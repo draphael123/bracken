@@ -619,7 +619,15 @@ export const STUCK_HANDS = {
       { key: 'gusts', rows: [165.5, 175.5], colGt: 47, colLt: 66, noClimb: true, at: [55, 165], dy: -4, line: 'THE GUSTS: BRACE (BLOCK) OR CROSS IN THE STILL AIR' } ] },   /* (fix pass) the gust ledges: the glint on the landing's lip */
     /* (fix pass) THE MATRIARCH'S LEVERS (her fight's one verb): both glint while a sluice is FULL and she can be caught in the channel (the hands report mat.lever: due) */
     { id: 'rg-lever', zone: WHOLE, steps: [
-      { key: 'lever', rows: [4, 24.5], colGt: 49, colLt: 90, is: ['mat.lever', 'due'], ats: [[51, 21], [88, 21]], dy: -26, line: 'THE SLUICES ARE FULL: E AT A LEVER LETS THE DAM GO' } ] },
+      { key: 'lever', rows: [4, 24.5], colGt: 95, colLt: 136, is: ['mat.lever', 'due'], ats: [[97, 21], [134, 21]], dy: -26, line: 'THE SLUICES ARE FULL: E AT A LEVER LETS THE DAM GO' } ] },   /* (claude/redgorgerework: her ledge moved east, src/red-gorge.js REDGORGE.matX) */
+    /* (claude/redgorgerework) THE SPILLWAY: on each pitch, the basket until you stand on it, then the wheel beside it (release its gate) */
+    { id: 'rg-spillway', zone: WHOLE, steps: [
+      { key: 'sp1', rows: [51.5, 61.5], colGt: 57, colLt: 70, mover: { gorge: 'sp1' }, off: { gorge: 'sp1' }, dy: -4, line: 'THE BASKET: STAND ON IT, THEN RELEASE ITS GATE AT THE WHEEL (E)' },
+      { key: 'sp1w', rows: [51.5, 61.5], colGt: 57, colLt: 70, at: [66, 61], dy: -30, line: 'THE WHEEL: E RELEASES THE GATE. THE WATER WINDS THE BASKET UP' },
+      { key: 'sp2', rows: [32.5, 43.5], colGt: 57, colLt: 80, mover: { gorge: 'sp2' }, off: { gorge: 'sp2' }, dy: -4, line: 'THE BASKET: STAND ON IT, THEN RELEASE ITS GATE AT THE WHEEL (E)' },
+      { key: 'sp2w', rows: [32.5, 43.5], colGt: 57, colLt: 80, at: [76, 42], dy: -30, line: 'THE WHEEL: E RELEASES THE GATE. THE WATER WINDS THE BASKET UP' },
+      { key: 'sp3', rows: [21.5, 33.5], colGt: 74, colLt: 86, mover: { gorge: 'sp3' }, off: { gorge: 'sp3' }, dy: -4, line: 'THE BASKET: STAND ON IT, THEN RELEASE ITS GATE AT THE WHEEL (E)' },
+      { key: 'sp3w', rows: [21.5, 33.5], colGt: 74, colLt: 86, at: [82, 32], dy: -30, line: 'THE WHEEL: E RELEASES THE GATE. THE WATER WINDS THE BASKET UP' } ] },
   ],
   /* THE UNDERWELL (claude/underwell): every nest, oil fire, torch and rope the route needs glints until it is done (src/underwell-hands.js handsState:
      nest.<id> shut|open, fire.<col> lit|out, torch.<id> up|fall|down, rope.<id> hung|burnt, lamp up|fall|down, skin some|empty) */

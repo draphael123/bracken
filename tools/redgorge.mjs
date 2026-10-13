@@ -50,7 +50,7 @@ const reachDam = (Lx, extra = {}) => { const R = floodReach(Lx, T, { ...real, ..
 const open = reachDam(lv.build());
 ok(open.n > 30, 'with THE JAM washed out and the baskets running, a real jump climbs the whole gorge to the old dam (' + open.n + ' tiles of its floor)');
 { const Ls = lv.build(); Ls.redgorge = false; ok(reachDam(Ls).n === 0, 'with THE JAM in place, the old dam cannot be reached: the jam is a lock'); }
-for (const id of ['ledges', 'narrows', 'spill']) { const Lb = lv.build(); Lb.moversExtra = Lb.moversExtra.filter(m => m.gorge !== id); ok(reachDam(Lb).n === 0, 'without the ' + id + ' basket the old dam cannot be reached: the flood is the only lift up that face'); }
+for (const id of ['ledges', 'narrows', 'spill', 'sp1', 'sp2', 'sp3']) {   /* (claude/redgorgerework: + THE SPILLWAY's three) */ const Lb = lv.build(); Lb.moversExtra = Lb.moversExtra.filter(m => m.gorge !== id); ok(reachDam(Lb).n === 0, 'without the ' + id + ' basket the old dam cannot be reached: the flood is the only lift up that face'); }
 /* every gate's wheel is reached before it is needed (from the start, with THE JAM still in place) */
 { const Ls = lv.build(); Ls.redgorge = false; const R = floodReach(Ls, T, real);
   for (const g of L.gates.filter(q => q.ch === 'gorge')) { const ws = L.ents.filter(e => e.t === 'sluice' && e.gate === g.id); ok(ws.length && ws.some(w => R.seen.has(w.x + ',' + w.y)) || g.id === 'narrows', 'the ' + g.id + ' gate has a wheel the climb reaches' + (g.id === 'narrows' ? ' (past the jam)' : ' with the jam still in place')); }
@@ -79,7 +79,8 @@ const feathers = L.ents.filter(e => e.t === 'stray' && e.kind === 'feather');
 ok(feathers.length === 4 && feathers.every(f => open.R.seen.has(f.x + ',' + f.y)) && new Set(feathers.map(f => f.x)).size === 4, 'four feathers, each one can be got (and no two share a column: the quest counts them by column)');
 ok(L.quest && L.quest.n === 4 && L.quest.item === 'feather', 'the quest counts four feathers');
 const checks = L.ents.filter(e => e.t === 'check');
-ok(checks.length === 3 && checks.some(c => c.y <= REDGORGE.summit) && checks.some(c => c.y === REDGORGE.climb.top && c.x < REDGORGE.climb.x0), 'three checkpoints (the climb\'s top at the gorge\'s mouth, the terrace, the dam\'s door): a death in the narrows costs the climb from the falls; a death in the gorge never replays the rapids and the climb');
+/* (claude/redgorgerework, the desertfix item + the spillway: a DELIBERATE change - the summit's shrine moved to the spillway's head, before her door, and bridge two's moved up to bridge four: three, spread up the climb, A10b 140-260 apart) */
+ok(checks.length === 3 && checks.some(c => c.y <= REDGORGE.summit && c.x > REDGORGE.spillway.x0 && c.x <= REDGORGE.spillway.x1) && checks.some(c => c.y === 69) && checks.some(c => c.y === REDGORGE.climb.top && c.x < REDGORGE.climb.x0), 'three checkpoints spread up the climb (the climb\'s top at the gorge\'s mouth, bridge four past the jam, the spillway\'s head before her door): a death in the spillway costs the narrows and the summit; a death in the gorge never replays the rapids and the climb');
 const keeper = L.ents.find(e => e.elite && e.gate !== undefined);
 ok(keeper && keeper.gate === 27 && keeper.y === 135, 'THE FALLS\' KEEPER (an elite scorpion) holds the gate between the terrace and the falls\' foot');
 
@@ -107,6 +108,16 @@ ok(keeper && keeper.gate === 27 && keeper.y === 135, 'THE FALLS\' KEEPER (an eli
   ok(L.ropes.some(([x, y0, y1]) => x >= C.x0 && x <= C.x1 && y1 - y0 >= 12), 'the climb\'s wall rope (twelve rows or more)'); }
 /* (claude/redgorge2) THE NEST LEDGE: the Matriarch's, and the crab benched */
 ok(L.arena && L.arena.boss === 'matriarch' && L.ents.some(e => e.t === 'matriarch') && !L.ents.some(e => e.t === 'gorgecrab'), 'the old dam\'s spillway is THE RAPTOR MATRIARCH\'s nest ledge; THE GREAT RED CRAB is benched (no crab in the gorge)');
+/* (claude/redgorgerework) THE SPILLWAY: dammed (its gates start full, the horn refills them, no flood runs it), three baskets on three gates, a rope down from the crest,
+   its exam's elite on the head shelf and the shrine before her door after him; raptors over its pitches */
+{ const SPW = REDGORGE.spillway, ch = L.channels.find(c => c.id === 'spillway'), gs = L.gates.filter(g => g.ch === 'spillway'), bs = L.baskets.filter(b => b.ch === 'spillway');
+  const inSp = e => e.x >= SPW.x0 && e.x <= SPW.x1 && e.y >= SPW.top && e.y < SPW.floor;
+  ok(ch && ch.dammed && gs.length === 3 && bs.length === 3 && gs.every(g => L.ents.some(e => e.t === 'sluice' && e.gate === g.id)) && bs.every(b => gs.some(g => g.row < b.wheelRow)),
+    'THE SPILLWAY is dammed (only a released gate lets water down it): three gates, each with a wheel, and three baskets each under a gate');
+  ok(L.ropes.some(([x, y0, y1]) => x >= SPW.x0 && x < 57 && y1 - y0 >= 30), 'a rope down the crest\'s shaft to the basin (and back up to the summit)');
+  ok(L.ents.filter(e => e.t === 'raptor' && inSp(e)).length >= 3, 'raptors over the spillway\'s pitches (' + L.ents.filter(e => e.t === 'raptor' && inSp(e)).length + ')');
+  const ex = L.ents.find(e => e.squad === 'spExam'), door = L.ents.find(e => e.t === 'check' && inSp(e));
+  ok(ex && ex.elite && door && door.x > ex.x && door.y === ex.y && L.arena.wallL - door.x <= 14, 'its exam: an elite on the head shelf\'s lip, and the shrine before her door after him'); }
 ok(L.decor.filter(d => d.kind === 'plume').length >= 4, 'her plumes along the way (B8: the approach sets her up): ' + L.decor.filter(d => d.kind === 'plume').length);
 
 /* THE GREAT RED CRAB, pure (BENCHED: unplaced, kept for a coast level - his module still holds its promises) */

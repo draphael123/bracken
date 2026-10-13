@@ -15,6 +15,8 @@
 // base-movement reach run per hero: the route on legs alone)
 import { openPage } from './cdp.mjs';
 const plans = (process.argv[2] || 'gate,race').split(','), hero = process.argv[3] || 'knight', god = process.argv[4] === '1', DBG = process.argv.includes('--dbg'), NOFOES = process.argv.includes('--nofoes');
+/* (claude/redgorgerework) --spillway: start at the summit's cut (the dam's crest) and walk only THE SPILLWAY and her door - the new section, per hero */
+const FROMSP = process.argv.includes('--spillway');
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const summary = [];
 try {
@@ -86,7 +88,9 @@ try {
           D(id, 'board try', a, Math.round(P().x), Math.round(P().y), Math.round(m.y), on()); if (!on() && feet() > Math.round(m.y0 / TS) + 1) return false; }
         for (let j = 0; j < 60 * 30 && !(on() && m.y <= m.y1 + 1); j++) { if (j % 30 === 0) D(id, G().phase, Math.round(P().x), Math.round(P().y), Math.round(m.y), on(), P().hp | 0); clear(); if (!on() && P().ground) k[(m.x + 16) > P().x ? 'right' : 'left'] = true; tick(1); }
         if (!(m.y <= m.y1 + 1)) return false; return walk(toCol, { tol: 3 }); };
-      const leg = (name, start, fn) => { let ok = false, tries = 0, lifted = false; const t0 = frames; legDmg = {};
+      let spStarted = !${FROMSP};
+      const leg = (name, start, fn) => { if (!spStarted) { if (!name.startsWith('THE SPILLWAY')) return true; spStarted = true; BK.tp(44, 21); clear(); tick(30); }
+        let ok = false, tries = 0, lifted = false; const t0 = frames; legDmg = {};
         for (; tries < 3 && !ok; tries++) { try { if (tries) { BK.tp(start[0], start[1]); clear(); tick(4); } ok = !!fn(); } catch (e) { if (!(e instanceof Died)) throw e; } }
         if (!ok) { lifted = true; }
         legs.push({ name, ok, lifted, retries: tries - 1, at: [col(), feet()], hp: Math.round(P().hp), pct: Math.round(100 * P().hp / maxHp), dmg: Object.fromEntries(Object.entries(legDmg).map(([a, b]) => [a, Math.round(b)])), s: +((frames - t0) / 60).toFixed(1), deaths: BK.stats().deaths });
@@ -129,7 +133,24 @@ try {
       else leg('THE NARROWS: race the next flood up the twenty-row rope', [13, 64], () => { walk(16, { tol: 2 }); leapShaft(); waitFor(() => G().phase === 'flood', 60 * 14); waitFor(() => G().phase === 'dry', 60 * 4); ontoRope(22); clear(); k.jump = true; BK.press('jump'); tick(20); clear(); tick(10); return feet() <= 42; }) || lift([28, 41]);
       /* ===== 6. THE SUMMIT ===== */
       leg('bridge five\\'s knives, up the summit ledges to the dam\\'s door (checkpoint two)', [28, 41], () => walk(37) && hops([[37, 39], [36, 36, -1], [35, 33], [35, 30], [36, 27], [37, 25], [37, 22, 1]]) && walk(44)) || lift([44, 21]);
-      leg('THE NEST LEDGE: through the door, the Matriarch wakes', [44, 21], () => { walk(53, { noFight: true }); wait(90, { noFight: true }); return BK.bossActive && BK.boss && BK.boss.t === 'matriarch'; });
+      /* ===== 7. THE SPILLWAY (claude/redgorgerework): down the crest's shaft into the dry basin, then up on three baskets, each lifted by a gate the hand
+         releases itself from the basket (E at the wheel beside it), under the birds; the elite on the head shelf; her door ===== */
+      const ride = (id, toCol) => { const m = BK.movers().find(q => q.gorge === id), gid = id, w = G().wheels.find(q => q.gate === gid), side = w.x < m.x ? Math.floor((m.x + 4) / TS) : Math.floor((m.x + m.w - 6) / TS);
+        const on = () => P().ground && Math.abs(P().y - m.y) < 3 && P().x > m.x + 1 && P().x < m.x + m.w - 1;
+        for (let a = 0; a < 4 && !(on() && m.y <= m.y1 + 1); a++) {
+          waitFor(() => m.y >= m.y0 - 0.5 || on(), 60 * 12); if (!on()) { walk(side, { tol: 3, noJump: true }); settle(); }
+          D(id, 'board', a, on(), Math.round(P().x), Math.round(P().y), Math.round(m.y), gate(gid));
+          if (!on()) continue; waitFor(() => gate(gid) === 'full', 60 * 14, { noFight: true });
+          if (!(m.y <= m.y1 + 1)) { clear(); P().face = Math.sign(w.x - P().x) || P().face; BK.press('talk'); tick(4); }
+          for (let j = 0; j < 60 * 6 && !(m.y <= m.y1 + 1) && on(); j++) { clear(); tick(1); } }
+        D(id, 'top?', on(), Math.round(m.y), m.y1); if (!(m.y <= m.y1 + 1)) return false; return walk(toCol, { tol: 3 }); };
+      leg('THE SPILLWAY: off the crest down the shaft to the dry basin', [44, 21], () => { walk(55, { noFight: true }); settle(); for (let j = 0; j < 240 && !(P().ground && feet() === 62); j++) { clear(); if (P().climb) k.down = true; tick(1); } return walk(64) && feet() === 62; }) || lift([64, 61]);
+      leg('the basin basket: on it, release its gate, ride the water up', [64, 61], () => ride('sp1', 63)) || lift([63, 51]);
+      leg('up the west ledges, across the bridge over the burst road', [63, 51], () => hops([[62, 49], [62, 46], [63, 43]]) && walk(73)) || lift([73, 42]);
+      leg('the second basket from the bridge, to the ledge under the head', [73, 42], () => ride('sp2', 77)) || lift([77, 32]);
+      leg('THE EXAM: the last basket up the head under the birds', [77, 32], () => ride('sp3', 84)) || lift([84, 21]);
+      leg('the head shelf: her guard (the elite), the shrine, her door', [84, 21], () => { for (let i = 0; i < 40 && BK.enemies().some(e => e.elite && e.alive && Math.abs(e.y - P().y) < 30 && Math.abs(e.x - P().x) < 160); i++) { walk(89); wait(60); } return walk(92); }) || lift([92, 21]);
+      leg('THE NEST LEDGE: through the door, the Matriarch wakes', [92, 21], () => { walk(BK.L.arena.wallL + 4, { noFight: true }); wait(90, { noFight: true }); return BK.bossActive && BK.boss && BK.boss.t === 'matriarch'; });
       return { dbg, plan: PLAN, hero: ${JSON.stringify(hero)}, maxHp, legs, dips, lowest: Math.round(lowest * 100), deaths: BK.stats().deaths, s: +(frames / 60).toFixed(1) };
     })()`, 2400000);
     if (DBG) console.log(r.dbg.join(String.fromCharCode(10))); const lifts = r.legs.filter(l => l.lifted).length, retries = r.legs.reduce((a, l) => a + l.retries, 0);
