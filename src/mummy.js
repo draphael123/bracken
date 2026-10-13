@@ -12,8 +12,8 @@
 // A GUARD (st.guard [x0, x1] in px) walks its beat inside a trap's reach and turns back at its ends until it sees you.
 // Frames (src/redraw/sealed_pyramid_art.js bakeMummy): 0,1 walk | 2 LASH TELL (arm back, the bandage coiled) | 3 LASH (arm out, the bandage flying) |
 // 4 GRAB TELL (both arms up and wide) | 5 GRAB (lurched forward, arms closed) | 6 hurt | 7 BURNING (arms flailing) - every move its own windup and release (B16).
-export const MUMMY = { hp: 150, w: 12, h: 20, speed: 17, beat: 46, sight: 150, sightY: 34, lashR: 58, lashTell: 0.66, lash: 0.22, grabR: 22, grabTell: 0.72, grab: 0.24,
-  cd: 0.85, yank: 22, hold: 1.1, flinch: 0.15, dmg: { lash: 26, grab: 18, squeeze: 10 } };   /* flinch: THE DEAD DO NOT FLINCH - a blow staggers a mummy this long at most (a parry, a broken guard or a trap more: src/sealed-pyramid-hands.js) */
+export const MUMMY = { hp: 150, w: 12, h: 20, speed: 17, beat: 46, sight: 150, sightY: 34, lashR: 58, lashTell: 0.55, lash: 0.22, grabR: 24, grabTell: 0.6, grab: 0.24,
+  cd: 0.6, yank: 22, hold: 1.1, flinch: 0.15, dmg: { lash: 32, grab: 22, squeeze: 12 } };   /* (claude/flasklever: the human bot with flasks walked through him at 100% hero health, 18/18 - shorter tells, a quicker beat, harder blows; claude/sealedpyramid had 0.66 / 0.72 / 0.85 / 26 / 18 / 10) */   /* flinch: THE DEAD DO NOT FLINCH - a blow staggers a mummy this long at most (a parry, a broken guard or a trap more: src/sealed-pyramid-hands.js) */
 const ev = (a, t, extra) => a.push({ t, ...extra });
 export function newMummy(x, y, guard) { return { kind: 'mummy', x, y, home: x, hp: MUMMY.hp, mode: 'walk', t: 0, face: -1, cd: 0.6, frame: 0, n: 0, guard: guard || null }; }
 /* w = { px, py, time, burning (s left ablaze: the hands set it from e.burn) } */

@@ -100,7 +100,9 @@ export const AFFIX_AT = {
 /* ELITETUNE (claude/elitetune): per-kind health and elite-damage multipliers, measured with tools/elite-lab.mjs toward the human bot's 75-85%
    (docs/elite-lab.json). hp scales the ELITE table's own hp in main.js; dmg scales every blow of his that lands (damagePlayer0). tell = windup length, every = the gap between his moves: both below 1 = sooner; a tell shortened by it never goes under 0.5 s, nor longer than as built. 1 = as built. */
 export const TUNE = {
-  mummy: { hp: 2.3, dmg: 2.7, tell: 0.9, every: 0.5 },   /* (claude/sealedpyramid) THE TOMB-WARDEN: slow, heavy, unflinching - the first cut died in 5-9 s to the mash bot (tools/elite-lab.mjs) */
+  mummy: { hp: 2.3, dmg: 2.7, tell: 0.9, every: 0.5 },   /* (claude/sealedpyramid) THE TOMB-WARDEN: slow, heavy, unflinching - the first cut died in 5-9 s to the mash bot (tools/elite-lab.mjs); his own blows are src/mummy.js MUMMY (claude/flasklever tuned those) */
+  oathmaul: { dmg: 1.35 },   /* (claude/flasklever, THE ROAD WARDENS under the human bot with flasks: the Briar Maul 92% (11/12) -> toward 75-85) */
+  oathlance: { hp: 0.8 },   /* (67% and 86 s a fight: fewer plates to chew) */
   gaffer: { hp: 1.4, dmg: 1.6, tell: 0.85, every: 0.6 },
   tideguard: { hp: 1.3, dmg: 2.6, tell: 0.85, every: 0.5 },
   hearthgob: { hp: 1.2, dmg: 2.2, tell: 0.85, every: 0.5 },
