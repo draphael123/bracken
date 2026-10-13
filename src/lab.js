@@ -589,7 +589,12 @@ async function runbossLab(BK, opts) {
     const smallEnd=()=>{const s=smallSw;smallSw=null;if(!s||(!s.hit&&s.other))return;smallSwings++;if(!s.hit)smallMissed++;};
     const smallWatch=(a0,aim)=>{if(a0<0&&P.atk>=0){smallEnd();if(aim)smallSw={aim,hp:aim.hp,set:new Set(smallFoes().concat([aim])),hit:false,other:false};}
       if(smallSw){for(const x of P.hitSet||[]){if(smallSw.set.has(x))smallSw.hit=true;else smallSw.other=true;}if(smallSw.aim.hp<smallSw.hp)smallSw.hit=true;if(P.atk<0)smallEnd();}};
-    const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);};
+    /* (claude/paladin2) HOLY GROUND IN THE PALADIN'S HANDS (src/holy-ground.js): near the boss with no circle of his own, on the ground and not resting, he TAPS
+       C to plant one; standing in it with Light to spend (empower, or the full bar's judgement) he taps again. One frame of C: a tap, never the aegis's hold */
+    const palHG={t:0},palHallow=()=>{const kk=BK.keys;if(palHG.t>0){palHG.t--;kk.block=palHG.t>0;return;}if(P.dead||!P.ground||P.labRest||P.atk>=0||kk.block||P.aegis||(P.dodge>0))return;
+      const H=BK.holy(),own=H.circles.find(c=>c.owner===P.n||c.owner===1||c.owner===null),inC=own&&Math.abs(P.x-own.x)<=own.r&&Math.abs(P.y-own.y)<=30,lt=P.light||0;
+      if((!own&&Math.abs(P.x-boss.x)<110&&P.st>48)||(inC&&(lt>=100||(!own.emp&&lt>=35)))){palHG.t=2;kk.block=true;}};
+    const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;if(h==='paladin'&&BK.holy&&LABP.v2)palHallow();BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);};
     P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labHold=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them
     const glass = []; if (boss.t === 'roc') for (const [x0, x1] of ((L.monk && L.monk.boards) || [])) for (let x = x0; x <= x1; x++) glass.push(x * TS + 8);
