@@ -15,6 +15,26 @@ export const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const BROWSERS = ['C:/Program Files/Google/Chrome/Application/chrome.exe', 'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
   '/usr/bin/google-chrome', '/usr/bin/chromium', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'];
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+export const browserExecutable = () => [process.env.BRACKEN_BROWSER, ...BROWSERS].filter(Boolean).find(p => existsSync(p));
+
+/* A suite worker may lend us a browser it already paid to start. Each openPage gets a NEW Chrome browser context, not
+   merely a new tab: saves, settings, cookies and localStorage cannot cross the seam. The context is disposed when the
+   tool closes, and the suite parent makes a second disposal pass after each child in case that child exits abruptly. */
+async function borrowedTarget(port) {
+  const info = await (await fetch('http://127.0.0.1:' + port + '/json/version')).json();
+  const ws = new WebSocket(info.webSocketDebuggerUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
+  let id = 0; const pending = new Map();
+  ws.onmessage = e => { const m = JSON.parse(e.data); if (pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } };
+  const send = (method, params = {}) => new Promise((res, rej) => { const n = ++id, timer = setTimeout(() => { pending.delete(n); rej(new Error(method + ' timed out')); }, 15000);
+    pending.set(n, m => { clearTimeout(timer); if (m.error) rej(new Error(m.error.message)); else res(m.result || {}); }); ws.send(JSON.stringify({ id: n, method, params })); });
+  try { const { browserContextId } = await send('Target.createBrowserContext');
+    const { targetId } = await send('Target.createTarget', { url: 'about:blank', browserContextId });
+    let page = null; for (let i = 0; i < 40 && !page; i++) { const list = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
+      page = list.find(t => t.id === targetId); if (!page) await sleep(100); }
+    if (!page) throw new Error('borrowed browser did not expose its new page');
+    return { wsUrl: page.webSocketDebuggerUrl, close: async () => { try { await send('Target.disposeBrowserContext', { browserContextId }); } finally { ws.close(); } } };
+  } catch (e) { ws.close(); throw e; }
+}
 
 export async function openPage(opts = {}) {
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
@@ -25,12 +45,15 @@ export async function openPage(opts = {}) {
   const mine = readFileSync(join(ROOT, 'src/lookpass.js'), 'utf8');
   const served = await (await fetch(URL0 + 'src/lookpass.js', {signal:AbortSignal.timeout(5000)})).text().catch(() => '');
   if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
-  const exe = BROWSERS.find(p => existsSync(p)); if (!exe) throw new Error('no Chrome or Edge found');
+  const exe = browserExecutable(); if (!exe && !process.env.BRACKEN_BROWSER_PORT) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER to its executable)');
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
-  const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look'), chrome = run.child;
-  const dbg = await run.devtoolsPort();
+  const borrowed = !!process.env.BRACKEN_BROWSER_PORT;
+  const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
+  const dbg = borrowed ? +process.env.BRACKEN_BROWSER_PORT : await run.devtoolsPort();
+  let loan = null;
   try {
-  let wsUrl = null;
+  loan = borrowed ? await borrowedTarget(dbg) : null;
+  let wsUrl = loan && loan.wsUrl;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list', {signal:AbortSignal.timeout(2000)})).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) throw new Error('could not reach the browser');
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
@@ -76,6 +99,6 @@ export async function openPage(opts = {}) {
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, send, errors, PORT, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return run.close(); } };
-  } catch (e) { if (server) server.kill(); await run.close(); throw e; }
+  return { evalp, send, errors, PORT, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
