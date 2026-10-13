@@ -27372,7 +27372,8 @@ function updateMovers(dt) {
     if (m.windlass && WTH && WTH.bucket(m, dt)) continue;
     if (m.gorge && RGH && RGH.basket(m, dt)) continue; if (m.sky && SKY && SKY.mover(m, dt)) continue;   /* THE SKY ROAD: THE GREAT KITE REEL's cage */   /* THE RED GORGE: a basket rides up its shaft only while the water runs past its wheel */   /* THE WELL TOWN: THE GREAT WELL's bucket goes only where a windlass sends it */
     if (m.debris && RGH && RGH.debris(m, dt)) continue;   /* (claude/redgorge2) THE RAPIDS' drifting timbers: down the current, faster in the horn's rapids */
-    if (m.mplank && MTH && MTH.plank(m, dt)) continue;   /* the dam's loose timbers on the Matriarch's ledge: they float up when it cracks */
+    if (m.mplank && MTH && MTH.plank(m, dt)) continue;
+    if (m.mbasket && MTH && MTH.basket(m, dt)) continue;   /* (claude/redgorgerework) THE STANDPIPE BASKETS: a lever's water lifts one to her wall in phase two */   /* the dam's loose timbers on the Matriarch's ledge: they float up when it cracks */
     if (m.canal && CNH.canalMover(CANAL, CNX, m, dt)) continue;   /* THE FOG CANAL: the water in the locks, and the barge on it */
     if (m.towpath && TPH && TPH.mover(m, dt)) continue;   /* THE TOWPATH: a punt rides its lock's water (src/towpath-hands.js) */
     if (m.theatre && THH.theatreMover(THEATRE, THX, m, dt)) continue;
@@ -29197,7 +29198,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
     if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
     if (m.leRaft || m.ft2) continue;   /* (the raft is drawn by its hands: LEH.drawBack; the falling tower's telescope and chunk by ftDraw) */
-    if (m.debris || m.mplank) continue;   /* (claude/redgorge2: the rapids' timbers and the dam's are drawn by their hands) */
+    if (m.debris || m.mplank || m.mbasket) continue;   /* (claude/redgorge2: the rapids' timbers and the dam's are drawn by their hands) */
     if (m.kind === 'bucket') { if (m.vis && m.x + m.w > cx - 10 && m.x < cx + VW + 10) drawBucket(g, m, cx, cy, time); continue; }
     if (m.x + m.w < cx - 10 || m.x > cx + VW + 10) continue;
     if (m.fair && FR.drawMover(g, m, cx, cy, time)) continue;   /* THE HARVEST FAIR: a gondola on the wheel, a chair on the swing ride */

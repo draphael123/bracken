@@ -256,7 +256,8 @@ export function buildRedGorge({ painter, T, TS }) {
 
   // ================= THE NEST LEDGE: THE RAPTOR MATRIARCH by the old dam's spillway (src/raptor-matriarch.js) =================
   const mat = stageMatriarch({ set, block, ent, air }, T, TS, 50);
-  for (const c of [5, 33]) moversExtra.push({ kind: 'mplank', mplank: true, x: (50 + c) * TS, x0: (50 + c) * TS, x1: (50 + c) * TS, y: MSTAGE.R * TS - 6, y0: MSTAGE.R * TS - 6, w: 32, h: 6 });   /* the dam's loose timbers in the channel's two wide reaches (they float up when the dam cracks) */
+  for (const b of MSTAGE.baskets) { const bx = (50 + b.x0) * TS; moversExtra.push({ kind: 'mbasket', mbasket: b.id, x: bx, x0: bx, x1: bx, y: MSTAGE.R * TS - 4, y0: MSTAGE.R * TS - 4, w: 32, h: 6 }); }   /* (claude/redgorgerework) THE STANDPIPE BASKETS by the banks: a lever's water lifts one to her wall in phase two */
+  for (const c of MSTAGE.planks) moversExtra.push({ kind: 'mplank', mplank: true, x: (50 + c) * TS, x0: (50 + c) * TS, x1: (50 + c) * TS, y: MSTAGE.R * TS - 6, y0: MSTAGE.R * TS - 6, w: 32, h: 6 });   /* the dam's loose timbers in the channel's two wide reaches (they float up when the dam cracks) */
   decor.push({ kind: 'plume', x: 40, y: 21 }, { kind: 'plume', x: 44, y: 21 });             /* (B8) her plumes thicken at the dam's door */
   sign(39, 21, 'HER PLUMES. THE OLD NEST WAS HERS: SHE NESTS BY THE SPILLWAY NOW.');
   air(91, 95, 16, 21); ent('gate', 93, 21);                                   /* the road out, to THE GLASS SEA */

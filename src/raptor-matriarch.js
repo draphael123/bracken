@@ -63,6 +63,11 @@ export const MAT = {
      your bank, crouched to pounce up at you - the lever's window. Until the sluice has stunned her once she WILL NOT BREAK: her health holds at the
      phase-two line (told: STUN HER WITH THE SLUICE) - the first pass forces the verb */
   waveV: 900, lureTell: 1.25, lureFly: 0.45, lureOff: 40, lureWalk: 0.004, lureMax: 2.6,
+  /* (claude/redgorgerework, Daniel 10-13: "while she FLIES, baskets go up with the WATER PRESSURE so you can hit her") THE STANDPIPE BASKETS, phase two: a lever
+     pulled while she is on the walls sends its sluice's water up the STANDPIPE beside its bank - pressT s of pressure (the gauge drains); the BASKET there rises
+     with a hero on it (basketRise s) to her wall height (basketTop px under the wall line: her body is in reach) and holds while the pressure does, then sinks
+     (basketFall s). A blow from a raised basket KNOCKS HER OFF THE WALL: she falls into the channel STUNNED (stunT), and the pressure drops - you come down with her */
+  pressT: 8, basketRise: 1.3, basketFall: 1.0, basketTop: 6, knockFly: 0.45,
   /* P2 */
   wallUp: 0.6, runT: [0.9, 1.6], runV: 170, diveTell: 0.9, diveFly: 0.3, diveR: 22, stunT: 4.4,   /* (claude/matriarch2: runT [1.6, 2.6], runV 150, diveTell 1.0, diveR 18 - she comes off the wall far more often) */
   volleyTell: 0.8, quills: 5, quillSpread: 0.2, quillV: 210, perchT: 3.0, toBridge: 0.5, tangleT: 5.0,
@@ -86,7 +91,8 @@ export const MOVES = {
 };
 /* (claude/redgorgerework) THE SLUICE STUN's words: one place, so the hands, the hint box and the tools say the same */
 export const SAY = { stun: 'THE SLUICE STUNS HER: STRIKE', wasted: 'SHE IS UP ON THE ROCK: THE WATER MISSES HER', lure: 'SHE IS IN THE CHANNEL: PULL THE LEVER (E)',
-  rule: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL', hold: 'SHE WILL NOT BREAK: STUN HER WITH THE SLUICE', warded: 'HER WARD: SHE IS READY FOR IT' };
+  rule: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL', walls: 'ON THE WALLS: A LEVER LIFTS ITS BASKET TO HER', press: 'THE STANDPIPE FILLS: RIDE THE BASKET UP',
+  knock: 'OFF THE WALL: SHE FALLS, STUNNED', drowned: 'THE DAM IS CRACKED: THE SLUICES ARE DROWNED', hold: 'SHE WILL NOT BREAK: STUN HER WITH THE SLUICE', warded: 'HER WARD: SHE IS READY FOR IT' };
 export const MOVE_NAME = { pounce: 'HER POUNCE', rake: 'HER TALONS', sweep: 'HER TAIL', scree: 'THE SCREE', dive: 'HER DIVE', quill: 'HER QUILLS', surge: 'THE DEBRIS', follow: 'HER FOLLOW-UP', rider: 'THE FLOOD RIDER' };
 
 /* ---------- THE NEST LEDGE ---------- */
@@ -97,7 +103,8 @@ export const STAGE = { W: 40, R: 24, top: 22, door: 6, wallRow: 9, bridgeRow: 13
     { id: 'B2', x0: 23, x1: 26, kind: 'broad' }, { id: 'N3', x0: 29, x1: 30, kind: 'narrow' }, { id: 'E', x0: 36, x1: 39, kind: 'bank' }],
   levers: [{ id: 'W', x: 1 }, { id: 'E', x: 38 }],
   bridges: [{ id: 'A', p0: 3, p1: 13 }, { id: 'B', p0: 26, p1: 36 }],
-  planks: [5, 33],      /* the dam's loose timbers: they lie in the two wide reaches of the channel, and float up when the dam cracks */
+  planks: [6, 32],      /* the dam's loose timbers: they lie in the two wide reaches of the channel, and float up when the dam cracks (claude/redgorgerework: 5 and 33 before - the baskets stand by the banks now) */
+  baskets: [{ id: 'W', x0: 4, lever: 'W' }, { id: 'E', x0: 34, lever: 'E' }],   /* (claude/redgorgerework) THE STANDPIPE BASKETS: two tiles each, against each bank, in the channel (its lever's water lifts it) */
   start: 37 };
 /* the cracks: every gap of two tiles or less between two tops (local columns [a, b]) */
 export const pitsOf = () => { const out = []; for (let i = 1; i < STAGE.tops.length; i++) { const a = STAGE.tops[i - 1].x1 + 1, b = STAGE.tops[i].x0 - 1; if (b >= a && b - a <= 1) out.push([a, b]); } return out; };
@@ -126,6 +133,7 @@ export function geom(A, TS = 16) {
     levers: STAGE.levers.map(l => ({ id: l.id, x: X(l.x) + 8 })),
     bridges: STAGE.bridges.map(b => ({ id: b.id, a: X(b.p0) + 8, b: X(b.p1) + 8, mid: (X(b.p0) + X(b.p1)) / 2 + 8 })),
     planks: STAGE.planks.map(c => ({ x: X(c), w: 2 * TS })),
+    baskets: STAGE.baskets.map(b => ({ id: b.id, lever: b.lever, l: X(b.x0), r: X(b.x0 + 2), cx: X(b.x0) + TS, y0: q.R * TS - 4, y1: (STAGE.wallRow + 1) * TS + MAT.basketTop })),
     floodY: q.R * TS - 18, p3Y: q.top * TS + 10, pitY: (q.R - 1) * TS, pits: pitsOf().map(([a, b]) => [X(a), X(b + 1)]) };
 }
 /* the top under x (a body of half-width hw stands on the highest ground under it), or null over the channel */
@@ -136,7 +144,7 @@ export const nearestTop = (G, x, f) => G.tops.filter(t => !f || f(t)).sort((a, b
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, gap: 1, act: 0, behindT: 0, ward: 0, wardSaid: 0,
-    sluice: { W: 1, E: 1 }, pending: [], burst: 0, burstId: 0, wave: null, flood: false, horn: false, floodId: 0, water: 0,
+    sluice: { W: 1, E: 1 }, pending: [], burst: 0, burstId: 0, wave: null, press: Object.fromEntries(STAGE.baskets.map(b => [b.id, { charge: 0, h: 0, rider: false }])), riderUp: false, flood: false, horn: false, floodId: 0, water: 0,
     bridges: { A: 'up', B: 'up' }, perch: null, planks: false, shots: [], bands: [], chain: 0, surgeT: 0, openTaken: 0,
     fly: null, mark: null, told: {},
     n: { cycles: 0, opens: 0, staggers: 0, footing: 0, wasted: 0, releases: 0, pounces: 0, whiffs: 0, dives: 0, stuns: 0, perches: 0, cuts: 0, tangles: 0, volleys: 0, p3Staggers: 0,
@@ -175,7 +183,9 @@ export function holdDmg(e, S, d) { if (!S || S.ph !== 1 || (S.n.sluiceStuns || 0
 export const holding = (e, S) => !!S && S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp <= e.maxHp * MAT.p2 + 1.5;
 /* ---------- THE WATER (the hands tell her what the gorge's clock does: c.horn(), c.flood()) ---------- */
 /* E AT A LEVER: the sluice lets the banked flood go. Returns 'released' | 'empty' | 'busy' */
-export function pull(S, id) { if (S.pending.length || S.burst > 0) return 'busy'; if (!S.sluice[id]) return 'empty'; S.sluice[id] = 0; S.pending.push({ id, t: MAT.releaseTell }); S.n.releases++; return 'released'; }
+export function pull(S, id) { if (S.ph === 3) return 'drowned';
+  if (S.ph === 2) { const B = S.press[id]; if (!B) return 'empty'; if (B.charge > 0) return 'busy'; if (!S.sluice[id]) return 'empty'; S.sluice[id] = 0; B.charge = MAT.pressT; S.n.presses = (S.n.presses || 0) + 1; return 'pressed'; }   /* (claude/redgorgerework) THE STANDPIPE */
+  if (S.pending.length || S.burst > 0) return 'busy'; if (!S.sluice[id]) return 'empty'; S.sluice[id] = 0; S.pending.push({ id, t: MAT.releaseTell }); S.n.releases++; return 'released'; }
 function stepWater(e, S, dt, c) {
   const G = S.G, horn = !!c.horn(), flood = !!c.flood();
   if (flood && !S.flood) { S.floodId++; if (S.ph < 3 && (!S.sluice.W || !S.sluice.E)) { S.sluice.W = 1; S.sluice.E = 1; c.number((G.x0 + G.x1) / 2, G.topY - 90, 'THE DAM BANKS THE FLOOD: THE SLUICES ARE FULL', '#7ab8e8'); } }
@@ -187,6 +197,18 @@ function stepWater(e, S, dt, c) {
   if (S.burst > 0) S.burst = Math.max(0, S.burst - dt);
   if (S.ph === 3 && S.water < 1) S.water = Math.min(1, S.water + dt / MAT.riseT);
 }
+/* THE STANDPIPE BASKETS (claude/redgorgerework): rise with a rider while their pipe holds pressure, hold, sink when it is spent. h: 0 (the channel floor) .. 1 (her wall) */
+export const wallMode = e => !!e && (e.mode === 'wallRun' || e.mode === 'circle' || e.mode === 'diveTell' || e.mode === 'volleyTell' || e.mode === 'broodTell');
+export const basketY = (G, S, id) => { const b = G.baskets.find(q => q.id === id), B = S.press[id]; return b.y0 - (b.y0 - b.y1) * (B ? B.h : 0); };
+function stepBaskets(S, dt, h) { S.riderUp = false;
+  for (const b of S.G.baskets) { const B = S.press[b.id]; B.rider = h.some(q => q.alive && q.onBasket === b.id);
+    if (S.ph === 2 && B.charge > 0) { B.charge = Math.max(0, B.charge - dt); if (B.rider || B.h > 0) { const was = B.h; B.h = Math.min(1, B.h + dt / MAT.basketRise); if (was < 1 && B.h >= 1 && B.rider) S.n.basketRides = (S.n.basketRides || 0) + 1; } }
+    else { B.charge = 0; B.h = Math.max(0, B.h - dt / MAT.basketFall); }
+    if (B.rider && B.h >= 0.5) S.riderUp = true; } }
+/* A BLOW FROM A RAISED BASKET while she is on the wall: she is knocked off it - down into the channel, STUNNED (the pressure drops: the basket comes down too). false: not now */
+export function knock(e, S, c) { if (S.ph !== 2 || !wallMode(e) || S.ward > 0 || matBig(e)) return false; const G = S.G;
+  S.n.knocks = (S.n.knocks || 0) + 1; for (const k in S.press) S.press[k].charge = 0; S.mark = null; S.perch = null; if (e.mode === 'circle' && c.dismissYoung) c.dismissYoung(); S.broodUp = 0;
+  const tx = clampX(G, e.x); fly(e, S, tx, surfY(G, tx, 4), MAT.knockFly, -6, 'knocked'); c.number(e.x, e.y - 50, SAY.knock, '#8fd160'); c.sound('fall'); c.shake(3); return true; }
 /* is the channel floor under water now (a natural flood, a burst, the cracked dam)? */
 export const channelWet = S => !!(S && (S.flood || S.burst > 0 || (S.ph === 3 && S.water > 0.3)));
 
@@ -198,7 +220,7 @@ export function stepMatriarch(e, S, dt, h, c) {
   e.modeT -= dt; S.clock = (S.clock || 0) + dt;
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
-  stepWater(e, S, dt, c); stepShots(e, S, dt, h, c); stepBands(e, S, dt, h, c);
+  stepWater(e, S, dt, c); stepBaskets(S, dt, h); stepShots(e, S, dt, h, c); stepBands(e, S, dt, h, c);
   if ((e.mode === 'rakeTell' || e.mode === 'rake') && P && P.dodge && Math.abs(P.x - e.x) < MAT.rakeRange + 30) S.rakeRoll = Math.sign(P.x - e.x) || 1;   /* (claude/matriarch2) she sees the roll she will follow */
   if (S.ph === 3 && S.water >= 1) { S.surgeT -= dt; }
   if (e.mode === 'sleep') return;
@@ -280,7 +302,8 @@ function nextMove(e, S, P, c) {
   if (m === 'lure' && !(S.ph === 1 && (S.sluice.W || S.sluice.E) && !S.pending.length && !(S.burst > 0) && !S.horn && !S.flood && (c.hornIn ? c.hornIn() : 99) > MAT.lureMax + 0.8)) m = 'pounce';   /* (and never into the horn: she has warning then, and would leave the lure for the rock) */   /* (claude/redgorgerework) no full sluice: a plain pounce */
   if (m === 'perch' && S.bridges.A !== 'up' && S.bridges.B !== 'up') m = 'volley';
   if (m === 'surge' && S.ph === 3) { S.surgeT = 0; }
-  if (m === 'brood' && (S.ph !== 2 || c.young() > 0)) m = 'dive';   /* (her young are their own: the screech's cliff raptors do not count against them) */   /* (claude/matriarch2) */
+  if (m === 'brood' && (S.ph !== 2 || c.young() > 0)) m = 'dive';
+  if (S.ph === 2 && S.riderUp && (m === 'dive' || m === 'volley')) m = 'run';   /* (claude/redgorgerework) a hero up on a basket at her height: she keeps running (and passes him) */   /* (her young are their own: the screech's cliff raptors do not count against them) */   /* (claude/matriarch2) */
   if (m === 'rider' && !(S.ph === 3 && S.water >= 1 && topAt(G, e.x, 4))) m = 'chain';
   switch (m) {
     case 'pounce': tell(e, S, c, 'pounceTell', MAT.pounceTell); return;
@@ -364,6 +387,7 @@ function stepFly(e, S, dt, P, c) {
   if (then === 'diveLand') { c.fx('land', e.x, e.y); c.shake(4); const hit = c.hit([e.x - MAT.diveR, e.x + MAT.diveR, e.y - 40, e.y + 8], MAT.dmg.dive, MOVE_NAME.dive, { key: 'dive' + S.act });
     S.mark = null; if (hit) { fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 20, 'wallRun'); S.runT = 1.0; return; }
     S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); if (!S.told.stun) c.number(e.x, e.y - 64, 'SHE SLAMS INTO THE ROCK: STUNNED', '#8fd160'); S.told.stun = 1; return; }
+  if (then === 'knocked') { c.fx('land', e.x, e.y); c.shake(4); S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); c.fx('stun', e.x, e.y); return; }   /* (claude/redgorgerework) off the wall from the basket: STUNNED in the channel */
   if (then === 'lure') { c.fx('land', e.x, e.y); e.face = Math.sign(P.x - e.x) || e.face; S.lure = 1; tell(e, S, c, 'pounceTell', lureT(S, P)); return; }   /* (claude/redgorgerework) down in the channel, crouched at you: the lever's window */
   if (then === 'wobble') { setMode(e, 'wobble', MAT.wobbleT); c.number(e.x, e.y - 64, 'THE NARROW PILLAR THROWS HER', '#8fd160'); c.sound('flap'); return; }
   if (then === 'volleyLand') { c.fx('land', e.x, e.y); setMode(e, 'skid', MAT.skidT); if (!S.told.vbeat) { S.told.vbeat = 1; c.number(e.x, e.y - 60, 'SHE COMES DOWN OFF THE WALL: HER GUARD IS DOWN', '#ffd36b'); } return; }
@@ -498,6 +522,16 @@ function matPlan0(s) {
     if (e.mode === 'pstagger') { const tp = topAt(G, kx, 2); if (myTop !== tp) { out.gx = tp.cx; if (P.ground && onTop && (Math.abs(P.x - myTop.l) < 12 || Math.abs(P.x - myTop.r) < 12)) out.jump = true; out.why = 'to her top'; } else { out.gx = s.tip ? clamp(kx + side * stand) : kx - side * 6; swing(kx); out.why = 'cut her: staggered'; } return fin(out); }
     if (matBig(e) && onTop && e.y > G.topY + 8 && S.ph < 3) { out.gx = clamp(kx + side * stand); out.why = 'down to her'; if (Math.abs(P.x - out.gx) < 30 && myTop) out.gx = clamp(P.x < myTop.cx ? myTop.l - 10 : myTop.r + 10); return fin(out); }
     out.gx = clamp(kx + side * stand); if (dx < hitR + 2 && Math.abs(P.y - e.y) < 30) swing(kx); out.why = matBig(e) ? 'cut her: open' : 'cut her: her guard is down'; return fin(out); }
+  /* 3b. PHASE TWO: THE STANDPIPE BASKETS (claude/redgorgerework) - while she is on the walls: pull a full lever, board its basket, ride it up, strike her off the wall */
+  if (S.ph === 2 && G.baskets) { const onBk = G.baskets.find(b => P.x > b.l - 4 && P.x < b.r + 4 && Math.abs(P.y - basketY(G, S, b.id)) < 8), wall = wallMode(e);
+    if (onBk) { const B = S.press[onBk.id];
+      if (B.h > 0.8 && wall && !(S.ward > 0) && Math.abs(e.x - P.x) < reach + MAT.w / 2 - 4 && seenFor('bk' + S.act + Math.round(e.x / 40), 0.15)) { swing(kx); out.gx = onBk.cx; out.why = 'the basket: strike her off the wall'; return fin(out); }
+      if (B.charge > 0 || B.h > 0.05) { out.gx = onBk.cx; out.face = Math.sign(kx - P.x) || out.face; out.why = 'the basket: ride it up to her'; return fin(out); } }
+    const ready = G.baskets.find(b => S.press[b.id].charge > 1.2 && S.press[b.id].h < 0.3);
+    if (ready && wall && !S.horn && !S.flood) { out.gx = ready.cx; out.why = 'the basket: board it'; return fin(out); }
+    if (wall && !S.horn && !S.flood && !ready) { const lv = G.levers.filter(l => S.sluice[l.id] && !(S.press[l.id] && S.press[l.id].charge > 0)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+      if (lv && seenFor('bkl' + S.act, 0.3)) { const bank = topAt(G, lv.x, 2); if (myTop !== bank || !onTop) { out.why = 'the basket: to its lever'; return goTop(bank); }
+        out.gx = lv.x; if (Math.abs(P.x - lv.x) < 12) { out.talk = true; out.why = 'the basket: pull its lever'; } else out.why = 'the basket: to its lever'; return fin(out); } } }
   /* 4. PHASE TWO: a post under her bridge */
   if (S.ph === 2 && e.mode === 'perch' && S.perch) { const b = G.bridges.find(q => q.id === S.perch), px = Math.abs(b.a - P.x) < Math.abs(b.b - P.x) ? b.a : b.b;
     const tp = topAt(G, px, 2); if (myTop !== tp) { out.why = 'to the bridge post'; return goTop(tp); } out.gx = px - Math.sign(px - P.x || 1) * 14; out.strike = Math.abs(P.x - px) < reach + 12; if (out.strike) swing(px); out.why = 'strike the post'; return fin(out); }
