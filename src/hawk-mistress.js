@@ -2,11 +2,19 @@
 // raiders' chief and falconer - not a goblin, not another king (Daniel 10-06). Concept + interview: .claude/briefs/brief-banditksar.md; the rework:
 // scratch/brief-ksar2.md (Daniel-approved: the rooftop arena, three new told moves of hers, two of the hawk's, the B15 floor, tuned WITH FLASKS).
 //
-// WHAT SHE IS (design standard B11): A HUMAN DUELIST, NOT A PUZZLE. She is ALWAYS HITTABLE and GUARDS BY ANGLE: her falconer's GAUNTLET turns a blow from
-//   the front by a hero standing at her height while she is ON GUARD (walking, recovering) - CLANK, "HER GAUNTLET" (src/boss-read.js's read) - but (B15, the
-//   RESISTANCE FLOOR) a turned blow still lands at HM.floor (0.4x); from BEHIND her, or from ABOVE (a jump), it lands whole; in her tells and her strikes
-//   she is committed and every blow lands. She is on src/boss-greed.js FULL_DAMAGE (no global chip; greed is still counted - the mash bot's reprisal).
+// (claude/ksarhawk, Daniel's 10-13 playtest: "too quick, often cannot get out of the way"; "the eagle a CENTRAL mechanic - outside it she is (near)
+//   invulnerable, throw FIRE to knock it down"; "use the kegs"; the back-of-room clipping; the seals drawn as mushrooms. Brief: scratch/briefs-boss-reworks-1013.md 3)
+// WHAT SHE IS NOW (B14/B17): A FALCONER WHOSE HAWK IS HER SHIELD. While THE HAWK RIDES OVER HER (circling, climbing, home on her glove) she is GUARDED:
+//   a blow CLANKS, "THE HAWK GUARDS HER", and lands at the B15 floor (HM.floor, 0.4x - never wholly). THE CENTRAL MECHANIC IS THE LEVEL'S OWN FIRE AND
+//   POWDER: take a TORCH from one of the roofs' BRAZIERS (src/ksar-hands.js torch stacks) and THROW it into the hawk - or a POWDER KEG from the stack, a keg
+//   that strikes the hawk blows in the air - and THE HAWK COMES DOWN: it crashes burning onto the roof and lies there stunned ('HAWK DOWN'), and she is
+//   OPEN (gold ring + timer, B10), a blow x HM.openMul for HM.openT s. Then she whistles it up (the B3 ward: it sits on her glove, told) and it climbs.
+//   The rule's lesser openings stay: A GONG sends the hawk WHEELING (low and slow: an easy torch), a FLASH blinds it, a stoop STRUCK or SHIELDED flinches it
+//   - she is BARE (x HM.bareMul for HM.bareT s, the same ring, 'BARE'); and while the hawk is off her on a stoop of its own she takes a blow whole.
+//   She is on src/boss-greed.js FULL_DAMAGE (no global chip: her own take holds the floor; greed is still counted - the mash bot's reprisal).
 //   Her kit: THE WHIP, A CURVED KNIFE, A BANDOLIER OF THROWING KNIVES, the fort's POWDER, and THE HAWK.
+// SLOWER (Daniel 10-13): every tell >= ~0.6 s (a '!!' longer), the gaps between her moves ~0.8-1.0 s, and ONE WINDUP AT A TIME: she starts nothing new while
+//   her keg rolls, her knives fly or the hawk is out on a stoop (calm()).
 // THE ARENA (claude/ksar2): THE FORT'S FLAT ROOFS - three roofs at one height with two SPIKED SHAFTS between them (HM_STAGE.shafts). A fall in costs a
 //   quarter of the bar and the shaft's HOT UPDRAFT throws you back up onto the roof edge (src/ksar-hands.js: never a death, never a soft-lock). She LEAPS
 //   roof to roof after you (a told leap, B12: she lands on the roof where you can follow, never in an opening).
@@ -29,24 +37,26 @@
 //   BACK - it rolls home and blows under her: OPEN). The arena: the fire burns the roofs' two ends and the ROOF LEDGES CRUMBLE end by end.
 // PURE: no DOM, no main.js. The world is a context `c` (src/hawk-mistress-hands.js binds it). hmPlan is the boss lab's HUMAN bot (src/lab.js).
 
+import { KINDS } from './carry-throw.js';   /* (claude/ksarhawk) the bot judges its throw at the hawk on the arc the game draws */
 export const HM = {
-  hp: 2850, w: 16, h: 30, markH: 48, floor: 0.4,
-  openMul: 2.0, openCap: 0.12, openT: 3.6, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80, flinchT: 0.35,
+  hp: 3200, w: 16, h: 30, markH: 48, floor: 0.4,
+  openMul: 2.0, openCap: 0.10, openT: 4.5, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80, flinchT: 0.35,
+  bareMul: 1.4, bareT: 2.8, bareCap: 0.04, fallT: 0.4, fireR: 22, wheelLow: 46,   /* (claude/ksarhawk) BARE: the lesser openings; the hawk's fall; the fire's reach on it; a wheeling hawk's height over the roof */
   p2: 0.6, p3: 0.25,
-  walk: 70, keep: 50, turn: 0.35, gap: [0.5, 0.42, 0.36],
-  lashTell: 0.55, lashT: 0.16, lashReach: 86, lashH: 16, lashRange: 110,
-  feintTell: 0.42, feintHold: 0.24, cutTell: 0.34, cutT: 0.18, cutReach: 34, cutStep: 210,   /* (the knife LUNGES: ~38 px in on the cut) */
-  spotTell: 0.9, markLashTell: 0.65, markR: 22,
-  callTell: 0.8, runT: 2.4, guardCap: 2,
-  leapT: 0.55, leapH: 44,
-  snareTell: 0.6, snareReach: 104, snareH: 26, snareHold: 1.3, snarePull: 120,
-  fanTell: 0.7, fanGap: 0.24, knifeV: 230, knifeR: 6,
-  kegTell: 0.6, kegV: 120, kegBack: 1.35, kegFuse: 3.2, kegR: 34,
-  rakeTell: 0.85, rakeFly: 0.42, rakeR: 12,
-  snatchTell: 1.0, snatchLock: 0.35, snatchDrop: 0.22, snatchR: 16, carryT: 0.8,
+  walk: 62, keep: 50, turn: 0.35, gap: [1.0, 0.9, 0.8],
+  lashTell: 0.85, lashT: 0.18, lashReach: 86, lashH: 16, lashRange: 110,
+  feintTell: 0.6, feintHold: 0.3, cutTell: 0.6, cutT: 0.18, cutReach: 34, cutStep: 190,   /* (the knife LUNGES: ~34 px in on the cut) */
+  spotTell: 1.0, markLashTell: 0.8, markR: 22,
+  callTell: 0.9, runT: 2.6, guardCap: 2,
+  leapT: 0.6, leapH: 44,
+  snareTell: 0.85, snareReach: 104, snareH: 26, snareHold: 1.3, snarePull: 120,
+  fanTell: 0.9, fanGap: 0.42, knifeV: 190, knifeR: 6,
+  kegTell: 0.85, kegV: 105, kegBack: 1.35, kegFuse: 3.4, kegR: 34,
+  rakeTell: 1.05, rakeFly: 0.55, rakeR: 12,
+  snatchTell: 1.3, snatchLock: 0.45, snatchDrop: 0.26, snatchR: 16, carryT: 0.8,
   hawkAlt: 74, hawkR: 30,
   fireW: 3, fireTick: 0.5, roofEvery: 4.0,
-  dmg: { lash: 31, cut: 34, markLash: 37, rake: 26, fire: 9, snare: 14, knife: 17, keg: 30, snatch: 10 },
+  dmg: { lash: 58, cut: 64, markLash: 70, rake: 50, fire: 9, snare: 27, knife: 32, keg: 57, snatch: 19 },   /* (claude/ksarhawk) ~x1.9: slower and every blow answerable, so each blow that lands weighs more (Daniel's weightier-combat direction) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]). One new move of hers a phase: snare (1), fan (2), keg (3); the hawk's
    rake from the start and its snatch from phase two */
@@ -68,9 +78,13 @@ export const HAWK_MOVES = { rake: 1, snatch: 2 };               /* the hawk's: t
 
 /* ---------- THE ROOFTOPS ---------- */
 /* local columns (0..45), the roofs' surface row R (the hero stands on R-1). Three ROOFS at one height and two SPIKED SHAFTS between them (cols, inclusive; the
-   shaft is shaftD rows deep, its updraft the level's). Two GONGS (the level's gongs: src/ksar-hands.js rings and cuts them), two FLASK RACKS, three LEDGES
-   over the roofs (one-way: the angle from above), two GUARD DOORS in the back wall. She starts at `her`, on the middle roof */
-export const HM_STAGE = { W: 46, door: 6, shaftD: 6, shafts: [[13, 14], [30, 31]], gongs: [{ id: 'yardW', x: 4 }, { id: 'yardE', x: 41 }], racks: [9, 36],
+   shaft is shaftD rows deep, its updraft the level's). Two GONGS (the level's gongs: src/ksar-hands.js rings and cuts them), (claude/ksarhawk) two TORCH RACKS by
+   the outer roofs' BRAZIERS and a POWDER KEG STACK on the middle roof (the level's own stacks: src/ksar-hands.js hands them out - E takes, ATTACK throws; they were
+   two flask racks), three LEDGES over the roofs (one-way: the angle from above), two GUARD DOORS in the back wall. She starts at `her`, on the middle roof.
+   (claude/ksarhawk, THE BACK OF THE ROOM: the road's GATE no longer stands inside her roofs over the east guard door and the gong - it waits in an ALCOVE behind the
+   east wall (exitAlcove), shut by the arena's own wall through the fight and open when she falls) */
+export const HM_STAGE = { W: 46, door: 6, shaftD: 6, shafts: [[13, 14], [30, 31]], gongs: [{ id: 'yardW', x: 4 }, { id: 'yardE', x: 41 }],
+  racks: [{ x: 9, kind: 'torch', n: 2 }, { x: 37, kind: 'torch', n: 2 }, { x: 21, kind: 'keg', n: 2 }], exitAlcove: { w: 3, h: 5 },
   ledges: [{ x0: 1, x1: 8, dy: 4 }, { x0: 18, x1: 27, dy: 7 }, { x0: 37, x1: 44, dy: 4 }], doors: [2, 43], her: 23, wallRow: 12 };
 export function stageHawkMistress(W, T, TS, sx, R) {
   const { set, block, ent, air } = W, ex = sx + HM_STAGE.W;
@@ -78,17 +92,19 @@ export function stageHawkMistress(W, T, TS, sx, R) {
     air(sx, ex - 1, R - 18, R - 1);
     block(sx - 1, sx - 1, R - 22, R - HM_STAGE.door - 1);   /* the west wall over the door you came in by (shut behind you) */
     block(ex, ex, R - 22, R - 1);
+    air(ex, ex + HM_STAGE.exitAlcove.w - 1, R - HM_STAGE.exitAlcove.h, R - 1);   /* (claude/ksarhawk) THE EXIT ALCOVE behind the east wall: the arena's wall (main.js setWall, wallR) shuts it through the fight and opens it when she falls */
     block(sx - 1, ex, R - 22, R - 19);                       /* the high back wall of the keep (its wall walk is drawn: the runners use it) */
     for (const [a, b] of HM_STAGE.shafts) { air(sx + a, sx + b, R, R + HM_STAGE.shaftD - 1); block(sx + a, sx + b, R + HM_STAGE.shaftD, R + HM_STAGE.shaftD); }   /* THE SHAFTS: down between the roofs to the spikes */
     for (const l of HM_STAGE.ledges) for (let x = sx + l.x0; x <= sx + l.x1; x++) set(x, R - l.dy, T.ONEWAY);
     for (const g of HM_STAGE.gongs) ent('ksgong', sx + g.x, R - 1, { id: g.id, arena: true });
-    for (const [i, x] of HM_STAGE.racks.entries()) ent('ksflasks', sx + x, R - 1, { id: 'rack' + i, arena: true });
+    for (const [i, r] of HM_STAGE.racks.entries()) ent(r.kind === 'torch' ? 'kstorches' : r.kind === 'keg' ? 'kskegs' : 'ksflasks', sx + r.x, R - 1, { id: 'rack' + i, arena: true });
     ent('hawkmistress', sx + HM_STAGE.her, R - 1, { face: -1 });
   };
   const arena = { x0: sx * TS, x1: ex * TS, floor: R * TS, trigger: (sx + 2) * TS, wallL: sx - 1, wallR: ex, boss: 'hawkmistress', music: 'hawkmistress',
     tint: '#c8843a', tintA: 0.05, start: [sx + 2, R - 1], y0: (R - 18) * TS, y1: (R + HM_STAGE.shaftD + 1) * TS, hm: { sx, R } };
   const shafts = HM_STAGE.shafts.map(([a, b]) => ({ x0: sx + a, x1: sx + b, top: R, bottom: R + HM_STAGE.shaftD - 1 }));
-  return { arena, carve, shafts, gongs: HM_STAGE.gongs.map(g => ({ id: g.id, x: sx + g.x, y: R - 1, ear: 24, earY: 12, arena: true })), racks: HM_STAGE.racks.map((x, i) => ({ id: 'rack' + i, x: sx + x, y: R - 1, kind: 'flask', n: 2, arena: true })) };
+  return { arena, carve, shafts, gongs: HM_STAGE.gongs.map(g => ({ id: g.id, x: sx + g.x, y: R - 1, ear: 24, earY: 12, arena: true })), racks: HM_STAGE.racks.map((r, i) => ({ id: 'rack' + i, x: sx + r.x, y: R - 1, kind: r.kind, n: r.n, arena: true })),
+    exit: { x0: ex, x1: ex + HM_STAGE.exitAlcove.w - 1, y0: R - HM_STAGE.exitAlcove.h, y1: R - 1, gate: ex + HM_STAGE.exitAlcove.w - 1 } };
 }
 /* the rooftops in world px, from the arena */
 export function geom(A, TS = 16) {
@@ -96,7 +112,7 @@ export function geom(A, TS = 16) {
   const roofs = [[0, sh[0][0] - 1], [sh[0][1] + 1, sh[1][0] - 1], [sh[1][1] + 1, HM_STAGE.W - 1]].map(([a, b]) => [X(a), X(b + 1)]);
   return { TS, x0: X(0), x1: X(HM_STAGE.W), floorY: q.R * TS, wallY: (q.R - 18) * TS,
     shafts: sh.map(([a, b]) => [X(a), X(b + 1)]), roofs,
-    gongs: HM_STAGE.gongs.map(g => ({ id: g.id, x: X(g.x) + 8 })), racks: HM_STAGE.racks.map((x, i) => ({ id: 'rack' + i, x: X(x) + 8 })),
+    gongs: HM_STAGE.gongs.map(g => ({ id: g.id, x: X(g.x) + 8 })), racks: HM_STAGE.racks.map((r, i) => ({ id: 'rack' + i, x: X(r.x) + 8, kind: r.kind })),
     ledges: HM_STAGE.ledges.map(l => ({ x0: X(l.x0), x1: X(l.x1 + 1), y: (q.R - l.dy) * TS, c0: q.sx + l.x0, c1: q.sx + l.x1, row: q.R - l.dy })),
     doors: HM_STAGE.doors.map(c => X(c) + 8), fire: [[X(0), X(HM.fireW)], [X(HM_STAGE.W - HM.fireW), X(HM_STAGE.W)]] };
 }
@@ -111,15 +127,26 @@ export function newFight(G) {
     knives: [], fan: null, keg: null, rake: null, snatch: null,
     hawk: { mode: 'circle', a: 0, x: 0, y: 0, t: 0, fx: 0, fy: 0, tx: 0, ty: 0 }, roofT: HM.roofEvery, fireT: 0, told: {},
     n: { cycles: 0, opens: 0, wheels: 0, blinds: 0, wards: 0, warded: 0, guarded: 0, rings: 0, ringsHome: 0, calls: 0, callsCut: 0, guards: 0, spots: 0, lashes: 0, cuts: 0, flashes: 0, crumbles: 0,
-      leaps: 0, snares: 0, snared: 0, fans: 0, knives: 0, knivesHit: 0, kegs: 0, kegsBack: 0, kegOpens: 0, rakes: 0, snatches: 0, snatched: 0, flinches: 0, moves: {} } };
+      leaps: 0, snares: 0, snared: 0, fans: 0, knives: 0, knivesHit: 0, kegs: 0, kegsBack: 0, kegOpens: 0, rakes: 0, snatches: 0, snatched: 0, flinches: 0, moves: {},
+      downs: 0, fires: 0, firesHome: 0, kegDowns: 0, bares: 0, hawkGuarded: 0 } };   /* (claude/ksarhawk) the hawk brought down (fire / a keg), fire on a hawk at home, the lesser openings, blows the hawk turned */
 }
 export const hPhase = e => (e.hp <= e.maxHp * HM.p3 ? 3 : e.hp <= e.maxHp * HM.p2 ? 2 : 1);
 export const hmOpen = e => !!e && e.mode === 'whistle' && (e.open || 0) > 0;
 const STRIKE = new Set(['lash', 'cut', 'markLash', 'snare', 'fan', 'leap']);
 const GUARD_MODES = new Set(['walk', 'recover', 'feintHold']);
-/* HER GAUNTLET: a blow from in front of her by a hero at her height (not from above, not in the air over her), while she is on guard */
-export const guarded = (e, hx, hy, airborne) => !!e && !hmOpen(e) && !(e.broken > 0) && GUARD_MODES.has(e.mode) && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 10) && Math.abs(hy - e.y) < 26;
+/* (claude/ksarhawk) THE HAWK GUARDS HER: while it rides over her (circling, climbing to her, home on her glove) or in her ward after an opening, a blow lands at
+   the floor - from any side, any height (it replaced her gauntlet's angle: the read is the hawk, one thing to watch). Off her on a stoop of its own, wheeling,
+   blind, sent off or DOWN, she takes a blow whole (open: x openMul / bareMul) */
+const GUARD_HAWK = new Set(['circle', 'climb', 'home']);
+export const hawkGuards = S => !!S && (S.ward > 0 || GUARD_HAWK.has(S.hawk.mode));
+export const guarded = (e, S) => !!e && !!S && !hmOpen(e) && hawkGuards(S);
 export const hawkAloft = S => !!S && ['circle', 'spot', 'climb'].includes(S.hawk.mode);
+/* WHERE FIRE CAN FIND THE HAWK: anywhere in the air off her glove (aloft, wheeling, blind, sent off, out on its own stoops) */
+const FIRE_HAWK = new Set(['circle', 'climb', 'spot', 'wheel', 'blind', 'sent', 'rakeTell', 'rake', 'hover', 'drop', 'carry']);
+export const hawkTarget = S => !!S && FIRE_HAWK.has(S.hawk.mode);
+export const hawkDown = S => !!S && (S.hawk.mode === 'fall' || S.hawk.mode === 'down');
+/* ONE WINDUP AT A TIME (Daniel 10-13): nothing new while her keg rolls, her knives fly or the hawk is out on a stoop */
+export const calm = S => !S.keg && !(S.knives && S.knives.length) && !S.rake && !S.snatch && !['rakeTell', 'rake', 'hover', 'drop', 'carry'].includes(S.hawk.mode);
 
 const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
@@ -127,11 +154,31 @@ const clampX = (G, x) => Math.max(G.x0 + 16, Math.min(G.x1 - 16, x));
 /* she keeps to the roof she stands on (a lunge or a step never carries her over a shaft's lip) */
 const clampRoof = (G, x, from) => { const r = G.roofs ? G.roofs[roofOf(G, from)] : [G.x0, G.x1]; return Math.max(r[0] + 10, Math.min(r[1] - 10, clampX(G, x))); };
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : 'tell'); }
-function endOpen(e, S, c) { e.open = 0; S.ward = HM.wardT; S.n.wards++; S.openTaken = 0; S.hawk.mode = 'home'; S.hawk.t = HM.wardT; c.number(e.x, e.y - 70, 'THE HAWK IS HOME: SHE GUARDS', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
-function open(e, S, c) { setMode(e, 'whistle', HM.openT + 0.05); e.open = HM.openT; S.openTaken = 0; S.n.opens++; if (S.pendWhy === 'keg') S.n.kegOpens++;
-  if (S.hawk.mode !== 'sent') { S.hawk.mode = 'return'; S.hawk.t = HM.openT; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; } else { S.hawk.t = Math.max(S.hawk.t, 0.4); S.hawk.after = 'return'; }
+function endOpen(e, S, c) { e.open = 0; e.openKind = S.openKind = ''; S.ward = HM.wardT; S.n.wards++; S.openTaken = 0; S.hawk.mode = 'home'; S.hawk.t = HM.wardT; c.number(e.x, e.y - 70, 'THE HAWK IS HOME: SHE GUARDS', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
+/* OPEN (claude/ksarhawk): DOWN (the hawk burnt out of the air, or her own keg under her) - x HM.openMul for HM.openT s; BARE (a gong, a flash, a flinch) - x HM.bareMul
+   for HM.bareT s. Either way the same read (B10: the gold ring and the timer bar; the bar says OPEN or BARE), and she stands still, whistling (B4) */
+const DOWN_WHY = new Set(['fire', 'keghawk', 'keg']);
+function open(e, S, c) { const down = DOWN_WHY.has(S.pendWhy), T0 = down ? HM.openT : HM.bareT;
+  setMode(e, 'whistle', T0 + 0.05); e.open = T0; e.openKind = S.openKind = down ? 'down' : 'bare'; e.openT0 = T0; S.openTaken = 0; S.n.opens++; if (S.pendWhy === 'keg') S.n.kegOpens++; if (!down) S.n.bares++;
+  if (hawkDown(S)) { if (S.hawk.mode === 'down') S.hawk.t = Math.max(S.hawk.t, T0); }   /* it lies on the roof while she is open (a falling hawk takes her open time when it lands) */
+  else if (S.hawk.mode !== 'sent') { S.hawk.mode = 'return'; S.hawk.t = T0; S.hawk.fx = S.hawk.x; S.hawk.fy = S.hawk.y; } else { S.hawk.t = Math.max(S.hawk.t, 0.4); S.hawk.after = 'return'; }
   S.leap = null; S.fan = null; c.fx('open', e.x, e.y); c.sound('whistle');
-  c.number(e.x, e.y - 70, S.pendWhy === 'blind' ? 'THE HAWK IS BLIND: SHE WHISTLES IT BACK - CUT HER' : S.pendWhy === 'struck' ? 'THE HAWK FLINCHES OFF: SHE WHISTLES IT BACK - CUT HER' : S.pendWhy === 'keg' ? 'HER OWN KEG! SHE REELS - CUT HER' : 'THE HAWK WHEELS OFF: SHE WHISTLES IT BACK - CUT HER', '#8fd160'); }
+  c.number(e.x, e.y - 70, S.pendWhy === 'fire' ? 'THE HAWK IS DOWN! SHE IS OPEN - CUT HER' : S.pendWhy === 'keghawk' ? 'THE POWDER BRINGS THE HAWK DOWN - CUT HER' : S.pendWhy === 'blind' ? 'THE HAWK IS BLIND: SHE IS BARE - CUT HER' : S.pendWhy === 'struck' ? 'THE HAWK FLINCHES OFF: SHE IS BARE - CUT HER' : S.pendWhy === 'keg' ? 'HER OWN KEG! SHE REELS - CUT HER' : 'THE HAWK WHEELS OFF: SHE IS BARE - BURN IT OR CUT HER', '#8fd160'); }
+/* THE CENTRAL MECHANIC (claude/ksarhawk): FIRE (a thrown torch) or POWDER (a keg that strikes it) finds the hawk in the air - it comes DOWN: it falls burning to the
+   roof and lies there, and she is OPEN. On her glove (her ward) it is safe. Returns 'down' | 'home' | 'far' | 'busy'. (x, y): where the fire met it; why: 'fire' | 'keghawk' */
+export function fireAt(e, S, c, x, y, why = 'fire') {
+  if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake') return 'busy';
+  if (Math.hypot(S.hawk.x - x, S.hawk.y - y) > HM.fireR + (why === 'keghawk' ? 40 : 0)) return 'far';
+  if (S.ward > 0 || S.hawk.mode === 'home' || (S.hawk.mode === 'return' && !(hmOpen(e) && S.openKind === 'bare'))) { S.n.firesHome++; c.number(e.x, e.y - 64, 'THE HAWK IS ON HER GLOVE: IT IS SAFE THERE', '#9ab0c0'); return 'home'; }
+  if (hawkDown(S) || (hmOpen(e) && S.openKind === 'down')) return 'busy';
+  S.rake = null; S.snatch = null; S.mark = null; if (c.drop) c.drop();   /* a hero it carried is let go */
+  S.n.fires++; S.n.downs++; if (why === 'keghawk') S.n.kegDowns++;
+  const k = S.hawk; k.mode = 'fall'; k.t = HM.fallT; k.fx = k.x; k.fy = k.y; k.tx = Math.max(S.G.x0 + 20, Math.min(S.G.x1 - 20, k.x)); if (overShaft(S.G, k.tx, 6)) k.tx = e.x + (k.x < e.x ? -24 : 24);
+  c.sound('hawk'); c.sound('blast'); c.fx('burn', x, y); c.shake(3);
+  if (!S.told.down) { S.told.down = 1; c.number(x, y - 18, 'FIRE! THE HAWK FALLS', '#ffd36b'); }
+  if (hmOpen(e)) { S.pendWhy = why; open(e, S, c); return 'down'; }   /* bare already: the fall makes it a full opening */
+  S.pend = 0.05; S.pendWhy = why; return 'down';
+}
 /* THE HAWK FLINCHES (struck mid-dive, or turned on a shield): it is SENT OFF, and she whistles - an opening (unless the hawk was home / she is warded) */
 function flinch(e, S, c, x, y) {
   S.n.flinches++; S.rake = null; S.snatch = null; S.mark = null;
@@ -207,6 +254,7 @@ export function stepHawkMistress(e, S, dt, h, c) {
   stepMove(e, S, dt, P, h, c);
 }
 function nextMove(e, S, P, c) {
+  if (!calm(S)) { setMode(e, 'walk', 0.15); return; }   /* (claude/ksarhawk) one windup at a time: her keg, her knives, the hawk's stoop finish first */
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++]; const dx = P.x - e.x, ad = Math.abs(dx), G = S.G;
   e.face = Math.sign(dx) || e.face;
@@ -297,14 +345,19 @@ function stepHawk(e, S, dt, P, c) {
   k.t -= dt;
   const lerpTo = (tx, ty, r) => { k.x += (tx - k.x) * Math.min(1, dt * r); k.y += (ty - k.y) * Math.min(1, dt * r); };
   switch (k.mode) {
-    case 'circle': k.a += dt * 2.2; lerpTo(e.x + Math.cos(k.a) * HM.hawkR, up + Math.sin(k.a * 2) * 7, 4); break;
-    case 'home': k.x = e.x + (e.face || 1) * 9; k.y = e.y - 22; if (k.t <= 0 && S.ward <= 0) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break;
+    case 'circle': k.a += dt * 1.5; lerpTo(e.x + Math.cos(k.a) * HM.hawkR, up + Math.sin(k.a * 2) * 7, 4); break;
+    case 'home': { const tx = e.x + (e.face || 1) * 9, ty = e.y - 22; if (Math.hypot(tx - k.x, ty - k.y) > 3) lerpTo(tx, ty, 9); else { k.x = tx; k.y = ty; }   /* (claude/ksarhawk) it flies to her glove (off the roof after a fall): never a snap */
+      if (k.t <= 0 && S.ward <= 0) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break; }
     case 'climb': { const q = Math.max(0, Math.min(1, 1 - k.t / 0.7)); k.x = k.fx + (e.x - k.fx) * q; k.y = k.fy + (up - k.fy) * q; if (k.t <= 0) k.mode = 'circle'; break; }
-    case 'wheel': { k.a += dt * 6; const r = 110 + 40 * Math.sin(k.a); lerpTo(clampX(G, e.x + Math.cos(k.a) * r), up - 50 + Math.sin(k.a) * 20, 3); break; }
+    /* (claude/ksarhawk) A GONG: it wheels off LOW and wide over the roofs (a torch finds it easily) */
+    case 'wheel': { k.a += dt * 4.2; const r = 100 + 30 * Math.sin(k.a); lerpTo(clampX(G, e.x + Math.cos(k.a) * r), G.floorY - HM.wheelLow + Math.sin(k.a * 1.3) * 8, 3); break; }
     case 'blind': k.x += Math.sin(k.t * 31) * 40 * dt; k.y += Math.cos(k.t * 23) * 30 * dt; break;
-    case 'sent': { k.y -= 90 * dt; k.x += (k.x < e.x ? -60 : 60) * dt; if (k.t <= 0) { k.mode = k.after || 'climb'; k.after = null; k.t = k.mode === 'return' ? HM.openT * 0.7 : 0.7; k.fx = k.x; k.fy = k.y; } break; }
-    case 'return': { const q = Math.max(0, Math.min(1, 1 - k.t / HM.openT)); const tx = e.x + (e.face || 1) * 9, ty = e.y - 22;
-      if (q < 0.5) { k.a += dt * 4; lerpTo(clampX(G, e.x + Math.cos(k.a) * 90), up - 30, 2); } else { k.x = k.x + (tx - k.x) * Math.min(1, dt * 3 * q); k.y = k.y + (ty - k.y) * Math.min(1, dt * 3 * q); } break; }
+    case 'sent': { k.y -= 90 * dt; k.x += (k.x < e.x ? -60 : 60) * dt; if (k.t <= 0) { k.mode = k.after || 'climb'; k.after = null; k.t = k.mode === 'return' ? Math.max(0.6, e.open || 0) : 0.7; k.fx = k.x; k.fy = k.y; } break; }
+    case 'return': { const T0 = e.openT0 || HM.openT, q = Math.max(0, Math.min(1, 1 - k.t / T0)); const tx = e.x + (e.face || 1) * 9, ty = e.y - 22, low = S.openKind === 'bare' ? G.floorY - HM.wheelLow : up - 30;
+      if (q < 0.5) { k.a += dt * 4; lerpTo(clampX(G, e.x + Math.cos(k.a) * 90), low, 2); } else { k.x = k.x + (tx - k.x) * Math.min(1, dt * 3 * q); k.y = k.y + (ty - k.y) * Math.min(1, dt * 3 * q); } break; }
+    /* (claude/ksarhawk) THE HAWK DOWN: it falls burning to the roof and lies there, stunned, while she is open; then it flies to her glove (endOpen: home) */
+    case 'fall': { const q = Math.max(0, Math.min(1, 1 - k.t / HM.fallT)); k.x = k.fx + (k.tx - k.fx) * q; k.y = k.fy + (G.floorY - 5 - k.fy) * q * q; if (k.t <= 0) { k.mode = 'down'; k.t = Math.max(0.5, e.open || HM.openT); c.fx('crash', k.x, G.floorY); c.shake(2); c.sound('blast'); } break; }
+    case 'down': k.y = G.floorY - 5; if (k.t <= 0 && !hmOpen(e) && !(S.pend > 0)) { k.mode = 'climb'; k.t = 0.7; k.fx = k.x; k.fy = k.y; } break;
     case 'spot': if (S.mark) lerpTo(S.mark.x, G.floorY - 46, 6); break;
     /* THE RAKE: up to the line's high end while she tells it, then down the line and on past your spot */
     case 'rakeTell': if (S.rake) lerpTo(S.rake.x0, S.rake.y0, 6); if (k.t <= 0 && S.rake) { k.mode = 'rake'; k.t = HM.rakeFly; k.fx = k.x; k.fy = k.y; } break;
@@ -349,15 +402,16 @@ function stepFire(e, S, dt, h, c) {
    guard runs for, a flask at the hawk. Open, it cuts her hard; warded, it waits off her; otherwise her BACK, or from a JUMP, never into her gauntlet.
    s = { P: { x, y, face, ground, atk, carry, snared, lifted }, e, S, gongs, racks, reach, shield, t, rng, mem, v2, hero } ->
        { gx, face, atk, jump, dodge, block, talk, up, down, why } */
-export const PLAN = { react: 0.25, miss: 0.12, missRing: 0.15, ringR: 150, kegBack: 0.5, rakeSwing: 0.4, jumpEdge: 4 };
+export const PLAN = { react: 0.25, miss: 0.12, missRing: 0.15, ringR: 150, kegBack: 0.5, rakeSwing: 0.4, jumpEdge: 4,
+  kegUse: 0.25, gongCost: 40, chip: 0.3, aim: 0.4, aimErr: 24 };   /* (claude/ksarhawk) a keg instead of a torch some of the time; a gong weighed a little dearer than a brazier; a chip under the hawk now and then; the throw's beat and its misjudged px */
 export function hmPlan(s) {
   const out = hmPlan0(s), { P, S } = s, G = S.G;
   /* THE SHAFTS: never a goal inside one; at a lip with the goal across, JUMP it */
-  if (G.shafts && out.gx != null) {
-    for (const [a, b] of G.shafts) if (out.gx > a - 8 && out.gx < b + 8) out.gx = Math.abs(out.gx - (a - 8)) < Math.abs(out.gx - (b + 8)) ? a - 10 : b + 10;
+  if (G.shafts && out.gx != null) { const toHer = /^cut her|^in to her|^where she lands/.test(out.why);
+    for (const [a, b] of G.shafts) if (out.gx > a - 8 && out.gx < b + 8) out.gx = toHer && s.e.x > b ? b + 10 : toHer && s.e.x < a ? a - 10 : Math.abs(out.gx - (a - 8)) < Math.abs(out.gx - (b + 8)) ? a - 10 : b + 10;   /* (claude/ksarhawk) the lip on HER side: open across a shaft, the bot jumps it (it stood at the near lip) */
     if (P.ground && !out.block && !out.down) for (const [a, b] of G.shafts) {
-      if (out.gx > b && P.x < a && a - P.x < PLAN.jumpEdge + 6 && a - P.x > 0) { out.jump = true; out.why += ' / over the shaft'; }
-      if (out.gx < a && P.x > b && P.x - b < PLAN.jumpEdge + 6 && P.x - b > 0) { out.jump = true; out.why += ' / over the shaft'; } }
+      if (out.gx > b && P.x < a + 6 && a - P.x < PLAN.jumpEdge + 6 && a - P.x > -6) { out.jump = true; out.why += ' / over the shaft'; }
+      if (out.gx < a && P.x > b - 6 && P.x - b < PLAN.jumpEdge + 6 && P.x - b > -6) { out.jump = true; out.why += ' / over the shaft'; } }
   }
   return out;
 }
@@ -371,6 +425,18 @@ function hmPlan0(s) {
   const kx = e.x, side = Math.sign(P.x - kx) || 1, dx = Math.abs(kx - P.x), same = Math.abs(P.y - e.y) < 24, hitR = reach + HM.w / 2 - 2;
   const swing = fx => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
   const gongs = s.gongs || [], racks = s.racks || [];
+  /* (claude/ksarhawk) THE THROW AT THE HAWK: the arc of what it carries (src/carry-throw.js KINDS, low / mid / high), from the hand; a human lines it up for PLAN.aim
+     s and misjudges the hawk's place by up to PLAN.aimErr px (one guess a throw) - so some torches miss */
+  const hawkTarget2 = (S2, e2) => hawkTarget(S2) || (S2.hawk.mode === 'return' && hmOpen(e2) && S2.openKind === 'bare');
+  const shot = () => { const kind = P.carry, K = KINDS[kind] || KINDS.torch, k = S.hawk; if (mem.jit == null) mem.jit = (rng() * 2 - 1) * PLAN.aimErr;
+    const hx = k.x + mem.jit, hy = k.y, f = Math.sign(hx - P.x) || 1, R2 = HM.fireR - 6;
+    for (const aim of ['high', 'mid', 'low']) { const a = K.aims[aim]; let x = P.x + f * 6, y = P.y - 18, vx = f * a.vx, vy = a.vy, ok = false;
+      for (let i = 0; i < 90 && !ok; i++) { vy += K.g / 60; x += vx / 60; y += vy / 60; if (Math.hypot(x - hx, y - hy) < R2) ok = true; if (y > G.floorY) break; }
+      if (!ok) continue;
+      if (mem.aimT == null) mem.aimT = t; out.face = f; out.gx = P.x;
+      if (t - mem.aimT < PLAN.aim || !P.ground) { out.why = kind + ': lining it up'; return out; }
+      out.atk = true; out.up = aim === 'high'; out.down = aim === 'low'; mem.jit = null; mem.aimT = null; out.why = kind + ': THROW IT INTO THE HAWK (' + aim + ')'; return out; }
+    mem.aimT = null; return null; };
   const fire = S.ph === 3 ? G.fire : [];
   const inFire = x => fire.some(([a, b]) => x > a - 6 && x < b + 6);
   const safeX = x => { let q = clamp(x); for (const [a, b] of fire) if (q > a - 8 && q < b + 8) q = a < G.x0 + 10 ? b + 10 : a - 10; return q; };
@@ -418,33 +484,41 @@ function hmPlan0(s) {
         out.gx = safeX(kx + side * 96); if (dx < 46 && e.mode === 'cutTell' && e.modeT < 0.18 && !s.noRoll) out.dodge = true; out.why = 'back off the knife'; return out; }
     }
   }
-  /* 2. OPEN: cut her (any side); WARDED: off her */
-  if (hmOpen(e)) { const st = s.tip ? 30 : 14; out.gx = safeX(kx + side * st); if (dx < hitR + 4 && same) swing(kx); out.why = 'cut her: the hawk is off'; return out; }
+  /* 1b. (claude/ksarhawk) HER GUARD (phase two's call: blades down from the doors) - one at your side is cut down first, unless she is open */
+  if (!hmOpen(e) && !P.carry) for (const q of (s.guards || [])) { const gd = Math.abs(q.x - P.x); if (gd < reach + 14 && Math.abs(q.y - P.y) < 24) { swing(q.x); out.gx = gd < reach - 6 ? P.x - Math.sign(q.x - P.x) * 8 : P.x; out.why = 'her guard at your side: cut him'; return out; } }
+  /* 2. OPEN: cut her (any side) - a torch or keg still in the hand is set down first (E), or thrown into a hawk that is still in the air (BARE: burn it DOWN);
+     WARDED (the hawk home): off her */
+  if (hmOpen(e)) {
+    if (P.carry && S.openKind === 'bare' && hawkTarget2(S, e)) { const sh = shot(); if (sh) return sh; }
+    if (P.carry && P.ground) { out.talk = true; out.gx = P.x; out.why = 'set it down: she is open'; return out; }
+    const st = s.tip ? 30 : 14; out.gx = safeX(kx + side * st); if (dx < hitR + 4 && same) swing(kx); out.why = S.openKind === 'down' ? 'cut her: the hawk is down' : 'cut her: she is bare'; return out; }
   if (S.ward > 0) { out.gx = safeX(kx + side * 80); out.why = 'her ward: wait'; return out; }
   if (S.pend > 0) { out.gx = safeX(kx + side * 30); out.why = 'she is about to whistle: close in'; return out; }
-  /* 3. A FLASK IN THE HAND: throw it at the hawk */
-  if (P.carry) { const hx = hk.x, hdx = hx - P.x;
-    if (!hawkAloft(S)) { out.gx = safeX(P.x + (P.x < kx ? -30 : 30)); out.why = 'flask: wait for the hawk to go up'; return out; }
-    const want = clamp(hx - Math.sign(hdx || 1) * 110); if (Math.abs(P.x - want) > 14 && !(Math.abs(hdx) > 70 && Math.abs(hdx) < 150)) { out.gx = safeX(want); out.why = 'flask: to a throw at the hawk'; return out; }
-    out.face = Math.sign(hdx) || 1; out.gx = P.x; out.atk = P.atk < 0 && P.ground; out.why = 'flask: throw it at the hawk'; return out; }
+  /* 3. FIRE (or POWDER) IN THE HAND: throw it into the hawk (the arc a human judges: a beat to line it up, and a misjudged distance some of the time) */
+  if (P.carry) { if (!hawkTarget2(S, e)) { out.gx = safeX(P.x + (P.x < kx ? -30 : 30)); out.why = P.carry + ': wait for the hawk to go up'; return out; }
+    const sh = shot(); if (sh) return sh;
+    const hx = hk.x, d0 = Math.sign(P.x - hx) || 1; out.gx = safeX(hx + d0 * (P.carry === 'keg' ? 54 : 62)); out.face = -d0; out.why = P.carry + ': under the hawk, to a throw'; return out; }
   /* 4. PHASE TWO: a runner going for a hanging gong - cut that rope first */
   if (S.runner) { const g = gongs.find(q => q.id === S.runner.gong); if (g && !g.cut) { out.gx = clamp(g.x + (P.x < g.x ? -10 : 10)); if (Math.abs(P.x - g.x) < reach + 6) { out.face = Math.sign(g.x - P.x) || 1; out.gx = P.x; out.atk = P.atk < 0; } out.why = 'cut the rope before he gets there'; return out; } }
-  /* 5. MAKE AN OPENING (the rule): RING a hanging, quiet gong; HANG BACK a fallen one; or THROW a flask from a rack - whichever is nearest */
+  /* 5. THE HAWK GUARDS HER: make the opening - a TORCH from a brazier's rack (or a KEG from the stack, some of the time), a gong RUNG (it wheels low: bare), a
+     fallen gong hung back - whichever is nearest */
   const free = gongs.filter(g => !g.cut && !(g.hum > 0)), fallen = gongs.filter(g => g.cut);
-  if (hawkAloft(S) && !/Tell$/.test(e.mode)) {
+  if (hawkGuards(S) && !/Tell$/.test(e.mode) && !s.rest) {
     const near = a => a.slice().sort((p, q) => Math.abs(p.x - P.x) - Math.abs(q.x - P.x))[0];
-    const g = free.slice().sort((a, b) => Math.abs(a.x - kx) - Math.abs(b.x - kx))[0], r = near(racks.filter(q => q.n > 0)), f = near(fallen);
-    const dG = g && Math.abs(g.x - kx) < 260 ? Math.abs(g.x - P.x) : 1e9, dR = r ? Math.abs(r.x - P.x) + (S.ph === 1 ? 80 : 0) : 1e9, dF = f ? Math.abs(f.x - P.x) + 60 : 1e9;
-    if (dG < 1e9 && dG <= dR && dG <= dF) { out.gx = clamp(g.x + (kx > g.x ? 10 : -10)); if (Math.abs(P.x - g.x) < 18 && dx < PLAN.ringR + 60 && !roll('ring' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(g.x - P.x) || 1; out.why = 'ring the gong: the hawk is up'; } else out.why = 'to a gong'; return out; }
-    if (dF < 1e9 && dF < dR) { out.gx = clamp(f.x + (kx > f.x ? 10 : -10)); if (Math.abs(P.x - f.x) < 18 && P.ground && !roll('hang' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(f.x - P.x) || 1; out.why = 'hang the gong back'; } else out.why = 'to a fallen gong'; return out; }
-    if (r) { out.gx = r.x; if (Math.abs(P.x - r.x) < 10 && P.ground) { out.talk = true; out.why = 'take a flask'; } else out.why = 'to a flask rack'; return out; } }
+    const useKeg = roll('kegpick' + Math.floor(t / 8), PLAN.kegUse);
+    const g = free.slice().sort((a, b) => Math.abs(a.x - kx) - Math.abs(b.x - kx))[0], r = near(racks.filter(q => q.n > 0 && (q.kind === 'torch' || (useKeg && q.kind === 'keg')))), f = near(fallen);
+    const dG = g && Math.abs(g.x - kx) < 260 ? Math.abs(g.x - P.x) + PLAN.gongCost : 1e9, dR = r ? Math.abs(r.x - P.x) : 1e9, dF = f ? Math.abs(f.x - P.x) + 60 : 1e9;
+    if (dR < 1e9 && dR <= dG && dR <= dF) { out.gx = r.x; if (Math.abs(P.x - r.x) < 10 && P.ground) { out.talk = true; out.why = 'take a ' + (r.kind || 'torch'); } else out.why = 'to the ' + (r.kind === 'keg' ? 'keg stack' : 'brazier'); return out; }
+    if (dG < 1e9 && dG <= dF) { out.gx = clamp(g.x + (kx > g.x ? 10 : -10)); if (Math.abs(P.x - g.x) < 18 && dx < PLAN.ringR + 60 && !roll('ring' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(g.x - P.x) || 1; out.why = 'ring the gong: the hawk is up'; } else out.why = 'to a gong'; return out; }
+    if (dF < 1e9) { out.gx = clamp(f.x + (kx > f.x ? 10 : -10)); if (Math.abs(P.x - f.x) < 18 && P.ground && !roll('hang' + Math.floor(t / 3), PLAN.missRing)) { out.talk = true; out.face = Math.sign(f.x - P.x) || 1; out.why = 'hang the gong back'; } else out.why = 'to a fallen gong'; return out; } }
   /* 5b. WINDED (the lab's stamina rest): off her, out of her whip's reach, until the bar is back */
   if (s.rest) { out.gx = safeX(kx + side * (HM.lashReach + 40)); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off her'; return out; }
-  /* 6. FIGHT HER: her back when she turns from you; from a jump over her gauntlet (B11) */
+  /* 6. FIGHT HER: the hawk off her on a stoop of its own - she takes a blow whole; under the hawk's guard a blow is a clank (the floor), so a human chips only now and then */
   if (e.mode === 'leap') { out.gx = safeX(S.leap ? S.leap.x1 + side * 20 : P.x); out.why = 'where she lands'; return out; }
-  if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'cut her back'; return out; }
+  const bareNow = !hawkGuards(S);
+  if (!bareNow && !roll('chip' + Math.floor(t * 2), PLAN.chip)) { out.gx = safeX(kx + side * Math.max(40, hitR + 16)); out.face = Math.sign(kx - P.x) || 1; out.why = 'the hawk guards her: keep off'; return out; }
   if (/Tell$/.test(e.mode) && e.mode !== 'lashTell' && e.mode !== 'cutTell' && e.mode !== 'snareTell' && dx < hitR + 2 && same) { swing(kx); out.gx = P.x; out.why = 'cut her in her tell'; return out; }
-  if ((e.mode === 'walk' || e.mode === 'recover') && dx < hitR + 30) { out.face = Math.sign(kx - P.x) || 1; if (dx > hitR - 4) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to her'; return out; }
-    out.gx = P.x; if (P.ground) { out.jump = true; out.why = 'up over her gauntlet'; return out; } if (P.y < e.y - 12) out.atk = P.atk < 0; out.why = 'cut from the jump'; return out; }
+  if ((e.mode === 'walk' || e.mode === 'recover' || bareNow) && dx < hitR + 30) { out.face = Math.sign(kx - P.x) || 1; if (dx > hitR - 4) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to her'; return out; }
+    out.gx = P.x; if (same) swing(kx); out.why = bareNow ? 'cut her: the hawk is off her' : 'chip her under the hawk'; return out; }
   out.gx = safeX(kx + side * Math.max(40, hitR + 16)); out.face = Math.sign(kx - P.x) || 1; out.why = 'keep off her whip'; return out;
 }

@@ -1485,8 +1485,8 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const HH=BK.hawkMistressHands(),S=HH&&HH.show(),KSX=BK.ksar?BK.ksar():null;
         if(f===0||!P.labHmMem)P.labHmMem={};
-        const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left})):[];
-        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:!!(P.carry&&P.carry.t==='ksflask'),snared:!!P.hmSnare,lifted:!!(P.ksLift||P.hmCarry)},e:boss,S,gongs,racks,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
+        const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left,kind:q.kind})):[];   /* (claude/ksarhawk) the roofs' braziers' torches and the keg stack */
+        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:P.carry&&P.carry.thrKind?P.carry.thrKind:null,snared:!!P.hmSnare,lifted:!!(P.ksLift||P.hmCarry)},e:boss,S,gongs,racks,guards:BK.enemies().filter(q=>q.alive&&q.hmGuard).map(q=>({x:q.x,y:q.y,mode:q.mode})),reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}

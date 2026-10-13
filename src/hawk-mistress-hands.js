@@ -9,6 +9,7 @@
 import * as HMM from './hawk-mistress.js';
 import { BOSS_PHASE } from './boss-music.js';
 import * as KSA from './redraw/ksar_art.js';
+import { drawKeyGlyph } from './boss-read.js';   /* (claude/ksarhawk) the shared THROW glyph on her hawk */
 const { HM } = HMM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), lash: s => (s.whip || s.slash)(), slash: s => (s.foeSlash || s.slash)(),
@@ -55,7 +56,10 @@ export function makeHawkMistressHands(ctx) {
         else if (k === 'blast') { ctx.burst(x, y, 24, ['#ff9a3c', '#ffd36b', '#3a2a12', '#c9b27c'], 120, 0.7); ctx.ring(x, y, HM.kegR, '#ff9a3c'); }
         else if (k === 'shaftBlast') ctx.burst(x, y, 20, ['#ff9a3c', '#ffd36b', '#ff6a2a'], 140, 0.8);
         else if (k === 'ward') ctx.ring(x, y - 16, 34, '#9ab0c0');
-        else if (k === 'mark') ctx.ring(x, y - 4, HM.diveR, '#ff6b6b'); },
+        else if (k === 'mark') ctx.ring(x, y - 4, HM.diveR, '#ff6b6b');
+        /* (claude/ksarhawk) FIRE IN THE HAWK, and its crash on the roof */
+        else if (k === 'burn') { ctx.burst(x, y, 22, ['#ff9a3c', '#ffd36b', '#ff6a2a', '#6a4428', '#e0caa0'], 120, 0.7); ctx.ring(x, y, 18, '#ff9a3c'); S.burnFx = 0.5; }
+        else if (k === 'crash') { ctx.burst(x, y - 4, 14, ['#6a4428', '#e0caa0', '#3a2a12', '#ff9a3c'], 80, 0.6); ctx.dust(x, y, 4); } },
       hit: (bx, d, name, o = {}) => { let any = false; lastHit = []; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
           const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock, low: !!o.low })); if (P.hp < hp0) { any = true; lastHit.push(pp); } }); return any; },
@@ -80,6 +84,7 @@ export function makeHawkMistressHands(ctx) {
         for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (res || !ctx.upright(pp) || P.dead || !ctx.overlap(B, ctx.box(P)) || keyed(pp, key)) return;
           const hp0 = P.hp, r = ctx.damagePlayer(S.hawk.x, d, { who: e, name }); hurtTally(name, hp0 - Math.max(0, P.hp)); if (r === 'blocked') res = 'blocked'; else if (P.hp < hp0) { res = 'hit'; lastHit.push(pp); } }); return res; },
       /* THE SNATCH caught a hero: the hawk carries him over the shaft at x and lets go */
+      drop: () => { for (const pp of ctx.players) if (pp.hmCarry) { pp.hmCarry = null; pp.vy = 40; ctx.number(pp.x, pp.y - 20, 'THE HAWK LETS YOU GO', '#ff9a5c'); } },   /* (claude/ksarhawk) burnt out of the air with a hero in its talons */
       carry: (tx, t) => { for (const pp of lastHit) { pp.hmCarry = { tx, t }; pp.hmSnare = null; } if (lastHit.length && !S.told.carry) { S.told.carry = 1; ctx.number(tx, S.G.floorY - 90, 'THE HAWK HAS YOU', '#ff6b6b'); } },
       gongs, guards: () => ctx.enemies().filter(q => q.alive && q.hmGuard).length,
       guardRing: id => { const r = ctx.ringGong ? ctx.ringGong(id, 'guard') : 'cut'; if (r !== 'rung') return false;
@@ -97,7 +102,7 @@ export function makeHawkMistressHands(ctx) {
   H.update = (e, dt) => {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - 80, 'THE HAWK-MISTRESS, CHIEF OF THE KSAR', '#ffd36b'); }
-    if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 110, 'HER HAWK IS HER EYES: A GONG SENDS IT OFF, A FLASH BLINDS IT', '#ffd36b'); }
+    if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 110, 'THE HAWK GUARDS HER: THROW FIRE INTO IT TO BRING IT DOWN', '#ffd36b'); }
     HMM.stepHawkMistress(e, S, dt, heroes(), world(e));
     /* (claude/ksar2) THE SNARE'S YANK (jump or roll breaks it) and THE SNATCH's carry (over a shaft, then let go) */
     for (const pp of ctx.players) {
@@ -114,17 +119,25 @@ export function makeHawkMistressHands(ctx) {
   /* THE RULE ON HER: a hero's ring on a courtyard gong, a flash (src/ksar-hands.js) */
   H.onRing = g => { const e = live(); if (!S || !e || !ctx.bossActive) return; HMM.ringHeard(e, S, world(e)); };
   H.onFlash = (x, y) => { const e = live(); if (!S || !e || !ctx.bossActive) return; HMM.flashAt(e, S, world(e), x, y); };
-  H.hawk = () => (S && live() ? S.hawk : null);
-  /* A BLOW ON HER: the ward turns everything; her gauntlet turns the front while she is on guard; open, x openMul (one opening openCap of her at most) */
+  /* (claude/ksarhawk) THE CENTRAL MECHANIC: a thrown TORCH or a KEG that meets the hawk in the air (src/ksar-hands.js) - it comes DOWN, she is OPEN; a keg's blast
+     beside the hawk does it too, and one on her lands its blast on her (through take: the hawk's guard holds it to the floor) */
+  H.onFire = (x, y, why) => { const e = live(); if (!S || !e || !ctx.bossActive) return 'busy'; return HMM.fireAt(e, S, world(e), x, y, why || 'fire'); };
+  H.onBlast = (x, y, r) => { const e = live(); if (!S || !e || !ctx.bossActive) return null; let res = null;
+    if (Math.hypot(S.hawk.x - x, S.hawk.y - y) < r + 10) res = HMM.fireAt(e, S, world(e), S.hawk.x, S.hawk.y, 'keghawk');
+    if (Math.hypot(e.x - x, e.y - 12 - y) < r + 8 && ctx.hurtFoe) ctx.hurtFoe(e, ctx.kegDmg || 60);
+    return res; };
+  H.hawk = () => { const e = live(); return S && e && (HMM.hawkTarget(S) || (S.hawk.mode === 'return' && HMM.hmOpen(e) && S.openKind === 'bare')) ? S.hawk : null; };   /* (claude/ksarhawk) only a hawk fire can find: in the air off her glove */
+  /* A BLOW ON HER (claude/ksarhawk): her ward (the hawk home after an opening) and THE HAWK OVER HER turn a blow to the B15 floor - a clank and the word; open:
+     DOWN x openMul (one opening openCap of her at most), BARE x bareMul; the hawk off her on a stoop of its own - a blow lands whole */
   H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero(), t = ctx.time();
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
-    if (S.ward > 0) { e.chipHit = t; S.n.warded++; e.guardFx = 0.25; e.guardWord = 'WARDED'; ctx.sfx.clank && ctx.sfx.clank(); return dmg * HM.floor; }   /* (claude/ksar2, B15) the floor: never wholly turned */
-    if (HMM.hmOpen(e) || e.broken > 0) { const cap = e.maxHp * HM.openCap, d = Math.min(dmg * HM.openMul, Math.max(0, cap - S.openTaken)); S.openTaken += d;
+    if (HMM.hmOpen(e) || e.broken > 0) { const bare = HMM.hmOpen(e) && S.openKind === 'bare', cap = e.maxHp * (bare ? HM.bareCap : HM.openCap), d = Math.min(dmg * (bare ? HM.bareMul : HM.openMul), Math.max(0, cap - S.openTaken)); S.openTaken += d;   /* (claude/ksarhawk) BARE: x bareMul, at most bareCap of her a window */
       if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 70, 'SHE GATHERS HERSELF', '#9aa39a'); } return d; }
-    if (HMM.guarded(e, P.x, P.y, !P.ground && !P.climb)) { e.chipHit = t; S.n.guarded++; e.guardFx = 0.25; e.guardWord = S.n.guarded < 6 ? ['HER GAUNTLET: GO ROUND', 'HER GAUNTLET: HIT HIGH'][S.n.guarded % 2] : 'HER GAUNTLET';
+    if (S.ward > 0) { e.chipHit = t; S.n.warded++; e.guardFx = 0.25; e.guardWord = 'WARDED'; ctx.sfx.clank && ctx.sfx.clank(); return dmg * HM.floor; }   /* (claude/ksar2, B15) the floor: never wholly turned */
+    if (HMM.hawkGuards(S)) { e.chipHit = t; S.n.guarded++; S.n.hawkGuarded++; e.guardFx = 0.25; e.guardWord = S.n.hawkGuarded < 6 ? 'THE HAWK GUARDS HER: BURN IT' : 'THE HAWK GUARDS HER';
       ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 10, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return dmg * HM.floor; }   /* (B15) a turned blow still lands at the floor */
     return dmg; };
-  H.barName = e => 'THE HAWK-MISTRESS' + (HMM.hmOpen(e) ? '  OPEN' : S && S.ward > 0 ? '  WARDED' : '');
+  H.barName = e => 'THE HAWK-MISTRESS' + (HMM.hmOpen(e) ? (S && S.openKind === 'bare' ? '  BARE' : '  OPEN') : S && S.ward > 0 ? '  WARDED' : S && HMM.hawkGuards(S) ? '  THE HAWK GUARDS' : '');
   H.end = e => { for (const q of ctx.enemies()) if (q.alive && q.hmGuard) { q.alive = false; ctx.burst(q.x, q.y, 8, ['#a8302a', '#5a1e1e'], 50, 0.5); } if (S) { S.runner = null; S.knives = []; S.keg = null; S.rake = null; S.snatch = null; } for (const pp of ctx.players) { pp.hmSnare = null; pp.hmCarry = null; } BOSS_PHASE.hawkmistress = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hawk: S.hawk.mode, hurt: { ...(S.hurt || {}) }, keg: !!S.keg, knives: (S.knives || []).length };
 
@@ -179,12 +192,17 @@ export function makeHawkMistressHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'hawkmistress') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', k = S.hawk;
     /* THE HAWK: a hawk over her (wings beating), blinded it flaps with white stars, home it sits on her glove; its shadow on the floor when it spots or dives */
-    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6, 7].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
-      const pose = k.mode === 'home' ? 7 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
+    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
+      const pose = k.mode === 'fall' || k.mode === 'down' ? 8 : k.mode === 'home' ? 7 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
       S.hawkF = k.x > (S.hawkLastX ?? k.x) + 0.2 ? 1 : k.x < (S.hawkLastX ?? k.x) - 0.2 ? -1 : (S.hawkF || (e.face || 1)); S.hawkLastX = k.x; const hf = k.mode === 'home' ? (e.face || 1) : S.hawkF, H0 = HW[pose], bob = k.mode === 'circle' ? R(Math.sin(time * 3) * 1) : 0;
       if (hf > 0) g.drawImage(H0.c, hx - H0.ax, hy - H0.ay + bob); else { g.save(); g.translate(hx, 0); g.scale(-1, 1); g.drawImage(H0.c, -H0.ax, hy - H0.ay + bob); g.restore(); }
       if (k.mode === 'blind') for (let i = 0; i < 3; i++) { const a = time * 7 + i * 2.1; g.fillStyle = '#ffffff'; g.fillRect(hx + R(Math.cos(a) * 9), hy - 10 + R(Math.sin(a) * 3), 2, 2); }
-      if (k.mode === 'wheel' || k.mode === 'blind') ctx.text(k.mode === 'wheel' ? 'WHEELING' : 'BLIND', hx, hy - 14, '#ffd36b', 'center', 5); }
+      if (k.mode === 'wheel' || k.mode === 'blind') ctx.text(k.mode === 'wheel' ? 'WHEELING' : 'BLIND', hx, hy - 14, '#ffd36b', 'center', 5);
+      /* (claude/ksarhawk) THE HAWK DOWN: it burns where it fell (flames, smoke, the word); THE HAWK'S GUARD: a dotted tether from it to her and the THROW glyph on it (src/boss-read.js drawKeyGlyph) - throw fire HERE */
+      if (k.mode === 'fall' || k.mode === 'down') { for (let i = 0; i < 4; i++) { const fh = 3 + ((time * 11 + i * 3) % 5); g.fillStyle = i % 2 ? '#ff8a2a' : '#ffd36b'; g.fillRect(hx - 6 + i * 4, hy - fh, 2, fh); }
+        if (Math.random() < 0.25) ctx.burst(k.x, k.y - 6, 1, ['#3a2a22', '#6a5a50'], 20, 0.8); ctx.text('HAWK DOWN', hx, hy - 16, Math.floor(time * 6) % 2 ? '#ffd36b' : '#ff9a3c', 'center', 5); }
+      else if (HMM.hawkGuards(S) && k.mode !== 'home' && !(S.ward > 0)) { g.globalAlpha = 0.45; g.strokeStyle = '#ffd36b'; if (g.setLineDash) g.setLineDash([2, 3]); g.beginPath(); g.moveTo(hx, hy + 4); g.lineTo(R(e.x - cx), R(e.y - HM.h - cy)); g.stroke(); if (g.setLineDash) g.setLineDash([]); g.globalAlpha = 1;
+        drawKeyGlyph(g, 'throw', hx, hy, time, 1.4); } }
     if (S.mark && (e.mode === 'spotTell' || e.mode === 'markLashTell' || e.mode === 'diveTell' || k.mode === 'dive')) { const x = R(S.mark.x - cx), y = R(G.floorY - 2 - cy), r = e.mode === 'diveTell' || k.mode === 'dive' ? HM.diveR : HM.markR;
       g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - r, y, r * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }
     /* (claude/ksar2) THE KNIVES, THE KEG, THE RAKE'S LINE, THE SNATCH'S SHADOW */
@@ -201,11 +219,12 @@ export function makeHawkMistressHands(ctx) {
     if (S.flashFx > 0) { g.globalAlpha = S.flashFx * 1.5; g.fillStyle = '#ffffff'; g.beginPath(); g.arc(R(e.x - cx), R(e.y - 14 - cy), HM.flashR, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - HM.h / 2 - cy);
-    if (HMM.hmOpen(e)) { const kk = Math.max(0, e.open / HM.openT);
+    if (HMM.hmOpen(e)) { const kk = Math.max(0, e.open / (e.openT0 || HM.openT)), bare = S.openKind === 'bare';
       g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 24, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      const by = R(e.y - HM.h - 26 - cy); ctx.text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * kk), 3); }
+      const by = R(e.y - HM.h - 26 - cy); ctx.text(bare ? 'BARE' : 'OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * kk), 3); }
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 26, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       ctx.text('WARDED', x, R(e.y - HM.h - 22 - cy), '#c8d8e8', 'center', 5); }
+    else if (!HMM.hmOpen(e) && HMM.hawkGuards(S)) { g.globalAlpha = 0.22 + 0.1 * Math.sin(time * 4); g.strokeStyle = '#e8d8a8'; if (g.setLineDash) g.setLineDash([3, 3]); g.beginPath(); g.arc(x, y, 25, 0, Math.PI * 2); g.stroke(); if (g.setLineDash) g.setLineDash([]); g.globalAlpha = 1; }   /* (claude/ksarhawk) THE HAWK'S GUARD: a faint dashed shell while it rides over her */
     if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, x, R(e.y - HM.h - 34 - cy) - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6);
   };
   return H;

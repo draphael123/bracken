@@ -207,7 +207,7 @@ export function makeKsarHands(ctx) {
   const held = P => (P && isItem(P.carry) ? P.carry : null);
   const handAt = P => ({ x: P.x + (P.face || 1) * 6, y: P.y - 18 });
   const foeAtPx = (x, y) => ctx.enemies().find(e => e.alive && !e.harmless && Math.abs(e.x - x) < (e.w || 10) / 2 + 3 && y > e.y - (e.h || 14) - 2 && y < e.y + 2) || null;
-  const hawkAtPx = (x, y) => (ctx.bossHawk ? (() => { const k = ctx.bossHawk(); return k && Math.hypot(k.x - x, k.y - y) < 16 ? k : null; })() : null);
+  const hawkAtPx = (x, y) => (ctx.bossHawk ? (() => { const k = ctx.bossHawk(); return k && Math.hypot(k.x - x, k.y - y) < 20 ? k : null; })() : null);
   H.arcOf = P => { const q = held(P); if (!q) return null; const h = handAt(P), v = CT.launchOf(q.thrKind, P, ctx.keys ? ctx.keys() : {});
     return CT.predictArc(q.thrKind, h.x, h.y, v, solidPx, { stopAt: (x, y) => foeAtPx(x, y) || hawkAtPx(x, y) || null }); };
   const newItem = (P, kind) => ({ t: kind === 'keg' ? 'kskeg' : kind === 'torch' ? 'kstorch' : 'ksflask', thrKind: kind, state: 'held', holder: P, x: P.x, y: P.y - 18, vx: 0, vy: 0, fuse: 0, burnT: 0, noClimb: kind !== 'flask', hurtWas: P.hurt > 0,
@@ -224,6 +224,9 @@ export function makeKsarHands(ctx) {
       if (q.state === 'fly') { if (!q.counted) { q.counted = 1; if (q.thrKind === 'keg') K.n.kegsThrown++; else if (q.thrKind === 'torch') K.n.torchesThrown = (K.n.torchesThrown || 0) + 1; else K.n.flasksThrown++; } q.holder = null;
         const px = q.x, py = q.y, k = CT.KINDS[q.thrKind]; CT.stepArc(q, dt, k.g);
         const hitFoe = foeAtPx(q.x, q.y), hitHawk = hawkAtPx(q.x, q.y);
+        /* (claude/ksarhawk) THE CENTRAL MECHANIC: a TORCH into the Hawk-Mistress's hawk burns it out of the air; a KEG that meets it blows there (src/hawk-mistress.js fireAt) */
+        if (hitHawk && !hitFoe && (q.thrKind === 'torch' || q.thrKind === 'keg') && ctx.bossFire) { q.state = 'gone'; K.n.hawkHits = (K.n.hawkHits || 0) + 1;
+          if (q.thrKind === 'keg') blast(q.x, q.y, 'keg'); else { ctx.bossFire(q.x, q.y, 'fire'); ctx.burst(q.x, q.y, 10, ['#ffd36b', '#ff6a2a', '#3a2a12'], 60, 0.5); } continue; }
         if (hitFoe || hitHawk) { land(q); continue; }
         if (solidPx(q.x + Math.sign(q.vx) * k.r, py, false) && !solidPx(px, py, false)) { q.x = px; q.y = py; land(q); continue; }
         if (q.vy < 0 && solidPx(q.x, q.y - k.r, false)) q.vy = 0;
@@ -251,6 +254,7 @@ export function makeKsarHands(ctx) {
     for (const t of K.trails) if (t.st === 'dry' && Math.abs(y - (t.y + 1) * ts) < 30 && x > t.x0 * ts - 30 && x < (t.x1 + 1) * ts + 30) lightTrail(t, x);
     for (const w of K.weak) if (!w.broken && Math.hypot(w.x * ts + 8 - x, w.y * ts + 8 - y) < KS.breakR) { w.broken = true; ctx.cellOpen(w.x, w.y); ctx.burst(w.x * ts + 8, w.y * ts + 4, 5, ['#b08a5a', '#7a5a3a'], 60, 0.6); if (once('roofHole')) number(x, y - 40, 'THE ROOF IS HOLED: A CELLAR UNDER IT', '#ffd36b'); }
     for (const k of K.setKegs) if (k.st === 'set' && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 6 - y) < KS.chainR) { k.st = 'lit'; k.t = KS.chainFuse; k.by = 'chain'; }
+    if (ctx.bossBlast) ctx.bossBlast(x, y, KS.kegR);   /* (claude/ksarhawk) the Hawk-Mistress's roofs: a blast by the hawk brings it down, one on her lands on her */
     for (const q of K.items) if (q.thrKind === 'keg' && (q.state === 'lie') && Math.hypot(q.x - x, q.y - y) < KS.chainR * 0.5) { q.state = 'fuse'; q.fuse = KS.chainFuse; }
   }
   /* THE FLASH: a hawk in reach is blinded (a scout, or hers), bandits close by are stunned, and a puff of smoke is left */
