@@ -8,6 +8,9 @@
 // main.js calls: spawnBoss, owns, on, update, take, trapHit, strike, broodHit, phase, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
 import * as SMM from './scarab-mother.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as MOM from './redraw/sealed_pyramid_mother.js';
+import * as CAST from './redraw/sealed_pyramid_cast.js';
+import { whiten } from './px.js';
 const { SM } = SMM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), charge: s => (s.roar || s.boom || s.thud)(), snap: s => (s.slash || s.tell)(),
@@ -88,53 +91,52 @@ export function makeScarabMotherHands(ctx) {
   H.end = e => { if (S) { S.glob = null; S.puddles = []; S.stones = []; S.brood = []; S.mound = null; S.seethe = null; } BOSS_PHASE.scarabmother = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, openKind: ctx.boss && ctx.boss.openKind, brood: S.brood.length, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
 
-  /* ---------- DRAWING (GREYBOX - every move its own pose, B16) ---------- */
-  const C = { shell: '#1e3a2c', shellL: '#3e7a52', shellH: '#8ad09a', belly: '#c8b078', leg: '#14201a', eye: '#ff5a3a', gold: '#d8aa40', goldL: '#f6dc80', mand: '#2a2016', acid: '#9ad04a', ink: '#0c0806' };
+  /* ---------- DRAWING (claude/spart: every move its OWN baked pose - src/redraw/sealed_pyramid_mother.js; B16) ---------- */
+  const C = { shell: '#1e3a2c', shellL: '#3e7a52', shellH: '#8ad09a', leg: '#14201a', gold: '#d8aa40', goldL: '#f6dc80', acid: '#9ad04a', acidL: '#e0ff90', sand: '#d8c8a0', sandD: '#a89070', sandDD: '#6e5a3c' };
   const ell = (g, x, y, rx, ry, col, a = 0) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), a, 0, 7); g.fill(); };
-  const leg = (g, x0, y0, x1, y1, x2, y2) => { g.strokeStyle = C.leg; g.lineWidth = 3; g.beginPath(); g.moveTo(R(x0), R(y0)); g.lineTo(R(x1), R(y1)); g.lineTo(R(x2), R(y2)); g.stroke(); g.lineWidth = 1; };
+  let POSES = null, WHITE = {}, BROODSET = null, STONE = null;
+  const poses = () => { if (!POSES) { POSES = MOM.bakeMother(); BROODSET = CAST.bakeScarab(); } return POSES; };
+  const whiteOf = (k) => WHITE[k] || (WHITE[k] = whiten(poses()[k]));
+  /* the pose for a mode: her windup and her release are never the same picture (B16) */
+  const poseOf = (e, time) => { const m = e.mode, wk = Math.floor(time * 7) & 1 ? 'walk1' : 'walk0';
+    if (m === 'sleep') return 'sleep'; if (m === 'wake') return 'wake'; if (m === 'chargeTell') return Math.floor(time * 9) & 1 ? 'rake1' : 'rake0'; if (m === 'charge') return 'charge'; if (m === 'skid') return 'skid'; if (m === 'dazed') return 'dazed';
+    if (m === 'snapTell') return 'snapTell'; if (m === 'snap') return 'snap'; if (m === 'spitTell') return 'spitTell'; if (m === 'burrowTell') return 'burrowTell'; if (m === 'burrowUp') return 'burrowUp'; if (m === 'quakeTell') return 'quakeTell'; if (m === 'quake') return 'quake';
+    if (m === 'recover' && S && S.glob && S.glob.t < 0.3) return 'spit';
+    if (m === 'open') return e.openKind === 'block' ? 'pinned' : e.openKind === 'darts' ? (Math.floor(time * 10) & 1 ? 'stuck1' : 'stuck0') : (Math.floor(time * 9) & 1 ? 'flipped1' : 'flipped0');
+    if (m === 'walk' || m === 'back') return wk; return 'walk0'; };
   H.drawBack = () => {};
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
-    const f = e.face || 1, m = e.mode, x = e.x - cx, y = e.y - cy, flash = (e.hurtT || 0) > 0, k = m === 'walk' || m === 'back' ? Math.sin(time * 14) : 0;
-    if (m === 'burrowed') { const r = 12 + 2 * Math.sin(time * 12); ell(g, x, y - 3, 22, 6, '#a89070'); ell(g, x, y - 5, r, 4, '#d8c8a0'); return; }
-    g.globalAlpha = 0.3; ell(g, x, y, 26, 3, '#10060a'); g.globalAlpha = 1;
+    const f = e.face || 1, m = e.mode, x = e.x - cx, y = e.y - cy, flash = (e.hurtT || 0) > 0;
+    if (m === 'burrowed') { /* the MOUND: a hump of sand running at you, a fissure down its crown, the ridge of her back glinting through, sand thrown off it */
+      const r = 12 + 2 * Math.sin(time * 12); ell(g, x, y - 1, 24, 6, C.sandDD); ell(g, x, y - 3, 22, 5.6, C.sandD); ell(g, x, y - 5, r + 4, 4.6, C.sand); g.fillStyle = C.sandDD; g.fillRect(R(x) - 8, R(y) - 5, 16, 1); g.fillRect(R(x) - 3, R(y) - 7, 6, 1);
+      g.fillStyle = C.gold; g.fillRect(R(x) - 1, R(y) - 7, 2, 3); g.fillStyle = C.goldL; g.fillRect(R(x) - 1, R(y) - 7, 1, 1);
+      for (let i = 0; i < 7; i++) { const a = time * 14 + i * 1.3; g.fillStyle = i % 2 ? C.sand : C.sandD; g.fillRect(R(x + Math.cos(a) * 20), R(y - 4 - Math.abs(Math.sin(a * 1.7)) * 9), 2, 2); } return; }
+    g.globalAlpha = 0.3; ell(g, x, y, 28, 3, '#10060a'); g.globalAlpha = 1;
+    const k = poseOf(e, time), P = poses()[k]; if (!P) return;
     g.save(); g.translate(R(x), R(y)); g.scale(f, 1);
-    if (flash) g.filter = 'brightness(3)';
-    if (m === 'open' && e.openKind === 'stone') {   /* FLIPPED: on her back, legs kicking at the air */
-      ell(g, 0, -10, 24, 10, C.belly); for (let i = -2; i <= 2; i++) { const a = Math.sin(time * 18 + i) * 4; leg(g, i * 8, -16, i * 9 + a, -28, i * 10 - a, -34); } ell(g, 18, -8, 7, 6, C.shell);
-    } else if (m === 'open' && e.openKind === 'block') {   /* PINNED: flattened under the block, legs splayed */
-      for (const i of [-2, -1, 1, 2]) leg(g, i * 9, -6, i * 14, -3, i * 17, 0); ell(g, 0, -7, 26, 7, C.shell); ell(g, 22, -6, 7, 5, C.shell); ell(g, 25, -7, 1.5, 1.5, C.eye);
-    } else {
-      const head = m === 'chargeTell' ? 6 : m === 'charge' ? 4 : m === 'quakeTell' ? -14 : m === 'snapTell' ? 0 : 0;   /* the head: lowered for the charge, up for the quake's rear */
-      const rear = m === 'quakeTell' ? 1 : m === 'quake' ? -0.3 : 0, tip = m === 'spitTell' ? 1 : 0, dig = m === 'burrowTell' ? Math.min(1, (SM.burrowTell - e.modeT) / SM.burrowTell) : 0, stuck = m === 'open' && e.openKind === 'darts';
-      g.rotate(-rear * 0.5); g.translate(0, dig * 12);
-      /* legs: walking, braced for the charge, scraping (a foreleg pawing) */
-      for (const [i, lx] of [[0, -14], [1, -4], [2, 8]]) { const sw = (i % 2 ? k : -k) * 3, paw = m === 'chargeTell' && i === 2 ? Math.sin(time * 20) * 5 : 0, splay = stuck ? 4 : 0;
-        leg(g, lx, -12, lx - 4 + sw + paw, -6, lx - 7 + sw + paw - splay, 0); leg(g, lx + 2, -12, lx + 6 - sw, -6, lx + 9 - sw + splay, 0); }
-      /* the abdomen (tipped up for the spit), the shell with its gold seam, the head with horn and mandibles */
-      g.save(); g.translate(-10, -14); g.rotate(-tip * 0.5); ell(g, -6, 0, 18, 11, C.shell); ell(g, -8, -4, 12, 5, C.shellL); g.fillStyle = C.gold; g.fillRect(-6, -10, 1, 20);
-      if (tip) { ell(g, -22, -6, 4, 4, C.acid); } g.restore();
-      ell(g, 4, -16, 14, 10, C.shell); ell(g, 2, -20, 9, 3, C.shellH);
-      g.save(); g.translate(18, -14 + head); ell(g, 0, 0, 7, 6, C.shell); g.fillStyle = C.eye; g.fillRect(2, -3, 2, 2);
-      g.fillStyle = C.mand; const open = m === 'snapTell' ? 6 : m === 'snap' ? 0 : 2; g.fillRect(6, -2 - open, 6, 2); g.fillRect(6, 1 + open, 6, 2);
-      g.fillStyle = C.shellL; g.beginPath(); g.moveTo(2, -5); g.lineTo(8, -14 - (m === 'chargeTell' ? -6 : 0)); g.lineTo(5, -5); g.fill(); g.restore();
-      if (stuck) { g.fillStyle = '#3a2a1a'; for (let i = 0; i < 6; i++) g.fillRect(-14 + i * 6, -22 + (i % 2) * 6, 1, 7); }
-      if (m === 'dazed') { g.fillStyle = C.goldL; for (let i = 0; i < 3; i++) { const a = time * 6 + i * 2.1; g.fillRect(R(18 + Math.cos(a) * 8), R(-28 + Math.sin(a) * 3), 2, 2); } }
-    }
-    g.filter = 'none'; g.restore();
+    g.drawImage(P, -MOM.CX, -P.height);
+    if (flash) { g.globalAlpha = 0.9; g.drawImage(whiteOf(k), -MOM.CX, -P.height); g.globalAlpha = 1; }
+    g.restore();
+    if (m === 'burrowTell') { for (let i = 0; i < 6; i++) { const a = time * 16 + i * 2; g.fillStyle = i % 2 ? C.sand : C.sandD; g.fillRect(R(x + f * (14 + Math.cos(a) * 8)), R(y - 3 - Math.abs(Math.sin(a * 1.4)) * 8), 2, 2); } }
+    if (m === 'dazed') { g.fillStyle = C.goldL; for (let i = 0; i < 3; i++) { const a = time * 6 + i * 2.1; g.fillRect(R(x + f * 22 + Math.cos(a) * 8), R(y - 38 + Math.sin(a) * 3), 2, 2); } }
+    if (m === 'spitTell') { const sy = y - 30 - Math.sin(time * 18) * 1.5; g.globalAlpha = 0.6; ell(g, x - f * 26, sy, 3 + Math.sin(time * 14), 3, C.acidL); g.globalAlpha = 1; }
+    if (m === 'quakeTell') { g.fillStyle = C.sandD; for (let i = 0; i < 5; i++) g.fillRect(R(x + f * (20 + i * 3)), R(y - 1 - (i % 2)), 2, 1); }
     if (e.guardFx > 0) { g.fillStyle = '#fff6c8'; g.fillRect(R(x + f * 18 - 2), R(y - 26), 5, 14); }
   };
-  /* the glob, the puddles, the mound, the quake's shadows, the brood, and THE READ (open ring + timer, ward shell, her shell's word) */
+  /* the glob, the puddles, the mound's ring, the quake's shadows and stones, the brood, and THE READ (open ring + timer, ward shell, her shell's word) */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'scarabmother') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
-    for (const p of S.puddles) { g.globalAlpha = 0.6 * Math.min(1, p.t); ell(g, p.x - cx, G.floorY - cy - 1, SM.puddleR, 3, C.acid); g.globalAlpha = 1; }
-    if (S.glob) { const q = S.glob, k = Math.min(1, q.t / SM.spitFly), gy = G.floorY - 30 - Math.sin(k * Math.PI) * 50; ell(g, q.x - cx, gy - cy, 4, 4, C.acid); }
+    for (const p of S.puddles) { const a = Math.min(1, p.t), px0 = p.x - cx, py0 = G.floorY - cy; g.globalAlpha = 0.65 * a; ell(g, px0, py0 - 1, SM.puddleR, 3.4, '#2a4a14'); ell(g, px0, py0 - 2, SM.puddleR - 2, 2.6, C.acid); g.globalAlpha = a;   /* an acid pool: a dark rim, a bright skin */
+      for (let i = 0; i < 4; i++) { const bb = (time * 3 + i * 0.4) % 1; g.fillStyle = C.acidL; g.fillRect(R(px0 - 10 + i * 6), R(py0 - 3 - bb * 6), 1 + (i & 1), 1 + (i & 1)); } g.globalAlpha = 1; }
+    if (S.glob) { const q = S.glob, kk = Math.min(1, q.t / SM.spitFly), gy = G.floorY - 30 - Math.sin(kk * Math.PI) * 50; ell(g, q.x - cx, gy - cy, 4, 4, '#2a4a14'); ell(g, q.x - cx, gy - cy, 3, 3, C.acid); g.fillStyle = C.acidL; g.fillRect(R(q.x - cx) - 2, R(gy - cy) - 2, 2, 1);
+      for (let i = 1; i < 5; i++) { g.globalAlpha = 0.5 - i * 0.1; g.fillStyle = C.acid; g.fillRect(R(q.x - cx - (q.tx > q.x0 ? i : -i) * 3), R(gy - cy + i * 0.6), 2, 2); } g.globalAlpha = 1; }
     if (e.mode === 'spitTell' && S.mark) { const x = R(S.mark.x - cx), y = R(G.floorY - 2 - cy); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke(); }
     if (S.mound) { const x = R(S.mound.x - cx), y = R(G.floorY - cy); g.strokeStyle = 'rgba(255,154,92,0.8)'; g.beginPath(); g.arc(x, y - 2, SM.burrowR, Math.PI, 0); g.stroke(); }
-    for (const s of S.stones) { if (s.done) { continue; } const x = R(s.x - cx), y = R(G.floorY - cy), k = 1 - Math.max(0, s.t) / (SM.quakeTell + SM.quakeFall);
-      g.globalAlpha = 0.3 + 0.5 * k; g.fillStyle = '#10060a'; g.fillRect(x - SM.quakeR, y - 3, SM.quakeR * 2, 3); g.globalAlpha = 1;
-      if (s.t < SM.quakeFall) { const sy = G.roofY + (G.floorY - G.roofY) * (1 - s.t / SM.quakeFall); g.fillStyle = '#b89c6c'; g.fillRect(x - 10, R(sy - cy) - 16, 20, 16); } }
+    for (const s of S.stones) { if (s.done) { continue; } const x = R(s.x - cx), y = R(G.floorY - cy), kk = 1 - Math.max(0, s.t) / (SM.quakeTell + SM.quakeFall);
+      g.globalAlpha = 0.3 + 0.5 * kk; g.fillStyle = '#10060a'; g.fillRect(x - SM.quakeR, y - 3, SM.quakeR * 2, 3); g.globalAlpha = 1;
+      if (s.t < SM.quakeFall) { const sy = G.roofY + (G.floorY - G.roofY) * (1 - s.t / SM.quakeFall), yy = R(sy - cy); g.fillStyle = '#5a4630'; g.fillRect(x - 11, yy - 18, 22, 18); g.fillStyle = '#b09462'; g.fillRect(x - 10, yy - 17, 20, 15); g.fillStyle = '#d0b47c'; g.fillRect(x - 10, yy - 17, 20, 2); g.fillStyle = '#6e5636'; g.fillRect(x - 10, yy - 5, 20, 3); g.fillRect(x - 2, yy - 17, 1, 8); g.fillRect(x + 3, yy - 12, 1, 7); } }
     if (S.seethe) { const x = R(S.seethe.x - cx), y = R(G.floorY - cy); g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 20); g.fillStyle = '#7ad08a'; g.fillRect(x - 14, y - 4, 28, 4); g.globalAlpha = 1; }
-    for (const b of S.brood) { if (!b.alive) continue; const x = R(b.x - cx), y = R(G.floorY - cy); ell(g, x, y - 4, 6, 4, C.shell); ell(g, x + (b.face || 1) * 5, y - 4, 2.5, 2.5, C.shellL); g.fillStyle = C.leg; for (let i = -1; i <= 1; i++) g.fillRect(x + i * 3, y - 1, 1, 2 + (Math.floor(time * 16 + i) & 1)); }
+    for (const b of S.brood) { if (!b.alive) continue; const x = R(b.x - cx), y = R(G.floorY - cy), fr = BROODSET ? BROODSET[(b.face || 1) > 0 ? 'R' : 'L'][Math.floor(time * 12) & 1] : null; if (fr) g.drawImage(fr, x - BROODSET.ax, y - fr.height); else { ell(g, x, y - 4, 6, 4, C.shell); } }
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - SM.h / 2 - cy);
     if (SMM.smOpen(e)) { const kk = Math.max(0, e.open / SM.openT);

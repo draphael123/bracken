@@ -20,6 +20,8 @@
 // main.js calls: on, reset, update, interact, world, onHit, takeMummy, mover, trapReady, bossHit (the boss hands set it), drawWorld, drawOver, drawStructure,
 // drawSeal, read, walkHint, handsState.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
+import * as ART from './redraw/sealed_pyramid_set.js';
+import * as SPB from './redraw/sealed_pyramid_backdrop.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';
 import { MUMMY } from './mummy.js';
@@ -284,88 +286,61 @@ export function makeSealedPyramidHands(ctx) {
     const C = K.stalls[r.key] = K.stalls[r.key] || newStall(); if (r.key !== K.stallKey) { K.stallKey = r.key; C.t = 0; C.best = 1e9; }
     if (stallTick(C, Math.hypot(P.x - t.x, P.y - t.y), dt, K.clock, false)) { K.n.nudges++; K.lastNudge = r.line; K.glint.show = true; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
 
-  /* ---------- DRAWING (GREYBOX, readable: the SONNET art lane redraws every piece) ---------- */
-  const COL = { stone: '#b89c6c', stoneL: '#e0c890', stoneD: '#6e5a3c', ink: '#1c140c', plate: '#efe4c4', plateL: '#fffaf0', plateD: '#b8a884', bone: '#e8e0c8', boneD: '#a89c80',
-    dart: '#3a2a1a', dartTip: '#d8d8d0', scarab: '#2a5a3e', scarabL: '#7ad08a', gold: '#d8aa40', goldL: '#f6dc80', red: '#ff6b6b', glow: '255,200,110' };
+  /* ---------- DRAWING (claude/spart: the art pass - src/redraw/sealed_pyramid_set.js draws every piece, src/redraw/sealed_pyramid_backdrop.js the rooms; the LOGIC above is untouched) ---------- */
+  const COL = { stone: '#b89c6c', stoneL: '#e0c890', stoneD: '#6e5a3c', ink: '#1c140c', red: '#ff6b6b', gold: '#d8aa40', goldL: '#f6dc80', scarabL: '#7ad08a' };
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   /* THE FOOTING KINDS (L.structures 'py*', main.js drawStructures): a carved corbel under a shelf; the robbers' walk on its posts */
   H.drawStructure = (g, kind, l, r, t, b) => {
-    if (kind === 'pyShelf' || kind === 'pyCornice' || kind === 'pyLedge') { for (const x of [l + 1, r - 7]) { rect(g, x, t + 6, 6, 3, COL.stone); rect(g, x + 1, t + 9, 4, 3, COL.stone); rect(g, x + 2, t + 12, 2, 3, COL.stoneD); rect(g, x, t + 6, 6, 1, COL.stoneL);
-        rect(g, x + 2, t + 15, 2, 2, COL.stoneD); } return true; }   /* (a carved bracket keyed into the wall behind: no post to the floor - the wall carries it) */
-    if (kind === 'pyWalk') { for (let x = l + 24; x < r - 8; x += 12 * 16) { rect(g, x, t + 6, 6, b - t - 6, COL.stoneD); rect(g, x, t + 6, 1, b - t - 6, COL.stone); rect(g, x - 3, t + 6, 12, 3, COL.stone); rect(g, x - 3, b - 4, 12, 4, COL.stoneD); } return true; }
+    if (kind === 'pyShelf' || kind === 'pyCornice' || kind === 'pyLedge') { for (const x of [l + 1, r - 7]) ART.corbel(g, x, t); return true; }   /* (a carved bracket keyed into the wall behind: no post to the floor - the wall carries it) */
+    if (kind === 'pyWalk') { for (let x = l + 24; x < r - 8; x += 12 * 16) ART.walkPost(g, x, t, b); return true; }
     return false; };
-  /* THE TOMB'S ROOMS (L.interiors 'py*'): a coursed sandstone back wall, darker than the stone you stand on, its courses offset; each room its own cast (the gallery's
-     dust, the false tomb's gilding, the pits' green-black, the deep way's dark) - GREYBOX: the art lane paints the reliefs and the light */
-  const ROOM = { pyGallery: ['#4a3a28', '#3a2c1e', '#5a4832'], pyShafts: ['#43362a', '#33281e', '#54442f'], pyCorridor: ['#4a3a28', '#3a2c1e', '#6a5432'], pyFalseTomb: ['#4e3c26', '#3c2c1a', '#7a6034'], pyPits: ['#2e3428', '#22281e', '#3a4430'], pyDeep: ['#2e261e', '#221c16', '#3c3226'], pyAntechamber: ['#33302a', '#26221c', '#4a4232'] };
-  H.drawRoom = (g, st, sx, sy, w, h, x0, y0, time) => { const C = ROOM[st] || ROOM.pyGallery, ts = TS(); g.fillStyle = C[0]; g.fillRect(R(sx), R(sy), R(w), R(h));
-    g.fillStyle = C[1]; for (let k = 0; k * 8 < h; k++) { g.fillRect(R(sx), R(sy + k * 8 + 7), R(w), 1); for (let x = ((k + y0 * 2) % 2) * 12; x < w; x += 24) g.fillRect(R(sx + x), R(sy + k * 8), 1, 7); }
-    g.fillStyle = C[2]; for (let k = 0; k * 8 < h; k += 3) g.fillRect(R(sx), R(sy + k * 8), R(w), 1); };
-  /* a SCARAB SEAL (stray kind 'scarabseal'): a green-glazed scarab on a gold disc */
+  /* THE TOMB'S ROOMS (L.interiors 'py*'): the back wall, its friezes, pilasters and THE SEAL (the landmark) - src/redraw/sealed_pyramid_backdrop.js */
+  H.drawRoom = (g, st, sx, sy, w, h, x0, y0, time) => SPB.drawRoom(g, st, sx, sy, w, h, x0, y0, time);
+  /* a SCARAB SEAL (stray kind 'scarabseal'): a green-glazed scarab on a gold disc, a teal breath round it */
   H.drawSeal = (g, x, y, time) => { const bob = Math.sin(time * 3 + x) * 2, cx0 = R(x), cy0 = R(y - 10 + bob);
-    g.fillStyle = COL.gold; g.beginPath(); g.arc(cx0, cy0, 6, 0, 7); g.fill(); g.fillStyle = COL.goldL; g.fillRect(cx0 - 4, cy0 - 5, 3, 1);
-    g.fillStyle = COL.scarab; g.beginPath(); g.ellipse(cx0, cy0 + 1, 3, 4, 0, 0, 7); g.fill(); g.fillStyle = COL.scarabL; g.fillRect(cx0 - 1, cy0 - 2, 2, 1); g.fillStyle = COL.ink; g.fillRect(cx0, cy0 - 1, 1, 5);
-    g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 5); g.fillStyle = COL.goldL; g.beginPath(); g.arc(cx0, cy0, 9, 0, 7); g.fill(); g.globalAlpha = 1; };
-  function drawPlate(g, x0, x1, row, cx, cy, t, time) { const ts = TS(), x = x0 * ts - cx, y = row * ts - cy, w = (x1 - x0 + 1) * ts;
-    rect(g, x + 1, y, w - 2, 3, COL.plate); rect(g, x + 3, y + 1, w - 6, 1, COL.plateD); rect(g, x + 1, y, w - 2, 1, COL.plateL);
-    if (!t) return;
-    if (t.st === 'ready') { g.globalAlpha = 0.18 + 0.12 * Math.sin(time * 3 + x0); rect(g, x, y - 3, w, 3, COL.plateL); g.globalAlpha = 1; }
-    else { const k = t.st === 'armed' ? 1 : t.st === 'reset' ? Math.max(0, 1 - t.t / Math.max(0.5, t.def.reset)) : 0; rect(g, x + 1, y - 5, w - 2, 2, '#2a1e14'); rect(g, x + 1, y - 5, (w - 2) * k, 2, t.st === 'armed' ? COL.red : '#ffb060'); } }
+    g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 5); g.fillStyle = '#7affd8'; g.beginPath(); g.arc(cx0, cy0, 10, 0, 7); g.fill(); g.globalAlpha = 1; g.drawImage(ART.ART.sealIcon(), cx0 - 8, cy0 - 8); };
   H.drawWorld = (g, cx, cy, time) => {
     if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), L = K.L;
     const vis = (x0, x1) => x1 * ts - cx > -64 && x0 * ts - cx < vw + 64;
-    /* THE DECOR: bones in the reaches, the groove, the sarcophagi, the false king, the mural, her reliefs, her eggs, the jars, the wheels */
+    /* THE DECOR: bones in the reaches, the groove, the sarcophagi, the false king, the mural, her reliefs, her eggs, the jars, the wheels, the capstone, the pits, the false door */
     for (const d of (L.decor || [])) { const a = d.x0 ?? d.x, b = d.x1 ?? d.x; if (!vis(a, b + 1)) continue; const X = a * ts - cx, Y = (d.y ?? 0) * ts - cy;
-      if (d.kind === 'bones') { for (let k = 0; k <= (b - a) * 2; k++) { const bx = X + 4 + k * 8, by = Y + 12; rect(g, bx, by, 6, 2, COL.bone); rect(g, bx + 1, by - 2, 2, 2, COL.boneD); } rect(g, X + 6, Y + 8, 5, 5, COL.bone); rect(g, X + 7, Y + 10, 1, 1, COL.ink); rect(g, X + 9, Y + 10, 1, 1, COL.ink); }
-      else if (d.kind === 'groove') { g.globalAlpha = 0.5; rect(g, X, Y + 14, (b - a + 1) * ts, 2, COL.stoneD); g.globalAlpha = 1; }
-      else if (d.kind === 'dartholes') { for (let r = d.y0; r <= d.y1; r++) for (let k = 0; k < 3; k++) rect(g, d.x * ts - cx + (k % 2) * 6 + 2, r * ts - cy + 3 + k * 4, 3, 2, COL.ink); }
-      else if (d.kind === 'sarcophagus') { rect(g, X - 10, Y - 6, 36, 22, '#8a6a3a'); rect(g, X - 10, Y - 6, 36, 3, COL.goldL); rect(g, X - 4, Y - 2, 24, 3, COL.gold); }
-      else if (d.kind === 'falseking') { rect(g, X - 8, Y, 40, 54, 'rgba(60,40,20,0.5)'); rect(g, X, Y + 6, 24, 30, COL.gold); rect(g, X + 4, Y + 12, 4, 3, COL.ink); rect(g, X + 16, Y + 12, 4, 3, COL.ink); rect(g, X + 8, Y + 26, 8, 2, '#8a2a2a'); ctx.text('THE FALSE KING', X + 12, Y - 4, '#e8d0a0', 'center', 4); }
-      else if (d.kind === 'mural') { g.globalAlpha = 0.45; rect(g, X, Y, (b - a + 1) * ts, 50, '#5a4a30'); g.globalAlpha = 1; g.fillStyle = COL.scarab; g.beginPath(); g.ellipse(X + (b - a + 1) * ts / 2, Y + 22, 26, 16, 0, 0, 7); g.fill(); for (let k = 0; k < 6; k++) rect(g, X + 10 + k * 30, Y + 40, 8, 6, COL.boneD); }
-      else if (d.kind === 'scarabrelief') { g.fillStyle = 'rgba(42,90,62,0.6)'; g.beginPath(); g.ellipse(X + (b - a + 1) * ts / 2, Y - 10, 18, 12, 0, 0, 7); g.fill(); rect(g, X + (b - a + 1) * ts / 2 - 1, Y - 22, 2, 24, COL.ink); }
-      else if (d.kind === 'eggs') { for (let k = 0; k <= b - a; k += 2) { g.fillStyle = '#d8d0a8'; g.beginPath(); g.ellipse(X + k * ts + 6, Y + 10, 5, 7, 0, 0, 7); g.fill(); } }
-      else if (d.kind === 'jars') { for (let k = 0; k <= b - a; k++) { rect(g, X + k * ts + 3, Y + 4, 10, 12, '#a87a48'); rect(g, X + k * ts + 5, Y + 2, 6, 3, '#d8b070'); } }
-      else if (d.kind === 'capstone') { rect(g, X, Y - 20, (b - a + 1) * ts, 20, COL.stone); rect(g, X, Y - 20, (b - a + 1) * ts, 2, COL.stoneL); }
-      else if (d.kind === 'cwheel') { const wx = d.x * ts + 16 - cx, wy = d.y * ts - cy; g.strokeStyle = COL.stoneD; g.lineWidth = 3; g.beginPath(); g.arc(wx, wy, 18, 0, 7); g.stroke(); g.lineWidth = 1; for (let k = 0; k < 6; k++) { const a0 = time * 0 + k * Math.PI / 3; g.beginPath(); g.moveTo(wx, wy); g.lineTo(wx + Math.cos(a0) * 18, wy + Math.sin(a0) * 18); g.stroke(); } }
-      else if (d.kind === 'scarabpit') { const w = (b - a + 1) * ts; rect(g, X, Y - 32, w, 32, 'rgba(10,6,4,0.6)'); for (let k = 0; k < (b - a + 1) * 4; k++) { const sx = X + ((k * 37 + time * 30 * (k % 2 ? 1 : -1)) % w + w) % w, sy = Y + 6 - (k % 3) * 3; rect(g, sx, sy, 3, 2, k % 3 ? COL.scarab : COL.scarabL); } }
-      else if (d.kind === 'falsedoor' && !K.broken.falsedoor) { const w = (b - a + 1) * ts, h = (d.y1 - d.y0 + 1) * ts, Yd = d.y0 * ts - cy; rect(g, X, Yd, w, h, '#c8b088'); rect(g, X + 4, Yd + 8, w - 8, h - 8, '#8a6a3a'); rect(g, X + 4, Yd + 8, w - 8, 2, COL.goldL);
-        g.strokeStyle = COL.ink; g.beginPath(); g.moveTo(X + 6, Yd + 20); g.lineTo(X + 14, Yd + 40); g.lineTo(X + 10, Yd + 60); g.stroke(); ctx.text('SEALED', X + w / 2, Yd - 4, '#e8d0a0', 'center', 4); }
-      else if (d.kind === 'storm' && K.stormNow) { const st = K.stormNow; if (st.phase !== 'calm') { const k = st.phase === 'gust' ? 0.5 : 0.18; g.globalAlpha = k; g.fillStyle = '#e2bb7a';
-          for (let i = 0; i < 40; i++) { const sx = ((i * 97 + time * 400 * st.dir) % vw + vw) % vw, sy = (i * 53) % vh; g.fillRect(R(sx), R(sy), 10, 1); } g.globalAlpha = 1; } }
-    }
-    /* THE LAMPS: braziers */
-    for (const lp of (L.lamps || [])) { const x = lp.x * ts + 8 - cx, y = lp.y * ts - cy; if (x < -30 || x > vw + 30) continue; rect(g, x - 4, y + 6, 8, 4, '#4a3a2a'); rect(g, x - 1, y + 10, 2, 6, '#3a2a1a');
-      g.fillStyle = Math.floor(time * 8) % 2 ? '#ffb040' : '#ffd36b'; g.beginPath(); g.moveTo(x - 4, y + 6); g.lineTo(x, y - 2 - Math.sin(time * 9) * 2); g.lineTo(x + 4, y + 6); g.fill(); }
-    /* THE TRAPS: plates (and their reload), the block in its slot (its shadow on the reach while it hangs), the dart holes, the stone */
+      if (d.kind === 'storm') { if (!K.stormNow) continue; const st = K.stormNow; if (st.phase === 'calm') continue; const gust = st.phase === 'gust', n = gust ? 70 : 28;
+        for (let i = 0; i < n; i++) { const sx = ((i * 97 + time * (gust ? 520 : 260) * st.dir) % vw + vw) % vw, sy = (i * 53 + (i * i) % 17) % vh, len = (gust ? 10 : 6) + (i % 4) * 3; g.globalAlpha = gust ? 0.55 : 0.2; g.fillStyle = i % 3 ? '#e8c488' : '#f6e0b0'; g.fillRect(R(sx), R(sy), len, 1); }
+        g.globalAlpha = gust ? 0.22 : 0.08; g.fillStyle = '#d8a860'; g.fillRect(0, 0, vw, vh); g.globalAlpha = 1; continue; }
+      ART.decor(g, d, X, Y, a, b, time, K, ctx, cx, cy, vw, vh); }
+    /* THE LAMPS: bronze braziers on carved brackets */
+    for (const lp of (L.lamps || [])) { const x = lp.x * ts + 8 - cx, y = lp.y * ts - cy; if (x < -30 || x > vw + 30) continue; ART.lamp(g, x, y + 6, time); }
+    /* THE TRAPS: plates (and their reload), the slot and the block in it (the reach scored), the dart holes, the stone */
     for (const t of K.traps) { const d = t.def; if (!vis(d.zone[0] - 4, d.zone[1] + 4)) continue;
-      for (const p of d.plates) if (Array.isArray(p)) drawPlate(g, p[0], p[1], p[2], cx, cy, t, time);
-      for (const p of (d.inner || [])) drawPlate(g, p[0], p[1], p[2], cx, cy, null, time);
-      if (t.kind === 'block') { const x = t.x - cx, y = t.y - cy;
-        if (t.st === 'ready' || t.st === 'armed') { g.globalAlpha = 0.16; rect(g, x, (d.on ? (moverOf(d.on) || { y: d.zone[3] * ts }).y : (d.land + 1) * ts) - cy - 4, t.w, 4, COL.ink); g.globalAlpha = 1; }   /* the slot's shadow on the reach */
-        rect(g, x, y, t.w, t.h, COL.stone); rect(g, x, y, t.w, 2, COL.stoneL); rect(g, x, y + t.h - 2, t.w, 2, COL.stoneD); for (let k = 16; k < t.w; k += 16) rect(g, x + k, y + 2, 1, t.h - 4, COL.stoneD);
-        if (t.st !== 'firing' || t.phase === 'haul') { rect(g, x + 6, d.slot[2] * ts - cy - 40, 2, y - (d.slot[2] * ts - cy - 40), '#5a5048'); rect(g, x + t.w - 8, d.slot[2] * ts - cy - 40, 2, y - (d.slot[2] * ts - cy - 40), '#5a5048'); }
-        if (t.st === 'armed') { g.globalAlpha = 0.6; for (let k = 0; k < 4; k++) rect(g, x + 4 + ((k * 23 + time * 60) % Math.max(8, t.w - 8)), y + t.h + ((time * 120 + k * 17) % 40), 1, 4, '#d8c8a0'); g.globalAlpha = 1; } }
-      if (t.kind === 'darts' && t.st === 'armed') { const wx = (d.dir > 0 ? (d.wall + 1) * ts : d.wall * ts) - cx; g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 30); for (let r = d.rows[0]; r <= d.rows[1]; r++) rect(g, wx - 2, r * ts - cy + 4, 4, 8, COL.red); g.globalAlpha = 1; }
-      if (t.kind === 'stone' && t.vis) { const r = d.great ? 18 : TRAP_STONE.r, x = t.x - cx, y = t.y - cy - r; g.fillStyle = COL.stone; g.beginPath(); g.arc(R(x), R(y), r, 0, 7); g.fill(); g.strokeStyle = COL.stoneD; g.lineWidth = 2; g.beginPath(); g.arc(R(x), R(y), r - 1, 0, 7); g.stroke();
-        const a = t.spin || 0; g.beginPath(); g.moveTo(R(x), R(y)); g.lineTo(R(x + Math.cos(a) * (r - 3)), R(y + Math.sin(a) * (r - 3))); g.moveTo(R(x), R(y)); g.lineTo(R(x - Math.sin(a) * (r - 3)), R(y + Math.cos(a) * (r - 3))); g.stroke(); g.lineWidth = 1;
-        if (t.st === 'armed') { g.globalAlpha = 0.6; ctx.text('!!', R(x), R(y - r - 8), COL.red, 'center', 6); g.globalAlpha = 1; } }
-      if (t.kind === 'stone' && !t.vis && d.drop && t.st !== 'firing') { const x = d.home * ts + 16 - cx, y = (d.drop[1] + 1) * ts - cy; rect(g, x - 14, y - 4, 28, 4, COL.stoneD); }
+      const reload = t.st === 'armed' ? 1 : t.st === 'reset' ? Math.max(0, 1 - t.t / Math.max(0.5, t.def.reset)) : 0;
+      const drawPl = (p, inner) => { const x = p[0] * ts - cx, y = p[2] * ts - cy, w = (p[1] - p[0] + 1) * ts; ART.plate(g, x, y, w, inner ? 'ready' : t.st === 'ready' ? 'ready' : t.st === 'armed' ? 'armed' : 'reset', time, reload); };
+      for (const p of d.plates) if (Array.isArray(p)) drawPl(p, false);
+      for (const p of (d.inner || [])) drawPl(p, true);
+      if (t.kind === 'block') { const x = t.x - cx, y = t.y - cy, sx = d.slot[0] * ts - cx, sy = d.slot[2] * ts - cy;
+        ART.slot(g, sx, sy, (d.slot[1] - d.slot[0] + 1) * ts, (d.slot[3] - d.slot[2] + 1) * ts);
+        if (t.st === 'ready' || t.st === 'armed') { const fy = (d.on ? (moverOf(d.on) || { y: d.zone[3] * ts }).y : (d.land + 1) * ts) - cy; ART.scoreBlock(g, d.zone[0] * ts - cx, (d.zone[1] + 1) * ts - cx, fy, time); }   /* the slot's dust and the worn floor under it */
+        if (t.st !== 'firing' || t.phase === 'haul') { const top = d.slot[2] * ts - cy - 6; ART.chain(g, x + 6, top, y + 3); ART.chain(g, x + t.w - 8, top, y + 3); }
+        ART.block(g, x, y, t.w, t.h, t.st); }
+      if (t.kind === 'darts') { const wx = (d.dir > 0 ? (d.wall + 1) * ts : d.wall * ts) - cx; ART.scoreDarts(g, d.zone[0] * ts - cx, (d.zone[1] + 1) * ts - cx, (d.zone[3] + 1) * ts - cy);
+        if (t.st === 'armed') ART.dartWall(g, wx, d.rows[0] * ts - cy, (d.rows[1] + 1) * ts - cy, d.dir, true, time); }
+      if (t.kind === 'stone' && t.vis) { const r = d.great ? 18 : TRAP_STONE.r; ART.stone(g, t.x - cx, t.y - cy - r, r, t.spin || 0, !!d.great, t.st === 'armed', time);
+        if (t.st === 'armed') ctx.text('!!', R(t.x - cx), R(t.y - cy - r * 2 - 8), COL.red, 'center', 6); }
+      if (t.kind === 'stone' && !t.vis && d.drop && t.st !== 'firing') { const x = d.home * ts + 16 - cx, y = (d.drop[1] + 1) * ts - cy; rect(g, x - 14, y - 4, 28, 4, COL.stoneD); rect(g, x - 14, y - 4, 28, 1, COL.stone); }
     }
-    for (const q of K.darts) { rect(g, q.x - cx - 5, q.y - cy, 8, 1, COL.dart); rect(g, q.x - cx + (q.dir > 0 ? 3 : -5), q.y - cy - 1, 2, 3, COL.dartTip); }
+    for (const q of K.darts) ART.dart(g, R(q.x - cx), R(q.y - cy), q.dir);
     /* THE COUNTERWEIGHTS: a stone block under each mover's top, its chains up to the wheel; a pale top where it is a plate */
     for (const m of ctx.movers()) { if (!m.pyr) continue; const x = m.x - cx, y = m.y - cy; if (x < -60 || x > vw + 60) continue;
-      const wy = (m.wheel ? m.wheel[1] * ts : m.top - 120) - cy; rect(g, x + 6, wy, 2, y - wy, '#5a5048'); rect(g, x + 24, wy, 2, y - wy, '#5a5048');
-      rect(g, x, y, 32, 30, COL.stone); rect(g, x, y, 32, 2, COL.stoneL); rect(g, x, y + 28, 32, 2, COL.stoneD); rect(g, x + 15, y + 2, 1, 26, COL.stoneD);
-      if (m.plate) { const t = K.traps.find(q => q.def.plates.some(p => p.mover === m.pyr)); rect(g, x + 2, y, 28, 3, COL.plate); rect(g, x + 2, y, 28, 1, COL.plateL);
-        if (t && t.st !== 'ready') { const k = t.st === 'armed' ? 1 : t.st === 'reset' ? Math.max(0, 1 - t.t / Math.max(0.5, t.def.reset)) : 0; rect(g, x + 2, y - 5, 28, 2, '#2a1e14'); rect(g, x + 2, y - 5, 28 * k, 2, t.st === 'armed' ? COL.red : '#ffb060'); } } }
+      const wy = (m.wheel ? m.wheel[1] * ts : m.top - 120) - cy; ART.chain(g, R(x) + 5, wy, y + 2); ART.chain(g, R(x) + 25, wy, y + 2);
+      ART.counterweight(g, x, y, m.plate);
+      if (m.plate) { const t = K.traps.find(q => q.def.plates.some(p => p.mover === m.pyr)); if (t && t.st !== 'ready') ART.ART.gauge(g, x, y + 2, 32, t.st, t.st === 'armed' ? 1 : Math.max(0, 1 - t.t / Math.max(0.5, t.def.reset)), time); } }
     /* THE SEALED TOMB's door: four seal sockets (the ones carried, lit) */
-    for (const v of K.vault) { if (v.open) continue; const x = v.x * ts - cx, y = v.y0 * ts - cy; if (x < -40 || x > vw + 40) continue; rect(g, x, y, 16, (v.y1 - v.y0 + 1) * ts, '#8a7048'); const got = ctx.questGot();
-      for (let k = 0; k < v.seals; k++) { g.fillStyle = k < got ? COL.scarabL : '#3a2e20'; g.beginPath(); g.arc(R(x + 8), R(y + 14 + k * 18), 4, 0, 7); g.fill(); } }
+    for (const v of K.vault) { if (v.open) continue; const x = v.x * ts - cx, y = v.y0 * ts - cy; if (x < -40 || x > vw + 40) continue; ART.vault(g, R(x), R(y), (v.y1 - v.y0 + 1) * ts, v.seals, ctx.questGot(), time); }
     /* THE FACE's storm told on the hero: the arrow while it warns */
     const P0 = ctx.hero(); if (K.stormNow && K.stormNow.phase === 'warn' && P0 && L.sandstorm && P0.x < L.sandstorm.x1) ctx.text(K.stormNow.dir > 0 ? '>>' : '<<', R(P0.x - cx), R(P0.y - cy - 30), '#ffd36b', 'center', 6);
   };
-  /* the route glint and a held hero's grip, over everything */
+  /* the route glint and a held hero's grip, over everything: the mummy's bandages wound round him and the word */
   H.drawOver = (g, cx, cy, time) => { if (!K) return;
-    for (const pp of ctx.players) if (pp.pyGrab) { const x = R(pp.x - cx), y = R(pp.y - cy); g.strokeStyle = '#e8dcb4'; g.lineWidth = 2; g.beginPath(); g.moveTo(x - 7, y - 10); g.lineTo(x + 7, y - 6); g.moveTo(x - 7, y - 4); g.lineTo(x + 7, y - 12); g.stroke(); g.lineWidth = 1; ctx.text('STRIKE IT', x, y - 30, '#ff6b6b', 'center', 4); }
+    for (const pp of ctx.players) if (pp.pyGrab) { const x = R(pp.x - cx), y = R(pp.y - cy); for (let k = 0; k < 4; k++) { g.fillStyle = k & 1 ? '#a08e66' : '#f0e6c4'; g.fillRect(x - 8, y - 14 + k * 3, 16, 1); } g.fillStyle = '#d6c8a0'; g.fillRect(x - 10, y - 12, 3, 4); g.fillRect(x + 7, y - 6, 3, 4); g.fillStyle = '#150e08'; g.fillRect(x - 10, y - 9, 3, 1); g.fillRect(x + 7, y - 3, 3, 1); ctx.text('STRIKE IT', x, y - 30, '#ff6b6b', 'center', 4); }
     if (K.glint && K.glint.show) drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
   H.read = () => K && { n: JSON.parse(JSON.stringify(K.n)), traps: K.traps.map(t => ({ id: t.id, st: t.st, filled: t.filled })), pairs: K.pairs.map(p => ({ id: p.id, t: +p.t.toFixed(2) })), broken: { ...K.broken }, vault: K.vault.map(v => ({ id: v.id, open: v.open })), storm: K.stormNow ? K.stormNow.phase : null };
   return H;
