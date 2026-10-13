@@ -39,7 +39,12 @@
 //                                  guard treads the plates
 //   393-451  THE DEEP WAY          EXAM  THE TOMB-WARDEN (elite mummy) under a block with a scarab pit at his back; THE LAST SHAFT: spend its dart wall, then
 //                                  ride under it; THE SEALED TOMB (the vault)
-//   452-491  THE ANTECHAMBER       BOSS  THE SCARAB MOTHER (src/scarab-mother.js stageScarabMother) - the tomb's own block, dart wall and rolling stone
+//   452-491  THE ANTECHAMBER       THE SCARAB MOTHER'S LAIR (src/scarab-mother.js stageScarabMother) - the tomb's own block, dart wall and rolling stone. MID-LEVEL
+//                                  since claude/pyramidlevel (MINI_SLOT): still the level's L.arena here (L.routePastBoss) until LANE B makes her a MINI
+// THE SECOND HALF (claude/pyramidlevel, 2026-10-13, Daniel "way too short"; src/sealed-pyramid-tombs.js): the way UP from her lair to the burial chamber -
+//   493-610  THE HALL OF THE DEAD, 611-735 THE EMBALMERS' GALLERY (gas), 736-862 THE OIL CHANNELS (fire), 863-962 THE FLOODED CRYPT (the sluices),
+//   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: lane B's new boss; a placeholder room today), the gate at 1049.
+//   The same rule: the gas jets, the oil channels and the sluices are TRAPS fired from PLATES; the tombs release the dead (mummies tread plates, the tomb guard does not).
 import { stageScarabMother, SM_STAGE } from './scarab-mother.js';
 import { buildTombHalf, TH, ARCS2, SECTIONS2, SPOTS2, MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';
 export { MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';   /* (claude/pyramidlevel) THE ARENA SLOTS for lane B: the Scarab Mother's lair mid-level, the burial chamber at the end */
@@ -282,7 +287,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448 | her lair | 615, 737, 858, 1003 before the burial chamber) */
     unlocks: [
-      { kind: 'tplate', opens: 'a TRAP: a falling block (a guard crushed, a pit filled, a counterweight weighed down), a dart wall, a rolling stone (a squad run down, the false door broken)', hud: 'THE PLATE CLICKS: THE TRAP FIRES' },
+      { kind: 'tplate', opens: 'a TRAP: a falling block (a guard crushed, a pit filled, a counterweight weighed down), a dart wall, a rolling stone (a squad run down, the false door broken); the embalmers gas jets, an oil channel fire, a sluice (the bore, then the water rises: the way up in the cistern and the crypt)', hud: 'THE PLATE CLICKS: THE TRAP FIRES' },
       { kind: 'stray', opens: 'THE SEALED TOMB by the deep way\'s drop once all four scarab seals are carried (a silver)', hud: 'SEALS n/4 - THE SEALED TOMB WAITS (the quest counter)' },
       { kind: 'sealvault', opens: 'THE SEALED TOMB\'s door: four seals open it (a silver)', hud: 'THE SEALED TOMB OPENS' },
     ],

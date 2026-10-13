@@ -1,0 +1,500 @@
+[
+ {
+  "id": "sealedpyramid",
+  "hero": "knight",
+  "seed": 1,
+  "lvl": 41,
+  "depth": 41,
+  "maxHp": 351,
+  "kit": [
+   "swordOfRealm",
+   "groundSlam",
+   "lunge"
+  ],
+  "gear": [
+   "heart",
+   "wind",
+   "edge",
+   "edge2",
+   "edge3",
+   "mail",
+   "plate",
+   "edge4",
+   "mail2"
+  ],
+  "tonics": 5,
+  "flasks": 3,
+  "charm": "heart",
+  "end": "route",
+  "miniHp": null,
+  "deaths": 0,
+  "levelups": 0,
+  "frames": 14528,
+  "secs": 242,
+  "kills": 32,
+  "hits": 17,
+  "walked": 99,
+  "stuck": null,
+  "stucks": [],
+  "resumes": 0,
+  "deathLog": [],
+  "hitBy": {
+   "construct*": [
+    1,
+    50
+   ],
+   "other": [
+    11,
+    136
+   ],
+   "scorpion": [
+    1,
+    2
+   ],
+   "scorpion*": [
+    1,
+    1
+   ],
+   "mummy": [
+    1,
+    0
+   ],
+   "mummy*": [
+    2,
+    52
+   ]
+  },
+  "arrivals": [
+   {
+    "i": 1,
+    "hp": 53,
+    "x": 615,
+    "frame": 3291,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 2,
+    "hp": 49,
+    "x": 737,
+    "frame": 7254,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 3,
+    "hp": 61,
+    "x": 858,
+    "frame": 10193,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 4,
+    "hp": 68,
+    "x": 1003,
+    "frame": 13951,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   }
+  ],
+  "shrines": 8,
+  "coverage": 99,
+  "sections": [
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 50,
+    "small": 3,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 1,
+    "kills": 9,
+    "secs": 55,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 104,
+    "small": 10,
+    "drinks": 2,
+    "drinkHp": 90,
+    "deaths": 0,
+    "hits": 11,
+    "kills": 9,
+    "secs": 66,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 87,
+    "small": 9,
+    "drinks": 2,
+    "drinkHp": 90,
+    "deaths": 0,
+    "hits": 5,
+    "kills": 9,
+    "secs": 49,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 7,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 5,
+    "secs": 63,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 0,
+    "secs": 10,
+    "lvup": 0
+   }
+  ],
+  "duels": [
+   {
+    "t": "construct",
+    "affix": "SHIELDED",
+    "at": [
+     596,
+     51
+    ],
+    "hp0": 100,
+    "secs": 9.8,
+    "won": true,
+    "hpEnd": 53
+   },
+   {
+    "t": "scorpion",
+    "affix": "VENOMOUS",
+    "at": [
+     710,
+     48
+    ],
+    "hp0": 49,
+    "secs": 10,
+    "won": true,
+    "hpEnd": 49
+   },
+   {
+    "t": "mummy",
+    "affix": "BURNING",
+    "at": [
+     843,
+     42
+    ],
+    "hp0": 66,
+    "secs": 8.4,
+    "won": true,
+    "hpEnd": 61
+   },
+   {
+    "t": "construct",
+    "affix": "UNSTOPPABLE",
+    "at": [
+     935,
+     54
+    ],
+    "hp0": 66,
+    "secs": 4.3,
+    "won": true,
+    "hpEnd": 67
+   }
+  ],
+  "subs": [],
+  "dets": [],
+  "eyes": {
+   "reads": 30,
+   "rtSum": 12280.835645416557,
+   "misreads": 4,
+   "greeds": 16,
+   "unseen": 0,
+   "heard": 0,
+   "rtMean": 409
+  },
+  "casts": {
+   "swordOfRealm": 5,
+   "groundSlam": 20,
+   "lunge": 15
+  }
+ },
+ {
+  "id": "sealedpyramid",
+  "hero": "warden",
+  "seed": 1,
+  "err": "the fresh lab page did not initialize"
+ },
+ {
+  "id": "sealedpyramid",
+  "hero": "pyro",
+  "seed": 1,
+  "lvl": 41,
+  "depth": 41,
+  "maxHp": 339,
+  "kit": [
+   "meteor",
+   "fireWall",
+   "wisp"
+  ],
+  "gear": [
+   "heart",
+   "wind",
+   "edge",
+   "edge2",
+   "edge3",
+   "mail",
+   "plate",
+   "edge4",
+   "mail2"
+  ],
+  "tonics": 5,
+  "flasks": 3,
+  "charm": "heart",
+  "end": "route",
+  "miniHp": null,
+  "deaths": 0,
+  "levelups": 0,
+  "frames": 14854,
+  "secs": 248,
+  "kills": 34,
+  "hits": 25,
+  "walked": 99,
+  "stuck": null,
+  "stucks": [],
+  "resumes": 0,
+  "deathLog": [],
+  "hitBy": {
+   "ambusher": [
+    1,
+    34
+   ],
+   "construct*": [
+    1,
+    50
+   ],
+   "scorpion": [
+    2,
+    12
+   ],
+   "other": [
+    16,
+    227
+   ],
+   "scorpion*": [
+    3,
+    3
+   ],
+   "mummy": [
+    1,
+    24
+   ],
+   "mummy*": [
+    1,
+    9
+   ]
+  },
+  "arrivals": [
+   {
+    "i": 1,
+    "hp": 75,
+    "x": 615,
+    "frame": 2787,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 2,
+    "hp": 67,
+    "x": 737,
+    "frame": 7320,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 3,
+    "hp": 52,
+    "x": 858,
+    "frame": 10474,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   },
+   {
+    "i": 4,
+    "hp": 60,
+    "x": 1003,
+    "frame": 14347,
+    "deathsBefore": 0,
+    "start": false,
+    "postMini": false
+   }
+  ],
+  "shrines": 8,
+  "coverage": 99,
+  "sections": [
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 84,
+    "small": 14,
+    "drinks": 1,
+    "drinkHp": 45,
+    "deaths": 0,
+    "hits": 2,
+    "kills": 10,
+    "secs": 46,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 157,
+    "small": 14,
+    "drinks": 3,
+    "drinkHp": 135,
+    "deaths": 0,
+    "hits": 16,
+    "kills": 10,
+    "secs": 76,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 119,
+    "small": 13,
+    "drinks": 2,
+    "drinkHp": 90,
+    "deaths": 0,
+    "hits": 7,
+    "kills": 9,
+    "secs": 53,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 8,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 5,
+    "secs": 65,
+    "lvup": 0
+   },
+   {
+    "postMini": false,
+    "stuck": false,
+    "resumed": false,
+    "lost": 0,
+    "small": 0,
+    "drinks": 0,
+    "drinkHp": 0,
+    "deaths": 0,
+    "hits": 0,
+    "kills": 0,
+    "secs": 8,
+    "lvup": 0
+   }
+  ],
+  "duels": [
+   {
+    "t": "construct",
+    "affix": "SHIELDED",
+    "at": [
+     597,
+     51
+    ],
+    "hp0": 77,
+    "secs": 3.6,
+    "won": true,
+    "hpEnd": 28
+   },
+   {
+    "t": "scorpion",
+    "affix": "VENOMOUS",
+    "at": [
+     711,
+     48
+    ],
+    "hp0": 76,
+    "secs": 21.9,
+    "won": true,
+    "hpEnd": 65
+   },
+   {
+    "t": "mummy",
+    "affix": "BURNING",
+    "at": [
+     840,
+     42
+    ],
+    "hp0": 54,
+    "secs": 13.6,
+    "won": true,
+    "hpEnd": 52
+   },
+   {
+    "t": "construct",
+    "affix": "UNSTOPPABLE",
+    "at": [
+     935,
+     54
+    ],
+    "hp0": 59,
+    "secs": 4.9,
+    "won": true,
+    "hpEnd": 60
+   }
+  ],
+  "subs": [],
+  "dets": [],
+  "eyes": {
+   "reads": 36,
+   "rtSum": 14257.538511652097,
+   "misreads": 7,
+   "greeds": 16,
+   "unseen": 0,
+   "heard": 0,
+   "rtMean": 396
+  },
+  "casts": {
+   "meteor": 14,
+   "fireWall": 22,
+   "wisp": 11
+  }
+ }
+]

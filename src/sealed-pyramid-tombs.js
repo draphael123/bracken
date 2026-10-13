@@ -143,7 +143,7 @@ export function buildTombHalf(B) {
   ent('tplate', 745, OI - 1, { trap: 'oil1' });
   sign(743, OI - 1, 'TREAD THE PLATE AS THE GUARD WALKS THE CHANNEL: HIS LINEN CATCHES.');
   guard(755, OI - 1, 749, 760, 'oilGuard');
-  firesc(764, OI - 1, 'oilScorpion');
+  firesc(764, OI - 1, 'oilScorpion'); skel(735, GH - 1, 'gasDoor');   /* (one tomb guard already up, at the gallery's door: it walks the passage) */
   /* THE LONG CHANNEL (SPEND IT): the plate before it, pale stones in it, refuges over the flame; the risen walk it - a mummy's tread fires it on you */
   traps.push({ id: 'oil2', kind: 'oil', plates: [[767, 768, OI]], inner: [[776, 777, OI], [786, 787, OI]], zone: [770, 796, OI - 2, OI - 1], head: 769, chan: [770, 796], runV: 220, burnT: 3.0, reset: 5.6, section: 'test' });
   ent('tplate', 767, OI - 1, { trap: 'oil2' });
