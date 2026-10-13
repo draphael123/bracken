@@ -87,6 +87,7 @@ import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carou
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js'; import * as TMK from './theatre-masks.js';   /* (claude/theatre4) THE THEATRE's mummers swap masks */   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
 import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
+import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as UIH from './ui-hud.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
@@ -281,7 +282,7 @@ const diffNow = () => DIFF[diffOf(curId())];
 const DIFFS = ['easy', 'normal', 'hard', 'expert'], SCALES = ['auto', 2, 3, 4];
 /* READ A SETTINGS FILE (boot, and tools/settings-tabs.mjs): every old key loads as it always did; the two fields the tabs added are cleaned
    (binds, from src/controls.js, keeps only known actions and real keys; coopHelpSeen is a plain flag) so a file from before them has none. */
-function readSettings(raw) { let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch {} Object.assign(SET, o); delete SET.combat; if (!o.hudV2) SET.hud = 'minimal'; SET.hudV2 = 1; if (!['bar', 'pct', 'num'].includes(SET.bossHp)) SET.bossHp = SET.bossHp === 'both' ? 'num' : 'bar';   /* HUD-SLIM (Daniel 10-09): MINIMAL is the default, and a settings file from before it takes it ONCE (hudV2): the plate HUD is an opt-in you keep once you pick it. The old BAR+BOTH boss readout is NUMBERS now. */ /* (the retired Weighty switch: an old save drops it) */ if (!['off', 'hit', 'full'].includes(o.shakeMode)) { SET.shakeMode = o.shakeAmt === 0 || o.shake === false ? 'off' : 'hit'; if (!(SET.shakeAmt > 0)) SET.shakeAmt = 1; SET.shake = SET.shakeMode !== 'off'; }   /* OLD SAVES (no shakeMode): everyone gets the new ON HIT default, unless shake was OFF - that stays OFF */
+function readSettings(raw) { let o = {}; try { o = JSON.parse(raw || '{}') || {}; } catch {} Object.assign(SET, o); if (!isDev()) SET.godmode = false;   /* (claude/heroroster) a saved UNLOCK EVERYTHING never outlives its dev flag */ delete SET.combat; if (!o.hudV2) SET.hud = 'minimal'; SET.hudV2 = 1; if (!['bar', 'pct', 'num'].includes(SET.bossHp)) SET.bossHp = SET.bossHp === 'both' ? 'num' : 'bar';   /* HUD-SLIM (Daniel 10-09): MINIMAL is the default, and a settings file from before it takes it ONCE (hudV2): the plate HUD is an opt-in you keep once you pick it. The old BAR+BOTH boss readout is NUMBERS now. */ /* (the retired Weighty switch: an old save drops it) */ if (!['off', 'hit', 'full'].includes(o.shakeMode)) { SET.shakeMode = o.shakeAmt === 0 || o.shake === false ? 'off' : 'hit'; if (!(SET.shakeAmt > 0)) SET.shakeAmt = 1; SET.shake = SET.shakeMode !== 'off'; }   /* OLD SAVES (no shakeMode): everyone gets the new ON HIT default, unless shake was OFF - that stays OFF */
   SET.binds = CTL.cleanBinds(o.binds); SET.coopHelpSeen = !!o.coopHelpSeen; try { applyBinds(); } catch {} return SET; }
 { let rawSet = null; try { rawSet = localStorage.getItem('bracken.settings'); } catch {} readSettings(rawSet); }
 // THE WORLD SLOWED DOWN, AND AN OLD SETTINGS FILE MUST NOT HOLD IT BACK. Anyone who has played before has a
@@ -321,6 +322,8 @@ const healthMemo = [];
 const slotHealthOf = i => { const raw = slotRaw(i), m = healthMemo[i]; if (m && m.raw === raw) return m.h; const h = SAFE.slotHealth(raw, CAMP_IDS); healthMemo[i] = { raw, h }; return h; };
 const slotKeys = () => Array.from({ length: SLOTS }, (_, j) => slotKey(j));
 let saveFail = '';   /* the last write that did not land ('SAVE FAILED - STORAGE FULL'), '' once one does: a banner shows it and every save retries */
+let ROSTER = HR.STARTERS.slice(), rosterReady = false;   /* THE DEVICE-LEVEL HERO ROSTER (claude/heroroster, src/hero-roster.js): every hero any slot has ever owned, on this device */
+function rosterNote() { if (!rosterReady) return; try { ROSTER = HR.addHeroes(localStorage, ROSTER, Object.keys(PROG.heroes || {}).filter(h => PROG.heroes[h])).heroes; } catch {} }
 function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
@@ -359,18 +362,19 @@ function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlo
   try { const res = loadProgress(localStorage, slotKey(i), raw, CAMP_IDS); loaded = res.progress; if (res.backup) SAFE.pruneBackups(localStorage, slotKey(i), res.backup); SAFE.keepLastGood(localStorage, slotKey(i), raw, CAMP_IDS); }
   catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
     saveBlocked = h.state === 'corrupt' ? 'Slot ' + (i + 1) + ' is damaged (copy kept): open CHOOSE A SAVE' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
-  for (const k in PROG) delete PROG[k]; Object.assign(PROG, loaded); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} }
+  for (const k in PROG) delete PROG[k]; Object.assign(PROG, loaded); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} rosterNote(); }
 function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf(i).state !== 'empty') SAFE.keepCorruptCopy(localStorage, slotKey(i), slotRaw(i)); localStorage.removeItem(slotKey(i) + SAFE.LASTGOOD); SAFE.pruneBackups(localStorage, slotKey(i)); } catch {}
   try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
 function saveProgress() { if (saveBlocked || bossJumpOn) return; dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
   let r; try { r = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(PROG), slotKeys()); } catch (e) { r = { ok: false, full: false }; }
-  PROG.hero = was; saveWritten(r); }
+  PROG.hero = was; saveWritten(r); rosterNote(); }
 /* a write that did not land is TOLD (a banner at the foot of every screen, a toast in a level, a buzz the first time) and retried on the next save; one that lands clears it */
 function saveWritten(r) { if (r.ok) { saveFail = ''; return; } const first = !saveFail; saveFail = r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE';
   if (first) { console.warn(saveFail, r.error || ''); try { SFX.buzz(); } catch {} } try { UIH.toastPush(toastQ, saveFail, 6); } catch {} }
 loadSlot(slot);
+{ try { ROSTER = HR.loadRoster(localStorage, () => Array.from({ length: SLOTS }, (_, j) => slotRaw(j))).heroes; } catch {} rosterReady = true; rosterNote(); }   /* THE ROSTER, once: stored, restored from its last good copy, or seeded from every slot */
 /* THE SOUND TEST'S LOCK, the write side. audio.js calls this every time ANYTHING asks for a track by name - a level's
    own theme, a boss arena, a mini fight, a menu - never when the Sound Test itself is only being browsed (browsing
    moves a cursor; it does not call music.play until Z is pressed on a track the player has already unlocked some
@@ -716,7 +720,7 @@ let K = null;   /* the hero's frames: baked once, by applySkin() ahead of the sp
 // TESTING (for now): UNLOCK EVERYTHING (SET.godmode, the old GOD MODE) owns everything and every wood is open, for as long as it is on - nothing is written into
 // the save, so switching it off puts the game back; GOD MODE (SET.invincible, the old INVINCIBLE; claude/godmode) takes no damage, never tires, jumps in the air and holds JUMP to rise,
 // a fall puts you back on safe ground - and it is an ASSIST: no medals, no silver, no no-hit, no boss feats while it is on.
-const godMode = () => !!SET.godmode;
+const godMode = () => isDev() && !!SET.godmode;   /* (claude/heroroster) UNLOCK EVERYTHING is a DEV helper: it does nothing without ?dev=1 in the URL (src/dev-flag.js), whatever a saved setting says */
 const owns = (tab, id) => godMode() || !!(PROG[tab.owned] && PROG[tab.owned][id]);
 const hero = () => PROG.hero || 'knight'; const isPyro = () => hero() === 'pyro'; const isPaladin = () => hero() === 'paladin'; const isPirate = () => hero() === 'pirate'; const isReaper = () => hero() === 'reaper'; const isWarden = () => hero() === 'warden'; const isGeo = () => hero() === 'geomancer'; let GEO = null; const isBz = () => hero() === 'berserker'; let BZK = null, CRC = null;   /* THE BERSERKER's kit (src/berserker.js) and his crouch (src/crouch-c.js), bound below beside hers */ let EMBER = null;   /* THE PYROMANCER'S EMBER WARD (src/ember-ward.js), bound beside the Geomancer's kit */   /* THE GEOMANCER's kit (src/geomancer.js), bound below once the world it reaches into exists */
 let CA = null;   /* THE CROUCH TWISTS, PART A (src/crouch-a.js), bound beside the ember ward */
@@ -5861,18 +5865,22 @@ function startTrial(h) { const i = LEVELS.findIndex(l => l.id === 'trial_' + h);
 const hasTrial = h => LEVELS.some(l => l.id === 'trial_' + h);
 /* A NEW GAME CHOOSES ONE OF THE DEFAULT HEROES (LEVELING, Daniel 2026-10-03: src/progression.js DEFAULT_HEROES). The others are bought for silver in
    the store, and the first one bought opens co-op. */
-const NEW_PICK = DEFAULT_HEROES;
+/* THE PICK SHOWS EVERY HERO (claude/heroroster, Daniel 10-12): the four free starters and every hero the DEVICE ROSTER holds (ROSTER: a hero bought in any slot) are open; the rest stand there as BLACK SILHOUETTES,
+   named '???', with a how-to line (src/hero-roster.js howTo). A locked card can be looked at but not taken: Z on it is a soft no and the how-to line pulses. A new game still owns ONLY the hero it takes. */
+const NEW_PICK = PICK;
+const heroOpen = h => godMode() || ROSTER.includes(h);
+let heroDenyAt = -99;
 function updateHeroPick() {
   if (heroPick.stage === 'pick') { const PICK = NEW_PICK; if (heroPick.i >= PICK.length) heroPick.i = 0;
     if (leftPress) { heroPick.i = (heroPick.i + PICK.length - 1) % PICK.length; heroPickAt = time; SFX.ui(); } if (rightPress) { heroPick.i = (heroPick.i + 1) % PICK.length; heroPickAt = time; SFX.ui(); }
-    if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
+    if (confirmPress && !heroOpen(PICK[heroPick.i])) { SFX.deny(); heroDenyAt = time; }
+    else if (confirmPress) { const h = PICK[heroPick.i]; PROG.heroes = { [h]: true }; PROG.hero = h; PROG.heroPicked = true; applySkin(); applyUpgrades(); saveProgress(); SFX.equip(); SFX.sting(); if (hasTrial(h)) heroPick.stage = 'trial'; else state = 'map'; } }
   else { if (confirmPress) { if (!startTrial(hero())) { state = 'map'; SFX.ui(); } } else if (atkPress || pausePress) { state = 'map'; SFX.ui(); } }
 }
 function drawHeroPick() { const PICK = NEW_PICK;
   g.fillStyle = '#0e0c16'; g.fillRect(0, 0, VW, VH);
   if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('a short practice yard for this hero. nothing in it can hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
     text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 38, UI.sel, 'center', 6); return; }
-  text('CHOOSE YOUR HERO', VW / 2, 3, UI.title, 'center', 12);
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
     pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '80 health', 'HARDER'],
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
@@ -5897,21 +5905,28 @@ function drawHeroPick() { const PICK = NEW_PICK;
       : h === 'berserker' ? preview('pick:berserker', () => bakeBerserkerHero({}))
       : preview('pick:knight', () => bakeKnight({}));
     pickSets[h] = set;
-    const lift = sel ? 4 : 0, fr = set.R.idle[Math.floor(time * 4 + k) % set.R.idle.length], fw = fr.width * 2, fh = fr.height * 2;
+    const locked = !heroOpen(h);
+    const lift = sel ? 4 : 0, fr0 = set.R.idle[Math.floor(time * 4 + k) % set.R.idle.length], fr = locked ? silhouetteOf(fr0) : fr0, fw = fr.width * 2, fh = fr.height * 2;   /* (locked: his real outline, baked black with a faint rim) */
     if (sel) { g.fillStyle = 'rgba(168,224,110,0.08)'; g.fillRect(x + 4, floorY - 60, cw - 8, 62); g.fillStyle = UI.sel; g.fillRect(mid - 16, floorY, 32, 2); }
     else { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(mid - 11, floorY, 22, 1); }
-    g.globalAlpha = sel ? 1 : 0.5;
-    g.drawImage(fr, 0, 0, fr.width, fr.height, mid - Math.round(fw / 2), floorY - lift - fh, fw, fh);
+    g.globalAlpha = sel ? 1 : locked ? 0.8 : 0.5;
+    g.drawImage(fr, 0, 0, fr.width, fr.height, mid - Math.round(fw / 2), floorY - lift - fh + (locked ? 2 : 0), fw, fh);
     g.globalAlpha = 1;
     /* THE NAME STAYS ON THE SCREEN: with many cards a name is wider than its card (DEATH KNIGHT is ~70), so a narrow card stacks it and holds its centre in from the edge */
-    { const nm = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER', berserker: 'BERSERKER' }[h] || H.name, nsz = wide ? 8 : 6, nw = textW(nm, nsz);
+    { const nm = locked ? '???' : { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER', berserker: 'BERSERKER' }[h] || H.name, nsz = wide ? 8 : 6, nw = textW(nm, nsz);
       const lab = nw > cw - 4 ? nm.split(' ') : [nm], lc = sel ? UI.title : UI.dim, ny = floorY + 3 + (!wide && k % 2 ? 7 : 0);
       lab.forEach((ln, li) => { const lw = textW(ln, nsz); text(ln, Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, mid)), ny + li * (nsz + 1), lc, 'center', nsz); });
-      if (wide) text(fitText(ROLE[h] || '', cw - 6, 6), mid, floorY + 13, sel ? UI.text : UI.dim, 'center', 6); }
+      if (wide && !locked) text(fitText(ROLE[h] || '', cw - 6, 6), mid, floorY + 13, sel ? UI.text : UI.dim, 'center', 6); }
   });
+  text('CHOOSE YOUR HERO', VW / 2, 3, UI.title, 'center', 12);   /* (drawn AFTER the row: a tall silhouette - the Pyromancer's - reaches the heading, and the heading stays whole on top of it) */
   // and the words, for the one you are looking at, under the row: THE LOOP (HERO_LOOP, the one sentence that is how this hero is played), then the stats.
   // A row of the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
-  { const h = PICK[heroPick.i], y0 = floorY + 24;
+  if (!heroOpen(PICK[heroPick.i])) {   /* A LOCKED CARD: '???' and the one line that says how to get him; the line pulses when Z was pressed on him */
+    const h = PICK[heroPick.i], y0 = floorY + 24, pulse = time - heroDenyAt < 0.7 && Math.floor((time - heroDenyAt) * 10) % 2 === 0;
+    text('???', VW / 2, y0 + 4, UI.title, 'center', 12);
+    wrap(HR.howTo(h), VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, y0 + 22 + i * BODY_LH, pulse ? '#ffd36b' : UI.text, 'center', 6));
+    text('A HERO BOUGHT ON ANY SAVE IS OPEN ON EVERY NEW GAME', VW / 2, y0 + 22 + 2 * BODY_LH + 6, UI.dim, 'center', 6); }
+  else { const h = PICK[heroPick.i], y0 = floorY + 24;
     /* THE SIGNATURE MOVE, LOOPING: a window on the right of the words plays the hero's own move on a training post (src/ability-preview.js, pure draw); the words keep the left */
     const SIG = { knight: ['risingCut', 'RISING CUT'], pyro: ['emberFlare', 'EMBER FLARE'], paladin: ['lightLance', 'LIGHT LANCE'], pirate: ['grapeshot', 'GRAPESHOT'], reaper: ['harvestMoon', 'HARVEST MOON'], warden: ['skewer', 'SKEWER'], geomancer: ['faultLine', 'FAULT LINE'], berserker: ['bzSpin', 'THE SPIN'] }[h], hs = pickSets[h];
     const PVW = 86, PVX = VW - PVW - 6, PVY = 94, TX = Math.round((PVX - 4) / 2);
@@ -5922,7 +5937,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
     body.forEach((ln, i) => { const yy = y0 + 3 + (loop.length + i) * BODY_LH;
       if (hard && i === body.length - 1) { const w1 = textW(ln, 6), w2 = textW('HARDER', 6), lx = Math.round(TX - (w1 + 8 + w2) / 2); text(ln, lx, yy, UI.dim, 'left', 6); text('HARDER', lx + w1 + 8, yy, '#ff9a5c', 'left', 6); }
       else text(ln, TX, yy, UI.dim, 'center', 6); }); }
-  text('LEFT/RIGHT choose    Z take this hero', VW / 2, VH - 19, UI.sel, 'center', 6);
+  text(heroOpen(PICK[heroPick.i]) ? 'LEFT/RIGHT choose    Z take this hero' : 'LEFT/RIGHT choose    LOCKED', VW / 2, VH - 19, UI.sel, 'center', 6);
   text('others: 10 silver each. a second opens co-op', VW / 2, VH - 11, UI.dim, 'center', 6);   /* (a row up: the bottom row sat on the screen edge) */
 }
 /* THE CO-OP PICK. Player one keeps the save's hero, his level and his talents; player two takes any hero the save
@@ -5938,7 +5953,7 @@ let coopPickFrom = 'title';
 /* WHOEVER YOU ARE IS STILL ON THE LIST. This filtered out player one's own hero, so a player who had taken THE WARDEN found her missing
    from player two's choices and read it as her not being selectable at all. The owner's rule: two of the same hero is allowed - two
    knights, or two Wardens, side by side. Both starters are always here, and everything the save owns with them. */
-const coopPickList = () => PICK.filter(h => PROG.heroes[h] || (PROG.coopLegacy && DEFAULT_HEROES.includes(h)) || godMode());   /* (LEVELING: the free starters are an OLD save's - src/progression.js migrateHeroes) */
+const coopPickList = () => PICK.filter(h => PROG.heroes[h] || ROSTER.includes(h) || (PROG.coopLegacy && DEFAULT_HEROES.includes(h)) || godMode());   /* (LEVELING: the free starters are an OLD save's - src/progression.js migrateHeroes) */
 /* CO-OP OPENS WITH THE SECOND HERO (LEVELING, Daniel 2026-10-03): until the save owns two (or is a save from before this), every way into the
    co-op pick - the title, the pause menu, the map's F - lands on a card that says so, and any key goes back. */
 const coopOk = () => godMode() || coopOpen(PROG);
@@ -6810,7 +6825,7 @@ function breakShrine(s) { s.broken = true; s.lit = false; P.breakT = 0; breakAt 
   if (Math.abs(checkpoint.x - s.x) < 1 && Math.abs(checkpoint.y - s.y) < 1) { const w = SV.wakeShrine(shrines); checkpoint = w ? { x: w.x, y: w.y } : { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS }; }   /* a death wakes at the shrine lit before it, or the start */
   SFX.crack(); SFX.heavy && SFX.heavy(); shakeCam(4); burst(s.x, s.y - 16, 22, ['#6a6a7a', '#3a3444', '#ffd36b', '#8a8a9a'], 90, 0.8, 0, 1); number(s.x, s.y - 44, 'SHRINE BROKEN  +1 FLASK', '#ff9a5c'); hintT = 4; hintMsg = SV.LINES.broken; flaskHud.flashT = 0.8;
   if (F2.objShrineBroken(PROG, { assist: assistOn() }).length) { saveProgress(); flaskObjSay('shrines5'); } }   /* (claude/flasks2) SHRINE BLESSING's objective: break five */
-const assistOn = () => !!(SET.invincible || SET.godmode);   /* THE ASSIST GUARD: God Mode / Unlock All earn no flask objective */
+const assistOn = () => !!(SET.invincible || godMode());   /* THE ASSIST GUARD: God Mode / Unlock All earn no flask objective */
 function flaskObjSay(id) { SFX.medal(); toastNow(F2.OBJ_LINE[id], 5); }
 function toastNow(msg, t) { hintMsg = msg; hintT = t; }
 const flaskKeyName = () => padLast ? 'LT' : TCH.on ? 'FLASK' : String(KEYS.flask[0] || 'U').toUpperCase();
@@ -31784,8 +31799,8 @@ function render() {
     hudG();
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
-    if (SET.invincible || SET.godmode) { hudShow();
-      text((SET.invincible ? 'GOD MODE ' : '') + (SET.godmode ? 'UNLOCK ALL' : ''), 6, hudPH + 4, '#ff9a5c', 'left', 6, 'outline'); hudG(); }
+    if (SET.invincible || godMode()) { hudShow();
+      text((SET.invincible ? 'GOD MODE ' : '') + (godMode() ? 'UNLOCK ALL' : ''), 6, hudPH + 4, '#ff9a5c', 'left', 6, 'outline'); hudG(); }
     g.drawImage(PROP.hudBolt, 4, 12);
     if (hero() === 'knight') { const hy = HY, full = (P.resolve || 0) >= 100, on = lcOn(), fill = on ? (P.lcBrace > 0 ? 1 : Math.max(0, P.lcLeft / LC_DIST)) : (P.resolve || 0) / 100;   /* RESOLVE: a shield for the icon; while THE LAST CHARGE runs, the bar is the road left in it */
       bar(15, hy, 45, 4, fill, on || full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#c9d1dc', fill);
@@ -32167,7 +32182,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
 document.getElementById('boot').remove();
-window.BK = { tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P), standing: () => TGM.standing(), throwIt: () => throwCarry(), note: pr => TGM.bellNote(pr), hurt: (e, d, x) => hurtEnemy(e, d, x, false) } : null),   /* THE TEMPLE GUARDIAN (src/temple-guardian.js) for the lab and tools/temple-guardian.mjs */ uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER.slice(), heroOpen: h => heroOpen(h), denyAt: () => heroDenyAt, heroArt: h => heroPreviewSet(h).R.idle[0],   /* (claude/heroroster) the dev flag's TEST HOOK, the device roster, whether a hero is pickable */ tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P), standing: () => TGM.standing(), throwIt: () => throwCarry(), note: pr => TGM.bellNote(pr), hurt: (e, d, x) => hurtEnemy(e, d, x, false) } : null),   /* THE TEMPLE GUARDIAN (src/temple-guardian.js) for the lab and tools/temple-guardian.mjs */ uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */

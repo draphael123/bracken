@@ -21,6 +21,7 @@ export const TABS = [
   { id: 'access',   name: 'ACCESSIBILITY', short: 'ACCESS' },
 ];
 
+import { isDev } from './dev-flag.js';
 export const TAB_ITEMS = {
   audio: ['Sound test', 'Music', 'Music volume', 'Effects vol', 'Ambience vol', 'UI volume', 'Sound FX', 'Character voices'],
   display: ['- PICTURE -', 'Graphics', 'Full screen', 'Pixel scale', 'Camera', 'Brightness', 'Screen filter', 'Scanlines', 'Film grain', 'Vignette',
@@ -52,7 +53,7 @@ export const stepTab = (id, dir) => TABS[(tabIndex(id) + dir + TABS.length) % TA
 /* the rows one tab shows: the strip first, 'Back' last; the Sound test is title-only (it needs the menu's own music) */
 export function tabRows(id, from) {
   const rows = TAB_ITEMS[id] || TAB_ITEMS.audio;
-  return ['@TABS', ...rows.filter(k => !(k === 'Sound test' && from === 'play')), 'Back'];
+  return ['@TABS', ...rows.filter(k => !(k === 'Sound test' && from === 'play') && !(k === 'Unlock everything' && !isDev())), 'Back'];   /* (claude/heroroster) UNLOCK EVERYTHING is a dev row: ?dev=1 only */
 }
 /* the first row the cursor may rest on: never the strip's own row 0 on a fresh open, and never a header */
 export const firstRow = rows => { let i = 1; while (i < rows.length - 1 && isHeaderRow(rows[i])) i++; return i; };

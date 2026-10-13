@@ -146,7 +146,7 @@ try {
     ok(await E('BK.state') !== 'slots', 'a second tap on the picked slot did not open it');
   });
   await section('map', async () => {
-    await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = false; BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200);
+    await idle(); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = false; BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.setDev(true); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200);
     const hs = await E('BK.touch.hitBoxes()'), mn = await E('BK.mapNodes()');
     ok(hs.length === mn.hitOrder.length && hs.length > 5, 'the map drew ' + hs.length + ' node boxes for ' + mn.hitOrder.length + ' nodes');
     const here = mn.hitOrder.indexOf(mn.node), next = mn.hitOrder.findIndex((n, k) => k > here && !mn.spur[n]);

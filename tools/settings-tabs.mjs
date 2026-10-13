@@ -63,7 +63,8 @@ try {
     BK.reset({ fresh: true }); BK.state = 'title'; ui.openMenu('title');
     out.kind = ui.menuKind; out.tabs = []; const union = new Set();
     for (const t of ${JSON.stringify(TABS.map(t => t.id))}) { ui.settingsTab = t; const rows = ui.menuRows(); out.tabs.push([t, rows.length]); if (rows[0] !== '@TABS' || rows[rows.length - 1] !== 'Back') out.badFrame = t; for (const k of rows) union.add(k); BK.state = 'menu'; if (${JSON.stringify(shots || '')}) shoot('tab-' + t); }
-    out.union = [...union];
+    out.union = [...union]; out.noDev = out.union.includes('Unlock everything');
+    BK.setDev(true); { const u2 = new Set(); for (const t of ${JSON.stringify(TABS.map(t => t.id))}) { ui.settingsTab = t; for (const k of ui.menuRows()) u2.add(k); } out.unionDev = [...u2]; } BK.setDev(false);
     ui.settingsTab = 'audio'; ui.menuI = 0; key('ArrowRight'); out.afterRight = ui.settingsTab; key('ArrowLeft'); out.afterLeft = ui.settingsTab; key('Tab'); out.afterTab = ui.settingsTab;
     ui.settingsTab = 'audio'; tap(5); out.afterRB = ui.settingsTab; tap(4); out.afterLB = ui.settingsTab;
     ui.settingsTab = 'gameplay'; const rows = ui.menuRows(); ui.menuI = rows.indexOf('Hit stop'); const c0 = S.hitstop; key('ArrowRight'); out.combat = [c0, ui.settings().hitstop]; out.noCombatRow = !rows.includes('Combat'); key('ArrowLeft');
@@ -106,7 +107,9 @@ try {
   assert.equal(o.bindsEmpty, JSON.stringify({ kb: {}, pad1: {}, pad2: {} }), 'an old file has no rebinds'); assert(!o.coopSeenOld, 'an old file has not seen the co-op page');
   assert.equal(o.cleaned, JSON.stringify({ kb: { jump: [null, 'x'] }, pad1: {}, pad2: {} }), 'garbage binds are cleaned on load');
   assert.equal(o.badFrame, undefined, 'every tab starts with the strip and ends with Back: ' + o.badFrame);
-  for (const k of LEGACY_ROWS) assert(o.union.includes(k), 'the game shows the old row ' + k);
+  /* DESIGN CHANGE (claude/heroroster, Daniel 10-12): UNLOCK EVERYTHING is a dev-only row - every other old row is shown as before, and with the dev flag (?dev=1) the whole old list is shown, that row too */
+  for (const k of LEGACY_ROWS) { if (k === 'Unlock everything') continue; assert(o.union.includes(k), 'the game shows the old row ' + k); }
+  assert(!o.noDev, 'without ?dev=1 the game has no UNLOCK EVERYTHING row'); for (const k of LEGACY_ROWS) assert(o.unionDev.includes(k), 'with ?dev=1 the game shows the old row ' + k);
   assert.equal(o.tabs.length, 5);
   assert.equal(o.afterRight, 'display'); assert.equal(o.afterLeft, 'audio'); assert.equal(o.afterTab, 'display', 'TAB steps the tab'); assert.equal(o.afterRB, 'display', 'RB steps the tab on a pad'); assert.equal(o.afterLB, 'audio', 'LB steps it back');
   assert.notEqual(o.combat[0], o.combat[1], 'a Gameplay-tab toggle (Hit stop) still flips'); assert.equal(o.noCombatRow, true, 'the Weighty COMBAT row is retired'); assert.equal(o.combatDropped, true, 'an old save with weighty on loads into classic: the field is dropped');

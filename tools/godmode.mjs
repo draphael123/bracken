@@ -12,7 +12,7 @@ const pg = await openPage({ audio: false, fonts: false }); const fails = [], ok 
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const SAVE = { hero: 'knight', heroes: { knight: true } };
 try {
-  const nav = async lv => { await pg.evalp('(()=>{localStorage.clear();localStorage.setItem("bracken.progress.0",' + JSON.stringify(JSON.stringify(SAVE)) + ');window.__gone=1;setTimeout(()=>location.assign("/?level=' + lv + '&hero=knight"),50);return 1})()', 8000);
+  const nav = async lv => { await pg.evalp('(()=>{localStorage.clear();localStorage.setItem("bracken.progress.0",' + JSON.stringify(JSON.stringify(SAVE)) + ');window.__gone=1;setTimeout(()=>location.assign("/?dev=1&level=' + lv + '&hero=knight"),50);return 1})()', 8000);
     for (let i = 0; i < 400; i++) { await sleep(150); if (await pg.evalp('!window.__gone&&typeof window.BK==="object"&&!!window.BK.lookPass&&location.search.includes("level=' + lv + '")', 3000).catch(() => false)) break; } };
   await nav("kings");
   const r = await pg.evalp(`(async()=>{ const P = BK.P, S = BK.SET, o = {}; BK.manualSimulation = true;
