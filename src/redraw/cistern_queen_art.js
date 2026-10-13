@@ -43,11 +43,13 @@ export function drawBody(g, o) {
     const path = TAIL[tail] || null; /* (claude/underwell3: the one table, src/cistern-queen.js TAIL - the stinger a blow must find is the one drawn) */
     if (tail === 'lance' && o.lanceTo) { const [tx, ty] = o.lanceTo; for (let i = 1; i <= 6; i++) { const q = i / 6, ax = px + (tx - px) * q, ay = py + (ty - py) * q - Math.sin(q * Math.PI) * 70; segs.push([ax, ay]); } }
     else for (const [ax, ay] of path || []) segs.push([ax + (tail === 'curl' ? Math.sin(t * 2.2) * 2 : 0), ay + (tail === 'curl' ? Math.cos(t * 2.2) * 2 : 0)]); }
+  if (o.broken && segs.length > 3) segs.pop();   /* (claude/cqueenrework) broken: a segment short */
   for (let i = segs.length - 1; i >= 1; i--) { const [x0, y0] = segs[i - 1], [x1, y1] = segs[i], r = 10.5 - i * 0.7;
     ln(g, C.chit0, r * 2 + 3, [[x0, y0], [x1, y1]]); ln(g, C.chit2, r * 2, [[x0, y0], [x1, y1]]);
     ell(g, C.chit0, x1, y1, r + 1.4, r * 0.85 + 1.4); ell(g, C.chit2, x1, y1, r, r * 0.85); ell(g, C.chit3, x1 - 1, y1 - r * 0.35, r * 0.62, r * 0.36); fr(g, C.rim, x1 - r * 0.6, y1 - r * 0.9, r * 1.2, 1.5); }
   /* THE STINGER (polish): an amber bulb in a real halo (a gradient, not a flat disc), a pale hook and a core - and white-hot, bigger and ringed while it is told */
-  { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx), green = o.venomHot;
+  if (o.broken) { const [sx, sy] = segs[segs.length - 1]; ell(g, '#3a2418', sx, sy, 7, 6); fr(g, '#e8d4a0', sx - 4, sy - 3, 2, 2); fr(g, '#e8d4a0', sx + 1, sy - 5, 2, 3); fr(g, '#a6e04a', sx - 1, sy + 1, 2, 2); }   /* (claude/cqueenrework) HER STINGER BROKEN: a cracked stump, venom weeping */
+  else { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx), green = o.venomHot;
     const hot = o.hot ? 0.6 + 0.4 * Math.abs(Math.sin(t * 18)) : 0, glow = 0.55 + 0.2 * Math.abs(Math.sin(t * 3)) + hot * 0.35, R0 = 22 + hot * 12;
     const cA = green ? '166,224,74' : '255,184,74', cH = green ? '214,255,140' : '255,242,192';
     const gr = g.createRadialGradient(sx, sy, 2, sx, sy, R0); gr.addColorStop(0, 'rgba(' + (o.hot ? cH : cA) + ',' + Math.min(1, glow) + ')'); gr.addColorStop(0.45, 'rgba(' + cA + ',' + (glow * 0.4) + ')'); gr.addColorStop(1, 'rgba(' + cA + ',0)');
@@ -122,6 +124,10 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   if (m === 'slip') { o.claw = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
   if (e.scorch > 0) o.scorch = Math.min(1, e.scorch);
   if (m === 'fallen') { o.legs = 'kick'; o.claw = 'up'; o.tail = 'down'; }
+  /* (claude/cqueenrework, PLACEHOLDER poses for the art lane) DOUSED: dripping (wet sheen); STINGER BROKEN: the tail a stump; REEL: claws thrown up, legs splayed, tail down */
+  if (S.wet > 0) o.wet = Math.max(o.wet || 0, 0.8);
+  if (S.broken) o.broken = true;
+  if (m === 'reel') { o.claw = 'up'; o.legs = 'splay'; o.walk = false; o.tail = 'down'; o.flash = Math.floor(time * 10) % 2 === 0; }
   /* STANDING, SHE BREATHES: a four-beat heave of the carapace (walking, clinging, hanging, getting up) */
   const idle = !moving && (m === 'walk' || m === 'cling' || m === 'hang' || m === 'recover' || m === 'planted' || m === 'stuck'), breath = idle ? 1 + 0.03 * [0, 1, 0, -1][Math.floor(time * 2.6 / (2 * Math.PI) * 4) % 4] : 1;
   g.save();
@@ -143,11 +149,11 @@ export function drawWindlass(g, x, y, b, time) {
   ln(g, '#c9b27c', 1, [[x, y - 18], [x, y - 40]]);   /* its rope runs up to the vault's pulley */
   if (b.st === 'up') { fr(g, '#7ab8e8', x - 1, y - 26, 3, 3); }
 }
-export function drawBucket(g, mx, vy, b, CQ, time) {
-  const k = b.st === 'fall' ? 1 - Math.max(0, b.t) / CQ.bucketFall : b.st === 'down' ? 1 : 0, by = vy - 60 + k * 90;
+export function drawBucket(g, mx, vy, b, CQ, time, land) {   /* (claude/cqueenrework) land: THE WELLHEAD's top - the bucket comes down onto it */
+  const drop = land ? land - 14 - (vy - 60) : 90, k = b.st === 'fall' ? 1 - Math.max(0, b.t) / CQ.bucketFall : b.st === 'down' ? 1 : 0, by = vy - 60 + k * drop;
   ln(g, '#c9b27c', 1, [[mx, vy - 200], [mx, by]]);
   if (b.st !== 'down' || b.t > CQ.bucketCd - 0.3) { fr(g, '#5a3a22', mx - 9, by, 18, 14); fr(g, '#8a5a32', mx - 8, by + 2, 16, 3); fr(g, '#3a7ab8', mx - 7, by + 1, 14, 2); }
-  if (b.st === 'down') { const up = 1 - b.t / CQ.bucketCd; fr(g, '#5a3a22', mx - 9, vy + 30 - up * 90, 18, 14); }
+  if (b.st === 'down') { const up = 1 - b.t / CQ.bucketCd; fr(g, '#5a3a22', mx - 9, vy - 60 + drop - up * drop, 18, 14); }
 }
 export function drawTunnels(g, x0, x1, fy, S, time) {
   for (const [x, d] of [[x0, 1], [x1, -1]]) { g.fillStyle = '#0a0808'; g.beginPath(); g.ellipse(x + d * 2, fy - 12, 10, 13, 0, 0, Math.PI * 2); g.fill(); fr(g, '#5a5048', x + d * 6 - (d < 0 ? 4 : 0), fy - 26, 4, 2); }
