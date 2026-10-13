@@ -10,11 +10,11 @@
 // NO extra hp. B10-B15 are untouched: no new windup, no new invulnerability, the 0.4x resistance floor and every opening are as authored.
 // Rows: act 1..5 as src/foe-react.js ACTS (actOf). 'mini' is its own column (B6: minis 75-85%).
 export const PRESSURE = {
-  1: { gap: 1.3, dmg: 1.5, mini: { gap: 1.25, dmg: 1.4 } },
-  2: { gap: 1.5, dmg: 1.8, mini: { gap: 1.4, dmg: 1.6 } },
-  3: { gap: 1.7, dmg: 2.1, mini: { gap: 1.5, dmg: 1.8 } },
-  4: { gap: 1.9, dmg: 2.4, mini: { gap: 1.6, dmg: 1.9 } },
-  5: { gap: 1.9, dmg: 2.4, mini: { gap: 1.6, dmg: 1.9 } },
+  1: { gap: 1.12, dmg: 1.2, mini: { gap: 1.15, dmg: 1.25 } },
+  2: { gap: 1.33, dmg: 1.55, mini: { gap: 1.25, dmg: 1.35 } },
+  3: { gap: 1.75, dmg: 2.15, mini: { gap: 1.3, dmg: 1.5 } },
+  4: { gap: 1.63, dmg: 2.0, mini: { gap: 1.35, dmg: 1.55 } },
+  5: { gap: 1.63, dmg: 2.0, mini: { gap: 1.35, dmg: 1.55 } },
 };
 /* the modes whose clock is NEVER scaled (told, open, ward, phase change, down): everything else of a boss's runs the dial's gap */
 const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|open|broken|ward|warded|reel|reeling|intro|rest0)$/;
