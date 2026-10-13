@@ -258,6 +258,18 @@
    "foeXp": 436,
    "bossXp": 435,
    "clear": 262
+  },
+  "buriedcity": {
+   "run": 1217,
+   "foeXp": 478,
+   "bossXp": 548,
+   "clear": 287
+  },
+  "sealedpyramid": {
+   "run": 984,
+   "foeXp": 306,
+   "bossXp": 555,
+   "clear": 184
   }
  }
 }

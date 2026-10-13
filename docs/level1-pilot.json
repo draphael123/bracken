@@ -358,5 +358,17 @@
   "lifts": 83,
   "walked": 100,
   "bare": true
+ },
+ "sealedpyramid": {
+  "hash": "12d4e6eb2a81",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 13,
+  "deaths": 5,
+  "kills": 24,
+  "lifts": 67,
+  "walked": 100,
+  "bare": true
  }
 }

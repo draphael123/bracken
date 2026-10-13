@@ -1,0 +1,26 @@
+[sealed-pyramid rc=0] ok  sealed-pyramid: 82 checks
+[level-quality rc=0] every gated level clears the quality bar.
+[reach-heroes rc=0] ok  reach-heroes: 7 known crossings, nothing new
+[solid-islands rc=0] ok  solid-islands  every island of every level has a drawn support or a reasoned allowance
+[deadends rc=0] 267 dead ends in 47 levels, and every one pays.
+[tells rc=0] the mark over every windup on the screen comes from this table (src/marks.js, 917 rows).
+[hint-shown rc=0] hint-shown OK: HE IS OPEN, STRIKE ITS LEVER, THE FIRE IS OUT - GO, THE GOBLIN QUEEN: OPEN and a counted line are drawn in the page; a flavour line is 
+[elites rc=0] 77 elites. every elite can be fought and every gate it holds opens onto the route.
+[architecture rc=0] 61 levels, 545 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on something.
+[sprinkle-cap rc=0] sprinkle-cap ok: 21 levels within the cap, a designed encounter in every section
+[one-new-foe rc=0]       harbor     shelved on purpose - the only level in LEVELS with no map node.
+[signs rc=0] no level says the same sentence on two signs (0 known).
+[killzones rc=0] no reachable tile kills a standing hero.
+[checkpoint-gaps rc=0] checkpoint-gaps  47 levels, 246 checkpoints; along the walked route none is more than 200 from the next (worst underleaf 197), none closer than 80 exc
+[checkpoint-stand rc=0] ok  checkpoint-stand   246 checkpoints in 61 levels: every one stood at with a real jump (5 columns, not 6; 8 gaps in the model listed), none in view 
+[map-spacing rc=0] map-spacing ok: 50 nodes, every plate clear (min node gap 16, pad 2)
+[map-grammar rc=0] The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every node has a real level, and mapToSaved's
+[modulepreload rc=0] modulepreload: 424 modules listed, 6 reachable ones not yet in the list (budget 15).
+[audio-assets rc=0] ok  audio-assets  47 levels all have music, 47 boss arenas and 15 minis all resolve to a real track, every TRACKS/manifest file exists on disk, and ev
+[boss-read rc=0] boss-read: ok (turned / auto / beats / wired)
+[threat-holes rc=0] ok  threat-holes   206 creature kinds placed across 61 levels, every one weighed. Deliberately 0: dummy, folk, hare, harlequin, marionette.
+[goblin-lint rc=0] ok  goblin-lint    church, canal, redgorge, undercrown, lamplit, theatre, welltown, fair: no goblins (124 reskinned foes, every skin drawn and carded,
+[spawns rc=0] 2516 creatures checked against the built levels. none start in the rock or out of the water.
+[floaters rc=0] 3128 standing things checked (56 set down a row or more at load; 40 hung ones with no rock over them are left out). every one can be set down.
+[collectables rc=0] every pickup can be picked up from some ground.
+stuck (static) OK: 2398 checks - 277 steps in 250 spots over 37 levels resolve a glint target and a nudge from their stall point

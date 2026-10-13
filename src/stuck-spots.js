@@ -499,6 +499,19 @@ export const STUCK_HANDS = {
       { key: 'trapFeed', is: ['trap.trap', 'feed'], at: [538, 32], line: 'THE GATE IS SHUT: SWING THE SAND-FALL INTO THE HALL' } ] },
     { id: 'bc-vault', zone: [598, 31, 610, 36], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [603, 35], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
   ],
+  /* THE SEALED PYRAMID (claude/sealedpyramid): every route need glints until its state is the one the route wants (src/sealed-pyramid-hands.js handsState:
+     cw.<pair> home / over / moving, wall.falsedoor shut / open, pit.<trap> open / filled, trap.<id> ready / spent, vault.<id> due); the robbers' hole glints after a stall */
+  sealedpyramid: [
+    { id: 'py-hole', zone: [46, 2, 75, 13], steps: [ { key: 'hole', at: [69, 13], glint: 'stall', line: 'THE ROBBERS\' HOLE IS THE WAY IN' } ] },
+    { id: 'py-cw1', zone: [166, 24, 181, 29], steps: [ { key: 'cw1', is: ['cw.cw1', 'home'], at: [180, 29], line: 'THE STONE BLOCK ON ITS CHAIN: STAND ON IT AND RIDE IT DOWN' } ] },
+    { id: 'py-weigh', zone: [186, 30, 215, 39], steps: [ { key: 'weigh', is: ['cw.cw2', 'home'], at: [214, 39], line: 'THE PALE BLOCK IS A PLATE: TREAD IT, AND YOU GO UP' } ] },
+    { id: 'py-great', zone: [250, 18, 325, 36], steps: [ { key: 'great', is: ['wall.falsedoor', 'shut'], at: [256, 29], line: 'THE GREAT STONE\'S PLATE IS ON THE ROBBERS\' WALK' },
+      { key: 'door', is: ['wall.falsedoor', 'open'], at: [327, 36], glint: 'stall', line: 'THE STONE BROKE THE FALSE DOOR: THE WAY DOWN IS BEHIND IT' } ] },
+    { id: 'py-pit2', zone: [348, 36, 357, 43], steps: [ { key: 'pit2', is: ['pit.pit2', 'open'], at: [353, 43], line: 'TOO WIDE TO JUMP: THE PLATE DROPS THE BLOCK INTO THE PIT' } ] },
+    { id: 'py-shaft', zone: [430, 46, 441, 50], steps: [ { key: 'shaftPlate', is: ['trap.shaft', 'ready'], at: [436, 50], line: 'SPEND THE DART WALL FROM THE PLATE FIRST' },
+      { key: 'shaftRide', is: ['trap.shaft', 'spent'], at: [440, 50], line: 'THE DARTS ARE RELOADING: RIDE THE BLOCK DOWN NOW' } ] },
+    { id: 'py-vault', zone: [393, 46, 400, 50], steps: [ { key: 'vault', is: ['vault.sealed', 'due'], at: [397, 50], line: 'THE SEALED TOMB: FOUR SEALS OPEN IT' } ] },
+  ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */
   ksar: [

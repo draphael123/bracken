@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { sealedpyramid: 1, scarabmother: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -343,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
+export const BOSS_PHASE = { scarabmother: 1, hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -418,6 +418,35 @@ function hourglassking(i, delay, variant, env) {
   if ((s === 0 && (crack || bar % 4 === 0))) { const f = nf('A5'); pluck(env, 'sine', f, 1.8, 0.05 * g, delay, { to: f * 0.999 }); if (crack) pluck(env, 'sine', f * 1.06, 1.4, 0.03 * g, delay, { to: f * 1.05 }); }   /* the hour */
   if (sands && s % 2 === 1) noise(env, step * 0.8, 0.03 * g, 6000, 0.8, delay);
   if (s === 0 || s === 4) { const row = HKM_CHOR[(bar >> 1) % 4], n = nf(row[s === 0 ? 0 : 1]) * (crack || second ? 2 : 1) * (crack && second ? 0.5 : 1); held(env, 'sawtooth', n, step * 3.6, 0.055 * g, delay, { lp: 1500, att: 0.06, hold: 0.6, det: 10, from: 0.97 }); }
+}
+// ---------------------------------------------------------------- THE SEALED PYRAMID (claude/sealedpyramid, the GREYBOX level bed until Daniel picks a CC0 track)
+// A Hijaz (A Bb C# D E F G), 4/4 at 72 (eighth = 0.417 s), 16 bars = 53 s. THE TOMB: a low A drone (a sub sine and a lowpassed saw), a soft frame-drum heartbeat
+// (dum on one, a lighter dum on the and of two), sand sifting from the courses on the off-beats, and a far NEY (a breathy square through a lowpass) that only
+// speaks every other bar, falling down the Hijaz to the C# and resting on A.
+const SPM_STEP = 60 / 72 / 2, SPM_LEN = 8, SPM_BARSN = 16;
+const SPM_NEY = [['E5', '-', 'F5', '-', 'E5', 'D5', 'C#5', '-'], ['D5', '-', 'C#5', 'Bb4', 'A4', '-', '-', '-'], ['G4', '-', 'A4', 'Bb4', 'C#5', '-', 'D5', '-'], ['C#5', 'Bb4', 'A4', '-', '-', '-', '-', '-']];
+function sealedpyramid(i, delay, variant, env) {
+  const step = SPM_STEP, bar = Math.floor(i / SPM_LEN), s = i % SPM_LEN, g = env.gain;
+  if (s === 0 && bar % 2 === 0) { pluck(env, 'sine', nf('A1'), step * SPM_LEN * 2 * 0.95, 0.32 * g, delay, { to: nf('A1') * 0.996 }); held(env, 'sawtooth', nf('A2'), step * SPM_LEN * 2 * 0.95, 0.025 * g, delay, { lp: 380, att: 0.6, hold: 0.8 }); }   /* the drone */
+  if (s === 0) pluck(env, 'sine', 88, 0.3, 0.32 * g, delay, { to: 46 }); if (s === 3) pluck(env, 'sine', 96, 0.22, 0.18 * g, delay, { to: 52 });   /* the heartbeat */
+  if (s % 2 === 1) noise(env, step * 0.7, 0.018 * g, 5200, 0.7, delay);   /* the sand sifting */
+  if (bar % 2 === 1) { const c = SPM_NEY[(bar >> 1) % 4][s]; if (c !== '-') held(env, 'square', nf(c), step * 1.8, 0.022 * g, delay, { lp: 1400, att: 0.06, hold: 0.6 }); }   /* the far ney */
+}
+// ---------------------------------------------------------------- THE SCARAB MOTHER (claude/sealedpyramid, her composed theme: three phases)
+// E Phrygian dominant (E F G# A B C D), 4/4 at 104 (eighth = 0.288 s), 16 bars = 37 s. THE BROOD-QUEEN: a SCUTTLE of dry clicks on every eighth (her legs), a low
+// E pulse on every quarter, a MANDIBLE SNAP (a bright noise crack) on two and four, and a HORN motif (a detuned saw pair) climbing E - F - G# - B and falling back.
+// 'scarabmother:p2' THE BROOD: a hiss swirl on the off-beats and the clicks doubled; 'scarabmother:p3' THE TOMB SHAKES: quicker (eighth 0.24 s), a low rumble every
+// bar and the horn an octave up.
+const SMM_STEP = 60 / 104 / 2, SMM_STEP3 = 60 / 124 / 2, SMM_LEN = 8, SMM_BARSN = 16;
+const SMM_HORN = [['E4', 'F4'], ['G#4', 'B4'], ['A4', 'G#4'], ['F4', 'E4']];
+function scarabmother(i, delay, variant, env) {
+  const brood = variant === 'p2', shake = variant === 'p3', step = shake ? SMM_STEP3 : SMM_STEP, bar = Math.floor(i / SMM_LEN), s = i % SMM_LEN, second = bar >= 8, g = env.gain;
+  noise(env, 0.012, (s % 2 ? 0.03 : 0.045) * g, 4200, 5, delay); if (brood || shake) noise(env, 0.01, 0.025 * g, 5600, 6, delay + step / 2);   /* the scuttle */
+  if (s % 2 === 0) pluck(env, 'triangle', nf(s % 4 === 0 ? 'E2' : 'B1'), step * 1.6, 0.26 * g, delay, { lp: 520 });   /* the pulse */
+  if (s === 2 || s === 6) noise(env, 0.03, 0.12 * g, 3000, 3, delay);   /* the snap */
+  if (brood && s % 2 === 1) noise(env, step * 0.8, 0.03 * g, 2200, 0.6, delay);   /* the brood's hiss */
+  if (shake && s === 0) { pluck(env, 'sine', 52, 0.7, 0.45 * g, delay, { to: 30 }); noise(env, 0.35, 0.06 * g, 300, 0.6, delay); }   /* the tomb shaking */
+  if (s === 0 || s === 4) { const row = SMM_HORN[(bar >> 1) % 4], n = nf(row[s === 0 ? 0 : 1]) * (shake || second ? 2 : 1) * (shake && second ? 0.5 : 1); held(env, 'sawtooth', n, step * 3.6, 0.05 * g, delay, { lp: 1600, att: 0.03, hold: 0.6, det: 10 }); }
 }
 // (THE BANDIT KSAR has no synth bed: 'Desert Loop' by iamoneabe is its file, claude/ksar art pass; THE HAWK-MISTRESS below keeps her composed theme)
 // ---------------------------------------------------------------- THE HAWK-MISTRESS (claude/ksar, her composed theme: three phases)
@@ -535,6 +564,7 @@ function fogknight(i, delay, variant, env) {
 export const SYNTH_BOSS = {
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
+  sealedpyramid: { step: SPM_STEP, total: SPM_LEN * SPM_BARSN, play: sealedpyramid }, scarabmother: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the greybox level bed and her theme */
   hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
   greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
@@ -552,6 +582,7 @@ export const SYNTH_BOSS = {
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
   'fogknight:p2': { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight }, 'fogknight:p3': { step: FKM_STEP3, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the double, the shroud */
+  'scarabmother:p2': { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother }, 'scarabmother:p3': { step: SMM_STEP3, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the brood, the tomb shaking */
   'hourglassking:p2': { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking }, 'hourglassking:p3': { step: HKM_STEP3, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the sands rise, the glass cracks */
   'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
   'greatdrill:p2': { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill }, 'greatdrill:p3': { step: GDM_STEP3, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) the roof and full bore */
