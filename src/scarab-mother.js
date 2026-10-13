@@ -28,7 +28,7 @@ export const SM = {
   hp: 2900, w: 40, h: 24, markH: 44,
   openMul: 1.8, openCap: 0.1, openT: 3.4, wardT: 3.0, wardMul: 0.4, resist: 0.45, trapBite: { block: 0.035, darts: 0.02, stone: 0.04 },
   p2: 0.6, p3: 0.28,
-  walk: 40, back: 66, backT: 0.9, keep: 70, gap: [0.45, 0.35, 0.25],
+  walk: 40, back: 66, backT: 0.9, keep: 70, gap: [0.65, 0.55, 0.45],
   chargeTell: 0.9, chargeV: 270, short: 56, skid: 0.95, dazed: 1.0,
   snapTell: 0.6, snapT: 0.22, snapR: 44, snapRange: 62,
   spitTell: 0.75, spitFly: 0.55, spitR: 16, puddleT: 2.4, puddleR: 18, puddleTick: 0.5,
@@ -36,7 +36,7 @@ export const SM = {
   quakeTell: 1.0, quakeFall: 0.6, quakeR: 15,
   brood: { every: 6.5, max: 3, speed: 72, seethe: 0.8, biteCd: 1.0, w: 10, h: 7 },
   reset3: 0.6,
-  dmg: { charge: 46, snap: 40, spit: 30, puddle: 8, burrow: 44, quake: 40, brood: 10 },
+  dmg: { charge: 35, snap: 30, spit: 24, puddle: 8, burrow: 33, quake: 30, brood: 10 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); ONE NEW MOVE A PHASE (B5) */
 export const CYCLES = {
