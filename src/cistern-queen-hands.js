@@ -11,7 +11,7 @@ const { CQ } = CQG;
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), dig: s => (s.rubble || s.thud)(), climb: s => (s.chitin || s.step || s.thud)(), lunge: s => (s.leap || s.heavy)(),
   stab: s => (s.pierce || s.sting || s.crack)(), flick: s => (s.rubble || s.thud)(), erupt: s => { (s.rubble || s.thud)(); (s.roar || s.heavy)(); }, plough: s => (s.rubble || s.thud)(),
   spit: s => (s.spit || s.hiss)(), sweep: s => (s.slash || s.heavy)(), slam: s => { (s.heavy || s.thud)(); (s.rubble || s.thud)(); }, drop: s => (s.leap || s.thud)(),
-  skitter: s => (s.chitin || s.step || s.thud)(), thrash: s => (s.wave || s.splash)(), snap: s => (s.crack || s.clank)(), whip: s => (s.slash || s.splash)(),
+  skitter: s => (s.chitin || s.step || s.thud)(), thrash: s => (s.wave || s.splash)(), snap: s => (s.crack || s.clank)(), stingBreak: s => (s.stingerBreak || s.crack || s.clank)(), whip: s => (s.slash || s.splash)(),
   bloom: s => (s.hiss || s.spit || s.splash)(), bloomBurst: s => { (s.whirlpool || s.splash)(); (s.hiss || s.spit || s.thud)(); },   /* (claude/queen4) THE VENOM BLOOM: the hiss of the tell, the slick's burst */
   call: s => (s.hiss || s.roar)(), sting: s => (s.sting || s.crack)(), soak: s => { (s.splash)(); (s.hiss || s.thud)(); }, fall: s => (s.heavy || s.thud)(), rear: s => (s.roar || s.heavy)(),
   windlass: s => { (s.clank)(); s.ratchet && s.ratchet(); }, splash: s => (s.whirlpool || s.splash)(), rock: s => (s.stone || s.thud)(), flood: s => { (s.whirlpool || s.splash)(); (s.roar || s.heavy)(); },
@@ -154,9 +154,8 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   /* the hall's machines, behind her: the windlass, the bucket's rope down the shaft, the tunnels, the springs' glint is the wells' own */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     if (wl) CQA.drawWindlass(g, R(wl.x * ctx.TS + 8 - cx), R((wl.y + 1) * ctx.TS - cy), S.bucket, time);
+    CQA.drawWellhead(g, G, cx, cy, S.bucket, CQ, time);   /* (claude/cqart) THE WELLHEAD: the stone lintel, the curb and the sheave's frame, and the bucket tipping its water on them */
     CQA.drawBucket(g, R(G.mid - cx), R(G.vault - cy), S.bucket, CQ, time, R(G.beamY - cy));
-    /* (claude/cqueenrework, PLACEHOLDER for the art lane) THE WELLHEAD: the pulley block its bucket rope runs through, bolted into the beam's middle (the beam's slabs and chains are the tile kit's) */
-    { const x = R(G.mid - cx), y = R(G.beamY - cy); fr(g, '#3a2c22', x - 7, y - 10, 14, 10); fr(g, '#6a5040', x - 5, y - 8, 10, 6); fr(g, '#c9b27c', x - 1, y - 9, 2, 2); fr(g, '#2a1c12', x - 12, y, 24, 3); }
     CQA.drawTunnels(g, R(G.x0 - cx), R(G.x1 - cx), R(G.floor - cy), S, time); };
   /* over everything: the water, the mound, her tells' marks on the floor (the strike's bulge, the lance's spot, the rubble's shadows, the pounce's
      shadow, the bands lit), what flies, the venom puddles, the claw, her opening's clock */
@@ -174,19 +173,27 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
       g.strokeStyle = 'rgba(255,211,107,' + (0.6 + 0.4 * p) + ')'; g.lineWidth = big ? 2 : 1; g.beginPath(); g.arc(x, y - 2, (big ? 15 : 10) + p * 4, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#ffffff'; const k = 2 + Math.round(p * 2); g.fillRect(x, y - 12 - k, 1, 2 * k + 1); g.fillRect(x - k, y - 12, 2 * k + 1, 1);
       const tk = Math.max(0, st.t / ({ slam: CQ.planted, slip: CQ.slipT }[st.k] || CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 12, y + 6, 24, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 12, y + 6, R(24 * Math.min(1, tk)), 3); }
-    else if (!warded && !CQG.qOpen(e)) { const tp = CQG.tipOf(e, S); if (tp) { const x = R(tp.x - cx), y = R(tp.y - cy), pays = CQG.qHot(S);   /* (claude/cqueenrework, B10) gold while it pays (HOT); a cold steel glint while it is armoured */
-      g.strokeStyle = pays ? 'rgba(255,211,107,' + (0.45 + 0.4 * p) + ')' : 'rgba(170,186,200,' + (0.25 + 0.15 * p) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, CQ.tipR - 2 + (pays ? p * 3 : 0), 0, Math.PI * 2); g.stroke(); fr(g, pays ? '#fff6c8' : '#c8d4de', x - 1, y - CQ.tipR - 3, 2, 2); } }
+    else if (!warded && !CQG.qOpen(e)) { const tp = CQG.tipOf(e, S); if (tp) { const x = R(tp.x - cx), y = R(tp.y - cy), pays = CQG.qHot(S), rr = CQ.tipR - 2;   /* (claude/cqueenrework, B10; claude/cqart: told by SHAPE as well as colour) it PAYS (HOT): a round gold ring and a pale star. It is ARMOURED: four cold steel corner-brackets, a plate not a ring, and a glint that slides across them */
+      if (pays) { g.strokeStyle = 'rgba(255,211,107,' + (0.55 + 0.4 * p) + ')'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, rr + p * 3, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; fr(g, '#fff6c8', x - 1, y - rr - 5, 2, 4); fr(g, '#fff6c8', x - 3, y - rr - 3, 6, 1); }
+      else { g.fillStyle = 'rgba(200,214,228,' + (0.55 + 0.25 * p) + ')'; for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { fr(g, x + sx * rr - (sx > 0 ? 4 : 0), y + sy * rr - (sy > 0 ? 0 : 0), 5, 1); fr(g, x + sx * rr - (sx > 0 ? 0 : 0), y + sy * rr - (sy > 0 ? 4 : 0), 1, 5); }
+        const gl = (time * 22) % (rr * 4); if (gl < rr * 2) { g.globalAlpha = 0.9; fr(g, '#eef4fa', x - rr + gl, y - rr + gl * 0.5, 2, 2); g.globalAlpha = 1; } } } }
     if (CQG.qScorched(e) && !(e.gone > 0)) { const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), k = Math.max(0, Math.min(1, e.scorch / CQ.scorchT));
       g.strokeStyle = 'rgba(255,211,107,' + (0.55 + 0.35 * p) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 20, CQ.w / 2 + 8, 28, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 60, 40, 3); g.fillStyle = '#ff9a3c'; g.fillRect(x - 20, y - 60, R(40 * k), 3); }
     /* HER FIRE: flames over her shell while she burns; sparks gathering while she flares */
-    if (CQG.qHot(S) && !(e.gone && e.mode !== 'pounce')) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, bh = wall ? 84 : 26, n = 10;
-      for (let i = 0; i < n; i++) { const fx = bx + ((i * 37 + R(time * 3)) % bw), fy = top + ((i * 19) % bh), h = 6 + 5 * Math.abs(Math.sin(time * 9 + i)); g.globalAlpha = 0.9;
-        g.fillStyle = i % 2 ? '#ff9a3c' : '#ffd36b'; g.fillRect(R(fx - cx), R(fy - h - cy), 3, R(h)); g.fillStyle = '#d84a14'; g.fillRect(R(fx - cx), R(fy - 2 - cy), 3, 2); } g.globalAlpha = 1; }
+    if (CQG.qHot(S) && !(e.gone && e.mode !== 'pounce')) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, bh = wall ? 84 : 26, n = 7;
+      for (let i = 0; i < n; i++) { const fx = bx + ((i * 37 + R(time * 3)) % bw), fy = top + ((i * 19) % bh), h = 5 + 4 * Math.abs(Math.sin(time * 9 + i)); g.globalAlpha = 0.9;
+        { const X0 = R(fx - cx), Y0 = R(fy - cy), hh = R(h + 2);   /* (claude/cqart) a tongue, not a candle: a red base, an orange body, a gold heart, a pale tip */
+          fr(g, '#d84a14', X0 - 1, Y0 - 2, 5, 3); fr(g, '#ff7a22', X0, Y0 - R(hh * 0.55), 3, R(hh * 0.55)); fr(g, '#ffb84a', X0 + (i % 2), Y0 - R(hh * 0.85), 2, R(hh * 0.4)); fr(g, '#fff2c0', X0 + 1, Y0 - hh, 1, 2); } } g.globalAlpha = 1; }
+    /* (claude/cqart) BLACKENED: smoke curls off the burnt shell, flakes of ash drift down, and a grey clock says how long until fire can take her again */
+    if (S.charT > 0 && !CQG.qHot(S) && !CQG.qWet(S) && !(e.gone > 0)) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, k0 = Math.max(0, Math.min(1, S.charT / CQ.charT));
+      for (let i = 0; i < 5; i++) { const k = (time * 0.4 + i * 0.2) % 1, sx = bx + 6 + ((i * 41) % (bw - 12)) + Math.sin(time * 2 + i * 1.7) * 3, sy = top + 6 - k * 34; g.globalAlpha = 0.5 * k0 * (1 - k); g.fillStyle = i % 2 ? '#6a625a' : '#8a8279'; g.beginPath(); g.ellipse(R(sx - cx), R(sy - cy), 2.5 + k * 4, 2 + k * 3, 0, 0, Math.PI * 2); g.fill(); }
+      for (let i = 0; i < 6; i++) { const k = (time * 0.55 + i * 0.17) % 1; g.globalAlpha = 0.7 * k0 * (1 - k); fr(g, i % 2 ? '#b8afa4' : '#7a7268', R(bx + ((i * 37) % bw) - cx), R(top + 4 + k * 44 - cy), 1, 1); }
+      g.globalAlpha = 1; const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 66, 40, 2); g.fillStyle = '#8a8279'; g.fillRect(x - 20, y - 66, R(40 * k0), 2); }
     /* (claude/cqueenrework) DOUSED: water runs off her - drips falling from her shell, a blue sheen line along her back, and the clock of it (blue) */
     if (CQG.qWet(S) && !CQG.qOpen(e) && !(e.gone > 0)) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 38;
-      for (let i = 0; i < 7; i++) { const fx = bx + 4 + ((i * 29) % (bw - 8)), k = (time * 1.6 + i * 0.37) % 1, fy = top + 6 + k * (wall ? 80 : 34); g.globalAlpha = 0.85 * (1 - k * 0.6); fr(g, '#7ab8e8', R(fx - cx), R(fy - cy), 2, 3); fr(g, '#e8f4f8', R(fx - cx), R(fy - cy), 1, 1); }
-      g.globalAlpha = 0.5; fr(g, '#7ab8e8', R(bx + 6 - cx), R(top + 2 - cy), bw - 12, 1); g.globalAlpha = 1;
+      for (let i = 0; i < 11; i++) { const fx = bx + 4 + ((i * 29) % (bw - 8)), k = (time * 1.5 + i * 0.37) % 1, fy = top + 8 + k * k * (wall ? 80 : 40); g.globalAlpha = 0.9 * (1 - k * 0.5); fr(g, '#2a5a8a', R(fx - cx) - 1, R(fy - cy), 4, 4); fr(g, '#7ab8e8', R(fx - cx), R(fy - cy), 2, 3 + R(k * 3)); fr(g, '#e8f4f8', R(fx - cx), R(fy - cy), 1, 1); }   /* (claude/cqart) beads that swell, let go and fall faster */
+      g.globalAlpha = 1;
       const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), k = Math.max(0, Math.min(1, S.wet / CQ.douseT)); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 66, 40, 2); g.fillStyle = '#7ab8e8'; g.fillRect(x - 20, y - 66, R(40 * k), 2); }
   };
   return H;

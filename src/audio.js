@@ -380,6 +380,8 @@ export const SFX = {
      wrong-verb hit in the game makes this one sound, so it is learned once. */
   glance() { noise(0.12, 0.2, 2600, 0.45); tone('sawtooth', vary(880), 340, 0.1, 0.07); tone('triangle', 210, 120, 0.07, 0.12, 0.01); noise(0.05, 0.1, 600, 0.8, 0.02); },
   spit() { tone('sine', 420, 180, 0.13, 0.2); },
+  /* (claude/cqart) HER STINGER BREAKING: a deep bone crack (the CC0 imp_bone pool already on disk), a low take of it under that, a stone crumble and a short sharp snap - nothing like the plain crack */
+  stingerBreak() { const a = file('imp_bone', 0.8, 0.9), b = file('imp_bone', 0.6, 0.6), c = file('crumble', 0.35, 1.2); if (!(a || b)) { noise(0.2, 0.3, 700, 0.5); tone('square', 220, 50, 0.2, 0.2); } tone('sawtooth', 1900, 300, 0.05, 0.1); },
   crack() { file('crack', 0.5) || (noise(0.16, 0.3, 900, 0.5), tone('square', 160, 60, 0.12, 0.18)); },
   die() { file('hurt', 0.7, 0.7); tone('sawtooth', 320, 40, 0.7, 0.28); tone('square', 200, 50, 0.5, 0.15, 0.1); },
   check() { [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.25, 0.18, i * 0.09)); },

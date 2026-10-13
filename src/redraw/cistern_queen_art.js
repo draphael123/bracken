@@ -9,12 +9,20 @@
 // walk a SIX-FRAME gait wave keyed to the ground she covers (no moonwalking on the spot), and standing she breathes (a four-beat heave).
 // Also: the hall's windlass, the shaft's bucket and rope, the two side tunnels, and over everything her tells on the floor and what she throws.
 //   drawQueen(g, e, S, x, y, time)   x, y = her feet on screen.   bakeCisternQueen() -> a sprite set for the bestiary and her body (CQ_F names its frames)
-import { TAIL, tailPose, view } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
+import { CQ, TAIL, tailPose, view, qOpen, stingerOut } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
 import { canvas, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
 export const QC = { chit0: '#1a100c', chit1: '#5a3c2e', chit2: '#86593f', chit3: '#b8805a', rim: '#f2cf90', sand: '#d8b47a', belly: '#9a7a58', bellyL: '#c8a87c', leg: '#a06c46', legD: '#6e4630', legL: '#d9a56c',
   eye: '#ff6a3a', eyeL: '#ffd0a0', sting: '#ffb84a', stingHot: '#fff2c0', stingCore: '#ff6a2a', venom: '#a6e04a', venomD: '#4e7a24', wet: '#7ab8e8', wetL: '#d8eef8', claw: '#9c6642', clawL: '#e4a86c' };
+/* (claude/cqart) HER THREE SHELLS: HOT (the fire has cracked her: the plates warm to ember-orange), DOUSED (water on her: a dark, cool, wet-lit shell) and BLACKENED (burnt out: ash-grey and sooty). Each is a swap of the same eight chitin colours, so every part of her (legs, tail, claws, head) wears it. */
+const PAL_HOT = { chit1: '#6e3022', chit2: '#a24c28', chit3: '#d8803c', rim: '#ffdca0', belly: '#a8603a', bellyL: '#e09a60', claw: '#b8582c', clawL: '#f4a860', legD: '#7a3a22', leg: '#b85e34', legL: '#f0a060' };
+const PAL_WET = { chit0: '#120e12', chit1: '#33282a', chit2: '#52403c', chit3: '#78625a', rim: '#cfe8f4', belly: '#4a4038', bellyL: '#7c8a90', claw: '#6a5046', clawL: '#a8bcc4', legD: '#3a2e2c', leg: '#6e5448', legL: '#a8bcc4' };
+const PAL_CHAR = { chit0: '#0b0908', chit1: '#27221f', chit2: '#3a342f', chit3: '#554d46', rim: '#8a8279', belly: '#352e29', bellyL: '#4e453d', claw: '#463d35', clawL: '#706558', legD: '#221d1a', leg: '#413831', legL: '#655a4e' };
+const WHITE = { chit0: '#fff', chit1: '#fff', chit2: '#fff', chit3: '#fff', rim: '#fff', belly: '#fff', bellyL: '#fff', claw: '#fff', clawL: '#fff', legD: '#fff', leg: '#fff', legL: '#fff' };
+/* the cracks in her shell, in her own frame: down each plate, along her back, across her head - HOT they glow, BLACKENED they are black fissures */
+const SEAMS = [[[-45, -38], [-40, -31], [-46, -25], [-41, -17]], [[-30, -40], [-26, -33], [-32, -27], [-27, -20], [-31, -14]], [[-14, -41], [-10, -34], [-16, -28], [-11, -21]],
+  [[2, -40], [6, -33], [1, -27], [7, -20], [3, -14]], [[18, -38], [22, -31], [17, -25], [22, -17]], [[33, -36], [37, -30], [32, -25], [36, -19]], [[-46, -30], [-34, -25], [-21, -31], [-6, -25], [10, -32], [26, -27]]];
 const R = Math.round;
 const fr = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
 const ell = (g, c, x, y, rx, ry, rot = 0) => { g.fillStyle = c; g.beginPath(); g.ellipse(R(x), R(y), Math.max(0.5, rx), Math.max(0.5, ry), rot, 0, Math.PI * 2); g.fill(); };
@@ -27,16 +35,20 @@ export function drawBody(g, o) {
   /* (claude/queen4) THE GAIT: a six-frame wave down each side (the legs of a side a quarter-cycle apart, the two sides half a cycle), the phase from the ground
      covered (o.gait) or, scrabbling up or down a wall, from the clock - stepped to six frames so it reads as drawn frames, not a wobble */
   const STEP = Math.PI / 3, gait = o.walk ? Math.floor((o.gait != null ? o.gait : t * 12) / STEP) * STEP : null;
-  const C = o.flash ? { chit0: '#fff', chit1: '#fff', chit2: '#fff', chit3: '#fff', rim: '#fff', belly: '#fff', bellyL: '#fff', claw: '#fff', clawL: '#fff', legD: '#fff', leg: '#fff', legL: '#fff' } : QC;
+  const heat = o.heat || 0, soaked = wet >= 0.7, charr = o.char || 0;   /* (claude/cqart) which shell she wears: DOUSED over BLACKENED over HOT */
+  const C = o.flash ? WHITE : soaked ? { ...QC, ...PAL_WET } : charr > 0 ? { ...QC, ...PAL_CHAR } : heat > 0 ? { ...QC, ...PAL_HOT } : QC;
   /* THE LEGS (polish): thick, lighter than the floor and the body, a dark edge under a lit one, a knee and a pale foot-claw - they read on the dark hall */
   const legs = o.legs || 'walk';
   for (let i = 0; i < 4; i++) { const bx = -26 + i * 15;
     for (const side of [0, 1]) { const sh = side ? 0 : 1, col = side ? C.leg : C.legD, hi = side ? C.legL : C.leg, ph = gait == null ? 0 : Math.sin(gait + i * Math.PI / 2 + side * Math.PI);
       let pts;
       if (legs === 'kick') { const a = Math.sin(t * 16 + i * 1.7 + side) * 6; pts = [[bx, -14], [bx - 6 + a, -34], [bx + 4 + a, -46]]; }
+      else if (legs === 'perch') { const sp = (i - 1.5) * 11 + (side ? 6 : -6), br = Math.sin(t * 2.2 + i) * 0.6; pts = [[bx, -14 - sh], [bx + sp * 1.5, -32 + sh * 3 + br], [bx + sp * 1.9 - 3, -2]]; }   /* (claude/cqart) THE PERCH: knees up and wide, a crouch on the beam, the foot-claws hooked down over its lip */
+      else if (legs === 'reel') { const tr = Math.sin(t * 34 + i * 2 + side) * 1.6; pts = i >= 2 ? [[bx, -14 - sh], [bx + 7 + tr, -40], [bx + 17, -50 + tr]] : [[bx, -14 - sh], [bx - 13, -24 + sh * 3], [bx - 23 + tr, -3]]; }   /* (claude/cqart) REEL: the front legs snatched up off the floor, the back ones buckled out */
       else { const fx = bx + (legs === 'splay' ? (i - 1.5) * 9 : ph * 5 - 4), lift = legs === 'walk' ? Math.max(0, ph) * 4 : 0; pts = [[bx, -14 - sh], [fx - 7, -30 + sh * 2], [fx - 11, -lift]]; }
       ln(g, C.chit0, 7, pts); ln(g, col, 4.6, pts); ln(g, hi, 1.4, pts.map(([x, y]) => [x - 0.8, y - 1]));
-      const [kx, ky] = pts[1], [fx2, fy2] = pts[2]; ell(g, hi, kx, ky, 2.6, 2.6); fr(g, C.rim, kx - 1, ky - 3, 2, 2); ell(g, C.legL, fx2, fy2, 2.4, 1.6); fr(g, C.rim, fx2 - 3, fy2 - 1, 5, 1); } }
+      const [kx, ky] = pts[1], [fx2, fy2] = pts[2]; ell(g, hi, kx, ky, 2.6, 2.6); fr(g, C.rim, kx - 1, ky - 3, 2, 2); ell(g, C.legL, fx2, fy2, 2.4, 1.6); fr(g, C.rim, fx2 - 3, fy2 - 1, 5, 1);
+      if (legs === 'perch') { ln(g, C.chit0, 3, [[fx2, fy2 - 1], [fx2 + 2, fy2 + 3]]); ln(g, C.legL, 1.4, [[fx2, fy2 - 1], [fx2 + 2, fy2 + 2]]); } } }   /* the toe hooked over the beam's edge */
   /* THE TAIL: seven segments from her rump, curled up over her back to the stinger (or out at what it is doing). Dark edge, lit top. */
   const tail = o.tail || 'curl', segs = [];
   { let px = -42, py = -22; segs.push([px, py]);
@@ -48,7 +60,16 @@ export function drawBody(g, o) {
     ln(g, C.chit0, r * 2 + 3, [[x0, y0], [x1, y1]]); ln(g, C.chit2, r * 2, [[x0, y0], [x1, y1]]);
     ell(g, C.chit0, x1, y1, r + 1.4, r * 0.85 + 1.4); ell(g, C.chit2, x1, y1, r, r * 0.85); ell(g, C.chit3, x1 - 1, y1 - r * 0.35, r * 0.62, r * 0.36); fr(g, C.rim, x1 - r * 0.6, y1 - r * 0.9, r * 1.2, 1.5); }
   /* THE STINGER (polish): an amber bulb in a real halo (a gradient, not a flat disc), a pale hook and a core - and white-hot, bigger and ringed while it is told */
-  if (o.broken) { const [sx, sy] = segs[segs.length - 1]; ell(g, '#3a2418', sx, sy, 7, 6); fr(g, '#e8d4a0', sx - 4, sy - 3, 2, 2); fr(g, '#e8d4a0', sx + 1, sy - 5, 2, 3); fr(g, '#a6e04a', sx - 1, sy + 1, 2, 2); }   /* (claude/cqueenrework) HER STINGER BROKEN: a cracked stump, venom weeping */
+  if (o.broken) { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx);   /* (claude/cqart) HER STINGER BROKEN: a torn stump - a jagged collar of shell, the pale inside, venom welling and dripping */
+    const ichor = 0.6 + 0.4 * Math.abs(Math.sin(t * 5));
+    g.save(); g.translate(sx, sy); g.rotate(a); g.scale(1.5, 1.5);
+    g.fillStyle = C.chit0; g.beginPath(); [[-3, -9], [3, -10], [2, -6], [7, -6], [5, -2], [9, 0], [5, 3], [7, 8], [1, 7], [-3, 9]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
+    g.fillStyle = C.chit2; g.beginPath(); [[-3, -7], [2, -8], [1, -5], [5, -4], [3, -1], [6, 0], [3, 3], [4, 6], [-1, 5], [-3, 7]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
+    ell(g, '#e6bfa4', 4.5, 0, 2.4, 4.4); ell(g, '#8a2a24', 5, 0.5, 1.5, 3); fr(g, '#fff0d8', 3, -3, 1, 2);   /* the torn end: pale flesh, a dark core, a glint */
+    ln(g, C.rim, 1, [[-3, -8], [2, -9]]); g.restore();
+    for (let i = 0; i < 3; i++) { const k = (t * 1.1 + i * 0.37) % 1, dx = Math.sin(i * 2.3) * 2; g.globalAlpha = 1 - k * 0.7; fr(g, QC.venomD, sx + 2 + i * 4 + dx, sy + 6 + k * 30, 4, 5 - k * 2); fr(g, QC.venom, sx + 3 + i * 4 + dx, sy + 6 + k * 30, 2, 4 - k * 2); fr(g, '#eaffb0', sx + 3 + i * 4 + dx, sy + 6 + k * 30, 1, 1); }
+    g.globalAlpha = ichor; fr(g, QC.venomD, sx + 1, sy + 2, 6, 5); fr(g, QC.venom, sx + 2, sy + 3, 4, 3); fr(g, '#eaffb0', sx + 3, sy + 3, 1, 1); g.globalAlpha = 1;
+    if ((o.reelT || 0) > 1.2) { const k = Math.min(1, (o.reelT - 1.2) / 0.4), r = 6 + (1 - k) * 12; g.globalAlpha = k; for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 + 0.3; ln(g, i % 2 ? '#ffe9a0' : '#ffffff', 2, [[sx + Math.cos(an) * r * 0.5, sy + Math.sin(an) * r * 0.5], [sx + Math.cos(an) * r, sy + Math.sin(an) * r]]); } g.globalAlpha = 1; } }   /* the snap: a star on the stump the instant it goes */
   else { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx), green = o.venomHot;
     const hot = o.hot ? 0.6 + 0.4 * Math.abs(Math.sin(t * 18)) : 0, glow = 0.55 + 0.2 * Math.abs(Math.sin(t * 3)) + hot * 0.35, R0 = 22 + hot * 12;
     const cA = green ? '166,224,74' : '255,184,74', cH = green ? '214,255,140' : '255,242,192';
@@ -57,7 +78,12 @@ export function drawBody(g, o) {
     if (o.hot) { g.strokeStyle = 'rgba(' + cH + ',' + (0.5 + 0.4 * hot) + ')'; g.lineWidth = 1.5; g.beginPath(); g.arc(sx, sy, 11 + hot * 5, 0, Math.PI * 2); g.stroke(); }
     ell(g, QC.chit0, sx, sy, 11, 10, a); ell(g, green ? QC.venom : QC.stingCore, sx, sy, 9, 8, a); ell(g, o.hot ? (green ? '#eaffb0' : QC.stingHot) : (green ? '#d6f8a0' : '#ffd070'), sx - 1, sy - 1, 5, 4, a);
     const bx = sx + Math.cos(a) * 15, by = sy + Math.sin(a) * 15, h1 = [bx + Math.cos(a + 1.9) * 7, by + Math.sin(a + 1.9) * 7];
-    ln(g, QC.chit0, 5, [[sx + Math.cos(a) * 5, sy + Math.sin(a) * 5], [bx, by], h1]); ln(g, o.hot ? QC.stingHot : '#ffe2a0', 2.2, [[sx + Math.cos(a) * 6, sy + Math.sin(a) * 6], [bx, by], h1]); }
+    ln(g, QC.chit0, 5, [[sx + Math.cos(a) * 5, sy + Math.sin(a) * 5], [bx, by], h1]); ln(g, o.hot ? QC.stingHot : '#ffe2a0', 2.2, [[sx + Math.cos(a) * 6, sy + Math.sin(a) * 6], [bx, by], h1]);
+    /* (claude/cqart) ARMOURED (outside her openings, B15 x0.4): a STEEL sleeve and two cap plates riveted over the bulb, the glow showing between them - bare and gold when it pays (HOT, stuck, an opening) */
+    if (o.armour && !green) { g.save(); g.translate(sx, sy); g.rotate(a);
+      fr(g, '#2a3038', -13, -10, 6, 20); fr(g, '#8995a3', -12, -9, 4, 18); fr(g, '#d6e0ea', -12, -9, 4, 2); fr(g, '#56606c', -9, -9, 1, 18); fr(g, '#eef4fa', -11, -6, 2, 2); fr(g, '#eef4fa', -11, 4, 2, 2);
+      fr(g, '#2a3038', -4, -12, 12, 5); fr(g, '#9aa7b4', -3, -11, 10, 3); fr(g, '#e2eaf2', -3, -11, 10, 1); fr(g, '#2a3038', -4, 7, 12, 5); fr(g, '#8995a3', -3, 8, 10, 3); fr(g, '#56606c', -3, 10, 10, 1);
+      g.restore(); } }
   /* THE BODY: a long segmented carapace, the underbelly paler, a continuous sandy rim light along the top and the head */
   ell(g, C.chit0, -4, -24, 50, 18); ell(g, C.belly, -6, -16, 46, 10); ell(g, C.chit1, -4, -24, 48, 16);
   for (let i = 0; i < 5; i++) { const x = -38 + i * 16; ell(g, C.chit0, x, -26, 12.4, 15.4); ell(g, i % 2 ? C.chit3 : C.chit2, x, -26, 11, 14); fr(g, C.chit3, x - 6, -34 + Math.abs(i - 2), 10, 2); }
@@ -75,17 +101,36 @@ export function drawBody(g, o) {
     else if (claw === 'down') { el = [60, -14 + dy]; hand = [74, -6 + dy]; open = 0.1; }
     else if (claw === 'up') { el = [56, -60 + dy]; hand = [50 + side * 14, -88 + dy]; open = 0.6 + 0.3 * Math.sin(t * 20 + side * 2); }
     else if (claw === 'snap') { el = [70, -28 + dy]; hand = [94, -26 + dy]; open = side ? 0.05 : 0.9; }
+    else if (claw === 'reel') { const sh2 = Math.sin(t * 28 + side * 2) * 1.5; if (side) { el = [40, -64]; hand = [20 + sh2, -92]; open = 1; } else { el = [74, -30]; hand = [96, -8 + sh2]; open = 0.95; } }   /* (claude/cqart) REEL: the near claw flung up and back over her shoulder, the far one thrown wide and low, both gaping - the body's recoil */
     else { el = [70, -26 + dy]; hand = [86 + reach, -22 + dy]; open = 0.75; }
     ln(g, C.chit0, 11, [sh, el, hand]); ln(g, col, 8, [sh, el, hand]); ln(g, colL, 2, [[sh[0], sh[1] - 3], [el[0], el[1] - 3], [hand[0], hand[1] - 3]]); ell(g, colL, el[0], el[1] - 1, 4, 3); fr(g, C.rim, el[0] - 2, el[1] - 4, 4, 1);
     /* the pincer: a heavy palm and two long fingers that open, the tips bright */
     const [hx, hy] = hand, u = [[hx + 6, hy - 3], [hx + 20, hy - 7 - open * 11]], d = [[hx + 6, hy + 3], [hx + 20, hy + 5 + open * 7]];
     ln(g, C.chit0, 9.5, u); ln(g, C.chit0, 9.5, d); ell(g, C.chit0, hx, hy, 15.5, 12.5);
     ln(g, col, 6.5, u); ln(g, col, 6.5, d); ell(g, col, hx, hy, 14, 11); ell(g, colL, hx - 2, hy - 4, 8, 3.2); ln(g, C.rim, 1.4, [[hx - 8, hy - 6], [hx + 6, hy - 8], u[1]]); fr(g, '#f6e0b0', u[1][0] - 1, u[1][1] - 1, 4, 3); fr(g, '#f6e0b0', d[1][0] - 1, d[1][1] - 1, 4, 3); }
-  /* WET: the water running off her */
-  if (wet > 0) { g.globalAlpha = 0.35 * wet; ell(g, QC.wet, -4, -26, 50, 16); g.globalAlpha = 1; for (let i = 0; i < 6; i++) { const x = -40 + i * 15, y = -10 + ((t * 40 + i * 13) % 16); fr(g, QC.wetL, x, y, 1, 2); } }
-  /* (claude/underwell3) SCORCHED: the fire has cracked her shell - glowing seams across every plate, embers rising off them */
-  if (o.scorch > 0) { const p = 0.6 + 0.4 * Math.abs(Math.sin(t * 9)); g.globalAlpha = p; for (let i = 0; i < 5; i++) { const x = -38 + i * 16; ln(g, '#ffb84a', 1.4, [[x - 6, -36], [x - 1, -28], [x - 4, -20], [x + 2, -14]]); fr(g, '#fff2c0', x - 2, -29, 2, 2); }
-    ln(g, '#ff9a3c', 1.2, [[30, -34], [36, -26], [32, -18]]); g.globalAlpha = 1; for (let i = 0; i < 5; i++) { const x = -40 + ((i * 23 + t * 30) % 80), y = -40 - ((t * 50 + i * 17) % 22); fr(g, i % 2 ? '#ffd36b' : '#ff9a3c', x, y, 2, 2); } }
+  /* (claude/cqart) HOT: the fire has CRACKED her shell - a glow under the plates, every seam open and burning (a dark red lip, an orange body, a pale core), the heat rising off her; as it burns out the seams sink to a dull red */
+  if (heat > 0 && !o.flash) { const dim = Math.min(1, 0.3 + heat * 1.2), pu = 0.7 + 0.3 * Math.sin(t * 7);
+    g.globalCompositeOperation = 'lighter'; g.fillStyle = 'rgba(255,100,30,' + (0.2 * dim) + ')'; g.beginPath(); g.ellipse(-4, -24, 52, 20, 0, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'source-over';
+    SEAMS.forEach((sm, i) => { const k = dim * (0.75 + 0.25 * Math.sin(t * 6 + i * 1.3)); g.globalAlpha = k * 0.8; ln(g, '#c4300c', 5, sm); g.globalAlpha = k; ln(g, '#7a1408', 3.4, sm); ln(g, '#ff7a22', 2.2, sm); g.globalAlpha = Math.min(1, k * 1.1); ln(g, heat > 0.4 ? '#fff0b0' : '#ff9a3c', 1.1, sm); });
+    g.globalAlpha = dim; ln(g, '#ffb84a', 1.4, [[-46, -36], [-36, -40], [-20, -42], [-4, -42], [12, -41], [28, -38], [38, -34]]);   /* the back's rim, white-hot */
+    for (let i = 1; i < segs.length - 1; i++) { const [x1, y1] = segs[i], r2 = 10.5 - i * 0.7; g.globalAlpha = dim * pu; ln(g, '#ff7a22', 1.8, [[x1 - r2 * 0.6, y1 - 2], [x1 - 1, y1 + 1], [x1 + r2 * 0.6, y1 - 1]]); fr(g, '#ffe9a0', x1 - 1, y1 - 1, 2, 1); }
+    g.globalAlpha = 1; for (let i = 0; i < 9; i++) { const x = -44 + ((i * 23 + t * 30) % 88), y = -40 - ((t * 45 + i * 17) % 26); fr(g, i % 3 ? '#ffd36b' : '#ff9a3c', x, y, 2, 2); } }
+  /* (claude/cqart) DOUSED: a dark wet shell lit cool - sheen along every plate, beads, runnels down the carapace, drops swelling on her belly, rings on the floor where it falls */
+  if (wet > 0 && !o.flash) { const w = Math.min(1, wet);
+    if (soaked) { for (let i = 0; i < 5; i++) { const x = -38 + i * 16, tw = (Math.sin(t * 3 + i * 1.9) + 1) / 2;
+        g.globalAlpha = 0.55 + 0.35 * tw; fr(g, '#d8eef8', x - 6, -37 + Math.abs(i - 2), 7, 1); fr(g, '#ffffff', x - 3 + (i % 2) * 2, -35 + Math.abs(i - 2), 2, 1);
+        g.globalAlpha = 0.7; const rx = x - 4 + ((i * 7) % 5), k = (t * 0.8 + i * 0.23) % 1; ln(g, QC.wet, 1, [[rx, -34 + k * 5], [rx + 1, -18 + k * 3]]); g.globalAlpha = 1; fr(g, '#ffffff', rx, -32 + k * 14, 1, 2); }
+      g.globalAlpha = 0.85; ln(g, '#d8eef8', 1.2, [[30, -38], [38, -34], [44, -31]]); g.globalAlpha = 1;
+      for (let i = 0; i < 16; i++) { const x = -42 + ((i * 29) % 84), y = -38 + ((i * 17) % 22); fr(g, i % 3 ? '#9fd0ee' : '#ffffff', x, y, 1, 1); }
+      for (let i = 0; i < 6; i++) { const x = -34 + i * 14, sw = 1 + ((t * 1.2 + i * 0.31) % 1) * 2; fr(g, '#7ab8e8', x, -11, 2, sw + 1); fr(g, '#e8f4f8', x, -11, 1, 1); } }
+    g.globalAlpha = 0.1 * w; ell(g, QC.wet, -4, -26, 50, 16); g.globalAlpha = 1;
+    if (o.floor && soaked) for (let j = 0; j < 2; j++) { const k = (t * 0.9 + j * 0.5) % 1; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#9fd0ee'; g.lineWidth = 1; g.beginPath(); g.ellipse(-4, 0, 22 + k * 30, 2 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
+  /* (claude/cqart) BLACKENED: burnt out - ash-grey plates split along black fissures, soot and flaked ash on the shell, a last dull ember or two in the cracks that dies as it clears */
+  if (charr > 0 && !o.flash) { const ember = Math.max(0, charr - 0.4) * 1.7;
+    g.globalAlpha = 0.5; for (let i = 0; i < 14; i++) { const x = -42 + ((i * 31) % 84), y = -39 + ((i * 13) % 24); fr(g, i % 2 ? '#a89f94' : '#6a625a', x, y, 2 + (i % 2), 1); }
+    g.globalAlpha = 0.95; for (const sm of SEAMS) { ln(g, '#050403', 2.6, sm); ln(g, '#8a8279', 0.7, sm.map(([x, y]) => [x + 1.4, y - 0.6])); }
+    if (ember > 0) SEAMS.forEach((sm, i) => { const [x, y] = sm[Math.floor(t * 1.6 + i) % sm.length]; g.globalAlpha = Math.min(1, ember) * (0.5 + 0.5 * Math.sin(t * 9 + i * 2)); fr(g, '#e0551c', x - 1, y - 1, 2, 2); });
+    g.globalAlpha = 1; }
 }
 
 /* HER ON THE SCREEN, by pose */
@@ -122,12 +167,19 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   { const tp = tailPose(e, S); o.tail = tp.tail; o.lanceTo = tp.lanceTo; if (tp.tail === 'lance') o.hot = true; }
   if (m === 'sslamTell') { o.claw = 'up'; o.hot = true; } if (m === 'planted') { o.claw = 'down'; o.legs = 'still'; }
   if (m === 'slip') { o.claw = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
-  if (e.scorch > 0) o.scorch = Math.min(1, e.scorch);
+  if (e.scorch > 0) { o.scorch = Math.min(1, e.scorch); o.heat = Math.min(1, e.scorch / CQ.scorchT); o.hot = true; }   /* (claude/cqart) HOT: how much of her burn is left (the seams sink as it dies), and her stinger bare and glowing */
   if (m === 'fallen') { o.legs = 'kick'; o.claw = 'up'; o.tail = 'down'; }
-  /* (claude/cqueenrework, PLACEHOLDER poses for the art lane) DOUSED: dripping (wet sheen); STINGER BROKEN: the tail a stump; REEL: claws thrown up, legs splayed, tail down */
+  /* (claude/cqart) DOUSED: a dark, wet-lit shell with water running off it; BLACKENED: ash-grey and split with soot; STINGER BROKEN: the torn stump; REEL: its own frame, thrown back off the stump */
   if (S.wet > 0) o.wet = Math.max(o.wet || 0, 0.8);
+  if (S.charT > 0 && !(e.scorch > 0)) o.char = Math.min(1, S.charT / CQ.charT);
+  if (S.pose === 'floor') o.floor = true;
   if (S.broken) o.broken = true;
-  if (m === 'reel') { o.claw = 'up'; o.legs = 'splay'; o.walk = false; o.tail = 'down'; o.flash = Math.floor(time * 10) % 2 === 0; }
+  /* THE ARMOURED STINGER: steel-capped while a blow on it is turned to CQ.tailMul (outside her openings, not HOT, not stuck in the floor); bare and gold when it pays */
+  o.armour = !S.broken && !(e.scorch > 0) && !qOpen(e) && !stingerOut(S) && !(S.ward > 0);
+  /* THE PERCH: on THE WELLHEAD she is crouched on the beam, her knees up and wide, the toes hooked over its lip */
+  if (S.pose === 'shaft' && !(e.gone > 0) && m !== 'leap' && m !== 'pounce' && m !== 'drop' && m !== 'fallen' && m !== 'soaked' && m !== 'reel') { o.legs = 'perch'; o.walk = false; }
+  /* REEL (B16): its own frame - the near claw flung up over her shoulder, the far one wide and low, the front legs snatched off the floor, the stump limp; the white hit-flash only on the first beat */
+  if (m === 'reel') { const rt = Math.max(0, e.modeT || 0); o.reel = true; o.reelT = rt; o.claw = 'reel'; o.legs = 'reel'; o.walk = false; o.tail = 'curl'; o.broken = true; o.flash = rt > 1.3 && Math.floor(time * 14) % 2 === 0; }
   /* STANDING, SHE BREATHES: a four-beat heave of the carapace (walking, clinging, hanging, getting up) */
   const idle = !moving && (m === 'walk' || m === 'cling' || m === 'hang' || m === 'recover' || m === 'planted' || m === 'stuck'), breath = idle ? 1 + 0.03 * [0, 1, 0, -1][Math.floor(time * 2.6 / (2 * Math.PI) * 4) % 4] : 1;
   g.save();
@@ -149,11 +201,60 @@ export function drawWindlass(g, x, y, b, time) {
   ln(g, '#c9b27c', 1, [[x, y - 18], [x, y - 40]]);   /* its rope runs up to the vault's pulley */
   if (b.st === 'up') { fr(g, '#7ab8e8', x - 1, y - 26, 3, 3); }
 }
-export function drawBucket(g, mx, vy, b, CQ, time, land) {   /* (claude/cqueenrework) land: THE WELLHEAD's top - the bucket comes down onto it */
-  const drop = land ? land - 14 - (vy - 60) : 90, k = b.st === 'fall' ? 1 - Math.max(0, b.t) / CQ.bucketFall : b.st === 'down' ? 1 : 0, by = vy - 60 + k * drop;
-  ln(g, '#c9b27c', 1, [[mx, vy - 200], [mx, by]]);
-  if (b.st !== 'down' || b.t > CQ.bucketCd - 0.3) { fr(g, '#5a3a22', mx - 9, by, 18, 14); fr(g, '#8a5a32', mx - 8, by + 2, 16, 3); fr(g, '#3a7ab8', mx - 7, by + 1, 14, 2); }
-  if (b.st === 'down') { const up = 1 - b.t / CQ.bucketCd; fr(g, '#5a3a22', mx - 9, vy - 60 + drop - up * drop, 18, 14); }
+/* (claude/cqart) THE BUCKET: a stave bucket with two iron hoops, a rope bail and the water in it - tipped about its west lip when it lands (the stream falls on the lintel; the stone's wet is drawWellhead's), then wound back up empty */
+function bucketArt(g, mx, top, tilt, full, time) {
+  g.save(); const px = mx - 10, py = top; g.translate(px, py); g.rotate(-tilt); g.translate(-px, -py);
+  g.fillStyle = '#1c1108'; g.beginPath(); g.moveTo(mx - 11, top - 1); g.lineTo(mx + 11, top - 1); g.lineTo(mx + 8, top + 15); g.lineTo(mx - 8, top + 15); g.closePath(); g.fill();
+  for (let i = 0; i < 4; i++) { const x = mx - 9 + i * 4.5; fr(g, i % 2 ? '#6a4428' : '#8a5a32', x, top, 4, 14); fr(g, '#a87a46', x, top, 1, 14); }
+  fr(g, '#2a3038', mx - 10, top + 3, 20, 2); fr(g, '#8995a3', mx - 10, top + 3, 20, 1); fr(g, '#2a3038', mx - 9, top + 10, 18, 2); fr(g, '#56606c', mx - 9, top + 10, 18, 1);
+  fr(g, '#a87a46', mx - 11, top - 2, 22, 2); fr(g, '#d8a868', mx - 11, top - 2, 22, 1);
+  if (full > 0) { const h = Math.max(1, R(2 * full)); fr(g, '#2a5a8a', mx - 9, top - 1, 18, h + 1); fr(g, '#7ab8e8', mx - 9, top - 1, 18, 1); fr(g, '#e8f4f8', mx - 6 + R(Math.sin(time * 6) * 2), top - 1, 4, 1); }
+  else { fr(g, '#120c06', mx - 9, top - 1, 18, 2); }
+  ln(g, '#c9b27c', 1, [[mx - 10, top - 1], [mx - 6, top - 7], [mx, top - 9], [mx + 6, top - 7], [mx + 10, top - 1]]); fr(g, '#a87a46', mx - 2, top - 10, 4, 3);
+  g.restore(); }
+export function drawBucket(g, mx, vy, b, CQ, time, land) {   /* land: THE WELLHEAD's top - the bucket comes down onto its curb */
+  const seat = land ? land - 6 - 16 : vy + 30, drop = seat - (vy - 60), k = b.st === 'fall' ? 1 - Math.max(0, b.t) / CQ.bucketFall : b.st === 'down' ? 1 : 0;
+  const since = b.st === 'down' ? CQ.bucketCd - Math.max(0, b.t) : 99, up = b.st === 'down' ? 1 - b.t / CQ.bucketCd : 0;
+  const top = b.st === 'down' ? vy - 60 + drop - up * drop : vy - 60 + k * drop;
+  /* its rope, from the vault's pulley down to the bail; slack and swaying a little while it is up */
+  ln(g, '#c9b27c', 1, [[mx, vy - 200], [mx + (b.st === 'up' ? R(Math.sin(time * 1.3)) : 0), top - 9]]);
+  const tilt = since < 1.2 ? 1.15 * Math.sin(Math.PI * Math.min(1, since / 1.2) * 0.92) : 0, full = b.st === 'down' ? (since < 0.2 ? 1 : Math.max(0, 1 - (since - 0.2) / 0.7)) : 1;
+  bucketArt(g, mx, R(top), tilt, full, time);
+  if (b.st === 'fall') for (let i = 0; i < 3; i++) { const q = (time * 3 + i * 0.4) % 1; fr(g, '#7ab8e8', mx - 8 + i * 8, R(top) - 4 - R(q * 6), 1, 2); }   /* it slops as it drops */
+  /* THE POUR: the stream off the west lip onto the lintel, and the splash where it lands */
+  if (since > 0.1 && since < 0.95 && land) { const lx = mx - 10 - R(tilt * 3), ly = R(top) + R(tilt * 4), fall = land - ly;
+    for (let i = 0; i < 9; i++) { const s = i / 8, wx = lx - 2 - s * 9, wy = ly + s * s * fall; fr(g, '#2a5a8a', R(wx) - 1, R(wy), 4, 3); fr(g, '#7ab8e8', R(wx), R(wy), 2, 3); fr(g, '#e8f4f8', R(wx), R(wy), 1, 1); }
+    for (let i = 0; i < 6; i++) { const q = (time * 5 + i * 0.31) % 1; fr(g, i % 2 ? '#e8f4f8' : '#7ab8e8', lx - 11 + R((i - 2.5) * 5 * q), land - 1 - R(Math.sin(q * Math.PI) * 8), 1, 1); } }
+}
+/* (claude/cqart) THE WELLHEAD: her perch, dressed as what it is - a lintel of dressed stone across the sump (courses, joints, a rope groove worn at its middle, a drip-moulding under), a squat stone curb at its middle for the bucket to land on, and an iron frame over the curb with the pulley's sheave. The bucket comes down between the two cheek plates and TIPS its water over the curb's lip onto the lintel: it runs along the stone, darkens it, and drips off both edges. */
+const WH = { top: '#cfae78', face: '#7c684c', faceD: '#5a4a34', joint: '#2a2016', mould: '#2c2218', mouldL: '#5a4630', relief: '#a58a5e', iron: '#2a3038', ironM: '#56606c', ironL: '#8995a3', ironH: '#d6e0ea', rope: '#c9b27c' };
+export function drawWellhead(g, G, cx, cy, b, CQ, time) {
+  const b0 = R(G.beam[0] - cx), b1 = R(G.beam[1] - cx), y0 = R(G.beamY - cy), mx = R(G.mid - cx), W = b1 - b0;
+  const since = b.st === 'down' ? CQ.bucketCd - Math.max(0, b.t) : 99;   /* seconds since the bucket landed (99: it has not) */
+  /* THE LINTEL: courses of dressed stone over the slab, the top lit, the joints dark, a carved lozenge on each block, the drip-moulding under */
+  fr(g, WH.mould, b0 - 2, y0 + 7, W + 4, 3); fr(g, WH.mouldL, b0 - 2, y0 + 7, W + 4, 1); fr(g, '#16110b', b0 - 2, y0 + 9, W + 4, 1);
+  fr(g, WH.face, b0, y0 + 1, W, 6); fr(g, WH.faceD, b0, y0 + 5, W, 2); fr(g, WH.top, b0, y0, W, 1); fr(g, '#e8d09a', b0 + 2, y0, W - 4, 1);
+  for (let x = b0 + 24; x < b1 - 6; x += 32) { fr(g, WH.joint, x, y0 + 1, 1, 6); fr(g, '#8a7656', x + 1, y0 + 1, 1, 5); }
+  for (let x = b0 + 8; x < b1 - 8; x += 32) { fr(g, WH.relief, x + 3, y0 + 3, 4, 1); fr(g, WH.faceD, x + 4, y0 + 4, 2, 1); }
+  for (const [ex, d] of [[b0, 1], [b1, -1]]) { fr(g, WH.joint, ex + (d > 0 ? -2 : 0), y0, 2, 10); fr(g, WH.top, ex + (d > 0 ? -2 : 0), y0, 2, 1); }   /* the end blocks, keyed into the columns */
+  fr(g, '#2a2016', mx - 3, y0 + 1, 6, 5); fr(g, '#3c3022', mx - 2, y0 + 1, 4, 3);   /* the groove the rope has worn at its middle */
+  /* THE WET: the bucket's water running along the lintel, darkening the stone, its sheen, the runnels down the face, the drips off both edges - spreading for 1.3 s, drying away by ~6 */
+  if (since < 6.5) { const sp = Math.min(1, since / 1.3), fade = Math.max(0, Math.min(1, (6.5 - since) / 3)), L = 8 + 36 * sp;
+    for (const d of [-1, 1]) { const xa = d < 0 ? mx - 12 - L : mx + 12, wdt = L; g.globalAlpha = 0.45 * fade; fr(g, '#1c3a56', xa, y0 + 1, wdt, 6); g.globalAlpha = 0.9 * fade; fr(g, '#7ab8e8', xa, y0, wdt, 1); fr(g, '#d8eef8', xa + 2 + R(Math.sin(time * 5 + d) * 2), y0, 3, 1);
+      for (let i = 0; i < 3; i++) { const rx = xa + 4 + i * (wdt / 3.4), k = (since * 0.7 + i * 0.3) % 1; g.globalAlpha = 0.8 * fade; fr(g, '#7ab8e8', R(rx), y0 + 1, 1, 6); fr(g, '#d8eef8', R(rx), y0 + 1 + R(k * 5), 1, 2); } }
+    g.globalAlpha = 1;
+    if (since < 5) for (const ex of [mx - 12 - L, mx + 12 + L - 1]) for (let i = 0; i < 3; i++) { const k = (since * 1.6 + i * 0.37) % 1, ox = Math.max(b0, Math.min(b1 - 1, R(ex))) + (i - 1) * 3; g.globalAlpha = (1 - k) * Math.min(1, fade * 2); fr(g, '#7ab8e8', ox, y0 + 10 + R(k * 34), 2, 3); fr(g, '#e8f4f8', ox, y0 + 10 + R(k * 34), 1, 1); }
+    g.globalAlpha = 1; }
+  /* THE CURB: a squat stone drum at the lintel's middle, an iron band round it, the bucket's seat */
+  fr(g, '#1c150e', mx - 13, y0 - 7, 26, 7); fr(g, '#6e5c42', mx - 12, y0 - 6, 24, 6); fr(g, '#8a7656', mx - 12, y0 - 6, 24, 1); fr(g, WH.top, mx - 12, y0 - 7, 24, 1);
+  fr(g, WH.faceD, mx - 12, y0 - 2, 24, 2); fr(g, WH.iron, mx - 12, y0 - 5, 24, 2); fr(g, WH.ironL, mx - 12, y0 - 5, 24, 1); for (const rx of [-9, -2, 5, 10]) fr(g, WH.ironH, mx + rx, y0 - 4, 1, 1);
+  /* THE FRAME: two iron cheek plates, a cross-bar, the sheave between them turning with the rope */
+  for (const sx of [-14, 12]) { fr(g, WH.iron, mx + sx, y0 - 30, 3, 24); fr(g, WH.ironL, mx + sx, y0 - 30, 1, 24); fr(g, WH.ironM, mx + sx + 2, y0 - 30, 1, 24); fr(g, WH.ironH, mx + sx, y0 - 8, 3, 1); }
+  fr(g, WH.iron, mx - 16, y0 - 32, 32, 3); fr(g, WH.ironL, mx - 16, y0 - 32, 32, 1); fr(g, WH.iron, mx - 18, y0 - 30, 3, 2); fr(g, WH.iron, mx + 15, y0 - 30, 3, 2);
+  const ang = b.st === 'fall' ? time * 9 : b.st === 'down' ? -time * 1.6 : time * 0.25, wy = y0 - 22;
+  g.fillStyle = '#12161a'; g.beginPath(); g.arc(mx, wy, 7.5, 0, Math.PI * 2); g.fill(); g.fillStyle = WH.ironL; g.beginPath(); g.arc(mx, wy, 6, 0, Math.PI * 2); g.fill(); g.fillStyle = WH.iron; g.beginPath(); g.arc(mx, wy, 4, 0, Math.PI * 2); g.fill();
+  for (let i = 0; i < 4; i++) { const a = ang + i * Math.PI / 2; ln(g, WH.ironH, 1, [[mx + Math.cos(a) * 1.5, wy + Math.sin(a) * 1.5], [mx + Math.cos(a) * 5.2, wy + Math.sin(a) * 5.2]]); }
+  fr(g, WH.ironH, mx - 1, wy - 1, 2, 2); fr(g, WH.ironH, mx - 6, wy - 5, 2, 1);
 }
 export function drawTunnels(g, x0, x1, fy, S, time) {
   for (const [x, d] of [[x0, 1], [x1, -1]]) { g.fillStyle = '#0a0808'; g.beginPath(); g.ellipse(x + d * 2, fy - 12, 10, 13, 0, 0, Math.PI * 2); g.fill(); fr(g, '#5a5048', x + d * 6 - (d < 0 ? 4 : 0), fy - 26, 4, 2); }

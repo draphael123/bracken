@@ -242,7 +242,7 @@ export function view(e, S) {
   /* (claude/cqueenrework) on THE WELLHEAD she stands upright on the beam - no more hung upside down from nothing */
   if (m === 'fallen') { V.sy = -1; V.ty = -30; }
   if (m === 'rear') { V.tx = -10; V.rot = -0.55 * face; }
-  if (m === 'reel') { V.tx = -8 * face; V.rot = -0.18 * face; }   /* (claude/cqueenrework) HER STINGER BROKEN: she reels back off it (a placeholder pose) */
+  if (m === 'reel') { V.tx = -10 * face; V.rot = -0.24 * face; }   /* (claude/cqueenrework) HER STINGER BROKEN: she reels back off it (claude/cqart: its own frame, drawn in src/redraw/cistern_queen_art.js, thrown further back) */
   if (m === 'diveTell') V.sink = CQ.sinkH * ease(Math.min(1, 1 - Math.max(0, e.modeT) / CQ.diveT));
   else if (S.pose === 'burrow' || S.pose === 'tunnel') V.sink = CQ.sinkH;
   if (S.tunnelK != null && m === 'ambushTell') V.sink = CQ.sinkH * S.tunnelK;   /* into the tunnel: down off the wall and under */
@@ -592,7 +592,7 @@ export function douse(e, S, c, why) { const was = S.wet > 0; S.wet = CQ.douseT; 
 
 /* ---------- HER STINGER BREAKS (claude/cqueenrework): its purse spent - she reels, a stall; every stinger move is gone for the rest of the phase ---------- */
 export function breakStinger(e, S, c) { if (S.broken) return; S.broken = true; S.n.broken2 = (S.n.broken2 || 0) + 1; S.stinger = null; S.bloom = null;
-  const G = S.G; c.number(e.x, Math.min(e.y, G.floor) - 86, 'HER STINGER BREAKS: SHE FIGHTS WITH HER CLAWS', '#ffd36b'); c.sound('snap'); c.shake(4); c.fx('lance', e.x, Math.min(e.y, G.floor) - 60);
+  const G = S.G; c.number(e.x, Math.min(e.y, G.floor) - 86, 'HER STINGER BREAKS: SHE FIGHTS WITH HER CLAWS', '#ffd36b'); c.sound('stingBreak'); c.shake(4); c.fx('lance', e.x, Math.min(e.y, G.floor) - 60);
   if (S.script) { const B = BROKEN_FOR[S.ph] || {}; for (let i = S.step; i < S.script.length; i++) { const k = S.script[i].split(':')[0]; if (STING_MOVES.has(k)) S.script[i] = B[k] || 'pincer'; } }
   if (!qOpen(e) && S.pose === 'floor' && e.mode !== 'grab' && e.mode !== 'hold' && !EXPLICIT.has(e.mode) && e.mode !== 'crawl') {   /* (she reels only on the floor: up a wall or on the wellhead the break is told and she fights on) */ S.claw = null; setMode(e, 'reel', CQ.breakT); } }
 /* a new phase: she MOULTS - her stinger is whole again, and its purse full */
