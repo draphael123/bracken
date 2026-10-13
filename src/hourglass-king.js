@@ -31,11 +31,11 @@ export const HK = {
   glass: 12, glass3: 8, lowAt: 0.48, lowAt3: 0.6,
   openMul: 2.0, openCap: 0.09, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
-  walk: 64, keep: 46, gap: [0.3, 0.2, 0.1],   /* (claude/buriedcity3: walk 42 -> 64 - "you lure him back and forth") */
+  walk: 64, keep: 46, gap: [0.45, 0.35, 0.25],   /* (claude/buriedcity3: walk 42 -> 64 - "you lure him back and forth") */
   pendTell: 0.62, pendT: 0.2, pendReach: 56, pendRange: 74,
   gearTell: 0.7, gearV: 165, gearR: 9,
   streamTell: 0.85, streamT: 0.45, streamR: 18,
-  surgeTell: 0.8, surgeV: 190, surgeH: 26, surgeW: 12,                 /* SAND SURGE: a tall wave from him toward you (one way) */
+  surgeTell: 0.9, surgeV: 190, surgeH: 26, surgeW: 12,                 /* SAND SURGE: a tall wave from him toward you (one way) */
   graspTell: 0.9, graspR: 20, graspHold: 0.8, graspUp: 0.35,            /* BURIAL GRASP: hands rise under your spot; caught on the sand you are held */
   rainTell: 1.0, rainN: 3, rainR: 11, rainT: 0.3, rainGap: 64,         /* GLASS RAIN: shards in told marks (one on you) */
   slipTell: 0.9, slipBack: 2.0, slipR: 26, slipRec: 0.9,                /* TIME SLIP: he snaps back to where he stood 2 s ago, swinging; then stands a beat */
@@ -44,7 +44,7 @@ export const HK = {
   great: { cd: 9.0, openT: 5.0, openCap: 0.12, dragV: 260 },          /* THE GREAT HOURGLASS (phase three's opening): its run back down, its open, its share */
   swap: 5.0, swapWarn: 1.0,                                             /* phase two's blocks: up/down by turns */
   tide: { every: 7.0, warn: 1.3, dur: 2.8 },                            /* phase two on: THE SAND TIDE - told, then the floor is DRIFT for dur s (take to a ledge or a block) */
-  dmg: { pend: 54, gear: 32, stream: 40, surge: 44, grasp: 36, rain: 34, slip: 46, hour: 48, pour: 11 },
+  dmg: { pend: 34, gear: 24, stream: 30, surge: 26, grasp: 28, rain: 18, slip: 34, hour: 36, pour: 8 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
