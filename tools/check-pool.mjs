@@ -15,6 +15,7 @@ export const SERIAL_TAIL = {
   'mobile-perf': 'frame timing must be measured without other labs on the GPU',
   'online-coop': 'host and guest need two simultaneous browsers of their own',
   'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
+  'textfit': 'opens several full game pages at once and needs the machine memory to itself',
   'textfit-full': 'its fixed ten-minute budget must not include pool contention',
   'profile-cleanup': 'must inspect completed children after the pool',
   'profile-leaks': 'must inspect the whole run after every child closes',
@@ -127,7 +128,11 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
       answer.set(result.name, result);
     }
     for (const b of shared.values()) await b.run.close(); shared.clear();
-    for (const job of tail) answer.set(job.name, await launch(job, 0));
+    for (const job of tail) {
+      const borrow = (job.name === 'textfit' || job.name === 'textfit-full');
+      if (!borrow) { for (const b of shared.values()) await b.run.close(); shared.clear(); }
+      answer.set(job.name, await launch(job, 0, borrow ? 0 : null));
+    }
   } finally { for (const b of shared.values()) await b.run.close(); for (const child of servers.values()) if (child) child.kill(); }
   return rows.map(r => answer.get(r.name));
 }
