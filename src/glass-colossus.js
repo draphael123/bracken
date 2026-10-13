@@ -35,35 +35,37 @@ export const COL = {
   hp: 680, w: 72, h: 200,
   /* (claude/colossus3, Daniel 10-07 after playing it: "the laser A LOT SLOWER") the windup ~1.7x longer, and the lance no longer lands along the whole line at once:
      a BOLT of light (lanceLen px) TRAVELS out from its chest at lanceV px/s to the mirror or the wall - you see it come, and jump it as it passes */
-  lanceTell: 1.65, lanceTell3: 1.45, lanceV: 190, lanceLen: 56, lanceDmg: 92, lanceBand: [28, 4],
-  stompTell: 0.72, stompV: 240, stompH: 14, stompDmg: 60,
-  shardTell: 0.85, shardAct: 0.25, shardDmg: 37, shardR: 9, shardSpread: 60,
-  shakeTell: 0.85, shake: 0.9, shakeDmg: 29, shakeAfter: 1.2, shakeCd: 5,
+  lanceTell: 1.65, lanceTell3: 1.45, lanceV: 190, lanceLen: 56, lanceDmg: 124, lanceBand: [28, 4],
+  stompTell: 0.72, stompV: 240, stompH: 14, stompDmg: 108,
+  shardTell: 0.85, shardAct: 0.25, shardDmg: 74, shardR: 9, shardSpread: 60,
+  shakeTell: 0.85, shake: 0.9, shakeDmg: 36, shakeAfter: 1.2, shakeCd: 5,
   /* NEW P2 (claude/colossus3, Daniel 10-07: "no add summoning" - the swarm call is gone from the fight): THE CRACK LINE (!!) - an amber glow runs along the
      floor from its foot to where you stand (and a little past); then glass spikes erupt along it, foot first, the front running out at crackV px/s (a spike
      bites for crackHot s as it rises). Jump it, or step off the line (past its end, or up on a hold). FIRELIGHT on its crack as they finish HOLDS it:
      its SHOULDERS BLAZE once the spikes are done (the phase's opening, as the swarm's was): dodge the line, then climb */
-  crackTell: 1.15, crackV: 260, crackHot: 0.22, crackH: 22, crackDmg: 52, crackFoot: 30, crackOver: 30, crackMin: 48,
-  waveTell: 0.85, waveV: 260, waveH: 16, waveDmg: 53,
+  crackTell: 1.15, crackV: 260, crackHot: 0.22, crackH: 22, crackDmg: 92, crackFoot: 30, crackOver: 30, crackMin: 48,
+  waveTell: 0.85, waveV: 260, waveH: 16, waveDmg: 92,
   /* NEW P1: THE SHARD SWEEP (!!) - its arm reaches out to the wall on your side and drags back along the floor to its feet: jump it, or be up on a hold */
-  sweepTell: 0.75, sweepV: 380, sweepH: 18, sweepDmg: 47, sweepIn: 40,
+  sweepTell: 0.75, sweepV: 380, sweepH: 18, sweepDmg: 92, sweepIn: 40,
   /* NEW P2: THE GLASS QUAKE (!!) - the floor plates under you and either side heave up (marked), then lie as slick tilted shards that slide you outward */
-  quakeTell: 0.9, quakeAct: 0.35, quakeDmg: 45, quakeW: 20, quakeH: 24, quakeSpread: 76, quakeSlick: 3.0, quakePush: 70,
-  openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.1,
+  quakeTell: 0.9, quakeAct: 0.35, quakeDmg: 82, quakeW: 20, quakeH: 24, quakeSpread: 76, quakeSlick: 3.0, quakePush: 70,
+  /* (claude/colossusrework tune, Daniel 10-13 "he is a little easy": every blow ~70% harder - stomp 60->108, shards 37->74, crack 52->92, wave 53->92, sweep 47->92, quake 45->82, lance 92->124, shake 29->36 (the human bot with the kit took ~45% of its pool and won 17/18) -
+     and an opening may take 13% (was 10%): sixty-four tiles and the walk made the fight long, the warden timed out in phase two) */
+  openT: 5.2, openShoulders: 5.6, openCrown: 5.4, openMul: 2.0, plungeMul: 2.4, openCap: 0.13,
   legPurse: [0.1, 0.06, 0.05], legMul: 1.0,
   wardT: 3.0, lockT: 1.5, phase2: 0.55, phase3: 0.25, phaseT: 2.2,
-  gap: [0.45, 0.4, 0.32],
+  gap: [0.3, 0.27, 0.22],   /* (claude/colossusrework tune: was 0.45/0.4/0.32 - the wider arena and the walk gave the time back) */
   /* (claude/colossusrework, Daniel 10-13: "he should MOVE AROUND a little (slowly)") HE WALKS between his stations: told (walkTell - his weight goes back, IT STRIDES,
      the ground shakes), then a slow stride (walkV px/s) to the next station, a footfall every strideT s (the step sound, a shake, and THE TRAMPLE under the landing
      foot: a small red bite, told by the lifted foot and its mark - step out of his path). His holds go with him (a climber rides) */
-  walkTell: 0.9, walkV: 54, strideT: 0.6, trampleW: 16, trampleH: 14, trampleDmg: 30, footOut: 28,
+  walkTell: 0.9, walkV: 54, strideT: 0.6, trampleW: 16, trampleH: 14, trampleDmg: 40, footOut: 28,
   /* NEW (P1, P3; claude/colossusrework, Daniel 10-13: "~two more attacks"): THE GAZE (!!) - his eyes burn and the gaze sweeps the floor from the far wall to your side:
      BREAK HIS LINE OF SIGHT - stand in a mirror's SHADE (drawn behind every disc during the tell), behind a mirror FACING him (it catches the gaze: all beyond it is dark),
      or up on his hips / shoulders (under his chin). gazeV px/s; the shade behind a disc runs shadeMin + shadeK x its distance from him (max shadeMax) */
-  gazeTell: 1.15, gazeV: 300, gazeW: 12, gazeDmg: 58, shadeMin: 30, shadeK: 0.26, shadeMax: 92,
+  gazeTell: 1.15, gazeV: 300, gazeW: 12, gazeDmg: 90, shadeMin: 30, shadeK: 0.26, shadeMax: 92,
   /* NEW (P2, P3): THE SHARD LUNGE (!, yellow - block or parry it): he draws a glass spear and drives it at the MIRROR nearest you (or at you, with none near): the
      marked ground round it erupts and the mirror is speared round to the wrong notch (P1 sky, P2 facing, P3 fire). Step off the mirror, or block */
-  lungeTell: 0.95, lungeAct: 0.35, lungeW: 34, lungeH: 44, lungeDmg: 50, lungeReach: 440, lungeNear: 80,
+  lungeTell: 0.95, lungeAct: 0.35, lungeW: 34, lungeH: 44, lungeDmg: 84, lungeReach: 440, lungeNear: 80,
   chain: { 1: ['lance', 'stomp', 'gaze', 'sweep', 'shards', 'walk', 'lance', 'sweep', 'gaze', 'shards', 'stomp', 'walk'], 2: ['crack', 'quake', 'lunge', 'shards', 'walk', 'crack', 'stomp', 'lunge', 'quake', 'walk'],
     3: ['lance', 'gaze', 'lunge', 'wave', 'walk', 'sweep', 'lance', 'shards', 'lunge', 'quake', 'gaze', 'walk'] },
 };
@@ -350,7 +352,7 @@ export function takeBlow(e, S, dmg, footY, plunge, out = {}) {
 
 /* ---------- THE BOT (src/lab.js): what a player sees, read a quarter-second late (the house's human bot: react 0.25 s, a tell misread one time in eight) ----------
    missBait: it does not make it behind the mirror for a lance; missTurn: it fumbles a mirror's turn this time (tries again a second later); missGrip: it lets go in a shake */
-export const COL_PLAN = { react: 0.25, miss: 0.13, missBait: 0.25, missTurn: 0.2, missGrip: 0.2 };
+export const COL_PLAN = { react: 0.25, miss: 0.13, missBait: 0.25, missTurn: 0.2, missGrip: 0.2, missShade: 0.2 };   /* (claude/colossusrework) missShade: it does not make the dark in time for a gaze, one in five (as missBait for the lance) */
 /* P: { x, y, ground, face, atk, vy }; returns { gx (walk to), jump, dodge, block, atk, talk (E), grip (hold down), face, why } */
 /* (claude/glasssea2) eyes: the v2 / human profile - src/lab-perceive.js already shows it his mode a reaction late (and misreads some), so the plan does not react
    twice: a tell is answered as soon as it is SEEN; only its hands' own fumbles (the bait, the turn, the grip) stay */
@@ -402,7 +404,7 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   /* (claude/colossusrework) THE GAZE: under his chin (on his hips/shoulders) stay; on the floor, into the nearest dark - behind a FACING mirror, or a disc's shade */
   if ((e.mode === 'gazeTell' || e.mode === 'gaze') && S.gaze) {
     if (onHip || onSh) { out.gx = P.x; out.why = 'under his chin'; return out; }
-    if (late('gaze')) { if (P.ground && gazeBlock(S, P.x)) { out.gx = P.x; out.why = 'in the shade'; return out; }
+    if (late('gaze') && !(mem['shade' + S.n.gaze] ??= rng() < COL_PLAN.missShade)) { if (P.ground && gazeBlock(S, P.x)) { out.gx = P.x; out.why = 'in the shade'; return out; }
       const sf = gazeSafe(S, P.x)[0]; if (sf) { out.gx = sf.x; out.why = 'into the ' + sf.how; return out; } } }
   /* THE SHARD LUNGE: off its mark (or a shield turns it: yellow) */
   if ((e.mode === 'lungeTell' || e.mode === 'lunge') && S.lunge && late('lunge')) { const Lg = S.lunge, on = Math.abs(P.x - Lg.x) < COL.lungeW + 10;
@@ -430,9 +432,10 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   if (S.ph === 3) { const skyM = fl.find(q => q.notch === 'sky');
     if (!skyM && S.ward <= 0 && e.mode !== 'lanceTell' && e.mode !== 'lance') { const m = fl.find(q => Math.sign(q.x - cx) === side) || myFlank; out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnS' + m.notch + Math.floor(t), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to the sky'; return out; } }
   /* (claude/glasssea2) P1: THE MIRRORS START TO THE SKY and it knocks the one that cracked it away again - TURN THE MIRROR TO HIM (the nearest; a turn a second, fumbled one in five) */
-  if (S.ph === 1 && S.ward <= 0 && !S.mirrors.some(q => q.notch === 'face' && Math.sign(q.x - cx) === side) && e.mode !== 'lance') { const m = S.mirrors.filter(q => Math.sign(q.x - cx) === side).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] || myMirror;   /* (claude/colossusrework: four mirrors - the one on YOUR side, the lance comes your way) */ out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnF' + m.notch + Math.floor(t * 1.5), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to him'; return out; }
+  const nearM = fl.find(q => Math.sign(q.x - cx) === side);   /* (claude/colossusrework) the FLANKING mirror on your side: a lance thrown back from it leaves time to climb (a far one costs the opening) */
+  if (S.ph === 1 && S.ward <= 0 && nearM && nearM.notch !== 'face' && e.mode !== 'lance') { const m = nearM;   /* (claude/colossusrework: four mirrors - the one on YOUR side, the lance comes your way) */ out.gx = m.x; if (Math.abs(P.x - m.x) < 14 && onFloor && late('turnF' + m.notch + Math.floor(t * 1.5), COL_PLAN.missTurn)) { out.talk = true; out.face = Math.sign(m.x - P.x) || P.face; } out.why = 'turn to him'; return out; }
   /* P1 (and P3's lances): wait just outside a FACING mirror on your side; while its lance is far off, cut its legs */
-  const m = S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - cx) === side) || S.mirrors.find(q => q.notch === 'face');
+  const m = (nearM && nearM.notch === 'face' ? nearM : null) || S.mirrors.find(q => q.notch === 'face' && Math.sign(q.x - cx) === side) || S.mirrors.find(q => q.notch === 'face');
   if (m) { const safeX = outside(m);
     const recent = (e.mode === 'idle' && S.lock > 0) || mem.after > t;   /* right after an opening (the ward and the lockout): no lance comes - the legs */
     if (S.legPurse > 0 && recent && onFloor) { const s = Math.sign(m.x - cx); out.gx = legX(s); if (Math.abs(P.x - out.gx) < 10 && (mem.legT ?? -9) < t - 0.9) { mem.legT = t; strike(-s); } out.why = 'legs'; return out; }
