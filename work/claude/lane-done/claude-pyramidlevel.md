@@ -149,14 +149,24 @@ None of its set pieces are reused here: no fixed mirrors, no thrown fire or burn
 - corpses ok, boss-fight-end (62 fights), mark-integrity MI_ONLY=scarabmother (charge/snap/spit posed + landed), untold-told.
 - probe (work/claude/pyramidlevel/probe.mjs): every machine fires, a tomb spawns its dead, both sluices rise, and you swim out.
 
-STAMPS_AND_LATE_CHECKS
+**More page checks:**
+- sealed-pyramid-stuck 8/8: every route need glints and nudges, including the two new sluices.
+- boss-openings ok: her block, darts and stone each open her 3.4 s, then a 3 s ward, and a trap in the ward glances off.
+- textfit --strict (TEXTFIT_PAGES=2): 0 issues in this level. Its 4 findings are pre-existing: coophelp, fallingtower and fair.
+
+**Re-stamped, LEVEL THEN BOSS:**
+- docs/level1-pilot.json: 36 blows, 8 deaths, walked 100%.
+- docs/level1-curve.json: 257% lost a run, 6 deaths in 3 runs, inside act 5's band.
+- docs/mash-bot.json level: every hero dies (knight 14, warden 59, pyro 11 deaths).
+- docs/mash-bot.json boss: the Mother holds 0/6 (left 91/93/83%). Only sealedpyramid rows changed.
+- **level-quality: CLEARS THE BAR (gated).**
 
 ## Reds
 - **Walker (pre-existing on master 7d920edb; not this lane's change):** warden and pyro never finish the FIRST half. The warden sticks on the first counterweight: he jumps on the block instead of riding it. The pyro sticks in the pits / deep way.
   - The cause is that the hint's `wait: true` is not a key the walker reads; it reads `hold`.
   - I tried `hold` and it made the shafts worse for pyro, so I reverted it.
   - This needs a walker-hands lane.
-- **textfit --strict:** the full run's "boss" scope timed out at 480 s on this PC under load (Runtime.evaluate; not a text failure). Rerun result below.
+- **textfit --strict:** the default run timed out its "boss" scope at 480 s on this PC under load (not a text failure). It passed on rerun with TEXTFIT_PAGES=2.
 
 ## ART needs for LANE C (placeholders today)
 1. **The tomb niches and their lids:**

@@ -10,3 +10,19 @@ ok  sealed-pyramid-stuck: every route need glints and nudges
 errors []
 {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"coldOpen":0,"mode":"scorched","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":"vent"},"mage":{"laid":true,"landed":{"mode":"hover","open":0,"hurt":true},"mode":"gather","open":3},"
 == textfit
+  scope bossfix          225 screens  68.5s
+  scope talk[reaper]     793 screens  97.1s
+
+== OFFSCREEN (1)
+  main.js:32054   coophelp page 2                                              "USED TWICE IS FLAGGED RED."
+
+== COVERS (2)
+  main.js:31766   talk fallingtower sign@34,300 [knight] page 1/1              "CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND" lines 3
+  main.js:31766   talk fair sign@405,12 [knight] page 1/1                      "THE HAYLOFT. SHOW 12 TICKETS." lines 2
+
+== COLLIDE (1)
+  main.js:32054   coophelp page 2                                              "SETTINGS > CONTROLS > REBIND KEYS: ONE PAGE EACH FOR" x "LEFT/RIGHT page   Z next   ESC close" (main.js:32054)
+
+9986 screens drawn, 107809 strings measured, 598s. OVERFLOW 0  OFFSCREEN 1  CLIPPED 0  TRUNCATED 0  COVERS 2  COLLIDE 1  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+13 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidlevel\audits\readability\textfit
+ALLDONE2
