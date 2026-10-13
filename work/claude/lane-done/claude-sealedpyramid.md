@@ -131,7 +131,7 @@ The Opus pass is done and stops here: level, mechanics and boss AI. The 12-seed 
   - mark-integrity (MI_ONLY=scarabmother, 150 s): charge, snap and spit drawn and landing. P2/P3 moves are not reached by its fight bot; their poses are on the pose sheet and they run in the boss-rates fights.
   - boss-read, boss-music, audio-assets, hint-shown, modulepreload, textfit (hints, bestiary, mapcard, boss: 0 issues).
 - **Reds not from this lane:**
-  - dangling-paths: tools/anti-plunge.mjs is missing on batch87.
+  - dangling-paths: the anti-plunge check file was not on the batch87 base (it is not in this tree either; the check list does not run it).
   - boss-greed: the minecart mini.
   - curve-gate: wood and marsh rows.
   - All three are red on the batch87 baseline too.
