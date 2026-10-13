@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-10-13",
+    "batch": 90,
+    "lines": [
+      "Buried City: the invisible platforms are fixed",
+      "The Hourglass King: strike the great hourglass to flip it",
+      "New rooftops to run across, and new King moves",
+      "New game: the hero pick shows every hero, locked ones as silhouettes"
+    ]
+  },
+{
+    "date": "2026-10-13",
     "batch": 89,
     "lines": [
       "New level: THE SEALED PYRAMID, and its Scarab Mother",
