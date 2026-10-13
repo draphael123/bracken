@@ -13,6 +13,7 @@ import { T } from './level.js';
 import { bakeMatriarch, poseOf, frameOf } from './redraw/matriarch_cast.js';   /* HER OWN SILHOUETTE (claude/redgorge2 art pass) */
 import { drawLedge, planLedgeDress } from './redraw/matriarch_ledge.js';   /* THE NEST LEDGE's set: the gates, the levers, the bridges, the water */
 import { drawTimber } from './redraw/redgorge2_art.js';
+import { drawStandpipes, drawBaskets, drawWave, drawLeverMarker, drawLeverLine } from './redraw/matriarch_sluice.js';   /* (claude/rgart) the standpipes, baskets, wave, lever marker and line */
 const { MAT } = RM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), leap: s => (s.leap || s.heavy)(), slash: s => (s.foeSlash || s.slash)(), sweep: s => (s.heavy || s.slash)(),
@@ -169,17 +170,12 @@ export function makeMatriarchHands(ctx) {
   /* the ledge: the spillway's water, the sluice gates, the levers and their gauges, the rope bridges, the channel's water, what lies on the tops */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     if (!S.dress) S.dress = planLedgeDress(ctx.L, T);
+    drawStandpipes(g, cx, cy, time, S, G, { VW: ctx.VW(), VH: ctx.VH() });
     drawLedge(g, cx, cy, time, S, G, { text: ctx.text, boss: ctx.boss, wy: waterY(), VW: ctx.VW(), VH: ctx.VH(), dress: S.dress });
     /* the dam's loose timbers in the channel (they float up when it cracks): broken boards, as the Rapids' */
     /* (claude/redgorgerework, PLACEHOLDER art) THE STANDPIPES and their BASKETS: a stone pipe up the bank's face, the water column under the basket while it holds
        pressure, a timber deck in a rope cradle, and the PRESSURE gauge on the pipe (it drains with the charge); a full lever's basket blinks UP in phase two */
-    for (const b of G.baskets) { const B = S.press[b.id], m = (ctx.movers ? ctx.movers() : []).find(q => q.mbasket === b.id), y = m ? m.y : b.y0, x = Math.round(b.l - cx), w = b.r - b.l;
-      if (x < -60 || x > ctx.VW() + 60) continue; const top = Math.round(b.y1 - cy), foot = Math.round(G.floorY - cy), yy = Math.round(y - cy), px = b.id === 'W' ? x - 6 : x + w + 1;
-      g.fillStyle = '#5a3a2a'; g.fillRect(px, top - 4, 5, foot - top + 4); g.fillStyle = '#7a5440'; g.fillRect(px, top - 4, 1, foot - top + 4);
-      const k = B.charge / MAT.pressT; g.fillStyle = '#10181c'; g.fillRect(px + 1, top, 3, foot - top); if (k > 0) { const gh = Math.round((foot - top) * k); g.fillStyle = '#4a8ac8'; g.fillRect(px + 1, foot - gh, 3, gh); g.fillStyle = '#c8e8ff'; g.fillRect(px + 1, foot - gh, 3, 1); }
-      if (B.h > 0.02 || B.charge > 0) { g.globalAlpha = 0.75; g.fillStyle = '#7ab8e8'; g.fillRect(x + 3, yy + 6, w - 6, Math.max(0, foot - yy - 6)); g.fillStyle = '#e8f4f8'; for (let i = 0; i < 4; i++) g.fillRect(x + 4 + ((i * 7 + Math.floor(time * 30)) % (w - 8)), yy + 8 + i * 5, 2, 2); g.globalAlpha = 1; }
-      g.fillStyle = '#8a5a32'; g.fillRect(x, yy, w, 6); g.fillStyle = '#c8945a'; g.fillRect(x, yy, w, 1); g.fillStyle = '#d9b36a'; g.fillRect(x, yy - 10, 1, 10); g.fillRect(x + w - 1, yy - 10, 1, 10); g.fillRect(x, yy - 10, w, 1);
-      if (S.ph === 2 && B.charge > 0 && B.h < 0.3 && Math.floor(time * 4) % 2) ctx.text('UP', x + w / 2, yy - 16, '#8fd160', 'center', 5); }
+    drawBaskets(g, cx, cy, time, S, G, { VW: ctx.VW(), VH: ctx.VH(), text: ctx.text, movers: ctx.movers ? ctx.movers() : [] });
     for (const m of (ctx.movers ? ctx.movers() : [])) { if (!m.mplank) continue; drawTimber(g, { ...m, w: m.w, what: 'plank', fast: S.ph === 3 && S.water > 0.3 }, cx, cy, time); } };
   /* HER: the matriarch's own silhouette (a pose per mode; the stalk walks, the rest stand still but for the breath), a contact shadow, a net over her when she is tangled, stars when stunned */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
@@ -219,12 +215,9 @@ export function makeMatriarchHands(ctx) {
        white wall of water running from its bank down the channel; the one that reaches her breaks over her (the 'stun' ring) and the read says STUNNED */
     if (S.ph === 1) { const inCh = e.y > G.topY + 8 && e.mode !== 'fly' && !RM.matBig(e), hot = !!S.lure || inCh, blinkG = Math.floor(time * (S.lure ? 8 : 3)) % 2;
       for (const l of G.levers) { if (!S.sluice[l.id] || S.pending.length || S.burst > 0) continue; const lx = R(l.x - cx), ly = R(G.topY - 58 - cy) + R(Math.sin(time * 5) * 3);
-        g.fillStyle = hot && blinkG ? '#fff6c8' : '#ffd36b'; g.beginPath(); g.moveTo(lx - 6, ly - 6); g.lineTo(lx + 6, ly - 6); g.lineTo(lx, ly + 2); g.closePath(); g.fill();
-        if (lx > 24 && lx < ctx.VW() - 24 && ly - 14 > 6 && ly - 14 < ctx.VH() - 8) ctx.text(hot ? 'PULL (E)' : 'LEVER', lx, ly - 14, hot && blinkG ? '#fff6c8' : '#ffd36b', 'center', 5);
-        if (inCh && !(S.ward > 0)) { const y0 = R(G.floorY - 10 - cy), x0 = R((l.id === 'W' ? G.tops[0].r : G.tops[G.tops.length - 1].l) - cx), x1 = R(e.x - cx); g.globalAlpha = hot && blinkG ? 0.9 : 0.55; g.fillStyle = '#ffd36b';
-          for (let xx = Math.min(x0, x1); xx < Math.max(x0, x1); xx += 8) g.fillRect(xx, y0, 5, 2); g.fillRect(lx - 1, R(G.topY - 40 - cy), 2, R(G.floorY - G.topY + 30)); g.globalAlpha = 1; } } }
-    if (S.wave) { const wx = R(S.wave.x - cx), top = R(G.floorY - 30 - cy), bot = R(G.floorY - cy); g.fillStyle = 'rgba(150,200,236,0.85)'; g.fillRect(wx - S.wave.dir * 26, top + 8, 26 * 1, bot - top - 8);
-      g.fillStyle = '#e8f4f8'; g.fillRect(wx - 3, top, 6, bot - top); for (let i = 0; i < 6; i++) g.fillRect(wx + S.wave.dir * (2 + (i % 3) * 3), top + 2 + i * 4 + R(Math.sin(time * 20 + i) * 2), 3, 2); }
+        drawLeverMarker(g, lx, ly, time, hot, blinkG, ctx.text, ctx.VW(), ctx.VH());
+        if (inCh && !(S.ward > 0)) { const y0 = R(G.floorY - 10 - cy), x0 = R((l.id === 'W' ? G.tops[0].r : G.tops[G.tops.length - 1].l) - cx), x1 = R(e.x - cx); drawLeverLine(g, x0, x1, y0, lx, R(G.topY - 40 - cy), R(G.floorY - G.topY + 30), time, hot, blinkG); } } }
+    if (S.wave) drawWave(g, cx, cy, time, S.wave, G);
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - MAT.h / 2 - cy);
     if (RM.matBig(e)) { const k = Math.max(0, e.open / ({ staggered: MAT.staggerT, stunned: MAT.stunT, tangled: MAT.tangleT, pstagger: MAT.p3StaggerT }[e.mode] || 3));
