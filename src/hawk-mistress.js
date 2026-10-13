@@ -40,7 +40,7 @@
 import { KINDS } from './carry-throw.js';   /* (claude/ksarhawk) the bot judges its throw at the hawk on the arc the game draws */
 export const HM = {
   hp: 3200, w: 16, h: 30, markH: 48, floor: 0.4,
-  openMul: 2.0, openCap: 0.10, openT: 4.5, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80, flinchT: 0.35,
+  openMul: 2.0, openCap: 0.085, openT: 4.5, wardT: 3.0, wheelT: 0.9, blindT: 0.7, flashHawk: 80, flinchT: 0.35,
   bareMul: 1.4, bareT: 2.8, bareCap: 0.04, fallT: 0.4, fireR: 22, wheelLow: 46,   /* (claude/ksarhawk) BARE: the lesser openings; the hawk's fall; the fire's reach on it; a wheeling hawk's height over the roof */
   p2: 0.6, p3: 0.25,
   walk: 62, keep: 50, turn: 0.35, gap: [1.0, 0.9, 0.8],
@@ -399,11 +399,14 @@ function stepFire(e, S, dt, h, c) {
    off her cut, steps off the hawk's mark; (claude/ksar2) it JUMPS a snare free, DUCKS a high knife, JUMPS a low one, blocks or rolls a mid one, JUMPS her keg
    or STRIKES IT BACK (some of the time), steps off the rake's line or swings at the hawk as it comes (some of the time), blocks the snatch or steps out from
    under it, and JUMPS THE SHAFTS between the roofs (never walks into one). Between her blows it works THE RULE: a gong while the hawk is up, the rope her
-   guard runs for, a flask at the hawk. Open, it cuts her hard; warded, it waits off her; otherwise her BACK, or from a JUMP, never into her gauntlet.
+   guard runs for, a flask at the hawk. (claude/ksarhawk) THE HAWK GUARDS HER: it fetches a TORCH from a brazier (a KEG some of the time) and throws it into the
+   hawk on the arc the game draws - lined up for PLAN.aim s, the hawk's place misjudged by up to PLAN.aimErr px, so some miss - or rings a gong (bare); it cuts
+   her guard down when one is at its side; open, it sets its torch down and cuts her hard; bare, it burns the low hawk if it still holds fire; warded, it
+   waits off her; under the hawk it chips her only now and then (PLAN.chip) - a clank at the floor.
    s = { P: { x, y, face, ground, atk, carry, snared, lifted }, e, S, gongs, racks, reach, shield, t, rng, mem, v2, hero } ->
        { gx, face, atk, jump, dodge, block, talk, up, down, why } */
 export const PLAN = { react: 0.25, miss: 0.12, missRing: 0.15, ringR: 150, kegBack: 0.5, rakeSwing: 0.4, jumpEdge: 4,
-  kegUse: 0.25, gongCost: 40, chip: 0.3, aim: 0.4, aimErr: 24 };   /* (claude/ksarhawk) a keg instead of a torch some of the time; a gong weighed a little dearer than a brazier; a chip under the hawk now and then; the throw's beat and its misjudged px */
+  kegUse: 0.25, gongCost: 40, chip: 0.3, aim: 0.45, aimErr: 34 };   /* (claude/ksarhawk) a keg instead of a torch some of the time; a gong weighed a little dearer than a brazier; a chip under the hawk now and then; the throw's beat and its misjudged px */
 export function hmPlan(s) {
   const out = hmPlan0(s), { P, S } = s, G = S.G;
   /* THE SHAFTS: never a goal inside one; at a lip with the goal across, JUMP it */
