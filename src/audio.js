@@ -412,6 +412,7 @@ export const SFX = {
   drumJam() { SFX.crack(); SFX.heavy(); tone('sawtooth', 110, 28, 0.8, 0.22); noise(0.55, 0.22, 900, 0.4, 0.05); tone('square', 1800, 1400, 0.5, 0.04, 0.1); },
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },
   bossHurt() { file('bossHurt', 0.55) || tone('sawtooth', 300, 120, 0.25, 0.25); },
+  deny() { tone('triangle', 196, 150, 0.14, 0.09, 0, uiGain); tone('triangle', 147, 110, 0.18, 0.08, 0.07, uiGain); },   /* a SOFT no: a locked hero's card (claude/heroroster) */
   buzz() { tone('sawtooth', 110, 130, 0.5, 0.12); tone('sawtooth', 220, 200, 0.5, 0.06); },
   ui() { file('ui', 0.35, 1, uiGain) || tone('square', 700, 700, 0.04, 0.1, 0, uiGain); },
   uiSel() { tone('square', 900, 1300, 0.08, 0.12, 0, uiGain); },

@@ -78,7 +78,7 @@ try {
      off-godmode passes above stay green. */
   const rg = await pg.evalp(`(async () => {
     const LV = (await import('/src/level.js')).LEVELS, out = [], k = BK.keys, TS = 16;
-    const fresh = () => { BK.setHero('knight'); BK.load(LV.findIndex(l => l.id === 'hanging')); BK.state = 'play'; BK.start(); BK.god = false; BK.SET.godmode = true; BK.reset(); BK.sim(30); for (const e of BK.enemies()) e.alive = false; };
+    const fresh = () => { BK.setHero('knight'); BK.load(LV.findIndex(l => l.id === 'hanging')); BK.state = 'play'; BK.start(); BK.god = false; BK.setDev(true); BK.SET.godmode = true; BK.reset(); BK.sim(30); for (const e of BK.enemies()) e.alive = false; };
     const P = () => BK.P, H = id => BK.hoists().find(m => m.hoist === id), clear = () => { k.left = k.right = k.jump = k.up = k.down = k.atk = k.block = false; };
     const hold = (key, n, until) => { clear(); for (let i = 0; i < n; i++) { k[key] = true; BK.sim(1); if (until && until()) break; } clear(); };
     const hop = dir => { clear(); BK.press('jump'); for (let i = 0; i < 26; i++) { k.jump = true; if (dir) k[dir] = true; BK.sim(1); } clear(); BK.sim(20); };
