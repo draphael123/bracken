@@ -66,7 +66,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
-  hp: 1950, w: 76,   /* (claude/queen4: 1650 -> 1950 with dmgK 0.55 -> 0.62 (1900: 7/8 3/8 5/8 = 63%) - her trips to the walls are seen now (her back open on the floor) and the brood are gone: 1650 x0.55 measured 6/8 5/8 8/8 = 79%, n=24) */ /* (claude/underwell3: 1150 -> 1650 with her blows x dmgK 0.55 - her stinger is whole any time and fire/water open her: the fight ran 60-70 s; 1650 x0.7: 3/8 3/8 2/8 = 33%; 1650 x0.55: 3/8 5/8 5/8 = 54%, fights 61-137 s, human bot n=24) */ /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
+  hp: 2300, w: 76,   /* (claude/queen4: 1650 -> 1950 with dmgK 0.55 -> 0.62 (1900: 7/8 3/8 5/8 = 63%) - her trips to the walls are seen now (her back open on the floor) and the brood are gone: 1650 x0.55 measured 6/8 5/8 8/8 = 79%, n=24) */ /* (claude/underwell3: 1150 -> 1650 with her blows x dmgK 0.55 - her stinger is whole any time and fire/water open her: the fight ran 60-70 s; 1650 x0.7: 3/8 3/8 2/8 = 33%; 1650 x0.55: 3/8 5/8 5/8 = 54%, fights 61-137 s, human bot n=24) */ /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
   openMul: 1.9, openT: 3.2, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
@@ -110,9 +110,9 @@ export const CQ = {
   shellFront: 0.4, shellBack: 0.55, wardMul: 0.4,
   /* (claude/cqueenrework) THE LOOP: HOT - a stinger tell x hotTellK slower; burnt out, BLACKENED charT s (no fire catches her). DOUSED douseT s (above, with the heat): her tells
      x wetTellK, her walk and scuttle x wetWalk; her burrow floods */
-  charT: 10, hotTellK: 1.3, wetTellK: 1.25, wetWalk: 0.7,
+  charT: 10, heroHotK: 0.6, heroHeatT: 2.5, hotTellK: 1.3, wetTellK: 1.25, wetWalk: 0.7,
   /* (claude/cqueenrework) HER STINGER: outside her openings x tailMul (told), stuck / HOT / open x tailOpenMul; tailPurse of her bar a phase on what lands, then it BREAKS: she reels breakT s */
-  tailMul: 0.4, tailOpenMul: 1.75, tailPurse: 0.1, breakT: 1.6,
+  tailMul: 0.4, tailOpenMul: 1.75, tailPurse: 0.06, breakT: 1.6,
   /* (claude/underwell3, Daniel 10-07: "I wanted her STINGER to be the VULNERABLE part") HER STINGER IS ALWAYS HER WEAK SPOT: wherever her tail carries it (curled over her
      back, up a wall, under her in the shaft) a blow on it lands whole (tipMul), outside her ward - it is high, so it is a jump and an up-cut. tipR: its box's half-size */
   tipR: 15,   /* (claude/cqueenrework: what a blow on it lands is CQ.tailMul / tailOpenMul, on its purse) */
@@ -130,7 +130,7 @@ export const CQ = {
   /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
   dmg: { pincer: 15, snap: 12, lunge: 21, lance: 22, flick: 8, strike: 25, charge: 18, spit: 11, puddle: 3, sweep: 18, slam: 18, pin: 22, pounce: 25,
     ambush: 19, wave: 15, grab: 8, sting: 34, tidal: 18, heat: 6, sslam: 30, bloom: 26 },   /* (claude/queen4: the bloom 26 - the death roll's 23 and a little for its two stacks' worth of venom told so long) */
-  dmgK: 0.62,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
+  dmgK: 2.9,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
 };
 for (const k in CQ.dmg) CQ.dmg[k] = Math.round(CQ.dmg[k] * CQ.dmgK * 10) / 10;
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
@@ -576,7 +576,7 @@ function fireUp(e, S, c) { if (!S.mound || !c.fire || !c.fire(S.mound.x)) return
    shell cracking for CQ.scorchT s - a gold ring and its clock over her, every blow on her body whole from any side, her heat on whoever stands close - and when it burns out, her
    told ward (B3) and her shell BLACKENED for CQ.charT (no fire takes her till it clears). c.fire(x): the world's oil */
 const fireUnder = (e, S, c) => { for (let dx = -CQ.w / 2 + 6; dx <= CQ.w / 2 - 6; dx += 10) if (c.fire(e.x + dx)) return true; return false; };
-export function scorchUp(e, S, c, why) { S.scorch = CQ.scorchT; S.n.scorched++; S.n.hot = S.n.hot || {}; S.n.hot[why || 'oil'] = (S.n.hot[why || 'oil'] || 0) + 1; e.scorch = S.scorch; S.scorchWhy = why || 'oil';
+export function scorchUp(e, S, c, why) { S.scorch = CQ.scorchT * (why === 'hero' ? CQ.heroHotK : 1);   /* (claude/cqueenrework: a hero's own fire is a lick, not a pool of oil - heroHotK of it) */ S.n.scorched++; S.n.hot = S.n.hot || {}; S.n.hot[why || 'oil'] = (S.n.hot[why || 'oil'] || 0) + 1; e.scorch = S.scorch; S.scorchWhy = why || 'oil';
   c.number(e.x, Math.min(e.y, S.G.floor) - 70, why === 'up' ? 'THE FIRE DRIVES HER UP: HER SHELL CRACKS. CUT HER' : why === 'hero' ? 'YOUR FIRE TAKES HER: SHE IS HOT. CUT HER' : 'THE FIRE CRACKS HER SHELL: CUT HER ANYWHERE', '#ffd36b'); c.fx('flare', e.x, Math.min(e.y, S.G.floor)); c.sound('flare');
   if (!S.told.steam) { S.told.steam = 1; c.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HOT: WATER ON HER NOW CRACKS HER OPEN', '#7ab8e8'); } }
 /* a fire under her or on her, by any way: HOT if it can take her, else told why not */

@@ -92,7 +92,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     /* she wakes: you came down the old well with water (the courtyard's well is the last before her door, and a checkpoint refills it) - the skin is full */
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.6; for (const pp of ctx.players) if (pp.skin) pp.skin.sips = pp.skin.max || 3; }
     const c = world(e), hs = heroes();
-    if (e.burn > 0 && !(S.scorch > 0)) { if (!CQG.fireOn(e, S, c, 'hero')) e.burn = 0; }   /* (claude/cqueenrework) THE PYRO'S OWN FIRE lights her as a torch does - and no oftener (wet, blackened: it goes out on her) */
+    if (e.burn > 0 && !(S.scorch > 0)) { if (!CQG.hotOK(e, S)) { CQG.fireOn(e, S, c, 'hero'); e.burn = 0; S.heroHeat = 0; } else if ((S.heroHeat = (S.heroHeat || 0) + dt) >= CQ.heroHeatT) { S.heroHeat = 0; CQG.fireOn(e, S, c, 'hero'); } } else if (S.heroHeat > 0) S.heroHeat = Math.max(0, S.heroHeat - dt * 0.5);   /* (claude/cqueenrework) the pyro's fire must keep on her CQ.heroHeatT s to take her (heat builds, and cools when it stops) */   /* (claude/cqueenrework) THE PYRO'S OWN FIRE lights her as a torch does - and no oftener (wet, blackened: it goes out on her) */
     CQG.stepQueen(e, S, dt, hs, c);
     /* her body's box follows her pose: long and low on the floor, tall on a wall, nothing under the sand or up the shaft */
     if (S.pose === 'wall' && (e.mode === 'cling' || e.mode === 'climb' || /Tell$/.test(e.mode) || e.mode === 'spit' || e.mode === 'slam' || e.mode === 'sweepLow' || e.mode === 'sweepHigh')) { e.w = 34; e.h = 82; }
