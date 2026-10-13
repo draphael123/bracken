@@ -49,12 +49,19 @@ export function makeGlassSeaHands(ctx) {
         n: { turns: 0, fused: 0, crumbled: 0, held: 0, boils: 0, falls: 0, spewed: 0, dazzled: 0, frozen: 0, shattered: 0, cold: 0, nudges: 0, slides: 0 } };
       for (const c of GSx.cracks) if (c.swarm) { const near = GSx.fires.filter(f => !f.arena && (f.x >= c.x0 - GS.holdR && f.x <= c.x1 + GS.holdR)); c.fireHeld = near.length > 0; }
     }
+    /* (claude/colossusrework, Daniel 10-13: "after you die the lasers stay but you cannot jump on them") a respawn puts the grid back AS BUILT (main.js
+       spawnEntitiesTail) - every fused tile is AIR again - while the beds keep their count of laid glass (b.set) and the beam still holds them: drawn as glass,
+       nothing to stand on. RE-LAY what is drawn: drawn as a platform = solid (tools/colossus-respawn.mjs) */
+    else relayBeds();
     GSx.stalls = {}; GSx.glint = null; GSx.stallKey = null; GSx.patches = [];
     for (const pp of ctx.players) { pp.gsCold = { v: 0 }; pp.gsSafe = null; pp.gsBoilK = 0; pp.gsPatchK = 0; }
     retrace();
     if (window.BK) Object.assign(window.BK, { glassSea: () => GSx, glassSeaHands: () => H });
   };
 
+  /* every tile a bed DRAWS as glass (index < b.set) is a ONEWAY cell (the grid may have been put back under it); the drawing asks the cell too (drawWorld) */
+  function relayBeds() { if (!GSx) return; const Tt = ctx.T; for (const b of GSx.beds) b.tiles.forEach(([x, y], i) => { const c = ctx.cellGet(x, y); if (i < b.set && c !== Tt.ONEWAY) ctx.cellSet(x, y, Tt.ONEWAY); }); }
+  H.relayBeds = relayBeds;
   /* ---------- THE BEAMS ---------- */
   const T = () => ctx.T;
   let opaqueT = null;
@@ -149,6 +156,7 @@ export function makeGlassSeaHands(ctx) {
       while (b.set > want) { const [x, y] = b.tiles[--b.set]; ctx.cellSet(x, y, Tt.AIR); if (b.set % 3 === 0) ctx.burst(x * ts + 8, y * ts + 4, 4, ['#c8b48a', '#9ae8d0'], 30, 0.5); }
       if (k0 < 1 && b.k >= 1) { GSx.n.fused++; ctx.sfx.crack && ctx.sfx.crack(); if (P0 && Math.abs(P0.x - b.tx * ts) < 400) say('THE BEAM FUSES THE SAND: ' + (b.label || 'GLASS'), '#9ae8d0'); }
       if (k0 > 0 && b.k <= 0 && !b.hit) { GSx.n.crumbled++; if (P0 && Math.abs(P0.x - b.tx * ts) < 400) ctx.number(ctx.hero().x, ctx.hero().y - 34, 'THE GLASS CRUMBLES BACK TO SAND', '#c8b48a'); } }
+    relayBeds();   /* (claude/colossusrework) whatever put the grid back under a bed, its drawn glass stands */
     /* THE CRACKS */
     for (const c of GSx.cracks) {
       /* (glasssea2) A SEAM AT DUSK: THE CRACK STIRS - the first time you come near, it glows and hisses, and its swarm climbs out one by one (the teach: they will not cross firelight) */
@@ -269,8 +277,8 @@ export function makeGlassSeaHands(ctx) {
       /* the fused tiles' supports, then the slabs (the arch of a long span under it) */
       for (const p of plan.posts) if (p.bed === b.id) { const idx = b.tiles.findIndex(([x, y]) => x === p.x && y === p.y0); if (idx >= 0 && idx < b.set && inX(p.x * ts)) GSET.drawPost(g, p, cx, cy, Math.min(1, 0.4 + b.k)); }
       for (const ar of plan.arches) if (ar.bed === b.id && b.set > 0) GSET.drawArch(g, ar, cx, cy, Math.min(1, b.set / b.tiles.length));
-      const warn = b.warn > 0 && Math.floor(time * 14) % 2;   /* (a pulse bed whose mirror is about to rock off: the glass flickers) */
-      for (let i = 0; i < b.set; i++) { const [x, y] = b.tiles[i], prev = b.tiles[i - 1], next = b.tiles[i + 1];
+      const warn = b.warn > 0 && Math.floor(time * 14) % 2;   /* (claude/colossusrework) and a tile is drawn as glass only while its cell IS glass: not solid = not drawn */   /* (a pulse bed whose mirror is about to rock off: the glass flickers) */
+      for (let i = 0; i < b.set; i++) { const [x, y] = b.tiles[i], prev = b.tiles[i - 1], next = b.tiles[i + 1]; if (ctx.cellGet(x, y) !== ctx.T.ONEWAY) continue;
         const l = !(prev && prev[1] === y && prev[0] === x - 1), r = !(next && next[1] === y && next[0] === x + 1);
         if (warn) g.globalAlpha = 0.55;
         GSA.drawFused(g, shelfTile(x, y, l, r), R(x * ts - cx), R(y * ts - cy), b.hit ? 1 : b.k, time, b.hit, l, r); g.globalAlpha = 1; }
