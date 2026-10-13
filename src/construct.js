@@ -32,13 +32,13 @@ export function constructStep(e, w, dt) {
       if (sees) e.face = Math.sign(d) || e.face;
       else if (Math.abs(e.x - e.home) > CONSTRUCT.beat) e.face = Math.sign(e.home - e.x) || e.face;   /* its beat: back and forth over its post */
       const sweepNext = e.n % 3 === 2;
-      if (sees && e.cd <= 0 && sweepNext && ad < CONSTRUCT.sweepR) { e.mode = 'sweepTell'; e.t = CONSTRUCT.sweepTell; e.frame = 2; ev(out, 'tell', { what: 'sweep', mark: '!!' }); }
+      if (sees && e.cd <= 0 && sweepNext && ad < CONSTRUCT.sweepR) { e.mode = 'sweepTell'; e.t = CONSTRUCT.sweepTell; e.frame = 6; ev(out, 'tell', { what: 'sweep', mark: '!!' }); }
       else if (sees && e.cd <= 0 && !sweepNext && ad < CONSTRUCT.pokeR) { e.mode = 'pokeTell'; e.t = CONSTRUCT.pokeTell; e.frame = 2; ev(out, 'tell', { what: 'poke', mark: '!' }); }
       else if (!(sees && ad < CONSTRUCT.pokeR * 0.75)) e.x += e.face * CONSTRUCT.speed * dt;
       break; }
     case 'pokeTell': if (e.t <= 0) { e.mode = 'poke'; e.t = CONSTRUCT.poke; e.frame = 3; e.n++;
         ev(out, 'hit', { what: 'poke', mark: '!', box: [e.x + (e.face > 0 ? 2 : -CONSTRUCT.pokeR - 4), e.x + (e.face > 0 ? CONSTRUCT.pokeR + 4 : -2), e.y - 16, e.y - 4], blockable: true, dmg: CONSTRUCT.dmg.poke }); } break;
-    case 'sweepTell': if (e.t <= 0) { e.mode = 'sweep'; e.t = CONSTRUCT.sweep; e.frame = 3; e.n++;
+    case 'sweepTell': if (e.t <= 0) { e.mode = 'sweep'; e.t = CONSTRUCT.sweep; e.frame = 7; e.n++;
         ev(out, 'hit', { what: 'sweep', mark: '!!', box: [e.x + (e.face > 0 ? -6 : -CONSTRUCT.sweepR - 2), e.x + (e.face > 0 ? CONSTRUCT.sweepR + 2 : 6), e.y - 9, e.y + 1], dmg: CONSTRUCT.dmg.sweep, low: true }); } break;
     case 'poke': case 'sweep': if (e.t <= 0) { e.cd = e.mode === 'sweep' ? CONSTRUCT.cd * 1.4 : CONSTRUCT.cd; e.mode = 'walk'; } break;
   }

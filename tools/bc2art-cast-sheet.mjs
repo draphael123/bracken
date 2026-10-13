@@ -7,7 +7,7 @@ const keys = process.argv.slice(2).length ? process.argv.slice(2) : ['sanddrowne
 const K = +(process.env.K || 5);
 const pg = await openPage({ audio: false });
 try {
-  const r = await pg.evalp(`(async () => { const CAST = await import('/src/redraw/buried_city_cast.js'); const sets = { sanddrowned: CAST.bakeSandDrowned(), sandslinger: CAST.bakeSandSlinger(), brassscorpion: CAST.bakeBrassScorpion(), construct: CAST.bakeConstruct(),
+  const r = await pg.evalp(`(async () => { const CAST = await import('/src/redraw/buried_city_cast.js'); const sets = { sanddrowned: CAST.bakeSandDrowned(), sandslinger: CAST.bakeSandSlinger(), brassscorpion: CAST.bakeBrassScorpion(), construct: CAST.bakeConstruct(), constructelite: CAST.bakeConstruct(true),
       king0: CAST.bakeHourglassKing(0), king1: CAST.bakeHourglassKing(1), king2: CAST.bakeHourglassKing(2) }; const cog = CAST.bakeCog(); sets.cog = { R: cog, w: 14, h: 14, ax: 7, ay: 14 };
     const res = {}; for (const key of ${JSON.stringify(keys)}) { const s = sets[key], fr = s.R; const cw = fr[0].width, ch = fr[0].height, cols = Math.min(8, fr.length), rows = Math.ceil(fr.length / cols), k = ${K};
       const c = document.createElement('canvas'); c.width = cols * (cw + 4) * k; c.height = rows * (ch + 4) * k; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.fillStyle = '#5a4a3a'; g.fillRect(0, 0, c.width, c.height);

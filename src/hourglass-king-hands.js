@@ -136,11 +136,11 @@ export function makeHourglassKingHands(ctx) {
       else if (blockFx > 0) { g.fillStyle = 'rgba(255,120,60,0.3)'; g.fillRect(l + sh, R(b.y - cy), w, R(G.floorY - b.y)); } });
   };
   /* his frame by mode: the kit's poses (0-13) and the new moves' own (14-19: src/redraw/buried_city_cast.js) */
-  const FR = { sleep: 0, wake: 0, recover: 0, streamTell: 3, gearTell: 5, pendTell: 9, pend: 10, hourTell: 3, stall: 11, turn: 12, surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19, slipRec: 8 };
+  const FR = { sleep: 0, wake: 0, recover: 0, streamTell: 3, gearTell: 5, pendTell: 9, pend: 10, hourTell: 22, stall: 11, turn: 12, surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19, slipRec: 8 };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     if (!SETS) SETS = [0, 1, 2].map(k => DG.bakeHourglassKing(k));
     const k = S.glass / S.glassMax, lvl = HKM.hkOpen(e) ? 2 : k > 0.6 + (HKM.lowOf(S.ph) - HK.lowAt) ? 0 : k > HKM.lowOf(S.ph) ? 1 : 2, set = SETS[lvl], f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
-    let fr = FR[m] ?? (m === 'walk' ? 1 + (Math.floor(time * 5) & 1) : 0); if (m === 'recover' && S.lastMove === 'surge') fr = 15; if (flash && m !== 'stall' && m !== 'turn') fr = 13;
+    let fr = FR[m] ?? (m === 'walk' ? 1 + (Math.floor(time * 5) & 1) : 0); if (m === 'recover') { const r = { surge: 15, grasp: 20, rain: 21, hour: 23 }[S.lastMove]; if (r && (e.modeT || 0) > 0.05) fr = r; } if (m === 'walk' || m === 'stall' || m === 'turn' || m === 'pendTell' || m === 'gearTell') S.lastMove = null; if (m === 'stall' && S.great.run > 0) fr = 25; else if ((m === 'walk' || (m === 'recover' && !S.lastMove)) && S.ph >= 2 && !S.tide.on && S.tide.warned && S.tide.t <= HK.tide.warn) fr = 24; if (flash && m !== 'stall' && m !== 'turn') fr = 13;
     const arr = flash ? (f > 0 ? set.white.R : set.white.L) : (f > 0 ? set.R : set.L), spr = arr[fr] || arr[0];
     const x = R(e.x - cx), y = R(e.y - cy);
     g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 14, y - 1, 28, 2); g.globalAlpha = 1;
