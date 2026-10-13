@@ -10,12 +10,12 @@
 // NO extra hp. B10-B15 are untouched: no new windup, no new invulnerability, the 0.4x resistance floor and every opening are as authored.
 // Rows: act 1..5 as src/foe-react.js ACTS (actOf). 'mini' is its own column (B6: minis 75-85%).
 export const PRESSURE = {
-  1: { gap: 1.12, dmg: 1.2, mini: { gap: 1.15, dmg: 1.25 } },
-  2: { gap: 1.33, dmg: 1.55, mini: { gap: 1.25, dmg: 1.35 } },
-  3: { gap: 1.75, dmg: 2.15, mini: { gap: 1.3, dmg: 1.5 } },
-  4: { gap: 1.63, dmg: 2.0, mini: { gap: 1.35, dmg: 1.55 } },
-  5: { gap: 1.63, dmg: 2.0, mini: { gap: 1.35, dmg: 1.55 } },
-};
+  1: { gap: 1.17, dmg: 1.3, mini: { gap: 1.15, dmg: 1.25 } },
+  2: { gap: 1.25, dmg: 1.42, mini: { gap: 1.33, dmg: 1.5 } },
+  3: { gap: 1.6, dmg: 1.9, mini: { gap: 1.4, dmg: 1.65 } },
+  4: { gap: 1.45, dmg: 1.7, mini: { gap: 1.45, dmg: 1.7 } },
+  5: { gap: 1.3, dmg: 1.5, mini: { gap: 1.35, dmg: 1.55 } },
+};   /* v3 (10-13 evening): v2 measured act medians 78/56/56/50/22 (minis 78/100/89/89/78) - interpolated toward 60-70 (minis 75-85) off the v0/v1/v2 response curve */
 /* the modes whose clock is NEVER scaled (told, open, ward, phase change, down): everything else of a boss's runs the dial's gap */
 const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|open|broken|ward|warded|reel|reeling|intro|rest0)$/;
 /* BOSSES THAT ARE TUNED INTO THE BAND BY THEIR OWN REWORK LANE take NO dial (factor 1): they would be double-tuned. Coordinator 10-13: the Cistern Queen (claude/cqueenrework,
