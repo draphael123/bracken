@@ -18,12 +18,16 @@ export const PRESSURE = {
 };
 /* the modes whose clock is NEVER scaled (told, open, ward, phase change, down): everything else of a boss's runs the dial's gap */
 const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|open|broken|ward|warded|reel|reeling|intro|rest0)$/;
+/* BOSSES THAT ARE TUNED INTO THE BAND BY THEIR OWN REWORK LANE take NO dial (factor 1): they would be double-tuned. Coordinator 10-13: the Cistern Queen (claude/cqueenrework,
+   67% with flasks at blows x2.9), the Hourglass King (claude/bc3tune, 61%); later the Matriarch, the Hawk-Mistress and the Glass Colossus when their lanes land (listed now so the dial
+   never stacks on them). Remove a name here once a later re-measure shows the boss outside the band again. */
+export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus']);
 export function pressureOf(act, mini) { const r = PRESSURE[act] || PRESSURE[5]; return mini ? r.mini : r; }
 /* the dt factor for one boss this frame: 1 unless his clock is a gap's */
 export function gapFactor(e, act, mini, winding) {
-  const g = pressureOf(act, mini).gap; if (!(g > 1) || !e || winding) return 1;
+  const g = pressureOf(act, mini).gap; if (!(g > 1) || !e || winding || DIAL_EXEMPT.has(e.t)) return 1;
   if (e.open > 0 || e.broken > 0 || e.stagger > 0 || e.warded > 0 || e.ward > 0) return 1;
   if (typeof e.mode === 'string' && FROZEN.test(e.mode)) return 1;
   return g;
 }
-export const dmgFactor = (act, mini) => pressureOf(act, mini).dmg;
+export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg);
