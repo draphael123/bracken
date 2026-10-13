@@ -73,13 +73,24 @@ try {
       const gate = e.maxHp * 0.66; out.archmageGate = {}; for (const [vn, v] of Object.entries(VARIANTS)) { e.alive = true; e.fam = false; e.stage = 1; e.hp = gate + 20; e.mode = 'idle'; e.open = 0; strike(e, v, 25, e.x - 40); out.archmageGate[vn] = { lost: +(gate + 20 - e.hp).toFixed(2), left: +(e.hp - gate).toFixed(2) }; }
       out.archmage.runes = !!R0; });
 
+    /* THE CISTERN QUEEN (underwell, claude/cqueenrework): an opening (soaked) and HER STINGER'S PURSE - a planted stinger under the blade, struck until it breaks: she counts in her
+       hands' take, inside wardedDamage after every multiplier, so these hold on what lands with no fix function */
+    await tryBoot('cisternqueen', async () => { const b = boot('underwell'); const H = BK.cisternQueenHands(), CQM = await import('/src/cistern-queen.js'), S = H.show(), CQ = CQM.CQ, P = BK.P;
+      for (let i = 0; i < 600 && (b.mode === 'sleep' || b.mode === 'wake'); i++) BK.sim(1);
+      const setupO = () => { b.alive = true; b.hp = b.maxHp * 0.95; S.ward = 0; S.openTaken = 0; b.mode = 'soaked'; b.open = 4; b.modeT = 4; S.pose = 'floor'; };
+      run(b, 'cisternqueen', setupO, () => +S.openTaken.toFixed(2), 25, b.x - 40, () => b.open > 0.4); out.cisternqueen.cap = CQ.openCap * b.maxHp;
+      const setupT = () => { b.alive = true; b.hp = b.maxHp * 0.95; S.ward = 0; S.scorch = 0; S.tailTaken = 0; S.broken = false; b.open = 0; b.mode = 'planted'; b.modeT = 9; S.pose = 'floor'; P.face = 1; P.atk = 0.08; P.y = S.G.floor; P.vy = 0;
+        S.stinger = { x: P.x + 14, y: S.G.floor - 6, t: 9, k: 'slam', big: true }; S.stingTaken = -1e9; };   /* (the planted stinger's own cap lifted, so the PURSE is what is tested) */
+      run(b, 'cisternqueenTail', setupT, () => +(S.tailTaken || 0).toFixed(2), 25, b.x - 40, () => !S.broken); out.cisternqueenTail.cap = CQ.tailPurse * b.maxHp; out.cisternqueenTail.broke = !!S.broken; out.cisternqueenTail.stingHits = S.n.stingHits; });
+
     return out; })()`);
 } finally { pg.close(); }
-const CAPS = ['wicker', 'colossus', 'colossusLegs', 'drill', 'huntmaster', 'grandmotherBack', 'grandmotherRap', 'archmage'];
+const CAPS = ['wicker', 'colossus', 'colossusLegs', 'drill', 'huntmaster', 'grandmotherBack', 'grandmotherRap', 'archmage', 'cisternqueen', 'cisternqueenTail'];   /* (claude/cqueenrework: the Cistern Queen's opening and her stinger's purse) */
 for (const name of CAPS) { const r = R[name]; if (!r || r.error) { bad.push(name + ': the fight could not be set up: ' + (r && r.error)); continue; }
-  for (const [vn, v] of Object.entries(r)) { if (vn === 'cap' || vn === 'runes') continue;
+  for (const [vn, v] of Object.entries(r)) { if (vn === 'cap' || vn === 'runes' || vn === 'broke' || vn === 'stingHits') continue;
     ok(v.lost <= r.cap + 1, name + ' / ' + vn + ': one opening took ' + v.lost + ' of its health, its cap is ' + r.cap.toFixed(1) + ' (blows ' + JSON.stringify(v.each) + ')');
     ok(v.lost >= r.cap * 0.25 && v.n >= 1, name + ' / ' + vn + ': the opening landed almost nothing (' + v.lost + ' of a cap of ' + r.cap.toFixed(1) + '): the test proves nothing'); } }
+if (R.cisternqueenTail && !R.cisternqueenTail.error) ok(R.cisternqueenTail.broke && R.cisternqueenTail.stingHits > 0, 'cisternqueenTail: the blows did not land on her planted stinger and break it (the test proves nothing): ' + JSON.stringify({ broke: R.cisternqueenTail.broke, stingHits: R.cisternqueenTail.stingHits }));   /* (claude/cqueenrework) */
 /* THE GATE: no blow, however it grew, takes the Archmage past the stage's floor (a spell he has not cast yet) */
 if (R.archmageGate) for (const [vn, v] of Object.entries(R.archmageGate)) ok(v.left >= 0, 'archmage gate / ' + vn + ': a blow took him ' + (-v.left) + ' below the stage floor');
 else bad.push('archmage gate: not measured');
