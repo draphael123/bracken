@@ -6,6 +6,7 @@
 // S = the hands' state { channels, spans, gates, wheels, wheelsW, jams, nest, vault, phase, t, L }; K = { TS, cx, cy, vw, vh, time, movers, questGot, questN }.
 // Everything static is baked once (memo); water is a baked texture scrolled down its span. Pure drawing.
 import { mulberry } from '../px.js';
+import { drawProps as drawSpillwayProps } from './spillway_art.js';   /* THE SPILLWAY's crest davit, crane and chain, and her door (claude/rgart) */
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return [c, g]; };
 const rc = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
@@ -143,6 +144,7 @@ export function drawBack(g, S, K) {
     g.fillStyle = P.w0; g.fillRect(x - 2, y - 1, m.w + 4, 2); g.fillStyle = '#e8c070'; g.fillRect(x - 2, y - 2, m.w + 4, 1);                                  /* the rim, lit */
     g.fillStyle = P.w0; g.fillRect(x + 1, y + 10, m.w - 2, 2); g.fillStyle = '#0a0604'; g.fillRect(x + 2, y + 12, m.w - 4, 1);
     g.fillStyle = P.rope; g.fillRect(x - 1, y + 4, 1, 3); g.fillRect(x + m.w, y + 4, 1, 3); }
+  drawSpillwayProps(g, S, { cx, cy, vw, vh, time, movers: K.movers });
   /* THE JAMS */
   for (const j of S.jams) { if (j.open) continue; const x = R(j.x0 * TS - cx), y = R(j.y0 * TS - cy), wpx = (j.x1 - j.x0 + 1) * TS, h = (j.y1 - j.y0 + 1) * TS; if (y > vh || y + h < 0 || x > vw || x + wpx < 0) continue;
     g.drawImage(jamArt(wpx, h), x, y); const full = S.gates.some(q => q.id === 'jam' && q.state === 'full');

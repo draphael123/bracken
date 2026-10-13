@@ -23,6 +23,7 @@ try {
     at('s6-bridge', 66, 42, 70, 40);
     at('s7-basket2', 74, 42);
     at('s8-basket3', 79, 33, 80, 28);
+    at('s8b-crane', 84, 21, 78, 24);
     at('s9-head', 88, 21);
     at('s10-door', 92, 21);
     /* THE LEDGE: a fight staged by hand (a picture, not a fight) */
