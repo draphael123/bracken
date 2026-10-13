@@ -32,7 +32,12 @@ async function borrowedTarget(port) {
     let page = null; for (let i = 0; i < 40 && !page; i++) { const list = await (await fetch('http://127.0.0.1:' + port + '/json/list')).json();
       page = list.find(t => t.id === targetId); if (!page) await sleep(100); }
     if (!page) throw new Error('borrowed browser did not expose its new page');
-    return { wsUrl: page.webSocketDebuggerUrl, close: async () => { try { await send('Target.disposeBrowserContext', { browserContextId }); } finally { ws.close(); } } };
+    let closing = null;
+    return { wsUrl: page.webSocketDebuggerUrl, close: () => closing ||= (async () => {
+      /* Many tools call pg.close() without awaiting it. The parent checks that this context has disappeared before
+         lending the browser again, so an already-pending disposal is harmless here. */
+      try { await send('Target.disposeBrowserContext', { browserContextId }); } catch {} finally { ws.close(); }
+    })() };
   } catch (e) { ws.close(); throw e; }
 }
 

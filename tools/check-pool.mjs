@@ -13,6 +13,7 @@ import { browserExecutable } from './cdp.mjs';
    cleanup verdict can only mean something once every earlier child is gone. */
 export const SERIAL_TAIL = {
   'mobile-perf': 'frame timing must be measured without other labs on the GPU',
+  'boss-music': 'its mock audio clock uses real timers to check two complete loops',
   'online-coop': 'host and guest need two simultaneous browsers of their own',
   'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
   'textfit': 'opens several full game pages at once and needs the machine memory to itself',
@@ -85,8 +86,13 @@ async function clearContexts(port) {
   let id = 0; const pending = new Map(); ws.onmessage = e => { const m = JSON.parse(e.data); if (pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } };
   const send = (method, params = {}) => new Promise((res, rej) => { const n = ++id, timer = setTimeout(() => { pending.delete(n); rej(new Error(method + ' timed out')); }, 15000);
     pending.set(n, m => { clearTimeout(timer); if (m.error) rej(new Error(m.error.message)); else res(m.result || {}); }); ws.send(JSON.stringify({ id: n, method, params })); });
-  try { const r = await send('Target.getBrowserContexts'); for (const browserContextId of r.browserContextIds || [])
-    await send('Target.disposeBrowserContext', { browserContextId }); } finally { ws.close(); }
+  try { for (let i = 0; i < 60; i++) { const r = await send('Target.getBrowserContexts');
+      if (!(r.browserContextIds || []).length) return;
+      for (const browserContextId of r.browserContextIds) try { await send('Target.disposeBrowserContext', { browserContextId }); }
+        catch (e) { if (!/already pending|not found|no browser context/i.test(e.message)) throw e; }
+      await sleep(100); }
+    throw new Error('borrowed browser kept a context after the check ended');
+  } finally { ws.close(); }
 }
 
 export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
@@ -103,8 +109,11 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
   const servers = new Map(), shared = new Map(), busy = new Map(), free = Array.from({ length: jobs }, (_, i) => i);
   const browserSlots = new Set();
   const serve = async slot => { if (!servers.has(slot)) servers.set(slot, await startServer(ROOT, portFor(slot))); };
+  const stopServers = async () => { const children = [...servers.values()].filter(Boolean); for (const child of children) child.kill();
+    await Promise.all(children.map(child => child.exitCode !== null ? null : Promise.race([new Promise(r => child.once('exit', r)), sleep(5000)])));
+    servers.clear(); };
   const launch = async (job, slot, browserSlot = null) => { const page = browser.get(job.name);
-    try { if (page) await serve(slot);
+    try { if (page && !['profile-cleanup', 'profile-leaks'].includes(job.name)) await serve(slot);
       let env = job.env;
       if (browserSlot !== null) { if (!shared.has(browserSlot)) shared.set(browserSlot, await startBrowser());
         env = { ...env, BRACKEN_BROWSER_PORT: String(shared.get(browserSlot).port) }; }
@@ -131,8 +140,9 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
     for (const job of tail) {
       const borrow = (job.name === 'textfit' || job.name === 'textfit-full');
       if (!borrow) { for (const b of shared.values()) await b.run.close(); shared.clear(); }
+      if (job.name === 'profile-cleanup') await stopServers();
       answer.set(job.name, await launch(job, 0, borrow ? 0 : null));
     }
-  } finally { for (const b of shared.values()) await b.run.close(); for (const child of servers.values()) if (child) child.kill(); }
+  } finally { for (const b of shared.values()) await b.run.close(); await stopServers(); }
   return rows.map(r => answer.get(r.name));
 }
