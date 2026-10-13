@@ -66,7 +66,7 @@ export function pacing(lv, o = {}) {   /* o.hero (claude/reachcore, opt-in): the
   let s0 = settle(L.START.x, L.START.y);
   /* THE END IS THE FIGHT. Several levels stand their gate at the arena door, so a route to the gate stops short of the boss */
   const goalXY = A && A.carpet && L.carpetAt ? [Math.floor(L.carpetAt.x / TS), Math.round(L.carpetAt.y / TS)]   /* A CARPET FIGHT starts where you board the carpet: the Falling Tower's is at the top of its spiral stair (2026-09-29), and the sky over the parapet is not the way to it */
-    : A ? [Math.round((A.x0 + A.x1) / 2 / TS), Math.round(A.floor / TS) - 1] : gate ? [gate.x, gate.y] : null;
+    : A && !(L.routePastBoss && gate) ? [Math.round((A.x0 + A.x1) / 2 / TS), Math.round(A.floor / TS) - 1] : gate ? [gate.x, gate.y] : null;   /* (claude/pyramidlevel) L.routePastBoss: a level whose road goes ON past its boss room to a gate far beyond (THE SEALED PYRAMID: the Scarab Mother's lair mid-level until lane B makes her a mini) ends at the gate */
   const dist = new Float64Array(N).fill(Infinity), par = new Int32Array(N).fill(-1);
   const run = srcs => { const B = []; for (const s of srcs) (B[dist[s]] ||= []).push(s);
     for (let k = 0; k < B.length; k++) { const b = B[k]; if (!b) continue; B[k] = null;

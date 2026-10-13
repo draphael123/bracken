@@ -324,7 +324,7 @@ export function makeSealedPyramidHands(ctx) {
           else if (t.id === 'oil1') number(P0.x, P0.y - 34, 'A PALE PLATE: IT TIPS THE BRAZIER INTO THE CHANNEL');
           else if (t.id === 'oil3') number(P0.x, P0.y - 34, 'A PALE PLATE: THE BURNING OIL POURS ON THE FLOOR BELOW');
           else if (t.id === 'flood1') number(P0.x, P0.y - 34, 'A PALE PLATE: IT OPENS THE SLUICE - STAND CLEAR OF THE BORE');
-          else if (t.id === 'flood2') number(P0.x, P0.y - 34, 'THE CRYPT\'S SLUICE: THE WATER IS THE WAY UP'); } } }
+          else if (t.id === 'flood2') number(P0.x, P0.y - 34, 'THE CRYPT SLUICE: THE WATER IS THE WAY UP'); } } }
     stall(P0, dt);
   };
 
@@ -344,8 +344,8 @@ export function makeSealedPyramidHands(ctx) {
       return at('shaftRide', null, { r: 14, wait: true }); }
     /* (claude/pyramidlevel) THE SLUICES: on the floor of the cistern / the crypt, tread the plate, then wait on the water and swim up when it is high */
     for (const [id, x0, x1, top] of [['flood1', 863, 878, 41], ['flood2', 885, 950, 30]]) { const ft = trapOf(id); if (!ft || !S[id] || c < x0 || c > x1 + 1 || feet < top) continue;
-      if (ft.st === 'ready' && !(ft.lvl > 0.05)) return at(id, null, { r: 10 });
-      if ((ft.lvl || 0) < 0.9 && ft.st !== 'reset') return at(id, null, { r: 40, wait: true, hold: true });
+      if (ft.st === 'ready' && !(ft.lvl > 0.05)) return at(id, null, { r: x1 - x0 + 4 });   /* (the whole floor: the plate is the way on from anywhere on it) */
+      if ((ft.lvl || 0) < 0.9 && ft.st !== 'reset') return at(id, null, { r: x1 - x0 + 4, wait: true, hold: true });
       return null; }
     /* THE KING'S STAIR: on the plate-course, wait out the volley before the last run */
     const sd = trapOf('stairDarts'); if (sd && S.stairPlate && c > 984 && c < 988 && Math.abs(feet - S.stairPlate[1]) <= 1 && sd.st !== 'ready' && sd.st !== 'reset') return at('stairPlate', null, { r: 12, wait: true, hold: true });

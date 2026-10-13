@@ -268,7 +268,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
   const masonry = [[0, W - 1, 0, H - 1]];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: SP.start - 1 }, pools: half.pools, gasVents: half.gasVents, crumble: half.crumble, tombs: half.tombs, slots: { mini: MINI_SLOT, boss: BOSS_SLOT }, falls: [], moversExtra, interiors, structures,
-    arena: stage.arena, gateAfterBoss: true,
+    arena: stage.arena, gateAfterBoss: true, routePastBoss: true,   /* (claude/pyramidlevel) her lair is MID-LEVEL: the road goes on past it to the gate at the far end (tools/pacing.mjs, tools/level-walk.mjs hand her off as a mini) - LANE B: make her L.mini, the new boss L.arena in BOSS_SLOT, and drop this flag */
     sealedpyramid: true, caravan: true,   /* caravan: the desert's hands in main.js (the desert machines' runner: the mummy, the scarabs; the sand skins) */
     traps, pairs: PAIRS.map(p => ({ ...p })), falseWalls: FALSE_WALLS.map(w => ({ ...w })), pitFill, vaultDoors, decor, plats, lamps, quicksand, spots: JSON.parse(JSON.stringify({ ...SPOTS, ...SPOTS2 })),
     rigBands: moversExtra.filter(m => m.ride).map(m => [Math.floor(m.x / TS), Math.floor(m.x / TS) + 1, Math.floor(m.top / TS) - 1, Math.floor(m.bot / TS) - 1]),   /* (each counterweight a hero RIDES is a ride between its stops: the first and last pairs' blocks that go down under you, the second's pale block that a trap's weight sends up - not their mates, which only move against a load) */
@@ -280,7 +280,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
     quest: { n: 4, item: 'scarabseal', name: 'SEALS', done: 'FOUR SEALS: THE SEALED TOMB OPENS', thanks: 'THE SEALED TOMB OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
-    checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448 | her lair | 496, 615, 737, 858, 958, 1003 before the burial chamber) */
+    checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448 | her lair | 615, 737, 858, 1003 before the burial chamber) */
     unlocks: [
       { kind: 'tplate', opens: 'a TRAP: a falling block (a guard crushed, a pit filled, a counterweight weighed down), a dart wall, a rolling stone (a squad run down, the false door broken)', hud: 'THE PLATE CLICKS: THE TRAP FIRES' },
       { kind: 'stray', opens: 'THE SEALED TOMB by the deep way\'s drop once all four scarab seals are carried (a silver)', hud: 'SEALS n/4 - THE SEALED TOMB WAITS (the quest counter)' },

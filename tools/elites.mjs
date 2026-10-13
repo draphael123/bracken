@@ -67,7 +67,8 @@ for (const lv of LEVELS) {
        room is the first thing asked; where the model cannot see into it (a ride, a canopy), the ground past the gate is */
     /* PAST IT is further along the way the level goes: along for a road, UP for a tower of stacked floors (the Falling Tower) */
     const side = Math.sign(e.gate - e.x), past = R => [...R.seen].filter(k => L.stackedFloors ? +k.split(',')[1] < G.top : (+k.split(',')[0] - e.gate) * side > 2).length;
-    const walkedRound = arenaIn(open) ? arenaIn(shut) : past(shut) > past(open) * 0.25;
+    const arenaPast = !(L.routePastBoss && L.arena && (L.arena.x1 / 16 - e.gate) * side < 0);   /* (claude/pyramidlevel) L.routePastBoss: the boss room may lie BEHIND a gate (the Sealed Pyramid's second half, past the Scarab Mother's lair) - then the ground past the gate is asked */
+    const walkedRound = arenaPast && arenaIn(open) ? arenaIn(shut) : past(shut) > past(open) * 0.25;
     if (walkedRound) out.push('the gate @' + e.gate + ' (rows ' + G.top + '-' + G.bot + ') can be walked round: ' + past(shut) + ' of ' + past(open) + ' tiles past it are still reached with it shut');
     for (const q of L.ents) if (HELD.has(q.t) && Math.abs(q.x - G.col) <= 1 && q.y >= G.top - 1 && q.y <= G.bot + 1) out.push('the gate @' + e.gate + ' comes down on a ' + q.t + ' @' + q.x + ',' + q.y);
   }

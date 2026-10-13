@@ -32,7 +32,7 @@
 export const TH = { hall: 57, upper: 51, gas: 51, gasHi: 48, oil: 48, oilHi: 42, cistern: 48, lip: 42, crypt: 54, landing: 30, stair: 34, burial: 24, W: 1052 };
 /* THE ARENA SLOTS (lane B): MINI_SLOT is the Scarab Mother's lair (her antechamber, mid-level - today still the level's `arena`, see src/sealed-pyramid.js);
    BOSS_SLOT is the burial chamber at the end (a placeholder room, its gate past its east door) */
-export const MINI_SLOT = { sx: 452, R: 57, W: 40, eastDoor: { col: 492, y0: 51, y1: 56 }, check: 448, after: 496 };
+export const MINI_SLOT = { sx: 452, R: 57, W: 40, eastDoor: { col: 492, y0: 51, y1: 56 }, check: 448 };
 export const BOSS_SLOT = { x0: 1007, x1: 1046, floor: 24, roof: 4, westDoor: { col: 1006, y0: 18, y1: 23 }, eastDoor: { col: 1047, y0: 18, y1: 23 }, gate: 1049, check: 1003,
   ledges: [{ x0: 1009, x1: 1014, y: 17 }, { x0: 1039, x1: 1044, y: 17 }], switches: [{ x: 1008, y: 10 }, { x: 1045, y: 10 }], plates: [[1017, 1018], [1026, 1027], [1035, 1036]],
   slots: [[1020, 1022], [1031, 1033]], sarcophagus: 1027 };
@@ -67,7 +67,7 @@ export function buildTombHalf(B) {
   // ================= 6. THE HALL OF THE DEAD (493-610): the tombs taught; the groove the risen walk; the upper hall; EXAM: THE BRASS WARDEN =================
   const HA = TH.hall, UP = TH.upper;
   air(493, 560, HA - 12, HA - 1); interiors.push([493, 560, HA - 12, HA - 1, 'pyTombs']);
-  ent('check', MINI_SLOT.after, HA - 1);                                                                     /* CHECKPOINT FIVE: past her lair */
+  /* (no shrine of its own past her lair: the one at 448 before her door is the hall's - A10b spacing; the next is the gallery's at 615) */
   sign(499, HA - 1, 'THE HALL OF THE DEAD. WHEN A LID CRACKS, THE DEAD GET UP.');
   lamp(503, HA - 11); lamp(530, HA - 11); lamp(552, HA - 11);
   decor.push({ kind: 'robbers', x: 501, y: HA - 1 });                                                        /* (a callback: the Buried City's robbers came this far - a sand-gate key and a broken hourglass by their bones) */
@@ -95,7 +95,7 @@ export function buildTombHalf(B) {
   brass(598, UP - 1, 'hallWarden', { elite: true, gate: 611 });
   tomb('h8', 604, UP, 'skel', [592, 610], 'hallWarden');
   decor.push({ kind: 'groove', x0: 589, x1: 608, y: UP - 1 }, { kind: 'bones', x0: 594, x1: 596, y: UP - 1 });
-  air(611, 618, UP - 6, UP - 1);                                                                             /* his door (the elite's gate) and the passage on */
+  air(611, 618, UP - 6, UP - 1); interiors.push([611, 618, UP - 6, UP - 1, 'pyTombs']);                                                                             /* his door (the elite's gate) and the passage on */
 
   // ================= 7. THE EMBALMERS' GALLERY (611-735): POISON =================
   const GA = TH.gas, GH = TH.gasHi;
@@ -130,7 +130,7 @@ export function buildTombHalf(B) {
   venom(714, GH - 1, 'stinger', { elite: true, gate: 727 }); vent(718, GH, 1.2); vent(721, GH, 2.6);
   tomb('g3', 722, GH, 'skel', [708, 726], 'stinger');
   decor.push({ kind: 'jars', x0: 708, x1: 710, y: GH - 4 }, { kind: 'bones', x0: 712, x1: 713, y: GH - 1 });
-  block(727, 740, GH - 12, GH - 7); air(736, 740, GH - 6, GH - 1);                                                                          /* the door's lintel (the elite's gate under it) */
+  block(727, 740, GH - 12, GH - 7); air(736, 740, GH - 6, GH - 1); interiors.push([736, 740, GH - 6, GH - 1, 'pyGas']);                                                                          /* the door's lintel (the elite's gate under it) */
 
   // ================= 8. THE OIL CHANNELS (736-862): FIRE =================
   const OI = TH.oil, OH = TH.oilHi;
@@ -171,7 +171,7 @@ export function buildTombHalf(B) {
   ent('check', 858, OH - 1);                                                                                 /* CHECKPOINT EIGHT */
   /* THE CISTERN (TEACH, REQUIRED): drop in; its sluice in the west wall; tread the plate: the bore runs its floor, then the water rises to the lip */
   air(863, 878, CI - 14, CI - 1); interiors.push([863, 878, CI - 14, CI - 1, 'pyCrypt']);
-  air(879, 884, LP - 8, LP - 1);                                                                             /* the lip and the way on (floor LP) */
+  air(879, 884, LP - 8, LP - 1); interiors.push([879, 884, LP - 8, LP - 1, 'pyCrypt']);                                                                             /* the lip and the way on (floor LP) */
   sign(861, OH - 1, 'THE CISTERN. ITS SLUICE FLOODS IT: THE BORE FIRST, THEN THE WATER RISES - SWIM UP ON IT.');
   pools.push({ id: 'flood1', x0: 863 * TS, x1: 879 * TS, y: (LP - 1) * TS + 4, swim: true, clear: true, bottom: CI * TS, crypt: true });   /* (its high mark a row over the lip: you swim onto it) */
   traps.push({ id: 'flood1', kind: 'flood', plates: [[864, 865, CI]], zone: [867, 878, CI - 2, CI - 1], sluice: 863, dir: 1, pool: 'flood1', low: CI, high: LP - 1, riseT: 3.0, holdT: 9.0, drainT: 3.5, reset: 6.0, section: 'teach' });
@@ -190,12 +190,11 @@ export function buildTombHalf(B) {
   decor.push({ kind: 'sarcophagus', x: 908, y: CR - 1 }, { kind: 'sarcophagus', x: 919, y: CR - 1 }, { kind: 'bones', x0: 932, x1: 934, y: CR - 1 });
   /* EXAM: THE BRASS WARDEN II keeps the sluice's plate at the crypt's east end - lure him into the bore's reach; brass sinks (the bore takes a share) */
   brass(938, CR - 1, 'cryptWarden', { elite: true });
-  sign(953, LD - 1, 'THE KING\'S STAIR IS ON. THE OLD COURSES GIVE UNDER YOU.');
 
   // ================= 10. THE KING'S STAIR (963-1006): A14 PLATFORMING - the courses over the scarab well =================
   const ST = TH.stair;
-  ent('check', 958, LD - 1);                                                                                 /* CHECKPOINT NINE */
-  air(963, 1003, 14, ST - 1); interiors.push([963, 1003, 14, ST - 1, 'pyStair']);
+  /* (the stair has no shrine of its own: the crypt's at 858 and the one before the burial chamber at 1003 bracket it - A10b spacing) */
+  air(963, 1003, 14, ST - 1); interiors.push([963, 1003, 14, ST, 'pyStair']);   /* (its room runs down over the well's floor: the scarab well is in it) */
   for (let x = 963; x <= 1003; x++) set(x, ST, T.SPIKE); decor.push({ kind: 'scarabpit', x0: 963, x1: 1003, y: ST });
   const course = (x0, x1, y, giving) => { ledge('cornice', x0, x1, y); if (giving) crumble.push({ x0, x1, row: y, tile: T.ONEWAY, quiet: 0 }); };
   course(965, 967, LD, false); course(970, 972, LD - 2, true); course(975, 977, LD - 2, false); course(980, 982, LD - 4, true);
@@ -204,7 +203,7 @@ export function buildTombHalf(B) {
   traps.push({ id: 'stairDarts', kind: 'darts', plates: [[985, 987, LD - 4]], zone: [963, 999, LD - 8, LD - 7], wall: 962, dir: 1, rows: [LD - 8, LD - 7], reset: 3.8, section: 'exam' });
   ent('tplate', 985, LD - 5, { trap: 'stairDarts' }); ent('dartwall', 962, LD - 7, { trap: 'stairDarts' });
   decor.push({ kind: 'dartholes', x: 962, y0: LD - 8, y1: LD - 7 });
-  sign(960, LD - 1, 'THE KING\'S STAIR. DO NOT STAND ON A GIVING COURSE. THE LAST ONE BEFORE THE RUN IS A PLATE.');
+  sign(960, LD - 1, 'THE KING\'S STAIR. THE OLD COURSES GIVE UNDER YOU: DO NOT STAND.');
   lamp(968, 18); lamp(990, 18);
   /* the top: the landing before the burial chamber (floor BU) */
   const BU = TH.burial;

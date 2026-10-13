@@ -89,5 +89,41 @@ console.log('== E. THE SCARAB MOTHER');
     const run = Math.max(0, Math.abs((T0.plate[0] + T0.plate[1]) / 2 - stop) - 30) / 92; ok(run + 0.6 < SM.openT, 'from the plate to her is ' + run.toFixed(2) + ' s at a walk - inside her ' + SM.openT + ' s opening'); }
   ok(SM.skid > 0.5 + 0.28, 'she skids long enough (' + SM.skid + ' s) for a step onto the plate and the block\'s fall'); }
 
+console.log('== F. THE SECOND HALF (claude/pyramidlevel: the tombs, the gas, the oil, the sluices, THE KING\'S STAIR, the arena slots)');
+{ const SPT = await import('../src/sealed-pyramid-tombs.js'), { MINI_SLOT: MS, BOSS_SLOT: BS, ARCS2 } = SPT;
+  /* every hazard is the plate rule: each kind has its own traps, plate before the reach (B above), taught > tested > examined */
+  const byKind = k => L.traps.filter(t => t.kind === k);
+  ok(byKind('gas').length >= 3 && byKind('oil').length >= 3 && byKind('flood').length >= 2, 'the hazards are plate traps: gas ' + byKind('gas').length + ', oil ' + byKind('oil').length + ', flood ' + byKind('flood').length);
+  for (const k of ['rise', 'gas', 'burn', 'flood', 'climb']) ok(ARCS2[k] && ARCS2[k].teach && ARCS2[k].exam && Object.keys(ARCS2[k]).length >= 3, 'ARCS2.' + k + ' is taught, used again and examined: ' + Object.keys(ARCS2[k] || {}).join(' > '));
+  /* each hazard section's EXAM: one elite on footing, a hazard's reach under him (v2: the weighty foe with the hazard behind) */
+  for (const k of ['rise', 'gas', 'burn', 'flood']) { const [x0, x1] = ARCS2[k].exam, el = L.ents.find(e => e.elite && e.x >= x0 - 2 && e.x <= x1 + 2);
+    const hz = el && L.traps.find(t => !t.arena && el.x >= t.zone[0] && el.x <= t.zone[1] && el.y >= t.zone[2] - 1 && el.y <= t.zone[3] + 1);
+    ok(!!el && stand(at(el.x, el.y + 1)), 'the ' + k + ' exam: an elite on footing (' + (el ? (el.cnSkin || el.t) + ' at ' + el.x + ',' + el.y : 'none') + ')');
+    ok(!!hz, 'the ' + k + ' exam: he stands in a trap\'s reach (' + (hz ? hz.id + ' ' + hz.kind : 'none') + ')'); }
+  /* THE TOMBS: each holds exactly its one dead (the ent waits: tombWait), standing on footing at the tomb; a mummy's tomb a mummy, a guard's the tomb guard */
+  for (const tb of L.tombs) { const es = L.ents.filter(e => e.tombWait === tb.id), e = es[0];
+    ok(es.length === 1 && e.t === 'mummy' && (tb.kind === 'skel') === (e.cnSkin === 'tombskel') && Math.abs(e.x - tb.x) <= 1 && e.y === tb.row - 1 && stand(at(e.x, tb.row)), 'tomb ' + tb.id + ': one ' + (tb.kind === 'skel' ? 'tomb guard' : 'mummy') + ' waits in it on footing');
+    ok(tb.wake[0] <= tb.x && tb.wake[1] >= tb.x - 2, 'tomb ' + tb.id + ': it wakes when you come to it (' + tb.wake.join('-') + ')'); }
+  ok(L.tombs.length >= 12 && L.tombs.filter(t => t.kind === 'skel').length >= 5, 'the dead come from tombs: ' + L.tombs.length + ' tombs, ' + L.tombs.filter(t => t.kind === 'skel').length + ' of them the tomb guard\'s');
+  ok(!L.ents.some(e => e.cnSkin === 'tombskel' && e.t !== 'mummy'), 'the tomb guard is the mummy\'s machine (A9: still one new foe)');
+  /* THE SLUICES ARE THE LOCKS: without their water nothing gets past the cistern's lip or up to the crypt's high door; with it, the gate */
+  const gate = L.ents.find(e => e.t === 'gate'); ok(gate && gate.x === BS.gate && goal(R, gate.x, gate.y), 'with the rule worked the reach model gets to the level\'s gate past the burial chamber (' + (gate ? gate.x + ',' + gate.y : '-') + ')');
+  { const L2 = { ...L, pools: L.pools.filter(p => p.id !== 'flood1') }; const Rn = floodReach(slopeReachGrid(L2, T), T, { rides: true }); ok(!goal(Rn, 882, 41), 'THE CISTERN unflooded: its lip is out of reach (882,41)'); }
+  { const L2 = { ...L, pools: L.pools.filter(p => p.id !== 'flood2') }; const Rn = floodReach(slopeReachGrid(L2, T), T, { rides: true }); ok(!goal(Rn, 955, 29), 'THE CRYPT unflooded: its high door is out of reach (955,29)'); }
+  for (const t of byKind('flood')) { const p = L.pools.find(q => q.id === t.pool); ok(p && p.swim && p.bottom === t.low * 16 && p.y < t.high * 16 + 16, t.id + ': its pool is built at its high mark (the reach model swims it) and the hands drain it to ' + t.low + ' until the plate'); }
+  /* THE KING'S STAIR (A14): courses over the scarab well, some of them give, the plate-course fires the volley over the last run */
+  const well = []; for (let x = 963; x <= 999; x++) if (at(x, SPT.TH.stair) === T.SPIKE) well.push(x);
+  ok(well.length >= 30 && L.crumble.length >= 3, 'THE KING\'S STAIR: a scarab well ' + well.length + ' wide under the courses, ' + L.crumble.length + ' of them give (A14)');
+  ok(L.traps.some(t => t.id === 'stairDarts' && t.plates.some(p => Array.isArray(p) && p[0] >= 980)), 'THE KING\'S STAIR: its plate-course fires the volley over the last run');
+  /* THE SLOTS (lane B): her lair mid-level (its east door is the arena's wallR, she wakes only inside it), the burial chamber carved at the end with its fittings */
+  ok(A.wallR === MS.eastDoor.col && A.until === (MS.sx + MS.W) * 16, 'MINI_SLOT: her east door is the arena\'s east wall (' + A.wallR + ') and she wakes only inside her room');
+  { let open = true; for (let y = MS.eastDoor.y0; y <= MS.eastDoor.y1; y++) if (at(MS.eastDoor.col, y) !== T.AIR) open = false; ok(open, 'MINI_SLOT: her east door is cut (' + MS.eastDoor.col + ', rows ' + MS.eastDoor.y0 + '-' + MS.eastDoor.y1 + ')'); }
+  { let air = 0, all = 0; for (let x = BS.x0; x <= BS.x1; x++) for (let y = BS.roof; y < BS.floor; y++) { all++; if (at(x, y) === T.AIR || at(x, y) === T.ONEWAY) air++; }
+    ok(air === all && BS.ledges.every(l => at(l.x0, l.y) === T.ONEWAY) && L.ents.some(e => e.t === 'check' && e.x === BS.check), 'BOSS_SLOT: the burial chamber is carved ' + (BS.x1 - BS.x0 + 1) + 'x' + (BS.floor - BS.roof) + ', its two ledges, a shrine before it'); }
+  ok(L.routePastBoss === true, 'L.routePastBoss: the road goes on past her lair (lane B drops it when she is L.mini)');
+  /* shrines: one a section, spaced (A10b) */
+  const cps = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), gaps = cps.slice(1).map((x, i) => x - cps[i]);
+  ok(gaps.filter((g, i) => cps[i] >= 440).every(g => g >= 90), 'the second half\'s shrines stand >= 90 columns apart: ' + cps.join(', ')); }
+
 console.log('\n' + (fails ? fails + ' FAIL of ' + n : 'ok  sealed-pyramid: ' + n + ' checks'));
 process.exit(fails ? 1 : 0);
