@@ -24,10 +24,13 @@ export const SERIAL_TAIL = {
    drives cdp.mjs, headless.mjs or browser-profile.mjs, the check needs a browser slot. Unknown imports are treated as
    page work; that costs a slot, never permits an extra browser. */
 export function usesBrowser(name, root) {
+  if (name === 'syntax') return false;
   const seen = new Set();
   const visit = p => {
-    p = resolve(root, p); if (seen.has(p)) return false; seen.add(p);
+    p = resolve(root, p); if (!p.startsWith(resolve(root, 'tools') + '\\') && !p.startsWith(resolve(root, 'tools') + '/')) return false;
+    if (seen.has(p)) return false; seen.add(p);
     let source; try { source = readFileSync(p, 'utf8'); } catch { return true; }
+    source = source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\r\n]*/g, '');
     if (/\b(openPage|launchBrowser)\s*\(|(?:tools\/)?(?:cdp|headless|browser-profile)\.mjs/.test(source)) return true;
     for (const m of source.matchAll(/(?:from\s*|import\s*\(|import\s*)['"](\.[^'"]+\.m?js)['"]/g)) {
       if (visit(resolve(p, '..', m[1]))) return true;
