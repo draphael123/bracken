@@ -9,12 +9,12 @@ import { launchBrowser } from './browser-profile.mjs';
 import { browserExecutable } from './cdp.mjs';
 
 /* Alone after the pool: measured frame rate changes when another lab has the GPU; the online test opens TWO browsers;
-   recovery deliberately kills and reopens its server; textfit-full has its own ten-minute wall budget; and a leak or
+   recovery tests protocol deadlines over twenty page reloads; textfit-full has its own ten-minute wall budget; and a leak or
    cleanup verdict can only mean something once every earlier child is gone. */
 export const SERIAL_TAIL = {
   'mobile-perf': 'frame timing must be measured without other labs on the GPU',
   'online-coop': 'host and guest need two simultaneous browsers of their own',
-  'cdp-recovery': 'deliberately restarts the server and browser',
+  'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
   'textfit-full': 'its fixed ten-minute budget must not include pool contention',
   'profile-cleanup': 'must inspect completed children after the pool',
   'profile-leaks': 'must inspect the whole run after every child closes',
