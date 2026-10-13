@@ -376,12 +376,12 @@ function hmPlan0(s) {
   const safeX = x => { let q = clamp(x); for (const [a, b] of fire) if (q > a - 8 && q < b + 8) q = a < G.x0 + 10 ? b + 10 : a - 10; return q; };
   const roomDir = ax => { const away = P.x <= ax ? -1 : 1, room = d => (d < 0 ? P.x - lo : hi - P.x); return room(away) >= 50 ? away : -away; };
   /* 0. WRAPPED IN HER WHIP: jump free (a beat late); OUT OF THE FIRE */
-  if (P.snared) { if (seenFor('snare' + S.n.snared, s.v2 ? 0.12 : PLAN.react)) { if (P.ground) { out.jump = true; out.why = 'jump free of the snare'; } else if (!s.noRoll) { out.dodge = true; out.why = 'roll free of the snare'; } } else out.why = 'snared'; out.gx = P.x; return out; }
+  if (P.snared) { if (seenFor('snare' + S.n.snared, PLAN.react)) { if (P.ground) { out.jump = true; out.why = 'jump free of the snare'; } else if (!s.noRoll) { out.dodge = true; out.why = 'roll free of the snare'; } } else out.why = 'snared'; out.gx = P.x; return out; }
   if (P.lifted) { out.gx = P.x; out.why = 'the updraft'; return out; }
   if (inFire(P.x) && P.ground) { out.gx = safeX(P.x); out.why = 'out of the fire'; return out; }
   /* 0b. HER KNIVES: duck the high, jump the low, block (or roll) the mid */
   for (const k of S.knives || []) { const ahead = Math.sign(k.vx) === Math.sign(P.x - k.x), d = Math.abs(P.x - k.x); if (!ahead || d > 46) continue;
-    if (!seenFor('kn' + k.key) || roll('knm' + k.key, s.v2 ? 0.08 : PLAN.miss)) continue;
+    if (!seenFor('kn' + k.key) || roll('knm' + k.key, PLAN.miss)) continue;
     if (s.shield && P.ground) { out.block = true; out.face = Math.sign(k.x - P.x) || 1; out.gx = P.x; out.why = 'shield the knife'; return out; }
     if (k.ht === 'high' && P.ground) { out.down = true; out.gx = P.x; out.why = 'duck the high knife'; return out; }
     if (k.ht === 'low' && P.ground && d < 30) { out.jump = true; out.gx = P.x; out.why = 'jump the low knife'; return out; }

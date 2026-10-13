@@ -218,7 +218,8 @@ export function freeSnag(S, how) { if (!S.snag) return false; S.snag = null; if 
 export const DRILL_PLAN = { react: 0.25, miss: 0.13, missRam: 0.15, missLever: 0.12 };
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0, eyes = false }) {
   const G = S.G, out = { gx: null, face: 1, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
-  const late = k => { if (eyes) return true; if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
+  /* (claude/flasklever) eyes: the lab's perception layer already shows HIS MODE late - but a rock, a stick of dynamite, a hook, a roof spot, a lever and an ore are not his mode: they were seen on the frame they came (the Foreman's perfect-eyes bypass). Only his reverse is a mode. */
+  const late = k => { if (eyes && k.startsWith('rev')) return true; if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
   const cab = cabBox(G, S), R0 = rearX(S), standX = cab.l - (tip ? tip + 4 : Math.max(10, reach - 8));
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) { if (P.x + 14 > frontFor(G, S, l)) out.backTo = frontFor(G, S, l) - 30; else out.drop = true; } };
   /* snagged: jump off the line (a player's first answer) */

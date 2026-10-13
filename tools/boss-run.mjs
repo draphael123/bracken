@@ -36,4 +36,4 @@ export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {
   return out;
 }
 export const line = x => x.row + ' ' + x.way + ' ' + x.hero + ' s' + x.seed + ' L' + x.lvl + ': ' + (x.err ? 'ERR ' + x.err : x.outcome + ' ' + x.secs + 's left ' + x.bossLeft + '% taken ' + x.taken
-  + (x.eyes ? ' rt' + x.eyes.rtMean + ' mis' + x.eyes.misreads + ' greed' + x.eyes.greeds : '') + (x.casts ? ' casts ' + JSON.stringify(x.casts) : '') + (x.rp ? ' rp ' + JSON.stringify(x.rp) : '') + (x.bz ? ' bz ' + JSON.stringify(x.bz) : ''));   /* (claude/riposte) the parries, the boss's riposte openings and the mix-up chain's pips and verbs */
+  + (x.eyes ? ' rt' + x.eyes.rtMean + ' mis' + x.eyes.misreads + ' greed' + x.eyes.greeds + (x.eyes.guardTells !== undefined ? ' guard ' + x.eyes.guardRaised + '/' + x.eyes.guardTried + '/' + x.eyes.guardTells : '') : '') + (x.casts ? ' casts ' + JSON.stringify(x.casts) : '') + (x.rp ? ' rp ' + JSON.stringify(x.rp) : '') + (x.bz ? ' bz ' + JSON.stringify(x.bz) : ''));   /* (claude/riposte) the parries, the boss's riposte openings and the mix-up chain's pips and verbs */
