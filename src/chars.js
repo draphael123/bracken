@@ -1833,6 +1833,11 @@ function paladinKitPoses(F, sh) {
   F.hallow = [K({ dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y - 2], maul: [X + 2, Y - 2, X + 3, Y - 13], plume: 1 }),
     K({ dy: 2, legs: 'kneel', arm: [X, Y, X + 4, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y - 1], maul: [X + 4, Y - 3, X + 6, Y + 5], plume: 2,
       bits: [a(X + 2, Y + 6, G), a(X + 10, Y + 6, G), a(X + 6, Y + 3, C), a(X, Y + 4, C), a(X + 12, Y + 4, C), a(X + 6, Y - 5, W)] })];
+  /* EMPOWER (claude/paladin2) - PLACEHOLDER, its own two frames for the art lane to finish: the maul raised straight up in both hands over the helm,
+     the head lit; then driven down two-handed into his circle, standing, with the light going up off the ground both sides of him */
+  F.sanctify = [K({ dy: -2, sho: 1, legs: 'wide', arm: [X, Y, X + 1, Y - 8], arm2: [OFF[0], OFF[1], X, Y - 8], maul: [X + 1, Y - 7, X + 1, Y - 19], glow: [X + 1, Y - 22], plume: 2 }),
+    K({ dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X + 2, Y + 2], maul: [X + 3, Y + 1, X + 5, Y + 9], plume: 2,
+      bits: [a(X - 6, Y + 2, G), a(X - 6, Y - 2, C), a(X - 6, Y - 6, W), a(X + 14, Y + 2, G), a(X + 14, Y - 2, C), a(X + 14, Y - 6, W), a(X + 5, Y + 6, W)] })];
   /* SPEAR OF LIGHT: the maul drawn back level behind him and the off hand out, sighting; then driven straight out level, the light
      leaving the head of it */
   F.beam = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y - 1], maul: [X - 1, Y - 1, X - 10, Y - 2], arm2: [OFF[0], OFF[1], X + 5, Y - 2], plume: 1 }),
