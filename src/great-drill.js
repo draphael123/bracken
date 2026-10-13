@@ -264,7 +264,7 @@ export function hitGear(e, S, id, dmg, c, out = {}) { const q = S.gears && S.gea
     if (g.moves.includes('dynamite') && e.mode === 'dynTell') { S.dynPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; }
     if ((g.moves.includes('rocks') && e.mode === 'rockTell') || (g.moves.includes('collapse') && e.mode === 'collapseTell')) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; }   /* (what is already falling falls) */
     c.sound && c.sound('gearBreak'); c.shake && c.shake(5);
-    c.number(rearX(S) - 30, S.G.laneY[g.lane] + g.t - 14, g.name + ' BROKEN: ' + g.word, '#8fd160');
+    const bw = g.name + ' BROKEN: ' + g.word; c.number(rearX(S) - 30, S.G.laneY[g.lane] + g.t - 14, bw, '#8fd160');
     if (!drillOpen(e) && S.ward <= 0 && e.mode !== 'phase' && e.mode !== 'sleep' && e.mode !== 'wake') beginJam(e, S, c, 'gear');
     if (shut0 && !gateShut(S)) { if (S.held > 0) { S.pass = Math.round(S.held); S.held = 0; out.release = S.pass; } c.number(rearX(S) - 30, S.G.laneY[2] - 54, S.ph === 3 ? 'ITS GEARS GIVE: FINISH IT' : 'ITS GEARS GIVE: THE DRIVE IS OPEN', '#ffd36b'); } }
   return d; }
