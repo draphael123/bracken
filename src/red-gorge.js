@@ -341,8 +341,7 @@ export function buildRedGorge({ painter, T, TS }) {
       { kind: 'jam', opens: 'the bridge it seals (a released burst washes it out)', hud: 'A JAM: ONLY A RELEASED BURST MOVES IT' },
       { kind: 'waterwheel', opens: 'its basket up the sheer face while the water runs', hud: 'THE WHEEL TURNS WHEN THE WATER RUNS' },
       { kind: 'oldnest', opens: "THE OLD NEST's vault (a silver)", hud: 'THE OLD NEST OPENS' },
-      { kind: 'mbasket', opens: "the Matriarch's walls in phase two: a lever's water lifts its basket to her, and a blow from it knocks her off, STUNNED", hud: 'THE STANDPIPE FILLS: RIDE THE BASKET UP' },
-      { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a wave: caught in the channel by it she is STUNNED); in phase two its basket's standpipe", hud: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL' },
+      { kind: 'mlever', opens: "the dam's banked flood down the Matriarch's channel (a wave: caught in the channel by it she is STUNNED); in phase two its basket's standpipe (the basket lifts you to her wall: a blow from it knocks her off, STUNNED)", hud: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL' },
     ],
     music: 'redgorge',   /* "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick (10-02); credited in src/audio.js MUSIC_CREDITS, audio/CREDITS.txt and the credits page (src/credits.js) */
     ambient: [{ x0: 0, x1: 99999, kind: 'canyon' }],   /* (claude/redgorge2 art pass) its own bed: the wind down the gorge, the river's roar, the spillway's hiss, a raptor on the wall (src/audio.js SYNTH_BEDS.canyon) */

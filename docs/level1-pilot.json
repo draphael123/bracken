@@ -60,14 +60,14 @@
   "bare": true
  },
  "redgorge": {
-  "hash": "1332d2630b5f",
+  "hash": "83c76b84fe01",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 27,
-  "deaths": 6,
+  "deaths": 3,
   "kills": 9,
-  "lifts": 69,
+  "lifts": 87,
   "walked": 100,
   "bare": true
  },
