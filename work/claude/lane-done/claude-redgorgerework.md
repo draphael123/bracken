@@ -84,3 +84,6 @@ Base: origin/master 7d920edb (batch90). claude/flasklever was not merged, so thi
    - Rec: keep. This is the A10b spacing.
 7. **A blow into her raised talons is now 0.4x, not 0** (B15 floor), and other blows outside openings are 0.5x ("TOUGH HIDE: STUN HER").
    - Rec: keep. It makes the lever the way to really hurt her.
+
+## Addendum: textfit --strict
+The first run flagged the lever labels drawing offscreen. They are now drawn only on screen. The re-run (TEXTFIT_PAGES=1) shows no redgorge finding. The reds left are other levels': coophelp offscreen and collide, the fallingtower and fair sign covers, the marsh arena collide.

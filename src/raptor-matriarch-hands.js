@@ -220,7 +220,7 @@ export function makeMatriarchHands(ctx) {
     if (S.ph === 1) { const inCh = e.y > G.topY + 8 && e.mode !== 'fly' && !RM.matBig(e), hot = !!S.lure || inCh, blinkG = Math.floor(time * (S.lure ? 8 : 3)) % 2;
       for (const l of G.levers) { if (!S.sluice[l.id] || S.pending.length || S.burst > 0) continue; const lx = R(l.x - cx), ly = R(G.topY - 58 - cy) + R(Math.sin(time * 5) * 3);
         g.fillStyle = hot && blinkG ? '#fff6c8' : '#ffd36b'; g.beginPath(); g.moveTo(lx - 6, ly - 6); g.lineTo(lx + 6, ly - 6); g.lineTo(lx, ly + 2); g.closePath(); g.fill();
-        ctx.text(hot ? 'PULL (E)' : 'LEVER', lx, ly - 14, hot && blinkG ? '#fff6c8' : '#ffd36b', 'center', 5);
+        if (lx > 24 && lx < ctx.VW() - 24 && ly - 14 > 6 && ly - 14 < ctx.VH() - 8) ctx.text(hot ? 'PULL (E)' : 'LEVER', lx, ly - 14, hot && blinkG ? '#fff6c8' : '#ffd36b', 'center', 5);
         if (inCh && !(S.ward > 0)) { const y0 = R(G.floorY - 10 - cy), x0 = R((l.id === 'W' ? G.tops[0].r : G.tops[G.tops.length - 1].l) - cx), x1 = R(e.x - cx); g.globalAlpha = hot && blinkG ? 0.9 : 0.55; g.fillStyle = '#ffd36b';
           for (let xx = Math.min(x0, x1); xx < Math.max(x0, x1); xx += 8) g.fillRect(xx, y0, 5, 2); g.fillRect(lx - 1, R(G.topY - 40 - cy), 2, R(G.floorY - G.topY + 30)); g.globalAlpha = 1; } } }
     if (S.wave) { const wx = R(S.wave.x - cx), top = R(G.floorY - 30 - cy), bot = R(G.floorY - cy); g.fillStyle = 'rgba(150,200,236,0.85)'; g.fillRect(wx - S.wave.dir * 26, top + 8, 26 * 1, bot - top - 8);
