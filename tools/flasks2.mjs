@@ -38,12 +38,12 @@ const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
   for (const id of ['extra2', 'rich', 'distilled', 'sunlight', 'quick']) assert.equal(F2.lockText(F2.itemOf(id), p1), null, id + ' still locked once its rule is met');
   assert.equal(F2.displayName(F2.itemOf('sunlight'), p1), 'BOTTLED SUNLIGHT', 'a found line still ???');
   /* the heal and the drink */
-  assert.equal(F2.healPct({}), 0.35); assert.equal(F2.POTENCY.cap, 0.50);   /* (Daniel 10-09: the store's tiers only - the card no longer heals) */
+  assert.equal(F2.healPct({}), 0.25); assert.equal(F2.POTENCY.cap, 0.40);   /* (claude/flasklever 10-13: the flask lever - was 0.35 / 0.50) */   /* (Daniel 10-09: the store's tiers only - the card no longer heals) */
   { const PR = await import('../src/progression.js'), c = PR.MINOR_PERKS.find(k => k.id === 'tonic'); assert.ok(c && c.name === 'SECOND DRAUGHT' && !/HEAL|%/.test(c.what), 'the old RICH FLASK card is not the non-heal SECOND DRAUGHT: ' + JSON.stringify(c)); }
   const own = (...ids) => ({ flaskItems: Object.fromEntries(ids.map(i => [i, true])) });
-  assert.equal(F2.healPct(own('rich')), 0.40); assert.equal(F2.healPct(own('rich', 'distilled')), 0.45); assert.equal(F2.healPct(own('sunlight')), 0.50); assert.equal(F2.healPct(own('rich', 'sunlight')), 0.50, 'the best one owned'); assert.equal(F2.healPct(own('rich', 'distilled', 'sunlight')), 0.50, 'potency caps at 50%');
+  assert.equal(F2.healPct(own('rich')), 0.30); assert.equal(F2.healPct(own('rich', 'distilled')), 0.35); assert.equal(F2.healPct(own('sunlight')), 0.40); assert.equal(F2.healPct(own('rich', 'sunlight')), 0.40, 'the best one owned'); assert.equal(F2.healPct(own('rich', 'distilled', 'sunlight')), 0.40, 'potency caps at 40%');
   assert.deepEqual(F2.drinkTimes({}, SV.FLASK), { drinkT: SV.FLASK.drinkT, swallowAt: SV.FLASK.swallowAt });
-  const q = F2.drinkTimes(own('quick'), SV.FLASK); assert.ok(q.drinkT < SV.FLASK.drinkT && q.swallowAt < SV.FLASK.swallowAt && Math.abs(q.drinkT / 0.6 - 0.5) < 0.02, 'QUICK DRAUGHT is ~0.5 s on the clock: ' + JSON.stringify(q));
+  const q = F2.drinkTimes(own('quick'), SV.FLASK); assert.ok(q.drinkT < SV.FLASK.drinkT && q.swallowAt < SV.FLASK.swallowAt && Math.abs(q.drinkT / 0.6 - 0.83) < 0.02, 'QUICK DRAUGHT is ~0.83 s on the clock (the lever: base drink 1.17 s): ' + JSON.stringify(q));
   assert.equal(F2.shrineGives({}), 1); assert.equal(F2.shrineGives(own('blessing')), 2);
   assert.equal(SV.flaskMax({ flaskUp: F2.countOf(own('tonic', 'extra2', 'extra3')) }), 4, 'three extra flasks make four');
   /* the objectives */

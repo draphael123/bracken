@@ -7,7 +7,7 @@
  *   2. THE EXAM KILLS, AND SAYS SO. In an exam span (L.examSpans) spikes are a real death (THE SPIKES on the card), and walking into the
  *      span says it (SV.LINES.exam). NEVER UNTOLD: every span with spikes in it has hurt spikes earlier in its wood (SV.untoldExams), every wood.
  *   3. THE FLASK. Three a shrine interval (the smith's extra ones on top), drunk on a key (U / 1), LT on a pad, the DRINK button on a phone, or
- *      BK.drinkFlask() for a bot: +35% of max health at the swallow, a committed drink (no swing, no jump while it lasts), and a blow before the
+ *      BK.drinkFlask() for a bot: +25% of max health (the lever; was 35%) at the swallow, a committed drink (no swing, no jump while it lasts), and a blow before the
  *      swallow SPILLS it (spent, nothing healed). No auto-drink: a blow under a quarter of the bar no longer drinks for you.
  *   4. DRY SHRINES. A shrine lights, fills the flasks and the stamina, and does NOT heal; a death does heal in full and fills them; R (back to
  *      the shrine) carries health and flasks. HEARTS heal 12% of max; KILL HEALS halve and cap at 5 (the charm alone: 3).
@@ -124,7 +124,7 @@ return out;})()`);
   assert.equal(f.start, 1, 'a fresh knight does not start with ONE flask (survival2)'); assert.equal(f.max, 1); assert.equal(f.maxUp, 3, 'the smith two extra flasks do not make three');
   assert.ok(f.drank && f.after === 2, 'BK.drinkFlask() did not start a drink: ' + JSON.stringify(f));
   assert.ok(f.rooted, 'a drink is not committed: he moved, jumped or swung through it: ' + JSON.stringify(f));
-  assert.equal(f.heal, f.want, 'a flask heals ' + f.heal + ', not 35% of the bar (' + f.want + ')');
+  assert.equal(f.heal, f.want, 'a flask heals ' + f.heal + ', not the lever's 25% of the bar (' + f.want + ')');
   assert.ok(Math.abs(f.swallowF - f.swallowWant) <= 3 && f.done, 'the swallow lands at ' + f.swallowF + ' frames (want ~' + f.swallowWant + ': FLASK.swallowAt at the game speed) and the drink ends');
   assert.deepEqual([f.spill.spent, f.spill.healed, f.spill.drinking], [1, 0, false], 'a blow before the swallow does not spill the flask: ' + JSON.stringify(f.spill));
   assert.ok(f.key, 'U does not drink'); assert.equal(f.auto.flasks, 3, 'a blow under a quarter still drinks for you'); assert.equal(f.empty, false, 'a drink with no flask');
