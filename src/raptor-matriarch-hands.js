@@ -127,7 +127,13 @@ export function makeMatriarchHands(ctx) {
     else if (S && A()) m.y = RM.basketY(S.G, S, m.mbasket); else m.y = m.y0;
     m.dy = m.y - oy; return true; };
   /* A BLOW ON HER: the ward turns everything; her talons turn the front; an opening pays x openMul (one opening openCap of her at most) */
-  H.take = (e, dmg) => { const d0 = take0(e, dmg); if (!S || !(d0 > 0)) return d0; const d = RM.holdDmg(e, S, d0);
+  H.take = (e, dmg) => { let d0 = take0(e, dmg); if (!S || !(d0 > 0)) return d0;
+    /* THE WATER DAMPS FIRE (claude/redgorgerework, the crab's rule on her: src/gorge-crab-hands.js): stunned by the sluice's wave she is SOAKED, and in phase three
+       the dam's water is round her - the pyromancer's staff and its burn hiss on her (x MAT.soakFire, with steam and a hiss, said once); a blade goes through water */
+    if (ctx.pyro && ctx.pyro() && (e.mode === 'staggered' || (S.ph === 3 && S.water > 0.5))) { d0 *= MAT.soakFire; S.n.soaked = (S.n.soaked || 0) + 1; const t = ctx.time();
+      if (!(S.soakFx > t - 0.25)) { S.soakFx = t; ctx.burst(e.x, e.y - 18, 8, ['#e8f4f8', '#c8d0d8', '#9aa3aa'], 50, 0.6); ctx.sfx.hiss && ctx.sfx.hiss(); }
+      if (!S.told.soak) { S.told.soak = 1; ctx.number(e.x, e.y - 56, 'THE WATER DAMPS YOUR FIRE', '#9ad0e8'); } }
+    const d = RM.holdDmg(e, S, d0);
     if (d < d0 && !(S.holdSaid > ctx.time())) { S.holdSaid = ctx.time() + 3; S.n.held = (S.n.held || 0) + 1; e.guardFx = 0.25; e.guardWord = 'THE SLUICE'; ctx.number(e.x, e.y - 70, RM.SAY.hold, '#ffd36b'); }   /* (claude/redgorgerework) THE HOLD: the first pass forces the verb (B10: said, never a silent no-damage blow) */
     return d; };
   H.hold = (e, d) => (S ? RM.holdDmg(e, S, d) : d);
@@ -137,15 +143,18 @@ export function makeMatriarchHands(ctx) {
     if (RM.matUnder(e)) { e.chipHit = t; e.guardFx = 0.25; e.guardWord = 'UNDER THE WATER'; ctx.sfx.clank && ctx.sfx.clank(); return 0; }
     /* (claude/redgorgerework) FROM A RAISED BASKET while she is on the wall: the blow lands whole and knocks her off it */
     { const m = P.onMover; if (S.ph === 2 && m && m.mbasket && S.press[m.mbasket] && S.press[m.mbasket].h >= 0.85 && RM.wallMode(e) && RM.knock(e, S, world(e))) return dmg; }   /* (claude/matriarch2) the flood rider is under the water: nothing reaches her - said (B10) */
-    if (RM.matBig(e) || e.broken > 0) { const cap = e.maxHp * MAT.openCap, d = Math.min(dmg * MAT.openMul, Math.max(0, cap - S.openTaken)); S.openTaken += d;
+    if (RM.matBig(e) || e.broken > 0) { const cap = e.maxHp * (RM.matBig(e) && S.openCap ? S.openCap : MAT.openCap), d = Math.min(dmg * MAT.openMul, Math.max(0, cap - S.openTaken)); S.openTaken += d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 70, 'SHE GATHERS HERSELF', '#9aa39a'); } return d; }
     /* A BEAT (her guard is down: the skid, the breath after the rake) lands whole, up to MAT.beatCap of her a beat */
     if (RM.matBeat(e)) { const k = S.act + e.mode; if (S.beatKey !== k) { S.beatKey = k; S.beatTaken = 0; } const d = Math.min(dmg, Math.max(0, e.maxHp * MAT.beatCap - S.beatTaken)); S.beatTaken += d; return d; }
     /* UNDER HER TALONS (B11 "blocks high -> hit low"; fix pass): the knight's SHIELD TRIP and the warden's LOW POKE (crouched X, src/crouch-a.js) go under the raised guard */
-    if ((P.caTrip || P.caPoke) && P.ground && RM.guarded(e, P.x, P.y, false)) { if (!(S.lowSaid > t)) { S.lowSaid = t + 2.5; ctx.number(e.x, e.y - 60, 'UNDER HER TALONS', '#8fd160'); } S.n.under = (S.n.under || 0) + 1; return dmg; }
+    /* (claude/redgorgerework, B15 + B17: THE SLUICE IS HOW YOU HURT HER) outside her openings and beats she is RESISTANT: a blow round her talons, from above or
+       under them lands x MAT.hideMul; one into her raised talons x MAT.talonMul (B15's floor: never nothing) - both told */
+    if ((P.caTrip || P.caPoke) && P.ground && RM.guarded(e, P.x, P.y, false)) { if (!(S.lowSaid > t)) { S.lowSaid = t + 2.5; ctx.number(e.x, e.y - 60, 'UNDER HER TALONS', '#8fd160'); } S.n.under = (S.n.under || 0) + 1; return dmg * MAT.hideMul; }
     if (RM.guarded(e, P.x, P.y, !P.ground && !P.climb)) { e.chipHit = t; S.n.guarded++; e.guardFx = 0.25; e.guardWord = S.n.guarded < 5 ? ['TALONS UP: GO LOW', 'TALONS UP: GO ROUND', 'TALONS UP: HIT HIGH'][S.n.guarded % 3] : 'TALONS UP';
-      ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 14, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return 0; }
-    return dmg; };
+      ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 14, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return dmg * MAT.talonMul; }
+    if (!(S.hideSaid > t)) { S.hideSaid = t + 6; e.guardFx = 0.2; e.guardWord = 'TOUGH HIDE: STUN HER'; }
+    return dmg * MAT.hideMul; };
   /* THE LEVERS' GLINT (src/stuck-spots.js STUCK_HANDS rg-lever, via src/red-gorge-hands.js 'mat.lever'): due while phase one has a full sluice and she can be thrown */
   H.leverDue = () => { if (!S || !ctx.bossActive || !A()) return ''; const e = ctx.boss; if (!e || !e.alive || e.t !== 'matriarch' || e.mode === 'sleep') return '';
     if (S.ph === 2) return RM.wallMode(e) && G0().levers.some(l => S.sluice[l.id] && !(S.press[l.id].charge > 0)) ? 'due' : '';   /* (claude/redgorgerework) phase two: a full lever lifts its basket to her */

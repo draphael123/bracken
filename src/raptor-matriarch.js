@@ -44,19 +44,21 @@
    ledges; she circles the walls till they are down - kill them and she drops to them, guard down), P3 THE FLOOD RIDER (she dives into the cracked
    dam's water and rides the surge under it - a FOAM LINE runs to your pillar's edge - and bursts out there: be off the edge, or meet her in the
    air as she comes up; a narrow top she lands on throws her, the level's rule) */
+/* (claude/redgorgerework tuning, the human bot with the campaign kit's flasks at 94-100%: her tells a beat quicker - sweep/scree 0.62, dive 0.9 (the pounce kept at 0.72: the warden's step) -
+   her beats shorter - skid 1.6, the rake's breath 1.0 - and her wall runs between dives 0.9-1.6 s; damage x1.75 (in dmg's own note)) */
 export const MAT = {
-  hp: 1000, scale: 1.35, w: 60, h: 46, markH: 76,   /* (w 44, h 34, markH 56 before claude/matriarch2) */
-  openMul: 1.6, openCap: 0.045, beatCap: 0.04, wardT: 3.0,   /* (fix pass: one opening is openCap of her at most, one BEAT - a skid, the breath after her rake - beatCap: the heavy blades were emptying a beat) */
+  hp: 900, scale: 1.35, w: 60, h: 46, markH: 76,   /* (claude/redgorgerework tuning: hp 1000 before) (w 44, h 34, markH 56 before claude/matriarch2) */
+  openMul: 1.6, openCap: 0.05, beatCap: 0.035, wardT: 3.0,   /* (claude/redgorgerework tuning: openCap 0.045, beatCap 0.04 before - the knight and the pyromancer filled every window, the warden's spear does not) */   /* (fix pass: one opening is openCap of her at most, one BEAT - a skid, the breath after her rake - beatCap: the heavy blades were emptying a beat) */
   p2: 0.6, p3: 0.25,
-  walk: 96, keep: 40, turn: 0.3, hopUp: 320, fall: 420, rest: 0.4,   /* (claude/matriarch2: walk 80, keep 30, turn 0.35; rest = the pause between her moves, 0.5 before) */
+  walk: 96, keep: 40, turn: 0.3, hopUp: 320, fall: 420, rest: 0.3,   /* (claude/matriarch2: walk 80, keep 30, turn 0.35; rest = the pause between her moves, 0.5 before) */
   /* P1 */
-  pounceTell: 0.72, pounceLock: 0.45, pounceFly: 0.5, pounceR: 22, pounceArc: 72, skidT: 1.6, skidSlide: 34, closeR: 200, closeT: 0.6,   /* (fix pass: pounceR/diveR 23 -> 18, so a walk-off on a 64 px top clears the mark; a rake or a sweep out of reach CLOSES IN once (closeT s), then kicks scree. claude/matriarch2: tell 0.8, R 18, arc 64, skid 1.5, closeR 170, closeT 0.7) */
-  rakeTell: 0.4, rakeT: 0.14, rakeGap: 0.2, rakeReach: 70, rakeBeatT: 1.0, rakeRange: 92,   /* (claude/matriarch2: tell 0.45, gap 0.22, reach 54, range 72) */
+  pounceTell: 0.72, pounceLock: 0.45, pounceFly: 0.5, pounceR: 17, pounceArc: 72, skidT: 1.25, skidSlide: 34, closeR: 200, closeT: 0.6,   /* (fix pass: pounceR/diveR 23 -> 18, so a walk-off on a 64 px top clears the mark; a rake or a sweep out of reach CLOSES IN once (closeT s), then kicks scree. claude/matriarch2: tell 0.8, R 18, arc 64, skid 1.5, closeR 170, closeT 0.7) */
+  rakeTell: 0.4, rakeT: 0.14, rakeGap: 0.2, rakeReach: 70, rakeBeatT: 0.8, rakeRange: 92,   /* (claude/matriarch2: tell 0.45, gap 0.22, reach 54, range 72) */
   followTell: 0.5, followLock: 0.3, followFly: 0.42, followAway: 8,   /* P1's NEW MOVE (claude/matriarch2): THE FOLLOW-UP - after her second slash, a hero who ROLLED in the rake (or is followAway px past its reach) is pounced at, the mark where they went */
-  sweepTell: 0.62, sweepT: 0.25, sweepR: 100, sweepH: 24,   /* (claude/matriarch2: tell 0.7, R 78, H 22 - the tail stays low: a jump still clears it) */
-  screeTell: 0.62, screeN: 4, screeV: [170, 250], screeG: 600,   /* (claude/matriarch2: tell 0.7) */
+  sweepTell: 0.55, sweepT: 0.25, sweepR: 100, sweepH: 24,   /* (claude/matriarch2: tell 0.7, R 78, H 22 - the tail stays low: a jump still clears it) */
+  screeTell: 0.55, screeN: 5, screeV: [170, 250], screeG: 600,   /* (claude/matriarch2: tell 0.7) */
   screechTell: 0.8, raptorCap: 2,
-  hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 4.2, releaseTell: 0.3, burstT: 1.6,
+  hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 5.5, releaseTell: 0.3, burstT: 1.6,
   /* (claude/redgorgerework, Daniel 10-13: "not clear how levers hurt/STUN the boss") THE SLUICE STUN, the fight's central mechanic (B17): a pulled lever sends
      ONE WAVE down the channel from its bank (waveV px/s, drawn as a wall of water); the wave that reaches her IN THE CHANNEL stuns her - always (the narrow /
      broad pillar lottery is gone), STUNNED + the gold ring. THE LURE (lureTell): every phase-one pass opens with her dropping into the channel in front of
@@ -67,15 +69,17 @@ export const MAT = {
      pulled while she is on the walls sends its sluice's water up the STANDPIPE beside its bank - pressT s of pressure (the gauge drains); the BASKET there rises
      with a hero on it (basketRise s) to her wall height (basketTop px under the wall line: her body is in reach) and holds while the pressure does, then sinks
      (basketFall s). A blow from a raised basket KNOCKS HER OFF THE WALL: she falls into the channel STUNNED (stunT), and the pressure drops - you come down with her */
-  pressT: 8, basketRise: 1.3, basketFall: 1.0, basketTop: 6, knockFly: 0.45,
+  pressT: 8, basketRise: 1.3, basketFall: 1.0, basketTop: 2, knockFly: 0.45,
+  verbCap: 0.10,
+  hideMul: 0.5, talonMul: 0.4, soakFire: 0.5,   /* soakFire: the pyromancer's fire on her soaked by the sluice (or in the cracked dam's water) - src/raptor-matriarch-hands.js */   /* (claude/redgorgerework, B15/B17) OUTSIDE her openings and beats: round, over or under her talons x hideMul; into them x talonMul (0 before: B15's floor) */   /* THE VERB PAYS: a stun the sluice makes (the wave, the basket's knock) is verbCap of her at most, the other openings openCap */
   /* P2 */
-  wallUp: 0.6, runT: [0.9, 1.6], runV: 170, diveTell: 0.9, diveFly: 0.3, diveR: 22, stunT: 4.4,   /* (claude/matriarch2: runT [1.6, 2.6], runV 150, diveTell 1.0, diveR 18 - she comes off the wall far more often) */
-  volleyTell: 0.8, quills: 5, quillSpread: 0.2, quillV: 210, perchT: 3.0, toBridge: 0.5, tangleT: 5.0,
+  wallUp: 0.6, runT: [0.6, 1.1], runV: 170, diveTell: 0.78, diveFly: 0.3, diveR: 22, stunT: 5.5,   /* (claude/matriarch2: runT [1.6, 2.6], runV 150, diveTell 1.0, diveR 18 - she comes off the wall far more often) */
+  volleyTell: 0.8, quills: 5, quillSpread: 0.2, quillV: 210, perchT: 3.0, toBridge: 0.5, tangleT: 6.0,
   broodTell: 0.8, broodN: 2, broodT: 9, broodHp: 0.35, broodOff: 240, griefT: 3.0,   /* P2's NEW MOVE (claude/matriarch2): THE BROOD CALL - broodN young off the nest ledges (each broodHp of a cliff raptor's health, off the walls broodOff px either side of you); she circles the walls up to broodT s; both down = she drops to them, GUARD DOWN griefT s */
   /* P3 */
-  crackT: 2.5, riseT: 2.0, chainN: 3, chainGap: 0.45, p3StaggerT: 4.4, surgeTell: 1.2, surgeV: 240, surgeEvery: 16,
+  crackT: 2.5, riseT: 2.0, chainN: 3, chainGap: 0.45, p3StaggerT: 5.0, surgeTell: 1.2, surgeV: 240, surgeEvery: 16,
   riderTell: 0.6, riderV: 190, riderMax: 2.4, riderWait: 0.5, riderOut: 12, riderR: 14, riderH: 44, riderRise: 0.45, riderArc: 40,   /* P3's NEW MOVE (claude/matriarch2): THE FLOOD RIDER - under the water a FOAM LINE runs at riderV to the edge of your top (riderOut px out from it, in the water), boils there riderWait s, and she bursts up: a column riderR px either side, riderH px over the tops */
-  dmg: { pounce: 31, rake: 16, sweep: 18, scree: 16, dive: 29, quill: 14, surge: 14, follow: 28, rider: 26 },   /* (claude/matriarch2: pounce 25, rake 15, sweep 17, dive 26) */
+  dmg: { pounce: 75, rake: 37, sweep: 36, scree: 50, dive: 70, quill: 33, surge: 33, follow: 67, rider: 62 },   /* (claude/redgorgerework: ~x2.4 - the human bot won 18/18 with flasks at 31/16/18/16/29/14/14/28/26; claude/matriarch2: pounce 25, rake 15, sweep 17, dive 26) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -171,7 +175,7 @@ function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] 
 /* a flight from where she is to (tx, ty) over t s, an arc `arc` px high; `then` is the mode she lands in */
 function fly(e, S, tx, ty, t, arc, then) { S.fly = { x0: e.x, y0: e.y, tx, ty, t, t0: t, arc, then }; e.mode = 'fly'; e.modeT = t; }
 function endOpen(e, S, c) { e.open = 0; S.ward = MAT.wardT; S.n.wards++; S.openTaken = 0; c.number(e.x, e.y - 70, 'HER WARD: SHE SHAKES IT OFF', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
-function open(e, S, c, mode, t) { setMode(e, mode, t); e.open = t; S.openTaken = 0; S.n.opens++; c.fx('open', e.x, e.y); }
+function open(e, S, c, mode, t, cap) { setMode(e, mode, t); e.open = t; S.openTaken = 0; S.openCap = cap || MAT.openCap; S.n.opens++; c.fx('open', e.x, e.y); }   /* (claude/redgorgerework: cap - the verb's own stuns pay more) */
 
 /* THE LURE's spot (claude/redgorgerework): down in the channel, lureOff px out from the bank of the FULL lever nearer the hero */
 export function lureSpot(S, P) { const G = S.G, ls = G.levers.filter(l => S.sluice[l.id]).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)), id = (ls[0] || G.levers[0]).id;
@@ -202,8 +206,9 @@ export const wallMode = e => !!e && (e.mode === 'wallRun' || e.mode === 'circle'
 export const basketY = (G, S, id) => { const b = G.baskets.find(q => q.id === id), B = S.press[id]; return b.y0 - (b.y0 - b.y1) * (B ? B.h : 0); };
 function stepBaskets(S, dt, h) { S.riderUp = false;
   for (const b of S.G.baskets) { const B = S.press[b.id]; B.rider = h.some(q => q.alive && q.onBasket === b.id);
-    if (S.ph === 2 && B.charge > 0) { B.charge = Math.max(0, B.charge - dt); if (B.rider || B.h > 0) { const was = B.h; B.h = Math.min(1, B.h + dt / MAT.basketRise); if (was < 1 && B.h >= 1 && B.rider) S.n.basketRides = (S.n.basketRides || 0) + 1; } }
-    else { B.charge = 0; B.h = Math.max(0, B.h - dt / MAT.basketFall); }
+    if (B.rider) B.ridden = true;   /* (a hero who has stood on it: it goes up with the pressure, a hop on it does not stop it) */
+    if (S.ph === 2 && B.charge > 0) { B.charge = Math.max(0, B.charge - dt); if (B.ridden || B.h > 0) { const was = B.h; B.h = Math.min(1, B.h + dt / MAT.basketRise); if (was < 1 && B.h >= 1 && B.rider) S.n.basketRides = (S.n.basketRides || 0) + 1; } }
+    else { B.charge = 0; B.h = Math.max(0, B.h - dt / MAT.basketFall); if (B.h === 0) B.ridden = false; }
     if (B.rider && B.h >= 0.5) S.riderUp = true; } }
 /* A BLOW FROM A RAISED BASKET while she is on the wall: she is knocked off it - down into the channel, STUNNED (the pressure drops: the basket comes down too). false: not now */
 export function knock(e, S, c) { if (S.ph !== 2 || !wallMode(e) || S.ward > 0 || matBig(e)) return false; const G = S.G;
@@ -244,7 +249,7 @@ export function stepMatriarch(e, S, dt, h, c) {
   if (S.wave && S.burstSeen !== S.wave.id && S.wave.dir * (S.wave.x - e.x) >= 0) { S.burstSeen = S.wave.id;
     if (S.ward > 0) { c.number(e.x, e.y - 64, SAY.warded, '#9ab0c0'); S.n.warded++; }
     else if (onFloor(G, e) && !matBig(e) && e.mode !== 'fly' && S.ph < 3) { S.n.staggers++; S.n.sluiceStuns = (S.n.sluiceStuns || 0) + 1; S.pAt = null; S.lure = 0;
-      open(e, S, c, 'staggered', MAT.staggerT); c.number(e.x, e.y - 64, SAY.stun, '#8fd160'); c.fx('stun', e.x, e.y); c.shake(3); return; }
+      open(e, S, c, 'staggered', MAT.staggerT, MAT.verbCap); c.number(e.x, e.y - 64, SAY.stun, '#8fd160'); c.fx('stun', e.x, e.y); c.shake(3); return; }
     else if (!matBig(e)) { S.n.wasted++; c.number(e.x, e.y - 64, SAY.wasted, '#9aa39a'); } }
   switch (e.mode) {
     case 'fly': stepFly(e, S, dt, P, c); return;
@@ -299,7 +304,12 @@ function nextMove(e, S, P, c) {
     if (S.ph === 1) { if (!S.closeIn && Math.abs(dx) < MAT.closeR) { S.closeIn = 1; S.step--; setMode(e, 'walk', MAT.closeT); return; } S.closeIn = 0; m = Math.abs(P.y - e.y) < 24 ? 'scree' : 'pounce'; }
     else m = 'pounce'; } else S.closeIn = 0;
   if (m === 'screech' && c.raptors() >= MAT.raptorCap) m = 'scree';
-  if (m === 'lure' && !(S.ph === 1 && (S.sluice.W || S.sluice.E) && !S.pending.length && !(S.burst > 0) && !S.horn && !S.flood && (c.hornIn ? c.hornIn() : 99) > MAT.lureMax + 0.8)) m = 'pounce';   /* (and never into the horn: she has warning then, and would leave the lure for the rock) */   /* (claude/redgorgerework) no full sluice: a plain pounce */
+  /* THE LURE (claude/redgorgerework): never into the horn (she has warning then, and would leave the lure for the rock) - a lure that cannot come now is
+     DUE, and comes at her next move that can; while she HOLDS (the sluice has not stunned her yet, and she will not break) one is due every other move */
+  const lureOk = () => S.ph === 1 && (S.sluice.W || S.sluice.E) && !S.pending.length && !(S.burst > 0) && !S.horn && !S.flood && (c.hornIn ? c.hornIn() : 99) > lureT(S, P) + 0.5;
+  if (S.ph === 1 && holding(e, S) && S.step % 2 === 0) S.lureDue = 1;
+  if (m !== 'lure' && S.lureDue && lureOk()) { S.step--; m = 'lure'; }
+  if (m === 'lure') { if (lureOk()) S.lureDue = 0; else { S.lureDue = S.ph === 1 ? 1 : 0; m = 'pounce'; } }
   if (m === 'perch' && S.bridges.A !== 'up' && S.bridges.B !== 'up') m = 'volley';
   if (m === 'surge' && S.ph === 3) { S.surgeT = 0; }
   if (m === 'brood' && (S.ph !== 2 || c.young() > 0)) m = 'dive';
@@ -387,7 +397,7 @@ function stepFly(e, S, dt, P, c) {
   if (then === 'diveLand') { c.fx('land', e.x, e.y); c.shake(4); const hit = c.hit([e.x - MAT.diveR, e.x + MAT.diveR, e.y - 40, e.y + 8], MAT.dmg.dive, MOVE_NAME.dive, { key: 'dive' + S.act });
     S.mark = null; if (hit) { fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 20, 'wallRun'); S.runT = 1.0; return; }
     S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); if (!S.told.stun) c.number(e.x, e.y - 64, 'SHE SLAMS INTO THE ROCK: STUNNED', '#8fd160'); S.told.stun = 1; return; }
-  if (then === 'knocked') { c.fx('land', e.x, e.y); c.shake(4); S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); c.fx('stun', e.x, e.y); return; }   /* (claude/redgorgerework) off the wall from the basket: STUNNED in the channel */
+  if (then === 'knocked') { c.fx('land', e.x, e.y); c.shake(4); S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT, MAT.verbCap); c.fx('stun', e.x, e.y); return; }   /* (claude/redgorgerework) off the wall from the basket: STUNNED in the channel */
   if (then === 'lure') { c.fx('land', e.x, e.y); e.face = Math.sign(P.x - e.x) || e.face; S.lure = 1; tell(e, S, c, 'pounceTell', lureT(S, P)); return; }   /* (claude/redgorgerework) down in the channel, crouched at you: the lever's window */
   if (then === 'wobble') { setMode(e, 'wobble', MAT.wobbleT); c.number(e.x, e.y - 64, 'THE NARROW PILLAR THROWS HER', '#8fd160'); c.sound('flap'); return; }
   if (then === 'volleyLand') { c.fx('land', e.x, e.y); setMode(e, 'skid', MAT.skidT); if (!S.told.vbeat) { S.told.vbeat = 1; c.number(e.x, e.y - 60, 'SHE COMES DOWN OFF THE WALL: HER GUARD IS DOWN', '#ffd36b'); } return; }
@@ -469,6 +479,12 @@ function matPlan0(s) {
      drawn only in diveTell: the hands remember it, they do not read her flight's own target) */
   const tellAt = mem.tellAt = mem.tellAt || {}; if (V2 && /Tell$/.test(e.mode)) tellAt[e.mode] = t; if (V2 && e.mode === 'diveTell' && S.mark) mem.diveX = S.mark.x;
   const objSeen = (o, tk) => { if (!V2) return true; if (tk && t - (tellAt[tk] ?? -9) < 2.5) return true; mem.objAt = mem.objAt || new WeakMap(); if (!mem.objAt.has(o)) mem.objAt.set(o, t); return t - mem.objAt.get(o) >= PLAN.react; };
+  /* ON A STANDPIPE BASKET (claude/redgorgerework, phase two): ride it up and stay on it - the channel's water is under you, her dives and quills are not for you
+     up there - and strike her off the wall as she runs past in reach */
+  if (S.ph === 2 && G.baskets) { const onBk = G.baskets.find(b => P.x > b.l - 4 && P.x < b.r + 4 && Math.abs(P.y - basketY(G, S, b.id)) < 8), B = onBk && S.press[onBk.id];
+    if (onBk && (B.charge > 0 || B.h > 0.05)) { const wall = wallMode(e);
+      if (B.h > 0.8 && wall && !(S.ward > 0) && Math.abs(e.x - P.x) < reach + MAT.w / 2 - 4 && seenFor('bk' + S.act + Math.round(e.x / 40), 0.15)) { swing(kx); out.gx = onBk.cx; out.why = 'the basket: strike her off the wall'; return fin(out); }
+      out.gx = onBk.cx; out.face = Math.sign(kx - P.x) || out.face; out.why = 'the basket: ride it up to her'; return fin(out); } }
   if (V2) { const v = v2Hands(s, out, { G, myTop, onTop, wet, kx, side, dx, same, hitR, lo, hi, clamp, swing, objSeen }); if (v) return v; }
   /* 0. IN THE WATER'S WAY: out of the channel onto the nearest top */
   if (!onTop && wet && S.ph < 3) { const tp = nearestTop(G, P.x, q => !(matOpen(e) === false && q === topAt(G, kx, 20) && dx < 30)); out.why = 'out of the channel'; return goTop(tp); }
@@ -511,6 +527,13 @@ function matPlan0(s) {
   /* the surge and the quills in flight */
   for (const b of S.bands) if (Math.abs(b.x - P.x) < 46 && b.dir * (P.x - b.x) > 0 && P.ground && objSeen(b, 'surgeTell')) { out.jump = true; out.gx = P.x; out.why = 'jump the surge'; return fin(out); }
   for (const q of S.shots) if (q.k === 'quill' && Math.hypot(q.x - P.x, q.y - (P.y - 10)) < 40 && P.ground && objSeen(q, 'volleyTell') && !roll('q' + q.key, PLAN.miss)) { out.dodge = true; out.gx = clamp(P.x + (q.vx > 0 ? 40 : -40)); out.why = 'roll the quill'; return fin(out); }
+  /* 1b. PHASE TWO (before her ward and her openings: a basket ridden is not let go): THE STANDPIPE BASKETS (claude/redgorgerework) - while she is on the walls: pull a full lever, board its basket, ride it up, strike her off the wall */
+  if (S.ph === 2 && G.baskets) { const wall = wallMode(e);
+    const ready = G.baskets.find(b => S.press[b.id].charge > 1.2 && S.press[b.id].h < 0.3);
+    if (ready && !matOpen(e) && !S.horn && !S.flood) { out.gx = ready.cx; out.why = 'the basket: board it'; return fin(out); }   /* (she comes back to the wall: board it whenever its pipe holds) */
+    if (wall && !S.horn && !S.flood && !ready) { const lv = G.levers.filter(l => S.sluice[l.id] && !(S.press[l.id] && S.press[l.id].charge > 0)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+      if (lv && seenFor('bkl' + S.act, 0.3)) { const bank = topAt(G, lv.x, 2); if (myTop !== bank || !onTop) { out.why = 'the basket: to its lever'; return goTop(bank); }
+        out.gx = lv.x; if (Math.abs(P.x - lv.x) < 12) { out.talk = true; out.why = 'the basket: pull its lever'; } else out.why = 'the basket: to its lever'; return fin(out); } } }
   /* 2. HER WARD: off her, let it pass */
   if (S.ward > 0) { out.gx = clamp(kx + side * 70); out.why = 'her ward: wait'; return fin(out); }
   /* 3. OPEN, OR A BEAT: cut her (from the side that is dry) */
@@ -522,16 +545,6 @@ function matPlan0(s) {
     if (e.mode === 'pstagger') { const tp = topAt(G, kx, 2); if (myTop !== tp) { out.gx = tp.cx; if (P.ground && onTop && (Math.abs(P.x - myTop.l) < 12 || Math.abs(P.x - myTop.r) < 12)) out.jump = true; out.why = 'to her top'; } else { out.gx = s.tip ? clamp(kx + side * stand) : kx - side * 6; swing(kx); out.why = 'cut her: staggered'; } return fin(out); }
     if (matBig(e) && onTop && e.y > G.topY + 8 && S.ph < 3) { out.gx = clamp(kx + side * stand); out.why = 'down to her'; if (Math.abs(P.x - out.gx) < 30 && myTop) out.gx = clamp(P.x < myTop.cx ? myTop.l - 10 : myTop.r + 10); return fin(out); }
     out.gx = clamp(kx + side * stand); if (dx < hitR + 2 && Math.abs(P.y - e.y) < 30) swing(kx); out.why = matBig(e) ? 'cut her: open' : 'cut her: her guard is down'; return fin(out); }
-  /* 3b. PHASE TWO: THE STANDPIPE BASKETS (claude/redgorgerework) - while she is on the walls: pull a full lever, board its basket, ride it up, strike her off the wall */
-  if (S.ph === 2 && G.baskets) { const onBk = G.baskets.find(b => P.x > b.l - 4 && P.x < b.r + 4 && Math.abs(P.y - basketY(G, S, b.id)) < 8), wall = wallMode(e);
-    if (onBk) { const B = S.press[onBk.id];
-      if (B.h > 0.8 && wall && !(S.ward > 0) && Math.abs(e.x - P.x) < reach + MAT.w / 2 - 4 && seenFor('bk' + S.act + Math.round(e.x / 40), 0.15)) { swing(kx); out.gx = onBk.cx; out.why = 'the basket: strike her off the wall'; return fin(out); }
-      if (B.charge > 0 || B.h > 0.05) { out.gx = onBk.cx; out.face = Math.sign(kx - P.x) || out.face; out.why = 'the basket: ride it up to her'; return fin(out); } }
-    const ready = G.baskets.find(b => S.press[b.id].charge > 1.2 && S.press[b.id].h < 0.3);
-    if (ready && wall && !S.horn && !S.flood) { out.gx = ready.cx; out.why = 'the basket: board it'; return fin(out); }
-    if (wall && !S.horn && !S.flood && !ready) { const lv = G.levers.filter(l => S.sluice[l.id] && !(S.press[l.id] && S.press[l.id].charge > 0)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-      if (lv && seenFor('bkl' + S.act, 0.3)) { const bank = topAt(G, lv.x, 2); if (myTop !== bank || !onTop) { out.why = 'the basket: to its lever'; return goTop(bank); }
-        out.gx = lv.x; if (Math.abs(P.x - lv.x) < 12) { out.talk = true; out.why = 'the basket: pull its lever'; } else out.why = 'the basket: to its lever'; return fin(out); } } }
   /* 4. PHASE TWO: a post under her bridge */
   if (S.ph === 2 && e.mode === 'perch' && S.perch) { const b = G.bridges.find(q => q.id === S.perch), px = Math.abs(b.a - P.x) < Math.abs(b.b - P.x) ? b.a : b.b;
     const tp = topAt(G, px, 2); if (myTop !== tp) { out.why = 'to the bridge post'; return goTop(tp); } out.gx = px - Math.sign(px - P.x || 1) * 14; out.strike = Math.abs(P.x - px) < reach + 12; if (out.strike) swing(px); out.why = 'strike the post'; return fin(out); }
