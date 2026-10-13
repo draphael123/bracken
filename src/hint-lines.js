@@ -186,6 +186,8 @@ export const CALL_LINES = new Set([
   /* claude/glasssea2: the swarm at dusk, the rocking mirrors, the Colossus's new moves and its read */
   'THE CRACK STIRS', 'THE SWARM WILL NOT CROSS FIRELIGHT', 'THE MIRROR ROCKS OFF THE SUN: THE GLASS GOES', 'THE GLASS GAVE WAY: BACK TO THE LIP',
   'TURN THE MIRROR TO HIM', 'TURN THE MIRROR TO HIM: HIS LANCE COMES BACK INTO HIS CHEST', 'THE GLASS IS SLICK: IT SLIDES YOU',
+  /* claude/colossusrework: THE GLASS COLOSSUS walks between his stations, his gaze, his shard lunge */
+  'IT STRIDES', 'THE MIRROR CATCHES HIS GAZE',
   /* claude/litchurch: THE LIT CHURCH's light, flame, clergy, grates, organ, dark rising and doors (src/lit-church-hands.js) and THE PALADIN (src/paladin-boss.js, src/paladin-boss-hands.js);
      (Waymeet's boss is THE CRUSADER now: his plate's lines above) */
   'THE ROOM IS LIT: THE PRIESTS ARE STRONG IN IT', 'LAMP ONE BURNS: A SCONCE ON THE ROOD SCREEN', 'LAMP TWO BURNS: A SCONCE ON THE ROOD SCREEN', 'LAMP THREE BURNS: THE CRYPT CRACKS',
@@ -244,7 +246,7 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
   /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
   stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'NO CURRENT: HOLD LEFT OR RIGHT AT HER END TO LEG HER', back: 'SHE GLIDES TO YOU: DROP BACK ONTO HER DECK' };   /* (claude/canal5) */
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
-export const CALL_COUNTS = [/^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
+export const CALL_COUNTS = [/^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^IT SPEARS THE MIRROR ROUND: (TO THE SKY|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */

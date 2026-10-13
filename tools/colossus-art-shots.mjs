@@ -31,16 +31,20 @@ try {
       { name: 'open-chest', ph: 1, mode: 'cracked', open: 5.2, pre: (e, S) => { S.mirrors[0].notch = 'face'; S.lastReflect = 0; }, times: [0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.8, 1.5, 3.0, 5.0] },
       { name: 'open-shoulders', ph: 2, mode: 'blazing', open: 5.6, pre: (e, S) => { S.mirrors[0].notch = 'fire'; }, times: [0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.8, 1.5, 3.0, 5.0] },
       { name: 'open-crown', ph: 3, mode: 'dazzled', open: 5.4, pre: (e, S) => { S.mirrors[1].notch = 'sky'; }, times: [0, 0.05, 0.1, 0.2, 0.3, 0.5, 0.8, 1.5, 3.0, 5.0] },
+      /* (claude/colossusrework) THE WALK, THE GAZE, THE SHARD LUNGE: their own windup + release poses (B16) and their reads */
+      { name: 'walk', ph: 1, mode: 'walkTell', dur: 0.9, pre: (e, S) => { e.face = 1; S.walk = { st: 2, to: S.G.stations[2], dir: 1, from: S.G.cx, stepT: 0.3, n: 0, id: 1 }; }, times: [0, 0.3, 0.6, 0.9, 1.2, 1.5, 1.8, 2.1, 2.4, 2.7, 3.0, 3.3] },
+      { name: 'gaze', ph: 1, mode: 'gazeTell', dur: 1.15, pre: (e, S) => { e.face = -1; S.mirrors[1].notch = 'face'; S.gaze = { dir: -1, x: S.G.x1 - 6, id: 1, live: false, caught: -1 }; }, times: [0, 0.3, 0.6, 0.9, 1.1, 1.2, 1.4, 1.7, 2.0, 2.4, 2.8, 3.2] },
+      { name: 'lunge', ph: 2, mode: 'lungeTell', dur: 0.95, pre: (e, S) => { e.face = -1; S.lunge = { x: S.mirrors[1].x, mirror: 1, id: 1 }; }, times: [0, 0.2, 0.4, 0.6, 0.8, 0.9, 0.95, 1.0, 1.1, 1.2, 1.3, 1.5] },
       { name: 'palettes', ph: 1, mode: 'idle', palettes: [1, 2, 3] },
     ];
     const snapFull = name => { const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push(['still-' + name, c.toDataURL('image/png')]); };
-    const STILLS = { lanceWind: [1.3], lanceFire: [1.75], stomp: [0.77], sweep: [1.0], crack: [1.2], quake: [0.93], 'phase-night': [0.7], shards: [0.95], 'open-chest': [0.5] };
+    const STILLS = { lanceWind: [1.3], lanceFire: [1.75], stomp: [0.77], sweep: [1.0], crack: [1.2], quake: [0.93], 'phase-night': [0.7], shards: [0.95], 'open-chest': [0.5], walk: [1.5], gaze: [0.9, 1.7, 2.4], lunge: [0.6, 1.0] };
     const crop = (e, S) => { const camx = BK.cam[0], camy = BK.cam[1], c = document.createElement('canvas'); c.width = CW; c.height = CH; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.fillStyle = '#000'; g.fillRect(0, 0, CW, CH);
       g.drawImage(BK.buf, Math.round(e.x - camx - CW / 2), Math.round(S.G.floor - camy - CH + 10), CW, CH, 0, 0, CW, CH); return c; };
     const compose = (name, frames, labels) => { const rows = Math.ceil(frames.length / PER), sheet = document.createElement('canvas'); sheet.width = CW * Math.min(PER, frames.length); sheet.height = (CH + 14) * rows; const sg = sheet.getContext('2d'); sg.imageSmoothingEnabled = false; sg.fillStyle = '#10141c'; sg.fillRect(0, 0, sheet.width, sheet.height); sg.font = '11px monospace';
       frames.forEach((c, i) => { const x = (i % PER) * CW, y = Math.floor(i / PER) * (CH + 14); sg.drawImage(c, x, y + 14); sg.fillStyle = '#ffd36b'; sg.fillText(name + ' ' + labels[i], x + 4, y + 11); }); res.push(['sheet-' + name, sheet.toDataURL('image/png')]); };
     for (const m of MOVES) { if (filt && !filt.split(',').some(q => m.name.includes(q))) continue;
-      fresh(); BK.hideHero = true; BK.look(612, 33);
+      fresh(); BK.hideHero = true; BK.look(630, 33);   /* (claude/colossusrework: the 64-wide arena - he stands at 636) */
       const CO = BK.colossusHands(), S = CO.show(), e = BK.boss, setPh = p => { S.ph = p; e.phase = p; };
       e.mode = 'idle'; S.cd = 99; for (let i = 0; i < 150; i++) { BK.sim(1); if (i % 10 === 0) BK.step(1); } BK.step(1);   /* the arena camera settles, the wake is over */
       if (m.palettes) { const frames = [], labels = []; for (const p of m.palettes) { setPh(p); e.mode = 'idle'; S.cd = 99; for (let i = 0; i < 40; i++) BK.sim(1); BK.step(1); frames.push(crop(e, S)); labels.push('phase ' + p); } compose(m.name, frames, labels); continue; }

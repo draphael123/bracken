@@ -25,19 +25,20 @@ try {
   const A=L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);let f=0;for(;f<600&&!BK.bossActive;f++){BK.P.hp=BK.P.maxHp;BK.sim(1);}
   const CO=BK.colossusHands(),S0=CO.show(),e=BK.boss;let moved=null;
   for(let i=0;i<300&&(e.mode==='wake'||e.mode==='sleep');i++)BK.sim(1);
-  /* (claude/colossusrework) he walks between his stations: make him walk once, so his holds are somewhere else when the hero dies */
-  if(CO.forceWalk){const x0=e.x;CO.forceWalk();for(let i=0;i<1800&&(CO.show().walk||Math.abs(e.x-x0)<8);i++){BK.P.hp=BK.P.maxHp;BK.tp(Math.round((A.x0+40)/16),Math.round(A.floor/16)-1);BK.sim(1);}moved=Math.round(e.x-x0);}
-  /* his lance: told and fired, the hero out on the floor in its line */
-  const S=CO.show(),CG=await import('/src/glass-colossus.js');S.cd=0;S.lock=0;S.ward=0;
-  let lanced=false;for(let i=0;i<900;i++){BK.P.hp=BK.P.maxHp;if(e.mode==='idle'&&S.cd<=0.05){const k=CG.COL.chain[S.ph].indexOf('lance');if(k>=0)S.i=k;}BK.sim(1);if(e.mode==='lance'&&S.lance&&S.lance.head>20){lanced=true;break;}}
-  BK.god=false;BK.P.inv=0;BK.damagePlayer(BK.P.x,99999,{unblockable:true,name:'TEST'});let died=!!BK.P.dead;for(let i=0;i<600&&BK.P.dead;i++)BK.sim(1);if(BK.P.dead)BK.respawn();BK.god=true;
   const scan=(phase)=>{const bad=[];const S=CO.show();
     for(const b of GS.beds){b.tiles.forEach(([x,y],i)=>{const c=cell(x,y);if(i<b.set&&c!==T.ONEWAY)bad.push('bed '+b.id+' tile '+x+','+y+' DRAWN as glass but cell '+c);if(i>=b.set&&c===T.ONEWAY)bad.push('bed '+b.id+' tile '+x+','+y+' solid but NOT drawn');});}
     const holds=[];if(S&&S.G){for(const l of [...S.G.knee,...S.G.hip,...S.G.shoulder]){const y=Math.round(l.y/TS);for(let x=Math.round(l.l/TS);x<Math.round(l.r/TS);x++){holds.push(x+','+y);if(cell(x,y)!==T.ONEWAY)bad.push('hold '+x+','+y+' DRAWN but cell '+cell(x,y));}}}
     const ax0=Math.round(A.x0/TS),ax1=Math.round(A.x1/TS),F=Math.round(A.floor/TS);for(let y=F-16;y<F;y++)for(let x=ax0;x<ax1;x++)if(cell(x,y)===T.ONEWAY&&!holds.includes(x+','+y))bad.push('arena cell '+x+','+y+' solid but no hold drawn there');
     return {phase,bad};};
+  /* (claude/colossusrework) he walks between his stations: make him walk once, so his holds are somewhere else when the hero dies */
+  if(CO.forceWalk){const x0=e.x;CO.forceWalk();for(let i=0;i<1800&&(CO.show().walk||Math.abs(e.x-x0)<8);i++){BK.P.hp=BK.P.maxHp;BK.tp(Math.round((A.x0+40)/16),Math.round(A.floor/16)-1);BK.sim(1);}moved=Math.round(e.x-x0);}
+  const walked=scan('after he walked to another station (his holds moved with him)');
+  /* his lance: told and fired, the hero out on the floor in its line */
+  const S=CO.show(),CG=await import('/src/glass-colossus.js');S.cd=0;S.lock=0;S.ward=0;
+  let lanced=false;for(let i=0;i<900;i++){BK.P.hp=BK.P.maxHp;if(e.mode==='idle'&&S.cd<=0.05){const k=CG.COL.chain[S.ph].indexOf('lance');if(k>=0)S.i=k;}BK.sim(1);if(e.mode==='lance'&&S.lance&&S.lance.head>20){lanced=true;break;}}
+  BK.god=false;BK.P.inv=0;BK.damagePlayer(BK.P.x,99999,{unblockable:true,name:'TEST'});let died=!!BK.P.dead;for(let i=0;i<600&&BK.P.dead;i++)BK.sim(1);if(BK.P.dead)BK.respawn();BK.god=true;
   const land=(x,y)=>{BK.tp(x,y-3);BK.P.vx=0;BK.P.vy=0;for(let i=0;i<50;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}return BK.P.ground&&Math.abs(BK.P.y-y*TS)<3;};
-  BK.sim(60);const ph=[scan('after the respawn')];
+  BK.sim(60);const ph=[walked,scan('after the respawn')];
   for(const q of BK.enemies())if(q.alive&&q.t!=='colossus')q.alive=false;   /* (the steps' throwers knock a test hero off the glass: the landing asks only the tiles) */
   const fell=[];
   for(const b of GS.beds){if(!b.set)continue;const ks=[...new Set([0,Math.floor((b.set-1)/2),b.set-1])];for(const k of ks){const [x,y]=b.tiles[k];if(!land(x,y))fell.push('bed '+b.id+' '+x+','+y+' (drawn) - fell through');}}
