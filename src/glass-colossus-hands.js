@@ -67,7 +67,7 @@ export function makeColossusHands(ctx) {
         if (ctx.standable(Math.floor((nx + Math.sign(vx) * 7) / ts), Math.floor((P.y - 8) / ts))) return; P.x = nx; }); if (!S.told.slick) { S.told.slick = 1; ctx.number(pp.x, G.floor - 40, 'THE GLASS IS SLICK: IT SLIDES YOU', '#c8d8e8'); } },
       slap: i => { const m = S.mirrors[i]; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(m.x, G.floor - 40, 'IT KNOCKS THE MIRROR ROUND', '#9aa39a'); },
       /* (claude/colossusrework) THE LUNGE spears a mirror round to the wrong notch (told where it happens, with the notch) */
-      spear: (i, to) => { const m = S.mirrors[i]; ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(m.x, G.floor - 30, 10, ['#e8fff8', '#9ae8d0', '#ffd36b'], 70, 0.5); ctx.number(m.x, G.floor - 40, 'IT SPEARS THE MIRROR ROUND: ' + CG.NOTCH_WORD[to], '#9aa39a'); },
+      spear: (i, to) => { const m = S.mirrors[i]; ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(m.x, G.floor - 30, 10, ['#e8fff8', '#9ae8d0', '#ffd36b'], 70, 0.5); const told = 'IT SPEARS THE MIRROR ROUND: ' + CG.NOTCH_WORD[to]; ctx.number(m.x, G.floor - 40, told, '#9aa39a'); },   /* (a line of CALL_COUNTS: src/hint-lines.js) */
       /* HE WALKS: the holds he left go, the new ones are laid; a hero standing on one rides with it */
       reseat: (old, nw, d) => { if (!ctx.cellSet) return; const ts = ctx.TS, on = new Set(old.map(([x, y]) => x + ',' + y));
         const riders = ctx.players.filter(pp => !pp.dead && pp.ground && on.has(Math.floor(pp.x / ts) + ',' + Math.round(pp.y / ts)));
@@ -172,8 +172,8 @@ export function makeColossusHands(ctx) {
       g.globalAlpha = faced.length ? 0.85 : 0.4; g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(cxp, cyp, 9, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ffd36b'; g.fillRect(cxp - 1, cyp - 1, 2, 2); g.globalAlpha = 1;
       for (const m of faced) dotted(m.x + (m.x < G.cx ? 1 : -1) * 6, G.floor - 38, G.cx, G.hipY - 20, 'rgba(255,211,107,0.7)');
       if (!faced.length && S.ph === 1) { const P = ctx.hero(), m = S.mirrors.reduce((a, b) => Math.abs(b.x - P.x) < Math.abs(a.x - P.x) ? b : a), x = R(m.x - cx), y = R(G.floor - 84 - cy) + R(Math.sin(time * 6) * 2);
-        ctx.text('TURN THE MIRROR TO HIM', x, y - 8, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8', 'center', 6); ctx.text('(E)', x, y + 2, '#fff6c8', 'center', 5); g.fillStyle = '#ffd36b'; for (let i = 0; i < 4; i++) g.fillRect(x - 3 + i, y + 10 + i, 7 - 2 * i, 1);
-        dotted(m.x, G.floor - 38, G.cx, G.hipY - 20, 'rgba(255,211,107,0.3)'); } }
+        if (x - 50 >= 0 && x + 50 <= ctx.VW()) { ctx.text('TURN THE MIRROR TO HIM', x, y - 8, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6c8', 'center', 6); ctx.text('(E)', x, y + 2, '#fff6c8', 'center', 5); g.fillStyle = '#ffd36b'; for (let i = 0; i < 4; i++) g.fillRect(x - 3 + i, y + 10 + i, 7 - 2 * i, 1);
+        } dotted(m.x, G.floor - 38, G.cx, G.hipY - 20, 'rgba(255,211,107,0.3)'); } }   /* (claude/colossusrework: the 64-wide arena puts the nearest mirror off the screen - its words wait until it is on it: tools/textfit OFFSCREEN) */
     if (S.ph === 2 && !CG.colOpen(e) && S.ward <= 0) for (const sx of [-1, 1]) dotted((G.crack[0] + G.crack[1]) / 2, G.floor - 4, G.cx + sx * 44, G.shoulderY - 10, CG.relaying(S) ? 'rgba(255,176,80,0.7)' : 'rgba(168,136,255,0.35)');
     if (S.ph === 3 && !CG.colOpen(e) && S.ward <= 0 && !CG.flank(S).some(m => m && m.notch === 'sky')) for (const m of CG.flank(S)) if (m) dotted(m.x, G.floor - 42, G.cx, G.crownY - 4, 'rgba(255,240,190,0.3)');
     /* (claude/colossusrework) THE WALK: where he goes (a gold arrow to the station and IT STRIDES), the lifted foot's landing mark (red: the trample) */
