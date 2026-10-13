@@ -55,15 +55,17 @@ async function startServer(root, port) {
 
 function execute(job, root, port) {
   return new Promise(resolveResult => {
-    const t0 = Date.now(), out = [], child = spawn(job.cmd, job.args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
+    const t0 = Date.now(), stdout = [], stderr = [], child = spawn(job.cmd, job.args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env, ...job.env, PORT: String(port) } });
-    child.stdout.on('data', b => out.push(b.toString())); child.stderr.on('data', b => out.push(b.toString()));
-    let timedOut = false, error = null, done = false;
+    let timedOut = false, error = null, done = false, outBytes = 0, errBytes = 0;
+    /* spawnSync's 1 MiB limit was part of the old verdict: a runaway tool failed instead of filling RAM. */
+    child.stdout.on('data', b => { outBytes += b.length; if (outBytes > 1048576) { error = new Error('stdout maxBuffer length exceeded'); child.kill(); } else stdout.push(b); });
+    child.stderr.on('data', b => { errBytes += b.length; if (errBytes > 1048576) { error = new Error('stderr maxBuffer length exceeded'); child.kill(); } else stderr.push(b); });
     const timer = job.timeout ? setTimeout(() => { timedOut = true; child.kill(); }, job.timeout) : null;
     child.on('error', e => { error = e; });
     child.on('close', code => { if (done) return; done = true; if (timer) clearTimeout(timer);
-      const lines = (out.join('') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
-      resolveResult({ name: job.name, ok: code === 0 && !timedOut, ms: Date.now() - t0,
+      const lines = (Buffer.concat(stdout).toString('utf8') + Buffer.concat(stderr).toString('utf8') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
+      resolveResult({ name: job.name, ok: code === 0 && !timedOut && !error, ms: Date.now() - t0,
         last: timedOut ? 'TIMED OUT after ' + Math.round(job.timeout / 60000) + ' min' : lines.at(-1) || '', out: lines }); });
   });
 }
