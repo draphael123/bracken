@@ -124,7 +124,7 @@ return out;})()`);
   assert.equal(f.start, 1, 'a fresh knight does not start with ONE flask (survival2)'); assert.equal(f.max, 1); assert.equal(f.maxUp, 3, 'the smith two extra flasks do not make three');
   assert.ok(f.drank && f.after === 2, 'BK.drinkFlask() did not start a drink: ' + JSON.stringify(f));
   assert.ok(f.rooted, 'a drink is not committed: he moved, jumped or swung through it: ' + JSON.stringify(f));
-  assert.equal(f.heal, f.want, 'a flask heals ' + f.heal + ', not the lever's 25% of the bar (' + f.want + ')');
+  assert.equal(f.heal, f.want, 'a flask heals ' + f.heal + ', not 25% of the bar (' + f.want + ')');
   assert.ok(Math.abs(f.swallowF - f.swallowWant) <= 3 && f.done, 'the swallow lands at ' + f.swallowF + ' frames (want ~' + f.swallowWant + ': FLASK.swallowAt at the game speed) and the drink ends');
   assert.deepEqual([f.spill.spent, f.spill.healed, f.spill.drinking], [1, 0, false], 'a blow before the swallow does not spill the flask: ' + JSON.stringify(f.spill));
   assert.ok(f.key, 'U does not drink'); assert.equal(f.auto.flasks, 3, 'a blow under a quarter still drinks for you'); assert.equal(f.empty, false, 'a drink with no flask');
