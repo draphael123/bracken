@@ -25,7 +25,7 @@ try {
   await pg.evalp(`(async()=>{ await BK.WN.loadUpdates(); try { localStorage.removeItem(BK.WN.SEEN_KEY); } catch {} BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.ui.pressCard = false; BK.state = 'title'; BK.step(150); return 1; })()`, 60000);
   const REC = `(()=>{ window.__textRec = []; BK.step(2); const r = window.__textRec.filter(x => x.kind === 'text').map(x => ({ s: x.s, x0: x.x0, y0: x.y0, w: x.w, h: x.h })); window.__textRec = null; return r; })()`;
   const newest = await pg.evalp('BK.WN.shortDate(BK.WN.newestDate())');
-  assert.equal(newest, '12 OCT', 'the newest entry is 12 OCT, shown as ' + newest);
+  assert.equal(newest, '13 OCT', 'the newest entry is 13 OCT, shown as ' + newest);
   assert.ok((await pg.evalp('BK.ui.titleTop()')).includes("WHAT'S NEW"), "the title board has the WHAT'S NEW row");
   let r = await pg.evalp(REC);
   assert.ok(r.some(x => x.s === newest), "the row shows the newest date: " + r.map(x => x.s).join(' / '));
@@ -38,8 +38,8 @@ try {
   assert.equal(await pg.evalp('BK.WN.hasNew()'), false, 'opening it clears the dot');
   r = await pg.evalp(REC);
   assert.ok(r.some(x => x.s === newest), 'the newest date heads the list: ' + r.map(x => x.s).join(' / '));
-  /* (batch88) the pinned newest line moved from batch 87's Road Wardens line to batch 88's Berserker line; the newest date stays 12 OCT */
-  assert.ok(r.some(x => /Berserker reborn/.test(x.s)), 'and its lines are there');
+  /* (batch89) the pinned newest line moved to batch 89's SEALED PYRAMID line and the newest date to 13 OCT. (batch88) the pinned newest line moved from batch 87's Road Wardens line to batch 88's Berserker line; the newest date stays 12 OCT */
+  assert.ok(r.some(x => /SEALED PYRAMID/.test(x.s)), 'and its lines are there');
   const { VW, VH } = await pg.evalp('BK.view');
   for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'inside the panel: ' + x.s + ' ' + JSON.stringify(x));
   /* scrolling: DOWN moves, and it never goes past the end */
