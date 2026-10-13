@@ -8539,7 +8539,7 @@
   }
  },
  "minecart": {
-  "hash": "f0546774b3bb",
+  "hash": "c14c5ba93827",
   "boss": {
    "boss": "greatdrill",
    "wins": 0,
@@ -8653,8 +8653,8 @@
      "dead:100/69"
     ],
     "pyro": [
-     "dead:100/49",
-     "dead:100/49"
+     "dead:100/48",
+     "dead:100/48"
     ]
    },
    "rows": [
@@ -8715,12 +8715,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 25.9,
+     "secs": 27.6,
      "hpLostPct": 100,
-     "bossLeftPct": 49,
-     "landed": 45,
-     "swings": 849,
-     "reprisalPct": 60,
+     "bossLeftPct": 48,
+     "landed": 49,
+     "swings": 915,
+     "reprisalPct": 62,
      "chip": []
     },
     {
@@ -8728,18 +8728,18 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 25.9,
+     "secs": 27.6,
      "hpLostPct": 100,
-     "bossLeftPct": 49,
-     "landed": 45,
-     "swings": 849,
-     "reprisalPct": 60,
+     "bossLeftPct": 48,
+     "landed": 49,
+     "swings": 915,
+     "reprisalPct": 62,
      "chip": []
     }
    ]
   },
   "carried": {
-   "from": "587a35955634",
+   "from": "f0546774b3bb",
    "parts": [
     "boss",
     "mini"
@@ -8789,7 +8789,7 @@
    "pyro": {
     "deaths": 4,
     "minHpPct": 0,
-    "hpLostPct": 479,
+    "hpLostPct": 475,
     "hits": 28,
     "walked": 100,
     "lifts": 27,

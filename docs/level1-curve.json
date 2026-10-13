@@ -585,16 +585,16 @@
   "lostPct": 233
  },
  "minecart": {
-  "hash": "f0546774b3bb",
+  "hash": "c14c5ba93827",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
+  "hits": 49,
   "deaths": 4,
-  "kills": 60,
+  "kills": 58,
   "lifts": 32,
   "walked": 100,
   "bare": true,
-  "lostPct": 235
+  "lostPct": 243
  }
 }
