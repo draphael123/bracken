@@ -120,14 +120,14 @@
   "bare": true
  },
  "ksar": {
-  "hash": "56d2003723a6",
+  "hash": "f1c48b3601cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
-  "deaths": 7,
-  "kills": 11,
-  "lifts": 136,
+  "hits": 42,
+  "deaths": 13,
+  "kills": 10,
+  "lifts": 145,
   "walked": 100,
   "bare": true
  },
