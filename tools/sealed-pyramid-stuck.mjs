@@ -10,7 +10,7 @@ const pg = await openPage({ audio: false, fonts: false });
 try {
   const spots = STUCK_HANDS.sealedpyramid.filter(sp => sp.id !== 'py-vault').map(sp => ({ id: sp.id, zone: sp.zone, steps: sp.steps }));
   const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const li = LEVELS.findIndex(l => l.id === 'sealedpyramid'); const out = [];
-    const stand = ${JSON.stringify({ 'py-hole': [60, 13], 'py-cw1': [172, 29], 'py-weigh': [205, 39], 'py-great': [262, 29], 'py-pit2': [350, 43], 'py-shaft': [432, 50], 'py-vault': [399, 50] })};
+    const stand = ${JSON.stringify({ 'py-hole': [60, 13], 'py-cw1': [172, 29], 'py-weigh': [205, 39], 'py-great': [262, 29], 'py-pit2': [350, 43], 'py-shaft': [432, 50], 'py-vault': [399, 50], 'py-flood1': [871, 47], 'py-flood2': [915, 53] })};   /* (claude/pyramidlevel: the sluices - the cistern's and the crypt's floors) */
     for (const sp of ${JSON.stringify(spots)}) { BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(li); BK.state = 'play'; BK.god = true; BK.sim(5);
       for (const e of BK.enemies()) if (!e.boss) e.alive = false;
       if (sp.id === 'py-vault') { for (let i = 0; i < 4; i++) BK.straysGot && BK.straysGot.add && BK.straysGot.add(1000 + i); }
