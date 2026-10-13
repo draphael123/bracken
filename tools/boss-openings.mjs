@@ -1,4 +1,5 @@
 /* tools/boss-openings.mjs — THE WINDOW THE PLAYER MAKES.
+     (claude/pyramidboss) THE TOMB-KING'S SARCOPHAGUS  a switch's counterweight, a chamber trap from a plate, a plate he stands on: each tips him open; left alone, nothing
    All four of the levels added in the Codex pass shipped a boss that chose its attacks with turn++%n and handed out a
    timed rest after every one of them, so nothing the player did ever opened anything: docs/audit-new-levels-0920.md.
    Each of them now has one opening the player causes, and this proves it is caused - the same boss, left alone through
@@ -300,7 +301,7 @@ try {
    BK.keys.jump=false;out.foreman={alone:+alone.toFixed(1),lostAlone:Math.round(lostAlone),open:+open.toFixed(1),stomp:Math.round(stomp),max:Math.round(F().e.maxHp0),ward:+F().S.ward.toFixed(1),lurch:F().S.n.lurch};}
   /* THE SCARAB MOTHER (claude/sealedpyramid): a minute of her with the hero at the door (no plate trodden) opens nothing; staged in each trap's reach (a skid, as her charge leaves her) and the hero
      walked onto its plate: the block PINS her, the darts STICK her, the stone (its plate up on the ledge) FLIPS her - each open 3 s or more; a trap in her ward after an opening glances off */
-  {const SMG=await import('/src/scarab-mother.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='sealedpyramid'));BK.state='play';BK.god=true;const A=BK.L.arena;
+  {const SMG=await import('/src/scarab-mother.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='sealedpyramid'));BK.state='play';BK.god=true;const A=BK.L.mini;   /* (claude/pyramidboss: she is the level's MINI now - her room is L.mini) */
    BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(240);const SH=BK.scarabMotherHands(),S=()=>SH.show(),b=BK.enemies().find(e=>e.t==='scarabmother'),P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=S().G.x0+24;BK.sim(1);if(SMG.smOpen(b))alone+=1/60;}
    const tread=(kind,plateX,plateY,fromX,herX)=>{const s=S();s.ward=0;s.charge=null;s.mound=null;b.mode='skid';b.modeT=1.2;b.x=herX;b.open=0;b.hp=b.maxHp*0.9;P.x=fromX;P.y=plateY;P.vx=0;P.vy=0;BK.sim(4);
@@ -313,6 +314,21 @@ try {
    for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);if(S().ward<=0&&!SMG.smOpen(b))break;}BK.sim(300);
    const stn=tread('stone',(G.stone.plate[0]+G.stone.plate[1])/2,G.stone.plateY,G.ledge.x1-10,G.x0+28*16);
    out.scarabmother={alone:+alone.toFixed(1),block:blk,glance,darts:drt,stone:stn};}
+  /* THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss): a minute of him with the hero on the floor between the plates (no switch struck, no plate trodden) opens nothing; staged in the west
+     counterweight's sweep, the switch struck from its ledge TIPS him (phase one); a switch in his ward glances off; phase two, staged in the west block's reach and the plate trodden, the
+     block knocks him flat; standing on the middle plate to strike, its darts fire on HIM - each open 3 s or more, then a told ward */
+  {const TKM=await import('/src/tomb-king.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='sealedpyramid'));BK.state='play';BK.god=true;const A=BK.L.arena;
+   BK.tp(A.start[0],A.start[1]);BK.sim(240);const TH=BK.tombKingHands(),S=()=>TH.show(),b=BK.boss,P=BK.P,G=S().G,K=BK.keys,none=()=>{for(const k of ['left','right','up','down','jump','block','atk'])K[k]=false;};let alone=0;
+   const mid=(G.plates[1].x1+G.plates[2].reach[0][0])/2;for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=mid;if(P.y<G.floorY-2)P.y=G.floorY;BK.sim(1);if(TKM.tkOpen(b))alone+=1/60;}
+   const settle=()=>{for(let i=0;i<60*9&&(TKM.tkOpen(b)||b.mode==='clamp'||S().ward>0||!/walk|recover/.test(b.mode));i++){P.hp=P.maxHp;BK.sim(1);}};
+   const watch=n=>{let open=0,got=null;for(let i=0;i<n&&!(open>0&&!TKM.tkOpen(b));i++){P.hp=P.maxHp;BK.sim(1);if(TKM.tkOpen(b)){open+=1/60;got=got||b.openKind;}}let ward=0;for(let i=0;i<90&&open>0;i++){P.hp=P.maxHp;BK.sim(1);ward=Math.max(ward,S().ward);}return {kind:got,open:+open.toFixed(1),ward:+ward.toFixed(1)};};
+   const lever=(side,inWard)=>{const gl=G.levers.find(l=>l.side===side),L=G.ledges.find(l=>l.side===side);settle();b.mode='recover';b.modeT=4;b.x=(gl.sweep[0]+gl.sweep[1])/2;b.open=0;S().ward=inWard?2.5:0;
+     P.x=side<0?L.x0+6:L.x1-6;P.y=L.y;P.vx=P.vy=0;P.face=side;BK.sim(4);none();BK.press('atk');return watch(60*6);};
+   settle();const wt=lever(-1,false);const k0=S().n.glanced;const gl=lever(1,true);const glance={glanced:S().n.glanced-k0,open:gl.open};
+   settle();b.hp=Math.round(b.maxHp*0.55);b.mode='recover';b.modeT=0.05;for(let i=0;i<300&&S().ph<2;i++){P.hp=P.maxHp;BK.sim(1);}settle();
+   const pw=G.plates[0];b.mode='recover';b.modeT=3;b.x=(pw.reach[0][0]+pw.reach[0][1])/2;b.open=0;S().ward=0;P.x=pw.x0-28;P.y=G.floorY;P.vx=P.vy=0;BK.sim(4);K.right=true;for(let i=0;i<40&&P.x<pw.x0+14;i++)BK.sim(1);none();const blk=watch(60*6);
+   settle();const PH=BK.sealedPyramidHands();for(let i=0;i<60*12&&!(PH.trapReady('tkDartsW')&&PH.trapReady('tkDartsE')&&/walk|recover/.test(b.mode)&&S().ward<=0);i++){P.hp=P.maxHp;BK.sim(1);}const pm=G.plates[1];P.x=pm.x0-40;P.y=G.floorY;b.x=(pm.x0+pm.x1)/2;b.mode='slamTell';b.modeT=0.7;b.open=0;S().ward=0;const plate=watch(60*6);
+   out.tombking={alone:+alone.toFixed(1),weight:wt,glance,ph:S().ph,traps:TH.trapsOn(),block:blk,plate,n:S().n.byKind,onPlate:S().n.onPlate};}
   return out;})()`, 300000);
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
@@ -419,6 +435,11 @@ try {
   assert.ok(r.foreman.stomp >= r.foreman.max * 0.25 && r.foreman.open >= 1.2 && r.foreman.lurch >= 1 && r.foreman.ward > 0, 'a jump onto his cart did not stomp a share of him, open him for the boarding, then lurch you off into a told brace: ' + JSON.stringify(r.foreman));
   assert.ok(r.scarabmother.alone === 0, 'THE SCARAB MOTHER: a minute of her with no plate trodden opened her: ' + JSON.stringify(r.scarabmother));
   for (const k of ['block', 'darts', 'stone']) assert.ok(r.scarabmother[k].kind === k && r.scarabmother[k].open >= 3 && r.scarabmother[k].ward > 0, 'THE SCARAB MOTHER: her in the ' + k + '\'s reach and its plate trodden did not open her (' + k + ') for 3 s or more, then ward her: ' + JSON.stringify(r.scarabmother));
+  assert.ok(r.tombking.alone === 0, 'THE TOMB-KING: a minute of him with no switch struck and no plate trodden opened him: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.weight.kind === 'weight' && r.tombking.weight.open >= 3 && r.tombking.weight.ward > 0, 'THE TOMB-KING: the west switch struck with him in its sweep did not tip him open >= 3 s, then a ward: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.glance.glanced >= 1 && !r.tombking.glance.open, 'THE TOMB-KING: a counterweight in his ward opened him (B3: it must glance off): ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.ph === 2 && r.tombking.traps && r.tombking.block.kind === 'block' && r.tombking.block.open >= 3, 'THE TOMB-KING: phase two, in the west block\'s reach with its plate trodden, he was not knocked open: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.plate.kind === 'darts' && r.tombking.plate.open >= 3 && r.tombking.onPlate >= 1, 'THE TOMB-KING: standing on the middle plate to strike, its darts did not fire on him: ' + JSON.stringify(r.tombking));
   assert.ok(r.scarabmother.glance.glanced >= 1 && !r.scarabmother.glance.open, 'THE SCARAB MOTHER: a trap in her ward opened her (B3: it must glance off): ' + JSON.stringify(r.scarabmother));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));

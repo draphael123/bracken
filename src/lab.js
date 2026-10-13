@@ -1469,7 +1469,7 @@ async function runbossLab(BK, opts) {
         const TH=BK.tombKingHands(),S=TH&&TH.show(),PH=BK.sealedPyramidHands();
         if(f===0||!P.labTkMem)P.labTkMem={};
         const levers=S?S.levers.map(l=>({side:l.side,ready:l.st==='ready'})):[],plates=S&&PH?S.G.plates.map(p=>({id:p.id,ready:TH.trapsOn()&&p.traps.every(id=>PH.trapReady(id))})):[];
-        const pl=S?tkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,levers,plates,dead:TH.deadNear(),reeled:TH.reeled(P),reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labTkMem}):{gx:null,face:P.face};
+        const pl=S?tkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,levers,plates,dead:TH.deadNear(),reeled:TH.reeled(P),reach:LAB_REACH[h],shield:SHIELDED(h)||h==='warden',t:f/60,rng:Math.random,mem:P.labTkMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}

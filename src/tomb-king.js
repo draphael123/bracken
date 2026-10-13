@@ -31,10 +31,10 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/tomb-king-hands.js binds it). tkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const TK = {
-  hp: 3600, w: 30, h: 40, markH: 54,
+  hp: 4000, w: 30, h: 40, markH: 54,
   openMul: 1.7, openCap: 0.12, openT: 3.6, clampT: 0.6, wardT: 3.0, wardMul: 0.4, resist: 0.4, resist3: 0.55, lidless: 0.4,
   p2: 0.6, p3: 0.3,
-  walk: 42, walk3: 56, keep: 52, gap: [2.0, 1.9, 1.4], firstGap: 1.2,
+  walk: 42, walk3: 56, keep: 52, gap: [1.6, 1.5, 1.15], firstGap: 1.2,
   dwell: 4.0, leapCd: 6.0, callCd: 16, curseCd: 5,
   lever: { delay: 0.55, swing: 0.7, reset: [9, 9, 4.5], h: 34 },
   slam: { tell: 0.7, reach: 58, shockV: 260, shockLen: 150, shockH: 10 },
@@ -48,7 +48,7 @@ export const TK = {
   breath: { tell: 0.7, t: 0.6, len: 124, blind: 1.0, slow: 1.0 },
   pit: { tell: 0.8, r: 22, sandT: 3.0 },
   curse: { tell: 0.6, delay: 1.5, r: 14 },
-  dmg: { slam: 30, shock: 18, lash: 22, leap: 38, chain: 10, crush: 26, lid: 24, jar: 18, cloud: 6, roll: 36, breath: 16, pit: 20, curse: 40, weight: 28 },
+  dmg: { slam: 38, shock: 22, lash: 28, leap: 46, chain: 12, crush: 32, lid: 30, jar: 22, cloud: 7, roll: 44, breath: 20, pit: 25, curse: 48, weight: 30 },
 };
 /* THE MOVES: the mode while it is told, its mark ('' = told but no blow), the answer (src/marks.js keeps the same rows), and the phase it comes in */
 export const MOVES = {
@@ -172,7 +172,7 @@ export function pickMove(e, S, P, rng = Math.random, deadN = 0) {
   const has = m => MOVES[m + 'Tell'].ph <= ph;
   if (S.dwell.t >= TK.dwell && S.leapCdT <= 0 && S.dwell.plat) return 'leap';   /* THE ANTI-CROWD MOVE: you have stood there too long */
   if (pl === 'W' || pl === 'E') { w.reel = 3; w.lash = ad < TK.lash.reach + 30 ? 2 : 0; w.volley = 1.5; w.curse = 2; w.call = 1; w.throw = 0.5; }
-  else if (ad < 72) { w.slam = 4; w.lash = 1.5; w.breath = 3; w.pit = 1.5; w.curse = 0.5; }
+  else if (ad < 72) { w.slam = 4; w.lash = 1.5; w.breath = 3; w.pit = 1.5; w.curse = 0.5; w.volley = 1; w.call = 0.8; }
   else if (ad < 180) { w.lash = 3; w.reel = 2; w.volley = 2; w.throw = 1.5; w.pit = 2; w.curse = 1.5; w.call = 1.2; w.roll = 1; w.slam = 0.5; }
   else { w.throw = 3; w.reel = 2.5; w.roll = 3; w.volley = 2; w.call = 1.5; w.curse = 1.5; }
   if (deadN > 0 || S.callCdT > 0) w.call = 0;
@@ -207,7 +207,7 @@ function nextMove(e, S, P, c, h) {
 function landY(G, x, P, onYou) { if (onYou && P.ground) return P.y; for (const l of G.ledges) if (x > l.x0 && x < l.x1 && P.y < G.floorY - 20) return l.y; return G.floorY; }
 /* THE TOLD BLOWS */
 function stepMove(e, S, dt, P, c, h) {
-  const G = S.G, f = e.face || 1, gap = () => setMode(e, 'recover', TK.gap[S.ph - 1]);
+  const G = S.G, f = e.face || 1, gap = () => setMode(e, 'walk', TK.gap[S.ph - 1]);   /* (the gap between his blows: he walks at you - so he walks into a switch's sweep, or over a plate) */
   switch (e.mode) {
     case 'slamTell': e.face = Math.sign(P.x - e.x) || e.face; if (e.modeT <= 0) { const f2 = e.face || 1; setMode(e, 'slam', 0.4); c.sound('slam'); c.shake(5);
         c.hit([f2 > 0 ? e.x : e.x - TK.slam.reach - TK.w / 2, f2 > 0 ? e.x + TK.slam.reach + TK.w / 2 : e.x, G.floorY - 44, G.floorY], TK.dmg.slam, MOVE_NAME.slam, { blockable: true, key: 'slam' + S.act });
@@ -303,8 +303,9 @@ function stepCurses(S, dt, c) { for (const q of S.curses) { q.t -= dt; if (q.t <
    off (the lid thrown) x TK.lidless, closed x TK.resist (x TK.resist3 in phase three, the lid cracked). Returns [dmg, word] ---------- */
 export function takeBlow(e, S, dmg) {
   if (e.mode === 'sleep' || e.mode === 'wake') return [0, null];
-  if (tkOpen(e)) { const cap = e.maxHp * TK.openCap, left = Math.max(0, cap - S.openTaken), d = Math.min(dmg * TK.openMul, left); S.openTaken += d;
-    if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; S.n.capped++; return [Math.max(d, dmg * TK.wardMul), TK_SAY.cap]; } return [Math.max(d, left > 0 ? 0 : dmg * TK.wardMul), null]; }
+  if (tkOpen(e)) { const cap = e.maxHp * TK.openCap, left = Math.max(0, cap - S.openTaken); if (left <= 0) return [0, TK_SAY.cap];   /* (the purse spent: he heaves his lid back - told, a clank and the word - the window closes in TK's 0.3 s) */
+    const d = Math.min(dmg * TK.openMul, left); S.openTaken += d;
+    if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; S.n.capped++; return [d, TK_SAY.cap]; } return [d, null]; }
   if (S.ward > 0 || e.mode === 'clamp') { S.n.warded++; return [dmg * TK.wardMul, 'WARDED']; }
   if (tkLidless(e)) return [dmg * TK.lidless, TK_SAY.lidless];
   S.n.sealed++; return [dmg * (S.ph >= 3 ? TK.resist3 : TK.resist), S.n.sealed < 6 ? TK_SAY.sealed : TK_SAY.sealed2];
@@ -334,7 +335,9 @@ export function tkPlan(s) {
   const inHaz = x => hazards.some(([hx, r]) => Math.abs(x - hx) < r);
   const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [hx, r] of hazards) if (Math.abs(q - hx) < r) q = clamp(q < hx ? hx - r - 4 : hx + r + 4); if (onLedge) { const L = ledgeOf(G, pl); q = Math.max(L.x0 + 4, Math.min(L.x1 - 4, q)); } return q; };
   const offLedge = () => { const L = ledgeOf(G, pl); return L.side < 0 ? L.x1 + 18 : L.x0 - 18; };
-  /* 0. THE CHAIN HAS YOU: cut it */
+  /* 0. CLIMBING: a jump for a ledge is carried through (in the air there is no platform to read) */
+  if (!P.ground && mem.climbT !== undefined && t - mem.climbT < 0.9) { out.gx = mem.climbX; out.why = 'climbing'; return out; }
+  /* 0b. THE CHAIN HAS YOU: cut it */
   if (s.reeled) { out.face = Math.sign(kx - P.x) || 1; out.atk = P.atk < 0; out.why = 'cut the chain'; return out; }
   /* 1. OUT OF A CLOUD, A MARK, THE PIT */
   if (inHaz(P.x) && P.ground) { const [hx, r] = hazards.find(([x0, r0]) => Math.abs(P.x - x0) < r0); let gx = P.x + (P.x < hx ? -r - 8 : r + 8);
@@ -383,9 +386,9 @@ export function tkPlan(s) {
     const inSweep = kx > gl.sweep[0] + 8 && kx < gl.sweep[1] - 8, onIt = pl === (half < 0 ? 'W' : 'E');
     if (lv.ready && onIt) { const atX = half < 0 ? L.x0 + 6 : L.x1 - 6; if (Math.abs(P.x - atX) > 4) { out.gx = atX; out.face = half; out.why = 'to the switch'; return out; }
       out.face = half; if (inSweep && e.mode !== 'leap' && !roll('lv' + S.act + half, PLAN.missLever)) { out.atk = P.atk < 0; out.why = 'strike the switch: he is in its sweep'; return out; } out.why = 'on the switch: wait for him in its sweep'; return out; }
-    if (lv.ready && !onIt && onFloor && !(S.dwell.t > TK.dwell - 1 && S.dwell.plat !== 'F')) { const under = half < 0 ? L.x1 - 14 : L.x0 + 14;
-      if (Math.abs(P.x - under) > 10) { out.gx = safeX(under); out.why = 'to the switch\'s ledge'; if (dx < hitR && /recover|walk/.test(e.mode) && Math.abs(P.x - under) < 60) swing(kx); return out; }
-      out.jump = P.ground; out.gx = half < 0 ? L.x0 + 10 : L.x1 - 10; out.why = 'up onto the ledge'; return out; }
+    if (lv.ready && !onIt && onFloor && !(S.dwell.t > TK.dwell - 1 && S.dwell.plat !== 'F')) { const under = half < 0 ? L.x1 - 14 : L.x0 + 14, beneath = P.x > L.x0 + 6 && P.x < L.x1 - 6;   /* (anywhere under the ledge: a jump up through it lands on it) */
+      if (!beneath) { out.gx = safeX(under); out.why = 'to the switch\'s ledge'; if (dx < hitR && /recover|walk/.test(e.mode) && Math.abs(P.x - under) < 60) swing(kx); return out; }
+      out.jump = P.ground; out.gx = half < 0 ? L.x0 + 10 : L.x1 - 10; if (P.ground) { mem.climbT = t; mem.climbX = out.gx; } out.why = 'up onto the ledge'; return out; }
   }
   /* his lid between the rule's turns is something (B15): cut it while he recovers close by */
   if (onLedge) { if (dx > 90 || S.dwell.t > TK.dwell - 1.2) { out.gx = offLedge(); out.why = 'down off the ledge'; return out; } out.gx = P.x; out.why = 'on the ledge: wait'; return out; }

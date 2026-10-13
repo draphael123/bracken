@@ -45,7 +45,7 @@ export const SM = {
   quakeTell: 1.0, quakeFall: 0.6, quakeR: 15,
   brood: { every: 6.5, max: 3, speed: 72, seethe: 0.8, biteCd: 1.0, w: 10, h: 7 },
   reset3: 0.6,
-  dmg: { charge: 35, snap: 30, spit: 24, puddle: 8, burrow: 33, quake: 30, brood: 10, leap: 32, erupt: 32 },
+  dmg: { charge: 37, snap: 32, spit: 25, puddle: 8, burrow: 34, quake: 31, brood: 10, leap: 34, erupt: 34 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); ONE NEW MOVE A PHASE (B5) */
 export const CYCLES = {
