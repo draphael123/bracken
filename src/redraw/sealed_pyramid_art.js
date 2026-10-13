@@ -10,5 +10,5 @@ import * as MOM from './sealed_pyramid_mother.js';
 export const bakeMummy = CAST.bakeMummy;
 export const bakeScarabMotherCard = MOM.bakeCard;
 export function bakeSealedPyramidSets(SPR) {
-  return { mummy: CAST.bakeMummy(), mummywarden: CAST.bakeMummy('warden'), scarabmother: MOM.bakeCard(), dartblower: CAST.bakeDartBlower(), jackal: CAST.bakeJackal(), scarab: CAST.bakeScarab(), scarabseal: CAST.bakeSealIcon() };
+  return { mummy: CAST.bakeMummy(), mummywarden: CAST.bakeMummy('warden'), scarabmother: MOM.bakeCard(), dartblower: CAST.bakeDartBlower(), jackal: CAST.bakeJackal(), scarab: CAST.bakeScarab(), scarabseal: CAST.bakeSealIcon(), tombskel: CAST.bakeSkeleton() };   /* (claude/pyramidlevel) THE TOMB GUARD - a placeholder sheet on the mummy's contract */
 }

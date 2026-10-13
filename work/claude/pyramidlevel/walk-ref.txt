@@ -1,0 +1,20 @@
+buriedcity knight s1 L40 (349hp, swordOfRealm+groundSlam+lunge, 3 flasks, heart charm): BOSS 1 deaths, 424s, 18 kills, 13 hits, walked 98%, arrivals 90% 97% 55%, measured 57% of the route
+    STUCK (section #1) at route node 62/162 next tile 319,32 (hero 313,29; near construct:walk@316.6,33.0)
+    STUCK (section #4) at route node 133/162 next tile 638,14 (hero 634,19)
+    sections: #0 lost 13% heal 3% (0 drinks) 0d 1h 2k 64s | #1 STUCK lost 6% heal 6% (0 drinks) 0d 1h 3k 99s | #2 (resumed) lost 4% heal 1% (0 drinks) 0d 2h 6k 79s | #3 lost 150% heal 8% (0 drinks) 1d 9h 6k 133s | #4 STUCK lost 0% heal 2% (0 drinks) 0d 0h 1k 49s | #5 (resumed) lost 0% heal 0% (0 drinks) 0d 0h 0k 1s
+    hit by (nearest foe, hits/%hp): construct* 6/31% scorpion 3/18% other 2/12% slinger 2/12%
+    deaths: THE FALL@552,50
+    elite duels: construct/SHIELDED@316 lost 20s 90->90%, construct/BURNING@481 WON 10.7s 100->97%, construct/UNSTOPPABLE@579 lost 20s 98->98%, construct/UNSTOPPABLE@587 WON 9.3s 66->55%
+ksar knight s1 L39 (347hp, swordOfRealm+groundSlam+lunge, 3 flasks, heart charm): BOSS 0 deaths, 328s, 47 kills, 6 hits, walked 97%, arrivals 16% 58% 53% 47% 54%, measured 97% of the route
+    sections: #0 lost 112% heal 28% (3 drinks) 0d 3h 19k 114s | #1 lost 16% heal 59% (1 drinks) 0d 0h 8k 36s | #2 lost 22% heal 17% (0 drinks) 0d 1h 3k 29s | #3 lost 82% heal 75% (0 drinks) 0d 1h 9k 94s | #4 lost 8% heal 14% (0 drinks) 0d 1h 8k 54s | #5 lost 0% heal 0% (0 drinks) 0d 0h 0k 2s
+    hit by (nearest foe, hits/%hp): other 5/96% cutthroat 1/7%
+    elite duels: shield/SHIELDED@683 WON 13.2s 52->44%
+glasssea knight s1 L38 (337hp, swordOfRealm+groundSlam+lunge, 3 flasks, heart charm): FRAMES 0 deaths, 600s, 5 kills, 1 hits, walked 30%, arrivals 90%, measured 25% of the route
+    sections: #0 lost 15% heal 5% (0 drinks) 0d 0h 4k 43s | #1 lost 4% heal 1% (0 drinks) 0d 1h 1k 557s
+    hit by (nearest foe, hits/%hp): vulture 1/4%
+
+LEVEL WALK  (campaign level, typical build, profile human+first, 3 runs, 1 min)  target: 1-2 deaths a first run, arrive < 50%
+level      hero     L runs deaths(haz/elite) arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target
+buriedcity knight  40    1    1.0(1.0/0.0)              81/55          8     0.0     18   424     98%   57%  boss           MISS: arrive 81% >= 50  STUCK 319,32 638,14
+ksar       knight  39    1    0.0(0.0/0.0)              46/16         48     4.0     47   328     97%   97%  boss           MISS: deaths 0.0 < 1
+glasssea   knight  38    1    0.0(0.0/0.0)              90/90         15     0.0      5   600     30%   25%  frames         MISS: deaths 0.0 < 1, arrive 90% >= 50

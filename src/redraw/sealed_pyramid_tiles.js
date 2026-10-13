@@ -22,7 +22,7 @@ export const SEC = {
   deep:  { r: ['#241e1a', '#352c24', '#483c30', '#605040', '#7c6850'], joint: '#14100c', inlay: null,      base: -2 },
   ante:  { r: ['#2a2622', '#3c352c', '#52483a', '#6c5e4a', '#8a7860'], joint: '#16120e', inlay: '#3aa068', base: -2 },
 };
-export const secOf = x => x < 64 ? 'face' : x < 172 ? 'gal' : x < 250 ? 'shaft' : x < 328 ? 'tomb' : x < 393 ? 'pits' : x < 452 ? 'deep' : 'ante';
+export const secOf = x => x < 64 ? 'face' : x < 172 ? 'gal' : x < 250 ? 'shaft' : x < 328 ? 'tomb' : x < 393 ? 'pits' : x < 452 ? 'deep' : x < 493 ? 'ante' : x < 611 ? 'gal' : x < 736 ? 'pits' : x < 863 ? 'tomb' : x < 963 ? 'deep' : x < 1007 ? 'shaft' : 'ante';   /* (claude/pyramidlevel: the second half borrows the first's palettes - placeholder; lane C gives the tombs, the gas, the oil, the crypt their own) */
 
 const INFO = new WeakMap();
 function info(L) {

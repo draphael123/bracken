@@ -206,3 +206,30 @@ export function bakeSealIcon() {
   ellipse(g, 8, 9, 3, 4, '#1e6a44'); ellipse(g, 7.4, 8, 2, 2.6, '#3aa86a'); px(g, 7, 6, '#b8f8c8'); rect(g, 8, 6, 1, 7, '#0e3a24'); ellipse(g, 8, 4.4, 1.8, 1.2, '#1e6a44'); px(g, 5, 8, '#1e6a44'); px(g, 11, 8, '#1e6a44'); px(g, 5, 10, '#1e6a44'); px(g, 11, 10, '#1e6a44');
   outline(c, OUT); return c;
 }
+
+// ================= THE TOMB GUARD (claude/pyramidlevel, a PLACEHOLDER: lane C draws it) =================
+// The mummy's 8-frame contract (src/mummy.js SKEL: 0,1 walk | 2 CUT TELL (blade cocked over the shoulder) | 3 CUT (blade swept down and out) | 4 LEAP TELL (crouched,
+// blade back) | 5 LEAP (flung forward, blade high) | 6 hurt (bones knocked askew) | 7 = 6). Bone-white, a rusted khopesh, a green-black scrap of kilt, the ember in the sockets.
+export function bakeSkeleton() {
+  const W = 46, H = 36, cx = 17, gy = 35, B = '#e8e2cc', M = '#b9b2a0', D = '#7a7466', K = '#06080a', RU = '#8a5a32', RL = '#c8884a', KI = '#2e4a3a', EY = '#ff8a3a';
+  const F = frames(W, H, 8, (g, f) => {
+    const crouch = f === 4 ? 4 : 0, lean = f === 5 ? 3 : f === 3 ? 1 : 0, hip = gy - 10 + crouch, x = cx + lean;
+    const st = f === 1 ? 2 : f === 0 ? -1 : f === 5 ? 3 : 0;
+    rect(g, x - 3 - st, hip, 2, gy - hip, M); rect(g, x + 1 + st, hip, 2, gy - hip, D); rect(g, x - 4 - st, gy - 1, 4, 1, D); rect(g, x + st, gy - 1, 4, 1, D);   /* the legs */
+    rect(g, x - 4, hip - 1, 9, 2, M); rect(g, x - 4, hip, 9, 3, KI);                                                                                               /* the pelvis and its kilt */
+    rect(g, x - 1, hip - 10, 2, 10, M); for (let i = 0; i < 3; i++) { rect(g, x - 4, hip - 9 + i * 2, 3, 1, B); rect(g, x + 1, hip - 9 + i * 2, 3, 1, B); }     /* the spine and ribs */
+    rect(g, x - 5, hip - 11, 11, 2, B);                                                                                                                         /* the collar bones */
+    const hy = hip - 17 + (f === 6 ? 1 : 0), hx = x + (f === 6 ? -2 : 0); rect(g, hx - 3, hy, 7, 6, B); rect(g, hx - 2, hy + 1, 2, 2, K); rect(g, hx + 1, hy + 1, 2, 2, K);   /* the skull */
+    px(g, hx - 1, hy + 1, EY); px(g, hx + 2, hy + 1, EY); rect(g, hx - 2, hy + 4, 5, 1, D);
+    /* the arm and the khopesh, by frame */
+    const sh = [x + 4, hip - 10], blade = (ax, ay, bx, by) => { line(g, sh[0], sh[1], ax, ay, B); line(g, ax, ay, bx, by, RU); line(g, ax, ay - 1, bx, by - 1, RL); };
+    if (f === 2) blade(x - 2, hip - 16, x - 8, hip - 22);                 /* CUT TELL: cocked over the shoulder */
+    else if (f === 3) blade(x + 9, hip - 6, x + 18, hip - 2);              /* CUT: swept down and out */
+    else if (f === 4) blade(x - 4, hip - 8, x - 12, hip - 10);             /* LEAP TELL: crouched, the blade back */
+    else if (f === 5) blade(x + 6, hip - 18, x + 14, hip - 24);            /* LEAP: flung forward, the blade high */
+    else blade(x + 6, hip - 4, x + 12, hip);                               /* walk / hurt: the blade low */
+    rect(g, x - 6, hip - 9, 2, 7, M);                                                                                                                           /* the far arm */
+  });
+  F[7] = F[6];
+  return pack(F, cx, H, 10, 20);
+}
