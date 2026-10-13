@@ -11,8 +11,9 @@
 //   footing that does not move (taught twice) - or, in the exam's sea, THE END (A10 amended: an exam pit, once taught, is a real death).
 // PURE OF main.js: the hands (src/buried-city-hands.js) give it the world (api: ctx, K, TS, T, number, once, unburyIn); it keeps its state on K.
 import * as SET from './redraw/buried_city_set.js';
+import * as ART from './redraw/buried_city_flip_art.js';
 
-export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25 };
+export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25, spinT: 0.6 };
 
 export function makeFlip(api) {
   const { ctx, number, once } = api, TS = () => ctx.TS, T = () => ctx.T;
@@ -52,7 +53,7 @@ export function makeFlip(api) {
   }
   /* ---------- STRIKE / TURN: a blow or E on a glass ---------- */
   function flip(g, P) {
-    if (g.cd > 0) return false; g.cd = 0.35; K.flipN.strikes++;
+    if (g.cd > 0) return false; g.cd = 0.35; g.spin = FLIP.spinT; K.flipN.strikes++;
     const was = g.t > 0; g.t = g.dur; g.warned = false; g.runs++; if (!was) K.flipN.runs++; else K.flipN.turns++;
     ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2);
     ctx.burst(px(g.x), (g.y + 1) * TS() - 14, 10, ['#f8dc90', '#e6bc68'], 60, 0.5);
@@ -78,7 +79,7 @@ export function makeFlip(api) {
   F.update = dt => {
     if (!K) return; const P0 = ctx.hero();
     strikes();
-    for (const g of K.glasses) { g.cd = Math.max(0, (g.cd || 0) - dt); if (g.t <= 0) continue;
+    for (const g of K.glasses) { g.cd = Math.max(0, (g.cd || 0) - dt); g.spin = Math.max(0, (g.spin || 0) - dt); if (g.t <= 0) continue;
       const t0 = g.t; g.t = Math.max(0, g.t - dt);
       if (g.t <= FLIP.warn && !g.warned) { g.warned = true; const near = P0 && Math.abs(P0.x - px(g.x)) < 520; if (near) number(P0.x, P0.y - 34, 'THE GLASS RUNS OUT', '#ff9a5c'); }
       if (g.t <= FLIP.warn && Math.floor(t0 * 2) !== Math.floor(g.t * 2)) ctx.sfx.clank && ctx.sfx.clank();
@@ -117,47 +118,22 @@ export function makeFlip(api) {
   F.read = () => K && { glasses: K.glasses.map(g => ({ id: g.id, t: +g.t.toFixed(2), runs: g.runs })), risers: K.risers.map(r => ({ glass: r.glass, x0: r.x0, up: +r.up.toFixed(2), solid: r.solid })), banks: K.banks.map(b => ({ glass: b.glass, full: +b.full.toFixed(2) })), n: { ...K.flipN } };
   /* the tools' hand: every glass struck at once (tools/drawn-solids.mjs) */
   F.flipAll = () => { for (const g of K.glasses) flip(g, null); };
-  /* ---------- DRAWING (PLACEHOLDER - the SONNET art lane finishes it: the art list in work/claude/lane-done/claude-buriedcity3.md) ---------- */
+  /* ---------- DRAWING (claude/bc3art: src/redraw/buried_city_flip_art.js - the hourglasses, risers, banks, dune falls, the sea, the gauges) ---------- */
   const R = Math.round;
   F.draw = (g, cx, cy, time) => {
     if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), V = { g, cx, cy, vw, vh, time, L: K.L, T: T() }, P0 = ctx.hero();
     const vis = (x0, x1) => (x1 + 1) * ts - cx > -48 && x0 * ts - cx < vw + 48;
-    /* THE SAND SEA: deep, rippling, its surface a shade under the rooftops' feet */
-    for (const s of K.seas) { if (!vis(s.x0, s.x1)) continue; const l = s.x0 * ts - cx, w = (s.x1 - s.x0 + 1) * ts, top = s.row * ts + 8 - cy, bot = vh + 8;
-      const gr = g.createLinearGradient(0, top, 0, top + 90); gr.addColorStop(0, s.lethal ? '#8a4a24' : '#9a6a34'); gr.addColorStop(0.25, s.lethal ? '#5a2814' : '#6a4420'); gr.addColorStop(1, s.lethal ? '#1e0a06' : '#2a180a');
-      g.fillStyle = gr; g.fillRect(R(l), R(top), w, R(Math.max(4, bot - top)));
-      for (let x = 0; x < w; x += 2) { const yy = top + Math.sin((x + time * 22) / 7) * 1.6 + Math.sin((x - time * 13) / 17) * 1.2; g.fillStyle = (x / 2) % 3 ? '#c49a5c' : '#e6c98a'; g.fillRect(R(l + x), R(yy - 1), 2, 2); }
-      for (let i = 0; i < Math.max(2, w / 48); i++) { const sx = l + ((i * 61 + time * 9) % w), sy = top + 12 + (i * 23) % 40, rr = 6 + 2 * Math.sin(time * 2 + i);   /* slow whirls dragging down: it takes what falls in */
-        g.strokeStyle = 'rgba(20,8,2,0.45)'; g.beginPath(); g.ellipse(R(sx), R(sy), rr, rr * 0.3, 0, time * 2 + i, time * 2 + i + 4.5); g.stroke(); }
-      if (s.lethal) { g.fillStyle = 'rgba(240,230,200,0.75)'; for (let i = 0; i < w / 40; i++) { const bx = l + 12 + i * 40 + (i % 2) * 9, by = top + 6 + (i % 3) * 5; g.fillRect(R(bx), R(by), 5, 1); g.fillRect(R(bx + 1), R(by - 1), 1, 3); } } }   /* (bones in the sand that is the end) */
-    /* THE RISERS: sunk, a parapet's tip shows where each will come up (and a dotted ghost while you are near its glass); moving, the block slides (the tiles draw it once it stands) */
-    for (const r of K.risers) { if (!vis(r.x0, r.x1)) continue; const l = r.x0 * ts - cx, w = (r.x1 - r.x0 + 1) * ts, top = r.top * ts - cy, h = r.rows * ts, gl = glassOf(r.glass);
-      const sh = r.shake ? Math.round(Math.sin(time * 40)) : 0;
-      if (r.up < 0.6) { const yy = top + (1 - r.up) * h * 1.2;
-        if (r.up > 0.02) { g.fillStyle = '#92704a'; g.fillRect(R(l + sh), R(yy), w, R(Math.max(2, top + h - yy))); g.fillStyle = '#d8bc86'; g.fillRect(R(l + sh), R(yy), w, 2); }
-        const near = P0 && gl && Math.abs(P0.x - px(gl.x)) < 22 * ts;
-        if (near && !r.sinks) { g.strokeStyle = 'rgba(248,220,144,' + (0.35 + 0.2 * Math.sin(time * 4)).toFixed(2) + ')'; g.setLineDash([2, 3]); g.strokeRect(R(l) + 0.5, R(top) + 0.5, w - 1, h - 1); g.setLineDash([]); }
-        g.fillStyle = '#c4a672'; for (let x = 0; x < w; x += 8) g.fillRect(R(l + x + 1), R(top + h + 2), 5, 2); }   /* (the tip of its parapet in the sand) */
-      else if (r.shake) { g.fillStyle = 'rgba(255,120,60,0.25)'; g.fillRect(R(l + sh), R(top), w, h); g.fillStyle = 'rgba(232,204,138,0.7)'; for (let i = 0; i < 3; i++) g.fillRect(R(l + ((i * 13 + time * 60) % w)), R(top + h + ((time * 80 + i * 9) % 12)), 1, 3); } }
-    /* THE BANKS: the sand as it runs out (its cells draw it full) */
-    for (const b of K.banks) { if (!vis(b.x0, b.x1) || b.full >= 0.999) continue; const l = b.x0 * ts, w = (b.x1 - b.x0 + 1) * ts, bot = (b.y1 + 1) * ts, h = (b.y1 - b.y0 + 1) * ts * b.full; if (h > 1) SET.sandBody(V, l, bot - h, w, bot); }
-    /* THE DUNE FALLS: down (beats you down) or UP (carries you) */
-    for (const f of K.dfalls) { if (!vis(f.x0, f.x1)) continue; const on = running(f.glass), l = f.x0 * ts - cx, w = (f.x1 - f.x0 + 1) * ts, top = f.top * ts - cy, bot = (f.bottom + 1) * ts - cy;
-      g.fillStyle = on ? 'rgba(248,220,144,0.30)' : 'rgba(230,188,104,0.55)'; g.fillRect(R(l + 2), R(top), w - 4, R(bot - top));
-      for (let i = 0; i < 14; i++) { const sx = l + 3 + (i * 7) % (w - 6), ph = (time * (on ? -110 : 140) + i * 37) % (bot - top), sy = (ph < 0 ? ph + (bot - top) : ph) + top; g.fillStyle = on ? '#fff4cc' : '#c89a44'; g.fillRect(R(sx), R(sy), 1, on ? 4 : 5); }
-      if (on) { g.fillStyle = '#fff4cc'; for (let k = 0; k < 3; k++) { const ay = top + 10 + k * 24 + ((time * 40) % 24); g.fillRect(R(l + w / 2 - 3), R(ay), 6, 1); g.fillRect(R(l + w / 2 - 2), R(ay - 1), 4, 1); g.fillRect(R(l + w / 2 - 1), R(ay - 2), 2, 1); } } }   /* (chevrons: UP) */
-    /* THE GLASSES: a brass stand, two bulbs, the sand where it is; the gauge over it; STRIKE when it is idle and you are by it */
+    for (const s of K.seas) { if (!vis(s.x0, s.x1)) continue; ART.drawSea(V, s, s.x0 * ts - cx, (s.x1 - s.x0 + 1) * ts, s.row * ts + 8 - cy); }
+    for (const r of K.risers) { if (!vis(r.x0, r.x1)) continue; const gl = glassOf(r.glass);
+      ART.drawRiser(V, r, { l: r.x0 * ts - cx, top: r.top * ts - cy, w: (r.x1 - r.x0 + 1) * ts, h: r.rows * ts, near: !!(P0 && gl && Math.abs(P0.x - px(gl.x)) < 22 * ts), moving: r.up > 0.02 && r.up < 0.98 }); }
+    for (const b of K.banks) { if (!vis(b.x0, b.x1) || b.full >= 0.999) continue; const l = b.x0 * ts, w = (b.x1 - b.x0 + 1) * ts, bot = (b.y1 + 1) * ts, h = (b.y1 - b.y0 + 1) * ts * b.full; if (h > 1) { SET.sandBody(V, l, bot - h, w, bot); ART.drawBankRunning(V, l - cx, bot - cy, w, h, b.full); } }
+    for (const f of K.dfalls) { if (!vis(f.x0, f.x1)) continue; ART.drawDuneFall(V, running(f.glass), f.x0 * ts - cx, f.top * ts - cy, (f.x1 - f.x0 + 1) * ts, (f.bottom + 1) * ts - cy); }
     for (const gq of K.glasses) { const x = px(gq.x) - cx, y = (gq.y + 1) * ts - cy; if (x < -40 || x > vw + 40) continue; const k = gq.t > 0 ? gq.t / gq.dur : 0, warn = gq.t > 0 && gq.t <= FLIP.warn;
-      g.fillStyle = '#5a4014'; g.fillRect(R(x - 7), R(y - 3), 14, 3); g.fillStyle = '#a47e30'; g.fillRect(R(x - 6), R(y - 26), 12, 2); g.fillRect(R(x - 6), R(y - 5), 12, 2); g.fillRect(R(x - 6), R(y - 26), 1, 23); g.fillRect(R(x + 5), R(y - 26), 1, 23);
-      g.fillStyle = 'rgba(190,226,240,0.35)'; g.fillRect(R(x - 4), R(y - 24), 8, 8); g.fillRect(R(x - 4), R(y - 13), 8, 8); g.fillRect(R(x - 1), R(y - 16), 2, 3);
-      g.fillStyle = '#e6bc68'; const upH = Math.round(7 * k), loH = 7 - upH; if (upH) g.fillRect(R(x - 3), R(y - 17 - upH), 6, upH); if (loH) g.fillRect(R(x - 3), R(y - 6 - loH), 6, loH);
-      if (gq.t > 0) { g.fillStyle = '#fff4cc'; g.fillRect(R(x), R(y - 16), 1, 10 - loH); }
-      if (gq.t > 0 || (P0 && Math.abs(P0.x - px(gq.x)) < 140)) { g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(R(x - 12), R(y - 34), 24, 4); g.fillStyle = warn ? (Math.floor(time * 8) % 2 ? '#ff5a3a' : '#ffb060') : '#ffd36b'; g.fillRect(R(x - 11), R(y - 33), R(22 * k), 2); }
-      if (gq.t <= 0) { SET.glow(V, px(gq.x), (gq.y + 1) * ts - 14, 18, 0.18 + 0.1 * Math.sin(time * 4), '255,210,120'); if (P0 && Math.abs(P0.x - px(gq.x)) < 40 && Math.abs(P0.y - (gq.y + 1) * ts) < 30) ctx.text('STRIKE', R(x), R(y - 44), '#ffd36b', 'center', 4); } }
+      ART.drawGlass(V, gq, { k, warn, spin: Math.max(0, (gq.spin || 0) / FLIP.spinT), x, y });
+      if (gq.t <= 0 && P0 && Math.abs(P0.x - px(gq.x)) < 40 && Math.abs(P0.y - (gq.y + 1) * ts) < 30) ctx.text('STRIKE', R(x), R(y - 44), '#ffd36b', 'center', 4); }
     /* THE GAUGE OVER YOUR HEAD (A3: what runs off-screen is shown where you stand): the nearest running glass */
     if (P0 && !P0.dead) { const gq = K.glasses.filter(q => q.t > 0 && Math.abs(P0.x - px(q.x)) < 40 * ts).sort((a, b) => Math.abs(P0.x - px(a.x)) - Math.abs(P0.x - px(b.x)))[0];
-      if (gq) { const x = P0.x - cx, y = P0.y - (P0.h || 20) - 12 - cy, k = gq.t / gq.dur, warn = gq.t <= FLIP.warn; g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(R(x - 10), R(y), 20, 3); g.fillStyle = warn ? (Math.floor(time * 8) % 2 ? '#ff5a3a' : '#ffb060') : '#ffd36b'; g.fillRect(R(x - 9), R(y + 1), R(18 * k), 1);
-        g.fillStyle = '#a47e30'; g.fillRect(R(x - 14), R(y - 2), 3, 1); g.fillRect(R(x - 14), R(y + 4), 3, 1); g.fillStyle = '#e6bc68'; g.fillRect(R(x - 13), R(y - 1 + (k > 0.5 ? 0 : 3)), 1, 2); } }
+      if (gq) ART.drawHeadGauge(V, R(P0.x - cx), R(P0.y - (P0.h || 20) - 12 - cy), gq.t / gq.dur, gq.t <= FLIP.warn); }
   };
   return F;
 }

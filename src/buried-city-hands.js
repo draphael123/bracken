@@ -15,7 +15,7 @@
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js';
-import { makeFlip } from './buried-city-flip.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
+import { makeFlip } from './buried-city-flip.js'; import * as FART from './redraw/buried_city_flip_art.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
 export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2, fallBeat: 130, fallPad: 4 };
 const SAND = SET.SAND; SAND.loose = SAND.loose || 'rgba(232,204,138,0.45)';
@@ -290,7 +290,10 @@ export function makeBuriedCityHands(ctx) {
     if (kind === 'bcBalcony' || kind === 'bcLintel') { for (const [x, s] of [[l, 1], [r - 8, -1]]) { g.fillStyle = '#8a6c48'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 8), 7, 3); g.fillRect(R(x + (s > 0 ? 1 : 1)), R(t + 11), 5, 3); g.fillRect(R(x + (s > 0 ? 1 : 2)), R(t + 14), 3, 3);   /* the corbel, stepped */
         g.fillStyle = '#c8aa72'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 8), 7, 1); g.fillRect(R(x + 1), R(t + 11), 5, 1); g.fillStyle = '#3e2c1a'; g.fillRect(R(x + (s > 0 ? 1 : 0)), R(t + 10), 7, 1); g.fillRect(R(x + 1), R(t + 13), 5, 1);
         g.globalAlpha = 0.5; post(x + 2, t + 17, b, 4, '#6e5638', '#a88a5c', '#2a1e14'); g.globalAlpha = 1; } return true; }   /* (and the wall's pilaster under it, fading into the dark) */
-    if (kind === 'bcBuried') { b = t + 200; g.fillStyle = '#6a4a30'; g.fillRect(R(l + 1), R(t + 10), R(r - l - 2), R(b - t - 10)); g.fillStyle = '#4a3220'; for (let y = t + 18; y < b; y += 8) g.fillRect(R(l + 1), R(y), R(r - l - 2), 1); g.fillStyle = '#2a1a10'; g.fillRect(R(l + 3), R(t + 22), 4, 6); g.fillRect(R(r - 7), R(t + 22), 4, 6); return true; }   /* (claude/buriedcity3) a building standing up out of THE SAND SEA: its walls go on down into the sand (placeholder) */
+    if (kind === 'bcBuried') { b = t + 200; const w = r - l; g.fillStyle = '#7a5a3c'; g.fillRect(R(l + 1), R(t + 10), R(w - 2), R(b - t - 10)); for (let y = t + 10; y < b; y += 8) { g.fillStyle = y % 16 ? '#6a4a30' : '#8e6c48'; g.fillRect(R(l + 1), R(y + 7), R(w - 2), 1); }   /* (claude/bc3art) a building standing up out of THE SAND SEA: plaster courses, a window with a lattice, beam ends, sand creeping in - and the dark deepening as it goes down into the sand */
+        g.fillStyle = '#3a2412'; g.fillRect(R(l + 3), R(t + 20), 6, 9); g.fillStyle = '#1a0e08'; g.fillRect(R(l + 4), R(t + 21), 4, 7); g.fillRect(R(l + 5), R(t + 21), 1, 7); g.fillStyle = '#c4a672'; g.fillRect(R(l + 3), R(t + 19), 6, 1); if (w > 36) { g.fillStyle = '#3a2412'; g.fillRect(R(r - 9), R(t + 20), 6, 9); g.fillStyle = '#1a0e08'; g.fillRect(R(r - 8), R(t + 21), 4, 7); g.fillStyle = '#c4a672'; g.fillRect(R(r - 9), R(t + 19), 6, 1); }
+        for (let x = l + 6; x < r - 6; x += 16) { g.fillStyle = '#2a1c10'; g.fillRect(R(x), R(t + 33), 8, 3); g.fillStyle = '#5a3e20'; g.fillRect(R(x), R(t + 33), 8, 1); }
+        g.fillStyle = '#e0b66c'; g.fillRect(R(l + 1), R(t + 10), R(w - 2), 1); g.fillRect(R(l + 1), R(t + 11), 2, 7); g.fillRect(R(r - 3), R(t + 11), 2, 4); const gr = g.createLinearGradient(0, t + 30, 0, t + 120); gr.addColorStop(0, 'rgba(20,8,2,0)'); gr.addColorStop(1, 'rgba(20,8,2,0.7)'); g.fillStyle = gr; g.fillRect(R(l + 1), R(t + 30), R(w - 2), 90); return true; }
     if (kind === 'bcDrum') { for (const x of [l + 1, r - 12]) { for (let k = 0; k < 3; k++) { g.fillStyle = k & 1 ? '#8a7048' : '#a48a5c'; g.fillRect(R(x + k), R(b - 6 - k * 5), 11 - k * 2, 5); g.fillStyle = '#d8c088'; g.fillRect(R(x + k), R(b - 6 - k * 5), 11 - k * 2, 1); g.fillStyle = '#3e2c1a'; g.fillRect(R(x + k), R(b - 2 - k * 5), 11 - k * 2, 1); }
         g.fillStyle = '#d8b472'; g.fillRect(R(x - 2), R(b - 3), 15, 3); g.fillStyle = '#f4dc9c'; g.fillRect(R(x - 2), R(b - 3), 15, 1); } return true; }   /* (the drum rests on broken blocks, the dune drifted round them) */
     return false; };
@@ -303,7 +306,7 @@ export function makeBuriedCityHands(ctx) {
     /* THE DECOR: spires, the sinkhole's lip, stalls, houses, domes, the great gate's grille; and (B8) THE KING everywhere - his head in the dune, his statues, his mural, his court */
     for (const d of (L.decor || [])) { const x0 = (d.x0 ?? d.x) * ts - cx; if (x0 > vw + 80 || ((d.x1 ?? d.x) + 1) * ts - cx < -80) continue;
       if (d.kind === 'spire') SET.drawSpire(V, d);
-      else if (d.kind === 'awning') SET.drawTornCanopy(V, d);
+      else if (d.kind === 'awning') { if (d.x0 >= 630) FART.drawRoofAwning(V, d, ts); else SET.drawTornCanopy(V, d); }
       else if (d.kind === 'stall') SET.drawStall(V, d);
       else if (d.kind === 'house') SET.drawHouse(V, d);
       else if (d.kind === 'dome') SET.drawDome(V, d);
@@ -316,9 +319,8 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
       else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);
-      else if (d.kind === 'shell') { const l = d.x0 * ts - cx, w = (d.x1 - d.x0 + 1) * ts, y = d.y * ts - cy, rr = w / 2;   /* (claude/buriedcity3, PLACEHOLDER) THE COURTYARD's collapsed dome: its broken ribs over the pit, glazed shards on them */
-        g.strokeStyle = '#2a8a98'; g.lineWidth = 3; for (const [a0, a1] of [[Math.PI, Math.PI * 1.32], [Math.PI * 1.7, Math.PI * 2]]) { g.beginPath(); g.arc(R(l + rr), R(y + rr * 0.9), rr, a0, a1); g.stroke(); } g.lineWidth = 1;
-        g.fillStyle = '#4cb4bc'; for (let i = 0; i < 6; i++) g.fillRect(R(l + 6 + i * w / 7), R(y + 6 + (i % 3) * 4), 4, 2); } }
+      else if (d.kind === 'shell') FART.drawShell(V, d, ts); }
+    if ((L.outside || []).length && cx > 560 * ts) { const T0 = T(); FART.drawDressing(V, x => { for (let y = 0; y < L.H - 1; y++) if (ctx.cellGet(x, y) === T0.SOLID && ctx.cellGet(x, y - 1) !== T0.SOLID && y > 3) return y; return -1; }); }   /* (claude/bc3art) what the desert city left on its dunes and roofs */
     /* THE LAMPS: oil lamps and wall braziers, warm light against the sand's cold shadow */
     for (const lp of (L.lamps || [])) SET.drawLamp(V, lp);
     /* THE SAND ROOMS */

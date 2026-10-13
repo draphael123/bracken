@@ -21308,7 +21308,8 @@ function drawCaravanHud() {
   if (KSH && KSH.on() && KSH.drawHud(g, P)) return;   /* (claude/ksar) (the Ksar keeps the desert's sun meter: drawHud says no) */   /* (claude/glasssea) by night THE FROST METER stands where the sun meter does */
   if (TPH && TPH.on()) TPH.drawHud(g);   /* (claude/towpath) the lantern's state, under the health */
   const stg = CV.stage || 0;   /* at full, the stage of the build (sunStep): the glare deepens with it */
-  if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw + 0.06 * stg; g.fillStyle = stg >= 3 ? '#ff7a40' : '#ffb060'; g.fillRect(0, 0, VW, VH);
+  if (sw > 0 && !SET.reduceMotion && L.buriedcity) { const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.28, VW / 2, VH / 2, VH * 0.95); const e0 = 0.05 + 0.2 * sw + 0.05 * stg; gr.addColorStop(0, 'rgba(255,150,70,0)'); gr.addColorStop(1, (stg >= 3 ? 'rgba(255,110,60,' : 'rgba(255,170,90,') + e0.toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }   /* (claude/bc3art, Q3) THE ROOFTOPS: the swim is a warm EDGE vignette, not an orange wash over the picture - the drain itself is untouched */
+  else if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw + 0.06 * stg; g.fillStyle = stg >= 3 ? '#ff7a40' : '#ffb060'; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.12 * sw; g.fillStyle = '#fff1c8'; for (let y = 0; y < VH; y += 6) { const o = Math.sin(time * 7 + y * 0.3) * 3 * sw; g.fillRect(Math.round(o), y, VW, 2); } g.globalAlpha = 1; }
   const x = 22, y = 52, k = v >= 1 ? 3 : v >= SUN.swimAt ? 2 : v > 0.2 ? 1 : 0;
   { const strip = (sx, sy, sw, sh) => { g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(sx, sy, sw, sh, 2); g.fill(); hudRects.push([sx, sy, sw, sh]); };   /* THE STATUS ROWS sit on a strip, not on the picture */

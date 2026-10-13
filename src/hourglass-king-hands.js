@@ -10,6 +10,7 @@
 import * as HKM from './hourglass-king.js';
 import { BOSS_PHASE } from './boss-music.js';
 import * as SET from './redraw/buried_city_set.js';
+import * as ART from './redraw/buried_city_flip_art.js';
 import * as DG from './redraw/buried_city_cast.js';   /* (claude/bc2art: the king and his cog are the city's own drawings now) */
 const { HK } = HKM;
 
@@ -115,25 +116,17 @@ export function makeHourglassKingHands(ctx) {
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     /* THE THRONE: a high-backed seat of lapis stone on a stepped dais, gilded, a crown of gears over its back (src/redraw/buried_city_set.js) */
     SET.drawThrone({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.x0 + 20 * ctx.TS + 8, G.floorY);
-    /* THE GREAT HOURGLASS before it (PLACEHOLDER: the art lane draws it - a brass frame on a pivot, two bulbs, its gauge): fast in its frame till phase three; then lit
-       when it can be turned, its sand running back down after (the gauge), and while it pours up a column of sand rises out of it to the roof */
-    { const x = R(G.great - cx), y = R(G.floorY - cy), k = S.great.cd > 0 ? 1 - S.great.cd / (HK.great.cd + HK.great.openT) : 1, ready = HKM.greatReady(S), run = S.great.run > 0, flip = run ? -1 : 1;
-      if (ready) SET.glow({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.great, G.floorY - 22, 30, 0.35 + 0.15 * Math.sin(time * 6), '255,210,120');
-      g.fillStyle = '#5a4014'; g.fillRect(x - 13, y - 4, 26, 4); g.fillRect(x - 13, y - 46, 26, 4); g.fillStyle = '#a47e30'; g.fillRect(x - 12, y - 45, 2, 41); g.fillRect(x + 10, y - 45, 2, 41); g.fillStyle = '#e8c460'; g.fillRect(x - 12, y - 45, 1, 41);
-      g.fillStyle = 'rgba(190,226,240,0.30)'; for (let i = 0; i < 38; i++) { const u = i / 38, v = u < 0.5 ? u / 0.5 : (1 - u) / 0.5, hw = Math.max(1, R(9 * Math.sin(Math.PI * Math.pow(v, 0.8)) + 1)); g.fillRect(x - hw, y - 42 + i, hw * 2, 1); }
-      const top = S.ph < 3 ? 0.1 : run ? 0 : 1 - k, bot = 1 - top; g.fillStyle = '#e6bc68';
-      if (flip > 0) { if (top > 0.02) g.fillRect(x - 6, y - 40 + R(14 * (1 - top)), 12, R(14 * top)); if (bot > 0.02) g.fillRect(x - 7, y - 6 - R(14 * bot), 14, R(14 * bot)); }
-      if (run) { g.fillStyle = 'rgba(248,220,144,0.55)'; g.fillRect(x - 5, R(G.roofY - cy), 10, R(G.floorY - G.roofY - 40)); g.fillStyle = '#fff4cc'; for (let i = 0; i < 8; i++) g.fillRect(x - 4 + (i * 3) % 9, R(G.floorY - 44 - ((time * 160 + i * 31) % (G.floorY - G.roofY - 44)) - cy), 1, 5); }
-      if (S.ph === 3) { g.fillStyle = 'rgba(0,0,0,0.55)'; g.fillRect(x - 14, y - 56, 28, 4); g.fillStyle = ready ? '#ffd36b' : '#a8782c'; g.fillRect(x - 13, y - 55, R(26 * k), 2); if (ready) ctx.text('STRIKE IT', x, y - 64, '#ffd36b', 'center', 5); } }
-    /* THE SAND TIDE coming (phase two on): the floor's sand stirs and glows a beat before it takes the floor */
-    if (S.ph >= 2 && !S.tide.on && S.tide.t <= HK.tide.warn) { const l = R(G.drift[0] - cx), w = G.drift[1] - G.drift[0], k = 1 - S.tide.t / HK.tide.warn; g.fillStyle = 'rgba(255,154,92,' + (0.15 + 0.25 * k * (0.6 + 0.4 * Math.sin(time * 18))).toFixed(2) + ')'; g.fillRect(l, R(G.floorY - 4 - cy), w, 6); g.fillStyle = '#e6c98a'; for (let x = 0; x < w; x += 6) g.fillRect(l + x, R(G.floorY - 2 - 3 * k * Math.abs(Math.sin(x + time * 9)) - cy), 2, 2); }
+    /* THE GREAT HOURGLASS before it (claude/bc3art: src/redraw/buried_city_flip_art.js - a brass frame on a pivot, a gear crown, the half turn, its gauge) */
+    { const V = { g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, ready = HKM.greatReady(S), run = S.great.run > 0, cdK = S.great.cd > 0 ? 1 - S.great.cd / (HK.great.cd + HK.great.openT) : 1;
+      ART.drawGreat(V, G, { ph: S.ph, ready, run: S.great.run, runT: run ? HK.great.openT - S.great.run : 0, cdK });
+      if (run && HK.great.openT - S.great.run > 0.9) ART.greatPour(V, G); }
+    /* THE SAND TIDE coming (phase two on): the floor's sand stirs and heaves a beat before it takes the floor */
+    if (S.ph >= 2 && !S.tide.on && S.tide.t <= HK.tide.warn) ART.tideWarn({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.drift[0], G.drift[1], 1 - S.tide.t / HK.tide.warn, G);
+    if (S.ph >= 2 && S.drift) ART.tideFloor({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.drift[0], G.drift[1], G);
     /* phase three's pours: two steady columns from the broken roof */
-    if (S.ph === 3) for (const x of G.pours) { const sx = R(x - HK.pourW / 2 - cx); g.globalAlpha = 0.75; g.fillStyle = '#e2bb7a'; g.fillRect(sx, R(G.roofY - cy), HK.pourW, R(G.floorY - G.roofY)); g.globalAlpha = 1;
-      g.fillStyle = '#fff0c8'; for (let i = 0; i < 4; i++) g.fillRect(sx + 3 + i * 5, R(G.roofY + ((time * 160 + i * 37) % (G.floorY - G.roofY)) - cy), 1, 6); }
-    /* the sandstone blocks: the next to rise shows its top in the drift; both shake before they swap */
-    if (S.ph >= 2) G.blocks.forEach((b, i) => { const l = R(b.x0 - cx), w = b.x1 - b.x0, up = i === S.blockUp, sh = blockFx > 0 ? R(Math.sin(time * 40)) : 0;
-      if (!up) { g.fillStyle = '#c4a672'; for (let xx = 0; xx < w; xx += 8) g.fillRect(l + xx + 1 + sh, R(G.floorY - 3 - cy), 5, 2); }
-      else if (blockFx > 0) { g.fillStyle = 'rgba(255,120,60,0.3)'; g.fillRect(l + sh, R(b.y - cy), w, R(G.floorY - b.y)); } });
+    if (S.ph === 3) for (const x of G.pours) ART.pourColumn({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, x, G, HK.pourW);
+    /* the sandstone blocks: the next to rise shows its cap in the drift; both shake before they swap */
+    if (S.ph >= 2) G.blocks.forEach((b, i) => ART.sandstoneBlock({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, b, i === S.blockUp, blockFx > 0, G));
   };
   /* his frame by mode: the kit's poses (0-13) and the new moves' own (14-19: src/redraw/buried_city_cast.js) */
   const FR = { sleep: 0, wake: 0, recover: 0, streamTell: 3, gearTell: 5, pendTell: 9, pend: 10, hourTell: 22, stall: 11, turn: 12, surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19, slipRec: 8 };
@@ -155,21 +148,21 @@ export function makeHourglassKingHands(ctx) {
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', fy = R(G.floorY - cy);
     if (!COG) COG = DG.bakeCog();
     for (const q of S.gears) g.drawImage(COG[Math.floor(time * 12) & 1], R(q.x - 7 - cx), R(G.floorY - 14 - cy));
-    for (const w of S.waves) { const hh = w.h || HK.hourH, hw = w.w || 10; g.fillStyle = w.k === 'surge' ? '#d8a050' : '#e2bb7a'; g.fillRect(R(w.x - hw - cx), R(G.floorY - hh - cy), hw * 2, hh); g.fillStyle = '#fff0c8'; g.fillRect(R(w.x - hw - cx), R(G.floorY - hh - cy), hw * 2, 2);
-      if (w.k === 'surge') { g.fillStyle = 'rgba(255,240,200,0.6)'; for (let i = 0; i < 4; i++) g.fillRect(R(w.x - hw - cx - w.dir * (6 + i * 5)), R(G.floorY - hh * (0.8 - i * 0.18) - cy), 3, 2); } }   /* (the surge's spray behind it) */
+    for (const w of S.waves) { ART.surgeWave({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, { ...w, h: w.h || HK.hourH }, G); }
     if (S.stream) { const x = R(S.stream.x - HK.streamR - cx); g.globalAlpha = 0.85; g.fillStyle = '#e2bb7a'; g.fillRect(x, R(G.roofY - cy), HK.streamR * 2, R(G.floorY - G.roofY)); g.globalAlpha = 1; }
     if (S.mark && (e.mode === 'streamTell' || e.mode === 'graspTell')) { const x = R(S.mark.x - cx), y = fy - 2, r = S.mark.k === 'grasp' ? HK.graspR : HK.streamR;
       g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(x - r, y, r * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 6, y - 6); g.lineTo(x + 6, y + 2); g.moveTo(x + 6, y - 6); g.lineTo(x - 6, y + 2); g.stroke();
       if (S.mark.k === 'stream') { g.fillStyle = 'rgba(226,187,122,0.6)'; g.fillRect(x - 1, R(G.roofY - cy), 2, R(G.floorY - G.roofY)); }
       else { g.strokeStyle = 'rgba(208,112,58,0.85)'; g.beginPath(); g.arc(x, y - 2, r * (0.5 + 0.5 * Math.abs(Math.sin(time * 6))), 0, 7); g.stroke(); for (let i = 0; i < 5; i++) { const hx = x - r + 4 + i * (r * 2 - 8) / 4; g.fillStyle = '#d0703a'; g.fillRect(R(hx), y - 2 - R(3 * Math.abs(Math.sin(time * 9 + i))), 2, 3); } } }
     /* THE GRASP RISING: sand hands up out of the floor */
-    if (S.grasp) { const x = R(S.grasp.x - cx), up = 1 - S.grasp.t / HK.graspUp; for (let i = 0; i < 5; i++) { const hx = x - HK.graspR + 4 + i * (HK.graspR * 2 - 8) / 4, hh = R(8 + 18 * up * (0.7 + 0.3 * Math.sin(i * 2.1))); g.fillStyle = '#b07a3a'; g.fillRect(R(hx), fy - hh, 3, hh); g.fillStyle = '#e2bb7a'; g.fillRect(R(hx) - 1, fy - hh, 5, 2); } }
-    /* THE RAIN: its marks blink pale blue on the floor (and a faint line to the roof); falling, the shards */
-    if (S.rain) for (const x0 of S.rain.xs) { const x = R(x0 - cx); if (!S.rain.fall) { g.strokeStyle = Math.floor(time * 10) % 2 ? '#bfe6f5' : '#ffffff'; g.beginPath(); g.arc(x, fy - 2, HK.rainR, 0, 7); g.stroke(); g.fillStyle = 'rgba(191,230,245,0.25)'; g.fillRect(x - 1, R(G.roofY - cy), 2, R(G.floorY - G.roofY)); }
-      else { for (let i = 0; i < 5; i++) { const sy = R(G.roofY - cy + ((S.rain.t / HK.rainT) * (G.floorY - G.roofY) + i * 23) % (G.floorY - G.roofY)); g.fillStyle = i % 2 ? '#dff2ff' : '#9ac8e0'; g.fillRect(x - HK.rainR + 3 + i * 4, sy, 2, 6); } } }
-    /* THE ECHO: where he stood two seconds ago, a violet ghost of him - he snaps back to it */
-    if (S.echo && e.mode === 'slipTell') { if (!SETS) SETS = [0, 1, 2].map(k => DG.bakeHourglassKing(k)); const set = SETS[0], spr = (e.face > 0 ? set.R : set.L)[18], x = R(S.echo.x - cx);
-      g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 16); g.drawImage(spr, x - (e.face > 0 ? set.ax : spr.width - set.ax), fy - set.ay); g.globalAlpha = 1; g.strokeStyle = '#b08cff'; g.beginPath(); g.arc(x, fy - 2, HK.slipR, Math.PI, 0); g.stroke(); }
+    if (S.grasp) ART.graspHands({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, S.grasp.x, 1 - S.grasp.t / HK.graspUp, G, HK.graspR);
+    /* THE RAIN: the roof cracks over its marks, they blink pale blue on the floor; falling, the shards */
+    if (S.rain) { const V = { g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }; if (!S.rain.fall) ART.rainCracks(V, S.rain.xs, G, e.mode === 'rainTell' ? 1 - Math.max(0, e.modeT) / HK.rainTell : 0.5);
+      for (const x0 of S.rain.xs) { const x = R(x0 - cx);
+        if (!S.rain.fall) { g.strokeStyle = Math.floor(time * 10) % 2 ? '#bfe6f5' : '#ffffff'; g.beginPath(); g.arc(x, fy - 2, HK.rainR, 0, 7); g.stroke(); g.fillStyle = 'rgba(191,230,245,0.25)'; g.fillRect(x - 1, R(G.roofY - cy), 2, R(G.floorY - G.roofY)); }
+        else ART.rainShards(V, x0, G, S.rain.t / HK.rainT, R(x0)); } }
+    /* THE ECHO: where he stood two seconds ago, a violet double of his slip pose - he snaps back to it */
+    if (S.echo && e.mode === 'slipTell') { if (!SETS) SETS = [0, 1, 2].map(k => DG.bakeHourglassKing(k)); ART.echoGhost({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, e, SETS[0], 18, S.echo.x, G, HK.slipR); }
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - HK.h / 2 - cy);
     if (HKM.hkOpen(e)) { const kk = Math.max(0, e.open / HK.openT);
@@ -184,7 +177,7 @@ export function makeHourglassKingHands(ctx) {
       if (low && S.ward <= 0 && e.mode !== 'turn') ctx.text('GLASS LOW', gx + 3, gy - 24, '#ffd36b', 'center', 4); }
     if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, x, R(e.y - HK.h - 40 - cy) - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6);
     /* a held hero: the sand round his legs */
-    for (const pp of ctx.players) if (pp.hkHold > 0) { const px = R(pp.x - cx), py = R(pp.y - cy); g.fillStyle = '#b07a3a'; for (let i = 0; i < 4; i++) g.fillRect(px - 7 + i * 4, py - 8 - (i % 2) * 2, 3, 8 + (i % 2) * 2); ctx.text('JUMP!', px, py - 34, blink, 'center', 5); }
+    for (const pp of ctx.players) if (pp.hkHold > 0) { ART.heldSand({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, pp); ctx.text('JUMP!', R(pp.x - cx), R(pp.y - cy) - 34, blink, 'center', 5); }
   };
   return H;
 }

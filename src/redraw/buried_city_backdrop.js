@@ -8,6 +8,7 @@
 //   4. THE ROOF'S UNDERSIDE a ceiling band of sand with buried rooftops and beams, grains sifting from its cracks (0.6)
 //   THE DUNES (cols 0-37) keep the sky: it fades out down the sinkhole; two lit dune silhouettes and the tower's tip stand over them
 // The shafts' light is drawn in the world (src/buried-city-hands.js drawWorld). main.js calls drawBackdrop(g, cx, cy, VW, VH, L, time, dY).
+import * as FART from './buried_city_flip_art.js';
 const R = Math.round;
 const PAL = { glass: 'rgba(190,226,240,0.13)', glassEdge: 'rgba(160,200,220,0.55)', glassHi: 'rgba(255,255,255,0.28)', sand: '#e6bc68', sandHi: '#f8dc90', sandLo: '#a8782c', brass: '#a47e30', brassHi: '#e8c460', brassLo: '#5a4014', brassDeep: '#2e200a' };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
@@ -95,7 +96,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
     g.globalAlpha = 1;
   }
   /* THE DUNES (only while the sky shows): lit silhouettes, and the tower's tip over them (you see where you are going before you go down) */
-  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
+  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 600 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
 }
 
 /* THE HOURGLASS TOWER: k = how far along the level you are (its upper bulb empties, it comes nearer) */

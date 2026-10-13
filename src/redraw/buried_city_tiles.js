@@ -46,7 +46,7 @@ function info(L, T) {
 /* the light on a cell, in steps of a seventh from -3 (the sand's cold shadow) to +4 (a shaft of sun): warm within ~9 tiles of a lamp, golden in a shaft, else cold */
 function lightAt(I, x, y) {
   let v = -1.4;   /* the city's own dark: cold, blue */
-  for (const z of I.sun) { const dx = x < z.x0 ? z.x0 - x : x > z.x1 ? x - z.x1 : 0; v = Math.max(v, 4 - dx * 0.9); }
+  for (const z of I.sun) { if (z.x0 >= 630) { v = Math.max(v, 1); continue; } const dx = x < z.x0 ? z.x0 - x : x > z.x1 ? x - z.x1 : 0; v = Math.max(v, 4 - dx * 0.9); }
   for (const lp of I.lamps) { const d = Math.hypot(lp.x - x, (lp.y - y) * 1.2); v = Math.max(v, 3.2 - d * 0.42); }
   return Math.max(-3, Math.min(4, Math.round(v)));
 }
