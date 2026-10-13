@@ -86,7 +86,7 @@ export function makeMatriarchHands(ctx) {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.6; ctx.number(e.x, e.y - 80, 'OLD PLUME, MOTHER OF THE GORGE', '#ffd36b'); }
     const c = world(e), hs = heroes(), G = S.G;
-    if (S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp < e.maxHp * MAT.p2 + 1) e.hp = e.maxHp * MAT.p2 + 1;   /* (claude/redgorgerework) THE HOLD against what writes her health straight (a bleed's tick): see H.hold */
+    { const fl = e.maxHp * MAT.p2 + 1; if (S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp < fl && e.hp > fl - 40) e.hp = fl; }   /* (a tick's dip under the line, not a script's hand on her health) */   /* (claude/redgorgerework) THE HOLD against what writes her health straight (a bleed's tick): see H.hold */
     RM.stepMatriarch(e, S, dt, hs, c);
     for (const q of ctx.enemies()) if (q.alive && q.rmYoung && q.st && q.st.gone) q.alive = false;   /* (claude/matriarch2) a young one home on the nest is gone from the fight */
     /* THE LEVER, TOLD AGAIN (fix pass; the wake's one floating line was the only lesson): she is in the channel, a sluice is full and you are by its lever */
