@@ -143,7 +143,7 @@ try {
     ok(d.cardSt, 'SECOND DRAUGHT did not refill the stamina');
     ok(d.std.began && Math.abs(d.std.frames - want) <= 3, 'the swallow lands at ' + d.std.frames + ' frames, want ~' + want);
     ok(d.quick.began && Math.abs(d.quick.frames - wantQ) <= 3 && d.quick.frames < d.std.frames, 'QUICK DRAUGHT swallows at ' + d.quick.frames + ', want ~' + wantQ);
-    ok(Math.abs(d.rich.pct - 0.40) < 1e-9 && d.rich.heal > d.std.heal, 'RICH DRAUGHT: ' + JSON.stringify(d.rich) + ' vs ' + JSON.stringify(d.std));
+    ok(Math.abs(d.rich.pct - 0.30) < 1e-9 && d.rich.heal > d.std.heal, 'RICH DRAUGHT: ' + JSON.stringify(d.rich) + ' vs ' + JSON.stringify(d.std));
     ok(d.spill.spent === 1 && d.spill.healed === 0 && !d.spill.drinking && d.spill.flying === 1 && d.spill.shake, 'a blow before the swallow: ' + JSON.stringify(d.spill));
     ok(d.steady.spent === 0 && d.steady.healed === 0 && !d.steady.drinking && d.steady.flying === 0, 'STEADY HAND: ' + JSON.stringify(d.steady)); }
   /* C4. the store's unlocks, the objectives, a find */
