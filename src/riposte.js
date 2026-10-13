@@ -81,6 +81,7 @@ const has = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
 export function verbOf(tag, skillNow) {
   if (!tag) return null;
   if (has(tag, 'riposte')) return 'riposte';
+  if (has(tag, 'partner')) return 'heavy';   /* (claude/partnerthrow) a THROWN PARTNER lands like a heavy blow: it adds the heavy verb's weight to the foe's DAMAGE % */
   if (skillNow) return 'skill';
   for (const k of ['heavy', 'plunge', 'sweep', 'rise', 'throw', 'dash', 'shot', 'reflect', 'light']) if (has(tag, k)) return VERB_OF[k];
   return null;

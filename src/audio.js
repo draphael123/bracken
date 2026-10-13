@@ -1765,6 +1765,13 @@ const REC = {
   snort: { p: 'vo_ogre_alert', v: 0.18, r: 1.5, voc: 1, g: () => ['snortRec', 0.1] }, screech: { p: 'vo_scream', v: 0.22, r: 1.35, voc: 1 }, caw: { p: 'amb_gull', v: 0.25, r: 0.8, g: () => ['caw', 0.35] },
   bark: { p: 'vo_bark', v: 0.3, voc: 1 }, yelp: { p: 'vo_bark', v: 0.26, r: 1.55, voc: 1 }, boreRoar: { p: 'roar', v: 0.45, r: 0.5 }, mawRoar: { p: 'roar', v: 0.4, r: 0.7 }, queenShriek: { p: 'vo_scream', v: 0.3, r: 1.05, voc: 1 }, croak: { p: 'croak', v: 0.3 },
 };
+/* (claude/partnerthrow) THE PARTNER'S SCREAM: the hero's own hurt cry (their voice kit) pitched up, under the long recorded scream (vo_scream, already on disk, CC0), at the pitch of
+   the hero it comes out of; the synth is the fallback while the clips load. h is the hero who is being carried or thrown (not the local hero: player two's is heard too). */
+SFX.partnerScream = function (h) {
+  const k = HERO_KIT[h] || HERO_KIT.knight, r = k.rate * (k.kit[0] === 'f' ? 1.3 : 1.12);
+  const a = voice(VOK(k.kit, 'hurt'), 0.42, r * 1.1, k.lp || 0), b = voice('vo_scream', 0.2, r, k.lp ? k.lp + 1200 : 0, 0.05);
+  if (!a && !b) { tone('sawtooth', 620 * r, 1060 * r, 0.7, 0.14); tone('triangle', 640 * r, 1100 * r, 0.7, 0.1, 0.02); noise(0.5, 0.06, 2400, 0.8, 0.05); }
+};
 SFX.hornBlastLow = function () { return SFX.hornBlast(); }; SFX.hornDrawLow = function () { return SFX.hornDraw(); };   /* synth fallback = the ordinary horn */
 export const RECORDED_SFX = Object.keys(REC);
 for (const [name, c] of Object.entries(REC)) {

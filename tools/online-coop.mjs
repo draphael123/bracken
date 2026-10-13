@@ -12,6 +12,7 @@
 //   7. a guest DISCONNECT drops player two cleanly (local co-op's drop-out: one player, coopWant off, the wood goes on) and the room waits
 //   8. the guest's own save (all of its localStorage EXCEPT the one key bracken.onlineVol, his remembered stream volume, which has its own
 //      key and is never part of a save) is byte-for-byte untouched, and the guest page never ran the game
+//  10. GRAB (claude/partnerthrow, 10-12): the guest GRABS the host's hero and is GRABBED (lifted, screams, wriggles free), his touch layer is told GRAB/THROW by the host, the scream is in the stream audio, nothing stalls
 //   9. POLISH (Daniel 10-11): the board opens from the MAP with G (same gate); the guest's volume is remembered under bracken.onlineVol and
 //      comes back on a rejoin; the guest's hero pick shows the host's baked idle frames, pixelated at a whole-number scale (no window.BK)
 //   node tools/online-coop.mjs          (PORT for the page server; the relay goes on ONLINE_RELAY or PORT+1)
@@ -26,7 +27,7 @@ const fails = [], notes = [], ok = (c, m) => { if (!c) { fails.push(m); if (proc
 let stub = null, host = null, guest = null;
 const until = async (pg, expr, ms = 15000, what = expr) => { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { try { v = await pg.evalp(expr, 5000); } catch { v = undefined; } if (v) return v; await sleep(150); } throw new Error('timed out (' + ms + ' ms) waiting for ' + what); };
 async function nav(pg, url, ready) { const t0 = await pg.evalp('performance.timeOrigin', 5000).catch(() => 0); await pg.send('Page.navigate', { url }); await until(pg, 'performance.timeOrigin !== ' + t0 + ' && location.href === ' + JSON.stringify(url) + ' && (' + ready + ')', 90000, 'the page at ' + url); }
-const VK = { ArrowRight: 39, ArrowLeft: 37, Escape: 27, z: 90, y: 89, a: 65 };
+const VK = { ArrowRight: 39, ArrowLeft: 37, Escape: 27, z: 90, y: 89, a: 65, i: 73 };
 const key = async (pg, k, type) => pg.send('Input.dispatchKeyEvent', { type, key: k, code: k.length === 1 ? 'Key' + k.toUpperCase() : k, windowsVirtualKeyCode: VK[k], nativeVirtualKeyCode: VK[k], ...(type === 'keyDown' && k.length === 1 ? { text: k } : {}) });
 const H = expr => host.evalp(expr, 60000), Gu = expr => guest.evalp(expr, 60000);   /* (a minute: a wood loading on a machine at 100% has taken over 20 s) */
 const p2 = () => H('(()=>{const p=BK.players()[1];return p?{x:p.x,y:p.y,vy:p.vy,hero:p.hero,right:!!p.keys.right,left:!!p.keys.left}:null})()');
@@ -161,6 +162,48 @@ try {
   ok(Math.abs(vol - 0.3) < 0.01, '6: the guest\'s volume sets the host sound\'s level: ' + vol);
   ok((await Gu('localStorage.getItem("bracken.onlineVol")')) === '0.3', '9: the volume is written under its own key, bracken.onlineVol');
   await Gu('BKGUEST.toggleMenu()');
+
+  // ---- 10. GRAB (claude/partnerthrow): the guest can GRAB the host's hero and BE GRABBED; the scream is in the stream; nothing desyncs ----
+  /* the host plays in real time here, so every check polls. Both heroes stand together on the ground; the host's god mode keeps a stray goblin out of it. */
+  const standTogether = async () => { await H('(()=>{const [a,b]=BK.players();a.vx=a.vy=b.vx=b.vy=0;b.x=a.x+10;b.y=a.y;BK.partnerThrow().reset();return true})()'); await until(host, '(()=>{const [a,b]=BK.players();return a.ground&&b.ground&&Math.abs(a.x-b.x)<14&&!a.ptC&&!b.ptC&&!a.ptH&&!b.ptH&&!a.ptF&&!b.ptF&&!(a.hurt>0)&&!(b.hurt>0)&&!(a.ptCd>0)&&!(b.ptCd>0)})()', 8000, 'both heroes standing together'); };
+  await H('(()=>{BK.SET.music=false;BK.SET.ambient=false;return true})()');
+  await standTogether();
+  const label10 = await until(guest, 'BKGUEST.state().grab', 6000, "the host's GRAB state reaching the guest's touch button").catch(() => null);
+  ok(label10 === 'GRAB', '10: the guest\'s touch layer is told GRAB while his partner stands in reach: ' + label10);
+  const gbtn = await Gu('(async()=>{await new Promise(r=>setTimeout(r,200));return BKGUEST.touch.debug().buttons.map(b=>b.k)})()');
+  ok(gbtn.includes('ctx'), '10: ...and shows the second contextual button: ' + gbtn.join(','));
+  /* the sound: tap the guest's stream before the grab, music and ambience off on the host, and watch the level */
+  await Gu(`(()=>{const s=BKGUEST.video.srcObject,ac=new AudioContext(),src=ac.createMediaStreamSource(s),an=ac.createAnalyser();an.fftSize=1024;src.connect(an);window.__lvl={ac,an,max:0,buf:new Float32Array(1024)};ac.resume();window.__lvl.t=setInterval(()=>{an.getFloatTimeDomainData(__lvl.buf);let m=0;for(const v of __lvl.buf)m=Math.max(m,Math.abs(v));__lvl.max=Math.max(__lvl.max,m);},25);return ac.state})()`);
+  await sleep(1200); const quiet = await Gu('(()=>{const m=__lvl.max;__lvl.max=0;return m})()');
+  const scr0 = await H('BK.partnerThrow().stats.screams');
+  await key(guest, 'i', 'keyDown'); await key(guest, 'i', 'keyUp');
+  const grabbed = await until(host, '(()=>{const [a,b]=BK.players();return a.ptH&&b.ptC&&b.ptC.v===a&&{ay:a.y,by:b.y}})()', 6000, 'the guest to lift player one').catch(() => null);
+  ok(!!grabbed, "10: the GUEST's GRAB key (I) lifts the host's hero (player one dangles over player two): " + JSON.stringify(grabbed));
+  await sleep(2200);
+  const loud = await Gu('__lvl.max'), scr1 = await H('BK.partnerThrow().stats.screams');
+  ok(scr1 - scr0 >= 2, '10: he SCREAMS on the host while held (' + (scr1 - scr0) + ' in ~2 s)');
+  ok(await Gu('BKGUEST.state().audio') && loud > 0, '10: the scream goes out on the host master, which is the stream the guest hears: the guest stream has a live audio track (peak ' + loud.toFixed(3) + ', baseline ' + quiet.toFixed(3) + ' - the level itself is not asserted: the wood is never silent)');
+  ok((await Gu('BKGUEST.state().grab')) === 'THROW', "10: the guest's button now reads THROW");
+  const f0 = (await Gu('BKGUEST.state().frames'));
+  await key(guest, 'i', 'keyDown'); await key(guest, 'i', 'keyUp');
+  const flew = await until(host, '(()=>{const [a,b]=BK.players();return !!a.ptF||a.ptF===null&&BK.partnerThrow().stats.throws>0})()', 6000, 'the throw').catch(() => false);
+  await until(host, '(()=>{const [a,b]=BK.players();return !a.ptF&&!a.ptH&&!b.ptC&&BK.partnerThrow().stats.landings>0})()', 8000, 'player one to land').catch(() => {});
+  const st10 = await H('(()=>{const s=BK.partnerThrow().stats;const [a,b]=BK.players();return {throws:s.throws,landings:s.landings,held:!!a.ptH,fly:!!a.ptF,ground:a.ground}})()');
+  ok(flew && st10.throws === 1 && st10.landings === 1 && !st10.held && !st10.fly, "10: the guest's second press THROWS player one, and he lands: " + JSON.stringify(st10));
+  ok((await Gu('BKGUEST.state().frames')) > f0 + 20, '10: the stream kept running through the throw (no stall, no desync)');
+  /* and the GUEST is grabbed: the host lifts player two, who mashes his own jump key to wriggle free */
+  await standTogether();
+  await H('BK.press("grab")');
+  const held2 = await until(host, '(()=>{const [a,b]=BK.players();return b.ptH&&a.ptC&&a.ptC.v===b})()', 6000, 'the host to lift the guest').catch(() => false);
+  ok(!!held2, '10: the host\'s GRAB lifts the GUEST\'s hero (player two dangles)');
+  const sc2 = await H('BK.partnerThrow().stats.screams'); await sleep(2400);
+  ok((await H('BK.partnerThrow().stats.screams')) - sc2 >= 1, "10: ...and the guest's hero screams in his own voice (the host plays it, the guest hears it)");
+  for (let i = 0; i < 7; i++) { await key(guest, 'z', 'keyDown'); await sleep(60); await key(guest, 'z', 'keyUp'); await sleep(80); }
+  const wiggled = await until(host, '(()=>{const [a,b]=BK.players();return !b.ptH&&!a.ptC&&BK.partnerThrow().stats.frees>0})()', 6000, 'the guest to wriggle free').catch(() => false);
+  ok(!!wiggled, "10: the guest MASHES his jump key and wriggles free (his presses reach player two's wiggle bar)");
+  await standTogether();
+  ok(guest.errors.length === 0 && host.errors.length === 0, '10: no page error through the grabs: ' + guest.errors.concat(host.errors).slice(0, 2).join(' | '));
+  await Gu('(()=>{clearInterval(__lvl.t);return true})()');
 
   // ---- 7. the guest goes: player two drops out cleanly ----
   const errs0 = host.errors.length;
