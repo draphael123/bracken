@@ -8,7 +8,8 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { TELL_LINES } from './minecart.js';
 import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
-import { HK_SAY } from './hourglass-king.js';   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
+import { HK_SAY } from './hourglass-king.js';
+import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 export const CALL_LINES = new Set([
   /* claude/slope (batch88 integ): THE RUNNING SLIDE tip (src/run-slide.js), said once - routed so the player can see it */
   'RUNNING SLIDE: LOW, AND UNDER HIGH BLOWS',
@@ -248,7 +249,7 @@ export const CALL_COUNTS = [/^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE M
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
-export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY]);
+export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY)]);
 /* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
    (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
 export const MC_TELL_LINES = new Set([...TELL_LINES, ...Object.values(FOREMAN_LINES)]);   /* (claude/deeprails3: and THE FOREMAN's lines, said as variables by src/foreman.js) */

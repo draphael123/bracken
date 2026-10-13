@@ -7755,6 +7755,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   dmg = angB ? Math.max(1, Math.round(wardedDamage(e, dmg, blow, tag) * BR_ANGLE.mul)) : bossChip(e, wardedDamage(e, dmg, blow, tag), raw0, !!blow);
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
   greedHit(e, fromX, blow);
+  if (e.t === 'matriarch' && MTH && MTH.hold) dmg = MTH.hold(e, dmg);   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's HOLD on what LANDS (after the riposte, the chain...): until the sluice has stunned her once she will not break past phase one */
   if (capFix && dmg > capD0) dmg = capFix(e, capD0, dmg);   /* (claude/batch86, claude/capsfix) A BOSS'S OPENING CAP holds against what multiplies a blow after it was counted (the mix-up chain, the riposte x1.5, a broken foe, cutthroat / turncoat x2, the quake): the cap is on what LANDS. One fix per boss that counts early (Wicker Man, Grandmother, Huntmaster, Colossus, Great Drill, Archmage); the others count in wardedDamage, after every multiplier */
   const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
   const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
@@ -26274,7 +26275,7 @@ DF2H = makeDesertFoes2Hands({ get L() { return L; }, get players() { return play
   standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), gorge: () => (RGH && RGH.on() ? { state: RGH.state, wetAt: RGH.wetAt } : null) });
 /* THE RAPTOR MATRIARCH'S HANDS (src/raptor-matriarch-hands.js, claude/redgorge2): main.js owns the world; the module owns her fight, the levers, the bridges' posts, the cracked dam's water */
 MTH = makeMatriarchHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, movers: () => movers, time: () => time, VW: () => VW, VH: () => VH,
-  gorge: () => (RGH && RGH.on() ? { phase: RGH.state().phase } : null),
+  gorge: () => (RGH && RGH.on() ? { phase: RGH.state().phase, t: RGH.state().t } : null),
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(),
   solid: (tx, ty) => isSolid(tx, ty),

@@ -56,7 +56,13 @@ export const MAT = {
   sweepTell: 0.62, sweepT: 0.25, sweepR: 100, sweepH: 24,   /* (claude/matriarch2: tell 0.7, R 78, H 22 - the tail stays low: a jump still clears it) */
   screeTell: 0.62, screeN: 4, screeV: [170, 250], screeG: 600,   /* (claude/matriarch2: tell 0.7) */
   screechTell: 0.8, raptorCap: 2,
-  hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 4.2, releaseTell: 0.4, burstT: 1.6,
+  hornLeap: 0.45, panicFly: 0.42, wobbleT: 0.7, staggerT: 4.2, releaseTell: 0.3, burstT: 1.6,
+  /* (claude/redgorgerework, Daniel 10-13: "not clear how levers hurt/STUN the boss") THE SLUICE STUN, the fight's central mechanic (B17): a pulled lever sends
+     ONE WAVE down the channel from its bank (waveV px/s, drawn as a wall of water); the wave that reaches her IN THE CHANNEL stuns her - always (the narrow /
+     broad pillar lottery is gone), STUNNED + the gold ring. THE LURE (lureTell): every phase-one pass opens with her dropping into the channel in front of
+     your bank, crouched to pounce up at you - the lever's window. Until the sluice has stunned her once she WILL NOT BREAK: her health holds at the
+     phase-two line (told: STUN HER WITH THE SLUICE) - the first pass forces the verb */
+  waveV: 900, lureTell: 1.25, lureFly: 0.45, lureOff: 40, lureWalk: 0.004, lureMax: 2.6,
   /* P2 */
   wallUp: 0.6, runT: [0.9, 1.6], runV: 170, diveTell: 0.9, diveFly: 0.3, diveR: 22, stunT: 4.4,   /* (claude/matriarch2: runT [1.6, 2.6], runV 150, diveTell 1.0, diveR 18 - she comes off the wall far more often) */
   volleyTell: 0.8, quills: 5, quillSpread: 0.2, quillV: 210, perchT: 3.0, toBridge: 0.5, tangleT: 5.0,
@@ -68,7 +74,7 @@ export const MAT = {
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
-  1: [['pounce', 'rake', 'sweep', 'pounce', 'scree'], ['rake', 'pounce', 'screech', 'sweep', 'pounce'], ['scree', 'pounce', 'rake', 'pounce', 'sweep'], ['pounce', 'sweep', 'rake', 'screech', 'pounce']],
+  1: [['lure', 'rake', 'sweep', 'pounce', 'scree'], ['lure', 'rake', 'screech', 'sweep', 'pounce'], ['lure', 'scree', 'rake', 'pounce', 'sweep'], ['lure', 'sweep', 'rake', 'screech', 'pounce']],   /* (claude/redgorgerework) every pass opens on THE LURE: the lever's window */
   2: [['run', 'dive', 'run', 'perch', 'run', 'brood'], ['run', 'dive', 'run', 'dive'], ['run', 'brood', 'run', 'perch', 'run', 'dive', 'run', 'volley'], ['run', 'volley', 'run', 'dive', 'run', 'perch', 'run', 'brood']],   /* (B5, fix pass: a phase's first pass is cycle 1 - the walls' first pass is the run and the dive alone; the perch and the volley come in the second. claude/matriarch2: THE BROOD CALL opens the second pass) */
   3: [['chain', 'rider', 'rake', 'chain'], ['surge', 'chain', 'rider', 'chain'], ['rider', 'chain', 'chain', 'rake']],   /* (claude/matriarch2: THE FLOOD RIDER in every pass) */
 };
@@ -78,6 +84,9 @@ export const MOVES = {
   screechTell: { mark: '!', answer: '' }, diveTell: { mark: '!!', answer: 'dodge' }, volleyTell: { mark: '!!', answer: 'dodge' }, surgeTell: { mark: '!!', answer: 'jump' },
   followTell: { mark: '!!', answer: 'dodge' }, broodTell: { mark: '!', answer: '' }, riderTell: { mark: '!!', answer: 'dodge' },   /* (claude/matriarch2: the three new moves) */
 };
+/* (claude/redgorgerework) THE SLUICE STUN's words: one place, so the hands, the hint box and the tools say the same */
+export const SAY = { stun: 'THE SLUICE STUNS HER: STRIKE', wasted: 'SHE IS UP ON THE ROCK: THE WATER MISSES HER', lure: 'SHE IS IN THE CHANNEL: PULL THE LEVER (E)',
+  rule: 'THE LEVER STUNS HER: PULL IT WHILE SHE IS IN THE CHANNEL', hold: 'SHE WILL NOT BREAK: STUN HER WITH THE SLUICE', warded: 'HER WARD: SHE IS READY FOR IT' };
 export const MOVE_NAME = { pounce: 'HER POUNCE', rake: 'HER TALONS', sweep: 'HER TAIL', scree: 'THE SCREE', dive: 'HER DIVE', quill: 'HER QUILLS', surge: 'THE DEBRIS', follow: 'HER FOLLOW-UP', rider: 'THE FLOOD RIDER' };
 
 /* ---------- THE NEST LEDGE ---------- */
@@ -127,7 +136,7 @@ export const nearestTop = (G, x, f) => G.tops.filter(t => !f || f(t)).sort((a, b
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, gap: 1, act: 0, behindT: 0, ward: 0, wardSaid: 0,
-    sluice: { W: 1, E: 1 }, pending: [], burst: 0, burstId: 0, flood: false, horn: false, floodId: 0, water: 0,
+    sluice: { W: 1, E: 1 }, pending: [], burst: 0, burstId: 0, wave: null, flood: false, horn: false, floodId: 0, water: 0,
     bridges: { A: 'up', B: 'up' }, perch: null, planks: false, shots: [], bands: [], chain: 0, surgeT: 0, openTaken: 0,
     fly: null, mark: null, told: {},
     n: { cycles: 0, opens: 0, staggers: 0, footing: 0, wasted: 0, releases: 0, pounces: 0, whiffs: 0, dives: 0, stuns: 0, perches: 0, cuts: 0, tangles: 0, volleys: 0, p3Staggers: 0,
@@ -156,6 +165,14 @@ function fly(e, S, tx, ty, t, arc, then) { S.fly = { x0: e.x, y0: e.y, tx, ty, t
 function endOpen(e, S, c) { e.open = 0; S.ward = MAT.wardT; S.n.wards++; S.openTaken = 0; c.number(e.x, e.y - 70, 'HER WARD: SHE SHAKES IT OFF', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
 function open(e, S, c, mode, t) { setMode(e, mode, t); e.open = t; S.openTaken = 0; S.n.opens++; c.fx('open', e.x, e.y); }
 
+/* THE LURE's spot (claude/redgorgerework): down in the channel, lureOff px out from the bank of the FULL lever nearer the hero */
+export function lureSpot(S, P) { const G = S.G, ls = G.levers.filter(l => S.sluice[l.id]).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x)), id = (ls[0] || G.levers[0]).id;
+  return id === 'W' ? G.tops[0].r + MAT.lureOff : G.tops[G.tops.length - 1].l - MAT.lureOff; }
+/* THE HOLD (claude/redgorgerework): until the sluice has stunned her once, a blow takes her no lower than the phase-two line. Returns the damage that lands */
+/* the lure's crouch: lureTell, and longer the further you stand from a full lever (she waits for you to get there: lureWalk s a px, to lureMax) */
+export const lureT = (S, P) => { const ls = S.G.levers.filter(l => S.sluice[l.id]), d = ls.length ? Math.min(...ls.map(l => Math.abs(l.x - P.x))) : 0; return Math.min(MAT.lureMax, MAT.lureTell + d * MAT.lureWalk); };
+export function holdDmg(e, S, d) { if (!S || S.ph !== 1 || (S.n.sluiceStuns || 0) > 0) return d; const floor = e.maxHp * MAT.p2 + 1; return Math.max(0, Math.min(d, e.hp - floor)); }
+export const holding = (e, S) => !!S && S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp <= e.maxHp * MAT.p2 + 1.5;
 /* ---------- THE WATER (the hands tell her what the gorge's clock does: c.horn(), c.flood()) ---------- */
 /* E AT A LEVER: the sluice lets the banked flood go. Returns 'released' | 'empty' | 'busy' */
 export function pull(S, id) { if (S.pending.length || S.burst > 0) return 'busy'; if (!S.sluice[id]) return 'empty'; S.sluice[id] = 0; S.pending.push({ id, t: MAT.releaseTell }); S.n.releases++; return 'released'; }
@@ -163,7 +180,9 @@ function stepWater(e, S, dt, c) {
   const G = S.G, horn = !!c.horn(), flood = !!c.flood();
   if (flood && !S.flood) { S.floodId++; if (S.ph < 3 && (!S.sluice.W || !S.sluice.E)) { S.sluice.W = 1; S.sluice.E = 1; c.number((G.x0 + G.x1) / 2, G.topY - 90, 'THE DAM BANKS THE FLOOD: THE SLUICES ARE FULL', '#7ab8e8'); } }
   S.horn = horn; S.flood = flood;
-  for (const p of S.pending) { p.t -= dt; if (p.t <= 0) { S.burst = MAT.burstT; S.burstId++; c.sound('burst'); c.shake(4); c.fx('burst', p.id === 'W' ? G.x0 + 40 : G.x1 - 40, G.floorY); } }
+  for (const p of S.pending) { p.t -= dt; if (p.t <= 0) { S.burst = MAT.burstT; S.burstId++; c.sound('burst'); c.shake(4); c.fx('burst', p.id === 'W' ? G.x0 + 40 : G.x1 - 40, G.floorY);
+    const bank = p.id === 'W' ? G.tops[0] : G.tops[G.tops.length - 1]; S.wave = { x: p.id === 'W' ? bank.r : bank.l, dir: p.id === 'W' ? 1 : -1, id: S.burstId, from: p.id }; } }   /* (claude/redgorgerework) THE WAVE: from the lever's bank, down the channel */
+  if (S.wave) { S.wave.x += S.wave.dir * MAT.waveV * dt; if (S.wave.x < G.x0 - 60 || S.wave.x > G.x1 + 60) S.wave = null; }
   S.pending = S.pending.filter(p => p.t > 0);
   if (S.burst > 0) S.burst = Math.max(0, S.burst - dt);
   if (S.ph === 3 && S.water < 1) S.water = Math.min(1, S.water + dt / MAT.riseT);
@@ -176,7 +195,7 @@ export const channelWet = S => !!(S && (S.flood || S.burst > 0 || (S.ph === 3 &&
    c.spawnRaptor(x, y) -> foe   c.raptors() -> alive   c.solid(px, py)   c.horn()  c.flood()   c.music(ph)   c.sweep(hero) (into the water) ---------- */
 export function stepMatriarch(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
-  e.modeT -= dt;
+  e.modeT -= dt; S.clock = (S.clock || 0) + dt;
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
   stepWater(e, S, dt, c); stepShots(e, S, dt, h, c); stepBands(e, S, dt, h, c);
@@ -191,19 +210,20 @@ export function stepMatriarch(e, S, dt, h, c) {
   const want = mPhase(e);
   if (want > S.ph && !matOpen(e) && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'wallRun' || e.mode === 'perch' || e.mode === 'circle')) {
     if (e.mode === 'circle' && c.dismissYoung) c.dismissYoung(); S.broodUp = 0;   /* (claude/matriarch2: a new phase sends her young home) */
-    S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; S.bands = []; S.perch = null;
+    S.n.phAt = S.n.phAt || {}; S.n.phAt[want] = Math.round(S.clock || 0); S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; S.bands = []; S.perch = null;
     if (want === 2) { c.number(e.x, e.y - 70, 'SHE TAKES TO THE CANYON WALLS', '#ff9a5c'); c.sound('screech'); c.music(2); fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 30, 'wallRun'); e.modeT = MAT.wallUp; S.runT = 0.8; return; }
     if (want === 3) { setMode(e, 'crack', MAT.crackT); c.number((G.x0 + G.x1) / 2, G.topY - 100, 'THE DAM CRACKS: GET TO THE PILLARS', '#ff6b6b'); c.sound('crack'); c.shake(6); c.music(3); return; } }
   /* THE HORN (phase one): she has warning - to a broad pillar or a bank before the water comes */
   if (S.ph === 1 && (S.horn || S.flood) && onFloor(G, e) && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'skid' || e.mode === 'rakeBeat' || /Tell$/.test(e.mode))) {
     const t = nearestTop(G, e.x, q => q.kind !== 'narrow'); if (!S.told.horn) { S.told.horn = 1; c.number(e.x, e.y - 64, 'SHE HATES THE WATER: SHE MAKES FOR THE ROCK', '#ffd36b'); }
     fly(e, S, clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, e.x))), G.topY, MAT.hornLeap, 40, 'walk'); return; }
-  /* A BURST (yours): no warning - caught in the channel she leaps for the NEAREST pillar */
-  if (S.burst > 0 && S.burstSeen !== S.burstId) { S.burstSeen = S.burstId;
-    if (S.ward > 0) { c.number(e.x, e.y - 64, 'HER WARD: SHE IS READY FOR IT', '#9ab0c0'); S.n.warded++; }
-    else if (onFloor(G, e) && !matBig(e) && e.mode !== 'fly' && S.ph < 3) { const t = nearestTop(G, e.x, q => q.kind !== 'bank'); S.panicTop = t;   /* the nearest PILLAR (the banks are not pillars: no warning, no choosing) */
-      fly(e, S, t.cx, G.topY, MAT.panicFly, 34, t.kind === 'narrow' ? 'wobble' : 'walk'); if (t.kind !== 'narrow') { S.n.footing++; S.footSay = 1; } return; }
-    else if (!matBig(e)) { S.n.wasted++; c.number(e.x, e.y - 64, 'SHE IS UP ON THE ROCK: THE WATER IS WASTED', '#9aa39a'); } }
+  /* A BURST (yours): THE WAVE comes down the channel from the lever's bank - no warning; the front that reaches her IN THE CHANNEL STUNS her (claude/redgorgerework:
+     always - the narrow pillar's throw was the old, unread middle step). Up on the rock, or in the air, the water misses her (said) */
+  if (S.wave && S.burstSeen !== S.wave.id && S.wave.dir * (S.wave.x - e.x) >= 0) { S.burstSeen = S.wave.id;
+    if (S.ward > 0) { c.number(e.x, e.y - 64, SAY.warded, '#9ab0c0'); S.n.warded++; }
+    else if (onFloor(G, e) && !matBig(e) && e.mode !== 'fly' && S.ph < 3) { S.n.staggers++; S.n.sluiceStuns = (S.n.sluiceStuns || 0) + 1; S.pAt = null; S.lure = 0;
+      open(e, S, c, 'staggered', MAT.staggerT); c.number(e.x, e.y - 64, SAY.stun, '#8fd160'); c.fx('stun', e.x, e.y); c.shake(3); return; }
+    else if (!matBig(e)) { S.n.wasted++; c.number(e.x, e.y - 64, SAY.wasted, '#9aa39a'); } }
   switch (e.mode) {
     case 'fly': stepFly(e, S, dt, P, c); return;
     case 'staggered': case 'stunned': case 'tangled': case 'pstagger':
@@ -257,12 +277,16 @@ function nextMove(e, S, P, c) {
     if (S.ph === 1) { if (!S.closeIn && Math.abs(dx) < MAT.closeR) { S.closeIn = 1; S.step--; setMode(e, 'walk', MAT.closeT); return; } S.closeIn = 0; m = Math.abs(P.y - e.y) < 24 ? 'scree' : 'pounce'; }
     else m = 'pounce'; } else S.closeIn = 0;
   if (m === 'screech' && c.raptors() >= MAT.raptorCap) m = 'scree';
+  if (m === 'lure' && !(S.ph === 1 && (S.sluice.W || S.sluice.E) && !S.pending.length && !(S.burst > 0) && !S.horn && !S.flood && (c.hornIn ? c.hornIn() : 99) > MAT.lureMax + 0.8)) m = 'pounce';   /* (and never into the horn: she has warning then, and would leave the lure for the rock) */   /* (claude/redgorgerework) no full sluice: a plain pounce */
   if (m === 'perch' && S.bridges.A !== 'up' && S.bridges.B !== 'up') m = 'volley';
   if (m === 'surge' && S.ph === 3) { S.surgeT = 0; }
   if (m === 'brood' && (S.ph !== 2 || c.young() > 0)) m = 'dive';   /* (her young are their own: the screech's cliff raptors do not count against them) */   /* (claude/matriarch2) */
   if (m === 'rider' && !(S.ph === 3 && S.water >= 1 && topAt(G, e.x, 4))) m = 'chain';
   switch (m) {
     case 'pounce': tell(e, S, c, 'pounceTell', MAT.pounceTell); return;
+    case 'lure': { const sp = lureSpot(S, P); S.n.lures = (S.n.lures || 0) + 1;
+      if (Math.abs(e.x - sp) < 24 && onFloor(G, e)) { e.face = Math.sign(P.x - e.x) || e.face; S.lure = 1; tell(e, S, c, 'pounceTell', lureT(S, P)); return; }
+      e.face = Math.sign(sp - e.x) || e.face; fly(e, S, sp, G.floorY, MAT.lureFly, 40, 'lure'); return; }
     case 'rake': tell(e, S, c, 'rakeTell', MAT.rakeTell); S.rakeN = 0; S.rakeRoll = 0; S.rakeTouch = 0; return;
     case 'brood': tell(e, S, c, 'broodTell', MAT.broodTell); c.sound('screech'); if (S.n.moves.broodTell <= 3) c.number(e.x, e.y - 50, 'SHE CALLS HER YOUNG OFF THE NEST', '#ffd36b'); return;
     case 'rider': tell(e, S, c, 'riderTell', MAT.riderTell); if (S.n.moves.riderTell <= 3) c.number(e.x, e.y - MAT.markH - 14, 'SHE RIDES THE SURGE: WATCH THE FOAM', '#7ab8e8'); return;
@@ -291,7 +315,7 @@ function stepMove(e, S, dt, P, h, c) {
       if (e.modeT <= 0) { const lx = S.pAt ? S.pAt.x : P.x; S.pAt = null; let tx = clampX(G, lx), ty = surfY(G, tx, 4); S.leapKind = fol ? 'follow' : 'pounce';
         if (S.ph === 3) { const t = topAt(G, lx, 4) || nearestTop(G, lx); tx = t.kind === 'narrow' ? t.cx : clampX(G, Math.max(t.l + 20, Math.min(t.r - 20, lx))); ty = G.topY; S.target = t; }
         else if (!topAt(G, tx, 4) && ty === G.floorY) ty = G.floorY;
-        S.n.pounces++; if (fol) S.n.follows = (S.n.follows || 0) + 1; c.sound('leap'); e.face = Math.sign(tx - e.x) || f; fly(e, S, tx, ty, fol ? MAT.followFly : MAT.pounceFly, fol ? MAT.pounceArc * 0.7 : MAT.pounceArc, 'land'); } return; }
+        S.lure = 0; S.n.pounces++; if (fol) S.n.follows = (S.n.follows || 0) + 1; c.sound('leap'); e.face = Math.sign(tx - e.x) || f; fly(e, S, tx, ty, fol ? MAT.followFly : MAT.pounceFly, fol ? MAT.pounceArc * 0.7 : MAT.pounceArc, 'land'); } return; }
     case 'rakeTell': if (e.modeT <= 0) { setMode(e, 'rake', MAT.rakeT); S.rakeN = (S.rakeN || 0) + 1; c.sound('slash');
         const got = c.hit([f > 0 ? e.x : e.x - MAT.rakeReach, f > 0 ? e.x + MAT.rakeReach : e.x, e.y - MAT.h, e.y], MAT.dmg.rake, MOVE_NAME.rake, { blockable: true, key: 'rake' + S.act + '.' + S.rakeN });
         if (got || (f * (P.x - e.x) > -8 && Math.abs(P.x - e.x) < MAT.rakeReach + 6 && Math.abs(P.y - e.y) < 30)) S.rakeTouch = 1; } return;   /* (claude/matriarch2: a slash that found you - or your guard - touched; two that found nothing are a whiff she follows) */
@@ -340,6 +364,7 @@ function stepFly(e, S, dt, P, c) {
   if (then === 'diveLand') { c.fx('land', e.x, e.y); c.shake(4); const hit = c.hit([e.x - MAT.diveR, e.x + MAT.diveR, e.y - 40, e.y + 8], MAT.dmg.dive, MOVE_NAME.dive, { key: 'dive' + S.act });
     S.mark = null; if (hit) { fly(e, S, clampX(G, e.x), G.wallY, MAT.wallUp, 20, 'wallRun'); S.runT = 1.0; return; }
     S.n.stuns++; open(e, S, c, 'stunned', MAT.stunT); if (!S.told.stun) c.number(e.x, e.y - 64, 'SHE SLAMS INTO THE ROCK: STUNNED', '#8fd160'); S.told.stun = 1; return; }
+  if (then === 'lure') { c.fx('land', e.x, e.y); e.face = Math.sign(P.x - e.x) || e.face; S.lure = 1; tell(e, S, c, 'pounceTell', lureT(S, P)); return; }   /* (claude/redgorgerework) down in the channel, crouched at you: the lever's window */
   if (then === 'wobble') { setMode(e, 'wobble', MAT.wobbleT); c.number(e.x, e.y - 64, 'THE NARROW PILLAR THROWS HER', '#8fd160'); c.sound('flap'); return; }
   if (then === 'volleyLand') { c.fx('land', e.x, e.y); setMode(e, 'skid', MAT.skidT); if (!S.told.vbeat) { S.told.vbeat = 1; c.number(e.x, e.y - 60, 'SHE COMES DOWN OFF THE WALL: HER GUARD IS DOWN', '#ffd36b'); } return; }
   if (then === 'grieve') { c.fx('land', e.x, e.y); setMode(e, 'grieve', MAT.griefT); return; }   /* (claude/matriarch2) down to her fallen young: her guard is down */
@@ -426,6 +451,12 @@ function matPlan0(s) {
   /* 0b. AT A FULL LEVER WITH HER IN THE CHANNEL (her crouch to pounce at you from the floor is the moment): pull */
   if (S.ph === 1 && onTop && !S.pending.length && !(S.burst > 0) && e.y > G.topY + 8 && e.mode !== 'fly' && !matOpen(e) && !(S.ward > 0) && (!s.v2 || leverNow(s, dx))) {
     const lv = G.levers.find(l => S.sluice[l.id] && Math.abs(l.x - P.x) < 12); if (lv && seenFor('lv' + S.act) && !roll('lv' + S.act, PLAN.missLever)) { out.talk = true; out.gx = P.x; out.why = 'pull: she is in the channel'; return fin(out); } }
+  /* 0c. THE LURE (claude/redgorgerework): she is crouched in the channel at you - to the full lever nearer you and pull it (seen a human beat after her crouch;
+     her mark locked on you first is a dodge, the v2 hands above) */
+  if (S.ph === 1 && S.lure && e.mode === 'pounceTell' && !S.pending.length && !(S.burst > 0) && !(S.ward > 0) && !S.horn && !S.flood && seenFor('lure' + S.act, 0.35) && !roll('lure' + S.act, PLAN.missLever)) {
+    const lv = G.levers.filter(l => S.sluice[l.id]).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    if (lv) { const bank = topAt(G, lv.x, 2); if (myTop !== bank || !onTop) { out.why = 'the lure: to the lever'; return goTop(bank); }
+      out.gx = lv.x; if (Math.abs(P.x - lv.x) < 12) { out.talk = true; out.why = 'the lure: pull'; } else out.why = 'the lure: to the lever'; return fin(out); } }
   /* 1. HER BLOWS COMING (a quarter-second late, some misread) */
   const key = 'k' + S.act + e.mode;
   if (/Tell$/.test(e.mode) || e.mode === 'fly' || e.mode === 'rake' || e.mode === 'sweep') {
