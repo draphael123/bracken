@@ -6992,7 +6992,7 @@ function openYardRespawn(dt) {   // in the open yard a straw man is back on his 
    (null = the base sheet), asked by the living hurt frame and by spawnCorpse; tools/corpses.mjs proves it for every reskin on the build */
 function reskinSet(e) {
   let s = null;
-  if (e.lamplighter && SPR.lamplighter) s = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) s = SPR[e.cnSkin];   /* THE FOG CANAL: the goblins' AI under a man's skin */
+  if (e.lamplighter && SPR.lamplighter) s = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) s = SPR[e.cnSkin]; if (e.t === 'construct' && e.elite && SPR.constructelite) s = SPR.constructelite;   /* THE FOG CANAL: the goblins' AI under a man's skin */
   if (e.bone && e.t === 'archer' && SPR.bonearcher) s = SPR.bonearcher;
   if (e.t === 'mummy' && e.elite && SPR.mummywarden) s = SPR.mummywarden;   /* THE TOMB-WARDEN wears his own sheet (claude/spart) */
   if (e.t === 'bat' && L.fields && SPR.batHaunt) s = SPR.batHaunt;
@@ -13264,6 +13264,8 @@ function ma() {
 }
 /* ONE SAY PER THING: the first few times, the hint box tells you; after that the level trusts you */
 function mageHint(key, msg) { const k = 'mgHint' + key; if ((PROG[k] || 0) >= 2) return; PROG[k] = (PROG[k] || 0) + 1; hintT = 4.5; hintMsg = msg; }
+/* THE BURIED CITY re-picks a cell its hands wrote (and its eight neighbours: a tile's edges read them) from its own kit - src/redraw/buried_city_tiles.js bcTile (claude/buriedcity3) */
+const bcRetile = (x, y) => { if (!L || !L.buriedcity || !tileSpr) return; for (let yy = y - 1; yy <= y + 1; yy++) for (let xx = x - 1; xx <= x + 1; xx++) { if (xx < 0 || yy < 0 || xx >= LW || yy >= LH) continue; const i = yy * LW + xx, t = L.grid[i]; if (t === T.AIR) { tileSpr[i] = null; continue; } if (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.SOFT) tileSpr[i] = BCT.bcTile(t, xx, yy, tileAt, T, L) || tileSpr[i]; } };
 const cellSet = (x, y, t) => { const i = y * LW + x; if (L.grid[i] !== t) { L.grid[i] = t; tileSpr[i] = null; } };
 function mageReset() {
   MG = null; P.flip = false; P.flipT = 0; P.flareSlab = null; P.flareT = 0; P.windRide = null; if (!L || !L.mage) { P.w = 10; P.h = 14; return; }
@@ -21478,7 +21480,8 @@ function drawCaravanHud() {
   if (KSH && KSH.on() && KSH.drawHud(g, P)) return;   /* (claude/ksar) (the Ksar keeps the desert's sun meter: drawHud says no) */   /* (claude/glasssea) by night THE FROST METER stands where the sun meter does */
   if (TPH && TPH.on()) TPH.drawHud(g);   /* (claude/towpath) the lantern's state, under the health */
   const stg = CV.stage || 0;   /* at full, the stage of the build (sunStep): the glare deepens with it */
-  if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw + 0.06 * stg; g.fillStyle = stg >= 3 ? '#ff7a40' : '#ffb060'; g.fillRect(0, 0, VW, VH);
+  if (sw > 0 && !SET.reduceMotion && L.buriedcity) { const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.28, VW / 2, VH / 2, VH * 0.95); const e0 = 0.05 + 0.2 * sw + 0.05 * stg; gr.addColorStop(0, 'rgba(255,150,70,0)'); gr.addColorStop(1, (stg >= 3 ? 'rgba(255,110,60,' : 'rgba(255,170,90,') + e0.toFixed(3) + ')'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }   /* (claude/bc3art, Q3) THE ROOFTOPS: the swim is a warm EDGE vignette, not an orange wash over the picture - the drain itself is untouched */
+  else if (sw > 0 && !SET.reduceMotion) { g.globalAlpha = 0.1 + 0.18 * sw + 0.06 * stg; g.fillStyle = stg >= 3 ? '#ff7a40' : '#ffb060'; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.12 * sw; g.fillStyle = '#fff1c8'; for (let y = 0; y < VH; y += 6) { const o = Math.sin(time * 7 + y * 0.3) * 3 * sw; g.fillRect(Math.round(o), y, VW, 2); } g.globalAlpha = 1; }
   const x = 22, y = 52, k = v >= 1 ? 3 : v >= SUN.swimAt ? 2 : v > 0.2 ? 1 : 0;
   { const strip = (sx, sy, sw, sh) => { g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(sx, sy, sw, sh, 2); g.fill(); hudRects.push([sx, sy, sw, sh]); };   /* THE STATUS ROWS sit on a strip, not on the picture */
@@ -26174,13 +26177,14 @@ HMH = makeHawkMistressHands({ get L() { return L; }, get players() { return play
   spawnGuard: (x, y) => { const n0 = enemies.length; spawnEnt({ t: 'cutthroat', x: Math.floor(x / TS), y: Math.floor(y / TS) - 1, face: -1, cnSkin: 'ksarblade' }); return enemies[n0] || null; } });
 /* THE BURIED CITY's HANDS (claude/buriedcity, src/buried-city-hands.js) and THE HOURGLASS KING's (src/hourglass-king-hands.js): main.js owns the world; the modules own the sand, the levers, the gate, the vault, and him */
 BCH = makeBuriedCityHands({ get L() { return L; }, lights: () => lights, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
-  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
-  questGot: () => straysGot.size, bossLever: x => (HGK ? HGK.onLever(x) : 'busy'), kingLit: () => !!(HGK && HGK.leversLit()),
+  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH && L.grid[y * LW + x] !== t) { cellSet(x, y, t); bcRetile(x, y); } },   /* (claude/buriedcity3: THE INVISIBLE PLATFORMS - cellSet only clears a cell's picture and nothing re-picked it: a drained room's pipe shelf, the street's roofs, a respawned bulb were floor with no picture. The cell and its neighbours are re-picked now: tools/drawn-solids.mjs) */
+  questGot: () => straysGot.size, atkBox: () => (P && P.atk >= 0 && !P.dead ? attackBox() : null), hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; }, god: () => !!(SET.invincible || (window.BK && window.BK.god)), killHero: (p, name) => { if (SET.invincible || (window.BK && window.BK.god)) return false; asPlayer(p, () => { P.inv = 0; P.dodge = 0; } ); asPlayer(p, () => damagePlayer(p.x, 99999, { unblockable: true, noKnock: true, name: name || 'THE SAND SEA' })); return !!p.dead || p.hp <= 0; },   /* (claude/buriedcity3) THE FLIP: a blow strikes an hourglass; THE SAND SEA's exam is the end */ bossLever: x => (HGK ? HGK.onLever(x) : 'busy'), kingLit: () => !!(HGK && HGK.leversLit()),
   spawnEnt: (e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; } return enemies[n0] || null; } });
 HGK = makeHourglassKingHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, T, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b),
-  cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); }, music: n => { if (bossActive) music.play(n); } });
+  cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH && L.grid[y * LW + x] !== t) { cellSet(x, y, t); bcRetile(x, y); } }, music: n => { if (bossActive) music.play(n); },
+  atkBox: () => (P && P.atk >= 0 && !P.dead ? attackBox() : null), hitOnce: o => { if (!P || !P.hitSet || P.hitSet.has(o)) return false; P.hitSet.add(o); return true; } });   /* (claude/buriedcity3) a blow on THE GREAT HOURGLASS; his banks, drift and blocks are re-picked (bcRetile) */
 /* THE SEALED PYRAMID's HANDS (claude/sealedpyramid, src/sealed-pyramid-hands.js) and THE SCARAB MOTHER's (src/scarab-mother-hands.js): main.js owns the world; the modules own the plates, the traps, the counterweights, the storm, the vault, and her */
 PYH = makeSealedPyramidHands({ get L() { return L; }, lights: () => lights, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH, keys: () => keys,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), cellGet: (x, y) => tileAt(x, y), cellSet: (x, y, t) => { if (x >= 0 && y >= 0 && x < LW && y < LH) cellSet(x, y, t); },
@@ -26936,6 +26940,7 @@ function updateProps(dt) {
   if (talkPress && state === 'play' && !P.dead && WRK && WRK.on() && WRK.interact(P)) talkPress = false;   /* (claude/winch5) THE WINCHMASTER: E takes a rock off his skip (or sets one down) */   /* THE BANDIT KSAR: E rings a gong, takes a keg or a flask, sets one down, hauls the winch, opens the strongroom */
   if (talkPress && state === 'play' && !P.dead && BCH && BCH.on() && BCH.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && PYH && PYH.on() && PYH.interact(P)) talkPress = false;   /* THE SEALED PYRAMID: E at the sealed tomb's door */
+  if (talkPress && state === 'play' && !P.dead && HGK && HGK.on() && HGK.interact(P)) talkPress = false;   /* (claude/buriedcity3) E at THE GREAT HOURGLASS (phase three) */
   if (talkPress && state === 'play' && !P.dead && COH && COH.on() && COH.interact(P)) talkPress = false;   /* THE GLASS COLOSSUS: E at a shelf-mirror turns it */
   if (talkPress && state === 'play' && !P.dead && GDH && GDH.on() && GDH.interact(P)) talkPress = false;   /* THE GREAT DRILL: E at the points mast */
   if (talkPress && state === 'play' && !P.dead && MCH && MCH.on() && MCH.interact(P)) talkPress = false;   /* THE DEEP RAILS: E at a lever throws the points */
@@ -29952,7 +29957,7 @@ function drawWorld(cx, cy, showPlayer) {
     let sprSet = e.t === 'mummer' && e.scare && !e.woke && !(e.hurtT > 0) ? SPR.scarecrowM : e.t === 'bellcrab' && e.phase === 3 ? SPR.bellcrabOut : e.t === 'reefmaw' && e.land && SPR.reefmaw && SPR.reefmaw.land ? SPR.reefmaw.land : e.bone && e.t === 'archer' ? SPR.bonearcher : e.t === 'familiar' ? SPR.familiarSmall : e.t === 'bat' && L.fields && SPR.bat ? (SPR.batHaunt = SPR.batHaunt || FF.hauntedSet(SPR.bat)) : e.t === 'lancer' && e.mini ? SPR.lancerRed : e.squirrel ? SPR.squirrel : e.t === 'hopper' && e.color && e.color !== 'green' ? SPR['hopper_' + e.color] : e.t === 'archmage' && e.fam ? SPR.familiar : (L.redgorge && RGSET[e.t === 'scorpion' && e.elite ? 'scorpionElite' : e.t]) || SPR[e.t];
     if (e.t === 'raptor' && e.young && SPR.raptorYoung) { sprSet = SPR.raptorYoung; if (e.st && e.st.mode === 'climb') frame = 6; }   /* (claude/matriarch2 art) HER YOUNG: their own juvenile set, drawn at scale 1 */
     if (e.t === 'sandworm' && L.underwell && e.st && e.st.fast && SPR.fastworm) sprSet = SPR.fastworm;   /* (claude/underwellart) THE FAST SANDWORM: slate violet, ivory bands, red-eyed */
-    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
+    if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
     if (e.t === 'mummer' && FAIR && !L.theatre && SPR.harvestMummer) sprSet = SPR.harvestMummer;   /* (claude/fairfix5) the harvest skin */
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler; else if (e.bandit && SPR.banditArcher) sprSet = SPR.banditArcher;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
@@ -32188,7 +32193,7 @@ window.BK = { setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
-  tileSpr: () => tileSpr, resolve: () => resolveTiles(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
+  tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
      drawn from, so a bot reading it is reading exactly what a player is shown and nothing more. */
   ember: () => EMBER ? EMBER.read() : null, emberReset: () => EMBER && EMBER.resetStats(), crouchA: () => CA ? CA.read() : null, crouchAReset: () => CA && CA.resetStats(),   /* THE CROUCH TWISTS, PART A (tools/crouch-a.mjs) */   /* THE EMBER WARD (tools/ember-flare.mjs) */

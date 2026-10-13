@@ -94,7 +94,7 @@ export const AFFIX_AT = {
   'glasssea|cutthroat': 'UNSTOPPABLE', 'skyroad|troll': 'THORNED',
   'caravan|cutthroat': 'SWIFT', 'caravan|scorpion#amb': 'BURNING',
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'underwell|scorpion': 'UNSTOPPABLE',
-  'buriedcity|construct#1': 'SHIELDED', 'buriedcity|construct#2': 'BURNING', 'buriedcity|construct#3': 'UNSTOPPABLE',
+  'buriedcity|construct#1': 'SHIELDED', 'buriedcity|construct#2': 'BURNING', 'buriedcity|construct#3': 'UNSTOPPABLE', 'buriedcity|construct#4': 'SWIFT',   /* (claude/buriedcity3: THE ROOFTOPS' courtyard - quick in the sun, where you cannot stand long) */   /* (claude/buriedcity: the halls' exam - go round his brass front; the foundry's - hot from the furnace yard; the throne's warden) */
   'sealedpyramid|mummy': 'UNSTOPPABLE',   /* (claude/sealedpyramid: THE TOMB-WARDEN, the deep way's exam - he walks through blows under his block; the trap still takes its share and staggers him) */   /* (claude/buriedcity: the halls' exam - go round his brass front; the foundry's - hot from the furnace yard; the throne's warden) */
 };
 /* ELITETUNE (claude/elitetune): per-kind health and elite-damage multipliers, measured with tools/elite-lab.mjs toward the human bot's 75-85%
