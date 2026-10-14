@@ -5858,8 +5858,23 @@ function openingStart() { opening = { i: 0, t: 0 }; state = 'opening'; }
 const HERO_ARMS = { knight: ['#2a3a6e', '#465a9a', '#c9d1dc', 'cross'], pyro: ['#6e2418', '#a04028', '#ffd36b', 'flame'],
   paladin: ['#6a5418', '#9a7c28', '#fff1c0', 'sun'], pirate: ['#5e1420', '#8e2434', '#e8dcc0', 'skull'],
   reaper: ['#1c3028', '#2c4a3a', '#8fd160', 'moon'] };
+/* HERO_COLOR (claude/herocolors, Daniel 10-14): ONE colour per hero, read by the pick's banners, its selection frame, the hero card's border and the co-op banners.
+   dark = the banner's foot plate (the name stands on it: ink must hold 4.5:1 on it), mid = the cloth, hi = the frame / accent, ink = the name, trim = an extra edge (the Berserker's embers). */
+const HERO_COLOR = {
+  knight:    { name: 'royal blue',   dark: '#1c2f66', mid: '#2f4fa8', hi: '#6c94ff', ink: '#f4f0e4' },
+  warden:    { name: 'forest green', dark: '#173a1c', mid: '#2a6a30', hi: '#6ccc74', ink: '#f4f0e4' },
+  geomancer: { name: 'amber',        dark: '#5a3604', mid: '#b87a14', hi: '#ffb83a', ink: '#fff4d8' },
+  ranger:    { name: 'russet',       dark: '#52200e', mid: '#8e3c1c', hi: '#e0714a', ink: '#f8ece0' },
+  pyro:      { name: 'flame red-orange', dark: '#6a1808', mid: '#c0401c', hi: '#ff8244', ink: '#fff0e0' },
+  paladin:   { name: 'gold',         dark: '#5c4608', mid: '#b8941c', hi: '#ffdc50', ink: '#fff8dc' },
+  pirate:    { name: 'sea teal',     dark: '#0a4244', mid: '#1a8584', hi: '#52d8d0', ink: '#eafffc' },
+  reaper:    { name: 'deep violet',  dark: '#2a1250', mid: '#54309a', hi: '#a888f8', ink: '#f2ecff' },
+  berserker: { name: 'iron grey, ember trim', dark: '#2c2f36', mid: '#5e636e', hi: '#a4aab6', ink: '#f4f0e4', trim: '#ff7a2a' },
+  sunpriest: { name: 'ivory sun-white', dark: '#5e5440', mid: '#e8e0c8', hi: '#fffbe8', ink: '#fffbe8' },   /* (reserved: not in the pick until he is wired) */
+};
+const heroCol = h => HERO_COLOR[h] || HERO_COLOR.knight;
 function heroBanner(h, x, y, w, hh, sel) {
-  const [dark, mid, ink, dev] = HERO_ARMS[h] || HERO_ARMS.knight;
+  const C = heroCol(h), dark = C.dark, mid = C.mid, ink = C.ink, dev = (HERO_ARMS[h] || HERO_ARMS.knight)[3];
   const bw = Math.max(14, Math.min(w - 8, Math.round(w * 0.62))), bx = Math.round(x + (w - bw) / 2), by = y + 3;
   const bh = hh - 14;
   g.globalAlpha = sel ? 1 : 0.55;
@@ -5917,6 +5932,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
   const ROLE = { knight: 'sword, kite', pyro: 'staff and fire', paladin: 'maul and ward', pirate: 'cutlass, pistol', reaper: 'greatsword', warden: 'spear, reach', geomancer: 'staff, stone', berserker: 'axes, rage', ranger: 'bow, quiver' };
   const n = PICK.length, cw = Math.floor((VW - 24) / n), rx = Math.floor((VW - cw * n) / 2), floorY = 74, pickSets = {}, wide = cw >= 70;
   g.fillStyle = 'rgba(201,178,124,0.22)'; g.fillRect(8, floorY, VW - 16, 1);
+  const nameTags = [];
   PICK.forEach((h, k) => { const x = rx + k * cw, mid = x + Math.round(cw / 2), sel = k === heroPick.i, H = HEROES.find(q => q.id === h);
     TCH.hit(x, 14, cw, floorY + 24 - 14, () => { if (heroPick.i === k) confirmPress = true; else { heroPick.i = k; heroPickAt = time; SFX.ui(); } initAudio(); });   /* a tap picks; a tap on the one picked takes him */
     const set = h === 'pyro' ? preview('pick:pyro', () => bakePyro(PYRO_SETS.bracken))
@@ -5930,17 +5946,23 @@ function drawHeroPick() { const PICK = NEW_PICK;
     pickSets[h] = set;
     const locked = !heroOpen(h);
     const lift = sel ? 4 : 0, fr0 = set.R.idle[Math.floor(time * 4 + k) % set.R.idle.length], fr = locked ? silhouetteOf(fr0) : fr0, fw = fr.width * 2, fh = fr.height * 2;   /* (locked: his real outline, baked black with a faint rim) */
-    if (sel) { g.fillStyle = 'rgba(168,224,110,0.08)'; g.fillRect(x + 4, floorY - 60, cw - 8, 62); g.fillStyle = UI.sel; g.fillRect(mid - 16, floorY, 32, 2); }
-    else { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(mid - 11, floorY, 22, 1); }
+    /* HIS BANNER (HERO_COLOR): cloth behind the portrait, a dark plate under the floor line for the name; a locked hero's hangs dimmed (the silhouette is as it was) */
+    { const C = heroCol(h), bx = x + 2, bw = cw - 4, bt = 15, bb = floorY + 22; g.globalAlpha = locked ? 0.28 : sel ? 1 : 0.55;
+      g.fillStyle = C.mid; g.fillRect(bx, bt, bw, floorY + 1 - bt); g.fillStyle = C.dark; g.fillRect(bx, floorY + 1, bw, bb - floorY - 1);
+      g.fillStyle = C.dark; g.fillRect(bx, bt, bw, 2); if (C.trim) { g.fillStyle = C.trim; g.fillRect(bx, bt + 2, bw, 1); g.fillRect(bx, floorY + 1, bw, 1); }
+      g.fillStyle = C.hi; g.globalAlpha *= 0.5; g.fillRect(bx, floorY, bw, 1); g.globalAlpha = 1;
+      if (sel) { g.strokeStyle = C.hi; g.lineWidth = 1; g.strokeRect(bx - 0.5, bt - 0.5, bw + 1, bb - bt + 1); g.fillStyle = C.hi; g.fillRect(mid - 16, floorY - 1, 32, 2); }
+      else { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(mid - 11, floorY, 22, 1); } }
     g.globalAlpha = sel ? 1 : locked ? 0.8 : 0.5;
     g.drawImage(fr, 0, 0, fr.width, fr.height, mid - Math.round(fw / 2), floorY - lift - fh + (locked ? 2 : 0), fw, fh);
     g.globalAlpha = 1;
     /* THE NAME STAYS ON THE SCREEN: with many cards a name is wider than its card (DEATH KNIGHT is ~70), so a narrow card stacks it and holds its centre in from the edge */
     { const nm = locked ? '???' : { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER', berserker: 'BERSERKER', ranger: 'RANGER' }[h] || H.name, nsz = wide ? 8 : 6, nw = textW(nm, nsz);
-      const lab = nw > cw - 4 ? nm.split(' ') : [nm], lc = sel ? UI.title : UI.dim, ny = floorY + 3 + (!wide && k % 2 ? 7 : 0);
-      lab.forEach((ln, li) => { const lw = textW(ln, nsz); text(ln, Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, mid)), ny + li * (nsz + 1), lc, 'center', nsz); });
+      const lab = nw > cw - 4 ? nm.split(' ') : [nm], lc = heroCol(h).ink, ny = floorY + 3 + (!wide && k % 2 ? 7 : 0);
+      lab.forEach((ln, li) => { const lw = textW(ln, nsz), cx = Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, mid)); nameTags.push({ ln, lw, cx, y: ny + li * (nsz + 1), lc, nsz, dark: heroCol(h).dark, a: locked ? 0.28 : sel ? 1 : 0.55, bw: cw - 4 }); });   /* (drawn after every banner: a name wider than its card runs over the next banner, and the next banner used to paint over it) */
       if (wide && !locked) text(fitText(ROLE[h] || '', cw - 6, 6), mid, floorY + 13, sel ? UI.text : UI.dim, 'center', 6); }
   });
+  for (const t of nameTags) { if (t.lw + 4 > t.bw) { g.globalAlpha = t.a; g.fillStyle = t.dark; g.fillRect(Math.round(t.cx - t.lw / 2 - 2), t.y - 1, t.lw + 4, t.nsz + 2); g.globalAlpha = 1; } text(t.ln, t.cx, t.y, t.lc, 'center', t.nsz); }   /* (a name wider than its banner gets a plate of its own colour under it) */
   text('CHOOSE YOUR HERO', VW / 2, 3, UI.title, 'center', 12);   /* (drawn AFTER the row: a tall silhouette - the Pyromancer's - reaches the heading, and the heading stays whole on top of it) */
   // and the words, for the one you are looking at, under the row: THE LOOP (HERO_LOOP, the one sentence that is how this hero is played), then the stats.
   // A row of the small hand every eight pixels (BODY_LH: seven of glyph and one of air), and the footer is at VH - 19.
@@ -5952,8 +5974,9 @@ function drawHeroPick() { const PICK = NEW_PICK;
   else { const h = PICK[heroPick.i], y0 = floorY + 24;
     /* THE SIGNATURE MOVE, LOOPING: a window on the right of the words plays the hero's own move on a training post (src/ability-preview.js, pure draw); the words keep the left */
     const SIG = { knight: ['risingCut', 'RISING CUT'], pyro: ['emberFlare', 'EMBER FLARE'], paladin: ['lightLance', 'LIGHT LANCE'], pirate: ['grapeshot', 'GRAPESHOT'], reaper: ['harvestMoon', 'HARVEST MOON'], warden: ['skewer', 'SKEWER'], geomancer: ['faultLine', 'FAULT LINE'], berserker: ['bzSpin', 'THE SPIN'], ranger: ['rgVolley', 'VOLLEY'] }[h], hs = pickSets[h];
-    const PVW = 86, PVX = VW - PVW - 6, PVY = 94, TX = Math.round((PVX - 4) / 2);
-    if (SIG && hs) { drawAbilityPreview(g, PVX, PVY, PVW, 50, { id: SIG[0], hero: h, t: time - heroPickAt, idle: hs.R.idle, atk: hs.R.atk || hs.R.idle, icon: null }); g.strokeStyle = 'rgba(201,178,124,0.5)'; g.lineWidth = 1; g.strokeRect(PVX + 0.5, PVY + 0.5, PVW - 1, 49); text(SIG[1], PVX + PVW / 2, PVY + 53, UI.dim, 'center', 6); }
+    const PVW = 86, PVX = VW - PVW - 6, PVY = 94, TX = Math.round((PVX - 4) / 2), HC = heroCol(h);
+    g.fillStyle = HC.hi; g.fillRect(4, y0 - 1, 2, 40); g.fillStyle = HC.mid; g.fillRect(6, y0 - 1, 1, 40);   /* the card's accent: his colour down the left of the words */
+    if (SIG && hs) { drawAbilityPreview(g, PVX, PVY, PVW, 50, { id: SIG[0], hero: h, t: time - heroPickAt, idle: hs.R.idle, atk: hs.R.atk || hs.R.idle, icon: null }); g.strokeStyle = HC.hi; g.lineWidth = 1; g.strokeRect(PVX + 0.5, PVY + 0.5, PVW - 1, 49); text(SIG[1], PVX + PVW / 2, PVY + 53, UI.dim, 'center', 6); }
     const loop = wrap(HERO_LOOP[h], PVX - 16, 6); loop.forEach((ln, i) => text(ln, TX, y0 + i * BODY_LH, UI.text, 'center', 6));
     /* HARDER rides on the end of the last line, not a line of its own: with a two-line loop the Pyromancer's fourth line landed on the footer */
     const body = LINES[h].filter(ln => ln !== 'HARDER'), hard = body.length < LINES[h].length;
@@ -31014,7 +31037,7 @@ function drawMother(cx, cy) {
 }
 function drawHeroCard() { // who you are right now: the numbers behind the bars
   g.fillStyle = 'rgba(10,14,12,0.75)'; g.fillRect(0, 0, VW, VH);
-  const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h, UI.border, 'parchment');
+  const x = 20, y = 6, w = VW - 40, h = VH - 12; panel(x, y, w, h, heroCol(hero()).hi, 'parchment');   /* (HERO_COLOR: the card's edge is his colour) */
   const H = HEROES.find(k => k.id === hero()) || HEROES[0]; text(H.name, VW / 2, y + 6, UI.title, 'center', TYPE.head);
   if (!touchOn) text('ESC back', x + 8, y + 6, UI.dim, 'left', 6);   /* up in the header: the loop under the name took the foot's tenth row */
   /* THE LOOP (HERO_LOOP) under the name, two lines of the small hand; the rows start under it */
@@ -32277,7 +32300,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
 document.getElementById('boot').remove();
-window.BK = { setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER.slice(), heroOpen: h => heroOpen(h), denyAt: () => heroDenyAt, heroArt: h => heroPreviewSet(h).R.idle[0],   /* (claude/heroroster) the dev flag's TEST HOOK, the device roster, whether a hero is pickable */ tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P), standing: () => TGM.standing(), throwIt: () => throwCarry(), note: pr => TGM.bellNote(pr), hurt: (e, d, x) => hurtEnemy(e, d, x, false) } : null),   /* THE TEMPLE GUARDIAN (src/temple-guardian.js) for the lab and tools/temple-guardian.mjs */ uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { heroColors: () => JSON.parse(JSON.stringify(HERO_COLOR)), setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER.slice(), heroOpen: h => heroOpen(h), denyAt: () => heroDenyAt, heroArt: h => heroPreviewSet(h).R.idle[0],   /* (claude/heroroster) the dev flag's TEST HOOK, the device roster, whether a hero is pickable */ tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P), standing: () => TGM.standing(), throwIt: () => throwCarry(), note: pr => TGM.bellNote(pr), hurt: (e, d, x) => hurtEnemy(e, d, x, false) } : null),   /* THE TEMPLE GUARDIAN (src/temple-guardian.js) for the lab and tools/temple-guardian.mjs */ uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */

@@ -168,7 +168,7 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   /* THE HERO PICK (2026-09-24), drawn BEFORE the menu (whose pause map stays up and lays its window over later screens): seven cards across a 320-pixel screen, a name under each - DEATH KNIGHT ran off the right edge, unseen here */
-  if (want('pick')) { const n = 8;   /* (claude/heroroster, Daniel 10-12: a new game's pick shows ALL eight heroes - the open ones by name, the locked ones as ??? with their how-to line; every card is measured, the locked ones included) */
+  if (want('pick')) { const n = 9;   /* (claude/heroroster, Daniel 10-12: a new game's pick shows ALL eight heroes - the open ones by name, the locked ones as ??? with their how-to line; every card is measured, the locked ones included) */
     /* drawn once unrecorded first: each card's hero is baked (preview) the first time it is drawn, and a bake's own rectangles on its
        own canvas are not plates the words are on */
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }

@@ -59,6 +59,10 @@ try {
     const rows = tap.filter(b => b.y <= 20 && b.h >= 50 && b.w < 200 && b.w > 60);
     assert.ok(rows.length >= 3, 'a portrait is a tap box (' + rows.length + ' found of ' + tap.length + ')');
   }
+  /* HERO_COLOR (claude/herocolors): one colour per hero; the name's ink holds 4.5:1 on the banner's plate (and the frame colour does too) */
+  const hc = await pg.evalp('BK.heroColors()'), lum = c => { const v = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16) / 255).map(u => u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; }, cr = (p, q) => (Math.max(lum(p), lum(q)) + 0.05) / (Math.min(lum(p), lum(q)) + 0.05);
+  for (const id of ['knight', 'warden', 'geomancer', 'ranger', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper', 'sunpriest']) { const c = hc[id]; assert.ok(c, 'HERO_COLOR has ' + id); assert.ok(cr(c.ink, c.dark) >= 4.5, id + ': name ink on its plate ' + cr(c.ink, c.dark).toFixed(2)); assert.ok(cr(c.hi, c.dark) >= 3, id + ': frame colour reads against the plate ' + cr(c.hi, c.dark).toFixed(2)); }
+  assert.equal(new Set(Object.values(hc).map(c => c.mid)).size, Object.keys(hc).length, 'no two heroes share a cloth');
   console.log('ok  hero pick      ' + h.out.length + ' portraits move, every hero named on one line under a clear heading, RIGHT picks, portraits are tap boxes');
 
   /* ---- 2b. ALL EIGHT HEROES (batch82 integ; claude/heroroster): the pick always lays eight cards; with every hero open (the dev flag + UNLOCK EVERYTHING, the way a tool opens them) it must still sit whole,
