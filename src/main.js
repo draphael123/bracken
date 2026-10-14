@@ -7578,11 +7578,11 @@ function greedHit(e, fromX, blow) {
   if (e.angleHit !== time && !(P.atk >= 0 && CM.swingTotal(hero(), P) > GB.GREED.tell) && GB.noteGreed(e, time, isB, isM)) SFX.tell(true);   /* (a blow round his guard is the right blow: no greed, claude/sweep1) */
 }
 function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
+  if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing (kept first: tools/tower-chase.mjs reads the head of this function) */
   if (e.t === 'drillgear') { if (GDH) GDH.takeGear(e, dmg, fromX); return; }   /* (claude/deeprails4) THE GREAT DRILL's GEAR BANKS: src/great-drill-hands.js takes the blow (whole; broken, that attack is gone for the phase) */
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
      moment he stands still with both hands full was the one moment nothing could be done to him: now the floor he is
      pulling down is the risk you take to break the spell (see undead-mage.js). */
-  if(e.t==='magechase')return;   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing */
   /* (claude/keyscore, B14 + THE PYRO BUG) pl: a PLUNGE BY ITS TAG - the pyromancer's FIREDROP is hurtAs('plunge', ..., false): the boolean is the hero's own body, the tag is the blow. Every boss hook below gets the tag (tools/blow-tags.mjs) */
   if (e.elite && EK) { const kd = EK.take(e, dmg, fromX, plunge, blow); if (kd === false) return; dmg = kd; }   /* (ELITES2) an elite's GUARD BY ANGLE (a light cut off his front turned, a heavy through at half) and the riposte into his opening: src/elite-kit.js */
   if (e.t === 'grindylow') { const k = CNF.grindylowTake(e); if (!k) { SFX.splash && SFX.splash(); return; } dmg *= k; }
@@ -9833,7 +9833,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
          a BIG drop (BIG_DROP, five tiles and more) is a DUST RING + a deeper thump + a stronger shake + a longer crouch-recover. Nothing here locks the controls (landT clears on the next press, above). */
       dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 3); SFX.pLand(surface()); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
       squash(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
-      if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); hitstop(tier === 2 ? 0.05 : 0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
+      if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); hitstop(0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
       if (tier === 2 && !SET.reduceMotion) { dustRing(P.x, P.y, 14); SFX.thud(); }
       scatterPebbles(P.x, P.y, tier); dipUnderfoot(tier); }
     pogoChain = 0;
@@ -32340,6 +32340,7 @@ window.BK = { setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER
       time = 0; levelTime = 0; stop = 0; parts = []; leaves = []; nums = []; ghosts = []; trail = []; fireflies = []; birds = []; drops = []; pollen = []; lightT = 8; lightFlash = 0; thunderT = 0; shake = 0; kick = 0; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
       for (const k of Object.keys(keys)) keys[k] = false;
       lastTellT = -9;   /* (claude/harness) the one-windup clock with the fight's own clock, for every fresh reset (BK.clearTellClock below is the same) */
+      creakT = 0; pebT = 0; camLead = 0; camFallT = 0; WRD.clear();   /* (batch92 integ, feelplatform) the world-react clocks: creakT gates a Math.random draw (the seeded stream), camLead moves the camera and so who is on screen - a fight must not inherit them (tools/lab-order.mjs) */
       /* (claude/harness) AND EVERYTHING ELSE A FIGHT LEFT BEHIND THAT THE NEXT ONE READS: the fish clock and the move-word cooldowns (both kept in
          absolute time, and both draw on Math.random, the stream a lab seeds per row), the last verbs, the attack-token board, and the once-a-level
          lessons. Measured by tools/lab-order.mjs: before this a seeded lab row came out differently as the second fight in a page. */
