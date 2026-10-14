@@ -35,6 +35,8 @@ function makeCartPilot(BK, plan) {
   /* THE FOREMAN's LOOP (src/foreman.js): what a player reads - his mode (the brake sparks, the !, the red shoes), the gap between his cart and mine */
   function foreman(p) { const F = MCH.foreman(), S = F.S, G = S.G, FM = { driftV: 72, ramV: 250, ramT: 0.5, halfW: 15 }, fx = G.x0 + S.R, dx = fx - p.x, low = Math.abs(p.y - G.lowY) < 6, hold = gx => { if (gx < p.x - 6) k.left = true; else if (gx > p.x + 6) k.right = true; };
     if (!p.ground) { if (jumpHold > 0) { jumpHold--; k.jump = true; } if (dropT > 0) { dropT--; k.down = true; } why = 'foreman: in the air'; return; }
+    if (S.mode === 'boom' || (S.mode === 'boomTell' && S.mT < 0.28)) { k.down = true; why = 'foreman: duck the boom'; return; }   /* (claude/deeprails5) HIS BOOM: duck in the tub */
+    { const lp = (S.lumps || []).find(q => q.x - p.x > 6 && q.x - p.x < 30); if (lp && low && jumpHold <= 0) { BK.press('jump'); jumpHold = 20; why = 'foreman: jump his ore'; k.jump = true; return; } }   /* HIS TIPPED ORE: jump it */
     if (!low) { if (S.ward <= 0 && Math.abs(dx) < 10 && S.mode !== 'ram' && S.mode !== 'ramTell') { k.down = true; BK.press('jump'); dropT = 6; why = 'foreman: drop on him'; } else hold(fx); return; }
     for (const o of (MCH.state().lobs || [])) { if (o.t <= 0 || Math.abs(o.tx - p.x) > 34) continue; k.left = true; why = 'foreman: off the mark'; return; }
     if (S.mode === 'ramTell' || S.mode === 'ram') { const reach = FM.ramV * FM.ramT + FM.halfW + 34; if (dx < 60 && jumpHold <= 0) { BK.press('jump'); jumpHold = 26; why = 'foreman: up from the ram'; } else if (dx < reach) { k.left = true; why = 'foreman: brake from the ram'; } if (jumpHold > 0) { jumpHold--; k.jump = true; } return; }

@@ -30,15 +30,22 @@ export const FOREMAN = {
   bumpDmg: 18, ramDmg: 38, contactCd: 0.9, bumpBack: 56, ramBack: 84,
   topDy: 15, halfW: 15,                 /* his cart's top (px over the rail) and half its width: the landing that is a STOMP */
   gap: [0.9, 0.7, 0.55],
-  chain: { 0: ['pick', 'drift', 'pick', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'ram', 'drift'], 2: ['ram', 'pick', 'drift', 'pick', 'ram', 'drift'] },
+  /* (deeprails5, Daniel 10-14: +2 told attacks, each a different answer) THE BOOM (DUCK): '!! THE BOOM: DUCK' - his cart's loading boom rises behind him, its hook circling (boomTell), then
+     swings back down the whole loop at head height (boomT): duck in your tub. THE TIP (JUMP, from his second stomp): '!! HE TIPS ORE: JUMP' - he heaves his tub's ore out over the back
+     (tipTell), lumps that roll back down the line at you (tipV past the world): jump each as it comes (in the air over it you are clear) */
+  boomTell: 0.75, boomT: 0.32, boomDmg: 22, boomHead: 16,
+  tipTell: 0.7, tipV: 150, tipN: 2, tipApart: 0.45, tipDmg: 18, tipR: 7, tipBack: 40,
+  chain: { 0: ['pick', 'drift', 'boom', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'boom', 'ram', 'drift'], 2: ['ram', 'tip', 'drift', 'boom', 'pick', 'tip', 'drift'] },
 };
-export const FOREMAN_LINES = { slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP', spikesUp: '!! SPIKES UP: DO NOT LAND', spikesWait: 'SPIKES UP: WAIT', spikesDown: 'SPIKES DOWN: JUMP ON HIM', spiked: 'SPIKED! THROWN BACK',
+export const FOREMAN_LINES = { boom: '!! THE BOOM: DUCK', boomAgain: '!! THE BOOM', tip: '!! HE TIPS ORE: JUMP', tipAgain: '!! ORE', slows: 'HE SLOWS: JUMP ON HIM', slowsAgain: 'HE SLOWS', ram: '!! HE BRAKES HARD: RAM', stomp: 'STOMPED! STRIKE HIM', lurch: '!! HE LURCHES', braced: 'BRACED: HIS SPIKES ARE UP', spikesUp: '!! SPIKES UP: DO NOT LAND', spikesWait: 'SPIKES UP: WAIT', spikesDown: 'SPIKES DOWN: JUMP ON HIM', spiked: 'SPIKED! THROWN BACK',
   armour: 'ARMOURED: JUMP ON HIM', thrown: 'THROWN OFF: BACK IN YOUR CART', start: 'THE FOREMAN: JUMP ON HIS CART' };
 
 export function geom(TS = 16) { const F = FOREMAN; return { x0: F.cols[0] * TS, x1: F.cols[1] * TS, lowY: F.low * TS, highY: F.high * TS, topY: F.low * TS - F.topDy, TS }; }
 function raise(S, c) { S.ward = FOREMAN.wardT; S.n.raised++; c.number(foremanX(S), S.G.topY - 40, FOREMAN_LINES.spikesUp, '#ff6b6b'); c.sound('spikesUp'); }   /* HIS BRACE: told as it comes up (a sound, the word, the spikes rising through the lid) */
-export function newFight(G) { return { G, R: FOREMAN.homeR, mode: 'wait', mT: 0, cd: 1.2, i: 0, stomps: 0, ward: 0, contactCd: 0, board: null, t: 0, told: {},
-  n: { spiked: 0, raised: 0, drift: 0, pick: 0, ram: 0, stomps: 0, braced: 0, bumps: 0, rams: 0, armoured: 0, open: 0, lurch: 0, thrown: 0, jumpedOff: 0 } }; }
+export function newFight(G) { return { G, R: FOREMAN.homeR, mode: 'wait', mT: 0, cd: 1.2, i: 0, stomps: 0, ward: 0, contactCd: 0, board: null, t: 0, told: {}, lumps: [], tipQ: [],
+  n: { spiked: 0, raised: 0, drift: 0, pick: 0, ram: 0, stomps: 0, braced: 0, bumps: 0, rams: 0, armoured: 0, open: 0, lurch: 0, thrown: 0, jumpedOff: 0, boom: 0, boomHits: 0, tip: 0, tipHits: 0 } }; }
+/* (deeprails5) THE BOOM's sweep: the whole loop behind his cart, at head height over the line (a ducked tub is under it) */
+export const boomY = G => G.lowY - FOREMAN.boomHead;
 export const foremanX = S => S.G.x0 + S.R;
 export const foremanOpen = S => !!S && (S.mode === 'boarded' || S.mode === 'lurchTell') && !!S.board;
 /* a hero's line on the loop: 0 LOW, 1 HIGH, -1 in the air */
@@ -64,6 +71,11 @@ export function stepForeman(S, e, dt, heroes, c) {
     if (ram) S.n.rams++; else S.n.bumps++;
     c.hit(h, ram ? F.ramDmg : F.bumpDmg, ram ? "THE FOREMAN'S RAM" : "THE FOREMAN'S CART"); c.bounce(h, ram ? F.ramBack : F.bumpBack); break; }
   S.mT -= dt;
+  /* (deeprails5) HIS TIPPED ORE: lumps rolling back down the loop past the world - a cart on the line meets one (a hit and a bump), a cart in the air over it is clear */
+  for (const q of S.tipQ) q.t -= dt; while (S.tipQ.length && S.tipQ[0].t <= 0) { S.tipQ.shift(); S.lumps.push({ x: fx - F.halfW - 4, id: ++S.n.tip * 1 }); c.sound('lurch'); }
+  for (const L0 of S.lumps) { L0.x -= F.tipV * dt; if (L0.x < G.x0 - 10) { L0.dead = true; continue; }
+    for (const h of live) { if (!h.ground || laneOf(G, h.y) !== 0 || Math.abs(h.x - L0.x) > F.tipR + 6 || h.pp && h.pp.mcBoard) continue; L0.dead = true; S.n.tipHits++; c.hit(h, F.tipDmg, "THE FOREMAN'S ORE"); c.bounce(h, F.tipBack); break; } }
+  S.lumps = S.lumps.filter(q => !q.dead);
   if (S.pickQ && S.pickQ.length) { for (const q of S.pickQ) q.t -= dt; while (S.pickQ.length && S.pickQ[0].t <= 0) { const q = S.pickQ.shift(); if (near) { c.lob(near, q.off); S.n.pick++; } } }   /* (a volley: the extra picks a beat apart, each at where you are by then) */
   const hr = near ? near.x - G.x0 : F.homeR - 160;
   switch (S.mode) {
@@ -71,6 +83,8 @@ export function stepForeman(S, e, dt, heroes, c) {
       const ch = F.chain[Math.min(2, S.stomps)], name = ch[S.i % ch.length]; S.i++;
       if (name === 'drift') { S.mode = 'driftTell'; S.mT = F.driftTell; S.n.drift++; S.dv = F.driftVs[Math.min(2, S.stomps)]; c.sound('brake'); if (S.ward > 0) c.number(fx, G.topY - 30, FOREMAN_LINES.spikesWait, '#ff6b6b'); else c.number(fx, G.topY - 30, S.told.drift ? FOREMAN_LINES.slowsAgain : FOREMAN_LINES.slows, '#ffd36b'); S.told.drift = 1; }
       else if (name === 'pick') { S.mode = 'pickTell'; S.mT = F.pickTell; S.n.pick++; c.sound('tell'); }
+      else if (name === 'boom') { S.mode = 'boomTell'; S.mT = F.boomTell; S.n.boom++; c.sound('tellHard'); c.number(fx, G.topY - 30, S.told.boom ? FOREMAN_LINES.boomAgain : FOREMAN_LINES.boom, '#ff6b6b'); S.told.boom = 1; }
+      else if (name === 'tip') { S.mode = 'tipTell'; S.mT = F.tipTell; c.sound('tell'); c.number(fx, G.topY - 30, S.told.tip ? FOREMAN_LINES.tipAgain : FOREMAN_LINES.tip, '#ffd36b'); S.told.tip = 1; }
       else { S.mode = 'ramTell'; S.mT = F.ramTell; S.n.ram++; c.sound('tellHard'); c.number(fx, G.topY - 30, FOREMAN_LINES.ram, '#ff6b6b'); }
       break; }
     case 'driftTell': if (S.mT <= 0) S.mode = 'drift'; break;
@@ -78,6 +92,11 @@ export function stepForeman(S, e, dt, heroes, c) {
     case 'away': S.R += F.awayV * dt; if (S.R >= F.homeR) { S.R = F.homeR; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break;
     case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); S.pickQ = Array.from({ length: F.picks[Math.min(2, S.stomps)] }, (_, i) => ({ t: F.pick2 * (i + 1), off: -F.cutoff * (i + 1) }));   /* (stomped once, he throws a second pick a beat after the first: off one mark, onto the next is a hit) */ S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
     case 'ramTell': if (S.mT <= 0) { S.mode = 'ram'; S.mT = F.ramT; c.sound('ram'); } break;
+    case 'boomTell': if (S.mT <= 0) { S.mode = 'boom'; S.mT = F.boomT; c.sound('lurch'); } break;
+    case 'boom': { const y = boomY(G); for (const h of live) { if (h.x > fx - F.halfW || (h.pp && h.pp.mcBoard) || (h.duckAt && h.duckAt(y)) || S.boomHit === S.n.boom + ':' + (h.pp && h.pp.id)) continue;
+        if (h.y > y - 2 && h.y - 26 < y) { S.boomHit = S.n.boom + ':' + (h.pp && h.pp.id); S.n.boomHits++; c.hit(h, F.boomDmg, "THE FOREMAN'S BOOM"); } }
+      if (S.mT <= 0) { S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break; }
+    case 'tipTell': if (S.mT <= 0) { S.tipQ = Array.from({ length: F.tipN }, (_, i) => ({ t: i * F.tipApart + 0.001 })); S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + F.tipApart * F.tipN; } break;
     case 'ram': S.R = Math.max(F.minR, S.R - F.ramV * dt); if (S.mT <= 0 || S.R <= F.minR) { S.mode = 'ramHold'; S.mT = F.ramHold; } break;
     case 'ramHold': if (S.mT <= 0) S.mode = 'away'; break;
     case 'boarded': if (!S.board) { S.mode = 'away'; raise(S, c); break; } if (S.mT <= 0) { S.mode = 'lurchTell'; S.mT = F.lurchTell; c.sound('tellHard'); c.number(fx, G.topY - 40, FOREMAN_LINES.lurch, '#ff6b6b'); } break;
@@ -110,6 +129,9 @@ export function foremanPlan({ P, S, rng = Math.random, mem = {}, t, eyes = false
   /* HIS DRIFT: hold the line under where he comes, and jump as he is a jump away (a stomp) */
   if ((S.mode === 'drift' || S.mode === 'driftTell') && (S.ward <= 0 || (mem['sp' + S.n.drift] ??= rng() < FOREMAN_PLAN.spikeMiss)) && late('drift' + S.n.drift)) { out.gx = null;   /* (hold where you are and let him come: no backing off, no steering in the air) */ const lead = (S.dv || F.driftV) * 0.55 + (mem.lead ?? (mem.lead = rng() * 10 - 5));
     if (S.mode === 'drift' && P.ground && P.lane === 0 && dx > lead - 10 && dx < lead + 6 && !(mem['mj' + S.n.drift] ??= rng() < FOREMAN_PLAN.miss)) { out.jump = true; out.why = 'drift: jump on him'; } else out.why = 'drift: wait'; return out; }
+  /* (deeprails5) HIS BOOM: duck in the tub as it swings (the windup's last beat, and the swing); HIS TIPPED ORE: jump each lump as it comes */
+  if ((S.mode === 'boom' || (S.mode === 'boomTell' && S.mT < 0.28)) && late('boom' + S.n.boom)) { out.gx = null; out.duck = true; out.why = 'boom: duck'; return out; }
+  { const lp = (S.lumps || []).find(q => q.x > P.x - 4 && q.x - P.x < 60); if (lp && late('tip' + lp.id)) { out.gx = null; if (P.ground && lp.x - P.x < 30 && lp.x - P.x > 6) out.jump = true; out.why = 'ore: jump it'; return out; } }
   /* HIS PICK: off its mark (the hands' lob list is read by the lab) */
   if (mem.mark && Math.abs(mem.mark.x - P.x) < 34 && mem.mark.t > 0) { out.gx = mem.mark.x - 60; out.why = 'pick: brake off the mark'; return out; }
   /* otherwise: hold well back while he is braced, else a little behind his reach */

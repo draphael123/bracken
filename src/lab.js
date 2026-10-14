@@ -1331,6 +1331,7 @@ async function runbossLab(BK, opts) {
         else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
         if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}
         if(pl.gx!=null&&Math.abs(pl.gx-P.x)>6)k[pl.gx>P.x?'right':'left']=true;
+        if(pl.duck&&P.ground){k.down=true;k.left=k.right=false;}   /* (claude/deeprails5: duck in the tub under HIS BOOM) */
         if(pl.atk&&P.atk<0){P.face=1;BK.press('atk');swings++;}
         const fo=!!(S&&foremanOpen(S));if(fo&&!wasOpen)opened++;wasOpen=fo;
         const was=P.hp,m0=S?S.mode:boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:fo,why:pl.why});if(f%600===599)await yieldNow();continue;

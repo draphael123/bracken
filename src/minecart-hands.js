@@ -260,7 +260,8 @@ export function makeMinecartHands(ctx) {
     F.scroll += MC.cruise * dt; F.wordT = Math.max(0, F.wordT - dt);
     /* a hero on his cart: jumped off (his own jump), or pinned where he stands on it */
     for (const pp of ctx.players) if (pp.mcBoard) { if (pp.dead || pp.vy < -60) { if (S.board && S.board.pp === pp) S.board = null; fmUnpin(pp, pp.dead ? 'down' : 'jump'); } }
-    const heroes = ctx.players.map(pp => ({ x: pp.x, y: pp.y, prevY: pp.mcPrevY === undefined ? pp.y : pp.mcPrevY, vy: pp.vy, ground: !!pp.ground, alive: !pp.dead && !(pp.hp <= 0), riding: H.riding(pp), v: cartOf(pp).v, pp }));
+    const heroes = ctx.players.map(pp => ({ x: pp.x, y: pp.y, prevY: pp.mcPrevY === undefined ? pp.y : pp.mcPrevY, vy: pp.vy, ground: !!pp.ground, alive: !pp.dead && !(pp.hp <= 0), riding: H.riding(pp), v: cartOf(pp).v, pp,
+      duckAt: y => ctx.asPlayer(pp, () => !!(ctx.duckClears && ctx.duckClears(ctx.hero(), y))) }));   /* (deeprails5) a ducked tub is under HIS BOOM */
     if (!heroes.some(h => h.alive && h.x > G.x0 - 8 && h.x < G.x1 + 8)) { fmAfter(F); return; }   /* (nobody on his loop - a hero lifted past it by a tool: he waits) */
     const c = fmC(F);
     FMG.stepForeman(S, e, dt, heroes, c);
@@ -281,7 +282,7 @@ export function makeMinecartHands(ctx) {
   function fmAfter(F) { const { e, cart, S } = F;
     if (S.board && S.board.pp && !S.board.pp.mcBoard) S.board = null;
     cart.x = FMG.foremanX(S); cart.v = MC.cruise + (S.mode === 'drift' ? -(S.dv || FMG.FOREMAN.driftV) : S.mode === 'ram' ? -FMG.FOREMAN.ramV : S.mode === 'away' ? FMG.FOREMAN.awayV : 0);
-    e.x = cart.x; e.y = cart.y - 6; e.vx = 0; e.vy = 0; e.face = -1; e.mcTelling = S.mode === 'pickTell' || S.mode === 'ramTell' || S.mode === 'driftTell' || S.mode === 'lurchTell';
+    e.x = cart.x; e.y = cart.y - 6; e.vx = 0; e.vy = 0; e.face = -1; e.mcTelling = S.mode === 'pickTell' || S.mode === 'ramTell' || S.mode === 'driftTell' || S.mode === 'lurchTell' || S.mode === 'boomTell' || S.mode === 'tipTell';
     for (const pp of ctx.players) if (pp.mcBoard) pinOn(pp);
     for (const pp of ctx.players) pp.mcPrevY = pp.y;
   }
@@ -431,6 +432,10 @@ export function makeMinecartHands(ctx) {
     if (!S || !c.e.alive) return; const blink = Math.floor(time * 12) % 2;
     if (mode === 'driftTell' || mode === 'drift') { for (const wx of [x - 10, x + 10]) { g.fillStyle = blink ? '#ffd36b' : '#ff9a3c'; g.fillRect(wx - 1, y - 2, 2, 2); } if (mode === 'driftTell') txt('!', x, y - 50, blink ? '#ffd36b' : '#ffffff', 'center', 7); }
     if (mode === 'pickTell') txt('!', x, y - 50, blink ? '#ff6b6b' : '#ffd36b', 'center', 7);
+    /* (deeprails5) THE BOOM rising behind him (its hook circling, the head-height band down the loop red), then swung back at head height; HIS TIPPED ORE rolling at you */
+    if (mode === 'boomTell' || mode === 'boom') { const G = S.G, reach = R(c.x - G.x0), hy = R(FMG.boomY(G) - cy); MCA.fmBoom(g, x - 8, y - 26, mode === 'boomTell' ? 1 - Math.max(0, S.mT) / FMG.FOREMAN.boomTell : 1, mode === 'boom' ? 1 - Math.max(0, S.mT) / FMG.FOREMAN.boomT : 0, reach, hy, time); if (mode === 'boomTell') txt('!! DUCK', x - 40, hy - 12, blink ? '#ff6b6b' : '#ffffff', 'center', 7); }
+    if (mode === 'tipTell') { txt('!', x, y - 50, blink ? '#ffd36b' : '#ffffff', 'center', 7); for (let i = 0; i < 3; i++) MCA.oreLump(g, x - 12 + i * 5, y - 18 - R(4 * (1 - Math.max(0, S.mT) / FMG.FOREMAN.tipTell)), time); }
+    for (const L0 of S.lumps || []) { MCA.oreLump(g, R(L0.x - cx), R(S.G.lowY - cy), time); txt('JUMP', R(L0.x - cx), R(S.G.lowY - 24 - cy), '#ffd36b', 'center', 5); }
     if (mode === 'ramTell' || mode === 'ram') { g.fillStyle = blink ? '#ff3b3b' : '#ff9a3c'; for (const wx of [x - 10, x, x + 10]) g.fillRect(wx - 3, y - 3, 6, 3); if (mode === 'ramTell') { const k = 1 - Math.max(0, S.mT) / FMG.FOREMAN.ramTell, sw = R(FMG.FOREMAN.ramV * FMG.FOREMAN.ramT); g.fillStyle = 'rgba(255,90,70,' + (0.1 + 0.18 * k).toFixed(2) + ')'; g.fillRect(x - sw - 16, y - 22, sw, 22); txt('!!', x, y - 50, blink ? '#ff6b6b' : '#ffffff', 'center', 7); } }
     if (FMG.foremanOpen(S)) { const k = Math.max(0, S.mT) / (mode === 'boarded' ? FMG.FOREMAN.boardT : FMG.FOREMAN.lurchTell), on = 0.6 + 0.4 * Math.sin(time * 10); g.globalAlpha = on; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 24, 22, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       if (mode === 'boarded') { g.fillStyle = '#1b1626'; g.fillRect(x - 18, y - 56, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, y - 56, R(36 * k), 3); txt('OPEN', x, y - 64, '#ffd36b', 'center', 5); }
@@ -545,7 +550,8 @@ export function makeMinecartHands(ctx) {
     MCA.tubFront(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob'); } };
   /* (dr3art) THE FOREMAN'S POSE (src/redraw/deeprails3_art.js FOREMAN_F): main.js asks for his frame every draw - the tell poses are the readable part of his fight */
   H.foremanFrame = e => { const S = M && M.fm && M.fm.e === e ? M.fm.S : null, F = MCA.FOREMAN_F; if (!S) return F.idle; if (S.ward > 0 || S.mode === 'boarded') return F.duck; const m = S.mode;
-    if (e.flash > 0.06 && m !== 'ramTell' && m !== 'pickTell' && m !== 'driftTell') return F.hurt; if (m === 'driftTell' || m === 'drift') return F.drift; if (m === 'pickTell') return F.pick; if (m === 'ramTell' || m === 'ram' || m === 'ramHold') return F.ram; if (m === 'lurchTell') return F.lurch; return F.idle; };
+    if (e.flash > 0.06 && m !== 'ramTell' && m !== 'pickTell' && m !== 'driftTell') return F.hurt; if (m === 'driftTell' || m === 'drift') return F.drift; if (m === 'pickTell') return F.pick; if (m === 'ramTell' || m === 'ram' || m === 'ramHold') return F.ram; if (m === 'lurchTell') return F.lurch;
+    if (m === 'boomTell') return F.lurch; if (m === 'boom') return F.ram; if (m === 'tipTell') return F.drift;   /* (deeprails5, GREYBOX: the boom and the tip borrow the lean / the shove / the brace - their own frames are the art lane's, B16) */ return F.idle; };
   H.drawCartBack = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, 0, time, 'back'); g.restore(); };
   H.drawCart = (g, P, cx, cy, time) => { if (!H.riding(P)) return; const c = cartOf(P); g.save(); g.translate(R(P.x - cx), R(P.y - cy + 1)); g.rotate(tilt(P)); MCA.heroCart(g, 0, 0, P.face || 1, c.v, !!c.braking, P.ducking ? 1 : 0, time, 'front'); g.restore();
     MCA.prowLamp(g, R(P.x - cx), R(P.y - cy + 1), P.face || 1, time); };
