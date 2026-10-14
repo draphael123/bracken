@@ -445,7 +445,7 @@ export function buildBuriedCity({ painter, T, TS }) {
      shrine after. Shade only under the dome's broken shell */
   ground(809, 810, 10); ground(811, 820, TH);
   plat('lintel', 812, 814, 15); plat('balcony', 817, 819, 19); plat('lintel', 812, 814, 23); plat('balcony', 817, 819, 27);
-  decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(809, 814, 11, TH - 1); shadeBox(818, 821, 11, TH - 1);   /* (claude/buriedcity4, brief 3: the dome's broken shell shades both sides of the courtyard - its hole lets the sun in over the middle, where the elite stands) */
+  decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(809, 814, 11, TH - 1); shadeBox(817, 821, 11, TH - 1);   /* (claude/buriedcity4, brief 3: the dome's broken shell shades both sides of the courtyard - its hole lets the sun in over the middle, where the elite stands) */
   construct(815, TH - 1, 'courtyard', { elite: true }); slinger(818, 26, 'courtyardSling', { face: -1 });
   glass('court', 814, TH - 1, 8); sandBound(819, TH - 1, 'court', 'courtyardBound');
   sign(811, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: TURN THE GLASS.');
@@ -462,7 +462,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   /* THE ANTECHAMBER (822-844, claude/buriedcity4 - NEW): under the throne room's sand roof, a hall of sand with no floor: its glass raises three slabs of sand, each
      crumbling on its own timer (drawn over it), the last one latest - cross before they go. Under them THE SAND SEA (a bite, and back to the glass's floor). The shrine
      after it is the last before the king */
-  block(821, 821, 10, 26); roof(822, 843, 21);                                     /* (the courtyard's east wall over the door; the hall's roof) */
+  block(821, 821, 10, 26); roof(822, 843, 21); ground(821, 821, TH); ground(844, 844, TH);   /* (claude/buriedcity4: the courtyard's and the throne room's doors had a one-column hole in the floor down out of the world since BC3 - floored) */                                     /* (the courtyard's east wall over the door; the hall's roof) */
   ground(822, 825, TH); sea(826, 838, TH); ground(839, 843, TH); interiors.push([822, 843, 22, TH - 1, 'bcAnte']);
   sign(822, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
   glass('ante', 824, TH - 1, 7);

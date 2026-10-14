@@ -24,9 +24,9 @@ try {
       const tick = n => { for (let i = 0; i < (n || 1); i++) {
         if (BK.state === 'card') { BK.cardClose(); cards++; }
         if (!${foes} && frames % 20 === 0) for (const e of BK.enemies()) if (!e.boss && e.alive) e.alive = false;   /* (the quarter's risen too) */
-        const hp0 = P().hp, d0 = BK.stats().deaths; BK.log = []; BK.sim(1); frames++;
+        const hp0 = P().hp, d0 = BK.stats().deaths, sw0 = BK.flip() ? BK.flip().n.swallowed : 0; BK.log = []; BK.sim(1); frames++;
         const lost = hp0 - P().hp, died = BK.stats().deaths > d0;
-        if (lost > 0 || died) { const hits = (BK.log || []).filter(q => q.k === 'dmgP'); const who = hits.length ? (hits[0].who || hits[0].name || (hits[0].by && (hits[0].by.cnSkin || hits[0].by.t)) || 'hazard') : 'other';
+        if (lost > 0 || died) { const hits = (BK.log || []).filter(q => q.k === 'dmgP'); const who = hits.length ? (hits[0].who || hits[0].name || (hits[0].by && (hits[0].by.cnSkin || hits[0].by.t)) || 'hazard') : (P().sunStage > 0 ? 'sun' : (BK.flip() && BK.flip().n.swallowed > sw0) ? 'sand sea' : 'other');
           legDmg[who] = (legDmg[who] || 0) + Math.max(0, died ? hp0 : lost); }
         lowest = Math.min(lowest, P().hp / maxHp);
         if (died || P().dead) { for (let j = 0; j < 600 && (P().dead || BK.state !== 'play'); j++) { BK.sim(1); frames++; if (BK.state === 'dead' || BK.state === 'gameover') BK.state = 'play'; } throw new Died('died'); } } };
@@ -105,7 +105,7 @@ try {
         ['THE CHAIN: turn the first glass, over its roofs to the stub, turn the second, over to the far bank', [749, 6], () => { if (!turn(750, 'chain1')) return false; walk(752, { tol: 2 }); if (!jumpTo(755, 8) || !jumpTo(760, 10) || !jumpTo(765, 11) || !jumpTo(769, 11)) return false;
             if (!turn(769, 'chain2')) return false; if (!jumpTo(774, 11) || !jumpTo(779, 11) || !jumpTo(784, 12)) return false; walk(788); return col() >= 786 && feet() === 12; }, [788, 12]],
         ['THE EXAM: the last glass sinks the standing roof and raises the rest; down into the courtyard, its elite', [788, 12], () => { if (!turn(791, 'exam')) return false; walk(794, { tol: 2 }); if (!jumpTo(796, 13) || !jumpTo(802, 12) || !jumpTo(806, 11) || !jumpTo(809, 10)) return false;
-            walk(816); waitFor(() => !BK.enemies().some(e => e.alive && e.elite && Math.abs(e.x / TS - 815) < 8), 3000); walk(820); settle(); DBG.push('courtyard ' + col() + ',' + feet()); return col() >= 819 && feet() === 32; }, [820, 32]],
+            DBG.push('rim ' + col() + ',' + feet() + ' t' + frames); walk(810, { tol: 2, noFight: true }); clear(); k.right = true; tick(7); clear(); settle(); walk(816); DBG.push('down ' + col() + ',' + feet() + ' t' + frames + ' hp' + Math.round(P().hp)); waitFor(() => !BK.enemies().some(e => e.alive && e.elite && Math.abs(e.x / TS - 815) < 8), 3000); DBG.push('elite done ' + col() + ',' + feet() + ' t' + frames + ' hp' + Math.round(P().hp)); walk(820); settle(); DBG.push('courtyard ' + col() + ',' + feet()); return col() >= 819 && feet() === 32; }, [820, 32]],
         /* (claude/buriedcity4) THE EXAM BEFORE THE THRONE: the courtyard's glass buries the sand-bound; the antechamber's glass raises the timed slabs - across before they crumble, the shrine */
         ['THE COURTYARD SAND-BOUND and THE ANTECHAMBER: turn the glass, cross the timed slabs before they crumble, the last shrine', [820, 32], () => { if (BK.enemies().some(e => e.alive && e.cnSkin === 'sandbound' && Math.abs(e.x / TS - 819) < 6)) { if (!turn(814, 'court')) return false; walk(819); }
             walk(824, { tol: 3 }); press('talk', 1); if (!glassRuns('ante')) return false; walk(825, { tol: 2 }); if (!jumpTo(828, 31) || !jumpTo(832, 30) || !jumpTo(836, 31) || !jumpTo(840, 32)) return false; walk(842); return col() >= 841 && feet() === 32; }, [842, 32]],
