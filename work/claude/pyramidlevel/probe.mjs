@@ -1,4 +1,4 @@
-// work/claude/pyramidlevel/probe.mjs - a quick page probe of the second half's machines (claude/pyramidlevel; not a suite tool: tools/sealed-pyramid-half.mjs is)
+// work/claude/pyramidlevel/probe.mjs - a quick page probe of the second half's machines (claude/pyramidlevel; not a suite tool, and never committed as one)
 import { openPage } from '../../../tools/cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
 try {

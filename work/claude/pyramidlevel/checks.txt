@@ -1,8 +1,8 @@
 == tools/sealed-pyramid-stuck.mjs
 Error: TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
     at <anonymous>:6:23
-    at Object.evalp (file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-pyramidlevel/tools/cdp.mjs:49:54)
-    at async file:///C:/Users/Daniel%20Raphael/.claude/bracken-lanes/bracken-pyramidlevel/tools/sealed-pyramid-stuck.mjs:12:13
+    at Object.evalp (file:///C:/Users/Daniel%20Raphael/tools/cdp.mjs:49:54)
+    at async file:///C:/Users/Daniel%20Raphael/tools/sealed-pyramid-stuck.mjs:12:13
 
 Node.js v24.19.0
 == tools/corpses.mjs
