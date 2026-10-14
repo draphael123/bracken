@@ -38,7 +38,7 @@ export const FK = {
   hp: 1850, w: 18, h: 34, markH: 50,
   openMul: 1.6, openCap: 0.12, openT: 3.4, scatterT: 3.0, wardT: 3.0, reelT: 1.1, burnT: 3.6, fireBurn: 0.06, burnR: 84, burnDecay: 0.35, arcR: 34,
   p2: 0.66, p3: 0.33,
-  walk: 62, keep: 40, turn: 0.3, gap: [0.6, 0.52, 0.46],
+  walk: 62, keep: 40, turn: 0.3, gap: [0.75, 0.65, 0.55],
   stanceTell: [0.5, 0.42, 0.36], litEarly: 0.18, darkLate: 0.14, cutDark: 0.06,
   cutTell: 0.62, cutT: 0.16, cutReach: 46, cutRec: 0.55,
   lungeTell: 0.8, lungeT: 0.26, lungeV: 420, lungeRec: 0.7, lungeRange: 150, lungeBeat: 0.22,
@@ -48,13 +48,13 @@ export const FK = {
   /* THE LOCK SURGE: told surgeTell s at the gate; the wall of water runs surgeV px/s west from the lower gate, surgeH px deep; surgeRec s committed */
   surgeTell: 1.2, surgeV: 300, surgeH: 26, surgeRec: 1.0, surgeKnock: 170,
   /* THE FOG SPEARS: told spearTell s; spearN spots spearGap px apart round you; each lance stands spearT s, spearH px tall, the next spearStep s after; spearRec s */
-  spearTell: 1.0, spearN: 6, spearGap: 22, spearT: 0.26, spearH: 46, spearStep: 0.06, spearRec: 0.8,
+  spearTell: 1.1, spearN: 5, spearGap: 22, spearT: 0.26, spearH: 46, spearStep: 0.06, spearRec: 0.8,
   /* THE DISSOLVE PLUNGE: sinkTell s melting into the fog, goneT s gone, plungeTell s of shadow and glow on the lit spot, the drop, plungeR px, plungeRec s stuck */
   sinkTell: 0.6, goneT: 0.7, plungeTell: 0.75, plungeR: 24, plungeRec: 1.2, plungeAfterOpen: 3.0,
   doubleTell: 0.7, doubleLag: 0.55, refill: 12, drainT: 1.4,
   shroudTell: 1.0, stepTell: 0.55, dissolveT: 0.5, reformD: 60, chainHits: 3, chainT: 2.0,
   fogH: [1, 3], lastSeenEvery: 1.2,
-  dmg: { cut: 30, lunge: 38, double: 20, step: 32, lash: 14, surge: 26, spear: 24, plunge: 34 },
+  dmg: { cut: 30, lunge: 32, double: 20, step: 32, lash: 14, surge: 26, spear: 24, plunge: 34 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); 'high' / 'low' / 'full' = take that stance (told) */
 export const CYCLES = {
@@ -366,7 +366,8 @@ export function landed(e, S, c, heroX) {
    s = { P: { x, y, face, ground, atk, lit, has }, e, S, reach, shield, t, rng, mem, v2, hero, gadgetNear, bridgeOpen, rest, noRoll, lamps } ->
        { gx, face, atk, jump, dodge, block, talk, up, down, why } */
 export const PLAN = { react: 0.25, miss: 0.12, missAngle: 0.15 };
-export function fkPlan(s) {
+export function fkPlan(s) { const o = fkPlan0(s); if (s.S) s.S.botWhy = o.why; return o; }   /* (the last reading, kept on the fight for the tune lane's ledger) */
+function fkPlan0(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, talk: false, up: false, down: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
@@ -402,17 +403,19 @@ export function fkPlan(s) {
       if (e.mode === 'lashTell') { out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'the chain is coming'; return out; }
       /* THE SPEARS: off the line (outside its spots, the nearer end) */
       if ((e.mode === 'spearTell' || e.mode === 'spears') && S.spears) { const xs = S.spears.spots.map(q => q.x), a = Math.min(...xs) - 18, b = Math.max(...xs) + 18;
-        if (P.x > a && P.x < b) { const to = (P.x - a < b - P.x && a > lo + 4) || b > hi - 4 ? a - 8 : b + 8; out.gx = clamp(to); out.why = 'off the spears\' line'; return out; }
+        if (P.x > a && P.x < b) { const far = Math.sign(P.x - kx) > 0 ? b + 8 : a - 8, near = far > P.x ? a - 8 : b + 8, fits = x => x > lo + 4 && x < hi - 4;   /* (the lances run out from him: the far end bursts last) */
+          const to = fits(far) && Math.abs(far - P.x) <= Math.abs(near - P.x) + 30 ? far : fits(near) ? near : far; out.gx = clamp(to); out.why = 'off the spears\' line'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'clear of the spears'; return out; }
       /* THE DISSOLVE PLUNGE: off the shadow; then in on him stuck */
       if ((e.mode === 'plungeTell' || e.mode === 'plunge') && S.plunge && S.plunge.x !== null) { const d = Math.abs(P.x - S.plunge.x);
         if (d < FK.plungeR + 26) { out.gx = clamp(S.plunge.x + (Math.sign(P.x - S.plunge.x) || 1) * (FK.plungeR + 34)); out.why = 'off the shadow'; return out; }
         out.gx = P.x; out.face = Math.sign(S.plunge.x - P.x) || 1; out.why = 'wait for the drop'; return out; }
       if (e.mode === 'sinkTell' || e.mode === 'gone') { out.gx = P.x; out.why = 'he is in the fog'; return out; }
+      if ((e.mode === 'lungeTell' || e.mode === 'lunge') && !P.ground && P.y > e.y - 60) { out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'in the air under the lunge: come down, then roll'; return out; }   /* (claude/towpath2: the stance fight's jumps no longer carry on through his lunge) */
       if ((e.mode === 'lungeTell' || e.mode === 'lunge') && same) {
         const to = S.lunge ? S.lunge.to : P.x, inPath = Math.abs(to - P.x) < 40 || dx < FK.lungeRange;
-        if (inPath) { if (e.mode === 'lungeTell' && e.modeT < FK.lungeBeat && P.ground && !s.noRoll) { out.dodge = true; out.gx = clamp(P.x + side * 30); out.why = 'roll the lunge in its last beat'; return out; }
-          if (e.mode === 'lunge' && P.ground && !s.noRoll) { out.dodge = true; out.gx = clamp(P.x + side * 30); out.why = 'roll the lunge (late)'; return out; }
+        if (inPath) { if (e.mode === 'lungeTell' && e.modeT < FK.lungeBeat * 0.5 && P.ground && !s.noRoll) { out.dodge = true; out.gx = clamp(P.x - side * 30); out.why = 'roll THROUGH the lunge in its last beat'; return out; }
+          if (e.mode === 'lunge' && P.ground && !s.noRoll) { out.dodge = true; out.gx = clamp(P.x - side * 30); out.why = 'roll through the lunge (late)'; return out; }
           if (s.noRoll) { out.gx = clamp(kx + side * (FK.lungeRange + 60)); out.why = 'out of the lunge\'s reach'; return out; }
           out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'wait for the lunge\'s last beat'; return out; } }
       if ((e.mode === 'cutTell' || e.mode === 'cut' || e.mode === 'stepTell' || e.mode === 'stepCut') && dx < FK.cutReach + 24 && same) {

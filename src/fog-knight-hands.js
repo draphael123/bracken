@@ -94,7 +94,7 @@ export function makeFogKnightHands(ctx) {
   let WORD = null;   /* the told move's word over him, while it winds up */
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
-    S = FKM.newFight(FKM.geom(Ar, ctx.TS)); BOSS_PHASE.fogknight = 1; WORD = null;
+    S = FKM.newFight(FKM.geom(Ar, ctx.TS)); S.landedOn = []; BOSS_PHASE.fogknight = 1; WORD = null;
     const e = { ...base, t: 'fogknight', w: FK.w, h: FK.h, hp: ctx.EHP.fogknight, maxHp: ctx.EHP.fogknight, noGrav: true, markH: FK.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1 };
     e.y = S.G.floorY; for (const pp of ctx.players) { pp.fkKeys = null; pp.fkRollEnd = -9; } return e; };
 
@@ -104,7 +104,8 @@ export function makeFogKnightHands(ctx) {
     const hitOne = (pp, bx, d, name, o) => { let any = false; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (bx && !ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P))) return; if (keyed(pp, o.key || name)) return;
         if (o.soon && !(P.dodge > 0) && ctx.time() - (pp.fkRollEnd ?? -9) < 0.45) { S.n.soon++; ctx.number(P.x, P.y - 40, 'TOO SOON: ROLL IN ITS LAST BEAT'); }
-        const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) { any = true; ctx.gutter(pp); } }); return any; };
+        const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) { any = true; ctx.gutter(pp);
+          if (S.landedOn) { S.landedOn.push({ name, dx: Math.round(P.x - e.x), dy: Math.round(P.y - e.y), ground: !!P.ground, dodge: +(P.dodge || 0).toFixed(2), sinceRoll: +(ctx.time() - (pp.fkRollEnd ?? -9)).toFixed(2), mode: e.mode, bot: S.botWhy || '' }); if (S.landedOn.length > 40) S.landedOn.shift(); } } }); return any; };   /* (S.landedOn: the tune lane's ledger of what landed, and how the hero stood) */
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), time: () => ctx.time(),
       music: ph => { BOSS_PHASE.fogknight = ph; if (ctx.music) ctx.music(ph > 1 ? 'fogknight:p' + ph : 'fogknight'); },
@@ -168,7 +169,7 @@ export function makeFogKnightHands(ctx) {
   H.barName = e => 'THE FOG KNIGHT' + (FKM.fkOpen(e) ? '  EMPTY' : S && S.ward > 0 ? '  WARDED' : FKM.fkGone(e) ? '  IN THE FOG' : S ? '  ' + FKM.STANCE_WORD[S.stance] : '');
   H.end = e => { if (S) { S.dbl = null; S.shroud = 0; S.lash = null; S.hooked = null; S.wave = null; S.spears = null; S.plunge = null; } BOSS_PHASE.fogknight = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, stance: S.stance, burn: +S.burn.toFixed(2), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, dbl: !!S.dbl, shroud: +S.shroud.toFixed(2), hurt: { ...(S.hurt || {}) },
-    fogTop: FKM.fogTop(S), lash: !!S.lash, hooked: !!S.hooked, wave: S.wave ? R(S.wave.x) : null, spears: S.spears ? S.spears.spots.map(q => R(q.x)) : null, plunge: S.plunge && S.plunge.x !== null ? R(S.plunge.x) : null };
+    fogTop: FKM.fogTop(S), landedOn: (S.landedOn || []).slice(), lash: !!S.lash, hooked: !!S.hooked, wave: S.wave ? R(S.wave.x) : null, spears: S.spears ? S.spears.spots.map(q => R(q.x)) : null, plunge: S.plunge && S.plunge.x !== null ? R(S.plunge.x) : null };
 
   /* ---------- DRAWING (GREYBOX) ---------- */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);

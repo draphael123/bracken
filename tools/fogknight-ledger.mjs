@@ -12,6 +12,7 @@ for (const h of heroes) for (let s = 1; s <= seeds; s++) {
     const fk = await pg.evalp('BK.fogKnight && BK.fogKnight()');
     console.log(h, 's' + s, r.outcome, Math.round(r.secs) + 's', 'boss left', r.bossLeft + '%', 'taken', r.taken, 'drank', r.drank);
     if (fk) { console.log('   hurt by:', JSON.stringify(fk.hurt)); const n = fk.n; console.log('   n:', JSON.stringify({ ph: fk.ph, opens: n.opens, burns: n.burns, scatters: n.scatters, landed: n.landed, turned: n.turned, warded: n.warded, reels: n.reels, lashes: n.lashes, hooks: n.hooks, highLashes: n.highLashes, surges: n.surges, surgeHits: n.surgeHits, spearSets: n.spearSets, spearHits: n.spearHits, dplunges: n.dplunges, dplungeHits: n.dplungeHits, cuts: n.cuts, lunges: n.lunges, doubles: n.doubles, steps: n.steps })); }
+    if (process.env.LANDED) for (const q of fk.landedOn || []) console.log('     ', JSON.stringify(q));
     if (pg.errors.length) console.log('   PAGE ERRORS:', pg.errors.slice(0, 3).join(' | '));
   } finally { pg.close(); }
 }
