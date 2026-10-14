@@ -360,14 +360,14 @@
   "bare": true
  },
  "sealedpyramid": {
-  "hash": "18eb266a664f",
+  "hash": "374d1b96d29b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 29,
-  "deaths": 7,
-  "kills": 26,
-  "lifts": 214,
+  "hits": 24,
+  "deaths": 6,
+  "kills": 21,
+  "lifts": 213,
   "walked": 100,
   "bare": true
  }

@@ -598,16 +598,16 @@
   "lostPct": 199
  },
  "sealedpyramid": {
-  "hash": "18eb266a664f",
+  "hash": "374d1b96d29b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 47,
-  "deaths": 10,
-  "kills": 47,
-  "lifts": 182,
+  "hits": 70,
+  "deaths": 12,
+  "kills": 66,
+  "lifts": 167,
   "walked": 100,
   "bare": true,
-  "lostPct": 432
+  "lostPct": 557
  }
 }
