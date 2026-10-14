@@ -16,6 +16,32 @@ function gear(g, x, y, r, a, col, colL, n = 8) {
   g.fillStyle = '#14100e'; g.beginPath(); g.arc(x, y, 2, 0, Math.PI * 2); g.fill();
   for (let k = 0; k < 3; k++) { const aa = a + k * 2.094; rc(g, x + Math.cos(aa) * (r - 4) - 0.5, y + Math.sin(aa) * (r - 4) - 0.5, 1, 1, '#14100e'); }   /* (spokes: the turn reads) */
 }
+/* EACH BANK ITS OWN MACHINE (B16: the tell names the gear): CHAIN = a winch drum wound with chain and a hook hanging; LUNGE = a boom pivot, a folded arm and a spring (unfolds on its windup);
+   DYNAMITE = a hoist with a cable drum and a crate of sticks that rides up to the cab window; ROOF = a jib on a mast, a cable to the roof (strikes up on its windup). hot 0..1 = its windup */
+function bankArt(g, id, x, t, b, hot, time, broken, flash) {
+  const cy = (t + b) / 2, iron = flash > 0 ? '#ffffff' : broken ? '#4a3a34' : '#b8302a', ironL = flash > 0 ? '#ffffff' : broken ? '#6a5a50' : '#e8604a', sp = broken ? 0 : time * (2.5 + hot * 14), sag = broken ? 3 : 0;
+  if (id === 'chain') {   /* the winch drum (ribbed, wound with chain), its crank gear, the chain hanging to a hook */
+    rc(g, x - 8, cy - 5 + sag, 14, 10, '#2a2830'); rc(g, x - 8, cy - 5 + sag, 14, 1, MP.i4);
+    for (let i = 0; i < 7; i++) { const ph = (Math.floor(sp * 2 + i) % 2 === 0); rc(g, x - 7 + i * 2, cy - 4 + sag, 1, 8, ph ? '#9aa0ac' : '#4a4e58'); }   /* the coils turn */
+    gear(g, x + 6, cy + sag, 4, sp, iron, ironL, 6);
+    const hang = broken ? 12 : 7 + R(hot * 4); for (let i = 0; i < hang; i += 2) rc(g, x - 5 + (broken ? i * 0.4 : 0), cy + 5 + i + sag, 2, 1, i % 4 ? '#9aa0ac' : '#5a5e68'); rc(g, x - 6 + (broken ? 5 : 0), cy + 5 + hang + sag, 3, 2, '#c8c0a8');   /* chain + hook */
+    if (hot > 0) for (let i = 0; i < 4; i++) { const tt = (time * 6 + i * 0.25) % 1; rc(g, x - 9 - tt * 14, cy + 2 + (i % 2) * 2, 2, 1, '#9aa0ac'); }   /* the chain unspooling out toward you */
+  } else if (id === 'lunge') {   /* a boom pivot: the folded arm and its spring */
+    rc(g, x - 8, cy - 4 + sag, 16, 8, '#2a2830'); gear(g, x - 4, cy + sag, 3, sp, iron, ironL, 6);
+    const ext = broken ? 0.15 : 0.25 + hot * 0.75; g.save(); g.translate(R(x - 4), R(cy + sag)); g.rotate(broken ? 0.9 : -0.2 - 0.9 * (1 - ext)); rc(g, 0, -1, 4 + R(10 * ext), 2, '#c8a040'); rc(g, 3 + R(10 * ext), -2, 3, 4, '#e05a3a'); g.restore();
+    for (let i = 0; i < 4; i++) rc(g, x + 2 + i, cy - 3 + (i & 1) * 2 + sag, 1, 2, '#9aa0ac');   /* the spring */
+  } else if (id === 'dyn') {   /* the hoist: a drum up top, a cable, the crate of sticks riding up toward the cab window */
+    rc(g, x - 8, t + 1, 16, 4, '#2a2830'); rc(g, x - 8, t + 1, 16, 1, MP.i4); gear(g, x, t + 3, 3, sp, iron, ironL, 6);
+    const ride = broken ? 1 : (hot > 0 ? 1 - hot : 1) ; const cyy = R(t + 8 + (b - t - 12) * ride); rc(g, x - 1, t + 5, 1, cyy - t - 5, '#c8c0a8');   /* the cable */
+    const dx = broken ? 5 : 0; rc(g, x - 4 + dx, cyy, 8, 6, '#6a4a2a'); rc(g, x - 4 + dx, cyy, 8, 1, '#a07a46'); for (let i = 0; i < 3; i++) rc(g, x - 3 + i * 2 + dx, cyy + 1, 1, 4, '#d8402a');   /* a crate of red sticks */
+    if (!broken) rc(g, x + 3, cyy - 1 - (Math.floor(time * 9) % 2), 1, 1, '#ffd36b');
+    if (broken) for (let i = 0; i < 3; i++) rc(g, x - 6 + i * 4, b - 1, 3, 1, '#d8402a');   /* the sticks spilled */
+  } else {   /* the jib: a mast arm and a pulley, the cable to the roof - it STRIKES UP on its windup */
+    rc(g, x - 8, b - 6 + sag, 16, 6, '#2a2830'); gear(g, x + 4, b - 3 + sag, 3, sp, iron, ironL, 6);
+    const an = broken ? 0.9 : -0.9 - hot * 0.5 + Math.sin(time * 18) * 0.04 * hot; g.save(); g.translate(R(x - 3), R(b - 6)); g.rotate(an); rc(g, 0, -1, 15, 2, '#6a6a76'); rc(g, 0, -1, 15, 1, '#9aa0ac'); rc(g, 13, -2, 3, 4, '#e05a3a'); g.restore();
+    if (!broken) { rc(g, x - 3 + R(Math.cos(an) * 14), b - 6 + R(Math.sin(an) * 14), 1, R(14 + hot * 8), '#c8c0a8'); if (hot > 0.5) for (let i = 0; i < 3; i++) rc(g, x - 8 + ((i * 7 + R(time * 50)) % 14), t - 6 - ((i * 5 + R(time * 70)) % 12), 1, 2, '#8a7660'); }
+  }
+}
 /* THE GEAR TOWER (B10/B14 read: a bank is a thing to hit). banks: [{ id, label, x, t, b, state: 'up' | 'broken' | 'off', hot (0..1: its attack winding up), k (health 0..1), flash, smoke (s since broken) }].
    x = the rear face (screen px). A riveted mast up the rear face holds them; each bank: a housing, its gear, a label, health pips */
 export function gearTower(g, x, top, bot, banks, time) {
@@ -23,15 +49,15 @@ export function gearTower(g, x, top, bot, banks, time) {
   for (const b of banks) { const h = b.b - b.t, cy = (b.t + b.b) / 2, r = Math.max(5, Math.min(8, h / 2 - 1));
     if (b.state === 'off') { rc(g, x - 7, b.t, 14, h, '#24222a'); rc(g, x - 7, b.t, 14, 1, '#4a4852'); for (let y = b.t + 3; y < b.b - 1; y += 4) rc(g, x - 6, y, 12, 1, '#1a1820'); continue; }   /* (not in this phase: a shutter over it) */
     rc(g, x - 9, b.t - 1, 18, h + 2, '#14121a'); rc(g, x - 9, b.t - 1, 18, 1, MP.i3);   /* its housing */
-    if (b.state === 'broken') {   /* CRACKED, STOPPED, SMOKING: hanging off its axle, a tooth gone, sparks dripping, a plume */
-      g.save(); g.translate(R(x), R(cy + 2)); g.rotate(0.5); gear(g, 0, 0, r, 0.3, '#4a3a34', '#6a5a50'); g.restore();
-      rc(g, x - 2, cy - r, 5, 2, '#14121a'); rc(g, x + 1, cy - 3, 1, 7, '#14121a');   /* the crack */
+    if (b.state === 'broken') { bankArt(g, b.id, x, b.t, b.b, 0, time, true, 0);   /* CRACKED, STOPPED, SMOKING, its own wreck: a plume, sparks dripping, a burst when it just broke */
       for (let i = 0; i < 4; i++) { const t = (time * 0.8 + i * 0.25) % 1; g.fillStyle = 'rgba(80,76,84,' + (0.6 * (1 - t)).toFixed(2) + ')'; g.fillRect(R(x - 4 + Math.sin(time * 2 + i) * 3 - t * 14), R(b.t - t * 26), 5 + R(t * 6), 4 + R(t * 4)); }
       if (Math.floor(time * 7 + b.t) % 3 === 0) { const t = (time * 3) % 1; rc(g, x + 2, cy + 2 + t * 10, 1, 1, '#ffd36b'); }
+      if (b.smoke != null && b.smoke < 0.5) { const k = b.smoke / 0.5; add(g, () => { g.globalAlpha = 0.8 * (1 - k); g.drawImage(glow(26 + R(14 * k), '255,190,90'), x - 26 - R(14 * k), cy - 26 - R(14 * k)); });   /* THE STALL: a burst of the bank as it breaks */
+        for (let i = 0; i < 12; i++) { const a = i * 0.52 + 0.3, d = 4 + k * 22; rc(g, x + Math.cos(a) * d, cy + Math.sin(a) * d + k * k * 10, 2, 2, i % 3 ? '#ffd36b' : '#8a7a70'); } }
       continue; }
-    const hot = b.hot || 0, spin = time * (2.5 + hot * 14), col = b.flash > 0 ? '#ffffff' : hot > 0 ? '#ff5a3a' : '#b8302a', colL = hot > 0 ? '#ffd36b' : '#e8604a';
+    const hot = b.hot || 0;
     if (hot > 0) add(g, () => { g.globalAlpha = 0.35 + 0.35 * hot; g.drawImage(glow(18, '255,120,60'), x - 18, cy - 18); });   /* B16: ITS ATTACK WINDS UP - the gear spins up, glows, whirs */
-    gear(g, x, cy, r, spin, col, colL);
+    bankArt(g, b.id, x, b.t, b.b, hot, time, false, b.flash);
     if (hot > 0) for (let i = 0; i < 3; i++) { const aa = time * 20 + i * 2.1; rc(g, x + Math.cos(aa) * (r + 3), cy + Math.sin(aa) * (r + 3), 1, 1, '#ffd36b'); }
     const pips = 4, on = Math.ceil(b.k * pips - 1e-6); for (let i = 0; i < pips; i++) rc(g, x - 7 + i * 4, b.b + 1, 3, 1, i < on ? '#8fd160' : '#3a2a26');   /* its health, in four pips */
   }

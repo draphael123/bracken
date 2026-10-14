@@ -481,4 +481,5 @@ export function rig(g, rx, lanes, ceilY, o, time) {
 /* DEEP RAILS 3 art (claude/dr3art): the Foreman's cart and skin, the low roofs, the switch and its bridge, the perched / swinging / leaping goblins, the Great Drill 3 pieces */
 export * from './deeprails3_art.js';
 export * from './deeprails4_art.js';
+export * from './deeprails4_poses.js';   /* (dr4art) windup poses, the slump set, the raiders' tub, the gantry and siding */
 import { tunnelFloor } from './deeprails4_art.js';

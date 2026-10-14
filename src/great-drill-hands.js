@@ -130,13 +130,16 @@ export function makeDrillHands(ctx) {
   };
   /* THE RIG: its rear (the gear housing, the gears, the deck and the cab with its goblin), its engine and stack, its tracks, the bit drilling the face ahead */
   /* (deeprails4) ITS POSE: jammed, it SLUMPS (eased in over 0.25 s, lifted over the window's last 0.4 s - the read of 'now'); each gear-driven windup has its own (B16) */
-  const poseOf = e => { if (GD.drillOpen(e)) { const k = Math.max(0, Math.min(1, ((e.openT0 || DRILL.jamT) - e.open) / 0.25, e.open / 0.4)); return { tilt: 0.035 * k, drop: 2 * k, slump: k }; }
-    if (e.mode === 'dynTell') return { tilt: -0.012, drop: 0 }; if (e.mode === 'lunge' && S.lunge && !S.lunge.on) return { tilt: 0.022 * Math.min(1, 1 - S.lunge.t / DRILL.lungeTell), drop: 1 };
-    if (e.mode === 'chain' && S.hook && !S.hook.flying) return { tilt: -0.024, drop: 0 }; if (e.mode === 'rockTell' || e.mode === 'collapseTell') return { tilt: -0.01, drop: -2 + R(Math.sin(ctx.time() * 30)) };
+  const poseOf = e => { if (GD.drillOpen(e)) { const k = Math.max(0, Math.min(1, ((e.openT0 || DRILL.jamT) - e.open) / 0.25, e.open / 0.4)); return { tilt: 0.05 * k, drop: 3 * k, slump: k, lift: e.open < 0.4 ? 1 - e.open / 0.4 : 0 }; }
+    if (e.mode === 'dynTell') { const k = 1 - Math.max(0, S.mT || 0) / DRILL.dynTell; return { tilt: -0.02 * k, drop: 0, kind: 'dyn', k }; } if (e.mode === 'lunge' && S.lunge && !S.lunge.on) { const k = Math.min(1, 1 - S.lunge.t / DRILL.lungeTell); return { tilt: 0.05 * k, drop: 2 * k, kind: 'lunge', k }; }
+    if (e.mode === 'chain' && S.hook && !S.hook.flying) return { tilt: -0.045, drop: 0, kind: 'chain', k: 1 }; if (e.mode === 'rockTell' || e.mode === 'collapseTell') { const tt = e.mode === 'rockTell' ? DRILL.rockTell : DRILL.collapseTell, k = 1 - Math.max(0, S.mT || 0) / tt; return { tilt: -0.012 * k, drop: -2 + R(Math.sin(ctx.time() * 30) * 1.5 * k), kind: 'roof', k }; }
     return { tilt: 0, drop: 0 }; };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S || e.t !== 'greatdrill') return; const G = S.G, rx = R(GD.rearX(S) - cx), jam = GD.drillOpen(e), ward = S.ward > 0, lanes = G.laneY.map(v => R(v - cy)), pose = poseOf(e);
     MCA.rig(g, rx, lanes, R(G.ceilY - cy), { jam, ward, hurt: (e.hurtT || 0) > 0 || (e.flash || 0) > 0, rev: e.mode === 'revTell' || e.mode === 'reverse',
       moving: fighting() && !jam, scroll: S.scroll || 0, spray: null, plateW: DRILL.plateW, plateH: DRILL.plateH, cabIn: DRILL.cabIn, cabW: DRILL.cabW, cabH: DRILL.cabH, stackX: DRILL.stackX, ph: S.ph, tilt: pose.tilt, drop: pose.drop, slump: pose.slump || 0 }, time);
+    { const tg = (fn) => { g.save(); g.translate(rx, lanes[0]); g.rotate(pose.tilt || 0); g.translate(-rx, -lanes[0] + (pose.drop || 0)); fn(); g.restore(); };
+    if (pose.kind) tg(() => MCA.windupPose(g, rx, lanes, R(G.ceilY - cy), DRILL.cabIn, DRILL.cabW, DRILL.cabH, pose.kind, pose.k, time));   /* (dr4art, B16) its own windup pose per gear-driven attack */
+    if (pose.slump) { tg(() => MCA.slumpPose(g, rx, lanes, DRILL.cabIn, DRILL.cabW, DRILL.cabH, pose.slump, time)); if (pose.lift > 0) MCA.steamHiss(g, rx + 174, R((lanes[1] + lanes[0]) / 2 - 6), rx + 23, lanes[0] - DRILL.plateH / 2 - 5, pose.lift, time); } }   /* (dr4art) the slump set, and the steam hiss as it lifts back */
     if (pose.slump) MCA.jamFx(g, pose.slump, rx + 174, R((lanes[1] + lanes[0]) / 2 - 6 + 6 * pose.slump), rx + 23, lanes[0] - DRILL.plateH / 2 - 5, rx + DRILL.cabIn + R(DRILL.cabW / 2), lanes[1] - DRILL.cabH + 8, time);   /* (deeprails4) the head smokes, sparks, the driver knocked silly */
     /* (deeprails4) THE GEAR TOWER up its rear face: each bank, its label, its state (spinning / spun up on its attack's windup / broken and smoking / shuttered) */
     if (S.gears && rx > -60 && rx < ctx.VW() + 60) { const banks = GD.GEARS.map(gg => { const q = S.gears[gg.id], t = R(G.laneY[gg.lane] + gg.t - cy), b = R(G.laneY[gg.lane] + gg.b - cy);

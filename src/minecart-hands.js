@@ -511,6 +511,8 @@ export function makeMinecartHands(ctx) {
     for (const r of M.rocks) { if (!(r.fallT > -0.6) || r.armed) continue; const x0 = R(r.x * ts - cx), w = r.w * ts, yb = R(r.row * ts - cy);
       if (r.fallT > 0) { const k = 1 - r.fallT / r.delay; g.fillStyle = 'rgba(0,0,0,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.fillRect(x0 - 2, yb - 2, w + 4, 3); g.fillStyle = '#8a7660'; for (let i = 0; i < 4; i++) g.fillRect(x0 + (i * 9 + R(time * 40)) % w, yb - 70 + ((i * 23 + R(time * 90)) % 60), 2, 2);
         MCA.boulder(g, x0, w, yb, k, time); txt('!', x0 + w / 2, yb - 24, '#ffd36b', 'center', 6); } }
+    /* (dr4art) THE TWIN LINES' LANDMARK and the raiders' SIDING: a crossover gantry over the yard (808-856, between the teach and the exam fork), the siding stub where the raiders peel off (858) */
+    { const hiY = R(27 * ts - cy), loY = R(30 * ts - cy), gx = R(822 * ts - cx), sx = R(858 * ts - cx); if (gx > -40 && gx < vw + 40) MCA.gantry(g, gx, hiY, loY, time); if (sx > -40 && sx < vw + 40) MCA.siding(g, sx, loY, time); }
     /* THE BEAMS */
     for (const b of M.beams) { const x = R(b.x0 * ts - cx), w = (b.x1 - b.x0 + 1) * ts, y = R(b.row * ts - 10 - cy); MCA.beam(g, x, w, y);
       const P = ctx.hero(); if (P && b.x0 * ts - P.x < 140 && b.x0 * ts > P.x - 4) { const fl = Math.floor(time * 8) % 2; txt('DUCK', x + w / 2, y + 22, fl ? '#ff6b6b' : '#ffd36b', 'center', 6); } }
@@ -522,6 +524,7 @@ export function makeMinecartHands(ctx) {
         if (c.e.alive && c.e.mcTelling) txt(c.perch ? '!' : '!', R(c.e.x - cx), R(c.e.y - 34 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7);
         if (c.chopT > 0) { const ly = R((c.line ? c.line * ts : c.y + 3 * ts) - 14 - cy); g.fillStyle = 'rgba(255,107,107,0.55)'; g.fillRect(R(c.x - 26 - cx), ly - 2, 32, 3); } continue; }
       MCA.tub(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob', time, c.v);
+      if (c.raid) MCA.raiderTub(g, c.x - cx, c.y - cy, time, c.e.alive && c.tell > 0 ? (c.boarding ? 2 : 1) : 0);   /* (dr4art) the raiders' livery, rack and throw / boarding poses */
       if (c.swing) { const ly = R(c.y + 3 * ts - 14 - cy), x = R(c.x - cx); MCA.swingHook(g, x, R(c.y - cy), R(c.y + 3 * ts - cy), c.chopT > 0 ? 'chop' : c.tell > 0 ? 'tell' : 'rest', c.chopT > 0 ? 1 - c.chopT / MC.swingT : 0, time); if (c.chopT > 0) { g.fillStyle = 'rgba(255,107,107,0.5)'; g.fillRect(x - 22, ly - 2, 44, 3); } }   /* (dr3art) a boom off his tub, a rope and a hook that swings down across the line */
       if (c.raid && c.boarding && c.tell > 0 && c.e.alive) { const Ph = ctx.hero(); MCA.raidPlank(g, R(c.x - cx), R(c.y - cy), Ph && Ph.y < c.y ? -1 : 1, 1 - c.tell / MC.boardTell); }   /* (deeprails4) the boarding plank out to your line */
       if (c.state === 'roll' && c.e.alive && c.e.mcTelling) txt(c.raid && c.boarding ? '!!' : '!', R(c.x - cx), R(c.y - 40 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); }
