@@ -19,6 +19,7 @@ export function islandsOf(L, T) {
   for (const f of (L.theatre && L.theatre.flats) || []) { const pos = f.tools === 'A' ? f.a : f.b;
     if (f.axis === 'y') { for (let y = pos; y < pos + f.h; y++) for (let x = f.x0; x <= f.x1; x++) machine.add(y * W + x); }
     else for (let y = f.y0; y <= f.y1; y++) for (let x = pos; x < pos + f.w; x++) machine.add(y * W + x); }
+  for (const j of L.machineCells || []) machine.add(j);   /* (claude/colossusrework) cells a machine moves - THE GLASS COLOSSUS's holds walk with him: never an island stood on posts (a post left behind when he walks is a drawn thing with nothing there) */
   for (let i = 0; i < W * H; i++) {
     if (seen[i] || g[i] === T.AIR || machine.has(i)) continue;
     const q = [i]; seen[i] = 1; let edge = false, x0 = W, x1 = -1, y0 = H, y1 = -1; const cells = [], kinds = new Set();

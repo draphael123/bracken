@@ -141,6 +141,8 @@ function onEnter(A, S, e, now) {
   else if (m === 'wave') add({ k: 'wave', x: e.x - STOMP_FEET, x2: e.x + STOMP_FEET });
   else if (m === 'cracked' || m === 'blazing' || m === 'dazzled') add({ k: 'open' });
   else if (m === 'wake') add({ k: 'wake' });
+  else if (m === 'lunge' && S.lunge) { const Lg = S.lunge, ms = Lg.mirror >= 0 && S.mirrors[Lg.mirror], hd = A.lastHand || [(Math.sign(Lg.x - e.x) || fc) * 79, -60];
+    add({ k: 'spear', x: Lg.x, y: G.floor - (ms ? 36 : 6), hx: e.x + hd[0], hy: G.floor + hd[1], disc: !!ms }); add({ k: 'erupt', x: Lg.x }); }
   else if (m === 'idle' && A.mode && A.mode !== 'idle') add({ k: 'settle', x: e.x - STOMP_FEET, x2: e.x + STOMP_FEET });   /* after any move: the dust it kicked up settles, a small puff at each heel */
 }
 /* ---- particles (all deterministic from the age: no state, no timers) ---- */
@@ -175,6 +177,22 @@ function drawFx(g, A, S, e, X, Y, now, pal, ph) {
       case 'phase': lite(g, () => { for (let i = 0; i < 3; i++) { const q = a - i * 0.28; if (q < 0 || q > 1.3) continue; g.globalAlpha = 0.7 * (1 - q / 1.3); g.strokeStyle = 'rgb(' + L + ')'; g.lineWidth = 2; g.beginPath(); g.arc(X, Y - 122, 16 + q * 170, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; g.lineWidth = 1; });
         for (let i = 0; i < 16; i++) { const r1 = rnd(51, i), r2 = rnd(52, i), t0 = 0.1 + r2 * 0.9, q = a - t0; if (q < 0 || q > 0.9) continue; g.globalAlpha = 1 - q / 0.9; g.fillStyle = i % 2 ? pal.l : '#ffffff'; g.fillRect(X + R((r1 - 0.5) * 110), Y - 190 + R(q * 150 + q * q * 120), 2, 2 + (i & 1)); } g.globalAlpha = 1; break;
       case 'wave': dust(g, sx(f.x), Y, a, 4, 61, 36, 0.6, D); dust(g, sx(f.x2), Y, a, 4, 62, 36, 0.6, D); break;
+      case 'foot': dust(g, sx(f.x), Y, a, 8, 41, 40, 0.7, D); chips(g, pal, sx(f.x), Y, a, 6, 43, 60, 120, 0.6, f.d * 0.8);
+        if (a < 0.12) { g.globalAlpha = 1 - a / 0.12; g.fillStyle = '#ffffff'; g.fillRect(sx(f.x) - R(a * 220), Y - 2, R(a * 440), 2); g.globalAlpha = 1; } break;
+      case 'erupt': { const n = 9, W2 = COL.lungeW, H2 = COL.lungeH, k = a < 0.09 ? a / 0.09 : a < 0.55 ? 1 : Math.max(0, 1 - (a - 0.55) / 0.5);   /* glass spikes tear up out of the marked ground, hold a beat, and settle */
+        for (let i = 0; i < n; i++) { const r1 = rnd(61, i), x0 = sx(f.x) + R(-W2 + (i + 0.5) * (2 * W2 / n) + (r1 - 0.5) * 4), h = R((12 + (H2 - 12) * (0.45 + 0.55 * rnd(62, i))) * k), w = 6 + (i & 1), ln = (r1 - 0.5) * 6; if (h < 2) continue;
+          fillPoly(g, [[x0 - w / 2 - 1, Y], [x0 + ln, Y - h - 1], [x0 + w / 2 + 1, Y]], '#0a1c26'); fillPoly(g, [[x0 - w / 2, Y], [x0 + ln, Y - h], [x0, Y]], '#c8fff0'); fillPoly(g, [[x0, Y], [x0 + ln, Y - h], [x0 + w / 2, Y]], '#34908c'); g.fillStyle = '#ffffff'; g.fillRect(R(x0 + ln), Y - h, 1, 2); }
+        if (a < 0.5) { dust(g, sx(f.x) - 20, Y, a, 4, 63, 28, 0.6, D); dust(g, sx(f.x) + 20, Y, a, 4, 64, 28, 0.6, D); chips(g, pal, sx(f.x), Y, a, 10, 65, 70, 190, 0.7, 0); }
+        if (a < 0.1) lite(g, () => radial(g, sx(f.x), Y - 10, 40, '210,255,240', 0.6 * (1 - a / 0.1))); break; }
+      case 'spear': { if (a > 1.15) break; const tt = c01(a / 0.07), x1 = sx(f.x), y1 = Y + R(f.y - S.G.floor), x0 = X + R(f.hx - e.x), y0 = Y + R(f.hy - S.G.floor), tx = x0 + (x1 - x0) * tt, ty = y0 + (y1 - y0) * tt, dl = Math.hypot(x1 - x0, y1 - y0) || 1, ux = (x1 - x0) / dl, uy = (y1 - y0) / dl;
+        const fade = a > 0.85 ? 1 - (a - 0.85) / 0.3 : 1; g.globalAlpha = fade;
+        if (tt < 1) lite(g, () => { g.strokeStyle = 'rgba(220,255,245,0.55)'; g.lineWidth = 3; g.beginPath(); g.moveTo(tx - ux * 92, ty - uy * 92); g.lineTo(tx, ty); g.stroke(); g.lineWidth = 1; });   /* the streak of its flight */
+        spearArt(g, R(tx - ux * 104), R(ty - uy * 104), R(tx), R(ty), pal, tt < 1 ? 1 : Math.max(0, 1 - (a - 0.07) / 0.3)); g.globalAlpha = 1;
+        if (a >= 0.07 && a < 0.3) { const k = 1 - (a - 0.07) / 0.23; lite(g, () => radial(g, x1, y1, 22 + 16 * (1 - k), '255,255,235', 0.85 * k)); star(g, x1, y1, 4 + R(14 * k), k); }   /* the strike */
+        if (a >= 0.07 && f.disc && a < 1) { const k = c01(1 - (a - 0.07) / 0.9); g.globalAlpha = k;   /* the disc, speared: cracks run across the polished face, glass flies off it */
+          for (let i = 0; i < 6; i++) { const an = i * 1.0472 + 0.4, ll = 5 + 6 * rnd(66, i); g.strokeStyle = '#0a1c26'; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x1 + Math.cos(an) * ll, y1 + Math.sin(an) * ll * 0.9); g.stroke(); g.fillStyle = '#ffffff'; g.fillRect(R(x1 + Math.cos(an) * ll * 0.5), R(y1 + Math.sin(an) * ll * 0.45), 1, 1); } g.globalAlpha = 1;
+          if (a < 0.6) chips(g, pal, x1, y1, a - 0.07, 12, 67, 80, 90, 0.5, 0, ['#ffffff', '#d8f8ff', '#7ad0e8', '#ffd36b']); }
+        if (a > 0.85 && a < 1.15) chips(g, pal, x1, y1, a - 0.85, 8, 68, 50, 60, 0.3, 0); break; }
       case 'settle': dust(g, sx(f.x), Y, a, 3, 71, 16, 0.55, D); dust(g, sx(f.x2), Y, a, 3, 72, 16, 0.55, D); break;
       case 'open': if (a < 0.45) chips(g, pal, X, Y - 134, a, 7, 81, 70, 80, 0.45, 0, ['#ffffff', '#dff8ff', pal.l]); break;
       case 'wake': dust(g, X - 40, Y, a, 5, 91, 40, 1.0, D); dust(g, X + 40, Y, a, 5, 92, 40, 1.0, D); chips(g, pal, X, Y - 150, a, 12, 93, 70, 30, 1.1, 0); break;
@@ -259,12 +277,134 @@ export function drawBody(g, e, S, G, cx, cy, time, flash, pose) {
   if (e.mode === 'quakeTell') { const k2 = c01((now - A.t0) / 0.9); for (const [kk, sdn] of [['armL', -1], ['armR', 1]]) lite(g, () => radial(g, at[kk][0] + CX + sdn * 79 + R(SH[kk]), at[kk][1] + FY - 22, 12 + 12 * k2, L, 0.15 + 0.5 * k2)); }
   if (e.mode === 'sweep' && S.sweep && S.sweep.live) { const sxp = X + R(S.sweep.x - e.x), dd = S.sweep.dir; for (let i = 0; i < 6; i++) { const u = (now * 4.2 + i * 0.19) % 1; g.globalAlpha = 1 - u; g.fillStyle = i % 2 ? '#ffffff' : pal.l; g.fillRect(sxp - dd * R(u * 12) , Y - 3 - R(u * (8 + 10 * rnd(3, i))), 2, 1 + (i & 1)); } g.globalAlpha = 1; }
   if (e.mode === 'sweepTell' && S.sweep) { const kk = S.sweep.dir < 0 ? 'armL' : 'armR', sdn = S.sweep.dir < 0 ? -1 : 1, u = c01((now - A.t0) / 0.75), dy = 10 + 120 * u; glint(g, at[kk][0] + CX + sdn * 75 + R(SH[kk] * Math.pow(dy / 150, 1.35)), at[kk][1] + FY - 150 + dy, Math.sin(u * Math.PI), '#fff6c8'); }   /* a gleam runs down the raised arm */
+  drawActs(g, e, S, X, Y, sway, bob, at, SH, cur, A, now, pal, ph);
   drawFx(g, A, S, e, X, Y, now, pal, ph);
+}
+/* ================= (claude/colart, ART lane; claude/colossusrework left these on greybox) THE WALK, THE GAZE, THE SHARD LUNGE, THE BRAZIERS ================= */
+const hot = (g, x, y, r, a, col) => lite(g, () => radial(g, x, y, r, col || '255,176,96', a));
+const star = (g, x, y, len, a, col) => { if (a <= 0.02) return; g.globalAlpha = Math.min(1, a); g.fillStyle = col || '#fff6e0'; g.fillRect(x - len, y, len * 2 + 1, 1); g.fillRect(x, y - len, 1, len * 2 + 1); const q = R(len * 0.55); g.fillRect(x - q, y - q, 1, 1); g.fillRect(x + q, y - q, 1, 1); g.fillRect(x - q, y + q, 1, 1); g.fillRect(x + q, y + q, 1, 1); g.fillStyle = '#ffffff'; g.fillRect(x - 1, y, 3, 1); g.fillRect(x, y - 1, 1, 3); g.globalAlpha = 1; };
+const fillPolyG = (g, pts) => { g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath(); g.fill(); };
+/* where a hand (the arm on side d) is on the screen this frame: the baked fist's centre carried by the pose (lean, bob, the arm's swing and its shear) */
+const handOf = (d, X, Y, at, SH) => { const k = d < 0 ? 'armL' : 'armR'; return [at[k][0] + CX + d * 79 + R(SH[k] * 0.82), at[k][1] + FY - 22]; };
+/* a glass SPEAR from its butt to its tip: a faceted shaft with a lit edge, a leaf head with a white tip and a bevel; a = 0..1 the glow of its charge */
+function spearArt(g, bx, by, tx, ty, pal, a) {
+  const dx = tx - bx, dy = ty - by, L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, nx = -uy, ny = ux, hl = Math.min(17, L * 0.3), sx = tx - ux * hl, sy = ty - uy * hl;
+  if (a > 0.02) hot(g, tx, ty, 14 + 16 * a, 0.2 + 0.5 * a, '190,255,235');
+  line(g, bx, by, sx, sy, '#0a1c26', 5); line(g, bx, by, sx, sy, '#34908c', 3); line(g, bx - nx, by - ny, sx - nx, sy - ny, '#7adcc4', 1); line(g, bx + nx, by + ny, sx + nx, sy + ny, '#e8fff8', 1);   /* the shaft: dark outline, teal body, a lit edge */
+  for (let i = 1; i < 5; i++) { const f = i / 5, qx = bx + (sx - bx) * f, qy = by + (sy - by) * f; g.fillStyle = i % 2 ? pal.l : '#ffffff'; g.fillRect(R(qx), R(qy), 1, 1); }   /* facet glints along it */
+  fillPoly(g, [[sx + nx * 5.5, sy + ny * 5.5], [tx, ty], [sx - nx * 5.5, sy - ny * 5.5], [sx - ux * 4, sy - uy * 4]], '#0a1c26');   /* the leaf head */
+  fillPoly(g, [[sx + nx * 4, sy + ny * 4], [tx - ux * 1.5, ty - uy * 1.5], [sx - nx * 4, sy - ny * 4], [sx - ux * 3, sy - uy * 3]], '#9ae8d0');
+  fillPoly(g, [[sx + nx * 4, sy + ny * 4], [tx - ux * 1.5, ty - uy * 1.5], [sx, sy]], '#e8fff8');
+  g.fillStyle = '#ffffff'; g.fillRect(R(tx - ux), R(ty - uy), 1, 1); g.fillStyle = pal.vein; g.fillRect(R(bx + (sx - bx) * 0.3), R(by + (sy - by) * 0.3), 1, 1);
+}
+/* the live, per-frame extras on the body: the stride's footfalls and scrapes, the gaze's eye flare, the spear in his hand */
+function drawActs(g, e, S, X, Y, sway, bob, at, SH, cur, A, now, pal, ph) {
+  const m = e.mode, W = S.walk;
+  /* THE WALK: a footfall (a new W.n) kicks the dust of the foot that came down; the planted foot scrapes (sparks) as the weight passes over it; the tell shakes dust from both heels */
+  if (m === 'walk' && W) { if (A.wId !== W.id) { A.wId = W.id; A.wN = W.n; }
+    else if (W.n !== A.wN) { A.wN = W.n; A.fx.push({ k: 'foot', x: e.x + W.dir * (STOMP_FEET + 8), d: W.dir, t: now }); if (A.fx.length > 24) A.fx.shift(); }
+    const u = c01(1 - W.stepT / COL.strideT); if (u < 0.3) { const fx = X + W.dir * (STOMP_FEET + 8) - W.dir * R(u * 12);
+      for (let i = 0; i < 4; i++) { const k = (now * 5 + i * 0.27) % 1; g.globalAlpha = 1 - k; g.fillStyle = i % 2 ? '#fff0c8' : '#ffb050'; g.fillRect(fx + W.dir * R(k * 9 + i), Y - 2 - R(k * (6 + 4 * rnd(5, i))), 2, 1); } g.globalAlpha = 1; } }
+  if (m === 'walkTell') for (const sd of [-1, 1]) { const k = ((now - A.t0) * 2.2 + (sd > 0 ? 0.5 : 0)) % 1; dust(g, X + sd * STOMP_FEET, Y, k * 0.7, 2, 17 + (sd > 0 ? 3 : 0), 12, 0.7, DUST[ph]); }
+  /* THE GAZE: both eyes burn - a hot bloom, a star, rings that fall inward over the charge (the tell), a steady blaze while the sweep runs */
+  if (m === 'gazeTell' || m === 'gaze') { const q = m === 'gaze' ? 1 : c01(1 - e.modeT / COL.gazeTell), fl = m === 'gaze' ? 0.88 + 0.12 * Math.sin(now * 41) : q * q * (3 - 2 * q);
+    for (const sd of [-1, 1]) { const ex = X + sway + 9 * sd, ey = Y + bob - 175;
+      hot(g, ex, ey, 9 + 20 * fl, 0.18 + 0.55 * fl); star(g, ex, ey, 3 + R(13 * fl), 0.35 + 0.65 * fl, m === 'gaze' ? '#fff6e0' : '#ffd8a0');
+      g.fillStyle = '#ff9a5c'; g.fillRect(ex - 4, ey - 1, 8, 3); g.fillStyle = '#fff6e0'; g.fillRect(ex - 3, ey, 6, 1);
+      if (m === 'gazeTell') for (let i = 0; i < 2; i++) { const k = ((now / 0.42) + i * 0.5) % 1; g.globalAlpha = k * 0.7 * q; g.strokeStyle = '#ffd8a0'; g.beginPath(); g.arc(ex, ey, 2 + (1 - k) * 24, 0, 6.2832); g.stroke(); g.globalAlpha = 1; } }
+    hot(g, X + sway, Y + bob - 172, 38, 0.1 + 0.2 * fl); }
+  /* THE SHARD LUNGE (wind-up): the spear, grown out of his fist - a glass shaft, tip up and back, then coming round onto its mark; trembling when it is ready.
+     (the release - the flight, the strike, the eruption - is the 'spear' fx laid when the mode turns to lunge) */
+  if (m === 'lungeTell' && S.lunge) { const Lg = S.lunge, d = Math.sign(Lg.x - e.x) || (e.face || -1), q = c01(1 - e.modeT / COL.lungeTell), H = handOf(d, X, Y, at, SH), grow = sst(q / 0.3);
+    const ms = Lg.mirror >= 0 && S.mirrors[Lg.mirror], tx = X + R(Lg.x - e.x), ty = ms ? Y - 36 : Y - 6, ang0 = Math.atan2(ty - H[1], (tx - H[0]) * d), aUp = Math.atan2(-1, 0.55), a = aUp + (ang0 - aUp) * sst((q - 0.4) / 0.5),
+      ux = Math.cos(a) * d, uy = Math.sin(a), len = 104 * grow, tr = q > 0.8 ? Math.sin(now * 70) * 0.8 : 0;
+    A.lastHand = [H[0] - X, H[1] - Y];
+    if (grow > 0.02) { spearArt(g, R(H[0] - ux * len * 0.35 + tr), R(H[1] - uy * len * 0.35), R(H[0] + ux * len * 0.65 + tr), R(H[1] + uy * len * 0.65), pal, q);
+      g.fillStyle = pal.x; g.fillRect(R(H[0]) - 3, R(H[1]) - 3, 7, 7); g.fillStyle = pal.m; g.fillRect(R(H[0]) - 2, R(H[1]) - 2, 5, 5); g.fillStyle = pal.l; g.fillRect(R(H[0]) - 2, R(H[1]) - 2, 5, 1); }   /* his fist closes round the haft */
+    if (q > 0.75) hot(g, R(H[0] + ux * len * 0.65), R(H[1] + uy * len * 0.65), 12 + 14 * (q - 0.75) * 4, 0.3, '190,255,235'); }
+}
+/* THE GAZE's SHADOWS: behind every disc a real shadow - a wedge of dark from the hood to the floor where the shade ends (a facing disc's reaches the wall) - and the faint line where
+   his light grazes its edge; the dark on the glass at its foot. Drawn in the tell (a promise: pulsing) and while the sweep runs (solid). live: 0 tell, 1 sweep */
+export function drawGazeShades(g, S, G, cx, cy, time, live, shadeLen) {
+  const y = R(G.floor - cy), ex = G.cx;
+  if (!live && S.gaze && S.art && S.art.cur) { const Z = S.gaze, c = S.art.cur, ox = R(G.cx - cx) + R(c.lean * 0.6), oy = y - 175 + R(c.bob); lite(g, () => { g.strokeStyle = 'rgba(255,190,120,' + (0.16 + 0.1 * Math.sin(time * 14)).toFixed(2) + ')'; g.beginPath(); g.moveTo(ox, oy); g.lineTo(R(Z.x - cx), y - 12); g.stroke(); }); }   /* the eyes sight along the line the sweep will run: a faint aim */
+  for (const m of S.mirrors) { const sd = Math.sign(m.x - ex); if (!sd || Math.abs(m.x - ex) < 20) continue; const face = m.notch === 'face', far = face ? (sd < 0 ? G.x0 : G.x1) : m.x + sd * shadeLen(S, m),
+      ax = R(m.x + sd * 3 - cx), bx = R(far - cx), top = y - 42; if (Math.max(ax, bx) < -4 || Math.min(ax, bx) > 460) continue;
+    const gr = g.createLinearGradient(ax, 0, bx, 0), k = live ? 1 : 0.62 + 0.18 * Math.sin(time * 9);
+    gr.addColorStop(0, 'rgba(10,4,32,' + (0.68 * k).toFixed(2) + ')'); gr.addColorStop(0.6, 'rgba(18,8,48,' + (0.5 * k).toFixed(2) + ')'); gr.addColorStop(1, 'rgba(28,14,64,0)');
+    g.fillStyle = gr; fillPolyG(g, [[ax, top], [ax, y], [bx, y]]);   /* the shadow volume: the disc's silhouette thrown to the floor */
+    g.fillStyle = gr; g.fillRect(Math.min(ax, bx), y - 5, Math.abs(bx - ax), 5);   /* the dark lying on the glass */
+    g.globalAlpha = 0.5 * k; g.strokeStyle = '#b8a8ff'; g.beginPath(); g.moveTo(ax + 0.5, top + 0.5); g.lineTo(bx + 0.5, y - 0.5); g.stroke(); g.globalAlpha = 1;   /* the lit edge of the shade */
+    if (face) lite(g, () => radial(g, R(m.x - cx), y - 36, 17 + 3 * Math.sin(time * 7), '255,236,170', live ? 0.32 : 0.18 + 0.1 * Math.sin(time * 9))); }   /* a FACING disc shines: it is the one that CATCHES the gaze */
+}
+/* THE GAZE, live: a cone of burning light from his eyes to the spot on the floor, the spot itself (a white-hot bar in a bloom of heat, embers rising), the scorch it leaves behind it,
+   and where a FACING disc catches it a glint (a starburst and a throw of sparks); a disc that only SHADES it takes the beam on its near side, dim */
+export function drawGaze(g, e, S, G, cx, cy, time, gazeBlock, W) {
+  const Z = S.gaze, A = S.art, cur = A && A.cur; if (!Z || !cur) return;
+  const y = R(G.floor - cy), ex = R(G.cx - cx) + R(cur.lean * 0.6), ey = y - 175 + R(cur.bob), sx = R(Z.x - cx), b = gazeBlock(S, Z.x);
+  /* the scorch it leaves: glowing slag cooling behind the spot (only where it was lit: never behind a disc's shade) */
+  const t0 = Z.dir < 0 ? G.x1 - 6 : G.x0 + 6;
+  for (let x = Z.x - Z.dir * 3; (x - t0) * Z.dir >= 0 && Math.abs(x - Z.x) < 170; x -= Z.dir * 5) { const ag = Math.abs(x - Z.x) / 170; if (gazeBlock(S, x)) continue; const q = R(x - cx); if (q < -6 || q > 440) continue;
+    g.globalAlpha = (1 - ag) * 0.75; g.fillStyle = ag < 0.25 ? '#ffb050' : ag < 0.6 ? '#c8582c' : '#5a2a32'; g.fillRect(q, y - 2, 5, 2); g.fillStyle = '#0a0410'; g.fillRect(q, y - 1, 5, 1); }
+  g.globalAlpha = 1;
+  const eyes = [ex - 8, ex + 8];
+  if (!b) {
+    lite(g, () => { const gr = g.createLinearGradient(ex, ey, sx, y); gr.addColorStop(0, 'rgba(255,200,130,0.1)'); gr.addColorStop(0.7, 'rgba(255,190,110,0.32)'); gr.addColorStop(1, 'rgba(255,230,170,0.66)'); g.fillStyle = gr; fillPolyG(g, [[ex - 7, ey], [ex + 7, ey], [sx + W + 2, y], [sx - W - 2, y]]);
+      g.strokeStyle = 'rgba(255,214,150,0.5)'; for (const q of eyes) { g.beginPath(); g.moveTo(q, ey); g.lineTo(sx + (q < ex ? -4 : 4), y - 1); g.stroke(); } });   /* the cone and the two eye-rays that make it */
+    g.strokeStyle = 'rgba(255,250,230,0.55)'; g.beginPath(); g.moveTo(ex + 0.5, ey); g.lineTo(sx + 0.5, y - 1); g.stroke();
+    lite(g, () => { g.save(); g.translate(sx, y - 1); g.scale(1, 0.28); const gr = g.createRadialGradient(0, 0, 2, 0, 0, 50); gr.addColorStop(0, 'rgba(255,200,120,0.8)'); gr.addColorStop(1, 'rgba(255,120,50,0)'); g.fillStyle = gr; g.fillRect(-50, -50, 100, 100); g.restore(); });   /* the heat on the glass */
+    g.fillStyle = '#ff7a3c'; g.fillRect(sx - W - 1, y - 4, W * 2 + 2, 4); g.fillStyle = '#ffb870'; g.fillRect(sx - W + 1, y - 4, W * 2 - 2, 3); g.fillStyle = '#fff6e0'; g.fillRect(sx - W + 3, y - 3, W * 2 - 6, 2); g.fillStyle = '#ffffff'; g.fillRect(sx - 3, y - 3, 6, 1);   /* the burning spot */
+    for (let i = 0; i < 7; i++) { const k = (time * 1.9 + i * 0.151) % 1; g.globalAlpha = 1 - k; g.fillStyle = i % 2 ? '#ffd890' : '#ff9a5c'; g.fillRect(sx + R((rnd(i, 3) - 0.5) * W * 2.2), y - 5 - R(k * 24), 1, 2); }   /* embers lift off it */
+    g.globalAlpha = 1; star(g, sx, y - 3, 6, 0.5 + 0.3 * Math.sin(time * 33)); }
+  else { const mx = R(b.m.x - cx), my = y - 36, caught = b.how === 'caught';
+    lite(g, () => { const gr = g.createLinearGradient(ex, ey, mx, my); gr.addColorStop(0, 'rgba(255,200,130,0.06)'); gr.addColorStop(1, 'rgba(255,236,180,' + (caught ? 0.5 : 0.26) + ')'); g.fillStyle = gr; fillPolyG(g, [[ex - 7, ey], [ex + 7, ey], [mx + 8, my + 5], [mx - 8, my - 5]]); });
+    g.strokeStyle = 'rgba(255,250,230,' + (caught ? 0.7 : 0.35) + ')'; g.beginPath(); g.moveTo(ex + 0.5, ey); g.lineTo(mx + 0.5, my); g.stroke();
+    if (caught) { hot(g, mx, my, 26 + 6 * Math.sin(time * 30), 0.8, '255,240,190'); star(g, mx, my, 12 + R(3 * Math.sin(time * 25)), 1, '#fff6c8');
+      for (let i = 0; i < 6; i++) { const k = (time * 2.4 + i * 0.17) % 1, an = -1.2 + i * 0.42 - (b.m.x < G.cx ? 0 : 0.6); g.globalAlpha = 1 - k; g.fillStyle = i % 2 ? '#ffffff' : '#ffd36b'; g.fillRect(mx + R(Math.cos(an) * (6 + k * 26)), my + R(Math.sin(an) * (6 + k * 26)), 2, 1); } g.globalAlpha = 1;   /* the glint thrown off the polished face */
+      lite(g, () => { g.strokeStyle = 'rgba(255,236,170,0.45)'; g.beginPath(); g.moveTo(mx, my); g.lineTo(mx + (b.m.x < G.cx ? -1 : 1) * 40, my - 40); g.stroke(); }); }   /* and a stray bounce, wasted skyward */
+    else hot(g, mx, my, 14, 0.3, '255,200,130'); }
+}
+/* THE BRAZIERS (the arena's four, Glass Sea fire): a bronze bowl on three legs on a glass plinth, glass lumps heaped on its coals, the flame tall; when its mirror is TO THE FIRE (st.lit) the flame
+   leans into the disc (st.dir) and burns tall - the light that is thrown. st = { dir, lit } from src/glass-colossus-hands.js drawBack (setBraziers) */
+const BRZ = new Map();
+export function setBraziers(list) { BRZ.clear(); for (const [x, st] of list) BRZ.set(Math.round(x), st); }
+export const brazierState = x => BRZ.get(Math.round(x)) || null;
+export function drawBrazier(g, x, y, time, seed, st) {
+  const B = { d: '#4a2e1a', m: '#8a5a2a', l: '#c89a4a', h: '#ffd36b' }, lit = !!(st && st.lit), dir = st ? st.dir : 0, hf = lit ? 1 : 0.7;
+  /* the plinth: a fused-glass block, pale on top; the three legs, the stem, the bowl and its bands */
+  g.fillStyle = '#175260'; g.fillRect(x - 11, y - 4, 22, 4); g.fillStyle = '#34908c'; g.fillRect(x - 11, y - 4, 22, 2); g.fillStyle = '#c8fff0'; g.fillRect(x - 10, y - 4, 20, 1); g.fillStyle = '#06202e'; g.fillRect(x - 12, y - 1, 24, 1);
+  for (const sd of [-1, 1]) for (let i = 0; i < 12; i++) { const lx = x + sd * (3 + R(i * 0.5)); g.fillStyle = B.d; g.fillRect(lx, y - 5 - i, 2, 1); g.fillStyle = B.l; g.fillRect(lx + (sd > 0 ? 0 : 1), y - 5 - i, 1, 1); }
+  g.fillStyle = B.d; g.fillRect(x - 1, y - 14, 3, 10); g.fillStyle = B.m; g.fillRect(x - 1, y - 14, 1, 10); g.fillStyle = B.l; g.fillRect(x - 1, y - 14, 1, 3);
+  g.fillStyle = B.h; g.fillRect(x - 5, y - 10, 10, 1); g.fillStyle = B.d; g.fillRect(x - 5, y - 9, 10, 1);   /* the cross-ring */
+  for (let i = 0; i < 6; i++) { const hw = R(9 - Math.abs(i - 2) * (i > 2 ? 1.2 : 0.4)); g.fillStyle = i === 0 ? B.h : i < 3 ? B.l : i < 5 ? B.m : B.d; g.fillRect(x - hw - 2, y - 21 + i, hw * 2 + 5, 1); }   /* the bowl */
+  g.fillStyle = B.d; g.fillRect(x - 12, y - 22, 25, 1); g.fillStyle = B.h; g.fillRect(x - 11, y - 23, 23, 1); g.fillStyle = B.l; g.fillRect(x - 11, y - 22, 3, 1);   /* the rim, lit */
+  /* the fuel: pale glass lumps over the embers, each glinting, and a molten glow in the bowl */
+  g.fillStyle = '#7a2a10'; g.fillRect(x - 9, y - 24, 19, 2); g.fillStyle = '#ff6a20'; for (let i = 0; i < 7; i++) if ((i + R(time * 5 + seed)) % 2) g.fillRect(x - 8 + i * 3, y - 24, 2, 1);
+  for (const [dx, w, h, col] of [[-8, 5, 3, '#7adcc4'], [-3, 4, 4, '#c8fff0'], [2, 5, 3, '#7adcc4'], [6, 3, 2, '#34908c']]) { g.fillStyle = '#0a1c26'; g.fillRect(x + dx - 1, y - 24 - h, w + 2, h + 1); g.fillStyle = col; g.fillRect(x + dx, y - 24 - h + 1, w, h - 1); g.fillStyle = '#ffffff'; g.fillRect(x + dx, y - 24 - h + 1, 1, 1); }
+  /* the flame: three tongues (red, amber, white-hot), each swaying on its own beat, all leaning toward its mirror when lit; sparks above */
+  const base = y - 26, top = (lit ? 25 : 16) * hf;
+  for (let i = 0; i < 3; i++) { const sway = Math.sin(time * (5 + i) + seed * 1.3 + i * 2.1), hh = (top - i * 4.5) * (0.78 + 0.22 * Math.abs(Math.sin(time * 7.3 + i * 1.9 + seed))), w = (lit ? 9 : 7) - i * 2, lean = dir * (lit ? (3 + 4 * i) : 0.8) + sway * 1.2, cols = ['#ff6a2a', '#ffb050', '#fff2a0'];
+    for (let r = 0; r < hh; r++) { const f = r / hh, ww = Math.max(1, R(w * (1 - f * f * 0.9))), lx = R(x - ww / 2 + lean * f * f); g.fillStyle = cols[i]; g.fillRect(lx, R(base - r), ww, 1); } }
+  for (let i = 0; i < 5; i++) { const t = (time * (lit ? 1.5 : 0.9) + i * 0.2 + seed * 0.13) % 1; g.fillStyle = i % 2 ? '#ffd890' : '#ffb050'; g.fillRect(R(x - 5 + i * 2.5 + dir * t * (lit ? 14 : 3) + Math.sin(t * 6 + i) * 2), R(base - 10 - t * (lit ? 34 : 24)), 1, 1); }
+  g.globalCompositeOperation = 'lighter'; const r0 = lit ? 60 : 40, pool = g.createRadialGradient(x, y, 2, x, y, r0); pool.addColorStop(0, 'rgba(255,170,80,' + (lit ? 0.46 : 0.32) + ')'); pool.addColorStop(1, 'rgba(255,140,60,0)'); g.fillStyle = pool; g.save(); g.translate(x, y); g.scale(1, 0.32); g.translate(-x, -y); g.fillRect(x - r0, y - r0, r0 * 2, r0 * 2); g.restore();
+  const hg = g.createRadialGradient(x + dir * 3, base - 8, 1, x + dir * 3, base - 8, lit ? 30 : 20); hg.addColorStop(0, 'rgba(255,190,100,' + (lit ? 0.4 : 0.26) + ')'); hg.addColorStop(1, 'rgba(255,150,70,0)'); g.fillStyle = hg; g.fillRect(x - 40, base - 48, 80, 80); g.globalCompositeOperation = 'source-over';
+}
+/* TOO FAR FROM HIM: the mirror's throw dies a short way from its disc - a dim beam STUB that fades to nothing (motes drifting from its end), plus the dim run from the brazier into the disc.
+   ph 2: the firelight, along the floor toward him; ph 3: the dawn, up toward his crown */
+export function drawStub(g, m, G, cx, cy, time, ph) {
+  const x = R(m.x - cx), y = R(G.floor - cy), sd = m.x < G.cx ? 1 : -1;
+  if (ph === 2) { const fx = R(G.fires[m.i] - cx), x0 = x + sd * 6, y0 = y - 38; g.globalCompositeOperation = 'lighter';
+    g.strokeStyle = 'rgba(255,150,60,0.14)'; g.lineWidth = 4; g.beginPath(); g.moveTo(fx, y - 24); g.lineTo(x - sd * 5, y - 38); g.stroke(); g.lineWidth = 1; g.strokeStyle = 'rgba(255,200,130,0.35)'; g.beginPath(); g.moveTo(fx, y - 24); g.lineTo(x - sd * 5, y - 38); g.stroke();   /* brazier -> disc, dim */
+    const gr = g.createLinearGradient(x0, 0, x0 + sd * 46, 0); gr.addColorStop(0, 'rgba(255,170,90,0.45)'); gr.addColorStop(1, 'rgba(255,150,70,0)'); g.fillStyle = gr; g.beginPath(); g.moveTo(x0, y0 - 2); g.lineTo(x0 + sd * 46, y - 3); g.lineTo(x0 + sd * 46, y); g.lineTo(x0, y0 + 2); g.closePath(); g.fill();
+    g.globalCompositeOperation = 'source-over'; for (let i = 0; i < 4; i++) { const k = (time * 0.8 + i * 0.25) % 1; g.globalAlpha = (1 - k) * 0.7; g.fillStyle = i % 2 ? '#ffd890' : '#ffb050'; g.fillRect(x0 + sd * R(30 + k * 18 + i * 3), y - 5 - R(k * 8 + (i % 2) * 3), 1, 1); } g.globalAlpha = 1; }
+  else { const x0 = x, y0 = y - 42; g.globalCompositeOperation = 'lighter'; const gr = g.createLinearGradient(x0, y0, x0 + sd * 22, y0 - 40); gr.addColorStop(0, 'rgba(255,240,190,0.5)'); gr.addColorStop(1, 'rgba(255,230,160,0)');
+    g.strokeStyle = gr; g.lineWidth = 4; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x0 + sd * 22, y0 - 40); g.stroke(); g.lineWidth = 1; g.globalCompositeOperation = 'source-over';
+    for (let i = 0; i < 4; i++) { const k = (time * 0.7 + i * 0.25) % 1; g.globalAlpha = (1 - k) * 0.7; g.fillStyle = i % 2 ? '#fff6c8' : '#ffe08a'; g.fillRect(x0 + sd * R(14 + k * 14), y0 - R(26 + k * 14), 1, 1); } g.globalAlpha = 1; }
 }
 /* THE HOLDS: crystal ledges growing out of the body, glowing; they flash at the shake's tell */
 export function drawHolds(g, e, S, G, cx, cy, time) {
-  const tellShake = e && e.mode === 'shakeTell', pulse = 0.5 + 0.5 * Math.sin(time * 4);
-  const paint = (l, i, kind) => { const x = R(l.l - cx), y = R(l.y - cy), w = R(l.r - l.l), body = x < R(G.cx - cx);
+  const tellShake = e && e.mode === 'shakeTell', pulse = 0.5 + 0.5 * Math.sin(time * 4), off = G.col != null ? R(G.cx - G.col * G.TS) : 0;   /* (claude/colart) the slabs glide with his centre: the tiles are re-laid a column (16 px) at a time, the DRAWING eases the rest */
+  const paint = (l, i, kind) => { const x = R(l.l - cx) + off, y = R(l.y - cy), w = R(l.r - l.l), body = l.l < G.cx;
     const rows = ['#ffffff', '#c8fff0', '#7adcc4', '#7adcc4', '#34908c', '#175260'];   /* a polished slab, six rows thick: white-hot top, mint, teal, a dark underside */
     for (let r = 0; r < 6; r++) { g.fillStyle = rows[r]; g.fillRect(x + (r === 0 ? 1 : 0), y + r, w - (r === 0 ? 2 : 0), 1); }
     g.fillStyle = '#e6fff6'; for (let k = 6; k < w - 3; k += 9) g.fillRect(x + k, y + 2, 1, 3);   /* facet ticks */
