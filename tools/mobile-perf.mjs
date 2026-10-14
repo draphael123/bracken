@@ -20,7 +20,7 @@ const SECS = +(process.env.MP_SECS || 4);
 /* (the PC runs other lanes while this runs, so the timing budgets are loose guards against a real regression - the structural guards below, which a busy PC cannot flake, are the sharp ones) */
 const BUDGET = { bootMs: +(process.env.MP_BOOT_BUDGET || 150000), fpsMin: +(process.env.MP_FPS_MIN || 40), worstMs: 600, inputMs: 50, canvasMegapixels: 1.3 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const pg = await openPage({ noWait: true, audio: false, fonts: false });
+const pg = await openPage({ noWait: true, audio: false, fonts: false, speed: +(process.env.MP_SPEED || 1) })   /* the live default is 100% now (batch 92): MP_SPEED=2 measures the double sub-step */;
 const fails = [], rows = [], out = { cpu: CPU, viewport: W + 'x' + H + '@' + DPR };
 const E = (x, t = 120000) => pg.evalp(x, t);
 try {
