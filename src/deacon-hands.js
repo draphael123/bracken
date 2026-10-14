@@ -1,6 +1,6 @@
 // src/deacon-hands.js - THE DEACON's HANDS (claude/church2). src/deacon.js is the fight (pure); this binds it to the world: his told blows on the heroes (keyed
 // once a blow; a shield turns only the yellow ones), the hook's haul, HIS FOUR LAMPS (the level's: src/lit-church-hands.js snuffs them - onLamp, brings a
-// chandelier down, and lights them when he kindles), his arena's arming (he is not in the church until you are out of the well: 'away', harmless, unseen),
+// chandelier down, and lights them when he kindles), his waiting (asleep behind the parclose until you come up the well into his room),
 // and the drawing: GREYBOX shapes until the art pass - a tall cleric in a black cassock and a white stole, a long brass pole (a hook one end, a flame the
 // other), every move its own windup + release pose of the pole; his LIGHT BAR, the holy fire of the arc, and the B10 read.
 // main.js calls: spawn, owns, idle, wake, update, take, drawBoss, drawOver, barName, end, read, show, clear, onLamp.
@@ -19,7 +19,7 @@ export function makeDeaconHands(ctx) {
   H.clear = () => { S = null; };
   const geom = Ar => ({ x0: Ar.x0, x1: Ar.x1, floorY: Ar.floor, roofY: Ar.y0 });
   H.spawn = base => { const Ar = A(); S = Ar ? DCM.newFight(geom(Ar)) : null;
-    return { ...base, t: 'deacon', mini: true, xpRole: 'mini', w: DC.w, h: DC.h, hp: ctx.EHP.deacon, maxHp: ctx.EHP.deacon, noGrav: true, markH: DC.markH, face: -1, mode: 'away', modeT: 0, open: 0, phase: 1, vx: 0, harmless: true, gone: 9 }; };
+    return { ...base, t: 'deacon', mini: true, xpRole: 'mini', w: DC.w, h: DC.h, hp: ctx.EHP.deacon, maxHp: ctx.EHP.deacon, noGrav: true, markH: DC.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, vx: 0 }; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.dcKeys = pp.dcKeys || new Map(); if (pp.dcKeys.size > 80) pp.dcKeys.clear(); if (pp.dcKeys.has(key)) return true; pp.dcKeys.set(key, 1); return false; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
@@ -36,17 +36,17 @@ export function makeDeaconHands(ctx) {
           if (o.blockable && (res === 'blocked' || (ctx.answered && ctx.answered(res)))) DCM.blowTurned(e, S, world(e), !!(ctx.answered && ctx.answered(res))); }); return any; },
     };
   }
-  /* BEFORE THE FIGHT he is not there (the arena is armed once you are out of the well: src/lit-church-hands.js miniArmed) */
-  H.idle = (e, dt) => { if (e.mode === 'away') { e.harmless = true; e.gone = 9; e.vx = 0; } };
+  /* BEFORE THE FIGHT he tends his lamps behind the parclose (you see him on the way to the transept: B8) */
+  H.idle = (e, dt) => { if (e.mode === 'sleep') { e.vx = 0; e.anim = (e.anim || 0) + dt; } };
   H.wake = e => { const Ar = A(); if (!Ar) return; if (!S) S = DCM.newFight(geom(Ar)); e.harmless = false; e.gone = 0; e.mode = 'wake'; e.modeT = 1.4; e.y = Ar.floor;
     ctx.number(e.x, e.y - 76, 'THE DEACON KEEPS THE LAMPS', '#ffd36b'); ctx.number((Ar.x0 + Ar.x1) / 2, Ar.floor - 96, 'HIS LAMPS ARE HIS LIGHT: SNUFF THEM, HIT HIM LOW', '#ffd36b'); for (const pp of ctx.players) pp.dcKeys = null; };
-  H.update = (e, dt) => { if (!S || !e.alive) return; if (e.mode === 'away') { H.wake(e); return; }
+  H.update = (e, dt) => { if (!S || !e.alive) return; if (e.mode === 'sleep' || e.mode === 'away') { H.wake(e); return; }
     DCM.stepDeacon(e, S, dt, heroes(), world(e));
     if (S.light > S.lastLight + 4) S.barUp = 0.35; else if (S.light < S.lastLight - 4) S.barDown = 0.35; S.lastLight = S.light; S.barUp = Math.max(0, (S.barUp || 0) - dt); S.barDown = Math.max(0, (S.barDown || 0) - dt); };
   /* THE RULE ON HIM: one of his lamps snuffed, or a chandelier brought down (src/lit-church-hands.js) */
   H.onLamp = l => { const e = live(); if (!S || !e || e.mode === 'away' || !l || !l.deacon) return; const under = !!l.dropped && Math.abs(e.x - (l.x * ctx.TS + 8)) < 20;
     const d = DCM.lampOut(e, S, world(e), { id: l.id, dropped: !!l.dropped, under }); if (d > 0 && ctx.hurtFoe) ctx.hurtFoe(e, d); };
-  H.take = (e, dmg, blow) => { if (!S) return e.mode === 'away' ? 0 : dmg; const P = ctx.hero();
+  H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
     if (!blow && ctx.burnTick && ctx.burnTick()) return DCM.burnOn(e, S, dmg).dmg;
     const heavy = ctx.blowHas ? ctx.blowHas(blow, 'heavy') : false, low = ctx.blowHas ? (ctx.blowHas(blow, 'sweep') || ctx.blowHas(blow, 'low')) : false;
     const r = DCM.blowOn(e, S, world(e), dmg, P.x, P.y, !P.ground && !P.climb, heavy, low);
@@ -75,7 +75,7 @@ export function makeDeaconHands(ctx) {
       case 'reel': return [-0.6, -6, 30, 'hook'];
     }
     return [0, 2, 40, 'hook'];   /* ON GUARD: crosswise HIGH over his head (the read: hit him low) */ };
-  H.drawBoss = (g, e, cx, cy, time) => { if (!e.alive || e.mode === 'away') return; const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy), flash = (e.hurtT || 0) > 0, open = DCM.dcOpen(e);
+  H.drawBoss = (g, e, cx, cy, time) => { if (!e.alive) return; const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy), flash = (e.hurtT || 0) > 0, open = DCM.dcOpen(e);
     const hunch = e.mode === 'grope' ? 4 : e.mode === 'reel' ? -2 : 0, top = y - DC.h + hunch;
     g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 9, y - 1, 18, 2); g.globalAlpha = 1;
     /* the cassock, the stole, the head */

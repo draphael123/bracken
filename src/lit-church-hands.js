@@ -86,6 +86,7 @@ export function makeLitChurchHands(ctx) {
       case 'reliquary': number(x, y, 'THE RELIQUARY OPENS', '#8fd160'); break;
       case 'sacristy': number(x, y, 'THE SACRISTY DOOR IS UNBARRED: A WAY BACK TO THE CRYPT', '#8fd160'); break;
       case 'chantry': number(x, y, 'THE CHANTRY DOOR OPENS', '#8fd160'); break;
+      case 'parclose': break;   /* (it opens with the crypt grate: one line is enough) */
     } }
   H.door = id => (K ? (K.doors.find(q => q.id === id) || {}).open : false);
 
@@ -116,11 +117,9 @@ export function makeLitChurchHands(ctx) {
   H.light = id => (K ? lightLamp(lampOf(id), 'boss') : false);   /* THE PALADIN's kindling (src/paladin-boss-hands.js) */
   H.lampsOf = room => (K ? K.lamps.filter(l => l.room === room).map(l => ({ id: l.id, x: px(l), lit: l.lit })) : []);
   H.deaconLamps = () => (K ? K.lamps.filter(l => l.deacon).map(l => ({ id: l.id, x: px(l), y: py(l), lit: l.lit, hang: !!l.hang && !l.fall })) : []);   /* (claude/church2) THE DEACON's four: two sconces, two chandeliers on chains */
-  /* THE DEACON's ARENA IS ARMED once you are out of the well (he waits for you at its top); the boss lab arms it by hand (BK.armMini) */
-  H.miniArmed = () => !!K && (K.escaped || !!K.labArm);
-  H.armMini = () => { if (K) K.labArm = true; };
+
   /* LAMP THREE: the crossing's crypt grate cracks open (the way up), and the dark is ARMED - it rises when you set foot in the well */
-  function crack() { openDoor('cryptgrate');
+  function crack() { openDoor('cryptgrate'); openDoor('parclose');   /* (claude/church2) the parclose grille swings open with it: THE DEACON's crossing */
     if (!K.escaped) K.dark.st = 'armed'; ctx.shake(6); ctx.sfx.crack && ctx.sfx.crack(); }
 
   /* ---------- THE FLAME IN YOUR HAND ---------- */

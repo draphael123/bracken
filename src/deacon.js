@@ -1,7 +1,7 @@
 // src/deacon.js - THE DEACON, LIT CHURCH 2's MINI (claude/church2; Daniel 10-10 brief section 3: "just a conception, we build next week" - built here).
 // WHO: the church's lamplighter - a tall cleric with a long brass LAMPLIGHTER'S POLE (a snuffer hook one end, a flame the other). He keeps the lamps; the dark is
 //   his enemy. PLACE: THE CROSSING, at the top of the crypt well - THE DARK RISES climb ends there, and he is waiting (a 4-lamp room: two floor sconces and two
-//   chandeliers on chains). He waits until you are out of the well (src/lit-church-hands.js miniArmed); before that he is not in the church.
+//   chandeliers on chains). Before lamp three he tends them behind THE PARCLOSE (an iron grille off the piers): you only come into his room up the well.
 // A DUELIST (B11): ALWAYS HITTABLE, GUARDS BY ANGLE - on guard he holds the pole crosswise HIGH: a blow from his front (at his height, or from a jump over him)
 //   is turned (B15: x DC.guardTake, CLANK, "GUARDS HIGH: HIT LOW"); a LOW blow (the sweep: DOWN + X) or one from BEHIND lands whole; so does anything while he
 //   is committed (his tells, his kindling, a reel).
@@ -55,7 +55,7 @@ function endGrope(e, S, c) { e.open = 0; S.ward = DC.wardT; S.n.wards++; setLigh
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
 /* A BLOW ON HIM from a hero at (hx, hy); low: the blow is a sweep. Returns { dmg, read } - 'guard' (his pole high turned it), 'ward', 'open', 'landed' */
 export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy, low) {
-  if (!e || !e.alive || e.mode === 'away' || e.mode === 'wake') return { dmg: 0, read: 'ward' };
+  if (!e || !e.alive || (e.mode === 'away' || e.mode === 'sleep') || e.mode === 'wake') return { dmg: 0, read: 'ward' };
   if (S.ward > 0) { S.n.warded++; return { dmg: 0, read: 'ward' }; }
   if (dcOpen(e)) { const cap = e.maxHp * DC.gropeCap - S.gropeTaken; const d = Math.max(0, Math.min(Math.round(dmg * DC.gropeMul), Math.round(cap))); S.gropeTaken += d; return { dmg: d, read: 'open' }; }
   if (guarded(e, hx, hy, airborne, low)) { S.n.guarded++; if (!S.told.guard || S.n.guarded % 4 === 0) { S.told.guard = 1; c.number(e.x, e.y - 64, 'HIS POLE GUARDS HIGH: HIT LOW', '#ffd36b'); } return { dmg: Math.max(1, Math.round(dmg * DC.guardTake)), read: 'guard' }; }
@@ -65,14 +65,14 @@ export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy, low) {
   if (!S.told.land) { S.told.land = 1; c.number(e.x, e.y - 64, 'IT LANDS: HIS LIGHT GUTTERS', '#8fd160'); }
   return { dmg, read: 'landed' };
 }
-export function burnOn(e, S, dmg) { if (!e || !e.alive || e.mode === 'away' || S.ward > 0) return { dmg: 0, read: 'ward' };
+export function burnOn(e, S, dmg) { if (!e || !e.alive || (e.mode === 'away' || e.mode === 'sleep') || S.ward > 0) return { dmg: 0, read: 'ward' };
   if (dcOpen(e)) { const d = Math.max(0, Math.min(dmg, Math.round(e.maxHp * DC.gropeCap - S.gropeTaken))); S.gropeTaken += d; return { dmg: d, read: 'open' }; } return { dmg, read: 'burn' }; }
 /* HIS BLOW TURNED: on the beat (a parry, a perfect guard) the sweep or the jab is a riposte - he reels */
 export function blowTurned(e, S, c, perfect) { if (!e || !e.alive || dcOpen(e) || S.ward > 0) return;
   if (e.mode === 'hook') { S.haul = null; }   /* a shield turns the hook: nothing caught */
   if (perfect && (e.mode === 'sweep' || e.mode === 'jab' || e.mode === 'hook')) { setMode(e, 'reel', DC.reelT); c.number(e.x, e.y - 64, 'ON THE BEAT: HE REELS', '#8fd160'); } }
 /* ONE OF HIS LAMPS SNUFFED (a blade through it): his light gutters; a CHANDELIER brought down ON HIM (dropped: true, under: he stood under it) staggers him */
-export function lampOut(e, S, c, o = {}) { if (!e || !e.alive || e.mode === 'away') return 0; S.n.lampsOut++; takeLight(S, DC.light.lampDim);
+export function lampOut(e, S, c, o = {}) { if (!e || !e.alive || (e.mode === 'away' || e.mode === 'sleep')) return 0; S.n.lampsOut++; takeLight(S, DC.light.lampDim);
   if (o.dropped) S.n.drops++;
   if (o.dropped && o.under && !dcOpen(e) && !(S.ward > 0)) { S.n.dropsOnHim++; const d = Math.round(e.maxHp * DC.drop.dmg); setMode(e, 'reel', DC.drop.stun); S.haul = null; c.number(e.x, e.y - 72, 'THE CHANDELIER COMES DOWN ON HIM', '#8fd160'); c.shake(5); return d; }
   if (e.mode === 'kindleTell' && o.id && o.id === S.kindleId) { setMode(e, 'recover', 0.4); }
@@ -85,7 +85,7 @@ export function stepDeacon(e, S, dt, h, c) {
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; e.dcLight = S.light;
   stepFire(e, S, dt, c);
-  if (e.mode === 'away') return;
+  if ((e.mode === 'away' || e.mode === 'sleep')) return;
   if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = nextScript(S); S.step = 0; setMode(e, 'walk', 0.5); } return; }
   const lamps = c.lamps ? c.lamps() : [], lit = lamps.filter(l => l.lit).length;
   if (S.starved && S.light <= 0 && e.mode !== 'grope' && S.ward <= 0 && !STRIKE.has(e.mode)) { grope(e, S, c); return; }

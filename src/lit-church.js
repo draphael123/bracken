@@ -156,9 +156,11 @@ export function buildLitChurch({ painter, T, TS }) {
   block(179, 179, GF + 1, NF - 1); doors.push({ id: 'rood', x0: 179, x1: 179, y0: NF - 5, y1: NF - 1, by: 'rood' });
   lamp('rood1', 176, NF - 3, 'crossing', 'rood', { of: 'chapel1' }); lamp('rood2', 177, NF - 3, 'crossing', 'rood', { of: 'chapel2' }); lamp('rood3', 178, NF - 3, 'crossing', 'rood', { of: 'chapel3', hand: true });
   sign(172, NF - 1, 'THE ROOD SCREEN OPENS WHEN ITS THREE SCONCES BURN.');
-  /* THE DEACON's CROSSING (claude/church2, src/deacon.js): the church's lamplighter waits here at the top of the crypt well - once you are out of it (the arena is
-     armed then: src/lit-church-hands.js miniArmed). HIS FOUR LAMPS: two floor sconces and two chandeliers on chains from the transept floor over the crossing
-     (struck, a chandelier's chain parts and it comes down - on him, if he stands under it). The pier side (cols 152-159) is shut by the fight's wall */
+  /* THE DEACON's CROSSING (claude/church2, src/deacon.js): the church's lamplighter waits here at the top of the crypt well. THE PARCLOSE (col 160: an iron grille)
+     shuts the crossing's east half off the piers until LAMP THREE cracks the crypt - so you only ever come into his room up the well (and you see him behind the
+     grille on the way to the transept: B8). HIS FOUR LAMPS: two floor sconces and two chandeliers on chains from the transept floor over the crossing (struck, a
+     chandelier's chain parts and it comes down - on him, if he stands under it). The fight's wall shuts the parclose again behind you */
+  doors.push({ id: 'parclose', x0: 160, x1: 160, y0: 30, y1: NF - 1, by: 'chapel3' });
   lamp('dcSconceW', 166, NF - 1, 'crossing', 'arena', { lit: true, deacon: true }); lamp('dcSconceE', 175, NF - 1, 'crossing', 'arena', { lit: true, deacon: true });
   lamp('dcChanW', 163, 33, 'crossing', 'arena', { lit: true, deacon: true, hang: true, top: 30, floorRow: NF - 1 }); lamp('dcChanE', 171, 33, 'crossing', 'arena', { lit: true, deacon: true, hang: true, top: 30, floorRow: NF - 1 });
   ent('deacon', 173, NF - 1, { face: -1 });
@@ -313,7 +315,7 @@ export function buildLitChurch({ painter, T, TS }) {
   const OUT = {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
-    mini: { name: 'THE DEACON', x0: 160 * TS, x1: 179 * TS, floor: NF * TS, y0: 29 * TS, y1: (NF + 1) * TS, trigger: 161 * TS, wallL: 159, gate: 159, boss: 'deacon', armed: 'escaped', start: [163, NF - 1] },   /* (claude/church2) THE DEACON at the top of the crypt well: armed once you are out of it */
+    mini: { name: 'THE DEACON', x0: 160 * TS, x1: 179 * TS, floor: NF * TS, y0: 29 * TS, y1: (NF + 1) * TS, trigger: 161 * TS, wallL: 159, gate: 159, boss: 'deacon', start: [163, NF - 1] },   /* (claude/church2) THE DEACON at the top of the crypt well (behind the parclose until lamp three) */
     litchurch: true, rows: { nave: NF, gallery: GF, crypt: CF, south: SF }, dark: 0.08,   /* dark: the base under the rooms' own (src/lit-church-hands.js sets each room's darkZones value from its lamps every frame) */
     darkZones: rooms.map(r => ({ x0: r.x0 * TS, x1: (r.x1 + 1) * TS, y0: r.y0 * TS, y1: (r.y1 + 1) * TS, dark: r.dark ? 0.78 : 0.3, room: r.id })),
     rooms, lamps, sources, bellows, desks, grates, doors, decor, vaultDoors, drops, troughs,

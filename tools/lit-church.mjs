@@ -171,7 +171,7 @@ ok((STUCK_HANDS.church || []).length >= 8 && STUCK_HANDS.church.every(sp => (sp.
   ok(said.filter(s => /^[A-Z]/.test(s) && !/^\+/.test(s)).every(s => isCallout(s) || s === '!'), 'every line the hands said is one the player can see (src/hint-lines.js): ' + said.filter(s => /^[A-Z]/.test(s) && !isCallout(s) && s !== '!').slice(0, 3).join(' | ')); }
 
 /* ---------- THE DEACON in a fake world (claude/church2: the litchurch Paladin's light bar and falter moved here; THE PALADIN's own check is tools/paladin-boss.mjs) ---------- */
-{ const M = L.mini; ok(M && M.boss === 'deacon' && M.armed === 'escaped' && L.ents.some(e => e.t === 'deacon'), 'THE DEACON is the crossing\'s mini, armed once you are out of the crypt well');
+{ const M = L.mini; ok(M && M.boss === 'deacon' && L.ents.some(e => e.t === 'deacon') && L.doors.find(d => d.id === 'parclose' && d.by === 'chapel3' && d.x0 === 160), 'THE DEACON is the crossing\'s mini, behind the parclose until lamp three: you come into his room up the crypt well');
   const dl = L.lamps.filter(l => l.deacon); ok(dl.length === 4 && dl.filter(l => l.hang).length === 2 && dl.every(l => l.x * TS >= M.x0 && (l.x + 1) * TS <= M.x1), 'his four lamps stand in his room: two sconces, two chandeliers on chains');
   ok(L.doors.find(d => d.id === 'cryptgrate').oneway, 'the cracked crypt grate swings up as an iron grate (one-way): his floor is whole, and you come up through it');
   const G = { x0: M.x0, x1: M.x1, floorY: M.floor, roofY: M.y0 };
