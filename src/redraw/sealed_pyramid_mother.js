@@ -78,6 +78,12 @@ export const POSE_DEFS = {
   burrowTell:{ lift: -8, hy: 8, hx: 4, hornUp: -5, horn: 3, mand: 1, feet: [[-20, 0], [-6, 0], [10, 6]], knee: [[-24, -7], [-9, -8], [14, -2]], ab: 1 },
   burrowUp:{ lift: -12, hy: 6, hx: 0, hornUp: -3, mand: 2, feet: [[-20, 0], [-8, 0], [8, 0]], knee: [[-24, -5], [-10, -6], [10, -6]], ab: -2 },
   quakeTell:{ lift: 6, tilt: 1, hy: -8, hx: -9, hornUp: 4, mand: 5, feet: [[-18, 0], [-6, 0], [4, 17]], knee: [[-24, -10], [-9, -12], [9, -20]], ab: -6, abx: -2 },
+  /* (claude/pyramidart) THE TWO MOVES THAT ANSWER CROWDING, each its own windup and release (B16): LEAP-SLAM crouched, every leg coiled, the body sunk, the head low and the horn levelled /
+     airborne, every foot off the ground, the forelegs thrown out ahead, the mandibles wide; BURROW-UP dug in to the shoulders, the forelegs raking, the horn down / thrown up out of the floor, legs trailing sand */
+  leapTell: { lift: -9, hy: 5, hx: 3, hornUp: -4, horn: 4, mand: 1, feet: [[-27, 0], [-13, 0], [5, 0]], knee: [[-33, -15], [-19, -16], [1, -15]], ab: 2, abx: 2 },
+  leap:     { lift: 6, hy: -3, hx: 7, hornUp: 1, horn: 3, mand: 7, feet: [[-20, 8], [-6, 10], [16, 15]], knee: [[-26, -10], [-10, -12], [19, -9]], ab: -3, abx: -2 },
+  digTell:  { lift: -15, hy: 10, hx: 5, hornUp: -7, horn: 3, mand: 1, feet: [[-18, 0], [-4, 0], [13, 9]], knee: [[-22, -4], [-8, -5], [18, 0]], ab: 3 },
+  eruptUp:  { lift: 4, hy: -8, hx: 3, hornUp: 4, horn: 2, mand: 8, feet: [[-14, 7], [-2, 9], [11, 12]], knee: [[-20, -11], [-8, -13], [13, -14]], ab: -4, abx: -2 },
   quake:   { lift: -2, hy: 5, hx: 6, hornUp: -3, mand: 1, feet: [[-20, 0], [-8, 0], [18, -1]], knee: [[-24, -9], [-10, -10], [20, -8]], ab: 2 },
 };
 export const POSE_NAMES = [...Object.keys(POSE_DEFS), 'pinned', 'stuck0', 'stuck1', 'flipped0', 'flipped1', 'idle'];

@@ -104,7 +104,7 @@ export function makeScarabMotherHands(ctx) {
   /* the pose for a mode: her windup and her release are never the same picture (B16) */
   const poseOf = (e, time) => { const m = e.mode, wk = Math.floor(time * 7) & 1 ? 'walk1' : 'walk0';
     if (m === 'sleep') return 'sleep'; if (m === 'wake') return 'wake'; if (m === 'chargeTell') return Math.floor(time * 9) & 1 ? 'rake1' : 'rake0'; if (m === 'charge') return 'charge'; if (m === 'skid') return 'skid'; if (m === 'dazed') return 'dazed';
-    if (m === 'snapTell') return 'snapTell'; if (m === 'snap') return 'snap'; if (m === 'spitTell') return 'spitTell'; if (m === 'burrowTell') return 'burrowTell'; if (m === 'burrowUp') return 'burrowUp'; if (m === 'quakeTell') return 'quakeTell'; if (m === 'leapTell') return 'skid'; if (m === 'leap' || m === 'drop') return 'charge'; if (m === 'perch') return 'walk0'; if (m === 'eruptTell') return 'burrowTell'; if (m === 'eruptUp') return 'burrowUp'; if (m === 'quake') return 'quake';
+    if (m === 'snapTell') return 'snapTell'; if (m === 'snap') return 'snap'; if (m === 'spitTell') return 'spitTell'; if (m === 'burrowTell') return 'burrowTell'; if (m === 'burrowUp') return 'burrowUp'; if (m === 'quakeTell') return 'quakeTell'; if (m === 'leapTell') return 'leapTell'; if (m === 'leap' || m === 'drop') return 'leap'; if (m === 'perch') return 'walk0'; if (m === 'eruptTell') return 'digTell'; if (m === 'eruptUp') return 'eruptUp'; if (m === 'quake') return 'quake';
     if (m === 'recover' && S && S.glob && S.glob.t < 0.3) return 'spit';
     if (m === 'open') return e.openKind === 'block' ? 'pinned' : e.openKind === 'darts' ? (Math.floor(time * 10) & 1 ? 'stuck1' : 'stuck0') : (Math.floor(time * 9) & 1 ? 'flipped1' : 'flipped0');
     if (m === 'walk' || m === 'back') return wk; return 'walk0'; };
@@ -121,7 +121,7 @@ export function makeScarabMotherHands(ctx) {
     g.save(); g.translate(R(x), R(y)); g.scale(f, 1);
     /* (claude/pyramidboss) PLACEHOLDER POSES for her two new moves (lane C draws them; B16: each its own windup and release): the LEAP-SLAM's crouch (squashed low, a
        hind leg cocked) and its jump (reared, rising); the BURROW-UP's dig (sunk to the shoulders in the floor) and its eruption (thrown up nose-first) */
-    if (m === 'leapTell') g.scale(1.08, 0.74); else if (m === 'leap' || m === 'drop') g.rotate(-0.38); else if (m === 'eruptTell') { g.translate(0, 9); g.beginPath(); g.rect(-60, -90, 120, 81); g.clip(); } else if (m === 'eruptUp') { g.translate(0, -8); g.rotate(-0.55); }
+    if (m === 'leap' || m === 'drop') g.rotate(-0.16); else if (m === 'eruptTell') { g.translate(0, 6); g.beginPath(); g.rect(-60, -90, 120, 84); g.clip(); } else if (m === 'eruptUp') { g.translate(0, -4); g.rotate(-0.22); }
     g.drawImage(P, -MOM.CX, -P.height);
     if (flash) { g.globalAlpha = 0.9; g.drawImage(whiteOf(k), -MOM.CX, -P.height); g.globalAlpha = 1; }
     g.restore();
