@@ -1,6 +1,6 @@
 // tools/towpath-art-sheet.mjs - THE TOWPATH 2's CAST SHEETS (claude/towpath2art; not in the suite): every pose of THE FOG KNIGHT 2 and THE FOG WRAITH, drawn from the art modules on a dark
 // ground at 3x and written to work/claude/towpath2art/knight-sheet.png and wraith-sheet.png (the B16 review: every move its own windup and release pose).
-//   PORT=8923 node tools/towpath-art-sheet.mjs [knight|wraith|fx]
+//   PORT=8926 node tools/towpath-art-sheet.mjs [knight|wraith|fx]
 import { openPage, ROOT } from './cdp.mjs';
 import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
@@ -31,8 +31,9 @@ try {
       wr('smother release', { hard: 1, rel: 0.2 }), wr('recoil', { hard: 1, recoil: 0.3, recoil0: 0.6 }), wr('recoil (shielded)', { hard: 1, recoil: 0.6, recoil0: 1.2, shielded: true }), wr('recoil (fog)', { hard: 0, recoil: 0.3, recoil0: 0.6 }),
       ...[0.12, 0.38, 0.62, 0.86].map(u => ({ name: 'death ' + u, draw: (g, w, y) => W.drawDeath(g, w / 2 - 4, y, 1, u) })), { name: 'chill on hero', draw: (g, w, y) => { g.fillStyle = '#7a8aa0'; g.fillRect(w / 2 - 3, y - 20, 6, 20); g.fillStyle = '#c8a070'; g.fillRect(w / 2 - 3, y - 26, 6, 6); W.drawChill(g, w / 2, y, 0.9, 1); } }];
     if (${which === 'all' || which === 'wraith' ? 'true' : 'false'}) res.wraith = sheet(PICK.length ? wcells.filter(c => PICK.includes(c.name)) : wcells, 64, 56, PICK.length ? Math.min(5, PICK.length) : 7, SC > 2 ? SC : 3);
+    if (${which === 'card' ? 'true' : 'false'}) { const FH = await import('/src/fog-knight-hands.js'); const cd = FH.bakeFogKnightCard().R[0], c = document.createElement('canvas'); c.width = cd.width * 8; c.height = cd.height * 8; const q = c.getContext('2d'); q.imageSmoothingEnabled = false; q.drawImage(cd, 0, 0, c.width, c.height); res.card = c.toDataURL('image/png'); }
     return res; })()`);
-  const dir = join(ROOT, 'work', 'claude', 'towpath2art'); mkdirSync(dir, { recursive: true });
+  const dir = join(ROOT, 'work', 'claude', 'fogknightart2'); mkdirSync(dir, { recursive: true });
   for (const [k, v] of Object.entries(out)) { writeFileSync(join(dir, k + '-sheet.png'), Buffer.from(v.split(',')[1], 'base64')); console.log('sheet', k); }
   const errs = pg.errors || []; if (errs.length) console.log('PAGE ERRORS', errs.slice(0, 4).join(' | '));
 } finally { pg.close(); }

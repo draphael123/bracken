@@ -389,7 +389,7 @@ export function makeTowpathHands(ctx) {
     if (!K) return; const vw = ctx.VW(), vh = ctx.VH(), ts = TS(), STEP = 4;
     const cols = []; let any = false;
     for (let sx = 0; sx < vw; sx += STEP) { const wx = cx + sx; let top = null, a = 0;
-      for (const b of K.D.banks || []) if (wx >= b.x0 * ts && wx < (b.x1 + 1) * ts) { if (top === null || b.top * ts < top) top = b.top * ts; const e = Math.min(1, (wx - b.x0 * ts) / 24, ((b.x1 + 1) * ts - wx) / 24); a = Math.max(a, b.a * (0.35 + 0.65 * e)); }
+      for (const b of K.D.banks || []) if (wx >= b.x0 * ts && wx < (b.x1 + 1) * ts) { const e0 = Math.min(1, (wx - b.x0 * ts) / 110, ((b.x1 + 1) * ts - wx) / 110), e = e0 * e0 * (3 - 2 * e0), bt = b.top * ts + (1 - e) * 22; if (top === null || bt < top) top = bt; a = Math.max(a, b.a * e); }   /* (fogknightart2) the bank's ends thin out over ~7 tiles: its alpha climbs from nothing and its top edge sinks, so no wall stands where it stops */
       const at = arenaTop(wx); if (at !== null) { top = top === null ? at : Math.min(top, at); a = Math.max(a, 0.62); }
       const sh = ctx.shroud ? ctx.shroud(wx) : 0; if (sh > 0.02) { top = cy - 40; a = Math.max(a, sh); }
       cols.push(top === null ? null : { top, a }); if (top !== null) any = true; }

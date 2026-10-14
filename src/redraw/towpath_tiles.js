@@ -117,6 +117,17 @@ function slate(v, top) {
     for (let row = 0; row < 4; row++) { const off = (row & 1) * 4; for (let x = -4; x < 16; x += 8) { rect(g, x + off, row * 4, 8, 4, row % 2 ? '#26343a' : '#2c3c42'); rect(g, x + off, row * 4, 8, 1, '#4a6468'); rect(g, x + off + 7, row * 4, 1, 4, '#10181a'); } }
     if (top) { rect(g, 0, 0, 16, 3, '#3a4e54'); rect(g, 0, 0, 16, 1, TC.lip); rect(g, 0, 3, 16, 1, '#0c1214'); } return c; });
 }
+/* a TIMBER-SHINGLE roof course (the lock-keeper's hut: not brick, not slate): split oak shingles in staggered rows, each with a ragged tail, silvered and moss-stained, the moon on their upper edges; top = the ridge course (a capped ridge beam) */
+function shingle(v, top) {
+  return once('shg' + v + top, () => { const [c, g] = canvas(16, 16), r = mulberry(v * 53 + 5); rect(g, 0, 0, 16, 16, '#100d0a');
+    const cols = ['#4a3a2a', '#3c2e22', '#54432f', '#32271d', '#463626'];
+    for (let row = 0; row < 4; row++) { const off = (row & 1) ? 2 : 0; for (let x = -2; x < 16; x += 4) { const t = r(), col = cols[Math.floor(t * cols.length)], y0 = row * 4, bx = x + off, tail = (t * 7 | 0) % 3;
+      rect(g, bx, y0, 4, 4, col); rect(g, bx, y0, 4, 1, '#7a6a52'); rect(g, bx + 3, y0, 1, 4, '#16110c'); rect(g, bx, y0 + 3, 4, 1, '#120e0a');
+      if (tail === 0) rect(g, bx, y0 + 3, 1, 1, '#100d0a'); if (tail === 1) rect(g, bx + 2, y0 + 3, 2, 1, '#100d0a');
+      rect(g, bx + 1, y0 + 1, 1, 2, 'rgba(0,0,0,0.25)'); if (t > 0.82) { rect(g, bx, y0 + 1, 3, 2, '#3a5a3a'); p2(g, bx + 1, y0 + 1, '#5a8a52'); } } }
+    if (top) { rect(g, 0, 0, 16, 4, '#2a2018'); rect(g, 0, 0, 16, 1, '#8a7a60'); rect(g, 0, 1, 16, 1, '#5a4a38'); rect(g, 0, 3, 16, 1, '#0c0a08'); for (let x = 2; x < 16; x += 5) p2(g, x, 2, '#8a8a90'); }
+    return c; });
+}
 /* iron stakes: the old gate irons, rusted, their points the only pale thing - drawn dark, they are found only in a light */
 function irons(v) {
   return once('irn' + v, () => { const [c, g] = canvas(16, 16);
@@ -162,7 +173,8 @@ export function towpathTile(t, x, y, at, T, L) {
   /* the aqueduct: an iron trough on arches */
   if (inZ(Z.aqueduct, x, y)) return dy === 6 ? ironTop(l, r, v) : ironBody(v);
   /* the mill, the cottage, the hut, the tower, the warehouses: brick under slate */
-  if (inZ(Z.hut, x, y) || inZ(Z.cottage, x, y) || inZ(Z.tower, x, y) && (dy === -8 || dy === -9)) { if (top) return slate(v, true); return slate(v, false); }
+  if (inZ(Z.hut, x, y)) return shingle(v, top);
+  if (inZ(Z.cottage, x, y) || inZ(Z.tower, x, y) && (dy === -8 || dy === -9)) { if (top) return slate(v, true); return slate(v, false); }
   if (inZ(Z.mill, x, y)) { if (dy === 11 && top) return slate(v, true); if (dy === 11) return slate(v, false); return brick(v, 0, top); }
   if (inZ(Z.tower, x, y)) return ashlar(v, 0, true);
   if (x >= 372 && x <= 390 && dy >= 3 && dy <= 40 && (x <= 379 || x >= 383)) return brick(v, dy > 20 ? 1 : 0, top);
