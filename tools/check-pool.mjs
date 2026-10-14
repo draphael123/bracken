@@ -14,6 +14,13 @@ import { browserExecutable } from './cdp.mjs';
 export const SERIAL_TAIL = {
   'mobile-perf': 'frame timing must be measured without other labs on the GPU',
   'boss-music': 'its mock audio clock uses real timers to check two complete loops',
+  /* These three pages rehearse long, stateful fights or a hero-by-hero climb. In the pooled borrowed browser, the court
+     once failed to drain at half health, the Pyromancer began the tower climb on the wrong floor, and one Archmage
+     assertion failed. Five --jobs=1 reruns of EACH passed in fresh browser profiles. Keep their answer measured alone,
+     after the pool has closed, until the underlying game-state flake is understood; no test rule has changed. */
+  'firsthour': 'the court half-health phase needs a fresh browser profile after a pooled-only failure',
+  'fallingtower2-keys': 'the seven-hero climb needs a fresh profile after a pooled-only checkpoint failure',
+  'archmage-folly': 'the staged boss rehearsal needs a fresh profile after a pooled-only failure',
   'online-coop': 'host and guest need two simultaneous browsers of their own',
   'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
   'textfit': 'opens several full game pages at once and needs the machine memory to itself',
