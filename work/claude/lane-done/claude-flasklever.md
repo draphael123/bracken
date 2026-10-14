@@ -16,6 +16,8 @@ ALL non-exempt bosses median **67** (n 40), minis median **78** (n 14); knight 6
 Still outside after this one pass (not re-measured tonight, per the coordinator): act 1 bosses a touch low (50) - ease act 1 to ~1.12 / 1.22 (the v2 value 1.12/1.2 gave 78 on a different seed set: the act is noisy, 8 rows x 3 seeds); act 3 a touch high (78) - raise to ~1.7 / 2.05. The medians are in or near band; the SPREAD is the problem and it is per boss (zero rows: rootway 0% all three heroes, witchlight 0% all three, theatre 22%, keep 22%, wood 22%, underleaf 22%; and 100% rows: storm, spore, harbor, lamplit, longwater, hurricane, burial, welltown). The per-boss outlier list in section 5 still stands, with these v3 numbers.
 Wood / marsh curve-gate re-stamp: NOT done (skipped per the coordinator: the batch fix lane handles curve-gate); the knights were not changed so the level hash is unchanged.
 
+## FINAL DIAL (coordinator 10-13 late): ACT 1 = the v2 values (boss 1.12 / 1.20, mini 1.15 / 1.25; measured 78%) - v3 act 1 (1.17 / 1.30) measured 50% (rootway 0, wood / underleaf 22, burning 33) and would wall new players; acts 2-5 = v3 as measured (67 / 78 / 67 / 72*). Act 3 RUNS HIGH (78): harbor / hurricane / lamplit / longwater at 100% against keep 22 / reef 33 - OUTLIERS for per-boss lanes (not a dial problem). Act 1 was not re-measured at v2 in this final form (v2 measured 78 on its 3-seed run).
+
 ## HEADLINE (v2, superseded by the update above)
 | | before (realism pass only, 6 seeds, 1044 fights) | after (flask lever + dial v2, 3 seeds, 520 fights) |
 |---|---|---|

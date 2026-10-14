@@ -10,7 +10,7 @@
 // NO extra hp. B10-B15 are untouched: no new windup, no new invulnerability, the 0.4x resistance floor and every opening are as authored.
 // Rows: act 1..5 as src/foe-react.js ACTS (actOf). 'mini' is its own column (B6: minis 75-85%).
 export const PRESSURE = {
-  1: { gap: 1.17, dmg: 1.3, mini: { gap: 1.15, dmg: 1.25 } },
+  1: { gap: 1.12, dmg: 1.2, mini: { gap: 1.15, dmg: 1.25 } },   /* ACT 1 = the v2 values (measured 78%; v3 1.17/1.3 measured 50% and would wall new players - coordinator 10-13) */
   2: { gap: 1.25, dmg: 1.42, mini: { gap: 1.33, dmg: 1.5 } },
   3: { gap: 1.6, dmg: 1.9, mini: { gap: 1.4, dmg: 1.65 } },
   4: { gap: 1.45, dmg: 1.7, mini: { gap: 1.45, dmg: 1.7 } },
