@@ -86,7 +86,7 @@ export function buildTombHalf(B) {
   ent('tplate', 520, HA - 1, { trap: 'hallStone' }); ent('rollstone', 524, HA - 1, { trap: 'hallStone' });
   sign(518, HA - 1, 'THE DEAD RISE IN THE STONE\'S ROAD. TREAD ITS PLATE WHEN THEY WALK IT.');
   tomb('h3', 534, HA, 'mummy', [517, 560], 'hallSquad'); tomb('h4', 546, HA, 'skel', [517, 560], 'hallSquad'); tomb('h5', 553, HA, 'mummy', [517, 560], 'hallSquad');
-  ledge('shelf', 529, 532, HA - 4); ledge('shelf', 543, 545, HA - 4); ledge('shelf', 549, 552, HA - 7); blower(550, HA - 8, 'hallBlower');
+  ledge('shelf', 529, 532, HA - 4); ledge('shelf', 543, 545, HA - 4); ledge('shelf', 549, 552, HA - 7); blower(550, HA - 8, 'annexBlower');
   decor.push({ kind: 'groove', x0: 524, x1: 556, y: HA - 1 }, { kind: 'bones', x0: 537, x1: 539, y: HA - 1 });
   drowned(528, HA - 1, 'hallDrowned');                                                                     /* (a sand-drowned under a drift of the hall's sand: the Buried City's) */
   /* THE UPPER HALL: two steps up; a pair of tombs; the warden's groove */

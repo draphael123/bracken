@@ -283,6 +283,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
     sandstorm: { x0: 0, x1: 76 * TS, dirs: [-1, -1, -1] },   /* THE FACE's storm (src/sealed-pyramid-hands.js on src/desert-rules.js's clock) */
     quest: { n: 4, item: 'scarabseal', name: 'SEALS', done: 'FOUR SEALS: THE SEALED TOMB OPENS', thanks: 'THE SEALED TOMB OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
+    squadBands: [{ lo: 1000, hi: 1199, spots: 0, why: 'THE BURIAL CHAMBER: columns 1000-1199 are the Coffin King arena (a shrine at 1003 before it) - no squad stands in a boss arena, as the canal and the theatre' }],
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448 | her lair | 615, 737, 858, 1003 before the burial chamber) */
     unlocks: [
