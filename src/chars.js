@@ -1840,6 +1840,14 @@ function paladinKitPoses(F, sh) {
   const bite = [a(X + 8, Y + 4, W), a(X + 9, Y + 3, G), a(X + 7, Y + 3, G), a(X + 11, Y + 4, D), a(X + 5, Y + 4, D)];   /* (the ground line, with dy 4) */
   F.leapLand = [K({ dx: 1, dy: 4, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 2, Y + 3], maul: [X + 3, Y + 1, X + 7, Y + 3], plume: 2, bits: bite }),
     K({ dy: 2, legs: 'wide', arm: [X, Y, X + 3, Y + 3], maul: [X + 3, Y + 3, X + 6, Y + 7], plume: 1 })];
+  /* HAMMER OF DAWN (B16, claude/plunges - his plunge has its OWN windup and release). The windup: up on his toes with the maul hauled plumb over the helm in both hands, the head lit; then the fall, the
+     maul driven down under him with the light streaming up off the haft. The release (hammerHit, played as it lands): the head of the maul in the ground, a gold star off it; then him coming up off it. */
+  F.hammerWind = [K({ dy: -1, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 1, Y - 8], arm2: [OFF[0], OFF[1], X - 1, Y - 8], maul: [X, Y - 7, X, Y - 19], glow: [X, Y - 21], plume: 2 }),
+    K({ legs: 'tuck', hy: 1, arm: [X, Y, X - 1, Y + 2], arm2: [OFF[0], OFF[1], X - 2, Y + 2], maul: [X - 1, Y + 2, X - 1, Y + 15], glow: [X - 1, Y + 16], plume: 2,
+      bits: [a(X - 6, Y - 3, G), a(X + 5, Y - 5, C), a(X - 4, Y - 9, G), a(X + 3, Y - 12, C), a(X - 2, Y - 15, G)] })];
+  F.hammerHit = [K({ dy: 4, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 1, Y + 5], arm2: [OFF[0], OFF[1], X, Y + 5], maul: [X + 1, Y + 4, X + 2, Y + 10], glow: [X + 2, Y + 11], plume: 2,
+      bits: [a(X - 4, Y + 10, G), a(X + 8, Y + 10, G), a(X - 6, Y + 8, C), a(X + 10, Y + 8, C), a(X + 2, Y + 12, W), a(X - 2, Y + 11, G), a(X + 6, Y + 11, G)] }),
+    K({ dy: 2, legs: 'wide', arm: [X, Y, X + 2, Y + 3], arm2: [OFF[0], OFF[1], X + 1, Y + 4], maul: [X + 2, Y + 3, X + 4, Y + 9], plume: 1, bits: [a(X - 5, Y + 9, D), a(X + 9, Y + 9, D), a(X + 1, Y + 11, G)] })];
   /* CONSECRATE: the maul lifted straight up before him; then down on one knee with the head set in the turf, both hands on the
      haft, the light coming up out of the ground round it */
   F.hallow = [K({ dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y - 2], maul: [X + 2, Y - 2, X + 3, Y - 13], plume: 1 }),
@@ -1937,6 +1945,15 @@ function pirateKitPoses(F, sh, holster, carry) {
   F.seas = [K({ wide: 2, dx: -2, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 4], cutlass: [X - 3, Y - 4, X - 11, Y - 12], pistol: holster(), plume: 2 }),
     K({ wide: 22, dx: 2, dy: 2, legs: 'wide', sho: 1, arm: [X, Y, X + 6, Y + 3], cutlass: [X + 6, Y + 3, X + 17, Y + 7], pistol: holster(), plume: 1, bits: [...sea(X + 9, 4), a(X + 12, Y - 1, SPR), a(X + 18, Y - 2, FOAM), a(X + 15, Y - 4, SPR)] }),
     K({ wide: 24, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 5, Y + 1], cutlass: [X + 5, Y + 1, X + 13, Y + 4], pistol: holster(), plume: 2, bits: [...sea(X + 12, 6), a(X + 16, Y - 3, FOAM), a(X + 22, Y - 1, SPR), a(X + 20, Y - 5, FOAM)] })];
+  /* BOARDING (B16, claude/plunges - his plunge has its OWN windup, ride and leap). The windup: the cutlass reversed point-down in his fist over his head, the other hand reaching ahead for a collar; then the
+     drop, knees up, the blade plumb under him. The RIDE (boardRide, a rocking cycle): crouched on a back, one fist in its collar, the cutlass thrown high behind him for balance. The LEAP (boardLeap): the heel
+     kicked off it and a hand pushing down on its shoulder; then both arms flung up with the cutlass overhead - the second jump. */
+  F.boardFall = [K({ wide: 4, dy: -1, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 3, Y - 7], cutlass: [X + 3, Y - 7, X + 3, Y - 17], arm2: [OFF[0], OFF[1], X + 7, Y - 4], pistol: holster(), plume: 2 }),
+    K({ wide: 4, legs: 'tuck', hy: 1, arm: [X, Y, X, Y + 2], cutlass: [X, Y + 2, X, Y + 15], arm2: [OFF[0], OFF[1], X + 6, Y + 3], pistol: holster(), plume: 2, bits: [a(X - 5, Y - 4, SMOKE), a(X + 4, Y - 7, PALE)] })];
+  F.boardRide = [K({ wide: 4, dy: 5, legs: 'crouch', legsDy: 4, arm: [X, Y, X + 5, Y + 6], arm2: [OFF[0], OFF[1], X + 4, Y + 7], cutlass: [X - 1, Y - 4, X - 4, Y - 16], pistol: holster(), plume: 1 }),
+    K({ wide: 4, dy: 4, legs: 'crouch', legsDy: 4, hy: -1, arm: [X, Y, X + 5, Y + 5], arm2: [OFF[0], OFF[1], X + 4, Y + 6], cutlass: [X, Y - 4, X - 2, Y - 17], pistol: holster(), plume: 2 })];
+  F.boardLeap = [K({ wide: 4, dx: 1, dy: 2, legs: 'tuck', arm: [X, Y, X + 3, Y + 7], cutlass: [X - 1, Y - 2, X - 5, Y - 12], pistol: holster(), plume: 1 }),
+    K({ wide: 4, dy: -2, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 2, Y - 9], arm2: [OFF[0], OFF[1], X - 2, Y - 8], cutlass: [X + 2, Y - 9, X + 6, Y - 20], pistol: holster(), plume: 2, bits: [a(X - 3, Y + 12, PALE), a(X + 5, Y + 13, PALE)] })];
   riposteKit(F, 'pirate', K, { X, Y, OFF, holster });
 }
 /* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD BOIL and GRAVECALL played beside an idle
@@ -5311,7 +5328,15 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
       return TK({ wide: 8, dx: 0, dy: -1, legs: k % 2 ? 'jump' : 'jump2', plume: k % 3, ...lead(lx, ly, lt, lty, lty < 0 ? 1 : -1), ...off(ox, oy2, ot, oty, oty < 0 ? 1 : -1), bits: arc }); };
     F.bzAirSpin = [spin(0), spin(1), spin(2), spin(3), TK({ legs: 'fall', ...lead(4, -3, 9, -10), ...off(-5, -1, -10, -8), plume: 2 })];
     /* AXEFALL, spun: both heads under his boots, crossing and uncrossing, the wind streaming up off them */
-    F.bzPlunge = [0, 1].map(i => TK({ legs: 'tuck', hy: 1, dy: i, ...lead(1, 3, i ? -2 : 3, 13, -1), ...off(-2, 3, i ? 4 : -3, 13, 1), plume: 2, bits: [o(-5, 4 - i, '#d4def5'), o(6, 3 + i, '#d4def5'), o(-6, 8 - i, '#8aa0c8'), o(7, 8 + i, '#8aa0c8')] }));
+    F.bzPlunge = [TK({ wide: 2, dy: -1, sho: 1, hy: -1, legs: 'jump2', ...lead(3, -8, 4, -18, 1), ...off(-3, -8, -4, -18, -1), plume: 2, bits: [o(0, -22, '#ffffff'), o(-6, -16, '#d4def5'), o(7, -16, '#d4def5')] }),   /* (claude/plunges B16) the WINDUP: both axes hauled up crossed over his head, then the spun fall below */
+      ...[0, 1].map(i => TK({ legs: 'tuck', hy: 1, dy: i, ...lead(1, 3, i ? -2 : 3, 13, -1), ...off(-2, 3, i ? 4 : -3, 13, 1), plume: 2, bits: [o(-5, 4 - i, '#d4def5'), o(6, 3 + i, '#d4def5'), o(-6, 8 - i, '#8aa0c8'), o(7, 8 + i, '#8aa0c8')] }))];
+    /* AXE SPIN (B16, claude/plunges): on the foe's head, crouched, both axes whirling flat round him - a cycle of four (the bought SPIN is bzSpin: this is the plunge's own); and the release (bzSpinEnd): thrown wide off it, up */
+    F.bzAxeSpin = [TK({ wide: 10, dy: 3, legs: 'crouch', legsDy: 3, ...lead(7, 1, 16, -2, -1), ...off(-7, 1, -16, 4, -1), plume: 1, bits: [o(14, -4, '#d4def5'), o(-14, 6, '#8aa0c8'), o(10, -6, '#ffffff')] }),
+      TK({ wide: 10, dy: 3, legs: 'crouch', legsDy: 3, ...lead(3, 4, 8, 10, -1), ...off(-3, -2, -8, -10, 1), plume: 2, bits: [o(9, 11, '#d4def5'), o(-9, -11, '#d4def5'), o(0, 12, '#ff9a5c')] }),
+      TK({ wide: 10, dy: 3, legs: 'crouch', legsDy: 3, ...lead(-7, 1, -16, -2, -1), ...off(7, 1, 16, 4, -1), plume: 0, bits: [o(-14, -4, '#d4def5'), o(14, 6, '#8aa0c8'), o(-10, -6, '#ffffff')] }),
+      TK({ wide: 10, dy: 3, legs: 'crouch', legsDy: 3, ...lead(-3, -2, -8, -10, 1), ...off(3, 4, 8, 10, -1), plume: 1, bits: [o(-9, -11, '#d4def5'), o(9, 11, '#d4def5'), o(0, -12, '#ff9a5c')] })];
+    F.bzSpinEnd = [TK({ wide: 10, dy: -1, legs: 'jump', ...lead(6, -3, 15, -9), ...off(-6, -3, -15, -9), plume: 2, bits: [o(16, -11, '#ffffff'), o(-16, -11, '#ffffff'), o(14, -6, '#d4def5'), o(-14, -6, '#d4def5')] }),
+      TK({ wide: 4, dy: -1, legs: 'jump2', ...lead(4, -4, 9, -11), ...off(-5, -2, -10, -9), plume: 1 })];
     /* TAKE IT: the two axes crossed in an X in front of his chest, feet planted wide, chin up; then the absorb - the shudder, the fur up, the blow's sparks at the crossing */
     F.bzTake = [TK({ dy: 1, legs: 'wide', ...lead(3, 0, 10, -8), ...off(3, -6, 10, 1, -1), plume: 1, bits: [o(8, -4, '#fff6c8')] }),
       TK({ dx: -1, dy: 2, legs: 'wide', sho: 1, hy: 1, ...lead(3, 0, 10, -8), ...off(3, -6, 10, 1, -1), plume: 2, bits: [...sp(9, -4), o(12, -7, '#ffd36b'), o(12, 0, '#ffd36b')] })];
@@ -5387,6 +5412,12 @@ function geoKitPoses(F, sh) {
   const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e', MS = '#6f9a4a';
+  /* EARTHFALL (B16, claude/plunges - her plunge has its OWN windup and release). The windup: the stave lifted point-down high over her head in both hands, the geode blazing; then the fall with it driven down
+     under her, the butt first and grit streaming up. The release (earthHit, played as she lands): the butt of the stave in the ground, her weight on it and the grit flung off it; then her coming up off it. */
+  F.earthWind = [KF({ dy: -1, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 2, Y - 9], arm2: [OFF[0], OFF[1], X - 2, Y - 9], stave: [X, Y - 17, X + 1, Y + 1], plume: 2, bits: [o(-3, -19, A), o(3, -19, A)] }),
+    KF({ legs: 'fall2', hy: 1, arm: [X, Y, X, Y + 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X - 1, Y + 16, X - 2, Y - 5], plume: 2, bits: [o(-4, 3, M), o(4, 5, D), o(-5, 9, M), o(5, 12, D)] })];
+  F.earthHit = [KF({ dy: 4, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 2, Y + 4], arm2: [OFF[0], OFF[1], X + 1, Y + 5], stave: [X + 3, Y + 11, X + 2, Y - 4], plume: 2, bits: [o(8, 11, M), o(9, 9, M), o(10, 11, D), o(-3, 11, D), o(-5, 10, M), o(0, 8, A)] }),
+    KF({ dy: 2, legs: 'wide', arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 1, Y + 3], stave: [X + 4, Y + 9, X + 2, Y - 7], plume: 1, bits: [o(9, 9, M), o(10, 8, D), o(-4, 9, D)] })];
   /* STONE STEP: in the air, the stave jabbed straight down under her boots onto the stone that rises to meet it, knees up */
   F.gStep = [KF({ legs: 'tuck', dy: -2, arm: [X, Y, X, Y + 3], arm2: [OFF[0], OFF[1], X - 1, Y + 2], stave: [X, Y + 14, X - 2, Y - 7], plume: 1 }),
     KF({ legs: 'jump', dy: -3, sho: 1, arm: [X, Y, X + 1, Y + 1], arm2: [OFF[0], OFF[1], X, Y + 1], stave: [X + 1, Y + 11, X - 1, Y - 10], plume: 2, bits: [o(0, 12, M), o(2, 12, M), o(-2, 12, M)] })];

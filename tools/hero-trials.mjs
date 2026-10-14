@@ -42,6 +42,10 @@ try {
           let f=0;while(!P.pinning&&f++<60)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}
       else if(kind==='stonefall'){while(!st.done&&tries++<6){const [a,b]=F();BK.sim(10);P.x=(a.x+b.x)/2;P.y=a.y-50;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.ground&&f++<80)BK.sim(1);K.down=false;run(40);}}
+      else if(kind==='hammerfall'||kind==='spin'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-40;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
+          let f=0;while(!P.ground&&f++<200&&!(P.vy<-200))BK.sim(1);K.down=false;run(120);}}   /* (claude/plunges) HAMMER OF DAWN and AXE SPIN: dropped onto the straw */
+      else if(kind==='board'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-40;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
+          let f=0;while(!P.riding&&f++<120)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}   /* BOARDING: onto a goblin, then off it */
       else if(kind==='meter'){run(10);__fresh();__tapC();run(90);}
       else if(kind==='skill'){run(10);__fresh();BK.press('throw');run(60);__fresh();BK.press('skill2');run(60);}
       else if(kind==='flash'||kind==='tells'){const e=F()[0],late=early?-99:h==='geomancer'?2:3;let pressed=0,glintAt=-1,awayT=0;
@@ -53,10 +57,12 @@ try {
         K.left=K.right=false;}
       return {kind,got:st.got||0,n:st.n,done:!!st.done,have:st.have||null};};
     return 1})()`);
-  for (const h of ['warden', 'geomancer']) {
+  const NEWP = { paladin: ['hammerfall'], pirate: ['board'], berserker: ['spin'] };   /* (claude/plunges) the three yards that teach a new plunge: just that station is played */
+  for (const h of ['warden', 'geomancer', 'paladin', 'pirate', 'berserker']) {
     if (!(await pg.evalp(`__yard('${h}')`))) { out[h] = 'no yard'; continue; }
     const n = await pg.evalp('BK.L.trial.length'), rows = [];
-    for (let i = 0; i < n; i++) { if (ONLY && !ONLY.includes(await pg.evalp(`BK.L.trial[${i}].kind`))) continue; rows.push(await pg.evalp(`__play('${h}',${i})`)); }
+    for (let i = 0; i < n; i++) { const kd = await pg.evalp(`BK.L.trial[${i}].kind`); if (NEWP[h] ? !NEWP[h].includes(kd) : ONLY && !ONLY.includes(kd)) continue; rows.push(await pg.evalp(`__play('${h}',${i})`)); }
+    if (NEWP[h] && rows.length !== NEWP[h].length) fails.push(h + ': his yard has no ' + NEWP[h].join(',') + ' station');
     out[h] = rows;
     for (const r of rows) if (!r.done) fails.push(h + ': station ' + r.kind + ' not finished (' + r.got + ' of ' + r.n + (r.have ? ' ' + JSON.stringify(r.have) : '') + ')');
     /* AND NOT OFF THE BEAT: C tapped as the tell STARTS, long before the flash, for three of his cuts - the station must not count it

@@ -120,7 +120,7 @@ import * as OKD from './order-chapters.js'; import { installOrder, bakeBase as o
 import { makeDamagePct, stunMul as DP_stun, shoveMul as DP_shove } from './damage-pct.js';   /* (claude/damagepct) DAMAGE % STAGGER, Smash-style: every hero blow builds a foe's %, and the % weighs the shove, the hitstun and the throw (src/damage-pct.js) */
 import { makeRiposte, PARRY as RP_K, PARRY_ART as RP_ART, verbOf as rpVerbOf } from './riposte.js';   /* (claude/riposte) THE UNIVERSAL PARRY -> RIPOSTE, THE POISE BAR's openings, THE MIX-UP CHAIN (src/riposte.js) */   /* THE BREAK ON EVERY COMMON FOE, AND OPEN WHILE IT LASTS (src/poise-break.js) */
 import { FIN, FINISH_OK, finishReady, finishFoe } from './finishers.js';
-import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.js';   /* OFF THEIR HEADS: one rebound for every hero, the stomp a pogo too (src/pogo-chain.js) */   /* EXECUTIONS: a broken common foe is finished, each hero his own way (src/finishers.js) */   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
+import { POGO_CHAIN, bounce as pogoBounce, firedropSpares } from './pogo-chain.js'; import * as PLG from './plunges.js';   /* (claude/plunges) the four new plunges: HAMMER OF DAWN, BOARDING, EARTHFALL, AXE SPIN */   /* OFF THEIR HEADS: one rebound for every hero, the stomp a pogo too (src/pogo-chain.js) */   /* EXECUTIONS: a broken common foe is finished, each hero his own way (src/finishers.js) */   /* THE COMBAT PASS, PART 2: held wind-ups, reactive waiting, the brute's cover, the squad hook (src/foe-tactics.js) */   /* ATTACK TOKENS: one or two common foes swing at a hero at once, the rest wait on a ring (src/attack-tokens.js) */
 import { xpFoe, xpFloor, levelOfXp, xpCatchUp, XP_CATCHUP, XP_CLEAR, XP_QUEST, XP_AGAIN, XP_KILL_NORMAL, xpTier, xpSoftCap, softCapMul, xpCap, LV_MAX } from './xp.js';   /* THE LEVEL IS XP: what a kill pays, and the curve */
 import * as ART from './art.js';
 import { COMBAT, HEAL, COMMON_BLOWS, chainCost, impactPause, hitStagger } from './combat.js';
@@ -2112,7 +2112,7 @@ let wayRoute = null, wayA = 0, wayT = 0, wayTgt = null, wayMe = 0;
 /* THE ROUTE is steps from the start through the reach fill (src/reachcore.js), breadth first: a shrine forty steps in comes
    before one ninety in, whichever way the level winds. Built the first time the arrow asks, once a level. */
 function wayBuild() {
-  const R = floodReach(L, T, { rides: true }), dist = new Map();   /* with the rides: without the pads Bracken Wood's fill stops at the pond, and past it nothing had a place on the route */ let sy = L.START.y; while (sy < LH - 1 && !R.footing.has(R.key(L.START.x, sy))) sy++;
+  const R = floodReach(GEO && GEO.baseGrid ? { ...L, grid: GEO.baseGrid() } : L, T, { rides: true }), dist = new Map();   /* with the rides: without the pads Bracken Wood's fill stops at the pond, and past it nothing had a place on the route */ let sy = L.START.y; while (sy < LH - 1 && !R.footing.has(R.key(L.START.x, sy))) sy++;
   let fr = [[L.START.x, sy]], d = 0; dist.set(R.key(L.START.x, sy), 0);
   while (fr.length) { const nx = []; d++; for (const [fx, fy] of fr) R.expand(fx, fy, (a, b) => { const k = R.key(a, b); if (R.footing.has(k) && !dist.has(k)) { dist.set(k, d); nx.push([a, b]); } }); fr = nx; }
   return { dist, key: R.key };
@@ -2168,9 +2168,9 @@ function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(
   if (st.got >= st.n) { st.done = true; PROG.taught = PROG.taught || {}; PROG.taught[st.kind] = 1;   /* the yard TAUGHT this (lessonHint reads it: the wood does not say again what the yard already said) */ openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
 function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
 /* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
-const TRIAL_NAME = { quiver: 'THE QUIVER', down: 'THE DOWNWARD SHOT', axe: 'THE AXE THROW', hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hallow: 'HOLY GROUND', sanctify: 'EMPOWER', hammer: 'THE HAMMER', smite: 'THE SMITE', hammerfall: 'HAMMERFALL', judgement: 'JUDGEMENT', ward: 'THE WARD', tip: 'THE POINT', runthrough: 'THE RUN-THROUGH', pin: 'THE PIN', fault: 'FAULT LINE', stonefall: 'STONEFALL' };
+const TRIAL_NAME = { quiver: 'THE QUIVER', down: 'THE DOWNWARD SHOT', axe: 'THE AXE THROW', hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hallow: 'HOLY GROUND', sanctify: 'EMPOWER', hammer: 'THE HAMMER', smite: 'THE SMITE', hammerfall: 'HAMMER OF DAWN', judgement: 'JUDGEMENT', ward: 'THE WARD', tip: 'THE POINT', runthrough: 'THE RUN-THROUGH', pin: 'THE PIN', fault: 'FAULT LINE', stonefall: 'EARTHFALL', board: 'BOARDING', spin: 'THE AXE SPIN' };
 /* WHAT THE PANEL SAYS AS IT COUNTS ONE. Words never float over a fight (see number()), so a yard's confirmation is written on its step panel */
-const TRIAL_SAY = { quiver: 'TAKEN BACK', down: 'FROM ABOVE', axe: 'THE AXE BITES', hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hallow: 'CONSECRATED', sanctify: 'SANCTIFIED', hammer: 'STRUCK', smite: 'SMITTEN', hammerfall: 'QUAKED', judgement: 'JUDGEMENT', ward: 'WARDED', tip: 'THE POINT RINGS', runthrough: 'SKEWERED', pin: 'PINNED', fault: 'BOTH IN ONE LINE', stonefall: 'KNOCKED DOWN' };
+const TRIAL_SAY = { quiver: 'TAKEN BACK', down: 'FROM ABOVE', axe: 'THE AXE BITES', hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hallow: 'CONSECRATED', sanctify: 'SANCTIFIED', hammer: 'STRUCK', smite: 'SMITTEN', hammerfall: 'SLAMMED', judgement: 'JUDGEMENT', ward: 'WARDED', tip: 'THE POINT RINGS', runthrough: 'SKEWERED', pin: 'PINNED', fault: 'BOTH IN ONE LINE', stonefall: 'A STONE RISES', board: 'RIDING', spin: 'SHREDDED' };
 function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
 function trialName(k) { if (k === 'heavyblow' && hero() === 'knight') return 'THE HEAVY CUT'; if (k === 'meter') return hero() === 'knight' ? 'THE LAST CHARGE' : isPyro() ? 'THE PYRE' : isPirate() ? 'THE BLACK FLAG' : isReaper() ? 'BLOOD SURGE' : isWarden() ? 'THE PHALANX' : isGeo() ? 'THE QUAKE' : isBz() ? 'THE FRENZY' : isRg() ? 'HUNTER\'S FOCUS' : 'JUDGEMENT'; return TRIAL_NAME[k] || 'THAT'; }
 function fillMeter(n) { if (isPaladin()) P.light = Math.max(P.light || 0, n); else if (hero() === 'knight') P.resolve = Math.max(P.resolve || 0, n); else if (isPirate()) P.plunder = Math.max(P.plunder || 0, n); else if (isReaper()) P.harvest = Math.max(P.harvest || 0, n); else if (isWarden()) P.vigil = Math.max(P.vigil || 0, n); else if (isGeo()) P.tremor = Math.max(P.tremor || 0, n); else if (isBz()) P.rage = Math.max(P.rage || 0, n); else if (isRg()) P.rgFocus = Math.max(P.rgFocus || 0, n); }
@@ -2291,7 +2291,7 @@ function spawnEntities() {
     if(L.sanctum&&!L.sandWalk){L.sanctum.open=false;L.sanctum.outOpen=0;L.sanctum.out=null;}
   } else if (typeof P !== 'undefined' && P && P.carpet) P.carpet = null;   /* a rug ridden out of the tower (quit mid-fight) must not fly into the next level: carpetBox reads L.arena and threw every frame */
   eliteWatch();   /* an elite cut down in the same beat the hero fell (the world is still in its hitstop) is written down before the board is reset */
-  shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (PTK) PTK.reset(); if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.runThrough = false; }
+  shots = []; bodies = []; risen = []; rbolts = []; bloodBolts = []; hands = []; moons = []; thrownScythe = null; grips = []; unholy = []; severs = []; wakes = []; phalanx = []; if (typeof P !== 'undefined' && P) P.ballast = null; if (typeof P !== 'undefined' && P) P.carry = null; if (PTK) PTK.reset(); if (typeof P !== 'undefined' && P) { P.harvest = 0; P.reaping = 0; P.loaded = true; P.reloadT = 0; P.plunder = 0; P.rum = 0; P.vigil = 0; P.pinning = null; P.riding = null; P.spinning = null; P.holyLandT = 0; P.runThrough = false; }
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
   for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) { P.candle = 0; P.snuffed = false; } for (const pp of (players || [])) { pp.dance = 0; pp.danceCue = 0; pp.danceMax = 0; pp.idleLongT = 0; }   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
@@ -6391,9 +6391,9 @@ const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width)
    same baked type as the numbers, once per event; the same word then waits MOVE_WORD_GAP before it floats again, so a run of parries
    is one PARRY and not a column of them. Every other capitalised string is still kept off the screen, the trial keeps its own panel
    for these, and the Hit numbers option off turns the words off with the numbers. (tools/popclutter.mjs counts what floats over a tell.) */
-const MOVE_WORDS = new Set(['BRACED IT', 'TOOK IT', 'CRACKED', 'FRENZY', 'SWEPT', 'BRACED', 'INK', 'THE WAVE', 'HE SHAKES IT', 'HIS EYE', 'THE EYE IS SHUT', /* (claude/kraken2) told on the road: the wave's shove and the crest's lee, the ink, the climb's shake, his eye */ 'FINISHER', 'RICOCHET', 'SECOND WIND', 'DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED', 'EXECUTED', 'IMMOLATED', 'REAPED', 'RUN THROUGH', 'SMITTEN', 'SHATTERED', 'SKEWERED', 'CLEAVED', 'TOO STRONG', 'BROUGHT DOWN', 'QUARRY', 'PIERCING SHOT', 'BOW-BASH', 'SNARED', 'CHECKED', 'THROUGH', 'OUT OF ARROWS', 'QUIVER FULL', 'THE WILD HUNT', 'NO QUARRY', 'WIND BACK'])   /* (claude/ranger: her finisher, her mark, her shots, the bash, the snare, the quiver) */;   /* (claude/riposte) TOO STRONG: a red !! or a bolt met on the parry beat - it floats like OPEN, never a hint box */   /* (part 2: the finishers' own names, src/finishers.js - they are what the finisher says, so they are shown) */   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
+const MOVE_WORDS = new Set(['HAMMER OF DAWN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'AXE SPIN', 'SHREDDED', 'BRACED IT', 'TOOK IT', 'CRACKED', 'FRENZY', 'SWEPT', 'BRACED', 'INK', 'THE WAVE', 'HE SHAKES IT', 'HIS EYE', 'THE EYE IS SHUT', /* (claude/kraken2) told on the road: the wave's shove and the crest's lee, the ink, the climb's shake, his eye */ 'FINISHER', 'RICOCHET', 'SECOND WIND', 'DASH ATTACK', 'OFF BALANCE', 'LAUNCHED', 'TRIPPED', 'BROKEN', 'PARRY', 'PARRIED', 'RIPOSTE', 'TURNED IT', 'EVADED', 'SHOULDERED', 'SLAM', 'OPENED UP', 'OFF THE GROUND', 'SHAKEN LOOSE', 'POWDER AND STEEL', 'TOO EARLY: AT THE FLASH', 'LEVEL UP', 'PINNED', 'IN THE EYE', 'GLANCES OFF', 'HE IS UNDER', 'MIXED UP', 'GLANCES', 'CARRIED UP', 'GUARD BROKEN', 'KNOCKED DOWN', 'ON ITS BACK', 'DISARMED', 'AGAINST THE WALL', 'BOWLED OVER', 'ON THE SPIKES', 'OFF THE EDGE', 'INTO THE WATER', 'PUSHED BACK', "THE QUEEN'S BOWS", 'COVERED', 'EXECUTED', 'IMMOLATED', 'REAPED', 'RUN THROUGH', 'SMITTEN', 'SHATTERED', 'SKEWERED', 'CLEAVED', 'TOO STRONG', 'BROUGHT DOWN', 'QUARRY', 'PIERCING SHOT', 'BOW-BASH', 'SNARED', 'CHECKED', 'THROUGH', 'OUT OF ARROWS', 'QUIVER FULL', 'THE WILD HUNT', 'NO QUARRY', 'WIND BACK'])   /* (claude/ranger: her finisher, her mark, her shots, the bash, the snare, the quiver) */;   /* (claude/riposte) TOO STRONG: a red !! or a bolt met on the parry beat - it floats like OPEN, never a hint box */   /* (part 2: the finishers' own names, src/finishers.js - they are what the finisher says, so they are shown) */   /* (the last five: the knight's third cut, paid where it threw them - THIRD_WORD) */   /* (the last five: the starter kits' moves as they land - the bought rising cut, the heavy cut's two stages, THE WHEEL, DISARM) */   /* PINNED is the Warden's, and the only word her spear is allowed to say. (Not RUN THROUGH: that is the freebooter's FINISHER name, and no hero's finisher floats - putting it on this list would have started his doing it.) */
 for (const w of KI_WORDS) MOVE_WORDS.add(w);   /* (claude/knockinto) INTO THE SPIKES / OFF THE EDGE / INTO THE FIRE ...: what a throw ended in is said */
-for (const w of PT_WORDS) MOVE_WORDS.add(w);   /* (claude/partnerthrow) GRABBED / HEAVE / THROWN / WIGGLED FREE / SET DOWN / DROPPED / TOO QUICK / THE PARTNER */
+for (const w of PT_WORDS) MOVE_WORDS.add(w); for (const w of PLG.WORDS) MOVE_WORDS.add(w);   /* (claude/plunges) HAMMER OF DAWN / GUARD BROKEN / SAFE LANDING / BOARDED / ... */   /* (claude/partnerthrow) GRABBED / HEAVE / THROWN / WIGGLED FREE / SET DOWN / DROPPED / TOO QUICK / THE PARTNER */
 const MOVE_WORD_GAP = 0.6, moveWordAt = {};
 /* THE HINT LINES THAT WERE NEVER SHOWN (src/hint-lines.js): a teaching line number() would drop is drawn in the hint box instead - one line, 1.8 s, the same text no more than once in 4 s, and never over a longer hint being read. */
 let calloutMsg = ''; const calloutAt = {};
@@ -7294,15 +7294,17 @@ function addPoise(e, dmg, fromX, plunge) {
   const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0 || dmg <= 0) return;
   let n = P.jetHit ? 0 : 6 + dmg * 0.25;   /* the jet leans on nothing: it burns, it does not break (09-17) */
   if (isBz() && BZK && !P.jetHit && P.atk >= 0) { if (P.heavy) n += BZ_K.poise.heavy * (e.maxHp || e.mini ? BZ_K.poise.bossMul : 1) * (P.bzAxe ? BZ_K.poise.one : 1); if (BZK.raging()) n *= BZ_K.poise.rage; }   /* (one axe: half) */   /* THE DOUBLE CHOP leans HARD on the bar - he is the poise-breaker - and rage leans harder (src/berserker.js BZ.poise) */
+  n += hammerPoise(e);   /* (claude/plunges) HAMMER OF DAWN: the poise breaker */
   if (!P.jetHit) { if (P.heavySwing && P.atk >= 0) n += 20; if (plunge) n += 12; if (e.face && Math.sign(fromX - e.x) === -e.face) n += 10; if (isBz() ? P.heavySwing && P.atk >= 0 : P.combo === 3) n += 8; if (rpCut()) n += RP_K.poise.riposte; if (P.dash > 0) n += 6; if (P.dashAtk > 0) n += 14; }
   if (e.keyHit === time) n += 12;   /* THE RIGHT TOOL leans on the bar too (the family table) */
   if (m === POISE_LIGHT || e.elite || ((lcBig(e) || e.xpRole === 'mini') && GB.openOf(e) !== true)) {   /* (ELITES2: and an ELITE, whose bar is his opening - a mash never breaks it, a heavy blow does) */   /* the small tier: weight only (see POISE_LIGHT). (claude/bosswave2, Daniel 10-04: A BOSS OR A MINI OUTSIDE HIS OPENING takes poise from HEAVIES only - a tap filled ~6 of his bar and a mash broke him open; inside an opening any blow still leans on it) */
-    n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') || (m !== POISE_LIGHT && P.heavySwing && P.atk >= 0) ? 30 : 0) + (plunge ? 12 : 0) + (e.keyHit === time ? 12 : 0) + (rpCut() ? RP_K.poise.riposte : 0) + (P.dashAtk > 0 ? 14 : 0) + ((isBz() ? P.heavySwing : P.combo === 3) && P.atk >= 0 ? 8 : 0);
-    if (e.elite) n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') ? 30 : 0) + (e.keyHit === time ? 12 : 0) + (rpCut() ? RP_K.poise.riposte : 0) + (P.dashAtk > 0 ? 14 : 0);   /* (ELITES2) AN ELITE'S BAR: only a held heavy, a riposte, a dash attack or the right tool - not a combo's third cut, not a stomp (a masher lifted onto his head broke him with them) */
+    n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') || (m !== POISE_LIGHT && P.heavySwing && P.atk >= 0) ? 30 : 0) + hammerPoise(e) + (plunge ? 12 : 0) + (e.keyHit === time ? 12 : 0) + (rpCut() ? RP_K.poise.riposte : 0) + (P.dashAtk > 0 ? 14 : 0) + ((isBz() ? P.heavySwing : P.combo === 3) && P.atk >= 0 ? 8 : 0);
+    if (e.elite) n = P.jetHit ? 0 : (blowHas(e.blowNow, 'heavy') ? 30 : 0) + hammerPoise(e) + (e.keyHit === time ? 12 : 0) + (rpCut() ? RP_K.poise.riposte : 0) + (P.dashAtk > 0 ? 14 : 0);   /* (ELITES2) AN ELITE'S BAR: only a held heavy, a riposte, a dash attack or the right tool - not a combo's third cut, not a stomp (a masher lifted onto his head broke him with them) */
     if (n && isBz() && BZK && !P.jetHit && P.heavy && P.atk >= 0) { n += BZ_K.poise.heavy * (e.maxHp || e.mini ? BZ_K.poise.bossMul : 1) * (P.bzAxe ? BZ_K.poise.one : 1); if (BZK.raging()) n *= BZ_K.poise.rage; }   /* (berserkerport: THE CROSS-CHOP still leans HARD where the bar takes heavies only - he is the poise-breaker, Daniel's kept call; a tap still adds nothing) */
     if (!n) return; }
   if (thr('m', 0) && !P.jetHit && ((P.heavySwing && P.atk >= 0) || blowHas(e.blowNow, 'heavy'))) n *= 1.25;   /* MIGHT 10: HEAVY HAND - weight only, so a tap on a boss still fills nothing */
   if (!P.jetHit) n *= RP.chainMul(P);   /* (claude/riposte) THE MIX-UP CHAIN: its pips wear the bar faster by the same factor */
+  if (P.hammerHit && hammerGuarded(e)) n = Math.max(n, m);   /* (claude/plunges) a GUARDED common foe's guard is broken by the slam: its bar goes at once */
   e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5;
   if (e.poise >= m) { e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; if (dpBossLike(e)) e.broken = DP.bossBreak(e, e.broken);   /* (claude/damagepct) A BOSS'S BREAK GROWS WITH HIS %: up to +50% (src/damage-pct.js breakMul), the % spent */ e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
     number(e.x, e.y - e.h - 20, 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
@@ -9399,6 +9401,10 @@ function updatePlayer(dt) {
       else if (pn.t >= PIN_HOLD * (tal('holdThem') ? 1.5 : 1)) endPin(false);   /* HOLD THEM DOWN: it is held half again as long */
     }
   }
+  /* (claude/plunges) HOLY LIGHT's clock, the plunge's age, and the two rides a plunge can become: BOARDING (the freebooter on a foe's back) and AXE SPIN (the berserker shredding one) */
+  P.holyLandT = Math.max(0, (P.holyLandT || 0) - dt); P.plungeT = P.plunge ? (P.plungeT || 0) + dt : 0;
+  if (P.riding) rideStep(dt);
+  if (P.spinning) spinStep(dt);
   /* ON THE POINT: the spear is in something too big to hold and she is stood on the haft. Nothing falls while she is,
      and the first jump or step she buffers is spent kicking off it rather than on the move it usually buys. */
   if (P.perch > 0) {
@@ -9462,7 +9468,7 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.rootT > 0 || (isPyro() && P.emberUp) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
+  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.riding || P.spinning || P.rootT > 0 || (isPyro() && P.emberUp) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   /* THE UNIVERSAL DUCK (claude/duck): DOWN held on the ground with nothing else asked of it - no walk, no swing, no guard, no roll - and
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
@@ -9710,7 +9716,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   const cutOut = dodging && P.dash > 0 && P.atk < 0 && dashCutNow();   /* X EARLY IN THE DODGE is the dash attack: it is the one thing that ends it */
   if (P.abuf > 0 && !stunned && !P.plunge && (!dodging || cutOut) && !P.aegis && !P.warding && !(P.deflectRec > 0) && !rushing() && !(P.braceRec > 0)) {   /* (claude/berserker2: a swing comes straight out of TAKE IT and drops it - the cross-chop riposte off the beat; P.braceT is his alone) */   /* (a sweep that met nothing is a beat she cannot swing in) */
     if (cutOut) { P.dodge = 0; P.dodgeInv = 0; }
-    if (!P.ground && (keys.down || P.abufDown) && (P.atk >= 0 ? P.atk > 0.17 : !CM.inRecovery(P))) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) {   /* WEIGHT: the plunge follows an air swing only once its active frames are out (it cut one at any frame) */ P.plungeN=(P.plungeN||0)+1; noteVerb('plunge'); P.plunge = true; P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
+    if (!P.ground && (keys.down || P.abufDown) && (P.atk >= 0 ? P.atk > 0.17 : !CM.inRecovery(P))) { P.abuf = 0; P.abufDown = false; if (spend(plungeCost())) {   /* WEIGHT: the plunge follows an air swing only once its active frames are out (it cut one at any frame) */ P.plungeN=(P.plungeN||0)+1; noteVerb('plunge'); P.plunge = true; P.plungeT = 0; plungeHint(); P.vy = Math.max(P.vy, P.swim ? 150 : (isPaladin() ? 40 : 60)); P.atk = -1; P.hitSet.clear(); SFX.pPlunge();   /* the plunge is heard as it starts, in the hero's own voice: only the pyromancer's was, and the rest were silent until they landed */
       if (isPaladin()) { P.consecrate = true; motes(P.x, P.y - 10, 8, 8); }   // THE CONSECRATION: it falls slower and it lands wider SFX.slash();
       if (isPyro()) { // the fireball goes down ahead of her and lands first
         embers.push({ x: P.x, y: GS > 0 ? P.y - 4 : P.y - P.h + 4, vx: 0, vy: 300 * GS, life: 1.1, hit: new Set(), plunge: true });   /* (turned over, it goes at the ceiling) */
@@ -9898,7 +9904,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (broke && isWarden()) { P.plunge = false; P.plungeRec = 0.12; P.canCut = false; P.hitSet.clear(); SFX.thud(); dust(P.x, P.y, 8); squash(1.35, 0.65, 0.12); }   /* the crate splits under the point and she stays on the floor */
       else if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall(); if (DOWN_STRIKE[hero()] && !P.swim && !P.onMover && GS > 0) plungeWave(DOWN_STRIKE[hero()]); lessonHint('down');   /* THE WOOD'S DOWN-ATTACK LESSON: said the first time one lands on the ground in its stretch */   /* (not onto a raft, a pad or a lift: that is a ride, and the marsh roofs' crossing from the east rides one - rooted on it, the knight never made it) */
-        if (isPaladin()) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0), sp: 200, hit: new Set() }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
+        if (isPaladin()) { P.holyLandT = PLG.HAMMER.landT; for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0), sp: 200, hit: new Set(), hammer: true }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
           if (P.consecrate) { P.consecrate = false; gainLight(14); if (HGR && !HGR.of(P)) plantCircle(true);   /* (claude/paladin2) HAMMER OF DAWN: with no circle standing, it is planted where the maul lands */ // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
             for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - e.h / 2 - (P.y - 10)) < 30) { hurtEnemy(e, Math.round(swordDmg() * 0.5), P.x, false); e.stagger = Math.max(e.stagger || 0, 0.5); } } } } // HAMMERFALL: the maul comes down and the ground carries it both ways
@@ -9940,7 +9946,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (P.pitCarry) { P.pitCarry.t -= dt; if (L.bellDeck && P.y < L.bellDeck.deck * TS - 2 && !P.dead) P.vx = P.pitCarry.vx; if (P.pitCarry.t <= 0 || (P.ground && P.y <= L.bellDeck.deck * TS)) P.pitCarry = null; }
   const pb = duckBox(P);   /* THE HURT BOX: the whole body standing, DUCK_H tall ducked (src/duck.js) - what flies at the head goes over a crouch */
   for (let ty = Math.floor(pb.t / TS); ty <= Math.floor((pb.b - 1) / TS); ty++) for (let tx = Math.floor(pb.l / TS); tx <= Math.floor((pb.r - 1) / TS); tx++) {
-    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6 && !windFall(tx, ty)) spikeBite(tx, 'THE SPIKES');   /* (a WIND ZONE's spikes are the zone's: one bite and the wind, spike-winds.js) */
+    if (tileAt(tx, ty) === T.SPIKE && pb.b > ty * TS + 6 && !windFall(tx, ty)) { if (holyShield()) holySafe(); else spikeBite(tx, 'THE SPIKES'); }   /* (claude/plunges) HOLY LIGHT: the paladin's plunge lands safe on spikes and thorns */   /* (a WIND ZONE's spikes are the zone's: one bite and the wind, spike-winds.js) */
   }
   if (P.y > LH * TS + 30) { if (SET.invincible) godSafe(); else { die({ name: 'THE FALL', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; } }   /* (in co-op the fall put him DOWN, and a downed hero is not also a dead one) */
   /* A POOL HAS A BOTTOM. This was "in its columns and anywhere below its surface", so the Undercrown's flooded level
@@ -9976,8 +9982,11 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
         if (e.t === 'mother' && e.tipped) continue;
         if (e.t === 'mother') { P.plunge = false; P.vy = -200; P.ground = false; P.canCut = false; BR.turned(e, P.x); continue; }
         if (e.t === 'heart') { hurtEnemy(e, 1, P.x, true); if (isWarden()) { wardenPerch(e, e.x, e.y - 20); continue; } P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; P.hitSet.clear(); SFX.pPogo(); pogoCount++; squash(0.8, 1.25, 0.1); continue; }
-        if (OK.plunge(e, P)) { P.hitSet.clear(); sparks(P.x, P.y + 4, P.face, 6); continue; }   /* (claude/order, rule a) THE DUELIST GUARDS HIGH: his shield over his helm turns a plunge - clank, bounced, no damage either way (src/foe-react.js guardsHigh) */
-        if (AP.thornSpiked(e) || (e.elite && e.affix === 'THORNED' && AP.thornedBristle(e, time, EK.K) > 0)) {   /* (claude/knockinto, rule e) SPIKED only while the spines are UP - drawn and told: the Spike Goblin's back bristles as you come over him (AP.thornTick), a THORNED elite's rise with a mash; down, it is plunged like anyone */
+        let hdGuard = false; if (isPaladin()) { if (e.t === 'oathblade' && (e.raHigh || 0) >= 1 && !(e.broken > 0)) { e.raHigh = 0; hdGuard = true; } }   /* (claude/plunges) HAMMER OF DAWN comes down THROUGH a raised guard: it is broken, not bounced off */
+        else if (OK.plunge(e, P)) { P.hitSet.clear(); sparks(P.x, P.y + 4, P.face, 6); continue; }   /* (claude/order, rule a) THE DUELIST GUARDS HIGH: his shield over his helm turns a plunge - clank, bounced, no damage either way (src/foe-react.js guardsHigh) */
+        const spikedFoe = AP.thornSpiked(e) || (e.elite && e.affix === 'THORNED' && AP.thornedBristle(e, time, EK.K) > 0);
+        if (spikedFoe && isPaladin()) { P.holyLandT = PLG.HAMMER.landT; number(e.x, e.y - (e.h || 16) - 8, 'SAFE LANDING', PLG.HAMMER.glow); }   /* (claude/plunges) HOLY LIGHT: the spines cannot bite the maul coming down */
+        if (spikedFoe && !isPaladin()) {   /* (claude/knockinto, rule e) SPIKED only while the spines are UP - drawn and told: the Spike Goblin's back bristles as you come over him (AP.thornTick), a THORNED elite's rise with a mash; down, it is plunged like anyone */
       if (e.mode === 'charge' && Math.random() < dt * 9) SFX.clatter();
           P.plunge = false; P.ground = false; P.canCut = false; P.hitSet.clear();
           SFX.clank(); sparks(P.x, P.y + 4, P.face, 8); number(e.x, e.y - e.h - 6, e.t === 'frog' ? 'CROWN OF THORNS' : 'SPIKED', '#ffd36b');
@@ -9993,7 +10002,10 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
           if (e.t === 'dummy') trialEvent('pogo');
           pogoCount++; pogoBounce(POGO_API, 'plunge', e); continue;   /* (part 2: and HE COMES BACK UP OFF IT like any hero - he fell through into a ground swing, and a pit crossed on heads was a pit he fell into) */
         } else {
-        if (!isPyro()) hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true);   /* THE PYROMANCER'S BOOTS DO NOTHING: only the FIREDROP that goes down ahead of her burns (09-17: her plunge was a second hit on top of its own fire) */ if (tal('bounding')) CM.refund(P, 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
+        const bd = isPirate() ? boardTry(e) : 0;   /* (claude/plunges) the freebooter's BOARDING: 1 he is on its back, 2 the landing killed it, 0 not rideable */
+        if (bd === 1) continue;
+        if (isPaladin()) hammerSlam(e, hdGuard); else if (bd === 2) { /* struck and gone: the pogo below */ } else if (isBz() && spinTry(e) === 1) continue; else if (!isPyro()) hurtAs('plunge', e, Math.round(plungeDmg() * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true);
+        if (isGeo() && GEO) GEO.earthfall({ anchor: e });   /* EARTHFALL: the stone rises under the head she came down on and stands a step */   /* THE PYROMANCER'S BOOTS DO NOTHING: only the FIREDROP that goes down ahead of her burns (09-17: her plunge was a second hit on top of its own fire) */ if (tal('bounding')) CM.refund(P, 8); if (tal('endlessSky') && hero() === 'knight') { P.airRolled = false; P.airJump = 1; P.dashedAir = false; P.airDashN = 0; number(P.x, P.y - 34, 'ENDLESS SKY', '#bfe6f5'); } if (e.t === 'dummy') trialEvent('pogo'); if (isPirate() && !e.maxHp) dropCoinAt(e.x, e.y - 8); }
           plungeHitBeat(e);   /* heavier than any ground swing, whatever comes after it (DOWN_STRIKE) */
           /* THE PIN, before the bounce: the point goes through it and stays there. A boss or a mini is too big to hold,
              so pinFoe says no, it keeps the blow and the stagger, and she rides up off it exactly as she always did. */
@@ -25395,6 +25407,7 @@ function updateEnemies(dt) {
     if (e.pinned > 0) { e.pinned -= dt; e.vx = 0; e.vy = Math.max(0, e.vy || 0);
       if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) * Math.random(), vx: 0, vy: -16, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: 0 });
       continue; }
+    if (e.ridden && rideFoe(e, dt)) continue;   /* (claude/plunges) BOARDING: the freebooter is on its back and steers it; it is thrown in knock-into's terms (spikes, a drop, water, fire) */
     if (e.t === 'thorn' && AP.thornTick(e, players || [P], dt, raAbove)) SFX.clatter();   /* (claude/knockinto) THE SPIKE GOBLIN's TOLD BRISTLE: a hero over him and his back spikes rise (~0.3 s, a clatter) */
     if (RP.tick(e, dt)) continue;   /* (claude/riposte) PARRIED: it stands reeling (its own AI waits); a boss's riposte opening, his ward, his verb on the poise bar */
     if (e.t === 'spit' && !(e.broken > 0) && raSidestep(e, players || [P], dt, RA_API)) continue;   /* (claude/knockinto, rule c) THE SPITTER SIDESTEPS a plunge, then stands OFF BALANCE (src/foe-react.js sidestepTick) */
@@ -26196,7 +26209,7 @@ GEO = makeGeomancer({ get P() { return P; }, get L() { return L; }, get enemies(
   swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l),
   shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), burst: (...a) => burst(...a), squash: (a, b, c) => squash(a, b, c), reflectSeed: s => reflectSeed(s),
   staffTip: () => { const c = K && P.lastKey ? pickFrame(K, P.lastKey, P.lastFrame || 0, 1) : null; return c && c.tip ? { x: P.x + P.face * (c.tip[0] - K.ax), y: P.y - K.ay + c.tip[1] } : null; },   /* HER GEODE, in the world: where the frame last drawn put it (chars.js keeps it on the canvas) */
-  kitPose: (p, k, t) => kitPose(p, k, t), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
+  kitPose: (p, k, t) => kitPose(p, k, t), blockedAt: (tx, fy) => earthBlocked(tx, fy), SFX, attackBox: () => attackBox(), heavyWind: () => heavyWind(), isGeo: () => isGeo(), tal: geoTal,
   meterFull: () => { meterReady('#e8a83a'); SFX.vigilFull(); }, trialEvent: k => trialEvent(k), noteParry: () => { noteVerb('parry'); parries++; }, parried: f => RP.parried(f) });   /* (claude/riposte: her STONE-SKIN on the beat is the shared parry) */
 /* THE EMBER FLARE (src/ember-ward.js): the pyromancer's press of down. main.js owns the world and the keys; the module owns the window, the mistime
    and what a catch does. It is called from updatePlayer (update, settle, catchSeeds), damagePlayer0 (takes) and the hero's draw */
@@ -26833,7 +26846,7 @@ const DOWN_STRIKE = {
   // THE GRAVE BURST: graveFall() (already his, main.js) is the bone-and-blood ring - wave: null for the same reason as the paladin's.
   reaper: { trail: ['#c9d1dc', '#6b1620'], hitStop: 0.08, hitShake: 5, wave: null, waveUp: 0, waveDmg: 0, waveStagger: 0, push: 0, ahead: false, whiff: 0.3, caught: 0.3 },
   // STONEFALL: she lands like a boulder. A ring both ways that KNOCKS DOWN what it reaches (knock s on its back; AFTERSHOCK: longer)
-  geomancer: { trail: ['#a8a696', '#8c8a7e'], hitStop: 0.08, hitShake: 5, wave: 38, waveUp: 12, waveDmg: 0.6, waveStagger: 0.6, push: 0, ahead: false, whiff: 0.3, caught: 0.14, knock: 1.1 },
+  geomancer: { trail: ['#a8a696', '#8c8a7e'], hitStop: 0.08, hitShake: 5, wave: null, earth: true, waveUp: 0, waveDmg: 0, waveStagger: 0, push: 0, ahead: false, whiff: 0.3, caught: 0.14 },   // EARTHFALL (claude/plunges): a stone spike rises where she lands (GEO.earthfall, in plungeWave): it owns the landing, so no ring is laid
   // AXEFALL: both heads driven into the ground under him - a short ring both ways that shoves the small back
   ranger: { trail: ['#c8e89a', '#e8e0c8'], hitStop: 0.05, hitShake: 3, wave: 24, waveUp: 8, waveDmg: 0.4, waveStagger: 0.4, push: 80, ahead: false, whiff: 0.24, caught: 0.1 },
   berserker: { trail: ['#ff9a5c', '#c9d1dc'], hitStop: 0.07, hitShake: 4, wave: 30, waveUp: 10, waveDmg: 0.5, waveStagger: 0.5, push: 90, ahead: false, whiff: 0.26, caught: 0.12 },
@@ -26851,9 +26864,109 @@ function drawPokeStreak(cx, cy, D) {
   const bx = Math.round(P.x - cx) + (P.face > 0 ? 1 : -2), by = Math.round(P.y - cy) + 10, len = 3 + (Math.floor(time * 30) % 3) * 2;
   g.globalAlpha = 0.9; g.fillStyle = D.trail[0]; g.fillRect(bx, by, 1, len);
   g.globalAlpha = 0.5; g.fillStyle = D.trail[1]; g.fillRect(bx + (P.face > 0 ? 1 : -1), by, 1, Math.max(2, len - 2)); g.globalAlpha = 1; }
+
+/* ==== (claude/plunges) THE FOUR NEW PLUNGES (src/plunges.js): each hero's plunge owns ONE job, and every one still hits as hurtAs('plunge', ...) - FROM ABOVE's key - first.
+   HAMMER OF DAWN (paladin: poise, a guard broken, holy light over spikes and thorns), BOARDING (freebooter: the ride), AXE SPIN (berserker: the shred), EARTHFALL (geomancer:
+   GEO.earthfall, in geomancer.js, called from plungeWave and from a head landing below). ==== */
+function plungeHint() { if (!PLG.NEW_PLUNGE.has(hero())) return; PROG.lessons = PROG.lessons || {}; const k = 'plunge_' + hero(); if (PROG.lessons[k] || (L && L.trial)) return; PROG.lessons[k] = 1; saveProgress(); hintT = 5; hintMsg = PLG.HINT[hero()]; }   /* ONE HINT LINE EACH, the first time he plunges (the yard teaches it in its own words) */
+const hammerPoise = e => P.hammerHit ? PLG.HAMMER.poise * (e.maxHp || e.mini ? PLG.HAMMER.bossPoise : e.elite ? PLG.HAMMER.eliteMul : 1) : 0;   /* HAMMER OF DAWN leans on the bar (addPoise) */
+const hammerGuarded = e => !e.elite && !e.maxHp && !e.mini && (P.hammerGuard || kiGuarded(e, P.x, RX_COVER, null) || (e.raHigh || 0) >= 1);
+const holyShield = () => isPaladin() && ((P.plunge && P.consecrate) || P.holyLandT > 0);   /* HOLY LIGHT: a SAFE LANDING - spikes and thorns cannot bite him while the maul is falling and a breath after */
+function holySafe() { if (!(P.holyNoteT > time)) { P.holyNoteT = time + 1.4; number(P.x, P.y - 32, 'SAFE LANDING', PLG.HAMMER.glow); ringAt(P.x, P.y - 4, 22, PLG.HAMMER.glow, 0.35); motes(P.x, P.y - 8, 8, 12); SFX.medal && SFX.medal(); } }
+function hammerSlam(e, guarded) {
+  const H = PLG.HAMMER, was = guarded || hammerGuarded(e); P.hammerHit = true; P.hammerGuard = !!guarded;
+  try { hurtAs('plunge', e, Math.round(plungeDmg() * H.dmg * (tal('bounding') ? Math.min(2, 1 + 0.25 * pogoChain) : 1)), P.x, true); } finally { P.hammerHit = false; P.hammerGuard = false; }
+  P.consecrate = false; P.holyLandT = H.landT; gainLight(H.light);
+  ringAt(e.x, e.y - (e.h || 16) / 2, 30, H.glow, 0.35); motes(e.x, e.y - 10, 10, 14); SFX.hammerfall && SFX.hammerfall(); shakeCam(5); hitstop(0.09); kitPose(P, 'hammerHit', 0.24);
+  number(e.x, e.y - (e.h || 16) - 14, 'HAMMER OF DAWN', H.glow);
+  if (was && e.alive && e.broken > 0) number(e.x, e.y - (e.h || 16) - 26, 'GUARD BROKEN', '#ffd36b');
+  if (e.t === 'dummy') trialEvent('hammerfall');
+}
+/* BOARDING. 0: not rideable (a boss, a mini, an elite, a brute, a flyer: struck as any plunge, he pogoes off), 1: he is on its back, 2: the landing killed it (he pogoes off) */
+function boardTry(e) {
+  if (e.t === 'dummy' || P.swim || !PLG.boardable(e, { knockSkip: KNOCK_SKIP, fly: FLYERS })) { const w = e.t !== 'dummy' ? PLG.refusal(e) : null; if (w) number(e.x, e.y - (e.h || 16) - 14, w, '#9aa39a'); return 0; }
+  hurtAs('plunge', e, Math.max(1, Math.round(plungeDmg() * PLG.BOARD.hitMul)), P.x, true);
+  if (!e.alive) return 2;
+  P.plunge = false; P.canCut = false; P.hitSet.clear(); P.vx = 0; P.vy = 0; P.ground = false; P.consecrate = false;
+  P.riding = { e, t: 0, dir: 0, air: 0 }; e.ridden = true; e.rider = P; e.knock = 0; e.kvx = 0; e.kvy = 0; e.broken = 0; e.stagger = 0;
+  e.kiFrom = { x: e.x, y: e.y }; e.kiEdge = false; e.kiHz = null; e.kiSlide = false; KI.stats.byWhy.board = (KI.stats.byWhy.board || 0) + 1;
+  plungeHitBeat(e); pogoCount++; if (!e.maxHp) dropCoinAt(e.x, e.y - 8); SFX.pPogo && SFX.pPogo(); squash(0.8, 1.25, 0.1);
+  number(e.x, e.y - (e.h || 16) - 14, 'BOARDED', PLG.BOARD.col); trialEvent('board'); return 1;
+}
+function rideStep(dt) {
+  const rd = P.riding, re = rd.e;
+  if (!re || !re.alive || P.dead) { endRide('gone'); return; }
+  if (P.hurt > 0 || P.swim) { endRide('hurt'); return; }
+  rd.t += dt; P.vx = 0; P.vy = 0; P.ground = false; P.abuf = 0; P.abufDown = false;
+  rd.dir = (keys.right ? 1 : 0) - (keys.left ? 1 : 0); if (rd.dir) { P.face = rd.dir; re.face = rd.dir; }
+  P.x = re.x; P.y = re.y - (re.h || 16) + 5;
+  if (P.jbuf > 0 || P.dbuf > 0 || rd.t >= PLG.BOARD.t || rd.air > 0.14) { P.jbuf = 0; P.dbuf = 0; endRide('leap'); }
+}
+function endRide(why) {
+  const rd = P.riding; if (!rd) return; P.riding = null; const e = rd.e;
+  if (e && e.ridden) { e.ridden = false; e.rider = null; if (e.alive) { e.stagger = Math.max(e.stagger || 0, 0.5); e.kiT = time + 2.2; if (rd.air > 0) { e.knock = 0.001; e.kvx = 0; e.kvy = Math.max(0, e.kvy || 0); e.knockAir = 0; } } }
+  P.canCut = true; P.hitSet.clear(); P.ground = false; P.atk = -1;
+  if (why === 'hurt') return;
+  P.vy = PLG.BOARD.leapVy; P.canCut = false; P.vx = P.face * PLG.BOARD.leapVx; P.coyote = 0; P.airRolled = false; P.dashedAir = false; P.airDashN = 0; P.inv = Math.max(P.inv || 0, 0.12);
+  SFX.pJump(); dust(P.x, P.y, 5); squash(0.8, 1.28, 0.12); kitPose(P, 'boardLeap', 0.3); number(P.x, P.y - 30, 'OFF THE BACK', PLG.BOARD.col);
+}
+/* the ridden foe, from updateEnemies: it walks where the rider's stick says, with no mind of its own, and it is THROWN in knock-into's terms (e.kiT): spikes, a drop, water and fire
+   are the hazards of a throw and they say so (INTO THE SPIKES...). true: this frame is the ride's */
+function rideFoe(e, dt) {
+  const R = e.rider, rd = R && R.riding; if (!rd || rd.e !== e || !e.alive) { e.ridden = false; e.rider = null; return false; }
+  const dir = rd.dir || 0; e.kiT = time + 2.2; e.kiWhy = 'board'; e.kiBy = R;
+  e.kvy = Math.min(400, (e.kvy || 0) + 1000 * dt); e.vx = dir * PLG.BOARD.speed; e.stagger = 0; e.knock = 0; e.broken = 0;
+  const r = moveBody(e, e.vx * dt, e.kvy * dt, false);
+  if (r && r.ground) { e.kvy = 0; rd.air = 0; } else rd.air = (rd.air || 0) + dt;
+  if (e.lx1) e.x = Math.max(e.lx0, Math.min(e.lx1, e.x));
+  e.vy = e.kvy; e.anim = (e.anim || 0) + dt * (dir ? 1 : 0.2);
+  if (KI.flight(e, !!(r && r.ground)) || !e.alive) return true;
+  hazardFoe(e); return true;
+}
+/* AXE SPIN. 0: nothing to spin on, 1: spinning, 2: the first blow killed it. The landing is the plunge (FROM ABOVE, stack one of REND); then four quick plain cuts (two more on a boss or a mini). */
+function spinTry(e) {
+  if (!BZK) return 0;
+  const crack = BZK.rend(e, true); if (crack) P.heavy = true;
+  try { hurtAs('plunge', e, Math.max(1, Math.round(plungeDmg() * 0.6)), P.x, true); } finally { if (crack) P.heavy = false; }
+  if (!e.alive && e.t !== 'dummy') return 2;
+  P.plunge = false; P.canCut = false; P.hitSet.clear(); P.vx = 0; P.vy = 0; P.ground = false;
+  P.spinning = { e, t: 0, n: 1, max: (e.maxHp || e.mini) ? 3 : PLG.SPIN.hits, next: PLG.SPIN.gap };
+  plungeHitBeat(e); pogoCount++; number(e.x, e.y - (e.h || 16) - 14, 'AXE SPIN', PLG.SPIN.col[0]); return 1;
+}
+function spinHit(e, sp) {
+  const crack = BZK.rend(e, true); if (crack) P.heavy = true;
+  try { hurtAs(crack ? 'heavy' : 'light', e, Math.max(1, Math.round(plungeDmg() * PLG.SPIN.mul)), P.x, false); } finally { if (crack) P.heavy = false; }
+  SFX.pSlash(); sparks(e.x, e.y - (e.h || 16) / 2, sp.n % 2 ? 1 : -1, 5); streaks(e.x, e.y - (e.h || 16) / 2, 3, PLG.SPIN.col, 130); hitstop(0.02); shakeCam(1.5);
+}
+function spinStep(dt) {
+  const sp = P.spinning, se = sp.e;
+  if (!se || !se.alive || P.dead || P.hurt > 0) { endSpin(); return; }
+  sp.t += dt; P.vx = 0; P.vy = 0; P.ground = false; P.abuf = 0; P.abufDown = false;
+  P.y = se.y - (se.h || 16) + 3; P.x += (se.x - P.x) * Math.min(1, dt * 14);
+  while (sp.n < sp.max && sp.t >= sp.next && se.alive) { sp.n++; sp.next += PLG.SPIN.gap; spinHit(se, sp); }
+  if (P.jbuf > 0 || P.dbuf > 0) { P.jbuf = 0; P.dbuf = 0; endSpin(); }
+  else if (sp.n >= sp.max && sp.t >= sp.next + PLG.SPIN.end) endSpin();
+}
+function endSpin() {
+  const sp = P.spinning; if (!sp) return; P.spinning = null;
+  if (sp.e && sp.e.t === 'dummy' && sp.n >= sp.max) trialEvent('spin');
+  if (P.dead || P.hurt > 0) { P.canCut = true; P.hitSet.clear(); return; }
+  if (sp.n >= sp.max) number(sp.e.x, sp.e.y - (sp.e.h || 16) - 14, 'SHREDDED', PLG.SPIN.col[1]);
+  kitPose(P, 'bzSpinEnd', 0.22); pogoBounce(POGO_API, 'plunge', sp.e);
+}
+/* EARTHFALL never blocks a gate, a door, a plate or a way out: the spot is refused within PLG.EARTH.gateR tiles of one (geomancer.js earthfall asks) */
+const EARTH_GATES = new Set(['gate', 'lockgate', 'door', 'doorway', 'exit', 'vault', 'streetgate', 'tidegate', 'ringdoor', 'mcgate', 'drawbridge', 'ksvault', 'gearvault', 'sealvault', 'cage', 'dropcage', 'plate', 'gplate', 'tplate', 'lever', 'mlever', 'sandlever', 'cuelever', 'crank', 'winch', 'stopwinch', 'pad', 'mover', 'check', 'tblock', 'pushblock', 'lcgrate', 'lockrune', 'locksluice', 'sluice', 'tpcapstan']);
+function earthBlocked(tx, fy) {
+  const Rg = PLG.EARTH.gateR;
+  for (let y = fy - 6; y <= fy + 1; y++) for (let x = tx - Rg; x <= tx + Rg; x++) if (tileAt(x, y) === T.PORT) return 'A GATE';
+  for (const en of L.ents || []) if (EARTH_GATES.has(en.t) && Math.abs(en.x - tx) <= Rg && Math.abs(en.y - fy) <= 6) return 'A GATE NEAR';
+  for (const pr of props) if (EARTH_GATES.has(pr.t) && Math.abs(pr.x / TS - tx) <= Rg && Math.abs(pr.y / TS - fy) <= 6) return 'A GATE NEAR';
+  return null;
+}
 function plungeHitBeat(e) { const D = DOWN_STRIKE[hero()]; if (!D) return;
   hitstop(D.hitStop); shakeCam(D.hitShake); SFX.pPlungeHit(); burst(e.x, e.y - (e.h || 16) / 2, 6, D.trail, 80, 0.25, 0, 1); }
 function plungeWave(D) { let caught = 0;
+  if (D.earth && GEO) { const ef = GEO.earthfall(); caught = ef.struck; SFX.pPlungeGround(); if (ef.piece) kitPose(P, 'earthHit', 0.24); if (caught) { hitstop(0.05); trialEvent('stonefall'); if (tal('geoAftershock')) for (const e of ef.hit) if (e.alive) floorFoe(e, 1.6); } }   /* (claude/plunges) EARTHFALL: the hit and the step */
   /* D.wave === null: THE PALADIN AND THE DEATH KNIGHT ALREADY OWN THIS EXPLOSION (HAMMERFALL, graveFall) - it is fired
      from the same landing a few lines below in updatePlayer, so laying a second ring, a second hurtEnemy loop and a
      second SFX.pPlungeGround() on top of it would be two shockwaves reading as one, louder and wronger than either.
@@ -27859,7 +27972,7 @@ function updatePwaves(dt) {
     for (const e of enemies) { if (!e.alive || w.hit.has(e) || e.harmless || Math.abs(e.x - w.x) > 11 || Math.abs(e.y - w.y) > 14) continue; w.hit.add(e);
       if (w.sunder && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 0.7); e.vx = w.dir * 140; } // SHATTER: the overhead's waves put them down
       if (w.dmg !== undefined) { hurtKnock = true; hurtAs('heavy', e, w.dmg, w.x - w.dir * 20, false); hurtKnock = false; if (w.down && e.alive) floorFoe(e, 1.2); continue; }   /* THE HEAVY CUT's shockwave: short, its own blow, and it floors */
-      if (e.t === 'mother' || e.t === 'king' || e.t === 'gill' || e.t === 'heart' || e.t === 'wasp' || e.t === 'drone') continue; hurtKnock = true; hurtAs('heavy', e,Math.round(15 * (1 + 0.075 * LV_GROW()) * (w.skill ? amul(w.skill) : 1) * (w.mul || 1)), w.x - w.dir * 20, false); hurtKnock = false; if (w.holy && e.alive) e.burn = Math.max(e.burn || 0, 1.5); e.quakedUntil = time + 1.5; if (e.t === 'dummy') trialEvent('hammerfall'); e.stagger = Math.max(e.stagger, 0.8); number(e.x, e.y - e.h - 14, 'QUAKED', '#ffd36b'); }
+      if (e.t === 'mother' || e.t === 'king' || e.t === 'gill' || e.t === 'heart' || e.t === 'wasp' || e.t === 'drone') continue; hurtKnock = true; P.hammerHit = !!w.hammer; hurtAs('heavy', e,Math.round(15 * (1 + 0.075 * LV_GROW()) * (w.skill ? amul(w.skill) : 1) * (w.mul || 1)), w.x - w.dir * 20, false); hurtKnock = false; P.hammerHit = false; if (w.holy && e.alive) e.burn = Math.max(e.burn || 0, 1.5); e.quakedUntil = time + 1.5; if (e.t === 'dummy') trialEvent('hammerfall'); e.stagger = Math.max(e.stagger, 0.8); number(e.x, e.y - e.h - 14, 'QUAKED', '#ffd36b'); }
   }
   pwaves = pwaves.filter(w => w.life > 0);
 }
@@ -30328,9 +30441,13 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.dodge > 0 && POSE_DASH[P.kPoseK] && kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* HOLY CHARGE and CINDER STEP are dodges with a body of their own, not the roll (hero-poses.js) */
       else if (P.dodge > 0 && P.rgFlip && isRg()) { const dm = P.dodgeMax || 0.3; key = K.R.rgFlip ? 'rgFlip' : 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (K.R.rgFlip ? 1 : (P.face > 0 ? -1 : 1)); }   /* (claude/ranger) THE BACKFLIP: the roll turned the other way over (art lane: rgFlip) */
       else if (P.dodge > 0) { const dm = P.dodgeMax || 0.3; key = 'roll'; frame = Math.floor((dm - P.dodge) / dm * 4) * (P.face > 0 ? 1 : -1); }   /* (its own length, so a short back-step plays all four beats of it and not the first one twice) */
+      else if (P.riding && K.R.boardRide) { key = 'boardRide'; frame = Math.floor(P.riding.t * 7) % K.R.boardRide.length; }   /* (claude/plunges) BOARDING: crouched on its back, one hand in its collar */
+      else if (P.spinning && K.R.bzAxeSpin) { key = 'bzAxeSpin'; frame = Math.floor(P.spinning.t * 24) % K.R.bzAxeSpin.length; }   /* AXE SPIN: both axes whirling round him on its head */
       else if (P.pinning && K.R.pin) key = 'pin';   /* THE PIN: down on the spear, both hands on it, holding the thing under the point */
       else if (CRC && CRC.leapPose(K.R)) { [key, frame] = CRC.leapPose(K.R); }   /* (claude/berserker2) THE POUNCE: the leap, then the committed landing */
-      else if (P.plunge) key = isBz() && K.R.bzPlunge ? 'bzPlunge' : 'plunge';   /* (his plunge: both axes spun under him) */
+      else if (P.plunge) { const wf = P.plungeT < 0.1 ? 0 : 1;   /* (claude/plunges B16) each of the four new plunges has its OWN windup and fall */
+        if (isPaladin() && K.R.hammerWind) { key = 'hammerWind'; frame = wf; } else if (isPirate() && K.R.boardFall) { key = 'boardFall'; frame = wf; } else if (isGeo() && K.R.earthWind) { key = 'earthWind'; frame = wf; }
+        else if (isBz() && K.R.bzPlunge) { key = 'bzPlunge'; frame = K.R.bzPlunge.length > 2 ? (P.plungeT < 0.09 ? 0 : 1 + (Math.floor(P.plungeT * 20) % 2)) : frame; } else key = 'plunge'; }   /* (his plunge: both axes spun under him) */
       else if (K.R.dashAtk && P.dashCut && (P.dashAtk > 0 || P.dashRec > 0) && DASH_STRIKE[hero()]) { key = 'dashAtk'; frame = P.dashAtk > 0 ? (P.dashAtk > DASH_STRIKE[hero()].t * 0.6 ? 0 : 1) : 2; }   /* the lunge, its full stretch, and the stumble that is its price */
       else if (P.bashing && P.atk >= 0 && K.R.bash) key = P.atk < 0.2 ? 'bash' : 'recover';   /* THE SHIELD CHARGE: the slam, then the shield let down */
       else if (P.lcBrace > 0) { key = K.R.brace ? 'brace' : 'block'; frame = 0; }   /* THE LAST CHARGE's tell: braced square behind the shield */

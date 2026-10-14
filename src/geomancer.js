@@ -15,6 +15,7 @@
 //   5. A level that is left or reloaded takes its pieces with it: a piece only ever restores the grid it was written into.
 // The kit is bound to main.js through `api` (makeGeomancer) - main.js owns the world, the input and the tal() reads; this owns
 // what she makes in it.
+import { EARTH as EARTH_FALL, earthSpot } from './plunges.js';   /* (claude/plunges) EARTHFALL, her plunge: a stone spike that hits and stands a few seconds as a step */
 export const GEO = {
   cap: 3, life: 4, lifeLong: 6, archLife: 6, crack: 1.0, rise: 0.12,
   pillarH: 2, wallH: 2, perfect: 0.2, wallHp: 3,
@@ -80,12 +81,12 @@ export function makeGeomancer(api) {
     if (p.kind === 'wall' && tal('shrapnel') && why !== 'silent' && why !== 'shatter') burstShards(cx, cy, 0, 4);   /* SHRAPNEL */
   }
   /* write a run of cells as one piece (RULE 1 checked per cell by the caller, re-checked here) */
-  function place(kind, cells, tile) {
+  function place(kind, cells, tile, opt = {}) {
     cells = cells.filter(([tx, ty]) => freeCell(tx, ty)); if (!cells.length) return null;
     const own = pieces.filter(q => q.capped);
-    while (own.length >= cap()) crumble(own.shift(), 'cap');   /* RULE 3 */
+    if (!opt.free) while (own.length >= cap()) crumble(own.shift(), 'cap');   /* RULE 3 (EARTHFALL's step is OUTSIDE the cap: it is a plunge's, not one of her three) */
     const g = grid(), t = api.time;
-    const p = { kind, tile, grid: g, born: t, age: 0, life: lifeOf(kind), crack: GEO.crack, capped: true, hp: GEO.wallHp, cells: [],
+    const p = { kind, tile, grid: g, born: t, age: 0, life: opt.life || lifeOf(kind), crack: GEO.crack, capped: !opt.free, earth: !!opt.free, hp: GEO.wallHp, cells: [],
       x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
     for (const [tx, ty] of cells) { const i = ty * api.LW + tx; p.cells.push({ i, tx, ty, was: g[i] }); g[i] = tile;
       p.x0 = Math.min(p.x0, tx * TS); p.x1 = Math.max(p.x1, tx * TS + TS); p.y0 = Math.min(p.y0, ty * TS); p.y1 = Math.max(p.y1, ty * TS + TS); }
@@ -97,19 +98,19 @@ export function makeGeomancer(api) {
     for (let tx = l; tx <= r; tx++) for (let ty = t0; ty <= t1; ty++) if (api.isSolid(tx, ty)) return false; return true; }
   function liftable(e) { return !api.lcBig(e) && !e.noGrav && !api.knockSkip(e) && !(e.pinned > 0); }
   /* THE ERUPTION: a column of `h` cells standing on the floor row fy at column tx, launching what is standing there */
-  function erupt(tx, fy, h, kind, o = {}) {
+  function erupt(tx, fy, h, kind, o = {}) {   /* o: { noHero, heroVy, hurt, mul, k, tag (the blow's name: EARTHFALL's is 'plunge'), noLaunch, free, life } */
     const top = (fy - h) * TS, col = { l: tx * TS, r: tx * TS + TS, t: top - 2, b: fy * TS };
-    const P = api.P, launched = []; let struck = 0;
+    const P = api.P, launched = [], hit = []; let struck = 0;
     if (!o.noHero && !P.dead && api.overlap(col, heroBox()) && roomAbove(P, top)) { P.y = top; P.vy = o.heroVy || GEO.heroLaunchVy; P.ground = false; P.coyote = 0; P.onMover = null; }
     for (const e of foes()) { if (e.harmless) continue; const eb = api.box(e), inCol = api.overlap(col, eb);
       if (!inCol && !api.overlap({ l: col.l - 8, r: col.r + 8, t: col.t, b: col.b + 2 }, eb)) continue;   /* THE GROUND HEAVES a hand either side: what stands beside the column is hit, not lifted */
-      if (inCol && liftable(e) && roomAbove(e, top)) { e.y = top; e.vy = GEO.launchVy; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.5); launched.push(e); }
-      if (!e.turncoat && o.hurt !== false) { api.hurtAs('heavy', e, dmg(o.mul || 1.3, o.k), P.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5); struck++; } }
+      if (inCol && !o.noLaunch && liftable(e) && roomAbove(e, top)) { e.y = top; e.vy = GEO.launchVy; e.geoAirT = api.time; e.stagger = Math.max(e.stagger || 0, 0.5); launched.push(e); }
+      if (!e.turncoat && o.hurt !== false) { api.hurtAs(o.tag || 'heavy', e, dmg(o.mul || 1.3, o.k), P.x, false); api.sparks(e.x, e.y - (e.h || 16) / 2, 0, 5); struck++; hit.push(e); } }
     const cells = []; for (let k = 1; k <= h; k++) { if (!freeCell(tx, fy - k)) break; cells.push([tx, fy - k]); }   /* bottom up: stop at the first that is not air, or has a body in it */
-    const p = cells.length ? place(kind, cells, T().SOLID) : null;
+    const p = cells.length ? place(kind, cells, T().SOLID, o) : null;
     api.dust(tx * TS + 8, fy * TS, 8); api.shakeCam(3); api.SFX.geoRise && api.SFX.geoRise();
     if (launched.length) { gainTremor(GEO.tremor.launch * launched.length); api.number(tx * TS + 8, top - 26, 'LAUNCHED', STONE.rune); }
-    return { piece: p, launched, struck };
+    return { piece: p, launched, struck, hit };
   }
   function gainTremor(n) { const P = api.P, was = (P.tremor || 0) >= 100; P.tremor = Math.min(100, (P.tremor || 0) + n * (tal('rumble') ? 1.5 : 1) * (empowered() ? GEO.ward.empTremor : 1)); if (!was && P.tremor >= 100) api.meterFull(); }
   const empowered = () => (api.P.geoEmpT || 0) > api.time;   /* EMPOWERED: a perfect ward, for GEO.ward.emp seconds (main.js swordDmg reads it too) */
@@ -263,6 +264,27 @@ export function makeGeomancer(api) {
   function dropRock(x, delay, hit, knock, foe, big) {
     const tx = Math.floor(x / TS), P = api.P; const fy = floorRow(tx, Math.max(0, Math.floor((P.y - 120) / TS)), 16);
     const gy = fy === null ? P.y : fy * TS; falls.push({ x, gy, y: gy - 170, delay, max: delay, st: 'wait', hit, knock, foe, r: big ? 8 : 5 }); }
+
+  /* ==== EARTHFALL (claude/plunges): HER PLUNGE. A stone spike rises where she lands - under the nearest foe within a hand's reach, else one tile ahead
+     of her (then behind) - and HITS (the plunge's own blow, tagged 'plunge': FROM ABOVE's key) and stands EARTH_FALL.life s as a ONE-TILE STEP, cracking for its
+     last second. It is written only into open level with four tiles of air over it (never a tunnel or a ledge), never within EARTH.gateR tiles of a gate,
+     a door, a plate or a lever (api.blockedAt), at most one at a time and OUTSIDE her cap of three. It is a step for a moment, never a way: baseGrid() is the
+     level with every stone of hers taken out, and it is what the reach fill (main.js wayBuild) reads. onFoe: she came down on a head - the step rises
+     under it without a second blow and without throwing it (the head was the blow). Returns { struck, piece, why } ==== */
+  function earthfall(o = {}) {
+    const P = api.P, hx = Math.floor(P.x / TS), tgt = foes().filter(e => !e.harmless && !e.turncoat);
+    const spot = earthSpot({ x: P.x, y: P.y, face: P.face, anchor: o.anchor ? { x: o.anchor.x, y: o.anchor.y } : null, foes: tgt.map(e => ({ x: e.x, y: e.y })),
+      floorRow: (tx, from) => floorRow(tx, from, 3), open: (tx, ty) => api.tileAt(tx, ty) === T().AIR && !api.isSolid(tx, ty),
+      blocked: (tx, fy) => (api.blockedAt ? api.blockedAt(tx, fy) : null) }, TS);
+    if (spot.why) { api.dust(P.x, P.y, 4); return { struck: 0, piece: null, hit: [], why: spot.why }; }
+    const r = erupt(spot.tx, spot.fy, EARTH_FALL.h, 'earthfall', { noHero: spot.tx !== hx || !!o.anchor, heroVy: -60, hurt: !o.anchor, noLaunch: !!o.anchor, mul: EARTH_FALL.mul, k: 'stoneStep', tag: 'plunge', free: true, life: EARTH_FALL.life });
+    for (const q of [...pieces]) if (q.earth && q !== r.piece) crumble(q, 'silent');   /* one at a time (the old one goes only once the new one stands) */
+    if (r.piece) { r.piece.life = EARTH_FALL.life; api.number(spot.tx * TS + 8, r.piece.y0 - 12, 'A STEP OF STONE', STONE.hi); }
+    gainTremor(GEO.tremor.launch + (r.struck ? 6 : 0));
+    return { struck: r.struck, piece: r.piece, hit: r.hit, why: null };
+  }
+  /* THE LEVEL WITHOUT HER STONE: a copy of the grid with every piece taken back out (the reach fill must never count a step of hers as a way) */
+  function baseGrid() { const g0 = grid(), g = g0.slice(); for (const p of pieces) if (p.grid === g0) for (const c of p.cells) if (g[c.i] === p.tile) g[c.i] = c.was; return g; }
 
   /* ==== THE NINE (main.js geomancerKit calls these once it has checked the press, the wait and the wind) ==== */
   const kit = {
@@ -496,6 +518,6 @@ export function makeGeomancer(api) {
     g.fillStyle = STONE.hi; g.fillRect(x - Math.round(r / 2), y - r + 1, Math.max(2, r - 1), 1);
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
-  return { update, draw, clear, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
+  return { earthfall, baseGrid, update, draw, clear, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
     shieldDrawn: () => shieldDrawn, spunAt: () => spunAt, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }
