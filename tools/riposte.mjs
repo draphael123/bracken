@@ -38,7 +38,7 @@ try {
         if(R.stats.parries>0&&P.ripSrc==='parry'&&P.riposteT>0)return {how,n,res,win:+P.riposteT.toFixed(2),hold:+(e.rpHold||0).toFixed(2),open:+(e.rpOpenT||0).toFixed(2),e};}
       return null;};
     /* the cut after: swing once at the foe and read what it lost */
-    window.__cut=(e)=>{const P=BK.P;BK.sim(2);const far=BK.hero()==='ranger';e.x=P.x+(far?60:16);if(far){e.vx=0;e.knock=0;}/* (claude/ranger, a deliberate design difference: HER bash throws the parried foe OUT TO RANGE and her riposte is the NEXT ARROW - so both of her cuts here are the same tap shot from 60 px) */P.face=1;P.inv=0;const hp0=e.hp;BK.press('atk');for(let i=0;i<24&&!(P.atk>=0);i++)BK.sim(1);BK.sim(40);return hp0-e.hp;};
+    window.__cut=(e)=>{const P=BK.P;BK.sim(2);const far=BK.hero()==='ranger';e.x=P.x+(far?60:16);if(far){e.vx=0;e.vy=0;e.knock=0;e.y=P.y;}/* (claude/ranger, a deliberate design difference: HER bash throws the parried foe OUT TO RANGE and her riposte is the NEXT ARROW - so both of her cuts here are the same tap shot from 60 px) */P.face=1;P.inv=0;const hp0=e.hp;BK.press('atk');for(let i=0;i<24&&!(P.atk>=0);i++)BK.sim(1);BK.sim(40);return hp0-e.hp;};
     return 1;})()`);
   const out = {};
   if (WANT.includes('heroes')) {

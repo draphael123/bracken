@@ -168,7 +168,8 @@ export function makeRanger(api) {
   function pointBlank(p) { for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face, hw = (e.w || 12) / 2;
     if (dx > -hw && dx - hw < RG.knife.reach && Math.abs((e.y - (e.h || 16) / 2) - (p.y - 10)) < (e.h || 16) / 2 + 10) return true; } return false; }
   function press(p, aim) { ensure(p);
-    if (p.rgCd > 0 || p.rgBashT > 0) return 'eat';                      /* (her hands are busy: the press is spent, nothing comes out) */
+    if (p.rgCd > 0) return 'eat';                                         /* (her hands are busy: the press is spent, nothing comes out) */
+    p.rgBashT = 0;                                                        /* a shot out of the bash ends it: the riposte comes straight off the parry */
     const air = !p.ground && !p.swim;
     if (air && aim.low) { if (p.rgQ > 0) return downShot(p) ? 'shot' : 'eat'; return false; }   /* empty: a knife plunge */
     if (p.dash > 0 && !p.rgFlip) return false;                            /* X early in a FORWARD roll: the knife's dash attack (the backflip has no dash in it) */
@@ -192,7 +193,9 @@ export function makeRanger(api) {
     p.rgBashT = RG.bash.t; p.rgBashAt = api.time; p.rgBashHit = new Set(); p.charge = 0; p.atkHeld = 0; p.rgNock = null; p.vx *= 0.3;
     api.kitPose(p, 'rgBash', RG.bash.t); api.SFX.rgBash && api.SFX.rgBash(); api.teach('bash'); return true; }
   const shove = (p, e, k = 1) => { if (e.maxHp || e.mini || e.elite || (api.knockSkip && api.knockSkip(e))) { e.stagger = Math.max(e.stagger || 0, e.maxHp || e.mini ? 0.15 : 0.35); return; }
-    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.bash.push * k * (T().bashBack ? 2 : 1); e.vy = Math.min(e.vy || 0, -80); e.knock = Math.max(e.knock || 0, 0.35 * k); e.stagger = Math.max(e.stagger || 0, 0.5); };
+    e.vx = (Math.sign(e.x - p.x) || p.face) * RG.bash.push * k * (T().bashBack ? 2 : 1); e.vy = Math.min(e.vy || 0, -80); knockOut(e, 0.35 * k); e.stagger = Math.max(e.stagger || 0, 0.5); };
+  /* the knock carries on the knock's own velocity (main.js: e.kvx / e.kvy) - set with it, or the foe's position goes NaN */
+  const knockOut = (e, t) => { e.knock = Math.max(e.knock || 0, t); e.kvx = e.vx; e.kvy = e.vy; e.knockAir = 0; e.bounced = false; e.slammed = false; };
   function bashStep(p) { if (!bashUp(p)) return;
     const hb = p.face > 0 ? { l: p.x, r: p.x + RG.bash.reach, t: p.y - 22, b: p.y - 2 } : { l: p.x - RG.bash.reach, r: p.x, t: p.y - 22, b: p.y - 2 };
     for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || p.rgBashHit.has(e) || !api.overlap(hb, api.box(e))) continue; p.rgBashHit.add(e);
@@ -202,9 +205,9 @@ export function makeRanger(api) {
     const front = Math.sign(fromX - p.x) === p.face || fromX === p.x; if (!front || !onBeat(p)) return null;
     if (unblockable) { stats.tooStrong++; return null; }                  /* (main.js has said TOO STRONG) */
     if (pierce && !foe) return null;                                      /* a bolt is not knocked aside by a bow */
-    stats.parries++; p.parryT = 0.22; p.rgBashT = Math.max(p.rgBashT, 0.12);
+    stats.parries++; p.parryT = 0.22;
     if (api.parried) api.parried(foe);                                    /* (claude/riposte) THE BOW-BASH ON THE BEAT is her parry: the window, the foe's reel */
-    if (foe && foe.alive) { if (!foe.maxHp && !foe.mini && !foe.elite) { foe.vx = (Math.sign(foe.x - p.x) || p.face) * RG.bash.push * 1.25 * (T().bashBack ? 2 : 1); foe.vy = Math.min(foe.vy || 0, -110); foe.knock = Math.max(foe.knock || 0, 0.5); } p.rgBashHit.add(foe); }   /* OUT TO RANGE */
+    if (foe && foe.alive) { if (!foe.maxHp && !foe.mini && !foe.elite) { foe.vx = (Math.sign(foe.x - p.x) || p.face) * RG.bash.push * 1.25 * (T().bashBack ? 2 : 1); foe.vy = Math.min(foe.vy || 0, -110); knockOut(foe, 0.5); } p.rgBashHit.add(foe); }   /* OUT TO RANGE */
     api.SFX.parry(); api.hitstop(0.08); api.shakeCam(3, -p.face * 2); api.zoomKick(1.04, 0.16);
     api.ringAt(p.x + p.face * 9, p.y - 12, 16, '#c8e89a', 0.3); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BOW-BASH', '#c8e89a');
     api.noteParry(); api.trialEvent('parry'); return 'blocked'; }
