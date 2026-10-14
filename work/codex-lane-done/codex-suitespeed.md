@@ -19,6 +19,9 @@ The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time aud
 | Same commit, parallel #2 | 72m 02s | 374 | Same four, plus `archmage-folly` and `mobile-perf` |
 | Corrected output, before fresh-browser isolation (`accf93f9`), parallel #1 | 73m 52s | 374 | `firsthour`, `curve-gate`, `no-hidden-hits`, `fallingtower2-keys`, `textfit-full` |
 | First full run at `55c33519`, before isolating `unburied-look` | 79m 34s | 374 | `unburied-look`, `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
+| `ef2f05fc` parallel #1 | 79m 48s | 374 | `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
+| `ef2f05fc` parallel #2 | 77m 07s | 374 | Same four |
+| `ef2f05fc` parallel #3 | 79m 43s | 374 | Same four, plus `unburied-bailey` misreported red by a browser-context disposal race |
 
 Full logs are beside this report: `baseline-suite.log`, `jobs4-run1.log`, `jobs4-equivalence-1.log`, `jobs1-equivalence.log`, and `jobs4-equivalence-2.log`. `archmage-folly-standalone.log` and `mobile-perf-standalone.log` show both intermittent failures passed alone. `mobile-perf` failed its unchanged 600 ms Red Gorge frame budget at 642.8 ms in parallel #2; its standalone worst frame was 35.5 ms. The third parallel full run was interrupted before results were emitted to honor the shutdown request; it is **not** counted as proof. The two shard runs and full three-run equivalence proof remain pending.
 
@@ -29,6 +32,8 @@ The new red in `firsthour` was its court not draining at 47% boss health; `falli
 The `55c33519` full run is preserved in `proof-jobs4-1.log`. It produced 369 ` ok ` and five `FAIL` summary lines, one for each check, so the output contract held. `unburied-look` reported one borderline dressing read: `fallenBanner@321`, mean luminance `12.0`, 117 pixels. The unchanged check then passed **five of five** isolated `--jobs=1` reruns (`unburied-look-serial-1.log` through `-5.log`). It is now in the fresh-browser tail; this prior run is not part of the final same-commit equivalence proof.
 
 The four-check fresh-browser subset after that change passed `unburied-look`, `firsthour`, and `fallingtower2-keys`; `archmage-folly` failed its random blink spread because the ten samples covered only 278 px of the room against an unchanged 300 px requirement. Its first fresh `--jobs=1` rerun also failed (`archmage-serial-recheck-1.log`), demonstrating a serial red. The subset receipt is `fresh-browser-tail-2.log`. No game code, test assertion, or tolerance changed.
+
+The three `ef2f05fc` full logs are `proof-ef2f-jobs4-1.log` through `-3.log`. Runs 1 and 2 emitted exactly 370 parseable ` ok ` and four `FAIL` summary lines. In run 3 the check `unburied-bailey` passed internally but the pool reported it failed with `Failed to find context with id ...` while tidying Chrome after the check. Chrome had disposed the context between listing and disposal. The cleanup now accepts that exact already-gone-context response, without hiding any check failure. The affected `unburied-bailey` subset and the separate consecutive-context storage self-test passed (`context-disposal-fix.log`; `context-storage-selftest.log`). The proof must restart on this repaired commit.
 
 | Rank | Check | Seconds |
 | ---: | --- | ---: |

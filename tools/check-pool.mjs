@@ -99,7 +99,7 @@ async function clearContexts(port) {
   try { for (let i = 0; i < 60; i++) { const r = await send('Target.getBrowserContexts');
       if (!(r.browserContextIds || []).length) return;
       for (const browserContextId of r.browserContextIds) try { await send('Target.disposeBrowserContext', { browserContextId }); }
-        catch (e) { if (!/already pending|not found|no browser context/i.test(e.message)) throw e; }
+        catch (e) { if (!/already pending|not found|no browser context|failed to find context with id/i.test(e.message)) throw e; }
       await sleep(100); }
     throw new Error('borrowed browser kept a context after the check ended');
   } finally { ws.close(); }
