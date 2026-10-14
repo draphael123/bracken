@@ -3828,8 +3828,8 @@ function trialYard(hero) {
       ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],
       ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
-      ['hallow', 1, 'HOLY GROUND: TAP C. IN YOUR CIRCLE YOU HIT HARDER AND MEND, AND FOES IN IT BURN.', [], 'TAP LB'],
-      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. A QUARTER OF THE LIGHT. THROW IT TWICE.', [['dummy', 16]], 'UP + LB'],
+      ['hallow', 1, 'HOLY GROUND: TAP C. IN YOUR CIRCLE YOU HIT HARDER AND MEND, AND FOES IN IT BURN.', [['dummy', 11], ['dummy', 14]], 'TAP LB'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
+      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. A QUARTER OF THE LIGHT. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
       ['hammerfall', 2, 'HAMMERFALL: JUMP, THEN DOWN+X. THE GROUND CARRIES IT BOTH WAYS. CATCH TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
       ['dodge', 2, 'THE HEAVY STEP: TAP A WAY TWICE, OR V. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS.', [], 'B, OR THE STICK TWICE'],
