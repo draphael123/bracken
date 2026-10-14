@@ -54,7 +54,7 @@ try {
     const wall = m1.t - m0.t, row = { scene: name, fps: +(r.n / wall).toFixed(1), p95: +r.p95.toFixed(1), worst: +r.worst.toFixed(1), busyMsPerFrame: +(((m1.task - m0.task) * 1000) / Math.max(1, r.n)).toFixed(1),
       scriptMs: +(((m1.script - m0.script) * 1000) / Math.max(1, r.n)).toFixed(1) };
     rows.push(row); console.log(('  ' + name).padEnd(12) + JSON.stringify(row)); return row; };
-  const level = async id => { await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(id)})); BK.state = 'play'; })()`); await sleep(1500); };
+  const level = async id => { const [lid, at] = id.split('@'), [cc, rr] = (at || '').split(':').map(Number); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lid)})); BK.state = 'play'; ${at ? 'BK.P.x = ' + (cc * 16 + 8) + '; BK.P.y = ' + (rr * 16) + ';' : ''} })()`); await sleep(1500); };   /* (claude/pyramidart) 'level@col:row' parks the hero in a spot (the boss room) */
   for (const s of SCENES) {
     if (s === 'title') { await E("BK.state = 'title'"); await measure('title'); }
     else if (s === 'map') { await E("BK.state = 'map'"); await sleep(800); await measure('map'); }
