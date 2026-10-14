@@ -9144,16 +9144,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/98",
-     "dead:100/98"
+     "dead:100/100",
+     "dead:100/100"
     ],
     "warden": [
-     "dead:100/99",
-     "dead:100/99"
+     "dead:100/100",
+     "dead:100/100"
     ],
     "pyro": [
-     "dead:100/96",
-     "dead:100/96"
+     "dead:100/95",
+     "dead:100/95"
     ]
    },
    "rows": [
@@ -9162,11 +9162,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 29,
+     "secs": 21.9,
      "hpLostPct": 100,
-     "bossLeftPct": 98,
-     "landed": 12,
-     "swings": 655,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 380,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9175,11 +9175,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 29,
+     "secs": 21.9,
      "hpLostPct": 100,
-     "bossLeftPct": 98,
-     "landed": 12,
-     "swings": 655,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 380,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9188,11 +9188,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 28.1,
+     "secs": 21.1,
      "hpLostPct": 100,
-     "bossLeftPct": 99,
-     "landed": 5,
-     "swings": 733,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 458,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9201,11 +9201,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 28.1,
+     "secs": 21.1,
      "hpLostPct": 100,
-     "bossLeftPct": 99,
-     "landed": 5,
-     "swings": 733,
+     "bossLeftPct": 100,
+     "landed": 1,
+     "swings": 458,
      "reprisalPct": 0,
      "chip": []
     },
@@ -9216,7 +9216,7 @@
      "out": "dead",
      "secs": 28.2,
      "hpLostPct": 100,
-     "bossLeftPct": 96,
+     "bossLeftPct": 95,
      "landed": 28,
      "swings": 733,
      "reprisalPct": 14,
@@ -9229,7 +9229,7 @@
      "out": "dead",
      "secs": 28.2,
      "hpLostPct": 100,
-     "bossLeftPct": 96,
+     "bossLeftPct": 95,
      "landed": 28,
      "swings": 733,
      "reprisalPct": 14,
