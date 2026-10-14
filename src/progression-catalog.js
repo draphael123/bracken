@@ -1085,8 +1085,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 1,
-    "price": 60
+    "level": 7,
+    "price": 120
   },
   {
     "id": "zeal",
@@ -1425,7 +1425,7 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 2,
     "destination": "skill",
-    "level": 4,
+    "level": 11,
     "price": 120
   },
   {
