@@ -8,6 +8,7 @@
 //                            players() = the heroes to drain (an array, read each step); take = the caller takes n whole hp off pp (and names src on a death);
 //                            god(pp) = true skips him (his part-taken resets); beat = seconds between onBeat calls (default 1)
 //   D.set(pp, id, rate, o)   start (or re-rate) a source: rate = share of max health a second (0.03 = 3%/s); o = { name, col, ...anything the HUD wants }
+//                            o.floor = n: the source never takes him below n hp (THE SUN: floor 1 - it drains, it does not kill; breath has no floor and still drowns)
 //   D.stop(pp, id)           stop it (its part-taken fraction is dropped: a stop is a stop)
 //   D.step(dt)               every hero, every source: accumulate, take whole hp, and once a `beat` (1 s) call onBeat(pp, hpTakenThatBeat, src)
 //                            - the TICK VISUALS hook (a '-n', a sizzle, a gasp)
@@ -15,7 +16,7 @@
 //   D.rate(pp)               the summed rate on him now
 //   D.clear(pp)              stop every source on him (a respawn, a level change)
 //   e.g. THE LONG WATER's breath: D.set(pp, 'breath', 0.04, { name: 'OUT OF BREATH', col: '#7fd0ff' }) while under with an empty bar, D.stop(pp, 'breath') on surfacing
-export function makeDrains({ players, take, god = () => false, onBeat = () => {}, beat = 1 }) {
+export function makeDrains({ players, take, god = () => false, hp = pp => pp.hp, onBeat = () => {}, beat = 1 }) {
   const D = {};
   const map = pp => pp.drains || (pp.drains = new Map());
   D.set = (pp, id, rate, o = {}) => { const m = map(pp), s = m.get(id) || { id, acc: 0, took: 0, beatT: beat }; Object.assign(s, o, { rate: Math.max(0, rate) }); m.set(id, s); return s; };
@@ -27,7 +28,7 @@ export function makeDrains({ players, take, god = () => false, onBeat = () => {}
     for (const pp of players()) { if (!pp.drains) continue;
       for (const s of pp.drains.values()) {
         if (pp.dead || god(pp)) { s.acc = 0; continue; }
-        if (s.rate > 0) { s.acc += s.rate * dt * (pp.maxHp || 100); const n = Math.floor(s.acc); if (n >= 1) { s.acc -= n; s.took += n; take(pp, n, s); } }
+        if (s.rate > 0) { s.acc += s.rate * dt * (pp.maxHp || 100); const n = Math.floor(s.acc); if (n >= 1) { s.acc -= n; const m = s.floor > 0 ? Math.min(n, Math.max(0, hp(pp) - s.floor)) : n; if (m >= 1) { s.took += m; take(pp, m, s); } } }
         s.beatT -= dt; if (s.beatT <= 0) { s.beatT += beat; if (s.took > 0) onBeat(pp, s.took, s); s.took = 0; } } }
   };
   return D;
