@@ -37,7 +37,7 @@ import { leOpen } from './lantern-eater.js';   /* THE LANTERN-EATER (claude/lant
 import { qOpen } from './cistern-queen.js';
 import { matOpen } from './raptor-matriarch.js';
 import { colOpen } from './glass-colossus.js';
-import { hmOpen } from './hawk-mistress.js'; import { hkOpen } from './hourglass-king.js'; import { smOpen } from './scarab-mother.js'; import { tkOpen } from './tomb-king.js';   /* THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss) */   /* THE SCARAB MOTHER (claude/sealedpyramid) */   /* THE HOURGLASS KING (claude/buriedcity) */   /* THE HAWK-MISTRESS (claude/ksar) */
+import { hmOpen } from './hawk-mistress.js'; import { hkOpen } from './hourglass-king.js'; import { smOpen } from './scarab-mother.js'; import { tkOpen } from './tomb-king.js';   /* THE COFFIN KING (claude/pyramidboss) */   /* THE SCARAB MOTHER (claude/sealedpyramid) */   /* THE HOURGLASS KING (claude/buriedcity) */   /* THE HAWK-MISTRESS (claude/ksar) */
 import { hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (claude/rootway) */
 import { drillHittable } from './great-drill.js';   /* THE GREAT DRILL (claude/minecart) */
 import { pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch) */
@@ -112,7 +112,7 @@ export const OPEN_RULE = {
   lanterneater: e => leOpen(e) || !!e.keyHit,                               // (claude/lanterneater) snagged / its teeth in the timber - or a blow at its KEY on what is in reach (B14: the keyed angle lands whole and is not greed; the wrong one is; its own ward of a twentieth: OWN_WARD)  //                                 // (claude/canal4) stuck in the raft - or a blow at her BARE angle (the kelp guard: always hittable, the right blow is not greed; her own ward of a twentieth: OWN_WARD)                                                // downed or jolted
   cisternqueen: e => qOpen(e) || e.sting > 0 || e.scorch > 0 || !!(e.cqBare && e.cqBare()),   /* (claude/underwell3, Daniel 10-07: her STINGER is her weak spot - a blow on it, wherever it is (e.cqBare: the hands ask the blow's box), and her body while the fire SCORCHES her) */                                             // soaked out of her burrow, on her back off her wall (doused), rearing from a broken grab (claude/welltown3); her STUCK STINGER (claude/welltown5)
   paladinboss: e => pbOpen(e),                                               // THE PALADIN (claude/litchurch): his light starved, he FALTERS on one knee - open
-  tombking: e => tkOpen(e),                                                  // THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss): tipped over by a switch's counterweight, or a chamber trap (a plate) - the lid off, open
+  tombking: e => tkOpen(e),                                                  // THE COFFIN KING (claude/pyramidboss): tipped over by a switch's counterweight, or a chamber trap (a plate) - the lid off, open
   scarabmother: e => smOpen(e),                                              // THE SCARAB MOTHER (claude/sealedpyramid): pinned / stuck / flipped by a trap she was lured into
   hourglassking: e => hkOpen(e) || e.mode === 'turn',                      // THE HOURGLASS KING (claude/buriedcity): stalled by a sand-gate pulled as his glass runs low, or turning his glass over (whole)
   hawkmistress: e => hmOpen(e),                                              // THE HAWK-MISTRESS (claude/ksar): the hawk wheeled off by a gong or blinded by a flash - she whistles it back, open

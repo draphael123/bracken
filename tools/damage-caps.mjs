@@ -62,7 +62,7 @@ try {
       const setupR = () => { b.alive = true; b.hp = b.maxHp * 0.95; b.ward = 0; b.purseLeft = undefined; b.purseShut = false; b.mode = 'rap'; b.modeT = 5; };
       run(b, 'grandmotherRap', setupR, () => b.purseLeft === undefined ? -1 : +b.purseLeft.toFixed(2), 25, b.x - 40); out.grandmotherRap.cap = GR.rapPurse * b.maxHp; });
 
-    /* (claude/pyramidboss) THE TOMB-KING'S SARCOPHAGUS (the Sealed Pyramid): one window (tipped over), counted in wardedDamage after every multiplier (src/tomb-king.js takeBlow) */
+    /* (claude/pyramidboss) THE COFFIN KING (the Sealed Pyramid): one window (tipped over), counted in wardedDamage after every multiplier (src/tomb-king.js takeBlow) */
     await tryBoot('tombking', async () => { const b = boot('sealedpyramid'); const H = BK.tombKingHands(), TKM = await import('/src/tomb-king.js'), S = H.show();
       const setup = () => { b.alive = true; b.hp = b.maxHp * 0.95; S.ward = 0; S.openTaken = 0; b.mode = 'flipped'; b.open = 4; b.openKind = 'weight'; };
       run(b, 'tombking', setup, () => +S.openTaken.toFixed(2), 25, b.x - 40, () => TKM.tkOpen(b)); out.tombking.cap = TKM.TK.openCap * b.maxHp; });
@@ -80,7 +80,7 @@ try {
 
     return out; })()`);
 } finally { pg.close(); }
-const CAPS = ['wicker', 'colossus', 'colossusLegs', 'drill', 'huntmaster', 'grandmotherBack', 'grandmotherRap', 'archmage', 'tombking'];   /* (claude/pyramidboss: THE TOMB-KING's window) */
+const CAPS = ['wicker', 'colossus', 'colossusLegs', 'drill', 'huntmaster', 'grandmotherBack', 'grandmotherRap', 'archmage', 'tombking'];   /* (claude/pyramidboss: THE COFFIN KING's window) */
 for (const name of CAPS) { const r = R[name]; if (!r || r.error) { bad.push(name + ': the fight could not be set up: ' + (r && r.error)); continue; }
   for (const [vn, v] of Object.entries(r)) { if (vn === 'cap' || vn === 'runes') continue;
     ok(v.lost <= r.cap + 1, name + ' / ' + vn + ': one opening took ' + v.lost + ' of its health, its cap is ' + r.cap.toFixed(1) + ' (blows ' + JSON.stringify(v.each) + ')');

@@ -43,7 +43,7 @@
 //                                  since claude/pyramidlevel (MINI_SLOT); THE LEVEL'S MINI since claude/pyramidboss (L.mini: her east door its portcullis)
 // THE SECOND HALF (claude/pyramidlevel, 2026-10-13, Daniel "way too short"; src/sealed-pyramid-tombs.js): the way UP from her lair to the burial chamber -
 //   493-610  THE HALL OF THE DEAD, 611-735 THE EMBALMERS' GALLERY (gas), 736-862 THE OIL CHANNELS (fire), 863-962 THE FLOODED CRYPT (the sluices),
-//   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: THE TOMB-KING'S SARCOPHAGUS, src/tomb-king.js - claude/pyramidboss), the gate at 1049.
+//   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: THE COFFIN KING, src/tomb-king.js - claude/pyramidboss), the gate at 1049.
 //   The same rule: the gas jets, the oil channels and the sluices are TRAPS fired from PLATES; the tombs release the dead (mummies tread plates, the tomb guard does not).
 import { stageScarabMother, SM_STAGE } from './scarab-mother.js';
 import { buildTombHalf, TH, ARCS2, SECTIONS2, SPOTS2, MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';
@@ -272,7 +272,7 @@ export function buildSealedPyramid({ painter, T, TS }) {
   const masonry = [[0, W - 1, 0, H - 1]];
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: SP.start - 1 }, pools: half.pools, gasVents: half.gasVents, crumble: half.crumble, tombs: half.tombs, slots: { mini: MINI_SLOT, boss: BOSS_SLOT }, falls: [], moversExtra, interiors, structures,
-    mini: stage.mini, arena: half.arena, gateAfterBoss: true, reachDoors: [{ x0: MINI_SLOT.eastDoor.col, x1: MINI_SLOT.eastDoor.col, y0: MINI_SLOT.eastDoor.y0, y1: MINI_SLOT.eastDoor.y1 }],   /* (claude/pyramidboss) her portcullis: the reach model reads it open (her death lifts it) */   /* (claude/pyramidboss, LANE B) THE SCARAB MOTHER is the level's MINI in her lair mid-level (MINI_SLOT: her east door is its portcullis); THE TOMB-KING'S SARCOPHAGUS is its boss in the burial chamber (BOSS_SLOT, src/tomb-king.js) - lane A's temporary arena.until and L.routePastBoss are gone */
+    mini: stage.mini, arena: half.arena, gateAfterBoss: true, reachDoors: [{ x0: MINI_SLOT.eastDoor.col, x1: MINI_SLOT.eastDoor.col, y0: MINI_SLOT.eastDoor.y0, y1: MINI_SLOT.eastDoor.y1 }],   /* (claude/pyramidboss) her portcullis: the reach model reads it open (her death lifts it) */   /* (claude/pyramidboss, LANE B) THE SCARAB MOTHER is the level's MINI in her lair mid-level (MINI_SLOT: her east door is its portcullis); THE COFFIN KING is its boss in the burial chamber (BOSS_SLOT, src/tomb-king.js) - lane A's temporary arena.until and L.routePastBoss are gone */
     sealedpyramid: true, caravan: true,   /* caravan: the desert's hands in main.js (the desert machines' runner: the mummy, the scarabs; the sand skins) */
     traps, pairs: PAIRS.map(p => ({ ...p })), falseWalls: FALSE_WALLS.map(w => ({ ...w })), pitFill, vaultDoors, decor, plats, lamps, quicksand, spots: JSON.parse(JSON.stringify({ ...SPOTS, ...SPOTS2 })),
     rigBands: moversExtra.filter(m => m.ride).map(m => [Math.floor(m.x / TS), Math.floor(m.x / TS) + 1, Math.floor(m.top / TS) - 1, Math.floor(m.bot / TS) - 1]),   /* (each counterweight a hero RIDES is a ride between its stops: the first and last pairs' blocks that go down under you, the second's pale block that a trap's weight sends up - not their mates, which only move against a load) */

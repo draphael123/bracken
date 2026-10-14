@@ -1,4 +1,4 @@
-// src/tomb-king-hands.js - THE TOMB-KING'S SARCOPHAGUS's HANDS (claude/pyramidboss, the Opus lane B). src/tomb-king.js is the fight (pure: his moves, his three
+// src/tomb-king-hands.js - THE COFFIN KING's HANDS (claude/pyramidboss, the Opus lane B). src/tomb-king.js is the fight (pure: his moves, his three
 // phases, the flip, the switches, the bot's reading); this binds it to the world: his told blows on the heroes (keyed once a blow; a shield turns only the yellow
 // ones), THE SWITCHES (a hero's blow on a lever: strike), THE CHAMBER'S TRAPS (the level's own plates: src/sealed-pyramid-hands.js fires them, asks trapsOn() whether
 // they are armed yet, presses a plate under him or his thrown lid - pressers() - and tells him when one lands: trapHit), THE DEAD of his Grave Call (mummies and
@@ -165,7 +165,7 @@ export function makeTombKingHands(ctx) {
   H.take = (e, dmg) => { if (!S) return dmg; const t = ctx.time(), [d, word] = TKM.takeBlow(e, S, dmg);
     if (word) { e.chipHit = t; e.guardFx = 0.25; e.guardWord = word; if (!TKM.tkOpen(e)) { ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 14, e.y - 22, sd, 4); } }
     return d; };
-  H.barName = e => "THE TOMB-KING" + (TKM.tkOpen(e) ? '  ' + (TKM.OPEN_NAME[e.openKind] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
+  H.barName = e => "THE COFFIN KING" + (TKM.tkOpen(e) ? '  ' + (TKM.OPEN_NAME[e.openKind] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
   H.end = e => { if (S) { S.lid = null; S.jars = []; S.clouds = []; S.pits = []; S.curses = []; S.chain = null; S.reel = null; S.shock = null; S.roll = null; S.breath = null; S.trapsOn = false; killDead(); }
     for (const pp of ctx.players) { pp.tkBlindT = 0; pp.tkSlowT = 0; } BOSS_PHASE.tombking = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, openKind: ctx.boss && ctx.boss.openKind, traps: !!S.trapsOn, dead: deadAlive(),

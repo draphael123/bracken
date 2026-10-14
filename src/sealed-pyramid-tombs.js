@@ -23,7 +23,7 @@
 //                                        squad; the water is the only way to the high door - REQUIRED), EXAM: THE BRASS WARDEN II guarding the crypt's sluice plate
 //   963-1006  THE KING'S STAIR           A14 PLATFORMING (its own exam): narrow courses over the scarab well, the old ones GIVE (crumble), the dart volley spent
 //                                        from a plate-course before the last run
-//   1007-1047 THE BURIAL CHAMBER         THE TOMB-KING'S SARCOPHAGUS's arena (claude/pyramidboss, LANE B: src/tomb-king.js): floor + two side ledges (on chains),
+//   1007-1047 THE BURIAL CHAMBER         THE COFFIN KING's arena (claude/pyramidboss, LANE B: src/tomb-king.js): floor + two side ledges (on chains),
 //                                        a switch on each wall that swings its counterweight across the floor, three pale plates firing the chamber's traps
 //                                        (two ceiling blocks, two dart walls), four floor alcoves for his dead; the level's gate beyond its east door
 // ART IS PLACEHOLDER (readable shapes, src/sealed-pyramid-hands.js drawTombHalf): lane C draws the kit (work/claude/lane-done/claude-pyramidlevel.md ART list).
@@ -31,7 +31,7 @@
 /* THE ROWS of the second half (floors) */
 export const TH = { hall: 57, upper: 51, gas: 51, gasHi: 48, oil: 48, oilHi: 42, cistern: 48, lip: 42, crypt: 54, landing: 30, stair: 34, burial: 24, W: 1052 };
 /* THE ARENA SLOTS: MINI_SLOT is the Scarab Mother's lair (her antechamber, mid-level) - since claude/pyramidboss she is the level's MINI there (L.mini; her east door
-   is its portcullis, L.mini.gate); BOSS_SLOT is the burial chamber at the end - THE TOMB-KING'S SARCOPHAGUS's arena (L.arena, src/tomb-king.js).
+   is its portcullis, L.mini.gate); BOSS_SLOT is the burial chamber at the end - THE COFFIN KING's arena (L.arena, src/tomb-king.js).
    (claude/pyramidboss, LANE B) The side ledges came down to row 21 (three rows over the floor, a base jump: at row 17 no hero could reach them - src/reachcore.js
    JUMP_UP 3). A SWITCH (a lever) on each wall at its ledge's end - struck from the ledge, or a jump from the floor under it - throws that side's COUNTERWEIGHT (a stone
    on a chain from the roof at `anchor`) across the floor's near half (`sweep`). The three pale plates are the chamber's traps (plateTraps: the west block, the middle
@@ -225,7 +225,7 @@ export function buildTombHalf(B) {
   ledge('shelf', 741, 743, OI - 3); ledge('shelf', 744, 751, OI - 6); ledge('shelf', 761, 762, OI - 3); ledge('shelf', 763, 766, OI - 6);   /* (the oil floor at 48: a stepped pair - its first step is in the floor's own height band) */
   ledge('shelf', 833, 838, OH - 3); ledge('shelf', 953, 960, LD - 3);
 
-  // ================= 11. THE BURIAL CHAMBER (1007-1047): THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss, LANE B: src/tomb-king.js) - the level's machine in one room =================
+  // ================= 11. THE BURIAL CHAMBER (1007-1047): THE COFFIN KING (claude/pyramidboss, LANE B: src/tomb-king.js) - the level's machine in one room =================
   const S = BOSS_SLOT, F = S.floor;
   air(S.x0, S.x1, S.roof, F - 1); interiors.push([S.x0, S.x1, S.roof, F - 1, 'pyBurial']);
   air(S.westDoor.col, S.westDoor.col, S.westDoor.y0, S.westDoor.y1); air(S.eastDoor.col, S.eastDoor.col, S.eastDoor.y0, S.eastDoor.y1);
@@ -244,7 +244,7 @@ export function buildTombHalf(B) {
   ent('tombking', S.king, F - 1, { face: -1 });                                                              /* HE STANDS ASLEEP where the placeholder great sarcophagus stood */
   lamp(S.x0 + 4, S.roof + 6); lamp(S.x1 - 4, S.roof + 6); lamp(Math.round((S.x0 + S.x1) / 2), S.roof + 3);
   air(S.eastDoor.col + 1, TH.W - 2, F - 6, F - 1);
-  ent('gate', S.gate, F - 1);                                                                                /* THE LEVEL'S GATE: it opens once THE TOMB-KING is down (gateAfterBoss) */
+  ent('gate', S.gate, F - 1);                                                                                /* THE LEVEL'S GATE: it opens once THE COFFIN KING is down (gateAfterBoss) */
   /* THE ARENA (L.arena): his walls shut both doors; `tk` hands src/tomb-king.js the chamber's fittings */
   const arena = { x0: S.x0 * TS, x1: (S.x1 + 1) * TS, floor: F * TS, trigger: (S.x0 + 3) * TS, wallL: S.westDoor.col, wallR: S.eastDoor.col, boss: 'tombking', music: 'tombking',
     tint: '#c8a040', tintA: 0.07, start: [S.x0 + 4, F - 1], y0: S.roof * TS, y1: (F + 1) * TS, tk: S };

@@ -1,5 +1,5 @@
 /* tools/boss-openings.mjs — THE WINDOW THE PLAYER MAKES.
-     (claude/pyramidboss) THE TOMB-KING'S SARCOPHAGUS  a switch's counterweight, a chamber trap from a plate, a plate he stands on: each tips him open; left alone, nothing
+     (claude/pyramidboss) THE COFFIN KING  a switch's counterweight, a chamber trap from a plate, a plate he stands on: each tips him open; left alone, nothing
    All four of the levels added in the Codex pass shipped a boss that chose its attacks with turn++%n and handed out a
    timed rest after every one of them, so nothing the player did ever opened anything: docs/audit-new-levels-0920.md.
    Each of them now has one opening the player causes, and this proves it is caused - the same boss, left alone through
@@ -314,7 +314,7 @@ try {
    for(let i=0;i<60*6;i++){P.hp=P.maxHp;BK.sim(1);if(S().ward<=0&&!SMG.smOpen(b))break;}BK.sim(300);
    const stn=tread('stone',(G.stone.plate[0]+G.stone.plate[1])/2,G.stone.plateY,G.ledge.x1-10,G.x0+28*16);
    out.scarabmother={alone:+alone.toFixed(1),block:blk,glance,darts:drt,stone:stn};}
-  /* THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss): a minute of him with the hero on the floor between the plates (no switch struck, no plate trodden) opens nothing; staged in the west
+  /* THE COFFIN KING (claude/pyramidboss): a minute of him with the hero on the floor between the plates (no switch struck, no plate trodden) opens nothing; staged in the west
      counterweight's sweep, the switch struck from its ledge TIPS him (phase one); a switch in his ward glances off; phase two, staged in the west block's reach and the plate trodden, the
      block knocks him flat; standing on the middle plate to strike, its darts fire on HIM - each open 3 s or more, then a told ward */
   {const TKM=await import('/src/tomb-king.js');BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='sealedpyramid'));BK.state='play';BK.god=true;const A=BK.L.arena;
@@ -435,11 +435,11 @@ try {
   assert.ok(r.foreman.stomp >= r.foreman.max * 0.25 && r.foreman.open >= 1.2 && r.foreman.lurch >= 1 && r.foreman.ward > 0, 'a jump onto his cart did not stomp a share of him, open him for the boarding, then lurch you off into a told brace: ' + JSON.stringify(r.foreman));
   assert.ok(r.scarabmother.alone === 0, 'THE SCARAB MOTHER: a minute of her with no plate trodden opened her: ' + JSON.stringify(r.scarabmother));
   for (const k of ['block', 'darts', 'stone']) assert.ok(r.scarabmother[k].kind === k && r.scarabmother[k].open >= 3 && r.scarabmother[k].ward > 0, 'THE SCARAB MOTHER: her in the ' + k + '\'s reach and its plate trodden did not open her (' + k + ') for 3 s or more, then ward her: ' + JSON.stringify(r.scarabmother));
-  assert.ok(r.tombking.alone === 0, 'THE TOMB-KING: a minute of him with no switch struck and no plate trodden opened him: ' + JSON.stringify(r.tombking));
-  assert.ok(r.tombking.weight.kind === 'weight' && r.tombking.weight.open >= 3 && r.tombking.weight.ward > 0, 'THE TOMB-KING: the west switch struck with him in its sweep did not tip him open >= 3 s, then a ward: ' + JSON.stringify(r.tombking));
-  assert.ok(r.tombking.glance.glanced >= 1 && !r.tombking.glance.open, 'THE TOMB-KING: a counterweight in his ward opened him (B3: it must glance off): ' + JSON.stringify(r.tombking));
-  assert.ok(r.tombking.ph === 2 && r.tombking.traps && r.tombking.block.kind === 'block' && r.tombking.block.open >= 3, 'THE TOMB-KING: phase two, in the west block\'s reach with its plate trodden, he was not knocked open: ' + JSON.stringify(r.tombking));
-  assert.ok(r.tombking.plate.kind === 'darts' && r.tombking.plate.open >= 3 && r.tombking.onPlate >= 1, 'THE TOMB-KING: standing on the middle plate to strike, its darts did not fire on him: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.alone === 0, 'THE COFFIN KING: a minute of him with no switch struck and no plate trodden opened him: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.weight.kind === 'weight' && r.tombking.weight.open >= 3 && r.tombking.weight.ward > 0, 'THE COFFIN KING: the west switch struck with him in its sweep did not tip him open >= 3 s, then a ward: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.glance.glanced >= 1 && !r.tombking.glance.open, 'THE COFFIN KING: a counterweight in his ward opened him (B3: it must glance off): ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.ph === 2 && r.tombking.traps && r.tombking.block.kind === 'block' && r.tombking.block.open >= 3, 'THE COFFIN KING: phase two, in the west block\'s reach with its plate trodden, he was not knocked open: ' + JSON.stringify(r.tombking));
+  assert.ok(r.tombking.plate.kind === 'darts' && r.tombking.plate.open >= 3 && r.tombking.onPlate >= 1, 'THE COFFIN KING: standing on the middle plate to strike, its darts did not fire on him: ' + JSON.stringify(r.tombking));
   assert.ok(r.scarabmother.glance.glanced >= 1 && !r.scarabmother.glance.open, 'THE SCARAB MOTHER: a trap in her ward opened her (B3: it must glance off): ' + JSON.stringify(r.scarabmother));
   assert.deepEqual(pg.errors, []);
   console.log(JSON.stringify(r));

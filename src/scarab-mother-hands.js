@@ -23,7 +23,7 @@ export function makeScarabMotherHands(ctx) {
   /* (claude/pyramidboss) SHE IS THE SEALED PYRAMID's MINI now (L.mini, her lair mid-level); an arena of hers still works (A() finds whichever room is hers) */
   const A = () => { const L = ctx.L; if (!L) return null; if (L.mini && L.mini.boss === 'scarabmother') return L.mini; return L.arena && L.arena.boss === 'scarabmother' ? L.arena : null; };
   const act = () => { const Ar = A(); return !!Ar && (Ar === ctx.L.mini ? !!ctx.miniActive : !!ctx.bossActive); };
-  let ME = null;   /* (her body: the boss slot is the Tomb-King's now) */
+  let ME = null;   /* (her body: the boss slot is the Coffin King's now) */
   const R = Math.round;
   H.show = () => S;
   H.on = () => !!(S && A());

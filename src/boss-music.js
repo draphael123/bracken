@@ -565,7 +565,7 @@ export const SYNTH_BOSS = {
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   sealedpyramid: { step: SPM_STEP, total: SPM_LEN * SPM_BARSN, play: sealedpyramid }, scarabmother: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the greybox level bed and her theme */
-  tombking: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/pyramidboss) THE TOMB-KING: a PLACEHOLDER (the tomb theme) until lane C writes his own */
+  tombking: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/pyramidboss) THE COFFIN KING: a PLACEHOLDER (the tomb theme) until lane C writes his own */
   hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
   greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */

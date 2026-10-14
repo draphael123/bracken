@@ -1,4 +1,4 @@
-// src/tomb-king.js - THE TOMB-KING'S SARCOPHAGUS, THE SEALED PYRAMID's boss (claude/pyramidboss, the OPUS lane B, 2026-10-13). Daniel approved the design
+// src/tomb-king.js - THE COFFIN KING, THE SEALED PYRAMID's boss (claude/pyramidboss, the OPUS lane B, 2026-10-13). Daniel approved the design
 // (scratch/briefs-sealedpyramid-1013.md LANE B): a man-sized stone sarcophagus with arms that walks on stone legs and leaps; the pharaoh inside shows only when
 // the lid is off. Working name - the report proposes a better one. Built to the design standard B1-B17 (B17: his central mechanic is the level's own plates and
 // switches) and B6 amended (tuned WITH FLASKS, 60-70%).
@@ -62,7 +62,7 @@ export const MOVE_NAME = { slam: 'THE LID SLAM', shock: 'THE SHOCK LINE', lash: 
 export const OPEN_NAME = { block: 'CRUSHED OVER', darts: 'DARTED OVER', weight: 'TIPPED OVER', stone: 'FLIPPED' };
 /* every line he says (the hint box shows them: src/hint-lines.js spreads TK_SAY) */
 export const TK_SAY = {
-  wake: 'THE TOMB-KING RISES IN HIS SARCOPHAGUS', rule: 'STRIKE A WALL SWITCH WHEN HE IS IN ITS SWEEP: THE COUNTERWEIGHT TIPS HIM',
+  wake: 'THE COFFIN KING RISES IN HIS SARCOPHAGUS', rule: 'STRIKE A WALL SWITCH WHEN HE IS IN ITS SWEEP: THE COUNTERWEIGHT TIPS HIM',
   p2: 'THE TRAPS ARM: A PLATE FIRES ON WHATEVER STANDS IN ITS REACH - HIM TOO', p3: 'THE LID CRACKS FOR GOOD: THE SWITCHES RESET TWICE AS FAST',
   weight: 'THE COUNTERWEIGHT TIPS HIM OVER - STRIKE', block: 'THE BLOCK KNOCKS HIM FLAT - STRIKE', darts: 'THE DARTS TOPPLE HIM - STRIKE', onPlate: 'HE STANDS ON THE PLATE: IT FIRES ON HIM',
   clamp: 'THE LID CLAMPS BACK ON: WARDED', glance: 'HIS LID IS CLAMPED: IT GLANCES OFF', cap: 'HE HEAVES HIS LID BACK',

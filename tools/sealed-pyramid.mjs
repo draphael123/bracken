@@ -4,7 +4,7 @@
 //      the inner plates are inside their reach, every use is taught and then used again (ARCS: >= 3 uses past their teach)
 //   C  THE LOCKS: the reach model, with each verb's work undone, does not get past it - THE GREAT STONE's false door, the second pit, the weighed counterweight
 //   D  THE CAST: one new foe (the mummy), roles >= 3, no type over 35%; four seals for a four-seal vault; silver <= 3; checkpoints one a section, one before her
-//   G  (claude/pyramidboss) THE TOMB-KING'S SARCOPHAGUS (pure, in the real burial chamber): eleven attacks, the reds only leap/roll/curse, phases add 4/3/4 (STATED
+//   G  (claude/pyramidboss) THE COFFIN KING (pure, in the real burial chamber): eleven attacks, the reds only leap/roll/curse, phases add 4/3/4 (STATED
 //      CHANGE to B5), left alone he never opens, every blow told, the flip opens >= 3 s at 1.5-2x (capped) then a told ward, the switches tip him in their sweep (and
 //      reset twice as fast in phase three), the chamber's traps are the level's own and arm in phase two, he picks by where you stand; THE SCARAB MOTHER as the mini
 //   E  THE SCARAB MOTHER (pure, in a fake antechamber): left alone she never opens; every move is told before its blow; a trap on her opens her >= 3 s at
@@ -16,7 +16,7 @@ import { floodReach } from '../src/reachcore.js';
 import { slopeReachGrid } from '../src/reach-slopes.js';
 import * as SPY from '../src/sealed-pyramid.js';
 import * as SMM from '../src/scarab-mother.js';
-import * as TKM from '../src/tomb-king.js';   /* (claude/pyramidboss) G: THE TOMB-KING'S SARCOPHAGUS */
+import * as TKM from '../src/tomb-king.js';   /* (claude/pyramidboss) G: THE COFFIN KING */
 import { ROLES } from './level-quality.mjs';
 
 let fails = 0, n = 0; const ok = (c, m) => { n++; if (!c) { fails++; console.log('  FAIL ' + m); } else if (process.argv.includes('--v')) console.log('  ok   ' + m); };
@@ -47,7 +47,7 @@ ok(Object.keys(SPY.ARCS).length >= 4, 'distinct uses of the rule: ' + Object.key
 
 console.log('== C. the locks (the verb undone, the way shut)');
 const goal = (RR, x, y) => { for (let dy = -1; dy <= 0; dy++) if (RR.seen.has(x + ',' + (y + dy))) return true; return false; };
-const A = L.mini, trig = [Math.floor(A.trigger / 16), A.floor / 16 - 1];   /* (claude/pyramidboss: she is the level's MINI now - L.mini; THE TOMB-KING is L.arena, section G) */
+const A = L.mini, trig = [Math.floor(A.trigger / 16), A.floor / 16 - 1];   /* (claude/pyramidboss: she is the level's MINI now - L.mini; THE COFFIN KING is L.arena, section G) */
 ok(goal(R, trig[0], trig[1]), 'with the rule worked, the reach model gets to her door (' + trig.join(',') + ')');
 { const L2 = { ...L, falseWalls: [] }; const Rn = floodReach(slopeReachGrid(L2, T), T, { rides: true }); ok(!goal(Rn, 337, SPY.SP.pits - 1), 'THE FALSE DOOR unbroken: nothing past the false tomb (the pits\' floor at 337)'); }
 { const L2 = { ...L, pitFill: L.pitFill.filter(p => p[0] !== 360) }; const Rn = floodReach(slopeReachGrid(L2, T), T, { rides: true }); ok(!goal(Rn, 370, SPY.SP.pits - 1), 'THE SECOND PIT unfilled: no jump crosses it (370)'); }
@@ -125,12 +125,12 @@ console.log('== F. THE SECOND HALF (claude/pyramidlevel: the tombs, the gas, the
   { let port = true; for (let y = MS.eastDoor.y0; y <= MS.eastDoor.y1; y++) if (at(MS.eastDoor.col, y) !== T.PORT) port = false; ok(port, 'MINI_SLOT: her east door is a portcullis (' + MS.eastDoor.col + ', rows ' + MS.eastDoor.y0 + '-' + MS.eastDoor.y1 + ')'); }
   { let air = 0, all = 0; for (let x = BS.x0; x <= BS.x1; x++) for (let y = BS.roof; y < BS.floor; y++) { all++; if (at(x, y) === T.AIR || at(x, y) === T.ONEWAY) air++; }
     ok(air === all && BS.ledges.every(l => at(l.x0, l.y) === T.ONEWAY) && L.ents.some(e => e.t === 'check' && e.x === BS.check), 'BOSS_SLOT: the burial chamber is carved ' + (BS.x1 - BS.x0 + 1) + 'x' + (BS.floor - BS.roof) + ', its two ledges, a shrine before it'); }
-  ok(!('routePastBoss' in L) && L.arena && L.arena.boss === 'tombking' && !('until' in L.arena) && !('until' in L.mini), 'lane A\'s scaffolding is gone: no L.routePastBoss, no arena.until; THE TOMB-KING is the arena\'s boss');
+  ok(!('routePastBoss' in L) && L.arena && L.arena.boss === 'tombking' && !('until' in L.arena) && !('until' in L.mini), 'lane A\'s scaffolding is gone: no L.routePastBoss, no arena.until; THE COFFIN KING is the arena\'s boss');
   /* shrines: one a section, spaced (A10b) */
   const cps = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b), gaps = cps.slice(1).map((x, i) => x - cps[i]);
   ok(gaps.filter((g, i) => cps[i] >= 440).every(g => g >= 90), 'the second half\'s shrines stand >= 90 columns apart: ' + cps.join(', ')); }
 
-console.log('== G. THE TOMB-KING\'S SARCOPHAGUS (claude/pyramidboss, LANE B: pure, in the real burial chamber) and THE SCARAB MOTHER as the mini');
+console.log('== G. THE COFFIN KING\'S SARCOPHAGUS (claude/pyramidboss, LANE B: pure, in the real burial chamber) and THE SCARAB MOTHER as the mini');
 { const { TK, MOVES } = TKM, Ar = L.arena, G = TKM.geom(Ar, 16), BS = Ar.tk;
   const fight = (hp = 1000) => { const S = TKM.newFight(G), e = { x: G.start, y: G.floorY, hp, maxHp: 1000, alive: true, mode: 'wake', modeT: 0.1, face: -1, open: 0 }; return { S, e }; };
   const world = (log, o = {}) => ({ hit: (b, d, name, oo) => { log.push({ k: 'hit', name, o: oo }); return []; }, number: (x, y, t) => log.push({ k: 'say', t }), mark: m => log.push({ k: 'mark', m }), sound: () => {}, fx: () => {}, shake: () => {}, music: () => {},

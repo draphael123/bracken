@@ -8,7 +8,7 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { TELL_LINES } from './minecart.js';
 import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
-import { HK_SAY } from './hourglass-king.js'; import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE TOMB-KING'S SARCOPHAGUS's lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
+import { HK_SAY } from './hourglass-king.js'; import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 export const CALL_LINES = new Set([
   /* claude/slope (batch88 integ): THE RUNNING SLIDE tip (src/run-slide.js), said once - routed so the player can see it */
   'RUNNING SLIDE: LOW, AND UNDER HIGH BLOWS',
