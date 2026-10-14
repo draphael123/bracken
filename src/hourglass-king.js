@@ -36,7 +36,7 @@
 // NO ADDS. PURE: no DOM, no main.js. The world is a context `c` (src/hourglass-king-hands.js binds it). hkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HK = {
-  hp: 2600, w: 20, h: 38, markH: 56,
+  hp: 2500, w: 20, h: 38, markH: 56,
   glass: 12, glass3: 8, lowAt: 0.48, lowAt3: 0.6,
   openMul: 2.0, openCap: 0.09, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
@@ -53,10 +53,10 @@ export const HK = {
   great: { cd: 9.0, openT: 5.0, openCap: 0.12, dragV: 260 },          /* THE GREAT HOURGLASS (phase three's opening): its run back down, its open, its share */
   swap: 5.0, swapWarn: 1.0,                                             /* phase two's blocks: up/down by turns */
   tide: { every: 7.0, warn: 1.3, dur: 2.8 },                            /* phase two on: THE SAND TIDE - told, then the floor is DRIFT for dur s (take to a ledge or a block) */
-  dmg: { pend: 39, gear: 28, stream: 35, surge: 30, grasp: 32, rain: 21, slip: 39, hour: 41, pour: 9, shard: 21, pot: 30 },   /* (claude/buriedcity4 tune: x1.15; x1.3 at 3000 hp read 67% but knight 0/3 - BC4's short tune measured 89% at 3500 hp / the old blows, fights 140-200 s) */
+  dmg: { pend: 44, gear: 31, stream: 39, surge: 34, grasp: 36, rain: 24, slip: 44, hour: 46, pour: 10, shard: 24, pot: 34 },   /* (claude/buriedcity4 tune: x1.15; x1.3 at 3000 hp read 67% but knight 0/3 - BC4's short tune measured 89% at 3500 hp / the old blows, fights 140-200 s) */
   /* (claude/buriedcity4) HE WITHDRAWS: every `every[ph]` s (0 = never: phase three is the great hourglass's), only while his glass is at least glassMin full; the glide, the
      pillar's rise and sink, the throws from up there (`throws[ph]`, shards and pots by turns), then THE SAND RISES: the slabs' lives (low, high) and the opening's share */
-  aloft: { every: [0, 19, 16, 0], first: 15, glassMin: 0.7, glideV: 300, riseT: 0.6, sinkT: 0.45, perchT: 0.4, throws: [0, 2, 3, 0], life: [4.8, 8.0], openCap: 0.1, upTol: 6 },
+  aloft: { every: [0, 24, 20, 0], first: 15, glassMin: 0.7, glideV: 300, riseT: 0.6, sinkT: 0.45, perchT: 0.4, throws: [0, 2, 3, 0], life: [4.8, 8.0], openCap: 0.1, upTol: 6 },
   withdrawTell: 0.75, raiseTell: 0.8, throwRel: 0.3, throwRec: 0.5,
   shardTell: 0.75, shardN: 3, shardV: 230, shardSpread: 0.2, shardR: 5,   /* GLASS SHARDS: a fan of three at where you stand */
   potTell: 0.9, potFly: 0.8, potR: 26, potArc: 70,                       /* A SAND POT: lobbed onto a told mark, bursts */
