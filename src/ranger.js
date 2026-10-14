@@ -236,7 +236,7 @@ export function makeRanger(api) {
   function restock(dt, keys) { const p = P(); ensure(p);
     /* CROUCH TO RESTOCK (main.js calls it right after P.ducking is known this frame): a held, still duck on the ground (main.js sets p.ducking: no walk, swing, guard or roll) draws from the pouch; anything else resets the delay */
     if (p.ducking && p.ground && !p.swim && !p.dead && !(p.hurt > 0) && !(p.dodge > 0) && !p.rgNock && !(p.atk > 0) && !keys.atk && p.rgQ < maxQ()) { p.rgRsT = (p.rgRsT || 0) + dt;
-      if (p.rgRsT >= RG.restock.delay) { p.rgRsE = (p.rgRsE || 0) + dt; if (p.rgRsE >= RG.restock.each) { p.rgRsE = 0; if (giveArrow(p, 1, 'restock')) { stats.restocked++; api.trialEvent('restock'); api.SFX.rgTick ? api.SFX.rgTick() : api.SFX.rgPick && api.SFX.rgPick(); } } } }
+      if (p.rgRsT >= RG.restock.delay) { p.rgRsE = (p.rgRsE || 0) + dt; const ph = p.rgRsE / RG.restock.each; api.kitPose(p, 'rgRestock' + (ph < 0.4 ? 0 : ph < 0.8 ? 1 : 2), 0.1); if (p.rgRsE >= RG.restock.each) { p.rgRsE = 0; if (giveArrow(p, 1, 'restock')) { stats.restocked++; api.trialEvent('restock'); api.SFX.rgTick ? api.SFX.rgTick() : api.SFX.rgPick && api.SFX.rgPick(); } } } }
     else { p.rgRsT = 0; p.rgRsE = 0; }
   }
   /* ---- EVERY FRAME (main.js updatePlayer, the hero's own C block): the timers, the trickle, C, the arrows ---- */
