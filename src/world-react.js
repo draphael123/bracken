@@ -16,11 +16,11 @@ export const dipOf = (m, i) => (m.size && m.has(i) ? 1 : 0);
 /* a sway is a whole pixel either way, never more than 1 (a sprite is never smeared): amp 0..1, phase per deco */
 export const swayPx = (amp, time, ph = 0) => (amp > 0 ? Math.round(Math.sin(time * 26 + ph) * Math.min(1, amp) * 1.6) : 0);
 export const swaysAs = kind => SWAY_RE.test(kind || '');
-/* n pebbles off a point: dir 0 = a scatter both ways, +-1 = off an edge that way. They are 1 px, live under half a second, fall under their own gravity */
-export function pebbles(parts, x, y, dir, n) {
+/* (batch92 integ) rnd: main.js passes its private art stream so a pebble never draws from the seeded gameplay one. n pebbles off a point: dir 0 = a scatter both ways, +-1 = off an edge that way. They are 1 px, live under half a second, fall under their own gravity */
+export function pebbles(parts, x, y, dir, n, rnd = Math.random) {
   for (let i = 0; i < n; i++) {
     const d = dir || (i % 2 ? 1 : -1);
-    parts.push({ x: x + d * (1 + Math.random() * 3), y: y - 1, vx: d * (24 + Math.random() * 40), vy: -(26 + Math.random() * 40), life: 0.45, max: 0.45, col: PEBBLE_COLS[(Math.random() * PEBBLE_COLS.length) | 0], size: 1, grav: 520 });
+    parts.push({ x: x + d * (1 + rnd() * 3), y: y - 1, vx: d * (24 + rnd() * 40), vy: -(26 + rnd() * 40), life: 0.45, max: 0.45, col: PEBBLE_COLS[(rnd() * PEBBLE_COLS.length) | 0], size: 1, grav: 520 });
   }
 }
 /* is the ground you run along ending within `reach` px ahead? solidAt(tx, ty) answers for a solid or one-way tile */
