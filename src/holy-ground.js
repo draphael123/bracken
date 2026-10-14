@@ -20,6 +20,7 @@ export const HG = {
   st: 18,             // stamina to plant one
   tick: 0.4,          // s between burns
   burn: 4,            // damage a burn (before the host's own skill multiplier)
+  bossBurn: 0.4,      // (claude/paltune) the burn on a BOSS: x this (a slow boss stands in the circle all fight; wood fell 75 -> 38 s)
   heal: 0.02,         // of max health a second, mended standing in his own circle (a partner in it: half)
   hitMul: 1.2,        // his blows inside his own circle
   empower: { cost: 35, r: 60, life: 12, burnMul: 2, flare: 12 },   // EMPOWERED CONSECRATE: Light spent, a flare on the tap, a bigger, longer, hotter circle

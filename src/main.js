@@ -26070,7 +26070,7 @@ CRB = makeCrouchB({ get P() { return P; }, get L() { return L; }, get enemies() 
 HFX = makeHolyFx({ bloom: (...a) => bloom(...a), parts: p => parts.push(p) });
 HGR = makeHolyGround({ time: () => time, g: () => g, parts: p => parts.push(p),
   targets: c => enemies.filter(e => e.alive && !e.harmless && !(e.gone > 0)),
-  hurt: (e, d, c) => { hurtEnemy(e, Math.round(d * amul('consecrate')), c.x, false); if (e.alive && e.t === 'wight') e.burn = Math.max(e.burn || 0, 1); },
+  hurt: (e, d, c) => { hurtEnemy(e, Math.max(1, Math.round(d * amul('consecrate') * (e === boss ? HG.bossBurn : 1))), c.x, false);   /* (claude/paltune) a boss burns at HG.bossBurn */ if (e.alive && e.t === 'wight') e.burn = Math.max(e.burn || 0, 1); },
   healers: c => players.filter(p => !p.dead),
   tethers: c => (coop() && c.owner && c.owner.hero === 'paladin' && c.owner.aegis && !c.owner.dead && (c.owner.st || 0) > 0) ? players.filter(p => p !== c.owner && !p.dead && HGR.inside(c, p)).map(p => ({ a: c.owner, b: p })) : [],   /* (claude/palart) the aegis's tether to each partner it covers */
   heal: (b, n, c) => { const own = b === c.owner; b.hp = Math.min(b.maxHp, b.hp + b.maxHp * n * (own && tal('litany') ? 2 : 1)); if (own && tal('mercy')) b.st = Math.min(b.maxSt, b.st + 8 * n / HG.heal); } });   /* LITANY: twice the mend; MERCY: wind back in it */
