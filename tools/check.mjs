@@ -41,6 +41,8 @@
 //   ambush-reach every captain an ambush makes you kill can be reached from where the room shuts you in (stake walls and gates are rock)
 //   elites    every elite can be reached, and every gate it holds is reached with it shut and really holds the route
 //   spawns    no creature starts inside the rock, no eel, angler or urchin starts out of the water
+//   feel-speed    (headless) Game speed 50..200%: the nine steps, 100% default for a fresh profile, the one-time speedV3 migration, sub-steps above 100% (claude/feelplatform)
+//   feel-platform (headless) camera lookahead (eased, ~1/6 screen, off with Reduce motion), landings by height, the world's small reactions (claude/feelplatform)
 //   pixels    (headless) no sprite floats, hangs from nothing or runs through a ledge, by its own pixels; no water
 //             creature leaves its water over a tide (src/floatlab.js)
 //   deadends  every dead end pays: loot, a heart or a coin cache at the far end of every pocket (land, water, up high)
@@ -208,6 +210,9 @@ for (const t of ['tells', 'shake-mode', 'hero-trials', 'ore-road', 'ore-ride', '
 if (take('lab-order')) results.push(run('lab-order', process.execPath, ['tools/lab-order.mjs']));
 /* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
+/* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
+if (take('feel-speed')) results.push(run('feel-speed', process.execPath, ['tools/feel-speed.mjs'], { PORT: String(portFor(4)) }));
+if (take('feel-platform')) results.push(run('feel-platform', process.execPath, ['tools/feel-platform.mjs'], { PORT: String(portFor(5)) }));
 /* THE SLOPES SWAP, PROVED IN THE PAGE (docs/slopes-integration.md §8.3). tools/slopes.mjs above proves the two movers equal in Node;
    this one drives the real knight over four shipped levels and compares every frame with the trace recorded before the swap. It is the
    check standing between the slopes work and the thirty levels that ship on the old mover, so it runs in the suite, not by hand. */

@@ -89,7 +89,7 @@ import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
-import * as UIH from './ui-hud.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
+import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
 import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
@@ -395,6 +395,7 @@ const AWNING_LAUNCH = SPRING_MOVE.AWNING;   /* (claude/fairfix5) THE HARVEST FAI
 /* EARTHSHAKER's 'from a height', 2026-09-24: it was prevVy > 250, and the fall is capped at 270 - so every full jump on flat ground
    (it lands at ~270) was a free, costless quake that staggered the boss, and the lab's Hurricane went 57s -> 33s on it alone.
    A flat jump peaks JUMPV^2/2G = 51 px up; this asks for 72 (four and a half tiles): off a ledge, or down from one. */
+const BIG_DROP = 80;   /* (feelplatform) a fall of this many pixels (five tiles) from the top of the arc is a BIG landing */
 const EARTHSHAKER_DROP = 72;   /* he read as sprinting everywhere at 100: the legs came down, the camera looks further ahead to pay for it */
 const SWORD_DMG = 10, PLUNGE_DMG = 20, PYRO_PLUNGE_DMG = 7;
 // The pyromancer does not come down like a man in armour. The drop itself is light; what does the
@@ -6313,6 +6314,14 @@ function drawParts(cx, cy) {
     g.globalCompositeOperation = 'source-over'; }
   g.globalAlpha = 1;
 }
+function dustRing(x, y, n = 12) { n = Math.max(2, Math.round(n * Math.min(1, partScale()))); for (let i = 0; i < n; i++) { const d = i % 2 ? 1 : -1, sp = 34 + Math.random() * 46; parts.push({ x: x + d * (2 + Math.random() * 4), y: y - 1, vx: d * sp, vy: -6 - Math.random() * 14, life: 0.34 + Math.random() * 0.12, max: 0.42, col: i % 3 ? '#c9b27c' : '#e8dcc0', size: 2, grav: 40 }); } }   /* the ring of dust a big landing throws along the ground */
+/* THE WORLD REACTS (src/world-react.js): the state and the three calls main.js makes. All of it is art, and all of it is off under Reduce motion except the creak (a sound). */
+const WRD = WR.newDips(); let creakT = 0, pebT = 0;
+function scatterPebbles(x, y, tier) { if (SET.reduceMotion || tier < 1 || SET.parts === 'low') return; const sf = surface(); if (sf === 'wood' || sf === 'water' || sf === 'iron') return; WR.pebbles(parts, x, y, 0, tier === 2 ? 5 : 2); }
+function dipUnderfoot(tier) { if (!L || P.onMover || P.swim) return; const ty = Math.floor((P.y + 1) / TS), sf = surface(), idx = [];
+  for (const tx of new Set([Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)])) { const i = ty * LW + tx; if (WR.dippable(L.grid[i], T, sf)) idx.push(i); }
+  if (!idx.length) return; if (creakT <= 0 && (tier > 0 || Math.random() < 0.5)) { creakT = 0.6; SFX.creak(); }
+  if (SET.reduceMotion) return; WR.dipLand(WRD, idx, tier ? 0.2 : 0.14); P.dipT = tier ? 0.2 : 0.14; }
 function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
 /* THE PICKUPS ARE BIGGER. A key or a quest item is why you went down that side passage, and at ten pixels it
    was the size of a coin lying on the floor. Each small icon is drawn at twice its size, baked once, pixel for pixel. */
@@ -9186,7 +9195,7 @@ function updatePlayer(dt) {
     if (was > 0 && P.cds[k] <= 0) { P.skReady = P.skReady || {}; P.skReady[k] = 1; SFX.ui && SFX.ui(); } } // a skill coming back says so
   if (P.skReady) for (const k in P.skReady) P.skReady[k] = Math.max(0, P.skReady[k] - dt * 1.6);
   hushT = Math.max(0, hushT - dt);
-  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired']) P[k] = Math.max(0, P[k] - dt);
+  for (const k of ['inv', 'grace', 'skidT', 'throwCd', 'slamCd', 'hurt', 'abuf', 'dbuf', 'plungeRec', 'dashRec', 'drop', 'dodgeCd', 'stFlash', 'sqT', 'stDelay', 'landT', 'guardTired', 'dipT']) P[k] = Math.max(0, P[k] - dt);
   for (const k of ['emptySaid', 'parryW', 'parryCd', 'hookCd', 'rum', 'boardT']) if (P[k] > 0) P[k] = Math.max(0, P[k] - dt);
   P.atkRec = Math.max(0, (P.atkRec || 0) - dt); if (!(P.atkRec > 0)) P.recSwing = false; CM.holdPresses(P, { dbuf: 0.12, jbuf: 0.12, abuf: 0.15 });   /* WEIGHT: the recovery runs down, and a press made while committed is HELD for the window */
   if (isPirate() && P.boardT > 0 && P.boardHit) { for (const e of enemies) { if (!e.alive || e.harmless || P.boardHit.has(e)) continue;
@@ -9800,8 +9809,14 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
           if (P.consecrate) { P.consecrate = false; gainLight(14); // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
             for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - e.h / 2 - (P.y - 10)) < 30) { hurtEnemy(e, Math.round(swordDmg() * 0.5), P.x, false); e.stagger = Math.max(e.stagger || 0, 0.5); } } } } // HAMMERFALL: the maul comes down and the ground carries it both ways
-    } else { const heavy = prevVy > 250, fellFar = P.y - (P.airTopY ?? P.y) >= EARTHSHAKER_DROP; /* fellFar is EARTHSHAKER's alone: heavy still sets every hero's landing (lag, dust, thud) as before */ if (fellFar && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
-      dust(P.x, P.y, heavy ? 9 : 4); SFX.pLand(surface()); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null); squash(heavy ? 1.4 : 1.25, heavy ? 0.6 : 0.75, 0.1); P.landT = heavy ? 0.16 : 0.1; P.landArt = P.landArtMax = heavy ? 0.26 : 0.2; if (heavy) { SFX.thud(); shakeCam(2); hitstop(0.035); ringAt(P.x, P.y - 1, 12, '#c9b27c', 0.2); } }
+    } else { const fallH = P.y - (P.airTopY ?? P.y), tier = fallH >= BIG_DROP ? 2 : prevVy > 250 ? 1 : 0, heavy = tier > 0, fellFar = P.y - (P.airTopY ?? P.y) >= EARTHSHAKER_DROP; /* fellFar is EARTHSHAKER's alone: heavy still sets every hero's landing (lag, dust, thud) as before */ if (fellFar && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
+      /* LANDINGS BY HEIGHT (Daniel 10-12, claude/feelplatform): a hop is a PUFF (a little dust, a shallow squash); a drop is what it always was (dust, thud, shake, a ring, the three landing frames);
+         a BIG drop (BIG_DROP, five tiles and more) is a DUST RING + a deeper thump + a stronger shake + a longer crouch-recover. Nothing here locks the controls (landT clears on the next press, above). */
+      dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 3); SFX.pLand(surface()); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
+      squash(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
+      if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); hitstop(tier === 2 ? 0.05 : 0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
+      if (tier === 2 && !SET.reduceMotion) { dustRing(P.x, P.y, 14); SFX.thud(); }
+      scatterPebbles(P.x, P.y, tier); dipUnderfoot(tier); }
     pogoChain = 0;
     for (const d of decor) if ((d.k === 'mushroom' || d.k === 'tiny') && Math.abs(d.x - P.x) < 30 && Math.abs(d.y - P.y) < 20) d.wob = 0.4;
   }
@@ -9812,7 +9827,8 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // counts a fraction of your own top speed now, and it is kept (not grown) while you are in the air.
   if (Math.abs(P.vx) > RUN * MOVE.SPRINT_HOLD) { if (P.ground) P.runT = (P.runT || 0) + dt; } else P.runT = 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
   if (P.ground && Math.abs(P.vx) > 90 && Math.sign(P.vx) !== P.face && !dodging) { if (Math.random() < dt * 30) dust(P.x + P.face * 3, P.y, 1); SFX.skid(); } // turning at a run: the boots skid
-  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush) { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
+  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush) { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail' || d.k === 'bush') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
+  if (!SET.reduceMotion && SET.parts !== 'low' && P.ground && Math.abs(P.vx) > 50 && !dodging) { pebT -= dt; if (pebT <= 0) { pebT = 0.3 + Math.random() * 0.5; const dr = Math.sign(P.vx), sf = surface(); if (sf !== 'wood' && sf !== 'water' && sf !== 'iron' && WR.ledgeAhead((tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), P.x, P.y, dr, TS)) WR.pebbles(parts, P.x + dr * 8, P.y, dr, 1 + (Math.random() < 0.4 ? 1 : 0)); } }   /* (feelplatform) loose pebbles skitter off the ledge you run along */
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
   /* THE FIDGET CLOCK. Stood still, in no danger, with nothing pressed, a hero gets restless: first after a few seconds,
@@ -27635,6 +27651,10 @@ function updateWeather(dt) {
   for (const b of birds) { b.t += dt; b.life -= dt; b.x += b.vx * dt; b.y += b.vy * dt; b.vy += Math.sin(b.t * 6) * 30 * dt - 10 * dt; }
   birds = birds.filter(b => b.life > 0);
   for (const d of decor) { if (d.sway > 0) d.sway = Math.max(0, d.sway - dt); if (d.wob > 0) d.wob = Math.max(0, d.wob - dt); }
+  WR.dipTick(WRD, dt); creakT = Math.max(0, creakT - dt);
+  /* VINES, ROPES, BANNERS, BUNTING, HUNG CLOTH AND MOSS SWAY AS YOU PASS THROUGH (src/world-react.js; art only; a deco's kind is tested once) */
+  if (state === 'play' && !SET.reduceMotion) for (const d of deco) { if (d.swq === undefined) d.swq = !!d.c && WR.swaysAs(d.kind); if (!d.swq) continue; if (d.sw > 0) d.sw = Math.max(0, d.sw - dt * 1.3);
+    if (!P.dead && Math.abs(P.x - d.x - d.c.width / 2) < d.c.width / 2 + 6 && P.y - 20 < d.y + d.c.height && P.y > d.y - 4 && (Math.abs(P.vx) > 25 || !P.ground)) d.sw = 1; }
   zoomT = Math.max(0, zoomT - dt); if (zoomT <= 0) zoomAmt = 1;
   // ambient bed by zone, and the music ducks while something winds up nearby
   let amb = 'forest', ambBell = false; for (const z of (L.ambient || [])) if (camX + VW / 2 >= z.x0 && camX + VW / 2 < z.x1) { amb = z.kind; ambBell = !!z.bell; }
@@ -27703,12 +27723,22 @@ function updateParticles(dt) {
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
 }
+/* CAMERA LOOKAHEAD (Daniel 10-12, claude/feelplatform): while you run the camera leads your direction by ~1/6 of the screen, EASED (about half a second to build and to turn, so a
+   reversal never snaps), and on a long fall it leads DOWN further the longer you fall. It is OFF - the camera is exactly what it was - wherever something else owns the frame: a
+   boss or mini fight (arena locks), any camLock, a chase (autoscroll or not), the spiral stair, the Deep Rails' cart, a wind/gale ride, a flight, the shared co-op camera, and
+   with Reduce motion. Off, the lead resets to 0 so it builds up again from nothing. */
+let camLead = 0, camFallT = 0;
+function lookaheadOn() { return !SET.reduceMotion && !coop() && !bossActive && !miniActive && !camLock && !chases.some(c => c.st.phase === 'run') && !(L && L.spiral) && !(MCH && MCH.on()) && !P.windRide && !P.galeRide && !P.fly && !P.dead; }
 function updateCamera(dt) {
   if (bannerT > 0) bannerT -= dt; if (miniIntroT > 0) miniIntroT -= dt;
   if (P.fly && flight) { camX = Math.max(0, Math.min(LW * TS - VW, flight.cx)); camY = Math.max(0, Math.min(LH * TS - VH, flight.cy)); shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt); return; }
-  const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
+  const LA = lookaheadOn();
+  if (LA) { const run = Math.abs(P.vx) > 14 ? Math.sign(P.vx) * Math.min(1, Math.abs(P.vx) / 70) : 0; camLead += (run * VW / 6 - camLead) * Math.min(1, dt * 2.2);
+    camFallT = !P.ground && P.vy > 200 ? camFallT + dt : 0; } else { camLead = 0; camFallT = 0; }
+  const fallLead = LA && SET.lookDown && camFallT > 0.25 ? Math.min(40, (camFallT - 0.25) * 70) : 0;   /* a long fall: the camera runs ahead of you, down */
+  const lookDown = !SET.lookDown ? 0 : !P.ground && P.vy > 120 ? Math.min(60, (P.vy - 120) * 0.4) + fallLead : (P.ground && keys.down && !P.block && P.atk < 0 ? 48 : 0);
   // the camera leads your speed as well as your shoulders, so a hard turn does not snap
-  let tx = P.x + P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28)) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
+  let tx = P.x + (LA ? P.face * 24 + camLead : P.face * 32 + Math.max(-38, Math.min(38, P.vx * 0.28))) - VW / 2, ty = P.y - (VH * CAM_FOOT) + lookDown - (bossActive && boss && boss.t === 'mother' ? 30 : 0) - (lookingUp() ? 48 : 0);   /* L.climbLook (STORMHOLD's towers): on a ladder the camera looks UP it, so the Scalder at the top and his mark are on the screen before his pitch is */ // falling or crouching peeks below; the hollow looks up at her gills
   /* THE SHARED SCREEN: the MIDPOINT of the two of them, and no shoulder lead - a lead that follows one hero's face
      is a lead that pushes the other one off the edge of the picture. */
   if (coop()) { const [mx, my] = coopCamTarget(); tx = mx - VW / 2; ty = my - VH * CAM_FOOT + lookDown; }
@@ -29036,7 +29066,7 @@ function softScenery(c){
 const HIDE = {};   /* (claude/unburiedart) BK.hide.deco / .facades / .structures: a layer the look checks switch off to see what it was holding up (tools/unburied-look.mjs) */
 function drawScenery(cx,cy){
   g.save();g.globalAlpha=.78;
-  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx,d.y-cy);
+  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx+(d.sw>0?WR.swayPx(d.sw,time,d.ph):0),d.y-cy);
     if(d.kind==='hangingHouse'||d.kind==='villageHall'){paintHouseSmoke(g,d.x+d.c.width-25-cx,d.y+10-cy,time+d.ph);g.globalAlpha=.78;}}
   for(const d of decor){if(d.x<cx-d.c.width||d.x>cx+VW)continue;const c=d.fire?PROP.campfire[Math.floor(time*9+d.x)%3]:d.c;const sway=d.sway>0?Math.round(Math.sin(time*28)*d.sway*3):0;g.drawImage(softScenery(c),d.x-cx+sway,d.y-cy);}
   g.restore();
@@ -29184,7 +29214,7 @@ function drawWorld(cx, cy, showPlayer) {
   const lip = L.edgeLit ? (typeof L.edgeLit === 'string' ? L.edgeLit : 'rgba(236,214,168,0.5)') : null, lip2 = lip && lip.replace(/[\d.]+\)$/, '0.18)');
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
-    const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0));
+    const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0) + (WRD.size ? WR.dipOf(WRD, ty * LW + tx) : 0));
     if (lip && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = lip; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = lip2; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
   }
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
@@ -30181,7 +30211,8 @@ function drawWorld(cx, cy, showPlayer) {
         else if (step[0] === 'crouch' || step[0] === 'land') dY = 1; }
       if (key !== 'swim' && key !== 'tread') swimRot = 0;   /* the victory dance can borrow the frame list mid-swim; nothing else in it should tilt */
       if (MCH && MCH.riding(P)) { if (!P.ducking) dY -= 3; MCH.drawCartBack(g, P, cx, cy, time); }   /* (claude/deeprails2) THE DEEP RAILS: the tub's back wall and its dark inside behind him - he sits IN the cart */
-      { const pz = PTK.pose(P, time, K.R); if (pz) { key = pz.key; frame = pz.frame; swimRot = pz.rot; } }   /* (claude/partnerthrow) the dangler flails, the thrown partner tumbles, the carrier heaves */
+      { const pz = PTK.pose(P, time, K.R); if (pz) { key = pz.key; frame = pz.frame; swimRot = pz.rot; } }
+      if (P.dipT > 0 && P.ground && !SET.reduceMotion) dY += 1;   /* (feelplatform) the plank gives a pixel under him, and so does he */   /* (claude/partnerthrow) the dangler flails, the thrown partner tumbles, the carrier heaves */
       const k = P.sqT > 0 ? P.sqT / 0.12 : 0, sx = 1 + (P.sqX - 1) * Math.min(1, k), sy = 1 + (P.sqY - 1) * Math.min(1, k);
       const br = 1;   /* at rest he breathes in the frames themselves now: a sub-pixel stretch on top of them only shimmered */
       const hs = isReaper() ? 1.22 : 1, shadowed = isReaper() && ((P.passT || 0) > 0 || P.dodge > 0);   /* the Death Knight is the biggest of them, and when he steps he is a shadow */
@@ -32264,6 +32295,7 @@ window.BK = { setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER
   flyers: () => FLYERS,   /* the creatures that legitimately have no floor under them: src/playtest.js's runtime floater sample reads this instead of keeping a second list */
   waterKin: () => HEEL_SWIMS,   /* what the sea does not drown: it lives IN or BY the water, not on a floor tile - the same list the runtime floater sample reads instead of keeping a second one */
   risen: () => risen, bodies: () => bodies,
+  feel: () => ({ la: lookaheadOn(), lead: camLead, fall: camFallT, camX, camY, dips: WRD.size, landT: P.landT, landArt: P.landArt, dipT: P.dipT, sw: deco.filter(d => d.sw > 0).length, swayers: deco.filter(d => d.swq).length, nparts: parts.length, speed: SET.speed }), dropTier: h => (h >= BIG_DROP ? 2 : 1),   /* (feelplatform) tools/feel-platform.mjs */
   get throneBlock() { return throneBlock; }, drinkFlask: () => tryDrink(), flasks: () => P.flasks | 0, flaskRow: () => flaskRowRect, breakShrine: s => breakShrine(s), skillSlots: () => skillSlotRects.slice(), flaskHud, flaskFinds: () => flaskFinds, flaskStore: () => STORE_TABS.find(t => t.flasks), flaskRows: () => storeItems(STORE_TABS.find(t => t.flasks)).map(k => ({ id: k.id, name: k.name, state: storeRowState(STORE_TABS.find(t => t.flasks), k), lock: lockOf(k, PROG, featDone) })), flaskHealPct: () => F2.healPct(PROG),   /* (claude/flasks2) the flask row and the slots, for tools/flasks2.mjs */ get flaskKey() { return flaskKeyName(); }, flaskMax: () => SV.flaskMax(PROG),   /* THE FLASK for the bots and the walkers (claude/survival): BK.drinkFlask() starts a drink (true) or says no (false); BK.P.flasks is what is left */ get talk() { return talk; }, get wisp() { return wisp; }, fires: () => fires, wardJav: () => wardJav, spearRain: () => spearRain, geo: () => GEO, bz: () => BZK ? BZK.read() : null, bzKit: () => BZK, crouchC: () => CRC ? CRC.read() : null, geoK: GEO_K, realmWaves: () => realmWaves, damagePlayer: (x, d, o) => damagePlayer(x, d, o), skillNow, props: () => props, get L() { return L; }, set shaftA(v) { SHAFT_A = v; }, get shaftA() { return SHAFT_A; }, set shaftDbg(v) { SHAFT_DBG = v; }, get shaftWhy() { return { weather: SET.weather, parts: SET.parts, daylit: daylit(), dusk: dusk(), night: L.night, glow: L.glowNight, dark: L.dark, violet: L.violet, sky: skylineNow(camX, camY).slice(0, 12).join(',') }; }, get slide() { return slide; }, get time() { return time; }, destroyedCount: () => destroyed.size, get bossActive() { return bossActive; }, press(k) { if (k === 'grab') grabPress = true; if (k === 'talk') talkPress = true; if (k === 'confirm') confirmPress = true; if (k === 'pause') pausePress = true; if (k === 'throw') throwPress = true; if (k === 'skill2') skill2Press = true; if (k === 'skill3') skill3Press = true; if (k === 'skill4') skill4Press = true; if (k === 'atk') atkPress = true; if (k === 'jump') jumpPress = true; if (k === 'dodge') dodgePress = true; if (k === 'left') leftPress = true; if (k === 'right') rightPress = true; if (k === 'up') upPress = true; if (k === 'down') downPress = true; if (k === 'flask') flaskPress = true; }, unpress: () => clearPresses(),   /* (the bot's duck: a swing or a roll it asked for this frame is taken back) */ get slot() { return slot; }, loadSlot, readSlot, eraseSlot, get state() { return state; }, set state(v) { state = v; }, get bannerT() { return bannerT; }, get miniActive() { return miniActive; }, get miniIntroT() { return miniIntroT; }, get front() { return { fade: frontFade, covered: frontCovered }; }, set hideHero(v) { heroHidden = !!v; }, set frontOff(v) { frontOff = !!v; }, get escape() { return escape; }, rocks: () => rocks, winchRocks: () => WRK, glass: () => glassPatches, strays: () => straysGot.size, audio: debugAudio, embers: () => embers, hero, silverAvail, silvers: () => silvers, get marks() { return marks; }, questOf, spawnEnt, movers: () => movers, bombs: () => bombs, deco: () => deco, get thrown() { return thrown; }, get gate() { return gate; }, critters: () => critters, decor: () => decor, tileSpr: () => tileSpr, impacts: () => impacts, rings: () => rings, clouds: () => clouds2, roots: () => roots, vines: () => vines, get mother() { return mother; }, props: () => props, bombs: () => bombs, fires: () => fires, foxes: () => foxes, bridges: () => bridges, get map() { return map; }, SKINS, SWORDS, UPGRADES, applySkin, applyUpgrades, ripples: () => ripples, get hitsTaken() { return hitsTaken; }, touchOn, touchZones, touch: TCH, touchVerbs: VERB_HOOKS, touchCtx: CTX_HOOKS, get padLast() { return padLast; }, set padLast(v) { padLast = v; }, medalFor, get boss() { return boss; }, get ed() { return { get cat() { return edCat; }, set cat(v) { edCat = v; }, get sel() { return edSel[edCat]; }, set sel(v) { edSel[edCat] = v; }, get doc() { return edDoc; }, get cur() { return edCur; }, get testing() { return edTesting; }, cats: ED_CATS, items: c => edItems(c === undefined ? edCat : c) }; }, get P() { return P; }, get warp() { return warp; }, get upPress() { return upPress; }, doorNow() { const pr = props.find(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 12 && Math.abs(q.y - P.y) < 20); if (pr) warpTo(pr); return pr ? pr.id : 'none'; }, setHero(h) { PROG.hero = h; PROG.heroes[h] = true; applySkin(); applyUpgrades(); P.hp = P.maxHp; return PROG.hero; }, get bossActive() { return bossActive; }, slay() { const b = boss; if (!b || !b.alive) return 'no boss'; if (b.t === 'mother') { for (const e of enemies) if (e.alive && (e.t === 'gill' || e.t === 'heart')) hurtEnemy(e, 9999, e.x - 10, false); return 'mother'; } b.open = 9; b.lit = true; b.litCols = new Set(['blue', 'violet', 'green']); b.torn = true; b.phase = 2; b.mode = { king: 'held', owl: 'grounded', ram: 'crash', gqueen: 'pinned', windcaller: 'ground', forgemaster: 'stun', roc: 'downed', lance: 'planted', reefmaw: 'stuck', quarter: 'reel', captain: 'beach', herald: 'mired', masthead: 'fouled', prince: 'buried', kraken: 'stuck' }[b.t] || b.mode; b.guard = false; b.guardT = 0; hurtEnemy(b, 99999, b.x - 20, false); return b.t + ' alive=' + b.alive; }, get bossMusicT() { return bossMusicT; }, get tongue() { return tongue; }, birds: () => birds, get weather() { return weatherAt(); }, get level() { return L; },
   stats: () => ({ got, total, kills, deaths, levelTime, pogoCount, parries, blocks, dodges }),
   /* THE DEATH COST, for tools/death-cost.mjs: whose bundle and carry, a blow on a chosen hero (by a chosen creature, or a hazard), and the level count */
