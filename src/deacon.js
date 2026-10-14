@@ -23,9 +23,9 @@ export const DC = {
   light: { max: 100, start: 85, regen: 2.2, drain: 8, drainHeavy: 14, lampDim: 18, refill: 60 },
   guardTake: 0.4, gropeT: 3.0, gropeMul: 1.8, gropeCap: 0.18, wardT: 3.0, reelT: 0.7,
   kindleT: 1.3, kindleCd: 6, kindleWalkT: 3,
-  sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 26 },
-  hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 10, haul: 380, jabTell: 0.5, jab: 22 },
-  arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 9 },
+  sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 40 },
+  hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 14, haul: 380, jabTell: 0.5, jab: 34 },
+  arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 13 },
   drop: { dmg: 0.07, stun: 1.2 },   /* a chandelier brought down on him: of his health, and the stagger (B4: he stands) */
   p2: 0.5,
 };
