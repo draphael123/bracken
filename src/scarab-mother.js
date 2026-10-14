@@ -32,7 +32,7 @@
      THE BURROW-UP (phase two on: '!!' she digs in; a dust trail runs under you - the ledge too - then stops, a ring under you, and she ERUPTS straight up through it
        to the ledge's height: step out of the ring) - when you have stood in one spot SM.erupt.camp s (cooldown SM.erupt.cd) */
 export const SM = {
-  hp: 1650, w: 40, h: 24, markH: 44,
+  hp: 1500, w: 40, h: 24, markH: 44,
   leap: { tell: 0.85, air: 0.6, r: 30, perch: 0.5, drop: 0.3, ledge: 2.6, camp: 4.0, cd: 7.0 },
   erupt: { tell: 0.8, run: 0.9, v: 170, fix: 0.45, up: 0.45, r: 22, camp: 3.5, cd: 8.0 },
   openMul: 1.8, openCap: 0.1, openT: 3.4, wardT: 3.0, wardMul: 0.4, resist: 0.45, trapBite: { block: 0.035, darts: 0.02, stone: 0.04 },
@@ -45,7 +45,7 @@ export const SM = {
   quakeTell: 1.0, quakeFall: 0.6, quakeR: 15,
   brood: { every: 6.5, max: 3, speed: 72, seethe: 0.8, biteCd: 1.0, w: 10, h: 7 },
   reset3: 0.6,
-  dmg: { charge: 37, snap: 32, spit: 25, puddle: 8, burrow: 34, quake: 31, brood: 10, leap: 34, erupt: 34 },
+  dmg: { charge: 30, snap: 32, spit: 25, puddle: 8, burrow: 34, quake: 31, brood: 10, leap: 34, erupt: 34 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); ONE NEW MOVE A PHASE (B5) */
 export const CYCLES = {

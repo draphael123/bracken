@@ -31,12 +31,12 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/tomb-king-hands.js binds it). tkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const TK = {
-  hp: 4000, w: 30, h: 40, markH: 54,
-  openMul: 1.7, openCap: 0.12, openT: 3.6, clampT: 0.6, wardT: 3.0, wardMul: 0.4, resist: 0.4, resist3: 0.55, lidless: 0.4,
+  hp: 5000, w: 30, h: 40, markH: 54,
+  openMul: 1.7, openCap: 0.09, openT: 3.6, clampT: 0.6, wardT: 3.0, wardMul: 0.4, resist: 0.4, resist3: 0.55, lidless: 0.4,
   p2: 0.6, p3: 0.3,
   walk: 42, walk3: 56, keep: 52, gap: [1.6, 1.5, 1.15], firstGap: 1.2,
-  dwell: 4.0, leapCd: 6.0, callCd: 16, curseCd: 5,
-  lever: { delay: 0.55, swing: 0.7, reset: [9, 9, 4.5], h: 34 },
+  dwell: 3.5, leapCd: 6.0, callCd: 16, curseCd: 5,
+  lever: { delay: 0.55, swing: 0.7, reset: [13, 13, 6.5], h: 34 },
   slam: { tell: 0.7, reach: 58, shockV: 260, shockLen: 150, shockH: 10 },
   lash: { tell: 0.6, reach: 124, pull: 22 },
   leap: { tell: 0.9, air: 0.7, r: 34, perch: 0.5, drop: 0.35 },
@@ -48,7 +48,7 @@ export const TK = {
   breath: { tell: 0.7, t: 0.6, len: 124, blind: 1.0, slow: 1.0 },
   pit: { tell: 0.8, r: 22, sandT: 3.0 },
   curse: { tell: 0.6, delay: 1.5, r: 14 },
-  dmg: { slam: 38, shock: 22, lash: 28, leap: 46, chain: 12, crush: 32, lid: 30, jar: 22, cloud: 7, roll: 44, breath: 20, pit: 25, curse: 48, weight: 30 },
+  dmg: { slam: 42, shock: 24, lash: 31, leap: 64, chain: 13, crush: 35, lid: 33, jar: 24, cloud: 8, roll: 62, breath: 22, pit: 27, curse: 66, weight: 30 },
 };
 /* THE MOVES: the mode while it is told, its mark ('' = told but no blow), the answer (src/marks.js keeps the same rows), and the phase it comes in */
 export const MOVES = {

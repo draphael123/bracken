@@ -40,7 +40,7 @@ export const TH = { hall: 57, upper: 51, gas: 51, gasHi: 48, oil: 48, oilHi: 42,
 export const MINI_SLOT = { sx: 452, R: 57, W: 40, eastDoor: { col: 492, y0: 51, y1: 56 }, check: 448 };
 export const BOSS_SLOT = { x0: 1007, x1: 1046, floor: 24, roof: 4, westDoor: { col: 1006, y0: 18, y1: 23 }, eastDoor: { col: 1047, y0: 18, y1: 23 }, gate: 1049, check: 1003,
   ledges: [{ x0: 1009, x1: 1014, y: 21 }, { x0: 1039, x1: 1044, y: 21 }],
-  switches: [{ x: 1008, y: 18, sweep: [1009, 1022], anchor: 1016 }, { x: 1045, y: 18, sweep: [1031, 1044], anchor: 1037 }],
+  switches: [{ x: 1008, y: 18, sweep: [1007, 1022], anchor: 1016 }, { x: 1045, y: 18, sweep: [1031, 1046], anchor: 1037 }],
   plates: [[1017, 1018], [1026, 1027], [1035, 1036]], plateTraps: [['tkBlockW'], ['tkDartsW', 'tkDartsE'], ['tkBlockE']], plateReach: [[[1019, 1023]], [[1007, 1025], [1028, 1046]], [[1030, 1034]]],
   slots: [[1019, 1023], [1030, 1034]], alcoves: [1012, 1021, 1032, 1041], king: 1032 };
 /* each new use's arc (tile columns) - read by tools/sealed-pyramid.mjs alongside the first half's ARCS */
