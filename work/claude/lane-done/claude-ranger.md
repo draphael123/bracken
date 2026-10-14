@@ -30,4 +30,44 @@ Every B14 key with base kit: plunge (downward shot), rise (rising shot), sweep (
 - CO-OP / ONLINE: all her state lives on the hero object (P.rgQ, P.rgArrows, P.rgFocus...), main.js runs/draws her through asPlayer, so a P2 ranger carries her own quiver; the online guest picks from coopPickList (the roster), where she is open as a starter.
 - BOT: lab.js LAB_REACH.ranger is live - 64 (stand-off at the sweet spot) with arrows, 16 (knife) without; she taps C on the beat like the warden/berserker (DEFLECTS).
 
-CHECKS / SANITY / ART LIST / QUESTIONS: below.
+## CHECKS (PORT 8903, one page at a time)
+- **tools/ranger.mjs (NEW, in check.mjs)**: quick shot (lands 69 px), the draw (rooted 0 px, held at full without loosing, full lands 142 px, HEAVY tag), quiver (stick, walk over = taken back, empty = knife, trickle 1 in 6 s), knife point-blank + DOWN+X sweep, rising shot (rise tag), downward shot (plunge tag, hop up, lands on a foe below), focus (sweet spot fills, point-blank does not), mark (UP+C, 9 vs 7 dmg), pierce (through two), bow-bash parry (0 lost, riposte window, foe thrown back 263 px/s; next arrow tagged riposte; late/red land), snare holds, backflip (faces on, back + up, a shot in it) / forward roll, all nine actives fire, every art key present, weapon skin touches the bow only: **GREEN**.
+- **GREEN, extended to hold the Ranger** (hero lists/counts in the check gained her - more coverage, nothing loosened): talents, progression, skill-passives (186; rgDeep probed), skill-icons (78 actives / 186 passives), skill-menu, store-ui, ability-poses (each of her 9 actives its own pose; jump arc), attack-animation (36 rows), dances, duck, settings-tabs, small-adds (9% miss, worst row 25%), weapon-skins, leveling, hero-trials (her yard completes), riposte-shots (parry + ripo 0/1/2), hero-roster.
+- **GREEN with her design difference STATED in the check** (each says why in a comment):
+  - hero-roster / leveling: STARTERS/DEFAULT_HEROES = knight, warden, geomancer, RANGER (Daniel 10-12); the berserker card is locked + BUY IN THE STORE - 10 SILVER; an old roster that lists the berserker keeps him.
+  - riposte: her bash throws the parried foe OUT TO RANGE, so her riposte is the next ARROW - both her measured cuts are the same tap shot from 60 px (ratio ~2.0, bound 1.8-2.7 unchanged).
+  - attack-animation: her UP+X is the rising SHOT; the rise row holds her knife's rising cut (quiver empty).
+  - verb-matrix: her up shots are posed on the pose clock (rgRise), not the swing's.
+  - lab-reach: with arrows her hand stands off and SHOOTS - contact is an arrow meeting the boss (stats.hits), not P.hitSet.
+- **GREEN, no edits**: blow-tags, boss-read, commitment, crouch-a, crouch-b, crouch-feet, slide, touch, knock-into, attack-buffer, hero-keys-strip, online-coop, partner-throw, hint-shown (her words are MOVE_WORDS; her mark word is QUARRY - MARKED/BASHED/QUIVER EMPTY were other heroes' silent lines), finishers (BROUGHT DOWN; X is the knife finisher on a broken foe in reach).
+- **textfit scoped** (hints,pick,trial,card,tree,menu,hud,store,practice --strict): 1217 screens, 0 issues.
+- NOT run (efficiency rule): the full textfit sweep, 12-seed tuning.
+
+## 3-SEED SANITY (NOT tuning: tools/boss-rates.mjs, profile human, kit flasks, campaign L3, practiced, 3 seeds)
+| Boss | Ranger | Knight |
+|---|---|---|
+| marsh (L3) | 3/3 (wins 30 s / 25 s / 11 s) | 2/3 |
+| stockade (L3) | 1/3 (one death at 41% left) | 1/3 |
+The bot's verbs (Ranger): shot 5-13 and cut (knife) 7-34 a fight - once her quiver is empty the bot fights with the knife until the trickle refills (it never walks to pick arrows up); 0 parries (the bot's C tap rarely met a yellow blow on the beat). Read these as "in the knight's neighbourhood", nothing more. The tune lane has the 12 seeds.
+
+## MASH (tools/mash-bot.mjs, Ranger only)
+- Bosses: marsh 2 seeds DEAD (boss left 17% / 83%), stockade 2 seeds TIMEOUT (the bot never reaches the chief - as in the berserker/riposte lanes). **0/4.** (One marsh seed got him to 17%: watch it in the tune lane.)
+- Level: marsh, hold right + mash: lowest hp 0%, 29 deaths - it does not hold the level.
+
+## ART LIST FOR THE SONNET LANE (every key is in her set today as a placeholder; chars.js bakeRanger / rgKitPoses)
+Her rig is BORROWED: bakeRanger = the Geomancer's rig with her body (RG_BODY/RG_PLUME/RG_PAL), the staff drawn as a LONGBOW (rgBowAt) and a quiver (rgQuiverAt). Give her her OWN rig.
+- **Body**: hooded woodland ranger (green-brown hooded cloak, red feather off the hood, leather jerkin + bracers, quiver of white/red fletchings on the back, a longbow taller than her shoulder); the same pixel scale.
+- **Locomotion/states (all currently the Geomancer's poses with a bow)**: idle (breath), run x6, jump x2, fall x2, takeoff, apex, land x3, skid, climb x2, hurt x2, crouch, slide x2, swim, tread, slump x2, fidget (her own), drink frames (FA.addDrink off her idle), dance (hunting horn - the jingle is in), dance2 (idle solo), dance3 (boss down).
+- **Knife**: atk/atkB/atkC x5 each, follow x2, heavy x3 (knife stab), dashAtk x3 (KNIFE IN out of a forward roll), rise/sweep/airUp (directionalPoses: the knife's rising cut, low sweep, air up-slash - today the bow swings), roll x4 (forward roll).
+- **Bow**: windup x3 (THE DRAW: nock, half, full at the cheek - rooted), rgLoose x2, rgShot x2, rgAirShot x2, rgRise x2 (rising shot), rgDown x2 (= plunge: the downward shot + the hop), **rgFlip x4 (NEW, the BACKFLIP - today the roll is played backwards)**.
+- **Defence**: rgBash x2 (= block), parry x2 (the bash on the beat, star where it meets the blow), ripo x3 (the riposte ARROW: step-in, loose with the gold flash, follow-through - played on the pose clock).
+- **Kit (B16: each its own windup + release)**: rgSnare x2, rgMark x2 (= blast/cast), rgHawkPose x2, rgLeapPose x2, rgVolleyPose x2, rgTrapPose x2, rgRainPose x2, rgSmokePose x2, rgRefillPose x2, rgHeartPose x2, rgHuntPose x2.
+- **FX / props (src/ranger.js render)**: the arrow (flying, stuck in a wall/floor at its angle, riding a foe, lying) + its GLINT, the pierce trail, the snare (open / sprung), the bear trap (open / shut), the hawk (flap x2 + strike), the arrow rain, the smoke burst, the MARK reticle (late pass, through walls), the bash arc (bright on the beat); HUD: focus bar + quiver strokes; nine skill icons (RG_ICONS, placeholder pixel art); the pick-screen idle.
+
+## QUESTIONS FOR DANIEL (lanes never block - what I built is the rec)
+1. **Talents ladder**: the brief says L1/L4/L8; the other three starters (and the berserker she replaces) are on the STARTERS' ladder (actives at 1/3/5/7/9/12/14/17/20, passives one a level). REC + BUILT: the starters' ladder (VOLLEY is her L1). Say if you want a short L1/L4/L8 tree instead.
+2. **The two focus spends**: REC + BUILT: UP+C = MARK; a FULL draw while focus is full = the PIERCING SHOT (spends it automatically). Alternative: pierce on its own input (e.g. hold C).
+3. **Who the mark pays**: REC + BUILT: every blow on a marked foe (any hero, co-op too) lands x1.33. Alternative: only hers.
+4. **Old devices keep the berserker**: every roster written while he was a starter lists him, so every EXISTING device keeps him open for new games (nobody loses access); only fresh devices see him locked at 10 silver. REC: keep (it is the brief's 'nobody loses access'). Alternative: strip him from rosters unless a slot actually owns him.
+5. **Tap timing**: REC + BUILT: the quick shot goes on RELEASE (so a hold can become the draw without wasting an arrow): a tap is <0.14 s. Alternative: on press (snappier, a hold then costs two arrows).
+6. **Bot**: the lab bot stands off at 64 px and shoots while she has arrows (knife inside 18 px); it does NOT walk over to pick its arrows up (it waits on the trickle). The tune lane may want a pickup hand.
