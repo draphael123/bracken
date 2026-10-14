@@ -68,7 +68,7 @@ try {
     const out = [], walk = [], { VW, VH } = BK.view;
     for (let i = 0; i < 8; i++) { BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(6); window.__textRec = []; BK.step(1);
       out.push((window.__textRec || []).filter(x => x.kind === 'text').map(x => ({ s: x.s, x0: x.x0, y0: x.y0, w: x.w, h: x.h }))); window.__textRec = null; }
-    BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(2); for (let i = 0; i < 8; i++) { BK.press('right'); BK.step(3); walk.push(BK.ui.heroPickI); }
+    BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(2); for (let i = 0; i < 9; i++) { BK.press('right'); BK.step(3); walk.push(BK.ui.heroPickI); }
     BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(3); const boxes = BK.touch.hitBoxes ? BK.touch.hitBoxes() : null;
     const took = []; for (const i of [3, 4, 6, 7]) { BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(2); BK.press('confirm'); BK.step(3); took.push(i + ':' + BK.hero()); }
     BK.SET.godmode = false; BK.setDev(false); return { out, walk, boxes, took, VW, VH }; })()`);
@@ -80,9 +80,9 @@ try {
     for (let a = 0; a < lab.length; a++) for (let b = a + 1; b < lab.length; b++) { const p = lab[a], q = lab[b];
       assert.ok(p.x0 + p.w <= q.x0 || q.x0 + q.w <= p.x0 || p.y0 + p.h <= q.y0 || q.y0 + q.h <= p.y0, 'eight, pick ' + i + ': names ' + p.s + ' and ' + q.s + ' overlap'); }
     const title = rec.find(x => x.s === 'CHOOSE YOUR HERO'); assert.ok(title && title.y0 + title.h <= 20, 'eight, pick ' + i + ': the heading is clear of the row'); });
-  /* DESIGN CHANGE (Daniel 10-12): the RANGER is the 4th free starter, so pick index 3 is her; the Berserker is a fire-mountain unlock (buyable meanwhile) */
-  assert.deepEqual(seven.took, ['3:ranger', '4:pyro', '6:pirate', '7:reaper'], 'confirm takes the portrait under the cursor: ' + seven.took);
-  assert.deepEqual(seven.walk, [1, 2, 3, 4, 5, 6, 7, 0], 'RIGHT walks all eight and wraps: ' + seven.walk);
+  /* DESIGN CHANGE (Daniel 10-12): the RANGER is the 4th free starter, so pick index 3 is her; the Berserker is a fire-mountain unlock (buyable meanwhile) and moves to the locked end of the order: indexes 4,6,7 shift with it */
+  assert.deepEqual(seven.took, ['3:ranger', '4:berserker', '6:paladin', '7:pirate'], 'confirm takes the portrait under the cursor: ' + seven.took);
+  assert.deepEqual(seven.walk, [1, 2, 3, 4, 5, 6, 7, 8, 0], 'RIGHT walks all nine (the Ranger joined) and wraps: ' + seven.walk);
   if (seven.boxes && seven.boxes.length) { const rows = seven.boxes.filter(b => b.y <= 20 && b.h >= 50 && b.w > 20 && b.w < 200); assert.ok(rows.length >= 8, 'eight portraits are eight tap boxes (' + rows.length + ')'); }
   console.log('ok  hero pick x8   all eight heroes named without overlap, on the screen, RIGHT walks them and wraps, eight tap boxes');
 
