@@ -51,13 +51,21 @@ the sonnet art and tune lanes follow.
 - Walker hints (walkHint) for the relay; STUCK_HANDS.church: the chantry's votive + door lamp; the reliquary spot moved with the wing.
 
 ## CHECKS (port 8921, one page at a time)
-RESULTS_CHECKS
+GREEN: tools/lit-church.mjs (355 checks; the old Paladin light-bar/falter checks moved to the Deacon, + holy fire, the chantry relay, the parclose), tools/paladin-boss.mjs (NEW, 132 checks: B5 kit + sheet, B16 own windup+release per move, B17 >=4 told + lamps as central mechanic, B11/B15 angle >=0.4x, falter/B4/B3, judgement, vigil, phases, holy ground, tables, DIAL_EXEMPT, unlock), tools/paladin-kit.mjs, level-quality church (CLEARS THE BAR after pilot + curve re-stamp), reach-heroes church (6 route targets, 0 crossings for all 8 heroes), solid-islands (church 42 -> 0), signs, tells (MARK regenerated --write), blow-tags, boss-read, goblin-lint, hint-shown (silent baseline shrunk by 2: BURNED / INTO THE WALL now routed), stuck (static + runtime, 253 spots), boss-greed, boss-openings, boss-fight-end (64 fights end on the kill), weak-bosses, corpses (thurifer/bell-ringer die in their skin), textfit bestiary,boss,store,hints --strict (0 of every class).
+MASH (re-stamped level THEN boss, docs/mash-bot.json): level - the masher does NOT clear the church (knight 5 deaths, warden 4, pyro 4); boss 0/6 (knight/warden/pyro DEAD, Paladin left 48-97%); mini 0/6 (Deacon left 77-85%).
+Not run: the full suite, 12-seed loops (forbidden here), map-*/road-order (no road change), tools/lit-church-route.mjs and lit-church-art-shots.mjs (not in the suite; their coordinates east of col 180 are 34 columns stale - the art lane re-points the shots).
 
 ## 3-SEED SANITY (tools/boss-rates.mjs church,church:mini --seeds=3 --profile=human --flasks=kit --jobs=1; campaign L26)
-RESULTS_RATES
+THE PALADIN (2500 hp): practiced kn 3/3 wa 2/3 py 1/3 = 67% IN BAND; first 1/2 1/2 2/2 = 67%; built 2/2 1/2 2/2 = 83%. Fights 92-205 s (warden long: ~200 s).
+THE DEACON (1500 hp): practiced 3/3 3/3 3/3 = 100% HIGH (+15); first 2/2 1/2 1/2 = 67%; built 2/2 2/2 2/2. Fights 31-94 s.
+Both are DIAL_EXEMPT (self-tuned here). Dry not measured (3-seed sanity only).
 
 ## REDS / NOT DONE
-RESULTS_REDS
+- Mini HIGH in the 3-seed sanity (100% practiced) after three damage passes - for the sonnet tune lane (Q8).
+- The Paladin vs the WARDEN bot runs ~200 s (over 90-150) - Q8.
+- mark-integrity: 1 PHANTOM on undeadmage|markTell (the undead mage: untouched by this lane - pre-existing).
+- THE ROAD (brief section 1) not built - Q1.
+- Greybox: the Deacon, the chandeliers/sconces, the chantry, holy fire, the clergy heads, the supports (C: ART BEFORE LIVE - this ships only with its art pass).
 
 ## QUESTIONS FOR DANIEL (rec first; what is built)
 1. THE ROAD (brief section 1: needs 'waymeet', Waymeet's three votive lamps open the hill gate, map node move + map-plates-solve) is NOT built here: it touches
