@@ -8,7 +8,8 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { TELL_LINES } from './minecart.js';
 import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
-import { HK_SAY } from './hourglass-king.js';   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
+import { HK_SAY } from './hourglass-king.js';
+import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 export const CALL_LINES = new Set([
   /* claude/slope (batch88 integ): THE RUNNING SLIDE tip (src/run-slide.js), said once - routed so the player can see it */
   'RUNNING SLIDE: LOW, AND UNDER HIGH BLOWS',
@@ -137,12 +138,12 @@ export const CALL_LINES = new Set([
   'THE HORN: THE FLOOD IS COMING', 'THE GATE HOLDS THE FLOOD', 'THE GATE IS SHUT: IT HOLDS THE NEXT FLOOD', 'THE GATE IS OPEN', 'RELEASED: THE WATER COMES DOWN', 'THE JAM BREAKS',
   'THE FLOOD TAKES YOU', 'E AT THE WHEEL: SHUT THE GATE, OR RELEASE WHAT IT HOLDS', 'A JAM: ONLY A RELEASED BURST MOVES IT', 'THE WHEEL TURNS WHEN THE WATER RUNS',
   /* claude/redgorge2: THE RAPTOR MATRIARCH (src/raptor-matriarch.js and its hands), THE RAPIDS and THE GORGE CLIMB (src/red-gorge-hands.js) */
-  'SHE TAKES TO THE CANYON WALLS', 'THE DAM CRACKS: GET TO THE PILLARS', 'SHE HATES THE WATER: SHE MAKES FOR THE ROCK', 'HER WARD: SHE IS READY FOR IT', 'SHE IS UP ON THE ROCK: THE WATER IS WASTED',
+  'SHE TAKES TO THE CANYON WALLS', 'THE DAM CRACKS: GET TO THE PILLARS', 'SHE HATES THE WATER: SHE MAKES FOR THE ROCK',
   "THE CHANNEL FLOODS: THE DAM'S TIMBERS FLOAT UP", 'THE DAM BANKS THE FLOOD: THE SLUICES ARE FULL', 'HER WARD: SHE SHAKES IT OFF', 'SHE PERCHES ON THE ROPE BRIDGE', "SHE SCREECHES: HER BROOD, AND THE RAPIDS' DEBRIS",
   'HER BROOD COMES OFF THE WALLS', 'THE NARROW TOP THROWS HER: STRIKE', 'SHE SKIDS: HER GUARD IS DOWN', 'SHE SLAMS INTO THE ROCK: STUNNED', 'THE NARROW PILLAR THROWS HER', 'SHE FINDS HER FOOTING ON THE BROAD ROCK',
   'SHE FALLS INTO THE WATER: STAGGERED', 'THE ROPES PART: SHE IS TANGLED IN THE BRIDGE', 'OLD PLUME, MOTHER OF THE GORGE', 'THE CURRENT THROWS YOU BACK ON THE ROCK', 'THE ROPES PART',
-  'THE ROPES HOLD: STRIKE IT WHILE SHE IS ON IT', 'THE SLUICES HOLD THE DAM: E AT A LEVER LETS IT GO', 'THE SLUICE OPENS: THE WATER COMES', 'THE SLUICE IS EMPTY: THE NEXT FLOOD FILLS IT', 'SHE GATHERS HERSELF',
-  'THE STOOP KNOCKS YOU INTO THE RIVER', 'SHE IS IN THE CHANNEL: PULL A LEVER (E)', 'UNDER HER TALONS', 'SHE COMES DOWN OFF THE WALL: HER GUARD IS DOWN',   /* (the fix pass's three lines, routed in the art pass) */
+  'THE ROPES HOLD: STRIKE IT WHILE SHE IS ON IT', 'THE SLUICE OPENS: THE WATER COMES', 'THE SLUICE IS EMPTY: THE NEXT FLOOD FILLS IT', 'SHE GATHERS HERSELF',
+  'THE STOOP KNOCKS YOU INTO THE RIVER', 'THE STOOP KNOCKS YOU OFF THE BASKET', 'THE WATER DAMPS YOUR FIRE', 'UNDER HER TALONS', 'SHE COMES DOWN OFF THE WALL: HER GUARD IS DOWN',   /* (the fix pass's three lines, routed in the art pass) */
   'SHE FOLLOWS YOUR ROLL', 'SHE CALLS HER YOUNG OFF THE NEST', 'SHE RIDES THE SURGE: WATCH THE FOAM', 'HER YOUNG ARE DOWN: SHE DROPS TO THEM', 'HER YOUNG FLY HOME',   /* (claude/matriarch2: the three new moves) */
   'THE OLD NEST WANTS FOUR FEATHERS', 'THE OLD NEST OPENS', 'THE WATER THROWS HIM: CUT HIM', 'HE SMELLS THE HELD WATER', 'HE IS NOT IN THE CHANNEL: THE WATER IS WASTED', 'THE SPRAY DAMPS YOUR FIRE',
   'HIS SHELL TURNS A BLADE: RELEASE THE DAM ON HIM', 'THE FLOOD TAKES HIM', 'SWEPT AWAY', 'CLIMB THE ROPE: UP',
@@ -250,7 +251,7 @@ export const CALL_COUNTS = [/^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE M
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
-export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY]);
+export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY)]);
 /* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
    (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
 export const MC_TELL_LINES = new Set([...TELL_LINES, ...Object.values(FOREMAN_LINES)]);   /* (claude/deeprails3: and THE FOREMAN's lines, said as variables by src/foreman.js) */

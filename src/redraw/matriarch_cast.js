@@ -29,12 +29,20 @@ const rot = (x, y, cx, cy, a) => { const c = Math.cos(a), s = Math.sin(a), dx = 
 function masked(g, cx, cy, rx, ry, test, col) { const X0 = Math.floor((cx - rx) * K + OX), X1 = Math.ceil((cx + rx) * K + OX), Y0 = Math.floor((cy - ry) * K + OY), Y1 = Math.ceil((cy + ry) * K + OY);
   for (let y = Y0; y <= Y1; y++) for (let x = X0; x <= X1; x++) { const xd = (x + 0.5 - OX) / K, yd = (y + 0.5 - OY) / K, ex = (xd - cx) / rx, ey = (yd - cy) / ry; if (ex * ex + ey * ey <= 0.92 && test(xd, yd)) pxB(g, x, y, col); } }
 
+/* (claude/rgart) THE TUMBLE: a baked frame turned about her body's middle (clockwise, radians), nearest-neighbour, so a knocked-off raptor can cartwheel - o.rot; o.pad adds rows under the frame so a turned tail or crest is not cut */
+const SPIN_C = [Math.round(38 * K + OX), Math.round(45 * K + OY)];
+function spin(c, a) {
+  const w = c.width, h = c.height, src = c.getContext('2d').getImageData(0, 0, w, h).data, [o, go] = canvas(w, h), img = go.getImageData(0, 0, w, h), d = img.data, cs = Math.cos(a), sn = Math.sin(a), [cx, cy] = SPIN_C;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const dx = x + 0.5 - cx, dy = y + 0.5 - cy, sx = Math.floor(cx + dx * cs + dy * sn), sy = Math.floor(cy - dx * sn + dy * cs);
+    if (sx < 0 || sy < 0 || sx >= w || sy >= h) continue; const si = (sy * w + sx) * 4, di = (y * w + x) * 4; if (src[si + 3] === 0) continue; d[di] = src[si]; d[di + 1] = src[si + 1]; d[di + 2] = src[si + 2]; d[di + 3] = src[si + 3]; }
+  go.putImageData(img, 0, 0); return o;
+}
 const GYd = 64;   /* the design plan's ground line */
 /* one frame. o = { dy (drop), pitch, head: [x, y], beak (0..1), crest (0..1 spread), crestSw (plume sway), crestUp, flare (ruff), breath (chest rise), tail: 'down'|'up'|'coil'|'flat'|'fan', tailSw (rad),
    wing: 'fold'|'half'|'spread'|'drop'|'back'|'none', flap (wing lift), legs: 'stand'|'a'|'b'|'crouch'|'air'|'brace'|'scrape'|'cling', gait (rad: a walking leg cycle), amp, lift, scr (0..1 scrape), tuck,
    arm: 'guard'|'cock'|'rake'|'tuck', armT (0..1 the arm's travel), eye: colour, shut, bx, by (body centre), drip (water) } */
 function bake(o) {
-  const [c, g] = canvas(MC.W, MC.H), D = o.dy || 0, bx = o.bx ?? 38, by = (o.by ?? 45) + D, pitch = o.pitch || 0, GY = GYd, flare = o.flare || 0, br = o.breath || 0, fl = o.flap || 0;
+  const [c, g] = canvas(MC.W, MC.H + (o.pad || 0)), D = o.dy || 0, bx = o.bx ?? 38, by = (o.by ?? 45) + D, pitch = o.pitch || 0, GY = GYd, flare = o.flare || 0, br = o.breath || 0, fl = o.flap || 0;
   const eye = o.eye || P.eye;
   /* ---- the far wing and the far leg first ---- */
   const wing = (shade, k0) => { const sx = bx + 5, sy = by - 8 + pitch * 0.4, w = o.wing, k = k0 + fl;
@@ -116,7 +124,7 @@ function bake(o) {
       for (const da of [-0.35, 0, 0.35]) feather(g, hx2, hy2, a + da + 0.2, 8, 1, P.claw);
       if (aT > 0.3) for (let i = 0; i < 16; i++) { const t = i / 15, q = -1.1 + t * 2.0; if (q > a + 0.15) break; px(g, ax + 12 + Math.cos(q) * 17, ay + 6 + Math.sin(q) * 16, t > 0.2 && t < 0.85 ? '#fff6e0' : P.cream); } } }
   if (o.drip) for (let i = 0; i < o.drip; i++) { px(g, bx - 10 + ((i * 7) % 24), by + 9 + (i * 5) % 10 + (i % 3), P.wet); px(g, bx - 8 + ((i * 11) % 22), by - 2 + (i * 3) % 8, '#e8f6fb'); }
-  return outline(c, OUT);
+  return outline(o.rot ? spin(c, o.rot) : c, OUT);
 }
 
 /* ---------- THE FRAMES: every pose key is a CYCLE ---------- */
@@ -187,6 +195,20 @@ FR.riderBurst = [{ dy: 4, by: 42, pitch: -2, head: [60, 26], legs: 'air', tuck: 
   { dy: -4, by: 36, pitch: -7, head: [55, 19], legs: 'air', tuck: 0.8, tail: 'fan', tailSw: -0.15, wing: 'spread', flap: 1, arm: 'rake', armT: 0.9, crest: 1, beak: 1, flare: 2.4, crestUp: true, drip: 6, crestSw: -0.2 },
   { dy: -1, by: 39, pitch: 2, head: [60, 28], legs: 'air', tuck: 0.2, tail: 'up', tailSw: -0.25, wing: 'half', flap: 2, arm: 'rake', armT: 0.8, crest: 0.9, beak: 0.7, drip: 3, crestSw: 0.3 }];
 
+/* (claude/rgart, B16) THE KNOCK-OFF TUMBLE: knocked off the wall by a blow from a raised basket she cartwheels - wings flailing, beak wide, the crest streaming - eight turns of a full spin (cycled, 1.4 turns on the way down), then braces for the landing (tumbleEnd: nose-down, feet reaching; the squat) */
+const TB = { pad: 40, by: 41, legs: 'air', tail: 'fan', wing: 'spread', arm: 'guard', head: [58, 25], crest: 1, crestUp: true, beak: 1, flare: 2, eye: '#ffffff' };
+FR.tumble = seq(8, (i, p) => mk(TB, { rot: p, flap: [3, -2, 4, -3, 3, -2, 4, -3][i], tailSw: 0.45 * S_(p * 2 + 0.5), crestSw: 0.3 * C_(p * 2), tuck: 0.35 + 0.35 * S_(p), head: [58 + S_(p * 3), 25 + C_(p * 2)] }));
+FR.tumbleEnd = [mk(TB, { rot: 0.5, tuck: 0, flap: 3, tail: 'up', tailSw: 0.2, head: [60, 27], beak: 0.8 }), mk(TB, { rot: 0.16, dy: 7, legs: 'crouch', tail: 'flat', wing: 'spread', flap: 4, arm: 'tuck', head: [60, 36], pitch: 5, beak: 0.5, crest: 0.6, crestUp: false, flare: 0.6 })];
+/* (claude/rgart, B16) THE LURE: she drops into the channel and CROUCHES AT YOU - low and open, a wing trailing as if hurt, the claw curling you in, the eye a calm gold (not the pounce's red), the tail twitching, panting. It is bait: come to the lever */
+const LU = { legs: 'crouch', pitch: 5, tail: 'down', wing: 'drop', arm: 'cock', crest: 0.25, beak: 0.35, flare: 0.4, bx: 37.5 };
+FR.lure = seq(4, (i, p) => mk(LU, { dy: 8 + (i === 1 ? 0.6 : 0), head: [61 + 1.2 * S_(p), 37 + 0.8 * C_(p)], breath: [0, 1, 2, 1][i], tailSw: 0.24 * S_(p), armT: 0.3 + 0.35 * (0.5 + 0.5 * S_(p)), flap: 1.5 * S_(p * 2), crestSw: 0.2 * S_(p) }));
+/* (claude/rgart, B16) THE SURGE CALL: she stamps and throws her head at the dam, wings flung up, eyes gone water-blue and spray on her - the debris call, not the screech (which is head back, crest up, ruff flared) */
+const SG = { legs: 'brace', tail: 'up', wing: 'spread', arm: 'guard', crest: 1, crestUp: true, eye: P.wet, beak: 1, flare: 2.2 };
+FR.surge = [mk(SG, { head: [52, 19], pitch: -4, flap: 1, beak: 0.6, dy: 1 }), mk(SG, { head: [47, 10], pitch: -10, flap: 4, tailSw: 0.15, dy: -1, drip: 5 }), mk(SG, { head: [46, 9], pitch: -11, flap: -1, tailSw: -0.15, dy: -1, crestSw: 0.2, drip: 7 })];
+/* (claude/rgart) STUNNED BY THE SLUICE: the wave has gone over her - sprawled and SOAKED, crest plastered flat, water running off the feathers, the head rolling, the eyes not on you (down, which staggered and tangled still wear, is dry) */
+const SN = { dy: 14, pitch: 8, legs: 'brace', tail: 'flat', wing: 'drop', arm: 'tuck', crest: 0, flare: 0, eye: P.creamD };
+FR.stunned = [0, 1, 2, 3].map(i => mk(SN, { head: [57 + [0, 2, 0, -2][i], 53 + (i % 2)], tailSw: [0, 0.1, 0, -0.1][i], beak: [0.3, 0.1, 0.3, 0.1][i], breath: [0, 2, 0, 2][i], shut: i === 3, drip: 16 - i * 3, wing: i % 2 ? 'half' : 'drop', flap: i % 2 ? -3 : 0, crestSw: 0.05 * (i - 1.5) }));
+
 /* ---------- the bake: lazy per frame (a canvas the first time it is drawn); C.warm() bakes the lot (the boss's spawn calls it) ---------- */
 const KEYS = Object.keys(FR);
 let CAST = null;
@@ -211,12 +233,12 @@ export function bakeMatriarch() {
 export function poseOf(e, S, t) {
   const m = e.mode;
   if (m === 'sleep') return 'sleep'; if (m === 'wake') return 'wake';
-  if (m === 'pounceTell') return 'crouch'; if (m === 'followTell') return 'follow'; if (m === 'broodTell') return 'broodcall'; if (m === 'circle') return 'circle'; if (m === 'grieve') return 'grieve'; if (m === 'riderTell') return 'riderTell'; if (m === 'skid') return 'skid'; if (m === 'rakeTell') return 'rakeTell'; if (m === 'rake') return 'rake'; if (m === 'rakeBeat') return 'rakeTell';
-  if (m === 'sweepTell') return 'sweepTell'; if (m === 'sweep') return 'sweep'; if (m === 'screeTell') return 'screeTell'; if (m === 'screechTell' || m === 'surgeTell') return 'screech';
-  if (m === 'wobble' || m === 'pstagger') return 'wobble'; if (m === 'staggered' || m === 'stunned' || m === 'tangled' || m === 'falling') return 'down';
+  if (m === 'pounceTell') return S && S.lure ? 'lure' : 'crouch'; if (m === 'followTell') return 'follow'; if (m === 'broodTell') return 'broodcall'; if (m === 'circle') return 'circle'; if (m === 'grieve') return 'grieve'; if (m === 'riderTell') return 'riderTell'; if (m === 'skid') return 'skid'; if (m === 'rakeTell') return 'rakeTell'; if (m === 'rake') return 'rake'; if (m === 'rakeBeat') return 'rakeTell';
+  if (m === 'sweepTell') return 'sweepTell'; if (m === 'sweep') return 'sweep'; if (m === 'screeTell') return 'screeTell'; if (m === 'screechTell') return 'screech'; if (m === 'surgeTell') return 'surge';
+  if (m === 'wobble' || m === 'pstagger') return 'wobble'; if (m === 'stunned') return 'stunned'; if (m === 'falling') return 'tumble'; if (m === 'staggered' || m === 'tangled') return 'down';
   if (m === 'wallRun') return 'wall'; if (m === 'diveTell') return 'divetell'; if (m === 'volleyTell') return 'volley'; if (m === 'perch' || m === 'perched') return 'perch'; if (m === 'crack') return 'crack';
   if (m === 'fly' && e.riderAir) return 'riderBurst';
-  if (m === 'fly') { const f = S && S.fly; return f && f.then === 'diveLand' ? 'dive' : 'leap'; }
+  if (m === 'fly') { const f = S && S.fly; return f && f.then === 'diveLand' ? 'dive' : f && f.then === 'knocked' ? 'tumble' : 'leap'; }
   return Math.floor(t * 5) % 2 ? 'walkA' : 'walkB';
 }
 /* THE FRAME: { key, i } from the mode and the time. t = the clock (s); A = { el: seconds in this mode, prev: the mode before, sinceFly: seconds since a flight ended, moving: she is walking }.
@@ -228,7 +250,7 @@ export function frameOf(e, S, t, A = {}) {
   switch (m) {
     case 'sleep': return cyc('sleep', 1.4);
     case 'wake': return prog('wake', 0.5);
-    case 'pounceTell': return el < 0.3 ? prog('crouch', 0.15) : { key: 'crouch', i: 2 + Math.floor(t * 16) % 2 };
+    case 'pounceTell': if (S && S.lure) return cyc('lure', 3.2); return el < 0.3 ? prog('crouch', 0.15) : { key: 'crouch', i: 2 + Math.floor(t * 16) % 2 };
     case 'followTell': return el < 0.3 ? prog('follow', 0.15) : { key: 'follow', i: 2 + Math.floor(t * 16) % 2 };
     case 'broodTell': return el < 0.7 ? prog('broodcall', 0.25) : { key: 'broodcall', i: 2 + Math.floor(t * 9) % 2 };
     case 'circle': return cyc('circle', 13);
@@ -241,9 +263,12 @@ export function frameOf(e, S, t, A = {}) {
     case 'sweepTell': return prog('sweepTell', 0.2);
     case 'sweep': return prog('sweep', 0.09);
     case 'screeTell': return cyc('screeTell', 7);
-    case 'screechTell': case 'surgeTell': return el < 0.15 ? { key: 'screech', i: 0 } : { key: 'screech', i: 1 + Math.floor(t * 11) % 2 };
+    case 'screechTell': return el < 0.15 ? { key: 'screech', i: 0 } : { key: 'screech', i: 1 + Math.floor(t * 11) % 2 };
+    case 'surgeTell': return el < 0.2 ? { key: 'surge', i: 0 } : { key: 'surge', i: 1 + Math.floor(t * 11) % 2 };
     case 'wobble': case 'pstagger': return cyc('wobble', 10);
-    case 'staggered': case 'stunned': case 'tangled': case 'falling': return cyc('down', 2.5);
+    case 'stunned': return cyc('stunned', 3);
+    case 'staggered': case 'tangled': return cyc('down', 2.5);
+    case 'falling': return cyc('tumble', 12);
     case 'wallRun': return cyc('wall', 11);
     case 'diveTell': return cyc('divetell', 9);
     case 'volleyTell': return el < 0.4 ? prog('volley', 0.2) : { key: 'volley', i: 1 + Math.floor(t * 12) % 2 };
@@ -253,6 +278,7 @@ export function frameOf(e, S, t, A = {}) {
       const f = S && S.fly, p = f && f.t0 > 0 ? Math.max(0, Math.min(1, 1 - e.modeT / f.t0)) : 0.5;
       if (e.riderAir) return { key: 'riderBurst', i: p < 0.18 ? 0 : p < 0.5 ? 1 : p < 0.78 ? 2 : 3 };
       if (f && f.then === 'diveLand') return prog('dive', 0.08);
+      if (f && f.then === 'knocked') return p < 0.8 ? { key: 'tumble', i: Math.floor(p * 11) % 8 } : { key: 'tumbleEnd', i: p < 0.92 ? 0 : 1 };
       return { key: 'leap', i: p < 0.1 ? 0 : p < 0.38 ? 1 : p < 0.62 ? 2 : p < 0.88 ? 3 : 4 }; }
     default: {
       if (A.prev === 'fly' && A.sinceFly < 0.36) return { key: 'land', i: A.sinceFly < 0.1 ? 0 : A.sinceFly < 0.22 ? 1 : 2 };

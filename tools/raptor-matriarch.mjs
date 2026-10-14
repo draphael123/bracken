@@ -116,6 +116,37 @@ const BIG = new Set(['staggered', 'stunned', 'tangled', 'pstagger']);
   const on = run(false), off = run(true);
   ok(on.under && on.foam && Math.abs(on.edge - (on.n2.l - MAT.riderOut)) < 2 && on.hit === 1 && on.said.includes('SHE RIDES THE SURGE: WATCH THE FOAM') && RM.MOVES.riderTell.mark === '!!', 'P3 THE FLOOD RIDER: told (!!, "SHE RIDES THE SURGE"), under the water the foam runs to the edge of your top - on the edge the burst finds you');
   ok(off.hit === 0 && off.air && off.p3 >= 2.5, 'off the edge it misses; she rises guard-down (meet her in the air) onto the NARROW top and it throws her: open ' + off.p3.toFixed(1) + ' s'); }
+/* k. (claude/redgorgerework, Daniel 10-13: "not clear how levers hurt/STUN the boss") THE SLUICE STUN IS THE CENTRAL MECHANIC: every phase-one pass opens on
+   THE LURE (down into the channel in front of your bank, a long told crouch); a pulled lever sends ONE WAVE down the channel from its bank and the front that
+   reaches her in the channel STUNS her (open, said, the gold ring); and until it has, she will not break past the phase-two line (THE HOLD, said) */
+{ const W = world({ x: G.tops[0].cx, y: G.topY }), F = fight(); let lure = null, crouch = 0;
+  for (let i = 0; i < 60 * 4 && !(crouch && F.e.mode !== 'pounceTell'); i++) { RM.stepMatriarch(F.e, F.S, dt, [{ x: W.hero.x, y: W.hero.y, ground: true, alive: true }], W.c); F.e.hp = MAT.hp;
+    if (F.e.mode === 'pounceTell' && F.S.lure) { crouch += dt; lure = lure || { x: F.e.x, y: F.e.y }; } }
+  ok(lure && Math.abs(lure.x - RM.lureSpot(F.S, W.hero)) < 3 && lure.y >= G.floorY - 1 && crouch >= MAT.lureTell - 0.05 && RM.CYCLES[1].every(p => p[0] === 'lure'),
+    'THE LURE opens every phase-one pass: she drops into the channel ' + MAT.lureOff + ' px off your bank and crouches at you ' + crouch.toFixed(2) + ' s (the lever\'s window)'); }
+{ const W = world({ x: G.tops[0].cx, y: G.topY }), F = fight(), eb = G.tops[G.tops.length - 1]; F.e.x = eb.l - 40; F.e.y = G.floorY; F.e.mode = 'recover'; F.e.modeT = 5;
+  RM.pull(F.S, 'W'); let stunAt = null, t = 0, wave = false;
+  for (let i = 0; i < 60 * 3 && stunAt == null; i++) { RM.stepMatriarch(F.e, F.S, dt, [{ x: W.hero.x, y: W.hero.y, ground: true, alive: true }], W.c); t += dt; F.e.hp = MAT.hp; if (F.S.wave) wave = true; if (F.e.mode === 'staggered') stunAt = t; }
+  const travel = (F.e.x - G.tops[0].r) / MAT.waveV;
+  ok(wave && stunAt != null && stunAt >= MAT.releaseTell + travel - 0.05 && F.S.n.sluiceStuns === 1 && W.said.includes(RM.SAY.stun) && F.e.open >= MAT.staggerT - 1,
+    'a pulled lever sends ONE WAVE down the channel from its bank: it STUNS her where it reaches her (' + (stunAt || 0).toFixed(2) + ' s for ' + Math.round(F.e.x - G.tops[0].r) + ' px), said: ' + RM.SAY.stun); }
+{ const S = RM.newFight(G), e = { hp: MAT.hp, maxHp: MAT.hp }, line = MAT.hp * MAT.p2 + 1;
+  const a = RM.holdDmg({ ...e, hp: line + 30 }, S, 100); S.n.sluiceStuns = 1; const b = RM.holdDmg({ ...e, hp: line + 30 }, S, 100);
+  ok(Math.abs(a - 30) < 0.01 && b === 100 && /SLUICE/.test(RM.SAY.hold), 'THE HOLD: before the sluice has stunned her a blow takes her no lower than the phase-two line (' + a.toFixed(0) + ' of 100); after, whole - said: ' + RM.SAY.hold); }
+/* l. (claude/redgorgerework, Daniel 10-13: "while she FLIES, baskets go up with the WATER PRESSURE so you can hit her") THE STANDPIPE BASKETS: in phase two a
+   pulled lever fills its standpipe (pressure, a draining gauge); its basket rises only with a hero on it, to her wall height; a blow from it while she is on the
+   wall knocks her off - she falls into the channel STUNNED - and the pressure drops (the basket comes down with you) */
+{ const W = world({ x: 0, y: G.topY }), F = fight(MAT.hp * 0.55); step(F, W, 60 * 3, () => { F.e.hp = MAT.hp * 0.55; });
+  const b = G.baskets.find(q => q.id === 'W'), hs = rider => [{ x: b.cx, y: RM.basketY(G, F.S, 'W'), ground: true, alive: true, onBasket: rider ? 'W' : null }];
+  const r1 = RM.pull(F.S, 'W'), alone = (() => { for (let i = 0; i < 60; i++) { RM.stepMatriarch(F.e, F.S, dt, hs(false), W.c); F.e.hp = MAT.hp * 0.55; } return F.S.press.W.h; })();
+  let up = 0; for (let i = 0; i < 60 * 2.5; i++) { RM.stepMatriarch(F.e, F.S, dt, hs(true), W.c); F.e.hp = MAT.hp * 0.55; up = F.S.press.W.h; }
+  const y = RM.basketY(G, F.S, 'W'), atWall = Math.abs(y - (G.wallY + MAT.basketTop)) < 1;
+  ok(F.S.ph === 2 && r1 === 'pressed' && alone === 0 && up === 1 && atWall && F.S.press.W.charge > 0 && b.l >= G.tops[0].r && b.r <= G.tops[1].l,
+    'P2 THE STANDPIPE: a pulled lever fills its pipe (' + MAT.pressT + ' s of pressure); its basket by the bank rises only with a hero on it, to her wall height (' + Math.round(G.floorY - y) + ' px up)');
+  F.e.mode = 'wallRun'; F.e.modeT = 2; F.e.y = G.wallY; F.S.ward = 0; const k = RM.knock(F.e, F.S, W.c); let stun = 0;
+  for (let i = 0; i < 60 * 2 && !stun; i++) { RM.stepMatriarch(F.e, F.S, dt, hs(true), W.c); F.e.hp = MAT.hp * 0.55; if (F.e.mode === 'stunned') stun = F.e.open; }
+  ok(k && stun >= 3 && F.S.press.W.charge === 0 && W.said.includes(RM.SAY.knock) && !RM.knock({ ...F.e, mode: 'walk' }, F.S, W.c),
+    'a blow from the raised basket while she is on the wall KNOCKS HER OFF: STUNNED ' + stun.toFixed(1) + ' s in the channel, the pressure drops (said: ' + RM.SAY.knock + ')'); }
 /* g. the mash bot loses to her (the stamped cache) */
 { let out = '', code = 0; try { out = execFileSync(process.execPath, ['tools/mash-bot.mjs', '--assert', 'redgorge'], { encoding: 'utf8' }); } catch (e) { code = 1; out = String(e.stdout || e.message); }
   ok(code === 0, 'the mash bot loses the gorge and her (' + out.trim().split('\n').pop() + ')'); }

@@ -13,6 +13,7 @@ import { T } from './level.js';
 import { bakeMatriarch, poseOf, frameOf } from './redraw/matriarch_cast.js';   /* HER OWN SILHOUETTE (claude/redgorge2 art pass) */
 import { drawLedge, planLedgeDress } from './redraw/matriarch_ledge.js';   /* THE NEST LEDGE's set: the gates, the levers, the bridges, the water */
 import { drawTimber } from './redraw/redgorge2_art.js';
+import { drawStandpipes, drawBaskets, drawWave, drawLeverMarker, drawLeverLine } from './redraw/matriarch_sluice.js';   /* (claude/rgart) the standpipes, baskets, wave, lever marker and line */
 const { MAT } = RM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), leap: s => (s.leap || s.heavy)(), slash: s => (s.foeSlash || s.slash)(), sweep: s => (s.heavy || s.slash)(),
@@ -32,12 +33,12 @@ export function makeMatriarchHands(ctx) {
   const keyed = (pp, key) => { pp.rmKeys = pp.rmKeys || new Map(); if (pp.rmKeys.size > 80) pp.rmKeys.clear(); if (pp.rmKeys.has(key)) return true; pp.rmKeys.set(key, 1); return false; };
 
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
-    S = RM.newFight(RM.geom(Ar, ctx.TS)); BOSS_PHASE.matriarch = 1; bakeMatriarch().warm();   /* (art) every frame baked now, not at the first draw */
+    S = RM.newFight(RM.geom(Ar, ctx.TS)); BOSS_PHASE.matriarch = 1; if (typeof window !== 'undefined') window.__RM_S = S;   /* (claude/redgorgerework) the last fight, for tools/redgorge-matprobe.mjs */ bakeMatriarch().warm();   /* (art) every frame baked now, not at the first draw */
     const e = { ...base, t: 'matriarch', w: MAT.w, h: MAT.h, hp: ctx.EHP.matriarch, maxHp: ctx.EHP.matriarch, noGrav: true, markH: MAT.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1 };
     e.y = S.G.topY; for (const pp of ctx.players) { pp.rmKeys = null; pp.rmWet = null; } return e; };
 
   /* ---------- THE WORLD AS SHE SEES IT ---------- */
-  const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, air: !pp.ground && !pp.climb, alive: ctx.upright(pp) && !pp.dead, dodge: (pp.dodge || 0) > 0, pp }));   /* (claude/matriarch2: dodge - she sees a roll in her rake and follows it) */
+  const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, air: !pp.ground && !pp.climb, alive: ctx.upright(pp) && !pp.dead, dodge: (pp.dodge || 0) > 0, onBasket: pp.onMover && pp.onMover.mbasket ? pp.onMover.mbasket : null, pp }));   /* (claude/redgorgerework: onBasket - the standpipe basket a hero stands on) */   /* (claude/matriarch2: dodge - she sees a roll in her rake and follows it) */
   const water = () => { const g = ctx.gorge && ctx.gorge(); return g || { phase: 'dry' }; };
   function world(e) {
     return {
@@ -49,6 +50,7 @@ export function makeMatriarchHands(ctx) {
         else if (k === 'scree') ctx.burst(x, y - 6, 10, ['#a85a32', '#7a4422', '#e0b080'], 80, 0.5);
         else if (k === 'burst') ctx.burst(x, y - 10, 24, ['#7ab8e8', '#e8f4f8', '#3a7ab8'], 110, 0.9);
         else if (k === 'open') ctx.ring(x, y - 16, 30, '#ffd36b');
+        else if (k === 'stun') { ctx.ring(x, y - 16, 44, '#ffd36b'); ctx.burst(x, y - 10, 18, ['#7ab8e8', '#e8f4f8', '#ffd36b'], 90, 0.7); }   /* (claude/redgorgerework) THE SLUICE STUN: the wave breaks over her, a big gold ring */
         else if (k === 'ward') ctx.ring(x, y - 16, 34, '#9ab0c0');
         else if (k === 'mark') ctx.ring(x, y - 4, MAT.diveR, '#ff6b6b');
       else if (k === 'boil') ctx.burst(x, y - 2, 10, ['#e8f4f8', '#7ab8e8'], 60, 0.5);   /* (claude/matriarch2) the foam boils where she will burst */
@@ -68,7 +70,7 @@ export function makeMatriarchHands(ctx) {
       young: () => ctx.enemies().filter(q => q.alive && q.rmYoung && !(q.st && q.st.mode === 'home')).length,
       dismissYoung: () => { for (const q of ctx.enemies()) if (q.alive && q.rmYoung && q.st) q.st.mode = 'home'; },
       solid: (x, y) => ctx.solid(Math.floor(x / ctx.TS), Math.floor(y / ctx.TS)),
-      horn: () => water().phase === 'horn', flood: () => water().phase === 'flood',
+      horn: () => water().phase === 'horn', flood: () => water().phase === 'flood', hornIn: () => (water().phase === 'dry' ? (water().t ?? 99) : 0),   /* (claude/redgorgerework: the lure waits out the horn) */
       sweep: q => { if (q && q.pp) intoWater(q.pp, true); },
     };
   }
@@ -85,18 +87,20 @@ export function makeMatriarchHands(ctx) {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.6; ctx.number(e.x, e.y - 80, 'OLD PLUME, MOTHER OF THE GORGE', '#ffd36b'); }
     const c = world(e), hs = heroes(), G = S.G;
+    { const fl = e.maxHp * MAT.p2 + 1; if (S.ph === 1 && !(S.n.sluiceStuns > 0) && e.hp < fl && e.hp > fl - 40) e.hp = fl; }   /* (a tick's dip under the line, not a script's hand on her health) */   /* (claude/redgorgerework) THE HOLD against what writes her health straight (a bleed's tick): see H.hold */
     RM.stepMatriarch(e, S, dt, hs, c);
     for (const q of ctx.enemies()) if (q.alive && q.rmYoung && q.st && q.st.gone) q.alive = false;   /* (claude/matriarch2) a young one home on the nest is gone from the fight */
     /* THE LEVER, TOLD AGAIN (fix pass; the wake's one floating line was the only lesson): she is in the channel, a sluice is full and you are by its lever */
-    if (H.leverDue() && e.y > G.topY + 8 && e.mode !== 'fly' && (S.leverSaidN || 0) < 4 && !(S.leverSaidT > ctx.time())) { const P0 = ctx.hero(), l = G.levers.find(q => S.sluice[q.id] && Math.abs(q.x - P0.x) < 96 && Math.abs(G.topY - P0.y) < 24);
-      if (l) { S.leverSaidT = ctx.time() + 12; S.leverSaidN = (S.leverSaidN || 0) + 1; ctx.number(l.x, G.topY - 44, 'SHE IS IN THE CHANNEL: PULL A LEVER (E)', '#ffd36b'); } }
+    if (H.leverDue() && e.y > G.topY + 8 && e.mode !== 'fly' && (S.leverSaidN || 0) < (S.n.sluiceStuns ? 4 : 99) && !(S.leverSaidT > ctx.time())) { const P0 = ctx.hero(), l = G.levers.find(q => S.sluice[q.id] && Math.abs(q.x - P0.x) < 160 && Math.abs(G.topY - P0.y) < 40);
+      if (l) { S.leverSaidT = ctx.time() + (S.n.sluiceStuns ? 12 : 5); S.leverSaidN = (S.leverSaidN || 0) + 1; ctx.number(l.x, G.topY - 44, RM.SAY.lure, '#ffd36b'); } }   /* (claude/redgorgerework: until the first stun it is said at every lure) */
     e.phase = S.ph; e.w = e.mode === 'tangled' || e.mode === 'stunned' ? MAT.w + 10 : MAT.w; e.h = e.mode === 'tangled' || e.mode === 'stunned' ? 30 : MAT.h;   /* (claude/matriarch2: down on her side, x MAT.scale: 52 x 22 before) */
     /* THE WATER ON THE HEROES: a flood or a burst in the channel is a blow once and a shove; phase three's water is the rapids' rule */
     const wy = waterY();
     for (const pp of ctx.players) { if (pp.dead || !ctx.upright(pp)) continue; if (pp.x < G.x0 || pp.x > G.x1) continue;
       const onPlank = pp.onMover && pp.onMover.mplank;
       if (S.ph === 3 && S.water > 0.5 && pp.y > wy + 3 && !onPlank) { intoWater(pp, false); continue; }
-      if (S.ph < 3 && pp.y > G.topY + 10 && (S.burst > 0 || S.flood)) { const id = S.burst > 0 ? 'b' + S.burstId : 'f' + S.floodId; if (pp.rmWet !== id) { pp.rmWet = id;
+      const behindWave = !S.wave || S.wave.dir * (S.wave.x - pp.x) >= 0;   /* (claude/redgorgerework) a burst is a WAVE: it finds you where it has been */
+      if (S.ph < 3 && pp.y > G.topY + 10 && ((S.burst > 0 && behindWave) || S.flood)) { const id = S.burst > 0 ? 'b' + S.burstId : 'f' + S.floodId; if (pp.rmWet !== id) { pp.rmWet = id;
         ctx.asPlayer(pp, () => { hurt('THE FLOOD', () => ctx.damagePlayer(pp.x, S.burst > 0 ? 10 : 8, { unblockable: true, noKnock: true, name: S.burst > 0 ? 'THE BURST' : 'THE FLOOD' })); ctx.burst(pp.x, pp.y - 8, 10, ['#7ab8e8', '#e8f4f8'], 70, 0.5); }); } } }
     /* THE POSTS: a blade on a post of the bridge she perches on parts its ropes (her weight has them taut); any other time the ropes hold */
     if (S.ph === 2) for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;
@@ -104,44 +108,74 @@ export function makeMatriarchHands(ctx) {
         if (S.bridges[b.id] !== 'up') continue;
         if (S.perch === b.id && e.mode === 'perch') { S.bridges[b.id] = 'cut'; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(px, G.topY - 20, 12, ['#d9b36a', '#7a5a30'], 70, 0.6); ctx.number(px, G.topY - 50, 'THE ROPES PART', '#8fd160'); }
         else if (!(S.postSaid > ctx.time())) { S.postSaid = ctx.time() + 2; ctx.number(px, G.topY - 50, 'THE ROPES HOLD: STRIKE IT WHILE SHE IS ON IT', '#9aa39a'); } } });
-    if (!S.told.lever && e.mode !== 'wake' && S.ph === 1) { S.told.lever = 1; ctx.number((G.x0 + G.x1) / 2, G.topY - 100, 'THE SLUICES HOLD THE DAM: E AT A LEVER LETS IT GO', '#ffd36b'); }
+    if (!S.told.walls && S.ph === 2 && RM.wallMode(e)) { S.told.walls = 1; ctx.number((G.x0 + G.x1) / 2, G.topY - 100, RM.SAY.walls, '#ffd36b'); }   /* (claude/redgorgerework) */
+    if (!S.told.lever && e.mode !== 'wake' && S.ph === 1) { S.told.lever = 1; ctx.number((G.x0 + G.x1) / 2, G.topY - 100, RM.SAY.rule, '#ffd36b'); }   /* (claude/redgorgerework) the fight's rule, named at the first beat */
   };
   /* E AT A LEVER: let the banked flood go down the channel */
   H.interact = P => { if (!S || !ctx.bossActive || !A()) return false; const G = S.G;
     const l = G.levers.find(q => Math.abs(q.x - P.x) <= 22 && Math.abs(G.topY - P.y) <= 20); if (!l) return false;
     const r = RM.pull(S, l.id);
-    if (r === 'released') { ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2); ctx.number(l.x, G.topY - 40, 'THE SLUICE OPENS: THE WATER COMES', '#8fd160'); }
+    if (r === 'pressed') { ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2); ctx.number(l.x, G.topY - 40, RM.SAY.press, '#8fd160'); }
+    else if (r === 'drowned') ctx.number(l.x, G.topY - 40, RM.SAY.drowned, '#9aa39a');
+    else if (r === 'released') { ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2); ctx.number(l.x, G.topY - 40, 'THE SLUICE OPENS: THE WATER COMES', '#8fd160'); }
     else if (r === 'empty') ctx.number(l.x, G.topY - 40, 'THE SLUICE IS EMPTY: THE NEXT FLOOD FILLS IT', '#9aa39a');
     return true; };
   /* THE DAM'S TIMBERS: they lie in the channel's two wide reaches, and float up when the dam cracks */
   H.plank = (m, dt) => { const oy = m.y; m.dx = 0; if (S && A() && S.ph === 3 && S.water > 0) { const wy = waterY(); m.y = Math.min(m.y0, wy - 3 + Math.sin(ctx.time() * 2.4 + m.x) * 1.5); } else m.y = m.y0; m.dy = m.y - oy; return true; };
+  /* THE STANDPIPE BASKETS (claude/redgorgerework): their height is the fight's (S.press[id].h); in phase three they float on the cracked dam's water like the timbers */
+  H.basket = (m, dt) => { const oy = m.y; m.dx = 0;
+    if (S && A() && S.ph === 3 && S.water > 0) { const wy = waterY(); m.y = Math.min(m.y0, wy - 3 + Math.sin(ctx.time() * 2.2 + m.x) * 1.5); }
+    else if (S && A()) m.y = RM.basketY(S.G, S, m.mbasket); else m.y = m.y0;
+    m.dy = m.y - oy; return true; };
   /* A BLOW ON HER: the ward turns everything; her talons turn the front; an opening pays x openMul (one opening openCap of her at most) */
-  H.take = (e, dmg) => { if (!S) return dmg; const P = ctx.hero(), t = ctx.time();
+  H.take = (e, dmg) => { let d0 = take0(e, dmg); if (!S || !(d0 > 0)) return d0;
+    /* THE WATER DAMPS FIRE (claude/redgorgerework, the crab's rule on her: src/gorge-crab-hands.js): stunned by the sluice's wave she is SOAKED, and in phase three
+       the dam's water is round her - the pyromancer's staff and its burn hiss on her (x MAT.soakFire, with steam and a hiss, said once); a blade goes through water */
+    if (ctx.pyro && ctx.pyro() && (e.mode === 'staggered' || (S.ph === 3 && S.water > 0.5))) { d0 *= MAT.soakFire; S.n.soaked = (S.n.soaked || 0) + 1; const t = ctx.time();
+      if (!(S.soakFx > t - 0.25)) { S.soakFx = t; ctx.burst(e.x, e.y - 18, 8, ['#e8f4f8', '#c8d0d8', '#9aa3aa'], 50, 0.6); ctx.sfx.hiss && ctx.sfx.hiss(); }
+      if (!S.told.soak) { S.told.soak = 1; ctx.number(e.x, e.y - 56, 'THE WATER DAMPS YOUR FIRE', '#9ad0e8'); } }
+    const d = RM.holdDmg(e, S, d0);
+    if (d < d0 && !(S.holdSaid > ctx.time())) { S.holdSaid = ctx.time() + 3; S.n.held = (S.n.held || 0) + 1; e.guardFx = 0.25; e.guardWord = 'THE SLUICE'; ctx.number(e.x, e.y - 70, RM.SAY.hold, '#ffd36b'); }   /* (claude/redgorgerework) THE HOLD: the first pass forces the verb (B10: said, never a silent no-damage blow) */
+    return d; };
+  H.hold = (e, d) => (S ? RM.holdDmg(e, S, d) : d);
+  const take0 = (e, dmg) => { if (!S) return dmg; const P = ctx.hero(), t = ctx.time();
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
     if (S.ward > 0) { e.chipHit = t; S.n.warded++; e.guardFx = 0.25; e.guardWord = 'WARDED'; ctx.sfx.clank && ctx.sfx.clank(); return 0; }
-    if (RM.matUnder(e)) { e.chipHit = t; e.guardFx = 0.25; e.guardWord = 'UNDER THE WATER'; ctx.sfx.clank && ctx.sfx.clank(); return 0; }   /* (claude/matriarch2) the flood rider is under the water: nothing reaches her - said (B10) */
-    if (RM.matBig(e) || e.broken > 0) { const cap = e.maxHp * MAT.openCap, d = Math.min(dmg * MAT.openMul, Math.max(0, cap - S.openTaken)); S.openTaken += d;
+    if (RM.matUnder(e)) { e.chipHit = t; e.guardFx = 0.25; e.guardWord = 'UNDER THE WATER'; ctx.sfx.clank && ctx.sfx.clank(); return 0; }
+    /* (claude/redgorgerework) FROM A RAISED BASKET while she is on the wall: the blow lands whole and knocks her off it */
+    { const m = P.onMover; if (S.ph === 2 && m && m.mbasket && S.press[m.mbasket] && S.press[m.mbasket].h >= 0.85 && RM.wallMode(e) && RM.knock(e, S, world(e))) return dmg; }   /* (claude/matriarch2) the flood rider is under the water: nothing reaches her - said (B10) */
+    if (RM.matBig(e) || e.broken > 0) { const cap = e.maxHp * (RM.matBig(e) && S.openCap ? S.openCap : MAT.openCap), d = Math.min(dmg * MAT.openMul, Math.max(0, cap - S.openTaken)); S.openTaken += d;
       if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 70, 'SHE GATHERS HERSELF', '#9aa39a'); } return d; }
     /* A BEAT (her guard is down: the skid, the breath after the rake) lands whole, up to MAT.beatCap of her a beat */
     if (RM.matBeat(e)) { const k = S.act + e.mode; if (S.beatKey !== k) { S.beatKey = k; S.beatTaken = 0; } const d = Math.min(dmg, Math.max(0, e.maxHp * MAT.beatCap - S.beatTaken)); S.beatTaken += d; return d; }
     /* UNDER HER TALONS (B11 "blocks high -> hit low"; fix pass): the knight's SHIELD TRIP and the warden's LOW POKE (crouched X, src/crouch-a.js) go under the raised guard */
-    if ((P.caTrip || P.caPoke) && P.ground && RM.guarded(e, P.x, P.y, false)) { if (!(S.lowSaid > t)) { S.lowSaid = t + 2.5; ctx.number(e.x, e.y - 60, 'UNDER HER TALONS', '#8fd160'); } S.n.under = (S.n.under || 0) + 1; return dmg; }
+    /* (claude/redgorgerework, B15 + B17: THE SLUICE IS HOW YOU HURT HER) outside her openings and beats she is RESISTANT: a blow round her talons, from above or
+       under them lands x MAT.hideMul; one into her raised talons x MAT.talonMul (B15's floor: never nothing) - both told */
+    if ((P.caTrip || P.caPoke) && P.ground && RM.guarded(e, P.x, P.y, false)) { if (!(S.lowSaid > t)) { S.lowSaid = t + 2.5; ctx.number(e.x, e.y - 60, 'UNDER HER TALONS', '#8fd160'); } S.n.under = (S.n.under || 0) + 1; return dmg * MAT.hideMul; }
     if (RM.guarded(e, P.x, P.y, !P.ground && !P.climb)) { e.chipHit = t; S.n.guarded++; e.guardFx = 0.25; e.guardWord = S.n.guarded < 5 ? ['TALONS UP: GO LOW', 'TALONS UP: GO ROUND', 'TALONS UP: HIT HIGH'][S.n.guarded % 3] : 'TALONS UP';
-      ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 14, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return 0; }
-    return dmg; };
+      ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(P.x - e.x) || 1) * 14, e.y - 20, Math.sign(P.x - e.x) || 1, 5); return dmg * MAT.talonMul; }
+    if (!(S.hideSaid > t)) { S.hideSaid = t + 6; e.guardFx = 0.2; e.guardWord = 'TOUGH HIDE: STUN HER'; }
+    return dmg * MAT.hideMul; };
   /* THE LEVERS' GLINT (src/stuck-spots.js STUCK_HANDS rg-lever, via src/red-gorge-hands.js 'mat.lever'): due while phase one has a full sluice and she can be thrown */
-  H.leverDue = () => { if (!S || !ctx.bossActive || !A()) return ''; const e = ctx.boss; if (!e || !e.alive || e.t !== 'matriarch' || S.ph !== 1 || S.pending.length || S.burst > 0 || S.ward > 0 || RM.matBig(e) || e.mode === 'sleep') return '';
+  H.leverDue = () => { if (!S || !ctx.bossActive || !A()) return ''; const e = ctx.boss; if (!e || !e.alive || e.t !== 'matriarch' || e.mode === 'sleep') return '';
+    if (S.ph === 2) return RM.wallMode(e) && G0().levers.some(l => S.sluice[l.id] && !(S.press[l.id].charge > 0)) ? 'due' : '';   /* (claude/redgorgerework) phase two: a full lever lifts its basket to her */
+    if (S.ph !== 1 || S.pending.length || S.burst > 0 || S.ward > 0 || RM.matBig(e)) return '';
     return S.sluice.W || S.sluice.E ? 'due' : ''; };
-  H.barName = e => 'OLD PLUME, THE RAPTOR MATRIARCH' + (RM.matBig(e) ? (e.mode === 'staggered' ? '  STAGGERED' : e.mode === 'stunned' ? '  STUNNED' : e.mode === 'tangled' ? '  TANGLED' : '  THROWN') : RM.matBeat(e) ? '  GUARD DOWN' : S && S.ward > 0 ? '  WARDED' : RM.matUnder(e) ? '  UNDER THE WATER' : '');
+  const G0 = () => S.G;
+  H.barName = e => 'OLD PLUME, THE RAPTOR MATRIARCH' + (RM.matBig(e) ? (e.mode === 'staggered' ? '  STUNNED' : e.mode === 'stunned' ? '  STUNNED' : e.mode === 'tangled' ? '  TANGLED' : '  THROWN') : RM.matBeat(e) ? '  GUARD DOWN' : S && S.ward > 0 ? '  WARDED' : RM.matUnder(e) ? '  UNDER THE WATER' : '');
   H.end = e => { if (S) { S.shots = []; S.bands = []; } for (const q of ctx.enemies()) if (q.alive && q.rmBrood) { q.alive = false; ctx.burst(q.x, q.y, 8, ['#c8643a', '#7a2e1c'], 50, 0.5); } BOSS_PHASE.matriarch = 1; };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), sluice: { ...S.sluice }, bridges: { ...S.bridges }, water: S.water, burst: S.burst, ward: S.ward, hurt: { ...(S.hurt || {}) } };
+  H.read = () => S && { lure: !!S.lure, wave: S.wave ? { ...S.wave } : null, mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), sluice: { ...S.sluice }, bridges: { ...S.bridges }, water: S.water, burst: S.burst, ward: S.ward, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (the art pass: src/redraw/matriarch_ledge.js = the set, src/redraw/matriarch_cast.js = HER) ---------- */
   /* the ledge: the spillway's water, the sluice gates, the levers and their gauges, the rope bridges, the channel's water, what lies on the tops */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     if (!S.dress) S.dress = planLedgeDress(ctx.L, T);
+    drawStandpipes(g, cx, cy, time, S, G, { VW: ctx.VW(), VH: ctx.VH() });
     drawLedge(g, cx, cy, time, S, G, { text: ctx.text, boss: ctx.boss, wy: waterY(), VW: ctx.VW(), VH: ctx.VH(), dress: S.dress });
     /* the dam's loose timbers in the channel (they float up when it cracks): broken boards, as the Rapids' */
+    /* (claude/redgorgerework, PLACEHOLDER art) THE STANDPIPES and their BASKETS: a stone pipe up the bank's face, the water column under the basket while it holds
+       pressure, a timber deck in a rope cradle, and the PRESSURE gauge on the pipe (it drains with the charge); a full lever's basket blinks UP in phase two */
+    drawBaskets(g, cx, cy, time, S, G, { VW: ctx.VW(), VH: ctx.VH(), text: ctx.text, movers: ctx.movers ? ctx.movers() : [] });
     for (const m of (ctx.movers ? ctx.movers() : [])) { if (!m.mplank) continue; drawTimber(g, { ...m, w: m.w, what: 'plank', fast: S.ph === 3 && S.water > 0.3 }, cx, cy, time); } };
   /* HER: the matriarch's own silhouette (a pose per mode; the stalk walks, the rest stand still but for the breath), a contact shadow, a net over her when she is tangled, stars when stunned */
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
@@ -176,11 +210,19 @@ export function makeMatriarchHands(ctx) {
       else { g.save(); g.translate(x, y); g.rotate(Math.atan2(s.vy, s.vx)); g.fillStyle = '#f0dcb8'; g.fillRect(-7, -1, 12, 2); g.fillStyle = '#7a2e1c'; g.fillRect(3, -1, 3, 2); g.restore(); } }
     for (const b of S.bands) { const x = R(b.x - cx), y0 = R(b.y0 - cy); g.fillStyle = '#6a4426'; g.fillRect(x - 14, y0 + 6, 28, 8); g.fillStyle = '#e8f4f8'; g.fillRect(x - 16, y0 + 4, 32, 2); g.fillStyle = '#8a5a32'; g.fillRect(x - 8, y0, 4, 8); }
     if (e.mode === 'surgeTell') { const fromW = ((S.surgeN || 0) + 1) % 2, x = R((fromW ? G.x0 + 10 : G.x1 - 10) - cx), y = R(G.topY - 20 - cy); g.fillStyle = blink; g.fillRect(x - 2, y, 4, 14); ctx.text('DEBRIS!', x, y - 8, '#ff9a5c', 'center', 6); }
+    /* (claude/redgorgerework) THE SLUICE STUN, DRAWN AS A CHAIN: a bobbing gold marker over every lever that can stun her now (a full sluice in phase one);
+       while she is down in the channel a dashed gold line runs from that lever along the channel to her (the lure: it blinks); a pulled lever's WAVE is a
+       white wall of water running from its bank down the channel; the one that reaches her breaks over her (the 'stun' ring) and the read says STUNNED */
+    if (S.ph === 1) { const inCh = e.y > G.topY + 8 && e.mode !== 'fly' && !RM.matBig(e), hot = !!S.lure || inCh, blinkG = Math.floor(time * (S.lure ? 8 : 3)) % 2;
+      for (const l of G.levers) { if (!S.sluice[l.id] || S.pending.length || S.burst > 0) continue; const lx = R(l.x - cx), ly = R(G.topY - 58 - cy) + R(Math.sin(time * 5) * 3);
+        drawLeverMarker(g, lx, ly, time, hot, blinkG, ctx.text, ctx.VW(), ctx.VH());
+        if (inCh && !(S.ward > 0)) { const y0 = R(G.floorY - 10 - cy), x0 = R((l.id === 'W' ? G.tops[0].r : G.tops[G.tops.length - 1].l) - cx), x1 = R(e.x - cx); drawLeverLine(g, x0, x1, y0, lx, R(G.topY - 40 - cy), R(G.floorY - G.topY + 30), time, hot, blinkG); } } }
+    if (S.wave) drawWave(g, cx, cy, time, S.wave, G);
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - MAT.h / 2 - cy);
     if (RM.matBig(e)) { const k = Math.max(0, e.open / ({ staggered: MAT.staggerT, stunned: MAT.stunT, tangled: MAT.tangleT, pstagger: MAT.p3StaggerT }[e.mode] || 3));
       g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 36, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      const by = R(e.y - MAT.h - 26 - cy); ctx.text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * k), 3); }
+      const by = R(e.y - MAT.h - 26 - cy); ctx.text(e.mode === 'staggered' || e.mode === 'stunned' ? 'STUNNED' : 'OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * k), 3); }
     else if (RM.matBeat(e)) { g.globalAlpha = 0.55; g.strokeStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 32, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 39, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       ctx.text('WARDED', x, R(e.y - MAT.h - 22 - cy), '#c8d8e8', 'center', 5); }
