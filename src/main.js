@@ -26314,10 +26314,11 @@ LCH = makeLitChurchHands({ boss: () => boss, get L() { return L; }, get players(
   keys: () => keys, questGot: () => straysGot.size,
   spawn: (t, tx, ty) => { const n0 = enemies.length; spawnEnt({ t, x: tx, y: ty, face: -1 }); const q = enemies[n0] || null; if (q) { q.woke = 1; q.summoned = true; } return q; },
   bossLamp: l => { if (PBH) PBH.onLamp(l); if (DCH) DCH.onLamp(l); }, bossKindled: l => { if (PBH) PBH.onKindled(l); }, miniOn: () => !!(miniActive && L.mini && L.mini.boss === 'deacon') });
-DCH = makeDeaconHands({ burnTick: () => BURN_TICK, get L() { return L; }, get players() { return players; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
+DCH = makeDeaconHands({ burnTick: () => BURN_TICK, VW: () => VW, get L() { return L; }, get players() { return players; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), blowHas: (b, v) => blowHas(b, v), answered: res => answered(res),
   lamps: () => (LCH && LCH.on() ? LCH.deaconLamps() : []), kindle: id => (LCH && LCH.on() ? LCH.light(id) : false) });
+SPR.deacon = DCH.bakeSet(canvas, flipX, whiten);   /* (claude/church2) THE DEACON's bestiary card (greybox, his guard pose) */
 PBH = makePaladinHands({ burnTick: () => BURN_TICK, g: () => g, get hfx() { return HFX; }, get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); }, blowHas: (b, v) => blowHas(b, v), answered: res => answered(res),

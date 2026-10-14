@@ -96,7 +96,7 @@ export function makeDeaconHands(ctx) {
   /* OVER: the holy fire of the arc, his light bar, the read */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(), e = live(); if (!S || !Ar || !e || e.mode === 'away') return; const fy = R(Ar.floor - cy);
     for (const q of S.fire) { const x = R(q.x - cx), k = Math.min(1, q.t / 0.6); for (let i = 0; i < 3; i++) { const h = 4 + R(5 * Math.abs(Math.sin(time * 9 + q.x * 0.3 + i * 2))); g.globalAlpha = 0.85 * k; g.fillStyle = i === 1 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - 5 + i * 4, fy - h, 2, h); } g.globalAlpha = 0.35 * k; g.fillStyle = '#ff9a3c'; g.fillRect(x - 6, fy - 2, 12, 2); g.globalAlpha = 1; }
-    const x = R(e.x - cx), by = R(e.y - DC.h - 18 - cy), w = 36, k = S.light / DC.light.max;
+    const w = 36, x = Math.max(w / 2 + 30, Math.min(ctx.VW() - w / 2 - 4, R(e.x - cx))), by = R(e.y - DC.h - 18 - cy), k = S.light / DC.light.max;
     g.fillStyle = '#1b1626'; g.fillRect(x - w / 2 - 1, by - 1, w + 2, 4); g.fillStyle = S.barDown > 0 ? '#8a6a30' : S.barUp > 0 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - w / 2, by, R(w * k), 2);
     ctx.text('LIGHT', x - w / 2 - 14, by - 1, '#ffd36b', 'center', 4);
     const yy = R(e.y - DC.h / 2 - cy);
@@ -104,5 +104,8 @@ export function makeDeaconHands(ctx) {
       ctx.text('HE GROPES', x, by - 10, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by - 5, 36, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 18, by - 5, R(36 * kk), 3); }
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 28, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', x, by - 10, '#c8d8e8', 'center', 5); }
     if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, x, by - 20 - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6); };
+  /* A STILL SET FOR THE BESTIARY CARD (GREYBOX: his guard pose, two frames of the flame flickering; the art lane draws the real sheet) */
+  H.bakeSet = (canvas, flipX, whiten) => { const R0 = [0, 1].map(i => { const [c, g] = canvas(48, 56); H.drawBoss(g, { t: 'deacon', alive: true, mode: 'walk', modeT: 0, face: 1, x: 24, y: 54, anim: i }, 0, 0, i * 0.2); return c; });
+    return { R: R0, L: R0.map(flipX), white: { R: R0.map(whiten), L: R0.map(c => flipX(whiten(c))) }, ax: 24, ay: 54, w: DC.w, h: DC.h }; };
   return H;
 }

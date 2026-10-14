@@ -120,14 +120,14 @@ export function makePaladinHands(ctx) {
     /* THE SMITE'S WINDUP (the hero's bloom on the maul's head) and the empower's gathering light */
     if (X && m === 'smiteTell') X.windup(g, x + f * 6, y - 52, Math.min(1, 1 - e.modeT / PB.smite.tell), time);
     if (m === 'empowerTell' || m === 'plantTell') { const k = m === 'empowerTell' ? 1 : 0.5; for (let i = 0; i < 8; i++) { const t = (time * 0.9 + i / 8) % 1; g.globalAlpha = 0.9 * (1 - t) * k; g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 16 + ((i * 19) % 33), R(fy - 4 - t * 46), 1, 2); } g.globalAlpha = 1;
-      ctx.text(m === 'empowerTell' ? 'EMPOWER' : 'CONSECRATE', x, y - 66, m === 'empowerTell' ? '#ff6b6b' : '#ffd36b', 'center', 6); }
+      ctx.text(m === 'empowerTell' ? 'EMPOWER' : 'CONSECRATE', x, y - 88, m === 'empowerTell' ? '#ff6b6b' : '#ffd36b', 'center', 6); }
     /* THE VIGIL: gold rising off the lamp into him */
-    if (m === 'vigil' || m === 'vigilTell') { for (let i = 0; i < 7; i++) { const t = (time * 1.2 + i / 7) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 12 + ((i * 19) % 25), R(y - 6 - t * 40), 1, 2); } g.globalAlpha = 1; ctx.text('VIGIL', x, y - 66, '#ffd36b', 'center', 6); }
-    if (m === 'aegis') ctx.text('AEGIS', x, y - 66, '#fff6c8', 'center', 6);
+    if (m === 'vigil' || m === 'vigilTell') { for (let i = 0; i < 7; i++) { const t = (time * 1.2 + i / 7) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 12 + ((i * 19) % 25), R(y - 6 - t * 40), 1, 2); } g.globalAlpha = 1; ctx.text('VIGIL', x, y - 88, '#ffd36b', 'center', 6); }
+    if (m === 'aegis') ctx.text('AEGIS', x, y - 88, '#fff6c8', 'center', 6);
     if (m === 'sleep') ctx.text('Z', x + 8 * f, y - 60 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
     if (e.guardFx > 0) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); g.fillStyle = '#ffffff'; g.fillRect(x + f * 18 - 2, y - 40, 5, 22); }
     /* THE LIGHT BAR over him (drawn with every change: gold up when his aegis drinks a blow, a dark notch when one lands), the spend ticks of his kit */
-    const bx = x, by = R(e.y - PB.h * PB.scale - 14 - cy), w = 44, k = S.light / PB.light.max;
+    const w = 44, bx = Math.max(w / 2 + 30, Math.min(ctx.VW() - w / 2 - 4, x)), by = R(e.y - PB.h * PB.scale - 14 - cy), k = S.light / PB.light.max;   /* (kept on the screen at the room's walls, its label too) */
     PAL.drawLightBar(g, bx, by, w, k, { open: PBM.pbOpen(e), up: S.barUp > 0, down: S.barDown > 0 });
     g.fillStyle = '#1b1626'; for (const c of [HG.smite.cost, HG.throw.cost, HG.empower.cost]) g.fillRect(R(bx - w / 2 + w * c / 100), by - 1, 1, 4);
     ctx.text('LIGHT', bx - w / 2 - 15, by - 1, '#ffd36b', 'center', 4);
