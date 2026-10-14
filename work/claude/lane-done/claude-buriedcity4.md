@@ -134,3 +134,66 @@ swallow skips him; the sea's art is clipped to its floor; stakes under the sea k
    to the courtyard.
 7. **The pilot's curve sits at the top of act 5's band** (12 deaths / 3 runs, 506% hp a run; band 2-12 deaths, 150-700%) - BC3 was 9 / 374%. Rec: leave to the
    SONNET tune lane (the sand-bound's weight and the courtyard elite are the levers).
+
+## THE KING HALF (OPUS 'bc4king', 2026-10-14) - brief 4, THE HOURGLASS KING partial rework ("not just pull levers and wait")
+Kept: every BC3 move (pendulum, gear, stream, SAND SURGE, BURIAL GRASP, GLASS RAIN, TIME SLIP, THE HOUR), the levers' role (pull as his glass runs low -> he STALLS),
+phase two's drift/tide/blocks, phase three's GREAT HOURGLASS. Code: src/hourglass-king.js (pure), src/hourglass-king-hands.js (world + draw), src/redraw/buried_city_cast.js
+(poses 26-32), src/marks.js (2 new tells). PORT 8910, one page at a time.
+
+### NEW: HE WITHDRAWS (phases one and two; every 19 s / 16 s of floor fighting, first ~15 s in, only while his glass is >= 70% full)
+1. told "HE WITHDRAWS TO HIS SAND" (pose 26) -> he glides to the room's FAR END from you and a PILLAR OF SAND (2 cols, 7 rows; HK_STAGE.aloft, mirrored W/E, clear of the
+   levers) lifts him. His glass does not run while he is up.
+2. From the pillar he THROWS (2 in phase one, 3 in phase two, by turns):
+   - GLASS SHARDS ('!' blockable, "HE THROWS GLASS", pale blue; tell 27 / throw 28): a fan of three at where you stand as he lets go - BLOCK, or roll/step out of the line.
+   - A SAND POT ('!!', "A POT OF SAND", rust; tell 29 / throw 30): lobbed in an arc onto a told blinking mark where you stand (floor or ledge), bursts - STEP OFF THE MARK.
+3. told "THE SAND RISES TO HIM: CLIMB AND STRIKE" (pose 32) -> TWO TIMED SAND SLABS rise from that side's ledge to his pillar, each with its own DRAINING TIMER bar (gold, red +
+   shaking in its last 0.8 s); the low one crumbles first (4.8 s), the high one at 8.0 s. While they stand he HOLDS THE SAND (pose 31): OPEN (B10 gold ring + timer bar +
+   'OPEN' in the bar name) to a blow from UP THERE (at or above the low slab) - from below his brass takes it (x0.45, told: CLIMB TO HIM). Cap 10% of him per hold.
+4. The top slab crumbles (or the share is taken): "THE SAND CRUMBLES: HE COMES DOWN", the pillar sinks, he WARDS 3 s (B3) and his glass is full.
+- B12 stair (every hero, base movement): floor -> the ledge (3 rows, one-way) -> the low slab (2 rows up, overlapping the ledge's end by a column, one-way: jump straight
+  up) -> the high slab (2 rows up, one column's gap) = level with the pillar's top. Asserted in tools/buried-city.mjs; the lab bot (knight/warden/pyro) climbs and cuts him.
+- A LEVER STILL WORKS ON HIM UP THERE: pulled as his glass runs low, it takes him off the pillar ("HE FALLS") and stalls him (in play his glass is >= 70% when he goes
+  up, so a pull says "HE STANDS ABOVE THE GATES: CLIMB HIS SAND"). A new phase brings him down first.
+### PHASE THREE IS OBVIOUS NOW
+- The crack line, then 2.6 s later "THE GATES RUN DRY: THE LEVERS ARE DEAD" said at BOTH levers; the levers are drawn DARK (a dark veil + DRY) all phase.
+- THE GREAT HOURGLASS when ready: a pulsing gold glow, STRIKE THE GLASS over it, a gold marker bobbing down onto it; left ready 7 s: "STRIKE THE GREAT HOURGLASS: E OR A BLOW"
+  is said again (+ ring + chime), every 7 s it stays unstruck. He does not withdraw in phase three.
+### B17: 10 told attacks (pendulum, gear, stream, surge, grasp, rain, slip, the hour, SHARDS, POT); central mechanic = HIS GLASS (levers drain it, the great hourglass flips
+it, his slabs are sand he holds up). Every new ability has its own windup + release pose (B16, greybox).
+
+### TUNE (DIAL_EXEMPT, tools/boss-rates.mjs --ways=practiced --profile=human --flasks=kit --seeds=3 --jobs=1, L40)
+| step | hp | blows | kn | wa | py | all | fight |
+|---|---|---|---|---|---|---|---|
+| rework, BC3 numbers | 3500 | x1.0 | 2/3 | 3/3 | 3/3 | 89% | 141-200 s |
+| | 3000 | x1.3 | 0/3 | 3/3 | 3/3 | 67% (knight 0) | 113-189 s |
+| **shipped** | **2900** | **x1.15** | **2/3** | **2/3** | **2/3** | **67%** | 137-191 s |
+Losses end at 4-5% boss left (close fights). The SONNET tune lane does the 12-seed confirm.
+
+### CHECKS (all green)
+tools/buried-city.mjs **358 green** (+24 King asserts) | buried-city-levers **30 pulls green** (unchanged test: phase three's levers stay dry/unlit, the great glass flips) |
+buriedcity-exit green | boss-openings green | boss-fight-end (62 fights end) | boss-greed green | weak-bosses OK | hint-shown OK (no new dead lines; every new line routed via
+HK_SAY/AL_SAY) | **textfit SCOPED** (TEXTFIT_LEVELS=buriedcity hints,talk,bestiary,boss --strict: 591 screens, all 0) | **mash boss 0/6** (re-stamped, docs/mash-bot.json).
+### STATED TEST CHANGES (none weakened)
+- tools/buried-city.mjs: the king's sheet `frames(W, H, 26,` -> `33,` (7 new poses, each asserted present and mapped); +24 assertions (the withdraw sequence, far-end side,
+  pillar/slab writes in order, open + frozen glass while up, ward after, throws land, the lever knocks him down, phase three: no withdraw, DRY said twice, strike hint repeats,
+  a phase change brings him down, the B12 stair geometry both sides, B17 >= 4 told).
+- buried-city-levers: NOT changed - the phase-three mechanics (levers dry, the great glass) are the same; only drawn/said more plainly.
+
+### ART LIST (SONNET art lane - all GREYBOX today)
+1. KING POSES (bakeHourglassKing, src/redraw/buried_city_cast.js): 26 WITHDRAW (hunched, sand ring at the feet; also glide + sink), 27 SHARD TELL (arm cocked back, three shards
+   fanned), 28 SHARD THROW (arm through, streaks), 29 POT TELL (clay pot hoisted overhead), 30 POT THROW (arms forward-up, pot let go), 31 HOLDING THE SAND (arms up, gold sand
+   streaming up - the open pose on the pillar; also 'rise'), 32 RAISE TELL (crouched, palms down, sand drawn up). Each needs the 3 sand-level sets + the white hurt flash.
+2. HIS SAND PILLAR (drawBack, flat rects today): a column of packed sand/masonry rising + sinking, sand pouring off it.
+3. HIS TWO TIMED SLABS (antechamber look reused): slab, rise, crumble, the timer bar.
+4. THE SHARDS in flight (lines today) and the SAND POT (a circle) + its burst; the pot's landing mark.
+5. PHASE THREE: the dark levers (a veil + DRY text) and the great hourglass's ready glow + STRIKE THE GLASS marker (a triangle) - nicer frame-scale versions.
+
+### QUESTIONS FOR DANIEL (rec first = built)
+1. **The hold is open only to a blow from up on the slabs** (ranged from the floor = his brass x0.45, told CLIMB TO HIM). Rec: keep - the brief's "open while you're up there",
+   and pyro climbs as everyone does. Alt: open to anything while the slabs stand.
+2. **Fights run 137-191 s** (B6 says ~90-150). Rec: let the tune lane shave it (HP to ~2600 with blows a touch higher, or withdraw every 22 s instead of 19/16). Alt: cut his
+   throws to 1/2 a withdraw now.
+3. **He does not withdraw in phase three** (its opening is the great hourglass, kept plain). Rec: keep. Alt: one withdraw in phase three with the pots only.
+4. **A lever pull as his glass runs low knocks him off his pillar** (in play his glass is >= 70% when he goes up, so this only shows if a future tune changes that). Rec: keep as
+   the fallback that keeps the levers' role. Alt: levers do nothing while he is up.
+5. **The withdraw is on a timer (19 s phase one / 16 s phase two of floor fighting)**, not in his move cycles (the cycles' sets stay asserted). Rec: keep.
