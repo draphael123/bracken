@@ -30,7 +30,7 @@ export const DIST = {
   throne: { r: ['#181628', '#242240', '#34325a', '#46447a', '#605e9a'], joint: '#0e0c1a', inlay: '#d8aa40' },
   royal:  { r: ['#100e22', '#1a1834', '#272548', '#363462', '#4a4880'], joint: '#080714', inlay: '#e0b44a' },
 };
-export const distOf = x => x < 38 ? 'sand' : x < 112 ? 'stair' : x < 200 ? 'bazaar' : x < 237 ? 'street' : x < 337 ? 'halls' : x < 396 ? 'sluice' : x < 513 ? 'quarter' : x < 750 ? 'throne' : 'royal';   /* (claude/buriedcity3: THE ROOFTOPS 630-749 are outside - their dunes are sand, the breach and the courtyard cut stone: bcTile, L.outside) */
+export const distOf = x => x < 38 ? 'sand' : x < 112 ? 'stair' : x < 200 ? 'bazaar' : x < 237 ? 'street' : x < 409 ? 'halls' : x < 468 ? 'sluice' : x < 585 ? 'quarter' : x < 845 ? 'throne' : 'royal';   /* (claude/buriedcity3: THE ROOFTOPS 702-821 are outside - their dunes are sand, the breach and the courtyard cut stone: bcTile, L.outside) */
 
 /* the level's own facts, read once from the built level: the roof's depth per column, the footing kinds by cell, where light falls */
 const INFO = new WeakMap();
@@ -46,7 +46,7 @@ function info(L, T) {
 /* the light on a cell, in steps of a seventh from -3 (the sand's cold shadow) to +4 (a shaft of sun): warm within ~9 tiles of a lamp, golden in a shaft, else cold */
 function lightAt(I, x, y) {
   let v = -1.4;   /* the city's own dark: cold, blue */
-  for (const z of I.sun) { if (z.x0 >= 630) { v = Math.max(v, 1); continue; } const dx = x < z.x0 ? z.x0 - x : x > z.x1 ? x - z.x1 : 0; v = Math.max(v, 4 - dx * 0.9); }
+  for (const z of I.sun) { if (z.x0 >= 702) { v = Math.max(v, 1); continue; } const dx = x < z.x0 ? z.x0 - x : x > z.x1 ? x - z.x1 : 0; v = Math.max(v, 4 - dx * 0.9); }
   for (const lp of I.lamps) { const d = Math.hypot(lp.x - x, (lp.y - y) * 1.2); v = Math.max(v, 3.2 - d * 0.42); }
   return Math.max(-3, Math.min(4, Math.round(v)));
 }
@@ -63,14 +63,15 @@ const vn = (wx, wy, s) => { const x0 = Math.floor(wx / s), y0 = Math.floor(wy / 
   const a = h(x0, y0), b = h(x0 + 1, y0), c = h(x0, y0 + 1), d = h(x0 + 1, y0 + 1); return (a * (1 - fx) + b * fx) * (1 - fy) + (c * (1 - fx) + d * fx) * fy; };
 
 /* ---------------------------------------------------------------- SAND (the dunes, the roof, the drifts) */
-const SAND = ['#8e6a3c', '#a88248', '#c29a5c', '#d8b472', '#ecd090'];
+const SAND = ['#85704a', '#9e8858', '#b8a06c', '#cdb682', '#e2cf9c'];   /* (claude/bc4art: toned from the orange wash toward ochre and bone) */
 function sandTile(x, y, o) {   /* o: up (a dune's lit lip), deep (rows under the surface), aL, aR */
   const dp = Math.min(o.depth, 9);
   return once(['sd', x % 5, y % 4, o.up ? 'U' : '', o.aL ? 'L' : '', o.aR ? 'R' : '', dp].join(''), () => { const [c, g] = canvas(16, 16), wx0 = x * 16, wy0 = y * 16;
     const shade = dp < 1 ? 0 : dp < 3 ? 1 : dp < 6 ? 2 : 3, ramp = [[2, 3, 3, 4], [1, 2, 2, 3], [0, 1, 1, 2], [0, 0, 1, 1]][shade];
     for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy;
       const rip = Math.sin((wx + wy * 1.7) / 5 + vn(wx, wy, 14) * 4) + Math.sin((wx - wy * 0.6) / 11); let k = rip > 0.9 ? 3 : rip > -0.2 ? 2 : rip > -1.1 ? 1 : 0;
-      k = ramp[Math.max(0, Math.min(3, k))]; if (hash(wx, wy) % 11 === 0) k = Math.max(0, k - 1); else if (hash(wx + 3, wy + 9) % 17 === 0) k = Math.min(4, k + 1);
+      k = ramp[Math.max(0, Math.min(3, k))]; if (dp >= 1) { const bed = (wy + Math.round(2.6 * Math.sin(wx / 19 + vn(wx, wy, 30) * 3))) % 13; if (bed === 0) k = Math.max(0, k - 1); else if (bed === 1 && hash(wx >> 2, wy) % 3) k = Math.min(4, k + 1); else if (bed === 7 && hash(wx >> 3, wy >> 1) % 5 === 0) k = Math.max(0, k - 2); }   /* (claude/bc4art) bedding planes: strata through the big blocks of sand, a darker seam, a pale one */
+      if (hash(wx, wy) % 11 === 0) k = Math.max(0, k - 1); else if (hash(wx + 3, wy + 9) % 17 === 0) k = Math.min(4, k + 1);
       px(g, xx, yy, SAND[k]); }
     if (o.up) for (let xx = 0; xx < 16; xx++) { px(g, xx, 0, SAND[4]); if (hash(wx0 + xx, 2) % 3) px(g, xx, 1, SAND[3]); }
     if (o.aL) for (let yy = 0; yy < 16; yy++) px(g, 0, yy, SAND[0]);
@@ -238,7 +239,13 @@ function minaretTile(i, n, x, y, top) {
 }
 function houseTile(dk, i, n, x, y, o) {
   return once(['phs', dk, x & 3, y & 3, i === 0 ? 'L' : i === n - 1 ? 'R' : 'M', o.top ? 'T' : '', o.vig ? 'V' : ''].join(''), () => { const [c, g] = canvas(16, 16), wx0 = x * 16, wy0 = y * 16, d = DIST[dk] || DIST.quarter;
-    for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy, n2 = vn(wx, wy, 8); let col = n2 > 0.55 ? '#a8845a' : n2 > 0.3 ? '#92704a' : '#7a5a3c'; if ((wy & 7) === 7) col = '#4a3220'; else if (hash(wx, wy) % 13 === 0) col = '#5e422c'; px(g, xx, yy, col); }
+    /* (claude/bc4art, the visual pass) the buried houses were flat orange siding: now plaster skin over mud-brick courses, stained and cracked, a string course every storey - strata, not planks */
+    for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy, zone = vn(wx + 40, wy, 22), course = Math.floor(wy / 6), bw = 12 + (hash(course, 3) % 3) * 2, off = hash(course, 9) % bw, bx = (wx + off) % bw, by = wy % 6; let col;
+      if (zone > 0.4) { const n2 = vn(wx, wy, 9); col = n2 > 0.58 ? '#a38c68' : n2 > 0.32 ? '#937c5a' : '#836d4f'; if (hash(wx >> 1, wy) % 29 === 0) col = '#6e5a40'; if (((wx * 3 + wy * 5) % 37) === 0 && zone < 0.6) col = '#5e4c36'; }
+      else { col = (hash(Math.floor((wx + off) / bw), course) % 4 === 0) ? '#84604a' : '#785640'; if (by === 5 || bx === bw - 1) col = '#3e2c20'; else if (by === 0) col = '#8e7058'; }
+      if (hash(wx, wy) % 13 === 0) col = zone > 0.4 ? '#76624a' : '#6a4a38';
+      if ((wy % 24) === 0) col = '#c4aa80'; else if ((wy % 24) === 1) col = '#6a5238';
+      px(g, xx, yy, col); }
     if (o.top) { /* the parapet: merlons along the roof's edge, a lit coping */
       for (let xx = 0; xx < 16; xx++) { const m = ((wx0 + xx) % 8) < 5; if (!m) { g.clearRect(xx, 0, 1, 3); px(g, xx, 3, '#d8bc86'); } else { px(g, xx, 0, '#e8d09a'); px(g, xx, 1, '#c4a672'); px(g, xx, 2, '#8a6a46'); } }
       for (let xx = 0; xx < 16; xx++) { px(g, xx, 4, '#d8bc86'); px(g, xx, 5, '#6a4a30'); } }

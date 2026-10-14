@@ -69,7 +69,7 @@ async function pageTextFit(input) {
   const BK = window.BK, TL = BK.textLab, lvm = await import('/src/level.js'), G = BK.g;
   const issues = [], stats = { frames: 0, texts: 0, screens: {} }, seenIssue = new Set();
   const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
-  const campaign = lvm.LEVELS.map((l, i) => [l, i]).filter(([l]) => (!l.hidden || l.secret) && l.id !== 'custom');
+  const campaign = lvm.LEVELS.map((l, i) => [l, i]).filter(([l]) => (!l.hidden || l.secret) && l.id !== 'custom' && (!input.levels || input.levels.includes(l.id)));   /* (claude/buriedcity4: TEXTFIT_LEVELS=a,b - a lane's SCOPED run over its own levels' signs and pages; unset, every level as before) */
   const want = s => !input.only.length || input.only.includes(s);
   const yieldNow = () => new Promise(r => setTimeout(r, 0));
   /* THE PLATES: every filled or stroked rectangle drawn while recording */
@@ -326,7 +326,7 @@ async function pageTextFit(input) {
 
 async function main() {
   const pg = await openPage();
-  const input = { only, hints: hints() };
+  const input = { only, hints: hints(), levels: process.env.TEXTFIT_LEVELS ? process.env.TEXTFIT_LEVELS.split(',') : null };
   console.log(input.hints.length + ' hint messages read out of src/main.js');
   const t0 = Date.now();
   /* EACH SCOPE UNDER ITS OWN TIMER, THE HEAVY ONES ON THEIR OWN PAGES. The whole sweep used to be ONE evaluate (30-minute ceiling) over

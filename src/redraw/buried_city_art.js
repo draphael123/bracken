@@ -11,6 +11,7 @@ import * as CAST from './buried_city_cast.js';
 export function bakeBuriedCitySets() {
   const out = { construct: CAST.bakeConstruct(), constructelite: CAST.bakeConstruct(true) };
   const king = CAST.bakeHourglassKing(0); out.hourglassking = { R: [king.R[0], king.R[1]], L: [king.L[0], king.L[1]], white: { R: [king.white.R[0], king.white.R[1]], L: [king.white.L[0], king.white.L[1]] }, ax: king.ax, ay: king.ay, w: king.w, h: king.h };
-  out.sanddrowned = CAST.bakeSandDrowned(); out.sandslinger = CAST.bakeSandSlinger(); out.brassscorpion = CAST.bakeBrassScorpion();
+  out.sanddrowned = CAST.bakeSandDrowned(); out.sandslinger = CAST.bakeSandSlinger(); out.brassscorpion = CAST.bakeBrassScorpion(); out.sandbound = CAST.bakeSandBound();   /* (claude/buriedcity4) THE SAND-BOUND (finished: claude/bc4art) */
+  { const sb = out.sandbound, pick = (a, ix) => ix.map(i => a[i]); out.sandboundCard = { R: pick(sb.R, [2, 3, 4, 5]), L: pick(sb.L, [2, 3, 4, 5]), white: { R: pick(sb.white.R, [2, 3, 4, 5]), L: pick(sb.white.L, [2, 3, 4, 5]) }, ax: sb.ax, ay: sb.ay, w: sb.w, h: sb.h }; }   /* (its bestiary card walks and slams: not the mound) */
   return out;
 }
