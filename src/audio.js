@@ -407,6 +407,7 @@ export const SFX = {
   lcCry() { noise(0.34, 0.2, 700, 0.9); tone('sawtooth', 150, 230, 0.3, 0.12); tone('square', 230, 300, 0.2, 0.06, 0.08); tone('sawtooth', 300, 170, 0.24, 0.08, 0.26); pad('sawtooth', 110, 150, 0.45, 0.06, 0.02, 900, 0.05); tone('square', 1300, 900, 0.05, 0.08, 0.2); },
   lcRoll() { noise(0.72, 0.24, 160, 0.5); noise(0.6, 0.12, 420, 0.7, 0.05); tone('sine', 58, 40, 0.7, 0.26); for (let i = 0; i < 6; i++) noise(0.05, 0.14, vary(260), 1.2, 0.04 + i * 0.1); },
   lcSlam() { file('slam', 0.5, 0.8); tone('sine', 90, 30, 0.5, 0.4); noise(0.3, 0.36, 300, 0.5); tone('square', 1100, 640, 0.08, 0.14, 0.02); tone('sine', 2200, 2150, 0.6, 0.06, 0.02); noise(0.5, 0.14, 120, 0.4, 0.08); },
+  creak() { if (!file('amb_creak', 0.13, 1.05)) { tone('sine', 210, 150, 0.12, 0.04); noise(0.05, 0.03, 760, 0.8); } },   /* (feelplatform) a plank or a rope giving under a landing */
   thud() { tone('sine', 110, 46, 0.18, 0.32); tone('triangle', 220, 120, 0.1, 0.12); noise(0.08, 0.18, 320, 0.6); }, // something wooden and heavy meeting the ground
   stone() { file('stone', 0.4); },
   /* THE WINCHMASTER's live skip under a rider who will jam him (claude/winch4): the ore's weight on the cable, low and felt - and the
