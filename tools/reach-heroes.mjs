@@ -26,6 +26,12 @@ const HEROES = (args.find(a => a.startsWith('--heroes=')) || '').slice(9).split(
 const heroes = HEROES.length ? HEROES : HERO_MOVE_IDS, TS = 16;
 let fails = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) fails++; };
 
+/* ---- D. EARTHFALL IS NEVER A WAY (claude/plunges): the geomancer's plunge raises a one-tile stone step for a few seconds. No reach model may count it: the fill and the hero model read nothing of it, and the
+   runtime fill (main.js wayBuild) reads GEO.baseGrid (the level without her stone; tools/plunges.mjs proves that equality in the page) ---- */
+{ const { readFileSync } = await import('node:fs'), { EARTH } = await import('../src/plunges.js');
+  for (const f of ['reachcore.js', 'reach-hero.js', 'hero-move.js', 'reach-gaps.js', 'reach-slopes.js']) ok(!/earthfall|earth_fall|geomancer.js/i.test(readFileSync(new URL('../src/' + f, import.meta.url), 'utf8')), 'src/' + f + ' knows nothing of EARTHFALL');
+  ok(EARTH.reachTool === false && EARTH.h === 1, 'EARTHFALL: a one-tile step that no reach tool counts');
+  ok(/GEO.baseGrid()/.test(readFileSync(new URL('../src/main.js', import.meta.url), 'utf8')), 'main.js wayBuild fills the base grid, not the level with her stone in it'); }
 /* ---- A. THE NUMBERS ---- */
 { console.log('== A. each hero\'s own jump (src/hero-move.js, flown by src/reach-hero.js at full game speed)');
   for (const h of heroes) { const J = heroJumps(h), st = J.fly(J.run(1)), run = J.fly(J.run(4)), sp = J.fly(J.run(24)), v = J.run(24).vx, slack = Math.max(TS, v * TS / MOVE.RUN);

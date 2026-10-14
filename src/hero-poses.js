@@ -4,6 +4,11 @@
    after the swing: a blow in progress still wins). This chooses ART ONLY: no timer here touches a box, a cost or a cooldown.
    BEATS are the elapsed seconds at which each next frame starts; CYCLE poses loop at a rate instead. */
 export const POSE_BEATS = {
+  /* THE FOUR NEW PLUNGES' RELEASES (claude/plunges, B16: each has its own windup - the plunge frames - and its own release/leap, played as kit poses) */
+  hammerHit: [0.08],           /* HAMMER OF DAWN: the head of the maul in the ground and a gold star off it; then him coming up off it */
+  boardLeap: [0.1],            /* BOARDING: the heel off its back and a hand pushing down; then both arms flung up - the second jump */
+  earthHit: [0.09],            /* EARTHFALL: the butt of the stave in the ground, the grit flung off it; then her coming up off it */
+  bzSpinEnd: [0.1],            /* AXE SPIN: thrown wide off the shredded foe, up */
   /* THE KNIGHT */
   lunge: [0.05, 0.2],          /* the drive off the back foot, the full stretch behind the point, and the pull-up */
   toss: [0.06, 0.16],          /* SHIELD THROW: the off arm cocked back, flung through, and following after it */

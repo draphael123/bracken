@@ -156,6 +156,7 @@ const HEROES_C = {
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
 };
+import { ROW as PLUNGE_ROW } from './plunges.js';
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);
   const swapped = swapZX && !isCustom(binds, 'kb', 'jump') && !isCustom(binds, 'kb', 'atk');
@@ -168,7 +169,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['emote', k1('dance') + ': DANCE, MOVE TO STOP', pd('dance')],
     ['jump', jumpKeys, pd('jump')],
     ['swing', atkKeys, pd('atk')],
-    ['plunge', k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
+    [(PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],   /* (claude/plunges) the four new plunges are named for what they do (src/plunges.js ROW) */
     [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : 'heavy blow', hero === 'geomancer' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
     hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/berserker2: his flurry runs five) */
     ['rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
