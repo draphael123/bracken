@@ -38,3 +38,19 @@ export function hawkStep(e, w, dt) {
   return out;
 }
 export const hawkOpen = e => e.mode === 'grounded' || e.mode === 'blind';
+
+/* ================= (claude/ksarfoes, Daniel 10-14: brief-ksarfix-1014.md part B) THE KSAR'S TWO NEW BANDITS - VARIANTS of proven machines (A9: the hawk scout stays the
+   Ksar's one brand-new AI). src/ksar-hands.js runs them; src/redraw/ksar_foes_art.js draws them; tools/ksar.mjs checks them.
+   THE FALCONER (cnSkin 'falconer'): the CUTTHROAT's machine (feint, knife) + a HAWK SCOUT on a leash (an ent with `falcon: <his squad>`). The hawk circles over him; he
+   SENDS it (a told windup, sendTell, then the release - his own poses B16): it wheels over you and STOOPS on your spot (the hawk scout's own told stoop: its shadow,
+   '!!'), lands a beat, climbs - and he CALLS it back to his glove (a told whistle, callTell). WHILE IT RIDES OVER HIM IT GUARDS HIM: a blow lands at guardMul with a clank
+   (HIS HAWK GUARDS) - the Hawk-Mistress's grammar in small (B8). KNOCK IT DOWN (two blows; a torch or a keg's blast burns it out of the air; a flash blinds it) and he is
+   OPEN (openMul, a gold ring + its timer, B10) for openT s (blind: while it is blind); with it dead he fights on unguarded.
+   THE PLATED BANDIT (cnSkin 'ksarplate'): the CUTTHROAT's machine, weightier (walkMul, a longer real windup). Steel plate: a blade (any hero's blow, any fire) lands at
+   plateMul with a clank and a word: THROW A BOMB (the shared turned read, src/boss-read.js). A KEG'S BLAST (thrown, kicked, a chain's) strips the plate: he staggers
+   (stripStun s) and takes everything whole from then on (cnSkin stays; he wears 'ksarplatebare'). Keg stacks stand by every one of them. */
+export const FALCON = { sendTell: 0.65, sendGo: 0.25, callTell: 0.6, glove: 1.2, cd: 3.0, sendR: 180, nearR: 34, guardR: 96, guardMul: 0.4, openMul: 1.5, openT: 3.5, leash: 36, alt: 66, toGloveV: 150 };
+export const PLATE = { plateMul: 0.25, walkMul: 0.65, slashExtra: 0.2, stripStun: 1.2 };
+/* the falconer's hawk guards him while it is up over him - not while it is out on a stoop, on the ground, blind, or dead */
+export const falconGuards = (m, k) => !!(m && k && k.alive && k.st && ['patrol', 'climb', 'glove', 'toGlove', 'shriek'].includes(k.st.mode) && Math.abs(k.x - m.x) < FALCON.guardR);
+export const falconDown = k => !k || !k.alive || (k.st && k.st.mode === 'blind');

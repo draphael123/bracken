@@ -15,7 +15,8 @@
 // main.js calls: reset, on, update, hold, world, evs, onHit, interact, smokeStep, noSun, drawWorld, drawOver, drawHud, read, handsState, arcOf.
 import * as CT from './carry-throw.js';
 import { CUTTHROAT } from './desert-foes.js';
-import { HAWK } from './ksar-foes.js';
+import { HAWK, FALCON, PLATE, falconGuards, falconDown } from './ksar-foes.js';
+import { drawKeyGlyph } from './boss-read.js';   /* (claude/ksarfoes) the plated bandit SHOWS his key: the shared THROW IT glyph over him */
 import * as SET from './redraw/ksar_set.js';
 import * as P2 from './redraw/ksar_props2.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
@@ -35,7 +36,7 @@ export const KS = { hum: 4, muster: 3.2, callV: 82, sight: 150, sightY: 40, runV
 CT.addKind('keg', { aims: { low: { vx: 70, vy: -120 }, mid: { vx: 125, vy: -190 }, high: { vx: 95, vy: -300 } }, g: 700, r: 4, ring: 12, dots: 14 });
 CT.addKind('flask', { aims: { low: { vx: 110, vy: -130 }, mid: { vx: 170, vy: -210 }, high: { vx: 120, vy: -330 } }, g: 640, r: 3, ring: 10, dots: 14 });
 /* (the torch is src/carry-throw.js's own kind 'torch' - the Underwell's, so a THROW game-wide reuses one row) */
-const FORT = new Set(['ksarblade', 'gonglookout', 'whipapprentice', 'shieldsentry', 'smokethrower', 'wallslinger']);
+const FORT = new Set(['ksarblade', 'gonglookout', 'whipapprentice', 'shieldsentry', 'smokethrower', 'wallslinger', 'falconer', 'ksarplate']);
 
 export function makeKsarHands(ctx) {
   let K = null;
@@ -77,8 +78,13 @@ export function makeKsarHands(ctx) {
     const ts = TS();
     for (const e of ctx.enemies()) { if (!e.alive || e.ks || e.hmGuard) continue; const k = e.xpKey != null ? parseInt(e.xpKey, 10) : -1, src = k >= 0 ? K.L.ents[k] : null;
       if (!src || (!src.ks && e.t !== 'hawkscout')) continue;
-      if (e.t === 'hawkscout') continue;
-      e.ksNest = !!src.nest; e.ks = { role: src.ks, post: e.x, gong: src.gong || null, patrol: src.patrol ? [src.patrol[0] * ts + 8, src.patrol[1] * ts + 8] : null, st: src.asleep || src.ks === 'reserve' ? 'asleep' : src.ks === 'gatehouse' ? 'room' : 'post', t: 0, hp: e.hp, dir: e.face || -1 }; }
+      if (e.t === 'hawkscout') { if (src.falcon && !e.ksFalcon) e.ksFalcon = src.falcon; continue; }   /* (claude/ksarfoes) a falconer's hawk: his squad names it */
+      e.ksNest = !!src.nest; e.ks = { role: src.ks, post: e.x, gong: src.gong || null, patrol: src.patrol ? [src.patrol[0] * ts + 8, src.patrol[1] * ts + 8] : null, st: src.asleep || src.ks === 'reserve' ? 'asleep' : src.ks === 'gatehouse' ? 'room' : 'post', t: 0, hp: e.hp, dir: e.face || -1 };
+      if (e.cnSkin === 'ksarplate') e.ksPlate = true;   /* (claude/ksarfoes) THE PLATED BANDIT: steel until a blast */
+      if (e.cnSkin === 'falconer') { e.ks.squad = src.squad; e.ksF = { st: 'idle', t: 0, cd: 1.2, open: 0, lost: false, dived: false, said: -9 }; } }
+    /* (claude/ksarfoes) THE FALCONER's HAWK: tie each to the falconer of its squad */
+    for (const k of ctx.enemies()) { if (!k.alive || !k.ksFalcon || k.ksMaster) continue; const m = ctx.enemies().find(e => e.alive && e.ksF && e.ks && e.ks.squad === k.ksFalcon && !e.ksHawk);
+      if (m) { k.ksMaster = m; m.ksHawk = k; } }
   }
   const gongOf = id => K.gongs.find(g => g.id === id);
   const gx = g => g.x * TS() + 8, gy = g => (g.y + 1) * TS();
@@ -155,6 +161,7 @@ export function makeKsarHands(ctx) {
         e.x = z.x0 + (z.x1 - z.x0) * R0.k; e.y = z.y0 + (z.y1 - z.y0) * R0.k + 12; e.vx = 0; e.vy = 0; e.face = Math.sign(z.x1 - z.x0) || -1; if (e.st) { e.st.x = e.x; e.st.y = e.y; e.st.face = e.face; } e.mode = 'walk';
         if (R0.k >= 1) { e.ksRide = null; q.st = 'fight'; ctx.dust(e.x, e.y, 4); } return true; } }
     if (e.ksStun > 0) { e.ksStun -= dt; fall(e, dt); e.vx = 0; return true; }
+    if (e.ksF && (q.st === 'post' || q.st === 'fight')) { const r = falconer(e, e.ksF, dt, P); if (r !== null) return r; }   /* (claude/ksarfoes) THE FALCONER sends and calls his hawk; OPEN when it is down */
     switch (q.st) {
       case 'asleep': fall(e, dt); e.vx = 0; e.mode = 'sleep'; return true;
       case 'room': return false;   /* the gatehouse squad: their own machines, behind the grille */
@@ -182,16 +189,64 @@ export function makeKsarHands(ctx) {
     }
     return false;
   };
+  /* ---------- (claude/ksarfoes) THE FALCONER: SEND (a told windup, then the release: the hawk wheels over you and stoops on your spot), CALL (a told whistle: the hawk to his
+     glove, a beat there, up again); his hawk DOWN (dead, burnt, blinded) = he is OPEN, standing still (B4), a gold ring and its timer (B10). null = his own machine runs ---------- */
+  function falconer(e, F, dt, P) { const k = e.ksHawk, ts = TS(); F.cd -= dt; F.t -= dt; if (F.open > 0) F.open -= dt;
+    const stand = fr => { fall(e, dt); e.vx = 0; e.mode = 'walk'; if (e.st) { e.st.frame = fr; e.st.mode = 'walk'; e.st.t = 0; e.st.cd = Math.max(e.st.cd || 0, 0.35); e.st.x = e.x; } return true; };   /* (his machine waits in its walk: it picks up cleanly after) */
+    if (k && !k.alive && !F.lost) { F.lost = true; openUp(e, F, FALCON.openT, 'HIS HAWK IS DOWN: CUT HIM'); }
+    if (k && k.alive && k.st && k.st.mode === 'blind' && !(F.open > 0)) openUp(e, F, Math.max(1, k.st.t), 'HIS HAWK IS BLIND: CUT HIM');
+    if (F.open > 0) return stand(9);   /* he calls for it in vain */
+    if (!k || !k.alive) return null;
+    const d = P.x - e.x;
+    if (F.st === 'send') { e.face = Math.sign(d) || e.face; if (e.st) e.st.face = e.face; if (F.t > 0) return stand(7);
+      F.st = 'sendGo'; F.t = FALCON.sendGo; const s = k.st; if (s && ['patrol', 'climb', 'glove', 'toGlove'].includes(s.mode)) { s.mode = 'circle'; s.t = 0.45; s.cd = 0; F.dived = true; K.n.falconSends = (K.n.falconSends || 0) + 1; } return stand(8); }
+    if (F.st === 'sendGo') { if (F.t > 0) return stand(8); F.st = 'idle'; F.cd = FALCON.cd; return null; }
+    if (F.st === 'call') { if (F.t > 0) return stand(9); F.st = 'idle'; if (k.st && k.st.mode === 'patrol') { k.st.mode = 'toGlove'; K.n.falconCalls = (K.n.falconCalls || 0) + 1; } F.cd = Math.max(F.cd, 1.6); return null; }
+    if (P.dead) return null;
+    const m = k.st && k.st.mode;
+    if (m === 'patrol' && F.dived) { F.dived = false; F.st = 'call'; F.t = FALCON.callTell; ctx.sfx.whistle ? ctx.sfx.whistle() : ctx.sfx.tell && ctx.sfx.tell(false); if (once('falconCall')) number(e.x, e.y - 44, 'HE CALLS HIS HAWK TO THE GLOVE', '#ffd36b'); return stand(9); }
+    const ad = Math.abs(d), sees = !hiddenFrom(k.x, k.y, P, true) && ad < FALCON.sendR && ad > FALCON.nearR && Math.abs(P.y - e.y) < 5 * ts;
+    if (F.cd <= 0 && (m === 'patrol' || m === 'glove') && sees) { F.st = 'send'; F.t = FALCON.sendTell; e.face = Math.sign(d) || e.face; ctx.number(e.x, e.y - 30, '!!', '#ff6b6b'); ctx.sfx.tell && ctx.sfx.tell(true);
+      if (once('falconSend')) number(e.x, e.y - 44, 'HE SENDS HIS HAWK: STEP OFF ITS SHADOW', '#ff9a5c'); return stand(7); }
+    return null; }
+  function openUp(e, F, t, line) { F.open = t; F.st = 'idle'; F.openT0 = t; K.n.falconOpens = (K.n.falconOpens || 0) + 1; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(e.x, e.y - 20, 8, ['#ffd36b', '#fff6c8'], 50, 0.5);
+    if (once('falconOpen') || K.clock - F.said > 6) { F.said = K.clock; number(e.x, e.y - 44, line, '#8fd160'); } }
+  /* ---------- (claude/ksarfoes) THE BLOW ON THE NEW BANDITS (main.js hurtEnemy0 asks before the hp comes off): returns what lands (0 = nothing) ----------
+     THE PLATED BANDIT: a blast strips the plate (and lands whole); anything else lands at PLATE.plateMul with the shared turned read - THROW A BOMB.
+     THE FALCONER: OPEN x openMul; guarded by his hawk x guardMul (HIS HAWK GUARDS). HIS HAWK: a blast or a torch burns it out of the air. */
+  H.owns = e => !!K && !!(e && (e.ksPlate || e.ksF || e.ksMaster));
+  H.take = (e, dmg, fromX) => { if (!K || !e) return dmg;
+    if (e.ksMaster && K.roomBlow) return Math.max(dmg, e.hp + 1);
+    if (e.ksPlate) { if (K.roomBlow === 'blast') { strip(e); return dmg; }
+      const d = Math.max(1, Math.round(dmg * PLATE.plateMul)); K.n.plateClanks = (K.n.plateClanks || 0) + 1; if (ctx.turned) ctx.turned(e, fromX, 'THROW A BOMB');
+      if (once('plate') || K.clock - (K.plateSaid || -9) > 8) { K.plateSaid = K.clock; number(e.x, e.y - 44, 'HIS PLATE TURNS A BLADE: THROW A KEG AT HIM', '#ff9a5c'); } return d; }
+    if (e.ksF) { if (e.ksF.open > 0) return Math.round(dmg * FALCON.openMul);
+      if (falconGuards(e, e.ksHawk)) { K.n.falconGuards = (K.n.falconGuards || 0) + 1; if (ctx.turned) ctx.turned(e, fromX, 'HIS HAWK GUARDS'); return Math.max(1, Math.round(dmg * FALCON.guardMul)); } }
+    return dmg; };
+  function strip(e) { e.ksPlate = false; e.skinNow = 'ksarplatebare'; e.ksStun = Math.max(e.ksStun || 0, PLATE.stripStun); K.n.plates = (K.n.plates || 0) + 1;
+    ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(e.x, e.y - 12, 16, ['#9aa4b0', '#d8e0ea', '#5e6874'], 110, 0.7); ctx.shake(2);
+    if (once('strip') || K.clock - (K.stripSaid || -9) > 8) { K.stripSaid = K.clock; number(e.x, e.y - 44, 'THE PLATE IS BLOWN OFF: CUT HIM', '#8fd160'); } }
   /* THE MACHINES' WORLD (main.js updateDesertFoe, before a machine steps): a hawk scout's eyes and blindness; a whip apprentice's reach */
   H.world = (e, s, w) => { if (!K) return; const P = ctx.hero();
+    if (e.t === 'hawkscout' && e.ksMaster) leash(e, s, e.ksMaster);   /* (claude/ksarfoes) a falconer's hawk keeps over its man */
+    if (e.cnSkin === 'ksarplate') e.ksX0 = s.x;   /* (claude/ksarfoes) the plated man's step is weighed after his machine moves him (H.evs) */
     if (e.t === 'hawkscout') { w.hidden = hiddenFrom(e.x, e.y, P, true); if (w.hidden) K.n.hidden++; w.blind = e.ksBlindNew || 0; e.ksBlindNew = 0; w.ground = P.y; return; }
     if (e.cnSkin === 'whipapprentice') { const d = w.px - e.x; w.px = e.x + d * (CUTTHROAT.reach / KS.lashReach); }   /* his machine reads you a lash's length nearer: he lashes from there */
     /* THE FORT'S DRILL (fix pass, review MUST 2: weight, not hazards): its blades and whips close at a run and come again sooner than the gang's - the told windups are the same */
     if ((e.cnSkin === 'ksarblade' || e.cnSkin === 'whipapprentice') && s.mode === 'walk') { if (s.cd > KS.drillCd) s.cd = KS.drillCd; const d = w.px - s.x;
       if (Math.abs(w.py - s.y) < 28 && Math.abs(d) < CUTTHROAT.sight && Math.abs(d) > CUTTHROAT.reach * 0.7) s.x += Math.sign(d) * KS.drillV * (w.dt || 1 / 60); }
   };
+  /* (claude/ksarfoes) THE LEASH: the falconer's hawk circles over him (it never spots for itself - he sends it); on his CALL it flies to his glove and sits there a beat */
+  function leash(e, s, m) { if (!m.alive) { e.ksMaster = null; return; } const F = m.ksF;
+    s.x0 = m.x - FALCON.leash; s.x1 = m.x + FALCON.leash; s.alt = m.y - FALCON.alt; if (s.mode === 'patrol') s.cd = Math.max(s.cd, 0.5);
+    const gx2 = m.x + (m.face || 1) * 5, gy2 = m.y - 15;
+    if (s.mode === 'toGlove') { const dx = gx2 - s.x, dy = gy2 - s.y, L2 = Math.hypot(dx, dy), v = FALCON.toGloveV / 60; s.face = Math.sign(dx) || s.face; s.frame = Math.floor(K.clock * 8) % 2;
+      if (L2 <= v + 1) { s.mode = 'glove'; F.gloveTill = K.clock + FALCON.glove; } else { s.x += dx / L2 * v; s.y += dy / L2 * v; } }
+    if (s.mode === 'glove') { s.x = gx2; s.y = gy2; s.frame = 5; s.face = m.face || 1; if (K.clock >= (F.gloveTill || 0)) { s.mode = 'climb'; s.t = HAWK.climb; s.cy = s.y; } } }
   /* THE MACHINES' EVENTS (after it steps): a hawk's 'spot' is the alarm; the apprentice's slash is a LASH with reach */
   H.evs = (e, s, evs) => { if (!K) return;
+    if (e.cnSkin === 'ksarplate' && e.ksX0 != null) { if (s.mode === 'walk') s.x = e.ksX0 + (s.x - e.ksX0) * PLATE.walkMul; e.ksX0 = null;   /* (claude/ksarfoes) THE PLATED MAN: a heavy step, a longer real windup */
+      for (const v of evs) if (v.t === 'tell' && v.what === 'slash') s.t += PLATE.slashExtra; }
     for (const v of evs) {
       if (v.t === 'spot') { K.n.shrieks++; K.fx.push({ k: 'shriek', x: v.x, y: v.y, t: 0.8 }); ctx.sfx.hawk ? ctx.sfx.hawk() : ctx.sfx.hiss && ctx.sfx.hiss(); alarm(v.x, ctx.hero().y, HAWK.earshot);
         if (once('shriek') || K.clock - (K.shriekSaid || -9) > 10) { K.shriekSaid = K.clock; number(ctx.hero().x, ctx.hero().y - 44, 'THE HAWK SHRIEKS: THE LOOKOUTS RUN', '#ff9a5c'); } }
@@ -238,14 +293,14 @@ export function makeKsarHands(ctx) {
   }
   function land(q) { q.vx = 0; q.vy = 0;
     if (q.thrKind === 'flask') { q.state = 'gone'; flash(q.x, q.y); return; }
-    if (q.thrKind === 'torch') { q.state = 'burn'; q.burnT = KS.torchBurn; ctx.sfx.puff && ctx.sfx.puff(); const f = foeAtPx(q.x, q.y); if (f) { ctx.hurtFoe(f, KS.torchDmg); f.burn = Math.max(f.burn || 0, 2.5); }
+    if (q.thrKind === 'torch') { q.state = 'burn'; q.burnT = KS.torchBurn; ctx.sfx.puff && ctx.sfx.puff(); const f = foeAtPx(q.x, q.y); if (f) { K.roomBlow = f.ksMaster ? 'fire' : null; try { ctx.hurtFoe(f, KS.torchDmg); } finally { K.roomBlow = null; } f.burn = Math.max(f.burn || 0, 2.5); }   /* (claude/ksarfoes: a torch into a falconer's hawk burns it down) */
       ignite(q.x, q.y, KS.torchR, 'torch'); return; }
     q.state = 'fuse'; q.fuse = KS.kegFuse; ctx.sfx.thud ? ctx.sfx.thud() : ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.hiss && ctx.sfx.hiss(); }
   /* THE BLAST: foes and heroes in it, the brick in reach, the next keg in reach (a CHAIN) */
   function blast(x, y, from) {
     const ts = TS(); K.n.blasts++; if (from === 'chain') K.n.chainBlasts++;
     ctx.sfx.boom ? ctx.sfx.boom() : ctx.sfx.crack && ctx.sfx.crack(); ctx.shake(5); ctx.burst(x, y, 26, ['#ff9a3c', '#ffd36b', '#3a2a12', '#c9b27c'], 120, 0.8); K.fx.push({ k: 'blast', x, y, t: 0.45 });
-    for (const e of ctx.enemies()) if (e.alive && !e.harmless && Math.hypot(e.x - x, e.y - 8 - y) < KS.kegR + (e.w || 10) / 2) { if (e.t === 'hawkmistress') continue; ctx.hurtFoe(e, KS.kegDmg); if (e.ks && e.ks.st !== 'fight') e.ks.st = 'fight'; }
+    K.roomBlow = 'blast'; try { for (const e of ctx.enemies()) if (e.alive && !e.harmless && Math.hypot(e.x - x, e.y - 8 - y) < KS.kegR + (e.w || 10) / 2) { if (e.t === 'hawkmistress') continue; ctx.hurtFoe(e, KS.kegDmg); if (e.ks && e.ks.st !== 'fight') e.ks.st = 'fight'; } } finally { K.roomBlow = null; }   /* (claude/ksarfoes) a BLAST: it strips a plate, it burns a falconer's hawk out of the air */
     for (const pp of ctx.players) if (!pp.dead && Math.hypot(pp.x - x, pp.y - 8 - y) < KS.kegR) ctx.asPlayer(pp, () => ctx.hurtHero(x, KS.kegHero, { unblockable: true, name: 'THE BLAST' }));
     for (const b of K.barricades) { if (b.broken) continue; let near = false; for (let cy = b.y0; cy <= b.y1 && !near; cy++) for (let cx = b.x0; cx <= b.x1; cx++) if (Math.hypot(cx * ts + 8 - x, cy * ts + 8 - y) < KS.breakR) { near = true; break; }
       if (near) { b.broken = true; K.n.broken++; for (let cy = b.y0; cy <= b.y1; cy++) for (let cx = b.x0; cx <= b.x1; cx++) { ctx.cellOpen(cx, cy); ctx.burst(cx * ts + 8, cy * ts + 8, 4, ['#b08a5a', '#7a5a3a', '#e0c090'], 70, 0.7); }
@@ -407,6 +462,13 @@ export function makeKsarHands(ctx) {
      bricked door. { x, y, key: 'talk'|'atk'|null, face } in world px, or null (nothing to work here) */
   H.walkHint = P => {
     if (!K || !P || P.dead) return null; const ts = TS(), c = P.x / ts, G = K.gate, here = (x, row, key, face) => ({ x: x * ts + 8, y: (row + 1) * ts, key, face: face || 0 });
+    /* (claude/ksarfoes) A PLATED MAN AWAKE AND AHEAD: a player fetches a keg from the stack by him and throws it at him (a blade only clanks) */
+    { const pl = ctx.enemies().find(e => e.alive && e.ksPlate && e.ks && e.ks.st !== 'asleep' && Math.abs(e.x - P.x) < 9 * ts && Math.abs(e.y - P.y) < 2.5 * ts);
+      if (pl) { const q = held(P), d = pl.x - P.x;
+        if (K.items.some(i => i.thrKind === 'keg' && (i.state === 'fuse' || i.state === 'fly'))) return { x: P.x - Math.sign(d || 1) * 3 * ts, y: P.y, key: null, face: Math.sign(d) || 1, r: 10 };
+        if (q && q.thrKind === 'keg') return Math.abs(d) <= 5 * ts ? { x: P.x, y: P.y, key: 'atk', face: Math.sign(d) || 1 } : { x: pl.x - Math.sign(d || 1) * 4 * ts, y: pl.y, key: null, face: Math.sign(d) || 1, r: 10 };
+        const st = K.stacks.filter(s2 => s2.kind === 'keg' && s2.left > 0 && Math.abs(s2.x * ts + 8 - pl.x) < 14 * ts && Math.abs((s2.y + 1) * ts - P.y) < 2.5 * ts).sort((a, b) => Math.abs(a.x * ts - P.x) - Math.abs(b.x * ts - P.x))[0];
+        if (st && !q) return here(st.x, st.y, 'talk', 1); } }
     if (G && !G.pinned && c > 226 && c < 258) { const gg = gongOf('great');
       if (braked()) return gg && gg.hum <= 0 && !squad().some(e => ['called', 'exit', 'muster'].includes(e.ks.st)) ? here(gg.x, gg.y, 'talk', 1) : here(G.winch[0], G.winch[1], null, 1);
       return here(G.winch[0], G.winch[1], 'talk', 1); }
@@ -514,6 +576,18 @@ export function makeKsarHands(ctx) {
       if (f.k === 'blast') { g.globalAlpha = Math.min(1, f.t * 3); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, KS.kegR * (1 - f.t), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       else if (f.k === 'flash') { g.globalAlpha = Math.min(1, f.t * 3); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y - 6, KS.flashR * (1 - f.t * 1.5), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       else if (f.k === 'shriek') { g.strokeStyle = 'rgba(255,107,107,' + (f.t).toFixed(2) + ')'; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(x, y, (1 - f.t) * 60 + i * 10, 0, Math.PI * 2); g.stroke(); } } }
+    /* (claude/ksarfoes) THE NEW BANDITS' READS (B10/B14): over a PLATED man the shared THROW IT glyph (red-hot while you carry a keg); a FALCONER guarded by his hawk - a dashed
+       jess from his glove to it and a faint shell; OPEN - the gold ring and its timer bar */
+    const vw = ctx.VW();
+    for (const e of ctx.enemies()) { if (!e.alive || e.x < cx - 40 || e.x > cx + vw + 40) continue; const x = R0(e.x - cx), y = R0(e.y - cy), h = e.h || 18;
+      if (e.ksPlate) { const kg = held(P) && held(P).thrKind === 'keg'; drawKeyGlyph(g, 'throw', x, y - h - 12, time, kg ? 1.3 : 1); }
+      const F = e.ksF; if (!F) continue;
+      if (F.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10), fr = Math.max(0, Math.min(1, F.open / (F.openT0 || FALCON.openT)));
+        g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - h / 2, 11 + k * 2, h / 2 + 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+        g.fillStyle = '#1b1626'; g.fillRect(x - 11, y - h - 9, 22, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 10, y - h - 8, R0(20 * fr), 1); }
+      else if (falconGuards(e, e.ksHawk)) { const k2 = e.ksHawk, gx3 = x + (e.face || 1) * 5, gy3 = y - 15, hx = R0(k2.x - cx), hy = R0(k2.y - cy);
+        g.globalAlpha = 0.5; g.fillStyle = '#e8d8b0'; for (let i = 1; i < 10; i += 2) { const t2 = i / 10; g.fillRect(R0(gx3 + (hx - gx3) * t2), R0(gy3 + (hy - gy3) * t2), 1, 1); }
+        g.globalAlpha = 0.22 + 0.08 * Math.sin(time * 4); g.strokeStyle = '#e8d8b0'; g.setLineDash([2, 3]); g.beginPath(); g.ellipse(x, y - h / 2, 10, h / 2 + 3, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }
     const q = held(P); if (q && !P.dead) { K.arc = H.arcOf(P); CT.drawArc(g, K.arc, cx, cy, time, q.thrKind === 'keg' ? '#ff9a3c' : q.thrKind === 'torch' ? '#ffb84a' : '#e8f4ff'); } else K.arc = null;
   };
   /* THE HUD: the sun meter is the desert's (main.js); the drawn rule state is in the world */
