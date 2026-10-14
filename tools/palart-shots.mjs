@@ -57,12 +57,18 @@ try {
       none(); K.block = true; BK.sim(30); place(40); res.dbg = { circles: BK.holy().circles, aegis: !!a.aegis, ax: a.x, bx: b.x, hero: a.hero }; shot2(S, 'aegis up', 2); shot2(S, 'aegis up', 20);
       BK.holyHurt(b, b.x + 30, 12, {}); for (const [l, f] of [['covered +0.02s', 1], ['+0.07s', 3], ['+0.12s', 3], ['+0.25s', 8], ['+0.5s', 15]]) shot2(S, l, f);
       K.block = false; BK.sim(30); shot(S, 'aegis down'); BK.coopEnd(); res.aegis = S.c.toDataURL('image/png'); }
+    /* ---- THE YARD: the hallow and hammer stations, with their straw men (LV=trial_paladin) ---- */
+    if (ONLY.includes('yard')) { const S = mk(1, 600, 200, 4); S.CW = 200; S.CH = 66; S.sx = 60;
+      for (const [i, lab, up] of [[4, 'HOLY GROUND station', 0], [4, 'circle planted between them', 1], [5, 'HAMMER station', 0], [5, 'throw out', 2]]) { const x0 = 4 + i * 26; BK.holyHands().clear(); BK.god = true; BK.tp(x0 + 3, 19); BK.sim(30); BK.god = false; BK.P.light = 60; BK.P.face = 1;
+        if (up === 1) { BK.tp(x0 + 11, 19); BK.sim(20); tap(); BK.sim(40); } if (up === 2) { tap({ up: true }); BK.sim(16); }
+        shot(S, lab, 2); }
+      res.yard = S.c.toDataURL('image/png'); }
     /* ---- THE HUD ---- */
     if (ONLY.includes('hud')) { home(); const S = mk(2, 480, 150, 4); const hud = (l, v) => { BK.P.light = v; BK.sim(2); BK.step(1); const x = (S.i % 2) * 480, y = Math.floor(S.i / 2) * 150; S.i++; S.g.drawImage(BK.buf, 0, 0, 80, 40, x, y, 480, 150 - 12); S.g.fillStyle = '#ffd36b'; S.g.font = '11px monospace'; S.g.fillText(l, x + 4, y + 146); };
       hud('light 0', 0); hud('light 22', 22); hud('light 30', 30); hud('light 100', 100); res.hud = S.c.toDataURL('image/png'); }
     none(); return res; })()`, 300000);
   if (R.err) { console.log('FAIL ' + R.err); process.exitCode = 1; }
-  else { for (const k of ['poses', 'circle', 'circlez', 'throw', 'smite', 'aegis', 'hud']) if (R[k]) save(k, R[k]); if (process.env.KEYS) console.log(R.keys.join(' ')); if (R.dbg) console.log(JSON.stringify(R.dbg)); }
+  else { for (const k of ['yard', 'poses', 'circle', 'circlez', 'throw', 'smite', 'aegis', 'hud']) if (R[k]) save(k, R[k]); if (process.env.KEYS) console.log(R.keys.join(' ')); if (R.dbg) console.log(JSON.stringify(R.dbg)); }
   if (pg.errors.length) console.log('page errors: ' + pg.errors.slice(0, 3).join(' | '));
 } catch (e) { console.log('FAIL the page: ' + e.message); process.exitCode = 1; }
 finally { pg.close(); }
