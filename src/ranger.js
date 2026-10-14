@@ -290,31 +290,46 @@ export function makeRanger(api) {
     e.rgMarkT = 0; }
 
   /* ---- DRAWN (after the hero): her arrows (in flight, in foes, stuck and glinting), the snare, the bear traps, the hawk, the rain; the nocked string ---- */
-  function drawArrowAt(g, x, y, ang, len = 7, dim = false) { const c = Math.cos(ang), s = Math.sin(ang), P2 = (u, col) => { g.fillStyle = col; g.fillRect(Math.round(x + u * c), Math.round(y + u * s), 1, 1); };
-    for (let u = -len; u <= -1; u++) P2(u, dim ? '#6a5236' : '#8a6a42');                           /* the shaft */
-    P2(0, '#c9d1dc'); P2(1, '#eef4fa');                                                              /* the point */
-    P2(-len, '#e8e0c8'); P2(-len - 1, '#c03a2a'); }                                                 /* the fletching */
+  /* THE ARROW, drawn pixel by pixel along its angle: a shaft with a lit side, a steel head with a barb, and a white-and-red fletching three long (the same look as the quiver on her back) */
+  function drawArrowAt(g, x, y, ang, len = 7, dim = false) { const c = Math.cos(ang), s = Math.sin(ang), P2 = (u, col, v = 0) => { g.fillStyle = col; g.fillRect(Math.round(x + u * c - v * s), Math.round(y + u * s + v * c), 1, 1); };
+    for (let u = -len; u <= -1; u++) { P2(u, dim ? '#6a5236' : u % 2 ? '#cfa86a' : '#a8844a'); }                         /* the shaft */
+    P2(0, '#c9d4e0'); P2(1, '#ffffff'); P2(-1, '#8a96a8', 1);                                                                /* the steel head and its barb */
+    if (!dim) { P2(-len, '#f0ead8'); P2(-len + 1, '#c9352a'); P2(-len, '#f0ead8', 1); P2(-len, '#c9352a', -1); P2(-len + 1, '#f0ead8', 1); P2(-len + 1, '#f0ead8', -1); }
+    else { P2(-len, '#e8e0c8'); P2(-len - 1, '#c03a2a'); } }
   function render(g, cx, cy) { const p = P(); if (!api.isRg()) return; ensure(p);
     for (const a of p.rgArrows) { const x = a.x - cx, y = a.y - cy, ang = a.state === 'fly' ? angleOf(a) : (a.ang ?? 0);
       if (a.state === 'foe' && a.foe) drawArrowAt(g, x, y, (a.foe.face || 1) > 0 ? ang : Math.PI - ang, 5, true);
       else drawArrowAt(g, x, y, ang, a.kind === 'pierce' || (a.kind === 'skill' && a.pierce) ? 9 : 7);
-      if (a.kind === 'pierce' && a.state === 'fly') { g.globalAlpha = 0.5; g.fillStyle = '#dfffb0'; g.fillRect(Math.round(x - Math.sign(a.vx) * 14), Math.round(y), 10, 1); g.globalAlpha = 1; }
+      if (a.kind === 'pierce' && a.state === 'fly') { g.globalAlpha = 0.5; g.fillStyle = '#dfffb0'; g.fillRect(Math.round(x - Math.sign(a.vx) * 16), Math.round(y), 12, 1); g.globalAlpha = 0.3; g.fillRect(Math.round(x - Math.sign(a.vx) * 22), Math.round(y - 1), 8, 3); g.globalAlpha = 0.8; g.fillStyle = '#ffffff'; g.fillRect(Math.round(x - Math.sign(a.vx) * 8), Math.round(y), 6, 1); g.globalAlpha = 1; }
       if (a.state === 'lie' || a.state === 'stuck') { const k = 0.5 + 0.5 * Math.sin(api.time * 6 + a.x), gx = Math.round(x), gy = Math.round(y) - 3;   /* THE GLINT: go and get it */
         g.globalAlpha = 0.35 + 0.45 * k; g.fillStyle = '#fff6c8'; g.fillRect(gx, gy - 1, 1, 3); g.fillRect(gx - 1, gy, 3, 1); g.globalAlpha = 1; } }
-    for (const s of p.rgSnares || []) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy); g.fillStyle = '#6a5236'; g.fillRect(x - 1, y - 3, 1, 3);   /* the peg and the loop of cord */
-      g.fillStyle = s.sprung > 0 ? '#e8dcb0' : '#b8a878'; for (const [u, v] of [[-4, 0], [-3, -1], [-2, -1], [-1, -1], [0, -1], [1, -1], [2, -1], [3, 0], [2, 0], [-3, 0]]) g.fillRect(x + u, y + v, 1, 1); }
-    for (const s of p.rgTraps || []) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), shut = s.sprung > 0; g.fillStyle = '#5a5e66'; g.fillRect(x - 5, y - 1, 11, 1);
-      g.fillStyle = '#9aa4b2'; for (let i = -4; i <= 4; i += 2) g.fillRect(x + i, y - (shut ? 4 : 2), 1, shut ? 3 : 1); }
-    const h = p.rgHawk; if (h) { const x = Math.round(h.x - cx), y = Math.round(h.y - cy), f = Math.floor(api.time * 12) % 2; g.fillStyle = '#6a4a2a'; g.fillRect(x - 1, y - 1, 3, 2); g.fillStyle = '#8a6a42'; g.fillRect(x - 3, y - 1 - f, 2, 1); g.fillRect(x + 2, y - 1 - f, 2, 1); g.fillStyle = '#e8c860'; g.fillRect(x + (h.x < (h.e ? h.e.x : h.x) ? 2 : -2), y, 1, 1); }
-    const r = p.rgRain; if (r && r.t < 0.35) { g.fillStyle = '#8a6a42'; for (let i = 0; i < 9; i++) { const x = Math.round(r.x - 32 + i * 8 - cx), y = Math.round(p.y - 40 + (0.35 - Math.max(0, r.t)) * 120 - cy) - (i % 3) * 5; g.fillRect(x, y, 1, 5); } }
+    for (const s of p.rgSnares || []) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), sp = s.sprung > 0;   /* THE SNARE: a peg with a cord looped to a ring on the turf; sprung it is drawn up tight, a pale knot with the cord standing */
+      g.fillStyle = '#4a3a26'; g.fillRect(x - 5, y - 4, 2, 4); g.fillStyle = '#8a6a42'; g.fillRect(x - 5, y - 4, 1, 4); g.fillStyle = '#cfa86a'; g.fillRect(x - 5, y - 5, 2, 1);
+      g.fillStyle = sp ? '#f0ead8' : '#d8c890'; for (const [u, v] of sp ? [[-3, -3], [-2, -4], [-1, -4], [0, -3], [0, -2], [-1, -1], [-2, -1], [-3, -2]] : [[-4, -1], [-3, 0], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [3, -1], [2, -1], [-3, -1], [3, 0], [4, 0]]) g.fillRect(x + u, y + v, 1, 1);
+      if (!sp) { g.fillStyle = '#f0ead8'; g.fillRect(x - 1, y - 1, 2, 1); } }
+    for (const s of p.rgTraps || []) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), shut = s.sprung > 0;   /* THE BEAR TRAP: a flat iron plate and two toothed jaws, open and flat in the grass, or SHUT, the teeth meshed upright */
+      g.fillStyle = '#2a2e34'; g.fillRect(x - 6, y - 1, 13, 2); g.fillStyle = '#6a727e'; g.fillRect(x - 6, y - 1, 13, 1); g.fillStyle = '#8a6a42'; g.fillRect(x - 1, y, 3, 1);
+      if (shut) { g.fillStyle = '#9aa4b2'; for (let i = -5; i <= 5; i += 2) g.fillRect(x + i, y - 5, 1, 4); g.fillStyle = '#e8eef6'; for (let i = -5; i <= 5; i += 2) g.fillRect(x + i, y - 6, 1, 1); g.fillStyle = '#6a727e'; g.fillRect(x - 5, y - 2, 11, 1); }
+      else { g.fillStyle = '#9aa4b2'; for (let i = -5; i <= 5; i += 2) g.fillRect(x + i, y - 3, 1, 2); g.fillStyle = '#e8eef6'; for (let i = -5; i <= 5; i += 2) g.fillRect(x + i, y - 4, 1, 1); } }
+    const h = p.rgHawk; if (h) { const x = Math.round(h.x - cx), y = Math.round(h.y - cy), f = Math.floor(api.time * 12) % 2, dir = (h.e ? h.e.x : h.x + 1) >= h.x ? 1 : -1;   /* THE HAWK: a barred brown body, broad wings (up, down, and swept back for the strike), a hooked beak and a bright eye */
+      g.fillStyle = '#4a2e18'; g.fillRect(x - 2, y - 1, 5, 3); g.fillStyle = '#8a5a30'; g.fillRect(x - 2, y - 1, 5, 1); g.fillStyle = '#e8d8b0'; g.fillRect(x - 1, y + 1, 3, 1);
+      const wy = f ? -3 : 1; g.fillStyle = '#6a4426'; g.fillRect(x - 5, y + wy - 1, 4, 2); g.fillRect(x + 2, y + wy - 1, 4, 2); g.fillStyle = '#a8743c'; g.fillRect(x - 5, y + wy - 1, 4, 1); g.fillRect(x + 2, y + wy - 1, 4, 1);
+      g.fillStyle = '#c9a070'; g.fillRect(x - dir * 4 - (dir > 0 ? 0 : -1), y, 2, 1);
+      g.fillStyle = '#e8c860'; g.fillRect(x + dir * 3, y - 1, 1, 1); g.fillRect(x + dir * 3 + (dir > 0 ? 1 : -1), y, 1, 1); g.fillStyle = '#ffffff'; g.fillRect(x + dir * 2, y - 1, 1, 1); }
+    const r = p.rgRain; if (r && r.t < 0.35) { for (let i = 0; i < 9; i++) { const x = Math.round(r.x - 32 + i * 8 - cx), y = Math.round(p.y - 40 + (0.35 - Math.max(0, r.t)) * 120 - cy) - (i % 3) * 5; g.fillStyle = '#cfa86a'; g.fillRect(x, y + 1, 1, 4); g.fillStyle = '#ffffff'; g.fillRect(x, y + 5, 1, 2); g.fillStyle = '#c9d4e0'; g.fillRect(x, y + 4, 1, 1); g.fillStyle = i % 2 ? '#f0ead8' : '#c9352a'; g.fillRect(x, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.globalAlpha = 0.35; g.fillStyle = '#e8dcb0'; g.fillRect(x, y - 5, 1, 5); g.globalAlpha = 1; } }
     if (p.rgWildT > 0 && Math.random() < 0.2) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 4 - Math.random() * 16, vx: 0, vy: -16, life: 0.4, max: 0.4, col: '#ff7a5a', size: 1, grav: 0 });
     /* THE BOW-BASH: the stave's arc in front of her, bright on the beat (placeholder for the bash frames) */
-    if (bashUp(p)) { const x = Math.round(p.x - cx) + p.face * 12, y = Math.round(p.y - cy) - 12, beat = onBeat(p); g.fillStyle = beat ? '#f2ffd8' : '#c8e89a';
-      for (let v = -5; v <= 5; v++) if (beat || Math.abs(v) % 2 === 0) g.fillRect(x + Math.round(Math.abs(v) * -0.4 * p.face), y + v, 1, 1); } }
+    if (bashUp(p)) { const x = Math.round(p.x - cx) + p.face * 12, y = Math.round(p.y - cy) - 12, beat = onBeat(p); g.fillStyle = beat ? '#f2ffd8' : '#c8e89a';   /* a bow-length arc of the stave's sweep, three pixels thick on the beat with a gold star at its middle */
+      for (let v = -9; v <= 9; v++) if (beat || Math.abs(v) % 2 === 0) { const bx = x + Math.round((9 - Math.abs(v)) * 0.35 * p.face); g.fillRect(bx, y + v, 1, 1); if (beat && Math.abs(v) < 7) { g.fillStyle = '#c8e89a'; g.fillRect(bx - p.face, y + v, 1, 1); g.fillStyle = '#f2ffd8'; } }
+      if (beat) { g.fillStyle = '#ffd36b'; g.fillRect(x + p.face * 3, y - 1, 1, 3); g.fillRect(x + p.face * 2, y, 3, 1); g.fillStyle = '#ffffff'; g.fillRect(x + p.face * 3, y, 1, 1); } } }
   /* THE MARK, on the late pass (main.js draws it after the walls and the foreground): a red reticle over the quarry, seen through stone */
-  function drawMarks(g, cx, cy) { for (const e of api.enemies) { if (!markOn(e)) continue; const x = Math.round(e.x - cx), y = Math.round(e.y - (e.h || 16) / 2 - cy), r = Math.max(7, Math.round(Math.max(e.w || 12, e.h || 16) * 0.55)), k = Math.floor(api.time * 4) % 2;
-      g.fillStyle = '#ff7a5a'; for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.fillRect(x + sx * r - (sx > 0 ? 2 : 0), y + sy * r, 3, 1); g.fillRect(x + sx * r, y + sy * r - (sy > 0 ? 2 : 0), 1, 3); }
-      if (k) { g.fillStyle = '#ffd0c0'; g.fillRect(x, y - r - 4, 1, 2); } } }
+  function drawMarks(g, cx, cy) { for (const e of api.enemies) { if (!markOn(e)) continue; const x = Math.round(e.x - cx), y = Math.round(e.y - (e.h || 16) / 2 - cy), r = Math.max(8, Math.round(Math.max(e.w || 12, e.h || 16) * 0.55)), k = Math.floor(api.time * 4) % 2, left = Math.max(0, e.rgMarkT - api.time);
+      /* THE MARK: a red reticle - a broken ring of four arcs, a cross-hair tick on each side, a bright centre, a dark rim so it reads on pale stone - tightening as its ten seconds run out, and a pulse */
+      const rr = r + (left < 2 ? Math.round(Math.sin(api.time * 14) * 1) : 0);
+      for (const [col, o] of [['#2a0a08', 1], ['#ff5a40', 0]]) { g.fillStyle = col;
+        for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.fillRect(x + sx * rr - (sx > 0 ? 3 - o : o), y + sy * rr - (o && sy > 0 ? 0 : 0), 4, 1); g.fillRect(x + sx * rr, y + sy * rr - (sy > 0 ? 3 : 0), 1, 4); }
+        g.fillRect(x - rr - 3, y, 3, 1); g.fillRect(x + rr + 1, y, 3, 1); g.fillRect(x, y - rr - 3, 1, 3); g.fillRect(x, y + rr + 1, 1, 3); }
+      g.fillStyle = '#ffd0c0'; g.fillRect(x, y, 1, 1); if (k) { g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1); } } }
   function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; }
   const read = () => { const p = P(); ensure(p); return { q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),

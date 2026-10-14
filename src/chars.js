@@ -4649,8 +4649,8 @@ const RG_BODY = [
   '...BB.....',     /* 0  (the peak comes from RG_PLUME) */
   '..BbbB....',     /* 1 */
   '.BbhbbbB..',     /* 2 */
-  '.Bbvvvvb..',     /* 3  the hood's mouth, in shadow */
-  '.Bbvvkkb..',     /* 4  her face lit on the side she faces */
+  '.Bbvvekb..',     /* 3  the hood's mouth, in shadow: an eye and the brow */
+  '.Bbvkkkb..',     /* 4  her face lit on the side she faces */
   '.CBbkkbBc.',     /* 5  the jaw; the cloak's edge at her front */
   'cCbhbbbCc.',     /* 6  THE MANTLE: the hood's collar over the cloak's shoulders */
   'CcllttlLC.',     /* 7  the jerkin, its lacing down the front */
@@ -4665,7 +4665,7 @@ const RG_PLUME = [
 ];
 /* b/B the hood (a skin's colour); c/C the cloak; h the hood's lit edge; l/L the jerkin, t its lacing; s/S the arms and the trousers (S); w/W belt leather and boots;
    y the buckle; f/F the feather and its lit edge; k the face; v the hood's shadow */
-const RG_PAL = { s: '#a88252', S: '#7a5c38', b: '#5f8040', B: '#2f4626', h: '#86a853', c: '#6f8446', C: '#43572b', l: '#a8743c', L: '#7a5028', t: '#ecd9a0', k: '#e8bb94', v: '#16180f',
+const RG_PAL = { s: '#a88252', S: '#7a5c38', b: '#5f8040', B: '#2f4626', h: '#86a853', c: '#6f8446', C: '#43572b', l: '#a8743c', L: '#7a5028', t: '#ecd9a0', k: '#f0c49c', v: '#16180f', e: '#1a1410',
   w: '#6a4a2a', W: '#33231a', y: '#d8b450', r: '#c9352a', f: '#c9352a', F: '#ff8a64', m: '#5f8040', g: '#5f8040', G: '#2f4626' };
 /* THE CLOAK, behind everything: from her shoulders back and down past the belt, a ragged hem that streams further the harder she moves (the plume count, and a run, a jump or a fall) */
 function rgCloakAt(g, x, y, legs, plume) {

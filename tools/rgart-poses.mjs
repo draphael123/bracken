@@ -7,7 +7,7 @@ const tag = process.argv[2] || 'poses', keys = (process.argv[3] || 'idle,run,jum
 const out = join(ROOT, 'work/claude/shots/rangerart'); mkdirSync(out, { recursive: true });
 const pg = await openPage({ audio: false, fonts: false, noWait: true });
 try {
-  const url = await pg.evalp(`(async()=>{ const C = await import('/src/chars.js'); const SP = C.bakeRanger(); const R = SP.R, keys = ${JSON.stringify(keys)}; const list = [];
+  const url = await pg.evalp(`(async()=>{ const C = await import('/src/chars.js'); const SP = C.bakeRanger(); (await import('/src/flask-art.js')).addDrink(SP, 'ranger'); const R = SP.R, keys = ${JSON.stringify(keys)}; const list = [];
     for (const k of keys) if (R[k]) (Array.isArray(R[k]) ? R[k] : [R[k]]).forEach((f, i) => list.push([k, i, f])); else list.push([k + ' MISSING', 0, null]);
     const z = ${z}, cw = Math.max(...list.map(l => l[2] ? l[2].width : 34)) * z + 8, ch = Math.max(...list.map(l => l[2] ? l[2].height : 40)) * z + 22, cols = Math.min(${process.env.COLS || 8}, list.length), c = document.createElement('canvas'); c.width = cols * cw; c.height = Math.ceil(list.length / cols) * ch; const g = c.getContext('2d'); g.imageSmoothingEnabled = false;
     list.forEach(([k, i, f], n) => { const x = (n % cols) * cw, y = Math.floor(n / cols) * ch; g.fillStyle = (n % 2) ? '#6a7a5e' : '#627256'; g.fillRect(x, y, cw, ch); g.fillStyle = '#ffe9a0'; g.font = '11px monospace'; g.fillText(k + ' ' + i, x + 3, y + 12);

@@ -794,7 +794,7 @@ function bakeFlameIcon() { const [c, g] = canvas(10, 12); g.fillStyle = '#ff6b2c
 const FLAME_ICON = bakeFlameIcon();
 const TONIC_ICON = (() => { const [c, q] = canvas(7, 9); q.fillStyle = '#c9d1dc'; q.fillRect(2, 0, 3, 3); q.fillStyle = '#c9463d'; q.fillRect(1, 3, 5, 5); q.fillRect(0, 4, 7, 3); q.fillStyle = '#ff9a9a'; q.fillRect(2, 4, 1, 2); return outline(c, '#1b1626'); })();
 // the pyromancer's five skills each get a picture of what they do, not the same flame five times
-const PIX_PAL = { o: '#ff6b2c', y: '#ffd36b', w: '#fff6c8', r: '#c9463d', R: '#8f2f28', d: '#1b1626', b: '#5c3a1d', s: '#7c8797', g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', m: '#6f9a4a', a: '#e8a83a' };   /* g n k m a: stone light/base/dark, moss, rune amber (the Geomancer's icons) */
+const PIX_PAL = { o: '#ff6b2c', y: '#ffd36b', w: '#fff6c8', r: '#c9463d', R: '#8f2f28', d: '#1b1626', b: '#5c3a1d', s: '#7c8797', g: '#a8a696', n: '#7c7a6e', k: '#5e5c54', m: '#6f9a4a', a: '#e8a83a', e: '#5f8040', E: '#33492a', h: '#cfa86a', t: '#e8eef6', u: '#9aa4b2', U: '#c9352a', l: '#a8743c' };   /* g n k m a: stone light/base/dark, moss, rune amber (the Geomancer's icons) */
 function pixIcon(rows) { const [c, g] = canvas(rows[0].length, rows.length); rows.forEach((row, y) => [...row].forEach((ch, x) => { if (PIX_PAL[ch]) { g.fillStyle = PIX_PAL[ch]; g.fillRect(x, y, 1, 1); } })); return outline(c, '#1b1626'); }
 const GEO_ICONS = {   /* THE GEOMANCER'S OWN: stone, moss and her amber runes (Daniel, 2026-09-26: "the geomancer's spell icons use the pyromancer's logo" - her abilities fell through skillIcon to FLAME_ICON) */
   stoneStep: pixIcon(['..........', '......a...', '.....aaa..', '......a...', '.....gggg.', '.....nnnk.', '..gggnnnk.', '..nnnnnnk.', '..nnnnnnk.', '..kkkkkkk.', '..........', '..........']),
@@ -881,16 +881,16 @@ const BZ_ICONS = {
   bzStorm: pixIcon(['......ww..', '.....wws..', '..ww.b....', '.wws......', '.b...ww...', '....wws...', '....b.....', 'ww........', 'ws........', 'b.........', '..........', '..........']),
 };
 /* THE RANGER'S NINE (claude/ranger): a fan of arrows, the hawk, a leap back, the jaws of a trap, arrows falling, a puff of smoke, a full quiver, one long black arrow, the red reticle */
-const RG_ICONS = {
-  rgVolley: pixIcon(['..........', '.......ww.', '.....bb...', '..bb......', 'bb....ww..', '...bbbb...', '..........', '...bb.....', '.....bbww.', '.......b..', '..........', '..........']),
-  rgHawk: pixIcon(['..........', 'bb......bb', '.bb....bb.', '..bbbbbb..', '...bwyb...', '....bb....', '....bb....', '...b..b...', '..........', '..........', '..........', '..........']),
-  rgLeap: pixIcon(['..........', '....bbb...', '...b...b..', '..b.....b.', '.b.......b', 'y........w', '.........b', '.........b', '........bb', 'ssssssssss', '..........', '..........']),
-  rgBearTrap: pixIcon(['..........', '..........', 's.s.s.s.s.', 'ssssssssss', 'k........k', 'k...kk...k', 'ssssssssss', 's.s.s.s.s.', '..........', 'bbbbbbbbbb', '..........', '..........']),
-  rgRain: pixIcon(['w..w..w...', 'b..b..b..w', 'b..b..b..b', 'b..b..b..b', '.w..w..w.b', '.b..b..b..', '.b..b..b..', '.b..b..b..', '..........', 'ssssssssss', '..........', '..........']),
-  rgSmoke: pixIcon(['..........', '...ggg....', '..gnnng...', '.gnnnnng..', 'gnngnnngg.', 'gnnnnnnnng', '.gnnnngng.', '..gggggg..', '.....b....', '....bw....', '..........', '..........']),
-  rgRefill: pixIcon(['..w.w.w...', '..r.r.r...', '..b.b.b...', '.bbbbbbb..', '.bbbbbbb..', '.bnbbbnb..', '.bbbbbbb..', '.bbbbbbb..', '.bnbbbnb..', '.bbbbbbb..', '..bbbbb...', '..........']),
-  rgHeart: pixIcon(['..........', '....rr....', '...r..r...', '..r....r..', 'ddddddddww', '..r....r..', '...r..r...', '....rr....', '..........', '..........', '..........', '..........']),
-  rgWildHunt: pixIcon(['rr......rr', 'r........r', '..........', '....rr....', '...rRRr...', '...rRRr...', '....rr....', '..........', 'r........r', 'rr......rr', '..........', '..........']),
+const RG_ICONS = {   /* (claude/rangerart) redrawn: the same nine, with the arrow's own colours (shaft, steel head, red-and-cream fletching), the hood's green, the hawk, the trap's iron */
+  rgVolley: pixIcon(['..........', '......Uwtt', '....UwhtU.', 'UwhhhhhtU.', '..Uwhhht..', 'UwhhhhhtU.', '.....Uwtt.', '..........', '..........', '..........', '..........', '..........']),
+  rgHawk: pixIcon(['..........', 'bb......bb', 'bhb....bhb', '.bhbbbbhb.', '..bbwbbb..', '...bbyb...', '....bb....', '...h..h...', '..h....h..', '..........', '..........', '..........']),
+  rgLeap: pixIcon(['..........', '....eee...', '...eEEEe..', '..eE...Ee.', '.eE.....Ee', 'U..........', '.w........', 'ssssssssss', '..........', '..........', '..........', '..........']),
+  rgBearTrap: pixIcon(['..........', 't.t.t.t.t.', 'uuuuuuuuuu', 'u........u', 'k..hhhh..k', 'u........u', 'uuuuuuuuuu', 't.t.t.t.t.', 'bbbbbbbbbb', '..........', '..........', '..........']),
+  rgRain: pixIcon(['U..U..U...', 'w..w..w..U', 'h..h..h..w', 'h..h..h..h', 't..t..t..h', '.U..U..U.t', '.w..w..w..', '.h..h..h..', '.t..t..t..', 'bbbbbbbbbb', '..........', '..........']),
+  rgSmoke: pixIcon(['...ggg....', '..gnnng...', '.gnnnnng.g', 'gnngnnnggn', 'gnnnnnnnng', '.gnnnnngg.', '..gggg....', 'Uwhhhhhhht', '..........', '..........', '..........', '..........']),
+  rgRefill: pixIcon(['.U.w.U.w..', '.w.U.w.U..', '.h.h.h.h..', 'llllllllll', 'lbbbbbbbbl', 'lbwbbbbwbl', 'lbbbbbbbbl', '.lbbbbbbl.', '.lbbbbbbl.', '..llllll..', '..........', '..........']),
+  rgHeart: pixIcon(['....rr....', '...rRRr...', '..r....r..', '.r......r.', 'ddddddddUt', '.r......r.', '..r....r..', '...rRRr...', '....rr....', '..........', '..........', '..........']),
+  rgWildHunt: pixIcon(['U........U', '.U......U.', '....yy....', '...yoooy..', '..yoyyooy.', '..yoooyyy.', '...yooy...', '....yy....', '.U......U.', 'U........U', '..........', '..........']),
 };
 const skillIcon = k => k === 'groundSlam' ? SLAM_ICON : k === 'shieldThrow' ? SHIELD_ICON : k === 'risingCut' ? RISE_ICON : RG_ICONS[k] || BZ_ICONS[k] || PYRO_ICONS[k] || GEO_ICONS[k] || PAL_ICONS[k] || MORE_ICONS[k] || LATE_ICONS[k] || FLAME_ICON;
 let wisp = null; // the pyromancer's flame familiar
