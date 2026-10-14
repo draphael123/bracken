@@ -168,6 +168,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   /* (claude/buriedcity4, brief 3) DRIFTING CLOUD SHADOWS over the open sky (the dunes, THE ROOFTOPS): [x0, x1] the columns a cloud's shadow crosses, w its width in tiles, v its
      drift (px a second, westward: toward you), ph where it starts (0..1 of its track). Its shadow is SHADE (src/buried-city-hands.js cloudAt; drawn on the ground) */
   const clouds = [{ x0: 0, x1: 37, w: 6, v: 12, ph: 0.3 }, { x0: 702, x1: 821, w: 8, v: 14, ph: 0.12 }, { x0: 702, x1: 821, w: 6, v: 14, ph: 0.45 }, { x0: 702, x1: 821, w: 9, v: 14, ph: 0.78 }];
+  const deep = (kind, x0, x1, top) => isle(kind, x0, x1, top, H - DY - top);   /* (claude/buriedcity4) a kiln, a stub, a pier standing up out of THE GLASS PIT from the city's floor (indoors it is laid stone: it stands on the bottom) */
   const tilt = (g, x0, x1, lo, floor) => { tilts.push({ glass: g, x0, x1, lo, floor }); for (let i = 0; i <= x1 - x0; i++) { set(x0 + i, lo - 1 - i, T.SLOPE_R1); block(x0 + i, x0 + i, lo - i, floor); }
     plats.push({ kind: 'dune', x0, x1, y: lo - (x1 - x0 + 1), y1: floor, riser: true }); structures.push({ kind: 'bcBuried', x0, x1, top: lo - (x1 - x0 + 1), floor }); };
   const tplat = (g, x0, x1, y, life) => { tplats.push({ glass: g, x0, x1, y, life }); plats.push({ kind: 'sandslab', x0, x1, y, riser: true }); };
@@ -289,26 +290,26 @@ export function buildBuriedCity({ painter, T, TS }) {
   lamp(338, 27, 'brazier');
   /* BEAT ONE - RISE AND SINK: two buried roofs stand over the pit to a kiln's chimney; its glass SINKS them behind you and RAISES two roofs up to the gallery */
   sea(341, 349, 40); sinker('works1', 342, 344, CO, 2, 'house'); sinker('works1', 346, 348, CO, 2, 'house');
-  isle('minaret', 350, 351, CO, 9); glass('works1', 351, CO - 1, 8);
+  deep('minaret', 350, 351, CO); glass('works1', 351, CO - 1, 8);
   sea(352, 360, 40); riser('works1', 353, 355, 30, 2, 'house'); riser('works1', 357, 359, 28, 2, 'house');
-  isle('house', 361, 367, 26, 15);                                                 /* THE GALLERY (row 26): a kiln's flat top */
+  deep('house', 361, 367, 26);                                                 /* THE GALLERY (row 26): a kiln's flat top */
   /* BEAT TWO - THE SAND LIFT: a sand-fall from a crack in the roof; idle it beats you down into the pit, its glass turns it UP - step in and it carries you eleven
      rows to the upper gallery */
   sign(362, 25, 'STRIKE THE GLASS: THE SAND-FALL FLOWS UP. STEP IN AND RIDE IT.');
   glass('works2', 364, 25, 7); sea(368, 369, 40); dfall('works2', 368, 369, 15, 39);
-  isle('house', 370, 377, 15, 26);                                                 /* THE UPPER GALLERY (row 15) */
+  deep('house', 370, 377, 15);                                                 /* THE UPPER GALLERY (row 15) */
   /* BEAT THREE - THE SAND-BOUND AND THE TILTING DUNE: one glass holds both. Resting, the sand holds the sand-bound (a blow glances off: THE SAND HOLDS IT) and the
      dune by the gallery rises WEST - a wall from here. Struck, the sand-bound is buried to the chest (stuck, every blow whole) and the dune tilts the other way: a
      ramp up to the high kiln */
   sign(370, 14, 'THE SAND HOLDS THE SAND-BOUND. TURN THE GLASS AND IT IS BURIED.');
   glass('works3', 372, 14, 9); sandBound(376, 14, 'works3', 'worksBound');
-  tilt('works3', 378, 382, 15, 40);
-  isle('house', 383, 388, 10, 31);                                                 /* THE HIGH KILN (row 10) */
+  tilt('works3', 378, 382, 15, H - 1 - DY);
+  deep('house', 383, 388, 10);                                                 /* THE HIGH KILN (row 10) */
   /* THE EXAM - THE RELAY: the high kiln's glass raises two roofs down to a chimney stub; ITS glass raises the last roof over the pit and buries the sand-bound
      waiting on the floor; a slinger on the balcony over the floor throws at the relay. Then a shrine */
   sign(383, 9, 'THE RELAY: EACH GLASS RAISES THE WAY TO THE NEXT.');
   glass('works4', 385, 9, 8); sea(389, 397, 40); riser('works4', 390, 392, 13, 2, 'house'); riser('works4', 394, 396, 17, 2, 'dome');
-  isle('minaret', 398, 400, 21, 20); glass('works5', 399, 20, 6);
+  deep('minaret', 398, 400, 21); glass('works5', 399, 20, 6);
   sea(401, 403, 40); riser('works5', 401, 403, 26, 2, 'house');
   ground(404, 408, CO); plat('balcony', 406, 408, 28); slinger(407, 27, 'worksSling', { face: -1 });
   sandBound(405, CO - 1, 'works5', 'worksFloor');
