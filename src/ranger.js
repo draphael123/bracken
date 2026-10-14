@@ -31,7 +31,7 @@ export const RG = {
   quiver: { n: 5, refill: 6, fletch: 4, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
   quick: { vx: 270, vy: -40, g: 720, dmg: 0.6, st: 4, rec: 0.2 },        /* THE QUICK SHOT: ~70 px (measured in the page) before it is at her feet; a tap's damage */
   draw: { wind: 0.55, vx0: 340, vx1: 420, vy: -55, g: 520, dmg0: 0.9, dmg1: 1.7, st: 9, hold: 3, rec: 0.24, heavyAt: 0.5, slow: 0.35 },   /* THE DRAW: wind s to full; a full one lands ~150 px out (half a screen at most; the SWEET SPOT, ~1/3 of one, is where it pays) */
-  rise: { vx: 110, vy: -390, g: 560, dmg: 0.8 },      /* THE RISING SHOT, steeply up */
+  rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 0.8 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
   down: { vy: 470, hop: -175, dmg: 1.05, st: 7 },      /* THE DOWNWARD SHOT (her plunge) and the hop it gives her */
   pierce: { vx: 520, range: 240, dmg: 1.9 },          /* THE PIERCING SHOT: flat, through everything in the line */
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
@@ -68,7 +68,7 @@ export function makeRanger(api) {
   const markOn = e => !!e && e.alive && (e.rgMarkT || 0) > api.time;
   const markMul = e => markOn(e) ? (T().apex ? RG.mark.apex : RG.mark.mul) : 1;
   function markFoe(p, e, why) { if (!e || !e.alive || e.harmless) return false; e.rgMarkT = api.time + RG.mark.t * (T().longMark ? 1.5 : 1); e.rgMarkBy = p; stats.marks++;
-    api.number(e.x, e.y - (e.h || 16) - 18, why || 'MARKED', '#ff7a5a'); api.ringAt(e.x, e.y - (e.h || 16) / 2, 16, '#ff7a5a', 0.3); api.SFX.rgMark && api.SFX.rgMark(); return true; }
+    api.number(e.x, e.y - (e.h || 16) - 18, why || 'QUARRY', '#ff7a5a'); api.ringAt(e.x, e.y - (e.h || 16) / 2, 16, '#ff7a5a', 0.3); api.SFX.rgMark && api.SFX.rgMark(); return true; }
   /* the nearest foe AHEAD of her within RG.mark.range - walls do not hide it (a hunter knows where her quarry is) */
   function quarry(p, range = RG.mark.range) { let best = null, bd = 1e9;
     for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face; if (dx < -4 || dx > range || Math.abs(e.y - p.y) > 90) continue;
@@ -81,10 +81,12 @@ export function makeRanger(api) {
   function loose(p, o) { ensure(p);
     const a = { x: p.x + p.face * 7, y: p.y - (o.low ? 7 : 10), vx: o.vx, vy: o.vy, g: o.g, dmg: o.dmg, tag: o.tag, kind: o.kind, state: 'fly', t: 0, hit: new Set(), x0: p.x, y0: p.y - 10,
       pierce: !!o.pierce, free: !!o.free, focus: o.focus || 0, range: o.range || 0, rip: false, wild: !!o.wild };
-    if (p.riposteT > 0 && !o.free) { a.rip = true; a.tag = [].concat(a.tag, 'riposte'); p.riposteT = 0; p.ripSrc = null; stats.riposteShots++; }   /* (claude/riposte) HER RIPOSTE IS AN ARROW: the parry's window spent on it */
+    if (p.riposteT > 0 && !o.free) { a.rip = true; p.rgRipNow = true; a.tag = [].concat(a.tag, 'riposte'); p.riposteT = 0; p.ripSrc = null; stats.riposteShots++; }   /* (claude/riposte) HER RIPOSTE IS AN ARROW: the parry's window spent on it */
     if (p.rgWildT > 0 && !o.free) a.wild = true;
     p.rgArrows.push(a); return a; }
   const angleOf = a => Math.atan2(a.vy, a.vx);
+  /* the shot's pose - or, for the arrow that is her RIPOSTE, the riposte strike (riposteKit's ripo: the step-in, the loose with its gold flash, the follow-through) */
+  const pose = (p, k, t) => { if (p.rgRipNow) { p.rgRipNow = false; api.kitPose(p, 'ripo', 0.3); } else api.kitPose(p, k, t); };
   function arrowHit(p, a, e) {
     const hp0 = e.hp, d = Math.abs(a.x - a.x0), sweet = d >= RG.sweet.near && d <= RG.sweet.far && !a.free;
     let dmg = a.dmg; if (sweet && T().eagle) dmg *= 4 / 3;
@@ -93,7 +95,7 @@ export function makeRanger(api) {
     const landed = e.hp < hp0 || !e.alive;
     if (e.t === 'dummy') api.trialEvent(a.kind === 'down' ? 'down' : a.kind === 'draw' && a.full ? 'heavyblow' : 'hit');   /* (her yard: the straw men count her arrows) */
     if (landed && sweet) { stats.sweet++; focusGain(p, a.focus); if (!p.rgSweetSaid || api.time - p.rgSweetSaid > 1.2) { p.rgSweetSaid = api.time; api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#9fdc6a', 0.2); } }
-    if (landed && a.wild) markFoe(p, e, 'MARKED');
+    if (landed && a.wild) markFoe(p, e);
     if (landed && a.kind === 'draw' && e.alive && !e.maxHp && !e.mini && !e.elite) { e.stagger = Math.max(e.stagger || 0, a.full ? 0.5 : 0.25); e.vx = Math.sign(a.vx || p.face) * (a.full ? 140 : 70); }
     if (landed && a.kind === 'quick' && e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.12);
     api.sparks(a.x, a.y, Math.sign(a.vx) || 1, landed ? 4 : 6); if (a.kind === 'draw' || a.kind === 'pierce') api.hitstop(0.04);
@@ -136,15 +138,16 @@ export function makeRanger(api) {
   const dmgBase = () => api.swordDmg();
   function quickShot(p, air) { if (!takeArrow(p)) return false; stats.quick++; if (p.dodge > 0) stats.flipShots++;
     const far = T().far ? 1.2 : 1, a = loose(p, { kind: 'quick', vx: p.face * RG.quick.vx * Math.sqrt(far), vy: RG.quick.vy, g: RG.quick.g / Math.sqrt(far), dmg: dmgBase() * RG.quick.dmg, tag: 'shot', focus: RG.sweet.quick });
-    void a; p.rgCd = RG.quick.rec; api.kitPose(p, air ? 'rgAirShot' : 'rgShot', 0.16); api.SFX.rgLoose && api.SFX.rgLoose(0); api.noteVerb('shot'); api.teachShot(); return true; }
+    void a; p.rgCd = RG.quick.rec; pose(p, air ? 'rgAirShot' : 'rgShot', 0.16); api.SFX.rgLoose && api.SFX.rgLoose(0); api.noteVerb('shot'); api.teachShot(); return true; }
   function riseShot(p) { if (!takeArrow(p)) return false; stats.rises++;
-    loose(p, { kind: 'rise', vx: p.face * RG.rise.vx, vy: RG.rise.vy, g: RG.rise.g, dmg: dmgBase() * RG.rise.dmg, tag: ['rise', 'shot'], focus: RG.sweet.rise });
-    p.rgCd = RG.quick.rec; api.kitPose(p, 'rgRise', 0.2); api.SFX.rgLoose && api.SFX.rgLoose(0); api.noteVerb('rise'); return true; }
+    const air = !p.ground && !p.swim, a = loose(p, { kind: 'rise', vx: p.face * (air ? RG.rise.airVx : RG.rise.vx), vy: RG.rise.vy, g: RG.rise.g, dmg: dmgBase() * RG.rise.dmg, tag: ['rise', 'shot'], focus: RG.sweet.rise });
+    if (air) a.x = p.x + p.face * 2;   /* IN THE AIR it goes nearly straight up: what is over her head */
+    p.rgCd = RG.quick.rec; pose(p, 'rgRise', 0.2); api.SFX.rgLoose && api.SFX.rgLoose(0); api.noteVerb('rise'); return true; }
   /* THE DOWNWARD SHOT (her plunge): straight down, and a small hop up off the release */
   function downShot(p) { if (!takeArrow(p)) return false; if (!api.spend(RG.down.st)) { giveArrow(p, 1); api.tired(); return false; } stats.downs++;
     const a = loose(p, { kind: 'down', vx: 0, vy: RG.down.vy, g: 300, dmg: dmgBase() * RG.down.dmg, tag: ['plunge', 'shot'], focus: RG.sweet.down });
     a.x = p.x; a.y = p.y - 2;
-    p.vy = Math.min(p.vy, RG.down.hop); p.rgCd = RG.quick.rec; api.kitPose(p, 'rgDown', 0.24); api.SFX.rgLoose && api.SFX.rgLoose(1); api.noteVerb('plunge'); api.dust(p.x, p.y + 2, 2); return true; }
+    p.vy = Math.min(p.vy, RG.down.hop); p.rgCd = RG.quick.rec; pose(p, 'rgDown', 0.24); api.SFX.rgLoose && api.SFX.rgLoose(1); api.noteVerb('plunge'); api.dust(p.x, p.y + 2, 2); return true; }
   /* THE DRAW, LET GO (main.js fireHeavy): wound 0..1 */
   function release(p, wound) { if (!takeArrow(p)) return false; stats.draws++;
     const k = Math.max(0, Math.min(1, wound)), full = k >= 0.999, far = T().far ? 1.2 : 1, heavy = k >= RG.draw.heavyAt;
@@ -159,7 +162,7 @@ export function makeRanger(api) {
       if (full && T().twin && takeArrow(p)) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * 0.8, tag: a.tag, focus: 0 }); b.full = true; b.y += 3; }
       if (full) { api.shakeCam(2, p.face * 2); api.zoomKick(1.03, 0.14); }
     }
-    p.rgCd = RG.draw.rec; api.kitPose(p, 'rgLoose', 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); return true; }
+    p.rgCd = RG.draw.rec; pose(p, 'rgLoose', 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); return true; }
 
   /* ---- X, PRESSED (main.js: her X before the swing). Returns true when the press is hers (a shot is nocked or loosed); false: it is the knife ---- */
   function pointBlank(p) { for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face, hw = (e.w || 12) / 2;
@@ -169,10 +172,11 @@ export function makeRanger(api) {
     const air = !p.ground && !p.swim;
     if (air && aim.low) { if (p.rgQ > 0) return downShot(p) ? 'shot' : 'eat'; return false; }   /* empty: a knife plunge */
     if (p.dash > 0 && !p.rgFlip) return false;                            /* X early in a FORWARD roll: the knife's dash attack (the backflip has no dash in it) */
-    if (p.rgQ <= 0) { if (!p.rgEmptySaid || api.time - p.rgEmptySaid > 3) { p.rgEmptySaid = api.time; api.number(p.x, p.y - 26, 'QUIVER EMPTY', '#9aa39a'); api.teach('empty'); } return false; }
+    if (p.rgQ <= 0) { if (!p.rgEmptySaid || api.time - p.rgEmptySaid > 3) { p.rgEmptySaid = api.time; api.number(p.x, p.y - 26, 'OUT OF ARROWS', '#9aa39a'); api.teach('empty'); } return false; }
     if (aim.low && !air) return false;                                     /* DOWN+X on her feet: the knife's low sweep */
     if (aim.up) return riseShot(p) ? 'shot' : 'eat';
     if (pointBlank(p) && !(p.dodge > 0)) return false;                    /* TOO CLOSE TO DRAW: the knife */
+    if (api.finishNear && api.finishNear()) return false;                 /* A BROKEN FOE IN REACH IS FINISHED WITH THE KNIFE (src/finishers.js: the execution is a melee blow) */
     p.rgNock = { t: 0, air, flip: p.dodge > 0 }; return 'nock'; }         /* (the quick shot goes when X is let go before the draw; held, it is the draw) */
   /* every frame, before main.js updateCharge: the nock becomes a quick shot when X is let go, unless the draw has begun */
   function nockStep(p, dt, keyAtk) { const n = p.rgNock; if (!n) return;
@@ -202,7 +206,7 @@ export function makeRanger(api) {
     if (api.parried) api.parried(foe);                                    /* (claude/riposte) THE BOW-BASH ON THE BEAT is her parry: the window, the foe's reel */
     if (foe && foe.alive) { if (!foe.maxHp && !foe.mini && !foe.elite) { foe.vx = (Math.sign(foe.x - p.x) || p.face) * RG.bash.push * 1.25 * (T().bashBack ? 2 : 1); foe.vy = Math.min(foe.vy || 0, -110); foe.knock = Math.max(foe.knock || 0, 0.5); } p.rgBashHit.add(foe); }   /* OUT TO RANGE */
     api.SFX.parry(); api.hitstop(0.08); api.shakeCam(3, -p.face * 2); api.zoomKick(1.04, 0.16);
-    api.ringAt(p.x + p.face * 9, p.y - 12, 16, '#c8e89a', 0.3); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BASHED', '#c8e89a');
+    api.ringAt(p.x + p.face * 9, p.y - 12, 16, '#c8e89a', 0.3); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BOW-BASH', '#c8e89a');
     api.noteParry(); api.trialEvent('parry'); return 'blocked'; }
 
   /* ---- THE SNARE (DOWN+C) ---- */
@@ -246,21 +250,21 @@ export function makeRanger(api) {
 
   /* ---- HER NINE BOUGHT ACTIVES (main.js rangerKit presses them through skillPress / cdReady / spend, like everyone's) ---- */
   const kit = {
-    volley() { const p = P(); api.kitPose(p, 'rgLoose', 0.3); for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * 1.0 * api.amul('rgVolley'), tag: 'shot', free: true }); api.SFX.rgLoose && api.SFX.rgLoose(2); },
+    volley() { const p = P(); api.kitPose(p, 'rgVolleyPose', 0.3); for (const [k, vy] of [[0.92, -95], [1, -55], [1.06, -18]]) loose(p, { kind: 'skill', vx: p.face * RG.draw.vx1 * k, vy, g: RG.draw.g, dmg: dmgBase() * 1.0 * api.amul('rgVolley'), tag: 'shot', free: true }); api.SFX.rgLoose && api.SFX.rgLoose(2); },
     hawk() { const p = P(), e = quarry(p, 220); api.kitPose(p, 'rgHawkPose', 0.35); p.rgHawk = { x: p.x, y: p.y - 22, e, t: 0, strikes: 0, back: false }; api.SFX.rgHawk && api.SFX.rgHawk(); },
     leap() { const p = P(); api.kitPose(p, 'rgLeapPose', 0.4); p.vx = -p.face * 300; p.vy = -260; p.inv = Math.max(p.inv || 0, 0.3); loose(p, { kind: 'skill', vx: p.face * 120, vy: 260, g: 400, dmg: dmgBase() * 1.2 * api.amul('rgLeap'), tag: ['plunge', 'shot'], free: true }); api.SFX.rgFlip && api.SFX.rgFlip(); },
-    bearTrap() { const p = P(); api.kitPose(p, 'rgSnare', 0.35); p.rgTraps = p.rgTraps || []; p.rgTraps.push({ x: p.x + p.face * 48, y: p.y, vy: -120, fly: 0.35, life: 16, held: null, sprung: 0 }); api.SFX.rgSnare && api.SFX.rgSnare(); },
-    rain() { const p = P(); api.kitPose(p, 'rgRise', 0.35); p.rgRain = { x: p.x + p.face * 80, t: 1.0, hit: new Set(), dmg: dmgBase() * 1.1 * api.amul('rgRain') }; api.SFX.rgLoose && api.SFX.rgLoose(2); },
-    smoke() { const p = P(); api.kitPose(p, 'rgShot', 0.25); const a = loose(p, { kind: 'skill', vx: p.face * RG.draw.vx0, vy: -60, g: RG.draw.g, dmg: dmgBase() * 0.6 * api.amul('rgSmoke'), tag: 'shot', free: true }); a.smoke = true; api.SFX.rgLoose && api.SFX.rgLoose(1); },
-    refill() { const p = P(); api.kitPose(p, 'rgMark', 0.3); const n = giveArrow(p, maxQ(), 'skill'); p.st = Math.min(p.maxSt || 100, (p.st || 0) + 40); api.ringAt(p.x, p.y - 14, 18, '#e8dcb0', 0.35); api.number(p.x, p.y - 28, n > 0 ? 'QUIVER FULL' : 'WIND BACK', '#e8dcb0'); },
-    heart() { const p = P(); api.kitPose(p, 'rgLoose', 0.4); loose(p, { kind: 'skill', vx: p.face * 640, vy: 0, g: 0, dmg: dmgBase() * 3 * api.amul('rgHeart'), tag: ['heavy', 'shot'], pierce: true, free: true, range: 420 }); api.shakeCam(5, p.face * 3); api.zoomKick(1.06, 0.25); api.SFX.rgLoose && api.SFX.rgLoose(2); },
-    wildHunt() { const p = P(); api.kitPose(p, 'rgMark', 0.4); p.rgWildT = 8; api.ringAt(p.x, p.y - 14, 40, '#ff7a5a', 0.5); api.number(p.x, p.y - 30, 'THE WILD HUNT', '#ff7a5a'); api.SFX.rgHawk && api.SFX.rgHawk(); },
+    bearTrap() { const p = P(); api.kitPose(p, 'rgTrapPose', 0.35); p.rgTraps = p.rgTraps || []; p.rgTraps.push({ x: p.x + p.face * 48, y: p.y, vy: -120, fly: 0.35, life: 16, held: null, sprung: 0 }); api.SFX.rgSnare && api.SFX.rgSnare(); },
+    rain() { const p = P(); api.kitPose(p, 'rgRainPose', 0.35); p.rgRain = { x: p.x + p.face * 80, t: 1.0, hit: new Set(), dmg: dmgBase() * 1.1 * api.amul('rgRain') }; api.SFX.rgLoose && api.SFX.rgLoose(2); },
+    smoke() { const p = P(); api.kitPose(p, 'rgSmokePose', 0.3); const a = loose(p, { kind: 'skill', vx: p.face * RG.draw.vx0, vy: -60, g: RG.draw.g, dmg: dmgBase() * 0.6 * api.amul('rgSmoke'), tag: 'shot', free: true }); a.smoke = true; api.SFX.rgLoose && api.SFX.rgLoose(1); },
+    refill() { const p = P(); api.kitPose(p, 'rgRefillPose', 0.35); const n = giveArrow(p, maxQ(), 'skill'); p.st = Math.min(p.maxSt || 100, (p.st || 0) + 40); api.ringAt(p.x, p.y - 14, 18, '#e8dcb0', 0.35); api.number(p.x, p.y - 28, n > 0 ? 'QUIVER FULL' : 'WIND BACK', '#e8dcb0'); },
+    heart() { const p = P(); api.kitPose(p, 'rgHeartPose', 0.4); loose(p, { kind: 'skill', vx: p.face * 640, vy: 0, g: 0, dmg: dmgBase() * 3 * api.amul('rgHeart'), tag: ['heavy', 'shot'], pierce: true, free: true, range: 420 }); api.shakeCam(5, p.face * 3); api.zoomKick(1.06, 0.25); api.SFX.rgLoose && api.SFX.rgLoose(2); },
+    wildHunt() { const p = P(); api.kitPose(p, 'rgHuntPose', 0.45); p.rgWildT = 8; api.ringAt(p.x, p.y - 14, 40, '#ff7a5a', 0.5); api.number(p.x, p.y - 30, 'THE WILD HUNT', '#ff7a5a'); api.SFX.rgHawk && api.SFX.rgHawk(); },
   };
   /* THE KIT'S BODIES IN MOTION (every frame, after update): the hawk, the bear traps, the rain, the smoke */
   function kitStep(dt) { const p = P();
     const h = p.rgHawk; if (h) { h.t += dt; const e = h.e && h.e.alive && !(h.e.gone > 0) ? h.e : null, tx = h.back || !e ? p.x : e.x, ty = h.back || !e ? p.y - 22 : e.y - (e.h || 16) - 4, d = Math.hypot(tx - h.x, ty - h.y) || 1, sp = 260 * dt;
       h.x += (tx - h.x) / d * Math.min(d, sp); h.y += (ty - h.y) / d * Math.min(d, sp);
-      if (!h.back && e && d < 8) { h.strikes++; api.hurtAs('rise', e, Math.max(1, Math.round(dmgBase() * 0.7 * api.amul('rgHawk'))), h.x, false); api.sparks(e.x, e.y - (e.h || 16), 0, 4); h.y -= 20; if (h.strikes >= 2) { markFoe(p, e, 'MARKED'); h.back = true; } }
+      if (!h.back && e && d < 8) { h.strikes++; api.hurtAs('rise', e, Math.max(1, Math.round(dmgBase() * 0.7 * api.amul('rgHawk'))), h.x, false); api.sparks(e.x, e.y - (e.h || 16), 0, 4); h.y -= 20; if (h.strikes >= 2) { markFoe(p, e); h.back = true; } }
       if ((h.back || !e) && d < 8) p.rgHawk = null; else if (h.t > 4) p.rgHawk = null; }
     if (p.rgTraps && p.rgTraps.length) { for (const s of p.rgTraps) { s.life -= dt;
         if (s.fly > 0) { s.fly -= dt; s.vy += 600 * dt; s.y += s.vy * dt; const ty = Math.floor((s.y + 1) / api.TS); if (s.vy > 0 && (api.isSolid(Math.floor(s.x / api.TS), ty) || api.isOneWay(api.tileAt(Math.floor(s.x / api.TS), ty)))) { s.y = ty * api.TS - 1; s.fly = 0; } continue; }
@@ -279,7 +283,7 @@ export function makeRanger(api) {
   /* A FOE OF HERS DIED (main.js hurtEnemy, a kill): THE KILL and BLOOD TRAIL read it */
   function killed(e) { const p = P(); if (!markOn(e) && !((e.rgMarkT || 0) > api.time - 0.05)) return;
     if (T().kill) { giveArrow(p, 2, 'kill'); focusGain(p, 20); }
-    if (T().trail) { let q = null, qd = 1e9; for (const f of api.enemies) { if (f === e || !f.alive || f.harmless || f.gone > 0) continue; const d = Math.hypot(f.x - e.x, f.y - e.y); if (d < 160 && d < qd) { q = f; qd = d; } } if (q) markFoe(p, q, 'MARKED'); }
+    if (T().trail) { let q = null, qd = 1e9; for (const f of api.enemies) { if (f === e || !f.alive || f.harmless || f.gone > 0) continue; const d = Math.hypot(f.x - e.x, f.y - e.y); if (d < 160 && d < qd) { q = f; qd = d; } } if (q) markFoe(p, q); }
     e.rgMarkT = 0; }
 
   /* ---- DRAWN (after the hero): her arrows (in flight, in foes, stuck and glinting), the snare, the bear traps, the hawk, the rain; the nocked string ---- */

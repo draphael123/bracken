@@ -204,6 +204,7 @@ export function keyVerb(BK, h, e) {
   if (P.charge > 0 || P.atkHeld > 0) return 'heavy';   /* a blow being wound is finished, not dropped for another */
   if (!K || K.open) return 'light';
   const f = K.family, swim = !!P.swim;
+  if (h === 'ranger' && rgArrows() > 0 && Math.abs(e.x - P.x) - (e.w || 12) / 2 > 18) return f === 'plate' || f === 'shell' || f === 'beast' || f === 'guard' ? 'heavy' : 'light';   /* (claude/ranger) WITH ARROWS, OUT OF KNIFE REACH SHE SHOOTS: a tap (the shooter, the wing, the small one alike) or a full draw (what wants a heavy) - the knife's sweep is for what has come inside */
   if (h === 'pirate' && P.loaded && f !== 'small' && e.t !== 'mimic' && Math.abs(e.x-P.x)>LAB_REACH[h]+(e.w||12)/2+12) return 'heavy';
   if ((h === 'pirate' || h === 'reaper') && e.t === 'mimic') return swim ? 'light' : 'plunge';
   if (f === 'guard') { const ad = Math.abs(e.x - P.x), reach = LAB_REACH[h] + (e.w || 12) / 2;

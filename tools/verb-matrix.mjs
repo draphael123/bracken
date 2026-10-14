@@ -14,7 +14,7 @@
    Red on master 3fd06c78: the ground up-slash jumped (he left the floor) and no hero had an air up-slash. Run: node tools/verb-matrix.mjs */
 import { openPage } from './cdp.mjs';
 
-const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger'];
 const pg = await openPage({ audio: false, fonts: false });
 let R;
 try {
@@ -29,7 +29,7 @@ try {
         const P = BK.P; P.face = 1; P.st = P.maxSt; P.vx = 0; return P; };
       const dummy = (dx, dy, hover) => { const P = BK.P; const [d] = BK.spawnFoe({ t: 'dummy', x: Math.round((P.x + dx) / 16 - 0.5), y: Math.round(P.y / 16) }); if (!d) return null; d.x = P.x + dx; d.y = P.y + dy; if (hover) { d.noGrav = true; d.hover = [d.x - P.x, d.y - P.y]; } return d; };
       const blows = (fn, frames, d) => { BK.log = []; const P = BK.P; const meta = { minY: P.y, leftGround: false, keys: new Set() }; const y0 = P.y;
-        fn(0); for (let i = 1; i <= frames; i++) { if (d && d.hover) { d.x = P.x + d.hover[0]; d.y = P.y + d.hover[1]; d.vy = 0; } BK.step(1); fn(i); meta.minY = Math.min(meta.minY, P.y); if (!P.ground) meta.leftGround = true; if (P.atk >= 0) meta.keys.add(P.lastKey); }
+        fn(0); for (let i = 1; i <= frames; i++) { if (d && d.hover) { d.x = P.x + d.hover[0]; d.y = P.y + d.hover[1]; d.vy = 0; } BK.step(1); fn(i); meta.minY = Math.min(meta.minY, P.y); if (!P.ground) meta.leftGround = true; if (P.atk >= 0 || (hero === 'ranger' && P.kPoseT > 0)) meta.keys.add(P.lastKey); }   /* (claude/ranger: her shots are posed on the pose clock, P.kPoseT - they are arrows, not swings) */
         const got = BK.log.filter(r => r.k === 'dmgE' && (!d || r.e === d)).map(r => [].concat(r.blow || 'none').join('+')); BK.log = null; P.st = P.maxSt;
         return { blows: [...new Set(got)], rose: Math.round(y0 - meta.minY), leftGround: meta.leftGround, keys: [...meta.keys] }; };
       /* UP ATTACK, GROUND: real keys, ArrowUp and X on the same frame, and again with X two frames after ArrowUp */
@@ -66,12 +66,12 @@ for (const [h, o] of Object.entries(R)) {
   console.log(h + ': ' + Object.entries(o).filter(([, v]) => v && typeof v === 'object').map(([k, v]) => k + '=' + (v.blows.join('|') || '-') + (v.rose ? ' rose' + v.rose : '') + (v.keys.length ? ' [' + v.keys.join(',') + ']' : '')).join('  ') + '  jump frames z ' + o.zJumpFrame + ' up ' + o.upJumpFrame);
   for (const k of ['upGround', 'upGroundLate']) { const r = o[k]; if (!has(r, 'rise')) fails.push(h + ' ' + k + ': up + X on the ground landed no rise blow (' + r.blows.join(',') + ')');
     if (r.leftGround || r.rose > 2) fails.push(h + ' ' + k + ': up + X on the ground jumped (rose ' + r.rose + ' px): it must be the slash from his feet');
-    if (!r.keys.includes('rise')) fails.push(h + ' ' + k + ': not drawn in his rise frames (' + r.keys.join(',') + ')'); }
+    if (!r.keys.includes('rise') && !(h === 'ranger' && r.keys.includes('rgRise'))) fails.push(h + ' ' + k + ': not drawn in his rise frames (' + r.keys.join(',') + ')'); }
   if (!o.upJump.leftGround) fails.push(h + ': an UP-key jump with no attack must still jump');
   if (o.zJumpFrame > 1) fails.push(h + ': Z must jump at once (left the floor on frame ' + o.zJumpFrame + ')');
   if (!(o.upJumpFrame >= 1 && o.upJumpFrame <= 5)) fails.push(h + ': an UP-key jump must leave the floor within its grace (frame ' + o.upJumpFrame + ')');
   if (!has(o.upAir, 'rise')) fails.push(h + ' upAir: up + X in the air landed no up blow on a dummy over his head (' + o.upAir.blows.join(',') + ')');
-  if (!o.upAir.keys.includes('airUp')) fails.push(h + ' upAir: not drawn in his own airUp frames (' + o.upAir.keys.join(',') + ')');
+  if (!o.upAir.keys.includes('airUp') && !(h === 'ranger' && o.upAir.keys.includes('rgRise'))) fails.push(h + ' upAir: not drawn in his own airUp frames (' + o.upAir.keys.join(',') + ')');
   /* (THE PYROMANCER'S boots do nothing and her firedrop spares the head she comes down on (src/pogo-chain.js), so her plunge on a dummy
      lands as the firedrop's burst, an unnamed blow: a gap for a 'plunge his head' weak point, listed in the lane report) */
   if (!has(o.plunge, 'plunge') && !(h === 'pyro' && o.plunge.blows.length)) fails.push(h + ' plunge: no plunge blow (' + o.plunge.blows.join(',') + ')');
