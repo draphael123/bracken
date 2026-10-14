@@ -10,7 +10,8 @@
 //   bakeConstruct()      THE CLOCKWORK CONSTRUCT (6: 0 idle | 1 walk | 2 POKE TELL | 3 POKE | 4 WOUND DOWN | 5 hurt) - brass guard with a CLOCK-FACE head (the hands at twelve while it keeps its round,
 //                        drooping when it is wound down), a window on its escapement (an anchor and a wheel) in the chest, pauldrons, a winding key, a halberd
   //   bakeHourglassKing(level)  THE HOURGLASS KING (20: 0 idle | 1,2 walk | 3 STREAM TELL | 4 STREAM | 5 GEAR TELL | 6 GEAR | 7 GRASP (was SLIP) | 8 SLIP | 9 PENDULUM TELL | 10 PENDULUM | 11 OPEN | 12 TURNING | 13 hurt
-//                        | claude/buriedcity3 GREYBOX: 14 SURGE TELL | 15 SURGE | 16 GRASP TELL | 17 RAIN TELL | 18 SLIP TELL | 19 SLIP STRIKE)
+//                        | claude/buriedcity3 GREYBOX: 14 SURGE TELL | 15 SURGE | 16 GRASP TELL | 17 RAIN TELL | 18 SLIP TELL | 19 SLIP STRIKE
+//                        | claude/buriedcity4 GREYBOX: 26 WITHDRAW (glide/sink) | 27 SHARD TELL | 28 SHARD THROW | 29 POT TELL | 30 POT THROW | 31 HOLDING THE SAND (open, on his pillar) | 32 RAISE TELL)
 //                        - lapis robes with a gilded hem, brass pauldrons and a fan collar, a crown of gears, a mask with amber eyes, the hourglass in a brass frame on his chest (sand by level), a
 //                        pendulum sceptre; every pose keyframed
 //   bakeCog()            the brass cog he throws
@@ -215,7 +216,7 @@ export function bakeHourglassKing(sandLevel = 0) {
   const arm = (g, x0, y0, x1, y1) => { thick(g, x0, y0, x1, y1, HK.robe, 4); thick(g, x0 - 1, y0, x1 - 1, y1, HK.robeL, 1); rect(g, x1 - 2, y1 - 1, 5, 2, HK.brass); px(g, x1 - 2, y1 - 1, HK.brassL); px(g, x1, y1 + 2, HK.skin); px(g, x1 + 1, y1 + 2, HK.skin); };   /* a sleeve, a brass cuff, a hand */
   const sceptre = (g, hx, hy, tx, ty) => { thick(g, hx, hy, tx, ty, HK.brass, 2); px(g, hx, hy, HK.brassL); circle(g, tx, ty, 3, HK.brass); circle(g, tx, ty, 1.4, HK.brassDD); px(g, tx - 1, ty - 2, HK.brassL); px(g, tx, ty, HK.eye); };   /* the pendulum: a rod and a heavy bob */
   const glowRing = (g, x, y, r, col) => { for (let a = 0; a < 20; a++) px(g, x + Math.round(Math.cos(a * 0.314) * r), y + Math.round(Math.sin(a * 0.314) * r), col); };
-  const F = frames(W, H, 26, (g, f) => {
+  const F = frames(W, H, 33, (g, f) => {
     const cx = 28, hip = gy - 24;
     /* (claude/bc3art, B16) EVERY NEW ABILITY ITS OWN WINDUP + RELEASE: 14 SURGE TELL (crouched, the sceptre reversed overhead in both fists, gold sand lifting) | 15 SURGE SLAM (bent
        over it, the bob driven into the floor, a gold crack and spray) | 16 GRASP TELL (kneeling, arms spread low, palms down, rust fingers of sand round his feet) | 20 GRASP RELEASE (fists
@@ -225,7 +226,7 @@ export function bakeHourglassKing(sandLevel = 0) {
        feet) | 25 DRAGGED INTO THE FLOW (the great glass pours up: lifted, tilted, robe and sand streaming up) */
     const VI = '#b08cff', VIL = '#e4d4ff', RU = '#d0703a', RUL = '#f0a060', ICE = '#bfe6f5', ICEL = '#f2fbff';
     const sandDots = (g, pts, c1 = HK.sandL, c2 = HK.sand) => pts.forEach(([x, y], i) => { px(g, x, y, i % 2 ? c1 : c2); if (i % 3 === 0) px(g, x + 1, y, c2); });
-    if (f >= 14 || f === 8) { const crouch = { 14: 4, 15: 5, 16: 6, 20: 5, 17: 0, 21: 1, 18: 0, 19: 1, 8: 2, 22: 0, 23: 3, 24: 0 }[f] || 0, bend = { 15: 5, 19: 6, 20: 3, 8: -3, 21: 2, 23: 1 }[f] || 0;
+    if (f >= 14 || f === 8) { const crouch = { 14: 4, 15: 5, 16: 6, 20: 5, 17: 0, 21: 1, 18: 0, 19: 1, 8: 2, 22: 0, 23: 3, 24: 0, 26: 3, 27: 0, 28: 1, 29: 0, 30: 1, 31: 0, 32: 5 }[f] || 0, bend = { 15: 5, 19: 6, 20: 3, 8: -3, 21: 2, 23: 1, 27: -3, 28: 4, 30: 3 }[f] || 0;
       if (f === 25) { const o = 8;   /* DRAGGED: lifted off the floor, tilted back, the flow streaming up through him */
         thick(g, cx - 4, hip - 6 - o, cx - 8, hip + 10 - o, HK.robeD, 5); thick(g, cx + 4, hip - 6 - o, cx + 2, hip + 12 - o, HK.robeD, 5); rect(g, cx - 11, hip + 9 - o, 5, 2, HK.brassD); rect(g, cx - 1, hip + 11 - o, 5, 2, HK.brassD);
         robe(g, cx + 2, hip - 28 - o, 3); shoulders(g, cx + 2, hip - 28 - o, 3); head(g, cx + 6, hip - 36 - o); arm(g, cx + 12, hip - 26 - o, cx + 18, hip - 44 - o); arm(g, cx - 8, hip - 24 - o, cx - 14, hip - 42 - o);
@@ -251,6 +252,17 @@ export function bakeHourglassKing(sandLevel = 0) {
       else if (f === 8) { arm(g, ...sh, cx + 6, hip - 14 + dy); arm(g, ...lh, cx - 16, hip - 6); for (let k = 0; k < 7; k++) px(g, cx + 12 - k * 4, hip - 36 + k * 3, k % 2 ? VI : VIL); circle(g, cx + bend, hip - 16 + dy, 5, 'rgba(176,140,255,0.28)'); }
       else if (f === 22) { arm(g, ...sh, cx + 16, hip - 40); arm(g, ...lh, cx - 16, hip - 38); sceptre(g, cx + 16, hip - 40, cx + 19, hip - 52); glowRing(g, cx, hip - 14, 9, '#ffd36b'); for (let k = -3; k <= 3; k++) line(g, cx + k * 4, hip + 14, cx + k * 4 + (k > 0 ? 1 : -1), hip + 14 - (6 + Math.abs(k) * 2), k % 2 ? HK.sandL : HK.sand); }
       else if (f === 23) { arm(g, ...sh, cx + 24, hip + 2); arm(g, ...lh, cx - 24, hip + 3); for (const s of [-1, 1]) for (let k = 0; k < 3; k++) { rect(g, cx + s * (16 + k * 6) - 1, hip + 18 - (3 - k) * 3, 3, (3 - k) * 3, k % 2 ? HK.sand : HK.sandL); } }
+      /* (claude/buriedcity4, GREYBOX - the art lane finishes them, B16) 26 WITHDRAW: hunched, arms wrapped in, a ring of sand lifting at his feet | 27 SHARD TELL: the throwing arm cocked
+         back over his head, three glass shards fanned in the fist, the other hand aimed | 28 SHARD THROW: the arm flung through, the shards' streaks ahead | 29 POT TELL: a clay pot of sand
+         hoisted over his head in both hands | 30 POT THROW: both arms driven forward-up, the pot let go | 31 HOLDING THE SAND: arms out and up, palms up, gold sand streaming up off them
+         | 32 RAISE TELL: crouched, palms down low, the sand drawn up between them */
+      else if (f === 26) { arm(g, ...sh, cx - 4, hip - 12 + dy); arm(g, ...lh, cx + 6, hip - 10 + dy); for (let a = 0; a < 16; a++) px(g, cx + Math.round(Math.cos(a * 0.39) * (14 + (a % 3))), hip + 18 + Math.round(Math.sin(a * 0.39) * 3) - (a % 4), a % 2 ? HK.sandL : HK.sand); sandDots(g, [[cx - 12, hip + 6], [cx + 12, hip + 4], [cx - 6, hip], [cx + 8, hip - 4]]); }
+      else if (f === 27) { arm(g, ...sh, cx - 10, hip - 44); arm(g, ...lh, cx + 16, hip - 26); for (const [a, b] of [[-14, -50], [-10, -52], [-6, -50]]) { fillPoly(g, [[cx + a, hip + b], [cx + a + 2, hip + b - 7], [cx + a + 3, hip + b + 1]], ICE); px(g, cx + a + 1, hip + b - 5, ICEL); } }
+      else if (f === 28) { arm(g, ...sh, cx + 26, hip - 24); arm(g, ...lh, cx - 12, hip - 14); for (let k = 0; k < 3; k++) { line(g, cx + 30, hip - 28 + k * 4, cx + 42, hip - 30 + k * 6, k % 2 ? ICE : ICEL); fillPoly(g, [[cx + 42, hip - 31 + k * 6], [cx + 46, hip - 30 + k * 6], [cx + 42, hip - 28 + k * 6]], ICE); } }
+      else if (f === 29) { arm(g, ...sh, cx + 6, hip - 46); arm(g, ...lh, cx - 6, hip - 46); circle(g, cx, hip - 53, 6, '#8a4a2a'); rect(g, cx - 4, hip - 60, 8, 2, RU); px(g, cx - 2, hip - 55, RUL); sandDots(g, [[cx - 2, hip - 61], [cx + 2, hip - 62], [cx, hip - 63]]); }
+      else if (f === 30) { arm(g, ...sh, cx + 20, hip - 38); arm(g, ...lh, cx + 14, hip - 36); circle(g, cx + 30, hip - 46, 6, '#8a4a2a'); rect(g, cx + 26, hip - 53, 8, 2, RU); px(g, cx + 28, hip - 48, RUL); for (let k = 0; k < 4; k++) px(g, cx + 22 - k * 3, hip - 40 - k * 2, HK.sandL); }
+      else if (f === 31) { arm(g, ...sh, cx + 20, hip - 34); arm(g, ...lh, cx - 20, hip - 34); glowRing(g, cx, hip - 14, 9, '#ffd36b'); for (const s2 of [-1, 1]) for (let k = 0; k < 4; k++) line(g, cx + s2 * (18 + k * 2), hip - 38 - k * 3, cx + s2 * (17 + k * 2), hip - 46 - k * 4, k % 2 ? HK.sandL : '#ffd36b'); }
+      else if (f === 32) { arm(g, ...sh, cx + 18, hip + 6); arm(g, ...lh, cx - 18, hip + 6); for (let k = -4; k <= 4; k++) line(g, cx + k * 4, hip + 22, cx + k * 4, hip + 22 - (4 + (Math.abs(k) * 3) % 6), k % 2 ? HK.sandL : HK.sand); glowRing(g, cx, hip + 18, 20, '#ffd36b'); }
       else if (f === 24) { arm(g, ...sh, cx + 18, hip - 44); arm(g, ...lh, cx - 18, hip - 44); sceptre(g, cx + 18, hip - 44, cx + 22, hip - 62); glowRing(g, cx + 22, hip - 62, 5, RUL); for (let a = 0; a < 18; a++) { const rr = 10 + a * 0.9; px(g, cx + Math.round(Math.cos(a * 0.7) * rr), hip + 20 + Math.round(Math.sin(a * 0.7) * 2), a % 2 ? RUL : HK.sand); } }
       return; }
     if (f === 11) { legs(g, cx, hip, 0); robe(g, cx, hip - 22, 0); shoulders(g, cx, hip - 22); head(g, cx + 1, hip - 30);   /* OPEN / STALLED: the glass empty, frozen mid-gesture */

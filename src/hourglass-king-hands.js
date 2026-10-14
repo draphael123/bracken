@@ -26,7 +26,7 @@ export function makeHourglassKingHands(ctx) {
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'hourglassking';
-  H.clear = () => { unbank(); undrift(); unblocks(); S = null; BOSS_PHASE.hourglassking = 1; };
+  H.clear = () => { unbank(); undrift(); unblocks(); unaloft(); S = null; BOSS_PHASE.hourglassking = 1; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.hkKeys = pp.hkKeys || new Map(); if (pp.hkKeys.size > 80) pp.hkKeys.clear(); if (pp.hkKeys.has(key)) return true; pp.hkKeys.set(key, 1); return false; };
   const live = () => { const e = ctx.boss; return e && e.alive && e.t === 'hourglassking' ? e : null; };
@@ -44,13 +44,24 @@ export function makeHourglassKingHands(ctx) {
     else { for (let x = c0; x <= c1; x++) ctx.cellSet(x, G.R, T.SOLID); if (L.quicksand) L.quicksand = L.quicksand.filter(q => !q.hk); drifted = null;
       for (const pp of ctx.players) if (!pp.dead && pp.x > c0 * ctx.TS && pp.x < (c1 + 1) * ctx.TS && pp.y > G.floorY) { pp.y = G.floorY; pp.qsDepth = 0; if (pp.vy > 0) pp.vy = 0; } } }
   function undrift() { if (!drifted || !S) { const L = ctx.L; if (L && L.quicksand) L.quicksand = L.quicksand.filter(q => !q.hk); drifted = null; return; } drift(false); }
+  /* (claude/buriedcity4) HIS PILLAR and THE TIMED SLABS (src/hourglass-king.js stepAloft): cells written while they stand (the pillar solid, the slabs one-way), what was
+     under them kept and put back; a hero inside the pillar as it rises is stood on its top */
+  const alCells = new Map();
+  function alWrite(key, c0, c1, r0, r1, t) { const T = ctx.T, keep = []; for (let x = c0; x <= c1; x++) for (let y = r0; y <= r1; y++) { keep.push([x, y, ctx.cellGet(x, y)]); ctx.cellSet(x, y, t); } alCells.set(key, keep); }
+  function alClear(key) { const keep = alCells.get(key); if (!keep) return; for (const [x, y, v] of keep) ctx.cellSet(x, y, v); alCells.delete(key); }
+  function unaloft() { for (const k of [...alCells.keys()]) alClear(k); }
+  function pillar(side, on) { const A = S.G.aloft[side], T = ctx.T; if (!on) { alClear('p' + side); return; }
+    alWrite('p' + side, A.c0, A.c1, S.G.R - A.rows, S.G.R - 1, T.SOLID);
+    for (const pp of ctx.players) if (!pp.dead && pp.x > A.x0 - 4 && pp.x < A.x1 + 4 && pp.y > A.y) { pp.y = A.y; if (pp.vy > 0) pp.vy = 0; } }
+  function slab(side, i, on) { const q = S.G.aloft[side].slabs[i]; if (!q) return; if (!on) { alClear('s' + side + i); ctx.burst((q.x0 + q.x1) / 2, q.y + 4, 12, ['#e6c98a', '#a87a40', '#7a5a30'], 70, 0.6); return; }
+    alWrite('s' + side + i, q.c0, q.c1, q.row, q.row, ctx.T.ONEWAY); ctx.burst((q.x0 + q.x1) / 2, q.y, 8, ['#e6c98a', '#a87a40'], 60, 0.5); }
   /* THE TWO SANDSTONE BLOCKS (phase two on): the one that is up is solid; the other is under the drift */
   let blocksOn = false, blockFx = 0;
   function writeBlocks(up) { const G = S.G, T = ctx.T; G.blocks.forEach((b, i) => { for (let r = 1; r <= b.rows; r++) for (let x = b.c0; x <= b.c1; x++) ctx.cellSet(x, G.R - r, i === up ? T.SOLID : T.AIR); });
     const b = G.blocks[up]; for (const pp of ctx.players) if (!pp.dead && pp.x > b.x0 - 4 && pp.x < b.x1 + 4 && pp.y > b.y && pp.y - (pp.h || 14) < G.floorY) { pp.y = b.y; if (pp.vy > 0) pp.vy = 0; } blocksOn = true; }
   function unblocks() { if (!blocksOn || !S) return; const G = S.G, T = ctx.T; for (const b of G.blocks) for (let r = 1; r <= b.rows; r++) for (let x = b.c0; x <= b.c1; x++) ctx.cellSet(x, G.R - r, T.AIR); blocksOn = false; }
 
-  H.spawnBoss = base => { const Ar = A(); if (!Ar) return null; if (S) { unbank(); undrift(); unblocks(); } else undrift();
+  H.spawnBoss = base => { const Ar = A(); if (!Ar) return null; if (S) { unbank(); undrift(); unblocks(); unaloft(); } else undrift();
     S = HKM.newFight(HKM.geom(Ar, ctx.TS)); BOSS_PHASE.hourglassking = 1;
     const e = { ...base, t: 'hourglassking', w: HK.w, h: HK.h, hp: ctx.EHP.hourglassking, maxHp: ctx.EHP.hourglassking, noGrav: true, markH: HK.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, boss: true };
     e.y = S.G.floorY; for (const pp of ctx.players) { pp.hkKeys = null; pp.hkHold = 0; } return e; };
@@ -64,6 +75,7 @@ export function makeHourglassKingHands(ctx) {
       music: ph => { BOSS_PHASE.hourglassking = ph; if (ctx.music) ctx.music(ph > 1 ? 'hourglassking:p' + ph : 'hourglassking'); },
       mark: m => ctx.number(e.x, e.y - HK.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       banks: on => { if (on) bank(); else unbank(); },
+      pillar: (side, on) => pillar(side, on), slab: (side, i, on) => slab(side, i, on),
       blocks: (up, kind) => { if (kind === 'swap') { writeBlocks(up); ctx.shake(3); } else blockFx = HK.swapWarn; },
       hold: (pp, s) => { if (!pp || pp.dead) return; pp.hkHold = s; pp.hkHoldX = pp.x; if (pp === ctx.hero() && !(S.told.hold > 1)) { S.told.hold = (S.told.hold || 0) + 1; ctx.number(pp.x, pp.y - 34, 'THE SAND HOLDS YOU: JUMP OUT', '#ff9a5c'); } },
       fx: (k, x, y) => {
@@ -97,20 +109,24 @@ export function makeHourglassKingHands(ctx) {
   H.interact = P => { const e = live(); if (!S || !e || !ctx.bossActive || P.dead) return false; if (Math.abs(P.x - S.G.great) > 20 || Math.abs(P.y - S.G.floorY) > 24) return false; HKM.greatStruck(e, S, world(e)); return true; };
   /* THE RULE ON HIM: a hero's pull on a throne-room lever (src/buried-city-hands.js) */
   /* M5 (fix pass 10-09, B10/A3): THE LEVERS ARE LIT while his glass is low and a pull will stall him (phases one and two); src/buried-city-hands.js glows them */
-  H.leversLit = () => { const e = live(); return !!(S && e && ctx.bossActive && A() && S.ph < 3 && HKM.glassLow(S) && S.ward <= 0 && !/^(stall|turn|sleep|wake|die)$/.test(e.mode)); };
+  H.leversLit = () => { const e = live(); return !!(S && e && ctx.bossActive && A() && S.ph < 3 && HKM.glassLow(S) && S.ward <= 0 && !/^(stall|hold|sink|turn|sleep|wake|die)$/.test(e.mode)); };
+  H.leversDark = () => { const e = live(); return !!(S && e && ctx.bossActive && A() && S.ph === 3); };   /* (claude/buriedcity4) phase three: THE GATES ARE DRY - drawn dark (drawOver) */
   H.onLever = x => { const e = live(); if (!S || !e || !ctx.bossActive) return 'busy'; return HKM.leverPulled(e, S, world(e), x); };
   /* A BLOW ON HIM (B15): open x HK.openMul (one opening its cap of him at most); turning, whole; warded, the floor with a clank; else his BRASS takes the share */
   H.take = (e, dmg) => { if (!S) return dmg; const t = ctx.time();
     if (e.mode === 'sleep' || e.mode === 'wake') return 0;
+    if (e.mode === 'hold' && S.al) { const P = ctx.hero(), s0 = S.G.aloft[S.al.side].slabs[0];   /* (claude/buriedcity4) HE HOLDS THE SAND: open to a blow from up on the slabs, his brass from below */
+      if (!P || P.y > s0.y + HK.aloft.upTol) { e.chipHit = t; S.n.brass++; e.guardFx = 0.25; e.guardWord = HKM.AL_SAY.climb.split(':')[0]; ctx.sfx.clank && ctx.sfx.clank(); if (!(S.told.climb > 1)) { S.told.climb = (S.told.climb || 0) + 1; ctx.number(e.x, e.y - 90, HKM.AL_SAY.climb, '#ffd36b'); } return dmg * HK.resist; }
+      S.n.holdHits++; if (!S.al.climbed) { S.al.climbed = true; S.n.climbed++; } }
     if (HKM.hkOpen(e)) { const cap = e.maxHp * (S.capNow || HK.openCap), d = Math.max(dmg * HK.resist, Math.min(dmg * HK.openMul, Math.max(0, cap - S.openTaken))); S.openTaken += d;   /* (B15: past the cap a blow still pays the brass floor, never nothing) */
       if (S.openTaken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 74, 'THE SAND STIRS IN HIM', '#9aa39a'); } return d; }
     if (e.mode === 'turn') { S.n.turnHits++; return dmg * HK.turnMul; }
     if (S.ward > 0) { e.chipHit = t; S.n.warded++; e.guardFx = 0.25; e.guardWord = 'WARDED'; ctx.sfx.clank && ctx.sfx.clank(); return dmg * HK.wardMul; }
     e.chipHit = t; S.n.brass++; e.guardFx = 0.25; e.guardWord = S.n.brass < 6 ? (S.ph === 3 ? 'HIS BRASS: TURN THE GREAT HOURGLASS' : HKM.glassLow(S) ? 'HIS BRASS: HIS GLASS IS LOW - A SAND-GATE' : 'HIS BRASS: WAIT FOR HIS GLASS TO RUN LOW') : 'HIS BRASS';
     ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(ctx.hero().x - e.x) || 1) * 10, e.y - 24, Math.sign(ctx.hero().x - e.x) || 1, 4); return dmg * HK.resist; };
-  H.barName = e => 'THE HOURGLASS KING' + (HKM.hkOpen(e) ? '  STALLED' : S && S.ward > 0 ? '  WARDED' : e.mode === 'turn' ? '  TURNING' : '');
-  H.end = e => { if (S) { S.gears = []; S.waves = []; S.stream = null; S.rain = null; S.grasp = null; S.echo = null; } undrift(); unbank(); unblocks(); BOSS_PHASE.hourglassking = 1; for (const pp of ctx.players) pp.hkHold = 0; };   /* (batch91: THE EXIT GATE stands at stage col W-2 = inside the east sand BANK (cols 37-39) - phase two wrote the bank in and nothing took it out at his death, so the gate was walled in sand and the level never ended. His death (and the end of a lost fight) now takes the banks and the sandstone blocks away) */
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, glass: +S.glass.toFixed(2), glassMax: S.glassMax, low: HKM.glassLow(S), ward: S.ward, drift: S.drift, blockUp: S.blockUp, great: { ...S.great }, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
+  H.barName = e => 'THE HOURGLASS KING' + (e.mode === 'hold' && HKM.hkOpen(e) ? '  OPEN' : HKM.hkOpen(e) ? '  STALLED' : S && S.ward > 0 ? '  WARDED' : e.mode === 'turn' ? '  TURNING' : '');
+  H.end = e => { if (S) { S.gears = []; S.waves = []; S.stream = null; S.rain = null; S.grasp = null; S.echo = null; S.shards = []; S.pots = []; S.al = null; } undrift(); unbank(); unblocks(); unaloft(); BOSS_PHASE.hourglassking = 1; for (const pp of ctx.players) pp.hkHold = 0; };   /* (batch91: THE EXIT GATE stands at stage col W-2 = inside the east sand BANK (cols 37-39) - phase two wrote the bank in and nothing took it out at his death, so the gate was walled in sand and the level never ended. His death (and the end of a lost fight) now takes the banks and the sandstone blocks away) */
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, glass: +S.glass.toFixed(2), glassMax: S.glassMax, low: HKM.glassLow(S), ward: S.ward, drift: S.drift, blockUp: S.blockUp, great: { ...S.great }, al: S.al ? { side: S.al.side, y: S.al.y, slabs: S.al.slabs.map(q => ({ up: q.up, t: +q.t.toFixed(2) })) } : null, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING ---------- */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
@@ -125,11 +141,19 @@ export function makeHourglassKingHands(ctx) {
     if (S.ph >= 2 && S.drift) ART.tideFloor({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.drift[0], G.drift[1], G);
     /* phase three's pours: two steady columns from the broken roof */
     if (S.ph === 3) for (const x of G.pours) ART.pourColumn({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, x, G, HK.pourW);
+    /* (claude/buriedcity4, GREYBOX) HIS PILLAR (rising and sinking with him) and THE TIMED SLABS, each its own draining timer (gold, red in its last HK.slabWarn s, shaking) */
+    if (S.al) { const Al = G.aloft[S.al.side], l = R(Al.x0 - cx), w = Al.x1 - Al.x0, top = R(S.al.y - cy), bot = R(G.floorY - cy);
+      if (bot - top > 1) { g.fillStyle = '#a87a48'; g.fillRect(l, top, w, bot - top); g.fillStyle = '#e2bb7a'; g.fillRect(l, top, w, 3); g.fillStyle = '#7a5a30'; g.fillRect(l + w - 3, top + 3, 3, bot - top - 3);
+        g.fillStyle = 'rgba(240,216,160,0.55)'; for (let i = 0; i < 6; i++) g.fillRect(l + 2 + (i * 5) % (w - 4), top + ((time * 50 + i * 13) % Math.max(4, bot - top)), 1, 3); }
+      for (const q of S.al.slabs) { if (!q.up) continue; const sb = Al.slabs[q.i], warn = q.t <= HK.slabWarn, sh = warn ? Math.sin(time * 60) * 1.2 : 0, sl = R(sb.x0 - cx + sh), sy = R(sb.y - cy), sw = sb.x1 - sb.x0;
+        g.fillStyle = '#b98c58'; g.fillRect(sl, sy, sw, 16); g.fillStyle = '#e2bb7a'; g.fillRect(sl, sy, sw, 3); g.fillStyle = '#8a6a3c'; g.fillRect(sl, sy + 13, sw, 3);
+        g.fillStyle = 'rgba(230,200,140,0.6)'; for (let i = 0; i < 4; i++) g.fillRect(sl + 3 + ((i * 7 + Math.floor(time * 30)) % Math.max(4, sw - 6)), sy + 16 + ((time * 40 + i * 9) % 14), 1, 2);
+        g.fillStyle = 'rgba(0,0,0,0.6)'; g.fillRect(sl + 2, sy - 7, sw - 4, 4); g.fillStyle = warn ? '#ff5a3a' : '#ffd36b'; g.fillRect(sl + 3, sy - 6, R((sw - 6) * Math.max(0, q.t / q.life)), 2); } }
     /* the sandstone blocks: the next to rise shows its cap in the drift; both shake before they swap */
     if (S.ph >= 2) G.blocks.forEach((b, i) => ART.sandstoneBlock({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, b, i === S.blockUp, blockFx > 0, G));
   };
   /* his frame by mode: the kit's poses (0-13) and the new moves' own (14-19: src/redraw/buried_city_cast.js) */
-  const FR = { sleep: 0, wake: 0, recover: 0, streamTell: 3, gearTell: 5, pendTell: 9, pend: 10, hourTell: 22, stall: 11, turn: 12, surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19, slipRec: 8 };
+  const FR = { withdrawTell: 26, glide: 26, sink: 26, rise: 31, perch: 0, shardTell: 27, shardRel: 28, potTell: 29, potRel: 30, raiseTell: 32, hold: 31, sleep: 0, wake: 0, recover: 0, streamTell: 3, gearTell: 5, pendTell: 9, pend: 10, hourTell: 22, stall: 11, turn: 12, surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19, slipRec: 8 };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     if (!SETS) SETS = [0, 1, 2].map(k => DG.bakeHourglassKing(k));
     const k = S.glass / S.glassMax, lvl = HKM.hkOpen(e) ? 2 : k > 0.6 + (HKM.lowOf(S.ph) - HK.lowAt) ? 0 : k > HKM.lowOf(S.ph) ? 1 : 2, set = SETS[lvl], f = e.face || 1, m = e.mode, flash = (e.hurtT || 0) > 0;
@@ -163,11 +187,22 @@ export function makeHourglassKingHands(ctx) {
         else ART.rainShards(V, x0, G, S.rain.t / HK.rainT, R(x0)); } }
     /* THE ECHO: where he stood two seconds ago, a violet double of his slip pose - he snaps back to it */
     if (S.echo && e.mode === 'slipTell') { if (!SETS) SETS = [0, 1, 2].map(k => DG.bakeHourglassKing(k)); ART.echoGhost({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, e, SETS[0], 18, S.echo.x, G, HK.slipR); }
+    /* (claude/buriedcity4, GREYBOX) HIS THROWS: the shards (pale glass slivers along their flight), the pot (a clay pot turning in its arc) and its mark (blinking where it bursts) */
+    for (const q of S.shards) { const sx = R(q.x - cx), sy = R(q.y - cy), a = Math.atan2(q.vy, q.vx); g.strokeStyle = '#dff2ff'; g.lineWidth = 2; g.beginPath(); g.moveTo(sx, sy); g.lineTo(R(sx - Math.cos(a) * 7), R(sy - Math.sin(a) * 7)); g.stroke(); g.lineWidth = 1; g.fillStyle = '#9fe0ff'; g.fillRect(sx - 1, sy - 1, 2, 2); }
+    for (const q of S.pots) { const sx = R(q.x - cx), sy = R(q.y - cy); g.fillStyle = '#8a4a2a'; g.beginPath(); g.arc(sx, sy, 5, 0, 7); g.fill(); g.fillStyle = '#d0703a'; g.fillRect(sx - 3, sy - 6, 6, 2); g.fillStyle = '#e2bb7a'; g.fillRect(sx - 1 + R(Math.sin(time * 20) * 2), sy - 2, 2, 2); }
+    if (S.mark && S.mark.k === 'pot') { const mx = R(S.mark.x - cx), my = R(S.mark.y - cy) - 2; g.fillStyle = 'rgba(30,10,10,0.55)'; g.fillRect(mx - HK.potR, my, HK.potR * 2, 3); g.strokeStyle = blink; g.beginPath(); g.moveTo(mx - 6, my - 6); g.lineTo(mx + 6, my + 2); g.moveTo(mx + 6, my - 6); g.lineTo(mx - 6, my + 2); g.stroke();
+      g.strokeStyle = 'rgba(208,112,58,0.85)'; g.beginPath(); g.arc(mx, my - 2, HK.potR * (0.6 + 0.4 * Math.abs(Math.sin(time * 6))), Math.PI, 0); g.stroke(); }
+    /* (claude/buriedcity4) PHASE THREE MUST BE OBVIOUS: the levers go DARK (a dark veil and DRY over each); THE GREAT HOURGLASS glows, STRIKE THE GLASS over it and a marker bobbing down onto it */
+    if (S.ph === 3) { for (const lv of G.levers) { const lx = R(lv.x - cx), ly = fy; g.fillStyle = 'rgba(8,6,10,0.6)'; g.beginPath(); g.arc(lx, ly - 10, 13, 0, 7); g.fill(); ctx.text('DRY', lx, ly - 30, '#7a7480', 'center', 5); }
+      if (HKM.greatReady(S) && !HKM.hkOpen(e)) { const gx = R(G.great - cx), pulse = 0.5 + 0.5 * Math.sin(time * 6), bob = R(Math.abs(Math.sin(time * 4)) * 5);
+        SET.glow({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.great, G.floorY - 24, 40, 0.3 + 0.25 * pulse, '255,211,107');
+        ctx.text('STRIKE THE GLASS', gx, fy - 78, Math.floor(time * 4) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6);
+        g.fillStyle = '#ffd36b'; g.beginPath(); g.moveTo(gx - 6, fy - 66 + bob); g.lineTo(gx + 6, fy - 66 + bob); g.lineTo(gx, fy - 58 + bob); g.closePath(); g.fill(); } }
     /* THE READ (B10) */
     const x = R(e.x - cx), y = R(e.y - HK.h / 2 - cy);
     if (HKM.hkOpen(e)) { const kk = Math.max(0, e.open / HK.openT);
       g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 28, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      const by = R(e.y - HK.h - 30 - cy); ctx.text('STALLED', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * Math.min(1, kk)), 3); }
+      const by = R(e.y - HK.h - 30 - cy); ctx.text(e.mode === 'hold' ? 'OPEN' : 'STALLED', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, R(36 * Math.min(1, e.mode === 'hold' ? e.open / HK.aloft.life[HK.aloft.life.length - 1] : kk)), 3); }
     if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 30, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       ctx.text('WARDED', x, R(e.y - HK.h - 26 - cy), '#c8d8e8', 'center', 5); }
     if (e.mode === 'turn') ctx.text('TURNING', x, R(e.y - HK.h - 26 - cy), '#e8d0a0', 'center', 5);
