@@ -624,7 +624,7 @@ const BZ_TEACH = { brace: ['bzBraceTold', 'HOLD C: TAKE IT ON THE AXES. A TENTH 
   drain: ['bzDrainTold', 'OUT OF A FIGHT YOUR RAGE DRAINS AWAY. STAY IN IT, OR STAND STILL AND WHET IT UP.'] };
 /* ==== THE RANGER'S KEYS, IN WORDS (her teaching lines, claude/ranger): the draw, the quiver, the focus ==== */
 const RG_TEACH = { shot: ['rgShotTold', 'TAP X: A QUICK SHOT. HOLD X: DRAW, AND LET GO. YOUR ARROWS DROP: MIND THE RANGE.'],
-  empty: ['rgEmptyTold', 'QUIVER EMPTY: WALK OVER YOUR ARROWS TO TAKE THEM BACK. UNTIL THEN, THE KNIFE.'],
+  empty: ['rgEmptyTold', 'QUIVER EMPTY: CROUCH TO RESTOCK. OR WALK OVER YOUR ARROWS. UNTIL THEN, THE KNIFE.'],
   focus: ['rgFocusTold', 'FOCUS FULL: UP+C MARKS YOUR QUARRY, OR A FULL DRAW LOOSES A PIERCING SHOT.'] };
 let rgTaughtIn = '';
 function rgTeach(k) { const t = RG_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || rgTaughtIn === levelIndex + ':' + k) return; rgTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintT = 5; hintMsg = t[1]; }
@@ -9400,7 +9400,7 @@ function updatePlayer(dt) {
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
   P.ducking = !!(GS > 0 && keys.down && P.ground && !move && !P.slideOn && ((isPyro() && P.emberUp) || (isBz() && CRC && CRC.coiled()) || (!keys.left && !keys.right)) && !P.climb && !P.cling && !P.swim && !P.dead && !P.plunge && P.atk < 0 && !dodging && !stunned
-    && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40 || (MCH && MCH.riding(P)))); P.crouch = P.ducking ? 1 : 0; if (isPyro() && EMBER) EMBER.settle();   /* (her ward turns with her: left and right face her about, and she stays down) */
+    && !P.block && !P.aegis && !P.warding && !(P.hurt > 0) && !P.fly && (P.onMover || Math.abs(P.vx) < 40 || (MCH && MCH.riding(P)))); P.crouch = P.ducking ? 1 : 0; if (isRg() && RGK) RGK.restock(dt, keys); if (isPyro() && EMBER) EMBER.settle();   /* (her ward turns with her: left and right face her about, and she stays down) */
   if (CRC) CRC.update(dt);   /* THE COIL, THE POUNCE and THE WHETSTONE (src/crouch-c.js, claude/berserker2): the berserker crouched, letting go, and stood still */
   if ((P.hasteT || 0) > 0) P.hasteT = Math.max(0, P.hasteT - dt);   /* A WAR CRY's haste (src/berserker.js warCry), on whoever it reached */
   if (CRH) CRH.update(dt);   /* (claude/crouchfix) the first crouch of each hero says his twist, behind any toast already up */

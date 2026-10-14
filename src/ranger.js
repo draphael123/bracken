@@ -26,9 +26,9 @@
 // main.js owns the world, the input and the tal() reads (rgTal); this module owns her arrows, her quiver, her focus, the bash and the snare.
 // BK.rg() reads it for tools/ranger.mjs and the bots.
 export const RG = {
-  hp: 90, dmg: 11,                                    /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
+  hp: 105, dmg: 14,                                    /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
   run: 1.04,                                          /* x RUN on foot: light and quick */
-  quiver: { n: 5, refill: 6, fletch: 4, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
+  quiver: { n: 5, refill: 8, fletch: 4, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
   quick: { vx: 270, vy: -40, g: 720, dmg: 0.6, st: 4, rec: 0.2 },        /* THE QUICK SHOT: ~70 px (measured in the page) before it is at her feet; a tap's damage */
   draw: { wind: 0.55, vx0: 340, vx1: 420, vy: -55, g: 520, dmg0: 0.9, dmg1: 1.7, st: 9, hold: 3, rec: 0.24, heavyAt: 0.5, slow: 0.35 },   /* THE DRAW: wind s to full; a full one lands ~150 px out (half a screen at most; the SWEET SPOT, ~1/3 of one, is where it pays) */
   rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 0.8 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
@@ -40,6 +40,7 @@ export const RG = {
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
   flip: { vx: 175, vy: -235, high: 1.25, shots: 1 },  /* THE BACKFLIP: off the ground; HIGH FLIP x high */
   snare: { st: 12, life: 14, hold: 1.6, eliteHold: 0.8, bossLean: 22, dmg: 0.5, cd: 0.7, toothed: 4 / 3 },
+  restock: { delay: 0.4, each: 1.3 },                 /* CROUCH TO RESTOCK (Daniel 10-14): DOWN held STILL on the ground delay s, then an arrow from the hip pouch every each s up to full; moving, a swing, a jump, a roll, a draw or a hit cancels it and resets the delay */
   perk: { quiver: 1, focus: 1 },                      /* LEVELING2's hero perks (FULL QUIVER, PATIENT EYE): main.js applyUpgrades sets these from the card; 1 = none */
   /* WEIGHT (claude/weight): her row of its commit table (src/commit.js reads COMMIT.ranger) - kept here as the record */
   commit: { light: 0.12, third: 0.18, up: 0.12, heavy: 0.24, roll: 22, rollInv: 0.2, rollT: 0.34 },
@@ -48,7 +49,7 @@ const ARROW_HIT = 3;   /* half-size of an arrow's point, px */
 
 export function makeRanger(api) {
   const stats = { quick: 0, draws: 0, full: 0, rises: 0, downs: 0, pierces: 0, knife: 0, hits: 0, sweet: 0, focusFull: 0, marks: 0, markHits: 0, bashes: 0, parries: 0, tooStrong: 0,
-    snares: 0, snared: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0 };
+    snares: 0, snared: 0, restocked: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0 };
   const P = () => api.P, T = () => api.tal();
   const maxQ = () => RG.quiver.n + (T().deep ? 1 : 0);
   const refillT = () => (T().fletch ? RG.quiver.fletch : RG.quiver.refill) / RG.perk.quiver;
@@ -232,6 +233,12 @@ export function makeRanger(api) {
     if (T().cover && api.time - (p.rgCoverAt ?? -9) >= 3 && giveArrow(p, 1, 'cover')) p.rgCoverAt = api.time;
     api.SFX.rgFlip && api.SFX.rgFlip(); return RG.flip.vx * k; }
 
+  function restock(dt, keys) { const p = P(); ensure(p);
+    /* CROUCH TO RESTOCK (main.js calls it right after P.ducking is known this frame): a held, still duck on the ground (main.js sets p.ducking: no walk, swing, guard or roll) draws from the pouch; anything else resets the delay */
+    if (p.ducking && p.ground && !p.swim && !p.dead && !(p.hurt > 0) && !(p.dodge > 0) && !p.rgNock && !(p.atk > 0) && !keys.atk && p.rgQ < maxQ()) { p.rgRsT = (p.rgRsT || 0) + dt;
+      if (p.rgRsT >= RG.restock.delay) { p.rgRsE = (p.rgRsE || 0) + dt; if (p.rgRsE >= RG.restock.each) { p.rgRsE = 0; if (giveArrow(p, 1, 'restock')) { stats.restocked++; api.trialEvent('restock'); api.SFX.rgTick ? api.SFX.rgTick() : api.SFX.rgPick && api.SFX.rgPick(); } } } }
+    else { p.rgRsT = 0; p.rgRsE = 0; }
+  }
   /* ---- EVERY FRAME (main.js updatePlayer, the hero's own C block): the timers, the trickle, C, the arrows ---- */
   function update(dt, keys, ctx) {
     const p = P(), t = T(); ensure(p);
@@ -330,12 +337,12 @@ export function makeRanger(api) {
         for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.fillRect(x + sx * rr - (sx > 0 ? 3 - o : o), y + sy * rr - (o && sy > 0 ? 0 : 0), 4, 1); g.fillRect(x + sx * rr, y + sy * rr - (sy > 0 ? 3 : 0), 1, 4); }
         g.fillRect(x - rr - 3, y, 3, 1); g.fillRect(x + rr + 1, y, 3, 1); g.fillRect(x, y - rr - 3, 1, 3); g.fillRect(x, y + rr + 1, 1, 3); }
       g.fillStyle = '#ffd0c0'; g.fillRect(x, y, 1, 1); if (k) { g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1); } } }
-  function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; }
+  function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
   const read = () => { const p = P(); ensure(p); return { q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };
   return { RG, arrows, maxQ, press, nockStep, release: w => release(P(), w), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
     bashTakes, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
-    update, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
+    update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }

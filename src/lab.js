@@ -53,6 +53,8 @@ export const LAB_STAND = Object.fromEntries(Object.keys(LAB_REACH).map(h => [h, 
 /* (claude/ranger) THE RANGER'S HANDS STAND OFF WHILE SHE HAS ARROWS: her reach is the bow's sweet spot (RANGER_STAND) with a quiver, the knife's without one. The page's hands read it live
    (BK.rg); in Node (no page) it is the knife's. A first pick for the tune lane: the hands do not yet walk over to take her arrows back - the trickle refills her */
 export const RANGER_STAND = 64;
+export const RANGER_SAFE = 130;   /* px from the boss at which the bot will crouch to restock */
+export const RANGER_PICK_WALK = 150;   /* (claude/rangertune) px the bot walks to take an arrow back */
 const rgArrows = () => { try { const r = globalThis.BK && globalThis.BK.rg && globalThis.BK.rg(); return r ? r.q : 0; } catch { return 0; } };
 Object.defineProperty(LAB_REACH, 'ranger', { get: () => rgArrows() > 0 ? RANGER_STAND : 16, enumerable: true });
 Object.defineProperty(LAB_STAND, 'ranger', { get: () => LAB_REACH.ranger - STAND_MARGIN, enumerable: true });
@@ -2310,8 +2312,15 @@ async function runbossLab(BK, opts) {
              tap does not clear it. Walking and not moving means something that size is in the way. */
           if (flotClimb && P.ground && Math.abs(P.vx) < 8 && (k.left || k.right) && f % 14 === 0) { BK.press('jump'); P.labJump = 18; }
           if (P.labJump > 0) { P.labJump--; k.jump = true; } } }
-      else if (goal !== null && !k.block) { let desired=strike ? goal-(Math.sign(goal-P.x)||P.face)*(LAB_STAND[h]+(boss.w||20)/2) : goal; if (boss.t === 'windcaller') desired = callerKeep(BK, boss, desired); const gd = desired - P.x;
+      else if (goal !== null && !k.block) { let desired=strike ? goal-(Math.sign(goal-P.x)||P.face)*(LAB_STAND[h]+(boss.w||20)/2) : goal; if (boss.t === 'windcaller') desired = callerKeep(BK, boss, desired);
+        /* (claude/rangertune) THE RANGER'S PICKUP HAND: with the quiver down to its last arrow a player walks over to the arrows lying/stuck near and takes them back (the glint) instead of knifing on until the trickle
+           refills her. Only arrows on her own footing within RANGER_PICK_WALK and not on the far side of the boss. */
+        if (h === 'ranger' && (rgArrows() <= 1 || P.labRs)) { const r = BK.rg && BK.rg(); let best = null, bd = 1e9; if (r) for (const a of r.arrows) { if (a.state !== 'lie' && a.state !== 'stuck') continue; const d = Math.abs(a.x - P.x); if (d > RANGER_PICK_WALK || a.y < P.y - 30 || a.y > P.y + 6 || Math.abs(a.x - boss.x) < 22 || (a.x - boss.x) * (P.x - boss.x) < 0) continue; if (d < bd) { bd = d; best = a; } } if (best) desired = best.x;
+          /* AND THE RESTOCK HAND: nothing to pick up, quiver empty (or filling) and the boss out of reach: stand still and hold DOWN (CROUCH TO RESTOCK) until it is nearly full or he closes */
+          else { const far = Math.abs(boss.x - P.x) > RANGER_SAFE; if (far && P.ground && !P.swim && (rgArrows() === 0 || (P.labRs && rgArrows() < 4))) { P.labRs = true; desired = P.x; } else P.labRs = false; } } else if (h === 'ranger') P.labRs = false;
+        const gd = desired - P.x;
         if (Math.abs(gd) > 4) k[gd > 0 ? 'right' : 'left'] = true;
+        if (h === 'ranger' && P.labRs && Math.abs(gd) <= 4) { k.left = k.right = false; k.down = true; k.atk = false; }
         /* THE TOMB'S RUBBLE IS A STEP: walking and not moving there means a mound in the way, and a player hops it */
         if (boss.t === 'prince' && (k.left || k.right) && P.ground && Math.abs(P.vx) < 4 && f % 15 === 0) BK.press('jump');
         /* AND WATER HAS A SECOND AXIS. Outside the Deep's own swimming branch the hands only ever walked left and

@@ -80,7 +80,8 @@ try {
     for (let a = 0; a < lab.length; a++) for (let b = a + 1; b < lab.length; b++) { const p = lab[a], q = lab[b];
       assert.ok(p.x0 + p.w <= q.x0 || q.x0 + q.w <= p.x0 || p.y0 + p.h <= q.y0 || q.y0 + q.h <= p.y0, 'eight, pick ' + i + ': names ' + p.s + ' and ' + q.s + ' overlap'); }
     const title = rec.find(x => x.s === 'CHOOSE YOUR HERO'); assert.ok(title && title.y0 + title.h <= 20, 'eight, pick ' + i + ': the heading is clear of the row'); });
-  assert.deepEqual(seven.took, ['3:berserker', '4:pyro', '6:pirate', '7:reaper'], 'confirm takes the portrait under the cursor: ' + seven.took);
+  /* DESIGN CHANGE (Daniel 10-12): the RANGER is the 4th free starter, so pick index 3 is her; the Berserker is a fire-mountain unlock (buyable meanwhile) */
+  assert.deepEqual(seven.took, ['3:ranger', '4:pyro', '6:pirate', '7:reaper'], 'confirm takes the portrait under the cursor: ' + seven.took);
   assert.deepEqual(seven.walk, [1, 2, 3, 4, 5, 6, 7, 0], 'RIGHT walks all eight and wraps: ' + seven.walk);
   if (seven.boxes && seven.boxes.length) { const rows = seven.boxes.filter(b => b.y <= 20 && b.h >= 50 && b.w > 20 && b.w < 200); assert.ok(rows.length >= 8, 'eight portraits are eight tap boxes (' + rows.length + ')'); }
   console.log('ok  hero pick x8   all eight heroes named without overlap, on the screen, RIGHT walks them and wraps, eight tap boxes');

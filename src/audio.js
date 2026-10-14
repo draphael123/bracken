@@ -1748,6 +1748,7 @@ Object.assign(SFX, {
      the bow-bash, the snare set and the snare biting, the backflip, the mark, the hawk */
   rgLoose(v = 0) { noise(0.08 + v * 0.03, 0.12 + v * 0.05, 2400 - v * 400, 1.3); tone('triangle', vary(220 + v * 30), 140, 0.06 + v * 0.03, 0.06 + v * 0.03); if (v >= 2) tone('sine', 110, 70, 0.14, 0.08); },
   rgThunk() { file('imp_wood', 0.22, 1.4); tone('square', vary(300), 180, 0.04, 0.04); },
+  rgTick() { tone('square', 1500, 1500, 0.025, 0.03); },
   rgPick() { tone('triangle', 880, 1175, 0.06, 0.04); noise(0.03, 0.06, 3200, 1.5); },
   rgBash() { noise(0.08, 0.14, 1400, 0.8); tone('triangle', vary(260), 160, 0.08, 0.06); },
   rgSnare() { tone('square', vary(500), 420, 0.04, 0.04); noise(0.06, 0.08, 1800, 1.1); },

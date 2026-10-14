@@ -42,7 +42,12 @@ try {
     { __rg(); __tap(); BK.sim(20); __tap(); BK.sim(60); const q1=R().q, xs=R().arrows.map(a=>a.x); K.right=true; for(let i=0;i<120&&R().arrows.length;i++)BK.sim(1); K.right=false; BK.sim(5);
       out.quiver={q1,stuck:xs.length,after:R().q,left:R().arrows.length,picked:R().stats.picked};
       __rg(); P().rgQ=0; const f=__foe(60); BK.sim(1); __tap(); out.quiver.emptyAtk=P().atk>=0; out.quiver.emptyArrows=R().arrows.length; f.alive=false;
-      BK.sim(2); P().rgQ=0; P().rgRefT=0; BK.sim(Math.round(60*6.3)); out.quiver.trickle=R().q; }
+      BK.sim(2); P().rgQ=0; P().rgRefT=0; BK.sim(Math.round(60*8.3)); out.quiver.trickle=R().q; }
+    /* CROUCH TO RESTOCK: a quick duck does not, a held still one does (1 arrow per ~1.3 s after 0.4 s), moving cancels and resets the delay */
+    { __rg(); P().rgQ=0; P().rgRefT=0; K.down=true; BK.sim(18); const duck=!!P().ducking, quick=R().q; K.down=false; BK.sim(6);
+      K.down=true; BK.sim(60); const at1s=R().q; BK.sim(60); const at2s=R().q; BK.sim(340); const full=R().q; K.down=false; BK.sim(3);
+      P().rgQ=0; P().rgRefT=0; K.down=true; BK.sim(30); K.right=true; BK.sim(3); K.right=false; const rt=P().rgRsT; BK.sim(40); const afterMove=R().q; K.down=false; BK.sim(3);
+      out.restock={duck,quick,at1s,at2s,full,rt,afterMove,stat:R().stats.restocked,max:R().max}; }
     /* knife: point-blank, and the low sweep */
     { __rg(); const f=__foe(12); BK.sim(1); __tap(); out.knife={atk:P().atk>=0,arrows:R().arrows.length,q:R().q}; f.alive=false; BK.sim(30);
       K.down=true; __tap(); out.knife.sweep=P().swingKind; K.down=false; out.knife.sweepArrows=R().arrows.length; BK.sim(30); }
@@ -89,7 +94,11 @@ try {
   ok(r.draw.land >= 125 && r.draw.land <= 185 && r.draw.land > r.quick.land + 40, 'draw: a full draw should land 125-185 px out, well past a tap: ' + r.draw.land);
   ok(r.quiver.stuck === 2 && r.quiver.left === 0 && r.quiver.after === r.quiver.q1 + 2 && r.quiver.picked === 2, 'quiver: walking over the stuck arrows should take them back: ' + JSON.stringify(r.quiver));
   ok(r.quiver.emptyAtk && r.quiver.emptyArrows === 0, 'quiver: empty, X should be the knife: ' + JSON.stringify(r.quiver));
-  ok(r.quiver.trickle === 1, 'quiver: one arrow should trickle back in ~6 s: ' + r.quiver.trickle);
+  ok(r.quiver.trickle === 1, 'quiver: one arrow should trickle back in ~8 s: ' + r.quiver.trickle);
+  ok(r.restock.duck && r.restock.quick === 0, 'restock: a quick duck (0.3 s) must not restock: ' + JSON.stringify(r.restock));
+  ok(r.restock.at1s === 0 || r.restock.at1s === 1, 'restock: about one arrow in the first second after the delay: ' + JSON.stringify(r.restock));
+  ok(r.restock.at2s >= 1 && r.restock.at2s <= 2 && r.restock.full === r.restock.max, 'restock: crouching still fills the quiver, one arrow per ~1.3 s: ' + JSON.stringify(r.restock));
+  ok(r.restock.rt === 0 && r.restock.afterMove === 0, 'restock: moving cancels it and resets the delay: ' + JSON.stringify(r.restock));
   ok(r.knife.atk && r.knife.arrows === 0 && r.knife.sweep === 'sweep' && r.knife.sweepArrows === 0, 'knife: point-blank X and DOWN+X should be the knife: ' + JSON.stringify(r.knife));
   ok(r.rise.kind === 'rise' && has(r.rise.tag, 'rise'), 'rise: UP+X should be the rising shot, tagged rise: ' + JSON.stringify(r.rise));
   ok(r.down.kind === 'down' && has(r.down.tag, 'plunge') && r.down.vy < 0 && !r.down.plunge, 'down: DOWN+X in the air should shoot down (plunge tag) and hop her up: ' + JSON.stringify(r.down));
