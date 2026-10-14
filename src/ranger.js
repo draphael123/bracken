@@ -26,17 +26,17 @@
 // main.js owns the world, the input and the tal() reads (rgTal); this module owns her arrows, her quiver, her focus, the bash and the snare.
 // BK.rg() reads it for tools/ranger.mjs and the bots.
 export const RG = {
-  hp: 105, dmg: 14,                                    /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
+  hp: 130, dmg: 15,                                    /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
   run: 1.04,                                          /* x RUN on foot: light and quick */
   quiver: { n: 5, refill: 8, fletch: 4, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
   quick: { vx: 270, vy: -40, g: 720, dmg: 0.6, st: 4, rec: 0.2 },        /* THE QUICK SHOT: ~70 px (measured in the page) before it is at her feet; a tap's damage */
   draw: { wind: 0.55, vx0: 340, vx1: 420, vy: -55, g: 520, dmg0: 0.9, dmg1: 1.7, st: 9, hold: 3, rec: 0.24, heavyAt: 0.5, slow: 0.35 },   /* THE DRAW: wind s to full; a full one lands ~150 px out (half a screen at most; the SWEET SPOT, ~1/3 of one, is where it pays) */
-  rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 0.8 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
+  rise: { vx: 110, airVx: 20, vy: -390, g: 560, dmg: 1.0 },   /* THE RISING SHOT, steeply up (in the air, nearly straight up) */
   down: { vy: 470, hop: -175, dmg: 1.05, st: 7 },      /* THE DOWNWARD SHOT (her plunge) and the hop it gives her */
   pierce: { vx: 520, range: 240, dmg: 1.9 },          /* THE PIERCING SHOT: flat, through everything in the line */
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
   mark: { t: 10, mul: 1.33, apex: 1.5, range: 300 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
-  knife: { reach: 18, dmg: 0.75 },                    /* THE KNIFE: a short cut (its box is 17 out, main.js attackBox0: a foe whose near edge is inside reach is POINT-BLANK), a little lighter than a sword */
+  knife: { reach: 18, dmg: 1.0 },                    /* THE KNIFE: a short cut (its box is 17 out, main.js attackBox0: a foe whose near edge is inside reach is POINT-BLANK), a little lighter than a sword */
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
   flip: { vx: 175, vy: -235, high: 1.25, shots: 1 },  /* THE BACKFLIP: off the ground; HIGH FLIP x high */
   snare: { st: 12, life: 14, hold: 1.6, eliteHold: 0.8, bossLean: 22, dmg: 0.5, cd: 0.7, toothed: 4 / 3 },
