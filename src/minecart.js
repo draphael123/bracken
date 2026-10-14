@@ -436,11 +436,11 @@ export function buildMinecart({ painter, T, TS }) {
     tell(950, 974, 'THE LINE ENDS: ON FOOT');
     ground(970, 975, D); decor.push({ kind: 'buffer', x: 975, row: D, soft: true });   /* the line runs out: a soft buffer, you step out (FOOT[2].x0) */
     /* TEACH (976-999) */
-    low(976, 985); sign(977, D - 1, 'THE SPOIL PITS. THE PITS BITE. HIGH: THE CATWALK - JUMP WHAT IS ON IT. LOW: THE WALK - JUMP THE PITS.');
+    low(976, 985); sign(977, D - 1, 'THE SPOIL PITS BITE. HIGH: THE CATWALK, JUMP WHAT IS ON IT. LOW: JUMP THE PITS.');
     stepUp(980); walk(982, 1001);
     pitAt(986, 988); low(989, 991); pitAt(992, 993); low(994, 999);
     for (const x of [985, 987, 989]) ent('coin', x, U - 2);   /* (the high way over the first pit pays) */
-    spoil(990, 991, U); sign(984, U - 1, 'SPOIL ON THE PLANKS: JUMP IT. A CRUSHER OVER THE CATWALK: TIME IT, OR DOWN + JUMP TO DROP UNDER IT.');
+    spoil(990, 991, U); sign(984, U - 1, 'A CRUSHER OVER THE CATWALK: TIME IT, OR DOWN + JUMP TO DROP UNDER IT.');
     crusher('pt1', 995, U, 2.6, 1.0, 0.2);
     stepUp(998);
     /* TEST (1000-1013) */

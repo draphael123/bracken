@@ -328,7 +328,7 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
   for (const d of S.dyn) if (d.t > 0 && Math.abs(d.x - DRILL.cruise * d.t - P.x) < DRILL.dynR + 10 && late('dyn' + d.id)) danger.add(d.lane);
   for (const d of S.dynPend || []) if (late('dyn' + d.id)) danger.add(d.lane);
   if (S.hook && !S.hook.flying && late('hook' + S.n.chain)) danger.add(S.hook.lane);
-  const lungeOn = S.lunge && S.lunge.lane === lane && late('lunge' + S.n.lunge) && (S.lunge.on || S.lunge.t < 0.5);   /* (deeprails5, the bot fix) a player works on through the whine and ducks as it comes - ducking the whole tell idled it a second a lunge */
+  const lungeOn = S.lunge && S.lunge.lane === lane && late('lunge' + S.n.lunge);
   /* (deeprails5) THE RAIL CLAW: its marked stretch and a torn one coming at me are a danger on their line; THE SPARE CUTTER on my line is struck back (or jumped) */
   if (S.clawPend && late('claw' + S.n.claw)) danger.add(S.clawPend.lane);
   const tear = S.tears.find(tr => tr.lane === lane && tr.x + DRILL.clawW > P.x - 14 && tr.x < P.x + 190 && late('tear' + tr.id));
@@ -364,7 +364,7 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
   if (danger.has(lane) && safe !== undefined && safe !== lane) { out.jump = false; out.drop = false; go(safe); out.why += ' +dodge'; }
   else if (danger.has(lane)) { out.gx = Math.min(out.gx ?? P.x, P.x - 60); out.why += ' +brake'; }
   if (tear && (safe === undefined || safe === lane) && P.ground) { out.boost = true; out.gx = null; if (tear.x - P.x < 22) out.jump = true; out.why += ' +torn rail: pump, jump'; }   /* (deeprails5) no other line: pump and jump it */
-  if (cut) { const gap = cut.x - P.x, sw = mem['mc' + cut.id] ??= rng() < DRILL_PLAN.missCut; if (!sw && gap < Math.min(reach, 34) + 6 && gap > 2 && P.atk < 0) { out.atk = true; out.face = 1; out.why += ' +cutter: strike it back'; } else if ((sw || P.atk >= 0) && gap < 26 && P.ground) { out.jump = true; out.drop = false; out.why += ' +cutter: jump'; } }
+  if (cut) { const gap = cut.x - P.x, sw = mem['mc' + cut.id] ??= rng() < DRILL_PLAN.missCut; if (!sw && gap < Math.min(reach, 34) + 26 && gap > 2 && P.atk < 0) {   /* (the swing started a beat before it arrives: it rolls in at cutterV) */ out.atk = true; out.face = 1; out.why += ' +cutter: strike it back'; } else if (sw && gap < 30 && P.ground) { out.jump = true; out.drop = false; out.why += ' +cutter: jump'; } }
   if (spot) { out.gx = Math.min(out.gx ?? P.x, P.x - 70); out.why += ' +roof: brake'; }
   if (lungeOn) { out.duck = true; out.jump = false; out.drop = false; out.atk = false; out.why += ' +duck'; }
   if (out.backTo !== undefined && !out.drop) out.gx = Math.min(out.gx ?? P.x, out.backTo);

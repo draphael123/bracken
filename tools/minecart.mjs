@@ -318,10 +318,9 @@ const hits = () => { const got = []; return { got, w: Object.assign(world([]), {
   ok(GD.DRILL.collapseApart > (MC.boost - MC.cruise) * GD.DRILL.collapseTell + GD.DRILL.collapseW, 'its spots are far enough apart that a pump runs through between them'); }
 { const { S, e } = fight(); S.lever = { x: G.x0 + 120, id: 1, thrown: false }; S.chute = { t: 1, R: 300 }; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[0], ground: true, face: 1, atk: -1, lane: 0, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
   ask(5); const pl = ask(5.5); ok(pl.talk && /lever/.test(pl.why), 'the bot throws the points lever as it passes (E, from the LOW line)'); }
-{ const { S, e } = fight(); S.lunge = { lane: 1, t: 0.25, on: false }; S.n.lunge = 1; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
-  ask(5); const pl = ask(5.5); ok(pl.duck, 'the bot ducks in its tub under the lunge (its last beat)');
-  S.lunge.on = true; ok(ask(5.6).duck, 'and while it sweeps');   /* (deeprails5, the bot fix: through the first of its whine it works on - it ducked the whole 1.0 s tell and idled; a player ducks as it comes) */
-  S.lunge = { lane: 1, t: 0.8, on: false }; S.n.lunge = 2; ask(6); ok(!ask(6.5).duck, 'early in the whine it works on (deeprails5: the bot fix)'); }
+{ const { S, e } = fight(); S.lunge = { lane: 1, t: 0.6, on: false }; S.n.lunge = 1; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
+  ask(5); const pl = ask(5.5); ok(pl.duck, 'the bot ducks in its tub under the lunge');
+  S.lunge.on = true; ok(ask(5.6).duck, 'and while it sweeps'); }
 { const { S, e } = fight(); S.chute = { x: G.x0 + 200, t: 0.6 }; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 120, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
   ask(5); const pl = ask(5.5); ok(/ore/.test(pl.why) && pl.drop, 'the bot drops to the LOW line to ram when the chute rattles with no lever left'); }
 ok(GD.DRILL.hp >= 1900 && GD.DRILL.jamCap >= 0.15, 'the drill\'s health is never lowered under the greybox floor (' + GD.DRILL.hp + ')');
