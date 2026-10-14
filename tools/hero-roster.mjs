@@ -23,8 +23,10 @@ class Fake { constructor(cap = Infinity) { this.m = new Map(); this.cap = cap; }
   used() { let n = 0; for (const [k, v] of this.m) n += k.length + v.length; return n; }
   setItem(k, v) { const was = this.m.has(k) ? k.length + this.m.get(k).length : 0; if (this.used() - was + k.length + v.length > this.cap) throw Object.assign(new Error('quota exceeded'), { name: 'QuotaExceededError' }); this.m.set(k, String(v)); } }
 assert.equal(howTo('pyro', false), 'BUY IN THE STORE - 10 SILVER'); assert.equal(howTo('paladin', true), 'BEAT HIM, THEN 10 SILVER', 'the hook: the unlock rule changes the line');
-assert.deepEqual(STARTERS, ['knight', 'warden', 'geomancer', 'berserker']); assert.equal(HERO_IDS.length, 8);
-assert.deepEqual(parseRoster(rosterText(['pyro'])), ['knight', 'warden', 'geomancer', 'berserker', 'pyro'], 'the four starters are always in it, in hero order');
+/* (claude/ranger, Daniel 10-12 - a deliberate design change: THE RANGER is the fourth free starter and the berserker is bought; a roster or a slot that holds him keeps him) */
+assert.deepEqual(STARTERS, ['knight', 'warden', 'geomancer', 'ranger']); assert.equal(HERO_IDS.length, 9);
+assert.deepEqual(parseRoster(rosterText(['pyro'])), ['knight', 'warden', 'geomancer', 'ranger', 'pyro'], 'the four starters are always in it, in hero order');
+assert.deepEqual(parseRoster(JSON.stringify({ v: 1, heroes: ['knight', 'warden', 'geomancer', 'berserker'] })), ['knight', 'warden', 'geomancer', 'ranger', 'berserker'], 'an old roster (written when the berserker was a starter) keeps him, and gains the ranger');
 assert.deepEqual(parseRoster(rosterText(['nobody', 'reaper'])), [...STARTERS, 'reaper'], 'an unknown id is dropped');
 assert.throws(() => parseRoster('{bad'), /not readable/); assert.throws(() => parseRoster('{"heroes":3}'), /no hero list/);
 const slotA = JSON.stringify({ hero: 'knight', heroes: { knight: true, pyro: true } }), slotB = JSON.stringify({ hero: 'paladin', heroes: { paladin: true, reaper: false } }), slotBad = '{trunc';
@@ -68,7 +70,7 @@ try {
   await nav('?noopening=1', 'localStorage.clear();localStorage.setItem("bracken.progress.0",' + JSON.stringify(SLOT0) + ');localStorage.setItem("bracken.progress.2",' + JSON.stringify(JSON.stringify({ hero: 'paladin', heroes: { paladin: true } })) + ');localStorage.setItem("bracken.slot","0");');
   let r = await pg.evalp(`({ roster: BK.roster(), stored: localStorage.getItem('bracken.roster'), lg: localStorage.getItem('bracken.roster.lastgood'), dev: BK.isDev() })`, 8000);
   ok(!r.dev, '1: no ?dev=1: the dev flag is off');
-  ok(['knight', 'warden', 'geomancer', 'berserker', 'paladin'].every(h => r.roster.includes(h)) && !r.roster.includes('pyro') && !r.roster.includes('pirate') && !r.roster.includes('reaper'), '1: the roster was seeded from every slot: ' + r.roster.join());
+  ok(['knight', 'warden', 'geomancer', 'ranger', 'paladin'].every(h => r.roster.includes(h)) && !r.roster.includes('berserker') && !r.roster.includes('pyro') && !r.roster.includes('pirate') && !r.roster.includes('reaper'), '1: the roster was seeded from every slot: ' + r.roster.join());
   ok(r.stored && r.stored === r.lg, '1: the roster is stored and backed up (.lastgood): ' + r.stored);
 
   /* 2. A HERO BOUGHT IN SLOT 2 (the real buy path, a coin route) is in the roster at once and open in slot 4's new game; the slots keep their own heroes */
@@ -79,13 +81,13 @@ try {
       BK.loadSlot(3); const fresh = { heroes: Object.keys(BKT.PROG.heroes), picked: !!BKT.PROG.heroPicked };
       return { before, bought, rosterNow: BK.roster(), stored: JSON.parse(localStorage.getItem('bracken.roster')).heroes, slot1Heroes: Object.keys(slot1.heroes), open: HEROS.map(h => [h, BK.heroOpen(h)]), fresh }; })()`.replace('HEROS', JSON.stringify(HERO_IDS)), 8000);
   ok(!r.before && r.bought && r.rosterNow.includes('pyro') && r.stored.includes('pyro'), '2: pyro bought in slot 2 is in the roster, memory and storage: ' + JSON.stringify([r.bought, r.rosterNow, r.stored]));
-  ok(r.open.filter(([, o]) => o).map(x => x[0]).join() === 'knight,warden,geomancer,berserker,pyro,paladin', '2: slot 4 (new game) can take the starters + pyro + paladin, not pirate / reaper: ' + JSON.stringify(r.open));
+  ok(r.open.filter(([, o]) => o).map(x => x[0]).join() === 'knight,warden,geomancer,ranger,pyro,paladin', '2: slot 4 (new game) can take the starters + pyro + paladin, not the berserker / pirate / reaper: ' + JSON.stringify(r.open));
   ok(!r.slot1Heroes.includes('paladin') && r.fresh.heroes.length <= 1, '2: each slot keeps its own heroes (slot 1 has no paladin; a fresh slot owns none until it picks): ' + JSON.stringify([r.slot1Heroes, r.fresh]));
 
   /* 3. THE PICK: a fresh slot, state heropick. Locked = silhouette + '???' + how-to; Z on him is a soft no; an open roster hero is taken */
   r = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.loadSlot(3); BK.reset({ fresh: true }); const { VW, VH } = BK.view; const out = { cards: [] };
       const text = i => { BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(6); window.__textRec = []; BK.step(1); const rec = (window.__textRec || []).filter(x => x.kind === 'text').map(x => x.s); window.__textRec = null; return rec; };
-      for (let i = 0; i < 8; i++) out.cards.push(text(i));
+      for (let i = 0; i < 9; i++) out.cards.push(text(i));
       /* the silhouette is his real outline: the idle frame's alpha, solid black, one pixel in from a faint rim */
       const { silhouetteOf } = await import('/src/hero-silhouette.js'); out.sil = {};
       for (const h of ['pirate', 'reaper', 'paladin']) { const fr = BK.heroArt(h), s = silhouetteOf(fr), a = fr.getContext('2d').getImageData(0, 0, fr.width, fr.height).data, b = s.getContext('2d').getImageData(0, 0, s.width, s.height).data;
@@ -94,17 +96,18 @@ try {
         for (let y = 0; y < s.height; y++) for (let x = 0; x < s.width; x++) { const bi = (y * s.width + x) * 4; if (b[bi + 3] > 0 && !(b[bi] === 0 && b[bi + 1] === 0 && b[bi + 2] === 0 && b[bi + 3] === 255)) rim++; }
         out.sil[h] = { inside, black, colour, rim, size: [s.width, s.height], frame: [fr.width, fr.height] }; }
       /* Z on a locked card */
-      BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 6; BK.step(3); const d0 = BK.denyAt(); BK.press('confirm'); BK.step(3);
+      BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 7; BK.step(3); const d0 = BK.denyAt(); BK.press('confirm'); BK.step(3);
       out.deny = { state: BK.state, picked: !!BKT.PROG.heroPicked, heroes: Object.keys(BKT.PROG.heroes), denied: BK.denyAt() !== d0 };
       /* Z on an open roster hero (pyro) */
-      BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 4; BK.step(3); BK.press('confirm'); BK.step(3);
+      BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 5; BK.step(3); BK.press('confirm'); BK.step(3);
       out.take = { hero: BK.hero(), heroes: Object.keys(BKT.PROG.heroes), picked: !!BKT.PROG.heroPicked };
       return out; })()`, 60000);
   const shown = i => r.cards[i];
-  ok(shown(6).includes('???') && !shown(6).includes('PIRATE') && shown(6).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: a locked card says ??? and the how-to line: ' + shown(6).join(' | '));
-  ok(shown(7).includes('???') && shown(7).some(s => /UNBURIED/.test(s)), '3: the Death Knight card is locked and names his way in: ' + shown(7).join(' | '));
-  ok(shown(0).includes('KNIGHT') && shown(4).includes('PYRO') && shown(5).includes('PALADIN'), '3: open heroes are named: ' + shown(0).join(' | '));
-  ok(shown(0).filter(s => s === '???').length === 2, '3: exactly the two locked cards are ??? (pirate, reaper): ' + shown(0).join(' | '));
+  ok(shown(7).includes('???') && !shown(7).includes('PIRATE') && shown(7).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: a locked card says ??? and the how-to line: ' + shown(7).join(' | '));
+  ok(shown(4).includes('???') && !shown(4).includes('BERSERKER') && shown(4).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: (claude/ranger) the berserker is no longer free: his card is locked and says BUY IN THE STORE - 10 SILVER: ' + shown(4).join(' | '));
+  ok(shown(8).includes('???') && shown(8).some(s => /UNBURIED/.test(s)), '3: the Death Knight card is locked and names his way in: ' + shown(8).join(' | '));
+  ok(shown(0).includes('KNIGHT') && shown(3).includes('RANGER') && shown(5).includes('PYRO') && shown(6).includes('PALADIN'), '3: open heroes are named: ' + shown(0).join(' | '));
+  ok(shown(0).filter(s => s === '???').length === 3, '3: exactly the three locked cards are ??? (berserker, pirate, reaper): ' + shown(0).join(' | '));
   for (const h of ['pirate', 'reaper', 'paladin']) { const s = r.sil[h]; ok(s.inside > 60 && s.black === s.inside && s.colour === 0, '3: ' + h + "'s silhouette is solid black over exactly his idle frame's pixels: " + JSON.stringify(s)); ok(s.rim > 10 && s.size[0] === s.frame[0] + 2, '3: ' + h + ' has a faint rim one pixel out: ' + JSON.stringify(s)); }
   ok(r.deny.state === 'heropick' && !r.deny.picked && r.deny.denied, '3: Z on a locked hero is refused (nothing taken, the soft no sounded): ' + JSON.stringify(r.deny));
   ok(r.take.hero === 'pyro' && r.take.heroes.join() === 'pyro' && r.take.picked, '3: Z on pyro (open by the roster) starts a new game with him alone: ' + JSON.stringify(r.take));

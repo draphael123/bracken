@@ -10,7 +10,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
-const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger'];
 const BOSSES = ['wood', 'kings', 'spire', 'crown', 'reef', 'flotilla', 'hurricane', 'waymeet', 'undercrown'];   /* the default bossLab roster, minus 'deep': the King swims and is played by a special-cased branch, not the generic stand */
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -58,6 +58,7 @@ try {
          THE PLANTED BLADE (P.heavy) instead of the plain cleave - a much shorter reach (main.js attackBox, "isReaper() &&
          P.heavy": r caps at 20-32 against the plain swing's 31) that failed on every boss for a reason that had nothing
          to do with LAB_STAND. A real player's tap, and the bot's, never holds the button down like that. */
+      const rg = h === 'ranger', h0 = rg ? BK.rgk().read().stats.hits : 0, touched = () => rg ? BK.rgk().read().stats.hits > h0 : P.hitSet.has(boss);   /* (claude/ranger) WITH ARROWS HER HAND STANDS OFF AND SHOOTS: contact is an arrow meeting him (src/ranger.js stats.hits - every other foe is gone), not the swing's P.hitSet */
       BK.press('atk');
       /* THE HAND TRACKS, IT DOES NOT COMMIT: in real play the goal math re-centres on the boss's CURRENT position every
          frame (src/lab.js, "desired"), so a mobile boss (the Hornet Queen drifts and hovers; the King paces) never
@@ -65,8 +66,8 @@ try {
          about reach, not pursuit - and the Death Knight needs it: his cleave is the slowest swing in the game
          (P.atk += dt * 0.34) and does not reach its full 31 px until 0.44 s in, plenty of time for a hovering queen
          to walk out from under a hand that was only checked once. */
-      for (let f = 0; f < 90 && boss.alive && !P.hitSet.has(boss); f++) { P.x = boss.x - stand; P.y = boss.y; P.vx = 0; P.vy = 0; BK.sim(1); }   /* the Hornet Queen also moves in y: pin both axes, not only x */
-      out.push({ lvl: lvId, h, stand: Math.round(stand), hit: P.hitSet.has(boss) });
+      for (let f = 0; f < 90 && boss.alive && !touched(); f++) { P.x = boss.x - stand; P.y = boss.y; P.vx = 0; P.vy = 0; BK.sim(1); }   /* the Hornet Queen also moves in y: pin both axes, not only x */
+      out.push({ lvl: lvId, h, stand: Math.round(stand), hit: touched() });
     }
     return out;
   })()`);

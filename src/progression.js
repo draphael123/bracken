@@ -6,7 +6,7 @@ export {LEGACY_NODES, SKILLS};
 /* 2 (2026-09-24): PASSIVES COME WITH LEVELS, ABILITIES ARE BOUGHT (docs/briefs/hero-kits.md 1b). A passive is no longer sold
    or slotted: it is on from the hero level the catalog gives it. Version 1 saves are migrated by passivesToLevels below. */
 export const PROGRESSION_VERSION = 2;
-export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker'];   /* THE GEOMANCER (2026-09-24): a third starter; THE BERSERKER (2026-10-04): the fourth default */
+export const HERO_IDS = ['knight','pyro','paladin','pirate','reaper','warden','geomancer','berserker','ranger'];   /* THE GEOMANCER (2026-09-24): a third starter; THE BERSERKER (2026-10-04): the fourth default; THE RANGER (claude/ranger, 2026-10-14): the fourth free starter in his place */
 const object = v => !!v && typeof v === 'object' && !Array.isArray(v);
 const clone = v => JSON.parse(JSON.stringify(v));
 /* THE THIRD SLOT OPENS AT LEVEL 16, AND THREE IS THE MOST (Daniel 2026-10-04; it was two at every level from 2026-09-23): two from the start,
@@ -80,6 +80,7 @@ export const HERO_PERKS = {
  reaper: [{ id: 'dward', name: 'BLOOD WARD', what: 'THE BLOOD WARD FILLS 12% FASTER' }, { id: 'dnova', name: 'DEEP DRAW', what: 'THE NOVA HEALS 10% MORE BLOOD' }],
  warden: [{ id: 'wdef', name: 'LONG TURN', what: 'THE DEFLECT WINDOW LASTS LONGER' }, { id: 'wrec', name: 'QUICK POLE', what: 'THE SHAFT RECOVERS 8% SOONER' }],
  geomancer: [{ id: 'gstone', name: 'HARD STONE', what: 'HER STONE STANDS A FIFTH LONGER' }, { id: 'gward', name: 'WIDE RUNE', what: 'THE RUNE-WARD PERFECT WINDOW GROWS' }],
+ ranger: [{ id: 'rgquiver', name: 'FULL QUIVER', what: 'THE QUIVER REFILLS A FIFTH SOONER' }, { id: 'rgfocus', name: 'PATIENT EYE', what: 'FOCUS FILLS A FIFTH FASTER' }],   /* (claude/ranger: 4% a rank, as the berserker's) */
  berserker: [{ id: 'bzstoke', name: 'STOKED', what: 'RAGE FILLS A FIFTH FASTER' }, { id: 'bzstout', name: 'STOUT BRACE', what: 'TAKE IT: THE BEAT IS A FIFTH LONGER' }],   /* (berserkerport: rank 5 = +20%, 4% a rank like the geomancer's) */
 };
 export const ALL_HERO_PERKS = Object.values(HERO_PERKS).flat();
@@ -143,7 +144,7 @@ export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m =
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
  const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0);
- const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105}[h]||100)+2*lv+8*v;
+ const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+2*lv+8*v;
  return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+2*lv+12*e,damage:Math.floor(lv/4)+Math.floor(ranks*(h==='reaper'?1.5:1))+m,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
 }
 /* THE CARD'S MIGRATION (cardV 1): a save from before the card has levels and no picks. Every hero with XP gets his levels as an even spread
@@ -157,7 +158,7 @@ export function migrateCard(p) {
    extra hero opens CO-OP (the AI partners and the co-op hub with it): coopOpen() is "owns two heroes", or a save from before this. OLD SAVES
    (heroFlow 1 migration): a save with any progress keeps every starter it has played as owned and keeps co-op (coopLegacy: its sofa
    friend may still take any starter, as before). */
-export const DEFAULT_HEROES = ['knight', 'warden', 'geomancer', 'berserker'];   /* THE BERSERKER (claude/berserker, 2026-10-04) is the fourth */
+export const DEFAULT_HEROES = ['knight', 'warden', 'geomancer', 'ranger'];   /* THE RANGER (claude/ranger, Daniel 10-12) is the fourth free starter; THE BERSERKER (claude/berserker, 2026-10-04) is bought now (10 silver) - a save that owns him keeps him (migrateHeroes only ever ADDS) */
 export const coopOpen = p => !!p && (!!p.coopLegacy || Object.keys(p.heroes || {}).filter(h => p.heroes[h]).length >= 2);
 export function migrateHeroes(p) {
  if (p.heroFlow === 1) return false;

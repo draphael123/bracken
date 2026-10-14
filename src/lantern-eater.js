@@ -70,8 +70,11 @@ export const special = e => SPECIAL.has(e.mode);
 /* WHAT A BLOW IS, BY ITS ANGLE (the hero as he swings): HIGH from the air (a jump attack, the air up-swing, a plunge) or the rising cut; LOW the low sweep
    (DOWN + swing: the knight's shield trip and the warden's low poke are sweeps too) or a crouched blow; anything else (a plain swing, a heavy, a shot, a burn) MID.
    (The same read claude/canal4 wrote for the kelp guard - every hero has both with base kit, tools/lantern-eater.mjs proves it in the page.) */
-export function blowAngle(P) {
+export function blowAngle(P, blow) {
   if (!P) return 'mid';
+  /* (claude/rangercanal) AN ARROW'S ANGLE IS THE ONE IT WAS LOOSED AT, NOT HER POSTURE WHEN IT LANDS: it flies a beat after the loose, by when she is back on her feet (so every UP+X rising shot read MID and clanked: tools/ranger-canal-trace.mjs). The rising shot (tag 'rise') and the downward shot (tag 'plunge') are HIGH, as the rising cut and the plunge are. */
+  const tag = Array.isArray(blow) ? blow : blow ? [blow] : [];
+  if (tag.includes('rise') || tag.includes('plunge')) return 'high';
   if (P.swingKind === 'sweep' || P.caTrip || P.caPoke || (P.ducking && P.atk >= 0)) return 'low';
   if (P.swingKind === 'rise' || P.swingKind === 'airUp' || P.plunge || P.leAirSwing || (!P.ground && !P.swim && !P.climb && (P.atk >= 0 || P.heavy))) return 'high';   /* (leAirSwing: a swing begun in the air stays a jump attack to its end) */
   return 'mid';

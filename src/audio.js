@@ -123,7 +123,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 }, berserker: { kit: 'm5', rate: 0.8, lp: 2300 } };   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 }, berserker: { kit: 'm5', rate: 0.8, lp: 2300 }, ranger: { kit: 'f3', rate: 1.08, lp: 3600 } };   /* THE RANGER (claude/ranger): the women's kit, pitched a little up and lightened */   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -163,7 +163,7 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' || h === 'ranger' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
@@ -338,6 +338,7 @@ export const SFX = {
      the geomancer's stone skin, the freebooter's cutlasses scraping, the death knight's blade bound low. */
   parryTone(who) { switch (who) {
     case 'warden': file('imp_wood', 0.3, 1.3); tone('triangle', vary(1500), 900, 0.1, 0.05); noise(0.05, 0.1, 3200, 1.4); break;
+    case 'ranger': file('imp_wood', 0.34, 1.1); tone('triangle', vary(900), 520, 0.08, 0.06); tone('sine', 220, 160, 0.12, 0.08); break;   /* (claude/ranger) the yew of the bow knocking the blade aside */
     case 'berserker': file('imp_steelH', 0.4, 0.8); tone('sine', 110, 60, 0.2, 0.14); noise(0.08, 0.16, 700, 0.6); break;
     case 'paladin': bell(1175, 0.5, 0.06); bell(1760, 0.4, 0.03, 0.02); file('r_chime', 0.16, 1.5); break;
     case 'pyro': noise(0.2, 0.16, 2600, 1.0); tone('sawtooth', 380, 900, 0.14, 0.05); tone('sine', 140, 70, 0.2, 0.1); noise(0.25, 0.14, 900, 0.7, 0.02); break;
@@ -1714,6 +1715,7 @@ Object.assign(SFX, {
     else if (h === 'pirate') { T('square', [392, 494, 587, 494, 587, 784, 587, 494, 392], 0.11, 0.06, 0.1); T('triangle', [196, 196, 196, 196], 0.14, 0.12, 0.225); }
     else if (h === 'reaper') { bell(147, 1.1, 0.16); bell(110, 1.3, 0.16, 0.55); pad('sawtooth', 110, 165, 1.1, 0.05, 0.6, 700); T('triangle', [220, 277, 330], 0.5, 0.06, 0.15, 0.75); }
     else if (h === 'geomancer') { [165, 220, 165, 196, 247, 196].forEach((f, i) => { tone('sine', f, f * 0.6, 0.16, 0.16, i * 0.15); noise(0.05, 0.12, 700 + (i % 3) * 250, 1.2, i * 0.15); }); pad('triangle', 165, 220, 1.0, 0.05, 0.05, 900); }
+    else if (h === 'ranger') { T('triangle', [392, 523, 392, 659, 784], 0.22, 0.09, 0.14); pad('triangle', 196, 196, 0.9, 0.05, 0.1, 1200); noise(0.2, 0.05, 3000, 1.2, 0.6); }   /* (claude/ranger) THE HUNTING HORN: a call out over the trees */
     else if (h === 'berserker') { [0, 1, 2, 3, 4, 5].forEach(i => { tone('square', i % 2 ? 1180 : 980, 600, 0.05, 0.05, i * 0.16); tone('sine', 82, 50, 0.14, 0.2, i * 0.16 + 0.08); }); pad('sawtooth', 98, 110, 0.9, 0.04, 0.1, 700); }   /* THE AXE DRUM: steel on steel, a stamp under each */
     else if (h === 'warden') { noise(0.3, 0.1, 2600, 1.1); tone('triangle', 300, 1200, 0.28, 0.06); T('triangle', [440, 587, 740, 880], 0.2, 0.09, 0.11, 0.3); bell(1760, 0.6, 0.05, 0.75); }
     else if (h === 'paladin') { pad('sine', 262, 262, 1.3, 0.08, 0, 1400, 0.25); pad('sine', 330, 330, 1.3, 0.07, 0.1, 1400, 0.25); pad('sine', 392, 392, 1.3, 0.07, 0.2, 1400, 0.25); bell(1568, 1.0, 0.07, 0.7); }
@@ -1744,6 +1746,18 @@ Object.assign(SFX, {
   bzShrug() { heroVo('heavy', 0.4); tone('sine', 160, 90, 0.18, 0.12); noise(0.1, 0.1, 900, 0.7); },
   bzHarden() { tone('sine', 82, 70, 0.5, 0.18); noise(0.3, 0.08, 500, 0.6); bell(330, 0.4, 0.03, 0.05); },
   bzKillHeal() { tone('triangle', 330, 494, 0.18, 0.05); },
+  /* THE RANGER (claude/ranger): the string let go (v: 0 a quick shot, 1 a draw, 2 a full one), an arrow into wood or stone, one taken back into the quiver,
+     the bow-bash, the snare set and the snare biting, the backflip, the mark, the hawk */
+  rgLoose(v = 0) { noise(0.08 + v * 0.03, 0.12 + v * 0.05, 2400 - v * 400, 1.3); tone('triangle', vary(220 + v * 30), 140, 0.06 + v * 0.03, 0.06 + v * 0.03); if (v >= 2) tone('sine', 110, 70, 0.14, 0.08); },
+  rgThunk() { file('imp_wood', 0.22, 1.4); tone('square', vary(300), 180, 0.04, 0.04); },
+  rgTick() { tone('square', 1500, 1500, 0.025, 0.03); },
+  rgPick() { tone('triangle', 880, 1175, 0.06, 0.04); noise(0.03, 0.06, 3200, 1.5); },
+  rgBash() { noise(0.08, 0.14, 1400, 0.8); tone('triangle', vary(260), 160, 0.08, 0.06); },
+  rgSnare() { tone('square', vary(500), 420, 0.04, 0.04); noise(0.06, 0.08, 1800, 1.1); },
+  rgSnap() { file('imp_wood', 0.3, 1.6); tone('square', vary(900), 300, 0.06, 0.07); },
+  rgFlip() { noise(0.18, 0.12, 2600, 1.2); tone('triangle', 400, 800, 0.12, 0.04); },
+  rgMark() { tone('triangle', 660, 990, 0.14, 0.06); bell(1320, 0.3, 0.04, 0.08); },
+  rgHawk() { tone('triangle', 1600, 2400, 0.12, 0.05); tone('triangle', 2200, 1500, 0.16, 0.05, 0.12); noise(0.2, 0.06, 4000, 1.4); },
 });
 // ---------- RECORDED TAKES OVER THE SYNTH (claude/sfx) ----------
 // Each name below plays a take from its recorded pool when the pool has loaded and sfxFiles is on; otherwise (pool still

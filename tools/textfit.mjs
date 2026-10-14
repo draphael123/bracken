@@ -168,14 +168,14 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   /* THE HERO PICK (2026-09-24), drawn BEFORE the menu (whose pause map stays up and lays its window over later screens): seven cards across a 320-pixel screen, a name under each - DEATH KNIGHT ran off the right edge, unseen here */
-  if (want('pick')) { const n = 8;   /* (claude/heroroster, Daniel 10-12: a new game's pick shows ALL eight heroes - the open ones by name, the locked ones as ??? with their how-to line; every card is measured, the locked ones included) */
+  if (want('pick')) { const n = 9;   /* (claude/heroroster, Daniel 10-12: a new game's pick shows ALL eight heroes - the open ones by name, the locked ones as ??? with their how-to line; every card is measured, the locked ones included) */
     /* drawn once unrecorded first: each card's hero is baked (preview) the first time it is drawn, and a bake's own rectangles on its
        own canvas are not plates the words are on */
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
     for (let i = 0; i < n; i++) frame('pick #' + i, () => { BK.state = 'heropick'; BK.ui.heroPickI = i; }, { settle: 20 });
     await yieldNow(); }
   /* THE TRIAL PROMPT (hero pick, stage 'trial'): its 64-letter sentence ran off both edges of the screen (UIQUICK 2026-10-04); every hero's name over it */
-  if (want('trial')) { for (const h of HEROES.concat(['geomancer', 'berserker'])) { BK.setHero(h); BK.state = 'heropick'; BK.ui.heroPickI = 0; BK.step(1); frame('trial prompt [' + h + ']', () => { BK.state = 'heropick'; BK.ui.heroPickStage = 'trial'; }, { settle: 20 }); BK.ui.heroPickStage = 'pick'; }
+  if (want('trial')) { for (const h of HEROES.concat(['geomancer', 'berserker', 'ranger'])) { BK.setHero(h); BK.state = 'heropick'; BK.ui.heroPickI = 0; BK.step(1); frame('trial prompt [' + h + ']', () => { BK.state = 'heropick'; BK.ui.heroPickStage = 'trial'; }, { settle: 20 }); BK.ui.heroPickStage = 'pick'; }
     await yieldNow(); }
   /* THE ERASE QUESTION (saves screen, ERASE SLOT n? YES / NO): each slot's, with a save in it */
   if (want('erase')) { for (let i = 0; i < 5; i++) frame('erase slot #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.eraseAsk = i; }, { settle: 20 }); BK.ui.eraseAsk = -1; await yieldNow(); }
@@ -195,9 +195,9 @@ async function pageTextFit(input) {
      line (the longest), the respec prompt and message, and the co-op lock card. The save is put back after. */
   if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });
     const CARDS = [[4, { v: 1, e: 1, m: 1, ms: {} }], [25, { v: 9, e: 8, m: 7, ms: {} }], [45, { v: 25, e: 19, m: 0, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane' } }], [50, { v: 25, e: 15, m: 10, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane', 45: 'heart', 50: 'leech' } }]];
-    for (const h of [...HEROES, 'geomancer', 'berserker']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }
+    for (const h of [...HEROES, 'geomancer', 'berserker', 'ranger']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }
     /* LEVELING2: the early milestones (a small perk, the hero's own marked and ranked), a stat card with threshold bars part-way and past, and the fullest PERKS line (all ten, the hero's own in it) */
-    { const PRG = await import('/src/progression.js'); for (const h of [...HEROES, 'geomancer', 'berserker']) { BK.setHero(h); const o = PRG.HERO_PERKS[h] || PRG.HERO_PERKS.knight;
+    { const PRG = await import('/src/progression.js'); for (const h of [...HEROES, 'geomancer', 'berserker', 'ranger']) { BK.setHero(h); const o = PRG.HERO_PERKS[h] || PRG.HERO_PERKS.knight;
       const full = { 5: 'stride', 10: o[1].id, 15: 'climber', 20: o[0].id, 25: 'iron', 30: o[1].id, 35: 'lungs', 40: o[0].id, 45: 'heart', 50: o[1].id };
       for (const [lv, c, tag] of [[5, { v: 1, e: 1, m: 1, ms: {} }, 'L5 small perk'], [12, { v: 9, e: 2, m: 1, ms: { 5: 'stride', 10: o[1].id } }, 'L12 thresholds part-way'], [20, { v: 7, e: 10, m: 20, ms: { 5: 'tonic', 10: o[1].id, 15: 'magnet', 20: o[0].id } }, 'L20 thresholds'], [50, { v: 25, e: 20, m: 5, ms: full }, 'L50 ten perks']])
         frame('card2 [' + h + '] ' + tag, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); } }
@@ -242,7 +242,7 @@ async function pageTextFit(input) {
   if (want('settings')) { toPlay(0, 'knight'); BK.ui.openMenu('title');
     for (const tb of ['audio', 'display', 'gameplay', 'controls', 'access']) { BK.ui.settingsTab = tb; const n = BK.ui.menuCount();
       for (let i = 0; i < n; i++) frame('settings ' + tb + ' #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'settings'; BK.ui.settingsTab = tb; BK.ui.menuI = i; }, { settle: 40 }); }
-    for (const h of [...HEROES, 'geomancer', 'berserker']) frame('controls [' + h + ']', () => { BK.setHero(h); BK.state = 'controls'; }, { settle: 5 });
+    for (const h of [...HEROES, 'geomancer', 'berserker', 'ranger']) frame('controls [' + h + ']', () => { BK.setHero(h); BK.state = 'controls'; }, { settle: 5 });
     for (const p of [0, 1, 2]) for (let i = -1; i <= 15; i++) frame('rebind p' + p + ' #' + i, () => { BK.state = 'menu'; BK.ui.rebind.open(p); BK.ui.rebind.state().i = i; }, { settle: 5 });
     frame('rebind listening', () => { BK.ui.rebind.open(0); const r = BK.ui.rebind.state(); r.i = 3; r.listening = true; r.msg = 'PRESS A KEY  (ESC CANCELS)'; r.msgT = 8; }, { settle: 5 });
     frame('rebind conflict', () => { BK.ui.rebind.open(0); const r = BK.ui.rebind.state(); r.i = 4; r.msg = 'ALSO USED BY: C: GUARD / ABILITY'; r.msgT = 8; const b = BK.ui.settings().binds; b.kb.jump = ['c', 'Space']; }, { settle: 5 }); BK.ui.readSettings('{}');
