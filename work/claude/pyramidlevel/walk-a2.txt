@@ -1,0 +1,17 @@
+sealedpyramid knight s1 L41 (351hp, swordOfRealm+groundSlam+lunge, 3 flasks, heart charm): ROUTE 0 deaths, 427s, 50 kills, 26 hits, walked 99%, arrivals 83% 85% 91% 80% 59% 70% 10% 24% 75% 75%, measured 99% of the route, AT THE MINI DOOR with 80%
+    sections: #0 lost 23% heal 6% (0 drinks) 0d 1h 6k 57s | #1 lost 0% heal 2% (0 drinks) 0d 0h 2k 32s | #2 lost 0% heal 6% (0 drinks) 0d 0h 5k 36s | #3 lost 150% heal 139% (3 drinks) 0d 5h 4k 48s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 2s | #5 lost 22% heal 0% (0 drinks) 0d 1h 1k 10s | #6 lost 50% heal 61% (1 drinks) 0d 1h 9k 51s | #7 lost 206% heal 145% (3 drinks) 0d 14h 9k 72s | #8 lost 85% heal 99% (2 drinks) 0d 4h 9k 47s | #9 lost 0% heal 52% (1 drinks) 0d 0h 5k 44s | #10 lost 0% heal 0% (0 drinks) 0d 0h 0k 16s | #11 lost 0% heal 0% (0 drinks) 0d 0h 0k 10s
+    hit by (nearest foe, hits/%hp): other 19/311% mummy* 2/100% scorpion* 2/51% construct* 1/50% scorpion 1/24% mummy 1/0%
+    elite duels: mummy@412 WON 6s 61->57%, construct@596 WON 6.8s 72->68%, scorpion@710 WON 10.3s 68->64%, mummy@843 WON 6s 72->24%, construct@935 WON 3.7s 72->73%
+sealedpyramid warden s1 L41 (351hp, rainOfSpears+spearDance+javelin, 3 flasks, heart charm): FRAMES 0 deaths, 1200s, 7 kills, 2 hits, walked 18%, arrivals 41%, measured 18% of the route
+    sections: #0 lost 68% heal 9% (0 drinks) 0d 2h 7k 88s | #1 lost 0% heal 0% (0 drinks) 0d 0h 0k 1112s
+    hit by (nearest foe, hits/%hp): hound 1/44% other 1/24%
+sealedpyramid pyro s1 L41 (339hp, meteor+fireWall+wisp, 3 flasks, heart charm): FRAMES 0 deaths, 1200s, 24 kills, 3 hits, walked 42%, arrivals 46% 49% 55%, measured 32% of the route
+    sections: #0 lost 58% heal 4% (0 drinks) 0d 2h 7k 67s | #1 lost 0% heal 4% (0 drinks) 0d 0h 3k 35s | #2 lost 0% heal 6% (0 drinks) 0d 0h 5k 35s | #3 lost 34% heal 57% (1 drinks) 0d 1h 9k 1063s
+    hit by (nearest foe, hits/%hp): other 3/92%
+    elite duels: mummy@412 WON 1.8s 76->77%
+
+LEVEL WALK  (campaign level, typical build, profile human+first, 3 runs, 2 min)  target: 1-2 deaths a first run, arrive < 50%
+level      hero     L runs deaths(haz/elite) arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target
+sealedpyramidknight  41    1    0.0(0.0/0.0)              66/10         54    10.0     50   427     99%   99%  route          MISS: deaths 0.0 < 1, arrive 66% >= 50
+sealedpyramidwarden  41    1    0.0(0.0/0.0)              41/41         68     0.0      7  1200     18%   18%  frames         MISS: deaths 0.0 < 1
+sealedpyramidpyro    41    1    0.0(0.0/0.0)              50/46         19     1.0     24  1200     42%   32%  frames         MISS: deaths 0.0 < 1, arrive 50% >= 50

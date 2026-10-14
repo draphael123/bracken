@@ -19,6 +19,7 @@
 //   walker's hints (BK.walkHint), and the drawing (PLACEHOLDER shapes until the art pass - readable: every trap, plate and reach is drawn).
 // main.js calls: on, reset, update, interact, world, onHit, takeMummy, mover, trapReady, bossHit (the boss hands set it), drawWorld, drawOver, drawStructure,
 // drawSeal, read, walkHint, handsState.
+import * as TA from './redraw/sealed_pyramid_tombart.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import * as ART from './redraw/sealed_pyramid_set.js';
 import * as SPB from './redraw/sealed_pyramid_backdrop.js';
@@ -26,11 +27,14 @@ import { STUCK_HANDS } from './stuck-spots.js';
 import { newStorm, stormStep, gustDrift, STORM } from './desert-rules.js';
 import { MUMMY } from './mummy.js';
 
-export const TRAP_DELAY = { block: 0.25, darts: 0.3, stone: 0.25 };
+export const TRAP_DELAY = { block: 0.25, darts: 0.3, stone: 0.25, gas: 0.35, oil: 0.3, flood: 0.4 };   /* (claude/pyramidlevel: the gas hisses, the brazier tips, the sluice groans - each told before it fires) */
 export const TRAP_DARTS = { volley: 0.9, every: 0.15 };
 export const TRAP_STONE = { v: 170, vGreat: 150, vArena: 320, r: 14, dropT: 0.3 };
 export const TRAP_BLOCK = { fallT: 0.28, lie: 0.9, haul: 1.1 };
 export const TRAP_SHARE = { teach: 0.24, test: 0.34, exam: 0.5, boss: 0.22 };   /* a hero caught in a reach: a share of his bar (A10 amended: taught cheap, the exam dear; never untold - the click comes first) */
+export const TRAP_GAS = { venom: 2.4 };   /* THE EMBALMERS' GAS (claude/pyramidlevel): a hero caught in it carries the caverns' venom a while (as the Burial Caverns' vents do) */
+export const TRAP_BORE = { v: 300, w: 20 };   /* THE SLUICE's BORE: the wave front's speed (px/s) and its half-width */
+export const TOMB = { crack: 1.0, rise: 0.5 };   /* THE TOMBS: the lid cracks (told) this long before the dead are out; they climb out this long (no blow) */
 export const PYS = { eliteShare: 0.3, eliteStagger: 2.4, stormPush: 64, grabSqueeze: 0.5, vaultR: 30, pairHalf: 0.5, linen: 3.2, linenMul: 1.5, linenElite: 1.15 };
 
 export function makeSealedPyramidHands(ctx) {
@@ -51,12 +55,15 @@ export function makeSealedPyramidHands(ctx) {
     if (fresh) K = { L, said: {}, clock: 0, broken: {}, vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })), storm: L.sandstorm ? newStorm(L.sandstorm.dirs) : null, gust: 0,
       n: { presses: 0, fired: 0, byFoe: 0, heroHit: 0, killed: 0, eliteHit: 0, bossHit: 0, rides: 0, gusts: 0, braced: 0, grabs: 0, torn: 0, burned: 0, nudges: 0, doorBroken: 0, fills: 0, byTrap: {} },
       fillBase: {} };
+    if (fresh) Object.assign(K.n, { tombsOpened: 0, floods: 0, bores: 0, burns: 0, gassed: 0 });
     /* the cells a fill block covers, as built (a respawn's grid still holds the block) */
     if (K.traps) for (const t of K.traps) if (t.def.fill && t.filled) unfill(t);
     K.traps = (L.traps || []).map(d => ({ def: d, id: d.id, kind: d.kind, st: 'ready', t: 0, y: 0, x: 0, volley: 0, pressed: false, hitKeys: new Set(), filled: false, arenaHit: null }));
     for (const t of K.traps) placeHome(t);
     for (const w of (L.falseWalls || [])) if (K.broken[w.id]) breakWall(w, true);
     K.pairs = (L.pairs || []).map(p => ({ ...p, t: 0, want: 0 }));
+    K.tombs = (L.tombs || []).map(d => ({ ...d, st: 'shut', t: 0 }));   /* (claude/pyramidlevel) every tomb shut again: its dead wait in it (a respawn puts them back) */
+    for (const t of K.traps) if (t.kind === 'flood') floodPool(t);
     K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = []; K.darts = []; K.gust = 0;
     for (const pp of ctx.players) { pp.pyGrab = null; }
     { const arr = ctx.lights ? ctx.lights() : null; if (arr) { for (let i = arr.length - 1; i >= 0; i--) if (arr[i].py) arr.splice(i, 1); for (const lp of (L.lamps || [])) arr.push({ x: lp.x * TS() + 8, y: lp.y * TS() + 2, r: 60, torch: true, bare: true, warm: true, py: true }); } }
@@ -68,10 +75,13 @@ export function makeSealedPyramidHands(ctx) {
   function placeHome(t) { const d = t.def, ts = TS();
     if (t.kind === 'block') { t.x = d.slot[0] * ts; t.y = d.slot[2] * ts; t.w = (d.slot[1] - d.slot[0] + 1) * ts; t.h = (d.slot[3] - d.slot[2] + 1) * ts; t.home = t.y; }
     if (t.kind === 'stone') { t.x = d.home * ts + 16; t.y = (d.drop ? (d.drop[1] + 1) * ts : d.row * ts); t.vis = !d.drop; t.dir = Math.sign(d.end - d.home) || 1; }
-    if (t.kind === 'darts') { t.volley = 0; } }
+    if (t.kind === 'darts') { t.volley = 0; }
+    if (t.kind === 'gas') { t.left = 0; }
+    if (t.kind === 'oil') { t.front = null; t.left = 0; }
+    if (t.kind === 'flood') { t.lvl = 0; t.phase = null; t.bore = null; } }
 
   /* ---------- THE PLATES ---------- */
-  const heavy = e => e.alive && (e.t === 'mummy') && !e.noGrav;
+  const heavy = e => e.alive && (e.t === 'mummy') && e.cnSkin !== 'tombskel' && !e.noGrav;   /* (claude/pyramidlevel: THE TOMB GUARD is bone - too light to press a plate) */
   const onCells = (b, x0, x1, row) => { const ts = TS(); return b.x > x0 * ts - 1 && b.x < (x1 + 1) * ts + 1 && Math.abs(b.y - row * ts) < 3; };
   function pressedBy(t) {
     const out = [];
@@ -79,17 +89,20 @@ export function makeSealedPyramidHands(ctx) {
       if (p.mover) { const m = moverOf(p.mover); if (!m) continue; for (const pp of ctx.players) if (!pp.dead && pp.onMover === m) out.push({ who: pp, hero: true, ride: !!p.ride, m }); continue; }
       const [x0, x1, row] = p;
       for (const pp of ctx.players) if (!pp.dead && pp.ground && !pp.onMover && onCells(pp, x0, x1, row)) out.push({ who: pp, hero: true });
-      for (const e of ctx.enemies()) if (heavy(e) && onCells(e, x0, x1, row)) out.push({ who: e, hero: false }); }
+      for (const e of ctx.enemies()) if (heavy(e) && onCells(e, x0, x1, row)) out.push({ who: e, hero: false });
+      /* (claude/pyramidboss) THE COFFIN KING's chamber: HE presses a plate he stands on (stone is heavy - not while he walks: he steps over them), and so does his thrown lid */
+      if (ctx.pressers) for (const b of ctx.pressers()) if (onCells(b, x0, x1, row)) out.push({ who: b.who, hero: false, boss: !!b.boss, lid: !!b.lid }); }
     return out; }
   function arm(t, by) {
-    const d = t.def, ts = TS(); t.st = 'armed'; t.t = TRAP_DELAY[t.kind]; K.n.presses++; if (!by.hero) K.n.byFoe++;
+    const d = t.def, ts = TS(); t.st = 'armed'; t.t = TRAP_DELAY[t.kind]; K.n.presses++; if (!by.hero) K.n.byFoe++; t.byBoss = by.boss ? by.who : null;   /* (claude/pyramidboss) a plate HE stands on fires on him */
     /* THE LAST SHAFT: its counterweight's own plate fires the darts as its rider comes level with them */
     if (by.ride && by.m && t.kind === 'darts') { const top = d.rows[0] * ts + 4; t.t = Math.max(0.2, (top - by.m.y) / Math.max(10, by.m.speed)); }
     const P0 = ctx.hero(); const near = P0 && Math.abs(P0.x - (d.zone[0] + d.zone[1]) * ts / 2) < 300 && Math.abs(P0.y - d.zone[3] * ts) < 160;
     ctx.sfx.click ? ctx.sfx.click() : ctx.sfx.clank && ctx.sfx.clank();
     if (near) { const wx = by.who.x, wy = by.who.y - 24;
-      if (!by.hero) number(wx, wy, t.kind === 'block' ? 'HE TREADS THE PLATE: THE BLOCK!' : t.kind === 'darts' ? 'HE TREADS THE PLATE: THE DARTS!' : 'HE TREADS THE PLATE: THE STONE!', '#ff9a5c');
-      else number(wx, wy, t.kind === 'block' ? 'CLICK: THE BLOCK FALLS' : t.kind === 'darts' ? 'CLICK: THE DARTS FLY' : 'CLICK: THE STONE RUNS', '#ffd36b'); }
+      if (!by.hero) number(wx, wy, t.kind === 'block' ? 'HE TREADS THE PLATE: THE BLOCK!' : t.kind === 'darts' ? 'HE TREADS THE PLATE: THE DARTS!' : t.kind === 'gas' ? 'HE TREADS THE PLATE: THE GAS!' : t.kind === 'oil' ? 'HE TREADS THE PLATE: THE FIRE!' : t.kind === 'flood' ? 'HE TREADS THE PLATE: THE SLUICE!' : 'HE TREADS THE PLATE: THE STONE!', '#ff9a5c');
+      else number(wx, wy, t.kind === 'block' ? 'CLICK: THE BLOCK FALLS' : t.kind === 'darts' ? 'CLICK: THE DARTS FLY' : t.kind === 'gas' ? 'CLICK: THE GAS HISSES' : t.kind === 'oil' ? 'CLICK: THE BRAZIER TIPS' : t.kind === 'flood' ? 'CLICK: THE SLUICE OPENS' : 'CLICK: THE STONE RUNS', '#ffd36b'); }
+    if (t.kind === 'gas' || t.kind === 'flood') ctx.sfx.hiss && ctx.sfx.hiss();
     if (t.kind === 'block') ctx.burst((d.zone[0] + d.zone[1] + 1) / 2 * ts, (d.slot[3] + 1) * ts, 8, ['#d8c8a0', '#a89070'], 40, 0.5);
     if (t.kind === 'stone') ctx.shake(t.def.great ? 4 : 2);
   }
@@ -116,18 +129,59 @@ export function makeSealedPyramidHands(ctx) {
     const d = t.def, ts = TS();
     const press = pressedBy(t), now = press.length > 0, fresh = now && !t.pressed; t.pressed = now;
     const speedUp = d.arena && ctx.bossPhase && ctx.bossPhase() >= 3 ? 0.6 : 1;
-    if (t.st === 'ready') { if (fresh) arm(t, press[0]); return; }
+    if (t.st === 'ready') { if (d.tk && ctx.trapLive && !ctx.trapLive(d)) return;   /* (claude/pyramidboss) the burial chamber's traps are inert until THE COFFIN KING's phase two arms them */
+      if (fresh) arm(t, press.find(p => p.boss) || press[0]); return; }
     t.t -= dt;
     if (t.st === 'armed') { if (t.t > 0) return; fire(t); return; }
     if (t.kind === 'block') stepBlock(t, dt, speedUp);
     else if (t.kind === 'darts') stepDarts(t, dt, speedUp);
     else if (t.kind === 'stone') stepStone(t, dt, speedUp);
+    else if (t.kind === 'gas') stepGas(t, dt);
+    else if (t.kind === 'oil') stepOil(t, dt);
+    else if (t.kind === 'flood') stepFlood(t, dt);
   }
   function fire(t) { const d = t.def; t.st = 'firing'; t.hitKeys.clear(); K.n.fired++; K.n.byTrap[t.id] = (K.n.byTrap[t.id] || 0) + 1; t.key = t.id + ':' + K.n.fired;
+    if (t.byBoss && ctx.bossTrap) { const b = t.byBoss; t.byBoss = null; K.n.bossHit++; ctx.bossTrap(b, t.kind, t, 'plate'); }   /* (claude/pyramidboss) THE PLATE HE STANDS ON FIRES ON HIM - and on you, if you stand in its reach */
     if (t.kind === 'block') { t.vy = 300; t.phase = 'fall'; ctx.sfx.thud && ctx.sfx.thud(); }   /* (it is let go, not dropped: a block from the antechamber's high roof lands inside her stagger) */
     if (t.kind === 'darts') { t.volley = TRAP_DARTS.volley; t.dartT = 0; ctx.sfx.bow ? ctx.sfx.bow() : ctx.sfx.slash && ctx.sfx.slash(); }
     if (t.kind === 'stone') { t.phase = d.drop ? 'drop' : 'roll'; t.vis = true; t.y = d.drop ? (d.drop[0]) * TS() : d.row * TS(); t.vy = 0; ctx.sfx.boom ? ctx.sfx.boom() : ctx.sfx.thud && ctx.sfx.thud(); }
+    if (t.kind === 'gas') { t.left = d.gasT; K.n.gassed++; ctx.sfx.hiss && ctx.sfx.hiss(); }
+    if (t.kind === 'oil') { t.front = d.chan[0] * TS(); t.left = 0; K.n.burns++; ctx.sfx.throwWhoosh ? ctx.sfx.throwWhoosh() : ctx.sfx.fire && ctx.sfx.fire(); }
+    if (t.kind === 'flood') { t.phase = 'rise'; t.left = d.riseT; t.bore = (d.dir > 0 ? d.sluice + 1 : d.sluice) * TS(); K.n.floods++; ctx.shake(3); ctx.sfx.splash ? ctx.sfx.splash() : ctx.sfx.heavy && ctx.sfx.heavy(); }
   }
+  /* THE EMBALMERS' GAS (claude/pyramidlevel): a green cloud stands in the reach for gasT s; what stands in it is struck once (a hero a share + the venom, the tomb's foes unmade) */
+  function stepGas(t, dt) { const d = t.def, ts = TS();
+    if (t.st === 'firing') { t.left -= dt; const box = { l: d.zone[0] * ts, r: (d.zone[1] + 1) * ts, t: d.zone[2] * ts, b: (d.zone[3] + 1) * ts };
+      const wasHit = K.n.heroHit; strike(t, box, t.key, 'THE EMBALMERS\' GAS'); if (K.n.heroHit > wasHit) for (const pp of ctx.players) if (!pp.dead && over(box, bodyBox({ x: pp.x, y: pp.y, w: 12, h: 18 }))) pp.venomT = Math.max(pp.venomT || 0, TRAP_GAS.venom);
+      if (Math.random() < dt * 30) ctx.burst((d.zone[0] + Math.random() * (d.zone[1] - d.zone[0] + 1)) * ts, (d.zone[3] + 1) * ts - 4, 1, ['#a6e04a', '#6a9a3a'], 26, 0.7);
+      if (t.left <= 0) { t.st = 'reset'; t.t = Math.max(0.4, d.reset - d.gasT); ctx.sfx.ratchet && ctx.sfx.ratchet(); } return; }
+    if (t.st === 'reset' && t.t <= 0) t.st = 'ready'; }
+  /* THE OIL CHANNEL (claude/pyramidlevel): the brazier tips at its head and the fire RUNS the channel at runV, then the whole channel burns burnT s; what stands in the burning stretch is struck once */
+  function stepOil(t, dt) { const d = t.def, ts = TS();
+    if (t.st === 'firing') { const end = (d.chan[1] + 1) * ts;
+      if (t.front < end) { t.front = Math.min(end, t.front + d.runV * dt); if (t.front >= end) t.left = d.burnT; }
+      else t.left -= dt;
+      strike(t, { l: d.chan[0] * ts, r: t.front, t: d.zone[2] * ts, b: (d.zone[3] + 1) * ts }, t.key, 'THE BURNING OIL');
+      for (const e of ctx.enemies()) if (e.alive && e.t === 'mummy' && e.cnSkin !== 'tombskel' && e.x > d.chan[0] * ts && e.x < t.front && e.y > d.zone[2] * ts && e.y <= (d.zone[3] + 1) * ts + 2) e.burn = Math.max(e.burn || 0, e.elite ? 0.4 : PYS.linen);
+      if (Math.random() < dt * 40) ctx.burst(d.chan[0] * ts + Math.random() * (t.front - d.chan[0] * ts), (d.zone[3] + 1) * ts - 2, 1, ['#ffd36b', '#ff9a3a', '#e0602c'], 40, 0.5);
+      if (t.front >= end && t.left <= 0) { t.st = 'reset'; t.t = Math.max(0.5, d.reset - d.burnT); t.front = null; } return; }
+    if (t.st === 'reset' && t.t <= 0) t.st = 'ready'; }
+  /* THE SLUICE (claude/pyramidlevel): the BORE runs the crypt's floor from the sluice (what stands in its reach is struck: a hero a share and a shove, the dead drowned), and the
+     WATER RISES - low to high in riseT, holds holdT, drains in drainT - then the sluice resets. The pool (L.pools, id) follows the level every frame */
+  function stepFlood(t, dt) { const d = t.def, ts = TS();
+    if (t.bore !== null) { t.bore += d.dir * TRAP_BORE.v * dt; const x = t.bore, w = TRAP_BORE.w;
+      const bl = Math.max(x - w, d.zone[0] * ts), br = Math.min(x + w, (d.zone[1] + 1) * ts); if (br > bl) strike(t, { l: bl, r: br, t: d.zone[2] * ts, b: (d.zone[3] + 1) * ts }, t.key, 'THE BORE');   /* (only inside its reach: the plate by the sluice is clear of it) */
+      if (Math.random() < dt * 40) ctx.burst(x, (d.zone[3] + 1) * ts - 4, 1, ['#eefaff', '#9fd0e8'], 60, 0.4);
+      if ((d.dir > 0 && x > (d.zone[1] + 1) * ts + w) || (d.dir < 0 && x < d.zone[0] * ts - w)) { t.bore = null; K.n.bores++; } }
+    if (t.st !== 'firing') { if (t.st === 'reset' && t.t <= 0) t.st = 'ready'; floodPool(t); return; }
+    t.left -= dt;
+    if (t.phase === 'rise') { t.lvl = Math.min(1, 1 - Math.max(0, t.left) / d.riseT); if (t.left <= 0) { t.phase = 'hold'; t.left = d.holdT; const P0 = ctx.hero(); if (P0 && once('high' + t.id)) number(P0.x, P0.y - 34, 'THE WATER IS UP: SWIM', '#9fd0e8'); } }
+    else if (t.phase === 'hold') { t.lvl = 1; if (t.left <= 0) { t.phase = 'drain'; t.left = d.drainT; ctx.sfx.ratchet && ctx.sfx.ratchet(); } }
+    else if (t.phase === 'drain') { t.lvl = Math.max(0, t.left / d.drainT); if (t.left <= 0) { t.lvl = 0; t.phase = null; t.st = 'reset'; t.t = Math.max(0.5, d.reset - d.riseT - d.holdT - d.drainT); } }
+    floodPool(t); }
+  function floodPool(t) { const d = t.def, ts = TS(), p = (K.L.pools || []).find(q => q.id === d.pool); if (!p) return; const lo = d.low * ts, hi = d.high * ts + 4;
+    p.y = lo - (lo - hi) * (t.lvl || 0); p.dry = !(t.lvl > 0.02); }
+  H.floodLevel = id => { const t = K && trapOf(id); return t ? t.lvl || 0 : 0; };
   /* THE BLOCK: falls (a beat), lies, is hauled back up into its slot */
   function stepBlock(t, dt, k) {
     const d = t.def, ts = TS();
@@ -212,7 +266,7 @@ export function makeSealedPyramidHands(ctx) {
   }
 
   /* ---------- THE MUMMY ---------- */
-  H.world = (e, s, w) => { if (e.t !== 'mummy') return; if (e.burn > 0) { if (!e.pyLit) { e.pyLit = true; e.burn = Math.max(e.burn, PYS.linen); K.n.burned++; if (once('linen')) number(e.x, e.y - 30, 'ITS LINEN BURNS', '#ff9a5c'); } w.burning = e.elite ? 0 : e.burn; } else { e.pyLit = false; w.burning = 0; } };   /* (THE TOMB-WARDEN burns, and takes it half again, but an elite does not flail: he keeps coming) */
+  H.world = (e, s, w) => { if (e.t !== 'mummy') return; if (e.cnSkin === 'tombskel') { w.burning = 0; return; }   /* (THE TOMB GUARD: dry bone does not catch) */ if (e.burn > 0) { if (!e.pyLit) { e.pyLit = true; e.burn = Math.max(e.burn, PYS.linen); K.n.burned++; if (once('linen')) number(e.x, e.y - 30, 'ITS LINEN BURNS', '#ff9a5c'); } w.burning = e.elite ? 0 : e.burn; } else { e.pyLit = false; w.burning = 0; } };   /* (THE TOMB-WARDEN burns, and takes it half again, but an elite does not flail: he keeps coming) */
   H.onHit = (e, v, landed, P) => { if (e.t !== 'mummy' || !landed || P.dead) return;
     if (v.yank) { ctx.moveBody(P, -Math.sign(P.x - e.x || -v.yank) * MUMMY.yank, 0); }
     if (v.grab) { P.pyGrab = { e, t: MUMMY.hold, tick: PYS.grabSqueeze }; K.n.grabs++; number(P.x, P.y - 30, 'IT HAS YOU: STRIKE IT', '#ff6b6b'); } };
@@ -223,6 +277,22 @@ export function makeSealedPyramidHands(ctx) {
       if (pp.dead || !e.alive || (e.st && e.st.mode === 'burning') || (g.t -= dt) <= 0) { pp.pyGrab = null; continue; }
       pp.x += ((e.x + (e.face || 1) * 9) - pp.x) * Math.min(1, dt * 6); pp.vx = 0; if (pp.vy < 0) pp.vy = 0;
       if ((g.tick -= dt) <= 0) { g.tick = PYS.grabSqueeze; ctx.asPlayer(pp, () => ctx.damagePlayer(e.x, MUMMY.dmg.squeeze, { unblockable: true, noKnock: true, who: e, name: 'THE MUMMY\'S GRIP' })); } } }
+
+  /* ---------- THE TOMBS (claude/pyramidlevel): a lid cracks when you come near (told: the crack, the dust, '!'), and its dead get up TOMB.crack s later ----------
+     A tomb's dead is a placed ent with tombWait: main.js never spawns it itself (H.waits); the hands spawn it when the lid gives (ctx.spawnEnt), and a respawn shuts every tomb again */
+  H.waits = e => !!(e && e.tombWait);
+  function stepTombs(P, dt) { if (!K.tombs || !K.tombs.length) return; const ts = TS();
+    for (const tb of K.tombs) {
+      if (tb.st === 'shut') { if (!P || P.dead) continue; const c = P.x / ts, r = (P.y - 1) / ts;
+        if (c >= tb.wake[0] && c <= tb.wake[1] + 1 && Math.abs(r - (tb.row - 1)) <= tb.dy) { tb.st = 'crack'; tb.t = TOMB.crack; ctx.sfx.crack ? ctx.sfx.crack() : ctx.sfx.clank && ctx.sfx.clank();
+          ctx.burst(tb.x * ts + 8, (tb.row - 2) * ts, 6, ['#d8c8a0', '#a89070'], 40, 0.6); if (Math.abs(P.x - tb.x * ts) < 260) number(tb.x * ts + 8, (tb.row - 3) * ts, once('crack') ? 'THE LID CRACKS: THE DEAD GET UP' : '!', '#ff9a5c'); }
+        continue; }
+      if (tb.st === 'crack') { tb.t -= dt; if (Math.random() < dt * 12) ctx.burst(tb.x * ts + 8, (tb.row - 1) * ts, 1, ['#d8c8a0'], 20, 0.4);
+        if (tb.t <= 0) { tb.st = 'open'; K.n.tombsOpened++; const k = (K.L.ents || []).findIndex(e => e.tombWait === tb.id); const ent = k >= 0 ? K.L.ents[k] : null;
+          const made = ent && ctx.spawnEnt ? ctx.spawnEnt(ent, k) : null;
+          if (made) { made.stagger = Math.max(made.stagger || 0, TOMB.rise); made.tombId = tb.id; ctx.burst(made.x, made.y - 8, 10, ['#e8dcc0', '#a89070'], 60, 0.7); }
+          ctx.sfx.stone ? ctx.sfx.stone() : ctx.sfx.thud && ctx.sfx.thud(); ctx.shake(2); } } } }
+  H.tombState = id => { const tb = K && K.tombs && K.tombs.find(q => q.id === id); return tb ? tb.st : null; };
 
   /* ---------- THE SEALED TOMB (E) ---------- */
   H.interact = P => {
@@ -238,9 +308,11 @@ export function makeSealedPyramidHands(ctx) {
     for (const f of K.fx) f.t -= dt; K.fx = K.fx.filter(f => f.t > 0);
     for (const q of K.darts) { q.x += q.dir * 420 * dt; q.t -= dt; } K.darts = K.darts.filter(q => q.t > 0 && (q.end - q.x) * q.dir > 0);
     for (const t of K.traps) stepTrap(t, dt);
+    for (const t of K.traps) if (t.kind === 'flood') floodPool(t);   /* (claude/pyramidlevel) the sluices' water follows its level every frame (a load or a respawn puts L.pools back to its built high mark) */
     stepGrabs(dt);
+    stepTombs(P0, dt);
     /* THE DEAD DO NOT FLINCH: a blow staggers a mummy MUMMY.flinch s at most - a parry (the riposte's hold), a broken guard or a trap's weight more */
-    for (const e of ctx.enemies()) if (e.alive && e.t === 'mummy') { if (e.elite && e.burn > 0.4) e.burn = 0.4;   /* (THE TOMB-WARDEN's wrappings are oiled for the long dark: they smoulder, they do not catch - his exam is the block, not a torch) */
+    for (const e of ctx.enemies()) if (e.alive && e.t === 'mummy' && e.cnSkin !== 'tombskel') { if (e.elite && e.burn > 0.4) e.burn = 0.4;   /* (THE TOMB-WARDEN's wrappings are oiled for the long dark: they smoulder, they do not catch - his exam is the block, not a torch) */
       if (e.pyStagT > 0) e.pyStagT -= dt; else if (e.stagger > MUMMY.flinch && !(e.rpHold > 0) && !(e.broken > 0)) e.stagger = MUMMY.flinch; }
     stepStorm(P0, dt);
     /* THE FIRST LOOK at a thing: a line once (what it is) */
@@ -251,7 +323,13 @@ export function makeSealedPyramidHands(ctx) {
           else if (t.id === 'g2stone') number(P0.x, P0.y - 34, 'A PALE PLATE: IT SENDS THE STONE DOWN THE GROOVE');
           else if (t.id === 'great') number(P0.x, P0.y - 34, 'THE PLATE OF THE GREAT STONE: THE FLOOR BELOW IS ITS ROAD');
           else if (t.id === 'pit2') number(P0.x, P0.y - 34, 'A PALE PLATE: ITS BLOCK FALLS INTO THE PIT');
-          else if (t.id === 'shaft') number(P0.x, P0.y - 34, 'SPEND THE DARTS FIRST: THEN RIDE UNDER THEM'); } } }
+          else if (t.id === 'shaft') number(P0.x, P0.y - 34, 'SPEND THE DARTS FIRST: THEN RIDE UNDER THEM');
+          else if (t.id === 'gas1') number(P0.x, P0.y - 34, 'A PALE PLATE: IT OPENS THE GAS JETS UNDER THE GUARD');
+          else if (t.id === 'gas3') number(P0.x, P0.y - 34, 'A PALE PLATE: ITS JETS ARE IN THE NICHE OVER YOU');
+          else if (t.id === 'oil1') number(P0.x, P0.y - 34, 'A PALE PLATE: IT TIPS THE BRAZIER INTO THE CHANNEL');
+          else if (t.id === 'oil3') number(P0.x, P0.y - 34, 'A PALE PLATE: THE BURNING OIL POURS ON THE FLOOR BELOW');
+          else if (t.id === 'flood1') number(P0.x, P0.y - 34, 'A PALE PLATE: IT OPENS THE SLUICE - STAND CLEAR OF THE BORE');
+          else if (t.id === 'flood2') number(P0.x, P0.y - 34, 'THE CRYPT SLUICE: THE WATER IS THE WAY UP'); } } }
     stall(P0, dt);
   };
 
@@ -269,6 +347,13 @@ export function makeSealedPyramidHands(ctx) {
     const sh = trapOf('shaft'), p3 = pairOf('cw3');
     if (sh && p3 && S.shaftPlate && c > 429 && c < 442 && feet <= S.shaftPlate[1] && feet >= S.shaftPlate[1] - 5) { if (sh.st === 'ready' && p3.t < 0.05) return at('shaftPlate', null, { r: 14 });
       return at('shaftRide', null, { r: 14, wait: true }); }
+    /* (claude/pyramidlevel) THE SLUICES: on the floor of the cistern / the crypt, tread the plate, then wait on the water and swim up when it is high */
+    for (const [id, x0, x1, top] of [['flood1', 863, 878, 41], ['flood2', 885, 950, 30]]) { const ft = trapOf(id); if (!ft || !S[id] || c < x0 || c > x1 + 1 || feet < top) continue;
+      if (ft.st === 'ready' && !(ft.lvl > 0.05)) return at(id, null, { r: x1 - x0 + 4 });   /* (the whole floor: the plate is the way on from anywhere on it) */
+      if ((ft.lvl || 0) < 0.9 && ft.st !== 'reset') return at(id, null, { r: x1 - x0 + 4, wait: true, hold: true });
+      return null; }
+    /* THE KING'S STAIR: on the plate-course, wait out the volley before the last run */
+    const sd = trapOf('stairDarts'); if (sd && S.stairPlate && c > 984 && c < 988 && Math.abs(feet - S.stairPlate[1]) <= 1 && sd.st !== 'ready' && sd.st !== 'reset') return at('stairPlate', null, { r: 12, wait: true, hold: true });
     return null; };
 
   /* ---------- THE GLINT AND THE NUDGE (the route list: src/stuck-spots.js STUCK_HANDS.sealedpyramid) ---------- */
@@ -277,6 +362,8 @@ export function makeSealedPyramidHands(ctx) {
     if (kind === 'wall') return K.broken[id] ? 'open' : 'shut';
     if (kind === 'pit') { const t = trapOf(id); return t ? (t.filled ? 'filled' : 'open') : ''; }
     if (kind === 'trap') { const t = trapOf(id); return t ? (t.st === 'ready' ? 'ready' : 'spent') : ''; }
+    if (kind === 'flood') { const t = trapOf(id); return t ? (t.lvl > 0.9 ? 'high' : t.lvl > 0.02 ? 'moving' : 'dry') : ''; }
+    if (kind === 'tomb') { const tb = K.tombs && K.tombs.find(q => q.id === id); return tb ? tb.st : ''; }
     if (kind === 'vault') { const v = K.vault.find(q => q.id === id); return v ? (v.open ? 'open' : ctx.questGot() >= v.seals ? 'due' : 'shut') : ''; }
     return ''; };
   H.handsState = n => (K ? handsState(n) : '');
@@ -327,6 +414,7 @@ export function makeSealedPyramidHands(ctx) {
         if (t.st === 'armed') ctx.text('!!', R(t.x - cx), R(t.y - cy - r * 2 - 8), COL.red, 'center', 6); }
       if (t.kind === 'stone' && !t.vis && d.drop && t.st !== 'firing') { const x = d.home * ts + 16 - cx, y = (d.drop[1] + 1) * ts - cy; rect(g, x - 14, y - 4, 28, 4, COL.stoneD); rect(g, x - 14, y - 4, 28, 1, COL.stone); }
     }
+    drawTombHalf(g, cx, cy, time, vis);
     for (const q of K.darts) ART.dart(g, R(q.x - cx), R(q.y - cy), q.dir);
     /* THE COUNTERWEIGHTS: a stone block under each mover's top, its chains up to the wheel; a pale top where it is a plate */
     for (const m of ctx.movers()) { if (!m.pyr) continue; const x = m.x - cx, y = m.y - cy; if (x < -60 || x > vw + 60) continue;
@@ -338,10 +426,39 @@ export function makeSealedPyramidHands(ctx) {
     /* THE FACE's storm told on the hero: the arrow while it warns */
     const P0 = ctx.hero(); if (K.stormNow && K.stormNow.phase === 'warn' && P0 && L.sandstorm && P0.x < L.sandstorm.x1) ctx.text(K.stormNow.dir > 0 ? '>>' : '<<', R(P0.x - cx), R(P0.y - cy - 30), '#ffd36b', 'center', 6);
   };
+  /* ---------- THE SECOND HALF, DRAWN (claude/pyramidart: src/redraw/sealed_pyramid_tombart.js; the hands keep every box and timer): the gas jets and their cloud, the oil channels, their
+     braziers and the running fire, the sluices and the bore, the tombs and their lids, the burial chamber's fittings, the robbers' callback ---------- */
+  function drawTombHalf(g, cx, cy, time, vis) { const ts = TS(), L = K.L;
+    for (const t of K.traps) { const d = t.def; if (!['gas', 'oil', 'flood'].includes(t.kind) || !vis(d.zone[0] - 6, d.zone[1] + 6)) continue;
+      if (t.kind === 'gas') { const jr = (d.jetRow ?? d.zone[3] + 1) * ts - cy;
+        for (const j of d.jets || []) TA.gasJet(g, j * ts - cx, jr, t.st === 'armed', time);
+        if (t.st === 'firing') { const a = Math.max(0, Math.min(1, t.left / 0.4, (d.gasT - t.left) / 0.3)); const x = d.zone[0] * ts - cx, y = d.zone[2] * ts - cy, w = (d.zone[1] - d.zone[0] + 1) * ts, h = (d.zone[3] - d.zone[2] + 1) * ts;
+          TA.gasCloud(g, x, y, w, h, a, time); } }
+      if (t.kind === 'oil') { const fy = (d.zone[3] + 1) * ts - cy, x0 = d.chan[0] * ts - cx, x1 = (d.chan[1] + 1) * ts - cx;
+        TA.oilChannel(g, x0, x1, fy, time);   /* the channel: a black sheen cut in the floor */
+        if (d.pour) TA.oilPour(g, d.pour[0] * ts - cx, (d.pour[1] + 1) * ts - cx, d.pour[2] * ts - cy);
+        const hx = d.head * ts - cx + 8, hy = (d.pour ? d.pour[2] : d.zone[3] + 1) * ts - cy, tip = t.st === 'armed' || t.st === 'firing';   /* THE BRAZIER at the head: tipped while it fires */
+        TA.brazier(g, hx, hy, tip, time);
+        if (t.st === 'firing' && t.front !== null) { TA.flameFront(g, x0, t.front - cx, fy, time); if (d.pour) TA.oilFall(g, d.pour[0] * ts - cx, (d.pour[1] + 1) * ts - cx, d.pour[2] * ts - cy, fy, time); } }
+      if (t.kind === 'flood') { const sx = (d.dir > 0 ? d.sluice + 1 : d.sluice) * ts - cx, sy0 = (d.zone[2] - 1) * ts - cy, sy1 = (d.zone[3] + 1) * ts - cy;   /* THE SLUICE: a bronze grille in the wall */
+        TA.sluice(g, sx, sy0, sy1, d.dir, t.st === 'ready', time);
+        if (t.bore !== null) TA.bore(g, t.bore - cx, sy1, TRAP_BORE.w, time);
+        if (t.st !== 'ready') TA.sluiceGauge(g, sx + (d.dir > 0 ? 4 : -36), sy0 - 10, t.lvl || 0); } }   /* its gauge: the water's height */
+    /* THE TOMBS: a lidded niche; the lid cracks (told), then lies open */
+    for (const tb of (K.tombs || [])) { if (!vis(tb.x - 2, tb.x + 3)) continue; TA.tomb(g, tb.x * ts - cx - 6, (tb.row - 3) * ts - cy, tb.kind, tb.st, time);
+      if (tb.st === 'crack') ctx.text('!', R(tb.x * ts - cx - 6 + 14), R((tb.row - 3) * ts - cy - 12), '#ffd36b', 'center', 6); }
+    /* THE BURIAL CHAMBER'S FITTINGS, the robbers' callback */
+    for (const d of (L.decor || [])) { const a = d.x0 ?? d.x, b = d.x1 ?? d.x; if (!vis(a - 2, b + 3)) continue; const X = a * ts - cx, Y = (d.y ?? 0) * ts - cy;
+      if (d.kind === 'chains') { TA.chains(g, X + 4, Y - 13 * ts, 13 * ts); TA.chains(g, (b + 1) * ts - cx - 5, Y - 13 * ts, 13 * ts); }
+      else if (d.kind === 'switchmount') TA.switchmount(g, X, Y);
+      else if (d.kind === 'paleplate') ART.plate(g, X, Y - 4, (b - a + 1) * ts, 'ready', time);
+      else if (d.kind === 'ceilslot') ART.slot(g, X, Y, (b - a + 1) * ts, 2 * ts);
+      else if (d.kind === 'robbers') TA.robbers(g, X, Y); } }
+
   /* the route glint and a held hero's grip, over everything: the mummy's bandages wound round him and the word */
   H.drawOver = (g, cx, cy, time) => { if (!K) return;
     for (const pp of ctx.players) if (pp.pyGrab) { const x = R(pp.x - cx), y = R(pp.y - cy); for (let k = 0; k < 4; k++) { g.fillStyle = k & 1 ? '#a08e66' : '#f0e6c4'; g.fillRect(x - 8, y - 14 + k * 3, 16, 1); } g.fillStyle = '#d6c8a0'; g.fillRect(x - 10, y - 12, 3, 4); g.fillRect(x + 7, y - 6, 3, 4); g.fillStyle = '#150e08'; g.fillRect(x - 10, y - 9, 3, 1); g.fillRect(x + 7, y - 3, 3, 1); ctx.text('STRIKE IT', x, y - 30, '#ff6b6b', 'center', 4); }
     if (K.glint && K.glint.show) drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
-  H.read = () => K && { n: JSON.parse(JSON.stringify(K.n)), traps: K.traps.map(t => ({ id: t.id, st: t.st, filled: t.filled })), pairs: K.pairs.map(p => ({ id: p.id, t: +p.t.toFixed(2) })), broken: { ...K.broken }, vault: K.vault.map(v => ({ id: v.id, open: v.open })), storm: K.stormNow ? K.stormNow.phase : null };
+  H.read = () => K && { n: JSON.parse(JSON.stringify(K.n)), traps: K.traps.map(t => ({ id: t.id, st: t.st, filled: t.filled })), pairs: K.pairs.map(p => ({ id: p.id, t: +p.t.toFixed(2) })), broken: { ...K.broken }, vault: K.vault.map(v => ({ id: v.id, open: v.open })), storm: K.stormNow ? K.stormNow.phase : null, tombs: (K.tombs || []).map(q => ({ id: q.id, st: q.st })), floods: K.traps.filter(t => t.kind === 'flood').map(t => ({ id: t.id, lvl: +(t.lvl || 0).toFixed(2), st: t.st })) };
   return H;
 }

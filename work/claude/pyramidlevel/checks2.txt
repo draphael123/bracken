@@ -1,0 +1,28 @@
+ok   py-hole    nudges 1  glint hole  "THE ROBBERS' HOLE IS THE WAY IN"  at 53,13
+ok   py-cw1     nudges 1  glint cw1  "THE STONE BLOCK ON ITS CHAIN: STAND ON IT AND RIDE IT DOWN"  at 173,29
+ok   py-weigh   nudges 1  glint weigh  "THE PALE BLOCK IS A PLATE: TREAD IT, AND YOU GO UP"  at 206,39
+ok   py-great   nudges 1  glint great  "THE GREAT STONE'S PLATE IS ON THE ROBBERS' WALK"  at 263,29
+ok   py-pit2    nudges 1  glint pit2  "TOO WIDE TO JUMP: THE PLATE DROPS THE BLOCK INTO THE PIT"  at 351,43
+ok   py-shaft   nudges 1  glint shaftPlate  "SPEND THE DART WALL FROM THE PLATE FIRST"  at 433,50
+ok   py-flood1  nudges 1  glint flood1  "THE SLUICE PLATE: TREAD IT AND THE WATER COMES"  at 872,47
+ok   py-flood2  nudges 1  glint flood2  "THE CRYPT SLUICE IS AT ITS FAR END: TREAD ITS PLATE"  at 916,53
+ok  sealed-pyramid-stuck: every route need glints and nudges
+errors []
+{"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"coldOpen":0,"mode":"scorched","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":"vent"},"mage":{"laid":true,"landed":{"mode":"hover","open":0,"hurt":true},"mode":"gather","open":3},"
+== textfit
+  scope bossfix          225 screens  68.5s
+  scope talk[reaper]     793 screens  97.1s
+
+== OFFSCREEN (1)
+  main.js:32054   coophelp page 2                                              "USED TWICE IS FLAGGED RED."
+
+== COVERS (2)
+  main.js:31766   talk fallingtower sign@34,300 [knight] page 1/1              "CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND" lines 3
+  main.js:31766   talk fair sign@405,12 [knight] page 1/1                      "THE HAYLOFT. SHOW 12 TICKETS." lines 2
+
+== COLLIDE (1)
+  main.js:32054   coophelp page 2                                              "SETTINGS > CONTROLS > REBIND KEYS: ONE PAGE EACH FOR" x "LEFT/RIGHT page   Z next   ESC close" (main.js:32054)
+
+9986 screens drawn, 107809 strings measured, 598s. OVERFLOW 0  OFFSCREEN 1  CLIPPED 0  TRUNCATED 0  COVERS 2  COLLIDE 1  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+13 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidlevel\audits\readability\textfit
+ALLDONE2

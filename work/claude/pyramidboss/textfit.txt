@@ -1,0 +1,13 @@
+  scope bossjump          69 screens  7.2s
+  scope boss            1740 screens  119.9s
+  scope bossfix          225 screens  19.5s
+
+== TRUNCATED (1)
+  main.js:5198    bossjump #58                                                 "TOMB-KING'S SARCOPHAGUS" -> "TOMB-KING'S SARCOPHAGU"  (x5)
+
+== ERROR (1)
+                  bestiary tab1 #21                                            "Cannot read properties of null (reading 'R')"
+
+2320 screens drawn, 24999 strings measured, 154s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 1  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 1
+1 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidboss\audits\readability\textfit
+done

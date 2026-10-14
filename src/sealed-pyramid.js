@@ -39,12 +39,19 @@
 //                                  guard treads the plates
 //   393-451  THE DEEP WAY          EXAM  THE TOMB-WARDEN (elite mummy) under a block with a scarab pit at his back; THE LAST SHAFT: spend its dart wall, then
 //                                  ride under it; THE SEALED TOMB (the vault)
-//   452-491  THE ANTECHAMBER       BOSS  THE SCARAB MOTHER (src/scarab-mother.js stageScarabMother) - the tomb's own block, dart wall and rolling stone
+//   452-491  THE ANTECHAMBER       THE SCARAB MOTHER'S LAIR (src/scarab-mother.js stageScarabMother) - the tomb's own block, dart wall and rolling stone. MID-LEVEL
+//                                  since claude/pyramidlevel (MINI_SLOT); THE LEVEL'S MINI since claude/pyramidboss (L.mini: her east door its portcullis)
+// THE SECOND HALF (claude/pyramidlevel, 2026-10-13, Daniel "way too short"; src/sealed-pyramid-tombs.js): the way UP from her lair to the burial chamber -
+//   493-610  THE HALL OF THE DEAD, 611-735 THE EMBALMERS' GALLERY (gas), 736-862 THE OIL CHANNELS (fire), 863-962 THE FLOODED CRYPT (the sluices),
+//   963-1006 THE KING'S STAIR (A14 platforming), 1007-1047 THE BURIAL CHAMBER (BOSS_SLOT: THE COFFIN KING, src/tomb-king.js - claude/pyramidboss), the gate at 1049.
+//   The same rule: the gas jets, the oil channels and the sluices are TRAPS fired from PLATES; the tombs release the dead (mummies tread plates, the tomb guard does not).
 import { stageScarabMother, SM_STAGE } from './scarab-mother.js';
+import { buildTombHalf, TH, ARCS2, SECTIONS2, SPOTS2, MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';
+export { MINI_SLOT, BOSS_SLOT } from './sealed-pyramid-tombs.js';   /* (claude/pyramidlevel) THE ARENA SLOTS for lane B: the Scarab Mother's lair mid-level, the burial chamber at the end */
 
 /* THE ROWS (a floor is the solid surface row; a hero stands on the row above). H 60: the descent is a walk with drops, not a tower (tools/level-quality.mjs: H > 60 is a tall level) */
-export const SP = { W: 498, H: 60, start: 28, summit: 14, g1: 22, g2: 30, hall: 40, corr: 30, walk: 30, tomb: 37, pits: 44, deep: 51, arena: 57 };
-export const SECTIONS = [['THE FACE', 0], ['THE GALLERY OF PLATES', 64], ['THE COUNTERWEIGHT SHAFTS', 172], ['THE FALSE TOMB', 250], ['THE SCARAB PITS', 328], ['THE DEEP WAY', 406], ['THE ANTECHAMBER', 452]];
+export const SP = { W: TH.W, H: 60, start: 28, summit: 14, g1: 22, g2: 30, hall: 40, corr: 30, walk: 30, tomb: 37, pits: 44, deep: 51, arena: 57 };
+export const SECTIONS = [['THE FACE', 0], ['THE GALLERY OF PLATES', 64], ['THE COUNTERWEIGHT SHAFTS', 172], ['THE FALSE TOMB', 250], ['THE SCARAB PITS', 328], ['THE DEEP WAY', 406], ['THE ANTECHAMBER', 452], ...SECTIONS2];
 export const RULE = 'THE TOMB IS A MACHINE: TREAD A PALE PLATE AND ITS TRAP FIRES ON WHATEVER STANDS IN ITS REACH - LET THE GUARDS STAND THERE, NOT YOU.';
 /* each use's arc (tile columns) - read by tools/sealed-pyramid.mjs */
 export const ARCS = {
@@ -53,6 +60,7 @@ export const ARCS = {
   weigh: { teach: [172, 185], exam: [206, 215] },                                                        /* ride the first block down; WEIGH THE SECOND (required) */
   open: { remix: [250, 333] },                                                                           /* THE GREAT STONE breaks the false door (required) */
   fill: { teach: [340, 347], test: [353, 365] },                                                         /* the first pit (optional); the second (required) */
+  ...ARCS2,   /* (claude/pyramidlevel) THE SECOND HALF: the tombs (rise), the gas, the oil (burn), the sluices (flood), THE KING'S STAIR (climb) - src/sealed-pyramid-tombs.js */
 };
 const { g1: G1, g2: G2, hall: HL, corr: CO, walk: WK, tomb: TB, pits: PT, deep: DP, arena: AR } = SP;
 
@@ -249,33 +257,36 @@ export function buildSealedPyramid({ painter, T, TS }) {
   const stage = stageScarabMother({ set, block, ent, air }, T, TS, AX, AR);
   stage.carve(); interiors.push([AX, AX + SM_STAGE.W - 1, AR - SM_STAGE.roof, AR - 1, 'pyAntechamber']);
   for (const l of SM_STAGE.ledges) structures.push({ kind: 'pyLedge', x0: AX + l.x0, x1: AX + l.x1, top: AR - l.dy, floor: AR });
-  ent('gate', AX + SM_STAGE.W - 2, AR - 1);
+  /* (claude/pyramidlevel) her lair is MID-LEVEL now: the level's gate is at the far end (src/sealed-pyramid-tombs.js), her east door opens on THE HALL OF THE DEAD */
   decor.push({ kind: 'dartholes', x: AX + SM_STAGE.W - 1, y0: AR - 2, y1: AR - 1 }, { kind: 'bones', x0: AX + 10, x1: AX + 13, y: AR - 1 }, { kind: 'bones', x0: AX + 30, x1: AX + 33, y: AR - 1 }, { kind: 'groove', x0: AX + 1, x1: AX + 38, y: AR - 1 }, { kind: 'eggs', x0: AX + 2, x1: AX + 6, y: AR - 1 });   /* (the antechamber's reaches scored, her eggs by her niche) */
 
+  // ================= THE SECOND HALF (claude/pyramidlevel): the way up from her lair - the tombs, the gas, the oil, the flooded crypt, THE KING'S STAIR, the burial chamber =================
+  const half = buildTombHalf({ set, block, ent, air, T, TS, sign, mummy, guard, blower, jackal, scarab, foe, ledge, lamp, decor, interiors, structures, plats });
+
   /* THE TRAPS, THE PAIRS AND THE FALSE DOOR as the hands want them (px where it moves) */
-  const traps = TRAPS.map(t => JSON.parse(JSON.stringify(t))).concat(stage.traps);
+  const traps = TRAPS.map(t => JSON.parse(JSON.stringify(t))).concat(stage.traps, half.traps);
   const moversExtra = [];
   for (const p of PAIRS) for (const [role, [x, home, other]] of [['a', p.a], ['b', p.b]]) moversExtra.push({ kind: 'lift', pyr: p.id + role, pair: p.id, role, x: x * TS, y: home * TS, y0: home * TS, y1: other * TS, home: home * TS, top: Math.min(home, other) * TS, bot: Math.max(home, other) * TS, w: 32, h: 8, speed: 46, plate: p.plate === role, wheel: p.wheel, hidden: p.id === 'cw3' && role === 'b', ride: p.ride === role });
   /* THE REACH MODEL (src/reachcore.js, L.sealedpyramid): a pit a block fills counts as filled, the false door as broken (the great stone is on the road before it) */
   const pitFill = traps.filter(t => t.fill).map(t => [t.zone[0], t.zone[1], t.land - 1, t.land]);
   const masonry = [[0, W - 1, 0, H - 1]];
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: SP.start - 1 }, pools: [], falls: [], moversExtra, interiors, structures,
-    arena: stage.arena, gateAfterBoss: true,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: SP.start - 1 }, pools: half.pools, gasVents: half.gasVents, crumble: half.crumble, tombs: half.tombs, slots: { mini: MINI_SLOT, boss: BOSS_SLOT }, falls: [], moversExtra, interiors, structures,
+    mini: stage.mini, arena: half.arena, gateAfterBoss: true, reachDoors: [{ x0: MINI_SLOT.eastDoor.col, x1: MINI_SLOT.eastDoor.col, y0: MINI_SLOT.eastDoor.y0, y1: MINI_SLOT.eastDoor.y1 }],   /* (claude/pyramidboss) her portcullis: the reach model reads it open (her death lifts it) */   /* (claude/pyramidboss, LANE B) THE SCARAB MOTHER is the level's MINI in her lair mid-level (MINI_SLOT: her east door is its portcullis); THE COFFIN KING is its boss in the burial chamber (BOSS_SLOT, src/tomb-king.js) - lane A's temporary arena.until and L.routePastBoss are gone */
     sealedpyramid: true, caravan: true,   /* caravan: the desert's hands in main.js (the desert machines' runner: the mummy, the scarabs; the sand skins) */
-    traps, pairs: PAIRS.map(p => ({ ...p })), falseWalls: FALSE_WALLS.map(w => ({ ...w })), pitFill, vaultDoors, decor, plats, lamps, quicksand, spots: JSON.parse(JSON.stringify(SPOTS)),
+    traps, pairs: PAIRS.map(p => ({ ...p })), falseWalls: FALSE_WALLS.map(w => ({ ...w })), pitFill, vaultDoors, decor, plats, lamps, quicksand, spots: JSON.parse(JSON.stringify({ ...SPOTS, ...SPOTS2 })),
     rigBands: moversExtra.filter(m => m.ride).map(m => [Math.floor(m.x / TS), Math.floor(m.x / TS) + 1, Math.floor(m.top / TS) - 1, Math.floor(m.bot / TS) - 1]),   /* (each counterweight a hero RIDES is a ride between its stops: the first and last pairs' blocks that go down under you, the second's pale block that a trap's weight sends up - not their mates, which only move against a load) */
     /* THE TOMB HITS HARD (difficulty v2: weight, not numbers): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
     knockHazards: [],   /* (the scarab pits are spike tiles the shared helper reads already: the warden's pit, the pits' lips) */
-    foeHit: { dartblower: 2.2, jackal: 4.4, scarab: 3.0 }, foeHp: { dartblower: 2.2, jackal: 2.6, scarab: 1.6 },
+    foeHit: { dartblower: 2.2, jackal: 4.4, scarab: 3.0, venomscorpion: 3.2, firescorpion: 3.2, sanddrowned: 5.4 }, foeHp: { dartblower: 2.2, jackal: 2.6, scarab: 1.6, venomscorpion: 2.4, firescorpion: 2.4, sanddrowned: 3.2 },   /* (claude/pyramidlevel: the reused desert foes at the Buried City's weights; the tomb guard is the mummy's machine at its own SKEL numbers) */
     alarms: traps.map(t => ({ x0: t.zone[0] - 4, x1: t.zone[1] + 4 })),   /* THE RULE'S STATE for tools/rule-state.mjs: the reaches are where the rule is live */
     sandstorm: { x0: 0, x1: 76 * TS, dirs: [-1, -1, -1] },   /* THE FACE's storm (src/sealed-pyramid-hands.js on src/desert-rules.js's clock) */
     quest: { n: 4, item: 'scarabseal', name: 'SEALS', done: 'FOUR SEALS: THE SEALED TOMB OPENS', thanks: 'THE SEALED TOMB OPENS' },
     sections: Object.fromEntries(SECTIONS.map(([n, x]) => [n, x])),
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
-    checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448) */
+    checkRun: 220,   /* (A10b: a shrine a section - 170, 252, 337, 448 | her lair | 615, 737, 858, 1003 before the burial chamber) */
     unlocks: [
-      { kind: 'tplate', opens: 'a TRAP: a falling block (a guard crushed, a pit filled, a counterweight weighed down), a dart wall, a rolling stone (a squad run down, the false door broken)', hud: 'THE PLATE CLICKS: THE TRAP FIRES' },
+      { kind: 'tplate', opens: 'a TRAP: a falling block (a guard crushed, a pit filled, a counterweight weighed down), a dart wall, a rolling stone (a squad run down, the false door broken); the embalmers gas jets, an oil channel fire, a sluice (the bore, then the water rises: the way up in the cistern and the crypt)', hud: 'THE PLATE CLICKS: THE TRAP FIRES' },
       { kind: 'stray', opens: 'THE SEALED TOMB by the deep way\'s drop once all four scarab seals are carried (a silver)', hud: 'SEALS n/4 - THE SEALED TOMB WAITS (the quest counter)' },
       { kind: 'sealvault', opens: 'THE SEALED TOMB\'s door: four seals open it (a silver)', hud: 'THE SEALED TOMB OPENS' },
     ],

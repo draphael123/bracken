@@ -517,6 +517,11 @@ export const STUCK_HANDS = {
     { id: 'py-pit2', zone: [348, 36, 357, 43], steps: [ { key: 'pit2', is: ['pit.pit2', 'open'], at: [353, 43], line: 'TOO WIDE TO JUMP: THE PLATE DROPS THE BLOCK INTO THE PIT' } ] },
     { id: 'py-shaft', zone: [430, 46, 441, 50], steps: [ { key: 'shaftPlate', is: ['trap.shaft', 'ready'], at: [436, 50], line: 'SPEND THE DART WALL FROM THE PLATE FIRST' },
       { key: 'shaftRide', is: ['trap.shaft', 'spent'], at: [440, 50], line: 'THE DARTS ARE RELOADING: RIDE THE BLOCK DOWN NOW' } ] },
+    /* (claude/pyramidlevel) THE SLUICES: the cistern and the crypt are shut until their water rises - tread the plate, then swim up */
+    { id: 'py-flood1', zone: [863, 34, 878, 47], steps: [ { key: 'flood1', is: ['flood.flood1', 'dry'], at: [864, 47], line: 'THE SLUICE PLATE: TREAD IT AND THE WATER COMES' },
+      { key: 'flood1up', is: ['flood.flood1', 'high'], at: [880, 41], glint: 'stall', line: 'THE WATER IS UP: SWIM TO THE LIP' } ] },
+    { id: 'py-flood2', zone: [885, 31, 950, 53], steps: [ { key: 'flood2', is: ['flood.flood2', 'dry'], at: [944, 53], line: 'THE CRYPT SLUICE IS AT ITS FAR END: TREAD ITS PLATE' },
+      { key: 'flood2up', is: ['flood.flood2', 'high'], at: [952, 29], glint: 'stall', line: 'THE WATER IS UP: SWIM TO THE HIGH DOOR' } ] },
     { id: 'py-vault', zone: [393, 46, 400, 50], steps: [ { key: 'vault', is: ['vault.sealed', 'due'], at: [397, 50], line: 'THE SEALED TOMB: FOUR SEALS OPEN IT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
