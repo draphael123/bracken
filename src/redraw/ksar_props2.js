@@ -210,6 +210,22 @@ export function drawTorchStack(V, s, time) {
   const n = Math.max(0, s.left == null ? 2 : s.left);
   for (let i = 0; i < n; i++) { const a = (i - (n - 1) / 2) * 5; wline(V, x + a * 0.2, y - 10, x + a * 1.5, y - 30 + Math.abs(a) * 0.3, '#7a5a30', 2); box(V, x + a * 1.5 - 2, y - 33 + Math.abs(a) * 0.3, 5, 4, '#4a3018'); box(V, x + a * 1.5 - 1, y - 33 + Math.abs(a) * 0.3, 3, 1, '#8a6a3a'); }   /* unlit heads, waxed */
 }
+/* (claude/ksarart) THE COURTYARD'S BRAZIER-AND-RACK (Hawk-Mistress's roofs; s: { x, y, left }): a stone plinth, an iron fire-bowl on a tripod with its coals and a tall flame, and a
+   standing rack beside it - an iron upright with two cradle hooks - that holds the torches (s.left of them, their waxed heads out, one lit at the brazier when they are taken) */
+export function drawBrazierRack(V, s, time) {
+  const x = R(s.x * TS + 8), y = (s.y + 1) * TS; if (!vis(V, x, x, 34)) return;
+  box(V, x - 14, y - 4, 28, 4, '#6a665c'); box(V, x - 14, y - 4, 28, 1, '#a8a496'); box(V, x - 12, y - 6, 24, 2, '#5e5a52'); box(V, x - 14, y - 1, 28, 1, '#35332e');   /* the plinth, two courses */
+  wline(V, x - 9, y - 6, x - 6, y - 14, '#2a2a32', 2); wline(V, x + 1, y - 6, x - 2, y - 14, '#2a2a32', 2); box(V, x - 4, y - 12, 2, 6, '#3a3a42');   /* the tripod */
+  box(V, x - 11, y - 18, 17, 4, '#3a3a42'); box(V, x - 11, y - 18, 17, 1, '#8a8a96'); box(V, x - 9, y - 14, 13, 1, '#1b1626'); box(V, x - 12, y - 19, 2, 2, '#8a8a96'); box(V, x + 5, y - 19, 2, 2, '#8a8a96');   /* the bowl and its rim */
+  box(V, x - 9, y - 20, 13, 2, '#ff6a2a'); box(V, x - 7, y - 21, 3, 1, '#ffd36b'); box(V, x, y - 21, 3, 1, '#ffd36b');   /* the coals */
+  flame(V, x - 3, y - 20, 13, time, s.x); flame(V, x - 7, y - 20, 8, time, s.x + 2); flame(V, x + 1, y - 20, 9, time, s.x + 5); glow(V, x - 3, y - 26, 34, 0.45);
+  for (let i = 0; i < 3; i++) { const q = (time * 0.9 + i * 0.33) % 1; alpha(V, 0.5 - q * 0.5, () => box(V, x - 4 + Math.sin(time * 3 + i * 2) * 3, y - 34 - q * 12, 2, 2, '#4a3e38')); }   /* the smoke it keeps */
+  const rx = x + 11; box(V, rx, y - 30, 3, 24, '#5a5a66'); box(V, rx, y - 30, 1, 24, '#9a9aa6'); box(V, rx - 1, y - 32, 5, 2, '#8a8a96');   /* the rack's upright */
+  for (const hy of [y - 24, y - 15]) { box(V, rx - 3, hy, 4, 1, '#7a7a86'); box(V, rx - 3, hy - 2, 1, 3, '#7a7a86'); }   /* the cradle hooks */
+  const n = Math.max(0, s.left == null ? 2 : s.left);
+  for (let i = 0; i < n; i++) { const hy = i ? y - 15 : y - 24; wline(V, rx - 2, hy, rx + 4 + i, hy - 12 - i * 2, '#7a5a30', 2); box(V, rx + 3 + i, hy - 16 - i * 2, 5, 5, '#4a3018'); box(V, rx + 4 + i, hy - 16 - i * 2, 3, 1, '#8a6a3a'); box(V, rx + 5 + i, hy - 14 - i * 2, 1, 3, '#2a1c0c'); }   /* waxed heads */
+  if (n === 0) { box(V, rx - 3, y - 25, 6, 1, '#8a8a96'); }
+}
 /* a torch in the hand, in the air or on the ground (state held | fly | burn): the shaft at its own angle, the head alight */
 export function drawTorchItem(V, x, y, time, state) {
   const ang = state === 'fly' ? time * 14 : state === 'burn' ? 1.45 : -0.15, len = 14, hx = x + Math.sin(ang) * len, hy = y - Math.cos(ang) * len;

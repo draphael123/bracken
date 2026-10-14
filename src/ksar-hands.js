@@ -481,7 +481,8 @@ export function makeKsarHands(ctx) {
       if (!q.cut && P && Math.abs(P.x - gx(q)) < q.ear * ts && Math.abs(P.y - gy(q)) < q.earY * ts) { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; const l = R(gx(q) - q.ear * ts - cx), r2 = R(gx(q) + q.ear * ts - cx);
         g.fillRect(l, y - 1, 2, -8); g.fillRect(r2, y - 1, 2, -8); for (let xx = l; xx < r2; xx += 12) g.fillRect(xx, y - 1, 4, 1); g.globalAlpha = 1; }
       if (q.ring > 0) { const k = 1 - q.ring / 1.4; g.strokeStyle = 'rgba(255,211,107,' + (0.8 * (1 - k)).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { const rr = (k + i * 0.18) % 1 * q.ear * ts; g.beginPath(); g.arc(x, y - (q.great ? 38 : 24), rr, Math.PI, Math.PI * 2); g.stroke(); } g.lineWidth = 1; } }
-    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') SET.drawStack(V, s); else P2.drawTorchStack(V, s, time); }   /* (part B) the torch rack: src/redraw/ksar_props2.js */
+    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') SET.drawStack(V, s); else if (s.arena) P2.drawBrazierRack(V, s, time); else P2.drawTorchStack(V, s, time); }
+    if (L.arena && L.arena.hm && inX(L.arena.x1)) SET.drawExitArch(V, L.arena);   /* (claude/ksarart) the exit alcove's arch in the east wall */   /* (part B) the torch rack: src/redraw/ksar_props2.js */
     /* THE SET KEGS AND THE CHAIN: a dotted fuse-line keg to keg and on to the arch (the chain shows its target before it goes) */
     const live = K.setKegs.filter(k => k.st !== 'spent');
     for (let i = 0; i < live.length; i++) { const k = live[i], x = R(k.x * ts + 8 - cx), y = R((k.y + 1) * ts - cy); if (!inX(k.x * ts, 200)) continue;

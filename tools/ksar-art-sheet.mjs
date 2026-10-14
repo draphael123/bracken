@@ -26,6 +26,6 @@ if (which === 'props2') {   /* (claude/ksar2 part B) the longer Ksar's pieces in
   const V = { g, cx: 0, cy: 0, vw: c.width, vh: c.height, time, L, T, noGlow: true }; P2.sheetScene(V, time);
   const big = newCanvas(c.width * sc, c.height * sc); big.getContext('2d').drawImage(c, 0, 0, c.width, c.height, 0, 0, big.width, big.height); savePNG(big, out); console.log('wrote ' + out);
 }
-if (which === 'mistress') { const F = await import('../src/redraw/ksar_art.js'); const items = [...F.MISTRESS_POSES.map(n => F.bakeMistress(n)), ...[0, 2, 3, 5, 7].map(i => F.bakeHerHawk(i).c)]; savePNG(sheet(items, { maxW: 820, bg: '#a87a68', pad: 4, scale: 3 }), out); console.log('wrote ' + out + ' (' + F.MISTRESS_POSES.join(' ') + ')'); }
+if (which === 'mistress') { const F = await import('../src/redraw/ksar_art.js'); const items = [...F.MISTRESS_POSES.map(n => F.bakeMistress(n)), ...[0, 2, 3, 5, 7, 8, 9, 10, 11, 12].map(i => F.bakeHerHawk(i).c)]; savePNG(sheet(items, { maxW: 820, bg: '#a87a68', pad: 4, scale: 3 }), out); console.log('wrote ' + out + ' (' + F.MISTRESS_POSES.join(' ') + ')'); }
 if (which === 'keep') { const P2 = await import('../src/redraw/ksar_props2.js'); const sc = 3, c = newCanvas(320, 180), g = c.getContext('2d'); g.fillStyle = '#e8a878'; g.fillRect(0, 0, 320, 180); P2.drawKeep(g, 4648, 0, 320, 180, 0.3, 0);
   const big = newCanvas(320 * sc, 180 * sc); big.getContext('2d').drawImage(c, 0, 0, 320, 180, 0, 0, big.width, big.height); savePNG(big, out); console.log('wrote ' + out); }

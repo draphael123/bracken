@@ -166,7 +166,15 @@ export function makeHawkMistressHands(ctx) {
     else if (m === 'fan') pose = ((HM.fanGap * 3 + 0.1 - (e.modeT || 0)) % HM.fanGap) < 0.09 ? 'fanThrow' : 'fanHold';
     else if (m === 'kegTell') pose = kk(HM.kegTell) < 0.7 ? 'kegSet' : 'kegKick';
     else if (m === 'recover' && S.keg && Math.abs(S.keg.x - e.x) < 46 && (e.modeT || 0) > 0.2) pose = 'kegKick';
-    else if (m === 'callTell' || m === 'rakeTell' || m === 'hawkGrabTell' || m === 'diveTell') pose = kk(m === 'callTell' ? HM.callTell : m === 'rakeTell' ? HM.rakeTell : HM.snatchTell) < 0.55 ? 'whistleA' : 'whistleB';
+    /* (claude/ksarart, B16) each hawk move has its OWN windup and release: RAKE (the hawk cocked on the glove, the free hand aiming, then the glove flung out along the line), SNATCH (the
+       gauntlet raised overhead, a finger at the sky; then slammed down at you), CALL (the free arm up and back at the wall walk, then flung up in the shout); the whistle keeps A/B */
+    else if (m === 'rakeTell') pose = kk(HM.rakeTell) < 0.62 ? 'rakeWind' : 'rakeSend';
+    else if (m === 'hawkGrabTell') pose = S.hawk && S.hawk.mode === 'drop' ? 'snatchDrop' : kk(HM.snatchTell) < 0.7 ? 'snatchWind' : 'snatchDrop';
+    else if (m === 'callTell') pose = kk(HM.callTell) < 0.55 ? 'callWind' : 'callCry';
+    else if (m === 'diveTell') pose = kk(HM.callTell) < 0.55 ? 'whistleA' : 'whistleB';
+    else if (m === 'recover' && S.rake && S.hawk && (S.hawk.mode === 'rake' || S.hawk.mode === 'rakeTell') && (e.modeT || 0) > 0.1) pose = 'rakeSend';
+    else if (m === 'recover' && S.snatch && S.hawk && (S.hawk.mode === 'drop' || S.hawk.mode === 'carry')) pose = 'snatchDrop';
+    else if (m === 'recover' && S.runner && (e.modeT || 0) > 0.15) pose = 'callCry';
     else if (m === 'whistle') pose = (time % 1.5) < 1.05 ? 'whistleA' : 'whistleB';
     else if (m === 'leap') { const Lp = S.leap; pose = Lp && Lp.t / HM.leapT < 0.16 ? 'leapCrouch' : 'leapAir'; }
     else if (m === 'walk' && pose === 'guard' && S.hawk && S.hawk.mode === 'home') { const ph = (time + e.x * 0.01) % 7; pose = ph < 3.6 ? 'guard' : ph < 4.4 ? 'tauntA' : ph < 5.2 ? 'tauntB' : ph < 6.4 ? 'stroke' : 'guard'; }   /* her idle: beckons, chin up, strokes the hawk on her glove */
@@ -192,14 +200,16 @@ export function makeHawkMistressHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'hawkmistress') return; const G = S.G;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', k = S.hawk;
     /* THE HAWK: a hawk over her (wings beating), blinded it flaps with white stars, home it sits on her glove; its shadow on the floor when it spots or dives */
-    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
-      const pose = k.mode === 'fall' || k.mode === 'down' ? 8 : k.mode === 'home' ? 7 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
+    { const hx = R(k.x - cx), hy = R(k.y - cy); if (!HW) HW = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(i => KSA.bakeHerHawk(i)); const wing = Math.floor(time * (k.mode === 'blind' ? 14 : 7)) & 1;
+      if (k.mode === 'down' && S.hawkWas !== 'down') S.hawkLandT = time; S.hawkWas = k.mode;   /* (claude/ksarart) the crash frame on the landing, then the burning loop, the embers once it is nearly up */
+      const downPose = k.mode === 'fall' ? 11 : time - (S.hawkLandT || 0) < 0.14 ? 12 : k.t < 0.55 && !HMM.hmOpen(e) ? 8 : (Math.floor(time * 8) & 1) ? 10 : 9;
+      const pose = k.mode === 'fall' || k.mode === 'down' ? downPose : k.mode === 'home' ? 7 : k.mode === 'blind' ? 4 : k.mode === 'dive' || k.mode === 'low' ? 3 : k.mode === 'diveTell' || k.mode === 'spot' ? 6 : k.mode === 'wheel' || k.mode === 'return' ? 2 : wing;
       S.hawkF = k.x > (S.hawkLastX ?? k.x) + 0.2 ? 1 : k.x < (S.hawkLastX ?? k.x) - 0.2 ? -1 : (S.hawkF || (e.face || 1)); S.hawkLastX = k.x; const hf = k.mode === 'home' ? (e.face || 1) : S.hawkF, H0 = HW[pose], bob = k.mode === 'circle' ? R(Math.sin(time * 3) * 1) : 0;
       if (hf > 0) g.drawImage(H0.c, hx - H0.ax, hy - H0.ay + bob); else { g.save(); g.translate(hx, 0); g.scale(-1, 1); g.drawImage(H0.c, -H0.ax, hy - H0.ay + bob); g.restore(); }
       if (k.mode === 'blind') for (let i = 0; i < 3; i++) { const a = time * 7 + i * 2.1; g.fillStyle = '#ffffff'; g.fillRect(hx + R(Math.cos(a) * 9), hy - 10 + R(Math.sin(a) * 3), 2, 2); }
       if (k.mode === 'wheel' || k.mode === 'blind') ctx.text(k.mode === 'wheel' ? 'WHEELING' : 'BLIND', hx, hy - 14, '#ffd36b', 'center', 5);
       /* (claude/ksarhawk) THE HAWK DOWN: it burns where it fell (flames, smoke, the word); THE HAWK'S GUARD: a dotted tether from it to her and the THROW glyph on it (src/boss-read.js drawKeyGlyph) - throw fire HERE */
-      if (k.mode === 'fall' || k.mode === 'down') { for (let i = 0; i < 4; i++) { const fh = 3 + ((time * 11 + i * 3) % 5); g.fillStyle = i % 2 ? '#ff8a2a' : '#ffd36b'; g.fillRect(hx - 6 + i * 4, hy - fh, 2, fh); }
+      if (k.mode === 'fall' || k.mode === 'down') { /* (claude/ksarart) the flames are baked into frames 9-11 */
         if (Math.random() < 0.25) ctx.burst(k.x, k.y - 6, 1, ['#3a2a22', '#6a5a50'], 20, 0.8); ctx.text('HAWK DOWN', hx, hy - 16, Math.floor(time * 6) % 2 ? '#ffd36b' : '#ff9a3c', 'center', 5); }
       else if (HMM.hawkGuards(S) && k.mode !== 'home' && !(S.ward > 0)) { g.globalAlpha = 0.45; g.strokeStyle = '#ffd36b'; if (g.setLineDash) g.setLineDash([2, 3]); g.beginPath(); g.moveTo(hx, hy + 4); g.lineTo(R(e.x - cx), R(e.y - HM.h - cy)); g.stroke(); if (g.setLineDash) g.setLineDash([]); g.globalAlpha = 1;
         drawKeyGlyph(g, 'throw', hx, hy, time, 1.4); } }
