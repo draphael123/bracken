@@ -282,12 +282,10 @@ export function drawBoundShell(g, x, y, time, buried, seed) {
   g.restore();
 }
 /* THE APPROACH FORETELLS HIM (B8): murals of the King along the road to him (art-only: placed by column, standing on whatever floor is there) and the folk he froze, half-buried, arms up */
-const APPR = { murals: [[296, 299, 'flip'], [404, 407, 'slabs'], [602, 605, 'throw'], [646, 649, 'slabs'], [682, 685, 'flip']], frozen: [[340, 0], [613, 1], [622, 2], [636, 0], [655, 1], [662, 2], [676, 0], [694, 1]] };
-const FLOOR = new Map();
-function floorOf(V, x) { const k = V.L.id + ':' + x; if (!FLOOR.has(k)) FLOOR.set(k, wallRowAt(V, x)); return FLOOR.get(k); }
+const APPR = { murals: [[296, 299, 'flip', 43], [404, 407, 'slabs', 33], [602, 605, 'throw', 33], [646, 649, 'slabs', 33], [682, 685, 'flip', 33]], frozen: [[340, 0, 33], [613, 1, 33], [622, 2, 33], [636, 0, 33], [655, 1, 33], [662, 2, 33], [676, 0, 33], [694, 1, 33]] };   /* (the floor rows are the level's: the halls 43, the glass works' end and the throne street 33) */
 export function drawApproach(V) {
-  for (const [x0, x1, kind] of APPR.murals) { if (!vis(V, x0 * TS, (x1 + 1) * TS)) continue; const f = floorOf(V, x0 + 1); if (f < 24) continue; drawKingMural(V, x0, x1, f * TS - 58, kind, 0.92); }
-  for (const [x, k] of APPR.frozen) { if (!vis(V, x * TS, x * TS + 24)) continue; const f = floorOf(V, x); if (f < 24) continue; drawFrozen(V, x * TS + 8, f * TS + 1, k); }
+  for (const [x0, x1, kind, f] of APPR.murals) { if (!vis(V, x0 * TS, (x1 + 1) * TS)) continue; drawKingMural(V, x0, x1, f * TS - 58, kind, 0.92); }
+  for (const [x, k, f] of APPR.frozen) { if (!vis(V, x * TS, x * TS + 24)) continue; drawFrozen(V, x * TS + 8, f * TS + 1, k); }
 }
 /* the sky's tone (the visual pass): the pink-orange wash of the desert sunset is cooled toward dusk violet from the top, so the lit sand and the cloth read against it */
 export function drawSkyTone(g, VW, VH) { const gr = g.createLinearGradient(0, 0, 0, VH * 0.8); gr.addColorStop(0, 'rgba(54,62,118,0.34)'); gr.addColorStop(0.6, 'rgba(70,70,120,0.16)'); gr.addColorStop(1, 'rgba(70,70,120,0)'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }
