@@ -19,6 +19,7 @@
 //   walker's hints (BK.walkHint), and the drawing (PLACEHOLDER shapes until the art pass - readable: every trap, plate and reach is drawn).
 // main.js calls: on, reset, update, interact, world, onHit, takeMummy, mover, trapReady, bossHit (the boss hands set it), drawWorld, drawOver, drawStructure,
 // drawSeal, read, walkHint, handsState.
+import * as TA from './redraw/sealed_pyramid_tombart.js';
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import * as ART from './redraw/sealed_pyramid_set.js';
 import * as SPB from './redraw/sealed_pyramid_backdrop.js';
@@ -425,44 +426,34 @@ export function makeSealedPyramidHands(ctx) {
     /* THE FACE's storm told on the hero: the arrow while it warns */
     const P0 = ctx.hero(); if (K.stormNow && K.stormNow.phase === 'warn' && P0 && L.sandstorm && P0.x < L.sandstorm.x1) ctx.text(K.stormNow.dir > 0 ? '>>' : '<<', R(P0.x - cx), R(P0.y - cy - 30), '#ffd36b', 'center', 6);
   };
-  /* ---------- THE SECOND HALF, DRAWN (claude/pyramidlevel: PLACEHOLDER shapes, readable - lane C draws the kit): the gas jets and their cloud, the oil channels, their
-     braziers and the running fire, the sluices and the bore, the tombs and their lids, the burial chamber's fittings ---------- */
+  /* ---------- THE SECOND HALF, DRAWN (claude/pyramidart: src/redraw/sealed_pyramid_tombart.js; the hands keep every box and timer): the gas jets and their cloud, the oil channels, their
+     braziers and the running fire, the sluices and the bore, the tombs and their lids, the burial chamber's fittings, the robbers' callback ---------- */
   function drawTombHalf(g, cx, cy, time, vis) { const ts = TS(), L = K.L;
     for (const t of K.traps) { const d = t.def; if (!['gas', 'oil', 'flood'].includes(t.kind) || !vis(d.zone[0] - 6, d.zone[1] + 6)) continue;
       if (t.kind === 'gas') { const jr = (d.jetRow ?? d.zone[3] + 1) * ts - cy;
-        for (const j of d.jets || []) { const x = j * ts - cx; rect(g, x + 2, jr - 2, 12, 3, '#1c1a16'); for (let k = 0; k < 4; k++) rect(g, x + 3 + k * 3, jr - 2, 1, 3, '#5a6a3a');
-          if (t.st === 'armed') { g.globalAlpha = 0.6; for (let k = 0; k < 3; k++) rect(g, x + 4 + k * 3, jr - 6 - ((time * 30 + k * 5) % 8), 2, 2, '#a6e04a'); g.globalAlpha = 1; } }
+        for (const j of d.jets || []) TA.gasJet(g, j * ts - cx, jr, t.st === 'armed', time);
         if (t.st === 'firing') { const a = Math.max(0, Math.min(1, t.left / 0.4, (d.gasT - t.left) / 0.3)); const x = d.zone[0] * ts - cx, y = d.zone[2] * ts - cy, w = (d.zone[1] - d.zone[0] + 1) * ts, h = (d.zone[3] - d.zone[2] + 1) * ts;
-          g.globalAlpha = 0.42 * a; g.fillStyle = '#7ab83a'; g.fillRect(R(x), R(y), R(w), R(h)); g.globalAlpha = 0.3 * a; g.fillStyle = '#c8f070';
-          for (let k = 0; k < w / 10; k++) { const bx = x + ((k * 37 + time * 14) % w), by = y + h * 0.5 + Math.sin(time * 2 + k) * h * 0.35; g.beginPath(); g.arc(R(bx), R(by), 6 + (k % 3) * 2, 0, 7); g.fill(); } g.globalAlpha = 1;
-          ctx.text('GAS', R(x + w / 2), R(y - 6), '#a6e04a', 'center', 4); } }
+          TA.gasCloud(g, x, y, w, h, a, time); } }
       if (t.kind === 'oil') { const fy = (d.zone[3] + 1) * ts - cy, x0 = d.chan[0] * ts - cx, x1 = (d.chan[1] + 1) * ts - cx;
-        rect(g, x0, fy - 2, x1 - x0, 3, '#141008'); g.globalAlpha = 0.5; for (let x = x0 + 3; x < x1; x += 7) rect(g, x, fy - 2, 3, 1, '#5a4a7a'); g.globalAlpha = 1;   /* the channel: a black sheen cut in the floor */
-        if (d.pour) { const px0 = d.pour[0] * ts - cx, px1 = (d.pour[1] + 1) * ts - cx, py = d.pour[2] * ts - cy; rect(g, px0, py - 2, px1 - px0, 2, '#141008'); }
+        TA.oilChannel(g, x0, x1, fy, time);   /* the channel: a black sheen cut in the floor */
+        if (d.pour) TA.oilPour(g, d.pour[0] * ts - cx, (d.pour[1] + 1) * ts - cx, d.pour[2] * ts - cy);
         const hx = d.head * ts - cx + 8, hy = (d.pour ? d.pour[2] : d.zone[3] + 1) * ts - cy, tip = t.st === 'armed' || t.st === 'firing';   /* THE BRAZIER at the head: tipped while it fires */
-        rect(g, hx - 1, hy - 12, 2, 12, '#6a5030'); g.save(); g.translate(R(hx), R(hy - 12)); g.rotate(tip ? 0.7 : 0); rect(g, -6, -5, 12, 5, '#b0743a'); rect(g, -6, -5, 12, 1, '#e8a868');
-        g.globalAlpha = 0.8 + 0.2 * Math.sin(time * 12); rect(g, -4, -9, 8, 4, '#ff9a3a'); rect(g, -2, -12, 4, 3, '#ffd36b'); g.globalAlpha = 1; g.restore();
-        if (t.st === 'firing' && t.front !== null) { const xe = t.front - cx; for (let x = x0; x < xe; x += 4) { const hgt = 8 + 6 * Math.abs(Math.sin(time * 9 + x * 0.3)); rect(g, x, fy - 2 - hgt, 4, hgt, '#e0602c'); rect(g, x + 1, fy - 2 - hgt * 0.7, 2, hgt * 0.7, '#ffd36b'); }
-          if (d.pour) { const pxe = (d.pour[1] + 1) * ts - cx, py = d.pour[2] * ts - cy; for (let x = d.pour[0] * ts - cx; x < pxe; x += 5) rect(g, x, py - 6 - 3 * Math.abs(Math.sin(time * 10 + x)), 4, 5, '#ff9a3a'); g.globalAlpha = 0.8; rect(g, pxe, py, 6, fy - py, '#ff9a3a'); g.globalAlpha = 1; } } }
+        TA.brazier(g, hx, hy, tip, time);
+        if (t.st === 'firing' && t.front !== null) { TA.flameFront(g, x0, t.front - cx, fy, time); if (d.pour) TA.oilFall(g, d.pour[0] * ts - cx, (d.pour[1] + 1) * ts - cx, d.pour[2] * ts - cy, fy, time); } }
       if (t.kind === 'flood') { const sx = (d.dir > 0 ? d.sluice + 1 : d.sluice) * ts - cx, sy0 = (d.zone[2] - 1) * ts - cy, sy1 = (d.zone[3] + 1) * ts - cy;   /* THE SLUICE: a bronze grille in the wall */
-        rect(g, sx - (d.dir > 0 ? 6 : 0), sy0, 6, sy1 - sy0, '#3a2e20'); for (let y = sy0 + 2; y < sy1; y += 4) rect(g, sx - (d.dir > 0 ? 6 : 0), y, 6, 1, t.st === 'ready' ? '#b0743a' : '#9fd0e8');
-        if (t.bore !== null) { const bx = t.bore - cx; g.globalAlpha = 0.75; rect(g, bx - TRAP_BORE.w, sy1 - 22, TRAP_BORE.w * 2, 22, '#9fd0e8'); rect(g, bx - TRAP_BORE.w, sy1 - 24, TRAP_BORE.w * 2, 3, '#eefaff'); g.globalAlpha = 1; ctx.text('THE BORE', R(bx), R(sy1 - 30), '#eefaff', 'center', 4); }
-        if (t.st !== 'ready') { const gx = sx + (d.dir > 0 ? 4 : -36), gy = sy0 - 10, k = t.lvl || 0; rect(g, gx, gy, 32, 4, '#1c140c'); rect(g, gx, gy, R(32 * k), 4, '#9fd0e8'); } } }   /* its gauge: the water's height */
+        TA.sluice(g, sx, sy0, sy1, d.dir, t.st === 'ready', time);
+        if (t.bore !== null) TA.bore(g, t.bore - cx, sy1, TRAP_BORE.w, time);
+        if (t.st !== 'ready') TA.sluiceGauge(g, sx + (d.dir > 0 ? 4 : -36), sy0 - 10, t.lvl || 0); } }   /* its gauge: the water's height */
     /* THE TOMBS: a lidded niche; the lid cracks (told), then lies open */
-    for (const tb of (K.tombs || [])) { if (!vis(tb.x - 2, tb.x + 3)) continue; const x = tb.x * ts - cx - 6, y = (tb.row - 3) * ts - cy, w = 28, h = 3 * ts;
-      rect(g, x - 2, y - 4, w + 4, 4, '#8a7450'); rect(g, x, y, w, h, '#120c08');
-      if (tb.st === 'shut' || tb.st === 'crack') { const sh = tb.st === 'crack' ? Math.sin(time * 60) * 1.2 : 0; rect(g, x + 1 + sh, y + 1, w - 2, h - 1, tb.kind === 'skel' ? '#c8bc9c' : '#b89c6c'); rect(g, x + 1 + sh, y + 1, w - 2, 1, '#e8dcc0');
-        rect(g, x + w / 2 - 4 + sh, y + 8, 8, 10, tb.kind === 'skel' ? '#8a8270' : '#d8aa40');   /* the lid's carving: a gilt face (a mummy's) or a bone ankh (a guard's) */
-        if (tb.st === 'crack') { for (let k = 0; k < 4; k++) rect(g, x + 4 + k * 6, y + 4 + (k % 2) * 12, 1, 14, '#1c140c'); ctx.text('!', R(x + w / 2), R(y - 12), '#ffd36b', 'center', 6); } }
-      else { rect(g, x - 6, y + h - 4, w + 6, 4, '#8a7450'); } }
-    /* THE BURIAL CHAMBER'S FITTINGS (lane B's arena slot, placeholders), the robbers' callback */
+    for (const tb of (K.tombs || [])) { if (!vis(tb.x - 2, tb.x + 3)) continue; TA.tomb(g, tb.x * ts - cx - 6, (tb.row - 3) * ts - cy, tb.kind, tb.st, time);
+      if (tb.st === 'crack') ctx.text('!', R(tb.x * ts - cx - 6 + 14), R((tb.row - 3) * ts - cy - 12), '#ffd36b', 'center', 6); }
+    /* THE BURIAL CHAMBER'S FITTINGS, the robbers' callback */
     for (const d of (L.decor || [])) { const a = d.x0 ?? d.x, b = d.x1 ?? d.x; if (!vis(a - 2, b + 3)) continue; const X = a * ts - cx, Y = (d.y ?? 0) * ts - cy;
-      if (d.kind === 'chains') { rect(g, X + 4, Y - 13 * ts, 1, 13 * ts, '#6a6a6a'); rect(g, (b + 1) * ts - cx - 5, Y - 13 * ts, 1, 13 * ts, '#6a6a6a'); }
-      else if (d.kind === 'switchmount') { rect(g, X, Y, 16, 16, '#3a2e20'); rect(g, X + 6, Y - 10, 4, 14, '#b0743a'); rect(g, X + 4, Y - 12, 8, 4, '#d8aa40'); }
-      else if (d.kind === 'paleplate') { rect(g, X, Y - 2, (b - a + 1) * ts, 2, '#efe3c0'); }
-      else if (d.kind === 'ceilslot') { rect(g, X, Y, (b - a + 1) * ts, 2 * ts, '#0c0806'); rect(g, X + 2, Y + 2 * ts - 6, (b - a + 1) * ts - 4, 6, '#6e5a3c'); }
-      else if (d.kind === 'greatsarcophagus') { rect(g, X - 18, Y - 14, 52, 30, '#6e5a3c'); rect(g, X - 20, Y - 18, 56, 6, '#b89c6c'); rect(g, X - 2, Y - 12, 20, 14, '#d8aa40'); rect(g, X + 4, Y - 8, 3, 3, '#1c140c'); rect(g, X + 10, Y - 8, 3, 3, '#1c140c'); }
-      else if (d.kind === 'robbers') { rect(g, X - 10, Y + 10, 20, 4, '#e8dcc0'); rect(g, X - 4, Y + 6, 6, 4, '#e8dcc0'); rect(g, X + 6, Y + 4, 6, 10, '#c8a060'); rect(g, X + 7, Y + 6, 4, 2, '#5a3a1a'); rect(g, X + 14, Y + 8, 4, 6, '#b0743a'); } } }
+      if (d.kind === 'chains') { TA.chains(g, X + 4, Y - 13 * ts, 13 * ts); TA.chains(g, (b + 1) * ts - cx - 5, Y - 13 * ts, 13 * ts); }
+      else if (d.kind === 'switchmount') TA.switchmount(g, X, Y);
+      else if (d.kind === 'paleplate') ART.plate(g, X, Y - 4, (b - a + 1) * ts, 'ready', time);
+      else if (d.kind === 'ceilslot') ART.slot(g, X, Y, (b - a + 1) * ts, 2 * ts);
+      else if (d.kind === 'robbers') TA.robbers(g, X, Y); } }
 
   /* the route glint and a held hero's grip, over everything: the mummy's bandages wound round him and the word */
   H.drawOver = (g, cx, cy, time) => { if (!K) return;
