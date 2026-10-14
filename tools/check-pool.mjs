@@ -21,6 +21,9 @@ export const SERIAL_TAIL = {
   'firsthour': 'the court half-health phase needs a fresh browser profile after a pooled-only failure',
   'fallingtower2-keys': 'the seven-hero climb needs a fresh profile after a pooled-only checkpoint failure',
   'archmage-folly': 'the staged boss rehearsal needs a fresh profile after a pooled-only failure',
+  /* The field's real-frame dressing margin produced one borderline mean-luminance miss in a pooled browser. Its full
+     eleven-part look check passed five fresh-profile reruns, so measure the picture after the pool has shut down. */
+  'unburied-look': 'the real-frame dressing margin needs a fresh profile after a pooled-only pixel miss',
   'online-coop': 'host and guest need two simultaneous browsers of their own',
   'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
   'textfit': 'opens several full game pages at once and needs the machine memory to itself',

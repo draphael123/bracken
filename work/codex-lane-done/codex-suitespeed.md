@@ -6,7 +6,7 @@ Status: **In progress, resumed 2026-10-14 at 9:00 a.m. Eastern.** The previous c
 
 The runner supports `--jobs=N`, `--max-browsers=N`, and timing-balanced deterministic `--shard=i/n`. It assigns each worker a separate port block and browser profile, reuses its server and browser where safe, and uses fresh browser contexts so storage cannot cross checks. Each check's output remains together, with one original-style ` ok ` or `FAIL <name>` line and added elapsed time. The release script's literal spawn-argument text and quoted check-name list remain in `tools/check.mjs`. The committed `tools/check-timings.json` contains all 374 baseline measurements. Chrome's optional `BRACKEN_BROWSER` path override preserves the Windows default.
 
-The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time audio), `online-coop` (two browsers), `cdp-recovery` (browser recovery), `textfit` and `textfit-full` (multi-page text audits), and `profile-cleanup` and `profile-leaks` (global profile/process inspection). Three stateful browser rehearsals were added after pooled-only failures: `firsthour`, `fallingtower2-keys`, and `archmage-folly`. Each now gets a fresh browser profile after the pool. Direct-browser checks are isolated as well. See `tools/check-pool.mjs` for the executable list and reasons.
+The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time audio), `online-coop` (two browsers), `cdp-recovery` (browser recovery), `textfit` and `textfit-full` (multi-page text audits), and `profile-cleanup` and `profile-leaks` (global profile/process inspection). Four browser checks were added after pooled-only failures: `firsthour`, `fallingtower2-keys`, `archmage-folly`, and `unburied-look`. Each now gets a fresh browser profile after the pool. Direct-browser checks are isolated as well. See `tools/check-pool.mjs` for the executable list and reasons.
 
 ## Measurements and checks run
 
@@ -18,12 +18,17 @@ The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time aud
 | Same commit, `--jobs=1` | 3h 21m 37s | 374 | Same four |
 | Same commit, parallel #2 | 72m 02s | 374 | Same four, plus `archmage-folly` and `mobile-perf` |
 | Corrected output, before fresh-browser isolation (`accf93f9`), parallel #1 | 73m 52s | 374 | `firsthour`, `curve-gate`, `no-hidden-hits`, `fallingtower2-keys`, `textfit-full` |
+| First full run at `55c33519`, before isolating `unburied-look` | 79m 34s | 374 | `unburied-look`, `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
 
 Full logs are beside this report: `baseline-suite.log`, `jobs4-run1.log`, `jobs4-equivalence-1.log`, `jobs1-equivalence.log`, and `jobs4-equivalence-2.log`. `archmage-folly-standalone.log` and `mobile-perf-standalone.log` show both intermittent failures passed alone. `mobile-perf` failed its unchanged 600 ms Red Gorge frame budget at 642.8 ms in parallel #2; its standalone worst frame was 35.5 ms. The third parallel full run was interrupted before results were emitted to honor the shutdown request; it is **not** counted as proof. The two shard runs and full three-run equivalence proof remain pending.
 
 The baseline's 30 slowest checks, in descending wall time, are below. Most are page checks that paid for their own server and Chrome startup on the baseline. The long combat, travel, and text checks also simulate many frames or layouts. `boss-music` is Node-only with real timers; `profile-cleanup` deliberately exercises multiple browser shutdown paths. `check-timings.md` has **all 374** checks sorted by wall time, classifies 223 page and 151 Node checks, and identifies pool and serial-tail handling.
 
 The new red in `firsthour` was its court not draining at 47% boss health; `fallingtower2-keys` placed the Pyromancer at the wrong start and climbed only 2/9 outer-face planks. The full output is preserved in `final-jobs4-1.log`. Each of these checks and the earlier intermittent `archmage-folly` passed **five of five** `--jobs=1` subset reruns, in the individual `*-jobs1-1.log` through `*-jobs1-5.log` files. The isolated-tail subset `fresh-browser-tail.log` passed syntax and all three unchanged checks. This is a scheduling repair, so the 73m 52s run is evidence, not one of the three final same-commit equivalence passes.
+
+The `55c33519` full run is preserved in `proof-jobs4-1.log`. It produced 369 ` ok ` and five `FAIL` summary lines, one for each check, so the output contract held. `unburied-look` reported one borderline dressing read: `fallenBanner@321`, mean luminance `12.0`, 117 pixels. The unchanged check then passed **five of five** isolated `--jobs=1` reruns (`unburied-look-serial-1.log` through `-5.log`). It is now in the fresh-browser tail; this prior run is not part of the final same-commit equivalence proof.
+
+The four-check fresh-browser subset after that change passed `unburied-look`, `firsthour`, and `fallingtower2-keys`; `archmage-folly` failed its random blink spread because the ten samples covered only 278 px of the room against an unchanged 300 px requirement. Its first fresh `--jobs=1` rerun also failed (`archmage-serial-recheck-1.log`), demonstrating a serial red. The subset receipt is `fresh-browser-tail-2.log`. No game code, test assertion, or tolerance changed.
 
 | Rank | Check | Seconds |
 | ---: | --- | ---: |
@@ -66,7 +71,7 @@ The baseline and first comparison runs revealed a release-parser bug: a long che
 
 1. **Recommendation:** On the 16 GB, 8-core main PC while two other heavy processes run, start with `--jobs=3 --max-browsers=1`. This PC has 20 logical cores and about 32 GB RAM; its measured configuration is `--jobs=4 --max-browsers=2`. The main PC setting still needs a local memory and timing check.
 2. **Recommendation:** Keep the release script's fewer-than-50 ` ok ` threshold per shard for a two-way split; each shard should contain about 187 checks. Merge the two shard logs when judging the whole release, and rerun `FAIL` checks by the existing check-name field.
-3. **Recommendation:** Keep `firsthour`, `fallingtower2-keys`, and `archmage-folly` isolated while investigating their pooled-only game-state failures. `mobile-perf` remains an intermittent timing red even in the existing serial tail. No assertion or tolerance was changed.
+3. **Recommendation:** Keep `firsthour`, `fallingtower2-keys`, `archmage-folly`, and `unburied-look` isolated while investigating their pooled-only state or frame differences. `mobile-perf` remains an intermittent timing red even in the existing serial tail. No assertion or tolerance was changed.
 
 ## Resume point
 
