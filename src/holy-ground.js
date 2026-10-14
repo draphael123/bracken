@@ -20,9 +20,10 @@ export const HG = {
   st: 18,             // stamina to plant one
   tick: 0.4,          // s between burns
   burn: 4,            // damage a burn (before the host's own skill multiplier)
-  bossBurn: 0.4,      // (claude/paltune) the burn on a BOSS: x this (a slow boss stands in the circle all fight; wood fell 75 -> 38 s)
+  bossOutMul: 1.0,    // (claude/paltune) his blow on a boss while OFF his ground
+  bossBurn: 0.3,      // (claude/paltune) the burn on a BOSS: x this (a slow boss stands in the circle all fight; wood fell 75 -> 38 s)
   heal: 0.02,         // of max health a second, mended standing in his own circle (a partner in it: half)
-  hitMul: 1.2,        // his blows inside his own circle
+  hitMul: 1.3,        // his blows inside his own circle
   empower: { cost: 35, r: 60, life: 12, burnMul: 2, flare: 12 },   // EMPOWERED CONSECRATE: Light spent, a flare on the tap, a bigger, longer, hotter circle
   smite: { cost: 20, mul: 1.5 },                                   // SMITE: the overhead inside the circle, its waves holy
   throw: { cost: 25, dmg: 9, reach: 112, t: 1.4 },                 // THE HAMMER THROW: out and back
