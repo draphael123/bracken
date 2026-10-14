@@ -31,3 +31,6 @@ RED (inherited, not from this lane, not weakened): tools/titlescene.mjs asserts 
 
 ## REVISION 3 (10-14): the slung bow is a short flat limb
 Slung bow now ~14 px diagonal (shoulder to hip, behind the cloak; 10 px for slide/swim/flip/roll), so her silhouette is the hooded figure. Run bodies sit one pixel back and the landing crouch is shallower (more upright). Pictures: v5-poses.png, v5-pick-ranger.png. Re-run GREEN: ranger.mjs, ability-poses, dances, hero-trials, textfit pick --strict.
+
+## REVISION 4 (10-14): CROUCH TO RESTOCK frames
+Pose keys rgRestock0 (hand to the hip pouch), rgRestock1 (fresh arrow drawn, fletching checked, tip glint), rgRestock2 (slid into the back quiver, cream sparkle at its mouth) plus the array rgRestock = [0,1,2], crouched low in the russet style (src/chars.js rgKitPoses). Not wired - claude/rangertune owns the state. Sheet: v6-poses.png. Re-run GREEN: ranger.mjs, ability-poses, dances.

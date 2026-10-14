@@ -4895,6 +4895,14 @@ function rgKitPoses(F, h) {
     /* THE FORWARD ROLL (a way held toward her face): tucked over the bow, a full turn clockwise */
     const ball = (o2 = {}) => KF({ legs: 'crouch', dy: 4, arm: [X, Y, X + 3, Y + 3], arm2: [OFF[0], OFF[1], X + 1, Y + 2], stave: BS, plume: 1, ...o2 });
     F.roll = [0, 1, 2, 3].map(q => rgSpin(ball(), q)); }
+  /* CROUCH TO RESTOCK (claude/rangertune wires the state; pose keys rgRestock0/1/2, also the array rgRestock): crouched low and still, (0) a hand to the leather HIP POUCH, (1) a fresh arrow drawn and its fletching checked
+     in the air before her eye, (2) the arrow slid into the quiver over her shoulder with a spark of cream at its mouth */
+  { const pouch = [o(-1, 5, '#6a4426'), o(0, 5, '#8a6a42'), o(-1, 6, '#4a2e18'), o(0, 6, '#6a4426'), o(-2, 5, '#c9a84a')];
+    const low = (o2 = {}) => KF({ dy: 3, legs: 'crouch', legsDy: 3, stave: BB, ...o2 });
+    F.rgRestock0 = low({ arm: [X, Y, X + 1, Y + 6], arm2: [OFF[0], OFF[1], X - 4, Y + 4], plume: 1, bits: [...pouch, o(2, 5, '#cfa86a'), o(3, 4, '#f0ead8')] });
+    F.rgRestock1 = low({ sho: 1, arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X - 4, Y + 4], plume: 2, bits: [...pouch, ...shaft(3, 0, 9, -3), o(10, -4, '#ffffff')] });
+    F.rgRestock2 = low({ sho: 1, hy: 1, arm: [X, Y, X + 2, Y + 4], arm2: [OFF[0], OFF[1], X - 7, Y - 5], plume: 0, bits: [...pouch, o(-7, -8, '#cfa86a'), o(-7, -9, '#f0ead8'), o(-5, -9, '#ffffff'), o(-8, -11, '#fff6c8'), o(-4, -11, '#fff6c8'), o(-6, -12, '#ffffff')] });
+    F.rgRestock = [F.rgRestock0, F.rgRestock1, F.rgRestock2]; }
   /* THE PARRY AND THE RIPOSTE ARROW (the shared key names): drawn in riposteKit('ranger') below */
   riposteKit(F, 'ranger', KF, { X, Y, OFF, aimed, knife });
 }
