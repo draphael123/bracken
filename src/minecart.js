@@ -453,9 +453,9 @@ export function buildMinecart({ painter, T, TS }) {
     foe('archer', 1025, U - 1, { squad: 'ptArcher' });
     /* THE EXAM (1029-1056): the pits kill here (told) */
     tell(1004, 1029, 'THE DEEP PITS KILL');
-    pitAt(1029, 1032); walk(1029, 1040); low(1033, 1034); pitAt(1035, 1037); low(1038, 1040);
+    pitAt(1029, 1032); walk(1029, 1041); low(1033, 1034); pitAt(1035, 1036); low(1037, 1041);
     spoil(1033, 1034, U); crusher('pt3', 1039, U, 2.2, 0.8, 0.5);
-    pitAt(1041, 1044); walk(1045, 1049); low(1045, 1063);   /* both lines broken over the last pit: a fall from either is a death */
+    pitAt(1042, 1044); walk(1045, 1049); low(1045, 1063);   /* both lines broken over the last pit: a fall from either is a death (3 wide, a run-up of five: reach-heroes) */
     foe('bat', 1042, U - 3, { squad: 'ptExBat' });
     foe('brute', 1048, D - 1, { squad: 'ptElite', elite: true });   /* THE SECTION'S EXAM (difficulty v2): one weighty elite on the last pier, the pit at your back */
     examSpans.push([1029, 1056]);
