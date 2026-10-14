@@ -233,8 +233,9 @@ const lashAt = (h0, up = 0) => { const { S, e } = fresh(), c = world(); S.ph = 1
 { const r = lashAt({}); ok(r.c.hooks.length === 1 && r.S.hooked, 'the towrope hooks a hero standing in its line');
   let t = 0; while (t < 2 && r.e.mode !== 'cutTell') { r.h[0].x = Math.min(r.h[0].x + 4, r.e.x - 20); FK.stepFogKnight(r.e, r.S, 1 / 60, r.h, r.c); t += 1 / 60; } ok(r.c.drags > 0 && r.e.mode === 'cutTell', 'drags him in, and follows with a told cut');
   ok(lashAt({}, 40).c.hooks.length === 0, 'a hero who jumps as it is thrown is passed (jump it)'); ok(lashAt({ dodge: true }).c.hooks.length === 0, 'a rolling hero is passed (roll it)'); }
-{ const { S, e } = fresh(), c = world(); S.ph = 1; e.mode = 'recover'; e.modeT = 0; S.script = ['cut']; S.step = 0; const h = [{ x: G.beams[1].x0 + 20, y: G.beams[1].y, alive: true, lit: false, pp: {} }];
-  FK.stepFogKnight(e, S, 1 / 60, h, c); ok(e.mode === 'lashTell' && S.n.highLashes === 1, 'up on a beam above the fog and seen: he lashes you down'); }
+{ const { S, e } = fresh(), c = world(); S.ph = 1; e.mode = 'recover'; e.modeT = 0; S.script = ['cut']; S.step = 0; const h = [{ x: G.beams[1].x0 + 20, y: G.beams[1].y, alive: true, lit: false, ground: true, pp: {} }];
+  FK.stepFogKnight(e, S, 1 / 60, h, c); ok(e.mode === 'lashTell' && S.n.highLashes === 1, 'up on a beam above the fog and seen: he lashes you down');
+  const f2 = fresh(); f2.S.ph = 1; f2.e.mode = 'recover'; f2.e.modeT = 0; f2.S.script = ['cut']; f2.S.step = 0; FK.stepFogKnight(f2.e, f2.S, 1 / 60, [{ ...h[0], ground: false }], c); ok(f2.S.n.highLashes === 0, 'a hero only in a jump is not lashed for it'); }
 /* THE SURGE: the wall of water sweeps the towpath and passes a bollard */
 { const { S, e } = fresh(), c = world(); S.ph = 2; const bx = (G.bollards[1].x0 + G.bollards[1].x1) / 2; const floor = { x: bx - 40, y: G.floorY, alive: true, pp: { a: 1 } }, perch = { x: bx, y: G.bollards[1].y, alive: true, pp: { b: 1 } };
   e.mode = 'recover'; e.modeT = 0; S.script = ['surge']; S.step = 0; let t = 0; while (t < 6 && !(S.n.surges && !S.wave && e.mode !== 'surgeTell' && e.mode !== 'surge')) { FK.stepFogKnight(e, S, 1 / 60, [floor, perch], c); t += 1 / 60; }

@@ -35,7 +35,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/fog-knight-hands.js binds it). fkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const FK = {
-  hp: 2050, w: 18, h: 34, markH: 50,
+  hp: 1850, w: 18, h: 34, markH: 50,
   openMul: 1.6, openCap: 0.12, openT: 3.4, scatterT: 3.0, wardT: 3.0, reelT: 1.1, burnT: 3.6, fireBurn: 0.06, burnR: 84, burnDecay: 0.35, arcR: 34,
   p2: 0.66, p3: 0.33,
   walk: 62, keep: 40, turn: 0.3, gap: [0.6, 0.52, 0.46],
@@ -44,7 +44,7 @@ export const FK = {
   lungeTell: 0.8, lungeT: 0.26, lungeV: 420, lungeRec: 0.7, lungeRange: 150, lungeBeat: 0.22,
   /* THE TOWROPE LASH: told lashTell s; the chain's head flies lashV px/s up to lashLen px toward where he sees you; a hook drags you dragV px/s toward him for at
      most dragT s (to dragTo px off him), and he follows it with a told cut; lashRec s committed after. highLash: a seen hero this far over his floor is lashed down */
-  lashTell: 0.85, lashV: 430, lashLen: 230, dragV: 300, dragT: 0.7, dragTo: 30, lashRec: 0.6, highLash: 40, highLashCd: 2.6,
+  lashTell: 0.85, lashV: 360, lashLen: 230, dragV: 300, dragT: 0.7, dragTo: 30, lashRec: 0.6, highLash: 40, highLashCd: 2.6,
   /* THE LOCK SURGE: told surgeTell s at the gate; the wall of water runs surgeV px/s west from the lower gate, surgeH px deep; surgeRec s committed */
   surgeTell: 1.2, surgeV: 300, surgeH: 26, surgeRec: 1.0, surgeKnock: 170,
   /* THE FOG SPEARS: told spearTell s; spearN spots spearGap px apart round you; each lance stands spearT s, spearH px tall, the next spearStep s after; spearRec s */
@@ -230,8 +230,8 @@ function nextMove(e, S, P, c, lit) {
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; S.reformUsed = false; }
   let m = S.script[S.step++]; const tx = S.seenX ?? P.x, dx = tx - e.x, ad = Math.abs(dx);
   e.face = Math.sign(dx) || e.face;
-  /* UP HIGH AND SEEN: a hero over his floor (a beam, the quay, the lock filled) is out of his sword - he LASHES you down (seen, not hidden in the fog) */
-  if (P && seesHero(e, S, P, c) && P.y < S.G.floorY - FK.highLash && S.highLashT <= 0 && m !== 'surge' && m !== 'dplunge') { m = 'lash'; S.highLashT = FK.highLashCd; S.n.highLashes++; S.step--; }
+  /* UP HIGH AND SEEN: a hero STOOD over his floor (a beam, the quay, the lock filled - not one in a jump) is out of his sword - he LASHES you down (seen, not hidden in the fog) */
+  if (P && P.ground && seesHero(e, S, P, c) && P.y < S.G.floorY - FK.highLash && S.highLashT <= 0 && m !== 'surge' && m !== 'dplunge') { m = 'lash'; S.highLashT = FK.highLashCd; S.n.highLashes++; S.step--; }
   if (m === 'double' && (S.dbl || !c.lockFull())) m = 'cut';
   if (m === 'step' && (S.ph < 3 || !canBlink(S))) m = 'cut';
   if (m === 'dplunge' && (S.ph < 3 || !canBlink(S))) m = 'lunge';
@@ -397,7 +397,7 @@ export function fkPlan(s) {
     if (seen && !miss) {
       /* THE CHAIN: jump it as its head comes (a roll in its path works too) */
       if ((e.mode === 'lashTell' || e.mode === 'lash') && S.lash && !S.lash.back) { const ad = Math.abs(S.lash.x - P.x), dy = S.lash.y - (P.y - 12);
-        if (ad < 60 && Math.abs(dy) < 30 && P.ground) { if (s.noRoll || rng() < 0.7) { out.jump = true; out.gx = P.x; out.why = 'jump the chain'; } else { out.dodge = true; out.gx = clamp(P.x + side * 30); out.why = 'roll the chain'; } return out; }
+        if (ad < 140 && Math.abs(dy) < 30 && P.ground) { if (s.noRoll || rng() < 0.7) { out.jump = true; out.gx = P.x; out.why = 'jump the chain'; } else { out.dodge = true; out.gx = clamp(P.x + side * 30); out.why = 'roll the chain'; } return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'watch the chain'; return out; }
       if (e.mode === 'lashTell') { out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'the chain is coming'; return out; }
       /* THE SPEARS: off the line (outside its spots, the nearer end) */
