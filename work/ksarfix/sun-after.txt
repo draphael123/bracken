@@ -1,0 +1,18 @@
+KSAR SUN (campaign level 39; max hp knight 282, warden 282, pyro 270, berserker 287); route 817 tiles, 74 sun stretches, 68 shade boxes
+stretch > 2 s (the drain's start): 0; > 3 s: 0; longest 1.7 s; walk in sun total 67.5 s
+stretch (cols)        secs   %max   fight%  knight   warden   pyro     berserker
+ 389-399              1.7    0.0    12.0   0.0      0.0      0.0      0.0      
+ 606-616              1.7    0.0    12.0   0.0      0.0      0.0      0.0      
+ 636-646              1.7    0.0    12.0   0.0      0.0      0.0      0.0      
+ 343-352              1.6    0.0    11.1   0.0      0.0      0.0      0.0      
+ 403-412              1.6    0.0    11.1   0.0      0.0      0.0      0.0      
+ 476-485              1.6    0.0    11.1   0.0      0.0      0.0      0.0      
+ 590-599              1.6    0.0    11.1   0.0      0.0      0.0      0.0      
+ 759-768              1.6    0.0    11.1   0.0      0.0      0.0      0.0      
+ 796-805              1.6    0.0    11.1   0.0      0.0      0.0      0.0      
+  10-18               1.4    0.0    10.4   0.0      0.0      0.0      0.0      
+  53-61               1.4    0.0    10.4   0.0      0.0      0.0      0.0      
+  91-99               1.4    0.0    10.4   0.0      0.0      0.0      0.0      
+TOTAL hp over every stretch (each from cool): knight 0.0  warden 0.0  pyro 0.0  berserker 0.0   | worst single stretch: knight 0.0  warden 0.0  pyro 0.0  berserker 0.0
+IF YOU SPEND 4 s FIGHTING IN EACH STRETCH: mean hp per stretch knight 23.5  warden 23.5  pyro 22.5  berserker 23.9   | worst stretch knight 33.8  warden 33.8  pyro 32.3  berserker 34.4
+JSON {"stretches":74,"over2":0,"over3":0,"longest":1.74,"sunSecs":67.5,"total":{"knight":0,"warden":0,"pyro":0,"berserker":0},"meanFight":{"knight":23.5,"warden":23.5,"pyro":22.5,"berserker":23.9},"worst":{"knight":0,"warden":0,"pyro":0,"berserker":0}}

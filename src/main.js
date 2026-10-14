@@ -27853,8 +27853,12 @@ function updateCamera(dt) {
     if (who && SET.bossIntro && !SET.reduceMotion) {
       const inK = Math.max(0, Math.min(1, (1.6 - left) / 0.34));           // it slides on
       const outK = Math.max(0, Math.min(1, (0.45 - left) / 0.45));         // and lets go before the first blow
-      const w = inK * (1 - outK), deep = who === boss ? 0.5 : 0.34;
-      const btx = who.x - VW / 2, bty = (who.y - (who.h || 20) * 0.6) - VH * 0.55;
+      const w = inK * (1 - outK); let deep = who === boss ? 0.5 : 0.34;
+      let btx = who.x - VW / 2; const bty = (who.y - (who.h || 20) * 0.6) - VH * 0.55;
+      /* (claude/ksarfix) THE HAWK-MISTRESS's COURTYARD IS 46 TILES WIDE and she stands at its far end: the intro slid the camera to her and pushed in 1.5x, which put the hero 100+ px off the
+         left edge of the picture the moment he stepped over the door - his entry was off-screen. Here the camera frames HIM first (the midpoint toward her, held so he stays 48 px inside the
+         frame) and does not push in; the room is wide enough that the dolly alone shows her. */
+      if (who === boss && L.arena && L.arena.hm) { deep = 0; btx = Math.max(P.x - VW + 48, Math.min(P.x - 48, (P.x + who.x) / 2 - VW / 2)); }
       camX += (Math.max(x0, Math.min(x1, btx)) - camX) * w;
       camY += (Math.max(0, Math.min(LH * TS - VH, bty)) - camY) * w;
       bossZoom = deep * w;
