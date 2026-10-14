@@ -14,83 +14,207 @@
 // Pure drawing on a 2d context g at (x, y) = his feet on screen; a left-facing figure is the same drawing mirrored.
 // SECOND PASS (claude/fogknightart2): the figure is drawn in three layers - the MIST he is made of (behind), the BODY (on a scratch canvas, then given a 1 px dark outline so the silhouette reads at game size, like the Crusader), and the FX (semi-transparent mist, trails, glow, in front). Proper proportions: a 34 px wide
 // shoulder line (round pauldrons), a ridged breastplate with plackart bands, plate-segment tassets that break up into the mist, bracers with couters, a fist on the grip with the crossguard above it, a broad heater shield, a tattered pennon streaming from the helm - and a strong mist lower body (a swirling column that pools on the stones).
+// THIRD PASS (claude/fogknightart3): THE KNIGHT IS NOW A HAND-DRAWN PIXEL SHEET. Helm, breastplate + faulds, pauldrons, shield, fists and the fog SHROUD are authored as palette-map rows below
+// (one character = one pixel, '.' clear) and stamped, not built from stacked rects; limbs and the sword are pixel lines with a shaded round brush. The shroud is a tattered cloak that comes off the shoulders and breaks
+// into drifting strips and single wisps at the legs (a row-by-row sway and a dissolve) - no pedestal. Pose keys, anchors, hands and the mist fx are the old ones.
 const R = Math.round;
 const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
 const px1 = (g, x, y, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), 1, 1); };
 const rgba = (c, a) => 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + Math.max(0, Math.min(1, a)).toFixed(3) + ')';
-const line = (g, x0, y0, x1, y1, c, w = 1) => { g.strokeStyle = c; g.lineWidth = w; g.beginPath(); g.moveTo(R(x0) + 0.5, R(y0) + 0.5); g.lineTo(R(x1) + 0.5, R(y1) + 0.5); g.stroke(); g.lineWidth = 1; };
+/* a crisp pixel line (no antialiasing), w px square brush */
+const line = (g, x0, y0, x1, y1, c, w = 1) => { g.fillStyle = c; x0 = R(x0); y0 = R(y0); x1 = R(x1); y1 = R(y1); const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1), o = Math.floor((w - 1) / 2); for (let i = 0; i <= n; i++) g.fillRect(R(x0 + (x1 - x0) * i / n) - o, R(y0 + (y1 - y0) * i / n) - o, w, w); };
 const FOG = [196, 208, 218], FOG_D = [120, 140, 156];
-/* the plate: a five-step ramp of rust-black iron, rust, a cold moonlit edge, barnacle grey, weed */
 const PAL = { iron0: '#161a22', iron1: '#3e4a56', iron2: '#6c7c88', iron3: '#9aaab4', rust0: '#4a2a1a', rust1: '#7a4426', rust2: '#b06a38', edge: '#c8d8e0', edge2: '#f0f8fa', barn: '#8c948c', barn2: '#b8c0b8', weed0: '#1e3626', weed1: '#2e4e34', weed2: '#4a7a4c' };
-
-/* ---------- the mist he is made of: a ghost's TAIL - wide at the faulds, narrowing in an S to a curl at the floor, a pale lit side and a deep shadowed side, wisps spinning off ---------- */
-function lowerMist(g, time, P, dbl) {
-  const a = dbl ? 0.85 : 1, lean = P.lean * 0.4, wide = 13 + P.fogcol * 2.5;
-  for (let y = -15; y <= 1; y++) { const t = (y + 15) / 16, half = Math.max(1.5, wide * (1 - Math.pow(t, 1.2) * 0.8)) + Math.sin(time * 2.1 + y * 0.5) * 1.3 + ((y * 7) % 3 === 0 ? -1 : 0), cx = lean * (1 - t) + Math.sin(time * 1.5 + y * 0.3) * (1 + t * 3) - t * t * 7, fade = Math.min(1, 0.45 + (y + 15) / 3) * (1 - t * t * 0.45);
-    g.fillStyle = rgba(FOG_D, 0.84 * a * fade); g.fillRect(R(cx - half), y, R(half * 2), 1);
-    g.fillStyle = rgba(FOG, 0.8 * a * fade); g.fillRect(R(cx - half * 0.25), y, R(half * 1.25), 1);
-    g.fillStyle = rgba([240, 248, 255], 0.7 * a * fade); g.fillRect(R(cx + half * 0.45), y, R(Math.max(1, half * 0.5)), 1);
-    g.fillStyle = rgba([60, 78, 96], 0.5 * a * fade); g.fillRect(R(cx - half), y, R(Math.max(2, half * 0.45)), 1);
-    if ((y + Math.floor(time * 4)) % 6 === 0) { g.fillStyle = rgba([255, 255, 255], 0.5 * a * fade); g.fillRect(R(cx - half * 0.1), y, R(half * 0.8), 1); } }
-  /* the pool on the stones and the curls that spin off the tail */
-  for (let i = 0; i < 5; i++) { const ph = time * 1.1 + i * 1.7, mx = Math.sin(ph) * (9 + P.fogcol * 4) + (i - 2) * 5, rw = 8 + (i % 3) * 3 + P.fogcol * 2;
-    g.fillStyle = rgba(i % 2 ? FOG : FOG_D, (0.34 + 0.1 * P.fogcol) * a); g.beginPath(); g.ellipse(R(mx), -1, rw, 2 + (i % 2), 0, 0, Math.PI * 2); g.fill(); }
-  for (let i = 0; i < 4; i++) { const ph = time * 1.7 + i * 1.9, sx = Math.sin(ph) * 10, sy = -4 - ((time * 6 + i * 5) % 14); g.fillStyle = rgba([232, 242, 252], 0.6 * a); g.fillRect(R(sx), R(sy), 3, 1); g.fillRect(R(sx + 1), R(sy + 1), 2, 1); }
+/* the sheet's palette: a deepest, b dark steel, c steel, d light, e pale, f white-hot edge; r/R/o rust (dark/mid/bright); s slit black, w slit light; g fog-lit seam; shroud: m n p q z (dark to white) */
+const PM = { a: '#161a22', b: '#3e4a56', c: '#6c7c88', d: '#9aaab4', e: '#c8d8e0', f: '#f0f8fa', r: '#4a2a1a', R: '#7a4426', o: '#b06a38', s: '#04060a', w: '#cfeaff', g: '#bfe6ff', m: '#34485a', n: '#52687c', p: '#7e96aa', q: '#b0c6d4', z: '#dcebf5', y: '#8c948c', Y: '#4a504a' };
+/* the darker set the far-side pieces are drawn in */
+const BACKMAP = { f: 'd', e: 'c', d: 'c', c: 'b', b: 'a', o: 'R', R: 'r', g: 'c' };
+function stamp(g, rows, x, y, o = {}) {
+  const { f, back, shear } = o; x = R(x); y = R(y);
+  for (let r = 0; r < rows.length; r++) { const s = rows[r], sx = shear ? R(shear(r)) : 0;
+    for (let c = 0; c < s.length; c++) { let ch = s[c]; if (ch === '.' || ch === ' ') continue; if (back && BACKMAP[ch]) ch = BACKMAP[ch]; g.fillStyle = f || PM[ch]; g.fillRect(x + c + sx, y + r, 1, 1); } }
 }
-/* a ragged lick of mist over the foot of the plate, in FRONT, so the iron melts into the tail */
+
+/* THE GREAT HELM 16 x 20 (cols 0..15, the eye slit's centre at col 8, row 9). Flat crown, steel face in three planes, a rusted brim and chin band, the cross-slit, a breath column, a crack. */
+const HELM = [
+  '..abccddeeeeff..',
+  '.abbcccddeeeffd.',
+  'abbbcccdddeeefff',
+  'abbbcccdddeeeffd',
+  'abbbcccdddeeefff',
+  'abbbcccdddeeefff',
+  'aRRRRRRRRRRoooRo',
+  'abbbbbbbbbbbbbbd',
+  'assssssssssssssd',
+  'asswwwwwwwwwwwsd',
+  'assssssssssssssd',
+  'aRRRRRRRRRRRRRRo',
+  'abbbccrdddeeefff',
+  'abbbcccdaeeeefff',
+  'abbbcccdadeeeffd',
+  'abbbcccdaddeeffd',
+  'abbbcccdadeeeffd',
+  '.abbccdddeeefff.',
+  '..abbcccddeeff..',
+  '...aabbcddeee...'];
+/* THE BREASTPLATE + FAULDS 26 x 26 (centre col 12): a V of plate from the shoulder line to the belt, a ridge and a plackart seam, a rust belt, four lames of faulds the lower two split into tatters */
+const TORSO = [
+  '....abbcccddddeeeefffd',
+  '..abbbccccdddddeeeeefffd',
+  '.abbbbccccccddddeeeeeeffd',
+  '.abbbbcccccdddddeeeeeeedd',
+  '.abbbbccccccdddddeeeeeedd',
+  '..abbbbcccccddddeeeeeedd',
+  '..abbbbcccccddddeeeeeedd',
+  '..abbbbccccccdddeeeeeed',
+  '...abbbbcccccddeeeeeedd',
+  '...abbbbccccccdeeeeeed',
+  '...aaaaaaaaaaaaaaaaaaa',
+  '...abbbcccccddddeeeeed',
+  '...abbbccccccdddeeeeed',
+  '...abbbbccccddddeeeed',
+  '....abbbccccddddeeeed',
+  '....abbbcccccdddeeed',
+  '....RRRRRRRRRRRRRRRRR',
+  '....rrrrroooorrrrrrrr',
+  '...abbcccddddeeeeffd',
+  '...abbcccddddeeeeffd',
+  '...aaaaaaaaaaaaaaaaa',
+  '..abbbcccddddeeeeffd',
+  '..abbbcccddddeeeeffd',
+  '..aaaa.aaaaa.aaaaaa',
+  '.abbcc.cddd.deee.eff',
+  '.ab.c..cd..d.ee..ef'];
+/* THE NEAR PAULDRON 16 x 9 (centre col 8, row 4): a domed lame stack, a rust rim line; the far one is the same drawn in BACKMAP */
+const PAULD = [
+  '....aabcddeeff..',
+  '..abbccdddeeeff.',
+  '.abbcccddeeeeeff',
+  'abbbccdddeeeefff',
+  'aRRRRRRRRRRRRRod',
+  'abbbcccdddeeeed.',
+  '.aabbcccddeeed..',
+  '...aaabbcdddd...',
+  '......aaaaa.....'];
+/* THE HEATER 15 x 20: pale rim, two-tone field (dark hoist, lit fly), the lock's sigil - a gate arch over water - in rust, the top-right corner broken away */
+const SHIELD = [
+  'eeeeeeeeeeeee..',
+  'ebbbbbbcddddde.',
+  'ebbbbbbcdddddde',
+  'ebbbbboooddddde',
+  'ebbbbRaaaRdddde',
+  'ebbbRaaaaaRddde',
+  'ebbbRaaaaaRddde',
+  'ebbbRaaaaaRddde',
+  'ebbbRaaaaaRddde',
+  'ebbbRaaaaaRddde',
+  'ebbbRaaaaaRddde',
+  'ebbbRRRRRRRddde',
+  'ebbbbcccccddde',
+  '.ebbbcocococdde.',
+  '..ebbbccdddde..',
+  '...ebbbcddde...',
+  '....ebbcdde....',
+  '.....ebcde.....',
+  '......ede......',
+  '.......e.......'];
+const FIST = ['.cddd.', 'bcddde', 'bccdde', 'bbccde', '.bbcd.', '..bb..'];
+/* THE SHROUD 36 wide (cols 0..35, the body's centre at col 18), 36 rows from y = -38: the cloak off the shoulders, wide and dark at the top, then breaking into strips that thin to threads and single wisps */
+const SHROUD = [
+  '....mnnnppppppppppppppppppnnm',
+  '...mnnnnppppppppppppppppppnnm',
+  '...mnnnppppppppppppppppppppnnm',
+  '..mmnnnppppppppppppppppppppnnm',
+  '..mnnnnpppppppppppppppppppppnnm',
+  '.mmnnnnppppppppppppppppppppppnnm',
+  '.mnnnnnpppppppppppppppppppppppnnm',
+  'mmnnnnnpppppppppppppppppppppppnnnm',
+  'mnnnnnnppppppppppppppppppppppppnnm',
+  'mnnnnnppppppppppppppppppppppppnnnm',
+  'mnnnnnppppppppppppppppppppppppnnnm',
+  'mmnnnnppppppppppppppppppppppppnnm',
+  'mmnnnnpppppppppppppppppppppppnnnm',
+  '.mnnnnppppppppqqqqqpppppppppnnnnm',
+  '.mnnnnpppppppqqqzzqqpppppppnnnnm',
+  '.mnnnnppppppqqqzzzqqppppppnnnnm',
+  '.mmnnnpppppqqqqzzqqqpppppnnnnm',
+  '..mnnnppppqqqqqzqqqqppppnnnnmm',
+  '..mnnnpppqqqqqqzqqqqpppnnnnm',
+  '..mnnnppppppqqqqqqqqqqqqppppppnnnm',
+  '..mnnnnppppppqqqqqzqqqqqqpppppppnnnm',
+  '..mnnnppppppqqqqqzzqqqqqqppppppnnnm',
+  '..mnnnpppppqqqqqzzzqqqqqqpppppnnnm',
+  '..mnnpppp.qqqqqqzzqqqqqqq.pppnnnm',
+  '..mnnppp..qqqqqqzzqqqqqq..pppnnm',
+  '..mnnppp...qqqqqzqqqqqq...ppnnm',
+  '..mnnpp....qqqqqqqqqqq....ppnn',
+  '..mnnp.....pqqqqqqqqq.....ppn',
+  '..mnn......pqqqqqqqq......pn',
+  '..mn.......ppqqqqqq.......pn',
+  '..mn........pqqqqq........p',
+  '..m.........pqqqq.........',
+  '..m..........pqqq',
+  '..n...........qq',
+  '..n............q'];
+/* the dither a strip dissolves through: 0..1 rising down the tail */
+const dissolve = (x, y, k, time) => ((x * 7 + y * 13 + Math.floor(time * 3) * 5) % 11) / 11 < k;
+function stampShroud(g, x0, y0, time, lean, a, wide) {
+  g.globalAlpha = a;
+  for (let r = 0; r < SHROUD.length; r++) { const s = SHROUD[r], dep = Math.max(0, (r - 13) / 24), sw = Math.round(lean * (1 - r / 40) + Math.sin(time * 1.9 + r * 0.33) * (0.4 + dep * 4.2) - dep * dep * 3 * (wide ? 0.5 : 1));
+    for (let c = 0; c < s.length; c++) { const ch = s[c]; if (ch === '.') continue; if (r > 24 && dissolve(c, r, (r - 24) / 12 * 0.55, time)) continue;
+      let col = PM[ch]; g.fillStyle = col; g.fillRect(x0 + c + sw, y0 + r, 1, 1);
+      if (r > 20 && dep > 0.45 && (c + r) % 4 === 0) { g.fillStyle = PM.z; g.fillRect(x0 + c + sw, y0 + r - 1, 1, 1); } } }
+  g.globalAlpha = 1;
+}
+/* ---------- the mist he is made of: the SHROUD behind, a few flat floor wisps and thread-streaks drifting up and away ---------- */
+function lowerMist(g, time, P, dbl) {
+  const a = dbl ? 0.85 : 1, lean = Math.round(P.lean * 0.4), fc = P.fogcol || 0;
+  stampShroud(g, -22 + lean, -38, time, lean * 0.4, a, fc > 1);
+  for (let i = 0; i < 5; i++) { const u = (time * 0.55 + i * 0.21) % 1, wx = -4 + ((i * 11) % 15) - u * 9 * (i % 2 ? 1 : -1) + Math.sin(time * 2 + i) * 2, wy = -3 - u * 20;
+    g.fillStyle = rgba(i % 2 ? FOG : [226, 238, 248], (0.55 - u * 0.5) * a); g.fillRect(R(wx), R(wy), 3 - (u > 0.5 ? 1 : 0), 1); g.fillRect(R(wx + 1), R(wy - 1), 2, 1); }
+  for (let i = 0; i < 4; i++) { const ph = time * 0.9 + i * 1.6, mx = Math.sin(ph) * (8 + fc * 4) + (i - 1.5) * 7, mw = 5 + (i % 3) * 3 + fc * 2;
+    g.fillStyle = rgba(FOG_D, (0.28 + 0.08 * fc) * a); g.fillRect(R(mx - mw / 2), -1, mw, 1); g.fillStyle = rgba(FOG, 0.3 * a); g.fillRect(R(mx - mw / 4 + 1), -2, mw / 2, 1); }
+}
+/* a few ragged licks of mist over the foot of the faulds, in FRONT, so the plate melts into the shroud */
 function frontMist(g, time, P, dbl) {
   const a = dbl ? 0.8 : 1;
-  for (let i = 0; i < 5; i++) { const ph = time * 1.4 + i * 1.7, mx = Math.sin(ph) * 7 + (i - 2) * 5 + P.lean * 0.3, my = -19 + (i % 2) * 2 + Math.sin(ph * 1.3) * 1.2; g.fillStyle = rgba(FOG, (0.62 - (i % 3) * 0.1) * a); g.beginPath(); g.ellipse(R(mx), R(my), 5 + (i % 3) * 2, 2, 0, 0, Math.PI * 2); g.fill(); }
+  for (let i = 0; i < 6; i++) { const ph = time * 1.2 + i * 1.7, mx = Math.sin(ph) * 7 + (i - 2.5) * 4 + P.lean * 0.3, my = -19 + (i % 3) * 2 + Math.sin(ph * 1.3) * 1.2; g.fillStyle = rgba(FOG, (0.55 - (i % 3) * 0.12) * a); g.fillRect(R(mx - 3), R(my), 4 + (i % 2) * 3, 1); g.fillRect(R(mx - 1), R(my + 1), 3, 1); }
 }
 function weed(g, x, y, len, time, ph = 0) { for (let i = 0; i < len; i++) px1(g, x + Math.sin(time * 1.6 + ph + i * 0.5) * (0.6 + i * 0.12), y + i, i % 3 === 2 ? PAL.weed2 : PAL.weed1); }
 function barnacles(g, x, y, n, seed) { for (let i = 0; i < n; i++) { const bx = x + ((seed * 7 + i * 5) % 8), by = y + ((seed * 3 + i * 3) % 5); px1(g, bx, by, PAL.barn); px1(g, bx + 1, by, PAL.barn2); px1(g, bx, by + 1, '#4a504a'); } }
-/* a shaded dome / disc: rx, ry radii, lit from the upper right; c = [shadow, mid, light, glint] */
-function disc(g, cx, cy, rx, ry, c, f) {
-  for (let dy = -ry; dy <= ry; dy++) { const hw = R(rx * Math.sqrt(Math.max(0, 1 - (dy / ry) * (dy / ry)))); if (hw <= 0) continue; const x0 = cx - hw, w = hw * 2;
-    rc(g, x0, cy + dy, w, 1, f || c[1]); rc(g, x0, cy + dy, Math.max(1, R(w * 0.3)), 1, f || c[0]); if (!f) { rc(g, cx + hw - Math.max(1, R(w * 0.28)), cy + dy, Math.max(1, R(w * 0.28)), 1, c[2]); if (dy <= -ry + 1) rc(g, cx - hw * 0.3, cy + dy, hw, 1, c[3]); } }
-}
-/* the great helm: a flat-topped pot in three clear planes (dark back, steel face, lit front edge), a rusted brim and chin band, the cross slit (the eye slit lit by the fog, a breath slit down the face), a crack; (cx, cy) = the eye slit's centre; a ragged pennon streams back from the crown */
+/* THE GREAT HELM at (cx, cy) = the eye slit's centre, with the pennon streaming back from the crown */
 function helm(g, cx, cy, o) {
-  const { glow = 1, dark = false, flash, time = 0 } = o, top = cy - 10, f = flash ? '#fff' : null, x0 = cx - 8, W = 16;
-  if (!f) for (let i = 0; i < 11; i++) { const wv = Math.sin(time * 3 + i * 0.55) * (1 + i * 0.12); rc(g, x0 + 2 - i, top - 1 + wv + i * 0.2, 1, i < 7 ? 3 : 2, i % 3 === 0 ? PAL.rust2 : PAL.rust1); }
-  for (let r = 0; r < 19; r++) { const inset = r === 0 ? 2 : (r === 1 ? 1 : 0); rc(g, x0 + inset, top + r, W - inset * 2, 1, f || PAL.iron2); }
-  rc(g, x0, top + 1, 5, 18, f || PAL.iron1); rc(g, x0, top + 1, 1, 18, f || PAL.iron0); rc(g, x0 + W - 5, top + 1, 5, 18, f || PAL.iron3); rc(g, x0 + W - 1, top + 1, 1, 18, f || PAL.edge2);
-  rc(g, x0 + 2, top, W - 4, 2, f || PAL.edge); rc(g, x0 + 3, top, W - 6, 1, f || PAL.edge2);
-  if (!f) { rc(g, cx + 1, top + 2, 2, 17, PAL.iron1); rc(g, cx, top + 2, 1, 17, PAL.iron3);
-    rc(g, x0, cy - 6, W, 2, PAL.rust1); rc(g, x0, cy - 6, W, 1, PAL.rust2); rc(g, x0, cy + 4, W, 2, PAL.iron1); rc(g, x0, cy + 4, W, 1, PAL.edge);
-    for (let i = 0; i < 3; i++) px1(g, cx + 4, cy + 7 + i * 2, PAL.iron0);
-    line(g, cx + 5, top + 2, cx + 3, top + 6, PAL.iron0); line(g, cx + 3, top + 6, cx + 5, top + 9, PAL.iron0);
-    rc(g, x0 + 1, cy + 8, 2, 1, PAL.rust2); }
-  rc(g, cx - 7, cy - 2, 15, 4, f || '#04060a');
-  if (!dark) { rc(g, cx - 6, cy - 1, 13, 2, f || '#cfeaff'); if (!f) { rc(g, cx - 6, cy - 1, 13, 1, '#ffffff'); g.fillStyle = rgba([180, 226, 255], 0.32 * glow); g.beginPath(); g.arc(R(cx + 1), R(cy), 10, 0, Math.PI * 2); g.fill(); } }
-  else rc(g, cx - 6, cy - 1, 13, 2, f || '#34404a');
-  if (!f) barnacles(g, x0 + 1, top + 9, 2, 1);
+  const { glow = 1, dark = false, flash, time = 0 } = o, top = cy - 9, f = flash ? '#fff' : null, x0 = cx - 8;
+  if (!f) { /* the pennon: a two-pixel ribbon of rust cloth out of the crown, rippling, forked at the end */
+    for (let i = 0; i < 13; i++) { const wv = Math.sin(time * 3.4 - i * 0.7) * (0.6 + i * 0.16), x = x0 + 4 - i, y = top - 2 + Math.round(i * 0.18 + wv + (i > 6 ? (i - 6) * 0.35 : 0)); const cc = i % 4 === 0 ? PAL.rust2 : PAL.rust1; px1(g, x, y, cc); px1(g, x, y + 1, i % 3 === 1 ? PAL.rust2 : PAL.rust0); if (i > 3 && i < 10) px1(g, x, y + 2, PAL.rust0); if (i === 12) px1(g, x - 1, y + 2, PAL.rust0); }
+    rc(g, x0 + 5, top - 2, 3, 2, PAL.iron3); px1(g, x0 + 6, top - 3, PAL.edge2); }
+  stamp(g, HELM, x0, top, { f });
+  if (!f) { px1(g, x0 + 11, top + 2, PAL.iron0); px1(g, x0 + 12, top + 3, PAL.iron0); px1(g, x0 + 12, top + 4, PAL.iron0); px1(g, x0 + 11, top + 5, PAL.iron0);   /* the crack */
+    barnacles(g, x0 + 2, top + 12, 1, 1); }
+  if (dark) { rc(g, x0 + 3, top + 9, 11, 1, f || '#34404a'); }
+  else if (!f) { g.fillStyle = rgba([180, 226, 255], 0.3 * glow); g.beginPath(); g.arc(R(cx + 1), R(cy), 9, 0, Math.PI * 2); g.fill(); px1(g, cx - 1, cy, '#ffffff'); px1(g, cx, cy, '#ffffff'); px1(g, cx + 1, cy, '#ffffff'); }
 }
 /* the fog spilling out of the slit, streaming forward and up then back */
 function slitFog(g, cx, cy, time, a = 1) { for (let i = 0; i < 6; i++) { const u = (time * 0.9 + i / 6) % 1; g.fillStyle = rgba(FOG, (0.55 - u * 0.5) * a); rc(g, cx + 7 + u * 12, cy - 1 - u * 6 + Math.sin(time * 5 + i) * 1.2, 2 + u * 2, 2); } }
-/* a round plated pauldron over a shoulder: three laminations, a lit crown, a rust-bloomed rim; (cx, cy) its centre; `back` = the far one, in shadow */
-function pauldron(g, cx, cy, rx, ry, f, back) {
-  const c = back ? [PAL.iron0, PAL.iron1, PAL.iron2, PAL.iron3] : [PAL.iron1, PAL.iron2, PAL.iron3, PAL.edge2];
-  disc(g, cx, cy, rx, ry, c, f);
-  if (!f) { rc(g, cx - rx + 1, cy + 1, rx * 2 - 2, 1, PAL.iron0); rc(g, cx - rx + 2, cy + 3, rx * 2 - 4, 1, PAL.iron0); rc(g, cx - rx + 1, cy + 2, 3, 1, PAL.rust1); px1(g, cx + rx - 3, cy - 1, PAL.edge2); }
-}
-/* a limb as a plated arm (shoulder -> elbow -> hand): shaded bracers, a round couter; `th` thick */
+/* a pauldron: (cx, cy) its centre; `back` = the far one in shadow */
+function pauldron(g, cx, cy, rx, ry, f, back) { stamp(g, PAULD, cx - 8, cy - 4, { f, back }); if (!f && !back) { px1(g, cx - 5, cy + 1, PAL.rust2); } }
+/* a limb as a plated arm (shoulder -> elbow -> hand): a three-tone round brush, a couter at the elbow; `th` thick (4 or 5) */
 function limb(g, S, H, o) { const { f, sag = 4, th = 5 } = o, E = [(S[0] + H[0]) / 2, (S[1] + H[1]) / 2 + sag];
-  for (const [a, b] of [[S, E], [E, H]]) { const n = Math.max(2, R(Math.hypot(b[0] - a[0], b[1] - a[1]) / 2)); for (let i = 0; i <= n; i++) { const x = a[0] + (b[0] - a[0]) * i / n, y = a[1] + (b[1] - a[1]) * i / n; rc(g, x - th / 2, y - th / 2, th, th, f || PAL.iron2); rc(g, x - th / 2, y - th / 2, th, 1, f || PAL.edge); rc(g, x - th / 2, y + th / 2 - 1, th, 1, f || PAL.iron1); } }
-  disc(g, R(E[0]), R(E[1]), 3, 3, [PAL.iron1, PAL.iron2, PAL.iron3, PAL.edge2], f); }
+  for (const [a, b] of [[S, E], [E, H]]) { if (!f) line(g, a[0], a[1], b[0], b[1], PAL.iron0, th + 2); line(g, a[0], a[1], b[0], b[1], f || PAL.iron1, th); if (!f) { line(g, a[0], a[1] - 1, b[0], b[1] - 1, PAL.iron2, th - 2); line(g, a[0] + 1, a[1] - 1, b[0] + 1, b[1] - 1, PAL.iron3, 1); } }
+  if (!f) { rc(g, E[0] - 3, E[1] - 3, 7, 7, PAL.iron0); rc(g, E[0] - 2, E[1] - 2, 5, 5, PAL.iron2); rc(g, E[0] - 2, E[1] - 2, 5, 1, PAL.edge); rc(g, E[0] - 2, E[1] + 2, 5, 1, PAL.iron0); px1(g, E[0] + 1, E[1], PAL.edge2); px1(g, E[0] - 1, E[1] + 1, PAL.rust2); } else rc(g, E[0] - 2, E[1] - 2, 5, 5, f); }
 /* a gauntlet fist at (x, y) */
-function fist(g, x, y, f) { rc(g, x - 3, y - 3, 6, 6, f || PAL.iron1); rc(g, x - 3, y - 3, 6, 3, f || PAL.iron3); rc(g, x - 3, y - 3, 6, 1, f || PAL.edge2); rc(g, x - 3, y + 2, 6, 1, f || PAL.iron0); if (!f) { px1(g, x, y, PAL.iron0); px1(g, x + 2, y - 1, PAL.edge); } }
-/* THE SWORD: a long bastard blade from the guard H to the tip T - three pixels wide (shade, steel, lit edge) tapering to a point, a fuller, a crossguard and a wheel pommel; the grip runs back from H to the fist. Returns the fist spot. */
+function fist(g, x, y, f) { stamp(g, FIST, x - 3, y - 3, { f }); }
+/* THE SWORD (unchanged): a bastard blade from the guard H to the tip T - 3 px (shade, steel, lit edge), a fuller, crossguard and wheel pommel */
 function swordFist(H, T) { const dx = T[0] - H[0], dy = T[1] - H[1], L = Math.hypot(dx, dy) || 1; return [H[0] - dx / L * 3, H[1] - dy / L * 3]; }
 function sword(g, H, T, o) {
   const { f, glow = 0 } = o, dx = T[0] - H[0], dy = T[1] - H[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L, nx = -uy, ny = ux, n = R(L);
   for (let i = 0; i < n; i++) { const t = i / n, x = H[0] + dx * t, y = H[1] + dy * t, taper = t > 0.8;
-    if (!taper) px1(g, x - nx, y - ny, f || '#4a5658'); px1(g, x, y, f || '#8a949a'); px1(g, x + nx * (taper ? 0 : 1), y + ny * (taper ? 0 : 1), f || '#d8e4e8'); if (i % 4 === 1 && t < 0.8) px1(g, x, y, f || '#5a666a'); }   /* shade, fuller, lit edge */
+    if (!taper) px1(g, x - nx, y - ny, f || '#4a5658'); px1(g, x, y, f || '#8a949a'); px1(g, x + nx * (taper ? 0 : 1), y + ny * (taper ? 0 : 1), f || '#d8e4e8'); if (i % 4 === 1 && t < 0.8) px1(g, x, y, f || '#5a666a'); }
   px1(g, T[0], T[1], f || '#f4fafc');
-  line(g, H[0] + nx * 5, H[1] + ny * 5, H[0] - nx * 5, H[1] - ny * 5, f || PAL.iron0, 3); line(g, H[0] + nx * 5, H[1] + ny * 5, H[0] - nx * 5, H[1] - ny * 5, f || PAL.rust2, 1);   /* the crossguard */
+  line(g, H[0] + nx * 5, H[1] + ny * 5, H[0] - nx * 5, H[1] - ny * 5, f || PAL.iron0, 3); line(g, H[0] + nx * 5, H[1] + ny * 5, H[0] - nx * 5, H[1] - ny * 5, f || PAL.rust2, 1);
   rc(g, H[0] + nx * 5 - 1, H[1] + ny * 5 - 1, 3, 3, f || PAL.iron3); rc(g, H[0] - nx * 5 - 1, H[1] - ny * 5 - 1, 3, 3, f || PAL.iron3);
-  for (let i = 1; i <= 4; i++) px1(g, H[0] - ux * i, H[1] - uy * i, f || PAL.iron2);   /* the grip */
-  rc(g, H[0] - ux * 6 - 2, H[1] - uy * 6 - 2, 4, 4, f || PAL.rust1); px1(g, H[0] - ux * 6, H[1] - uy * 6, f || PAL.edge2);   /* the wheel pommel */
+  for (let i = 1; i <= 4; i++) px1(g, H[0] - ux * i, H[1] - uy * i, f || PAL.iron2);
+  rc(g, H[0] - ux * 6 - 2, H[1] - uy * 6 - 2, 4, 4, f || PAL.rust1); px1(g, H[0] - ux * 6, H[1] - uy * 6, f || PAL.edge2);
 }
 /* the blade's glow and the mist trailing off it (semi-transparent: an FX layer) */
 function swordFx(g, H, T, time, trail, glow) {
@@ -98,37 +222,27 @@ function swordFx(g, H, T, time, trail, glow) {
   if (glow) { g.fillStyle = rgba([190, 230, 255], 0.22 * glow); g.beginPath(); g.arc(R(T[0]), R(T[1]), 6, 0, Math.PI * 2); g.fill(); }
   for (let i = 0; i < trail * 6; i++) { const u = (time * 2 + i / 6) % 1, t = 0.35 + 0.65 * ((i * 0.37) % 1); g.fillStyle = rgba(FOG, 0.5 * (1 - u) * Math.min(1, trail)); rc(g, H[0] + dx * t - Math.sign(dx || 1) * u * 12, H[1] + dy * t - u * 2 + Math.sin(time * 9 + i) * 1.5, 3, 2); }
 }
-/* THE SHIELD: a broad heater - a steel rim, the face in two tones, the lock's old sigil (a gate over water) in rust, a corner broken away; centre (x, y), h tall */
+/* THE SHIELD: the authored heater, centre (x, y) (the height argument only picks it small or large: the small ones are drawn clipped to the 17 rows nearest the point) */
 function shield(g, x, y, h, o) {
-  const f = o.flash ? '#fff' : null, w = Math.round(h * 0.8), top = y - h / 2;
-  const hwAt = r => { const t = r / h; return t < 0.55 ? w : Math.max(1, Math.round(w * (1 - Math.pow((t - 0.55) / 0.45, 1.3)))); };
-  for (let r = 0; r < h; r++) { const hw = hwAt(r), x0 = x - hw / 2;
-    rc(g, x0, top + r, hw, 1, f || PAL.iron3); if (hw > 4) { rc(g, x0 + 2, top + r, hw - 4, 1, f || PAL.iron1); rc(g, x, top + r, Math.max(0, hw / 2 - 2), 1, f || PAL.iron2); } }
+  const f = o.flash ? '#fff' : null; stamp(g, SHIELD, x - 7, y - 10, { f });
   if (f) return;
-  rc(g, x - w / 2, top, w, 1, PAL.edge2); rc(g, x - w / 2, top, 1, h * 0.55, PAL.iron1); rc(g, x + w / 2 - 1, top + 1, 1, h * 0.55, PAL.edge2);
-  rc(g, x - 4, top + 5, 9, 2, PAL.rust2); rc(g, x - 4, top + 5, 2, 10, PAL.rust2); rc(g, x + 3, top + 5, 2, 10, PAL.rust2); rc(g, x - 3, top + 11, 7, 2, PAL.rust1);
-  rc(g, x + w / 2 - 5, top + 1, 5, 4, '#06080a'); rc(g, x + w / 2 - 4, top + 2, 3, 2, rgba(FOG, 0.9));
-  barnacles(g, x - 7, top + 3, 3, 3); weed(g, x - 3, y + h / 4 - 2, 5, o.time || 0, 1);
+  px1(g, x + 5, y - 9, '#06080a'); px1(g, x + 6, y - 8, rgba(FOG, 0.9)); px1(g, x + 6, y - 9, '#06080a');
+  barnacles(g, x - 6, y - 7, 2, 3); weed(g, x - 3, y + 5, 4, o.time || 0, 1);
 }
-const rgba2 = (c, a) => 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')';
-/* THE PLATE: a ridged breastplate in three planes, a plackart seam, a belt, a lame skirt and two hanging side tassets over the mist (no greaves); `sag` for the empty armour; lx the lean at the shoulders */
+/* THE PLATE: the authored breastplate + faulds, sheared by the lean; the ridge, a rust bloom and the fog-lit seam are laid over it; `sag` for the empty armour */
 function torso(g, lx, o) {
   const f = o.flash ? '#fff' : null, sag = o.sag || 0, time = o.time || 0, cx = R(lx * 0.5), y0 = -45 + sag;
-  for (let r = 0; r < 20; r++) { const t = r / 19, hw = R(12 - 4 * Math.pow(t, 1.3)), yy = y0 + r, xx = cx + lx * (1 - t) * 0.3, x0 = R(xx - hw), w = hw * 2;
-    rc(g, x0, yy, w, 1, f || PAL.iron2); rc(g, x0, yy, R(w * 0.3), 1, f || PAL.iron1); rc(g, x0, yy, 1, 1, f || PAL.iron0); rc(g, R(xx + hw - w * 0.3), yy, R(w * 0.3), 1, f || PAL.iron3); rc(g, R(xx + hw - 1), yy, 1, 1, f || PAL.edge2); }
-  if (f) { for (let i = 0; i < 2; i++) rc(g, cx - 8 + i, y0 + 20 + i * 3, 16 - i * 2, 3, f); rc(g, cx - 9, y0 + 26, 7, 7, f); rc(g, cx + 2, y0 + 26, 7, 7, f); return; }
-  rc(g, cx - 1, y0 + 3, 3, 14, PAL.iron1); rc(g, cx - 1, y0 + 3, 1, 14, PAL.iron3); rc(g, cx + 1, y0 + 3, 1, 14, PAL.edge2);
-  line(g, cx - 10, y0 + 10, cx + 10, y0 + 10, PAL.iron0); rc(g, cx - 9, y0 + 11, 18, 1, PAL.iron3);
-  px1(g, cx - 8, y0 + 8, PAL.edge2); px1(g, cx + 8, y0 + 8, PAL.edge2); px1(g, cx - 8, y0 + 13, PAL.edge2); px1(g, cx + 8, y0 + 13, PAL.edge2);
-  rc(g, cx - 12, y0 + 1, 25, 2, PAL.iron3); rc(g, cx - 12, y0 + 1, 25, 1, PAL.edge2);
-  rc(g, cx + 3, y0 + 4, 6, 5, '#05070a'); rc(g, cx + 2, y0 + 6, 1, 2, '#05070a'); g.fillStyle = rgba(FOG, 0.75 + 0.2 * Math.sin(time * 2)); rc(g, cx + 4, y0 + 5, 4, 3); g.fillStyle = 'rgba(255,255,255,0.8)'; rc(g, cx + 4 + ((time * 6) % 3), y0 + 6, 1, 1);
-  rc(g, cx - 9, y0 + 12, 4, 1, PAL.rust1); px1(g, cx - 7, y0 + 13, PAL.rust2);
-  rc(g, cx - 10, y0 + 18, 21, 2, PAL.rust0); rc(g, cx - 10, y0 + 18, 21, 1, PAL.rust2); rc(g, cx - 2, y0 + 17, 5, 4, PAL.iron0); rc(g, cx - 1, y0 + 18, 3, 2, PAL.edge2);
-  for (let i = 0; i < 4; i++) { const yy = y0 + 20 + i * 3, hw = 10 - i * 1.5, x0 = R(cx - hw), w = R(hw * 2); rc(g, x0, yy, w, 3, i % 2 ? PAL.iron2 : PAL.iron3); rc(g, x0, yy, w, 1, PAL.edge); rc(g, x0, yy + 2, w, 1, PAL.iron0); rc(g, x0, yy, 3, 3, PAL.iron1); px1(g, x0 + 4, yy + 1, PAL.edge2); px1(g, x0 + w - 4, yy + 1, PAL.edge2);
-    if (i >= 2) { for (let k = 0; k < 3; k++) g.clearRect(x0 + 2 + k * 5 + i, yy + 2, 2, 1); if (i === 3) g.clearRect(x0 + 6, yy, 3, 2); } }   /* the lame skirt: four plates, the lowest tattered, rust-bitten */
-  rc(g, cx - 6, y0 + 23, 3, 2, PAL.rust1);
-  weed(g, cx - 7, y0 + 19, 9, time, 0); weed(g, cx + 6, y0 + 20, 7, time, 2); barnacles(g, cx - 10, y0 + 4, 2, 2);
+  stamp(g, TORSO, cx - 12, y0, { f, shear: r => lx * (1 - r / 26) * 0.3 });
+  if (f) return;
+  const sh = r => R(lx * (1 - r / 26) * 0.3);
+  for (let r = 3; r < 10; r++) { px1(g, cx + sh(r), y0 + r, PAL.edge2); px1(g, cx + sh(r) - 1, y0 + r, PAL.iron3); }   /* the ridge */
+  for (let r = 11; r < 16; r++) { px1(g, cx + sh(r), y0 + r, PAL.edge); }
+  px1(g, cx - 7 + sh(5), y0 + 5, PAL.rust1); px1(g, cx - 6 + sh(5), y0 + 6, PAL.rust2); px1(g, cx - 8 + sh(6), y0 + 6, PAL.rust0); px1(g, cx - 5 + sh(12), y0 + 12, PAL.rust1);
+  g.fillStyle = rgba(FOG, 0.75 + 0.2 * Math.sin(time * 2)); g.fillRect(cx + 4 + sh(5), y0 + 4, 4, 1); g.fillRect(cx + 5 + sh(6), y0 + 5, 3, 1); px1(g, cx + 5 + sh(5), y0 + 3, '#04060a'); px1(g, cx + 8 + sh(5), y0 + 5, '#04060a');   /* the fog showing through a split in the plate */
+  px1(g, cx + 6 + sh(5), y0 + 4, '#fff');
+  weed(g, cx - 7, y0 + 19, 6, time, 0); barnacles(g, cx - 9, y0 + 3, 2, 2);
 }
+
 
 /* ---------- THE POSES: sword hand (the GUARD) / tip, shield, head, lean, crouch - by mode and stance (right-facing; y up negative) ---------- */
 function pose(mode, stance, p, time) {
@@ -178,7 +292,7 @@ function geo(o, time) {
 /* layer 1 (behind): the mist column + the wrap of fog */
 function drawBack(g, G, o, time) {
   const { P } = G; if (!P.plungeBody) { g.save(); g.translate(0, G.cr * 0.6); lowerMist(g, time, P, o.double); g.restore(); }
-  if (P.wrap) { g.fillStyle = rgba(FOG, 0.34); g.beginPath(); g.ellipse(0, -26 + G.bob, 19, 30, 0, 0, Math.PI * 2); g.fill(); for (let i = 0; i < 6; i++) { const a = time * 1.6 + i * 1.05; g.fillStyle = rgba([226, 236, 244], 0.45); rc(g, Math.cos(a) * 18, -26 + Math.sin(a) * 22 + Math.sin(a * 2), 3, 2); } }
+  if (P.wrap) { for (let i = 0; i < 14; i++) { const a = time * 1.5 + i * 0.9, rr = 17 + (i % 3) * 2, yy = -26 + G.bob + Math.sin(a) * 24; g.fillStyle = rgba(i % 2 ? [226, 236, 244] : FOG, 0.5); g.fillRect(R(Math.cos(a) * rr), R(yy), 4 - (i % 2), 1); g.fillRect(R(Math.cos(a) * rr) + 1, R(yy) + 1, 2, 1); } }
 }
 /* layer 2: the plate (opaque; outlined afterwards) on a canvas whose origin is his feet */
 function drawBody(g, G, o, time) {
