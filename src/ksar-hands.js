@@ -207,7 +207,7 @@ export function makeKsarHands(ctx) {
   const held = P => (P && isItem(P.carry) ? P.carry : null);
   const handAt = P => ({ x: P.x + (P.face || 1) * 6, y: P.y - 18 });
   const foeAtPx = (x, y) => ctx.enemies().find(e => e.alive && !e.harmless && Math.abs(e.x - x) < (e.w || 10) / 2 + 3 && y > e.y - (e.h || 14) - 2 && y < e.y + 2) || null;
-  const hawkAtPx = (x, y) => (ctx.bossHawk ? (() => { const k = ctx.bossHawk(); return k && Math.hypot(k.x - x, k.y - y) < 16 ? k : null; })() : null);
+  const hawkAtPx = (x, y) => (ctx.bossHawk ? (() => { const k = ctx.bossHawk(); return k && Math.hypot(k.x - x, k.y - y) < 20 ? k : null; })() : null);
   H.arcOf = P => { const q = held(P); if (!q) return null; const h = handAt(P), v = CT.launchOf(q.thrKind, P, ctx.keys ? ctx.keys() : {});
     return CT.predictArc(q.thrKind, h.x, h.y, v, solidPx, { stopAt: (x, y) => foeAtPx(x, y) || hawkAtPx(x, y) || null }); };
   const newItem = (P, kind) => ({ t: kind === 'keg' ? 'kskeg' : kind === 'torch' ? 'kstorch' : 'ksflask', thrKind: kind, state: 'held', holder: P, x: P.x, y: P.y - 18, vx: 0, vy: 0, fuse: 0, burnT: 0, noClimb: kind !== 'flask', hurtWas: P.hurt > 0,
@@ -224,6 +224,9 @@ export function makeKsarHands(ctx) {
       if (q.state === 'fly') { if (!q.counted) { q.counted = 1; if (q.thrKind === 'keg') K.n.kegsThrown++; else if (q.thrKind === 'torch') K.n.torchesThrown = (K.n.torchesThrown || 0) + 1; else K.n.flasksThrown++; } q.holder = null;
         const px = q.x, py = q.y, k = CT.KINDS[q.thrKind]; CT.stepArc(q, dt, k.g);
         const hitFoe = foeAtPx(q.x, q.y), hitHawk = hawkAtPx(q.x, q.y);
+        /* (claude/ksarhawk) THE CENTRAL MECHANIC: a TORCH into the Hawk-Mistress's hawk burns it out of the air; a KEG that meets it blows there (src/hawk-mistress.js fireAt) */
+        if (hitHawk && !hitFoe && (q.thrKind === 'torch' || q.thrKind === 'keg') && ctx.bossFire) { q.state = 'gone'; K.n.hawkHits = (K.n.hawkHits || 0) + 1;
+          if (q.thrKind === 'keg') blast(q.x, q.y, 'keg'); else { ctx.bossFire(q.x, q.y, 'fire'); ctx.burst(q.x, q.y, 10, ['#ffd36b', '#ff6a2a', '#3a2a12'], 60, 0.5); } continue; }
         if (hitFoe || hitHawk) { land(q); continue; }
         if (solidPx(q.x + Math.sign(q.vx) * k.r, py, false) && !solidPx(px, py, false)) { q.x = px; q.y = py; land(q); continue; }
         if (q.vy < 0 && solidPx(q.x, q.y - k.r, false)) q.vy = 0;
@@ -251,6 +254,7 @@ export function makeKsarHands(ctx) {
     for (const t of K.trails) if (t.st === 'dry' && Math.abs(y - (t.y + 1) * ts) < 30 && x > t.x0 * ts - 30 && x < (t.x1 + 1) * ts + 30) lightTrail(t, x);
     for (const w of K.weak) if (!w.broken && Math.hypot(w.x * ts + 8 - x, w.y * ts + 8 - y) < KS.breakR) { w.broken = true; ctx.cellOpen(w.x, w.y); ctx.burst(w.x * ts + 8, w.y * ts + 4, 5, ['#b08a5a', '#7a5a3a'], 60, 0.6); if (once('roofHole')) number(x, y - 40, 'THE ROOF IS HOLED: A CELLAR UNDER IT', '#ffd36b'); }
     for (const k of K.setKegs) if (k.st === 'set' && Math.hypot(k.x * ts + 8 - x, (k.y + 1) * ts - 6 - y) < KS.chainR) { k.st = 'lit'; k.t = KS.chainFuse; k.by = 'chain'; }
+    if (ctx.bossBlast) ctx.bossBlast(x, y, KS.kegR);   /* (claude/ksarhawk) the Hawk-Mistress's roofs: a blast by the hawk brings it down, one on her lands on her */
     for (const q of K.items) if (q.thrKind === 'keg' && (q.state === 'lie') && Math.hypot(q.x - x, q.y - y) < KS.chainR * 0.5) { q.state = 'fuse'; q.fuse = KS.chainFuse; }
   }
   /* THE FLASH: a hawk in reach is blinded (a scout, or hers), bandits close by are stunned, and a puff of smoke is left */
@@ -477,7 +481,8 @@ export function makeKsarHands(ctx) {
       if (!q.cut && P && Math.abs(P.x - gx(q)) < q.ear * ts && Math.abs(P.y - gy(q)) < q.earY * ts) { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; const l = R(gx(q) - q.ear * ts - cx), r2 = R(gx(q) + q.ear * ts - cx);
         g.fillRect(l, y - 1, 2, -8); g.fillRect(r2, y - 1, 2, -8); for (let xx = l; xx < r2; xx += 12) g.fillRect(xx, y - 1, 4, 1); g.globalAlpha = 1; }
       if (q.ring > 0) { const k = 1 - q.ring / 1.4; g.strokeStyle = 'rgba(255,211,107,' + (0.8 * (1 - k)).toFixed(2) + ')'; g.lineWidth = 2; for (let i = 0; i < 3; i++) { const rr = (k + i * 0.18) % 1 * q.ear * ts; g.beginPath(); g.arc(x, y - (q.great ? 38 : 24), rr, Math.PI, Math.PI * 2); g.stroke(); } g.lineWidth = 1; } }
-    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') SET.drawStack(V, s); else P2.drawTorchStack(V, s, time); }   /* (part B) the torch rack: src/redraw/ksar_props2.js */
+    for (const s of K.stacks) { if (!inX(s.x * ts)) continue; if (s.kind !== 'torch') SET.drawStack(V, s); else if (s.arena) P2.drawBrazierRack(V, s, time); else P2.drawTorchStack(V, s, time); }
+    if (L.arena && L.arena.hm && inX(L.arena.x1)) SET.drawExitArch(V, L.arena);   /* (claude/ksarart) the exit alcove's arch in the east wall */   /* (part B) the torch rack: src/redraw/ksar_props2.js */
     /* THE SET KEGS AND THE CHAIN: a dotted fuse-line keg to keg and on to the arch (the chain shows its target before it goes) */
     const live = K.setKegs.filter(k => k.st !== 'spent');
     for (let i = 0; i < live.length; i++) { const k = live[i], x = R(k.x * ts + 8 - cx), y = R((k.y + 1) * ts - cy); if (!inX(k.x * ts, 200)) continue;

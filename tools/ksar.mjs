@@ -7,9 +7,10 @@
 //     called; a blast breaks brick in reach and lights the next keg; the murder holes stop when the gatehouse empties
 //   - the cast: one new foe (the hawk scout), reskins by cnSkin, a ranged one, role mix, every gong calls someone; checkpoints 90..175 route tiles apart;
 //     the desert's sun: no walk on the route over SUN.maxWalk out of the shade; five seals and the strongroom; silver at most 3
-//   - THE HAWK-MISTRESS (src/hawk-mistress.js, a fake world): a gong while the hawk is up -> it wheels -> she whistles, OPEN >= 3 s, standing still (B4); a ward
-//     follows (the hawk home: a gong in it finds the glove); a flash in reach blinds the hawk and opens her, one out of reach does not; her gauntlet guards
-//     the front at her height on guard, not her back, not from above, not in her tells (B11); one new told move a phase; her marks are src/marks.js's
+//   - THE HAWK-MISTRESS (src/hawk-mistress.js, a fake world; claude/ksarhawk): THE HAWK OVER HER GUARDS HER (the floor); FIRE into the hawk (a torch, a keg)
+//     brings it DOWN - she is OPEN >= 4 s, standing still (B4), the hawk on the roof; a gong while the hawk is up -> it wheels -> she is BARE; a ward follows
+//     (the hawk home: a gong or a torch finds the glove); a flash in reach blinds the hawk (BARE), one out of reach does not; every tell >= 0.6 s (a !! >= 0.8),
+//     one windup at a time; one new told move a phase; her marks are src/marks.js's
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
@@ -183,22 +184,40 @@ const A = L.arena; ok(A && A.boss === 'hawkmistress' && L.ents.some(e => e.t ===
 const Gm = HM.geom(A, TS), mk = () => { const e = { x: Gm.x1 - 80, y: Gm.floorY, hp: 1000, maxHp: 1000, alive: true, face: -1, mode: 'walk', modeT: 5, open: 0 }; const S = HM.newFight(Gm); S.hawk.x = e.x; S.hawk.y = Gm.floorY - HM.HM.hawkAlt; S.script = ['lash']; return { e, S }; };
 const said = []; const c = { hit: () => false, number: (x, y, t) => said.push(t), mark() {}, sound() {}, fx() {}, shake() {}, music() {}, time: () => 0, gongs: () => [{ id: 'yardW', x: Gm.x0 + 88, cut: false, hum: 0 }], guardRing: () => false, guards: () => 0, crumble: () => false };
 const hero = [{ x: Gm.x0 + 60, y: Gm.floorY, ground: true, alive: true, air: false }];
+/* (claude/ksarhawk, a deliberate design change - Daniel 10-13: the hawk is her central mechanic) A GONG now leaves her BARE (x bareMul for bareT s), not the
+   full opening; FIRE brings the hawk DOWN and opens her (x openMul for openT s); the gauntlet's angle is gone - THE HAWK OVER HER is her guard */
 { const { e, S } = mk(); ok(HM.ringHeard(e, S, c) === 'wheel' && S.hawk.mode === 'wheel', 'a gong rung while the hawk is up sends it wheeling');
   let t = 0; while (!HM.hmOpen(e) && t < 3) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); t += 1 / 60; }
-  ok(HM.hmOpen(e) && e.mode === 'whistle' && e.open >= 3, 'she whistles it back: OPEN, ' + e.open.toFixed(1) + ' s (>= 3)');
+  ok(HM.hmOpen(e) && e.mode === 'whistle' && S.openKind === 'bare' && e.open >= 2.5, 'she whistles it back: BARE, ' + e.open.toFixed(1) + ' s (>= 2.5)');
+  ok(!HM.guarded(e, S) && HM.hawkTarget(S) === false && S.hawk.mode === 'return', 'bare, the hawk is off her (not guarding) - and still in the air for a torch');
+  ok(HM.fireAt(e, S, c, S.hawk.x, S.hawk.y) === 'down' && S.openKind === 'down' && e.open >= 4, 'fire into the wheeling hawk while she is bare: it comes DOWN and the bare window becomes the full opening (' + e.open.toFixed(1) + ' s)');
   const x0 = e.x; for (let i = 0; i < 120; i++) HM.stepHawkMistress(e, S, 1 / 60, hero, c); ok(e.x === x0 && HM.hmOpen(e), 'open, she stands still (B4)');
+  ok(S.hawk.mode === 'down' && Math.abs(S.hawk.y - (Gm.floorY - 5)) < 1, 'the hawk lies on the roof where it fell while she is open');
   while (HM.hmOpen(e)) HM.stepHawkMistress(e, S, 1 / 60, hero, c);
   ok(S.ward > 2.5 && S.hawk.mode === 'home', 'a told ward follows the opening (' + S.ward.toFixed(1) + ' s), the hawk on her glove');
-  ok(HM.ringHeard(e, S, c) === 'home' && !HM.hmOpen(e), 'a gong in the ward finds the hawk home: nothing'); }
-{ const { e, S } = mk(); S.script = null; let opened = false; for (let i = 0; i < 60 * 60; i++) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); if (HM.hmOpen(e)) opened = true; } ok(!opened, 'a minute of her left alone (no gong, no flash) never opens her: the opening is made, not waited for (B1, B13)'); }
+  ok(HM.guarded(e, S), 'in the ward she is guarded (the floor, WARDED)');
+  ok(HM.ringHeard(e, S, c) === 'home' && !HM.hmOpen(e), 'a gong in the ward finds the hawk home: nothing');
+  ok(HM.fireAt(e, S, c, S.hawk.x, S.hawk.y) === 'home' && !HM.hmOpen(e), 'fire at the hawk on her glove: it is safe there'); }
+{ const { e, S } = mk(); S.script = null; let opened = false; for (let i = 0; i < 60 * 60; i++) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); if (HM.hmOpen(e)) opened = true; } ok(!opened, 'a minute of her left alone (no gong, no flash, no fire) never opens her: the opening is made, not waited for (B1, B13)'); }
 { const { e, S } = mk(); ok(HM.flashAt(e, S, c, S.hawk.x + 200, S.hawk.y) === 'far', 'a flash out of the hawk\'s reach does nothing');
   ok(HM.flashAt(e, S, c, S.hawk.x + 20, S.hawk.y + 30) === 'blind', 'a flash in reach blinds the hawk'); let t = 0; while (!HM.hmOpen(e) && t < 3) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); t += 1 / 60; }
-  ok(HM.hmOpen(e), 'blinded, she whistles it back: OPEN'); }
-{ const e = { x: 500, y: 300, face: -1, mode: 'walk', open: 0 };
-  ok(HM.guarded(e, 470, 300, false), 'her gauntlet turns a blow from the front at her height (walking)');
-  ok(!HM.guarded(e, 530, 300, false), 'not from behind (GO ROUND)'); ok(!HM.guarded(e, 480, 270, true), 'not from above (a jump)');
-  e.mode = 'lashTell'; ok(!HM.guarded(e, 470, 300, false), 'not in her tells: committed, every blow lands'); }
-ok(HM.HM.openT >= 3 && HM.HM.wardT >= 2.5 && HM.HM.wardT <= 3.5, 'openings >= 3 s, the ward ~3 s');
+  ok(HM.hmOpen(e) && S.openKind === 'bare', 'blinded, she whistles it back: BARE'); }
+/* THE CENTRAL MECHANIC: fire (a torch) or powder (a keg) into the hawk in the air brings it down - she is OPEN */
+{ const { e, S } = mk(); ok(HM.guarded(e, S) && HM.hawkGuards(S), 'the hawk circling over her: SHE IS GUARDED (a blow lands at the floor)');
+  ok(HM.fireAt(e, S, c, S.hawk.x + 60, S.hawk.y) === 'far', 'a torch that misses the hawk does nothing');
+  ok(HM.fireAt(e, S, c, S.hawk.x + 6, S.hawk.y - 4) === 'down' && S.hawk.mode === 'fall' && S.n.downs === 1, 'a torch into the hawk: it FALLS');
+  let t = 0; while (!HM.hmOpen(e) && t < 2) { HM.stepHawkMistress(e, S, 1 / 60, hero, c); t += 1 / 60; }
+  ok(HM.hmOpen(e) && S.openKind === 'down' && e.open >= HM.HM.openT - 0.2 && t < 0.5, 'she is OPEN at once (' + t.toFixed(2) + ' s), ' + HM.HM.openT + ' s, x' + HM.HM.openMul);
+  ok(!HM.guarded(e, S), 'open, the hawk guards nothing'); }
+{ const { e, S } = mk(); S.hawk.mode = 'rake'; ok(!HM.guarded(e, S) && HM.hawkTarget(S), 'the hawk out on a stoop of its own: she is not guarded, and fire can find it');
+  ok(HM.fireAt(e, S, c, S.hawk.x, S.hawk.y, 'keghawk') === 'down' && S.n.kegDowns === 1, 'a keg that meets the hawk brings it down too'); }
+ok(HM.HM.openT >= 4 && HM.HM.bareT >= 2.5 && HM.HM.openMul > HM.HM.bareMul && HM.HM.bareMul > 1 && HM.HM.wardT >= 2.5 && HM.HM.wardT <= 3.5, 'the fire opening ' + HM.HM.openT + ' s x' + HM.HM.openMul + ', bare ' + HM.HM.bareT + ' s x' + HM.HM.bareMul + ', the ward ~3 s');
+/* SLOWER (Daniel 10-13: "too quick, often cannot get out of the way"): every told move >= 0.6 s (a !! >= 0.8 s), the gaps between her moves >= 0.8 s, one windup at a time */
+{ const TELL = { lashTell: 'lashTell', feintTell: 'feintTell', cutTell: 'cutTell', spotTell: 'spotTell', markLashTell: 'markLashTell', callTell: 'callTell', snareTell: 'snareTell', fanTell: 'fanTell', kegTell: 'kegTell', rakeTell: 'rakeTell', hawkGrabTell: 'snatchTell' };
+  for (const [m, v] of Object.entries(HM.MOVES)) { const T0 = HM.HM[TELL[m]]; ok(T0 >= 0.6 && (v.mark !== '!!' || T0 >= 0.8), 'her ' + m + ' is told ' + T0 + ' s (>= 0.6, a !! >= 0.8)'); }
+  ok(HM.HM.gap.every(g => g >= 0.8) && HM.HM.fanGap >= 0.4, 'the gaps between her moves ' + HM.HM.gap.join('/') + ' s, between her knives ' + HM.HM.fanGap + ' s');
+  const { e, S } = mk(); S.keg = { x: e.x - 200, vx: -50, fuse: 9, back: false }; e.mode = 'recover'; e.modeT = 0; S.script = ['lash']; S.step = 0; const far = [{ x: e.x - 30, y: Gm.floorY, ground: true, alive: true }];
+  let told = false; for (let i = 0; i < 30; i++) { HM.stepHawkMistress(e, S, 1 / 60, far, Object.assign({}, c, { keg: () => null })); if (/Tell$/.test(e.mode)) told = true; } ok(!told && !HM.calm(S), 'one windup at a time: nothing new while her keg rolls'); }
 const movesOf = ph => new Set(HM.CYCLES[ph].flat());
 /* (claude/ksar2) ONE NEW TOLD MOVE OF HERS A PHASE (B5): the snare (one), the knife fan (two), the keg kick (three); the hawk's rake from the start and its
    snatch from phase two; the call (her guard: the arena's change) from phase two */
@@ -232,7 +251,7 @@ ok(!Object.values(HM.CYCLES).flat(2).includes('dive'), "the old hawk's dive is t
     for (let i = 0; i < 6 * 60; i++) { HM.stepHawkMistress(e, S, 1 / 60, far, base({ hit: () => false })); if (e.mode === 'leap') leapt = true; if (e.mode !== 'leap' && HM.overShaft(G2, e.x, 4)) inShaft = true; }
     ok(leapt && HM.roofOf(G2, e.x) === 0 && !inShaft, 'she LEAPS the shaft after a hero on another roof and lands on his roof - never standing over a shaft (B12)'); }
   const hsrc = readFileSync(new URL('../src/hawk-mistress-hands.js', import.meta.url), 'utf8');
-  ok(HM.HM.floor >= 0.4 && (hsrc.match(/return dmg \* HM\.floor;/g) || []).length === 2 && !/return 0; *}\s*\n\s*if \(HMM\.hmOpen/.test(hsrc), 'B15: her ward and her gauntlet turn a blow to ' + HM.HM.floor + 'x - never wholly');
+  ok(HM.HM.floor >= 0.4 && (hsrc.match(/return dmg \* HM\.floor;/g) || []).length === 2 && !/return 0; *}\s*\n\s*if \(HMM\.hmOpen/.test(hsrc), 'B15: her ward and the guard of her hawk turn a blow to ' + HM.HM.floor + 'x - never wholly');
   const bot = (o) => HM.hmPlan(Object.assign({ e: mk2('lash').e, S: mk2('lash').S, gongs: [], racks: [], reach: 26, t: 9, mem: {}, rng: () => 0.99, v2: true }, o));
   { const m = mk2('lash'); const o = HM.hmPlan({ P: { x: G2.shafts[0][0] - 6, y: G2.floorY, face: 1, ground: true, atk: -1 }, e: Object.assign(m.e, { x: G2.roofs[1][0] + 70, mode: 'walk' }), S: m.S, gongs: [], racks: [], reach: 26, t: 9, mem: {}, v2: true }); ok(o.jump, 'the bot JUMPS a shaft at its lip (' + o.why + ')'); }
   { const m = mk2('lash'), mem = {}, q = t => HM.hmPlan({ P: { x: m.e.x - 40, y: G2.floorY, face: 1, ground: true, atk: -1, snared: true }, e: m.e, S: m.S, gongs: [], racks: [], reach: 26, t, mem, v2: true }); q(9); ok(q(9.5).jump, 'the bot jumps free of a snare (a beat late)'); void bot; } }
