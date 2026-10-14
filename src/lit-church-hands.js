@@ -20,11 +20,14 @@ import * as SET from './redraw/church_set.js';
    chordTell/chordT/gustAir/gustGround the key desk's chord; darkV px/s the rising dark climbs, darkTick/darkPct its bite, holdT s a sconce holds it, darkSpawn its
    dead; archHealCd/archHealTell/archHeal THE ARCHDEACON's prayer over his room */
 export const FLAME = { life: 14, takeR: 24, useR: 26, glow: 70 };
+/* (claude/church2) HOLY FIRE: a trough BLAZES while its lamp burns - a touch costs HOLY.pct of you (unblockable, the A10 hazard cost) and puts you back on your last safe
+   footing (or the trough's near lip); its lamp out, it is EMBERS you walk. HOLY.cd s between two burns */
+export const HOLY = { pct: 0.27, cd: 0.6 };
 export const LC = { litMul: 1.3, darkMul: 0.7, knightLit: 1.15, heal: 0.16, litHeal: 1.5, darkHeal: 0.5, healCd: 7, healTell: 1.0, healR: 130, relightT: 1.5, acoRelightT: 0.6,
   priestV: 44, acoV: 92, riseEvery: 4.5, riseTell: 1.0, riseCap: 3, deadDark: 1.8, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
   darkV: 24, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0 };
 /* what a dark room's grates bring up (by room; the rest bring wights and haunts) */
-const RISE = { graveyard: ['wight'], narthex: ['haunt'], nave: ['wight', 'haunt', 'boo'], transept: ['haunt', 'wight'], gallery: ['boo', 'haunt'], ossuary: ['wight', 'haunt'], altar: ['wight', 'haunt'], south: ['wight', 'haunt', 'boo'], tower: ['boo'] };
+const RISE = { chantry: ['wight', 'haunt'], graveyard: ['wight'], narthex: ['haunt'], nave: ['wight', 'haunt', 'boo'], transept: ['haunt', 'wight'], gallery: ['boo', 'haunt'], ossuary: ['wight', 'haunt'], altar: ['wight', 'haunt'], south: ['wight', 'haunt', 'boo'], tower: ['boo'] };
 const RELIGHT = new Set(['lamp', 'sconce', 'arena']);   /* what the clergy light again (a chapel lamp, the rood screen's sconces and the seal are not theirs) */
 
 export function makeLitChurchHands(ctx) {
@@ -43,7 +46,7 @@ export function makeLitChurchHands(ctx) {
     if (!K || K.L !== L) {
       K = { L, said: {}, clock: 0, lamps: (L.lamps || []).map(l => ({ ...l, lit: !!l.lit, hold: l.hold ? LC.holdT : 0, by: l.lit ? 'laid' : '' })), sources: (L.sources || []).map(s => ({ ...s })),
         bellows: (L.bellows || []).map(b => ({ ...b, air: 0 })), desks: (L.desks || []).map(d => ({ ...d, tell: 0, on: 0 })), grates: (L.grates || []).map(g => ({ ...g, t: 0, glow: 0 })),
-        doors: (L.doors || []).map(d => ({ ...d, open: false })), rooms: (L.rooms || []).map(r => ({ ...r, lit: false, was: null })),
+        doors: (L.doors || []).map(d => ({ ...d, open: false })), rooms: (L.rooms || []).map(r => ({ ...r, lit: false, was: null })), troughs: (L.troughs || []).map(t => ({ ...t })),
         dark: { st: 'idle', y: 0, t: 0, spawnT: 0, tickT: 0 }, escaped: false,
         n: { lit: 0, litByHero: 0, snuffed: 0, relit: 0, relitByAco: 0, ritesCut: 0, heals: 0, healsCut: 0, archHeals: 0, risen: 0, burnt: 0, flames: 0, flamesOut: 0, flamesDied: 0,
           breaths: 0, lifts: 0, chords: 0, gusted: 0, doors: 0, darkHolds: 0, darkBites: 0, nudges: 0 } };
@@ -82,6 +85,7 @@ export function makeLitChurchHands(ctx) {
       case 'cryptgrate': number(x, y, 'THE CRYPT GRATE IN THE CROSSING CRACKS OPEN', '#8fd160'); break;
       case 'reliquary': number(x, y, 'THE RELIQUARY OPENS', '#8fd160'); break;
       case 'sacristy': number(x, y, 'THE SACRISTY DOOR IS UNBARRED: A WAY BACK TO THE CRYPT', '#8fd160'); break;
+      case 'chantry': number(x, y, 'THE CHANTRY DOOR OPENS', '#8fd160'); break;
     } }
   H.door = id => (K ? (K.doors.find(q => q.id === id) || {}).open : false);
 
@@ -91,7 +95,7 @@ export function makeLitChurchHands(ctx) {
     if (l.hold) l.hold = LC.holdT;
     ctx.sfx.ignite ? ctx.sfx.ignite() : ctx.sfx.whoosh && ctx.sfx.whoosh(); ctx.burst(px(l), py(l) - 22, 8, ['#ffd36b', '#fff6c8', '#ff9a3c'], 50, 0.5);
     if (by === 'hero' && once('firstLight')) number(px(l), py(l) - 44, 'THE ROOM IS LIT: THE PRIESTS ARE STRONG IN IT', '#ffd36b');
-    if (l.opens === 'west') openDoor('west');
+    if (l.opens === 'west' || l.opens === 'chantry') openDoor(l.opens);
     if (l.kind === 'chapel') { const rs = K.lamps.find(q => q.kind === 'rood' && q.of === l.id && !q.hand); if (rs && !rs.lit) { rs.lit = true; K.n.lit++; }
       number(px(l), py(l) - 44, l.id === 'chapel1' ? 'LAMP ONE BURNS: A SCONCE ON THE ROOD SCREEN' : l.id === 'chapel2' ? 'LAMP TWO BURNS: A SCONCE ON THE ROOD SCREEN' : 'LAMP THREE BURNS: THE CRYPT CRACKS', '#8fd160');
       if (l.cracks) crack(); }
@@ -123,17 +127,24 @@ export function makeLitChurchHands(ctx) {
   const fires = () => K.sources.map(s => ({ x: px(s), y: py(s), src: s })).concat(K.lamps.filter(l => l.lit && l.kind !== 'rood').map(l => ({ x: px(l), y: py(l), lamp: l })));
   H.holyLights = () => (K ? fires().map(f => ({ x: f.x, y: f.y })) : []);   /* (claude/crouchfix) every flame that burns - the paladin kneels at them to fill his Light (src/crouch-b.js HOLY) */
   const near = (P, x, y, r) => Math.abs(P.x - x) <= r && P.y > y - 40 && P.y < y + 20;
+  /* (claude/church2) how long a taper lasts where you stand: a room with a draught (the chantry) burns it fast */
+  const lifeAt = P => { const r = roomAt(P.x, P.y); return r && r.flameLife ? r.flameLife : FLAME.life; };
+  /* HOLY FIRE: blazing while its lamp burns */
+  const blazing = t => { const l = lampOf(t.lamp); return !!l && l.lit; };
+  const inTrough = (t, x, y) => { const ts = TS(); return x >= t.x0 * ts - 2 && x <= (t.x1 + 1) * ts + 2 && y > t.row * ts + 3 && y <= (t.row + 1) * ts + 2; };
+  H.troughs = () => (K ? K.troughs.map(t => ({ id: t.id, x0: t.x0, x1: t.x1, row: t.row, lamp: t.lamp, blaze: blazing(t) })) : []);
+  H.fireAt = (x, y) => !!K && K.troughs.some(t => blazing(t) && inTrough(t, x, y));
   H.interact = P => {
     if (!K || P.dead) return false;
     /* a DARK LAMP with a flame in hand: light it */
     const dark = K.lamps.filter(l => !l.lit && l.kind !== 'rood' && near(P, px(l), py(l), FLAME.useR)).concat(K.lamps.filter(l => !l.lit && l.kind === 'rood' && l.hand && near(P, px(l), py(l) + 16, FLAME.useR + 10)));
     if (dark.length) { const l = dark.sort((a, b) => Math.abs(px(a) - P.x) - Math.abs(px(b) - P.x))[0];
-      if (P.lcFlame > 0) { lightLamp(l, 'hero'); return true; }
+      if (P.lcFlame > 0) { lightLamp(l, 'hero'); if (l.relay) { P.lcFlame = lifeAt(P); P.lcHp = P.hp; K.n.relays = (K.n.relays || 0) + 1; number(P.x, P.y - 44, once('relay') ? 'THE BRAZIER CATCHES: A FRESH FLAME FROM IT' : 'A FRESH FLAME', '#ffd36b'); } return true; }   /* (claude/church2) a relay brazier hands you a fresh flame */
       if (l.kind === 'chapel' && once('chapelNeeds')) number(P.x, P.y - 40, 'A CHAPEL LAMP WANTS A FLAME: E AT A FIRE TAKES ONE', '#9aa39a');
       else if (K.clock - (K.needSaid || -9) > 2.5) { K.needSaid = K.clock; number(P.x, P.y - 40, 'A FLAME LIGHTS IT: E AT A FIRE TAKES ONE', '#9aa39a'); } return true; }
     /* A FIRE: take a flame */
     const f = fires().filter(q => near(P, q.x, q.y, FLAME.takeR)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (f) { P.lcFlame = FLAME.life; P.lcHp = P.hp; K.n.flames++; ctx.sfx.ignite ? ctx.sfx.ignite() : ctx.sfx.whoosh && ctx.sfx.whoosh(); ctx.burst(P.x, P.y - 30, 6, ['#ffd36b', '#ff9a3c'], 30, 0.4);
+    if (f) { P.lcFlame = lifeAt(P); P.lcHp = P.hp; if (lifeAt(P) < FLAME.life && once('draught')) number(P.x, P.y - 56, 'A DRAUGHT: THE TAPER BURNS FAST HERE', '#ff9a5c'); K.n.flames++; ctx.sfx.ignite ? ctx.sfx.ignite() : ctx.sfx.whoosh && ctx.sfx.whoosh(); ctx.burst(P.x, P.y - 30, 6, ['#ffd36b', '#ff9a3c'], 30, 0.4);
       if (once('flame')) number(P.x, P.y - 44, 'A FLAME: IT BURNS DOWN. A BLOW PUTS IT OUT', '#ffd36b'); return true; }
     /* THE KEY DESK: a chord */
     const d = K.desks.find(q => near(P, px(q), py(q), 24));
@@ -230,6 +241,19 @@ export function makeLitChurchHands(ctx) {
       for (const e of ctx.enemies()) if (e.alive && !e.maxHp && e.x > x0 && e.x < x1 && e.y > y0 && e.y < y1 + 2 && !e.noGrav) ctx.moveFoe(e, d.dir * 50 * dt);   /* it blows them west too: off the broken loft */
       if (d.on <= 0) for (const pp of ctx.players) pp.lcGust = 0; } }
 
+  /* ---------- HOLY FIRE (claude/church2): a hero in a blazing trough is burnt and put back - on his last safe footing, or the trough's near lip ---------- */
+  function stepHolyFire(dt) { const ts = TS();
+    for (const pp of ctx.players) { pp.lcFireCd = Math.max(0, (pp.lcFireCd || 0) - dt); if (pp.dead || pp.lcFireCd > 0) continue;
+      const t = K.troughs.find(q => blazing(q) && inTrough(q, pp.x, pp.y)); if (!t) continue;
+      pp.lcFireCd = HOLY.cd; K.n.fireBurns = (K.n.fireBurns || 0) + 1;
+      ctx.asPlayer(pp, () => ctx.hurtHero(pp.x, 0, { unblockable: true, noKnock: true, name: 'THE HOLY FIRE', pct: HOLY.pct }));
+      ctx.burst(pp.x, pp.y - 6, 14, ['#fff6c8', '#ffd36b', '#ff9a3c'], 90, 0.5);
+      if (pp.dead || pp.hp <= 0) continue;
+      const s = pp.safe, ok = s && s.L === ctx.L && !K.troughs.some(q => inTrough(q, s.x, s.y));
+      if (ok) { pp.x = s.x; pp.y = s.y; } else { const lx = (t.x0 - 1) * ts + 8, rx = (t.x1 + 1) * ts + 8, from = s ? s.x : pp.x; pp.x = Math.abs(from - lx) <= Math.abs(from - rx) ? lx : rx; pp.y = t.row * ts; }
+      pp.vx = 0; pp.vy = 0; pp.onMover = null;
+      number(pp.x, pp.y - 40, once('fireBack') ? 'THE HOLY FIRE BURNS WHILE ITS LAMP DOES: SNUFF IT, OR CROSS ABOVE' : 'BURNED', '#ff9a5c'); } }
+
   /* ---------- A CHANDELIER COMING DOWN (claude/church2): it drops to the floor, lands out, and from then on stands there (a floor lamp he can kindle) ---------- */
   function stepFalls(dt) { for (const l of K.lamps) { if (!l.fall) continue; l.fall.vy = Math.min(600, l.fall.vy + 900 * dt); l.y = Math.min(l.floorRow, l.y + l.fall.vy * dt / TS());
       if (l.y >= l.floorRow) { l.y = l.floorRow; l.fall = null; l.hang = false; l.dropped = true; ctx.shake(3); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.burst(px(l), py(l) - 4, 10, ['#c8a040', '#6a6a7a', '#ffd36b'], 70, 0.5);
@@ -269,7 +293,7 @@ export function makeLitChurchHands(ctx) {
       for (const l of K.lamps) if (l.lit && ctx.overlap(hb, { l: px(l) - 7, r: px(l) + 7, t: py(l) - (l.kind === 'sconce' ? 26 : 34), b: py(l) - 6 })) snuff(l, 'hero');
       for (const b of K.bellows) if (b.air < LC.bellowsT - 0.4 && ctx.overlap(hb, { l: b.x * ts - 6, r: b.x * ts + 22, t: (b.y + 1) * ts - 16, b: (b.y + 1) * ts })) { b.air = LC.bellowsT; K.n.breaths++; ctx.sfx.whoosh ? ctx.sfx.whoosh() : ctx.sfx.thud && ctx.sfx.thud();
         if (once('breath')) number(b.x * ts + 8, (b.y + 1) * ts - 40, 'THE PIPE BREATHES: RIDE IT UP', '#ffd36b'); } });
-    rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt); stepFalls(dt);
+    rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt); stepFalls(dt); stepHolyFire(dt);
     if (K.roodWait && !(ctx.miniOn && ctx.miniOn())) { K.roodWait = false; openDoor('rood'); }
     /* THE FIRST LOOK at a room: its name and its state, once */
     if (P0 && !P0.dead) { const r = roomAt(P0.x, P0.y); if (r && r !== K.inRoom) { K.inRoom = r; K.roomT = 2.2; } K.roomT = Math.max(0, (K.roomT || 0) - dt); }
@@ -296,6 +320,13 @@ export function makeLitChurchHands(ctx) {
         if (here2 && !here2.lit && P.lcFlame > 0) return here(here2.x, here2.y, 'talk', -1);
         if (here2 && here2.lit && P.lcFlame < (top ? 12 : 6)) return here(here2.x, here2.y, 'talk', -1);
         return null; } }
+    /* (claude/church2) THE CHANTRY'S RELAY: a flame from the votive stand, carried stall to stall - light each relay brazier (it hands you a fresh flame), then the door's lamp;
+       with no flame (or a short one), back to the nearest fire behind you. The walker crosses the stalls itself (or the embers, if a lamp is out) */
+    if (c >= 179.5 && c < 214 && row > NF - 17 && row < NF + 1) { const door = lampOf('chantryDoor'); if (door && !door.lit) {
+        const chain = ['relay1', 'relay2', 'chantryDoor'].map(lampOf).filter(Boolean), next = chain.find(l => !l.lit);
+        if (P.lcFlame > 1.2 && next) return here(next.x, next.y, 'talk', Math.sign(next.x * ts + 8 - P.x) || 1);
+        const fire = [K.sources.find(q => q.id === 'votive3'), ...chain.filter(l => l.lit)].filter(Boolean).filter(q => q.x * ts + 8 <= P.x + 4).sort((a, b) => b.x - a.x)[0] || K.sources.find(q => q.id === 'votive3');
+        return fire ? here(fire.x, fire.y, 'talk', -1) : null; } }
     if (row > TR && row < NF && c >= 150 && c <= 179 && !lampOf('rood3').lit) { const r3 = lampOf('rood3'); if (P.lcFlame > 0) return here(r3.x, NF - 1, 'talk', 1); return null; }
     return null; };
 
@@ -321,7 +352,8 @@ export function makeLitChurchHands(ctx) {
     for (const s of K.sources) if (inX(px(s))) hole(px(s) - cx, py(s) - 12 - cy, 64);
     if (K.plan) for (const l of K.plan.lights) if (inX(l.wx) && (l.yard || lit(roomIdOf(l)))) hole(l.wx - cx, l.wy - 16 - cy, l.r, l.kind === 'grave' ? 0.6 : 0.85);   /* the dressing's candles burn with their room */
     for (const pp of ctx.players) if (pp.lcFlame > 0 && !pp.dead) hole(pp.x - cx, pp.y - 30 - cy, FLAME.glow * (0.6 + 0.4 * Math.min(1, pp.lcFlame / 4)));
-    for (const b of K.bellows) if (b.air > 0 && inX(b.x * TS())) hole(b.x * TS() + 8 - cx, (b.y + 1) * TS() - 30 - cy, 30, 0.4); };
+    for (const b of K.bellows) if (b.air > 0 && inX(b.x * TS())) hole(b.x * TS() + 8 - cx, (b.y + 1) * TS() - 30 - cy, 30, 0.4);
+    for (const t of K.troughs) { const on = blazing(t); for (let x = t.x0; x <= t.x1; x += 3) if (inX(x * TS())) hole(x * TS() + 8 - cx, t.row * TS() - 4 - cy, on ? 34 : 14, on ? 0.7 : 0.3); } };   /* (claude/church2) the holy fire lights its room; embers barely */
 
   /* ---------- DRAWING (the art pass: src/redraw/church_set.js draws every piece; this decides WHEN and keeps the rule's overlays) ---------- */
   const R = Math.round;
@@ -336,6 +368,14 @@ export function makeLitChurchHands(ctx) {
     SET.paintWorld(v, K.plan);
     /* THE DOORS: the west door's bars, the hatch's bars of light (the seal), the crossing's grate, the rood screen's door, the reliquary's and the sacristy's */
     for (const d of K.doors) { if (d.open || !inX(d.x0 * ts, 80)) continue; SET.drawDoor(v, d); }
+    /* (claude/church2, GREYBOX) HOLY FIRE: BLAZING - white-gold tongues the length of the trough; EMBERS - a low red bed and a few sparks; and the lamp's feed: a dotted line
+       of light along the floor from its lamp to the trough while it burns (the rule's state where the player stands, A3) */
+    for (const t of K.troughs) { if (!inX(t.x0 * ts, 200) && !inX(t.x1 * ts, 200)) continue; const on = blazing(t), y = R((t.row + 1) * ts - cy);
+      for (let x = t.x0 * ts; x < (t.x1 + 1) * ts; x += 2) { const sx = R(x - cx), n = Math.sin(time * 11 + x * 0.37) + Math.sin(time * 7 - x * 0.21);
+        if (on) { const h = 7 + R(4 * n); g.fillStyle = (x >> 1) % 3 === 0 ? '#ffffff' : (x >> 1) % 3 === 1 ? '#fff6c8' : '#ffd36b'; g.fillRect(sx, y - 2 - h, 2, h); g.fillStyle = '#ff9a3c'; g.fillRect(sx, y - 3, 2, 3); }
+        else { g.fillStyle = (x >> 1) % 2 ? '#7a2a1a' : '#a8401e'; g.fillRect(sx, y - 3 + (n > 1.2 ? -1 : 0), 2, 3); if (n > 1.7) { g.fillStyle = '#ff9a3c'; g.fillRect(sx, y - 6 - R(((time * 20 + x) % 6)), 1, 1); } } }
+      const l = lampOf(t.lamp); if (l && on) { const lx = px(l), ly = py(l), tx = lx < t.x0 * ts ? t.x0 * ts : (t.x1 + 1) * ts, k0 = Math.min(lx, tx), k1 = Math.max(lx, tx); g.fillStyle = '#ffd36b';
+        for (let x = k0; x < k1; x += 6) { const ph = ((x - k0) / 6 + Math.floor(time * 8)) % 3 === 0; g.globalAlpha = ph ? 0.9 : 0.4; g.fillRect(R(x - cx), R(Math.max(ly, t.row * ts) - 1 - cy), 2, 1); } g.globalAlpha = 1; } }
     /* THE GRATES: iron bars in the floor; a dark room's glows cold before its dead come up */
     for (const q of K.grates) { if (!inX(q.x * ts)) continue; SET.drawGrate(v, q); }
     /* THE FIRES (sources): the brazier, the votive stands, the vigil candle */
@@ -374,7 +414,7 @@ export function makeLitChurchHands(ctx) {
   H.drawHud = (g, P) => { if (!K || !K.inRoom || !(K.roomT > 0) || K.inRoom.arena) return false; const r = K.inRoom, a = Math.min(1, K.roomT);
     g.globalAlpha = a; ctx.text(r.name + (r.lit ? ': LIT' : ': DARK'), R(ctx.VW() / 2), 30, r.lit ? '#ffd36b' : '#9ab0c0', 'center', 6); g.globalAlpha = 1; return false; };
   H.read = () => K && { n: { ...K.n }, lamps: Object.fromEntries(K.lamps.map(l => [l.id, l.lit])), rooms: Object.fromEntries(K.rooms.map(r => [r.id, r.lit])), doors: Object.fromEntries(K.doors.map(d => [d.id, d.open])),
-    dark: { st: K.dark.st, y: R(K.dark.y / 16) }, escaped: K.escaped, flame: ctx.hero() ? +(ctx.hero().lcFlame || 0).toFixed(1) : 0, glint: K.glint && K.glint.key, lastNudge: K.lastNudge || null,
+    dark: { st: K.dark.st, y: R(K.dark.y / 16) }, escaped: K.escaped, troughs: Object.fromEntries(K.troughs.map(t => [t.id, blazing(t)])), flame: ctx.hero() ? +(ctx.hero().lcFlame || 0).toFixed(1) : 0, glint: K.glint && K.glint.key, lastNudge: K.lastNudge || null,
     foes: ctx.enemies().filter(e => e.alive && e.lc).map(e => ({ t: e.cnSkin || e.t, role: e.lc.role, st: e.lc.st, room: e.lc.room, x: R(e.x / 16), y: R(e.y / 16) })) };
   return H;
 }

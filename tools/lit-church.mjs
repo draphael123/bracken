@@ -41,8 +41,8 @@ const stand = (x, y) => at(x, y) !== T.SOLID && at(x, y) !== T.PORT && (at(x, y 
 const src = readFileSync(new URL('../src/lit-church.js', import.meta.url), 'utf8');
 ok(lv.rule === RULE && src.includes('// THE RULE: ' + RULE), 'the rule line in LEVELS is the one src/lit-church.js states');
 ok(/LIT ROOM/.test(RULE) && /DARK ONE LETS THE DEAD UP/.test(RULE) && /CARRY A FLAME TO LIGHT A LAMP/.test(RULE) && /A BLOW SNUFFS IT/.test(RULE), 'the rule line names both states and both verbs');
-for (const v of ['light', 'snuff', 'organ', 'crypt']) ok(ARCS[v].teach && ARCS[v].test && ARCS[v].remix && ARCS[v].exam, 'the ' + v + ' is taught, tested, remixed and examined');
-ok(SECTIONS.length === 8, 'eight places in the cross');
+for (const v of ['light', 'snuff', 'organ', 'crypt', 'fire', 'relay']) ok(ARCS[v].teach && ARCS[v].test && ARCS[v].remix && ARCS[v].exam, 'the ' + v + ' is taught, tested, remixed and examined');
+ok(SECTIONS.length === 9 && SECTIONS.some(([n]) => n === 'THE CHANTRY'), 'nine places in the cross (claude/church2, a stated change: THE CHANTRY joins - the holy fire and the relay)');
 const sign = (x0, x1, re) => L.ents.some(e => e.t === 'sign' && e.x >= x0 && e.x <= x1 && re.test(e.text));
 const door = id => L.doors.find(d => d.id === id), lamp = id => L.lamps.find(l => l.id === id);
 for (const d of L.doors) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) ok(at(x, y) === T.PORT, 'the door ' + d.id + ' is barred as laid (' + x + ',' + y + ')');
@@ -62,7 +62,7 @@ for (const d of L.doors) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x
   const ways = []; for (let x = 46; x <= 178; x++) { const y = CHURCH.nave + 1; if (at(x, y) !== T.SOLID) ways.push(x + ':' + at(x, y)); }
   ok(ways.every(w => /:(12)$/.test(w) || /:(2)$/.test(w)), 'the crypt\'s ceiling has no open hole but barred doors and the grate\'s step: ' + ways.join(' '));
   for (let y = CHURCH.nave + 2; y < CHURCH.crypt; y++) { ok(at(45, y) === T.SOLID, 'the crypt\'s west wall (' + y + ')'); if (y !== 39 && y !== 40) ok(at(179, y) === T.SOLID, 'the crypt\'s east wall (' + y + ')'); }
-  ok(door('sacristy').x0 === 184 && door('sacristy').by === 'stubs', 'the crypt\'s only east way is the sacristy passage, barred until the reliquary');
+  ok(door('sacristy').x0 === 184 + 34 && door('sacristy').by === 'stubs', 'the crypt\'s only east way is the sacristy passage (under the chantry - the east wing stands 34 columns on, claude/church2), barred until the reliquary');
   ok(sign(46, 55, /A BLOW SNUFFS A LAMP/) && sign(46, 55, /THE SEAL LAMP: ITS LIGHT HOLDS THE CRYPT SHUT/), 'the snuff and the seal are taught at the point of use'); }
 /* REQUIRED: THE ORGAN - the bellows (the gallery is out of reach from the transept) and the chord (the broken loft is wider than a jump) */
 { const b = L.bellows.find(q => q.id === 'transept'); ok(b && b.top < CHURCH.gallery - 4, 'the transept\'s bellows lift past the gallery floor');
@@ -154,8 +154,20 @@ ok((STUCK_HANDS.church || []).length >= 8 && STUCK_HANDS.church.every(sp => (sp.
   ok(bl.air > 0, 'a blow on the bellows: the pipe breathes'); go(166, 28); hero.vy = 0; step(1 / 60); ok(hero.vy <= -LC.lift, 'its breath lifts you');
   go(109, 18); H.interact(hero); step(LC.chordTell - 0.05); ok(S.desks[0].on <= 0 && S.desks[0].tell > 0, 'the chord is told before the gust (the pipes draw breath)');
   step(0.1); hero.ground = false; hero.vx = 0; step(0.3); ok(hero.vx < -LC.gustAir * 0.8, 'then the gust carries a hero west (' + Math.round(hero.vx) + ' px/s in the air)');
+  /* (claude/church2) HOLY FIRE AND THE CHANTRY'S RELAY */
+  { const tr = id => L.troughs.find(q => q.id === id); ok(L.troughs.length >= 4 && tr('nave').lamp === 'naveA' && tr('chantry1').lamp === 'chantryA' && tr('chantry2').lamp === 'chantryB' && tr('south').lamp === 'southLow', 'HOLY FIRE: the nave\'s trough (teach), the chantry\'s two (test, remix), the exam\'s - each fed by its own lamp');
+    ok(H.fireAt(190 * TS + 8, 38 * TS) && H.fireAt(82 * TS + 8, 38 * TS) === !!S.lamps.find(l => l.id === 'naveA').lit, 'a trough BLAZES exactly while its lamp burns');
+    go(190, 37); hero.lcFireCd = 0; step(1 / 60); ok(S.n.fireBurns === 1 && hero.y === 37 * TS && (hero.x === 184 * TS + 8 || hero.x === 196 * TS + 8), 'a hero in the blazing trough is burnt and put back on its lip (' + Math.round(hero.x / TS) + ')');
+    const la = S.lamps.find(l => l.id === 'chantryA'); atkBox = { l: la.x * TS, r: la.x * TS + 16, t: (la.y + 1) * TS - 30, b: (la.y + 1) * TS - 8 }; hero.atk = 0; go(184, 36); step(1 / 60); atkBox = null; hero.atk = -1;
+    ok(!la.lit && !H.fireAt(190 * TS + 8, 38 * TS) && H.fireAt(200 * TS + 8, 38 * TS), 'snuff chantry lamp one: its trough sinks to EMBERS (the second still blazes on its own lamp)');
+    go(190, 37); const nb = S.n.fireBurns; step(0.5); ok(S.n.fireBurns === nb, 'embers burn nobody: walk them');
+    let col = true; for (let y = 22; y <= 36; y++) if (cell(213, y) === T.AIR) col = false; ok(col && cell(213, 36) === T.PORT, 'the chantry door is the only way on (its column is wall and bars)');
+    go(181, 36); H.interact(hero); ok(hero.lcFlame === 6.5 && said.includes('A DRAUGHT: THE TAPER BURNS FAST HERE'), 'in the chantry a taper burns fast: ' + hero.lcFlame + ' s (the draught, told)');
+    const r1 = S.lamps.find(l => l.id === 'relay1'); hero.lcFlame = 2; go(r1.x, r1.y); hero.hp = hero.maxHp; hero.lcHp = hero.hp; H.interact(hero); ok(r1.lit && hero.lcFlame === 6.5, 'a RELAY BRAZIER lit hands you a fresh flame');
+    hero.lcFlame = 3; go(210, 36); H.interact(hero); ok(H.door('chantry') && cell(213, 36) === T.AIR, 'the door\'s lamp lit: THE CHANTRY DOOR OPENS');
+    hero.lcFlame = 0; }
   /* THE RELIQUARY */
-  go(188, 40); hero.ground = true; H.interact(hero); ok(!H.door('reliquary'), 'the reliquary wants five stubs'); got = 5; H.interact(hero); ok(H.door('reliquary') && H.door('sacristy'), 'five candle stubs: the reliquary opens, and the sacristy door with it');
+  go(188 + 34, 40); hero.ground = true; H.interact(hero); ok(!H.door('reliquary'), 'the reliquary wants five stubs'); got = 5; H.interact(hero); ok(H.door('reliquary') && H.door('sacristy'), 'five candle stubs: the reliquary opens, and the sacristy door with it');
   ok(said.filter(s => /^[A-Z]/.test(s) && !/^\+/.test(s)).every(s => isCallout(s) || s === '!'), 'every line the hands said is one the player can see (src/hint-lines.js): ' + said.filter(s => /^[A-Z]/.test(s) && !isCallout(s) && s !== '!').slice(0, 3).join(' | ')); }
 
 /* ---------- THE DEACON in a fake world (claude/church2: the litchurch Paladin's light bar and falter moved here; THE PALADIN's own check is tools/paladin-boss.mjs) ---------- */

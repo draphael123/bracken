@@ -6,6 +6,9 @@
 //   THE CHAPEL KNIGHT  the sworn sword in a white surcoat with a red cross on the breast, cream shield
 //   THE TEMPLAR     the hedge knight in white over the plate, the gold trim and a red cross
 //   THE CHAPEL CROSSBOW  the crossbowman's white with a red cross on the chest
+//   (claude/church2, LIT CHURCH 2: the goblin PRIEST's machine - the rite, the censer, the bell - as HUMAN clergy; GREYBOX recolour, the art lane redraws the heads)
+//   THE THURIFER    a white cotta over a red cassock (the red at the hem), a gold stole, a human face under the hood; his censer is the machine's
+//   THE BELL-RINGER a black cassock with a grey hood and a pale rope girdle, a white collar; his hand bell is the machine's
 import { canvas, flipX, whiten } from '../px.js';
 
 const pack = (R, ax, ay, w, h) => ({ R, L: R.map(c => flipX(c)), white: { R: R.map(c => whiten(c)), L: R.map(c => flipX(whiten(c))) }, ax, ay, w, h });
@@ -42,6 +45,10 @@ export const CHURCH_SKINS = {
   chapelknight: { base: 'swornsword', map: { '#3a5a8a': '#e4dccc', '#22355a': '#a49c88' }, fx: (fi, g, b) => cross(g, b) },
   templar: { base: 'hedgeknight', map: { '#9a3a3a': '#e4dccc', '#8a6a4a': '#c9a050' }, fx: (fi, g, b) => cross(g, b) },
   chapelbow: { base: 'crossbow', map: { '#3a5a8a': '#e4dccc', '#22355a': '#a49c88' }, fx: (fi, g, b) => cross(g, b) },
+  thurifer: { base: 'gobpriest', map: { '#6faa4a': '#d8a880', '#3f6e2c': '#9a6a4a', '#8e3a32': '#e8e0d0', '#5a1e1e': '#8a2a2a', '#b8584a': '#ffffff' },
+    fx: (fi, g, b) => { for (let x = b.x0 + 1; x < b.x1; x++) { dot(g, x, b.y1 - 3, RED); dot(g, x, b.y1 - 2, '#5a1a1a'); } } },   /* the red cassock below the cotta */
+  bellringer: { base: 'gobpriest', map: { '#6faa4a': '#d8a880', '#3f6e2c': '#9a6a4a', '#8e3a32': '#2c2634', '#5a1e1e': '#16121c', '#b8584a': '#4e4658', '#e8a83a': '#c8c0a8', '#a8681c': '#8a8270' },
+    fx: (fi, g, b) => { const mid = (b.x0 + b.x1) >> 1; for (let x = mid - 2; x <= mid + 2; x++) dot(g, x, b.y0 + 12, CREAM); } },   /* the white collar */
 };
 const isTunic = (g, x, y) => { const d = g.getImageData(x, y, 1, 1).data; return d[0] > d[2] + 30 && d[0] > 70; };   /* a red/brown body pixel (not skin, steel or outline) */
 function cross(g, b) { const mx = (b.x0 + b.x1) >> 1, my = b.y0 + Math.round((b.y1 - b.y0) * 0.5); for (const [dx, dy] of [[0, -1], [-1, 0], [0, 0], [1, 0], [0, 1]]) dot(g, mx + dx, my + dy, RED); }
