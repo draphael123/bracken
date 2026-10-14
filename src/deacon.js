@@ -19,13 +19,13 @@
 
 export const DC = {
   hp: 1500, w: 14, h: 40, markH: 58,
-  walk: 58, keep: 48, turn: 0.45, gap: [0.6, 0.5],
+  walk: 58, keep: 48, turn: 0.45, gap: [0.5, 0.42],
   light: { max: 100, start: 85, regen: 2.2, drain: 8, drainHeavy: 14, lampDim: 18, refill: 60 },
   guardTake: 0.4, gropeT: 3.0, gropeMul: 1.8, gropeCap: 0.18, wardT: 3.0, reelT: 0.7,
   kindleT: 1.3, kindleCd: 6, kindleWalkT: 3,
-  sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 18 },
-  hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 8, haul: 380, jabTell: 0.5, jab: 16 },
-  arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 7 },
+  sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 26 },
+  hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 10, haul: 380, jabTell: 0.5, jab: 22 },
+  arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 9 },
   drop: { dmg: 0.07, stun: 1.2 },   /* a chandelier brought down on him: of his health, and the stagger (B4: he stands) */
   p2: 0.5,
 };

@@ -171,7 +171,7 @@ export function makeLitChurchHands(ctx) {
     if (!K || !e.alive) return false;
     if (!e.lc) { if (e.lcRisen) e.lc = { role: 'dead', room: e.lcRisen, st: 'free', hp: e.hp }; else return false; }
     const q = e.lc, P = ctx.hero(), lt = lit(q.room), hit = e.hp < q.hp - 0.01; q.hp = e.hp;
-    if (q.role === 'priest') e.lcMul = lt ? LC.litMul : LC.darkMul; else if (q.role === 'knight') e.lcMul = lt ? LC.knightLit : 1; else if (q.role === 'dead') e.lcMul = lt ? 1 : LC.deadDark; else e.lcMul = 1;   /* the dark is the dead's: in it they hit harder */
+    if (q.role === 'priest' || q.role === 'clerk') e.lcMul = lt ? LC.litMul : LC.darkMul;   /* (claude/church2) the thurifer and the bell-ringer are clergy: the light is theirs */ else if (q.role === 'knight') e.lcMul = lt ? LC.knightLit : 1; else if (q.role === 'dead') e.lcMul = lt ? 1 : LC.deadDark; else e.lcMul = 1;   /* the dark is the dead's: in it they hit harder */
     if (q.role === 'dead') { /* THE LIGHT BURNS THE DEAD: in a lit room they smoke and sink */
       if (lt && !roomOf(q.room).arena) { q.burn = (q.burn || 0) + LC.burnDps * dt; if (Math.random() < dt * 12) ctx.burst(e.x, e.y - 10, 1, ['#fff6c8', '#ffd36b'], 30, 0.4);
         if (q.burn >= 4) { const d = Math.floor(q.burn); q.burn -= d; ctx.hurtFoe(e, d); if (!e.alive) K.n.burnt++; if (once('burnDead')) number(e.x, e.y - 30, 'THE LIGHT BURNS THE DEAD', '#ffd36b'); } }
@@ -181,7 +181,7 @@ export function makeLitChurchHands(ctx) {
     q.cd -= dt; q.relCd = Math.max(0, (q.relCd || 0) - dt);
     const dP = P && !P.dead ? Math.abs(P.x - e.x) : 1e9, sameY = P && Math.abs(P.y - e.y) < 40;
     if (q.role === 'acolyte') return holdAcolyte(e, q, dt, dP, sameY);
-    if (q.role !== 'priest') return false;
+    if (q.role !== 'priest') return false;   /* (a clerk - the thurifer, the bell-ringer - runs his own machine: the rite, the censer, the bell) */
     const arch = e.cnSkin === 'archdeacon';
     switch (q.st) {
       case 'rite': q.t -= dt; e.vx = 0; fall(e, dt); if (Math.random() < dt * 14) ctx.burst(e.x + (e.face || 1) * 8, e.y - 18, 1, ['#ffd36b', '#fff6c8'], 20, 0.4);

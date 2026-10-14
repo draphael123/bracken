@@ -33,9 +33,9 @@
 // pbPlan is the boss lab's HUMAN bot (src/lab.js). DIAL_EXEMPT in src/boss-pressure.js (self-tuned in this lane).
 
 export const PB = {
-  hp: 2900, w: 18, h: 36, scale: 1.5, markH: 62,
+  hp: 2500, w: 18, h: 36, scale: 1.5, markH: 62,
   walk: 64, keep: 40, turn: 0.42, gap: [0.6, 0.5, 0.42],
-  light: { max: 100, start: 55, regen: 1.4, land: 8, feed: 6, drain: 9, drainHeavy: 15, lampDim: 12, refill: 45, kneel: 26 },
+  light: { max: 100, start: 70, regen: 1.6, land: 8, feed: 6, drain: 6.5, drainHeavy: 11, lampDim: 12, refill: 50, kneel: 26 },
   aegis: { take: 0.4, min: 8 },                       /* B15: a turned blow still bites x take; under min Light the aegis fails */
   falterT: 2.8, falterMul: 1.7, falterCap: 0.12, wardT: 3.0, reelT: 0.8, reboundT: 0.7,
   circle: { r: 56, life: 9, burnK: 0.32, mend: 0.18, cd: 7 },   /* r: HG.r x 1.27; burnK: x the hero's burn (10/s) -> ~3 a second on a hero in it (6 empowered); mend: x HG.heal (0.02/s) -> 0.36% a second of him */

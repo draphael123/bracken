@@ -247,7 +247,7 @@ export function buildLitChurch({ painter, T, TS }) {
   air(180, 212, 22, NF - 1);
   source('votive3', 181, NF - 1, 'votive');
   lamp('chantryA', 183, NF - 1, 'chantry', 'lamp', { lit: true });
-  sign(182, NF - 1, 'HOLY FIRE BURNS WHILE ITS LAMP DOES. SNUFF IT: EMBERS.');
+  sign(182, NF - 1, 'TWO LAMPS FEED THIS FIRE: SNUFF ONE, ITS LENGTH COOLS.');
   air(185, 195, NF, NF); troughs.push({ id: 'chantry1', x0: 185, x1: 195, row: NF, lamp: 'chantryA', room: 'chantry' });
   air(197, 207, NF, NF); troughs.push({ id: 'chantry2', x0: 197, x1: 207, row: NF, lamp: 'chantryB', room: 'chantry' });
   grate(190, NF + 1, 'chantry'); grate(202, NF + 1, 'chantry');
