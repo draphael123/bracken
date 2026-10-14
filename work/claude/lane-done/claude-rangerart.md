@@ -21,3 +21,10 @@ RED (inherited, not from this lane, not weakened): tools/titlescene.mjs asserts 
 ## QUESTIONS FOR DANIEL
 1. Cloak and hood are both green: REC keep (brief says green-brown); alternative: brown cloak for stronger split. Built: green.
 2. Flip/roll show the whole longbow: REC keep. Alternative: bow slung shorter (not possible without redrawing the bow shorter in those frames).
+
+## REVISION 10-14 (Daniel: too close to the Warden) - drawing code only
+- AUTUMN RUSSET: darker rust hood (b/B) over a lighter rust cloak (c/C), tan jerkin laced in moss (the one green), dark-brown bracers/boots, ONE cream feather (+ short quiver fletchings so there is no second antenna).
+- TALLER: hood peak stands two pixels higher and upright, cloak cut short (ends at the hips) so the legs show, less cloak spread.
+- BOW: slung on her back (drawn behind the cloak, dull string) in idle/run/jump/fall/land/climb/hurt/crouch/knife/dance/trap/leap/hawk/refill/mark; a short slung bow in slide/swim/tread/flip/roll. The full bow is out in front only for the draw, shots, bash, rise/down shot.
+- Pictures: v4-poses.png, v4k-poses.png, b-game.png, v4-pick-ranger.png / v4-pick-warden.png (hero pick, tools/rangerart-pick.mjs).
+- Re-run GREEN: ranger.mjs, ability-poses 78/78, skill-icons, dances, hero-trials, mobile-perf, textfit pick/tree/store --strict (0). titlescene red unchanged (inherited pick order).
