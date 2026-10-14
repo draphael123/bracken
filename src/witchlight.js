@@ -176,7 +176,7 @@ export function buildWitchlight({ painter, T, TS }) {
   crack(425, 27); ledge(430, 26, 3); crack(435, 26); crack(440, 28);
   stand(445, 447, 27);                                                                      /* a merlon standing in the moat */
   slab(449, 28, { range: 4, speed: 18 });                                                   /* a slider: the gap after it closes to two */
-  crack(457, 28); ledge(462, 27, 3); crack(468, 26);
+  crack(457, 28); ledge(462, 27, 4); crack(468, 26);   /* (weakfix) the ledge one tile longer: the 463>468 jump was frame-perfect for 7 of 8 heroes */
   perch(436, 17); perch(458, 17);                                                           /* the spouts over the cracked ledges */
   stand(473, 479, 25);                                                                      // the cornice's end: a checkpoint
   /* COMBINED: THE RUNE TOWER - a rune column off a merlon in the moat, up to the tower's high cornice, and down its broken ledges past

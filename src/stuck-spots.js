@@ -69,13 +69,13 @@ export const STUCK = {
   ],
   /* (claude/stuckguides) SPORE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   spore: [
-    { id: 'sp-bud-37', zone: [23, 10, 41, 27], at: [37, 19], glint: 'stall', line: 'A BUD CAP RISES UNDER YOU: STAND ON IT' },
+    { id: 'sp-bud-37', zone: [23, 10, 41, 27], at: [37, 19], glint: 'stall', line: 'STOP ON A BUD: THE CAP GROWS INTO A STEP' },
     { id: 'sp-vent-58', zone: [46, 8, 64, 29], ats: [[58, 25], [52, 16], [56, 16]], glint: 'stall', line: 'THE VENT LIFTS YOU TO THE CAP THAT CARRIES YOU ON' },
     { id: 'sp-cap-164', zone: [150, 0, 172, 14], ats: [[164, 6], [168, 6]], glint: 'stall', line: 'THE CAP IN THE CANOPY DRIFTS: RIDE IT' },
     { id: 'sp-lean-177', zone: [163, 5, 181, 21], at: [177, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER THE GAP' },
     { id: 'sp-lean-192', zone: [180, 5, 196, 21], at: [192, 13], glint: 'stall', line: 'THE NEXT LEANING CAP IS THE WAY OVER' },
-    { id: 'sp-bud-250', zone: [238, 4, 250, 21], at: [250, 13], glint: 'stall', line: 'THE SPORE BUDS GROW A STEP UNDER YOUR FEET' },
-    { id: 'sp-bud-257', zone: [253, 1, 263, 19], at: [257, 9], glint: 'stall', line: 'THE HIGH BUD LIFTS YOU TO THE LEDGE' },
+    { id: 'sp-bud-250', zone: [238, 4, 250, 21], at: [250, 13], glint: 'stall', line: 'STOP ON A BUD: IT GROWS A STEP UNDER YOU' },
+    { id: 'sp-bud-257', zone: [253, 1, 263, 19], at: [257, 9], glint: 'stall', line: 'STOP ON THE HIGH BUD: IT LIFTS YOU TO THE LEDGE' },
     { id: 'sp-vent-292', zone: [278, 5, 296, 21], at: [292, 13], glint: 'stall', line: 'THE VENT LIFTS WHOEVER STANDS IN IT' },
     { id: 'sp-cap-313', zone: [298, 2, 328, 18], ats: [[313, 9], [318, 9]], glint: 'stall', line: 'THE FLOATING CAP CARRIES YOU OVER THE BOG' },
     { id: 'sp-bud-345', zone: [331, 5, 349, 21], at: [345, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER' },
@@ -94,6 +94,9 @@ export const STUCK = {
   /* (claude/stuckguides) HURRICANE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   hurricane: [
     { id: 'hu-bulkhead-208', zone: [186, 19, 212, 32], ats: [[194, 26], [208, 26]], glint: 'stall', done: ['bulkhead', 208, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
+    { id: 'hu-line-150', zone: [128, 10, 176, 20], at: [150, 14], glint: 'stall', line: 'A LINE SWINGS OVER THE FLOODED WAIST: TAKE HOLD' },
+    { id: 'hu-breech-264', zone: [254, 22, 267, 26], at: [264, 26], glint: 'stall', line: 'THE LAST GUN AIMS AT THE MAGAZINE WALL: STRIKE ITS BREECH' },
+    { id: 'hu-line-504', zone: [486, 10, 534, 20], ats: [[504, 14], [528, 14]], glint: 'stall', line: 'THE ROPES OVER THE OIL CARRY YOU TO THE FAR SHIP' },
     { id: 'hu-pump-246', zone: [228, 12, 252, 30], at: [246, 19], glint: 'stall', line: 'THE PUMP BRAKE DRAINS THE HOLD' },
     { id: 'hu-bulkhead-372', zone: [350, 19, 376, 32], ats: [[358, 26], [372, 26]], glint: 'stall', done: ['bulkhead', 372, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
     { id: 'hu-davit', zone: [462, 12, 486, 26], at: [481, 19], glint: 'stall', line: "THE DAVIT'S WINCH LOWERS HER BOAT TO THE FAR SHIP" },
