@@ -29,6 +29,7 @@ try {
     for (let i = 0; i < 120; i++) { const v = await pg.evalp('typeof window.BK === "object" && !!window.BK.lookPass ? [BK.SET.speed, BK.SET.speedV3, JSON.parse(localStorage.getItem("bracken.settings")).speed] : null', 3000).catch(() => null); if (v) return v; await new Promise(r => setTimeout(r, 500)); } return null; };
   const m1 = await boot(JSON.stringify({ speed: 0.6, speedV2: 1, hudV2: 1 })); ok(m1 && m1[0] === 1 && m1[1] === 1 && m1[2] === 1, 'an old file (0.6) is migrated to 1.0 once and saved: ' + JSON.stringify(m1));
   const m2 = await boot(JSON.stringify({ speed: 0.7, speedV2: 1, speedV3: 1, hudV2: 1 })); ok(m2 && m2[0] === 0.7, 'a v3 file keeps the speed the player chose: ' + JSON.stringify(m2));
+  ok(!pg.errors.length, 'page errors: ' + pg.errors.slice(0, 2).join(' / '));
 } finally { await pg.close(); }
 if (fails.length) { console.log('FEEL-SPEED: ' + fails.length + ' red'); process.exit(1); }
 console.log('FEEL-SPEED ok: the speed range, default, migration and sub-steps hold');

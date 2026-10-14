@@ -70,6 +70,7 @@ try {
     ok(w.landReduced && w.landReduced.dips === 0, 'Reduce motion: nothing dips: ' + JSON.stringify(w.landReduced));
     ok(w.land && w.landReduced && w.land.y === w.landReduced.y, 'collision is identical with and without the dip: ' + w.land.y + ' vs ' + w.landReduced.y);
   } else console.log('NOTE no wooden ledge found in the sampled levels');
+  ok(!pg.errors.length, 'page errors: ' + pg.errors.slice(0, 2).join(' / '));
 } finally { await pg.close(); }
 if (fails.length) { console.log('FEEL-PLATFORM: ' + fails.length + ' red'); process.exit(1); }
 console.log('FEEL-PLATFORM ok');
