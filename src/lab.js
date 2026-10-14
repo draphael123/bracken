@@ -36,7 +36,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18 };   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -50,6 +50,12 @@ export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper
 export const WALK_DEADBAND = 4;   /* exported for tools/lab-reach.mjs: the worst-case rested distance is LAB_STAND + WALK_DEADBAND, and that is the distance a reach check has to prove, not LAB_STAND alone */
 const STAND_MARGIN = 6;   /* > WALK_DEADBAND, so the worst rested spot (stand + deadband) is still 2 px inside reach */
 export const LAB_STAND = Object.fromEntries(Object.keys(LAB_REACH).map(h => [h, LAB_REACH[h] - STAND_MARGIN]));
+/* (claude/ranger) THE RANGER'S HANDS STAND OFF WHILE SHE HAS ARROWS: her reach is the bow's sweet spot (RANGER_STAND) with a quiver, the knife's without one. The page's hands read it live
+   (BK.rg); in Node (no page) it is the knife's. A first pick for the tune lane: the hands do not yet walk over to take her arrows back - the trickle refills her */
+export const RANGER_STAND = 64;
+const rgArrows = () => { try { const r = globalThis.BK && globalThis.BK.rg && globalThis.BK.rg(); return r ? r.q : 0; } catch { return 0; } };
+Object.defineProperty(LAB_REACH, 'ranger', { get: () => rgArrows() > 0 ? RANGER_STAND : 16, enumerable: true });
+Object.defineProperty(LAB_STAND, 'ranger', { get: () => LAB_REACH.ranger - STAND_MARGIN, enumerable: true });
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 /* THE CO-OP ALLY IS THIS BOT. main.js imports threatOf, SHIELDED and HARD_TELLS below and plays a hero
@@ -67,8 +73,8 @@ export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the w
 /* THE BERSERKER'S BRACE IS THE SAME SHAPE IN THE HANDS (claude/berserker): a TAP on the beat of a yellow blow (live 0.3 s, then a beat rooted if it
    met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
    is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
-export const DEFLECTS = h => h === 'warden' || h === 'berserker';
-const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
+export const DEFLECTS = h => h === 'warden' || h === 'berserker' || h === 'ranger';   /* (claude/ranger: her BOW-BASH is a tap on the beat too) */
+const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : h === 'ranger' ? (P.rgCd || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */

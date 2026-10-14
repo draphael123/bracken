@@ -144,12 +144,13 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
 let SPEARLESS = false;
 let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null, nock = null }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const BZ = BODY_REF === BZ_BODY, rgo = BZ ? [[BX + dx + 4, top + BY + dy + hy + 3, '#ff2a1a'], [BX + dx + 5, top + BY + dy + hy + 3, '#c01c14']] : null;   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
   if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
+  if (BODY_REF === RG_BODY) rgQuiverAt(g, BX + dx, BY + dy + hy);   /* (claude/ranger) THE QUIVER on her back, fletchings over her shoulder: behind everything */
   if (kite && kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* slung on his back (the ladder): drawn first, so the body covers all but its rim */
   if (!hy && !sho) draw(body, BX + dx, BY + dy);
   else { /* A BREATH IS NOT A BOB. The shoulders come up first - the outermost pixel of each torso row lifts one - and the
@@ -236,7 +237,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     }
     px(g, ...at(len), '#ffffff');                                        // the point, the brightest pixel she owns
   }
-  if (stave) { /* THE GEOMANCER'S STAFF (round 3, 2026-09-24: Daniel played her and the standing stone on a shaft read as a CLUB, or a
+  if (stave && BODY_REF === RG_BODY) rgBowAt(g, stave, dx, dy, nock);   /* (claude/ranger) THE RANGER'S LONGBOW: her rig is the Geomancer's, and where the staff would be the bow is */
+  else if (stave) { /* THE GEOMANCER'S STAFF (round 3, 2026-09-24: Daniel played her and the standing stone on a shaft read as a CLUB, or a
        SHOVEL). Now a TALL STAFF: a gnarled shaft one pixel through that wanders a pixel either way along its length, with knots
        standing off it; an iron-shod BUTT (the end she strikes the ground with); and at the top an AMBER GEODE held in STONE CLAWS
        - two grey prongs curling up round a bright amber stone, the brightest thing she owns, a moss tuft on one claw. The geode is
@@ -802,6 +804,12 @@ function riposteKit(F, hero, K, c) {
       F.ripo = [M({ wide: 8, dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 3], stave: [X - 9, Y + 4, X + 4, Y + 1], plume: 1 }),
         M({ wide: 14, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 6, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], stave: [X - 3, Y + 2, X + 18, Y - 1], glow: [X + 18, Y - 2], plume: 2, bits: [...flash(21, -1), o(18, 4, MS), o(20, 3, D)] }),
         M({ wide: 10, dx: 3, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X + 3, Y + 4], stave: [X + 1, Y + 5, X + 13, Y + 9], plume: 0, bits: [o(14, 9, MS), o(15, 8, D)] })];
+      break; }
+    case 'ranger': {   /* (claude/ranger) THE BOW-BASH on the beat: the bow shoved out flat with the star where it meets the blow; the RIPOSTE is an arrow, drawn short and loosed point-blank */
+      const { aimed } = c;
+      F.parry = [M({ wide: 6, dx: 2, legs: 'runC', arm: [X, Y, X + 7, Y + 1], arm2: [OFF[0], OFF[1], X + 6, Y - 2], stave: [X + 9, Y + 9, X + 10, Y - 9], plume: 2, bits: star(12, 0, true) }),
+        M({ wide: 4, dx: 1, legs: 'wide', arm: [X, Y, X + 6, Y + 1], arm2: [OFF[0], OFF[1], X + 5, Y - 1], stave: [X + 8, Y + 9, X + 9, Y - 9], plume: 1, bits: [o(11, -3, C), o(11, 3, G)] })];
+      F.ripo = [M({ legs: 'wide', dx: -1, ...aimed(1), plume: 1 }), M({ wide: 8, legs: 'runC', dx: 1, ...aimed(null), plume: 2, bits: flash(16, 0) }), M({ legs: 'wide', ...aimed(null), arm2: [OFF[0], OFF[1], X - 3, Y + 1], plume: 0 })];
       break; }
     case 'berserker': {
       const { lead, off } = c, R = '#ff6b4a';
@@ -4624,6 +4632,105 @@ export function bakeTemperer() {
     f(grids.idle, true), f(grids.walkA, true), f(grids.cutTell, true), f(grids.cut, true),
     f(grids.hurt)], 8, 22, 10, 14);
 }
+/* ==== THE RANGER (claude/ranger, 2026-10-14, scratch/brief-ranger.md): the fourth free starter. A PLACEHOLDER RIG (the Sonnet art lane draws her
+   properly): she is baked on the Geomancer's rig (bakeGeomancer(skin, prev, true)) - the same tall-weapon poses - with her own body, her own
+   palette, and the weapon drawn as a LONGBOW (rgBowAt) wherever the staff would be, a QUIVER on her back (rgQuiverAt), and her own keys over
+   the top (rgKitPoses): the draw, the loose, the quick shot, the rising and downward shots, the knife, the bow-bash, the snare, the mark.
+   What says RANGER at game scale: a deep HOOD in a green-brown cloak with a red FEATHER standing off its back, a LONGBOW taller than her
+   shoulder, a quiver of white fletchings over her shoulder, leather bracers. ==== */
+const RG_BODY = [
+  '...BBB....',     /* 0  the peak of the hood */
+  '..BbbbB...',     /* 1 */
+  '.fBbbbbB..',     /* 2  THE FEATHER standing up off the back of the hood */
+  '.Bbvvvvb..',     /* 3  the hood's mouth, in shadow */
+  '.Bbvvkkb..',     /* 4  her face lit on the side she faces */
+  '.cBbkkbBc.',     /* 5  the jaw; the cloak's edge */
+  'cccbbbbcc.',     /* 6  THE CLOAK on her shoulders */
+  'cCllllllC.',     /* 7  the leather jerkin under it */
+  '.CSllllSC.',     /* 8  the bracers */
+  '..lllll...',     /* 9 */
+  '.wywwyw...',     /* 10 the belt, a buckle and a knife sheath */
+];
+const RG_PLUME = [
+  ['...BBB....', '..BbbbB...', '.fBbbbbB..'],
+  ['..BBB.....', '..BbbbB...', 'f.BbbbbB..'],   /* the feather nods back a pixel as she breathes */
+  ['...BB.....', '.BBbbbB...', '.fBbbbbB..'],
+];
+/* B/b the hood and cloak (green-brown homespun - not a goblin's green: brown-dark, the face pale); c/C the cloak's shoulders; l the jerkin;
+   S the bracers and the arm line; s a lit sleeve; f the feather; w/W the belt and boots; y the buckle. g/G/h/m (the Geomancer's plates) unused */
+const RG_PAL = { s: '#8a6a48', S: '#5a4430', b: '#4e5a32', B: '#2e3620', c: '#5e6a3a', C: '#3a4226', l: '#7a5634', k: '#e0b08a', v: '#141810', f: '#c8402a', w: '#4a3020', W: '#2a1e14', y: '#c9a84a', r: '#c8402a', m: '#5e6a3a', g: '#5e6a3a', G: '#3a4226', h: '#5e6a3a' };
+/* THE LONGBOW. Given [low tip x, low tip y, high tip x, high tip y] (the stave spec) and an optional nock [x, y] (the draw hand): two limbs of
+   yew that BOW toward where she aims (the side away from the string), a leather grip at the middle, horn nocks at the tips, and the STRING
+   tip to tip - straight at rest, pulled back to the nock while she draws, with an ARROW laid from the nock out past the grip */
+function rgBowAt(g, spec, dx, dy, nock) {
+  const [x0, y0, x1, y1] = spec.slice(0, 4).map((v, i) => v + (i & 1 ? dy : dx));
+  const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax, bulge = 2.6;
+  const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
+  for (let t = 0; t <= len; t += 0.5) { const o = bulge * Math.sin(Math.PI * t / len), mid = Math.abs(t - len / 2) < 1.6;
+    px(g, ...at(t, o), mid ? '#3a2414' : WT(t < len / 2 ? '#7a4e2a' : '#8a5a32', 0.3)); if (!mid && t > 2 && t < len - 2) px(g, ...at(t, o + 0.8), WL('#a8743e')); }
+  px(g, ...at(0), '#e8dcb0'); px(g, ...at(len), '#e8dcb0');   /* the horn nocks */
+  const s0 = at(0.5, -0.4), s1 = at(len - 0.5, -0.4);
+  if (nock) { const n = [nock[0] + dx, nock[1] + dy]; line(g, s0[0], s0[1], n[0], n[1], '#e8e0c8', 1); line(g, n[0], n[1], s1[0], s1[1], '#e8e0c8', 1);
+    const gp = at(len / 2, bulge + 1), ux = gp[0] - n[0], uy = gp[1] - n[1], ul = Math.hypot(ux, uy) || 1;
+    for (let i = 0; i <= ul + 3; i++) px(g, Math.round(n[0] + ux / ul * i), Math.round(n[1] + uy / ul * i), i > ul + 1 ? '#eef4fa' : '#9a7a4e');   /* the arrow, point out past the grip */
+    px(g, n[0] - Math.round(ux / ul), n[1] - Math.round(uy / ul), '#c8402a'); }
+  else line(g, s0[0], s0[1], s1[0], s1[1], '#d8d0b8', 1);
+}
+/* THE QUIVER on her back: a leather tube slung over the off shoulder, the fletchings standing up out of it past her hood (white and red) */
+function rgQuiverAt(g, x, y) { for (let i = 0; i < 8; i++) px(g, x + 1 - Math.floor(i / 4), y + 5 + i, i % 3 ? '#6a4426' : '#4a2e18');
+  for (const [u, v, col] of [[2, 3, '#e8e0c8'], [2, 4, '#6a4426'], [3, 2, '#e8e0c8'], [3, 3, '#c8402a'], [1, 3, '#e8e0c8'], [1, 4, '#6a4426']]) px(g, x + u - 1, y + v, col); }
+/* THE STORE AND PICK CARDS: hers are the rig's own (her knife frames are drawn over in the full bake only) */
+const rgCard = card => card;
+export function bakeRanger(skin = {}, previewOnly = false) { return bakeGeomancer(skin, previewOnly, true); }
+/* HER OWN KEYS (rgKitPoses, over the Geomancer-shaped set): the KNIFE swings, THE DRAW (windup), THE LOOSE, the quick and air shots, the rising and
+   downward shots, the BOW-BASH and her parry, the SNARE, the MARK, the hawk, the leap - and the riposte. Every key the art lane must redraw. */
+function rgKitPoses(F, sh) {
+  const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
+  const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
+  const W2 = '#ffffff', C = '#fff6c8', GR = '#c8e89a', D = '#c9b27c';
+  /* the bow held out in the lead hand to shoot, aimed straight ahead; pull: where the draw hand (and the nock) is - null: let go */
+  const aimed = (pull, f = {}) => ({ arm: [X, Y, X + 6, Y + 1], stave: [X + 5, Y + 11, X + 5, Y - 9], ...(pull === null ? { arm2: [OFF[0], OFF[1], X - 5, Y - 2] } : { arm2: [OFF[0], OFF[1], X + pull, Y], nock: [X + pull, Y] }), ...f });
+  const atBack = { stave: [X - 6, Y + 9, X - 4, Y - 10], arm2: [OFF[0], OFF[1], X - 4, Y + 1] };   /* the bow in the off hand, down at her back, while the knife works */
+  const knife = (hx, hy, tx, ty, f = {}) => KF({ ...atBack, arm: [X, Y, X + hx, Y + hy], sword: [X + hx, Y + hy, X + tx, Y + ty], ...f });
+  const G5 = KF({ legs: 'stand', arm: [X, Y, X + 2, Y - 2], stave: [X + 1, Y + 8, X + 4, Y - 12], arm2: [OFF[0], OFF[1], X + 1, Y + 3], plume: 0 });
+  /* THE KNIFE: a short cut, drawn back by the shoulder and flicked through the front - the bow kept back out of its way */
+  F.atk = [knife(-2, -2, -5, -6, { dx: -1, legs: 'wide', plume: 1 }), knife(4, -1, 9, -2, { wide: 4, dx: 1, legs: 'runC', plume: 2 }), knife(6, 0, 12, 1, { wide: 6, dx: 2, legs: 'runC', plume: 2, bits: [o(13, 1, W2)] }), knife(4, 2, 8, 5, { wide: 4, dx: 1, legs: 'wide', plume: 0 }), G5];
+  F.atkB = [knife(2, 3, -2, 6, { dx: -1, legs: 'wide', plume: 1 }), knife(5, 1, 10, -2, { wide: 4, dx: 1, legs: 'runC', plume: 2 }), knife(6, -1, 12, -4, { wide: 6, dx: 2, legs: 'runC', plume: 2, bits: [o(13, -4, W2)] }), knife(4, 0, 8, -3, { wide: 4, dx: 1, legs: 'wide', plume: 0 }), G5];
+  F.atkC = [knife(-1, -4, -3, -9, { dx: -1, legs: 'wide', sho: 1, plume: 1 }), knife(5, -3, 10, -1, { wide: 4, dx: 1, legs: 'runC', plume: 2 }), knife(7, 1, 13, 4, { wide: 6, dx: 2, dy: 1, legs: 'runC', plume: 2, bits: [o(14, 4, W2), o(12, 6, C)] }), knife(4, 3, 8, 7, { wide: 4, dx: 1, legs: 'wide', plume: 0 }), G5];
+  F.follow = [knife(5, 3, 9, 7, { wide: 4, dx: 1, dy: 1, legs: 'wide', plume: 1 }), knife(3, 1, 6, -2, { dy: 1, plume: 0 })];
+  /* THE KNIFE'S HEAVY (an empty quiver and X held): the blade reversed and driven in two-handed */
+  F.heavy = [knife(1, -5, 1, -10, { dy: -1, legs: 'wide', sho: 1, plume: 1 }), knife(6, 1, 12, 4, { wide: 6, dx: 2, legs: 'runC', plume: 2 }), knife(6, 3, 11, 8, { wide: 6, dx: 2, dy: 2, legs: 'wide', plume: 0, bits: [o(12, 8, W2), o(10, 9, D)] })];
+  /* THE DRAW (X held, rooted): the bow up in the lead hand and the string coming back to her cheek - three beats, the last at full draw */
+  F.windup = [KF({ legs: 'wide', ...aimed(3), plume: 1 }), KF({ legs: 'wide', ...aimed(0), plume: 2 }), KF({ legs: 'wide', sho: 1, ...aimed(-3), plume: 2, bits: [o(13, -1, C)] })];
+  /* THE LOOSE: the string snapped straight, the draw hand flown back past her ear, the bow arm held */
+  F.rgLoose = [KF({ legs: 'wide', ...aimed(null), plume: 2, bits: [o(14, 0, W2), o(16, 0, C)] }), KF({ legs: 'wide', ...aimed(null), arm2: [OFF[0], OFF[1], X - 3, Y + 1], plume: 1 })];
+  /* THE QUICK SHOT: a half draw and gone (on her feet, and in the air) */
+  F.rgShot = [KF({ legs: 'runC', ...aimed(2), plume: 1 }), KF({ legs: 'wide', ...aimed(null), plume: 2, bits: [o(14, 0, W2)] })];
+  F.rgAirShot = [KF({ legs: 'jump2', dy: -1, ...aimed(2), plume: 1 }), KF({ legs: 'jump', dy: -1, ...aimed(null), plume: 2, bits: [o(14, 0, W2)] })];
+  /* THE RISING SHOT: the bow tilted back and the arrow loosed steeply up */
+  F.rgRise = [KF({ legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y - 4], stave: [X + 12, Y + 1, X - 4, Y - 9], arm2: [OFF[0], OFF[1], X + 1, Y], nock: [X + 1, Y], plume: 1 }),
+    KF({ legs: 'wide', arm: [X, Y, X + 4, Y - 4], stave: [X + 12, Y + 1, X - 4, Y - 9], arm2: [OFF[0], OFF[1], X - 3, Y + 2], plume: 2, bits: [o(8, -12, W2), o(9, -14, C)] })];
+  /* THE DOWNWARD SHOT (her plunge): tucked over the bow, held flat under her, loosed straight down - and the hop up off it */
+  F.rgDown = [KF({ legs: 'tuck', hy: 1, arm: [X, Y, X + 1, Y + 6], stave: [X - 8, Y + 6, X + 10, Y + 6], arm2: [OFF[0], OFF[1], X + 1, Y + 2], nock: [X + 1, Y + 2], plume: 2 }),
+    KF({ legs: 'jump', dy: -2, arm: [X, Y, X + 1, Y + 6], stave: [X - 8, Y + 6, X + 10, Y + 6], arm2: [OFF[0], OFF[1], X - 3, Y - 2], plume: 1, bits: [o(1, 13, W2), o(1, 15, C)] })];
+  /* THE BOW-BASH (C): the bow brought round flat in both hands and shoved out like a bar; on the beat (her PARRY) it rings */
+  F.rgBash = [KF({ legs: 'wide', dx: -1, arm: [X, Y, X + 2, Y + 1], arm2: [OFF[0], OFF[1], X + 1, Y - 1], stave: [X + 3, Y + 9, X + 3, Y - 9], plume: 1 }),
+    KF({ wide: 6, legs: 'runC', dx: 2, arm: [X, Y, X + 7, Y + 1], arm2: [OFF[0], OFF[1], X + 6, Y - 2], stave: [X + 9, Y + 9, X + 10, Y - 9], plume: 2, bits: [o(12, -2, GR), o(12, 3, GR)] })];
+  /* THE SNARE (DOWN+C): down on one knee, the peg pushed into the turf and the loop laid open */
+  F.rgSnare = [KF({ dy: 3, legs: 'kneel', arm: [X, Y, X + 5, Y + 7], ...atBack, plume: 1 }), KF({ dy: 3, legs: 'kneel', arm: [X, Y, X + 6, Y + 8], ...atBack, plume: 0, bits: [o(6, 10, '#6a5236'), o(5, 11, D), o(8, 11, D)] })];
+  /* THE MARK (UP+C, her focus spent): the bow raised and the off hand levelled at the quarry, two fingers out */
+  F.rgMark = [KF({ legs: 'wide', arm: [X, Y, X + 2, Y - 3], stave: [X + 1, Y + 7, X + 4, Y - 13], arm2: [OFF[0], OFF[1], X + 7, Y - 1], plume: 1 }),
+    KF({ legs: 'wide', sho: 1, arm: [X, Y, X + 2, Y - 3], stave: [X + 1, Y + 7, X + 4, Y - 13], arm2: [OFF[0], OFF[1], X + 9, Y - 2], plume: 2, bits: [o(11, -3, '#ff7a5a'), o(12, -2, '#ff7a5a')] })];
+  /* THE HAWK: the gauntleted off arm thrown up and the bird away off it */
+  F.rgHawkPose = [KF({ legs: 'wide', arm: [X, Y, X + 2, Y - 2], stave: [X + 1, Y + 8, X + 4, Y - 12], arm2: [OFF[0], OFF[1], X - 1, Y - 6], plume: 1, bits: [o(-1, -8, '#6a4a2a'), o(0, -9, '#8a6a42')] }),
+    KF({ legs: 'wide', sho: 1, arm: [X, Y, X + 2, Y - 2], stave: [X + 1, Y + 8, X + 4, Y - 12], arm2: [OFF[0], OFF[1], X + 3, Y - 8], plume: 2 })];
+  /* LEAP BACK: up and away, the bow turned down at where she stood */
+  F.rgLeapPose = [KF({ legs: 'jump', dy: -2, arm: [X, Y, X + 4, Y + 4], stave: [X - 2, Y + 10, X + 10, Y - 2], arm2: [OFF[0], OFF[1], X + 1, Y + 3], nock: [X + 1, Y + 3], plume: 2 }),
+    KF({ legs: 'jump2', dy: -2, arm: [X, Y, X + 4, Y + 4], stave: [X - 2, Y + 10, X + 10, Y - 2], arm2: [OFF[0], OFF[1], X - 3, Y], plume: 1 })];
+  /* the shared keys hers stand in for (the plunge is her downward shot, the block her bash, the blast her mark, a cast the bow raised) */
+  F.plunge = F.rgDown[0]; F.block = F.rgBash; F.blast = F.rgMark; F.cast = F.rgMark;
+  riposteKit(F, 'ranger', KF, { X, Y, OFF, aimed, knife });
+}
 /* ==== THE GEOMANCER (2026-09-24, docs/briefs/geomancer.md). A hood and a stone mantle, and (round 3) a TALL STAFF with an amber geode.
    The silhouette read, against everyone else on the knight's rig: a pointed moss-green HOOD (not a helm, not a brim), a
    MANTLE of rough stones on both shoulders that makes her the widest thing at shoulder height in the cast, and the short
@@ -4659,8 +4766,9 @@ const GEO_PLUME = [
    rune and on its crown; the hood and robe are undyed wool, so the one green thing on her head is gone and the face reads human. */
 /* (2026-09-24, THE REWORK: the robe goes SLATE - b/B, sleeves and legs S/w - and the plates g/G/h are the pale worked stone) */
 const GEO_PAL = { s: '#8f928c', S: '#4e514d', b: '#6d706b', B: '#353735', m: '#6f9a4a', r: '#e0a040', k: '#cfa47c', w: '#5a5a54', W: '#2e2a24', y: '#e8a83a', v: '#18181c', g: '#aaa694', G: '#67645a', h: '#d6d1bc' };
-export function bakeGeomancer(skin = {}, previewOnly = false) {
-  KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME;
+export function bakeGeomancer(skin = {}, previewOnly = false, rg = false) {
+  if (rg) { KP = Object.assign({}, KP0, RG_PAL, skin); BODY_REF = RG_BODY; PLUME_REF = RG_PLUME; } else {   /* (claude/ranger) THE RANGER is baked on her rig: bakeRanger */
+  KP = Object.assign({}, KP0, GEO_PAL, skin); BODY_REF = GEO_BODY; PLUME_REF = GEO_PLUME; }
   const sh = [BX + 8, BY + 7], [X, Y] = sh, OFF = [BX + 2, BY + 7], WIDE = 12;
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e';
@@ -4677,7 +4785,7 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
       () => knightFrame({ legs: 'stand', ...guard(), plume: 0 }),
     ].map((make, i) => (previewOnly === 'weaponIcon' && i > 2) || (previewOnly === 'atk' && i > 2) ? null : make())),
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.stone);
+  if (previewOnly) return storeFrames(rg ? rgCard(card, sh) : card, false, previewOnly, rg ? SMEAR_COL.steel : SMEAR_COL.stone);
   const F = {
     idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy], i) =>
@@ -4811,8 +4919,8 @@ export function bakeGeomancer(skin = {}, previewOnly = false) {
      with the rune alight while she spreads her hands off it. The Quake radiates from the foot of it */
   F.blast = [TK({ dy: -2, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y - 8], arm2: [OFF[0], OFF[1], X - 4, Y - 8], stave: [X - 8, Y - 9, X + 8, Y - 10], plume: 1 }),
     TK({ wide: 4, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X - 5, Y + 2], stave: [X + 8, Y + 9, X + 8, Y - 9], plume: 2, glow: [X + 8, Y - 6], bits: [o(6, 9, D), o(10, 9, D), o(4, 9, M), o(12, 9, M)] })];
-  geoKitPoses(F, sh);
-  smearPass(F, SMEAR_COL.stone);   /* the strike beats get their arc (claude/herokeys) */
+  if (rg) rgKitPoses(F, sh); else geoKitPoses(F, sh);
+  smearPass(F, rg ? SMEAR_COL.steel : SMEAR_COL.stone);   /* the strike beats get their arc (claude/herokeys) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);

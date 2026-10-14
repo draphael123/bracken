@@ -74,6 +74,8 @@ export const POSE_BEATS = {
   bzStand: [0.18],             /* LAST STAND: down on a knee, an axe planted, the other raised */
   bzUnch: [0.16],              /* UNCHAINED: fists to his chest, then flung out */
   bzStorm: [0.12],             /* AXE STORM: one hatchet underhand, then the fan overhand */
+  /* THE RANGER (claude/ranger): her shots and her kit, each the bow doing something */
+  rgShot: [0.07], rgAirShot: [0.07], rgLoose: [0.1], rgRise: [0.08], rgDown: [0.08], rgBash: [0.06], rgSnare: [0.12], rgMark: [0.12], rgHawkPose: [0.14], rgLeapPose: [0.16],
 };
 /* A POSE THAT FOLLOWS THE BODY, not a clock: the frame is chosen from the hero's own state, and null ends it early (HAMMER LEAP
    plays his arc - maul up on the rise, over at the top, down on the drop - for as long as he is off the ground, and no longer) */

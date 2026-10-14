@@ -19,5 +19,8 @@ export const PASSIVE_GLYPH = {
   /* THE GEOMANCER: ten passives, ten glyphs. pillar, slab, fall, stones, shards, rune and wave are drawn in main.js's talIcon in her stone, moss and amber */
   /* THE BERSERKER (claude/berserker): his rage is a flame, his frenzy's heal a drop, the throw a chevron, the brace a shield */
   berserker: { bzCool: 'hourglass', bzLong: 'hourglass', bzHot: 'flame', bzPrice: 'drop', bzChain: 'twin', bzBurn: 'flame', bzMist: 'eye', bzBite: 'blade', bzReturn: 'reflect', bzStagger: 'chev', bzWide: 'ring', bzSpinChop: 'blade', bzHaft: 'chev', bzSplit: 'blade', bzBraceLong: 'shield', bzBraceBack: 'reflect', bzScar: 'drop', bzUnflinch: 'shield', bzIronBrace: 'shield', bzHide: 'boot', bzUnbowed: 'skull' },
+  /* THE RANGER (claude/ranger): the quiver and the draw are shots and an hourglass, the focus and the mark an eye, the snare a ring, the bash a shield, the flip a boot */
+  ranger: { rgDeep: 'shot', rgSteady: 'hourglass', rgFletch: 'hourglass', rgFar: 'chev', rgBodkin: 'shot', rgTwin: 'twin', rgEagle: 'eye', rgKeen: 'eye', rgLongMark: 'eye', rgSnares: 'ring', rgToothed: 'ring', rgTrail: 'drop', rgKill: 'skull', rgApex: 'eye',
+    rgBashLong: 'shield', rgBashBack: 'reflect', rgHighFlip: 'boot', rgSoftStep: 'boot', rgAirDraw: 'boot', rgCover: 'shot', rgLast: 'blade' },
   geomancer: { geoTall: 'pillar', geoLasting: 'slab', geoHardLand: 'fall', geoFourth: 'stones', geoReturn: 'reflect', geoShrapnel: 'shards', geoBulwark: 'shield', geoRumble: 'rune', geoAftershock: 'ring', geoWideQuake: 'wave' },
 };

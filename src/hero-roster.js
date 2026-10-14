@@ -10,8 +10,8 @@
 import { keepCorruptCopy, LASTGOOD, CORRUPT, safeSet } from './save-safety.js';
 
 export const ROSTER_KEY = 'bracken.roster';
-export const STARTERS = ['knight', 'warden', 'geomancer', 'berserker'];
-export const HERO_IDS = ['knight', 'warden', 'geomancer', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper'];
+export const STARTERS = ['knight', 'warden', 'geomancer', 'ranger'];   /* (claude/ranger, Daniel 10-12: THE RANGER is the fourth free starter; THE BERSERKER is bought - a roster that holds him keeps him) */
+export const HERO_IDS = ['knight', 'warden', 'geomancer', 'ranger', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper'];
 export const HERO_RULE_SHIPS = false;
 /* the lines a locked card says (size 6, 320 wide: textfit heropick strict). Hero-specific where the way in is not just the store. */
 const HOW = { reaper: 'BEAT HIM IN THE UNBURIED, THEN BUY: 10 SILVER' };
