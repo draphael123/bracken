@@ -16,6 +16,7 @@
 import * as CT from './carry-throw.js';
 import { CUTTHROAT } from './desert-foes.js';
 import { HAWK, FALCON, PLATE, falconGuards, falconDown } from './ksar-foes.js';
+import { bakePlateShards } from './redraw/ksar_foes_art.js';   /* (ksarfoesart) the falling plate */
 import { drawKeyGlyph } from './boss-read.js';   /* (claude/ksarfoes) the plated bandit SHOWS his key: the shared THROW IT glyph over him */
 import * as SET from './redraw/ksar_set.js';
 import * as P2 from './redraw/ksar_props2.js';
@@ -78,7 +79,7 @@ export function makeKsarHands(ctx) {
     const ts = TS();
     for (const e of ctx.enemies()) { if (!e.alive || e.ks || e.hmGuard) continue; const k = e.xpKey != null ? parseInt(e.xpKey, 10) : -1, src = k >= 0 ? K.L.ents[k] : null;
       if (!src || (!src.ks && e.t !== 'hawkscout')) continue;
-      if (e.t === 'hawkscout') { if (src.falcon && !e.ksFalcon) e.ksFalcon = src.falcon; continue; }   /* (claude/ksarfoes) a falconer's hawk: his squad names it */
+      if (e.t === 'hawkscout') { if (src.falcon && !e.ksFalcon) { e.ksFalcon = src.falcon; e.skinNow = 'falconhawk'; } continue; }   /* (ksarfoesart) it wears the falconer's lanner skin: slate, hooded, belled, jessed */   /* (claude/ksarfoes) a falconer's hawk: his squad names it */
       e.ksNest = !!src.nest; e.ks = { role: src.ks, post: e.x, gong: src.gong || null, patrol: src.patrol ? [src.patrol[0] * ts + 8, src.patrol[1] * ts + 8] : null, st: src.asleep || src.ks === 'reserve' ? 'asleep' : src.ks === 'gatehouse' ? 'room' : 'post', t: 0, hp: e.hp, dir: e.face || -1 };
       if (e.cnSkin === 'ksarplate') e.ksPlate = true;   /* (claude/ksarfoes) THE PLATED BANDIT: steel until a blast */
       if (e.cnSkin === 'falconer') { e.ks.squad = src.squad; e.ksF = { st: 'idle', t: 0, cd: 1.2, open: 0, lost: false, dived: false, said: -9 }; } }
@@ -224,8 +225,10 @@ export function makeKsarHands(ctx) {
     if (e.ksF) { if (e.ksF.open > 0) return Math.round(dmg * FALCON.openMul);
       if (falconGuards(e, e.ksHawk)) { K.n.falconGuards = (K.n.falconGuards || 0) + 1; if (ctx.turned) ctx.turned(e, fromX, 'HIS HAWK GUARDS'); return Math.max(1, Math.round(dmg * FALCON.guardMul)); } }
     return dmg; };
+  const PLATE_FX_T = 1.5; let SHARDS = null;
   function strip(e) { e.ksPlate = false; e.skinNow = 'ksarplatebare'; e.ksStun = Math.max(e.ksStun || 0, PLATE.stripStun); K.n.plates = (K.n.plates || 0) + 1;
-    ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(e.x, e.y - 12, 16, ['#9aa4b0', '#d8e0ea', '#5e6874'], 110, 0.7); ctx.shake(2);
+    ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(e.x, e.y - 12, 8, ['#9aa4b0', '#d8e0ea', '#5e6874'], 90, 0.5); ctx.shake(2);
+    K.fx.push({ k: 'plate', x: e.x, y: e.y - 14, fy: e.y, face: e.face || 1, t: PLATE_FX_T, seed: (K.n.plates || 0) * 7 + 3 });   /* (ksarfoesart) the plate FALLS off him in pieces */
     if (once('strip') || K.clock - (K.stripSaid || -9) > 8) { K.stripSaid = K.clock; number(e.x, e.y - 44, 'THE PLATE IS BLOWN OFF: CUT HIM', '#8fd160'); } }
   /* THE MACHINES' WORLD (main.js updateDesertFoe, before a machine steps): a hawk scout's eyes and blindness; a whip apprentice's reach */
   H.world = (e, s, w) => { if (!K) return; const P = ctx.hero();
@@ -243,7 +246,7 @@ export function makeKsarHands(ctx) {
     const gx2 = m.x + (m.face || 1) * 5, gy2 = m.y - 15;
     if (s.mode === 'toGlove') { const dx = gx2 - s.x, dy = gy2 - s.y, L2 = Math.hypot(dx, dy), v = FALCON.toGloveV / 60; s.face = Math.sign(dx) || s.face; s.frame = Math.floor(K.clock * 8) % 2;
       if (L2 <= v + 1) { s.mode = 'glove'; F.gloveTill = K.clock + FALCON.glove; } else { s.x += dx / L2 * v; s.y += dy / L2 * v; } }
-    if (s.mode === 'glove') { s.x = gx2; s.y = gy2; s.frame = 5; s.face = m.face || 1; if (K.clock >= (F.gloveTill || 0)) { s.mode = 'climb'; s.t = HAWK.climb; s.cy = s.y; } } }
+    if (s.mode === 'glove') { s.x = gx2; s.y = gy2; s.frame = 7; s.face = m.face || 1; if (K.clock >= (F.gloveTill || 0)) { s.mode = 'climb'; s.t = HAWK.climb; s.cy = s.y; } } }
   /* THE MACHINES' EVENTS (after it steps): a hawk's 'spot' is the alarm; the apprentice's slash is a LASH with reach */
   H.evs = (e, s, evs) => { if (!K) return;
     if (e.cnSkin === 'ksarplate' && e.ksX0 != null) { if (s.mode === 'walk') s.x = e.ksX0 + (s.x - e.ksX0) * PLATE.walkMul; e.ksX0 = null;   /* (claude/ksarfoes) THE PLATED MAN: a heavy step, a longer real windup */
@@ -570,25 +573,38 @@ export function makeKsarHands(ctx) {
   };
   function drawThing(V, kind, x, y, time, lit, state) { if (kind === 'keg') { SET.drawKeg(V, x, y, lit, time); if (lit) P2.kegSparks(V, x, y, time, true); } else if (kind === 'torch') P2.drawTorchItem(V, x, y, time, state === 'burn' ? 'burn' : state === 'fly' ? 'fly' : 'held'); else SET.drawFlask(V, x, y); }
   /* OVER EVERYTHING: the told arc of what is in your hand, the smoke, the blasts and flashes, the hawks' shrieks */
+  /* (ksarfoesart) THE PLATE FALLS: the stripped plate comes off him in pieces (helm, pauldrons, breast, tassets, rivet plates, splinters): thrown out and up, tumbling in quarter turns, bouncing once on the floor and lying there, fading at the end */
+  const PIECES = [['helm', -0.35, -150], ['pauldron', -1.1, -105], ['pauldron', 1.0, -115], ['breast', 0.12, -75], ['tasset', -0.65, -95], ['tasset', 0.7, -90], ['rivet', -1.5, -170], ['rivet', 1.4, -160], ['splinter', 0.45, -190], ['splinter', -0.85, -150]];
+  function drawPlateFall(g, f, cx, cy) { SHARDS = SHARDS || bakePlateShards(); const age = PLATE_FX_T - f.t, a = f.t < 0.4 ? f.t / 0.4 : 1, R0 = Math.round;
+    PIECES.forEach(([nm, vx0, vy0], i) => { let x = f.x, y = f.y, vx = vx0 * 95, vy = vy0 * (0.8 + ((f.seed + i) % 3) * 0.12), rest = false;
+      for (let t = 0; t < age; t += 1 / 60) { if (rest) break; vy += 520 / 60; x += vx / 60; y += vy / 60; if (y >= f.fy - 1) { y = f.fy - 1; if (vy > 40) { vy = -vy * 0.32; vx *= 0.55; } else { vy = 0; vx = 0; rest = true; } } }
+      const turn = rest ? (i + 1) % 4 : Math.floor(age * 14 + i) % 4, im = SHARDS[nm][turn]; g.globalAlpha = a; g.drawImage(im, R0(x - cx - im.width / 2), R0(y - cy - im.height + (rest ? 1 : im.height / 2))); }); g.globalAlpha = 1; }
   H.drawOver = (g, cx, cy, time) => { if (!K) return; const P = ctx.hero(), R0 = Math.round;
     for (const s of K.smokes) { const k = Math.min(1, s.t / 1.2), x = R0(s.x - cx), y = R0(s.y - cy); for (let i = 0; i < 7; i++) { const a = i * 0.9 + time * 0.4, rr = s.r * (0.55 + 0.25 * Math.sin(time + i));
         g.globalAlpha = 0.38 * k; g.fillStyle = i % 2 ? '#d8d0c8' : '#b8b0a8'; g.beginPath(); g.arc(x + Math.cos(a) * s.r * 0.35, y + Math.sin(a) * s.r * 0.25, rr, 0, Math.PI * 2); g.fill(); } g.globalAlpha = 1; }
     for (const f of K.fx) { const x = R0(f.x - cx), y = R0(f.y - cy);
       if (f.k === 'blast') { g.globalAlpha = Math.min(1, f.t * 3); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, KS.kegR * (1 - f.t), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       else if (f.k === 'flash') { g.globalAlpha = Math.min(1, f.t * 3); g.fillStyle = '#ffffff'; g.beginPath(); g.arc(x, y - 6, KS.flashR * (1 - f.t * 1.5), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+      else if (f.k === 'plate') drawPlateFall(g, f, cx, cy);
       else if (f.k === 'shriek') { g.strokeStyle = 'rgba(255,107,107,' + (f.t).toFixed(2) + ')'; for (let i = 0; i < 3; i++) { g.beginPath(); g.arc(x, y, (1 - f.t) * 60 + i * 10, 0, Math.PI * 2); g.stroke(); } } }
     /* (claude/ksarfoes) THE NEW BANDITS' READS (B10/B14): over a PLATED man the shared THROW IT glyph (red-hot while you carry a keg); a FALCONER guarded by his hawk - a dashed
        jess from his glove to it and a faint shell; OPEN - the gold ring and its timer bar */
     const vw = ctx.VW();
     for (const e of ctx.enemies()) { if (!e.alive || e.x < cx - 40 || e.x > cx + vw + 40) continue; const x = R0(e.x - cx), y = R0(e.y - cy), h = e.h || 18;
       if (e.ksPlate) { const kg = held(P) && held(P).thrKind === 'keg'; drawKeyGlyph(g, 'throw', x, y - h - 12, time, kg ? 1.3 : 1); }
-      const F = e.ksF; if (!F) continue;
-      if (F.open > 0) { const k = 0.5 + 0.5 * Math.sin(time * 10), fr = Math.max(0, Math.min(1, F.open / (F.openT0 || FALCON.openT)));
-        g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - h / 2, 11 + k * 2, h / 2 + 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-        g.fillStyle = '#1b1626'; g.fillRect(x - 11, y - h - 9, 22, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 10, y - h - 8, R0(20 * fr), 1); }
-      else if (falconGuards(e, e.ksHawk)) { const k2 = e.ksHawk, gx3 = x + (e.face || 1) * 5, gy3 = y - 15, hx = R0(k2.x - cx), hy = R0(k2.y - cy);
-        g.globalAlpha = 0.5; g.fillStyle = '#e8d8b0'; for (let i = 1; i < 10; i += 2) { const t2 = i / 10; g.fillRect(R0(gx3 + (hx - gx3) * t2), R0(gy3 + (hy - gy3) * t2), 1, 1); }
-        g.globalAlpha = 0.22 + 0.08 * Math.sin(time * 4); g.strokeStyle = '#e8d8b0'; g.setLineDash([2, 3]); g.beginPath(); g.ellipse(x, y - h / 2, 10, h / 2 + 3, 0, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; } }
+      const F = e.ksF; if (!F) continue; const fc = e.face || 1, gx3 = x + fc * 5, gy3 = y - 15, k2 = e.ksHawk;
+      if (k2 && k2.alive && e.alive) { const hx = R0(k2.x - cx), hy = R0(k2.y - cy - 2), dist = Math.hypot(hx - gx3, hy - gy3);   /* THE JESS: a leather cord from his glove to the hawk, sagging; fainter the further it flies, gone when it stoops */
+        if (dist > 3 && dist < 150 && !(k2.st && (k2.st.mode === 'dive' || k2.st.mode === 'diveTell'))) { const a = Math.max(0, Math.min(1, (150 - dist) / 90)), n = Math.max(6, Math.round(dist / 3)), sag = Math.min(9, dist * 0.18);
+          for (let i = 0; i <= n; i++) { const u = i / n, jx = R0(gx3 + (hx - gx3) * u), jy = R0(gy3 + (hy - gy3) * u + Math.sin(u * Math.PI) * sag); g.globalAlpha = 0.9 * a; g.fillStyle = '#3a2412'; g.fillRect(jx, jy + 1, 1, 1); g.fillStyle = '#8a5a32'; g.fillRect(jx, jy, 1, 1); }
+          g.globalAlpha = a; g.fillStyle = '#ffd870'; g.fillRect(gx3 - 1, gy3 - 1, 2, 2); g.globalAlpha = 1; } }
+      if (F.open > 0) { const kk = 0.5 + 0.5 * Math.sin(time * 10), fr = Math.max(0, Math.min(1, F.open / (F.openT0 || FALCON.openT)));   /* OPEN, the shared read (B10): a gold ring round him, the word, a timer bar */
+        g.globalAlpha = 0.5 + 0.4 * kk; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - h / 2, 11 + kk * 2, h / 2 + 4, 0, 0, Math.PI * 2); g.stroke();
+        g.globalAlpha = 0.25; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - h / 2, 14 + kk * 2, h / 2 + 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+        const by = y - h - 12; ctx.text('OPEN', x, by - 6, Math.sin(time * 10) > 0 ? '#ffffff' : '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 17, by + 1, R0(34 * fr), 1); }
+      else if (falconGuards(e, k2)) {   /* GUARDED, the shared read: a pale shell round him (rim + a glint arc), the word comes with the turned blow (HIS HAWK GUARDS) */
+        g.globalAlpha = 0.16 + 0.06 * Math.sin(time * 4); g.fillStyle = '#e8d8b0'; g.beginPath(); g.ellipse(x, y - h / 2, 11, h / 2 + 4, 0, 0, Math.PI * 2); g.fill();
+        g.globalAlpha = 0.6; g.strokeStyle = '#eef4ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - h / 2, 11, h / 2 + 4, 0, 0, Math.PI * 2); g.stroke();
+        g.strokeStyle = '#ffffff'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - h / 2, 11, h / 2 + 4, 0, Math.PI * 1.1, Math.PI * 1.45); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; } }
     const q = held(P); if (q && !P.dead) { K.arc = H.arcOf(P); CT.drawArc(g, K.arc, cx, cy, time, q.thrKind === 'keg' ? '#ff9a3c' : q.thrKind === 'torch' ? '#ffb84a' : '#e8f4ff'); } else K.arc = null;
   };
   /* THE HUD: the sun meter is the desert's (main.js); the drawn rule state is in the world */
