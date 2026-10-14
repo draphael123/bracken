@@ -59,14 +59,18 @@ lunge late). The hands keep `S.landedOn` (what landed, how the hero stood, the b
 
 ## BOSS SANITY (tools/boss-rates.mjs towpath --seeds=3 --profile=human --flasks=kit --jobs=1, practiced)
 Baseline (old knight): 2/3 3/3 3/3 = 89%, fights 50-130 s.
-FOG KNIGHT 2 final: RATES_FINAL
+FOG KNIGHT 2 final (after the batch92 merge): practiced 1/3 2/3 2/3 = 56% | first 1/2 0/2 1/2 = 33% | built 1/2 1/2 1/2 = 50% (band 60-70: LOW -4 on practiced; no hero at 0 on practiced). Fights 82-156 s (90-150 target). Deaths mostly at 9-27% boss hp left. Early runs went 22% -> 33% -> 44% -> 56% as the bot learned the new answers (log: ../towpath2-logs/rates-*.log).
 Dry: not measured (tune lane).
 
 ## CHECKS
-CHECKS_TABLE
+GREEN: tools/towpath.mjs (311 checks, rewritten for the rework: rule, fog banks per lock/pound, punt in/out of fog, rides, arches, wraith, all knight moves + bot answers), tools/towpath-probe.mjs (page smoke: every ride carries the hero, wraith stays in its fog, no page errors), level-quality towpath (CLEARS THE BAR, gated), reach-heroes (8 heroes, 0 crossings), level-reach, checkpoint-gaps, one-new-foe, signs, stuck (static + runtime), hint-shown, boss-openings, boss-fight-end, boss-greed, weak-bosses, corpses, mark-integrity, untold-told, riposte, survival, tells, boss-read, blow-tags, solid-islands, answer-tags, threat-holes, mash-gate, curve-gate, mash-carry, textfit (scoped hints,bestiary,hud --strict: 0 issues), goblin-lint, audit, comments, dangling-paths, map-spacing.
+STAMPED: mash level (knight/warden/pyro all die, 7-8 deaths) THEN boss (0/6), level-1 pilot (35 blows, 8 deaths), curve (act 4: 388%/run, in band).
+DELIBERATE TEST CHANGES (stated, not weakenings): one-new-foe NEW_EXACTLY (Q2); blow-tags NOT_BOSS += FWR.wraithTake (a common foe, like the wisp); solid-islands towpath allowance 15 -> 2 (tightened: the island-post kit); towpath.mjs dark-paddle assertion fog -> dark (Q4); shrines 3 (was 3) with the new spacing.
 
 ## REDS
-REDS
+- Boss band: 56% practiced at 3 seeds (LOW -4) - the TUNE lane (12 seeds) owns it; levers: FK.gap, FK.dmg, hp 1850, the dial.
+- mark-integrity: a FLAKY pre-existing PHANTOM on the Undead Archmage (undeadmage|poisonTell / markTell) - reproduced on untouched master 2cf3294b; my final run was green.
+- Not run (per the prompt): full textfit, 12-seed loops, the suite. tools/towpath-route.mjs (the old route pilot, not in the suite) still walks the first greybox's columns - stale; the walker (BK.walkHint) is updated and the mash/pilot walkers ran the level 100%.
 
 ## QUESTIONS FOR DANIEL (rec first; what I built)
 1. THE CHURCH FORK - the brief says it goes away when church2 moves the church off Waymeet. church2 has not landed, so I KEPT the lychgate + 'tpchurch' door
