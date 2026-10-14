@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { SECTIONS, ARCS, RULE, ROOMS, CHUTES, WHEEL, SUN, DY } from '../src/buried-city.js';
+import { SECTIONS, ARCS, RULE, ROOMS, CHUTES, WHEEL, SUN, DY, OUT } from '../src/buried-city.js';
 import { makeBuriedCityHands, BCS } from '../src/buried-city-hands.js';
 import * as HKM from '../src/hourglass-king.js';
 import { newConstruct, constructStep } from '../src/construct.js';
@@ -42,7 +42,7 @@ ok(ARCS.fill.teach[0] < ARCS.fill.remix[0] && ARCS.fill.remix[0] < ARCS.fill.exa
 ok(ARCS.fall.teach[0] < ARCS.fall.exam[0] && ARCS.sun.teach[0] < ARCS.sun.test[0] && ARCS.sun.test[0] < ARCS.sun.remix[0] && ARCS.sun.remix[0] < ARCS.sun.exam[0], 'the fall taught then examined; the sun under the roof taught, tested, remixed, examined');
 ok(new Set(ROOMS.map(r => r.use)).size >= 4 && CHUTES.some(c => Object.values(c.to).some(t => t.kind === 'mound')) && CHUTES.some(c => Object.values(c.to).some(t => t.kind === 'room')),
   'A4: the sand asks seven things of you (drain, ride, sink, fill, run down, pile up, feed) - a remix, not a repeat');
-ok(SECTIONS.length === 10 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'the dunes, eight sections (claude/buriedcity3: THE ROOFTOPS, outside) and the throne room, in order');
+ok(SECTIONS.length === 12 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'the dunes, ten sections (claude/buriedcity3: THE ROOFTOPS, outside; claude/buriedcity4: THE GLASS WORKS and THE ANTECHAMBER - a stated change, 10 -> 12) and the throne room, in order');
 /* THE FLIP (claude/buriedcity3, Daniel 10-12: "the hourglass is unclear in function" - now it is the level's second verb): taught -> tested -> remixed -> examined, then the king */
 ok(ARCS.flip.teach[0] < ARCS.flip.test[0] && ARCS.flip.test[0] < ARCS.flip.remix[0] && ARCS.flip.remix[0] < ARCS.flip.exam[0] && ARCS.flip.exam[0] < ARCS.flip.boss[0], 'the flip: teach -> test -> remix -> exam -> the king, in order');
 { const uses = new Set(); for (const r of L.risers) uses.add(r.sinks ? 'sink' : 'rise'); if (L.banks.length) uses.add('bank'); if (L.dfalls.length) uses.add('fallup'); if (L.glasses.filter(g => L.risers.some(r => r.glass === g.id)).length >= 3) uses.add('chain');
@@ -254,6 +254,67 @@ ok(room('street').level === room0('street').full && cell(215, room0('street').fl
 ok((STUCK_HANDS.buriedcity || []).length >= 12, 'the route\'s locks glint (' + (STUCK_HANDS.buriedcity || []).length + ' stuck spots)');
 for (const sp of STUCK_HANDS.buriedcity) for (const s of sp.steps) ok(isCallout(s.line), 'the nudge line is shown: ' + s.line);
 for (const [id, want] of [['street', /street/], ['sluice', /sluice/], ['trap', /trap/]]) ok(STUCK_HANDS.buriedcity.some(sp => want.test(sp.id) && sp.steps.length >= 2), 'the ' + id + '\'s steps are each glinted in turn');
+/* ================= BURIED CITY 4 (claude/buriedcity4, scratch/brief-buriedcity4.md items 1-3, 6-10) ================= */
+{ const sec = n => SECTIONS.find(s => s[0] === n)[1], gw0 = sec('THE GLASS WORKS'), gw1 = sec('THE SAND-FALL') - 1, half = L.W / 2;
+  /* 1. THE GLASS WORKS: flip platforming INDOORS, in the FIRST HALF, taught before the rooftops test it, with its own exam and a shrine after */
+  ok(gw0 < half && gw1 < half, 'brief 1: THE GLASS WORKS (' + gw0 + '-' + gw1 + ') is in the first half of the city (W ' + L.W + ')');
+  const inGW = x => x >= gw0 && x <= gw1, gwGlass = L.glasses.filter(g => inGW(g.x));
+  ok(gwGlass.length >= 4, 'THE GLASS WORKS turns ' + gwGlass.length + ' glasses');
+  { let open = true; for (let x = gw0; x <= gw1; x++) if (at(x, 0) === T.AIR) open = false; ok(open, 'THE GLASS WORKS is indoors: under the sand roof over every column'); }
+  ok(L.risers.some(r => inGW(r.x0) && r.sinks) && L.risers.some(r => inGW(r.x0) && !r.sinks), 'floors SINK and floors RISE with the flip in THE GLASS WORKS');
+  ok(L.dfalls.some(f => inGW(f.x0)) && L.tilts.some(t => inGW(t.x0)) && L.ents.some(e => e.cnSkin === 'sandbound' && inGW(e.x)), 'THE GLASS WORKS teaches the sand lift, the tilting dune and the sand-bound');
+  ok(ARCS.flip.test[0] <= gw0 && ARCS.flip.test[1] >= gw1 && ARCS.flip.test[1] < ARCS.flip.remix[0], 'the flip arc: THE GLASS WORKS is its test, before the rooftops remix it');
+  for (const k of ['lift', 'tilt', 'bound']) { const a = ARCS[k], ks = Object.keys(a); ok(ks.length >= 2 && inGW(a[ks[0]][0]) && a[ks[1]][0] > a[ks[0]][0], 'A14: ' + k + ' is taught in THE GLASS WORKS, then used again later (' + JSON.stringify(a) + ')'); }
+  ok(L.ents.some(e => e.t === 'check' && e.x >= gw1 - 6 && e.x <= gw1), 'THE GLASS WORKS\' exam (the relay) has a shrine after it');
+  const noRisersIn = gid => ({ ...L, sandSolid: L.sandSolid.filter(b => !L.risers.some(r => r.glass === gid && !r.sinks && b[0] === r.x0 && b[1] === r.x1)) });
+  for (const gid of ['works1', 'works4', 'works5']) ok(!reaches(noRisersIn(gid)), 'REQUIRED: without the roofs glass ' + gid + ' raises nothing reaches the throne room');
+  ok(!reaches({ ...L, sandRungs: L.sandRungs.filter(b => !L.dfalls.some(f => f.glass === 'works2' && b[0] === f.x0)) }), 'REQUIRED (brief 7): without riding THE SAND LIFT up the upper gallery is out of reach');
+  const idle = t => { const g = L.grid.slice(), n = t.x1 - t.x0 + 1; for (let i = 0; i < n; i++) { const sr = t.lo - n + i; for (let y = t.lo - n; y <= t.floor; y++) g[y * L.W + t.x0 + i] = y < sr ? T.AIR : y === sr ? T.SLOPE_L1 : T.SOLID; } return g; };
+  for (const t of L.tilts) ok(!reaches({ ...L, grid: idle(t) }), 'REQUIRED (brief 8): with THE TILTING DUNE at ' + t.x0 + ' idle (rising west) nothing reaches the throne room');
+  /* 2. THE SAND-BOUND: a variant (the drowned's machine, cnSkin), bound to a glass placed where the flip is taught and tested */
+  const sb = L.ents.filter(e => e.cnSkin === 'sandbound');
+  ok(sb.length >= 3 && sb.every(e => e.t === 'ambusher' && L.glasses.some(g => g.id === e.glass)), 'brief 2: ' + sb.length + ' SAND-BOUND, each the ambusher\'s machine bound to a glass of the level');
+  ok(sb.every(e => { const g = L.glasses.find(q => q.id === e.glass); return Math.abs(g.x - e.x) <= 12; }), 'every sand-bound stands within reach of its glass (the flip is your weapon there)');
+  ok(L.foeHit.sandbound > 0 && L.foeHp.sandbound > 0, 'the sand-bound is weighed like the drowned (foeHit / foeHp)');
+  /* 9. THE EXAM BEFORE THE THRONE: one stretch - a glass, a sand-bound, an elite, the timed slabs - and the shrine after, at the throne room's door */
+  const ex = ARCS.slab.exam, cy = ARCS.bound.exam, inEx = x => x >= cy[0] && x <= ex[1];
+  ok(L.ents.some(e => e.elite && inEx(e.x)) && sb.some(e => inEx(e.x)) && L.glasses.some(g => inEx(g.x)) && L.tplats.length >= 3 && L.tplats.every(p => inEx(p.x0)), 'brief 9: the exam before the throne has the flip, a sand-bound, an elite and ' + L.tplats.length + ' timed slabs');
+  ok(L.tplats.every((p, i) => i === 0 || p.life > L.tplats[i - 1].life) && L.tplats.every(p => p.life <= L.glasses.find(g => g.id === p.glass).dur), 'the slabs crumble one after another, the farthest last (each within its glass\'s run)');
+  ok(!reaches({ ...L, sandSolid: L.sandSolid.filter(b => !L.tplats.some(p => b[0] === p.x0 && b[1] === p.x1)) }), 'REQUIRED: without the timed slabs nothing crosses THE ANTECHAMBER');
+  { const cp = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(cp.some(x => x > ex[1] - 4 && x < L.arena.x0 / TS), 'the shrine after the exam stands at the throne room\'s door (' + cp + ')'); }
+  /* 10. THE LOOP BACK TO A SHRINE: the old street under the rooftops, its sand-gate shut as built (the route goes over the roofs) and opened from the courtyard side */
+  const LD = L.loopDoor; ok(LD && at(LD.x, LD.y0) === T.SOLID && at(LD.x, LD.y1) === T.SOLID, 'brief 10: the old street\'s sand-gate is shut as built');
+  ok(LD.lever[0] > LD.x, 'its lever is on the far (courtyard) side');
+  { const cps = L.ents.filter(e => e.t === 'check' && e.x < OUT.x0).map(e => e.x), back = Math.max(...cps), g = L.grid.slice(); for (let y = LD.y0; y <= LD.y1; y++) g[y * L.W + LD.x] = T.AIR;
+    const R0 = floodReach({ ...L, grid: g, START: { x: back, y: L.ents.find(e => e.t === 'check' && e.x === back).y } }, T); let thru = false; for (const k of R0.seen) { const [x, y] = k.split(',').map(Number); if (x === LD.lever[0] && Math.abs(y - LD.lever[1]) <= 1) thru = true; }
+    ok(thru, 'opened, the old street runs from the shrine before the rooftops (' + back + ') to the courtyard - the loop'); }
+  ok(L.seas.filter(s => s.x0 >= OUT.x0 && s.x1 <= OUT.x1).every(s => s.bottom !== undefined && s.bottom < LD.y0), 'the rooftops\' sand seas have a floor over the old street (who is in the street is not in the sea)');
+  /* 3. OUTDOOR SHADE within running reach: every glass outdoors is struck in shade, the courtyard is shaded on both sides, and clouds drift over the open sky */
+  const shaded = (x, row) => L.shade.some(([x0, x1, y0, y1]) => (x * TS + 8) >= x0 && (x * TS + 8) <= x1 && (row + 1) * TS - 1 >= y0 && (row + 1) * TS - 1 <= y1);
+  for (const g of L.glasses.filter(q => q.x >= OUT.x0 && q.x <= OUT.x1)) ok(shaded(g.x, g.y) || shaded(g.x - 1, g.y) || shaded(g.x + 1, g.y), 'brief 3: the rooftop glass ' + g.id + ' is struck in shade');
+  ok(L.clouds.filter(c => c.x0 >= OUT.x0).length >= 2 && L.clouds.some(c => c.x1 < 38), 'brief 3: cloud shadows drift over THE ROOFTOPS and the dunes');
+  /* 6. THE LANDMARK shows the flip: the great hourglass turns over while a glass near you runs, and its glass is no longer a ghost */
+  { const bd = readFileSync(new URL('../src/redraw/buried_city_backdrop.js', import.meta.url), 'utf8'), fl = readFileSync(new URL('../src/buried-city-flip.js', import.meta.url), 'utf8');
+    ok(/function drawTower\([^)]*fk = 0\)/.test(bd) && /L\.towerFlip/.test(bd) && /K\.L\.towerFlip =/.test(fl), 'brief 6: THE GREAT HOURGLASS turns over with the flip (L.towerFlip)');
+    const a = +(/glass: 'rgba\(\d+,\d+,\d+,([\d.]+)\)'/.exec(bd) || [0, 0])[1]; ok(a >= 0.5, 'brief 6: its glass is not see-through (alpha ' + a + ')'); }
+  /* THE NEW PIECES IN THE HANDS (the fake world) */
+  H.reset(); const K4 = H.state(), F = H.flip, glv = id => K4.glasses.find(g => g.id === id);
+  const t0 = L.tilts.find(t => t.glass === 'works3'), n0 = t0.x1 - t0.x0 + 1;
+  ok(cell(t0.x0, t0.lo - n0) === T.SLOPE_L1 && cell(t0.x1, t0.lo - 1) === T.SLOPE_L1, 'THE TILTING DUNE idle rises WEST (a wall from the gallery)');
+  { const g3 = glv('works3'); place(g3.x, g3.y); H.interact(hero); run(0.2); ok(cell(t0.x0, t0.lo - 1) === T.SLOPE_R1 && cell(t0.x1, t0.lo - n0) === T.SLOPE_R1, 'struck, it tilts the other way: a ramp up east');
+    const bound = { t: 'ambusher', cnSkin: 'sandbound', glass: 'works3', alive: true, x: 376 * TS + 8, y: 15 * TS, h: 18, st: { mode: 'walk', frame: 2 } };
+    ok(F.boundTake(bound) === 1 && H.hold(bound, 1 / 60) && bound.sbBuried, 'while its glass runs the sand-bound is BURIED: held (stuck) and every blow whole');
+    run(g3.dur + 0.5); ok(cell(t0.x0, t0.lo - n0) === T.SLOPE_L1, 'run out, the dune tilts back'); ok(F.boundTake(bound) === 0.4 && !H.hold(bound, 1 / 60), 'run out, THE SAND HOLDS IT: a blow lands at 0.4 (B15\'s floor, told in main.js)'); }
+  { const ga = glv('ante'), p0 = K4.tplats[0], pL = K4.tplats[K4.tplats.length - 1];
+    ok(K4.tplats.every(p => !p.up && cell(p.x0, p.y) === T.AIR), 'the timed slabs are down until their glass is struck');
+    place(ga.x, ga.y); H.interact(hero); run(0.1); ok(K4.tplats.every(p => p.up && cell(p.x0, p.y) === T.ONEWAY), 'struck, every slab rises');
+    run(p0.life); ok(!p0.up && cell(p0.x0, p0.y) === T.AIR && pL.up, 'the first crumbles on its timer while the last still stands');
+    run(pL.life); ok(K4.tplats.every(p => !p.up), 'and then the last'); }
+  { const sx = K4.seas.find(s => s.bottom !== undefined); hero.hp = 100; const x0 = hero.x; place(Math.round((sx.x0 + sx.x1) / 2), LD.y1); H.update(1 / 30); ok(hero.hp === 100 && Math.abs(hero.x - (Math.round((sx.x0 + sx.x1) / 2) * TS + 8)) < 2, 'a hero in the old street under a sand sea is not swallowed by it'); }
+  { place(LD.x - 3, LD.y1); hero.dead = false; ok(!H.interact(hero) || !K4.loopOpen, 'from the street side the sand-gate does not open (its lever is in the courtyard)');
+    place(LD.lever[0], LD.lever[1]); H.interact(hero); ok(K4.loopOpen && cell(LD.x, LD.y0) === T.AIR && cell(LD.x, LD.y1) === T.AIR, 'E at its lever in the courtyard opens the old street'); }
+  ok(L.ents.some(e => e.t === 'sign' && /SHUT FROM THE FAR SIDE/.test(e.text) && e.x < LD.x - 50), 'the old street\'s mouth says its gate is shut from the far side');
+  H.reset(); }
 /* THE HOURGLASS KING (pure) */
 const G = HKM.geom(L.arena, TS); ok(G.levers.length === 2, 'two sand-gate levers in the throne room');
 ok(HKM.HK.resist >= 0.4 && HKM.HK.wardMul >= 0.4, 'B15: outside his openings his brass takes >= 0.4 (resist ' + HKM.HK.resist + ', ward ' + HKM.HK.wardMul + ')');

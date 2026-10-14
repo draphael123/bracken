@@ -51,7 +51,7 @@ import { stageHourglassKing, HK_STAGE } from './hourglass-king.js';
    and a balcony three rows up is a second height (tools/level-quality.mjs bands). The exported ROOMS, CHUTES, WHEEL and the built level are in GRID rows (+DY) */
 export const DY = 1;
 export const BC = { W: 887, H: 49, dune: 24, base: 36, upper: 28, hall: 38, corr: 32, sluice: 42, quarter: 36, low: 44, throne: 32 };
-export const SECTIONS = [['THE DUNES', 0], ['THE SAND STAIR', 48], ['THE BURIED BAZAAR', 112], ['THE SINKING STREET', 200], ['THE HOURGLASS HALLS', 237], ['THE SAND-FALL', 409], ['THE DROWNED QUARTER', 468], ['THE THRONE STREET', 585], ['THE ROOFTOPS', 702], ['THE THRONE ROOM', 845]];
+export const SECTIONS = [['THE DUNES', 0], ['THE SAND STAIR', 48], ['THE BURIED BAZAAR', 112], ['THE SINKING STREET', 200], ['THE HOURGLASS HALLS', 237], ['THE GLASS WORKS', 337], ['THE SAND-FALL', 409], ['THE DROWNED QUARTER', 468], ['THE THRONE STREET', 585], ['THE ROOFTOPS', 702], ['THE ANTECHAMBER', 822], ['THE THRONE ROOM', 845]];   /* (claude/buriedcity4: THE GLASS WORKS and THE ANTECHAMBER are new) */
 export const RULE = 'PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.';   /* (claude/buriedcity3: THE FLIP is the rule's second half - the line says what the code does, A1) */
 /* each use's arc (tile columns) - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/buried-city.mjs */
 export const ARCS = {
@@ -60,7 +60,13 @@ export const ARCS = {
   fill: { teach: [237, 262], remix: [293, 310], exam: [608, 634] },                                    /* THE SPIKE CELLAR; the lower bulb; THE TRAP HALL (required) */
   fall: { teach: [409, 452], exam: [608, 634] },                                                        /* THE SAND-FALL (required: pile it to the arch); THE TRAP HALL (feed it) */
   sun: { teach: [48, 56], test: [112, 138], remix: [311, 324], exam: [585, 598] },                      /* cross a shaft; the market's awnings are shade; the halls' elite in the light; the clock shaft's ride */
-  flip: { teach: [98, 111], test: [309, 316], remix: [710, 784], exam: [785, 821], boss: [845, 884] },   /* (claude/buriedcity3) THE FLIP: a roof rises (safe, required); a bank runs out; the fall flows up + the chain of two glasses; the glass that sinks one roof and raises the rest over the end; the king's great glass */
+  flip: { teach: [98, 111], test: [309, 408], remix: [710, 784], exam: [785, 844], boss: [845, 884] },   /* (claude/buriedcity4: the test is the halls' bank AND THE GLASS WORKS - its own exam, the relay; the exam runs on into THE ANTECHAMBER's timed slabs) */
+  /* (claude/buriedcity4) THE FLIP'S NEW PIECES, each taught indoors in THE GLASS WORKS before the rooftops use it again: the SAND LIFT (a fall that flows up), the TILTING DUNE,
+     THE SAND-BOUND (the glass is your weapon), the TIMED SLABS (the King's own trick, in the exam before his door) */
+  lift: { teach: [361, 369], remix: [718, 733] },
+  tilt: { teach: [370, 382], remix: [734, 746] },
+  bound: { teach: [370, 377], test: [404, 408], remix: [747, 752], exam: [811, 821] },
+  slab: { exam: [822, 843] },   /* (claude/buriedcity3) THE FLIP: a roof rises (safe, required); a bank runs out; the fall flows up + the chain of two glasses; the glass that sinks one roof and raises the rest over the end; the king's great glass */
 };
 /* the sand rooms: x0..x1 the interior, floor the surface row under the sand (the sand stands on rows floor-full .. floor-1), full its rows, init its state on a
    fresh load ('full' or 'empty'), levers [x, feet row, chain rows (a CHAIN up the wall: pulled anywhere on its length - the lever inside a room you may be
@@ -410,7 +416,12 @@ export function buildBuriedCity({ painter, T, TS }) {
   sign(723, 13, 'STRIKE THE HOURGLASS: THE SAND-FALL FLOWS UP. RIDE IT.');
   /* THE HIGH DUNE (734-752): shade under a stall's cloth; then THE CHAIN (753-784, REMIX): the high dune's glass raises three roofs down to a minaret stub that
      stands in the sea; its own glass raises the last two to the far bank. A slinger on the stub throws while you cross (a fight during the rule) */
-  ground(734, 752, 6); decor.push({ kind: 'awning', x0: 738, x1: 742, y: 2 }); shadeBox(738, 742, 3, 5);
+  ground(734, 741, 6); decor.push({ kind: 'awning', x0: 736, x1: 740, y: 2 }); shadeBox(736, 740, 3, 5);
+  /* (claude/buriedcity4) THE ROOFTOPS REMIX THE GLASS WORKS: the high dune is broken by a TILTING DUNE (742-746) that the FALL's glass turns - the glass that lifted you
+     also tilts the dune your way (idle it rises west: a wall from the hollow) - keep moving; and on the dune's far crest a SAND-BOUND bound to THE CHAIN's first glass:
+     strike it and the sand-bound is buried, but the chain's roofs run on the same glass (bury it and go, or fight it shielded) */
+  ground(742, 746, 11); tilt('fall', 742, 746, 11, 15); ground(747, 752, 6);
+  sandBound(748, 5, 'chain1', 'roofBound');
   sign(744, 5, 'TWO GLASSES: THE FIRST RAISES THE WAY TO THE SECOND.');
   glass('chain1', 750, 5, 8); sea(753, 784, 16);
   decor.push({ kind: 'awning', x0: 747, x1: 751, y: 2 }); shadeBox(747, 751, 3, 5);   /* (claude/buriedcity4: shade over the chain's first glass) */
@@ -435,7 +446,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   plat('lintel', 812, 814, 15); plat('balcony', 817, 819, 19); plat('lintel', 812, 814, 23); plat('balcony', 817, 819, 27);
   decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(809, 814, 11, TH - 1); shadeBox(818, 821, 11, TH - 1);   /* (claude/buriedcity4, brief 3: the dome's broken shell shades both sides of the courtyard - its hole lets the sun in over the middle, where the elite stands) */
   construct(815, TH - 1, 'courtyard', { elite: true }); slinger(818, 26, 'courtyardSling', { face: -1 });
-  glass('court', 812, TH - 1, 8); sandBound(819, TH - 1, 'court', 'courtyardBound');
+  glass('court', 814, TH - 1, 8); sandBound(819, TH - 1, 'court', 'courtyardBound');
   sign(811, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: TURN THE GLASS.');
   /* THE OLD STREET UNDER THE DUNES (brief 10, the LOOP BACK TO A SHRINE): the throne street runs on under the rooftops (rows 28-31, 710-810) to the courtyard - sealed
      at the courtyard end by a sand-gate that only opens FROM THE COURTYARD (E). Opened once, it stays open: a death past the rooftops walks back from the fourth
