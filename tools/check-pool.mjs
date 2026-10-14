@@ -26,8 +26,8 @@ export const SERIAL_TAIL = {
   'unburied-look': 'the real-frame dressing margin needs a fresh profile after a pooled-only pixel miss',
   'online-coop': 'host and guest need two simultaneous browsers of their own',
   'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
-  'textfit': 'opens several full game pages at once and needs the machine memory to itself',
-  'textfit-full': 'its fixed ten-minute budget must not include pool contention',
+  'textfit': 'opens many game pages and needs its own fresh browser for the picture verdict',
+  'textfit-full': 'its fixed ten-minute budget and picture verdict need its own fresh browser',
   'profile-cleanup': 'must inspect completed children after the pool',
   'profile-leaks': 'must inspect the whole run after every child closes',
 };
@@ -148,10 +148,12 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
     }
     for (const b of shared.values()) await b.run.close(); shared.clear();
     for (const job of tail) {
-      const borrow = (job.name === 'textfit' || job.name === 'textfit-full');
-      if (!borrow) { for (const b of shared.values()) await b.run.close(); shared.clear(); }
+      /* Text fit draws thousands of frames in several contexts. It reported a Weaver plate overlap once while using
+         borrowed incognito Chrome; six --jobs=1 reruns with its own fresh browser passed. Keep both scopes on their original
+         browser lifecycle, while the rest of the pool still reuses Chrome where that answer stays stable. */
+      for (const b of shared.values()) await b.run.close(); shared.clear();
       if (job.name === 'profile-cleanup') await stopServers();
-      answer.set(job.name, await launch(job, 0, borrow ? 0 : null));
+      answer.set(job.name, await launch(job, 0));
     }
   } finally { for (const b of shared.values()) await b.run.close(); await stopServers(); }
   return rows.map(r => answer.get(r.name));

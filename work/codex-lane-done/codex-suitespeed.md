@@ -22,6 +22,7 @@ The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time aud
 | `ef2f05fc` parallel #1 | 79m 48s | 374 | `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
 | `ef2f05fc` parallel #2 | 77m 07s | 374 | Same four |
 | `ef2f05fc` parallel #3 | 79m 43s | 374 | Same four, plus `unburied-bailey` misreported red by a browser-context disposal race |
+| `f7caf3c9` parallel #1, before textfit browser isolation | 73m 26s | 374 | Same four, plus scoped `textfit` (Weaver title/warning overlap) |
 
 Full logs are beside this report: `baseline-suite.log`, `jobs4-run1.log`, `jobs4-equivalence-1.log`, `jobs1-equivalence.log`, and `jobs4-equivalence-2.log`. `archmage-folly-standalone.log` and `mobile-perf-standalone.log` show both intermittent failures passed alone. `mobile-perf` failed its unchanged 600 ms Red Gorge frame budget at 642.8 ms in parallel #2; its standalone worst frame was 35.5 ms. The third parallel full run was interrupted before results were emitted to honor the shutdown request; it is **not** counted as proof. The two shard runs and full three-run equivalence proof remain pending.
 
@@ -34,6 +35,8 @@ The `55c33519` full run is preserved in `proof-jobs4-1.log`. It produced 369 ` o
 The four-check fresh-browser subset after that change passed `unburied-look`, `firsthour`, and `fallingtower2-keys`; `archmage-folly` failed its random blink spread because the ten samples covered only 278 px of the room against an unchanged 300 px requirement. Its first fresh `--jobs=1` rerun also failed (`archmage-serial-recheck-1.log`), demonstrating a serial red. The subset receipt is `fresh-browser-tail-2.log`. No game code, test assertion, or tolerance changed.
 
 The three `ef2f05fc` full logs are `proof-ef2f-jobs4-1.log` through `-3.log`. Runs 1 and 2 emitted exactly 370 parseable ` ok ` and four `FAIL` summary lines. In run 3 the check `unburied-bailey` passed internally but the pool reported it failed with `Failed to find context with id ...` while tidying Chrome after the check. Chrome had disposed the context between listing and disposal. The cleanup now accepts that exact already-gone-context response, without hiding any check failure. The affected `unburied-bailey` subset and the separate consecutive-context storage self-test passed (`context-disposal-fix.log`; `context-storage-selftest.log`). The proof must restart on this repaired commit.
+
+The first `f7caf3c9` full run is `proof-f7ca-jobs4-1.log`: it completed 374 checks in 73m 26s. Scoped `textfit` saw `THE WEAVER` overdrawn and colliding with a `!!` mark in one of 3,316 frames; this was not in the previous full runs. Six consecutive fresh `--jobs=1 textfit` reruns passed with zero pictures (`textfit-serial-recheck-1.log` through `-6.log`). The parallel tail had been borrowing a Chrome incognito context for both text scopes; it now gives each the same own-browser lifecycle as `--jobs=1`, still serial after the pool. The targeted `--jobs=4 textfit` run passed with zero pictures (`textfit-own-browser-1.log`). The full proof must restart again on that browser-lifecycle commit. No test or game source changed.
 
 | Rank | Check | Seconds |
 | ---: | --- | ---: |

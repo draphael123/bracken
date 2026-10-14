@@ -1,0 +1,34 @@
+ ok  syntax            227ms  1 files parse
+ ok  textfit        150108ms  0 pictures in C:\Users\danie\Documents\Codex\2026-10-13\https-usefountain-slack-com-archives-d05sc1rm2ud\brack
+
+---- syntax ----
+
+
+---- textfit ----
+  90 hint messages read out of src/main.js
+    scope hints             90 screens  1.1s
+    scope bestiary         284 screens  6.2s
+    scope store            780 screens  5.5s
+    scope bossfix          225 screens  13.4s
+    scope tree             185 screens  3.9s
+    scope pick               3 screens  2.0s
+    scope opening            4 screens  1.0s
+    scope press              1 screens  0.0s
+    scope title              1 screens  0.0s
+    scope mapcard           47 screens  21.4s
+    scope death              7 screens  0.7s
+    scope results            1 screens  1.5s
+    scope card              67 screens  5.0s
+    scope practice           8 screens  0.1s
+    scope bossjump          68 screens  4.2s
+    scope menu              19 screens  4.8s
+    scope soundtest        125 screens  2.6s
+    scope whatsnew           3 screens  1.0s
+    scope hud               30 screens  4.1s
+    scope plates          1368 screens  71.7s
+  
+  3316 screens drawn, 53040 strings measured, 84s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+  0 pictures in C:\Users\danie\Documents\Codex\2026-10-13\https-usefountain-slack-com-archives-d05sc1rm2ud\bracken-suitespeed\audits\readability\textfit
+
+2 of 372 checks pass - A SUBSET (textfit), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.
