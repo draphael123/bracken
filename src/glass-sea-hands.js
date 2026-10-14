@@ -14,6 +14,7 @@ import { RIDE_MOVE } from './hero-move.js';   /* (claude/reachcore) the slick gl
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as GSA from './redraw/glasssea_art.js';
+import * as COLA from './redraw/glass_colossus_art.js';   /* (claude/colart) the Colossus arena's braziers */
 import * as GSET from './redraw/glasssea_set.js';
 import * as GPL from './redraw/glasssea_props.js';
 import { shelfTile } from './redraw/glasssea_tiles.js';
@@ -286,7 +287,7 @@ export function makeGlassSeaHands(ctx) {
     for (const c of GSx.cracks) if (c.ring && inX(c.ring[0] * ts)) GSA.drawRing(g, R(c.ring[0] * ts + 8 - cx), R(c.ring[1] * ts + 8 - cy), c.ringHit, time, true);
     /* 4. WHERE EACH BEAM LANDS: a target ring on a receiver or a wall (never on a disc: a disc turned to the sky soaks the light into its face) */
     for (const [b, P, col] of paths) if (P.stop !== 'disc' && inX(P.end[0])) GSA.drawRing(g, R(P.end[0] - cx), R(P.end[1] - cy), P.stop === 'recv', time, false, col);
-    for (const f of GSx.fires) if (inX(f.x * ts)) GSA.drawFire(g, R(f.x * ts + 8 - cx), R((f.y + 1) * ts - cy), time, f.x);
+    for (const f of GSx.fires) if (inX(f.x * ts)) { if (f.arena) COLA.drawBrazier(g, R(f.x * ts + 8 - cx), R((f.y + 1) * ts - cy), time, f.x, COLA.brazierState(f.x * ts + 8)); else GSA.drawFire(g, R(f.x * ts + 8 - cx), R((f.y + 1) * ts - cy), time, f.x); }   /* (claude/colart) the Colossus's four arena fires are Glass Sea BRAZIERS */
     /* 5. THE MIRRORS' FACES OVER THE LIGHT (the polished disc, the pivot, the dial), then the glint where a beam bounces and the glow where one soaks into a disc */
     for (const v of mView) GSA.drawMirrorFace(g, v.x, v.y, v.m.state, v.m.n, v.m.notches.length, v.m.flash, time, v.locked, v.hood, v.side);
     for (const [b, P, col] of paths) { for (const [x, y] of P.bounces) if (inX(x)) GSA.drawBounce(g, R(x - cx), R(y - cy), col, time); if (P.stop === 'disc' && inX(P.end[0])) GSA.drawDiscHit(g, R(b.disc.x * ts + 8 - cx), R(b.disc.y * ts + 8 - cy), col, time); }

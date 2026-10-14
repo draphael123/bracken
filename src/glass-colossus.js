@@ -165,8 +165,15 @@ export function poseOf(e, S, t) {
        the lead foot swings up and plants every strideT, the trunk leans into the way it goes, the arms swing against the legs (walkStride) */
     case 'walkTell': { const d = S.walk ? S.walk.dir : face, q = k(COL.walkTell); p.key = 'walkWind'; p.lean = -d * (1 + 2.6 * sst(q)); p.bob = 1.6 * sst(q); ft(d, 2 + 6 * sst(q)); fdx(d, 2 * sst(q));
       side(d, [3, -5 * sst(q)]); side(-d, [1, 2 + sst(q)]); sw(d, 2 * sst(q)); p.glow = 0.2 * q; break; }
-    case 'walk': { const W = S.walk, d = W ? W.dir : face, u = W ? c01(1 - W.stepT / COL.strideT) : 0, lead = W && W.n % 2 ? -d : d, lift = 9 * Math.sin(u * Math.PI);
-      p.key = 'walkStride'; p.lean = d * (2 + 1.2 * Math.sin(u * Math.PI)); p.bob = u > 0.85 ? 2.5 * (u - 0.85) / 0.15 : 0.6; ft(lead, lift); fdx(lead, 3 * Math.sin(u * Math.PI)); side(lead, [2, 3 * Math.sin(u * Math.PI)]); side(-lead, [2, -3 * Math.sin(u * Math.PI)]); sw(lead, -2); sw(-lead, 3); p.glow = 0.15; break; }
+    /* (claude/colart, ART) THE STRIDE, real frames: the FRONT foot (the trample lands under it) takes the step - a slide back under his weight just after it lands, then it lifts (a sine of 12 px),
+       swings out and comes down on the footfall (u = 1); the REAR foot only drags along (a 3 px hop and a short slide); the arms counter-swing, alternating each step. Sawtooth-free: the
+       slide's end is the swing's start, the bob's end is its start. Pure drawing: no timing, no hit box */
+    case 'walk': { const W = S.walk, d = W ? W.dir : face, u = W ? c01(1 - W.stepT / COL.strideT) : 0, par = W && W.n % 2 ? -1 : 1, sw0 = Math.sin(u * Math.PI), sq = c01((u - 0.3) / 0.7);
+      const fwd = (s, D) => { if (s < 0) p.fdL = -D; else p.fdR = D; };
+      p.key = 'walkStride'; p.lean = d * (2 + 1.2 * sw0); p.bob = 0.6 + 2.4 * Math.exp(-u * 10) + 2.4 * sst((u - 0.75) / 0.25);
+      ft(d, u > 0.3 ? 14 * Math.sin(Math.PI * sst(sq)) : 0); fwd(d, u < 0.3 ? 8 - 11 * (u / 0.3) : -3 + 11 * sst(sq));
+      ft(-d, 3 * Math.pow(Math.sin(Math.PI * c01((u - 0.5) / 0.5)), 2)); fwd(-d, d * 3 * sw0);
+      side(d, [2, 3 * sw0 * par]); side(-d, [2, -3 * sw0 * par]); sw(d, -3 * par * sw0 - 1); sw(-d, 3 * par * sw0 + 1); p.glow = 0.15; break; }
     /* THE GAZE: the head draws back and up, the arms brace low, the eyes flare (gazeWind); the sweep: the trunk turns with the burning spot (gazeSweep) */
     case 'gazeTell': { const q = k(COL.gazeTell); p.key = 'gazeWind'; p.lean = -face * (1 + 2.2 * sst(q)); p.bob = -1.8 * sst(q); p.armL = [4, 3 + 3 * sst(q)]; p.armR = p.armL.slice(); p.swL = p.swR = -3 * sst(q); p.eye = 1; p.glow = 0.3 + 0.6 * q; break; }
     case 'gaze': { const Z = S.gaze, ld = Z ? Math.max(-1, Math.min(1, (Z.x - e.x) / 140)) : 0; p.key = 'gazeSweep'; p.lean = 3.6 * ld; p.bob = -1.2; p.armL = [5, 4]; p.armR = [5, 4]; p.swL = p.swR = -2; p.eye = 1; p.glow = 0.85; break; }
