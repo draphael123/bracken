@@ -9,14 +9,16 @@
 //   - the rule in the hands: rooms lit / dark by their lamps; a flame taken, carried, put out by a blow, burnt out; a lamp lit and snuffed; a priest's blows by his
 //     room's light; the doors; THE DARK RISES and a lit sconce holds it; out of the well, the nave goes dark
 //   - the cast: no goblin without a skin, a ranged foe, three roles, every foe tied to the light (clergy or dead); every climb on the route a two-row step
-//   - THE PALADIN (src/paladin-boss.js, a fake world): his aegis turns the front on guard and FEEDS his light; behind, above, in his tells it lands and DRAINS;
-//     emptied, he FALTERS >= 3 s standing still (B4), then a told ward (B3); hammering his aegis for a minute never opens him; a snuffed lamp dims him; his
-//     radiance has a column for each lamp burning; one new told move a phase (B5); his marks are src/marks.js's; OPEN_RULE + FULL_DAMAGE (B11)
+//   - THE DEACON (src/deacon.js, a fake world; claude/church2 moved the litchurch Paladin's light bar and falter to him): his pole guards HIGH (front, at his
+//     height or from a jump: x0.4); low, behind, committed it lands and his light gutters; emptied he GROPES >= 2.5 s standing still (B4), then a told ward (B3);
+//     hammering his guard a minute never opens him; a snuffed lamp dims him, a chandelier dropped on him hurts; he kindles; one new move (the arc); marks, OPEN_RULE
+//     + FULL_DAMAGE. THE PALADIN (the hero as the boss) has his own check: tools/paladin-boss.mjs
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { CHURCH, RULE, ARCS, SECTIONS, FORK } from '../src/lit-church.js';
 import * as PBM from '../src/paladin-boss.js';
+import * as DCM from '../src/deacon.js';
 import { makeLitChurchHands, FLAME, LC } from '../src/lit-church-hands.js';
 import { BY_HAND, ANSWER } from '../src/marks.js';
 import { OPEN_RULE, FULL_DAMAGE } from '../src/boss-greed.js';
@@ -156,33 +158,35 @@ ok((STUCK_HANDS.church || []).length >= 8 && STUCK_HANDS.church.every(sp => (sp.
   go(188, 40); hero.ground = true; H.interact(hero); ok(!H.door('reliquary'), 'the reliquary wants five stubs'); got = 5; H.interact(hero); ok(H.door('reliquary') && H.door('sacristy'), 'five candle stubs: the reliquary opens, and the sacristy door with it');
   ok(said.filter(s => /^[A-Z]/.test(s) && !/^\+/.test(s)).every(s => isCallout(s) || s === '!'), 'every line the hands said is one the player can see (src/hint-lines.js): ' + said.filter(s => /^[A-Z]/.test(s) && !isCallout(s) && s !== '!').slice(0, 3).join(' | ')); }
 
-/* ---------- THE PALADIN in a fake world ---------- */
-{ const A = L.arena, G = PBM.geom(A, TS), mkC = (lit = 3) => { const c = { lamps: () => G.lamps.map((l, i) => ({ id: l.id, x: l.x, lit: i < lit })), kindle: () => true, hit: () => false, number: (x, y, s) => c.said.push(s), mark: m => c.marks.push(m), sound() {}, fx() {}, shake() {}, music() {}, said: [], marks: [] }; return c; };
-  const mk = () => { const S = PBM.newFight(G), e = { t: 'paladinboss', x: G.x0 + 30 * TS, y: G.floorY, hp: PBM.PB.hp, maxHp: PBM.PB.hp, face: -1, mode: 'walk', modeT: 5, open: 0, alive: true }; S.script = ['chain']; return { S, e }; };
+/* ---------- THE DEACON in a fake world (claude/church2: the litchurch Paladin's light bar and falter moved here; THE PALADIN's own check is tools/paladin-boss.mjs) ---------- */
+{ const M = L.mini; ok(M && M.boss === 'deacon' && M.armed === 'escaped' && L.ents.some(e => e.t === 'deacon'), 'THE DEACON is the crossing\'s mini, armed once you are out of the crypt well');
+  const dl = L.lamps.filter(l => l.deacon); ok(dl.length === 4 && dl.filter(l => l.hang).length === 2 && dl.every(l => l.x * TS >= M.x0 && (l.x + 1) * TS <= M.x1), 'his four lamps stand in his room: two sconces, two chandeliers on chains');
+  ok(L.doors.find(d => d.id === 'cryptgrate').oneway, 'the cracked crypt grate swings up as an iron grate (one-way): his floor is whole, and you come up through it');
+  const G = { x0: M.x0, x1: M.x1, floorY: M.floor, roofY: M.y0 };
+  const mkC = (lit = 4) => { const c = { said: [], marks: [], kindled: [] }; c.L = [0, 1, 2, 3].map(i => ({ id: 'd' + i, x: G.x0 + 40 + i * 70, lit: i < lit, hang: i % 2 === 1 }));
+    return Object.assign(c, { lamps: () => c.L, kindle: id => { const l = c.L.find(q => q.id === id); if (l && !l.lit) { l.lit = true; c.kindled.push(id); return true; } return false; }, hit: () => false, haul() {}, number: (x, y, s) => c.said.push(s), mark: m => c.marks.push(m), sound() {}, fx() {}, shake() {} }); };
+  const mk = () => { const S = DCM.newFight(G), e = { t: 'deacon', x: G.x0 + 150, y: G.floorY, hp: DCM.DC.hp, maxHp: DCM.DC.hp, face: -1, mode: 'walk', modeT: 5, open: 0, alive: true }; S.script = ['sweep']; return { S, e }; };
   { const { S, e } = mk(), c = mkC(); const L0 = S.light;
-    const r1 = PBM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false); ok(r1.read === 'aegis' && r1.dmg === Math.round(30 * PBM.PB.aegisTake) && r1.dmg < 30 && PBM.PB.aegisTake >= 0.4 && S.light === Math.min(100, L0 + PBM.PB.light.feed), 'HIS AEGIS turns a blow from the front at his height on guard - it bites at x' + PBM.PB.aegisTake + ' only (B15: never a wall) - and it FEEDS his light');
-    const r2 = PBM.blowOn(e, S, c, 30, e.x + 20, e.y, false, false); ok(r2.read === 'landed' && r2.dmg === 30 && S.light < L0 + PBM.PB.light.feed, 'from behind it lands whole, and drains his light');
-    const r3 = PBM.blowOn(e, S, c, 30, e.x - 10, e.y - 30, true, false); ok(r3.read === 'landed', 'from above (a jump) it lands');
-    e.mode = 'chainTell'; const r4 = PBM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false); ok(r4.read === 'landed', 'in his tells (committed) the front lands too'); e.mode = 'walk';
-    e.mode = 'mendTell'; PBM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false); ok(e.mode === 'recover' && S.n.mendsCut === 1, 'a blow in his MEND cuts it (the light stays spent)'); }
-  { const { S, e } = mk(), c = mkC(); S.light = 3; e.mode = 'walk'; const x0 = e.x; PBM.blowOn(e, S, c, 20, e.x + 20, e.y, false, false); PBM.stepPaladin(e, S, 1 / 60, [{ x: e.x + 60, y: e.y, alive: true }], c);
-    ok(PBM.pbOpen(e) && e.open >= 3, 'STARVED of light he FALTERS: open ' + e.open.toFixed(2) + ' s');
-    let still = true, t = 0; while (PBM.pbOpen(e)) { PBM.stepPaladin(e, S, 1 / 60, [{ x: e.x + 60, y: e.y, alive: true }], c); if (Math.abs(e.x - x0) > 0.01) still = false; t += 1 / 60; if (t > 5) break; } ok(still && t >= 2.9, 'he stands still through it (B4): ' + t.toFixed(2) + ' s');
-    ok(S.ward > 0 && PBM.blowOn(e, S, c, 30, e.x + 20, e.y, false, false).read === 'ward' && S.light === PBM.PB.light.refill, 'then a told ward (B3) as his light comes back to ' + PBM.PB.light.refill);
-    const ca = mkC(); const { S: S2, e: e2 } = mk(); S2.light = 30; e2.mode = 'falter'; e2.open = 3; const d1 = PBM.blowOn(e2, S2, ca, 100, e2.x - 10, e2.y, false, false).dmg; ok(d1 === Math.round(100 * PBM.PB.falterMul), 'open, a blow lands x' + PBM.PB.falterMul); }
-  { const { S, e } = mk(), c = mkC(); let fal = 0, t = 0, opened = false; const h = [{ x: e.x - 30, y: e.y, alive: true, ground: true }];
-    for (let i = 0; i < 60 * 60; i++) { h[0].x = e.x - (e.face || 1) * -30 * -1; h[0].x = e.x + (e.face || -1) * 30; if (i % 30 === 0) PBM.blowOn(e, S, c, 20, h[0].x, e.y, false, false); PBM.stepPaladin(e, S, 1 / 60, h, c); if (PBM.pbOpen(e)) opened = true; t += 1 / 60; }
-    ok(!opened, 'hammering his aegis from the front for a minute never opens him (it feeds him)'); }
-  { const { S, e } = mk(), c = mkC(); e.mode = 'bash'; const l0 = S.light; PBM.blowTurned(e, S, c, false); ok(e.mode === 'reel' && Math.abs(e.modeT - PBM.PB.reboundT) < 1e-9 && S.light === l0 - PBM.PB.light.turned, 'his BASH taken on a shield REBOUNDS him (' + PBM.PB.reboundT + ' s on his heels: the shield window) and dims him');
-    const f = mk(); f.e.mode = 'chain'; PBM.blowTurned(f.e, f.S, c, false); ok(f.e.mode === 'chain', '(a hammer blow turned plainly does not: only ON THE BEAT is a riposte)'); PBM.blowTurned(f.e, f.S, c, true); ok(f.e.mode === 'reel' && f.e.modeT === PBM.PB.reelT, '(on the beat he reels ' + PBM.PB.reelT + ' s)'); }
-  { const { S, e } = mk(); const l0 = S.light, rb = PBM.burnOn(e, S, 2); ok(rb.dmg === 2 && S.light === l0, 'a BURN tick on him is no blow: it burns whole and his light neither feeds nor drains (paladin tune: the pyro starved him off her fire)');
-    S.ward = 1; ok(PBM.burnOn(e, S, 2).dmg === 0, '(his ward stops a burn)'); S.ward = 0; e.mode = 'falter'; e.open = 3; ok(PBM.burnOn(e, S, 2).dmg === 2 && S.light === l0, '(open, a burn pays x1 - the falter pays blows - and still leaves the light alone)'); }
-  { const { S, e } = mk(), c = mkC(); const l0 = S.light; PBM.lampOut(e, S, c); ok(S.light === l0 - PBM.PB.light.lampDim, 'a snuffed sanctuary lamp dims his light at once'); }
-  { const { S, e } = mk(), c1 = mkC(2), c3 = mkC(3); e.hp = e.maxHp * 0.5; S.ph = 2; S.script = ['rad']; S.step = 0; S.light = 90; e.mode = 'recover'; e.modeT = 0; PBM.stepPaladin(e, S, 1 / 60, [{ x: e.x - 40, y: e.y, alive: true }], c1);
-    ok(e.mode === 'radTell' && S.marks.length === 2, 'RADIANCE: one column for each lamp that burns (two lit: two)');
-    const f = mk(); f.e.hp = f.e.maxHp * 0.5; f.S.ph = 2; f.S.script = ['rad']; f.S.step = 0; f.S.light = 90; f.e.mode = 'recover'; f.e.modeT = 0; PBM.stepPaladin(f.e, f.S, 1 / 60, [{ x: f.e.x - 40, y: f.e.y, alive: true }], c3); ok(f.S.marks.length === 3, '(three lit: three)'); }
-  { const moves = ph => new Set(PBM.CYCLES[ph].flat()); const p1 = moves(1), p2 = moves(2), p3 = moves(3);
-    ok([...p2].filter(m => !p1.has(m)).join() === 'rad' && [...p3].filter(m => !p2.has(m)).join() === 'leap', 'one new told move a phase (B5): radiance, then judgement'); }
-  for (const [mode, mv] of Object.entries(PBM.MOVES)) ok(BY_HAND['paladinboss|' + mode] === mv.mark && (!mv.answer || ANSWER['paladinboss|' + mode] === mv.answer), 'his ' + mode + ' wears ' + (mv.mark || 'no mark') + ' in src/marks.js');
-  ok(OPEN_RULE.paladinboss && FULL_DAMAGE.paladinboss, 'he has an opening rule and is on FULL_DAMAGE (a duelist: no chip)'); }
-console.log('ok  lit-church  ' + n + ' checks: the spur and the Paladin\'s price, the Crusader, the rule line, each verb required (the west door, the rood screen, the seal, the bellows, the broken loft, lamp three), the hands in a fake world (rooms, flame, snuff, clergy, the dead, the doors, the dark rising and its holds, the organ, the reliquary), the cast, THE PALADIN (aegis, starve, falter, ward, lamps, phases, marks)');
+    const g1 = DCM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false, false); ok(g1.read === 'guard' && g1.dmg === Math.round(30 * DCM.DC.guardTake) && DCM.DC.guardTake >= 0.4 && S.light === L0, 'his pole GUARDS HIGH: a blow from his front at his height is turned at x' + DCM.DC.guardTake + ' (B15)');
+    ok(DCM.blowOn(e, S, c, 30, e.x - 20, e.y - 30, true, false, false).read === 'guard', '(and from a jump over him: the pole is high)');
+    const g2 = DCM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false, true); ok(g2.read === 'landed' && g2.dmg === 30 && S.light < L0, 'a LOW blow (the sweep) lands whole and his light gutters');
+    ok(DCM.blowOn(e, S, c, 30, e.x + 20, e.y, false, false, false).read === 'landed', 'from behind it lands');
+    for (const m of ['sweepTell', 'hookTell', 'arcTell', 'kindleTell', 'reel']) { e.mode = m; ok(DCM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false, false).read === 'landed', 'committed (' + m + ') the front lands too'); }
+    e.mode = 'kindleTell'; DCM.blowOn(e, S, c, 30, e.x - 20, e.y, false, false, false); ok(S.n.kindlesCut >= 1, 'a blow in his KINDLE cuts it'); }
+  { const { S, e } = mk(), c = mkC(0); S.light = 5; e.mode = 'walk'; const x0 = e.x; DCM.blowOn(e, S, c, 20, e.x + 20, e.y, false, false, false); DCM.stepDeacon(e, S, 1 / 60, [{ x: e.x + 60, y: e.y, alive: true }], c);
+    ok(DCM.dcOpen(e) && e.open >= 2.5, 'his light gone, he GROPES IN THE DARK: open ' + e.open.toFixed(2) + ' s');
+    let still = true, t = 0; while (DCM.dcOpen(e)) { DCM.stepDeacon(e, S, 1 / 60, [{ x: e.x + 60, y: e.y, alive: true }], c); if (Math.abs(e.x - x0) > 0.01) still = false; t += 1 / 60; if (t > 5) break; } ok(still && t >= 2.5, 'he stands still through it (B4): ' + t.toFixed(2) + ' s');
+    ok(S.ward > 0 && DCM.blowOn(e, S, c, 30, e.x + 20, e.y, false, false, false).read === 'ward' && S.light === DCM.DC.light.refill, 'then a told ward (B3) as he finds his flame again (' + DCM.DC.light.refill + ')');
+    const o = mk(); o.e.mode = 'grope'; o.e.open = 3; ok(DCM.blowOn(o.e, o.S, c, 100, o.e.x - 10, o.e.y, false, false, false).dmg === Math.round(100 * DCM.DC.gropeMul) && DCM.DC.gropeMul >= 1.5 && DCM.DC.gropeMul <= 2, 'groping, a blow lands x' + DCM.DC.gropeMul); }
+  { const { S, e } = mk(), c = mkC(); let opened = false; const h = [{ x: e.x - 30, y: e.y, alive: true, ground: true }];
+    for (let i = 0; i < 60 * 60; i++) { h[0].x = e.x + (e.face || -1) * 30; if (i % 30 === 0 && (e.mode === 'walk' || e.mode === 'recover')) DCM.blowOn(e, S, c, 20, h[0].x, e.y, false, false, false); DCM.stepDeacon(e, S, 1 / 60, h, c); if (DCM.dcOpen(e)) opened = true; }
+    ok(!opened, 'hammering his high guard from the front for a minute never opens him: the angle (low, behind) or his lamps do'); }
+  { const { S, e } = mk(), c = mkC(); const l0 = S.light; DCM.lampOut(e, S, c, { id: 'd0' }); ok(S.light === l0 - DCM.DC.light.lampDim, 'a snuffed lamp of his: his light gutters at once');
+    const f = mk(); const d = DCM.lampOut(f.e, f.S, c, { id: 'd1', dropped: true, under: true }); ok(d > 0 && f.e.mode === 'reel', 'a chandelier brought down ON him: it hurts him (' + d + ') and he reels'); }
+  { const { S, e } = mk(), c = mkC(3); S.kindleCd = 0; e.mode = 'recover'; e.modeT = 0; const h = [{ x: e.x - 100, y: e.y, alive: true }]; DCM.stepDeacon(e, S, 1 / 60, h, c);
+    ok(e.mode === 'kindleWalk', 'a lamp of his dark: he goes to kindle it'); let t = 0; while (e.mode !== 'recover' && t < 8) { DCM.stepDeacon(e, S, 1 / 60, h, c); t += 1 / 60; } ok(c.kindled.length === 1, 'and lights it again (told: ' + c.said.filter(s => /KINDLES/.test(s)).join() + ')'); }
+  { const moves = ph => new Set(DCM.CYCLES[ph].flat()); ok([...moves(2)].filter(m => !moves(1).has(m)).join() === 'arc', 'one new told move in his second half (B5): THE FLAME ARC'); }
+  for (const [mode, mv] of Object.entries(DCM.MOVES)) ok(BY_HAND['deacon|' + mode] === mv.mark && (!mv.answer || ANSWER['deacon|' + mode] === mv.answer), 'his ' + mode + ' wears ' + (mv.mark || 'no mark') + ' in src/marks.js');
+  ok(OPEN_RULE.deacon && FULL_DAMAGE.deacon, 'he has an opening rule and is on FULL_DAMAGE (a duelist: no chip)'); }
+ok(L.arena.boss === 'paladinboss' && PBM.PAL_POSES.length > 20, 'THE PALADIN keeps the sanctuary (his own check: tools/paladin-boss.mjs)');
+console.log('ok  lit-church  ' + n + ' checks: the spur and the Paladin\'s price, the Crusader, the rule line, each verb required (the west door, the rood screen, the seal, the bellows, the broken loft, lamp three), the hands in a fake world (rooms, flame, snuff, clergy, the dead, the doors, the dark rising), THE DEACON (guards high, gropes in the dark, his lamps, his kindling, the arc)');

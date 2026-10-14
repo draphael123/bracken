@@ -72,8 +72,8 @@ export function makeLitChurchHands(ctx) {
   H.lit = id => !!K && lit(id);
 
   /* ---------- THE DOORS ---------- */
-  function setDoor(d, open) { for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) { if (open) ctx.cellOpen(x, y); else ctx.cellSet(x, y, T().PORT); } }
-  function openDoor(id) { const d = K.doors.find(q => q.id === id); if (!d || d.open) return; d.open = true; K.n.doors++; setDoor(d, true); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2);
+  function setDoor(d, open) { for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) { if (open && d.oneway) ctx.cellSet(x, y, T().ONEWAY); else if (open) ctx.cellOpen(x, y); else ctx.cellSet(x, y, T().PORT); } }   /* (claude/church2) d.oneway: the crypt grate swings up - you come up through it and stand on it (THE DEACON's floor) */
+  function openDoor(id) { const d = K.doors.find(q => q.id === id); if (!d || d.open) return; if (id === 'rood' && ctx.miniOn && ctx.miniOn()) { K.roodWait = true; return; } d.open = true; K.n.doors++; setDoor(d, true); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2);
     const ts = TS(), x = (d.x0 + d.x1 + 1) / 2 * ts, y = d.y0 * ts - 24; for (let yy = d.y0; yy <= d.y1; yy++) ctx.burst(x, yy * ts + 8, 3, ['#ffe9a8', '#c9b27c'], 40, 0.5);
     switch (id) {   /* (each line a literal: src/hint-lines.js routes it, tools/hint-shown.mjs reads it) */
       case 'west': number(x, y, 'THE WEST DOOR OPENS', '#8fd160'); break;
@@ -102,14 +102,19 @@ export function makeLitChurchHands(ctx) {
     rooms(); return true; }
   function snuff(l, by) {
     if (!l || !l.lit || l.kind === 'chapel' || l.kind === 'rood') return false; l.lit = false; l.by = ''; K.n.snuffed++;
+    if (l.hang && !l.fall) { l.fall = { vy: 0 }; K.n.drops = (K.n.drops || 0) + 1; ctx.sfx.crack && ctx.sfx.crack(); if (once('chanDrop')) number(px(l), py(l) - 30, 'THE CHAIN PARTS: THE CHANDELIER COMES DOWN', '#ff9a5c'); rooms(); return true; }   /* (claude/church2) it falls: stepFalls lands it and tells THE DEACON */
     ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(px(l), py(l) - 22, 6, ['#6a6a7a', '#3a3a4a', '#c8c8d0'], 40, 0.6);
     if (l.opens === 'hatch') openDoor('hatch');
-    if (l.kind === 'arena' && by === 'hero' && ctx.bossLamp) ctx.bossLamp(l);
+    if (l.kind === 'arena' && by === 'hero' && ctx.bossLamp) ctx.bossLamp(l);   /* (THE PALADIN's sanctuary lamps, THE DEACON's crossing lamps: each hands file checks the room) */
     if (by === 'hero') { const r = roomOf(l.room); rooms();
       if (r && !r.lit && once('firstDark') && !r.arena) number(px(l), py(l) - 44, 'THE ROOM IS DARK: THE PRIESTS WEAKEN, AND THE DEAD COME UP', '#ff9a5c'); }
     rooms(); return true; }
   H.light = id => (K ? lightLamp(lampOf(id), 'boss') : false);   /* THE PALADIN's kindling (src/paladin-boss-hands.js) */
   H.lampsOf = room => (K ? K.lamps.filter(l => l.room === room).map(l => ({ id: l.id, x: px(l), lit: l.lit })) : []);
+  H.deaconLamps = () => (K ? K.lamps.filter(l => l.deacon).map(l => ({ id: l.id, x: px(l), y: py(l), lit: l.lit, hang: !!l.hang && !l.fall })) : []);   /* (claude/church2) THE DEACON's four: two sconces, two chandeliers on chains */
+  /* THE DEACON's ARENA IS ARMED once you are out of the well (he waits for you at its top); the boss lab arms it by hand (BK.armMini) */
+  H.miniArmed = () => !!K && (K.escaped || !!K.labArm);
+  H.armMini = () => { if (K) K.labArm = true; };
   /* LAMP THREE: the crossing's crypt grate cracks open (the way up), and the dark is ARMED - it rises when you set foot in the well */
   function crack() { openDoor('cryptgrate');
     if (!K.escaped) K.dark.st = 'armed'; ctx.shake(6); ctx.sfx.crack && ctx.sfx.crack(); }
@@ -225,6 +230,11 @@ export function makeLitChurchHands(ctx) {
       for (const e of ctx.enemies()) if (e.alive && !e.maxHp && e.x > x0 && e.x < x1 && e.y > y0 && e.y < y1 + 2 && !e.noGrav) ctx.moveFoe(e, d.dir * 50 * dt);   /* it blows them west too: off the broken loft */
       if (d.on <= 0) for (const pp of ctx.players) pp.lcGust = 0; } }
 
+  /* ---------- A CHANDELIER COMING DOWN (claude/church2): it drops to the floor, lands out, and from then on stands there (a floor lamp he can kindle) ---------- */
+  function stepFalls(dt) { for (const l of K.lamps) { if (!l.fall) continue; l.fall.vy = Math.min(600, l.fall.vy + 900 * dt); l.y = Math.min(l.floorRow, l.y + l.fall.vy * dt / TS());
+      if (l.y >= l.floorRow) { l.y = l.floorRow; l.fall = null; l.hang = false; l.dropped = true; ctx.shake(3); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.burst(px(l), py(l) - 4, 10, ['#c8a040', '#6a6a7a', '#ffd36b'], 70, 0.5);
+        if (ctx.bossLamp) ctx.bossLamp(l); l.dropped = false; l.down = true; } } }
+
   /* ---------- THE DARK RISES (the well, after lamp three) ---------- */
   function stepDark(dt) { const D = K.dark, ro = K.L.rooms.find(r => r.rises); if (!ro || D.st === 'idle' || D.st === 'done') return; const ts = TS(), P = ctx.hero();
     const inWell = P && !P.dead && P.x > (ro.x0 - 12) * ts && P.x < (ro.x1 + 12) * ts && P.y > (ro.rises.top) * ts && P.y <= ro.rises.floor * ts;
@@ -259,7 +269,8 @@ export function makeLitChurchHands(ctx) {
       for (const l of K.lamps) if (l.lit && ctx.overlap(hb, { l: px(l) - 7, r: px(l) + 7, t: py(l) - (l.kind === 'sconce' ? 26 : 34), b: py(l) - 6 })) snuff(l, 'hero');
       for (const b of K.bellows) if (b.air < LC.bellowsT - 0.4 && ctx.overlap(hb, { l: b.x * ts - 6, r: b.x * ts + 22, t: (b.y + 1) * ts - 16, b: (b.y + 1) * ts })) { b.air = LC.bellowsT; K.n.breaths++; ctx.sfx.whoosh ? ctx.sfx.whoosh() : ctx.sfx.thud && ctx.sfx.thud();
         if (once('breath')) number(b.x * ts + 8, (b.y + 1) * ts - 40, 'THE PIPE BREATHES: RIDE IT UP', '#ffd36b'); } });
-    rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt);
+    rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt); stepFalls(dt);
+    if (K.roodWait && !(ctx.miniOn && ctx.miniOn())) { K.roodWait = false; openDoor('rood'); }
     /* THE FIRST LOOK at a room: its name and its state, once */
     if (P0 && !P0.dead) { const r = roomAt(P0.x, P0.y); if (r && r !== K.inRoom) { K.inRoom = r; K.roomT = 2.2; } K.roomT = Math.max(0, (K.roomT || 0) - dt); }
     stall(P0, dt);
@@ -329,7 +340,8 @@ export function makeLitChurchHands(ctx) {
     for (const q of K.grates) { if (!inX(q.x * ts)) continue; SET.drawGrate(v, q); }
     /* THE FIRES (sources): the brazier, the votive stands, the vigil candle */
     for (const s of K.sources) { if (!inX(px(s))) continue; SET.drawSource(v, s); }
-    for (const l of K.lamps) if (inX(px(l))) { SET.drawLamp(v, l); if (l.hold && l.lit && K.dark.st === 'rising' && l.holdSaid) { const x = R(px(l) - cx), y = R(py(l) - cy), k = Math.max(0, l.hold / LC.holdT); g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 30, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 30, R(16 * k), 2); }
+    for (const l of K.lamps) if (inX(px(l))) { if (l.hang || l.fall) { const x = R(px(l) - cx), y0 = R(l.top * ts - cy), y1 = R(py(l) - 30 - cy); g.fillStyle = '#5a5048'; for (let yy = y0; yy < y1; yy += 3) g.fillRect(x - 1 + ((yy / 3) & 1), yy, 1, 2); if (l.fall) { g.fillStyle = '#8a7a60'; g.fillRect(x - 1, y1 - 2, 1, 3); } }   /* (claude/church2, GREYBOX) a chandelier's chain up to the vault; parted, its end swings */
+      SET.drawLamp(v, l); if (l.hold && l.lit && K.dark.st === 'rising' && l.holdSaid) { const x = R(px(l) - cx), y = R(py(l) - cy), k = Math.max(0, l.hold / LC.holdT); g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 30, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 30, R(16 * k), 2); }
       if (l.kind === 'rood' && !l.lit) { const x = R(px(l) - cx), y = R(py(l) - cy); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 4); g.strokeStyle = '#ffd36b'; g.strokeRect(x - 3, y - 25, 7, 8); g.globalAlpha = 1; } }
     /* THE BELLOWS: a leather bellows on its frame and a gauge; breathing, it heaves */
     for (const b of K.bellows) { if (!inX(b.x * ts)) continue; const x = R(b.x * ts + 8 - cx), y = R((b.y + 1) * ts - cy); SET.drawBellows(v, b);

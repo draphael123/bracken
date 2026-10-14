@@ -154,7 +154,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, o
   hawkscout: 2.5, hawkmistress: 6, ksgong: 0, kskegs: 0, ksflasks: 0, kskeg: 0, ksbarricade: 0, kswinch: 0, ksvault: 0, kstorches: 0, ksreeds: 0, ksropebridge: 0, ksline: 0,
   /* THE LIT CHURCH (claude/litchurch): THE PALADIN is a boss: a 6. The lamps, fires, bellows, the key desk, the grates and the reliquary fight nobody */
   acolyte: 1.5,   /* (claude/litchurch) the runner's body: he does not fight - he relights (a support and a runner) */
-  paladinboss: 6, lclamp: 0, lcsource: 0, lcbellows: 0, lcdesk: 0, lcgrate: 0, lcreliquary: 0,
+  paladinboss: 6, deacon: 5, lclamp: 0, lcsource: 0, lcbellows: 0, lcdesk: 0, lcgrate: 0, lcreliquary: 0,
   /* THE TOWPATH (claude/towpath): THE FOG KNIGHT is a boss: a 6. The paddles, capstans, lamps, the lantern, the lychgate and the church door fight nobody */
   fogknight: 6, tppaddle: 0, tpcapstan: 0, tplamp: 0, tplantern: 0, tplychgate: 0, tpchurch: 0,
   /* THE BURIED CITY (claude/buriedcity): THE CLOCKWORK CONSTRUCT is a slow heavy halberd (a poke a shield turns, a low sweep to jump): a 3. THE HOURGLASS KING is a boss: a 6.
