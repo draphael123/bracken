@@ -26,7 +26,7 @@
 // main.js owns the world, the input and the tal() reads (rgTal); this module owns her arrows, her quiver, her focus, the bash and the snare.
 // BK.rg() reads it for tools/ranger.mjs and the bots.
 export const RG = {
-  hp: 130, dmg: 15,                                    /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
+  hp: 110, dmg: 16,                                    /* base health (src/progression.js) and the knife's / an arrow's base damage (main.js swordDmg) */
   run: 1.04,                                          /* x RUN on foot: light and quick */
   quiver: { n: 5, refill: 8, fletch: 4, pick: 11, life: 30, lost: 3 },   /* arrows; s an arrow trickles back (FLETCHER: fletch); px she picks one up from; s a loosed arrow lies before it is lost */
   quick: { vx: 270, vy: -40, g: 720, dmg: 0.6, st: 4, rec: 0.2 },        /* THE QUICK SHOT: ~70 px (measured in the page) before it is at her feet; a tap's damage */

@@ -144,7 +144,7 @@ export function respecCard(p, h) { const c = ensureCard(p, h); c.v = c.e = c.m =
 export function growthAt(h,lv,card){
  lv=Math.max(0,lv);const ranks=Math.min(lv,24)/12,c=card===undefined?evenCard(lv):(card||{v:0,e:0,m:0,ms:{}}),ms=Object.values(c.ms||{});
  const v=Math.min(CARD_CAP,c.v||0),e=Math.min(CARD_CAP,c.e||0),m=Math.min(CARD_CAP,c.m||0);
- const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:130}[h]||100)+2*lv+8*v;
+ const hp0=({knight:100,pyro:88,paladin:120,pirate:90,reaper:95,warden:100,geomancer:95,berserker:105,ranger:110}[h]||100)+2*lv+8*v;
  return {hp:Math.round(hp0*(ms.includes('heart')?1.1:1)),stamina:100+2*lv+12*e,damage:Math.floor(lv/4)+Math.floor(ranks*(h==='reaper'?1.5:1))+m,ranks,techniqueRank:Math.floor(ranks),skillMultiplier:skillScale(lv)*(ms.includes('arcane')?1.15:1),picks:{v,e,m}};
 }
 /* THE CARD'S MIGRATION (cardV 1): a save from before the card has levels and no picks. Every hero with XP gets his levels as an even spread
