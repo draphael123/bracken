@@ -1430,14 +1430,14 @@ async function runbossLab(BK, opts) {
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:djOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='paladinboss'){
-        /* THE PALADIN (claude/litchurch): src/paladin-boss.js pbPlan reads what a player sees - his tells, the radiance crosses, the judgement's ring, the holy floor - and
-           works THE RULE: it never swings into his aegis on purpose (it goes round him or comes down from a jump), cuts his mend and his kindle, and snuffs his lamps
-           when he is far; it hits him hard while he falters. It rests inside its own branch (off him) */
+        /* THE PALADIN, THE HERO AS THE BOSS (claude/church2): src/paladin-boss.js pbPlan reads what a player sees - his tells, the hammer of light, the spires and the quake
+           on the floor, the judgement's crosses, the leap's ring, his holy circle - and works THE RULE: it never swings into his aegis on purpose (it goes round him or
+           comes down from a jump), cuts his vigil, and snuffs his lamps when he is far; it hits him hard while he falters. It rests inside its own branch (off him) */
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const PH=BK.paladinHands(),S=PH&&PH.show(),LCX=BK.litChurchHands?BK.litChurchHands():null;
         if(f===0||!P.labPbMem)P.labPbMem={};
         const lamps=LCX&&LCX.on()?LCX.lampsOf('sanctuary'):[];
-        const pl=S?pbPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,lamps,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labPbMem}):{gx:null,face:P.face};
+        const pl=S?pbPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,lamps,circle:PH.circle?PH.circle():null,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labPbMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
