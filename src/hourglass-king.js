@@ -36,7 +36,7 @@
 // NO ADDS. PURE: no DOM, no main.js. The world is a context `c` (src/hourglass-king-hands.js binds it). hkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HK = {
-  hp: 2900, w: 20, h: 38, markH: 56,
+  hp: 2600, w: 20, h: 38, markH: 56,
   glass: 12, glass3: 8, lowAt: 0.48, lowAt3: 0.6,
   openMul: 2.0, openCap: 0.09, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
