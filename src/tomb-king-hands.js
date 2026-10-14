@@ -9,7 +9,7 @@
 // the pharaoh in his wrappings showing). THE SHARED READ (B10): FLIPPED = a gold ring and a timer bar; WARDED = a pale ring and the word; SEALED = a turned
 // share CLANKS, sparks and says SEALED (the first times: what to do about it).
 // main.js calls: spawnBoss, owns, on, update, take, trapHit, strike, phase, trapsOn, pressers, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
-import * as TKM from './tomb-king.js';
+import * as TKM from './tomb-king.js'; import * as KA from './redraw/sealed_pyramid_king.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 const { TK } = TKM;
@@ -27,7 +27,7 @@ const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y),
 const ell = (g, x, y, rx, ry, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), 0, 0, 7); g.fill(); };
 /* THE POSE A MODE WEARS: { tilt (rad, + leans toward his face), lift (px the lid rides up), arm (the front arm: 'down' | 'up' | 'back' | 'out' | 'cross' | 'chain' | 'jars'),
    squat (px), glow (the face slot's colour), lidOff, lying } - windup and release are never the same picture */
-const POSE = {
+export const POSE = {
   sleep: { tilt: 0, arm: 'cross', glow: null }, wake: { tilt: 0, arm: 'cross', glow: C.goldL }, walk: { tilt: 0.04, arm: 'down' }, recover: { tilt: 0, arm: 'down' },
   slamTell: { tilt: -0.28, lift: 6, arm: 'up', squat: 0 }, slam: { tilt: 0.55, arm: 'down', squat: 3 },
   lashTell: { tilt: -0.1, arm: 'back' }, lash: { tilt: 0.12, arm: 'out' },
@@ -42,41 +42,9 @@ const POSE = {
   curseTell: { tilt: 0, arm: 'up', glow: '#ff6b6b' }, curse: { tilt: 0, arm: 'out', glow: '#ffd36b' },
   flipped: { lying: true, lidOff: true }, clamp: { tilt: 0, arm: 'cross', lift: 8 },
 };
-/* the sarcophagus, standing (its foot at 0,0, facing +x), in a pose */
-function drawStanding(g, p, flash, time, ph) {
-  const sq = p.squat || 0, Hh = TK.h - sq, W = TK.w;
-  g.save(); g.rotate((p.tilt || 0) * 0.6);
-  /* stone legs */ rect(g, -10, -8, 7, 8, C.stoneD); rect(g, 3, -8, 7, 8, C.stoneD); rect(g, -11, -2, 9, 2, C.ink); rect(g, 2, -2, 9, 2, C.ink);
-  /* the box */ rect(g, -W / 2, -Hh, W, Hh - 6, flash ? '#fff' : C.stone); rect(g, -W / 2, -Hh, 2, Hh - 6, C.stoneL); rect(g, W / 2 - 2, -Hh, 2, Hh - 6, C.stoneD);
-  /* the lid (the king's gilt face on it) - lifted or off */
-  const lift = p.lift || 0;
-  if (!p.lidOff) { const ly = -Hh - lift; rect(g, -W / 2 - 1, ly, W + 2, Hh - 8, flash ? '#fff' : C.stoneL); rect(g, -W / 2 + 4, ly + 3, W - 8, 13, C.gold); rect(g, -W / 2 + 6, ly + 4, W - 12, 4, C.lapis);
-    rect(g, -3, ly + 8, 2, 2, p.glow || C.ink); rect(g, 3, ly + 8, 2, 2, p.glow || C.ink); rect(g, -W / 2 + 6, ly + 18, W - 12, 2, C.lapisL); rect(g, -W / 2 + 8, ly + 22, W - 16, 10, C.gold);
-    if (ph >= 3) { rect(g, -2, ly + 2, 1, 20, C.ink); rect(g, -1, ly + 20, 6, 1, C.ink); rect(g, 4, ly + 20, 1, 9, C.ink); } }
-  else { /* the pharaoh inside: linen wrappings and a gold mask */ rect(g, -W / 2 + 3, -Hh + 2, W - 6, Hh - 10, C.ink); rect(g, -6, -Hh + 4, 12, Hh - 14, C.linen); for (let k = 0; k < 6; k++) rect(g, -6, -Hh + 7 + k * 5, 12, 1, C.linenD); rect(g, -5, -Hh + 4, 10, 8, C.gold); rect(g, -3, -Hh + 7, 2, 1, C.ink); rect(g, 1, -Hh + 7, 2, 1, C.ink); }
-  /* the arms (stone, out of the box's sides) */
-  const ay = -Hh + 16, arm = p.arm || 'down';
-  if (arm === 'down') { rect(g, W / 2, ay, 5, 18, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 18, C.stoneD); }
-  else if (arm === 'up') { rect(g, W / 2, ay - 18, 5, 20, C.stoneD); rect(g, -W / 2 - 5, ay - 18, 5, 20, C.stoneD); rect(g, W / 2 - 1, ay - 22, 7, 5, C.stone); rect(g, -W / 2 - 6, ay - 22, 7, 5, C.stone); }
-  else if (arm === 'back') { rect(g, -W / 2 - 16, ay - 2, 16, 5, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); for (let k = 0; k < 4; k++) rect(g, -W / 2 - 22 - k * 4, ay - 4 + k, 4, 2, C.linen); }
-  else if (arm === 'out') { rect(g, W / 2, ay - 1, 18, 5, C.stoneD); rect(g, W / 2 + 16, ay - 3, 5, 9, C.stone); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); }
-  else if (arm === 'cross') { rect(g, -W / 2 + 2, ay + 2, W - 4, 4, C.stoneD); rect(g, -W / 2 + 2, ay + 8, W - 4, 4, C.stoneD); rect(g, -3, ay, 6, 14, C.gold); }
-  else if (arm === 'chain') { rect(g, W / 2, ay, 5, 16, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); for (let k = 0; k < 5; k++) { const a = time * 9 + k * 1.3; rect(g, R(Math.cos(a) * 7), R(ay + 8 + Math.sin(a) * 5), 3, 3, '#8a8478'); } rect(g, -3, ay + 4, 6, 6, '#5d594e'); }
-  else if (arm === 'jars') { rect(g, W / 2, ay - 14, 5, 16, C.stoneD); rect(g, -W / 2 - 5, ay - 14, 5, 16, C.stoneD); for (const jx of [W / 2 - 1, -W / 2 - 6]) { rect(g, jx, ay - 24, 7, 10, '#c8b48a'); rect(g, jx + 1, ay - 27, 5, 3, '#2e8a6a'); } }
-  g.restore();
-}
-function drawLying(g, p, flash, time) {   /* on his back (flipped) or on his side (rolling): long along the floor */
-  const W = TK.h + 4, Hh = TK.w - 6;
-  rect(g, -W / 2, -Hh, W, Hh, flash ? '#fff' : C.stone); rect(g, -W / 2, -Hh, W, 2, C.stoneL);
-  if (p.lidOff) { rect(g, -W / 2 + 3, -Hh + 3, W - 6, Hh - 6, C.ink); rect(g, -W / 2 + 6, -Hh + 6, W - 14, Hh - 10, C.linen); for (let k = 0; k < 6; k++) rect(g, -W / 2 + 8 + k * 5, -Hh + 6, 1, Hh - 10, C.linenD); rect(g, W / 2 - 12, -Hh + 5, 8, Hh - 9, C.gold);
-    for (const lx of [-8, 6]) rect(g, lx, -2, 6, 6, C.stoneD); }
-  else { const sp = (time * 12) % 6; for (let k = 0; k < 4; k++) rect(g, -W / 2 + ((k * 12 + sp * 2) % W), -Hh + 2, 2, Hh - 4, C.stoneD); rect(g, -6, -Hh + 4, 12, Hh - 8, C.gold); }
-  if (p.dazed) { for (let i = 0; i < 3; i++) { const a = time * 6 + i * 2.1; rect(g, R(Math.cos(a) * 10), R(-Hh - 8 + Math.sin(a) * 3), 2, 2, C.goldL); } }
-}
-
-/* HIS BESTIARY CARD (a PLACEHOLDER until lane C: two of his poses on canvases, the contract the cast sheets keep - R faces right, L the flip, white the hurt flash) */
-export function bakeTombKingCard() { const fr = ['walk', 'slamTell'].map(k => { const [c, g] = canvas(56, 64); g.translate(28, 62); drawStanding(g, POSE[k], false, 0, 1); return c; });
-  return { R: fr, L: fr.map(c => flipX(c)), white: { R: fr.map(c => whiten(c)), L: fr.map(c => flipX(whiten(c))) }, ax: 28, ay: 62, w: TK.w, h: TK.h }; }
+/* THE PICTURE is src/redraw/sealed_pyramid_king.js (claude/pyramidart): the anthropoid sarcophagus, the king inside when the lid is off, the rolling coffin; POSE (above) stays the contract */
+const drawStanding = (g, p, flash, time, ph) => KA.drawStanding(g, p, flash, time, ph, TK), drawLying = (g, p, flash, time) => KA.drawLying(g, p, flash, time, TK);
+export const bakeTombKingCard = () => KA.bakeCard(POSE, TK);   /* HIS BESTIARY CARD: two of his poses (walk, the slam's windup) - the contract the cast sheets keep */
 
 export function makeTombKingHands(ctx) {
   let S = null;
