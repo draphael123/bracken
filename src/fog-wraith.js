@@ -31,18 +31,18 @@ export function stepWraith(e, dt, X) {
   if (e.mode === 'smotherTell') { if (!P || P.dead || !X.litOf(P) || d > W.smotherR + 24) { e.mode = 'drift'; e.smCd = 1.2; return; }
     go(P.x - (Math.sign(dx) || 1) * 10, P.y - 14, W.hardDrift * 0.6);
     if (e.modeT <= 0) { e.mode = 'drift'; e.smCd = W.smotherCd; e.recoil = W.recoil;
-      if (X.guards && X.guards(P, e)) { e.recoil = W.recoil * 2; if (X.hint) X.hint('shielded', 'YOU SHIELD THE FLAME: IT DRAWS BACK'); return; }   /* (a guard raised toward it: the flame is shielded - the yellow !'s answer) */
-      if (X.smother(P)) { X.sfx && X.sfx.hiss && X.sfx.hiss(); if (X.hint) X.hint('smothered', 'IT SMOTHERS YOUR LANTERN: E LIGHTS IT'); } } return; }
+      if (X.guards && X.guards(P, e)) { e.recoil = W.recoil * 2; if (X.number) X.number(e.x, e.y, 'YOU SHIELD THE FLAME: IT DRAWS BACK'); return; }   /* (a guard raised toward it: the flame is shielded - the yellow !'s answer) */
+      if (X.smother(P)) { X.sfx && X.sfx.hiss && X.sfx.hiss(); if (X.number) X.number(e.x, e.y, 'IT SMOTHERS YOUR LANTERN: E LIGHTS IT'); } } return; }
   if (!P || P.dead || d > W.notice || (top != null && P.y - 20 < top - 4 && Math.abs(dx) > 40)) {   /* nobody in its fog: back toward where it rose */
     const hx = e.hx + Math.sin(e.anim * 0.7) * 18; go(hx, Math.max(roof, e.hy + Math.sin(e.anim * 1.3) * 4), W.drift * 0.5); return; }
   if (Math.hypot(e.x - e.hx, e.y - e.hy) > W.home && d > 60) { go(e.hx, e.hy, W.drift); return; }
   /* close to a LIT hero: it reaches for the flame */
   if (X.litOf(P) && d < W.smotherR && e.smCd <= 0 && e.recoil <= 0) { e.mode = 'smotherTell'; e.modeT = W.smotherTell; X.mark && X.mark(e, '!', '#ffd36b'); X.sfx && X.sfx.tell && X.sfx.tell(false);
-    if (X.hint) X.hint('smother', 'IT REACHES FOR YOUR FLAME: CUT IT WHILE YOUR LIGHT HOLDS IT'); return; }
+    if (X.number) X.number(e.x, e.y, 'IT REACHES FOR YOUR FLAME: CUT IT WHILE YOUR LIGHT HOLDS IT'); return; }
   /* it drifts at you - slower once your light has it - and, fog, through you */
   if (e.recoil > 0) { go(e.x - (Math.sign(dx) || 1) * 30, e.y - 4, W.drift); return; }
   go(P.x, P.y - 12, hard ? W.hardDrift : W.drift);
-  if (!hard && d < W.chillR && e.chillCd <= 0) { e.chillCd = W.chillCd; X.chill(P, W.chill); if (X.hint) X.hint('chill', 'A FOG WRAITH: ONLY LIGHT MAKES IT SOLID'); }
+  if (!hard && d < W.chillR && e.chillCd <= 0) { e.chillCd = W.chillCd; X.chill(P, W.chill); if (X.number) X.number(e.x, e.y, 'A FOG WRAITH: ONLY LIGHT MAKES IT SOLID'); }
 }
 function nearest(e, X) { const hs = (X.heroes ? X.heroes() : [X.hero()]).filter(q => q && !q.dead); let best = null, bd = 1e9; for (const q of hs) { const dd = Math.hypot(q.x - e.x, q.y - e.y); if (dd < bd) { bd = dd; best = q; } } return best; }
 /* A BLOW ON IT: dim, it is fog - the blade passes through (0); in light it is cut */

@@ -30,15 +30,16 @@
 //   166-235  THE LOCK FLIGHT      SET PIECE three locks up the hill, each a different use of the rule: DRAIN F1 to bring its punt down into the fog, FILL to ride
 //                                           out; FILL F2 to drown the pair on its dry bed (or fight them in the fog on it); ride F3 up out of its fog under the
 //                                           watchman's beam - the bargeman champion on the top deck; THE LOCK-KEEPER'S TOWER (the landmark: a ladder climb)
-//   236-313  THE AQUEDUCT         SET PIECE the canal's iron trough over the gorge, dry and broken: OPEN ITS SLUICE and the water floats the moored barge across
+//   236-321  THE AQUEDUCT         SET PIECE the canal's iron trough over the gorge, dry and broken: OPEN ITS SLUICE and the water floats the moored barge across
 //                                           the broken span in the clear air under a watchman; then THE BROKEN ARCHES - the platforming section and its exam:
-//                                           pier to pier down into the basin's fog, where only your lantern shows the next pier (and a wraith waits)
-//   314-382  THE BASIN            REMIX     thick fog: the swing bridge strands the dozing squad; THE SUNKEN BARGES, hull to hull across the east basin (their masts
+//                                           pier to pier down into the basin's fog, where only your lantern shows the next pier (and a wraith waits);
+//                                           the second shrine at their foot
+//   322-390  THE BASIN            REMIX     thick fog: the swing bridge strands the dozing squad; THE SUNKEN BARGES, hull to hull across the east basin (their masts
 //                                           poles); THE BASIN CRANE's hook out of the fog up to the warehouse roofs, where the watchman sees you
-//   383-433  THE LAST LOCK        EXAM      drain X and CROSS ITS FLOOR in the fog among the old gate irons (only the lantern shows them; a wraith reaches for
+//   391-441  THE LAST LOCK        EXAM      drain X and CROSS ITS FLOOR in the fog among the old gate irons (only the lantern shows them; a wraith reaches for
 //                                           it), the culvert, Y refilled up out of the fog under a bargeman's hook, the last cut swung across to the deck
 //                                           foreman (the exam's elite) - the shrine after it
-//   434-485  THE TOWPATH'S END    BOSS      THE FOG KNIGHT (src/fog-knight.js stageFogKnight): the cut, its swing bridge, the lock at two heights, the fog line
+//   442-493  THE TOWPATH'S END    BOSS      THE FOG KNIGHT (src/fog-knight.js stageFogKnight): the cut, its swing bridge, the lock at two heights, the fog line
 import { stageFogKnight, FK_STAGE } from './fog-knight.js';
 
 export const O = 9;   /* the sheet is laid O rows lower than the design rows written here (headroom over the flight, the tower and the aqueduct) */
@@ -264,7 +265,7 @@ export function buildTowpath({ painter, T, TS }) {
   ent('silver', 298, 10);
 
   // ================= 5. THE BASIN (322-390): REMIX - the bridge strands the squad; the sunken barges; THE BASIN CRANE =================
-  /* THE WEST QUAY (in the basin's thick fog) and the third shrine; THE BASIN (330-342) under its SWING BRIDGE, a capstan on each quay. A squad of river rats
+  /* THE WEST QUAY (in the basin's thick fog) and the second shrine; THE BASIN (330-342) under its SWING BRIDGE, a capstan on each quay. A squad of river rats
      dozes in the fog on the east quay: lit, they wake and come across - swing the deck clear under them and the basin takes them; dim, you have the first blow */
   ground(322, 329, 20);
   ent('check', 325, 19);   /* THE SECOND SHRINE, at the foot of the arches (after the platforming exam; checkpoint-gaps: 148 walked tiles after the first) */

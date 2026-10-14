@@ -56,7 +56,9 @@ export function drawPlate(g, x, y, f, o, time) {
   else if (mode === 'lashTell') { g.moveTo(hx, hy); g.lineTo(x - f * 10, top + 34); }   /* (the sword down at his side: the chain is in his shield hand) */
   else if (mode === 'surgeTell') { g.moveTo(x + f * 1, top + 6); g.lineTo(x + f * 6, top - 22); }   /* the sword raised two-handed over the helm toward the gate */
   else if (mode === 'surge') { g.moveTo(x + f * 4, top + 14); g.lineTo(x + f * 22, y + 1); }        /* struck down into the gate's stones */
-  else if (mode === 'spearTell' || mode === 'spears') { g.moveTo(x + f * 2, top + 12); g.lineTo(x + f * 4, y + 6); }   /* knelt, the point in the canal */
+  else if (mode === 'spearTell') { g.moveTo(x + f * 2, top + 12); g.lineTo(x + f * 4, y + 6); }   /* the windup: knelt, the point down in the canal */
+  else if (mode === 'spears') { g.moveTo(x + f * 2, top + 14); g.lineTo(x + f * 8, top - 18); }   /* the release: the blade torn up out of the water, the lances with it */
+  else if (mode === 'lash' || mode === 'lashRec') { g.moveTo(hx, hy); g.lineTo(x - f * 10, top + 34); }   /* the release: the sword at his side, the chain arm thrown out (below) */
   else if (mode === 'plunge' || mode === 'plungeRec') { g.moveTo(x, top + 4); g.lineTo(x, y + 4); }  /* point down, through the towpath */
   else if (stance === 'low' && mode !== 'empty') { g.moveTo(x - f * 6, top + 15); g.lineTo(x - f * 8, y + 1); }
   else { g.moveTo(x - f * 6, top + 15); g.lineTo(x - f * 10, top + 36); }
@@ -66,6 +68,7 @@ export function drawPlate(g, x, y, f, o, time) {
   /* THE TOWROPE: whirled over his head in the windup (its loops), out in the throw (the hands draw its length) */
   if (mode === 'lashTell') { const a = time * 14; g.strokeStyle = flash ? '#ffffff' : '#7a5a3a'; g.beginPath(); g.moveTo(x + f * 8, top + 10); g.lineTo(R(x + f * 8 + Math.cos(a) * 14), R(top - 6 + Math.sin(a) * 6)); g.stroke();
     g.fillStyle = '#8a7a6a'; g.fillRect(R(x + f * 8 + Math.cos(a) * 14) - 2, R(top - 6 + Math.sin(a) * 6) - 2, 4, 4); }
+  if (mode === 'lash') { g.strokeStyle = flash ? '#ffffff' : '#4e3022'; g.lineWidth = 3; g.beginPath(); g.moveTo(x + f * 4, top + 13); g.lineTo(x + f * 14, top + 16); g.stroke(); g.lineWidth = 1; }   /* (the arm that threw the towrope, out toward you) */
   if (mode !== 'empty') { const wisp = (wx, wy) => { for (let i = 0; i < 2; i++) { const a = time * 1.7 + i * 2.3 + wx * 0.1; g.fillStyle = fogc(0.35); g.fillRect(R(wx + Math.cos(a) * 3), R(wy - ((time * 14 + i * 5) % 12)), 2, 2); } };
     wisp(x - 7, top + 11); wisp(x + 7, top + 11); wisp(x, top + 2); }
   g.globalAlpha = 1;

@@ -172,7 +172,7 @@ for (const e of ents('fogwraith')) ok(D.banks.some(b => e.x >= b.x0 && e.x <= b.
     const e = FW.newWraith({ t: 'fogwraith', x: we.x * TS + 8, y: (we.y + 1) * TS, hp: FW.WRAITH.hp, alive: true }); let chills = 0, smothers = 0, guard = false;
     const hero = { n: 1, x: e.x + 60, y: (we.y + 1) * TS, dead: false, face: -1 }; ctx.players.length = 0; ctx.players.push(hero); ctx.hero = () => hero; H.setLantern(hero, true, false);
     const X = { hero: () => hero, heroes: () => [hero], lightAt: (x, y) => H.hardLight(x, y), fogTop: x => H.fogTop(x), litOf: q => H.lanternOf(q).lit, smother: q => { const r = H.smother(q); if (r) smothers++; return r; },
-      guards: () => guard, chill: () => { chills++; }, mark: () => {}, sfx: {}, hint: () => {} };
+      guards: () => guard, chill: () => { chills++; }, mark: () => {}, sfx: {}, number: () => {} };
     let hi = 1e9; for (let i = 0; i < 600; i++) { FW.stepWraith(e, 1 / 60, X); hi = Math.min(hi, e.y); hero.y = (we.y + 1) * TS - 200; }
     ok(top !== null && hi >= top, 'a wraith never rises above its bank (a hero lifted out of the fog leaves it under him)');
     hero.y = (we.y + 1) * TS; e.x = hero.x; e.y = hero.y - 10;
