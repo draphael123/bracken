@@ -21,8 +21,15 @@ export const SEC = {
   pits:  { r: ['#1c241c', '#2c382a', '#3e4c38', '#566248', '#74805c'], joint: '#10160f', inlay: '#4a8a58', base: -2 },
   deep:  { r: ['#241e1a', '#352c24', '#483c30', '#605040', '#7c6850'], joint: '#14100c', inlay: null,      base: -2 },
   ante:  { r: ['#2a2622', '#3c352c', '#52483a', '#6c5e4a', '#8a7860'], joint: '#16120e', inlay: '#3aa068', base: -2 },
+  /* (claude/pyramidart) THE SECOND HALF's own palettes: the hall's pale bone-ochre, the gallery's verdigris, the oil's soot and ember, the crypt's wet blue, the stair's sun-bleached limestone, the burial chamber's dusk-violet with gold */
+  hall:  { r: ['#4e3c28', '#6e5438', '#90724a', '#b4925c', '#d8b878'], joint: '#34261a', inlay: '#c8a050', base: -1 },
+  gas:   { r: ['#1e2a22', '#2e3e32', '#42564a', '#5e7462', '#82988a'], joint: '#101a14', inlay: '#6ac090', base: -2 },
+  oil:   { r: ['#241814', '#382620', '#4e362a', '#6e4a34', '#94643e'], joint: '#14100c', inlay: '#d8602a', base: -1 },
+  crypt: { r: ['#182028', '#222e3a', '#34465a', '#4c627a', '#6e8aa4'], joint: '#0c1218', inlay: '#4aa8c8', base: -2 },
+  stair: { r: ['#6a5a46', '#8a7658', '#aa9470', '#cab48c', '#e8d4a8'], joint: '#4a3c2c', inlay: null, base: 0 },
+  royal: { r: ['#1c1824', '#2a2434', '#3c3446', '#544a5c', '#74687c'], joint: '#0e0b14', inlay: '#e0b44a', base: -2 },
 };
-export const secOf = x => x < 64 ? 'face' : x < 172 ? 'gal' : x < 250 ? 'shaft' : x < 328 ? 'tomb' : x < 393 ? 'pits' : x < 452 ? 'deep' : x < 493 ? 'ante' : x < 611 ? 'gal' : x < 736 ? 'pits' : x < 863 ? 'tomb' : x < 963 ? 'deep' : x < 1007 ? 'shaft' : 'ante';   /* (claude/pyramidlevel: the second half borrows the first's palettes - placeholder; lane C gives the tombs, the gas, the oil, the crypt their own) */
+export const secOf = x => x < 64 ? 'face' : x < 172 ? 'gal' : x < 250 ? 'shaft' : x < 328 ? 'tomb' : x < 393 ? 'pits' : x < 452 ? 'deep' : x < 493 ? 'ante' : x < 611 ? 'hall' : x < 736 ? 'gas' : x < 863 ? 'oil' : x < 963 ? 'crypt' : x < 1007 ? 'stair' : 'royal';   /* (claude/pyramidlevel: the second half borrows the first's palettes - placeholder; lane C gives the tombs, the gas, the oil, the crypt their own) */
 
 const INFO = new WeakMap();
 function info(L) {

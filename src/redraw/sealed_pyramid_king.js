@@ -116,3 +116,73 @@ export function bakeCard(POSE, dim) {
   const fr = ['walk', 'slamTell'].map(k => { const [c, g] = canvas(64, 80); g.translate(32, 78); drawStanding(g, POSE[k], false, 0, 1, dim); return c; });
   return { R: fr, L: fr.map(c => flipX(c)), white: { R: fr.map(c => whiten(c)), L: fr.map(c => flipX(whiten(c))) }, ax: 32, ay: 78, w: dim.w, h: dim.h };
 }
+
+/* ================= THE BURIAL CHAMBER's pieces (src/tomb-king-hands.js drawBack calls these) ================= */
+/* a WALL SWITCH: a carved stone housing with a bronze lever; st 'ready' (lever up, a gilt gleam), 'swing'/'pulled' (thrown down), 'reset' (down, its gauge winding back: k 0..1) */
+export function lever(g, x, y0, y1, side, st, k, time, hot) {
+  const H = y1 - y0 + 4;
+  rect(g, x - 8, y0 - 2, 16, H, N.s1); rect(g, x - 8, y0 - 2, 16, 1, N.s3); rect(g, x - 8, y0 - 2, 1, H, N.s3); rect(g, x + 7, y0 - 2, 1, H, N.s0); rect(g, x - 8, y0 + H - 3, 16, 1, N.s0);
+  rect(g, x - 5, y0 + 1, 10, H - 6, N.ink); for (let yy = y0 + 3; yy < y0 + H - 6; yy += 4) { px(g, x - 5, yy, N.s1); px(g, x + 4, yy, N.s1); }   /* the slot the lever runs in */
+  rect(g, x - 7, y0 + H - 8, 14, 5, N.s2); rect(g, x - 7, y0 + H - 8, 14, 1, N.s4); rect(g, x - 2, y0 + H - 7, 5, 3, N.br0); rect(g, x - 1, y0 + H - 7, 3, 1, N.br2);   /* the pivot boss */
+  g.save(); g.translate(R(x), R(y1 - 6)); g.rotate((st === 'ready' ? -0.7 : 0.7) * side * -1);
+  rect(g, -1, -22, 3, 22, N.br0); rect(g, -1, -22, 1, 22, N.br2); rect(g, 1, -22, 1, 22, N.brD); rect(g, -3, -27, 7, 6, st === 'ready' ? N.g1 : N.s2); rect(g, -3, -27, 7, 1, st === 'ready' ? N.g2 : N.s3); rect(g, -2, -25, 5, 2, st === 'ready' ? N.g2 : N.s1); g.restore();
+  if (st === 'ready' && hot) { g.globalAlpha = 0.4 + 0.3 * Math.sin(time * 5); g.strokeStyle = N.g2; g.strokeRect(x - 9.5, y0 - 3.5, 19, H + 2); g.globalAlpha = 1; }
+  if (st === 'reset') { rect(g, x - 8, y1 + 3, 16, 4, N.ink); rect(g, x - 8, y1 + 3, 16, 1, N.s1); rect(g, x - 8, y1 + 3, R(16 * Math.max(0, Math.min(1, k))), 4, N.g1); rect(g, x - 8, y1 + 3, R(16 * Math.max(0, Math.min(1, k))), 1, N.g2); }
+}
+/* a COUNTERWEIGHT: a dressed stone on a chain from the roof (ax, ay the anchor; wx, wy the stone's top-centre); an ankh cut in it, bronze corner caps */
+export function counterweight(g, ax, ay, wx, wy, hot) {
+  g.strokeStyle = '#8a8478'; g.lineWidth = 2; g.beginPath(); g.moveTo(R(ax), R(ay)); g.lineTo(R(wx), R(wy)); g.stroke(); g.strokeStyle = '#c0bab0'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(ax) - 1, R(ay)); g.lineTo(R(wx) - 1, R(wy)); g.stroke();
+  rect(g, ax - 5, ay, 10, 4, '#5d594e'); rect(g, ax - 5, ay, 10, 1, '#9a958c');
+  slab(g, N, wx - 12, wy, 24, 22, N.s1, N.s3, N.s0); rect(g, wx - 11, wy + 1, 22, 2, N.s4); rect(g, wx - 12, wy + 18, 24, 4, N.s0);
+  for (const [a, b] of [[-12, 0], [8, 0], [-12, 18], [8, 18]]) { rect(g, wx + a, wy + b, 4, 4, N.br1); px(g, wx + a, wy + b, N.br2); }
+  rect(g, wx - 1, wy + 5, 3, 12, N.n1); rect(g, wx - 4, wy + 8, 9, 2, N.n1); rect(g, wx - 2, wy + 3, 5, 3, N.n1); px(g, wx - 1, wy + 4, N.s1); px(g, wx + 1, wy + 4, N.s1);
+  rect(g, wx - 2, wy - 4, 4, 4, N.br1); px(g, wx - 2, wy - 4, N.br2);   /* the ring */
+}
+/* a FLOOR ALCOVE his dead climb out of: a stone-rimmed grave slot, a grating over it; lit when it is about to spill */
+export function alcove(g, x, y, lit, time) {
+  rect(g, x - 10, y - 4, 20, 4, N.s1); rect(g, x - 10, y - 4, 20, 1, N.s3); rect(g, x - 9, y - 3, 18, 3, N.ink);
+  for (let k = -8; k <= 7; k += 3) { rect(g, x + k, y - 3, 1, 3, N.br0); }
+  rect(g, x - 9, y - 3, 18, 1, lit ? '#ff9a5c' : N.s2);
+  if (lit) { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 14); rect(g, x - 6, y - 8, 12, 4, '#ff9a5c'); g.globalAlpha = 1; for (let k = 0; k < 4; k++) px(g, x - 5 + k * 3, y - 6 - ((time * 24 + k * 5) % 8), '#ffd36b'); }
+}
+
+/* ================= HIS ATTACKS' PIECES ================= */
+export function lidDisc(g, x, y, r, spin) {   /* THE THROWN LID: a spinning stone disc edge-on - a pale slab with gilt end caps; the face turns toward you as it spins */
+  g.save(); g.translate(R(x), R(y)); g.rotate(spin);
+  rect(g, -r, -3, r * 2, 6, N.s3); rect(g, -r, -3, r * 2, 1, N.s4); rect(g, -r, 2, r * 2, 1, N.s1); rect(g, -r, -3, 3, 6, N.g1); rect(g, r - 3, -3, 3, 6, N.g1); rect(g, -4, -3, 8, 6, N.g1); rect(g, -4, -3, 8, 1, N.g2); rect(g, -1, -2, 2, 4, N.l1); g.restore();
+}
+export function jar(g, x, y, falling, time) {   /* a CANOPIC JAR: a clay body, a gilt band, a jackal-headed stopper, a green fume */
+  rect(g, x - 3, y - 4, 7, 9, '#c8b48a'); rect(g, x - 3, y - 4, 7, 1, '#e8d8a8'); rect(g, x + 3, y - 3, 1, 8, '#8a7450'); rect(g, x - 3, y, 7, 1, N.g1); rect(g, x - 3, y + 2, 7, 1, N.l1);
+  rect(g, x - 2, y - 8, 5, 4, '#2e8a6a'); rect(g, x - 2, y - 8, 5, 1, '#7ae0a8'); px(g, x - 2, y - 10, '#2e8a6a'); px(g, x + 2, y - 10, '#2e8a6a');
+  if (falling) { g.globalAlpha = 0.6; px(g, x + Math.sin(time * 18) * 2, y - 12, '#a6e04a'); px(g, x - 2, y - 14, '#d8ff90'); g.globalAlpha = 1; }
+}
+export function mark(g, x, y, blink) {   /* the told X on the floor: an inked cross in a ring of sand */
+  g.globalAlpha = 0.9; g.strokeStyle = blink; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, 8, 3, 0, 0, 7); g.moveTo(x - 4, y - 4); g.lineTo(x + 4, y + 3); g.moveTo(x + 4, y - 4); g.lineTo(x - 4, y + 3); g.stroke(); g.globalAlpha = 1;
+}
+export function poisonCloud(g, x, y, r, a, time) {
+  g.globalAlpha = 0.4 * a; g.fillStyle = '#5a9a28'; g.beginPath(); g.ellipse(R(x), R(y - 9), r, 13, 0, 0, 7); g.fill();
+  for (let k = 0; k < 5; k++) { const bx = x + Math.cos(time * 1.4 + k * 1.26) * r * 0.6, by = y - 9 + Math.sin(time * 1.9 + k * 2.1) * 6; g.globalAlpha = 0.4 * a; g.fillStyle = k & 1 ? '#a8e050' : '#d8ff90'; g.beginPath(); g.arc(R(bx), R(by), 5 + (k % 3), 0, 7); g.fill(); }
+  g.globalAlpha = 1;
+}
+export function sinkhole(g, x, y, r, a, time) {   /* the SAND PIT: a ring of heaped sand, a dark funnel, grains running in */
+  g.globalAlpha = a; g.fillStyle = '#b89c6c'; g.beginPath(); g.ellipse(R(x), R(y - 1), r, 4, 0, 0, 7); g.fill(); g.fillStyle = '#6e5636'; g.beginPath(); g.ellipse(R(x), R(y - 1), r - 3, 3, 0, 0, 7); g.fill(); g.fillStyle = N.ink; g.beginPath(); g.ellipse(R(x), R(y - 1), r - 7, 2, 0, 0, 7); g.fill();
+  for (let k = 0; k < 6; k++) { const q = (time * 1.6 + k / 6) % 1, ang = k * 1.05 + time; rect(g, x + Math.cos(ang) * (r - 3) * (1 - q), y - 2 + Math.sin(ang) * 2 * (1 - q), 2, 1, '#e0cc98'); }
+  g.globalAlpha = 1;
+}
+export function sandColumn(g, x, ytop, ybot, r, a, time) {   /* the CURSE: a column of sand and gold dust, wider at the foot, grains spiralling up */
+  g.globalAlpha = a; for (let i = 0; i < 3; i++) { const w = r * 2 - i * 5; rect(g, x - w / 2, ytop, w, ybot - ytop, i === 0 ? '#a8885a' : i === 1 ? '#d8c090' : '#f8e8b8'); }
+  for (let k = 0; k < 14; k++) { const q = (time * 0.9 + k / 14) % 1, yy = ybot - q * (ybot - ytop), xx = x + Math.sin(q * 9 + k) * (r - 2); rect(g, xx, yy, 2, 2, k & 1 ? N.g2 : '#fff6d0'); }
+  g.globalAlpha = 1;
+}
+export function sandCone(g, x0, y0, x1, yTop, yBot, dir, time) {   /* the BREATH: a cone of blown sand, streaks rushing out */
+  g.globalAlpha = 0.45; g.fillStyle = '#d8c8a0'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, yTop); g.lineTo(x1, yBot); g.closePath(); g.fill();
+  g.globalAlpha = 0.8; for (let k = 0; k < 16; k++) { const q = (time * 2.2 + k * 0.37) % 1, xx = x0 + (x1 - x0) * q, spread = (yBot - yTop) * 0.5 * q, yy = y0 + ((k * 53) % 21 - 10) / 10 * spread * 0.8; rect(g, xx, yy, 3 * dir, 1, k & 1 ? '#fff6d0' : '#c8b48a'); } g.globalAlpha = 1;
+}
+export function bandage(g, x0, y0, x1, y1, bend) {   /* THE LASH: a linen strip with a frayed tip */
+  g.strokeStyle = N.n1; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2, bend, x1, y1); g.stroke(); g.strokeStyle = N.n0; g.lineWidth = 1; g.beginPath(); g.moveTo(x0, y0 + 1); g.quadraticCurveTo((x0 + x1) / 2, bend + 1, x1, y1 + 1); g.stroke();
+  rect(g, x1 - 1, y1 - 2, 4, 5, N.n2); px(g, x1 + 3, y1 - 1, N.n1); px(g, x1 + 3, y1 + 2, N.n0);
+}
+export function chainRun(g, x0, y0, x1, y1) {   /* THE CHAIN: iron links along the line, a hooked head */
+  const n = Math.max(2, Math.floor(Math.hypot(x1 - x0, y1 - y0) / 4)); for (let k = 0; k <= n; k++) { const t = k / n, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t; rect(g, x - 1, y - 1, 3, 3, k & 1 ? '#9a958c' : '#5d594e'); }
+  rect(g, x1 - 3, y1 - 3, 6, 6, '#5d594e'); rect(g, x1 - 3, y1 - 3, 6, 1, '#9a958c'); px(g, x1, y1, N.ink);
+}

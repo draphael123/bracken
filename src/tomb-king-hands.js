@@ -146,15 +146,11 @@ export function makeTombKingHands(ctx) {
      THE FLOOR ALCOVES his dead climb out of */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const G = S.G;
     for (const gl of G.levers) { const L = S.levers.find(l => l.side === gl.side), x = R(gl.x - cx), y0 = R(gl.y0 - cy), y1 = R(gl.y1 - cy);
-      rect(g, x - 7, y0 - 2, 14, y1 - y0 + 4, '#3a2e20'); rect(g, x - 6, y0 - 1, 12, 2, '#6e5a3c');
-      g.save(); g.translate(x, y1 - 8); g.rotate((L.st === 'ready' ? -0.7 : 0.7) * gl.side * -1); rect(g, -1, -22, 3, 22, '#b0743a'); rect(g, -3, -26, 7, 5, L.st === 'ready' ? C.goldL : '#8a7450'); g.restore();
-      if (L.st === 'ready' && ctx.bossActive) { g.globalAlpha = 0.4 + 0.3 * Math.sin(time * 5); g.strokeStyle = C.goldL; g.strokeRect(x - 8.5, y0 - 3.5, 17, y1 - y0 + 7); g.globalAlpha = 1; }
-      if (L.st === 'reset') { const k = 1 - L.t / TK.lever.reset[S.ph - 1]; rect(g, x - 8, y1 + 2, 16, 3, '#1c140c'); rect(g, x - 8, y1 + 2, R(16 * Math.max(0, Math.min(1, k))), 3, '#d8aa40'); }
+      KA.lever(g, x, y0, y1, gl.side, L.st, L.st === 'reset' ? 1 - L.t / TK.lever.reset[S.ph - 1] : 0, time, ctx.bossActive);
       /* its COUNTERWEIGHT: a stone on a chain from the roof - at rest by the wall, swinging across the sweep when thrown */
       const ax = gl.anchor - cx, ay = G.roofY - cy, rest = gl.side < 0 ? gl.sweep[0] + 8 : gl.sweep[1] - 8, wx = (L.st === 'swing' && L.x != null ? L.x : L.st === 'pulled' ? rest + gl.side * -6 * Math.sin(time * 30) : rest) - cx, wy = G.floorY - TK.lever.h - cy + (L.st === 'swing' ? 6 : -40);
-      g.strokeStyle = '#8a8478'; g.lineWidth = 1; g.beginPath(); g.moveTo(R(ax), R(ay)); g.lineTo(R(wx), R(wy)); g.stroke(); rect(g, ax - 4, ay, 8, 4, '#5d594e');
-      rect(g, wx - 12, wy, 24, 22, C.stoneD); rect(g, wx - 11, wy + 1, 22, 2, C.stoneL); rect(g, wx - 4, wy + 7, 8, 8, '#efe3c0'); }
-    for (const ax of G.alcoves) { const x = R(ax - cx), y = R(G.floorY - cy); rect(g, x - 9, y - 3, 18, 3, '#2a2016'); rect(g, x - 8, y - 3, 16, 1, S.alcoveT > 0 ? '#ff9a5c' : '#6e5a3c'); }
+      KA.counterweight(g, ax, ay, wx, wy); }
+    for (const ax of G.alcoves) KA.alcove(g, R(ax - cx), R(G.floorY - cy), S.alcoveT > 0, time);
   };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const f = e.face || 1, m = e.mode, x = e.x - cx, y = e.y - cy, flash = (e.hurtT || 0) > 0, p = POSE[m] || POSE.walk;
@@ -171,18 +167,18 @@ export function makeTombKingHands(ctx) {
     /* the leap's shadow on the platform he will land on (the tell) */
     if ((m => m === 'leapTell' || m === 'leap')(e.mode) && S.leap) { const q = S.leap; g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 14); ell(g, X(q.tx), Y(q.ty) - 1, TK.leap.r, 4, '#10060a'); g.globalAlpha = 1; g.strokeStyle = blink; g.strokeRect(X(q.tx) - TK.leap.r, Y(q.ty) - 3, TK.leap.r * 2, 3); }
     if (S.shock) { const q = S.shock; for (let k = 0; k < 4; k++) rect(g, X(q.x) - q.dir * k * 6 - 3, Y(G.floorY) - 4 - (k % 2) * 3, 6, 4, k ? C.sandD : C.sand); }
-    if (S.lashAt) { const q = S.lashAt; g.strokeStyle = C.linen; g.lineWidth = 2; g.beginPath(); g.moveTo(X(q.x0), Y(q.y) - 22); g.quadraticCurveTo(X((q.x0 + q.x1) / 2), Y(q.y) - 34, X(q.x1), Y(q.y) - 12); g.stroke(); g.lineWidth = 1; }
-    if (S.chain) { const q = S.chain; g.strokeStyle = '#9a958c'; g.lineWidth = 2; g.beginPath(); g.moveTo(X(e.x), Y(e.y - 26)); g.lineTo(X(q.x), Y(q.y)); g.stroke(); g.lineWidth = 1; rect(g, X(q.x) - 3, Y(q.y) - 3, 6, 6, '#5d594e'); }
-    if (S.lid) { const q = S.lid, lx = X(q.x), ly = Y(G.floorY) - TK.thrw.r; g.save(); g.translate(lx, ly); g.rotate(q.spin); rect(g, -TK.thrw.r, -3, TK.thrw.r * 2, 6, C.stoneL); rect(g, -4, -3, 8, 6, C.gold); g.restore(); }
-    for (const j of S.jars) { if (j.t < 0) continue; rect(g, X(j.x) - 3, Y(j.y) - 5, 7, 9, '#c8b48a'); rect(g, X(j.x) - 2, Y(j.y) - 7, 5, 2, '#2e8a6a'); }
-    for (const mk of (S.jarMarks || [])) { const x = X(mk.x), y = Y(mk.y) - 2; g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 5, y - 5); g.lineTo(x + 5, y + 2); g.moveTo(x + 5, y - 5); g.lineTo(x - 5, y + 2); g.stroke(); }
-    for (const q of S.jars) { const x = X(q.tx), y = Y(q.ty) - 2; g.strokeStyle = blink; g.beginPath(); g.moveTo(x - 5, y - 5); g.lineTo(x + 5, y + 2); g.moveTo(x + 5, y - 5); g.lineTo(x - 5, y + 2); g.stroke(); }
-    for (const q of S.clouds) { const a = Math.min(1, q.t * 2); g.globalAlpha = 0.45 * a; ell(g, X(q.x), Y(q.y) - 10, TK.volley.cloudR, 12, '#7ab83a'); g.globalAlpha = 0.3 * a; ell(g, X(q.x) + Math.sin(time * 3) * 4, Y(q.y) - 14, TK.volley.cloudR - 6, 8, '#c8f070'); g.globalAlpha = 1; }
+    if (S.lashAt) { const q = S.lashAt; KA.bandage(g, X(q.x0), Y(q.y) - 22, X(q.x1), Y(q.y) - 12, Y(q.y) - 34); }
+    if (S.chain) { const q = S.chain; KA.chainRun(g, X(e.x), Y(e.y - 26), X(q.x), Y(q.y)); }
+    if (S.lid) { const q = S.lid; KA.lidDisc(g, X(q.x), Y(G.floorY) - TK.thrw.r, TK.thrw.r, q.spin); }
+    for (const j of S.jars) { if (j.t < 0) continue; KA.jar(g, X(j.x), Y(j.y), true, time); }
+    for (const mk of (S.jarMarks || [])) KA.mark(g, X(mk.x), Y(mk.y) - 1, blink);
+    for (const q of S.jars) KA.mark(g, X(q.tx), Y(q.ty) - 1, blink);
+    for (const q of S.clouds) KA.poisonCloud(g, X(q.x), Y(q.y), TK.volley.cloudR, Math.min(1, q.t * 2), time);
     if (e.mode === 'pitTell' && S.pitMark) { g.strokeStyle = blink; g.beginPath(); g.ellipse(X(S.pitMark.x), Y(S.pitMark.y) - 1, TK.pit.r, 4, 0, 0, 7); g.stroke(); }
-    for (const q of S.pits) { g.globalAlpha = Math.min(1, q.t); ell(g, X(q.x), Y(q.y) - 1, TK.pit.r, 4, '#6e5a3c'); ell(g, X(q.x), Y(q.y) - 1, TK.pit.r - 5, 2.5, '#2a2016'); for (let k = 0; k < 4; k++) { const a = time * 4 + k * 1.6; rect(g, X(q.x + Math.cos(a) * (TK.pit.r - 4)), Y(q.y) - 2, 2, 1, C.sand); } g.globalAlpha = 1; }
+    for (const q of S.pits) KA.sinkhole(g, X(q.x), Y(q.y), TK.pit.r, Math.min(1, q.t), time);
     for (const q of S.curses) { const x = X(q.x), y = Y(q.y); if (!q.done) { const k = 1 - q.t / TK.curse.delay; g.globalAlpha = 0.4 + 0.5 * k; g.strokeStyle = '#ff6b6b'; g.beginPath(); g.ellipse(x, y - 2, TK.curse.r + 4, 4, 0, 0, 7); g.stroke(); g.globalAlpha = 0.15 + 0.2 * k; rect(g, x - TK.curse.r, Y(G.roofY), TK.curse.r * 2, y - Y(G.roofY), '#d8aa40'); g.globalAlpha = 1; ctx.text('!!', x, y - 34, '#ff6b6b', 'center', 6); }
-      else { g.globalAlpha = Math.max(0, 1 + q.t * 3); rect(g, x - TK.curse.r, Y(G.roofY), TK.curse.r * 2, y - Y(G.roofY), C.sand); g.globalAlpha = 1; } }
-    if (S.breath && e.mode === 'breath') { const q = S.breath; g.globalAlpha = 0.5; g.fillStyle = C.sand; g.beginPath(); g.moveTo(X(e.x + q.dir * 12), Y(e.y - 30)); g.lineTo(X(e.x + q.dir * (12 + TK.breath.len)), Y(e.y - 60)); g.lineTo(X(e.x + q.dir * (12 + TK.breath.len)), Y(e.y)); g.closePath(); g.fill(); g.globalAlpha = 1; }
+      else KA.sandColumn(g, x, Y(G.roofY), y, TK.curse.r, Math.max(0, Math.min(1, 1 + q.t * 3)), time); }
+    if (S.breath && e.mode === 'breath') { const q = S.breath; KA.sandCone(g, X(e.x + q.dir * 12), Y(e.y - 30), X(e.x + q.dir * (12 + TK.breath.len)), Y(e.y - 60), Y(e.y), q.dir, time); }
     if (e.mode === 'breathTell') { for (let k = 0; k < 5; k++) rect(g, X(e.x + (e.face || 1) * (16 + k * 4)), Y(e.y - 32 + Math.sin(time * 20 + k) * 2), 2, 2, C.sand); }
     if (e.mode === 'rollTell') { for (let k = 0; k < 4; k++) rect(g, X(e.x - (e.face || 1) * (18 + k * 4)), Y(G.floorY) - 2 - (k % 2), 3, 2, C.sandD); }
     /* THE SAND ON YOU: the screen's edge goes dark (blind) */

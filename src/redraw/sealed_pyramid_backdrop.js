@@ -27,6 +27,13 @@ const STYLE = {
   pyFalseTomb: { r: ['#2e2012', '#3c2a16', '#4c371c', '#5e4624'], joint: '#1c1209', rec: '#22160a', gly: '#d8aa40', trim: '#e0b44a', motif: 'lattice', tone: 'rgba(60,36,6,0.14)' },
   pyPits:      { r: ['#121a14', '#1a241c', '#243026', '#2e3c30'], joint: '#0a100c', rec: '#0e140f', gly: '#3a8a58', trim: '#4a8a58', motif: 'damp', tone: 'rgba(6,24,14,0.22)' },
   pyDeep:      { r: ['#16120f', '#1e1814', '#28201a', '#342a22'], joint: '#0c0907', rec: '#0f0b09', gly: '#5a4a38', trim: '#7a6648', motif: 'guards', tone: 'rgba(6,6,16,0.28)' },
+  /* (claude/pyramidart) the second half's rooms */
+  pyTombs:     { r: ['#2a2016', '#382a1c', '#4a3824', '#5e4830'], joint: '#1a120a', rec: '#1e150c', gly: '#c8a050', trim: '#d8b060', motif: 'niches', tone: 'rgba(40,26,10,0.16)' },
+  pyGas:       { r: ['#142018', '#1c2c20', '#283c2e', '#364c3c'], joint: '#0a120c', rec: '#0e1710', gly: '#6ac090', trim: '#5aa078', motif: 'verdigris', tone: 'rgba(8,30,14,0.26)' },
+  pyOil:       { r: ['#1c1210', '#2a1a14', '#3c261c', '#523424'], joint: '#100a08', rec: '#140c0a', gly: '#d8602a', trim: '#a8502a', motif: 'soot', tone: 'rgba(40,12,4,0.22)' },
+  pyCrypt:     { r: ['#101820', '#18242e', '#223444', '#30465a'], joint: '#080e14', rec: '#0a1118', gly: '#4aa8c8', trim: '#3a8aa8', motif: 'tide', tone: 'rgba(4,20,34,0.3)' },
+  pyStair:     { r: ['#3a3024', '#4a3e2e', '#5e503a', '#74644a'], joint: '#241c14', rec: '#281e14', gly: '#a89060', trim: '#c8aa6a', motif: 'slits', tone: 'rgba(70,50,20,0.1)' },
+  pyBurial:    { r: ['#14101c', '#1c1626', '#2a2236', '#3a3048'], joint: '#0a0810', rec: '#0c0a12', gly: '#e0b44a', trim: '#d8aa40', motif: 'royal', tone: 'rgba(20,10,34,0.24)' },
   pyAntechamber: { r: ['#14110f', '#1c1814', '#26201a', '#322a22'], joint: '#0a0806', rec: '#0c0907', gly: '#2e9a68', trim: '#2e9a68', motif: 'scarabs', tone: 'rgba(4,16,10,0.26)' },
 };
 const TW = 192, TH = 96;
@@ -57,6 +64,23 @@ function wallTexture(st) {
       for (const cr of [1, 7]) for (let i = 0; i < 12; i++) { const sx = 4 + i * 16, sy = cr * 12 + 3; ellipse(g, sx + 3, sy + 3, 3, 3.4, '#0c2a1c'); rect(g, sx + 3, sy, 1, 7, S.gly); px(g, sx + 2, sy + 2, '#5ad8a0'); px(g, sx, sy + 1, S.gly); px(g, sx + 6, sy + 1, S.gly); px(g, sx, sy + 5, S.gly); px(g, sx + 6, sy + 5, S.gly); }
     } else if (S.motif === 'lotus') {   /* THE HIGH CORRIDOR: a lotus-and-papyrus band on course 6 */
       for (let i = 0; i < 16; i++) { const lx = 4 + i * 12, ly = 6 * 12 + 4; rect(g, lx + 3, ly + 3, 1, 4, '#4a6a30'); px(g, lx + 2, ly + 2, '#c8a050'); px(g, lx + 3, ly + 1, '#e8c070'); px(g, lx + 4, ly + 2, '#c8a050'); px(g, lx + 1, ly + 3, '#a07a38'); px(g, lx + 5, ly + 3, '#a07a38'); }
+    }
+    if (S.motif === 'niches') {   /* THE HALL OF THE DEAD: shallow wall niches, each with a wrapped bundle */
+      for (const cr of [1, 6]) for (let i = 0; i < 6; i++) { const nx = 8 + i * 32, ny = cr * 12 + 1; rect(g, nx, ny + 2, 14, 9, S.rec); rect(g, nx + 1, ny + 1, 12, 1, S.rec); rect(g, nx + 3, ny, 8, 1, S.rec); rect(g, nx + 4, ny + 4, 6, 7, '#8a7650'); rect(g, nx + 4, ny + 4, 6, 1, '#b8a070'); px(g, nx + 6, ny + 6, '#2a1c10'); px(g, nx + 8, ny + 6, '#2a1c10'); for (let k = 0; k < 3; k++) rect(g, nx + 4, ny + 7 + k * 2, 6, 1, '#6a5836'); }
+    } else if (S.motif === 'verdigris') {   /* THE GALLERY: green streaks from bronze rosettes in the courses */
+      for (let i = 0; i < 9; i++) { const dx = 6 + i * 21, dy = 2 * 12 + 4; circle(g, dx, dy, 3, '#5a4020'); circle(g, dx, dy, 2, '#b0743a'); px(g, dx, dy, '#e8a868'); for (let k = 0; k < 10 + hash(i, 3) % 14; k++) { if (dy + 4 + k > 46) break; px(g, dx + (k % 5 === 3 ? 1 : 0), dy + 4 + k, k < 6 ? '#3a8a6a' : '#264a38'); } }
+    } else if (S.motif === 'soot') {   /* THE OIL CHANNELS: black soot climbing the courses, a few ember cracks */
+      for (let i = 0; i < 18; i++) { const dx = hash(i, 8) % TW, dy = (hash(i, 9) % 4) * 12 + 36 - (hash(i, 4) % 24), len = 10 + hash(i, 7) % 24; for (let k = 0; k < len; k++) { const yy = dy - k; if (yy < 0 || (yy > 47 && yy < 60)) continue; px(g, dx + (k % 4 === 2 ? 1 : 0), yy, k < len - 4 ? '#0a0605' : '#1c1210'); } }
+      for (let i = 0; i < 8; i++) { const ex = hash(i, 11) % TW, ey = (hash(i, 12) % 7) * 12 + 2; if (ey > 44 && ey < 62) continue; px(g, ex, ey, '#d8602a'); px(g, ex + 1, ey + 1, '#8a3a1a'); }
+    } else if (S.motif === 'tide') {   /* THE CRYPT: a high-water stain across the courses, a bloom under it, drip lines */
+      rect(g, 0, 60, TW, 1, '#2a6a88'); for (let x = 0; x < TW; x++) { const dd = hash(x, 31) % 4; rect(g, x, 61, 1, 4 + dd * 2, '#0a1a24'); if (hash(x, 32) % 5 === 0) px(g, x, 64 + dd, '#3a8aa8'); }
+      for (let i = 0; i < 20; i++) { const dx = hash(i, 5) % TW, dy = (hash(i, 6) % 3) * 12 + 11 + 36 * (i & 1), len = 5 + hash(i, 7) % 14; for (let k = 0; k < len; k++) { if (dy + k >= TH || (dy + k > 47 && dy + k < 62)) break; px(g, dx, dy + k, k < len - 2 ? '#08121a' : '#2a6a88'); } }
+    } else if (S.motif === 'slits') {   /* THE KING'S STAIR: narrow light slits, pale sun-bars falling from them */
+      for (let i = 0; i < 6; i++) { const sx = 10 + i * 32; rect(g, sx, 14, 3, 14, '#0c0806'); rect(g, sx, 14, 3, 1, S.trim); for (let k = 0; k < 20; k++) px(g, sx + 4 + (k >> 1), 18 + k, '#6a5a3a'); }
+    } else if (S.motif === 'royal') {   /* THE BURIAL CHAMBER: gilt sun-discs over lapis, a gold dado */
+      for (let i = 0; i < 8; i++) { const sx = 4 + i * 24, sy = 6; circle(g, sx + 8, sy + 8, 5, '#1e3a7a'); circle(g, sx + 8, sy + 8, 4, '#2e4a8a'); circle(g, sx + 8, sy + 8, 2, '#e0b44a'); px(g, sx + 8, sy + 8, '#f8e08a'); for (let k = 0; k < 8; k++) { const a = k * Math.PI / 4; px(g, sx + 8 + Math.cos(a) * 6.5, sy + 8 + Math.sin(a) * 6.5, '#d8aa40'); } }
+      for (let i = 0; i < 24; i++) { const sx = 4 + i * 8; px(g, sx, 74 + (i % 2) * 2, '#e0b44a'); px(g, sx + 1, 75 + (i % 2) * 2, '#8a6a20'); }
+      rect(g, 0, 84, TW, 1, '#d8aa40'); rect(g, 0, 85, TW, 1, '#7a5a18');
     }
     /* a few cracks and a pocked block here and there */
     for (let i = 0; i < 7; i++) { let cx0 = hash(i, 21) % TW, cy0 = (hash(i, 22) % 7) * 12 + 1; if (cy0 > 44 && cy0 < 62) continue; for (let k = 0; k < 9; k++) { px(g, cx0, cy0, S.joint); cy0++; cx0 += hash(k, i) % 3 - 1; if (cy0 >= TH) break; } }
