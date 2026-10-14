@@ -106,7 +106,7 @@ export function makeMinecartHands(ctx) {
   const bounceBack = (c, px) => { c.bounce = Math.sqrt(2 * 700 * px); c.v = MC.crawl; };
 
   /* ---------- THE POINTS ---------- */
-  const leverBox = p => { const ts = TS(), x = p.x * ts + 8; return p.hang ? { l: x - 10, r: x + 10, t: p.row * ts - 4, b: p.row * ts + 14 } : { l: x - 10, r: x + 10, t: p.row * ts - 28, b: p.row * ts }; };
+  const leverBox = p => { const ts = TS(), x = p.x * ts + 8; if (p.sw) return { l: x - 18, r: x + 18, t: p.row * ts - 30, b: p.row * ts };   /* (deeprails4) a switch's whole stand takes the blow */ return p.hang ? { l: x - 10, r: x + 10, t: p.row * ts - 4, b: p.row * ts + 14 } : { l: x - 10, r: x + 10, t: p.row * ts - 28, b: p.row * ts }; };
   function throwLever(p, P, how) {
     if (p.flash > 0.25) return false;
     if (p.ore && ctx.questGot() < p.ore) { p.flash = 0.5; ctx.sfx.clank && ctx.sfx.clank(); ctx.number(p.x * TS() + 8, p.row * TS() - 34, 'LOCKED: THE SMELTER WANTS 8 ORE', '#9aa39a'); return true; }
@@ -117,7 +117,7 @@ export function makeMinecartHands(ctx) {
     return true;
   }
   H.interact = P => { if (!M || !H.riding(P)) return false; const ts = TS();
-    const p = M.points.find(q => Math.abs(q.x * ts + 8 - P.x) <= MC.leverReach && (q.hang ? P.y - q.row * ts < 90 && P.y > q.row * ts : Math.abs(P.y - q.row * ts) <= 24));
+    const p = M.points.find(q => Math.abs(q.x * ts + 8 - P.x) <= (q.sw ? MC.swReach : MC.leverReach) && (q.hang ? P.y - q.row * ts < 90 && P.y > q.row * ts : Math.abs(P.y - q.row * ts) <= 24));
     return p ? throwLever(p, P, 'E') : false; };
 
   /* ---------- THE GOBLIN CARTS, THE THROWERS, THE FOREMAN ---------- */
@@ -126,15 +126,17 @@ export function makeMinecartHands(ctx) {
   function spawnCart(e, P) {
     const ts = TS(), sp = e.mcRide, row = sp.row; let x;
     if (sp.at !== undefined) x = sp.at * ts + 8;
+    else if (sp.raid) x = Math.abs(P.y - row * ts) < 12 ? P.x + 200 : P.x - 150;   /* (deeprails4) a raider: on YOUR line he is ahead (ram him); on the other he rolls up from behind to draw alongside */
     else { x = P.x + (sp.off >= 0 ? Math.max(sp.off, 190) : Math.min(sp.off, -190)); if (surfaceY(x, row) === null) x = P.x + sp.off; }
     const still = sp.ledge || sp.perch || sp.jumper;   /* (deeprails3) a goblin on a roof timber, a goblin on a ledge who leaps: they stand where they are put */
     const y = still ? row * ts : sp.foreman ? FMG.FOREMAN.low * ts : surfaceY(x, row); if (y === null) return;
     const cart = { e, row, x, y, v: still || sp.foreman ? 0 : sp.slow || sp.pace || cartOf(P).v || MC.cruise, off: sp.off, slow: sp.slow || 0, pace: sp.pace || 0, hold: sp.at !== undefined, ledge: !!sp.ledge, foreman: !!sp.foreman,
-      perch: !!sp.perch, jumper: !!sp.jumper, swing: !!sp.swing, line: sp.line || 0,
+      perch: !!sp.perch, jumper: !!sp.jumper, swing: !!sp.swing, raid: !!sp.raid, line: sp.line || 0,
       state: sp.ledge ? 'ledge' : sp.perch ? 'perch' : sp.jumper ? 'jwait' : 'roll', cd: 0.9 + Math.random() * 0.5, tell: 0, vy: 0, id: M.carts.length, rams: 0, stun: 0, maxX: 1e9 };
+    if (cart.raid) { cart.off = MC.raidOff; cart.cd = 0.8; cart.until = sp.until || 0; }   /* (deeprails4) a raider rolls up from behind to sit alongside you, a little ahead */
     cart.hp0 = e.hp; M.carts.push(cart); e.mcCart = cart; e.mcWait = false; e.alive = true; e.x = x; e.y = y - (still ? 0 : 6); e.vx = 0; e.vy = 0; e.face = Math.sign(P.x - x) || -1;
     if (!M.said['cart' + e.t + cart.ledge + cart.perch + cart.jumper + cart.swing]) { M.said['cart' + e.t + cart.ledge + cart.perch + cart.jumper + cart.swing] = 1;
-      ctx.number(P.x, P.y - 40, cart.foreman ? 'THE FOREMAN: JUMP ON HIS CART' : cart.perch ? 'A GOBLIN ON THE ROOF TIMBER' : cart.jumper ? 'A GOBLIN READY TO LEAP' : cart.swing ? 'A GOBLIN WITH A HOOK ALONGSIDE' : cart.ledge ? 'A GOBLIN THROWER ON A LEDGE' : e.t === 'gobmage' ? 'A GOBLIN CASTER ON A CART' : 'A GOBLIN ARCHER ON A CART', '#ffd36b'); }
+      ctx.number(P.x, P.y - 40, cart.foreman ? 'THE FOREMAN: JUMP ON HIS CART' : cart.perch ? 'A GOBLIN ON THE ROOF TIMBER' : cart.jumper ? 'A GOBLIN READY TO LEAP' : cart.swing ? 'A GOBLIN WITH A HOOK ALONGSIDE' : cart.raid ? 'A RAIDER DRAWS ALONGSIDE' : cart.ledge ? 'A GOBLIN THROWER ON A LEDGE' : e.t === 'gobmage' ? 'A GOBLIN CASTER ON A CART' : 'A GOBLIN ARCHER ON A CART', '#ffd36b'); }
     if (!still) ctx.sfx.rattle && ctx.sfx.rattle(1);
   }
   /* (deeprails3) THE FOREMAN's cart, made at load: he waits in it on his loop (src/foreman.js mode 'wait') until the lead hero rides in */
@@ -156,9 +158,11 @@ export function makeMinecartHands(ctx) {
       else if (cart.hold && P.x + cart.off < cart.x - 4) cart.v = 0;
       else if (cart.slow) cart.v = cart.slow;
       else if (cart.pace) { cart.hold = false; cart.v = cart.pace; if (P.x - cart.x > 320) { cart.state = 'gone'; return; } }   /* A RIDER AT HIS OWN PACE: pump to catch him (behind you and out of sight, he pulls off) */
+      if (cart.raid && cart.until && cart.x > cart.until * ts) { cart.state = 'gone'; e.alive = false; e.mcCart = null; e.mcTelling = false; ctx.burst(cart.x, cart.y - 8, 6, ['#5a6270', '#8a919c'], 40, 0.4); return; }   /* (deeprails4) down a siding at the yard's end: he is gone (not a kill) */
+      else if (cart.raid && Math.abs(P.y - cart.y) < 12) { cart.hold = false; cart.v = cart.x > P.x ? MC.cruise + 10 : Math.max(30, heroV - 60); }   /* (deeprails4) a raider on YOUR line: ahead, he rolls on at his own pace (pump and ram him); behind, he drops back */
       else { cart.hold = false; const target = P.x + cart.off; cart.v = Math.max(30, Math.min(270, heroV + (target - cart.x) * 1.6)); }
       cart.x += cart.v * dt;
-      const y = surfaceY(cart.x, cart.row);
+      let y = surfaceY(cart.x, cart.row); if (y === null && cart.raid) y = cart.y;   /* (deeprails4) a raider's cart hops the twin lines' gaps (a goblin who knows his line) - knocked off over one, his tub drops */
       if (y === null) { cart.state = 'fall'; cart.vy = 0; if (e.alive && e.mcCart === cart) { ctx.killFoe(e); M.n.knocked++; } ctx.sfx.heavy && ctx.sfx.heavy(); return; }
       cart.y = y;
       if (cart.state === 'empty' || !e.alive || e.mcCart !== cart) return;
@@ -169,6 +173,20 @@ export function makeMinecartHands(ctx) {
       if (cart.chopT > 0) { cart.chopT -= dt; chopAt(cart, cart.x - 22, cart.x + 22, MC.swingDmg, 'A SWINGING HOOK'); if (cart.chopT <= 0) { cart.cd = MC.swingCd; e.mcTelling = false; } return; }
       if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true; if (cart.tell <= 0) { cart.chopT = MC.swingT; cart.hitDone = false; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } return; }
       cart.cd -= dt; if (cart.cd <= 0 && Math.abs(dx) < 40 && !P.dead && P.y > cart.y + 20) { cart.tell = MC.swingTell; ctx.sfx.tell && ctx.sfx.tell(false); } return; }
+    /* (deeprails4) A RAIL RAIDER: alongside on the other line he THROWS (told: '!' and the arm back - a pick at your mark) and he BOARDS (told: '!!', a crouch on his rim and a
+       plank out - then the leaper's leap onto your line ahead, his shadow on your rail; his cart rolls on empty). Struck (a jump-cut up to him, a drop-cut down) he is knocked off;
+       on your own line his cart is rammed like any other */
+    if (cart.raid) { const dx = P.x - cart.x; if (cart.stun > 0) { cart.tell = 0; e.mcTelling = false; e.mcPose = null; return; }
+      if (cart.tell > 0) { cart.tell -= dt; e.mcTelling = true; e.mcPose = cart.boarding ? { sy: 0.7, sx: 1.2 } : { sy: 1.05, rot: -0.14 };
+        if (cart.tell <= 0) { e.mcTelling = false; e.mcPose = null; cart.cd = MC.raidCd;
+          if (!cart.boarding) lob(cart, P, heroV, "A RAIDER'S PICK", MC.raidDmg);
+          else { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y; M.carts.push({ ...cart, state: 'empty', raid: false, emptyT: 0, tell: 0, id: M.carts.length + 1000 });   /* his tub rolls on, empty */
+            cart.leap = { x0: cart.x, y0: cart.y, tx: runeAt(P.x, heroV, MC.leapT) + MC.leapLead, ty: gy, t: MC.leapT }; cart.state = 'leap'; cart.raid = false; cart.jumper = true; M.n.boarded = (M.n.boarded || 0) + 1; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } }
+        return; }
+      cart.cd -= dt;
+      if (cart.cd <= 0 && Math.abs(dx) < MC.raidNear && !P.dead && H.riding(P) && Math.abs(P.y - cart.y) > 24) { cart.raidN = (cart.raidN || 0) + 1; cart.boarding = cart.raidN % 2 === 0; cart.tell = cart.boarding ? MC.boardTell : MC.raidTell; ctx.sfx.tell && ctx.sfx.tell(cart.boarding);
+        if (cart.boarding) { const pc = cartOf(P), gy = pc.lastGround ? pc.lastGround.y : P.y; M.shadows.push({ x: runeAt(P.x, heroV, MC.boardTell + MC.leapT) + MC.leapLead, y: gy, t: MC.boardTell + MC.leapT, t0: MC.boardTell + MC.leapT, cart }); } }
+      return; }
     /* ITS SHOT: told ('!' and the draw), then loosed */
     const dx = P.x - cart.x, inRange = Math.abs(dx) < (cart.ledge ? 230 : 250) && !P.dead && !(cart.ledge && dx > 20);
     const tellT = cart.ledge ? MC.throwTell : e.t === 'gobmage' ? MC.casterTell : MC.archerTell, cdT = cart.ledge ? MC.throwCd : e.t === 'gobmage' ? MC.casterCd : MC.archerCd;
@@ -463,7 +481,7 @@ export function makeMinecartHands(ctx) {
     for (const w of M.wrecks) { const x = R(w.x - cx), y = R(w.y - cy); if (x < -40 || x > vw + 40) continue; g.save(); g.translate(x, y); g.rotate(w.parked ? 0 : w.a); MCA.heroCart(g, 0, 6, 1, 0, false, 0, time, 'empty'); g.restore(); }
     /* THE POINTS: the lever (its disc's arrow) and the fork itself (set = rail; open = a chute down) */
     for (const p of M.points) { const lx = p.x * ts + 8; if (lx < cx - 40 || lx > cx + vw + 40) continue; const x = R(lx - cx), y = R(p.row * ts - cy), set = p.state === 'set', locked = p.ore && ctx.questGot() < p.ore;
-      const fl = p.flash > 0 && Math.floor(time * 20) % 2; const dy = p.sw ? MCA.switchLever(g, x, y, set, fl, locked, time) : MCA.lever(g, x, y, p.hang, set, locked, fl, time);
+      const fl = p.flash > 0 && Math.floor(time * 20) % 2; const dy = p.sw ? MCA.switchLever(g, x, y, set, fl, locked, time) : p.side ? MCA.sideSwitch(g, x, y, set, fl, time) : MCA.lever(g, x, y, p.hang, set, locked, fl, time);   /* (deeprails4) a SIDE SWITCH: its arm points to the line it keeps you on */
       if (locked) txt('ORE ' + ctx.questGot() + '/' + p.ore, x, dy - 12, '#9aa39a', 'center', 5);
       const Ph = ctx.hero(); if ((p.req || p.sw) && !set && Ph && lx - Ph.x > -8 && lx - Ph.x < 300) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.strokeStyle = 'rgba(255,211,107,' + (0.5 + 0.5 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, dy, 9 + 3 * k, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }
       const fx0 = R(p.x0 * ts - cx), fw = (p.x1 - p.x0 + 1) * ts, fy = R(p.prow * ts - cy);
@@ -493,6 +511,8 @@ export function makeMinecartHands(ctx) {
     for (const r of M.rocks) { if (!(r.fallT > -0.6) || r.armed) continue; const x0 = R(r.x * ts - cx), w = r.w * ts, yb = R(r.row * ts - cy);
       if (r.fallT > 0) { const k = 1 - r.fallT / r.delay; g.fillStyle = 'rgba(0,0,0,' + (0.25 + 0.35 * k).toFixed(2) + ')'; g.fillRect(x0 - 2, yb - 2, w + 4, 3); g.fillStyle = '#8a7660'; for (let i = 0; i < 4; i++) g.fillRect(x0 + (i * 9 + R(time * 40)) % w, yb - 70 + ((i * 23 + R(time * 90)) % 60), 2, 2);
         MCA.boulder(g, x0, w, yb, k, time); txt('!', x0 + w / 2, yb - 24, '#ffd36b', 'center', 6); } }
+    /* (dr4art) THE TWIN LINES' LANDMARK and the raiders' SIDING: a crossover gantry over the yard (808-856, between the teach and the exam fork), the siding stub where the raiders peel off (858) */
+    { const hiY = R(27 * ts - cy), loY = R(30 * ts - cy), gx = R(822 * ts - cx), sx = R(858 * ts - cx); if (gx > -40 && gx < vw + 40) MCA.gantry(g, gx, hiY, loY, time); if (sx > -40 && sx < vw + 40) MCA.siding(g, sx, loY, time); }
     /* THE BEAMS */
     for (const b of M.beams) { const x = R(b.x0 * ts - cx), w = (b.x1 - b.x0 + 1) * ts, y = R(b.row * ts - 10 - cy); MCA.beam(g, x, w, y);
       const P = ctx.hero(); if (P && b.x0 * ts - P.x < 140 && b.x0 * ts > P.x - 4) { const fl = Math.floor(time * 8) % 2; txt('DUCK', x + w / 2, y + 22, fl ? '#ff6b6b' : '#ffd36b', 'center', 6); } }
@@ -504,8 +524,10 @@ export function makeMinecartHands(ctx) {
         if (c.e.alive && c.e.mcTelling) txt(c.perch ? '!' : '!', R(c.e.x - cx), R(c.e.y - 34 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7);
         if (c.chopT > 0) { const ly = R((c.line ? c.line * ts : c.y + 3 * ts) - 14 - cy); g.fillStyle = 'rgba(255,107,107,0.55)'; g.fillRect(R(c.x - 26 - cx), ly - 2, 32, 3); } continue; }
       MCA.tub(g, c.x - cx, c.y - cy, c.e.t === 'gobmage' ? 'caster' : 'gob', time, c.v);
+      if (c.raid) MCA.raiderTub(g, c.x - cx, c.y - cy, time, c.e.alive && c.tell > 0 ? (c.boarding ? 2 : 1) : 0);   /* (dr4art) the raiders' livery, rack and throw / boarding poses */
       if (c.swing) { const ly = R(c.y + 3 * ts - 14 - cy), x = R(c.x - cx); MCA.swingHook(g, x, R(c.y - cy), R(c.y + 3 * ts - cy), c.chopT > 0 ? 'chop' : c.tell > 0 ? 'tell' : 'rest', c.chopT > 0 ? 1 - c.chopT / MC.swingT : 0, time); if (c.chopT > 0) { g.fillStyle = 'rgba(255,107,107,0.5)'; g.fillRect(x - 22, ly - 2, 44, 3); } }   /* (dr3art) a boom off his tub, a rope and a hook that swings down across the line */
-      if (c.state === 'roll' && c.e.alive && c.e.mcTelling) txt('!', R(c.x - cx), R(c.y - 40 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); }
+      if (c.raid && c.boarding && c.tell > 0 && c.e.alive) { const Ph = ctx.hero(); MCA.raidPlank(g, R(c.x - cx), R(c.y - cy), Ph && Ph.y < c.y ? -1 : 1, 1 - c.tell / MC.boardTell); }   /* (deeprails4) the boarding plank out to your line */
+      if (c.state === 'roll' && c.e.alive && c.e.mcTelling) txt(c.raid && c.boarding ? '!!' : '!', R(c.x - cx), R(c.y - 40 - cy), Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 7); }
     for (const sh of M.shadows) { const k = 1 - sh.t / sh.t0, x = R(sh.x - cx), y = R(sh.y - cy); MCA.leapShadow(g, x, y, k, time); txt('!', x, y - 16, Math.floor(time * 12) % 2 ? '#ff6b6b' : '#ffd36b', 'center', 6); }   /* (deeprails3) where a leaping goblin will land */
     /* arrows, runes, lobs (the lob's MARK on the rail where it will land) */
     for (const s of M.shots) { g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; const a = Math.atan2(s.vy, s.vx); g.beginPath(); g.moveTo(R(s.x - cx), R(s.y - cy)); g.lineTo(R(s.x - Math.cos(a) * 7 - cx), R(s.y - Math.sin(a) * 7 - cy)); g.stroke(); }

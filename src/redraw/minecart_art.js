@@ -393,7 +393,8 @@ export function tunnel(g, x0, x1, yCeil, yFloor, vh, scroll, laneYs, highDown, t
   /* the rock over the roof and under the floor: courses of broken block, near pace */
   const off = scroll % 48, far = (scroll * 0.5) % 64;
   if (wet) { rc(g, x0, yFloor + 2, w, vh - yFloor + 4, '#05080c'); for (let x = x0 - 48 - off; x < x1 + 48; x += 48) { rc(g, x + 2, yFloor + 2, 4, vh - yFloor, T[1]); rc(g, x + 2, yFloor + 2, 1, vh - yFloor, T[3]); } for (let i = x0 - (scroll % 12); i < x1; i += 12) rc(g, i, yFloor + 26, 6 + R(3 * Math.sin(time * 1.3 + (i + scroll) * 0.07)), 1, '#1e3446'); }   /* THE FLOODED RUN under the loop: trestle legs in black water */
-  for (const [ya, yb] of (wet ? [[0, yCeil]] : [[0, yCeil], [yFloor, vh + 4]])) { for (let y = ya; y < yb; y += 8) { const row = Math.floor((y - ya) / 8); for (let x = x0 - 48 - ((off + row * 13) % 24); x < x1 + 24; x += 24) { rc(g, x, y, 23, 7, row & 1 ? K[2] : K[1]); rc(g, x, y, 23, 1, K[3]); } } }
+  if (!wet) tunnelFloor(g, x0, w, yFloor, vh, scroll);   /* (deeprails4, Daniel's 10-12 photo) under the low line a FLOOR - plates, a lip, the rail bed - not wall courses */
+  for (const [ya, yb] of [[0, yCeil]]) { for (let y = ya; y < yb; y += 8) { const row = Math.floor((y - ya) / 8); for (let x = x0 - 48 - ((off + row * 13) % 24); x < x1 + 24; x += 24) { rc(g, x, y, 23, 7, row & 1 ? K[2] : K[1]); rc(g, x, y, 23, 1, K[3]); } } }
   /* the far wall inside the tunnel: dark rock with ore flecks, at half pace */
   rc(g, x0, yCeil, w, yFloor - yCeil, '#0e0a0c');
   for (let x = x0 - 64 - far; x < x1 + 64; x += 64) { for (let k = 0; k < 5; k++) { const hx = x + ((k * 37) % 60), hy = yCeil + 10 + ((k * 23) % Math.max(10, yFloor - yCeil - 20)); rc(g, hx, hy, 9, 5, wet ? '#0a1c1a' : '#171217'); rc(g, hx + 2, hy + 1, 2, 1, wet ? (k % 2 ? MP.cu2 : MP.cu1) : k % 2 ? MP.cu1 : MP.go1); } }
@@ -425,6 +426,8 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   /* the rock face it is boring into, and its spoil flying back */
   rc(g, bodyR + 66, ceilY - 40, 400, L0 - ceilY + 80, MP.r1); for (let y = ceilY; y < L0 + 30; y += 9) rc(g, bodyR + 66 + ((y * 7) % 8), y, 400, 1, MP.r2);
   for (let i = 0; i < 8; i++) { const t = (time * 2.2 + i * 0.125) % 1; rc(g, bodyR + 60 - t * 40 + ((i * 13) % 20), (L1 + L0) / 2 - 20 + ((i * 29) % 40) - t * 10 + t * t * 30, 3, 2, i % 3 ? MP.r5 : MP.go1); }
+  /* (deeprails4) ITS POSE: o.tilt (radians, + = nose down) about its rear foot and o.drop px - the JAM's slump, and a windup pose per gear-driven attack (B16) */
+  g.save(); if (o.tilt || o.drop) { g.translate(rx, L0); g.rotate(o.tilt || 0); g.translate(-rx, -L0 + (o.drop || 0)); }
   /* the tracks under the whole rig: a run of links that turns while it drives, road wheels in it */
   const tOff = o.moving ? (o.scroll * 1.0) % 8 : 0;
   rc(g, rx + 8, L0 - 14, bodyR - rx + 20, 14, '#14121a'); for (let x = rx + 8 - tOff; x < bodyR + 28; x += 8) rc(g, Math.max(rx + 8, x), L0 - 14, 3, 14, '#2c2a34');
@@ -460,10 +463,10 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   rc(g, cx0, ct, cw, ch, flash || '#5a4a3c'); rc(g, cx0, ct, cw, 2, '#8a7660'); rc(g, cx0, ct, 2, ch, '#7a6650'); rc(g, cx0 + cw - 2, ct, 2, ch, '#2a2018');
   for (let y = ct + 27; y < ct + ch - 3; y += 6) { rc(g, cx0 + 2, y, cw - 4, 1, '#2a2018'); rc(g, cx0 + 3, y + 2, 1, 1, MP.i5); rc(g, cx0 + cw - 5, y + 2, 1, 1, MP.i5); }
   rc(g, cx0 + 3, ct + 5, cw - 6, 17, '#0e0a10'); rc(g, cx0 + 4, ct + 6, cw - 8, 15, o.jam ? '#ffd36b' : '#e0a040'); rc(g, cx0 + 4, ct + 6, cw - 8, 2, '#f8d890');
-  const gm = cx0 + R(cw / 2) - 2, look = Math.sin(time * 1.3) > 0.6 ? 1 : 0;   /* the goblin: green head, a rusty helm, red eyes looking back (left) at you, a snarl; his hands on the levers */
+  const gm = cx0 + R(cw / 2) - 2, look = Math.sin(time * 1.3) > 0.6 ? 1 : 0; if (o.slump > 0.5) { rc(g, cx0 + 4, ct + 6, cw - 8, 15, '#ffd36b'); rc(g, gm - 5, ct + 15, 10, 6, '#4a7a30'); rc(g, gm - 6, ct + 13, 12, 3, '#6a3a1a'); rc(g, gm - 4, ct + 17, 2, 1, '#101010'); rc(g, gm, ct + 17, 2, 1, '#101010'); } else {   /* the goblin: green head, a rusty helm, red eyes looking back (left) at you, a snarl; his hands on the levers */
   rc(g, gm - 5, ct + 11, 10, 9, '#4a7a30'); rc(g, gm - 5, ct + 11, 10, 1, '#6aa048'); rc(g, gm - 8, ct + 13, 3, 2, '#4a7a30'); rc(g, gm - 6, ct + 9, 12, 3, '#6a3a1a'); rc(g, gm - 6, ct + 9, 12, 1, '#a0602a');
   rc(g, gm - 4 - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - look, ct + 14, 2, 2, '#ff4030'); rc(g, gm - 4, ct + 18, 6, 1, '#101010'); rc(g, gm - 3, ct + 17, 1, 1, '#e8e0c0'); rc(g, gm, ct + 17, 1, 1, '#e8e0c0');
-  rc(g, gm + 5, ct + 18, 4, 2, '#4a7a30'); rc(g, gm + 8, ct + 15, 1, 6, MP.i4);   /* a hand on the lever */
+  rc(g, gm + 5, ct + 18, 4, 2, '#4a7a30'); rc(g, gm + 8, ct + 15, 1, 6, MP.i4); }   /* a hand on the lever (jammed: the driver slumped over his levers, eyes shut) */
   rc(g, cx0 + 3, ct + 5, 2, 17, '#14101a'); rc(g, cx0 + cw - 5, ct + 5, 2, 17, '#14101a');
   rc(g, cx0 + 4, ct - 5, cw - 8, 5, '#2a2018'); rc(g, cx0 + 4, ct - 5, cw - 8, 1, '#8a7660'); rc(g, gm - 3, ct - 9, 6, 5, MP.i2); rc(g, gm - 2, ct - 8, 4, 3, '#fff0b0');
   add(g, () => { g.globalAlpha = 0.6; g.drawImage(glow(30, '255,220,140'), gm - 30, ct - 7 - 30); });
@@ -471,8 +474,12 @@ export function rig(g, rx, lanes, ceilY, o, time) {
   /* THE SPARK SPRAY: a jet out of the exhaust down its line */
   if (o.spray && o.spray.on) { const y = lanes[o.spray.lane] - 12; add(g, () => { g.globalAlpha = 0.5; g.drawImage(glow(28, '255,170,60'), rx - 40, y - 28); });
     for (let i = 0; i < 26; i++) { const t = (time * 3 + i / 26) % 1, xx = rx - t * 150, yy = y + Math.sin(i * 7.3 + time * 20) * (4 + t * 10); rc(g, xx, yy, 2, 1, i % 3 ? MP.l3 : MP.go2); } }
+  g.restore();
 }
 
 
 /* DEEP RAILS 3 art (claude/dr3art): the Foreman's cart and skin, the low roofs, the switch and its bridge, the perched / swinging / leaping goblins, the Great Drill 3 pieces */
 export * from './deeprails3_art.js';
+export * from './deeprails4_art.js';
+export * from './deeprails4_poses.js';   /* (dr4art) windup poses, the slump set, the raiders' tub, the gantry and siding */
+import { tunnelFloor } from './deeprails4_art.js';
