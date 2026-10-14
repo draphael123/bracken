@@ -4732,7 +4732,7 @@ export function bakeRanger(skin = {}, previewOnly = false) {
   const W2 = '#ffffff', C = '#fff6c8', GR = '#c8e89a', D = '#c9b27c', BR = '#d8b050', BRD = '#8a6a28', GY = '#b8bcb0', GYD = '#8a9088';
   const KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
   /* THE BOW AT HER SIDE: carried low and ahead in the lead hand, its foot just off the turf, its top leaning in over her front; the off hand hangs at her belt */
-  const BB = [X - 12, Y - 8, X - 9, Y + 9, 'back'], BS = [X - 12, Y - 5, X - 9, Y + 9, 'back'];   /* THE BOW SLUNG ON HER BACK (drawn behind the cloak; the full bow comes out in front only to shoot), and a short one for the rolled and turned frames */
+  const BB = [X - 11, Y + 6, X - 4, Y - 6, 'back'], BS = [X - 10, Y + 5, X - 5, Y - 3, 'back'];   /* THE BOW SLUNG ON HER BACK (drawn behind the cloak; the full bow comes out in front only to shoot), and a short one for the rolled and turned frames */
   const carry = () => ({ stave: BB, arm: [X, Y, X + 3, Y + 5], arm2: [OFF[0], OFF[1], X - 3, Y + 5] });
   /* the bow held out in the lead hand to shoot, level with her eye; pull: where the draw hand (and the nock) is - null: let go */
   const aimed = (pull, f = {}) => ({ arm: [X, Y, X + 6, Y - 2], stave: [X + 6, Y + 9, X + 6, Y - 13], ...(pull === null ? { arm2: [OFF[0], OFF[1], X - 5, Y - 1] } : { arm2: [OFF[0], OFF[1], X + pull, Y - 3], nock: [X + pull, Y - 3] }), ...f });
@@ -4753,13 +4753,13 @@ export function bakeRanger(skin = {}, previewOnly = false) {
   const F = {
     idle: card.idle(),
     run: [['run1', -1], ['run2', 0], ['run3', 1], ['run4', 0], ['run5', -1], ['run6', 0]].map(([l, dy, ], i) =>
-      knightFrame({ legs: l, dy, plume: i % 3, arm: [X, Y, X + 2 + (i % 2) * 3, Y + 4 - (i % 2) * 3], arm2: [OFF[0], OFF[1], X - 5 + (i % 2) * 4, Y + 1 + ((i + 1) % 2) * 3], stave: BB })),   /* (upright, the arms pumping, the bow slung, the cloak streaming) */
+      knightFrame({ legs: l, dy, dx: -1, plume: i % 3, arm: [X, Y, X + 2 + (i % 2) * 3, Y + 4 - (i % 2) * 3], arm2: [OFF[0], OFF[1], X - 5 + (i % 2) * 4, Y + 1 + ((i + 1) % 2) * 3], stave: BB })),   /* (upright, the arms pumping, the bow slung, the cloak streaming) */
     jump: [knightFrame({ legs: 'jump', dy: -1, arm: [X, Y, X + 4, Y - 3], arm2: [OFF[0], OFF[1], X - 5, Y], stave: BB, plume: 1 }),
       knightFrame({ legs: 'jump2', arm: [X, Y, X + 4, Y - 3], arm2: [OFF[0], OFF[1], X - 5, Y], stave: BB, plume: 1 })],
     fall: [knightFrame({ legs: 'fall', arm: [X, Y, X + 4, Y - 4], arm2: [OFF[0], OFF[1], X - 5, Y - 3], stave: BB, plume: 2 }),
       knightFrame({ legs: 'fall2', dy: -1, arm: [X, Y, X + 4, Y - 6], arm2: [OFF[0], OFF[1], X - 5, Y - 5], stave: BB, plume: 2 })],
     /* THE LANDING: a knee bent, the hands down for balance, the cloak settling after her */
-    land: [knightFrame({ legs: 'crouch', legsDy: 3, dy: 3, arm: [X, Y, X + 4, Y + 4], arm2: [OFF[0], OFF[1], X - 3, Y + 4], stave: BB, plume: 2, bits: [o(5, 9, D), o(7, 9, D), o(3, 9, D)] }),
+    land: [knightFrame({ legs: 'crouch', legsDy: 2, dy: 2, arm: [X, Y, X + 4, Y + 4], arm2: [OFF[0], OFF[1], X - 3, Y + 4], stave: BB, plume: 2, bits: [o(5, 9, D), o(7, 9, D), o(3, 9, D)] }),
       knightFrame({ legs: 'land', dy: 1, ...carry(), plume: 0 }),
       knightFrame({ legs: 'stand', ...carry(), plume: 1 })],
     takeoff: knightFrame({ legs: 'push', dy: -1, sho: 1, arm: [X, Y, X + 3, Y - 5], arm2: [OFF[0], OFF[1], X - 5, Y + 1], stave: BB, plume: 2 }),

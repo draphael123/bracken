@@ -28,3 +28,6 @@ RED (inherited, not from this lane, not weakened): tools/titlescene.mjs asserts 
 - BOW: slung on her back (drawn behind the cloak, dull string) in idle/run/jump/fall/land/climb/hurt/crouch/knife/dance/trap/leap/hawk/refill/mark; a short slung bow in slide/swim/tread/flip/roll. The full bow is out in front only for the draw, shots, bash, rise/down shot.
 - Pictures: v4-poses.png, v4k-poses.png, b-game.png, v4-pick-ranger.png / v4-pick-warden.png (hero pick, tools/rangerart-pick.mjs).
 - Re-run GREEN: ranger.mjs, ability-poses 78/78, skill-icons, dances, hero-trials, mobile-perf, textfit pick/tree/store --strict (0). titlescene red unchanged (inherited pick order).
+
+## REVISION 3 (10-14): the slung bow is a short flat limb
+Slung bow now ~14 px diagonal (shoulder to hip, behind the cloak; 10 px for slide/swim/flip/roll), so her silhouette is the hooded figure. Run bodies sit one pixel back and the landing crouch is shallower (more upright). Pictures: v5-poses.png, v5-pick-ranger.png. Re-run GREEN: ranger.mjs, ability-poses, dances, hero-trials, textfit pick --strict.
