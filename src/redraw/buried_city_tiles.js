@@ -30,7 +30,7 @@ export const DIST = {
   throne: { r: ['#181628', '#242240', '#34325a', '#46447a', '#605e9a'], joint: '#0e0c1a', inlay: '#d8aa40' },
   royal:  { r: ['#100e22', '#1a1834', '#272548', '#363462', '#4a4880'], joint: '#080714', inlay: '#e0b44a' },
 };
-export const distOf = x => x < 38 ? 'sand' : x < 112 ? 'stair' : x < 200 ? 'bazaar' : x < 237 ? 'street' : x < 337 ? 'halls' : x < 396 ? 'sluice' : x < 513 ? 'quarter' : x < 750 ? 'throne' : 'royal';   /* (claude/buriedcity3: THE ROOFTOPS 630-749 are outside - their dunes are sand, the breach and the courtyard cut stone: bcTile, L.outside) */
+export const distOf = x => x < 38 ? 'sand' : x < 112 ? 'stair' : x < 200 ? 'bazaar' : x < 237 ? 'street' : x < 409 ? 'halls' : x < 468 ? 'sluice' : x < 585 ? 'quarter' : x < 845 ? 'throne' : 'royal';   /* (claude/buriedcity3: THE ROOFTOPS 702-821 are outside - their dunes are sand, the breach and the courtyard cut stone: bcTile, L.outside) */
 
 /* the level's own facts, read once from the built level: the roof's depth per column, the footing kinds by cell, where light falls */
 const INFO = new WeakMap();
@@ -46,7 +46,7 @@ function info(L, T) {
 /* the light on a cell, in steps of a seventh from -3 (the sand's cold shadow) to +4 (a shaft of sun): warm within ~9 tiles of a lamp, golden in a shaft, else cold */
 function lightAt(I, x, y) {
   let v = -1.4;   /* the city's own dark: cold, blue */
-  for (const z of I.sun) { if (z.x0 >= 630) { v = Math.max(v, 1); continue; } const dx = x < z.x0 ? z.x0 - x : x > z.x1 ? x - z.x1 : 0; v = Math.max(v, 4 - dx * 0.9); }
+  for (const z of I.sun) { if (z.x0 >= 702) { v = Math.max(v, 1); continue; } const dx = x < z.x0 ? z.x0 - x : x > z.x1 ? x - z.x1 : 0; v = Math.max(v, 4 - dx * 0.9); }
   for (const lp of I.lamps) { const d = Math.hypot(lp.x - x, (lp.y - y) * 1.2); v = Math.max(v, 3.2 - d * 0.42); }
   return Math.max(-3, Math.min(4, Math.round(v)));
 }

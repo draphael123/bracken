@@ -59,10 +59,10 @@ ok(sign(46, 52, /SUN STILL BURNS/), 'a sign at the first shaft of sun says the s
 ok(sign(130, 144, /SHUT THE GATE/), 'a sign at the granary says SHUT THE GATE');
 ok(sign(190, 197, /OPEN ITS GATE AND IT SINKS/), 'a sign at the sinking street says OPEN ITS GATE AND IT SINKS');
 ok(sign(234, 242, /SHUT THE GATE/), 'a sign at the cellar says SHUT THE GATE');
-ok(sign(338, 345, /CHUTE LEVER SWINGS THE SAND-FALL/), 'a sign at the sand-fall says THE CHUTE LEVER SWINGS THE SAND-FALL');
-ok(sign(395, 405, /TURNS THE WHEEL/), 'a sign at the great wheel says E TURNS THE WHEEL');
-ok(sign(96, 102, /STRIKE THE HOURGLASS/) && sign(306, 311, /STRIKE THE HOURGLASS/) && sign(646, 656, /SAND-FALL FLOWS UP/) && sign(710, 719, /SINKS THE ROOF/), 'the flip is told at every new use: the first glass, the bank, the fall that flows up, the exam sinking roof');
-ok(sign(530, 539, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(540, 545, /FALL HERE IS THE END/), 'the trap hall\'s two verbs are told at their levers, and its deadly drop before its lip');
+ok(sign(410, 417, /CHUTE LEVER SWINGS THE SAND-FALL/), 'a sign at the sand-fall says THE CHUTE LEVER SWINGS THE SAND-FALL');
+ok(sign(467, 477, /TURNS THE WHEEL/), 'a sign at the great wheel says E TURNS THE WHEEL');
+ok(sign(96, 102, /STRIKE THE HOURGLASS/) && sign(306, 311, /STRIKE THE HOURGLASS/) && sign(718, 728, /SAND-FALL FLOWS UP/) && sign(782, 791, /SINKS THE ROOF/), 'the flip is told at every new use: the first glass, the bank, the fall that flows up, the exam sinking roof');
+ok(sign(602, 611, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(612, 617, /FALL HERE IS THE END/), 'the trap hall\'s two verbs are told at their levers, and its deadly drop before its lip');
 /* THE TRAP HALL'S DEATH IS TAUGHT FIRST (A10 amended: an exam death once taught, never untold - the BCREVIEW's M3): a small OPEN floor-gate before it, survivable,
    with a floor under it and its own lever and sign; and the exam hall is drawn lethal (its lamps) */
 { const yd = room0('yard'), tr = room0('trap');
@@ -74,10 +74,10 @@ ok(sign(530, 539, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(540,
   ok((tr.lamps || []).length === 2 && tr.fedBy === 'trapfall' && !tr.pour, 'the trap hall\'s lips are lamp-lit (red open, gold shut), and only the sand-fall feeds it'); }
 /* THE SECTION EXAMS ARE ELITES on footing with a hazard by them: the halls (a shaft of sun on him, stakes behind him), the quarter (a drift at his back), the throne street (a drift at yours, his gate) */
 { const el = L.ents.filter(e => e.t === 'construct' && e.elite).map(e => e.x).sort((a, b) => a - b);
-  ok(el.join() === '318,484,582,743', 'the four section exams are ELITE constructs (' + el + ') - claude/buriedcity3: THE ROOFTOPS courtyard is the fourth');
+  ok(el.join() === '318,556,654,815', 'the four section exams are ELITE constructs (' + el + ') - claude/buriedcity3: THE ROOFTOPS courtyard is the fourth');
   const sunAt = x => SUN.some(z => x >= z.x0 && x <= z.x1), spikeNear = (x, y) => { for (let dx = -8; dx <= 8; dx++) for (let dy = -1; dy <= 3; dy++) if (at(x + dx, y + dy) === T.SPIKE) return true; return false; };
   const qs = x => L.quicksand.some(q => Math.abs(q.x0 / TS - x) <= 9);
-  const e1 = L.ents.find(e => e.elite && e.x === 318), e2 = L.ents.find(e => e.elite && e.x === 484), e3 = L.ents.find(e => e.elite && e.x === 582);
+  const e1 = L.ents.find(e => e.elite && e.x === 318), e2 = L.ents.find(e => e.elite && e.x === 556), e3 = L.ents.find(e => e.elite && e.x === 654);
   ok(sunAt(e1.x) && spikeNear(e1.x, e1.y), 'the halls\' elite stands in a shaft of sun with stakes behind him (a heavy blow throws a foe onto them)');
   ok(qs(e2.x) && qs(e3.x) && e3.gate, 'the quarter\'s and the throne street\'s elites stand by a drift; the throne\'s warden holds a gate'); }
 /* REQUIRED: the reach model */
@@ -188,25 +188,25 @@ ok(room('upperbulb').level === 0 && room('lowerbulb').level >= room('lowerbulb')
 /* THE SAND-FALL: the chute lands it on the grate (nothing piles); swung onto the wall the heap piles up under the arch, lifting what stands there; in the fall a hero
    is beaten down; swung back, the heap stays and is a stair to the arch */
 { const c0 = chute0('sluice'), wall = c0.to.wall, max = Math.max(...wall.rungs.map(q => q[0])), sill = wall.floor - max;
-  ok(chute('sluice').at === 'grate' && cell(378, sill) === T.AIR, 'a fresh load: the fall runs away through the grate; no heap');
-  const e = { t: 'construct', alive: true, x: 375 * TS + 8, y: wall.floor * TS, h: 18, st: newConstruct(375 * TS + 8, wall.floor * TS) }; enemies.push(e);
+  ok(chute('sluice').at === 'grate' && cell(450, sill) === T.AIR, 'a fresh load: the fall runs away through the grate; no heap');
+  const e = { t: 'construct', alive: true, x: 447 * TS + 8, y: wall.floor * TS, h: 18, st: newConstruct(447 * TS + 8, wall.floor * TS) }; enemies.push(e);
   place(c0.levers[0][0], c0.levers[0][1]); ok(H.interact(hero) && chute('sluice').at === 'wall', 'E at the chute lever swings the fall onto the wall');
-  run(1.5); ok(chute('sluice').heap.wall.rows >= 2 && cell(370, wall.floor - 1) === T.SOFT, 'where it lands THE SAND PILES UP (' + chute('sluice').heap.wall.rows + ' rows)');
+  run(1.5); ok(chute('sluice').heap.wall.rows >= 2 && cell(442, wall.floor - 1) === T.SOFT, 'where it lands THE SAND PILES UP (' + chute('sluice').heap.wall.rows + ' rows)');
   ok(e.y < wall.floor * TS && e.bcJam > 0, 'a construct where the heap rises is lifted and JAMMED');
-  run(4); ok(chute('sluice').heap.wall.rows === max && cell(378, sill) === T.SOFT, 'the heap is up to the arch\'s sill (row ' + sill + ')');
-  place(378, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy >= BCS.fallBeat, 'in the fall a hero is BEATEN DOWN (he cannot rise in it)');
+  run(4); ok(chute('sluice').heap.wall.rows === max && cell(450, sill) === T.SOFT, 'the heap is up to the arch\'s sill (row ' + sill + ')');
+  place(450, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy >= BCS.fallBeat, 'in the fall a hero is BEATEN DOWN (he cannot rise in it)');
   ok(said.includes('THE SAND-FALL BEATS YOU DOWN: SWING IT AWAY'), 'and it is told');
   place(c0.levers[1][0], c0.levers[1][1]); H.update(1); ok(H.interact(hero) && chute('sluice').at === 'grate', 'the second chute lever swings it back off the heap');
-  place(378, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy < 0 && chute('sluice').heap.wall.rows === max, 'off the fall the heap stays: a stair to the arch'); enemies.length = 0; }
+  place(450, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy < 0 && chute('sluice').heap.wall.rows === max, 'off the fall the heap stays: a stair to the arch'); enemies.length = 0; }
 /* THE GREAT SAND-GATE: three turns, the quarter drains, its foes stand up */
 const W = L.wheel; for (let i = 0; i < 3; i++) { place(W.x, W.row); H.interact(hero); run(1); }
 ok(K.wheel.done, 'three turns open THE GREAT SAND-GATE'); run(12);
-ok(room('great').level === 0 && cell(440, room0('great').floor - 12) === T.AIR, 'the quarter drains: its old street comes out');
+ok(room('great').level === 0 && cell(512, room0('great').floor - 12) === T.AIR, 'the quarter drains: its old street comes out');
 ok(spawned.length === L.ents.filter(e => e.sandWait).length, 'the quarter\'s buried foes stand up when the sand has gone off them (' + spawned.length + ')');
 /* THE TRAP HALL (THE EXAM): its floor-gate is its floor; it fills only with the gate shut AND the fall swung into it; the fall on the lip holds a construct */
-{ const r = room0('trap'), tc = chute0('trapfall'), mid = 552, gl = r.levers[0], cl = tc.levers[0];
+{ const r = room0('trap'), tc = chute0('trapfall'), mid = 624, gl = r.levers[0], cl = tc.levers[0];
   ok(cell(mid, r.floor) === T.AIR && chute('trapfall').at === 'lip', 'THE TRAP HALL\'s floor-gate is open as laid (a drop) and its fall lands on the lip');
-  const e = { t: 'construct', alive: true, x: 541 * TS + 8, y: (gl[1] + 1) * TS, h: 18, st: newConstruct(541 * TS + 8, (gl[1] + 1) * TS) }; enemies.push(e); run(0.5);
+  const e = { t: 'construct', alive: true, x: 613 * TS + 8, y: (gl[1] + 1) * TS, h: 18, st: newConstruct(613 * TS + 8, (gl[1] + 1) * TS) }; enemies.push(e); run(0.5);
   ok(e.bcJam > 0, 'the construct on the lip is held in the fall: JAMMED');
   place(cl[0], cl[1]); H.interact(hero); run(3); ok(chute('trapfall').at === 'hall' && room('trap').level === 0 && said.includes('THE SAND FALLS THROUGH THE OPEN FLOOR-GATE INTO THE DARK'), 'swung in with the floor-gate open, the sand falls through into the dark (told) - no fill');
   run(3); ok(!(e.bcJam > 0), 'and the construct it held is free');
@@ -239,7 +239,7 @@ ok(spawned.length === L.ents.filter(e => e.sandWait).length, 'the quarter\'s bur
   place(Math.round((s.x0 + s.x1) / 2), s.row + 1); H.update(1 / 30); ok(hero.hp < 100 && Math.abs(hero.x - ((s.x0 - 2) * TS + 8)) < 2, 'THE SAND SEA swallows: a bite of you and back to your last footing (hp ' + hero.hp + ')');
   let killed = 0; ctx.killHero = () => { killed++; return true; }; const se = L.seas.find(q => q.lethal); place(Math.round((se.x0 + se.x1) / 2), se.row + 1); H.update(1 / 30); ok(killed === 1, 'the exam sea is THE END (A10 amended: taught twice before)'); delete ctx.killHero;
   /* THE EXAM: the glass sinks the roof that stands and raises the rest */
-  const ge = gl('exam'), sk = L.risers.find(r => r.sinks); ok(cell(sk.x0, sk.top) === T.SOLID, 'as built the exam one roof stands');
+  const ge = gl('exam'), sk = L.risers.find(r => r.sinks && r.glass === 'exam'); ok(cell(sk.x0, sk.top) === T.SOLID, 'as built the exam one roof stands');
   place(ge.x, ge.y); H.interact(hero); run(1); ok(cell(sk.x0, sk.top) === T.AIR && rs('exam').filter(r => !r.sinks).every(r => cell(r.x0, r.top) === T.SOLID), 'turned, it SINKS the roof that stood and raises the rest');
   run(ge.dur + 1); ok(cell(sk.x0, sk.top) === T.SOLID, 'run out, the standing roof comes back up'); }
 /* THE CLOCKWORK VAULT */
@@ -247,8 +247,8 @@ const V = L.vaultDoors[0]; place(V.x + 1, V.y1); quest = 4; H.interact(hero); ok
 quest = 5; H.interact(hero); ok(cell(V.x, V.y0) === T.AIR, 'five gears open THE CLOCKWORK VAULT');
 /* A RESPAWN: the small rooms as built, the great gate kept, the falls back where they were laid and the heaps flat */
 H.reset(); ok(room('great').level === 0 && K.wheel.done, 'a respawn keeps THE GREAT SAND-GATE open'); ok(room('first').level === room('first').full && cell(66, room0('first').floor - 1) === T.SOFT, 'a respawn fills the first room again');
-ok(room('trap').gate === 'open' && cell(552, room0('trap').floor) === T.AIR && cell(552, room0('trap').floor - 3) === T.AIR, 'a respawn opens the trap hall\'s floor-gate again (and its sand is gone)');
-ok(chute('sluice').at === 'grate' && chute('sluice').heap.wall.rows === 0 && cell(370, chute0('sluice').to.wall.floor - 1) === T.AIR, 'a respawn swings the falls back and flattens the heap');
+ok(room('trap').gate === 'open' && cell(624, room0('trap').floor) === T.AIR && cell(624, room0('trap').floor - 3) === T.AIR, 'a respawn opens the trap hall\'s floor-gate again (and its sand is gone)');
+ok(chute('sluice').at === 'grate' && chute('sluice').heap.wall.rows === 0 && cell(442, chute0('sluice').to.wall.floor - 1) === T.AIR, 'a respawn swings the falls back and flattens the heap');
 ok(room('street').level === room0('street').full && cell(215, room0('street').floor - room0('street').full - 1) === T.SOLID, 'a respawn stands the street back up on its sand');
 /* THE GLINT: every route lock is a stuck spot */
 ok((STUCK_HANDS.buriedcity || []).length >= 12, 'the route\'s locks glint (' + (STUCK_HANDS.buriedcity || []).length + ' stuck spots)');

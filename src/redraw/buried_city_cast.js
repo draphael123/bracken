@@ -284,3 +284,36 @@ export function bakeCog() {
     F.push(outline(c, OUT)); }
   return F;
 }
+
+// ================= THE SAND-BOUND (claude/buriedcity4, GREYBOX - the SONNET art lane draws it) =================
+//   bakeSandBound()      THE SAND-BOUND (the ambusher's machine, 9 frames: 0 BURIED (a mound) | 1 RISING | 2,3 walk | 4 SLAM TELL (both sand-fists raised over the head) | 5 SLAM (brought
+//                        down, sand thrown off them) | 6 (unused: it never burrows) | 7 hurt | 8 BURIED TO THE CHEST (its glass runs: stuck, flailing)) - one of the drowned with the sand
+//                        grown over it like a shell: a crust of packed sand on the shoulders and back, fists clubbed in sand, the court's collar half-swallowed. Its OWN poses (B16):
+//                        the slam is not the drowned's knife cut
+const SB = { crust: '#c8a064', crustL: '#ecc988', crustD: '#8a6a3c', bone: '#d6cbac', boneD: '#a89c7c', wrap: '#a89878', wrapD: '#7a6c52', dark: '#16100c', eye: '#ffb84a', eyeL: '#fff0c0', gold: '#d8aa40', goldL: '#f6dc80' };
+export function bakeSandBound() {
+  const W = 36, H = 32, cx = 15, gy = 30;
+  const fist = (g, x, y) => { ellipse(g, x, y, 3, 2.6, SB.crust); px(g, x - 1, y - 2, SB.crustL); px(g, x + 1, y + 2, SB.crustD); px(g, x + 2, y, SB.crustD); };
+  const arm = (g, x0, y0, x1, y1) => { thick(g, x0, y0, x1, y1, SB.crustD, 2); line(g, x0, y0, x1, y1, SB.crust); fist(g, x1, y1); };
+  const head = (g, x, y) => { ellipse(g, x, y, 3.4, 3.4, SB.bone); rect(g, x - 2, y - 1, 2, 2, SB.dark); rect(g, x + 1, y - 1, 2, 2, SB.dark); px(g, x - 1, y - 1, SB.eye); px(g, x + 2, y - 1, SB.eye);
+    ellipse(g, x - 0.5, y - 2.8, 4.4, 2.2, SB.crust); px(g, x - 3, y - 4, SB.crustL); px(g, x + 2, y - 4, SB.crustD); rect(g, x - 1, y + 2, 3, 1, SB.dark); };   /* a skull capped with packed sand, amber eyes */
+  const body = (g, x, y, legs) => { const [a, b] = legs;
+    rect(g, x - 3 + a, y + 10, 3, 3, SB.crustD); rect(g, x + 1 + b, y + 10, 3, 3, SB.crustD);   /* legs grown into sand */
+    fillPoly(g, [[x - 5, y], [x + 5, y], [x + 6, y + 10], [x - 6, y + 10]], SB.wrap); line(g, x - 4, y + 3, x + 4, y + 5, SB.wrapD);
+    fillPoly(g, [[x - 7, y - 1], [x + 7, y - 1], [x + 6, y + 5], [x - 6, y + 5]], SB.crust); rect(g, x - 7, y - 1, 14, 1, SB.crustL); for (let i = -6; i <= 6; i += 3) px(g, x + i, y + 3, SB.crustD);   /* THE SHELL: a crust of sand on the shoulders */
+    rect(g, x - 3, y + 5, 7, 1, SB.gold); px(g, x - 1, y + 5, SB.goldL); };
+  const mound = (g, x, h) => { fillPoly(g, [[x - 13, gy], [x - 6, gy - h], [x + 6, gy - h], [x + 13, gy]], SB.crust); rect(g, x - 6, gy - h, 12, 1, SB.crustL); for (let i = 0; i < 6; i++) px(g, x - 10 + i * 4, gy - 1, SB.crustD); };
+  const F = frames(W, H, 9, (g, f) => {
+    if (f === 0) { mound(g, cx, 5); px(g, cx - 1, gy - 4, SB.eye); px(g, cx + 2, gy - 4, SB.eye); return; }
+    if (f === 8) { const by = gy - 7; body(g, cx, by, [0, 0]); head(g, cx, by - 4); arm(g, cx - 5, by + 1, cx - 9, by - 5); arm(g, cx + 5, by + 1, cx + 10, by - 3); mound(g, cx, 9);   /* BURIED TO THE CHEST: the sand to its ribs, arms thrown up */
+      for (let i = 0; i < 7; i++) px(g, cx - 8 + i * 3, gy - 10 + (i % 3), SB.crustL); return; }
+    if (f === 1) { body(g, cx, gy - 13, [0, 0]); head(g, cx, gy - 17); mound(g, cx, 6); for (let i = 0; i < 8; i++) px(g, cx - 6 + i * 2, gy - 17 + (i % 4) * 3, SB.crustL); return; }
+    const by = gy - 13; const legs = f === 2 ? [0, 1] : f === 3 ? [1, 0] : [0, 0];
+    body(g, cx, by, legs); head(g, cx + (f === 5 ? 2 : 0), by - 4);
+    if (f === 4) { arm(g, cx - 4, by + 1, cx - 2, by - 11); arm(g, cx + 4, by + 1, cx + 3, by - 12); px(g, cx, by - 14, SB.crustL); }   /* SLAM TELL: both sand-fists high over the head */
+    else if (f === 5) { arm(g, cx - 2, by + 2, cx + 9, by + 11); arm(g, cx + 4, by + 2, cx + 12, by + 10); for (let i = 0; i < 6; i++) px(g, cx + 8 + i * 2, by + 6 + (i % 2) * 2, SB.crustL); }   /* SLAM: down in front, sand thrown off */
+    else if (f === 7) { arm(g, cx - 4, by + 2, cx - 7, by + 7); arm(g, cx + 4, by + 2, cx + 6, by + 8); }
+    else { arm(g, cx - 5, by + 2, cx - 6, by + 9); arm(g, cx + 5, by + 2, cx + 7, by + 9); }
+  });
+  return pack(F, cx, H, 14, 20);
+}

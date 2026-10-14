@@ -96,7 +96,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
     g.globalAlpha = 1;
   }
   /* THE DUNES (only while the sky shows): lit silhouettes, and the tower's tip over them (you see where you are going before you go down) */
-  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 600 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
+  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 672 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
 }
 
 /* THE HOURGLASS TOWER: k = how far along the level you are (its upper bulb empties, it comes nearer) */
