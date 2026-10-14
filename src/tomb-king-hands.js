@@ -11,12 +11,72 @@
 // main.js calls: spawnBoss, owns, on, update, take, trapHit, strike, phase, trapsOn, pressers, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
 import * as TKM from './tomb-king.js';
 import { BOSS_PHASE } from './boss-music.js';
+import { canvas, flipX, whiten } from './px.js';
 const { TK } = TKM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), slam: s => (s.boom || s.thud)(), lash: s => (s.slash || s.tell)(), roar: s => (s.roar || s.boom)(),
   thud: s => (s.thud || s.stone || s.clank)(), chain: s => (s.ratchet || s.clank || s.tell)(), throw: s => (s.throwWhoosh || s.slash || s.tell)(), roll: s => (s.boom || s.stone || s.thud)(),
   breath: s => (s.hiss || s.puff || s.slash)(), curse: s => (s.crack || s.tell)(), rumble: s => (s.boom || s.crack || s.thud)(), open: s => (s.crack || s.clank)(), clamp: s => (s.clank || s.thud)(),
   lever: s => (s.click || s.clank)(), swing: s => (s.ratchet || s.clank)(), ratchet: s => (s.ratchet || s.click || s.clank)(), cut: s => (s.crack || s.clank)() };
+
+/* ---------- DRAWING: PLACEHOLDER SHAPES (lane C draws him), every move its OWN pose (B16) ---------- */
+const C = { stone: '#9c8660', stoneL: '#cdb88a', stoneD: '#5e4c34', ink: '#1c140c', gold: '#d8aa40', goldL: '#f6dc80', lapis: '#2e4a8a', lapisL: '#6a8ad8', linen: '#e0d4b0', linenD: '#a89870',
+  sand: '#d8c8a0', sandD: '#a89070', acid: '#9ad04a', acidL: '#e0ff90', red: '#ff6b6b' };
+const R = Math.round;
+const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
+const ell = (g, x, y, rx, ry, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), 0, 0, 7); g.fill(); };
+/* THE POSE A MODE WEARS: { tilt (rad, + leans toward his face), lift (px the lid rides up), arm (the front arm: 'down' | 'up' | 'back' | 'out' | 'cross' | 'chain' | 'jars'),
+   squat (px), glow (the face slot's colour), lidOff, lying } - windup and release are never the same picture */
+const POSE = {
+  sleep: { tilt: 0, arm: 'cross', glow: null }, wake: { tilt: 0, arm: 'cross', glow: C.goldL }, walk: { tilt: 0.04, arm: 'down' }, recover: { tilt: 0, arm: 'down' },
+  slamTell: { tilt: -0.28, lift: 6, arm: 'up', squat: 0 }, slam: { tilt: 0.55, arm: 'down', squat: 3 },
+  lashTell: { tilt: -0.1, arm: 'back' }, lash: { tilt: 0.12, arm: 'out' },
+  leapTell: { tilt: 0, arm: 'up', squat: 8, glow: C.red }, leap: { tilt: 0.1, arm: 'up', squat: -4 }, perch: { tilt: 0, arm: 'down', squat: 2 }, drop: { tilt: 0.1, arm: 'up' },
+  reelTell: { tilt: -0.12, arm: 'chain', glow: C.goldL }, reel: { tilt: 0.06, arm: 'out' },
+  callTell: { tilt: 0, arm: 'up', lift: 3, glow: '#8fd160' }, call: { tilt: 0, arm: 'out', lift: 2 },
+  throwTell: { tilt: -0.2, arm: 'up', lift: 10 }, throw: { tilt: 0.3, arm: 'out', lidOff: true }, lidless: { tilt: 0, arm: 'cross', lidOff: true }, catch: { tilt: 0, arm: 'up', lift: 4 },
+  volleyTell: { tilt: -0.15, arm: 'jars' }, volley: { tilt: 0.2, arm: 'out' },
+  rollTell: { tilt: 0.9, arm: 'cross', squat: 4 }, roll: { lying: true }, rollEnd: { lying: true, dazed: true },
+  breathTell: { tilt: -0.08, arm: 'back', glow: C.sand }, breath: { tilt: 0.1, arm: 'down', glow: '#fff6c8' },
+  pitTell: { tilt: 0, arm: 'up', squat: -3 }, pit: { tilt: 0, arm: 'down', squat: 6 },
+  curseTell: { tilt: 0, arm: 'up', glow: '#ff6b6b' }, curse: { tilt: 0, arm: 'out', glow: '#ffd36b' },
+  flipped: { lying: true, lidOff: true }, clamp: { tilt: 0, arm: 'cross', lift: 8 },
+};
+/* the sarcophagus, standing (its foot at 0,0, facing +x), in a pose */
+function drawStanding(g, p, flash, time, ph) {
+  const sq = p.squat || 0, Hh = TK.h - sq, W = TK.w;
+  g.save(); g.rotate((p.tilt || 0) * 0.6);
+  /* stone legs */ rect(g, -10, -8, 7, 8, C.stoneD); rect(g, 3, -8, 7, 8, C.stoneD); rect(g, -11, -2, 9, 2, C.ink); rect(g, 2, -2, 9, 2, C.ink);
+  /* the box */ rect(g, -W / 2, -Hh, W, Hh - 6, flash ? '#fff' : C.stone); rect(g, -W / 2, -Hh, 2, Hh - 6, C.stoneL); rect(g, W / 2 - 2, -Hh, 2, Hh - 6, C.stoneD);
+  /* the lid (the king's gilt face on it) - lifted or off */
+  const lift = p.lift || 0;
+  if (!p.lidOff) { const ly = -Hh - lift; rect(g, -W / 2 - 1, ly, W + 2, Hh - 8, flash ? '#fff' : C.stoneL); rect(g, -W / 2 + 4, ly + 3, W - 8, 13, C.gold); rect(g, -W / 2 + 6, ly + 4, W - 12, 4, C.lapis);
+    rect(g, -3, ly + 8, 2, 2, p.glow || C.ink); rect(g, 3, ly + 8, 2, 2, p.glow || C.ink); rect(g, -W / 2 + 6, ly + 18, W - 12, 2, C.lapisL); rect(g, -W / 2 + 8, ly + 22, W - 16, 10, C.gold);
+    if (ph >= 3) { rect(g, -2, ly + 2, 1, 20, C.ink); rect(g, -1, ly + 20, 6, 1, C.ink); rect(g, 4, ly + 20, 1, 9, C.ink); } }
+  else { /* the pharaoh inside: linen wrappings and a gold mask */ rect(g, -W / 2 + 3, -Hh + 2, W - 6, Hh - 10, C.ink); rect(g, -6, -Hh + 4, 12, Hh - 14, C.linen); for (let k = 0; k < 6; k++) rect(g, -6, -Hh + 7 + k * 5, 12, 1, C.linenD); rect(g, -5, -Hh + 4, 10, 8, C.gold); rect(g, -3, -Hh + 7, 2, 1, C.ink); rect(g, 1, -Hh + 7, 2, 1, C.ink); }
+  /* the arms (stone, out of the box's sides) */
+  const ay = -Hh + 16, arm = p.arm || 'down';
+  if (arm === 'down') { rect(g, W / 2, ay, 5, 18, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 18, C.stoneD); }
+  else if (arm === 'up') { rect(g, W / 2, ay - 18, 5, 20, C.stoneD); rect(g, -W / 2 - 5, ay - 18, 5, 20, C.stoneD); rect(g, W / 2 - 1, ay - 22, 7, 5, C.stone); rect(g, -W / 2 - 6, ay - 22, 7, 5, C.stone); }
+  else if (arm === 'back') { rect(g, -W / 2 - 16, ay - 2, 16, 5, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); for (let k = 0; k < 4; k++) rect(g, -W / 2 - 22 - k * 4, ay - 4 + k, 4, 2, C.linen); }
+  else if (arm === 'out') { rect(g, W / 2, ay - 1, 18, 5, C.stoneD); rect(g, W / 2 + 16, ay - 3, 5, 9, C.stone); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); }
+  else if (arm === 'cross') { rect(g, -W / 2 + 2, ay + 2, W - 4, 4, C.stoneD); rect(g, -W / 2 + 2, ay + 8, W - 4, 4, C.stoneD); rect(g, -3, ay, 6, 14, C.gold); }
+  else if (arm === 'chain') { rect(g, W / 2, ay, 5, 16, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); for (let k = 0; k < 5; k++) { const a = time * 9 + k * 1.3; rect(g, R(Math.cos(a) * 7), R(ay + 8 + Math.sin(a) * 5), 3, 3, '#8a8478'); } rect(g, -3, ay + 4, 6, 6, '#5d594e'); }
+  else if (arm === 'jars') { rect(g, W / 2, ay - 14, 5, 16, C.stoneD); rect(g, -W / 2 - 5, ay - 14, 5, 16, C.stoneD); for (const jx of [W / 2 - 1, -W / 2 - 6]) { rect(g, jx, ay - 24, 7, 10, '#c8b48a'); rect(g, jx + 1, ay - 27, 5, 3, '#2e8a6a'); } }
+  g.restore();
+}
+function drawLying(g, p, flash, time) {   /* on his back (flipped) or on his side (rolling): long along the floor */
+  const W = TK.h + 4, Hh = TK.w - 6;
+  rect(g, -W / 2, -Hh, W, Hh, flash ? '#fff' : C.stone); rect(g, -W / 2, -Hh, W, 2, C.stoneL);
+  if (p.lidOff) { rect(g, -W / 2 + 3, -Hh + 3, W - 6, Hh - 6, C.ink); rect(g, -W / 2 + 6, -Hh + 6, W - 14, Hh - 10, C.linen); for (let k = 0; k < 6; k++) rect(g, -W / 2 + 8 + k * 5, -Hh + 6, 1, Hh - 10, C.linenD); rect(g, W / 2 - 12, -Hh + 5, 8, Hh - 9, C.gold);
+    for (const lx of [-8, 6]) rect(g, lx, -2, 6, 6, C.stoneD); }
+  else { const sp = (time * 12) % 6; for (let k = 0; k < 4; k++) rect(g, -W / 2 + ((k * 12 + sp * 2) % W), -Hh + 2, 2, Hh - 4, C.stoneD); rect(g, -6, -Hh + 4, 12, Hh - 8, C.gold); }
+  if (p.dazed) { for (let i = 0; i < 3; i++) { const a = time * 6 + i * 2.1; rect(g, R(Math.cos(a) * 10), R(-Hh - 8 + Math.sin(a) * 3), 2, 2, C.goldL); } }
+}
+
+/* HIS BESTIARY CARD (a PLACEHOLDER until lane C: two of his poses on canvases, the contract the cast sheets keep - R faces right, L the flip, white the hurt flash) */
+export function bakeTombKingCard() { const fr = ['walk', 'slamTell'].map(k => { const [c, g] = canvas(56, 64); g.translate(28, 62); drawStanding(g, POSE[k], false, 0, 1); return c; });
+  return { R: fr, L: fr.map(c => flipX(c)), white: { R: fr.map(c => whiten(c)), L: fr.map(c => flipX(whiten(c))) }, ax: 28, ay: 62, w: TK.w, h: TK.h }; }
 
 export function makeTombKingHands(ctx) {
   let S = null;
@@ -105,7 +165,7 @@ export function makeTombKingHands(ctx) {
   H.take = (e, dmg) => { if (!S) return dmg; const t = ctx.time(), [d, word] = TKM.takeBlow(e, S, dmg);
     if (word) { e.chipHit = t; e.guardFx = 0.25; e.guardWord = word; if (!TKM.tkOpen(e)) { ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 14, e.y - 22, sd, 4); } }
     return d; };
-  H.barName = e => "THE TOMB-KING'S SARCOPHAGUS" + (TKM.tkOpen(e) ? '  ' + (TKM.OPEN_NAME[e.openKind] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
+  H.barName = e => "THE TOMB-KING" + (TKM.tkOpen(e) ? '  ' + (TKM.OPEN_NAME[e.openKind] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
   H.end = e => { if (S) { S.lid = null; S.jars = []; S.clouds = []; S.pits = []; S.curses = []; S.chain = null; S.reel = null; S.shock = null; S.roll = null; S.breath = null; S.trapsOn = false; killDead(); }
     for (const pp of ctx.players) { pp.tkBlindT = 0; pp.tkSlowT = 0; } BOSS_PHASE.tombking = 1; };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, openKind: ctx.boss && ctx.boss.openKind, traps: !!S.trapsOn, dead: deadAlive(),
@@ -114,59 +174,6 @@ export function makeTombKingHands(ctx) {
   H.deadNear = () => (S ? S.dead.filter(d => d && d.alive).map(d => ({ x: d.x, y: d.y })) : []);
   H.reeled = pp => !!(S && S.reel && S.reel.pp === pp);
 
-  /* ---------- DRAWING: PLACEHOLDER SHAPES (lane C draws him), every move its OWN pose (B16) ---------- */
-  const C = { stone: '#9c8660', stoneL: '#cdb88a', stoneD: '#5e4c34', ink: '#1c140c', gold: '#d8aa40', goldL: '#f6dc80', lapis: '#2e4a8a', lapisL: '#6a8ad8', linen: '#e0d4b0', linenD: '#a89870',
-    sand: '#d8c8a0', sandD: '#a89070', acid: '#9ad04a', acidL: '#e0ff90', red: '#ff6b6b' };
-  const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
-  const ell = (g, x, y, rx, ry, col) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), 0, 0, 7); g.fill(); };
-  /* THE POSE A MODE WEARS: { tilt (rad, + leans toward his face), lift (px the lid rides up), arm (the front arm: 'down' | 'up' | 'back' | 'out' | 'cross' | 'chain' | 'jars'),
-     squat (px), glow (the face slot's colour), lidOff, lying } - windup and release are never the same picture */
-  const POSE = {
-    sleep: { tilt: 0, arm: 'cross', glow: null }, wake: { tilt: 0, arm: 'cross', glow: C.goldL }, walk: { tilt: 0.04, arm: 'down' }, recover: { tilt: 0, arm: 'down' },
-    slamTell: { tilt: -0.28, lift: 6, arm: 'up', squat: 0 }, slam: { tilt: 0.55, arm: 'down', squat: 3 },
-    lashTell: { tilt: -0.1, arm: 'back' }, lash: { tilt: 0.12, arm: 'out' },
-    leapTell: { tilt: 0, arm: 'up', squat: 8, glow: C.red }, leap: { tilt: 0.1, arm: 'up', squat: -4 }, perch: { tilt: 0, arm: 'down', squat: 2 }, drop: { tilt: 0.1, arm: 'up' },
-    reelTell: { tilt: -0.12, arm: 'chain', glow: C.goldL }, reel: { tilt: 0.06, arm: 'out' },
-    callTell: { tilt: 0, arm: 'up', lift: 3, glow: '#8fd160' }, call: { tilt: 0, arm: 'out', lift: 2 },
-    throwTell: { tilt: -0.2, arm: 'up', lift: 10 }, throw: { tilt: 0.3, arm: 'out', lidOff: true }, lidless: { tilt: 0, arm: 'cross', lidOff: true }, catch: { tilt: 0, arm: 'up', lift: 4 },
-    volleyTell: { tilt: -0.15, arm: 'jars' }, volley: { tilt: 0.2, arm: 'out' },
-    rollTell: { tilt: 0.9, arm: 'cross', squat: 4 }, roll: { lying: true }, rollEnd: { lying: true, dazed: true },
-    breathTell: { tilt: -0.08, arm: 'back', glow: C.sand }, breath: { tilt: 0.1, arm: 'down', glow: '#fff6c8' },
-    pitTell: { tilt: 0, arm: 'up', squat: -3 }, pit: { tilt: 0, arm: 'down', squat: 6 },
-    curseTell: { tilt: 0, arm: 'up', glow: '#ff6b6b' }, curse: { tilt: 0, arm: 'out', glow: '#ffd36b' },
-    flipped: { lying: true, lidOff: true }, clamp: { tilt: 0, arm: 'cross', lift: 8 },
-  };
-  /* the sarcophagus, standing (its foot at 0,0, facing +x), in a pose */
-  function drawStanding(g, p, flash, time, ph) {
-    const sq = p.squat || 0, Hh = TK.h - sq, W = TK.w;
-    g.save(); g.rotate((p.tilt || 0) * 0.6);
-    /* stone legs */ rect(g, -10, -8, 7, 8, C.stoneD); rect(g, 3, -8, 7, 8, C.stoneD); rect(g, -11, -2, 9, 2, C.ink); rect(g, 2, -2, 9, 2, C.ink);
-    /* the box */ rect(g, -W / 2, -Hh, W, Hh - 6, flash ? '#fff' : C.stone); rect(g, -W / 2, -Hh, 2, Hh - 6, C.stoneL); rect(g, W / 2 - 2, -Hh, 2, Hh - 6, C.stoneD);
-    /* the lid (the king's gilt face on it) - lifted or off */
-    const lift = p.lift || 0;
-    if (!p.lidOff) { const ly = -Hh - lift; rect(g, -W / 2 - 1, ly, W + 2, Hh - 8, flash ? '#fff' : C.stoneL); rect(g, -W / 2 + 4, ly + 3, W - 8, 13, C.gold); rect(g, -W / 2 + 6, ly + 4, W - 12, 4, C.lapis);
-      rect(g, -3, ly + 8, 2, 2, p.glow || C.ink); rect(g, 3, ly + 8, 2, 2, p.glow || C.ink); rect(g, -W / 2 + 6, ly + 18, W - 12, 2, C.lapisL); rect(g, -W / 2 + 8, ly + 22, W - 16, 10, C.gold);
-      if (ph >= 3) { rect(g, -2, ly + 2, 1, 20, C.ink); rect(g, -1, ly + 20, 6, 1, C.ink); rect(g, 4, ly + 20, 1, 9, C.ink); } }
-    else { /* the pharaoh inside: linen wrappings and a gold mask */ rect(g, -W / 2 + 3, -Hh + 2, W - 6, Hh - 10, C.ink); rect(g, -6, -Hh + 4, 12, Hh - 14, C.linen); for (let k = 0; k < 6; k++) rect(g, -6, -Hh + 7 + k * 5, 12, 1, C.linenD); rect(g, -5, -Hh + 4, 10, 8, C.gold); rect(g, -3, -Hh + 7, 2, 1, C.ink); rect(g, 1, -Hh + 7, 2, 1, C.ink); }
-    /* the arms (stone, out of the box's sides) */
-    const ay = -Hh + 16, arm = p.arm || 'down';
-    if (arm === 'down') { rect(g, W / 2, ay, 5, 18, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 18, C.stoneD); }
-    else if (arm === 'up') { rect(g, W / 2, ay - 18, 5, 20, C.stoneD); rect(g, -W / 2 - 5, ay - 18, 5, 20, C.stoneD); rect(g, W / 2 - 1, ay - 22, 7, 5, C.stone); rect(g, -W / 2 - 6, ay - 22, 7, 5, C.stone); }
-    else if (arm === 'back') { rect(g, -W / 2 - 16, ay - 2, 16, 5, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); for (let k = 0; k < 4; k++) rect(g, -W / 2 - 22 - k * 4, ay - 4 + k, 4, 2, C.linen); }
-    else if (arm === 'out') { rect(g, W / 2, ay - 1, 18, 5, C.stoneD); rect(g, W / 2 + 16, ay - 3, 5, 9, C.stone); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); }
-    else if (arm === 'cross') { rect(g, -W / 2 + 2, ay + 2, W - 4, 4, C.stoneD); rect(g, -W / 2 + 2, ay + 8, W - 4, 4, C.stoneD); rect(g, -3, ay, 6, 14, C.gold); }
-    else if (arm === 'chain') { rect(g, W / 2, ay, 5, 16, C.stoneD); rect(g, -W / 2 - 5, ay, 5, 16, C.stoneD); for (let k = 0; k < 5; k++) { const a = time * 9 + k * 1.3; rect(g, R(Math.cos(a) * 7), R(ay + 8 + Math.sin(a) * 5), 3, 3, '#8a8478'); } rect(g, -3, ay + 4, 6, 6, '#5d594e'); }
-    else if (arm === 'jars') { rect(g, W / 2, ay - 14, 5, 16, C.stoneD); rect(g, -W / 2 - 5, ay - 14, 5, 16, C.stoneD); for (const jx of [W / 2 - 1, -W / 2 - 6]) { rect(g, jx, ay - 24, 7, 10, '#c8b48a'); rect(g, jx + 1, ay - 27, 5, 3, '#2e8a6a'); } }
-    g.restore();
-  }
-  function drawLying(g, p, flash, time) {   /* on his back (flipped) or on his side (rolling): long along the floor */
-    const W = TK.h + 4, Hh = TK.w - 6;
-    rect(g, -W / 2, -Hh, W, Hh, flash ? '#fff' : C.stone); rect(g, -W / 2, -Hh, W, 2, C.stoneL);
-    if (p.lidOff) { rect(g, -W / 2 + 3, -Hh + 3, W - 6, Hh - 6, C.ink); rect(g, -W / 2 + 6, -Hh + 6, W - 14, Hh - 10, C.linen); for (let k = 0; k < 6; k++) rect(g, -W / 2 + 8 + k * 5, -Hh + 6, 1, Hh - 10, C.linenD); rect(g, W / 2 - 12, -Hh + 5, 8, Hh - 9, C.gold);
-      for (const lx of [-8, 6]) rect(g, lx, -2, 6, 6, C.stoneD); }
-    else { const sp = (time * 12) % 6; for (let k = 0; k < 4; k++) rect(g, -W / 2 + ((k * 12 + sp * 2) % W), -Hh + 2, 2, Hh - 4, C.stoneD); rect(g, -6, -Hh + 4, 12, Hh - 8, C.gold); }
-    if (p.dazed) { for (let i = 0; i < 3; i++) { const a = time * 6 + i * 2.1; rect(g, R(Math.cos(a) * 10), R(-Hh - 8 + Math.sin(a) * 3), 2, 2, C.goldL); } }
-  }
   /* the chamber's own pieces behind him: the two SWITCHES (a lever on the wall: up = ready, thrown, winding back - its gauge) and their COUNTERWEIGHTS on their chains,
      THE FLOOR ALCOVES his dead climb out of */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const G = S.G;
