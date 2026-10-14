@@ -1,0 +1,40 @@
+== A. each hero's own jump (src/hero-move.js, flown by src/reach-hero.js at full game speed)
+  knight     rise 49.4px (3 rows)  carry: standing 64  run 64 (92px/s)  sprint 74 (106px/s)  widest flat gap with the slack: 3 at a run, 3 at the sprint (a toe: 5)
+  ok   knight: three rows up, and the sprint carries at least as far as the run
+  warden     rise 49.4px (3 rows)  carry: standing 64  run 64 (92px/s)  sprint 74 (106px/s)  widest flat gap with the slack: 3 at a run, 3 at the sprint (a toe: 5)
+  ok   warden: three rows up, and the sprint carries at least as far as the run
+  pyro       rise 49.4px (3 rows)  carry: standing 74  run 74 (106px/s)  sprint 85 (122px/s)  widest flat gap with the slack: 3 at a run, 4 at the sprint (a toe: 5)
+  ok   pyro: three rows up, and the sprint carries at least as far as the run
+  paladin    rise 49.4px (3 rows)  carry: standing 58  run 58 (83px/s)  sprint 67 (95px/s)  widest flat gap with the slack: 2 at a run, 3 at the sprint (a toe: 4)
+  ok   paladin: three rows up, and the sprint carries at least as far as the run
+  pirate     rise 49.4px (3 rows)  carry: standing 64  run 64 (92px/s)  sprint 74 (106px/s)  widest flat gap with the slack: 3 at a run, 3 at the sprint (a toe: 5)
+  ok   pirate: three rows up, and the sprint carries at least as far as the run
+  reaper     rise 49.4px (3 rows)  carry: standing 64  run 64 (74px/s)  sprint 64 (74px/s)  widest flat gap with the slack: 3 at a run, 3 at the sprint (a toe: 4)
+  ok   reaper: three rows up, and the sprint carries at least as far as the run
+  geomancer  rise 49.4px (3 rows)  carry: standing 64  run 64 (85px/s)  sprint 74 (97px/s)  widest flat gap with the slack: 3 at a run, 3 at the sprint (a toe: 5)
+  ok   geomancer: three rows up, and the sprint carries at least as far as the run
+  berserker  rise 49.4px (3 rows)  carry: standing 64  run 64 (92px/s)  sprint 74 (106px/s)  widest flat gap with the slack: 3 at a run, 3 at the sprint (a toe: 5)
+  ok   berserker: three rows up, and the sprint carries at least as far as the run
+== B. THE SLICK SLOPE: the Glass Sea's slide gap, from the dune's crest
+  --   before (56c2cf92): the shared fill (no slide, six columns) does not cross it from the crest 134,30 - it was never what passed it: glasssea-route's frame-perfect hand did
+  ok   before (56c2cf92): knight does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): warden does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): pyro does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): paladin does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): pirate does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): reaper does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): geomancer does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  ok   before (56c2cf92): berserker does not cross the slide gap from the crest (slide 170px/s, 8px short of a hand's slack past the lip)
+  --   now: the shared fill (no slide, six columns) does not cross it from the crest 133,28 - it was never what passed it: glasssea-route's frame-perfect hand did
+  ok   now: knight crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: warden crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: pyro crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: paladin crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: pirate crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: reaper crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: geomancer crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+  ok   now: berserker crosses the slide gap from the crest (slide 224px/s, 17px past a hand's slack past the lip)
+== C. every level, every hero: the route the shared fill walks, in each hero's own legs
+  ksar         1 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  (433ms)
+
+ok  reach-heroes: 0 known crossings, nothing new

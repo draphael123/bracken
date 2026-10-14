@@ -1,0 +1,6 @@
+90 hint messages read out of src/main.js
+  scope hints             90 screens  1.5s
+  scope bestiary         286 screens  7.1s
+
+376 screens drawn, 8766 strings measured, 9s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in work\claude\ksarfoes\textfit\textfit
