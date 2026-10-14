@@ -23,6 +23,17 @@
 //   P3 (30-0%):  THE ARENA CHANGES (B5): the roof takes the HIGH line (two lines left). NEW: ROOF COLLAPSE - it gouges the roof: rubble falls on told spots (dust and
 //                 shadows across every line) - pump through or brake.
 // (The GREAT DRILL 2 spark spray is retired: the lunge reads better as its rear's line attack.)
+// GREAT DRILL 4 (claude/deeprails4, Daniel 10-12 live: "GEARS: each powers one attack, break one and that attack is gone for the phase - the fight ~half gears, half body"):
+//   ITS GEAR TOWER. Up its rear face, one GEAR BANK per height, EACH DRIVING ONE OF ITS ATTACKS (GEARS below): THE CHAIN WINCH (the grapple chain) on the gear housing -
+//   struck from the LOW line; THE SPIN-UP GEAR (the lunge) under the deck's lip - a JUMP from the LOW line; THE DYNAMITE FEED (the driver's sticks) on the deck - the MID
+//   line, standing back from the cab; THE ROOF WINCH (the boulders, the roof collapse) at the mast head - the HIGH line (P3, the high line down: a JUMP from the MID line).
+//   A phase shows only the banks whose attack it uses (P1 two, P2 three, P3 four). Every gear is ALWAYS hittable and takes a blow whole (no armour); a few blows and it
+//   SMOKES, SPARKS AND STOPS: that attack is GONE FOR THE PHASE (its windup cancelled if it was coming), and the rig STALLS (gearStallT: the shared OPEN read on the cab,
+//   a smaller purse - gearStallCap - then the B3 ward). A new phase bolts on NEW GEARS.
+//   HALF GEARS, HALF BODY - THE GEARS HOLD IT: at each phase line (60%, 30%) and at its end the drive will not give until HALF that phase's banks are broken (gearsNeed:
+//   1 of 2, 2 of 3, 2 of 4). A blow that would take it past a shut line is HELD (B15: never nothing - the clank says ITS GEARS HOLD IT: HIT THE GEARS; up to heldCap of
+//   it), and lands the moment the gate opens (THE DRIVE GIVES). So the body alone never passes a line, and the gears alone never empty the bar.
+//   B16: each gear-driven attack has its own rig pose and its gear SPINS UP (glows, whirs) through its windup - the tell names the gear that drives it.
 export const DRILL_STAGE = { W: 30, lanes: [0, 3, 6], ceil: 10, chute: 12 };
 export const DRILL = {
   /* GREAT DRILL 3 NUMBERS (claude/deeprails3): a greybox pass - the Sonnet tune lane measures it WITH FLASKS (tools/boss-rates.mjs minecart --profile=human) */
@@ -41,6 +52,9 @@ export const DRILL = {
   chainTell: 0.9, chainFly: 0.3, chainT: 2.2, chainPull: 95, chainDmg: 20,   /* THE GRAPPLE CHAIN: the hook swings, flies; snagged, your cart is dragged at it this fast */
   collapseTell: 1.25, collapseW: 30, collapseDmg: 62, collapseApart: 150,     /* ROOF COLLAPSE: two spots - where you will be if you hold, and this far ahead of it */
   phase2: 0.6, phase3: 0.3, phaseT: 2.0,
+  /* (deeprails4) THE GEARS: a bank's health (a few blows at campaign level), the stall a broken one costs it (an OPEN of its own: >= 3 s, its own purse), the held
+     purse at a shut gate. The Sonnet tune lane owns these (and the fight's hp) - greybox numbers */
+  gearHp: 120, gearStallT: 3.0, gearStallCap: 0.05, heldCap: 0.12, gearW: 16,
   gap: [0.3, 0.22, 0.15],
   chain: { 1: ['dynamite', 'reverse', 'rocks', 'dynamite', 'reverse', 'rocks'], 2: ['lunge', 'dynamite', 'chain', 'reverse', 'lunge', 'chain', 'dynamite'],
     3: ['collapse', 'chain', 'lunge', 'reverse', 'collapse', 'dynamite', 'lunge'] },
@@ -79,14 +93,34 @@ export const cabBox = (G, S) => ({ l: rearX(S) + DRILL.cabIn, r: rearX(S) + DRIL
 export const frontFor = (G, S, lane) => (lane <= 0 ? rearX(S) : lane === 1 ? cabBox(G, S).l : rearX(S) + DRILL.stackX);
 /* THE CHUTE'S POINTS LEVER's box (a tall trackside post: every line reaches it) */
 export const leverBox = (G, lv) => ({ l: lv.x - 9, r: lv.x + 9, t: G.laneY[2] - 44, b: G.laneY[0] });
+/* (deeprails4) THE GEAR TOWER: one bank per height up its rear face (px over its line: t..b); 'jump' = struck from a jump off the line under it */
+export const GEARS = [
+  { id: 'chain', name: 'THE CHAIN WINCH', moves: ['chain'], lane: 0, t: -30, b: -8, word: 'NO MORE CHAIN' },
+  { id: 'lunge', name: 'THE SPIN-UP GEAR', moves: ['lunge'], lane: 0, t: -44, b: -32, jump: true, word: 'NO MORE LUNGE' },
+  { id: 'dyn', name: 'THE DYNAMITE FEED', moves: ['dynamite'], lane: 1, t: -30, b: -8, word: 'NO MORE DYNAMITE' },
+  { id: 'roof', name: 'THE ROOF WINCH', moves: ['rocks', 'collapse'], lane: 2, t: -30, b: -8, word: 'NO MORE ROCKFALL' },
+];
+export const gearBoxOf = (G, S, g) => ({ l: rearX(S) - DRILL.gearW / 2, r: rearX(S) + DRILL.gearW / 2, t: G.laneY[g.lane] + g.t, b: G.laneY[g.lane] + g.b });
+export const phaseGears = ph => GEARS.filter(g => g.moves.some(m => (DRILL.chain[ph] || []).includes(m)));
+export const gearsNeed = ph => Math.ceil(phaseGears(ph).length / 2);
+export const moveGear = m => GEARS.find(g => g.moves.includes(m)) || null;
+export function armGears(S) { S.armed = 1; S.gears = {}; for (const g of phaseGears(S.ph)) S.gears[g.id] = { hp: DRILL.gearHp, max: DRILL.gearHp, broken: false, hot: 0, flash: 0, smoke: 0 }; }
+export const gearUp = (S, id) => !!(S.gears && S.gears[id] && !S.gears[id].broken);
+export const brokenN = S => Object.values(S.gears || {}).filter(q => q.broken).length;
+export const gateShut = S => brokenN(S) < gearsNeed(S.ph);
+const lineOf = (e, ph) => (ph >= 4 ? -Infinity : Math.round(e.maxHp * (ph === 1 ? DRILL.phase2 : ph === 2 ? DRILL.phase3 : 0)) + 1);
+/* the floor a blow stops at: this phase's line while its gears hold it; once they give, the NEXT line (no blow runs on past it into a phase whose gears are not up yet) */
+export const gateFloor = (S, e) => lineOf(e, gateShut(S) ? S.ph : S.ph + 1);
+/* where a hero stands to strike a gear: its line (a jump bank: the line under it, and he jumps) */
+export const gearStand = (S, g) => (g.jump ? { lane: 0, jump: true } : g.lane === 2 && S.highDown ? { lane: 1, jump: true } : { lane: g.lane, jump: false });
 
 export function newFight(G) {
   return { G, ph: 1, i: 0, cd: 1.8, t: 0, ward: 0, R: DRILL.homeR, rocks: [], dyn: [], spots: [], lunge: null, hook: null, snag: null, lever: null, ores: [], oreT: DRILL.oreFirst, oreN: 0, chute: null, openTaken: 0, contactCd: 0, revV: 0,
     n: { rocks: 0, reverse: 0, dynamite: 0, lunge: 0, chain: 0, collapse: 0, ores: 0, levers: 0, thrown: 0, jams: 0, rammed: 0, crashed: 0, shrugged: 0, warded: 0, cab: 0, armoured: 0, contact: 0,
-      revHits: 0, rockHits: 0, dynHits: 0, lungeHits: 0, snags: 0, cuts: 0, collapseHits: 0 }, told: {} };
+      revHits: 0, rockHits: 0, dynHits: 0, lungeHits: 0, snags: 0, cuts: 0, collapseHits: 0, gears: 0, gearBlows: 0, gearDmg: 0, stalls: 0, held: 0, gave: 0 }, told: {}, held: 0, pass: 0, gears: null, armed: 0 };
 }
-const beginJam = (e, S, c, how) => { e.mode = 'jammed'; e.open = DRILL.jamT; e.openT0 = DRILL.jamT; S.openTaken = 0; S.n.jams++; S.lunge = null; S.hook = null; S.snag = null; S.revV = 0;
-  c.sound && c.sound('jam'); c.shake && c.shake(6); c.number(rearX(S), S.G.laneY[1] - 40, how === 'lever' ? 'ITS OWN ORE IN ITS GEARS: STRIKE THE CAB' : 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', '#ffd36b'); };
+const beginJam = (e, S, c, how) => { const gear = how === 'gear'; e.mode = 'jammed'; e.open = gear ? DRILL.gearStallT : DRILL.jamT; e.openT0 = e.open; S.openKind = gear ? 'gear' : 'jam'; S.openTaken = 0; if (gear) S.n.stalls++; else S.n.jams++; S.lunge = null; S.hook = null; S.snag = null; S.revV = 0;
+  c.sound && c.sound('jam'); c.shake && c.shake(6); c.number(rearX(S), S.G.laneY[1] - 40, how === 'lever' ? 'ITS OWN ORE IN ITS GEARS: STRIKE THE CAB' : gear ? 'A GEAR GONE: IT STALLS - STRIKE THE CAB' : 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', '#ffd36b'); };
 /* THE POINTS THROWN (src/great-drill-hands.js: a blow on the lever, or E beside it) - true when it took */
 export function throwLever(S, c) { const lv = S.lever; if (!lv || lv.thrown || lv.gone) return false; lv.thrown = true; lv.dump = DRILL.leverDump; S.n.thrown++; c && c.sound && c.sound('points');
   c && c.number(lv.x, S.G.laneY[2] - 50, 'POINTS THROWN: ITS ORE GOES IN ITS GEARS', '#ffd36b'); return true; }
@@ -95,6 +129,8 @@ export function throwLever(S, c) { const lv = S.lever; if (!lv || lv.thrown || l
    c: { hit(box, dmg, name, o) -> bool, number(x, y, t, col), sound(k), shake(n), music(ph), crash(h, o), shove(h, px), arena(k), snag(h) } */
 export function stepDrill(e, S, dt, heroes, c) {
   const G = S.G; S.t += dt;
+  if (!S.armed) { armGears(S); S.armed = 1; }
+  for (const q of Object.values(S.gears || {})) { q.hot = Math.max(0, q.hot - dt); q.flash = Math.max(0, q.flash - dt); if (q.broken) q.smoke += dt; }
   { const cb = cabBox(G, S); e.x = (cb.l + cb.r) / 2; e.y = cb.b; e.gdWard = S.ward; }
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { e.modeT = (e.modeT ?? 1.6) - dt; if (e.modeT <= 0) { e.mode = 'idle'; S.cd = 1.4; } return; }
@@ -163,7 +199,7 @@ export function stepDrill(e, S, dt, heroes, c) {
   /* THE PHASES */
   const k = e.hp / e.maxHp;
   if (e.mode !== 'phase' && e.mode !== 'reverse' && ((S.ph === 1 && k <= DRILL.phase2) || (S.ph === 2 && k <= DRILL.phase3))) {
-    S.ph++; e.phase = S.ph; e.mode = 'phase'; S.mT = DRILL.phaseT; S.i = 0; S.lunge = null; S.hook = null; c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
+    S.ph++; e.phase = S.ph; e.mode = 'phase'; S.mT = DRILL.phaseT; S.i = 0; S.lunge = null; S.hook = null; armGears(S); c.music && c.music(S.ph); c.shake && c.shake(5); c.sound && c.sound('phase');
     if (S.ph === 3) { S.highDown = true; c.arena && c.arena('highDown'); c.sound && c.sound('rock'); }
     c.number(rearX(S), G.laneY[2] - 34, S.ph === 2 ? 'IT SPINS UP: DUCK ITS HEAD, CUT ITS CHAIN' : 'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT', S.ph === 2 ? '#ffb070' : '#ff6b6b'); return; }
   if (e.mode === 'phase') { S.mT -= dt; if (S.mT <= 0) { e.mode = 'idle'; S.cd = 0.9; } return; }
@@ -172,7 +208,9 @@ export function stepDrill(e, S, dt, heroes, c) {
   S.mT = (S.mT || 0) - dt;
   switch (e.mode) {
     case 'idle': { S.cd -= dt; if (S.cd > 0 || !near || S.lever || S.snag) break;   /* (one thing at a time: no move while its points lever is out, or while it has you on its chain) */
-      const ch = DRILL.chain[S.ph]; const name = ch[S.i % ch.length]; S.i++;
+      const ch = DRILL.chain[S.ph]; let name = 'reverse';   /* (deeprails4) a move whose gear is broken is GONE for the phase: the next one comes instead (the reverse ram is the drive itself - never gone) */
+      for (let k = 0; k < ch.length; k++) { const m = ch[S.i % ch.length]; S.i++; const gg = moveGear(m); if (!gg || gearUp(S, gg.id)) { name = m; break; } }
+      { const gg = moveGear(name); if (gg && S.gears[gg.id]) S.gears[gg.id].hot = 1.3; }   /* B16: its gear SPINS UP through the windup (drawn) */
       const ls = lanesOf(S), hl = Math.min(ls[ls.length - 1], near.lane >= 0 ? near.lane : laneUnder(G, near.y));
       if (name === 'rocks') { const clear = ls.length === 2 ? ls.find(l => l !== hl) : ls.filter(l => l !== hl)[S.n.rocks % 2]; S.n.rocks++;
         S.rocks = ls.filter(l => l !== clear).map((lane, j) => ({ lane, x: Math.min(rearX(S) - 20, near.x + DRILL.cruise * DRILL.rockTell + (j ? 18 : 0)), t: DRILL.rockTell, id: S.n.rocks * 3 + j }));
@@ -203,23 +241,48 @@ export function stepDrill(e, S, dt, heroes, c) {
 }
 /* A HERO'S BLOW ON IT (the cab): what comes off the bar (and the word in out.word). Armoured x0.4 (B15: never totally invulnerable), jammed x2 capped a share a jam */
 export function takeBlow(e, S, dmg, out = {}) {
+  if (S.pass > 0) { const p = S.pass; S.pass = 0; S.n.gave += p; out.word = 'THE DRIVE GIVES'; return p; }   /* (deeprails4) the HELD blows, landing as the gate opens */
   if (e.mode === 'sleep' || e.mode === 'wake') { out.word = 'ARMOURED'; return Math.round(dmg * DRILL.armour); }
-  S.n.cab++;
-  if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * DRILL.jamCap - S.openTaken), d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d; out.cap = 'jam';
-    if (cap - d <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT FREES ITS GEARS'; } return d; }
-  S.n.armoured++; if (S.ward > 0) S.n.warded++; out.word = S.ward > 0 ? 'PLATES UP' : 'ARMOURED: THROW ITS POINTS';
-  return dmg * DRILL.armour;
+  S.n.cab++; let d;
+  if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * (S.openKind === 'gear' ? DRILL.gearStallCap : DRILL.jamCap) - S.openTaken); d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d; out.cap = 'jam';
+    if (cap - d <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT FREES ITS GEARS'; } }
+  else { S.n.armoured++; if (S.ward > 0) S.n.warded++; S.wordI = (S.wordI || 0) + 1;
+    out.word = S.ward > 0 ? 'PLATES UP' : Object.values(S.gears || {}).some(q => !q.broken) && S.wordI % 2 ? 'ARMOURED: HIT THE GEARS' : 'ARMOURED: THROW ITS POINTS'; d = dmg * DRILL.armour; }
+  return d;
 }
+/* (deeprails4) THE GEARS HOLD IT: what LANDS (src/main.js, last before the bar - after every multiplier and finisher), past a shut phase line, is HELD (B15: not nothing -
+   it lands when the gate opens, up to heldCap of it); out.word names the gears */
+export function gateBlow(e, S, d, out = {}) { const fl = gateFloor(S, e); if (!(d > 0) || e.hp < fl || e.hp - d >= fl) return d;
+  const keep = Math.max(0, e.hp - fl), over = d - keep; S.held = Math.min(e.maxHp * DRILL.heldCap, S.held + over); S.n.held += over; out.word = 'ITS GEARS HOLD IT: HIT THE GEARS'; return keep; }
+/* (deeprails4) A BLOW ON A GEAR BANK: whole (a gear has no armour). Broken: its attack is gone for the phase (a windup of it cancelled), the rig STALLS (an opening, unless it is
+   already open, warded or changing phase) and, if that opens the gate, the held blows are passed (out.release: the hands land them through the game's own hurt) */
+export function hitGear(e, S, id, dmg, c, out = {}) { const q = S.gears && S.gears[id], g = GEARS.find(k => k.id === id); if (!q || !g) return 0; if (q.broken) { out.word = 'BROKEN'; return 0; }
+  const shut0 = gateShut(S), d = Math.min(q.hp, Math.max(0, dmg)); q.hp -= d; q.flash = 0.15; S.n.gearBlows++; S.n.gearDmg += d;
+  if (q.hp <= 0.001) { q.hp = 0; q.broken = true; q.smoke = 0; q.hot = 0; S.n.gears++; out.broke = true;
+    if (g.moves.includes('lunge') && S.lunge) { S.lunge = null; if (e.mode === 'lunge') { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } }
+    if (g.moves.includes('chain')) { if (S.hook) { S.hook = null; if (e.mode === 'chain') { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } } S.snag = null; }
+    if (g.moves.includes('dynamite') && e.mode === 'dynTell') { S.dynPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; }
+    if ((g.moves.includes('rocks') && e.mode === 'rockTell') || (g.moves.includes('collapse') && e.mode === 'collapseTell')) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; }   /* (what is already falling falls) */
+    c.sound && c.sound('gearBreak'); c.shake && c.shake(5);
+    const bw = g.name + ' BROKEN: ' + g.word; c.number(rearX(S) - 30, S.G.laneY[g.lane] + g.t - 14, bw, '#8fd160');
+    if (!drillOpen(e) && S.ward <= 0 && e.mode !== 'phase' && e.mode !== 'sleep' && e.mode !== 'wake') beginJam(e, S, c, 'gear');
+    if (shut0 && !gateShut(S)) { if (S.held > 0) { S.pass = Math.round(S.held); S.held = 0; out.release = S.pass; } c.number(rearX(S) - 30, S.G.laneY[2] - 54, S.ph === 3 ? 'ITS GEARS GIVE: FINISH IT' : 'ITS GEARS GIVE: THE DRIVE IS OPEN', '#ffd36b'); } }
+  return d; }
+
 /* a snag ends: a jump off the line, or the chain cut (src/great-drill-hands.js) */
 export function freeSnag(S, how) { if (!S.snag) return false; S.snag = null; if (how === 'cut') S.n.cuts++; return true; }
 
 /* ---------- THE BOT (src/lab.js): what a player sees, read a quarter-second late (react 0.25 s, a tell misread one time in eight) ----------
    P: { x, y, ground, face, atk, vy, lane, v, snagged }; returns { gx (where to hold, arena px), jump, drop (down + jump), duck, talk (E), atk, boost, face, why } */
-export const DRILL_PLAN = { react: 0.25, miss: 0.13, missRam: 0.15, missLever: 0.12 };
+export const DRILL_PLAN = { react: 0.25, miss: 0.13, missRam: 0.15, missLever: 0.12, gearOrder: ['dyn', 'chain', 'roof', 'lunge'] };   /* (deeprails4) the gear a player goes for first: the nearest line's, then this order */
+/* (deeprails4) the bank a bot goes for: up and in this phase - on its own line first */
+function pickGear(S, lane, P) { const up = GEARS.filter(g => gearUp(S, g.id)); if (!up.length) return null; const mine = up.find(g => !g.jump && gearStand(S, g).lane === lane && !gearStand(S, g).jump);
+  return mine || DRILL_PLAN.gearOrder.map(id => up.find(g => g.id === id)).find(Boolean); }
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0, eyes = false }) {
   const G = S.G, out = { gx: null, face: 1, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
   /* (claude/flasklever) eyes: the lab's perception layer already shows HIS MODE late - but a rock, a stick of dynamite, a hook, a roof spot, a lever and an ore are not his mode: they were seen on the frame they came (the Foreman's perfect-eyes bypass). Only his reverse is a mode. */
   const late = k => { if (eyes && k.startsWith('rev')) return true; if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
+  let gb = null;
   const cab = cabBox(G, S), R0 = rearX(S), standX = cab.l - (tip ? tip + 4 : Math.max(10, reach - 8));
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) { if (P.x + 14 > frontFor(G, S, l)) out.backTo = frontFor(G, S, l) - 30; else out.drop = true; } };
   /* snagged: jump off the line (a player's first answer) */
@@ -247,6 +310,13 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
     if (lane !== 0) go(0); out.why = 'ore: ram';
     if (o) { if (!(mem['mr' + S.oreN] ??= rng() < DRILL_PLAN.missRam)) { out.gx = o.x + 40; out.boost = true; } else out.gx = o.x - 30; }
     else out.gx = Math.min(P.x, R0 - 40); }
+  /* 4b. (deeprails4) THE GEARS: while the gate is shut (its gears hold it), break a bank - the one on my line first, else the order; stand back from the rear face on the
+     bank's line (a jump bank: under it, and strike rising) */
+  else if (gateShut(S) && e.mode !== 'phase' && (gb = pickGear(S, lane, P))) { const g = gb, st = gearStand(S, g), bx = gearBoxOf(G, S, g), gx = bx.l - Math.max(8, Math.min(reach, 30)) + 10;
+    out.why = 'gear ' + g.id; out.gx = gx;
+    if (lane !== st.lane && P.ground) { if (st.lane < lane && P.x + 14 > frontFor(G, S, st.lane)) out.gx = Math.min(gx, frontFor(G, S, st.lane) - 30); else go(st.lane); }
+    else if (Math.abs(P.x - gx) < 10) { if (st.jump) { if (P.ground && lane === st.lane) out.jump = true; else if (!P.ground && P.y < G.laneY[st.lane] - (g.lane === 2 ? 30 : 8) && P.atk < 0) out.atk = true; }
+      else if (P.atk < 0 && (mem.atkT ?? -9) < t - 0.3) { mem.atkT = t; out.atk = true; } } }
   /* 5. OTHERWISE: work the cab from the MID line between its moves (x0.4 is still damage), or wait off its sweep while its plates are up */
   else { const busy = e.mode === 'revTell' || e.mode === 'reverse' || lungeOn;
     out.gx = standX; if (lane !== 1 && LS.includes(1)) { if (lane === 2 && P.x > cab.l - 16) out.gx = cab.l - 26; else go(1); } if (Math.abs(P.x - standX) < 12 && lane >= 1 && !busy && P.atk < 0 && (mem.atkT ?? -9) < t - 0.35) { mem.atkT = t; out.atk = true; } out.why = 'cab'; }

@@ -1,0 +1,39 @@
+== tools/sealed-pyramid-stuck.mjs
+Error: TypeError: undefined is not iterable (cannot read property Symbol(Symbol.iterator))
+    at <anonymous>:6:23
+    at Object.evalp (file:///C:/Users/Daniel%20Raphael/tools/cdp.mjs:49:54)
+    at async file:///C:/Users/Daniel%20Raphael/tools/sealed-pyramid-stuck.mjs:12:13
+
+Node.js v24.19.0
+== tools/corpses.mjs
+  ok   underwell cn:oilscorpion (scorpion) corpse: the reskin
+  ok   underwell cn:firescorpion (scorpion) corpse: the reskin
+  ok   underwell cn:drowneddead (zombie)  corpse: the reskin
+  ok   underwell cn:cisternbat (bat)      corpse: the reskin
+  ok   underwell cn:oilthief (sapper)     corpse: the reskin
+ok  corpses  every reskinned foe's hurt frame and body are drawn in its own skin
+== tools/textfit.mjs --strict
+  scope talk[warden]     793 screens  300.5s
+  scope whatsnew           3 screens  3.7s
+  scope hud               30 screens  16.9s
+  scope plates          1368 screens  364.7s
+
+TEXTFIT SCOPE "boss" FAILED after 481s (limit 480s; TEXTFIT_SCOPE_TIMEOUT changes it): Runtime.evaluate did not answer within 481000ms
+== tools/boss-openings.mjs
+{"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"coldOpen":0,"mode":"scorched","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":"vent"},"mage":{"laid":true,"landed":{"mode":"hover","open":0,"hurt":true},"mode":"gather","open":3},"pyro":{"alone":{"open":0,"heat":8},"mode":"overheat","open":3.4},"graveWarden":{"solid":{"mode":"dig
+== tools/boss-fight-end.mjs
+Every one of 62 boss and mini fights (47 bosses, 15 minis) ends when its boss dies.
+== tools/mark-integrity.mjs
+boss scarabmother   scarabmother|chargeTell       !!  seen 4, landed 4, posed 4/4 (px 1520-51640)
+boss scarabmother   scarabmother|snapTell         !   seen 2, landed 2, posed 2/2 (px 1558-1559)
+boss scarabmother   scarabmother|spitTell         !   seen 2, landed 2, posed 2/2 (px 1452-1503)
+
+every mark seen belongs to a windup that is drawn and lands.
+== tools/untold-told.mjs
+{"t":"kite","tells":1,"marks":["!"],"hits":1,"lost":17,"untold":[],"nUntold":0,"alive":true,"mode":"hover"}
+{"t":"bale","tells":1,"marks":["!!"],"hits":0,"lost":0,"untold":[],"nUntold":0,"alive":true,"mode":"roll"}
+{"t":"sweep","tells":1,"marks":["!"],"hits":1,"lost":9,"untold":[],"nUntold":0,"alive":true,"mode":"hide"}
+{"t":"horn","tells":1,"marks":["!!"],"hits":0,"lost":0,"untold":[],"nUntold":0,"alive":true,"mode":"idle"}
+{"t":"mummy","tells":2,"marks":["!"],"hits":2,"lost":46,"untold":[],"nUntold":0,"alive":true,"mode":"walk"}
+23 foes that were untold each wound up on a mark, and none hurt the hero without one (skipped, answer-tags holds them: lamprey - it lives in deep water and reaches only a swimming hero; clinger - it hangs on a wall over a hero in the air)
+ALLDONE

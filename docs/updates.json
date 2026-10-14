@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-14",
+    "batch": 92,
+    "lines": [
+      "Sealed Pyramid rebuilt: tombs, traps and the Coffin King",
+      "Paladin: holy ground, hammer throw and new art",
+      "Deep Rails: the Great Drill gets its new look",
+      "Game speed now goes from 50% to 200%",
+      "Desert sun can no longer kill you, and the Ksar has more shade",
+      "New music for three more levels"
+    ]
+  },
+  {
+    "date": "2026-10-14",
     "batch": 91,
     "lines": [
       "Bosses fight harder, and flasks heal less",

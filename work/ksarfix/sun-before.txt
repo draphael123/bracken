@@ -1,0 +1,18 @@
+KSAR SUN (campaign level 39; max hp knight 282, warden 282, pyro 270, berserker 287); route 817 tiles, 53 sun stretches, 46 shade boxes
+stretch > 2 s (the drain's start): 18; > 3 s: 7; longest 4.0 s; walk in sun total 82.8 s
+stretch (cols)        secs   %max   fight%  knight   warden   pyro     berserker
+ 389-412              4.0    4.7    22.2   13.2     13.2     12.7     13.5     
+ 338-359              3.7    3.6    20.6   10.0     10.0     9.6      10.2     
+ 601-622              3.7    3.6    20.6   10.0     10.0     9.6      10.2     
+ 363-382              3.3    2.6    19.0   7.2      7.2      6.9      7.4      
+  23-41               3.1    2.1    18.2   5.9      5.9      5.7      6.0      
+  81-99               3.1    2.1    18.2   5.9      5.9      5.7      6.0      
+ 123-141              3.1    2.1    18.2   5.9      5.9      5.7      6.0      
+ 145-160              2.6    1.0    15.9   2.7      2.7      2.6      2.8      
+ 238-253              2.6    1.0    15.9   2.7      2.7      2.6      2.8      
+ 562-577              2.6    1.0    15.9   2.7      2.7      2.6      2.8      
+ 636-651              2.6    1.0    15.9   2.7      2.7      2.6      2.8      
+ 164-178              2.4    0.7    15.1   1.9      1.9      1.8      1.9      
+TOTAL hp over every stretch (each from cool): knight 76.5  warden 76.5  pyro 73.3  berserker 77.9   | worst single stretch: knight 13.2  warden 13.2  pyro 12.7  berserker 13.5
+IF YOU SPEND 4 s FIGHTING IN EACH STRETCH: mean hp per stretch knight 31.7  warden 31.7  pyro 30.3  berserker 32.2   | worst stretch knight 62.5  warden 62.5  pyro 59.9  berserker 63.6
+JSON {"stretches":53,"over2":18,"over3":7,"longest":4,"sunSecs":82.8,"total":{"knight":76.5,"warden":76.5,"pyro":73.3,"berserker":77.9},"meanFight":{"knight":31.7,"warden":31.7,"pyro":30.3,"berserker":32.2},"worst":{"knight":13.2,"warden":13.2,"pyro":12.7,"berserker":13.5}}

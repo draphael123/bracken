@@ -20,7 +20,7 @@ const SECS = +(process.env.MP_SECS || 4);
 /* (the PC runs other lanes while this runs, so the timing budgets are loose guards against a real regression - the structural guards below, which a busy PC cannot flake, are the sharp ones) */
 const BUDGET = { bootMs: +(process.env.MP_BOOT_BUDGET || 150000), fpsMin: +(process.env.MP_FPS_MIN || 40), worstMs: 600, inputMs: 50, canvasMegapixels: 1.3 };
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-const pg = await openPage({ noWait: true, audio: false, fonts: false });
+const pg = await openPage({ noWait: true, audio: false, fonts: false, speed: +(process.env.MP_SPEED || 0.6) })   /* the live default is 60%; MP_SPEED=1 or 2 measures the sub-step */;
 const fails = [], rows = [], out = { cpu: CPU, viewport: W + 'x' + H + '@' + DPR };
 const E = (x, t = 120000) => pg.evalp(x, t);
 try {
@@ -54,7 +54,7 @@ try {
     const wall = m1.t - m0.t, row = { scene: name, fps: +(r.n / wall).toFixed(1), p95: +r.p95.toFixed(1), worst: +r.worst.toFixed(1), busyMsPerFrame: +(((m1.task - m0.task) * 1000) / Math.max(1, r.n)).toFixed(1),
       scriptMs: +(((m1.script - m0.script) * 1000) / Math.max(1, r.n)).toFixed(1) };
     rows.push(row); console.log(('  ' + name).padEnd(12) + JSON.stringify(row)); return row; };
-  const level = async id => { await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(id)})); BK.state = 'play'; })()`); await sleep(1500); };
+  const level = async id => { const [lid, at] = id.split('@'), [cc, rr] = (at || '').split(':').map(Number); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lid)})); BK.state = 'play'; ${at ? 'BK.P.x = ' + (cc * 16 + 8) + '; BK.P.y = ' + (rr * 16) + ';' : ''} })()`); await sleep(1500); };   /* (claude/pyramidart) 'level@col:row' parks the hero in a spot (the boss room) */
   for (const s of SCENES) {
     if (s === 'title') { await E("BK.state = 'title'"); await measure('title'); }
     else if (s === 'map') { await E("BK.state = 'map'"); await sleep(800); await measure('map'); }

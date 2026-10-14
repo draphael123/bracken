@@ -1,0 +1,14 @@
+sealedpyramid knight s1 L41 (351hp, swordOfRealm+groundSlam+lunge, 3 flasks, heart charm): ROUTE 0 deaths, 242s, 32 kills, 17 hits, walked 99%, arrivals 53% 49% 61% 68%, measured 99% of the route
+    sections: #0 lost 50% heal 3% (0 drinks) 0d 1h 9k 55s | #1 lost 104% heal 100% (2 drinks) 0d 11h 9k 66s | #2 lost 87% heal 99% (2 drinks) 0d 5h 9k 49s | #3 lost 0% heal 7% (0 drinks) 0d 0h 5k 63s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 10s
+    hit by (nearest foe, hits/%hp): other 11/136% mummy* 2/52% construct* 1/50% scorpion 1/2% scorpion* 1/1% mummy 1/0%
+    elite duels: construct/SHIELDED@596 WON 9.8s 100->53%, scorpion/VENOMOUS@710 WON 10s 49->49%, mummy/BURNING@843 WON 8.4s 66->61%, construct/UNSTOPPABLE@935 WON 4.3s 66->67%
+sealedpyramid warden s1: ERR the fresh lab page did not initialize
+sealedpyramid pyro s1 L41 (339hp, meteor+fireWall+wisp, 3 flasks, heart charm): ROUTE 0 deaths, 248s, 34 kills, 25 hits, walked 99%, arrivals 75% 67% 52% 60%, measured 99% of the route
+    sections: #0 lost 84% heal 59% (1 drinks) 0d 2h 10k 46s | #1 lost 157% heal 149% (3 drinks) 0d 16h 10k 76s | #2 lost 119% heal 103% (2 drinks) 0d 7h 9k 53s | #3 lost 0% heal 8% (0 drinks) 0d 0h 5k 65s | #4 lost 0% heal 0% (0 drinks) 0d 0h 0k 8s
+    hit by (nearest foe, hits/%hp): other 16/227% construct* 1/50% ambusher 1/34% mummy 1/24% scorpion 2/12% mummy* 1/9% scorpion* 3/3%
+    elite duels: construct/SHIELDED@597 WON 3.6s 77->28%, scorpion/VENOMOUS@711 WON 21.9s 76->65%, mummy/BURNING@840 WON 13.6s 54->52%, construct/UNSTOPPABLE@935 WON 4.9s 59->60%
+
+LEVEL WALK  (campaign level, typical build, profile human+first, 3 runs, 3 min)  target: 1-2 deaths a first run, arrive < 50%
+level      hero     L runs deaths(haz/elite) arrive%(mean/min)  lost%/sec  drinks  kills  secs  walked  meas  end            vs target
+sealedpyramidknight  41    1    0.0(0.0/0.0)              58/49         60     4.0     32   242     99%   99%  route          MISS: deaths 0.0 < 1, arrive 58% >= 50
+sealedpyramidpyro    41    1    0.0(0.0/0.0)              64/52         90     6.0     34   248     99%   99%  route          MISS: deaths 0.0 < 1, arrive 64% >= 50

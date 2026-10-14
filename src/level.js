@@ -133,7 +133,7 @@ function brackenWood() {
   plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
-  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'HOLD C: AEGIS. TAP C: MEND. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
+  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'TAP C: HOLY GROUND. HOLD C: AEGIS. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
   // A STONE BLOCK (teaching use, backlog #12: PUSHABLE BLOCKS). A ledge floats over the path at row 18 - four
   // tiles up, a real jump reaches about 3.2 - with a coin on it. Push the block two tiles snug underneath, stand
   // on it, and the last tile is one jump away. The ledge is a single floating tile (rows 19-21 under it stay
@@ -1194,7 +1194,7 @@ function kingswood() {
 
   const ret = {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 19 }, pools: [], falls: [], moversExtra: movers,
-    duskStart: -1, duskLen: 1, music: 'theme3', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'kingswood', night: false, glowNight: true,
     interiors: [[45, 84, 17, 19], [85, 150, 17, 21], [211, 275, 16, 20]], // hollowed trunks and burrows: a dark planked backdrop behind the play layer
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
@@ -3828,12 +3828,13 @@ function trialYard(hero) {
       ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],
       ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
-      ['mend', 1, 'MEND: TAP C TO SPEND HALF THE LIGHT ON HEALING. IT ROOTS YOU A MOMENT.', [], 'TAP LB'],
+      ['hallow', 1, 'HOLY GROUND: TAP C. IN YOUR CIRCLE YOU HIT HARDER AND MEND, AND FOES IN IT BURN.', [['dummy', 11], ['dummy', 14]], 'TAP LB'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
+      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. A QUARTER OF THE LIGHT. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
       ['hammerfall', 2, 'HAMMERFALL: JUMP, THEN DOWN+X. THE GROUND CARRIES IT BOTH WAYS. CATCH TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
       ['dodge', 2, 'THE HEAVY STEP: TAP A WAY TWICE, OR V. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS.', [], 'B, OR THE STICK TWICE'],
       DASH, RISE, SWEEP,
-      ['judgement', 1, 'JUDGEMENT: WITH A FULL LIGHT, PRESS C AGAIN. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH A FULL BAR'],
+      ['judgement', 1, 'JUDGEMENT: A FULL LIGHT, IN YOUR CIRCLE, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB IN THE CIRCLE, FULL'],
       SKILL],
     /* THE WARDEN'S YARD (2026-09-24, POLISH): her four verbs, not the knight's. The POINT (only the last quarter of the spear bites),
        the DEFLECT on the beat (C is a sweep of the shaft, never a shield), the RUN-THROUGH (the held X that skewers a line) and the PIN
@@ -3884,7 +3885,7 @@ function trialYard(hero) {
     for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 18, 19); ent('archer', x0 + dx, 17, { face: -1, lx0: x0 + 1, lx1: gate - 1 }); } else if (t === 'dummy') ent('dummy', x0 + dx, 19);
       else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
-    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
+    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' ? 60 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
   const xe = 4 + ST.length * SW;
   ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
   ent('gate', xe + 14, 19);
@@ -5192,10 +5193,10 @@ function theHurricane() {
   plat(53, 16, 4); net(53, 54, 15, 19);
   ent('deco', 15, 17, { kind: 'figurehead', hang: true });   /* 15: against the stem - at 14 she hung eight pixels off the bow in the air (level review, 2026-09-24) */                 // her head, hung off the bow under your feet
   ent('deco', 20, 15, { kind: 'shipBell' }); ent('deco', 46, 15, { kind: 'anchor' });
-  ent('sign', 18, 15, { text: 'HER BELL. THEY RANG IT FOR THE WATCH AND FOR THE DEAD, AND IT IS STILL RINGING ITSELF.' });
+  
   ent('sign', 26, 19, { text: 'THE WAVE COMES FROM WINDWARD. TAKE A LINE, CLIMB, OR GO BELOW. ON DECK, JUMP IT.' });
   ent('check', 30, 19);
-  ent('sign', 44, 19, { text: 'HER LANTERNS ROLLED INTO THE CORNERS OF THE SHIP. ONE STILL HOLDS A LIGHT.' });
+  
   ent('sign', 50, 19, { text: 'SHE ROLLS. WHEN SHE HEELS, HOLD A LINE, PUT A BITT AT YOUR BACK, OR STAND ON THE SAND.' });
   ent('deco', 40, 19, { kind: 'kegStack' }); ent('deco', 24, 19, { kind: 'hammock', v: 0 }); ent('deco', 32, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 46, 19, { kind: 'washing' }); ent('deco', 28, 19, { kind: 'hammock', v: 1 });
   coins([28, 18], [36, 18], [48, 18]);
@@ -5210,11 +5211,11 @@ function theHurricane() {
   ent('lookout', 72, 5, { face: -1 });
   for (const [gx, gy] of [[80, 8], [84, 7], [88, 8]]) ent('petrel', gx, gy, { gull: true, face: -1 });   /* A FLOCK in the wind over her yards: they come down one at a time */
   ent('cargo', 92, 18, { kind: 'barrel' }); ent('cargo', 110, 18, { kind: 'crate' });   /* loose on her deck, and they go where she leans */
-  ent('sign', 57, 19, { text: 'THEY WANT HER BACK AND THEY DO NOT CARE THAT SHE IS SINKING.' });
+  
   air(66, 67, 20, 20); net(66, 67, 20, 26); // the fore hatch down into her hold
   // FORWARD OF THE HATCH: her forepeak, where the cable and the spare canvas live. It is a walk with an end
   // to it, so it is worth the walk - the stores, the men guarding them, and her silver at the head of her.
-  ent('sign', 60, 26, { text: 'THE FOREPEAK. THEY PUT MEN ON IT, SO SOMETHING IS DOWN THERE.' });
+  
   ent('deco', 56, 26, { kind: 'coiledCable', v: 0 }); ent('deco', 48, 26, { kind: 'kegStack' });
   ent('deco', 40, 26, { kind: 'rumBarrels', v: 1 }); ent('deco', 32, 26, { kind: 'waterButt' });
   ent('deco', 26, 26, { kind: 'plunder', v: 2 }); ent('deco', 22, 26, { kind: 'chartTable' });
@@ -5245,7 +5246,7 @@ function theHurricane() {
   block(184, 216, 16, 19); air(186, 214, 17, 19); air(184, 185, 17, 19); air(215, 216, 17, 19);
   plat(217, 16, 4); net(182, 183, 15, 19); net(217, 218, 15, 19);
   ent('torch', 190, 19); ent('deco', 194, 19, { kind: 'kegStack' }); ent('deco', 206, 19, { kind: 'chickenCoop' });
-  ent('sign', 188, 19, { text: 'HER GALLEY. THE STOVE IS OUT AND THE COOK IS GONE AND THE KETTLE IS STILL SWINGING.' });
+  
   ent('bosun', 202, 19, { face: -1 }); ent('cutlass', 210, 19, { face: -1 }); ent('sailor', 194, 19, { face: 1 }); ent('marine', 218, 15, { face: -1 });
   ent('check', 186, 19);
   ent('deco', 198, 15, { kind: 'lanternDeck', v: 1 });
@@ -5271,21 +5272,21 @@ function theHurricane() {
   ent('deco', 278, 25, { kind: 'coiledCable', v: 1 });   /* 284 is inside the bulkhead: it was pushed out against it */ coins([273, 25], [278, 25], [282, 25]);
   ent('pump', 246, 19, { pool: 424 });   /* 246, on the deck: 244 is the rope ladder out of the hold (src/storm-ship.js nets 243-244), and it stood on the rope (level review, 2026-09-24) */ ent('sign', 240, 19, { text: 'WORK THE PUMP BRAKE TO DRAIN THE HOLD. THE ORLOP HIDES SOMETHING WHEN DRY.' });
   ent('deco', 250, 19, { kind: 'kegStack' }); ent('deco', 252, 19, { kind: 'waterButt' });   /* not on the shroud's foot at 248: a net is no floor, and it sank a row into the rail */
-  ent('sign', 226, 19, { text: 'THE WAIST IS THE WORST OF HER: NO RAIL WORTH THE NAME AND NOTHING TO HOLD BUT THE SHROUDS.' });
+  
   air(236, 237, 20, 20); net(236, 237, 20, 26);
   ent('deco', 228, 19, { kind: 'washing' }); ent('deco', 320, 19, { kind: 'boardingNet' }); ent('deco', 264, 19, { kind: 'rumBarrels', v: 1 }); ent('deco', 308, 19, { kind: 'washing' }); ent('deco', 286, 19, { kind: 'hammock', v: 0 });
   movers.push({ kind: 'swing', px: 276 * TS, py: 8 * TS, arm: 88, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 0.4 });
   movers.push({ kind: 'swing', px: 296 * TS, py: 8 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.6, phase: 2 });
   coins([230, 18], [244, 18], [258, 18], [274, 18], [288, 18], [304, 18], [318, 18], [278, 10], [298, 11], [236, 18], [252, 18], [266, 18], [282, 18], [296, 18], [312, 18], [240, 25], [256, 25], [272, 25], [290, 25]);
   // AMIDSHIPS: the hands who are still trying to save her, and do not care that you are aboard
-  ent('sign', 290, 19, { text: 'HER MAIN. THE CREW ARE STILL WORKING HER AND THEY WILL STILL KILL YOU FOR HER.' });
+  
   ent('boarder', 322, 19, { face: -1 }); ent('sailor', 318, 19, { rise: true, face: -1 }); ent('bosun', 328, 19, { face: -1 });
   ent('check', 292, 19);
   // THE MAIN COMES DOWN (L.felled). Walk aft of her pump and the sky marks her mainmast and the deck she will land on;
   // a breath later she is down: her tops in a heap across the waist at 289, and her mast lying from the deck at 258 up
   // into the main yard at 280 - the old road shut and a new one up into the rigging. The orlop under her is still a
   // way aft, so nobody is ever shut in, and a death before the trigger stands her back up.
-  ent('check', 222, 19); ent('sign', 234, 19, { text: 'HER MAIN IS THE TALLEST THING FOR A MILE, AND THE SKY HAS BEEN LOOKING AT IT ALL NIGHT.' });
+  ent('check', 222, 19); 
   ent('cargo', 248, 18, { kind: 'barrel' }); ent('cargo', 302, 18, { kind: 'crate' });
 
   // ---- HER BULKHEADS: iron across the orlop, and only a round shot moves one ----
@@ -5301,7 +5302,7 @@ function theHurricane() {
     for (let y = 20; y <= 22; y++) { set(604, y, T.AIR); set(605, y, T.AIR); }   // the hatch down past it
     set(604, 22, T.PLANK); set(605, 22, T.PLANK);
     door(208, 194, null);                     // 3. and one on the long dark run forward
-    ent('sign', 186, 26, { text: 'THE FORWARD MAGAZINE. THEY SHUT IT WHEN SHE STRUCK AND NOBODY HAS BEEN IN SINCE.' });
+    
     coins([374, 25], [376, 25], [598, 25], [600, 25], [210, 25], [212, 25]);
   }
 
@@ -5319,7 +5320,7 @@ function theHurricane() {
   ent('eel', 366, 33); ent('eel', 402, 35); ent('eel', 388, 30); ent('urchin', 378, 41); ent('urchin', 392, 41); ent('urchin', 404, 41); ent('petrel', 356, 29); ent('petrel', 412, 29);
   coins([358, 32], [366, 36], [374, 30], [382, 38], [390, 32], [398, 36], [406, 30], [414, 34]);
   air(414, 418, 20, 27); net(415, 416, 21, 27); // the hatch aft: up out of the water into her flooded hold
-  ent('sign', 420, 19, { text: 'UP THROUGH HER AFTER HATCH. SHE IS FULL TO THE ORLOP BACK HERE.' });
+  
 
   // ================= 7. HER FLOODED HOLD: over your boots and rising, and the pumps have stopped =================
   pools.push({ x0: 424 * TS, x1: 478 * TS, y: 25 * TS + 4, bottom: 27 * TS, shallow: true, depth: 24, pumped: true, base: 25 * TS + 4 }); // HER PUMPS answer this one
@@ -5328,7 +5329,7 @@ function theHurricane() {
   ent('deco', 444, 26, { kind: 'hammock', v: 0 }); ent('deco', 468, 26, { kind: 'plunder', v: 1 });
   ent('vault', 448, 26); ent('coin', 464, 26); ent('deco', 456, 26, { kind: 'plunder', v: 1 }); coins([446, 26], [454, 26], [462, 26], [470, 26]); // (under the water until the pumps run)
   ent('netter', 440, 26, { face: 1 }); ent('marine', 470, 26, { face: -1 }); ent('boarder', 456, 26, { face: -1 }); ent('crab', 464, 26, { face: -1 });
-  ent('sign', 426, 26, { text: 'THE PUMPS HAVE STOPPED. WADING IS SLOW, AND SHE IS SINKING FASTER.' });
+  
   ent('check', 432, 26);
   coins([434, 25], [442, 25], [450, 25], [458, 25], [466, 25], [474, 25]);
   for (const hx of [428, 476] ) { air(hx, hx + 1, 20, 20); net(hx, hx + 1, 20, 26); } // up onto her deck at either end
@@ -5337,7 +5338,7 @@ function theHurricane() {
   // Fifty tiles of dead calm between the Weather Deck and the wreck (L.eye): no sea, no sky, no roll, no rain, the band
   // gone quiet, and nobody on her deck but a hand who has sat down to die. It is the only quiet place in her, and a
   // promise about the rest of her: past it the wash comes quicker and harder and the sky strikes more often.
-  ent('sign', 436, 19, { text: 'THE EYE. THE WIND HAS DROPPED AND THE STARS ARE OUT. IT WILL NOT LAST.' });
+  
 
   ent('deco', 446, 19, { kind: 'waterButt' }); ent('deco', 458, 19, { kind: 'coiledCable', v: 0 });
   coins([440, 17], [444, 16], [448, 17], [460, 17], [464, 16], [468, 17]);
@@ -5355,7 +5356,7 @@ function theHurricane() {
   air(504, 540, 25, 26); air(500, 544, 26, 27); air(520, 521, 24, 24); net(520, 521, 24, 26);   /* her bottom is gone: her boat's lane runs under her deck */ // and a way up out of the wreck's hold, or it is a hole you fall into
   block(486, 556, 34, 35);                      // she is aground: the oil has a bottom, and things lie on it
   pools.push({ x0: 486 * TS, x1: 557 * TS, y: 28 * TS, bottom: 34 * TS, shallow: false, swim: true, harm: true, clear: true, pumpOil: true, oilHi: 28 * TS, ...FOUL }); // her oil on the water, and her beam takes it down
-  ent('sign', 482, 19, { text: 'OIL BETWEEN THE SHIPS. CROSS ON THE ROPES, OR STRIKE THE WINCH AND TAKE HER BOAT.' });
+  
   net(555, 556, 20, 33);   /* the rope ladder her boat fetches up against, and one more way out of the oil */
   plat(488, 17, 4); plat(497, 15, 4); plat(508, 17, 5); plat(520, 15, 4); plat(530, 17, 4); plat(542, 15, 4); plat(551, 17, 5);
   bob(493, 21); bob(515, 21); bob(536, 21); bob(547, 21);
@@ -5394,7 +5395,7 @@ function theHurricane() {
   ent('loosegun', 586, 18, { trigger: 578 }); ent('cargowall', 614, 18, { span: [614, 615, 16, 18] }); ent('cargo', 570, 18, { kind: 'barrel' });
   ent('sign', 580, 19, { text: 'HER AFT GUN IS WORKING LOOSE. WHEN SHE HEELS IT RUNS: STRIKE IT AT THEM, OR AT HER CARGO.' });
   ent('deco', 621, 19, { kind: 'plunder', v: 1 }); coins([617, 18], [620, 18], [622, 18]);
-  ent('check', 572, 19); ent('sign', 566, 19, { text: 'THE LAST OF HER OPEN DECK. HER POWDER IS UNDER YOUR FEET AND HER CAPTAIN IS AFT.' });
+  ent('check', 572, 19); 
   air(636, 637, 20, 20); net(636, 637, 20, 26);
   ent('deco', 570, 19, { kind: 'rumBarrels', v: 0 }); ent('deco', 650, 19, { kind: 'boardingNet' }); ent('deco', 584, 19, { kind: 'kegStack' }); ent('deco', 616, 19, { kind: 'washing' }); ent('deco', 644, 19, { kind: 'hammock', v: 1 }); ent('deco', 596, 19, { kind: 'boardingNet' });
   ent('deco', 606, 26, { kind: 'kegStack' }); ent('deco', 620, 26, { kind: 'kegStack' }); ent('torch', 614, 26);
@@ -5407,7 +5408,7 @@ function theHurricane() {
   ent('sign', 564, 26, { text: 'NO LIGHT BACK HERE. WAIT FOR THE SKY AND WALK WHILE IT IS WHITE.' });
   ent('deco', 576, 26, { kind: 'hammock', v: 0 }); ent('deco', 592, 26, { kind: 'bones', v: 1 });
   ent('marine', 584, 26, { face: -1 }); ent('cutlass', 600, 26, { face: 1 }); ent('boarder', 640, 26, { face: -1 });
-  ent('sign', 660, 26, { text: 'HER POWDER STORE. NO LIGHT, NO IRON. THE CAPTAIN WAITS AFT.' });
+  
   ent('deco', 670, 26, { kind: 'kegStack' }); ent('deco', 686, 26, { kind: 'kegStack' }); ent('deco', 712, 26, { kind: 'rumBarrels', v: 1 });
   ent('deco', 696, 26, { kind: 'plunder', v: 0 }); ent('deco', 724, 26, { kind: 'plunder', v: 2 });
   ent('torch', 706, 26); ent('boarder', 680, 26, { face: 1 }); ent('marine', 718, 26, { face: -1 }); ent('cutlass', 736, 26, { face: -1 });

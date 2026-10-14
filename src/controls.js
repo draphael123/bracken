@@ -149,7 +149,7 @@ const first = (binds, prof, action) => labelFor(binds, prof, action, 1);
 const HEROES_C = {
   knight:     ['block', tk => 'HOLD ' + tk.c + (tk.toggle ? ' (TOGGLE)' : '')],
   pyro:       ['ember / jet', tk => 'TAP ' + tk.c + ' EMBER, HOLD JET'],
-  paladin:    ['mend / aegis', tk => 'TAP ' + tk.c + ' MEND, HOLD AEGIS'],
+  paladin:    ['holy ground', tk => 'TAP ' + tk.c + ' CONSECRATE, HOLD AEGIS'],   /* (claude/paladin2) in his circle the tap spends Light */
   pirate:     ['parry / hook', tk => 'TAP ' + tk.c + ' PARRY, HOLD HOOK'],
   reaper:     ['blood ward', tk => 'HOLD ' + tk.c + ', LET GO: NOVA'],
   warden:     ['the deflect', tk => 'TAP ' + tk.c + '  (FULL: PHALANX)'],
@@ -178,6 +178,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
     ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' ON A HIT', 'TAP ' + pd('down')]] : []),
     [cRow[0], cRow[1](tk), pd('block')],
+    ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (A QUARTER LIGHT)', pd('up') + '+' + pd('block')], ['in circle', 'TAP ' + tk.c + ': EMPOWER / JUDGEMENT', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
     ['dodge', hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],

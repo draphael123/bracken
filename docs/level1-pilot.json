@@ -144,14 +144,14 @@
   "bare": true
  },
  "minecart": {
-  "hash": "587a35955634",
+  "hash": "c14c5ba93827",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 5,
-  "kills": 56,
-  "lifts": 30,
+  "hits": 48,
+  "deaths": 4,
+  "kills": 59,
+  "lifts": 31,
   "walked": 100,
   "bare": true
  },
@@ -360,14 +360,14 @@
   "bare": true
  },
  "sealedpyramid": {
-  "hash": "12d4e6eb2a81",
+  "hash": "374d1b96d29b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 13,
-  "deaths": 5,
-  "kills": 24,
-  "lifts": 67,
+  "hits": 24,
+  "deaths": 6,
+  "kills": 21,
+  "lifts": 213,
   "walked": 100,
   "bare": true
  }

@@ -1,0 +1,59 @@
+== sealed-pyramid-stuck
+ok   py-flood2  nudges 1  glint flood2  "THE CRYPT SLUICE IS AT ITS FAR END: TREAD ITS PLATE"  at 916,53
+ok  sealed-pyramid-stuck: every route need glints and nudges
+errors []
+exit 0
+== hint-shown
+hint-shown source: 1891 number() literals the filter drops: 1034 routed to the hint box, 857 old silent flavour (none new)
+hint-shown OK: HE IS OPEN, STRIKE ITS LEVER, THE FIRE IS OUT - GO, THE GOBLIN QUEEN: OPEN and a counted line are drawn in the page; a flavour line is not
+exit 0
+== untold-told
+{"t":"horn","tells":1,"marks":["!!"],"hits":0,"lost":0,"untold":[],"nUntold":0,"alive":true,"mode":"idle"}
+{"t":"mummy","tells":2,"marks":["!"],"hits":2,"lost":46,"untold":[],"nUntold":0,"alive":true,"mode":"walk"}
+23 foes that were untold each wound up on a mark, and none hurt the hero without one (skipped, answer-tags holds them: lamprey - it lives in deep water and reaches only a swimming hero; clinger - it hangs on a wall over a hero in the air)
+exit 0
+== boss-openings
+{"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"coldOpen":0,"mode":"scorched","open":3.4},"warden":{"unguarded":1.8,"guarded":3.4,"mode":"vent"},"mage":{"laid":true,"landed":{"mode":"hover","open":0,"hurt":true},"mode":"gather","open":3},"pyro":{"alone":{"open":0,"heat":8},"mode":"overheat","open":3.4},"graveWarden":{"solid":{"mode":"dig
+exit 0
+== damage-caps
+damage-caps ok: 9 caps hold under the chain, the riposte opening, a broken foe and a x2 talent blow
+exit 0
+== mark-integrity
+mini scarabmother   scarabmother|chargeTell       !!  seen 10, landed 10, posed 10/10 (px 1542-39560)
+mini scarabmother   scarabmother|snapTell         !   seen 5, landed 5, posed 5/5 (px 1346-1539)
+mini scarabmother   scarabmother|spitTell         !   seen 5, landed 5, posed 5/5 (px 1370-1484)
+boss tombking       tombking|slamTell             !   seen 9, landed 9, posed 9/9 (px 1484-1554)
+boss tombking       tombking|lashTell             !   seen 8, landed 8, posed 8/8 (px 758-863)
+boss tombking       tombking|leapTell             !!  seen 2, landed 2, posed 2/2 (px 1406-1490)
+
+every mark seen belongs to a windup that is drawn and lands.
+== pilot
+sealedpyramid (knight, fresh save, 3 runs summed): 24 hits taken, 6 deaths, 21 kills, walked 100% of the waypoints, 295% hp lost a run, 213 lifts (61947 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidboss\docs\level1-pilot.json
+errors []
+== curve
+sealedpyramid (knight, fresh save, 3 runs summed): 70 hits taken, 12 deaths, 66 kills, walked 100% of the waypoints, 557% hp lost a run, 167 lifts (58822 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidboss\docs\level1-curve.json
+errors []
+== mash level
+sealedpyramid LEVEL L41 knight: lowest hp 0%, hp lost 3604%, deaths 36, walked 92% of waypoints, 4 rides {"lift":4}, 0 pulls, 4 boarding lifts, 81 lifts (95 HELD: put back by a room it could not finish), 177 blows taken
+sealedpyramid LEVEL L41 warden: lowest hp 0%, hp lost 5672%, deaths 57, walked 100% of waypoints, 4 rides {"lift":4}, 0 pulls, 4 boarding lifts, 88 lifts (156 HELD: put back by a room it could not finish), 221 blows taken
+sealedpyramid LEVEL L41 pyro: lowest hp 0%, hp lost 3327%, deaths 32, walked 92% of waypoints, 5 rides {"lift":5}, 0 pulls, 4 boarding lifts, 79 lifts (94 HELD: put back by a room it could not finish), 304 blows taken
+wrote docs/mash-bot.json
+errors []
+== mash boss
+sealedpyramid BOSS expected L41 knight#1: DEAD 38.3s, hero lost 100%, boss left 98%, 31/865 blows
+sealedpyramid BOSS expected L41 knight#2: DEAD 34.2s, hero lost 100%, boss left 99%, 19/750 blows
+sealedpyramid BOSS expected L41 warden#1: DEAD 34.2s, hero lost 100%, boss left 99%, 12/910 blows
+sealedpyramid BOSS expected L41 warden#2: DEAD 34s, hero lost 100%, boss left 99%, 12/903 blows
+sealedpyramid BOSS expected L41 pyro#1: DEAD 43.8s, hero lost 100%, boss left 94%, 67/1240 blows
+sealedpyramid BOSS expected L41 pyro#2: DEAD 43.1s, hero lost 100%, boss left 94%, 71/1244 blows
+sealedpyramid MINI expected L41 knight#1: DEAD 36.8s, hero lost 100%, boss left 82%, 43/797 blows
+sealedpyramid MINI expected L41 knight#2: DEAD 36.8s, hero lost 100%, boss left 82%, 43/797 blows
+sealedpyramid MINI expected L41 warden#1: DEAD 33.1s, hero lost 100%, boss left 91%, 17/848 blows
+sealedpyramid MINI expected L41 warden#2: DEAD 33.1s, hero lost 100%, boss left 91%, 17/848 blows
+sealedpyramid MINI expected L41 pyro#1: DEAD 53.2s, hero lost 100%, boss left 61%, 90/1609 blows
+sealedpyramid MINI expected L41 pyro#2: DEAD 53.2s, hero lost 100%, boss left 61%, 90/1609 blows
+wrote docs/mash-bot.json
+errors []
+ALLDONE

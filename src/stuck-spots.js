@@ -69,13 +69,13 @@ export const STUCK = {
   ],
   /* (claude/stuckguides) SPORE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   spore: [
-    { id: 'sp-bud-37', zone: [23, 10, 41, 27], at: [37, 19], glint: 'stall', line: 'A BUD CAP RISES UNDER YOU: STAND ON IT' },
+    { id: 'sp-bud-37', zone: [23, 10, 41, 27], at: [37, 19], glint: 'stall', line: 'STOP ON A BUD: THE CAP GROWS INTO A STEP' },
     { id: 'sp-vent-58', zone: [46, 8, 64, 29], ats: [[58, 25], [52, 16], [56, 16]], glint: 'stall', line: 'THE VENT LIFTS YOU TO THE CAP THAT CARRIES YOU ON' },
     { id: 'sp-cap-164', zone: [150, 0, 172, 14], ats: [[164, 6], [168, 6]], glint: 'stall', line: 'THE CAP IN THE CANOPY DRIFTS: RIDE IT' },
     { id: 'sp-lean-177', zone: [163, 5, 181, 21], at: [177, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER THE GAP' },
     { id: 'sp-lean-192', zone: [180, 5, 196, 21], at: [192, 13], glint: 'stall', line: 'THE NEXT LEANING CAP IS THE WAY OVER' },
-    { id: 'sp-bud-250', zone: [238, 4, 250, 21], at: [250, 13], glint: 'stall', line: 'THE SPORE BUDS GROW A STEP UNDER YOUR FEET' },
-    { id: 'sp-bud-257', zone: [253, 1, 263, 19], at: [257, 9], glint: 'stall', line: 'THE HIGH BUD LIFTS YOU TO THE LEDGE' },
+    { id: 'sp-bud-250', zone: [238, 4, 250, 21], at: [250, 13], glint: 'stall', line: 'STOP ON A BUD: IT GROWS A STEP UNDER YOU' },
+    { id: 'sp-bud-257', zone: [253, 1, 263, 19], at: [257, 9], glint: 'stall', line: 'STOP ON THE HIGH BUD: IT LIFTS YOU TO THE LEDGE' },
     { id: 'sp-vent-292', zone: [278, 5, 296, 21], at: [292, 13], glint: 'stall', line: 'THE VENT LIFTS WHOEVER STANDS IN IT' },
     { id: 'sp-cap-313', zone: [298, 2, 328, 18], ats: [[313, 9], [318, 9]], glint: 'stall', line: 'THE FLOATING CAP CARRIES YOU OVER THE BOG' },
     { id: 'sp-bud-345', zone: [331, 5, 349, 21], at: [345, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER' },
@@ -94,6 +94,9 @@ export const STUCK = {
   /* (claude/stuckguides) HURRICANE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   hurricane: [
     { id: 'hu-bulkhead-208', zone: [186, 19, 212, 32], ats: [[194, 26], [208, 26]], glint: 'stall', done: ['bulkhead', 208, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
+    { id: 'hu-line-150', zone: [128, 10, 176, 20], at: [150, 14], glint: 'stall', line: 'A LINE SWINGS OVER THE FLOODED WAIST: TAKE HOLD' },
+    { id: 'hu-breech-264', zone: [254, 22, 267, 26], at: [264, 26], glint: 'stall', line: 'THE LAST GUN AIMS AT THE MAGAZINE WALL: STRIKE ITS BREECH' },
+    { id: 'hu-line-504', zone: [486, 10, 534, 20], ats: [[504, 14], [528, 14]], glint: 'stall', line: 'THE ROPES OVER THE OIL CARRY YOU TO THE FAR SHIP' },
     { id: 'hu-pump-246', zone: [228, 12, 252, 30], at: [246, 19], glint: 'stall', line: 'THE PUMP BRAKE DRAINS THE HOLD' },
     { id: 'hu-bulkhead-372', zone: [350, 19, 376, 32], ats: [[358, 26], [372, 26]], glint: 'stall', done: ['bulkhead', 372, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
     { id: 'hu-davit', zone: [462, 12, 486, 26], at: [481, 19], glint: 'stall', line: "THE DAVIT'S WINCH LOWERS HER BOAT TO THE FAR SHIP" },
@@ -522,6 +525,11 @@ export const STUCK_HANDS = {
     { id: 'py-pit2', zone: [348, 36, 357, 43], steps: [ { key: 'pit2', is: ['pit.pit2', 'open'], at: [353, 43], line: 'TOO WIDE TO JUMP: THE PLATE DROPS THE BLOCK INTO THE PIT' } ] },
     { id: 'py-shaft', zone: [430, 46, 441, 50], steps: [ { key: 'shaftPlate', is: ['trap.shaft', 'ready'], at: [436, 50], line: 'SPEND THE DART WALL FROM THE PLATE FIRST' },
       { key: 'shaftRide', is: ['trap.shaft', 'spent'], at: [440, 50], line: 'THE DARTS ARE RELOADING: RIDE THE BLOCK DOWN NOW' } ] },
+    /* (claude/pyramidlevel) THE SLUICES: the cistern and the crypt are shut until their water rises - tread the plate, then swim up */
+    { id: 'py-flood1', zone: [863, 34, 878, 47], steps: [ { key: 'flood1', is: ['flood.flood1', 'dry'], at: [864, 47], line: 'THE SLUICE PLATE: TREAD IT AND THE WATER COMES' },
+      { key: 'flood1up', is: ['flood.flood1', 'high'], at: [880, 41], glint: 'stall', line: 'THE WATER IS UP: SWIM TO THE LIP' } ] },
+    { id: 'py-flood2', zone: [885, 31, 950, 53], steps: [ { key: 'flood2', is: ['flood.flood2', 'dry'], at: [944, 53], line: 'THE CRYPT SLUICE IS AT ITS FAR END: TREAD ITS PLATE' },
+      { key: 'flood2up', is: ['flood.flood2', 'high'], at: [952, 29], glint: 'stall', line: 'THE WATER IS UP: SWIM TO THE HIGH DOOR' } ] },
     { id: 'py-vault', zone: [393, 46, 400, 50], steps: [ { key: 'vault', is: ['vault.sealed', 'due'], at: [397, 50], line: 'THE SEALED TOMB: FOUR SEALS OPEN IT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
@@ -552,13 +560,13 @@ export const STUCK_HANDS = {
     { id: 'mc-cavein', zone: [524, 20, 555, 31], steps: [ { key: 'caveinPts', is: ['points.cavein', 'open'], at: [538, 26], line: 'THE POINTS LEVER UP TOP: THE LOW LINE IS GOING' } ] },
     /* (claude/deeprails2) the lava ramp (a cart that keeps falling short), the lift (a hero on foot at its foot), the foreman (a cart that keeps bumping him) */
     { id: 'mc-ramp', zone: [596, 26, 626, 40], steps: [ { key: 'lavaRamp', at: [614, 36], glint: 'stall', line: 'THE RAMP: PUMP HARD BEFORE ITS LIP' } ] },
-    { id: 'mc-lift', zone: [756, 18, 784, 38], steps: [ { key: 'lift', at: [766, 36], glint: 'stall', line: 'THE LIFT: STAND ON THE CAGE AND RIDE IT UP' } ] },
-    { id: 'mc-foreman', zone: [821, 18, 852, 31], steps: [ { key: 'foreman', at: [836, 28], glint: 'stall', line: 'THE FOREMAN: JUMP ON HIS CART AS HE DROPS BACK' } ] },
+    { id: 'mc-lift', zone: [763, 18, 784, 38], steps: [ { key: 'lift', at: [766, 36], glint: 'stall', line: 'THE LIFT: STAND ON THE CAGE AND RIDE IT UP' } ] },
+    { id: 'mc-foreman', zone: [891, 18, 922, 31], steps: [ { key: 'foreman', at: [906, 28], glint: 'stall', line: 'THE FOREMAN: JUMP ON HIS CART AS HE DROPS BACK' } ] },
     /* (claude/deeprails3) THE SWITCHES: each glints until its bridge is laid (handsState points.<id>: open / set) */
-    { id: 'mc-yardSw', zone: [140, 18, 160, 31], steps: [ { key: 'yardSw', is: ['points.yardSw', 'open'], at: [151, 25], line: 'THE SWITCH: STRIKE IT, OR PRESS E - ITS BRIDGE IS OUT' } ] },
-    { id: 'mc-driftSw', zone: [171, 18, 188, 31], steps: [ { key: 'driftSw', is: ['points.driftSw', 'open'], at: [180, 24], line: 'THE SWITCH IN THE DARK: STRIKE IT AS YOU PASS' } ] },
-    { id: 'mc-worksSw', zone: [744, 28, 760, 40], steps: [ { key: 'worksSw', is: ['points.worksSw', 'open'], at: [752, 36], line: 'THE SWITCH: DUCK THE BEAM, THEN STRIKE IT' } ] },
-    { id: 'mc-examSw', zone: [853, 22, 868, 31], steps: [ { key: 'examSw', is: ['points.examSw', 'open'], at: [860, 29], line: 'THE SWITCH: STRIKE IT BEFORE THE BRIDGE' } ] },
+    { id: 'mc-yardSw', zone: [138, 18, 162, 31], steps: [ { key: 'yardSw', is: ['points.yardSw', 'open'], at: [151, 25], line: 'THE SWITCH: STRIKE IT, OR PRESS E - ITS BRIDGE IS OUT' } ] },
+    { id: 'mc-driftSw', zone: [171, 18, 189, 31], steps: [ { key: 'driftSw', is: ['points.driftSw', 'open'], at: [180, 24], line: 'THE SWITCH IN THE DARK: STRIKE IT AS YOU PASS' } ] },
+    { id: 'mc-worksSw', zone: [744, 28, 762, 40], steps: [ { key: 'worksSw', is: ['points.worksSw', 'open'], at: [755, 36], line: 'THE SWITCH: DUCK THE BEAM, THEN STRIKE IT' } ] },
+    { id: 'mc-examSw', zone: [925, 22, 942, 31], steps: [ { key: 'examSw', is: ['points.examSw', 'open'], at: [935, 29], line: 'THE SWITCH: STRIKE IT BEFORE THE BRIDGE' } ] },
   ],
   /* THE SUNKEN CARAVAN (claude/caravan2, design standard A6): the route's needs glint after a stall - the first quicksand's far lip, the wagon bed in the
      sinking basin, and the crest of each REQUIRED dune slide (src/draft/sunken-caravan.js L.duneSlides: the teach, the big dune, the exam's) */

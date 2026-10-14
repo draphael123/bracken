@@ -1,0 +1,41 @@
+sealedpyramid practiced knight s1 L41: win 129.2s left 0% taken 321 rt404 mis2 greed24 rp {"par":2,"open":0,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":88,"riposte":1}}
+sealedpyramid practiced knight s2 L41: win 116s left 0% taken 458 rt408 mis6 greed18 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":80}}
+sealedpyramid practiced knight s3 L41: win 122.8s left 0% taken 476 rt408 mis6 greed16 rp {"par":3,"open":1,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":79}}
+sealedpyramid practiced knight s4 L41: win 127.5s left 0% taken 487 rt411 mis5 greed20 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":82}}
+sealedpyramid practiced knight s5 L41: win 120.3s left 0% taken 130 rt415 mis3 greed18 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":76}}
+sealedpyramid practiced knight s6 L41: win 124.9s left 0% taken 278 rt415 mis3 greed21 rp {"par":2,"open":1,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":80}}
+sealedpyramid practiced warden s1 L41: win 185.1s left 0% taken 601 rt394 mis3 greed38 rp {"par":4,"open":1,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":160}}
+sealedpyramid practiced warden s2 L41: win 186.6s left 0% taken 360 rt408 mis6 greed31 rp {"par":8,"open":3,"warded":2,"openHits":1,"pips":2,"pipsMax":2,"verbs":{"cut":146,"riposte":1}}
+sealedpyramid practiced warden s3 L41: death 174.8s left 16% taken 690 rt405 mis9 greed30 rp {"par":6,"open":4,"warded":0,"openHits":3,"pips":4,"pipsMax":2,"verbs":{"cut":136,"riposte":3}}
+sealedpyramid practiced warden s4 L41: win 173.1s left 0% taken 574 rt401 mis5 greed31 rp {"par":6,"open":3,"warded":1,"openHits":3,"pips":6,"pipsMax":2,"verbs":{"cut":150,"riposte":3}}
+sealedpyramid practiced warden s5 L41: win 191.4s left 0% taken 337 rt410 mis7 greed35 rp {"par":6,"open":3,"warded":0,"openHits":3,"pips":6,"pipsMax":2,"verbs":{"cut":173,"riposte":3}}
+sealedpyramid practiced warden s6 L41: death 183.5s left 6% taken 692 rt409 mis10 greed33 rp {"par":2,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":149}}
+sealedpyramid practiced pyro s1 L41: win 126.9s left 0% taken 508 rt401 mis3 greed30 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":126}}
+sealedpyramid practiced pyro s2 L41: death 130.2s left 13% taken 677 rt409 mis10 greed25 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":93}}
+sealedpyramid practiced pyro s3 L41: win 121.4s left 0% taken 543 rt399 mis3 greed23 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":103,"dash":1}}
+sealedpyramid practiced pyro s4 L41: win 120.6s left 0% taken 643 rt396 mis2 greed29 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":117}}
+sealedpyramid practiced pyro s5 L41: win 131.2s left 0% taken 643 rt405 mis4 greed34 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":135,"dash":1}}
+sealedpyramid practiced pyro s6 L41: win 138.5s left 0% taken 489 rt409 mis3 greed27 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":124}}
+sealedpyramid:mini practiced knight s1 L41: win 64.7s left 0% taken 250 rt400 mis3 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":56,"riposte":1}}
+sealedpyramid:mini practiced knight s2 L41: death 78.1s left 8% taken 690 rt404 mis3 greed17 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":65,"riposte":1}}
+sealedpyramid:mini practiced knight s3 L41: death 68.5s left 29% taken 690 rt412 mis2 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":46}}
+sealedpyramid:mini practiced knight s4 L41: win 67s left 0% taken 564 rt401 mis3 greed16 rp {"par":1,"open":1,"warded":0,"openHits":1,"pips":2,"pipsMax":2,"verbs":{"cut":53,"riposte":1}}
+sealedpyramid:mini practiced knight s5 L41: death 72.2s left 50% taken 690 rt420 mis2 greed16 rp {"par":2,"open":2,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":48}}
+sealedpyramid:mini practiced knight s6 L41: death 92s left 1% taken 690 rt402 mis5 greed24 rp {"par":2,"open":2,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":74,"riposte":1}}
+sealedpyramid:mini practiced warden s1 L41: win 76.6s left 0% taken 331 rt397 mis4 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":71}}
+sealedpyramid:mini practiced warden s2 L41: win 83.8s left 0% taken 417 rt407 mis3 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":60}}
+sealedpyramid:mini practiced warden s3 L41: win 92.9s left 0% taken 435 rt403 mis8 greed21 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":80}}
+sealedpyramid:mini practiced warden s4 L41: death 59.9s left 71% taken 690 rt410 mis2 greed14 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":41}}
+sealedpyramid:mini practiced warden s5 L41: win 78.8s left 0% taken 533 rt409 mis5 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":76}}
+sealedpyramid:mini practiced warden s6 L41: win 71.3s left 0% taken 516 rt400 mis8 greed17 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":79}}
+sealedpyramid:mini practiced pyro s1 L41: win 66.5s left 0% taken 251 rt403 mis5 greed13 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":53}}
+sealedpyramid:mini practiced pyro s2 L41: win 71.6s left 0% taken 339 rt394 mis4 greed16 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":62}}
+sealedpyramid:mini practiced pyro s3 L41: win 81.7s left 0% taken 360 rt402 mis6 greed18 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":61}}
+sealedpyramid:mini practiced pyro s4 L41: death 89.3s left 16% taken 663 rt413 mis8 greed22 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":72}}
+sealedpyramid:mini practiced pyro s5 L41: win 70.8s left 0% taken 492 rt382 mis2 greed13 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":59}}
+sealedpyramid:mini practiced pyro s6 L41: win 70.3s left 0% taken 484 rt413 mis6 greed19 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":65}}
+
+BOSS RATES  profile human  flasks kit  (36 fights, 10 min)
+row                 L  practiced kn/wa/py        band
+sealedpyramid      41  6/6 4/6 5/6 = 83%         HIGH +23
+sealedpyramid:mini 41  2/6 5/6 5/6 = 67%         LOW -3

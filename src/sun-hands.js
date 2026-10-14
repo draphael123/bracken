@@ -37,7 +37,7 @@ export function makeSunHands(ctx) {
       if (sh && Math.abs(pp.vx || 0) > 20) { const dir = Math.sign(pp.vx), ax = pp.x + dir * SUNH.warnLook;
         if (!ctx.shaded({ x: ax, y: pp.y, h: pp.h, vx: pp.vx })) { if (!(pp.sunWarnCd > 0)) { pp.sunWarnCd = SUNH.warnCd; if (ctx.sfx.sunWarn) ctx.sfx.sunWarn(); } pp.sunWarn = SUNH.warnT; pp.sunWarnDir = dir; } }
       /* THE DRAIN: the sun's source on the shared drain (src/drain.js), its rate from the meter (0 in the shade) */
-      pp.sunStage = r.stage; if (r.rate > 0) DR.set(pp, 'sun', r.rate, { name: 'THE SUN', col: '#ff9a4c' }); else DR.stop(pp, 'sun');
+      pp.sunStage = r.stage; if (r.rate > 0) DR.set(pp, 'sun', r.rate, { name: 'THE SUN', col: '#ff9a4c', floor: 1 }); else DR.stop(pp, 'sun');
       /* SWEAT off a hero out in it */
       if (!sh && pp.sun.v > 0.1 && !ctx.calm() && Math.random() < dt * SUNH.sweatRate * pp.sun.v)
         ctx.part({ x: pp.x + (Math.random() - 0.5) * 8, y: pp.y - 16 - Math.random() * 6, vx: (Math.random() - 0.5) * 20, vy: -30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#e8f6ff', size: 1, grav: 260 });

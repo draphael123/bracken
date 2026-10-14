@@ -1,0 +1,27 @@
+== pilot
+sealedpyramid: big hp events (>=12%): 27 from the bot (3 within 90 frames of a lift); 0 of 206 lifts met hazard water (0 put on a mover, 0 on dry footing)
+sealedpyramid (knight, fresh save, 3 runs summed): 36 hits taken, 8 deaths, 31 kills, walked 100% of the waypoints, 355% hp lost a run, 206 lifts (62381 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidlevel\docs\level1-pilot.json
+errors []
+== curve
+sealedpyramid: big hp events (>=12%): 17 from the bot (0 within 90 frames of a lift); 0 of 220 lifts met hazard water (0 put on a mover, 0 on dry footing)
+sealedpyramid (knight, fresh save, 3 runs summed): 30 hits taken, 6 deaths, 23 kills, walked 100% of the waypoints, 257% hp lost a run, 220 lifts (63347 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-pyramidlevel\docs\level1-curve.json
+errors []
+== mash level
+sealedpyramid: level hash changed: carried the boss row(s) of the old hash (re-run the boss to refresh them: node tools/mash-bot.mjs <id> --write)
+sealedpyramid LEVEL L41 knight: lowest hp 0%, hp lost 1471%, deaths 14, walked 100% of waypoints, 5 rides {"lift":5}, 0 pulls, 4 boarding lifts, 89 lifts (130 HELD: put back by a room it could not finish), 95 blows taken
+sealedpyramid LEVEL L41 warden: lowest hp 0%, hp lost 5871%, deaths 59, walked 100% of waypoints, 4 rides {"lift":4}, 0 pulls, 4 boarding lifts, 90 lifts (162 HELD: put back by a room it could not finish), 229 blows taken
+sealedpyramid LEVEL L41 pyro: lowest hp 0%, hp lost 1161%, deaths 11, walked 100% of waypoints, 5 rides {"lift":5}, 0 pulls, 4 boarding lifts, 88 lifts (133 HELD: put back by a room it could not finish), 144 blows taken
+wrote docs/mash-bot.json
+errors []
+== mash boss
+sealedpyramid BOSS expected L41 knight#1: DEAD 45s, hero lost 100%, boss left 91%, 57/1104 blows
+sealedpyramid BOSS expected L41 knight#2: DEAD 45s, hero lost 100%, boss left 91%, 57/1104 blows
+sealedpyramid BOSS expected L41 warden#1: DEAD 42.1s, hero lost 100%, boss left 93%, 28/1165 blows
+sealedpyramid BOSS expected L41 warden#2: DEAD 42.1s, hero lost 100%, boss left 93%, 28/1165 blows
+sealedpyramid BOSS expected L41 pyro#1: DEAD 51.2s, hero lost 100%, boss left 83%, 103/1503 blows
+sealedpyramid BOSS expected L41 pyro#2: DEAD 51.2s, hero lost 100%, boss left 83%, 103/1503 blows
+wrote docs/mash-bot.json
+errors []
+ALLDONE3

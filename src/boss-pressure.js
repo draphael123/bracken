@@ -22,7 +22,7 @@ const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|op
    67% with flasks at blows x2.9), the Hourglass King (claude/bc3tune, 61%); later the Matriarch, the Hawk-Mistress and the Glass Colossus when their lanes land (listed now so the dial
    never stacks on them). Remove a name here once a later re-measure shows the boss outside the band again. */
 /* MERGE NOTE (coordinator 10-13): add the NEW PYRAMID BOSS (claude/pyramidboss: the Tomb-King's Sarcophagus) here under its e.t when that lane merges - it is tuned into the band by its own lane. */
-export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus']);
+export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus', 'greatdrill', 'foremancart', 'tombking', 'scarabmother']);   /* (dr4art merge) the Deep Rails 4 boss pair: dr4tune measured them 69% / 81% with flasks BEFORE the dial existed, so they are self-tuned */
 export function pressureOf(act, mini) { const r = PRESSURE[act] || PRESSURE[5]; return mini ? r.mini : r; }
 /* the dt factor for one boss this frame: 1 unless his clock is a gap's */
 export function gapFactor(e, act, mini, winding) {
@@ -32,3 +32,9 @@ export function gapFactor(e, act, mini, winding) {
   return g;
 }
 export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg);
+/* (claude/oneshotcap) THE ONE-BLOW CEILING ON THE DIAL'S BOOST: the dial's x(dmg) must never turn one blow of a boss or mini into more than BLOW_CAP of the hero's max hp on the bar
+   (tools/blow-census.mjs found 5 of 58 rows over 45% of the lowest-hp hero at campaign level: Lanterneater's Snap, the Owl, the Ploughman, the Lamp-Reeve and the Serjeant minis).
+   It caps only what the dial ADDED: a blow that is already over the ceiling as tuned (before the dial) is left at that tuned number, so un-dialled numbers stay as authored. `fin` is the
+   chain that still runs after the dial (difficulty x tier), so the ceiling is read on what lands. DIAL_EXEMPT bosses never reach this (dmgFactor is 1). */
+export const BLOW_CAP = 0.45;
+export function capBoost(before, boosted, maxHp, fin = 1) { if (!(boosted > before) || !(maxHp > 0)) return boosted; const lim = Math.max(1, Math.round(BLOW_CAP * maxHp / (fin > 0 ? fin : 1))); return boosted <= lim ? boosted : Math.max(before, lim); }

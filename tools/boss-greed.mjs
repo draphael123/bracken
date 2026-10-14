@@ -89,7 +89,8 @@ try {
     /* A MINI: the bosun (claude/bosswave1: his parried pin is his opening, and he is on the chip outside it) */
     { const b = boot('harbor', true); const o = {}; if (b) { freeze(b); b.open = 0; o.t = b.t; o.heroBlow = hero(b, 40); freeze(b); b.open = 3; o.heroOpen = hero(b, 40); b.open = 0; freeze(b);   /* (claude/bosswave1: on the chip outside his parried pin, whole inside it) */
       const P = BK.P; BK.god = false; P.inv = 0; P.hp = P.maxHp; let began = -1; for (let i = 0; i < ${GREED.nMini}; i++) { BKT.hurtAs('light', b, 1, b.x - 12, false); if (b.greedT > 0 && began < 0) began = i + 1; } o.greedBegan = began;
-      freeze(b); P.hp = P.maxHp; P.inv = 0; const h0 = P.hp; BKT.damagePlayer(b.x, 20, { who: b }); o.miniHit = h0 - P.hp; P.hp = P.maxHp; P.inv = 0; BKT.damagePlayer(b.x, 20, {}); o.plainHit = h0 - P.hp; BK.god = true; }
+      const mhp = P.maxHp; P.maxHp = 400; /* (claude/oneshotcap) a bar the one-blow ceiling cannot touch: this line measures the greed and the dial multipliers alone */ freeze(b); P.hp = P.maxHp; P.inv = 0; const h0 = P.hp; BKT.damagePlayer(b.x, 20, { who: b }); o.miniHit = h0 - P.hp; P.hp = P.maxHp; P.inv = 0; BKT.damagePlayer(b.x, 20, {}); o.plainHit = h0 - P.hp;
+      P.maxHp = 100; freeze(b); P.hp = P.maxHp; P.inv = 0; BKT.damagePlayer(b.x, 25, { who: b }); o.capHit = 100 - P.hp; P.maxHp = mhp; P.hp = P.maxHp; BK.god = true; }
       out.bosunMini = o; }
     return out; })()`, 600000);
 } finally { pg.close(); }
@@ -124,7 +125,8 @@ for (const [id, o] of Object.entries(R)) {
   if (!own && !wall) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
 }
 { const m = R.bosunMini; ok(m && m.t === 'bosun', 'the bosun mini was not found');
-  if (m && m.t) { ok(m.heroBlow <= Math.ceil(40 * GREED.chip), 'a mini on the chip (CHIP_MINI, claude/bosswave1): a hero blow of 40 on the bosun outside his opening took ' + m.heroBlow);
+  if (m && m.t) { ok(m.capHit <= 47 && m.capHit >= 20, '(claude/oneshotcap) the one-blow ceiling: a 25 blow of a mini (1.3 x 1.65 = 54 uncapped) on a 100 hp hero lands at no more than ~45% (the dial cannot boost one blow past it): took ' + m.capHit);
+    ok(m.heroBlow <= Math.ceil(40 * GREED.chip), 'a mini on the chip (CHIP_MINI, claude/bosswave1): a hero blow of 40 on the bosun outside his opening took ' + m.heroBlow);
     ok(m.heroOpen >= 20, 'and in his opening (his pin parried) it lands whole: took ' + m.heroOpen);
     ok(m.greedBegan === GREED.nMini, 'the bosun must answer the ' + GREED.nMini + 'th blow in a row (began on ' + m.greedBegan + ')');
     const dialDmg = pressureOf(actOf('harbor', depthsOf(LEVELS).harbor || 1).act, true).dmg, want = GREED.miniHit * dialDmg;   /* the bosun stands in harbor: act 3's mini column (was GREED.miniHit alone before the dial) */

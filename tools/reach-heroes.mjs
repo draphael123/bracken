@@ -89,9 +89,7 @@ const PRE_SLIDE = [
 /* ---- C. THE KNOWN CROSSINGS: 'level x,y>x,y': [the heroes it holds for, the reason]. From the sweep of 2026-10-08, each read on the map (claude/reachcore's report
    has the table). Every one is TIGHT - a frame-perfect take-off from the very edge lands (a toe on the lip, the mantle), a hand's slack past the lip does not: the old
    levels' standard four-wide gap is a hair short of Daniel's "a tile clear of the lip" for the slower legs. A fix at the level deletes its line (a stale line fails). claude/gaps (10-10) fixed 18 of the 19 in src/reach-gaps.js (witchlight is the witchlight lane's) ---- */
-export const KNOWN = {
-  'witchlight 463,26>468,25': ['knight warden paladin pirate reaper geomancer berserker', 'TIGHT (gap 4, up 1) to checkpoint 519,26: 8px short of the slack: a frame-perfect jump makes it (a toe on the lip, the mantle), a hand’s slack does not - QUESTION: narrow the gap a tile / lower the landing'],
-};
+export const KNOWN = {};   /* (weakfix 10-14) witchlight 463>468 closed: its ledge is a tile longer; nothing is known-tight now */
 
 /* ---- C. the sweep ---- */
 const ROUTE = { check: 'checkpoint', gate: 'the gate', key: 'a key' };

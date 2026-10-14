@@ -10,6 +10,7 @@ import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
 import { HK_SAY } from './hourglass-king.js';
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
+import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
   /* claude/slope (batch88 integ): THE RUNNING SLIDE tip (src/run-slide.js), said once - routed so the player can see it */
   'RUNNING SLIDE: LOW, AND UNDER HIGH BLOWS',
@@ -176,7 +177,7 @@ export const CALL_LINES = new Set([
   'DERAILED! ON FOOT: A CART WAITS AHEAD', 'THE LINE ENDS: OUT, AND UP THE LIFT', 'INTO THE CART: ROLL ON', 'FLY!', 'NOT ENOUGH PUMP!', 'A BUMP: PUMP TO RAM, OR STRIKE OR JUMP', 
   /* claude/deeprails3: THE FOREMAN (the mini: src/foreman.js FOREMAN_LINES are routed below), the foes that come to your line, the switches */
   /* claude/deeprails3: GREAT DRILL 3 - the chute's points lever, the dynamite, the lunge, the chain, the roof */ 'OFF THE LINE: THE HOOK SLIPS', 'CHAIN CUT', 'ITS OWN ORE IN ITS GEARS: STRIKE THE CAB', 'POINTS THROWN: ITS ORE GOES IN ITS GEARS', 'ORE! THROW ITS POINTS', 'ORE! ITS POINTS LEVER COMES: STRIKE IT, OR E', 'AN ORE CART: PUMP AND RAM IT INTO ITS GEARS', '!! SNAGGED: JUMP, OR STRIKE THE CHAIN', 'IT SPINS UP: DUCK ITS HEAD, CUT ITS CHAIN', '!! DYNAMITE', '!! DYNAMITE: OFF ITS LINE, OR BRAKE', '!! DUCK', '!! IT SPINS UP: DUCK IN YOUR TUB', '!! THE HOOK', '!! THE HOOK: JUMP, OR CHANGE LINE', '!! THE ROOF', '!! THE ROOF COMES DOWN: PUMP THROUGH, OR BRAKE', 'THE FOREMAN: JUMP ON HIS CART', 'A GOBLIN ON THE ROOF TIMBER', 'A GOBLIN READY TO LEAP', 'A GOBLIN WITH A HOOK ALONGSIDE', 'HE IS ON YOUR LINE: RAM HIM', 'KNOCKED OFF HIS BEAM', 'THROWN OFF: BACK IN YOUR CART',
-  'TOO SLOW: PUMP TO RAM IT', 'THE GREAT DRILL BORES ON AHEAD: CHASE IT', 'ITS CAB IS ARMOURED: JAM ITS GEARS', 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', 
+  /* claude/deeprails4: GREAT DRILL 4's gears, the RAIL RAIDERS */ 'A GEAR GONE: IT STALLS - STRIKE THE CAB', 'ITS GEARS GIVE: FINISH IT', 'ITS GEARS GIVE: THE DRIVE IS OPEN', 'A RAIDER DRAWS ALONGSIDE', 'TOO SLOW: PUMP TO RAM IT', 'THE GREAT DRILL BORES ON AHEAD: CHASE IT', 'ITS CAB IS ARMOURED: JAM ITS GEARS', 'THE ORE JAMS ITS GEARS: STRIKE THE CAB', 
   'ITS PLATES ARE UP: IT SHRUGS IT OFF', 'IT SHRUGS IT OFF', 'RAMMED: INTO ITS GEARS!', 'ITS PLATES ARE UP', 'IT CLEARS ITS GEARS: ITS PLATES ARE UP', 
   'IT CRACKS THE ROOF: OFF THE SHADOWS', '!! REVERSE', '!! IT BACKS AT YOU: BRAKE, OR JUMP UP', '!! IT BACKS AT YOU: BRAKE',    
   'THE ROOF TAKES THE HIGH LINE: TWO LINES LEFT',
@@ -224,6 +225,7 @@ export const CALL_LINES = new Set([
   'THE STORM  >>', '<<  THE STORM: BRACE (BLOCK)', 'ITS LINEN BURNS', 'IT HAS YOU: STRIKE IT', 'YOU TEAR LOOSE OF ITS GRIP', 'THE SEALED TOMB WANTS FOUR SCARAB SEALS', 'THE SEALED TOMB OPENS',
   'A PALE PLATE: IT DROPS THE BLOCK ON THE GUARD UNDER IT', 'A PALE PLATE: IT FIRES THE DART WALL ACROSS THE RUN', 'A PALE PLATE: IT SENDS THE STONE DOWN THE GROOVE', 'THE PLATE OF THE GREAT STONE: THE FLOOR BELOW IS ITS ROAD', 'A PALE PLATE: ITS BLOCK FALLS INTO THE PIT', 'SPEND THE DARTS FIRST: THEN RIDE UNDER THEM',
   'THE SCARAB MOTHER, QUEEN OF THE BROOD', 'LURE HER UNDER A TRAP, THEN TREAD ITS PLATE', 'SHE STRUGGLES FREE', 'SHE RIGHTS HERSELF AND SHUTS HER SHELL: WARDED', 'HER SHELL IS SHUT: THE TRAP GLANCES OFF',
+  /* (claude/pyramidlevel) THE SECOND HALF: the gas, the oil, the sluices, the tombs */ 'HE TREADS THE PLATE: THE GAS!', 'HE TREADS THE PLATE: THE FIRE!', 'HE TREADS THE PLATE: THE SLUICE!', 'CLICK: THE GAS HISSES', 'CLICK: THE BRAZIER TIPS', 'CLICK: THE SLUICE OPENS', 'THE WATER IS UP: SWIM', 'THE LID CRACKS: THE DEAD GET UP', 'A PALE PLATE: IT OPENS THE GAS JETS UNDER THE GUARD', 'A PALE PLATE: ITS JETS ARE IN THE NICHE OVER YOU', 'A PALE PLATE: IT TIPS THE BRAZIER INTO THE CHANNEL', 'A PALE PLATE: THE BURNING OIL POURS ON THE FLOOR BELOW', 'A PALE PLATE: IT OPENS THE SLUICE - STAND CLEAR OF THE BORE', 'THE CRYPT SLUICE: THE WATER IS THE WAY UP',
   'THE BLOCK PINS HER - STRIKE', 'DARTS IN HER JOINTS: SHE IS STUCK - STRIKE', 'THE STONE FLIPS HER ON HER BACK - STRIKE', 'THE FLOOR CRACKS: HER BROOD COMES UP OUT OF THE PITS', 'THE TOMB SHAKES: ITS TRAPS RESET FASTER', 'SHE HITS THE WALL', 'THE BROOD',
   /* (claude/buriedcity3) THE HOURGLASS KING's rework (src/hourglass-king.js, -hands.js): his new moves' words, the drift, THE GREAT HOURGLASS */ 'THE GATES ARE DRY: TURN THE GREAT HOURGLASS', 'THE GREAT GLASS IS FAST IN ITS FRAME - NOT YET', 'ITS SAND STILL RUNS BACK DOWN', 'HE GUARDS HIS GLASS: WAIT', 'THE SANDS RISE: THE TIDE WILL TAKE THE FLOOR - THE LEDGES', 'THE SAND RISES: UP ON A LEDGE', 'HIS GLASS CRACKS: STRIKE THE GREAT HOURGLASS', 'THE SAND HOLDS YOU: JUMP OUT',
   /* (claude/buriedcity3) THE FLIP and THE SAND SEA (src/buried-city-flip.js) */ 'TURNED BACK: THE GLASS IS FULL AGAIN', 'THE SAND RUNS BACK UP: A BURIED ROOF RISES', 'THE SAND RUNS OUT OF THE BANK', 'THE SAND-FALL FLOWS UP: STEP IN AND RIDE IT', 'THE ROOF THAT STOOD SINKS - THE REST RISE', 'THE SAND RUNS BACKWARD: THE ROOFS RISE', 'THE GLASS IS TURNED', 'THE GLASS RUNS OUT', 'THE SAND-FALL BEATS YOU DOWN: TURN ITS GLASS', 'THE SAND SEA SWALLOWS YOU', 'THE SAND SEA SWALLOWS YOU: BACK TO THE ROOF',
@@ -245,6 +247,8 @@ export const CALL_LINES = new Set([
   'HIS NET: ROLL THROUGH IT', 'THE HEAVY ARROW', 'HE SETS HIS SNARES', 'THE HUNTING HORN', 'HIS KNIFE', 'THE POD BURSTS IN HIS FACE: HE STAGGERS', 'HE IS OPEN: THREE BLOWS, THEN HE GUARDS', 'HE SETS HIS SNARES: JUMP THEM, OR THROW A POD ON THEM',
   'THE HORN CALLS HIS BOWS: CUT THEM OFF THE PERCHES', 'NETTED: STRUGGLE FREE', 'THROUGH THE NET', 'THE TRAP SNAPS ON NOTHING', 'A JAW TRAP: JUMP IT, OR THROW SOMETHING ON IT', 'THE TRAP HAS YOU: STRUGGLE', 'A NET: ROLL THROUGH IT', 'NETTED',
   'A SPORE POD: ATTACK THROWS IT', 'A BLOW: YOU DROP THE POD', 'HIS BOWS FALL BACK', 'THE POD CUTS THE ROPE',
+  /* claude/paladin2 + claude/palart (batch92 integ): the Paladin's holy-ground feedback - plant, empower, smite, aegis on a partner, the circle following a leap, the empty Light bar - routed so the player can see them */
+  'HIS AEGIS', 'SMITE', 'THE GROUND FOLLOWS', 'CONSECRATED', 'SANCTIFIED', 'NO LIGHT',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
@@ -254,11 +258,11 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
   /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
   stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'NO CURRENT: HOLD LEFT OR RIGHT AT HER END TO LEG HER', back: 'SHE GLIDES TO YOU: DROP BACK ONTO HER DECK' };   /* (claude/canal5) */
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
-export const CALL_COUNTS = [/^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^IT SPEARS THE MIRROR ROUND: (TO THE SKY|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
+export const CALL_COUNTS = [/^THE (CHAIN WINCH|SPIN-UP GEAR|DYNAMITE FEED|ROOF WINCH) BROKEN: NO MORE (CHAIN|LUNGE|DYNAMITE|ROCKFALL)$/, /^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^IT SPEARS THE MIRROR ROUND: (TO THE SKY|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
-export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY)]);
+export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY), ...Object.values(TK_SAY), 'HER DOOR LIFTS: THE WAY UP TO THE KING']);   /* (claude/pyramidboss: THE SCARAB MOTHER's MINI_DONE line, said as a variable by main.js miniEnd) */
 /* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
    (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
 export const MC_TELL_LINES = new Set([...TELL_LINES, ...Object.values(FOREMAN_LINES)]);   /* (claude/deeprails3: and THE FOREMAN's lines, said as variables by src/foreman.js) */
