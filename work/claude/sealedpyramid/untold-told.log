@@ -1,0 +1,25 @@
+{"t":"spit","tells":2,"marks":["!"],"hits":2,"lost":26,"untold":[],"nUntold":0,"alive":true,"mode":"idle"}
+{"t":"lurker","tells":2,"marks":["!"],"hits":14,"lost":420,"untold":[],"nUntold":0,"alive":true,"mode":"rest"}
+{"t":"hopper","tells":2,"marks":["!"],"hits":5,"lost":65,"untold":[],"nUntold":0,"alive":true,"mode":"sit"}
+{"t":"crow","tells":2,"marks":["!!"],"hits":10,"lost":70,"untold":[],"nUntold":0,"alive":true,"mode":"fly"}
+{"t":"hound","tells":2,"marks":["!!"],"hits":6,"lost":150,"untold":[],"nUntold":0,"alive":false,"mode":"pounceTell"}
+{"t":"sapper","tells":1,"marks":["!!"],"hits":1,"lost":22,"untold":[],"nUntold":0,"alive":false,"mode":"walk"}
+{"t":"sporeling","tells":2,"marks":["!"],"hits":6,"lost":126,"untold":[],"nUntold":0,"alive":true,"mode":"biteTell"}
+{"t":"spitcap","tells":1,"marks":["!!"],"hits":1,"lost":9,"untold":[],"nUntold":0,"alive":true,"mode":"rest"}
+{"t":"weaver","tells":2,"marks":["!"],"hits":1,"lost":7,"untold":[],"nUntold":0,"alive":true,"mode":"spit"}
+{"t":"thief","tells":1,"marks":["!!"],"hits":0,"lost":0,"untold":[],"nUntold":0,"alive":false,"mode":"flee"}
+{"t":"wight","tells":2,"marks":["!!"],"hits":2,"lost":42,"untold":[],"nUntold":0,"alive":false,"mode":"drift"}
+{"t":"holdfast","tells":1,"marks":["!!"],"hits":5,"lost":30,"untold":[],"nUntold":0,"alive":true,"mode":"spent"}
+{"t":"shardling","tells":2,"marks":["!!"],"hits":2,"lost":32,"untold":[],"nUntold":0,"alive":true,"mode":"shed"}
+{"t":"bonearcher","tells":2,"marks":["!"],"hits":1,"lost":16,"untold":[],"nUntold":0,"alive":true}
+{"t":"boo","tells":1,"marks":["!!"],"hits":17,"lost":170,"untold":[],"nUntold":0,"alive":false,"mode":"drift"}
+{"t":"husk","tells":2,"marks":["!"],"hits":2,"lost":20,"untold":[],"nUntold":0,"alive":true,"mode":"rest"}
+{"t":"apprentice","tells":1,"marks":["!"],"hits":1,"lost":12,"untold":[],"nUntold":0,"alive":true,"mode":"walk"}
+{"t":"emberwisp","tells":1,"marks":["!!"],"hits":1,"lost":9,"untold":[],"nUntold":0,"alive":true,"mode":"drift"}
+{"t":"kite","tells":1,"marks":["!"],"hits":1,"lost":17,"untold":[],"nUntold":0,"alive":true,"mode":"hover"}
+{"t":"bale","tells":1,"marks":["!!"],"hits":0,"lost":0,"untold":[],"nUntold":0,"alive":true,"mode":"roll"}
+{"t":"sweep","tells":1,"marks":["!"],"hits":1,"lost":9,"untold":[],"nUntold":0,"alive":true,"mode":"hide"}
+{"t":"horn","tells":1,"marks":["!!"],"hits":0,"lost":0,"untold":[],"nUntold":0,"alive":true,"mode":"idle"}
+{"t":"mummy","tells":2,"marks":["!"],"hits":2,"lost":46,"untold":[],"nUntold":0,"alive":true,"mode":"walk"}
+23 foes that were untold each wound up on a mark, and none hurt the hero without one (skipped, answer-tags holds them: lamprey - it lives in deep water and reaches only a swimming hero; clinger - it hangs on a wall over a hero in the air)
+rc=0

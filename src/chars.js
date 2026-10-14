@@ -146,6 +146,7 @@ let SPEARLESS = false;
 let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
 function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null }) {
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
+  const BZ = BODY_REF === BZ_BODY, rgo = BZ ? [[BX + dx + 4, top + BY + dy + hy + 3, '#ff2a1a'], [BX + dx + 5, top + BY + dy + hy + 3, '#c01c14']] : null;   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
   if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
   const draw = (rows, ox, oy) => rows.forEach((r, y) => { for (let x = 0; x < r.length; x++) { const k = r[x]; if (k !== '.' && KP[k]) px(g, ox + x, oy + y, KP[k]); } });
   const body = PLUME_REF[plume].concat(BODY_REF.slice(3));
@@ -160,12 +161,14 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   draw(LEGS[legs], BX + dx, BY + 11 + legsDy);
   if (GEAR) gearFront(g, BX + dx, BY + dy, headTop(body.slice(0, 6)), hy, sho, body);
   if (kite && !kite.back) draw(KITE, BX + dx + kite.x, BY + dy + kite.y);   /* on the off arm across his front: under the sword arm, over the tabard */
-  if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
+  if (arm2) line(g, arm2[0] + dx, arm2[1] + dy, arm2[2] + dx, arm2[3] + dy, KP.S, 2);
+  if (BZ && arm2) bzArmInk(g, rgo, arm2, dx, dy, top);   /* THE OFF ARM, drawn only where an ability puts it to work (a throw, a cry): over the kite, under the sword arm */
   /* THE BERSERKER'S HAND AXES (claude/berserker). Given [hand x, hand y, head x, head y, side]: a short oak haft out of the fist (its knob two
      past the hand), and at the end a BEARDED HEAD - a blade three pixels out on the +side, longest at its lower horn, with a bright edge, and a
      stub of spike on the back. side +1 puts the edge forward when the axe is held up (and down when it is held out level). Only the head takes
      a weapon skin (WT/WL). axe2 is the off hand's, drawn under the lead arm; ONEAXE (the bare set) leaves it out. */
   const axeAt = (spec, mine) => { if (!spec) return; const [x0, y0, x1, y1] = spec.slice(0, 4).map((v, i) => v + (i & 1 ? dy : dx)), side = spec[4] || 1;
+    if (!mine) return hatchetAt(g, spec, dx, dy);   /* (claude/bzart) THE OFF AXE IS A HATCHET: a different tool in the other fist */
     const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, len = Math.min(12, len0), ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay * side, qy = ax * side;   /* A HAND AXE IS SHORT: a pose that asks for more reach (the rising cut, the sweep) gets the head at the haft's own length along it */
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
     for (let t = -2; t <= len - 1; t += 0.5) px(g, ...at(t), t < 1 ? '#4a2e18' : '#7a5230');   /* the haft, the grip darker */
@@ -178,6 +181,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     if (mine) { const tp = at(len + 1, 2); c.axeTip = [tp[0], tp[1] + top]; } };
   axeAt(ONEAXE ? null : axe2, false);
   if (arm) line(g, arm[0] + dx, arm[1] + dy, arm[2] + dx, arm[3] + dy, KP.S, 2);
+  if (BZ && arm) bzArmInk(g, rgo, arm, dx, dy, top);
   const gearMask = GEAR >= 3 ? g.getImageData(0, 0, c.width, c.height) : null;   /* the hero so far - no weapon yet: the aura follows HIM */
   axeAt(axe, true);   /* (the lead axe over the lead arm's fist) */
   if (sword) {
@@ -326,6 +330,7 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
   }
   if (bits) for (const [bx, by, k] of bits) { const col = k[0] === '#' ? k : k === 'n' ? WL(KP.s) : KP[k]; if (col) px(g, BX + dx + bx, BY + dy + by, col); }   /* loose pixels, over everything: a glint, a hand, a flap of cloth */
   outline(c, OUT);
+  if (rgo) c.rgo = rgo;
   gearAura(c, gearMask, (plume | 0) * 2 + (dy | 0) + (dx | 0) + 8);
   { const W0 = sword || staff || maul || spear || stave || cutlass || greatsword || scythe || axe;   /* WHERE THE BLADE WAS DRAWN (hand, tip), kept for the smear pass: the arc between two beats is read off these, not guessed */
     if (W0) { const hd = arm ? [arm[2] + dx, arm[3] + dy] : [W0[0] + dx, W0[1] + dy]; c.wp = { p: [hd[0], hd[1] + top], t: [W0[2] + dx, W0[3] + dy + top] }; } }
@@ -395,7 +400,7 @@ function comboArcs(sh, key, len, extra = {}) {
    The new cuts can then travel overhead; the low blow bends at the knees and keeps its edge at ankle height. */
 const ATTACK_HEADROOM = 24;
 function padHeroFrames(F) {
-  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
+  const memo = new Map(), pad = c => { if (!memo.has(c)) { const [out, g] = canvas(c.width, c.height + ATTACK_HEADROOM); g.drawImage(c, 0, ATTACK_HEADROOM); if (c.wp) out.wp = { p: [c.wp.p[0], c.wp.p[1] + ATTACK_HEADROOM], t: [c.wp.t[0], c.wp.t[1] + ATTACK_HEADROOM] }; if (c.tip) out.tip = [c.tip[0], c.tip[1] + ATTACK_HEADROOM]; if (c.rgo) out.rgo = c.rgo.map(([x, y, col]) => [x, y + ATTACK_HEADROOM, col]); if (c.feet !== undefined) out.feet = c.feet + ATTACK_HEADROOM; memo.set(c, out); } return memo.get(c); };   /* (c.tip: the Geomancer's geode, carried down with the frame) */
   for (const key in F) F[key] = Array.isArray(F[key]) ? F[key].map(c => c ? pad(c) : c) : pad(F[key]);
 }
 /* THE SMEAR (claude/herokeys, Daniel 10-09 art direction: "a rotated sprite, not drawn frames"). A swing is a blade at one angle in one beat and another in the
@@ -4826,14 +4831,14 @@ const BZ_BODY = [
   '..hHhh....',     /* 0  the mane */
   '.hhhhhH...',     /* 1 */
   'hhhkkkhH..',     /* 2  the brow, the hair falling either side */
-  '.hkkvkkh..',     /* 3  the eye on the side he faces */
-  '.hkkkkk...',     /* 4 */
-  '..HHHHk...',     /* 5  the beard */
+  'Hhkkvkkh..',     /* 3  the eye on the side he faces; a braid starts behind his ear (bzart) */
+  'hhkkkkk...',     /* 4  the braid hangs down his back */
+  'n.HHnHk...',     /* 5  the braid's bone bead, the plaited beard with its bead (bzart) */
   'FfkkkkfF..',     /* 6  THE FUR MANTLE on both shoulders, his bare chest between */
-  'FfkpkkfF..',     /* 7  the war-paint */
-  '.fkkkpk...',     /* 8 */
+  'FfnpknfF..',     /* 7  the war-paint, and the bone necklace across his chest (bzart) */
+  'Ffkkknpk..',     /* 8  the pelt hanging at his back; the trophy tooth on the necklace */
   '.WyWWyW...',     /* 9  the belt, iron-studded */
-  '.bBbBbb...',     /* 10 the kilt (a skin's colour) */
+  '.bBbwBb...',     /* 10 the leather kilt, laced (a skin's colour) */
 ];
 const BZ_PLUME = [
   ['..hHhh....', '.hhhhhH...', 'hhhkkkhH..'],
@@ -4842,7 +4847,19 @@ const BZ_PLUME = [
 ];
 /* s/S: his skin (S is the arm, drawn as a line, and the bare thigh); k his face and chest; h/H the copper mane; f/F the fur; p the paint; b/B the kilt;
    w the garters, W the belt and the boots, y the iron studs. */
-const BZ_PAL = { s: '#f0c49c', S: '#d49a70', k: '#e2a77e', v: '#2a1a14', h: '#c0602e', H: '#7a3a1c', f: '#9a8466', F: '#5e4a36', p: '#3a6ab0', b: '#6a4a2a', B: '#4a3018', w: '#9a8a62', W: '#3e2e20', y: '#a8a8b0', r: '#c0602e' };
+const BZ_PAL = { n: '#e8e0c8', N: '#b8ab8a', s: '#f0c49c', S: '#d49a70', k: '#e2a77e', v: '#2a1a14', h: '#c0602e', H: '#7a3a1c', f: '#9a8466', F: '#5e4a36', p: '#3a6ab0', b: '#6a4a2a', B: '#4a3018', w: '#9a8a62', W: '#3e2e20', y: '#a8a8b0', r: '#c0602e' };
+/* (claude/bzart) THE BARBARIAN'S ARMS ARE PAINTED: a blue band of war-paint every third pixel along each bare arm, and (on the rage overlay) a vein between them */
+function bzArmInk(g, rg, a, dx, dy, top) { const x0 = a[0] + dx, y0 = a[1] + dy, x1 = a[2] + dx, y1 = a[3] + dy, n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
+  for (let i = 1; i < n - 1; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); if (i % 3 === 1) px(g, x, y, KP.p); else if (i % 3 === 0) rg.push([x, y + top, '#d8301f']); } }
+/* (claude/bzart) THE HATCHET, the off hand's: a short pale-ash haft with a red cord wound at the grip, and a small straight-bladed head of dark iron - no beard, no spike, a bright edge three long */
+function hatchetAt(g, spec, dx, dy) { const [x0, y0, x1, y1] = spec.slice(0, 4).map((v, i) => v + (i & 1 ? dy : dx)), side = spec[4] || 1;
+  const len0 = Math.hypot(x1 - x0, y1 - y0) || 1, len = Math.min(9, len0), ax = (x1 - x0) / len0, ay = (y1 - y0) / len0, qx = -ay * side, qy = ax * side;
+  const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
+  for (let t = -1; t <= len - 1; t += 0.5) px(g, ...at(t), t < 1 ? '#b8905a' : '#a07a48');
+  px(g, ...at(0), '#c0382c'); px(g, ...at(1), '#c0382c');
+  for (const [t, o] of [[len - 2, 1], [len - 1, 1], [len, 1], [len - 1, 2], [len, 2], [len + 1, 2]]) px(g, ...at(t, o), WT('#6a727e', 0.3));
+  for (const t of [len - 1, len, len + 1]) px(g, ...at(t, 3), WL('#f2f6fa'));
+  px(g, ...at(len - 1, 0), '#4a4e56'); px(g, ...at(len, 0), '#4a4e56'); }
 /* ONEAXE (declared by SPEARLESS): baking the BARE set (his OFF AXE is thrown and out of his hand): every frame, the lead axe only */
 export function bakeBerserkerHero(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, BZ_PAL, skin); BODY_REF = BZ_BODY; PLUME_REF = BZ_PLUME;
@@ -4951,7 +4968,8 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
      growling - two frames, the axes drawn across each other one way and back */
   F.grind = [0, 1].map(i => KF({ dy: 3, legs: 'crouch', legsDy: 3, hy: 1, ...lead(3, 1, 7 + i * 2, -7), ...off(-1, 2, 5 - i * 2, -7, -1), plume: i,
     bits: i ? [o(7, -9, '#ffd36b'), o(9, -10, '#fff6c8'), o(4, -10, '#ffd36b')] : [o(6, -9, '#fff6c8')] }));
-  const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
+  const flip1 = c => { if (!c) return c; const o = flipX(c); if (c.rgo) o.rgo = c.rgo.map(([x, y, col]) => [c.width - 1 - x, y, col]); return o; };
+  const mirror = f => Array.isArray(f) ? f.map(flip1) : flip1(f);   /* (claude/bzart: his rage overlay turns with him) */
   directionalPoses(F, 'axe', { make: KF, extra: off(-4, 4, -10, 0) });   /* (the off axe kept at guard through the rising cut, the low sweep and the air up-slash) */
   const TK = f => KF({ top: ATTACK_HEADROOM, ...f });
   /* THE CROSS-CHOP (his held X): the WIND-UP takes both axes up over his head, crossed, and cocks them back as the hold grows; the CHOP brings
@@ -4971,6 +4989,58 @@ export function bakeBerserkerHero(skin = {}, previewOnly = false) {
   bzKitPoses(F, sh);
   smearPass(F, SMEAR_COL.steel);   /* the strike beats get their arc (claude/herokeys): the lead axe's hand and head are kept as c.wp */
   if (ONEAXE) F.atkB = F.atk;   /* ONE-HANDED: no off chop - the lead axe cuts every blow of the run */
+  /* (claude/bzart) HIS NEW KEYS, DRAWN (scratch/brief-berserker2.md 5; the aliases the berserker2 lane left are gone). Each is built with the headroom (TK) because it
+     is made after directionalPoses padded the rest. The strike keys are 5 frames on the attack-animation beats (0 anticipation, 1 strike, 2 extended, 3 recover, 4 settle).
+     LEAD = the BEARDED AXE, OFF = the HATCHET. One-handed (ONEAXE: the bare set) the off axe is simply not drawn; the keys that leant on it say so below. */
+  { const G5 = F.atk[4], opt = (a, b) => ONEAXE ? a : b;
+    const offWp = (c, hx, hy, tx, ty, dx = 0, dy = 0) => { c.wp = { p: [X + hx + dx, Y + hy + dy + ATTACK_HEADROOM], t: [X + tx + dx, Y + ty + dy + ATTACK_HEADROOM] }; return c; };
+    const sp = (x, y) => [o(x, y, '#ffffff'), o(x + 1, y, '#fff6c8'), o(x, y - 1, '#fff6c8'), o(x, y + 1, '#fff6c8')];
+    /* FLURRY LEFT: the bearded axe, a quick DOWN-chop from over the shoulder, short (the hatchet drawn across his belly); the shoulders turn into it */
+    F.bzFlurryL = [TK({ dx: -1, legs: 'wide', sho: 1, ...lead(1, -5, -3, -12), ...off(-3, 3, -9, 0), plume: 1 }),
+      TK({ wide: 6, dx: 1, legs: 'runC', sho: 1, ...lead(4, -4, 10, -10), ...off(-4, 3, -9, 3), plume: 2 }),
+      TK({ wide: WIDE, dx: 2, dy: 1, legs: 'runC', ...lead(5, 1, 13, 5), ...off(-4, 4, -10, 2), plume: 2, bits: sp(15, 7) }),
+      TK({ wide: 6, dx: 1, dy: 1, legs: 'wide', ...lead(4, 4, 9, 11, -1), ...off(-4, 4, -9, 1), plume: 0 }),
+      G5];
+    /* FLURRY RIGHT: the HATCHET, a low rising backhand - cocked low behind him, whipped up and across; the bearded axe pulled back out of its way */
+    const fr = [[-4, 5, -10, 10, -1, -1, 'wide', 1], [1, 3, 7, -3, 1, 1, 'runC', 2], [5, -2, 12, -8, 1, 2, 'runC', 2], [4, -6, 8, -14, 1, 1, 'wide', 0]];
+    F.bzFlurryR = [...fr.map(([hx, hy, tx, ty, sd, dx, legs, pl], i) => offWp(TK({ wide: i ? 6 : 0, dx, dy: i === 2 ? -1 : 0, legs, sho: i === 1 ? 1 : 0, ...lead(-1, 4, -6, -1), ...off(hx, hy, tx, ty, sd), plume: pl, bits: i === 2 ? sp(14, -9) : null }), hx, hy, tx, ty, dx)), G5];
+    /* THE CROSS-CHOP: both axes drawn back wide, swept in together to cross in front (the bearded head high, the hatchet low) and bite where they meet */
+    F.bzCross = [TK({ dx: -2, legs: 'wide', sho: 1, ...lead(-2, -4, -8, -11), ...off(-4, -3, -11, -8), plume: 1 }),
+      TK({ wide: 8, legs: 'runC', sho: 1, ...lead(3, 1, 9, -6), ...off(3, -7, 9, 0, -1), plume: 2 }),
+      TK({ wide: WIDE + 4, dx: 2, legs: 'runC', ...lead(5, -2, 13, -7), ...off(5, -6, 13, -2, -1), plume: 2, bits: [...sp(15, -4), o(13, -9, '#fff6c8'), o(14, 1, '#fff6c8')] }),
+      TK({ wide: 8, dx: 1, dy: 1, legs: 'wide', ...lead(4, 3, 9, 10, -1), ...off(4, 2, 9, 8, -1), plume: 0 }),
+      G5];
+    /* THE AIR SPIN: both axes whirling round him, one ahead and one behind, a turn a beat (arms out, the heads carried round the circle) */
+    const spin = k => { const a = k * 1.15 + 0.3, c = Math.cos(a), sn = Math.sin(a), P2 = (r, sg) => [Math.round(sg * r * c), Math.round(-sg * r * sn * 0.8)];
+      const [lx, ly] = P2(5, 1), [lt, lty] = P2(13, 1), [ox, oy2] = P2(5, -1), [ot, oty] = P2(13, -1);
+      const arc = k === 1 || k === 2 ? [o(Math.round(lt * 0.5) + 2, lty - 3, '#d4def5'), o(Math.round(lt * 0.9), lty - 2, '#ffffff'), o(Math.round(ot * 0.5) - 2, oty + 3, '#d4def5')] : [];
+      return TK({ wide: 8, dx: 0, dy: -1, legs: k % 2 ? 'jump' : 'jump2', plume: k % 3, ...lead(lx, ly, lt, lty, lty < 0 ? 1 : -1), ...off(ox, oy2, ot, oty, oty < 0 ? 1 : -1), bits: arc }); };
+    F.bzAirSpin = [spin(0), spin(1), spin(2), spin(3), TK({ legs: 'fall', ...lead(4, -3, 9, -10), ...off(-5, -1, -10, -8), plume: 2 })];
+    /* AXEFALL, spun: both heads under his boots, crossing and uncrossing, the wind streaming up off them */
+    F.bzPlunge = [0, 1].map(i => TK({ legs: 'tuck', hy: 1, dy: i, ...lead(1, 3, i ? -2 : 3, 13, -1), ...off(-2, 3, i ? 4 : -3, 13, 1), plume: 2, bits: [o(-5, 4 - i, '#d4def5'), o(6, 3 + i, '#d4def5'), o(-6, 8 - i, '#8aa0c8'), o(7, 8 + i, '#8aa0c8')] }));
+    /* TAKE IT: the two axes crossed in an X in front of his chest, feet planted wide, chin up; then the absorb - the shudder, the fur up, the blow's sparks at the crossing */
+    F.bzTake = [TK({ dy: 1, legs: 'wide', ...lead(3, 0, 10, -8), ...off(3, -6, 10, 1, -1), plume: 1, bits: [o(8, -4, '#fff6c8')] }),
+      TK({ dx: -1, dy: 2, legs: 'wide', sho: 1, hy: 1, ...lead(3, 0, 10, -8), ...off(3, -6, 10, 1, -1), plume: 2, bits: [...sp(9, -4), o(12, -7, '#ffd36b'), o(12, 0, '#ffd36b')] })];
+    /* COIL: down low, both axes thrust out level in front like horns, the war-paint and the eyes burning - the rage breathing in and out of him */
+    F.bzCoil = [0, 1, 2].map(i => TK({ dy: 3 + (i === 1 ? 1 : 0), legs: 'crouch', legsDy: 3, hy: 1, sho: i === 1 ? 1 : 0, ...lead(4, 2, 12, 1 - i % 2, -1), ...off(3, 4, 11, 3 + i % 2, -1), plume: i,
+      bits: [o(-1, 2, '#ff4a3a'), o(1, 3, '#c01c14'), ...(i === 1 ? [o(-2, -6, '#9a8a8a'), o(-1, -8, '#cfc6c0')] : [])] }));
+    /* POUNCE: the push-off, then flat out axes-first - heads together at the end of his arms, the wind streaming back off his mane */
+    F.bzPounce = [TK({ wide: 6, dx: 2, dy: 2, legs: 'push', sho: 1, ...lead(5, 0, 12, -3), ...off(3, 2, 11, 0), plume: 2 }),
+      TK({ wide: 10, dx: 4, dy: 1, legs: 'jump2', sho: 1, ...lead(7, -2, 14, -3), ...off(6, 1, 14, 0, -1), plume: 2, bits: [o(-9, -2, '#d4def5'), o(-12, 0, '#d4def5'), o(-8, 3, '#d4def5')] })];
+    /* THE COMMITTED LANDING: down in a crouch, the heads driven into the turf, dust; then the heave back up */
+    F.bzPLand = [TK({ wide: 4, dx: 2, dy: 4, legs: 'crouch', legsDy: 3, hy: 1, ...lead(5, 4, 10, 9, -1), ...off(3, 5, 9, 9, -1), plume: 1, bits: [o(11, 9, D), o(13, 9, D), o(-2, 9, D), o(-5, 9, D)] }),
+      TK({ wide: 4, dx: 1, dy: 2, legs: 'wide', ...lead(4, 3, 9, 6, -1), ...off(3, 3, 8, 5, -1), plume: 0, bits: [o(10, 9, D), o(-3, 9, D)] })];
+    /* THE WHETSTONE: stood easy, the bearded axe held flat across him, the hatchet's flat dragged down its edge (or, one-handed, a stone), sparks off the stroke */
+    F.bzWhet = [0, 1, 2, 3].map(i => { const hx = [2, 5, 8, 5][i], stone = o(hx + 3, 1, '#8c8a7e');
+      return TK({ dy: 0, legs: 'stand', sho: i === 1 ? 1 : 0, hy: i === 2 ? 1 : 0, ...lead(3, 1, 11, 2, -1), ...(ONEAXE ? { arm2: [OFF[0], OFF[1], X + hx, Y + 3] } : off(hx, 3, hx + 5, -2, -1)), plume: i % 3,
+        bits: [...(ONEAXE ? [stone, o(hx + 4, 1, '#a8a696')] : []), ...(i === 1 || i === 2 ? [o(hx + 6, 1, '#ffd36b'), o(hx + 8, 0, '#fff6c8')] : [o(hx + 6, 2, '#fff6c8')])] }); });
+    /* THE RIPOSTE IS THE CROSS-CHOP (riposteKit's three frames, redrawn): the crossed axes' windup, the cut with the flash where they bite, the settle */
+    { const C2 = '#fff6c8', G2 = '#ffd36b';
+      F.ripo = [TK({ wide: 6, dx: -1, dy: 1, legs: 'wide', sho: 1, ...lead(-1, -4, -7, -11), ...off(-3, -3, -9, -8), plume: 2 }),
+        TK({ wide: 14, dx: 3, dy: 1, legs: 'runC', ...lead(6, -2, 14, -6), ...off(6, -6, 14, -1, -1), plume: 2, bits: [...sp(17, -3), o(19, -3, G2), o(15, -9, C2), o(15, 3, C2), o(12, 6, '#ff6b4a')] }),
+        TK({ wide: 10, dx: 3, dy: 2, legs: 'wide', ...lead(4, 4, 9, 11, -1), ...off(4, 3, 9, 9, -1), plume: 0, bits: [o(10, 11, C2), o(12, 10, G2)] })]; }
+    for (const k of ['bzFlurryL', 'bzFlurryR', 'bzCross', 'bzAirSpin']) for (const i of [1, 2]) smearBeat(F[k][i], F[k][i - 1], SMEAR_COL.steel, i === 2 ? { max: 55 } : {}); }
+  if (ONEAXE) F.bzFlurryR = F.bzFlurryL;   /* ONE-HANDED: the bearded axe cuts every blow of the run */
   const RR = F, L = {}; for (const k in F) L[k] = mirror(F[k]);
   const white = {}; for (const k in F) white[k] = Array.isArray(F[k]) ? F[k].map(c => whiten(c)) : whiten(F[k]);
   const whiteL = {}; for (const k in white) whiteL[k] = mirror(white[k]);

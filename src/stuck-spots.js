@@ -498,6 +498,26 @@ export const STUCK_HANDS = {
       { key: 'trapLever', is: ['trap.trap', 'gate'], at: [544, 32], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' },
       { key: 'trapFeed', is: ['trap.trap', 'feed'], at: [538, 32], line: 'THE GATE IS SHUT: SWING THE SAND-FALL INTO THE HALL' } ] },
     { id: 'bc-vault', zone: [598, 31, 610, 36], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [603, 35], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
+    /* (claude/buriedcity3) THE FLIP: every glass the route needs glints until it is running (handsState glass.<id>: idle / running) */
+    { id: 'bc-stairglass', zone: [98, 28, 107, 37], steps: [ { key: 'stairGlass', is: ['glass.stair', 'idle'], at: [102, 36], line: 'A FALLEN HOUSE: STRIKE THE HOURGLASS BY IT' } ] },
+    { id: 'bc-bankglass', zone: [306, 26, 313, 33], steps: [ { key: 'bankGlass', is: ['glass.bank', 'idle'], at: [311, 32], line: 'A BANK OF SAND: STRIKE THE HOURGLASS' } ] },
+    { id: 'bc-fallglass', zone: [646, 8, 661, 18], steps: [ { key: 'fallGlass', is: ['glass.fall', 'idle'], at: [656, 14], line: 'STRIKE THE GLASS ON THE DOME, THEN RIDE THE FALL UP' } ] },
+    { id: 'bc-chain1', zone: [671, 1, 681, 8], steps: [ { key: 'chain1', is: ['glass.chain1', 'idle'], at: [678, 6], line: 'THE SAND SEA: STRIKE THE HOURGLASS AND THE ROOFS RISE' } ] },
+    { id: 'bc-chain2', zone: [695, 6, 700, 13], steps: [ { key: 'chain2', is: ['glass.chain2', 'idle'], at: [697, 11], line: 'THE SECOND HOURGLASS RAISES THE REST' } ] },
+    { id: 'bc-examglass', zone: [711, 6, 722, 13], steps: [ { key: 'examGlass', is: ['glass.exam', 'idle'], at: [719, 12], line: 'THE LAST HOURGLASS: STRIKE IT, THEN RUN' } ] },
+  ],
+  /* THE SEALED PYRAMID (claude/sealedpyramid): every route need glints until its state is the one the route wants (src/sealed-pyramid-hands.js handsState:
+     cw.<pair> home / over / moving, wall.falsedoor shut / open, pit.<trap> open / filled, trap.<id> ready / spent, vault.<id> due); the robbers' hole glints after a stall */
+  sealedpyramid: [
+    { id: 'py-hole', zone: [46, 2, 75, 13], steps: [ { key: 'hole', at: [69, 13], glint: 'stall', line: 'THE ROBBERS\' HOLE IS THE WAY IN' } ] },
+    { id: 'py-cw1', zone: [166, 24, 181, 29], steps: [ { key: 'cw1', is: ['cw.cw1', 'home'], at: [180, 29], line: 'THE STONE BLOCK ON ITS CHAIN: STAND ON IT AND RIDE IT DOWN' } ] },
+    { id: 'py-weigh', zone: [186, 30, 215, 39], steps: [ { key: 'weigh', is: ['cw.cw2', 'home'], at: [214, 39], line: 'THE PALE BLOCK IS A PLATE: TREAD IT, AND YOU GO UP' } ] },
+    { id: 'py-great', zone: [250, 18, 325, 36], steps: [ { key: 'great', is: ['wall.falsedoor', 'shut'], at: [256, 29], line: 'THE GREAT STONE\'S PLATE IS ON THE ROBBERS\' WALK' },
+      { key: 'door', is: ['wall.falsedoor', 'open'], at: [327, 36], glint: 'stall', line: 'THE STONE BROKE THE FALSE DOOR: THE WAY DOWN IS BEHIND IT' } ] },
+    { id: 'py-pit2', zone: [348, 36, 357, 43], steps: [ { key: 'pit2', is: ['pit.pit2', 'open'], at: [353, 43], line: 'TOO WIDE TO JUMP: THE PLATE DROPS THE BLOCK INTO THE PIT' } ] },
+    { id: 'py-shaft', zone: [430, 46, 441, 50], steps: [ { key: 'shaftPlate', is: ['trap.shaft', 'ready'], at: [436, 50], line: 'SPEND THE DART WALL FROM THE PLATE FIRST' },
+      { key: 'shaftRide', is: ['trap.shaft', 'spent'], at: [440, 50], line: 'THE DARTS ARE RELOADING: RIDE THE BLOCK DOWN NOW' } ] },
+    { id: 'py-vault', zone: [393, 46, 400, 50], steps: [ { key: 'vault', is: ['vault.sealed', 'due'], at: [397, 50], line: 'THE SEALED TOMB: FOUR SEALS OPEN IT' } ] },
   ],
   /* THE BANDIT KSAR (claude/ksar): the route's two verb locks glint until they are done (src/ksar-hands.js handsState: gate braked/free/open, arch.<id> whole/broken, vault.<id>),
      and the climbs over the towers on the walk and out of the store's cellar glint after a stall */
@@ -599,7 +619,15 @@ export const STUCK_HANDS = {
       { key: 'gusts', rows: [165.5, 175.5], colGt: 47, colLt: 66, noClimb: true, at: [55, 165], dy: -4, line: 'THE GUSTS: BRACE (BLOCK) OR CROSS IN THE STILL AIR' } ] },   /* (fix pass) the gust ledges: the glint on the landing's lip */
     /* (fix pass) THE MATRIARCH'S LEVERS (her fight's one verb): both glint while a sluice is FULL and she can be caught in the channel (the hands report mat.lever: due) */
     { id: 'rg-lever', zone: WHOLE, steps: [
-      { key: 'lever', rows: [4, 24.5], colGt: 49, colLt: 90, is: ['mat.lever', 'due'], ats: [[51, 21], [88, 21]], dy: -26, line: 'THE SLUICES ARE FULL: E AT A LEVER LETS THE DAM GO' } ] },
+      { key: 'lever', rows: [4, 24.5], colGt: 95, colLt: 136, is: ['mat.lever', 'due'], ats: [[97, 21], [134, 21]], dy: -26, line: 'THE SLUICES ARE FULL: E AT A LEVER LETS THE DAM GO' } ] },   /* (claude/redgorgerework: her ledge moved east, src/red-gorge.js REDGORGE.matX) */
+    /* (claude/redgorgerework) THE SPILLWAY: on each pitch, the basket until you stand on it, then the wheel beside it (release its gate) */
+    { id: 'rg-spillway', zone: WHOLE, steps: [
+      { key: 'sp1', rows: [51.5, 61.5], colGt: 57, colLt: 70, mover: { gorge: 'sp1' }, off: { gorge: 'sp1' }, dy: -4, line: 'THE BASKET: STAND ON IT, THEN RELEASE ITS GATE AT THE WHEEL (E)' },
+      { key: 'sp1w', rows: [51.5, 61.5], colGt: 57, colLt: 70, at: [66, 61], dy: -30, line: 'THE WHEEL: E RELEASES THE GATE. THE WATER WINDS THE BASKET UP' },
+      { key: 'sp2', rows: [32.5, 43.5], colGt: 57, colLt: 80, mover: { gorge: 'sp2' }, off: { gorge: 'sp2' }, dy: -4, line: 'THE BASKET: STAND ON IT, THEN RELEASE ITS GATE AT THE WHEEL (E)' },
+      { key: 'sp2w', rows: [32.5, 43.5], colGt: 57, colLt: 80, at: [76, 42], dy: -30, line: 'THE WHEEL: E RELEASES THE GATE. THE WATER WINDS THE BASKET UP' },
+      { key: 'sp3', rows: [21.5, 33.5], colGt: 74, colLt: 86, mover: { gorge: 'sp3' }, off: { gorge: 'sp3' }, dy: -4, line: 'THE BASKET: STAND ON IT, THEN RELEASE ITS GATE AT THE WHEEL (E)' },
+      { key: 'sp3w', rows: [21.5, 33.5], colGt: 74, colLt: 86, at: [82, 32], dy: -30, line: 'THE WHEEL: E RELEASES THE GATE. THE WATER WINDS THE BASKET UP' } ] },
   ],
   /* THE UNDERWELL (claude/underwell): every nest, oil fire, torch and rope the route needs glints until it is done (src/underwell-hands.js handsState:
      nest.<id> shut|open, fire.<col> lit|out, torch.<id> up|fall|down, rope.<id> hung|burnt, lamp up|fall|down, skin some|empty) */

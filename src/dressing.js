@@ -1081,3 +1081,5 @@ GROUND_KITS.towpath={density:0,kinds:[]};   /* THE TOWPATH (claude/towpath, batc
 ALLOWED_DECORATIONS.towpath=[];
 GROUND_KITS.buriedcity={density:0,kinds:[]};   /* THE BURIED CITY (claude/buriedcity, batch82 integ): sand over a drowned city's stone, brass and gear - nothing grows or is sprinkled; its dressing is the level's own decor rows and src/redraw (no placed decoration) */
 ALLOWED_DECORATIONS.buriedcity=[];
+GROUND_KITS.sealedpyramid={density:0,kinds:[]};   /* THE SEALED PYRAMID (claude/sealedpyramid): a sealed tomb of laid stone - nothing grows or is sprinkled; its dressing is the level's own decor rows (bones, jars, sarcophagi, her reliefs) */
+ALLOWED_DECORATIONS.sealedpyramid=[];

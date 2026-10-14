@@ -1,0 +1,64 @@
+fights 486 errs 0 rows 54
+ACT 1 bosses n 8 median 50   [0,22,22,33,67,78,78,100]  minis n 1 median 78 [78]
+ACT 2 bosses n 9 median 67   [44,56,56,56,67,78,78,89,100]  minis n 3 median 78 [44,78,89]
+ACT 3 bosses n 9 median 78   [22,33,44,44,78,100,100,100,100]  minis n 2 median 83.5 [67,100]
+ACT 4 bosses n 12 median 67   [0,22,56,56,67,67,67,78,78,89,89,100]  minis n 7 median 78 [67,67,67,78,78,89,89]
+ACT 5 bosses n 2 median 72   [44,100]  minis n 1 median 78 [78]
+ALL bosses (non-exempt) median 67 n 40  minis median 78
+knight 64% (103/162)  warden 65% (105/162)  pyro 73% (118/162)
+
+row|act|mini|k w p|%|lvl|secs|verdict
+burning | 1 |  | 2/3 1/3 0/3 | 33% | 3 | 86s | LOW ZERO:pyro
+kings | 1 |  | 2/3 1/3 3/3 | 67% | 5 | 55s | IN
+kings:mini | 1 | mini | 3/3 2/3 2/3 | 78% | 5 | 28s | IN
+marsh | 1 |  | 2/3 2/3 3/3 | 78% | 3 | 28s | HIGH
+rootway | 1 |  | 0/3 0/3 0/3 | 0% | 5 | 142s | LOW ZERO:knight,warden,pyro
+spore | 1 |  | 3/3 3/3 3/3 | 100% | 3 | 103s | HIGH
+stockade | 1 |  | 2/3 3/3 2/3 | 78% | 3 | 36s | HIGH
+underleaf | 1 |  | 1/3 1/3 0/3 | 22% | 6 | 115s | LOW ZERO:pyro
+wood | 1 |  | 1/3 0/3 1/3 | 22% | 3 | 85s | LOW ZERO:warden
+crown | 2 |  | 3/3 1/3 3/3 | 78% | 15 | 57s | HIGH
+crown:mini | 2 | mini | 2/3 2/3 3/3 | 78% | 15 | 35s | IN
+hanging | 2 |  | 1/3 2/3 2/3 | 56% | 8 | 103s | LOW
+hanging:mini | 2 | mini | 3/3 2/3 3/3 | 89% | 8 | 30s | HIGH
+moor | 2 |  | 1/3 3/3 0/3 | 44% | 10 | 103s | LOW ZERO:pyro
+oreroad | 2 |  | 3/3 1/3 2/3 | 67% | 12 | 106s | IN
+scree | 2 |  | 2/3 1/3 2/3 | 56% | 7 | 74s | LOW
+skyroad | 2 |  | 3/3 1/3 1/3 | 56% | 11 | 104s | LOW
+spire | 2 |  | 2/3 3/3 3/3 | 89% | 9 | 70s | HIGH
+spire:mini | 2 | mini | 2/3 2/3 0/3 | 44% | 9 | 80s | LOW ZERO:pyro
+storm | 2 |  | 3/3 3/3 3/3 | 100% | 14 | 25s | HIGH
+undercrown | 2 |  | 1/3 3/3 3/3 | 78% | 16 | 51s | HIGH
+causeway | 3 |  | 2/3 0/3 2/3 | 44% | 23 | 94s | LOW ZERO:warden
+deep | 3 |  | 0/3 2/3 2/3 | 44% | 21 | 47s | LOW ZERO:knight
+flotilla | 3 |  | 2/3 3/3 2/3 | 78% | 18 | 47s | HIGH
+harbor | 3 |  | 3/3 3/3 3/3 | 100% | 24 | 87s | HIGH
+harbor:mini | 3 | mini | 3/3 3/3 3/3 | 100% | 24 | 60s | HIGH
+hurricane | 3 |  | 3/3 3/3 3/3 | 100% | 19 | 82s | HIGH
+keep | 3 |  | 1/3 1/3 0/3 | 22% | 22 | 48s | LOW ZERO:pyro
+lamplit | 3 |  | 3/3 3/3 3/3 | 100% | 20 | 57s | HIGH
+lamplit:mini | 3 | mini | 1/3 3/3 2/3 | 67% | 20 | 28s | LOW
+longwater | 3 |  | 3/3 3/3 3/3 | 100% | 16 | 33s | HIGH
+reef | 3 |  | 2/3 0/3 1/3 | 33% | 17 | 34s | LOW ZERO:warden
+burial | 4 |  | 3/3 3/3 3/3 | 100% | 30 | 104s | HIGH
+burial:mini | 4 | mini | 1/3 2/3 3/3 | 67% | 30 | 33s | LOW
+canal | 4 |  | 1/3 1/3 3/3 | 56% | 26 | 87s | LOW
+church | 4 |  | 2/3 2/3 2/3 | 67% | 26 | 98s | IN
+fair | 4 |  | 2/3 3/3 3/3 | 89% | 28 | 95s | HIGH
+fallingtower | 4 |  | 1/3 3/3 3/3 | 78% | 33 | 127s | HIGH
+fallingtower:mini | 4 | mini | 2/3 1/3 3/3 | 67% | 33 | 17s | LOW
+fields | 4 |  | 2/3 2/3 1/3 | 56% | 29 | 121s | LOW
+fields:mini | 4 | mini | 2/3 3/3 3/3 | 89% | 29 | 28s | HIGH
+mage | 4 |  | 0/3 3/3 3/3 | 67% | 32 | 138s | IN ZERO:knight
+mage:mini | 4 | mini | 3/3 2/3 3/3 | 89% | 32 | 59s | HIGH
+theatre | 4 |  | 0/3 0/3 2/3 | 22% | 27 | 71s | LOW ZERO:knight,warden
+towpath | 4 |  | 2/3 3/3 3/3 | 89% | 25 | 82s | HIGH
+unburied | 4 |  | 0/3 3/3 3/3 | 67% | 32 | 78s | IN ZERO:knight
+unburied:mini | 4 | mini | 3/3 0/3 3/3 | 67% | 32 | 30s | LOW ZERO:warden
+waymeet | 4 |  | 1/3 3/3 3/3 | 78% | 24 | 104s | HIGH
+waymeet:mini | 4 | mini | 2/3 3/3 2/3 | 78% | 24 | 46s | IN
+witchlight | 4 |  | 0/3 0/3 0/3 | 0% | 31 | 124s | LOW ZERO:knight,warden,pyro
+witchlight:mini | 4 | mini | 3/3 2/3 2/3 | 78% | 31 | 59s | IN
+caravan | 5 |  | 2/3 0/3 2/3 | 44% | 34 | 109s | LOW ZERO:warden
+welltown | 5 |  | 3/3 3/3 3/3 | 100% | 35 | 86s | HIGH
+welltown:mini | 5 | mini | 3/3 2/3 2/3 | 78% | 35 | 59s | IN

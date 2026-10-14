@@ -10,7 +10,7 @@ import {buildWitchlight} from './witchlight.js';
 import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (docs/briefs/harvest-fair.md): between WAYMEET and THE HEXED FIELDS; its foes stand by the facing rule (src/mummer.js) */
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
-import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildTowpath } from './towpath.js';   /* THE TOWPATH (claude/towpath, the greybox): the bridge level WAYMEET -> THE TOWPATH -> THE FOG CANAL; its boss is THE FOG KNIGHT (src/fog-knight.js) */ import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */ import { buildBuriedCity } from './buried-city.js';   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR; its boss is THE HOURGLASS KING */
+import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildTowpath } from './towpath.js';   /* THE TOWPATH (claude/towpath, the greybox): the bridge level WAYMEET -> THE TOWPATH -> THE FOG CANAL; its boss is THE FOG KNIGHT (src/fog-knight.js) */ import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */ import { buildBuriedCity } from './buried-city.js'; import { buildSealedPyramid, RULE as PYRAMID_RULE } from './sealed-pyramid.js';   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the main road past THE BURIED CITY; its boss is THE SCARAB MOTHER */   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR; its boss is THE HOURGLASS KING */
 import { buildRootway } from './rootway.js';   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
@@ -3860,18 +3860,18 @@ function trialYard(hero) {
       ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
-       straw that takes them), THE CROSS-CHOP (his held X), THE BRACE on the beat (C is his chest, never a shield: one blow, as rage), the marks
+       straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
        (the brace takes a yellow one; a red one goes through it), THE SHOULDER ROLL, THE AXE THROW (UP+C, and then he must fetch it) and
        THE FRENZY (a full bar, spent) */
     berserker: [
-      ['third', 2, 'THE CHOPS: X, X, X. THE RUN GOES ON ONLY WHILE THEY LAND. THE THIRD BITES DEEP. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['heavyblow', 2, 'HOLD X, LET GO: THE CROSS-CHOP, BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
-      ['flash', 2, 'THE BRACE: TAP C AS HIS SWORD FLASHES. YOUR CHEST TAKES IT AS RAGE AND HE REELS. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
-      ['tells', 2, 'ONE YELLOW ! : THE BRACE TAKES IT. TWO RED !! : IT GOES THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['third', 2, 'THE FLURRY: X FIVE TIMES, LEFT AXE, RIGHT AXE. LAND THEM ALL: THE FIFTH IS THE CROSS-CHOP.', [['dummy', 16], ['dummy', 20]], 'X x5'],
+      ['heavyblow', 2, 'HOLD X, LET GO: BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
+      ['flash', 2, 'TAKE IT: RAISE THE AXES (C) AS HIS SWORD FLASHES. A PARRY: HE REELS. TWICE.', [['swornsword', 18]], 'LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : HOLD C AND TAKE IT AS RAGE. TWO RED !! : TOO STRONG, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['dodge', 2, 'THE SHOULDER ROLL: TAP A WAY TWICE, OR V. IT KNOCKS THE SMALL ONES ASIDE. ROLL TWICE.', [], 'B, OR THE STICK TWICE'],
       ['axe', 2, 'UP+C HURLS THE OFF AXE. YOU FIGHT ONE-HANDED UNTIL YOU PICK IT UP. HIT THE STRAW TWICE.', [['dummy', 11]], 'UP+LB'],
       DASH, RISE, SWEEP,
-      ['meter', 1, 'BLOWS GIVEN AND TAKEN FILL RAGE. FULL, TAP C: THE FRENZY. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
+      ['meter', 1, 'BLOWS FILL RAGE. FULL: HOLD DOWN, TAP C, THE FRENZY.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
   }[hero];
   const SW = 26, W = 8 + ST.length * SW + 26, H = 24; const L = painter(W, H);
@@ -7954,7 +7954,7 @@ export const LEVELS = [
   /* (2026-09-24, POLISH) the Warden's and the Geomancer's yards, APPENDED: LEVELS is an append log (map nodes and saves count by index) */
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
   { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
-  { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'chops, brace and frenzy', build: () => trialYard('berserker'), hidden: true },
+  { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'flurry, take it and frenzy', build: () => trialYard('berserker'), hidden: true },
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'theatre' },   /* (claude/theatre: the playhouse stands between Waymeet and the fair now) */
@@ -7970,7 +7970,7 @@ export const LEVELS = [
   { id: 'shopWell', name: 'THE WELL STORE', sub: 'ask the keeper', build: theShopWell, hidden: true },   /* THE WELL TOWN's walk-in store (claude/welltown): APPENDED, like every level */
   /* THE RED GORGE (claude/redgorge, the GREYBOX, 2026-10-02): desert arc level 3 - a climb up a canyon whose channel floods on a clock - after THE WELL TOWN. APPENDED, so no
      index and no save moves. THE GREAT RED CRAB is its boss, on the old dam at its head (the desert-arc concept: a new flood-tied ground boss; THE ROC stays for THE SKY ROAD) */
-  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE GORGE AND THE RIVER RUNS WILD. A SHUT GATE HOLDS IT; LET IT GO TO BREAK WHAT BLOCKS YOU.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
+  { id: 'redgorge', arc: 'the desert', name: 'THE RED GORGE', sub: 'the channel floods on the horn', rule: 'AT THE HORN THE FLOOD COMES DOWN THE GORGE: A SHUT GATE HOLDS IT, AND THE WATER YOU LET GO BREAKS JAMS AND LIFTS BASKETS.', build: () => buildRedGorge({ painter, T, TS }), needs: 'underwell' },   /* (claude/underwell: THE UNDERWELL stands between the town and the gorge now) */
   /* THE UNDERWELL (claude/underwell, the GREYBOX, 2026-10-05): the old cistern tunnels under THE WELL TOWN, dry since the Djinn's well took the water - lamp oil,
      the Cistern Queen's brood, the water skin scarce. APPENDED, so no index and no save moves; its place on the road is its needs (and the gorge's) and its map node.
      THE CISTERN QUEEN (src/cistern-queen.js, benched by claude/welltown5) is its boss */
@@ -7998,7 +7998,10 @@ export const LEVELS = [
   { id: 'towpath', arc: 'the road inland', name: 'THE TOWPATH', sub: 'the river road out of Waymeet, lock by lock into the fog', rule: 'THE LOCKS LIFT THE WATER, AND THE WATER LIFTS YOU.', build: () => buildTowpath({ painter, T, TS }), needs: 'waymeet' },   /* THE TOWPATH (claude/towpath, the greybox, 2026-10-08): appended (saves count levels by index); in the road between WAYMEET and THE FOG CANAL by its needs */
   /* THE BURIED CITY (claude/buriedcity, the OPUS GREYBOX, 2026-10-08; Daniel's desert-arc concept 10-01, to today's rules): a city of the living buried whole under the dunes past
      THE BANDIT KSAR - its rooms fill with sand. APPENDED, so no index and no save moves. THE HOURGLASS KING (src/hourglass-king.js) is its boss; THE SEALED PYRAMID will need it */
-  { id: 'buriedcity', arc: 'the desert', name: 'THE BURIED CITY', sub: 'a city of the living, buried whole', rule: 'THE CITY\'S ROOMS FILL WITH SAND: PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES - AND CARRIES YOU.', build: () => buildBuriedCity({ painter, T, TS }), needs: 'ksar' },
+  { id: 'buriedcity', arc: 'the desert', name: 'THE BURIED CITY', sub: 'a city of the living, buried whole', rule: 'PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.', build: () => buildBuriedCity({ painter, T, TS }), needs: 'ksar' },
+  /* THE SEALED PYRAMID (claude/sealedpyramid, the OPUS GREYBOX, 2026-10-12; Daniel's concept interview 10-11): the tomb past THE BURIED CITY - a descent through galleries of
+     traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
+  { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

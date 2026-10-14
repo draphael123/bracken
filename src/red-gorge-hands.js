@@ -41,7 +41,7 @@ export function makeRedGorgeHands(ctx) {
       RG = { L, phase: 'dry', t: GORGE.first, id: 0, said: {}, spans: [], pending: [],
         n: { floods: 0, held: 0, releases: 0, wasted: 0, swept: 0, foesSwept: 0, foesTaken: 0, nudges: 0, jams: 0, rides: 0, shut: 0 },
         channels: (L.channels || []).map(c => ({ ...c })),
-        gates: (L.gates || []).map(g => ({ ...g, state: 'open', fx: 0 })),
+        gates: (L.gates || []).map(g => ({ ...g, state: (L.channels || []).some(c => c.id === g.ch && c.dammed) ? 'full' : 'open', fx: 0 })),   /* (claude/redgorgerework) a DAMMED channel's gates start full: the dam's water is behind them */
         wheels: ents.filter(e => e.t === 'sluice').map(e => ({ x: e.x * ts + 8, y: (e.y + 1) * ts, gate: e.gate, arena: !!e.arena, cd: 0 })),
         ropes: (L.ropes || []).map(([x, y0, y1]) => ({ x: x * ts + 8, y0: y0 * ts, y1: (y1 + 1) * ts, r0: y0, r1: y1 })),
         jams: (L.jams || []).map(j => ({ ...j, open: false })),
@@ -65,7 +65,7 @@ export function makeRedGorgeHands(ctx) {
   const chOf = id => RG.channels.find(c => c.id === id);
   const gatesIn = id => RG.gates.filter(g => g.ch === id).sort((a, b) => a.row - b.row);
   /* where a flood from the top of channel c stops now: the first SHUT gate (a full one overtops); returns [y0, y1] or null */
-  const floodSpan = c => { for (const g of gatesIn(c.id)) if (g.row >= c.y0 - 1 && g.state === 'shut') return g.row >= c.y0 ? [c.y0, g.row] : null; return [c.y0, c.y1]; };
+  const floodSpan = c => { if (c.dammed) return null; for (const g of gatesIn(c.id)) if (g.row >= c.y0 - 1 && g.state === 'shut') return g.row >= c.y0 ? [c.y0, g.row] : null; return [c.y0, c.y1]; };
   /* where a burst released at gate g runs: from its row down to the next shut gate (which it fills) or the channel's foot */
   const burstSpan = (c, g) => { for (const q of gatesIn(c.id)) if (q.row > g.row && q.state === 'shut') return [g.row + 1, q.row, q]; return [g.row + 1, c.y1, null]; };
   const wetAt = (x, y, kinds) => { const tx = Math.floor(x / ctx.TS), ty = Math.floor(y / ctx.TS);
@@ -106,7 +106,8 @@ export function makeRedGorgeHands(ctx) {
       if (RG.phase === 'dry') { RG.phase = 'horn'; RG.t += GORGE.horn; RG.hornT0 = RG.clock; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.sfx.rumble && ctx.sfx.rumble();
         (RG.said['horn'] ? 0 : (RG.said['horn'] = 1, ctx.number(P0.x, P0.y - 34, 'THE HORN: THE FLOOD IS COMING', '#ff9a5c'))); }
       else if (RG.phase === 'horn') { RG.phase = 'flood'; RG.t += GORGE.run; RG.n.floods++; RG.id++; ctx.sfx.waveCrash && ctx.sfx.waveCrash();
-        for (const c of RG.channels) { const held = gatesIn(c.id).find(g => g.row >= c.y0 - 1 && g.state === 'shut'); const sp = floodSpan(c);
+        for (const c of RG.channels) { if (c.dammed) { for (const g of gatesIn(c.id)) if (g.state !== 'full') { g.state = 'full'; g.fx = 0.6; RG.n.refills = (RG.n.refills || 0) + 1; } continue; }   /* (claude/redgorgerework) THE SPILLWAY: the horn's water banks behind its gates (they refill), and none comes down it */
+          const held = gatesIn(c.id).find(g => g.row >= c.y0 - 1 && g.state === 'shut'); const sp = floodSpan(c);
           if (held) { held.state = 'full'; held.fx = 0.8; RG.n.held++; if (Math.abs(held.row * ctx.TS - P0.y) < 260 && Math.abs((c.x0 + 2) * ctx.TS - P0.x) < 360) ctx.number((c.x0 + 2.5) * ctx.TS, held.row * ctx.TS - 10, 'THE GATE HOLDS THE FLOOD', '#7ab8e8'); }
           if (sp) RG.spans.push({ ch: c.id, y0: sp[0], y1: sp[1], t: GORGE.run, kind: 'flood', id: 'f' + RG.id + c.id }); } }
       else { RG.phase = 'dry'; RG.t += ctx.crabPhase && ctx.crabPhase() === 2 ? ctx.crabDry() : GORGE.dry; }
@@ -116,7 +117,7 @@ export function makeRedGorgeHands(ctx) {
     /* A RELEASE: the gate creaks (its tell), then the banked water comes down below it at once */
     for (const p of RG.pending) { p.t -= dt; if (p.t > 0) continue; const g = p.g, c = chOf(g.ch); g.state = 'open'; RG.n.releases++; RG.id++;
       const [y0, y1, next] = burstSpan(c, g); if (next) next.state = 'full';
-      RG.spans.push({ ch: c.id, y0, y1, t: GORGE.release.run, kind: 'burst', id: 'b' + RG.id, gate: g.id }); ctx.sfx.waveCrash && ctx.sfx.waveCrash(); ctx.shake(4);
+      RG.spans.push({ ch: c.id, y0, y1, t: c.run || GORGE.release.run, kind: 'burst', id: 'b' + RG.id, gate: g.id }); ctx.sfx.waveCrash && ctx.sfx.waveCrash(); ctx.shake(4);
       /* A JAM in its way is washed out */
       for (const j of RG.jams) if (!j.open && j.x0 <= c.x1 && j.x1 >= c.x0 && j.y1 >= y0 && j.y0 <= y1) { j.open = true; RG.n.jams++; for (const [x, y] of cellsOf(j)) ctx.cellOpen(x, y);
         ctx.burst((j.x0 + j.x1 + 1) * ctx.TS / 2, (j.y0 + 2) * ctx.TS, 24, ['#6a4426', '#8a5a32', '#7ab8e8', '#e8f4f8'], 110, 1.0); ctx.sfx.crumble && ctx.sfx.crumble();
@@ -129,7 +130,8 @@ export function makeRedGorgeHands(ctx) {
     for (const w of RG.wheelsW) { const b = ctx.movers().find(m => m.gorge === w.basket); if (b && running(b.gch || 'gorge', b.wheelRow)) w.a += dt * 9; }
     /* A RAPTOR'S STOOP OVER THE RAPIDS knocks you in (claude/redgorge2): a hero hit while he stands on a stone or a timber over the water goes in downstream */
     for (const pp of ctx.players) if (pp.rgKnock > 0) { pp.rgKnock -= dt; if (pp.rgKnockGo) { pp.rgKnockGo = false; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return; P.onMover = null; P.ground = false; P.vx = RAPIDS.knock[0]; P.vy = RAPIDS.knock[1]; });
-      if (!RG.said.knock) { RG.said.knock = 1; ctx.number(pp.x, pp.y - 34, 'THE STOOP KNOCKS YOU INTO THE RIVER', '#ff9a5c'); } } }
+      if (pp.rgKnockBasket) { pp.rgKnockBasket = false; if (!RG.said.knockB) { RG.said.knockB = 1; ctx.number(pp.x, pp.y - 34, 'THE STOOP KNOCKS YOU OFF THE BASKET', '#ff9a5c'); } }
+      else if (!RG.said.knock) { RG.said.knock = 1; ctx.number(pp.x, pp.y - 34, 'THE STOOP KNOCKS YOU INTO THE RIVER', '#ff9a5c'); } } }
     /* THE TORRENT ON THE HEROES: once a flood, a blow and down through the bridge; while in it, pushed down and out to the nearer bank */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead) return;
       const s = wetAt(P.x, P.y - 8); if (!s) return; const c = chOf(s.ch), k = 1;
@@ -163,7 +165,7 @@ export function makeRedGorgeHands(ctx) {
   };
 
   /* ---------- THE GLINT AND THE NUDGE: what the climb needs next, by where the hero is (the route list: src/stuck-spots.js STUCK_HANDS) ---------- */
-  const handsState = name => name === 'mat.lever' ? (ctx.matLever ? ctx.matLever() : '') : name === 'gate.falls' ? ((RG.gates.find(q => q.id === 'falls') || {}).state || '') : name === 'jam' ? (RG.jams[0] ? (RG.jams[0].open ? 'open' : 'closed') : '') : '';
+  const handsState = name => name.startsWith('gate.sp') ? ((RG.gates.find(q => q.id === name.slice(5)) || {}).state || '') : name === 'mat.lever' ? (ctx.matLever ? ctx.matLever() : '') : name === 'gate.falls' ? ((RG.gates.find(q => q.id === 'falls') || {}).state || '') : name === 'jam' ? (RG.jams[0] ? (RG.jams[0].open ? 'open' : 'closed') : '') : '';
   const stall = (P, dt) => { const TS = ctx.TS, r = resolve('redgorge', Math.floor(P.x / TS), Math.floor((P.y - 1) / TS), { TS, props: [], movers: ctx.movers(), hero: P, state: handsState }, STUCK_HANDS);
     const stalls = RG.stalls = RG.stalls || {};   /* one clock per key: its 'said' outlasts a change of key, the headway clock starts again with it */
     if (!r) { RG.glint = null; RG.stallKey = null; return; } const t = r.targets[0]; RG.glint = { key: r.key, x: t.x, y: t.y };
@@ -197,6 +199,7 @@ export function makeRedGorgeHands(ctx) {
     /* over the rapids, a stoop that comes down on you knocks you into the river (the hands' update throws you in) */
     if (was === 'dive' && s.mode !== 'dive' && RG && RG.L.pools && RG.L.pools.some(p => p.rapids && s.x > p.x0 - 48 && s.x < p.x1 + 48 && Math.abs(s.y - p.y) < 60))
       for (const pp of ctx.players) if (!pp.dead && Math.abs(pp.x - s.x) < 18 && Math.abs(pp.y - s.y) < 28) { pp.rgKnock = 0.5; pp.rgKnockGo = true; }
+    if (was === 'dive' && s.mode !== 'dive') for (const pp of ctx.players) { const m = pp.onMover; if (!pp.dead && m && m.gorge && m.gch === 'spillway' && Math.abs(pp.x - s.x) < 18 && Math.abs(pp.y - s.y) < 28) { pp.rgKnock = 0.5; pp.rgKnockGo = true; pp.rgKnockBasket = true; RG.n.basketKnocks = (RG.n.basketKnocks || 0) + 1; } }   /* (claude/redgorgerework) THE SPILLWAY's EXAM: a stoop that lands on you on a basket knocks you off it */
     if (s.mode === 'dive') s.groundY = s.ty;   /* it lands where it struck (a rope, the basket, a ledge), not back on its bridge */
     return out; };
 

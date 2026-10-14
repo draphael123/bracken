@@ -357,6 +357,25 @@ export function drawCourtyard(V, A) {
   for (const px0 of [(sx + 9) * TS + 8, (sx + 30) * TS + 8]) put(V, P.bakePerch(Math.floor(V.time * 0.7 + px0) & 1), px0 - 13, fl - 30);
 }
 
+/* (claude/ksarart) THE EXIT ALCOVE'S ARCH: the recess behind the arena's east wall (three tiles wide, five tall: the road's gate waits at its back) gets a horseshoe arch in the wall,
+   a ring of alternating voussoirs, a gold keystone with the caravan's crescent, stepped jambs and a worn threshold; its back wall is dark ashlar with a niche lamp. The arena's own wall shuts the
+   first tile through the fight (tile art); once it opens (air) the arch frames the way on. Drawn over the wall tiles. */
+export function drawExitArch(V, A) {
+  if (!A || !A.hm) return; const { sx, R: Rr } = A.hm, ex = sx + 46, x0 = ex * TS, wd = 48, yt = (Rr - 5) * TS, yb = Rr * TS; if (!vis(V, x0 - 16, x0 + 64, 0)) return;
+  const C0 = { body: '#a5643f', lit: '#c8885a', sh: '#7a4429', cap: '#e6cf9e', mort: '#4a2a1a' }, cx = x0 + wd / 2, r0 = wd / 2 - 1, r1 = r0 + 5, open = !V.L || !V.L.grid || V.L.grid[(Rr - 3) * V.L.W + ex] === V.T.AIR;
+  const bx = open ? x0 : x0 + 16;   /* the recess's back: shaded ashlar (not over the wall tile that is still shut) */
+  box(V, bx, yt - 10, x0 + wd - bx, yb - yt + 10, '#2a1c1a'); for (let y = yt - 10; y < yb; y += 8) { if (y + 7 < yb) box(V, bx, y + 7, x0 + wd - bx, 1, '#1d1218'); for (let x = bx + ((y / 8 | 0) & 1) * 8; x < x0 + wd; x += 16) box(V, x, y, 1, 8, '#1d1218'); }
+  for (let dy = -r1; dy <= 0; dy++) for (let dx = -r1; dx <= r1; dx++) { const d = Math.hypot(dx + 0.5, dy), a = Math.atan2(-dy, dx + 0.5); if (d < r0 || d > r1) continue;
+    const seg = Math.floor(a / (Math.PI / 12)), edge = Math.abs(a - (seg + 0.5) * (Math.PI / 12)) > Math.PI / 24 - 0.03;
+    box(V, cx + dx, yt + dy, 1, 1, edge ? C0.mort : (seg & 1) ? C0.lit : C0.body); if (d > r1 - 0.9) box(V, cx + dx, yt + dy, 1, 1, C0.cap); else if (d < r0 + 1 && !edge) box(V, cx + dx, yt + dy, 1, 1, C0.sh); }
+  for (const jx of [x0 - 5, x0 + wd]) { const L = jx < x0; box(V, jx, yt, 5, yb - yt, C0.body); box(V, jx, yt, 1, yb - yt, L ? C0.lit : C0.sh); box(V, jx + 4, yt, 1, yb - yt, L ? C0.sh : C0.lit);
+    for (let y = yt + 8; y < yb; y += 16) box(V, jx, y, 5, 1, C0.mort); box(V, jx - 1, yt - 1, 7, 2, C0.cap); box(V, jx - 1, yb - 6, 7, 6, C0.lit); box(V, jx - 1, yb - 6, 7, 1, C0.cap); }   /* the jambs: ashlar courses, an impost and a plinth */
+  const ky = yt - r1 - 2; box(V, cx - 4, ky, 8, 7, '#d9b04a'); box(V, cx - 4, ky, 8, 1, '#f0dca0'); box(V, cx - 4, ky + 6, 8, 1, '#8a6a22');   /* the keystone */
+  box(V, cx - 1, ky + 1, 3, 1, '#7a1414'); box(V, cx - 2, ky + 2, 1, 3, '#7a1414'); box(V, cx - 1, ky + 5, 3, 1, '#7a1414'); box(V, cx + 1, ky + 3, 1, 1, '#fff0a0');   /* the crescent and its star */
+  const lx = x0 + wd - 8; box(V, lx, yt + 18, 1, 8, '#3a3a42'); box(V, lx - 2, yt + 26, 5, 6, '#d9a02a'); box(V, lx - 2, yt + 26, 5, 1, '#3a3a42'); box(V, lx - 1, yt + 28, 3, 3, Math.floor(V.time * 7) & 1 ? '#fff0a0' : '#ffd36b'); glow(V, lx, yt + 29, 28, 0.35);   /* the niche lamp */
+  box(V, x0 - 6, yb - 1, wd + 12, 1, '#4a2a1a'); box(V, x0, yb - 2, wd, 1, '#7a4429');   /* the threshold worn smooth */
+}
+
 /* THE FAR SKYLINE (src/main.js's backdrop calls drawBack): the fort on the horizon - its minaret, the great gong's tower, and the HAWK TOWER, tallest, with a beacon and circling hawks - in dusk haze, slow parallax */
 export function drawBack(g, cx, cy, vw, vh, time, dy = 0) {
   const base = vh - 52 + dy, f = 0.1, ox = 3150;   /* the tower stands where the hero meets it at about column 480 */

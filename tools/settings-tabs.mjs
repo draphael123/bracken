@@ -1,3 +1,4 @@
+// (batch89 integ) the rebind fixtures use Y, not I: I is now the default GRAB key (claude/partnerthrow), so binding it to jump is a real, flagged conflict.
 // tools/settings-tabs.mjs - SETTINGS IN TABS, REBINDING, THE CO-OP GUIDE (claude/storeui; HANDOFF items 18 and 22).
 //   1. the five tabs exist (AUDIO, DISPLAY, GAMEPLAY, CONTROLS, ACCESSIBILITY) and EVERY row of the old Settings list is on exactly one of them,
 //      under the name it always had (a saved value is keyed by the SET field behind the name, which the tabs never touch)
@@ -24,8 +25,8 @@ assert.equal(tabOf('Difficulty'), 'gameplay'); assert.equal(tabOf('Sound test'),
 /* ---- 4a. the defaults are the old key lists ---- */
 { const t = keysTable(emptyBinds());
   for (const a in KB_DEFAULT) assert.deepEqual([...new Set(t[a].map(x => x.toLowerCase()))].filter(x => x !== 'escape').sort(), [...new Set(KB_DEFAULT[a].flatMap(x => x === 'Space' ? [' ', 'space'] : [x.toLowerCase()]))].filter(x => x !== 'escape').sort(), 'default keys for ' + a);
-  const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'i'); assert.deepEqual(b.kb.jump, ['i', 'Space']);
-  assert(!conflicts(b, 'kb').jump, 'no flag when nothing is shared'); setSlot(b, 'kb', 'atk', 0, 'i'); assert(conflicts(b, 'kb').jump && conflicts(b, 'kb').atk, 'the shared key is flagged on both rows');
+  const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'y'); assert.deepEqual(b.kb.jump, ['y', 'Space']);
+  assert(!conflicts(b, 'kb').jump, 'no flag when nothing is shared'); setSlot(b, 'kb', 'atk', 0, 'y'); assert(conflicts(b, 'kb').jump && conflicts(b, 'kb').atk, 'the shared key is flagged on both rows');
   assert.deepEqual(conflicts(emptyBinds(), 'kb'), {}, 'the defaults (UP is also jump) are not flags');
   assert.deepEqual(cleanBinds({ kb: { jump: ['<script>', 'x', 'y'], nonsense: ['z'] }, pad1: { jump: [99, 3] }, pad9: {} }), { kb: { jump: [null, 'x'] }, pad1: { jump: [null, 3] }, pad2: {} }, 'garbage is cleaned'); }
 
@@ -33,9 +34,9 @@ assert.equal(tabOf('Difficulty'), 'gameplay'); assert.equal(tabOf('Sound test'),
 { const pyro = cardRows({ hero: 'pyro' }), names = pyro.map(r => r[0]);
   const ward = pyro.find(r => r[0] === 'ember flare'); assert(ward && /TAP DOWN/.test(ward[1]), 'the Pyromancer\'s card has an EMBER FLARE row: TAP DOWN'); assert(pyro.find(r => r[0] === 'weak guard' && /HOLD DOWN/.test(r[1])), 'and the weak guard: HOLD DOWN');
   assert(!names.includes('block'), 'her card no longer lists C as block'); assert(pyro.find(r => /EMBER/.test(r[1]) && r[0] === 'ember / jet'), 'C is her ember and jet');
-  for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker']) { const r = cardRows({ hero: h }); assert(r.find(x => x[0] === 'crouch' && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember flare'), h + ' has no ember flare'); }
-  const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'i'); setSlot(b, 'kb', 'block', 0, 'o'); setSlot(b, 'kb', 'down', 0, 'k');
-  const rows = cardRows({ hero: 'knight', binds: b }); assert(/^I \//.test(rows.find(r => r[0] === 'jump')[1]), 'the card shows the chosen jump key'); assert(/HOLD O/.test(rows.find(r => r[0] === 'block')[1]), 'and the chosen C');
+  for (const h of ['knight', 'warden', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker']) { const r = cardRows({ hero: h }); /* (batch88, claude/berserker2) the Berserker's crouch row is named POUNCE: his crouch coils and lets go as the pounce (src/controls.js) */ assert(r.find(x => x[0] === (h === 'berserker' ? 'pounce' : 'crouch') && /HOLD DOWN/.test(x[1])), h + ' has the universal duck on the card'); assert(!r.find(x => x[0] === 'ember flare'), h + ' has no ember flare'); }
+  const b = emptyBinds(); setSlot(b, 'kb', 'jump', 0, 'y'); setSlot(b, 'kb', 'block', 0, 'o'); setSlot(b, 'kb', 'down', 0, 'k');
+  const rows = cardRows({ hero: 'knight', binds: b }); assert(/^Y \//.test(rows.find(r => r[0] === 'jump')[1]), 'the card shows the chosen jump key'); assert(/HOLD O/.test(rows.find(r => r[0] === 'block')[1]), 'and the chosen C');
   assert(/TAP K/.test(cardRows({ hero: 'pyro', binds: b }).find(r => r[0] === 'ember flare')[1]), 'and the ember flare follows the crouch key'); }
 
 const shots = process.env.SETTINGS_SHOTS; if (shots) mkdirSync(shots, { recursive: true });
@@ -62,7 +63,8 @@ try {
     BK.reset({ fresh: true }); BK.state = 'title'; ui.openMenu('title');
     out.kind = ui.menuKind; out.tabs = []; const union = new Set();
     for (const t of ${JSON.stringify(TABS.map(t => t.id))}) { ui.settingsTab = t; const rows = ui.menuRows(); out.tabs.push([t, rows.length]); if (rows[0] !== '@TABS' || rows[rows.length - 1] !== 'Back') out.badFrame = t; for (const k of rows) union.add(k); BK.state = 'menu'; if (${JSON.stringify(shots || '')}) shoot('tab-' + t); }
-    out.union = [...union];
+    out.union = [...union]; out.noDev = out.union.includes('Unlock everything');
+    BK.setDev(true); { const u2 = new Set(); for (const t of ${JSON.stringify(TABS.map(t => t.id))}) { ui.settingsTab = t; for (const k of ui.menuRows()) u2.add(k); } out.unionDev = [...u2]; } BK.setDev(false);
     ui.settingsTab = 'audio'; ui.menuI = 0; key('ArrowRight'); out.afterRight = ui.settingsTab; key('ArrowLeft'); out.afterLeft = ui.settingsTab; key('Tab'); out.afterTab = ui.settingsTab;
     ui.settingsTab = 'audio'; tap(5); out.afterRB = ui.settingsTab; tap(4); out.afterLB = ui.settingsTab;
     ui.settingsTab = 'gameplay'; const rows = ui.menuRows(); ui.menuI = rows.indexOf('Hit stop'); const c0 = S.hitstop; key('ArrowRight'); out.combat = [c0, ui.settings().hitstop]; out.noCombatRow = !rows.includes('Combat'); key('ArrowLeft');
@@ -71,18 +73,18 @@ try {
     BK.state = 'menu'; ui.rebind.open(0); out.rebindState = BK.state; const rb = ui.rebind.state();
     rb.i = 4; rb.slot = 0; key('Enter'); out.listening = ui.rebind.state().listening;
     key('r'); out.reserved = [ui.rebind.state().listening, JSON.stringify(ui.settings().binds.kb.jump || null)];
-    rb.i = 4; rb.slot = 0; key('Enter'); key('i'); out.jump = ui.settings().binds.kb.jump;
+    rb.i = 4; rb.slot = 0; key('Enter'); key('y'); out.jump = ui.settings().binds.kb.jump;
     if (${JSON.stringify(shots || '')}) shoot('rebind');
-    rb.i = 5; rb.slot = 0; key('Enter'); key('i'); out.conflict = ui.rebind.conflicts();
+    rb.i = 5; rb.slot = 0; key('Enter'); key('y'); out.conflict = ui.rebind.conflicts();
     if (${JSON.stringify(shots || '')}) shoot('rebind-conflict');
     /* in play the new key jumps and the old one does not */
     BK.load(0); BK.state = 'play'; BK.god = true; BK.sim(120);
     const jumped = k => { BK.P.vy = 0; const y = BK.P.y; dispatchEvent(new KeyboardEvent('keydown', { key: k })); BK.step(3); dispatchEvent(new KeyboardEvent('keyup', { key: k })); const up = BK.P.vy < -50 || BK.P.y < y - 1; BK.sim(90); return up; };
-    out.newKeyJumps = jumped('i'); out.oldKey = jumped('k') ? 'k still jumps' : 'no';
+    out.newKeyJumps = jumped('y'); out.oldKey = jumped('k') ? 'k still jumps' : 'no';
     /* the pad: a real pad poll */
     BK.state = 'menu'; ui.rebind.open(1); const rp = ui.rebind.state(); rp.i = 4; rp.slot = 0; key('Enter'); tap(6); out.padJump = ui.settings().binds.pad1.jump;
     /* saved and loaded */
-    const saved = localStorage.getItem('bracken.settings'); out.savedHasBinds = /"binds"/.test(saved) && /"i"/.test(saved);
+    const saved = localStorage.getItem('bracken.settings'); out.savedHasBinds = /"binds"/.test(saved) && /"y"/.test(saved);
     ui.readSettings('{}'); out.afterBlank = JSON.stringify(ui.settings().binds); ui.readSettings(saved); out.reloaded = JSON.stringify(ui.settings().binds.kb.jump);
     /* the reset */
     ui.rebind.open(0); const rr = ui.rebind.state(); rr.i = ${ACTION_IDS.length}; key('Enter'); out.armed = rr.arm > 0; key('Enter'); out.afterReset = JSON.stringify(ui.settings().binds.kb);
@@ -105,15 +107,17 @@ try {
   assert.equal(o.bindsEmpty, JSON.stringify({ kb: {}, pad1: {}, pad2: {} }), 'an old file has no rebinds'); assert(!o.coopSeenOld, 'an old file has not seen the co-op page');
   assert.equal(o.cleaned, JSON.stringify({ kb: { jump: [null, 'x'] }, pad1: {}, pad2: {} }), 'garbage binds are cleaned on load');
   assert.equal(o.badFrame, undefined, 'every tab starts with the strip and ends with Back: ' + o.badFrame);
-  for (const k of LEGACY_ROWS) assert(o.union.includes(k), 'the game shows the old row ' + k);
+  /* DESIGN CHANGE (claude/heroroster, Daniel 10-12): UNLOCK EVERYTHING is a dev-only row - every other old row is shown as before, and with the dev flag (?dev=1) the whole old list is shown, that row too */
+  for (const k of LEGACY_ROWS) { if (k === 'Unlock everything') continue; assert(o.union.includes(k), 'the game shows the old row ' + k); }
+  assert(!o.noDev, 'without ?dev=1 the game has no UNLOCK EVERYTHING row'); for (const k of LEGACY_ROWS) assert(o.unionDev.includes(k), 'with ?dev=1 the game shows the old row ' + k);
   assert.equal(o.tabs.length, 5);
   assert.equal(o.afterRight, 'display'); assert.equal(o.afterLeft, 'audio'); assert.equal(o.afterTab, 'display', 'TAB steps the tab'); assert.equal(o.afterRB, 'display', 'RB steps the tab on a pad'); assert.equal(o.afterLB, 'audio', 'LB steps it back');
   assert.notEqual(o.combat[0], o.combat[1], 'a Gameplay-tab toggle (Hit stop) still flips'); assert.equal(o.noCombatRow, true, 'the Weighty COMBAT row is retired'); assert.equal(o.combatDropped, true, 'an old save with weighty on loads into classic: the field is dropped');
   assert.equal(o.rebindState, 'rebind'); assert.equal(o.listening, true, 'Z/ENTER on a row listens'); assert.deepEqual(o.reserved, [false, 'null'], 'R is reserved and refused');
-  assert.deepEqual(o.jump, ['i', 'Space'], 'jump rebound to I'); assert(o.conflict.jump && o.conflict.atk, 'binding I twice flags both rows: ' + JSON.stringify(o.conflict));
+  assert.deepEqual(o.jump, ['y', 'Space'], 'jump rebound to Y'); assert(o.conflict.jump && o.conflict.atk, 'binding Y twice flags both rows: ' + JSON.stringify(o.conflict));
   assert.equal(o.newKeyJumps, true, 'the new key jumps in play'); assert.equal(o.oldKey, 'no', 'the old key no longer does');
   assert.deepEqual(o.padJump, [6, null], 'the pad rebinds through a real poll (LT)');
-  assert(o.savedHasBinds, 'the bindings are in the saved settings'); assert.equal(o.afterBlank, JSON.stringify({ kb: {}, pad1: {}, pad2: {} })); assert.equal(o.reloaded, JSON.stringify(['i', 'Space']), 'and load back');
+  assert(o.savedHasBinds, 'the bindings are in the saved settings'); assert.equal(o.afterBlank, JSON.stringify({ kb: {}, pad1: {}, pad2: {} })); assert.equal(o.reloaded, JSON.stringify(['y', 'Space']), 'and load back');
   assert(o.armed, 'reset asks twice'); assert.equal(o.afterReset, '{}', 'and puts the page back to its defaults');
   assert(o.card_pyro.some(x => /^ember flare\|TAP DOWN/.test(x)) && !o.card_pyro.some(x => /^block\|/.test(x)), 'the game\'s Pyromancer card: ' + o.card_pyro.join(' ; ')); assert(o.card_knight.some(x => /^block\|HOLD C/.test(x)));
   assert.equal(o.coopFirst, 'coophelp', 'the co-op page opens the first time co-op is switched on'); assert(o.coopSeen1); assert.equal(o.coopClosed, 'map'); assert.equal(o.coopSecond, 'map', 'and only the first time');

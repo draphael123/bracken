@@ -4,7 +4,7 @@
 //   - a hero who crouches is not told FIRST[hero] (the hint box, PROG.crouchFirst[hero] = 1), or all eight lines are not distinct
 //   - he is told a second time (a second crouch, a minute later, even after a level load)
 //   - a hint (or two) already showing is CUT IN ON: the crouch hint must wait until the box and its queue are quiet, then show
-//   - a hero whose own contextual line was already said (the paladin's kneelTold; the berserker's WORKING UP before he crouches) is told twice
+//   - a hero whose own contextual line was already said (the paladin's kneelTold) is told twice
 //   - a line is longer than 56 characters (the box is two lines at 6px caps; tools/textfit.mjs reads the same table)
 //   node tools/crouch-hint.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
@@ -31,7 +31,7 @@ try {
       /* a stumble: down for 0.1 s */
       K.down = true; BK.sim(6); none(); BK.sim(10); r.stumbleTold = BK.crouchHint().stats.told;
       /* the crouch: held 1 s */
-      for (const k of ['crouchTold_knight', 'crouchTold_warden', 'crouchTold_pirate', 'kneelTold', 'senseTold', 'harvestTold', 'workTold']) delete BKT.PROG[k];   /* (the contextual lines are tested in their own checks) */
+      for (const k of ['crouchTold_knight', 'crouchTold_warden', 'crouchTold_pirate', 'kneelTold', 'senseTold', 'harvestTold', 'workTold', 'pounceTold']) delete BKT.PROG[k];   /* (the contextual lines are tested in their own checks) */
       K.down = true; { let n = 0; while (BK.crouchHint().stats.told < 1 && n < 2000) { BK.sim(10); n += 10; } r.after = n; }   /* (the stockade's own toasts are up first: it waits for them) */
       r.msg = BKT.hintNow.msg; r.t = BKT.hintNow.t; r.told = BK.crouchHint().stats.told; r.flag = BKT.PROG.crouchFirst && BKT.PROG.crouchFirst[h]; none();
       /* again: never twice (a minute later, and after a level load) */
@@ -56,8 +56,7 @@ else {
   for (const [h, s] of Object.entries(FIRST)) if (s.length > 56 || s !== s.toUpperCase()) bad.push(h + ': the line is over 56 characters or not capitals: ' + s);
   for (const h of HEROES) { const r = R[h];
     if (r.walkTold || r.stumbleTold) bad.push(h + ': told while standing, walking or on a ' + SETTLE + ' s stumble: ' + JSON.stringify(r));
-    /* THE BERSERKER is taught by his own calm-standing line ('WORKING UP: ...', src/crouch-c.js) before he ever crouches: that IS his first-crouch teach, so he is not told twice */
-    if (h === 'berserker') { if (r.told !== 0 || r.flag !== 1 || !/^WORKING UP/.test(r.msg)) bad.push(h + ': his own line should have taught him and the crouch hint stayed quiet: ' + JSON.stringify(r)); continue; }
+    /* (claude/berserker2) THE BERSERKER's crouch is THE COIL and THE POUNCE now - taught here like everyone's; WORKING UP moved off the crouch to his idle WHETSTONE, which teaches itself standing */
     if (r.told !== 1 || r.msg !== FIRST[h] || !(r.t > 0)) bad.push(h + ': the first crouch did not say ' + JSON.stringify(FIRST[h]) + ': ' + JSON.stringify(r));
     if (r.flag !== 1) bad.push(h + ': PROG.crouchFirst not set (it must save with the slot)');
     if (r.toldAfter !== 1 || r.toldAfterLoad !== 1) bad.push(h + ': told a second time: ' + JSON.stringify(r)); }

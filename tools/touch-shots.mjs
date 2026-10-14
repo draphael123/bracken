@@ -40,6 +40,6 @@ try {
   await goto('&safe=8,44,21,44'); await toPlay(); await E('BK.step(2)'); await shot('hud-play-notch-insets');
   await goto(); await sleep(1200);
   const it2 = await E('BK.ui.titleItems()'), k = it2.findIndex(x => x === 'NEW GAME' || x === 'CHOOSE A SAVE'); await tapGame(k); await sleep(500); await shot('save-slots');
-  await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200); await shot('map');
+  await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.setDev(true); BK.SET.godmode = true; BK.mapLook('wood'); })()`); await sleep(1200); await shot('map');
   await E('BK.ui.storeOpen("map", "heroes")'); await sleep(900); await shot('store');
 } finally { await pg.close(); }

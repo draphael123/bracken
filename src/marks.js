@@ -82,8 +82,9 @@ export const BY_HAND = {
   'scorpion|clawTell':'!','scorpion|tailTell':'!!','sandgob|knifeTell':'!','vulture|watch':'!!',   /* THE SUNKEN CARAVAN (desert-foes.js, by hand): the claw and the knife a shield turns; the sting over its back and the vulture's dive nothing does */
   'hawkmistress|lashTell':'!!', 'hawkmistress|feintTell':'', 'hawkmistress|cutTell':'!', 'hawkmistress|spotTell':'!', 'hawkmistress|markLashTell':'!!', 'hawkmistress|callTell':'!', 'hawkmistress|snareTell':'!!', 'hawkmistress|fanTell':'!', 'hawkmistress|kegTell':'!!', 'hawkmistress|rakeTell':'!', 'hawkmistress|hawkGrabTell':'!', 'hawkscout|diveTell':'!!',   /* THE BANDIT KSAR (claude/ksar, by hand: src/hawk-mistress.js MOVES; the hawk scout is a CV machine in src/ksar-foes.js - its stoop on the spot it marked) */
   'fogknight|stanceTell':'', 'fogknight|cutTell':'!', 'fogknight|lungeTell':'!!', 'fogknight|doubleTell':'', 'fogknight|shroudTell':'', 'fogknight|stepTell':'!',   /* THE TOWPATH (claude/towpath, by hand: src/fog-knight.js MOVES) - ! a shield turns his sword (and the cut out of the shroud); !! the fog lunge (roll in its last beat); a stance, the double's summoning and the shroud strike nobody */
-  'hourglassking|pendTell':'!', 'hourglassking|gearTell':'!!', 'hourglassking|streamTell':'!!', 'hourglassking|slipTell':'!!', 'hourglassking|hourTell':'!!', 'construct|pokeTell':'!', 'construct|sweepTell':'!!',   /* THE BURIED CITY (claude/buriedcity, by hand: src/hourglass-king.js MOVES; the construct is a CV machine in src/construct.js - the poke a shield turns, the sweep along the floor) */
-  'skitter|biteTell':'!', 'colossus|lanceTell':'!!', 'colossus|stompTell':'!!', 'colossus|shardTell':'!', 'colossus|shakeTell':'!!', 'colossus|waveTell':'!!', 'colossus|crackTell':'!!', 'colossus|sweepTell':'!!', 'colossus|quakeTell':'!!',   /* (claude/glasssea2) THE SHARD SWEEP along the floor (jump it, or be up on a hold) and THE GLASS QUAKE's heaving plates (step off them): no shield turns either */   /* THE GLASS SEA (claude/glasssea, by hand): the skitter's nip a shield turns; THE GLASS COLOSSUS's lance (jump it, or a mirror), stomp ring and shard rain (a shield, or jump / step off), its shake (grip) and shard wave (jump); (claude/colossus3) THE CRACK LINE, which replaced the swarm call: glass spikes along the floor - jump them or step off the line */
+  'scarabmother|chargeTell':'!!', 'scarabmother|snapTell':'!', 'scarabmother|spitTell':'!', 'scarabmother|burrowTell':'!!', 'scarabmother|quakeTell':'!!', 'mummy|lashTell':'!', 'mummy|grabTell':'!!',   /* THE SEALED PYRAMID (claude/sealedpyramid, by hand: src/scarab-mother.js MOVES; the mummy is a CV machine in src/mummy.js) */
+  'hourglassking|pendTell':'!', 'hourglassking|gearTell':'!!', 'hourglassking|streamTell':'!!', 'hourglassking|slipTell':'!!', 'hourglassking|hourTell':'!!', 'hourglassking|surgeTell':'!!', 'hourglassking|graspTell':'!!', 'hourglassking|rainTell':'!!', 'construct|pokeTell':'!', 'construct|sweepTell':'!!',   /* THE BURIED CITY (claude/buriedcity, by hand: src/hourglass-king.js MOVES; the construct is a CV machine in src/construct.js - the poke a shield turns, the sweep along the floor) */
+  'skitter|biteTell':'!', 'colossus|lanceTell':'!!', 'colossus|stompTell':'!!', 'colossus|shardTell':'!', 'colossus|shakeTell':'!!', 'colossus|waveTell':'!!', 'colossus|crackTell':'!!', 'colossus|sweepTell':'!!', 'colossus|quakeTell':'!!', 'colossus|gazeTell':'!!', 'colossus|lungeTell':'!', 'colossus|walkTell':'!!',   /* (claude/colossusrework) THE GAZE (break line of sight), THE SHARD LUNGE (yellow: block it), THE WALK's trample */   /* (claude/glasssea2) THE SHARD SWEEP along the floor (jump it, or be up on a hold) and THE GLASS QUAKE's heaving plates (step off them): no shield turns either */   /* THE GLASS SEA (claude/glasssea, by hand): the skitter's nip a shield turns; THE GLASS COLOSSUS's lance (jump it, or a mirror), stomp ring and shard rain (a shield, or jump / step off), its shake (grip) and shard wave (jump); (claude/colossus3) THE CRACK LINE, which replaced the swarm call: glass spikes along the floor - jump them or step off the line */
   'corpse|cutTell':'!','corpse|riseTell':'','bannerbearer|plantTell':'','bannerbearer|poleTell':'!',   /* THE UNBURIED FIELD (unburied-foes.js, by hand): a dead man's cut and the standard's pole a shield turns; rising and planting strike nobody */
   'barrowrider|rideTell':'!!','barrowrider|trampleTell':'!','barrowrider|fireTell':'!','barrowrider|lanceTell':'!!','barrowrider|thrustTell':'!','barrowrider|remountTell':'',   /* THE BARROW RIDER (2026-09-24, in the Standard-Bearer's place): the ride-through and the lance line no shield turns; the trample, the grave-fire and the thrust it does; the bones crawling back strike nobody */
   'bloodknight|swingTell':'!','bloodknight|cleaveTell':'!','bloodknight|bladeTell':'!!','bloodknight|gripTell':'!!','bloodknight|boilTell':'!!','bloodknight|coilTell':'!','bloodknight|tideTell':'!!','bloodknight|wardTell':'','bloodknight|novaTell':'!!','bloodknight|raiseTell':'','bloodknight|callTell':'','bloodknight|surgeTell':'!!',   /* THE DEATH KNIGHT (claude/dk3, rebuilt from the hero's kit): his cuts, the Cleave and the Coil a shield turns; the bolts, the chain, the boil, the tide, the nova and the surge nothing does; the ward and the raising strike nobody */
@@ -177,7 +178,7 @@ export const MARK = {
   'closedhelm|bashTell': '!!', 'closedhelm|brandTell': '!!', 'closedhelm|cutTell': '!', 'closedhelm|delayTell': '!', 'closedhelm|followTell': '!', 'closedhelm|grabTell': '!!',
   'closedhelm|judgeTell': '!', 'closedhelm|leapTell': '!!', 'closedhelm|oathTell': '!!', 'closedhelm|radianceTell': '!!', 'closedhelm|thrustTell': '!', 'colossus|crackTell': '!!',
   'colossus|lanceTell': '!!', 'colossus|quakeTell': '!!', 'colossus|shakeTell': '!!', 'colossus|shardTell': '!', 'colossus|stompTell': '!!', 'colossus|sweepTell': '!!',
-  'colossus|waveTell': '!!', 'construct|pokeTell': '!', 'construct|sweepTell': '!!', 'corpse|cutTell': '!', 'corpse|riseTell': '', 'courtier|clawTell': '!',
+  'colossus|waveTell': '!!', 'colossus|gazeTell': '!!', 'colossus|lungeTell': '!', 'colossus|walkTell': '!!', 'construct|pokeTell': '!', 'construct|sweepTell': '!!', 'corpse|cutTell': '!', 'corpse|riseTell': '', 'courtier|clawTell': '!',
   'crab|lungeTell': '!', 'crab|pinchTell': '!', 'crab|shockTell': '!!', 'crab|snapTell': '!', 'crab|strikeTell': '!', 'crab|thrustTell': '!',
   'crossbow|aim': '!', 'crossbow|cutTell': '!', 'crossbow|leapTell': '!!', 'crossbow|shout': '!', 'crossbow|stabTell': '!', 'crossbow|swingTell': '!',
   'crow|diveTell': '!!', 'cutlass|ekLungeTell': '!', 'cutlass|ekPistolTell': '!!', 'cutlass|shootTell': '!', 'cutlass|slashTell': '!', 'cutlass|swingTell': '!',
@@ -218,7 +219,7 @@ export const MARK = {
   'heronfoe|lungeTell': '!', 'heronfoe|pinchTell': '!', 'heronfoe|shockTell': '!!', 'heronfoe|snapTell': '!', 'heronfoe|strikeTell': '!', 'heronfoe|thrustTell': '!',
   'hobbyhorse|rear': '!!', 'holdfast|gripTell': '!!', 'homunculus|flaskTell': '!!', 'homunculus|pounceTell': '!', 'homunculus|poundTell': '!!', 'homunculus|scuttleTell': '!!',
   'homunculus|swipeTell': '!', 'hopper|ekBellyTell': '!!', 'hopper|ekTongueTell': '!', 'hopper|hopTell': '!', 'horn|tell': '!!', 'horn|whistleTell': '',
-  'hound|pounceTell': '!!', 'hourglassking|gearTell': '!!', 'hourglassking|hourTell': '!!', 'hourglassking|pendTell': '!', 'hourglassking|slipTell': '!!', 'hourglassking|streamTell': '!!',
+  'hound|pounceTell': '!!', 'hourglassking|gearTell': '!!', 'hourglassking|hourTell': '!!', 'hourglassking|surgeTell': '!!', 'hourglassking|graspTell': '!!', 'hourglassking|rainTell': '!!', 'hourglassking|pendTell': '!', 'hourglassking|slipTell': '!!', 'hourglassking|streamTell': '!!',
   'huntmaster|aimTell': '!', 'huntmaster|flurryTell': '!', 'huntmaster|heavyTell': '!!', 'huntmaster|hoistTell': '!!', 'huntmaster|hornTell': '', 'huntmaster|leapTell': '',
   'huntmaster|netTell': '!!', 'huntmaster|snareTell': '!!', 'huntmaster|splitTell': '!!', 'huntmaster|volleyTell': '!', 'husk|ekClawTell': '!', 'husk|ekGraspTell': '!!',
   'husk|grabTell': '!', 'husk|riseTell': '', 'imp|throwTell': '!', 'javelin|grabTell': '!!', 'javelin|raise': '!!', 'javelin|slashTell': '!',
@@ -241,65 +242,66 @@ export const MARK = {
   'merrowcaller|surgeTell': '!!', 'merrowspear|throwTell': '!', 'mimic|biteTell': '!', 'miner|smashTell': '', 'miner|swingTell': '!', 'miner|throwTell': '!',
   'mother|capClapTell': '!!', 'mother|floorSurgeTell': '!!', 'mother|rootColumnsTell': '!!', 'mother|rootFanTell': '!!', 'mother|rootStabTell': '!!', 'mother|seedRainTell': '!',
   'mother|sporeSweepTell': '!!', 'mother|sporeVolleyTell': '!', 'mother|sporeWheelTell': '!', 'mummer|glow': '!!', 'mummer|lungeTell': '!!', 'mummer|mimeTell': '!',
-  'netter|biteTell': '!', 'netter|castTell': '!', 'netter|dive': '!', 'netter|hookTell': '!', 'netter|swellTell': '!', 'oathblade|bladeTell': '!',
-  'oathblade|castTell': '!', 'oathblade|chargeTell': '!', 'oathblade|cutTell': '!', 'oathblade|lungeTell': '!', 'oathblade|mudTell': '!!', 'oathblade|rustTell': '!!',
-  'oathblade|shoveTell': '!', 'oathblade|slamTell': '!!', 'oathblade|snareTell': '!!', 'oathblade|snuffTell': '', 'oathblade|sweepTell': '!', 'oathblade|thrustTell': '!',
-  'oathblade|timberTell': '!!', 'oathblade|vineTell': '!', 'oathlance|bladeTell': '!', 'oathlance|castTell': '!', 'oathlance|chargeTell': '!', 'oathlance|cutTell': '!',
-  'oathlance|lungeTell': '!', 'oathlance|mudTell': '!!', 'oathlance|rustTell': '!!', 'oathlance|shoveTell': '!', 'oathlance|slamTell': '!!', 'oathlance|snareTell': '!!',
-  'oathlance|snuffTell': '', 'oathlance|sweepTell': '!', 'oathlance|thrustTell': '!', 'oathlance|timberTell': '!!', 'oathlance|vineTell': '!', 'oathmage|bladeTell': '!',
-  'oathmage|castTell': '!', 'oathmage|chargeTell': '!', 'oathmage|cutTell': '!', 'oathmage|lungeTell': '!', 'oathmage|mudTell': '!!', 'oathmage|rustTell': '!!',
-  'oathmage|shoveTell': '!', 'oathmage|slamTell': '!!', 'oathmage|snareTell': '!!', 'oathmage|snuffTell': '', 'oathmage|sweepTell': '!', 'oathmage|thrustTell': '!',
-  'oathmage|timberTell': '!!', 'oathmage|vineTell': '!', 'oathmaul|bladeTell': '!', 'oathmaul|castTell': '!', 'oathmaul|chargeTell': '!', 'oathmaul|cutTell': '!',
-  'oathmaul|lungeTell': '!', 'oathmaul|mudTell': '!!', 'oathmaul|rustTell': '!!', 'oathmaul|shoveTell': '!', 'oathmaul|slamTell': '!!', 'oathmaul|snareTell': '!!',
-  'oathmaul|snuffTell': '', 'oathmaul|sweepTell': '!', 'oathmaul|thrustTell': '!', 'oathmaul|timberTell': '!!', 'oathmaul|vineTell': '!', 'owl|fanTell': '!',
-  'owl|hootTell': '!!', 'owl|lampTell': '!!', 'owl|riseUp': '!!', 'owl|ropeTell': '', 'owl|screechTell': '!', 'owl|shakeTell': '!!',
-  'owl|skimTell': '!!', 'owl|swoopTell': '!!', 'paladinboss|bashTell': '!', 'paladinboss|chainBeatTell': '!', 'paladinboss|chainTell': '!', 'paladinboss|kindleTell': '',
-  'paladinboss|leapTell': '!!', 'paladinboss|mendTell': '', 'paladinboss|radTell': '!!', 'petrel|biteTell': '!', 'petrel|castTell': '!', 'petrel|dive': '!',
-  'petrel|diveTell': '!', 'petrel|hookTell': '!', 'petrel|swellTell': '!', 'piece|nipTell': '!', 'pike|ekLongTell': '!', 'pike|elSweepTell': '!',
-  'pike|tell': '!', 'ploughman|chargeTell': '!!', 'ploughman|furrowTell': '!!', 'ploughman|goadTell': '!', 'ploughman|headTell': '!!', 'prince|callTell': '',
-  'prince|crownTell': '!', 'prince|cutTell': '!', 'prince|sinkTell': '!!', 'prince|snuffTell': '!!', 'prise|reachTell': '!', 'propman|raise': '!',
-  'propman|setTell': '', 'propman|throwTell': '!', 'puffer|biteTell': '!', 'puffer|castTell': '!', 'puffer|dive': '!', 'puffer|hookTell': '!',
-  'puffer|swellTell': '!', 'pumpkin|biteTell': '!', 'pumpkin|puffTell': '!!', 'puppeteer|dropTell': '!!', 'puppeteer|snareHighTell': '!!', 'puppeteer|snareLowTell': '!!',
-  'pyromancer|bellowsTell': '!!', 'pyromancer|cutTell': '!', 'pyromancer|emberTell': '!', 'pyromancer|ventTell': '!!', 'quarter|shootTell': '!!', 'quarter|slashTell': '!',
-  'quarter|stanceTell': '!!', 'queen|aim': '!', 'queen|slamHang': '!', 'queen|sweepStart': '!', 'queen|volleyUp': '!', 'ram|buttTell': '!',
-  'ram|leapTell': '!!', 'ram|lower': '!', 'ram|rear': '!', 'ram|stampTell': '!!', 'ram|sweepTell': '!!', 'ram|tossTell': '!!',
-  'raptor|watch': '!!', 'reefmaw|biteTell': '!', 'reefmaw|lungeTell': '!!', 'reefmaw|riseTell': '!', 'reefmaw|spitTell': '!', 'reefmaw|tailTell': '!',
-  'reefmaw|thrashTell': '!', 'rockgoblin|throw': '!', 'roc|chainTell': '!!', 'roc|deadAirTell': '!!', 'roc|diveTell': '!!', 'roc|grabTell': '!!',
-  'roc|gustTell': '', 'roc|roofTell': '!', 'roc|shedTell': '!', 'roc|shriekTell': '!!', 'roc|talonTell': '!!', 'rook|diveTell': '!',
-  'runner|aim': '!', 'runner|cutTell': '!', 'runner|leapTell': '!!', 'runner|shout': '!', 'runner|stabTell': '!', 'runner|swingTell': '!',
-  'sailer|sail': '!', 'sailor|biteTell': '!', 'sailor|castTell': '!', 'sailor|dive': '!', 'sailor|hookTell': '!', 'sailor|swellTell': '!',
-  'sandgob|knifeTell': '!', 'sandworm|lungeTell': '!!', 'sapper|lightTell': '!!', 'scalder|ladleTell': '!', 'scalder|pourTell': '!!', 'scarecrow|ekCrowsTell': '!',
-  'scarecrow|ekReapTell': '!!', 'scarecrow|swipeTell': '!', 'scorpion|clawTell': '!', 'scorpion|ekDigTell': '!!', 'scorpion|ekTailTell': '!!', 'scorpion|ekUnderTell': '!!',
-  'scorpion|tailTell': '!!', 'scout|lungeTell': '!', 'scout|pinchTell': '!', 'scout|shockTell': '!!', 'scout|snapTell': '!', 'scout|strikeTell': '!',
-  'scout|thrustTell': '!', 'seawitch|callTell': '!!', 'sexton|dropTell': '!!', 'sexton|rushTell': '!', 'sexton|swingTell': '!', 'sexton|tollTell': '!!',
-  'shardling|shedTell': '!!', 'sheargob|cutTell': '!!', 'sheargob|snipTell': '!', 'shield|elChargeTell': '!', 'shield|elWallTell': '', 'shield|shoveTell': '!',
-  'siren|lungeTell': '!', 'siren|pinchTell': '!', 'siren|shockTell': '!!', 'siren|snapTell': '!', 'siren|strikeTell': '!', 'siren|thrustTell': '!',
-  'skitter|biteTell': '!', 'slinger|kickTell': '!', 'slinger|slingTell': '!', 'snuffer|snuffTell': '', 'snuffer|swipeTell': '!', 'soldier|grabTell': '!!',
-  'soldier|raise': '!!', 'soldier|slashTell': '!', 'soldier|windUp': '!', 'spider|drop': '!', 'spider|dropTell': '!', 'spider|reelTell': '!',
-  'spider|spitTell': '!', 'spitcap|swellTell': '!!', 'spit|spitTell': '!', 'sporeling|biteTell': '!', 'sprig|biteTell': '!', 'stagehand|dropTell': '!!',
-  'stagehand|swingTell': '!!', 'stormshaman|callTell': '!!', 'strawking|baleTell': '!!', 'strawking|callTell': '', 'strawking|forkTell': '!', 'strawking|lanternTell': '!!',
-  'strawking|leapTell': '!!', 'strawking|lightTell': '', 'strawking|slamTell': '!', 'strawking|sweepTell': '!!', 'stringjack|jerk': '!', 'suncatcher|clawTell': '!',
-  'suncatcher|frostTell': '!!', 'suncatcher|hailTell': '!!', 'suncatcher|shardTell': '!', 'suncatcher|spireTell': '!!', 'sweep|popTell': '!', 'swornsword|aim': '!',
-  'swornsword|cutTell': '!', 'swornsword|leapTell': '!!', 'swornsword|shout': '!', 'swornsword|stabTell': '!', 'swornsword|swingTell': '!', 'temperer|cutTell': '!',
-  'temperer|quenchTell': '!!', 'temperer|shoveTell': '!', 'thief|snatchTell': '!!', 'thorn|ekRollTell': '!!', 'thorn|ekSpineTell': '!', 'thorn|wind': '!',
-  'tideguard|ekSpearTell': '!', 'tideguard|ekTideTell': '!!', 'tideguard|ekUnderTell': '!!', 'tideguard|lungeTell': '!', 'tideguard|pinchTell': '!', 'tideguard|shockTell': '!!',
-  'tideguard|snapTell': '!', 'tideguard|strikeTell': '!', 'tideguard|thrustTell': '!', 'tidemarauder|harpoonTell': '!', 'tidemarauder|rakeTell': '!!', 'tippler|barTell': '!',
-  'tippler|heaveTell': '!!', 'tollmaster|blackoutTell': '!', 'tollmaster|darkTell': '', 'tollmaster|ledgerTell': '!', 'tollmaster|rodTell': '!', 'tollmaster|tollTell': '!!',
-  'tome|tell': '!', 'topiary|swipeTell': '!', 'troll|ekAfterTell': '!!', 'troll|ekRockTell': '!!', 'troll|hurlTell': '!', 'troll|ripTell': '!!',
-  'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'trophyhunter|dropTell': '', 'trophyhunter|jabTell': '!', 'trophyhunter|lungeTell': '!',
-  'turret|chargeTell': '!', 'turtle|lungeTell': '!', 'turtle|pinchTell': '!', 'turtle|shockTell': '!!', 'turtle|snapTell': '!', 'turtle|strikeTell': '!',
-  'turtle|thrustTell': '!', 'undeadmage|bendTell': '!', 'undeadmage|boneTell': '!!', 'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!', 'undeadmage|handTell': '!',
-  'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!', 'undeadmage|orbitTell': '!!', 'undeadmage|poisonTell': '!', 'undeadmage|pullTell': '!!', 'undeadmage|realmTell': '',
-  'undeadmage|scriptTell': '!!', 'undeadmage|sporeTell': '!!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!', 'undeadmage|wallTell': '!!',
-  'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!', 'vulture|watch': '!!',
-  'wasp|stingTell': '!', 'watch|ekChopTell': '!!', 'watch|ekHookTell': '!!', 'watch|ekThrustTell': '!', 'watch|sweepTell': '!', 'watch|thrustTell': '!',
-  'waterthief|feintTell': '', 'waterthief|slashTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!', 'wickerman|swingTell': '!',
-  'wickerman|throwTell': '!!', 'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!', 'wickerqueen|leapTell': '!!',
-  'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!', 'wickerqueen|thrustLowTell': '!!',
-  'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!', 'winchmaster|leapTell': '!!',
-  'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|spillTell': '!!', 'winchmaster|sweepTell': '!!',
-  'winchmaster|tossTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|blastTell': '!!', 'windcaller|galeTell': '!', 'windcaller|howlTell': '',
-  'windcaller|stoneTell': '!!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
+  'mummy|grabTell': '!!', 'mummy|lashTell': '!', 'netter|biteTell': '!', 'netter|castTell': '!', 'netter|dive': '!', 'netter|hookTell': '!',
+  'netter|swellTell': '!', 'oathblade|bladeTell': '!', 'oathblade|castTell': '!', 'oathblade|chargeTell': '!', 'oathblade|cutTell': '!', 'oathblade|lungeTell': '!',
+  'oathblade|mudTell': '!!', 'oathblade|rustTell': '!!', 'oathblade|shoveTell': '!', 'oathblade|slamTell': '!!', 'oathblade|snareTell': '!!', 'oathblade|snuffTell': '',
+  'oathblade|sweepTell': '!', 'oathblade|thrustTell': '!', 'oathblade|timberTell': '!!', 'oathblade|vineTell': '!', 'oathlance|bladeTell': '!', 'oathlance|castTell': '!',
+  'oathlance|chargeTell': '!', 'oathlance|cutTell': '!', 'oathlance|lungeTell': '!', 'oathlance|mudTell': '!!', 'oathlance|rustTell': '!!', 'oathlance|shoveTell': '!',
+  'oathlance|slamTell': '!!', 'oathlance|snareTell': '!!', 'oathlance|snuffTell': '', 'oathlance|sweepTell': '!', 'oathlance|thrustTell': '!', 'oathlance|timberTell': '!!',
+  'oathlance|vineTell': '!', 'oathmage|bladeTell': '!', 'oathmage|castTell': '!', 'oathmage|chargeTell': '!', 'oathmage|cutTell': '!', 'oathmage|lungeTell': '!',
+  'oathmage|mudTell': '!!', 'oathmage|rustTell': '!!', 'oathmage|shoveTell': '!', 'oathmage|slamTell': '!!', 'oathmage|snareTell': '!!', 'oathmage|snuffTell': '',
+  'oathmage|sweepTell': '!', 'oathmage|thrustTell': '!', 'oathmage|timberTell': '!!', 'oathmage|vineTell': '!', 'oathmaul|bladeTell': '!', 'oathmaul|castTell': '!',
+  'oathmaul|chargeTell': '!', 'oathmaul|cutTell': '!', 'oathmaul|lungeTell': '!', 'oathmaul|mudTell': '!!', 'oathmaul|rustTell': '!!', 'oathmaul|shoveTell': '!',
+  'oathmaul|slamTell': '!!', 'oathmaul|snareTell': '!!', 'oathmaul|snuffTell': '', 'oathmaul|sweepTell': '!', 'oathmaul|thrustTell': '!', 'oathmaul|timberTell': '!!',
+  'oathmaul|vineTell': '!', 'owl|fanTell': '!', 'owl|hootTell': '!!', 'owl|lampTell': '!!', 'owl|riseUp': '!!', 'owl|ropeTell': '',
+  'owl|screechTell': '!', 'owl|shakeTell': '!!', 'owl|skimTell': '!!', 'owl|swoopTell': '!!', 'paladinboss|bashTell': '!', 'paladinboss|chainBeatTell': '!',
+  'paladinboss|chainTell': '!', 'paladinboss|kindleTell': '', 'paladinboss|leapTell': '!!', 'paladinboss|mendTell': '', 'paladinboss|radTell': '!!', 'petrel|biteTell': '!',
+  'petrel|castTell': '!', 'petrel|dive': '!', 'petrel|diveTell': '!', 'petrel|hookTell': '!', 'petrel|swellTell': '!', 'piece|nipTell': '!',
+  'pike|ekLongTell': '!', 'pike|elSweepTell': '!', 'pike|tell': '!', 'ploughman|chargeTell': '!!', 'ploughman|furrowTell': '!!', 'ploughman|goadTell': '!',
+  'ploughman|headTell': '!!', 'prince|callTell': '', 'prince|crownTell': '!', 'prince|cutTell': '!', 'prince|sinkTell': '!!', 'prince|snuffTell': '!!',
+  'prise|reachTell': '!', 'propman|raise': '!', 'propman|setTell': '', 'propman|throwTell': '!', 'puffer|biteTell': '!', 'puffer|castTell': '!',
+  'puffer|dive': '!', 'puffer|hookTell': '!', 'puffer|swellTell': '!', 'pumpkin|biteTell': '!', 'pumpkin|puffTell': '!!', 'puppeteer|dropTell': '!!',
+  'puppeteer|snareHighTell': '!!', 'puppeteer|snareLowTell': '!!', 'pyromancer|bellowsTell': '!!', 'pyromancer|cutTell': '!', 'pyromancer|emberTell': '!', 'pyromancer|ventTell': '!!',
+  'quarter|shootTell': '!!', 'quarter|slashTell': '!', 'quarter|stanceTell': '!!', 'queen|aim': '!', 'queen|slamHang': '!', 'queen|sweepStart': '!',
+  'queen|volleyUp': '!', 'ram|buttTell': '!', 'ram|leapTell': '!!', 'ram|lower': '!', 'ram|rear': '!', 'ram|stampTell': '!!',
+  'ram|sweepTell': '!!', 'ram|tossTell': '!!', 'raptor|watch': '!!', 'reefmaw|biteTell': '!', 'reefmaw|lungeTell': '!!', 'reefmaw|riseTell': '!',
+  'reefmaw|spitTell': '!', 'reefmaw|tailTell': '!', 'reefmaw|thrashTell': '!', 'rockgoblin|throw': '!', 'roc|chainTell': '!!', 'roc|deadAirTell': '!!',
+  'roc|diveTell': '!!', 'roc|grabTell': '!!', 'roc|gustTell': '', 'roc|roofTell': '!', 'roc|shedTell': '!', 'roc|shriekTell': '!!',
+  'roc|talonTell': '!!', 'rook|diveTell': '!', 'runner|aim': '!', 'runner|cutTell': '!', 'runner|leapTell': '!!', 'runner|shout': '!',
+  'runner|stabTell': '!', 'runner|swingTell': '!', 'sailer|sail': '!', 'sailor|biteTell': '!', 'sailor|castTell': '!', 'sailor|dive': '!',
+  'sailor|hookTell': '!', 'sailor|swellTell': '!', 'sandgob|knifeTell': '!', 'sandworm|lungeTell': '!!', 'sapper|lightTell': '!!', 'scalder|ladleTell': '!',
+  'scalder|pourTell': '!!', 'scarabmother|burrowTell': '!!', 'scarabmother|chargeTell': '!!', 'scarabmother|quakeTell': '!!', 'scarabmother|snapTell': '!', 'scarabmother|spitTell': '!',
+  'scarecrow|ekCrowsTell': '!', 'scarecrow|ekReapTell': '!!', 'scarecrow|swipeTell': '!', 'scorpion|clawTell': '!', 'scorpion|ekDigTell': '!!', 'scorpion|ekTailTell': '!!',
+  'scorpion|ekUnderTell': '!!', 'scorpion|tailTell': '!!', 'scout|lungeTell': '!', 'scout|pinchTell': '!', 'scout|shockTell': '!!', 'scout|snapTell': '!',
+  'scout|strikeTell': '!', 'scout|thrustTell': '!', 'seawitch|callTell': '!!', 'sexton|dropTell': '!!', 'sexton|rushTell': '!', 'sexton|swingTell': '!',
+  'sexton|tollTell': '!!', 'shardling|shedTell': '!!', 'sheargob|cutTell': '!!', 'sheargob|snipTell': '!', 'shield|elChargeTell': '!', 'shield|elWallTell': '',
+  'shield|shoveTell': '!', 'siren|lungeTell': '!', 'siren|pinchTell': '!', 'siren|shockTell': '!!', 'siren|snapTell': '!', 'siren|strikeTell': '!',
+  'siren|thrustTell': '!', 'skitter|biteTell': '!', 'slinger|kickTell': '!', 'slinger|slingTell': '!', 'snuffer|snuffTell': '', 'snuffer|swipeTell': '!',
+  'soldier|grabTell': '!!', 'soldier|raise': '!!', 'soldier|slashTell': '!', 'soldier|windUp': '!', 'spider|drop': '!', 'spider|dropTell': '!',
+  'spider|reelTell': '!', 'spider|spitTell': '!', 'spitcap|swellTell': '!!', 'spit|spitTell': '!', 'sporeling|biteTell': '!', 'sprig|biteTell': '!',
+  'stagehand|dropTell': '!!', 'stagehand|swingTell': '!!', 'stormshaman|callTell': '!!', 'strawking|baleTell': '!!', 'strawking|callTell': '', 'strawking|forkTell': '!',
+  'strawking|lanternTell': '!!', 'strawking|leapTell': '!!', 'strawking|lightTell': '', 'strawking|slamTell': '!', 'strawking|sweepTell': '!!', 'stringjack|jerk': '!',
+  'suncatcher|clawTell': '!', 'suncatcher|frostTell': '!!', 'suncatcher|hailTell': '!!', 'suncatcher|shardTell': '!', 'suncatcher|spireTell': '!!', 'sweep|popTell': '!',
+  'swornsword|aim': '!', 'swornsword|cutTell': '!', 'swornsword|leapTell': '!!', 'swornsword|shout': '!', 'swornsword|stabTell': '!', 'swornsword|swingTell': '!',
+  'temperer|cutTell': '!', 'temperer|quenchTell': '!!', 'temperer|shoveTell': '!', 'thief|snatchTell': '!!', 'thorn|ekRollTell': '!!', 'thorn|ekSpineTell': '!',
+  'thorn|wind': '!', 'tideguard|ekSpearTell': '!', 'tideguard|ekTideTell': '!!', 'tideguard|ekUnderTell': '!!', 'tideguard|lungeTell': '!', 'tideguard|pinchTell': '!',
+  'tideguard|shockTell': '!!', 'tideguard|snapTell': '!', 'tideguard|strikeTell': '!', 'tideguard|thrustTell': '!', 'tidemarauder|harpoonTell': '!', 'tidemarauder|rakeTell': '!!',
+  'tippler|barTell': '!', 'tippler|heaveTell': '!!', 'tollmaster|blackoutTell': '!', 'tollmaster|darkTell': '', 'tollmaster|ledgerTell': '!', 'tollmaster|rodTell': '!',
+  'tollmaster|tollTell': '!!', 'tome|tell': '!', 'topiary|swipeTell': '!', 'troll|ekAfterTell': '!!', 'troll|ekRockTell': '!!', 'troll|hurlTell': '!',
+  'troll|ripTell': '!!', 'troll|slamTell': '!!', 'troll|swatTell': '!', 'troll|throwTell': '!', 'trophyhunter|dropTell': '', 'trophyhunter|jabTell': '!',
+  'trophyhunter|lungeTell': '!', 'turret|chargeTell': '!', 'turtle|lungeTell': '!', 'turtle|pinchTell': '!', 'turtle|shockTell': '!!', 'turtle|snapTell': '!',
+  'turtle|strikeTell': '!', 'turtle|thrustTell': '!', 'undeadmage|bendTell': '!', 'undeadmage|boneTell': '!!', 'undeadmage|decoyTell': '', 'undeadmage|fireTell': '!',
+  'undeadmage|handTell': '!', 'undeadmage|iceTell': '!', 'undeadmage|markTell': '!!', 'undeadmage|orbitTell': '!!', 'undeadmage|poisonTell': '!', 'undeadmage|pullTell': '!!',
+  'undeadmage|realmTell': '', 'undeadmage|scriptTell': '!!', 'undeadmage|sporeTell': '!!', 'undeadmage|stepTell': '', 'undeadmage|stormTell': '!!', 'undeadmage|trapTell': '!',
+  'undeadmage|wallTell': '!!', 'urchin|biteTell': '!', 'urchin|castTell': '!', 'urchin|dive': '!', 'urchin|hookTell': '!', 'urchin|swellTell': '!',
+  'vulture|watch': '!!', 'wasp|stingTell': '!', 'watch|ekChopTell': '!!', 'watch|ekHookTell': '!!', 'watch|ekThrustTell': '!', 'watch|sweepTell': '!',
+  'watch|thrustTell': '!', 'waterthief|feintTell': '', 'waterthief|slashTell': '!', 'weaver|spitTell': '!', 'whelp|crouchTell': '!', 'whelp|fireTell': '!',
+  'wickerman|swingTell': '!', 'wickerman|throwTell': '!!', 'wickerqueen|crownTell': '', 'wickerqueen|floorTell': '!!', 'wickerqueen|lashHighTell': '!!', 'wickerqueen|lashLowTell': '!!',
+  'wickerqueen|leapTell': '!!', 'wickerqueen|ringTell': '!!', 'wickerqueen|stabTell': '!!', 'wickerqueen|sweepHighTell': '!!', 'wickerqueen|sweepLowTell': '!!', 'wickerqueen|thrustHighTell': '!!',
+  'wickerqueen|thrustLowTell': '!!', 'wickerqueen|tossTell': '!!', 'wight|graspTell': '!!', 'willowisp|flareTell': '!', 'winchmaster|descendTell': '!!', 'winchmaster|hookTell': '!!',
+  'winchmaster|leapTell': '!!', 'winchmaster|leverTell': '!', 'winchmaster|reverseTell': '', 'winchmaster|rideTell': '!!', 'winchmaster|sendTell': '!!', 'winchmaster|spillTell': '!!',
+  'winchmaster|sweepTell': '!!', 'winchmaster|tossTell': '!!', 'winchmaster|whirlTell': '!!', 'winchmaster|wrenchTell': '!', 'windcaller|blastTell': '!!', 'windcaller|galeTell': '!',
+  'windcaller|howlTell': '', 'windcaller|stoneTell': '!!', 'windcaller|wallTell': '!!', 'zombie|grabTell': '!', 'zombie|riseTell': '',
 };
 /* MARK:END */
 
@@ -415,8 +417,9 @@ export const ANSWER = {
   'paladinboss|chainTell': 'block', 'paladinboss|chainBeatTell': 'block', 'paladinboss|bashTell': 'block', 'paladinboss|radTell': 'dodge', 'paladinboss|leapTell': 'dodge',   /* (claude/litchurch) */
   'hawkmistress|lashTell': 'jump', 'hawkmistress|cutTell': 'block', 'hawkmistress|markLashTell': 'dodge', 'hawkmistress|snareTell': 'jump', 'hawkmistress|fanTell': 'block', 'hawkmistress|kegTell': 'jump', 'hawkmistress|rakeTell': 'block', 'hawkmistress|hawkGrabTell': 'block', 'hawkscout|diveTell': 'dodge',   /* (claude/ksar) */
   'fogknight|cutTell': 'block', 'fogknight|lungeTell': 'dodge', 'fogknight|stepTell': 'block',   /* (claude/towpath) */
-  'hourglassking|pendTell': 'block', 'hourglassking|gearTell': 'jump', 'hourglassking|streamTell': 'dodge', 'hourglassking|slipTell': 'dodge', 'hourglassking|hourTell': 'jump', 'construct|pokeTell': 'block', 'construct|sweepTell': 'jump',   /* (claude/buriedcity) */
-  'skitter|biteTell': 'block', 'colossus|lanceTell': 'jump', 'colossus|stompTell': 'jump', 'colossus|shardTell': 'block', 'colossus|shakeTell': 'block', 'colossus|waveTell': 'jump', 'colossus|sweepTell': 'jump', 'colossus|quakeTell': 'dodge', 'colossus|crackTell': 'jump',   /* (claude/glasssea) */
+  'scarabmother|chargeTell': 'jump', 'scarabmother|snapTell': 'block', 'scarabmother|spitTell': 'block', 'scarabmother|burrowTell': 'dodge', 'scarabmother|quakeTell': 'dodge', 'mummy|lashTell': 'block', 'mummy|grabTell': 'dodge',   /* (claude/sealedpyramid) */
+  'hourglassking|pendTell': 'block', 'hourglassking|gearTell': 'jump', 'hourglassking|streamTell': 'dodge', 'hourglassking|slipTell': 'dodge', 'hourglassking|hourTell': 'jump', 'hourglassking|surgeTell': 'jump', 'hourglassking|graspTell': 'dodge', 'hourglassking|rainTell': 'dodge', 'construct|pokeTell': 'block', 'construct|sweepTell': 'jump',   /* (claude/buriedcity) */
+  'skitter|biteTell': 'block', 'colossus|lanceTell': 'jump', 'colossus|stompTell': 'jump', 'colossus|shardTell': 'block', 'colossus|shakeTell': 'block', 'colossus|waveTell': 'jump', 'colossus|sweepTell': 'jump', 'colossus|quakeTell': 'dodge', 'colossus|crackTell': 'jump', 'colossus|gazeTell': 'dodge', 'colossus|lungeTell': 'block', 'colossus|walkTell': 'dodge',   /* (claude/glasssea) */
   'scout|lungeTell': 'block', 'scout|pinchTell': 'block', 'scout|snapTell': 'block', 'scout|strikeTell': 'block', 'scout|thrustTell': 'block', 'scout|shockTell': 'dodge',
   'seawitch|callTell': 'dodge',
   'sheargob|cutTell': 'dodge', 'sheargob|snipTell': 'block',
@@ -673,8 +676,9 @@ export const HEIGHT = {
   'paladinboss|chainTell': 'low', 'paladinboss|chainBeatTell': 'low', 'paladinboss|bashTell': 'low', 'paladinboss|radTell': 'low', 'paladinboss|leapTell': 'low',   /* (claude/litchurch) his maul and his aegis along the floor, the columns and the slam: ducking is no answer */
   'hawkmistress|lashTell': 'low', 'hawkmistress|cutTell': 'low', 'hawkmistress|spotTell': 'low', 'hawkmistress|markLashTell': 'low', 'hawkmistress|callTell': 'low', 'hawkmistress|snareTell': 'low', 'hawkmistress|fanTell': 'low', 'hawkmistress|kegTell': 'low', 'hawkmistress|rakeTell': 'low', 'hawkmistress|hawkGrabTell': 'low', 'hawkscout|diveTell': 'low',   /* (claude/ksar) */
   'fogknight|cutTell': 'low', 'fogknight|lungeTell': 'low', 'fogknight|stepTell': 'low',   /* (claude/towpath; batch82 integ: stance, double and shroud say no mark - no told blow, no height) */
-  'hourglassking|pendTell': 'low', 'hourglassking|gearTell': 'low', 'hourglassking|streamTell': 'low', 'hourglassking|slipTell': 'low', 'hourglassking|hourTell': 'low', 'construct|pokeTell': 'low', 'construct|sweepTell': 'low',   /* (claude/buriedcity) */
-  'skitter|biteTell': 'low', 'colossus|lanceTell': 'low', 'colossus|stompTell': 'low', 'colossus|shardTell': 'high', 'colossus|shakeTell': 'low', 'colossus|waveTell': 'low', 'colossus|sweepTell': 'low', 'colossus|quakeTell': 'low', 'colossus|crackTell': 'low',   /* (claude/glasssea) */
+  'scarabmother|chargeTell': 'low', 'scarabmother|snapTell': 'low', 'scarabmother|spitTell': 'low', 'scarabmother|burrowTell': 'low', 'scarabmother|quakeTell': 'low', 'mummy|lashTell': 'low', 'mummy|grabTell': 'low',   /* (claude/sealedpyramid) */
+  'hourglassking|pendTell': 'low', 'hourglassking|gearTell': 'low', 'hourglassking|streamTell': 'low', 'hourglassking|slipTell': 'low', 'hourglassking|hourTell': 'low', 'hourglassking|surgeTell': 'low', 'hourglassking|graspTell': 'low', 'hourglassking|rainTell': 'high', 'construct|pokeTell': 'low', 'construct|sweepTell': 'low',   /* (claude/buriedcity) */
+  'skitter|biteTell': 'low', 'colossus|lanceTell': 'low', 'colossus|stompTell': 'low', 'colossus|shardTell': 'high', 'colossus|shakeTell': 'low', 'colossus|waveTell': 'low', 'colossus|sweepTell': 'low', 'colossus|quakeTell': 'low', 'colossus|crackTell': 'low', 'colossus|gazeTell': 'low', 'colossus|lungeTell': 'low', 'colossus|walkTell': 'low',   /* (claude/glasssea) */
   'scout|lungeTell': 'low', 'scout|pinchTell': 'low', 'scout|snapTell': 'low', 'scout|strikeTell': 'low', 'scout|thrustTell': 'low', 'scout|shockTell': 'low',
   'seawitch|callTell': 'low',
   'shardling|shedTell': 'low',

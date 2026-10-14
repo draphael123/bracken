@@ -102,7 +102,7 @@ else {
     if (r.duckH !== DUCK_H) bad.push(`${r.h}: ducked hurt box ${r.duckH} px tall, not DUCK_H ${DUCK_H}`);
     if (!(r.stand > DUCK_H)) bad.push(`${r.h}: standing hurt box ${r.stand} px, not taller than the duck`);
     if (r.guardDucks) bad.push(`${r.h}: ducked with a guard up`);
-    if (r.walkDucks && !(r.h === 'pyro' && r.walkWard && r.walkMoved <= 1)) bad.push(`${r.h}: ducked while walking`);   /* (the pyromancer's EMBER WARD turns her on a way held, and she does not walk: tools/ember-flare.mjs) */
+    if (r.walkDucks && !(((r.h === 'pyro' && r.walkWard) || r.h === 'berserker') && r.walkMoved <= 1)) bad.push(`${r.h}: ducked while walking`);   /* (the pyromancer's EMBER WARD turns her on a way held, and she does not walk: tools/ember-flare.mjs; claude/berserker2: THE BERSERKER COILED is turned by a way and stays down to aim his pounce, tools/berserker.mjs) */
     if (r.airDucks) bad.push(`${r.h}: ducked in the air`);
     if (r.after) bad.push(`${r.h}: still ducked with down let go`);
   }

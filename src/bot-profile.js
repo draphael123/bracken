@@ -34,6 +34,9 @@ export const PROFILES = {
     greed: 0.413, greedSwings: [1, 2],      // chance after a landed hit to stay in for 1-2 more swings, blind to his next tell
     staminaSlip: 0.2,                      // share of the fight it is not minding the roll it should keep back (re-rolled every 3 s)
     openRt: 1.0,                           // his OPEN is noticed with the same reaction (x this)
+    planReact: 0.396,                      // (claude/flasklever) s: the clock every per-boss plan puts on a NON-mode read (a rock, a hook, a band, a lever): plan jitter -0.04..+0.06 -> mean 0.406 s, the profile's own mean reaction (src/lab.js bossLab sets each PLAN.react to it; the plans' 0.25 s was a quicker man)
+    parryTry: 0.6, parryLead: 0.09,       // (claude/flasklever) the share of yellow tells a SHIELD hero (knight/paladin/geomancer) tries to PARRY (guard raised only in the tell's last parryLead s, so it lands inside the 0.11 s beat); the rest are blocked held-from-the-start, as before
+    mixHeavy: true,                        // (claude/flasklever) a held HEAVY is wound into his OPENINGS only (src/lab.js mixedHeavy): verb mixing without a heavy into a live boss
     drinkAt: 0.35,                         // (claude/survival) drinks a flask (BK.drinkFlask) under this share of the bar, while one is held; legacy never drinks
     first: false, firstMisread: 0.5, learnAfter: 2, firstTiming: 2, openDiscover: 0.9,
   },

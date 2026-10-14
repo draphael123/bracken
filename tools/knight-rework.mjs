@@ -34,7 +34,7 @@ try {
       BKT.PROG.skillOwned.knight=Object.fromEntries(ids.map(i=>[i,true]));BKT.PROG.loadouts.knight=ids.slice(0,4);BK.applyUpgrades();BK.load(0);BK.state='play';
       BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const L=BK.L;for(let x=2;x<60;x++)for(let y=1;y<L.H;y++)L.grid[y*L.W+x]=y>=22?1:0;
       BK.tp(10,21);BK.sim(120);BK.P.hp=BK.P.maxHp;BK.P.inv=0;BK.P.st=BK.P.maxSt;BK.P.face=1;BK.P.combo=0;BK.P.riposteT=0;BK.P.riposteHeavy=false;BK.P.thirdPays=0;BK.P.thirdPayLast=null;
-      return foes.map(([t,dx])=>{BK.spawnEnt({t,x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;return e;});};
+      return foes.map(([t,dx])=>{BK.spawnEnt({t,x:(BK.P.x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.dmgPct=70;return e;});};   /* (batch88 integ, as tools/knock-into.mjs) THE THROW IS THE FOE'S DAMAGE % NOW (claude/damagepct): these 5000-hp dummies never build one, so they stand at 70%, where a throw goes as far as the old fixed one; every assertion is unchanged */
     /* raise the guard 'lead' frames before a blow lands (null: never raised; negative: raised that many frames AFTER it landed;
        'noblow': no blow at all, the plain first cut to measure against),
        then wait 'wait' frames and swing once. What came of the blow, of the swing, and what the swing did to the foe. */

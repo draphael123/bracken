@@ -1,0 +1,31 @@
+=== elites
+
+77 elites. every elite can be fought and every gate it holds opens onto the route.
+exit 0
+=== order-knights
+
+91 checks: the order holds.
+exit 0
+=== riposte-shots
+
+Node.js v24.19.0
+exit 1
+=== weapon-skins
+weapon-skins: ok - 1168 hero x skin x weapon bakes; only weapon pixels change, the head never does, every weapon shows
+exit 0
+=== dances
+ok  co-op          player two's key danced player two's own warden and left player one standing
+ok  dances         seven heroes, one dance each: baked in every skin, on H, after every boss, on a long idle, and never in the way
+exit 0
+=== lab-reach
+
+Node.js v24.19.0
+exit 1
+=== geomancer
+
+Node.js v24.19.0
+exit 1
+=== ember-flare
+others [{"h":"knight","ducking":true,"flares":0,"walked":23.819999999999737,"duckWalking":false},{"h":"warden","ducking":true,"flares":0,"walked":23.819999999999737,"duckWalking":false},{"h":"paladin","ducking":true,"flares":0,"walked":21.81600000000006,"duckWalking":false}]
+the ember flare holds: down held 0.3 s is a 0.25 s flare (a shorter hold, down + jump and down + swing are not), a blow caught in it is cancelled, scorches its attacker and gains heat, a blow after it lands, a flare that catches nothing leaves her rooted and exposed, holding down is still the plain 
+exit 0

@@ -50,8 +50,9 @@ try {
    const modes=run(b,200,i=>{if(b.mode==='roll'&&rollF===null)rollF=i;if(b.mode==='roll'&&i%6===0&&P.atk<0){BK.press('atk');n++;}if(rollF!==null&&freeF===null&&b.mode!=='roll')freeF=i;});
    out.rollFree={modes,held:freeF!==null&&rollF!==null?+((freeF-rollF)/60).toFixed(2):null,presses:n,freed:b.freed||0,grabCd:+(b.grabCd||0).toFixed(1)};}
   {const b=landBoss(),A=BK.L.arena,mid=(A.x0+A.x1)/2;place(b,mid-60,mid+40,1);lunge(b);let rollF=null,endF=null;const hp0=P.hp;
-   const modes=run(b,240,i=>{idle();if(b.mode==='roll'&&rollF===null)rollF=i;if(rollF!==null&&endF===null&&b.mode!=='roll')endF=i;});
-   out.rollAlone={modes,held:endF!==null&&rollF!==null?+((endF-rollF)/60).toFixed(2):null,grabCd:+(b.grabCd||0).toFixed(1)};}
+   let cdF=null;   /* (batch91) the act-3 pressure dial runs his cooldowns 1.6x while he is idle: the readout is no longer 'what is left at frame 240' but HOW LONG, in real seconds, from the roll's end until he may grab again */
+   const modes=run(b,600,i=>{idle();if(b.mode==='roll'&&rollF===null)rollF=i;if(rollF!==null&&endF===null&&b.mode!=='roll')endF=i;if(endF!==null&&cdF===null&&i>endF&&!(b.grabCd>0))cdF=i;});
+   out.rollAlone={modes,held:endF!==null&&rollF!==null?+((endF-rollF)/60).toFixed(2):null,grabCd:+(b.grabCd||0).toFixed(1),noGrabS:cdF!==null&&endF!==null?+((cdF-endF)/60).toFixed(2):null};}
   /* 4. the tail: behind him */
   {const b=landBoss(),A=BK.L.arena,mid=(A.x0+A.x1)/2;place(b,mid,mid-60,1);let hurt=0;
    const modes=run(b,150,()=>{idle();if(P.hurt>0||P.inv>0.5)hurt++;});out.tail={modes,hurt:hurt>0,faceAfter:b.face};}
@@ -72,7 +73,7 @@ try {
   assert.ok(!r.short.beached && r.short.modes.includes('lunge'), 'A11: a lunge that stops short of the hero must NOT beach him: ' + JSON.stringify(r.short));
   assert.ok(r.rollFree.modes.includes('roll') && r.rollFree.freed >= 1 && r.rollFree.held !== null && r.rollFree.held < 1.2, 'three swings must tear the hero free of the roll: ' + JSON.stringify(r.rollFree));
   assert.ok(r.rollAlone.modes.includes('roll') && r.rollAlone.held !== null && r.rollAlone.held <= 1.75, 'left alone, the roll must let go by itself inside 1.75 s: ' + JSON.stringify(r.rollAlone));
-  assert.ok(r.rollAlone.grabCd > 2, 'after a roll he must not be able to take hold again straight away');
+  assert.ok(r.rollAlone.noGrabS !== null && r.rollAlone.noGrabS > 2, 'after a roll he must not be able to take hold again straight away (> 2 s of real time; the act-3 dial shortens his 4 s cooldown to 2.5): ' + JSON.stringify(r.rollAlone));
   assert.ok(r.tail.modes.includes('tailTell') && r.tail.modes.includes('tail') && r.tail.hurt, 'standing behind him must bring the tail round, and it must land: ' + JSON.stringify(r.tail));
   assert.deepEqual(pg.errors, [], 'page errors');
   console.log('ok  reefmaw-land  the tide goes out (told), he comes ashore; a dodged lunge beaches him (jumped or from a ledge), a short one does not; the roll lets go; the tail lands');

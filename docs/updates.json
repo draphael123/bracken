@@ -1,13 +1,65 @@
 [
   {
+    "date": "2026-10-14",
+    "batch": 91,
+    "lines": [
+      "Bosses fight harder, and flasks heal less",
+      "Cistern Queen: fire and water",
+      "Red Gorge: lever stun, and the Spillway",
+      "Hawk-Mistress: burn the hawk",
+      "Glass Colossus walks the arena",
+      "Buried City: the exit gate works again"
+    ]
+  },
+{
+    "date": "2026-10-13",
+    "batch": 90,
+    "lines": [
+      "Buried City: the invisible platforms are fixed",
+      "The Hourglass King: strike the great hourglass to flip it",
+      "New rooftops to run across, and new King moves",
+      "New game: the hero pick shows every hero, locked ones as silhouettes"
+    ]
+  },
+{
+    "date": "2026-10-13",
+    "batch": 89,
+    "lines": [
+      "New level: THE SEALED PYRAMID, and its Scarab Mother",
+      "Co-op: GRAB your partner and THROW them",
+      "Tread the pale plates: the traps fire on you"
+    ]
+  },
+  {
+    "date": "2026-10-12",
+    "batch": 88,
+    "lines": [
+      "The Berserker reborn: two axes, Frenzy",
+      "Hills carry you: run downhill, and slide",
+      "Wear foes down, then launch them (damage %)",
+      "Report a bug from the pause menu",
+      "The Foreman's spikes: time your stomp"
+    ]
+  },
+  {
+    "date": "2026-10-12",
+    "batch": 87,
+    "lines": [
+      "Buried City rebuilt, with a new Trap Hall",
+      "Deep Rails 3: duck, switch, fight the Foreman",
+      "The Road Wardens hold three roads",
+      "Lost? Stand still: glints show the way"
+    ]
+  },
+  {
     "date": "2026-10-11",
     "batch": 86,
     "lines": [
-      "Online co-op: play with a friend over the internet",
+      "Online co-op with a friend",
       "Parry and riposte for every hero, a poise bar on elites and bosses, and a mix-up chain",
       "Knock foes into spikes, pits, water and fire",
       "Every region has its own gates and exits",
-      "Paladin prays by holy lights; the Pyromancer holds DOWN to flare",
+      "Paladin prays at holy lights; Pyro holds DOWN",
       "Three too-hard bosses eased"
     ]
   },
@@ -15,18 +67,18 @@
     "date": "2026-10-11",
     "batch": 85,
     "lines": [
-      "New hero: the Berserker, with two axes and a battle rage",
+      "New hero: the Berserker, two axes and a rage",
       "Four heroes are free to start with now",
-      "67 recorded sound effects, and real bells for the bell bosses",
+      "67 sound effects and real boss bells",
       "WHAT'S NEW on the title menu",
-      "The title screen changes with how far you have got"
+      "The title changes with your progress"
     ]
   },
   {
     "date": "2026-10-11",
     "batch": 84,
     "lines": [
-      "Deep Rails redrawn, with new 'Machines' music",
+      "Deep Rails redrawn, with new music",
       "Falling Tower redrawn: drink flasks on the carpet, the Archmage casts with his staff",
       "Caravan redrawn, with a new route through the upper ruins",
       "Rootway redrawn, and the Lookout is easier to read",

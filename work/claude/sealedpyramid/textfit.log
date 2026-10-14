@@ -1,0 +1,8 @@
+90 hint messages read out of src/main.js
+  scope hints             90 screens  4.5s
+  scope bestiary         284 screens  14.7s
+  scope mapcard           47 screens  20.8s
+  scope boss            1710 screens  120.8s
+
+2131 screens drawn, 22659 strings measured, 161s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-sealedpyramid\audits\readability\textfit

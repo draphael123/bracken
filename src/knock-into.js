@@ -47,6 +47,7 @@ export const HAZ = {
   foul:   { word: 'INTO THE MIRE', share: 0.35, elite: 0.12 },
   poison: { word: 'INTO THE POISON', share: 0.45, elite: 0.15 },
   press:  { word: 'UNDER THE PRESS', hold: 1.4 },
+  sand:   { word: 'INTO THE SAND', hold: 2.2 },   /* (claude/kifollow) quicksand (L.quicksand, auto-listed): it holds a thrown foe, it never kills it (as it never kills a hero) */
 };
 export const COL = '#8fd160';
 export const WORDS = Object.values(HAZ).flatMap(h => [h.word, h.old]).filter(Boolean);
@@ -59,6 +60,11 @@ export function killAt(e, W) {
   if (e.y > W.LH * TS + 8) return { kind: 'drop' };
   if (!W.amphib(e)) for (const p of (W.pools || [])) if (!p.shallow && !p.swim && !p.dry && e.x > p.x0 && e.x < p.x1 && e.y > p.y + 6 && (p.bottom === undefined || e.y <= p.bottom + 8))
     return { kind: p.lava ? 'lava' : 'water', pool: p };
+  return null;
+}
+/* (claude/kifollow) A KILLING L.knockHazards ROW (lava): the data pass's rows whose hazard kills, for a thrown common foe (hazardFoe asks) */
+export function killRowAt(e, W) {
+  for (const h of (W.extra || [])) if (HAZ[h.kind] && HAZ[h.kind].kill && e.x >= h.x0 && e.x <= h.x1 && e.y >= h.y0 && e.y <= h.y1) return { kind: h.kind, row: h };
   return null;
 }
 /* THE REST, for a THROWN foe only (a foe that walks through its own camp's fire is not hurt by this - its AI keeps it out, or its level
@@ -87,6 +93,7 @@ export const hazardAt = (e, W, thrown) => killAt(e, W) || (thrown ? thrownAt(e, 
    surface all stop it). standable(tx, ty) is the level's own */
 export function deathBelow(x, y, W) {
   const tx = Math.floor(x / W.TS);
+  for (const h of (W.extra || [])) if (x >= h.x0 && x <= h.x1 && h.y1 > y && h.y0 >= y - 2) return false;   /* (claude/kifollow) a lava / sand row below speaks for itself (INTO THE LAVA), not OFF THE EDGE */
   for (let ty = Math.max(0, Math.floor(y / W.TS)); ty < W.LH; ty++) {
     const t = W.tile(tx, ty); if (t === W.T.SPIKE || W.standable(tx, ty)) return false;
     for (const p of (W.pools || [])) if (x > p.x0 && x < p.x1 && (ty + 1) * W.TS > p.y) return false;
@@ -97,7 +104,7 @@ export function deathBelow(x, y, W) {
 export const guardedOf = (e, fromX, cover, eliteGuard) => !(e.broken > 0) && (e.rxGuard > 0
   || ((cover.has(e.t) || (e.elite && eliteGuard && eliteGuard(e))) && Math.sign(fromX - e.x) === (e.ekSide || e.face || 1)));
 
-/* api: { time(), knock(e, dir, push, { wt, slide }), hurt(e, dmg, x), fullHp(e), number(x, y, txt, col), smoke(x, y), sfx(name), world(), log } */
+/* api: { time(), knock(e, dir, push, { wt, slide, k, lift, tumble }), scale(e, slide) -> { k, lift, tumble } (claude/damagepct: the foe's %), hurt(e, dmg, x), fullHp(e), number(x, y, txt, col), smoke(x, y), sfx(name), world(), log } */
 export function makeKnockInto(api) {
   const stats = { thrown: 0, slid: 0, into: {}, elitesBack: 0, edges: 0, byWhy: {}, said: [] };
   const say = (e, txt) => { api.number(e.x, e.y - (e.h || 16) - 10, txt, COL); stats.said.push(txt); if (stats.said.length > 24) stats.said.shift(); };
@@ -107,13 +114,17 @@ export function makeKnockInto(api) {
     if (slide) wt *= KNOCK.slide;
     if (why === 'riposte') push = Math.max(push, KNOCK.ripPush); else if (why === 'broke') push = Math.max(push, KNOCK.breakPush);
     const was = { x: e.x, y: e.y };
-    if (!api.knock(e, dir, push, { wt, slide })) return false;
+    /* (claude/damagepct) THE DISTANCE IS THE FOE'S DAMAGE %, no longer a fixed small/mid/brute throw: sc.k scales the speed (0% a shove, ~72% the old throw, 200% twice it and more),
+       sc.lift the arc, sc.tumble a launch that turns over in the air (src/damage-pct.js). The weight classes above still multiply it */
+    const sc = api.scale ? api.scale(e, slide) : null;
+    if (!api.knock(e, dir, push, { wt, slide, k: sc ? sc.k : 1, lift: sc ? sc.lift : 1, tumble: !!(sc && sc.tumble) })) return false;
     if (why === 'broke' && e.broken > 0) e.broken = 0;   /* the throw SPENDS the break once it flies: spent AFTER the knock asks, so a BROKEN UNSTOPPABLE elite (and the order's brute) can be thrown (claude/orderart) */
-    e.kiT = api.time() + KNOCK.live; e.kiWhy = why; e.kiFrom = was; e.kiBy = o.by || null; e.kiEdge = false; e.kiHz = null;
+    e.kiT = api.time() + KNOCK.live; e.kiSlide = slide; e.kiWhy = why; e.kiFrom = was; e.kiBy = o.by || null; e.kiEdge = false; e.kiHz = null;
     stats.thrown++; if (slide) stats.slid++; stats.byWhy[why] = (stats.byWhy[why] || 0) + 1;
     return true;
   }
   const thrown = e => !!e && e.kiT > api.time();
+  const fx = (kind, e) => { if (api.fx) api.fx(kind, e); };   /* (claude/kifollow) the entry burst for this hazard kind (src/ki-art.js entryFx) */
   /* EVERY FRAME OF THE FLIGHT (main.js, the THROWN block, before hazardFoe): the death-drop read, and the hazards only a throw finds.
      true: it was dealt with (dead, held, put back) - the caller stops there */
   function flight(e, grounded) {
@@ -127,10 +138,10 @@ export function makeKnockInto(api) {
   }
   /* WHAT A NON-KILLING HAZARD DOES (and an elite's killing one) */
   function apply(e, kind, hz) {
-    const H = HAZ[kind]; if (!H) return false; e.kiHz = kind; stats.into[kind] = (stats.into[kind] || 0) + 1;
-    say(e, H.word);
+    const H = HAZ[kind]; if (!H) return false; if (H.kill && !e.elite) return false;   /* (a common foe's killing hazard is hazardFoe's: it says the word and bursts there) */
+    e.kiHz = kind; stats.into[kind] = (stats.into[kind] || 0) + 1;
+    say(e, H.word); fx(kind, e);
     if (H.hold) { e.knock = 0; e.kvx = 0; e.vx = 0; e.stagger = Math.max(e.stagger || 0, H.hold); e.kiHeld = hz && hz.prop; api.sfx('thud'); return true; }
-    if (H.kill && !e.elite) return false;   /* (killAt's kinds: hazardFoe kills it, saying this word) */
     const share = e.elite ? (H.kill ? KNOCK.eliteShare : H.elite || 0) : H.share || 0;
     const dmg = Math.max(1, Math.round(api.fullHp(e) * share));
     if (H.burn) e.burn = Math.max(e.burn || 0, H.burn);
@@ -151,8 +162,9 @@ export function makeKnockInto(api) {
     if (!thrown(e)) return { word: HAZ[kind] && HAZ[kind].old };
     if (e.elite) { apply(e, kind); return { spared: true }; }
     stats.into[kind] = (stats.into[kind] || 0) + 1;
+    fx(kind, e);
     if (thirdSaid || (kind === 'drop' && e.kiEdge)) return { word: null };
     stats.said.push(HAZ[kind].word); return { word: HAZ[kind].word };
   }
-  return { throwFoe, thrown, flight, onKill, apply, stats, reset() { for (const k of Object.keys(stats)) stats[k] = typeof stats[k] === 'number' ? 0 : Array.isArray(stats[k]) ? [] : {}; } };
+  return { throwFoe, thrown, flight, onKill, apply, stats, killRow: e => killRowAt(e, api.world()), reset() { for (const k of Object.keys(stats)) stats[k] = typeof stats[k] === 'number' ? 0 : Array.isArray(stats[k]) ? [] : {}; } };
 }

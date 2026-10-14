@@ -31,10 +31,10 @@
 //   572-603  THE COLOSSUS STEPS    EXAM     the slick stair, the fires, THE GAZE: bend the Colossus's own light onto the sand to fuse the bridge AND
 //                                           relay a fire onto the crack beside it, throwers on the far steps; the vault mirror; the arena's two
 //                                           shelf-mirrors in view
-//   604-643  THE GLASS COLOSSUS    BOSS     src/glass-colossus.js stageColossus (a PUZZLE boss: the rule personified)
+//   604-667  THE GLASS COLOSSUS    BOSS     src/glass-colossus.js stageColossus (a PUZZLE boss: the rule personified; claude/colossusrework: 64 wide, three stations)
 import { stageColossus, COLOSSUS_STAGE } from './glass-colossus.js';
 
-export const GLASS = { W: 648, H: 46, base: 34, pit: 44 };
+export const GLASS = { W: 672, H: 46, base: 34, pit: 44 };   /* (claude/colossusrework: 648 -> 672, the arena 40 -> 64 wide) */
 export const SECTIONS = [['THE GLASS EDGE', 0], ['THE FULGURITE FIELD', 96], ['THE BONE CROSSING', 196], ['THE FORK OBELISK', 296], ['THE SUNKEN HEAD', 372], ['THE COLD FLATS', 452], ['THE COLOSSUS STEPS', 572], ['THE GLASS COLOSSUS', 604]];
 /* each verb's arc (tile columns) - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/glasssea.mjs */
 export const ARCS = {
@@ -315,6 +315,7 @@ export function buildGlassSea({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
+    machineCells: stage.holds.map(([x, y]) => y * W + x),   /* (claude/colossusrework) his holds walk with him: no glass pedestals under them (src/island-posts.js) */
     glasssea: true, caravan: true,   /* caravan: the desert's hands in main.js (the sun, the creatures' machines, the sand skins) */
     sunsetX: SUNSET_X, glassFrom: 12,
     mirrors, sources, beds, cracks, fires, decor, vaultDoors, dunes,

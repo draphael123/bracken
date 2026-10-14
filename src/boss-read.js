@@ -34,7 +34,7 @@ export const TURN = {
 export const GUARD = {
   ram: 'horns',      // THE RAM LORD: his horns are his guard - from behind, the flank or ABOVE (a jump cut, a plunge) he is a beast like any other (claude/sweep1; claude/scree2: 'horns' = 'front' + the air)
   chief: 'front',    // THE GOBLIN CHIEFTAIN: the shield on his arm - round it, or wait for his club in the ground (claude/sweep1)
-  cisternqueen: 'front',   // THE CISTERN QUEEN: her raised claws on the floor - round her (claude/sweep3, Daniel 10-06: never fully invulnerable)
+  /* (claude/cqueenrework) THE CISTERN QUEEN is off this list: a puzzle/beast boss (B14), her own take turns a frontal blow on her claws to 0.4 (GO ROUND) and her back to 0.55 - the angle's x0.5 on top took her under B15's floor */
   /* (claude/keyscore, B13 CHIP SWEEP - Daniel 10-05: no waiting-room invulnerability) 'wall' = his front is a wall: a blow from behind him OR from above him
      (a plunge, or a hero in the air over his feet) beats it and lands at ANGLE.mul; from the front at his height it is TURNED (GO ROUND). In his
      openings (src/boss-greed.js OPEN_RULE) every blow lands whole. These four were a flat NO, or a twentieth, until he chose to open. */
@@ -70,8 +70,9 @@ export const TURN_WORD = {
   gargoyle: e => (e.wardT > 0 ? TURN.WARDED : 'DROP HIM ON THE SPIKES'),   // (claude/witchfix, Daniel 10-08) stone until he lies on the spikes - the word names the verb; WARDED just after
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
+  scarabmother: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'burrowed' ? 'UNDER THE SAND' : 'HER SHELL'),   // (claude/sealedpyramid) her shell takes most of a blow until a trap opens her (B15: x0.45, never nothing)
   hourglassking: e => (e.ward > 0 ? TURN.WARDED : 'HIS BRASS'),   // (claude/buriedcity) his brass takes most of a blow until a sand-gate stalls him (B15: x0.45, never nothing)
-  hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'HER GAUNTLET'),
+  hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'THE HAWK GUARDS'),   /* (claude/ksarhawk) her hawk over her is her guard: fire brings it down (src/hawk-mistress.js) */
   paladinboss: e => (e.ward > 0 ? TURN.WARDED : 'HIS AEGIS'),   // (claude/litchurch) his aegis turns the front while he guards (and drinks the blow into his light): go round, or come down on him   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
   fogknight: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'dissolve' ? TURN.NOT_THERE : 'HIS STANCE'),   // (claude/towpath) his stance turns the wrong angle: his own take names it (GUARDS HIGH / GUARDS LOW / FULL GUARD)
   lanterneater: e => (e.mode === 'open' ? TURN.WARDED : ['gulpTell', 'huntTell'].includes(e.mode) && e.part === 'lure' ? 'TOO LOW' : ['jaws', 'snapTell'].includes(e.mode) ? 'TOO HIGH' : TURN.WARDED),   // (claude/lanterneater) B14 keys: its lure HIGH, its gums LOW - the word names the wrong height (src/lantern-eater.js KEY_WORD)

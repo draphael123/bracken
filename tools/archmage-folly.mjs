@@ -192,7 +192,7 @@ try {
     ok((b.wardBlinks || []).length === 3 && b.wardBlinks.every(q => q.x >= q.lo - 40 && q.x <= q.hi + 40) && b.backToWard, 'warded, he blinks among his runes and back into his ward: ' + JSON.stringify(b.wardBlinks) + ' ' + b.backToWard); }
   // 7 (claude/archfix: he attacks a bit faster, never a shorter tell)
   { const p = r.pace || {}, b = p.bolts || [], gaps = b.slice(1).map((f, i) => (f - b[i]) / 60), avg = gaps.reduce((a, g) => a + g, 0) / Math.max(1, gaps.length);
-    ok(p.cfg >= 0.8 && p.cfg <= 0.85 && gaps.length >= 3 && avg <= 4.25 && avg >= 3.6, 'the gaps between his casts are x' + p.cfg + ' (15-20% shorter): a bolt every ' + avg.toFixed(2) + ' s, tell to tell (4.77 on the base)');
+    ok(p.cfg >= 0.8 && p.cfg <= 0.85 && gaps.length >= 3 && avg <= 3.5 && avg >= 2.85, 'the gaps between his casts are x' + p.cfg + ' (15-20% shorter, and the act-4 pressure dial runs his idle clock 1.45x on top - claude/flasklever; the old band was 3.6-4.25): a bolt every ' + avg.toFixed(2) + ' s, tell to tell (4.77 on the base)');
     ok((p.tell || []).length > 0 && p.tell.every(t => t >= 0.79) && p.rendTell >= 0.84, 'and every tell is as long as it was: bolt ' + JSON.stringify(p.tell) + ', rend ' + p.rendTell); }
   // 4
   ok(r.landed >= 1 && r.landed <= 3, 'an opening is three clean blows (claude/easethree: openHits 2 -> 3, the window 2.6/3.2 -> 3.0/3.5 s): ' + r.landed + ' landed before he recovered (' + r.openTook + ' taken, ' + r.openFrames + ' frames)');

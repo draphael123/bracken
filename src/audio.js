@@ -16,6 +16,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   skyroad: './audio/skyroad.ogg', rootway: './audio/rootway.ogg', huntmaster: './audio/huntmaster.ogg', greatdrill: './audio/greatdrill.ogg',   /* THE GREAT DRILL (claude/deeprailsart, Daniel approved): "Machines" by Tsorthan Grove, CC-BY 4.0 (audio/CREDITS.txt) - the file plays through all three phases */   /* THE ROOTWAY (claude/rootwayfix, Daniel 10-09: its own music): "Forest Whisper Theme" by Cleyton Kauffman, CC0; THE HUNTMASTER: "Call to War" by Umplix, CC0 (audio/CREDITS.txt) */ rocphoenix: './audio/rocphoenix.ogg', underwell: './audio/underwell.ogg',   /* THE UNDERWELL (claude/underwellart, Daniel's pick): "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
   winchmaster: './audio/winchmaster.ogg',   /* THE WINCHMASTER (claude/winch5, Daniel approved the download 10-08): "Boss Battle #8 Metal" by nene, CC0 (audio/CREDITS.txt) - his fight; the composed mine-cart chase it replaced stays in src/boss-music.js unplayed */
   buriedcity: './audio/buriedcity.ogg',   /* THE BURIED CITY (claude/buriedcity music pass, Daniel approved the download 10-09): "Loopable Dungeon Ambience" by JaggedStone (Aron Elal), CC0 (audio/CREDITS.txt) - the level track; THE HOURGLASS KING keeps his composed theme */
+  sealedpyramid: './audio/sealedpyramid.ogg',   /* THE SEALED PYRAMID (claude/spart, Daniel's pick 10-12): "Forgoten tomb ambience" by kindland, CC0 (licence re-read on the page; audio/CREDITS.txt) - the level track (THE SCARAB MOTHER keeps her composed theme) */
   ksar: './audio/ksar.ogg',   /* THE BANDIT KSAR (claude/ksar art pass, Daniel's pick): "Desert Loop" by iamoneabe, CC0 (audio/CREDITS.txt) - the level track; THE HAWK-MISTRESS keeps her composed theme */
   litchurch: './audio/litchurch.ogg', paladin: './audio/paladin.ogg',   /* THE LIT CHURCH (claude/churchart, Daniel's picks 10-08): "Cathedral" by Umplix, CC0 - the level track; "Church combat" by Centurion_of_war, CC-BY 4.0 - THE PALADIN's fight (audio/CREDITS.txt) */
   glasssea: './audio/glasssea.ogg',   /* THE GLASS SEA (claude/glasssea art pass, Daniel's pick): "Eastern Arctic Dubstep" by VishwaJai (credited Vishwa Jay), CC0 (audio/CREDITS.txt) - the level track; THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js) */
@@ -161,14 +162,14 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 // robe that flutters, soft steps, a staff that whooshes and crackles, embers that pop, a jet that roars
 // for as long as she holds it. Enemies keep the shared sounds; only the player's calls come through here.
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
-export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' ? h : 'knight'; }
+export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
 const vary = f => f * (0.94 + Math.random() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
 export const SFX = {
   resetSteps() { stepN = 0; },   /* (claude/harness) the footstep count back to nought for a fresh body: every other step draws a Math.random (vary), so a lab fight inherited the last one's parity */
   pJump() { if (heroVoice === 'pyro') { if (Math.random() < 0.35) heroVo('jump', 0.28); noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
-    else { if (heroVoice === 'knight' && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
+    else { if ((heroVoice === 'knight' || heroVoice === 'berserker') && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
   pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
     SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
   pStep(surf) { stepN++; if (heroVoice === 'reaper') { if (surf === 'water') { noise(0.06, 0.07, 800, 0.5); return; } noise(0.05, 0.05, 300, 0.5); tone('sine', 88, 48, 0.09, 0.12); if (stepN % 2) { tone('square', vary(900), 600, 0.04, 0.03); } return; }   /* the biggest man in the game walks like it */
@@ -379,6 +380,8 @@ export const SFX = {
      wrong-verb hit in the game makes this one sound, so it is learned once. */
   glance() { noise(0.12, 0.2, 2600, 0.45); tone('sawtooth', vary(880), 340, 0.1, 0.07); tone('triangle', 210, 120, 0.07, 0.12, 0.01); noise(0.05, 0.1, 600, 0.8, 0.02); },
   spit() { tone('sine', 420, 180, 0.13, 0.2); },
+  /* (claude/cqart) HER STINGER BREAKING: a deep bone crack (the CC0 imp_bone pool already on disk), a low take of it under that, a stone crumble and a short sharp snap - nothing like the plain crack */
+  stingerBreak() { const a = file('imp_bone', 0.8, 0.9), b = file('imp_bone', 0.6, 0.6), c = file('crumble', 0.35, 1.2); if (!(a || b)) { noise(0.2, 0.3, 700, 0.5); tone('square', 220, 50, 0.2, 0.2); } tone('sawtooth', 1900, 300, 0.05, 0.1); },
   crack() { file('crack', 0.5) || (noise(0.16, 0.3, 900, 0.5), tone('square', 160, 60, 0.12, 0.18)); },
   die() { file('hurt', 0.7, 0.7); tone('sawtooth', 320, 40, 0.7, 0.28); tone('square', 200, 50, 0.5, 0.15, 0.1); },
   check() { [523, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, 0.25, 0.18, i * 0.09)); },
@@ -412,6 +415,7 @@ export const SFX = {
   drumJam() { SFX.crack(); SFX.heavy(); tone('sawtooth', 110, 28, 0.8, 0.22); noise(0.55, 0.22, 900, 0.4, 0.05); tone('square', 1800, 1400, 0.5, 0.04, 0.1); },
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },
   bossHurt() { file('bossHurt', 0.55) || tone('sawtooth', 300, 120, 0.25, 0.25); },
+  deny() { tone('triangle', 196, 150, 0.14, 0.09, 0, uiGain); tone('triangle', 147, 110, 0.18, 0.08, 0.07, uiGain); },   /* a SOFT no: a locked hero's card (claude/heroroster) */
   buzz() { tone('sawtooth', 110, 130, 0.5, 0.12); tone('sawtooth', 220, 200, 0.5, 0.06); },
   ui() { file('ui', 0.35, 1, uiGain) || tone('square', 700, 700, 0.04, 0.1, 0, uiGain); },
   uiSel() { tone('square', 900, 1300, 0.08, 0.12, 0, uiGain); },
@@ -839,6 +843,18 @@ const SYNTH_BEDS = {
       if (Math.random() < 0.05) noise(0.6, 0.012, 6000, 0.8);   /* a trickle of sand */
     };
     ambTickMs = 480;
+  },
+  /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the hush of a sealed tomb. A low ROOM TONE (the stone's weight), SAND sifting from the courses, a FAR
+     GRIND of stone on stone (a trap somewhere resetting), the odd SCUTTLE of scarabs in the walls, and the storm's moan far above. */
+  sealedpyramid() {
+    const room = loopNoise(140, 0.8, 0.12, 'lowpass'); lfoOn(room.g.gain, 0.04, 0.04);
+    const storm = loopNoise(360, 0.7, 0.03); lfoOn(storm.g.gain, 0.07, 0.025);
+    ambTick = () => {
+      if (Math.random() < 0.05) noise(0.7, 0.012, 5600, 0.8);   /* sand sifting from the courses */
+      if (Math.random() < 0.02) { tone('sawtooth', 70, 58, 1.2, 0.02); noise(1.0, 0.015, 240, 0.6); }   /* far stone grinding on stone */
+      if (Math.random() < 0.06) for (let k = 0; k < 5; k++) noise(0.008, 0.012, 4200 + Math.random() * 800, 6, k * 0.04);   /* scarabs in the walls */
+    };
+    ambTickMs = 520;
   },
   ksar() {
     const wind = loopNoise(420, 0.75, 0.2); lfoOn(wind.g.gain, 0.11, 0.1); lfoOn(wind.f.frequency, 0.06, 140);
@@ -1765,6 +1781,13 @@ const REC = {
   snort: { p: 'vo_ogre_alert', v: 0.18, r: 1.5, voc: 1, g: () => ['snortRec', 0.1] }, screech: { p: 'vo_scream', v: 0.22, r: 1.35, voc: 1 }, caw: { p: 'amb_gull', v: 0.25, r: 0.8, g: () => ['caw', 0.35] },
   bark: { p: 'vo_bark', v: 0.3, voc: 1 }, yelp: { p: 'vo_bark', v: 0.26, r: 1.55, voc: 1 }, boreRoar: { p: 'roar', v: 0.45, r: 0.5 }, mawRoar: { p: 'roar', v: 0.4, r: 0.7 }, queenShriek: { p: 'vo_scream', v: 0.3, r: 1.05, voc: 1 }, croak: { p: 'croak', v: 0.3 },
 };
+/* (claude/partnerthrow) THE PARTNER'S SCREAM: the hero's own hurt cry (their voice kit) pitched up, under the long recorded scream (vo_scream, already on disk, CC0), at the pitch of
+   the hero it comes out of; the synth is the fallback while the clips load. h is the hero who is being carried or thrown (not the local hero: player two's is heard too). */
+SFX.partnerScream = function (h) {
+  const k = HERO_KIT[h] || HERO_KIT.knight, r = k.rate * (k.kit[0] === 'f' ? 1.3 : 1.12);
+  const a = voice(VOK(k.kit, 'hurt'), 0.42, r * 1.1, k.lp || 0), b = voice('vo_scream', 0.2, r, k.lp ? k.lp + 1200 : 0, 0.05);
+  if (!a && !b) { tone('sawtooth', 620 * r, 1060 * r, 0.7, 0.14); tone('triangle', 640 * r, 1100 * r, 0.7, 0.1, 0.02); noise(0.5, 0.06, 2400, 0.8, 0.05); }
+};
 SFX.hornBlastLow = function () { return SFX.hornBlast(); }; SFX.hornDrawLow = function () { return SFX.hornDraw(); };   /* synth fallback = the ordinary horn */
 export const RECORDED_SFX = Object.keys(REC);
 for (const [name, c] of Object.entries(REC)) {
@@ -1782,7 +1805,7 @@ for (const [name, c] of Object.entries(REC)) {
 
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rootway', 'huntmaster', 'greatdrill', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'mountain', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage', 'lanterneater'];
-export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'mineworks', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight', 'ksar', 'towpath', 'rootway', 'litchurch', 'foothills', 'buriedcity'];
+export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'mineworks', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight', 'ksar', 'towpath', 'rootway', 'litchurch', 'foothills', 'buriedcity', 'sealedpyramid'];
 /* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
 export const AMBIENT_SOURCES = { foothills: ['synth:wind-gusts', 'synth:sheep-bell', 'synth:scree-trickle', 'synth:far-rockfall', 'synth:hawk'], towpath: ['synth:lap', 'synth:weir', 'synth:owl', 'synth:drip', 'synth:ratchet', 'file:amb_creak'], rootway: ['synth:leaves', 'synth:timber-breath', 'synth:groan', 'file:amb_creak', 'synth:lantern-tink', 'synth:spore-pop', 'synth:sap', 'synth:far-drum'], canyon: ['synth:wind', 'synth:river-roar', 'synth:spillway', 'synth:raptor-cry', 'synth:gust', 'file:amb_creak'], highair: ['synth:gust', 'synth:whistle', 'synth:cloth-crack', 'synth:line-hum', 'synth:grit', 'synth:raptor', 'file:amb_creak'], cistern: ['synth:air', 'synth:drip', 'synth:scuttle', 'synth:oil-gurgle', 'synth:chain', 'file:amb_creak'], battlefield: ['synth:wind', 'synth:dead-grass', 'synth:far-battle', 'synth:shout', 'synth:banner', 'synth:crow', 'file:amb_creak'], hall: ['file:ambCave', 'synth:drip', 'synth:distant-bell'], glassday: ['synth:wind', 'synth:whistle', 'synth:shard-chime', 'synth:sand-hiss'], glassnight: ['synth:hush', 'synth:frost', 'synth:glass-tick', 'synth:far-chime', 'synth:low-moan'], ksar: ['synth:wind', 'synth:far-gong', 'synth:souq', 'synth:hawk-cry', 'synth:flag', 'file:amb_creak'], litchurch: ['synth:organ-drone', 'synth:tower-wind', 'synth:crypt-drip', 'synth:pew-creak', 'synth:candle-spit', 'synth:far-bell'], buriedcity: ['synth:room-tone', 'synth:sand-trickle', 'synth:far-chime', 'synth:gears'] };
 // THE SOUND TEST'S CREDIT LINE, one per song in MUSIC_NAMES, read back from audio/CREDITS.txt (every licence line on
@@ -1849,6 +1872,7 @@ export const MUSIC_CREDITS = {
   paladin: '"Church combat" — Centurion_of_war, CC-BY',   /* (claude/churchart: CC-BY, credit required) */
   winchmaster: '"Boss Battle #8 Metal" — nene, CC0',   /* (claude/winch5: CC0, credited all the same) */
   buriedcity: '"Loopable Dungeon Ambience" — JaggedStone (Aron Elal), CC0',   /* (claude/buriedcity music pass: CC0, credited all the same) */
+  sealedpyramid: '"Forgoten tomb ambience" — kindland, CC0',   /* (claude/spart: CC0, credited all the same) */
   ksar: '"Desert Loop" — iamoneabe, CC0',   /* (claude/ksar art pass: CC0, credited all the same) */
   glasssea: '"Eastern Arctic Dubstep" — Vishwa Jay',   /* (claude/glasssea art pass: CC0 - Daniel asked for the credit anyway: the composer is VishwaJai on OpenGameArt, credited as Vishwa Jay) */
   gorgecrab: '"The Great Red Crab" — BRACKEN',

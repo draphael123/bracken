@@ -8,6 +8,7 @@
 //   4. THE ROOF'S UNDERSIDE a ceiling band of sand with buried rooftops and beams, grains sifting from its cracks (0.6)
 //   THE DUNES (cols 0-37) keep the sky: it fades out down the sinkhole; two lit dune silhouettes and the tower's tip stand over them
 // The shafts' light is drawn in the world (src/buried-city-hands.js drawWorld). main.js calls drawBackdrop(g, cx, cy, VW, VH, L, time, dY).
+import * as FART from './buried_city_flip_art.js';
 const R = Math.round;
 const PAL = { glass: 'rgba(190,226,240,0.13)', glassEdge: 'rgba(160,200,220,0.55)', glassHi: 'rgba(255,255,255,0.28)', sand: '#e6bc68', sandHi: '#f8dc90', sandLo: '#a8782c', brass: '#a47e30', brassHi: '#e8c460', brassLo: '#5a4014', brassDeep: '#2e200a' };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
@@ -74,7 +75,8 @@ function drawDunes(g, cx, cy, VW, VH) {
 
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
   const TS = 16, levelW = L.W * TS, open = 38 * TS;
-  const mid = cx + VW / 2, sky = Math.max(0, Math.min(1, (open - mid) / (8 * TS) + 0.5));   /* how much of the view is the DUNES' sky (fading out down the sinkhole) */
+  const mid = cx + VW / 2; let sky = Math.max(0, Math.min(1, (open - mid) / (8 * TS) + 0.5));   /* how much of the view is the DUNES' sky (fading out down the sinkhole) */
+  for (const z of (L.outside || [])) sky = Math.max(sky, Math.max(0, Math.min(1, Math.min(mid - z.x0 * TS, (z.x1 + 1) * TS - mid) / (6 * TS) + 0.5)));   /* (claude/buriedcity3) THE ROOFTOPS are outside: the sky over them */
   const under = 1 - sky * 0.999;
   g.globalAlpha = 1;
   if (under > 0.001) {
@@ -94,14 +96,16 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
     g.globalAlpha = 1;
   }
   /* THE DUNES (only while the sky shows): lit silhouettes, and the tower's tip over them (you see where you are going before you go down) */
-  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
+  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 600 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
 }
 
 /* THE HOURGLASS TOWER: k = how far along the level you are (its upper bulb empties, it comes nearer) */
 function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1) {
   const k = Math.max(0, Math.min(1, cx / Math.max(1, levelW - VW)));
-  const sc = 0.8 + k * 0.5, X = R(VW * 0.8 - cx * 0.035 + 40), Wh = R(30 * sc), top = R(VH * 0.16), bot = R(top + VH * (0.52 + k * 0.2)), neck = (top + bot) / 2, nw = 3;
-  const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha;
+  /* (claude/buriedcity3, Daniel 10-12: "the hourglass takes up too much of the screen" - it was 0.8-1.3 scale and 52-72% of the view tall: now a LANDMARK at backdrop scale,
+     about a fifth of the view, far off and hazed; it drifts from the right of the view toward its middle as you near the throne at its foot - parallax 0.035 in spirit, by progress) */
+  const sc = 0.36 + k * 0.12, X = R(VW * (0.84 - 0.36 * k) - (cx * 0.035) % 1), Wh = R(30 * sc), top = R(VH * 0.16), bot = R(top + VH * (0.15 + k * 0.05)), neck = (top + bot) / 2, nw = 2;
+  const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha * 0.8;   /* (far off: hazed) */
   /* the warm glow the sand throws on the stone behind it */
   const gl = g.createRadialGradient(X, neck, 4, X, neck, Wh * 3.4); gl.addColorStop(0, 'rgba(255,184,86,0.30)'); gl.addColorStop(1, 'rgba(255,184,86,0)'); g.fillStyle = gl; g.fillRect(X - Wh * 3.4, neck - Wh * 3.4, Wh * 6.8, Wh * 6.8);
   /* the base the city is built round: a stepped stone plinth under the frame, running off the bottom */

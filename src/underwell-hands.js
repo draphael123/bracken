@@ -291,7 +291,7 @@ export function makeUnderwellHands(ctx) {
       for (let y = r.y0; y <= r.y1; y++) { ctx.cellSet(r.x, y, ctx.T.AIR); if (y % 3 === 0) ctx.burst(r.x * 16 + 8, y * 16 + 8, 3, ['#ff8a2a', '#3a2a20'], 30, 0.6); }
       const P = ctx.hero(); if (P) ctx.number(P.x, P.y - 34, 'THE ROPE BURNS TO ASH', '#ff9a5c'); }
     /* THE QUEEN BURNS THROUGH THE OIL (fix pass): while she clings to a wall alight, the lamp oil streaked down it burns with her (drawn) */
-    const q = ctx.queen && ctx.queen(); if (q && q.S && UW.L.queenOil && q.S.burn && q.S.pose === 'wall' && UW.L.queenOil[q.S.wall]) { const [qx, qy0, qy1] = UW.L.queenOil[q.S.wall];
+    const q = ctx.queen && ctx.queen(); if (q && q.S && UW.L.queenOil && q.S.scorch > 0 && q.S.pose === 'wall' && UW.L.queenOil[q.S.wall]) { const [qx, qy0, qy1] = UW.L.queenOil[q.S.wall];
       for (let y = qy0; y <= qy1; y++) { const c = cellAt(qx, y); if (c) { if (c.st !== 'fire') c.age = 0; c.st = 'fire'; c.t = Math.max(c.t, 1.0); } } }
     /* A FIRE SCORPION's burning patch lights any oil it touches */
     for (const p of (ctx.patches ? ctx.patches() : [])) { const tx = Math.floor(p.x / 16), ty = Math.round(p.y / 16) - 1; let n = 0; for (let dx = -1; dx <= 1; dx++) n += ignite(cellAt(tx + dx, ty)) ? 1 : 0; if (n) { UW.n.patchLit++; if (once('patchLit')) ctx.number(p.x, p.y - 28, 'ITS FIRE TAKES THE OIL', '#ff9a5c'); } }

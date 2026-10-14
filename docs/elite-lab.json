@@ -589,9 +589,30 @@
      27.2
     ]
    }
+  },
+  "mummy": {
+   "level": "sealedpyramid",
+   "affix": "UNSTOPPABLE",
+   "ehp": 1459,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 6,
+    "secs": [
+     35.8,
+     35.8,
+     49.9,
+     49.9,
+     14.4,
+     14.4
+    ]
+   }
   }
  },
- "stamp": "46dd0e3d9865",
+ "stamp": "b15dec1b40e8",
  "heroes": [
   "knight",
   "warden",

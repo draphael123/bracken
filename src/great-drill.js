@@ -244,7 +244,7 @@ export function takeBlow(e, S, dmg, out = {}) {
   if (S.pass > 0) { const p = S.pass; S.pass = 0; S.n.gave += p; out.word = 'THE DRIVE GIVES'; return p; }   /* (deeprails4) the HELD blows, landing as the gate opens */
   if (e.mode === 'sleep' || e.mode === 'wake') { out.word = 'ARMOURED'; return Math.round(dmg * DRILL.armour); }
   S.n.cab++; let d;
-  if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * (S.openKind === 'gear' ? DRILL.gearStallCap : DRILL.jamCap) - S.openTaken); d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d;
+  if (drillOpen(e)) { const cap = Math.max(0, e.maxHp * (S.openKind === 'gear' ? DRILL.gearStallCap : DRILL.jamCap) - S.openTaken); d = Math.min(dmg * DRILL.jamMul, cap); S.openTaken += d; out.cap = 'jam';
     if (cap - d <= 0.01 && e.open > 0.3) { e.open = 0.3; out.word = 'IT FREES ITS GEARS'; } }
   else { S.n.armoured++; if (S.ward > 0) S.n.warded++; S.wordI = (S.wordI || 0) + 1;
     out.word = S.ward > 0 ? 'PLATES UP' : Object.values(S.gears || {}).some(q => !q.broken) && S.wordI % 2 ? 'ARMOURED: HIT THE GEARS' : 'ARMOURED: THROW ITS POINTS'; d = dmg * DRILL.armour; }
@@ -280,7 +280,8 @@ function pickGear(S, lane, P) { const up = GEARS.filter(g => gearUp(S, g.id)); i
   return mine || DRILL_PLAN.gearOrder.map(id => up.find(g => g.id === id)).find(Boolean); }
 export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip = 0, eyes = false }) {
   const G = S.G, out = { gx: null, face: 1, why: '' }, lane = P.lane >= 0 ? P.lane : Math.min(lanesOf(S).length - 1, laneUnder(G, P.y)), LS = lanesOf(S);
-  const late = k => { if (eyes) return true; if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
+  /* (claude/flasklever) eyes: the lab's perception layer already shows HIS MODE late - but a rock, a stick of dynamite, a hook, a roof spot, a lever and an ore are not his mode: they were seen on the frame they came (the Foreman's perfect-eyes bypass). Only his reverse is a mode. */
+  const late = k => { if (eyes && k.startsWith('rev')) return true; if (!(k in mem)) { mem[k] = t + DRILL_PLAN.react - 0.04 + rng() * 0.1; mem['m' + k] = rng() < DRILL_PLAN.miss; } return t >= mem[k] && !mem['m' + k]; };
   let gb = null;
   const cab = cabBox(G, S), R0 = rearX(S), standX = cab.l - (tip ? tip + 4 : Math.max(10, reach - 8));
   const go = l => { if (l > lane && P.ground) out.jump = true; else if (l < lane && P.ground) { if (P.x + 14 > frontFor(G, S, l)) out.backTo = frontFor(G, S, l) - 30; else out.drop = true; } };

@@ -1,0 +1,103 @@
+underleaf practiced knight s1 L6: death 175.4s left 16% taken 230 rt410 mis20 greed4 rp {"par":3,"open":2,"warded":1,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":17}}
+underleaf practiced knight s2 L6: timeout 240s left 9% taken 209 rt406 mis26 greed4 rp {"par":3,"open":3,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"plunge":1,"cut":20}}
+underleaf practiced knight s3 L6: win 176.2s left 0% taken 136 rt404 mis24 greed5 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":19,"plunge":1}}
+underleaf practiced knight s4 L6: ERR Page.navigate did not answer within 15000ms
+scree practiced knight s3 L7: win 104.7s left 0% taken 159 rt408 mis3 greed12 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":8,"pipsMax":5,"verbs":{"cut":50,"plunge":10}}
+scree practiced knight s4 L7: death 133.6s left 14% taken 248 rt400 mis13 greed13 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":54,"plunge":1}}
+scree practiced knight s2 L7: ERR the fresh lab page did not initialize
+harbor practiced knight s1 L24: win 72.5s left 0% taken 164 rt397 mis3 greed26 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":10,"pipsMax":3,"verbs":{"cut":107,"riposte":4,"plunge":9,"reflect":1}}
+scree practiced knight s1 L7: ERR the fresh lab page did not initialize
+harbor practiced knight s2 L24: win 73.3s left 0% taken 128 rt407 mis0 greed30 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":9,"pipsMax":5,"verbs":{"cut":112,"riposte":3,"plunge":10,"reflect":1}}
+harbor practiced knight s4 L24: win 72.3s left 0% taken 130 rt414 mis1 greed27 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":8,"pipsMax":3,"verbs":{"cut":111,"riposte":3,"plunge":9}}
+harbor practiced knight s3 L24: win 75.6s left 0% taken 201 rt413 mis1 greed30 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":5,"pipsMax":3,"verbs":{"cut":129,"reflect":1,"riposte":2}}
+flotilla practiced knight s1 L18: win 43.9s left 0% taken 93 rt415 mis0 greed6 rp {"par":2,"open":2,"warded":0,"openHits":2,"pips":6,"pipsMax":2,"verbs":{"cut":21,"riposte":2,"rise":1}}
+flotilla practiced knight s3 L18: win 49.5s left 0% taken 76 rt392 mis2 greed7 rp {"par":3,"open":3,"warded":0,"openHits":2,"pips":8,"pipsMax":2,"verbs":{"cut":25,"riposte":2,"rise":2}}
+flotilla practiced knight s2 L18: win 66.6s left 0% taken 301 rt405 mis8 greed14 rp {"par":1,"open":1,"warded":0,"openHits":1,"pips":8,"pipsMax":4,"verbs":{"dash":1,"cut":42,"riposte":1,"rise":3}}
+flotilla practiced knight s4 L18: win 84.3s left 0% taken 400 rt401 mis5 greed22 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":66,"rise":3}}
+unburied practiced knight s1 L32: win 96.7s left 0% taken 213 rt418 mis5 greed20 rp {"par":6,"open":5,"warded":1,"openHits":1,"pips":5,"pipsMax":3,"verbs":{"cut":49,"plunge":2,"riposte":1}}
+unburied practiced knight s2 L32: win 110.5s left 0% taken 330 rt407 mis8 greed21 rp {"par":5,"open":5,"warded":0,"openHits":1,"pips":9,"pipsMax":2,"verbs":{"cut":54,"plunge":5,"riposte":3}}
+unburied practiced knight s3 L32: win 93.9s left 0% taken 329 rt408 mis12 greed17 rp {"par":4,"open":4,"warded":0,"openHits":1,"pips":8,"pipsMax":3,"verbs":{"cut":51,"plunge":8,"riposte":2}}
+unburied practiced knight s4 L32: win 91.8s left 0% taken 273 rt411 mis12 greed21 rp {"par":3,"open":3,"warded":0,"openHits":2,"pips":11,"pipsMax":3,"verbs":{"cut":51,"plunge":9,"riposte":3,"dash":1}}
+undercrown practiced knight s1 L16: win 59.8s left 0% taken 97 rt416 mis0 greed20 rp {"par":4,"open":2,"warded":2,"openHits":0,"pips":3,"pipsMax":2,"verbs":{"cut":70,"riposte":2}}
+undercrown practiced knight s2 L16: win 38.3s left 0% taken 57 rt411 mis1 greed13 rp {"par":2,"open":2,"warded":0,"openHits":2,"pips":5,"pipsMax":2,"verbs":{"cut":49,"riposte":2,"plunge":1}}
+undercrown practiced knight s4 L16: win 72s left 0% taken 280 rt409 mis4 greed24 rp {"par":3,"open":1,"warded":1,"openHits":0,"pips":2,"pipsMax":1,"verbs":{"cut":92,"plunge":2}}
+waymeet practiced knight s1 L24: win 137.8s left 0% taken 333 rt411 mis5 greed21 rp {"par":7,"open":7,"warded":0,"openHits":6,"pips":4,"pipsMax":2,"verbs":{"cut":52,"riposte":2}}
+undercrown practiced knight s3 L16: win 86.9s left 0% taken 391 rt400 mis4 greed30 rp {"par":2,"open":2,"warded":0,"openHits":1,"pips":6,"pipsMax":5,"verbs":{"cut":111,"plunge":4,"riposte":1}}
+waymeet practiced knight s3 L24: win 113.8s left 0% taken 223 rt403 mis4 greed20 rp {"par":6,"open":6,"warded":0,"openHits":7,"pips":6,"pipsMax":2,"verbs":{"cut":49,"riposte":2,"dash":1}}
+waymeet practiced knight s2 L24: win 112.7s left 0% taken 233 rt405 mis3 greed21 rp {"par":4,"open":4,"warded":0,"openHits":6,"pips":8,"pipsMax":2,"verbs":{"cut":51,"riposte":3,"dash":2}}
+waymeet practiced knight s4 L24: win 118.9s left 0% taken 94 rt398 mis3 greed14 rp {"par":9,"open":9,"warded":0,"openHits":7,"pips":4,"pipsMax":2,"verbs":{"cut":46,"plunge":1,"riposte":1}}
+reef practiced knight s1 L17: death 70.3s left 70% taken 401 rt399 mis3 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":50}}
+reef practiced knight s2 L17: death 78.4s left 38% taken 401 rt408 mis1 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":51}}
+reef practiced knight s4 L17: win 64.1s left 0% taken 184 rt393 mis2 greed16 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":47}}
+reef practiced knight s3 L17: death 68.1s left 85% taken 401 rt401 mis3 greed16 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":38}}
+spore practiced knight s1 L3: win 120.4s left 0% taken 102 rt406 mis8 greed3 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":5,"pipsMax":1,"verbs":{"cut":8,"sweep":8}}
+spore practiced knight s2 L3: win 120.1s left 0% taken 67 rt409 mis3 greed4 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":5,"pipsMax":1,"verbs":{"cut":8,"sweep":6}}
+spore practiced knight s3 L3: win 109.1s left 0% taken 108 rt395 mis6 greed3 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":3,"pipsMax":1,"verbs":{"cut":8,"sweep":5}}
+spore practiced knight s4 L3: win 111.7s left 0% taken 162 rt414 mis7 greed1 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":3,"pipsMax":1,"verbs":{"cut":10,"sweep":3}}
+hanging practiced knight s1 L8: win 103.4s left 0% taken 104 rt410 mis3 greed12 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":47}}
+hanging practiced knight s2 L8: win 126.3s left 0% taken 183 rt414 mis3 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":47,"dash":1}}
+hanging practiced knight s4 L8: death 102.4s left 2% taken 140 rt413 mis3 greed8 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":46}}
+hanging practiced knight s3 L8: win 102.4s left 0% taken 135 rt410 mis2 greed11 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":2,"verbs":{"cut":49,"plunge":1}}
+crown practiced knight s1 L15: win 64.4s left 0% taken 205 rt404 mis2 greed7 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":30}}
+crown practiced knight s2 L15: win 48.6s left 0% taken 86 rt401 mis2 greed7 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":32}}
+crown practiced knight s4 L15: win 77.7s left 0% taken 105 rt416 mis0 greed8 rp {"par":2,"open":2,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":30}}
+crown practiced knight s3 L15: win 64.9s left 0% taken 130 rt407 mis2 greed10 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":29}}
+keep practiced knight s1 L22: win 40.8s left 0% taken 63 rt420 mis0 greed10 rp {"par":1,"open":1,"warded":0,"openHits":1,"pips":3,"pipsMax":2,"verbs":{"cut":40,"riposte":1,"plunge":1}}
+keep practiced knight s2 L22: timeout 240s left 90% taken 50 rt412 mis0 greed2 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":1,"verbs":{"plunge":7,"cut":5}}
+keep practiced knight s3 L22: win 44.1s left 0% taken 42 rt400 mis0 greed10 rp {"par":2,"open":0,"warded":2,"openHits":0,"pips":6,"pipsMax":2,"verbs":{"plunge":11,"cut":47,"riposte":1}}
+keep practiced knight s4 L22: win 24.3s left 0% taken 21 rt429 mis0 greed6 rp {"par":1,"open":1,"warded":0,"openHits":1,"pips":2,"pipsMax":2,"verbs":{"cut":30,"riposte":1}}
+hurricane practiced knight s1 L19: win 68.7s left 0% taken 116 rt399 mis3 greed26 rp {"par":7,"open":7,"warded":0,"openHits":7,"pips":16,"pipsMax":5,"verbs":{"cut":73,"riposte":8,"reflect":1,"dash":1}}
+hurricane practiced knight s3 L19: win 71.3s left 0% taken 153 rt403 mis5 greed29 rp {"par":7,"open":7,"warded":0,"openHits":7,"pips":9,"pipsMax":4,"verbs":{"cut":82,"riposte":7,"dash":1}}
+hurricane practiced knight s2 L19: win 67s left 0% taken 152 rt393 mis3 greed21 rp {"par":4,"open":4,"warded":0,"openHits":2,"pips":8,"pipsMax":3,"verbs":{"cut":76,"riposte":3,"dash":2,"plunge":1}}
+hurricane practiced knight s4 L19: win 62.1s left 0% taken 99 rt412 mis1 greed22 rp {"par":4,"open":4,"warded":0,"openHits":4,"pips":9,"pipsMax":2,"verbs":{"cut":67,"riposte":4,"dash":3}}
+moor practiced knight s1 L10: win 170.3s left 0% taken 268 rt405 mis1 greed11 rp {"par":6,"open":6,"warded":0,"openHits":0,"pips":5,"pipsMax":2,"verbs":{"cut":44,"reflect":4}}
+moor practiced knight s3 L10: win 131.8s left 0% taken 215 rt400 mis3 greed13 rp {"par":4,"open":4,"warded":0,"openHits":0,"pips":5,"pipsMax":2,"verbs":{"cut":52,"reflect":4}}
+moor practiced knight s4 L10: win 132.4s left 0% taken 261 rt409 mis1 greed13 rp {"par":3,"open":3,"warded":0,"openHits":0,"pips":6,"pipsMax":1,"verbs":{"cut":55,"reflect":6}}
+redgorge practiced knight s1 L37: win 140.6s left 0% taken 291 rt399 mis4 greed20 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":7,"pipsMax":3,"verbs":{"cut":86,"sweep":7}}
+redgorge practiced knight s2 L37: win 114.7s left 0% taken 178 rt409 mis4 greed20 rp {"par":1,"open":0,"warded":1,"openHits":0,"pips":7,"pipsMax":5,"verbs":{"cut":91,"sweep":7,"riposte":1,"dash":1}}
+redgorge practiced knight s3 L37: win 139.5s left 0% taken 209 rt407 mis6 greed21 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":7,"pipsMax":5,"verbs":{"cut":100,"sweep":4,"plunge":3}}
+moor practiced knight s2 L10: win 132.1s left 0% taken 225 rt426 mis5 greed13 rp {"par":2,"open":2,"warded":0,"openHits":0,"pips":7,"pipsMax":1,"verbs":{"cut":52,"reflect":7}}
+spire practiced knight s1 L9: win 101.2s left 0% taken 128 rt433 mis3 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":18,"pipsMax":4,"verbs":{"sweep":8,"cut":85,"riposte":1,"reflect":3,"plunge":7}}
+redgorge practiced knight s4 L37: win 118.5s left 0% taken 168 rt414 mis6 greed17 rp {"par":1,"open":1,"warded":0,"openHits":0,"pips":5,"pipsMax":2,"verbs":{"cut":63,"sweep":10,"riposte":1}}
+spire practiced knight s2 L9: win 99.2s left 0% taken 165 rt432 mis2 greed16 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":9,"pipsMax":2,"verbs":{"cut":85,"sweep":3,"reflect":2,"dash":1}}
+spire practiced knight s3 L9: death 75.2s left 53% taken 256 rt433 mis4 greed8 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":10,"pipsMax":4,"verbs":{"sweep":5,"cut":49,"plunge":5,"dash":2,"reflect":2}}
+spire practiced knight s4 L9: win 88.8s left 0% taken 186 rt426 mis3 greed17 rp {"par":3,"open":2,"warded":0,"openHits":2,"pips":27,"pipsMax":5,"verbs":{"sweep":3,"cut":84,"riposte":5,"reflect":12,"plunge":1}}
+caravan practiced knight s1 L34: death 145.4s left 10% taken 383 rt404 mis4 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":61}}
+caravan practiced knight s3 L34: win 104.6s left 0% taken 187 rt413 mis4 greed15 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":69}}
+caravan practiced knight s4 L34: win 124.1s left 0% taken 336 rt412 mis5 greed18 rp {"par":1,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":70}}
+caravan practiced knight s2 L34: win 96.3s left 0% taken 129 rt406 mis1 greed14 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":68}}
+kings practiced knight s1 L5: win 61.4s left 0% taken 61 rt401 mis3 greed8 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":2,"pipsMax":1,"verbs":{"cut":29,"dash":1,"plunge":3}}
+kings practiced knight s3 L5: win 72.2s left 0% taken 108 rt403 mis4 greed8 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":30,"dash":1,"plunge":4}}
+kings practiced knight s2 L5: win 80.4s left 0% taken 67 rt399 mis1 greed8 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":4,"pipsMax":4,"verbs":{"cut":32,"plunge":4}}
+kings practiced knight s4 L5: win 95s left 0% taken 131 rt415 mis9 greed7 rp {"par":0,"open":0,"warded":0,"openHits":0,"pips":1,"pipsMax":1,"verbs":{"cut":31,"plunge":6}}
+lamplit practiced knight s2 L20: win 43.2s left 0% taken 194 rt420 mis4 greed12 rp {"par":3,"open":3,"warded":0,"openHits":3,"pips":5,"pipsMax":2,"verbs":{"cut":48,"riposte":3}}
+lamplit practiced knight s1 L20: win 60.3s left 0% taken 270 rt419 mis6 greed12 rp {"par":1,"open":1,"warded":0,"openHits":2,"pips":4,"pipsMax":2,"verbs":{"riposte":2,"cut":28,"plunge":2}}
+lamplit practiced knight s4 L20: win 53s left 0% taken 219 rt404 mis6 greed17 rp {"par":3,"open":1,"warded":2,"openHits":1,"pips":12,"pipsMax":4,"verbs":{"cut":71,"riposte":5,"plunge":4}}
+lamplit practiced knight s3 L20: win 71.5s left 0% taken 350 rt410 mis4 greed27 rp {"par":5,"open":2,"warded":1,"openHits":2,"pips":7,"pipsMax":2,"verbs":{"cut":84,"riposte":3,"plunge":1}}
+fallingtower practiced knight s1 L33: win 117.1s left 0% taken 210 rt399 mis2 greed22 rp {"par":3,"open":3,"warded":0,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":100}}
+fallingtower practiced knight s3 L33: win 156.5s left 0% taken 268 rt404 mis5 greed19 rp {"par":9,"open":5,"warded":1,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":105}}
+fallingtower practiced knight s2 L33: win 112.1s left 0% taken 284 rt400 mis5 greed23 rp {"par":5,"open":5,"warded":0,"openHits":1,"pips":0,"pipsMax":0,"verbs":{"cut":99}}
+fallingtower practiced knight s4 L33: win 137.1s left 0% taken 364 rt409 mis6 greed21 rp {"par":6,"open":5,"warded":1,"openHits":0,"pips":0,"pipsMax":0,"verbs":{"cut":103}}
+
+BOSS RATES  profile human  flasks kit  (80 fights, 17 min)
+row                 L  practiced kn              band
+underleaf           6  1/3 = 33%                 LOW -17
+scree               7  1/2 = 50%                 in band
+harbor             24  4/4 = 100%                HIGH +40
+flotilla           18  4/4 = 100%                HIGH +40
+unburied           32  4/4 = 100%                HIGH +40
+undercrown         16  4/4 = 100%                HIGH +40
+waymeet            24  4/4 = 100%                HIGH +40
+reef               17  1/4 = 25%                 LOW -25
+spore               3  4/4 = 100%                HIGH +40
+hanging             8  3/4 = 75%                 HIGH +15
+crown              15  4/4 = 100%                HIGH +40
+keep               22  3/4 = 75%                 HIGH +15
+hurricane          19  4/4 = 100%                HIGH +40
+moor               10  4/4 = 100%                HIGH +40
+redgorge           37  4/4 = 100%                HIGH +40
+spire               9  3/4 = 75%                 HIGH +15
+caravan            34  3/4 = 75%                 HIGH +15
+kings               5  4/4 = 100%                HIGH +40
+lamplit            20  4/4 = 100%                HIGH +40
+fallingtower       33  4/4 = 100%                HIGH +40

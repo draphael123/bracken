@@ -88,14 +88,17 @@ export function makeDrillHands(ctx) {
     if (out.broke) { ctx.burst(mx, my, 22, ['#ffd36b', '#ff9a3c', '#8a919c', '#ffffff'], 140, 0.7); ctx.shake(5); }
     if (out.release && ctx.hurtBoss) ctx.hurtBoss(e, out.release); };
   /* A BLOW ON THE CAB */
-  H.take = (e, dmg) => { if (!S) return dmg; const o = {}; const d = GD.takeBlow(e, S, dmg, o);
+  H.take = (e, dmg) => { if (!S) return dmg; const o = {}; const d = GD.takeBlow(e, S, dmg, o); S.capKind = o.cap || null;
     if (o.word) { e.guardFx = 0.45; e.guardWord = o.word; }
     if (!GD.drillOpen(e)) { e.chipHit = ctx.time(); ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(GD.cabBox(S.G, S).l, S.G.laneY[1] - 20, 1, 4); }
     return d; };
   H.gate = (e, d) => { if (!S || e.t !== 'greatdrill') return d; const o = {}, k = GD.gateBlow(e, S, d, o); if (o.word) { e.guardFx = 0.45; e.guardWord = o.word; ctx.sfx.clank && ctx.sfx.clank(); } return k; };   /* (deeprails4) the gate, on what lands */
+  H.fix = (e, d0, d1) => { if (!S || S.capKind !== 'jam') return d1; const room = Math.max(0, e.maxHp * GD.DRILL.jamCap - S.openTaken), extra = Math.min(d1 - d0, room); S.openTaken += extra; if (room - extra <= 0.01 && e.open > 0.3) { e.open = 0.3; e.guardFx = 0.45; e.guardWord = 'IT FREES ITS GEARS'; } return d0 + extra; };
+  H.interact = P => { if (!S || !fighting() || !S.lever || S.lever.thrown) return false; if (Math.abs(P.x - S.lever.x) > DRILL.leverReach) return false; return throwIt(); };   /* (GREAT DRILL 3: E at its chute's points lever - the opening) */
   H.interact = P => { if (!S || !fighting() || !S.lever || S.lever.thrown) return false; if (Math.abs(P.x - S.lever.x) > DRILL.leverReach) return false; return throwIt(); };   /* (GREAT DRILL 3: E at its chute's points lever - the opening) */
   H.barName = e => 'THE GREAT DRILL' + (e.mode === 'jammed' ? (S && S.openKind === 'gear' ? '  STALLED' : '  JAMMED') : S && S.ward > 0 ? '  PLATES UP' : '') + (S && S.gears && GD.gateShut(S) ? '  GEARS ' + GD.brokenN(S) + '/' + GD.gearsNeed(S.ph) : '');   /* (deeprails4) the gate: the gears it still wants broken */
   H.end = e => { dropGears(); if (S) { S.ores = []; S.rocks = []; S.chute = null; S.dyn = []; S.spots = []; S.lunge = null; S.hook = null; S.snag = null; S.lever = null; if (S.highDown) { S.highDown = false; highLine(true); } } BOSS_PHASE.greatdrill = 1; if (ctx.L) ctx.L.mcDrillDown = true; };
+  H.fight = () => S;   /* (tools/damage-caps.mjs: the fight's own counters) */
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, R: R(S.R), rear: R(GD.rearX(S)), ores: S.ores.map(o => ({ x: R(o.x), fly: o.fly })), chute: !!S.chute, rocks: S.rocks.length, lever: S.lever ? { x: R(S.lever.x), thrown: S.lever.thrown } : null, dyn: S.dyn.length, spots: S.spots.length, lunge: S.lunge ? S.lunge.lane : -1, hook: S.hook ? S.hook.lane : -1, snag: !!S.snag, ward: S.ward, n: { ...S.n }, hurt: { ...(S.hurt || {}) }, gears: Object.fromEntries(Object.entries(S.gears || {}).map(([k, q]) => [k, { hp: R(q.hp), broken: q.broken }])), gate: GD.gateShut(S), held: R(S.held), open: S.openKind };
 
   /* ---------- DRAWING ---------- */

@@ -32,7 +32,7 @@
 
 export const PARRY = {
   hold: null,         // a HELD guard's beat = main.js perfectWindow() (0.11 s, PERFECT GUARD 0.22): handed in by the api, never copied
-  tap: 0.2,           // a TAPPED answer's beat (the freebooter's parryW, the first 0.2 s of the warden's deflect or the berserker's brace)
+  tap: 0.2,           // a TAPPED answer's beat (the freebooter's parryW, the first 0.2 s of the warden's deflect or of the berserker's TAKE IT)
   window: 0.6,        // s the hero's riposte waits (was RIPOSTE.window, the knight's)
   mul: 2,             // the riposte cut into a parried common foe or elite
   foeHold: 0.6,       // s a common foe stands reeling, parried
@@ -53,7 +53,7 @@ export const DUELISTS = new Set(['closedhelm', 'paladinboss', 'fogknight', 'bloo
 export const PARRY_LOOK = {
   knight:    { look: 'SHIELD',      input: 'raise C (hold) as the blow lands', col: '#fff6e0' },
   warden:    { look: 'SPEAR DEFLECT', input: 'tap C as the blow lands',        col: '#dff0d8' },
-  berserker: { look: 'AXE BRACE',   input: 'tap C as the blow lands',          col: '#ff9a5c' },
+  berserker: { look: 'TAKE IT',     input: 'raise the crossed axes (hold C) as the blow lands; the riposte is the cross-chop', col: '#ff9a5c' },   /* (claude/berserker2) */
   paladin:   { look: 'LIGHT-WARD',  input: 'raise the aegis (hold C) as the blow lands', col: '#fff6c8' },
   pyro:      { look: 'FLAME-CATCH', input: 'hold DOWN as the blow winds up (the ember flare opens after 0.3 s)', col: '#ff9a5c' },
   geomancer: { look: 'STONE-SKIN',  input: 'raise the rune-ward (hold C) as the blow lands', col: '#c8bca8' },
@@ -81,6 +81,7 @@ const has = (b, v) => !!b && (b === v || (Array.isArray(b) && b.includes(v)));
 export function verbOf(tag, skillNow) {
   if (!tag) return null;
   if (has(tag, 'riposte')) return 'riposte';
+  if (has(tag, 'partner')) return 'heavy';   /* (claude/partnerthrow) a THROWN PARTNER lands like a heavy blow: it adds the heavy verb's weight to the foe's DAMAGE % */
   if (skillNow) return 'skill';
   for (const k of ['heavy', 'plunge', 'sweep', 'rise', 'throw', 'dash', 'shot', 'reflect', 'light']) if (has(tag, k)) return VERB_OF[k];
   return null;

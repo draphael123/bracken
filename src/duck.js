@@ -26,8 +26,10 @@ export const DUCK_WINDOW = 0.9;   // a told blow is still THAT blow this long af
 const AT_REST = new Set(['walk', 'idle', 'rest', 'stand', 'patrol', 'guard', 'pace', 'recover', 'stalk', 'hover', 'drift', 'perch',
   'wait', 'sleep', 'scan', 'ready', 'span', 'still', 'shut', 'hide', 'crawl', 'swim', 'stunned', 'reel', 'dazed', 'winded']);
 
-export const duckBox = b => ({ l: b.x - b.w / 2, r: b.x + b.w / 2, t: b.y - (b.ducking ? DUCK_H : b.h), b: b.y });
-export const duckClears = (b, y) => !!b.ducking && y <= b.y - DUCK_H;
+/* (claude/slope) THE RUNNING SLIDE (src/run-slide.js, b.lowSlide) is as low as a duck: the same box, the same blows over it */
+const low = b => !!(b.ducking || b.lowSlide);
+export const duckBox = b => ({ l: b.x - b.w / 2, r: b.x + b.w / 2, t: b.y - (low(b) ? DUCK_H : b.h), b: b.y });
+export const duckClears = (b, y) => low(b) && y <= b.y - DUCK_H;
 
 /* WHAT A WINDUP LEAVES ON ITS CREATURE: called every frame it winds up (updateEnemies), it notes the blow it is telling */
 export function noteTell(e, now) { e.toldK = tellKey(e); e.toldAt = now; e.blowMode = null; }
@@ -37,4 +39,4 @@ export const blowHigh = (e, now) => !!(e && e.toldK && HEIGHT[e.toldK] === 'high
   (now - e.toldAt < DUCK_WINDOW || (e.blowMode && e.mode === e.blowMode && !AT_REST.has(e.mode))));
 /* A HIGH SEED GOES OVER A DUCKER while it flies near level: an arrow loosed along the same floor dips at most 0.6 of its run by
    the time it arrives, and one shot DOWN from a ledge comes in steeper than 0.8 and still finds him */
-export const seedOver = (b, s) => !!(b.ducking && s.high && Math.abs(s.vy || 0) <= Math.abs(s.vx || 0) * 0.8);
+export const seedOver = (b, s) => !!(low(b) && s.high && Math.abs(s.vy || 0) <= Math.abs(s.vx || 0) * 0.8);

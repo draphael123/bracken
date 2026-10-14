@@ -332,7 +332,7 @@ export function buildKsar({ painter, T, TS }) {
   ground(AX, AX + HM_STAGE.W - 1, B);
   block(AX + HM_STAGE.W, W - 1, 0, H - 1);
   stage.carve(); gongs.push(...stage.gongs); stacks.push(...stage.racks); const shafts = stage.shafts;   /* (claude/ksar2) THE ROOFTOP SHAFTS (src/ksar-hands.js: the spikes bite, the updraft throws you up) */   /* the courtyard's gongs and flask racks are the level's (src/ksar-hands.js rings, cuts and hands them out) */
-  ent('gate', AX + HM_STAGE.W - 2, B - 1);
+  ent('gate', stage.exit.gate, B - 1);   /* (claude/ksarhawk) in the exit alcove behind her east wall (it stood on her roof over the guard door and the gong: the back-of-room clutter) */
 
   /* the rule's gadgets the level tools read as ents are placed above (ksgong, kskegs, ksflasks, kskeg, ksbarricade, kswinch, ksvault) */
   const START = { x: 3, y: 37 };

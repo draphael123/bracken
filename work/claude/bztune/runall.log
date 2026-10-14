@@ -1,0 +1,45 @@
+=== riposte
+heroes berserker {"plain":10,"parry":{"how":"hold","n":1,"res":"blocked","win":0.6,"hold":0.6,"open":0.6},"rip":36,"ratio":3.6,"held":true,"red":{"how":"hold","n":1,"res":"hit","lost":8,"parries":0,"too":1}}
+elite {"elite":true,"hold":0.35,"broken1":0,"hold2":0.35,"broken2":2.92,"d1":36,"d2":54,"breaks":1}
+boss {"stockade":{"t":"chief","res":"blocked","open":0.5,"bossOpen":true,"poiseMax":100,"openFrames":37,"ward":2.98,"blockT":0.016666666666666666,"res2":"blocked","par2":2,"reopen":0,"warded":1,"bar":true,"broke":1.8,"wardAfterBreak":3},"to
+chain {"mash":[0,0,0,0,0,0,0,0],"mix":[0,1,2,3,4,5,5,5],"dmg":[100,106,112,118,124,130,130,130],"word":[0,0,0,1,1,1,1,1],"repeat":5,"afterHit":0,"before":1,"idle":0,"poise":{"bare":12,"five":15.6}}
+the riposte: teach, heroes, elite, boss, chain hold.
+=== ability-poses
+  ok   bzStorm         own=[bzStorm]  bzStorm:0x20 bzStorm:1x10
+SHARED POSES: warden harrier/poleSpring (vault)
+POSED DODGES: pyro cinderStep 15/15 frames drawn; paladin holyCharge 15/15 frames drawn; plain grace 19/36
+JUMP ARCS: knight air 7 [takeoff:0 jump:0 jump:1 apex:0 fall:0 fall:1 land:2] land 3; pyro air 7 [takeoff:0 jump:0 jump:1 apex:0 fall:0 fall:1 land:2] land 3; paladin air 7 [takeoff:0 jump:0 jump:1 apex:0 fall:0 fall:1 land:2] land 3; pirat
+ability poses: 69 of 69 actives have a body of their own; known debt 0
+=== dances
+ok  baked          8 heroes x 18 skins: every one has a dance of its own, R + L + white, at least 4 drawings
+ok  emote + idle   all 7: H starts the hero's own dance, a step or jump or H again ends it, and half a minute of standing about is a couple of seconds of it
+ok  after a boss   all 7 heroes dance as the arena opens (first at frame 15/15/15/15/15/15/15/15 after the kill) and every fight still ends
+ok  co-op          player two's key danced player two's own warden and left player one standing
+ok  dances         seven heroes, one dance each: baked in every skin, on H, after every boss, on a long idle, and never in the way
+=== mark-integrity
+boss hourglassking  hourglassking|gearTell        !!  seen 5, landed 4, posed 5/5 (px 101-106)
+boss hourglassking  hourglassking|streamTell      !!  seen 3, landed 3, posed 3/3 (px 653-666)
+
+1 PHANTOM(S):
+  undeadmage|markTell: PHANTOM POSE: the windup is drawn the same as the mode before it (0 px differ at most)
+=== pixels
+46 levels, 2963 sprites. nothing in the air, through the ground or out of the water.
+=== mash
+stockade BOSS expected L2 berserker#1: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/6283 blows
+stockade BOSS expected L2 berserker#2: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/6283 blows
+stockade BOSS expected L2 berserker#3: TIMEOUT 150s, hero lost 0%, boss left 100%, 0/6283 blows
+underleaf BOSS expected L6 berserker#1: DEAD 31.1s, hero lost 100%, boss left 100%, 0/1201 blows
+underleaf BOSS expected L6 berserker#2: DEAD 31.1s, hero lost 100%, boss left 100%, 0/1201 blows
+underleaf BOSS expected L6 berserker#3: DEAD 31.1s, hero lost 100%, boss left 100%, 0/1201 blows
+errors []
+=== rates
+
+BOSS RATES  profile human  flasks kit  (72 fights, 10 min)
+row                 L  practiced be              band
+stockade            3  10/12 = 83%               HIGH +23
+underleaf           6  4/12 = 33%                LOW -17
+reef               17  10/12 = 83%               HIGH +23
+hanging             8  12/12 = 100%              HIGH +40
+mage               32  12/12 = 100%              HIGH +40
+ksar               39  8/12 = 67%                HIGH +7
+ALLDONE

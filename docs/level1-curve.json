@@ -4,26 +4,26 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 28,
-  "deaths": 5,
-  "kills": 41,
-  "lifts": 87,
+  "hits": 16,
+  "deaths": 1,
+  "kills": 34,
+  "lifts": 96,
   "walked": 100,
   "bare": true,
-  "lostPct": 215
+  "lostPct": 111
  },
  "marsh": {
   "hash": "064de4159658",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 45,
-  "deaths": 3,
-  "kills": 36,
+  "hits": 40,
+  "deaths": 2,
+  "kills": 45,
   "lifts": 86,
   "walked": 100,
   "bare": true,
-  "lostPct": 275
+  "lostPct": 227
  },
  "stockade": {
   "hash": "c88404798755",
@@ -468,30 +468,30 @@
   "lostPct": 264
  },
  "redgorge": {
-  "hash": "1332d2630b5f",
+  "hash": "83c76b84fe01",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
+  "hits": 27,
   "deaths": 3,
-  "kills": 6,
-  "lifts": 71,
+  "kills": 9,
+  "lifts": 87,
   "walked": 100,
   "bare": true,
-  "lostPct": 286
+  "lostPct": 274
  },
  "underwell": {
-  "hash": "8f3ade0c604c",
+  "hash": "6efa445cddb3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
+  "hits": 38,
   "deaths": 3,
-  "kills": 27,
-  "lifts": 113,
+  "kills": 31,
+  "lifts": 104,
   "walked": 100,
   "bare": true,
-  "lostPct": 269
+  "lostPct": 255
  },
  "skyroad": {
   "hash": "5f209187c7c4",
@@ -507,30 +507,30 @@
   "lostPct": 135
  },
  "glasssea": {
-  "hash": "f0255d0dda14",
+  "hash": "19662ab324ba",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 26,
+  "hits": 33,
   "deaths": 6,
-  "kills": 30,
-  "lifts": 104,
+  "kills": 21,
+  "lifts": 102,
   "walked": 100,
   "bare": true,
-  "lostPct": 294
+  "lostPct": 296
  },
  "ksar": {
-  "hash": "56d2003723a6",
+  "hash": "f1c48b3601cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 38,
-  "deaths": 10,
-  "kills": 12,
-  "lifts": 143,
+  "hits": 42,
+  "deaths": 17,
+  "kills": 6,
+  "lifts": 145,
   "walked": 100,
   "bare": true,
-  "lostPct": 499
+  "lostPct": 671
  },
  "rootway": {
   "hash": "bcecbe519d8c",
@@ -572,17 +572,17 @@
   "lostPct": 322
  },
  "buriedcity": {
-  "hash": "69eca98c1755",
+  "hash": "9139d6b8a07b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 18,
-  "deaths": 3,
-  "kills": 6,
-  "lifts": 126,
+  "deaths": 9,
+  "kills": 9,
+  "lifts": 144,
   "walked": 100,
   "bare": true,
-  "lostPct": 233
+  "lostPct": 374
  },
  "minecart": {
   "hash": "c14c5ba93827",
@@ -596,5 +596,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 243
+ },
+ "sealedpyramid": {
+  "hash": "12d4e6eb2a81",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 11,
+  "deaths": 6,
+  "kills": 24,
+  "lifts": 65,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 227
  }
 }

@@ -18,7 +18,7 @@ const HELD = new Set(['hold', 'latched']);
 /* [type, dx tiles from the hero, dy tiles (up is negative), extra spawn fields, the hero faces AWAY from it (the shy dead move only then)] */
 const FOES = [['spit', 5, 0], ['lurker', 3, 0], ['hopper', 6, 0], ['crow', 12, 0, { speed: 110 }], ['hound', 8, 0], ['sapper', 8, 0], ['sporeling', 5, 0],
   ['spitcap', 8, 0], ['weaver', 3, -4], ['thief', 6, 0], ['wight', 5, 0], ['holdfast', 0, 0], ['shardling', 4, 0], ['bonearcher', 9, 0],
-  ['boo', 6, -1, null, true], ['husk', 4, 0], ['apprentice', 7, 0], ['emberwisp', 5, -1], ['kite', 0, -5], ['bale', 8, 0], ['sweep', 4, 0], ['horn', 6, 0]];
+  ['boo', 6, -1, null, true], ['husk', 4, 0], ['apprentice', 7, 0], ['emberwisp', 5, -1], ['kite', 0, -5], ['bale', 8, 0], ['sweep', 4, 0], ['horn', 6, 0], ['mummy', 5, 0]];   /* (claude/sealedpyramid: THE MUMMY, the tomb's one new foe - its lash and its grab are told) */
 const SKIP = { lamprey: 'it lives in deep water and reaches only a swimming hero', clinger: 'it hangs on a wall over a hero in the air' };
 const pg = await openPage({ audio: false, fonts: false });
 const out = [];

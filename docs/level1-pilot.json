@@ -60,14 +60,14 @@
   "bare": true
  },
  "redgorge": {
-  "hash": "1332d2630b5f",
+  "hash": "83c76b84fe01",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 27,
-  "deaths": 6,
+  "deaths": 3,
   "kills": 9,
-  "lifts": 69,
+  "lifts": 87,
   "walked": 100,
   "bare": true
  },
@@ -84,13 +84,13 @@
   "bare": true
  },
  "underwell": {
-  "hash": "8f3ade0c604c",
+  "hash": "6efa445cddb3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 48,
-  "deaths": 7,
-  "kills": 32,
+  "hits": 52,
+  "deaths": 8,
+  "kills": 24,
   "lifts": 120,
   "walked": 100,
   "bare": true
@@ -108,26 +108,26 @@
   "bare": true
  },
  "glasssea": {
-  "hash": "f0255d0dda14",
+  "hash": "19662ab324ba",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 25,
+  "hits": 31,
   "deaths": 6,
-  "kills": 32,
-  "lifts": 105,
+  "kills": 18,
+  "lifts": 100,
   "walked": 100,
   "bare": true
  },
  "ksar": {
-  "hash": "56d2003723a6",
+  "hash": "f1c48b3601cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
-  "deaths": 7,
-  "kills": 11,
-  "lifts": 136,
+  "hits": 42,
+  "deaths": 13,
+  "kills": 10,
+  "lifts": 145,
   "walked": 100,
   "bare": true
  },
@@ -228,14 +228,14 @@
   "bare": true
  },
  "buriedcity": {
-  "hash": "69eca98c1755",
+  "hash": "9139d6b8a07b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 18,
-  "deaths": 3,
-  "kills": 6,
-  "lifts": 126,
+  "deaths": 9,
+  "kills": 9,
+  "lifts": 144,
   "walked": 100,
   "bare": true
  },
@@ -356,6 +356,18 @@
   "deaths": 3,
   "kills": 42,
   "lifts": 83,
+  "walked": 100,
+  "bare": true
+ },
+ "sealedpyramid": {
+  "hash": "12d4e6eb2a81",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 13,
+  "deaths": 5,
+  "kills": 24,
+  "lifts": 67,
   "walked": 100,
   "bare": true
  }

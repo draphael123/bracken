@@ -35,7 +35,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'slots', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'slots', 'ending', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -168,7 +168,7 @@ async function pageTextFit(input) {
     await yieldNow(); }
 
   /* THE HERO PICK (2026-09-24), drawn BEFORE the menu (whose pause map stays up and lays its window over later screens): seven cards across a 320-pixel screen, a name under each - DEATH KNIGHT ran off the right edge, unseen here */
-  if (want('pick')) { const n = 3;   /* (LEVELING: a new game picks one of the three default heroes) */
+  if (want('pick')) { const n = 8;   /* (claude/heroroster, Daniel 10-12: a new game's pick shows ALL eight heroes - the open ones by name, the locked ones as ??? with their how-to line; every card is measured, the locked ones included) */
     /* drawn once unrecorded first: each card's hero is baked (preview) the first time it is drawn, and a bake's own rectangles on its
        own canvas are not plates the words are on */
     for (let i = 0; i < n; i++) { BK.state = 'heropick'; BK.ui.heroPickI = i; BK.step(1); }
@@ -213,8 +213,17 @@ async function pageTextFit(input) {
     for (let i = 0; i < 5; i++) frame('slots full #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
     for (const i of [1, 4]) ls.removeItem('bracken.progress.' + i);   /* and empty ones among full ones */
     for (let i = 0; i < 5; i++) frame('slots mixed #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; }, { settle: 20 });
+    /* (claude/shipfix) A DAMAGED SLOT is a row of its own words (CORRUPT / NEWER SAVE) and a FIX IT list over the picker */
+    ls.setItem('bracken.progress.1', '{"hero":"knight","coins":1'); ls.setItem('bracken.progress.4', JSON.stringify({ hero: 'pyro', progressionVersion: 99 }));
+    for (let i = 0; i < 5; i++) frame('slots damaged #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.fixAsk = -1; }, { settle: 20 });
+    for (const i of [1, 4]) frame('slots fix it #' + i, () => { BK.state = 'slots'; BK.ui.slotI = i; BK.ui.fixAsk = i; }, { settle: 20 });
+    BK.ui.fixAsk = -1;
     for (let i = 0; i < 5; i++) { if (was[i] === null) ls.removeItem('bracken.progress.' + i); else ls.setItem('bracken.progress.' + i, was[i]); }
     await yieldNow(); }
+  /* (claude/shipfix) THE END OF THE ROAD card, solo, with the worst figures: every level cleared on gold, an hour of best times, three-digit deaths */
+  if (want('ending')) { const pr = BKT.PROG, keep = JSON.stringify(pr); for (const l of lvm.LEVELS) if (!l.hidden) pr[l.id] = { cleared: true, medal: 3, best: 3599, deaths: 999 };
+    frame('end of the road solo', () => { BK.state = 'victory'; }, { settle: 5 });
+    for (const k of Object.keys(pr)) delete pr[k]; Object.assign(pr, JSON.parse(keep)); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
     for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
     await yieldNow(); }

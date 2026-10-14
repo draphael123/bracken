@@ -20,6 +20,8 @@ export const COOP_HELP_PAGES = ({ downT = 20, reviveT = 1.5 } = {}) => [
     ['', 'STICK or D-PAD move   A jump   X swing (hold: heavy)   B dodge'],
     ['', 'LB or RB the hero\'s C   Y skill one   RT skill two   BACK emote'],
     ['', 'START and every menu belong to player one, so nobody pauses on a partner who is reading.'],
+    ['#', 'GRAB YOUR PARTNER'],
+    ['', 'Stand close and press GRAB (I, or R3): lift them overhead, press it again to THROW (hold UP to lob, DOWN to set them down). They scream, and can mash to get free. A thrown partner hits foes, and gets hurt by spikes, pits and spiked foes.'],
     ['#', 'CHANGE ANY OF IT'],
     ['', 'Settings > CONTROLS > Rebind keys: one page each for the keyboard, pad one and pad two. A key or button used twice is flagged red.'],
   ] },

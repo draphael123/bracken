@@ -8,6 +8,12 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
 import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): a v2 profile with drinkAt drinks; legacy never does */
+/* (claude/flasklever) EVERY PLAN'S OWN REACTION CLOCK: the per-boss plans read non-mode things (a rock, a hook, a lever, a band) a PLAN.react late; a human profile sets them all to ITS reaction (bossLab) */
+import { PLAN as RT_QUEEN } from './cistern-queen.js'; import { DJ_PLAN as RT_DJINN } from './djinn.js'; import { DRILL_PLAN as RT_DRILL } from './great-drill.js'; import { FOREMAN_PLAN as RT_FOREMAN } from './foreman.js';
+import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FOG } from './fog-knight.js'; import { PLAN as RT_GANG } from './gang-leader.js'; import { PLAN as RT_CRAB } from './gorge-crab.js';
+import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
+import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
+const PLAN_CLOCKS = [RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
@@ -21,7 +27,7 @@ import { puppetPlan } from './puppeteer.js';
 import { queenPlan, qOpen } from './cistern-queen.js'; /* (claude/underwell3, v2) THE CISTERN QUEEN's hall fire as the hands see it: the torch in hand, her two cressets, her two floor pools of oil (and whether they will catch), and where an aim would land */ const labCqFire=(P,f)=>{const UH=BK.underwellHands&&BK.underwellHands(),UW=BK.underwell&&BK.underwell();if(!UH||!UW||!UH.on())return null;if(f===0||!P.labCqPools){const cs=UW.list.filter(c=>c.arena&&!c.vertical).sort((a,b)=>a.y-b.y||a.x-b.x),runs=[];for(const c of cs){const r=runs[runs.length-1];if(r&&r.y===c.y&&c.x===r.x1+1){r.x1=c.x;r.cells.push(c);}else runs.push({y:c.y,x0:c.x,x1:c.x,cells:[c]});}P.labCqPools=runs.filter(r=>r.cells.length>=3);}return{held:!!(P.carry&&P.carry.t==='uwtorch'),cressets:UW.sconces.filter(q=>/^queen/.test(q.id||'')).map(q=>({x:q.x*16+8,up:q.st==='up'})),pools:P.labCqPools.map(r=>({x0:r.x0*16,x1:(r.x1+1)*16,oil:r.cells.filter(c=>c.st==='oil').length>=r.cells.length/2,fire:r.cells.some(c=>c.st==='fire')})),land:aim=>{const a=UH.arcFor(P,aim);return a&&a.land?a.land.x:null;}};}; import { glPlan, glOpen } from './gang-leader.js'; import { djinnPlan, djOpen } from './djinn.js';   /* (claude/welltown5) THE DJINN OF THE GREAT WELL: the bot works the skin on him, the crank and his hand */   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
 import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad): the bot rides the thermals and plunges, waits out her dive on the nest, turns the storm's stone */
 import { matPlan, matOpen } from './raptor-matriarch.js';   /* THE RAPTOR MATRIARCH (claude/redgorge2): the bot reads her tells, the water and the levers off her own module */
-import { colPlan, colOpen } from './glass-colossus.js'; import { hmPlan, hmOpen } from './hawk-mistress.js'; import { hkPlan, hkOpen } from './hourglass-king.js'; import { fkPlan, fkOpen } from './fog-knight.js';   /* THE FOG KNIGHT (claude/towpath): the bot reads his stance, his tells, the double and the bridge off his own module */ import { pbPlan, pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch) */   /* THE HAWK-MISTRESS (claude/ksar): the bot reads her tells, the hawk, the runners and the courtyard's gongs and racks off her own module */   /* THE GLASS COLOSSUS (claude/glasssea): the bot reads its tells, the lance's end and the mirrors off its own module, turns the mirrors and climbs */
+import { colPlan, colOpen } from './glass-colossus.js'; import { hmPlan, hmOpen } from './hawk-mistress.js'; import { hkPlan, hkOpen } from './hourglass-king.js'; import { smPlan, smOpen } from './scarab-mother.js';   /* THE SCARAB MOTHER (claude/sealedpyramid) */ import { fkPlan, fkOpen } from './fog-knight.js';   /* THE FOG KNIGHT (claude/towpath): the bot reads his stance, his tells, the double and the bridge off his own module */ import { pbPlan, pbOpen } from './paladin-boss.js';   /* THE PALADIN (claude/litchurch) */   /* THE HAWK-MISTRESS (claude/ksar): the bot reads her tells, the hawk, the runners and the courtyard's gongs and racks off her own module */   /* THE GLASS COLOSSUS (claude/glasssea): the bot reads its tells, the lance's end and the mirrors off its own module, turns the mirrors and climbs */
 import { hmPlan as hnPlan, hmOpen as hnOpen } from './huntmaster.js';   /* THE GOBLIN HUNTMASTER (claude/rootway): the bot reads his tells and his arrows off his own module; v2 strikes the gold ones back */
 import { drillPlan, drillOpen, laneOf as drillLane } from './great-drill.js';
 import { foremanPlan, foremanOpen, laneOf as fmLane } from './foreman.js';   /* THE FOREMAN (claude/deeprails3, THE DEEP RAILS' mini): the bot rides his loop - holds its place, jumps on his cart as he drops back, brakes out of his ram, strikes him aboard */   /* THE GREAT DRILL (claude/minecart): the bot rides the treadmill - boost / brake to hold its place, jump / drop between the lines, E at the points mast */
@@ -30,7 +36,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 20 };   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18 };   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -62,7 +68,7 @@ export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the w
    met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
    is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
 export const DEFLECTS = h => h === 'warden' || h === 'berserker';
-const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.braceT || 0) : 0;
+const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
@@ -484,6 +490,7 @@ function dashIn(BK, h, e, f) {
    remaining windup (a tell he can see, or a boss's greed ring), and (b) one roll's wind kept back - a swing that would leave less than a
    roll is not started. This is not a weaker bot: under the old combat a swing into a tell could be rolled out of, so the bot never had to
    read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
+let GUARDR = null, GSTATS = null;   /* (claude/flasklever) the human parry's dice and counts, per row */
 let HUMAN_H = null; export const LAB_RESERVE_DEFAULT = 0.5; let LAB_RESERVE = LAB_RESERVE_DEFAULT;
 let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the row's bot profile (src/bot-profile.js), its perception (src/lab-perceive.js) and its skill hands, or null */
 function humanSwingOk(BK) {
@@ -524,19 +531,33 @@ function rollWhenDue(BK, press0) {
   if (winding && left > ROLL_LATE) return;
   P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; if (callerRollBad(BK)) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
 }
+/* (claude/flasklever) THE HUMAN PARRY. A SHIELD hero's guard held from the first frame of a tell is a block, never a parry (the perfect guard is the first 0.11 s of a raised
+   guard). A player parries by raising it as the blow lands: on a yellow tell he TRIES (LABP.parryTry of them) and holds the guard back until the tell's last parryLead s -
+   as READ (the eyes' modeT carries a reader's error, so some land on the beat and some a hair late or early). Run with the eyes' state on, just before the world steps.
+   Red tells (HARD_TELLS) and the rest of the frame's key choices are untouched; the held-from-the-start block stays for the share that does not try. */
+function humanGuard(BK, h, boss) {
+  const P = BK.P, k = BK.keys; if (!LABP.v2 || !(LABP.parryTry > 0) || !P || !boss || !k.block || P.block || P.atkHeld > 0 || P.charge > 0) return;
+  if (h !== 'knight' && h !== 'paladin' && h !== 'geomancer') return;
+  const m = boss.mode; if (!m || !/Tell$/.test(m) || m === 'stanceTell' || HARD_TELLS.has(boss.t + '|' + m) || typeof boss.modeT !== 'number') return;
+  if (!GUARDR) return;
+  if (P.labGuardM !== m || boss.modeT > (P.labGuardT ?? -1) + 0.05) { P.labGuardM = m; P.labGuardTry = GUARDR() < LABP.parryTry; P.labGuardUp = false; if (GSTATS) { GSTATS.tells++; if (P.labGuardTry) GSTATS.tried++; } }   /* a NEW tell: the mode changed or its clock went UP */
+  P.labGuardT = boss.modeT;
+  if (P.labGuardTry) { if (boss.modeT > (LABP.parryLead ?? 0.09)) k.block = false; else if (!P.labGuardUp) { P.labGuardUp = true; if (GSTATS) GSTATS.raised = (GSTATS.raised || 0) + 1; } }
+}
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation, press0 = BK.press, sim0 = BK.sim, step0 = BK.step;
   BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
-  LABP = profileOf(opts.profile ?? BK.labProfile);   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
+  LABP = profileOf(opts.profile ?? BK.labProfile);
+  const clocks0 = []; if (LABP.v2 && LABP.perceive && LABP.planReact) { for (const o of PLAN_CLOCKS) { clocks0.push([o, o.react]); o.react = LABP.planReact; } clocks0.push([RT_ROC, RT_ROC.base]); RT_ROC.base = Math.max(0.2, LABP.planReact - 0.075); }   /* (claude/flasklever) every plan reads its non-mode things a HUMAN reaction late, not 0.25 s */   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
   /* WITH EYES (a perceiving profile) the world steps one frame at a time: the hands decide on what was SEEN, the seen state comes off, the world steps, and what is seen now goes back on */
-  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
+  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC && ROWBOSS) humanGuard(BK, HUMAN_H, ROWBOSS); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
   const OBS = opts.observe || null;
   BK.sim = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(sim0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
   BK.step = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(step0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { for (const [o, v] of clocks0) { if ('base' in o) o.base = v; else o.react = v; } if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -610,7 +631,7 @@ async function runbossLab(BK, opts) {
        on how many creatures anything else in the level spawned before it. */
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
-    if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); }
+    if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); GUARDR = mulberry(seedOf('guard|' + lvId + '|' + h + '|' + (opts.seed || '') + '|' + (opts.salt || ''))); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; }
     ROWBOSS = boss; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
@@ -631,7 +652,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1442,6 +1463,24 @@ async function runbossLab(BK, opts) {
         if(fkOpen(boss)&&!wasOpen)opened++;wasOpen=fkOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:fkOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
+      if(boss.t==='scarabmother'){
+        /* THE SCARAB MOTHER (claude/sealedpyramid): src/scarab-mother.js smPlan reads what a player sees - her tells a reaction late (the v2 eyes), the spit's mark, the
+           puddles, the mound, the quake's shadows, her brood - and works THE RULE: it waits by the far side of the plate on her side of the room, and steps onto it when she
+           stops in that trap's reach (the plate's reload is drawn on it: it reads the traps' state off the level's hands). It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const SH=BK.scarabMotherHands(),S=SH&&SH.show(),PH=BK.sealedPyramidHands();
+        if(f===0||!P.labSmMem)P.labSmMem={};
+        const ready=PH?{block:PH.trapReady('smBlock'),darts:PH.trapReady('smDarts'),stone:PH.trapReady('smStone')}:{};
+        const pl=S?smPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,traps:ready,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labSmMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(smOpen(boss)&&!wasOpen)opened++;wasOpen=smOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:smOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
       if(boss.t==='hourglassking'){
         /* THE HOURGLASS KING (claude/buriedcity): src/hourglass-king.js hkPlan reads what a player sees - his tells a reaction late (the v2 eyes), the cogs and waves on the
            floor, the stream's X and the slip's swirl, phase three's pours, HIS GLASS (its gauge over him) - and works THE RULE: as his glass runs low it goes to the nearer
@@ -1449,9 +1488,9 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const HH=BK.hourglassKingHands(),S=HH&&HH.show();
         if(f===0||!P.labHkMem)P.labHkMem={};
-        const pl=S?hkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,levers:S.G.levers,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHkMem}):{gx:null,face:P.face};
+        const pl=S?hkPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,qs:(P.qsDepth||0)>0},e:boss,S,levers:S.G.levers,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHkMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
-        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(pl.jump&&(P.ground||(P.qsDepth||0)>0)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
@@ -1467,8 +1506,8 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const HH=BK.hawkMistressHands(),S=HH&&HH.show(),KSX=BK.ksar?BK.ksar():null;
         if(f===0||!P.labHmMem)P.labHmMem={};
-        const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left})):[];
-        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:!!(P.carry&&P.carry.t==='ksflask'),snared:!!P.hmSnare,lifted:!!(P.ksLift||P.hmCarry)},e:boss,S,gongs,racks,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
+        const gongs=KSX?KSX.gongs.filter(g=>g.arena).map(g=>({id:g.id,x:g.x*16+8,cut:g.cut,hum:g.hum})):[],racks=KSX?KSX.stacks.filter(q=>q.arena).map(q=>({id:q.id,x:q.x*16+8,n:q.left,kind:q.kind})):[];   /* (claude/ksarhawk) the roofs' braziers' torches and the keg stack */
+        const pl=S?hmPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk,carry:P.carry&&P.carry.thrKind?P.carry.thrKind:null,snared:!!P.hmSnare,lifted:!!(P.ksLift||P.hmCarry)},e:boss,S,gongs,racks,guards:BK.enemies().filter(q=>q.alive&&q.hmGuard).map(q=>({x:q.x,y:q.y,mode:q.mode})),reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labHmMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -2296,7 +2335,7 @@ async function runbossLab(BK, opts) {
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       // THE HERALD'S STONES LEAVE PISTOL ROOM: a loaded shot reaches across them; the short C release answers his yellow thrust.
       const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
-      const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
+      const mixedHeavy=(opts.attackStyle==='mixed'||(LABP.v2&&LABP.mixHeavy&&h!=='pirate'&&h!=='reaper')||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
       /* THE SWING GOES AT HIM, NOT BEHIND. Standing closer than its spot, the bot walks back to it - and the game turns a hero to the key he
          holds before a swing starts (updatePlayer: if (!attacking) P.face = move), so a swing pressed on that frame went out behind him: on
@@ -2332,6 +2371,17 @@ async function runbossLab(BK, opts) {
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
       if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
+      /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
+         the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
+         a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
+      if (h === 'berserker' && BK.bz) { const Z = BK.bz() || {};
+        if (P.labBzCoil > 0) { P.labBzCoil--; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = k.up = k.jump = k.atk = k.block = false; k.down = true; P.face = P.labBzDir || P.face;
+          if (P.labBzCoil === 0) P.labBzRel = 2; }
+        else if (P.labBzRel > 0) { P.labBzRel--; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = k.up = k.jump = k.atk = k.block = false; k.down = false; k[(P.labBzDir || 1) > 0 ? 'right' : 'left'] = true; }
+        else if (!(Z.frenzyT > 0) && Z.rage >= 100 && P.ground && !tell && !rushing && ad < 150 && P.atk < 0 && !P.cWas && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0)) { strike = false; k.left = k.right = k.up = k.jump = k.atk = false; k.down = true; k.block = true; P.labBzFrenzied = f; }   /* the war cry: hold DOWN, press C */
+        else if (!(Z.frenzyT > 0) && P.ground && !tell && !rushing && ad > 110 && ad < 230 && Math.abs(boss.y - P.y) < 28 && P.atk < 0 && P.st >= 36 && !(P.hurt > 0) && !(P.dodge > 0) && !(Z.braceRec > 0) && !(Z.takeUp)
+          && f - (P.labBzPounceAt ?? -999) > 1500 && f - (P.labBzFrenzied ?? -999) > 40) {
+          P.labBzPounceAt = f; P.labBzDir = Math.sign(d) || P.face; P.labBzCoil = 38; BK.unpress(); P.labJump = 0; strike = false; k.left = k.right = false; k.down = true; } }
       // A BANKED PYRE IS FOR SPENDING: release the full heat meter toward a clear target between committed swings.
       if (h==='pyro' && P.full && !tell && !rushing && ad<140 && Math.abs(boss.y-P.y)<30 && !P.plunge && !P.cWas && P.atk<0) { P.face=Math.sign(d)||P.face; k.block=true; }
       /* A HAND CAUGHT ON A SPRING DOES NOT KNOW IT: nothing here has ever asked a bouncer a question, so a knockback that lands
@@ -2402,7 +2452,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
@@ -2585,9 +2635,14 @@ export function chaseClimb(BK, m, o = {}) {
    tiles past the start, as fightLab does) }. Returns { out: 'win'|'dead'|'timeout', secs, hpLeftPct, eliteLeftPct, affix, ehp }. */
 export async function eliteLab(BK, o) {
   const lvm = await import('./level.js'); const press0 = BK.press, sim0 = BK.sim, step0 = BK.step, previous = BK.manualSimulation;
+  /* (claude/flasklever) THE ELITE LAB'S HUMAN has the boss lab's human now: the 'human' profile (its eyes: a tell is seen 254-578 ms late and sometimes misread, the greed after a
+     landed hit; its parry: a shield hero's guard raised in the tell's last 0.09 s on 60% of the yellow tells) - the legacy hands it measured with were blind to none of it and
+     never parried (claude/order: the Road Wardens' knights 33-56% against 75-85%). o.profile names another ('legacy' = the old elite-lab bot exactly). */
+  let eliteE = null; const eyesOn = o.mode === 'human' && (o.profile ?? 'human') !== 'legacy', LABP0 = LABP;
+  const eliteStep = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { rollWhenDue(BK, press0); if (PERC && eliteE) humanGuard(BK, o.hero, eliteE); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } } return r; };
   if (o.mode === 'human') { HUMAN_H = o.hero;
     BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
-    BK.sim = n => { rollWhenDue(BK, press0); return sim0.call(BK, n); }; BK.step = n => { rollWhenDue(BK, press0); return step0.call(BK, n); }; }
+    BK.sim = n => eyesOn ? eliteStep(sim0, n) : (rollWhenDue(BK, press0), sim0.call(BK, n)); BK.step = n => eyesOn ? eliteStep(step0, n) : (rollWhenDue(BK, press0), step0.call(BK, n)); }
   BK.manualSimulation = true;
   try {
     BK.setHero(o.hero); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === o.level)); BK.start(); BK.god = false; BK.sim(10);   /* (claude/elitemoves: the tell clock with the fight's own clock - see BK.clearTellClock) */
@@ -2602,8 +2657,12 @@ export async function eliteLab(BK, o) {
       let spot = null; for (const sd of [away, -away]) { for (const k of [6, 5, 7, 4, 8, 3]) { const x = ex + sd * k; if (free(x, r) && free(x, r - 1) && !free(x, r + 1) && clear(x)) { spot = x; break; } } if (spot !== null) break; }
       BK.tp(spot !== null ? spot : ex + away * 6, r); }
     BK.sim(20); P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0; e.elT = Math.max(e.elT || 0, 1.0);
+    if (eyesOn) { LABP = profileOf(o.profile ?? 'human'); const key = o.level + '|' + o.kind + '|' + o.hero + '|' + (o.seed || 0);
+      GUARDR = mulberry(seedOf('guard|' + key)); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; P.labGuardUp = false;
+      PERC = makePerception(BK, LABP, key, e, {}); PERC.apply(); eliteE = e; }
     const ehp = e.hp0 || e.hp, maxF = Math.round((o.secs || 60) * 60), reach = LAB_REACH[o.hero] || 22; let f = 0;
     for (; f < maxF && e.alive && !P.dead; f++) {
+      if (eyesOn && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/flasklever) the human drinks, as the boss lab's does */
       if (o.mode === 'mash') { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
         const dx = e.x - P.x, edge = (e.w || 12) / 2; if (Math.abs(dx) > Math.min(reach * 0.7, 14) + edge * 0.5 || Math.abs(dx) > 6) k[dx > 0 ? 'right' : 'left'] = true;
         if (P.swim) { const dy = (e.y - (e.h || 16) / 2) - (P.y - 10); if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }
@@ -2613,8 +2672,9 @@ export async function eliteLab(BK, o) {
       if (f % 900 === 899) await yieldNow();
     }
     k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
-    return { out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
-  } finally { BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
+    let eyes = null; if (PERC) { PERC.restore(); eyes = { ...PERC.stats(), guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 }; PERC = null; }
+    return { eyes, out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
+  } finally { if (PERC) { PERC.restore(); PERC = null; } LABP = LABP0; BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
 }
 /* (claude/walkerhands) THE LAB'S DUEL HANDS FOR THE LEVEL WALKER (tools/level-walk.mjs + src/walk-duel.js). One frame of labBotFrame - the hands the
    elite lab measures every elite with (docs/elite-lab.json: the human wins ~80%) - with the HUMAN gates the elite lab puts on them (no swing into a

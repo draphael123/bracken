@@ -1,0 +1,11 @@
+90 hint messages read out of src/main.js
+  scope hints             90 screens  1.6s
+  scope tree             185 screens  4.5s
+  scope pick               3 screens  1.4s
+  scope trial              8 screens  3.4s
+  scope card              67 screens  22.0s
+  scope menu              18 screens  18.2s
+  scope hud               30 screens  15.1s
+
+401 screens drawn, 9294 strings measured, 66s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-berserker2\audits\readability\textfit
