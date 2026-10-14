@@ -33,6 +33,7 @@
 //                                                lamp, the grates; his gate holds the sanctuary. THE RELIQUARY behind the altar
 //   241-282  THE SANCTUARY              BOSS     THE PALADIN (src/paladin-boss.js stagePaladin), lit by the lamps you lit
 import { stagePaladin, PB_STAGE } from './paladin-boss.js';
+import { addChurchSupports } from './church-supports.js';   /* (claude/church2) nothing in the church floats: every raised board on its drawn support */
 
 export const CHURCH = { W: 290, H: 60, nave: 37, gallery: 19, crypt: 54, south: 41 };
 export const RULE = 'LIGHT IS THE CLERGY\'S: A LIT ROOM MAKES THE PRIESTS STRONG, A DARK ONE LETS THE DEAD UP. CARRY A FLAME TO LIGHT A LAMP; A BLOW SNUFFS IT.';
@@ -274,7 +275,7 @@ export function buildLitChurch({ painter, T, TS }) {
   for (const d of doors) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) set(x, y, T.PORT);
   /* every placed foe in a room learns it from its ent (the hands read e.room); a grate's dead come up as wights, haunts and boos (the room's own `dead` list) */
   const START = { x: 2, y: NF - 3 };
-  return {
+  const OUT = {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
     mini: { name: 'THE DEACON', x0: 160 * TS, x1: 179 * TS, floor: NF * TS, y0: 29 * TS, y1: (NF + 1) * TS, trigger: 161 * TS, wallL: 159, gate: 159, boss: 'deacon', armed: 'escaped', start: [163, NF - 1] },   /* (claude/church2) THE DEACON at the top of the crypt well: armed once you are out of it */
@@ -311,4 +312,9 @@ export function buildLitChurch({ painter, T, TS }) {
     palette: { set: 'night', near: 'none', dress: 'none', noFg: true, noNear: true, haze: 'rgba(120,130,170,0.08)', darkCol: '8,8,18' },
     night: true, nightA: 0.1, duskStart: -1, duskLen: 1,
   };
+  /* LIT CHURCH 2: NOTHING FLOATS (src/church-supports.js): every one-way run with air under it stands on its kind's support; the organ gallery's west floor stands on the
+     nave arcade (the pillars at 68 and 88 carry it - drawn piers under the gallery) */
+  addChurchSupports(OUT, T, OUT.rows);
+  for (const x of [68, 88]) OUT.routeSupports.push({ x, y: GF, bottom: NF, kind: 'pier' });
+  return OUT;
 }
