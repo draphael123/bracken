@@ -251,7 +251,7 @@ export function makeLitChurchHands(ctx) {
       const s = pp.safe, ok = s && s.L === ctx.L && !K.troughs.some(q => inTrough(q, s.x, s.y));
       if (ok) { pp.x = s.x; pp.y = s.y; } else { const lx = (t.x0 - 1) * ts + 8, rx = (t.x1 + 1) * ts + 8, from = s ? s.x : pp.x; pp.x = Math.abs(from - lx) <= Math.abs(from - rx) ? lx : rx; pp.y = t.row * ts; }
       pp.vx = 0; pp.vy = 0; pp.onMover = null;
-      number(pp.x, pp.y - 40, once('fireBack') ? 'THE HOLY FIRE BURNS WHILE ITS LAMP DOES: SNUFF IT, OR CROSS ABOVE' : 'BURNED', '#ff9a5c'); } }
+      if (once('fireBack')) number(pp.x, pp.y - 40, 'HOLY FIRE: SNUFF ITS LAMP, OR CROSS ABOVE', '#ff9a5c'); else number(pp.x, pp.y - 40, 'BURNED', '#ff9a5c'); } }
 
   /* ---------- A CHANDELIER COMING DOWN (claude/church2): it drops to the floor, lands out, and from then on stands there (a floor lamp he can kindle) ---------- */
   function stepFalls(dt) { for (const l of K.lamps) { if (!l.fall) continue; l.fall.vy = Math.min(600, l.fall.vy + 900 * dt); l.y = Math.min(l.floorRow, l.y + l.fall.vy * dt / TS());
