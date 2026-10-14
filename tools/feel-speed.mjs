@@ -19,16 +19,16 @@ try {
     out.runs = {}; for (const s of [0.5, 1, 1.25, 1.5, 2]) out.runs[s] = run(s, 30);
     return out; })()`, 600000);
   console.log(JSON.stringify(r));
-  ok(r.defaultSpeed === 1, 'a fresh profile defaults to 100%: ' + r.defaultSpeed);
-  ok(r.v3 === 1, 'a fresh profile is marked speedV3');
+  ok(r.defaultSpeed === 0.6, 'a fresh profile defaults to 60% (Daniel 10-14; SPEED_DEFAULT flips it later): ' + r.defaultSpeed);
+  ok(!r.v3, 'no speedV3 migration is applied while SPEED_MIGRATE is off');
   const d1 = r.runs[1].dx; ok(d1 > 20, 'the hero ran at 100%: ' + d1);
   for (const s of [0.5, 1.25, 1.5, 2]) { const k = r.runs[s].dx / d1; ok(Math.abs(k - s) < 0.12 * s + 0.05, 'ground covered at ' + s + ' is ' + s + ' x the 100% run, was ' + k.toFixed(2)); }
   ok(r.runs[2].maxStep <= r.runs[1].maxStep * 2.05 + 0.2, 'no single frame at 200% moved more than twice a 100% frame (two sub-steps)');
   /* THE ONE-TIME MIGRATION: an old file (speed 0.6, no speedV3) boots at 1.0 and is flagged; a v3 file at 0.7 keeps 0.7 */
   const boot = async (raw) => { await pg.evalp('localStorage.setItem("bracken.settings", ' + JSON.stringify(raw) + '); setTimeout(()=>location.reload(), 10); 1', 10000); await new Promise(r => setTimeout(r, 1500));
     for (let i = 0; i < 120; i++) { const v = await pg.evalp('typeof window.BK === "object" && !!window.BK.lookPass ? [BK.SET.speed, BK.SET.speedV3, JSON.parse(localStorage.getItem("bracken.settings")).speed] : null', 3000).catch(() => null); if (v) return v; await new Promise(r => setTimeout(r, 500)); } return null; };
-  const m1 = await boot(JSON.stringify({ speed: 0.6, speedV2: 1, hudV2: 1 })); ok(m1 && m1[0] === 1 && m1[1] === 1 && m1[2] === 1, 'an old file (0.6) is migrated to 1.0 once and saved: ' + JSON.stringify(m1));
-  const m2 = await boot(JSON.stringify({ speed: 0.7, speedV2: 1, speedV3: 1, hudV2: 1 })); ok(m2 && m2[0] === 0.7, 'a v3 file keeps the speed the player chose: ' + JSON.stringify(m2));
+  const m1 = await boot(JSON.stringify({ speed: 0.6, speedV2: 1, hudV2: 1 })); ok(m1 && m1[0] === 0.6 && !m1[1], 'an old file (0.6) is NOT migrated: ' + JSON.stringify(m1));
+  const m2 = await boot(JSON.stringify({ speed: 0.7, speedV2: 1, speedV3: 1, hudV2: 1 })); ok(m2 && m2[0] === 0.7, 'a file keeps the speed the player chose: ' + JSON.stringify(m2));
   ok(!pg.errors.length, 'page errors: ' + pg.errors.slice(0, 2).join(' / '));
 } finally { await pg.close(); }
 if (fails.length) { console.log('FEEL-SPEED: ' + fails.length + ' red'); process.exit(1); }

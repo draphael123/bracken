@@ -32,3 +32,10 @@
 2. Row order: ascending (right arrow = faster). The old row went 100% down to 50%. Say if you want it reversed.
 3. Lookahead is always on (no settings row; Reduce motion turns it off). Rec built; a LOOK AHEAD row would add a line to the Gameplay tab.
 4. updateCharge (heavy-charge timer) and a few input timers run on wall time, not world time (as they did at 60%): at 200% a heavy charge takes twice the world time per wall second. Not changed here; flag for the combat feel lane if it matters.
+
+## UPDATE 10-14 (Daniel's answers, applied)
+- Default speed stays 60% (SPEED_DEFAULT = 0.6): new profiles get the 0.6 step, old saves are NOT migrated, no toast. The speedV3 migration + toast stay behind `SPEED_MIGRATE = false` (flip SPEED_DEFAULT to 1 and SPEED_MIGRATE to true after a boss-rates re-measure at 100%). 50-200% range, 60% step, ascending row and sub-steps unchanged.
+- NEW settings row LOOK AHEAD (Gameplay > World, after Look down), default ON (SET.lookAhead), Reduce motion still forces it off.
+- feel-speed updated to the new rule (default 0.6, no migration, a chosen speed is kept); mobile-perf default measures 60% (MP_SPEED=1/2 for the sub-step).
+- Re-run green at the default: feel-speed, feel-platform, settings-tabs (76 rows), uiscreens, mobile-perf (60 fps, inside budget), textfit settings/menu/hints strict (only the pre-existing coophelp red, identical on master).
+- Q4 (wall-time charge/input timers at >100%) is for the combat feel lane.
