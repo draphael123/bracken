@@ -524,13 +524,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
-  "deaths": 17,
-  "kills": 6,
-  "lifts": 145,
+  "hits": 36,
+  "deaths": 15,
+  "kills": 5,
+  "lifts": 143,
   "walked": 100,
   "bare": true,
-  "lostPct": 671
+  "lostPct": 556
  },
  "rootway": {
   "hash": "bcecbe519d8c",
