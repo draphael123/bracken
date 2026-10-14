@@ -556,6 +556,11 @@ export const STUCK_HANDS = {
     /* (claude/deeprails2) the lava ramp (a cart that keeps falling short), the lift (a hero on foot at its foot), the foreman (a cart that keeps bumping him) */
     { id: 'mc-ramp', zone: [596, 26, 626, 40], steps: [ { key: 'lavaRamp', at: [614, 36], glint: 'stall', line: 'THE RAMP: PUMP HARD BEFORE ITS LIP' } ] },
     { id: 'mc-lift', zone: [763, 18, 784, 38], steps: [ { key: 'lift', at: [766, 36], glint: 'stall', line: 'THE LIFT: STAND ON THE CAGE AND RIDE IT UP' } ] },
+    /* (deeprails5 #4) THE PARKED CARTS: each glints until you are in it (src/minecart-hands.js handsState board.<id>: out / in) - the first (THE WRECK's) at once, where it is taught */
+    { id: 'mc-board-wreck', zone: [664, 28, 676, 38], steps: [ { key: 'boardWreck', is: ['board.wreck', 'out'], at: [674, 36], line: 'THE PARKED CART: JUMP INTO IT AND ITS GATE OPENS' } ] },
+    { id: 'mc-board-lift', zone: [774, 18, 785, 28], steps: [ { key: 'boardLift', is: ['board.lift', 'out'], at: [783, 26], glint: 'stall', line: 'THE PARKED CART: JUMP INTO IT' } ] },
+    { id: 'mc-board-pits', zone: [1052, 22, 1063, 31], steps: [ { key: 'boardPits', is: ['board.pits', 'out'], at: [1062, 29], glint: 'stall', line: 'THE PARKED CART: JUMP INTO IT' } ] },
+    { id: 'mc-pits-crusher', zone: [990, 18, 999, 27], steps: [ { key: 'pitsCrusher', at: [995, 25], glint: 'stall', line: 'A CRUSHER OVER THE CATWALK: TIME IT, OR DOWN + JUMP UNDER IT' } ] },
     { id: 'mc-foreman', zone: [891, 18, 922, 31], steps: [ { key: 'foreman', at: [906, 28], glint: 'stall', line: 'THE FOREMAN: JUMP ON HIS CART AS HE DROPS BACK' } ] },
     /* (claude/deeprails3) THE SWITCHES: each glints until its bridge is laid (handsState points.<id>: open / set) */
     { id: 'mc-yardSw', zone: [138, 18, 162, 31], steps: [ { key: 'yardSw', is: ['points.yardSw', 'open'], at: [151, 25], line: 'THE SWITCH: STRIKE IT, OR PRESS E - ITS BRIDGE IS OUT' } ] },

@@ -132,7 +132,8 @@ export function makeDrillHands(ctx) {
     /* (deeprails5) THE RAIL CLAW: its marked stretch through the tell, then the torn rail coming down the tunnel; THE SPARE CUTTER rolling at you (or struck back) */
     if (S.clawPend) MCA.tearMark(g, R(S.clawPend.x - cx), R(S.clawPend.x + DRILL.clawW - cx), R(G.laneY[S.clawPend.lane] - cy), 1 - Math.max(0, S.mT || 0) / DRILL.clawTell, time);
     for (const tr of S.tears) MCA.tornRail(g, R(tr.x - cx), R(tr.x + DRILL.clawW - cx), R(G.laneY[tr.lane] - cy), time);
-    for (const cu of S.cutters) { MCA.cutterDisc(g, R(cu.x - cx), R(G.laneY[cu.lane] - DRILL.cutterH / 2 - cy), DRILL.cutterR, time, cu.back); if (!cu.back) txt('STRIKE IT', R(cu.x - cx), R(G.laneY[cu.lane] - 30 - cy), Math.floor(time * 10) % 2 ? '#ffd36b' : '#ffffff', 'center', 5); }
+    for (const cu of S.cutters) { const fk = cu.fly > 0 ? 1 - cu.fly / DRILL.cutterFly : 1, ly = R(G.laneY[cu.lane] - cy); if (cu.fly > 0) { g.fillStyle = 'rgba(0,0,0,' + (0.3 + 0.4 * fk).toFixed(2) + ')'; g.fillRect(R(cu.tx - cx) - DRILL.cutterR, ly - 2, DRILL.cutterR * 2, 3); txt('!', R(cu.tx - cx), ly - 34, '#ff6b6b', 'center', 6); }   /* its landing, marked on your line */
+      MCA.cutterDisc(g, R(cu.x - cx), R(G.laneY[cu.lane] - DRILL.cutterH / 2 - Math.sin(fk * Math.PI) * 36 - cy), DRILL.cutterR, time, cu.back); if (!cu.back && !(cu.fly > 0)) txt('STRIKE IT', R(cu.x - cx), R(G.laneY[cu.lane] - 30 - cy), Math.floor(time * 10) % 2 ? '#ffd36b' : '#ffffff', 'center', 5); }
   };
   /* THE RIG: its rear (the gear housing, the gears, the deck and the cab with its goblin), its engine and stack, its tracks, the bit drilling the face ahead */
   /* (deeprails4) ITS POSE: jammed, it SLUMPS (eased in over 0.25 s, lifted over the window's last 0.4 s - the read of 'now'); each gear-driven windup has its own (B16) */

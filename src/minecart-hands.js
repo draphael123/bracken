@@ -14,7 +14,7 @@
 //   reset()                             a load or a death: the points back to their default, the rails relaid, the goblins waiting, a fresh cart
 //   holes(hole, cx, cy, dg)             THE DARK DRIFT: the headlamp's cone, the goblins' lanterns
 //   drawWorld, drawCartBack, drawCart, drawHud, read, bakeOreIcon, handsState
-import { MC, cartSpeed, runeAt } from './minecart.js';
+import { MC, cartSpeed, runeAt, gateX } from './minecart.js';
 import * as FMG from './foreman.js';   /* (deeprails3) THE FOREMAN, the mini: his fight is pure (src/foreman.js); these hands bind it - the loop, the pin on his cart, the draw */
 import * as MCA from './redraw/minecart_art.js';
 import { heightAt } from './slopes.js';
@@ -29,9 +29,13 @@ export function makeMinecartHands(ctx) {
   const L = () => ctx.L;
   H.on = () => !!(L() && L().minecart);
   /* ON FOOT (deeprails2): between a stretch's x0 and its board column the hero is out of the cart (positional, so a station inside it, a respawn or a tool all agree) */
-  const footAt = x => { const Lv = L(); if (!Lv || !Lv.mcFoot) return null; const ts = TS(); return Lv.mcFoot.find(f => x >= f.x0 * ts && x < f.board * ts) || null; };
-  H.footAt = footAt;
-  H.riding = pp => H.on() && !!pp && !pp.dead && !pp.swim && !pp.climb && !pp.mcBoard && !footAt(pp.x);   /* (deeprails3: on THE FOREMAN's cart he is out of his own - pp.mcBoard) */
+  /* (deeprails5 #4) the stretch runs on to its GATE, two columns past the parked cart: walking up to the cart is still on foot - you are in the cart once you JUMP INTO it (pp.mcIn) */
+  const footAt = x => { const Lv = L(); if (!Lv || !Lv.mcFoot) return null; const ts = TS(); return Lv.mcFoot.find(f => x >= f.x0 * ts && x < (f.board + 2) * ts) || null; };
+  const onFoot = pp => { const f = pp ? footAt(pp.x) : null; return f && pp.mcIn !== f.id ? f : null; };
+  H.footAt = footAt; H.onFoot = onFoot;
+  const cartRow = f => { const e = (L().ents || []).find(q => q.t === 'mccart' && q.x === f.board); return e ? e.y + 1 : 30; };   /* (the parked cart's rail: its ent stands on it - the column's first rock is the roof) */
+  H.cartRow = cartRow;
+  H.riding = pp => H.on() && !!pp && !pp.dead && !pp.swim && !pp.climb && !pp.mcBoard && !onFoot(pp);   /* (deeprails3: on THE FOREMAN's cart he is out of his own - pp.mcBoard) */
   const cartOf = pp => pp.mcCart || (pp.mcCart = { v: 0, crashCd: 0, hist: [], lastGround: null, wasGround: true, crashT: 0, bounce: 0 });
   H.cart = pp => cartOf(pp);
 
@@ -51,13 +55,13 @@ export function makeMinecartHands(ctx) {
     for (const r of M.rocks) { r.armed = true; r.fallT = -1; r.done = false; }
     for (const b of M.breaks) relay(b);
     M.carts = []; M.shots = []; M.runes = []; M.lobs = []; M.wrecks = []; M.told = {}; M.tellT = -9; M.fm = null; M.shadows = [];   /* (a life: every tell ahead of you is told again) */
-    for (const pp of ctx.players) pp.mcBoard = null;
+    for (const pp of ctx.players) { pp.mcBoard = null; pp.mcIn = null; }   /* (deeprails5: a life starts out of every parked cart) */
     /* THE GOBLINS WAIT: a placed foe whose ent says ride: {...} is put away (not alive) until you pass its trigger */
     const ents = M.L.ents;
     for (const e of ctx.enemies()) { const k = e.xpKey ? +String(e.xpKey).split('.')[0] : -1, src = k >= 0 ? ents[k] : null;
       if (src && src.ride && e.alive && src.ride.foreman) { e.mcRide = src.ride; fmSpawn(e); continue; }   /* (deeprails3) THE FOREMAN waits in his cart from the start (the mini: the game finds him alive) */
       if (src && src.ride && e.alive) { e.mcRide = src.ride; e.mcWait = true; e.alive = false; e.mcSrcX = src.x; if (src.eliteName) e.eliteName = src.eliteName; } }
-    for (const pp of ctx.players) { const c = cartOf(pp); c.v = 0; c.hist = []; c.lastGround = null; c.crashCd = 0; c.holdT = MC.hold; c.bounce = 0; c.foot = !!footAt(pp.x); c.prevX = pp.x; }   /* (the cart waits a beat at the start and at a station) */
+    for (const pp of ctx.players) { const c = cartOf(pp); c.v = 0; c.hist = []; c.lastGround = null; c.crashCd = 0; c.holdT = MC.hold; c.bounce = 0; c.foot = !!onFoot(pp); c.prevX = pp.x; c.wasAir = false; }   /* (the cart waits a beat at the start and at a station) */
   };
   const layPoints = p => { const t = ctx.T; for (const [x, y] of p.tiles) ctx.cellSet(x, y, p.state === 'set' ? t.RAIL : t.AIR); };
   const relay = b => { for (let x = b.x0; x <= b.x1; x++) ctx.cellSet(x, b.row, ctx.T.RAIL); b.started = false; b.front = 0; b.broken = new Set(); b.debris = []; };
@@ -326,12 +330,23 @@ export function makeMinecartHands(ctx) {
     if (P0 && !M.said.ore8) { const sm = M.points.find(p => p.ore); if (sm && ctx.questGot() >= sm.ore) { M.said.ore8 = 1; ctx.number(P0.x, P0.y - 40, "EIGHT ORE: THE SMELTER'S POINTS WILL OPEN", '#ffd36b'); } }
   };
   /* THE ON-FOOT STRETCHES: crossing a stretch's x0 in the cart derails it (or you step out at a line's end); crossing its board column you are in the waiting cart */
-  function footStep(P) { const c = cartOf(P), f = footAt(P.x), was = !!c.foot; c.foot = !!f; if (P.dead) return;
+  function footStep(P) { const f0 = footAt(P.x), c = cartOf(P), f = f0 && P.mcIn !== f0.id ? f0 : null, was = !!c.foot; c.foot = !!f; if (P.dead) { c.wasAir = false; return; }
+    if (f) footHazards(P, c, f);
     if (f && !was) { const ts = TS(); M.n.derails++;
       if (f.derail) { P.vy = Math.min(P.vy, -250); P.ground = false; ctx.shake(6); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(P.x + 6, P.y - 6, 18, ['#5a6270', '#8a919c', '#8a5a32', '#ffd36b'], 120, 0.6);
         M.wrecks.push({ x: P.x + 4, y: P.y - 6, vx: 60, vy: -160, a: 0, va: 7, t: 0, floor: P.y - 6 }); ctx.number(P.x, P.y - 40, 'DERAILED! ON FOOT: A CART WAITS AHEAD', '#ffd36b'); }
       else { ctx.sfx.clank && ctx.sfx.clank(); M.wrecks.push({ x: P.x, y: P.y - 6, vx: 0, vy: 0, a: 0, va: 0, t: 0, floor: P.y - 6, parked: true }); ctx.number(P.x, P.y - 40, 'THE LINE ENDS: OUT, AND UP THE LIFT', '#ffd36b'); } }
-    else if (!f && was && P.x >= ((L().mcFoot || []).find(q => Math.abs(q.board * TS() - P.x) < 40) || { board: -1 }).board * TS()) { M.n.boards++; c.v = 0; c.holdT = 0.5; c.hist = []; ctx.sfx.clank && ctx.sfx.clank(); ctx.dust(P.x, P.y, 6); ctx.number(P.x, P.y - 40, 'INTO THE CART: ROLL ON', '#8fd160'); } }
+    /* (deeprails5 #4) THE PARKED CART: a LANDING in its tub (you were in the air, and come down on its rail over its width) puts you in it - walking up to it does not;
+       until then its GATE, just past its nose, holds the line shut */
+    if (f) { const ts = TS(), cx0 = f.board * ts + 8, rowY = cartRow(f) * ts, gx = gateX(f, ts);
+      if (c.wasAir && P.vy >= 0 && Math.abs(P.x - cx0) <= 14 && Math.abs(P.y - rowY) <= 8) { P.mcIn = f.id; c.foot = false; P.x = cx0; P.y = rowY; P.vx = 0; P.vy = 0; M.n.boards++; c.v = 0; c.holdT = 0.5; c.hist = []; c.lastGround = null; c.prevX = P.x;
+        (M.gateOpen = M.gateOpen || {})[f.id] = true; ctx.sfx.clank && ctx.sfx.clank(); ctx.sfx.leverClunk && ctx.sfx.leverClunk(); ctx.dust(P.x, P.y, 6); ctx.shake(2); ctx.number(P.x, P.y - 40, 'INTO THE CART: ROLL ON', '#8fd160'); }
+      else if (P.x > gx - 6) { P.x = gx - 6; if (P.vx > 0) P.vx = 0; M.n.gateHeld = (M.n.gateHeld || 0) + 1; (sayOk('cartGate') && ctx.number(P.x, P.y - 40, 'THE GATE: JUMP INTO THE CART', '#ffd36b')); } }
+    c.wasAir = !P.ground; }
+  /* (deeprails5) ON FOOT IN THE SPOIL PITS: the crushers over the catwalk bite a hero on foot too (time them, or drop under) - a hit, and back off its bed */
+  function footHazards(P, c, f) { if (P.inv > 0) return; const ts = TS(), now = ctx.time();
+    for (const k of M.crushers) { const ph = crushPhase(k, now); if (ph.state !== 'down') continue; const x0 = k.x * ts, x1 = (k.x + k.w) * ts, y1 = k.row * ts;
+      if (P.x + 4 > x0 && P.x - 4 < x1 && P.y > y1 - 40 && P.y <= y1 + 2) { M.n.crushed++; ctx.hurtHero(P.x, MC.crushDmg, { unblockable: true, name: 'A CRUSHER', noKnock: true }); if (!P.dead && P.hp > 0) { P.x = x0 - 10; P.vx = 0; P.inv = Math.max(P.inv || 0, 0.8); (sayOk('crushedFoot', true) && ctx.number(P.x, P.y - 34, 'CRUSHED: TIME IT, OR DROP UNDER IT', '#ff9a5c')); } } } }
   /* THE TELLS (review MF1): crossing a tell's column (and short of the place it can hurt) puts its line in the hint box - once a life, never over another */
   function tells(P) { if (P.dead || fmLive()) return; const col = P.x / TS();   /* (deeprails3: nothing is told over THE FOREMAN's fight - the tells past his loop wait for its end) */
     for (const t of M.L.mcTells || []) { if (M.told[t.id]) continue; if (col >= t.at) { M.told[t.id] = 1; continue; } if (col < t.x) break;
@@ -416,7 +431,9 @@ export function makeMinecartHands(ctx) {
   const inDark = x => (M.L.darkZones || []).some(z => x > z.x0 && x < z.x1);
 
   /* ---------- THE GLINT AND THE NUDGE (src/stuck-spots.js STUCK_HANDS.minecart: points.<id> open / set) ---------- */
-  const handsState = name => { const [kind, id] = name.split('.'); if (kind === 'points') { const p = M.points.find(q => q.id === id); return p ? p.state : ''; } return ''; };
+  const handsState = name => { const [kind, id] = name.split('.'); if (kind === 'points') { const p = M.points.find(q => q.id === id); return p ? p.state : ''; }
+    if (kind === 'board') { const P0 = ctx.players[0]; return P0 && P0.mcIn === id ? 'in' : 'out'; }   /* (deeprails5) a parked cart: 'out' until you jump into it */
+    return ''; };
   H.handsState = n => (M ? handsState(n) : '');
   const stall = (P, dt) => { if (!P || P.dead) return; const ts = TS();
     const r = resolve('minecart', Math.floor(P.x / ts), Math.floor((P.y - 1) / ts), { TS: ts, props: [], movers: [], hero: P, state: handsState }, STUCK_HANDS);
@@ -479,9 +496,11 @@ export function makeMinecartHands(ctx) {
     { const Ph = ctx.hero(); for (const r of M.ramps) { const lx = (r.x + 1) * ts; if (lx < cx - 60 || lx > cx + vw + 60) continue; const near = Ph && lx - Ph.x > -4 && lx - Ph.x < 260;
         MCA.kicker(g, R(lx - cx), R(r.row * ts - cy), near && Math.floor(time * 8) % 2, time); if (near) txt('PUMP!', R(lx - cx) - 10, R(r.row * ts - cy) - 34, '#ffd36b', 'center', 6); } }
     /* THE WAITING CARTS at the end of each on-foot stretch */
-    for (const f of M.L.mcFoot || []) { const x = f.board * ts + 8; if (x < cx - 40 || x > cx + vw + 40) continue; const Ph = ctx.hero(); if (Ph && Ph.x >= f.board * ts && !footAt(Ph.x) && Ph.x - x < 200) continue;
-      const row = (() => { for (let y = 0; y < ctx.LH(); y++) { const t = ctx.cellGet(f.board, y); if (t !== ctx.T.AIR) return y; } return 30; })();
-      MCA.heroCart(g, R(x - cx), R(row * ts - cy), 1, 0, false, 0, time, 'whole'); if (Ph && footAt(Ph.x) && Math.floor(time * 4) % 2) txt('A CART', R(x - cx), R(row * ts - cy) - 26, '#8fd160', 'center', 5); }
+    /* (deeprails5 #4: it was drawn at the column's first rock - the ROOF - so it never showed) PARKED on its rail, and its GATE past its nose: shut until you jump in */
+    for (const f of M.L.mcFoot || []) { const x = f.board * ts + 8; if (x < cx - 60 || x > cx + vw + 60) continue; const Ph = ctx.hero(), row = cartRow(f), gx = gateX(f, ts), inIt = !!(Ph && Ph.mcIn === f.id), past = !!(Ph && Ph.x >= (f.board + 2) * ts);
+      MCA.cartGate(g, R(gx - cx) - 7, R(row * ts - cy) - 30, R(row * ts - cy), inIt || past || !!(M.gateOpen && M.gateOpen[f.id]), time);
+      if (inIt || (past && Ph.x - x < 200)) continue;
+      MCA.heroCart(g, R(x - cx), R(row * ts - cy), 1, 0, false, 0, time, 'whole'); if (Ph && onFoot(Ph) && Math.floor(time * 4) % 2) txt('JUMP IN', R(x - cx), R(row * ts - cy) - 26, '#8fd160', 'center', 5); }
     /* THE WRECKS (a derailed cart tumbling, a parked one at a line's end) */
     for (const w of M.wrecks) { const x = R(w.x - cx), y = R(w.y - cy); if (x < -40 || x > vw + 40) continue; g.save(); g.translate(x, y); g.rotate(w.parked ? 0 : w.a); MCA.heroCart(g, 0, 6, 1, 0, false, 0, time, 'empty'); g.restore(); }
     /* THE POINTS: the lever (its disc's arrow) and the fork itself (set = rail; open = a chute down) */
@@ -562,7 +581,7 @@ export function makeMinecartHands(ctx) {
   H.bakeOreIcon = () => { const c = document.createElement('canvas'); c.width = 10; c.height = 8; const k = c.getContext('2d');
     k.fillStyle = '#3a2e26'; k.fillRect(1, 2, 8, 6); k.fillRect(2, 1, 6, 7); k.fillStyle = '#d89a5a'; k.fillRect(3, 3, 2, 2); k.fillStyle = '#ffd36b'; k.fillRect(6, 2, 2, 2); k.fillRect(4, 5, 1, 1); k.fillStyle = '#fff6c8'; k.fillRect(6, 2, 1, 1); return c; };
   H.read = () => M && { points: Object.fromEntries(M.points.map(p => [p.id, p.state])), carts: M.carts.map(c => ({ t: c.e.t, x: R(c.x), row: c.row, state: c.state, v: R(c.v), ledge: c.ledge, foreman: c.foreman, rams: c.rams })), shots: M.shots.length, runes: M.runes.length, lobs: M.lobs.length, n: { ...M.n },
-    breaks: M.breaks.map(b => ({ id: b.id, started: b.started, broken: b.broken.size, front: R(b.front) })), cart: ctx.players[0] ? { v: R(cartOf(ctx.players[0]).v), foot: !!footAt(ctx.players[0].x) } : null, glint: M.glint };
+    breaks: M.breaks.map(b => ({ id: b.id, started: b.started, broken: b.broken.size, front: R(b.front) })), cart: ctx.players[0] ? { v: R(cartOf(ctx.players[0]).v), foot: !!onFoot(ctx.players[0]), in: ctx.players[0].mcIn || null } : null, glint: M.glint };
   H.state = () => M;
   H.setPoints = (id, st) => { const p = M && M.points.find(q => q.id === id); if (p) { p.state = st; layPoints(p); } return !!p; };
   return H;

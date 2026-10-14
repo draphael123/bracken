@@ -60,7 +60,7 @@ export const DRILL = {
      '!! A CUTTER: STRIKE IT BACK'), then bowled down your line at shin height - STRIKE IT as it reaches you and it flies back into its own gears (cutterBite off a bank), or JUMP it.
      THE RAIL CLAW (P3, the CHAIN WINCH's): told (the claw drops on its chain behind the rig, the stretch of your line it will rip marked red, '!! THE CLAW: PUMP AND JUMP'), then
      that stretch of rail is TORN and comes down the tunnel at you with the world - too long for a cruising jump (clawW): PUMP AND JUMP it (the level's pump gap) or change line */
-  cutterTell: 0.9, cutterV: 230, cutterDmg: 46, cutterR: 9, cutterH: 16, cutterBite: 55, cutterBackV: 420,
+  cutterTell: 0.9, cutterFly: 0.45, cutterLead: 50, cutterV: 160, cutterDmg: 36, cutterR: 9, cutterH: 16, cutterBite: 55, cutterBackV: 420,   /* (bowled: it flies cutterFly s off the boom - its landing marked on your line, cutterLead px ahead of you - then rolls at you) */
   clawTell: 1.1, clawW: 92, clawDmg: 44,   /* (clawW: + a cart's width it is 0.45 s under a pumped jump (0.62 s aloft), 0.69 s under a cruising one - it falls short) */
   chain: { 1: ['dynamite', 'reverse', 'rocks', 'dynamite', 'reverse', 'rocks'], 2: ['lunge', 'dynamite', 'chain', 'reverse', 'cutter', 'chain', 'dynamite'],
     3: ['collapse', 'chain', 'lunge', 'reverse', 'claw', 'dynamite', 'cutter'] },
@@ -188,6 +188,7 @@ export function stepDrill(e, S, dt, heroes, c) {
   for (const cu of S.cutters) {
     if (cu.back) { cu.x += DRILL.cutterBackV * dt; if (cu.x >= rearX(S) - 4) { cu.dead = true; S.n.cutBites++; const id = gearUp(S, 'lunge') ? 'lunge' : (GEARS.find(g => gearUp(S, g.id)) || {}).id;
         c.sound && c.sound('clank'); c.shake && c.shake(3); if (id) { c.number(rearX(S) - 20, G.laneY[0] - 56, 'STRUCK BACK: INTO ITS GEARS', '#8fd160'); hitGear(e, S, id, DRILL.cutterBite, c, {}); } } continue; }
+    if (cu.fly > 0) { cu.fly -= dt; const k = 1 - Math.max(0, cu.fly) / DRILL.cutterFly; cu.x = cu.x0 + (cu.tx - cu.x0) * k; continue; }   /* (in the air off the boom: harmless, its landing marked) */
     cu.x -= DRILL.cutterV * dt;
     if (cu.x < G.x0 - 20) { cu.dead = true; continue; }
     if (!cu.hit) { const y = G.laneY[cu.lane]; if (c.hit([cu.x - DRILL.cutterR, cu.x + DRILL.cutterR, y - DRILL.cutterH, y + 2], DRILL.cutterDmg, 'THE SPARE CUTTER', { key: 'cutter' + cu.id })) { cu.hit = true; S.n.cutterHits++; } } }
@@ -256,7 +257,8 @@ export function stepDrill(e, S, dt, heroes, c) {
       else if (name === 'claw') { e.mode = 'clawTell'; S.mT = DRILL.clawTell; S.n.claw++; S.clawPend = { lane: hl, x: rearX(S) - 8 - DRILL.clawW }; c.sound && c.sound('chain');   /* (deeprails5) the claw drops behind it on your line: the stretch it will rip is marked */
         c.number(rearX(S) - 40, G.laneY[hl] - 44, S.told.claw ? '!! THE CLAW' : '!! THE CLAW: PUMP AND JUMP, OR CHANGE LINE', '#ff6b6b'); S.told.claw = 1; }
       break; }
-    case 'cutterTell': if (S.mT <= 0) { if (S.cutPend) S.cutters.push({ x: rearX(S) - 12, lane: S.cutPend.lane, id: S.n.cutter, back: false }); S.cutPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.3; c.sound && c.sound('lunge'); } break;
+    case 'cutterTell': if (S.mT <= 0) { if (S.cutPend) { const x0 = rearX(S) - 12, hx = live.length ? Math.max(...live.filter(h => h.lane === S.cutPend.lane || h.lane < 0).map(h => h.x).concat([heroX])) : heroX;
+        S.cutters.push({ x: x0, x0, tx: Math.max(G.x0 + 24, Math.min(x0 - 20, hx + DRILL.cutterLead)), fly: DRILL.cutterFly, lane: S.cutPend.lane, id: S.n.cutter, back: false }); } S.cutPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.3; c.sound && c.sound('lunge'); } break;
     case 'clawTell': if (S.clawPend) S.clawPend.x = rearX(S) - 8 - DRILL.clawW;   /* (the marked stretch is the rail just behind it, where the claw bites: off it - or off the line - before it rips) */
       if (S.mT <= 0) { if (S.clawPend) S.tears.push({ x: S.clawPend.x, lane: S.clawPend.lane, id: S.n.claw }); S.clawPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.3; c.sound && c.sound('rock'); c.shake && c.shake(3); } break;
     case 'rockTell': case 'collapseTell': if (S.mT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } break;
@@ -304,7 +306,7 @@ export function hitGear(e, S, id, dmg, c, out = {}) { const q = S.gears && S.gea
 export function freeSnag(S, how) { if (!S.snag) return false; S.snag = null; if (how === 'cut') S.n.cuts++; return true; }
 /* (deeprails5) THE SPARE CUTTER's box on its line; a blow (box { l, r, t, b }) that lands on a rolling one STRIKES IT BACK up the line into its gears - true when it took */
 export const cutterBox = (G, cu) => ({ l: cu.x - DRILL.cutterR - 3, r: cu.x + DRILL.cutterR + 3, t: G.laneY[cu.lane] - DRILL.cutterH - 4, b: G.laneY[cu.lane] + 2 });
-export function strikeCutter(S, hb) { let any = false; for (const cu of S.cutters) { if (cu.back || cu.dead) continue; const b = cutterBox(S.G, cu); if (hb.r > b.l && hb.l < b.r && hb.b > b.t && hb.t < b.b) { cu.back = true; S.n.cutBacks++; any = true; } } return any; }
+export function strikeCutter(S, hb) { let any = false; for (const cu of S.cutters) { if (cu.back || cu.dead || cu.fly > 0) continue; const b = cutterBox(S.G, cu); if (hb.r > b.l && hb.l < b.r && hb.b > b.t && hb.t < b.b) { cu.back = true; S.n.cutBacks++; any = true; } } return any; }
 
 /* ---------- THE BOT (src/lab.js): what a player sees, read a quarter-second late (react 0.25 s, a tell misread one time in eight) ----------
    P: { x, y, ground, face, atk, vy, lane, v, snagged }; returns { gx (where to hold, arena px), jump, drop (down + jump), duck, talk (E), atk, boost, face, why } */
@@ -326,12 +328,12 @@ export function drillPlan({ P, e, S, reach, rng = Math.random, mem = {}, t, tip 
   for (const d of S.dyn) if (d.t > 0 && Math.abs(d.x - DRILL.cruise * d.t - P.x) < DRILL.dynR + 10 && late('dyn' + d.id)) danger.add(d.lane);
   for (const d of S.dynPend || []) if (late('dyn' + d.id)) danger.add(d.lane);
   if (S.hook && !S.hook.flying && late('hook' + S.n.chain)) danger.add(S.hook.lane);
-  const lungeOn = S.lunge && S.lunge.lane === lane && late('lunge' + S.n.lunge) && (S.lunge.on || S.lunge.t < 0.32);   /* (deeprails5, the bot fix) a player works on through the whine and ducks as it comes - ducking the whole tell idled it a second a lunge */
+  const lungeOn = S.lunge && S.lunge.lane === lane && late('lunge' + S.n.lunge) && (S.lunge.on || S.lunge.t < 0.5);   /* (deeprails5, the bot fix) a player works on through the whine and ducks as it comes - ducking the whole tell idled it a second a lunge */
   /* (deeprails5) THE RAIL CLAW: its marked stretch and a torn one coming at me are a danger on their line; THE SPARE CUTTER on my line is struck back (or jumped) */
   if (S.clawPend && late('claw' + S.n.claw)) danger.add(S.clawPend.lane);
   const tear = S.tears.find(tr => tr.lane === lane && tr.x + DRILL.clawW > P.x - 14 && tr.x < P.x + 190 && late('tear' + tr.id));
   for (const tr of S.tears) if (tr.x + DRILL.clawW > P.x - 14 && tr.x < P.x + 190 && late('tear' + tr.id)) danger.add(tr.lane);
-  const cut = S.cutters.find(cu => !cu.back && cu.lane === lane && cu.x > P.x - 6 && cu.x - P.x < 120 && late('cut' + cu.id));
+  const cut = S.cutters.find(cu => !cu.back && !(cu.fly > 0) && cu.lane === lane && cu.x > P.x - 6 && cu.x - P.x < 120 && late('cut' + cu.id));
   const spot = S.spots.find(sp => sp.t > 0 && Math.abs(sp.x - DRILL.cruise * sp.t - P.x) < DRILL.collapseW / 2 + 12 && late('roof' + sp.id));
   const revOn = (e.mode === 'revTell' || (e.mode === 'reverse' && S.revV > 0)) && late('rev' + S.n.reverse);
   const safe = [lane, 1, 2, 0].filter(l => LS.includes(l)).find(l => !danger.has(l));

@@ -114,10 +114,18 @@ function deckTile(x, y) {
     return c; });
 }
 
+/* (deeprails5, GREYBOX - the art lane's) THE SPOIL: a pit floor / a heap on the walk of broken pit-props and rubble, splintered ends up - it bites (SPIKE) */
+function spoilTile(x, y) {
+  return once('sp5_' + (x & 3), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, 41));
+    rect(g, 0, 11, 16, 5, '#2a2018'); for (let i = 0; i < 5; i++) px2(g, (r() * 15) | 0, 12 + ((r() * 3) | 0), '#4a3a2a');   /* the rubble bed */
+    for (const [px, h] of [[1, 8], [5, 11], [9, 7], [13, 10]]) { rect(g, px, 16 - h - 2, 2, h, MP.t2); px2(g, px, 16 - h - 2, '#e8d8b0'); px2(g, px + 1, 16 - h - 3, '#c8b890'); }   /* the splintered props */
+    return c; });
+}
 // ================================ THE HOOK ================================
 export function mineTile(t, x, y, at, T, L) {
   const zone = zoneOf(x), op = open(at, T);
-  if (t === T.RAIL) return deckTile(x, y);
+  if (t === T.RAIL || t === T.ONEWAY) return deckTile(x, y);   /* (deeprails5: THE SPOIL PITS' catwalk planks are the trestle deck's timber) */
+  if (t === T.SPIKE) return spoilTile(x, y);
   if (isSlope(t)) return slopeTile(t, x, y, zone, 0);
   if (t !== T.SOLID) return null;
   const up = op(0, -1, x, y), down = op(0, 1, x, y), eL = op(-1, 0, x, y), eR = op(1, 0, x, y);

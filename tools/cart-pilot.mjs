@@ -25,6 +25,11 @@ function makeCartPilot(BK, plan) {
       if (onIt) { go = mv.y > mv.y0 - mv.rise + 4 ? false : true; if (!go) { why = 'lift: riding up'; } else why = 'lift: off at the top'; if (go) jump = true; }
       else if (p.x < x0 && p.x > x0 - 40 && p.y > mv.y0 - 8) { if (mv.y < mv.y0 - 6) { go = false; why = 'lift: waiting for the cage'; } else why = 'lift: on'; } }
     const ahead = Math.floor((p.x + 10) / TS); if (go && p.ground && (stand(tile(ahead, row - 1)) || tile(ahead, row - 1) === 1)) { jump = true; why = 'on foot: up a step'; }
+    /* (claude/deeprails5) THE SPOIL PITS: spoil (spikes) on the walk ahead - jump it; a crusher over my line ahead - wait for its lift */
+    if (go && p.ground && [ahead, ahead + 1].some(c => tile(c, row - 1) === 3)) { jump = true; why = 'on foot: jump the spoil'; }
+    { const M = MCH.state(), now = typeof BK.time === 'function' ? BK.time() : BK.time; for (const kq of (M && M.crushers) || []) { if (kq.row !== row || !MCH.crushPhase) continue; const d = kq.x * TS - p.x; if (d < -8 || d > 46) continue; const ph = MCH.crushPhase(kq, now); if (ph.state !== 'up' || ph.k > 0.55) { go = false; jump = false; why = 'on foot: wait for the crusher'; } } }
+    /* (claude/deeprails5 #4) THE PARKED CART: jump into it (walking up to it does not board it - its gate holds the line) */
+    { const cx0 = f.board * TS + 8; if (p.ground && cx0 - p.x > 6 && cx0 - p.x < 40 && Math.abs(p.y - (MCH.cartRow ? MCH.cartRow(f) : row) * TS) < 6) { jump = true; why = 'on foot: jump into the cart'; } }
     if (go && p.ground && floorAt(ahead + 1, row) < 0 && floorAt(ahead + 1, row + 1) < 0 && floorAt(ahead + 1, row + 2) < 0 && !(mv && Math.abs(mv.x - (ahead + 1) * TS) < 50)) { jump = true; why = 'on foot: a gap'; }
     if (plan.fight) { const e = BK.enemies().filter(q => q.alive && !q.boss && Math.abs(q.y - p.y) < 30 && q.x - p.x > -10 && q.x - p.x < 34).sort((a, b) => a.x - b.x)[0];
       if (e) { go = Math.abs(e.x - p.x) > 18 && go; if (atkCd <= 0) { p.face = e.x >= p.x ? 1 : -1; BK.press('atk'); atkCd = 16; why = 'on foot: strike ' + e.t; } } }
@@ -48,7 +53,7 @@ function makeCartPilot(BK, plan) {
     const p = P(), M = MCH.state(), now = typeof BK.time === 'function' ? BK.time() : BK.time; clear(); why = 'cruise';
     if (!M || p.dead) return;
     talkCd = Math.max(0, talkCd - 1); atkCd = Math.max(0, atkCd - 1);
-    const f = MCH.footAt ? MCH.footAt(p.x) : null; if (f) { onFoot(p, f); return; }
+    const f = MCH.onFoot ? MCH.onFoot(p) : MCH.footAt ? MCH.footAt(p.x) : null; if (f) { onFoot(p, f); return; }
     /* (deeprails3) THE FOREMAN: on his cart, strike him; in his loop, ride his shuttle - jump on him as he drops back, brake out of his ram, off his pick's mark */
     if (p.mcBoard) { if (atkCd <= 0) { p.face = 1; BK.press('atk'); atkCd = 14; } why = 'aboard: strike'; return; }
     if (MCH.foremanOn && MCH.foremanOn() && MCH.treadmill(p)) { foreman(p); return; }
