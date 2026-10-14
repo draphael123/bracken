@@ -5919,14 +5919,14 @@ function drawHeroPick() { const PICK = NEW_PICK;
   if (heroPick.stage === 'trial') { const H = HEROES.find(k => k.id === hero()); text(H.name, VW / 2, VH / 2 - 30, UI.title, 'center', 12); text('TAKE THE TRIAL FIRST?', VW / 2, VH / 2, UI.text, 'center'); wrap('a short practice yard for this hero. nothing in it can hurt you.', VW - 32, 6).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 14 + i * BODY_LH, UI.dim, 'center', 6));   /* (one 64-letter line ran off both sides: two lines; textfit trial) */
     text('Z  YES        X  STRAIGHT TO THE MAP', VW / 2, VH / 2 + 38, UI.sel, 'center', 6); return; }
   const LINES = { knight: ['sword and shield', 'HOLD X: THE HEAVY CUT', '100 health'],
-    pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '80 health', 'HARDER'],
+    pyro: ['staff and fire, no shield', 'heat banks into THE PYRE', '88 health', 'HARDER'],
     paladin: ['maul and holy light', 'slow, heavy, a ward', '120 health'],
     pirate: ['cutlass and pistol', 'kills are his powder', '90 health'],
     reaper: ['a greatsword: slow, and it cuts them ALL', 'his ward banks what it stops', '95 health', 'HARDER'],
     warden: ['a spear: everything at its point', 'C PLANTS IT: a charge dies on it', '100 health'],
     geomancer: ['a tall staff and the stone under her', 'HOLD X: A FAULT LINE', '95 health'],
     berserker: ['two hand axes, no shield', 'HOLD C: BLOWS INTO RAGE', '105 health'],
-    ranger: ['a longbow, a quiver and a knife', 'HOLD X: DRAW. ARROWS ARC AND STICK', '90 health'] };
+    ranger: ['a longbow, a quiver and a knife', 'HOLD X: DRAW. ARROWS ARC AND STICK', '110 health'] };
   /* THE ROW (Daniel 2026-10-09: portraits, not banners): each hero stands on the floor line in his OWN idle frames at one integer scale (2x). The one
      you are looking at steps forward and is lit; the rest stand back, dimmed, and still breathe. Name and a one-line role are under each. */
   const ROLE = { knight: 'sword, kite', pyro: 'staff and fire', paladin: 'maul and ward', pirate: 'cutlass, pistol', reaper: 'greatsword', warden: 'spear, reach', geomancer: 'staff, stone', berserker: 'axes, rage', ranger: 'bow, quiver' };
@@ -5962,6 +5962,7 @@ function drawHeroPick() { const PICK = NEW_PICK;
       lab.forEach((ln, li) => { const lw = textW(ln, nsz), cx = Math.max(2 + lw / 2, Math.min(VW - 2 - lw / 2, mid)); nameTags.push({ ln, lw, cx, y: ny + li * (nsz + 1), lc, nsz, dark: heroCol(h).dark, a: locked ? 0.28 : sel ? 1 : 0.55, bw: cw - 4 }); });   /* (drawn after every banner: a name wider than its card runs over the next banner, and the next banner used to paint over it) */
       if (wide && !locked) text(fitText(ROLE[h] || '', cw - 6, 6), mid, floorY + 13, sel ? UI.text : UI.dim, 'center', 6); }
   });
+  for (const t of nameTags) { const L = nameTags.filter(o => o !== t && nameTags.indexOf(o) < nameTags.indexOf(t) && o.y === t.y).pop(); if (L && L.cx + L.lw / 2 + 3 > t.cx - t.lw / 2) t.cx = Math.min(VW - 2 - t.lw / 2, Math.ceil(L.cx + L.lw / 2 + 3 + t.lw / 2)); }   /* (no name touches its neighbour on the same line: PIRATE / KNIGHT ran together) */
   for (const t of nameTags) { if (t.lw + 4 > t.bw) { g.globalAlpha = t.a; g.fillStyle = t.dark; g.fillRect(Math.round(t.cx - t.lw / 2 - 2), t.y - 1, t.lw + 4, t.nsz + 2); g.globalAlpha = 1; } text(t.ln, t.cx, t.y, t.lc, 'center', t.nsz); }   /* (a name wider than its banner gets a plate of its own colour under it) */
   text('CHOOSE YOUR HERO', VW / 2, 3, UI.title, 'center', 12);   /* (drawn AFTER the row: a tall silhouette - the Pyromancer's - reaches the heading, and the heading stays whole on top of it) */
   // and the words, for the one you are looking at, under the row: THE LOOP (HERO_LOOP, the one sentence that is how this hero is played), then the stats.
