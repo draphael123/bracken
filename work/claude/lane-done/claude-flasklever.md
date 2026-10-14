@@ -2,7 +2,21 @@
 
 Pushed: claude/flasklever (this report's commit is the head). Measured on PORT 8880, jobs=1, profile human, --flasks=kit, --ways=practiced.
 
-## HEADLINE
+
+## UPDATE 10-13 21:30 - DIAL v3 (CALIBRATED; supersedes the table in section 3 and the headline above)
+Coordinator: v2 overshot (acts 4-5 too hard, act 1 high, acts 2-3 a touch low). v3 interpolated off the v0/v1/v2 curve, then re-measured on the 54 non-exempt rows x 3 seeds (486 fights, 0 errors; docs/flask-lever-1013-v3.json, rows in docs/flask-lever-1013-v3-table.txt; exempt: underwell, redgorge, buriedcity, glasssea, ksar, sealedpyramid's old row).
+| act | boss gap / dmg | boss median (n) | mini gap / dmg | mini median (n) | in band? |
+|---|---|---|---|---|---|
+| 1 | 1.17 / 1.30 | **50** (8) [0,22,22,33,67,78,78,100] | 1.15 / 1.25 | 78 (1) | bosses UNDER (60-70): rootway 0, burning 33, wood 22, underleaf 22 |
+| 2 | 1.25 / 1.42 | **67** (9) | 1.33 / 1.50 | 78 (3) [44,78,89] | IN (bosses), minis IN |
+| 3 | 1.60 / 1.90 | **78** (9) [22,33,44,44,78,100x4] | 1.40 / 1.65 | 83.5 (2) | bosses OVER (+8): the act splits - harbor/hurricane/lamplit/longwater 100 against keep 22, reef 33 |
+| 4 | 1.45 / 1.70 | **67** (12) | 1.45 / 1.70 | 78 (7) | IN, minis IN |
+| 5 | 1.30 / 1.50 | **72** (2: caravan 44, welltown 100) | 1.35 / 1.55 | 78 (1) | n too small to read |
+ALL non-exempt bosses median **67** (n 40), minis median **78** (n 14); knight 64% / warden 65% / pyro 73% (v2: 58 / 63 / 70; before the dial 87 / 91 / 93).
+Still outside after this one pass (not re-measured tonight, per the coordinator): act 1 bosses a touch low (50) - ease act 1 to ~1.12 / 1.22 (the v2 value 1.12/1.2 gave 78 on a different seed set: the act is noisy, 8 rows x 3 seeds); act 3 a touch high (78) - raise to ~1.7 / 2.05. The medians are in or near band; the SPREAD is the problem and it is per boss (zero rows: rootway 0% all three heroes, witchlight 0% all three, theatre 22%, keep 22%, wood 22%, underleaf 22%; and 100% rows: storm, spore, harbor, lamplit, longwater, hurricane, burial, welltown). The per-boss outlier list in section 5 still stands, with these v3 numbers.
+Wood / marsh curve-gate re-stamp: NOT done (skipped per the coordinator: the batch fix lane handles curve-gate); the knights were not changed so the level hash is unchanged.
+
+## HEADLINE (v2, superseded by the update above)
 | | before (realism pass only, 6 seeds, 1044 fights) | after (flask lever + dial v2, 3 seeds, 520 fights) |
 |---|---|---|
 | boss median (non-exempt) | **94.4%** (44 rows; 2 in band) | **56%** (41 rows; per act 78 / 56 / 56 / 50 / 22*) |
