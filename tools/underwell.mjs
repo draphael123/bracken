@@ -152,7 +152,7 @@ if (!process.argv.includes('--static')) {
       b.mode='soaked'; b.open=0.05; b.modeT=0.1; for(let i=0;i<30&&!(S.ward>0);i++)BK.sim(1); out.ward=+(S.ward||0).toFixed(2);
       const Qm=await import('/src/cistern-queen.js'); S.pose='burrow'; S.mound={x:b.x}; b.mode='burrow'; out.aim=Qm.pourAim(b,S,{x:b.x-30,y:S.G.floor,face:1,onLedge:null}); S.stinger={x:b.x,y:S.G.floor-6,t:1}; const h0=b.hp; out.take=BK.cisternQueenHands().take(b,40);
       return out;})()`, 300000);
-    ok(wd.ward > 2.5 && wd.aim === null && wd.take === 0, 'THE QUEEN\'S WARD: after an opening, ' + wd.ward + ' s when a pour finds nothing and a blade (the stinger too) takes nothing');
+    ok(wd.ward > 2.5 && wd.aim === null && wd.take > 0 && wd.take <= 40 * 0.4 + 0.01, 'THE QUEEN\'S WARD: after an opening, ' + wd.ward + ' s when a pour finds nothing and a blade (the stinger too) takes at most 0.4 of it (took ' + wd.take + ' of 40)');   /* (claude/cqueenrework: DELIBERATE - design standard B15, never nothing: her ward was a flat 0, it is x0.4 now, told WARDED) */
     /* THE GREAT LAMP and THE BROOD */
     const lp = await pg.evalp(`(async()=>{${LOAD} BK.god=true; const out={};
       const br=BK.enemies().filter(e=>e.cnSkin==='venomscorpion'&&e.x>118*16&&e.x<132*16); out.brood=br.length;
