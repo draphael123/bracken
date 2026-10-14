@@ -19,6 +19,10 @@
 // handsState, walkHint.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
+import * as TPG from './redraw/towpath_gear.js';
+import * as TPG2 from './redraw/towpath_gear2.js';
+import * as TPS from './redraw/towpath_set.js';
+import { drawChill } from './redraw/fog_wraith_art.js';
 
 /* THE NUMBERS. fill: px/s a chamber's water moves; swing: s a bridge takes to turn; reach: px a hero's E reaches a gadget; hitCd: s before the same gadget
    answers another blow; litR / dimR: px a lantern burns its clearing (lit / dimmed); lampR: a lamp's; sightW / sightD: px a watchman / a dozer sees a LIT hero
@@ -243,6 +247,7 @@ export function makeTowpathHands(ctx) {
 
   /* ---------- ONE FRAME ---------- */
   H.update = dt => {
+    if (K) for (const pp of ctx.players) if (pp.chillT > 0) pp.chillT = Math.max(0, pp.chillT - dt);
     if (!K) return; K.clock += dt; const ts = TS(), P0 = ctx.hero();
     stepLocks(dt); stepBridges(dt); strikes(dt);
     /* THE LAST DRY FOOTING is never in a lock: a rung or a sill in a chamber is under the water when it fills (the hand-back would put you in it again) */
@@ -333,81 +338,50 @@ export function makeTowpathHands(ctx) {
     const C = K.stalls[r.key] = K.stalls[r.key] || newStall(); if (r.key !== K.stallKey) { K.stallKey = r.key; C.t = 0; C.best = 1e9; }
     if (stallTick(C, Math.hypot(P.x - t.x, P.y - t.y), dt, K.clock, false)) { K.n.nudges++; K.lastNudge = r.line; K.glint.show = true; ctx.number(P.x, P.y - 34, r.line, '#ffe9a0'); } };
 
-  /* ---------- DRAWING (GREYBOX: plain shapes until the art pass) ---------- */
+  /* ---------- DRAWING (claude/towpath2art: src/redraw/towpath_gear.js draws every machine, src/redraw/towpath_set.js the set pieces) ---------- */
   H.drawWorld = (g, cx, cy, time) => {
     if (!K) return; const ts = TS(), vw = ctx.VW(), inX = (x, m = 80) => x > cx - m && x < cx + vw + m;
-    /* THE LOCK CHAMBERS: the GAUGE on each gate (a white post, the water's mark, the two levels), the gates */
+    TPS.drawFront(g, cx, cy, vw, ctx.VH(), K.L, time, { light: (x, y) => lightAt(x, y) });
+    /* THE LOCK CHAMBERS: the staff gauge on each gate (the water's float between the two levels), the gates (open: their leaves folded back; shut: the tile's leaf under its balance beam) */
     for (const k of K.locks) { if (!inX(k.x0 * ts, 200)) continue;
-      const gx0 = k.gate ? k.gate.x : k.x0 - 1; gauge(g, R(gx0 * ts + 8 - cx), k, cx, cy);
-      if (k.gate) { const x = R(k.gate.x * ts - cx), top = R(k.gate.top * ts - cy), bot = R((k.gate.bot + 1) * ts - cy);
-        if (k.gateOpen) { g.fillStyle = '#4a3c2c'; g.fillRect(x, top - 2, 3, bot - top + 2); g.fillRect(x + 13, top - 2, 3, bot - top + 2); }   /* open: the gate's leaves folded back */
-        else { g.fillStyle = '#5a4630'; g.fillRect(x, top, ts, bot - top); g.fillStyle = '#342818'; for (let y = top + 4; y < bot; y += 8) g.fillRect(x + 1, y, ts - 2, 1); g.fillStyle = '#7a6040'; g.fillRect(x - 2, top - 3, ts + 4, 3); } } }
+      const gx0 = k.gate ? k.gate.x : k.x0 - 1; TPG.drawGauge(g, R(gx0 * ts + 8 - cx), R(k.hiY - cy), R(k.loY - cy), R(k.y - cy), false);
+      if (k.gate) TPG.drawGate(g, R(k.gate.x * ts - cx), R(k.gate.top * ts - cy), R((k.gate.bot + 1) * ts - cy), k.gateOpen, time); }
+    /* THE AQUEDUCT'S TROUGH: its far wall (the plates sag through the break), its water (running), the fall of it through the break */
+    for (const q of K.troughs) { if (!inX(q.stopW * ts, 700)) continue; const bedY = R(q.bedY - cy), x0 = R((q.stopW) * ts - cx), x1 = R((q.stopE + q.w) * ts - cx), b0 = R(252 * ts - cx), b1 = R(274 * ts - cx);
+      TPG2.drawTroughPlate(g, x0, x1, bedY, b0, b1, time);
+      if (q.water > 0.02) { const wy = R(q.bedY - (q.bedY - q.surfY) * q.water - cy); TPG.drawTroughWater(g, x0, x1, wy, bedY, time, q.water); TPG.drawCascade(g, b0 + 4, bedY + 4, 150, b1 - b0 - 8, time); } }
     /* THE PUNTS, THE HOIST'S DECK, THE BARGE, THE HOOK */
     for (const m of ctx.movers()) { if (!m.towpath || !inX(m.x)) continue; const x = R(m.x - cx), y = R(m.y - cy);
-      if (m.kind === 'hoist') { const h = hoistOf(m.towpath); g.fillStyle = '#5a4a36'; g.fillRect(x, y, m.w, 4); g.fillStyle = '#3a2e20'; g.fillRect(x, y + 4, m.w, 2);
-        g.strokeStyle = '#8a8070'; g.beginPath(); g.moveTo(x + 2, y); g.lineTo(x + 2, R(h.topY - 120 - cy)); g.moveTo(x + m.w - 2, y); g.lineTo(x + m.w - 2, R(h.topY - 120 - cy)); g.stroke(); continue; }
-      if (m.kind === 'barge') { g.fillStyle = '#3a2a1c'; g.fillRect(x, y, m.w, 8); g.fillStyle = '#5a4028'; g.fillRect(x + 2, y - 1, m.w - 4, 2); g.fillStyle = '#20160e'; g.fillRect(x + 4, y + 8, m.w - 8, 3);
-        g.fillStyle = '#2a2018'; g.fillRect(x + m.w - 10, y - 10, 2, 10); continue; }   /* (the barge: a long dark hull, its tiller post) */
-      if (m.kind === 'hook') { const c = craneOf(m.towpath), mx = R(c.mast[0] * ts + 8 - cx), my = R(c.mast[1] * ts - cy);
-        g.strokeStyle = '#7a7060'; g.beginPath(); g.moveTo(x + m.w / 2, y - 2); g.lineTo(R(m.x + m.w / 2 - cx), my + 6); g.stroke();
-        g.fillStyle = '#6a6a72'; g.fillRect(x, y, m.w, 4); g.fillRect(x + m.w / 2 - 1, y - 6, 2, 6); continue; }
-      g.fillStyle = '#3a2a1a'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#5a3e24'; g.fillRect(x + 2, y - 1, m.w - 4, 2); g.fillStyle = '#22180e'; g.fillRect(x + 1, y + 6, m.w - 2, 2); g.fillRect(x + 4, y - 4, 2, 4); }
-    /* THE AQUEDUCT'S TROUGH: its water (running), and the fall of it through the break */
-    for (const q of K.troughs) { if (!inX(q.stopW * ts, 600)) continue; if (q.water <= 0.02) continue; const wy = R(q.bedY - (q.bedY - q.surfY) * q.water - cy), x0 = R((q.stopW - 5) * ts - cx), x1 = R((q.stopE + q.w + 8) * ts - cx);
-      g.fillStyle = 'rgba(60,96,110,0.75)'; g.fillRect(x0, wy, x1 - x0, R(q.bedY - cy) - wy);
-      g.fillStyle = 'rgba(180,214,226,0.5)'; for (let i = 0; i < 6; i++) { const fx = R((252 + i * 3.5) * ts - cx); g.fillRect(fx, R(q.bedY - cy), 2, 120 + R(Math.sin(time * 3 + i) * 10)); } }
-    /* THE CRANE: its mast and jib over the quay */
-    for (const c of K.cranes) { const mx = R(c.mast[0] * ts + 8 - cx), my = R(c.mast[1] * ts - cy), base = R(c.from[1] * ts - cy), p = hookAt(c);
-      if (!inX(c.mast[0] * ts, 200)) continue; g.fillStyle = '#3a3430'; g.fillRect(mx - 2, my, 4, base - my); g.fillStyle = '#4a4038'; g.fillRect(mx - 2, my - 2, R(p.x + 16 - c.mast[0] * ts - 8), 3); }
-    /* THE MILL WHEEL: a rim, spokes and paddles, turning (or still: its stair) */
-    for (const w of K.wheels) { if (!inX(w.cx * ts, 200)) continue; const x = R(w.cx * ts + 8 - cx), y = R(w.cy * ts - cy), r = w.r * ts;
-      g.strokeStyle = '#4a3c2a'; g.lineWidth = 3; g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-      for (let i = 0; i < 8; i++) { const a = w.a + i * Math.PI / 4, ex = x + Math.cos(a) * r, ey = y + Math.sin(a) * r; g.strokeStyle = '#3a2e20'; g.beginPath(); g.moveTo(x, y); g.lineTo(ex, ey); g.stroke();
-        g.fillStyle = w.still ? '#6a5236' : '#7a6040'; g.fillRect(R(ex - 4), R(ey - 2), 8, 4); }
-      g.fillStyle = '#2e2418'; g.fillRect(x - 3, y - 3, 6, 6);
-      if (!w.still) { g.strokeStyle = 'rgba(255,107,107,0.35)'; g.setLineDash([3, 4]); g.beginPath(); g.arc(x, y, r + 6, 0, Math.PI * 2); g.stroke(); g.setLineDash([]); } }
+      if (m.kind === 'hoist') { const h = hoistOf(m.towpath); TPG2.drawHoistDeck(g, x, y, m.w, R(h.topY - 98 - cy), time); continue; }
+      if (m.kind === 'barge') { const tq = troughOf(m.towpath); TPG.drawBarge(g, x, y, m.w, time, !tq || tq.water < 0.5, lightAt(m.x, m.y) > 0.1); continue; }
+      if (m.kind === 'hook') { TPG.drawHook(g, x, y, m.w, time, false); continue; }
+      TPG.drawPunt(g, x, y, m.w, time, lightAt(m.x + m.w, m.y) > 0.1); }
+    /* THE CRANE: its mast, jib, chain and counterweight over the quay */
+    for (const c of K.cranes) { const mx = R(c.mast[0] * ts + 8 - cx), my = R(c.mast[1] * ts - cy), base = R((c.from[1] - 1) * ts - cy), p = hookAt(c);
+      if (!inX(c.mast[0] * ts, 300)) continue; TPG.drawCrane(g, mx, my, base, R(c.to[0] * ts + c.w * 8 - cx), my, R(p.x + c.w * 8 - cx), R(p.y - cy), c.w * ts, time); }
+    /* THE MILL WHEEL: a breast wheel turning (or still: its stair) */
+    for (const w of K.wheels) { if (!inX(w.cx * ts, 200)) continue; TPG.drawWheel(g, R(w.cx * ts + 8 - cx), R(w.cy * ts - cy), w.r * ts, w.a, w.still, time); }
     /* THE SWING BRIDGES: across, the cells are its deck (the tiles draw it); turning or clear, the deck swung on its pivot */
-    for (const b of K.bridges) { if (!inX(b.x0 * ts, 200)) continue; const pivL = R(b.x0 * ts - cx), y = R(b.row * ts - cy), len = (b.x1 - b.x0 + 1) * ts, a = b.k * Math.PI * 0.42;
-      g.fillStyle = '#2e2820'; g.fillRect(pivL - 3, y - 2, 4, 10);
-      if (b.k > 0.01) { g.save(); g.translate(pivL, y + 2); g.rotate(-a); g.fillStyle = '#6a5034'; g.fillRect(0, -3, len, 5); g.fillStyle = '#3a2c18'; for (let i = 4; i < len; i += 8) g.fillRect(i, -3, 1, 5); g.fillRect(0, -9, len, 1); g.restore(); }
-      else { g.fillStyle = '#3a2c18'; g.fillRect(pivL, y - 7, len, 1); for (let i = 0; i <= len; i += 16) g.fillRect(pivL + i, y - 7, 1, 7); } }
+    for (const b of K.bridges) { if (!inX(b.x0 * ts, 200)) continue; TPG.drawBridge(g, R(b.x0 * ts - cx), R(b.row * ts - cy), (b.x1 - b.x0 + 1) * ts, b.k, !!b.arena); }
     /* THE GADGETS: paddles, capstans, winches, sluices, the crane's capstan, lamps, the lantern on its hook, the lychgate, the church door */
     for (const q of K.gadgets) { if (!inX(q.x)) continue; const x = R(q.x - cx), y = R(q.y - cy), fl = q.flash > 0;
-      if (q.t === 'tppaddle' && darkPaddle(q)) { g.fillStyle = 'rgba(40,40,44,0.5)'; g.fillRect(x - 2, y - 22, 4, 22); continue; }   /* (in the dark: only a post's shape) */
-      if (q.t === 'tppaddle') { const k = lockOf(q.lock); g.fillStyle = fl ? '#fff6c8' : '#4a3a2a'; g.fillRect(x - 2, y - 22, 4, 22); g.fillStyle = '#8a8a8a'; g.fillRect(x - 5, y - 24, 10, 3);
-        g.strokeStyle = fl ? '#fff6c8' : '#c8c8c8'; g.beginPath(); g.arc(x, y - 14, 5, 0, Math.PI * 2); g.stroke(); const a = time * (k && Math.abs(k.to - k.y) > 0.5 ? 6 : 0); g.beginPath(); g.moveTo(x, y - 14); g.lineTo(x + Math.cos(a) * 7, y - 14 + Math.sin(a) * 7); g.stroke();
+      if (q.t === 'tppaddle' && darkPaddle(q)) { g.fillStyle = 'rgba(30,34,38,0.6)'; g.fillRect(x - 2, y - 22, 4, 22); g.fillRect(x - 5, y - 24, 10, 2); continue; }   /* (in the dark: only a post's shape) */
+      if (q.t === 'tppaddle') { const k = lockOf(q.lock), mv = !!(k && Math.abs(k.to - k.y) > 0.5); TPG.drawPaddle(g, x, y, fl, mv, time);
         if (k) { const up = k.to < k.y - 0.5, dn = k.to > k.y + 0.5; if (up || dn) ctx.text(up ? 'FILLING' : 'DRAINING', x, y - 34, '#cfe6f0', 'center', 5); } }
-      else if (q.t === 'tpcapstan' || q.t === 'tpcrane') { g.fillStyle = fl ? '#fff6c8' : q.t === 'tpcrane' ? '#4a4a52' : '#5a4630'; g.fillRect(x - 5, y - 12, 10, 12); g.fillStyle = '#3a2e20'; g.fillRect(x - 7, y - 13, 14, 2); const a = time * 2; g.fillStyle = '#8a7048'; g.fillRect(x + R(Math.cos(a) * 8) - 1, y - 9, 3, 2); }
-      else if (q.t === 'tpwinch') { g.fillStyle = fl ? '#fff6c8' : '#4a3a2a'; g.fillRect(x - 2, y - 18, 4, 18); g.strokeStyle = fl ? '#fff6c8' : '#a89878'; g.beginPath(); g.arc(x, y - 14, 6, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#a89878'; g.fillRect(x + 5, y - 15, 4, 2); }
-      else if (q.t === 'tpsluice') { const tq = troughOf(q.trough); g.fillStyle = fl ? '#fff6c8' : '#3a4048'; g.fillRect(x - 3, y - 20, 6, 20); g.fillStyle = '#6a7480'; g.fillRect(x - 6, y - 22, 12, 3);
-        g.fillStyle = tq && tq.water > 0.5 ? '#6ab0e0' : '#8a8070'; g.fillRect(x - 2, y - 12, 4, 4); }
-      else if (q.t === 'tplamp') { const l = K.lamps.find(z => z.x * ts + 8 === q.x && Math.abs((z.y + 1) * ts - q.y) < ts * 1.5) || K.lamps.find(z => z.x * ts + 8 === q.x), gut = l && l.gutter > 0 && Math.sin(time * 40) > 0; g.fillStyle = '#2e2a26'; g.fillRect(x - 1, y - 26, 3, 26); g.fillStyle = l && l.lit && !gut ? '#ffd36b' : '#4a4640'; g.fillRect(x - 3, y - 32, 7, 7);
-        if (l && l.lit && !gut) { g.globalAlpha = 0.25 + 0.08 * Math.sin(time * 9); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y - 28, 14, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; } }
-      else if (q.t === 'tplantern') { if (lantern(ctx.hero()).has) continue; g.fillStyle = '#3a2e20'; g.fillRect(x - 1, y - 30, 2, 8); g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 22, 7, 8); g.globalAlpha = 0.3; g.beginPath(); g.arc(x, y - 18, 12, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-      else if (q.t === 'tplychgate') { g.fillStyle = '#4a3a2a'; g.fillRect(x - 18, y - 30, 4, 30); g.fillRect(x + 14, y - 30, 4, 30); g.fillStyle = '#5a3424'; g.beginPath(); g.moveTo(x - 24, y - 30); g.lineTo(x, y - 44); g.lineTo(x + 24, y - 30); g.fill();
-        g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 30, 4, 4); }
-      else if (q.t === 'tpchurch') { g.fillStyle = '#4a4440'; g.fillRect(x - 12, y - 34, 24, 34); g.fillStyle = '#22201c'; g.fillRect(x - 7, y - 26, 14, 26); g.fillStyle = '#ffd36b'; g.fillRect(x - 2, y - 32, 4, 4);
-        if (Math.abs(ctx.hero().x - q.x) < 40 && Math.abs(ctx.hero().y - q.y) < 40) ctx.text('THE LIT CHURCH', x, y - 44, '#ffe9a0', 'center', 5); } }
-    /* THE DECOR (greybox): milestones, drowned willows, cattle, bollards, eel traps, the gibbet, the sunken barges' masts */
-    for (const d of K.decor) { if (!inX(d.x * ts)) continue; const x = R(d.x * ts + 8 - cx), y = R((d.y + 1) * ts - cy);
-      if (d.kind === 'emptyArmour') { g.fillStyle = '#2e2620'; g.fillRect(x - 1, y - 4, 3, 4); g.fillStyle = '#221e1c'; g.fillRect(x - 6, y - 30, 12, 18); g.fillRect(x - 4, y - 12, 3, 9); g.fillRect(x + 1, y - 12, 3, 9);
-        g.fillRect(x - 4, y - 38, 8, 8); g.fillStyle = 'rgba(200,210,220,' + (0.35 + 0.15 * Math.sin(time * 1.3)).toFixed(2) + ')'; g.fillRect(x - 3, y - 35, 6, 2); continue; }   /* (the lock-keeper's armour, rust-black, fog in its visor) */
-      if (d.kind === 'fogKnight') { if (d.gone || d.a <= 0.02) continue; g.globalAlpha = 0.28 * d.a; g.fillStyle = '#d8e0e8'; g.fillRect(x - 7, y - 32, 14, 20); g.fillRect(x - 5, y - 12, 4, 12); g.fillRect(x + 1, y - 12, 4, 12);
-        g.fillRect(x - 5, y - 42, 10, 10); g.fillRect(x + 8, y - 40, 2, 34); g.globalAlpha = 0.6 * d.a; g.fillStyle = '#9ad0ff'; g.fillRect(x - 3, y - 38, 6, 2); g.globalAlpha = 1; continue; }   /* (a plate shape in the fog: gone as you come) */
-      if (d.kind === 'milestone') { g.fillStyle = '#6a665e'; g.fillRect(x - 3, y - 10, 6, 10); }
-      else if (d.kind === 'willow') { g.fillStyle = '#2a2420'; g.fillRect(x - 2, y - 30, 4, 30); g.fillStyle = 'rgba(46,70,52,0.85)'; for (let i = -3; i <= 3; i++) g.fillRect(x + i * 4, y - 34 + Math.abs(i) * 2, 2, 22 - Math.abs(i) * 2); }
-      else if (d.kind === 'cattle') { g.fillStyle = '#4a3e32'; g.fillRect(x - 10, y - 10, 20, 7); g.fillRect(x + 8, y - 13, 5, 5); g.fillRect(x - 8, y - 3, 2, 3); g.fillRect(x + 6, y - 3, 2, 3); }
-      else if (d.kind === 'bollard') { g.fillStyle = '#26221e'; g.fillRect(x - 3, y - 8, 6, 8); g.fillRect(x - 4, y - 9, 8, 2); }
-      else if (d.kind === 'eeltrap') { g.strokeStyle = '#5a4a30'; g.beginPath(); g.ellipse(x, y - 4, 7, 4, 0, 0, Math.PI * 2); g.stroke(); }
-      else if (d.kind === 'gibbet') { g.fillStyle = '#2a2420'; g.fillRect(x - 1, y - 44, 3, 44); g.fillRect(x - 1, y - 44, 14, 3); g.strokeStyle = '#6a6050'; g.beginPath(); g.moveTo(x + 11, y - 41); g.lineTo(x + 11, y - 30); g.stroke(); g.strokeRect(x + 7, y - 30, 8, 12); }
-      else if (d.kind === 'mast') { g.fillStyle = 'rgba(30,26,22,0.6)'; g.fillRect(x + 8, y - 4, 10, 2); } }
+      else if (q.t === 'tpcapstan') { const b = bridgeOf(q.bridge); TPG.drawCapstan(g, x, y, fl, time, !!(b && b.k > 0.02 && b.k < 0.98)); }
+      else if (q.t === 'tpcrane') { const c = craneOf(q.crane); TPG.drawCraneCapstan(g, x, y, fl, time, !!(c && Math.abs(c.k - c.goal) > 0.01)); }
+      else if (q.t === 'tpwinch') { const h = hoistOf(q.hoist); TPG.drawWinch(g, x, y, fl, time, !!(h && Math.abs(h.y - h.to) > 0.5)); }
+      else if (q.t === 'tpsluice') { const tq = troughOf(q.trough); TPG.drawSluice(g, x, y, fl, !!(tq && tq.water > 0.5), time); }
+      else if (q.t === 'tplamp') { const l = K.lamps.find(z => z.x * ts + 8 === q.x && Math.abs((z.y + 1) * ts - q.y) < ts * 1.5) || K.lamps.find(z => z.x * ts + 8 === q.x), gut = !!(l && l.gutter > 0 && Math.sin(time * 40) > 0); TPG.drawLamp(g, x, y, !!(l && l.lit), gut, time); }
+      else if (q.t === 'tplantern') { if (lantern(ctx.hero()).has) continue; TPG.drawHookLantern(g, x, y, time); }
+      else if (q.t === 'tplychgate') TPG.drawLychgate(g, x, y, time);
+      else if (q.t === 'tpchurch') { TPG.drawChurchDoor(g, x, y, time); if (Math.abs(ctx.hero().x - q.x) < 40 && Math.abs(ctx.hero().y - q.y) < 40) ctx.text('THE LIT CHURCH', x, y - 44, '#ffe9a0', 'center', 5); } }
+    /* THE DECOR: milestones, drowned willows, cattle, bollards, eel traps, the gibbet, the keeper's armour, the knight's shape in the fog */
+    for (const d of K.decor) { if (!inX(d.x * ts, 120)) continue; TPG.drawDecor(g, d, R(d.x * ts + 8 - cx), R((d.y + 1) * ts - cy), time); }
     /* THE DOZERS: a 'z' over a dozing man; awake, nothing */
     for (const e of ctx.enemies()) { if (!e.alive || !e.tpDoze || e.tpAwake || !inX(e.x)) continue; ctx.text('Z', R(e.x - cx) + 6, R(e.y - cy) - 26 - R((time * 8) % 8), '#c8d8e8', 'center', 6); }
     if (K.glint && K.glint.show) drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), vw, ctx.VH(), time);
   };
-  /* A GAUGE: a white post by the gate, the two levels marked (lo, hi), the water's own mark moving between them */
-  function gauge(g, x, k, cx, cy) { const hi = R(k.hiY - cy), lo = R(k.loY - cy), w = R(k.y - cy); g.fillStyle = '#c8c8c0'; g.fillRect(x - 1, hi - 4, 2, lo - hi + 8); g.fillStyle = '#8fd160'; g.fillRect(x - 3, hi, 6, 1); g.fillStyle = '#c8a070'; g.fillRect(x - 3, lo, 6, 1);
-    g.fillStyle = '#6ab0e0'; g.fillRect(x - 4, Math.max(hi - 4, Math.min(lo + 4, w)) - 1, 8, 2); }
   let FOGC = null;
   /* OVER EVERYTHING: THE FOG BANKS (each lies on its water up to its top edge - a rolling, paler edge; the clearings that the lantern and the lamps burn in it),
      the hero's lantern glow */
@@ -415,23 +389,33 @@ export function makeTowpathHands(ctx) {
     if (!K) return; const vw = ctx.VW(), vh = ctx.VH(), ts = TS(), STEP = 4;
     const cols = []; let any = false;
     for (let sx = 0; sx < vw; sx += STEP) { const wx = cx + sx; let top = null, a = 0;
-      for (const b of K.D.banks || []) if (wx >= b.x0 * ts && wx < (b.x1 + 1) * ts) { if (top === null || b.top * ts < top) top = b.top * ts; a = Math.max(a, b.a); }
+      for (const b of K.D.banks || []) if (wx >= b.x0 * ts && wx < (b.x1 + 1) * ts) { if (top === null || b.top * ts < top) top = b.top * ts; const e = Math.min(1, (wx - b.x0 * ts) / 24, ((b.x1 + 1) * ts - wx) / 24); a = Math.max(a, b.a * (0.35 + 0.65 * e)); }
       const at = arenaTop(wx); if (at !== null) { top = top === null ? at : Math.min(top, at); a = Math.max(a, 0.62); }
       const sh = ctx.shroud ? ctx.shroud(wx) : 0; if (sh > 0.02) { top = cy - 40; a = Math.max(a, sh); }
       cols.push(top === null ? null : { top, a }); if (top !== null) any = true; }
     if (any && typeof document !== 'undefined') {
       if (!FOGC || FOGC.width !== vw || FOGC.height !== vh) { FOGC = document.createElement('canvas'); FOGC.width = vw; FOGC.height = vh; }
       const f = FOGC.getContext('2d'); f.globalCompositeOperation = 'source-over'; f.clearRect(0, 0, vw, vh);
-      cols.forEach((q, i) => { if (!q) return; const sx = i * STEP, roll = Math.sin(time * 0.6 + (cx + sx) * 0.05) * 3 + Math.sin(time * 1.1 + (cx + sx) * 0.11) * 2, ty = R(q.top - cy + roll);
-        if (ty >= vh) return; f.fillStyle = 'rgba(150,166,178,' + q.a.toFixed(3) + ')'; f.fillRect(sx, Math.max(0, ty), STEP, vh - Math.max(0, ty));
-        f.fillStyle = 'rgba(214,224,232,' + (q.a * 0.55).toFixed(3) + ')'; f.fillRect(sx, ty - 2, STEP, 5);   /* the bank's top edge: drawn, rolling */
-        f.fillStyle = 'rgba(190,204,214,' + (q.a * 0.25).toFixed(3) + ')'; f.fillRect(sx, ty + 10 + R(Math.sin(time * 0.4 + (cx + sx) * 0.02) * 4), STEP, 14); });
+      /* THE BANK (claude/towpath2art): a pale moonlit skin over a bluer, thicker body that deepens with depth; slow swirls and a dark band drifting inside it; its TOP EDGE a bright
+         rolling line with a haze over it - and wisps that lift off the edge and drift (so the edge reads from across a lock) */
+      cols.forEach((q, i) => { if (!q) return; const sx = i * STEP, wx = cx + sx, roll = Math.sin(time * 0.6 + wx * 0.05) * 3 + Math.sin(time * 1.1 + wx * 0.11) * 2 + Math.sin(time * 0.35 + wx * 0.017) * 2, ty = R(q.top - cy + roll);
+        if (ty >= vh) return; const y0 = Math.max(0, ty), deep = ty + 30, yd = Math.max(0, Math.min(vh, deep));
+        f.fillStyle = 'rgba(172,192,204,' + (q.a * 0.6).toFixed(3) + ')'; f.fillRect(sx, y0, STEP, Math.max(0, yd - y0));
+        if (deep < vh) { f.fillStyle = 'rgba(88,114,130,' + Math.min(0.95, q.a * 0.95).toFixed(3) + ')'; f.fillRect(sx, Math.max(0, deep), STEP, vh - Math.max(0, deep)); }
+        const sw = R(Math.sin(time * 0.5 + wx * 0.03) * 5); f.fillStyle = 'rgba(214,228,236,' + (q.a * 0.2).toFixed(3) + ')'; f.fillRect(sx, ty + 7 + sw, STEP, 6);
+        const db = ty + 40 + R(Math.sin(time * 0.3 + wx * 0.02) * 12); f.fillStyle = 'rgba(52,76,92,' + (q.a * 0.32).toFixed(3) + ')'; f.fillRect(sx, db, STEP, 9);
+        f.fillStyle = 'rgba(236,244,248,' + Math.min(0.9, q.a * 0.85).toFixed(3) + ')'; f.fillRect(sx, ty - 1, STEP, 2);
+        f.fillStyle = 'rgba(214,228,236,' + (q.a * 0.3).toFixed(3) + ')'; f.fillRect(sx, ty - 4, STEP, 3); });
+      for (let i = 0; i < 16; i++) { const span = vw + 400, wxw = (i * 211 + time * (5 + (i % 4) * 3)) % 4000, sxp = (((wxw - cx) % span) + span) % span - 200, qi = Math.max(0, Math.min(cols.length - 1, Math.floor(sxp / STEP))), q = cols[qi]; if (!q) continue;
+        const ty = R(q.top - cy), lift = (Math.sin(time * 0.4 + i * 2.1) * 0.5 + 0.5) * 9; f.fillStyle = 'rgba(226,238,244,' + (q.a * 0.2).toFixed(3) + ')'; f.beginPath(); f.ellipse(sxp, ty - 2 - lift, 16 + (i % 3) * 7, 3 + (i % 2) * 2, 0, 0, Math.PI * 2); f.fill(); }
       f.globalCompositeOperation = 'destination-out';
       const hole = (x, y, r) => { const gr = f.createRadialGradient(x, y, r * 0.2, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,0.95)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); f.fillStyle = gr; f.beginPath(); f.arc(x, y, r, 0, Math.PI * 2); f.fill(); };
       for (const pp of ctx.players) { if (pp.dead) continue; const q = lantern(pp); hole(pp.x - cx, pp.y - 12 - cy, q.has ? (q.lit ? TP.litR : TP.dimR) : TP.dimR); }
       for (const l of K.lamps) if (l.lit) hole(l.x * ts + 8 - cx, l.y * ts - 14 - cy, TP.lampR);
       f.globalCompositeOperation = 'source-over'; g.drawImage(FOGC, 0, 0);
     }
+    /* THE CHILL (a fog wraith's touch): frost wisps round the hero for 0.8 s */
+    for (const pp of ctx.players) if (!pp.dead && pp.chillT > 0) drawChill(g, R(pp.x - cx), R(pp.y - cy), Math.min(1, pp.chillT / 0.5), time);
     /* THE LANTERN IN HIS HAND: a warm point and its glow (dimmed: an ember) */
     for (const pp of ctx.players) { if (pp.dead) continue; const q = lantern(pp); if (!q.has) continue; const x = R(pp.x - cx + (pp.face || 1) * 6), y = R(pp.y - 10 - cy);
       g.fillStyle = q.lit ? '#ffd36b' : '#7a5a3a'; g.fillRect(x - 1, y - 2, 3, 4); if (q.lit) { g.globalAlpha = 0.18; g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(x, y, 18, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; } }

@@ -13,6 +13,7 @@
 // PURE: no DOM, no main.js. step(e, dt, X) with X = { hero(), heroes(), lightAt(x, y), fogTop(x) (px, or null: no bank here), litOf(pp), smother(pp), guards(pp, e),
 //   chill(pp, n), mark(e, txt, col), sfx, hint(key, line) }. take(e, dmg, X) -> the damage that lands (0: it passed through).
 
+import * as ART from './redraw/fog_wraith_art.js';   /* (claude/towpath2art) its look: every frame its own (B16) */
 export const WRAITH = { hp: 30, w: 14, h: 20, notice: 150, drift: 30, hardDrift: 14, chill: 5, chillR: 12, chillCd: 1.1, smotherR: 34, smotherTell: 0.8, smotherCd: 3.2,
   hardAt: 0.18, home: 120, below: 6, recoil: 0.6 };
 
@@ -22,7 +23,7 @@ export function newWraith(e) { Object.assign(e, { hx: e.x, hy: e.y - 10, y: e.y 
 export const wraithHard = (e, X) => (X.lightAt ? X.lightAt(e.x, e.y - 4) : 0) > WRAITH.hardAt;
 
 export function stepWraith(e, dt, X) {
-  const W = WRAITH; e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.chillCd = Math.max(0, (e.chillCd || 0) - dt); e.smCd = Math.max(0, (e.smCd || 0) - dt); e.recoil = Math.max(0, (e.recoil || 0) - dt);
+  const W = WRAITH; e.anim = (e.anim || 0) + dt; e.modeT -= dt; e.chillCd = Math.max(0, (e.chillCd || 0) - dt); e.smCd = Math.max(0, (e.smCd || 0) - dt); e.recoil = Math.max(0, (e.recoil || 0) - dt); e.rel = Math.max(0, (e.rel || 0) - dt); if (!(e.recoil > 0)) e.shielded = false;
   const hard = wraithHard(e, X); e.hard = hard ? Math.min(1, (e.hard || 0) + dt * 6) : Math.max(0, (e.hard || 0) - dt * 4);
   const top = X.fogTop ? X.fogTop(e.x) : null, roof = top == null ? e.hy - 40 : top + W.below;   /* it cannot leave the fog: never above its bank's top edge */
   const P = nearest(e, X), dx = P ? P.x - e.x : 0, dy = P ? (P.y - 12) - e.y : 0, d = Math.hypot(dx, dy);
@@ -30,9 +31,9 @@ export function stepWraith(e, dt, X) {
   /* THE SMOTHER: it reaches for a lit lantern (told); it closes, the flame goes out */
   if (e.mode === 'smotherTell') { if (!P || P.dead || !X.litOf(P) || d > W.smotherR + 24) { e.mode = 'drift'; e.smCd = 1.2; return; }
     go(P.x - (Math.sign(dx) || 1) * 10, P.y - 14, W.hardDrift * 0.6);
-    if (e.modeT <= 0) { e.mode = 'drift'; e.smCd = W.smotherCd; e.recoil = W.recoil;
-      if (X.guards && X.guards(P, e)) { e.recoil = W.recoil * 2; if (X.number) X.number(e.x, e.y, 'YOU SHIELD THE FLAME: IT DRAWS BACK'); return; }   /* (a guard raised toward it: the flame is shielded - the yellow !'s answer) */
-      if (X.smother(P)) { X.sfx && X.sfx.hiss && X.sfx.hiss(); if (X.number) X.number(e.x, e.y, 'IT SMOTHERS YOUR LANTERN: E LIGHTS IT'); } } return; }
+    if (e.modeT <= 0) { e.mode = 'drift'; e.smCd = W.smotherCd; e.recoil = W.recoil; e.recoil0 = W.recoil;
+      if (X.guards && X.guards(P, e)) { e.recoil = W.recoil * 2; e.recoil0 = W.recoil * 2; e.shielded = true; if (X.number) X.number(e.x, e.y, 'YOU SHIELD THE FLAME: IT DRAWS BACK'); return; }   /* (a guard raised toward it: the flame is shielded - the yellow !'s answer) */
+      if (X.smother(P)) { e.rel = 0.3; X.sfx && X.sfx.hiss && X.sfx.hiss(); if (X.number) X.number(e.x, e.y, 'IT SMOTHERS YOUR LANTERN: E LIGHTS IT'); } } return; }
   if (!P || P.dead || d > W.notice || (top != null && P.y - 20 < top - 4 && Math.abs(dx) > 40)) {   /* nobody in its fog: back toward where it rose */
     const hx = e.hx + Math.sin(e.anim * 0.7) * 18; go(hx, Math.max(roof, e.hy + Math.sin(e.anim * 1.3) * 4), W.drift * 0.5); return; }
   if (Math.hypot(e.x - e.hx, e.y - e.hy) > W.home && d > 60) { go(e.hx, e.hy, W.drift); return; }
@@ -51,27 +52,13 @@ export function wraithTake(e, dmg, X) { return wraithHard(e, X) ? dmg : 0; }
 /* ================= THE GREYBOX LOOK (the art lane draws it: scratch/brief-towpath2.md section 3) =================
    drawn live (like the ember wisp): a hood and two arms of grey fog, translucent and soft-edged while it is fog; in light, sharp-edged with two glowing eyes.
    The SMOTHER pose: the near arm long and out toward the flame, the hood bowed. g: a 2d context, x/y: its centre-bottom on screen */
-export function drawWraith(g, e, x, y, time) {
-  const R = Math.round, k = e.hard || 0, sm = e.mode === 'smotherTell', a = 0.32 + 0.5 * k, f = e.face || 1, bob = Math.sin((e.anim || 0) * 2.2) * 1.5;
-  const body = 'rgba(' + R(180 + 40 * k) + ',' + R(190 + 36 * k) + ',' + R(200 + 30 * k) + ',' + a.toFixed(2) + ')';
-  const yy = R(y + bob);
-  /* the trailing tail (no legs: it drifts) */
-  for (let i = 0; i < 4; i++) { g.fillStyle = 'rgba(190,200,210,' + (a * (0.6 - i * 0.13)).toFixed(2) + ')'; g.fillRect(R(x - 3 + Math.sin(time * 3 + i) * 2), yy - 2 + i * 2, 6 - i, 2); }
-  /* the shroud: a hood over a narrowing body */
-  g.fillStyle = body; g.fillRect(R(x - 5), yy - 16, 10, 14); g.fillRect(R(x - 4), yy - 20, 8, 4); g.fillRect(R(x - 3), yy - 22, 6, 2);
-  if (k > 0.5) { g.fillStyle = 'rgba(30,36,44,' + (0.6 * k).toFixed(2) + ')'; g.fillRect(R(x - 5), yy - 16, 1, 14); g.fillRect(R(x + 4), yy - 16, 1, 14); }   /* (hardened: its edge drawn) */
-  /* the arms: hanging, or the near one long and reaching for the flame */
-  g.fillStyle = body;
-  if (sm) { const reach = 6 + Math.min(10, (0.8 - Math.max(0, e.modeT)) * 16); g.fillRect(R(x + f * 4), yy - 14, R(f * reach), 2); g.fillRect(R(x + f * (4 + reach)) - (f < 0 ? 2 : 0), yy - 16, 2, 4); g.fillRect(R(x - f * 6), yy - 12, 2, 6); }
-  else { g.fillRect(R(x - 7), yy - 13, 2, 8); g.fillRect(R(x + 5), yy - 13, 2, 8); }
-  /* the eyes: two pale points in the hood - glowing once your light has it */
-  g.fillStyle = k > 0.5 ? '#bfe8ff' : 'rgba(150,170,190,0.5)'; g.fillRect(R(x - 2 + f), yy - 19, 1, 1); g.fillRect(R(x + 1 + f), yy - 19, 1, 1);
-  if (k > 0.5) { g.globalAlpha = 0.25 * k; g.fillStyle = '#bfe8ff'; g.beginPath(); g.arc(R(x + f), yy - 19, 4, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-}
-/* THE CARD / THE CORPSE SET: one frame a canvas (soft, hard), faced right; L is the flip. A wraith cut down comes apart upward (main.js: a spirit's death) */
+export function drawWraith(g, e, x, y, time) { ART.drawWraith(g, e, x, y, time); }
+/* THE CARD / THE CORPSE SET: soft (0), hard (1), then the DEATH in four frames (2-5); faced right; L is the flip. A wraith cut down comes apart upward (main.js: a spirit's death) */
 export function bakeWraith(canvas, flipX) {
-  const mk = hard => { const [c, g] = canvas(16, 26); drawWraith(g, { hard: hard ? 1 : 0, face: 1, anim: 0, mode: 'drift' }, 8, 25, 0); return c; };
-  const R = [mk(false), mk(true)], L = R.map(c => flipX(c));
-  return { R, L, white: { R, L }, ax: 8, ay: 25, w: WRAITH.w, h: WRAITH.h };
+  const W = 30, H = 40, ax = 15, ay = 34;
+  const mk = fn => { const [c, g] = canvas(W, H); fn(g); return c; };
+  const R = [mk(g => ART.drawWraith(g, { hard: 0, face: 1, anim: 0.5, mode: 'drift' }, ax, ay, 0)), mk(g => ART.drawWraith(g, { hard: 1, face: 1, anim: 0.5, mode: 'drift' }, ax, ay, 0)),
+    ...[0.12, 0.38, 0.62, 0.86].map(u => mk(g => ART.drawDeath(g, ax, ay, 1, u)))], L = R.map(c => flipX(c));
+  return { R, L, white: { R, L }, ax, ay, w: WRAITH.w, h: WRAITH.h };
 }
 export const wraithFrame = e => ((e.hard || 0) > 0.5 ? 1 : 0);

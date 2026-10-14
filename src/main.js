@@ -17,7 +17,7 @@ import { newPushBlock, updatePushBlock, PB } from './push-blocks.js';   /* PUSHA
 import { bakeGraveWarden, bakeHedgeWarden, bakeGateGargoyle } from './redraw/queue_bosses.js';
 let GS = 1;   /* (claude/witchfix) the gravity sign the hero's own update runs under: -1 while he walks a turned-over room's ceiling (flipPlayer) */
 import * as WHF from './gargoyle-whelp.js';   /* THE GARGOYLE WHELP: its numbers, frames and art (docs/briefs/witchlight-whelps.md) */
-import * as CNB from './redraw/canal_backdrop.js'; import * as CFA from './redraw/canal_foes_art.js'; import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js'; import * as UCS from './redraw/undercrown_skins.js'; import * as VSK from './redraw/variety_skins.js';   /* (claude/goblinsweep) THE UNDERCROWN's navvy, bone-chucker, timberman and mine warden: the goblins' AI in skins that are not goblins */   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
+import * as TPB from './redraw/towpath_backdrop.js'; import * as TPT from './redraw/towpath_tiles.js'; import * as TPS from './redraw/towpath_set.js'; import * as CNB from './redraw/canal_backdrop.js'; import * as CFA from './redraw/canal_foes_art.js'; import * as CNH from './canal-hands.js'; import * as CNF from './canal-foes.js'; import * as UCS from './redraw/undercrown_skins.js'; import * as VSK from './redraw/variety_skins.js';   /* (claude/goblinsweep) THE UNDERCROWN's navvy, bone-chucker, timberman and mine warden: the goblins' AI in skins that are not goblins */   /* THE FOG CANAL (docs/briefs/fog-canal.md): its hands on the game, and its two new foes (the grindylow, the will-o'-the-wisp) */
 import { updateGargoyle as stepGargoyle, gargFrame, gargTake, gargOpen, drawGargoyleWorld, GARG, gargCam, gargRegrowT, gargKeepFooting, drawSlabGhost, gargStomped, stepBall, drawBall, RUNE, runeStep, drawRune, slabShards, stepShards as stepSlabShards, drawShards as drawSlabShards } from './gate-gargoyle.js';   /* THE GATE GARGOYLE, the Witchlight Stair's boss */
 import { WIND, windZoneAt, onSpikes, windCatch, windStep, windBite, stompOn, drawWinds } from './spike-winds.js';   /* THE SPIKED MOAT AND ITS WINDS (the battlements and the Gargoyle's room) */
 import { updateHedgeWarden as stepHedgeWarden, drawHedgeWarden, hedgeFrame, hedgeTake, hedgeAnswered, HEDGE, stepRoots, drawRoots, rootOut } from './hedge-warden.js';
@@ -1211,6 +1211,7 @@ function resolveTiles() {
     if (L.ksar && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = KST.ksarTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BANDIT KSAR's own ground (claude/ksar art pass, src/redraw/ksar_tiles.js): mud-brick, ashlar, bedrock, flagstones, the breaches' stakes, the beams */
     if (L.sealedpyramid && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
     if (L.buriedcity && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.SOFT)) { const ts = BCT.bcTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BURIED CITY's own ground (claude/bc2art, src/redraw/buried_city_tiles.js): the sand roof, each district's masonry, every footing kind, the stakes, the light on each tile */
+    if (L.towpath && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.NET)) { const ts = TPT.towpathTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE TOWPATH's tile kit (claude/towpath2art, src/redraw/towpath_tiles.js): wet moonlit stone, turf banks, black-green lock walls, iron, brick, the old irons */
     if (L.litchurch && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = CHT.churchTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE LIT CHURCH's own ground (claude/churchart, src/redraw/church_tiles.js): cut stone, chequered flags, marble, the crypt's bone-niched stone, turf, the pews and corbels */
     if (L.glasssea && (t === T.SOLID || isSlope(t))) { const ts = GST.glassTileFor(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE GLASS SEA's own ground (claude/glasssea art pass, src/redraw/glasssea_tiles.js): fused glass, slick diagonals; the first columns stay sand */
     if (L.minecart && (t === T.SOLID || t === T.RAIL || isSlope(t))) { const ts = MCT.mineTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE DEEP RAILS' tile kit (claude/minecartart, src/redraw/minecart_tiles.js): the rail bed, shored rock, ragged roofs, ore-veined mass, the trestle deck */
@@ -7079,7 +7080,7 @@ function spawnCorpse(e, dir) {
     case 'badger': Object.assign(c, { vx: dir * 40, vy: -110, spin: dir * 6, life: 1.0, max: 1.0 }); break;
     case 'gar': Object.assign(c, { vx: dir * 30, vy: -90, spin: dir * 5, life: 0.9, max: 0.9 }); break;
     case 'wight': Object.assign(c, { vx: 0, vy: -20, spin: 0, life: 0.6, max: 0.6, grav: -100 }); SFX.hiss(); break;
-    case 'fogwraith': Object.assign(c, { vx: 0, vy: -30, spin: 0, life: 0.5, max: 0.5, grav: -120 }); SFX.hiss && SFX.hiss(); break;   /* (claude/towpath2) cut in a light, it comes apart upward into the fog */
+    case 'fogwraith': Object.assign(c, { vx: 0, vy: -30, spin: 0, life: 0.7, max: 0.7, grav: -60, frame: 2 }); SFX.hiss && SFX.hiss(); break;   /* (claude/towpath2) cut in a light, it comes apart upward into the fog */
     case 'courtier': Object.assign(c, { vx: dir * 70, vy: -140, spin: dir * 9, life: 0.8, max: 0.8 }); SFX.stone(); break;   /* a bag of old bones, going over */
     case 'windcaller': Object.assign(c, { vx: dir * 60, vy: -150, spin: dir * 8, life: 1.2, max: 1.2 }); SFX.gobDie(); SFX.callerBlast(); break;
     case 'kite': Object.assign(c, { vx: dir * 40, vy: -40, spin: dir * 4, life: 1.2, max: 1.2, grav: 200 }); SFX.kiteChatter(); break;
@@ -23133,7 +23134,7 @@ const CNX = { T, L: () => L, keys: () => keys, movers: () => movers, enemies: ()
 /* THE FOG WRAITH's context (src/fog-wraith.js, claude/towpath2): the towpath's fog banks and its light */
 const FWX = { hero: () => P, heroes: () => players.filter(p => !p.dead), lightAt: (x, y) => (TPH && TPH.on() ? TPH.hardLight(x, y) : 0), fogTop: x => (TPH && TPH.on() ? TPH.fogTop(x) : null),
   litOf: pp => { const q = TPH && TPH.on() ? TPH.lanternOf(pp) : null; return !!(q && q.has && q.lit); }, smother: pp => !!(TPH && TPH.on() && TPH.smother(pp)), guards: (pp, e) => !!pp.block && Math.sign(e.x - pp.x) === (pp.face || 1),
-  chill: (pp, n) => asPlayer(pp, () => { if (P.dead || P.dodge > 0 || (P.iframes || 0) > 0) return; P.hp = Math.max(0, P.hp - n); burst(P.x, P.y - 14, 5, ['#c8d8e8', '#e8f0f8'], 30, 0.4, -20); if (SFX.chill) SFX.chill(); if (P.hp <= 0) die({ name: 'A FOG WRAITH', red: false, rule: '' }); }),
+  chill: (pp, n) => asPlayer(pp, () => { if (P.dead || P.dodge > 0 || (P.iframes || 0) > 0) return; P.hp = Math.max(0, P.hp - n); burst(P.x, P.y - 14, 5, ['#c8d8e8', '#e8f0f8'], 30, 0.4, -20); P.chillT = 0.8; if (SFX.chill) SFX.chill(); if (P.hp <= 0) die({ name: 'A FOG WRAITH', red: false, rule: '' }); }),
   mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col), sfx: SFX, number: (x, y, line) => { if (!FWX.said) FWX.said = {}; if (FWX.said[line]) return; FWX.said[line] = 1; number(P.x, P.y - 34, line); } };
 const CNFX = { hero: () => P, barge: () => CANAL && CANAL.barge, solid: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)), surfaceAt: x => (CANAL ? CNH.surfaceAt(CANAL, CNX, x) : TPH && TPH.on() ? TPH.surfaceAt(x) : null), solidAt: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); },
   press: () => ({ jump: jumpPress, atk: atkPress, left: leftPress, right: rightPress }), hurtHero: (x, d, o) => damagePlayer(x, d, o), mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col), sfx: SFX,
@@ -25959,6 +25960,7 @@ function updateCorpses(dt) {
     for (const p of fx.parts) p.clack = false; return on; });
   for (const c of corpses) {
     c.life -= dt; c.sq = Math.max(0, (c.sq || 0) - dt);
+    if (c.t === 'fogwraith') c.frame = 2 + Math.min(3, Math.floor((1 - Math.max(0, c.life) / c.max) * 4));   /* (claude/towpath2art) it comes apart upward in four frames (src/redraw/fog_wraith_art.js) */
     if (c.life <= 0 && !c.poofed && c.max > 0.05) { c.poofed = true; smoke(c.x, c.y - 4, 3, 5); }   /* it does not blink out: it goes to smoke */
     if (c.crumple) continue;
     if (c.run) { c.x += c.vx * dt; c.frame = Math.floor(c.life * 10) % 2; continue; }   /* THE SERJEANT'S HORSE goes on down the road without him */
@@ -29223,6 +29225,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (L.skyroad) SKB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SKY ROAD's own far mesas, kite fleet, landmark spires and the Eyrie on the horizon (claude/skyroadart, src/redraw/skyroad_backdrop.js) */
   else if (L.buriedcity) {}   /* (claude/buriedcity2) THE BURIED CITY drew its own backdrop above: no far dunes under the sand roof */
   else if (L.minecart) MCB.drawBackdrop(g, cx, cy, VW, VH, L, time);   /* THE DEEP RAILS' own deep mine: the rock wall, ore veins, timber frames, lantern strings, the goblin works, the smelter's chimney and the bore's mouth (claude/minecartart, src/redraw/minecart_backdrop.js) */
+  else if (L.towpath) TPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE TOWPATH's own night: the moon, Waymeet's roofs going to silhouette, drowned willows, lock cottages (src/redraw/towpath_backdrop.js) */
   else if (L.canal) CNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE FOG CANAL's own far fields, mill, steeple, hedges, cottages and boats (src/redraw/canal_backdrop.js), not Waymeet's town */
   else if (L.welltown) WTB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE WELL TOWN's own dunes, oasis line, skyline, dovecote and Kasbah (src/redraw/welltown_backdrop.js), not the caravan's mesas */
   else if (FAIR) { FCR.drawSky(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); FB.drawBackdrop(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), SET.parallax === 'full'); FCR.drawMid(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy), { hx: P.x - cx, calm: fairCalm() }); }   /* + the night sky, moon and Wicker Queen before the far hills, and the scarecrows, ghost rides and vanishing townsfolk after the mid layer (claude/faircreepy) */   /* THE HARVEST FAIR's own far fields, steeple, tents and wheel (src/redraw/fair_backdrop.js), not Waymeet's town */
@@ -29239,6 +29242,7 @@ function drawWorld(cx, cy, showPlayer) {
   // a wood with parts in different light (L.tints: [x0, x1, rgb, alpha] in tiles), crossfaded over two dozen tiles at each seam
   if (L.tints) { const mx = (cx + VW / 2) / TS; for (const [x0, x1, c, a] of L.tints) { const k = Math.max(0, Math.min(1, Math.min(mx - x0 + 12, x1 - mx + 12) / 24)); if (k > 0.01) { g.fillStyle = 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + (a * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } }
   if (FAIR) { FAW.drawCrowd(g, cx, cy, VW, L, dusk(), time, { x: P.x, face: P.face || 1 }); if (SET.parallax !== 'off') { FB.drawNear(g, cx, cy, VW, L, dusk(), time); FB.drawMotes(g, cx, cy, VW, VH, L, time, dusk(), bgDY(cy)); if (!L.dark && !(L.green && P.x > L.green.door * TS)) FCR.drawFog(g, cx, cy, VW, VH, L, time, dusk(), FCR.depth(L, cx, VW)); } }   /* the crowd and the bunting, the fireflies and sparks, the low fog behind the road (claude/faircreepy) */
+  if (L.towpath && SET.parallax !== 'off') TPB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* the towpath's reeds and mooring posts */
   if (L.canal && SET.parallax !== 'off') CNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* the canal's reeds, mooring posts and hung lanterns */
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
@@ -29249,7 +29253,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
   if (BG.nearTrees && !L.colosseum && !L.rootway) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
-  else if (!L.castle && !L.colosseum && !FAIR && !L.canal && !L.rootway && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
+  else if (!L.castle && !L.colosseum && !FAIR && !L.canal && !L.towpath && !L.rootway && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy); if (SKY && SKY.on()) SKY.drawSky(g, cx, cy, VW, VH, time);   /* THE SKY ROAD: the cloud banks and their shadows */   /* the sky ship: her cloud, her gasbags, her sails */
   if (L.hangingTown && L.groundZones && SET.parallax !== 'off') HV.drawHangingBack(g, L, cx, cy, time, VW, VH);   /* THE CLIFF THE VILLAGE HANGS FROM, and each floor's landmark on it: behind the ropes, the rooms and the tiles */
@@ -29265,6 +29269,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.oreRoad) { const dl = drumLine(); drawOreStructures(g, L, cx, cy, time, VW, VH, dl ? dl.t / 22 : 0); }   /* THE ORE ROAD: the pylon, the tower's timber, the loft, the great drum */   /* THE WITCHLIGHT STAIR: its arches, its colonnade, its statues, its orrery ring */
   if (HIDE.back) { g.fillStyle = HIDE.back; g.fillRect(0, 0, VW, VH); }   /* (claude/unburied4) BK.hide.back = a colour: the backdrop as one flat colour, so tools/unburied-aloft.mjs can see what stands in front of the sky */
   drawFacades(cx, cy);
+  if (L.towpath) TPS.drawBack(g, cx, cy, VW, VH, L, time);   /* THE TOWPATH: the back walls of its chambers, races and cuts, the gorge, the basin's far quay (src/redraw/towpath_set.js) */
   for (const [x0, x1, y0, y1, st] of (L.interiors || [])) {
     if (L.sealedpyramid && String(st).startsWith('py') && PYH && PYH.on()) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx <= VW && sx + w >= 0) PYH.drawRoom(g, st, sx, sy, w, h, x0, y0, time); continue; }   /* (claude/sealedpyramid) THE SEALED PYRAMID's rooms: the tomb's own coursed back wall (src/sealed-pyramid-hands.js), never the shared plank room */
     if (st === 'church' || (L.buriedcity && String(st).startsWith('bc'))) continue;   /* (claude/bc2art: THE BURIED CITY's rooms are its own backdrop - src/redraw/buried_city_backdrop.js - not the shared plank room) */   /* THE LIT CHURCH paints its own far walls (src/redraw/church_set.js drawBackdrop); the shared brick room would cover them */
@@ -29290,7 +29295,7 @@ function drawWorld(cx, cy, showPlayer) {
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); drawRouteSupports(g,L,cx,cy); drawClimbCues(g,L,cx,cy);
+  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
@@ -29747,6 +29752,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (c.set || SPR[c.t] || c.t === 'hopper') { const q = c.sq > 0 ? c.sq / 0.16 : 0, sink = c.settled ? Math.round((1 - c.life / c.max) * 2) : 0;   /* squash where it lands, sink as it goes */
       const cs = c.set || (c.t === 'hopper' && c.color && c.color !== 'green' ? SPR['hopper_' + c.color] : SPR[c.t]); c.shown = cs;   /* (c.shown: what was drawn, for tools/corpses.mjs) */ drawRot(cs, c.frame, c.x - cx, c.y - cy + sink, c.face, c.rot, al, 1 + 0.3 * q, 1 - 0.3 * q); }
   }
+  if (FKH && FKH.drawDead && L.arena && L.arena.boss === 'fogknight') FKH.drawDead(g, cx, cy, time);   /* the Fog Knight's plate, fallen (src/redraw/fog_knight_art.js) */
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
   for (const e of enemies) {
@@ -30596,6 +30602,7 @@ function drawRoom(st, sx, sy, w, h, tx0, ty0) {
 const fallenBlocked = (tx, ty) => tx < 0 || ty < 0 || tx >= LW || ty >= LH || (grid0 || L.grid)[ty * LW + tx] !== T.AIR;
 function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.fallingTower && FTW.paintFallenRoom(g, st, sx, sy, w, h, tx0, ty0, time, fallenBlocked)) return;   /* THE FALLING TOWER paints its own broken rooms, not the Folly's - its holes and windows only where no tile stands in front of them (round 2) */
+  if (L.towpath && TPS.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE TOWPATH's rooms: the hut, the cottage, the mill's loft and sack floor, the tower, the warehouses, the culvert (src/redraw/towpath_set.js) */
   if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY)) return;   /* THE MASKWRIGHT'S THEATRE's rooms (src/redraw/theatre_rooms.js) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.canal && CNH.paintCanalRoom(g, st, sx, sy, w, h, time)) return;   /* THE FOG CANAL (greybox rooms) */

@@ -365,9 +365,10 @@ export function buildTowpath({ painter, T, TS }) {
       { kind: 'tpsluice', opens: 'the aqueduct\'s sluice: the trough runs and floats the barge over the broken span', hud: 'THE SLUICE OPENS: THE TROUGH RUNS AND THE BARGE FLOATS.' },
       { kind: 'tpcrane', opens: 'the basin crane: its jib swings the hook up out of the fog to the warehouse roofs', hud: 'THE CRANE SWINGS: THE HOOK RIDES UP OUT OF THE FOG.' },
       { kind: 'tpchurch', opens: 'the hill path to THE LIT CHURCH', hud: 'THE HILL PATH: THE LIT CHURCH.' } ],
-    music: 'towpath', duskStart: 0.15, duskLen: 0.45,
-    palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
-      haze: 'rgba(120,150,160,0.22)', murkCol: '#141c24',
+    bgSpan: 200,   /* (claude/towpath2art: the backdrop rides within 200 px whatever storey the camera is on, as the canal's) */
+    music: 'towpath', night: true, nightA: 0.22, duskStart: 99999, duskLen: 1,   /* (claude/towpath2art) THE RIVER ROAD BY NIGHT: cold blue-green, moonlit */
+    palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'night', far: 'town', mid: 'town', near: 'town', nearSet: 'town', noFg: true, noNear: true,
+      haze: 'rgba(110,150,150,0.14)', murkCol: '#0e161a',
       grass: '#3e5a40', grassL: '#5a7a58', grassD: '#26382a', dirt: '#4a4a44', dirtL: '#5e5e56', dirtD: '#2e2e2a',
       canopy: ['#16201e', '#1e2c28', '#2a3c36', '#365046'] },
     weather: [], ambient: [{ x0: 0, x1: 47 * TS, kind: 'town' }, { x0: 47 * TS, x1: 99999, kind: 'towpath' }],
