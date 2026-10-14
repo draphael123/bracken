@@ -156,7 +156,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, o
   acolyte: 1.5,   /* (claude/litchurch) the runner's body: he does not fight - he relights (a support and a runner) */
   paladinboss: 6, lclamp: 0, lcsource: 0, lcbellows: 0, lcdesk: 0, lcgrate: 0, lcreliquary: 0,
   /* THE TOWPATH (claude/towpath): THE FOG KNIGHT is a boss: a 6. The paddles, capstans, lamps, the lantern, the lychgate and the church door fight nobody */
-  fogknight: 6, tppaddle: 0, tpcapstan: 0, tplamp: 0, tplantern: 0, tplychgate: 0, tpchurch: 0,
+  fogknight: 6, tppaddle: 0, tpcapstan: 0, tplamp: 0, tplantern: 0, tplychgate: 0, tpchurch: 0, tpwinch: 0, tpsluice: 0, tpcrane: 0, fogwraith: 1.5,   /* (claude/towpath2: THE FOG WRAITH - a chill, and your light) */
   /* THE BURIED CITY (claude/buriedcity): THE CLOCKWORK CONSTRUCT is a slow heavy halberd (a poke a shield turns, a low sweep to jump): a 3. THE HOURGLASS KING is a boss: a 6.
      The sand-gate levers, the great wheel and the clockwork vault fight nobody */
   construct: 3, hourglassking: 6, sandlever: 0, sandwheel: 0, gearvault: 0, sandchute: 0,

@@ -455,26 +455,31 @@ export const STUCK_HANDS = {
       { key: 'rood3fire', is: ['need.rood3', 'fire'], at: [176, 28], line: 'LAMP ONE BURNS ON: A FLAME FOR THE THIRD SCONCE' } ] },
     { id: 'lc-reliquary', zone: [180, 31, 200, 40], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [188, 40], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
   ],
-  /* THE TOWPATH (claude/towpath): every lock, the race and every swing bridge the route needs glints until its water stands where the way needs it (src/towpath-hands.js
-     handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across | open); rows are the sheet's (the design rows + 10) */
+  /* THE TOWPATH (claude/towpath; THE TOWPATH 2, claude/towpath2): every lock, the race, the hoist, the aqueduct's sluice, the crane and every swing bridge the route
+     needs glints until its water (or its ride) stands where the way needs it (src/towpath-hands.js handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across |
+     open, hoist.<id> bot | top | moving, trough.<id> west | east | moving, crane.<id> quay | roof | moving); rows are the sheet's (the design rows + 9) */
   towpath: [
-    { id: 'tp-lockA', zone: [40, 40, 56, 55], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [54, 49], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
-    { id: 'tp-race', zone: [92, 35, 110, 55], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 43], line: 'THE RACE PADDLE ON THE BANK' },
-      { key: 'wheel', is: ['wheel.mill', 'still'], rows: [37.2, 60], colLt: 109, at: [107, 36], glint: 'stall', line: 'THE WHEEL STANDS STILL: CLIMB ITS PADDLES' } ] },   /* (claude/towpath fix, review S4: the stilled wheel, the warehouse ladder, the culvert) */
-    { id: 'tp-tail', zone: [126, 35, 140, 45], steps: [ { key: 'tail', is: ['bridge.tail', 'open'], at: [130, 41], line: 'THE CAPSTAN BY THE CUT' } ] },
-    { id: 'tp-f1', zone: [152, 30, 168, 48], steps: [
-      { key: 'f1bank', is: ['lock.F1', 'hi'], colLt: 160, at: [159, 41], line: 'THE LOCK IS FULL: ITS PADDLE IS ON THE BANK' },
-      { key: 'f1punt', is: ['lock.F1', 'lo'], at: [166, 42], line: 'THE PADDLE BY THE PUNT' } ] },
-    { id: 'tp-f2', zone: [167, 25, 176, 44], steps: [
-      { key: 'f2', is: ['lock.F2', 'dry'], at: [172, 42], line: 'THE PADDLE IN THE DRY CHAMBER' },
-      { key: 'f2hi', is: ['lock.F2', 'hi'], colLt: 169, at: [167, 36], line: 'THE PUNT RODE UP: ITS PADDLE IS ON THE LANDING' } ] },
-    { id: 'tp-f3', zone: [175, 22, 183, 38], steps: [ { key: 'f3', is: ['lock.F3', 'lo'], at: [182, 32], line: 'THE PADDLE BY THE PUNT' } ] },
-    { id: 'tp-basin', zone: [216, 20, 238, 30], steps: [ { key: 'basin', is: ['bridge.basin', 'open'], at: [220, 26], line: 'A CAPSTAN ON EACH BANK' } ] },
-    { id: 'tp-ladder', zone: [243, 20, 246, 28], steps: [ { key: 'ladder', rows: [25.5, 27.5], colLt: 246, at: [245, 25], glint: 'stall', line: 'THE LADDER UP THE WAREHOUSE FACE' } ] },
-    { id: 'tp-x', zone: [262, 20, 280, 37], steps: [ { key: 'xlamp', is: ['lamp.x', 'out'], colLt: 268, at: [266, 26], line: 'THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN' }, { key: 'x', is: ['lock.X', 'hi'], colLt: 268, at: [266, 26], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
-    { id: 'tp-culvert', zone: [268, 28, 279, 37], steps: [ { key: 'culvert', is: ['lock.X', 'dry'], rows: [29, 35.5], at: [282, 35], glint: 'stall', line: 'THE CULVERT UNDER THE EAST WALL' } ] },
-    { id: 'tp-y', zone: [280, 20, 293, 37], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [291, 36], line: 'THE PADDLE BY THE PUNT' } ] },
-    { id: 'tp-cut', zone: [292, 18, 302, 26], steps: [ { key: 'cut', is: ['bridge.cut', 'open'], at: [296, 23], line: 'THE CAPSTAN BY THE CUT' } ] },
+    { id: 'tp-lockA', zone: [40, 39, 56, 54], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [54, 48], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
+    { id: 'tp-race', zone: [92, 34, 110, 54], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 42], line: 'THE RACE PADDLE ON THE BANK' },
+      { key: 'wheel', is: ['wheel.mill', 'still'], rows: [36.2, 59], colLt: 109, at: [107, 35], glint: 'stall', line: 'THE WHEEL STANDS STILL: CLIMB ITS PADDLES' } ] },   /* (claude/towpath fix, review S4: the stilled wheel, the culvert) */
+    { id: 'tp-hoist', zone: [112, 31, 119, 36], steps: [
+      { key: 'hoist', is: ['hoist.sack', 'bot'], at: [117, 35], line: 'THE SACK HOIST: STAND ON IT AND STRIKE ITS WINCH' },
+      { key: 'hoistDown', is: ['hoist.sack', 'top'], at: [117, 35], line: 'THE HOIST IS UP: ITS WINCH CALLS IT DOWN' } ] },
+    { id: 'tp-tail', zone: [125, 24, 139, 30], steps: [ { key: 'tail', is: ['bridge.tail', 'open'], at: [130, 27], line: 'THE CAPSTAN BY THE CUT' } ] },
+    { id: 'tp-f1', zone: [158, 17, 174, 35], steps: [
+      { key: 'f1bank', is: ['lock.F1', 'hi'], colLt: 166, at: [165, 28], line: 'THE LOCK IS FULL: ITS PADDLE IS ON THE BANK' },
+      { key: 'f1punt', is: ['lock.F1', 'lo'], at: [172, 29], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-f2', zone: [173, 12, 182, 31], steps: [
+      { key: 'f2', is: ['lock.F2', 'dry'], at: [178, 29], line: 'THE PADDLE IN THE DRY CHAMBER' },
+      { key: 'f2hi', is: ['lock.F2', 'hi'], colLt: 175, at: [173, 23], line: 'THE PUNT RODE UP: ITS PADDLE IS ON THE LANDING' } ] },
+    { id: 'tp-f3', zone: [181, 9, 189, 25], steps: [ { key: 'f3', is: ['lock.F3', 'lo'], at: [188, 19], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-aq', zone: [236, 11, 252, 17], steps: [ { key: 'aq', is: ['trough.aq', 'west'], at: [240, 14], line: 'THE AQUEDUCT IS DRY: OPEN ITS SLUICE BY THE BARGE' } ] },
+    { id: 'tp-basin', zone: [324, 20, 346, 29], steps: [ { key: 'basin', is: ['bridge.basin', 'open'], at: [328, 28], line: 'A CAPSTAN ON EACH BANK' } ] },
+    { id: 'tp-crane', zone: [361, 20, 372, 29], steps: [ { key: 'crane', is: ['crane.jib', 'quay'], at: [364, 28], line: 'THE CRANE: STAND ON ITS HOOK AND STRIKE ITS CAPSTAN' } ] },
+    { id: 'tp-x', zone: [388, 19, 406, 36], steps: [ { key: 'xlamp', is: ['lamp.x', 'out'], colLt: 394, at: [392, 25], line: 'THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN' }, { key: 'x', is: ['lock.X', 'hi'], colLt: 394, at: [392, 25], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
+    { id: 'tp-culvert', zone: [394, 27, 405, 36], steps: [ { key: 'culvert', is: ['lock.X', 'dry'], rows: [28, 36], at: [408, 34], glint: 'stall', line: 'THE CULVERT UNDER THE EAST WALL' } ] },
+    { id: 'tp-y', zone: [406, 19, 419, 36], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [417, 35], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-cut', zone: [418, 17, 428, 25], steps: [ { key: 'cut', is: ['bridge.cut', 'open'], at: [422, 22], line: 'THE CAPSTAN BY THE CUT' } ] },
   ],
   /* THE BURIED CITY (claude/buriedcity): every sand room the route needs glints until its state is the one the route wants (src/buried-city-hands.js handsState:
      room.<id> full / empty / filling / draining, wheel.great open / shut, vault.<id>); the climb out of the lower bulb's pit glints after a stall */
