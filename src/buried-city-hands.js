@@ -14,7 +14,7 @@
 // main.js calls: on, reset, update, interact, waits, world, takeConstruct, drawWorld, drawOver, drawStructure, noSun, read, state, walkHint, handsState.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
-import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js';
+import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js'; import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) */
 import { makeFlip } from './buried-city-flip.js'; import * as FART from './redraw/buried_city_flip_art.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
 export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2, fallBeat: 130, fallPad: 4 };
@@ -297,7 +297,8 @@ export function makeBuriedCityHands(ctx) {
   const view = (g, cx, cy, time) => ({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time, L: K.L, T: T() });
   H.drawBack = () => {};   /* (the backdrop and the Hourglass Tower are src/redraw/buried_city_backdrop.js's) */
   /* THE CITY'S FOOTING KINDS (L.structures 'bc*', main.js drawStructures): what holds each ledge up - stepped corbels, a stall's poles, a pipe's brackets, a drum's rubble */
-  H.drawStructure = (g, kind, l, r, t, b) => {
+  H.drawStructure = (g, kind, l, r, t, b, x0) => {
+    if (kind === 'bcBuried' && x0 !== undefined && A4.inWorks(x0)) { A4.drawKilnStub(g, l, r, t, b, x0); return true; }   /* (claude/bc4art) the glass works' kiln stubs and chimney piers: brick, a fire-mouth, iron bands */
     const post = (x, y0, y1, w, a, hi, lo) => { g.fillStyle = a; g.fillRect(R(x), R(y0), w, R(y1 - y0)); g.fillStyle = hi; g.fillRect(R(x), R(y0), 1, R(y1 - y0)); g.fillStyle = lo; g.fillRect(R(x + w - 1), R(y0), 1, R(y1 - y0)); };
     if (kind === 'bcAwning') { post(l + 1, t + 6, b, 3, '#6a4a2a', '#a07a44', '#3a2812'); post(r - 4, t + 6, b, 3, '#6a4a2a', '#a07a44', '#3a2812');
       for (const x of [l + 1, r - 4]) { g.fillStyle = '#c49a38'; g.fillRect(R(x) - 1, R(t + 3), 5, 3); g.fillStyle = '#f0d070'; g.fillRect(R(x) - 1, R(t + 3), 5, 1); g.fillStyle = '#2a1c10'; g.fillRect(R(x), R(b - 3), 3, 3); }
@@ -317,15 +318,13 @@ export function makeBuriedCityHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => {
     if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), L = K.L, V = view(g, cx, cy, time);
     const vis = (x0, x1) => x1 * ts - cx > -64 && x0 * ts - cx < vw + 64;
-    /* (claude/buriedcity4, GREYBOX) THE OLD STREET UNDER THE DUNES: its dark (it runs under the open sky's columns), its lamps are L.lamps; its sand-gate and the gate's lever */
-    for (const it of (L.interiors || [])) if (it[4] === 'bcUnder' && vis(it[0], it[1] + 1)) { const x0 = Math.max(it[0], Math.floor(cx / ts) - 1), x1 = Math.min(it[1], Math.ceil((cx + vw) / ts) + 1);
-      for (let x = x0; x <= x1; x++) for (let y = it[2]; y <= it[3]; y++) if (ctx.cellGet(x, y) === T().AIR) { g.fillStyle = (x + y) % 7 ? '#241a14' : '#2c2018'; g.fillRect(R(x * ts - cx), R(y * ts - cy), ts, ts); } }
-    { const LD = L.loopDoor; if (LD && vis(LD.x - 3, LD.x + 3)) { const dx = R(LD.x * ts - cx), y0 = R(LD.y0 * ts - cy), h = (LD.y1 - LD.y0 + 1) * ts;
-      if (!K.loopOpen) { g.fillStyle = '#c8a064'; g.fillRect(dx, y0, ts, h); g.fillStyle = '#8a6a3c'; for (let y = 0; y < h; y += 6) g.fillRect(dx, y0 + y, ts, 1); g.fillStyle = '#5a4428'; g.fillRect(dx, y0 - 3, ts, 3); }
-      else { g.fillStyle = '#5a4428'; g.fillRect(dx, y0 - 3, ts, 3); g.fillStyle = '#c8a064'; g.fillRect(dx, y0 + h - 3, ts, 3); }
-      const lx = R(LD.lever[0] * ts + 8 - cx), ly = R((LD.lever[1] + 1) * ts - cy); g.fillStyle = '#3a3446'; g.fillRect(lx - 1, ly - 18, 3, 18); g.fillStyle = K.loopOpen ? '#8fd160' : '#ffd36b'; g.fillRect(K.loopOpen ? lx + 2 : lx - 6, ly - 20, 5, 3);
+    /* (claude/bc4art) THE OLD STREET UNDER THE DUNES (a vaulted tunnel), THE ANTECHAMBER's lapis hall, THE GLASS WORKS' pipes, racks and kiln-glow, the murals of him and the folk he froze */
+    for (const it of (L.interiors || [])) if (it[4] === 'bcUnder' && vis(it[0], it[1] + 1)) A4.drawOldStreet(V, it);
+    A4.drawAnteBack(V); A4.drawApproach(V);
+    { const cl = L.clouds; if (cl) L.cloudNow = cl.map((c, i) => { const [a, b] = cloudSpan(c); return [Math.max(a, c.x0 * ts - 40), Math.min(b, (c.x1 + 1) * ts + 40), i]; }); }   /* (the clouds the sky draws over their shadows) */
+    { const LD = L.loopDoor; if (LD && vis(LD.x - 3, LD.x + 3)) { A4.drawLoopGate(V, LD, !!K.loopOpen, time, false); const lx = R(LD.lever[0] * ts + 8 - cx), ly = R((LD.lever[1] + 1) * ts - cy);
       const P0 = ctx.hero(); if (!K.loopOpen && P0 && Math.abs(P0.x - (lx + cx)) < 40 && Math.abs(P0.y - (ly + cy)) < 30) ctx.text('E: OPEN THE OLD STREET', lx, ly - 30, '#ffd36b', 'center', 4); } }
-    /* (claude/buriedcity4, GREYBOX) THE CLOUDS' SHADOWS: a cool wash over the columns a cloud covers, and a hard band on the ground where it falls (you see where it ends) */
+    /* (claude/buriedcity4; the clouds themselves are drawn in the sky: claude/bc4art) THE CLOUDS' SHADOWS: a cool wash over the columns a cloud covers, and a hard band on the ground where it falls (you see where it ends) */
     for (const c of (L.clouds || [])) { let [a, b] = cloudSpan(c); a = Math.max(a, c.x0 * ts); b = Math.min(b, (c.x1 + 1) * ts); if (b <= a || b - cx < -8 || a - cx > vw + 8) continue;
       g.fillStyle = 'rgba(40,36,80,0.16)'; g.fillRect(R(a - cx), 0, R(b - a), vh);
       for (let x = Math.floor(a / ts); x * ts < b; x++) { let y = 0; while (y < L.H - 1 && ctx.cellGet(x, y) === T().AIR) y++; const l = Math.max(a, x * ts), r = Math.min(b, (x + 1) * ts); g.fillStyle = 'rgba(30,26,70,0.35)'; g.fillRect(R(l - cx), R(y * ts - cy), R(r - l), 4); }
@@ -345,7 +344,7 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'arch') SET.drawArch(V, { ...d, down: d.x0 < 300 });
       else if (d.kind === 'kinghead') SET.drawKingHead(V, d.x * ts + 8, (d.y + 1) * ts);
       else if (d.kind === 'kingstatue') SET.drawKingStatue(V, d.x * ts + 8, (d.y + 1) * ts, d.h);
-      else if (d.kind === 'mural') SET.drawMural(V, d);
+      else if (d.kind === 'mural') { if (d.x0 >= 822) A4.drawKingMural(V, d.x0, d.x1, d.y * ts - 42, 'slabs'); else SET.drawMural(V, d); }   /* (claude/bc4art: the antechamber's mural is HIM raising slabs of sand toward himself - the fight foretold) */
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
       else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);
@@ -403,10 +402,8 @@ export function makeBuriedCityHands(ctx) {
     for (const v of K.vault) { if (v.open) continue; if (v.x * ts - cx < -40 || v.x * ts - cx > vw + 40) continue; RUL.drawVault(V, v.x, v.y0, v.y1 - v.y0 + 1, v.gears, ctx.questGot(), time); }
   };
   /* the route glint over everything */
-  /* (claude/buriedcity4, GREYBOX, B10's read) THE SAND-BOUND'S SHELL: while the sand holds it a crust of sand shimmers round it (a blow glances off); buried, the sand is round its chest */
-  const drawBound = (g, cx, cy, time) => { for (const e of ctx.enemies()) { if (!e.alive || e.cnSkin !== 'sandbound' || !e.st || e.st.mode === 'buried') continue; const x = e.x - cx, y = e.y - cy; if (x < -40 || x > ctx.VW() + 40) continue;
-    if (e.sbBuried) { g.fillStyle = '#c8a064'; g.beginPath(); g.ellipse(R(x), R(y - 2), 13, 5, 0, 0, Math.PI * 2); g.fill(); g.fillStyle = '#ecc988'; g.fillRect(R(x - 10), R(y - 6), 20, 1); continue; }
-    const k = 0.5 + 0.5 * Math.sin(time * 6 + e.x); g.strokeStyle = 'rgba(236,201,136,' + (0.45 + 0.35 * k).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(R(x), R(y - 11), 11 + k, 14 + k, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; } };
+  /* (claude/bc4art, B10's read) THE SAND-BOUND'S SHELL: while the sand holds it a crust of sand shimmers round it (a blow glances off); buried, the sand is round its chest */
+  const drawBound = (g, cx, cy, time) => { for (const e of ctx.enemies()) { if (!e.alive || e.cnSkin !== 'sandbound' || !e.st || e.st.mode === 'buried') continue; const x = e.x - cx, y = e.y - cy; if (x < -40 || x > ctx.VW() + 40) continue; A4.drawBoundShell(g, x, y, time, !!e.sbBuried, e.x); } };
   H.drawOver = (g, cx, cy, time) => { if (K) drawBound(g, cx, cy, time); if (!K || !K.glint || !K.glint.show) return; drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
   H.drawHud = () => false;
   H.read = () => K && { loopOpen: !!K.loopOpen, n: { ...K.n }, rooms: K.rooms.map(r => ({ id: r.id, level: +r.level.toFixed(2), gate: r.gate, rows: r.rows })), wheel: { ...K.wheel }, waiting: K.waiting.length, vault: K.vault.map(v => ({ id: v.id, open: v.open })),

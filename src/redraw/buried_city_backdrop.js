@@ -9,6 +9,7 @@
 //   THE DUNES (cols 0-37) keep the sky: it fades out down the sinkhole; two lit dune silhouettes and the tower's tip stand over them
 // The shafts' light is drawn in the world (src/buried-city-hands.js drawWorld). main.js calls drawBackdrop(g, cx, cy, VW, VH, L, time, dY).
 import * as FART from './buried_city_flip_art.js';
+import * as A4 from './buried_city_bc4_art.js';   /* (claude/bc4art) clouds over their shadows */
 const R = Math.round;
 const PAL = { glass: 'rgba(120,150,170,0.62)', glassEdge: 'rgba(214,236,246,0.95)', glassHi: 'rgba(255,255,255,0.55)',   /* (claude/buriedcity4, brief 6: the glass was pale and see-through - now a dark smoked glass with a bright rim, so the sand in it reads) */ sand: '#e6bc68', sandHi: '#f8dc90', sandLo: '#a8782c', brass: '#a47e30', brassHi: '#e8c460', brassLo: '#5a4014', brassDeep: '#2e200a' };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
@@ -68,7 +69,7 @@ function roofStrip() {
 /* THE DUNES' two silhouettes, drawn live (cheap: one pass of columns): lit rims against the sunset sky */
 function drawDunes(g, cx, cy, VW, VH) {
   const dx = cx * 0.15;
-  for (const [col, rim, base, amp, f, ph] of [['#9a6a3e', '#e8b070', 0.58, 10, 0.011, 0], ['#c8945a', '#f4cc88', 0.66, 14, 0.013, 2]]) {
+  for (const [col, rim, base, amp, f, ph] of [['#8a6a4c', '#d8b484', 0.58, 10, 0.011, 0], ['#b8905e', '#ecca90', 0.66, 14, 0.013, 2]]) {
     g.fillStyle = col; g.beginPath(); g.moveTo(0, VH); for (let x = 0; x <= VW; x += 4) g.lineTo(x, R(VH * base + Math.sin((x + dx) * f + ph) * amp + Math.sin((x + dx) * f * 2.3) * 3 - cy * 0.05)); g.lineTo(VW, VH); g.closePath(); g.fill();
     g.fillStyle = rim; for (let x = 0; x < VW; x += 2) g.fillRect(x, R(VH * base + Math.sin((x + dx) * f + ph) * amp + Math.sin((x + dx) * f * 2.3) * 3 - cy * 0.05), 2, 1); }
 }
@@ -92,11 +93,12 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
     drawTower(g, cx, VW, VH, levelW, time, dY, 1, L.towerFlip || 0);
     const rt = roofStrip(), rx = -((cx * 0.6) % 480 + 480) % 480, band = R(-14 - cy * 0.04);
     for (let x = rx - 480; x < VW + 480; x += 480) g.drawImage(rt, R(x), band);
+    A4.drawWorksBack({ g, cx, cy, vw: VW, vh: VH, time });   /* (claude/bc4art) THE GLASS WORKS' furnaces, shelves, racks and pipes on its walls (behind the tiles) */
     g.fillStyle = 'rgba(226,196,130,0.4)'; for (let i = 0; i < 9; i++) { const x = R((((i * 97 - cx * 0.6) % VW) + VW) % VW), y = band + 40 + ((time * 30 + i * 41) % Math.max(20, VH - band - 40)); g.fillRect(x, R(y), 1, 3); }
     g.globalAlpha = 1;
   }
   /* THE DUNES (only while the sky shows): lit silhouettes, and the tower's tip over them (you see where you are going before you go down) */
-  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 672 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.9, L.towerFlip || 0); g.globalAlpha = 1; }
+  if (sky > 0.01) { g.globalAlpha = sky; A4.drawSkyTone(g, VW, VH); if (L.cloudNow) A4.drawClouds(g, cx, cy, VW, VH, L, L.cloudNow); drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 672 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.9, L.towerFlip || 0); g.globalAlpha = 1; }
 }
 
 /* THE HOURGLASS TOWER: k = how far along the level you are (its upper bulb empties, it comes nearer) */
@@ -137,7 +139,10 @@ function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1, fk = 0) {
   plate(top - 8, 6); plate(bot, 8);
   g.fillStyle = PAL.brass; g.fillRect(X - 8, R(neck) - 3, 16, 6); g.fillStyle = PAL.brassHi; g.fillRect(X - 8, R(neck) - 3, 16, 1); g.fillStyle = PAL.brassLo; g.fillRect(X - 8, R(neck) + 2, 16, 1);   /* the collar */
   g.restore();
-  if (fk > 0.5) { const k2 = (fk - 0.5) * 2; g.fillStyle = 'rgba(255,214,107,' + (0.5 + 0.4 * Math.sin(time * 8)) * k2 + ')'; for (let i = 0; i < 3; i++) { const yy = R(bot - 6 - ((time * 26 + i * 9) % Math.max(8, bot - top - 8))); g.fillRect(X + Wh + 12, yy, 3, 1); g.fillRect(X + Wh + 13, yy - 1, 1, 1); g.fillRect(X - Wh - 15, yy, 3, 1); g.fillRect(X - Wh - 14, yy - 1, 1, 1); } }   /* (and gold marks climbing beside it: the sand runs UP) */
+  /* (claude/bc4art) THE FLIP STATE, READ AT A GLANCE: gold chevrons beside the glass run the way its sand runs - down (dim, as it is) or UP (bright, flipped) - and while it turns two arcs sweep round the neck */
+  { const up = fk > 0.5, mid = fk > 0.03 && fk < 0.97, al = up ? 0.55 + 0.35 * Math.sin(time * 8) : 0.3; g.fillStyle = 'rgba(255,214,107,' + al.toFixed(2) + ')';
+    for (const sx of [X - Wh - 18, X + Wh + 16]) for (let i = 0; i < 4; i++) { const p = ((time * 22 + i * ((bot - top) / 4)) % (bot - top - 8)), yy = R(up ? bot - 6 - p : top + 6 + p), d = up ? 1 : -1; g.fillRect(sx, yy, 2, 1); g.fillRect(sx - 2, yy + d * 2, 2, 1); g.fillRect(sx + 2, yy + d * 2, 2, 1); g.fillRect(sx - 4, yy + d * 4, 2, 1); g.fillRect(sx + 4, yy + d * 4, 2, 1); }
+    if (mid) { g.strokeStyle = 'rgba(255,236,160,' + (0.5 + 0.4 * Math.sin(fk * 9)).toFixed(2) + ')'; g.lineWidth = 2; for (let q = 0; q < 2; q++) { const a0 = Math.PI * (turn * 2) + q * Math.PI; g.beginPath(); g.arc(X, R(neck), Wh + 12, a0, a0 + 1.1); g.stroke(); } g.lineWidth = 1; } }
   /* the crown: a great toothed gear that turns, over the top plate, and a smaller one meshing with it */
   const gear = (gx, gy, r, teeth, a, col, hi) => { g.fillStyle = col; for (let i = 0; i < teeth; i++) { const an = a + i * Math.PI * 2 / teeth, tx = gx + Math.cos(an) * (r + 2), ty = gy + Math.sin(an) * (r + 2); g.fillRect(R(tx) - 1, R(ty) - 1, 3, 3); }
     g.beginPath(); g.arc(gx, gy, r, 0, 7); g.fill(); g.fillStyle = hi; g.fillRect(gx - r + 1, gy - 1, 2, 2); g.fillStyle = PAL.brassDeep; g.beginPath(); g.arc(gx, gy, Math.max(2, r * 0.4), 0, 7); g.fill(); g.fillStyle = col; for (let i = 0; i < 4; i++) { const an = a + i * Math.PI / 2; g.fillRect(R(gx + Math.cos(an) * r * 0.55) - 1, R(gy + Math.sin(an) * r * 0.55) - 1, 2, 2); } };

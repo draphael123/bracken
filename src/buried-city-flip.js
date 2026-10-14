@@ -12,6 +12,7 @@
 // PURE OF main.js: the hands (src/buried-city-hands.js) give it the world (api: ctx, K, TS, T, number, once, unburyIn); it keeps its state on K.
 import * as SET from './redraw/buried_city_set.js';
 import * as ART from './redraw/buried_city_flip_art.js';
+import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) the slabs, the tilt, the pit's skin */
 
 export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25, spinT: 0.6,
   boundShield: 0.4, boundBuried: 1.0, slabWarn: 0.8 };   /* (claude/buriedcity4) THE SAND-BOUND: a blow on it while the sand holds it lands at 0.4 (B15's floor; told), buried whole; a timed slab's last 0.8 s is red */
@@ -57,7 +58,7 @@ export function makeFlip(api) {
   /* (claude/buriedcity4) THE TILTING DUNE: dir +1 rises EAST (as laid in the level: the route), -1 rises WEST (idle, mirrored). Its cells from the high end's row to
      its floor: air over the slope, the slope tile, rock under it */
   function writeTilt(t, force) {
-    const want = running(t.glass) ? 1 : -1; if (!force && want === t.dir) return; t.dir = want; const n = t.x1 - t.x0 + 1, T0 = T();
+    const want = running(t.glass) ? 1 : -1; if (!force && want === t.dir) return; t.dir = want; if (!force) t.turn = 0; const n = t.x1 - t.x0 + 1, T0 = T();
     for (let i = 0; i < n; i++) { const x = t.x0 + i, sr = want > 0 ? t.lo - 1 - i : t.lo - n + i;
       for (let y = t.lo - n; y <= t.floor; y++) ctx.cellSet(x, y, y < sr ? T0.AIR : y === sr ? (want > 0 ? T0.SLOPE_R1 : T0.SLOPE_L1) : T0.SOLID); }
     api.unburyIn(t.x0, t.x1, null); if (!force) { K.flipN.tilted++; ctx.shake(2); ctx.burst(px((t.x0 + t.x1) / 2), (t.lo - n / 2) * TS(), 14, ['#e6c98a', '#a87a40'], 80, 0.6); }
@@ -115,6 +116,7 @@ export function makeFlip(api) {
       writeBank(b, false); }
     /* (claude/buriedcity4) the tilting dunes turn with their glass; the timed slabs run down and crumble */
     for (const t of K.tilts) writeTilt(t, false);
+    for (const t of K.tilts) t.turn = Math.min(1, (t.turn === undefined ? 1 : t.turn) + dt / 0.7);   /* (claude/bc4art) the turn's animation clock */
     for (const p of K.tplats) { if (!p.up) continue; p.t = Math.max(0, p.t - dt); if (p.t === 0) { writeSlab(p, false); K.flipN.crumbled++; ctx.burst(px((p.x0 + p.x1) / 2), p.y * TS() + 4, 12, ['#e6c98a', '#a87a40', '#7a5a30'], 70, 0.6); ctx.sfx.gateDrop && ctx.sfx.gateDrop(); } }
     /* the dune falls: idle they beat you down, flipped they carry you up to the lip */
     for (const f of K.dfalls) { const on = running(f.glass), l = f.x0 * TS() - 2, r = (f.x1 + 1) * TS() + 2, top = f.top * TS(), bot = (f.bottom + 1) * TS();
@@ -150,11 +152,10 @@ export function makeFlip(api) {
     if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), V = { g, cx, cy, vw, vh, time, L: K.L, T: T() }, P0 = ctx.hero();
     const vis = (x0, x1) => (x1 + 1) * ts - cx > -48 && x0 * ts - cx < vw + 48;
     for (const s of K.seas) { if (!vis(s.x0, s.x1)) continue; const cl = s.bottom !== undefined; if (cl) { g.save(); g.beginPath(); g.rect(s.x0 * ts - cx, s.row * ts - cy - 12, (s.x1 - s.x0 + 1) * ts, (s.bottom - s.row + 1) * ts + 12); g.clip(); }   /* (claude/buriedcity4: a sea with the old street under it stops at its floor) */
-      ART.drawSea(V, s, s.x0 * ts - cx, (s.x1 - s.x0 + 1) * ts, s.row * ts + 8 - cy); if (cl) g.restore(); }
-    /* (claude/buriedcity4, GREYBOX) THE TIMED SAND SLABS: a slab of packed sand, its own timer over it (gold, red in its last FLIP.slabWarn s), shaking at the end */
-    for (const p of K.tplats) { if (!p.up || !vis(p.x0, p.x1)) continue; const warn = p.t <= FLIP.slabWarn, sh = warn ? Math.sin(time * 60) * 1.2 : 0, l = R(p.x0 * ts - cx + sh), y = R(p.y * ts - cy), w = (p.x1 - p.x0 + 1) * ts;
-      g.fillStyle = '#b98c58'; g.fillRect(l, y, w, ts); g.fillStyle = '#e2bb7a'; g.fillRect(l, y, w, 3); g.fillStyle = '#8a6a3c'; g.fillRect(l, y + ts - 3, w, 3); g.fillStyle = 'rgba(230,200,140,0.6)'; for (let i = 0; i < 4; i++) g.fillRect(l + 3 + ((i * 7 + Math.floor(time * 30)) % Math.max(4, w - 6)), y + ts + ((time * 40 + i * 9) % 14), 1, 2);
-      const k = p.t / p.life; g.fillStyle = 'rgba(0,0,0,0.6)'; g.fillRect(l + 2, y - 7, w - 4, 4); g.fillStyle = warn ? '#ff5a3a' : '#ffd36b'; g.fillRect(l + 3, y - 6, R((w - 6) * k), 2); }
+      ART.drawSea(V, s, s.x0 * ts - cx, (s.x1 - s.x0 + 1) * ts, s.row * ts + 8 - cy); if (A4.inWorks(s.x0)) A4.drawPitSkin(V, s, s.x0 * ts - cx, (s.x1 - s.x0 + 1) * ts, s.row * ts + 8 - cy); if (cl) { A4.drawSeaBones(V, s); g.restore(); } }   /* (claude/bc4art: THE GLASS PIT is the works' own darker sand with glass in it; the old street's stakes and bones under the rooftops' seas) */
+    /* (claude/bc4art) THE TIMED SAND SLABS: a cut slab of sand in strata, its own hourglass timer over it (gold, red in its last FLIP.slabWarn s), cracks opening and grains falling as it runs down, shaking at the end */
+    K.tplats.forEach((p, i) => { if (!p.up || !vis(p.x0, p.x1)) return; A4.drawSlab(V, p.x0 * ts - cx, p.y * ts - cy, (p.x1 - p.x0 + 1) * ts, p.t / p.life, p.t <= FLIP.slabWarn, i, time); });
+    for (const t of K.tilts) { const gq = glassOf(t.glass), warn = !!gq && gq.t > 0 && gq.t <= FLIP.warn, tn = t.turn === undefined ? 1 : t.turn; if (tn < 1 || warn) A4.drawTilt(V, t, tn, warn, time); }   /* (claude/bc4art) the dune's turn, and its shake in the glass's last 2 s */
     for (const r of K.risers) { if (!vis(r.x0, r.x1)) continue; const gl = glassOf(r.glass);
       ART.drawRiser(V, r, { l: r.x0 * ts - cx, top: r.top * ts - cy, w: (r.x1 - r.x0 + 1) * ts, h: r.rows * ts, near: !!(P0 && gl && Math.abs(P0.x - px(gl.x)) < 22 * ts), moving: r.up > 0.02 && r.up < 0.98 }); }
     for (const b of K.banks) { if (!vis(b.x0, b.x1) || b.full >= 0.999) continue; const l = b.x0 * ts, w = (b.x1 - b.x0 + 1) * ts, bot = (b.y1 + 1) * ts, h = (b.y1 - b.y0 + 1) * ts * b.full; if (h > 1) { SET.sandBody(V, l, bot - h, w, bot); ART.drawBankRunning(V, l - cx, bot - cy, w, h, b.full); } }

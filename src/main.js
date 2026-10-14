@@ -29040,7 +29040,7 @@ function drawStructures(cx,cy) {
     if(z.kind==='seam'){drawBurialSeam(g,l,r,t,b);continue;}
     if(z.kind==='cryptPier'){drawCryptPier(g,l,r,t,b);continue;}   /* a pier of the Drowned Ossuary's arcade under its stone walkway */   /* a pillar where two of the Burial Caverns' backdrops meet (src/burial-looks.js) */
     if(String(z.kind).startsWith('ub')){UBS.drawStructure(g,z.kind,l,r,t,b,z.x0);continue;}
-    if(String(z.kind).startsWith('bc')&&BCH&&BCH.drawStructure(g,z.kind,l,r,t,b))continue;
+    if(String(z.kind).startsWith('bc')&&BCH&&BCH.drawStructure(g,z.kind,l,r,t,b,z.x0))continue;
     if(String(z.kind).startsWith('py')&&PYH&&PYH.on()&&PYH.drawStructure(g,z.kind,l,r,t,b))continue;   /* (claude/sealedpyramid) THE SEALED PYRAMID's corbels and the robbers' walk's posts */   /* (claude/buriedcity2) THE BURIED CITY's footing kinds: corbels, a stall's poles, a pipe's brackets (src/buried-city-hands.js drawStructure) */   /* the field's gun-deck trestles, and (claude/unburied4) the piers, cart frames and shores that hold its ledges up (src/redraw/unburied_siege.js) */
     if(z.kind==='chains'){for(const x of [l+4,r-5])for(let yy=t;yy<b;yy+=4){g.fillStyle=(yy/4)&1?'#5d594e':'#9a958c';g.fillRect(x,yy,(yy/4)&1?1:3,3);g.fillStyle='#3a3630';g.fillRect(x+((yy/4)&1?0:1),yy+1,1,1);}continue;}   /* a platform HUNG from the roof on two chains (B9), not stood on a pier: the Buried Dead's crown bier */
     g.fillStyle=z.kind==='timber'?'#755b43':'#827a67';

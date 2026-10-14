@@ -14,10 +14,10 @@ try {
       BK.manualSimulation = true; BKT.setHeroLevel('knight', 40); BK.setHero('knight'); BK.reset({ fresh: false }); BK.applyUpgrades && BK.applyUpgrades();
       BK.load(i); BK.state = 'play'; BK.god = true; ${process.env.PRE || ''}
       if (!flags.includes('h')) { try { BK.SET.hud = 'minimal'; } catch (e) {} }
-      BK.sim(60); BK.tp(+xs, +ys); BK.sim(40);
-      if (!flags.includes('f')) for (const e of BK.enemies()) if (!e.boss && !e.cnSkin) e.alive = false;
-      if (/s/i.test(flags)) { const H = BK.buriedCityHands(); H.flip.interact(BK.P); }
-      for (let k = 0; k < (+sims || 60); k++) { if (BK.state === 'card') BK.cardClose(); BK.step(1); }
+      BK.sim(500); BK.tp(+xs, +ys); BK.sim(40);
+      if (flags.includes('k')) for (const e of BK.enemies()) if (!e.boss && !e.cnSkin) e.alive = false;
+      if (flags.includes('A')) BK.flipAll(); if (/s/i.test(flags)) { const H = BK.buriedCityHands(); H.flip.interact(BK.P); }
+      for (let k = 0; k < (+sims || 60) + 150; k++) { if (BK.state === 'card') BK.cardClose(); BK.step(1); }
       const crop = ${JSON.stringify((process.env.CROP || '').split(',').map(Number))}; const c = document.createElement('canvas'); let g;
       if (crop.length === 5) { c.width = crop[2] * crop[4]; c.height = crop[3] * crop[4]; g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, crop[0], crop[1], crop[2], crop[3], 0, 0, c.width, c.height); }
       else { c.width = 640; c.height = 360; g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); }
