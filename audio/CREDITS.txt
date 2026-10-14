@@ -326,3 +326,5 @@ RECORDED SOUND EFFECTS (claude/sfx, Daniel 2026-10-11; all CC0, licence field re
 - "Their Coming (generic horn sound)" by StumpyStrust (opengameart.org/content/their-coming-generic-horn-sound) - r_horn, r_hornD
 - "Impact Sounds" by Kenney (kenney.nl/assets/impact-sounds, CC0; claude/sfx3) - r_bellA, r_bellB, r_bellC (impactBell_heavy), r_glassC (impactGlass_medium); r_archF and r_wqF are further takes from rubberduck "80 CC0 RPG SFX"
 - the cry SFX that now use the creature kits already credited above (vo_bark, vo_scream, vo_ogre_alert, roar, croak, amb_gull) carry no new files
+
+THE COFFIN KING (2026-10-13, claude/pyramidart): his theme (tombking, tombking:p2, tombking:p3) is composed and synthesised in code (src/boss-music.js): no file, no third-party audio. B Phrygian dominant funeral march at 76 / 91 / 107 bpm.

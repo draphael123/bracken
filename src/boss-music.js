@@ -448,6 +448,39 @@ function scarabmother(i, delay, variant, env) {
   if (shake && s === 0) { pluck(env, 'sine', 52, 0.7, 0.45 * g, delay, { to: 30 }); noise(env, 0.35, 0.06 * g, 300, 0.6, delay); }   /* the tomb shaking */
   if (s === 0 || s === 4) { const row = SMM_HORN[(bar >> 1) % 4], n = nf(row[s === 0 ? 0 : 1]) * (shake || second ? 2 : 1) * (shake && second ? 0.5 : 1); held(env, 'sawtooth', n, step * 3.6, 0.05 * g, delay, { lp: 1600, att: 0.03, hold: 0.6, det: 10 }); }
 }
+// ---------------------------------------------------------------- THE COFFIN KING (claude/pyramidart, his own theme: three phases; Daniel 10-13)
+// B Phrygian dominant (B C D# E F# G A), 4/4 at 76 (eighth = 0.395 s), 16 bars = 50 s. A FUNERAL MARCH in a stone box: the LID DRUM (a sub sine struck on the one, with a
+// stone-on-stone thud, and a dry coffin KNOCK on the three), CHAINS (a high iron rattle on the off-beats, a clank on the four), a DIRGE ORGAN (two detuned saws under a
+// lowpass, held two bars; the major third D# joins in the second half, the flat second C leans on it every fourth bar), a tolled BELL every four bars, and the
+// LAMENT: a reedy line (a saw and a triangle through a lowpass, a scoop into each note) falling from F# to B.
+// 'tombking:p2' THE TRAPS ARM: quicker (eighth 0.33 s), the dart ticks run on every beat and a gear ratchets on the last eighth, the lament an octave up.
+// 'tombking:p3' THE LID CRACKS: quicker again (eighth 0.28 s), the lament over a B-C grind, the drum rolling into every bar and a SAND WIND swelling every two bars.
+const CKM_STEP = 60 / 76 / 2, CKM_STEP2 = 60 / 91 / 2, CKM_STEP3 = 60 / 107 / 2, CKM_LEN = 8, CKM_BARSN = 16;
+const CKM_LINE = [['F#4', '-', 'G4', '-', 'F#4', 'E4', 'D#4', '-'], ['E4', '-', '-', '-', 'D#4', 'C4', 'B3', '-'], ['B3', 'C4', 'D#4', '-', 'E4', '-', 'F#4', '-'], ['G4', 'F#4', 'E4', '-', 'D#4', '-', '-', '-']];
+function tombking(i, delay, variant, env) {
+  const p2 = variant === 'p2', p3 = variant === 'p3', step = p3 ? CKM_STEP3 : p2 ? CKM_STEP2 : CKM_STEP, bar = Math.floor(i / CKM_LEN), s = i % CKM_LEN, second = bar >= 8, b = bar % 4, g = env.gain, long = step * CKM_LEN;
+  // THE LID DRUM and the coffin knock
+  if (s === 0) { pluck(env, 'sine', 72, 0.55, 1.0 * g, delay, { to: 33 }); noise(env, 0.09, 0.16 * g, 180, 0.7, delay); }
+  if (s === 4) { pluck(env, 'triangle', 168, 0.12, 0.5 * g, delay, { to: 120, lp: 900 }); noise(env, 0.04, 0.1 * g, 1400, 2, delay); }
+  if ((p2 || p3) && s === 2) pluck(env, 'sine', 96, 0.2, 0.4 * g, delay, { to: 52 });
+  if (p3 && (s === 6 || s === 7)) pluck(env, 'sine', s === 6 ? 118 : 100, 0.16, 0.5 * g, delay, { to: 55 });   // the roll into the next bar
+  // THE CHAINS
+  if (s % 2 === 1) noise(env, 0.05, 0.03 * g, 6800, 8, delay);
+  if (s === 7 || s === 3) pluck(env, 'square', 2900, 0.04, 0.02 * g, delay, { lp: 3600 });
+  if (p2 || p3) { pluck(env, 'square', s % 2 ? 3700 : 4300, 0.018, 0.022 * g, delay, { lp: 5000 }); if (s === 7) noise(env, step * 0.9, 0.04 * g, 3400, 7, delay); }   // the dart ticks, a gear ratcheting
+  // THE DIRGE ORGAN (two bars a breath), the major third in the second half, the flat second leaning every fourth bar
+  if (s === 0 && bar % 2 === 0) { const ns = second || p3 ? ['B1', 'F#2', 'D#3'] : ['B1', 'F#2']; for (const n of ns) held(env, 'sawtooth', nf(n), long * 2 * 0.98, (p3 ? 0.055 : 0.045) * g, delay, { lp: 430, att: 0.8, hold: 0.8, det: 12 }); }
+  if (s === 0 && (b === 3 || p3) && bar % 2 === 1) held(env, 'sawtooth', nf('C3'), long * 0.97, 0.04 * g, delay, { lp: 380, att: 0.5, hold: 0.7, det: 9 });
+  // THE BELL, tolled every four bars (twice in his last phase)
+  if (s === 0 && (bar % 4 === 0 || (p3 && bar % 2 === 0))) for (const [fr, v] of [[247, 0.13], [352, 0.06], [598, 0.035]]) pluck(env, 'sine', fr, 3.2, v * g, delay, { to: fr * 0.99 });
+  // THE LAMENT (an octave up in the second phase; a doubling under it in the second half)
+  const c = CKM_LINE[b][s]; if (c !== '-' && bar >= 1) { let k = 1; while (s + k < CKM_LEN && CKM_LINE[b][s + k] === '-') k++;
+    const f = nf(c) * (p2 ? 2 : 1), len = step * k * 0.97, v = (p2 || p3 ? 0.07 : 0.08) * g;
+    held(env, 'sawtooth', f, len, v, delay, { lp: 1700, att: 0.04, hold: 0.55, from: 0.93 }); held(env, 'triangle', f * 2, len, v * 0.45, delay, { lp: 2400, att: 0.05, hold: 0.5, from: 0.94 });
+    if (second) held(env, 'sawtooth', f * 0.75, len, v * 0.35, delay, { lp: 1200, att: 0.05, hold: 0.5, det: 8 }); }
+  // THE SAND WIND (his last phase)
+  if (p3 && s === 0 && bar % 2 === 0) noise(env, long * 1.6, 0.06 * g, 1700 + 300 * (b & 1), 0.45, delay);
+}
 // (THE BANDIT KSAR has no synth bed: 'Desert Loop' by iamoneabe is its file, claude/ksar art pass; THE HAWK-MISTRESS below keeps her composed theme)
 // ---------------------------------------------------------------- THE HAWK-MISTRESS (claude/ksar, her composed theme: three phases)
 // D Phrygian dominant (D Eb F# G A Bb C), 4/4 at 100 (eighth = 0.3 s), 16 bars = 38 s. THE DUEL: a frame drum (a bendir: dum on 1 and the and of 2, a slap on
@@ -565,7 +598,7 @@ export const SYNTH_BOSS = {
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   sealedpyramid: { step: SPM_STEP, total: SPM_LEN * SPM_BARSN, play: sealedpyramid }, scarabmother: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the greybox level bed and her theme */
-  tombking: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/pyramidboss) THE COFFIN KING: a PLACEHOLDER (the tomb theme) until lane C writes his own */
+  tombking: { step: CKM_STEP, total: CKM_LEN * CKM_BARSN, play: tombking },   /* (claude/pyramidart) THE COFFIN KING: his own theme (B Phrygian dominant funeral march), :p2 and :p3 below */
   hourglassking: { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the greybox level bed and his theme */   /* (claude/lanterneater) */
   greatdrill: { step: GDM_STEP, total: GDM_LEN * GDM_BARSN, play: greatdrill },   /* (claude/minecart) */
   colossus: { step: COM_STEP, total: COM_LEN * COM_BARSN, play: colossus },   /* (claude/glasssea) */
@@ -583,7 +616,7 @@ export const SYNTH_BOSS = {
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
   'fogknight:p2': { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight }, 'fogknight:p3': { step: FKM_STEP3, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the double, the shroud */
-  'tombking:p2': { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother }, 'tombking:p3': { step: SMM_STEP3, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/pyramidboss) placeholders: lane C */
+  'tombking:p2': { step: CKM_STEP2, total: CKM_LEN * CKM_BARSN, play: tombking }, 'tombking:p3': { step: CKM_STEP3, total: CKM_LEN * CKM_BARSN, play: tombking },   /* (claude/pyramidboss) placeholders: lane C */
   'scarabmother:p2': { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother }, 'scarabmother:p3': { step: SMM_STEP3, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the brood, the tomb shaking */
   'hourglassking:p2': { step: HKM_STEP, total: HKM_LEN * HKM_BARSN, play: hourglassking }, 'hourglassking:p3': { step: HKM_STEP3, total: HKM_LEN * HKM_BARSN, play: hourglassking },   /* (claude/buriedcity) the sands rise, the glass cracks */
   'hawkmistress:p2': { step: HMM_STEP, total: HMM_LEN * HMM_BARSN, play: hawkmistress }, 'hawkmistress:p3': { step: HMM_STEP3, total: HMM_LEN * HMM_BARSN, play: hawkmistress },   /* (claude/ksar) her guard, the store burning */
