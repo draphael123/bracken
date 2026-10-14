@@ -39,7 +39,10 @@ export function makeBuriedCityHands(ctx) {
      the sun reaches only the columns L.sun names (the dunes, and the holes where the roof has fallen in) - there the shared drain (src/sun-hands.js) runs as on
      any desert road, and a solid thing over your head is still shade */
   H.sunAt = x => !!K && (K.L.sun || []).some(z => x >= z.x0 * TS() && x < (z.x1 + 1) * TS());
-  H.noSun = x => !!K && !H.sunAt(x);
+  /* (claude/buriedcity4, brief 3) A DRIFTING CLOUD's shadow is shade: where each cloud is now (px; it drifts west along its track and comes round again) */
+  const cloudSpan = c => { const span = (c.x1 - c.x0 + 1 + c.w) * TS(), x = (c.x1 + 1) * TS() - (((c.ph * span + K.clock * c.v) % span) + span) % span; return [x, x + c.w * TS()]; };
+  H.cloudAt = x => !!K && (K.L.clouds || []).some(c => { if (x < c.x0 * TS() || x >= (c.x1 + 1) * TS()) return false; const [a, b] = cloudSpan(c); return x >= a && x < b; });
+  H.noSun = x => !!K && (!H.sunAt(x) || H.cloudAt(x));
 
   /* ---------- RESET: a fresh load builds the rooms; a respawn puts every small room back as it was built and keeps THE GREAT SAND-GATE as it was left ---------- */
   const deckUp = r => (r.deck ? 1 + Math.max(0, ...r.deck.map(c => -c[3])) : 0);   /* rows the deck (and what stands on it) takes over the sand's top */
@@ -322,6 +325,11 @@ export function makeBuriedCityHands(ctx) {
       else { g.fillStyle = '#5a4428'; g.fillRect(dx, y0 - 3, ts, 3); g.fillStyle = '#c8a064'; g.fillRect(dx, y0 + h - 3, ts, 3); }
       const lx = R(LD.lever[0] * ts + 8 - cx), ly = R((LD.lever[1] + 1) * ts - cy); g.fillStyle = '#3a3446'; g.fillRect(lx - 1, ly - 18, 3, 18); g.fillStyle = K.loopOpen ? '#8fd160' : '#ffd36b'; g.fillRect(K.loopOpen ? lx + 2 : lx - 6, ly - 20, 5, 3);
       const P0 = ctx.hero(); if (!K.loopOpen && P0 && Math.abs(P0.x - (lx + cx)) < 40 && Math.abs(P0.y - (ly + cy)) < 30) ctx.text('E: OPEN THE OLD STREET', lx, ly - 30, '#ffd36b', 'center', 4); } }
+    /* (claude/buriedcity4, GREYBOX) THE CLOUDS' SHADOWS: a cool wash over the columns a cloud covers, and a hard band on the ground where it falls (you see where it ends) */
+    for (const c of (L.clouds || [])) { let [a, b] = cloudSpan(c); a = Math.max(a, c.x0 * ts); b = Math.min(b, (c.x1 + 1) * ts); if (b <= a || b - cx < -8 || a - cx > vw + 8) continue;
+      g.fillStyle = 'rgba(40,36,80,0.16)'; g.fillRect(R(a - cx), 0, R(b - a), vh);
+      for (let x = Math.floor(a / ts); x * ts < b; x++) { let y = 0; while (y < L.H - 1 && ctx.cellGet(x, y) === T().AIR) y++; const l = Math.max(a, x * ts), r = Math.min(b, (x + 1) * ts); g.fillStyle = 'rgba(30,26,70,0.35)'; g.fillRect(R(l - cx), R(y * ts - cy), R(r - l), 4); }
+      g.fillStyle = 'rgba(255,240,200,0.5)'; g.fillRect(R(a - cx), 0, 1, vh); g.fillRect(R(b - cx) - 1, 0, 1, vh); }
     if (FL) FL.draw(g, cx, cy, time);   /* THE FLIP's pieces (placeholder art): THE SAND SEA, the risers, the banks, the dune falls, the glasses and their gauges */
     /* THE LIGHT IN THE SHAFTS: slanted god-rays, drifting dust, a lit patch where they reach the floor */
     for (const z of (L.sun || [])) { if (z.x0 < 38 || !vis(z.x0, z.x1 + 1)) continue; if (z.floor === undefined) { let fy = 1; const mx = (z.x0 + z.x1) >> 1; while (fy < L.H - 1 && ctx.cellGet(mx, fy) === T().AIR) fy++; z.floor = fy; } SET.drawShaft(V, z, z.floor); }

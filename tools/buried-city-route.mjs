@@ -108,7 +108,7 @@ try {
             walk(816); waitFor(() => !BK.enemies().some(e => e.alive && e.elite && Math.abs(e.x / TS - 815) < 8), 3000); walk(820); settle(); DBG.push('courtyard ' + col() + ',' + feet()); return col() >= 819 && feet() === 32; }, [820, 32]],
         /* (claude/buriedcity4) THE EXAM BEFORE THE THRONE: the courtyard's glass buries the sand-bound; the antechamber's glass raises the timed slabs - across before they crumble, the shrine */
         ['THE COURTYARD SAND-BOUND and THE ANTECHAMBER: turn the glass, cross the timed slabs before they crumble, the last shrine', [820, 32], () => { if (BK.enemies().some(e => e.alive && e.cnSkin === 'sandbound' && Math.abs(e.x / TS - 819) < 6)) { if (!turn(812, 'court')) return false; walk(819); }
-            walk(824, { tol: 3 }); press('talk', 1); if (!glassRuns('ante')) return false; walk(825, { tol: 2 }); if (!jumpTo(828, 31) || !jumpTo(831, 30) || !jumpTo(833, 31) || !jumpTo(836, 30) || !jumpTo(840, 32)) return false; walk(842); return col() >= 841 && feet() === 32; }, [842, 32]],
+            walk(824, { tol: 3 }); press('talk', 1); if (!glassRuns('ante')) return false; walk(825, { tol: 2 }); if (!jumpTo(828, 31) || !jumpTo(832, 30) || !jumpTo(836, 31) || !jumpTo(840, 32)) return false; walk(842); return col() >= 841 && feet() === 32; }, [842, 32]],
       ];
       let lifts = [], retries = 0;
       if (${FROM}) { BK.tp(LEGS[${FROM}][1][0], LEGS[${FROM}][1][1]); BK.sim(5); if (LEGS[${FROM}][0].startsWith('THE FOUNDRY') || ${FROM} > LEGS.findIndex(l => l[0].startsWith('THE GREAT SAND-GATE'))) { const W = K().wheel; W.done = true; W.turns = 3; const g = room('great'); g.gate = 'open'; g.drain = 4; } }

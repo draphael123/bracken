@@ -159,6 +159,9 @@ export function buildBuriedCity({ painter, T, TS }) {
      sandBound: THE SAND-BOUND (brief 2): the sand-drowned's machine (the ambusher, cnSkin 'sandbound') bound to a glass - while its glass rests THE SAND HOLDS IT
        (it takes 0.4 of a blow, told: a clank and THE SAND HOLDS IT); strike the glass and it is BURIED to the chest - stuck, and every blow lands whole */
   const tilts = [], tplats = [];
+  /* (claude/buriedcity4, brief 3) DRIFTING CLOUD SHADOWS over the open sky (the dunes, THE ROOFTOPS): [x0, x1] the columns a cloud's shadow crosses, w its width in tiles, v its
+     drift (px a second, westward: toward you), ph where it starts (0..1 of its track). Its shadow is SHADE (src/buried-city-hands.js cloudAt; drawn on the ground) */
+  const clouds = [{ x0: 0, x1: 37, w: 6, v: 12, ph: 0.3 }, { x0: 702, x1: 821, w: 8, v: 14, ph: 0.12 }, { x0: 702, x1: 821, w: 6, v: 14, ph: 0.45 }, { x0: 702, x1: 821, w: 9, v: 14, ph: 0.78 }];
   const tilt = (g, x0, x1, lo, floor) => { tilts.push({ glass: g, x0, x1, lo, floor }); for (let i = 0; i <= x1 - x0; i++) { set(x0 + i, lo - 1 - i, T.SLOPE_R1); block(x0 + i, x0 + i, lo - i, floor); }
     plats.push({ kind: 'dune', x0, x1, y: lo - (x1 - x0 + 1), y1: floor, riser: true }); structures.push({ kind: 'bcBuried', x0, x1, top: lo - (x1 - x0 + 1), floor }); };
   const tplat = (g, x0, x1, y, life) => { tplats.push({ glass: g, x0, x1, y, life }); plats.push({ kind: 'sandslab', x0, x1, y, riser: true }); };
@@ -403,14 +406,17 @@ export function buildBuriedCity({ painter, T, TS }) {
   decor.push({ kind: 'awning', x0: 713, x1: 716, y: 10 }); shadeBox(713, 716, 11, 13);
   sea(718, 734, 16); isle('house', 721, 725, 14, 2); isle('dome', 727, 730, 14, 2); decor.push({ kind: 'dome', x0: 727, x1: 730, y: 14 });
   glass('fall', 728, 13, 8); dfall('fall', 732, 733, 6, 15);
+  decor.push({ kind: 'awning', x0: 726, x1: 730, y: 10 }); shadeBox(726, 730, 11, 13);   /* (claude/buriedcity4, brief 3: OUTDOOR SHADE within running reach - a cloth over the dome's glass: you strike it in the shade) */
   sign(723, 13, 'STRIKE THE HOURGLASS: THE SAND-FALL FLOWS UP. RIDE IT.');
   /* THE HIGH DUNE (734-752): shade under a stall's cloth; then THE CHAIN (753-784, REMIX): the high dune's glass raises three roofs down to a minaret stub that
      stands in the sea; its own glass raises the last two to the far bank. A slinger on the stub throws while you cross (a fight during the rule) */
   ground(734, 752, 6); decor.push({ kind: 'awning', x0: 738, x1: 742, y: 2 }); shadeBox(738, 742, 3, 5);
   sign(744, 5, 'TWO GLASSES: THE FIRST RAISES THE WAY TO THE SECOND.');
   glass('chain1', 750, 5, 8); sea(753, 784, 16);
+  decor.push({ kind: 'awning', x0: 747, x1: 751, y: 2 }); shadeBox(747, 751, 3, 5);   /* (claude/buriedcity4: shade over the chain's first glass) */
   riser('chain1', 754, 756, 8, 2, 'house'); riser('chain1', 759, 761, 10, 2, 'house'); riser('chain1', 764, 766, 11, 2, 'dome');
   isle('minaret', 769, 770, 11, 5); glass('chain2', 769, 10, 7);
+  decor.push({ kind: 'awning', x0: 768, x1: 771, y: 7 }); shadeBox(768, 771, 8, 10);   /* (claude/buriedcity4: a torn cloth on the minaret stub - shade at the second glass) */
   riser('chain2', 773, 775, 11, 2, 'house'); riser('chain2', 778, 780, 11, 2, 'house');
   slinger(785, 11, 'roofSling', { face: -1 });                                     /* (on the far bank, throwing back across the chain) */
   /* THE FAR BANK (783-794) and THE EXAM (795-808): the last glass RAISES three roofs and SINKS the one that stands (798-800: the sand runs the other way) -
@@ -418,6 +424,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(783, 794, 12); decor.push({ kind: 'awning', x0: 784, x1: 788, y: 8 }); shadeBox(784, 788, 9, 11);
   sign(786, 11, 'THE LAST GLASS SINKS THE ROOF THAT STANDS - AND RAISES THE REST.');
   glass('exam', 791, 11, 6); sea(795, 808, 16, true);
+  decor.push({ kind: 'awning', x0: 789, x1: 793, y: 8 }); shadeBox(789, 793, 9, 11);   /* (claude/buriedcity4: shade at the exam's glass) */
   sinker('exam', 798, 799, 12, 2, 'house');
   riser('exam', 795, 797, 13, 2, 'house'); riser('exam', 801, 803, 12, 2, 'dome'); riser('exam', 806, 807, 11, 2, 'house');
   /* THE COURTYARD (809-821) under a collapsed dome: its rim, its ribs down to the floor (row 32), the throne room's door in its east wall. THE EXAM BEFORE THE
@@ -426,7 +433,7 @@ export function buildBuriedCity({ painter, T, TS }) {
      shrine after. Shade only under the dome's broken shell */
   ground(809, 810, 10); ground(811, 820, TH);
   plat('lintel', 812, 814, 15); plat('balcony', 817, 819, 19); plat('lintel', 812, 814, 23); plat('balcony', 817, 819, 27);
-  decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(811, 813, 25, TH - 1);
+  decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(809, 814, 11, TH - 1); shadeBox(818, 821, 11, TH - 1);   /* (claude/buriedcity4, brief 3: the dome's broken shell shades both sides of the courtyard - its hole lets the sun in over the middle, where the elite stands) */
   construct(815, TH - 1, 'courtyard', { elite: true }); slinger(818, 26, 'courtyardSling', { face: -1 });
   glass('court', 812, TH - 1, 8); sandBound(819, TH - 1, 'court', 'courtyardBound');
   sign(811, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: TURN THE GLASS.');
@@ -440,14 +447,14 @@ export function buildBuriedCity({ painter, T, TS }) {
   block(810, 810, 28, TH - 1);                                                      /* the sand-gate at the courtyard end (the hands open it: L.loopDoor) */
   sign(712, TH - 1, 'THE OLD STREET RUNS ON UNDER THE DUNES. ITS GATE IS SHUT FROM THE FAR SIDE.');
   lamp(760, 29); lamp(800, 29);
-  /* THE ANTECHAMBER (822-844, claude/buriedcity4 - NEW): under the throne room's sand roof, a hall of sand with no floor: its glass raises four slabs of sand, each
+  /* THE ANTECHAMBER (822-844, claude/buriedcity4 - NEW): under the throne room's sand roof, a hall of sand with no floor: its glass raises three slabs of sand, each
      crumbling on its own timer (drawn over it), the last one latest - cross before they go. Under them THE SAND SEA (a bite, and back to the glass's floor). The shrine
      after it is the last before the king */
   block(821, 821, 10, 26); roof(822, 843, 21);                                     /* (the courtyard's east wall over the door; the hall's roof) */
   ground(822, 825, TH); sea(826, 838, TH); ground(839, 843, TH); interiors.push([822, 843, 22, TH - 1, 'bcAnte']);
   sign(822, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
   glass('ante', 824, TH - 1, 7);
-  tplat('ante', 827, 828, 31, 3.2); tplat('ante', 830, 831, 30, 4.2); tplat('ante', 833, 834, 31, 5.2); tplat('ante', 836, 837, 30, 6.2);
+  tplat('ante', 827, 829, 31, 3.4); tplat('ante', 831, 833, 30, 4.6); tplat('ante', 835, 837, 31, 5.8);
   decor.push({ kind: 'mural', x0: 840, x1: 843, y: 25 });                          /* (B8: the art lane draws HIM raising slabs of sand toward himself - foreshadowing his fight) */
   lamp(841, 24, 'brazier');
   ent('check', 842, TH - 1);                                                        /* CHECKPOINT FIVE, past the exam before the throne, at the throne room's door */
@@ -497,6 +504,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     alarms: ROOMS.map(r => ({ x0: r.x0, x1: r.x1 })).concat(CHUTES.flatMap(c => Object.values(c.to).map(t => ({ x0: t.x0 - 4, x1: t.x1 + 4 })))),   /* THE RULE'S STATE for tools/rule-state.mjs: the sand rooms and the falls are where the rule is live */
     sun: SUN.map(z => ({ ...z })), shade, shadeArt: shade,   /* THE DESERT'S SUN on the dunes and in the shafts only (the city is under its roof): src/buried-city-hands.js sunAt */
     loopDoor: { x: 810, y0: 28 + DY, y1: TH - 1 + DY, lever: [812, TH - 1 + DY] },   /* (claude/buriedcity4) THE OLD STREET's sand-gate: opened from the courtyard (E), it stays open (brief 10, the loop back to the fourth shrine) */
+    clouds,
     glasses, risers, banks, dfalls, seas, tilts, tplats, outside: [{ ...OUT }], outMasonry: [[702, 709, 0, H - 1], [811, 820, 0, H - 1]],   /* THE FLIP (claude/buriedcity3): the hourglasses and what each turns; THE SAND SEA; THE ROOFTOPS are OUTSIDE (the backdrop's sky: src/redraw/buried_city_backdrop.js) */
     noSkyRays: true,   /* (the sky's rays are the dunes' and the shafts' only: src/redraw/buried_city_backdrop.js draws the shafts' light) */
     quest: { n: 5, item: 'gear', name: 'GEARS', done: 'FIVE GEARS: THE CLOCKWORK VAULT OPENS', thanks: 'THE CLOCKWORK VAULT OPENS' },

@@ -23,7 +23,7 @@ export function makeFlip(api) {
   const px = x => x * TS() + 8;
   /* ---------- RESET: a fresh load or a respawn - every glass run out, every riser down, every sinker and bank as built ---------- */
   F.reset = (K0, fresh) => {
-    K = K0; const L = K.L;
+    K = K0; const L = K.L; L.towerFlip = 0;
     K.glasses = (L.glasses || []).map(g => ({ ...g, t: 0, runs: 0, warned: false }));
     K.risers = (L.risers || []).map(r => ({ ...r, up: r.sinks ? 1 : 0, solid: null, shake: 0 }));
     K.banks = (L.banks || []).map(b => ({ ...b, full: 1, solid: null, wait: 0 }));
@@ -97,6 +97,7 @@ export function makeFlip(api) {
   F.update = dt => {
     if (!K) return; const P0 = ctx.hero();
     strikes();
+    { const on = !!P0 && K.glasses.some(q => q.t > 0 && Math.abs(P0.x - px(q.x)) < 40 * TS()), f0 = K.L.towerFlip || 0; K.L.towerFlip = on ? Math.min(1, f0 + dt * 1.6) : Math.max(0, f0 - dt * 1.6); }   /* (claude/buriedcity4, brief 6) THE GREAT HOURGLASS on the skyline turns over while a glass near you runs (src/redraw/buried_city_backdrop.js drawTower) */
     for (const g of K.glasses) { g.cd = Math.max(0, (g.cd || 0) - dt); g.spin = Math.max(0, (g.spin || 0) - dt); if (g.t <= 0) continue;
       const t0 = g.t; g.t = Math.max(0, g.t - dt);
       if (g.t <= FLIP.warn && !g.warned) { g.warned = true; const near = P0 && Math.abs(P0.x - px(g.x)) < 520; if (near) number(P0.x, P0.y - 34, 'THE GLASS RUNS OUT', '#ff9a5c'); }
@@ -135,7 +136,7 @@ export function makeFlip(api) {
     K.flipN.swallowed++; ctx.shake(4); ctx.burst(p.x, s.row * TS(), 18, ['#e6c98a', '#a87a40'], 90, 0.7); ctx.sfx.pHurt && ctx.sfx.pHurt();
     if (s.lethal && ctx.killHero) { const dead = ctx.killHero(p, 'THE SAND SEA'); if (dead) return; }
     const bite = Math.min(Math.round((p.maxHp || 100) * FLIP.bite), Math.max(0, p.hp - 1)); if (bite > 0 && !(ctx.god && ctx.god())) { p.hp -= bite; p.hurt = 0.25; ctx.number(p.x, p.y - 20, '-' + bite, '#ff6b6b'); }
-    const sf = K.safe.get(p) || { x: px(s.x0 - 2), y: (s.row - 2) * TS() }; p.x = sf.x; p.y = sf.y; p.vx = 0; p.vy = 0; p.inv = Math.max(p.inv || 0, 1);
+    const sf = K.safe.get(p) || (() => { const x = s.x0 - 1; for (let y = 1; y < K.L.H; y++) if (ctx.cellGet(x, y) !== T().AIR && ctx.cellGet(x, y - 1) === T().AIR) return { x: px(x), y: y * TS() }; return { x: px(s.x0 - 2), y: (s.row - 2) * TS() }; })();   /* (claude/buriedcity4: no footing yet - the top of the sea's west lip, wherever it stands) */ p.x = sf.x; p.y = sf.y; p.vx = 0; p.vy = 0; p.inv = Math.max(p.inv || 0, 1);
     if (p === ctx.hero()) number(p.x, p.y - 34, s.lethal ? 'THE SAND SEA SWALLOWS YOU' : 'THE SAND SEA SWALLOWS YOU: BACK TO THE ROOF', '#ff9a5c');
   }
   /* ---------- the glint's states and the walker's hints ---------- */
