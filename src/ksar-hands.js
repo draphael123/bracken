@@ -193,8 +193,8 @@ export function makeKsarHands(ctx) {
      glove, a beat there, up again); his hawk DOWN (dead, burnt, blinded) = he is OPEN, standing still (B4), a gold ring and its timer (B10). null = his own machine runs ---------- */
   function falconer(e, F, dt, P) { const k = e.ksHawk, ts = TS(); F.cd -= dt; F.t -= dt; if (F.open > 0) F.open -= dt;
     const stand = fr => { fall(e, dt); e.vx = 0; e.mode = 'walk'; if (e.st) { e.st.frame = fr; e.st.mode = 'walk'; e.st.t = 0; e.st.cd = Math.max(e.st.cd || 0, 0.35); e.st.x = e.x; } return true; };   /* (his machine waits in its walk: it picks up cleanly after) */
-    if (k && !k.alive && !F.lost) { F.lost = true; openUp(e, F, FALCON.openT, 'HIS HAWK IS DOWN: CUT HIM'); }
-    if (k && k.alive && k.st && k.st.mode === 'blind' && !(F.open > 0)) openUp(e, F, Math.max(1, k.st.t), 'HIS HAWK IS BLIND: CUT HIM');
+    if (k && !k.alive && !F.lost) { F.lost = true; openUp(e, F, FALCON.openT, 0); }
+    if (k && k.alive && k.st && k.st.mode === 'blind' && !(F.open > 0)) openUp(e, F, Math.max(1, k.st.t), 1);
     if (F.open > 0) return stand(9);   /* he calls for it in vain */
     if (!k || !k.alive) return null;
     const d = P.x - e.x;
@@ -209,8 +209,9 @@ export function makeKsarHands(ctx) {
     if (F.cd <= 0 && (m === 'patrol' || m === 'glove') && sees) { F.st = 'send'; F.t = FALCON.sendTell; e.face = Math.sign(d) || e.face; ctx.number(e.x, e.y - 30, '!!', '#ff6b6b'); ctx.sfx.tell && ctx.sfx.tell(true);
       if (once('falconSend')) number(e.x, e.y - 44, 'HE SENDS HIS HAWK: STEP OFF ITS SHADOW', '#ff9a5c'); return stand(7); }
     return null; }
-  function openUp(e, F, t, line) { F.open = t; F.st = 'idle'; F.openT0 = t; K.n.falconOpens = (K.n.falconOpens || 0) + 1; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(e.x, e.y - 20, 8, ['#ffd36b', '#fff6c8'], 50, 0.5);
-    if (once('falconOpen') || K.clock - F.said > 6) { F.said = K.clock; number(e.x, e.y - 44, line, '#8fd160'); } }
+  const OPEN_LINES = ['HIS HAWK IS DOWN: CUT HIM', 'HIS HAWK IS BLIND: CUT HIM'];
+  function openUp(e, F, t, li) { F.open = t; F.st = 'idle'; F.openT0 = t; K.n.falconOpens = (K.n.falconOpens || 0) + 1; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(e.x, e.y - 20, 8, ['#ffd36b', '#fff6c8'], 50, 0.5);
+    if (once('falconOpen') || K.clock - F.said > 6) { F.said = K.clock; number(e.x, e.y - 44, OPEN_LINES[li], '#8fd160'); } }
   /* ---------- (claude/ksarfoes) THE BLOW ON THE NEW BANDITS (main.js hurtEnemy0 asks before the hp comes off): returns what lands (0 = nothing) ----------
      THE PLATED BANDIT: a blast strips the plate (and lands whole); anything else lands at PLATE.plateMul with the shared turned read - THROW A BOMB.
      THE FALCONER: OPEN x openMul; guarded by his hawk x guardMul (HIS HAWK GUARDS). HIS HAWK: a blast or a torch burns it out of the air. */
