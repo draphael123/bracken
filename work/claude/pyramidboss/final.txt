@@ -1,0 +1,9 @@
+== fight-end
+Every one of 63 boss and mini fights (47 bosses, 16 minis) ends when its boss dies.
+== openings
+exit 0
+== dry
+row                 L  practiced kn/wa/py        band
+sealedpyramid      41  0/3 0/3 0/3 = 0%          LOW -50  zero: knight,warden,pyro
+sealedpyramid:mini 41  0/3 1/3 2/3 = 33%         LOW -37  zero: knight
+ALLDONE
