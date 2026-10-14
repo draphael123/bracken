@@ -217,6 +217,14 @@ export function buildTombHalf(B) {
   air(1000, 1006, BU - 6, BU - 1); block(1000, 1006, BU, ST - 1); for (let x = 1000; x <= 1003; x++) set(x, ST, T.SOLID);
   ent('check', BOSS_SLOT.check, BU - 1);                                                                     /* CHECKPOINT TEN: before the burial chamber (A10b) */
 
+  // ================= (claude/pyramidboss) A SECOND HEIGHT IN THE LONG FLAT RUNS: with the boss room now at the far end, level-quality measures the whole second half
+  // (it measured only up to her lair before) - it offered a second height in 33% of the width (bar 40%). Shelves and stepped pairs on lane A's floors, clear of the
+  // traps' plates and of the tomb niches: refuges over the reaches, nothing else changed =================
+  ledge('shelf', 494, 503, HA - 3); ledge('shelf', 537, 541, HA - 3); ledge('shelf', 561, 564, UP - 3); ledge('shelf', 578, 584, UP - 3); ledge('shelf', 591, 597, UP - 3);
+  ledge('shelf', 619, 627, GA - 3); ledge('shelf', 691, 692, GH - 3); ledge('shelf', 693, 699, GH - 6);   /* (and clear of the oil warden's gate at 853: a shelf over it walked round it - tools/elites.mjs) */
+  ledge('shelf', 741, 743, OI - 3); ledge('shelf', 744, 751, OI - 6); ledge('shelf', 761, 762, OI - 3); ledge('shelf', 763, 766, OI - 6);   /* (the oil floor at 48: a stepped pair - its first step is in the floor's own height band) */
+  ledge('shelf', 833, 838, OH - 3); ledge('shelf', 953, 960, LD - 3);
+
   // ================= 11. THE BURIAL CHAMBER (1007-1047): THE TOMB-KING'S SARCOPHAGUS (claude/pyramidboss, LANE B: src/tomb-king.js) - the level's machine in one room =================
   const S = BOSS_SLOT, F = S.floor;
   air(S.x0, S.x1, S.roof, F - 1); interiors.push([S.x0, S.x1, S.roof, F - 1, 'pyBurial']);
