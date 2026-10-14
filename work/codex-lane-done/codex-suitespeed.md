@@ -1,6 +1,6 @@
 # Task A checkpoint: suite speed
 
-Status: **Partial, paused at Daniel's request on 2026-10-13 so this PC can shut down.** Branch `codex/suitespeed` is based on `origin/master`. Task B has not started. No game source (`src/`) was changed.
+Status: **In progress, resumed 2026-10-14 at 9:00 a.m. Eastern.** The previous checkpoint was paused at Daniel's request on 2026-10-13. Branch `codex/suitespeed` is based on `origin/master`. Task B has not started. No game source (`src/`) was changed.
 
 ## What is saved
 
@@ -20,7 +20,7 @@ The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time aud
 
 Full logs are beside this report: `baseline-suite.log`, `jobs4-run1.log`, `jobs4-equivalence-1.log`, `jobs1-equivalence.log`, and `jobs4-equivalence-2.log`. `archmage-folly-standalone.log` and `mobile-perf-standalone.log` show both intermittent failures passed alone. `mobile-perf` failed its unchanged 600 ms Red Gorge frame budget at 642.8 ms in parallel #2; its standalone worst frame was 35.5 ms. The third parallel full run was interrupted before results were emitted to honor the shutdown request; it is **not** counted as proof. The two shard runs and full three-run equivalence proof remain pending.
 
-The baseline's 30 slowest checks, in descending wall time, are below. Most are page checks that paid for their own server and Chrome startup on the baseline. The long combat, travel, and text checks also simulate many frames or layouts. `boss-music` is Node-only with real timers; `profile-cleanup` deliberately exercises multiple browser shutdown paths.
+The baseline's 30 slowest checks, in descending wall time, are below. Most are page checks that paid for their own server and Chrome startup on the baseline. The long combat, travel, and text checks also simulate many frames or layouts. `boss-music` is Node-only with real timers; `profile-cleanup` deliberately exercises multiple browser shutdown paths. `check-timings.md` has **all 374** checks sorted by wall time, classifies 223 page and 151 Node checks, and identifies pool and serial-tail handling.
 
 | Rank | Check | Seconds |
 | ---: | --- | ---: |
@@ -55,6 +55,10 @@ The baseline's 30 slowest checks, in descending wall time, are below. Most are p
 | 29 | store | 82.4 |
 | 30 | online-coop | 82.4 |
 
+## October 14 output-contract correction
+
+The baseline and first comparison runs revealed a release-parser bug: a long check name could touch its time, and a failed check's own `FAIL` line could be mistaken for another check. Parallel checks also buffered their output but printed only the last line or last 30 lines. The runner now leaves a fixed separator before elapsed time and prints each parallel check's complete buffered output under an indented heading. The focused `mark-integrity` rerun produced exactly one parseable `FAIL mark-integrity ...` summary and preserved its known undeadmage phantom details; `output-contract.log` is the receipt. The check itself remains red as on the clean baseline. This is an output-only change; the same-commit full equivalence and two-shard proof will be rerun on the corrected commit.
+
 ## QUESTIONS FOR DANIEL
 
 1. **Recommendation:** On the 16 GB, 8-core main PC while two other heavy processes run, start with `--jobs=3 --max-browsers=1`. This PC has 20 logical cores and about 32 GB RAM; its measured configuration is `--jobs=4 --max-browsers=2`. The main PC setting still needs a local memory and timing check.
@@ -63,4 +67,4 @@ The baseline's 30 slowest checks, in descending wall time, are below. Most are p
 
 ## Resume point
 
-Finish parallel full run #3, compare all verdicts against `--jobs=1`, run both shards and compare their union to the 374-name list, then finalize Task A and push. Only after Task A is complete, create `codex/geomsweep` from `origin/master` and do Task B.
+Run three full parallel suites and one full serial suite on the corrected commit, then both shards and compare their union to the 374-name list. Investigate any new reds, finalize Task A, and push. Only after Task A is complete, create `codex/geomsweep` from `origin/master` and do Task B.

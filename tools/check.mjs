@@ -256,8 +256,11 @@ if (!WANT.length && take('profile-leaks')) results.push(run('profile-leaks', pro
 if (JOBS > 1) results = await runPool(results, { ROOT, jobs: JOBS, maxBrowsers: MAX_BROWSERS, portFor });
 
 let failed = 0;
-for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
-for (const r of results) if (!r.ok) { console.log('\n---- ' + r.name + ' ----'); console.log(r.out.slice(-30).join('\n')); }
+for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + ' ' + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
+/* A release reader takes the SECOND word of each ^FAIL line as the check name. Child output can itself begin FAIL,
+   and a long check name can fill the old padding exactly; indent every diagnostic line and always leave a real separator
+   before the time. Parallel hands print each check's WHOLE buffered answer here, one check at a time. */
+for (const r of results) if (JOBS > 1 || !r.ok) { console.log('\n---- ' + r.name + ' ----'); console.log((JOBS > 1 ? r.out : r.out.slice(-30)).map(line => '  ' + line).join('\n')); }
 console.log(failed ? '\n' + failed + ' check(s) failed.'
   : SUBSET ? '\n' + results.length + ' of ' + (results.length + skipped) + ' checks pass - ' + (SHARD ? 'SHARD ' + SHARD.join('/') : 'A SUBSET (' + WANT.join(', ') + ')') + ', NOT THE SUITE.'
       + '\nRun `npm run check` with no arguments before a commit that matters, and before any deploy.'
