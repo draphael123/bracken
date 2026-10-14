@@ -1,0 +1,9 @@
+  ok   ksar cn:wallslinger (slinger)      corpse: the reskin
+  ok   ksar cn:gonglookout (cutthroat)    corpse: the reskin
+  ok   ksar cn:ksarblade (cutthroat)      corpse: the reskin
+  ok   ksar cn:ksarplate (cutthroat)      corpse: the reskin
+  ok   ksar cn:smokethrower (sapper)      corpse: the reskin
+  ok   ksar cn:shieldsentry (shield)      corpse: the reskin
+  ok   ksar cn:whipapprentice (cutthroat) corpse: the reskin
+  ok   ksar cn:falconer (cutthroat)       corpse: the reskin
+ok  corpses  every reskinned foe's hurt frame and body are drawn in its own skin

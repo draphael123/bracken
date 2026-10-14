@@ -10,6 +10,7 @@
 //   THE HAWK-MISTRESS  a body with real pose cycles (bakeMistress(pose)), facing right: idle, walk A/B, guard, lashTell, lash, feint, cutTell, cut, whistle, recover, sleep, hurt
 //   HER HAWK         bakeHerHawk(pose): soar A/B, bank, stoop, blind, perched on the glove
 import { canvas, rect, px, ellipse, circle, line, outline, flipX, whiten, fillPoly } from '../px.js';
+import { bakeKsarFoeSets } from './ksar_foes_art.js';   /* (claude/ksarfoes) THE FALCONER and THE PLATED BANDIT, drawn whole (their own poses, B16) */
 
 const pack = (frames, ax, ay, w, h) => { const R = frames, L = frames.map(c => flipX(c)), white = frames.map(c => whiten(c)); return { R, L, white: { R: white, L: white.map(c => flipX(c)) }, ax, ay, w, h }; };
 const hexOf = (r, g, b) => '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
@@ -257,6 +258,7 @@ export function bakeKsarSets(SPR) {
   const add = (k, v) => { if (v) out[k] = v; };
   add('ksarblade', bakeKsarBlade(SPR.cutthroat)); add('gonglookout', bakeGongLookout(SPR.cutthroat)); add('whipapprentice', bakeWhipApprentice(SPR.cutthroat));
   add('shieldsentry', bakeShieldSentry(SPR.shieldguard || SPR.shield)); add('smokethrower', bakeSmokeThrower(SPR.dynamiter || SPR.sapper)); add('wallslinger', bakeWallSlinger(SPR.slinger));
+  Object.assign(out, bakeKsarFoeSets());   /* (claude/ksarfoes) falconer, ksarplate, ksarplatebare */
   return out;
 }
 /* a contact sheet list for tools/ksar-art-sheet.mjs: the bases and the skins, then the hawks and the Mistress */
@@ -264,5 +266,6 @@ export async function sheetItems() {
   const CB = await import('./caravan_bandits.js'), DF2A = await import('./desert_foes2.js'), out = [];
   const cu = CB.bakeCutthroat(), sl = CB.bakeSlinger(), sh = DF2A.bakeShieldGuard(), dy = DF2A.bakeDynamiter();
   for (const [b, s] of [[cu, bakeKsarBlade(cu)], [cu, bakeGongLookout(cu)], [cu, bakeWhipApprentice(cu)], [sh, bakeShieldSentry(sh)], [dy, bakeSmokeThrower(dy)], [sl, bakeWallSlinger(sl)]]) out.push(...b.R.slice(0, 5), ...s.R.slice(0, 5));
+  { const S = bakeKsarFoeSets(); out.push(...S.falconer.R, ...S.ksarplate.R, ...S.ksarplatebare.R); }   /* (claude/ksarfoes) */
   out.push(...bakeHawk().R); for (let i = 0; i < 13; i++) out.push(bakeHerHawk(i).c); out.push(...MISTRESS_POSES.map(bakeMistress)); return out;
 }
