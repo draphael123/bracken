@@ -54,6 +54,11 @@ export const LAB_STAND = Object.fromEntries(Object.keys(LAB_REACH).map(h => [h, 
    (BK.rg); in Node (no page) it is the knife's. A first pick for the tune lane: the hands do not yet walk over to take her arrows back - the trickle refills her */
 export const RANGER_STAND = 64;
 export const RANGER_SAFE = 130;   /* px from the boss at which the bot will crouch to restock */
+export const LE_RG_REACH = 28;   /* (claude/rangercanal) THE LANTERN-EATER's keys are the knife's: its gums are a low SWEEP (DOWN+X on her feet, 28 out), its lure a rise shot or a jump. The bow's stand-off (RANGER_STAND) put her 58 px from the rail, out of her own sweep's reach */
+/* (claude/rangercanal) THE HUMAN'S FLASK: under drinkAt of the bar, OR - once a single blow has taken LABP.drinkBig of it - whenever the next such blow would kill (bar <= 1.1 x the biggest blow so far). Called once a frame. */
+const botShouldDrinkBig = (P, LABP) => { if (P.labHpWas !== undefined && P.labHpWas - P.hp > (P.labMaxHit || 0)) P.labMaxHit = P.labHpWas - P.hp; P.labHpWas = P.hp;
+  if (botShouldDrink(P, LABP.drinkAt)) return true;
+  return LABP.drinkBig > 0 && (P.labMaxHit || 0) >= P.maxHp * LABP.drinkBig && botShouldDrink(P, 1) && P.hp <= P.labMaxHit * 1.1; };
 export const RANGER_PICK_WALK = 150;   /* (claude/rangertune) px the bot walks to take an arrow back */
 const rgArrows = () => { try { const r = globalThis.BK && globalThis.BK.rg && globalThis.BK.rg(); return r ? r.q : 0; } catch { return 0; } };
 Object.defineProperty(LAB_REACH, 'ranger', { get: () => rgArrows() > 0 ? RANGER_STAND : 16, enumerable: true });
@@ -655,7 +660,7 @@ async function runbossLab(BK, opts) {
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
-      if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
+      if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
       { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
         if (bm !== dkS.m) { if (/Tell$/.test(dkS.m)) dkS.blow = bm; else if (dkS.blow && dkS.m === dkS.blow) { dkS.endF = f; dkS.blow = null; } dkS.m = bm; } if (/Tell$/.test(bm)) dkS.tellF = f;
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
@@ -1571,7 +1576,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const LH=BK.lanternEaterHands(),show=LH&&LH.show();
         if(f===0||!P.labLeMem)P.labLeMem={};
-        const pl=show?lanternPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:(P.snare||0)+(P.rootT||0),atk:P.atk},e:boss,show,reach:LAB_REACH[h],t:f/60,rng:Math.random,mem:P.labLeMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
+        const pl=show?lanternPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:(P.snare||0)+(P.rootT||0),atk:P.atk},e:boss,show,reach:h==='ranger'?LE_RG_REACH:LAB_REACH[h],t:f/60,rng:Math.random,mem:P.labLeMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
         if(pl.jump&&(P.ground||P.swim)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down)k.down=true;if(pl.up)k.up=true;
@@ -2678,7 +2683,7 @@ export async function eliteLab(BK, o) {
       PERC = makePerception(BK, LABP, key, e, {}); PERC.apply(); eliteE = e; }
     const ehp = e.hp0 || e.hp, maxF = Math.round((o.secs || 60) * 60), reach = LAB_REACH[o.hero] || 22; let f = 0;
     for (; f < maxF && e.alive && !P.dead; f++) {
-      if (eyesOn && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/flasklever) the human drinks, as the boss lab's does */
+      if (eyesOn && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/flasklever) the human drinks, as the boss lab's does */
       if (o.mode === 'mash') { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
         const dx = e.x - P.x, edge = (e.w || 12) / 2; if (Math.abs(dx) > Math.min(reach * 0.7, 14) + edge * 0.5 || Math.abs(dx) > 6) k[dx > 0 ? 'right' : 'left'] = true;
         if (P.swim) { const dy = (e.y - (e.h || 16) / 2) - (P.y - 10); if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }
