@@ -34,7 +34,7 @@ hp 1950 -> **2300**. Her blows dmgK 0.62 -> **2.9**: she hits hard (a lunge is a
 - RED, not from this lane:
   - mark-integrity: `undeadmage|markTell` PHANTOM POSE (the Archmage).
   - textfit --strict: coophelp page 2 OFFSCREEN/COLLIDE, and COVERS on fallingtower and fair signs. None are Queen strings; her new lines fit.
-- MISSING: tools/cast-poses.mjs does not exist on master, so it was not run.
+- MISSING: the cast-poses tool does not exist on master, so it was not run.
 
 ## Rates (boss-rates underwell, practiced, L36, profile human)
 - **WITH flasks (campaign kit), 10 seeds: knight 8/10, warden 4/10, pyro 8/10 = 67%** (in the 60-70 target; no hero at 0).

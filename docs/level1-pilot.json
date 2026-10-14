@@ -84,13 +84,13 @@
   "bare": true
  },
  "underwell": {
-  "hash": "8f3ade0c604c",
+  "hash": "6efa445cddb3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 48,
-  "deaths": 7,
-  "kills": 32,
+  "hits": 52,
+  "deaths": 8,
+  "kills": 24,
   "lifts": 120,
   "walked": 100,
   "bare": true

@@ -25,6 +25,8 @@ export function makeCisternQueenHands(ctx) {
   const R = Math.round, fr = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
   H.show = () => S;
   H.on = () => !!(S && A());
+  /* (batch91, claude-cqart.md Q1) THE WELLHEAD PERCH: her tail stood above the top of the boss camera - the arena camera rises ~24 px while she is up on the beam (the camera eases there itself) */
+  H.camY = ty => (S && A() && S.pose === 'shaft' && ctx.bossActive && ctx.boss && ctx.boss.alive ? ty - 24 : ty);
   H.owns = e => e.t === 'cisternqueen';
   H.clear = () => { S = null; };
   /* WHAT HURT: the health each of her blows took, by name (the pilots print it) */

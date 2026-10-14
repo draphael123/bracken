@@ -4,26 +4,26 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 28,
-  "deaths": 5,
-  "kills": 41,
-  "lifts": 87,
+  "hits": 16,
+  "deaths": 1,
+  "kills": 34,
+  "lifts": 96,
   "walked": 100,
   "bare": true,
-  "lostPct": 215
+  "lostPct": 111
  },
  "marsh": {
   "hash": "064de4159658",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 45,
-  "deaths": 3,
-  "kills": 36,
+  "hits": 40,
+  "deaths": 2,
+  "kills": 45,
   "lifts": 86,
   "walked": 100,
   "bare": true,
-  "lostPct": 275
+  "lostPct": 227
  },
  "stockade": {
   "hash": "c88404798755",
@@ -481,17 +481,17 @@
   "lostPct": 274
  },
  "underwell": {
-  "hash": "8f3ade0c604c",
+  "hash": "6efa445cddb3",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 42,
+  "hits": 38,
   "deaths": 3,
-  "kills": 27,
-  "lifts": 113,
+  "kills": 31,
+  "lifts": 104,
   "walked": 100,
   "bare": true,
-  "lostPct": 269
+  "lostPct": 255
  },
  "skyroad": {
   "hash": "5f209187c7c4",
@@ -520,17 +520,17 @@
   "lostPct": 296
  },
  "ksar": {
-  "hash": "56d2003723a6",
+  "hash": "f1c48b3601cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 38,
-  "deaths": 10,
-  "kills": 12,
-  "lifts": 143,
+  "hits": 42,
+  "deaths": 17,
+  "kills": 6,
+  "lifts": 145,
   "walked": 100,
   "bare": true,
-  "lostPct": 499
+  "lostPct": 671
  },
  "rootway": {
   "hash": "bcecbe519d8c",

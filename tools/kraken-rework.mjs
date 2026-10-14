@@ -51,7 +51,7 @@ try {
    {const a=rg()[0];a.hp=1;a.ae.hp=1;e.hp=Math.max(e.hp,200);cut(a,5);out.open.cutOne=rg().length;for(let i=0;i<500;i++){BK.sim(1);if(i%60===0)for(const k in e.T)e.T[k]=999;}out.open.back=rg().length;}}
   /* ---- HE HITS HARDER: a quicker sweep, and the grab drags you toward the sea - pressed or rolled out of, never held past ~2 s ---- */
   {const e=boot(),A=BK.L.arena,fl=A.floor,P=BK.P;out.hit={};
-   const a=e.arms.find(q=>!q.severed&&q.st==='idle');const hold=()=>{hush(e);stand(576*TS+8);P.st=P.maxSt||100;e.armI=a.i;a.st='hold';a.low=true;e.mode='held';e.modeT=2.2;e.grip=5;};
+   const a=e.arms.find(q=>!q.severed&&q.st==='idle');const hold=()=>{hush(e);/* (batch91) the pressure dial changes what the boot's 700 unhushed frames throw: a crate may have landed on the stand-spot and the drag would push into it. The cargo is cover by design; the test clears the road above the floor for the drag's whole run first */{const G=BK.L.grid,W=BK.L.W,fr=Math.round(fl/TS);for(let c=573;c<=612;c++)for(let r=fr-5;r<fr;r++)if(G[r*W+c]===1)G[r*W+c]=0;}stand(576*TS+8);P.st=P.maxSt||100;e.armI=a.i;a.st='hold';a.low=true;e.mode='held';e.modeT=2.2;e.grip=5;};
    hold();const x0=P.x;BK.sim(30);out.hit.dragged=Math.round(P.x-x0);
    /* seaward of the arm that has you, it still drags you on out to sea - not back to the arm */hold();P.x=a.bx+40;const x1=P.x;BK.sim(30);out.hit.draggedPast=Math.round(P.x-x1);
    hold();BK.sim(1);BK.press('dodge');BK.sim(3);out.hit.rolled=e.mode!=='held';

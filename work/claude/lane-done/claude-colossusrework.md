@@ -55,7 +55,7 @@ flank relay, B17 count, B16 poses, bot answers), colossus-respawn (new), damage-
 tells, mark-integrity (glasssea), hint-shown, arena-shut (glasssea), textfit --strict boss scope (0), reach-heroes glasssea, stuck --static.
 Deliberate test changes (stated in code): glasssea.mjs arena forty -> sixty-four tiles; chain moves picked by name not index; the relay
 test uses a FLANKING mirror and stands 280 px off (the old distance); the shake test window 5 -> 7 s (the first lance runs to a farther wall).
-cast-poses: tools/cast-poses.mjs is not on master - the six new pose keys are asserted distinct in glasssea.mjs instead.
+cast-poses: the cast-poses tool is not on master - the six new pose keys are asserted distinct in glasssea.mjs instead.
 STAMPS (re-stamped level THEN boss): level1-pilot --write + --curve; mash-bot --level glasssea --write (every hero dies in the level), then mash-bot glasssea --write: the boss holds 0/6 mash wins; level-quality glasssea CLEARS THE BAR.
 
 ## Reds / not mine

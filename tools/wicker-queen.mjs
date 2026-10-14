@@ -414,7 +414,7 @@ try {
         if (q.mode === 'ring') { burnF++; if (act === 'gap') hold(q.gapX, -1); else if (act === 'stand') hold(Math.max(A.x0 + 30, Math.min(A.x1 - 30, q.gapX + (q.gapX < A.x1 - 140 ? 100 : -100))), -1); }
         else if (act !== 'ride' && q.mode !== 'ringTell') hold(A.x0 + 360, -1);
         BK.sim(1); if (burnF && q.mode !== 'ring') break; }
-      const lost = hp0 - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; BK.P.onMover = null; q.bank = 0; return { lost, told, burnF, mark, mode: q.mode }; };
+      const lost = hp0 - BK.P.hp; BK.god = true; BK.P.hp = BK.P.maxHp; BK.P.dead = 0; /* (batch91) the act-4 pressure dial (x1.7) makes a hero who STANDS in the ring's fire die (lost 100): raise him, or the dead hero's timer stops the fight (bossActive off) and the next runs, the co-op and her death all fail for that reason */ BK.P.onMover = null; q.bank = 0; return { lost, told, burnF, mark, mode: q.mode }; };
     out.ring = { stand: ringAs('stand'), gap: ringAs('gap'), ride: ringAs('ride') };
     // 13. CO-OP: the warden facing her holds her feet while the knight's back is turned
     for (const e of BK.enemies()) if (e.fromQueen) e.alive = false;

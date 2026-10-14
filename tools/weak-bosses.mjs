@@ -40,7 +40,7 @@ try {
     for(const p of lampsIn()){p.lit=false;p.gut=0;}const far=lampsIn()[0];far.lit=true;
     const lunge=(roll)=>{BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.st=BK.P.maxSt;BK.P.winded=false;BK.P.exhaustT=0;BK.P.wick=0;b.mode='stalk';b.modeT=0;b.snuffT=99;b.sweepT=99;b.douseT=99;b.hookT=99;b.lungeT=0;b.x=(M.x0+M.x1)/2;BK.P.x=b.x+(b.x>far.x?-120:120);if(Math.abs(BK.P.x-far.x)<130)BK.P.x=b.x-(BK.P.x-b.x);BK.P.y=M.floor;
       let told=null,mark=null,hp0=BK.P.hp;for(let i=0;i<120;i++){hold();if(b.mode==='lungeTell'){told=b.mode;mark=BK.markShown(b);if(roll&&b.modeT<0.04){BK.keys[b.x<BK.P.x?'left':'right']=true;BK.press('dodge');}}BK.sim(1);if(b.mode==='lungeEnd'||b.mode==='stalk'&&told)break;}
-      const r={told,mark,hurt:Math.round(hp0-BK.P.hp),light:BK.litNear?BK.litNear(BK.P.x,BK.P.y-10,110):null};BK.god=true;return r;};
+      const r={told,mark,hurt:Math.round(hp0-BK.P.hp),light:BK.litNear?BK.litNear(BK.P.x,BK.P.y-10,110):null};BK.god=true;BK.P.dead=0;BK.P.hp=BK.P.maxHp;BK.P.vx=0;BK.P.vy=0;BK.P.inv=0;BK.P.dodge=0;BK.P.knock=0;return r;};   /* (batch91) the act-4 mini dial makes the standing hero's lunge lethal (hurt 100): raise him, or his death timer stops the fight and the roll-through run never sees a tell */
     o.lungeStand=lunge(false);o.lungeRoll=lunge(true);
     {b.mode='stalk';b.lungeT=0;b.snuffT=99;b.sweepT=99;b.douseT=99;b.hookT=99;BK.P.x=far.x;BK.P.wick=14;b.x=far.x+120;let seen=false;for(let i=0;i<120;i++){hold();BK.P.x=far.x;BK.P.wick=14;BK.sim(1);if(b.mode==='lungeTell')seen=true;}o.lungeInLight=seen;}
     /* PHASE TWO: your light */

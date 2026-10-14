@@ -27717,6 +27717,7 @@ function updateCamera(dt) {
   else if (bossActive && boss && boss.t === 'puppeteer' && PUPH && PUPH.on()) ty = PUPH.camY(ty);
   /* THE LANTERN-EATER's basin is tall (the lights come down out of the fog over the raft): the camera holds the whole of it when the view is tall enough */
   else if (bossActive && boss && boss.t === 'lanterneater' && LEH && LEH.on()) ty = LEH.camY(ty);
+  else if (bossActive && boss && boss.t === 'cisternqueen' && CQH && CQH.on()) ty = CQH.camY(ty);   /* (batch91) 24 px higher while she is on the wellhead, so her tail is not cut */
   /* THE SPIRAL STAIR (src/spiral-chase.js): the Undead Archmage waits over the landing you are climbing to, and he casts only with his whole
      body in the picture. So the camera looks UP the stairwell far enough to hold him - his head under the top of the frame - while it keeps
      your feet on the screen. Without this he hung above the top edge for the first half of every flight, and said nothing. */

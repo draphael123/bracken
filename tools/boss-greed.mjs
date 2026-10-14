@@ -18,6 +18,9 @@ import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
 import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI, FULL_DAMAGE } from '../src/boss-greed.js';
 import { openPage } from './cdp.mjs';
+import { pressureOf } from '../src/boss-pressure.js';   /* (batch91) a mini's blow is GREED.miniHit x the act's pressure-dial mini damage (src/boss-pressure.js) */
+import { actOf } from '../src/foe-react.js';
+import { depthsOf } from '../src/campaign-order.js';
 import { GUARD, ANGLE } from '../src/boss-read.js';   /* (claude/keyscore) the duelists whose front is a wall (B11/B13): their front blows are TURNED, not chipped */
 
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
@@ -124,7 +127,8 @@ for (const [id, o] of Object.entries(R)) {
   if (m && m.t) { ok(m.heroBlow <= Math.ceil(40 * GREED.chip), 'a mini on the chip (CHIP_MINI, claude/bosswave1): a hero blow of 40 on the bosun outside his opening took ' + m.heroBlow);
     ok(m.heroOpen >= 20, 'and in his opening (his pin parried) it lands whole: took ' + m.heroOpen);
     ok(m.greedBegan === GREED.nMini, 'the bosun must answer the ' + GREED.nMini + 'th blow in a row (began on ' + m.greedBegan + ')');
-    ok(m.miniHit > m.plainHit && Math.abs(m.miniHit / m.plainHit - GREED.miniHit) < 0.15, 'a mini hits ' + GREED.miniHit + 'x harder: ' + m.miniHit + ' against ' + m.plainHit); } }
+    const dialDmg = pressureOf(actOf('harbor', depthsOf(LEVELS).harbor || 1).act, true).dmg, want = GREED.miniHit * dialDmg;   /* the bosun stands in harbor: act 3's mini column (was GREED.miniHit alone before the dial) */
+    ok(m.miniHit > m.plainHit && Math.abs(m.miniHit / m.plainHit - want) < 0.15, 'a mini hits ' + GREED.miniHit + 'x (greed) times ' + dialDmg + 'x (the act dial) = ' + want.toFixed(2) + 'x harder: ' + m.miniHit + ' against ' + m.plainHit); } }
 console.log(JSON.stringify(R));
 if (fails.length) { console.log('boss-greed: ' + fails.length + ' FAIL\n  ' + fails.join('\n  ')); process.exit(1); }
 console.log('boss-greed: ' + bosses + ' bosses and ' + minis + ' minis have a rule or a reason; the chip, the room\'s blow, the opening, the poise break, the own ward, the no-opening boss, the told reprisal, the burn and the mini all hold');

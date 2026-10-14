@@ -109,7 +109,7 @@ export function makeHourglassKingHands(ctx) {
     e.chipHit = t; S.n.brass++; e.guardFx = 0.25; e.guardWord = S.n.brass < 6 ? (S.ph === 3 ? 'HIS BRASS: TURN THE GREAT HOURGLASS' : HKM.glassLow(S) ? 'HIS BRASS: HIS GLASS IS LOW - A SAND-GATE' : 'HIS BRASS: WAIT FOR HIS GLASS TO RUN LOW') : 'HIS BRASS';
     ctx.sfx.clank && ctx.sfx.clank(); ctx.sparks(e.x + (Math.sign(ctx.hero().x - e.x) || 1) * 10, e.y - 24, Math.sign(ctx.hero().x - e.x) || 1, 4); return dmg * HK.resist; };
   H.barName = e => 'THE HOURGLASS KING' + (HKM.hkOpen(e) ? '  STALLED' : S && S.ward > 0 ? '  WARDED' : e.mode === 'turn' ? '  TURNING' : '');
-  H.end = e => { if (S) { S.gears = []; S.waves = []; S.stream = null; S.rain = null; S.grasp = null; S.echo = null; } undrift(); BOSS_PHASE.hourglassking = 1; for (const pp of ctx.players) pp.hkHold = 0; };
+  H.end = e => { if (S) { S.gears = []; S.waves = []; S.stream = null; S.rain = null; S.grasp = null; S.echo = null; } undrift(); unbank(); unblocks(); BOSS_PHASE.hourglassking = 1; for (const pp of ctx.players) pp.hkHold = 0; };   /* (batch91: THE EXIT GATE stands at stage col W-2 = inside the east sand BANK (cols 37-39) - phase two wrote the bank in and nothing took it out at his death, so the gate was walled in sand and the level never ended. His death (and the end of a lost fight) now takes the banks and the sandstone blocks away) */
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, glass: +S.glass.toFixed(2), glassMax: S.glassMax, low: HKM.glassLow(S), ward: S.ward, drift: S.drift, blockUp: S.blockUp, great: { ...S.great }, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING ---------- */
