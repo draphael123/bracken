@@ -32,6 +32,8 @@ export const POSE_BEATS = {
   halo: [0.1, 0.22],           /* DIVINE SHIELD: the maul lifted to his chest, raised overhead across both hands, and the light closing round him */
   leapLand: [0.07],            /* HAMMER LEAP's landing: the head of the maul in the ground, and him coming up off it */
   hallow: [0.12],              /* CONSECRATE: the maul lifted, then down on one knee with the head set in the turf */
+  hallowQ: [0.07],             /* CONSECRATE again, with one already standing (claude/palart): the same two frames on a 0.25 s beat so it reads as planting when tapped often */
+  sanctify: [0.16],            /* EMPOWER (claude/palart): up on his toes, the maul straight up over the helm, the head lit; then driven down into his circle with a column of light going up either side */
   beam: [0.1],                 /* SPEAR OF LIGHT: drawn back with the off hand out, then the maul driven straight out level */
   hurlH: [0.1],                /* BLESSED HAMMER: the off hand low behind him, then flung through with the light leaving it */
   /* THE PYROMANCER */

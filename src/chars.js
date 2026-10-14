@@ -1833,6 +1833,18 @@ function paladinKitPoses(F, sh) {
   F.hallow = [K({ dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y - 2], maul: [X + 2, Y - 2, X + 3, Y - 13], plume: 1 }),
     K({ dy: 2, legs: 'kneel', arm: [X, Y, X + 4, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y - 1], maul: [X + 4, Y - 3, X + 6, Y + 5], plume: 2,
       bits: [a(X + 2, Y + 6, G), a(X + 10, Y + 6, G), a(X + 6, Y + 3, C), a(X, Y + 4, C), a(X + 12, Y + 4, C), a(X + 6, Y - 5, W)] })];
+  F.hallowQ = F.hallow;   /* (claude/palart) the same two frames on a 0.25 s beat: the circle MOVED, tapped again while one stands (hero-poses.js POSE_BEATS) */
+  /* EMPOWER, SANCTIFY (claude/palart: the placeholder's real frames). WINDUP: up on his toes, the maul straight up over the helm in both hands, his
+     helm tipped back to it, the head of it lit white and a ring of light standing off it with a ray up and a mote falling either side; RELEASE: driven
+     two-handed straight down in front of him, head bowed over it, the head of it in the turf with a flash, and a column of light going up off the ground on
+     BOTH sides of him (white at the root, gold at the top, a ground-line splash under each) - the circle answering. (ab() is a() for a frame with a body dy.) */
+  const ab = (x, y, col, d = 0) => [x - BX, y - BY - d, col];
+  const colm = (x0, h, d) => { const o = []; for (let j = 0; j < h; j++) { const y = 21 - j, c = j < 2 ? W : j < 6 ? C : G; o.push(ab(x0, y, c, d)); if (j < h - 3) o.push(ab(x0 + 1, y, j & 1 ? G : C, d)); } o.push(ab(x0, 22, W, d), ab(x0 + 1, 22, W, d), ab(x0 - 1, 22, G, d), ab(x0 + 2, 22, G, d), ab(x0 - 2, 22, D, d), ab(x0 + 3, 22, D, d)); return o; };
+  F.sanctify = [K({ dy: -2, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 1, Y - 8], arm2: [OFF[0], OFF[1], X, Y - 8], maul: [X + 1, Y - 7, X + 1, Y - 19], glow: [X + 1, Y - 22], plume: 2,
+      bits: [a(X + 1, Y - 17, W), a(X, Y - 16, W), a(X + 2, Y - 16, W), a(X - 5, Y - 18, C), a(X - 6, Y - 15, G), a(X + 7, Y - 18, C), a(X + 8, Y - 15, G), a(X + 1, Y - 25, C), a(X + 1, Y - 27, G),
+        a(X - 3, Y - 23, G), a(X + 5, Y - 23, G), a(X - 7, Y - 8, C), a(X + 9, Y - 10, G), a(X - 8, Y - 3, G), a(X + 10, Y - 4, C)] }),
+    K({ dy: 1, hy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 1], arm2: [OFF[0], OFF[1], X + 3, Y + 2], maul: [X + 4, Y, X + 5, Y + 8], plume: 2,
+      bits: [...colm(5, 15, 1), ...colm(29, 12, 1), ab(X + 3, 22, W, 1), ab(X + 6, 22, W, 1), ab(X + 5, 22, G, 1), ab(X + 9, 22, C, 1), ab(X + 1, 20, G, 1), ab(8, 7, C, 1), ab(25, 9, W, 1), ab(3, 11, G, 1), ab(31, 13, C, 1)] })];
   /* SPEAR OF LIGHT: the maul drawn back level behind him and the off hand out, sighting; then driven straight out level, the light
      leaving the head of it */
   F.beam = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y - 1], maul: [X - 1, Y - 1, X - 10, Y - 2], arm2: [OFF[0], OFF[1], X + 5, Y - 2], plume: 1 }),

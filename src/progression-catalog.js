@@ -1045,7 +1045,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "LITANY",
     "max": 1,
-    "desc": "mend no longer roots you: heal on the move",
+    "desc": "your holy circle mends you twice as fast",
     "parent": null,
     "active": false,
     "cap": false,
@@ -1062,7 +1062,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "MERCY",
     "max": 1,
-    "desc": "mend gives back 30 stamina as well",
+    "desc": "standing in your holy circle your wind comes back faster",
     "parent": "radiance",
     "active": false,
     "cap": false,
@@ -1077,13 +1077,13 @@ export const LEGACY_NODES = [
     "branch": 0,
     "row": 1,
     "col": 1,
-    "name": "CONSECRATE",
+    "name": "HALLOWED GROUND",
     "max": 1,
-    "desc": "hallow the ground around you. foes on it take a holy tick (the dead burn), and you mend while you stand in it",
+    "desc": "your holy circle reaches a tile further and stands three seconds longer, empowered or not",
     "parent": "radiance",
-    "active": true,
+    "active": false,
     "cap": false,
-    "cost": 3,
+    "cost": 2,
     "destination": "skill",
     "level": 1,
     "price": 60
@@ -1136,8 +1136,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 8,
-    "price": 220
+    "level": 7,
+    "price": 190
   },
   {
     "id": "beacon",
@@ -1255,8 +1255,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 4,
-    "price": 120
+    "level": 9,
+    "price": 240
   },
   {
     "id": "unwavering",
@@ -1306,8 +1306,8 @@ export const LEGACY_NODES = [
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 8,
-    "price": 220
+    "level": 3,
+    "price": 100
   },
   {
     "id": "crusade",
@@ -1419,11 +1419,11 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "BLESSED HAMMER",
     "max": 1,
-    "desc": "a hammer of light flung out in a wide arc and called back, striking everything it passes both ways",
+    "desc": "the thrown hammer (UP and C) flies a third further and sets alight whatever it strikes",
     "parent": "heavy",
-    "active": true,
+    "active": false,
     "cap": false,
-    "cost": 3,
+    "cost": 2,
     "destination": "skill",
     "level": 4,
     "price": 120
@@ -1470,14 +1470,14 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "HAMMER LEAP",
     "max": 1,
-    "desc": "leap and bring the maul down: the ground carries it both ways",
+    "desc": "leap and bring the maul down: the ground carries it both ways, and your holy circle comes down with you",
     "parent": "blessedHammer",
     "active": true,
     "cap": false,
     "cost": 3,
     "destination": "skill",
-    "level": 8,
-    "price": 220
+    "level": 1,
+    "price": 60
   },
   {
     "id": "earthshaker",
