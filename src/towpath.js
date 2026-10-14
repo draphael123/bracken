@@ -102,21 +102,22 @@ export function buildTowpath({ painter, T, TS }) {
   /* a plain pound (deep, one level): the tail race, the basin, the last cut, the river in the gorge - water you fall into */
   const pound = (id, x0, x1, bed, surf) => { air(x0, x1, surf - 6, bed - 1); block(x0, x1, bed, BOT); pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: R(surf) + 4, shallow: false, swim: false, clear: true, bottom: R(bed), tp: id }); };
   const lamp = (x, y, lit) => { lamps.push({ x, y: y + O, lit: !!lit }); ent('tplamp', x, y, { lit: !!lit }); };   /* a lamp post on the towpath: struck, lit or put out */
-  /* THE SACK HOIST (THE MILL): a deck w columns wide in its shaft, from its bottom row up to its top (rows: the floor its deck is level with); a WINCH at each
-     floor beside the shaft sends it to the other stop. For the reach model, a ride from bot to top */
-  const hoist = (id, x0, w, top, bot, winches) => { hoists.push({ id, x0, w, top: top + O, bot: bot + O });
-    moversExtra.push({ kind: 'hoist', towpath: id, x: x0 * TS, y: R(bot), w: w * TS, h: 6 }); rigBands.push([x0, x0 + w - 1, top + O, bot + O]);
+  /* THE SACK HOIST (THE MILL): a deck w columns wide in its shaft, from its bottom stop - a NOTCH a row deep cut in the floor at row bot, the deck a step down in it
+     (a mover is boarded from above: a deck flush with the floor would be under your feet, not your footing) - up to its top (flush with the floor at row top); a
+     WINCH at each floor beside the shaft sends it to the other stop. For the reach model, a ride from bot to top */
+  const hoist = (id, x0, w, top, bot, winches) => { air(x0, x0 + w - 1, bot, bot); hoists.push({ id, x0, w, top: top + O, bot: bot + O, topPx: R(top), botPx: R(bot + 1) - 6 });
+    moversExtra.push({ kind: 'hoist', towpath: id, x: x0 * TS, y: R(bot + 1) - 6, w: w * TS, h: 6 }); rigBands.push([x0, x0 + w - 1, top + O, bot + 1 + O]);
     for (const [wx, wy] of winches) ent('tpwinch', wx, wy, { hoist: id }); };
-  /* THE AQUEDUCT'S TROUGH: an iron channel west..east whose bed is at bed (a design row) and whose water, running, stands at surf; a BARGE w columns long moored
-     at x0 (dry, on the bed); its SLUICES [[x, y], ...] (struck, or E): the water runs and floats the barge to the far stop (west stop at stopW, east at stopE:
+  /* THE AQUEDUCT'S TROUGH: an iron channel west..east whose bed is at bed (a design row: the channel a row under the walkway, so the dry barge is boarded a step
+     down) and whose water, running, stands at surf; a BARGE w columns long moored at x0 (dry, on the bed); its SLUICES [[x, y], ...] (struck, or E): the water runs and floats the barge to the far stop (west stop at stopW, east at stopE:
      its west end's column). For the reach model, a ride along surf from stopW to stopE + w - 1 */
   const trough = (id, stopW, stopE, bed, surf, w, sluices) => { troughs.push({ id, stopW, stopE, bed: bed + O, surf: surf + O, w });
     moversExtra.push({ kind: 'barge', towpath: id, x: stopW * TS, y: R(bed) - 8, w: w * TS, h: 8 }); rigBands.push([stopW, stopE + w - 1, surf + O, surf + O]);
     for (const [sx, sy] of sluices) ent('tpsluice', sx, sy, { trough: id }); };
-  /* THE BASIN CRANE: its HOOK (a platform w columns wide) hangs at `from` [x, row] on the quay and its capstan swings the jib to `to` [x, row] over the roof - and
-     back. rows: the surface the hook's deck is flush with. For the reach model, a ride over the box between them */
-  const crane = (id, from, to, w, caps, mast) => { cranes.push({ id, from: [from[0], from[1] + O], to: [to[0], to[1] + O], w, mast: [mast[0], mast[1] + O] });
-    moversExtra.push({ kind: 'hook', towpath: id, x: from[0] * TS, y: R(from[1]), w: w * TS, h: 6 }); rigBands.push([Math.min(from[0], to[0]), Math.max(from[0], to[0]) + w - 1, Math.min(from[1], to[1]) + O, Math.max(from[1], to[1]) + O]);
+  /* THE BASIN CRANE: its HOOK (a platform w columns wide) hangs at `from` [x, row] - in a notch cut in the quay, a step down (row: the notch's floor) - and its
+     capstan swings the jib to `to` [x, row] over the roof - and back (row: the roof's surface, the hook flush with it). For the reach model, a ride over the box */
+  const crane = (id, from, to, w, caps, mast) => { air(from[0], from[0] + w - 1, from[1] - 1, from[1] - 1); cranes.push({ id, from: [from[0], from[1] + O], to: [to[0], to[1] + O], w, mast: [mast[0], mast[1] + O], fromPx: R(from[1]) - 6, toPx: R(to[1]) });
+    moversExtra.push({ kind: 'hook', towpath: id, x: from[0] * TS, y: R(from[1]) - 6, w: w * TS, h: 6 }); rigBands.push([Math.min(from[0], to[0]), Math.max(from[0], to[0]) + w - 1, Math.min(from[1], to[1]) + O, Math.max(from[1], to[1]) + O]);
     for (const [cx, cy] of caps) ent('tpcrane', cx, cy, { crane: id }); };
 
   // ================= 0. THE LYCHGATE (0-46): THE FORK, THE HUT, THE FIRST WRAITH =================
@@ -243,11 +244,11 @@ export function buildTowpath({ painter, T, TS }) {
   /* the iron trough over the gorge: dry (its sluice shut) and broken (252-273: the towpath and its arches are down, the iron channel sagged - only floating
      crosses it). The BARGE lies moored on the west bed. OPEN THE SLUICE: the water runs, the barge floats, and the current carries it across to the east bed
      in the clear air - the watchman at the east span's end sees you all the way. The east sluice sends it back. The gorge's river is far below, in its own fog */
-  block(236, 251, 6, 8); block(240, 242, 9, BOT); block(247, 249, 9, BOT);   /* the west span: its trough bed (6) and two piers into the river */
+  block(236, 240, 6, 8); block(241, 251, 7, 8); block(240, 242, 9, BOT); block(247, 249, 9, BOT);   /* the west span: its walkway (6), the trough's channel a row under it (7), two piers into the river */
   block(274, 289, 6, 8); block(279, 281, 9, BOT); block(286, 288, 9, BOT);   /* the east span */
   pound('river', 236, 304, 48, 42);   /* THE RIVER in the gorge: a fall is the water's (A10: it bites and hands you back to the last dry footing) */
   for (const [a, b] of [[240, 242], [247, 249], [279, 281], [286, 288]]) block(a, b, 36, BOT);   /* (the piers stand through the river) */
-  trough('aq', 241, 274, 6, 4, 8, [[240, 5], [282, 5]]);
+  trough('aq', 241, 274, 7, 4, 8, [[240, 5], [282, 5]]);
   sign(236, 5, 'THE AQUEDUCT IS DRY. OPEN ITS SLUICE: THE WATER FLOATS THE BARGE ACROSS THE BREAK.');
   boards(236, 240, 3); boards(283, 289, 3);   /* (the sluice gantries at each end of the trough: second heights, clear of the barge's line) */
   watchman(287, 5, 'aqEast', { face: -1 });   /* a watchman at the east span's end, over the break: the aqueduct is all clear air - he sees the barge all the way */
@@ -281,7 +282,7 @@ export function buildTowpath({ painter, T, TS }) {
   /* THE CRANE QUAY and THE BASIN CRANE: the warehouses' wall (372) is seventeen rows of brick; the crane's capstan swings its jib, and the HOOK - stood on - rides
      out of the fog up to the roof's edge (and back) */
   ground(362, 371, 20);
-  crane('jib', [365, 20], [370, 3], 2, [[364, 19], [373, 2]], [368, -3]);
+  crane('jib', [365, 21], [370, 3], 2, [[364, 19], [373, 2]], [368, -3]);
   sign(362, 19, 'THE BASIN CRANE: STAND ON ITS HOOK AND STRIKE ITS CAPSTAN.');
   bank(305, 371, 21, 0.72);
   /* THE WAREHOUSE ROOFS, above the fog: a bargeman dozing, a watchman who sees you whatever your light says; the alley between them is a pocket */

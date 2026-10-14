@@ -48,7 +48,7 @@ export function makeTowpathHands(ctx) {
     K.bridges = D.bridges.map(b => ({ ...b, across: b.init === 'across', k: b.init === 'across' ? 0 : 1 }));
     K.lamps = D.lamps.map(l => ({ ...l }));
     K.wheels = D.wheels.map(w => ({ ...w, a: 0, v: 0, cd: 0 }));
-    K.hoists = (D.hoists || []).map(h => ({ ...h, y: h.bot * ts, to: h.bot * ts, topY: h.top * ts, botY: h.bot * ts }));
+    K.hoists = (D.hoists || []).map(h => ({ ...h, y: h.botPx, to: h.botPx, topY: h.topPx, botY: h.botPx }));
     K.troughs = (D.troughs || []).map(q => ({ ...q, x: q.stopW * ts, to: q.stopW * ts, water: 0, fillT: 0, bedY: q.bed * ts, surfY: q.surf * ts + 4 }));
     K.cranes = (D.cranes || []).map(c => ({ ...c, k: 0, goal: 0 }));   /* (k: where the hook is between the quay (0) and the roof (1); goal: where its capstan sent it) */
     K.gadgets = []; K.cd = new Map(); K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = [];
@@ -122,7 +122,7 @@ export function makeTowpathHands(ctx) {
   }
   function wheelCells(w) { const still = !!w.still || w.v < 0.05; for (const [a, b, row] of w.steps) for (let x = a; x <= b; x++) ctx.cellSet(x, row, still ? T().ONEWAY : T().AIR); }
   const hoistOf = id => K.hoists.find(h => h.id === id), troughOf = id => K.troughs.find(q => q.id === id), craneOf = id => K.cranes.find(c => c.id === id);
-  const hookAt = c => { const ts = TS(), k = c.k, x = (c.from[0] + (c.to[0] - c.from[0]) * k) * ts, y = (c.from[1] + (c.to[1] - c.from[1]) * k) * ts - Math.sin(k * Math.PI) * 26; return { x, y }; };
+  const hookAt = c => { const ts = TS(), k = c.k, x = (c.from[0] + (c.to[0] - c.from[0]) * k) * ts, y = c.fromPx + (c.toPx - c.fromPx) * k - Math.sin(k * Math.PI) * 26; return { x, y }; };
   const bargeDeck = q => { const dry = q.bedY - 8, wet = q.surfY - 6; return dry + (wet - dry) * q.water; };
 
   /* ---------- THE MOVERS: a punt's deck rides its chamber's water (or rests on the dry bed); the hoist, the barge, the hook go where their gadgets sent them ---------- */

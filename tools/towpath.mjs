@@ -112,20 +112,20 @@ for (const e of ents('fogwraith')) ok(D.banks.some(b => e.x >= b.x0 && e.x <= b.
   H.swing('tail'); run(2); ok(at(tail.x0, tail.row) === T.ONEWAY && H.handsState('bridge.tail') === 'across', 'its capstan swings it across: footing');
   H.swing('tail'); run(0.1); ok(at(tail.x0, tail.row) === T.AIR, 'swung clear, the deck is gone at once (whoever stands on it goes in)');
   /* THE RIDES: the hoist, the barge, the hook - each where its gadget sends it, a gadget in reach at each end */
-  { const h = D.hoists[0], m = movers.find(q => q.kind === 'hoist'); ok(Math.abs(m.y - h.bot * TS) < 1, 'the sack hoist rests at the loft floor');
+  { const h = D.hoists[0], m = movers.find(q => q.kind === 'hoist'); ok(Math.abs(m.y - h.botPx) < 1 && m.y > h.bot * TS && at(h.x0, h.bot) === T.AIR, 'the sack hoist rests in its notch, a step down from the loft floor (boarded from above)');
     const wn = ents('tpwinch').filter(e => e.hoist === h.id); ok(wn.length === 2 && wn.some(e => e.y + 1 === h.bot) && wn.some(e => e.y + 1 === h.top) && wn.every(e => e.x >= h.x0 + h.w && e.x <= h.x0 + h.w + 1), 'a winch beside the shaft on each floor, in reach of the deck');
-    ok(H.wind('sack') === 'up', 'its winch sends it up'); run(1); ok(H.rideState('hoist', 'sack') === 'moving', 'it rides'); run(5); ok(H.rideState('hoist', 'sack') === 'top' && Math.abs(m.y - h.top * TS) < 1, 'up at the sack floor, flush with its boards');
+    ok(H.wind('sack') === 'up', 'its winch sends it up'); run(1); ok(H.rideState('hoist', 'sack') === 'moving', 'it rides'); run(5); ok(H.rideState('hoist', 'sack') === 'top' && Math.abs(m.y - h.topPx) < 1 && h.topPx === h.top * TS, 'up at the sack floor, flush with its boards');
     ok(at(h.x0, h.top) === T.AIR && at(h.x0 - 1, h.top) === T.ONEWAY, 'the shaft is open through the sack floor'); H.wind('sack'); run(6); ok(H.rideState('hoist', 'sack') === 'bot', 'and back down'); }
-  { const q = D.troughs[0], m = movers.find(z => z.kind === 'barge'), sl = ents('tpsluice'); ok(H.rideState('trough', 'aq') === 'west' && m.y >= q.bed * TS - 9, 'the barge lies moored on the dry west bed');
+  { const q = D.troughs[0], m = movers.find(z => z.kind === 'barge'), sl = ents('tpsluice'); ok(H.rideState('trough', 'aq') === 'west' && m.y >= q.bed * TS - 9 && m.y > (q.bed - 1) * TS, 'the barge lies moored on the dry channel bed, a step down from the walkway (boarded from above)');
     ok(sl.some(e => e.x === q.stopW - 1) && sl.some(e => e.x === q.stopE + q.w), 'a sluice at each end, by the barge\'s end');
     let gap = 0; for (let x = q.stopW + q.w; x < q.stopE; x++) if (at(x, q.bed) !== T.SOLID) gap++; ok(gap >= 18, 'the span is broken: ' + gap + ' columns no jump crosses');
     ok(H.sluice('aq', false) === null && H.rideState('trough', 'aq') === 'west', 'the far sluice does not send a barge that is not at its stop');
     ok(H.sluice('aq', true) === 'sent', 'the west sluice opens'); run(0.5); ok(H.rideState('trough', 'aq') === 'moving', 'the trough runs');
     run(20); ok(H.rideState('trough', 'aq') === 'east' && Math.abs(m.x - q.stopE * TS) < 1 && Math.abs(m.y - (q.surf * TS - 2)) < 1, 'the barge floats over the break to the east stop, on the water');
     ok(H.sluice('aq', false) === 'sent', 'the east sluice sends it back'); run(20); ok(H.rideState('trough', 'aq') === 'west', 'and it is back at the west stop'); }
-  { const c = D.cranes[0], m = movers.find(z => z.kind === 'hook'), caps = ents('tpcrane'); ok(H.rideState('crane', 'jib') === 'quay' && Math.abs(m.y - c.from[1] * TS) < 1, 'the hook hangs flush with the quay');
-    ok(caps.some(e => Math.abs(e.x - c.from[0]) <= 1 && e.y + 1 === c.from[1]) && caps.some(e => Math.abs(e.x - (c.to[0] + c.w)) <= 3 && e.y + 1 === c.to[1]), 'a capstan by the hook at the quay and on the roof');
-    ok(H.jib('jib') === 'up', 'the capstan swings the jib'); run(4); ok(H.rideState('crane', 'jib') === 'roof' && Math.abs(m.y - c.to[1] * TS) < 1 && at(c.to[0] + c.w, c.to[1]) === T.SOLID, 'the hook rides up to the roof\'s edge, flush with it');
+  { const c = D.cranes[0], m = movers.find(z => z.kind === 'hook'), caps = ents('tpcrane'); ok(H.rideState('crane', 'jib') === 'quay' && Math.abs(m.y - c.fromPx) < 1 && m.y > (c.from[1] - 1) * TS, 'the hook hangs in its notch, a step down from the quay (boarded from above)');
+    ok(caps.some(e => Math.abs(e.x - c.from[0]) <= 1 && e.y + 1 === c.from[1] - 1) && caps.some(e => Math.abs(e.x - (c.to[0] + c.w)) <= 3 && e.y + 1 === c.to[1]), 'a capstan by the hook at the quay and on the roof');
+    ok(H.jib('jib') === 'up', 'the capstan swings the jib'); run(4); ok(H.rideState('crane', 'jib') === 'roof' && Math.abs(m.y - c.toPx) < 1 && c.toPx === c.to[1] * TS && at(c.to[0] + c.w, c.to[1]) === T.SOLID, 'the hook rides up to the roof\'s edge, flush with it');
     let wall = 0; for (let y = c.to[1]; y < c.from[1]; y++) if (at(c.to[0] + c.w, y) === T.SOLID) wall++; ok(wall >= 12, 'the warehouse wall it lifts you over is no climb: ' + wall + ' rows'); H.jib('jib'); run(4); }
   /* THE BROKEN ARCHES (A14): a real platforming run - pier to pier, every gap a jump (two columns) over water */
   { let piers = 0, x = 290; for (; x < 322; x++) if (at(x, 30) === T.SOLID && at(x - 1, 30) !== T.SOLID && x > 291) piers++;
