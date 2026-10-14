@@ -9833,7 +9833,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
          a BIG drop (BIG_DROP, five tiles and more) is a DUST RING + a deeper thump + a stronger shake + a longer crouch-recover. Nothing here locks the controls (landT clears on the next press, above). */
       dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 3); SFX.pLand(surface()); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
       squash(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
-      if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); hitstop(0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
+      if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); if (prevVy > 250) hitstop(0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
       if (tier === 2 && !SET.reduceMotion) { dustRing(P.x, P.y, 14); SFX.thud(); }
       scatterPebbles(P.x, P.y, tier); dipUnderfoot(tier); }
     pogoChain = 0;
