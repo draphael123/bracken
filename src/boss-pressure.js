@@ -32,3 +32,9 @@ export function gapFactor(e, act, mini, winding) {
   return g;
 }
 export const dmgFactor = (act, mini, e) => (e && DIAL_EXEMPT.has(e.t) ? 1 : pressureOf(act, mini).dmg);
+/* (claude/oneshotcap) THE ONE-BLOW CEILING ON THE DIAL'S BOOST: the dial's x(dmg) must never turn one blow of a boss or mini into more than BLOW_CAP of the hero's max hp on the bar
+   (tools/blow-census.mjs found 5 of 58 rows over 45% of the lowest-hp hero at campaign level: Lanterneater's Snap, the Owl, the Ploughman, the Lamp-Reeve and the Serjeant minis).
+   It caps only what the dial ADDED: a blow that is already over the ceiling as tuned (before the dial) is left at that tuned number, so un-dialled numbers stay as authored. `fin` is the
+   chain that still runs after the dial (difficulty x tier), so the ceiling is read on what lands. DIAL_EXEMPT bosses never reach this (dmgFactor is 1). */
+export const BLOW_CAP = 0.45;
+export function capBoost(before, boosted, maxHp, fin = 1) { if (!(boosted > before) || !(maxHp > 0)) return boosted; const lim = Math.max(1, Math.round(BLOW_CAP * maxHp / (fin > 0 ? fin : 1))); return boosted <= lim ? boosted : Math.max(before, lim); }
