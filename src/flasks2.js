@@ -17,8 +17,8 @@
 //   every flask it had. Nothing else existed to migrate (the old RICH FLASK card pick keeps its id: it is SECOND DRAUGHT now).
 //   THE CAMPAIGN KIT (src/campaign-kit.js) reads typicalFlaskKit: the flask build a typical player has bought by each point of the road.
 
-export const POTENCY = { base: 0.35, cap: 0.50 };   /* +35% of max health a flask; the store's tiers only, 50% at most (Daniel 10-09: the card's RICH FLASK is folded in - it is SECOND DRAUGHT now, stamina) */
-export const QUICK = { drinkT: 0.30, swallowAt: 0.20 };   /* GAME s: at game speed 0.6 the drink is 0.5 s on the clock, the swallow at 0.33 s (was 0.45 / 0.3) */
+export const POTENCY = { base: 0.25, cap: 0.40 };   /* (claude/flasklever 10-13: was 0.35 / 0.50) */   /* +35% of max health a flask; the store's tiers only, 50% at most (Daniel 10-09: the card's RICH FLASK is folded in - it is SECOND DRAUGHT now, stamina) */
+export const QUICK = { drinkT: 0.50, swallowAt: 0.36 };   /* (claude/flasklever 10-13: was 0.30 / 0.20; the base drink is now 0.70 / 0.55) */   /* GAME s: at game speed 0.6 the drink is 0.5 s on the clock, the swallow at 0.33 s (was 0.45 / 0.3) */
 export const BLESSING_REFILL = 2;
 export const SHRINES_FOR_BLESSING = 5;
 
@@ -27,10 +27,10 @@ export const FLASK_ITEMS = [
   { id: 'tonic', group: 'COUNT', name: 'EXTRA FLASK I', price: 150, count: 1, desc: 'one more red flask to carry. you start with one. a shrine gives one back, a death all.' },
   { id: 'extra2', group: 'COUNT', name: 'EXTRA FLASK II', price: 300, count: 1, req: { beat: 'crown', name: 'beat THE GOBLIN QUEEN (Highcrown)' }, desc: 'a second extra flask: three to carry with the first.' },
   { id: 'extra3', group: 'COUNT', name: 'EXTRA FLASK III', price: 450, count: 1, hidden: true, req: { find: 'flaskshard', name: 'find the FLASK SHARD' }, desc: 'made from the flask shard you found under the castle: one more flask to carry.' },
-  { id: 'rich', group: 'POTENCY', name: 'RICH DRAUGHT', price: 200, heal: 0.40, req: { beat: 'stockade', name: "beat THE STOCKADE'S CHIEFTAIN" }, desc: 'a flask heals 40% of your health, not 35%.' },
-  { id: 'distilled', group: 'POTENCY', name: 'DISTILLED DRAUGHT', price: 400, heal: 0.45, req: { beat: 'keep', name: 'beat THE DROWNED KING (the Underwater Keep)' }, desc: 'a flask heals 45% of your health.' },
-  { id: 'sunlight', group: 'POTENCY', name: 'BOTTLED SUNLIGHT', price: 500, heal: 0.50, hidden: true, req: { find: 'sunlight', name: 'find the bottled sunlight' }, desc: 'the Glass Sea\'s light, stoppered: a flask heals 50% of your health.' },
-  { id: 'quick', group: 'PERKS', name: 'QUICK DRAUGHT', price: 250, perk: true, req: { obj: 'dry', name: 'clear any level without drinking a flask' }, desc: 'the drink is quicker: about half a second, not three quarters. less time to be hit.' },
+  { id: 'rich', group: 'POTENCY', name: 'RICH DRAUGHT', price: 200, heal: 0.30, req: { beat: 'stockade', name: "beat THE STOCKADE'S CHIEFTAIN" }, desc: 'a flask heals 30% of your health, not 25%.' },
+  { id: 'distilled', group: 'POTENCY', name: 'DISTILLED DRAUGHT', price: 400, heal: 0.35, req: { beat: 'keep', name: 'beat THE DROWNED KING (the Underwater Keep)' }, desc: 'a flask heals 35% of your health.' },
+  { id: 'sunlight', group: 'POTENCY', name: 'BOTTLED SUNLIGHT', price: 500, heal: 0.40, hidden: true, req: { find: 'sunlight', name: 'find the bottled sunlight' }, desc: 'the Glass Sea\'s light, stoppered: a flask heals 40% of your health.' },
+  { id: 'quick', group: 'PERKS', name: 'QUICK DRAUGHT', price: 250, perk: true, req: { obj: 'dry', name: 'clear any level without drinking a flask' }, desc: 'the drink is quicker: under a second, not more than one. less time to be hit.' },
   { id: 'steady', group: 'PERKS', name: 'STEADY HAND', price: 300, perk: true, hidden: true, req: { find: 'steady', name: 'find the steady hand' }, desc: 'a blow still stops the drink, but the flask is not spilled: it goes back on your belt.' },
   { id: 'blessing', group: 'PERKS', name: 'SHRINE BLESSING', price: 250, perk: true, req: { obj: 'shrines5', name: 'break ' + SHRINES_FOR_BLESSING + ' shrines' }, desc: 'a shrine you reach gives back TWO flasks, not one.' },
 ];

@@ -23,6 +23,8 @@
 //   THE MASTS LIGHT UP (Daniel 10-06): their charge glows, sparks and throws a light pool on the floor; in the storm they burn at a glance.
 // ANTI-SPAM WARD (B3): after every opening a told 3 s ward (HER FEATHERS BRISTLE, a ring): no blow and no plunge lands (WARDED), and the dive skids.
 // STAGGER = STILL: open, she lies. The bot plan is below (rocEyriePlan, src/lab.js). Numbers: EYRIE.
+/* (claude/flasklever) the base of every lag she draws (0.2 s + 0..0.15): a human profile raises it to its own reaction (src/lab.js bossLab) */
+export const ROC_LAG = { base: 0.2 };
 export const EYRIE = {
   hp: 1200, hitK: 1.9, dropK: 2.0,   /* (FIX PASS: dropK 1.3 -> 2.0 - her snatch drop is unblockable, so it reaches the shield) */
   spd: 1.15,   /* (claude/roc2) she moves ~15% faster than the greybox: her flight, her dive, her rests and her tells (never under 0.5 s) */
@@ -266,7 +268,7 @@ export function makeRocEyrie(ctx) {
    nest's stone under her; it steps out of the column under the dead air's cloud, and hops the chain lightning's floor as the arc comes) */
 function planRaw(o) {
   const { P, e, R, A, therms, stone, reach, shield, t, rng, mem } = o, out = { gx: null, why: '' }, nest = A.nest || [0, 0], floor = A.floor;
-  if (mem.seenMode !== e.mode) { mem.seenMode = e.mode; mem.seenAt = t; mem.lag = 0.2 + rng() * 0.15; }
+  if (mem.seenMode !== e.mode) { mem.seenMode = e.mode; mem.seenAt = t; mem.lag = ROC_LAG.base + rng() * 0.15; }
   const seen = o.eyes || t - mem.seenAt >= mem.lag;   /* (a quarter-second, give or take, before it reacts to a new mode) */   /* (claude/botreads, o.eyes: the lab's eyes already see her a reaction late - no second lag on top, and none again as a read tell turns into its blow) */
   if (P.snatched) { out.mash = true; out.why = 'struggle'; return out; }
   const evx = mem.ex !== undefined ? (e.x - mem.ex) / Math.max(1e-3, t - mem.et) : 0; mem.ex = e.x; mem.et = t;
@@ -295,7 +297,7 @@ function planRaw(o) {
 function planEyes(o, out, dx) {
   const { P, e, R, reach, stone, rng, mem, t } = o, floor = o.A.floor;
   /* a drawn thing is SEEN a reaction after it first appears (its own die), as a player sees it - never on the frame it is born */
-  const sees = (k, key) => { if (!key) { mem[k] = null; return false; } if (!mem[k] || mem[k].key !== key) mem[k] = { key, at: t, lag: 0.2 + rng() * 0.15 }; return t - mem[k].at >= mem[k].lag; };
+  const sees = (k, key) => { if (!key) { mem[k] = null; return false; } if (!mem[k] || mem[k].key !== key) mem[k] = { key, at: t, lag: ROC_LAG.base + rng() * 0.15 }; return t - mem[k].at >= mem[k].lag; };
   const deadSeen = sees('seeDead', R && R.dead ? R.dead.x + ':' + R.dead.top : null), chainSeen = sees('seeChain', R && R.chain ? 'c' + R.chain.dir + ':' + (R.n ? R.n.chains : 0) : null);
   /* THE DEAD AIR: the cloud gathers over a column - out of it, sideways (glide if aloft); never under its live underside */
   if (R && R.dead && deadSeen) { const d = R.dead, inBox = P.x > d.x0 - 8 && P.x < d.x1 + 8 && P.y > d.y0 - 30;

@@ -12,11 +12,12 @@ import { createHash } from 'node:crypto';
 import { LEVELS } from '../src/level.js';
 import { depthsOf } from '../src/campaign-order.js';
 import { openPage } from './cdp.mjs';
+import { fightFlasks } from './boss-run.mjs';   /* (claude/flasklever) the campaign kit's flasks, as the boss rows carry them (--flasks=bare for none) */
 import { AFFIX_AT } from '../src/elite-kit.js';
 
 const args = process.argv.slice(2), has = k => args.includes('--' + k);
 const opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
-const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), mashSeeds = +opt('mash-seeds', 1), secs = +opt('secs', 60);
+const flaskMode = opt('flasks', 'kit'), profile = opt('profile', 'human'), heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), mashSeeds = +opt('mash-seeds', 1), secs = +opt('secs', 60);
 const OUT = new URL('../docs/elite-lab.json', import.meta.url);
 const eliteStamp = () => { const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), kit = readFileSync(new URL('../src/elite-kit.js', import.meta.url), 'utf8');
   const a = src.indexOf('\nconst ELITE = {'), b = src.indexOf('/* THE MARK OF ONE:'); return createHash('sha1').update(src.slice(a, b).replace(/\r/g, '') + kit.replace(/\r/g, '')).digest('hex').slice(0, 12); };
@@ -40,12 +41,12 @@ try {
   await pg.reload();
   await pg.evalp(`(async () => { const { mulberry } = await import('/src/px.js'); const lab = await import('/src/lab.js'); const real = Math.random;
     const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
-    window.__elite = async o => { const P0 = BKT.PROG, progRow = JSON.stringify(P0); /* (claude/harness) the fight leaves the save as it found it: the XP of a kill and the lessons told must not reach the next row (tools/lab-order.mjs) */ BKT.setHeroLevel(o.hero, o.lvl); P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
+    window.__elite = async o => { const P0 = BKT.PROG, progRow = JSON.stringify(P0); /* (claude/harness) the fight leaves the save as it found it: the XP of a kill and the lessons told must not reach the next row (tools/lab-order.mjs) */ BKT.setHeroLevel(o.hero, o.lvl); if (o.flasks) { P0.flaskItems = o.flasks; P0.flaskUp = Object.keys(o.flasks).filter(k => ['tonic', 'extra2', 'extra3'].includes(k)).length; } P0.skillOwned[o.hero] = {}; P0.loadouts[o.hero] = []; if (P0.talents) P0.talents[o.hero] = {};
       Math.random = mulberry(hash(o.level + '|' + o.kind + '|' + o.hero + '|' + o.mode + '|' + o.seed)); try { return await lab.eliteLab(BK, o); } finally { Math.random = real; const p0 = JSON.parse(progRow); for (const k of Object.keys(BKT.PROG)) if (!(k in p0)) delete BKT.PROG[k]; Object.assign(BKT.PROG, p0); } };
     return true; })()`);
   for (const j of jobs) for (const hero of heroes) {
     for (const [mode, n] of [['mash', mashSeeds], ['human', seeds]]) for (let seed = 0; seed < n; seed++) {
-      const r = await pg.evalp(`window.__elite(${JSON.stringify({ ...j, hero, mode, seed, secs })})`, 1800000);
+      const r = await pg.evalp(`window.__elite(${JSON.stringify({ ...j, hero, mode, seed, secs, profile, flasks: mode === 'human' && flaskMode === 'kit' ? fightFlasks(j.level) : null })})`, 1800000);
       rows.push({ ...j, hero, mode, seed, ...r });
       console.log([j.kind.padEnd(12), j.level.padEnd(12), hero.padEnd(7), mode.padEnd(6), r.skipped ? 'SKIPPED ' + r.skipped : (r.out.padEnd(8) + String(r.secs).padStart(5) + 's  hero ' + String(r.hpLeftPct).padStart(3) + '%  elite ' + String(r.eliteLeftPct).padStart(3) + '%  ' + (r.affix || '-') + (r.roused ? ' roused' : ''))].join(' '));
     }

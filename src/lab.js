@@ -8,6 +8,12 @@ import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate,
 //   await BK.bossLab({ bosses: ['wood', 'kings', ...], heroes: [...] })                                -> window.__bossLab
 import { MARK, HEIGHT } from './marks.js';
 import { botShouldDrink } from './survival.js';   /* THE FLASK (claude/survival): a v2 profile with drinkAt drinks; legacy never does */
+/* (claude/flasklever) EVERY PLAN'S OWN REACTION CLOCK: the per-boss plans read non-mode things (a rock, a hook, a lever, a band) a PLAN.react late; a human profile sets them all to ITS reaction (bossLab) */
+import { PLAN as RT_QUEEN } from './cistern-queen.js'; import { DJ_PLAN as RT_DJINN } from './djinn.js'; import { DRILL_PLAN as RT_DRILL } from './great-drill.js'; import { FOREMAN_PLAN as RT_FOREMAN } from './foreman.js';
+import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FOG } from './fog-knight.js'; import { PLAN as RT_GANG } from './gang-leader.js'; import { PLAN as RT_CRAB } from './gorge-crab.js';
+import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
+import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
+const PLAN_CLOCKS = [RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
@@ -484,6 +490,7 @@ function dashIn(BK, h, e, f) {
    remaining windup (a tell he can see, or a boss's greed ring), and (b) one roll's wind kept back - a swing that would leave less than a
    roll is not started. This is not a weaker bot: under the old combat a swing into a tell could be rolled out of, so the bot never had to
    read it; now it must, as a person must. Only a STARTED cut is held back (a plunge from the air is not), and only on the ground. ==== */
+let GUARDR = null, GSTATS = null;   /* (claude/flasklever) the human parry's dice and counts, per row */
 let HUMAN_H = null; export const LAB_RESERVE_DEFAULT = 0.5; let LAB_RESERVE = LAB_RESERVE_DEFAULT;
 let LABP = profileOf(null), PERC = null, SKH = null, ROWBOSS = null;   /* the row's bot profile (src/bot-profile.js), its perception (src/lab-perceive.js) and its skill hands, or null */
 function humanSwingOk(BK) {
@@ -524,19 +531,33 @@ function rollWhenDue(BK, press0) {
   if (winding && left > ROLL_LATE) return;
   P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; if (callerRollBad(BK)) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
 }
+/* (claude/flasklever) THE HUMAN PARRY. A SHIELD hero's guard held from the first frame of a tell is a block, never a parry (the perfect guard is the first 0.11 s of a raised
+   guard). A player parries by raising it as the blow lands: on a yellow tell he TRIES (LABP.parryTry of them) and holds the guard back until the tell's last parryLead s -
+   as READ (the eyes' modeT carries a reader's error, so some land on the beat and some a hair late or early). Run with the eyes' state on, just before the world steps.
+   Red tells (HARD_TELLS) and the rest of the frame's key choices are untouched; the held-from-the-start block stays for the share that does not try. */
+function humanGuard(BK, h, boss) {
+  const P = BK.P, k = BK.keys; if (!LABP.v2 || !(LABP.parryTry > 0) || !P || !boss || !k.block || P.block || P.atkHeld > 0 || P.charge > 0) return;
+  if (h !== 'knight' && h !== 'paladin' && h !== 'geomancer') return;
+  const m = boss.mode; if (!m || !/Tell$/.test(m) || m === 'stanceTell' || HARD_TELLS.has(boss.t + '|' + m) || typeof boss.modeT !== 'number') return;
+  if (!GUARDR) return;
+  if (P.labGuardM !== m || boss.modeT > (P.labGuardT ?? -1) + 0.05) { P.labGuardM = m; P.labGuardTry = GUARDR() < LABP.parryTry; P.labGuardUp = false; if (GSTATS) { GSTATS.tells++; if (P.labGuardTry) GSTATS.tried++; } }   /* a NEW tell: the mode changed or its clock went UP */
+  P.labGuardT = boss.modeT;
+  if (P.labGuardTry) { if (boss.modeT > (LABP.parryLead ?? 0.09)) k.block = false; else if (!P.labGuardUp) { P.labGuardUp = true; if (GSTATS) GSTATS.raised = (GSTATS.raised || 0) + 1; } }
+}
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation, press0 = BK.press, sim0 = BK.sim, step0 = BK.step;
   BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
-  LABP = profileOf(opts.profile ?? BK.labProfile);   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
+  LABP = profileOf(opts.profile ?? BK.labProfile);
+  const clocks0 = []; if (LABP.v2 && LABP.perceive && LABP.planReact) { for (const o of PLAN_CLOCKS) { clocks0.push([o, o.react]); o.react = LABP.planReact; } clocks0.push([RT_ROC, RT_ROC.base]); RT_ROC.base = Math.max(0.2, LABP.planReact - 0.075); }   /* (claude/flasklever) every plan reads its non-mode things a HUMAN reaction late, not 0.25 s */   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
   /* WITH EYES (a perceiving profile) the world steps one frame at a time: the hands decide on what was SEEN, the seen state comes off, the world steps, and what is seen now goes back on */
-  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
+  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC && ROWBOSS) humanGuard(BK, HUMAN_H, ROWBOSS); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
   const OBS = opts.observe || null;
   BK.sim = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(sim0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
   BK.step = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(step0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
-  finally { if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
+  finally { for (const [o, v] of clocks0) { if ('base' in o) o.base = v; else o.react = v; } if (PERC) PERC.restore(); PERC = null; SKH = null; ROWBOSS = null; LABP = profileOf(null); BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; if(miniBefore)for(const[k,v]of Object.entries(miniBefore)){if(v===undefined)delete BK.PROG[k].mini;else BK.PROG[k].mini=v;} }
 }
 async function runbossLab(BK, opts) {
   const healthMode=opts.healthMode||'refill';
@@ -610,7 +631,7 @@ async function runbossLab(BK, opts) {
        on how many creatures anything else in the level spawned before it. */
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
-    if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); }
+    if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); GUARDR = mulberry(seedOf('guard|' + lvId + '|' + h + '|' + (opts.seed || '') + '|' + (opts.salt || ''))); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; }
     ROWBOSS = boss; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
@@ -2314,7 +2335,7 @@ async function runbossLab(BK, opts) {
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       // THE HERALD'S STONES LEAVE PISTOL ROOM: a loaded shot reaches across them; the short C release answers his yellow thrust.
       const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
-      const mixedHeavy=(opts.attackStyle==='mixed'||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
+      const mixedHeavy=(opts.attackStyle==='mixed'||(LABP.v2&&LABP.mixHeavy&&h!=='pirate'&&h!=='reaper')||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
       /* THE SWING GOES AT HIM, NOT BEHIND. Standing closer than its spot, the bot walks back to it - and the game turns a hero to the key he
          holds before a swing starts (updatePlayer: if (!attacking) P.face = move), so a swing pressed on that frame went out behind him: on
@@ -2431,7 +2452,7 @@ async function runbossLab(BK, opts) {
     const secs = f * (BK.SET.speed || 1) / 60;
     rows.push({ lvl: lvId, boss: boss.t, h, killed: !boss.alive, secs: +secs.toFixed(1), bossHp: hp0, hpLeftPct: boss.alive ? Math.round(100 * boss.hp / hp0) : 0,
       health: {...health,endHp:Math.max(0,P.hp),died:!!P.dead}, outcome: !boss.alive ? (P.dead?'trade':'win') : P.dead&&normalHealth?'death':'timeout',
-      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes } : {}), ...(skillCasts ? { skillCasts } : {}) });
+      takenPerMin: Math.round(taken / Math.max(1 / 60, secs) * 60), heroHp: P.maxHp, crowned: boss.crowned || 0, swings, smallSwings, smallMissed, opened, damage: boss.damageLedger || {plunge:0,other:0}, ripostes: boss.ripostes || 0, wallOpens: boss.wallOpens || 0, falls, returns: BK.stats().parries - par0, ...(opts.modes ? { modes: modeN, hitBy } : {}), ...(boss.t === 'lance' ? { archers: bowSeen.size, archersCut: [...bowSeen].filter(q => q.hp <= 0).length } : {}), ...(eyes ? { profile: LABP.name, eyes: { ...eyes, guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 } } : {}), ...(skillCasts ? { skillCasts } : {}) });
     await yieldNow();
     } finally { Math.random = realRandom; if (PERC) { PERC.restore(); PERC = null; } SKH = null; { const p0 = JSON.parse(progRow); for (const k of Object.keys(BK.PROG)) if (!(k in p0)) delete BK.PROG[k]; Object.assign(BK.PROG, p0); } }
   }
@@ -2614,9 +2635,14 @@ export function chaseClimb(BK, m, o = {}) {
    tiles past the start, as fightLab does) }. Returns { out: 'win'|'dead'|'timeout', secs, hpLeftPct, eliteLeftPct, affix, ehp }. */
 export async function eliteLab(BK, o) {
   const lvm = await import('./level.js'); const press0 = BK.press, sim0 = BK.sim, step0 = BK.step, previous = BK.manualSimulation;
+  /* (claude/flasklever) THE ELITE LAB'S HUMAN has the boss lab's human now: the 'human' profile (its eyes: a tell is seen 254-578 ms late and sometimes misread, the greed after a
+     landed hit; its parry: a shield hero's guard raised in the tell's last 0.09 s on 60% of the yellow tells) - the legacy hands it measured with were blind to none of it and
+     never parried (claude/order: the Road Wardens' knights 33-56% against 75-85%). o.profile names another ('legacy' = the old elite-lab bot exactly). */
+  let eliteE = null; const eyesOn = o.mode === 'human' && (o.profile ?? 'human') !== 'legacy', LABP0 = LABP;
+  const eliteStep = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { rollWhenDue(BK, press0); if (PERC && eliteE) humanGuard(BK, o.hero, eliteE); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } } return r; };
   if (o.mode === 'human') { HUMAN_H = o.hero;
     BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
-    BK.sim = n => { rollWhenDue(BK, press0); return sim0.call(BK, n); }; BK.step = n => { rollWhenDue(BK, press0); return step0.call(BK, n); }; }
+    BK.sim = n => eyesOn ? eliteStep(sim0, n) : (rollWhenDue(BK, press0), sim0.call(BK, n)); BK.step = n => eyesOn ? eliteStep(step0, n) : (rollWhenDue(BK, press0), step0.call(BK, n)); }
   BK.manualSimulation = true;
   try {
     BK.setHero(o.hero); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === o.level)); BK.start(); BK.god = false; BK.sim(10);   /* (claude/elitemoves: the tell clock with the fight's own clock - see BK.clearTellClock) */
@@ -2631,8 +2657,12 @@ export async function eliteLab(BK, o) {
       let spot = null; for (const sd of [away, -away]) { for (const k of [6, 5, 7, 4, 8, 3]) { const x = ex + sd * k; if (free(x, r) && free(x, r - 1) && !free(x, r + 1) && clear(x)) { spot = x; break; } } if (spot !== null) break; }
       BK.tp(spot !== null ? spot : ex + away * 6, r); }
     BK.sim(20); P.hp = P.maxHp; P.st = P.maxSt; P.inv = 0; e.elT = Math.max(e.elT || 0, 1.0);
+    if (eyesOn) { LABP = profileOf(o.profile ?? 'human'); const key = o.level + '|' + o.kind + '|' + o.hero + '|' + (o.seed || 0);
+      GUARDR = mulberry(seedOf('guard|' + key)); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; P.labGuardUp = false;
+      PERC = makePerception(BK, LABP, key, e, {}); PERC.apply(); eliteE = e; }
     const ehp = e.hp0 || e.hp, maxF = Math.round((o.secs || 60) * 60), reach = LAB_REACH[o.hero] || 22; let f = 0;
     for (; f < maxF && e.alive && !P.dead; f++) {
+      if (eyesOn && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/flasklever) the human drinks, as the boss lab's does */
       if (o.mode === 'mash') { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
         const dx = e.x - P.x, edge = (e.w || 12) / 2; if (Math.abs(dx) > Math.min(reach * 0.7, 14) + edge * 0.5 || Math.abs(dx) > 6) k[dx > 0 ? 'right' : 'left'] = true;
         if (P.swim) { const dy = (e.y - (e.h || 16) / 2) - (P.y - 10); if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }
@@ -2642,8 +2672,9 @@ export async function eliteLab(BK, o) {
       if (f % 900 === 899) await yieldNow();
     }
     k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
-    return { out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
-  } finally { BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
+    let eyes = null; if (PERC) { PERC.restore(); eyes = { ...PERC.stats(), guardTells: GSTATS ? GSTATS.tells : 0, guardTried: GSTATS ? GSTATS.tried : 0, guardRaised: GSTATS ? GSTATS.raised || 0 : 0 }; PERC = null; }
+    return { eyes, out: P.dead ? 'dead' : e.alive ? 'timeout' : 'win', secs: +(f / 60).toFixed(1), hpLeftPct: Math.max(0, Math.round(P.hp / P.maxHp * 100)), eliteLeftPct: e.alive ? Math.round(e.hp / ehp * 100) : 0, affix: e.affix || null, ehp, roused: !!e.ekRoused };
+  } finally { if (PERC) { PERC.restore(); PERC = null; } LABP = LABP0; BK.press = press0; BK.sim = sim0; BK.step = step0; BK.manualSimulation = previous; HUMAN_H = null; }
 }
 /* (claude/walkerhands) THE LAB'S DUEL HANDS FOR THE LEVEL WALKER (tools/level-walk.mjs + src/walk-duel.js). One frame of labBotFrame - the hands the
    elite lab measures every elite with (docs/elite-lab.json: the human wins ~80%) - with the HUMAN gates the elite lab puts on them (no swing into a

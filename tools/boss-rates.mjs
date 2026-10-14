@@ -9,7 +9,7 @@
      PORT=8644 node tools/boss-rates.mjs <level>[:mini][,<level>[:mini]..] | --all  [--ways=practiced,first,built] [--seeds=6] [--first-seeds=N]
         [--built-seeds=N] [--heroes=knight,warden,pyro] [--profile=human] [--secs=240] [--jobs=2] [--out=file.json] [--level=N]
    --all: every live boss and mini (BOSS_ROWS below). --jobs: pages run side by side (each its own headless Chrome). Prints a row a fight
-   and a table: boss, hero level, then per way the wins per hero and overall, and the band (bosses 50-60%, minis 70-75%; no hero at 0). */
+   and a table: boss, hero level, then per way the wins per hero and overall, and the band (bosses 60-70%, minis 75-85% with flasks; no hero at 0). */
 import { writeFileSync } from 'node:fs';
 import { runFights, line, won } from './boss-run.mjs';
 import { STANDARD } from '../src/bot-profile.js';
@@ -29,7 +29,7 @@ export function summarize(rows) {
     const H = W[x.hero] = W[x.hero] || { w: 0, n: 0 }; H.n++; if (won(x)) H.w++; }
   return Object.values(by);
 }
-const band = r => r.includes(':mini') ? [70, 75] : [50, 60];
+const band = r => r.includes(':mini') ? [75, 85] : [60, 70];   /* B6 amended: with flasks bosses 60-70, minis 75-85 */
 console.log('\nBOSS RATES  profile ' + prof + '  flasks ' + flasks + '  (' + out.length + ' fights, ' + Math.round((Date.now() - t0) / 60000) + ' min)');
 console.log('row'.padEnd(18) + 'L'.padStart(3) + '  ' + ways.map(w => (w + ' ' + heroes.map(h => h.slice(0, 2)).join('/')).padEnd(26)).join('') + 'band');
 for (const B of summarize(out)) { const cells = ways.map(w => { const W = B.ways[w] || {}; let tw = 0, tn = 0; const per = heroes.map(h => { const H = W[h] || { w: 0, n: 0 }; tw += H.w; tn += H.n; return H.w + '/' + H.n; });

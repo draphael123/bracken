@@ -112,7 +112,7 @@ import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from 
 import { makeCrouchA, CROUCH as CROUCH_A } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): the knight's LOW GUARD and SHIELD TRIP, the warden's SET SPEAR and LOW POKE, the freebooter's DUCK AND RELOAD */
 import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRelease, claim as tokenClaim } from './attack-tokens.js';
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
-import { installTactics, braceHit } from './foe-tactics.js'; import { installReact } from './foe-react.js'; import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
+import { installTactics, braceHit } from './foe-tactics.js'; import { installReact, actOf as bpActOf } from './foe-react.js'; import { gapFactor as bpGap, dmgFactor as bpDmg } from './boss-pressure.js';   /* (claude/flasklever) THE GLOBAL BOSS PRESSURE DIAL: one table per act (src/boss-pressure.js) */ import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
 import { makePartnerThrow, WORDS as PT_WORDS, PT as PTC } from './partner-throw.js';   /* (claude/partnerthrow) CO-OP: GRAB YOUR PARTNER, CARRY HIM (he dangles and screams), THROW HIM (src/partner-throw.js) */
 import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS, weightOf as kiWeight } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep, REACT_AIR as RX_AIR } from './foe-react.js'; import * as AP from './anti-plunge.js'; import * as KA from './ki-art.js'; import { knockRows as kiRows } from './knock-data.js';   /* (claude/kifollow) the knock-into ART (spines, armed states, poses, entry FX: src/ki-art.js) and the per-act hazard DATA (src/knock-data.js) */   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
@@ -2623,7 +2623,7 @@ function spawnEnt(e) {
       case 'suncatcher': { if (rimeReset()) resolveTiles(); const sc = { ...base, t: 'suncatcher', mini: !!e.mini, w: 22, h: 40, hp: EHP.suncatcher, maxHp: EHP.suncatcher, mode: 'sleep', modeT: 0, face: -1, phase: 1, frostT: 2.5, spireT: 4, shardT: 1.6, clawT: 1, hailT: 3, spires: [], hitT: 0 }; if (!e.mini) boss = sc; enemies.push(sc); } break;
       case 'grandmother': boss = { ...base, t: 'grandmother', w: 20, h: 40, hp: EHP.grandmother, maxHp: EHP.grandmother, mode: 'sleep', modeT: 0, face: -1, phase: 1, hitT: 0, ear: px, earT: 0, sweepT: 2.6, listenT: 7, callT: 5, caught: false, teleT: 8, fireT: 4.5, balls: [], alpha: 1 }; enemies.push(boss); break;
       case 'bellman': enemies.push(HUH.newBellman(base, e)); break;   /* THE BELLMAN (UNDERLEAF 2's one new foe): blind, an ear trumpet and a handbell (src/hush-hands.js) */
-      case 'assassin': enemies.push({ ...base, t: 'assassin', w: 9, h: 15, hp: EHP.assassin, speed: 96, mode: 'lurk', modeT: 0, cd: 1.2 + Math.random(), fade: 0.32, quiet: true }); break;
+      case 'assassin': enemies.push({ ...base, t: 'assassin', w: 9, h: 15, hp: EHP.assassin, ...(e.mini ? { maxHp: EHP.assassin, mini: true } : {}) /* (claude/flasklever) THE STALKER IS A MINI: a real duel, no finisher one-shot (capsfix Q2) */, speed: 96, mode: 'lurk', modeT: 0, cd: 1.2 + Math.random(), fade: 0.32, quiet: true }); break;
       case 'berserker': enemies.push({ ...base, t: 'berserker', w: 14, h: 20, hp: EHP.berserker, speed: 132, mode: e.awake ? 'run' : 'asleep', modeT: 0, cd: 0, phase: 1, loud: true, chained: !!e.chained }); break;
       case 'hearthgob': enemies.push({ ...base, t: 'hearthgob', w: 10, h: 13, hp: EHP.hearthgob, speed: 42, mode: 'asleep', modeT: 0, swingT: 0 }); break;
       /* THE TEMPERER. heatCd, hot, open, quenched and shoved are all written down HERE and nowhere else: a cooldown
@@ -6570,6 +6570,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit);
     if (src && dmg > 0 && BOSS_HIT[src.t] && (src === boss || src.xpRole === 'mini')) dmg = Math.round(dmg * BOSS_HIT[src.t]);
+    if (src && dmg > 0 && ((src === boss && bossActive) || src.xpRole === 'mini')) { const bf = bpDmg(bpActOf(curId(), ((bpDepths || (bpDepths = depthsOf(LEVELS)))[curId()]) || 1).act, src !== boss, src); if (bf !== 1) dmg = Math.max(1, Math.round(dmg * bf)); }   /* (claude/flasklever) the act's pressure dial: every blow of his that lands */
     if (src && src.drone && (src.t === 'wasp' || src.t === 'hopper') && dmg > 0) dmg = Math.max(1, Math.round(dmg * DRONE_HIT)); if (src) dmg = RX.tier(src, dmg); if (src && dmg > 0 && L.foeHit && (src.wKey || src.cnSkin) && L.foeHit[src.wKey || src.cnSkin]) dmg = Math.round(dmg * L.foeHit[src.wKey || src.cnSkin]); if (src && dmg > 0 && src.lcMul && src.lcMul !== 1) dmg = Math.max(1, Math.round(dmg * src.lcMul)); }   /* (claude/litchurch) THE LIT CHURCH: a priest's blows by his room's light (src/lit-church-hands.js lcMul: lit x1.3, dark x0.7) */   /* (RX.tier: a later act's common foe hits harder - src/foe-react.js ACTS) */   /* (claude/bosswave2) THE FIRST BOSSES' SWARMS STING, THEY DO NOT KILL: under WEIGHT the Hornet Queen's drones and the Bullfrog's hoppers did most of a hero's dying (a drone's touch was 24 of 110) */   /* A MINI HITS HARDER (claude/combat3): he keeps his damage taken, and his blows land GREED.miniHit harder */   /* DISARMED: it fights bare */   /* who / blow / name: for the line under a death (killerOf) - the creature, its blow's name, or a hazard's name */
   if (!(dmg > 0)) dmg = 10; // a missing table entry must never poison the health bar
   if (!P.dead && P.dodge > 0 && (P.dodgeInv === undefined || P.dodgeInv > 0) && tal('evasion') && !isPyro() && !isPaladin() && time - (P.evadeAt || -9) > 0.7) { P.evadeAt = time; CM.refund(P, 20); P.evadeCutT = time + 1; number(P.x, P.y - 24, 'EVADED', '#8fd160'); SFX.dodge(); } // EVASION
@@ -25212,6 +25213,7 @@ const GREED_API = { dt: 0, get time() { return time; }, get P() { return P; },
   mark: e => { number(e.x, e.y - (e.markH || e.h || 20) - 16, '!!', '#ff6b6b'); number(e.x, e.y - (e.h || 20) - 30, 'TOO GREEDY: HE HITS BACK', '#ff6b6b'); },
   boom: e => { SFX.heavy(); shakeCam(5); ringAt(e.x, e.y - (e.h || 20) / 2, GB.GREED.reach + (e.w || 20) / 2, '#ff6b6b', 0.3); burst(e.x, e.y - (e.h || 20) / 2, 16, ['#ff6b6b', '#ffd36b', '#fff6e0'], 140, 0.5); } };
 function updateEnemies(dt) {
+  const DT_FRAME = dt, bpAct = bpActOf(curId(), ((bpDepths || (bpDepths = depthsOf(LEVELS)))[curId()]) || 1).act;   /* (claude/flasklever) a boss's gaps run the act's pressure dial; dt is put back for every other creature */
   OK.world(dt);   /* (claude/order) the knights' bolts in flight, mud, rust and the felled pine on the floor, the snare's hold, the dark that re-plates the ore (src/order-knights.js world) */
   updatePack(dt); eliteWatch(); tkApi.dt = dt; RX.frame(players || [P], enemies, dt);   /* (src/foe-react.js: the act, the ring's sides, a whiff punished, a squad's pincer) */
   if (WMH) WMH.tick(dt, time);   /* (claude/fairfix6) THE WICKER MAN's fire in flight and the swing clock it is struck back by: once a frame, whoever threw it */
@@ -25320,6 +25322,7 @@ function updateEnemies(dt) {
     if (e.t === 'duneworm') { if (bossActive) { beastSeen('duneworm'); updateDuneWormBoss(e, dt); } continue; }   /* THE DUNE WORM (not in the Rush: it is parked) */
     if (e.t === 'pyromancer') { if (bossActive) { beastSeen('pyromancer'); updatePyromancer(e, dt); } continue; }
     if (e.t === 'abbot') { if (bossActive || rushOn()) { beastSeen('abbot'); updateFalseAbbotBoss(e, dt); } continue; }
+    dt = DT_FRAME; if ((e === boss && bossActive) || (e.xpRole === 'mini' && miniActive)) dt = DT_FRAME * bpGap(e, bpAct, e !== boss, windingUp(e));   /* (claude/flasklever) the act's gap dial, in his idle moments only */
     if (GLH && GLH.owns(e)) { if (miniActive) { beastSeen('gangleader'); GLH.update(e, dt); } continue; }   /* THE GANG LEADER (src/gang-leader.js): the courtyard's mini */
     if (CQH && CQH.owns(e)) { if (bossActive && e === boss) { beastSeen('cisternqueen'); CQH.update(e, dt); } continue; }
     if (HNH && HNH.owns(e)) { if (bossActive && e === boss) { beastSeen('huntmaster'); HNH.update(e, dt); } continue; }   /* THE GOBLIN HUNTMASTER (src/huntmaster.js) */
@@ -25823,7 +25826,7 @@ function updateEnemies(dt) {
       e.face = -e.face; e.vx = 0;
     }
   }
-  disarmTick(); updFoe = null;
+  dt = DT_FRAME; disarmTick(); updFoe = null;
   for (const w of waves) {
     w.life -= dt; w.x += w.dir * w.sp * dt;
     { const tx = Math.floor(w.x / TS), ty = Math.floor(w.y / TS); if (!isSolid(tx, ty) && isSolid(tx, ty + 1)) w.y = (ty + 1) * TS; else if (isSolid(tx, ty - 1)) w.life = 0; }
@@ -26467,6 +26470,7 @@ function drawWardenKit(cx, cy) {
                       third cut (or a heavy cut) a great one; the cast itself answers with a great one each way. Against a
                       boss or a mini a wave is capped at REALM_CAP of its bar, so it can never be what kills one outright. ==== */
 const DISARMED_TAKE = 0.4, DISARM_OPEN = 1.5, REALM_CAP = 0.03;
+let bpDepths = null;   /* (claude/flasklever) the depth map, once */
 let updFoe = null, updSeedN = 0, droppedArms = [], realmWaves = [];
 function disarmTick() { if (updFoe && updFoe.disarmed) for (let i = updSeedN; i < seeds.length; i++) if (!seeds[i].reflected) seeds[i].dead = true;
   if (updFoe) for (let i = updSeedN; i < seeds.length; i++) if (seeds[i].high === undefined) seeds[i].high = blowHigh(updFoe, time); }   /* THE UNIVERSAL DUCK: what it threw on a high tell flies high (seedOver) */

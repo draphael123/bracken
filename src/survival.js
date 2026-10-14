@@ -15,7 +15,8 @@
 //                  IN AN EXAM (L.examSpans, tile columns [x0, x1]) or a wood with L.fallRule === 'death', SPIKES ARE A REAL DEATH. Never untold:
 //                  the exam says so as you walk in, and tools/survival.mjs fails a span that has no hurt spikes before it to teach them.
 
-export const FLASK = { base: 1, extraMax: 3, heal: 0.35, richHeal: 0.45, drinkT: 0.45, swallowAt: 0.3 };   /* GAME seconds: at the default game speed (0.6) the drink is 0.75 s on the clock, the swallow at 0.5 s */
+/* (claude/flasklever 10-13 FLASK LEVER: the human bot with the campaign kit won ~94% of boss rows; a drink is longer - 1.17 s on the clock, the swallow at 0.92 s, so a blow has a longer window to SPILL it - and heals less: 25% (tiers 30/35/40). Was heal 0.35, richHeal 0.45, drinkT 0.45, swallowAt 0.3.) */
+export const FLASK = { base: 1, extraMax: 3, heal: 0.25, richHeal: 0.30, drinkT: 0.70, swallowAt: 0.55 };   /* GAME seconds: at the default game speed (0.6) the drink is 0.75 s on the clock, the swallow at 0.5 s */
 /* (claude/survival2, Daniel 10-07 A10b, after playing the pilot Marsh) ONE flask to start; the smith's EXTRA FLASK makes two more (PROG.flaskUp
    0..extraMax -> max 3). A SHRINE REACHED gives back ONE (once a shrine a life); a DEATH gives back ALL (to max); a BROKEN shrine gives +1 that may
    stand over the max until it is drunk (a death keeps a flask over the max that was not drunk: max(held, max)). */
@@ -95,6 +96,6 @@ export const LINES = {
   shrine: 'A SHRINE SAVES AND GIVES BACK ONE FLASK. IT DOES NOT HEAL: DRINK ONE (KEY).',
   breakIt: 'HOLD (KEY): BREAK THE SHRINE: +1 FLASK, NO CHECKPOINT',
   broken: 'SHRINE BROKEN: +1 FLASK. NO CHECKPOINT HERE NOW.',
-  drink: 'HURT? KEY DRINKS A FLASK: +35% HEALTH. STAND STILL: A BLOW SPILLS IT.',
+  drink: 'HURT? KEY DRINKS A FLASK: +25% HEALTH. STAND STILL: A BLOW SPILLS IT.',
   exam: 'THE EXAM: HERE THE SPIKES KILL.',
 };
