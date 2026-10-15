@@ -2698,6 +2698,12 @@ function reaperRhythmPoses(F, sh) {
     hold(1, X - 13, Y - 15, { sho: 1, bits: [[4, 3, '#ff4a5a'], ...along(X - 3, Y - 2, X - 13, Y - 15, 3, RED, PINK)] }),
     hold(2, X - 14, Y - 18, { sho: 1, hy: 1, bits: [[4, 3, '#ff4a5a'], [5, 3, '#ff4a5a'], ...along(X - 3, Y - 2, X - 14, Y - 18, 4, RED, PINK), a(X - 15, Y - 19, HOT)] }),
     hold(3, X - 15, Y - 20, { sho: 1, hy: 1, bits: [[4, 3, HOT], [5, 3, HOT], [3, 3, '#ff4a5a'], [6, 3, '#ff4a5a'], ...along(X - 3, Y - 2, X - 15, Y - 20, 5, PINK, HOT), a(X - 16, Y - 21, '#ffffff'), a(X - 14, Y - 21, HOT), a(X - 16, Y - 19, PINK)] })];
+  /* THE DRAIN (the boss's signature, BLOOD SURGE's second half - the hero has no such pose): the blade held low and back in one fist, the other hand thrown out open toward the one he drinks, claw-fingered, the lights in the helm gone red;
+     the second beat the hand drawn in a pace with the red running back along the line into him */
+  F.drainPull = [K({ wide: 8, dx: 1, legs: 'wide', arm: [X, Y, X - 2, Y + 3], greatsword: [X - 2, Y + 3, X - 8, Y + 9], arm2: [OFF[0], OFF[1], X + 10, Y - 3], plume: 2,
+      bits: [[4, 3, '#ff4a5a'], [5, 3, '#ff4a5a'], a(X + 11, Y - 4, HOT), a(X + 12, Y - 2, PINK), a(X + 14, Y - 3, RED), a(X + 17, Y - 3, DRED)] }),
+    K({ wide: 8, dx: 0, dy: 1, legs: 'wide', hy: 1, arm: [X, Y, X - 2, Y + 3], greatsword: [X - 2, Y + 3, X - 8, Y + 9], arm2: [OFF[0], OFF[1], X + 7, Y - 2], plume: 1,
+      bits: [[4, 3, HOT], [5, 3, HOT], a(X + 8, Y - 3, HOT), a(X + 10, Y - 3, PINK), a(X + 12, Y - 2, RED), a(X + 14, Y - 3, PINK), a(X + 5, Y + 2, RED), a(X + 3, Y + 3, PINK)] })];
   /* THE CRESCENT CLEAVE: hauled up from behind, red running off the steel; round through the whole front of him, level and wide, at the full stretch of him; then down into the follow-through, the point trailing */
   F.crescent = [K({ dx: -2, legs: 'wide', ...gs(X - 3, Y - 6, X - 12, Y - 20), plume: 1, bits: [...along(X - 3, Y - 6, X - 12, Y - 20, 3, RED, PINK)] }),
     K({ wide: 14, dx: 3, legs: 'runC', ...gs(X + 6, Y - 4, X + 25, Y - 5), plume: 2, bits: [a(X + 25, Y - 5, '#ffffff'), a(X + 22, Y - 4, HOT), a(X + 18, Y - 4, PINK), a(X + 12, Y - 3, RED)] }),

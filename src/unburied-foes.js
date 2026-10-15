@@ -455,11 +455,11 @@ export function updateBloodKnight(e, dt, c) {
   if (!e.alive || e.mode === 'sleep') return;
   e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.bolts ??= []; e.pools ??= []; e.coils ??= []; e.hands ??= []; e.phase ??= 1; e.y = floor; e.vx = 0;
   e.dodgeCd = Math.max(0, (e.dodgeCd || 0) - dt); e.wardCd = Math.max(0, (e.wardCd || 0) - dt); e.heat = Math.max(0, (e.heat || 0) - S.heatFall * dt);
-  e.open = bkOpen(e) ? Math.max(0, e.modeT) : 0;
+  e.open = bkOpen(e) ? Math.max(0, e.modeT) : 0; e.openMax = e.open > 0 ? Math.max(e.openMax || 0, e.open) : 0;   /* (claude/dk2art: the clock the gold ring shows) */
   stepBkWorld(e, dt, c);
   /* THE CHAPEL STANDARDS (claude/dk2b, B17): cut one and it falls - and a ward standing then BREAKS; while one stands, the ward is fed */
-  e.stds ??= (A.stdX || []).map(x => ({ x, up: true }));
-  for (const s of e.stds) if (s.up && c.struck && c.struck(s.x - 6, floor - 44, 12, 44, s)) { s.up = false; e.stdCuts = (e.stdCuts || 0) + 1; c.sound('crack'); c.shake?.(3);
+  e.stds ??= (A.stdX || []).map(x => ({ x, up: true })); for (const s of e.stds) s.ft = (s.ft ?? 9) + dt;   /* (claude/dk2art: how long since it fell / rose, for its animation) */
+  for (const s of e.stds) if (s.up && c.struck && c.struck(s.x - 6, floor - 44, 12, 44, s)) { s.up = false; s.ft = 0; s.rose = false; e.stdCuts = (e.stdCuts || 0) + 1; c.sound('crack'); c.sound('stdfall'); c.shake?.(3);
     if (e.mode === 'ward' && !e.wardLock) { e.wardBroke = true; e.stdBroke = (e.stdBroke || 0) + 1; c.say('THE STANDARD FALLS: THE WARD BREAKS', '#8fd160'); } else c.say('THE STANDARD FALLS', '#c8b6ff'); }
   if (e.mode === 'ward' && !e.wardLock) { const n = e.stds.filter(s => s.up).length; e.feedT = (e.feedT || 0) + dt * n; if (e.feedT >= S.stdFeed) { e.feedT = 0; if ((e.wardFill || 0) < S.wardFull) { e.wardFill = (e.wardFill || 0) + 1; e.wardEvt = (e.wardEvt || 0) + 1; e.fed = (e.fed || 0) + 1; } } } else e.feedT = 0;
   /* WHAT YOUR HANDS ARE DOING (he reads them as a player reads a boss): a heavy being charged, a cut starting, and how far into a string */
@@ -473,7 +473,7 @@ export function updateBloodKnight(e, dt, c) {
   if (e.mode === 'drain') {   /* (claude/dk2b) HIS SIGNATURE: he drinks from you - near him, a red thread and your blood into him, a draught a drainTick; struck drainBreak times it BREAKS */
     if ((e.drainHits || 0) >= S.drainBreak) { e.mode = 'reel'; e.modeT = S.reelT; e.open = S.reelT; e.drainBroken = (e.drainBroken || 0) + 1; c.say('THE DRAIN BREAKS: HE IS OPEN', '#8fd160'); c.sound('crack'); c.shake(4); return; }
     e.drainTickT = (e.drainTickT ?? S.drainTick) - dt; e.drinking = !P.dead && Math.abs(P.x - e.x) < S.drainR && P.y > floor - 60;
-    if (e.drainTickT <= 0) { e.drainTickT = S.drainTick; if (e.drinking) { const r = c.hit(e.x, UNB.dmg.bkDrain, true, 'BLOOD SURGE'); if (r !== false && r !== 'blocked') { const h = UNB.dmg.bkDrain * S.drainHeal; e.hp = Math.min(e.maxHp, e.hp + h); e.healed = (e.healed || 0) + h; e.drank = (e.drank || 0) + 1; } } }
+    if (e.drainTickT <= 0) { e.drainTickT = S.drainTick; if (e.drinking) { const r = c.hit(e.x, UNB.dmg.bkDrain, true, 'BLOOD SURGE'); if (r !== false && r !== 'blocked') { const h = UNB.dmg.bkDrain * S.drainHeal; e.hp = Math.min(e.maxHp, e.hp + h); e.healed = (e.healed || 0) + h; e.drank = (e.drank || 0) + 1; c.sound('drain'); } } }
     if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.4; e.drinking = false; } return; }
   if (e.mode === 'crescent') { if (e.modeT > 0) return;
     if (e.crescentHit) { e.mode = 'rest'; e.modeT = 0.45; return; }
@@ -509,12 +509,12 @@ export function updateBloodKnight(e, dt, c) {
         if (e.modeT <= S.tell.commit * bkMul(e)) { e.committed = true; e.threat = !P.dead && bkReach(e, P, floor); c.sound('whoosh'); } }
     } else if (e.mode === 'swingTell') { if (e.modeT > S.tell.swingTurn) e.face = Math.sign(P.x - e.x) || e.face; }
     else if (e.mode === 'priceTell') { if (e.modeT > 0.25) e.face = Math.sign(P.x - e.x) || e.face;   /* THE BLOOD PRICE: the blade drinks HIS blood while he holds it (never his last) */
-      e.priceT = (e.priceT ?? S.priceEvery) - dt; if (e.priceT <= 0 && e.modeT > 0.1) { e.priceT = S.priceEvery * bkMul(e); const cost = Math.max(1, Math.round(e.maxHp * S.pricePct)), hp0 = e.hp; e.hp = Math.max(1, e.hp - cost); e.paid = (e.paid || 0) + (hp0 - e.hp); e.paidN = (e.paidN || 0) + 1; c.sound('rise'); } }
+      e.priceT = (e.priceT ?? S.priceEvery) - dt; if (e.priceT <= 0 && e.modeT > 0.1) { e.priceT = S.priceEvery * bkMul(e); const cost = Math.max(1, Math.round(e.maxHp * S.pricePct)), hp0 = e.hp; e.hp = Math.max(1, e.hp - cost); e.paid = (e.paid || 0) + (hp0 - e.hp); e.paidN = (e.paidN || 0) + 1; c.sound('price'); } }
     else if (e.mode !== 'bladeTell' && e.mode !== 'gripTell' && e.mode !== 'boilTell' && e.mode !== 'tideTell') e.face = Math.sign(P.x - e.x) || e.face;
     if (e.mode === 'surgeTell') c.pull?.(e.x, S.surgeR + 30, 30, dt);   /* the drain takes a step of you toward him */
     if (e.modeT > 0) return;
     const ad = Math.abs(P.x - e.x);
-    if (e.mode === 'priceTell') { const n = e.paidN || 0, f = (P.x - e.x) * e.face; e.mode = 'crescent'; e.modeT = 0.4; e.crescentHit = false; c.sound('heavy'); c.shake(4 + n); c.ring?.(e.x + e.face * 30, floor - 30, S.crescentR * 0.6, '#ff4a5a');
+    if (e.mode === 'priceTell') { const n = e.paidN || 0, f = (P.x - e.x) * e.face; e.mode = 'crescent'; e.modeT = 0.4; e.crescentHit = false; c.sound('crescent'); c.shake(4 + n); c.ring?.(e.x + e.face * 30, floor - 30, S.crescentR * 0.6, '#ff4a5a');
       if (!P.dead && !(c.dodging && c.dodging()) && f > -S.crescentBack && f < S.crescentR && P.y > floor - S.crescentTop) { const r = c.hit(e.x, Math.round(UNB.dmg.bkCrescent * (1 + 0.12 * n)), true, 'BLOOD PRICE CLEAVE');
         if (r !== false) { e.crescentHit = true; const back = (e.paid || 0) * S.priceBack; e.hp = Math.min(e.maxHp, e.hp + back); e.healed = (e.healed || 0) + back; c.say('HE DRINKS IT BACK', '#ff6b6b'); } }
       if (e.phase === 2 && n >= S.volleyAt) { const sx = e.x + e.face * 22, sy = floor - 6, nb = S.boltsP2; for (let i = 0; i < nb; i++) { const tx = clamp(P.x + (i - (nb - 1) / 2) * S.gapP2, A.x0 + 8, A.x1 - 8), T = S.boltT + 0.05 * i; e.bolts.push({ x: sx, y: sy, t: 0, vx: (tx - sx) / T, vy: ((floor - 12) - sy - 0.5 * S.boltG * T * T) / T }); } e.volleys = (e.volleys || 0) + 1; }   /* THE RED VOLLEY */
@@ -549,7 +549,7 @@ export function updateBloodKnight(e, dt, c) {
       return; }
     if (e.mode === 'surgeTell') { e.mode = 'surge'; e.modeT = 0.6; c.sound('pass'); c.shake(6); c.ring(e.x, floor - 12, S.surgeR, '#ff6b6b');
       if (!P.dead && ad < S.surgeR && P.y > floor - 44) c.hit(e.x, UNB.dmg.bkSurge, true, 'BLOOD SURGE');
-      if (!e.surged) { e.surged = true; c.say('HE SURGES: EVERYTHING COMES SOONER', '#ff6b6b'); e.turn = 0; e.raiseNext = true; if ((e.stds || []).some(s => !s.up)) { for (const s of e.stds) s.up = true; c.say('HIS STANDARDS RISE AGAIN', '#c8b6ff'); } } return; }
+      if (!e.surged) { e.surged = true; c.say('HE SURGES: EVERYTHING COMES SOONER', '#ff6b6b'); e.turn = 0; e.raiseNext = true; if ((e.stds || []).some(s => !s.up)) { for (const s of e.stds) { if (!s.up) { s.ft = 0; s.rose = true; } s.up = true; } c.sound('rise'); c.say('HIS STANDARDS RISE AGAIN', '#c8b6ff'); } } return; }
   }
   /* STALKING: he moves like you - at a hero's pace (quicker once he has surged), a greatsword's length off you, never hugging you */
   if (bkReact(e, c, W, wAtk0, rnd)) return;
@@ -605,18 +605,20 @@ export const BK_KIT = { string: "REAPER'S RHYTHM (the chain: the rising cut, THE
    0 idle | 1-3 walk | 4 the blade back (a cut or the cleave lifted) | 5 overhead, committed | 6 the cut down | 7 the blade in the floor (stuck,
    and the planted blade driven in) | 8,9 the planted blade: lifted, overhead | 10,11 the blood ward | 12 THE PASSING | 13,14 death grip |
    15,16 blood boil | 17,18 death coil | 19,20 grave tide | 21,22 summon / gravecall | 23,24 surge and nova | 25 wrenching it free, reeling | 26 hurt */
-export const BK_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4], ['atk', 0], ['atk', 1], ['atk', 3], ['heavy', 2], ['heavy', 0], ['heavy', 1], ['block', 0], ['block', 1],
+export const BK_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4], ['atk', 0], ['atk', 1], ['atk', 2], ['heavy', 2], ['heavy', 0], ['heavy', 1], ['block', 0], ['block', 1],
   ['slide', 0], ['grip', 0], ['grip', 1], ['boil', 0], ['boil', 1], ['coil', 0], ['coil', 1], ['tide', 0], ['tide', 1], ['call', 1], ['call', 2], ['unholy', 0], ['unholy', 1], ['slump', 0],
-  ['priceHold', 0], ['priceHold', 1], ['crescent', 0], ['crescent', 1], ['crescent', 2], ['atkB', 0], ['atkB', 1], ['harvest', 1], ['hurt', 0]];   /* (claude/dk2b) 26,27 the blood price held | 28-30 the crescent | 31,32 THE HOOK | 33 THE DRAIN (the hand drawing your blood) | 34 hurt */
+  ['priceHold', 0], ['priceHold', 1], ['priceHold', 2], ['priceHold', 3], ['crescent', 0], ['crescent', 1], ['crescent', 2], ['atkB', 0], ['atkB', 2], ['drainPull', 0], ['drainPull', 1], ['atkC', 0], ['atkC', 1], ['atkC', 2], ['atkC', 3], ['hurt', 0]];   /* (claude/dk2b, redrawn claude/dk2art) 26-29 the blood price held (four beats) | 30-32 the crescent | 33,34 THE HOOK (tell, the point out) | 35,36 THE DRAIN (the hand drawing your blood) | 37-40 THE DRAG (up, over, down, dragged) | 41 hurt */
 export const BK_SCALE = 1.4;   /* (claude/dk2b: 1.5 -> 1.4, like the Crusader and the Pyromancer as bosses) */
+/* the blade over his shoulder, four beats as the prices mount (the hero's own priceHold) */
+export const bkPriceFrame = n => 26 + (n >= 5 ? 3 : n >= 3 ? 2 : n >= 2 ? 1 : 0);
 export function bkFrame(e) {
-  switch (e.mode) { case 'swingTell': return (e.cutN || 0) === 1 && !e.punish ? 31 : 4; case 'swing': return e.cutN === 2 && !e.punish ? 32 : 6;
-    case 'priceTell': return (e.paidN || 0) >= 2 ? 27 : 26; case 'crescent': return e.modeT > 0.28 ? 29 : 30; case 'spent': return 30; case 'drain': return 33; case 'cleaveTell': return e.committed ? 5 : 4; case 'cleave': return 6; case 'stuck': case 'blade': return 7; case 'wrench': case 'reel': return 25;
+  switch (e.mode) { case 'swingTell': return (e.cutN || 0) === 1 && !e.punish ? 33 : 4; case 'swing': return e.cutN === 2 && !e.punish ? 34 : 6;
+    case 'priceTell': return bkPriceFrame(e.paidN || 0); case 'crescent': return e.modeT > 0.28 ? 31 : 32; case 'spent': return 32; case 'drain': return 35 + (Math.floor((e.anim || 0) * 3) % 2); case 'cleaveTell': return e.committed ? 38 : 37; case 'cleave': return 39; case 'stuck': case 'blade': return 7; case 'wrench': case 'reel': return 25;
     case 'bladeTell': return e.modeT > UNB.bk.tell.blade * bkMul(e) * 0.5 ? 8 : 9; case 'wardTell': case 'ward': return 10 + Math.floor((e.anim || 0) * 3) % 2;
     case 'pass': return 12; case 'gripTell': return 13; case 'grip': case 'drag': return 14; case 'boilTell': return 15; case 'boil': return 16; case 'coilTell': return 17; case 'coil': return 18;
     case 'tideTell': return 19; case 'tide': return 20; case 'raiseTell': case 'callTell': case 'raise': return 21 + Math.floor((e.anim || 0) * 4) % 2;
     case 'surgeTell': case 'novaTell': return 23; case 'surge': case 'nova': return 24; case 'sleep': case 'wake': return 0; }
-  if (e.hurtT > 0) return 34;
+  if (e.hurtT > 0) return 41;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 8) % 3 : 0;
 }
 /* 0 idle carrying | 1,2 walk | 3 plant tell | 4 guard (planted, pole in hand) | 5 pole tell | 6 pole | 7 hurt */
@@ -848,23 +850,50 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
    once he has committed), the spots the bolts will come down on and the bolts, the chain's line and the chain, the boil's ring and the
    pools, the coil, the tide's marks and its hands, the ward on its face (a pip for each blow it has kept; FULL it is outlined green), the
    nova and the surge closing in, the smear THE PASSING leaves - and the blade in the floor / the broken ward, outlined green: the window */
+/* (claude/dk2art) THE DEATH KNIGHT'S BLOOD, DRAWN. The tip of the blade over his shoulder as priceHold draws it (x scaled by BK_SCALE), a crescent between two arcs, a thread of blood that runs in a curve with drops on it. */
+const BK_TIP = [[-10, -20], [-11, -23], [-13, -25], [-14, -27]];
+function bkCrescent(g, ox, oy, f, R_, Th, th, sweep, alpha, rim) {
+  const a0 = -1.55, a1 = a0 + 2.7 * sweep, arc = (rx, ry, x0, from, to, ccw) => { if (f > 0) g.ellipse(x0, oy, rx, ry, 0, from, to, ccw); else g.ellipse(x0, oy, rx, ry, 0, Math.PI - from, Math.PI - to, !ccw); };
+  const ri = Math.max(4, R_ - th), ti = Math.max(4, Th - th * 0.6);
+  g.globalAlpha = alpha * 0.85; g.fillStyle = '#c8283c'; g.beginPath(); arc(R_, Th, ox, a0, a1, false); arc(ri, ti, ox - f * 4, a1, a0, true); g.closePath(); g.fill();
+  g.globalAlpha = alpha; g.strokeStyle = rim || '#ffd0d0'; g.lineWidth = 1; g.beginPath(); arc(R_, Th, ox, a0, a1, false); g.stroke();
+  g.strokeStyle = '#5e0c18'; g.beginPath(); arc(ri, ti, ox - f * 4, a0, a1, false); g.stroke(); g.globalAlpha = 1; }
+function bkThread(g, x0, y0, x1, y1, time, k, dir) {   /* a curve of blood from (x0,y0) to (x1,y1) with drops running along it (dir 1: toward x1) */
+  const mx = (x0 + x1) / 2, my = Math.min(y0, y1) - 14 - 4 * Math.sin(time * 5);
+  g.globalAlpha = 0.5 + 0.3 * k; g.strokeStyle = '#5e0c18'; g.lineWidth = 3; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo(mx, my, x1, y1); g.stroke();
+  g.strokeStyle = '#c8283c'; g.lineWidth = 1; g.stroke();
+  for (let i = 0; i < 6; i++) { const u0 = dir > 0 ? (time * 1.5 + i / 6) % 1 : 1 - (time * 1.5 + i / 6) % 1, v = 1 - u0, px = v * v * x0 + 2 * v * u0 * mx + u0 * u0 * x1, py = v * v * y0 + 2 * v * u0 * my + u0 * u0 * y1;
+    g.globalAlpha = 0.9; R(g, px - 1, py - 1, 3, 3, '#7a1020'); R(g, px - 1, py - 1, 2, 2, i % 2 ? '#ff6b6b' : '#ffb0b8'); }
+  g.globalAlpha = 1; }
 function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
   const S = UNB.bk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 14);
   if (e.mode === 'swingTell') { g.globalAlpha = 0.16 + 0.18 * k; R(g, f > 0 ? x - S.cleaveBack : x - S.swingR, fy - 2, S.swingR + S.cleaveBack, 2, '#ffd36b'); g.globalAlpha = 1; }
   if (e.mode === 'cleaveTell') { g.globalAlpha = (e.committed ? 0.35 : 0.18) + 0.2 * k; R(g, f > 0 ? x - S.cleaveBack : x - S.cleaveR, fy - 2, S.cleaveR + S.cleaveBack, 2, e.committed ? '#ff6b6b' : '#ffd36b'); g.globalAlpha = 1; }
   /* (claude/dk2b) THE BLOOD PRICE: the blade over his shoulder glowing redder with every price, and the reach the crescent will have (red: no guard) */
-  if (e.mode === 'priceTell') { const n = e.paidN || 0; g.globalAlpha = 0.3 + 0.25 * k + 0.05 * n; R(g, f > 0 ? x - S.crescentBack : x - S.crescentR, fy - 2, S.crescentR + S.crescentBack, 2, '#ff4a5a');
-    g.fillStyle = '#c0283a'; g.globalAlpha = 0.35 + 0.1 * n; g.beginPath(); g.arc(x - f * 18, fy - 62, 4 + 2 * n, 0, 7); g.fill(); g.globalAlpha = 1; R(g, x - f * 18 - 1, fy - 64 - n, 2, 4 + 2 * n, '#ffd0d0'); }
-  if (e.mode === 'crescent') { const t = 1 - Math.max(0, e.modeT) / 0.4; g.globalAlpha = 0.75 * (1 - t * 0.6); g.strokeStyle = '#ff4a5a'; g.lineWidth = 3; g.beginPath(); g.ellipse(x + f * 10, fy - 30, S.crescentR * 0.85, 34, 0, f > 0 ? -1.4 : Math.PI - 1.0, f > 0 ? 1.0 : Math.PI + 1.4); g.stroke(); g.globalAlpha = 1; }
+  if (e.mode === 'priceTell') { const n = e.paidN || 0, fr = Math.min(3, bkPriceFrame(n) - 26), [tx, ty] = BK_TIP[fr], hx = Math.round(x + f * tx * BK_SCALE), hy = Math.round(fy + ty * BK_SCALE), r = Math.round((3 + n) * BK_SCALE), full = n >= 5;
+    g.globalAlpha = 0.3 + 0.25 * k + 0.05 * n; R(g, f > 0 ? x - S.crescentBack : x - S.crescentR, fy - 2, S.crescentR + S.crescentBack, 2, '#ff4a5a');   /* the reach on the floor... */
+    g.globalAlpha = 0.18 + 0.07 * n + 0.15 * k; g.strokeStyle = '#ff4a5a'; g.lineWidth = 1; g.setLineDash([3, 3]); g.beginPath(); g.ellipse(x + f * 10, fy - 30, S.crescentR * 0.85, 34, 0, f > 0 ? -1.4 : Math.PI - 1.0, f > 0 ? 1.0 : Math.PI + 1.4); g.stroke(); g.setLineDash([]);   /* ...and the crescent's whole sweep, drawn in dashes, told before it comes */
+    g.globalAlpha = 0.3 + 0.1 * k; g.fillStyle = '#7a1020'; g.beginPath(); g.arc(hx, hy, r + 6, 0, 7); g.fill(); g.globalAlpha = 0.45 + 0.15 * k; g.fillStyle = '#c8283c'; g.beginPath(); g.arc(hx, hy, r + 3, 0, 7); g.fill();
+    g.globalAlpha = 0.7 + 0.3 * k; g.fillStyle = full ? '#ffffff' : '#ff9aa6'; g.beginPath(); g.arc(hx, hy, Math.max(1, r - 3), 0, 7); g.fill();
+    for (let i = 0; i < 2 + (n >> 1); i++) { const t2 = (time * 1.4 + i / 3) % 1; g.globalAlpha = (1 - t2) * 0.8; R(g, hx - 3 + Math.round(Math.sin(time * 5 + i * 2) * 3) + i * 2, hy - 2 - Math.round(t2 * (10 + n * 2)), 1, 2, i % 2 ? '#ff6b6b' : '#c8283c'); } g.globalAlpha = 1; }
+  if (e.mode === 'crescent') { const t = 1 - Math.max(0, e.modeT) / 0.4; bkCrescent(g, x + f * 10, fy - 30, f, S.crescentR * 0.85, 34, 12 + 2 * (e.paidN || 0), Math.min(1, t / 0.28), Math.max(0, 1 - Math.max(0, t - 0.5) / 0.5)); }
   /* (claude/dk2b) THE DRAIN: a red thread from you to him while he drinks, and the drops running along it */
-  if (e.mode === 'drain' && e.drinking && e.heroX !== undefined) { const px = Math.round(e.heroX - cx), py = Math.round(e.heroY - cy) - 14; g.globalAlpha = 0.45 + 0.3 * k; g.strokeStyle = '#c0283a'; g.lineWidth = 1; g.beginPath(); g.moveTo(px, py); g.lineTo(x, fy - 40); g.stroke();
-    for (let i = 0; i < 4; i++) { const u = ((time * 1.6 + i / 4) % 1); R(g, px + (x - px) * u - 1, py + (fy - 40 - py) * u - 1, 2, 2, '#ff6b6b'); } g.globalAlpha = 1; }
+  if (e.mode === 'drain' && e.drinking && e.heroX !== undefined) { const px = Math.round(e.heroX - cx), py = Math.round(e.heroY - cy) - 14, hx = Math.round(x + f * 18), hy = fy - 17;
+    bkThread(g, px, py, hx, hy, time, k, 1); g.globalAlpha = 0.5 + 0.3 * k; g.fillStyle = '#c8283c'; g.beginPath(); g.arc(hx, hy, 5 + 2 * k, 0, 7); g.fill(); g.globalAlpha = 0.8; R(g, hx - 1, hy - 1, 3, 3, '#ffd0d0');   /* the hand he drinks with */
+    bkThread(g, hx, hy, x, fy - 30, time + 0.4, k, 1);   /* and it runs on up into his chest */ g.globalAlpha = 1; }
   if (e.mode === 'drain') { const n = Math.max(0, UNB.bk.drainBreak - (e.drainHits || 0)); for (let i = 0; i < UNB.bk.drainBreak; i++) R(g, x - 5 + i * 6, fy - 74, 4, 4, i < n ? '#c0283a' : '#3a1418'); }   /* what is left to break it */
   /* (claude/dk2b) THE CHAPEL STANDARDS: standing - a pole and a red standard, and while his ward stands a thread of blood from each into it; cut - lying */
-  for (const s of e.stds || []) { const sx = Math.round(s.x - cx);
-    if (s.up) { R(g, sx - 1, fy - 46, 2, 46, '#5a4a36'); R(g, sx + 1, fy - 44, 11, 14, '#8e1a22'); R(g, sx + 1, fy - 44, 11, 2, '#c8a44a'); R(g, sx + 4, fy - 39, 5, 5, '#c0283a'); R(g, sx - 3, fy - 2, 6, 2, '#3a2e22');
-      if (e.mode === 'ward' && !e.wardLock) { const wx = x + (e.wardFace || f) * 20; g.globalAlpha = 0.3 + 0.3 * k; g.strokeStyle = '#ff4a5a'; g.lineWidth = 1; g.beginPath(); g.moveTo(sx + 6, fy - 37); g.quadraticCurveTo((sx + wx) / 2, fy - 70, wx, fy - 30); g.stroke(); g.globalAlpha = 1; } }
-    else { R(g, sx - 12, fy - 3, 24, 2, '#5a4a36'); R(g, sx + 6, fy - 6, 10, 4, '#5e1418'); } }
+  for (const s of e.stds || []) { const sx = Math.round(s.x - cx), ft = s.ft ?? 9, lean = Math.sign(e.x - s.x) || 1;
+    R(g, sx - 5, fy - 2, 10, 2, '#3a2e22'); R(g, sx - 3, fy - 4, 6, 2, '#4a3a2c');   /* the stone it stands in */
+    if (s.up) { const rising = s.rose && ft < 0.5, ang = rising ? lean * (Math.PI / 2) * Math.pow(1 - ft / 0.5, 2) : 0;
+      if (ang) { g.save(); g.translate(sx, fy - 3); g.rotate(ang); drawStandard(g, 0, 0, time, true, false); g.restore(); } else drawStandard(g, sx, fy - 3, time, true, false);
+      if (rising) { g.globalAlpha = 0.7 * (1 - ft / 0.5); g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(sx, fy - 3, 8 + 28 * ft, 3 + 6 * ft, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }   /* the risen-again flare */
+      else { g.globalAlpha = 0.12 + 0.1 * k; g.fillStyle = '#c0283a'; g.beginPath(); g.arc(sx, fy - 60, 7, 0, 7); g.fill(); g.globalAlpha = 1; }
+      if (e.mode === 'ward' && !e.wardLock) { const wx = x + (e.wardFace || f) * 20; bkThread(g, sx, fy - 56, wx, fy - 30, time + s.x * 0.01, k, 1); } }   /* it FEEDS the ward: a thread of blood from the banner into the shell */
+    else { const fall = Math.min(1, ft / 0.45), ang = lean * (Math.PI / 2) * fall * fall;
+      if (fall < 1) { g.save(); g.translate(sx, fy - 3); g.rotate(ang); drawStandard(g, 0, 0, time, true, false); g.restore(); }
+      else { R(g, sx - 14, fy - 4, 30, 2, '#5a4a36'); R(g, sx + lean * 6 - 5, fy - 7, 12, 4, '#7a1e24'); R(g, sx + lean * 6 - 3, fy - 7, 6, 1, '#d8b04a'); }   /* lying torn on the chapel floor */
+      if (ft < 0.45) for (let i = 0; i < 5; i++) { const d = (i - 2) * 6 + lean * 24 * fall; g.globalAlpha = 0.5 * (1 - ft / 0.45); R(g, sx + d, fy - 4 - Math.round(fall * (i % 2) * 3), 3, 3, '#8a7a68'); g.globalAlpha = 1; } } }
   if (e.mode === 'bladeTell') for (const tx of e.boltAt || []) { const sx = Math.round(tx - cx); g.globalAlpha = 0.35 + 0.45 * k; R(g, sx - 5, fy - 2, 11, 2, '#ff6b6b'); R(g, sx - 1, fy - 6, 3, 4, '#c0283a'); g.globalAlpha = 1; }
   for (const b of e.bolts || []) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy); g.globalAlpha = 0.6; R(g, bx - 3 - Math.sign(b.vx) * 5, by - 1, 5, 2, '#7a1020'); g.globalAlpha = 1;
     R(g, bx - 3, by - 3, 6, 6, '#7a1020'); R(g, bx - 2, by - 2, 4, 4, '#c0283a'); R(g, bx - 1, by - 1, 2, 2, '#ff9a9a'); }
@@ -901,7 +930,9 @@ function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
   /* THE PASSING: the smear he leaves behind him (dark, a breath of violet), the tell that he has slipped you */
   if (e.mode === 'pass') (e.smear || []).forEach((sx0, i, a) => { const sx = Math.round(sx0 - cx), al = 0.08 + 0.32 * (i + 1) / a.length; g.globalAlpha = al; R(g, sx - 9, fy - 52, 18, 50, '#2a2034'); g.globalAlpha = al * 0.6; R(g, sx - 10, fy - 30, 20, 3, '#b07cf0'); g.globalAlpha = 1; });
   if (e.phase === 2 && e.mode !== 'sleep') { g.globalAlpha = 0.12 + 0.08 * Math.sin(time * 6); g.fillStyle = '#c0283a'; g.beginPath(); g.ellipse(x, fy - 26, 20, 30, 0, 0, 7); g.fill(); g.globalAlpha = 1; }   /* surged: the blood hangs round him */
-  if (bkOpen(e)) { const kk = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * kk; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 26 + kk * 3, 7, 0, 0, 7); g.stroke();
+  if (bkOpen(e)) { const kk = 0.5 + 0.5 * Math.sin(time * 10), left = e.openMax > 0 ? Math.max(0, Math.min(1, e.open / e.openMax)) : 1;   /* (B10, the shared read: a gold ring, a gold clock - claude/dk2art; it was the shared green ring) */
+    g.globalAlpha = 0.45 + 0.4 * kk; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 28 + kk * 3, 8, 0, 0, 7); g.stroke(); g.globalAlpha = 0.18 + 0.12 * kk; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(x, fy - 2, 26, 6, 0, 0, 7); g.fill();
+    g.globalAlpha = 1; R(g, x - 21, fy - 82, 42, 5, '#2a2010'); R(g, x - 20, fy - 81, Math.round(40 * left), 3, left < 0.3 && Math.floor(time * 10) % 2 ? '#ffffff' : '#ffd36b');   /* the clock over his head */
     if (e.mode === 'stuck') { g.globalAlpha = 0.6 + 0.3 * kk; R(g, x + f * 30 - 1, fy - 10, 3, 10, '#dfffc0'); } g.globalAlpha = 1; }
 }
 export function drawField(g, F, cx, cy, time, VW, VH) {
