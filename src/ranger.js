@@ -74,8 +74,13 @@ export function makeRanger(api) {
   function quarry(p, range = RG.mark.range) { let best = null, bd = 1e9;
     for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face; if (dx < -4 || dx > range || Math.abs(e.y - p.y) > 90) continue;
       const d = dx + Math.abs(e.y - p.y) * 0.5; if (d < bd) { bd = d; best = e; } } return best; }
-  function spendMark(p) { if (!focusFull(p)) return false; const e = quarry(p); if (!e) { api.number(p.x, p.y - 26, 'NO QUARRY', '#9aa39a'); return false; }
+  function spendMark(p) { if (!focusFull(p)) { if (!p.rgFocusSaid || api.time - p.rgFocusSaid > 1.2) { p.rgFocusSaid = api.time; api.number(p.x, p.y - 26, 'FOCUS ' + Math.floor(p.rgFocus || 0) + '%: SWEET-SPOT HITS FILL IT', '#9aa39a'); } return false; }   /* (Daniel 10-15: UP+C did nothing below full focus - it says why now) */ const e = quarry(p); if (!e) { api.number(p.x, p.y - 26, 'NO QUARRY', '#9aa39a'); return false; }
     p.rgFocus = 0; markFoe(p, e); api.kitPose(p, 'rgMark', 0.3); api.trialEvent('meter'); return true; }
+
+  /* ---- HER STANCE (Daniel 10-15): BOW (X shoots; an empty quiver is the knife) or KNIFE (X is always the knife). Kept through deaths and levels ---- */
+  function toggleStance(p) { ensure(p); p.rgStance = p.rgStance === 'knife' ? 'bow' : 'knife'; p.rgNock = null;
+    api.number(p.x, p.y - 26, p.rgStance === 'knife' ? 'KNIFE' : 'BOW', p.rgStance === 'knife' ? '#c9d4e0' : '#e8dcb0'); api.SFX.rgPick && api.SFX.rgPick(); return p.rgStance; }
+  const bowReady = () => { const p = P(); ensure(p); return p.rgQ > 0 && p.rgStance !== 'knife'; };   /* (main.js: a held X is her draw only then - else the knife's heavy) */
 
   /* ---- AN ARROW ----
      state: 'fly' (in the air), 'foe' (in a foe: it rides it), 'stuck' (in a wall or the floor), 'lie' (on the ground), 'drop' (falling), 'gone' */
@@ -170,6 +175,7 @@ export function makeRanger(api) {
     if (dx > -hw && dx - hw < RG.knife.reach && Math.abs((e.y - (e.h || 16) / 2) - (p.y - 10)) < (e.h || 16) / 2 + 10) return true; } return false; }
   function press(p, aim) { ensure(p);
     if (p.rgCd > 0) return 'eat';                                         /* (her hands are busy: the press is spent, nothing comes out) */
+    if (p.rgStance === 'knife') return false;                              /* KNIFE STANCE (Daniel 10-15): X is the knife, the bow stays on her back */
     p.rgBashT = 0;                                                        /* a shot out of the bash ends it: the riposte comes straight off the parry */
     const air = !p.ground && !p.swim;
     if (air && aim.low) { if (p.rgQ > 0) return downShot(p) ? 'shot' : 'eat'; return false; }   /* empty: a knife plunge */
@@ -306,10 +312,17 @@ export function makeRanger(api) {
   function render(g, cx, cy) { const p = P(); if (!api.isRg()) return; ensure(p);
     for (const a of p.rgArrows) { const x = a.x - cx, y = a.y - cy, ang = a.state === 'fly' ? angleOf(a) : (a.ang ?? 0);
       if (a.state === 'foe' && a.foe) drawArrowAt(g, x, y, (a.foe.face || 1) > 0 ? ang : Math.PI - ang, 5, true);
-      else drawArrowAt(g, x, y, ang, a.kind === 'pierce' || (a.kind === 'skill' && a.pierce) ? 9 : 7);
+      else { const len = a.kind === 'pierce' || (a.kind === 'skill' && a.pierce) ? 9 : 7;
+        if (a.state === 'fly' && a.kind !== 'pierce') { const c = Math.cos(ang), s = Math.sin(ang);   /* (Daniel 10-15: easier to see in flight) a pale streak behind it, fading */
+          for (let u = len + 1; u <= len + 10; u++) { g.globalAlpha = 0.75 * (1 - (u - len) / 11); g.fillStyle = '#fff6d8'; g.fillRect(Math.round(x - u * c), Math.round(y - u * s), 1, 1); } g.globalAlpha = 1; }
+        g.globalAlpha = 0.55; drawArrowAt(g, x, y + 1, ang, len, true); g.globalAlpha = 1;   /* a dark copy under it: it reads on pale stone and sky */
+        drawArrowAt(g, x, y, ang, len); }
       if (a.kind === 'pierce' && a.state === 'fly') { g.globalAlpha = 0.5; g.fillStyle = '#dfffb0'; g.fillRect(Math.round(x - Math.sign(a.vx) * 16), Math.round(y), 12, 1); g.globalAlpha = 0.3; g.fillRect(Math.round(x - Math.sign(a.vx) * 22), Math.round(y - 1), 8, 3); g.globalAlpha = 0.8; g.fillStyle = '#ffffff'; g.fillRect(Math.round(x - Math.sign(a.vx) * 8), Math.round(y), 6, 1); g.globalAlpha = 1; }
       if (a.state === 'lie' || a.state === 'stuck') { const k = 0.5 + 0.5 * Math.sin(api.time * 6 + a.x), gx = Math.round(x), gy = Math.round(y) - 3;   /* THE GLINT: go and get it */
-        g.globalAlpha = 0.35 + 0.45 * k; g.fillStyle = '#fff6c8'; g.fillRect(gx, gy - 1, 1, 3); g.fillRect(gx - 1, gy, 3, 1); g.globalAlpha = 1; } }
+        g.globalAlpha = 0.45 + 0.55 * k; g.fillStyle = '#fff6c8'; g.fillRect(gx, gy - 2, 1, 5); g.fillRect(gx - 2, gy, 5, 1); g.globalAlpha = 1; g.fillStyle = '#ffffff'; g.fillRect(gx, gy, 1, 1);
+        const by = gy - 9 + Math.round(Math.sin(api.time * 4 + a.x * 0.1) * 1.5);   /* (Daniel 10-15: easier to find) a bobbing chevron over it, dark-rimmed */
+        g.fillStyle = '#2a2418'; for (let i = -3; i <= 3; i++) g.fillRect(gx + i, by - Math.abs(i) - 1, 1, 3);
+        g.fillStyle = '#e8dcb0'; for (let i = -2; i <= 2; i++) g.fillRect(gx + i, by - Math.abs(i), 1, 1); } }
     for (const s of p.rgSnares || []) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), sp = s.sprung > 0;   /* THE SNARE: a peg with a cord looped to a ring on the turf; sprung it is drawn up tight, a pale knot with the cord standing */
       g.fillStyle = '#4a3a26'; g.fillRect(x - 5, y - 4, 2, 4); g.fillStyle = '#8a6a42'; g.fillRect(x - 5, y - 4, 1, 4); g.fillStyle = '#cfa86a'; g.fillRect(x - 5, y - 5, 2, 1);
       g.fillStyle = sp ? '#f0ead8' : '#d8c890'; for (const [u, v] of sp ? [[-3, -3], [-2, -4], [-1, -4], [0, -3], [0, -2], [-1, -1], [-2, -1], [-3, -2]] : [[-4, -1], [-3, 0], [-2, 0], [-1, 0], [0, 0], [1, 0], [2, 0], [3, -1], [2, -1], [-3, -1], [3, 0], [4, 0]]) g.fillRect(x + u, y + v, 1, 1);
@@ -338,10 +351,10 @@ export function makeRanger(api) {
         g.fillRect(x - rr - 3, y, 3, 1); g.fillRect(x + rr + 1, y, 3, 1); g.fillRect(x, y - rr - 3, 1, 3); g.fillRect(x, y + rr + 1, 1, 3); }
       g.fillStyle = '#ffd0c0'; g.fillRect(x, y, 1, 1); if (k) { g.fillRect(x - 1, y, 1, 1); g.fillRect(x + 1, y, 1, 1); g.fillRect(x, y - 1, 1, 1); g.fillRect(x, y + 1, 1, 1); } } }
   function clear() { const p = P(); p.rgArrows = []; p.rgSnares = []; p.rgTraps = []; p.rgHawk = null; p.rgRain = null; p.rgNock = null; p.rgBashT = 0; p.rgFlip = null; p.rgWildT = 0; p.rgQ = maxQ(); p.rgRefT = 0; p.rgRsT = 0; p.rgRsE = 0; }
-  const read = () => { const p = P(); ensure(p); return { q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
+  const read = () => { const p = P(); ensure(p); return { stance: p.rgStance || 'bow', q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };
-  return { RG, arrows, maxQ, press, nockStep, release: w => release(P(), w), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
+  return { RG, arrows, maxQ, toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: w => release(P(), w), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
     bashTakes, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
