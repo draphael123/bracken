@@ -445,7 +445,7 @@ export function buildMinecart({ painter, T, TS }) {
     stepUp(998);
     /* TEST (1000-1013) */
     pitAt(1000, 1003); low(1004, 1012); walk(1005, 1012);   /* the catwalk's first gap (1002-1004) over the pit: jump it, or fall in */
-    foe('sapper', 1008, D - 1, { squad: 'ptSapper' }); spoil(1010, 1011, D);
+    foe('sapper', 1008, D - 1, { squad: 'ptSapper' }); spoil(1010, 1011, D); spoil(1007, 1007, U);   /* (and one heap on the catwalk: the test asks the high line's jump too) */
     foe('bat', 1003, U - 4, { squad: 'ptBat' });
     /* REMIX (1013-1028) */
     pitAt(1013, 1015); walk(1016, 1028); low(1016, 1019);    /* both lines broken over one pit: one jump, either line */
@@ -454,7 +454,7 @@ export function buildMinecart({ painter, T, TS }) {
     /* THE EXAM (1029-1056): the pits kill here (told) */
     tell(1004, 1029, 'THE DEEP PITS KILL');
     pitAt(1029, 1032); walk(1029, 1041); low(1033, 1034); pitAt(1035, 1036); low(1037, 1041);
-    spoil(1033, 1034, U); crusher('pt3', 1039, U, 2.2, 0.8, 0.5);
+    spoil(1033, 1033, U); crusher('pt3', 1037, U, 2.2, 0.8, 0.5);   /* (the heap ONE wide: two wide, a jump from a near stand came down on its last column - the curve pilot died there every run; the crusher at 1037, not 1039: the catwalk keeps a three-column run-up to the last pit) */
     pitAt(1042, 1044); walk(1045, 1049); low(1045, 1063);   /* both lines broken over the last pit: a fall from either is a death (3 wide, a run-up of five: reach-heroes) */
     foe('bat', 1042, U - 3, { squad: 'ptExBat' });
     foe('brute', 1048, D - 1, { squad: 'ptElite', elite: true });   /* THE SECTION'S EXAM (difficulty v2): one weighty elite on the last pier, the pit at your back */

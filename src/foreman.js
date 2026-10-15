@@ -88,7 +88,7 @@ export function stepForeman(S, e, dt, heroes, c) {
       else { S.mode = 'ramTell'; S.mT = F.ramTell; S.n.ram++; c.sound('tellHard'); c.number(fx, G.topY - 30, FOREMAN_LINES.ram, '#ff6b6b'); }
       break; }
     case 'driftTell': if (S.mT <= 0) S.mode = 'drift'; break;
-    case 'drift': S.R -= (S.dv || F.driftV) * dt; if (S.R <= Math.max(0, hr - 40)) { S.mode = 'away'; }   /* (he drops back all the way past you - even a cart held at the loop's back edge has him under it) */ break;
+    case 'drift': S.R -= (S.dv || F.driftV) * dt; if (S.R <= Math.max(0, hr - 40) || (S.ward > 0 && S.R <= hr + F.halfW + 24)) { S.mode = 'away'; }   /* (deeprails5) while his SPIKES are up ('SPIKES UP: WAIT') he stops short of you and pulls away - he ran 40 px past you, a bump the told WAIT could not dodge (the BOOM in the chain put more drifts inside the brace) */   /* (he drops back all the way past you - even a cart held at the loop's back edge has him under it) */ break;
     case 'away': S.R += F.awayV * dt; if (S.R >= F.homeR) { S.R = F.homeR; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break;
     case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); S.pickQ = Array.from({ length: F.picks[Math.min(2, S.stomps)] }, (_, i) => ({ t: F.pick2 * (i + 1), off: -F.cutoff * (i + 1) }));   /* (stomped once, he throws a second pick a beat after the first: off one mark, onto the next is a hit) */ S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
     case 'ramTell': if (S.mT <= 0) { S.mode = 'ram'; S.mT = F.ramT; c.sound('ram'); } break;
