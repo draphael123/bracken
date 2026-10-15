@@ -1,6 +1,6 @@
 # Task A checkpoint: suite speed
 
-Status: **In progress, resumed 2026-10-14 at 9:00 a.m. Eastern.** The previous checkpoint was paused at Daniel's request on 2026-10-13. Branch `codex/suitespeed` is based on `origin/master`. Task B has not started. No game source (`src/`) was changed.
+Status: **In progress, paused before Daniel's 10 p.m. Eastern cutoff on 2026-10-14; resume at 8 a.m. Eastern on 2026-10-15.** Branch `codex/suitespeed` is based on `origin/master`. Task B has not started. No game source (`src/`) was changed.
 
 ## What is saved
 
@@ -23,6 +23,9 @@ The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time aud
 | `ef2f05fc` parallel #2 | 77m 07s | 374 | Same four |
 | `ef2f05fc` parallel #3 | 79m 43s | 374 | Same four, plus `unburied-bailey` misreported red by a browser-context disposal race |
 | `f7caf3c9` parallel #1, before textfit browser isolation | 73m 26s | 374 | Same four, plus scoped `textfit` (Weaver title/warning overlap) |
+| `f00290e2` parallel #1 | 74m 44s | 374 | `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
+| `f00290e2` parallel #2 | 85m 53s | 374 | `curve-gate`, `mark-integrity`, `textfit-full`; `no-hidden-hits` passed |
+| `f00290e2` shard 1/2 | 39m 00s | 187 | `curve-gate`, `mark-integrity`, `no-hidden-hits` |
 
 Full logs are beside this report: `baseline-suite.log`, `jobs4-run1.log`, `jobs4-equivalence-1.log`, `jobs1-equivalence.log`, and `jobs4-equivalence-2.log`. `archmage-folly-standalone.log` and `mobile-perf-standalone.log` show both intermittent failures passed alone. `mobile-perf` failed its unchanged 600 ms Red Gorge frame budget at 642.8 ms in parallel #2; its standalone worst frame was 35.5 ms. The third parallel full run was interrupted before results were emitted to honor the shutdown request; it is **not** counted as proof. The two shard runs and full three-run equivalence proof remain pending.
 
@@ -37,6 +40,10 @@ The four-check fresh-browser subset after that change passed `unburied-look`, `f
 The three `ef2f05fc` full logs are `proof-ef2f-jobs4-1.log` through `-3.log`. Runs 1 and 2 emitted exactly 370 parseable ` ok ` and four `FAIL` summary lines. In run 3 the check `unburied-bailey` passed internally but the pool reported it failed with `Failed to find context with id ...` while tidying Chrome after the check. Chrome had disposed the context between listing and disposal. The cleanup now accepts that exact already-gone-context response, without hiding any check failure. The affected `unburied-bailey` subset and the separate consecutive-context storage self-test passed (`context-disposal-fix.log`; `context-storage-selftest.log`). The proof must restart on this repaired commit.
 
 The first `f7caf3c9` full run is `proof-f7ca-jobs4-1.log`: it completed 374 checks in 73m 26s. Scoped `textfit` saw `THE WEAVER` overdrawn and colliding with a `!!` mark in one of 3,316 frames; this was not in the previous full runs. Six consecutive fresh `--jobs=1 textfit` reruns passed with zero pictures (`textfit-serial-recheck-1.log` through `-6.log`). The parallel tail had been borrowing a Chrome incognito context for both text scopes; it now gives each the same own-browser lifecycle as `--jobs=1`, still serial after the pool. The targeted `--jobs=4 textfit` run passed with zero pictures (`textfit-own-browser-1.log`). The full proof must restart again on that browser-lifecycle commit. No test or game source changed.
+
+On `f00290e2`, both full parallel logs (`proof-f002-jobs4-1.log`, `proof-f002-jobs4-2.log`) emitted 374 parseable summary lines. Scoped `textfit` passed both. The 1/2 shard (`proof-f002-shard-1of2.log`) emitted 187 summary lines: 184 ` ok ` and three `FAIL`. The old release threshold of 50 ` ok ` lines still distinguishes this shard from an aborted suite. `no-hidden-hits` passed full run 2 yet failed full run 1 and shard 1, showing its intermittent verdict. Daniel asked to pause by 10 p.m.; shard 2, full parallel run 3, and same-commit serial proof remain for the next run. The pushed checkpoint preserves these completed receipts.
+
+The exact executable trees for these runs are `tools` at `b1df84f3d2028b7171ea0e481dfcb00e125bca09` and untouched `src` at `250beb342f8e67f9e0abac2e7c981ea838a8322b`. The checkpoint commit below changes only the report and logs, so these trees remain stable even though the branch SHA advances.
 
 | Rank | Check | Seconds |
 | ---: | --- | ---: |
@@ -83,4 +90,4 @@ The baseline and first comparison runs revealed a release-parser bug: a long che
 
 ## Resume point
 
-Run three full parallel suites and one full serial suite on the corrected, isolated-tail commit, then both shards and compare their union to the 374-name list. Investigate any new reds, finalize Task A, and push. Only after Task A is complete, create `codex/geomsweep` from `origin/master` and do Task B.
+At 8 a.m. Eastern on 2026-10-15, inspect the pushed checkpoint and run the remaining full parallel, full `--jobs=1`, and shard 2/2 proofs. If the report-only checkpoint commit changes HEAD without changing executable files, record the exact code tree used by all proof runs and repeat any run needed to meet the same-commit requirement literally. Compare the two 187-check shards with the 374-name full suite, finalize Task A, and push. Only after Task A is complete, create `codex/geomsweep` from `origin/master` and do Task B.
