@@ -29,10 +29,6 @@ The serial tail covers `mobile-perf` (frame timing), `boss-music` (real-time aud
 | Same commit `f00290e2`, `--jobs=1` | 3h 11m 10s | 374 | `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
 | Same commit `f00290e2`, shard 1/2 | 39m 00s | 187 | `curve-gate`, `mark-integrity`, `no-hidden-hits` |
 | Same commit `f00290e2`, shard 2/2 | 41m 49s | 187 | `textfit-full` |
-| `f00290e2` parallel #1 | 74m 44s | 374 | `curve-gate`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
-| `f00290e2` parallel #2 | 85m 53s | 374 | `curve-gate`, `mark-integrity`, `textfit-full`; `no-hidden-hits` passed |
-| `f00290e2` shard 1/2 | 39m 00s | 187 | `curve-gate`, `mark-integrity`, `no-hidden-hits` |
-
 Full logs are beside this report: `baseline-suite.log`, `jobs4-run1.log`, `jobs4-equivalence-1.log`, `jobs1-equivalence.log`, and `jobs4-equivalence-2.log`. `archmage-folly-standalone.log` and `mobile-perf-standalone.log` show both intermittent failures passed alone. `mobile-perf` failed its unchanged 600 ms Red Gorge frame budget at 642.8 ms in parallel #2; its standalone worst frame was 35.5 ms. The third parallel full run was interrupted before results were emitted to honor the shutdown request; it is **not** counted as proof. The later `f00290e2` runs below provide the final same-commit comparison.
 
 The baseline's 30 slowest checks, in descending wall time, are below. Most are page checks that paid for their own server and Chrome startup on the baseline. The long combat, travel, and text checks also simulate many frames or layouts. `boss-music` is Node-only with real timers; `profile-cleanup` deliberately exercises multiple browser shutdown paths. `check-timings.md` has **all 374** checks sorted by wall time, classifies 223 page and 151 Node checks, and identifies pool and serial-tail handling.
