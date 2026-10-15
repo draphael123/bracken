@@ -976,6 +976,11 @@ Object.assign(SFX, {
   drillLunge() { noise(0.45, 0.3, 2600, 0.9); tone('sawtooth', 1600, 480, 0.45, 0.12); tone('sine', 92, 40, 0.3, 0.18); },
   chainRattle() { for (let i = 0; i < 7; i++) { tone('square', 1900 - i * 90, 900, 0.03, 0.06, i * 0.04); noise(0.04, 0.1, 3000, 1.5, i * 0.04); } },
   fuseFizz() { noise(0.7, 0.14, 5200, 1.5); for (let i = 0; i < 6; i++) tone('square', 3000 + i * 230, 2200, 0.02, 0.04, i * 0.1); },
+  /* DEEP RAILS 5 (claude/dr5art): the spare cutter's spin-up whine (a saw winding up, a grind under it), the claw's tear (iron screaming off its sleepers), the loading boom's swing (a creak, then the whoosh and the hook's clink) and the ore tip (a bucket of rock let go and rattling down the loop) */
+  cutterWhine() { tone('sawtooth', 320, 2400, 0.75, 0.08); tone('square', 160, 1200, 0.75, 0.04, 0.05); noise(0.75, 0.1, 4200, 1.4, 0.05); for (let i = 0; i < 5; i++) noise(0.04, 0.12, 3000, 1.6, 0.15 + i * 0.12); },
+  clawTear() { tone('sawtooth', 1900, 380, 0.5, 0.12); noise(0.5, 0.26, 2400, 1.1); tone('square', 230, 70, 0.3, 0.14, 0.05); for (let i = 0; i < 4; i++) tone('square', 1200 - i * 150, 600, 0.04, 0.06, 0.08 + i * 0.09); SFX.rubble && SFX.rubble(); },
+  boomSwing() { tone('sine', 190, 150, 0.22, 0.05); noise(0.45, 0.28, 520, 0.6, 0.02); tone('sawtooth', 240, 90, 0.4, 0.07, 0.04); tone('sine', 1500, 1200, 0.1, 0.06, 0.32); },
+  oreTip() { noise(0.5, 0.26, 700, 0.5); for (let i = 0; i < 7; i++) { noise(0.05, 0.16, 1500 - i * 110, 1.6, 0.06 + i * 0.07); tone('sine', 140 - i * 8, 70, 0.07, 0.07, 0.06 + i * 0.07); } },
   stompClank() { SFX.clank(); tone('sine', 150, 60, 0.3, 0.2); noise(0.18, 0.2, 500, 0.5); },
   leverClunk() { tone('square', 260, 120, 0.08, 0.14); noise(0.06, 0.2, 1800, 1.1); tone('sine', 90, 50, 0.2, 0.14, 0.04); },
   bridgeSwing(down) { noise(0.4, 0.14, 700, 0.6); tone('sawtooth', down ? 220 : 120, down ? 90 : 220, 0.4, 0.05); if (down) { tone('sine', 80, 38, 0.3, 0.22, 0.4); noise(0.2, 0.2, 500, 0.5, 0.4); } },

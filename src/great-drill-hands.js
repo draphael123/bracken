@@ -15,6 +15,7 @@ const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.t
   sparks: s => (s.screech || s.zap || s.heavy)(), jam: s => { (s.clank || s.heavy)(); s.crack && s.crack(); }, ward: s => (s.clank || s.thud)(), phase: s => (s.roar || s.heavy)(),
   chute: s => (s.rattle ? s.rattle(1) : s.clank && s.clank()), oreLand: s => (s.thud || s.heavy)(), ram: s => { (s.heavy || s.thud)(); s.clank && s.clank(); }, eat: s => (s.crack || s.heavy)(), rock: s => (s.rubble || s.thud || s.heavy)(),
   /* (deeprails3) GREAT DRILL 3 */ points: s => { (s.leverClunk || s.clank)(); s.stone && s.stone(); }, boom: s => (s.boom || s.heavy)(), lunge: s => { (s.drillLunge || s.screech || s.heavy)(); s.heavy && s.heavy(); }, whine: s => { s.tell && s.tell(true); (s.drillWhine || s.charge || s.screech || s.zap || (() => {}))(); },
+  /* (deeprails5 art) */ cutterWhine: s => { s.tell && s.tell(true); (s.cutterWhine || s.drillWhine || s.charge || s.screech || (() => {}))(); }, clawTear: s => { (s.clawTear || s.rubble || s.thud || s.heavy)(); s.clank && s.clank(); },
   /* (deeprails4) */ gearBreak: s => { (s.crack || s.heavy)(); s.clank && s.clank(); s.rubble && s.rubble(); },
   chain: s => (s.chainRattle ? s.chainRattle() : s.rattle ? s.rattle(1) : s.clank && s.clank()), throw: s => { s.throwWhoosh && s.throwWhoosh(); s.fuseFizz && s.fuseFizz(); }, rumble: s => { s.tell && s.tell(true); (s.rumble || s.thud || s.heavy)(); }, clank: s => s.clank && s.clank() };
 BOSS_PHASE.greatdrill = BOSS_PHASE.greatdrill || 1;

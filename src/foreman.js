@@ -72,7 +72,7 @@ export function stepForeman(S, e, dt, heroes, c) {
     c.hit(h, ram ? F.ramDmg : F.bumpDmg, ram ? "THE FOREMAN'S RAM" : "THE FOREMAN'S CART"); c.bounce(h, ram ? F.ramBack : F.bumpBack); break; }
   S.mT -= dt;
   /* (deeprails5) HIS TIPPED ORE: lumps rolling back down the loop past the world - a cart on the line meets one (a hit and a bump), a cart in the air over it is clear */
-  for (const q of S.tipQ) q.t -= dt; while (S.tipQ.length && S.tipQ[0].t <= 0) { S.tipQ.shift(); S.lumps.push({ x: fx - F.halfW - 4, id: ++S.n.tip * 1 }); c.sound('lurch'); }
+  for (const q of S.tipQ) q.t -= dt; while (S.tipQ.length && S.tipQ[0].t <= 0) { S.tipQ.shift(); S.lumps.push({ x: fx - F.halfW - 4, id: ++S.n.tip * 1 }); c.sound('oreTip'); }
   for (const L0 of S.lumps) { L0.x -= F.tipV * dt; if (L0.x < G.x0 - 10) { L0.dead = true; continue; }
     for (const h of live) { if (!h.ground || laneOf(G, h.y) !== 0 || Math.abs(h.x - L0.x) > F.tipR + 6 || h.pp && h.pp.mcBoard) continue; L0.dead = true; S.n.tipHits++; c.hit(h, F.tipDmg, "THE FOREMAN'S ORE"); c.bounce(h, F.tipBack); break; } }
   S.lumps = S.lumps.filter(q => !q.dead);
@@ -92,7 +92,7 @@ export function stepForeman(S, e, dt, heroes, c) {
     case 'away': S.R += F.awayV * dt; if (S.R >= F.homeR) { S.R = F.homeR; S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break;
     case 'pickTell': if (S.mT <= 0) { if (near) c.lob(near); S.pickQ = Array.from({ length: F.picks[Math.min(2, S.stomps)] }, (_, i) => ({ t: F.pick2 * (i + 1), off: -F.cutoff * (i + 1) }));   /* (stomped once, he throws a second pick a beat after the first: off one mark, onto the next is a hit) */ S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)] + 0.4; } break;
     case 'ramTell': if (S.mT <= 0) { S.mode = 'ram'; S.mT = F.ramT; c.sound('ram'); } break;
-    case 'boomTell': if (S.mT <= 0) { S.mode = 'boom'; S.mT = F.boomT; c.sound('lurch'); } break;
+    case 'boomTell': if (S.mT <= 0) { S.mode = 'boom'; S.mT = F.boomT; c.sound('boomSwing'); } break;
     case 'boom': { const y = boomY(G); for (const h of live) { if (h.x > fx - F.halfW || (h.pp && h.pp.mcBoard) || (h.duckAt && h.duckAt(y)) || S.boomHit === S.n.boom + ':' + (h.pp && h.pp.id)) continue;
         if (h.y > y - 2 && h.y - 26 < y) { S.boomHit = S.n.boom + ':' + (h.pp && h.pp.id); S.n.boomHits++; c.hit(h, F.boomDmg, "THE FOREMAN'S BOOM"); } }
       if (S.mT <= 0) { S.mode = 'idle'; S.cd = F.gap[Math.min(2, S.stomps)]; } break; }

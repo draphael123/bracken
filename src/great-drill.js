@@ -252,7 +252,7 @@ export function stepDrill(e, S, dt, heroes, c) {
       else if (name === 'collapse') { e.mode = 'collapseTell'; S.mT = DRILL.collapseTell; S.n.collapse++; c.sound && c.sound('rumble');
         S.spots = [0, DRILL.collapseApart].map((dx, j) => ({ x: near.x + DRILL.cruise * DRILL.collapseTell + dx, t: DRILL.collapseTell, id: S.n.collapse * 3 + j }));
         c.number(rearX(S) - 40, G.laneY[1] - 50, S.told.collapse ? '!! THE ROOF' : '!! THE ROOF COMES DOWN: PUMP THROUGH, OR BRAKE', '#ff6b6b'); S.told.collapse = 1; }
-      else if (name === 'cutter') { e.mode = 'cutterTell'; S.mT = DRILL.cutterTell; S.n.cutter++; S.cutPend = { lane: hl }; c.sound && c.sound('whine');   /* (deeprails5) its boom lifts a spare cutter disc: told on your line */
+      else if (name === 'cutter') { e.mode = 'cutterTell'; S.mT = DRILL.cutterTell; S.n.cutter++; S.cutPend = { lane: hl }; c.sound && c.sound('cutterWhine');   /* (deeprails5) its boom lifts a spare cutter disc: told on your line */
         c.number(rearX(S) - 40, G.laneY[hl] - 44, S.told.cutter ? '!! CUTTER' : '!! A CUTTER: STRIKE IT BACK, OR JUMP', '#ff6b6b'); S.told.cutter = 1; }
       else if (name === 'claw') { e.mode = 'clawTell'; S.mT = DRILL.clawTell; S.n.claw++; S.clawPend = { lane: hl, x: rearX(S) - 8 - DRILL.clawW }; c.sound && c.sound('chain');   /* (deeprails5) the claw drops behind it on your line: the stretch it will rip is marked */
         c.number(rearX(S) - 40, G.laneY[hl] - 44, S.told.claw ? '!! THE CLAW' : '!! THE CLAW: PUMP AND JUMP, OR CHANGE LINE', '#ff6b6b'); S.told.claw = 1; }
@@ -260,7 +260,7 @@ export function stepDrill(e, S, dt, heroes, c) {
     case 'cutterTell': if (S.mT <= 0) { if (S.cutPend) { const x0 = rearX(S) - 12, hx = live.length ? Math.max(...live.filter(h => h.lane === S.cutPend.lane || h.lane < 0).map(h => h.x).concat([heroX])) : heroX;
         S.cutters.push({ x: x0, x0, tx: Math.max(G.x0 + 24, Math.min(x0 - 20, hx + DRILL.cutterLead)), fly: DRILL.cutterFly, lane: S.cutPend.lane, id: S.n.cutter, back: false }); } S.cutPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.3; c.sound && c.sound('lunge'); } break;
     case 'clawTell': if (S.clawPend) S.clawPend.x = rearX(S) - 8 - DRILL.clawW;   /* (the marked stretch is the rail just behind it, where the claw bites: off it - or off the line - before it rips) */
-      if (S.mT <= 0) { if (S.clawPend) S.tears.push({ x: S.clawPend.x, lane: S.clawPend.lane, id: S.n.claw }); S.clawPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.3; c.sound && c.sound('rock'); c.shake && c.shake(3); } break;
+      if (S.mT <= 0) { if (S.clawPend) S.tears.push({ x: S.clawPend.x, lane: S.clawPend.lane, id: S.n.claw }); S.clawPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1] + 0.3; c.sound && c.sound('clawTear'); c.shake && c.shake(3); } break;
     case 'rockTell': case 'collapseTell': if (S.mT <= 0) { e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; } break;
     case 'dynTell': if (S.mT <= 0) { for (const d of S.dynPend || []) { d.fly = 0; S.dyn.push(d); } S.dynPend = null; e.mode = 'idle'; S.cd = DRILL.gap[S.ph - 1]; c.sound && c.sound('throw'); } break;
     case 'revTell': if (S.mT <= 0) { e.mode = 'reverse'; S.mT = DRILL.revT; S.revV = DRILL.revV; c.sound && c.sound('reverse'); c.shake && c.shake(4); } break;
