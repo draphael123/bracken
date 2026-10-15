@@ -15,7 +15,7 @@ const theme = {
   skyroad: 'cloud-stone pillars', glasssea: 'glass-rock fins and dune stone', ksar: 'desert sandstone and fort corbels', rootway: 'root arches and living trunks', minecart: 'rail trestles and mine timber', church: 'church masonry and iron stays', towpath: 'canal brick and towpath posts', buriedcity: 'sandstone corbels, pipe brackets and chains', sealedpyramid: 'pyramid stone and tomb corbels',
 };
 const shot = (id, x, y, label) => '[' + label + '](../codex/shots/geomsweep/' + id + '-' + x + '-' + y + '.png)';
-const chunks = (a, n = 12) => { const out = []; for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n).join(', ')); return out.join('  \n'); };
+const chunks = (a, n = 12) => { const out = []; for (let i = 0; i < a.length; i += n) out.push(a.slice(i, i + n).join(', ')); return out.join('\n'); };
 const rank = rows.map(r => { const d = drawn.get(r.id), top = d?.ph?.[0]?.cells || [], movers = d?.movers || []; return { ...r, top, movers, count: r.findings.length + top.length + movers.length }; }).sort((a, b) => b.count - a.count || a.id.localeCompare(b.id));
 const total = (k) => rank.reduce((s, r) => s + r[k], 0);
 let md = '# Whole-game geometry sweep\n\n';
