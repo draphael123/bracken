@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-15",
+    "batch": 94,
+    "lines": [
+      "The Paladin: Conviction, Verdict and a moving aura",
+      "Towpath reworked: fog, locks and the Fog Knight",
+      "Road Wardens guard the act I and II exams",
+      "New music for the Underwell and the Towpath",
+      "Ranger arrows are easier to see and find",
+      "Paste a share link to join co-op"
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "batch": 93,
     "lines": [
       "New hero: the Ranger, a bow and a knife",
@@ -35,7 +47,7 @@
       "Buried City: the exit gate works again"
     ]
   },
-{
+  {
     "date": "2026-10-13",
     "batch": 90,
     "lines": [
@@ -45,7 +57,7 @@
       "New game: the hero pick shows every hero, locked ones as silhouettes"
     ]
   },
-{
+  {
     "date": "2026-10-13",
     "batch": 89,
     "lines": [
