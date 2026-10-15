@@ -63,6 +63,20 @@
 //   bar a phase, clamped on what lands - the hands' take runs after every multiplier); spent, HER STINGER BREAKS: she reels (CQ.breakT) and every stinger
 //   move is gone for the rest of the phase (the Great Drill's gears) - she fights with her claws; at the next phase she MOULTS and it is whole again.
 //
+// CISTERN QUEEN 3 (claude/cisternqueen3, Daniel 10-14: "unclear"; "destroying the tail should NOT be a mechanic - the tail is how you hit her; fire stuns
+// her; throw water when she comes out of a burrow so she slips"). SUPERSEDES the rework's loop above: the stinger PURSE / BREAK / MOULT and the HOT / DOUSED /
+// STEAM states are GONE. Her fight is now three plain rules, each said where it is used (src/hint-lines.js):
+//   STRIKE THE STINGER   her stinger is how you hurt her: wherever her tail carries it a blow lands WHOLE (x CQ.tipMul, up to CQ.tipCap of her a move - past that
+//                        she curls it away, B15's 0.4); stuck in the floor after a lance / pin / slam / sting x CQ.tailOpenMul (one sting's cap). Her shell and
+//                        claws are B15's floor (x CQ.shellFront / shellBack = 0.4) and SAY 'STRIKE THE STINGER' (B10).
+//   SET HER ALIGHT       fire under her (a thrown torch on her floor oil, her burrow run up into burning oil, a hero's own fire held on her CQ.heroHeatT s): she is
+//                        ABLAZE - she THRASHES (CQ.thrashT, her heat on whoever is close), then SAGS: down, her TAIL DROOPS TO THE FLOOR - the gold window (CQ.ablazeT).
+//                        Then her told ward (B3) and her shell BLACKENED for CQ.charT - no fire takes her until it cools (told). In the FLOOD she is wet: no fire.
+//   SHE SURFACES: THROW WATER   a water jar (her hall's two racks by the springs, E takes one, ATTACK throws it in the told arc - src/cistern-queen-hands.js), the
+//                        skin's pour on the spot, or the shaft's bucket - WHILE SHE BURSTS OUT OF THE SAND (the dust and rumble at the spot, CQ.burstEarly s before,
+//                        to CQ.burstLate s after): she SLIPS and lands ON HER BACK, her stinger flailing low - the second window. Early or late: a splash.
+// Every opening lays her stinger on the floor behind her (S.stinger, big): that is the blow that pays (x openMul); her body takes x1 under the same cap.
+//
 // PURE: no DOM, no main.js. The world is a context `c` (src/cistern-queen-hands.js binds it). queenPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CQ = {
@@ -106,13 +120,17 @@ export const CQ = {
   /* THE STINGER (claude/welltown5): stuck low after each sting this long (s), a blow on it x stingMul, one sting's worth at most stingCap of her */
   wardT: 3.0,   /* (claude/underwell, design standard B3) after every opening ends: a told ward this long - a pour finds nothing, the shell turns the stinger too */
   stuck: { lance: 1.15, barb: 0.85, pin: 1.3, sting: 1.0, tidal: 1.0, bloom: 2.05 /* (claude/queen4) the bloom: bloomSpread + bloomT + bloomPull */ }, stingMul: 1.25, stingCap: 0.07, stingR: 13,
-  /* (claude/cqueenrework, B15) HER SHELL outside her openings: her raised claws turn a frontal blow to shellFront (GO ROUND), her back and flanks take shellBack; her ward wardMul */
-  shellFront: 0.4, shellBack: 0.55, wardMul: 0.4,
-  /* (claude/cqueenrework) THE LOOP: HOT - a stinger tell x hotTellK slower; burnt out, BLACKENED charT s (no fire catches her). DOUSED douseT s (above, with the heat): her tells
-     x wetTellK, her walk and scuttle x wetWalk; her burrow floods */
-  charT: 10, heroHotK: 0.6, heroHeatT: 2.5, hotTellK: 1.3, wetTellK: 1.25, wetWalk: 0.7,
-  /* (claude/cqueenrework) HER STINGER: outside her openings x tailMul (told), stuck / HOT / open x tailOpenMul; tailPurse of her bar a phase on what lands, then it BREAKS: she reels breakT s */
-  tailMul: 0.4, tailOpenMul: 1.75, tailPurse: 0.06, breakT: 1.6,
+  /* (claude/cqueenrework, B15; claude/cisternqueen3: both 0.4 - "her shell + claws stay at the B15 floor", told STRIKE THE STINGER) HER SHELL outside her openings; her ward wardMul */
+  shellFront: 0.4, shellBack: 0.4, wardMul: 0.4,
+  /* (claude/cisternqueen3) SET HER ALIGHT: she thrashes thrashT s (her heat close), then sags ablazeT s (OPEN, her tail on the floor); then BLACKENED charT s (no fire catches her, told).
+     A hero's own fire must stay on her heroHeatT s to take her */
+  thrashT: 0.8, ablazeT: 3.6, charT: 10, heroHeatT: 2.5,
+  /* (claude/cisternqueen3) SHE SURFACES: THROW WATER - the window opens burstEarly s before she bursts out of the sand (the dust and rumble at the spot) and closes burstLate s after
+     she is out; water reaching her (or the spot) within burstR px in it: she SLIPS onto her back. A jar rack refills jarBack s after its jar is taken */
+  burstEarly: 0.45, burstLate: 0.6, burstR: 50, jarBack: 4,
+  /* (claude/cisternqueen3) HER STINGER: free, x tipMul up to tipCap of her a move (then she curls it away: x tailMul, told); stuck in the floor x tailOpenMul (one sting's cap);
+     in an opening x openMul (the opening's cap); her body in an opening x openBody */
+  tipMul: 1.0, tipCap: 0.025, tailMul: 0.4, tailOpenMul: 1.75, openBody: 1.0,
   /* (claude/underwell3, Daniel 10-07: "I wanted her STINGER to be the VULNERABLE part") HER STINGER IS ALWAYS HER WEAK SPOT: wherever her tail carries it (curled over her
      back, up a wall, under her in the shaft) a blow on it lands whole (tipMul), outside her ward - it is high, so it is a jump and an up-cut. tipR: its box's half-size */
   tipR: 15,   /* (claude/cqueenrework: what a blow on it lands is CQ.tailMul / tailOpenMul, on its purse) */
@@ -121,12 +139,12 @@ export const CQ = {
   sslamTell: 0.9, sslamT: 0.18, slamReach: 170, slamR: 28, planted: 2.6, plantR: 22, plantCap: 0.1,
   /* FIRE ON HER OIL (Daniel 10-07): a thrown torch lights her hall's floor oil; while the fire touches her she is SCORCHED scorchT s - her BODY takes a blow whole from any side
      (her claws too: the shell is cracked by the heat) - and she FIGHTS ON (not a stun). Her hall's oil seeps back oilBack s after it burns out (told), her torches relight */
-  scorchT: 6.0, scorchMul: 1.0,   /* (her hall's oil seeps back OIL.arenaBack s after it burns - src/underwell-hands.js) */
+  /* (claude/cisternqueen3: SCORCHED is gone - fire stuns her now: CQ.thrashT, CQ.ablazeT above. Her hall's oil seeps back OIL.arenaBack s after it burns - src/underwell-hands.js) */
   /* WATER ON HER WAY OUT (Daniel 10-07): a pour on the mound (where she will come up) wets the sand - she comes up through it and SLIPS: down slipT s, all of her open (x openMul)
      and her stinger flung out flat on the floor behind her (x stingMul, part of the opening's cap) */
   slipT: 3.4,
   /* HER FIRE (claude/cqueenrework: while she is HOT, any phase): her heat ticks heatTick s, heatR px past her body; DOUSED she is wet douseT s */
-  heatTick: 0.6, heatR: 12, douseT: 8,
+  heatTick: 0.6, heatR: 12,
   /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
   dmg: { pincer: 15, snap: 12, lunge: 21, lance: 22, flick: 8, strike: 25, charge: 18, spit: 11, puddle: 3, sweep: 18, slam: 18, pin: 22, pounce: 25,
     ambush: 19, wave: 15, grab: 8, sting: 34, tidal: 18, heat: 6, sslam: 30, bloom: 26 },   /* (claude/queen4: the bloom 26 - the death roll's 23 and a little for its two stacks' worth of venom told so long) */
@@ -218,7 +236,11 @@ export function tailPose(e, S) {
   if (m === 'sweepLowTell') tail = 'back'; if (m === 'sweepHighTell') tail = 'backHigh'; if (m === 'sweepLow' || m === 'sweepHigh' || m === 'tidal') tail = 'sweep';
   if (m === 'soaked' || m === 'fallen') tail = 'down'; if (m === 'spitTell') tail = 'spit';
   if (m === 'bloomTell') tail = 'high';   /* (claude/queen4) THE VENOM BLOOM told: her tail arched high, the stinger green */
-  if (S.stinger && S.stinger.t > 0 && S.pose !== 'wall' && (m === 'stuck' || m === 'pinned' || m === 'planted' || m === 'slip' || m === 'bloom' || m === 'bloomBurst')) { tail = 'lance'; lanceTo = [(S.stinger.x - e.x) * face, S.stinger.y - e.y]; }
+  if (m === 'thrash') tail = 'flick';   /* (claude/cisternqueen3) ABLAZE: she thrashes, the tail whipping over her */
+  if (S.stinger && S.stinger.t > 0 && S.pose !== 'wall' && (m === 'stuck' || m === 'pinned' || m === 'planted' || m === 'bloom' || m === 'bloomBurst' || OPEN_MODES.has(m))) { tail = 'lance';
+    /* (claude/cisternqueen3) in every opening her tail lies on the floor to the stinger; on her back (her body flipped, S.view sy -1) the point is found through the flip, so the
+       stinger drawn is the stinger struck */
+    const V = view(e, S); lanceTo = [(S.stinger.x - e.x) * face, (S.stinger.y - e.y - V.ty) / (V.sy || 1)]; }
   return { tail, lanceTo };
 }
 /* the stinger's point in her frame for a pose (the lance's: where it is driven) */
@@ -240,9 +262,10 @@ export function view(e, S) {
   const w = onWall ? (S.wallK ?? 1) : 0;
   if (w > 0) { V.rot = face * Math.PI / 2 * w; V.tx = -16 * face * w; V.ty = -84 * w; V.sc = 1 - 0.18 * w; }
   /* (claude/cqueenrework) on THE WELLHEAD she stands upright on the beam - no more hung upside down from nothing */
-  if (m === 'fallen') { V.sy = -1; V.ty = -30; }
+  if (m === 'fallen' || m === 'slip') { V.sy = -1; V.ty = -30; }   /* (claude/cisternqueen3: SHE SLIPS onto her back, as she falls off her wall) */
   if (m === 'rear') { V.tx = -10; V.rot = -0.55 * face; }
-  if (m === 'reel') { V.tx = -10 * face; V.rot = -0.24 * face; }   /* (claude/cqueenrework) HER STINGER BROKEN: she reels back off it (claude/cqart: its own frame, drawn in src/redraw/cistern_queen_art.js, thrown further back) */
+  if (m === 'thrash') { V.tx = -10 * face; V.rot = -0.24 * face; }   /* (claude/cisternqueen3) ABLAZE, THRASHING: thrown back (greybox: the old reel's frame - the art lane draws her own) */
+  if (m === 'ablaze') V.crouch = 1;   /* (claude/cisternqueen3) ABLAZE, SAGGING: down on her belly (greybox) */
   if (m === 'diveTell') V.sink = CQ.sinkH * ease(Math.min(1, 1 - Math.max(0, e.modeT) / CQ.diveT));
   else if (S.pose === 'burrow' || S.pose === 'tunnel') V.sink = CQ.sinkH;
   if (S.tunnelK != null && m === 'ambushTell') V.sink = CQ.sinkH * S.tunnelK;   /* into the tunnel: down off the wall and under */
@@ -280,7 +303,7 @@ export function framePoint(e, V, lx, ly) {
   return { x: e.x + (V.ox || 0) + V.tx + x * c - y * s, y: e.y + (V.oy || 0) + V.ty + V.sink + x * s + y * c };
 }
 export function tipOf(e, S) {
-  if (!e || !S || e.mode === 'sleep' || S.pose === 'burrow' || S.pose === 'tunnel' || (e.gone > 0 && S.pose !== 'shaft') || stingerOut(S) || S.broken) return null;   /* (claude/cqueenrework: a BROKEN stinger is no target) */
+  if (!e || !S || e.mode === 'sleep' || S.pose === 'burrow' || S.pose === 'tunnel' || (e.gone > 0 && S.pose !== 'shaft') || stingerOut(S)) return null;
   const p = tailPose(e, S), [lx, ly] = tipLocal(p), V = S.view && S.view.live ? S.view : view(e, S);
   return framePoint(e, V, lx, ly);
 }
@@ -290,13 +313,15 @@ export const tipBox = t => ({ l: t.x - CQ.tipR, r: t.x + CQ.tipR, t: t.y - CQ.ti
 export function newShow(G) {
   return { G, cycle: 0, ph: 1, step: 0, script: null, moveT: 0, gap: 1.0, pose: 'floor', wall: null, behindT: 0, act: 0,
     mound: null, shots: [], bands: [], rubble: [], puddles: [], bucket: { st: 'up', t: 0 }, water: 0, flood: false, claw: null, held: null, bloom: null, trip: null, view: null,
-    stinger: null, stingTaken: 0, burn: false, douse: 0, flare: 0, heatK: 0, scorch: 0,
+    stinger: null, stingTaken: 0, burn: false, heatK: 0, scorch: 0, surfT: 0, charT: 0, tipAct: -1, tipTaken: 0,
     told: {}, n: { cycles: 0, opens: 0, soaked: 0, fallen: 0, rear: 0, pours: 0, wasted: 0, buckets: 0, bucketHits: 0, grabs: 0, caught: 0, broken: 0, countered: 0, stung: 0,
       guarded: 0, blooms: 0, bloomHits: 0, stingers: 0, stingHits: 0, doused: 0, flares: 0, burnTurned: 0, moves: {}, slip: 0, scorched: 0, tipHits: 0, plantHits: 0, sslams: 0 } };
 }
 export const qPhase = e => (e.hp <= e.maxHp * CQ.p3 ? 3 : e.hp <= e.maxHp * CQ.p2 ? 2 : 1);
-export const qOpen = e => !!e && (e.open || 0) > 0 && (e.mode === 'soaked' || e.mode === 'fallen' || e.mode === 'rear' || e.mode === 'slip');   /* (claude/underwell3: 'slip' - she came up through wet sand) */
-/* (claude/underwell3) SCORCHED: the fire on her oil touches her - her body takes a blow whole from any side while it lasts, and she fights on (not an opening: she is not down) */
+/* (claude/cisternqueen3) her openings: soaked (the bucket), fallen (off her wall / the wellhead), rear (a grab broken), slip (water as she surfaces), ablaze (the fire's sag) */
+const OPEN_MODES = new Set(['soaked', 'fallen', 'rear', 'slip', 'ablaze']);
+export const qOpen = e => !!e && (e.open || 0) > 0 && OPEN_MODES.has(e.mode);
+/* (claude/cisternqueen3) ABLAZE and THRASHING: fire has her - she is not open yet (her heat is on whoever is close); she sags open after CQ.thrashT */
 export const qScorched = e => !!e && (e.scorch || 0) > 0;
 export const qTake = e => (qOpen(e) ? CQ.openMul : 1);
 export const enraged = e => !!e && e.hp <= e.maxHp * CQ.enrage;
@@ -310,33 +335,26 @@ export const shelled = e => !qOpen(e) && e.mode !== 'sleep' && e.mode !== 'wake'
 export const stingerOut = S => (S && S.stinger && S.stinger.t > 0 ? S.stinger : null);
 export const stingBox = st => { const r = st.big ? CQ.plantR : CQ.stingR; return { l: st.x - r, r: st.x + r, t: st.y - r - 4, b: st.y + 6 }; };   /* (claude/underwell3: a PLANTED or flung stinger is a bigger target) */
 /* stick the stinger at (x, the floor) for t s: her tail lies there, it glints, it can be cut */
-function stick(e, S, x, t, c, k) { const G = S.G; if (S.broken) return;   /* (claude/cqueenrework: a broken stinger sticks nowhere) */ S.stinger = { x: Math.max(G.x0 + 10, Math.min(G.x1 - 10, x)), y: G.floor - 6, t, k }; S.stingTaken = 0; S.n.stingers++;
+function stick(e, S, x, t, c, k) { const G = S.G; S.stinger = { x: Math.max(G.x0 + 10, Math.min(G.x1 - 10, x)), y: G.floor - 6, t, k }; S.stingTaken = 0; S.n.stingers++;
   if (!S.told.stinger) { S.told.stinger = 1; c.number(S.stinger.x, G.floor - 40, 'HER STINGER IS STUCK: STRIKE IT', '#8fd160'); } }
-/* HER FIRE (claude/cqueenrework: while she is HOT, in any phase - she is no longer alight all of phase two): the heat on whoever is close; the clocks of her wet shell
-   and her blackened one */
+/* HER FIRE (claude/cisternqueen3: only while she THRASHES, ablaze): the heat on whoever is close; the clock of her blackened shell, told when it cools */
 function heatBox(e, S) { const G = S.G, r = CQ.heatR;
   if (e.gone && e.mode !== 'pounce') return null;
   if (S.pose === 'wall') return [e.x - 17 - r, e.x + 17 + r, G.floor - 92, G.floor];
   return [e.x - CQ.w / 2 - r, e.x + CQ.w / 2 + r, e.y - 44, e.y]; }
 function stepFire(e, S, dt, h, c) {
   if (!e.alive) return;
-  if (S.wet > 0) { S.wet = Math.max(0, S.wet - dt); if (S.wet <= 0 && !qOpen(e)) c.number(e.x, Math.min(e.y, S.G.floor) - 86, 'SHE DRIES: THE FIRE CAN TAKE HER AGAIN', '#c9a46a'); }
-  if (S.charT > 0 && !(S.scorch > 0)) S.charT = Math.max(0, S.charT - dt);
+  if (S.surfT > 0) S.surfT = Math.max(0, S.surfT - dt);
+  if (S.charT > 0 && !(S.scorch > 0) && !qOpen(e)) { S.charT = Math.max(0, S.charT - dt); if (S.charT <= 0 && !S.flood) c.number(e.x, Math.min(e.y, S.G.floor) - 86, 'HER SHELL COOLS: FIRE TAKES HER AGAIN', '#ffb070'); }
   if (S.scorch > 0) { S.heatK += dt; if (S.heatK >= CQ.heatTick) { S.heatK = 0; S.heatN = (S.heatN || 0) + 1; const b = heatBox(e, S); if (b) c.hit(b, CQ.dmg.heat, MOVE_NAME.heat, { key: 'heat' + S.heatN, noKnock: true, heat: true }); } } }
-/* (claude/cqueenrework) THE LOOP'S TWO STATES, as the hands and the bot ask them */
+/* (claude/cisternqueen3) the fire's state, as the hands, the art and the bot ask it: alight (thrashing) - the old name qHot kept */
 export const qHot = S => !!S && (S.scorch || 0) > 0;
-export const qWet = S => !!S && (S.wet || 0) > 0;
-/* CAN FIRE TAKE HER NOW? not wet (the firebreak), not blackened (charT), not in her ward or an opening, not already HOT */
-export const hotOK = (e, S) => !!(e && S && e.alive && !(S.wet > 0) && !(S.charT > 0) && !(S.ward > 0) && !qOpen(e) && !(S.scorch > 0) && e.mode !== 'sleep' && e.mode !== 'wake');
-/* a fire that cannot take her says why - once a wetting / a blackening */
-function fireRefused(e, S, c) { if (S.wet > 0) { if (S.told.wetFire !== S.n.doused) { S.told.wetFire = S.n.doused; c.number(e.x, Math.min(e.y, S.G.floor) - 86, 'SHE IS WET: THE FIRE WILL NOT TAKE HER', '#7ab8e8'); } }
+/* CAN FIRE TAKE HER NOW? not in the flood (she is wet), not blackened (charT), not in her ward or an opening, not already alight */
+export const hotOK = (e, S) => !!(e && S && e.alive && !S.flood && !(S.charT > 0) && !(S.ward > 0) && !qOpen(e) && !(S.scorch > 0) && e.mode !== 'thrash' && e.mode !== 'sleep' && e.mode !== 'wake');
+/* a fire that cannot take her says why - once a flood / a blackening */
+function fireRefused(e, S, c) { if (S.flood) { if (!S.told.wetFire) { S.told.wetFire = 1; c.number(e.x, Math.min(e.y, S.G.floor) - 86, 'SHE IS WET: THE FIRE WILL NOT TAKE HER', '#7ab8e8'); } }
   else if (S.charT > 0) { if (S.told.charFire !== S.n.scorched) { S.told.charFire = S.n.scorched; c.number(e.x, Math.min(e.y, S.G.floor) - 86, 'HER SHELL IS BLACKENED: NOT YET', '#9aa39a'); } } }
-/* (claude/cqueenrework) THE STINGER'S MOVES, and what she does in their place once it is BROKEN (the rest of the phase): her claws, her rubble, her waves */
-export const STING_MOVES = new Set(['lance', 'sslam', 'pin', 'tidal', 'bloom', 'combo']);
-const BROKEN_FOR = { 1: { lance: 'pincer', sslam: 'snapsnap' }, 2: { sslam: 'slam', pin: 'spit' }, 3: { sslam: 'wave', tidal: 'grab', bloom: 'snapsnap', combo: 'snapsnap' } };
-const STING_TELLS = new Set(['lanceTell', 'sslamTell', 'pinTell', 'tidalTell', 'bloomTell', 'barbTell']);
-const nextScript0 = (S, e) => { const ph = S.ph; if (ph === 3 && enraged(e)) return CYCLES.enraged.slice(); const set = CYCLES[ph]; return set[S.cycle % set.length].slice(); };
-const nextScript = (S, e) => { const s = nextScript0(S, e); if (!S.broken) return s; const B = BROKEN_FOR[S.ph] || {}; return s.map(m => (STING_MOVES.has(m.split(':')[0]) ? B[m.split(':')[0]] || 'pincer' : m)); };
+const nextScript = (S, e) => { const ph = S.ph; if (ph === 3 && enraged(e)) return CYCLES.enraged.slice(); const set = CYCLES[ph]; return set[S.cycle % set.length].slice(); };
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 
 /* ---------- ONE FRAME. h = the heroes [{ x, y, ground, alive, ducking, onLedge: 'W'|'E'|null, pp }], c = the world:
@@ -349,7 +367,7 @@ function stepQueen0(e, S, dt, h, c) {
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward || 0;
   if (S.stinger) { S.stinger.t -= dt; if (S.stinger.t <= 0) S.stinger = null; } e.sting = S.stinger && !(S.ward > 0) ? S.stinger.t : 0;   /* (e.sting: src/boss-greed.js OPEN_RULE - a blow on the stinger is not chipped) */
-  stepFire(e, S, dt, h, c); stepScorch(e, S, dt, c); e.burning = qHot(S); e.wet = S.wet || 0;
+  stepFire(e, S, dt, h, c); stepScorch(e, S, dt, c); e.burning = qHot(S); e.wet = S.flood ? 1 : 0;
   stepShots(e, S, dt, h, c); stepBands(e, S, dt, c); stepRubble(e, S, dt, c); stepPuddles(e, S, dt, c); stepBucket(e, S, dt, c);
   if (S.flood && S.water < CQ.waterH) { S.water = Math.min(CQ.waterH, S.water + 14 * dt); c.water(S.water); }
   if (e.mode === 'sleep') return;
@@ -357,23 +375,24 @@ function stepQueen0(e, S, dt, h, c) {
   /* THE PHASES: a new one waits for the blow in hand to finish (and never cuts an opening short) */
   const want = qPhase(e);
   if (want > S.ph && !qOpen(e) && isIdle(e)) { S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want;
-    moult(e, S, c);   /* (claude/cqueenrework) a new phase: she MOULTS - her stinger whole again, its purse full */
     if (want === 2) { clearFloor(S); setMode(e, 'climbTell', CQ.climbT); c.number(e.x, e.y - 70, 'SHE TAKES TO HER WALLS AND THE WELLHEAD', '#ffd36b'); c.sound('climb'); c.music && c.music(2); return; }
     if (want === 3) { clearFloor(S); S.pose = 'floor'; S.trip = null; S.wallK = 0; S.shaftK = null; S.tunnelK = null; e.gone = 0; e.y = G.floor; e.x = Math.max(G.x0 + 40, Math.min(G.x1 - 40, e.x)); e.face = Math.sign(P.x - e.x) || e.face; setMode(e, 'floodTell', CQ.floodT); c.number(e.x, e.y - 70, 'THE CISTERN FLOODS: THE WALL OF THE SHAFT GIVES', '#ffd36b');   /* (claude/queen4: no brood - Daniel 10-07, no add summons; her drop off the wall or out of the shaft is eased by S.view, not popped) */ c.sound('flood'); c.music && c.music(3); return; } }
   switch (e.mode) {
     /* ---- the openings: she lies there; when it is over she gets up (and the cycle goes on) ---- */
-    case 'soaked': case 'fallen': case 'rear': case 'slip':
+    case 'soaked': case 'fallen': case 'rear': case 'slip': case 'ablaze':
       if (e.mode === 'rear') e.x += Math.sin(S.moveT * 20) * 0.4;
-      if (e.open <= 0) { if (e.mode === 'slip') S.stinger = null; setMode(e, 'recover', 0.55); if (S.pose !== 'floor') S.pose = 'floor'; S.ward = CQ.wardT; S.n.wards = (S.n.wards || 0) + 1; c.number(e.x, Math.min(e.y, G.floor) - 70, 'HER WARD: WATER AND BLADES RUN OFF HER', '#9ab0c0'); c.sound('tell'); }   /* (claude/underwell, design standard B3) THE ANTI-SPAM WARD: told (the line, a ring), CQ.wardT s */
+      if (e.open <= 0) { const burnt = e.mode === 'ablaze'; S.stinger = null; setMode(e, 'recover', 0.55);
+        if (burnt) { S.charT = CQ.charT; c.number(e.x, Math.min(e.y, G.floor) - 86, 'SHE BURNS OUT: HER SHELL BLACKENS', '#9ab0c0'); }   /* (claude/cisternqueen3) and no fire takes her till it cools (told) */ if (S.pose !== 'floor') S.pose = 'floor'; S.ward = CQ.wardT; S.n.wards = (S.n.wards || 0) + 1; c.number(e.x, Math.min(e.y, G.floor) - 70, 'HER WARD: WATER AND BLADES RUN OFF HER', '#9ab0c0'); c.sound('tell'); }   /* (claude/underwell, design standard B3) THE ANTI-SPAM WARD: told (the line, a ring), CQ.wardT s */
       return;
     case 'recover': e.gone = 0; if (e.modeT <= 0) nextMove(e, S, P, c); return;
-    case 'reel': if (e.modeT <= 0) { if (S.pose !== 'floor') { S.pose = 'floor'; } after(e, S); } return;   /* (claude/cqueenrework) HER STINGER BROKEN: she reels, a stall, and fights on without it */
+    /* (claude/cisternqueen3) ABLAZE: she thrashes (her heat on whoever is close), then sags - the window, her tail on the floor */
+    case 'thrash': e.x += Math.sin(S.moveT * 26) * 0.6; e.x = Math.max(G.x0 + 40, Math.min(G.x1 - 40, e.x)); if (e.modeT <= 0) { S.scorch = 0; e.scorch = 0; openUp(e, S, 'ablaze', c, S.scorchWhy); } return;
     case 'climbTell': if (e.modeT <= 0) { S.script = nextScript(S, e); S.step = 0; nextMove(e, S, P, c); } return;
     case 'floodTell': if (e.modeT <= 0) { S.flood = true; S.script = nextScript(S, e); S.step = 0; nextMove(e, S, P, c); } return;
     case 'walk': {
       if (S.pose === 'floor') { const d = P.x - e.x, ad = Math.abs(d);
         if ((e.face || 1) * d < -10) { S.behindT += dt; if (S.behindT > CQ.turn) { e.face = Math.sign(d) || e.face; S.behindT = 0; } } else S.behindT = 0;
-        if (ad > CQ.keep) e.x += Math.sign(d) * CQ.walk * dt * (S.flood ? 0.8 : 1) * (S.wet > 0 ? CQ.wetWalk : 1);   /* (claude/cqueenrework: DOUSED, slowed) */
+        if (ad > CQ.keep) e.x += Math.sign(d) * CQ.walk * dt * (S.flood ? 0.8 : 1);
         e.x = Math.max(G.x0 + 40, Math.min(G.x1 - 40, e.x)); }
       if (e.modeT <= 0) nextMove(e, S, P, c);
       return; }
@@ -421,9 +440,9 @@ function nextMove(e, S, P, c) {
       if ((S.told.sslam = (S.told.sslam || 0) + 1) <= 2) c.number(e.x, Math.min(e.y, G.floor) - 86, 'STINGER SLAM: OFF THE RED RING, THEN CUT IT', '#ff6b6b'); c.sound('rear');   /* (the word is on her bar every time: src/cistern-queen-hands.js barName) */ return tell(e, 'sslamTell', CQ.sslamTell, c);
   }
 }
-/* (claude/cqueenrework) her show by her body, for tell(): DOUSED she tells everything slower (CQ.wetTellK), HOT her stinger tells slower (CQ.hotTellK) */
+/* her show by her body, for tell() (claude/cisternqueen3: no more slowed tells - DOUSED and HOT are gone) */
 const SOF = new WeakMap();
-function tell(e, mode, t, c) { const S = SOF.get(e); if (S) { if (S.wet > 0) t *= CQ.wetTellK; if (S.scorch > 0 && STING_TELLS.has(mode)) t *= CQ.hotTellK; } setMode(e, mode, t); const m = MOVES[mode]; if (m && m.mark) { c.mark(m.mark); c.sound(m.mark === '!' ? 'tell' : 'tellHard'); } }
+function tell(e, mode, t, c) { setMode(e, mode, t); const m = MOVES[mode]; if (m && m.mark) { c.mark(m.mark); c.sound(m.mark === '!' ? 'tell' : 'tellHard'); } }
 /* (claude/queen4) A TRIP: the legs she must be SEEN to make to get to a wall, the shaft, or a spot on the floor - then the script goes on */
 function goTo(e, S, dest, P, c) {
   const G = S.G, trip = [], same = dest.k === 'wall' && S.pose === 'wall' && S.wall === dest.wall;
@@ -440,7 +459,7 @@ function nextLeg(e, S, P, c) {
   S.from = [e.x, e.y];
   if (L.k === 'descend') { setMode(e, 'descend', CQ.wallDown); c.sound('climb'); }
   else if (L.k === 'drop') { setMode(e, 'drop', CQ.dropT); e.gone = 0; c.sound('drop'); }
-  else if (L.k === 'crawl') { const d = Math.abs(L.x - e.x); if (d < 1) { e.x = L.x; nextLeg(e, S, P, c); return; } setMode(e, 'crawl', d / (CQ.crawl * (S.flood ? 0.8 : 1) * (S.wet > 0 ? CQ.wetWalk : 1)) + 0.5); c.sound('skitter'); }
+  else if (L.k === 'crawl') { const d = Math.abs(L.x - e.x); if (d < 1) { e.x = L.x; nextLeg(e, S, P, c); return; } setMode(e, 'crawl', d / (CQ.crawl * (S.flood ? 0.8 : 1)) + 0.5); c.sound('skitter'); }
   else if (L.k === 'climb') { S.wall = L.wall; S.pose = 'wall'; S.wallK = 0; e.gone = 0; setMode(e, 'climb', CQ.wallUp); c.sound('climb'); }
   else if (L.k === 'leap') { S.pose = 'shaft'; S.shaftK = 0; e.gone = 0; setMode(e, 'leap', CQ.leapT); c.sound('lunge'); c.fx('dig', e.x, S.G.floor); }
 }
@@ -465,7 +484,7 @@ function stepMove(e, S, dt, P, h, c) {
     case 'drop': { const k = Math.min(1, 1 - Math.max(0, e.modeT) / CQ.dropT), fr0 = S.from;
       e.x = fr0[0] + (G.mid - fr0[0]) * k; e.y = fr0[1] + (G.floor - fr0[1]) * k * k; S.shaftK = 1 - ease(k); e.gone = 0;
       if (e.modeT <= 0) { S.pose = 'floor'; S.shaftK = null; e.y = G.floor; c.shake(3); c.fx('land', e.x, G.floor); c.sound('drop'); nextLeg(e, S, P, c); } return; }
-    case 'crawl': { const L = S.leg, d = L.x - e.x, v = CQ.crawl * (S.flood ? 0.8 : 1) * (S.wet > 0 ? CQ.wetWalk : 1) * dt; e.face = Math.sign(d) || e.face; e.x += Math.sign(d) * Math.min(Math.abs(d), v);
+    case 'crawl': { const L = S.leg, d = L.x - e.x, v = CQ.crawl * (S.flood ? 0.8 : 1) * dt; e.face = Math.sign(d) || e.face; e.x += Math.sign(d) * Math.min(Math.abs(d), v);
       if (Math.abs(L.x - e.x) < 0.5 || e.modeT <= 0) { e.x = L.x; nextLeg(e, S, P, c); } return; }
     case 'climb': { const k = Math.min(1, 1 - Math.max(0, e.modeT) / CQ.wallUp), fr0 = S.from, to = [S.wall === 'W' ? G.x0 + 20 : G.x1 - 20, G.floor - 4];
       e.x = fr0[0] + (to[0] - fr0[0]) * k; e.y = fr0[1] + (to[1] - fr0[1]) * k; e.face = S.wall === 'W' ? 1 : -1; S.wallK = ease(k);
@@ -497,20 +516,21 @@ function stepMove(e, S, dt, P, h, c) {
     case 'planted': if (e.modeT <= 0) { S.stinger = null; after(e, S); } return;
     /* P1: under the sand */
     case 'diveTell': { const n = Math.floor((CQ.diveT - e.modeT) / 0.12); if (n !== cur.digN) { cur.digN = n; c.fx('dig', e.x + (n % 2 ? 1 : -1) * (12 + (n % 3) * 9), F); } }   /* (claude/queen4: dirt flies as she sinks - S.view.sink) */
-      if (e.modeT <= 0 && S.wet > 0 && !(S.ward > 0)) { S.mound = { x: e.x, t: 0, wet: 1 }; S.n.floodedDives = (S.n.floodedDives || 0) + 1; openUp(e, S, 'slip', c, 'flood'); return; }   /* (claude/cqueenrework) DOUSED, HER BURROW FLOODS: the wet sand will not take her - she slips */
       if (e.modeT <= 0) { e.gone = 1; S.pose = 'burrow'; S.mound = { x: e.x, t: 0, wet: 0 }; setMode(e, 'burrow', CQ.moundMax); c.fx('dig', e.x, F); } return;
     case 'burrow': { const m = S.mound; if (!m) { setMode(e, 'recover', 0.4); return; } m.t += dt;
       if (fireUp(e, S, c)) return;   /* (claude/underwell2) her burrow runs into burning floor oil: the fire drives her up, open */
       if (cur.how === 'charge') { const tx = P.x < G.mid ? G.x1 - 70 : G.x0 + 70, d = tx - m.x; m.x += Math.sign(d) * Math.min(Math.abs(d), CQ.moundSpeed * 1.3 * dt);
         if (Math.abs(d) < 4 || e.modeT <= 0) { cur.dir = Math.sign(P.x - m.x) || 1; tell(e, 'chargeTell', CQ.chargeTell, c); } }
       else { const d = P.x - m.x; m.x += Math.sign(d) * Math.min(Math.abs(d), CQ.moundSpeed * dt); m.x = Math.max(G.x0 + 20, Math.min(G.x1 - 20, m.x));
-        if ((Math.abs(d) < 8 && P.ground) || e.modeT <= 0) { cur.x = m.x; tell(e, 'strikeTell', CQ.strikeTell, c); } }
+        if ((Math.abs(d) < 8 && P.ground) || e.modeT <= 0) { cur.x = m.x; tell(e, 'strikeTell', CQ.strikeTell, c); c.shake(1); c.sound('dig');
+          if (!S.told.surface) { S.told.surface = 1; c.number(cur.x, F - 70, 'SHE SURFACES: THROW WATER', '#7ab8e8'); } } }   /* (claude/cisternqueen3) THE BURST IS TOLD: the bulge, dust and a rumble at the spot - and the first time, what to do */
       e.x = m.x; return; }
-    case 'strikeTell': if (fireUp(e, S, c)) return; if (e.modeT <= 0) { setMode(e, 'strike', CQ.strikeT); c.sound('erupt'); c.fx('erupt', cur.x, F); surface(e, S, cur.x); } return;
+    case 'strikeTell': if (fireUp(e, S, c)) return; { const n = Math.floor((CQ.strikeTell - e.modeT) / 0.1); if (n !== cur.dustN) { cur.dustN = n; c.fx('dig', cur.x + (n % 2 ? 1 : -1) * (6 + (n % 3) * 7), F); } }   /* (claude/cisternqueen3: dust trickling up at the spot) */
+      if (e.modeT <= 0) { setMode(e, 'strike', CQ.strikeT); c.sound('erupt'); c.fx('erupt', cur.x, F); surface(e, S, cur.x); S.surfT = CQ.strikeT + CQ.burstLate; S.burstX = cur.x; } return;
     case 'strike': c.hit([cur.x - CQ.strikeR, cur.x + CQ.strikeR, F - 52, F], CQ.dmg.strike, MOVE_NAME.strike, { key, launch: true }); if (e.modeT <= 0) after(e, S); return;
     case 'chargeTell': if (e.modeT <= 0) { const m = S.mound; S.bands.push({ k: 'dune', x: m ? m.x : e.x, dir: cur.dir, speed: CQ.waveSpeed, y: [F - 20, F], dmg: CQ.dmg.charge, name: MOVE_NAME.charge, key, kind: 'low', rider: true });
       setMode(e, 'charge', 4); c.sound('plough'); } return;
-    case 'charge': { const b = S.bands.find(q => q.rider); if (b) { e.x = b.x; if (S.mound) S.mound.x = b.x; } if (!b || e.modeT <= 0) { surface(e, S, e.x); setMode(e, 'surface', CQ.surfaceT); } return; }
+    case 'charge': { const b = S.bands.find(q => q.rider); if (b) { e.x = b.x; if (S.mound) S.mound.x = b.x; } if (!b || e.modeT <= 0) { surface(e, S, e.x); setMode(e, 'surface', CQ.surfaceT); S.surfT = CQ.burstLate; S.burstX = e.x; } return; }
     case 'surface': if (e.modeT <= 0) after(e, S); return;
     /* P2: on the walls, in the shaft */
     case 'spitTell': if (e.modeT <= 0) { setMode(e, 'spit', 0.25); c.sound('spit');
@@ -537,7 +557,7 @@ function stepMove(e, S, dt, P, h, c) {
         if (cur.inWall) { const mx = cur.inWall === 'W' ? G.x0 + 6 : G.x1 - 6; e.x = fr0[0] + (mx - fr0[0]) * k; e.y = fr0[1] + (G.floor - fr0[1]) * k; S.wallK = 1 - ease(k); }
         S.tunnelK = ease(k); if (k >= 1) { S.pose = 'tunnel'; e.gone = 1; S.tunnelK = null; S.wallK = 0; c.fx('dig', e.x, G.floor); } }
       if (e.modeT <= 0) { const from = cur.side === 'W' ? G.x0 + 10 : G.x1 - 10; e.x = from; e.y = G.floor; e.face = cur.side === 'W' ? 1 : -1; e.gone = 0; S.pose = 'floor'; S.tunnelK = null;
-      setMode(e, 'ambush', 3); c.sound('skitter'); c.fx('burst', from + e.face * 14, G.floor); } return;   /* (out of the tunnel's mouth in a burst of dirt: the art clips her to the hall, so she comes out of the wall) */
+      setMode(e, 'ambush', 3); S.surfT = CQ.burstLate; S.burstX = null; c.sound('skitter'); c.fx('burst', from + e.face * 14, G.floor); } return;   /* (out of the tunnel's mouth in a burst of dirt: the art clips her to the hall, so she comes out of the wall) */
     case 'ambush': { e.x += (e.face || 1) * CQ.ambushSpeed * dt; c.hit([e.x - 30, e.x + 30, G.floor - 26, G.floor], CQ.dmg.ambush, MOVE_NAME.ambush, { key });
       if (e.x < G.x0 + 30 || e.x > G.x1 - 30 || e.modeT <= 0) { e.x = Math.max(G.x0 + 40, Math.min(G.x1 - 40, e.x)); S.script.splice(S.step, 0, 'wall:' + (e.x < G.mid ? 'W' : 'E')); setMode(e, 'recover', 0.35); } return; }
     /* P3: in the flood */
@@ -551,7 +571,6 @@ function stepMove(e, S, dt, P, h, c) {
     case 'hold': { const cl = S.claw; if (!cl || !cl.caught) { setMode(e, 'recover', 0.3); return; }
       if (c.free(cl.caught)) { S.claw = null; S.n.broken++; openUp(e, S, 'rear', c); c.number(e.x, e.y - 70, 'THE GRAB IS BROKEN: SHE REARS. CUT HER', '#8fd160'); return; }
       c.holdAt(cl.caught, cl.x);
-      if (e.modeT <= 0 && S.broken) { c.hit([cl.x - 30, cl.x + 30, F - 50, F + 4], CQ.dmg.grab * 2.5, MOVE_NAME.grab, { key: key + 'cr', held: cl.caught }); c.release(cl.caught); S.claw = null; c.sound('snap'); after(e, S); return; }   /* (claude/cqueenrework) no stinger to sting with: she crushes and lets go */
       if (e.modeT <= 0) { c.hit([cl.x - 30, cl.x + 30, F - 50, F + 4], CQ.dmg.sting, MOVE_NAME.sting, { key: key + 'st', venom: 2, held: cl.caught }); S.n.stung++; c.release(cl.caught); S.claw = null; c.sound('sting'); stick(e, S, cl.x, CQ.stuck.sting, c, 'sting'); setMode(e, 'stuck', CQ.stuck.sting); } return; }
     /* (claude/queen4, Daniel 10-07) THE VENOM BLOOM: the stinger driven into the floodwater - stuck there (exposed: a blow on it x stingMul, one sting's cap) while the
        slick spreads to its ring; then it BLOOMS (anyone in the ring on the floor: the venom), and she tugs the stinger out */
@@ -567,90 +586,89 @@ function stepMove(e, S, dt, P, h, c) {
   }
   if (e.modeT <= -2) after(e, S);   /* (a mode nothing above knows: never stand still) */
 }
-/* THE FIRE DRIVES HER UP (claude/underwell2, Daniel 10-06: "fire + water as the clear way to hurt the boss"): she is the brood's mother and the brood will not cross fire -
-   a burrow that runs into burning floor oil (her hall's two pools, lit by a torch you threw) comes up under it, HOT (claude/cqueenrework: when fire can take her - hotOK).
+/* THE FIRE DRIVES HER UP (claude/underwell2, Daniel 10-06): she is the brood's mother and the brood will not cross fire - a burrow that runs into burning floor oil (her
+   hall's two pools, lit by a torch you threw) comes up under it ALIGHT (claude/cisternqueen3: the fire stuns her - when fire can take her, hotOK).
    The world answers c.fire(x) (src/cistern-queen-hands.js: the Underwell's oil); a level without oil never asks */
 function fireUp(e, S, c) { if (!S.mound || !c.fire || !c.fire(S.mound.x)) return false; if (!hotOK(e, S)) { fireRefused(e, S, c); return false; } S.n.fireUps = (S.n.fireUps || 0) + 1;
-  S.bands = S.bands.filter(b => !b.rider); surface(e, S, S.mound.x); scorchUp(e, S, c, 'up'); setMode(e, 'surface', CQ.surfaceT); return true; }   /* (claude/underwell3, Daniel 10-07: the fire makes her BODY vulnerable - it does not stop her: up out of the sand, HOT, and on with the fight) */
-/* HOT (claude/underwell3's SCORCHED, claude/cqueenrework: the loop's fire state): fire under her body - or a hero's own fire on her (why 'hero', src/cistern-queen-hands.js) - sets her
-   shell cracking for CQ.scorchT s - a gold ring and its clock over her, every blow on her body whole from any side, her heat on whoever stands close - and when it burns out, her
-   told ward (B3) and her shell BLACKENED for CQ.charT (no fire takes her till it clears). c.fire(x): the world's oil */
+  S.bands = S.bands.filter(b => !b.rider); surface(e, S, S.mound.x); scorchUp(e, S, c, 'up'); return true; }
+/* SET HER ALIGHT (claude/cisternqueen3, Daniel 10-14 "fire stuns her"): fire under her body - her hall's oil burning, her burrow run up into it, or a hero's own fire held on her
+   (why 'hero', src/cistern-queen-hands.js) - and she is ABLAZE: she THRASHES CQ.thrashT s (her heat on whoever stands close; off a wall or the wellhead she drops to the floor), then
+   SAGS (openUp 'ablaze'): down, her tail on the floor - the gold window. After it her told ward (B3) and BLACKENED CQ.charT s. The name scorchUp is kept for the hands and tools */
 const fireUnder = (e, S, c) => { for (let dx = -CQ.w / 2 + 6; dx <= CQ.w / 2 - 6; dx += 10) if (c.fire(e.x + dx)) return true; return false; };
-export function scorchUp(e, S, c, why) { S.scorch = CQ.scorchT * (why === 'hero' ? CQ.heroHotK : 1);   /* (claude/cqueenrework: a hero's own fire is a lick, not a pool of oil - heroHotK of it) */ S.n.scorched++; S.n.hot = S.n.hot || {}; S.n.hot[why || 'oil'] = (S.n.hot[why || 'oil'] || 0) + 1; e.scorch = S.scorch; S.scorchWhy = why || 'oil';
-  c.number(e.x, Math.min(e.y, S.G.floor) - 70, why === 'up' ? 'THE FIRE DRIVES HER UP: HER SHELL CRACKS. CUT HER' : why === 'hero' ? 'YOUR FIRE TAKES HER: SHE IS HOT. CUT HER' : 'THE FIRE CRACKS HER SHELL: CUT HER ANYWHERE', '#ffd36b'); c.fx('flare', e.x, Math.min(e.y, S.G.floor)); c.sound('flare');
-  if (!S.told.steam) { S.told.steam = 1; c.number(e.x, Math.min(e.y, S.G.floor) - 96, 'HOT: WATER ON HER NOW CRACKS HER OPEN', '#7ab8e8'); } }
-/* a fire under her or on her, by any way: HOT if it can take her, else told why not */
-export function fireOn(e, S, c, why) { if (hotOK(e, S)) { scorchUp(e, S, c, why); return true; } if (e.alive && !(S.scorch > 0) && !qOpen(e) && !(S.ward > 0)) fireRefused(e, S, c); return false; }
+export function scorchUp(e, S, c, why) { const G = S.G; S.scorch = CQ.thrashT; e.scorch = S.scorch; S.n.scorched++; S.n.hot = S.n.hot || {}; S.n.hot[why || 'oil'] = (S.n.hot[why || 'oil'] || 0) + 1; S.scorchWhy = why || 'oil';
+  if (S.claw && S.claw.caught) c.release(S.claw.caught); S.claw = null; S.stinger = null; S.bloom = null; S.trip = null; S.tunnelK = null; S.mound = null; S.surfT = 0; e.gone = 0;
+  if (S.pose !== 'floor') { const back = S.pose === 'wall' ? 'wall:' + S.wall : null; e.x = S.pose === 'shaft' ? G.mid : S.wall === 'W' ? G.x0 + 52 : G.x1 - 52; e.y = G.floor; S.pose = 'floor'; S.wallK = 0; S.shaftK = null;
+    if (back && S.script) S.script.splice(S.step, 0, back); }   /* (she drops off her wall or the wellhead, burning - S.view eases the fall) */
+  setMode(e, 'thrash', CQ.thrashT);
+  c.number(e.x, Math.min(e.y, G.floor) - 70, why === 'up' ? 'THE FIRE DRIVES HER UP: SHE BURNS' : why === 'hero' ? 'YOUR FIRE TAKES HER: SHE BURNS' : 'SET ALIGHT: SHE THRASHES', '#ffb070'); c.fx('flare', e.x, Math.min(e.y, G.floor)); c.sound('flare');
+  if (!S.told.alight) { S.told.alight = 1; c.number(e.x, Math.min(e.y, G.floor) - 96, 'SET HER ALIGHT: SHE FALLS', '#ffd36b'); } }
+/* a fire under her or on her, by any way: ALIGHT if it can take her, else told why not */
+export function fireOn(e, S, c, why) { if (hotOK(e, S)) { scorchUp(e, S, c, why); return true; } if (e.alive && !(S.scorch > 0) && !qOpen(e) && !(S.ward > 0) && e.mode !== 'thrash') fireRefused(e, S, c); return false; }
 function stepScorch(e, S, dt, c) {
-  if (S.scorch > 0) { S.scorch = Math.max(0, S.scorch - dt); if (S.scorch <= 0 && e.alive && !qOpen(e)) { S.charT = CQ.charT; S.ward = Math.max(S.ward || 0, CQ.wardT); S.n.wards = (S.n.wards || 0) + 1; c.number(e.x, Math.min(e.y, S.G.floor) - 70, 'SHE BURNS OUT: HER SHELL BLACKENS', '#9ab0c0'); c.sound('tell'); } }
-  else if (c.fire && e.alive && !(S.ward > 0) && !qOpen(e) && S.pose === 'floor' && !(e.gone > 0) && e.mode !== 'sleep' && e.mode !== 'wake' && fireUnder(e, S, c)) fireOn(e, S, c, 'oil');
+  if (S.scorch > 0) S.scorch = Math.max(0, S.scorch - dt);
+  else if (c.fire && e.alive && !(S.ward > 0) && !qOpen(e) && S.pose === 'floor' && !(e.gone > 0) && e.mode !== 'sleep' && e.mode !== 'wake' && e.mode !== 'thrash' && fireUnder(e, S, c)) fireOn(e, S, c, 'oil');
   e.scorch = S.scorch; }
 function surface(e, S, x) { e.gone = 0; S.pose = 'floor'; e.x = Math.max(S.G.x0 + 40, Math.min(S.G.x1 - 40, x)); S.mound = null; }
-/* DOUSED (claude/cqueenrework: the loop's water state): wet CQ.douseT s - slowed, her burrow floods, no fire takes her. A pour on her while she is HOT is STEAM instead: pourAt */
-export function douse(e, S, c, why) { const was = S.wet > 0; S.wet = CQ.douseT; S.n.doused++; S.n.douse = S.n.douse || {}; S.n.douse[why || 'pour'] = (S.n.douse[why || 'pour'] || 0) + 1;
-  if (!was) c.number(e.x, Math.min(e.y, S.G.floor) - 70, 'DOUSED: SHE SLOWS, AND HER SAND IS WET', '#7ab8e8'); c.sound('soak'); c.fx('splash', e.x, Math.min(e.y, S.G.floor)); }
 
-/* ---------- HER STINGER BREAKS (claude/cqueenrework): its purse spent - she reels, a stall; every stinger move is gone for the rest of the phase ---------- */
-export function breakStinger(e, S, c) { if (S.broken) return; S.broken = true; S.n.broken2 = (S.n.broken2 || 0) + 1; S.stinger = null; S.bloom = null;
-  const G = S.G; c.number(e.x, Math.min(e.y, G.floor) - 86, 'HER STINGER BREAKS: SHE FIGHTS WITH HER CLAWS', '#ffd36b'); c.sound('stingBreak'); c.shake(4); c.fx('lance', e.x, Math.min(e.y, G.floor) - 60);
-  if (S.script) { const B = BROKEN_FOR[S.ph] || {}; for (let i = S.step; i < S.script.length; i++) { const k = S.script[i].split(':')[0]; if (STING_MOVES.has(k)) S.script[i] = B[k] || 'pincer'; } }
-  if (!qOpen(e) && S.pose === 'floor' && e.mode !== 'grab' && e.mode !== 'hold' && !EXPLICIT.has(e.mode) && e.mode !== 'crawl') {   /* (she reels only on the floor: up a wall or on the wellhead the break is told and she fights on) */ S.claw = null; setMode(e, 'reel', CQ.breakT); } }
-/* a new phase: she MOULTS - her stinger is whole again, and its purse full */
-function moult(e, S, c) { S.tailTaken = 0; if (S.broken) { S.broken = false; c.number(e.x, Math.min(e.y, S.G.floor) - 96, 'SHE MOULTS: HER STINGER IS WHOLE AGAIN', '#c9a46a'); } }
-/* what is left of the tail's purse this phase (of her bar) */
-export const tailLeft = (e, S) => Math.max(0, e.maxHp * CQ.tailPurse - (S.tailTaken || 0));
+/* ---------- SHE SURFACES: THROW WATER (claude/cisternqueen3, Daniel 10-14 "throw water when she comes out of a burrow so she slips") ----------
+   THE BURST WINDOW: from CQ.burstEarly s before she bursts out of the sand (the strike's told spot: the bulge, the dust, the rumble) until CQ.burstLate s after she is out -
+   the strike, the dune wave's surfacing, and (phase two) her skitter out of a tunnel. burstAt(e, S) -> { x } where water must reach (the spot, or her), or null */
+export function burstAt(e, S) { if (!e || !S || !e.alive || qOpen(e) || S.ward > 0 || e.mode === 'thrash') return null;
+  if (e.mode === 'strikeTell' && e.modeT <= CQ.burstEarly && S.cur && S.cur.x != null) return { x: S.cur.x };
+  if (S.surfT > 0 && S.pose === 'floor' && !(e.gone > 0)) return { x: e.mode === 'strike' && S.burstX != null ? S.burstX : e.x };
+  return null; }
+/* WATER REACHES (x, y) - a thrown jar, the skin's pour, the bucket (why): in the window and near enough, she SLIPS ONTO HER BACK (open); else it is a splash (told once
+   in a while). -> 'open' | 'splash' */
+export function waterAt(e, S, x, y, c, why) { const b = burstAt(e, S), G = S.G;
+  if (b && Math.abs(x - b.x) <= CQ.burstR && y >= G.floor - 90) { S.n.water = S.n.water || {}; S.n.water[why || 'jar'] = (S.n.water[why || 'jar'] || 0) + 1; openUp(e, S, 'slip', c, why || 'jar'); return 'open'; }
+  S.n.splashes = (S.n.splashes || 0) + 1; if (e.alive && !((S.splashSaid ?? -9) > S.moveT - 4)) { S.splashSaid = S.moveT; c.number(x, Math.min(y, G.floor) - 30, 'A SPLASH: THROW AS SHE SURFACES', '#9aa39a'); }
+  return 'splash'; }
 
-/* ---------- THE OPENINGS ---------- */
+/* ---------- THE OPENINGS (claude/cisternqueen3: in every one her tail lies on the floor behind her - the stinger, big and gold, is the blow that pays) ---------- */
+const OPEN_T = { slip: () => CQ.slipT, ablaze: () => CQ.ablazeT };
 export function openUp(e, S, how, c, why) {
-  const G = S.G, T0 = how === 'slip' ? CQ.slipT : CQ.openT, wasHot = S.scorch > 0; e.open = T0; S.openTaken = 0; S.n.opens++; S.n[how] = (S.n[how] || 0) + 1; setMode(e, how, T0 + 0.05); S.scorch = 0; e.scorch = 0; e.gone = 0; S.bands = S.bands.filter(b => !b.rider); S.stinger = null; S.bloom = null; S.trip = null; S.tunnelK = null;
-  if (wasHot) { S.charT = CQ.charT; c.fx('steam', e.x, G.floor); }
-  if (how !== 'rear') { S.wet = CQ.douseT; S.n.doused++; }   /* (claude/cqueenrework) every water opening leaves her DOUSED (slowed, her sand wet) */
+  const G = S.G, T0 = (OPEN_T[how] || (() => CQ.openT))(); e.open = T0; S.openTaken = 0; S.n.opens++; S.n[how] = (S.n[how] || 0) + 1; setMode(e, how, T0 + 0.05); S.scorch = 0; e.scorch = 0; e.gone = 0; S.bands = S.bands.filter(b => !b.rider); S.stinger = null; S.bloom = null; S.trip = null; S.tunnelK = null; S.surfT = 0;
   e.openWhy = why || null;
-  if (how === 'soaked') { if (S.mound) e.x = S.mound.x; S.mound = null; S.pose = 'floor'; e.y = G.floor; c.number(e.x, e.y - 70, why === 'steam' ? 'STEAM: HER HOT SHELL CRACKS. CUT HER' : 'FLOODED OUT: SHE IS SOAKED. CUT HER', '#8fd160'); c.sound('soak'); c.fx('burst', e.x, G.floor); if (why === 'steam') S.n.steam = (S.n.steam || 0) + 1; }
-  if (how === 'fallen') { e.x = S.pose === 'shaft' ? G.mid : S.wall === 'W' ? G.x0 + 52 : G.x1 - 52; e.y = G.floor; S.pose = 'floor'; c.number(e.x, e.y - 70, wasHot ? 'STEAM, AND ON HER BACK: CUT HER' : 'SHE LOSES HER GRIP: ON HER BACK. CUT HER', '#8fd160'); c.sound('fall'); c.shake(5); c.fx('land', e.x, G.floor);
+  if (how === 'soaked' || how === 'slip' || how === 'ablaze') { if (S.mound) e.x = S.mound.x; S.mound = null; S.pose = 'floor'; e.y = G.floor; }
+  if (how === 'soaked') { c.number(e.x, e.y - 70, 'FLOODED OUT: SHE IS SOAKED. STRIKE THE STINGER', '#8fd160'); c.sound('soak'); c.fx('burst', e.x, G.floor); }
+  if (how === 'fallen') { e.x = S.pose === 'shaft' ? G.mid : S.wall === 'W' ? G.x0 + 52 : G.x1 - 52; e.y = G.floor; S.pose = 'floor'; c.number(e.x, e.y - 70, 'SHE LOSES HER GRIP: ON HER BACK. STRIKE THE STINGER', '#8fd160'); c.sound('fall'); c.shake(5); c.fx('land', e.x, G.floor);
     S.script.splice(S.step, 0, 'wall:' + (e.x < G.mid ? 'E' : 'W')); }
   if (how === 'rear') { c.sound('rear'); }
-  /* (claude/underwell3, Daniel 10-07: "POUR WATER where she's COMING OUT ... she SLIPS AND FALLS into a vulnerable state, and her STINGER is vulnerable there") up through the wet sand
-     she slips and goes down - all of her open, her tail flung out flat behind her, the stinger on the floor (claude/cqueenrework: or DOUSED, her burrow floods: why 'flood') */
-  if (how === 'slip') { if (S.mound) e.x = S.mound.x; S.mound = null; S.pose = 'floor'; e.y = G.floor; e.x = Math.max(G.x0 + 40, Math.min(G.x1 - 40, e.x)); const f = e.face || 1;
-    if (!S.broken) { S.stinger = { x: Math.max(G.x0 + 10, Math.min(G.x1 - 10, e.x - f * (CQ.w / 2 + 36))), y: G.floor - 6, t: CQ.slipT + 0.05, k: 'slip', big: true }; S.stingTaken = 0; }
-    c.number(e.x, e.y - 70, why === 'flood' ? 'HER BURROW FLOODS: SHE SLIPS. CUT HER' : 'UP THROUGH THE WET SAND SHE SLIPS: CUT HER STINGER', '#8fd160'); c.sound('fall'); c.shake(4); c.fx('burst', e.x, G.floor); c.fx('splash', e.x, G.floor); }
+  if (how === 'slip') { c.number(e.x, e.y - 70, 'SHE SLIPS ONTO HER BACK: STRIKE THE STINGER', '#8fd160'); c.sound('fall'); c.shake(4); c.fx('burst', e.x, G.floor); c.fx('splash', e.x, G.floor); }
+  if (how === 'ablaze') { c.number(e.x, e.y - 70, 'SHE SAGS: HER TAIL DROOPS. STRIKE THE STINGER', '#ffd36b'); c.sound('fall'); c.fx('steam', e.x, G.floor); }
   e.x = Math.max(G.x0 + 40, Math.min(G.x1 - 40, e.x));
+  /* HER TAIL ON THE FLOOR: the stinger flung out flat behind her (big, gold, the opening's clock) */
+  const f = e.face || 1; S.stinger = { x: Math.max(G.x0 + 10, Math.min(G.x1 - 10, e.x - f * (CQ.w / 2 + 36))), y: G.floor - 6, t: T0 + 0.05, k: how, big: true }; S.stingTaken = 0;
 }
-/* A POUR AT HER (the hero's E with a sip): what it lands on - her burrow's mound (P1), the wall above her from her ledge (P2), her on THE WELLHEAD from the beam beside her
-   (claude/cqueenrework), her shell from the floor in front of her (claude/cqueenrework: any phase - HOT, it is STEAM; else she is DOUSED; already dripping and not HOT,
-   nothing to gain: null, so E is never spent on her for nothing) - or null when it would not reach her at all. hero = { x, y, face, onLedge } */
+/* A POUR AT HER (the hero's E with a sip): what it lands on - the spot she is bursting out of (P1, in the burst window), the wall above her from her ledge (P2), her on THE
+   WELLHEAD from the beam beside her - or null when it would not reach her at all (E is never spent on her for nothing). hero = { x, y, face, onLedge } */
 export function pourAim(e, S, hero) {
   if (!e || !e.alive || qOpen(e) || S.ward > 0 || e.mode === 'sleep' || e.mode === 'wake') return null; const G = S.G;   /* (her ward: the water runs off her) */
-  if (S.pose === 'burrow' && S.mound && (e.mode === 'burrow' || e.mode === 'strikeTell' || e.mode === 'chargeTell')) { const d = (S.mound.x - hero.x) * (hero.face || 1);
-    if (d > -12 && d < 60 && Math.abs(hero.y - G.floor) < 20) return { x: S.mound.x, y: G.floor - 4, what: 'mound' }; }
+  { const b = burstAt(e, S); if (b) { const d = (b.x - hero.x) * (hero.face || 1);   /* (claude/cisternqueen3: only as she bursts out - the window) */
+    if (d > -12 && d < 60 && Math.abs(hero.y - G.floor) < 20) return { x: b.x, y: G.floor - 4, what: 'mound' }; } }
   if (S.pose === 'wall' && S.wall && hero.onLedge === S.wall && (e.mode === 'cling' || /Tell$/.test(e.mode) || e.mode === 'climb')) return { x: S.wall === 'W' ? G.x0 + 8 : G.x1 - 8, y: G.ledgeY + 6, what: 'wall' };
   if (S.pose === 'shaft' && hero.onLedge === 'B' && e.mode !== 'leap' && e.mode !== 'drop' && e.mode !== 'pounce') { const d = (e.x - hero.x) * (hero.face || 1);
     if (d > 0 && d < CQ.w / 2 + 64) return { x: e.x - (hero.face || 1) * (CQ.w / 2 - 6), y: e.y - 24, what: 'perch' }; }
-  if (S.pose === 'floor' && !e.gone && (S.scorch > 0 || !(S.wet > 0)) && Math.abs(hero.y - G.floor) < 20) { const d = (e.x - hero.x) * (hero.face || 1);
-    if (d > 0 && d < CQ.w / 2 + 64) return { x: e.x - (hero.face || 1) * (CQ.w / 2 - 6), y: G.floor - 24, what: S.scorch > 0 ? 'steam' : 'shell' }; }
   return null;
 }
 export function pourAt(e, S, hero, c) {
   const a = pourAim(e, S, hero); S.n.pours++;
   if (!a) { S.n.wasted++; return 'wasted'; }
-  if (a.what === 'mound') { openUp(e, S, 'slip', c); return 'open'; }   /* (claude/underwell3: the wet sand where she comes up - she slips) */
+  if (a.what === 'mound') return waterAt(e, S, a.x, a.y, c, 'pour');   /* (claude/cisternqueen3: the skin's water at her burst - she slips) */
   if (a.what === 'wall' || a.what === 'perch') { if (a.what === 'perch') S.n.perchPours = (S.n.perchPours || 0) + 1; c.fx('runoff', a.x, a.y); openUp(e, S, 'fallen', c); return 'open'; }
-  if (a.what === 'steam') { openUp(e, S, 'soaked', c, 'steam'); return 'open'; }   /* (claude/cqueenrework) HOT THEN WATER: STEAM - the big opening */
-  if (a.what === 'shell') { douse(e, S, c, 'pour'); return 'douse'; }   /* (claude/cqueenrework) DOUSED: slowed, her sand wet, no fire takes her */
   return null;
 }
-/* THE WINDLASS: struck, the shaft's bucket comes down (CQ.bucketFall) and empties: a mound near the sump is flooded (P1), she is knocked off THE WELLHEAD (P2).
-   It winds itself back up in CQ.bucketCd */
+/* THE WINDLASS: struck, the shaft's bucket comes down (CQ.bucketFall) and empties: a mound near the sump is flooded - she comes up slipping (P1); she is knocked off THE
+   WELLHEAD (P2). It winds itself back up in CQ.bucketCd */
 export function strikeWindlass(e, S, c) {
   const b = S.bucket; if (b.st !== 'up') return false; b.st = 'fall'; b.t = CQ.bucketFall; S.n.buckets++; c.sound('windlass'); c.number(e.x, e.y - 70, 'THE BUCKET COMES DOWN THE SHAFT', '#7ab8e8'); return true;
 }
 function stepBucket(e, S, dt, c) {
   const b = S.bucket, G = S.G;
   if (b.st === 'fall') { b.t -= dt; if (b.t <= 0) { b.st = 'down'; b.t = CQ.bucketCd; c.fx('splash', G.mid, S.pose === 'shaft' ? G.beamY : G.floor); c.sound('splash');
-    if (e.alive && !qOpen(e) && !(S.ward > 0)) { if (S.pose === 'burrow' && S.mound && Math.abs(S.mound.x - G.mid) < CQ.bucketR) { S.n.bucketHits++; openUp(e, S, 'soaked', c); }
+    if (e.alive && !qOpen(e) && !(S.ward > 0)) { if (S.pose === 'burrow' && S.mound && Math.abs(S.mound.x - G.mid) < CQ.bucketR) { S.n.bucketHits++; openUp(e, S, 'slip', c, 'bucket'); }
       else if (S.pose === 'shaft' && e.mode !== 'drop' && e.mode !== 'pounce') { S.n.bucketHits++; openUp(e, S, 'fallen', c); }
-      else if (S.pose === 'floor' && !e.gone && Math.abs(e.x - G.mid) < CQ.bucketR) { S.n.bucketHits++; if (S.scorch > 0) openUp(e, S, 'soaked', c, 'steam'); else douse(e, S, c, 'bucket'); } } } }   /* (claude/cqueenrework: under the shaft on the floor - DOUSED, or STEAM if she is HOT) */
+      else if (burstAt(e, S) && Math.abs(burstAt(e, S).x - G.mid) < CQ.bucketR) { if (waterAt(e, S, burstAt(e, S).x, G.floor - 4, c, 'bucket') === 'open') S.n.bucketHits++; } } } }   /* (claude/cisternqueen3: the bucket on her as she bursts out under the shaft - she slips; else the water runs off) */
   else if (b.st === 'down') { b.t -= dt; if (b.t <= 0) { b.st = 'up'; c.sound('windlass'); } }
 }
 /* ---------- WHAT FLIES, SWEEPS, FALLS AND LIES ---------- */
@@ -688,7 +706,7 @@ export const PLAN = { react: 0.25, miss: 0.13, missPour: 0.2, counter: 0.45, mis
   /* (claude/underwell3, v2) missTip: the share of her open stinger it lets go by (a player does not always see it, or dare); missFire: the share of chances to take a torch it lets go */
   missTip: 0.35, missFire: 0.35, tipGreed: 3,
   /* (claude/cqueenrework) steamAfter: HOT, the cuts it takes before it pours for STEAM (s); missDouse: the share of chances to douse her it lets go */
-  steamAfter: 2.0, missDouse: 0.4, perchClimb: 0.6,   /* (perchClimb: the share of her perches it climbs to her rather than drop the bucket) */
+  perchClimb: 0.6, missJar: 0.25,   /* (perchClimb: the share of her perches it climbs to her rather than drop the bucket; claude/cisternqueen3 missJar: the share of chances to take a jar it lets go) */
   run: 92 };   /* (claude/queen4) the hero's run (src/main.js RUN), for the bloom's way out */
 /* (claude/underwell3, v2: s.eyes) THE NEW WAYS IN, read as a player reads them - SCORCHED: cut her body from where you stand; HER STINGER where her tail holds it: under it, jump,
    UP + ATTACK; THE FIRE: take a torch from her hall's cresset (s.fire, the lab's view of her hall: { held, cressets: [{ x, up }], pools: [{ x0, x1, oil, fire }], land(aim) -> x | null }),
@@ -696,14 +714,10 @@ export const PLAN = { react: 0.25, miss: 0.13, missPour: 0.2, counter: 0.45, mis
 function queenPlanV3(s, out, q) {
   const { P, e, S, G, m, t, mem, roll, clamp, side, ad, reach, onLedge } = q, F = G.floor, busy = /Tell$/.test(m) || ['lunge', 'bloom', 'bloomBurst', 'ambush', 'charge', 'strike', 'pounce', 'grab', 'hold', 'sslam', 'pin', 'barb'].includes(m);
   const fire = s.fire, held = !!(fire && fire.held);
-  /* (claude/cqueenrework) HOT THEN WATER: with a sip, a few cuts first and then the pour on her - STEAM, her big opening */
-  if (qScorched(e) && S.pose === 'floor' && !(e.gone > 0) && !held && s.sips > 0 && P.ground && !onLedge && (S.scorch < CQ.scorchT - PLAN.steamAfter || (s.greed || 0) >= 3) && !roll('steam' + S.n.scorched, PLAN.missPour)) {
-    out.gx = clamp(e.x - side * (CQ.w / 2 + 30)); out.face = Math.sign(e.x - P.x) || 1; if (ad > CQ.w / 2 + 4 && ad < CQ.w / 2 + 60) { out.talk = true; out.why = 'pour on her HOT shell: steam'; } else out.why = 'to a pour on her HOT shell'; return out; }
-  /* SCORCHED (HOT): her body, from any side - cut her (not into a blow she has told) */
-  if (qScorched(e) && S.pose === 'floor' && !(e.gone > 0) && !busy && !held && (s.greed || 0) < 4) { out.gx = clamp(e.x - side * Math.max(8, reach * 0.5 + CQ.w * 0.3)); out.face = Math.sign(e.x - P.x) || 1; if (onLedge && P.ground) { out.down = true; out.jump = true; }
-    out.atk = ad < reach + CQ.w / 2 + 2 && Math.abs(P.y - e.y) < 50 && P.atk < 0; out.why = 'cut her: the fire has cracked her shell'; return out; }
+  /* (claude/cisternqueen3) ABLAZE, THRASHING: her heat is on whoever is close - stand off until she sags (then the opening branch cuts her stinger) */
+  if (e.mode === 'thrash') { out.gx = clamp(e.x + side * (CQ.w / 2 + CQ.heatR + 34)); out.face = Math.sign(e.x - P.x) || 1; out.why = 'off her while she thrashes'; return out; }
   /* THE FIRE: a torch in hand - throw it on the pool she is on or coming to; none - take one when a pool is ready and she is on the floor */
-  if (fire && S.ph !== 2 || fire && held) { const pools = fire.pools || [], near = pools.filter(p => p.oil && !p.fire);
+  if (fire && S.ph === 1 && !S.flood || fire && held) { const pools = fire.pools || [], near = pools.filter(p => p.oil && !p.fire);
     if (held) { mem.heldT = mem.heldT ?? t; const on = near.find(p => (e.x + CQ.w / 2 > p.x0 - 30 && e.x - CQ.w / 2 < p.x1 + 30 && S.pose === 'floor' && !(e.gone > 0)) || (S.pose === 'burrow' && S.mound && S.mound.x > p.x0 - 20 && S.mound.x < p.x1 + 20)) || (t - mem.heldT > 9 ? near[0] : null);
       if (on) { for (const aim of ['mid', 'low', 'high']) { const lx = fire.land(aim); if (lx != null && lx > on.x0 && lx < on.x1) { out.face = Math.sign((on.x0 + on.x1) / 2 - P.x) || P.face; out.atk = P.atk < 0; out.up = aim === 'high'; out.down = aim === 'low'; out.why = 'throw the torch on her oil (' + aim + ')'; mem.heldT = null; return out; } }
         const cx = (on.x0 + on.x1) / 2, want = cx + (P.x < cx ? -80 : 80); out.gx = clamp(want); out.face = Math.sign(cx - P.x) || 1; out.why = 'to a throw\'s length from her oil'; return out; }
@@ -711,11 +725,11 @@ function queenPlanV3(s, out, q) {
       if (p && !busy) { const cx = (p.x0 + p.x1) / 2, far = cx + (Math.sign(cx - e.x) || 1) * 90; out.gx = clamp(far); out.face = Math.sign(cx - P.x) || 1; out.why = 'torch up: wait past her oil for her to cross it'; return out; }
       return null; }
     const cr = (fire.cressets || []).filter(c => c.up).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (cr && near.length && S.pose === 'floor' && !qOpen(e) && !qScorched(e) && !busy && !(s.sips > 0 && S.pose === 'burrow') && !roll('fire' + (S.n.cycles || 0), PLAN.missFire) && Math.abs(cr.x - e.x) > CQ.w / 2 + 10) {
+    if (cr && near.length && S.pose === 'floor' && hotOK(e, S) && !(s.jar && s.jar.held) && !busy && !(s.sips > 0 && S.pose === 'burrow') && !roll('fire' + (S.n.cycles || 0), PLAN.missFire) && Math.abs(cr.x - e.x) > CQ.w / 2 + 10) {
       if (onLedge) { out.down = true; out.jump = P.ground; } out.gx = cr.x; if (Math.abs(P.x - cr.x) < 8 && P.ground) { out.talk = true; out.why = 'take the torch from her cresset'; } else out.why = 'to her cresset'; return out; } }
   /* HER STINGER where her tail carries it: under it, jump, and UP + ATTACK at the top of the jump */
   const tp = tipOf(e, S);
-  if (tp && (qScorched(e) || qOpen(e)) && !held && !busy && !(S.ward > 0) && (s.greed || 0) < PLAN.tipGreed && Math.abs(tp.y - F) < 120 && !roll('tip' + S.act, PLAN.missTip)) {
+  if (tp && (s.tipPays ? s.tipPays : true) && !held && !(s.jar && s.jar.held) && !busy && !(S.ward > 0) && (s.greed || 0) < PLAN.tipGreed && Math.abs(tp.y - F) < 120 && !roll('tip' + S.act, PLAN.missTip)) {   /* (claude/cisternqueen3: her free stinger pays whole - under its cap a move) */
     if (onLedge && Math.abs(tp.y - P.y) > 40) { out.down = true; out.jump = P.ground; }
     out.gx = clamp(tp.x); out.face = Math.sign(tp.x - P.x) || P.face; const dx = Math.abs(P.x - tp.x);
     if (P.ground && dx < 12) out.jump = true;
@@ -723,9 +737,7 @@ function queenPlanV3(s, out, q) {
     out.why = 'jump and cut her stinger'; return out; }
   return null;
 }   /* (claude/welltown5: and it lets some of her stuck stingers go) */
-/* (claude/cqueenrework) is a torch's fire to be had in her hall now? (a cresset with its torch, a pool of oil that will catch) - else the bot douses her */
-const fireReady = s => !!(s.fire && (s.fire.held || ((s.fire.cressets || []).some(c => c.up) && (s.fire.pools || []).some(p => p.oil && !p.fire))));
-export function queenPlan(s) {
+function queenPlan0(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, block: false, dodge: false, talk: false, down: false, up: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
@@ -736,6 +748,8 @@ export function queenPlan(s) {
   const onLedge = P.onLedge, F = G.floor, misread = roll(key + 'm', miss);
   /* (claude/underwell3, v2) a torch in hand when she is down or her stinger is out: set it down (E) - the blade is wanted */
   if (s.eyes && s.fire && s.fire.held && (qOpen(e) || (S.stinger && S.stinger.t > 0.3)) && !(P.snare > 0)) { out.talk = true; out.why = 'set the torch down: cut her'; return out; }
+  /* (claude/cisternqueen3) a jar in hand when she is down or her stinger is stuck, or past phase one (the ladders want your hands): set it down (E) */
+  if (s.jar && s.jar.held && (qOpen(e) || (S.stinger && S.stinger.t > 0.3) || S.ph !== 1) && !(P.snare > 0)) { out.talk = true; out.why = 'set the jar down'; return out; }
   /* held: mash */
   if (P.snare > 0) { out.atk = P.atk < 0; out.why = 'mash out of the claw'; return out; }
   /* 0. what is flying or sweeping at you (a quarter-second late) */
@@ -752,6 +766,9 @@ export function queenPlan(s) {
   if (rock && !misread && (!s.eyes || told(['slamTell'], 2) || objSeen(rock))) { out.gx = clamp(P.x + (P.x < rock.x ? -40 : 40)); out.why = 'out from under the rubble'; return out; }
   const pud = S.puddles.find(p => Math.abs(p.x - P.x) < 18);
   /* 1. THE OPENING: on her */
+  /* (claude/cisternqueen3) in every opening her tail lies on the floor: cut the STINGER (it pays x openMul), her body if it is in the way */
+  if (qOpen(e) && S.stinger && S.stinger.t > 0.05) { const st0 = S.stinger, sd = Math.sign(P.x - st0.x) || -(e.face || 1); if (onLedge && P.ground) { out.down = true; out.jump = true; }
+    out.gx = clamp(st0.x + sd * Math.max(6, reach * 0.6)); out.face = -sd; out.atk = Math.abs(P.x - st0.x) < reach + CQ.plantR && Math.abs(P.y - st0.y) < 34 && P.atk < 0; out.why = 'cut her stinger: she is down'; return out; }
   if (qOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? CQ.w / 2 + s.tip : Math.max(8, reach * 0.5 + CQ.w * 0.3))); if (onLedge && P.ground) { out.down = true; out.jump = true; }
     out.face = Math.sign(e.x - P.x) || 1; out.atk = ad < reach + CQ.w / 2 + 4 && Math.abs(P.y - e.y) < 50 && P.atk < 0; out.why = 'cut her: she is open'; return out; }
   /* 1a. (claude/queen4, Daniel 10-07) THE VENOM BLOOM: out of its ring before it blooms (a ledge is above it); a v2 player already close cuts the stinger in the water
@@ -783,9 +800,13 @@ export function queenPlan(s) {
     if (m === 'lungeTell' || m === 'barbTell') { if (ad < 160) { out.gx = clamp(e.x + side * 190); if (ad < 90) out.dodge = true; out.why = 'off the lunge'; return out; } }
     if (m === 'lanceTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < 30) { out.gx = clamp(P.x + (P.x < cx ? -46 : 46)); out.why = 'off the lance\'s mark'; return out; } }
     if (m === 'flickTell' && ad < 220) { if (s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the sand'; return out; } out.gx = clamp(P.x + side * 70); out.why = 'out from the sand'; return out; }
-    if (m === 'strikeTell') { const cx = S.cur && S.cur.x; if (s.sips > 0 && S.mound && Math.abs(S.mound.x - P.x) < 54 && !roll(key + 'p', PLAN.missPour)) { out.face = Math.sign(S.mound.x - P.x) || P.face; out.talk = true; out.why = 'flood the mound'; return out; }
+    if (m === 'strikeTell') { const cx = S.cur && S.cur.x;
+      /* (claude/cisternqueen3) SHE SURFACES: THROW WATER - a jar in hand: off her spot, then the aim (short, mid or a lob) that lands on it, thrown in the window */
+      if (s.jar && s.jar.held && cx != null && !roll(key + 'j', PLAN.missPour)) { const far = Math.abs(cx - P.x) > CQ.strikeR + 10;
+        if (far) for (const aim of ['low', 'mid', 'high']) { const lx = s.jar.land(aim); if (lx != null && Math.abs(lx - cx) < CQ.burstR * 0.5) { out.face = Math.sign(cx - P.x) || P.face; out.up = aim === 'high'; out.down = aim === 'low';
+          if (e.modeT < CQ.burstEarly + 0.35) { out.atk = P.atk < 0; out.jarThrow = true; } out.why = 'throw the jar on her spot (' + aim + ')'; return out; } }
+        out.gx = clamp(cx + (P.x < cx ? -1 : 1) * 52); if (out.gx === clamp(cx) || Math.abs(out.gx - cx) < 40) out.gx = clamp(cx - (P.x < cx ? -1 : 1) * 52); out.face = Math.sign(cx - P.x) || P.face; out.why = 'off her spot, the jar ready'; return out; } if (s.sips > 0 && cx != null && Math.abs(cx - P.x) < 54 && Math.abs(cx - P.x) > 14 && !roll(key + 'p', PLAN.missPour)) { out.face = Math.sign(cx - P.x) || P.face; if (e.modeT <= CQ.burstEarly) { out.talk = true; out.why = 'pour on her spot as she bursts'; } else out.why = 'by her spot, the skin ready'; return out; }   /* (claude/cisternqueen3: the skin's water in the burst window) */
       if (cx != null && Math.abs(cx - P.x) < 50) { out.gx = clamp(P.x + (P.x < cx ? -70 : 70)); out.dodge = Math.abs(cx - P.x) < 30; out.why = 'off the mound'; return out; } }
-    if (m === 'chargeTell') { if (s.sips > 0 && S.mound && Math.abs(S.mound.x - P.x) < 54 && !roll(key + 'p', PLAN.missPour)) { out.face = Math.sign(S.mound.x - P.x) || P.face; out.talk = true; out.why = 'flood the mound'; return out; } }
     if (m === 'slamTell') { /* the rubble comes where you stand: move as it falls (handled above) */ }
     /* (claude/queen4) THE STINGER SLAM's red ring under you: off it before the stinger comes down (the bot never answered it - every slam landed; a player reads the ring and the word) */
     if (m === 'sslamTell') { const cx = S.cur && S.cur.x; if (cx != null && Math.abs(cx - P.x) < CQ.slamR + 14 && !onLedge) { let dir = P.x < cx ? -1 : 1; if (cx + dir * (CQ.slamR + 24) < G.x0 + 14 || cx + dir * (CQ.slamR + 24) > G.x1 - 14) dir = -dir;
@@ -809,6 +830,10 @@ export function queenPlan(s) {
   if (s.eyes) { const r = queenPlanV3(s, out, { P, e, S, G, m, t, mem, rng, roll, clamp, side, ad, reach, onLedge }); if (r) return r; }
   if ((m === 'ambush' || m === 'lunge') && Math.sign(P.x - e.x) === e.face && ad < 90) { out.jump = P.ground; if (ad < 50 && P.ground) out.dodge = true; out.why = 'over her body'; return out; }
   if (m === 'charge' || m === 'wave') { /* bands above */ }
+  /* 2b. (claude/cisternqueen3) A JAR: in phase one, a hand free and her not on you - to the nearest full rack (or a jar set down) and take it (E) */
+  if (s.jar && !s.jar.held && S.ph === 1 && !(s.fire && s.fire.held) && !onLedge && !qOpen(e) && (S.pose === 'burrow' ? (S.mound && Math.abs(S.mound.x - P.x) > 110) : ad > 70) && !roll('jar' + S.cycle, PLAN.missJar)) {
+    const spots = [...s.jar.racks.filter(r => r.full).map(r => r.x), ...(s.jar.lying || []).map(q => q.x)].sort((a, b) => Math.abs(a - P.x) - Math.abs(b - P.x)), rx = spots[0];
+    if (rx != null && Math.abs(rx - P.x) < 420) { out.gx = rx; out.face = Math.sign(rx - P.x) || P.face; if (Math.abs(P.x - rx) < 8 && P.ground) { out.talk = true; out.why = 'take a water jar'; } else out.why = 'to a water jar'; return out; } }
   /* 3. NO WATER: the nearest basin (P1, P2: the flood fills the skin in P3 at a basin too) */
   if (s.sips <= 0 && S.ph < 3) { const bx = Math.abs(P.x - G.basinW) < Math.abs(P.x - G.basinE) ? G.basinW : G.basinE;
     if (onLedge) { out.down = true; out.jump = P.ground; out.gx = bx; out.why = 'down off the ledge for water'; return out; }
@@ -816,7 +841,6 @@ export function queenPlan(s) {
   /* 4. P1: the mound - stand in front of it and pour; or the windlass when it is by the sump */
   if (S.pose === 'burrow' && S.mound) { const mx = S.mound.x;
     if (Math.abs(mx - G.mid) < CQ.bucketR - 10 && S.bucket.st === 'up' && Math.abs(P.x - G.windlass) < 20 && !roll(key + 'w', PLAN.missPour)) { out.face = Math.sign(G.windlass - P.x) || 1; out.atk = P.atk < 0; out.why = 'strike the windlass'; return out; }
-    if (Math.abs(mx - P.x) < 50 && !roll(key + 'p', PLAN.missPour)) { out.face = Math.sign(mx - P.x) || P.face; out.talk = true; out.why = 'flood the mound'; return out; }
     out.gx = clamp(mx + (P.x < mx ? -34 : 34)); out.face = Math.sign(mx - P.x) || P.face; out.why = 'meet the mound'; return out; }
   /* 5. P2: she clings to a wall - up to that wall's ledge and pour; in the shaft - the windlass */
   if (S.pose === 'wall' && S.wall && s.sips > 0) { const lad = S.wall === 'W' ? G.ladderW : G.ladderE, ledge = S.wall === 'W' ? G.ledgeW : G.ledgeE;
@@ -826,8 +850,6 @@ export function queenPlan(s) {
     if (P.y <= G.ledgeY + 10) { out.gx = S.wall === 'W' ? ledge[0] + 30 : ledge[1] - 30; out.jump = !!P.climb; out.why = 'onto the ledge'; return out; }
     if (Math.abs(P.x - lad) > 5 && !P.climb) { out.gx = lad; out.why = 'to her wall\'s ladder'; return out; }
     out.up = true; out.why = 'up to the ledge'; return out; }
-  /* 5b. (claude/cqueenrework) DOUSE HER on the floor when no torch is to be had (or no fire plan at all): she slows and her burrow floods - and keeps a sip for the mound */
-  if (S.pose === 'floor' && !qWet(S) && !qScorched(e) && !fireReady(s) && !e.gone && s.sips > 1 && P.ground && !onLedge && ad > CQ.w / 2 + 4 && ad < CQ.w / 2 + 60 && !roll('dz' + S.n.doused + ':' + S.cycle, PLAN.missDouse)) { out.face = Math.sign(e.x - P.x) || 1; out.talk = true; out.why = 'douse her: slow her, wet her sand'; return out; }
   if (S.pose === 'shaft' && (S.bucket.st !== 'up' || onLedge === 'B' || (P.climb && Math.abs(P.x - G.ropeB) < 8) || roll('perch' + S.cycle, PLAN.perchClimb)) && s.sips > 0 && e.mode !== 'leap' && e.mode !== 'pounce' && e.mode !== 'drop') { const bx = e.x - (P.x < e.x ? 1 : -1) * (CQ.w / 2 + 30), side0 = P.x < e.x ? 1 : -1;   /* (claude/cqueenrework) UP TO HER ON THE WELLHEAD: its rope, the beam, a pour beside her */
     if (onLedge === 'B') { if (Math.abs(P.x - bx) > 10) { out.gx = bx; out.why = 'along the wellhead to her'; return out; } out.face = side0; if (!roll(key + 'bp', PLAN.missPour)) { out.talk = true; out.why = 'pour on her from the wellhead'; } return out; }
     if (onLedge) { out.down = true; out.jump = P.ground; out.gx = G.ropeB; out.why = 'off the ledge for the wellhead'; return out; }
@@ -844,3 +866,5 @@ export function queenPlan(s) {
   out.gx = clamp(e.x + side * want); out.face = Math.sign(e.x - P.x) || P.face; out.why = 'keep a step off';
   return out;
 }
+/* (claude/cisternqueen3) a jar in hand: ATTACK throws it - so the bot swings only when it means the throw (any other blow waits until it is set down) */
+export function queenPlan(s) { const out = queenPlan0(s); if (s.jar && s.jar.held && out.atk && !out.jarThrow) out.atk = false; return out; }

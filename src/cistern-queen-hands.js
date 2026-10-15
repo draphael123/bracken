@@ -6,6 +6,7 @@
 // with a line listed in src/hint-lines.js.
 import * as CQG from './cistern-queen.js';
 import * as CQA from './redraw/cistern_queen_art.js';
+import * as CT from './carry-throw.js';   /* (claude/cisternqueen3) HER WATER JARS fly the jug's told arc (THROW_KIND.jug, the Burning Village's light water) */
 const { CQ } = CQG;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), dig: s => (s.rubble || s.thud)(), climb: s => (s.chitin || s.step || s.thud)(), lunge: s => (s.leap || s.heavy)(),
@@ -42,10 +43,12 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   /* ---------- SPAWNING: a fresh attempt is a fresh show (the hall dry, the bucket up) ---------- */
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
     S = CQG.newShow(CQG.geom(Ar, ctx.TS)); wl = (ctx.L.ents || []).find(q => q.t === 'qwindlass');
+    /* (claude/cisternqueen3) THE WATER JARS: a rack by each spring (the springs fill them), one jar each - E takes it, ATTACK throws it; the rack is filled again CQ.jarBack s after */
+    S.racks = [{ x: S.G.basinW + 32, full: true, t: 0 }, { x: S.G.basinE - 32, full: true, t: 0 }]; S.jars = []; for (const pp of ctx.players) if (isJar(pp.carry)) pp.carry = null;
     const e = { ...base, t: 'cisternqueen', w: CQ.w, h: CQ.h, hp: ctx.EHP.cisternqueen, maxHp: ctx.EHP.cisternqueen, noGrav: true, markH: CQ.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1 };
     e.x = base.x; e.y = S.G.floor; for (const pp of ctx.players) { pp.cqKeys = null; pp.cqVenom = []; pp.venomSlow = 1; }
     /* (claude/underwell3) IS THIS BLOW ON HER STINGER? asked by src/boss-greed.js OPEN_RULE as the blow lands (a blow on the stinger is the right blow: never chipped, never greed) */
-    e.cqBare = () => { if (!S) return false; const hb = ctx.attackBox(); if (!hb || S.ward > 0 || S.broken) return false; const st = CQG.stingerOut(S); return !!(st && ctx.overlap(hb, CQG.stingBox(st))); };   /* (claude/cqueenrework: her free stinger is armoured outside her openings - a blow there is not the right blow) */
+    e.cqBare = () => { if (!S) return false; const hb = ctx.attackBox(); if (!hb || S.ward > 0) return false; const st = CQG.stingerOut(S); if (st) return ctx.overlap(hb, CQG.stingBox(st)); const tp = CQG.tipOf(e, S); return !!(tp && tipPays(e) && ctx.overlap(hb, CQG.tipBox(tp))); };   /* (claude/cisternqueen3: her STINGER is how you hurt her - a blow on it, stuck or free (under its cap), is the right blow) */
     return e; };
 
   /* ---------- THE WORLD AS SHE SEES IT, AND WHAT HER BLOWS DO ---------- */
@@ -112,7 +115,11 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     /* HER VENOM wears off, a stack at a time; while it is in you, stamina comes back slower */
     for (const pp of ctx.players) { const v = pp.cqVenom || []; for (let i = 0; i < v.length; i++) v[i] -= dt; pp.cqVenom = v.filter(t => t > 0); pp.venomSlow = Math.max(0.1, 1 - CQ.venom.slow * pp.cqVenom.length); }
     /* THE FIRST TIME: what her claws do, and where the water is */
-    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'FIRE ON HER OIL, THEN WATER ON HER: THAT OPENS HER', '#ffd36b'); }   /* (claude/cqueenrework: the loop is her fight's one mechanic - B17) */   /* (claude/underwell3: was CLAWS TURN BLADES: GO ROUND, OR FLOOD HER - the claws still say GO ROUND when they turn a blow) */
+    if (!S.told.guard && e.mode !== 'wake' && e.mode !== 'sleep') { S.told.guard = 1; ctx.number(e.x, e.y - 90, 'STRIKE THE STINGER', '#ffd36b'); }   /* (claude/cisternqueen3, Daniel 10-14: her stinger is how you hurt her - said first) */
+    /* (claude/cisternqueen3) THE OTHER TWO RULES, said where they are used: she steps onto her hall's oil while fire can take her - SET HER ALIGHT; a hero by a full jar rack - TAKE A JAR */
+    if (!S.told.alight && S.pose === 'floor' && !(e.gone > 0) && CQG.hotOK(e, S) && oilUnder(e)) { S.told.alight = 1; ctx.number(e.x, e.y - 90, 'SET HER ALIGHT: SHE FALLS', '#ffb070'); }
+    if (!S.told.jar && S.ph === 1) for (const pp of ctx.players) { const r = S.racks.find(q => q.full && Math.abs(q.x - pp.x) < 40 && Math.abs(S.G.floor - pp.y) < 20); if (r && !pp.carry) { S.told.jar = 1; ctx.number(r.x, S.G.floor - 40, 'E TAKES A JAR: THROW IT AS SHE SURFACES', '#7ab8e8'); break; } }
+    stepJars(e, dt, c);
   };
   /* ---------- A BLOW ON HER (claude/cqueenrework: B15 - never nothing; this runs inside main.js wardedDamage, AFTER every multiplier, so what it caps is what lands):
      IN AN OPENING (soaked, on her back, rearing, slipped) x openMul, an opening's worth at most CQ.openCap of her.
@@ -120,33 +127,84 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
      openings it is ARMOURED - x tailMul, a clank and WHEN IT STICKS. Every blow on it draws on its PURSE (CQ.tailPurse of her a phase); spent, it BREAKS (src/cistern-queen.js).
      HER BODY: HOT, whole from any side; else her raised claws turn a frontal blow to shellFront (GO ROUND), her back, flanks, her up a wall or on the wellhead shellBack.
      HER WARD (B3, after an opening or a burn-out): everything x wardMul (WARDED) ---------- */
-  H.take = (e, dmg, tag) => { if (!S) return dmg; const P = ctx.hero(), c = world(e), hb = tag ? ctx.attackBox() : null, turned = w => { if (ctx.turned && tag) ctx.turned(e, P.x, w); };   /* (a burn tick has no blow: it is her body's) */
-    const open = CQG.qOpen(e), hot = CQG.qHot(S), st = CQG.stingerOut(S);
-    let tail = null; if (hb && !S.broken) { if (st && ctx.overlap(hb, CQG.stingBox(st))) tail = 'stuck'; else { const tp = CQG.tipOf(e, S); if (tp && ctx.overlap(hb, CQG.tipBox(tp))) tail = 'tip'; } }
-    const purse = d => { if (!tail) return d; d = Math.min(d, CQG.tailLeft(e, S)); S.tailTaken = (S.tailTaken || 0) + d; S.n.tailHits = (S.n.tailHits || 0) + 1; S.n.tailDmg = (S.n.tailDmg || 0) + d;
-      if (CQG.tailLeft(e, S) <= 0.01) CQG.breakStinger(e, S, c); return d; };
+  H.take = (e, dmg, tag) => { if (!S) return dmg; const P = ctx.hero(), hb = tag ? ctx.attackBox() : null, turned = w => { if (ctx.turned && tag) ctx.turned(e, P.x, w); };   /* (a burn tick has no blow: it is her body's) */
+    const open = CQG.qOpen(e), st = CQG.stingerOut(S);
+    let tail = null; if (hb) { if (st && ctx.overlap(hb, CQG.stingBox(st))) tail = 'stuck'; else { const tp = CQG.tipOf(e, S); if (tp && ctx.overlap(hb, CQG.tipBox(tp))) tail = 'tip'; } }
     const spark = () => { const at = tail === 'stuck' ? { x: st.x, y: st.y - 4 } : tail === 'tip' ? CQG.tipOf(e, S) : null; if (at) { ctx.sparks(at.x, at.y, P.face || 1, 6); ctx.burst(at.x, at.y, 6, ['#ffb84a', '#fff2c0'], 60, 0.4); } };
-    if (open) { const cap = e.maxHp * CQ.openCap, d = purse(Math.min(dmg * CQ.openMul, Math.max(0, cap - (S.openTaken || 0)))); S.openTaken = (S.openTaken || 0) + d; if (tail) { S.n.stingHits++; spark(); }
+    if (tail) S.n.tailHits = (S.n.tailHits || 0) + 1;
+    /* IN AN OPENING her tail is on the floor: the stinger x openMul, her body x openBody - an opening's worth at most CQ.openCap of her */
+    if (open) { const cap = e.maxHp * CQ.openCap, d = Math.min(dmg * (tail ? CQ.openMul : CQ.openBody), Math.max(0, cap - (S.openTaken || 0))); S.openTaken = (S.openTaken || 0) + d; if (tail) { S.n.stingHits++; spark(); }
       if (S.openTaken >= cap - 0.01 && e.open > 0.4) { e.open = 0.4; ctx.number(e.x, e.y - 70, 'SHE RIGHTS HERSELF', '#9aa39a'); S.n.capped = (S.n.capped || 0) + 1; } return d; }
-    if (S.ward > 0) { S.n.guarded++; e.guardFx = 0.2; turned('WARDED'); return purse(dmg * CQ.wardMul); }   /* (claude/cqueenrework, B15: her ward turns most of it, never all) */
-    if (tail === 'stuck') { const capS = e.maxHp * (st.big ? CQ.plantCap : CQ.stingCap), d = purse(Math.min(dmg * CQ.tailOpenMul, Math.max(0, capS - (S.stingTaken || 0)))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++; if (st.big) S.n.plantHits++; spark();
-      if (S.stingTaken >= capS - 0.01 && st.t > 0.2 && !S.broken) { st.t = 0.2; ctx.number(st.x, S.G.floor - 40, 'SHE TUGS IT FREE', '#9aa39a'); } return d; }
-    if (tail === 'tip') { S.n.tipHits++; spark(); if (hot) { if (!S.told.tip) { S.told.tip = 1; ctx.number(P.x, P.y - 40, 'HER STINGER: THAT IS WHERE SHE BLEEDS', '#8fd160'); } return purse(dmg * CQ.tailOpenMul); }
-      S.n.tipArmoured = (S.n.tipArmoured || 0) + 1; e.guardFx = 0.2; turned('WHEN IT STICKS'); return purse(dmg * CQ.tailMul); }
-    if (hot) { S.n.scorchHits = (S.n.scorchHits || 0) + 1; ctx.burst(P.x + (P.face || 1) * 12, P.y - 14, 6, ['#ffd36b', '#ff9a3c'], 50, 0.4); return dmg * CQ.scorchMul; }
-    const claws = S.pose === 'floor' && !(e.gone) && CQG.frontal(e, P.x) && !!tag;
-    if (claws) { S.n.guarded++; e.guardFx = 0.2; turned('GO ROUND'); if (!S.told.claws) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'HER CLAWS TURN IT: GO ROUND HER, OR STRIKE HER STINGER', '#9aa39a'); } return dmg * CQ.shellFront; }
-    S.n.shellHits = (S.n.shellHits || 0) + 1; return dmg * CQ.shellBack; };
+    if (S.ward > 0) { S.n.guarded++; e.guardFx = 0.2; turned('WARDED'); return dmg * CQ.wardMul; }   /* (B15: her ward turns most of it, never all) */
+    if (tail === 'stuck') { const capS = e.maxHp * (st.big ? CQ.plantCap : CQ.stingCap), d = Math.min(dmg * CQ.tailOpenMul, Math.max(0, capS - (S.stingTaken || 0))); S.stingTaken = (S.stingTaken || 0) + d; S.n.stingHits++; if (st.big) S.n.plantHits++; spark();
+      if (S.stingTaken >= capS - 0.01 && st.t > 0.2) { st.t = 0.2; ctx.number(st.x, S.G.floor - 40, 'SHE TUGS IT FREE', '#9aa39a'); } return d; }
+    /* HER FREE STINGER (claude/cisternqueen3): whole, up to CQ.tipCap of her a move; past that she curls it away - B15's floor, told */
+    if (tail === 'tip') { S.n.tipHits++; spark(); if (S.tipAct !== S.act) { S.tipAct = S.act; S.tipTaken = 0; } const cap = e.maxHp * CQ.tipCap, room = Math.max(0, cap - S.tipTaken);
+      if (room > 0.01) { const d = Math.min(dmg * CQ.tipMul, room) + Math.max(0, dmg * CQ.tipMul - room) * CQ.tailMul; S.tipTaken += d; S.n.tipDmg = (S.n.tipDmg || 0) + d; if (!S.told.tip) { S.told.tip = 1; ctx.number(P.x, P.y - 40, 'HER STINGER: THAT IS WHERE SHE BLEEDS', '#8fd160'); } return d; }
+      S.n.tipCurled = (S.n.tipCurled || 0) + 1; e.guardFx = 0.2; turned('SHE CURLS IT AWAY'); return dmg * CQ.tailMul; }
+    /* HER SHELL AND CLAWS: B15's floor, and the clank says what to do */
+    const claws = S.pose === 'floor' && !(e.gone) && CQG.frontal(e, P.x) && !!tag; S.n.guarded++; if (tag) { e.guardFx = 0.2; turned('STRIKE THE STINGER'); }
+    if (!S.told.claws && tag) { S.told.claws = 1; ctx.number(e.x, e.y - 80, 'HER SHELL TURNS IT: STRIKE THE STINGER', '#9aa39a'); }
+    if (!claws) S.n.shellHits = (S.n.shellHits || 0) + 1; return dmg * (claws ? CQ.shellFront : CQ.shellBack); };
+  /* does a blow on her free stinger pay whole now (outside her ward, under this move's cap)? - the art's gold, the greed rule */
+  const tipPays = e => !!S && !(S.ward > 0) && (S.tipAct !== S.act || S.tipTaken < e.maxHp * CQ.tipCap - 0.01);
+  H.tipPays = e => tipPays(e);
+  /* ---------- THE WATER JARS (claude/cisternqueen3, Daniel 10-14 "throw water when she comes out of a burrow so she slips") ----------
+     E at a full rack (or at a jar set down) takes one; carried, it shows the told arc (src/carry-throw.js, the jug's: UP lobs, DOWN tosses short); ATTACK throws it (main.js
+     throwCarry). Where it reaches her or the floor the water lands: as she bursts out of the sand she SLIPS (src/cistern-queen.js waterAt), else a splash. A blow spills it */
+  function isJar(q) { return !!(q && q.t === 'cqjar'); }
+  const heldJar = P => (P && isJar(P.carry) ? P.carry : null);
+  const handAt = P => ({ x: P.x + (P.face || 1) * 6, y: P.y - 20 });
+  const solidPx = (px, py, falling) => { if (!ctx.cellGet || !ctx.T) return py >= S.G.floor; const tx = Math.floor(px / 16), ty = Math.floor(py / 16), t = ctx.cellGet(tx, ty);
+    if (t === ctx.T.SOLID) return true; if (falling && t === ctx.T.ONEWAY && py - ty * 16 < 6) return true; return false; };
+  /* the water reaches her (as she bursts out: the spot or her body; at any other time her body is in the way) */
+  const jarStop = (x, y) => { const e = ctx.boss; if (!e || !e.alive || !S) return null; const b = CQG.burstAt(e, S); if (b && Math.abs(x - b.x) <= CQ.burstR * 0.6 && y >= S.G.floor - 60) return 'her';
+    if (S.pose === 'floor' && !(e.gone > 0) && Math.abs(x - e.x) < CQ.w / 2 && y > e.y - 40 && y < e.y) return 'her'; return null; };
+  const arcFrom = (P, keys) => { const h = handAt(P), v = CT.launchOf('jug', P, keys || {}); return CT.predictArc('jug', h.x, h.y, v, solidPx, { stopAt: jarStop }); };
+  H.arcFor = (P, aim) => arcFrom(P, { up: aim === 'high', down: aim === 'low' });
+  const newJar = (P, rack) => ({ t: 'cqjar', thrKind: 'jug', state: 'held', holder: P, x: P.x, y: P.y - 20, vx: 0, vy: 0, lieT: 0, noClimb: true, rack, hurtWas: P.hurt > 0,
+    launch: PP => CT.launchOf('jug', PP, ctx.keys ? ctx.keys() : {}) });
+  /* E: set a carried jar down; take a jar set down, or one off a full rack (a pour on her bursting out, in front of you, comes first) */
+  H.interact = P => { if (!S || !A() || !ctx.bossActive) return false;
+    const h = heldJar(P); if (h) { P.carry = null; h.state = 'lie'; h.holder = null; h.x = P.x + (P.face || 1) * 8; h.y = S.G.floor; h.lieT = 8; return true; }
+    if (P.carry || P.dead) return false; if (P.skin && P.skin.sips > 0 && H.pourable.aim(P)) return false;
+    const lying = S.jars.find(q => q.state === 'lie' && Math.abs(q.x - P.x) <= 14 && Math.abs(q.y - P.y) <= 18), rack = lying ? null : S.racks.find(q => q.full && Math.abs(q.x - P.x) <= 14 && Math.abs(S.G.floor - P.y) <= 18);
+    if (!lying && !rack) return false;
+    let q = lying; if (q) { q.state = 'held'; q.holder = P; q.hurtWas = P.hurt > 0; } else { q = newJar(P, rack); S.jars.push(q); rack.full = false; rack.t = CQ.jarBack; }
+    P.carry = q; S.n.jarsTaken = (S.n.jarsTaken || 0) + 1; try { ctx.sfx.clank && ctx.sfx.clank(); } catch {} ctx.burst(P.x, P.y - 22, 6, ['#7ab8e8', '#e8f4f8'], 30, 0.4);
+    if (!S.told.jarThrow) { S.told.jarThrow = 1; ctx.number(P.x, P.y - 34, 'ATTACK THROWS IT: UP LOBS IT, DOWN TOSSES IT SHORT', '#7ab8e8'); } return true; };
+  const jarLands = (q, x, y, c) => { q.state = 'gone'; const e = ctx.boss; ctx.burst(x, y - 4, 16, ['#7ab8e8', '#e8f4f8', '#3a7ab8'], 90, 0.6); try { (ctx.sfx.splash || ctx.sfx.clank)(); } catch {}
+    S.n.jarLands = (S.n.jarLands || 0) + 1; S.lastJar = { x: Math.round(x), y: Math.round(y) }; if (e && e.alive && e.t === 'cisternqueen') { const r = CQG.waterAt(e, S, x, y, c, 'jar'); if (r === 'open') S.n.jarHits = (S.n.jarHits || 0) + 1; } };
+  function stepJars(e, dt, c) {
+    for (const r of S.racks) if (!r.full) { r.t -= dt; if (r.t <= 0) { r.full = true; r.t = 0; } }
+    for (const q of S.jars) {
+      if (q.state === 'held') { const P = q.holder;
+        if (!P || P.dead || P.carry !== q) { if (P && P.carry === q) P.carry = null; q.state = P && P.dead ? 'gone' : 'lie'; q.lieT = 8; q.holder = null; q.y = S.G.floor; continue; }
+        if (P.hurt > 0 && !q.hurtWas) { P.carry = null; q.state = 'gone'; ctx.burst(P.x, P.y - 6, 12, ['#7ab8e8', '#e8f4f8'], 60, 0.5); S.n.jarSpilt = (S.n.jarSpilt || 0) + 1; continue; }   /* a blow spills it */
+        q.hurtWas = P.hurt > 0; const h = handAt(P); q.x = h.x; q.y = h.y; continue; }
+      if (q.state === 'fly') { if (!q.counted) { q.counted = true; S.n.jarThrows = (S.n.jarThrows || 0) + 1; } q.holder = null; const px = q.x, py = q.y; CT.stepArc(q, dt, CT.KINDS.jug.g);
+        if (jarStop(q.x, q.y)) { jarLands(q, q.x, q.y, c); continue; }
+        if (solidPx(q.x + Math.sign(q.vx) * CT.KINDS.jug.r, py, false) && !solidPx(px, py, false)) { jarLands(q, px, py, c); continue; }
+        if (q.vy < 0 && solidPx(q.x, q.y - CT.KINDS.jug.r, false)) q.vy = 0;
+        if (q.vy >= 0 && solidPx(q.x, q.y + CT.KINDS.jug.r, true)) { jarLands(q, q.x, q.y, c); continue; }
+        if (q.y > S.G.floor + 64) q.state = 'gone'; continue; }
+      if (q.state === 'lie') { q.lieT -= dt; if (q.lieT <= 0) q.state = 'gone'; } }
+    S.jars = S.jars.filter(q => q.state !== 'gone'); }
+  /* the bot's view of the jars (src/lab.js): one in hand, the racks, where an aim would land */
+  H.jarView = P => (S ? { held: !!heldJar(P), racks: S.racks.map(r => ({ x: r.x, full: r.full })), lying: S.jars.filter(q => q.state === 'lie').map(q => ({ x: q.x })), land: aim => { const a = H.arcFor(P, aim); return a && a.land ? a.land.x : null; } } : null);
+  /* her hall's floor oil under her, as the Underwell's hands hold it (for the first-time line) */
+  const oilUnder = e => { const L = ctx.oilCells ? ctx.oilCells() : null; if (!L) return false; const fy = Math.floor(S.G.floor / 16) - 1;
+    return L.some(q => q.arena && !q.vertical && q.st === 'oil' && q.y === fy && Math.abs(q.x * 16 + 8 - e.x) < CQ.w / 2); };
   /* ---------- THE POUR (src/well-town-hands.js asks: what would a pour land on, and pour it) ---------- */
   const heroOf = P => ({ x: P.x, y: P.y, face: P.face || 1, onLedge: onLedgeOf(P, S && S.G) });
   H.pourable = {
     aim: P => { const e = ctx.boss; if (!S || !ctx.bossActive || !e || e.t !== 'cisternqueen' || !e.alive) return null; return CQG.pourAim(e, S, heroOf(P)); },
     pour: P => { const e = ctx.boss; if (!S || !e || e.t !== 'cisternqueen') return null; const r = CQG.pourAt(e, S, heroOf(P), world(e)); if (r === 'wasted') ctx.number(P.x, P.y - 30, 'IT RUNS INTO THE SAND', '#9aa39a'); return r; },
   };
-  H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? '  SOAKED' : e.mode === 'slip' ? '  SLIPPED' : e.mode === 'fallen' ? '  ON HER BACK' : '  REARING') : CQG.qScorched(e) ? '  SCORCHED: HOT' : S && S.broken && e.mode === 'reel' ? '  STINGER BROKEN' : S && CQG.qWet(S) ? '  DOUSED' : e.mode === 'sslamTell' || e.mode === 'sslam' ? '  STINGER SLAM!' : e.mode === 'bloomTell' || e.mode === 'bloom' || e.mode === 'bloomBurst' ? '  VENOM BLOOM!' : e.mode === 'planted' ? '  STINGER PLANTED' : e.burrowed ? '  BURROWED' : '');   /* (claude/underwell3: SLIPPED - up through wet sand; SCORCHED - the fire on her oil; DRIVEN UP is a scorch now) */
-  H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; S.bloom = null; }
-    for (const pp of ctx.players) { pp.cqVenom = []; pp.venomSlow = 1; if (pp.snare > 0) pp.snare = 0; } };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, hot: +(S.scorch || 0).toFixed(2), wet: +(S.wet || 0).toFixed(2), char: +(S.charT || 0).toFixed(2), broken: !!S.broken, tailLeft: ctx.boss ? +CQG.tailLeft(ctx.boss, S).toFixed(1) : 0, n: JSON.parse(JSON.stringify(S.n)), water: S.water, bloom: S.bloom ? S.bloom.st : null, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
+  H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? '  SOAKED' : e.mode === 'slip' || e.mode === 'fallen' ? '  ON HER BACK' : e.mode === 'ablaze' ? '  ABLAZE: STUNNED' : '  REARING') : e.mode === 'thrash' ? '  ABLAZE!' : e.mode === 'sslamTell' || e.mode === 'sslam' ? '  STINGER SLAM!' : e.mode === 'bloomTell' || e.mode === 'bloom' || e.mode === 'bloomBurst' ? '  VENOM BLOOM!' : e.mode === 'planted' ? '  STINGER PLANTED' : e.burrowed ? '  BURROWED' : S && S.charT > 0 && !S.flood ? '  BLACKENED' : '');   /* (claude/cisternqueen3: ABLAZE - thrashing, then stunned; ON HER BACK - she slipped, or fell; BLACKENED - no fire yet) */
+  H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; S.bloom = null; S.jars = []; }
+    for (const pp of ctx.players) { pp.cqVenom = []; pp.venomSlow = 1; if (pp.snare > 0) pp.snare = 0; if (isJar(pp.carry)) pp.carry = null; } };
+  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, alight: +(S.scorch || 0).toFixed(2), char: +(S.charT || 0).toFixed(2), surf: +(S.surfT || 0).toFixed(2), racks: S.racks.map(r => r.full), jars: S.jars.map(q => q.state), lastJar: S.lastJar || null, n: JSON.parse(JSON.stringify(S.n)), water: S.water, bloom: S.bloom ? S.bloom.st : null, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING ---------- */
   /* her body (from the enemy loop, before the bodies of everyone else are drawn) */
@@ -174,29 +232,35 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     if (st && !warded) { const x = R(st.x - cx), y = R(st.y - cy), big = !!st.big;
       g.strokeStyle = 'rgba(255,211,107,' + (0.6 + 0.4 * p) + ')'; g.lineWidth = big ? 2 : 1; g.beginPath(); g.arc(x, y - 2, (big ? 15 : 10) + p * 4, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#ffffff'; const k = 2 + Math.round(p * 2); g.fillRect(x, y - 12 - k, 1, 2 * k + 1); g.fillRect(x - k, y - 12, 2 * k + 1, 1);
-      const tk = Math.max(0, st.t / ({ slam: CQ.planted, slip: CQ.slipT }[st.k] || CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 12, y + 6, 24, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 12, y + 6, R(24 * Math.min(1, tk)), 3); }
-    else if (!warded && !CQG.qOpen(e)) { const tp = CQG.tipOf(e, S); if (tp) { const x = R(tp.x - cx), y = R(tp.y - cy), pays = CQG.qHot(S), rr = CQ.tipR - 2;   /* (claude/cqueenrework, B10; claude/cqart: told by SHAPE as well as colour) it PAYS (HOT): a round gold ring and a pale star. It is ARMOURED: four cold steel corner-brackets, a plate not a ring, and a glint that slides across them */
+      const tk = Math.max(0, st.t / ({ slam: CQ.planted, slip: CQ.slipT, ablaze: CQ.ablazeT, fallen: CQ.openT, rear: CQ.openT, soaked: CQ.openT }[st.k] || CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 12, y + 6, 24, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 12, y + 6, R(24 * Math.min(1, tk)), 3); }
+    else if (!warded && !CQG.qOpen(e)) { const tp = CQG.tipOf(e, S); if (tp) { const x = R(tp.x - cx), y = R(tp.y - cy), pays = tipPays(e), rr = CQ.tipR - 2;   /* (claude/cqart: told by SHAPE as well as colour; claude/cisternqueen3: it PAYS whenever it is out - gold; steel only once she has curled it away for this move) */
       if (pays) { g.strokeStyle = 'rgba(255,211,107,' + (0.55 + 0.4 * p) + ')'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, rr + p * 3, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; fr(g, '#fff6c8', x - 1, y - rr - 5, 2, 4); fr(g, '#fff6c8', x - 3, y - rr - 3, 6, 1); }
       else { g.fillStyle = 'rgba(200,214,228,' + (0.55 + 0.25 * p) + ')'; for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { fr(g, x + sx * rr - (sx > 0 ? 4 : 0), y + sy * rr - (sy > 0 ? 0 : 0), 5, 1); fr(g, x + sx * rr - (sx > 0 ? 0 : 0), y + sy * rr - (sy > 0 ? 4 : 0), 1, 5); }
         const gl = (time * 22) % (rr * 4); if (gl < rr * 2) { g.globalAlpha = 0.9; fr(g, '#eef4fa', x - rr + gl, y - rr + gl * 0.5, 2, 2); g.globalAlpha = 1; } } } }
-    if (CQG.qScorched(e) && !(e.gone > 0)) { const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), k = Math.max(0, Math.min(1, e.scorch / CQ.scorchT));
-      g.strokeStyle = 'rgba(255,211,107,' + (0.55 + 0.35 * p) + ')'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 20, CQ.w / 2 + 8, 28, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-      g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 60, 40, 3); g.fillStyle = '#ff9a3c'; g.fillRect(x - 20, y - 60, R(40 * k), 3); }
-    /* HER FIRE: flames over her shell while she burns; sparks gathering while she flares */
-    if (CQG.qHot(S) && !(e.gone && e.mode !== 'pounce')) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, bh = wall ? 84 : 26, n = 7;
+    /* HER FIRE (claude/cisternqueen3: ABLAZE, thrashing): flames over her shell, and the short orange clock until she sags */
+    if (CQG.qHot(S) && !(e.gone && e.mode !== 'pounce')) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, bh = wall ? 84 : 26, n = 9;
       for (let i = 0; i < n; i++) { const fx = bx + ((i * 37 + R(time * 3)) % bw), fy = top + ((i * 19) % bh), h = 5 + 4 * Math.abs(Math.sin(time * 9 + i)); g.globalAlpha = 0.9;
         { const X0 = R(fx - cx), Y0 = R(fy - cy), hh = R(h + 2);   /* (claude/cqart) a tongue, not a candle: a red base, an orange body, a gold heart, a pale tip */
-          fr(g, '#d84a14', X0 - 1, Y0 - 2, 5, 3); fr(g, '#ff7a22', X0, Y0 - R(hh * 0.55), 3, R(hh * 0.55)); fr(g, '#ffb84a', X0 + (i % 2), Y0 - R(hh * 0.85), 2, R(hh * 0.4)); fr(g, '#fff2c0', X0 + 1, Y0 - hh, 1, 2); } } g.globalAlpha = 1; }
+          fr(g, '#d84a14', X0 - 1, Y0 - 2, 5, 3); fr(g, '#ff7a22', X0, Y0 - R(hh * 0.55), 3, R(hh * 0.55)); fr(g, '#ffb84a', X0 + (i % 2), Y0 - R(hh * 0.85), 2, R(hh * 0.4)); fr(g, '#fff2c0', X0 + 1, Y0 - hh, 1, 2); } } g.globalAlpha = 1;
+      const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), k = Math.max(0, Math.min(1, S.scorch / CQ.thrashT)); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 60, 40, 3); g.fillStyle = '#ff9a3c'; g.fillRect(x - 20, y - 60, R(40 * k), 3); }
+    /* ABLAZE, SAGGED (the opening): embers still in her seams */
+    if (e.mode === 'ablaze') { for (let i = 0; i < 6; i++) { const k = (time * 0.8 + i * 0.17) % 1, ex = e.x - CQ.w / 2 + 6 + ((i * 23) % (CQ.w - 12)); g.globalAlpha = 0.8 * (1 - k); fr(g, i % 2 ? '#ff9a3c' : '#ffd36b', R(ex - cx), R(e.y - 24 - k * 26 - cy), 1, 2); } g.globalAlpha = 1; }
     /* (claude/cqart) BLACKENED: smoke curls off the burnt shell, flakes of ash drift down, and a grey clock says how long until fire can take her again */
-    if (S.charT > 0 && !CQG.qHot(S) && !CQG.qWet(S) && !(e.gone > 0)) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, k0 = Math.max(0, Math.min(1, S.charT / CQ.charT));
+    if (S.charT > 0 && !S.flood && !CQG.qHot(S) && !(e.gone > 0)) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 40, k0 = Math.max(0, Math.min(1, S.charT / CQ.charT));
       for (let i = 0; i < 5; i++) { const k = (time * 0.4 + i * 0.2) % 1, sx = bx + 6 + ((i * 41) % (bw - 12)) + Math.sin(time * 2 + i * 1.7) * 3, sy = top + 6 - k * 34; g.globalAlpha = 0.5 * k0 * (1 - k); g.fillStyle = i % 2 ? '#6a625a' : '#8a8279'; g.beginPath(); g.ellipse(R(sx - cx), R(sy - cy), 2.5 + k * 4, 2 + k * 3, 0, 0, Math.PI * 2); g.fill(); }
       for (let i = 0; i < 6; i++) { const k = (time * 0.55 + i * 0.17) % 1; g.globalAlpha = 0.7 * k0 * (1 - k); fr(g, i % 2 ? '#b8afa4' : '#7a7268', R(bx + ((i * 37) % bw) - cx), R(top + 4 + k * 44 - cy), 1, 1); }
       g.globalAlpha = 1; const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 66, 40, 2); g.fillStyle = '#8a8279'; g.fillRect(x - 20, y - 66, R(40 * k0), 2); }
-    /* (claude/cqueenrework) DOUSED: water runs off her - drips falling from her shell, a blue sheen line along her back, and the clock of it (blue) */
-    if (CQG.qWet(S) && !CQG.qOpen(e) && !(e.gone > 0)) { const wall = S.pose === 'wall', bx = wall ? e.x - 17 : e.x - CQ.w / 2, bw = wall ? 34 : CQ.w, top = wall ? S.G.floor - 92 : e.y - 38;
-      for (let i = 0; i < 11; i++) { const fx = bx + 4 + ((i * 29) % (bw - 8)), k = (time * 1.5 + i * 0.37) % 1, fy = top + 8 + k * k * (wall ? 80 : 40); g.globalAlpha = 0.9 * (1 - k * 0.5); fr(g, '#2a5a8a', R(fx - cx) - 1, R(fy - cy), 4, 4); fr(g, '#7ab8e8', R(fx - cx), R(fy - cy), 2, 3 + R(k * 3)); fr(g, '#e8f4f8', R(fx - cx), R(fy - cy), 1, 1); }   /* (claude/cqart) beads that swell, let go and fall faster */
-      g.globalAlpha = 1;
-      const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy), k = Math.max(0, Math.min(1, S.wet / CQ.douseT)); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 66, 40, 2); g.fillStyle = '#7ab8e8'; g.fillRect(x - 20, y - 66, R(40 * k), 2); }
+    /* (claude/cisternqueen3) WHAT IS USABLE GLOWS: her hall's oil while fire can take her (an amber shimmer on the pool), a full jar rack (a blue glint) */
+    const L = ctx.oilCells ? ctx.oilCells() : null, fy = Math.floor(S.G.floor / 16) - 1;
+    if (L && CQG.hotOK(e, S)) { g.globalAlpha = 0.25 + 0.2 * p; g.fillStyle = '#ffb070'; for (const q of L) if (q.arena && !q.vertical && q.st === 'oil' && q.y === fy) fr(g, q.x * 16 - cx, S.G.floor - 3 - cy, 16, 2); g.globalAlpha = 1; }
+    for (const r of S.racks) { const x = R(r.x - cx), y = R(S.G.floor - cy);
+      fr(g, '#4a3222', x - 8, y - 4, 16, 2); fr(g, '#4a3222', x - 8, y - 4, 2, 4); fr(g, '#4a3222', x + 6, y - 4, 2, 4);   /* the rack (greybox) */
+      if (r.full) { drawJar(g, x, y - 4, true); if (S.ph === 1) { const k = (time * 1.4 + r.x * 0.01) % 1; if (k < 0.35) { g.fillStyle = '#ffffff'; fr(g, x + 3, y - 18, 1, 3); fr(g, x + 2, y - 17, 3, 1); } } }
+      else { g.fillStyle = '#7ab8e8'; g.globalAlpha = 0.5; fr(g, x - 6, y - 5, R(12 * (1 - r.t / CQ.jarBack)), 1); g.globalAlpha = 1; } }   /* (an empty rack: the spring fills its jar again - the line grows) */
+    for (const q of S.jars) drawJar(g, R(q.x - cx), R(q.y - cy) + (q.state === 'held' ? 4 : 0), true);
+    { const P = ctx.hero(); if (P && !P.dead && heldJar(P)) { const arc = arcFrom(P, ctx.keys ? ctx.keys() : {}); S.arc = arc; CT.drawArc(g, arc, cx, cy, time, '#7ab8e8'); } else S.arc = null; }
   };
+  /* a water jar (greybox for the art lane): a clay belly, a neck, water at the lip */
+  function drawJar(g, x, y, full) { fr(g, '#8a5a3a', x - 4, y - 8, 8, 8); fr(g, '#a8704a', x - 3, y - 8, 2, 7); fr(g, '#6a4228', x - 2, y - 11, 4, 3); if (full) fr(g, '#7ab8e8', x - 1, y - 11, 2, 1); }
   return H;
 }

@@ -166,7 +166,9 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   /* (claude/underwell3) HER TAIL by src/cistern-queen.js tailPose - the same choice the hit on her stinger makes; the stinger stuck in the floor (a sting, the slam, the slip) runs the tail down to it, hot-white */
   { const tp = tailPose(e, S); o.tail = tp.tail; o.lanceTo = tp.lanceTo; if (tp.tail === 'lance') o.hot = true; }
   if (m === 'sslamTell') { o.claw = 'up'; o.hot = true; } if (m === 'planted') { o.claw = 'down'; o.legs = 'still'; }
-  if (m === 'slip') { o.claw = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
+  if (m === 'slip') { o.claw = 'up'; o.legs = 'kick'; o.wet = 1; o.walk = false; }   /* (claude/cisternqueen3) SHE SLIPS ONTO HER BACK: drawn as the fall (greybox - the art lane draws her own slip) */
+  if (m === 'thrash') { o.claw = 'reel'; o.legs = 'reel'; o.walk = false; o.reelT = Math.max(0, e.modeT || 0); }   /* (claude/cisternqueen3) ABLAZE, THRASHING (greybox: the reel frame) */
+  if (m === 'ablaze') { o.claw = 'down'; o.legs = 'splay'; o.walk = false; o.char = 1; }   /* (claude/cisternqueen3) ABLAZE, SAGGED: down, the shell charred (greybox) */
   if (e.scorch > 0) { o.scorch = Math.min(1, e.scorch); o.heat = Math.min(1, e.scorch / CQ.scorchT); o.hot = true; }   /* (claude/cqart) HOT: how much of her burn is left (the seams sink as it dies), and her stinger bare and glowing */
   if (m === 'fallen') { o.legs = 'kick'; o.claw = 'up'; o.tail = 'down'; }
   /* (claude/cqart) DOUSED: a dark, wet-lit shell with water running off it; BLACKENED: ash-grey and split with soot; STINGER BROKEN: the torn stump; REEL: its own frame, thrown back off the stump */
@@ -175,9 +177,9 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   if (S.pose === 'floor') o.floor = true;
   if (S.broken) o.broken = true;
   /* THE ARMOURED STINGER: steel-capped while a blow on it is turned to CQ.tailMul (outside her openings, not HOT, not stuck in the floor); bare and gold when it pays */
-  o.armour = !S.broken && !(e.scorch > 0) && !qOpen(e) && !stingerOut(S) && !(S.ward > 0);
+  o.armour = !qOpen(e) && !stingerOut(S) && ((S.ward > 0) || (S.tipAct === S.act && (S.tipTaken || 0) >= (e.maxHp || 1) * CQ.tipCap - 0.01));   /* (claude/cisternqueen3: it pays whenever it is out - steel only in her ward, or once she has curled it away for this move) */
   /* THE PERCH: on THE WELLHEAD she is crouched on the beam, her knees up and wide, the toes hooked over its lip */
-  if (S.pose === 'shaft' && !(e.gone > 0) && m !== 'leap' && m !== 'pounce' && m !== 'drop' && m !== 'fallen' && m !== 'soaked' && m !== 'reel') { o.legs = 'perch'; o.walk = false; }
+  if (S.pose === 'shaft' && !(e.gone > 0) && m !== 'leap' && m !== 'pounce' && m !== 'drop' && m !== 'fallen' && m !== 'soaked' && m !== 'thrash') { o.legs = 'perch'; o.walk = false; }
   /* REEL (B16): its own frame - the near claw flung up over her shoulder, the far one wide and low, the front legs snatched off the floor, the stump limp; the white hit-flash only on the first beat */
   if (m === 'reel') { const rt = Math.max(0, e.modeT || 0); o.reel = true; o.reelT = rt; o.claw = 'reel'; o.legs = 'reel'; o.walk = false; o.tail = 'curl'; o.broken = true; o.flash = rt > 1.3 && Math.floor(time * 14) % 2 === 0; }
   /* STANDING, SHE BREATHES: a four-beat heave of the carapace (walking, clinging, hanging, getting up) */
