@@ -4770,6 +4770,7 @@ function branchStep(dir, key) { key = key || (dir < 0 ? 'up' : 'down');
 function updateMap(dt) {
   if (mapTip.t > 0) mapTip.t -= dt;
   if (map.glide && map.glide.node !== map.node) map.glide = null;   /* (a jump from the panel, the title or a reset leaves no glide behind) */
+  if (map.glide && (leftPress || rightPress || upPress || downPress || confirmPress || mapPress || pausePress)) map.glide = null;   /* a key during the glide lands the token at once and is taken: nothing waits on the animation */
   if (map.glide) { map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(0, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
   if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
