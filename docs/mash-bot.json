@@ -9153,8 +9153,8 @@
      "dead:100/100"
     ],
     "pyro": [
-     "dead:100/95",
-     "dead:100/95"
+     "dead:100/97",
+     "dead:100/97"
     ]
    },
    "rows": [
@@ -9215,12 +9215,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 28.2,
+     "secs": 23.8,
      "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 28,
-     "swings": 733,
-     "reprisalPct": 14,
+     "bossLeftPct": 97,
+     "landed": 20,
+     "swings": 568,
+     "reprisalPct": 27,
      "chip": []
     },
     {
@@ -9228,12 +9228,12 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 28.2,
+     "secs": 23.8,
      "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 28,
-     "swings": 733,
-     "reprisalPct": 14,
+     "bossLeftPct": 97,
+     "landed": 20,
+     "swings": 568,
+     "reprisalPct": 27,
      "chip": []
     }
    ]
