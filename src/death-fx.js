@@ -15,7 +15,7 @@ const R = s => { let a = s >>> 0; return () => { a = (a + 0x6D2B79F5) | 0; let t
 export const MATERIAL_OF = {
   bone: ['skeleton', 'bonecorsair', 'bonegob', 'bonearcher', 'skeletonguard', 'gildedguard', 'burieddead', 'lich'],
   rot: ['zombie', 'husk', 'mummy', 'drowned', 'apprentice'],
-  spirit: ['wight', 'haunt', 'boo', 'ghostfarmer', 'ghostwife', 'ghostchild', 'shadow', 'emberwisp', 'nighthunter'],
+  spirit: ['fogwraith', 'wight', 'haunt', 'boo', 'ghostfarmer', 'ghostwife', 'ghostchild', 'shadow', 'emberwisp', 'nighthunter'],
   armour: ['hedgeknight', 'soldier', 'armour', 'tideguard', 'closedhelm', 'heavy', 'swornsword', 'marine', 'jackalguard', 'sentry', 'pike', 'lancer'],
   fur: ['bat', 'hound', 'dog', 'fox', 'greathound', 'badger', 'hare', 'squirrel', 'goat', 'ram', 'troll'],
   feather: ['crow', 'harpy', 'petrel', 'roc', 'vulture', 'raptor', 'owl', 'kite', 'fledgling'],

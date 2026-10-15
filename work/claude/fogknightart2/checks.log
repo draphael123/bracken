@@ -1,0 +1,55 @@
+=== node tools/towpath.mjs
+towpath: 311 checks ok
+exit 0
+=== node tools/towpath-probe.mjs
+{"errs":[],"notes":[],"lantern":true,"inFogLow":true,"wraith":true,"wraithTop":720,"wraithY":752,"hoist":"top","hoistRode":125,"barge":"east","bargeX":278,"inFogArches":true,"crane":"roof","craneRow":3,"xFloorFog":true}
+  ok   the lantern is taken at the hut
+  ok   the low towpath by lock A lies in the fog
+  ok   the first wraith stays in its fog
+  ok   the sack hoist carries the hero up
+  ok   the barge floats the hero over the break
+  ok   the low arches lie in the basin's fog
+  ok   the crane hook lifts the hero to the roof
+  ok   the last lock's floor lies in the fog
+  ok   no page errors
+exit 0
+=== node tools/corpses.mjs
+  ok   undercrown bonearcher (archer)     corpse: the reskin
+  ok   lamplit cn:lampsnuffer (snuffer)   corpse: the reskin
+  ok   witchlight bonearcher (archer)     corpse: the reskin
+  ok   witchlight cn:gravehound (hound)   corpse: the reskin
+  ok   fallingtower cn:venomimp (imp)     corpse: the reskin
+  ok   fallingtower cn:fireimp (imp)      corpse: the reskin
+  ok   burial cn:gravehound (hound)       corpse: the reskin
+  ok   burial bonearcher (archer)         corpse: the reskin
+  ok   unburied cn:gravehound (hound)     corpse: the reskin
+  ok   unburied bonearcher (archer)       corpse: the reskin
+  ok   flotilla cn:powderboy (sapper)     corpse: the reskin
+  ok   keep cn:shockeel (eel)             corpse: the reskin
+  ok   deep cn:shockeel (eel)             corpse: the reskin
+  ok   longwater cn:tidecrab (crab)       corpse: the reskin
+  ok   causeway cn:tidecrab (crab)        corpse: the reskin
+  ok   underwell cn:venomscorpion (scorpion) corpse: the reskin
+  ok   underwell cn:dustscorpion (scorpion) corpse: the reskin
+  ok   underwell cn:thirstscorpion (scorpion) corpse: the reskin
+  ok   underwell cn:spitscorpion (slinger) corpse: the reskin
+  ok   underwell cn:oilscorpion (scorpion) corpse: the reskin
+  ok   underwell cn:firescorpion (scorpion) corpse: the reskin
+  ok   underwell cn:drowneddead (zombie)  corpse: the reskin
+  ok   underwell cn:cisternbat (bat)      corpse: the reskin
+  ok   underwell cn:oilthief (sapper)     corpse: the reskin
+ok  corpses  every reskinned foe's hurt frame and body are drawn in its own skin
+exit 0
+=== node tools/hint-shown.mjs
+hint-shown source: 1928 number() literals the filter drops: 1072 routed to the hint box, 856 old silent flavour (none new)
+hint-shown OK: HE IS OPEN, STRIKE ITS LEVER, THE FIRE IS OUT - GO, THE GOBLIN QUEEN: OPEN and a counted line are drawn in the page; a flavour line is not
+exit 0
+=== MP_SCENES=towpath node tools/mobile-perf.mjs
+timeout: failed to run command 'MP_SCENES=towpath': No such file or directory
+exit 127
+=== MI_ONLY=fogknight node tools/mark-integrity.mjs
+timeout: failed to run command 'MI_ONLY=fogknight': No such file or directory
+exit 127
+=== TEXTFIT_PAGES=1 node tools/textfit.mjs bestiary,hints
+timeout: failed to run command 'TEXTFIT_PAGES=1': No such file or directory
+exit 127

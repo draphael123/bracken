@@ -180,14 +180,14 @@
   "bare": true
  },
  "towpath": {
-  "hash": "c08e9f288a6b",
+  "hash": "1e92f56b2a75",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
-  "deaths": 7,
-  "kills": 1,
-  "lifts": 58,
+  "hits": 35,
+  "deaths": 8,
+  "kills": 5,
+  "lifts": 78,
   "walked": 100,
   "bare": true
  },

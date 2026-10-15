@@ -1,0 +1,22 @@
+== mobile-perf
+boot: BK up at 9.7 s (title 9.7 s) under 4x CPU throttle
+boot main-thread busy: 8938 ms
+boot steps (ms): modules 251, hero 448, art1 332, art2 704, art3 300, art4 318, art5 201, art6 61, art7 141, art8 166, art9 49, sub 747, sub 24, sub 11, sub 1, sub 1, sub 1, tiles 0, sub 4, sub 25, sub 70, sub 21, sub 21, props 90, sky 198, misc1 420, misc2 271, misc3 1941, l_build 316, sub 25, sub 1, sub 10, sub 4, sub 1, sub 2, l_bake 0, sub 7, sub 37, sub 161, sub 31, sub 27, l_bake 121, l_bake 354, l_deep 109, l_rest 619, final 112
+page: {"coarse":true,"dpr":2.625,"cv":"1201x541","set":{"parallax":"near","touchInit":1}}
+structure: {"mp":0.649741,"tl":true,"tlw":2402,"pre":448,"desync":true}
+  towpath   {"scene":"towpath","fps":60.2,"p95":16.8,"worst":16.9,"busyMsPerFrame":12.4,"scriptMs":11.5}
+input: {"firstMs":204.1,"stickMs":0.3}
+mobile perf: inside the budget at 4x CPU on a 915x412 phone.
+== mark-integrity
+boss fogknight      fogknight|cutTell             !   seen 6, landed 6, posed 6/6 (px 1629-47038)
+boss fogknight      fogknight|lashTell            !!  seen 3, landed 3, posed 3/3 (px 1330-1562)
+boss fogknight      fogknight|lungeTell           !!  seen 1, landed 1, posed 1/1 (px 1706-1706)
+
+every mark seen belongs to a windup that is drawn and lands.
+== textfit
+90 hint messages read out of src/main.js
+  scope hints             90 screens  1.4s
+  scope bestiary         287 screens  8.0s
+
+377 screens drawn, 8804 strings measured, 9s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 0  COLLIDE 0  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+0 pictures in C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-fogknightart2\audits\readability\textfit
