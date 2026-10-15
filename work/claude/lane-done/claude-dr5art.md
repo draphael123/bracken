@@ -13,7 +13,7 @@ Pictures: work/claude/lane-done/dr5art-shots/ (tools/dr5-art-shots.mjs makes all
 
 ## CHECKS (PORT 8934, one page at a time, beside the suite)
 GREEN: minecart.mjs 524 | audio-assets (every SFX call resolves) | level-quality minecart (same numbers) | corpses | boss-openings (exit 0)
-Others: see the final message (textfit hints,boss scoped; mobile-perf).
+textfit hints,boss: 1831 screens, all counters 0 | mobile-perf: inside the budget (its scenes do not include the Deep Rails).
 Not run (not asked / not present here): cast-poses (no such tool in this tree); reach-heroes, stuck, mark-integrity (art-only; mark-integrity is the DR5 report's pre-existing red).
 
 ## SELF-GRADE: B
