@@ -2741,6 +2741,19 @@ export function bakeReaper(skin = {}, previewOnly = false) {
     blast: [knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0], sh[1] - 6], greatsword: [sh[0], sh[1] - 3, sh[0], sh[1] - 18], glow: [sh[0], sh[1] - 20] }),
       knightFrame({ dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], greatsword: [sh[0] + 4, sh[1] - 1, sh[0] + 16, sh[1] + 6], glow: [sh[0] + 12, sh[1] + 3] })],
   };
+  /* (claude/dk2b) GREYBOX - THE ART LANE REDRAWS THESE (scratch/brief-dk2.md, B16: each its own pose).
+     GRAVE KNEEL: down on one knee, the greatsword PLANTED POINT-DOWN in front, both hands on the pommel - the blade is the low guard */
+  F.graveKneel = [0, 1].map(i => knightFrame({ dy: 3, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 1], greatsword: [sh[0] + 5, sh[1] - 2, sh[0] + 7, sh[1] + 14], plume: i + 1,
+    bits: i ? [[sh[0] + 7, sh[1] + 13, '#c0283a'], [sh[0] + 6, sh[1] + 12, '#7a1020']] : [[sh[0] + 7, sh[1] + 13, '#7a1020']] }));
+  /* THE BLOOD PRICE, HELD: the blade back over his shoulder, point up behind him, drinking - redder on the second frame (the growing glow is drawn live, drawPriceBlade) */
+  F.priceHold = [0, 1].map(i => knightFrame({ dx: -1, dy: 1, legs: 'wide', arm: [sh[0], sh[1], sh[0] - 3, sh[1] - 2], greatsword: [sh[0] - 3, sh[1] + 1, sh[0] - 13, sh[1] - 9], plume: 2,
+    bits: i ? [[sh[0] - 12, sh[1] - 8, '#ff6b6b'], [sh[0] - 10, sh[1] - 6, '#c0283a'], [sh[0] - 8, sh[1] - 4, '#c0283a'], [sh[0] - 6, sh[1] - 2, '#7a1020']] : [[sh[0] - 12, sh[1] - 8, '#c0283a'], [sh[0] - 9, sh[1] - 5, '#7a1020']] }));
+  /* THE CRESCENT CLEAVE: hauled up from behind, round through the whole front of him wide and level, and down into the follow-through */
+  F.crescent = [
+    knightFrame({ dx: -1, legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] - 1, sh[1] - 5], greatsword: [sh[0] - 1, sh[1] - 5, sh[0] - 9, sh[1] - 16], plume: 1, bits: [[sh[0] - 8, sh[1] - 15, '#c0283a']] }),
+    knightFrame({ wide: 8, dx: 2, legs: 'runC', arm: [sh[0], sh[1], sh[0] + 5, sh[1] - 3], greatsword: [sh[0] + 5, sh[1] - 3, sh[0] + 20, sh[1] - 5], plume: 2, bits: [[sh[0] + 19, sh[1] - 5, '#ff6b6b'], [sh[0] + 15, sh[1] - 4, '#c0283a']] }),
+    knightFrame({ wide: 8, dx: 2, dy: 2, legs: 'wide', arm: [sh[0], sh[1], sh[0] + 4, sh[1] + 2], greatsword: [sh[0] + 4, sh[1] + 2, sh[0] + 17, sh[1] + 9], plume: 0, bits: [[sh[0] + 16, sh[1] + 9, '#c0283a']] }),
+  ];
   /* THE PASSING: he does not roll. He goes thin and steps through. */
   F.roll = [0, 1, 2, 3].map(i => knightFrame({ dy: 1, legs: i % 2 ? 'wide' : 'runC', greatsword: carry(1), plume: i % 3 }));
   { const arcs = comboArcs(sh, 'greatsword', 16); F.atkB = [...arcs.B, F.atk[4]]; F.atkC = [...arcs.T, F.atk[4]]; F.air = [...arcs.A, F.jump[1]]; F.fidget = [...arcs.I, F.idle[0]]; }   /* the long blade rising, and driven through */

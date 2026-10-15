@@ -86,11 +86,12 @@ import * as FGM from './fair-games.js'; import * as FR from './redraw/fair_rides
 import * as WC from './wicker-carousel.js'; import * as CRG from './redraw/carousel_ring.js';   /* THE WICKER QUEEN'S CAROUSEL (claude/fairboss): the ride, pure, and its look */
 import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.js'; import * as TMK from './theatre-masks.js';   /* (claude/theatre4) THE THEATRE's mummers swap masks */   /* THE MASKWRIGHT'S THEATRE's machinery in the game (claude/theatre): lamps, fly lines, flats, traps and the show */
 import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
-import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
+import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, blowLow, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
+import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
 import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight } from './holy-ground.js'; let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
 import { makeGuardian, TG as TGN } from './temple-guardian.js'; let TGM = null;   /* THE TEMPLE GUARDIAN, reworked (claude/monastery2): bells and its own blocks stagger it, bigger, off the x0.05 chip */
@@ -6662,6 +6663,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (isPyro() && EMBER && P.ducking) { if (EMBER.guardTakes(fromX, dmg, unblockable, who || updFoe, pierce) === 'half') dmg = Math.max(1, Math.ceil(dmg / 2)); }   /* HER WEAK PLAIN GUARD (down held after the flare): a yellow blow from the front costs half, no heat, no scorch */
   /* THE KNIGHT'S LOW GUARD (src/crouch-a.js): crouched, the shield low in front of him turns what did not go over him - no step back */
   if (CA && hero() === 'knight') { const w = CA.takes(fromX, dmg, unblockable && !low, who || updFoe, pierce);   /* (claude/ksar) a LOW red blow - the Hawk-Mistress's whip along the floor - wraps a standing shield, but one set low turns it */ if (w === 'blocked') { blocks++; trialEvent('block'); return 'blocked'; } if (w === 'half') dmg = Math.ceil(dmg / 2); }
+  if (isReaper()) { const w = dkKneelTakes(fromX, dmg, unblockable, who || updFoe, low); if (w === 'blocked') return 'blocked'; if (w === 'half') dmg = Math.max(1, Math.ceil(dmg / 2)); }   /* (claude/dk2b) GRAVE KNEEL: the planted blade turns a LOW blow */
   { const sd = Math.sign(fromX - P.x) || P.face;
     let g2 = null, gd = 1e9;
     for (const r of risen) { if (r.life <= 0 || r.kind === 'wisp' || !(r.hp > 0)) continue;
@@ -7175,6 +7177,7 @@ function spawnCorpse(e, dir) {
     case 'frog': Object.assign(c, { vx: -dir * 10, vy: -120, spin: dir * 0.8, life: 1.6, max: 1.6, grav: 600, royal: true }); break;
   }
   if(c.max>.05 && !e.maxHp && !e.mini){c.life+=COMBAT.corpseLinger;c.max=c.life;}
+  if (e.dkBody && c.max > 0.05) { c.dkHeld = e.dkBody; e.dkBody = null; }   /* (claude/dk2b) the Death Knight's dead lie as long as their blood does (updateRisen lets go) */
   if (V2_DEATH[e.t] !== undefined && c.t === e.t && !c.set) c.frame = V2_DEATH[e.t];   /* the redrawn ones have a death of their own */
   corpses.push(c);
   if (deathFx.length < 12) { const fx = deathBurst(materialOf(e.t), e.x, e.y, dir || 1, (e.x * 31 + e.y * 17) | 0, e.h || 16); fx.y0 = e.y - (e.h || 16); deathFx.push(fx); }   /* DEATH BY MATERIAL: bone clatters, armour sheds, a spirit comes apart upward */
@@ -8326,14 +8329,16 @@ function updateCharge(dt) {
   if (!keys.atk || !can) { // let go (or lost the footing for it): if it was wound up, it lands
     if (hero() === 'knight') { const st = cutStage(P.atkHeld || 0); P.cutShown = 0; if (st && can) { P.cutWant = st; fireHeavy(); } else if (P.charge > 0) SFX.ui(); P.atkHeld = 0; P.charge = 0; return; }   /* THE HEAVY CUT: what stage it reached is what comes down */
     if (P.charge > (isGeo() || isRg() ? 0 : heavyWind() * 0.55) && can) fireHeavy();   /* (THE RANGER: any draw looses - the shorter, the weaker) */   /* (THE GEOMANCER: any wind at all fires - the quickest is a short crack that hits what touches her) */
-    else if (P.charge > 0) { SFX.ui(); }
+    else if (P.charge > 0) { SFX.ui(); if (isReaper() && (P.dkPaid || 0) > 0) number(P.x, P.y - 30, 'THE BLOOD IS LOST', '#7a1020'); }
+    if (isReaper()) dkPriceReset();
     P.atkHeld = 0; P.charge = 0; return;
   }
   P.atkHeld = (P.atkHeld || 0) + dt;
   const was = P.charge || 0;
   P.charge = Math.max(0, P.atkHeld - HEAVY_START);
-  if (was <= 0 && P.charge > 0) { SFX.charge(); P.cutShown = 0; }
+  if (was <= 0 && P.charge > 0) { SFX.charge(); P.cutShown = 0; if (isReaper()) { dkPriceReset(); P.dkPriceT = 0; } }
   if (P.charge > 0) { P.vx *= 0.86; // he plants his feet to wind it up
+    if (isReaper() && dkPriceTick(dt)) return;   /* (claude/dk2b) THE BLOOD PRICE: the blade drinks his own blood while it is held (fires itself once the last price has been held) */
     const k = Math.min(1, P.charge / heavyWind());
     if (Math.random() < dt * (10 + k * 40)) { const col = isPyro() ? (Math.random() < 0.5 ? '#ff9a5c' : '#ffd36b') : isPaladin() ? '#ffe6a0' : '#dfe8ff';
       parts.push({ x: P.x + P.face * (isPyro() ? 10 : 2) + (Math.random() - 0.5) * 10, y: P.y - 18 - Math.random() * 14, vx: 0, vy: -30, life: 0.3, max: 0.3, col, size: 1, grav: -20 }); }
@@ -8342,7 +8347,7 @@ function updateCharge(dt) {
       if (P.atkHeld >= CUT_AUTO) { P.cutShown = 0; P.cutWant = 3; fireHeavy(); }
       return; }
     if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); shakeCam(1.5); }
-    if (k >= 1 && !(isRg() && RGK && RGK.arrows() > 0 && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold)) fireHeavy();   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
+    if (k >= 1 && !isReaper() && !(isRg() && RGK && RGK.arrows() > 0 && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold)) fireHeavy();   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
   } else P.chargeFull = false;
 }
 let bloodBolts = [];
@@ -8373,7 +8378,7 @@ function leaveBody(e) {   // THE REAPING drags what it kills to his feet; anythi
   const drag = !!P.reaping;
   if (tal('graveProvides') && tal('summonSkeleton') && !e.maxHp && !e.mini && e.t !== 'dummy' && summoned().length < RISEN_MAX()) {   /* THE GRAVE PROVIDES: no body lies there, it is already up - while there is room for it, so it is still one at a time */
     riseAt(e.x, e.y, bodyKind(e.t)); gainHarvest(e.mark > 0 ? 16 : 7); return; }
-  bodies.push({ x: drag ? P.x + P.face * 10 : e.x, y: drag ? P.y - 4 : e.y, kind: bodyKind(e.t), life: 24, t: e.t });
+  bodies.push({ x: drag ? P.x + P.face * 10 : e.x, y: drag ? P.y - 4 : e.y, kind: bodyKind(e.t), life: DK2.linger.body, t: e.t }); if (!drag) e.dkBody = bodies[bodies.length - 1];   /* (claude/dk2b) THE DEAD LINGER for him (was 24 s): the fallen picture stays with it (spawnCorpse) */
   if (bodies.length > 14) bodies.shift();
   gainHarvest(e.mark > 0 ? 16 : 7);
   if (drag) for (let i = 0; i < 6; i++) parts.push({ x: e.x, y: e.y - 8, vx: (P.x - e.x) * 1.6, vy: -40 - Math.random() * 40, life: 0.5, max: 0.5, col: '#8fd160', size: 2, grav: 60 });
@@ -8418,6 +8423,7 @@ function riseAt(x, y, kind, src) {
 function updateRisen(dt) {
   for (const b of bodies) b.life -= dt;
   bodies = bodies.filter(b => b.life > 0);
+  for (const c of corpses) if (c.dkHeld && (c.dkHeld.drained || c.dkHeld.life <= DK2.linger.fade || !bodies.includes(c.dkHeld))) { c.dkHeld = null; c.life = Math.min(c.life, c.max * 0.4); }   /* (claude/dk2b) drawn, raised or gone: the picture goes too */
   for (const r of risen) {
     r.life -= dt; r.anim += dt; r.cd -= dt; r.flash = Math.max(0, (r.flash || 0) - dt); r.rise = Math.max(0, (r.rise || 0) - dt);
     let tgt = null, td = 1e9;
@@ -8491,7 +8497,9 @@ function drawRisen(cx, cy) {
     g.strokeStyle = s.struck ? '#ff9a9a' : '#c0283a'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 4, 1.4, 5.6); g.stroke();
     g.fillStyle = '#ff6b6b'; g.fillRect(-1, -1, 3, 3); g.restore();
     if (Math.random() < 0.6) parts.push({ x: s.x, y: s.y, vx: 0, vy: 10, life: 0.25, max: 0.25, col: '#a01a2a', size: 1, grav: 60 }); }
-  for (const b of bodies) { const a = Math.min(1, b.life / 3) * 0.5;   /* a body lying there, and a green in it */
+  for (const b of bodies) { if (!b.drained) { const k = Math.min(1, b.life / DK2.linger.fade) * (0.16 + 0.08 * Math.sin(time * 3 + b.x)), gx = Math.round(b.x - cx), gy = Math.round(b.y - cy);   /* (claude/dk2b) A FAINT RED GLOW while it can still be harvested or raised */
+      g.globalAlpha = k; g.fillStyle = '#c0283a'; g.fillRect(gx - 9, gy - 4, 18, 4); g.fillRect(gx - 6, gy - 6, 12, 2); g.globalAlpha = k * 0.6; g.fillRect(gx - 12, gy - 2, 24, 2); g.globalAlpha = 1; }
+    const a = Math.min(1, b.life / 3) * 0.5;   /* a body lying there, and a green in it */
     g.globalAlpha = a; g.fillStyle = '#2a3a24'; g.fillRect(Math.round(b.x - cx) - 6, Math.round(b.y - cy) - 3, 12, 3);
     g.fillStyle = '#8fd160'; g.fillRect(Math.round(b.x - cx) - 1 + Math.round(Math.sin(time * 2 + b.x) * 2), Math.round(b.y - cy) - 5, 1, 1); g.globalAlpha = 1; }
   for (const r of risen) {
@@ -8515,6 +8523,7 @@ function drawRisen(cx, cy) {
     g.globalAlpha = 1;
     const k = r.life < 2 ? r.life / 2 : 1; if (k < 1 && Math.random() < 0.3) parts.push({ x: r.x, y: r.y - 8, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: -10 });
   }
+  if (isReaper() && !P.dead) drawPriceBlade(cx, cy);   /* (claude/dk2b) THE BLOOD PRICE: the blade over his shoulder glows redder and grows with what it drank */
   if (isReaper() && !P.dead) drawWard(cx, cy);   /* BLOOD WARD, DRAWN: the ward in front of him, what it holds, and the RETURN */
   for (const c of culls) drawCull(c, cx, cy);
   for (const b of rbolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy);
@@ -8818,7 +8827,7 @@ function fireHeavy() { noteVerb('heavy');
   P.vx = P.face * (isPaladin() ? 40 : 110);
   startSwing(); P.combo = 3;            // a heavy blow counts as the end of a run, not the start of one
   P.heavySwing = true; P.swingMul = heavyMul(); // (AFTER startSwing, which sets swingMul itself from the combo)
-  if (isReaper()) { P.vx = P.face * 30; P.reaping = 0.8; }   /* he does not lunge: he sets his feet to put the sword in the ground */
+  if (isReaper()) { P.vx = P.face * 60; P.reaping = 0.8; dkCleaveStart(); }   /* (claude/dk2b) THE BLOOD PRICE CLEAVE: he steps into the crescent, and what he paid is in it */
   /* THE WARDEN LUNGES. She is the one hero whose held blow TRAVELS: the coil puts her weight over the back foot and the
      drive carries her a tile and a half behind the point, so the line she clears is deeper than the box on any one frame.
      P.runThrough is what the box, the haft's shove and the drive all read to know this is the lunge and not a swing. */
@@ -8945,11 +8954,7 @@ function attackBox0() {
     if (P.ground && cm === 0) return P.face > 0 ? { l: P.x - 12, r: P.x + 28, t: P.y - 22, b: P.y } : { l: P.x - 28, r: P.x + 12, t: P.y - 22, b: P.y };   /* THE SPIN: round behind her too */
     if (P.ground && cm === 2) return P.face > 0 ? { l: P.x + 2, r: P.x + 24, t: P.y - 16, b: P.y - 6 } : { l: P.x - 24, r: P.x - 2, t: P.y - 16, b: P.y - 6 };   /* THE BUTT-JAB */
     return P.face > 0 ? { l: P.x + 2, r: P.x + 26, t: P.y - 28, b: P.y - 1 } : { l: P.x - 26, r: P.x - 2, t: P.y - 28, b: P.y - 1 }; }   /* THE HEAD-STRIKE (and in the air) */
-  if (isReaper() && P.heavy) {   /* THE PLANTED BLADE: only the point coming down hurts; the bolts do the rest */
-    if (P.atk < 0.12 || P.atk >= 0.19) return null;
-    const r = 20 + 12 * tal('longHaft');   /* the point is drawn to 19-20 px on its two live frames; 38 cut the air beyond it */
-    return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 22, b: P.y + 4 } : { l: P.x - r, r: P.x - 2, t: P.y - 22, b: P.y + 4 };
-  }
+  if (isReaper() && P.heavy) return dkCrescentBox(P.x, P.y, P.face, P.atk, P.dkCleave ? P.dkCleave.n : 0, tal('longHaft'));   /* (claude/dk2b) THE BLOOD PRICE CLEAVE: a crescent that grows with what he paid (src/dk2.js) */
   /* ==== THE WARDEN. Every one of these numbers was measured off her own baked frames, not chosen: the point of the
      thrust inks at 44 px from her centre, the short second of the run at 39, the one in the air at 40, and the shaft
      of the spin at 30 in front of her and 13 behind. The box is the spear, and nothing here reaches past the art. ==== */
@@ -8991,13 +8996,7 @@ function attackBox0() {
   if (isPaladin() && P.atk >= 0.06 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 26, t: P.y - 24, b: P.y + 1 } : { l: P.x - 26, r: P.x - 2, t: P.y - 24, b: P.y + 1 }; // the maul: over and down, a wide heavy arc
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
-  if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) {   /* THE CLEAVE: over the shoulder and down through what is in FRONT of him - a sword, not a scythe */
-    /* AS FAR AS IT IS DRAWN, read off the canvas frame by frame: while the blade is still coming over his shoulder it reaches 22 px,
-       and from 0.15 the arc drawSwing lays through the front of him is out to 31. The 46 it was (after 36, a short sword's reach)
-       landed a tile past both, on air the art never touched */
-    const r = (P.atk < 0.15 ? 22 : 31) + 14 * tal('longHaft'), top = 30;
-    return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
-  }
+  if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) return dkRhythmBox(P.x, P.y, P.face, P.atk, dkStep(P.combo), tal('longHaft'));   /* (claude/dk2b) REAPER'S RHYTHM: the rising diagonal, the hook along the shins, the drag from overhead (src/dk2.js; the windows are the old cleave's, its clock quicker) */
   if (isPirate() && P.atk >= 0.03 && P.atk < 0.15) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 19, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 19, b: P.y - 1 };   // a cutlass is long and it is fast
   if (P.atk >= 0.04 && P.atk < 0.16) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 17, b: P.y - 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 17, b: P.y - 1 };
   return null;
@@ -9346,7 +9345,10 @@ function updatePlayer(dt) {
   if (P.rooted && (!P.rooted.alive || P.rooted.mode !== 'hold')) P.rooted = null;
   if (isReaper()) {
     P.harvest = Math.max(0, Math.min(100, P.harvest || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
-    P.reaping = Math.max(0, (P.reaping || 0) - dt);
+    P.reaping = Math.max(0, (P.reaping || 0) - dt); P.dkDrySaid = Math.max(0, (P.dkDrySaid || 0) - dt); P.dkBladeT = Math.max(0, (P.dkBladeT || 0) - dt);
+    if (P.atk >= 0.1 && P.atk < 0.24 && !P.heavy && !P.swingKind && Math.random() < dt * 60) { const k = (P.atk - 0.1) / 0.14, a = -1.1 + 1.6 * k, r = 24 + 6 * Math.random(), st = dkStep(P.combo);   /* (claude/dk2b) REAPER'S RHYTHM: the blade leaves a short BLOOD TRAIL along its cut */
+      const ay = st === 0 ? -a : st === 1 ? 0.6 + 0.3 * k : a;
+      parts.push({ x: P.x + P.face * Math.cos(a) * r, y: P.y - 14 + Math.sin(ay) * 14, vx: P.face * 10, vy: 6, life: DK2.rhythm.trail, max: DK2.rhythm.trail, col: Math.random() < 0.6 ? '#c0283a' : '#7a1020', size: 1, grav: 120 }); }
     P.wardFlash = Math.max(0, (P.wardFlash || 0) - dt); P.plateFlash = Math.max(0, (P.plateFlash || 0) - dt); P.novaCd = Math.max(0, (P.novaCd || 0) - dt); P.returnT = Math.max(0, (P.returnT || 0) - dt); P.wardSince = (P.wardSince ?? 9) + dt; P.retSince = (P.retSince ?? 9) + dt; P.parryT = Math.max(0, (P.parryT || 0) - dt);
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);   /* WEIGHT: his skills and his ward wait for the window */
     /* A full blood bar defers the equipped first-slot skill until release; a long hold spends only Blood Surge. Other slots cast normally. */
@@ -9729,8 +9731,8 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
       const was = P.atk;
-      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? 0.24 : 0.34) : 1) * (P.heavy && !isReaper() ? 0.72 : 1) * (isBz() && BZK ? BZK.swingMul() : 1) * ((P.hasteT || 0) > 0 ? BZ_K.swing.haste : 1);   /* (THE BERSERKER: quicker with rage, quickest in a frenzy, slower one-handed; a WAR CRY quickens anyone) */   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
-      if (P.heavy && isReaper()) { if (was < 0.17 && P.atk >= 0.17) plantBlade(1); if (twice && was < 0.3 && P.atk >= 0.3) plantBlade(2); }
+      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? DK2.price.rate : DK2.rhythm.rate) : 1) * (P.heavy && !isReaper() ? 0.72 : 1) * (isBz() && BZK ? BZK.swingMul() : 1) * ((P.hasteT || 0) > 0 ? BZ_K.swing.haste : 1);   /* (THE BERSERKER: quicker with rage, quickest in a frenzy, slower one-handed; a WAR CRY quickens anyone) */   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
+      if (P.heavy && isReaper() && was < DK2.price.live[0] && P.atk >= DK2.price.live[0]) dkCrescentFx();   /* (claude/dk2b) THE CRESCENT comes round (the planted blade's bolts are THE RED VOLLEY now: dkLanded) */ void twice;
       if (P.heavy && hero() === 'knight' && P.cutStage === 3 && !P.cutQuaked && was < 0.2 && P.atk >= 0.2 && (P.ground || P.swim)) { P.cutQuaked = true; cutQuake(); }   /* THE KNOCKDOWN's blade into the floor */   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { P.atkRec = CM.recoveryFor(hero(), { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut }); P.atkRecMax = P.atkRec;   /* WEIGHT: the swing is seen through (src/commit.js COMMIT) */ if (!P.heavy && P.ground && (isBz() ? P.heavySwing : (P.combo || 0) % 3 === 0)) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
         P.recSwing = P.atkRec > 0;   /* (claude/dkhero) this recovery is a SWING's: the Death Knight's ward may cut its end */
@@ -10041,7 +10043,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if ((e.t === 'shield' || e.t === 'merrowbrute') && front && !throughGuard(e) && !(e.broken > 0) &&!(e.elite && e.mode === 'elDazed')) {   /* (a shield captain turned or run into a wall has his shield flung wide; the merrow brute's clam shell does the same job) */
         guardTurned(e); SFX.clank(); hitstop(0.05); P.vx = e.face * 170; P.vy = Math.min(P.vy, -70); P.ground = false; e.stagger = 0.4; P.atk = 0.22; shakeCam(2, e.face * 2);
         sparks(e.x + e.face * 8, e.y - 8, e.face, 7);
-      } else { heroCut(e); swordEffect(e); if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
+      } else { heroCut(e); swordEffect(e); if (isReaper()) dkLanded(e); if (dashStriking()) dashStrikeHit(e); if (P.swingKind && e.alive && e.glancedAt !== time) swingKindHit(e);   /* a glancing sweep trips nothing, a glancing rise lifts nothing */
         if (P.heavy && e.alive) { // a heavy blow moves whatever it lands on, and SUNDER leaves it open
           const ram = (P.bashing && tal('bash') ? 2 : 1) * (P.bashing ? 1 + 0.15 * prk('kbash') : 1);   /* BULL RUSH: the charge's bash staggers twice as long */
           if (!e.maxHp && !(P.bashing && e.mini)) { e.stagger = Math.max(e.stagger || 0, 0.6 * ram); e.vx = P.face * 200; e.vy = Math.min(e.vy || 0, -40); }
@@ -24791,6 +24793,10 @@ function bloodNova(k0, second) {
 /* BLOOD WARD, DRAWN. A tall crescent of blood standing up in front of the planted greatsword, with a bright rim and a dark line
    outside it so it reads on the darkest ground; it FILLS from the bottom with what it holds, so the ward is its own gauge. A
    RETURN is a white star off its face. What a return gave back hangs over his head as a bar until it is spent. */
+function drawPriceBlade(cx, cy) { if (!(P.charge > 0) || !P.ground && !P.swim) return; const n = P.dkPaidN || 0; if (!n) return;
+  const x = Math.round(P.x - P.face * 13 - cx), y = Math.round(P.y - 36 - cy), r = 2 + n, pulse = 0.55 + 0.25 * Math.sin(time * (8 + n * 2)) + (P.dkBladeT > 0 ? 0.3 : 0);
+  g.globalAlpha = Math.min(1, pulse * 0.45); g.fillStyle = '#c0283a'; g.beginPath(); g.arc(x, y, r + 3, 0, Math.PI * 2); g.fill();
+  g.globalAlpha = Math.min(1, pulse); g.fillStyle = n >= DK2.price.ticks ? '#ffd0d0' : '#ff4a5a'; g.fillRect(x - 1, y - r, 2, r * 2); g.fillRect(x - r + 1, y - 1, r * 2 - 2, 2); g.globalAlpha = 1; }
 function drawWard(cx, cy) {
   const cap = wardCap(), gk = Math.min(1, (P.wardG || 0) / cap), px = Math.round(P.x - cx), py = Math.round(P.y - cy), fc = P.face > 0 ? 1 : -1;
   if (P.warding) { const W = 6, H = 40, bx = px + fc * 11, top = py - H - 2, fl = Math.min(1, (P.wardFlash || 0) / 0.2), fill = H - Math.round(H * gk), pulse = 0.5 + 0.5 * Math.sin(time * 7);
@@ -24847,6 +24853,57 @@ function graveFall() {
     for (let j = 0; j < 3; j++) parts.push({ x: gx, y: P.y, vx: d * 10, vy: -120 - (7 - k) * 22 - Math.random() * 40, life: 0.28 + k * 0.03, max: 0.45, col: j === 0 ? '#5a0a14' : j === 1 ? '#c0283a' : '#ff6b6b', size: 2, grav: 700 }); }
   ringAt(P.x, P.y - 2, reach, '#8a1020', 0.35); shakeCam(5); zoomKick(1.04, 0.16); SFX.squelch();
 }
+/* ==== THE DEATH KNIGHT 2 (claude/dk2b, scratch/brief-dk2.md; numbers in src/dk2.js DK2). HE PAYS IN BLOOD AND DRAINS IT BACK. ==== */
+/* THE BLOOD PRICE: one price the moment the wind starts, then one every DK2.price.every s held - his own health, floored at 1 (HE NEVER KILLS
+   HIMSELF). At one he has nothing left to pay: the blade drinks nothing and grows no more. Held at the last price a beat, it goes by itself. */
+function dkPriceReset() { P.dkPaid = 0; P.dkPaidN = 0; P.dkPriceT = 0; P.dkHeldFull = 0; }
+function dkPriceTick(dt) { const S = DK2.price;
+  if ((P.dkPaidN || 0) >= S.ticks) { P.dkHeldFull = (P.dkHeldFull || 0) + dt; if (P.dkHeldFull >= S.every) { fireHeavy(); P.atkHeld = 0; P.charge = 0; return true; } return false; }
+  P.dkPriceT = (P.dkPriceT || 0) - dt; if (P.dkPriceT > 0) return false; P.dkPriceT = S.every;
+  const c = dkPriceOf(P.maxHp), hp0 = P.hp, free = !!(L && L.trial) || SET.invincible;   /* (a trial never hurts: the price is shown, not taken) */
+  if (!free) P.hp = dkFloor(P.hp, c);
+  const paid = free ? c : hp0 - P.hp; if (paid <= 0) { if (!(P.dkDrySaid > 0)) { P.dkDrySaid = 1.5; number(P.x, P.y - 30, 'NO BLOOD LEFT TO PAY', '#7a1020'); } return false; }
+  P.dkPaid = (P.dkPaid || 0) + paid; P.dkPaidN = (P.dkPaidN || 0) + 1; P.dkBladeT = 0.25;
+  number(P.x, P.y - 22 - 4 * (P.dkPaidN % 2), '-' + paid, '#c0283a'); SFX.bloodDraw(); if (P.dkPaidN === S.ticks) { SFX.tell(true); ringAt(P.x - P.face * 6, P.y - 30, 16, '#ff4a5a', 0.3); }
+  for (let i = 0; i < 4 + P.dkPaidN; i++) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 12 - Math.random() * 8, vx: -P.face * (20 + Math.random() * 30), vy: -40 - Math.random() * 30, life: 0.4, max: 0.4, col: Math.random() < 0.6 ? '#c0283a' : '#ff6b6b', size: 1, grav: -30 });   /* it runs out of him into the blade over his shoulder */
+  return false; }
+/* THE CRESCENT, let go: what he paid is in it (dkCleaveMul), and it is a HEAVY blow (B14: P.heavy) */
+function dkCleaveStart() { const n = P.dkPaidN || 0, paid = P.dkPaid || 0; P.dkCleave = { n, paid, landed: false, volley: false }; P.swingMul = (P.swingMul || 1) * dkCleaveMul(n); dkPriceReset();
+  if (n > 0) number(P.x, P.y - 34, n >= DK2.price.ticks ? 'THE FULL PRICE' : 'BLOOD PRICE', '#ff4a5a'); }
+function dkCrescentFx() { const c = P.dkCleave, n = c ? c.n : 0, x = P.x + P.face * 18, y = P.y - 18;
+  SFX.heavy(); SFX.dkWard(); shakeCam(3 + n * 0.6, P.face * 2); zoomKick(1.03 + 0.008 * n, 0.18);
+  for (let i = 0; i < 10 + 3 * n; i++) { const a = -Math.PI * 0.75 + Math.PI * 1.1 * (i / (10 + 3 * n)), r = DK2.price.reach * 0.8 + DK2.price.grow * n;
+    parts.push({ x: P.x + P.face * Math.cos(a) * r, y: y + 14 + Math.sin(a) * r * 0.9, vx: P.face * 40, vy: 10, life: 0.3, max: 0.3, col: i % 3 ? '#c0283a' : '#ffd0d0', size: n >= 4 ? 2 : 1, grav: 0 }); }
+  ringAt(x, y, 14 + 3 * n, '#ff4a5a', 0.25); }
+/* A CUT OF HIS THAT LANDS (after heroCut, every foe it finds) */
+function dkLanded(e) { if (!e) return;
+  if (P.heavy && P.dkCleave) { const c = P.dkCleave;
+    if (!c.landed) { c.landed = true; if (c.paid > 0) { const back = Math.round(c.paid * DK2.price.back), hp0 = P.hp; P.hp = Math.min(P.maxHp, P.hp + back);   /* THE BLOOD COMES BACK: double what he paid, once a cleave */
+      if (P.hp > hp0) number(P.x, P.y - 40, '+' + (P.hp - hp0) + ' DRAINED', '#ff6b6b'); dkDrainFx(e); SFX.bloodDraw(); } }
+    if (!c.volley && tal('fullCircle') && c.n >= DK2.price.volleyAt) { c.volley = true; plantBlade(1); }   /* THE RED VOLLEY (fullCircle): a deep-paid crescent looses the old planted blade's bolts */
+    return; }
+  if (P.plunge || P.swingKind || P.dashCut) return;   /* (the rhythm is the chain on his feet, not the sweep, the rise, the dash cut or the drop) */
+  const st = dkStep(P.combo);
+  if (st === 1 && e.alive && !e.maxHp && !e.mini && !e.harmless && !e.noGrav && !HEAVY.has(e.t)) {   /* THE HOOK: the reverse sweep pulls it a step to him (never a boss, a mini or a heavy one) */
+    const want = e.x - P.face * DK2.rhythm.pull, lim = P.x + P.face * 12, nx = P.face > 0 ? Math.max(want, lim) : Math.min(want, lim);
+    if ((nx - e.x) * P.face < 0 && !isSolid(Math.floor(nx / TS), Math.floor((e.y - 6) / TS))) { e.x = nx; e.vx = 0; P.dkHooks = (P.dkHooks || 0) + 1; } }
+  if (st === 2 && !P.dkDrained) { P.dkDrained = true; const d = dkDragDrain(swordDmg() * (P.swingMul || 1)), hp0 = P.hp; P.hp = Math.min(P.maxHp, P.hp + d);   /* THE DRAG: a sliver of it comes back up the blade */
+    if (P.hp > hp0) { number(P.x, P.y - 34, '+' + (P.hp - hp0), '#ff6b6b'); dkDrainFx(e); } P.dkDrags = (P.dkDrags || 0) + 1; }
+  if (!P.dkFed) { P.dkFed = true; const top = wardCap() * DK2.rhythm.wardTop; if ((P.wardG || 0) < top) { P.wardG = Math.min(top, (P.wardG || 0) + DK2.rhythm.ward); P.wardKeepT = 3; P.dkFeeds = (P.dkFeeds || 0) + 1; } }   /* EVERY CUT THAT LANDS FEEDS THE WARD (never to full: a fed ward does not break) */
+}
+function dkDrainFx(e) { for (let i = 0; i < 8; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - (e.h || 16) * 0.6, vx: (P.x - e.x) * (1.8 + Math.random()), vy: -30 - Math.random() * 40, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: 1, grav: 40 }); }
+/* GRAVE KNEEL: down on one knee, the greatsword planted point-down in front. A LOW blow (its creature's last tell is a 'low' row of
+   src/marks.js HEIGHT, or the blow says o.low) from the front meets the blade - for a guard's wind. A red one goes through at half. */
+function dkKneelTakes(fromX, dmg, unblockable, src, low) {
+  if (!P.ducking || P.harvBody || !(low || blowLow(src, time))) return null;   /* (drawing a body the blade lies behind him: he is EXPOSED, src/crouch-b.js) */
+  const front = Math.sign(fromX - P.x) === P.face || fromX === P.x; if (!front) return null;
+  if (unblockable) { P.dkKneelSaid = time; number(P.x, P.y - 22, 'UNDER THE BLADE', '#ff6b6b'); return 'half'; }
+  const cost = CM.blockCost(dmg); P.dkKneelBlocks = (P.dkKneelBlocks || 0) + 1;
+  if (P.st < cost) { P.st = 0; P.stFlash = 0.5; P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); SFX.guardBreak(); number(P.x, P.y - 22, 'THE KNEEL BREAKS', '#ffd36b'); return 'half'; }
+  P.st -= cost; P.stDelay = ST.delay; blocks++; trialEvent('block'); gainHarvest(1);
+  const sd = Math.sign(fromX - P.x) || P.face; SFX.lowGuard(); SFX.clank(); hitstop(0.04); sparks(P.x + sd * 10, P.y - 4, sd, 6); ringAt(P.x + sd * 10, P.y - 4, 10, '#ff4a5a', 0.22);
+  if (time - (P.dkKneelSaid ?? -9) > DK2.kneel.said) { P.dkKneelSaid = time; number(P.x, P.y - 22, 'GRAVE KNEEL', '#ff9a9a'); }
+  return 'blocked'; }
 function plantBlade(n) {
   const x = P.x + P.face * 14, y = P.y;
   SFX.heavy(); SFX.crack(); SFX.stone(); SFX.golemStomp && SFX.dkPlant(); shakeCam(n > 1 ? 5 : 7, P.face * 2); zoomKick(1.06, 0.25); hitstop(0.06);
@@ -26033,7 +26090,7 @@ function updateCorpses(dt) {
     if (fx.parts.some(p => p.clack) && fx.parts.reduce((n, p) => n + (p.clack ? 1 : 0), 0) > was && !fx.clacked) { fx.clacked = true; SFX.clatter(); }
     for (const p of fx.parts) p.clack = false; return on; });
   for (const c of corpses) {
-    c.life -= dt; c.sq = Math.max(0, (c.sq || 0) - dt);
+    c.life -= c.dkHeld && c.settled ? 0 : dt; c.sq = Math.max(0, (c.sq || 0) - dt);   /* (claude/dk2b: held while his body still lies there) */
     if (c.life <= 0 && !c.poofed && c.max > 0.05) { c.poofed = true; smoke(c.x, c.y - 4, 3, 5); }   /* it does not blink out: it goes to smoke */
     if (c.crumple) continue;
     if (c.run) { c.x += c.vx * dt; c.frame = Math.floor(c.life * 10) % 2; continue; }   /* THE SERJEANT'S HORSE goes on down the road without him */
@@ -26993,7 +27050,7 @@ function plungeWave(D) { let caught = 0;
 function dashAttack() { if (DASH_STRIKE[hero()]) return dashStrike(DASH_STRIKE[hero()]); P.dashLate = 0; P.dash = 0; P.dashAtk = 0.24; P.swingMul = Math.max(P.swingMul || 1, 1.6); if (!P.ground) P.vy = Math.min(P.vy, 30);
   streaks(P.x + P.face * 10, P.y - 11, P.face, ['#fff6e0', '#ffd36b'], 170); ringAt(P.x + P.face * 14, P.y - 11, 8, '#ffd36b', 0.18); zoomKick(1.03, 0.12); SFX.heavy();
   P.dashCut = true; if (dashAtkShown < 3) { dashAtkShown++; number(P.x, P.y - 28, 'DASH ATTACK', '#ffd36b'); } }
-function startSwing() { const quick0 = inRun(), quick = isBz() && BZK ? BZK.chopStart(quick0) : quick0;   /* THE BERSERKER's run goes on only while his chops land (berserker.js chopStart) */ P.swingKind = null; P.dashCut = false; P.cutStage = 0;
+function startSwing() { P.dkFed = false; P.dkDrained = false; const quick0 = inRun(), quick = isBz() && BZK ? BZK.chopStart(quick0) : quick0;   /* THE BERSERKER's run goes on only while his chops land (berserker.js chopStart) */ P.swingKind = null; P.dashCut = false; P.cutStage = 0;
   if (!P.ground && (!P.airHang || tal('hangCut')) && !P.swim) { P.airHang = true; P.vy = Math.min(P.vy, 20); }   /* THE AIR SLASH hangs: the first swing in a jump stops the fall for a beat, once a jump */ P.combo = quick ? (P.combo || 0) + 1 : 1; P.lastSwingT = time;
   SFX.swingUp ? SFX.swingUp(Math.min(3, P.combo - 1)) : null; // the run of them climbs in pitch
   // THE THIRD CUT. Every hero, no talent needed: this is what the attack IS, and the tree only sharpens it.
@@ -30453,10 +30510,12 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.lcBrace > 0) { key = K.R.brace ? 'brace' : 'block'; frame = 0; }   /* THE LAST CHARGE's tell: braced square behind the shield */
       else if ((P.rush > 0 || P.lcLeft > 0) && K.R.rush) { key = 'rush'; frame = Math.floor(time * (P.lcLeft > 0 ? 18 : 14)) % 2; }
       else if (P.rushRec > 0 && K.R.recover) key = 'recover';
+      else if (isReaper() && P.heavy && P.atk >= 0 && K.R.crescent) { key = 'crescent'; frame = P.atk < DK2.price.live[0] ? 0 : P.atk < DK2.price.live[1] ? 1 : 2; }   /* (claude/dk2b) THE CRESCENT CLEAVE: its own three frames */
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : isGeo() ? 0.34 : 0.26) && K.R.atk && K.R.atk[3]) { key = isGeo() || isBz() ? 'heavy' : 'atk'; frame = isGeo() || isBz() ? 2 : 3; } }   /* (she stays down on the stave while her crack runs) */
       else if (hero() === 'knight' && knightWinding() && K.R.windup) { key = 'windup'; frame = Math.max(0, cutStage(P.atkHeld || 0) - 1); }   /* THE HEAVY CUT: the sword up over the shield, a frame a stage */
+      else if (isReaper() && P.charge > 0 && K.R.priceHold) { key = 'priceHold'; frame = (P.dkPaidN || 0) >= 3 ? 1 : 0; }   /* (claude/dk2b) THE BLOOD PRICE, held: the blade drinking over his shoulder */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0 && P.swingRiposte && K.R.ripo && P.ground && !P.swingKind) { key = 'ripo'; frame = RP.ripoFrame(P); }   /* (claude/riposteart) THE RIPOSTE STRIKE out of the parry: the step-in, the cut or thrust with its gold flash, the follow-through - each hero's own weapon */
@@ -32545,7 +32604,7 @@ setInterval(() => { if (performance.now() - lastTick > 200) tick(performance.now
 await LS.drive(loadLevelG(0));   /* the first wood, inside the boot bar */
 await LS.step('final');
 document.getElementById('boot').remove();
-window.BK = { heroColors: () => JSON.parse(JSON.stringify(HERO_COLOR)), setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER.slice(), heroOpen: h => heroOpen(h), denyAt: () => heroDenyAt, heroArt: h => heroPreviewSet(h).R.idle[0],   /* (claude/heroroster) the dev flag's TEST HOOK, the device roster, whether a hero is pickable */ tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P), standing: () => TGM.standing(), throwIt: () => throwCarry(), note: pr => TGM.bellNote(pr), hurt: (e, d, x) => hurtEnemy(e, d, x, false) } : null),   /* THE TEMPLE GUARDIAN (src/temple-guardian.js) for the lab and tools/temple-guardian.mjs */ uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
+window.BK = { dk2: () => ({ DK2, bodies, corpses, enemies, box: () => attackBox(), hit: (x, d, o) => damagePlayer(x, d, o || {}), spawn: e => spawnEnt(e), kill: e => hurtEnemy(e, 9999, P.x, false), wardG: () => P.wardG || 0, wardCap: () => wardCap(), stats: () => ({ hooks: P.dkHooks || 0, drags: P.dkDrags || 0, feeds: P.dkFeeds || 0, kneels: P.dkKneelBlocks || 0, paid: P.dkPaid || 0, paidN: P.dkPaidN || 0, cleave: P.dkCleave ? { ...P.dkCleave } : null }) }),   /* (claude/dk2b) THE DEATH KNIGHT 2, for tools/dk2.mjs */ heroColors: () => JSON.parse(JSON.stringify(HERO_COLOR)), setDev: v => setDev(v), isDev: () => isDev(), roster: () => ROSTER.slice(), heroOpen: h => heroOpen(h), denyAt: () => heroDenyAt, heroArt: h => heroPreviewSet(h).R.idle[0],   /* (claude/heroroster) the dev flag's TEST HOOK, the device roster, whether a hero is pickable */ tg: () => (TGM ? { ...TGM.state(), take: p => TGM.takeBlock(p || P), standing: () => TGM.standing(), throwIt: () => throwCarry(), note: pr => TGM.bellNote(pr), hurt: (e, d, x) => hurtEnemy(e, d, x, false) } : null),   /* THE TEMPLE GUARDIAN (src/temple-guardian.js) for the lab and tools/temple-guardian.mjs */ uiHud: { hint: (m, t = 4.5) => { hintMsg = m; hintT = t; }, q: toastQ, rects: () => hudRects, env: () => hudEnvR, sun: () => sunPrev, fade: () => ({ ...uiFade, now: time }), gfx: () => UIH.gfxOf(SET), msg: () => menuMsg, SET: () => SET }, village: () => ({ G: () => VG, saved: () => straysGot.size, total: () => questOf().n, smokeUp: s => smokeUp(s), buckets: () => props.filter(q => q.t === 'vbucket'), take: pr => { P.carry = pr; pr.state = 'held'; pr.hurtWas = P.hurt > 0; }, throwIt: () => throwCarry() }), markOver: e => e && e.t === 'emberwisp' ? '!!' : null, gargBreak: m => breakSlab(m),   /* THE GATE GARGOYLE's slab break, for tools/gargoyle-smash.mjs */ store: { coinRoute: id => coinRoute(HEROES.find(h => h.id === id)), coinHeroes: () => HEROES.filter(h => h.coinNeeds).map(h => ({ id: h.id, needs: h.coinNeeds, boss: !!h.coinBoss })), silverLeft: () => silverAvail(), buy: id => buyHeroCoins(id), locked: id => { const k = HEROES.find(h => h.id === id); return !!(k && ((k.needs && !(PROG[k.needs] && PROG[k.needs].cleared)) || (k.feat && !featDone(k.feat)))); } }, phalanx: () => phalanx, pinning: () => P.pinning,   /* THE WARDEN's row of spears and what she has on the point, for the harnesses */
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */

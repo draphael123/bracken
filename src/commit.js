@@ -12,6 +12,7 @@
    3. THE SEAM (shared with the LEVELING lane): staminaOf(P) is the ONE place max / regen / roll-cost growth is read. main.js binds the
       level hooks (bindStamina) - this module never hard-codes the level numbers, and LEVELING's ENDURANCE feeds P.maxSt. */
 
+import { DK2 } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: REAPER'S RHYTHM and the crescent run on their own clocks */
 export const WINDOW = 0.06;   /* s: the last four frames of a recovery are the cancel window, for everything */
 
 /* RECOVERY ADDED AFTER THE SWING'S ART ENDS (s), per hero x verb. Light totals press-to-free (WEIGHT-T): freebooter 0.29, knight/warden/pyro 0.40,
@@ -34,7 +35,7 @@ export const PLUNGE_WHIFF = 0.10;   /* a plunge that met nothing lands this much
 
 /* THE SWING'S ART: P.atk runs 0 -> lim at this rate (main.js advances it with artRate, so the two can never disagree) */
 export const artLim = heavy => heavy ? 0.42 : 0.3;
-export const artRate = (h, heavy) => (h === 'paladin' ? 0.56 : h === 'pirate' ? 1.35 : h === 'reaper' ? (heavy ? 0.24 : 0.34) : 1) * (heavy && h !== 'reaper' ? 0.72 : 1);
+export const artRate = (h, heavy) => (h === 'paladin' ? 0.56 : h === 'pirate' ? 1.35 : h === 'reaper' ? (heavy ? DK2.price.rate : DK2.rhythm.rate) : 1) * (heavy && h !== 'reaper' ? 0.72 : 1);
 
 /* how long the recovery after a swing's art is. An AIR swing adds none (the plunge may follow it once its active frames are out); the
    dash cut keeps its own rooted dashRec; a crouched blow (crouch-a) is a light one */
