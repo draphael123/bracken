@@ -111,8 +111,8 @@ export function makeHolyFx(api) {
       g.globalAlpha = a * 0.7; g.fillStyle = W; g.beginPath(); g.arc(x, y, 8 * (1 - k) + 2, 0, 7); g.fill();
       g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; B(g, x, y, r * 0.8, 0.35 * a, 'gold'); }
     for (const v of vstrikes) { const k = v.t / v.max, a = 1 - k * k, x = Math.round(v.x - cx), y = Math.round(v.y - cy), h = Math.round(120 * Math.min(1, v.t / 0.06)), w = Math.max(3, Math.round(7 * (1 - k * 0.5)));
-      g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.75 * a; g.fillStyle = G; g.fillRect(x - Math.ceil(w / 2) - 2, y - h, w + 4, h);
-      g.globalAlpha = 0.9 * a; g.fillStyle = C; g.fillRect(x - Math.floor(w / 2), y - h, w, h); g.globalAlpha = a; g.fillStyle = W; g.fillRect(x - Math.max(0, Math.floor(w / 2) - 1), y - h, Math.max(1, w - 2), h);
+      g.globalAlpha = 0.8 * a; g.fillStyle = '#e8a82c'; g.fillRect(x - Math.ceil(w / 2) - 2, y - h, w + 4, h); g.globalAlpha = 0.9 * a; g.fillStyle = G; g.fillRect(x - Math.ceil(w / 2) - 1, y - h, w + 2, h);   /* (the golden body in plain colour so it stays gold over a night sky) */
+      g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.85 * a; g.fillStyle = C; g.fillRect(x - Math.max(0, Math.floor(w / 2) - 1), y - h, Math.max(1, w - 2), h); g.globalAlpha = a; g.fillStyle = W; g.fillRect(x - Math.max(0, Math.floor(w / 2) - 2), y - h, Math.max(1, w - 4), h);
       g.globalAlpha = 0.7 * a; g.strokeStyle = W; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, 3 + 15 * k, 1 + 4 * k, 0, 0, 7); g.stroke();   /* the sigil's ring, flat on the floor */
       g.globalAlpha = 0.5 * a; g.strokeStyle = G; g.beginPath(); g.ellipse(x, y - 1, 2 + 9 * k, 1 + 2.5 * k, 0, 0, 7); g.stroke();
       g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; B(g, x, y - 24, 20, 0.35 * a, 'gold'); }
