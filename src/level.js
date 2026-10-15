@@ -228,7 +228,7 @@ function brackenWood() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 },
     pools: [{ x0: 85 * TS, x1: 98 * TS, y: 23 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 13 * TS }, { x0: 215 * TS, x1: 218 * TS, y: 16 * TS }, { x0: 251 * TS, x1: 255 * TS, y: 10 * TS }],
     falls: [],
-    duskStart: 2700, duskLen: 1000, music: 'theme',
+    duskStart: 2700, duskLen: 1000, music: 'brackenwood',
 
     weather: [{ x0: 0, x1: 1500, kind: 'pollen' }, { x0: 3150, x1: 3800, kind: 'mist' }, { x0: 4540, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 3150, kind: 'forest' }, { x0: 3150, x1: 3800, kind: 'water' }, { x0: 3800, x1: 4540, kind: 'forest' }, { x0: 4540, x1: 99999, kind: 'hive' }],
@@ -1200,7 +1200,7 @@ function kingswood() {
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 45 * TS, kind: 'forest' }, { x0: 45 * TS, x1: 150 * TS, kind: 'fire' }, { x0: 150 * TS, x1: 211 * TS, kind: 'forest' }, { x0: 211 * TS, x1: 275 * TS, kind: 'fire' }, { x0: 275 * TS, x1: 316 * TS, kind: 'forest' }, { x0: 316 * TS, x1: 99999, kind: 'fire' }],   /* the open wood keeps its birds; the court's halls (the trunk halls, the great hall) have hearth fires and no birds (claude/identity0) */
 
-    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'goblinroyal', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
+    arena: { x0: 316 * TS, x1: 370 * TS, floor: 14 * TS, trigger: 322 * TS, wallL: 315, wallR: 371, boss: 'king', music: 'gorm', tint: '#c9463d', tintA: 0.12, fx: 'embers' },
     mini: { x0: 168 * TS, x1: 189 * TS, floor: 14 * TS, trigger: 172 * TS, wallL: 167, gate: 190, boss: 'greathound' },
   }
   // ---- 5c. THE TOLL BRIDGE: a rope bridge over the gorge. Pikes hold it, a cutter waits at the far post; if it falls, ledges below lead back up. ----
@@ -7787,7 +7787,7 @@ function theMagesFolly() {
 
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: G - 1 }, pools, falls: [], moversExtra, interiors, gusts: [], winds,   /* THE WARDED COURTYARD's drain and gate ditch (spike-winds.js) */
-    music: 'musUnder', night: true, nightA: 0.14, edgeLit: true, duskStart: 99999, duskLen: 1,
+    music: 'folly', night: true, nightA: 0.14, edgeLit: true, duskStart: 99999, duskLen: 1,
     mage: { shelves, skins, hedges, chains, dais: [632, 640], flood: [611, 632], stacks: [614, 619, 624, 629], weight: 616, cage: [[633, 2], [641, 2]], hung: [[520, 6], [570, 2]], outside: 64, yard: G, portcullis: [53, 56, G - 11, G - 5] },   /* (yard: the courtyard's paving row, for its backdrop - src/tower-ascent.js) */
 
     palette: { sky: 'mage', far: 'mage', mid: 'mage', near: 'mage', dress: 'village', haze: 'rgba(120,90,180,0.10)',

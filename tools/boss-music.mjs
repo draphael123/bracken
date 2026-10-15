@@ -26,7 +26,7 @@ assert.equal(arena('mage').music, 'archmage', "the Archmage's arena is not on th
 assert.equal(arena('fallingtower').music, 'undeadmage', "the Undead Archmage's arena is not on his own recording (claude/archmage2b: audio/undeadmage.ogg; his stair chase plays arena.music from the first step)");
 assert.ok(A.MUSIC_NAMES.includes('undeadmage') && /Matthew Pablo/.test(A.MUSIC_CREDITS.undeadmage || '') && !A.MUSIC_NAMES.includes('archmage:undead'), 'the Undead Archmage\'s recording has no credited Sound Test row (or the old synth voicing is still listed)');
 assert.ok(!('archmage:undead' in BM.SYNTH_VARIANT), 'the undead synth voicing is still in boss-music.js - nothing plays it now');
-assert.equal(arena('kings').music, 'goblinroyal', "the Goblin King's arena is not on the Goblin royals' theme");
+assert.equal(arena('kings').music, 'gorm', "KING GORM's arena is not on his own recording (claude/music1015: audio/gorm.ogg, Emma_MA's Determined Pursuit)");
 assert.equal(arena('crown').music, 'goblinroyal', "the Goblin Queen's arena is not on the Goblin royals' theme");
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
@@ -97,7 +97,7 @@ const hs = Object.values(results).map(r => r.hash); assert.equal(new Set(hs).siz
 assert.equal(errors.length, 0, 'the scheduler threw: ' + (errors[0] && errors[0].message));
 const gainNow = A.debugAudio().musicGain.gain; A.music.play('archmage'); assert.ok(A.debugAudio().wantTrack === 'archmage');
 A.music.stop();
-console.log('ok  boss-music   Drowned King (keep, drownedking), Winchmaster (oreroad, winchmaster), Gate Gargoyle (witchlight, gargoyle); Archmages (mage) on the archmage theme, the Undead Archmage (fallingtower) on his own recording, Goblin King + Queen on goblinroyal; ' +
+console.log('ok  boss-music   Drowned King (keep, drownedking), Winchmaster (oreroad, winchmaster), Gate Gargoyle (witchlight, gargoyle); Archmages (mage) on the archmage theme, the Undead Archmage (fallingtower) on his own recording, KING GORM on his own recording, the Goblin Queen on goblinroyal; ' +
   Object.entries(results).map(([k, v]) => k + ' ' + v.seconds + 's ' + v.perSecond + ' osc/s').join(', ') + '; loops repeat exactly');
 process.exit(0);
 } catch (e) { console.error(e && e.stack || e); process.exit(1); }
