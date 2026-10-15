@@ -145,7 +145,7 @@ export function makeCrouchB(api) {
     if (h === 'paladin' && R.kneel && p.kneelT >= KNEEL.settle) return ['kneel', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];
     if (h === 'geomancer' && R.sense && p.senseT >= SENSE.settle) return ['sense', Math.floor(p.senseT * 3) % 2];
     if (h === 'reaper' && R.harvest && p.harvBody) return ['harvest', p.harvT > HARVEST.time * 0.5 ? 1 : 0];
-    if (h === 'reaper' && R.graveKneel) return ['graveKneel', Math.floor(api.time * 1.6) % 2];   /* (claude/dk2b) GRAVE KNEEL: the blade planted point-down in front of him (src/dk2.js) */
+    if (h === 'reaper' && R.graveKneel) return ['graveKneel', api.time - (p.dkKneelHit ?? -9) < 0.24 ? 2 : Math.floor(api.time * 1.6) % 2];   /* (claude/dk2art: the third beat - a low blow turned on the blade) */   /* (claude/dk2b) GRAVE KNEEL: the blade planted point-down in front of him (src/dk2.js) */
     return null; }
 
   /* DRAWN (after the hero): his prayer's glow; what her sense has shown, outlined and pulsing; the draw going out of a body */

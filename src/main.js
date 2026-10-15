@@ -8351,6 +8351,7 @@ function updateCharge(dt) {
   } else P.chargeFull = false;
 }
 let bloodBolts = [];
+let dkTrail = [], dkArcs = [];   /* (claude/dk2art) THE DEATH KNIGHT's blood trail (the blade's tip, fading) and the crescent's arcs */
 let bodies = [], risen = [], rbolts = [], hands = [], thrownScythe = null, grips = [], unholy = [];
 let novas = [];   /* the BLOOD NOVA's rings, going out */
 /* BLOOD WARD, IN NUMBERS. C held a twelfth of a second stands the ward up (the blade going in); standing it up costs six wind
@@ -8497,8 +8498,11 @@ function drawRisen(cx, cy) {
     g.strokeStyle = s.struck ? '#ff9a9a' : '#c0283a'; g.lineWidth = 2; g.beginPath(); g.arc(0, 0, 4, 1.4, 5.6); g.stroke();
     g.fillStyle = '#ff6b6b'; g.fillRect(-1, -1, 3, 3); g.restore();
     if (Math.random() < 0.6) parts.push({ x: s.x, y: s.y, vx: 0, vy: 10, life: 0.25, max: 0.25, col: '#a01a2a', size: 1, grav: 60 }); }
-  for (const b of bodies) { if (!b.drained) { const k = Math.min(1, b.life / DK2.linger.fade) * (0.16 + 0.08 * Math.sin(time * 3 + b.x)), gx = Math.round(b.x - cx), gy = Math.round(b.y - cy);   /* (claude/dk2b) A FAINT RED GLOW while it can still be harvested or raised */
-      g.globalAlpha = k; g.fillStyle = '#c0283a'; g.fillRect(gx - 9, gy - 4, 18, 4); g.fillRect(gx - 6, gy - 6, 12, 2); g.globalAlpha = k * 0.6; g.fillRect(gx - 12, gy - 2, 24, 2); g.globalAlpha = 1; }
+  for (const b of bodies) { if (!b.drained) { const fade = Math.min(1, b.life / DK2.linger.fade), k = 0.5 + 0.5 * Math.sin(time * 3 + b.x), gx = Math.round(b.x - cx), gy = Math.round(b.y - cy);   /* (claude/dk2b) A FAINT RED GLOW while it can still be harvested or raised */
+      g.globalAlpha = fade * (0.14 + 0.1 * k); g.fillStyle = '#c8283c'; g.beginPath(); g.ellipse(gx, gy - 1, 15, 4, 0, 0, 7); g.fill(); g.globalAlpha = fade * (0.22 + 0.14 * k); g.fillStyle = '#ff6b6b'; g.beginPath(); g.ellipse(gx, gy - 1, 8, 2, 0, 0, 7); g.fill();
+      { const t2 = (time * 0.7 + b.x * 0.013) % 1; g.globalAlpha = fade * 0.5 * (1 - t2); g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(gx, gy - 1, 6 + 10 * t2, 1.5 + 2.5 * t2, 0, 0, 7); g.stroke(); }
+      for (let i = 0; i < 3; i++) { const t2 = (time * 0.9 + i / 3 + b.x * 0.02) % 1; g.globalAlpha = fade * 0.8 * (1 - t2); g.fillStyle = i % 2 ? '#ff9aa6' : '#c8283c'; g.fillRect(gx - 5 + i * 5 + Math.round(Math.sin(time * 2 + i * 2.1) * 2), gy - 3 - Math.round(t2 * 12), 1, 2); }
+      g.globalAlpha = 1; }
     const a = Math.min(1, b.life / 3) * 0.5;   /* a body lying there, and a green in it */
     g.globalAlpha = a; g.fillStyle = '#2a3a24'; g.fillRect(Math.round(b.x - cx) - 6, Math.round(b.y - cy) - 3, 12, 3);
     g.fillStyle = '#8fd160'; g.fillRect(Math.round(b.x - cx) - 1 + Math.round(Math.sin(time * 2 + b.x) * 2), Math.round(b.y - cy) - 5, 1, 1); g.globalAlpha = 1; }
@@ -9347,6 +9351,7 @@ function updatePlayer(dt) {
     P.harvest = Math.max(0, Math.min(100, P.harvest || 0)); P.castT = Math.max(0, (P.castT || 0) - dt); P.blastT = Math.max(0, (P.blastT || 0) - dt);
     P.reaping = Math.max(0, (P.reaping || 0) - dt); P.dkDrySaid = Math.max(0, (P.dkDrySaid || 0) - dt); P.dkBladeT = Math.max(0, (P.dkBladeT || 0) - dt);
     if (P.atk >= 0.1 && P.atk < 0.24 && !P.heavy && !P.swingKind && Math.random() < dt * 60) { const k = (P.atk - 0.1) / 0.14, a = -1.1 + 1.6 * k, r = 24 + 6 * Math.random(), st = dkStep(P.combo);   /* (claude/dk2b) REAPER'S RHYTHM: the blade leaves a short BLOOD TRAIL along its cut */
+      { const tx = st === 0 ? 14 + 12 * k : st === 1 ? 32 - 20 * k : 8 + 24 * k, ty = st === 0 ? -3 - 22 * k : st === 1 ? -4 : -31 + 27 * k; dkTrail.push({ x: P.x + P.face * tx, y: P.y + ty, t: 0, w: st === 2 ? 4 : 3 }); }   /* (claude/dk2art) the ribbon the blade draws: the rising cut up, the hook back along the shins, the drag down */
       const ay = st === 0 ? -a : st === 1 ? 0.6 + 0.3 * k : a;
       parts.push({ x: P.x + P.face * Math.cos(a) * r, y: P.y - 14 + Math.sin(ay) * 14, vx: P.face * 10, vy: 6, life: DK2.rhythm.trail, max: DK2.rhythm.trail, col: Math.random() < 0.6 ? '#c0283a' : '#7a1020', size: 1, grav: 120 }); }
     P.wardFlash = Math.max(0, (P.wardFlash || 0) - dt); P.plateFlash = Math.max(0, (P.plateFlash || 0) - dt); P.novaCd = Math.max(0, (P.novaCd || 0) - dt); P.returnT = Math.max(0, (P.returnT || 0) - dt); P.wardSince = (P.wardSince ?? 9) + dt; P.retSince = (P.retSince ?? 9) + dt; P.parryT = Math.max(0, (P.parryT || 0) - dt);
@@ -24794,10 +24799,15 @@ function bloodNova(k0, second) {
 /* BLOOD WARD, DRAWN. A tall crescent of blood standing up in front of the planted greatsword, with a bright rim and a dark line
    outside it so it reads on the darkest ground; it FILLS from the bottom with what it holds, so the ward is its own gauge. A
    RETURN is a white star off its face. What a return gave back hangs over his head as a bar until it is spent. */
+/* (claude/dk2art) THE BLOOD PRICE'S BLADE: a halo at the tip of the steel over his shoulder (the tip as priceHold draws it), larger and hotter with every price, red motes rising off it, white-hot at the full price */
+const DK_TIP = [[-10, -20], [-11, -23], [-13, -25], [-14, -27]];
 function drawPriceBlade(cx, cy) { if (!(P.charge > 0) || !P.ground && !P.swim) return; const n = P.dkPaidN || 0; if (!n) return;
-  const x = Math.round(P.x - P.face * 13 - cx), y = Math.round(P.y - 36 - cy), r = 2 + n, pulse = 0.55 + 0.25 * Math.sin(time * (8 + n * 2)) + (P.dkBladeT > 0 ? 0.3 : 0);
-  g.globalAlpha = Math.min(1, pulse * 0.45); g.fillStyle = '#c0283a'; g.beginPath(); g.arc(x, y, r + 3, 0, Math.PI * 2); g.fill();
-  g.globalAlpha = Math.min(1, pulse); g.fillStyle = n >= DK2.price.ticks ? '#ffd0d0' : '#ff4a5a'; g.fillRect(x - 1, y - r, 2, r * 2); g.fillRect(x - r + 1, y - 1, r * 2 - 2, 2); g.globalAlpha = 1; }
+  const fr = n >= DK2.price.ticks ? 3 : n >= 3 ? 2 : n >= 2 ? 1 : 0, [ox, oy] = DK_TIP[fr], x = Math.round(P.x + P.face * ox - cx), y = Math.round(P.y + oy - cy), full = n >= DK2.price.ticks, r = 3 + n, pulse = 0.55 + 0.25 * Math.sin(time * (8 + n * 2)) + (P.dkBladeT > 0 ? 0.3 : 0);
+  g.globalAlpha = Math.min(1, pulse * 0.30); g.fillStyle = '#7a1020'; g.beginPath(); g.arc(x, y, r + 5, 0, 7); g.fill();
+  g.globalAlpha = Math.min(1, pulse * 0.45); g.fillStyle = '#c8283c'; g.beginPath(); g.arc(x, y, r + 2, 0, 7); g.fill();
+  g.globalAlpha = Math.min(1, pulse); g.fillStyle = full ? '#ffffff' : '#ff9aa6'; g.beginPath(); g.arc(x, y, Math.max(1, r - 3), 0, 7); g.fill();
+  for (let i = 0; i < 2 + (n >> 1); i++) { const t2 = (time * 1.4 + i / 3) % 1; g.globalAlpha = (1 - t2) * 0.8; g.fillStyle = i % 2 ? '#ff6b6b' : '#c8283c'; g.fillRect(x - 3 + Math.round(Math.sin(time * 5 + i * 2) * 3) + i * 2, y - 2 - Math.round(t2 * (8 + n * 2)), 1, 2); }
+  g.globalAlpha = 1; }
 function drawWard(cx, cy) {
   const cap = wardCap(), gk = Math.min(1, (P.wardG || 0) / cap), px = Math.round(P.x - cx), py = Math.round(P.y - cy), fc = P.face > 0 ? 1 : -1;
   if (P.warding) { const W = 6, H = 40, bx = px + fc * 11, top = py - H - 2, fl = Math.min(1, (P.wardFlash || 0) / 0.2), fill = H - Math.round(H * gk), pulse = 0.5 + 0.5 * Math.sin(time * 7);
@@ -24875,12 +24885,12 @@ function dkCrescentFx() { const c = P.dkCleave, n = c ? c.n : 0, x = P.x + P.fac
   SFX.heavy(); SFX.dkWard(); shakeCam(3 + n * 0.6, P.face * 2); zoomKick(1.03 + 0.008 * n, 0.18);
   for (let i = 0; i < 10 + 3 * n; i++) { const a = -Math.PI * 0.75 + Math.PI * 1.1 * (i / (10 + 3 * n)), r = DK2.price.reach * 0.8 + DK2.price.grow * n;
     parts.push({ x: P.x + P.face * Math.cos(a) * r, y: y + 14 + Math.sin(a) * r * 0.9, vx: P.face * 40, vy: 10, life: 0.3, max: 0.3, col: i % 3 ? '#c0283a' : '#ffd0d0', size: n >= 4 ? 2 : 1, grav: 0 }); }
-  ringAt(x, y, 14 + 3 * n, '#ff4a5a', 0.25); }
+  ringAt(x, y, 14 + 3 * n, '#ff4a5a', 0.25); dkArcs.push({ x: P.x, y: P.y, face: P.face, n, t: 0, life: 0.3 }); }   /* (claude/dk2art: the arc itself is drawn, drawBloodBolts) */
 /* A CUT OF HIS THAT LANDS (after heroCut, every foe it finds) */
 function dkLanded(e) { if (!e) return;
   if (P.heavy && P.dkCleave) { const c = P.dkCleave;
     if (!c.landed) { c.landed = true; if (c.paid > 0) { const back = Math.round(c.paid * DK2.price.back), hp0 = P.hp; P.hp = Math.min(P.maxHp, P.hp + back);   /* THE BLOOD COMES BACK: double what he paid, once a cleave */
-      if (P.hp > hp0) number(P.x, P.y - 40, '+' + (P.hp - hp0), '#ff6b6b'); dkDrainFx(e); SFX.bloodDraw(); } }
+      if (P.hp > hp0) number(P.x, P.y - 40, '+' + (P.hp - hp0), '#ff6b6b'); dkDrainFx(e); surgeLinks.push({ e, t: 0 }); SFX.bloodDraw(); } }
     if (!c.volley && tal('fullCircle') && c.n >= DK2.price.volleyAt) { c.volley = true; plantBlade(1); }   /* THE RED VOLLEY (fullCircle): a deep-paid crescent looses the old planted blade's bolts */
     return; }
   if (P.plunge || P.swingKind || P.dashCut) return;   /* (the rhythm is the chain on his feet, not the sweep, the rise, the dash cut or the drop) */
@@ -24889,7 +24899,7 @@ function dkLanded(e) { if (!e) return;
     const want = e.x - P.face * DK2.rhythm.pull, lim = P.x + P.face * 12, nx = P.face > 0 ? Math.max(want, lim) : Math.min(want, lim);
     if ((nx - e.x) * P.face < 0 && !isSolid(Math.floor(nx / TS), Math.floor((e.y - 6) / TS))) { e.x = nx; e.vx = 0; P.dkHooks = (P.dkHooks || 0) + 1; } }
   if (st === 2 && !P.dkDrained) { P.dkDrained = true; const d = dkDragDrain(swordDmg() * (P.swingMul || 1)), hp0 = P.hp; P.hp = Math.min(P.maxHp, P.hp + d);   /* THE DRAG: a sliver of it comes back up the blade */
-    if (P.hp > hp0) { number(P.x, P.y - 34, '+' + (P.hp - hp0), '#ff6b6b'); dkDrainFx(e); } P.dkDrags = (P.dkDrags || 0) + 1; }
+    if (P.hp > hp0) { number(P.x, P.y - 34, '+' + (P.hp - hp0), '#ff6b6b'); dkDrainFx(e); surgeLinks.push({ e, t: 0 }); SFX.bloodDraw(); } P.dkDrags = (P.dkDrags || 0) + 1; }
   if (!P.dkFed) { P.dkFed = true; const top = wardCap() * DK2.rhythm.wardTop; if ((P.wardG || 0) < top) { P.wardG = Math.min(top, (P.wardG || 0) + DK2.rhythm.ward); P.wardKeepT = 3; P.dkFeeds = (P.dkFeeds || 0) + 1; } }   /* EVERY CUT THAT LANDS FEEDS THE WARD (never to full: a fed ward does not break) */
 }
 function dkDrainFx(e) { for (let i = 0; i < 8; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 8, y: e.y - (e.h || 16) * 0.6, vx: (P.x - e.x) * (1.8 + Math.random()), vy: -30 - Math.random() * 40, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: 1, grav: 40 }); }
@@ -24902,7 +24912,7 @@ function dkKneelTakes(fromX, dmg, unblockable, src, low) {
   const cost = CM.blockCost(dmg); P.dkKneelBlocks = (P.dkKneelBlocks || 0) + 1;
   if (P.st < cost) { P.st = 0; P.stFlash = 0.5; P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); SFX.guardBreak(); number(P.x, P.y - 22, 'THE KNEEL BREAKS', '#ffd36b'); return 'half'; }
   P.st -= cost; P.stDelay = ST.delay; blocks++; trialEvent('block'); gainHarvest(1);
-  const sd = Math.sign(fromX - P.x) || P.face; SFX.lowGuard(); SFX.clank(); hitstop(0.04); sparks(P.x + sd * 10, P.y - 4, sd, 6); ringAt(P.x + sd * 10, P.y - 4, 10, '#ff4a5a', 0.22);
+  const sd = Math.sign(fromX - P.x) || P.face; P.dkKneelHit = time; SFX.lowGuard(); SFX.clank(); hitstop(0.04); sparks(P.x + sd * 10, P.y - 4, sd, 6); ringAt(P.x + sd * 10, P.y - 4, 10, '#ff4a5a', 0.22);
   if (time - (P.dkKneelSaid ?? -9) > DK2.kneel.said) { P.dkKneelSaid = time; number(P.x, P.y - 22, 'GRAVE KNEEL', '#ff9a9a'); }
   return 'blocked'; }
 function plantBlade(n) {
@@ -24916,6 +24926,7 @@ function plantBlade(n) {
     bloodBolts.push({ x, y: y - 4, vx: Math.cos(a) * sp * P.face, vy: Math.sin(a) * sp, life: 0.9, dmg, hit: new Set(), trail: [] }); }
 }
 function updateBloodBolts(dt) {
+  for (const q of dkTrail) q.t += dt; dkTrail = dkTrail.filter(q => q.t < 0.24); for (const q of dkArcs) q.t += dt; dkArcs = dkArcs.filter(q => q.t < q.life);
   for (const b of bloodBolts) { b.life -= dt; b.trail.push([b.x, b.y]); if (b.trail.length > 6) b.trail.shift();
     b.vy += 260 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || b.hit.has(e)) continue;
@@ -24930,6 +24941,17 @@ function updateBloodBolts(dt) {
   for (const n of novas) n.t += dt; novas = novas.filter(n => n.t < n.life);
 }
 function drawBloodBolts(cx, cy) {
+  /* (claude/dk2art) THE BLOOD TRAIL: the ribbon the blade drew - a dark rim, a wet red body, a hot core, thinning as it ages */
+  for (let i = 1; i < dkTrail.length; i++) { const p = dkTrail[i - 1], q = dkTrail[i]; if (Math.abs(p.x - q.x) + Math.abs(p.y - q.y) > 34) continue; const age = q.t / 0.24, w = Math.max(1, Math.round(q.w * (1 - age))), x0 = Math.round(p.x - cx), y0 = Math.round(p.y - cy), x1 = Math.round(q.x - cx), y1 = Math.round(q.y - cy);
+    g.lineCap = 'butt'; g.globalAlpha = 0.85 * (1 - age); g.strokeStyle = '#5e0c18'; g.lineWidth = w + 2; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke();
+    g.strokeStyle = '#c8283c'; g.lineWidth = w; g.stroke(); if (age < 0.6) { g.strokeStyle = '#ffb0b8'; g.lineWidth = 1; g.globalAlpha = 0.9 * (1 - age); g.stroke(); } }
+  g.globalAlpha = 1;
+  /* THE CRESCENT, DRAWN: the whole sweep of it, red and wet with a hot edge, as wide as what he paid */
+  for (const c of dkArcs) { const k = c.t / c.life, sweep = Math.min(1, c.t / 0.1), R = DK2.price.reach + DK2.price.grow * c.n, Th = 30 + 2 * c.n, f = c.face, ox = Math.round(c.x - f * 6 - cx), oy = Math.round(c.y - 18 - cy), a0 = -1.55, a1 = a0 + 2.7 * sweep, th = 8 + 1.5 * c.n;
+    const arc = (rx, ry, x, from, to, ccw) => { if (f > 0) g.ellipse(x, oy, rx, ry, 0, from, to, ccw); else g.ellipse(x, oy, rx, ry, 0, Math.PI - from, Math.PI - to, !ccw); };
+    g.globalAlpha = (1 - k) * 0.85; g.fillStyle = '#c8283c'; g.beginPath(); arc(R, Th, ox, a0, a1, false); arc(Math.max(4, R - th), Math.max(4, Th - th * 0.6), ox - f * 4, a1, a0, true); g.closePath(); g.fill();
+    g.globalAlpha = (1 - k); g.strokeStyle = '#ffd0d0'; g.lineWidth = 1; g.beginPath(); arc(R, Th, ox, a0, a1, false); g.stroke();
+    g.strokeStyle = '#5e0c18'; g.beginPath(); arc(Math.max(4, R - th), Math.max(4, Th - th * 0.6), ox - f * 4, a0, a1, false); g.stroke(); g.globalAlpha = 1; }
   /* THE NOVA, DRAWN: a ring of blood going out to its reach, a pale edge inside it, and its shadow along the ground */
   for (const n of novas) { const k = n.t / n.life, r = n.R * (1 - Math.pow(1 - k, 2.2)), x = Math.round(n.x - cx), y = Math.round(n.y - 12 - cy), a = 1 - k;
     g.globalAlpha = 0.18 * a; g.fillStyle = '#7a1020'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
@@ -30516,7 +30538,7 @@ function drawWorld(cx, cy, showPlayer) {
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : isGeo() ? 0.34 : 0.26) && K.R.atk && K.R.atk[3]) { key = isGeo() || isBz() ? 'heavy' : 'atk'; frame = isGeo() || isBz() ? 2 : 3; } }   /* (she stays down on the stave while her crack runs) */
       else if (hero() === 'knight' && knightWinding() && K.R.windup) { key = 'windup'; frame = Math.max(0, cutStage(P.atkHeld || 0) - 1); }   /* THE HEAVY CUT: the sword up over the shield, a frame a stage */
-      else if (isReaper() && P.charge > 0 && K.R.priceHold) { key = 'priceHold'; frame = (P.dkPaidN || 0) >= 3 ? 1 : 0; }   /* (claude/dk2b) THE BLOOD PRICE, held: the blade drinking over his shoulder */
+      else if (isReaper() && P.charge > 0 && K.R.priceHold) { key = 'priceHold'; { const n = P.dkPaidN || 0; frame = n >= DK2.price.ticks ? 3 : n >= 3 ? 2 : n >= 2 ? 1 : 0; } }   /* (claude/dk2art: four beats - the blade longer and redder with every price) */   /* (claude/dk2b) THE BLOOD PRICE, held: the blade drinking over his shoulder */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0 && P.swingRiposte && K.R.ripo && P.ground && !P.swingKind) { key = 'ripo'; frame = RP.ripoFrame(P); }   /* (claude/riposteart) THE RIPOSTE STRIKE out of the parry: the step-in, the cut or thrust with its gold flash, the follow-through - each hero's own weapon */
