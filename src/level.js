@@ -133,7 +133,7 @@ function brackenWood() {
   plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
-  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'TAP C: HOLY GROUND. HOLD C: AEGIS. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
+  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'TAP C: SPEND CONVICTION. HOLD C: AEGIS. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
   // A STONE BLOCK (teaching use, backlog #12: PUSHABLE BLOCKS). A ledge floats over the path at row 18 - four
   // tiles up, a real jump reaches about 3.2 - with a coin on it. Push the block two tiles snug underneath, stand
   // on it, and the last tile is one jump away. The ledge is a single floating tile (rows 19-21 under it stay
@@ -3825,17 +3825,18 @@ function trialYard(hero) {
       ['meter', 1, 'PLUNDER FILLS AS YOU FIGHT. FULL, TAP C: THE BLACK FLAG. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
       SKILL],
     paladin: [
-      ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW FILLS THE LIGHT.', [['dummy', 18]], 'X, X, X'],
+      ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW BUILDS CONVICTION.', [['dummy', 18]], 'X, X, X'],
       ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],
       ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
-      ['hallow', 1, 'HOLY GROUND: TAP C. IN YOUR CIRCLE YOU HIT HARDER AND MEND, AND FOES IN IT BURN.', [['dummy', 11], ['dummy', 14]], 'TAP LB'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
-      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. A QUARTER OF THE LIGHT. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
+      ['smite', 1, 'SMITE: ONE CONVICTION, TAP C. ANY SPEND LIGHTS YOUR AURA: IN IT YOU HIT HARDER AND MEND.', [['dummy', 6], ['dummy', 14]], 'TAP LB'],   /* (PALADIN 3: the planted circle is gone - the first tier, and the aura it lights) */
+      ['sanctify', 1, 'RADIANCE: THREE CONVICTION, TAP C. A BURST OF LIGHT ALL ROUND YOU.', [['dummy', 9], ['dummy', 12]], 'TAP LB WITH THREE'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
+      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. THREE CONVICTION. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
       ['hammerfall', 2, 'HAMMER OF DAWN: JUMP, THEN DOWN+X. THE SLAM BREAKS POISE AND A GUARD. HIT TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
-      ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
+      ['verdict', 1, 'VERDICT: HOLD X. A SIGIL A BEAT ON WHAT IS AHEAD. LET GO: THE LIGHT STRIKES THEM ALL.', [['dummy', 8], ['dummy', 13]], 'HOLD X, LET GO'],   /* (PALADIN 3: the held X is VERDICT, not the overhead) */
       ['dodge', 2, 'THE HEAVY STEP: TAP A WAY TWICE, OR V. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS.', [], 'B, OR THE STICK TWICE'],
       DASH, RISE, SWEEP,
-      ['judgement', 1, 'JUDGEMENT: A FULL LIGHT, IN YOUR CIRCLE, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB IN THE CIRCLE, FULL'],
+      ['judgement', 1, 'SUNFALL: FIVE CONVICTION, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH FIVE'],   /* (PALADIN 3: the old Judgement, renamed; its trial key stays) */
       SKILL],
     /* THE WARDEN'S YARD (2026-09-24, POLISH): her four verbs, not the knight's. The POINT (only the last quarter of the spear bites),
        the DEFLECT on the beat (C is a sweep of the shaft, never a shield), the RUN-THROUGH (the held X that skewers a line) and the PIN
@@ -3902,7 +3903,7 @@ function trialYard(hero) {
     for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 18, 19); ent('archer', x0 + dx, 17, { face: -1, lx0: x0 + 1, lx1: gate - 1 }); } else if (t === 'dummy') ent('dummy', x0 + dx, 19);
       else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
-    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' ? 60 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
+    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' || kind === 'sanctify' ? 60 : kind === 'smite' ? 20 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
   const xe = 4 + ST.length * SW;
   ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
   ent('gate', xe + 14, 19);
