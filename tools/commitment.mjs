@@ -50,6 +50,7 @@ try {
     for (const verb of VERBS) for (const it of INTS) {
       if (verb === 'third' && h === 'berserker') continue;   /* HIS RUN GOES ON ONLY WHILE THE CHOPS LAND: against the air there is no third (tools/berserker.mjs 'chain' holds his third against a foe) */
       if (verb === 'heavy' && h === 'pirate' && it === 'c') continue;
+      if (verb === 'heavy' && h === 'paladin') continue;   /* (claude/paladin3, batch94 integ) HIS HELD X IS VERDICT NOW: a cast (castT 0.3, no swing: P.atk -1, no P.heavy), so there is no heavy swing to start and no recovery to cancel; tools/paladin-kit.mjs holds the verdict (marks, release, strike) */
       if (verb === 'third' && h === 'berserker') continue;   /* HIS RUN GOES ON ONLY WHILE THE CHOPS LAND: against the air there is no third (tools/berserker.mjs 'chain' holds his third against a foe) */   /* his C while the pistol smokes is the blast's own (blastT), unchanged */
       const r = await pg.evalp(`(()=>{const h=${JSON.stringify(h)},verb=${JSON.stringify(verb)},it=${JSON.stringify(it)},sk=${JSON.stringify(SKILL[h])};
         __prep(h,20);const P=BK.P,K=BK.keys;

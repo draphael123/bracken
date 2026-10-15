@@ -11,7 +11,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
-const HEROES = ['knight', 'pyro', 'reaper', 'pirate', 'paladin', 'geomancer', 'warden'];
+const HEROES = ['knight', 'pyro', 'reaper', 'pirate', 'paladin', 'geomancer', 'warden', 'berserker'];   /* (claude/plunges: AXE SPIN rebounds at the end of its shred) */
 const pg = await openPage({ audio: false, fonts: false });
 let R;
 try {
@@ -32,7 +32,7 @@ try {
         P.x = w.x; P.y = w.y - (above || 30); P.vx = 0; P.vy = 40; P.ground = false; P.plunge = false; P.atk = -1; P.dodge = 0; P.face = 1;
         if (plunge) { K.down = true; BK.press('atk'); }
         let best = 0, hit = false;
-        for (let k = 0; k < 50; k++) { BK.sim(1); if (plunge && k > 2) K.down = false; if (P.vy < best) best = P.vy; if (best < -150) { hit = true; if (k > 3 && P.vy > best + 60) break; } if (P.ground) break; }
+        for (let k = 0; k < 140; k++) { BK.sim(1); if (plunge && k > 2) K.down = false; if (P.vy < best) best = P.vy; if (best < -150) { hit = true; if (k > 3 && P.vy > best + 60) break; } if (P.ground) break; }
         K.down = false; return { vy: Math.round(best), hit, chain: chain(), ground: !!P.ground };
       };
       for (const e of BK.enemies()) e.alive = false; BK.tp(spot[0], spot[1]); BK.sim(20);

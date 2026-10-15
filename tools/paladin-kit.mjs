@@ -1,15 +1,16 @@
-// tools/paladin-kit.mjs — PALADIN 2: HOLY GROUND + LIGHT SPENT (claude/paladin2, scratch/brief-paladin2.md, src/holy-ground.js). On flat Stockade
-// floor, with the real keys, this fails when:
-//   - a TAP of C does not plant ONE circle at his feet (or costs no wind), a second circle can stand beside the first, a tap inside the
-//     replant wait plants again, or a tap after it does not MOVE the circle to where he stands
-//   - standing in his circle does not mend him slowly (or he mends out of it), a foe standing in it does not burn (or one outside does)
-//   - his maul does not land harder in his circle than out of it (HG.hitMul)
-//   - LIGHT IS NOT SPENT: a tap in his circle with HG.empower.cost does not EMPOWER it (wider, longer) and take the Light; a full bar there is
-//     not JUDGEMENT; UP + C with HG.throw.cost is not the HAMMER THROW (Light taken, a foe ahead struck) or with too little it throws and
-//     takes anything; the held overhead in his circle with HG.smite.cost is not a SMITE (Light taken), or out of it it takes any
-//   - the circle goes out early or stands past its life
-//   - CO-OP: a partner standing in his circle while he holds the AEGIS is not covered (the blow turned, the paladin's wind paying), or one
-//     outside it / with the aegis down / a RED blow is covered
+// tools/paladin-kit.mjs — PALADIN 3: CONVICTION (claude/paladin3, scratch/brief-paladin3-1014.md; was PALADIN 2's holy-ground check, rewritten:
+// the planted circle is gone). On flat Stockade floor, with the real keys, this fails when:
+//   - CONVICTION is not five pips of the Light store (HG.conv.pip each), or a tap of C with none spends anything
+//   - a tap of C does not spend BY TIER: 1-2 pips = SMITE (one pip, a foe in front struck), 3-4 = RADIANCE (three, a foe beside him struck),
+//     5 = SUNFALL (all of it, the old Judgement's blast); UP + C with 3 is not the HAMMER THROW (three spent, a foe ahead struck), with 2 throws nothing
+//   - a spend does not light the HALLOWED AURA, or the aura stays where it was lit instead of TRAVELLING WITH HIM, or it does not mend him / burn
+//     a foe in it, or it stands past its life (base + perPip a pip)
+//   - THE GUARD: a blow on the aegis is not +1 pip, a blow on the aegis raised ON THE BEAT (a perfect guard) is not +2 and a holy flash that
+//     staggers the attacker
+//   - BULWARK ADVANCE: the aegis held and pressing ahead does not walk him forward slowly and shove a common foe back (a boss is never moved)
+//   - VERDICT (hold X): no sigil on each of the foes ahead, one a beat, up to four - or the release swings the hammer, or does not strike them all
+//   - HEAVEN'S ARC (up + X in the air): not two hits on a foe over him
+//   - CO-OP: a partner in his AURA while he holds the aegis is not covered (the paladin paying the wind), or a RED blow is
 //   - the page throws
 //   node tools/paladin-kit.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
@@ -33,71 +34,68 @@ try {
     if (!spot) return { err: 'no flat floor' };
     const K = BK.keys, none = () => { for (const k of ['left', 'right', 'up', 'down', 'jump', 'block', 'atk']) K[k] = false; };
     const clear = () => { for (const e of BK.enemies()) e.alive = false; for (const s of BK.seeds()) s.dead = true; };
-    const H = () => BK.holy(), mine = () => H().circles.filter(c => c.owner === 1 || c.owner === null);
-    const home = (dx = 0) => { clear(); none(); BK.holyHands().clear(); BK.god = true; BK.tp(spot[0], spot[1]); BK.sim(40); BK.god = false; const P = BK.P; P.x += dx; P.hp = P.maxHp; P.st = P.maxSt; P.vx = 0; P.hurt = 0; P.face = 1; P.light = 0; P.inv = 0; BK.sim(20); };
+    const H = () => BK.holy(), aura = () => H().circles.find(c => (c.owner === 1 || c.owner === null) && !c.out) || null;
+    const home = (dx = 0) => { clear(); none(); BK.holyHands().clear(); BK.god = true; BK.tp(spot[0], spot[1]); BK.sim(40); BK.god = false; const P = BK.P; P.x += dx; P.hp = P.maxHp; P.st = P.maxSt; P.vx = 0; P.hurt = 0; P.face = 1; P.light = 0; P.inv = 0; P.verdict = []; BK.sim(20); };
     const tap = (o = {}) => { none(); if (o.up) K.up = true; K.block = true; BK.sim(3); K.block = false; BK.sim(2); K.up = false; BK.sim(o.after ?? 20); };
+    const foe = (dx, o = {}) => { const [f] = BK.spawnFoe({ t: o.t || 'sprig', x: spot[0] + dx, y: spot[1] - (o.up || 0), face: -1 }); f.hp = f.maxHp = o.hp || 900; f.stagger = 9; f.cd = 99; return f; };
+    const hold = (f, dx) => { f.x = (spot[0] + dx) * 16 + 8; f.stagger = 9; };
     const out = {};
-    /* 1. ONE CIRCLE, at his feet, for wind */
-    home(); { const st0 = BK.P.st; tap({ after: 1 }); const c = H().circles; out.plant = { n: c.length, dx: c[0] ? Math.abs(c[0].x - BK.P.x) : 99, r: c[0] && c[0].r, stPaid: st0 - BK.P.st > HG.st - 3 };
-      tap({ after: 5 }); out.waitN = H().circles.length; out.waitX = H().circles[0] && H().circles[0].x;
-      BK.sim(80); BK.P.x += 120; BK.sim(10); const x1 = BK.P.x; tap(); out.moved = { n: H().circles.length, x: H().circles[0] && H().circles[0].x, want: Math.round(x1) }; }
-    /* 2. THE SLOW MEND, in and out */
-    home(); tap(); { const P = BK.P; P.hp = 40; BK.sim(120); out.mendIn = P.hp - 40; P.x += 200; BK.sim(10); P.hp = 40; BK.sim(120); out.mendOut = P.hp - 40; }
-    /* 3. A FOE IN IT BURNS, one outside does not */
-    home(); tap(); { const [a] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 1, y: spot[1], face: -1 }); const [b] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 9, y: spot[1], face: -1 });
-      if (!a || !b) return { err: 'no sprigs' }; for (const e of [a, b]) { e.hp = e.maxHp = 500; e.frozen = 9; e.stagger = 9; }
-      const ha = a.hp, hb = b.hp; for (let k = 0; k < 90; k++) { a.x = (spot[0] + 1) * 16 + 8; b.x = (spot[0] + 9) * 16 + 8; a.stagger = b.stagger = 9; BK.P.hp = BK.P.maxHp; BK.sim(1); }
-      out.burn = { inside: ha - a.hp, outside: hb - b.hp }; }
-    /* 4. HE HITS HARDER IN IT: one swing on a still foe, out of the circle and in it */
-    const swingOn = inC => { home(); if (inC) tap(); else BK.sim(25);
-      const [f] = BK.spawnFoe({ t: 'sprig', x: Math.floor(BK.P.x / 16) + 1, y: spot[1], face: -1 }); f.hp = f.maxHp = 900; const h0 = f.hp, b0 = H().stats.burnDmg;
-      f.x = BK.P.x + 18; f.stagger = 9; BK.sim(1); none(); BK.press('atk'); for (let k = 0; k < 40; k++) { f.x = BK.P.x + 18; f.stagger = 9; BK.sim(1); } return h0 - f.hp - (H().stats.burnDmg - b0); };
-    out.swing = { out: swingOn(false), in: swingOn(true) };
-    /* 5. EMPOWER, then JUDGEMENT, spend the Light */
-    home(); tap(); { const P = BK.P; P.light = 50; BK.sim(80); const r0 = H().circles[0].r, l0 = H().circles[0].life; tap(); const c = H().circles[0];
-      out.empower = { light: Math.round(P.light), emp: c.emp, r: c.r, r0, life: c.life, l0, n: H().circles.length };
-      P.light = 100; BK.sim(2); tap({ after: 4 }); out.judge = { light: Math.round(P.light), blast: P.blastT > 0 }; }
-    /* 6. THE HAMMER THROW: UP + C, a quarter of the light; with too little nothing goes */
-    home(); { const P = BK.P, [f] = BK.spawnFoe({ t: 'sprig', x: spot[0] + 5, y: spot[1], face: -1 }); f.hp = f.maxHp = 900; const h0 = f.hp;
-      P.light = 30; tap({ up: true, after: 2 }); const lAfter = P.light; for (let k = 0; k < 90; k++) { f.x = (spot[0] + 5) * 16 + 8; f.stagger = 9; BK.sim(1); }
-      out.throw = { light: Math.round(lAfter), dmg: h0 - f.hp, aegis: false };
-      P.light = 10; f.hp = 900; none(); K.up = true; K.block = true; BK.sim(30); out.throw.aegisAfter = !!P.aegis; K.block = false; K.up = false; BK.sim(4); out.throw.poor = Math.round(P.light); out.throw.circles = H().circles.length; }
-    /* 7. SMITE: the held overhead in the circle spends HG.smite.cost; out of it nothing */
-    const heavy = () => { none(); BK.press('atk'); K.atk = true; BK.sim(50); K.atk = false; BK.sim(30); };
-    home(); tap(); BK.P.light = 40; BK.sim(60); heavy(); out.smiteIn = Math.round(BK.P.light);
-    home(); BK.P.light = 40; heavy(); out.smiteOut = Math.round(BK.P.light);
-    /* 8. ITS LIFE */
-    home(); tap(); BK.sim(Math.round((HG.life - 0.5) * 60)); out.lifeAlive = H().circles.length; BK.sim(60); out.lifeGone = H().circles.length;
-    /* 9. CO-OP: THE AEGIS COVERS A PARTNER IN HIS CIRCLE */
-    home(); tap(); BK.coopStart('knight', false); BK.sim(2); { const [a, b] = BK.players(); const place = dx => { b.x = a.x + dx; b.y = a.y; b.vx = 0; b.hurt = 0; b.inv = 0; b.hp = b.maxHp; b.ground = true; };
+    /* 1. NO CONVICTION: a tap spends nothing and lights nothing */
+    home(); tap(); out.none = { light: BK.P.light, aura: !!aura() };
+    /* 2. SMITE (1 pip): one spent, the foe in front struck, the aura lit */
+    home(); { const f = foe(1); BK.P.light = 2 * HG.conv.pip; const h0 = f.hp; tap({ after: 10 }); out.smite = { light: Math.round(BK.P.light), dmg: h0 - f.hp, aura: !!aura(), life: aura() && +aura().life.toFixed(2) }; }
+    /* 3. THE AURA TRAVELS WITH HIM, mends him, burns a foe in it, goes out after its life */
+    home(); { const P = BK.P; P.light = HG.conv.pip; tap({ after: 2 }); const c = aura(); const x0 = c && c.x; P.x += 60; BK.sim(4); out.follow = { x0: Math.round(x0), x1: Math.round(aura() && aura().x), want: Math.round(P.x) };
+      P.hp = 40; BK.sim(60); out.mend = +(P.hp - 40).toFixed(2); const f = foe(0); hold(f, Math.round(P.x / 16) - spot[0]); const fh = f.hp; for (let k = 0; k < 40; k++) { f.x = P.x + 6; f.stagger = 9; P.hp = P.maxHp; BK.sim(1); } out.burn = fh - f.hp;
+      BK.sim(Math.round((HG.aura.base + HG.aura.perPip) * 60)); out.goneAfter = !aura(); }
+    /* 4. RADIANCE (3 pips) */
+    home(); { const f = foe(2); BK.P.light = 4 * HG.conv.pip; const h0 = f.hp; tap({ after: 10 }); out.radiance = { light: Math.round(BK.P.light), dmg: h0 - f.hp, life: aura() && +aura().life.toFixed(2) }; }
+    /* 5. SUNFALL (5 pips) */
+    home(); { const f = foe(3); BK.P.light = 100; const h0 = f.hp; tap({ after: 4 }); out.sunfall = { light: Math.round(BK.P.light), blast: BK.P.blastT > 0, dmg: 0 }; BK.sim(30); out.sunfall.dmg = h0 - f.hp; }
+    /* 6. THE HAMMER THROW (UP + C, 3 pips); with 2 nothing */
+    home(); { const P = BK.P, f = foe(5); const h0 = f.hp; P.light = 3 * HG.conv.pip; tap({ up: true, after: 2 }); const lAfter = P.light; for (let k = 0; k < 90; k++) { hold(f, 5); BK.sim(1); }
+      out.throw = { light: Math.round(lAfter), dmg: h0 - f.hp }; P.light = 2 * HG.conv.pip; tap({ up: true, after: 4 }); out.throw.poor = Math.round(P.light); }
+    /* 7. THE GUARD: a blow on the aegis +1 pip; raised on the beat +2 and a holy flash */
+    home(); { const P = BK.P, f = foe(2); hold(f, 2); none(); K.block = true; BK.sim(40); const l0 = P.light; const r = BK.holyHurt(P, f.x, 10, {}); out.block = { r, gain: Math.round(P.light - l0), aegis: !!P.aegis }; K.block = false; BK.sim(30); }
+    home(); { const P = BK.P, f = foe(2); hold(f, 2); f.stagger = 0; none(); K.block = true; for (let k = 0; k < 30 && !P.aegis; k++) BK.sim(1); BK.sim(1); const l1 = P.light; const r2 = BK.holyHurt(P, f.x, 10, {}); out.perfect = { r: r2, gain: Math.round(P.light - l1), stagger: +(f.stagger || 0).toFixed(2) }; K.block = false; BK.sim(30); }
+    /* 8. BULWARK ADVANCE */
+    home(); { const P = BK.P, f = foe(2); delete f.maxHp; f.stagger = 0; none(); K.block = true; BK.sim(30);   /* (a COMMON foe: maxHp marks a boss, which the bulwark never moves) */ const x0 = P.x, fx0 = f.x; K.right = true; BK.sim(50); out.bulwark = { walked: Math.round(P.x - x0), aegis: !!P.aegis, shoved: Math.round(f.x - fx0), speed: Math.round(Math.abs(P.vx)) }; none(); BK.sim(20); }
+    /* 9. VERDICT: hold X before three foes - three sigils, one a beat; the release strikes them all, no hammer swing */
+    home(); { const fs = [foe(3), foe(5), foe(6)]; none(); BK.press('atk'); K.atk = true; let n1 = 0; for (let k = 0; k < 120; k++) { fs.forEach((f, i) => hold(f, [3, 5, 6][i])); BK.sim(1); if (k === 30) n1 = (BK.P.verdict || []).length; }
+      const marked = (BK.P.verdict || []).length, h0 = fs.map(f => f.hp); K.atk = false; BK.sim(2); const swung = BK.P.atk >= 0; BK.sim(20);
+      out.verdict = { early: n1, marked, struck: fs.filter((f, i) => f.hp < h0[i]).length, swung }; }
+    /* 10. HEAVEN'S ARC: up + X in the air over a foe - two hits */
+    home(); { const P = BK.P, f = foe(0, { up: 2 }); f.noGrav = true; f.fly = true; none(); K.jump = true; BK.press('jump'); BK.sim(16); K.jump = false;   /* (past the jump's first 0.18 s: up + X there is still the rising cut) */ let hits = 0, h = f.hp;
+      K.up = true; BK.press('atk'); for (let k = 0; k < 24; k++) { f.x = P.x + P.face * 4; f.y = P.y - 26; f.vy = 0; f.stagger = 9; BK.sim(1); if (f.hp < h) { hits++; h = f.hp; } } K.up = false; BK.sim(30); out.arc = { hits, kind: P.swingKind }; }
+    /* 11. CO-OP: THE AEGIS COVERS A PARTNER IN HIS AURA */
+    home(); BK.P.light = HG.conv.pip; tap({ after: 2 }); BK.coopStart('knight', false); BK.sim(2); { const [a, b] = BK.players(); const place = dx => { b.x = a.x + dx; b.y = a.y; b.vx = 0; b.hurt = 0; b.inv = 0; b.hp = b.maxHp; b.ground = true; };
       const hit = (o = {}) => { const hp0 = b.hp, st0 = a.st, r = BK.holyHurt(b, b.x + 30, 12, o); return { r, lost: hp0 - b.hp, paid: st0 - a.st }; };
-      none(); K.block = true; BK.sim(30); out.coop = { aegis: !!a.aegis };
-      place(24); out.coop.inside = hit(); BK.sim(30);
-      place(24); out.coop.red = hit({ unblockable: true }); BK.sim(30);
-      a.st = a.maxSt; place(140); out.coop.outside = hit(); BK.sim(30);
-      K.block = false; BK.sim(30); a.st = a.maxSt; place(24); out.coop.down = hit(); BK.coopEnd(); }
+      none(); K.block = true; BK.sim(20); out.coop = { aegis: !!a.aegis, aura: !!aura() };
+      place(20); out.coop.inside = hit(); BK.sim(20);
+      place(20); out.coop.red = hit({ unblockable: true }); BK.coopEnd(); }
     none(); return out; })()`, 120000);
 } catch (e) { console.log('FAIL the page: ' + e.message); pg.close(); process.exit(1); }
-pg.close();
+const errs = pg.errors.slice(); pg.close();
 if (R.err) { console.log('FAIL ' + R.err); process.exit(1); }
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
-ok(R.plant.n === 1 && R.plant.dx < 4 && R.plant.r >= HG.r && R.plant.stPaid, 'a tap of C plants one circle at his feet for ' + HG.st + ' wind: ' + JSON.stringify(R.plant));
-ok(R.waitN === 1, 'a tap inside the replant wait is not a second circle: ' + R.waitN);
-ok(R.moved.n === 1 && Math.abs(R.moved.x - R.moved.want) < 4, 'a tap after the wait moves the ONE circle to his feet: ' + JSON.stringify(R.moved));
-ok(R.mendIn > 1.5 && R.mendOut < 0.5, 'his circle mends him slowly, and only in it: in +' + R.mendIn.toFixed(2) + ', out +' + R.mendOut.toFixed(2));
-ok(R.burn.inside >= 8 && R.burn.outside === 0, 'a foe in the circle burns, one outside does not: ' + JSON.stringify(R.burn));
-ok(R.swing.in > 0 && R.swing.out > 0 && R.swing.in >= Math.floor(R.swing.out * HG.hitMul), 'his maul lands harder in his circle (x' + HG.hitMul + '): ' + JSON.stringify(R.swing));
-ok(R.empower.emp && R.empower.light === 50 - HG.empower.cost && R.empower.r > R.empower.r0 && R.empower.n === 1, 'a tap in the circle with ' + HG.empower.cost + ' Light EMPOWERS it and spends the Light: ' + JSON.stringify(R.empower));
-ok(R.judge.light === 0 && R.judge.blast, 'a full bar and a tap in the circle is JUDGEMENT: ' + JSON.stringify(R.judge));
-ok(R.throw.light === 30 - HG.throw.cost && R.throw.dmg > 0, 'UP + C is the HAMMER THROW: ' + HG.throw.cost + ' Light spent and a foe ahead struck: ' + JSON.stringify(R.throw));
-ok(R.throw.poor === 10 && !R.throw.aegisAfter && R.throw.circles === 0, 'UP + C with too little Light throws nothing, spends nothing, and the hold is not an aegis or a circle: ' + JSON.stringify(R.throw));
-ok(R.smiteIn === 40 - HG.smite.cost && R.smiteOut === 40, 'the held overhead in the circle SMITES (' + HG.smite.cost + ' Light) and out of it spends none: in ' + R.smiteIn + ', out ' + R.smiteOut);
-ok(R.lifeAlive === 1 && R.lifeGone === 0, 'the circle stands its ' + HG.life + ' s and then goes out: ' + R.lifeAlive + ' / ' + R.lifeGone);
-ok(R.coop.aegis, 'the paladin raised the aegis for the co-op test');
-ok(R.coop.inside.r === 'blocked' && R.coop.inside.lost === 0 && R.coop.inside.paid >= HG.cover.st - 1, 'a partner in his circle under his aegis is covered, the paladin paying the wind: ' + JSON.stringify(R.coop.inside));
+const pip = HG.conv.pip;
+ok(R.none.light === 0 && !R.none.aura, 'a tap with no Conviction spends nothing and lights no aura: ' + JSON.stringify(R.none));
+ok(R.smite.light === pip && R.smite.dmg > 0 && R.smite.aura && R.smite.life > HG.aura.base, 'two pips: a tap is SMITE - one pip spent, the foe in front struck, the aura lit: ' + JSON.stringify(R.smite));
+ok(Math.abs(R.follow.x1 - R.follow.want) < 3 && Math.abs(R.follow.x1 - R.follow.x0) > 40, 'the HALLOWED AURA travels with him: ' + JSON.stringify(R.follow));
+ok(R.mend > 0.5 && R.burn > 0, 'his aura mends him and burns a foe in it: mend +' + R.mend + ', burn ' + R.burn);
+ok(R.goneAfter, 'the aura goes out after its life (' + HG.aura.base + ' + ' + HG.aura.perPip + ' a pip)');
+ok(R.radiance.light === pip && R.radiance.dmg > 0 && R.radiance.life >= HG.aura.base + 3 * HG.aura.perPip - 0.3, 'four pips: a tap is RADIANCE - three spent, the foe beside him struck, a longer aura: ' + JSON.stringify(R.radiance));
+ok(R.sunfall.light === 0 && R.sunfall.blast && R.sunfall.dmg > 0, 'five pips: a tap is SUNFALL - all spent, the blast, the foe struck: ' + JSON.stringify(R.sunfall));
+ok(R.throw.light === 0 && R.throw.dmg > 0 && R.throw.poor === 2 * pip, 'UP + C: three pips throw the hammer (a foe ahead struck), two throw nothing: ' + JSON.stringify(R.throw));
+ok(R.block.r === 'blocked' && R.block.gain === pip, 'a blow on the aegis is +1 pip: ' + JSON.stringify(R.block));
+ok(R.perfect.r === 'blocked' && R.perfect.gain === 2 * pip && R.perfect.stagger >= HG.flash.stagger - 0.05, 'a PERFECT GUARD is +2 pips and a holy flash that staggers the attacker: ' + JSON.stringify(R.perfect));
+ok(R.bulwark.aegis && R.bulwark.walked > 8 && R.bulwark.speed <= 30 && R.bulwark.shoved > 12, 'BULWARK ADVANCE: behind the aegis he walks slowly forward and shoves the foe back: ' + JSON.stringify(R.bulwark));
+ok(R.verdict.early >= 1 && R.verdict.early < 3 && R.verdict.marked === 3 && R.verdict.struck === 3 && !R.verdict.swung, 'VERDICT: a sigil a beat on the foes ahead (3), the release strikes all three, no hammer swing: ' + JSON.stringify(R.verdict));
+ok(R.arc.hits >= 2, "HEAVEN'S ARC: up + X in the air hits a foe over him twice: " + JSON.stringify(R.arc));
+ok(R.coop.aegis && R.coop.aura, 'the paladin raised the aegis in his aura for the co-op test: ' + JSON.stringify(R.coop));
+ok(R.coop.inside.r === 'blocked' && R.coop.inside.lost === 0 && R.coop.inside.paid >= HG.cover.st - 1, 'a partner in his aura under his aegis is covered, the paladin paying the wind: ' + JSON.stringify(R.coop.inside));
 ok(R.coop.red.r !== 'blocked' && R.coop.red.lost > 0, 'a RED blow is never covered: ' + JSON.stringify(R.coop.red));
-ok(R.coop.outside.r !== 'blocked' && R.coop.outside.lost > 0, 'a partner outside his circle is not covered: ' + JSON.stringify(R.coop.outside));
-ok(R.coop.down.r !== 'blocked' && R.coop.down.lost > 0, 'with the aegis down nothing is covered: ' + JSON.stringify(R.coop.down));
+ok(!errs.length, 'the page threw: ' + errs.join(' | '));
 if (process.env.PK_VERBOSE) console.log(JSON.stringify(R, null, 1));
 if (fails.length) { console.log('paladin-kit: ' + fails.length + ' FAIL\n  ' + fails.join('\n  ')); process.exit(1); }
-console.log('paladin-kit: ok - one circle, its mend and burn, x' + HG.hitMul + ' in it, empower/judgement/throw/smite spend Light, the aegis covers a partner (swing out ' + R.swing.out + ' / in ' + R.swing.in + ', burn ' + R.burn.inside + ')');
+console.log('paladin-kit: ok - Conviction tiers (smite / radiance / sunfall / throw), the aura travels, mends and burns, the guard pays pips + the holy flash, bulwark, verdict x' + R.verdict.marked + ', heaven\'s arc x' + R.arc.hits + ', the partner aegis');

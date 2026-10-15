@@ -19,6 +19,7 @@
 import { openPage } from './cdp.mjs';
 import { startStub } from './online-stub.mjs';
 import { PORT_BASE } from './ports.mjs';
+import { cleanCode } from '../src/online-net.js';
 
 const PORT = +(process.env.PORT || PORT_BASE), RELAY = +(process.env.ONLINE_RELAY || PORT + 1), URL0 = 'http://localhost:' + PORT + '/';
 const ARGS = ['--disable-features=WebRtcHideLocalIpsWithMdns', '--allow-loopback-in-peer-connection'];   /* two browsers on one machine: plain host candidates, no mDNS names to resolve */
@@ -50,17 +51,15 @@ try {
   const top = await H('BK.ui.titleTop()');
   ok(top.indexOf('ONLINE CO-OP') === top.indexOf('LOCAL CO-OP') + 1, '1: the title has ONLINE CO-OP right after LOCAL CO-OP: ' + top.join(', '));
   await H('(()=>{const h=BK.PROG.heroes;for(const k in h)if(k!=="knight")delete h[k];BK.PROG.coopLegacy=false;})()');
-  const locked = await H('BKONLINE.host()');
-  ok(locked && locked.error === 'locked', '1: with one hero, hosting is locked: ' + JSON.stringify(locked));
-  await H('BKONLINE.open()');
+  await H('BKONLINE.open()');   /* (Daniel 10-15) co-op is open with ONE hero: no lock, no second hero needed */
   const lockedBoard = await H('document.getElementById("olhost").innerText');
-  ok(/SECOND HERO/.test(lockedBoard) && !/HOST A GAME/.test(lockedBoard), '1: the locked board says why and offers no HOST button');
-  ok(/JOIN/.test(lockedBoard), '1: JOIN a friend is offered even when locked (the guest needs no hero of his own)');
+  ok(!/SECOND HERO/.test(lockedBoard) && /HOST A GAME/.test(lockedBoard), '1: with one hero the board offers HOST A GAME (no lock): ' + lockedBoard.slice(0, 120));
+  ok(/JOIN/.test(lockedBoard), '1: JOIN a friend is offered');
   await H('document.querySelector("#olhost button:last-child").click()');
   // 9a. the MAP key (G) opens the same board, with the same gate
   const mapKeyBoard = async () => { await H('(()=>{BK.state="map";return true})()'); await sleep(300); await key(host, 'g', 'keyDown'); await key(host, 'g', 'keyUp'); await until(host, 'document.getElementById("olhost") && document.getElementById("olhost").style.display !== "none" && document.getElementById("olhost").innerText.length > 0', 8000, 'the online board from the map key'); return H('document.getElementById("olhost").innerText'); };
   const mapLocked = await mapKeyBoard();
-  ok(/ONLINE CO-OP/.test(mapLocked) && /SECOND HERO/.test(mapLocked) && !/HOST A GAME/.test(mapLocked), '9: G on the map opens the online board, locked with one hero (same gate)');
+  ok(/ONLINE CO-OP/.test(mapLocked) && !/SECOND HERO/.test(mapLocked) && /HOST A GAME/.test(mapLocked), '9: G on the map opens the online board, open with one hero (same gate)');
   await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="BACK").click()');
 
   // ---- 2. hosting, the code, the link, joining ----
@@ -74,6 +73,7 @@ try {
   ok(/^[A-HJ-NP-Z]{4}$/.test(code), '2: a four-letter room code (no I, no O): ' + code);
   const boardTxt = await H('document.getElementById("olhost").innerText');
   ok(boardTxt.includes(code) && boardTxt.includes('?join=' + code), '2: the host board shows the code and the share link');
+  ok(cleanCode('https://bracken-nine.vercel.app/?join=' + code.toLowerCase()) === code && cleanCode(code.toLowerCase() + ' ') === code, '2: the SHARE LINK pasted into the code box is read as its code (Daniel 10-15: it read HTTPS)');
   await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY + '&touch=1', '!!window.BKGUEST');
   await until(guest, 'BKGUEST.state().phase === "pick"', 25000, 'the guest to reach the hero pick');
   const roster = await Gu('BKGUEST.state().roster.map(r=>r.id)');

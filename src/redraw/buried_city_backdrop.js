@@ -9,8 +9,9 @@
 //   THE DUNES (cols 0-37) keep the sky: it fades out down the sinkhole; two lit dune silhouettes and the tower's tip stand over them
 // The shafts' light is drawn in the world (src/buried-city-hands.js drawWorld). main.js calls drawBackdrop(g, cx, cy, VW, VH, L, time, dY).
 import * as FART from './buried_city_flip_art.js';
+import * as A4 from './buried_city_bc4_art.js';   /* (claude/bc4art) clouds over their shadows */
 const R = Math.round;
-const PAL = { glass: 'rgba(190,226,240,0.13)', glassEdge: 'rgba(160,200,220,0.55)', glassHi: 'rgba(255,255,255,0.28)', sand: '#e6bc68', sandHi: '#f8dc90', sandLo: '#a8782c', brass: '#a47e30', brassHi: '#e8c460', brassLo: '#5a4014', brassDeep: '#2e200a' };
+const PAL = { glass: 'rgba(120,150,170,0.62)', glassEdge: 'rgba(214,236,246,0.95)', glassHi: 'rgba(255,255,255,0.55)',   /* (claude/buriedcity4, brief 6: the glass was pale and see-through - now a dark smoked glass with a bright rim, so the sand in it reads) */ sand: '#e6bc68', sandHi: '#f8dc90', sandLo: '#a8782c', brass: '#a47e30', brassHi: '#e8c460', brassLo: '#5a4014', brassDeep: '#2e200a' };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
 const mk = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; return [c, g]; };
 const BAKED = {};
@@ -68,7 +69,7 @@ function roofStrip() {
 /* THE DUNES' two silhouettes, drawn live (cheap: one pass of columns): lit rims against the sunset sky */
 function drawDunes(g, cx, cy, VW, VH) {
   const dx = cx * 0.15;
-  for (const [col, rim, base, amp, f, ph] of [['#9a6a3e', '#e8b070', 0.58, 10, 0.011, 0], ['#c8945a', '#f4cc88', 0.66, 14, 0.013, 2]]) {
+  for (const [col, rim, base, amp, f, ph] of [['#8a6a4c', '#d8b484', 0.58, 10, 0.011, 0], ['#b8905e', '#ecca90', 0.66, 14, 0.013, 2]]) {
     g.fillStyle = col; g.beginPath(); g.moveTo(0, VH); for (let x = 0; x <= VW; x += 4) g.lineTo(x, R(VH * base + Math.sin((x + dx) * f + ph) * amp + Math.sin((x + dx) * f * 2.3) * 3 - cy * 0.05)); g.lineTo(VW, VH); g.closePath(); g.fill();
     g.fillStyle = rim; for (let x = 0; x < VW; x += 2) g.fillRect(x, R(VH * base + Math.sin((x + dx) * f + ph) * amp + Math.sin((x + dx) * f * 2.3) * 3 - cy * 0.05), 2, 1); }
 }
@@ -89,27 +90,31 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
     for (let x = ax - 384; x < VW + 384; x += 384) g.drawImage(at, R(x), ay);
     /* the arcade's floor of dark fog: the far bays sink into it */
     const fg = g.createLinearGradient(0, VH * 0.55, 0, VH); fg.addColorStop(0, 'rgba(14,12,22,0)'); fg.addColorStop(1, 'rgba(14,12,22,0.55)'); g.fillStyle = fg; g.fillRect(0, VH * 0.55, VW, VH * 0.45);
-    drawTower(g, cx, VW, VH, levelW, time, dY);
+    drawTower(g, cx, VW, VH, levelW, time, dY, 1, L.towerFlip || 0);
     const rt = roofStrip(), rx = -((cx * 0.6) % 480 + 480) % 480, band = R(-14 - cy * 0.04);
     for (let x = rx - 480; x < VW + 480; x += 480) g.drawImage(rt, R(x), band);
+    A4.drawWorksBack({ g, cx, cy, vw: VW, vh: VH, time });   /* (claude/bc4art) THE GLASS WORKS' furnaces, shelves, racks and pipes on its walls (behind the tiles) */
     g.fillStyle = 'rgba(226,196,130,0.4)'; for (let i = 0; i < 9; i++) { const x = R((((i * 97 - cx * 0.6) % VW) + VW) % VW), y = band + 40 + ((time * 30 + i * 41) % Math.max(20, VH - band - 40)); g.fillRect(x, R(y), 1, 3); }
     g.globalAlpha = 1;
   }
   /* THE DUNES (only while the sky shows): lit silhouettes, and the tower's tip over them (you see where you are going before you go down) */
-  if (sky > 0.01) { g.globalAlpha = sky; drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 600 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.5); g.globalAlpha = 1; }
+  if (sky > 0.01) { g.globalAlpha = sky; A4.drawSkyTone(g, VW, VH); if (L.cloudNow) A4.drawClouds(g, cx, cy, VW, VH, L, L.cloudNow); drawDunes(g, cx, cy, VW, VH); if ((L.outside || []).length && cx > 672 * TS) FART.drawSkyline(g, cx, cy, VW, VH); drawTower(g, cx, VW, VH, levelW, time, dY, 0.9, L.towerFlip || 0); g.globalAlpha = 1; }
 }
 
 /* THE HOURGLASS TOWER: k = how far along the level you are (its upper bulb empties, it comes nearer) */
-function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1) {
+/* (claude/buriedcity4, brief 6: THE LANDMARK SHOWS THE FLIP) fk 0..1: while a glass near you runs, THE GREAT HOURGLASS TURNS OVER (half a turn about its neck, eased) and its sand runs the other way
+   - up the screen; when the glass runs out it turns back. src/buried-city-flip.js eases L.towerFlip */
+function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1, fk = 0) {
   const k = Math.max(0, Math.min(1, cx / Math.max(1, levelW - VW)));
   /* (claude/buriedcity3, Daniel 10-12: "the hourglass takes up too much of the screen" - it was 0.8-1.3 scale and 52-72% of the view tall: now a LANDMARK at backdrop scale,
      about a fifth of the view, far off and hazed; it drifts from the right of the view toward its middle as you near the throne at its foot - parallax 0.035 in spirit, by progress) */
   const sc = 0.36 + k * 0.12, X = R(VW * (0.84 - 0.36 * k) - (cx * 0.035) % 1), Wh = R(30 * sc), top = R(VH * 0.16), bot = R(top + VH * (0.15 + k * 0.05)), neck = (top + bot) / 2, nw = 2;
-  const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha * 0.8;   /* (far off: hazed) */
+  const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha;   /* (claude/buriedcity4: no longer hazed to a ghost - it is the landmark) */
   /* the warm glow the sand throws on the stone behind it */
   const gl = g.createRadialGradient(X, neck, 4, X, neck, Wh * 3.4); gl.addColorStop(0, 'rgba(255,184,86,0.30)'); gl.addColorStop(1, 'rgba(255,184,86,0)'); g.fillStyle = gl; g.fillRect(X - Wh * 3.4, neck - Wh * 3.4, Wh * 6.8, Wh * 6.8);
   /* the base the city is built round: a stepped stone plinth under the frame, running off the bottom */
   g.fillStyle = '#2a2638'; g.fillRect(X - Wh - 18, bot + 6, Wh * 2 + 36, VH); g.fillStyle = '#3a3650'; g.fillRect(X - Wh - 18, bot + 6, Wh * 2 + 36, 2); g.fillStyle = '#322e44'; g.fillRect(X - Wh - 10, bot - 2, Wh * 2 + 20, 8);
+  const turn = fk <= 0.001 ? 0 : fk >= 0.999 ? 1 : fk * fk * (3 - 2 * fk); g.save(); if (turn) { g.translate(X, neck); g.rotate(Math.PI * turn); g.translate(-X, -neck); }
   /* the glass: scanline by scanline, an outline, a pale body, a streak of light down its left */
   const half = u => { const v = u < 0.5 ? u / 0.5 : (1 - u) / 0.5, gv = Math.max(Math.sin(Math.PI * Math.pow(v, 0.75)), 0.5 * Math.pow(1 - v, 4) * 1.2); return nw + (Wh - nw) * Math.min(1, gv); };
   const rows = bot - top;
@@ -133,6 +138,11 @@ function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1) {
     for (let x = X - Wh - 9; x < X + Wh + 9; x += 8) { g.fillStyle = PAL.brassHi; g.fillRect(x, y + 2, 1, 1); } };
   plate(top - 8, 6); plate(bot, 8);
   g.fillStyle = PAL.brass; g.fillRect(X - 8, R(neck) - 3, 16, 6); g.fillStyle = PAL.brassHi; g.fillRect(X - 8, R(neck) - 3, 16, 1); g.fillStyle = PAL.brassLo; g.fillRect(X - 8, R(neck) + 2, 16, 1);   /* the collar */
+  g.restore();
+  /* (claude/bc4art) THE FLIP STATE, READ AT A GLANCE: gold chevrons beside the glass run the way its sand runs - down (dim, as it is) or UP (bright, flipped) - and while it turns two arcs sweep round the neck */
+  { const up = fk > 0.5, mid = fk > 0.03 && fk < 0.97, al = up ? 0.55 + 0.35 * Math.sin(time * 8) : 0.3; g.fillStyle = 'rgba(255,214,107,' + al.toFixed(2) + ')';
+    for (const sx of [X - Wh - 18, X + Wh + 16]) for (let i = 0; i < 4; i++) { const p = ((time * 22 + i * ((bot - top) / 4)) % (bot - top - 8)), yy = R(up ? bot - 6 - p : top + 6 + p), d = up ? 1 : -1; g.fillRect(sx, yy, 2, 1); g.fillRect(sx - 2, yy + d * 2, 2, 1); g.fillRect(sx + 2, yy + d * 2, 2, 1); g.fillRect(sx - 4, yy + d * 4, 2, 1); g.fillRect(sx + 4, yy + d * 4, 2, 1); }
+    if (mid) { g.strokeStyle = 'rgba(255,236,160,' + (0.5 + 0.4 * Math.sin(fk * 9)).toFixed(2) + ')'; g.lineWidth = 2; for (let q = 0; q < 2; q++) { const a0 = Math.PI * (turn * 2) + q * Math.PI; g.beginPath(); g.arc(X, R(neck), Wh + 12, a0, a0 + 1.1); g.stroke(); } g.lineWidth = 1; } }
   /* the crown: a great toothed gear that turns, over the top plate, and a smaller one meshing with it */
   const gear = (gx, gy, r, teeth, a, col, hi) => { g.fillStyle = col; for (let i = 0; i < teeth; i++) { const an = a + i * Math.PI * 2 / teeth, tx = gx + Math.cos(an) * (r + 2), ty = gy + Math.sin(an) * (r + 2); g.fillRect(R(tx) - 1, R(ty) - 1, 3, 3); }
     g.beginPath(); g.arc(gx, gy, r, 0, 7); g.fill(); g.fillStyle = hi; g.fillRect(gx - r + 1, gy - 1, 2, 2); g.fillStyle = PAL.brassDeep; g.beginPath(); g.arc(gx, gy, Math.max(2, r * 0.4), 0, 7); g.fill(); g.fillStyle = col; for (let i = 0; i < 4; i++) { const an = a + i * Math.PI / 2; g.fillRect(R(gx + Math.cos(an) * r * 0.55) - 1, R(gy + Math.sin(an) * r * 0.55) - 1, 2, 2); } };

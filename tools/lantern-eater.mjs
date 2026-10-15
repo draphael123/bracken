@@ -186,6 +186,7 @@ try {
       o.plain=runBlow('gulpTell',()=>{BK.press('atk');});
       o.sweep=runBlow('jaws',()=>{k.down=true;BK.sim(3);BK.press('atk');BK.sim(4);});
       o.plainJaws=runBlow('jaws',()=>{BK.press('atk');});
+      if(h==='ranger'){ /* (claude/rangercanal) HER RISING SHOT (UP+X, standing) is the lure's HIGH key: the arrow lands a beat after the loose, with her back on her feet - it was read off that posture and clanked MID */ o.rise=runBlow('gulpTell',()=>{k.up=true;BK.press('atk');BK.sim(2);k.up=false;}); }
       out.heroes[h]=o; }
     /* THE REAL LAMP: a real swing takes nothing */
     { const e2=boot('knight'),S2=BK.lanternEaterHands().show();const lx=S2.raft.x+40;S2.lights=[{kind:'lamp',x:lx,y:S2.A.deck-${M.LE.dangleY},sway:0,ph:0,flick:1}];e2.mode='gulpTell';e2.modeT=9;S2.lure=null;S2.gulp={x:lx+80,id:998};
@@ -208,6 +209,7 @@ try {
   const w = r.woke; ok(w.active && w.mode !== 'sleep' && w.onRaft && Math.abs(w.raftX - w.mid) < 4, 'walked onto the raft it did not wake and take the raft out: ' + JSON.stringify(w));
   for (const [h, o] of Object.entries(r.heroes)) {
     ok(o.jump.keyHits > 0 && o.jump.angle === 'high', h + ': a real jump attack did not land whole on the dangling lure: ' + JSON.stringify(o.jump));
+    if (h === 'ranger') ok(o.rise && o.rise.keyHits > 0 && o.rise.angle === 'high', h + ': a rising shot (UP+X) did not land whole on the dangling lure: ' + JSON.stringify(o.rise));
     ok(o.plain.clank > 0 && o.plain.keyHits === 0 && !o.plain.open, h + ': a plain standing swing did not clank on the lure: ' + JSON.stringify(o.plain));
     ok(o.sweep.keyHits > 0 && o.sweep.angle === 'low', h + ': a real low sweep did not land whole on its gums at the rail: ' + JSON.stringify(o.sweep));
     ok(o.plainJaws.clank > 0 && o.plainJaws.keyHits === 0, h + ': a plain standing swing did not clank on its gums: ' + JSON.stringify(o.plainJaws)); }

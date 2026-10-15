@@ -7,7 +7,7 @@ import { dirname } from 'node:path';
 import { openPage } from './cdp.mjs';
 const OUT = process.argv[2];   /* no path: assert only (the check); a path: also write the sheet */
 if (OUT) mkdirSync(dirname(OUT), { recursive: true });
-const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker'];
+const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger'];
 const CW = 96, CH = 64, SC = 3;
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -29,8 +29,8 @@ try {
         if(R.stats.parries>0&&P.ripSrc==='parry'&&P.riposteT>0){
           const s=[];BK.step(1);out.keys.push(P.lastKey);s.push(__crop('catch'));BK.step(7);out.keys.push(P.lastKey);s.push(__crop('hold'));
           BK.step(14);e.x=P.x+16;P.face=1;P.inv=0;
-          BK.press('atk');for(let i=0;i<24&&!(P.atk>=0);i++)BK.step(1);
-          const seen=[];for(let i=0;i<40&&P.atk>=0;i++){seen.push(P.lastKey+':'+P.lastFrame);if(i===1)s.push(__crop('step'));if(i===4)s.push(__crop('cut'));if(i===9)s.push(__crop('thru'));BK.step(1);}
+          BK.press('atk');for(let i=0;i<24&&!(P.atk>=0)&&!(P.kPoseK==='ripo'&&P.kPoseT>0);i++)BK.step(1);   /* (claude/ranger: HER riposte is an arrow - its strike runs on the pose clock, P.kPoseT) */
+          const seen=[];for(let i=0;i<40&&(P.atk>=0||(P.kPoseK==='ripo'&&P.kPoseT>0));i++){seen.push(P.lastKey+':'+P.lastFrame);if(i===1)s.push(__crop('step'));if(i===4)s.push(__crop('cut'));if(i===9)s.push(__crop('thru'));BK.step(1);}
           out.strike=seen;out.how=how+n;__shots.push(s);return out;}}
       return null;})()`);
     assert(r, h + ': parried through its real input');

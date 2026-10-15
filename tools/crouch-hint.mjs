@@ -1,7 +1,7 @@
 // tools/crouch-hint.mjs - THE FIRST-CROUCH HINT (claude/crouchfix, src/crouch-hint.js): the first time each hero crouches, one short line names
 // his twist. On the Stockade's flat floor, fresh save, this fails when:
 //   - a hero stood or walking is told anything, or crouching 0.1 s (a stumble) is
-//   - a hero who crouches is not told FIRST[hero] (the hint box, PROG.crouchFirst[hero] = 1), or all eight lines are not distinct
+//   - a hero who crouches is not told FIRST[hero] (the hint box, PROG.crouchFirst[hero] = 1), or all nine lines are not distinct
 //   - he is told a second time (a second crouch, a minute later, even after a level load)
 //   - a hint (or two) already showing is CUT IN ON: the crouch hint must wait until the box and its queue are quiet, then show
 //   - a hero whose own contextual line was already said (the paladin's kneelTold) is told twice
@@ -52,7 +52,7 @@ try {
 if (R.err) bad.push(R.err);
 else {
   for (const [k, v] of Object.entries(R)) console.log(k, JSON.stringify(v));
-  if (new Set(Object.values(FIRST)).size !== HEROES.length || HEROES.length !== 8) bad.push('the eight heroes need eight distinct lines');
+  if (new Set(Object.values(FIRST)).size !== HEROES.length || HEROES.length !== 9) bad.push('the nine heroes need nine distinct lines');
   for (const [h, s] of Object.entries(FIRST)) if (s.length > 56 || s !== s.toUpperCase()) bad.push(h + ': the line is over 56 characters or not capitals: ' + s);
   for (const h of HEROES) { const r = R[h];
     if (r.walkTold || r.stumbleTold) bad.push(h + ': told while standing, walking or on a ' + SETTLE + ' s stumble: ' + JSON.stringify(r));
@@ -67,4 +67,4 @@ else {
   if (R.taught.told !== 0 || R.taught.flag !== 1) bad.push('the paladin was told twice (his own line was said): ' + JSON.stringify(R.taught));
 }
 assert.deepEqual(bad, [], 'the first-crouch hint:\n  ' + bad.join('\n  '));
-console.log('the first-crouch hint holds: each of the eight heroes is told his twist once, on his first real crouch, queued behind any toast already up, and never twice');
+console.log('the first-crouch hint holds: each of the nine heroes is told his twist once, on his first real crouch, queued behind any toast already up, and never twice');

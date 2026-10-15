@@ -38,7 +38,7 @@ const PAGE = `const key=(t,k,code)=>window.dispatchEvent(new KeyboardEvent(t,{ke
     fresh();settle(90);const y0=P().y;key('keydown','z');BK.sim(10);key('keyup','z');BK.sim(2);const away=P().y-y0;key('keydown','ArrowDown');BK.sim(1);tap('x');let pl=false,up=false;for(let i=0;i<6;i++){BK.sim(1);if(P().plunge){pl=true;up=up||P().vy<0;}}
     key('keyup','ArrowDown');for(let i=0;i<120&&!(P().ground&&!P().plunge);i++)BK.sim(1);o.plunge={left:Math.round(away),on:pl,atCeiling:up};
     /* X held: the heavy, wound and let go */
-    fresh();settle(90);key('keydown','x');let ch=0;for(let i=0;i<55;i++){BK.sim(1);ch=Math.max(ch,P().charge||0,P().atkHeld||0);}key('keyup','x');let hv=false;for(let i=0;i<12;i++){BK.sim(1);hv=hv||!!P().heavy||P().atk>=0||(P().blastT>0);}o.heavy={wound:ch>0,blow:hv};
+    fresh();settle(90);key('keydown','x');let ch=0;for(let i=0;i<55;i++){BK.sim(1);ch=Math.max(ch,P().charge||0,P().atkHeld||0);}key('keyup','x');let hv=false;for(let i=0;i<12;i++){BK.sim(1);hv=hv||!!P().heavy||P().atk>=0||(P().blastT>0)||(h==='paladin'&&P().castT>0);}   /* (claude/paladin3, batch94 integ) the paladin's let-go X is VERDICT: a cast (castT 0.3), no swing */o.heavy={wound:ch>0,blow:hv};
     /* F: the skill (settle(240): the death knight's heavy just before runs ~3 s, upright as well - a press inside it is held for its window) */
     fresh();settle(240);tap('f');let cd=0;for(let i=0;i<4;i++){BK.sim(1);cd=Math.max(cd,(P().cds&&P().cds[skill])||0);}o.skill=cd>0;
     settle(120);

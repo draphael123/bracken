@@ -71,7 +71,7 @@ check('early milestones', () => {
     assert.equal(PR.HERO_PERKS[h].length, 2, h + ' needs two options'); }
   assert.equal(PR.PERKS.length + PR.MINOR_PERKS.length >= 16, true); assert.equal(PR.MINOR_PERKS.length >= 8, true);
   /* the hero's own is a different hand per hero, and every id of every hero is unique */
-  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 16);   /* (berserkerport: two a hero, eight heroes) */
+  assert.equal(new Set(PR.ALL_HERO_PERKS.map(k => k.id)).size, 18);   /* (berserkerport: two a hero, eight heroes; claude/ranger: nine) */
   assert.equal(PR.levelsToPerk(0), 5); assert.equal(PR.levelsToPerk(7), 3); assert.equal(PR.levelsToPerk(20), 5); assert.equal(PR.levelsToPerk(49), 1); assert.equal(PR.levelsToPerk(50), null);
   assert.deepEqual(PR.techniquesArriving('knight', 0, 50), []); assert.deepEqual(PR.TECH_LEVELS, [10, 20, 30]);   /* the technique hook: empty, ready, and L20/L30 untouched */
 });
@@ -127,9 +127,9 @@ check('slots', () => {
 });
 
 check('heroes for silver', () => {
-  const fresh = PR.migrateProgress(null).progress; assert.equal(fresh.heroFlow, 1); assert(!fresh.coopLegacy); assert(!PR.coopOpen(fresh));
-  fresh.heroes = { warden: true }; assert(!PR.coopOpen(fresh)); fresh.heroes.knight = true; assert(PR.coopOpen(fresh), 'a second hero does not open co-op');
-  assert.deepEqual(PR.DEFAULT_HEROES, ['knight', 'warden', 'geomancer', 'berserker']);   /* (claude/berserker, 2026-10-04: the fourth default) */
+  const fresh = PR.migrateProgress(null).progress; assert.equal(fresh.heroFlow, 1); assert(!fresh.coopLegacy); assert(PR.coopOpen(fresh), 'co-op is open on a fresh save (Daniel 10-15)');
+  fresh.heroes = { warden: true }; assert(PR.coopOpen(fresh), 'co-op is open with one hero (Daniel 10-15: no second hero needed)');
+  assert.deepEqual(PR.DEFAULT_HEROES, ['knight', 'warden', 'geomancer', 'ranger']);   /* (claude/berserker, 2026-10-04: the fourth default; claude/ranger, Daniel 10-12 - a deliberate design change: THE RANGER is the fourth free starter, the berserker is bought) */
   const oldSave = JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: 5000, geomancer: 400 }, done: { warden: { wood: 1 }, geomancer: {} }, wood: { cleared: true }, coins: 10 });
   const o = PR.migrateProgress(oldSave).progress; assert(o.coopLegacy && PR.coopOpen(o), 'an old save lost co-op'); assert(o.heroes.warden && o.heroes.geomancer, 'an old save lost a starter it played'); assert(!o.heroes.pyro);
   const again = PR.migrateProgress(JSON.stringify(o)).progress; assert.deepEqual(again.heroes, o.heroes); assert.equal(again.heroFlow, 1);
@@ -165,7 +165,7 @@ check('skill ranks', () => {
       const p = +r.match(/price: (\d+)/)[1], silver = /silver: true/.test(r), id = r.match(/id: '(\w+)'/)[1]; if (id === 'steel') continue;
       assert(silver ? p >= 6 && p <= 10 : p >= 150 && p <= 400, id + ' priced ' + p); } });
   check('sinks', () => { { const f2 = readFileSync(new URL('../src/flasks2.js', import.meta.url), 'utf8'); assert(/id: 'tonic', group: 'COUNT'/.test(f2) && (f2.match(/group: 'COUNT'/g) || []).length === 3 && /F2\.FLASK_ITEMS/.test(src), 'the extra flasks do not take a hero to four (claude/flasks2, Daniel 10-08: EXTRA FLASK I - the old tonic line - II and the hidden III, on the FLASKS tab)'); } assert(/id: 'edge4'/.test(src) && /id: 'mail2'/.test(src), 'no late smith');
-    for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer', 'berserker'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
+    for (const n of PR.SKILLS.filter(n => n.active && ['knight', 'warden', 'geomancer', 'berserker', 'ranger'].includes(n.hero) && PR.TOP_PRICE[n.level])) assert.equal(n.price, PR.TOP_PRICE[n.level], n.id);
     assert.equal(DC.bankStake(400), 0); assert.equal(DC.bankStake(900), 100); assert.equal(DC.bankStake(5000), 300); assert.equal(DC.bankStake(-5), 0);
     notes.push('bank stake on death: bank 1k ' + DC.bankStake(1000) + ', 2k ' + DC.bankStake(2000) + ', 5k ' + DC.bankStake(5000)); }); }
 

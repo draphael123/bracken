@@ -610,9 +610,27 @@
      14.4
     ]
    }
+  },
+  "oathmage": {
+   "level": "spore",
+   "affix": "VENOMOUS",
+   "ehp": 158,
+   "mash": {
+    "n": 3,
+    "wins": 0
+   },
+   "human": {
+    "n": 6,
+    "wins": 3,
+    "secs": [
+     53.7,
+     28.2,
+     31.2
+    ]
+   }
   }
  },
- "stamp": "b15dec1b40e8",
+ "stamp": "0d89fd28a51c",
  "heroes": [
   "knight",
   "warden",

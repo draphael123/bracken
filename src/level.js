@@ -133,7 +133,7 @@ function brackenWood() {
   plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
   floor(98, 120, 22);
   coins([99, 20], [100, 19], [101, 20]);
-  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'TAP C: HOLY GROUND. HOLD C: AEGIS. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
+  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'TAP C: SPEND CONVICTION. HOLD C: AEGIS. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
   // A STONE BLOCK (teaching use, backlog #12: PUSHABLE BLOCKS). A ledge floats over the path at row 18 - four
   // tiles up, a real jump reaches about 3.2 - with a coin on it. Push the block two tiles snug underneath, stand
   // on it, and the last tile is one jump away. The ledge is a single floating tile (rows 19-21 under it stay
@@ -1740,7 +1740,7 @@ function underleaf() {
   ent('window', 288, R - 3, { gob: 'shield', dx: 293, dy: R - 1 });
   ent('sapper', 306, R - 1, { face: -1, sleeper: true });
   /* THE CHURCHYARD'S EXAM, at the tower's foot before the iron gate: the pike serjeant, awake under the toll, and his goblin asleep at his heel */
-  ent('pike', 331, R - 1, { face: -1, elite: true, squad: 'tower-foot' }); ent('sprig', 328, R - 1, { face: -1, sleeper: true, squad: 'tower-foot' }); ent('sprig', 278, 25, { face: 1, sleeper: true });
+  { const kn = knightRow('underleaf'); ent(kn[0], kn[1], kn[2], { ...kn[3], elite: true, squad: 'tower-foot' }); }   /* (claude/wardens12) THE HUSH LANCE of the Spore Chapter is the pike serjeant UPGRADED (was ent('pike', 331, R - 1, { face: -1, elite: true, squad: 'tower-foot' })) */ ent('sprig', 328, R - 1, { face: -1, sleeper: true, squad: 'tower-foot' }); ent('sprig', 278, 25, { face: 1, sleeper: true });
   ent('assassin', 302, R - 1, { face: 1 }); ent('archer', 290, 25, { face: -1, sleeper: true });
   /* THE CHURCHYARD'S BELLMAN walks between the church and the tower: under the toll he hears nothing either */
   bellman(300, 295, 312, 1, -1);
@@ -3820,21 +3820,23 @@ function trialYard(hero) {
       ['tells', 2, 'ONE YELLOW ! : A PARRY TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['heavyblow', 2, 'HOLD X: THE PISTOL GOES THROUGH ANY GUARD, THEN RELOADS. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
       ['hook', 2, 'HOLD C: THE HOOK HAULS YOU TO RIGGING, OR A MAN TO YOU. THROW IT TWICE.', [['dummy', 20]], 'HOLD LB'],
+      ['board', 2, 'BOARDING: JUMP, THEN DOWN+X ON A GOBLIN. STEER IT, THEN JUMP OFF. RIDE TWO.', [['sprig', 13], ['sprig', 19]], 'A, THEN DOWN+X'],
       DASH, RISE, SWEEP,
       ['meter', 1, 'PLUNDER FILLS AS YOU FIGHT. FULL, TAP C: THE BLACK FLAG. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'LB WITH A FULL BAR'],
       SKILL],
     paladin: [
-      ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW FILLS THE LIGHT.', [['dummy', 18]], 'X, X, X'],
+      ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW BUILDS CONVICTION.', [['dummy', 18]], 'X, X, X'],
       ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],
       ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
-      ['hallow', 1, 'HOLY GROUND: TAP C. IN YOUR CIRCLE YOU HIT HARDER AND MEND, AND FOES IN IT BURN.', [['dummy', 11], ['dummy', 14]], 'TAP LB'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
-      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. A QUARTER OF THE LIGHT. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
-      ['hammerfall', 2, 'HAMMERFALL: JUMP, THEN DOWN+X. THE GROUND CARRIES IT BOTH WAYS. CATCH TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
-      ['heavyblow', 2, 'HOLD X FOR THE OVERHEAD: IT BREAKS A RAISED SHIELD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
+      ['smite', 1, 'SMITE: ONE CONVICTION, TAP C. ANY SPEND LIGHTS YOUR AURA: IN IT YOU HIT HARDER AND MEND.', [['dummy', 6], ['dummy', 14]], 'TAP LB'],   /* (PALADIN 3: the planted circle is gone - the first tier, and the aura it lights) */
+      ['sanctify', 1, 'RADIANCE: THREE CONVICTION, TAP C. A BURST OF LIGHT ALL ROUND YOU.', [['dummy', 9], ['dummy', 12]], 'TAP LB WITH THREE'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
+      ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. THREE CONVICTION. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
+      ['hammerfall', 2, 'HAMMER OF DAWN: JUMP, THEN DOWN+X. THE SLAM BREAKS POISE AND A GUARD. HIT TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
+      ['verdict', 1, 'VERDICT: HOLD X. A SIGIL A BEAT ON WHAT IS AHEAD. LET GO: THE LIGHT STRIKES THEM ALL.', [['dummy', 8], ['dummy', 13]], 'HOLD X, LET GO'],   /* (PALADIN 3: the held X is VERDICT, not the overhead) */
       ['dodge', 2, 'THE HEAVY STEP: TAP A WAY TWICE, OR V. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS.', [], 'B, OR THE STICK TWICE'],
       DASH, RISE, SWEEP,
-      ['judgement', 1, 'JUDGEMENT: A FULL LIGHT, IN YOUR CIRCLE, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB IN THE CIRCLE, FULL'],
+      ['judgement', 1, 'SUNFALL: FIVE CONVICTION, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH FIVE'],   /* (PALADIN 3: the old Judgement, renamed; its trial key stays) */
       SKILL],
     /* THE WARDEN'S YARD (2026-09-24, POLISH): her four verbs, not the knight's. The POINT (only the last quarter of the spear bites),
        the DEFLECT on the beat (C is a sweep of the shaft, never a shield), the RUN-THROUGH (the held X that skewers a line) and the PIN
@@ -3857,13 +3859,28 @@ function trialYard(hero) {
       ['fault', 2, 'FAULT LINE: HOLD X, LET GO. A LONGER HOLD, A LONGER CRACK. CATCH BOTH IN ONE.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
-      ['stonefall', 2, 'STONEFALL: JUMP, THEN DOWN+X BETWEEN THEM. THE RING KNOCKS DOWN BOTH SIDES. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
+      ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. A STONE RISES AND HITS. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],
       ['meter', 1, 'WHAT SHE BUILDS AND BREAKS FILLS TREMOR. FULL, TAP C: THE QUAKE. IT IS FILLED FOR YOU HERE.', [['dummy', 12], ['sprig', 18]], 'LB WITH A FULL BAR'],
       SKILL],
     /* THE BERSERKER'S YARD (claude/berserker, 2026-10-04): his verbs. THE CHAIN (the run goes on only while the chops land, so it is taught on
        straw that takes them; claude/berserker2: a FLURRY of five, the fifth THE CROSS-CHOP), THE DOUBLE CHOP (his held X), TAKE IT on the beat (C: the crossed axes, a parry on the beat, rage off it), the marks
        (the brace takes a yellow one; a red one goes through it), THE SHOULDER ROLL, THE AXE THROW (UP+C, and then he must fetch it) and
        THE FRENZY (a full bar, spent) */
+    /* THE RANGER'S YARD (claude/ranger, 2026-10-14): her verbs. THE QUICK SHOT (a tap), THE DRAW (held: a full one carries to the far straw), THE QUIVER (walk
+       over your arrows to take them back), THE BOW-BASH on the beat (her parry), the marks, THE BACKFLIP, THE DOWNWARD SHOT, the knife's dash and sweep,
+       and HUNTER'S FOCUS (filled for her: UP+C marks the straw) */
+    ranger: [
+      ['hit', 3, 'TAP X: A QUICK SHOT. IT IS SHORT AND IT DROPS. HIT THE STRAW MAN THREE TIMES.', [['dummy', 13]], 'X'],
+      ['heavyblow', 2, 'HOLD X: DRAW, AND LET GO. A FULL DRAW FLIES FAR AND HITS HARD. LAND TWO ON THE FAR ONE.', [['dummy', 22]], 'HOLD X, LET GO'],
+      ['quiver', 3, 'YOUR ARROWS STICK WHERE THEY LAND AND GLINT. WALK OVER THEM: TAKE THREE BACK.', [['dummy', 12]], 'WALK OVER THEM'],
+      ['flash', 2, 'THE BOW-BASH: TAP C AS HIS SWORD FLASHES. HE REELS, THROWN BACK OUT TO RANGE. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
+      ['tells', 2, 'ONE YELLOW ! : BASH IT ON THE BEAT. TWO RED !! : TOO STRONG, SO FLIP CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
+      ['restock', 2, 'QUIVER EMPTY? CROUCH STILL (HOLD DOWN): FRESH ARROWS, ONE A SECOND. TAKE TWO.', [], 'HOLD DOWN, STAY STILL'],
+      ['dodge', 2, 'THE BACKFLIP: V, OR TAP A WAY TWICE. SHE FLIPS AWAY FROM WHAT SHE FACES. FLIP TWICE.', [], 'B, OR THE STICK TWICE'],
+      ['down', 2, 'DOWN+X IN THE AIR: A SHOT STRAIGHT DOWN, AND A HOP UP OFF IT. HIT THE STRAW TWICE.', [['dummy', 14], ['dummy', 19]], 'A, THEN DOWN+X'],
+      DASH, SWEEP,
+      ['meter', 1, 'ARROWS FROM THE SWEET SPOT FILL FOCUS. FULL: UP+C MARKS YOUR QUARRY. MARK THE STRAW.', [['dummy', 14], ['sprig', 20]], 'UP + LB WITH A FULL BAR'],
+      SKILL],
     berserker: [
       ['third', 2, 'THE FLURRY: X FIVE TIMES, LEFT AXE, RIGHT AXE. LAND THEM ALL: THE FIFTH IS THE CROSS-CHOP.', [['dummy', 16], ['dummy', 20]], 'X x5'],
       ['heavyblow', 2, 'HOLD X, LET GO: BOTH AXES DOWN AT ONCE. IT BREAKS A GUARD.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
@@ -3871,6 +3888,7 @@ function trialYard(hero) {
       ['tells', 2, 'ONE YELLOW ! : HOLD C AND TAKE IT AS RAGE. TWO RED !! : TOO STRONG, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['dodge', 2, 'THE SHOULDER ROLL: TAP A WAY TWICE, OR V. IT KNOCKS THE SMALL ONES ASIDE. ROLL TWICE.', [], 'B, OR THE STICK TWICE'],
       ['axe', 2, 'UP+C HURLS THE OFF AXE. YOU FIGHT ONE-HANDED UNTIL YOU PICK IT UP. HIT THE STRAW TWICE.', [['dummy', 11]], 'UP+LB'],
+      ['spin', 2, 'AXE SPIN: JUMP, THEN DOWN+X ON THE STRAW. THE AXES SHRED IT. SPIN TWICE.', [['dummy', 12], ['dummy', 19]], 'A, THEN DOWN+X'],
       DASH, RISE, SWEEP,
       ['meter', 1, 'BLOWS FILL RAGE. FULL: HOLD DOWN, TAP C, THE FRENZY.', [['dummy', 14], ['sprig', 20]], 'DOWN + LB WITH A FULL BAR'],
       SKILL],
@@ -3885,7 +3903,7 @@ function trialYard(hero) {
     for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 18, 19); ent('archer', x0 + dx, 17, { face: -1, lx0: x0 + 1, lx1: gate - 1 }); } else if (t === 'dummy') ent('dummy', x0 + dx, 19);
       else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
-    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' ? 60 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
+    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' || kind === 'sanctify' ? 60 : kind === 'smite' ? 20 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
   const xe = 4 + ST.length * SW;
   ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
   ent('gate', xe + 14, 19);
@@ -4071,7 +4089,7 @@ function galeMoor() {
   ent('kite', o + 17, 10); ent('kite', o + 40, 9); ent('kite', o + 53, 11); ent('harpy', o + 44, 7);
   for (let x = o + 20; x <= o + 25; x++) set(x, 22, 0); block(o + 20, o + 25, 24, 29); pools.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS + 4, shallow: true, depth: 12 }); hags.push({ x0: (o + 20) * TS, x1: (o + 26) * TS, y: 22 * TS });
   ent('flagpost', o + 4, 21); ent('flagpost', o + 36, 21); ent('hare', o + 44, 21, { face: -1 }); ent('sailer', o + 22, 21, { face: -1 }); ent('sailer', o + 52, 21, { face: -1 });
-  ent('goat', o + 38, 21, { elite: true, gate: o + 43 });   /* the herd billy, in the open between the posts, and the field's gate held behind him (it stood in the Bothy's lee) */
+  { const kn = knightRow('moor'); ent(kn[0], kn[1], kn[2], { ...kn[3], elite: true }); }   /* (claude/wardens12) THE GALE LANCE of the Scree Chapter REPLACES the herd billy (was ent('goat', o + 38, 21, { elite: true, gate: o + 43 })): o + 38 = 188, o + 43 = 193 */   /* the herd billy, in the open between the posts, and the field's gate held behind him (it stood in the Bothy's lee) */
   ent('sign', o + 1, 21, { text: 'KITE GOBLINS DROP STONES. CUT THE STRING OR THE GOBLIN AND BOTH COME DOWN.' });
   coins([o + 8, 19], [o + 14, 17], [o + 30, 16], [o + 37, 19], [o + 48, 18], [o + 54, 19]);
   ent('check', o + 54, 21);
@@ -7956,6 +7974,7 @@ export const LEVELS = [
   { id: 'trial_warden', name: "THE WARDEN'S TRIAL", sub: 'point, shaft and pin', build: () => trialYard('warden'), hidden: true },
   { id: 'trial_geomancer', name: "THE GEOMANCER'S TRIAL", sub: 'fault line, shield and quake', build: () => trialYard('geomancer'), hidden: true },
   { id: 'trial_berserker', name: "THE BERSERKER'S TRIAL", sub: 'flurry, take it and frenzy', build: () => trialYard('berserker'), hidden: true },
+  { id: 'trial_ranger', name: "THE RANGER'S TRIAL", sub: 'the shot, the bash and the mark', build: () => trialYard('ranger'), hidden: true },   /* (claude/ranger) APPENDED: LEVELS is an append log */
   /* THE HARVEST FAIR (claude/fair1, L1: greybox + the facing mechanic): the road inland's second stop, between WAYMEET and THE HEXED FIELDS (the Fields
      need it now). APPENDED, like every level since the log began, so no index and no save moves; its place on the road is its `needs` and its map node */
   { id: 'fair', name: 'THE HARVEST FAIR', sub: 'abandoned mid-festival, as the sun goes down', rule: "DON'T TURN YOUR BACK ON THEM.", build: () => buildHarvestFair({ painter, T, TS }), needs: 'theatre' },   /* (claude/theatre: the playhouse stands between Waymeet and the fair now) */
@@ -7996,7 +8015,7 @@ export const LEVELS = [
      save moves. AN OPTIONAL SPLIT PATH whose fork is THE TOWPATH's first screen (claude/towpath, in parallel): until the integrator joins them it hangs off WAYMEET
      (needs + opensOn); then both become 'towpath' (src/lit-church.js FORK) */
   { id: 'church', arc: 'the road inland', name: 'THE LIT CHURCH', sub: 'the chapel the paladins were sworn to', rule: CHURCH_RULE, build: () => buildLitChurch({ painter, T, TS }), needs: 'towpath', classFor: 'paladin', opensOn: { level: 'towpath', medal: 'bronze' } },
-  { id: 'towpath', arc: 'the road inland', name: 'THE TOWPATH', sub: 'the river road out of Waymeet, lock by lock into the fog', rule: 'THE LOCKS LIFT THE WATER, AND THE WATER LIFTS YOU.', build: () => buildTowpath({ painter, T, TS }), needs: 'waymeet' },   /* THE TOWPATH (claude/towpath, the greybox, 2026-10-08): appended (saves count levels by index); in the road between WAYMEET and THE FOG CANAL by its needs */
+  { id: 'towpath', arc: 'the road inland', name: 'THE TOWPATH', sub: 'the river road out of Waymeet, lock by lock into the fog', rule: 'THE FOG LIES ON THE LOW WATER. THE LOCKS LIFT YOU OUT OF IT.', build: () => buildTowpath({ painter, T, TS }), needs: 'waymeet' },   /* THE TOWPATH (claude/towpath, the greybox, 2026-10-08): appended (saves count levels by index); in the road between WAYMEET and THE FOG CANAL by its needs */
   /* THE BURIED CITY (claude/buriedcity, the OPUS GREYBOX, 2026-10-08; Daniel's desert-arc concept 10-01, to today's rules): a city of the living buried whole under the dunes past
      THE BANDIT KSAR - its rooms fill with sand. APPENDED, so no index and no save moves. THE HOURGLASS KING (src/hourglass-king.js) is its boss; THE SEALED PYRAMID will need it */
   { id: 'buriedcity', arc: 'the desert', name: 'THE BURIED CITY', sub: 'a city of the living, buried whole', rule: 'PULL A SAND-GATE AND A ROOM DRAINS; SHUT IT AND THE SAND RISES AND CARRIES YOU. STRIKE AN HOURGLASS AND THE SAND RUNS BACKWARD.', build: () => buildBuriedCity({ painter, T, TS }), needs: 'ksar' },
@@ -8591,29 +8610,29 @@ function ambushRooms(L, id) {
    gate actually holds the route, and that nothing counted stands in the gate. */
 const ELITES = {
   /* and the same four had no elite either: every other level has its one big fight on the way to the boss */
-  burning: [['shield', 156, 25, { face: -1, gate: 166 }]],   /* THE CROFTS' shield holds the lane out of the crofts. The barn captain who held the barn's far door
+  burning: [knightRow('burning')],   /* (claude/wardens12) THE EMBER BLADE of the Bog Chapter REPLACES the crofts' shield, his gate 166 */   /* was ['shield', 156, 25, { face: -1, gate: 166 }] */   /* THE CROFTS' shield holds the lane out of the crofts. The barn captain who held the barn's far door
      leads the barn's ambush now (AMBUSH.burning), and Q2 keeps an elite off an ambush's doorstep (docs/briefs/burning-village-rework.md §5) */
   harbor: [['bosun', 292, 29, { face: -1 }], ['marine', 700, 25, { face: -1 }]],
   keep: [['wight', 247, 58, { face: -1 }], ['tideguard', 590, 58, { face: -1 }]],   /* the inner keep starts at KEEP_APPROACH (560) */
   burial: [['corpse', 94, 21, { face: -1, risen: true }], ['husk', 129, 21, { face: -1 }], ['husk', 404, 21, { face: -1 }]],   /* (claude/burial2: a barrow soldier past the Candle Path's second pit, a husk under the Ossuary's shelves, and the husk on THE ROTTEN BRIDGES' pier) */   /* (the third husk holds THE ROTTEN BRIDGES' pier since 2026-09-24: 950 is a board now) (the wight left the Falling Gallery's road, walled up in batch 4b, for the Grave Causeway before its green water) */
-  oreroad: [knightRow('oreroad')],   /* (claude/order) THE ORE LANCE of the Ore Chapter holds the drum yard's gate (472) in the King's Champion's place - his ORE is the Winchmaster's key taught first (src/order-chapters.js ORDER_AT) */   /* was ['heavy', 458, 12, { face: -1, gate: 472 }]:   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck. 458, not 455 (lane claude/oreroad2, THE ORE SHAFT rework): the checkpoint at 454 needs two tiles' clearance from him (elites, "never at a landing") */
+  oreroad: [knightRow('oreroad')],   /* (claude/order) THE ORE LANCE of the Ore Chapter holds the drum yard's gate (472) in the King's Champion's place - his ORE is the Winchmaster's key taught first (src/order-chapters.js ORDER_AT) */   /* was ['heavy', 458, 12, { face: -1, gate: 472 }] */   /* THE ORE ROAD: the drum yard's foreman holds the last gate onto the drum house's deck. 458, not 455 (lane claude/oreroad2, THE ORE SHAFT rework): the checkpoint at 454 needs two tiles' clearance from him (elites, "never at a landing") */
   witchlight: [['husk', 110, 76, { face: -1 }], ['armour', 300, 34, { face: -1 }]],   /* the redesign: the second pier's captain calls up the gorge's dead; the warden armour on the tall hedge guards its silver (at 300 since the garden grew, claude/hedgewarden2) */
   fallingtower: [['husk', 52, 146, { face: -1 }]],   /* the cistern's husk over the poison: it sits ON the cistern's own first-tier husk, so it is UPGRADED, not added - one husk in the tower, and it is this one. Since the rework of 2026-09-25 (docs/briefs/falling-tower-rework.md) the tower's other two elites are gone into its named fights: the orrery's armour CAPTAINS THE ORRERY PIT (AMBUSH, below) and the bell loft's warden became THE SEXTON, its mini - an elite beside either would be back to back with it (rule Q). */
   wood: [knightRow('wood')],   /* (claude/order) THE BRIAR MAUL of the Thorn Chapter REPLACES the warding shield captain at 147 and holds his gate (157) - the first knight of the order you meet */
-  rootway: [['shield', 147, 22, { face: -1, gate: 157 }], ['shield', 276, 18, { face: -1 }], ['shield', 372, 18, { face: -1 }]],   /* (claude/rootway2, Daniel 10-09: five areas - the HOLLOW TRUNK's exam holds the knothole (gate 157: the only way out of the trunk), the gantry's, and THE TROPHY LODGE's among the traps) */   /* (claude/stamina12, Daniel 10-08: stamina x1.4 -> x1.2 and the mash bot cleared the Rootway: the great roots' exam is the shield captain at the gap (checkpoint 193 after), the hoist yard's the shield at the yard's cages (checkpoint 290 after)) */
+  rootway: [knightRow('rootway'), ['shield', 276, 18, { face: -1 }], ['shield', 372, 18, { face: -1 }]],   /* (claude/wardens12) THE HOIST MAUL of the Spore Chapter REPLACES the hollow trunk's shield (147, gate 157); the gantry's and the lodge's stay */   /* was ['shield', 147, 22, { face: -1, gate: 157 }] */   /* (claude/rootway2, Daniel 10-09: five areas - the HOLLOW TRUNK's exam holds the knothole (gate 157: the only way out of the trunk), the gantry's, and THE TROPHY LODGE's among the traps) */   /* (claude/stamina12, Daniel 10-08: stamina x1.4 -> x1.2 and the mash bot cleared the Rootway: the great roots' exam is the shield captain at the gap (checkpoint 193 after), the hoist yard's the shield at the yard's cages (checkpoint 290 after)) */
   marsh: [knightRow('marsh')],   /* (claude/order) THE BOG BLADE of the Bog Chapter REPLACES the thorned spike goblin on the far bank, the channel at your back, his gate 105 */   /* (claude/levelpilot: on the stilts at 65/72, with both stilt archers shut in with him, he was the marsh's whole threat in one locked room; he holds the far bank of the archer island now, one on one with the water at your back - section one's exam, the checkpoint at 109 after it. An elite frog was tried here: the lab's human bot killed it in 1.8 s, no exam) */
-  stockade: [['brute', 302, 19, { gate: 317 }]],
-  spore: [['shield', 412, 13, { gate: 430 }]],
+  stockade: [knightRow('stockade')],   /* (claude/wardens12) THE HORN LANCE of the Bog Chapter REPLACES the camp brute at 302 and holds the palisade gate (317) */   /* was ['brute', 302, 19, { gate: 317 }] */
+  spore: [knightRow('spore')],   /* (claude/wardens12) THE SPORE MAGE (a battle mage: his first wiring) REPLACES the cap-top shield at 412 and holds the gate (430) */   /* was ['shield', 412, 13, { gate: 430 }] */
   kings: [['brute', 433, 20]],
-  scree: [['troll', 505, 18, { gate: 510 }]],   /* (claude/scree2: +96, the rockslide chase grew in before him) 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
-  hanging: [['shield', 85, 107]],
+  scree: [knightRow('scree')],   /* (claude/wardens12) THE SCREE MAUL of the Scree Chapter REPLACES the crag troll at 505 and holds the gate (510) */   /* was ['troll', 505, 18, { gate: 510 }] */   /* (claude/scree2: +96, the rockslide chase grew in before him) 409: at 403 he stood a tile from the checkpoint at 404 - the landing (level review, 2026-09-24) */
+  hanging: [knightRow('hanging')],   /* (claude/wardens12) THE ROPE BLADE of the Scree Chapter REPLACES the village street's shield at 85 */   /* was ['shield', 85, 107] */
   /* THE MONASTERY keeps the Temple Guardian in its hall, so neither of its two holds a gate. Both stand on a floor the
      level walks the LENGTH of, and neither stands at the trapdoor either end of it: a crag troll loose in the
      scriptorium, on the long walk from the trapdoor at 73-77 to the prayer wheel at 47, and the herd billy out on the
      shrines' ledge above the cloud, clear of the way up at 31-37, the cellar at 81-89 and the bellows at 14 */
-  spire: [['troll', 61, 171], ['goat', 62, 79]],
+  spire: [knightRow('spire'), ['goat', 62, 79]],   /* (claude/wardens12) THE GONG MAUL of the Scree Chapter REPLACES the scriptorium's crag troll (61, 171); the herd billy on the shrines' ledge stays */   /* was ['troll', 61, 171] */
   /* moor: the Kite Field's herd billy and the Gallery's crag troll are built in galeMoor() in their final columns */
-  storm: [['shield', 33, 35, { face: -1, gate: 38 }], ['brute', 162, 31, { face: -1 }], ['brute', 214, 31, { face: -1 }], ['shield', 343, 31, { face: -1 }], ['pike', 373, 29, { gate: 378 }], ['shield', 470, 43, { face: -1, gate: 475 }]],   /* (claude/stormtough: one weighty elite a section, the exams of the Road, the Square, Smoke Row, the Close's far bank and the gorge; the Pike Serjeant keeps the Halls) */   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
+  storm: [['shield', 33, 35, { face: -1, gate: 38 }], ['brute', 162, 31, { face: -1 }], ['brute', 214, 31, { face: -1 }], ['shield', 343, 31, { face: -1 }], knightRow('storm'), ['shield', 470, 43, { face: -1, gate: 475 }]],   /* (claude/wardens12) THE STORM LANCE of the Storm Chapter REPLACES the Pike Serjeant at 373 and holds the Halls' gate (378) */   /* was ['pike', 373, 29, { gate: 378 }] */   /* (claude/stormtough: one weighty elite a section, the exams of the Road, the Square, Smoke Row, the Close's far bank and the gorge; the Pike Serjeant keeps the Halls) */   /* THE PIKE SERJEANT, THE HALLS: he holds the gap the Longhouse's second roof frames at 378 (this rework, docs/briefs/stormhold-town.md) */
   /* HIGHCROWN has the Forgemaster's armoury, so neither holds a gate: the King's Champion alone in the siege yard (clear of
      its winch), and the Hearth Boss rallying his cooks in the keep's kitchen. The Leads' alarm gate at 880 is left alone */
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],

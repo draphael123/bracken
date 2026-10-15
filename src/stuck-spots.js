@@ -461,26 +461,31 @@ export const STUCK_HANDS = {
       { key: 'chantryDoor', is: ['need.chantryDoor', 'lamp'], at: [210, 36], line: 'THE CHANTRY DOOR\'S LAMP IS DARK: CARRY A FLAME TO IT' } ] },
     { id: 'lc-reliquary', zone: [214, 31, 234, 40], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [222, 40], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
   ],
-  /* THE TOWPATH (claude/towpath): every lock, the race and every swing bridge the route needs glints until its water stands where the way needs it (src/towpath-hands.js
-     handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across | open); rows are the sheet's (the design rows + 10) */
+  /* THE TOWPATH (claude/towpath; THE TOWPATH 2, claude/towpath2): every lock, the race, the hoist, the aqueduct's sluice, the crane and every swing bridge the route
+     needs glints until its water (or its ride) stands where the way needs it (src/towpath-hands.js handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across |
+     open, hoist.<id> bot | top | moving, trough.<id> west | east | moving, crane.<id> quay | roof | moving); rows are the sheet's (the design rows + 9) */
   towpath: [
-    { id: 'tp-lockA', zone: [40, 40, 56, 55], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [54, 49], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
-    { id: 'tp-race', zone: [92, 35, 110, 55], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 43], line: 'THE RACE PADDLE ON THE BANK' },
-      { key: 'wheel', is: ['wheel.mill', 'still'], rows: [37.2, 60], colLt: 109, at: [107, 36], glint: 'stall', line: 'THE WHEEL STANDS STILL: CLIMB ITS PADDLES' } ] },   /* (claude/towpath fix, review S4: the stilled wheel, the warehouse ladder, the culvert) */
-    { id: 'tp-tail', zone: [126, 35, 140, 45], steps: [ { key: 'tail', is: ['bridge.tail', 'open'], at: [130, 41], line: 'THE CAPSTAN BY THE CUT' } ] },
-    { id: 'tp-f1', zone: [152, 30, 168, 48], steps: [
-      { key: 'f1bank', is: ['lock.F1', 'hi'], colLt: 160, at: [159, 41], line: 'THE LOCK IS FULL: ITS PADDLE IS ON THE BANK' },
-      { key: 'f1punt', is: ['lock.F1', 'lo'], at: [166, 42], line: 'THE PADDLE BY THE PUNT' } ] },
-    { id: 'tp-f2', zone: [167, 25, 176, 44], steps: [
-      { key: 'f2', is: ['lock.F2', 'dry'], at: [172, 42], line: 'THE PADDLE IN THE DRY CHAMBER' },
-      { key: 'f2hi', is: ['lock.F2', 'hi'], colLt: 169, at: [167, 36], line: 'THE PUNT RODE UP: ITS PADDLE IS ON THE LANDING' } ] },
-    { id: 'tp-f3', zone: [175, 22, 183, 38], steps: [ { key: 'f3', is: ['lock.F3', 'lo'], at: [182, 32], line: 'THE PADDLE BY THE PUNT' } ] },
-    { id: 'tp-basin', zone: [216, 20, 238, 30], steps: [ { key: 'basin', is: ['bridge.basin', 'open'], at: [220, 26], line: 'A CAPSTAN ON EACH BANK' } ] },
-    { id: 'tp-ladder', zone: [243, 20, 246, 28], steps: [ { key: 'ladder', rows: [25.5, 27.5], colLt: 246, at: [245, 25], glint: 'stall', line: 'THE LADDER UP THE WAREHOUSE FACE' } ] },
-    { id: 'tp-x', zone: [262, 20, 280, 37], steps: [ { key: 'xlamp', is: ['lamp.x', 'out'], colLt: 268, at: [266, 26], line: 'THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN' }, { key: 'x', is: ['lock.X', 'hi'], colLt: 268, at: [266, 26], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
-    { id: 'tp-culvert', zone: [268, 28, 279, 37], steps: [ { key: 'culvert', is: ['lock.X', 'dry'], rows: [29, 35.5], at: [282, 35], glint: 'stall', line: 'THE CULVERT UNDER THE EAST WALL' } ] },
-    { id: 'tp-y', zone: [280, 20, 293, 37], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [291, 36], line: 'THE PADDLE BY THE PUNT' } ] },
-    { id: 'tp-cut', zone: [292, 18, 302, 26], steps: [ { key: 'cut', is: ['bridge.cut', 'open'], at: [296, 23], line: 'THE CAPSTAN BY THE CUT' } ] },
+    { id: 'tp-lockA', zone: [40, 39, 56, 54], steps: [ { key: 'lockA', is: ['lock.A', 'lo'], at: [54, 48], line: 'THE LOCK PADDLE, BY THE PUNT' } ] },
+    { id: 'tp-race', zone: [92, 34, 110, 54], steps: [ { key: 'race', is: ['lock.race', 'hi'], at: [98, 42], line: 'THE RACE PADDLE ON THE BANK' },
+      { key: 'wheel', is: ['wheel.mill', 'still'], rows: [36.2, 59], colLt: 109, at: [107, 35], glint: 'stall', line: 'THE WHEEL STANDS STILL: CLIMB ITS PADDLES' } ] },   /* (claude/towpath fix, review S4: the stilled wheel, the culvert) */
+    { id: 'tp-hoist', zone: [112, 31, 119, 36], steps: [
+      { key: 'hoist', is: ['hoist.sack', 'bot'], at: [117, 35], line: 'THE SACK HOIST: STAND ON IT AND STRIKE ITS WINCH' },
+      { key: 'hoistDown', is: ['hoist.sack', 'top'], at: [117, 35], line: 'THE HOIST IS UP: ITS WINCH CALLS IT DOWN' } ] },
+    { id: 'tp-tail', zone: [125, 24, 139, 30], steps: [ { key: 'tail', is: ['bridge.tail', 'open'], at: [130, 27], line: 'THE CAPSTAN BY THE CUT' } ] },
+    { id: 'tp-f1', zone: [158, 17, 174, 35], steps: [
+      { key: 'f1bank', is: ['lock.F1', 'hi'], colLt: 166, at: [165, 28], line: 'THE LOCK IS FULL: ITS PADDLE IS ON THE BANK' },
+      { key: 'f1punt', is: ['lock.F1', 'lo'], at: [172, 29], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-f2', zone: [173, 12, 182, 31], steps: [
+      { key: 'f2', is: ['lock.F2', 'dry'], at: [178, 29], line: 'THE PADDLE IN THE DRY CHAMBER' },
+      { key: 'f2hi', is: ['lock.F2', 'hi'], colLt: 175, at: [173, 23], line: 'THE PUNT RODE UP: ITS PADDLE IS ON THE LANDING' } ] },
+    { id: 'tp-f3', zone: [181, 9, 189, 25], steps: [ { key: 'f3', is: ['lock.F3', 'lo'], at: [188, 19], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-aq', zone: [236, 11, 252, 17], steps: [ { key: 'aq', is: ['trough.aq', 'west'], at: [240, 14], line: 'THE AQUEDUCT IS DRY: OPEN ITS SLUICE BY THE BARGE' } ] },
+    { id: 'tp-basin', zone: [324, 20, 346, 29], steps: [ { key: 'basin', is: ['bridge.basin', 'open'], at: [328, 28], line: 'A CAPSTAN ON EACH BANK' } ] },
+    { id: 'tp-crane', zone: [361, 20, 372, 29], steps: [ { key: 'crane', is: ['crane.jib', 'quay'], at: [364, 28], line: 'THE CRANE: STAND ON ITS HOOK AND STRIKE ITS CAPSTAN' } ] },
+    { id: 'tp-x', zone: [388, 19, 406, 36], steps: [ { key: 'xlamp', is: ['lamp.x', 'out'], colLt: 394, at: [392, 25], line: 'THE LAMP IS OUT: STRIKE IT, OR LIGHT THE LANTERN' }, { key: 'x', is: ['lock.X', 'hi'], colLt: 394, at: [392, 25], line: 'THE LAST LOCK IS FULL: ITS PADDLE IS ON THE BANK' } ] },
+    { id: 'tp-culvert', zone: [394, 27, 405, 36], steps: [ { key: 'culvert', is: ['lock.X', 'dry'], rows: [28, 36], at: [408, 34], glint: 'stall', line: 'THE CULVERT UNDER THE EAST WALL' } ] },
+    { id: 'tp-y', zone: [406, 19, 419, 36], steps: [ { key: 'y', is: ['lock.Y', 'dry'], at: [417, 35], line: 'THE PADDLE BY THE PUNT' } ] },
+    { id: 'tp-cut', zone: [418, 17, 428, 25], steps: [ { key: 'cut', is: ['bridge.cut', 'open'], at: [422, 22], line: 'THE CAPSTAN BY THE CUT' } ] },
   ],
   /* THE BURIED CITY (claude/buriedcity): every sand room the route needs glints until its state is the one the route wants (src/buried-city-hands.js handsState:
      room.<id> full / empty / filling / draining, wheel.great open / shut, vault.<id>); the climb out of the lower bulb's pit glints after a stall */
@@ -491,26 +496,34 @@ export const STUCK_HANDS = {
     { id: 'bc-cellar', zone: [236, 31, 246, 39], steps: [ { key: 'cellarLever', is: ['room.cellar', 'empty'], at: [242, 38], line: 'STAKES ACROSS THE CELLAR: ITS SAND-GATE' } ] },
     { id: 'bc-bulb', zone: [270, 25, 282, 33], steps: [ { key: 'bulbLever', is: ['room.upperbulb', 'full'], at: [278, 32], line: 'THE UPPER HALL IS FULL: ITS SAND-GATE' } ] },
     { id: 'bc-pit', zone: [294, 33, 310, 43], steps: [ { key: 'bulbUp', at: [308, 33], glint: 'stall', line: 'THE PIPES LEAD UP OUT OF THE PIT' } ] },
-    { id: 'bc-sluice', zone: [341, 26, 380, 43], steps: [
-      { key: 'sluiceSwing', is: ['sluice.sluice', 'swing'], at: [345, 42], line: 'THE ARCH IS HIGH: SWING THE SAND-FALL ONTO THE WALL' },
-      { key: 'sluicePile', is: ['sluice.sluice', 'pile'], at: [366, 42], glint: 'stall', line: 'LET THE SAND PILE UP UNDER THE ARCH, THEN SWING IT BACK' },
-      { key: 'sluiceBack', is: ['sluice.sluice', 'back'], at: [366, 42], line: 'THE HEAP IS UP: SWING THE FALL BACK OFF IT' },
-      { key: 'sluiceClimb', is: ['sluice.sluice', 'climb'], at: [379, 34], glint: 'stall', line: 'CLIMB THE HEAP TO THE ARCH' } ] },
-    { id: 'bc-wheel', zone: [396, 21, 411, 37], steps: [ { key: 'greatWheel', is: ['wheel.great', 'shut'], at: [405, 36], line: 'THE GREAT SAND-GATE: ITS WHEEL' } ] },
-    { id: 'bc-quarter', zone: [411, 22, 466, 44], steps: [ { key: 'quarterClimb', at: [461, 33], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
-    { id: 'bc-yard', zone: [490, 37, 497, 45], steps: [ { key: 'yardLever', is: ['room.yard', 'empty'], at: [496, 44], line: 'AN OPEN FLOOR-GATE IS A DROP: ITS LEVER SHUTS IT' } ] },
-    { id: 'bc-shaft', zone: [513, 21, 526, 45], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [39, 45], at: [516, 44], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
-    { id: 'bc-trap', zone: [533, 27, 546, 33], steps: [
-      { key: 'trapLever', is: ['trap.trap', 'gate'], at: [544, 32], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' },
-      { key: 'trapFeed', is: ['trap.trap', 'feed'], at: [538, 32], line: 'THE GATE IS SHUT: SWING THE SAND-FALL INTO THE HALL' } ] },
-    { id: 'bc-vault', zone: [598, 31, 610, 36], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [603, 35], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
+    { id: 'bc-sluice', zone: [413, 26, 452, 43], steps: [
+      { key: 'sluiceSwing', is: ['sluice.sluice', 'swing'], at: [417, 42], line: 'THE ARCH IS HIGH: SWING THE SAND-FALL ONTO THE WALL' },
+      { key: 'sluicePile', is: ['sluice.sluice', 'pile'], at: [438, 42], glint: 'stall', line: 'LET THE SAND PILE UP UNDER THE ARCH, THEN SWING IT BACK' },
+      { key: 'sluiceBack', is: ['sluice.sluice', 'back'], at: [438, 42], line: 'THE HEAP IS UP: SWING THE FALL BACK OFF IT' },
+      { key: 'sluiceClimb', is: ['sluice.sluice', 'climb'], at: [451, 34], glint: 'stall', line: 'CLIMB THE HEAP TO THE ARCH' } ] },
+    { id: 'bc-wheel', zone: [468, 21, 483, 37], steps: [ { key: 'greatWheel', is: ['wheel.great', 'shut'], at: [477, 36], line: 'THE GREAT SAND-GATE: ITS WHEEL' } ] },
+    { id: 'bc-quarter', zone: [483, 22, 538, 44], steps: [ { key: 'quarterClimb', at: [533, 33], glint: 'stall', line: 'THE OLD STREET\'S DOOR IS PAST THE TOWER: OVER THE HOUSES' } ] },
+    { id: 'bc-yard', zone: [562, 37, 569, 45], steps: [ { key: 'yardLever', is: ['room.yard', 'empty'], at: [568, 44], line: 'AN OPEN FLOOR-GATE IS A DROP: ITS LEVER SHUTS IT' } ] },
+    { id: 'bc-shaft', zone: [585, 21, 598, 45], steps: [ { key: 'shaftLever', is: ['room.shaft', 'empty'], rows: [39, 45], at: [588, 44], line: 'THE WAY ON IS HIGH: THE SHAFT\'S SAND-GATE' } ] },
+    { id: 'bc-trap', zone: [605, 27, 618, 33], steps: [
+      { key: 'trapLever', is: ['trap.trap', 'gate'], at: [616, 32], line: 'THE TRAP HALL\'S FLOOR-GATE IS OPEN: ITS LEVER' },
+      { key: 'trapFeed', is: ['trap.trap', 'feed'], at: [610, 32], line: 'THE GATE IS SHUT: SWING THE SAND-FALL INTO THE HALL' } ] },
+    { id: 'bc-vault', zone: [670, 31, 682, 36], steps: [ { key: 'vault', is: ['vault.clockwork', 'due'], at: [675, 35], line: 'THE CLOCKWORK VAULT: FIVE GEARS OPEN IT' } ] },
     /* (claude/buriedcity3) THE FLIP: every glass the route needs glints until it is running (handsState glass.<id>: idle / running) */
     { id: 'bc-stairglass', zone: [98, 28, 107, 37], steps: [ { key: 'stairGlass', is: ['glass.stair', 'idle'], at: [102, 36], line: 'A FALLEN HOUSE: STRIKE THE HOURGLASS BY IT' } ] },
     { id: 'bc-bankglass', zone: [306, 26, 313, 33], steps: [ { key: 'bankGlass', is: ['glass.bank', 'idle'], at: [311, 32], line: 'A BANK OF SAND: STRIKE THE HOURGLASS' } ] },
-    { id: 'bc-fallglass', zone: [646, 8, 661, 18], steps: [ { key: 'fallGlass', is: ['glass.fall', 'idle'], at: [656, 14], line: 'STRIKE THE GLASS ON THE DOME, THEN RIDE THE FALL UP' } ] },
-    { id: 'bc-chain1', zone: [671, 1, 681, 8], steps: [ { key: 'chain1', is: ['glass.chain1', 'idle'], at: [678, 6], line: 'THE SAND SEA: STRIKE THE HOURGLASS AND THE ROOFS RISE' } ] },
-    { id: 'bc-chain2', zone: [695, 6, 700, 13], steps: [ { key: 'chain2', is: ['glass.chain2', 'idle'], at: [697, 11], line: 'THE SECOND HOURGLASS RAISES THE REST' } ] },
-    { id: 'bc-examglass', zone: [711, 6, 722, 13], steps: [ { key: 'examGlass', is: ['glass.exam', 'idle'], at: [719, 12], line: 'THE LAST HOURGLASS: STRIKE IT, THEN RUN' } ] },
+    { id: 'bc-fallglass', zone: [718, 8, 733, 18], steps: [ { key: 'fallGlass', is: ['glass.fall', 'idle'], at: [728, 14], line: 'STRIKE THE GLASS ON THE DOME, THEN RIDE THE FALL UP' } ] },
+    { id: 'bc-chain1', zone: [743, 1, 753, 8], steps: [ { key: 'chain1', is: ['glass.chain1', 'idle'], at: [750, 6], line: 'THE SAND SEA: STRIKE THE HOURGLASS AND THE ROOFS RISE' } ] },
+    { id: 'bc-chain2', zone: [767, 6, 772, 13], steps: [ { key: 'chain2', is: ['glass.chain2', 'idle'], at: [769, 11], line: 'THE SECOND HOURGLASS RAISES THE REST' } ] },
+    { id: 'bc-examglass', zone: [783, 6, 794, 13], steps: [ { key: 'examGlass', is: ['glass.exam', 'idle'], at: [791, 12], line: 'THE LAST HOURGLASS: STRIKE IT, THEN RUN' } ] },
+    /* (claude/buriedcity4) THE GLASS WORKS, THE ROOFTOPS' TILTING DUNE, THE ANTECHAMBER: every glass the route needs glints until it runs */
+    { id: 'bc-works1', zone: [341, 28, 352, 34], steps: [ { key: 'works1', is: ['glass.works1', 'idle'], at: [351, 32], line: 'THE KILN STUB: STRIKE ITS GLASS AND THE STAIR RISES' } ] },
+    { id: 'bc-works2', zone: [361, 22, 368, 27], steps: [ { key: 'works2', is: ['glass.works2', 'idle'], at: [364, 26], line: 'STRIKE THE GLASS, THEN STEP INTO THE SAND-FALL' } ] },
+    { id: 'bc-works3', zone: [370, 12, 383, 17], steps: [ { key: 'works3', is: ['glass.works3', 'idle'], at: [372, 15], line: 'THE DUNE IS A WALL: TURN THE GLASS AND IT TILTS' } ] },
+    { id: 'bc-works4', zone: [383, 7, 389, 11], steps: [ { key: 'works4', is: ['glass.works4', 'idle'], at: [385, 10], line: 'THE RELAY: STRIKE THE GLASS, THEN JUMP' } ] },
+    { id: 'bc-works5', zone: [398, 18, 401, 22], steps: [ { key: 'works5', is: ['glass.works5', 'idle'], at: [399, 21], line: 'THE RELAY: ITS SECOND GLASS RAISES THE LAST ROOF' } ] },
+    { id: 'bc-tiltdune', zone: [734, 2, 746, 12], steps: [ { key: 'tiltDune', is: ['glass.fall', 'idle'], at: [741, 6], glint: 'stall', line: 'THE DUNE TILTS WITH THE GLASS BY THE FALL: STRIKE IT AGAIN' } ] },
+    { id: 'bc-ante', zone: [822, 28, 826, 33], steps: [ { key: 'ante', is: ['glass.ante', 'idle'], at: [824, 32], line: 'STRIKE THE GLASS AND CROSS THE SLABS BEFORE THEY GO' } ] },
   ],
   /* THE SEALED PYRAMID (claude/sealedpyramid): every route need glints until its state is the one the route wants (src/sealed-pyramid-hands.js handsState:
      cw.<pair> home / over / moving, wall.falsedoor shut / open, pit.<trap> open / filled, trap.<id> ready / spent, vault.<id> due); the robbers' hole glints after a stall */

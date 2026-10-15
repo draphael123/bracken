@@ -79,7 +79,7 @@ export function makeBerserker(api) {
       const whole = Math.floor(p.bzHealAcc); if (whole >= 1) { p.bzHealAcc -= whole; const hp0 = p.hp; p.hp = Math.min(p.maxHp, p.hp + whole); stats.healed += p.hp - hp0;
         if (p.hp > hp0 && Math.random() < 0.5) api.parts.push({ x: p.x + (Math.random() - 0.5) * 8, y: p.y - 14, vx: 0, vy: -26, life: 0.4, max: 0.4, col: '#ff6b6b', size: 1, grav: 0 }); } } }
   /* REND (main.js bzRendBlow, as a frenzied melee blow is struck): a stack on THIS foe; the n-th CRACKS him - true: that blow is a heavy */
-  function rend(e) { const p = P(); if (!(p.frenzyT > 0) || !e || !e.alive || e.harmless) return false;
+  function rend(e, force) { const p = P(); if ((!(p.frenzyT > 0) && !force) || !e || !e.alive || e.harmless) return false;   /* (claude/plunges) force: AXE SPIN stacks it out of a frenzy */
     if (p.bzRendE !== e || api.time - (p.bzRendAt ?? -99) > BZ.rend.decay) { p.bzRendE = e; p.bzRendN = 0; }
     p.bzRendAt = api.time; p.bzRendN = (p.bzRendN || 0) + 1; stats.rends++;
     if (p.bzRendN < BZ.rend.n) { api.sparks(e.x, e.y - (e.h || 16) / 2, Math.sign(e.x - p.x) || p.face, 2 + p.bzRendN); return false; }

@@ -1,0 +1,9 @@
+ksar: level hash changed: carried the boss row(s) of the old hash (re-run the boss to refresh them: node tools/mash-bot.mjs <id> --write)
+ksar LEVEL L39 knight: lowest hp 0%, hp lost 806%, deaths 7, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 72 lifts (18 HELD: put back by a room it could not finish), 19 blows taken
+ksar LEVEL L39 warden: lowest hp 0%, hp lost 713%, deaths 6, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 70 lifts (12 HELD: put back by a room it could not finish), 18 blows taken
+ksar LEVEL L39 pyro: lowest hp 0%, hp lost 545%, deaths 4, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 68 lifts (9 HELD: put back by a room it could not finish), 22 blows taken
+ksar LEVEL L39 knight: lowest hp 0%, hp lost 806%, deaths 7, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 72 lifts (18 HELD: put back by a room it could not finish), 19 blows taken
+ksar LEVEL L39 warden: lowest hp 0%, hp lost 713%, deaths 6, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 70 lifts (12 HELD: put back by a room it could not finish), 18 blows taken
+ksar LEVEL L39 pyro: lowest hp 0%, hp lost 545%, deaths 4, walked 100% of waypoints, 0 rides {}, 0 pulls, 0 boarding lifts, 68 lifts (9 HELD: put back by a room it could not finish), 22 blows taken
+wrote docs/mash-bot.json
+errors []

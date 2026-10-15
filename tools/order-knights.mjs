@@ -12,7 +12,8 @@
 //           INTERRUPTED by a blow in his cast and wards a shot off his front
 //   twists  (page) WOOD's TIMBER fells the pine once he is roused, and a swing across the trunk STICKS IN WOOD; MARSH's SHOVE drives a hero
 //           back; THE ORE ROAD's RUST gives under a hero standing on it
-//   levels  (page) the three exams: the knight stands in his chapter's skin and name, holds his gate shut (his banner on it), and the gate
+//   twists  (page) ... and, from claude/wardens12, EVERY roll-out twist by family (patch: the strip springs and hurts / tosses; shove: pushes or hauls in; horn: a blow while he draws breath SILENCES it, sounded it hits)
+//   levels  (page) the exams: the knight stands in his chapter's skin and name, holds his gate shut (his banner on it), and the gate
 //           lifts when he falls; he dies in his chapter's skin
 // node tools/order-knights.mjs [table,moves,bodies,twists,levels]      (PORT from the environment)
 import assert from 'node:assert/strict';
@@ -42,13 +43,14 @@ if (WANT.includes('table')) {
     ok(kn.length === 1 && kn[0].t === o.body && kn[0].x === o.at[0] && kn[0].y === o.at[1] && kn[0].gate === o.gate && kn[0].elite, id + ': the level puts ' + o.name + ' at ' + o.at + ' holding gate ' + o.gate);
     ok(kn[0].cnSkin === OC.skinOf(o.body, o.chapter) && kn[0].affix === (o.affix || undefined), id + ': in his chapter skin ' + kn[0].cnSkin + ' with the table\'s affix');
     ok(!L.ents.some(e => e.t === o.replaces && e.y === o.at[1] && Math.abs(e.x - o.at[0]) <= 3), id + ': the ' + o.replaces + ' he replaces is gone');
-    ok(L.ents.filter(e => e.elite && !e.ambush).length >= 1 && !L.ents.some(e => e.elite && e !== kn[0] && Math.abs(e.x - o.at[0]) < 20), id + ': no second elite beside him (replace, not add)');
+    ok(L.ents.filter(e => e.elite && !e.ambush).length >= 1 && !L.ents.some(e => e.elite && e !== kn[0] && Math.abs(e.x - o.at[0]) < 20 && Math.abs(e.y - o.at[1]) < 24), id + ': no second elite beside him (replace, not add)');
   }
-  const moves = new Set([...Object.values(BODY_MOVES).flat(), ...Object.keys(OC.SIG).filter(s => !OC.SIG[s].passive), 'timber', 'shove', 'rust']);
+  const moves = new Set([...Object.values(BODY_MOVES).flat(), ...Object.keys(OC.SIG).filter(s => !OC.SIG[s].passive), 'timber', 'shove', 'rust', ...Object.values(OC.TWISTS).map(t => t.move).filter(Boolean)]);
   for (const m of moves) ok(OC.ORDER_MARKS[m + 'Tell'] !== undefined, 'the windup ' + m + 'Tell has a mark (' + JSON.stringify(OC.ORDER_MARKS[m + 'Tell']) + ')');
   for (const t of OC.TYPES) for (const [m, v] of Object.entries(OC.ORDER_MARKS)) assert(BY_HAND[t + '|' + m] === v, 'BY_HAND ' + t + '|' + m);
   ok(true, 'src/marks.js BY_HAND has every body x windup (' + OC.TYPES.length * Object.keys(OC.ORDER_MARKS).length + ' rows)');
-  for (const [k, T] of Object.entries(OC.TWISTS)) ok(OC.ORDER_MARKS[{ timber: 'timberTell', channel: 'shoveTell', rust: 'rustTell' }[k]] === T.mark, 'twist ' + k + ' marks ' + T.mark + ' as its table says');
+  for (const [k, T] of Object.entries(OC.TWISTS)) ok(OC.ORDER_MARKS[T.move ? T.move + 'Tell' : { timber: 'timberTell', channel: 'shoveTell', rust: 'rustTell' }[k]] === T.mark, 'twist ' + k + ' marks ' + T.mark + ' as its table says');
+  for (const [k, T] of Object.entries(OC.TWISTS)) if (T.move) ok(['patch', 'shove', 'horn'].includes(T.fam) && T.n && T.n.tell >= 0.5 && T.n.tell <= 1.1 && T.word && T.sound, 'twist ' + k + ' is one of the three families with a told windup (' + T.fam + ', ' + T.n.tell + ' s)');
   /* the guard layer */
   const ore = { t: 'oathlance', okPlate: 2, face: 1, alive: true };
   ok(orderGuard(ore, 10, 'light', false, 20, 'light').dmg === 4 && orderGuard(ore, 10, 'light', false, -20, 'light').word === 'ORE' && ore.okPlate === 2, 'ORE: a light cut only chips the ore (x0.4, ORE) from either side, and cracks nothing');
@@ -133,6 +135,20 @@ if (WANT.some(w => w !== 'table')) {
       ok(r.felled && r.stuck, 'WOOD - TIMBER: roused, he fells the pine; a swing across the trunk STICKS IN WOOD');
       ok(r.shoveLast === 'shove' && r.pushed > 20, 'MARSH - THE SHOVE drives the hero back toward the channel (' + r.pushed + ' px)');
       ok(r.rust && r.rustDmg > 0, 'THE ORE ROAD - RUST: the patch under the hero gives (' + r.rustDmg + ' hp)');
+      /* THE ROLL-OUT TWISTS (claude/wardens12), every one by its family, on the body its level gives him */
+      const NEW = Object.entries(OC.TWISTS).filter(([, T]) => T.move).map(([k, T]) => ({ k, fam: T.fam, move: T.move, body: OC.ORDER_AT[T.level].body, ember: !!(T.n.ember) }));
+      const rr = await pg.evalp(`(()=>{const out={};for(const T of ${JSON.stringify(NEW)}){const rec={};
+        if(T.fam==="patch"){const P=__arena("knight");const e=__knight(T.body,60,{twist:T.k});e.elT=0;const hp0=P.hp;let fired=false;for(let i=0;i<300;i++){P.x=e.x-60;P.vx=0;BK.sim(1);if(e.mode===T.move){fired=true;BK.sim(2);break;}}
+          rec.fired=fired;rec.dmg=hp0-P.hp;rec.vy=Math.round(P.vy);rec.strip=(e.okFx.rust||[]).length;if(T.ember){const h1=P.hp;P.x=e.x-60;for(let i=0;i<150;i++){P.vx=0;P.x=e.x-60;BK.sim(1);}rec.emberDmg=h1-P.hp;}}
+        if(T.fam==="shove"){const P=__arena("knight");const e=__knight(T.body,28,{twist:T.k});e.elT=0;let x0=null;const hp0=P.hp;for(let i=0;i<300;i++){P.hp=P.maxHp;if(x0===null)P.x=e.x-24;BK.sim(1);if(e.mode===T.move&&x0===null)x0=P.x;if(x0!==null&&e.mode!==T.move){BK.sim(20);rec.dx=Math.round(P.x-x0);break;}}rec.fired=x0!==null;rec.sign=e.x>P.x?1:-1;}
+        if(T.fam==="horn"){{const P=__arena("knight");const e=__knight(T.body,60,{twist:T.k});e.elT=0;let told=false;for(let i=0;i<300;i++){P.x=e.x-60;P.vx=0;BK.sim(1);if(e.mode===T.move+"Tell"){told=true;e.hp-=1;BK.sim(2);rec.silenced=e.mode==="castBroken";break;}}rec.told=told;}
+          {const P=__arena("knight");const e=__knight(T.body,60,{twist:T.k});e.elT=0;const hp0=P.hp;let fired=false;for(let i=0;i<300;i++){P.x=e.x-60;P.vx=0;BK.sim(1);if(e.mode===T.move){fired=true;BK.sim(2);break;}}rec.fired=fired;rec.dmg=hp0-P.hp;}}
+        out[T.k]=rec;}return out;})()`);
+      console.log('  ' + JSON.stringify(rr));
+      for (const T of NEW) { const q = rr[T.k];
+        if (T.fam === 'patch') ok(q.fired && q.dmg > 0 && q.strip > 0 && (!T.ember || q.emberDmg > 0), T.k + ' (patch): the strip is marked, springs (' + q.dmg + ' hp, toss vy ' + q.vy + ')' + (T.ember ? ', the embers burn on (' + q.emberDmg + ' hp)' : ''));
+        if (T.fam === 'shove') ok(q.fired && (OC.TWISTS[T.k].n.push < 0 ? q.dx > 20 : q.dx < -20), T.k + ' (shove): ' + (OC.TWISTS[T.k].n.push < 0 ? 'hauls the hero IN' : 'drives the hero back') + ' (' + q.dx + ' px)');
+        if (T.fam === 'horn') ok(q.told && q.silenced && q.fired && q.dmg > 0, T.k + ' (horn): a blow while he draws breath SILENCES it; sounded it hits (' + q.dmg + ' hp)'); }
     }
     if (WANT.includes('levels')) {
       console.log('levels');
@@ -145,7 +161,7 @@ if (WANT.some(w => w !== 'table')) {
           return {skin:e.cnSkin,name:e.eliteName,affix:e.affix,chapter:e.okChapter,twist:e.okTwist,gate:G&&G.col,shut,drawn,dead:!e.alive,lifted:(e.shut||[]).length===0,corpse:c?(c.shown===set?'skin':c.shown===BK.SPR[e.t]?'BASE':'other'):'none'};})()`);
         console.log('  ' + id + ' ' + JSON.stringify(r));
         ok(!r.none && r.skin === OC.skinOf(o.body, o.chapter) && r.name === o.name && r.chapter === o.chapter && r.twist === o.twist && (r.affix || null) === o.affix, id + ': ' + o.name + ' stands in his chapter (' + r.skin + ', ' + r.twist + ', ' + r.affix + ')');
-        ok(r.gate === o.gate && r.shut > 0 && r.drawn, id + ': he holds gate ' + o.gate + ' shut, drawn in his chapter skin');
+        ok(o.gate === undefined ? (!r.gate && r.shut === 0 && r.drawn) : (r.gate === o.gate && r.shut > 0 && r.drawn), id + ': ' + (o.gate === undefined ? 'a level with no gated exam: he holds none, ' : 'he holds gate ' + o.gate + ' shut, ') + 'drawn in his chapter skin');
         ok(r.dead && r.lifted && r.corpse === 'skin', id + ': he falls, the gate lifts, and he dies in his chapter skin');
       }
     }

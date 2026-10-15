@@ -38,7 +38,7 @@ export const eliteMul = el => el ? (XP_ELITE[el] !== undefined ? XP_ELITE[el] : 
 /* XP-ONLY WEIGHTS AND TIERS (LEVELING, audit-econ sec.2 bugs). THREAT and TIER are combat tables too (TIER scales foe health and blows in
    main.js), so the three woods with no TIER (canal, theatre, fair: their bosses paid the tier-0 purse, 150 against 470-525 next door) and the
    placed foes weighed 0 for attention (the moor's hares, the theatre's brute and harlequin) are paid HERE without changing a fight. */
-export const XP_THREAT = { hare: 2, marionette: 2, harlequin: 2.5 };
+export const XP_THREAT = { hare: 2, marionette: 2, harlequin: 2.5, oathblade: 0, oathlance: 0, oathmaul: 0, oathmage: 0 };   /* (batch94 integ) THE ROAD WARDENS weigh 4 in THREAT now (the INDEX counts them) but pay NO XP, exactly as they did at weight 0: a kill that levels the hero opens the card and stalls the fight (tools/order-knights.mjs). Whether they should pay like the elites they replaced is Daniel's question */
 export const XP_TIER = { canal: 2.0, theatre: 2.0, fair: 2.2 };
 export const xpTier = (id, tier) => XP_TIER[id] !== undefined ? XP_TIER[id] : (tier || 0);
 /* what one foe pays: role is 'boss', 'mini' or '' (see spawnEnt's tail in src/main.js), tier the level's TIER (xpTier) */

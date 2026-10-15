@@ -32,6 +32,7 @@ export const ARCS = {
 };
 export const DISC = { live: 16, stagger: 0.45 };   /* s the disc's road stays lit; s between one thermal of the road waking and the next */
 
+import { knightRow } from './order-chapters.js';   /* (claude/wardens12) THE SUN BLADE holds the cliff troll's gate */
 export function buildSkyRoad({ painter, T, TS }) {
   const { W, H } = SKYROAD, SEA = SKYROAD.sea, FL = SKYROAD.floor;
   const L = painter(W, H), { set, block, ent } = L;
@@ -123,7 +124,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   rock(265, 298, 18); plank(268, 280, 14); rock(285, 288, 16); rock(291, 292, 16);                  /* THE FAR CLIFF, the riders' racks over it, a fallen block */
   foe('rockgoblin', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' });
   /* THE CRAG TROLL (claude/elitegates, Daniel 10-07): the Sky Road's GATEKEEPER ELITE, in the shield's place (difficulty v2: one weighty foe). He holds the far cliff - the first footing the roost chain's thermals feed - and the portcullis at 290 comes down over the cliff's east end (the bridgehead and the sun-disc) until he is dead. Behind you the last roost's air is under the cloud bank and the cloud sea is under the west edge; his slam and rockfall are told. The checkpoint is past his gate. */
-  foe('troll', 277, 17, 'cliffTroll', { face: -1, elite: true, gate: 290 });
+  { const kn = knightRow('skyroad'); foe(kn[0], kn[1], kn[2], 'cliffTroll', { ...kn[3], elite: true }); }   /* (claude/wardens12) THE SUN BLADE of the Scree Chapter REPLACES the cliff troll (was foe('troll', 277, 17, 'cliffTroll', { face: -1, elite: true, gate: 290 })) */
   ent('check', 294, 17);                                                        /* CHECKPOINT THREE: past the troll's gate, at the bridgehead (it was at 278, in his yard) */
 
   // ================= 4. THE BROKEN SKY BRIDGE (298-388): THE SUN-DISC, then THE EXAM =================
