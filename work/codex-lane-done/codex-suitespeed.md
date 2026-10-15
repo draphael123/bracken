@@ -53,8 +53,6 @@ The exact runner commit `f00290e2` produced three full `--jobs=4 --max-browsers=
 
 The common four reds match the earlier serial run and clean-master reds. `no-hidden-hits` passed in parallel #2 and failed in the other three full runs, including `--jobs=1`; it is a demonstrated serial flake. The scoped `textfit` red appeared only in parallel #3; it passed the other two parallel full runs, the serial full run, and six serial subset reruns. The single two-picture Weaver finding is not yet demonstrated at `--jobs=1`. **This is the remaining equivalence limit:** the runner kept the unchanged audit and captured the discrepancy; Daniel and Claude should not treat it as a green equivalence proof. The suite speed goal is met for this PC: 74–86 minutes versus 3h27m on clean master, or 2.4–2.8 times faster. The same-commit serial run was 3h11m; the parallel median was 81m03s, 2.36 times faster than that serial run.
 
-On `f00290e2`, both full parallel logs (`proof-f002-jobs4-1.log`, `proof-f002-jobs4-2.log`) emitted 374 parseable summary lines. Scoped `textfit` passed both. The 1/2 shard (`proof-f002-shard-1of2.log`) emitted 187 summary lines: 184 ` ok ` and three `FAIL`. The old release threshold of 50 ` ok ` lines still distinguishes this shard from an aborted suite. `no-hidden-hits` passed full run 2 yet failed full run 1 and shard 1, showing its intermittent verdict. Daniel asked to pause by 10 p.m.; shard 2, full parallel run 3, and same-commit serial proof remain for the next run. The pushed checkpoint preserves these completed receipts.
-
 The exact executable trees for these runs are `tools` at `b1df84f3d2028b7171ea0e481dfcb00e125bca09` and untouched `src` at `250beb342f8e67f9e0abac2e7c981ea838a8322b`. The checkpoint commit below changes only the report and logs, so these trees remain stable even though the branch SHA advances.
 
 | Rank | Check | Seconds |
@@ -100,7 +98,3 @@ The baseline and first comparison runs revealed a release-parser bug: a long che
 2. **Recommendation:** Keep the release script's fewer-than-50 ` ok ` threshold per shard for a two-way split; each shard should contain about 187 checks. Merge the two shard logs when judging the whole release, and rerun `FAIL` checks by the existing check-name field.
 3. **Recommendation:** Keep `firsthour`, `fallingtower2-keys`, `archmage-folly`, and `unburied-look` isolated while investigating their pooled-only state or frame differences. `mobile-perf` remains an intermittent timing red even in the existing serial tail. No assertion or tolerance was changed.
 4. **Recommendation:** Investigate the hanging mini-boss plate in the unchanged scoped `textfit` audit before relying on strict parallel/serial verdict equivalence. It produced `THE WEAVER` x `!!` collision and overdraw in parallel full run #3, but passed the serial full run and six serial subset reruns. Keep the check and its threshold intact; its full output is in `proof-f002-jobs4-3.log`.
-
-## Next lane
-
-Push this report and the final proof logs on `codex/suitespeed`. Then create `codex/geomsweep` from `origin/master` for Task B. Neither branch is a deployment.
