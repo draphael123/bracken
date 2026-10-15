@@ -2000,7 +2000,7 @@ function reaperKitPoses(F, sh) {
       bits: [a(X + 9, Y - 3, BONE), a(X + 10, Y - 2, BONE), a(X + 9, Y - 1, BONE), a(X + 11, Y - 2, GRN), a(X + 12, Y - 3, LIT)] }),
     K({ dx: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X - 1, Y - 1], plume: 1,
       bits: [...lit, a(X - 1, Y - 1, BONE), a(X + 3, Y - 1, GRN), a(X + 6, Y - 1, DGRN), a(X + 9, Y - 1, GRN)] })];
-  /* THE LATE ACTIVES' OWN POSES (claude/heroposes). BONE ARMOR: both arms crossed hard over his chest on the flat of the blade; then the
+  /* THE LATE ACTIVES' OWN POSES (claude/heroposes). OSSUARY MAIL: both arms crossed hard over his chest on the flat of the blade; then the
      head back and the lights up while plates of bone close over the shoulders, ribs and arms; and the last plate seated, the blade low */
   const PLATE = '#f6f1da';
   const plateA = [a(X - 1, Y - 5, PLATE), a(X, Y - 6, PLATE), a(X + 1, Y - 6, PLATE), a(X - 2, Y - 4, PLATE), a(X - 9, Y - 5, PLATE), a(X - 8, Y - 6, PLATE), a(X - 7, Y - 6, PLATE), a(X - 10, Y - 4, PLATE)];
@@ -2008,7 +2008,7 @@ function reaperKitPoses(F, sh) {
   F.bone = [K({ dy: 1, legs: 'wide', arm: [X, Y, X - 6, Y - 1], arm2: [OFF[0], OFF[1], X - 2, Y], greatsword: [X - 12, Y - 3, X + 8, Y + 1], plume: 0, bits: [a(X - 14, Y + 6, PLATE), a(X + 11, Y + 5, PLATE), a(X - 10, Y + 12, GRN)] }),
     K({ hy: -1, sho: 1, dy: -1, legs: 'wide', arm: [X, Y, X + 4, Y - 3], arm2: [OFF[0], OFF[1], OFF[0] - 4, OFF[1] - 4], greatsword: [X + 4, Y - 3, X + 5, Y + 11], plume: 2, bits: [...lit, ...plateA, ...plateB, a(X - 13, Y - 10, GRN), a(X + 12, Y - 8, PLATE), a(X + 11, Y + 6, GRN)] }),
     K({ legs: 'stand', arm: [X, Y, X - 1, Y + 3], greatsword: low, plume: 1, bits: [...plateA.slice(0, 4), ...plateB.slice(0, 4), a(X - 6, Y - 6, LIT)] })];
-  /* SOUL REAP: the blade drawn back behind him to the hilt and the off hand open; the great scything cut swung clean across ahead of
+  /* THE REAPING: the blade drawn back behind him to the hilt and the off hand open; the great scything cut swung clean across ahead of
      him, a pale-green crescent standing where it passed; and the off hand drawing the soul back in to his chest, the lights flaring */
   const ARC = [a(X + 7, Y - 12, LIT), a(X + 11, Y - 8, GRN), a(X + 13, Y - 3, LIT), a(X + 13, Y + 2, GRN), a(X + 11, Y + 7, DGRN), a(X + 8, Y + 11, GRN), a(X + 15, Y - 5, GRN), a(X + 16, Y + 1, DGRN)];
   F.reap = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 4, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 1], greatsword: [X - 4, Y - 5, X - 16, Y - 15], plume: 1 }),

@@ -30,8 +30,8 @@ export const POSE_BEATS = {
   wrath: [0.1, 0.24],          /* HOLY WRATH: the maul cocked back over the shoulder, brought round level, and held out with the light up off both shoulders */
   keg: [0.1, 0.22],            /* POWDER KEG: the lit cask held low on his heels, the underhand lob, and the follow-through */
   seas: [0.1, 0.24],           /* HEAVY SEAS: the cutlass taken back to brace, swept low with the sea standing up off the point, the wave rolling on */
-  bone: [0.12, 0.3],           /* BONE ARMOR: both arms crossed on the flat of the blade, plates of bone closing over him, the last plate seated */
-  reap: [0.1, 0.22],           /* SOUL REAP: the blade drawn back, the great scything cut with a green crescent, the off hand drawing the soul in */
+  bone: [0.12, 0.3],           /* OSSUARY MAIL: both arms crossed on the flat of the blade, plates of bone closing over him, the last plate seated */
+  reap: [0.1, 0.22],           /* THE REAPING: the blade drawn back, the great scything cut with a green crescent, the off hand drawing the soul in */
   /* THE PALADIN (lane P, 2026-09-24) */
   charge: [0.08, 0.22],        /* HOLY CHARGE: the maul levelled like a ram, the full stretch behind the lit head, the pull-up */
   halo: [0.1, 0.22],           /* DIVINE SHIELD: the maul lifted to his chest, raised overhead across both hands, and the light closing round him */

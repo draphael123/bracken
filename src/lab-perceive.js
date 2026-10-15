@@ -115,7 +115,7 @@ export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false) {
     const now = BK.time; if (now - last < 1 * (BK.SET.speed || 1)) return;
     const open = boss.open > 0, wind = !!(BK.windingUp && BK.windingUp(boss)) && !open, dx = boss.x - p.x, edge = Math.abs(dx) - (boss.w || 20) / 2;
     if (h === 'reaper' && (p.harvest >= 100 || p.fHeld > 0 || p.warding || p.hurt > 0 || p.castT > 0)) return;   /* (claude/dkhero) his F key is also the surge: never press it while the blood is full; never over a ward */
-    if (wind && h === 'reaper' && Math.abs(boss.y - p.y) <= 48 && edge <= (RANGE.boneArmor || 160) && !(p.boneArmor > 0)) {   /* BONE ARMOR: a tell seen in reach, a shell for the next three blows */
+    if (wind && h === 'reaper' && Math.abs(boss.y - p.y) <= 48 && edge <= (RANGE.boneArmor || 160) && !(p.boneArmor > 0)) {   /* OSSUARY MAIL: a tell seen in reach, a shell for the next three blows */
       for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null; if (id !== 'boneArmor' || (p.cds && p.cds[id] > 0) || p.st < 26 + rollCost) continue;
         BK.press(KEYS[i]); last = now; casts[id] = (casts[id] || 0) + 1; return; } }
     if (wind || Math.abs(boss.y - p.y) > 48) return;
