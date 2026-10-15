@@ -53,3 +53,5 @@ owner API (plant / follow / spendLight / pipsOf) works on any body with { x, y, 
 1. A tap of C with 4 pips spends 3 (RADIANCE), not waiting for 5. Rec: keep (spend early or hold to 5 is your choice by when you tap). Alt: 4 pips = RADIANCE + a bigger aura.
 2. A BLOCK +1 pip every blow is generous (blocking a combo fills him fast). Rec: keep for your playthrough, tune lane watches it. Alt: +1 per blocked string (0.5 s apart).
 3. The hitboxes stay the maul's until the hammer is drawn. Rec: shrink the swing box ~15% with the art. Alt: keep the reach (the hammer is a long haft).
+
+**Daniel 10-15 ~11:45: "Yes this works" - all three recs kept (4 pips taps RADIANCE; +1 pip a block; the reach shrinks ~15% with the hammer art).**
