@@ -49,13 +49,13 @@ tools/boss-rates.mjs, profile human, kit flasks, campaign level (NOT tuning):
 - **MASH (tools/mash-bot.mjs unburied --arena-only): 0/6** (knight/warden/pyro x2 all DEAD in 24-36 s, boss left 73-96%).
 - THE DEATH KNIGHT AS THE HERO (practiced, 3 seeds, vs the knight): stockade L3 2/3 (knight 1/3), marsh 3/3 (3/3), burning 3/3 (3/3).
 
-## QUESTIONS FOR DANIEL
-1. GRAVE KNEEL keeps the universal HIGH duck as well as blocking LOW (so only middle blows land on a kneeling DK). REC: keep (the duck is every hero's; the stamina price + "exposed while harvesting" keep it honest). Alternative: his kneel loses the high duck. BUILT: keep.
-2. Ward face blows stay 0 (kept) rather than the B15 0.4x floor - it is a guard you go round or break (two ways now: full ward, or a standard). REC: keep. BUILT: keep.
-3. SOUL REAP and BONE ARMOR are close to WoW names too (Soul Reaper, Bone Shield). REC: rename when a lane touches them (e.g. THE LAST RITES / OSSUARY MAIL). BUILT: untouched.
-4. "ONE raised skeleton at a time": SUMMON SKELETON is one at a time already; THE PRESS talent makes it two and GRAVECALL is three for 5 s. REC: keep (talents/skill). BUILT: untouched.
-5. The boss's hook only happens on a FULL three-cut string (a quarter of his phase-one strings). REC: tune lane may weight strings toward 3 if the hook reads too rarely. BUILT: strings unchanged.
-6. The trial yard line for him ('ward, blood surge, dash attack, rise and sweep') does not yet drill the price/kneel. REC: art/tune lane adds a BLOOD PRICE + GRAVE KNEEL drill. BUILT: untouched.
+## QUESTIONS FOR DANIEL - ANSWERED (Daniel, interview 10-15)
+1. GRAVE KNEEL keeps the high duck as well as the low block: **KEEP BOTH** (as built).
+2. Ward face blows stay 0 (a guard you go round or break - full ward, or a standard): **KEEP 0** (as built).
+3. Soul Reap / Bone Armor (WoW-close): **RENAMED NOW** (commit dk2b 6) - SOUL REAP -> **THE REAPING** (LAST RITES was taken by an existing passive), BONE ARMOR -> **OSSUARY MAIL**; ids soulReap/boneArmor kept for saves. talents (names unique), hint-shown, skill-icons green.
+4. Skeletons: one at a time is the base; THE PRESS (two) and GRAVECALL (three, 5 s) stay: **KEEP AS IS**.
+5. The boss hook only on a full three-cut string: **THE TUNE LANE DECIDES** (weight strings toward 3 if it reads too rarely).
+6. Trial-yard drills for BLOOD PRICE + GRAVE KNEEL: **THE ART/TUNE LANE ADDS THEM** on the final poses.
 
 ## ART LIST FOR THE SONNET ART LANE (greybox today)
 - HERO (chars.js bakeReaper, all marked claude/dk2b GREYBOX): `graveKneel` x2 (one knee, greatsword planted point-down in front, hands on the pommel, a red gleam at the point), `priceHold` x2 (blade back over the shoulder drinking - a growing red glow, the second redder), `crescent` x3 (haul from behind, the wide level crescent with a blood arc, the low follow-through), REAPER'S RHYTHM's three cuts each their own (rising diagonal / reverse-sweep hook / overhead drag - today the shared atk/atkB/atkC arcs), a proper blood-trail smear (today particles), the crescent's arc FX (today an ellipse + particles), the growing blade glow (today a cross + disc, drawPriceBlade), the lingering-body red glow (today rects), the price "-N" / drain "+N" juice.

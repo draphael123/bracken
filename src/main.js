@@ -6805,7 +6805,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   if (iron || bzIron) { SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 5); }
   else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); if (isReaper()) P.plateFlash = 0.22; }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
-  if (isReaper() && P.boneArmor > 0 && dmg > 0) { P.boneArmor--; dmg = Math.max(1, Math.round(dmg * 0.4)); 0; SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 6); if (P.boneArmor <= 0) P.boneArmorT = 0; }   /* BONE ARMOR (claude/herokit): three blows at two fifths */
+  if (isReaper() && P.boneArmor > 0 && dmg > 0) { P.boneArmor--; dmg = Math.max(1, Math.round(dmg * 0.4)); 0; SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 6); if (P.boneArmor <= 0) P.boneArmorT = 0; }   /* OSSUARY MAIL (claude/herokit): three blows at two fifths */
   if (pct > 0) dmg = Math.max(1, Math.round(P.maxHp * pct));   /* A HAZARD'S SHARE (src/survival.js HAZARD): a share of the bar, past the difficulty, tier, co-op and armour chain above */
   if (isBz() && BZK) dmg = BZK.lethal(dmg, pct > 0 ? 0 : (P.bzSur || 0));   /* LAST STAND / UNBOWED hold him at one - and HIS OWN COST never kills him: the frenzy's surcharge (claude/berserker2) */
   P.hp -= dmg; RP.hitReset(P); if (isBz() && BZK) BZK.took(dmg);   /* (claude/riposte: a blow taken resets the mix-up chain) */ P.inv = (armoured ? 0.55 : 0.8) + (perk('grit') ? 0.15 : 0); P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
@@ -9117,9 +9117,9 @@ function updatePlayer(dt) {
     for (const e of lateFoes(160, 50)) { if (Math.sign(e.x - P.x) !== P.face) continue; hurtEnemy(e, Math.round(12 * amul('heavySeas')), P.x, false); if (e.alive) { if (e.maxHp) e.stagger = Math.max(e.stagger || 0, 0.3); else { e.vx = P.face * 340; e.vy = -100; e.stagger = Math.max(e.stagger || 0, 1.3); } } }
     for (let i = 0; i < 26; i++) parts.push({ x: P.x + P.face * (8 + Math.random() * 140), y: P.y - Math.random() * 12, vx: P.face * (120 + Math.random() * 160), vy: -40 - Math.random() * 90, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#bfe6f5' : '#e8f4f0', size: 2, grav: 140 });
     shakeCam(6, P.face * 3); SFX.heavy(); SFX.splash ? SFX.splash() : SFX.puff(); 0; } else tired(); }
-  // BONE ARMOR (death knight, L14): three blows are cut to two fifths, for twelve seconds
+  // OSSUARY MAIL (death knight, L14): three blows are cut to two fifths, for twelve seconds
   if (isReaper() && skillPress('boneArmor') && cdReady('boneArmor') && canAct()) { if (spend(26)) { cdSet('boneArmor'); P.boneArmor = 3; P.boneArmorT = 12; P.castT = 0.3; kitPose(P, 'bone', 0.4); ringAt(P.x, P.y - 10, 30, '#dfffa0', 0.45); burst(P.x, P.y - 10, 12, ['#e8dcc0', '#dfffa0'], 70, 0.5); 0; SFX.clank(); } else tired(); }
-  // SOUL REAP (death knight, L20): everything near is cut, marked and bled, and he drinks from each
+  // THE REAPING (death knight, L20): everything near is cut, marked and bled, and he drinks from each
   if (isReaper() && skillPress('soulReap') && cdReady('soulReap') && canAct()) { if (spend(34)) { cdSet('soulReap'); P.castT = 0.35; kitPose(P, 'reap', 0.45); let n = 0;
     for (const e of lateFoes(130)) { hurtEnemy(e, Math.round(14 * amul('soulReap')), P.x, false); markFoe(e); if (e.alive) { e.bleed = Math.max(e.bleed || 0, 2.5); e.bleedN = Math.max(e.bleedN || 0, 1); } if (n < 3) { P.hp = Math.min(P.maxHp, P.hp + Math.round(P.maxHp * 0.02)); n++; } }
     gainHarvest(8 * n); ringAt(P.x, P.y - 10, 130, '#c0283a', 0.45); ringAt(P.x, P.y - 10, 70, '#8fd160', 0.4); shakeCam(4); SFX.squelch(); SFX.heavy(); 0; } else tired(); }
