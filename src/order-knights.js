@@ -48,6 +48,9 @@ const WORD = { cut: 'CUT', lunge: 'LUNGE', slam: 'SLAM', sweep: 'SWEEP', thrust:
   mud: 'MUD', snuff: 'SNUFF', timber: 'TIMBER', shove: 'SHOVE', rust: 'RUST' };
 const SOUND = { cut: 'charge', lunge: 'charge', slam: 'charge', sweep: 'charge', thrust: 'charge', charge: 'shieldSlam', cast: 'charge', blade: 'charge', vine: 'bow',
   snare: 'clatter', mud: 'squelch', snuff: 'hiss', timber: 'crack', shove: 'shieldSlam', rust: 'clank' };
+/* (claude/wardens12) THE ROLL-OUT TWISTS (src/order-chapters.js TWISTS with a 'move'): each one's move id, word and windup sound ride the same tables as the three before them */
+for (const [k, tw] of Object.entries(TWISTS)) if (tw.move) { TWIST_MOVE[k] = tw.move; WORD[tw.move] = tw.word; SOUND[tw.move] = tw.sound; }
+const MODE_RE = new RegExp('^(cut|lunge|slam|sweep|thrust|charge|cast|blade|vine|snare|mud|snuff|timber|shove|rust|' + Object.values(TWISTS).map(t => t.move).filter(Boolean).join('|') + ')(Tell)?$|Rec$|Stuck$|^(dazed|teeter|chargeEnd|castBroken)$');
 
 /* ============================ THE GUARD LAYER (src/elite-kit.js take asks this first) ============================
    null: no opinion (the elite guard by angle decides). { turn: word }: the blow is TURNED (a clank, the word). { dmg, word }: it goes in at dmg. */
@@ -160,6 +163,11 @@ export function installOrder(api) {
       case 'timber': return e.ekRoused && !e.okFelled && ad < 160 && dy < 24;
       case 'shove': return ad < TWISTS.channel.n.reach + w2 + 6 && dy < 18;
       case 'rust': return ad < 170 && dy < 40 && !!p.ground;
+      default: { const tw = e.okTwist && TWISTS[e.okTwist]; if (!tw || tw.move !== id) return false;   /* (claude/wardens12) the roll-out twists: by family */
+        if (tw.fam === 'patch') return ad < 170 && dy < 40 && !!p.ground;
+        if (tw.fam === 'shove') return ad < tw.n.reach + w2 + 6 && dy < 18;
+        if (tw.fam === 'horn') return ad < tw.n.r + 20 && dy < 46;
+        return false; }
     }
     return false;
   }
@@ -179,14 +187,14 @@ export function installOrder(api) {
   function start(e, id) {
     const C = chapterOf(e), p = P(), tw = e.okTwist && TWISTS[e.okTwist];
     api.take(e); e.okLast = id; (e.okUsed || (e.okUsed = {}))[id] = now(); e.elHit = false;
-    const T = id === 'timber' ? tw.n.tell : id === 'shove' ? tw.n.tell : id === 'rust' ? tw.n.tell : K[id].tell;
+    const T = id === 'timber' || id === 'shove' || id === 'rust' || (tw && tw.move === id) ? tw.n.tell : K[id].tell;
     e.mode = id + 'Tell'; e.modeT = api.tell(e, T); e.okTell0 = e.modeT;
     const mk = ORDER_MARKS[e.mode]; if (mk) api.mark(e, mk, mk === '!!' ? HARD : SOFT);
     const word = WORD[id] || (id === 'cast' ? C.element : id.toUpperCase()); api.say(e, word, mk === '!!' ? HARD : C.col, Math.max(0.8, e.modeT + 0.2)); S(SOUND[id]);
     if (stats.told.length < 400) stats.told.push({ t: e.t, id, mode: e.mode, mark: mk || '', col: mk ? (mk === '!!' ? HARD : SOFT) : '', word, sound: SOUND[id], at: now(), tell: e.modeT });
-    if (id === 'snare' || id === 'mud' || id === 'rust') { const half = id === 'rust' ? tw.n.half : K[id].half; e.okMark = { x: p.x, y: floorUnder(p.x, p.y), half, kind: id, t: 0 }; }
+    if (id === 'snare' || id === 'mud' || id === 'rust' || (tw && tw.fam === 'patch' && tw.move === id)) { const half = id === 'rust' || (tw && tw.move === id) ? tw.n.half : K[id].half; e.okMark = { x: p.x, y: floorUnder(p.x, p.y), half, kind: id, t: 0 }; }
     if (id === 'timber') { const f = Math.sign(p.x - e.x) || e.face, x0 = e.x + f * (e.w / 2 + 2), x1 = x0 + f * tw.n.len * TS; e.okMark = { x: (x0 + x1) / 2, y: e.y, half: Math.abs(x1 - x0) / 2, kind: 'timber', t: 0, f }; }
-    if (id === 'cast') e.okCastHp = e.hp;
+    if (id === 'cast' || (tw && tw.fam === 'horn' && tw.move === id)) e.okCastHp = e.hp;
     if (id === 'snuff') e.okLamp = lampNear(e, true);
   }
   function finish(e, every) { e.okMark = null; e.okVine = null; api.done(e); e.elT = api.every(e, every || K.every); }
@@ -214,7 +222,7 @@ export function installOrder(api) {
       const id = choose(e); if (!id) return false;
       start(e, id);
     }
-    if (!/^(cut|lunge|slam|sweep|thrust|charge|cast|blade|vine|snare|mud|snuff|timber|shove|rust)(Tell)?$|Rec$|Stuck$|^(dazed|teeter|chargeEnd|castBroken)$/.test(e.mode || '')) { abandon(e); return false; }   /* not one of his: the elite's own (riposte, thorns) had it */
+    if (!MODE_RE.test(e.mode || '')) { abandon(e); return false; }   /* not one of his: the elite's own (riposte, thorns) had it */
     e.modeT -= dt; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt); e.anim = (e.anim || 0) + dt;
     if (api.lost(e)) { abandon(e); return false; }
     if (e.okMark) e.okMark.t += dt;
@@ -295,7 +303,7 @@ export function installOrder(api) {
         if (res === 'hit') { p.vx = e.face * tw.n.push; p.vy = -110; p.ground = false; api.mark(e, 'SHOVED', C.col); } else if (res === 'blocked') p.vx = e.face * tw.n.blockedPush;
         if (e.modeT <= 0) { e.mode = 'shoveRec'; e.modeT = 0.45; e.okCd.shove = tw.n.every; } break; }
       case 'shoveRec': e.vx = 0; if (e.modeT <= 0) finish(e); break;
-      default: abandon(e); return false;
+      default: if (tw && tw.fam && twistRun(e, tw, p, C, dt, strike)) break; abandon(e); return false;
     }
     if (e.mode === 'castTell' || /Tell$/.test(e.mode)) e.vx = 0;
     api.body(e, dt);
@@ -305,11 +313,43 @@ export function installOrder(api) {
   function fireFloor(e, id) {
     const M = e.okMark; e.okMark = null; if (!M) return; const p = P(), tw = e.okTwist && TWISTS[e.okTwist];
     const inIt = !p.dead && Math.abs(p.x - M.x) < M.half + 4 && p.y > M.y - 40 && p.y <= M.y + 6;
+    if (tw && tw.fam === 'patch' && id === tw.move) return patchFire(e, tw, M, p, inIt);   /* (claude/wardens12) */
     if (id === 'snare') { S('crack'); e.okFx.snares.push({ x: M.x, y: M.y, t: 0.5 }); for (let k = -2; k <= 2; k++) api.part({ x: M.x + k * 6, y: M.y - 2, vx: 0, vy: -60, life: 0.35, max: 0.35, col: '#5a8a3a', size: 2, grav: 200 });
       if (inIt) { const res = api.hit(e, K.snare.dmg, { unblockable: true, blow: 'the briar snare' }); if (res === 'hit') { e.okFx.snare = { x: p.x, t: K.snare.hold }; api.mark(e, 'ROOTED', '#8fd160'); } } }
     if (id === 'mud') { S('squelch'); e.okFx.mud.push({ x0: M.x - M.half, x1: M.x + M.half, y: M.y, life: K.mud.life }); }
     if (id === 'rust') { S('crack'); e.okFx.rust.push({ x0: M.x - M.half, x1: M.x + M.half, y: M.y, life: 1.6 });
       if (inIt) { const res = api.hit(e, tw.n.dmg, { unblockable: true, blow: 'the rust gives' }); if (res === 'hit') { p.vy = -150; p.ground = false; api.mark(e, 'IT GIVES', '#c07048'); } } }
+  }
+  /* ---- (claude/wardens12) THE ROLL-OUT TWISTS, by family (src/order-chapters.js TWISTS): patch = the Ore Road's RUST family, shove = the Marsh's SHOVE family (push < 0 hauls you IN),
+     horn = a told blast that a blow while he draws breath SILENCES (the mage's interrupted cast). Data only: tell / dmg / every are the as-played three's. ---- */
+  function patchFire(e, tw, M, p, inIt) {
+    const n = tw.n; S(tw.fire); api.dust(M.x, M.y, 6);
+    e.okFx.rust.push({ x0: M.x - M.half, x1: M.x + M.half, y: M.y, life: n.life, kind: tw.move, col: n.col, ember: n.ember ? { tick: n.ember.tick, dmg: n.ember.dmg, t: n.ember.tick } : null });
+    if (inIt) { const res = api.hit(e, n.dmg, { unblockable: true, blow: tw.word.toLowerCase() });
+      if (res === 'hit') { p.vy = n.vy; if (n.vx) p.vx = (Math.sign(p.x - e.x) || 1) * n.vx; p.ground = false; api.mark(e, tw.word, n.col); } }
+  }
+  function twistRun(e, tw, p, C, dt, strike) {
+    const m = tw.move, n = tw.n, md = e.mode;
+    if (md === m + 'Tell') { e.vx = 0;
+      if (tw.fam !== 'patch') e.face = Math.sign(p.x - e.x) || e.face;
+      if (tw.fam === 'horn') {
+        if (e.hp < (e.okCastHp ?? e.hp)) { e.mode = 'castBroken'; e.modeT = K.cast.broken; e.ekStunT = Math.max(e.ekStunT || 0, K.cast.broken); api.mark(e, 'SILENCED', '#8fd160'); S('crack'); e.okMark = null; e.okCd[m] = n.every * 0.5; return true; }
+        if (Math.random() < dt * 14) api.part({ x: e.x + e.face * 8, y: e.y - e.h * 0.7, vx: e.face * 30, vy: -8, life: 0.3, max: 0.3, col: C.col, size: 1, grav: 0 }); }
+      if (e.modeT <= 0) { e.mode = m; e.modeT = tw.fam === 'patch' ? 0.15 : tw.fam === 'shove' ? 0.16 : 0.2; if (tw.fam === 'patch') fireFloor(e, m); else if (tw.fam === 'shove') S(tw.fire); }
+      return true; }
+    if (md === m) {
+      if (tw.fam === 'patch') { e.vx = 0; if (e.modeT <= 0) { e.mode = m + 'Rec'; e.modeT = 0.4; e.okCd[m] = n.every; } }
+      else if (tw.fam === 'shove') { e.vx = api.edge(e) ? 0 : e.face * 70; const res = strike(n.reach, n.dmg, { blow: tw.word.toLowerCase() });
+        if (res === 'hit') { p.vx = e.face * n.push; p.vy = n.push < 0 ? -60 : -110; p.ground = false; api.mark(e, n.push < 0 ? 'HAULED IN' : 'DRIVEN BACK', C.col); } else if (res === 'blocked') p.vx = e.face * n.blockedPush;
+        if (e.modeT <= 0) { e.mode = m + 'Rec'; e.modeT = 0.45; e.okCd[m] = n.every; } }
+      else { e.vx = 0;
+        if (!e.okBlast) { e.okBlast = true; S(tw.fire); api.shake(3); api.ring(e.x, e.y - 8, n.r, C.col, 0.5);
+          if (!p.dead && Math.abs(p.x - e.x) < n.r && Math.abs(p.y - e.y) < 46) { const res = api.hit(e, n.dmg, { blow: tw.word.toLowerCase() }), sg = Math.sign(p.x - e.x) || 1;
+            if (res === 'hit') { p.vx = sg * n.push; p.vy = -90; p.ground = false; api.mark(e, 'BLOWN BACK', C.col); } else if (res === 'blocked') p.vx = sg * n.blockedPush; } }
+        if (e.modeT <= 0) { e.okBlast = false; e.mode = m + 'Rec'; e.modeT = 0.5; e.okCd[m] = n.every; } }
+      return true; }
+    if (md === m + 'Rec') { e.vx = 0; if (e.modeT <= 0) finish(e); return true; }
+    return false;
   }
   /* WOOD: is the felled pine between him and the end of his swing? Then the blade bites into it and stays (his long opening) */
   function woodBite(e, reach) {
@@ -334,7 +374,8 @@ export function installOrder(api) {
       F.bolts = F.bolts.filter(b => b.life > 0);
       for (const m of F.mud) { m.life -= dt; if (!p.dead && p.ground && p.x > m.x0 && p.x < m.x1 && Math.abs(p.y - m.y) < 4) slowed = true; }
       F.mud = F.mud.filter(m => m.life > 0);
-      for (const r of F.rust) r.life -= dt; F.rust = F.rust.filter(r => r.life > 0);
+      for (const r of F.rust) { r.life -= dt; if (r.ember && e.alive && !p.dead && p.ground && p.x > r.x0 && p.x < r.x1 && Math.abs(p.y - r.y) < 6) { r.ember.t -= dt; if (r.ember.t <= 0) { r.ember.t = r.ember.tick; api.hit(e, r.ember.dmg, { unblockable: true, blow: 'the embers' }); } } }   /* (claude/wardens12) the burning plank's embers keep burning while you stand on them */
+      F.rust = F.rust.filter(r => r.life > 0);
       if (F.snare) { F.snare.t -= dt; if (F.snare.t > 0 && !p.dead) { p.x = F.snare.x; p.vx = 0; } else F.snare = null; }
       if (F.log) F.log.t += dt;
       for (const s of F.snares) s.t -= dt; F.snares = F.snares.filter(s => s.t > 0);
@@ -352,6 +393,9 @@ export function installOrder(api) {
     const w = Math.round(x1 - x0); if (w < 14) return; const cw = spr.l.width, mid = spr.mid[fr % spr.mid.length], mw = mid.width;
     g.drawImage(spr.l, Math.round(x0), fy - up); g.drawImage(spr.r, Math.round(x0) + w - cw, fy - up);
     for (let xx = cw; xx < w - cw; xx += mw) { const sw = Math.min(mw, w - cw - xx); g.drawImage(mid, 0, 0, sw, mid.height, Math.round(x0) + xx, fy - up, sw, mid.height); } };
+  /* (claude/wardens12) a roll-out twist's sprung strip: the patch in its twist's colour, flecks rising off it */
+  const stripDraw = (g, r, cx, cy, t) => { const x0 = Math.round(r.x0 - cx), w = Math.round(r.x1 - r.x0), y = Math.round(r.y - cy); g.globalAlpha = Math.min(1, r.life) * 0.9; g.fillStyle = r.col; g.fillRect(x0, y - 3, w, 3);
+    g.globalAlpha = Math.min(1, r.life) * 0.55; for (let xx = 3, i = 0; xx < w - 2; xx += 6, i++) g.fillRect(x0 + xx, y - 4 - Math.round((t * 22 + i * 5) % 12), 1, 2); g.globalAlpha = 1; };
   function draw(g, e, cx, cy) {
     const C = chapterOf(e), F = e.okFx || {}, fx = OA.bakeFx(), x = Math.round(e.x - cx), y = Math.round(e.y - cy), f = e.face || 1, t = now(), ph = Math.floor(t * 3) % 2;
     /* a told patch on the floor: its colour and its word's (red where nothing turns it); the briars sprout in it as it fills */
@@ -359,7 +403,7 @@ export function installOrder(api) {
       api.tellBar(Math.round(M.x - M.half - cx), Math.round(M.x + M.half - cx), Math.round(M.y - cy), M.kind === 'timber' ? 6 : 4, k, red ? HARD : C.col, 0.7 + 0.3 * Math.sin(t * 18));
       if (e.mode === 'snareTell') { const sp = fx.snare[k < 0.4 ? 0 : k < 0.8 ? 1 : 2]; for (let q = -1; q <= 1; q++) g.drawImage(sp, Math.round(M.x - cx) - 15 + q * 26, Math.round(M.y - cy) - 19); } }
     for (const m of F.mud || []) { g.globalAlpha = Math.min(1, m.life); tile(g, fx.mud, m.x0 - cx, m.x1 - cx, Math.round(m.y - cy), 5, ph); g.globalAlpha = 1; }
-    for (const r of F.rust || []) { g.globalAlpha = Math.min(1, r.life); tile(g, { l: fx.rust.mid[0], r: fx.rust.mid[1], mid: fx.rust.mid }, r.x0 - cx, r.x1 - cx, Math.round(r.y - cy), 4, ph);
+    for (const r of F.rust || []) { if (r.col) { stripDraw(g, r, cx, cy, t); continue; } g.globalAlpha = Math.min(1, r.life); tile(g, { l: fx.rust.mid[0], r: fx.rust.mid[1], mid: fx.rust.mid }, r.x0 - cx, r.x1 - cx, Math.round(r.y - cy), 4, ph);
       for (let xx = r.x0 + 4, i = 0; xx < r.x1 - 4; xx += 11, i++) g.drawImage(fx.rust.flake[i % 3], Math.round(xx - cx), Math.round(r.y - cy) - 6 - Math.round((1.6 - Math.min(1.6, r.life)) * 5)); g.globalAlpha = 1; }
     for (const s of F.snares || []) { g.globalAlpha = Math.min(1, s.t * 3); for (let q = -1; q <= 1; q++) g.drawImage(fx.snare[2], Math.round(s.x - cx) - 15 + q * 26, Math.round(s.y - cy) - 19); g.globalAlpha = 1; }
     if (F.snare) { const pp = P(); g.drawImage(fx.snare[2], Math.round(F.snare.x - cx) - 15, Math.round(pp.y - cy) - 19); }   /* the held hero in his cage */
