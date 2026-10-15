@@ -24,8 +24,9 @@ export const HERO_RUN = {
   knight: { ground: 1, air: 1 }, warden: { ground: 1, air: 1 }, pirate: { ground: 1, air: 1 },
   pyro: { ground: 1.15, air: 1.15 }, paladin: { ground: 0.9, air: 0.9 },
   reaper: { ground: 0.8, air: 1 }, geomancer: { ground: 0.92, air: 1 }, berserker: { ground: 1, air: 1 },   /* (berserkerport: his legs are the knight's) */
+  ranger: { ground: 1.04, air: 1 },   /* (claude/ranger: light on her feet; her jump is the knight's) */
 };
-export const HERO_MOVE_IDS = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker'];
+export const HERO_MOVE_IDS = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper', 'geomancer', 'berserker', 'ranger'];
 export const heroRunMul = (hero, ground) => { const h = HERO_RUN[hero] || HERO_RUN.knight; return ground ? h.ground : h.air; };
 export const sprintK = runT => runT > MOVE.SPRINT_AFTER ? Math.min(1, (runT - MOVE.SPRINT_AFTER) / MOVE.SPRINT_RAMP) : 0;
 /* THE RIDES' OWN NUMBERS that a jump carries into (one copy, read by the level's hands AND by src/reach-hero.js): the Sky Road cloak's glide

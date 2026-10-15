@@ -21,6 +21,7 @@ export const FINISH = {
   paladin:   { name: 'SMITTEN',     col: '#ffe6a0', sfx: ['hammerfall', 'heavy'], sig: 'light' },   /* the maul comes down in light, and the light is his */
   geomancer: { name: 'SHATTERED',   col: '#e0a040', sfx: ['crack', 'heavy'],     sig: 'shards' },   /* stone on it: it goes to pieces, amber */
   warden:    { name: 'SKEWERED',    col: '#8fd160', sfx: ['tipRing', 'heavy'],   sig: 'point' },    /* the point through it, and it rings */
+  ranger:    { name: 'BROUGHT DOWN', col: '#c8e89a', sfx: ['heavy', 'clank'],    sig: 'point' },    /* (claude/ranger) the knife, under the arm and home */
   berserker: { name: 'CLEAVED',     col: '#ff9a5c', sfx: ['heavy', 'clank'],     sig: 'cleave' },   /* (berserkerport) both axes down through it: sparks off the heads and the red of his rage */
 };
 export const FIN = { reach: 34, rise: 26, stop: 0.14, zoom: 1.14, inv: 0.45, heal: 3, done: 0, byHero: {} };

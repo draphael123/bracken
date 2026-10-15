@@ -18,7 +18,7 @@ const put = (V, spr, wx, wy) => V.g.drawImage(spr, R(wx - V.cx), R(wy - V.cy));
 const cellAt = (V, x, y) => (x < 0 || y < 0 || x >= V.L.W || y >= V.L.H ? 1 : V.L.grid[y * V.L.W + x]);
 
 /* ---------------------------------------------------------------- SAND */
-export const SAND = { ramp: ['#9a7240', '#b08650', '#c49c5e', '#d8b474', '#ecd092'], crest: '#f4dc9c', crestLo: '#d8b474', deep: 'rgba(58,32,12,0.34)', stream: 'rgba(232,196,128,0.9)', streamHi: '#fff0c8', dark: '#a27c42' };
+export const SAND = { ramp: ['#8e7248', '#a68856', '#bc9d68', '#d0b47c', '#e4cc98'], crest: '#f4dc9c', crestLo: '#d8b474', deep: 'rgba(58,32,12,0.34)', stream: 'rgba(232,196,128,0.9)', streamHi: '#fff0c8', dark: '#a27c42' };
 /* a 64 x 64 seamless rippled sand: strata of wind-ripple, grit, a few dark grains */
 function sandTex() {
   return once('sandtex', () => { const [c, g] = mk(64, 64);

@@ -276,4 +276,45 @@ ok(readFileSync(new URL('./one-new-foe.mjs', import.meta.url), 'utf8').includes(
   ok(Object.keys(hero).every(k => ['hp', 'maxHp', 'drains'].includes(k)), 'a drain touches nothing on the hero but hp (through take) and its own sources: no stagger, knock, hurt or mercy window');
   D.set(hero, 'breath', 0.02); ok(Math.abs(D.rate(hero) - 0.07) < 1e-9 && D.sources(hero).length === 2, 'two sources stack (the sun and the breath)');
   D.stop(hero, 'sun'); ok(D.sources(hero).map(q => q.id).join() === 'breath', 'a stop ends one source'); D.clear(hero); ok(D.rate(hero) === 0, 'a clear ends them all'); }
+/* (claude/ksarfoes, Daniel 10-14: brief-ksarfix-1014.md part B) THE TWO NEW BANDITS - VARIANTS of the cutthroat's machine (the hawk scout stays the one new AI, A9):
+   THE PLATED BANDIT (blades x0.25 with the turned read THROW A BOMB; a blast strips the plate) and THE FALCONER (his leashed hawk: sent in told stoops, called to the glove;
+   it guards him while it rides over him; knocked down, he is OPEN). Placed: taught safe first (A4), then in fights during the rule (A5); a keg stack by every plated man */
+{ const FK = await import('../src/ksar-foes.js'), { FALCON, PLATE } = FK;
+  const plates = L.ents.filter(e => e.cnSkin === 'ksarplate').sort((a, b) => a.x - b.x), fals = L.ents.filter(e => e.cnSkin === 'falconer').sort((a, b) => a.x - b.x);
+  ok(plates.length >= 3 && fals.length >= 3 && plates.concat(fals).every(e => e.t === 'cutthroat'), 'the new bandits ride the cutthroat machine: ' + plates.length + ' plated, ' + fals.length + ' falconers');
+  ok((['ksarblade', 'gonglookout', 'whipapprentice', 'falconer', 'ksarplate'].reduce((a, k) => a + (cnt[k] || 0), 0)) / foes.length <= 0.5, 'the cutthroat machine (with the falconer and the plated man) is still at most half the cast');
+  ok(L.foeHit.ksarplate >= L.foeHit.ksarblade && L.foeHit.falconer >= 1.5, 'the plated man hits hardest in the fort; the falconer\'s knife is light (his hawk is the threat)');
+  for (const p of plates) ok(L.stacks.some(s => s.kind === 'keg' && Math.abs(s.x - p.x) <= 10 && Math.abs(s.y - p.y) <= 6) || L.setKegs.some(k => Math.abs(k.x - p.x) <= 5 && k.y === p.y), 'a keg stack (or a set keg) stands by the plated man at ' + p.x);
+  const p0 = plates[0], ear = (g, e) => Math.abs(g.x - e.x) <= g.ear && Math.abs(g.y - e.y) <= g.earY;
+  ok(p0.ks === 'reserve' && !L.gongs.some(g => ear(g, p0)) && sign(p0.x - 8, p0.x, /KEG/) && L.stacks.some(s => s.kind === 'keg' && s.x < p0.x && p0.x - s.x <= 12), 'THE PLATED MAN TAUGHT SAFE: the first (' + p0.x + ') sleeps out of every gong\'s earshot, a sign (A KEG) and a keg stack before him');
+  for (const f of fals) ok(L.ents.some(e => e.t === 'hawkscout' && e.falcon === f.squad), 'the falconer at ' + f.x + ' has his own hawk on the leash');
+  const f0 = fals[0], cps0 = L.ents.filter(e => e.t === 'check').map(e => e.x);
+  ok(sign(f0.x - 12, f0.x, /FALCONER/) && cps0.some(x => x < f0.x && f0.x - x <= 20) && L.stacks.some(s => s.kind === 'flask' && Math.abs(s.x - f0.x) <= 12)
+    && !L.ents.some(e => e.t === 'hawkscout' && !e.falcon && e.x0 <= f0.x + 12 && e.x1 >= f0.x - 12), 'THE FALCONER TAUGHT SAFE: the first (' + f0.x + ') stands past a checkpoint, a sign and a flask rack by him, no other hawk over him');
+  ok(FALCON.sendTell >= 0.6 && FALCON.callTell >= 0.6 && PLATE.plateMul === 0.25 && FALCON.guardMul >= 0.4, 'the falconer\'s send and call are told (>= 0.6 s, before the hawk\'s own 0.8 s stoop tell); plate x0.25; his hawk\'s guard at the floor (x0.4)');
+  /* THE HANDS: a fake falconer, his hawk, a plated man, a set keg */
+  ctx.hurtFoe = (e, d) => { const d2 = H.owns(e) ? H.take(e, d, e.x) : d; e.hp -= d2; e.lastTook = d2; if (e.hp <= 0) e.alive = false; };
+  const pi = L.ents.indexOf(plates[1]), fi = L.ents.indexOf(fals[0]); ok(pi >= 0 && fi >= 0, 'found the placed men');
+  const pm = men.find(m => m.xpKey === pi + '.0'), fm = men.find(m => m.xpKey === fi + '.0');
+  const hk = { t: 'hawkscout', alive: true, hp: 14, x: fm.x, y: fm.y - 66, ksFalcon: fals[0].squad, xpKey: L.ents.findIndex(e => e.t === 'hawkscout' && e.falcon === fals[0].squad) + '.0', st: FK.newHawk(fm.x - 30, fm.x + 30, fm.y - 66) };
+  men.push(hk); K.bound = 0; H.update(1 / 60);
+  ok(pm.ksPlate === true && fm.ksF && fm.ksHawk === hk && hk.ksMaster === fm, 'bound: the plated man in his plate, the falconer tied to his hawk');
+  pm.hp = 300; ok(H.take(pm, 40, pm.x - 10) === 10 && pm.ksPlate, 'a blade on the plate lands a quarter (40 -> ' + H.take(pm, 40, pm.x - 10) + ') and the plate holds');
+  K.setKegs.push({ id: 'testKeg', x: Math.floor(pm.x / TS) - 1, y: Math.floor(pm.y / TS) - 1, st: 'lit', t: 0.01 }); H.update(0.02);
+  ok(!pm.ksPlate && pm.skinNow === 'ksarplatebare' && pm.lastTook === KS.kegDmg && pm.ksStun > 0, 'A KEG\'S BLAST strips the plate: whole damage (' + pm.lastTook + '), the bare skin, a stagger');
+  ok(H.take(pm, 40, pm.x - 10) === 40, 'stripped, a blade lands whole');
+  hk.st.mode = 'patrol'; hk.x = fm.x; hk.y = fm.y - 60; fm.hp = 200;
+  ok(H.take(fm, 40, fm.x - 10) === 16, 'his hawk up over him GUARDS the falconer (x0.4)');
+  hk.st.mode = 'dive'; ok(H.take(fm, 40, fm.x - 10) === 40, 'his hawk out on a stoop: a blow on him lands whole');
+  /* the send: hero in his reach of sight, the hawk circling over him */
+  hk.st.mode = 'patrol'; fm.ks.st = 'post'; fm.ksF.cd = 0; fm.st = { frame: 0, mode: 'walk' }; P.x = fm.x + 88; P.y = fm.y; P.dead = false; const held0 = H.hold(fm, 1 / 60);
+  ok(held0 && fm.ksF.st === 'send' && fm.st.frame === 7, 'he SENDS his hawk on a told windup (his own pose, frame 7)');
+  for (let i = 0; i < 45; i++) H.hold(fm, 1 / 60);
+  ok(['circle', 'diveTell', 'dive'].includes(hk.st.mode) && fm.ksF.dived, 'after the windup and the release (frame 8) the hawk wheels over you to stoop (' + hk.st.mode + ')');
+  hk.st.mode = 'patrol'; fm.ksF.st = 'idle'; for (let i = 0; i < 3; i++) H.hold(fm, 1 / 60);
+  ok(fm.ksF.st === 'call' && fm.st.frame === 9, 'back up, he CALLS it to his glove (a told whistle, frame 9)');
+  hk.alive = false; H.hold(fm, 1 / 60);
+  ok(fm.ksF.open > 3 && H.take(fm, 40, fm.x - 10) === 60 && H.hold(fm, 1 / 60) === true, 'his hawk DOWN: he is OPEN (x1.5, ' + fm.ksF.open.toFixed(1) + ' s), standing his ground (B4)');
+  const hk2 = { t: 'hawkscout', alive: true, hp: 200, ksMaster: fm, x: 0, y: 0 }; K.roomBlow = 'blast'; ok(H.take(hk2, 10, 0) > 200, 'a blast (or a torch) burns a falconer\'s hawk out of the air whatever its health'); K.roomBlow = null;
+  men.splice(men.indexOf(hk), 1); }
 console.log('ksar: ' + n + ' checks ok');

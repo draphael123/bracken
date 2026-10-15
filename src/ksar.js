@@ -54,7 +54,13 @@ export function buildKsar({ painter, T, TS }) {
   const sentry = (x, y, squad, gong, o) => foe('shield', x, y, squad, Object.assign({ cnSkin: 'shieldsentry', ks: 'planted', gong }, o || {}));   /* THE SHIELD SENTRY: planted before a gong */
   const smoke = (x, y, squad, o) => foe('sapper', x, y, squad, Object.assign({ cnSkin: 'smokethrower', ks: 'post' }, o || {}));               /* THE SMOKE THROWER: his pots burst in smoke */
   const slinger = (x, y, squad, o) => foe('slinger', x, y, squad, Object.assign({ cnSkin: 'wallslinger', ks: 'post' }, o || {}));            /* THE WALL SLINGER: the ranged one, on the parapets */
-  const hawk = (x0, x1, y, squad) => ent('hawkscout', (x0 + x1) >> 1, y, { squad, x0, x1 });                                                     /* THE HAWK SCOUT: the one new AI (src/ksar-foes.js) */
+  const hawk = (x0, x1, y, squad) => ent('hawkscout', (x0 + x1) >> 1, y, { squad, x0, x1 });
+  /* (claude/ksarfoes, Daniel 10-14) THE TWO NEW BANDITS - VARIANTS of proven machines (src/ksar-foes.js FALCON / PLATE; the hawk scout stays the one new AI, A9):
+     THE FALCONER: the cutthroat's machine with a HAWK SCOUT on his leash (the hawk ent carries his squad as `falcon`): he sends it in told stoops and calls it to his glove; while it
+     rides over him it guards him - knock it down (a blade, a torch, a keg, a flash) and he is OPEN. Foreshadows THE HAWK-MISTRESS (B8).
+     THE PLATED BANDIT: the cutthroat's machine, weightier, in steel - a blade clanks off (x0.25: THROW A BOMB); a keg's blast strips the plate. A keg stack stands by every one. */
+  const falconer = (x, y, squad, o) => { foe('cutthroat', x, y, squad, Object.assign({ cnSkin: 'falconer', ks: 'post' }, o || {})); ent('hawkscout', x, y - 5, { squad, x0: x - 2, x1: x + 2, falcon: squad, perch: true }); };   /* (batch93 integ: the hawk flies over its falconer's floor squad on purpose - e.perch exempts that member from the one-floor test, as the Rootway's perches) */
+  const plated = (x, y, squad, o) => foe('cutthroat', x, y, squad, Object.assign({ cnSkin: 'ksarplate', ks: 'post' }, o || {}));                                                     /* THE HAWK SCOUT: the one new AI (src/ksar-foes.js) */
   /* THE RULE'S PIECES (src/ksar-hands.js reads them off L): gongs, keg stacks, set kegs, flask racks, barricades, the winch and its gate, the cellar's weak roof */
   const gongs = [], stacks = [], setKegs = [], racks = [], barricades = [], weak = [], interiors = [], decor = [], vaultDoors = [], breaches = [], drops = [];
   /* a GONG: its frame stands on the floor whose surface row is y+1 (the hero's feet row is y); ear/earY: its earshot in tiles (half-width, rows up/down) */
@@ -87,6 +93,10 @@ export function buildKsar({ painter, T, TS }) {
   /* THE FIRST KEG (TEACH, THROW, safe): a stack on the road, and THE BRICKED ARCH in the wall's foot (the old caravan gate, a seal behind it) */
   stack('roadKegs', 56, B - 1, 'keg', 3);
   sign(58, B - 1, 'POWDER KEGS: E TAKES ONE, ATTACK THROWS IT. IT BREAKS BRICK.');
+  /* (claude/ksarfoes) THE PLATED BANDIT TAUGHT SAFE (A4): one ASLEEP at the stair's foot, out of every gong's earshot, the road's keg stack ten steps back - carry a keg, throw it: the
+     blast blows his plate off and wakes him (a blade first only clanks, THROW A BOMB, and wakes him plated) */
+  sign(62, B - 1, 'A PLATED MAN: A BLADE ONLY CLANKS. A KEG BLOWS HIS PLATE OFF.');
+  plated(66, B - 1, 'roadPlate', { ks: 'reserve', face: -1 });
   boards(60, 66, 32); boards(64, 70, 30); boards(68, 71, 28);                    /* the stair up the outer wall (two-row steps, overlapping: up through each) */
 
   // ================= 2. THE OUTER WALLS (72-231): TEST - cut under a lookout's eye; the hawk; the planted sentry =================
@@ -156,7 +166,7 @@ export function buildKsar({ painter, T, TS }) {
   // ================= 4. THE SOUQ YARD (273-357): REMIX - RING A GONG TO DRAW A SQUAD ONTO A KEG =================
   ground(273, 357, B);
   ent('check', 276, B - 1);                                                      /* CHECKPOINT TWO, past the gate */
-  boards(282, 300, 27); boards(330, 346, 27); slinger(296, 26, 'souqSling', { face: -1 }); ent('silver', 284, 26);   /* the souq's roof walks (a second height): a slinger on one, a silver on the other end */
+  boards(282, 300, 27); boards(330, 346, 27); slinger(332, 26, 'souqSling', { face: -1 });   /* (claude/ksarfoes) the souq's slinger on the far roof walk (was 296, over the falconer's teach) */ ent('silver', 284, 26);   /* the souq's roof walks (a second height): a slinger on one, a silver on the other end */
   for (const [x0, x1] of [[281, 284], [290, 293], [334, 337]]) { boards(x0, x1, 30); decor.push({ kind: 'stall', x0, x1, y: 30 }); }   /* the souq's stalls: their awnings are ledges */
   /* THE SOUQ GONG under its roof; the roof (a two-row hop off the ledge) carries a keg stack over it */
   boards(304, 306, 31); block(308, 326, 29, 29); interiors.push([309, 325, 30, B - 1, 'ksSouq']); decor.push({ kind: 'souqroof', x0: 308, x1: 326, y: 29 });   /* (the souq's covered hall: its roof stands on the hall, src/ksar-hands.js draws its posts) */
@@ -164,8 +174,13 @@ export function buildKsar({ painter, T, TS }) {
   stack('souqKegs', 323, 28, 'keg', 3); blade(358, 24, 'terraceGuard', { face: -1 });
   sign(300, B - 1, 'RING THE GONG AND THEY COME TO IT. A KEG FROM THE ROOF MEETS THEM.');
   /* THE STAIR'S SQUAD (a whip apprentice and two blades) at the foot of the only stair up */
-  sentry(340, B - 1, 'stairSquad', null, { ks: 'post', face: -1 }); whip(344, B - 1, 'stairSquad', { face: -1 }); blade(348, B - 1, 'stairSquad', { face: -1 });   /* front: a shield; the whip behind him; a blade on the stair's foot */
-  hawk(284, 380, 13, 'souqHawk');                                                 /* a hawk scout over the souq and the terrace */
+  plated(340, B - 1, 'stairSquad', { face: -1 }); stack('stairKegs', 333, B - 1, 'keg', 2);   /* (claude/ksarfoes) the stair squad's front man is PLATED now (was a shield): a keg off the roof - or the stack under the stall - strips him (FIGHT DURING THE RULE: ring the gong, they muster under the keg) */ whip(344, B - 1, 'stairSquad', { face: -1 }); blade(348, B - 1, 'stairSquad', { face: -1 });   /* front: a shield; the whip behind him; a blade on the stair's foot */
+  hawk(306, 380, 13, 'souqHawk');   /* (claude/ksarfoes: from 306 - the yard under the first roof walk is the falconer's teach, his hawk the only one over it) */
+  /* (claude/ksarfoes) THE FALCONER TAUGHT SAFE (A4): alone in the souq's open yard past CHECKPOINT TWO, a flask rack by the sign, the stalls' awnings to hide under (a hawk
+     cannot find you under canvas); he answers the souq gong too */
+  sign(279, B - 1, 'A FALCONER: HIS HAWK GUARDS HIM. KNOCK IT DOWN AND HE IS OPEN.');
+  stack('souqFlasks', 280, B - 1, 'flask', 2);
+  falconer(289, B - 1, 'souqFalconer', { face: -1 });                                                 /* a hawk scout over the souq and the terrace */
   boards(342, 349, 32); boards(347, 352, 30); boards(350, 355, 28); boards(353, 355, 26);   /* the stair up to the terrace (row 25): two-row steps, overlapping (up through each), every hero's legs */
 
   // ================= 5. THE POWDER STORE (358-445): SET PIECE TWO - THE CHAIN (REQUIRED THROW) =================
@@ -184,7 +199,7 @@ export function buildKsar({ painter, T, TS }) {
   for (const [i, x] of [400, 408, 416, 424, 432, 440].entries()) kegAt('k' + i, x, 24, { chain: true });
   barricade('storeArch', 443, 444, 17, 24);                                       /* THE BRICKED ARCH: eight rows of mud-brick across the roof - no way over it */
   /* THE ROOF SQUAD (the short chain's victims) and the store's cellar under its weak roof (a seal) */
-  blade(411, 24, 'roofSquad', { face: -1 }); smoke(414, 24, 'roofSquad'); sentry(419, 24, 'roofSquad', null, { ks: 'post', face: -1 });
+  falconer(411, 24, 'roofSquad', { face: -1 });   /* (claude/ksarfoes) a FALCONER in the roof squad (was a blade): the chain's blast brings his hawk down */ smoke(414, 24, 'roofSquad'); sentry(419, 24, 'roofSquad', null, { ks: 'post', face: -1 });
   air(417, 430, 26, 31); interiors.push([417, 430, 26, 31, 'ksCellar']); for (let x = 423; x <= 425; x++) weak.push([x, 25]);   /* (three tiles: a hole a hero leaps, or drops into) */
   seal(427, 31); ent('silver', 418, 31); boards(419, 421, 29); boards(423, 425, 27);   /* the ledges back up out of the cellar, through the hole */
   hawk(396, 458, 11, 'storeHawk');
@@ -212,7 +227,7 @@ export function buildKsar({ painter, T, TS }) {
   /* THE CLIMAX: ROOF TWO and THE ROOF BRIDGE */
   block(494, 523, 21, H - 1);
   boards(497, 520, 17); seal(519, 16); slinger(500, 16, 'ledgeSling', { face: 1 });   /* the high ledge over roof two: SEAL FIVE at its end, a slinger at its foot */
-  whip(503, 20, 'roofTwo', { face: -1 }); blade(512, 20, 'roofTwo', { face: -1 });
+  whip(503, 20, 'roofTwo', { face: -1 }); falconer(512, 20, 'roofTwo', { face: -1 });   /* (claude/ksarfoes) the climax's FALCONER (was a blade): his stoops while the lookout races for the bridge gong */
   lookout(515, 20, 'roofLookoutB', 'bridge', { patrol: [510, 518], face: -1 });
   sign(498, 20, 'THE ROOF BRIDGE HANGS FROM THE GONG\'S ROPE: A BLADE CUTS IT DOWN.');
   gong('bridge', 521, 20, { ear: 34, earY: 10, bridge: [524, 530, 21] });       /* its rope holds THE ROOF BRIDGE up on the far side: cut, the gong drops silent and the bridge comes down */
@@ -306,7 +321,7 @@ export function buildKsar({ painter, T, TS }) {
   boards(720, 724, 30); boards(687, 692, 30); boards(767, 772, 30);   /* (claude/ksar2) a second height over the quarter's street and the alley (level-quality bands): a hop up off the kegs' floor */
   blade(728, B - 1, 'alleyA', { face: -1 }); whip(731, B - 1, 'alleyA', { face: -1 });
   drop(737, 739);                                                                /* THE FIRST BREAK: a fall to the wadi (the exam's death, A10) */
-  sentry(746, B - 1, 'alleyB', null, { ks: 'post', face: -1 }); blade(749, B - 1, 'alleyB', { face: -1 });
+  plated(746, B - 1, 'alleyB', { face: -1 });   /* (claude/ksarfoes) PLATED in the keg alley (was a shield): the chain's blasts strip him - the exam's remix */ blade(749, B - 1, 'alleyB', { face: -1 });
   boards(754, 758, 29); slinger(756, 28, 'alleyLedge', { face: -1 });
   drop(763, 765);                                                                /* THE SECOND BREAK */
   smoke(769, B - 1, 'alleyC', { face: -1 }); blade(771, B - 1, 'alleyC', { face: -1 });
@@ -346,8 +361,8 @@ export function buildKsar({ painter, T, TS }) {
     gongs, stacks, setKegs, racks, barricades, weak, gate, decor, vaultDoors, breaches, drops, shafts, reeds, ropeBridges, trails, raidLines, zipLines, nests, chasms,
     /* THE FORT HITS HARD (fix pass, review MUST 2: weight, not hazards): a fort man's blow x this, on top of the act's tier (src/foe-react.js) - a blade's cut is ~12% of a
        campaign-level hero, a shield's bash ~12%: every one a 1v1 threat (main.js damagePlayer0 reads L.foeHit by cnSkin). A slinger's stone is KS.stoneDmg */
-    foeHit: { ksarblade: 3.6, gonglookout: 2.6, whipapprentice: 3.6, shieldsentry: 3.0, smokethrower: 2.2 },
-    foeHp: { ksarblade: 2.6, gonglookout: 1.6, whipapprentice: 2.6, shieldsentry: 2.4, wallslinger: 1.6, smokethrower: 1.8 },   /* ...and stands a blow or two longer (main.js spawn reads L.foeHp by cnSkin) */
+    foeHit: { ksarblade: 3.6, gonglookout: 2.6, whipapprentice: 3.6, shieldsentry: 3.0, smokethrower: 2.2, falconer: 2.6, ksarplate: 4.0 },   /* (claude/ksarfoes) the falconer's knife is light (his hawk is the threat); the plated man's cleaver is the heaviest blow in the fort */
+    foeHp: { ksarblade: 2.6, gonglookout: 1.6, whipapprentice: 2.6, shieldsentry: 2.4, wallslinger: 1.6, smokethrower: 1.8, falconer: 2.0, ksarplate: 2.4 },   /* ...and stands a blow or two longer (main.js spawn reads L.foeHp by cnSkin) */
     alarms: gongs.map(g => ({ x0: g.x - g.ear, x1: g.x + g.ear })),   /* THE RULE'S STATE for tools/rule-state.mjs: each gong's earshot is where the fort answers it */
     sun: [{ x0: 0, x1: 584 }], shade, shadeArt: shade,   /* THE DESERT'S SUN, the backdrop (not the rule): the shade boxes, tinted violet by main.js (the art pass may paint them) */   /* THE RULE'S STATE for tools/rule-state.mjs: each gong's earshot is where the fort answers it */
     quest: { n: 5, item: 'caravanseal', name: 'SEALS', done: 'FIVE SEALS: THE STRONGROOM OPENS', thanks: 'THE STRONGROOM OPENS' },

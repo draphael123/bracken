@@ -290,7 +290,7 @@ function prop(kind) {
       rc(g, 8, 10, 4, 7, '#2e7a78'); rc(g, 8, 10, 4, 1, '#4cb4bc'); rc(g, 8, 16, 4, 1, '#12444e'); rc(g, 13, 11, 3, 9, '#c4442c'); rc(g, 13, 11, 3, 1, '#e8806a'); rc(g, 13, 19, 3, 1, '#7e2616'); rc(g, 2, 24, 20, 2, SD.m); rc(g, 2, 24, 20, 1, SD.h); }
     return c; });
 }
-const DRESS = [[643, 'amphora'], [641, 'beam'], [664, 'column'], [669, 'pots'], [676, 'cairn'], [680, 'amphora'], [716, 'pots'], [721, 'column'], [718, 'beam']];
+const DRESS = [[715, 'amphora'], [713, 'beam'], [736, 'column'], [741, 'pots'], [748, 'cairn'], [752, 'amphora'], [788, 'pots'], [793, 'column'], [790, 'beam']];
 export function drawDressing(V, topOf) {   /* topOf(col) -> the row of the surface, or -1 */
   const g = V.g; for (const [x, kind] of DRESS) { const wx = x * 16 + 8 - V.cx; if (wx < -30 || wx > V.vw + 30) continue; const r = topOf(x); if (r < 0) continue; g.drawImage(prop(kind), R(wx - 12), R(r * 16 - V.cy - 26)); }
 }

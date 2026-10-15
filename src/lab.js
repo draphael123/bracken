@@ -36,7 +36,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18 };   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -50,6 +50,19 @@ export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper
 export const WALK_DEADBAND = 4;   /* exported for tools/lab-reach.mjs: the worst-case rested distance is LAB_STAND + WALK_DEADBAND, and that is the distance a reach check has to prove, not LAB_STAND alone */
 const STAND_MARGIN = 6;   /* > WALK_DEADBAND, so the worst rested spot (stand + deadband) is still 2 px inside reach */
 export const LAB_STAND = Object.fromEntries(Object.keys(LAB_REACH).map(h => [h, LAB_REACH[h] - STAND_MARGIN]));
+/* (claude/ranger) THE RANGER'S HANDS STAND OFF WHILE SHE HAS ARROWS: her reach is the bow's sweet spot (RANGER_STAND) with a quiver, the knife's without one. The page's hands read it live
+   (BK.rg); in Node (no page) it is the knife's. A first pick for the tune lane: the hands do not yet walk over to take her arrows back - the trickle refills her */
+export const RANGER_STAND = 64;
+export const RANGER_SAFE = 130;   /* px from the boss at which the bot will crouch to restock */
+export const LE_RG_REACH = 28;   /* (claude/rangercanal) THE LANTERN-EATER's keys are the knife's: its gums are a low SWEEP (DOWN+X on her feet, 28 out), its lure a rise shot or a jump. The bow's stand-off (RANGER_STAND) put her 58 px from the rail, out of her own sweep's reach */
+/* (claude/rangercanal) THE HUMAN'S FLASK: under drinkAt of the bar, OR - once a single blow has taken LABP.drinkBig of it - whenever the next such blow would kill (bar <= 1.1 x the biggest blow so far). Called once a frame. */
+const botShouldDrinkBig = (P, LABP) => { if (P.labHpWas !== undefined && P.labHpWas - P.hp > (P.labMaxHit || 0)) P.labMaxHit = P.labHpWas - P.hp; P.labHpWas = P.hp;
+  if (botShouldDrink(P, LABP.drinkAt)) return true;
+  return LABP.drinkBig > 0 && (P.labMaxHit || 0) >= P.maxHp * LABP.drinkBig && botShouldDrink(P, 1) && P.hp <= P.labMaxHit * 1.1; };
+export const RANGER_PICK_WALK = 150;   /* (claude/rangertune) px the bot walks to take an arrow back */
+const rgArrows = () => { try { const r = globalThis.BK && globalThis.BK.rg && globalThis.BK.rg(); return r ? r.q : 0; } catch { return 0; } };
+Object.defineProperty(LAB_REACH, 'ranger', { get: () => rgArrows() > 0 ? RANGER_STAND : 16, enumerable: true });
+Object.defineProperty(LAB_STAND, 'ranger', { get: () => LAB_REACH.ranger - STAND_MARGIN, enumerable: true });
 export const LAB_FOES = ['sprig', 'shield', 'swornsword', 'archer', 'hedgeknight', 'cutlass', 'harpy', 'crab', 'tideguard', 'scout'];
 const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 /* THE CO-OP ALLY IS THIS BOT. main.js imports threatOf, SHIELDED and HARD_TELLS below and plays a hero
@@ -67,8 +80,8 @@ export const WARDEN_TIP = 32;   /* (claude/herokit) the near-edge distance the w
 /* THE BERSERKER'S BRACE IS THE SAME SHAPE IN THE HANDS (claude/berserker): a TAP on the beat of a yellow blow (live 0.3 s, then a beat rooted if it
    met nothing), never held - so wherever the hands sweep the Warden's shaft they set his brace. A full bar makes the same tap his FRENZY, which
    is exactly when a player would take it. DEFLECTS is who taps; BUSY_C is the beat each is spent after one that met nothing. */
-export const DEFLECTS = h => h === 'warden' || h === 'berserker';
-const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
+export const DEFLECTS = h => h === 'warden' || h === 'berserker' || h === 'ranger';   /* (claude/ranger: her BOW-BASH is a tap on the beat too) */
+const BUSY_C = (h, P) => h === 'warden' ? (P.blastT || 0) + (P.deflectRec || 0) : h === 'berserker' ? (P.blastT || 0) + (P.braceRec || 0) + (P.pounceRec || 0) : h === 'ranger' ? (P.rgCd || 0) : 0;   /* (claude/berserker2: TAKE IT is held, so his guard up is not "busy" - tapping keeps it up) */
 /* AND ON THE BEAT. A sweep is live a quarter second and then a quarter second spent, so tapping all through a long wind-up leaves half of
    it bare - measured: a hedge knight's swing landed on the spent half one fight in three. A common foe's tell counts its modeT down to
    the blow, so she holds the sweep until the last fifth of a second of it (a tell that keeps no such clock is swept at as before). */
@@ -198,6 +211,7 @@ export function keyVerb(BK, h, e) {
   if (P.charge > 0 || P.atkHeld > 0) return 'heavy';   /* a blow being wound is finished, not dropped for another */
   if (!K || K.open) return 'light';
   const f = K.family, swim = !!P.swim;
+  if (h === 'ranger' && rgArrows() > 0 && Math.abs(e.x - P.x) - (e.w || 12) / 2 > 18) return f === 'plate' || f === 'shell' || f === 'beast' || f === 'guard' ? 'heavy' : 'light';   /* (claude/ranger) WITH ARROWS, OUT OF KNIFE REACH SHE SHOOTS: a tap (the shooter, the wing, the small one alike) or a full draw (what wants a heavy) - the knife's sweep is for what has come inside */
   if (h === 'pirate' && P.loaded && f !== 'small' && e.t !== 'mimic' && Math.abs(e.x-P.x)>LAB_REACH[h]+(e.w||12)/2+12) return 'heavy';
   if ((h === 'pirate' || h === 'reaper') && e.t === 'mimic') return swim ? 'light' : 'plunge';
   if (f === 'guard') { const ad = Math.abs(e.x - P.x), reach = LAB_REACH[h] + (e.w || 12) / 2;
@@ -651,7 +665,7 @@ async function runbossLab(BK, opts) {
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
     for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
-      if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
+      if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
       { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
         if (bm !== dkS.m) { if (/Tell$/.test(dkS.m)) dkS.blow = bm; else if (dkS.blow && dkS.m === dkS.blow) { dkS.endF = f; dkS.blow = null; } dkS.m = bm; } if (/Tell$/.test(bm)) dkS.tellF = f;
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
@@ -1586,7 +1600,7 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const LH=BK.lanternEaterHands(),show=LH&&LH.show();
         if(f===0||!P.labLeMem)P.labLeMem={};
-        const pl=show?lanternPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:(P.snare||0)+(P.rootT||0),atk:P.atk},e:boss,show,reach:LAB_REACH[h],t:f/60,rng:Math.random,mem:P.labLeMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
+        const pl=show?lanternPlan({P:{x:P.x,y:P.y,face:P.face,ground:P.ground,swim:!!P.swim,snare:(P.snare||0)+(P.rootT||0),atk:P.atk},e:boss,show,reach:h==='ranger'?LE_RG_REACH:LAB_REACH[h],t:f/60,rng:Math.random,mem:P.labLeMem,eyes:!!LABP.v2}):{gx:null,face:P.face};
         if(pl.jump&&(P.ground||P.swim)){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=14;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.down)k.down=true;if(pl.up)k.up=true;
@@ -2327,8 +2341,15 @@ async function runbossLab(BK, opts) {
              tap does not clear it. Walking and not moving means something that size is in the way. */
           if (flotClimb && P.ground && Math.abs(P.vx) < 8 && (k.left || k.right) && f % 14 === 0) { BK.press('jump'); P.labJump = 18; }
           if (P.labJump > 0) { P.labJump--; k.jump = true; } } }
-      else if (goal !== null && !k.block) { let desired=strike ? goal-(Math.sign(goal-P.x)||P.face)*(LAB_STAND[h]+(boss.w||20)/2) : goal; if (boss.t === 'windcaller') desired = callerKeep(BK, boss, desired); const gd = desired - P.x;
+      else if (goal !== null && !k.block) { let desired=strike ? goal-(Math.sign(goal-P.x)||P.face)*(LAB_STAND[h]+(boss.w||20)/2) : goal; if (boss.t === 'windcaller') desired = callerKeep(BK, boss, desired);
+        /* (claude/rangertune) THE RANGER'S PICKUP HAND: with the quiver down to its last arrow a player walks over to the arrows lying/stuck near and takes them back (the glint) instead of knifing on until the trickle
+           refills her. Only arrows on her own footing within RANGER_PICK_WALK and not on the far side of the boss. */
+        if (h === 'ranger' && (rgArrows() <= 1 || P.labRs)) { const r = BK.rg && BK.rg(); let best = null, bd = 1e9; if (r) for (const a of r.arrows) { if (a.state !== 'lie' && a.state !== 'stuck') continue; const d = Math.abs(a.x - P.x); if (d > RANGER_PICK_WALK || a.y < P.y - 30 || a.y > P.y + 6 || Math.abs(a.x - boss.x) < 22 || (a.x - boss.x) * (P.x - boss.x) < 0) continue; if (d < bd) { bd = d; best = a; } } if (best) desired = best.x;
+          /* AND THE RESTOCK HAND: nothing to pick up, quiver empty (or filling) and the boss out of reach: stand still and hold DOWN (CROUCH TO RESTOCK) until it is nearly full or he closes */
+          else { const far = Math.abs(boss.x - P.x) > RANGER_SAFE; if (far && P.ground && !P.swim && (rgArrows() === 0 || (P.labRs && rgArrows() < 4))) { P.labRs = true; desired = P.x; } else P.labRs = false; } } else if (h === 'ranger') P.labRs = false;
+        const gd = desired - P.x;
         if (Math.abs(gd) > 4) k[gd > 0 ? 'right' : 'left'] = true;
+        if (h === 'ranger' && P.labRs && Math.abs(gd) <= 4) { k.left = k.right = false; k.down = true; k.atk = false; }
         /* THE TOMB'S RUBBLE IS A STEP: walking and not moving there means a mound in the way, and a player hops it */
         if (boss.t === 'prince' && (k.left || k.right) && P.ground && Math.abs(P.vx) < 4 && f % 15 === 0) BK.press('jump');
         /* AND WATER HAS A SECOND AXIS. Outside the Deep's own swimming branch the hands only ever walked left and
@@ -2686,7 +2707,7 @@ export async function eliteLab(BK, o) {
       PERC = makePerception(BK, LABP, key, e, {}); PERC.apply(); eliteE = e; }
     const ehp = e.hp0 || e.hp, maxF = Math.round((o.secs || 60) * 60), reach = LAB_REACH[o.hero] || 22; let f = 0;
     for (; f < maxF && e.alive && !P.dead; f++) {
-      if (eyesOn && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrink(P, LABP.drinkAt)) BK.drinkFlask();   /* (claude/flasklever) the human drinks, as the boss lab's does */
+      if (eyesOn && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/flasklever) the human drinks, as the boss lab's does */
       if (o.mode === 'mash') { k.left = k.right = k.up = k.down = k.jump = k.block = k.atk = false;
         const dx = e.x - P.x, edge = (e.w || 12) / 2; if (Math.abs(dx) > Math.min(reach * 0.7, 14) + edge * 0.5 || Math.abs(dx) > 6) k[dx > 0 ? 'right' : 'left'] = true;
         if (P.swim) { const dy = (e.y - (e.h || 16) / 2) - (P.y - 10); if (dy < -10) k.up = true; else if (dy > 10) k.down = true; }

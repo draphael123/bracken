@@ -59,6 +59,10 @@ try {
     const rows = tap.filter(b => b.y <= 20 && b.h >= 50 && b.w < 200 && b.w > 60);
     assert.ok(rows.length >= 3, 'a portrait is a tap box (' + rows.length + ' found of ' + tap.length + ')');
   }
+  /* HERO_COLOR (claude/herocolors): one colour per hero; the name's ink holds 4.5:1 on the banner's plate (and the frame colour does too) */
+  const hc = await pg.evalp('BK.heroColors()'), lum = c => { const v = [1, 3, 5].map(i => parseInt(c.slice(i, i + 2), 16) / 255).map(u => u <= 0.03928 ? u / 12.92 : Math.pow((u + 0.055) / 1.055, 2.4)); return 0.2126 * v[0] + 0.7152 * v[1] + 0.0722 * v[2]; }, cr = (p, q) => (Math.max(lum(p), lum(q)) + 0.05) / (Math.min(lum(p), lum(q)) + 0.05);
+  for (const id of ['knight', 'warden', 'geomancer', 'ranger', 'berserker', 'pyro', 'paladin', 'pirate', 'reaper', 'sunpriest']) { const c = hc[id]; assert.ok(c, 'HERO_COLOR has ' + id); assert.ok(cr(c.ink, c.dark) >= 4.5, id + ': name ink on its plate ' + cr(c.ink, c.dark).toFixed(2)); assert.ok(cr(c.hi, c.dark) >= 3, id + ': frame colour reads against the plate ' + cr(c.hi, c.dark).toFixed(2)); }
+  assert.equal(new Set(Object.values(hc).map(c => c.mid)).size, Object.keys(hc).length, 'no two heroes share a cloth');
   console.log('ok  hero pick      ' + h.out.length + ' portraits move, every hero named on one line under a clear heading, RIGHT picks, portraits are tap boxes');
 
   /* ---- 2b. ALL EIGHT HEROES (batch82 integ; claude/heroroster): the pick always lays eight cards; with every hero open (the dev flag + UNLOCK EVERYTHING, the way a tool opens them) it must still sit whole,
@@ -68,7 +72,7 @@ try {
     const out = [], walk = [], { VW, VH } = BK.view;
     for (let i = 0; i < 8; i++) { BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(6); window.__textRec = []; BK.step(1);
       out.push((window.__textRec || []).filter(x => x.kind === 'text').map(x => ({ s: x.s, x0: x.x0, y0: x.y0, w: x.w, h: x.h }))); window.__textRec = null; }
-    BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(2); for (let i = 0; i < 8; i++) { BK.press('right'); BK.step(3); walk.push(BK.ui.heroPickI); }
+    BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(2); for (let i = 0; i < 9; i++) { BK.press('right'); BK.step(3); walk.push(BK.ui.heroPickI); }
     BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = 0; BK.step(3); const boxes = BK.touch.hitBoxes ? BK.touch.hitBoxes() : null;
     const took = []; for (const i of [3, 4, 6, 7]) { BK.reset({ fresh: true }); BK.state = 'heropick'; BK.ui.heroPickStage = 'pick'; BK.ui.heroPickI = i; BK.step(2); BK.press('confirm'); BK.step(3); took.push(i + ':' + BK.hero()); }
     BK.SET.godmode = false; BK.setDev(false); return { out, walk, boxes, took, VW, VH }; })()`);
@@ -80,8 +84,9 @@ try {
     for (let a = 0; a < lab.length; a++) for (let b = a + 1; b < lab.length; b++) { const p = lab[a], q = lab[b];
       assert.ok(p.x0 + p.w <= q.x0 || q.x0 + q.w <= p.x0 || p.y0 + p.h <= q.y0 || q.y0 + q.h <= p.y0, 'eight, pick ' + i + ': names ' + p.s + ' and ' + q.s + ' overlap'); }
     const title = rec.find(x => x.s === 'CHOOSE YOUR HERO'); assert.ok(title && title.y0 + title.h <= 20, 'eight, pick ' + i + ': the heading is clear of the row'); });
-  assert.deepEqual(seven.took, ['3:berserker', '4:pyro', '6:pirate', '7:reaper'], 'confirm takes the portrait under the cursor: ' + seven.took);
-  assert.deepEqual(seven.walk, [1, 2, 3, 4, 5, 6, 7, 0], 'RIGHT walks all eight and wraps: ' + seven.walk);
+  /* DESIGN CHANGE (Daniel 10-12): the RANGER is the 4th free starter, so pick index 3 is her; the Berserker is a fire-mountain unlock (buyable meanwhile) and moves to the locked end of the order: indexes 4,6,7 shift with it */
+  assert.deepEqual(seven.took, ['3:ranger', '4:berserker', '6:paladin', '7:pirate'], 'confirm takes the portrait under the cursor: ' + seven.took);
+  assert.deepEqual(seven.walk, [1, 2, 3, 4, 5, 6, 7, 8, 0], 'RIGHT walks all nine (the Ranger joined) and wraps: ' + seven.walk);
   if (seven.boxes && seven.boxes.length) { const rows = seven.boxes.filter(b => b.y <= 20 && b.h >= 50 && b.w > 20 && b.w < 200); assert.ok(rows.length >= 8, 'eight portraits are eight tap boxes (' + rows.length + ')'); }
   console.log('ok  hero pick x8   all eight heroes named without overlap, on the screen, RIGHT walks them and wraps, eight tap boxes');
 

@@ -4,7 +4,7 @@
    For every hero x skin x weapon this bakes the hero in the STEEL weapon and in that weapon and asserts:
      1. only WEAPON pixels differ (the diff is inside the weapon mask: the pixels the weapon palette is able to reach at all), in the store
         frames for every skin and in the FULL combat set (every pose, mirrored, hurt, white, bare) for the default skin;
-     (the freebooter's boxes skip the hip rows: her holstered pistol is a weapon pixel there)
+     (the freebooter's boxes skip the hip rows: her holstered pistol is a weapon pixel there; so do the ranger's, batch93 integ: her hip knife is a weapon pixel at x9-11 y18-19 of the idle frame, in the mask both ways)
      2. the head, torso and legs (helm / cowl, body, hem) are untouched in the idle frame, whatever the weapon - the probe is a fixed box, not derived from the bake,
         so a baker that lets the weapon palette into the body fails it even if the mask followed along;
      3. a non-steel weapon VISIBLY changes the weapon (>= MIN_PX pixels in the swing frames). Needs the page (Chrome over CDP). */
@@ -16,7 +16,7 @@ const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const swordBlock = src.slice(src.indexOf('const SWORDS = ['), src.indexOf('const UPGRADES = ['));
 const SWORDS = [...swordBlock.matchAll(/\{ id: '([^']+)'/g)].map(m => m[1]);
 assert.ok(SWORDS.length >= 9 && SWORDS[0] === 'steel', 'could not read the SWORDS table');
-const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker'];
+const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geomancer', 'berserker', 'ranger'];
 const MIN_PX = 6;
 
 const pg = await openPage({ audio: false, fonts: false });
@@ -46,7 +46,7 @@ try {
               const M = mask.get(p) || new Set();
               for (const px of set) { total++; if (!M.has(px)) { outside++; if (bad.length < 12) bad.push([h, sk, w, p, 'px ' + px + ' is not a weapon pixel']); } }
               if (!full && /atk/.test(p)) atk += set.size;
-              if (!full && /idle\\[0\\]/.test(p)) { const W = steel.get(p).w; const boxes = h === 'pyro' ? [[8, 17, 0, 7], [9, 17, 13, 17]] : h === 'pirate' ? [[11, 19, 6, 11], [11, 18, 12, 14], [11, 18, 18, 21]] : [[11, 19, 6, 11], [11, 18, 12, 21]]; for (const px of set) { const x = px % W, y = Math.floor(px / W) - 24; if (boxes.some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y >= y0 && y <= y1)) head++; } }
+              if (!full && /idle\\[0\\]/.test(p)) { const W = steel.get(p).w; const boxes = h === 'pyro' ? [[8, 17, 0, 7], [9, 17, 13, 17]] : h === 'pirate' ? [[11, 19, 6, 11], [11, 18, 12, 14], [11, 18, 18, 21]] : h === 'ranger' ? [[11, 19, 6, 11], [11, 18, 12, 17], [12, 18, 18, 21]] : [[11, 19, 6, 11], [11, 18, 12, 21]]; for (const px of set) { const x = px % W, y = Math.floor(px / W) - 24; if (boxes.some(([x0, x1, y0, y1]) => x >= x0 && x <= x1 && y >= y0 && y <= y1)) head++; } }
             }
             rows.push({ h, sk, w, full, total, outside, atk, head });
           }

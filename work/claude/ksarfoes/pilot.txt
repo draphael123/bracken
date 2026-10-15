@@ -1,0 +1,4 @@
+ksar: big hp events (>=12%): 41 from the bot (5 within 90 frames of a lift); 0 of 144 lifts met hazard water (0 put on a mover, 0 on dry footing)
+ksar (knight, fresh save, 3 runs summed): 36 hits taken, 13 deaths, 17 kills, walked 100% of the waypoints, 581% hp lost a run, 144 lifts (49391 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-ksarfoes\docs\level1-pilot.json
+errors []
