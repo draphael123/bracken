@@ -70,6 +70,7 @@ export function makeHolyGround(api) {
   /* MOVE: the circle comes with him (HAMMER LEAP) - same life, a new floor */
   function move(c, x, y) { if (!c || c.out) return; c.x = x; c.y = y; c.at = time(); }
   /* FOLLOW: the HALLOWED AURA walks with him every frame (no re-plant flash: move's c.at is the plant ring) */
+  const flare = c => { if (c && !c.out) c.flareT = time(); };
   function follow(c, x, y) { if (!c || c.out) return; c.x = x; c.y = y; }
   /* A CIRCLE THAT COVERS THIS BODY and is someone else's whose owner passes ok(owner) - the aegis covering a partner */
   const covering = (b, ok) => circles.find(c => !c.out && c.owner !== b && inside(c, b) && ok(c.owner)) || null;
@@ -96,8 +97,26 @@ export function makeHolyGround(api) {
      second ring, taller posts and two more behind, motes rising off the whole floor; PLANTED or MOVED: a 1 px ring runs out from the middle to the rim;
      GOING OUT: the rim blinks and the runes go dark one after another, clockwise, the sun last. Owner-agnostic: the colours come from HG_PAL[c.side], so
      LIT CHURCH 2's boss circle ('foe') is this same draw in its own tint. */
+  /* THE HALLOWED AURA (PALADIN 3 ART, claude/paladin3art): not a planted circle - a SOFT RING OF LIGHT at his feet that goes where he goes. A faint floor glow that is
+     brightest at the middle, two thin rims (the outer one a ring of long dashes running slowly round it, so a still ring still reads as alive), six motes orbiting on it
+     with a short tail, a little light rising off it; it fades out over its last 0.7 s (no blinking, no runes, no posts). WHEN IT IS LIT (a spend, or a spend while it
+     stands: c.flareT) a FLARE: two rings running out past the rim, a cross glint on the floor and a spray of motes. Same pal as the circle (the owner's side tints it). */
+  function drawAura(c, cx, cy, now, g) { const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), k = Math.min(1, c.life / 0.7), age = now - Math.max(c.at, c.flareT || 0), grow = Math.min(1, (now - c.at) / 0.2), r = Math.max(4, c.r * (0.4 + 0.6 * grow)), ry = r * 0.2 + 1;
+    g.globalCompositeOperation = 'lighter';
+    const gr = g.createRadialGradient(x, y - 1, 1, x, y - 1, r); gr.addColorStop(0, 'rgba(255,230,150,0.32)'); gr.addColorStop(0.7, 'rgba(255,211,107,0.14)'); gr.addColorStop(1, 'rgba(255,211,107,0)');
+    g.save(); g.translate(0, 0); g.globalAlpha = k; g.fillStyle = gr; g.beginPath(); g.ellipse(x, y - 1, r, ry + 1.5, 0, 0, 7); g.fill(); g.restore();
+    g.globalAlpha = 0.5 * k; g.strokeStyle = pal.hot; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, r, ry, 0, 0, 7); g.stroke();                                    /* the outer rim */
+    g.globalAlpha = 0.85 * k; g.setLineDash([7, 9]); g.lineDashOffset = -now * 14; g.strokeStyle = pal.emp; g.beginPath(); g.ellipse(x, y - 1, r - 1, Math.max(1, ry - 0.6), 0, 0, 7); g.stroke(); g.setLineDash([]);   /* the running dashes */
+    g.globalAlpha = 0.28 * k; g.strokeStyle = pal.floor; g.beginPath(); g.ellipse(x, y - 1, r * 0.66, ry * 0.66, 0, 0, 7); g.stroke();                                    /* the inner line */
+    for (let i = 0; i < 6; i++) { const a = now * 1.3 + i * 1.0472, sx = x + Math.cos(a) * r, sy = y - 1 + Math.sin(a) * ry, front = Math.sin(a) > 0;                                 /* six motes going round, a tail behind each */
+      for (let t = 0; t < 3; t++) { const a2 = a - t * 0.16; g.globalAlpha = (front ? 0.95 : 0.55) * k * (1 - t * 0.3); g.fillStyle = t ? pal.floor : pal.emp; g.fillRect(Math.round(x + Math.cos(a2) * r), Math.round(y - 1 + Math.sin(a2) * ry), 1, 1); } }
+    for (let i = 0; i < 4; i++) { const u = (now * 0.7 + hash(i * 3.7)) % 1; g.globalAlpha = (1 - u) * 0.7 * k; g.fillStyle = pal.hot; g.fillRect(Math.round(x + (hash(i + 2) - 0.5) * 1.6 * r), Math.round(y - 2 - u * 11), 1, 1); }   /* a little light rising off it */
+    if (age < 0.45) { const u = age / 0.45; for (let q = 0; q < 2; q++) { const uu = Math.max(0, u - q * 0.14); if (uu <= 0) continue; g.globalAlpha = (1 - uu) * (q ? 0.55 : 0.95); g.strokeStyle = q ? pal.hot : pal.emp; g.beginPath(); g.ellipse(x, y - 1, r * (0.3 + 1.0 * uu), (r * (0.3 + 1.0 * uu)) * 0.2 + 1, 0, 0, 7); g.stroke(); }   /* THE FLARE: two rings out past the rim... */
+      g.globalAlpha = (1 - u) * 0.9; g.fillStyle = pal.emp; const ar = Math.round(4 + 8 * (1 - u)); g.fillRect(x - ar, y - 1, ar * 2 + 1, 1); g.fillRect(x, y - 1 - Math.round(ar * 0.5), 1, Math.round(ar) + 1);   /* ...a cross glint on the floor... */
+      g.globalAlpha = (1 - u) * 0.45; g.fillStyle = pal.floor; g.beginPath(); g.ellipse(x, y - 1, r * 0.9, ry + 2, 0, 0, 7); g.fill(); }   /* ...and the floor brightening */
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   function draw(cx, cy) { const g = api.g(), now = time();
-    for (const c of circles) { const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), k = Math.min(1, c.life / 0.5), going = c.life < HG.warn, blinkOff = going && Math.floor(now * 8) % 2 === 0;
+    for (const c of circles) { if (c.aura) { drawAura(c, cx, cy, now, g); continue; } const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), k = Math.min(1, c.life / 0.5), going = c.life < HG.warn, blinkOff = going && Math.floor(now * 8) % 2 === 0;
       const grow = Math.min(1, (now - c.at) / 0.18), r = Math.max(4, c.r * grow), hot = c.emp ? pal.emp : pal.hot, N = c.emp ? 16 : 12, lit = going ? Math.ceil(N * c.life / HG.warn) : N;
       g.globalAlpha = 0.4 * k; g.strokeStyle = pal.under; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, r, 6, 0, 0, 7); g.stroke();   /* the dark line under the rim, a pixel below it */
       g.globalCompositeOperation = 'lighter';
@@ -153,5 +172,5 @@ export function makeHolyGround(api) {
   }
   const clear = () => { circles = []; wards = []; };
   const read = () => ({ circles: circles.map(c => ({ x: Math.round(c.x), y: Math.round(c.y), r: c.r, life: +c.life.toFixed(2), emp: c.emp, side: c.side, owner: c.owner && c.owner.n ? c.owner.n : c.owner && c.owner.t || null })), stats: { ...stats } });
-  return { plant, empower, move, follow, inside, of, standing, covering, ward, update, draw, clear, read, list: () => circles, stats };
+  return { plant, empower, move, follow, flare, inside, of, standing, covering, ward, update, draw, clear, read, list: () => circles, stats };
 }

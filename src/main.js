@@ -8992,14 +8992,14 @@ function attackBox0() {
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - 16, b: P.y - 1 } : { l: P.x - r, r: P.x - 2, t: P.y - 16, b: P.y - 1 };
   }
   if (P.heavy && P.atk >= (hero() === 'knight' && P.cutStage ? 0.07 : 0.03) && P.atk < 0.22) { // it reaches further and lands lower than a swing (THE HEAVY CUT: not while the blade is still over his head)
-    const r = isPyro() ? PYRO_STAFF.heavyReach : isPaladin() ? 32 : 26, top = hero() === 'knight' && P.cutStage ? 34 : 26;   /* THE HEAVY CUT starts over his head */
+    const r = isPyro() ? PYRO_STAFF.heavyReach : isPaladin() ? 27 : 26, top = hero() === 'knight' && P.cutStage ? 34 : 26;   /* THE HEAVY CUT starts over his head */
     return P.face > 0 ? { l: P.x + 2, r: P.x + r, t: P.y - top, b: P.y + 2 } : { l: P.x - r, r: P.x - 2, t: P.y - top, b: P.y + 2 };
   }
   if (P.plunge) return { l: P.x - 10, r: P.x + 10, t: P.y - 6, b: P.y + 12 };
-  if (P.swingKind === 'rise' && P.atk >= 0.02 && P.atk < 0.17) { const r = isPyro() || isPaladin() || isReaper() ? 28 : 22; return P.face > 0 ? { l: P.x - 4, r: P.x + r, t: P.y - 40, b: P.y + 14 } : { l: P.x - r, r: P.x + 4, t: P.y - 40, b: P.y + 14 }; }   /* floor to overhead, and it starts below the feet it leaves with */
-  if (P.swingKind === 'sweep' && P.atk >= 0.02 && P.atk < 0.15) { const r = isPyro() || isPaladin() || isReaper() ? 34 : 28; return P.face > 0 ? { l: P.x - 6, r: P.x + r, t: P.y - 8, b: P.y + 2 } : { l: P.x - r, r: P.x + 6, t: P.y - 8, b: P.y + 2 }; }   /* ankle height */
+  if (P.swingKind === 'rise' && P.atk >= 0.02 && P.atk < 0.17) { const r = isPaladin() ? 24 : isPyro() || isReaper() ? 28 : 22; return P.face > 0 ? { l: P.x - 4, r: P.x + r, t: P.y - 40, b: P.y + 14 } : { l: P.x - r, r: P.x + 4, t: P.y - 40, b: P.y + 14 }; }   /* floor to overhead, and it starts below the feet it leaves with */
+  if (P.swingKind === 'sweep' && P.atk >= 0.02 && P.atk < 0.15) { const r = isPaladin() ? 29 : isPyro() || isReaper() ? 34 : 28; return P.face > 0 ? { l: P.x - 6, r: P.x + r, t: P.y - 8, b: P.y + 2 } : { l: P.x - r, r: P.x + 6, t: P.y - 8, b: P.y + 2 }; }   /* ankle height */
   if (isPyro() && P.atk >= PYRO_STAFF.live[0] && P.atk < PYRO_STAFF.live[1]) { const S = PYRO_STAFF; return P.face > 0 ? { l: P.x + 2, r: P.x + S.reach, t: P.y - S.top, b: P.y - S.bot } : { l: P.x - S.reach, r: P.x - 2, t: P.y - S.top, b: P.y - S.bot }; } // the staff thrusts: a lighter blow, a tile more reach
-  if (isPaladin() && P.atk >= 0.06 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 26, t: P.y - 24, b: P.y + 1 } : { l: P.x - 26, r: P.x - 2, t: P.y - 24, b: P.y + 1 }; // the maul: over and down, a wide heavy arc
+  if (isPaladin() && P.atk >= 0.06 && P.atk < 0.18) return P.face > 0 ? { l: P.x + 2, r: P.x + 22, t: P.y - 24, b: P.y + 1 } : { l: P.x - 22, r: P.x - 2, t: P.y - 24, b: P.y + 1 }; // the WAR HAMMER (PALADIN 3 ART, Daniel 10-15: reach -15%, 26 -> 22): over and down
   // THE SWATHE. It lands LATE - the blade is behind him for the first third of it - and then it is
   // everywhere at once. The window is where the weight of the thing lives.
   if (isReaper() && P.atk >= 0.12 && P.atk < 0.24) {   /* THE CLEAVE: over the shoulder and down through what is in FRONT of him - a sword, not a scythe */
@@ -26748,7 +26748,7 @@ function risingCut() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKin
    groundLeap: the old leaping ground uppercut (false: it is a slash from the feet); air: each hero's air up-slash box (half width, top above
    his feet, lean toward his face), read off his own airUp frames (src/chars.js directionalPoses) */
 const UP_SLASH = { grace: 0.05, groundLeap: false,
-  air: { knight: { w: 13, top: 44, lean: 3 }, warden: { w: 9, top: 50, lean: 2 }, pyro: { w: 12, top: 46, lean: 3 }, paladin: { w: 15, top: 44, lean: 3 },
+  air: { knight: { w: 13, top: 44, lean: 3 }, warden: { w: 9, top: 50, lean: 2 }, pyro: { w: 12, top: 46, lean: 3 }, paladin: { w: 13, top: 44, lean: 3 },
     pirate: { w: 12, top: 42, lean: 3 }, reaper: { w: 16, top: 48, lean: 3 }, geomancer: { w: 12, top: 46, lean: 3 }, berserker: { w: 12, top: 42, lean: 3 } } };
 /* THE AIR UP-SLASH: up + attack in the air (past the jump's first 0.18 s, where the rising cut still rides it). No lift, no hang: a blow over his head */
 function airUpCut() { P.swingKind = 'airUp'; noteVerb('rise'); const c = specialCol();
@@ -26777,7 +26777,7 @@ function swingKindTrail(k, px0) { const c = specialCol()[0];
   if (P.swingKind === 'airUp') { const a = -0.35 - 2.4 * Math.min(1, k * 1.6), r = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14;   /* (claude/combat3) the blade over his head, front to back */
     trail.push({ x0: P.x + P.face * Math.cos(a + 0.4) * r, y0: P.y - 12 + Math.sin(a + 0.4) * r, x: P.x + P.face * Math.cos(a) * r, y: P.y - 12 + Math.sin(a) * r, life: 0.08 }); return; }
   if (P.swingKind === 'rise') { const y = P.y - 4 - (isWarden() ? 39 : 35) * Math.min(1, k * 2); trail.push({ x0: px0 + P.face * 5, y0: Math.min(P.y - 4, y + 10), x: P.x + P.face * (isWarden() ? 8 : 12), y, life: 0.08 }); }
-  else { const reach = isWarden() ? 40 : isPyro() || isPaladin() || isReaper() ? 34 : 28, x = P.x + P.face * (8 + (reach - 8) * Math.min(1, k * 2)); trail.push({ x0: x - P.face * 10, y0: P.y - 4, x, y: P.y - 4, life: 0.08 }); }
+  else { const reach = isWarden() ? 40 : isPyro() || isReaper() ? 34 : isPaladin() ? 29 : 28, x = P.x + P.face * (8 + (reach - 8) * Math.min(1, k * 2)); trail.push({ x0: x - P.face * 10, y0: P.y - 4, x, y: P.y - 4, life: 0.08 }); }
   if (Math.random() < 0.5) parts.push({ x: px0 + P.face * 14, y: P.y - (P.swingKind === 'rise' ? 14 + k * 16 : 2), vx: P.face * 30, vy: P.swingKind === 'rise' ? -60 : -10, life: 0.2, max: 0.2, col: c, size: 1, grav: 0 }); }
 /* THE DASH ATTACK. A swing out of a dash used to stop the hero dead into an ordinary cut, so the two never added up to
    anything. Now the dash carries the blade through: the hero keeps going, the cut lands harder and throws what it hits. */
@@ -26809,7 +26809,7 @@ const DASH_STRIKE = {
   knight: { win: 0.6, t: 0.26, speed: 290, dmg: 1.8, st: 13, rec: 0.24, near: -2, reach: 26, top: 18, hitStop: 0.07, passStop: 0.03, shake: 4, cols: ['#fff6e0', '#c9d1dc'] },
   warden: { win: 0.6, t: 0.24, speed: 300, dmg: 1.3, st: 13, rec: 0.28, near: 2, reach: 46, top: 14, hitStop: 0.06, passStop: 0.025, shake: 3, cols: ['#dff0d8', '#c9b27c'] },
   pyro: { win: 0.6, t: 0.22, speed: 320, dmg: 2.0, st: 13, rec: 0.22, near: 0, reach: 34, top: 12, hitStop: 0.05, passStop: 0.02, shake: 3, cols: ['#ffd36b', '#ff6b2c'] },
-  paladin: { win: 0.6, t: 0.32, speed: 250, dmg: 1.6, st: 13, rec: 0.34, near: -2, reach: 30, top: 20, hitStop: 0.09, passStop: 0.04, shake: 5, cols: ['#ffe6a0', '#ffd36b'] },
+  paladin: { win: 0.6, t: 0.32, speed: 250, dmg: 1.6, st: 13, rec: 0.34, near: -2, reach: 26, top: 20, hitStop: 0.09, passStop: 0.04, shake: 5, cols: ['#ffe6a0', '#ffd36b'] },
   pirate: { win: 0.6, t: 0.2, speed: 310, dmg: 2.2, st: 13, rec: 0.2, near: 2, reach: 34, top: 16, hitStop: 0.05, passStop: 0.02, shake: 3, cols: ['#fff6e0', '#bfe6f5'] },
   reaper: { win: 0.6, t: 0.34, speed: 260, dmg: 1.6, st: 13, rec: 0.36, near: -2, reach: 32, top: 24, hitStop: 0.09, passStop: 0.035, shake: 5, cols: ['#c9d1dc', '#6b1620'] },
   /* geomancer - ROLLING STONE: a short heavy shoulder behind the stave, and the boot put through a stone that rolls on ahead of her
@@ -27144,24 +27144,24 @@ function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(10
 function convGain(n, perfect) { const was = pipsOf(P); P.light = Math.min(100, (P.light || 0) + n * HG.conv.pip); const now = pipsOf(P);
   if (now > was) { ringAt(P.x, P.y - 12, 10 + 2 * now, '#ffd36b', 0.25); if (now >= HG.conv.pips && was < HG.conv.pips) { SFX.lightFull(); number(P.x, P.y - 30, 'CONVICTION', '#ffd36b'); } else if (perfect) number(P.x, P.y - 36, '+2', '#fff6c8'); } }
 function hallowAura(pips) { if (!HGR || P.dead) return; const n = tal('consecrate'), c0 = HGR.of(P), life = HG.aura.base + HG.aura.perPip * pips + 1.5 * n;
-  if (c0 && c0.aura) { c0.life = c0.max = Math.max(c0.life, life); return; }
+  if (c0 && c0.aura) { c0.life = c0.max = Math.max(c0.life, life); HGR.flare(c0);  return; }
   const c = HGR.plant(P, P.x, P.y, { r: HG.aura.r + 6 * n, life }); c.aura = true; trialEvent('hallow'); }
 function convictionTap() { if (P.dead) return; const p = pipsOf(P);
-  if (p >= HG.conv.pips) { castJudgement(); hallowAura(5); number(P.x, P.y - 34, 'SUNFALL', '#fff6c8'); kitPose(P, 'sanctify', 0.45); return; }
+  if (p >= HG.conv.pips) { castJudgement(); hallowAura(5); number(P.x, P.y - 34, 'SUNFALL', '#fff6c8'); kitPose(P, 'sunfall', 0.5); if (HFX) HFX.sunfall(P.x, P.y); return; }
   if (p >= 3) { radiance(); return; }
   if (p >= 1) { smiteQ(); return; }
   SFX.buzz(); P.stFlash = 0.3; number(P.x, P.y - 24, 'NO CONVICTION', '#9aa39a'); }
-function smiteQ() { const S = HG.smiteQ; if (!spendLight(P, S.cost)) return; trialEvent('smite'); noteVerb('cast'); P.castT = 0.22; kitPose(P, 'hallowQ', 0.25);
+function smiteQ() { const S = HG.smiteQ; if (!spendLight(P, S.cost)) return; trialEvent('smite'); noteVerb('cast'); P.castT = 0.22; kitPose(P, 'smiteQ', 0.25);
   const x0 = P.x + P.face * 14; if (HFX) HFX.smite(x0, P.y); SFX.judgement(); ringAt(x0, P.y - 10, 16, '#ffffff', 0.3); number(P.x, P.y - 30, 'SMITE', '#fff6c8');
   const hb = P.face > 0 ? { l: P.x, r: P.x + S.reach, t: P.y - 30, b: P.y + 2 } : { l: P.x - S.reach, r: P.x, t: P.y - 30, b: P.y + 2 };
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || !overlap(hb, box(e))) continue; hurtAs('light', e, Math.round(swordDmg() * S.mul), P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, S.stagger); }
   hallowAura(1); }
-function radiance() { const B = HG.burst; if (!spendLight(P, B.cost)) return; trialEvent('sanctify'); noteVerb('cast'); P.castT = 0.35; P.rootT = Math.max(P.rootT || 0, 0.25); kitPose(P, 'sanctify', 0.45);
+function radiance() { const B = HG.burst; if (!spendLight(P, B.cost)) return; trialEvent('sanctify'); noteVerb('cast'); P.castT = 0.35; P.rootT = Math.max(P.rootT || 0, 0.25); kitPose(P, 'radiance', 0.45); if (HFX) HFX.radiance(P.x, P.y - 8, B.r);
   SFX.judgement(); shakeCam(4); zoomKick(1.05, 0.2); ringAt(P.x, P.y - 8, B.r, '#ffffff', 0.45); ringAt(P.x, P.y - 8, B.r * 0.6, '#ffd36b', 0.35); motes(P.x, P.y - 8, 20, B.r); number(P.x, P.y - 30, 'RADIANCE', '#fff6c8');
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - P.x) > B.r || Math.abs(e.y - P.y) > 40) continue; hurtEnemy(e, Math.round(B.dmg * amul('consecrate') * (1 + 0.075 * LV_GROW())), P.x, false); if (e.alive && !e.maxHp && !e.mini) { e.stagger = Math.max(e.stagger || 0, B.stagger); e.burn = Math.max(e.burn || 0, 1.5); } }
   hallowAura(3); }
 /* THE PERFECT GUARD's HOLY FLASH: the attacker staggers (a boss is left to the parry's own opening: src/riposte.js) */
-function holyFlash(f) { ringAt(P.x + P.face * 10, P.y - 12, HG.flash.r, '#ffffff', 0.3); motes(P.x + P.face * 10, P.y - 12, 10, 16); killFlash = Math.max(killFlash || 0, 0.02);
+function holyFlash(f) { ringAt(P.x + P.face * 10, P.y - 12, HG.flash.r, '#ffffff', 0.3); motes(P.x + P.face * 10, P.y - 12, 10, 16); if (HFX) HFX.flash(P.x + P.face * 10, P.y - 12, P.face); killFlash = Math.max(killFlash || 0, 0.02);
   for (const e of enemies) { if (!e.alive || e.harmless || e.maxHp || e.mini || Math.abs(e.x - P.x) > HG.flash.r || Math.abs(e.y - P.y) > 36) continue; if (e === f || Math.sign(e.x - P.x) === P.face) { e.stagger = Math.max(e.stagger || 0, HG.flash.stagger); e.flash = 0.15; } } }
 /* BULWARK ADVANCE: walking behind the raised aegis, he SHOVES what is in front of him back - a common foe is knocked (into hazards too: the knock rules);
    an ELITE only staggers back a little (never knocked into a hazard by it); a BOSS or a mini is not moved at all */
@@ -27175,13 +27175,13 @@ function verdictMark() { const V = HG.verdict; P.verdict = (P.verdict || []).fil
   while (P.verdict.length < want) { let best = null, bd = 1e9;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || P.verdict.includes(e)) continue; const dx = (e.x - P.x) * P.face, dy = Math.abs((e.y - (e.h || 16) / 2) - (P.y - 12));
       if (dx < -6 || dx > V.reach || dy > V.dy || !sightClear(P.x, P.y - 12, e.x, e.y - (e.h || 16) / 2)) continue; const d = Math.abs(dx) + dy * 0.5; if (d < bd) { bd = d; best = e; } }
-    if (!best) break; P.verdict.push(best); SFX.tell(false); ringAt(best.x, best.y - (best.h || 16) - 6, 8, '#ffd36b', 0.3); } }
-function verdictStrike() { const V = HG.verdict, marked = (P.verdict || []).filter(e => e.alive); P.verdict = []; P.atk = -1; P.heavy = false; P.vx = 0; P.castT = 0.3; kitPose(P, 'sanctify', 0.4); trialEvent('verdict');
+    if (!best) break; P.verdict.push(best); best.sigilT = time; SFX.tell(false); ringAt(best.x, best.y - (best.h || 16) - 6, 8, '#ffd36b', 0.3); } }
+function verdictStrike() { const V = HG.verdict, marked = (P.verdict || []).filter(e => e.alive); P.verdict = []; P.atk = -1; P.heavy = false; P.vx = 0; P.castT = 0.3; kitPose(P, 'vRel', 0.3); trialEvent('verdict');
   SFX.judgement(); shakeCam(5, P.face * 2); zoomKick(1.05, 0.2); hitstop(0.05); number(P.x, P.y - 32, marked.length ? 'VERDICT x' + marked.length : 'VERDICT', '#fff6c8');
   const dmg = Math.round(swordDmg() * heavyMul() * V.mul);
-  const strike = e => { bolts.push({ x: e.x, y: e.y, life: 0.4, storm: true, holy: true }); ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35); hurtAs('heavy', e, dmg, P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.8); };
+  const strike = e => { if (HFX) HFX.verdict(e.x, e.y); ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35); hurtAs('heavy', e, dmg, P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.8); };
   if (marked.length) { for (const e of marked) strike(e); return; }
-  const x = P.x + P.face * 26; bolts.push({ x, y: P.y, life: 0.4, storm: true, holy: true });   /* nothing marked: the light comes down just ahead of him */
+  const x = P.x + P.face * 26; if (HFX) HFX.verdict(x, P.y);   /* nothing marked: the light comes down just ahead of him */
   for (const e of enemies) if (e.alive && !e.harmless && e.gone <= 0 && Math.abs(e.x - x) < 12 + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40) strike(e); }
 function holyTap() { if (!HGR) return; const c = HGR.of(P), inC = HGR.inside(c, P);
   if (inC && (P.light || 0) >= HG.judge) { castJudgement(); return; }
@@ -29117,9 +29117,8 @@ function drawBloom(cx, cy) {
   if (isPaladin() && (P.light || 0) >= 100) bloom(P.x - cx, P.y - 12 - cy, 22, 0.28 + 0.1 * Math.sin(time * 7), 'gold'); // a full light shows on him
   if (wisp) bloom(wisp.x - cx, wisp.y - cy, 16, 0.4, 'gold');
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-  if (isPaladin() && P.charge > 0 && !P.dead) for (const e of P.verdict || []) { if (!e.alive) continue; const x = Math.round(e.x - cx), y = Math.round(e.y - (e.h || 16) - 8 - cy), s = Math.floor(time * 6) % 2;   /* (PALADIN 3) VERDICT's SIGIL: a gold diamond over the foe, a cross in it (greybox) */
-    g.fillStyle = '#5a3a08'; for (let i = -4; i <= 4; i++) { g.fillRect(x + i, y - (4 - Math.abs(i)) - 1, 1, 1); g.fillRect(x + i, y + (4 - Math.abs(i)) + 1, 1, 1); }
-    g.fillStyle = s ? '#fff6c8' : '#ffd36b'; for (let i = -3; i <= 3; i++) { g.fillRect(x + i, y - (3 - Math.abs(i)), 1, 1); g.fillRect(x + i, y + (3 - Math.abs(i)), 1, 1); } g.fillStyle = '#ffffff'; g.fillRect(x, y - 1, 1, 3); g.fillRect(x - 1, y, 3, 1); }
+  if (HFX && isPaladin() && P.charge > 0 && !P.dead) for (const e of P.verdict || []) { if (!e.alive) continue; const x = Math.round(e.x - cx), fy = Math.round(e.y - (e.h || 16) - cy), y = fy - 8;   /* (PALADIN 3 ART) VERDICT's SIGIL over the foe: opens from a point, a cross in a diamond, four ticks going round, a plumb line down to him (src/holy-fx.js) */
+    HFX.sigil(g, x, y, time - (e.sigilT || time - 1), time, fy); }
   if (HFX && isPaladin() && P.charge > 0 && !P.dead && false) HFX.windup(g, Math.round(P.x + P.face * 3 - cx), Math.round(P.y - 15 - cy), Math.min(1, P.charge / heavyWind()), time);   /* (claude/palart) SMITE's windup: the head of the maul lit white-gold, growing with the wind, only when the Light is there to spend */
 }
 // THE SWING. A blade leaves a crescent behind it; a staff thrust leaves a streak of flame.
@@ -29171,7 +29170,27 @@ function drawCutArc(cx, cy) {
 /* THE AIR UP-SLASH SMEAR (claude/airupart; combat3 drew one thin arc): a crisp tapered crescent the blade's tip drew, front to back over his head - a
    white core inside a coloured body, fat in the middle and fine at both ends, swept in with the live blow (0.02-0.17 s) and let fade through the follow-through
    (to 0.24 s, art only: the hit box is unchanged). The pivot is his shoulder and the radius the blade's reach, read off the hand-drawn frames (chars.js AIRUP_*). */
+/* (PALADIN 3 ART) HEAVEN'S ARC's GOLDEN TRAIL: the hammer's whole whirl, drawn as TWO gold crescents - the first sweeping front -> over his head -> behind (the first hit, 0.02-0.09 s), the second a
+   hand's breadth wider over the same way (the second hit, 0.09-0.17 s), the first holding as a dimmer ring behind it - white at the leading edge, a mote shed off the head of each. Art only. */
+function drawHeavenArc(cx, cy) {
+  if (P.atk < 0.02 || P.atk >= 0.26) return;
+  const x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 12, f = P.face, fade = P.atk < 0.17 ? 1 : Math.max(0, 1 - (P.atk - 0.17) / 0.09), R = (UP_SLASH.air.paladin || UP_SLASH.air.knight).top - 14;
+  const k1 = Math.min(1, (P.atk - 0.02) / 0.07), k2 = Math.max(0, Math.min(1, (P.atk - 0.09) / 0.08));
+  const ring = (rOut, w0, a0, a1) => { const n = 16, pts = [], w = w0 * Math.min(1, Math.max(0, (a0 - a1) / 1.2));
+    for (let i = 0; i <= n; i++) { const t = i / n, an = a1 + (a0 - a1) * t, th = w * Math.sin(Math.PI * Math.pow(t, 0.8)); pts.push([an, th]); }
+    g.beginPath(); pts.forEach(([an], i) => { const px = x + f * Math.cos(an) * rOut, py = y + Math.sin(an) * rOut; if (i) g.lineTo(Math.round(px), Math.round(py)); else g.moveTo(Math.round(px), Math.round(py)); });
+    for (let i = pts.length - 1; i >= 0; i--) { const [an, th] = pts[i], ri = rOut - th; g.lineTo(Math.round(x + f * Math.cos(an) * ri), Math.round(y + Math.sin(an) * ri)); }
+    g.closePath(); g.fill(); };
+  const pass = (rr, k, al) => { if (k <= 0) return; const head = -0.35 - 2.5 * k, tail = Math.min(-0.35, head + 1.7), a = (SET.reduceMotion ? 0.45 : 1) * al * fade;
+    g.fillStyle = '#ffb83a'; g.globalAlpha = 0.6 * a; ring(rr + 1.5, 11, tail, head); g.fillStyle = '#ffd36b'; g.globalAlpha = 0.85 * a; ring(rr, 7, tail, head);
+    g.fillStyle = '#fff6c8'; g.globalAlpha = 0.95 * a; ring(rr - 0.5, 3, Math.min(-0.35, head + 1.0), head);
+    if (k < 1 && SET.parts !== 'low' && Math.random() < 0.7) parts.push({ x: P.x + f * Math.cos(head) * rr, y: P.y - 12 + Math.sin(head) * rr, vx: -f * 10, vy: 8, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#fff6c8' : '#ffd36b', size: 1, grav: 0, glow: true }); };
+  g.save(); g.globalCompositeOperation = 'lighter';
+  pass(R - 3, k1, k2 > 0 ? 0.45 : 1);   /* the first pass: a dimmer ring once the second is out */
+  pass(R + 3, k2, 1);
+  g.restore(); }
 function drawAirUpCrescent(cx, cy) {
+  if (isPaladin()) { drawHeavenArc(cx, cy); return; }
   if (P.atk < 0.02 || P.atk >= 0.24) return;
   const k = Math.min(1, (P.atk - 0.02) / 0.15), fade = P.atk < 0.17 ? 1 : 1 - (P.atk - 0.17) / 0.07, x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 12, f = P.face;
   const R = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14, head = -0.35 - 2.4 * Math.min(1, k * 1.5), tail = Math.min(-0.35, head + 1.5 - 0.5 * (1 - fade)), col = specialCol();
@@ -29194,7 +29213,7 @@ function drawSwing(cx, cy) {
     const rising = P.swingKind === 'rise', end = rising ? 0.17 : 0.15;
     if (P.atk < 0.02 || P.atk >= end) return;
     const k = (P.atk - 0.02) / (end - 0.02), x = Math.round(P.x - cx), y = Math.round(P.y - cy), f = P.face;
-    const reach = isWarden() ? 40 : isPyro() || isPaladin() || isReaper() ? 34 : 28;
+    const reach = isWarden() ? 40 : isPyro() || isReaper() ? 34 : isPaladin() ? 29 : 28;   /* (the war hammer: -15%) */
     g.save(); g.globalCompositeOperation = 'lighter'; g.strokeStyle = specialCol()[0]; g.lineWidth = 1;
     g.globalAlpha = SET.reduceMotion ? 0.3 : 0.55 * (1 - k * 0.65); g.beginPath();
     if (rising) { const top = isWarden() ? 43 : 39, tipY = y - 4 - (top - 4) * Math.min(1, k * 2);
@@ -30536,6 +30555,7 @@ function drawWorld(cx, cy, showPlayer) {
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : isGeo() ? 0.34 : 0.26) && K.R.atk && K.R.atk[3]) { key = isGeo() || isBz() ? 'heavy' : 'atk'; frame = isGeo() || isBz() ? 2 : 3; } }   /* (she stays down on the stave while her crack runs) */
       else if (hero() === 'knight' && knightWinding() && K.R.windup) { key = 'windup'; frame = Math.max(0, cutStage(P.atkHeld || 0) - 1); }   /* THE HEAVY CUT: the sword up over the shield, a frame a stage */
+      else if (isPaladin() && P.charge > 0 && K.R.vWind) { const kw = Math.min(1, P.charge / heavyWind()); if (kw >= 1 || (P.verdict || []).length) { key = 'vHold'; frame = Math.floor(time * 5) % 2; } else { key = 'vWind'; frame = kw >= 0.7 ? 2 : kw >= 0.3 ? 1 : 0; } }   /* (PALADIN 3 ART) VERDICT: the hammer lifted, carried up with a halo opening, held aloft with the halo turning */
       else if (P.charge > 0) { const kw = Math.min(1, P.charge / heavyWind());   /* THE WIND-UP has its own frames where a hero has them: hers load the lunge, the knight's brace behind the shield */
         key = K.R.windup ? 'windup' : K.R.brace ? 'brace' : 'heavy'; frame = K.R.windup ? (kw >= 0.78 ? 2 : kw >= 0.38 ? 1 : 0) : 0; }   /* (the last beat is drawn BEFORE the bar fills, or the coil is never seen: a full wind fires itself the frame it arrives) */
       else if (P.atk >= 0 && P.swingRiposte && K.R.ripo && P.ground && !P.swingKind) { key = 'ripo'; frame = RP.ripoFrame(P); }   /* (claude/riposteart) THE RIPOSTE STRIKE out of the parry: the step-in, the cut or thrust with its gold flash, the follow-through - each hero's own weapon */
@@ -30552,6 +30572,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if (P.castT > 0 && K.R.cast) { key = 'cast'; frame = P.castT > 0.1 ? 0 : 1; }   /* any hero with cast frames: a list of four left the Warden out, so SKEWER's castT drew nothing (her own pose, hero-poses.js, now plays first) */
       else if (isWarden() && P.vaultT > 0 && K.R.vault) { key = 'vault'; frame = P.vaultT > 0.21 ? 1 : 0; }   /* up on the shaft, and coming down off it */
       else if (isWarden() && (P.deflectT || 0) > 0 && K.R.deflect) { key = 'deflect'; frame = P.deflectT > DEF_LIVE * 0.5 ? 0 : 1; }   /* THE DEFLECT: the shaft crossing her body, then swept out to the point */
+      else if (isPaladin() && P.bulwark && P.aegis && K.R.bulwark) { key = 'bulwark'; frame = Math.floor(time * 6) % 4; }   /* (PALADIN 3 ART) BULWARK ADVANCE: walking behind the aegis */
       else if (P.block || P.jet || P.aegis || P.warding || P.geoGuard || (isBz() && (P.braceT > 0 || P.braceRec > 0))) { key = isBz() && K.R.bzTake ? 'bzTake' : 'block'; frame = Math.floor(P.anim * 2) % 2; }
       else if (P.flatT > 0 && K.R.hurt) { key = 'hurt'; frame = Array.isArray(K.R.hurt) ? K.R.hurt.length - 1 : 0; }   /* ON HIS BACK: the heavy hit's last beat, held (src/slide.js) */
       else if ((P.slideOn || P.rsl > 0) && P.ground && K.R.slide) { key = 'slide'; frame = Math.floor(time * 9) % K.R.slide.length; }   /* THE BUTT-SLIDE: feet first, leaning back, the weapon tucked (chars.js F.slide) */
@@ -32244,9 +32265,15 @@ function render() {
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isPyro()) { const hy = HY; bar(15, hy, 45, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isPaladin()) { const hy = HY, lt = P.light || 0, pp = pipsOf(P), full = pp >= HG.conv.pips, blink = Math.floor(time * 10) % 2;   /* (PALADIN 3) CONVICTION: five pips, the next one filling under its slot (greybox) */
-      for (let i = 0; i < HG.conv.pips; i++) { const x = 16 + i * 9, on = i < pp; g.fillStyle = '#3a2808'; g.fillRect(x - 1, hy - 2, 8, 8); g.fillStyle = on ? (full && blink ? '#fff6c8' : '#ffd36b') : '#5a4a2a'; g.fillRect(x, hy - 1, 6, 6); if (on) { g.fillStyle = '#fff6c8'; g.fillRect(x + 1, hy, 2, 1); }
-        if (i === pp && !full) { const f = (lt - pp * HG.conv.pip) / HG.conv.pip; g.fillStyle = '#c8a040'; g.fillRect(x, hy + 4, Math.round(6 * f), 1); }
-        if (i === 0 || i === 2 || i === 4) { g.fillStyle = on ? '#fff6c8' : '#8a7a4a'; g.fillRect(x + 2, hy - 4, 2, 1); } }   /* (ticks over 1, 3 and 5: the tiers) */   /* (claude/palart) THE SPEND MARKS: SMITE 20, the throw 25, EMPOWER 35 - dark through the gold once the Light has reached them */
+      /* (PALADIN 3 ART) FIVE SUN PIPS: each a 7 x 7 sun (a white heart, a gold body, spokes and diagonal motes) in a dark socket; unlit = a dim cold sun, the next one FILLING from the bottom up
+         as the Light climbs to it, lit = the full sun (all five lit and held = the whole row breathes); tier ticks over 1 / 3 / 5 (SMITE / RADIANCE / SUNFALL) - a small notch that lights when that tier can be spent */
+      const SUN = ['..y.y..', '.yyryy.', 'yrWWWry', '.rWWWr.', 'yrWWWry', '.yyryy.', '..y.y..'];   /* y gold, r gold-light, W the heart */
+      for (let i = 0; i < HG.conv.pips; i++) { const x = 16 + i * 9, on = i < pp, fill = i === pp && !full ? (lt - pp * HG.conv.pip) / HG.conv.pip : 0, lit = full && blink;
+        g.fillStyle = '#2a1c04'; g.fillRect(x - 1, hy - 2, 9, 9); g.fillStyle = '#4a3410'; g.fillRect(x, hy - 1, 7, 7);                                    /* the socket */
+        for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) { const ch = SUN[r][c]; if (ch === '.') continue;
+          const lightUp = on || (fill > 0 && r >= 7 - Math.ceil(7 * fill));
+          g.fillStyle = lightUp ? (ch === 'W' ? (lit ? '#ffffff' : '#fff6c8') : ch === 'r' ? (lit ? '#fff6c8' : '#ffe9a0') : '#ffd36b') : (ch === 'W' ? '#7a6a3c' : ch === 'r' ? '#6a5a30' : '#5a4a28'); g.fillRect(x + c, hy - 1 + r, 1, 1); }
+        if (i === 0 || i === 2 || i === 4) { const ready = pp >= i + 1; g.fillStyle = ready ? '#fff6c8' : '#8a7a4a'; g.fillRect(x + 2, hy - 4, 3, 1); g.fillStyle = ready ? '#ffd36b' : '#5a4a2a'; g.fillRect(x + 3, hy - 3, 1, 1); } }   /* (ticks over 1, 3 and 5: the tiers) */
       g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (hudMeter) meterPrompt(hudMeter, hy); }
     // BREATH BELONGS ON THE PLATE. It was six pale pips floating over his head - and the half of the Shipwreck
     // Reef that has no surface to breathe at is also the half that is dark, so the pips were invisible and the
