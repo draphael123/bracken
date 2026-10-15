@@ -22,7 +22,7 @@ const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|op
    67% with flasks at blows x2.9), the Hourglass King (claude/bc3tune, 61%); later the Matriarch, the Hawk-Mistress and the Glass Colossus when their lanes land (listed now so the dial
    never stacks on them). Remove a name here once a later re-measure shows the boss outside the band again. */
 /* MERGE NOTE (coordinator 10-13): add the NEW PYRAMID BOSS (claude/pyramidboss: the Tomb-King's Sarcophagus) here under its e.t when that lane merges - it is tuned into the band by its own lane. */
-export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus', 'greatdrill', 'foremancart', 'tombking', 'scarabmother']);   /* (dr4art merge) the Deep Rails 4 boss pair: dr4tune measured them 69% / 81% with flasks BEFORE the dial existed, so they are self-tuned */
+export const DIAL_EXEMPT = new Set(['cisternqueen', 'hourglassking', 'matriarch', 'hawkmistress', 'colossus', 'greatdrill', 'foremancart', 'tombking', 'scarabmother', 'fogknight']);   /* (dr4art merge) the Deep Rails 4 boss pair: dr4tune measured them 69% / 81% with flasks BEFORE the dial existed, so they are self-tuned */
 export function pressureOf(act, mini) { const r = PRESSURE[act] || PRESSURE[5]; return mini ? r.mini : r; }
 /* the dt factor for one boss this frame: 1 unless his clock is a gap's */
 export function gapFactor(e, act, mini, winding) {

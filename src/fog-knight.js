@@ -35,10 +35,10 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/fog-knight-hands.js binds it). fkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const FK = {
-  hp: 1850, w: 18, h: 34, markH: 50,
+  hp: 1650, w: 18, h: 34, markH: 50,
   openMul: 1.6, openCap: 0.12, openT: 3.4, scatterT: 3.0, wardT: 3.0, reelT: 1.1, burnT: 3.6, fireBurn: 0.06, burnR: 84, burnDecay: 0.35, arcR: 34,
   p2: 0.66, p3: 0.33,
-  walk: 62, keep: 40, turn: 0.3, gap: [0.75, 0.65, 0.55],
+  walk: 62, keep: 40, turn: 0.3, gap: [0.52, 0.46, 0.4],
   stanceTell: [0.5, 0.42, 0.36], litEarly: 0.18, darkLate: 0.14, cutDark: 0.06,
   cutTell: 0.62, cutT: 0.16, cutReach: 46, cutRec: 0.55,
   lungeTell: 0.8, lungeT: 0.26, lungeV: 420, lungeRec: 0.7, lungeRange: 150, lungeBeat: 0.22,
@@ -54,7 +54,7 @@ export const FK = {
   doubleTell: 0.7, doubleLag: 0.55, refill: 12, drainT: 1.4,
   shroudTell: 1.0, stepTell: 0.55, dissolveT: 0.5, reformD: 60, chainHits: 3, chainT: 2.0,
   fogH: [1, 3], lastSeenEvery: 1.2,
-  dmg: { cut: 30, lunge: 32, double: 20, step: 32, lash: 14, surge: 26, spear: 24, plunge: 34 },
+  dmg: { cut: 45, lunge: 49, double: 31, step: 49, lash: 23, surge: 41, spear: 38, plunge: 54 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]); 'high' / 'low' / 'full' = take that stance (told) */
 export const CYCLES = {
