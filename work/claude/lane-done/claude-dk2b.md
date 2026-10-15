@@ -32,10 +32,22 @@ Confirmed: the live fight is **'bloodknight' only** (THE DEATH KNIGHT, updateBlo
 - Bot (src/lab.js): reads priceTell/crescent (out of reach, or dodge through with no room), spent/drain (strike), a fed full ward (cut the nearest standard); the reaper bot's lead uses the new clock.
 
 ## CHECKS (PORT 8933, one page at a time)
-CHECKS_PLACEHOLDER
+- **tools/dk2.mjs (NEW, in check.mjs)**: rhythm clock x1.35 (swing 0.65 s), HOOK pulls 12 px, DRAG heals, landed cuts feed the ward (<=75%), held price ~3 hp/0.5 s up to 6 and fires itself, floored at 1 hp, crescent box >= 38 px and HEAVY, a landed crescent drains back x2, an air crescent gives 0, GRAVE KNEEL turns low-front / flagged-low, not behind / middle / standing, high still ducks; the dead linger 45 s (body + picture) then go; the knight's do not linger.
+- **tools/unburied-fights.mjs (UPDATED to the design change, nothing loosened)**: A3 move lists now expect priceTell (in place of the planted blade, B5) and, phase two, the drain; NEW blocks: the rhythm's hook (guarded = no pull) and the drag's drink; BLOOD PRICE CLEAVE (pays, never his last point, red, drinks back x2, out of reach / dodged = spent OPEN + B3 guard, P2 RED VOLLEY); THE DRAIN (heals him, 2 blows break it open, far = nothing); THE CHAPEL STANDARDS (feed, a full ward holds, cut one = it breaks, the surge raises them, none = the hero's rule). The forced planted-blade block still passes (the bolt fan is THE RED VOLLEY).
+- **tools/commitment.mjs**: reaper LIGHT_TOTAL 0.98 -> 0.76 (Daniel 10-14 LATE, REAPER'S RHYTHM ~35% quicker - the brief's own number); MASH_MAX unchanged and green.
+- **tools/verb-matrix.mjs**: fresh() now ends any swing carried in from the row before (the held crescent was let go on the heavy row's last frames and still swinging into the dash row) - state hygiene, every assertion unchanged.
+- **GREEN, no edits**: hint-shown, crouch-b, duck, crouch-a, crouch-hint, talents, skill-passives, progression, skill-menu, skill-icons, attack-animation, ability-poses, blow-tags, boss-read, lab-reach, reaper-input, boss-greed, weak-bosses, unburied, corpses, attack-buffer, untold-told, no-hidden-hits, rule-openings, deathknight-unlock, boss-openings; textfit hints,tree,menu,hud,boss,pick,practice,store,bestiary --strict: 3163 screens, 0 issues.
+- NOT run: the full suite (check.mjs), cast-poses (tools/cast-poses.mjs does not exist yet), 12-seed tuning, level-quality.
 
 ## 3-SEED SANITY + MASH
-RATES_PLACEHOLDER
+tools/boss-rates.mjs, profile human, kit flasks, campaign level (NOT tuning):
+| Row | practiced kn/wa/py | first kn/wa/py | built kn/wa/py |
+|---|---|---|---|
+| unburied (THE DEATH KNIGHT) L32 | **0/3** 3/3 2/3 = 56% (band LOW -4) | 0/2 2/2 1/2 | 2/2 2/2 2/2 |
+
+- **RED (pre-existing, for the tune lane): practiced KNIGHT 0/3.** It was already 0/3 before this lane (docs/flask-lever-1013-final.json: practiced kn/wa/py 0/3, 3/3, 3/3). Knight deaths leave him at 28-46%; the warden wins in ~60 s. Tune target 60-70% with flasks, no hero at 0/N.
+- **MASH (tools/mash-bot.mjs unburied --arena-only): 0/6** (knight/warden/pyro x2 all DEAD in 24-36 s, boss left 73-96%).
+- THE DEATH KNIGHT AS THE HERO (practiced, 3 seeds, vs the knight): stockade L3 2/3 (knight 1/3), marsh 3/3 (3/3), burning 3/3 (3/3).
 
 ## QUESTIONS FOR DANIEL
 1. GRAVE KNEEL keeps the universal HIGH duck as well as blocking LOW (so only middle blows land on a kneeling DK). REC: keep (the duck is every hero's; the stamina price + "exposed while harvesting" keep it honest). Alternative: his kneel loses the high duck. BUILT: keep.
