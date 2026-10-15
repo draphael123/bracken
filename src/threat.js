@@ -51,6 +51,8 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, o
      but what he costs you is ATTENTION in somebody else's fight, which is the Runner's argument exactly, and
      unlike the Runner the thing he comes back with is unblockable. A soldier's weight, no more. */
   temperer: 3,
+  /* THE ROAD WARDENS (claude/batch94 integ): a knight of the order is a troll-weight fight (hp x0.85-1.65, a told twist) - 14 of them REPLACED an exam elite that weighed 2-4, and weighed 0 here, so Scree fell off its INDEX */
+  oathblade: 4, oathlance: 4, oathmaul: 4, oathmage: 4,
   /* THE SCALDER: an archer's reach, aimed down a column instead of across a floor, on a creature that never leaves his post */
   scalder: 2.5,
   whelp: 2.5,   /* THE GARGOYLE WHELP: 28 health and a 9 point swoop, but the swoop is a SHOVE placed over a fall, and it is stone until it moves (an imp is 2.5) */

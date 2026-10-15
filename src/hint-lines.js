@@ -250,7 +250,9 @@ export const CALL_LINES = new Set([
   'THE HORN CALLS HIS BOWS: CUT THEM OFF THE PERCHES', 'NETTED: STRUGGLE FREE', 'THROUGH THE NET', 'THE TRAP SNAPS ON NOTHING', 'A JAW TRAP: JUMP IT, OR THROW SOMETHING ON IT', 'THE TRAP HAS YOU: STRUGGLE', 'A NET: ROLL THROUGH IT', 'NETTED',
   'A SPORE POD: ATTACK THROWS IT', 'A BLOW: YOU DROP THE POD', 'HIS BOWS FALL BACK', 'THE POD CUTS THE ROPE',
   /* claude/paladin2 + claude/palart (batch92 integ): the Paladin's holy-ground feedback - plant, empower, smite, aegis on a partner, the circle following a leap, the empty Light bar - routed so the player can see them */
-  'HIS AEGIS', 'SMITE', 'THE GROUND FOLLOWS', 'CONSECRATED', 'SANCTIFIED', 'NO LIGHT',
+  'HIS AEGIS', 'SMITE', 'THE GROUND FOLLOWS', 'CONSECRATED', 'SANCTIFIED',
+  /* claude/paladin3 + claude/rangerfeel (batch94 integ): CONVICTION replaced the Light bar ('NO LIGHT' is 'NO CONVICTION' now), its spends, the held VERDICT, and the Ranger's focus / stance feedback - routed so the player can see them */
+  'CONVICTION', 'SUNFALL', 'NO CONVICTION', 'RADIANCE', 'VERDICT', 'VERDICT x', 'THROW: 3 CONVICTION', 'FOCUS ', '%: SWEET-SPOT HITS FILL IT', 'KNIFE', 'BOW',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
@@ -260,7 +262,7 @@ export const CANAL_NUDGE = { gate: 'THE GATE IS SHUT: FIND ITS PADDLE', bridge: 
   /* (claude/canal4) THE LEGGING TUNNEL: the stop-planks' windlass, a rider standing on her where there is no current, a hero who has left her in the dark */
   stop: 'STOP-PLANKS HOLD HER: FIND THE WINDLASS', leg: 'NO CURRENT: HOLD LEFT OR RIGHT AT HER END TO LEG HER', back: 'SHE GLIDES TO YOU: DROP BACK ONTO HER DECK' };   /* (claude/canal5) */
 /* (they go straight to the hint box, src/canal-hands.js H.hint - not through number(), so they are not CALL_LINES) */
-export const CALL_COUNTS = [/^THE (CHAIN WINCH|SPIN-UP GEAR|DYNAMITE FEED|ROOF WINCH) BROKEN: NO MORE (CHAIN|LUNGE|DYNAMITE|ROCKFALL)$/, /^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^IT SPEARS THE MIRROR ROUND: (TO THE SKY|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
+export const CALL_COUNTS = [/^VERDICT x\d+$/, /^FOCUS \d+%: SWEET-SPOT HITS FILL IT$/,/^THE (CHAIN WINCH|SPIN-UP GEAR|DYNAMITE FEED|ROOF WINCH) BROKEN: NO MORE (CHAIN|LUNGE|DYNAMITE|ROCKFALL)$/, /^THE GREAT GATE OPENS A NOTCH \(\d\/\d\)$/, /^THE MIRROR: (TO THE SKY|EAST|WEST|UP|DOWN|FACING THE GIANT|TO THE FIRE)$/, /^IT SPEARS THE MIRROR ROUND: (TO THE SKY|FACING THE GIANT|TO THE FIRE)$/, /^THE BEAM FUSES THE SAND: [A-Z' ]+$/, /^THE ROAD COMES UP: \d+ LAMPS$/, /^SAVED \d+ OF \d+$/, /^THE VALVE COOKS: \d+ MORE$/, /^THE GATE TAKES \d+$/];
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
