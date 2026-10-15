@@ -21,19 +21,19 @@ export const FOREMAN = {
   cols: [892, 922],   /* (deeprails4: +70, THE TWIN LINES before the flooded run) */ low: 30, high: 27,   /* the loop: columns, and the two lines' rows */
   homeR: 290, minR: 34, maxR: 420,      /* his cart's place on the loop, px from its left edge: at home, the nearest a ram brings him, the farthest */
   driftTell: 0.4, driftV: 84, driftVs: [84, 112, 140], awayV: 120,   /* (his drift quickens with each stomp: told by its sparks and its pace) */
-  pickTell: 0.6, pickDmg: 26, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
+  pickTell: 0.6, pickDmg: 31, pickT: 0.45, pick2: 0.3, picks: [1, 2, 3], cutoff: 0,          /* (his pick: lighter than a ledge thrower's - THE DEEP RAILS' curve, deeprails3: the bare level-1 knight died to him in every run) */
   ramTell: 0.8, ramV: 250, ramT: 0.5, ramHold: 0.45,
   boardT: 0.85, lurchTell: 0.75, wardT: 4.5, lurchVy: -300,
   spikeRise: 0.35, spikeDmg: 18, spikeBack: 70,   /* (MISSED BOARDING, Daniel 10-12) spikes are DEADLY once risen (spikeRise s after the ward starts - drawn, a sound, 'SPIKES UP'): the full bump (spikeDmg = bumpDmg) and thrown back spikeBack px */
   stompK: 0.25, bracedK: 0.04,           /* a stomp takes this share of his health; a landing on him BRACED is turned (a clank, this much - B15) */
   armour: 0.4,                          /* B15: a blade from your cart */
-  bumpDmg: 18, ramDmg: 38, contactCd: 0.9, bumpBack: 56, ramBack: 84,
+  bumpDmg: 22, ramDmg: 46, contactCd: 0.9, bumpBack: 56, ramBack: 84,
   topDy: 15, halfW: 15,                 /* his cart's top (px over the rail) and half its width: the landing that is a STOMP */
-  gap: [0.9, 0.7, 0.55],
+  gap: [0.75, 0.6, 0.45],
   /* (deeprails5, Daniel 10-14: +2 told attacks, each a different answer) THE BOOM (DUCK): '!! THE BOOM: DUCK' - his cart's loading boom rises behind him, its hook circling (boomTell), then
      swings back down the whole loop at head height (boomT): duck in your tub. THE TIP (JUMP, from his second stomp): '!! HE TIPS ORE: JUMP' - he heaves his tub's ore out over the back
      (tipTell), lumps that roll back down the line at you (tipV past the world): jump each as it comes (in the air over it you are clear) */
-  boomTell: 0.75, boomT: 0.32, boomDmg: 22, boomHead: 16,
+  boomTell: 0.75, boomT: 0.32, boomDmg: 27, boomHead: 16,
   tipTell: 0.7, tipV: 150, tipN: 2, tipApart: 0.45, tipDmg: 18, tipR: 7, tipBack: 40,
   chain: { 0: ['pick', 'drift', 'boom', 'pick', 'drift'], 1: ['ram', 'pick', 'drift', 'boom', 'ram', 'drift'], 2: ['ram', 'tip', 'drift', 'boom', 'pick', 'tip', 'drift'] },
 };
