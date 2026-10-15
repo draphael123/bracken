@@ -250,7 +250,7 @@ export function buildTowpath({ painter, T, TS }) {
   pound('river', 236, 304, 48, 42);   /* THE RIVER in the gorge: a fall is the water's (A10: it bites and hands you back to the last dry footing) */
   for (const [a, b] of [[240, 242], [247, 249], [279, 281], [286, 288]]) block(a, b, 36, BOT);   /* (the piers stand through the river) */
   trough('aq', 241, 274, 7, 4, 8, [[240, 5], [282, 5]]);
-  sign(236, 5, 'THE AQUEDUCT IS DRY. OPEN ITS SLUICE: THE WATER FLOATS THE BARGE ACROSS THE BREAK.');
+  sign(237, 5, 'THE AQUEDUCT IS DRY. OPEN ITS SLUICE: THE WATER FLOATS THE BARGE ACROSS THE BREAK.');
   boards(236, 240, 3); boards(283, 289, 3);   /* (the sluice gantries at each end of the trough: second heights, clear of the barge's line) */
   watchman(287, 5, 'aqEast', { face: -1 });   /* a watchman at the east span's end, over the break: the aqueduct is all clear air - he sees the barge all the way */
   bank(236, 304, 42, 0.6);
