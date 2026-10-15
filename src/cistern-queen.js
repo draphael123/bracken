@@ -81,7 +81,7 @@
 
 export const CQ = {
   hp: 2300, w: 76,   /* (claude/cqueenrework: 1950 -> 2300 and her blows dmgK 0.62 -> 2.9, the tail purse 6% a phase - measured WITH the campaign kit's flasks (B6), human bot, base a0e14160: 9/10 5/10 6/10 = 67%; dry 0/9; the base itself measured 6/6 6/6 6/6 with flasks) */ /* (claude/queen4: 1650 -> 1950 with dmgK 0.55 -> 0.62 (1900: 7/8 3/8 5/8 = 63%) - her trips to the walls are seen now (her back open on the floor) and the brood are gone: 1650 x0.55 measured 6/8 5/8 8/8 = 79%, n=24) */ /* (claude/underwell3: 1150 -> 1650 with her blows x dmgK 0.55 - her stinger is whole any time and fire/water open her: the fight ran 60-70 s; 1650 x0.7: 3/8 3/8 2/8 = 33%; 1650 x0.55: 3/8 5/8 5/8 = 54%, fights 61-137 s, human bot n=24) */ /* (claude/underwell2: 1050 -> 1150 - her torches are taken and thrown now, so a jump-strike no longer drops one into the floor oil under you, and the standard bot rose 63% -> 79% on this branch, the base 0c0b69aa measured beside it: likely her cressets - a jump-strike dropped one into the floor oil under the bot; 1150: 4/8 1/8 8/8 = 54%) */ /* (claude/sweep3, Daniel 10-06: her health reflects how hard she is to hit - 1250 until her shell gave from behind) */   /* (claude/underwell: 1000 -> 1250 (1400 before her told ward) in her own level, on the WEIGHT/HARNESSCARD heroes: the human bot won 12/12 at 1000) */ h: 38, markH: 78,
-  openMul: 1.9, openT: 4.0, openCap: 0.14,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
+  openMul: 1.9, openT: 4.0, openCap: 0.09,   /* (and one opening takes no more than openCap of her: every hero needs seven or so, two or three a phase)
    */                       /* her three openings (SOAKED, ON HER BACK, REARING): >= 3 s (tools/boss-openings.mjs), the blow x openMul */
   p2: 2 / 3, p3: 1 / 3, enrage: 0.15,
   walk: 62, keep: 40, turn: 0.45,                  /* she walks you down; she turns to face you only between blows, and only after you have been behind her this long */
@@ -119,7 +119,7 @@ export const CQ = {
   venom: { max: 3, slow: 0.25, t: 6 },
   /* THE STINGER (claude/welltown5): stuck low after each sting this long (s), a blow on it x stingMul, one sting's worth at most stingCap of her */
   wardT: 3.0,   /* (claude/underwell, design standard B3) after every opening ends: a told ward this long - a pour finds nothing, the shell turns the stinger too */
-  stuck: { lance: 1.15, barb: 0.85, pin: 1.3, sting: 1.0, tidal: 1.0, bloom: 2.05 /* (claude/queen4) the bloom: bloomSpread + bloomT + bloomPull */ }, stingMul: 1.25, stingCap: 0.07, stingR: 13,
+  stuck: { lance: 1.15, barb: 0.85, pin: 1.3, sting: 1.0, tidal: 1.0, bloom: 2.05 /* (claude/queen4) the bloom: bloomSpread + bloomT + bloomPull */ }, stingMul: 1.25, stingCap: 0.055, stingR: 13,
   /* (claude/cqueenrework, B15; claude/cisternqueen3: both 0.4 - "her shell + claws stay at the B15 floor", told STRIKE THE STINGER) HER SHELL outside her openings; her ward wardMul */
   shellFront: 0.4, shellBack: 0.4, wardMul: 0.4,
   /* (claude/cisternqueen3) SET HER ALIGHT: she thrashes thrashT s (her heat close), then sags ablazeT s (OPEN, her tail on the floor); then BLACKENED charT s (no fire catches her, told).
@@ -136,7 +136,7 @@ export const CQ = {
   tipR: 15,   /* (claude/cqueenrework: what a blow on it lands is CQ.tailMul / tailOpenMul, on its purse) */
   /* THE STINGER SLAM (claude/underwell3, Daniel 10-07 "she SLAMS THE GROUND and makes her stinger very EASY TO HIT"): told sslamTell s (a red !!, the word, the spot on the floor),
      the stinger driven into the floor at the spot (slamR px either side: dodge out), and it STAYS PLANTED `planted` s - a big target (plantR) that takes x stingMul up to plantCap of her */
-  sslamTell: 0.9, sslamT: 0.18, slamReach: 170, slamR: 28, planted: 2.6, plantR: 22, plantCap: 0.1,
+  sslamTell: 0.9, sslamT: 0.18, slamReach: 170, slamR: 28, planted: 2.6, plantR: 22, plantCap: 0.08,
   /* FIRE ON HER OIL (Daniel 10-07): a thrown torch lights her hall's floor oil; while the fire touches her she is SCORCHED scorchT s - her BODY takes a blow whole from any side
      (her claws too: the shell is cracked by the heat) - and she FIGHTS ON (not a stun). Her hall's oil seeps back oilBack s after it burns out (told), her torches relight */
   /* (claude/cisternqueen3: SCORCHED is gone - fire stuns her now: CQ.thrashT, CQ.ablazeT above. Her hall's oil seeps back OIL.arenaBack s after it burns - src/underwell-hands.js) */
@@ -148,7 +148,7 @@ export const CQ = {
   /* (claude/underwell: x1.43 on every blow in her own level - the WEIGHT/HARNESSCARD heroes at the Underwell's depth took 80-200 of 250 at the old numbers) */
   dmg: { pincer: 15, snap: 12, lunge: 21, lance: 22, flick: 8, strike: 25, charge: 18, spit: 11, puddle: 3, sweep: 18, slam: 18, pin: 22, pounce: 25,
     ambush: 19, wave: 15, grab: 8, sting: 34, tidal: 18, heat: 6, sslam: 30, bloom: 26 },   /* (claude/queen4: the bloom 26 - the death roll's 23 and a little for its two stacks' worth of venom told so long) */
-  dmgK: 2.4,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
+  dmgK: 2.0,   /* (claude/underwell3) every blow above x this (applied once below): a longer fight that hits softer */   /* (claude/sweep3: x1.1 with her shell giving from behind and 1050 health) */
 };
 for (const k in CQ.dmg) CQ.dmg[k] = Math.round(CQ.dmg[k] * CQ.dmgK * 10) / 10;
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]; a cycle ends with the blow that holds her opening) */
