@@ -186,8 +186,8 @@ export function makeFlip(api) {
       /* (claude/bc4fix) THE LINK TO WHAT IT MOVES: struck, a trail of gold grains runs to each thing (FLIP.linkRun s) and brackets pulse on them; it stays faint while the glass runs;
          idle and near, a pale ghost of it shows what the glass is tied to before you strike (Rootway's "shows its target first") */
       const dP = P0 && !P0.dead ? Math.hypot(P0.x - gx, (P0.y - gy) * 1.5) : 1e9, lt = gq.linkT ?? 99, struck = lt < FLIP.linkHold, ghost = !run && !struck && dP < FLIP.ghostR;
-      if (run || struck || ghost) { const kk = ghost ? 1 : Math.min(1, lt / FLIP.linkRun), a = ghost || struck ? 1 : 0.4;
-        for (const q of targetsOf(gq)) { FIX.drawGlassLink(V, gx, gy - 30, (q.l + q.r) / 2, q.t, kk, a, ghost); if (kk >= 1) FIX.drawLinkTarget(V, q.l, q.t, q.r - q.l, q.b - q.t, a, ghost); } }
+      if (run || struck || ghost) { const kk = ghost ? 1 : Math.min(1, lt / FLIP.linkRun), a = ghost || struck ? 1 : 0.6;
+        for (const q of targetsOf(gq)) { FIX.drawGlassLink(V, gx, gy - 20, (q.l + q.r) / 2, q.t, kk, a, ghost); if (kk >= 1) FIX.drawLinkTarget(V, q.l, q.t, q.r - q.l, q.b - q.t, a, ghost); } }
       if (!run && dP < FLIP.reachR) { FIX.drawStrikeGlint(V, gx, gy - 35); ctx.text('STRIKE / E', R(x), R(y - 46), '#ffd36b', 'center', 4); } }   /* THE STRIKE GLINT + PROMPT in reach (A6) */
     /* THE GAUGE OVER YOUR HEAD (A3: what runs off-screen is shown where you stand): the nearest running glass */
     if (P0 && !P0.dead) { const gq = K.glasses.filter(q => q.t > 0 && Math.abs(P0.x - px(q.x)) < 40 * ts).sort((a, b) => Math.abs(P0.x - px(a.x)) - Math.abs(P0.x - px(b.x)))[0];

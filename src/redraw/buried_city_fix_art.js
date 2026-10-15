@@ -83,12 +83,14 @@ export function drawCoinCache(V, x, floorY, open) {
 
 /* ============================================================ THE GLASS'S LINK: what a struck hourglass moves */
 /* the arc from (x0,y0) to (x1,y1) (world px), lifted over the middle: a quadratic bezier's point at u */
-const arcAt = (x0, y0, x1, y1, u) => { const mx = (x0 + x1) / 2, my = Math.min(y0, y1) - 18 - Math.abs(x1 - x0) * 0.18, a = 1 - u; return [a * a * x0 + 2 * a * u * mx + u * u * x1, a * a * y0 + 2 * a * u * my + u * u * y1]; };
+const arcAt = (x0, y0, x1, y1, u) => { const mx = (x0 + x1) / 2, my = Math.min(y0, y1) - 8 - Math.abs(x1 - x0) * 0.12, a = 1 - u; return [a * a * x0 + 2 * a * u * mx + u * u * x1, a * a * y0 + 2 * a * u * my + u * u * y1]; };
 /* k: how far the trail has run (0..1, the head's place); a: the dotted arc's strength behind it (0..1); ghost: the idle preview (pale, slower) */
 export function drawGlassLink(V, x0, y0, x1, y1, k, a, ghost) {
   const g = V.g, t = V.time, len = Math.hypot(x1 - x0, y1 - y0) + 40, n = Math.max(6, R(len / 7));
-  for (let i = 0; i <= n; i++) { const u = i / n; if (u > k) break; const crawl = ((u * n - t * (ghost ? 3 : 7)) % 3 + 3) % 3; if (crawl > 1.2) continue;
-    const [x, y] = arcAt(x0, y0, x1, y1, u); g.globalAlpha = a * (ghost ? 0.4 : 0.85); g.fillStyle = ghost ? '#f0dca0' : (i % 2 ? '#ffd36b' : '#f8e8b0'); g.fillRect(R(x - V.cx), R(y - V.cy), ghost ? 1 : 2, ghost ? 1 : 2); }
+  for (let i = 0; i <= n; i++) { const u = i / n; if (u > k) break; if (ghost && i % 2) continue; const crawl = ((u * n - t * (ghost ? 3 : 9)) % 4 + 4) % 4, hot = crawl < 1;   /* a pulse of light runs along it, glass to target */
+    const [x, y] = arcAt(x0, y0, x1, y1, u), X = R(x - V.cx), Y = R(y - V.cy), s = ghost ? 1 : 2;
+    g.globalAlpha = a * (ghost ? 0.35 : 0.6); g.fillStyle = '#1e1008'; g.fillRect(X - 1, Y - 1, s + 2, s + 2);   /* a dark rim, so it reads over the sand and the stone */
+    g.globalAlpha = a * (ghost ? 0.55 : hot ? 1 : 0.75); g.fillStyle = ghost ? '#f0dca0' : hot ? '#fff6d0' : '#ffc850'; g.fillRect(X, Y, s, s); }
   g.globalAlpha = 1;
   if (k < 1 && !ghost) { const [hx, hy] = arcAt(x0, y0, x1, y1, k);   /* the head: a clot of bright grains tumbling along it */
     for (let j = 0; j < 7; j++) { const ox = Math.sin(t * 23 + j * 1.7) * 3, oy = Math.cos(t * 19 + j * 2.3) * 3; g.fillStyle = j % 3 ? '#ffe9a0' : '#ffffff'; g.fillRect(R(hx - V.cx + ox), R(hy - V.cy + oy), 2, 2); }

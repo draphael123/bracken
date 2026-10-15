@@ -145,10 +145,10 @@ export function makeHourglassKingHands(ctx) {
   /* ---------- DRAWING ---------- */
   H.drawBack = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G;
     /* THE THRONE: a high-backed seat of lapis stone on a stepped dais, gilded, a crown of gears over its back (src/redraw/buried_city_set.js) */
-    SET.drawThrone({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.x0 + 20 * ctx.TS + 8, G.floor0);   /* (claude/bc4fix: on the stone floor - the sand buries its foot) */
+    SET.drawThrone({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.x0 + 20 * ctx.TS + 8, G.floorY);   /* (claude/bc4fix: on the sand's top - the sand carries his throne and his great glass up with it) */
     /* THE GREAT HOURGLASS before it (claude/bc3art: src/redraw/buried_city_flip_art.js - a brass frame on a pivot, a gear crown, the half turn, its gauge) */
     { const V = { g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, ready = HKM.greatReady(S), run = S.great.run > 0, cdK = S.great.cd > 0 ? 1 - S.great.cd / (HK.great.cd + HK.great.openT) : 1;
-      const G0 = S.sand ? { ...G, floorY: G.floor0 } : G; ART.drawGreat(V, G0, { ph: S.ph, ready, run: S.great.run, runT: run ? HK.great.openT - S.great.run : 0, cdK });
+      const G0 = G; ART.drawGreat(V, G0, { ph: S.ph, ready, run: S.great.run, runT: run ? HK.great.openT - S.great.run : 0, cdK });
       if (run && HK.great.openT - S.great.run > 0.9) ART.greatPour(V, G0); }
     /* THE SAND TIDE coming (phase two on): the floor's sand stirs and heaves a beat before it takes the floor */
     if (S.ph >= 2 && !S.tide.on && S.tide.t <= HK.tide.warn) ART.tideWarn({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time }, G.drift[0], G.drift[1], 1 - S.tide.t / HK.tide.warn, G);
