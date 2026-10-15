@@ -1400,7 +1400,7 @@ const COOP_RULES = [
 ];
 const COOP_EDGE = 10;     /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
 const HERO_SHORT = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER', berserker: 'BERSERKER', ranger: 'RANGER' };
-const COOP_TAG = { warden: 'WARD', paladin: 'PALAD', reaper: 'DK', geomancer: 'GEO', ranger: 'RANGR', berserker: 'BERSRK' };   /* the co-op pick card's name when the full one is wider than the card (eight or nine cards) */
+const COOP_TAG = { knight: 'KNGHT', warden: 'WARD', paladin: 'PALAD', reaper: 'DK', geomancer: 'GEO', ranger: 'RANGR', berserker: 'BERSK' };   /* the co-op pick card's name when the full one is wider than the card (eight or nine cards) */
 /* THE SCORE COUNTS ALL FOUR: what you killed and how hard, what you picked up, what you did FOR the other one,
    and a death against you. It is a friendly tally and nothing in the game reads it back - nobody loses a run on it. */
 const freshScore = () => ({ kills: 0, dmg: 0, coins: 0, revives: 0, turns: 0, deaths: 0 });
