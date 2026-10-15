@@ -35,10 +35,11 @@ function glassBody(g, ox, oy, k, time, live) {
   const top = oy + 5, bot = oy + GH - 8, n = (top + bot) / 2, x = ox + 11;
   g.save(); bulbPath(g, x, top, bot); g.clip();
   g.fillStyle = GL.body; g.fillRect(x - 7, top, 14, bot - top);
-  const up = k * 9, lo = (1 - k) * 9;
+  const up = live ? (1 - k) * 9 : k * 9, lo = live ? k * 9 : (1 - k) * 9;   /* (claude/bc4fix, Daniel 10-15 "what does the hourglass do?"): struck, its sand runs UP - the bottom bulb empties into the top (what is left below = the time left); at rest it lies in the bottom */
   if (up > 0.3) { g.fillStyle = SD.b; g.fillRect(x - 7, n - 2 - up, 14, up); g.fillStyle = SD.l; g.fillRect(x - 7, n - 2 - up, 14, 1); g.fillStyle = SD.d; g.fillRect(x + 2, n - 2 - up, 5, up); }
   if (lo > 0.3) { g.fillStyle = SD.b; g.fillRect(x - 7, bot - lo, 14, lo); g.fillStyle = SD.l; g.fillRect(x - 3, bot - lo - 2, 6, 2); g.fillRect(x - 5, bot - lo - 1, 10, 1); g.fillStyle = SD.d; g.fillRect(x + 2, bot - lo + 1, 5, lo); }
-  if (live) { g.fillStyle = SD.h; g.fillRect(x, n - 1, 1, Math.max(1, bot - lo - n + 2)); g.fillStyle = SD.l; g.fillRect(x - 1 + (Math.floor(time * 20) & 1), n + ((time * 40) % Math.max(3, bot - lo - n)), 1, 2); }
+  if (live) { const sTop = n - 2 - up, sBot = bot - lo; g.fillStyle = SD.h; g.fillRect(x, R(sTop), 1, Math.max(1, R(sBot - sTop)));   /* the thread of sand climbing from the bottom heap up through the neck into the top */
+    for (let i = 0; i < 3; i++) { const p = ((time * 1.6 + i / 3) % 1), yy = sBot - p * Math.max(3, sBot - sTop); g.fillStyle = i ? SD.l : '#ffffff'; g.fillRect(x - 1 + (i & 1) * 2, R(yy), 1, 2); } }
   g.restore();
   g.fillStyle = GL.hi; g.fillRect(x - 5, top + 2, 1, 7); g.fillRect(x - 5, bot - 9, 1, 6); g.fillRect(x - 4, top + 1, 2, 1);
   g.strokeStyle = GL.edge; g.lineWidth = 1; bulbPath(g, x, top, bot); g.stroke();
@@ -52,12 +53,10 @@ export function drawGlass(V, gq, o) {   /* o: { k, warn, spin (0..1, 1 = just st
   const g = V.g, t = V.time, x = o.x, y = o.y, ox = R(x - GW / 2), oy = R(y - GH), run = gq.t > 0;
   { const a = run ? 0.35 : 0.2 + 0.12 * Math.sin(t * 3 + gq.x), gr = g.createRadialGradient(x, y - 16, 2, x, y - 16, 26);
     gr.addColorStop(0, run && o.warn ? 'rgba(255,90,60,' + a.toFixed(2) + ')' : 'rgba(255,224,140,' + a.toFixed(2) + ')'); gr.addColorStop(1, 'rgba(255,214,120,0)'); g.fillStyle = gr; g.fillRect(x - 28, y - 44, 56, 56); }
-  if (o.spin > 0) {   /* THE TURN-OVER: the stand rolls a half turn about its middle; the sand lands on its head */
-    const ang = Math.PI * (1 - o.spin); g.save(); g.translate(x, y - GH / 2); g.rotate(ang); g.translate(-x, -(y - GH / 2)); glassBody(g, ox, oy, 0, t, false); g.restore();
-    for (let i = 0; i < 6; i++) { const a = ang * 2 + i * 1.05; dot(g, x + Math.cos(a) * 19, y - GH / 2 + Math.sin(a) * 19, i % 2 ? SD.l : SD.h); }
-    return; }
-  glassBody(g, ox, oy, o.k, t, run); postGauge(g, ox, oy, o.k, o.warn, t);
-  if (run) for (let i = 0; i < 3; i++) { const ph = (t * 1.3 + i * 0.33) % 1; dot(g, x - 4 + i * 4, y - GH + 4 - ph * 14, ph < 0.6 ? SD.l : SD.d); }
+  const jx = o.spin > 0 ? R(Math.sin(t * 70) * 1.5 * o.spin) : 0;   /* (claude/bc4fix) THE STRIKE: a jolt and a ring of light - and the sand starts UP (it was a half turn-over, and the sand then fell DOWN in it: Daniel could not read it) */
+  glassBody(g, ox + jx, oy, o.k, t, run); postGauge(g, ox + jx, oy, o.k, o.warn, t);
+  if (o.spin > 0) { g.strokeStyle = 'rgba(255,240,180,' + (0.9 * o.spin).toFixed(2) + ')'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - GH / 2, 14 + (1 - o.spin) * 16, 0, 7); g.stroke(); g.lineWidth = 1; }
+  if (run) for (const sx of [ox - 4, ox + GW + 3]) for (let i = 0; i < 3; i++) { const ph = (t * 1.1 + i / 3) % 1, yy = y - 6 - ph * (GH - 8), a = ph < 0.15 ? ph / 0.15 : ph > 0.8 ? (1 - ph) / 0.2 : 1; g.globalAlpha = a * (o.warn ? 0.5 : 0.9); g.fillStyle = o.warn ? '#ffb060' : '#ffd36b'; g.fillRect(R(sx), R(yy), 1, 1); g.fillRect(R(sx) - 1, R(yy) + 1, 1, 1); g.fillRect(R(sx) + 1, R(yy) + 1, 1, 1); g.globalAlpha = 1; }   /* gold chevrons climbing both sides: the sand runs UP */
 }
 /* the little gauge over a hero's head (A3): a brass glass-icon and a bar, red and ticking at the end */
 export function drawHeadGauge(V, x, y, k, warn) {

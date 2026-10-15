@@ -17,7 +17,7 @@
 //     arena (banks, pours); B12: his low window is long enough to reach a lever in every phase; no adds; his marks are src/marks.js's
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { LEVELS, T } from '../src/level.js';
+import { LEVELS, T, eliteGate } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
 import { SECTIONS, ARCS, RULE, ROOMS, CHUTES, WHEEL, SUN, DY, OUT } from '../src/buried-city.js';
 import { makeBuriedCityHands, BCS } from '../src/buried-city-hands.js';
@@ -295,7 +295,7 @@ for (const [id, want] of [['street', /street/], ['sluice', /sluice/], ['trap', /
   ok(L.clouds.filter(c => c.x0 >= OUT.x0).length >= 2 && L.clouds.some(c => c.x1 < 38), 'brief 3: cloud shadows drift over THE ROOFTOPS and the dunes');
   /* 6. THE LANDMARK shows the flip: the great hourglass turns over while a glass near you runs, and its glass is no longer a ghost */
   { const bd = readFileSync(new URL('../src/redraw/buried_city_backdrop.js', import.meta.url), 'utf8'), fl = readFileSync(new URL('../src/buried-city-flip.js', import.meta.url), 'utf8');
-    ok(/function drawTower\([^)]*fk = 0\)/.test(bd) && /L\.towerFlip/.test(bd) && /K\.L\.towerFlip =/.test(fl), 'brief 6: THE GREAT HOURGLASS turns over with the flip (L.towerFlip)');
+    ok(/function drawTower\([^)]*fk = 0[,)]/.test(bd) && /L\.towerFlip/.test(bd) && /K\.L\.towerFlip =/.test(fl), 'brief 6: THE GREAT HOURGLASS turns over with the flip (L.towerFlip)');
     const a = +(/glass: 'rgba\(\d+,\d+,\d+,([\d.]+)\)'/.exec(bd) || [0, 0])[1]; ok(a >= 0.5, 'brief 6: its glass is not see-through (alpha ' + a + ')'); }
   /* THE NEW PIECES IN THE HANDS (the fake world) */
   H.reset(); const K4 = H.state(), F = H.flip, glv = id => K4.glasses.find(g => g.id === id);
@@ -356,7 +356,7 @@ for (const m of ['pendTell', 'gearTell', 'streamTell', 'surgeTell', 'graspTell',
 { const mk = (hp, ph) => { const S0 = HKM.newFight(G), e0 = { t: 'hourglassking', x: (G.x0 + G.x1) / 2, y: G.floorY, hp, maxHp: 1000, alive: true, mode: 'walk', modeT: 0.5, face: -1, open: 0 }; S0.ward = 0; if (ph) { S0.ph = ph; if (ph === 3) S0.glassMax = HKM.HK.glass3; } return [e0, S0]; };
   const c2 = { ...c, said: [], held: [], number(x, y, t) { this.said.push(t); }, hold(pp, s) { this.held.push(s); }, blocks() {}, banks() {} };
   { const [e0, S0] = mk(1000); ok(HKM.greatStruck(e0, S0, c2) === 'early' && !HKM.hkOpen(e0), 'THE GREAT HOURGLASS will not turn before phase three (told)'); }
-  { const [e0, S0] = mk(500, 2); ok(!HKM.driftOn(e0, S0), 'phase two: the floor is firm between tides'); for (let i = 0; i < 60 * 8; i++) { HKM.stepHourglassKing(e0, S0, 1 / 60, hero2, c2); if (S0.tide.on) break; } e0.mode = 'walk'; ok(S0.tide.on && HKM.driftOn(e0, S0) && c2.said.includes('THE SAND RISES: UP ON A LEDGE'), 'phase two: THE SAND TIDE is told, then the floor is DRIFT');
+  { const [e0, S0] = mk(500, 2); ok(!HKM.driftOn(e0, S0), 'phase two: the floor is firm between tides'); for (let i = 0; i < 60 * 8; i++) { HKM.stepHourglassKing(e0, S0, 1 / 60, hero2, c2); if (S0.tide.on) break; } e0.mode = 'walk'; ok(S0.tide.on && HKM.driftOn(e0, S0) && c2.said.includes('THE SAND TIDE COMES: UP ON A LEDGE'), 'phase two: THE SAND TIDE is told, then the floor is DRIFT');
     S0.glass = S0.glassMax * HKM.lowOf(2) - 0.1; HKM.leverPulled(e0, S0, c2, G.levers[0].x); ok(HKM.hkOpen(e0) && !HKM.driftOn(e0, S0), 'a stall drains the drift while he stands open (B12: you can stand by him)'); }
   { const [e0, S0] = mk(200, 3); ok(HKM.leverPulled(e0, S0, c2, G.levers[0].x) === 'dry' && c2.said.includes('THE GATES ARE DRY: TURN THE GREAT HOURGLASS'), 'phase three: the gates are dry - a pull says what to do instead');
     e0.x = G.x0 + 60; ok(HKM.greatReady(S0) && HKM.greatStruck(e0, S0, c2) === 'flip' && HKM.hkOpen(e0) && S0.capNow === HKM.HK.great.openCap, 'phase three: STRIKE THE GREAT HOURGLASS - the sand pours up and takes him: his big opening (a ' + HKM.HK.great.openCap + ' share)');
@@ -418,4 +418,40 @@ ok(!/ctx.spawn(?!Boss)|enemies().push|enemies.push/.test(hkSrc), 'NO ADDS: the k
 ok(OPEN_RULE.hourglassking && OWN_WARD.has('hourglassking'), 'the greed rule knows his opening; his brass is his own ward (no x0.05 chip)');
 ok(SYNTH_BOSS.hourglassking && SYNTH_VARIANT['hourglassking:p2'] && SYNTH_VARIANT['hourglassking:p3'] && !SYNTH_BOSS.buriedcity, "his three-phase theme is composed in code; the city's greybox synth bed is gone (music pass: 'Loopable Dungeon Ambience' is the level track)");
 ok(DY === 1 && L.H === 49, '(the city is laid one row lower than its logical rows: DY ' + DY + ')');
+/* ===== BURIED CITY 4 FIXES (claude/bc4fix, 2026-10-15 - Daniel played BC4 live; scratch/brief-buriedcity4fix-1015.md). (item 1, the sand-bound's footing, is a page check:
+   tools/bc-bound-footing.mjs; item 6, the pilot's stuck spots, was walked - no snag) ===== */
+{ const src = f => readFileSync(new URL('../src/' + f, import.meta.url), 'utf8'), main = src('main.js'), hands = src('buried-city-hands.js'), flip = src('buried-city-flip.js'), bd = src('redraw/buried_city_backdrop.js'), a4 = src('redraw/buried_city_bc4_art.js');
+  /* 1. the hands' unbury stands a body on a slope's SURFACE, and a far foe of the sand is set down on its footing */
+  ok(/isSlope\(t0\) && b\.y <= surfaceY\(t0, tx, fy, b\.x\) \+ 1\) return false/.test(hands) && /b\.y = isSlope\(tt\) \? surfaceY/.test(hands) && /settleFar\(P0\)/.test(hands), 'item 1: a turning dune no longer lifts what stands on it to its tile\'s top; a far sand foe is set down');
+  /* 2. THE GEAR: a brass gear in the world (turning, a glint) and on GEARS n/5 - not the fallback mushroom */
+  ok(L.quest.item === 'gear' && /pr\.kind === 'gear'\) \{ const cb = big2\(BCFA\.gearFrame/.test(main) && /Q\.item === 'gear' \? BCFA\.gearIcon/.test(main), 'item 2: the gear has its own sprite in the world and on the HUD counter');
+  /* 3. EVERY ELITE EXAM IS A GATE HE HOLDS, A COIN CACHE BEHIND IT, nothing over or under the gate */
+  const els = L.ents.filter(e => e.elite);
+  ok(els.length >= 4 && els.every(e => e.gate !== undefined && e.gate > e.x), 'item 3: every elite holds a gate ahead of him (' + els.map(e => e.squad + '@' + e.x + '>' + e.gate).join(' ') + ')');
+  for (const e of els) { const g = eliteGate(L, e.gate, e.y), over = (() => { let n = 0; for (let y = g.top - 1; y >= 0 && at(e.gate, y) === T.AIR; y--) n++; return n; })();
+    ok(g.bot - g.top >= 3 && over === 0 && at(e.gate, g.bot + 1) !== T.AIR, 'item 3: ' + e.squad + "'s gate (" + e.gate + ', rows ' + g.top + '-' + g.bot + ') shuts the way: floor under it, stone over it (a hero is 14 px: no slot over the top)'); }
+  for (const e of els.filter(q => q.squad !== 'throneGuard')) { const d = L.decor.find(q => q.kind === 'coincache' && q.gate === e.gate), coins = d ? L.ents.filter(q => q.t === 'coin' && Math.abs(q.x - d.x) <= 1 && q.y < d.y && q.y >= d.y - 3).length : 0;
+    ok(d && d.x > e.gate && coins >= 5, 'item 3: ' + e.squad + "'s gate keeps a COIN CACHE behind it (" + coins + ' coins at ' + (d && d.x) + ')'); }
+  ok(/'HIS GATE KEEPS A CACHE OF COIN: PUT HIM DOWN'/.test(hands) && isCallout('HIS GATE KEEPS A CACHE OF COIN: PUT HIM DOWN') && /drawCoinCache/.test(hands), 'item 3: the cache is drawn and told');
+  /* 4. THE HOURGLASSES READ: every glass moves something the link can be drawn to; STRIKE / E + a glint in reach; the sand runs UP; the camera looks at what it moved; no decorative hourglass reads as a switch */
+  const moves = id => L.risers.filter(r => r.glass === id).length + L.banks.filter(b => b.glass === id).length + L.dfalls.filter(f => f.glass === id).length + L.tilts.filter(t => t.glass === id).length + L.tplats.filter(p => p.glass === id).length + L.ents.filter(q => q.cnSkin === 'sandbound' && q.glass === id).length;
+  for (const g of L.glasses) ok(moves(g.id) >= 1, 'item 4: the glass ' + g.id + ' moves ' + moves(g.id) + ' thing(s) - its link has somewhere to run');
+  ok(/'STRIKE \/ E'/.test(flip) && /drawStrikeGlint/.test(flip) && /drawGlassLink/.test(flip) && /drawLinkTarget/.test(flip) && /F\.cam = /.test(flip) && /BCH\.cam\(\)/.test(main), 'item 4: STRIKE / E and a glint in reach, the link and the brackets, the camera\'s look');
+  ok(/const up = live \? \(1 - k\) \* 9/.test(src('redraw/buried_city_flip_art.js')), 'item 4: a running glass\'s sand runs UP (bottom bulb into the top)');
+  ok(/drawTower\(g, cx, VW, VH, levelW, time, dY, 1, L\.towerFlip \|\| 0, true\)/.test(bd) && /if \(!far\) \{ pil\(/.test(bd), 'item 4: indoors the great hourglass is FAR (dim, no cage, no plinth) - not a caged switch by a lever');
+  ok(/farSpr\('shelf'/.test(a4) && /farSpr\('rack'/.test(a4), 'item 4: the glass works\' racks and shelves of glasses are pushed back (dimmed)');
+  for (const g of L.glasses.filter(q => q.x >= 337 && q.x <= 408)) ok(![343, 356, 376, 391].some(x => g.x >= x - 1 && g.x <= x + 3), 'item 4: no shelf of decorative glasses beside the working glass ' + g.id);
+  /* 5. THE SAND RISES: a layer a withdraw in phase two (told), carrying the floor up; capped clear of the ledges and the roof; phase three's dry gates drain it */
+  { const G5 = HKM.geom(L.arena, TS), S5 = HKM.newFight(G5), e5 = { t: 'hourglassking', x: (G5.x0 + G5.x1) / 2, y: G5.floorY, hp: 500, maxHp: 1000, alive: true, mode: 'walk', modeT: 0.5, face: -1, open: 0 }; S5.ph = 2; S5.ward = 0;
+    const me = [{ x: G5.x0 + 100, y: G5.floorY, ground: true, alive: true, air: false, pp: {} }], calls = [];
+    const cw = { said: [], number(x, y, t) { this.said.push(t); }, mark() {}, sound() {}, fx() {}, shake() {}, music() {}, time: () => 0, banks() {}, blocks() {}, hold() {}, hit() { return false; }, pillar() {}, slab() {}, sand(n, apply) { calls.push(n); apply(); } };
+    const toGlide = () => { S5.wdT = 0; for (let i = 0; i < 60 * 30 && !(e5.mode === 'glide'); i++) { if (S5.glass < S5.glassMax) S5.glass = S5.glassMax; HKM.stepHourglassKing(e5, S5, 1 / 60, me, cw); } for (let i = 0; i < 60 * 25 && S5.al; i++) { S5.glass = S5.glassMax; HKM.stepHourglassKing(e5, S5, 1 / 60, me, cw); } };
+    toGlide(); ok(S5.sand === 1 && G5.floorY === G5.floor0 - TS && calls.join() === '1' && cw.said.includes(HKM.AL_SAY.rises), 'item 5: he withdraws in phase two and THE SAND RISES a layer (told: ' + HKM.AL_SAY.rises + ')');
+    ok(e5.y === G5.floorY, 'item 5: he stands on the sand\'s top (his floor moves with it)');
+    toGlide(); toGlide(); ok(S5.sand === HKM.HK.sand.max && G5.floorY === G5.floor0 - HKM.HK.sand.max * TS && calls.join() === '1,2', 'item 5: a layer a withdraw, capped at ' + HKM.HK.sand.max + ' (' + calls.join() + ')');
+    ok(G5.ledges.every(l => l.y < G5.floorY) && G5.floorY - G5.roofY >= 14 * TS && G5.aloft.E.slabs.every(s => s.y < G5.floorY), 'item 5: at its highest the sand is under every ledge and slab and far under the roof (no crush, no trap: B7)');
+    ok(G5.floorY - G5.ledges[0].y <= TS && G5.floorY - G5.aloft.E.slabs[0].y <= 3 * TS, 'item 5: it carries you up toward his slabs (the ledge a row up, the low slab three)');
+    e5.hp = 200; for (let i = 0; i < 60 * 12; i++) { S5.glass = S5.glassMax; HKM.stepHourglassKing(e5, S5, 1 / 60, me, cw); }
+    ok(S5.ph === 3 && S5.sand === 0 && G5.floorY === G5.floor0 && cw.said.includes(HKM.AL_SAY.dry) && cw.said.includes(HKM.AL_SAY.drains) && calls.join() === '1,2,1,0', 'item 5: phase three - THE GATES RUN DRY and the sand runs out, a layer at a time (' + calls.join() + ')');
+    ok(/function sandTo\(n, apply\)/.test(src('hourglass-king-hands.js')) && /unsand\(\)/.test(src('hourglass-king-hands.js')) && /kingSand/.test(hands), 'item 5: the hands write the layers (lifting a hero on them), take them away on a new attempt and at his death, and the levers ride on the sand'); } }
 console.log('buried-city: ' + n + ' checks green');
