@@ -423,7 +423,7 @@ export function buildBuriedCity({ painter, T, TS }) {
      strike it and the sand-bound is buried, but the chain's roofs run on the same glass (bury it and go, or fight it shielded) */
   ground(742, 746, 11); tilt('fall', 742, 746, 11, 15); ground(747, 752, 6);
   sandBound(748, 5, 'chain1', 'roofBound');
-  sign(744, 5, 'TWO GLASSES: THE FIRST RAISES THE WAY TO THE SECOND.');
+  sign(747, 5, 'TWO GLASSES: THE FIRST RAISES THE WAY TO THE SECOND.');
   glass('chain1', 750, 5, 8); sea(753, 784, 16);
   decor.push({ kind: 'awning', x0: 747, x1: 751, y: 2 }); shadeBox(747, 751, 3, 5);   /* (claude/buriedcity4: shade over the chain's first glass) */
   riser('chain1', 754, 756, 8, 2, 'house'); riser('chain1', 759, 761, 10, 2, 'house'); riser('chain1', 764, 766, 11, 2, 'dome');
@@ -448,7 +448,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(809, 814, 11, TH - 1); shadeBox(817, 821, 11, TH - 1);   /* (claude/buriedcity4, brief 3: the dome's broken shell shades both sides of the courtyard - its hole lets the sun in over the middle, where the elite stands) */
   construct(815, TH - 1, 'courtyard', { elite: true }); slinger(818, 26, 'courtyardSling', { face: -1 });
   glass('court', 814, TH - 1, 8); sandBound(819, TH - 1, 'court', 'courtyardBound');
-  sign(811, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: TURN THE GLASS.');
+  sign(812, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: TURN THE GLASS.');
   /* THE OLD STREET UNDER THE DUNES (brief 10, the LOOP BACK TO A SHRINE): the throne street runs on under the rooftops (rows 28-31, 710-810) to the courtyard - sealed
      at the courtyard end by a sand-gate that only opens FROM THE COURTYARD (E). Opened once, it stays open: a death past the rooftops walks back from the fourth
      shrine (693) under them in a few seconds. Under THE SAND SEA's troughs its floor (bottom 26) is the street's vault: the sea's bones are stakes (the reach model's

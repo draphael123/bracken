@@ -120,14 +120,14 @@
   "bare": true
  },
  "ksar": {
-  "hash": "300b1c4b64d3",
+  "hash": "248ad37248ed",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 36,
   "deaths": 13,
   "kills": 17,
-  "lifts": 144,
+  "lifts": 146,
   "walked": 100,
   "bare": true
  },
@@ -228,12 +228,12 @@
   "bare": true
  },
  "buriedcity": {
-  "hash": "0b93ca4f0871",
+  "hash": "18e2752143b4",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 21,
-  "deaths": 12,
+  "deaths": 9,
   "kills": 12,
   "lifts": 171,
   "walked": 100,
@@ -360,14 +360,14 @@
   "bare": true
  },
  "sealedpyramid": {
-  "hash": "374d1b96d29b",
+  "hash": "60a8498518ab",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
-  "deaths": 6,
-  "kills": 21,
-  "lifts": 213,
+  "hits": 42,
+  "deaths": 15,
+  "kills": 35,
+  "lifts": 195,
   "walked": 100,
   "bare": true
  }

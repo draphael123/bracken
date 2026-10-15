@@ -101,7 +101,7 @@ export const HINT = {
 };
 /* the controls card / moves list row: [label, what it is for] per hero (src/controls.js cardRows reads the label) */
 export const ROW = {
-  paladin: ['hammer of dawn', 'HAMMER OF DAWN: ONE HEAVY SLAM THAT BREAKS A GUARD AND POISE'],
+  paladin: ['dawn hammer', 'HAMMER OF DAWN: ONE HEAVY SLAM THAT BREAKS A GUARD AND POISE'],
   pirate: ['boarding', 'BOARDING: RIDE A SMALL FOE AND STEER IT INTO A HAZARD'],
   geomancer: ['earthfall', 'EARTHFALL: A STONE SPIKE THAT HITS AND STANDS AS A STEP'],
   berserker: ['axe spin', 'AXE SPIN: SHRED ONE FOE, STACKING REND'],
