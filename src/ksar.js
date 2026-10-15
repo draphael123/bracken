@@ -59,7 +59,7 @@ export function buildKsar({ painter, T, TS }) {
      THE FALCONER: the cutthroat's machine with a HAWK SCOUT on his leash (the hawk ent carries his squad as `falcon`): he sends it in told stoops and calls it to his glove; while it
      rides over him it guards him - knock it down (a blade, a torch, a keg, a flash) and he is OPEN. Foreshadows THE HAWK-MISTRESS (B8).
      THE PLATED BANDIT: the cutthroat's machine, weightier, in steel - a blade clanks off (x0.25: THROW A BOMB); a keg's blast strips the plate. A keg stack stands by every one. */
-  const falconer = (x, y, squad, o) => { foe('cutthroat', x, y, squad, Object.assign({ cnSkin: 'falconer', ks: 'post' }, o || {})); ent('hawkscout', x, y - 5, { squad, x0: x - 2, x1: x + 2, falcon: squad }); };
+  const falconer = (x, y, squad, o) => { foe('cutthroat', x, y, squad, Object.assign({ cnSkin: 'falconer', ks: 'post' }, o || {})); ent('hawkscout', x, y - 5, { squad, x0: x - 2, x1: x + 2, falcon: squad, perch: true }); };   /* (batch93 integ: the hawk flies over its falconer's floor squad on purpose - e.perch exempts that member from the one-floor test, as the Rootway's perches) */
   const plated = (x, y, squad, o) => foe('cutthroat', x, y, squad, Object.assign({ cnSkin: 'ksarplate', ks: 'post' }, o || {}));                                                     /* THE HAWK SCOUT: the one new AI (src/ksar-foes.js) */
   /* THE RULE'S PIECES (src/ksar-hands.js reads them off L): gongs, keg stacks, set kegs, flask racks, barricades, the winch and its gate, the cellar's weak roof */
   const gongs = [], stacks = [], setKegs = [], racks = [], barricades = [], weak = [], interiors = [], decor = [], vaultDoors = [], breaches = [], drops = [];

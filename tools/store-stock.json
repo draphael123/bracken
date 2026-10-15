@@ -57,6 +57,13 @@
     "silver": true,
     "needs": null,
     "feat": null
+   },
+   {
+    "id": "ranger",
+    "price": 10,
+    "silver": true,
+    "needs": null,
+    "feat": null
    }
   ]
  },
