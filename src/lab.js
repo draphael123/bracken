@@ -1952,7 +1952,7 @@ async function runbossLab(BK, opts) {
          HIS CUTS (gold): guarded (a shield; the warden's deflect), or stepped back out of. THE CLEAVE: stand in its reach while he lifts it
          (that is what makes him commit), and once he has COMMITTED dodge out of it, away: the blade goes into the floor and the hands cut the
          stuck man. His recoveries (after a cut, a cleave, the bolts) are cut too: every blow lands whole now. THE PLANTED BLADE: the middle
-         of the widest gap. DEATH GRIP: jump the chain as it arrives. BLOOD BOIL: out of its ring. DEATH COIL: on the shield, or dodged as it
+         of the widest gap. GRAVE CHAIN: jump the chain as it arrives. BLOOD WELL: out of its ring. BLOOD LEECH: on the shield, or dodged as it
          arrives. GRAVE TIDE: round behind him. THE WARD: from behind his back is cut; on its face the hands FILL it and break it (he reels
          open), and back off before a nova they did not break. NOVA, SURGE: out of the ring. His dead are cut when they come close. */
       else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;

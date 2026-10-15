@@ -20,8 +20,8 @@
 //   THE FIRST DEATH KNIGHT     the armour and the scythe the class inherits - and, since 2026-09-24, the CLASS'S OWN KIT turned
 //                              on you, boss-sized (Daniel: "fights with the Death Knight hero's kit"):
 //                              THE CLEAVE        !   over the shoulder and down through what is in front of him: guard it
-//                              DEATH GRIP        !!  a chain along the floor; caught, you are dragged to his feet and cleaved
-//                              BLOOD BOIL        !!  the ground boils where you stand and cuts while you stay: step out
+//                              GRAVE CHAIN        !!  a chain along the floor; caught, you are dragged to his feet and cleaved
+//                              BLOOD WELL        !!  the ground boils where you stand and cuts while you stay: step out
 //                              THE LONG PASSING  !!  the greatsword rush: through you and far past: jump or dodge it
 //                              BLOOD WARD, NOVA  !!  the ward keeps every blow on it; he lets go and the nova pays it out
 //                              SUMMON SKELETON       (quiet) one of his dead gets up
@@ -272,7 +272,7 @@ export function brFrame(e) {
    Every move is one of the playable Death Knight's, boss-sized; the scythe stays (the polish lane's silhouette), so a greatsword
    blow is a scythe blow here. The hero's own rule is his opening: a FULL ward struck again BREAKS. */
 const DK_TELL = { cleave: 'cleaveTell', grip: 'gripTell', boil: 'boilTell', pass: 'passTell', ward: 'wardTell', raise: 'raiseTell', call: 'callTell', surge: 'surgeTell' };
-const DK_SAY = { cleaveTell: 'THE CLEAVE: GUARD', gripTell: 'DEATH GRIP: JUMP THE CHAIN', boilTell: 'BLOOD BOIL: STEP OUT', passTell: 'THE LONG PASSING: JUMP IT', wardTell: 'BLOOD WARD: BREAK IT', novaTell: 'BLOOD NOVA: JUMP IT',
+const DK_SAY = { cleaveTell: 'THE CLEAVE: GUARD', gripTell: 'GRAVE CHAIN: JUMP THE CHAIN', boilTell: 'BLOOD WELL: STEP OUT', passTell: 'THE LONG PASSING: JUMP IT', wardTell: 'BLOOD WARD: BREAK IT', novaTell: 'BLOOD NOVA: JUMP IT',
   raiseTell: 'SUMMON SKELETON', callTell: 'GRAVECALL', surgeTell: 'BLOOD SURGE: GET AWAY' };
 const DK_SND = { cleaveTell: 'charge', gripTell: 'crank', boilTell: 'fire', passTell: 'pass', wardTell: 'plant', novaTell: 'roar', raiseTell: 'rise', callTell: 'horn', surgeTell: 'pass' };
 const DK_COL = { cleaveTell: '#ffd36b', raiseTell: '#c8b6ff', callTell: '#c8b6ff', wardTell: '#8fd160' };
@@ -288,8 +288,8 @@ export function updateDeathKnight(e, dt, c) {
   if (!e.alive || e.mode === 'sleep') return;
   e.modeT -= dt; e.cd = (e.cd ?? 1) - dt; e.turn ??= 0; e.pools ??= []; e.y = floor; e.vx = 0;
   e.open = dkOpen(e) ? Math.max(0, e.modeT) : 0;
-  /* BLOOD BOIL: each pool cuts whoever stands in it, every half second, until it cools */
-  for (const p of e.pools) { p.t -= dt; p.tick -= dt; if (p.tick <= 0) { p.tick = D.boilTick; if (!P.dead && Math.abs(P.x - p.x) < D.boilR && P.y > floor - 20) c.hit(p.x, UNB.dmg.boil, true, 'BLOOD BOIL'); } }
+  /* BLOOD WELL: each pool cuts whoever stands in it, every half second, until it cools */
+  for (const p of e.pools) { p.t -= dt; p.tick -= dt; if (p.tick <= 0) { p.tick = D.boilTick; if (!P.dead && Math.abs(P.x - p.x) < D.boilR && P.y > floor - 20) c.hit(p.x, UNB.dmg.boil, true, 'BLOOD WELL'); } }
   e.pools = e.pools.filter(p => p.t > 0);
   if (e.phase !== 2 && e.hp <= e.maxHp * 0.5 && !tells(e) && e.mode !== 'pass' && e.mode !== 'grip' && e.mode !== 'ward' && e.mode !== 'open') { e.phase = 2; e.mode = 'rally'; e.modeT = 1.4; e.turn = 0; c.say('HE IS THE BANNER NOW: WHAT FALLS HERE GETS UP', '#ff6b6b'); c.sound('horn'); return; }
   if (e.mode === 'wake' || e.mode === 'rally') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.6; } return; }
@@ -302,7 +302,7 @@ export function updateDeathKnight(e, dt, c) {
     return; }
   if (e.mode === 'grip') {   /* the chain runs out along the floor; what it catches it brings to his feet, and the cleave follows */
     e.chainX += e.face * D.chainV * dt;
-    if (!P.dead && (P.x - e.x) * e.face > 0 && (P.x - e.chainX) * e.face <= 0 && P.y > floor - 26 && Math.abs(P.x - e.x) <= D.gripR) { c.hit(e.x, UNB.dmg.grip, true, 'DEATH GRIP'); c.sound('crank');
+    if (!P.dead && (P.x - e.x) * e.face > 0 && (P.x - e.chainX) * e.face <= 0 && P.y > floor - 26 && Math.abs(P.x - e.x) <= D.gripR) { c.hit(e.x, UNB.dmg.grip, true, 'GRAVE CHAIN'); c.sound('crank');
       P.x = e.x + e.face * 26; e.mode = 'cleaveTell'; e.modeT = D.tell.cleaveAfter; c.say('COME HERE', '#8fd160'); return; }
     if (Math.abs(e.chainX - e.x) >= D.gripR || e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.5; }
     return; }
@@ -364,9 +364,9 @@ export function dkFrame(e) {
      THE CLEAVE           !   the heavy: he COMMITS it to where you stand a moment before it comes down. Be under it at the commit and
                               out of it (or dodging through it) when it lands, and the blade goes into the floor: OPEN (x openMul)
      THE PLANTED BLADE    !!  the hero's held blow: a fan of blood bolts round where you stand, through any guard - stand in a gap
-     DEATH GRIP           !!  a rune-chain along the floor: jump it or dodge through it; caught, you are dragged to his feet and cleaved
-     BLOOD BOIL           !!  the ground boils where you stand and cuts while you stay: step out
-     DEATH COIL           !   a knot of blood that seeks you; if it lands it HEALS him - guard it, dodge through it, or cut it down
+     GRAVE CHAIN           !!  a rune-chain along the floor: jump it or dodge through it; caught, you are dragged to his feet and cleaved
+     BLOOD WELL           !!  the ground boils where you stand and cuts while you stay: step out
+     BLOOD LEECH           !   a knot of blood that seeks you; if it lands it HEALS him - guard it, dodge through it, or cut it down
      BLOOD WARD               (quiet) the ward in front of him: a blow on its FACE is stopped and FILLS it (the only thing on him that
                               stops a blade). Go round it - from behind he takes it whole. A FULL ward struck again BREAKS: he reels
                               OPEN. Left alone it pays out as BLOOD NOVA !! round him, bigger for every blow it kept
@@ -382,8 +382,8 @@ export function dkFrame(e) {
    (the stuck blade, the broken ward) pay x openMul. After each opening he raises a short GUARD (the ward, unbreakable, no nova) so he is
    never chain-locked (design standard B3). The greed reprisal (the mash counter-burst) stays: it counts blows outside his openings. */
 const BK_TELL = { string: 'swingTell', punish: 'swingTell', cleave: 'cleaveTell', blade: 'bladeTell', grip: 'gripTell', boil: 'boilTell', coil: 'coilTell', tide: 'tideTell', ward: 'wardTell', raise: 'raiseTell', call: 'callTell', surge: 'surgeTell', nova: 'novaTell' };
-const BK_SAY = { swingTell: 'HIS GREATSWORD: GUARD IT', cleaveTell: 'THE CLEAVE: GUARD, OR DODGE IT LATE', bladeTell: 'THE PLANTED BLADE: FIND THE GAP', gripTell: 'DEATH GRIP: JUMP THE CHAIN',
-  boilTell: 'BLOOD BOIL: STEP OUT', coilTell: 'DEATH COIL: GUARD IT, OR IT HEALS HIM', tideTell: 'GRAVE TIDE: OFF THE FLOOR', wardTell: 'BLOOD WARD: GET BEHIND HIM', novaTell: 'BLOOD NOVA: GET CLEAR',
+const BK_SAY = { swingTell: 'HIS GREATSWORD: GUARD IT', cleaveTell: 'THE CLEAVE: GUARD, OR DODGE IT LATE', bladeTell: 'THE PLANTED BLADE: FIND THE GAP', gripTell: 'GRAVE CHAIN: JUMP THE CHAIN',
+  boilTell: 'BLOOD WELL: STEP OUT', coilTell: 'BLOOD LEECH: GUARD IT, OR IT HEALS HIM', tideTell: 'GRAVE TIDE: OFF THE FLOOR', wardTell: 'BLOOD WARD: GET BEHIND HIM', novaTell: 'BLOOD NOVA: GET CLEAR',
   raiseTell: 'SUMMON SKELETON', callTell: 'GRAVECALL', surgeTell: 'BLOOD SURGE: GET AWAY' };
 const BK_SND = { swingTell: 'whoosh', cleaveTell: 'charge', bladeTell: 'plant', gripTell: 'crank', boilTell: 'fire', coilTell: 'rise', tideTell: 'bones', wardTell: 'plant', novaTell: 'roar', raiseTell: 'rise', callTell: 'horn', surgeTell: 'roar' };
 const BK_COL = { swingTell: '#ffd36b', cleaveTell: '#ffd36b', coilTell: '#ffd36b', wardTell: '#8fd160', raiseTell: '#c8b6ff', callTell: '#c8b6ff' };
@@ -411,16 +411,16 @@ function stepBkWorld(e, dt, c) {
     if (!P.dead && Math.abs(P.x - b.x) < 8 && b.y > P.y - 26 && b.y < P.y + 2) { b.done = true; c.hit(b.x, UNB.dmg.bkBolt, true, 'THE PLANTED BLADE'); }
     if (b.y >= floor - 2 || b.x < A.x0 + 4 || b.x > A.x1 - 4 || (b.vy > 0 && b.t > 0.2 && c.stand && c.stand(b.x, b.y))) b.done = true; }
   e.bolts = e.bolts.filter(b => !b.done);
-  /* BLOOD BOIL: each pool cuts whoever stands in it, every boilTick, until it cools */
-  for (const p of e.pools) { p.t -= dt; p.tick -= dt; if (p.tick <= 0) { p.tick = S.boilTick; if (!P.dead && Math.abs(P.x - p.x) < S.boilR && P.y > floor - 20) c.hit(p.x, UNB.dmg.bkBoil, true, 'BLOOD BOIL'); } }
+  /* BLOOD WELL: each pool cuts whoever stands in it, every boilTick, until it cools */
+  for (const p of e.pools) { p.t -= dt; p.tick -= dt; if (p.tick <= 0) { p.tick = S.boilTick; if (!P.dead && Math.abs(P.x - p.x) < S.boilR && P.y > floor - 20) c.hit(p.x, UNB.dmg.bkBoil, true, 'BLOOD WELL'); } }
   e.pools = e.pools.filter(p => p.t > 0);
-  /* DEATH COIL: it turns toward you (only so fast), and what it opens it brings back into him. A guard turns it, a dodge goes through
+  /* BLOOD LEECH: it turns toward you (only so fast), and what it opens it brings back into him. A guard turns it, a dodge goes through
      it, and a blade cuts it out of the air. */
   for (const q of e.coils) { q.t -= dt; const tx = P.x - q.x, ty = (P.y - 12) - q.y, want = Math.atan2(ty, tx); let da = want - q.a; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
     q.a += clamp(da, -S.coilTurn * dt, S.coilTurn * dt); q.x += Math.cos(q.a) * S.coilV * dt; q.y += Math.sin(q.a) * S.coilV * dt;
     if (c.struck && c.struck(q.x - 6, q.y - 6, 12, 12, q)) { q.done = true; c.ring(q.x, q.y, 8, '#ffd36b'); c.sound('crack'); continue; }
     if (!P.dead && q.t < S.coilT - 0.25 && !(c.dodging && c.dodging()) && Math.abs(P.x - q.x) < 9 && Math.abs((P.y - 12) - q.y) < 14) { q.done = true;
-      const r = c.hit(q.x, UNB.dmg.bkCoil, false, 'DEATH COIL');
+      const r = c.hit(q.x, UNB.dmg.bkCoil, false, 'BLOOD LEECH');
       if (r && r !== 'blocked') { e.hp = Math.min(e.maxHp, e.hp + S.coilHeal); e.healed = (e.healed || 0) + S.coilHeal; c.say('HE DRINKS YOUR BLOOD', '#ff6b6b'); c.sound('rise'); } }
     if (q.t <= 0 || q.y > floor + 4 || q.x < A.x0 || q.x > A.x1) q.done = true; }
   e.coils = e.coils.filter(q => !q.done);
@@ -462,7 +462,7 @@ export function updateBloodKnight(e, dt, c) {
   if (e.mode === 'grip') {   /* the chain runs out along the floor; what it catches it brings to his feet, and the cleave follows */
     e.chainX += e.face * S.chainV * dt;
     if (!P.dead && !(c.dodging && c.dodging()) && (P.x - e.x) * e.face > 0 && (P.x - e.chainX) * e.face <= 0 && P.y > floor - 26 && Math.abs(P.x - e.x) <= S.gripR) {
-      c.hit(e.x, UNB.dmg.bkGrip, true, 'DEATH GRIP'); c.sound('crank'); e.mode = 'drag'; e.modeT = 0.5; e.grips = (e.grips || 0) + 1; c.say('COME HERE', '#8fd160'); return; }
+      c.hit(e.x, UNB.dmg.bkGrip, true, 'GRAVE CHAIN'); c.sound('crank'); e.mode = 'drag'; e.modeT = 0.5; e.grips = (e.grips || 0) + 1; c.say('COME HERE', '#8fd160'); return; }
     if (Math.abs(e.chainX - e.x) >= S.gripR || e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.45; }
     return; }
   if (e.mode === 'drag') { const tx = e.x + e.face * 30, dx = tx - P.x; if (!P.dead) { P.x += Math.sign(dx) * Math.min(Math.abs(dx), S.dragV * dt); P.vx = 0; }
@@ -556,7 +556,7 @@ function beginBK(e, what, c) { const { P, A } = c, S = UNB.bk, rnd = c.rand || M
 export const bkForce = (e, what, c) => beginBK(e, what, c);   /* for the harness: A3, every attack forced */
 export const bkPassForce = (e, c) => bkPass(e, c, 'forced');
 /* THE MOVE LIST, for the check (tools/unburied-fights.mjs): every move of his and the hero skill it is (src/progression-catalog.js names) */
-export const BK_KIT = { string: 'greatsword cleave (the combo)', cleave: 'greatsword cleave (the heavy)', blade: 'THE PLANTED BLADE', grip: 'DEATH GRIP', boil: 'BLOOD BOIL', coil: 'DEATH COIL',
+export const BK_KIT = { string: 'greatsword cleave (the combo)', cleave: 'greatsword cleave (the heavy)', blade: 'THE PLANTED BLADE', grip: 'GRAVE CHAIN', boil: 'BLOOD WELL', coil: 'BLOOD LEECH',
   tide: 'GRAVE TIDE', ward: 'BLOOD WARD', nova: 'BLOOD WARD (NOVA)', pass: 'THE PASSING', punish: 'THE PASSING (the cut out of it)', raise: 'SUMMON SKELETON', call: 'GRAVECALL', surge: 'BLOOD SURGE' };
 /* HIS SPRITE IS THE HERO'S OWN KIT (bakeReaper, src/chars.js), a pose per frame - main.js bakes this list into SPR.bloodknight at 1.5x,
    a touch darker. [pose, frame] into the kit; the LAST row is his hurt (HAS_HURT reads the last frame of a set as the hurt pose).
@@ -776,12 +776,12 @@ export function drawUnbWorld(g, foes, cx, cy, time) {
     if (e.t === 'corpse' && e.mode === 'riseTell') { for (let i = 0; i < 3; i++) R(g, x - 8 + i * 7 + Math.round(Math.sin(time * 14 + i) * 2), fy - 3 - ((time * 30 + i * 5) % 8), 2, 2, '#c8b6ff');
       g.globalAlpha = 0.7; for (let i = 0; i < 7; i++) { const t = (time * 2.2 + i * 0.37) % 1; R(g, x - 10 + i * 3 + Math.round(Math.sin(time * 5 + i * 2) * 3), fy - 2 - Math.round(t * 16), 2 + (i % 2), 2, i % 2 ? '#ece8d8' : '#bdb8a4'); } g.globalAlpha = 1; }   /* and the lime dust of the pit they lay in lifts off them */
     if (e.t === 'deathknight') { const D = UNB.dk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 12);
-      /* BLOOD BOIL: where it will come up (bubbles, red), and the pools while they boil */
+      /* BLOOD WELL: where it will come up (bubbles, red), and the pools while they boil */
       if (e.mode === 'boilTell' && Number.isFinite(e.boilX)) { const bx = Math.round(e.boilX - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy - 2, D.boilR, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
         for (let i = 0; i < 4; i++) R(g, bx - 20 + i * 12, fy - 3 - ((time * 40 + i * 7) % 8), 2, 2, '#c0283a'); }
       for (const p of e.pools || []) { const bx = Math.round(p.x - cx); g.globalAlpha = 0.55; g.fillStyle = '#8a1020'; g.beginPath(); g.ellipse(bx, fy - 1, D.boilR, 4, 0, 0, 7); g.fill(); g.globalAlpha = 1;
         for (let i = 0; i < 6; i++) { const h = (time * 30 + i * 11) % 10; R(g, bx - D.boilR + 6 + i * 9, fy - 2 - h, 2, 2, i % 2 ? '#ff6b6b' : '#c0283a'); } }
-      /* DEATH GRIP: the line the chain will run, then the chain of runes itself */
+      /* GRAVE CHAIN: the line the chain will run, then the chain of runes itself */
       if (e.mode === 'gripTell') { g.globalAlpha = 0.25 + 0.3 * k; R(g, f > 0 ? x : x - D.gripR, fy - 6, D.gripR, 4, '#ff6b6b'); g.globalAlpha = 1; }
       if (e.mode === 'grip' && Number.isFinite(e.chainX)) { const x1 = Math.round(e.chainX - cx); for (let q = Math.min(x, x1); q < Math.max(x, x1); q += 5) R(g, q, fy - 6 + ((q >> 2) % 2), 3, 2, (q >> 2) % 2 ? '#8fd160' : '#dfffa0'); }
       /* THE LONG PASSING: the lane he will cross */
@@ -811,15 +811,15 @@ function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
   if (e.mode === 'bladeTell') for (const tx of e.boltAt || []) { const sx = Math.round(tx - cx); g.globalAlpha = 0.35 + 0.45 * k; R(g, sx - 5, fy - 2, 11, 2, '#ff6b6b'); R(g, sx - 1, fy - 6, 3, 4, '#c0283a'); g.globalAlpha = 1; }
   for (const b of e.bolts || []) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy); g.globalAlpha = 0.6; R(g, bx - 3 - Math.sign(b.vx) * 5, by - 1, 5, 2, '#7a1020'); g.globalAlpha = 1;
     R(g, bx - 3, by - 3, 6, 6, '#7a1020'); R(g, bx - 2, by - 2, 4, 4, '#c0283a'); R(g, bx - 1, by - 1, 2, 2, '#ff9a9a'); }
-  /* DEATH GRIP: the line the chain will run, then the chain of runes itself */
+  /* GRAVE CHAIN: the line the chain will run, then the chain of runes itself */
   if (e.mode === 'gripTell') { g.globalAlpha = 0.25 + 0.3 * k; R(g, f > 0 ? x : x - S.gripR, fy - 6, S.gripR, 4, '#ff6b6b'); g.globalAlpha = 1; }
   if ((e.mode === 'grip' || e.mode === 'drag') && Number.isFinite(e.chainX)) { const x1 = e.mode === 'drag' ? x + f * 30 : Math.round(e.chainX - cx); for (let q = Math.min(x, x1); q < Math.max(x, x1); q += 5) R(g, q, fy - 6 + ((q >> 2) % 2), 3, 2, (q >> 2) % 2 ? '#8fd160' : '#dfffa0'); }
-  /* BLOOD BOIL: where it will come up (bubbles, red), and the pools while they boil */
+  /* BLOOD WELL: where it will come up (bubbles, red), and the pools while they boil */
   if (e.mode === 'boilTell' && Number.isFinite(e.boilX)) { const bx = Math.round(e.boilX - cx); g.globalAlpha = 0.3 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy - 2, S.boilR, 5, 0, 0, 7); g.stroke(); g.globalAlpha = 1;
     for (let i = 0; i < 4; i++) R(g, bx - 18 + i * 12, fy - 3 - ((time * 40 + i * 7) % 8), 2, 2, '#c0283a'); }
   for (const p of e.pools || []) { const bx = Math.round(p.x - cx); g.globalAlpha = 0.55; g.fillStyle = '#8a1020'; g.beginPath(); g.ellipse(bx, fy - 1, S.boilR, 4, 0, 0, 7); g.fill(); g.globalAlpha = 1;
     for (let i = 0; i < 6; i++) { const h = (time * 30 + i * 11) % 10; R(g, bx - S.boilR + 5 + i * 9, fy - 2 - h, 2, 2, i % 2 ? '#ff6b6b' : '#c0283a'); } }
-  /* DEATH COIL: the knot gathering in his hand (gold: a guard turns it), then the knot and its tail */
+  /* BLOOD LEECH: the knot gathering in his hand (gold: a guard turns it), then the knot and its tail */
   if (e.mode === 'coilTell') { const hx = x + f * 18, r = 2 + Math.round(4 * (1 - Math.max(0, e.modeT) / (S.tell.coil * bkMul(e)))); g.globalAlpha = 0.5 + 0.4 * k; R(g, hx - r, fy - 34 - r, r * 2, r * 2, '#c0283a'); R(g, hx - 1, fy - 35, 2, 2, '#ffd36b'); g.globalAlpha = 1; }
   for (const q of e.coils || []) { const qx = Math.round(q.x - cx), qy = Math.round(q.y - cy);
     for (let i = 1; i <= 4; i++) { g.globalAlpha = 0.5 - i * 0.1; R(g, qx - Math.cos(q.a) * i * 4 - 2, qy - Math.sin(q.a) * i * 4 - 2, 4, 4, '#7a1020'); }
@@ -1114,7 +1114,7 @@ const KNIGHT = { steelD: '#38423e', steelL: '#8a9892', mail: '#3e4a44', mailD: '
 export function bakeDeathKnight() {
   const F = [];
   /* 0 idle | 1,2 walk | 3 CLEAVE TELL (over the shoulder) | 4 CLEAVE (down through the front) | 5 GRIP TELL (the free hand thrust out) |
-     6 GRIP (hauling it in) | 7 BLOOD BOIL (the point down, the hand to the ground) | 8 PASSING TELL (crouched, the blade trailed) |
+     6 GRIP (hauling it in) | 7 BLOOD WELL (the point down, the hand to the ground) | 8 PASSING TELL (crouched, the blade trailed) |
      9 PASSING (the rush) | 10 WARD (the scythe planted before him) | 11 NOVA TELL (both hands up) | 12 NOVA (flung wide) |
      13 SUMMON / GRAVECALL (the hand up, green) | 14 SURGE (arms out, drinking) | 15 OPEN (on a knee, the ward broken) | 16 hurt */
   for (let f = 0; f < 17; f++) { const [c, g] = canvas(96, 84), cx = 42, fy = 83, s = 2;

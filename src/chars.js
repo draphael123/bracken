@@ -1956,8 +1956,8 @@ function pirateKitPoses(F, sh, holster, carry) {
     K({ wide: 4, dy: -2, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 2, Y - 9], arm2: [OFF[0], OFF[1], X - 2, Y - 8], cutlass: [X + 2, Y - 9, X + 6, Y - 20], pistol: holster(), plume: 2, bits: [a(X - 3, Y + 12, PALE), a(X + 5, Y + 13, PALE)] })];
   riposteKit(F, 'pirate', K, { X, Y, OFF, holster });
 }
-/* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD BOIL and GRAVECALL played beside an idle
-   death knight, and GRAVE TIDE, UNHOLY GROUND, DEATH COIL and DEATH GRIP all shared the one RAISE cast with SUMMON SKELETON - which
+/* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD WELL and GRAVECALL played beside an idle
+   death knight, and GRAVE TIDE, UNHOLY GROUND, BLOOD LEECH and GRAVE CHAIN all shared the one RAISE cast with SUMMON SKELETON - which
    keeps it, because the free hand down and the green coming up out of the ground is exactly what raising one is. The other five
    now have frames of their own on his rig; OFF is the off shoulder, and a() puts a loose pixel at an absolute point. */
 function reaperKitPoses(F, sh) {
@@ -1965,7 +1965,7 @@ function reaperKitPoses(F, sh) {
   const a = (x, y, col) => [x - BX, y - BY, col], RED = '#c0283a', PINK = '#ff6b6b', GRN = '#8fd160', DGRN = '#4f7a3a', LIT = '#dfffc0', BONE = '#b9c2cf';
   const lit = [[4, 3, LIT], [5, 3, LIT]];   /* the two lights in the helm, up bright */
   const low = [X - 3, Y + 3, X + 12, Y + 6];   /* the long blade held low across him, as he breathes (the idle's own guard) */
-  /* BLOOD BOIL: hunched over the blade stood point-down before him, both hands on it; flung open with the blade out wide and the
+  /* BLOOD WELL: hunched over the blade stood point-down before him, both hands on it; flung open with the blade out wide and the
      blood coming up off him every way; and the settle back to guard */
   F.boil = [K({ dy: 2, hy: 1, legs: 'wide', arm: [X, Y, X + 2, Y - 1], arm2: [OFF[0], OFF[1], X + 1, Y - 1], greatsword: [X + 2, Y - 1, X + 3, Y + 12], plume: 0, bits: [a(X - 2, Y + 7, RED), a(X + 5, Y + 7, RED)] }),
     K({ wide: 6, dy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 5, Y - 3], greatsword: [X + 5, Y - 3, X + 17, Y - 9], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 4], plume: 2,
@@ -1979,7 +1979,7 @@ function reaperKitPoses(F, sh) {
     K({ legs: 'wide', hy: -1, ...stood, arm2: [OFF[0], OFF[1], OFF[0] - 3, OFF[1] - 9], plume: 2, bits: [...lit, ...flame] }),
     K({ legs: 'wide', hy: -1, ...stood, arm2: [OFF[0], OFF[1], OFF[0] - 3, OFF[1] - 9], plume: 0,
       bits: [...lit, ...flame, a(X - 14, Y + 8, GRN), a(X - 11, Y + 7, DGRN), a(X - 13, Y + 5, GRN), a(X + 9, Y + 8, GRN), a(X + 12, Y + 7, DGRN), a(X + 10, Y + 5, GRN), a(X - 16, Y + 6, LIT), a(X + 13, Y + 4, LIT)] })];
-  /* DEATH COIL: the off hand drawn back with the knot of blood in it; then flung out past him, and the coil gone off the fingers */
+  /* BLOOD LEECH: the off hand drawn back with the knot of blood in it; then flung out past him, and the coil gone off the fingers */
   F.coil = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 1], plume: 1,
       bits: [a(OFF[0] - 6, OFF[1] - 2, RED), a(OFF[0] - 7, OFF[1] - 1, PINK), a(OFF[0] - 6, OFF[1], RED)] }),
     K({ wide: 4, dx: 1, legs: 'runC', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 7, Y - 2], plume: 2,
@@ -1994,7 +1994,7 @@ function reaperKitPoses(F, sh) {
   F.unholy = [K({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y + 3], arm2: [OFF[0], OFF[1], X - 4, Y + 3], greatsword: [X - 4, Y + 3, X - 17, Y + 7], plume: 1 }),
     K({ wide: 10, dx: 2, dy: 2, legs: 'runC', arm: [X, Y, X + 4, Y + 3], arm2: [OFF[0], OFF[1], X + 3, Y + 3], greatsword: [X + 4, Y + 3, X + 21, Y + 6], plume: 2,
       bits: [a(X + 8, Y + 7, GRN), a(X + 12, Y + 7, DGRN), a(X + 16, Y + 7, GRN), a(X + 20, Y + 7, DGRN), a(X + 4, Y + 7, DGRN), a(X + 10, Y + 6, LIT)] })];
-  /* DEATH GRIP: the off hand thrown out ahead, clawed, with the green off the fingers; then the fist hauled back in to his chest,
+  /* GRAVE CHAIN: the off hand thrown out ahead, clawed, with the green off the fingers; then the fist hauled back in to his chest,
      the green line coming with it */
   F.grip = [K({ wide: 4, dx: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 8, Y - 2], plume: 2,
       bits: [a(X + 9, Y - 3, BONE), a(X + 10, Y - 2, BONE), a(X + 9, Y - 1, BONE), a(X + 11, Y - 2, GRN), a(X + 12, Y - 3, LIT)] }),

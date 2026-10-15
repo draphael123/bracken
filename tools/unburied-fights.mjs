@@ -131,12 +131,12 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
   /* THE CLEAVE: in front, and a shield turns it */
   { const P = { x: X - 40, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'cleave', c); U.updateDeathKnight(e, 0.02, c); assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, false, 'the cleave is the guardable one');
     const Q = { x: X - 110, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); force(e2, 'cleave', c2); U.updateDeathKnight(e2, 0.02, c2); assert.equal(c2.hits.length, 0, 'out of reach of the cleave, nothing'); }
-  /* DEATH GRIP: the chain along the floor catches you and brings you to his feet, and the cleave follows; a jump clears it */
+  /* GRAVE CHAIN: the chain along the floor catches you and brings you to his feet, and the cleave follows; a jump clears it */
   { const P = { x: X - 150, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'grip', c); run(U.updateDeathKnight, e, c, 0.5);
     assert.equal(c.hits.length, 1); assert.equal(c.hits[0].hard, true, 'no shield holds the grip'); assert.ok(Math.abs(P.x - (X - 26)) < 2, 'dragged to his feet: ' + (P.x - X)); assert.equal(e.mode, 'cleaveTell', 'and the cleave follows');
     const J = { x: X - 150, y: A.floor - 40, dead: false }, e2 = mk(), c2 = dk(J); force(e2, 'grip', c2); run(U.updateDeathKnight, e2, c2, 1); assert.equal(c2.hits.length, 0, 'a jump clears the chain'); assert.equal(J.x, X - 150, 'and nothing drags you');
     const B = { x: X + 60, y: A.floor, dead: false }, e3 = mk(), c3 = dk(B); U.dkForce(e3, 'grip', c3); e3.face = -1; e3.modeT = 0; run(U.updateDeathKnight, e3, c3, 1); assert.equal(c3.hits.length, 0, 'the chain does not reach behind him'); }
-  /* BLOOD BOIL: where you stood, it cuts while you stay; step out and it does not */
+  /* BLOOD WELL: where you stood, it cuts while you stay; step out and it does not */
   { const P = { x: X - 90, y: A.floor, dead: false }, e = mk(), c = dk(P); force(e, 'boil', c); run(U.updateDeathKnight, e, c, 1.6);
     assert.ok(c.hits.length >= 3 && c.hits.every(h => h.hard), 'standing in the boil, it keeps cutting: ' + c.hits.length);
     const Q = { x: X - 90, y: A.floor, dead: false }, e2 = mk(), c2 = dk(Q); force(e2, 'boil', c2); Q.x -= 50; run(U.updateDeathKnight, e2, c2, 1.6); assert.equal(c2.hits.length, 0, 'stepped out of it, nothing'); }
@@ -231,16 +231,16 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
     const Q = { x: X - 90, y: A.floor, dead: false }, e2 = mk(), c2 = bk(Q); force(e2, 'blade', c2); Q.x = X - 90 + S.gap / 2; tell(e2, c2, S.tell.blade + S.boltT + 0.5); assert.equal(c2.hits.length, 0, 'in the gap between two bolts, nothing');
     const e3 = mk({ phase: 2, hp: UNB.hp.bloodknight * 0.4 }), c3 = bk({ x: X - 90, y: A.floor, dead: false }); force(e3, 'blade', c3); assert.equal(e3.boltAt.length, S.boltsP2, 'phase two: five');
     assert.ok(Math.max(...e3.boltAt) - Math.min(...e3.boltAt) > span1 * 1.4, 'A10: and the fan is WIDER'); }
-  /* DEATH GRIP: the chain along the floor - jumped or dodged it passes; caught, you are dragged to his feet and the Cleave follows */
+  /* GRAVE CHAIN: the chain along the floor - jumped or dodged it passes; caught, you are dragged to his feet and the Cleave follows */
   { const P = { x: X - 120, y: A.floor, dead: false }, e = mk(), c = bk(P); force(e, 'grip', c); tell(e, c, S.tell.grip + 0.6);
     assert.equal(c.hits.length, 1, 'the chain catches a hero on the floor'); assert.equal(c.hits[0].hard, true); assert.ok(Math.abs(P.x - (e.x - 30)) < 4, 'and drags him to his feet: ' + Math.round(P.x - e.x));
     assert.equal(e.mode, 'cleaveTell', 'and the Cleave follows');
     const J = { x: X - 120, y: A.floor - 40, dead: false }, e2 = mk(), c2 = bk(J); force(e2, 'grip', c2); tell(e2, c2, S.tell.grip + 0.6); assert.equal(c2.hits.length, 0, 'jumped, the chain passes under');
     const D = { x: X - 120, y: A.floor, dead: false, dodge: 1 }, e3 = mk(), c3 = bk(D); force(e3, 'grip', c3); tell(e3, c3, S.tell.grip + 0.6); assert.equal(c3.hits.length, 0, 'dodged through, the chain passes'); }
-  /* BLOOD BOIL: told where you stand, it boils and cuts while you stay; out of it, nothing */
+  /* BLOOD WELL: told where you stand, it boils and cuts while you stay; out of it, nothing */
   { const P = { x: X - 90, y: A.floor, dead: false }, e = mk(), c = bk(P); force(e, 'boil', c); tell(e, c, S.tell.boil + 1.2); assert.ok(c.hits.length >= 2 && c.hits.every(h => h.hard), 'stood in the boil it cuts over and over: ' + c.hits.length);
-    const Q = { x: X - 90, y: A.floor, dead: false }, e2 = mk(), c2 = bk(Q); force(e2, 'boil', c2); tell(e2, c2, S.tell.boil - 0.1); Q.x -= S.boilR + 20; tell(e2, c2, 2); assert.equal(c2.hits.filter(h => h.name === 'BLOOD BOIL').length, 0, 'stepped out, it boils empty'); }
-  /* DEATH COIL: it seeks you; landing it HEALS him; a guard turns it (no heal); a dodge goes through it; a blade cuts it down */
+    const Q = { x: X - 90, y: A.floor, dead: false }, e2 = mk(), c2 = bk(Q); force(e2, 'boil', c2); tell(e2, c2, S.tell.boil - 0.1); Q.x -= S.boilR + 20; tell(e2, c2, 2); assert.equal(c2.hits.filter(h => h.name === 'BLOOD WELL').length, 0, 'stepped out, it boils empty'); }
+  /* BLOOD LEECH: it seeks you; landing it HEALS him; a guard turns it (no heal); a dodge goes through it; a blade cuts it down */
   { const P = { x: X - 110, y: A.floor, dead: false }, e = mk({ hp: 500 }), c = bk(P); force(e, 'coil', c); tell(e, c, S.tell.coil + 2);
     assert.equal(c.hits.length, 1, 'the coil finds a hero who stands'); assert.equal(c.hits[0].hard, false, 'a shield turns it'); assert.equal(e.hp, 500 + S.coilHeal, 'landed, it heals him ' + S.coilHeal);
     const Q = { x: X - 110, y: A.floor, dead: false }, e2 = mk({ hp: 500 }), c2 = bk(Q, [], { hit: (x, d, hard, name) => { c2.hits.push({ d, hard, name }); return 'blocked'; } }); force(e2, 'coil', c2); tell(e2, c2, S.tell.coil + 2);
@@ -248,7 +248,7 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
     const D = { x: X - 110, y: A.floor, dead: false, dodge: 9 }, e3 = mk({ hp: 500 }), c3 = bk(D); force(e3, 'coil', c3); tell(e3, c3, S.tell.coil + S.coilT + 0.1); assert.equal(c3.hits.length, 0, 'dodging, it goes through'); assert.equal(e3.hp, 500);
     const K = { x: X - 110, y: A.floor, dead: false }, e4 = mk({ hp: 500 }), c4 = bk(K, [], { struck: () => true }); force(e4, 'coil', c4); tell(e4, c4, S.tell.coil + 2); assert.equal(c4.hits.length, 0, 'cut down, it lands nothing'); assert.equal(e4.hp, 500);
     /* it turns, only so fast: it follows a hero who walks off its line */
-    const M = { x: X - 150, y: A.floor, dead: false }, e5 = mk(), c5 = bk(M); force(e5, 'coil', c5); tell(e5, c5, S.tell.coil + 0.3); M.x = X - 150 + 40; tell(e5, c5, 2); assert.equal(c5.hits.filter(h => h.name === 'DEATH COIL').length, 1, 'it seeks: a step off its line does not lose it'); }
+    const M = { x: X - 150, y: A.floor, dead: false }, e5 = mk(), c5 = bk(M); force(e5, 'coil', c5); tell(e5, c5, S.tell.coil + 0.3); M.x = X - 150 + 40; tell(e5, c5, 2); assert.equal(c5.hits.filter(h => h.name === 'BLOOD LEECH').length, 1, 'it seeks: a step off its line does not lose it'); }
   /* GRAVE TIDE (phase two): hands up out of the floor along a line toward you, one after another - off the floor, or out of the line */
   { const P = { x: X - 120, y: A.floor, dead: false }, e = mk({ phase: 2 }), c = bk(P); force(e, 'tide', c); assert.ok(e.tideAt.length >= 5, 'a line of hands: ' + e.tideAt.length);
     tell(e, c, S.tell.tide * S.p2 + 1.2); assert.equal(c.hits.length, 1, 'on the floor in its line, one hand holds and tears'); assert.equal(c.hits[0].hard, true);
