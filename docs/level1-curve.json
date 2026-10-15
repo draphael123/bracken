@@ -585,17 +585,17 @@
   "lostPct": 506
  },
  "minecart": {
-  "hash": "c14c5ba93827",
+  "hash": "46b2afcc5e15",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 49,
-  "deaths": 4,
-  "kills": 58,
-  "lifts": 32,
+  "hits": 39,
+  "deaths": 5,
+  "kills": 61,
+  "lifts": 41,
   "walked": 100,
   "bare": true,
-  "lostPct": 243
+  "lostPct": 207
  },
  "sealedpyramid": {
   "hash": "374d1b96d29b",

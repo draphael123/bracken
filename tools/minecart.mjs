@@ -20,7 +20,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { THREAT } from '../src/threat.js';
-import { MC, BOOST_GAP, SECTIONS, ARCS, FOOT, cartSpeed, runeAt, runeHits, rampFlight } from '../src/minecart.js';
+import { MC, BOOST_GAP, SECTIONS, ARCS, FOOT, ARENA_X, gateX, cartSpeed, runeAt, runeHits, rampFlight } from '../src/minecart.js';
+import { STUCK_HANDS } from '../src/stuck-spots.js';
 import { isCallout } from '../src/hint-lines.js';
 import * as GD from '../src/great-drill.js';
 import * as FMG from '../src/foreman.js';
@@ -46,7 +47,7 @@ ok(MC.ramV > MC.cruise + 20 && MC.ramV < MC.boost, 'the RAM pace (' + MC.ramV + 
 ok(cartSpeed(MC.cruise, { boost: true }, 1) === MC.boost && cartSpeed(0, {}, 10) === MC.cruise, 'the cart: pump to ' + MC.boost + ', cruise at ' + MC.cruise);
 /* THE ARCS */
 for (const k of ['points', 'speed', 'combat', 'switch']) ok(['teach', 'test', 'remix', 'exam', 'boss'].every(s => ARCS[k][s]), 'the ' + k + ' arc is taught, tested, remixed, examined and in the boss');
-ok(SECTIONS.length === 11 && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'ten sections (deeprails4: THE TWIN LINES went in before the flooded run) and the arena, in order');
+ok(SECTIONS.length === 12 && SECTIONS.find(s => s[0] === 'THE TWIN LINES') && SECTIONS.find(s => s[0] === 'THE SPOIL PITS') && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'eleven sections (deeprails4: THE TWIN LINES went in before the flooded run; deeprails5: THE SPOIL PITS after it) and the arena, in order');
 const sec = name => { const i = SECTIONS.findIndex(s => s[0] === name); return [SECTIONS[i][1], SECTIONS[i + 1][1]]; };
 /* THE AREAS (A8: dark and light stretches) */
 { const dz = (L.darkZones || [])[0], [d0, d1] = sec('THE DARK DRIFT'); ok(dz && dz.dark >= 0.8 && dz.x0 <= (d0 + 6) * TS && dz.x1 >= (d1 - 6) * TS && L.dark > 0, 'THE DARK DRIFT is pitch (dark ' + (dz && dz.dark) + ': the headlamp cone, src/minecart-hands.js holes)');
@@ -103,7 +104,7 @@ for (const g of gaps) { const deadly = L.mcExam.some(([a, b]) => g.x0 >= a && g.
 for (const r of L.mcRamps) ok(toldFor(r.x), 'the ramp at ' + r.x + ' is told');
 for (const b of L.mcBreaks) if (b.x0 < L.chases[0].trigger / TS) ok(T_.some(t => t.x < b.x0 && t.at >= b.x0 && /BREAK/.test(t.text)), 'the first rail that breaks is told');
 for (const p of req) ok(toldFor(L.mcWalls.find(q => q.x > p.x1 && q.x - p.x1 < 30).x) || toldFor(p.x), 'the required points ' + p.id + ' are told');
-for (const f of FOOT) ok(T_.some(t => t.x < f.x0 && t.at >= f.x0 && /DERAIL|LIFT/.test(t.text)), 'the ' + f.name + ' stretch is told before the cart stops');
+for (const f of FOOT) ok(T_.some(t => t.x < f.x0 && t.at >= f.x0 && /DERAIL|LIFT|ON FOOT/.test(t.text)), 'the ' + f.name + ' stretch is told before the cart stops');
 ok(T_.some(t => t.x >= 900 && t.at >= 940 && /BORE/.test(t.text)), 'the drill is told before its arena (B8)');
 ok(['scar', 'rumble', 'headlight', 'spoil'].every(k => L.decor.some(d => d.kind === k)), 'its approach: bore scars, a rumble, its headlight through the rock, spoil (B8)');
 ok(L.decor.some(d => d.kind === 'crumble' && d.x0 <= 530 && d.x1 >= P('cavein').x1), 'the cave-in low line crumbles in view from 530 (review MF5)');
@@ -172,7 +173,7 @@ ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + 
 /* THE FOREMAN (deeprails3: THE MINI, src/foreman.js) */
 { { const st = L.ents.filter(e => e.t === 'check').map(e => e.x), F0 = FMG.FOREMAN.cols[1], ex = L.mcPoints.find(p => p.id === 'examSw');
     ok(st.some(x => x > F0 && x <= F0 + 4 && x < ex.x - 6), 'a STATION right after the Foreman gate (' + F0 + '), before the exam duck + switch (deeprails4, Daniel 10-12): a later death never redoes him');
-    ok(!st.some(x => x > F0 + 4 && x < 960), 'and none between it and the drill (one shrine moved, not added: A10b)'); }
+    { const nx = st.filter(x => x > F0 + 4).sort((a, b) => a - b)[0]; ok(nx === undefined || nx - (F0 + 2) >= 134, 'and the next station is a section on (A10b: ' + (nx === undefined ? 'none' : nx - (F0 + 2)) + ' columns - deeprails5: STATION SEVEN after THE SPOIL PITS exam)'); } }
  const fm = L.ents.find(e => e.mini && e.ride && e.ride.foreman), M_ = L.mini, F = FMG.FOREMAN, G = FMG.geom(TS);
   ok(fm && fm.t === 'brute' && M_ && M_.boss === 'brute' && M_.name === 'THE FOREMAN' && !fm.elite, 'THE FOREMAN is the level\'s MINI (a goblin captain - a brute - in an armoured cart), no longer an elite');
   ok(M_.x0 === G.x0 && M_.x1 === G.x1 && L.mcExam.some(([a, b]) => F.cols[0] >= a && F.cols[1] <= b), 'his loop (' + F.cols.join('-') + ') is the mini\'s room, inside the flooded run\'s exam');
@@ -201,6 +202,8 @@ ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + 
     const z = {}; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 6 }], C(z)); ok(z.spiked === F.bumpDmg && F.spikeDmg === F.bumpDmg && !z.board && !z.braced && S.n.spiked === 1, 'a landing on his rim with the spikes up costs the FULL BUMP (' + z.spiked + ') and throws you back');
     ok(F.spikeRise <= 0.5 && F.spikeBack > 0, 'the spikes are told ' + F.spikeRise + ' s before they bite');
     S.mode = 'idle'; S.cd = 0; S.i = 2; log.length = 0; FMG.stepForeman(S, e, 1 / 60, [{ ...h, x: FMG.foremanX(S) - 60, y: G.lowY, prevY: G.lowY, vy: 0, ground: true }], C({})); ok(S.mode === 'driftTell' && log.includes(FMG.FOREMAN_LINES.spikesWait) && !log.includes(FMG.FOREMAN_LINES.slows), 'his drift with the spikes up says so (SPIKES UP: WAIT), not JUMP ON HIM');
+    { const hb = { ...h, x: FMG.foremanX(S) - 60, y: G.lowY, prevY: G.lowY, vy: 0, ground: true, riding: true, v: MC.cruise }, xb = {}; for (let i = 0; i < 400 && S.mode !== 'away'; i++) FMG.stepForeman(S, e, 1 / 60, [hb], C(xb));
+      ok(S.mode === 'away' && !xb.hit && S.ward > 0 && S.n.bumps === 0, 'and WAIT is the answer (deeprails5): a hero held on the low line is never bumped - the braced drift stops short of him and pulls away'); }
     for (let i = 0; i < Math.ceil(F.wardT * 60) + 5; i++) FMG.stepForeman(S, e, 1 / 60, [], C({})); ok(S.ward === 0 && log.includes(FMG.FOREMAN_LINES.spikesDown), 'and the spikes coming DOWN are told too'); }
   { const { S, e } = mk(), x = {}; const h = { x: FMG.foremanX(S) - 18, y: G.lowY, prevY: G.lowY, vy: 0, ground: true, alive: true, riding: true, v: MC.cruise, pp: {} };
     FMG.stepForeman(S, e, 1 / 60, [h], C(x)); ok(x.hit === F.bumpDmg && x.bounce === 1 && !x.board, 'met in your cart on the LOW line he is a BUMP (armoured: it hurts you and throws you back)'); }
@@ -209,13 +212,43 @@ ok(MC.swReach >= 44 && MC.swReach > MC.leverReach, 'a SWITCH answers E from ' + 
   { const { S, e } = mk(); S.mode = 'drift'; S.R = 160; const mem = {}, ask = t => FMG.foremanPlan({ P: { x: G.x0 + 118, y: G.lowY, ground: true, vy: 0, atk: -1, v: MC.cruise, lane: 0 }, S, rng: () => 0.9, mem, t });
     ask(1); const pl = ask(1.5); ok(pl.jump, 'the bot jumps on him as he drops back to it (' + pl.why + ')'); } }
 /* THE ON-FOOT STRETCHES (deeprails2) */
-ok(FOOT.length === 2 && FOOT.some(f => f.derail) && FOOT.some(f => !f.derail), 'two on-foot stretches: a derailment and a lift (Daniel 10-09)');
+ok(FOOT.length === 3 && FOOT.some(f => f.derail) && FOOT.some(f => !f.derail) && FOOT.some(f => f.id === 'pits'), 'three on-foot stretches: a derailment, a lift (Daniel 10-09) and THE SPOIL PITS (deeprails5, Daniel 10-14)');
 for (const f of FOOT) { ok(L.ents.some(e => e.t === 'mccart' && e.x === f.board), f.name + ': a cart waits at its end (column ' + f.board + ')');
   ok(f.board - f.x0 >= 20, f.name + ' is a short stretch on a big platform (' + (f.board - f.x0) + ' columns)');
   ok(L.ents.some(e => e.t === 'check' && e.x > f.x0 && e.x < f.board), f.name + ': a station on it'); }
 ok(L.decor.some(d => d.kind === 'buffer' && d.x === FOOT[0].x0 + 1) && at(FOOT[0].x0 + 1, 36) === T.SOLID, 'THE WRECK: the buffer stop the cart hits');
 { const mv = L.ents.find(e => e.t === 'mover' && e.vert && e.x > FOOT[1].x0 && e.x < FOOT[1].board); ok(mv, 'THE LIFT: a cage lift (a vertical mover)');
   ok(mv && stand(at(mv.x + mv.len, mv.y - mv.rise)) && at(mv.x + mv.len, mv.y - mv.rise - 1) === T.AIR, 'its top meets the high line (' + (mv.y - mv.rise) + ')'); }
+/* THE SPOIL PITS (deeprails5, Daniel 10-14 #1): a PIT section on foot after the Foreman - lots of pits; hazards in the way you JUMP UP over or DROP DOWN under; high or low;
+   A14 platforming with its own exam; teach -> test -> remix -> exam; A10b kept; the cart parked at its end */
+{ const [p0, p1] = sec('THE SPOIL PITS'), A = ARCS.pits, D = 30, U = 26, f = FOOT.find(q => q.id === 'pits'), SP = T.SPIKE;
+  ok(p0 > FMG.FOREMAN.cols[1] && p1 <= ARENA_X && f && f.x0 >= p0 && f.board < p1, 'THE SPOIL PITS stand after the Foreman (and his station) and before the drill, on foot (' + f.x0 + '-' + f.board + ')');
+  ok(A && A.teach[1] < A.test[0] && A.test[1] < A.remix[0] && A.remix[1] < A.exam[0] && A.exam[1] < f.board, 'the pits arc runs teach -> test -> remix -> exam in order');
+  const pits = L.mcPits.filter(([a]) => a >= p0 && a < p1); ok(pits.length >= 6, pits.length + ' pits');
+  for (const [a, b] of pits) { ok(b - a + 1 <= 4, 'the pit at ' + a + ' is ' + (b - a + 1) + ' wide (every hero clears it with base movement)');
+    let floor = -1; for (let y = D; y < L.H; y++) if (at(a, y) === SP) { floor = y; break; } ok(floor > D && at(a, floor + 1) === T.SOLID && [a, b].every(x => !stand(at(x, D))), 'the pit at ' + a + ' has a floor of spoil (spikes) under it - never a bottomless drop'); }
+  ok(L.examSpans.length === 1 && L.examSpans[0][0] === A.exam[0] && L.examSpans[0][1] === A.exam[1] && pits.some(([a]) => a >= A.exam[0] && a <= A.exam[1]), 'its exam is an exam span: the pits kill there (src/survival.js examAt)');
+  ok(pits.some(([a]) => a < A.exam[0]) && T_.some(t => /PITS KILL/.test(t.text) && t.at <= A.exam[0] + 1 && t.at >= A.exam[0] - 1), 'taught first where they only bite, and the exam is told before it kills (never an untold death)');
+  { const cat = c => at(c, U) === T.ONEWAY, low = c => at(c, D) === T.SOLID, cols = []; for (let c = A.teach[0]; c <= A.exam[1]; c++) cols.push(c);
+    ok(cols.filter(cat).length >= 50 && cols.filter(low).length >= 50, 'TWO LINES across it: the high catwalk (' + cols.filter(cat).length + ' columns, one-way planks: down + jump drops) and the low walk (' + cols.filter(low).length + ')');
+    ok(D - U >= 4, 'the low walk is ' + (D - U) + ' rows under the catwalk: a jump never takes you back up through it (a step does)');
+    const spoilHi = cols.filter(c => cat(c) && at(c, U - 1) === SP), spoilLo = cols.filter(c => low(c) && at(c, D - 1) === SP), crHi = L.mcCrushers.filter(k => k.row === U && k.x >= p0 && k.x < p1);
+    ok(spoilHi.length >= 4 && spoilLo.length >= 4 && crHi.length >= 2, 'IN THE WAY on each line: spoil on the planks (' + spoilHi.length + ', jump it), crushers over the catwalk (' + crHi.length + ', time them or drop under), spoil on the walk (' + spoilLo.length + ')');
+    for (const k of crHi) ok([k.x, k.x + 1].every(low) && ![k.x, k.x + 1].some(c => at(c, D - 1) === SP), 'the crusher at ' + k.x + ' over the catwalk has the low walk clear under it (drop down)');
+    const steps = cols.filter(c => at(c, D - 2) === T.SOLID && at(c, D - 3) === T.AIR && low(c)); ok(steps.length >= 4, 'steps off the low walk back up to the catwalk (' + steps.length + ' columns)');
+    ok(L.ents.some(e => e.t === 'sign' && e.x >= p0 && e.x <= A.teach[1] && /HIGH/.test(e.text) && /LOW/.test(e.text)) && L.ents.some(e => e.t === 'sign' && e.x >= p0 && e.x <= A.teach[1] && /DROP/.test(e.text)), 'taught by signs at the point of use (high / low; drop under the crusher)'); }
+  { const el = L.ents.filter(e => e.elite && e.x >= A.exam[0] && e.x <= A.exam[1]); ok(el.length === 1 && el[0].t === 'brute' && pits.some(([a, b]) => b < el[0].x && el[0].x - b <= 4), 'its exam: one weighty elite (an elite brute) on the last pier, a pit at your back');
+    const stp = L.ents.filter(e => e.t === 'check' && e.x > A.exam[1] && e.x < f.board); ok(stp.length === 1, 'a station after the exam (CP after), before the parked cart'); }
+  ok(!L.ents.some(e => e.t === 'stray' && e.x >= p0 && e.x < p1), 'no ore here: the quest\'s ten stand where they were'); }
+/* THE HAND-OFF (deeprails5, Daniel 10-14 #4): at the end of EVERY on-foot stretch the cart is PARKED (visible: drawn on its own rail, not the column's first rock), you JUMP INTO it,
+   and a GATE shuts the line past its nose until you do; taught once (THE WRECK: a sign, a tell, a glint at once) */
+{ for (const f of FOOT) { const e = L.ents.find(q => q.t === 'mccart' && q.x === f.board); ok(e && stand(at(f.board, e.y + 1)), f.name + ': its cart is parked ON its rail (row ' + (e && e.y + 1) + ')');
+    ok(gateX(f, TS) > f.board * TS + 8 + 8 && gateX(f, TS) < (f.board + 2) * TS, f.name + ': its gate stands just past the cart\'s nose');
+    const sp = (STUCK_HANDS.minecart || []).find(s => s.id === 'mc-board-' + f.id); ok(sp && sp.steps[0].is[0] === 'board.' + f.id && sp.steps[0].is[1] === 'out', f.name + ': its cart glints until you are in it (stuck spot ' + (sp && sp.id) + ')'); }
+  const w = FOOT[0], spw = STUCK_HANDS.minecart.find(s => s.id === 'mc-board-wreck');
+  ok(!spw.steps[0].glint && L.ents.some(e => e.t === 'sign' && e.x > w.x0 && e.x <= w.board && /JUMP INTO/.test(e.text)) && T_.some(t => /JUMP INTO/.test(t.text) && t.at === w.board), 'taught once, at THE WRECK: a sign, a tell and a glint at once (the later carts glint after a stall)');
+  ok(/c\.wasAir && P\.vy >= 0 && Math\.abs\(P\.x - cx0\) <= 14/.test(hands) && /P\.mcIn = f\.id/.test(hands) && /else if \(P\.x > gx - 6\) \{ P\.x = gx - 6;/.test(hands), 'the hands board you only on a LANDING in the tub, and the gate holds the line until then');
+  ok(/const cartRow = f =>/.test(hands) && !/for \(let y = 0; y < ctx\.LH\(\); y\+\+\) \{ const t = ctx\.cellGet\(f\.board, y\)/.test(hands), 'the parked cart is drawn on its rail (it was drawn at the roof\'s first rock and never showed)'); }
 /* COLLECTIBLES, STATIONS */
 ok(L.ents.filter(e => e.t === 'stray' && e.kind === 'orenugget').length === 10, 'ten ore nuggets');
 ok(L.ents.filter(e => e.t === 'silver').length === 3 && !L.ents.some(e => e.t === 'relic'), 'three silvers, no relic');
@@ -288,10 +321,61 @@ const hits = () => { const got = []; return { got, w: Object.assign(world([]), {
 { const { S, e } = fight(); S.lever = { x: G.x0 + 120, id: 1, thrown: false }; S.chute = { t: 1, R: 300 }; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[0], ground: true, face: 1, atk: -1, lane: 0, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
   ask(5); const pl = ask(5.5); ok(pl.talk && /lever/.test(pl.why), 'the bot throws the points lever as it passes (E, from the LOW line)'); }
 { const { S, e } = fight(); S.lunge = { lane: 1, t: 0.6, on: false }; S.n.lunge = 1; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
-  ask(5); const pl = ask(5.5); ok(pl.duck, 'the bot ducks in its tub under the lunge'); }
+  ask(5); const pl = ask(5.5); ok(pl.duck, 'the bot ducks in its tub under the lunge');
+  S.lunge.on = true; ok(ask(5.6).duck, 'and while it sweeps'); }
 { const { S, e } = fight(); S.chute = { x: G.x0 + 200, t: 0.6 }; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 120, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
   ask(5); const pl = ask(5.5); ok(/ore/.test(pl.why) && pl.drop, 'the bot drops to the LOW line to ram when the chute rattles with no lever left'); }
 ok(GD.DRILL.hp >= 1900 && GD.DRILL.jamCap >= 0.15, 'the drill\'s health is never lowered under the greybox floor (' + GD.DRILL.hp + ')');
+/* GREAT DRILL 5 (deeprails5, Daniel 10-14: +2 told attacks tied to the gears / rails) - THE SPARE CUTTER (strike it back, or jump it) and THE RAIL CLAW (pump and jump the torn rail, or change line) */
+{ const D = GD.DRILL, air = 2 * 320 / 1000 - 0.02;
+  ok(D.chain[2].includes('cutter') && D.chain[3].includes('claw') && !D.chain[1].includes('cutter') && !D.chain[1].includes('claw'), 'the spare cutter comes in P2, the rail claw in P3');
+  ok(GD.moveGear('cutter').id === 'lunge' && GD.moveGear('claw').id === 'chain', 'each new attack is driven by a gear bank (the cutter by the spin-up gear, the claw by the chain winch): break it and it is gone for the phase');
+  ok(D.cutterTell >= 0.8 && D.clawTell >= 0.9, 'both told: the cutter ' + D.cutterTell + ' s, the claw ' + D.clawTell + ' s');
+  ok((D.clawW + 12) / D.cruise > air && (D.clawW + 12) / MC.boost < air - 0.12, 'THE TORN RAIL (' + D.clawW + ' px) is too long to clear from a cruising jump and clears from a pumped one (the level\'s pump gap)');
+  /* the cutter: told on your line, bowled, it hits a cart that holds; struck back it bites its own gear */
+  { const { S, e } = fight(); S.ph = 2; GD.armGears(S); S.cd = 0; S.i = D.chain[2].indexOf('cutter'); const log = [], { got, w } = hits(); w.number = (a, b, t) => log.push(t);
+    GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w); ok(e.mode === 'cutterTell' && log.some(t => /CUTTER: STRIKE IT BACK/.test(t)), 'THE SPARE CUTTER: told first (its boom lifts it) - ' + log.join(' / '));
+    for (let i = 0; i < 200 && !got.some(g => g.name === 'THE SPARE CUTTER'); i++) GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w);
+    const b = got.find(g => g.name === 'THE SPARE CUTTER'); ok(b && b.b[2] >= G.laneY[1] - D.cutterH - 1 && b.b[3] <= G.laneY[1] + 2, 'held on its line, the cutter rolls into you at shin height (a jump clears it)');
+    const { S: S2, e: e2 } = fight(); S2.ph = 2; GD.armGears(S2); S2.cd = 0; S2.i = D.chain[2].indexOf('cutter'); const lg = [], w2 = Object.assign(world(lg), { hit: () => false });
+    for (let i = 0; i < 160 && !(S2.cutters.length && !(S2.cutters[0].fly > 0)); i++) GD.stepDrill(e2, S2, 1 / 60, H0(G.x0 + 100), w2);   /* (bowled: it flies off the boom first - harmless - and lands ahead of you) */
+    ok(Math.abs(S2.cutters[0].x - (G.x0 + 100 + D.cutterLead)) < 6, 'it lands ' + D.cutterLead + ' px ahead of you on your line (its landing marked through the flight)');
+    const cu = S2.cutters[0], bx = GD.cutterBox(G, cu); ok(GD.strikeCutter(S2, { l: bx.l - 2, r: bx.l + 6, t: bx.t + 2, b: bx.b - 2 }) && cu.back, 'a blow that lands on it strikes it back');
+    const hp0 = S2.gears.lunge.hp; for (let i = 0; i < 120 && S2.cutters.length; i++) GD.stepDrill(e2, S2, 1 / 60, H0(G.x0 + 100), w2);
+    ok(S2.gears.lunge.hp === hp0 - D.cutterBite && lg.includes('STRUCK BACK: INTO ITS GEARS'), 'struck back, it flies into its own spin-up gear (' + D.cutterBite + ' off it)'); }
+  /* the claw: its stretch marked through the tell, then torn: a grounded cart on it is hit */
+  { const { S, e } = fight(); S.ph = 3; S.highDown = true; GD.armGears(S); S.cd = 0; S.i = D.chain[3].indexOf('claw'); const log = [], { got, w } = hits(); w.number = (a, b, t) => log.push(t);
+    GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w); ok(e.mode === 'clawTell' && S.clawPend && S.clawPend.lane === 1 && log.some(t => /THE CLAW: PUMP AND JUMP/.test(t)), 'THE RAIL CLAW: told first, on your line (its stretch marked)');
+    for (let i = 0; i < 200 && !S.tears.length; i++) GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w);
+    ok(S.tears.length === 1 && Math.abs(S.tears[0].x + D.clawW - (GD.rearX(S) - 8)) < 8, 'then that stretch of rail is torn, just behind the rig');
+    for (let i = 0; i < 200 && !got.some(g => g.name === 'THE TORN RAIL'); i++) GD.stepDrill(e, S, 1 / 60, H0(G.x0 + 100), w);
+    const b = got.find(g => g.name === 'THE TORN RAIL'); ok(b && b.b[2] >= G.laneY[1] - 6, 'the torn rail comes down the tunnel at you: met on the line it hits (in the air over it you are clear)');
+    const o = {}; const { S: S3, e: e3 } = fight(); S3.ph = 3; S3.highDown = true; GD.armGears(S3); S3.cd = 0; S3.i = D.chain[3].indexOf('claw'); GD.stepDrill(e3, S3, 1 / 60, H0(G.x0 + 100), world([]));
+    GD.hitGear(e3, S3, 'chain', 999, world([]), o); ok(o.broke && !S3.clawPend && e3.mode !== 'clawTell', 'break the chain winch and a coming claw is gone (its gear drives it)'); }
+  /* the bot: strikes a cutter back as it reaches it; with no other line, pumps and jumps a torn rail */
+  { const { S, e } = fight(); S.ph = 2; S.cutters = [{ x: G.x0 + 118, lane: 1, id: 7, back: false }]; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
+    ask(5); const pl = ask(5.5); ok(pl.atk && /strike it back/.test(pl.why), 'the bot strikes the spare cutter back as it reaches it (' + pl.why + ')'); }
+  { const { S, e } = fight(); S.ph = 3; S.highDown = true; S.tears = [{ x: G.x0 + 115, lane: 1, id: 3 }, { x: G.x0 + 115, lane: 0, id: 4 }]; const mem = {}, ask = t => GD.drillPlan({ P: { x: G.x0 + 100, y: G.laneY[1], ground: true, face: 1, atk: -1, lane: 1, v: 150 }, e, S, reach: 22, rng: () => 0.9, mem, t });
+    ask(5); const pl = ask(5.5); ok(pl.boost && pl.jump, 'torn on both lines, the bot pumps and jumps it (' + pl.why + ')'); } }
+/* THE FOREMAN 5 (deeprails5): +2 told attacks - HIS BOOM (duck) and HIS TIPPED ORE (jump) */
+{ const F = FMG.FOREMAN, G5 = FMG.geom(TS);
+  ok(F.chain[0].includes('boom') && F.chain[2].includes('tip') && !F.chain[0].includes('tip') && !F.chain[1].includes('tip'), 'the boom from the start, the tipped ore from his second stomp (one new move a stage, B5)');
+  ok(F.boomTell >= 0.6 && F.tipTell >= 0.6, 'both told: the boom ' + F.boomTell + ' s, the ore ' + F.tipTell + ' s');
+  const mk5 = () => { const S = FMG.newFight(G5), e = { hp: 400, maxHp0: 400, alive: true }; S.mode = 'idle'; S.cd = 0; return { S, e }; };
+  const C5 = (x, log) => ({ ramV: MC.ramV, ramDmg: MC.ramDmg, hit: (h, d, name) => { x[name] = (x[name] || 0) + d; }, bounce: () => { x.bounce = (x.bounce || 0) + 1; }, stomp: () => {}, spiked: () => {}, board: () => {}, release: () => {}, lob: () => {}, number: (a, b, t) => log.push(t), sound: () => {}, chip: () => {} });
+  const hero5 = (o = {}) => ({ x: G5.x0 + 120, y: G5.lowY, prevY: G5.lowY, vy: 0, ground: true, alive: true, riding: true, v: MC.cruise, pp: { id: 1 }, ...o });
+  const BOOM = 'THE FOREMAN\'S BOOM', ORE = 'THE FOREMAN\'S ORE';
+  { const { S, e } = mk5(), x = {}, log = []; S.i = F.chain[0].indexOf('boom'); FMG.stepForeman(S, e, 1 / 60, [hero5()], C5(x, log)); ok(S.mode === 'boomTell' && log.includes(FMG.FOREMAN_LINES.boom), 'HIS BOOM: told first (' + FMG.FOREMAN_LINES.boom + ')');
+    for (let i = 0; i < 120; i++) FMG.stepForeman(S, e, 1 / 60, [hero5()], C5(x, log)); ok(x[BOOM] === F.boomDmg, 'it swings back down the loop at head height: a cart sitting up is hit (once)');
+    const y = {}, { S: S2, e: e2 } = mk5(); S2.i = F.chain[0].indexOf('boom'); for (let i = 0; i < 120; i++) FMG.stepForeman(S2, e2, 1 / 60, [hero5({ duckAt: yy => yy === FMG.boomY(G5) })], C5(y, []));
+    ok(!y[BOOM], 'a ducked tub is under it'); }
+  { const { S, e } = mk5(), x = {}, log = []; S.stomps = 2; S.i = F.chain[2].indexOf('tip'); FMG.stepForeman(S, e, 1 / 60, [hero5()], C5(x, log)); ok(S.mode === 'tipTell' && log.includes(FMG.FOREMAN_LINES.tip), 'HIS TIPPED ORE: told first (' + FMG.FOREMAN_LINES.tip + ')');
+    for (let i = 0; i < 240; i++) FMG.stepForeman(S, e, 1 / 60, [hero5()], C5(x, log)); ok(x[ORE] >= F.tipDmg && x.bounce >= 1, 'its lumps roll back down the line into a cart that holds');
+    const y = {}, { S: S2, e: e2 } = mk5(); S2.stomps = 2; S2.i = F.chain[2].indexOf('tip'); for (let i = 0; i < 240; i++) FMG.stepForeman(S2, e2, 1 / 60, [hero5({ ground: false, y: G5.lowY - 30 })], C5(y, []));
+    ok(!y[ORE], 'a cart in the air over them is clear'); }
+  { const { S } = mk5(); S.mode = 'boom'; S.mT = 0.2; S.n.boom = 1; const mem = {}, ask = t => FMG.foremanPlan({ P: { x: G5.x0 + 120, y: G5.lowY, ground: true, vy: 0, atk: -1, v: MC.cruise, lane: 0 }, S, rng: () => 0.9, mem, t });
+    ask(1); ok(ask(1.5).duck, 'the bot ducks his boom');
+    S.mode = 'idle'; S.lumps = [{ x: G5.x0 + 140, id: 4 }]; ask(2); ok(ask(2.5).jump, 'and jumps his ore'); } }
 /* GREAT DRILL 4 (deeprails4, Daniel 10-12): THE GEARS - each bank drives one attack; break it and that attack is gone for the phase; the fight half gears, half body */
 { const ids = p => GD.phaseGears(p).map(g => g.id).sort().join();
   ok(GD.GEARS.length === 4 && new Set(GD.GEARS.flatMap(g => g.moves)).size === GD.GEARS.flatMap(g => g.moves).length, 'four gear banks, each driving its own attack(s): ' + GD.GEARS.map(g => g.id + '=' + g.moves.join('+')).join(', '));
