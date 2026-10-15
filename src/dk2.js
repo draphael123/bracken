@@ -25,7 +25,7 @@ export const DK2 = {
   /* BLOOD PRICE CLEAVE: a price of pct of max health the moment the wind starts, then one every `every` s held, at most `ticks`; each paid
      price adds mul to the crescent's multiplier; a crescent that lands drains back `back` x what was paid; rate is the release's P.atk speed;
      reach is the crescent's box (px in front), +grow a price; volleyAt: the price count that looses THE RED VOLLEY (with its talent) */
-  price: { every: 0.5, pct: 0.03, ticks: 6, mul: 0.22, back: 2, rate: 0.32, reach: 38, grow: 3, top: 42, live: [0.12, 0.26], volleyAt: 3 },
+  price: { every: 0.5, pct: 0.03, ticks: 6, mul: 0.22, back: 2, rate: 0.32, lim: 0.36, reach: 38, grow: 3, top: 42, live: [0.12, 0.26], volleyAt: 3 },
   /* GRAVE KNEEL: what a low blow turned on the planted blade costs him (the guard's own price, src/commit.js blockCost) */
   kneel: { said: 1.2 },
   /* THE DEAD LINGER for him: a body's life (s) and the last `fade` s it dims over */

@@ -25,7 +25,7 @@ try {
     const none = () => { for (const k in BK.keys) BK.keys[k] = false; };
     for (const hero of ${JSON.stringify(HEROES)}) {
       const o = {}; out[hero] = o;
-      const fresh = () => { none(); BK.setHero(hero); BK.load(yard); BK.state = 'play'; BK.god = true; for (const e of BK.enemies()) e.alive = false; BK.tp(10, 21); BK.sim(40); BK.reset(); BK.sim(5);
+      const fresh = () => { none(); BK.setHero(hero); BK.load(yard); BK.state = 'play'; BK.god = true; for (const e of BK.enemies()) e.alive = false; BK.tp(10, 21); BK.sim(40); BK.reset(); BK.sim(5); BK.P.atk = -1; BK.P.heavy = false; BK.P.atkRec = 0; BK.P.charge = 0; BK.P.atkHeld = 0;   /* (claude/dk2b) FRESH: no swing carried in from the row before (the Death Knight's held crescent is let go on that row's last frames and still swinging) */
         const P = BK.P; P.face = 1; P.st = P.maxSt; P.vx = 0; return P; };
       const dummy = (dx, dy, hover) => { const P = BK.P; const [d] = BK.spawnFoe({ t: 'dummy', x: Math.round((P.x + dx) / 16 - 0.5), y: Math.round(P.y / 16) }); if (!d) return null; d.x = P.x + dx; d.y = P.y + dy; if (hover) { d.noGrav = true; d.hover = [d.x - P.x, d.y - P.y]; } return d; };
       const blows = (fn, frames, d) => { BK.log = []; const P = BK.P; const meta = { minY: P.y, leftGround: false, keys: new Set() }; const y0 = P.y;

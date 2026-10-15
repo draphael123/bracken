@@ -9729,7 +9729,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (P.atk < 0 && P.swingKind) P.swingKind = null;
   if (P.atk < 0) { P.bashing = false; P.runThrough = false; P.rtHit = null; P.rtWound = 0; }   /* the lunge is over when the blow is */
   if (P.atk >= 0) {
-    { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? 0.42 : 0.3;
+    { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? (isReaper() ? DK2.price.lim : 0.42) : 0.3;   /* (claude/dk2b: the crescent's follow-through is shorter than the planted blade's haul-out) */
       const was = P.atk;
       P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? DK2.price.rate : DK2.rhythm.rate) : 1) * (P.heavy && !isReaper() ? 0.72 : 1) * (isBz() && BZK ? BZK.swingMul() : 1) * ((P.hasteT || 0) > 0 ? BZ_K.swing.haste : 1);   /* (THE BERSERKER: quicker with rage, quickest in a frenzy, slower one-handed; a WAR CRY quickens anyone) */   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
       if (P.heavy && isReaper() && was < DK2.price.live[0] && P.atk >= DK2.price.live[0]) dkCrescentFx();   /* (claude/dk2b) THE CRESCENT comes round (the planted blade's bolts are THE RED VOLLEY now: dkLanded) */ void twice;
