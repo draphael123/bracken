@@ -18,14 +18,14 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/deacon-hands.js binds it). dcPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const DC = {
-  hp: 1500, w: 14, h: 40, markH: 58,
-  walk: 58, keep: 48, turn: 0.45, gap: [0.5, 0.42],
-  light: { max: 100, start: 85, regen: 2.2, drain: 8, drainHeavy: 14, lampDim: 18, refill: 60 },
+  hp: 1650, w: 14, h: 40, markH: 58,
+  walk: 66, keep: 48, turn: 0.45, gap: [0.4, 0.32],
+  light: { max: 100, start: 85, regen: 2.2, drain: 6, drainHeavy: 11, lampDim: 18, refill: 60 },
   guardTake: 0.4, gropeT: 3.0, gropeMul: 1.8, gropeCap: 0.18, wardT: 3.0, reelT: 0.7,
   kindleT: 1.3, kindleCd: 6, kindleWalkT: 3,
-  sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 40 },
-  hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 14, haul: 380, jabTell: 0.5, jab: 34 },
-  arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 13 },
+  sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 47 },
+  hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 14, haul: 380, jabTell: 0.5, jab: 42 },
+  arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 15 },
   drop: { dmg: 0.07, stun: 1.2 },   /* a chandelier brought down on him: of his health, and the stagger (B4: he stands) */
   p2: 0.5,
 };
