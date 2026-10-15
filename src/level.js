@@ -3827,15 +3827,18 @@ function trialYard(hero) {
       SKILL],
     paladin: [
       ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW BUILDS CONVICTION.', [['dummy', 18]], 'X, X, X'],
-      ['aegis', 3, 'THE AEGIS: HOLD C FOR A WARD THAT LASTS A BREATH AND A HALF. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],
+      ['aegis', 3, 'THE LIGHT-WARD: HOLD C. IT TURNS BLOWS FROM ANY SIDE AND COSTS WIND WHILE HELD. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],   /* (PALADIN 4: the aegis is the all-round Light-ward) */
       ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['smite', 1, 'SMITE: ONE CONVICTION, TAP C. ANY SPEND LIGHTS YOUR AURA: IN IT YOU HIT HARDER AND MEND.', [['dummy', 6], ['dummy', 14]], 'TAP LB'],   /* (PALADIN 3: the planted circle is gone - the first tier, and the aura it lights) */
-      ['sanctify', 1, 'RADIANCE: THREE CONVICTION, TAP C. A BURST OF LIGHT ALL ROUND YOU.', [['dummy', 9], ['dummy', 12]], 'TAP LB WITH THREE'],   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
+      ['twinsmite', 1, 'TWIN SMITE: TWO CONVICTION, TAP C. THE SMITE STRIKES TWICE.', [['dummy', 6], ['dummy', 14]], 'TAP LB WITH TWO'],   /* (PALADIN 4: every pip counts - the empowered first tier) */
+      ['sanctify', 1, 'RADIANCE: THREE CONVICTION, TAP C. A BURST OF LIGHT ALL ROUND YOU.', [['dummy', 9], ['dummy', 12]], 'TAP LB WITH THREE'],
+      ['radiancePlus', 1, 'RADIANCE+: FOUR CONVICTION, TAP C. A WIDER BURST, AND IT MENDS YOU.', [['dummy', 8], ['dummy', 13]], 'TAP LB WITH FOUR'],   /* (PALADIN 4: the empowered second tier) */   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
       ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. THREE CONVICTION. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
-      ['hammerfall', 2, 'HAMMER OF DAWN: JUMP, THEN DOWN+X. THE SLAM BREAKS POISE AND A GUARD. HIT TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
+      ['hammerfall', 2, 'DAWNFALL: JUMP, THEN DOWN+X. THE SLAM BREAKS A GUARD; A PILLAR OF LIGHT STRIKES ROUND IT. HIT TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
       ['verdict', 1, 'VERDICT: HOLD X. A SIGIL A BEAT ON WHAT IS AHEAD. LET GO: THE LIGHT STRIKES THEM ALL.', [['dummy', 8], ['dummy', 13]], 'HOLD X, LET GO'],   /* (PALADIN 3: the held X is VERDICT, not the overhead) */
-      ['dodge', 2, 'THE HEAVY STEP: TAP A WAY TWICE, OR V. THE PAULDRON GOES FIRST AND TURNS WHAT IT MEETS.', [], 'B, OR THE STICK TWICE'],
+      ['dodge', 2, 'THE SANCTUARY STEP: TAP A WAY TWICE, OR V. A QUICK STEP, AND HOLY LIGHT WHERE YOU STOOD SLOWS THEM. TWICE.', [], 'B, OR THE STICK TWICE'],
+      ['pray', 1, 'PRAYER: HOLD DOWN AND STAY STILL. A PIP OF CONVICTION COMES. A HIT OR A STEP BREAKS IT.', [], 'HOLD DOWN'],   /* (PALADIN 4: kneel anywhere) */
       DASH, RISE, SWEEP,
       ['judgement', 1, 'SUNFALL: FIVE CONVICTION, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH FIVE'],   /* (PALADIN 3: the old Judgement, renamed; its trial key stays) */
       SKILL],
@@ -3904,7 +3907,7 @@ function trialYard(hero) {
     for (const [t, dx] of things) { if (t === 'archer') { block(x0 + dx - 2, x0 + dx + 2, 18, 19); ent('archer', x0 + dx, 17, { face: -1, lx0: x0 + 1, lx1: gate - 1 }); } else if (t === 'dummy') ent('dummy', x0 + dx, 19);
       else ent(t, x0 + dx, 19, { face: -1, trainer: t === 'swornsword' || t === 'hedgeknight' ? 'drill' : 'still', lx0: x0 + 1, lx1: gate - 1 }); }   /* a drill fights you (it cannot hurt you here); a still one stands and takes it */
     for (let y = 14; y <= 19; y++) set(gate, y, T.PORT); block(gate, gate, 0, 13);
-    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' || kind === 'sanctify' ? 60 : kind === 'smite' ? 20 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
+    trial.push({ x0, gate, kind, n, text, pad, kinds, fill: kind === 'mend' ? 60 : kind === 'hammer' || kind === 'sanctify' ? 60 : kind === 'smite' ? 20 : kind === 'twinsmite' ? 40 : kind === 'radiancePlus' ? 80 : kind === 'judgement' || (kind === 'meter' && hero !== 'pyro') ? 100 : 0 }); });
   const xe = 4 + ST.length * SW;
   ent('sign', xe + 2, 19, { text: 'THE TRIAL IS DONE. THE GATE AHEAD RETURNS YOU TO THE MAP.' });
   ent('gate', xe + 14, 19);

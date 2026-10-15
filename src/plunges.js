@@ -4,7 +4,8 @@
 // answers all eight, and PLUNGE THE HELM / the plate family stay as they were (a plunge comes over a guard):
 //   KNIGHT     POGO        vertical mobility (today)          WARDEN  VAULT      horizontal travel (today)
 //   PYRO       FIREDROP    the safe strike from height        DEATH KNIGHT  THE CULL   the area round the landing (today)
-//   PALADIN    HAMMER OF DAWN  POISE BREAKER: one heavy slam, big poise damage, a guard broken; holy light = a SAFE landing on spikes and thorns
+//   PALADIN    DAWNFALL (was HAMMER OF DAWN; claude/paladin4, Daniel 10-15)  POISE BREAKER: one heavy slam, big poise damage, a guard broken, and a PILLAR OF LIGHT round
+//                          the landing (main.js dawnfall: a small burst, his aura lit 2 s, +1 Conviction on a hit). The spike SAFE landing is DROPPED
 //   FREEBOOTER BOARDING    CONTROL: lands on a foe's back and RIDES it ~1.5 s, steering it through the knock-into rules, then leaps off
 //                          with a second jump. Never a boss, a mini, an elite or a brute: those he just strikes (and pogos off)
 //   GEOMANCER  EARTHFALL   TERRAIN: a stone spike rises where she lands - a hit, and a one-tile step for a few seconds that never blocks
@@ -90,7 +91,7 @@ export function earthSpot(q, TS = 16) {
 }
 
 /* the words these plunges float (main.js adds them to MOVE_WORDS: number() drops any other sentence) */
-export const WORDS = ['HAMMER OF DAWN', 'GUARD BROKEN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'AXE SPIN', 'SHREDDED'];
+export const WORDS = ['DAWNFALL', 'HAMMER OF DAWN', 'GUARD BROKEN', 'SAFE LANDING', 'BOARDED', 'OFF THE BACK', 'TOO BIG TO RIDE', 'TOO HEAVY TO RIDE', 'EARTHFALL', 'A STEP OF STONE', 'AXE SPIN', 'SHREDDED'];
 
 /* ONE HINT LINE EACH, on the first plunge (lessonHint-style, PROG.lessons.plunge_<hero>): short, true to what the code does */
 export const HINT = {

@@ -1130,7 +1130,7 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "SPEAR OF LIGHT",
     "max": 1,
-    "desc": "a lance of light straight ahead, through everything in its path to the first wall",
+    "desc": "a wind-up, then a spear of light thrown straight ahead: it strikes the first foe it meets",
     "parent": "consecrate",
     "active": true,
     "cap": false,

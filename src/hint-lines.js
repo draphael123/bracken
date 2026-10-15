@@ -254,6 +254,8 @@ export const CALL_LINES = new Set([
   'HIS AEGIS', 'SMITE', 'THE GROUND FOLLOWS', 'CONSECRATED', 'SANCTIFIED',
   /* claude/paladin3 + claude/rangerfeel (batch94 integ): CONVICTION replaced the Light bar ('NO LIGHT' is 'NO CONVICTION' now), its spends, the held VERDICT, and the Ranger's focus / stance feedback - routed so the player can see them */
   'CONVICTION', 'SUNFALL', 'NO CONVICTION', 'RADIANCE', 'VERDICT', 'VERDICT x', 'THROW: 3 CONVICTION', 'FOCUS ', '%: SWEET-SPOT HITS FILL IT', 'KNIFE', 'BOW',
+  /* claude/paladin4: the empowered tiers, the prayer, the Light-ward's break and pierce, VERDICT judged, the spear lost to a hit */
+  'TWIN SMITE', 'RADIANCE+', 'PRAY', 'JUDGED', 'WARD BROKEN', 'THROUGH THE WARD', 'SPEAR LOST',
 ]);
 /* ...and the ones with a count in them (the count is the teaching: how many more) */
 /* claude/canalfix3: THE FOG CANAL's NUDGES (Daniel 10-02: "not always clear what you need to do; you get stuck"). When the barge has been held ~10 s and the
