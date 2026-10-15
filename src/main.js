@@ -1400,6 +1400,7 @@ const COOP_RULES = [
 ];
 const COOP_EDGE = 10;     /* THE SOFT STOP: how near the frame's edge a hero may walk before it holds him */
 const HERO_SHORT = { knight: 'KNIGHT', pyro: 'PYRO', paladin: 'PALADIN', pirate: 'PIRATE', reaper: 'DEATH KNIGHT', warden: 'WARDEN', geomancer: 'GEOMANCER', berserker: 'BERSERKER', ranger: 'RANGER' };
+const COOP_TAG = { warden: 'WARD', paladin: 'PALAD', reaper: 'DK', geomancer: 'GEO', ranger: 'RANGR', berserker: 'BERSRK' };   /* the co-op pick card's name when the full one is wider than the card (eight or nine cards) */
 /* THE SCORE COUNTS ALL FOUR: what you killed and how hard, what you picked up, what you did FOR the other one,
    and a death against you. It is a friendly tally and nothing in the game reads it back - nobody loses a run on it. */
 const freshScore = () => ({ kills: 0, dmg: 0, coins: 0, revives: 0, turns: 0, deaths: 0 });
@@ -6085,7 +6086,8 @@ function drawCoopPick() {
       g.globalAlpha = sel ? 1 : 0.7;
       g.drawImage(fr, 0, 0, fr.width, fr.height, Math.round(x + cw / 2 - fr.width * sc / 2), top + ch - 6 - Math.round(fr.height * sc), Math.round(fr.width * sc), Math.round(fr.height * sc));
       g.globalAlpha = 1; }
-    text(fitText(HERO_SHORT[h] || h.toUpperCase(), cw, 6), x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6); });
+    const full = HERO_SHORT[h] || h.toUpperCase();   /* (batch94 integ: co-op opens to every free starter now, so eight cards of 35 px can stand here - a name that does not fit is its card tag, never a cut word) */
+    text(fitText(textW(full, 6) <= cw ? full : (COOP_TAG[h] || full), cw, 6), x + cw / 2, top + ch + 3, sel ? UI.title : '#7a7a84', 'center', 6); });
   { const h = list[coopPick.i] || 'knight';
     wrap(HERO_LOOP[h] || '', VW - 24, 6).forEach((ln, i) => text(ln, VW / 2, top + ch + 13 + i * BODY_LH, UI.text, 'center', 6)); }
   /* HOW CO-OP WORKS, which this screen never said: a fallen hero is DOWN, NOT DEAD (REVIVE_D / REVIVE_T lift him), the stake is
