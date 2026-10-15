@@ -250,7 +250,7 @@ THE GLASS SEA (2026-10-06, claude/glasssea art pass, Daniel's pick; the file was
   Its ambient beds (glassday, glassnight in src/audio.js) are synthesised for this game and play under the track.
 
 THE UNDERWELL (2026-10-05, claude/underwellart, Daniel's pick; the file was fetched by the coordinator with his yes - the lane downloaded nothing):
-- underwell.ogg = "Ossuary 6 - Air" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - THE UNDERWELL's level track.
+- (REPLACED 2026-10-14, claude/music1014b: underwell.ogg is now "The Eternal Sands" by HitCtrl, see the block at the end of this file; Ossuary 6 - Air is no longer shipped) underwell.ogg = "Ossuary 6 - Air" by Kevin MacLeod, Creative Commons Attribution 4.0 (CC BY 4.0, CREDIT REQUIRED) - https://incompetech.com - THE UNDERWELL's level track.
   Credit, exactly as the licensor asks: "Ossuary 6 - Air" Kevin MacLeod (incompetech.com) Licensed under Creative Commons: By Attribution 4.0 License http://creativecommons.org/licenses/by/4.0/
   Changes: the first 150 s only, with a 4 s fade-out; mono; encoded to OGG Vorbis q2.
 
@@ -336,3 +336,9 @@ THREE LEVEL TRACKS (2026-10-14, claude/music1014, Daniel's picks; he approved th
   Credit: "Throne Room" by Of Far Different Nature (https://fardifferent.carrd.co/), licensed under CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: the single (non-looping) track made loopable by an 8 s equal-power crossfade of its last 8 s onto its first 8 s (the first pass plays the original opening; later passes loop from 8.0 s); encoded to OGG Vorbis q4 stereo (129.8 s, already -12.5 LUFS).
 - buriedcity.ogg = "Deadly Ruins" by Some Weirdo, CC0 (public domain, credited all the same) - https://opengameart.org/node/173380 (deadly_ruins.zip, the "Loop" folder's "Deadly Ruins.wav" only) - THE BURIED CITY's level track (THE HOURGLASS KING keeps his composed theme).
   Credit: "Deadly Ruins" by Some Weirdo (OpenGameArt.org), CC0. Changes: +1.7 dB with a peak limiter (to about -12.5 LUFS); encoded to OGG Vorbis q4 stereo (48.0 s, the author's own loop).
+
+TWO LEVEL TRACKS (2026-10-14, claude/music1014b, Daniel's picks; he approved the downloads and each licence was re-read on the track's own page today):
+- underwell.ogg = "The Eternal Sands" by HitCtrl, CC-BY 3.0 (CREDIT REQUIRED) - https://opengameart.org/content/fantasy-music-the-eternal-sands (the_eternal_sands.ogg only) - THE UNDERWELL's level track (replaces Kevin MacLeod's "Ossuary 6 - Air"; the Cistern Queen keeps her own boss theme; the drip/water ambience bed is separate).
+  Credit: "The Eternal Sands" by HitCtrl (OpenGameArt.org), licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). Changes: -0.8 dB with a peak limiter (to about -13 LUFS); re-encoded to OGG Vorbis q4 stereo (115.2 s, the author's own loop; the whole file loops).
+- towpath.ogg = "Kokopelli's Graveyard Theme" by Cleyton Kauffman, CC0 (public domain, credited all the same) - https://opengameart.org/content/kokopellis-graveyard-theme (kokopellis_graveyard_theme.zip, the "Kokopelli's Graveyard.ogg" loop only; WAV and MP3 not used) - THE TOWPATH's level track (replaces the in-code synth; the Fog Knight keeps his own boss theme).
+  Credit: "Kokopelli's Graveyard Theme" by Cleyton Kauffman (OpenGameArt.org), CC0. Changes: +13.2 dB with a peak limiter (to about -12.8 LUFS); re-encoded to OGG Vorbis q4 stereo (86.4 s, the author's own seamless loop; the whole file loops).

@@ -326,7 +326,7 @@ export function buildUnderwell({ painter, T, TS }) {
       { kind: 'skinwell', opens: 'your skin: a spring fills it, a drip gives one sip', hud: 'YOUR SKIN IS FULL: E POURS, E DRINKS' },
       { kind: 'oilfire', opens: 'the way it burns across (a pour)', hud: 'THE FIRE IS OUT - GO' },
     ],
-    music: 'underwell',   /* (its boss room: arena.music, set below the stage) */   /* "Ossuary 6 - Air" by Kevin MacLeod, CC-BY 4.0 (Daniel's pick; src/audio.js, audio/CREDITS.txt) */
+    music: 'underwell',   /* (its boss room: arena.music, set below the stage) */   /* "The Eternal Sands" by HitCtrl, CC-BY 3.0 (Daniel's pick 10-14, claude/music1014b; replaced Kevin MacLeod's "Ossuary 6 - Air"; src/audio.js, audio/CREDITS.txt) */
     ambient: [{ x0: 0, x1: 99999, kind: 'cistern' }],   /* (claude/underwellart) its own bed: drips, a far skitter, oil in a pipe (src/audio.js SYNTH_BEDS.cistern) */
     caravan: true,   /* the desert's hands in main.js (the scorpions' and the worms' machines); the sun never reaches down here (the shade above) */
     /* (claude/underwellart) THE LOOK: a dark level, as the Ore Road's mine is - black with a hole for every torch, every burning cell, the lamp and the light you carry; a warm dark, the
