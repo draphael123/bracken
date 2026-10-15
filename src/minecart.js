@@ -445,7 +445,7 @@ export function buildMinecart({ painter, T, TS }) {
     stepUp(998);
     /* TEST (1000-1013) */
     pitAt(1000, 1003); low(1004, 1012); walk(1005, 1012);   /* the catwalk's first gap (1002-1004) over the pit: jump it, or fall in */
-    foe('sapper', 1008, D - 1, { squad: 'ptSapper' }); spoil(1010, 1011, D); spoil(1007, 1007, U);   /* (and one heap on the catwalk: the test asks the high line's jump too) */
+    foe('sapper', 1006, D - 1, { squad: 'ptSapper' }); spoil(1010, 1011, D); spoil(1007, 1007, U);   /* (and one heap on the catwalk: the test asks the high line's jump too; the sapper at 1006, not 1008: fought at the heap's foot, the jump over it came from a stand) */
     foe('bat', 1003, U - 4, { squad: 'ptBat' });
     /* REMIX (1013-1028) */
     pitAt(1013, 1015); walk(1016, 1028); low(1016, 1019);    /* both lines broken over one pit: one jump, either line */
