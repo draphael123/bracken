@@ -44,7 +44,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
   H.spawnBoss = base => { const Ar = A(); if (!Ar) return null;
     S = CQG.newShow(CQG.geom(Ar, ctx.TS)); wl = (ctx.L.ents || []).find(q => q.t === 'qwindlass');
     /* (claude/cisternqueen3) THE WATER JARS: a rack by each spring (the springs fill them), one jar each - E takes it, ATTACK throws it; the rack is filled again CQ.jarBack s after */
-    S.racks = [{ x: S.G.basinW + 32, full: true, t: 0 }, { x: S.G.basinE - 32, full: true, t: 0 }]; S.jars = []; for (const pp of ctx.players) if (isJar(pp.carry)) pp.carry = null;
+    S.racks = [{ x: S.G.basinW + 32, full: true, t: 0 }, { x: S.G.basinE - 32, full: true, t: 0 }]; S.jars = []; S.splashes = []; for (const pp of ctx.players) if (isJar(pp.carry)) pp.carry = null;
     const e = { ...base, t: 'cisternqueen', w: CQ.w, h: CQ.h, hp: ctx.EHP.cisternqueen, maxHp: ctx.EHP.cisternqueen, noGrav: true, markH: CQ.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1 };
     e.x = base.x; e.y = S.G.floor; for (const pp of ctx.players) { pp.cqKeys = null; pp.cqVenom = []; pp.venomSlow = 1; }
     /* (claude/underwell3) IS THIS BLOW ON HER STINGER? asked by src/boss-greed.js OPEN_RULE as the blow lands (a blow on the stinger is the right blow: never chipped, never greed) */
@@ -173,14 +173,16 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     let q = lying; if (q) { q.state = 'held'; q.holder = P; q.hurtWas = P.hurt > 0; } else { q = newJar(P, rack); S.jars.push(q); rack.full = false; rack.t = CQ.jarBack; }
     P.carry = q; S.n.jarsTaken = (S.n.jarsTaken || 0) + 1; try { ctx.sfx.clank && ctx.sfx.clank(); } catch {} ctx.burst(P.x, P.y - 22, 6, ['#7ab8e8', '#e8f4f8'], 30, 0.4);
     if (!S.told.jarThrow) { S.told.jarThrow = 1; ctx.number(P.x, P.y - 34, 'ATTACK THROWS IT: UP LOBS IT, DOWN TOSSES IT SHORT', '#7ab8e8'); } return true; };
-  const jarLands = (q, x, y, c) => { q.state = 'gone'; const e = ctx.boss; ctx.burst(x, y - 4, 16, ['#7ab8e8', '#e8f4f8', '#3a7ab8'], 90, 0.6); try { (ctx.sfx.splash || ctx.sfx.clank)(); } catch {}
+  const jarLands = (q, x, y, c) => { q.state = 'gone'; const e = ctx.boss; (S.splashes || (S.splashes = [])).push({ x, y, fy: y + CT.KINDS.jug.r, t: 0 });   /* (claude/cq3art) the shatter's picture: src/redraw/cistern_queen_art.js drawShatter */
+ ctx.burst(x, y - 4, 16, ['#7ab8e8', '#e8f4f8', '#3a7ab8'], 90, 0.6); try { (ctx.sfx.splash || ctx.sfx.clank)(); } catch {}
     S.n.jarLands = (S.n.jarLands || 0) + 1; S.lastJar = { x: Math.round(x), y: Math.round(y) }; if (e && e.alive && e.t === 'cisternqueen') { const r = CQG.waterAt(e, S, x, y, c, 'jar'); if (r === 'open') S.n.jarHits = (S.n.jarHits || 0) + 1; } };
   function stepJars(e, dt, c) {
     for (const r of S.racks) if (!r.full) { r.t -= dt; if (r.t <= 0) { r.full = true; r.t = 0; } }
+    if (S.splashes && S.splashes.length) { for (const sp of S.splashes) sp.t += dt / 0.9; S.splashes = S.splashes.filter(sp => sp.t < 1); }
     for (const q of S.jars) {
       if (q.state === 'held') { const P = q.holder;
         if (!P || P.dead || P.carry !== q) { if (P && P.carry === q) P.carry = null; q.state = P && P.dead ? 'gone' : 'lie'; q.lieT = 8; q.holder = null; q.y = S.G.floor; continue; }
-        if (P.hurt > 0 && !q.hurtWas) { P.carry = null; q.state = 'gone'; ctx.burst(P.x, P.y - 6, 12, ['#7ab8e8', '#e8f4f8'], 60, 0.5); S.n.jarSpilt = (S.n.jarSpilt || 0) + 1; continue; }   /* a blow spills it */
+        if (P.hurt > 0 && !q.hurtWas) { P.carry = null; q.state = 'gone'; ctx.burst(P.x, P.y - 6, 12, ['#7ab8e8', '#e8f4f8'], 60, 0.5); S.n.jarSpilt = (S.n.jarSpilt || 0) + 1; (S.splashes || (S.splashes = [])).push({ x: P.x, y: P.y - 6, fy: P.y, t: 0, soft: true }); continue; }   /* a blow spills it */
         q.hurtWas = P.hurt > 0; const h = handAt(P); q.x = h.x; q.y = h.y; continue; }
       if (q.state === 'fly') { if (!q.counted) { q.counted = true; S.n.jarThrows = (S.n.jarThrows || 0) + 1; } q.holder = null; const px = q.x, py = q.y; CT.stepArc(q, dt, CT.KINDS.jug.g);
         if (jarStop(q.x, q.y)) { jarLands(q, q.x, q.y, c); continue; }
@@ -202,7 +204,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     pour: P => { const e = ctx.boss; if (!S || !e || e.t !== 'cisternqueen') return null; const r = CQG.pourAt(e, S, heroOf(P), world(e)); if (r === 'wasted') ctx.number(P.x, P.y - 30, 'IT RUNS INTO THE SAND', '#9aa39a'); return r; },
   };
   H.barName = e => 'THE CISTERN QUEEN' + (CQG.qOpen(e) ? (e.mode === 'soaked' ? '  SOAKED' : e.mode === 'slip' || e.mode === 'fallen' ? '  ON HER BACK' : e.mode === 'ablaze' ? '  ABLAZE: STUNNED' : '  REARING') : e.mode === 'thrash' ? '  ABLAZE!' : e.mode === 'sslamTell' || e.mode === 'sslam' ? '  STINGER SLAM!' : e.mode === 'bloomTell' || e.mode === 'bloom' || e.mode === 'bloomBurst' ? '  VENOM BLOOM!' : e.mode === 'planted' ? '  STINGER PLANTED' : e.burrowed ? '  BURROWED' : S && S.charT > 0 && !S.flood ? '  BLACKENED' : '');   /* (claude/cisternqueen3: ABLAZE - thrashing, then stunned; ON HER BACK - she slipped, or fell; BLACKENED - no fire yet) */
-  H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; S.bloom = null; S.jars = []; }
+  H.end = e => { if (S) { S.bands = []; S.shots = []; S.rubble = []; S.puddles = []; S.claw = null; S.bloom = null; S.jars = []; S.splashes = []; }
     for (const pp of ctx.players) { pp.cqVenom = []; pp.venomSlow = 1; if (pp.snare > 0) pp.snare = 0; if (isJar(pp.carry)) pp.carry = null; } };
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, pose: S.pose, cycle: S.cycle, alight: +(S.scorch || 0).toFixed(2), char: +(S.charT || 0).toFixed(2), surf: +(S.surfT || 0).toFixed(2), racks: S.racks.map(r => r.full), jars: S.jars.map(q => q.state), lastJar: S.lastJar || null, n: JSON.parse(JSON.stringify(S.n)), water: S.water, bloom: S.bloom ? S.bloom.st : null, bucket: S.bucket.st, hurt: { ...(S.hurt || {}) } };
 
@@ -232,6 +234,7 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
     if (st && !warded) { const x = R(st.x - cx), y = R(st.y - cy), big = !!st.big;
       g.strokeStyle = 'rgba(255,211,107,' + (0.6 + 0.4 * p) + ')'; g.lineWidth = big ? 2 : 1; g.beginPath(); g.arc(x, y - 2, (big ? 15 : 10) + p * 4, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
       g.fillStyle = '#ffffff'; const k = 2 + Math.round(p * 2); g.fillRect(x, y - 12 - k, 1, 2 * k + 1); g.fillRect(x - k, y - 12, 2 * k + 1, 1);
+      if (big) CQA.drawTargetCue(g, x, y, R(S.G.floor - cy), time, p);   /* (claude/cq3art) a gold light on the floor under it and an arrow bobbing over it: the tail on the floor IS the target */
       const tk = Math.max(0, st.t / ({ slam: CQ.planted, slip: CQ.slipT, ablaze: CQ.ablazeT, fallen: CQ.openT, rear: CQ.openT, soaked: CQ.openT }[st.k] || CQ.stuck[st.k] || 1)); g.fillStyle = '#1b1626'; g.fillRect(x - 12, y + 6, 24, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 12, y + 6, R(24 * Math.min(1, tk)), 3); }
     else if (!warded && !CQG.qOpen(e)) { const tp = CQG.tipOf(e, S); if (tp) { const x = R(tp.x - cx), y = R(tp.y - cy), pays = tipPays(e), rr = CQ.tipR - 2;   /* (claude/cqart: told by SHAPE as well as colour; claude/cisternqueen3: it PAYS whenever it is out - gold; steel only once she has curled it away for this move) */
       if (pays) { g.strokeStyle = 'rgba(255,211,107,' + (0.55 + 0.4 * p) + ')'; g.lineWidth = 1.5; g.beginPath(); g.arc(x, y, rr + p * 3, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; fr(g, '#fff6c8', x - 1, y - rr - 5, 2, 4); fr(g, '#fff6c8', x - 3, y - rr - 3, 6, 1); }
@@ -252,15 +255,13 @@ const onLedgeOf = (pp, G) => { if (!G || !(pp.ground || pp.climb) || pp.y > G.le
       g.globalAlpha = 1; const x = R(e.x - cx), y = R(Math.min(e.y, S.G.floor) - cy); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y - 66, 40, 2); g.fillStyle = '#8a8279'; g.fillRect(x - 20, y - 66, R(40 * k0), 2); }
     /* (claude/cisternqueen3) WHAT IS USABLE GLOWS: her hall's oil while fire can take her (an amber shimmer on the pool), a full jar rack (a blue glint) */
     const L = ctx.oilCells ? ctx.oilCells() : null, fy = Math.floor(S.G.floor / 16) - 1;
-    if (L && CQG.hotOK(e, S)) { g.globalAlpha = 0.25 + 0.2 * p; g.fillStyle = '#ffb070'; for (const q of L) if (q.arena && !q.vertical && q.st === 'oil' && q.y === fy) fr(g, q.x * 16 - cx, S.G.floor - 3 - cy, 16, 2); g.globalAlpha = 1; }
-    for (const r of S.racks) { const x = R(r.x - cx), y = R(S.G.floor - cy);
-      fr(g, '#4a3222', x - 8, y - 4, 16, 2); fr(g, '#4a3222', x - 8, y - 4, 2, 4); fr(g, '#4a3222', x + 6, y - 4, 2, 4);   /* the rack (greybox) */
-      if (r.full) { drawJar(g, x, y - 4, true); if (S.ph === 1) { const k = (time * 1.4 + r.x * 0.01) % 1; if (k < 0.35) { g.fillStyle = '#ffffff'; fr(g, x + 3, y - 18, 1, 3); fr(g, x + 2, y - 17, 3, 1); } } }
-      else { g.fillStyle = '#7ab8e8'; g.globalAlpha = 0.5; fr(g, x - 6, y - 5, R(12 * (1 - r.t / CQ.jarBack)), 1); g.globalAlpha = 1; } }   /* (an empty rack: the spring fills its jar again - the line grows) */
-    for (const q of S.jars) drawJar(g, R(q.x - cx), R(q.y - cy) + (q.state === 'held' ? 4 : 0), true);
+    if (L && CQG.hotOK(e, S)) { for (const q of L) if (q.arena && !q.vertical && q.st === 'oil' && q.y === fy) CQA.drawOilGlow(g, R(q.x * 16 - cx), R(S.G.floor - cy), time, p, q.x); }   /* (claude/cq3art) a warm light, a running shimmer and a lifting ember on the pool that will catch */
+    for (const r of S.racks) CQA.drawRack(g, R(r.x - cx), R(S.G.floor - cy), r, time, CQ.jarBack, S.ph === 1);   /* (claude/cq3art) a stone block, an iron cradle, the spring's brass nozzle; full and glinting, or dripping while the jar fills */
+    for (const q of S.jars) { const jx = R(q.x - cx), jy = R(q.y - cy);
+      if (q.state === 'fly') { const nv = Math.hypot(q.vx, q.vy) || 1; for (let k = 1; k <= 3; k++) { g.globalAlpha = 0.7 / k; fr(g, k % 2 ? '#7ab8e8' : '#e8f4f8', R(jx - q.vx / nv * 5 * k), R(jy - 8 - q.vy / nv * 5 * k), 2, 2); } g.globalAlpha = 1; CQA.drawJarArt(g, jx, jy + 8, { ang: time * 14 * (q.vx < 0 ? -1 : 1), t: time }); }
+      else CQA.drawJarArt(g, jx, jy + (q.state === 'held' ? 4 : 0), { t: time, slosh: q.state === 'held' }); }
+    for (const sp of S.splashes || []) CQA.drawShatter(g, sp, cx, cy, sp.fy);
     { const P = ctx.hero(); if (P && !P.dead && heldJar(P)) { const arc = arcFrom(P, ctx.keys ? ctx.keys() : {}); S.arc = arc; CT.drawArc(g, arc, cx, cy, time, '#7ab8e8'); } else S.arc = null; }
   };
-  /* a water jar (greybox for the art lane): a clay belly, a neck, water at the lip */
-  function drawJar(g, x, y, full) { fr(g, '#8a5a3a', x - 4, y - 8, 8, 8); fr(g, '#a8704a', x - 3, y - 8, 2, 7); fr(g, '#6a4228', x - 2, y - 11, 4, 3); if (full) fr(g, '#7ab8e8', x - 1, y - 11, 2, 1); }
   return H;
 }

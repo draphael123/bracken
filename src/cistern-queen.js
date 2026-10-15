@@ -240,7 +240,7 @@ export function tailPose(e, S) {
   if (S.stinger && S.stinger.t > 0 && S.pose !== 'wall' && (m === 'stuck' || m === 'pinned' || m === 'planted' || m === 'bloom' || m === 'bloomBurst' || OPEN_MODES.has(m))) { tail = 'lance';
     /* (claude/cisternqueen3) in every opening her tail lies on the floor to the stinger; on her back (her body flipped, S.view sy -1) the point is found through the flip, so the
        stinger drawn is the stinger struck */
-    const V = view(e, S); lanceTo = [(S.stinger.x - e.x) * face, (S.stinger.y - e.y - V.ty) / (V.sy || 1)]; }
+    lanceTo = unFramePoint(e, S.view && S.view.live ? S.view : view(e, S), S.stinger.x, S.stinger.y); }   /* (claude/cq3art: through the whole transform - a rear's tilt too - so the tail drawn ends on the stinger struck) */
   return { tail, lanceTo };
 }
 /* the stinger's point in her frame for a pose (the lance's: where it is driven) */
@@ -262,10 +262,10 @@ export function view(e, S) {
   const w = onWall ? (S.wallK ?? 1) : 0;
   if (w > 0) { V.rot = face * Math.PI / 2 * w; V.tx = -16 * face * w; V.ty = -84 * w; V.sc = 1 - 0.18 * w; }
   /* (claude/cqueenrework) on THE WELLHEAD she stands upright on the beam - no more hung upside down from nothing */
-  if (m === 'fallen' || m === 'slip') { V.sy = -1; V.ty = -30; }   /* (claude/cisternqueen3: SHE SLIPS onto her back, as she falls off her wall) */
+  if (m === 'fallen' || m === 'slip') { V.sy = -1; V.ty = -38; }   /* (claude/cq3art: -30 -> -38, her back sits on the floor instead of sunk in it - drawing only: in an opening the stinger struck is S.stinger) */   /* (claude/cisternqueen3: SHE SLIPS onto her back, as she falls off her wall) */
   if (m === 'rear') { V.tx = -10; V.rot = -0.55 * face; }
-  if (m === 'thrash') { V.tx = -10 * face; V.rot = -0.24 * face; }   /* (claude/cisternqueen3) ABLAZE, THRASHING: thrown back (greybox: the old reel's frame - the art lane draws her own) */
-  if (m === 'ablaze') V.crouch = 1;   /* (claude/cisternqueen3) ABLAZE, SAGGING: down on her belly (greybox) */
+  if (m === 'thrash') { V.tx = -10 * face; V.rot = -0.24 * face; }   /* (claude/cisternqueen3) ABLAZE, THRASHING: thrown back (the art draws its own windup and release frames over this) */
+  if (m === 'ablaze') V.crouch = 1;   /* (claude/cisternqueen3) ABLAZE, SAGGING: down on her belly (the art lays the legs and claws flat) */
   if (m === 'diveTell') V.sink = CQ.sinkH * ease(Math.min(1, 1 - Math.max(0, e.modeT) / CQ.diveT));
   else if (S.pose === 'burrow' || S.pose === 'tunnel') V.sink = CQ.sinkH;
   if (S.tunnelK != null && m === 'ambushTell') V.sink = CQ.sinkH * S.tunnelK;   /* into the tunnel: down off the wall and under */
@@ -301,6 +301,14 @@ export function framePoint(e, V, lx, ly) {
   x *= V.sx * V.sc; y *= V.sy * V.sc;
   const c = Math.cos(V.rot), s = Math.sin(V.rot);
   return { x: e.x + (V.ox || 0) + V.tx + x * c - y * s, y: e.y + (V.oy || 0) + V.ty + V.sink + x * s + y * c };
+}
+/* the inverse of framePoint: the point of her own frame that lands on the world point (wx, wy) under the view - the tail drawn to it ends exactly there */
+export function unFramePoint(e, V, wx, wy) {
+  const dx = wx - (e.x + (V.ox || 0) + V.tx), dy = wy - (e.y + (V.oy || 0) + V.ty + V.sink), c = Math.cos(V.rot), s = Math.sin(V.rot);
+  const sxx = (V.sx * V.sc) || 1e-3, syy = Math.abs(V.sy * V.sc) < 0.15 ? 0.15 * (V.sy < 0 ? -1 : 1) * V.sc : V.sy * V.sc;   /* (mid-flip the squash is nearly flat: the divide is held off zero) */
+  let x = (dx * c + dy * s) / sxx, y = (-dx * s + dy * c) / syy;
+  const a1 = 0.04 * V.lean - 0.1 * V.crouch, c1 = Math.cos(a1), s1 = Math.sin(a1); x -= 4 * V.lean - 4 * V.crouch; y -= 6 * V.crouch;
+  return [x * c1 + y * s1, -x * s1 + y * c1];
 }
 export function tipOf(e, S) {
   if (!e || !S || e.mode === 'sleep' || S.pose === 'burrow' || S.pose === 'tunnel' || (e.gone > 0 && S.pose !== 'shaft') || stingerOut(S)) return null;
