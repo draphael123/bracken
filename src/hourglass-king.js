@@ -33,6 +33,10 @@
 //   DRAINING TIMER (red in its last HK.slabWarn s); the lower crumbles first. While they stand HE HOLDS THE SAND - OPEN (B10: the gold ring + a timer bar, 'OPEN') to
 //   a blow from UP THERE (a blow from below the lowest slab is his brass: "CLIMB TO HIM"); when the top slab crumbles (or the opening's share is taken) the pillar sinks,
 //   he comes down and WARDS (B3). Every hero climbs floor -> ledge -> slab -> slab with base movement (two-row steps, B12). His glass does not run while he is up.
+// BURIED CITY 4 FIXES (claude/bc4fix, 2026-10-15, Daniel played him live - brief item 5): THE SAND RISES IN STEPS. Each time he WITHDRAWS in phase two the throne room's sand rises ONE
+//   LAYER (a row of sand over the whole floor, HK.sand.max layers at most - two rows, far under the roof: nothing is crushed, every ledge stays clear of the drift) - drawn heaving up,
+//   told "THE SAND RISES: IT CARRIES YOU UP TO HIM" - and it CARRIES the hero up toward his ledges and slabs (the floor he fights on is the sand's top: S.G.floorY moves with it,
+//   and so does every move of his that runs on the floor). Phase three's "THE GATES RUN DRY" drains it, a layer at a time.
 // NO ADDS. PURE: no DOM, no main.js. The world is a context `c` (src/hourglass-king-hands.js binds it). hkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HK = {
@@ -61,6 +65,7 @@ export const HK = {
   shardTell: 0.75, shardN: 3, shardV: 230, shardSpread: 0.2, shardR: 5,   /* GLASS SHARDS: a fan of three at where you stand */
   potTell: 0.9, potFly: 0.8, potR: 26, potArc: 70,                       /* A SAND POT: lobbed onto a told mark, bursts */
   slabWarn: 0.8, stallHint: 7.0,                                         /* a slab's last red second; phase three's STRIKE THE GLASS said again after stallHint s ready */
+  sand: { max: 2, heave: 0.8, drainEvery: 0.5 },                          /* (claude/bc4fix) THE SAND RISES: layers at most (rows), the heave's draw (s), phase three's drain (s a layer) */
 };
 /* EVERY CYCLE CHANGES: the order of each pass, by phase (cycle k uses [k % n]) */
 export const CYCLES = {
@@ -81,7 +86,7 @@ export const MOVES = {
 /* the lines said as variables (src/hint-lines.js routes them: SAY_LINES) - his new moves' words and the great glass's opening */
 export const GREAT_LINE = 'THE GREAT GLASS TURNS: THE SAND TAKES HIM - STRIKE';
 /* (claude/buriedcity4) the lines of his withdraw, his slabs and phase three's plain read (said as variables: routed through HK_SAY) */
-export const AL_SAY = { climb: 'CLIMB TO HIM: HIS BRASS TAKES IT FROM BELOW', crumble: 'THE SAND CRUMBLES: HE COMES DOWN', aloft: 'HE STANDS ABOVE THE GATES: CLIMB HIS SAND', fall: 'THE GATE TAKES HIS LAST GRAINS: HE FALLS', dry: 'THE GATES RUN DRY: THE LEVERS ARE DEAD', strike: 'STRIKE THE GREAT HOURGLASS: E OR A BLOW' };
+export const AL_SAY = { rises: 'THE SAND RISES: IT CARRIES YOU UP TO HIM', drains: 'THE GATES RUN DRY: HIS SAND RUNS OUT', climb: 'CLIMB TO HIM: HIS BRASS TAKES IT FROM BELOW', crumble: 'THE SAND CRUMBLES: HE COMES DOWN', aloft: 'HE STANDS ABOVE THE GATES: CLIMB HIS SAND', fall: 'THE GATE TAKES HIS LAST GRAINS: HE FALLS', dry: 'THE GATES RUN DRY: THE LEVERS ARE DEAD', strike: 'STRIKE THE GREAT HOURGLASS: E OR A BLOW' };
 export const HK_SAY = [...Object.values(MOVES).map(m => m.word).filter(Boolean), GREAT_LINE, ...Object.values(AL_SAY)];
 export const MOVE_NAME = { pend: 'HIS PENDULUM', gear: 'A BRASS GEAR', stream: 'THE SAND STREAM', surge: 'THE SAND SURGE', grasp: 'THE BURIAL GRASP', rain: 'THE GLASS RAIN', slip: 'THE TIME SLIP', hour: 'THE HOUR', pour: 'THE POURING SAND', shard: 'THE GLASS SHARDS', pot: 'THE SAND POT' };
 
@@ -112,13 +117,16 @@ export function stageHourglassKing(W, T, TS, sx, R) {
 /* the throne room in world px, from the arena */
 export function geom(A, TS = 16) {
   const q = A.hk, X = c => (q.sx + c) * TS;
-  return { TS, x0: X(0), x1: X(HK_STAGE.W), floorY: q.R * TS, roofY: (q.R - 18) * TS, sx: q.sx, R: q.R,
+  return { TS, x0: X(0), x1: X(HK_STAGE.W), floorY: q.R * TS, roofY: (q.R - 18) * TS, sx: q.sx, R: q.R, R0: q.R, floor0: q.R * TS,   /* (claude/bc4fix) R / floorY: the sand's top (it rises in phase two); R0 / floor0: the throne room's stone floor */
     levers: HK_STAGE.levers.map((x, i) => ({ id: 'throne' + (i ? 'E' : 'W'), x: X(x) + 8 })),
     pours: HK_STAGE.pours.map(c => X(c) + 8), banks: HK_STAGE.banks.map(([a, b]) => [X(a), X(b + 1)]), bankTop: (q.R - HK_STAGE.bankRows) * TS,
     ledges: HK_STAGE.ledges.map(l => ({ x0: X(l.x0), x1: X(l.x1 + 1), y: (q.R - l.dy) * TS })),
     drift: [X(HK_STAGE.drift[0]), X(HK_STAGE.drift[1] + 1)], blocks: HK_STAGE.blocks.map(b => ({ x0: X(b.x0), x1: X(b.x1 + 1), y: (q.R - b.rows) * TS, c0: q.sx + b.x0, c1: q.sx + b.x1, rows: b.rows })),
     great: X(HK_STAGE.great) + 8, aloft: { E: aloftSide(q, X, TS, 'E'), W: aloftSide(q, X, TS, 'W') } };
 }
+/* (claude/bc4fix) THE SAND'S LAYERS: n rows of sand over the stone floor - the fight's floor is their top (his blows, the drift, the banks and the blocks ride it) */
+export function sandGeom(S, n) { const G = S.G; S.sand = n; G.R = G.R0 - n; G.floorY = G.R * G.TS; G.bankTop = (G.R - HK_STAGE.bankRows) * G.TS; for (const b of G.blocks) b.y = (G.R - b.rows) * G.TS; }
+function setSand(S, c, n) { n = Math.max(0, Math.min(HK.sand.max, n)); if (n === S.sand) return false; const up = n > S.sand; S.sandK = 0; S.sandUp = up; if (c.sand) c.sand(n, () => sandGeom(S, n)); else sandGeom(S, n); if (up) S.n.rises++; else S.n.drains++; return true; }
 
 /* one end's pillar + stair in px and cells (the west is the east mirrored) */
 function aloftSide(q, X, TS, side) { const A = HK_STAGE.aloft, m = c => (side === 'E' ? c : HK_STAGE.W - 1 - c), span = (a, b) => [Math.min(m(a), m(b)), Math.max(m(a), m(b))];
@@ -129,8 +137,8 @@ function aloftSide(q, X, TS, side) { const A = HK_STAGE.aloft, m = c => (side ==
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, glass: HK.glass, glassMax: HK.glass, ward: 0, openTaken: 0, capNow: HK.openCap, dragTo: null, dragV: HK.dragV, lowSaid: false, mark: null,
-    gears: [], waves: [], stream: null, pourT: 0, jamT: 0, told: {}, trail: [], echo: null, rain: null, grasp: null, great: { cd: 0, run: 0 }, drift: false, tide: { t: HK.tide.every, on: false, said: 0 }, blockUp: 0, swapT: HK.swap, t: 0, al: null, shards: [], pots: [], wdT: HK.aloft.first, greatIdle: 0,
-    n: { cycles: 0, opens: 0, greatOpens: 0, turns: 0, pulls: 0, pullsFull: 0, pullsWard: 0, pullsDry: 0, wards: 0, warded: 0, brass: 0, turnHits: 0, gears: 0, streams: 0, surges: 0, grasps: 0, held: 0, rains: 0, slips: 0, hours: 0, pends: 0, flips: 0, withdraws: 0, shards: 0, pots: 0, holds: 0, climbed: 0, holdHits: 0, crumbles: 0, falls: 0, strikeHints: 0, moves: {} } };
+    gears: [], waves: [], stream: null, pourT: 0, jamT: 0, told: {}, trail: [], echo: null, rain: null, grasp: null, great: { cd: 0, run: 0 }, drift: false, tide: { t: HK.tide.every, on: false, said: 0 }, blockUp: 0, swapT: HK.swap, t: 0, al: null, shards: [], pots: [], wdT: HK.aloft.first, greatIdle: 0, sand: 0, sandK: 1, sandUp: true, drainT: 0,
+    n: { cycles: 0, opens: 0, greatOpens: 0, turns: 0, pulls: 0, pullsFull: 0, pullsWard: 0, pullsDry: 0, wards: 0, warded: 0, brass: 0, turnHits: 0, gears: 0, streams: 0, surges: 0, grasps: 0, held: 0, rains: 0, slips: 0, hours: 0, pends: 0, flips: 0, withdraws: 0, shards: 0, pots: 0, holds: 0, climbed: 0, holdHits: 0, crumbles: 0, falls: 0, strikeHints: 0, rises: 0, drains: 0, moves: {} } };
 }
 export const hPhase = e => (e.hp <= e.maxHp * HK.p3 ? 3 : e.hp <= e.maxHp * HK.p2 ? 2 : 1);
 export const hkOpen = e => !!e && (e.mode === 'stall' || e.mode === 'hold') && (e.open || 0) > 0;   /* (claude/buriedcity4: 'hold' - up on his pillar, holding the slabs) */
@@ -191,6 +199,8 @@ export function stepHourglassKing(e, S, dt, h, c) {
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward;
   if (S.great.cd > 0) S.great.cd = Math.max(0, S.great.cd - dt); if (S.great.run > 0) S.great.run = Math.max(0, S.great.run - dt);
+  S.sandK = Math.min(1, (S.sandK ?? 1) + dt / HK.sand.heave);
+  if (S.ph === 3 && S.sand > 0 && !(S.dryT > 0) && !S.al) { S.drainT -= dt; if (S.drainT <= 0) { S.drainT = HK.sand.drainEvery; if (S.sand === S.sandMax0) c.number((G.x0 + G.x1) / 2, G.floorY - 100, AL_SAY.drains, '#9aa39a'); setSand(S, c, S.sand - 1); } }   /* (claude/bc4fix) THE GATES RUN DRY: the sand runs out, a layer at a time */
   /* his TRAIL (the time slip's echo is where he stood HK.slipBack s ago) */
   S.trail.push([S.t, e.x]); while (S.trail.length > 2 && S.trail[1][0] < S.t - HK.slipBack - 0.5) S.trail.shift();
   stepGears(S, dt, c); stepWaves(S, dt, c); stepStream(e, S, dt, c); stepRain(S, dt, c); stepGrasp(S, dt, h, c); stepShots(S, dt, c);
@@ -202,7 +212,7 @@ export function stepHourglassKing(e, S, dt, h, c) {
   /* HIS GLASS: it runs while he fights; empty, he turns himself over (told). Stalled or warded it does not run */
   if (!S.al && S.ph < 3 && HK.aloft.every[S.ph] && !hkOpen(e) && S.ward <= 0 && e.mode !== 'turn') S.wdT -= dt;   /* (claude/buriedcity4) the time to his next withdraw runs while he fights on the floor */
   /* (claude/buriedcity4) PHASE THREE READS PLAIN: the gates are said dry a beat after the crack, and THE GREAT HOURGLASS left ready is called again every HK.stallHint s */
-  if (S.dryT > 0) { S.dryT -= dt; if (S.dryT <= 0) for (const lv of G.levers) c.number(lv.x, G.floorY - 64, AL_SAY.dry, '#9aa39a'); }
+  if (S.dryT > 0) { S.dryT -= dt; if (S.dryT <= 0) { for (const lv of G.levers) c.number(lv.x, G.floorY - 64, AL_SAY.dry, '#9aa39a'); S.sandMax0 = S.sand; S.drainT = 0; } }
   if (S.ph === 3 && greatReady(S) && !hkOpen(e) && e.mode !== 'sleep' && e.mode !== 'wake') { S.greatIdle += dt; if (S.greatIdle >= HK.stallHint) { S.greatIdle = 0; S.n.strikeHints++; c.number(G.great, G.floorY - 96, AL_SAY.strike, '#ffd36b'); c.fx('great', G.great, G.floorY); c.sound('chime'); } } else S.greatIdle = 0;
   if (e.mode !== 'stall' && e.mode !== 'turn' && S.ward <= 0 && !S.al) {
     S.glass = Math.max(0, S.glass - dt);
@@ -258,7 +268,9 @@ function nextMove(e, S, P, c) {
 /* (claude/buriedcity4) UP ON HIS PILLAR: the glide to it, its rise, the throws (shards and pots by turns), THE SAND RISES (the slabs: OPEN while they stand), the sink + ward */
 function stepAloft(e, S, dt, P, c) { const G = S.G, A = S.al, AL = HK.aloft; if (!A) { setMode(e, 'recover', 0.3); return; }
   switch (e.mode) {
-    case 'withdrawTell': if (e.modeT <= 0) setMode(e, 'glide', 4); return;
+    case 'withdrawTell': if (e.modeT <= 0) { setMode(e, 'glide', 4);
+        if (S.ph === 2 && S.sand < HK.sand.max && setSand(S, c, S.sand + 1)) { c.number((G.x0 + G.x1) / 2, G.floorY - 120, AL_SAY.rises, '#ffd36b'); c.sound('rumble'); c.shake(4); c.fx('erupt', (G.x0 + G.x1) / 2, G.floorY); } }   /* (claude/bc4fix) as he goes, THE SAND RISES A LAYER and carries you up to him (after his own word is read) */
+      return;
     case 'glide': { const d = A.kx - e.x; e.face = Math.sign(d) || e.face;
       if (Math.abs(d) > 2) { e.x += Math.sign(d) * Math.min(Math.abs(d), AL.glideV * dt); return; }
       e.x = A.kx; A.pillar = true; if (c.pillar) c.pillar(A.side, true); c.sound('rumble'); c.shake(3); c.fx('erupt', e.x, G.floorY); setMode(e, 'rise', AL.riseT); return; }
@@ -344,7 +356,7 @@ function stepBlocks(S, dt, c) { S.swapT -= dt;
   if (S.swapT <= 0) { S.blockUp = 1 - S.blockUp; S.swapT = HK.swap; S.swapSaid = false; if (c.blocks) c.blocks(S.blockUp, 'swap'); } }
 /* PHASE TWO ON: THE SAND TIDE - told (a rumble, the floor's sand glows, "THE SAND RISES"), then the floor is drift for a while: up on a ledge or a block */
 function stepTide(S, dt, c) { const T = S.tide, G = S.G; T.t -= dt;
-  if (!T.on && T.t <= HK.tide.warn && !T.warned) { T.warned = true; c.sound('rumble'); if (T.said < 3) { T.said++; c.number((G.x0 + G.x1) / 2, G.floorY - 110, 'THE SAND RISES: UP ON A LEDGE', '#ff9a5c'); } }
+  if (!T.on && T.t <= HK.tide.warn && !T.warned) { T.warned = true; c.sound('rumble'); if (T.said < 3) { T.said++; c.number((G.x0 + G.x1) / 2, G.floorY - 110, 'THE SAND TIDE COMES: UP ON A LEDGE', '#ff9a5c'); } }
   if (!T.on && T.t <= 0) { T.on = true; T.t = HK.tide.dur; c.shake(3); }
   else if (T.on && T.t <= 0) { T.on = false; T.warned = false; T.t = HK.tide.every; } }
 /* PHASE THREE: two steady pours from the broken roof (a tick on a hero under one) */

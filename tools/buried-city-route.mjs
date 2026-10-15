@@ -19,12 +19,17 @@ try {
       if (!${foes}) for (const e of BK.enemies()) if (!e.boss) e.alive = false;
       const P = () => BK.P, k = BK.keys, K = () => BK.buriedCity(), legs = [], DBG = []; let frames = 0, legDmg = {}, lowest = 1, cards = 0;
       const maxHp = P().maxHp;
+      /* --floats (claude/bc4fix, item 1): every frame, a sand-drowned or sand-bound on screen standing (|vy| < 1) more than 2 px over the footing under its body, 4 frames running */
+      const FLOATS = ${process.argv.includes('--floats')}, SLm = FLOATS ? await import('/src/slopes.js') : null, Tm = FLOATS ? (await import('/src/level.js')).T : null, floats = [], fstreak = new Map();
+      const fsurf = (x, y) => { const L = BK.L, tx = Math.floor(x / TS); for (let ty = Math.floor((y - 6) / TS); ty < L.H; ty++) { const t = L.grid[ty * L.W + tx]; if (!(t === Tm.SOLID || t === Tm.SOFT || SLm.isOneWay(t) || SLm.isSlope(t))) continue; const s = SLm.isSlope(t) ? SLm.surfaceY(t, tx, ty, x) : ty * TS; if (s < y - 6) continue; return s; } return 1e9; };
+      const floatWatch = () => { for (const e of BK.enemies()) { if (!e.alive || e.t !== 'ambusher' || Math.abs(e.x - P().x) > 170 || Math.abs(e.y - P().y) > 100) continue; const hw = (e.w || 12) / 2 - 1, gp = Math.min(fsurf(e.x - hw, e.y), fsurf(e.x, e.y), fsurf(e.x + hw, e.y)) - e.y, n = fstreak.get(e) || 0;
+        if (Math.abs(e.vy || 0) < 1 && !(e.stagger > 0) && gp > 2 && gp < 1e8) { fstreak.set(e, n + 1); if (n + 1 === 4 && floats.length < 40) floats.push((e.cnSkin || e.t) + '@' + Math.round(e.x / TS) + ',' + Math.round(e.y / TS) + ' +' + Math.round(gp) + 'px ' + (e.st && e.st.mode) + ' f' + frames); } else fstreak.set(e, 0); } };
       const clear = () => { k.left = k.right = k.jump = k.down = k.up = k.atk = k.block = false; };
       class Died extends Error {}
       const tick = n => { for (let i = 0; i < (n || 1); i++) {
         if (BK.state === 'card') { BK.cardClose(); cards++; }
         if (!${foes} && frames % 20 === 0) for (const e of BK.enemies()) if (!e.boss && e.alive) e.alive = false;   /* (the quarter's risen too) */
-        const hp0 = P().hp, d0 = BK.stats().deaths, sw0 = BK.flip() ? BK.flip().n.swallowed : 0; BK.log = []; BK.sim(1); frames++;
+        const hp0 = P().hp, d0 = BK.stats().deaths, sw0 = BK.flip() ? BK.flip().n.swallowed : 0; BK.log = []; BK.sim(1); frames++; if (FLOATS) floatWatch();
         const lost = hp0 - P().hp, died = BK.stats().deaths > d0;
         if (lost > 0 || died) { const hits = (BK.log || []).filter(q => q.k === 'dmgP'); const who = hits.length ? (hits[0].who || hits[0].name || (hits[0].by && (hits[0].by.cnSkin || hits[0].by.t)) || 'hazard') : (P().sunStage > 0 ? 'sun' : (BK.flip() && BK.flip().n.swallowed > sw0) ? 'sand sea' : 'other');
           legDmg[who] = (legDmg[who] || 0) + Math.max(0, died ? hp0 : lost); }
@@ -118,11 +123,12 @@ try {
         if (!okLeg) { lifts.push(name); BK.tp(end[0], end[1]); BK.sim(5); }
         legs.push({ name, ok: okLeg, tries, at: [col(), feet()], hp: Math.round(P().hp), secs: +((frames - f0) / 60).toFixed(1), dmg: legDmg });
       }
-      return { hero: ${JSON.stringify(hero)}, maxHp, legs, dbg: DBG.slice(0, 60), lifts, retries, cards, deaths: BK.stats().deaths, lowest: +lowest.toFixed(2), secs: +(frames / 60).toFixed(0), n: K().n };
+      return { hero: ${JSON.stringify(hero)}, floats, maxHp, legs, dbg: DBG.slice(0, 60), lifts, retries, cards, deaths: BK.stats().deaths, lowest: +lowest.toFixed(2), secs: +(frames / 60).toFixed(0), n: K().n };
     })()`, 1800000);
     console.log('\n== ' + r.hero + ' (hp ' + r.maxHp + ')' + (god ? ' GOD' : '') + (foes ? '' : ' NO FOES'));
     for (const l of r.legs) console.log('  ' + (l.ok ? 'ok  ' : 'LIFT') + ' ' + l.name.padEnd(72) + ' tries ' + l.tries + '  at ' + l.at.join(',') + '  hp ' + l.hp + '  ' + l.secs + ' s  ' + JSON.stringify(l.dmg));
     if (process.argv.includes('--dbg')) console.log('  ' + r.dbg.join(' | '));
+    if (process.argv.includes('--floats')) console.log('  floats: ' + (r.floats.length ? r.floats.join(' | ') : 'none'));
     console.log('  level-up cards ' + r.cards + ';  deaths ' + r.deaths + ', retries ' + r.retries + ', lifts ' + r.lifts.length + (r.lifts.length ? ' (' + r.lifts.join('; ') + ')' : '') + ', lowest ' + Math.round(r.lowest * 100) + '%, ' + r.secs + ' s  ' + JSON.stringify(r.n));
     summary.push(r.hero + ': ' + (r.lifts.length ? r.lifts.length + ' LIFTED' : 'walked') + ', ' + r.deaths + ' deaths'); if (r.lifts.length) bad++;
   }

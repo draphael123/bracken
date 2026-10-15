@@ -511,7 +511,7 @@ export const STUCK_HANDS = {
     /* (claude/buriedcity4) THE GLASS WORKS, THE ROOFTOPS' TILTING DUNE, THE ANTECHAMBER: every glass the route needs glints until it runs */
     { id: 'bc-works1', zone: [341, 28, 352, 34], steps: [ { key: 'works1', is: ['glass.works1', 'idle'], at: [351, 32], line: 'THE KILN STUB: STRIKE ITS GLASS AND THE STAIR RISES' } ] },
     { id: 'bc-works2', zone: [361, 22, 368, 27], steps: [ { key: 'works2', is: ['glass.works2', 'idle'], at: [364, 26], line: 'STRIKE THE GLASS, THEN STEP INTO THE SAND-FALL' } ] },
-    { id: 'bc-works3', zone: [370, 12, 383, 17], steps: [ { key: 'works3', is: ['glass.works3', 'idle'], at: [372, 15], line: 'THE DUNE IS A WALL: TURN THE GLASS AND IT TILTS' } ] },
+    { id: 'bc-works3', zone: [370, 12, 383, 17], steps: [ { key: 'works3', is: ['glass.works3', 'idle'], at: [372, 15], line: 'THE DUNE IS A WALL: STRIKE THE GLASS AND IT TILTS' } ] },
     { id: 'bc-works4', zone: [383, 7, 389, 11], steps: [ { key: 'works4', is: ['glass.works4', 'idle'], at: [385, 10], line: 'THE RELAY: STRIKE THE GLASS, THEN JUMP' } ] },
     { id: 'bc-works5', zone: [398, 18, 401, 22], steps: [ { key: 'works5', is: ['glass.works5', 'idle'], at: [399, 21], line: 'THE RELAY: ITS SECOND GLASS RAISES THE LAST ROOF' } ] },
     { id: 'bc-tiltdune', zone: [734, 2, 746, 12], steps: [ { key: 'tiltDune', is: ['glass.fall', 'idle'], at: [741, 6], glint: 'stall', line: 'THE DUNE TILTS WITH THE GLASS BY THE FALL: STRIKE IT AGAIN' } ] },

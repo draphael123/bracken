@@ -14,7 +14,9 @@
 // main.js calls: on, reset, update, interact, waits, world, takeConstruct, drawWorld, drawOver, drawStructure, noSun, read, state, walkHint, handsState.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
+import { isSlope, surfaceY } from './slopes.js';   /* (claude/bc4fix) a body on a slope stands on its SURFACE, not on its tile's top */
 import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js'; import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) */
+import * as FIXA from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the coin caches */
 import { makeFlip } from './buried-city-flip.js'; import * as FART from './redraw/buried_city_flip_art.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
 export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2, fallBeat: 130, fallPad: 4 };
@@ -103,10 +105,14 @@ export function makeBuriedCityHands(ctx) {
   }
   /* A BODY WHOSE FEET ARE IN SOMETHING THE SAND (OR THE DECK, OR A HEAP) PUT THERE stands on top of it: the street rising under you, a heap growing under a foe */
   const filled = t => t !== T().AIR && t !== T().SPIKE;
+  /* (claude/bc4fix, brief item 1 - "SAND-BOUND SOLDIERS SOMETIMES FLOAT"): a body standing ON a slope's surface (a tilting dune) is not buried in it - and one lifted out onto a slope
+     stands on the slope's surface. Before, every turn of a tilting dune lifted whatever stood on it to the top of its slope TILE (up to 15 px over the drawn sand); a foe the
+     game does not step (more than 420 px from the hero) stayed hanging there */
   function unbury(b, isFoe, r) {
     const ts = TS(), tx = Math.floor(b.x / ts); let fy = Math.floor((b.y - 1) / ts), moved = false;
+    { const t0 = ctx.cellGet(tx, fy); if (isSlope(t0) && b.y <= surfaceY(t0, tx, fy, b.x) + 1) return false; }
     for (let i = 0; i < 24 && fy > 0 && filled(ctx.cellGet(tx, fy)); i++) { fy--; moved = true; }
-    if (!moved) return false; b.y = (fy + 1) * ts; if (b.vy > 0) b.vy = 0; if (isFoe && b.st) b.st.y = b.y; if (isFoe && b.t === 'construct') jam(b, r); else if (!isFoe) K.n.lifts++; return true; }
+    if (!moved) return false; { const tt = ctx.cellGet(tx, fy + 1); b.y = isSlope(tt) ? surfaceY(tt, tx, fy + 1, b.x) : (fy + 1) * ts; } if (b.vy > 0) b.vy = 0; if (isFoe && b.st) b.st.y = b.y; if (isFoe && b.t === 'construct') jam(b, r); else if (!isFoe) K.n.lifts++; return true; }
   function unburyIn(x0, x1, r) { const l = x0 * TS() - 2, rr = (x1 + 1) * TS() + 2;
     for (const pp of ctx.players) if (!pp.dead && pp.x > l && pp.x < rr) unbury(pp, false, r);
     for (const e of ctx.enemies()) if (e.alive && !e.noGrav && !e.boss && e.x > l && e.x < rr) unbury(e, true, r); }
@@ -119,7 +125,7 @@ export function makeBuriedCityHands(ctx) {
     if (b && !e.sbBuried) { K.flipN.held++; ctx.burst(e.x, e.y - 4, 12, ['#e6c98a', '#a87a40'], 70, 0.6); const P0 = ctx.hero(); if (P0 && Math.abs(P0.x - e.x) < 260 && once('boundBuried')) number(e.x, e.y - 34, 'BURIED TO THE CHEST: IT CANNOT MOVE', '#8fd160'); }
     if (!b && e.sbBuried) ctx.burst(e.x, e.y - 8, 10, ['#e6c98a', '#a87a40'], 80, 0.5);
     e.sbBuried = b; if (b) { e.st.frame = 8; e.frame = 8; } return b; };
-  H.takeSandBound = e => { if (!FL) return 1; const k = FL.boundTake(e); if (k < 1) { K.flipN.glanced++; const P0 = ctx.hero(); if (P0 && once('boundHolds')) number(e.x, e.y - 44, 'THE SAND HOLDS IT: TURN ITS GLASS', '#ffd36b'); } return k; };
+  H.takeSandBound = e => { if (!FL) return 1; const k = FL.boundTake(e); if (k < 1) { K.flipN.glanced++; const P0 = ctx.hero(); if (P0 && once('boundHolds')) number(e.x, e.y - 44, 'THE SAND HOLDS IT: STRIKE ITS GLASS', '#ffd36b'); } return k; };
   /* a JAMMED construct takes a blow twice over (told once) */
   H.takeConstruct = (e, dmg) => { if (e.st && e.st.mode === 'jammed') { if (!e.bcJamSaid) { e.bcJamSaid = 1; number(e.x, e.y - 30, 'JAMMED: IT CANNOT GUARD', '#8fd160'); } return dmg * BCS.jamMul; } return dmg; };
 
@@ -218,6 +224,7 @@ export function makeBuriedCityHands(ctx) {
     for (const r of K.rooms) { const q = r.into && roomOf(r.into); if (q && q.level !== q._lv) { q._lv = q.level; q.moving = 0.6; write(q, false); } }
     stepFalls(dt);
     if (FL) FL.update(dt);   /* THE FLIP: the glasses run, the roofs rise and sink, the banks run out, the dune falls flow up, THE SAND SEA swallows */
+    settleFar(P0);
     /* THE DROWNED QUARTER's foes stand up out of the sand when it has gone off them */
     if (K.waiting.length) for (let i = K.waiting.length - 1; i >= 0; i--) { const q = K.waiting[i]; if (H.waits(q.e)) continue; K.waiting.splice(i, 1); K.n.risen++;
       const made = ctx.spawnEnt ? ctx.spawnEnt(q.e, q.k) : null; if (made) ctx.burst(made.x, made.y - 6, 10, ['#d8b070', '#a87a40'], 60, 0.6); }
@@ -225,10 +232,17 @@ export function makeBuriedCityHands(ctx) {
     if (P0 && !P0.dead) { const near = (x, y, r) => Math.abs(x - P0.x) < r && Math.abs(y - P0.y) < 70;
       for (const r of K.rooms) { const lv = (r.levers || [])[0]; if (lv && RULE_SAID[r.id] && near(px(lv[0]), (lv[1] + 1) * TS(), 70) && once('room' + r.id)) sayRule(r.id, P0.x, P0.y - 34); }
       for (const c of K.chutes) { const lv = c.levers[0]; if (lv && near(px(lv[0]), (lv[1] + 1) * TS(), 80) && once('chute' + c.id)) number(P0.x, P0.y - 34, 'A SAND-FALL: E SWINGS ITS CHUTE', '#ffd36b'); }
-      const W = K.L.wheel; if (W && near(px(W.x), (W.row + 1) * TS(), 90) && once('wheel')) number(P0.x, P0.y - 34, 'THE GREAT SAND-GATE: E TURNS THE WHEEL', '#ffd36b'); }
+      const W = K.L.wheel; if (W && near(px(W.x), (W.row + 1) * TS(), 90) && once('wheel')) number(P0.x, P0.y - 34, 'THE GREAT SAND-GATE: E TURNS THE WHEEL', '#ffd36b');
+      for (const d of (K.L.decor || [])) if (d.kind === 'coincache' && gateHeld(d.gate) && Math.abs(px(d.gate) - P0.x) < 150 && Math.abs(d.y * TS() - P0.y) < 90 && once('cache' + d.gate)) number(P0.x, P0.y - 34, 'HIS GATE KEEPS A CACHE OF COIN: PUT HIM DOWN', '#ffd36b'); }   /* (claude/bc4fix) the elite's purse, told */
     dropBack(P0);
     stall(P0, dt);
   };
+  /* (claude/bc4fix, brief item 1) A SAND-DROWNED OR SAND-BOUND OFF THE SCREEN stands on what is under it: the game steps a desert foe only within 420 px of the hero, so ground the
+     rule moved out from under one further off (a dune turned, a roof sank, a slab crumbled) left it hanging until you came back. It is set down on the footing under it */
+  function settleFar(P) { if (!P) return; const ts = TS(), T0 = T();
+    for (const e of ctx.enemies()) { if (!e.alive || e.t !== 'ambusher' || e.noGrav || Math.abs(e.x - P.x) <= 420) continue; const tx = Math.floor(e.x / ts);
+      for (let ty = Math.floor((e.y - 1) / ts), n = 0; n < 30 && ty < K.L.H; ty++, n++) { const t = ctx.cellGet(tx, ty); if (t === T0.AIR || t === T0.SPIKE) continue;
+        const top = isSlope(t) ? surfaceY(t, tx, ty, e.x) : ty * ts; if (top < e.y - 1) break; if (top > e.y + 1) { e.y = top; e.vy = 0; if (e.st) e.st.y = top; } break; } } }
   /* THE FOUNDRY'S FLOOR-GATE (A10 base): the TEACH of the trap hall - a hero who drops through the small open floor-gate lands three rows down, and it costs him
      about a quarter of his health (never the last point: this one is not the end) and puts him back on the lip he came from, told */
   function dropBack(P) {
@@ -283,9 +297,10 @@ export function makeBuriedCityHands(ctx) {
     if (kind === 'trap') { const r = roomOf(id); if (!r) return ''; if (r.level >= r.full - 0.05) return 'full'; return r.gate === 'open' ? 'gate' : !feeds(r) ? 'feed' : 'filling'; }
     return ''; };
   H.handsState = n => (K ? handsState(n) : '');
+  const kingSand = () => (ctx.kingSand ? ctx.kingSand() : 0);   /* (claude/bc4fix) */
   const kingLever = P => (ctx.kingLit && ctx.kingLit() && P) ? levers().filter(q => q.arena).sort((a, b) => Math.abs(px(a.x) - P.x) - Math.abs(px(b.x) - P.x))[0] || null : null;   /* M5: the nearer throne-room lever while a pull stalls him */
   const stall = (P, dt) => { if (!P || P.dead) return; const ts = TS();
-    { const a = kingLever(P); if (a) { K.glint = { key: 'kinglever', x: px(a.x), y: (a.row + 1) * ts, show: true }; K.stallKey = null; return; } }   /* the guide's arrow points at it (B10: with ~1.4 s of slack nobody hunts for the lever) */
+    { const a = kingLever(P); if (a) { K.glint = { key: 'kinglever', x: px(a.x), y: (a.row + 1 - kingSand()) * ts, show: true }; K.stallKey = null; return; } }   /* the guide's arrow points at it (B10: with ~1.4 s of slack nobody hunts for the lever) */
     const r = resolve('buriedcity', Math.floor(P.x / ts), Math.floor((P.y - 1) / ts), { TS: ts, props: [], movers: ctx.movers(), hero: P, state: handsState }, STUCK_HANDS);
     if (!r) { K.glint = null; K.stallKey = null; return; } const t = r.targets[0]; K.glint = { key: r.key, x: t.x, y: t.y, show: r.glint !== 'stall' };
     const C = K.stalls[r.key] = K.stalls[r.key] || newStall(); if (r.key !== K.stallKey) { K.stallKey = r.key; C.t = 0; C.best = 1e9; }
@@ -348,7 +363,8 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
       else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);
-      else if (d.kind === 'shell') FART.drawShell(V, d, ts); }
+      else if (d.kind === 'shell') FART.drawShell(V, d, ts);
+      else if (d.kind === 'coincache') FIXA.drawCoinCache(V, d.x * ts + 8, d.y * ts, !gateHeld(d.gate)); }   /* (claude/bc4fix) an elite's purse behind his gate */
     if ((L.outside || []).length && cx > 632 * ts) { const T0 = T(); FART.drawDressing(V, x => { for (let y = 0; y < L.H - 1; y++) if (ctx.cellGet(x, y) === T0.SOLID && ctx.cellGet(x, y - 1) !== T0.SOLID && y > 3) return y; return -1; }); }   /* (claude/bc3art) what the desert city left on its dunes and roofs */
     /* THE LAMPS: oil lamps and wall braziers, warm light against the sand's cold shadow */
     for (const lp of (L.lamps || [])) SET.drawLamp(V, lp);
@@ -386,12 +402,12 @@ export function makeBuriedCityHands(ctx) {
     }
     /* THE LEVERS and their GAUGES (A3: the room's level, OPEN / SHUT; a chute lever names where its fall lands). M5: the throne room's levers GLOW gold while his glass is low */
     const kl = kingLever(ctx.hero());
-    for (const lv of levers()) { const x = px(lv.x) - cx, y = (lv.row + 1) * ts - cy; if (x < -40 || x > vw + 40) continue;
+    for (const lv of levers()) { const x = px(lv.x) - cx, y = (lv.row + 1 - (lv.arena ? kingSand() : 0)) * ts - cy; if (x < -40 || x > vw + 40) continue;   /* (claude/bc4fix: the throne room's levers ride up on its sand) */
       const r = lv.r, open = r ? r.gate === 'open' : lv.chute ? lv.chute.at === Object.keys(lv.chute.to)[1] : false, fx = K.fx.find(f => f.kind === 'pull' && Math.abs(f.x - px(lv.x)) < 2);
       if (lv.arena && kl) { const near = kl.arena === lv.arena; g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 10); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(R(x), R(y - 8), near ? 18 : 13, 0, 7); g.fill(); g.globalAlpha = 1;
         if (near) { g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(R(x), R(y - 8), 21 + 3 * Math.sin(time * 8), 0, 7); g.stroke(); g.lineWidth = 1; ctx.text('PULL', R(x), R(y - 34), '#ffd36b', 'center', 5); } }
       const thrown = open || (fx && fx.t > 0.25), tk = lv.chute ? lv.chute.at : null, tt = lv.chute ? lv.chute.to[tk] : null;
-      RUL.drawLever(V, { x: px(lv.x), y: (lv.row + 1) * ts, kind: lv.arena ? 'arena' : lv.chute ? 'chute' : 'gate', open: thrown, chain: lv.chain, k: r && r.full ? r.level / r.full : 0, dir: tt ? ((tt.x0 + tt.x1 + 1) / 2 * ts > px(lv.x) ? 1 : -1) : 1 });
+      RUL.drawLever(V, { x: px(lv.x), y: (lv.row + 1 - (lv.arena ? kingSand() : 0)) * ts, kind: lv.arena ? 'arena' : lv.chute ? 'chute' : 'gate', open: thrown, chain: lv.chain, k: r && r.full ? r.level / r.full : 0, dir: tt ? ((tt.x0 + tt.x1 + 1) / 2 * ts > px(lv.x) ? 1 : -1) : 1 });
       if (r) ctx.text(open ? 'OPEN' : 'SHUT', R(x + 12), R(y - 30), open ? '#8fd160' : '#ffb060', 'center', 4);
       if (lv.chute) ctx.text(tk === 'wall' ? 'TO THE WALL' : tk === 'hall' ? 'INTO THE HALL' : tk === 'grate' ? 'TO THE GRATE' : 'ON THE LIP', R(x), R(y - 42), '#ffd36b', 'center', 4);
       if (fx) { g.globalAlpha = fx.t * 2; g.strokeStyle = fx.ok ? '#ffd36b' : '#9aa39a'; g.beginPath(); g.arc(R(x), R(y - 8), 14 + (0.5 - fx.t) * 20, 0, 7); g.stroke(); g.globalAlpha = 1; } }
@@ -406,6 +422,9 @@ export function makeBuriedCityHands(ctx) {
   const drawBound = (g, cx, cy, time) => { for (const e of ctx.enemies()) { if (!e.alive || e.cnSkin !== 'sandbound' || !e.st || e.st.mode === 'buried') continue; const x = e.x - cx, y = e.y - cy; if (x < -40 || x > ctx.VW() + 40) continue; A4.drawBoundShell(g, x, y, time, !!e.sbBuried, e.x); } };
   H.drawOver = (g, cx, cy, time) => { if (K) drawBound(g, cx, cy, time); if (!K || !K.glint || !K.glint.show) return; drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
   H.drawHud = () => false;
+  H.cam = () => (FL ? FL.cam() : null);
+  /* (claude/bc4fix) is the elite who holds this gate column still standing (his cache is behind it) */
+  const gateHeld = col => ctx.enemies().some(e => e.alive && e.elite && e.gate === col);   /* (claude/bc4fix) the camera's look at what a struck glass moves (main.js updateCamera) */
   H.read = () => K && { loopOpen: !!K.loopOpen, n: { ...K.n }, rooms: K.rooms.map(r => ({ id: r.id, level: +r.level.toFixed(2), gate: r.gate, rows: r.rows })), wheel: { ...K.wheel }, waiting: K.waiting.length, vault: K.vault.map(v => ({ id: v.id, open: v.open })),
     chutes: K.chutes.map(c => ({ id: c.id, at: c.at, heap: Object.fromEntries(Object.entries(c.heap).map(([k, v]) => [k, v.rows])) })), flip: FL ? FL.read() : null };
   return H;
