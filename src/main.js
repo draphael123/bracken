@@ -4891,7 +4891,16 @@ function drawMap() {
       g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 9);
       text(msg, Math.round(lx), ly + 1, '#c9463d', 'center', 6); } }
   if (!map.walking && !map.glide) { const here = NODES[map.node]; if (here && !here.spur) for (const c of spursAt(here.id)) { if (nodeLocked(c)) continue;   /* THE WAY ONTO A SIDE ROAD: a few bright dots run out along its stub from the junction you stand on */
-      const dx = c.x - here.x, dy = c.y - here.y, len = Math.hypot(dx, dy) || 1; for (let d = 8, k = 0; d < len - 8; d += 6, k++) { g.globalAlpha = 0.35 + 0.65 * Math.max(0, Math.sin(time * 5 - k * 0.9)); g.fillStyle = '#fff4c8'; g.fillRect(Math.round(here.x + dx * d / len) - 1, Math.round(here.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1; } }
+      const dx = c.x - here.x, dy = c.y - here.y, len = Math.hypot(dx, dy) || 1; for (let d = 8, k = 0; d < len - 8; d += 6, k++) { g.globalAlpha = 0.35 + 0.65 * Math.max(0, Math.sin(time * 5 - k * 0.9)); g.fillStyle = '#fff4c8'; g.fillRect(Math.round(here.x + dx * d / len) - 1, Math.round(here.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1;
+      /* THE KEY PROMPT: the key that enters, drawn beside the side road's node - an arrow cap on a keyboard (square), on a pad (round), and TAP on touch */
+      const key = ['right', 'left', 'down', 'up'].find(k => spurFor(here, k) === c), ux = dx / len, uy = dy / len;
+      if (key) { const cw = touchOn ? 17 : 11, chh = 11, cx0 = Math.max(2, Math.min(VW - cw - 2, Math.round(c.x + ux * 15 + (ux < 0 ? -cw : 0) - (Math.abs(ux) < 0.5 ? cw / 2 : 0)))), cy0 = Math.max(2, Math.min(VH - 16, Math.round(c.y + uy * 14 - 5 - (Math.abs(uy) < 0.5 ? 0 : 0))));
+        g.fillStyle = '#1a1420'; g.fillRect(cx0, cy0, cw, chh); g.fillStyle = '#e8dcc0'; g.fillRect(cx0 + 1, cy0, cw - 2, 1); g.fillRect(cx0 + 1, cy0 + chh - 1, cw - 2, 1); g.fillRect(cx0, cy0 + 1, 1, chh - 2); g.fillRect(cx0 + cw - 1, cy0 + 1, 1, chh - 2);
+        if (padLast) { g.fillStyle = '#1a1420'; g.fillRect(cx0, cy0, 1, 1); g.fillRect(cx0 + cw - 1, cy0, 1, 1); g.fillRect(cx0, cy0 + chh - 1, 1, 1); g.fillRect(cx0 + cw - 1, cy0 + chh - 1, 1, 1); }
+        if (touchOn) text('TAP', cx0 + (cw >> 1), cy0 + 3, '#fff4c8', 'center', 6);
+        else { const mx = cx0 + (cw >> 1), my = cy0 + (chh >> 1); g.fillStyle = '#fff4c8'; const v = { right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1] }[key], px = -v[1], py = v[0];
+          for (let a = -2; a <= 2; a++) g.fillRect(mx + v[0] * a - (a === 0 ? 0 : 0), my + v[1] * a, 1, 1);   /* the shaft */
+          g.fillRect(mx - v[0] * 2, my - v[1] * 2, 1, 1); for (let a = 1; a <= 2; a++) { g.fillRect(mx + v[0] * (2 - a) + px * a, my + v[1] * (2 - a) + py * a, 1, 1); g.fillRect(mx + v[0] * (2 - a) - px * a, my + v[1] * (2 - a) - py * a, 1, 1); } } } } }
   const [px, py] = mapPos();
   updateMapLife(0.016, px, py); drawMapLife();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);

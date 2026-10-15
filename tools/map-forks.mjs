@@ -50,14 +50,15 @@ try {
     const go = (id, key) => { BK.mapLook(id); BK.state = 'map'; BK.step(2); BK.press(key); for (let i = 0; i < 120; i++) BK.step(1); const n = BK.mapNodes(); return n.ids[n.node]; };
     const info = id => { const n = BK.mapNodes(), i = n.ids.indexOf(id); return { secret: n.secret[i], locked: n.locked[i] }; };
     const wipe = () => { BK.reset({ fresh: true }); for (const l of LEVELS) delete BKT.PROG[l.id]; delete BKT.PROG.lostBanners; delete BKT.PROG.fieldOpen; }; wipe(); for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'undercrown', 'harbor'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 };
-    out.slowStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
-    BKT.PROG.stockade.best = 250; out.fastStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
+    BKT.PROG.stockade = { best: 250 };   /* NOT cleared */ out.unclearedStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
+    BKT.PROG.stockade = { cleared: true, medal: 1, best: 400 }; out.slowStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
     wipe(); out.crownUnseen = info('undercrown');
     BKT.PROG.crown = { cleared: true, medal: 1, best: 400, slain: 10, slainOf: 100 }; out.crownFew = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
     BKT.PROG.crown.slain = 90; out.crownMany = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
     return out; })()`, 300000);
-  S.slowStockade.info.locked && S.slowStockade.up === 'stockade' && S.slowStockade.right === 'spore' ? ok('burning shut (stockade slower than 5:00): UP stays, RIGHT walks on to sporewood') : fail('burning shut: ' + JSON.stringify(S.slowStockade));
-  !S.fastStockade.info.locked && S.fastStockade.up === 'burning' && S.fastStockade.right === 'burning' ? ok('burning open (stockade under 5:00): UP and RIGHT walk onto it') : fail('burning open: ' + JSON.stringify(S.fastStockade));
+  // DANIEL'S DESIGN CHANGE 10-15 (never weaken): the Burning Village opens as soon as the Stockade is CLEARED - no best-time clock.
+  S.unclearedStockade.info.locked && S.unclearedStockade.up === 'stockade' && S.unclearedStockade.right === 'spore' ? ok('burning shut while the Stockade is not cleared: UP stays, RIGHT walks the road on') : fail('burning, Stockade not cleared: ' + JSON.stringify(S.unclearedStockade));
+  !S.slowStockade.info.locked && S.slowStockade.up === 'burning' && S.slowStockade.right === 'burning' ? ok('burning open once the Stockade is cleared, even slowly (best 6:40): UP and RIGHT walk onto it') : fail('burning open: ' + JSON.stringify(S.slowStockade));
   S.crownUnseen.secret ? ok('undercrown not shown before highcrown is cleared') : fail('undercrown shown early: ' + JSON.stringify(S.crownUnseen));
   !S.crownFew.info.secret && S.crownFew.info.locked && S.crownFew.up === 'crown' && S.crownFew.right !== 'undercrown' ? ok('undercrown shown but shut at 10%: UP stays on highcrown, RIGHT walks the road on (' + S.crownFew.right + ')') : fail('undercrown at 10%: ' + JSON.stringify(S.crownFew));
   !S.crownMany.info.locked && S.crownMany.up === 'undercrown' && S.crownMany.right === 'undercrown' ? ok('undercrown open at 90%: UP and RIGHT walk onto it') : fail('undercrown at 90%: ' + JSON.stringify(S.crownMany));

@@ -27,3 +27,8 @@ tools/map-forks.mjs (registered in tools/check.mjs): real keys on every node; al
 ## QUESTIONS FOR DANIEL
 1. Church and Unburied are still entered by DOWN (LEFT/RIGHT at those junctions is the road). Want a different rule (e.g. a visible arrow label)? Built: pulsing dots on the stub, no text.
 2. Harbor: leave shelved (built) or give it a node?
+
+## Follow-up (Daniel's answers, 10-15)
+- THE BURNING VILLAGE now opens as soon as the Stockade is CLEARED: `opensOn: { level: 'stockade' }` (the `time: 300` clock is dropped; Pyromancer unlock untouched). Old saves that cleared the Stockade see it open. Tests updated, stated as Daniel's design change, none weakened: class-spurs (slow 5:01 clear and bronze/no-time clear now open it; an uncleared Stockade still shuts it) and map-forks (uncleared = shut, cleared slowly = open).
+- KEY PROMPT: standing on a junction with an OPEN spur, a small cap beside the spur node shows the key that enters (pixel arrow on a square cap for keyboard, round-cornered cap when the last input was the pad, "TAP" on touch). The pulsing dots stay. Harbor stays shelved.
+- Re-run green: map-forks, class-spurs, burning-village, map-grammar, map-spacing, map-scale, map-footer, unburied-secret, lit-church, touch, uiscreens, mobile-perf, textfit (map scope, 0 on every counter; one earlier run hit an audio.js page error, re-run clean).
