@@ -194,8 +194,7 @@ export const SKINS = []; for (const t of TYPES) for (const k of Object.keys(CHAP
    onto the ent, so main.js's eliteMake gives him the affix the table names and src/order-knights.js reads the rest off him. */
 export function knightRow(id) {
   const o = ORDER_AT[id]; if (!o) return null;
-  const f = { face: -1, replaces: o.replaces, order: id, cnSkin: skinOf(o.body, o.chapter), eliteName: o.name };
-  if (o.gate !== undefined) f.gate = o.gate;   /* (claude/wardens12: a level with no gated exam - underleaf, hanging, spire - gives him none) */
+  const f = { face: -1, gate: o.gate, replaces: o.replaces, order: id, cnSkin: skinOf(o.body, o.chapter), eliteName: o.name };
   if (o.affix) f.affix = o.affix;
   return [o.body, o.at[0], o.at[1], f];
 }
