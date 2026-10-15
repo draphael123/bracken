@@ -6016,7 +6016,7 @@ let coopPickFrom = 'title';
 /* WHOEVER YOU ARE IS STILL ON THE LIST. This filtered out player one's own hero, so a player who had taken THE WARDEN found her missing
    from player two's choices and read it as her not being selectable at all. The owner's rule: two of the same hero is allowed - two
    knights, or two Wardens, side by side. Both starters are always here, and everything the save owns with them. */
-const coopPickList = () => PICK.filter(h => PROG.heroes[h] || ROSTER.includes(h) || (PROG.coopLegacy && DEFAULT_HEROES.includes(h)) || godMode());   /* (LEVELING: the free starters are an OLD save's - src/progression.js migrateHeroes) */
+const coopPickList = () => PICK.filter(h => PROG.heroes[h] || ROSTER.includes(h) || DEFAULT_HEROES.includes(h) || godMode());   /* (Daniel 10-15: co-op opens with one hero, so player two may take any free starter - it was an old save's only) */   /* (LEVELING: the free starters are an OLD save's - src/progression.js migrateHeroes) */
 /* CO-OP OPENS WITH THE SECOND HERO (LEVELING, Daniel 2026-10-03): until the save owns two (or is a save from before this), every way into the
    co-op pick - the title, the pause menu, the map's F - lands on a card that says so, and any key goes back. */
 const coopOk = () => godMode() || coopOpen(PROG);

@@ -127,8 +127,8 @@ check('slots', () => {
 });
 
 check('heroes for silver', () => {
-  const fresh = PR.migrateProgress(null).progress; assert.equal(fresh.heroFlow, 1); assert(!fresh.coopLegacy); assert(!PR.coopOpen(fresh));
-  fresh.heroes = { warden: true }; assert(!PR.coopOpen(fresh)); fresh.heroes.knight = true; assert(PR.coopOpen(fresh), 'a second hero does not open co-op');
+  const fresh = PR.migrateProgress(null).progress; assert.equal(fresh.heroFlow, 1); assert(!fresh.coopLegacy); assert(PR.coopOpen(fresh), 'co-op is open on a fresh save (Daniel 10-15)');
+  fresh.heroes = { warden: true }; assert(PR.coopOpen(fresh), 'co-op is open with one hero (Daniel 10-15: no second hero needed)');
   assert.deepEqual(PR.DEFAULT_HEROES, ['knight', 'warden', 'geomancer', 'ranger']);   /* (claude/berserker, 2026-10-04: the fourth default; claude/ranger, Daniel 10-12 - a deliberate design change: THE RANGER is the fourth free starter, the berserker is bought) */
   const oldSave = JSON.stringify({ progressionVersion: 2, hero: 'warden', heroes: { warden: true }, xp: { warden: 5000, geomancer: 400 }, done: { warden: { wood: 1 }, geomancer: {} }, wood: { cleared: true }, coins: 10 });
   const o = PR.migrateProgress(oldSave).progress; assert(o.coopLegacy && PR.coopOpen(o), 'an old save lost co-op'); assert(o.heroes.warden && o.heroes.geomancer, 'an old save lost a starter it played'); assert(!o.heroes.pyro);

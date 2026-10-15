@@ -61,7 +61,7 @@ export function open() {
   UI.styles(); board = UI.board('olhost');
   if (sess) { roomView(); return; }
   const ok = api.coopOk(), lw = NET.explain('locked')[1];
-  const inp = UI.el('input'); inp.maxLength = 6; inp.placeholder = 'CODE'; inp.autocomplete = 'off'; inp.spellcheck = false;
+  const inp = UI.el('input'); inp.maxLength = 200;   /* (a pasted link must reach cleanCode whole: at 6 it was cut to HTTPS: first) */  inp.placeholder = 'CODE'; inp.autocomplete = 'off'; inp.spellcheck = false;
   inp.addEventListener('input', () => { inp.value = NET.cleanCode(inp.value); });
   const go = UI.el('button.go', 'JOIN', () => { const c = NET.cleanCode(inp.value); if (c.length >= 4) joinCode(c); else inp.focus(); });
   board.set(

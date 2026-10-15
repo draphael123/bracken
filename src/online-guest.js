@@ -176,7 +176,7 @@ function render() {
   if (P === 'play' && !G.menu) { if (board) { board.remove(); board = null; } return; }
   board = UI.board('olguest');
   if (P === 'code') {
-    const inp = UI.el('input'); inp.maxLength = 6; inp.placeholder = 'CODE'; inp.autocomplete = 'off'; inp.spellcheck = false; inp.addEventListener('input', () => { inp.value = NET.cleanCode(inp.value); });
+    const inp = UI.el('input'); inp.maxLength = 200;   /* (a pasted link must reach cleanCode whole: at 6 it was cut to HTTPS: first) */  inp.placeholder = 'CODE'; inp.autocomplete = 'off'; inp.spellcheck = false; inp.addEventListener('input', () => { inp.value = NET.cleanCode(inp.value); });
     parts.push(UI.el('p', 'TYPE THE CODE YOUR FRIEND SENT'), UI.row(inp, UI.el('button.go', 'JOIN', () => { const c = NET.cleanCode(inp.value); if (c.length >= 4) location.href = location.pathname + '?join=' + c; })), UI.row(UI.el('button', 'BACK TO MY GAME', backHome)));
   } else if (P === 'finding' || P === 'linking' || P === 'opening' || P === 'start') {
     parts.push(UI.el('div.code', code), UI.el('p', P === 'finding' ? 'ASKING THE MATCHMAKER FOR THE GAME...' : P === 'linking' ? 'OPENING A DIRECT LINK TO THE HOST...' : 'SAYING HELLO...'), UI.el('p.dim', 'you play player two in the host\'s game; your own save is never touched'), UI.row(UI.el('button', 'CANCEL', backHome)));
