@@ -125,11 +125,12 @@ try {
   for (const h of HEROES) { if (only && !only.includes(h)) continue;
     const r = await pg.evalp(`(()=>{const h=${JSON.stringify(h)};__prep(h,0);const P=BK.P;P.face=1;const s0=P.st;BK.press('dodge');BK.sim(1);const cost=Math.round(s0-P.st);
       BK.sim(5);P.inv=0;P.grace=0;const early=BKT.damagePlayer(P.x+10,5,{unblockable:true});
-      __prep(h,0);P.face=1;BK.press('dodge');BK.sim(1);for(let i=0;i<16;i++)BK.sim(1);P.inv=0;P.grace=0;const inRoll=P.dodge>0;const late=h==='warden'?null:BKT.damagePlayer(P.x+10,5,{unblockable:true});
+      __prep(h,0);P.face=1;BK.press('dodge');BK.sim(1);for(let i=0;i<(h==='paladin'?13:16);i++)BK.sim(1);P.inv=0;P.grace=0;const inRoll=P.dodge>0;const late=h==='warden'?null:BKT.damagePlayer(P.x+10,5,{unblockable:true});
       let back=null;if(h==='warden'){__prep(h,0);P.face=1;const b0=P.st;BK.keys.left=false;BK.press('dodge');BK.sim(1);back=Math.round(b0-P.st);}
       return {cost,early,late,inRoll,back}})()`);
     check(r.early === false, `${h}: a blow 0.1 s into the roll was '${r.early}', not a miss`);
-    if (h !== 'warden') { check(r.inRoll && r.late === 'hit', `${h}: a blow in the roll's tail (0.25 s, in roll: ${r.inRoll}) was '${r.late}', not a hit`); }
+    if (h !== 'warden') { /* (claude/paladin4: the paladin's dodge is the SANCTUARY STEP - 0.26 s, 0.2 s of grace - so its tail is sampled at 0.23 s, not 0.28 s, which is past its end) */
+      check(r.inRoll && r.late === 'hit', `${h}: a blow in the roll's tail (${h === 'paladin' ? '0.23' : '0.28'} s, in roll: ${r.inRoll}) was '${r.late}', not a hit`); }
     const want = h === 'warden' ? STEP_BACK : ROLL_COST[h];
     check(r.cost === want, `${h}: the roll cost ${r.cost}, the brief says ${want}`);
   }

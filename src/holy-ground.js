@@ -49,7 +49,7 @@ export const HG = {
   ward: { drain: 27.5, big: 0.25, per: 2 },
   /* SANCTUARY STEP (the dodge, Daniel 10-15 ~17:20 - NOT a brace): a quick step in the held direction, a roll's grace a little shorter, and a small patch of holy
      light left where he stood: foes crossing it are slowed (a common foe or an elite, never a boss or a mini), a PARTNER in it mends */
-  step: { t: 0.22, inv: 0.2, speed: 250 },
+  step: { t: 0.26, inv: 0.2, speed: 240 },   // s (a roll is 0.30), s of grace (a roll 0.26), px/s
   patch: { r: 16, life: 2, slow: 0.5, heal: 0.03 },             // the patch: px either side, s, foes' pace in it (x), a partner's mend (of max health a second)
   /* PRAYER (crouch, Daniel 10-15 ~17:20): kneel anywhere; after settle s still, +1 pip every 'every' s (x holyMul at a holy light: src/crouch-b.js HOLY) */
   pray: { settle: 0.6, every: 2.5, holyMul: 3 },

@@ -47,6 +47,8 @@ try {
       else if(kind==='board'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-40;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.riding&&f++<120)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}   /* BOARDING: onto a goblin, then off it */
       else if(kind==='meter'){run(10);__fresh();__tapC();run(90);}
+      else if(kind==='twinsmite'||kind==='radiancePlus'){while(!st.done&&tries++<4){const e=F()[0];P.x=e.x-14;P.face=1;P.vx=0;run(20);__fresh();__tapC();run(60);}}   /* (claude/paladin4) the empowered tiers: filled for him, tapped beside the straw */
+      else if(kind==='pray'){K.down=true;run(60*5);K.down=false;run(5);}   /* (claude/paladin4) PRAYER: down and still until a pip comes */
       else if(kind==='skill'){run(10);__fresh();BK.press('throw');run(60);__fresh();BK.press('skill2');run(60);}
       else if(kind==='flash'||kind==='tells'){const e=F()[0],late=early?-99:h==='geomancer'?2:3;let pressed=0,glintAt=-1,awayT=0;
         for(let f=0;f<frames&&!st.done;f++){P.face=Math.sign(e.x-P.x)||1;__fresh();const gap=Math.abs(e.x-P.x);if(awayT<=0){K.right=gap>30&&e.x>P.x;K.left=gap>30&&e.x<P.x;}
@@ -57,7 +59,7 @@ try {
         K.left=K.right=false;}
       return {kind,got:st.got||0,n:st.n,done:!!st.done,have:st.have||null};};
     return 1})()`);
-  const NEWP = { paladin: ['hammerfall'], pirate: ['board'], berserker: ['spin'] };   /* (claude/plunges) the three yards that teach a new plunge: just that station is played */
+  const NEWP = { paladin: ['hammerfall', 'twinsmite', 'radiancePlus', 'pray'], pirate: ['board'], berserker: ['spin'] };   /* (claude/plunges) the three yards that teach a new plunge: just that station is played (claude/paladin4: and the paladin's empowered tiers + prayer) */
   for (const h of ['warden', 'geomancer', 'paladin', 'pirate', 'berserker']) {
     if (!(await pg.evalp(`__yard('${h}')`))) { out[h] = 'no yard'; continue; }
     const n = await pg.evalp('BK.L.trial.length'), rows = [];
