@@ -26,10 +26,10 @@ try {
   out = await pg.evalp(`(async()=>{const {LEVELS,T}=await import('/src/level.js');const res=[];
     const DRAWN=new Set([T.SOLID,T.ONEWAY,T.SPIKE,T.PLANK,T.CRATE,T.PORT,T.SHELF,T.RAIL,T.PALISADE,T.CLIMB,T.SOFT,T.ICE,T.WEB,T.REED,T.BOUNCER,T.CRYST].filter(v=>v!==undefined));
     const ink=new Map();const hasInk=c=>{if(!c||!c.width)return false;if(ink.has(c))return ink.get(c);const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let a=0;for(let i=3;i<d.length;i+=4)a+=d[i]>8?1:0;const v=a>=8;ink.set(c,v);return v;};
-    const top=new Map();const topInk=c=>{if(!c||!c.width)return false;if(top.has(c))return top.get(c);
+    const top=new Map();const topInk=(c,start=0)=>{if(!c||!c.width)return false;let memo=top.get(c);if(memo&&start in memo)return memo[start];
       const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let good=false;
-      for(let y=0;y<Math.min(4,c.height)&&!good;y++){let run=0;for(let x=0;x<c.width;x++){run=d[(y*c.width+x)*4+3]>128?run+1:0;if(run>=3){good=true;break;}}}
-      top.set(c,good);return good;};
+      for(let y=start;y<Math.min(start+4,c.height)&&!good;y++){let run=0;for(let x=0;x<c.width;x++){run=d[(y*c.width+x)*4+3]>128?run+1:0;if(run>=3){good=true;break;}}}
+      if(!memo){memo={};top.set(c,memo);}memo[start]=good;return good;};
     const inBox=(a,x,y)=>a&&a.some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3]);
     /* These are not missing pictures: each exact coordinate is handed to a second, foreground painter below the tile
        loop in main.js. Match the metadata that painter reads, not a blanket level exemption. */
@@ -44,7 +44,9 @@ try {
         /* The old City gate still examines every solid cell. The whole-game sweep asks about standable TOP surfaces; a buried
            wall cell behind a painted bookshelf is not a platform and must not be counted as one. */
         if(${all}&&(!y||G[k-W]!==T.AIR||t===T.SPIKE))continue;   /* a spike hurts; it is not a standable platform */
-        if(!(${all}?topInk(S[k]):hasInk(S[k]))){const why=${all}?custom(L,x,y,t):null;if(why)other[why]=(other[why]||0)+1;else bad.push([x,y,t]);}}
+        /* A reed's sprite is drawn eight pixels ABOVE its collision cell (drawWorld); sample the sprite rows that really
+           land on the cell's top instead of mistaking its high fronds for a missing footing. */
+        if(!(${all}?topInk(S[k],t===T.REED?8:0):hasInk(S[k]))){const why=${all}?custom(L,x,y,t):null;if(why)other[why]=(other[why]||0)+1;else bad.push([x,y,t]);}}
       return {phase,bad:bad.length,cells:bad,custom:other};};
     for(const id of (${JSON.stringify(ids)}||LEVELS.map(l=>l.id))){const i=LEVELS.findIndex(l=>l.id===id);if(i<0){res.push({id,err:'no such level'});continue;}
       BK.load(i);BK.start();BK.god=true;BK.sim(${all?60:30});const ph=[scan('as loaded')],move=[];

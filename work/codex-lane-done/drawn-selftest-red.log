@@ -15,7 +15,7 @@ AssertionError [ERR_ASSERTION]: solid cells with no picture (an invisible platfo
 + ]
 - []
 
-    at file:///C:/Users/danie/Documents/Codex/2026-10-13/https-usefountain-slack-com-archives-d05sc1rm2ud/bracken-geomsweep/tools/drawn-solids.mjs:93:8 {
+    at file:///C:/Users/danie/Documents/Codex/2026-10-13/https-usefountain-slack-com-archives-d05sc1rm2ud/bracken-geomsweep/tools/drawn-solids.mjs:95:8 {
   generatedMessage: false,
   code: 'ERR_ASSERTION',
   actual: [

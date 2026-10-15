@@ -26,27 +26,27 @@ The rendered crop for **every** finding is linked below and saved as `work/codex
 | 14 | ksar | 0 | 0 | 47 | 47 |
 | 15 | canal | 0 | 1 | 45 | 46 |
 | 16 | deep | 0 | 0 | 44 | 44 |
-| 17 | marsh | 26 | 0 | 18 | 44 |
-| 18 | fallingtower | 1 | 6 | 35 | 42 |
-| 19 | theatre | 0 | 1 | 41 | 42 |
-| 20 | oreroad | 0 | 0 | 40 | 40 |
-| 21 | burial | 0 | 1 | 38 | 39 |
-| 22 | church | 0 | 0 | 39 | 39 |
-| 23 | lamplit | 0 | 0 | 34 | 34 |
-| 24 | mage | 0 | 0 | 34 | 34 |
-| 25 | storm | 0 | 0 | 32 | 32 |
-| 26 | stockade | 0 | 0 | 24 | 24 |
-| 27 | undercrown | 0 | 0 | 24 | 24 |
-| 28 | waymeet | 0 | 0 | 24 | 24 |
-| 29 | fields | 0 | 0 | 23 | 23 |
-| 30 | underleaf | 0 | 0 | 23 | 23 |
-| 31 | moor | 0 | 0 | 22 | 22 |
-| 32 | caravan | 0 | 0 | 20 | 20 |
-| 33 | fair | 8 | 0 | 12 | 20 |
-| 34 | flotilla | 0 | 0 | 20 | 20 |
-| 35 | towpath | 0 | 0 | 20 | 20 |
-| 36 | causeway | 0 | 0 | 19 | 19 |
-| 37 | reef | 0 | 0 | 19 | 19 |
+| 17 | fallingtower | 1 | 6 | 35 | 42 |
+| 18 | theatre | 0 | 1 | 41 | 42 |
+| 19 | oreroad | 0 | 0 | 40 | 40 |
+| 20 | burial | 0 | 1 | 38 | 39 |
+| 21 | church | 0 | 0 | 39 | 39 |
+| 22 | lamplit | 0 | 0 | 34 | 34 |
+| 23 | mage | 0 | 0 | 34 | 34 |
+| 24 | storm | 0 | 0 | 32 | 32 |
+| 25 | stockade | 0 | 0 | 24 | 24 |
+| 26 | undercrown | 0 | 0 | 24 | 24 |
+| 27 | waymeet | 0 | 0 | 24 | 24 |
+| 28 | fields | 0 | 0 | 23 | 23 |
+| 29 | underleaf | 0 | 0 | 23 | 23 |
+| 30 | moor | 0 | 0 | 22 | 22 |
+| 31 | caravan | 0 | 0 | 20 | 20 |
+| 32 | fair | 8 | 0 | 12 | 20 |
+| 33 | flotilla | 0 | 0 | 20 | 20 |
+| 34 | towpath | 0 | 0 | 20 | 20 |
+| 35 | causeway | 0 | 0 | 19 | 19 |
+| 36 | reef | 0 | 0 | 19 | 19 |
+| 37 | marsh | 0 | 0 | 18 | 18 |
 | 38 | wood | 0 | 1 | 17 | 18 |
 | 39 | witchlight | 0 | 0 | 16 | 16 |
 | 40 | burning | 0 | 0 | 13 | 13 |
@@ -73,7 +73,7 @@ The rendered crop for **every** finding is linked below and saved as `work/codex
 | 61 | trial_warden | 0 | 0 | 0 | 0 |
 | 62 | unburied | 0 | 0 | 0 | 0 |
 
-Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 720 overhangs accepted by visible supports or keyed reasons.
+Totals: 144 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 720 overhangs accepted by visible supports or keyed reasons.
 
 ## Level findings and theme-matched fix
 
@@ -275,17 +275,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [8-24,211](../codex/shots/geomsweep/deep-8-211.png), [88-103,215](../codex/shots/geomsweep/deep-88-215.png), [8-22,219](../codex/shots/geomsweep/deep-8-219.png), [112-154,223](../codex/shots/geomsweep/deep-112-223.png), [96-103,225](../codex/shots/geomsweep/deep-96-225.png), [8-16,227](../codex/shots/geomsweep/deep-8-227.png), [104-111,231](../codex/shots/geomsweep/deep-104-231.png), [155-160,237](../codex/shots/geomsweep/deep-155-237.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with mine stone and iron braces, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 17. marsh — 44 finding(s)
-
-- Tile top: [120,14](../codex/shots/geomsweep/marsh-120-14.png), [121,14](../codex/shots/geomsweep/marsh-121-14.png), [331,15](../codex/shots/geomsweep/marsh-331-15.png), [364,15](../codex/shots/geomsweep/marsh-364-15.png), [365,15](../codex/shots/geomsweep/marsh-365-15.png), [390,15](../codex/shots/geomsweep/marsh-390-15.png), [391,15](../codex/shots/geomsweep/marsh-391-15.png), [392,15](../codex/shots/geomsweep/marsh-392-15.png), [452,15](../codex/shots/geomsweep/marsh-452-15.png), [457,15](../codex/shots/geomsweep/marsh-457-15.png), [458,15](../codex/shots/geomsweep/marsh-458-15.png), [55,16](../codex/shots/geomsweep/marsh-55-16.png)
-[259,16](../codex/shots/geomsweep/marsh-259-16.png), [260,16](../codex/shots/geomsweep/marsh-260-16.png), [274,16](../codex/shots/geomsweep/marsh-274-16.png), [275,16](../codex/shots/geomsweep/marsh-275-16.png), [292,16](../codex/shots/geomsweep/marsh-292-16.png), [459,16](../codex/shots/geomsweep/marsh-459-16.png), [460,16](../codex/shots/geomsweep/marsh-460-16.png), [478,16](../codex/shots/geomsweep/marsh-478-16.png), [479,16](../codex/shots/geomsweep/marsh-479-16.png), [52,18](../codex/shots/geomsweep/marsh-52-18.png), [53,18](../codex/shots/geomsweep/marsh-53-18.png), [54,18](../codex/shots/geomsweep/marsh-54-18.png)
-[50,20](../codex/shots/geomsweep/marsh-50-20.png), [51,20](../codex/shots/geomsweep/marsh-51-20.png)
-- Mover top: none
-- Unsupported overhang: [124-125,11](../codex/shots/geomsweep/marsh-124-11.png), [120-121,14](../codex/shots/geomsweep/marsh-120-14.png), [241-247,14](../codex/shots/geomsweep/marsh-241-14.png), [251-256,14](../codex/shots/geomsweep/marsh-251-14.png), [283-289,14](../codex/shots/geomsweep/marsh-283-14.png), [347-348,14](../codex/shots/geomsweep/marsh-347-14.png), [331-332,15](../codex/shots/geomsweep/marsh-331-15.png), [334-339,15](../codex/shots/geomsweep/marsh-334-15.png), [350-356,15](../codex/shots/geomsweep/marsh-350-15.png), [364-365,15](../codex/shots/geomsweep/marsh-364-15.png), [259-260,16](../codex/shots/geomsweep/marsh-259-16.png), [274-275,16](../codex/shots/geomsweep/marsh-274-16.png)
-[292-293,16](../codex/shots/geomsweep/marsh-292-16.png), [326-330,16](../codex/shots/geomsweep/marsh-326-16.png), [342-346,16](../codex/shots/geomsweep/marsh-342-16.png), [359-363,16](../codex/shots/geomsweep/marsh-359-16.png), [367-370,17](../codex/shots/geomsweep/marsh-367-17.png), [52-54,18](../codex/shots/geomsweep/marsh-52-18.png)
-- Suggested fix: Draw a continuous three-pixel foreground footing with bog-oak piles and reed lashings, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
-
-### 18. fallingtower — 42 finding(s)
+### 17. fallingtower — 42 finding(s)
 
 - Tile top: [19,150](../codex/shots/geomsweep/fallingtower-19-150.png)
 - Mover top: [wheel@93,87](../codex/shots/geomsweep/fallingtower-93-87.png), [wheel@91,91](../codex/shots/geomsweep/fallingtower-91-91.png), [wheel@88,87](../codex/shots/geomsweep/fallingtower-88-87.png), [wheel@103,86](../codex/shots/geomsweep/fallingtower-103-86.png), [wheel@100,89](../codex/shots/geomsweep/fallingtower-100-89.png), [wheel@99,85](../codex/shots/geomsweep/fallingtower-99-85.png)
@@ -294,7 +284,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [12-33,207](../codex/shots/geomsweep/fallingtower-12-207.png), [12-21,219](../codex/shots/geomsweep/fallingtower-12-219.png), [25-57,219](../codex/shots/geomsweep/fallingtower-25-219.png), [12-21,229](../codex/shots/geomsweep/fallingtower-12-229.png), [23-59,229](../codex/shots/geomsweep/fallingtower-23-229.png), [18-26,234](../codex/shots/geomsweep/fallingtower-18-234.png), [17-59,241](../codex/shots/geomsweep/fallingtower-17-241.png), [12-25,265](../codex/shots/geomsweep/fallingtower-12-265.png), [27-59,265](../codex/shots/geomsweep/fallingtower-27-265.png), [14-23,273](../codex/shots/geomsweep/fallingtower-14-273.png), [24-32,276](../codex/shots/geomsweep/fallingtower-24-276.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with tower masonry and iron ties, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 19. theatre — 42 finding(s)
+### 18. theatre — 42 finding(s)
 
 - Tile top: none
 - Mover top: [fly@275,33](../codex/shots/geomsweep/theatre-275-33.png)
@@ -304,7 +294,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [275-299,35](../codex/shots/geomsweep/theatre-275-35.png), [303-308,35](../codex/shots/geomsweep/theatre-303-35.png), [218-227,37](../codex/shots/geomsweep/theatre-218-37.png), [247-251,40](../codex/shots/geomsweep/theatre-247-40.png), [270-274,40](../codex/shots/geomsweep/theatre-270-40.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with stage trusses and fly ropes, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 20. oreroad — 40 finding(s)
+### 19. oreroad — 40 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -314,7 +304,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [120-128,37](../codex/shots/geomsweep/oreroad-120-37.png), [96-104,41](../codex/shots/geomsweep/oreroad-96-41.png), [121-127,41](../codex/shots/geomsweep/oreroad-121-41.png), [79-85,44](../codex/shots/geomsweep/oreroad-79-44.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with ore-road pylons and iron trestles, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 21. burial — 39 finding(s)
+### 20. burial — 39 finding(s)
 
 - Tile top: none
 - Mover top: [platform@361,56](../codex/shots/geomsweep/burial-361-56.png)
@@ -324,7 +314,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [268-276,57](../codex/shots/geomsweep/burial-268-57.png), [360-361,60](../codex/shots/geomsweep/burial-360-60.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with crypt stone and ossuary piers, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 22. church — 39 finding(s)
+### 21. church — 39 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -334,7 +324,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [93-98,50](../codex/shots/geomsweep/church-93-50.png), [154-156,50](../codex/shots/geomsweep/church-154-50.png), [172-174,50](../codex/shots/geomsweep/church-172-50.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with church masonry and iron stays, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 23. lamplit — 34 finding(s)
+### 22. lamplit — 34 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -343,7 +333,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [311-325,27](../codex/shots/geomsweep/lamplit-311-27.png), [327-329,27](../codex/shots/geomsweep/lamplit-327-27.png), [341-349,27](../codex/shots/geomsweep/lamplit-341-27.png), [352-356,27](../codex/shots/geomsweep/lamplit-352-27.png), [358-428,27](../codex/shots/geomsweep/lamplit-358-27.png), [430-441,27](../codex/shots/geomsweep/lamplit-430-27.png), [446-470,27](../codex/shots/geomsweep/lamplit-446-27.png), [481-520,27](../codex/shots/geomsweep/lamplit-481-27.png), [530-555,27](../codex/shots/geomsweep/lamplit-530-27.png), [559-568,27](../codex/shots/geomsweep/lamplit-559-27.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with town brick and iron brackets, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 24. mage — 34 finding(s)
+### 23. mage — 34 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -352,7 +342,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [274-283,31](../codex/shots/geomsweep/mage-274-31.png), [302-308,31](../codex/shots/geomsweep/mage-302-31.png), [585-589,33](../codex/shots/geomsweep/mage-585-33.png), [32,34](../codex/shots/geomsweep/mage-32-34.png), [64-65,35](../codex/shots/geomsweep/mage-64-35.png), [212-215,35](../codex/shots/geomsweep/mage-212-35.png), [476-478,35](../codex/shots/geomsweep/mage-476-35.png), [424-427,40](../codex/shots/geomsweep/mage-424-40.png), [402-423,41](../codex/shots/geomsweep/mage-402-41.png), [428,41](../codex/shots/geomsweep/mage-428-41.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with runed stone and library shelves, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 25. storm — 32 finding(s)
+### 24. storm — 32 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -361,7 +351,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [595-607,30](../codex/shots/geomsweep/storm-595-30.png), [613-625,30](../codex/shots/geomsweep/storm-613-30.png), [631-643,30](../codex/shots/geomsweep/storm-631-30.png), [649-661,30](../codex/shots/geomsweep/storm-649-30.png), [667-679,30](../codex/shots/geomsweep/storm-667-30.png), [685-693,30](../codex/shots/geomsweep/storm-685-30.png), [496-499,34](../codex/shots/geomsweep/storm-496-34.png), [496-499,38](../codex/shots/geomsweep/storm-496-38.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with weathered ship timber and rigging, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 26. stockade — 24 finding(s)
+### 25. stockade — 24 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -369,7 +359,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [411-412,13](../codex/shots/geomsweep/stockade-411-13.png), [90-91,14](../codex/shots/geomsweep/stockade-90-14.png), [461-462,14](../codex/shots/geomsweep/stockade-461-14.png), [481-482,14](../codex/shots/geomsweep/stockade-481-14.png), [99-100,16](../codex/shots/geomsweep/stockade-99-16.png), [457-459,16](../codex/shots/geomsweep/stockade-457-16.png), [484-486,16](../codex/shots/geomsweep/stockade-484-16.png), [232-244,17](../codex/shots/geomsweep/stockade-232-17.png), [247-263,17](../codex/shots/geomsweep/stockade-247-17.png), [111-114,20](../codex/shots/geomsweep/stockade-111-20.png), [115-126,21](../codex/shots/geomsweep/stockade-115-21.png), [336-373,21](../codex/shots/geomsweep/stockade-336-21.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with palisade stakes and stockade braces, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 27. undercrown — 24 finding(s)
+### 26. undercrown — 24 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -377,7 +367,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [79,100](../codex/shots/geomsweep/undercrown-79-100.png), [97-150,105](../codex/shots/geomsweep/undercrown-97-105.png), [46-51,106](../codex/shots/geomsweep/undercrown-46-106.png), [68-73,106](../codex/shots/geomsweep/undercrown-68-106.png), [96-143,130](../codex/shots/geomsweep/undercrown-96-130.png), [10-95,136](../codex/shots/geomsweep/undercrown-10-136.png), [4-9,143](../codex/shots/geomsweep/undercrown-4-143.png), [16-28,143](../codex/shots/geomsweep/undercrown-16-143.png), [76-98,143](../codex/shots/geomsweep/undercrown-76-143.png), [30-74,155](../codex/shots/geomsweep/undercrown-30-155.png), [29,160](../codex/shots/geomsweep/undercrown-29-160.png), [75,160](../codex/shots/geomsweep/undercrown-75-160.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with mine stone and crystal buttresses, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 28. waymeet — 24 finding(s)
+### 27. waymeet — 24 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -385,7 +375,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [378-388,32](../codex/shots/geomsweep/waymeet-378-32.png), [399-410,32](../codex/shots/geomsweep/waymeet-399-32.png), [578-586,32](../codex/shots/geomsweep/waymeet-578-32.png), [591-598,32](../codex/shots/geomsweep/waymeet-591-32.png), [684-688,32](../codex/shots/geomsweep/waymeet-684-32.png), [431-443,33](../codex/shots/geomsweep/waymeet-431-33.png), [358-366,34](../codex/shots/geomsweep/waymeet-358-34.png), [473-485,37](../codex/shots/geomsweep/waymeet-473-37.png), [488-499,37](../codex/shots/geomsweep/waymeet-488-37.png), [502-513,37](../codex/shots/geomsweep/waymeet-502-37.png), [516-527,37](../codex/shots/geomsweep/waymeet-516-37.png), [530-539,37](../codex/shots/geomsweep/waymeet-530-37.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with quay timber and mooring posts, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 29. fields — 23 finding(s)
+### 28. fields — 23 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -393,7 +383,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [377-399,26](../codex/shots/geomsweep/fields-377-26.png), [328-331,27](../codex/shots/geomsweep/fields-328-27.png), [340,29](../codex/shots/geomsweep/fields-340-29.png), [416,29](../codex/shots/geomsweep/fields-416-29.png), [182-187,33](../codex/shots/geomsweep/fields-182-33.png), [190-194,33](../codex/shots/geomsweep/fields-190-33.png), [209-219,34](../codex/shots/geomsweep/fields-209-34.png), [223-235,34](../codex/shots/geomsweep/fields-223-34.png), [239-251,34](../codex/shots/geomsweep/fields-239-34.png), [255-267,34](../codex/shots/geomsweep/fields-255-34.png), [271-281,34](../codex/shots/geomsweep/fields-271-34.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with dead orchard trunks and bale props, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 30. underleaf — 23 finding(s)
+### 29. underleaf — 23 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -401,7 +391,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [212-224,28](../codex/shots/geomsweep/underleaf-212-28.png), [274-278,28](../codex/shots/geomsweep/underleaf-274-28.png), [228-240,29](../codex/shots/geomsweep/underleaf-228-29.png), [30-44,30](../codex/shots/geomsweep/underleaf-30-30.png), [118-139,30](../codex/shots/geomsweep/underleaf-118-30.png), [164-176,30](../codex/shots/geomsweep/underleaf-164-30.png), [196-208,30](../codex/shots/geomsweep/underleaf-196-30.png), [352-356,30](../codex/shots/geomsweep/underleaf-352-30.png), [386-390,30](../codex/shots/geomsweep/underleaf-386-30.png), [420-430,30](../codex/shots/geomsweep/underleaf-420-30.png), [452-462,30](../codex/shots/geomsweep/underleaf-452-30.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with roots and canopy trunks, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 31. moor — 22 finding(s)
+### 30. moor — 22 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -409,7 +399,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [384-386,14](../codex/shots/geomsweep/moor-384-14.png), [160,15](../codex/shots/geomsweep/moor-160-15.png), [273-274,15](../codex/shots/geomsweep/moor-273-15.png), [200,16](../codex/shots/geomsweep/moor-200-16.png), [269-270,16](../codex/shots/geomsweep/moor-269-16.png), [111,17](../codex/shots/geomsweep/moor-111-17.png), [238-241,17](../codex/shots/geomsweep/moor-238-17.png), [265-266,17](../codex/shots/geomsweep/moor-265-17.png), [594-629,17](../codex/shots/geomsweep/moor-594-17.png), [384-386,18](../codex/shots/geomsweep/moor-384-18.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with moor stone and rooted heather, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 32. caravan — 20 finding(s)
+### 31. caravan — 20 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -417,14 +407,14 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [105-107,22](../codex/shots/geomsweep/caravan-105-22.png), [410-412,22](../codex/shots/geomsweep/caravan-410-22.png), [44-46,24](../codex/shots/geomsweep/caravan-44-24.png), [146-148,24](../codex/shots/geomsweep/caravan-146-24.png), [228-230,24](../codex/shots/geomsweep/caravan-228-24.png), [400-402,25](../codex/shots/geomsweep/caravan-400-25.png), [420-422,25](../codex/shots/geomsweep/caravan-420-25.png), [480-482,25](../codex/shots/geomsweep/caravan-480-25.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with sandstone, wagon ribs and dune-rock, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 33. fair — 20 finding(s)
+### 32. fair — 20 finding(s)
 
 - Tile top: [402,26](../codex/shots/geomsweep/fair-402-26.png), [403,26](../codex/shots/geomsweep/fair-403-26.png), [404,26](../codex/shots/geomsweep/fair-404-26.png), [405,26](../codex/shots/geomsweep/fair-405-26.png), [556,26](../codex/shots/geomsweep/fair-556-26.png), [557,26](../codex/shots/geomsweep/fair-557-26.png), [558,26](../codex/shots/geomsweep/fair-558-26.png), [559,26](../codex/shots/geomsweep/fair-559-26.png)
 - Mover top: none
 - Unsupported overhang: [398-410,12](../codex/shots/geomsweep/fair-398-12.png), [176-195,13](../codex/shots/geomsweep/fair-176-13.png), [563-571,14](../codex/shots/geomsweep/fair-563-14.png), [590-594,14](../codex/shots/geomsweep/fair-590-14.png), [418-436,18](../codex/shots/geomsweep/fair-418-18.png), [373,20](../codex/shots/geomsweep/fair-373-20.png), [529-555,20](../codex/shots/geomsweep/fair-529-20.png), [621,23](../codex/shots/geomsweep/fair-621-23.png), [198-214,28](../codex/shots/geomsweep/fair-198-28.png), [321-337,28](../codex/shots/geomsweep/fair-321-28.png), [597-608,28](../codex/shots/geomsweep/fair-597-28.png), [340-347,29](../codex/shots/geomsweep/fair-340-29.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with ride frames and fairground timber, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 34. flotilla — 20 finding(s)
+### 33. flotilla — 20 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -432,7 +422,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [116-119,23](../codex/shots/geomsweep/flotilla-116-23.png), [122-133,23](../codex/shots/geomsweep/flotilla-122-23.png), [139-169,23](../codex/shots/geomsweep/flotilla-139-23.png), [248-309,23](../codex/shots/geomsweep/flotilla-248-23.png), [312-340,23](../codex/shots/geomsweep/flotilla-312-23.png), [23-26,25](../codex/shots/geomsweep/flotilla-23-25.png), [34-57,25](../codex/shots/geomsweep/flotilla-34-25.png), [61-93,25](../codex/shots/geomsweep/flotilla-61-25.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with ship hull frames and rigging, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 35. towpath — 20 finding(s)
+### 34. towpath — 20 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -440,7 +430,7 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [125,33](../codex/shots/geomsweep/towpath-125-33.png), [27-30,35](../codex/shots/geomsweep/towpath-27-35.png), [280-284,36](../codex/shots/geomsweep/towpath-280-36.png), [154-157,37](../codex/shots/geomsweep/towpath-154-37.png), [22-25,38](../codex/shots/geomsweep/towpath-22-38.png), [141-148,38](../codex/shots/geomsweep/towpath-141-38.png), [68-74,39](../codex/shots/geomsweep/towpath-68-39.png), [84-92,40](../codex/shots/geomsweep/towpath-84-40.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with canal brick and towpath posts, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 36. causeway — 19 finding(s)
+### 35. causeway — 19 finding(s)
 
 - Tile top: none
 - Mover top: none
@@ -448,13 +438,21 @@ Totals: 170 tile-top findings, 10 mover findings, 1656 unsupported overhangs; 72
 [569-574,25](../codex/shots/geomsweep/causeway-569-25.png), [577-582,25](../codex/shots/geomsweep/causeway-577-25.png), [585-590,25](../codex/shots/geomsweep/causeway-585-25.png), [593-598,25](../codex/shots/geomsweep/causeway-593-25.png), [601-606,25](../codex/shots/geomsweep/causeway-601-25.png), [312-326,26](../codex/shots/geomsweep/causeway-312-26.png), [443-447,26](../codex/shots/geomsweep/causeway-443-26.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with sea stone and bridge piers, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
-### 37. reef — 19 finding(s)
+### 36. reef — 19 finding(s)
 
 - Tile top: none
 - Mover top: none
 - Unsupported overhang: [257-300,2](../codex/shots/geomsweep/reef-257-2.png), [122-209,7](../codex/shots/geomsweep/reef-122-7.png), [233-256,12](../codex/shots/geomsweep/reef-233-12.png), [303-337,12](../codex/shots/geomsweep/reef-303-12.png), [341-389,12](../codex/shots/geomsweep/reef-341-12.png), [393-410,12](../codex/shots/geomsweep/reef-393-12.png), [266-282,13](../codex/shots/geomsweep/reef-266-13.png), [285-300,13](../codex/shots/geomsweep/reef-285-13.png), [464-477,17](../codex/shots/geomsweep/reef-464-17.png), [400-408,19](../codex/shots/geomsweep/reef-400-19.png), [119-121,20](../codex/shots/geomsweep/reef-119-20.png), [467-480,21](../codex/shots/geomsweep/reef-467-21.png)
 [213-229,24](../codex/shots/geomsweep/reef-213-24.png), [338-340,24](../codex/shots/geomsweep/reef-338-24.png), [390-392,26](../codex/shots/geomsweep/reef-390-26.png), [301,27](../codex/shots/geomsweep/reef-301-27.png), [210-212,28](../codex/shots/geomsweep/reef-210-28.png), [230-232,28](../codex/shots/geomsweep/reef-230-28.png), [162-172,32](../codex/shots/geomsweep/reef-162-32.png)
 - Suggested fix: Draw a continuous three-pixel foreground footing with reef rock and coral ribs, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
+
+### 37. marsh — 18 finding(s)
+
+- Tile top: none
+- Mover top: none
+- Unsupported overhang: [124-125,11](../codex/shots/geomsweep/marsh-124-11.png), [120-121,14](../codex/shots/geomsweep/marsh-120-14.png), [241-247,14](../codex/shots/geomsweep/marsh-241-14.png), [251-256,14](../codex/shots/geomsweep/marsh-251-14.png), [283-289,14](../codex/shots/geomsweep/marsh-283-14.png), [347-348,14](../codex/shots/geomsweep/marsh-347-14.png), [331-332,15](../codex/shots/geomsweep/marsh-331-15.png), [334-339,15](../codex/shots/geomsweep/marsh-334-15.png), [350-356,15](../codex/shots/geomsweep/marsh-350-15.png), [364-365,15](../codex/shots/geomsweep/marsh-364-15.png), [259-260,16](../codex/shots/geomsweep/marsh-259-16.png), [274-275,16](../codex/shots/geomsweep/marsh-274-16.png)
+[292-293,16](../codex/shots/geomsweep/marsh-292-16.png), [326-330,16](../codex/shots/geomsweep/marsh-326-16.png), [342-346,16](../codex/shots/geomsweep/marsh-342-16.png), [359-363,16](../codex/shots/geomsweep/marsh-359-16.png), [367-370,17](../codex/shots/geomsweep/marsh-367-17.png), [52-54,18](../codex/shots/geomsweep/marsh-52-18.png)
+- Suggested fix: Draw a continuous three-pixel foreground footing with bog-oak piles and reed lashings, joined visibly to the ground or a solid wall. For a deliberate floating form, add a coordinate-keyed reason and retain its crop.
 
 ### 38. wood — 18 finding(s)
 
