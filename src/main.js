@@ -6106,7 +6106,7 @@ function selectStart() {
 // ---------- input ----------
 const keys = {};
 let grabPress = false;   /* (claude/partnerthrow) GRAB: lift / throw your partner, or throw what you carry */
-let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false, flaskPress = false;   /* flaskPress: THE FLASK (claude/survival) */ // padLast: the last press came from a gamepad (prompts show pad glyphs)
+let throwPress = false, skill2Press = false, skill3Press = false, skill4Press = false, talkPress = false, padLast = false, flaskPress = false, stancePress = false;   /* flaskPress: THE FLASK (claude/survival) */ // padLast: the last press came from a gamepad (prompts show pad glyphs)
 let jumpUpKey = false;   /* the jump press this frame came from a key that is UP too (ArrowUp, W): see UP_SLASH */
 let jumpPress = false, atkPress = false, dodgePress = false, pausePress = false, anyPress = false, upPress = false, downPress = false, leftPress = false, rightPress = false, confirmPress = false, talentsPress = false, mapPress = false;
 const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
@@ -6114,7 +6114,7 @@ const isKey = (e, names) => names.includes(e.key) || names.includes(e.code);
 const menuTake = () => confirmPress || atkPress;
 const KEYS = {
   jump: ['z', 'Z', ' ', 'Space', 'ArrowUp', 'w', 'W', 'k', 'K'], atk: ['x', 'X', 'j', 'J', 'Enter'], block: ['c', 'C', 'l', 'L'], dodge: ['v', 'V', 'Shift'],
-  throw: ['f', 'F', 'b', 'B'], grab: ['i', 'I'], skill2: ['g', 'G', 'n', 'N'], talk: ['e', 'E', 't', 'T'], flask: ['u', 'U', '1'],
+  throw: ['f', 'F', 'b', 'B'], grab: ['i', 'I'], skill2: ['g', 'G', 'n', 'N'], talk: ['e', 'E', 't', 'T'], flask: ['u', 'U', '1'], stance: ['2'],
   left: ['ArrowLeft', 'a', 'A'], right: ['ArrowRight', 'd', 'D'], down: ['ArrowDown', 's', 'S'], up: ['ArrowUp', 'w', 'W'], pause: ['Escape', 'p', 'P'], talents: ['q', 'Q'], dance: ['h', 'H'], map: ['Tab'],
 };
 addEventListener('keydown', e => {
@@ -6142,6 +6142,7 @@ addEventListener('keydown', e => {
   if (isKey(e, KEYS.throw)) { throwPress = true; keys.throw = true; }   /* held, for the Death Knight's HOLD F */
   if (isKey(e, KEYS.skill2)) skill2Press = true;
   if(e.key.toLowerCase()===SET.skill3Key)skill3Press=true;if(e.key.toLowerCase()===SET.skill4Key)skill4Press=true;
+  if (isKey(e, KEYS.stance)) stancePress = true;   /* THE RANGER's STANCE */
   if (isKey(e, KEYS.flask)) flaskPress = true;   /* THE FLASK: drink (src/survival.js) */
   if (isKey(e, KEYS.talk)) { talkPress = true; keys.talk = true; }   /* (survival2) held: BREAK THE SHRINE is a hold */
   padLast = false;
@@ -6218,7 +6219,7 @@ function pollGamepad() {
   if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
-  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
+  if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
   pad.prev = now;
@@ -6302,7 +6303,7 @@ Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
 const drawTouch = () => TCH.draw();
-function clearPresses() { grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; jumpUpKey = false;
+function clearPresses() { grabPress = false; jumpPress = atkPress = dodgePress = pausePress = anyPress = upPress = downPress = leftPress = rightPress = confirmPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = talentsPress = mapPress = flaskPress = false; stancePress = false; jumpUpKey = false;
   if (players) for (const p of players) if (p !== players[0] && p.press) p.press = {}; }   /* the other hands are one-shot too, and are emptied on the same beat */
 
 // ---------- collision ----------
@@ -6853,6 +6854,7 @@ function tryDrink() {
 }
 function drinkTick(dt) {
   if (flaskPress) { flaskPress = false; tryDrink(); }
+  if (stancePress) { stancePress = false; if (isRg() && RGK) RGK.toggleStance(); }   /* (Daniel 10-15) THE RANGER: BOW / KNIFE */
   spillsTick(dt); if (flaskHud.glowT > 0) flaskHud.glowT = Math.max(0, flaskHud.glowT - dt);
   if (!(P.drinkT > 0)) return;
   if (P.dead || P.down > 0 || state !== 'play') { P.drinkT = 0; return; }
@@ -7514,11 +7516,11 @@ function ptPass() {
   const r = PTK.pass(P, { grab: gp, mash: jumpPress || atkPress || dodgePress || gp, up: !!keys.up, down: !!keys.down });
   if (r.neutral) {   /* HELD OR THROWN: no hands of his own for the pass (the keys are given back after it) */
     const sv = keysRead(); for (const k in keys) keys[k] = false;
-    jumpPress = atkPress = dodgePress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = leftPress = rightPress = upPress = downPress = false; P.abuf = 0; P.dbuf = 0; P.jbuf = 0;
+    jumpPress = atkPress = dodgePress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = stancePress = leftPress = rightPress = upPress = downPress = false; P.abuf = 0; P.dbuf = 0; P.jbuf = 0;
     return sv; }
   if (r.eat) {   /* CARRYING HIM: no swing, roll, guard, skill or flask - the same rule as carrying a bucket */
     atkPress = false; keys.atk = false; P.abuf = 0; dodgePress = false; keys.dodge = false; P.dbuf = 0; keys.block = false; keys.throw = false;
-    throwPress = skill2Press = skill3Press = skill4Press = flaskPress = false; }
+    throwPress = skill2Press = skill3Press = skill4Press = flaskPress = stancePress = false; }
   return null;
 }
 function ptMasked(p, fn) {
@@ -8348,7 +8350,7 @@ function updateCharge(dt) {
       return; }
     if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); shakeCam(1.5); }
     if (isPaladin()) verdictMark();   /* (PALADIN 3) a SIGIL a beat on the nearest foes ahead */
-    if (k >= 1 && !(isRg() && RGK && RGK.arrows() > 0 && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold) && !(isPaladin() && P.atkHeld < HEAVY_START + HG.verdict.hold)) fireHeavy();   /* (VERDICT is held: up to four sigils, then it goes) */   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
+    if (k >= 1 && !(isRg() && RGK && RGK.bowReady() && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold) && !(isPaladin() && P.atkHeld < HEAVY_START + HG.verdict.hold)) fireHeavy();   /* (VERDICT is held: up to four sigils, then it goes) */   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
   } else P.chargeFull = false;
 }
 let bloodBolts = [];
@@ -8813,7 +8815,7 @@ function reloadPistol(why) {
 }
 function fireHeavy() { noteVerb('heavy');
   if (isPirate()) { P.atkHeld = 0; P.charge = 0; P.chargeFull = false; firePistol(); return; }
-  if (isRg() && RGK && RGK.arrows() > 0) { const w = Math.min(1, (P.charge || 0) / heavyWind()); P.atkHeld = 0; P.charge = 0; P.chargeFull = false;   /* (claude/ranger) THE DRAW, LET GO: the arrow (src/ranger.js release) - empty, the knife's heavy below */
+  if (isRg() && RGK && RGK.bowReady()) { const w = Math.min(1, (P.charge || 0) / heavyWind()); P.atkHeld = 0; P.charge = 0; P.chargeFull = false;   /* (claude/ranger) THE DRAW, LET GO: the arrow (src/ranger.js release) - empty, the knife's heavy below */
     if (!spend(RG_K.draw.st)) { SFX.clank(); P.stFlash = 0.35; return; } RGK.release(w); return; }   /* (no wind: the bar's red flash says so) */
   const wound = Math.min(1, (P.charge || 0) / heavyWind());   /* how far it was wound when it was let go: the length of the knight's charge */
   P.atkHeld = 0; P.charge = 0; P.chargeFull = false;
@@ -32276,7 +32278,9 @@ function render() {
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isRg()) { const hy = HY, fill = Math.min(1, (P.rgFocus || 0) / 100), full = fill >= 1, q = RGK ? RGK.arrows() : 0, mq = RGK ? RGK.maxQ() : RG_K.quiver.n;   /* (claude/ranger) HUNTER'S FOCUS, and THE QUIVER: an arrow a stroke */
       bar(16, hy, 44, 4, fill, full ? (Math.floor(time * 10) % 2 ? '#dfffb0' : '#9fdc6a') : '#5a8a3a', fill);
+      const kn = RGK && RGK.stance() === 'knife'; if (kn) g.globalAlpha = 0.35;   /* KNIFE STANCE: the quiver dims and a knife stands over it */
       for (let i = 0; i < mq; i++) { g.fillStyle = i < q ? '#e8e0c8' : '#4a4038'; g.fillRect(3 + i * 2, hy - 3, 1, 7); g.fillStyle = i < q ? '#c8402a' : '#3a3028'; g.fillRect(3 + i * 2, hy + 3, 1, 1); }
+      g.globalAlpha = 1; if (kn) { g.fillStyle = '#2a2418'; g.fillRect(5, hy - 5, 3, 10); g.fillStyle = '#e8eef6'; g.fillRect(6, hy - 4, 1, 5); g.fillStyle = '#ffffff'; g.fillRect(6, hy - 4, 1, 1); g.fillStyle = '#8a6a42'; g.fillRect(5, hy + 1, 3, 1); g.fillRect(6, hy + 2, 1, 2); }
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isGeo()) { const hy = HY, full = (P.tremor || 0) >= 100, fill = (P.tremor || 0) / 100;   /* TREMOR */
       bar(15, hy, 45, 4, fill, full ? (Math.floor(time * 10) % 2 ? '#fff0c0' : '#e8a83a') : '#8a6a2a', fill);

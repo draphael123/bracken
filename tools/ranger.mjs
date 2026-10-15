@@ -115,6 +115,16 @@ try {
   for (const [id, s] of Object.entries(r.skills)) ok(s.cd > 0 && (s.spent > 0 || (id === 'rgRefill' && s.q > 0)), 'skill ' + id + ' did not fire: ' + JSON.stringify(s));
   ok(!r.art.missing.length, 'art: missing keys ' + r.art.missing);
   ok(r.art.skinDiff > 0 && r.art.skinDiff < 40, 'art: a weapon skin changed ' + r.art.skinDiff + ' pixels of her idle (only the bow should change)');
+  /* (Daniel 10-15) HER STANCE: KNIFE makes X (tap and hold) the knife and keeps the quiver; BOW again shoots. UP+C below full focus says why, and marks nothing */
+  const s = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,R=()=>BK.rg(),G=()=>BK.rgk(),out={};
+    __rg(); __foe(60); out.st0=G().stance(); G().toggleStance(); out.st1=G().stance(); const q0=R().q; __tap(); BK.sim(20); out.tapQ=R().q-q0; out.tapArrows=R().arrows.length;
+    K.atk=true; BK.press('atk'); BK.sim(70); K.atk=false; BK.sim(30); out.holdQ=R().q-q0; out.holdArrows=R().arrows.length;
+    G().toggleStance(); out.st2=G().stance(); BK.sim(30); __tap(); BK.sim(5); out.bowArrows=R().arrows.length;
+    __rg(); __foe(60); P().rgFocus=40; K.up=true; __c(); BK.sim(2); K.up=false; out.marks=G().read().stats.marks; out.said=!!P().rgFocusSaid; return out;})()`);
+  ok(s.st0 === 'bow' && s.st1 === 'knife' && s.st2 === 'bow', 'stance: she starts in BOW and toggles KNIFE / BOW: ' + JSON.stringify(s));
+  ok(s.tapQ === 0 && s.tapArrows === 0 && s.holdQ === 0 && s.holdArrows === 0, 'stance: in KNIFE a tap and a held X loose no arrow and spend none: ' + JSON.stringify(s));
+  ok(s.bowArrows === 1, 'stance: back in BOW a tap looses an arrow: ' + JSON.stringify(s));
+  ok(s.marks === 0 && s.said, 'UP+C below full focus marks nothing and says why: ' + JSON.stringify(s));
   assert.deepEqual(pg.errors, []);
 } finally { pg.close(); }
 if (fails.length) { console.log('FAIL\n  ' + fails.join('\n  ')); process.exit(1); }
