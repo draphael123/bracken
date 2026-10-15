@@ -712,10 +712,13 @@ export const PLAN = { react: 0.25, miss: 0.13, missPour: 0.2, counter: 0.45, mis
    UP + ATTACK; THE FIRE: take a torch from her hall's cresset (s.fire, the lab's view of her hall: { held, cressets: [{ x, up }], pools: [{ x0, x1, oil, fire }], land(aim) -> x | null }),
    and throw it on the pool she is crossing (or wait on its far side for her to come). Returns `out` when it acts, else null */
 function queenPlanV3(s, out, q) {
-  const { P, e, S, G, m, t, mem, roll, clamp, side, ad, reach, onLedge } = q, F = G.floor, busy = /Tell$/.test(m) || ['lunge', 'bloom', 'bloomBurst', 'ambush', 'charge', 'strike', 'pounce', 'grab', 'hold', 'sslam', 'pin', 'barb'].includes(m);
+  const { P, e, S, G, m, t, mem, roll, clamp, side, ad, reach, onLedge, standAt, lo, hi } = q, F = G.floor, busy = /Tell$/.test(m) || ['lunge', 'bloom', 'bloomBurst', 'ambush', 'charge', 'strike', 'pounce', 'grab', 'hold', 'sslam', 'pin', 'barb'].includes(m);
   const fire = s.fire, held = !!(fire && fire.held);
   /* (claude/cisternqueen3) ABLAZE, THRASHING: her heat is on whoever is close - stand off until she sags (then the opening branch cuts her stinger) */
-  if (e.mode === 'thrash') { out.gx = clamp(e.x + side * (CQ.w / 2 + CQ.heatR + 34)); out.face = Math.sign(e.x - P.x) || 1; out.why = 'off her while she thrashes'; return out; }
+  if (e.mode === 'thrash') {
+    /* (claude/cq3tune) and to the side her tail will drop (behind her, openUp): the warden past the stinger's far end (all point, no haft), anyone else just off the heat on it, so no cut is spent crossing her body */
+    const sdir = -(e.face || 1), stx = e.x + sdir * (CQ.w / 2 + 36), want = s.tip ? stx + sdir * standAt(CQ.plantR) : e.x + sdir * (CQ.w / 2 + CQ.heatR + 34);
+    out.gx = clamp(want >= lo && want <= hi ? want : e.x + side * (CQ.w / 2 + CQ.heatR + 34)); out.face = Math.sign(e.x - P.x) || 1; out.why = 'off her while she thrashes'; return out; }
   /* THE FIRE: a torch in hand - throw it on the pool she is on or coming to; none - take one when a pool is ready and she is on the floor */
   if (fire && S.ph === 1 && !S.flood || fire && held) { const pools = fire.pools || [], near = pools.filter(p => p.oil && !p.fire);
     if (held) { mem.heldT = mem.heldT ?? t; const on = near.find(p => (e.x + CQ.w / 2 > p.x0 - 30 && e.x - CQ.w / 2 < p.x1 + 30 && S.pose === 'floor' && !(e.gone > 0)) || (S.pose === 'burrow' && S.mound && S.mound.x > p.x0 - 20 && S.mound.x < p.x1 + 20)) || (t - mem.heldT > 9 ? near[0] : null);
@@ -745,7 +748,9 @@ function queenPlan0(s) {
   const key = e.mode + S.act; const seen = () => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= react; };
   const roll = (k, pr) => { if (!mem.roll.has(k)) mem.roll.set(k, rng() < pr); return mem.roll.get(k); };
   const lo = G.x0 + 12, hi = G.x1 - 12, clamp = x => Math.max(lo, Math.min(hi, x)), side = Math.sign(P.x - e.x) || 1, ad = Math.abs(P.x - e.x);
-  const onLedge = P.onLedge, F = G.floor, misread = roll(key + 'm', miss);
+  const onLedge = P.onLedge, F = G.floor, standAt = R => s.tip ? Math.min(s.tip + R, reach + R - 4) : Math.max(6, reach * 0.6),
+    /* (claude/cq3tune) WHICH SIDE OF THE STINGER: the warden's point pays by the distance to the QUEEN's box (main.js tipPay) - stood between her body and her stinger it is all haft (x0.3). She cuts it from the FAR side, facing her, when the hall has room; everyone else: the side they are on */
+    stSide = (stx, R, def) => { if (!s.tip) return def; const dir = Math.sign(stx - e.x) || def, far = stx + dir * standAt(R); return far >= lo && far <= hi ? dir : def; }, misread = roll(key + 'm', miss);
   /* (claude/underwell3, v2) a torch in hand when she is down or her stinger is out: set it down (E) - the blade is wanted */
   if (s.eyes && s.fire && s.fire.held && (qOpen(e) || (S.stinger && S.stinger.t > 0.3)) && !(P.snare > 0)) { out.talk = true; out.why = 'set the torch down: cut her'; return out; }
   /* (claude/cisternqueen3) a jar in hand when she is down or her stinger is stuck, or past phase one (the ladders want your hands): set it down (E) */
@@ -767,8 +772,11 @@ function queenPlan0(s) {
   const pud = S.puddles.find(p => Math.abs(p.x - P.x) < 18);
   /* 1. THE OPENING: on her */
   /* (claude/cisternqueen3) in every opening her tail lies on the floor: cut the STINGER (it pays x openMul), her body if it is in the way */
-  if (qOpen(e) && S.stinger && S.stinger.t > 0.05) { const st0 = S.stinger, sd = Math.sign(P.x - st0.x) || -(e.face || 1); if (onLedge && P.ground) { out.down = true; out.jump = true; }
-    out.gx = clamp(st0.x + sd * Math.max(6, reach * 0.6)); out.face = -sd; out.atk = Math.abs(P.x - st0.x) < reach + CQ.plantR && Math.abs(P.y - st0.y) < 34 && P.atk < 0; out.why = 'cut her stinger: she is down'; return out; }
+  if (qOpen(e) && S.stinger && S.stinger.t > 0.05) { const st0 = S.stinger, sd = stSide(st0.x, st0.big ? CQ.plantR : CQ.stingR, Math.sign(P.x - st0.x) || -(e.face || 1)); if (onLedge && P.ground) { out.down = true; out.jump = true; }
+    out.gx = clamp(st0.x + sd * standAt(st0.big ? CQ.plantR : CQ.stingR)); out.face = -sd; out.atk = Math.abs(P.x - st0.x) < reach + CQ.plantR && Math.abs(P.y - st0.y) < 34 && P.atk < 0 && !(s.tip && Math.abs(P.x - out.gx) > 14); out.why = 'cut her stinger: she is down';   /* (the warden swings from her point's spot, not on the way to it: a swing roots her) */
+    /* (claude/cq3tune) her body is in the way: over her, not through her (the hero crawls through a body at a px a second) */
+    if (P.ground && (P.x - e.x) * (out.gx - e.x) < 0 && Math.abs(P.x - e.x) < CQ.w / 2 + 30) { out.jump = true; out.atk = false; out.why = 'over her to her stinger'; }
+    return out; }
   if (qOpen(e)) { out.gx = clamp(e.x - side * (s.tip ? CQ.w / 2 + s.tip : Math.max(8, reach * 0.5 + CQ.w * 0.3))); if (onLedge && P.ground) { out.down = true; out.jump = true; }
     out.face = Math.sign(e.x - P.x) || 1; out.atk = ad < reach + CQ.w / 2 + 4 && Math.abs(P.y - e.y) < 50 && P.atk < 0; out.why = 'cut her: she is open'; return out; }
   /* 1a. (claude/queen4, Daniel 10-07) THE VENOM BLOOM: out of its ring before it blooms (a ledge is above it); a v2 player already close cuts the stinger in the water
@@ -779,14 +787,14 @@ function queenPlan0(s) {
       const left = e.mode === 'bloomTell' ? Math.max(0, e.modeT) + CQ.bloomDrive + CQ.bloomSpread : e.mode === 'bloom' ? Math.max(0, e.modeT) : 0;
       if (Math.abs(dx) < edge) { const need = (edge - Math.abs(dx)) / PLAN.run + 0.2, st = S.stinger;
         if (s.eyes && st && st.k === 'bloom' && !(S.ward > 0) && left > need + 0.35 && (s.greed || 0) < PLAN.tipGreed && !roll('blcut' + bl.id, PLAN.missTip)) {
-          const sd = Math.sign(P.x - st.x) || 1; out.gx = clamp(st.x + sd * Math.max(6, reach * 0.6)); out.face = -sd; out.atk = Math.abs(P.x - st.x) < reach + CQ.stingR && P.atk < 0; out.why = 'cut her stinger in the water, then out of the ring'; return out; }
+          const sd = stSide(st.x, CQ.stingR, Math.sign(P.x - st.x) || 1); out.gx = clamp(st.x + sd * standAt(CQ.stingR)); out.face = -sd; out.atk = Math.abs(P.x - st.x) < reach + CQ.stingR && P.atk < 0; out.why = 'cut her stinger in the water, then out of the ring'; return out; }
         let dir = Math.sign(dx) || -(e.face || 1), gx = bl.x + dir * (edge + 10); if (gx < G.x0 + 14 || gx > G.x1 - 14) { dir = -dir; gx = bl.x + dir * (edge + 10); }
         out.gx = clamp(gx); out.dodge = P.ground && left < need; out.face = dir; out.why = 'out of the venom ring'; return out; }
       if (e.mode === 'bloomTell' || e.mode === 'bloom' || e.mode === 'bloomBurst') { const dir = Math.sign(dx) || 1; out.gx = Math.abs(dx) < edge + 24 ? clamp(bl.x + dir * (edge + 26)) : null; out.face = -dir; out.why = 'wait out the bloom'; return out; } } }
   /* 1b. HER STUCK STINGER (claude/welltown5): it glints - get to it and strike it (not while her shell burns) */
   const st = S.stinger && S.stinger.t > 0.12 ? S.stinger : null;
   if (st && t - (mem.stSeen && mem.stSeen.k === S.n.stingers ? mem.stSeen.t : (mem.stSeen = { k: S.n.stingers, t }).t) >= PLAN.react && !roll('st' + S.n.stingers, PLAN.missSting)) {
-    const sd = Math.sign(P.x - st.x) || 1; if (onLedge) { out.down = true; out.jump = P.ground; } out.gx = clamp(st.x + sd * Math.max(6, reach * 0.6)); out.face = -sd;
+    const sd = stSide(st.x, st.big ? CQ.plantR : CQ.stingR, Math.sign(P.x - st.x) || 1); if (onLedge) { out.down = true; out.jump = P.ground; } out.gx = clamp(st.x + sd * standAt(st.big ? CQ.plantR : CQ.stingR)); out.face = -sd;
     out.atk = Math.abs(P.x - st.x) < reach + CQ.stingR && Math.abs(P.y - st.y) < 30 && P.atk < 0; out.why = 'strike her stinger'; return out; }
   /* (claude/wardenkit, v2 only: s.eyes) HER SAND IS YELLOW: the stones she flicks arc down onto you - the warden meets them with the shaft as they come
      (her deflect turns a yellow blow from overhead too now), facing the Queen. The hands walked 70 px off and the arc found her anyway: 3-4 stones a fight */
@@ -827,7 +835,7 @@ function queenPlan0(s) {
   }
   if (m === 'grab' && S.claw && Math.abs(S.claw.x - P.x) < 40) { out.atk = P.atk < 0; out.face = Math.sign(S.claw.x - P.x) || 1; out.why = 'strike the claw'; return out; }
   /* (claude/underwell3, v2 only: s.eyes) DANIEL'S THREE NEW WAYS IN, as a player who has read her: */
-  if (s.eyes) { const r = queenPlanV3(s, out, { P, e, S, G, m, t, mem, rng, roll, clamp, side, ad, reach, onLedge }); if (r) return r; }
+  if (s.eyes) { const r = queenPlanV3(s, out, { P, e, S, G, m, t, mem, rng, roll, clamp, side, ad, reach, onLedge, standAt, lo, hi }); if (r) return r; }
   if ((m === 'ambush' || m === 'lunge') && Math.sign(P.x - e.x) === e.face && ad < 90) { out.jump = P.ground; if (ad < 50 && P.ground) out.dodge = true; out.why = 'over her body'; return out; }
   if (m === 'charge' || m === 'wave') { /* bands above */ }
   /* 2b. (claude/cisternqueen3) A JAR: in phase one, a hand free and her not on you - to the nearest full rack (or a jar set down) and take it (E) */
