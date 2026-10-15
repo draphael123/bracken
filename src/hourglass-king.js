@@ -40,7 +40,7 @@
 // NO ADDS. PURE: no DOM, no main.js. The world is a context `c` (src/hourglass-king-hands.js binds it). hkPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const HK = {
-  hp: 2500, w: 20, h: 38, markH: 56,
+  hp: 2250, w: 20, h: 38, markH: 56,
   glass: 12, glass3: 8, lowAt: 0.48, lowAt3: 0.6,
   openMul: 2.0, openCap: 0.09, openT: 4.0, wardT: 3.0, wardMul: 0.4, resist: 0.45, turnT: 1.4, turnMul: 1.0, dragV: 300, dragStop: 40, fullJam: 1.6,
   p2: 0.6, p3: 0.25,
@@ -57,7 +57,7 @@ export const HK = {
   great: { cd: 9.0, openT: 5.0, openCap: 0.12, dragV: 260 },          /* THE GREAT HOURGLASS (phase three's opening): its run back down, its open, its share */
   swap: 5.0, swapWarn: 1.0,                                             /* phase two's blocks: up/down by turns */
   tide: { every: 7.0, warn: 1.3, dur: 2.8 },                            /* phase two on: THE SAND TIDE - told, then the floor is DRIFT for dur s (take to a ledge or a block) */
-  dmg: { pend: 41, gear: 29, stream: 37, surge: 32, grasp: 34, rain: 23, slip: 41, hour: 43, pour: 9, shard: 23, pot: 32 },   /* (claude/bc4tune: hp 2500, blows x1.08 of BC3, withdraw 24/20 s -> 69% k7 w8 p10 of 12 with flasks; before: 2900 hp x1.15 19/16 s = 67% on 3 seeds, fights 137-191 s) (claude/buriedcity4 tune: x1.15; x1.3 at 3000 hp read 67% but knight 0/3 - BC4's short tune measured 89% at 3500 hp / the old blows, fights 140-200 s) */
+  dmg: { pend: 50, gear: 35, stream: 44, surge: 39, grasp: 41, rain: 28, slip: 50, hour: 52, pour: 11, shard: 28, pot: 39 },   /* (claude/bc4tune: hp 2500, blows x1.08 of BC3, withdraw 24/20 s -> 69% k7 w8 p10 of 12 with flasks; before: 2900 hp x1.15 19/16 s = 67% on 3 seeds, fights 137-191 s) (claude/buriedcity4 tune: x1.15; x1.3 at 3000 hp read 67% but knight 0/3 - BC4's short tune measured 89% at 3500 hp / the old blows, fights 140-200 s) */
   /* (claude/buriedcity4) HE WITHDRAWS: every `every[ph]` s (0 = never: phase three is the great hourglass's), only while his glass is at least glassMin full; the glide, the
      pillar's rise and sink, the throws from up there (`throws[ph]`, shards and pots by turns), then THE SAND RISES: the slabs' lives (low, high) and the opening's share */
   aloft: { every: [0, 24, 20, 0], first: 15, glassMin: 0.7, glideV: 300, riseT: 0.6, sinkT: 0.45, perchT: 0.4, throws: [0, 2, 3, 0], life: [4.8, 8.0], openCap: 0.1, upTol: 6 },
