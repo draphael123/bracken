@@ -37,6 +37,9 @@ export function noteTell(e, now) { e.toldK = tellKey(e); e.toldAt = now; e.blowM
 export function noteRelease(e) { if (e.toldK && e.blowMode === null) e.blowMode = e.mode; }
 export const blowHigh = (e, now) => !!(e && e.toldK && HEIGHT[e.toldK] === 'high' &&
   (now - e.toldAt < DUCK_WINDOW || (e.blowMode && e.mode === e.blowMode && !AT_REST.has(e.mode))));
+/* (claude/dk2b) ...and a LOW one, the same way: the Death Knight's GRAVE KNEEL turns it on the planted blade (src/dk2.js) */
+export const blowLow = (e, now) => !!(e && e.toldK && HEIGHT[e.toldK] === 'low' &&
+  (now - e.toldAt < DUCK_WINDOW || (e.blowMode && e.mode === e.blowMode && !AT_REST.has(e.mode))));
 /* A HIGH SEED GOES OVER A DUCKER while it flies near level: an arrow loosed along the same floor dips at most 0.6 of its run by
    the time it arrives, and one shot DOWN from a ledge comes in steeper than 0.8 and still finds him */
 export const seedOver = (b, s) => !!(low(b) && s.high && Math.abs(s.vy || 0) <= Math.abs(s.vx || 0) * 0.8);
