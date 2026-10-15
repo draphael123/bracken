@@ -5,9 +5,9 @@ try {
   const rows=await pg.evalp(`(async()=>{
     BK.manualSimulation=true; const {LEVELS}=await import('/src/level.js'); const rows=[];
     const yard=LEVELS.findIndex(l=>l.id==='trial_open');
-    for(const hero of ['knight','warden','pyro','paladin','pirate','reaper','geomancer','berserker']) for(const face of [-1,1]) for(const kind of ['rise','sweep']){
+    for(const hero of ['knight','warden','pyro','paladin','pirate','reaper','geomancer','berserker','ranger']) for(const face of [-1,1]) for(const kind of ['rise','sweep']){
       BK.setHero(hero);BK.load(yard);BK.state='play';BK.enemies().forEach(e=>e.alive=false);BK.tp(10,21);BK.sim(30);BK.reset();
-      const p=BK.P; p.face=face;p.st=p.maxSt;BK.keys[kind==='rise'?'up':'down']=true;if(kind==='sweep'&&(hero==='knight'||hero==='warden'))BK.keys[face>0?'right':'left']=true;/* crouched STILL, their X is the shield trip / the low poke (src/crouch-a.js): the low sweep is down + X on the move */BK.press('atk');
+      const p=BK.P; p.face=face;p.st=p.maxSt;if(hero==='ranger'&&kind==='rise')p.rgQ=0;/* (claude/ranger) HER UP+X is the RISING SHOT (an arrow: tools/ranger.mjs); with an empty quiver it is the knife's rising cut, and that is the swing held to it here */BK.keys[kind==='rise'?'up':'down']=true;if(kind==='sweep'&&(hero==='knight'||hero==='warden'))BK.keys[face>0?'right':'left']=true;/* crouched STILL, their X is the shield trip / the low poke (src/crouch-a.js): the low sweep is down + X on the move */BK.press('atk');
       const frames=[];
       for(let f=0;f<100;f++){BK.sim(1);BK.step(0);if(p.atk>=0){
         if(p.swingKind!==kind||p.lastKey!==kind)throw Error(hero+' '+kind+' rendered '+p.lastKey+' for '+p.swingKind);
@@ -25,6 +25,6 @@ try {
     if(BK.P.lastKey!=='heavy'||BK.P.lastFrame!==2)throw Error('run-through recovers while its full reach is still live');
     return rows;
   })()`);
-  assert.equal(rows.length,32);   /* eight heroes (THE GEOMANCER, 2026-09-24; THE BERSERKER, 2026-10-04) */assert.deepEqual(pg.errors,[]);
-  console.log('32 real-input directional attacks render preparation, contact and recovery in both directions; greatsword and spear timing verified.');
+  assert.equal(rows.length,36);   /* nine heroes (THE GEOMANCER, 2026-09-24; THE BERSERKER, 2026-10-04; THE RANGER, claude/ranger) */assert.deepEqual(pg.errors,[]);
+  console.log('36 real-input directional attacks render preparation, contact and recovery in both directions; greatsword and spear timing verified.');
 } finally {pg.close();}

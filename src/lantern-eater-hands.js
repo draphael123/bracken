@@ -98,7 +98,7 @@ export function makeLanternEaterHands(ctx) {
   };
   /* ---------- THE KEY: what a blow takes off it, by its angle; the right one in reach lands whole (and snags the lure); the wrong one CLANKS and says so ---------- */
   H.take = (e, blow) => { if (!show || !blow) return LM.leTake(e);   /* (a burn tick, or anything not a hero's blow: open or warded, never the key) */
-  const ang = LM.blowAngle(ctx.P), k = LM.leTakeAt(e, show, ang); e.lastAngle = ang;
+  const ang = LM.blowAngle(ctx.P, blow), k = LM.leTakeAt(e, show, ang); e.lastAngle = ang;
     if (k >= 1 && !LM.leOpen(e)) { e.keyHit = true; show.n.keyHits = (show.n.keyHits || 0) + 1; if (LM.snag(e, show) === 'jerk') { SOUND.jerk(); ctx.burst(e.x, e.y - 12, 6, ['#ffd36b', '#e8b860'], 50, 0.3); if (!show.told.jerk) { show.told.jerk = true; ctx.number(e.x, e.y - 40, 'IT JERKS ON ITS STALK: AGAIN, BEFORE IT BITES', '#ffd36b'); } } } return k; };
   H.warded = e => { if (!show) return; show.n.clank++; const keyed2 = LM.keyedNow(e), word = keyed2 ? LM.KEY_WORD[LM.keyOf(e)] : 'WARDED';
     ctx.turned(e, ctx.P.x, word);

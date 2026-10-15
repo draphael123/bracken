@@ -10,7 +10,8 @@
 //   bakeConstruct()      THE CLOCKWORK CONSTRUCT (6: 0 idle | 1 walk | 2 POKE TELL | 3 POKE | 4 WOUND DOWN | 5 hurt) - brass guard with a CLOCK-FACE head (the hands at twelve while it keeps its round,
 //                        drooping when it is wound down), a window on its escapement (an anchor and a wheel) in the chest, pauldrons, a winding key, a halberd
   //   bakeHourglassKing(level)  THE HOURGLASS KING (20: 0 idle | 1,2 walk | 3 STREAM TELL | 4 STREAM | 5 GEAR TELL | 6 GEAR | 7 GRASP (was SLIP) | 8 SLIP | 9 PENDULUM TELL | 10 PENDULUM | 11 OPEN | 12 TURNING | 13 hurt
-//                        | claude/buriedcity3 GREYBOX: 14 SURGE TELL | 15 SURGE | 16 GRASP TELL | 17 RAIN TELL | 18 SLIP TELL | 19 SLIP STRIKE)
+//                        | claude/buriedcity3 GREYBOX: 14 SURGE TELL | 15 SURGE | 16 GRASP TELL | 17 RAIN TELL | 18 SLIP TELL | 19 SLIP STRIKE
+//                        | claude/buriedcity4 GREYBOX: 26 WITHDRAW (glide/sink) | 27 SHARD TELL | 28 SHARD THROW | 29 POT TELL | 30 POT THROW | 31 HOLDING THE SAND (open, on his pillar) | 32 RAISE TELL)
 //                        - lapis robes with a gilded hem, brass pauldrons and a fan collar, a crown of gears, a mask with amber eyes, the hourglass in a brass frame on his chest (sand by level), a
 //                        pendulum sceptre; every pose keyframed
 //   bakeCog()            the brass cog he throws
@@ -192,6 +193,11 @@ function hourglassChest(g, x, y, level) {
   px(g, x - 6, y + 6, HK.brassDD); px(g, x + 6, y + 6, HK.brassDD); rect(g, x - 1, y + 5, 3, 1, HK.brassL);
   for (const [dx, dy] of [[-6, 3], [6, 3], [-6, 9], [6, 9]]) px(g, x + dx, y + dy, HK.trimL);   /* rivets */
 }
+const KICE = '#bfe6f5', KICEL = '#f2fbff', KRU = '#d0703a', KRUL = '#f0a060';   /* (claude/bc4art) the king's thrown glass and clay */
+/* a jagged shard, a painted clay pot (the throw poses 27-30) */
+const kShard = (g, x, y, a, len, c1 = KICE) => { const ca = Math.cos(a), sa = Math.sin(a); fillPoly(g, [[x, y], [x + ca * len - sa * 1.8, y + sa * len + ca * 1.8], [x + ca * len * 0.85 + sa * 1.6, y + sa * len * 0.85 - ca * 1.6]], c1); line(g, x, y, x + ca * len, y + sa * len, KICEL); px(g, x + ca * len, y + sa * len, '#ffffff'); px(g, x + ca * len * 0.5 - sa, y + sa * len * 0.5 + ca, '#8fc4dc'); };
+const kPot = (g, x, y, r, tilt = 0) => { circle(g, x, y, r, '#8a4a2a'); circle(g, x - 1, y - 1, r - 2, '#a8602e'); px(g, x - r + 2, y - r + 2, KRUL); px(g, x - r + 1, y - r + 3, KRUL); rect(g, x - r + 1, y + 1 + tilt, r * 2 - 2, 2, '#d8aa40'); rect(g, x - r + 1, y + 1 + tilt, r * 2 - 2, 1, HK.trimL); for (let k = -r + 2; k < r - 1; k += 3) px(g, x + k, y + 3 + tilt, '#5a2a14');
+  rect(g, x - 3, y - r - 2, 6, 3, '#8a4a2a'); rect(g, x - 4, y - r - 3, 8, 2, KRU); rect(g, x - 4, y - r - 3, 8, 1, KRUL); px(g, x + r - 2, y + 2, '#5a2a14'); px(g, x - r, y - 1, '#6a3418'); px(g, x + r, y - 1, '#6a3418'); };
 export function bakeHourglassKing(sandLevel = 0) {
   const W = 76, H = 92, gy = 90;   /* (12 rows taller than the greybox king: the fan collar and the crown of gears stand over his head) */
   const legs = (g, x, y, ph) => { const a = [0, 2, -2][ph] || 0, b = -a; thick(g, x - 4, y, x - 4 + a, y + 16, HK.robeD, 5); thick(g, x + 4, y, x + 4 + b, y + 16, HK.robeD, 5);
@@ -215,7 +221,7 @@ export function bakeHourglassKing(sandLevel = 0) {
   const arm = (g, x0, y0, x1, y1) => { thick(g, x0, y0, x1, y1, HK.robe, 4); thick(g, x0 - 1, y0, x1 - 1, y1, HK.robeL, 1); rect(g, x1 - 2, y1 - 1, 5, 2, HK.brass); px(g, x1 - 2, y1 - 1, HK.brassL); px(g, x1, y1 + 2, HK.skin); px(g, x1 + 1, y1 + 2, HK.skin); };   /* a sleeve, a brass cuff, a hand */
   const sceptre = (g, hx, hy, tx, ty) => { thick(g, hx, hy, tx, ty, HK.brass, 2); px(g, hx, hy, HK.brassL); circle(g, tx, ty, 3, HK.brass); circle(g, tx, ty, 1.4, HK.brassDD); px(g, tx - 1, ty - 2, HK.brassL); px(g, tx, ty, HK.eye); };   /* the pendulum: a rod and a heavy bob */
   const glowRing = (g, x, y, r, col) => { for (let a = 0; a < 20; a++) px(g, x + Math.round(Math.cos(a * 0.314) * r), y + Math.round(Math.sin(a * 0.314) * r), col); };
-  const F = frames(W, H, 26, (g, f) => {
+  const F = frames(W, H, 33, (g, f) => {
     const cx = 28, hip = gy - 24;
     /* (claude/bc3art, B16) EVERY NEW ABILITY ITS OWN WINDUP + RELEASE: 14 SURGE TELL (crouched, the sceptre reversed overhead in both fists, gold sand lifting) | 15 SURGE SLAM (bent
        over it, the bob driven into the floor, a gold crack and spray) | 16 GRASP TELL (kneeling, arms spread low, palms down, rust fingers of sand round his feet) | 20 GRASP RELEASE (fists
@@ -225,7 +231,7 @@ export function bakeHourglassKing(sandLevel = 0) {
        feet) | 25 DRAGGED INTO THE FLOW (the great glass pours up: lifted, tilted, robe and sand streaming up) */
     const VI = '#b08cff', VIL = '#e4d4ff', RU = '#d0703a', RUL = '#f0a060', ICE = '#bfe6f5', ICEL = '#f2fbff';
     const sandDots = (g, pts, c1 = HK.sandL, c2 = HK.sand) => pts.forEach(([x, y], i) => { px(g, x, y, i % 2 ? c1 : c2); if (i % 3 === 0) px(g, x + 1, y, c2); });
-    if (f >= 14 || f === 8) { const crouch = { 14: 4, 15: 5, 16: 6, 20: 5, 17: 0, 21: 1, 18: 0, 19: 1, 8: 2, 22: 0, 23: 3, 24: 0 }[f] || 0, bend = { 15: 5, 19: 6, 20: 3, 8: -3, 21: 2, 23: 1 }[f] || 0;
+    if (f >= 14 || f === 8) { const crouch = { 14: 4, 15: 5, 16: 6, 20: 5, 17: 0, 21: 1, 18: 0, 19: 1, 8: 2, 22: 0, 23: 3, 24: 0, 26: 3, 27: 0, 28: 1, 29: 0, 30: 1, 31: 0, 32: 5 }[f] || 0, bend = { 15: 5, 19: 6, 20: 3, 8: -3, 21: 2, 23: 1, 27: -3, 28: 4, 30: 3 }[f] || 0;
       if (f === 25) { const o = 8;   /* DRAGGED: lifted off the floor, tilted back, the flow streaming up through him */
         thick(g, cx - 4, hip - 6 - o, cx - 8, hip + 10 - o, HK.robeD, 5); thick(g, cx + 4, hip - 6 - o, cx + 2, hip + 12 - o, HK.robeD, 5); rect(g, cx - 11, hip + 9 - o, 5, 2, HK.brassD); rect(g, cx - 1, hip + 11 - o, 5, 2, HK.brassD);
         robe(g, cx + 2, hip - 28 - o, 3); shoulders(g, cx + 2, hip - 28 - o, 3); head(g, cx + 6, hip - 36 - o); arm(g, cx + 12, hip - 26 - o, cx + 18, hip - 44 - o); arm(g, cx - 8, hip - 24 - o, cx - 14, hip - 42 - o);
@@ -251,6 +257,28 @@ export function bakeHourglassKing(sandLevel = 0) {
       else if (f === 8) { arm(g, ...sh, cx + 6, hip - 14 + dy); arm(g, ...lh, cx - 16, hip - 6); for (let k = 0; k < 7; k++) px(g, cx + 12 - k * 4, hip - 36 + k * 3, k % 2 ? VI : VIL); circle(g, cx + bend, hip - 16 + dy, 5, 'rgba(176,140,255,0.28)'); }
       else if (f === 22) { arm(g, ...sh, cx + 16, hip - 40); arm(g, ...lh, cx - 16, hip - 38); sceptre(g, cx + 16, hip - 40, cx + 19, hip - 52); glowRing(g, cx, hip - 14, 9, '#ffd36b'); for (let k = -3; k <= 3; k++) line(g, cx + k * 4, hip + 14, cx + k * 4 + (k > 0 ? 1 : -1), hip + 14 - (6 + Math.abs(k) * 2), k % 2 ? HK.sandL : HK.sand); }
       else if (f === 23) { arm(g, ...sh, cx + 24, hip + 2); arm(g, ...lh, cx - 24, hip + 3); for (const s of [-1, 1]) for (let k = 0; k < 3; k++) { rect(g, cx + s * (16 + k * 6) - 1, hip + 18 - (3 - k) * 3, 3, (3 - k) * 3, k % 2 ? HK.sand : HK.sandL); } }
+      /* (claude/bc4art: the seven new poses, finished) 26 WITHDRAW: hunched, arms wrapped across the glass, his legs sunk in a whirl of sand that climbs his robe in a spiral | 27 SHARD TELL: the throwing arm cocked back over
+         his head, three jagged shards fanned between the fingers with a glint on each tip, the other hand levelled at you | 28 SHARD THROW: the arm whipped through, the shards leaving the hand in streaks | 29 POT TELL: a
+         painted clay pot of sand hoisted over his head in both fists, sand trickling from its neck, his back arched | 30 POT THROW: both arms driven forward-up, the pot just let go, a trail of sand behind it | 31 HOLDING THE SAND:
+         arms flung out and up, palms up, gold sand streaming up off them, a gold ring at his glass, the head thrown back (the open pose) | 32 RAISE TELL: crouched low, palms flat down either side, columns of sand drawn up
+         between them, a gold ring on the floor */
+      else if (f === 26) { arm(g, ...sh, cx - 2, hip - 11 + dy); arm(g, ...lh, cx + 5, hip - 9 + dy); rect(g, cx - 10, hip - 10 + dy, 18, 2, HK.robeD);
+        ellipse(g, cx, hip + 20, 14, 3.6, '#b98c58'); ellipse(g, cx, hip + 19, 12, 2.6, HK.sand); rect(g, cx - 10, hip + 18, 20, 1, HK.sandL); rect(g, cx - 14, hip + 22, 28, 1, HK.sandD);   /* the whirl at his feet */
+        for (let a = 0; a < 26; a++) { const t = a / 26, ang = t * 9.4, r2 = 15 - t * 6; px(g, cx + Math.round(Math.cos(ang) * r2), hip + 19 - Math.round(t * 30) + Math.round(Math.sin(ang) * 2), a % 2 ? HK.sandL : HK.sand); if (a % 4 === 0) px(g, cx + Math.round(Math.cos(ang) * r2) + 1, hip + 19 - Math.round(t * 30), HK.sandD); }   /* the spiral climbing him */
+        sandDots(g, [[cx - 16, hip + 6], [cx + 17, hip + 3], [cx - 18, hip - 6], [cx + 15, hip - 12], [cx - 13, hip - 18]]); }
+      else if (f === 27) { arm(g, ...sh, cx - 9, hip - 46); arm(g, ...lh, cx + 20, hip - 28); line(g, cx + 22, hip - 29, cx + 30, hip - 31, HK.skin); for (let k = 0; k < 3; k++) px(g, cx + 34 + k * 3, hip - 32 + (k & 1), HK.trimL);   /* the aiming hand, a finger levelled; a ticked line to you */
+        for (const [a, l] of [[-2.0, 11], [-1.62, 13], [-1.2, 11]]) kShard(g, cx - 9, hip - 50, a, l); for (const [dx, dy2] of [[-14, -60], [-9, -64], [-4, -62]]) { px(g, cx + dx, hip + dy2, '#ffffff'); px(g, cx + dx + 1, hip + dy2, ICEL); px(g, cx + dx, hip + dy2 - 1, ICEL); } }   /* the glints on the tips */
+      else if (f === 28) { arm(g, ...sh, cx + 26, hip - 25); arm(g, ...lh, cx - 13, hip - 13); for (let k = 0; k < 3; k++) { const y0 = hip - 30 + k * 5; line(g, cx + 26, hip - 25, cx + 33 + k, y0 + 1, ICEL); thick(g, cx + 33 + k, y0 + 1, cx + 40, y0 + 5 + k * 2, ICE, 1); fillPoly(g, [[cx + 39, y0 + 3 + k * 2], [cx + 45, y0 + 5 + k * 2], [cx + 39, y0 + 8 + k * 2]], ICE); line(g, cx + 39, y0 + 4 + k * 2, cx + 44, y0 + 5 + k * 2, '#ffffff'); }
+        for (let k = 0; k < 5; k++) line(g, cx + 14 - k * 3, hip - 38 + k * 4, cx + 22 - k * 3, hip - 34 + k * 4, 'rgba(223,242,255,0.55)'); }   /* the arm's blur */
+      else if (f === 29) { arm(g, ...sh, cx + 5, hip - 47); arm(g, ...lh, cx - 6, hip - 47); kPot(g, cx, hip - 56, 7); sandDots(g, [[cx - 2, hip - 66], [cx + 2, hip - 68], [cx, hip - 70], [cx + 3, hip - 64]]); for (let k = 0; k < 4; k++) px(g, cx + 6 + k, hip - 60 - k * 2, HK.sandL); }
+      else if (f === 30) { arm(g, ...sh, cx + 21, hip - 39); arm(g, ...lh, cx + 15, hip - 36); kPot(g, cx + 31, hip - 48, 7, 1); for (let k = 0; k < 7; k++) { px(g, cx + 24 - k * 3, hip - 42 + k * 2, k % 2 ? HK.sandL : HK.sand); px(g, cx + 23 - k * 3, hip - 43 + k * 2, HK.sandD); }
+        for (let k = 0; k < 3; k++) line(g, cx + 36 + k * 3, hip - 56 - k * 2, cx + 40 + k * 3, hip - 56 - k * 2, 'rgba(240,216,160,0.6)'); }
+      else if (f === 31) { arm(g, ...sh, cx + 20, hip - 35); arm(g, ...lh, cx - 20, hip - 35); glowRing(g, cx, hip - 14, 9, '#ffd36b'); glowRing(g, cx, hip - 14, 12, '#f8dc90'); circle(g, cx, hip - 14, 4, 'rgba(255,211,107,0.35)');   /* the open pose: his glass ringed in gold */
+        for (const s2 of [-1, 1]) { rect(g, cx + s2 * 20 - 2, hip - 38, 5, 2, HK.skin); for (let k = 0; k < 6; k++) { const sx = cx + s2 * (19 + (k % 3) * 2 + (k >> 1)), sy = hip - 40 - k * 4; line(g, sx, sy, sx - s2, sy - 3, k % 2 ? HK.sandL : '#ffd36b'); px(g, sx + s2, sy - 1, '#fff4c0'); } }
+        for (let a = 0; a < 6; a++) px(g, cx - 16 + a * 6, hip + 20 - (a % 2), HK.sandL); }
+      else if (f === 32) { arm(g, ...sh, cx + 19, hip + 7); arm(g, ...lh, cx - 19, hip + 7); rect(g, cx - 22, hip + 9, 5, 2, HK.skin); rect(g, cx + 17, hip + 9, 5, 2, HK.skin);   /* palms flat on the floor */
+        for (let k = -4; k <= 4; k++) { const h2 = 5 + (Math.abs(k) * 3) % 7; rect(g, cx + k * 4, hip + 22 - h2, 3, h2, k % 2 ? HK.sand : HK.sandL); px(g, cx + k * 4, hip + 22 - h2, '#fff4c0'); }
+        for (let a = 0; a < 20; a++) px(g, cx + Math.round(Math.cos(a * 0.314) * 22), hip + 21 + Math.round(Math.sin(a * 0.314) * 3), a % 2 ? '#ffd36b' : HK.trimL); glowRing(g, cx, hip + 18, 17, '#ffd36b'); }
       else if (f === 24) { arm(g, ...sh, cx + 18, hip - 44); arm(g, ...lh, cx - 18, hip - 44); sceptre(g, cx + 18, hip - 44, cx + 22, hip - 62); glowRing(g, cx + 22, hip - 62, 5, RUL); for (let a = 0; a < 18; a++) { const rr = 10 + a * 0.9; px(g, cx + Math.round(Math.cos(a * 0.7) * rr), hip + 20 + Math.round(Math.sin(a * 0.7) * 2), a % 2 ? RUL : HK.sand); } }
       return; }
     if (f === 11) { legs(g, cx, hip, 0); robe(g, cx, hip - 22, 0); shoulders(g, cx, hip - 22); head(g, cx + 1, hip - 30);   /* OPEN / STALLED: the glass empty, frozen mid-gesture */
@@ -283,4 +311,56 @@ export function bakeCog() {
     for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + (f ? 0.4 : 0); px(g, Math.round(7 + Math.cos(a) * 3.6), Math.round(7 + Math.sin(a) * 3.6), HK.brassD); }
     F.push(outline(c, OUT)); }
   return F;
+}
+
+// ================= THE SAND-BOUND (claude/bc4art: the finished sprite set, its OWN skin) =================
+//   bakeSandBound()      THE SAND-BOUND (the ambusher's machine, 9 frames: 0 BURIED (a mound, two eyes) | 1 RISING | 2,3 walk | 4 SLAM TELL (both sand-fists hauled up over the head, sand
+//                        streaming up off them, a ring of grains lifting at its feet) | 5 SLAM (driven down in front, the crust cracking, a wave of sand thrown) | 6 (unused: it never burrows,
+//                        drawn as the mound) | 7 hurt | 8 BURIED TO THE CHEST (its glass runs: sand to the ribs, a collar of sand round it, arms thrown up, the eyes wide))
+//                        - one of the drowned the sand grew over: a carapace of packed sand in strata on the shoulders and back with splinters of the hourglass's glass grown through it, a brass
+//                        chain of the glass that binds it (its tether) round the neck, clubbed fists of sand, teal-less amber eyes in a sand-capped skull, grains trickling off it. Its OWN poses (B16):
+//                        the slam is not the drowned's knife cut
+const SB = { crust: '#c8a064', crustL: '#ecc988', crustLL: '#fbe6b0', crustD: '#8a6a3c', crustDD: '#5a4224', bone: '#d6cbac', boneD: '#a89c7c', wrap: '#a89878', wrapD: '#7a6c52', wrapDD: '#52462e', dark: '#16100c',
+  eye: '#ffb84a', eyeL: '#fff0c0', gold: '#d8aa40', goldL: '#f6dc80', goldD: '#8a6a20', glass: '#9ad8e0', glassL: '#e6fbff', glassD: '#4a8a9c', chain: '#7a6a3c' };
+export function bakeSandBound() {
+  const W = 48, H = 34, cx = 17, gy = 32;
+  const crustBlock = (g, x, y, w, h) => { rect(g, x, y, w, h, SB.crust); for (let k = 1; k < h; k += 3) rect(g, x, y + k, w, 1, k % 6 === 1 ? SB.crustL : SB.crustD); px(g, x, y, SB.crustLL); px(g, x + w - 1, y + h - 1, SB.crustDD); };
+  const fist = (g, x, y, big = 0) => { ellipse(g, x, y, 3.4 + big, 3 + big, SB.crust); ellipse(g, x - 1, y - 1, 2.2, 1.6, SB.crustL); px(g, x - 2, y - 2, SB.crustLL); px(g, x + 2, y + 2, SB.crustD); px(g, x + 3, y, SB.crustD); px(g, x, y + 3 + big, SB.crustD);
+    px(g, x + 1, y - 1, SB.glass); px(g, x + 1, y, SB.glassL); px(g, x - 2, y + 2, SB.glassD); };   /* a fist clubbed in sand, a sliver of glass glinting in it */
+  const arm = (g, x0, y0, x1, y1, big = 0) => { thick(g, x0, y0, x1, y1, SB.crustD, 3); line(g, x0, y0 - 1, x1, y1 - 1, SB.crust); line(g, x0, y0 - 1, (x0 + x1) / 2, (y0 + y1) / 2 - 1, SB.crustL); px(g, (x0 + x1) / 2, (y0 + y1) / 2, SB.wrap); fist(g, x1, y1, big); };
+  const head = (g, x, y, mouth = 0) => { ellipse(g, x, y, 3.6, 3.6, SB.bone); px(g, x - 2, y - 1, SB.boneD); px(g, x + 3, y + 1, SB.boneD); rect(g, x - 2, y + 2, 5, 1, SB.boneD);
+    rect(g, x - 2, y - 1, 2, 2, SB.dark); rect(g, x + 1, y - 1, 2, 2, SB.dark); px(g, x - 1, y - 1, SB.eye); px(g, x + 2, y - 1, SB.eye); px(g, x - 1, y - 2, SB.eyeL); px(g, x + 2, y - 2, SB.eyeL);   /* sockets with amber eyes */
+    rect(g, x - 1, y + 2 + mouth, 3, 1 + mouth, SB.dark);
+    ellipse(g, x - 0.5, y - 3, 4.8, 2.6, SB.crust); rect(g, x - 4, y - 4, 9, 1, SB.crustL); px(g, x - 3, y - 5, SB.crustLL); px(g, x + 2, y - 5, SB.crustLL); px(g, x + 3, y - 3, SB.crustD); px(g, x - 4, y - 2, SB.crustD); px(g, x, y - 4, SB.crustD);   /* a cap of packed sand, banded */
+    px(g, x + 1, y - 6, SB.glass); px(g, x + 1, y - 7, SB.glassL); if (mouth) { px(g, x, y + 4 + mouth, SB.crustL); px(g, x, y + 5 + mouth, SB.crust); } else { px(g, x, y + 3, SB.crustL); } };   /* a shard of glass grown out of the crown */
+  const body = (g, x, y, legs, lean = 0) => { const [a, b] = legs;
+    crustBlock(g, x - 3 + a, y + 10, 4, 4); crustBlock(g, x + 1 + b, y + 10, 4, 4); px(g, x - 2 + a, y + 13, SB.crustDD); px(g, x + 2 + b, y + 13, SB.crustDD);   /* legs grown thick into sand */
+    fillPoly(g, [[x - 5 + lean, y], [x + 5 + lean, y], [x + 6, y + 11], [x - 6, y + 11]], SB.wrap); line(g, x - 4, y + 3, x + 4, y + 5, SB.wrapD); line(g, x - 5, y + 8, x + 5, y + 9, SB.wrapDD);
+    for (let i = -5; i <= 5; i += 2) px(g, x + i, y + 11 + (i & 2 ? 1 : 0), SB.wrapD);   /* the hem in rags */
+    fillPoly(g, [[x - 8 + lean, y - 2], [x + 8 + lean, y - 2], [x + 7, y + 6], [x - 7, y + 6]], SB.crust);   /* THE CARAPACE: strata of packed sand over the shoulders and back */
+    rect(g, x - 8 + lean, y - 2, 16, 1, SB.crustL); for (const [ly, c] of [[0, SB.crustD], [2, SB.crustL], [4, SB.crustD]]) rect(g, x - 7 + lean, y + ly, 14, 1, c); px(g, x - 8 + lean, y - 2, SB.crustLL); px(g, x + 7 + lean, y + 5, SB.crustDD);
+    for (const [dx, dy, h] of [[-5, 0, 2], [-1, 1, 3], [4, 0, 2]]) { rect(g, x + dx + lean, y + dy, 1, h, SB.glass); px(g, x + dx + lean, y + dy, SB.glassL); px(g, x + dx + lean, y + dy + h, SB.glassD); }   /* splinters of the glass that binds it, grown through the shell */
+    rect(g, x - 4, y + 6, 9, 1, SB.chain); for (let i = -4; i <= 4; i += 2) px(g, x + i, y + 7, SB.gold); px(g, x, y + 8, SB.goldL); px(g, x, y + 9, SB.goldD);   /* the brass chain of its glass, a tag hanging */
+    px(g, x - 7 + lean, y + 6, SB.crustL); px(g, x + 8, y + 7, SB.crustL); px(g, x + 9, y + 9, SB.crust); px(g, x - 8, y + 8, SB.crust); };   /* grains trickling off it */
+  const mound = (g, x, h, crack = false) => { fillPoly(g, [[x - 15, gy], [x - 7, gy - h], [x + 7, gy - h], [x + 15, gy]], SB.crust); rect(g, x - 7, gy - h, 14, 1, SB.crustL); for (let k = 2; k < h; k += 3) rect(g, x - 12 + k, gy - h + k, 24 - k * 2, 1, SB.crustD);
+    for (let i = 0; i < 7; i++) px(g, x - 12 + i * 4, gy - 1, SB.crustD); px(g, x - 3, gy - h, SB.crustLL); if (crack) { line(g, x - 3, gy - h, x + 1, gy - 2, SB.crustDD); } };
+  const spray = (g, pts) => pts.forEach(([x, y], i) => { px(g, x, y, i % 2 ? SB.crustL : SB.crust); if (i % 3 === 0) px(g, x + 1, y + 1, SB.crustD); });
+  const F = frames(W, H, 9, (g, f) => {
+    if (f === 0 || f === 6) { mound(g, cx, f === 0 ? 5 : 4, true); px(g, cx - 2, gy - 4, SB.eye); px(g, cx + 2, gy - 4, SB.eye); px(g, cx - 2, gy - 5, SB.eyeL); px(g, cx + 2, gy - 5, SB.eyeL); rect(g, cx + 6, gy - 11, 1, 3, SB.glass); px(g, cx + 6, gy - 11, SB.glassL); return; }   /* BURIED: a mound, a glass splinter standing out of it, two amber eyes */
+    if (f === 8) { const by = gy - 13; body(g, cx, by, [0, 0]); head(g, cx + 1, by - 4, 1); arm(g, cx - 6, by, cx - 12, by - 8, 0.4); arm(g, cx + 7, by, cx + 14, by - 6, 0.4); mound(g, cx, 9);   /* BURIED TO THE CHEST: the sand to its ribs, arms thrown up, mouth open */
+      ellipse(g, cx, gy - 10, 12, 2.6, SB.crustD); rect(g, cx - 12, gy - 11, 24, 1, SB.crustL); for (let i = 0; i < 9; i++) { px(g, cx - 10 + i * 2.5, gy - 12 - (i % 3), SB.crustL); px(g, cx - 9 + i * 2.5, gy - 14 - (i % 4), SB.crust); }
+      for (const s of [-1, 1]) for (let k = 0; k < 3; k++) px(g, cx + s * (11 + k * 2), gy - 19 - k * 2, k % 2 ? SB.crustLL : SB.crustL); return; }
+    if (f === 1) { body(g, cx, gy - 15, [0, 0], 1); head(g, cx + 1, gy - 19, 1); mound(g, cx, 7); spray(g, [[cx - 9, gy - 20], [cx - 6, gy - 16], [cx - 10, gy - 13], [cx + 9, gy - 19], [cx + 8, gy - 14], [cx + 11, gy - 11], [cx - 3, gy - 22], [cx + 4, gy - 23]]); return; }   /* RISING: sand pouring off the shell */
+    const by = gy - 15; const legs = f === 2 ? [0, 1] : f === 3 ? [1, 0] : [0, 0];
+    if (f === 7) { body(g, cx - 1, by + 1, [0, 0], -1); head(g, cx - 2, by - 3, 1); arm(g, cx - 6, by + 2, cx - 9, by + 8); arm(g, cx + 6, by + 2, cx + 8, by + 9); spray(g, [[cx + 10, by - 2], [cx + 12, by - 5], [cx + 9, by - 7], [cx - 11, by + 1]]); return; }   /* hurt: rocked back, the shell flaking */
+    if (f === 4) { body(g, cx, by + 1, [0, 0], -1); head(g, cx - 1, by - 3, 1); arm(g, cx - 6, by - 1, cx - 7, by - 13, 0.8); arm(g, cx + 6, by - 1, cx + 4, by - 14, 0.8);   /* SLAM TELL: hunched, both fists hauled up over the head, sand running up off them */
+      for (let k = 0; k < 6; k++) { px(g, cx - 9 + k * 2, by - 17 - (k % 3), k % 2 ? SB.crustL : SB.crustLL); px(g, cx - 8 + k * 2, by - 20 - (k % 4), SB.crust); }
+      for (let a = 0; a < 14; a++) px(g, cx - 13 + a * 2, gy - 1 - (a % 3), a % 2 ? SB.crustL : SB.crust); return; }   /* a ring of grains lifting at its feet */
+    if (f === 5) { body(g, cx + 2, by + 2, [1, 0], 3); head(g, cx + 6, by - 1, 1); arm(g, cx - 2, by + 3, cx + 11, by + 10, 1); arm(g, cx + 6, by + 3, cx + 15, by + 9, 1);   /* SLAM: bent over it, both fists driven down in front */
+      fillPoly(g, [[cx + 10, gy], [cx + 14, gy - 5], [cx + 22, gy - 3], [cx + 25, gy]], SB.crust); rect(g, cx + 14, gy - 5, 8, 1, SB.crustL); line(g, cx + 13, gy, cx + 18, gy - 4, SB.crustDD);
+      spray(g, [[cx + 18, gy - 10], [cx + 22, gy - 12], [cx + 26, gy - 9], [cx + 15, gy - 12], [cx + 28, gy - 5], [cx + 25, gy - 14], [cx + 20, gy - 15]]); return; }
+    body(g, cx, by, legs); head(g, cx + 1, by - 4);
+    arm(g, cx - 6, by + 1, cx - 8, by + 9 + (f === 2 ? 1 : 0)); arm(g, cx + 6, by + 1, cx + 9, by + 8 + (f === 3 ? 1 : 0));   /* walking: the heavy arms swinging low */
+  });
+  return pack(F, cx, H, 14, 20);
 }

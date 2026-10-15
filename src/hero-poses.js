@@ -4,6 +4,11 @@
    after the swing: a blow in progress still wins). This chooses ART ONLY: no timer here touches a box, a cost or a cooldown.
    BEATS are the elapsed seconds at which each next frame starts; CYCLE poses loop at a rate instead. */
 export const POSE_BEATS = {
+  /* THE FOUR NEW PLUNGES' RELEASES (claude/plunges, B16: each has its own windup - the plunge frames - and its own release/leap, played as kit poses) */
+  hammerHit: [0.08],           /* HAMMER OF DAWN: the head of the maul in the ground and a gold star off it; then him coming up off it */
+  boardLeap: [0.1],            /* BOARDING: the heel off its back and a hand pushing down; then both arms flung up - the second jump */
+  earthHit: [0.09],            /* EARTHFALL: the butt of the stave in the ground, the grit flung off it; then her coming up off it */
+  bzSpinEnd: [0.1],            /* AXE SPIN: thrown wide off the shredded foe, up */
   /* THE KNIGHT */
   lunge: [0.05, 0.2],          /* the drive off the back foot, the full stretch behind the point, and the pull-up */
   toss: [0.06, 0.16],          /* SHIELD THROW: the off arm cocked back, flung through, and following after it */
@@ -76,6 +81,10 @@ export const POSE_BEATS = {
   bzStand: [0.18],             /* LAST STAND: down on a knee, an axe planted, the other raised */
   bzUnch: [0.16],              /* UNCHAINED: fists to his chest, then flung out */
   bzStorm: [0.12],             /* AXE STORM: one hatchet underhand, then the fan overhand */
+  /* THE RANGER (claude/ranger): her shots and her kit, each the bow doing something */
+  rgShot: [0.07], rgAirShot: [0.07], rgLoose: [0.1], rgRise: [0.08], rgDown: [0.08], rgBash: [0.06], rgSnare: [0.12], rgMark: [0.12], rgHawkPose: [0.14], rgLeapPose: [0.16],
+  ripo: [0.06, 0.14],          /* (claude/ranger) THE RIPOSTE STRIKE when it is an ARROW (hers): the step-in, the loose, the follow-through - played off the pose clock, not the swing */
+  rgVolleyPose: [0.12], rgTrapPose: [0.12], rgRainPose: [0.14], rgSmokePose: [0.12], rgRefillPose: [0.16], rgHeartPose: [0.18], rgHuntPose: [0.16],
 };
 /* A POSE THAT FOLLOWS THE BODY, not a clock: the frame is chosen from the hero's own state, and null ends it early (HAMMER LEAP
    plays his arc - maul up on the rise, over at the top, down on the drop - for as long as he is off the ground, and no longer) */

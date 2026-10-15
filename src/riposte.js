@@ -53,6 +53,7 @@ export const DUELISTS = new Set(['closedhelm', 'paladinboss', 'fogknight', 'bloo
 export const PARRY_LOOK = {
   knight:    { look: 'SHIELD',      input: 'raise C (hold) as the blow lands', col: '#fff6e0' },
   warden:    { look: 'SPEAR DEFLECT', input: 'tap C as the blow lands',        col: '#dff0d8' },
+  ranger:    { look: 'BOW-BASH',    input: 'tap C as the blow lands; the riposte is her next arrow', col: '#c8e89a' },   /* (claude/ranger) */
   berserker: { look: 'TAKE IT',     input: 'raise the crossed axes (hold C) as the blow lands; the riposte is the cross-chop', col: '#ff9a5c' },   /* (claude/berserker2) */
   paladin:   { look: 'LIGHT-WARD',  input: 'raise the aegis (hold C) as the blow lands', col: '#fff6c8' },
   pyro:      { look: 'FLAME-CATCH', input: 'hold DOWN as the blow winds up (the ember flare opens after 0.3 s)', col: '#ff9a5c' },
@@ -67,6 +68,7 @@ export const MIX = { max: 5, per: 0.06, idle: 3.0, word: 3 };   /* word: the pip
 export const PARRY_ART = {
   knight:    { hand: [7, -10],  tip: [4, -22],  style: 'steel', glint: '#ffffff', flash: '#fff6e0', sound: 'knight' },
   warden:    { hand: [6, -10],  tip: [15, -19], style: 'shaft', glint: '#dff0d8', flash: '#dff0d8', sound: 'warden' },
+  ranger:    { hand: [7, -10],  tip: [10, -21], style: 'shaft', glint: '#e8f8c8', flash: '#c8e89a', sound: 'ranger' },   /* (claude/ranger) the bow's upper limb */
   berserker: { hand: [7, -10],  tip: [14, -18], style: 'rage',  glint: '#ffb27a', flash: '#ffb27a', sound: 'berserker' },
   paladin:   { hand: [8, -10],  tip: [8, -22],  style: 'halo',  glint: '#fff6c8', flash: '#fff6c8', sound: 'paladin' },
   pyro:      { hand: [8, -12],  tip: [3, -26],  style: 'ember', glint: '#ffd36b', flash: '#ffb23e', sound: 'pyro' },

@@ -1,0 +1,8 @@
+# claude/herocolors - one colour per hero (Daniel 10-14)
+HERO_COLOR (src/main.js, beside HERO_ARMS): knight royal blue, warden forest green, geomancer amber, ranger russet, pyro flame red-orange, paladin gold, pirate sea teal, reaper deep violet, berserker iron grey + ember trim, sunpriest ivory (reserved, not in the pick). Fields: dark (name plate), mid (cloth), hi (frame/accent), ink (name), trim.
+Read by: the hero pick (a banner behind each portrait, the selection frame + floor bar in `hi`, name ink on the dark plate, an accent bar + preview-window border in `hi`), the hero card (panel border), the co-op pick banners (heroBanner). Locked heroes' banners hang dimmed (alpha .28), silhouettes unchanged. Names are drawn after all banners (a wide name no longer gets painted over by the next banner) with a plate where wider than the banner.
+Checks (port 8919): titlescene green (new: every hero's ink >= 4.5:1 on its plate, frame >= 3:1, no two cloths equal); uiscreens green; textfit pick,store --strict 0 findings (pick scope now 9 cards, was 8). hero-trials smoke not run: the trial code is untouched (only the card's border colour).
+Shots: work/claude/shots/herocolors/ - pick-knight, pick-ranger, pick-pyro (3 selected), pick-berserker-locked, plus every other hero, contact-all-banners-open.png (all nine open). Script: tools/herocolors-pick.mjs.
+## QUESTIONS FOR DANIEL
+- Names wider than a 32px card (GEOMANCER, DEATH KNIGHT) hang on their own plate over the neighbour's banner edge; PIRATE/DEATH KNIGHT sit side by side. Fine, or shorten (GEOMANC.)?
+- Berserker's ember trim is a thin orange rule top and at the floor line; say if you want more.

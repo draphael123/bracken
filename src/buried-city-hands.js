@@ -14,7 +14,7 @@
 // main.js calls: on, reset, update, interact, waits, world, takeConstruct, drawWorld, drawOver, drawStructure, noSun, read, state, walkHint, handsState.
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
-import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js';
+import * as SET from './redraw/buried_city_set.js'; import * as RUL from './redraw/buried_city_rule.js'; import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) */
 import { makeFlip } from './buried-city-flip.js'; import * as FART from './redraw/buried_city_flip_art.js';   /* THE FLIP (claude/buriedcity3): the hourglasses you strike, the roofs they raise, THE SAND SEA */
 
 export const BCS = { dropBite: 0.27, leverR: 20, leverH: 22, wheelR: 26, wheelCd: 0.7, cdLever: 0.5, jamT: 2.4, jamMul: 2.0, vaultR: 30, liftPad: 2, fallBeat: 130, fallPad: 4 };
@@ -39,7 +39,10 @@ export function makeBuriedCityHands(ctx) {
      the sun reaches only the columns L.sun names (the dunes, and the holes where the roof has fallen in) - there the shared drain (src/sun-hands.js) runs as on
      any desert road, and a solid thing over your head is still shade */
   H.sunAt = x => !!K && (K.L.sun || []).some(z => x >= z.x0 * TS() && x < (z.x1 + 1) * TS());
-  H.noSun = x => !!K && !H.sunAt(x);
+  /* (claude/buriedcity4, brief 3) A DRIFTING CLOUD's shadow is shade: where each cloud is now (px; it drifts west along its track and comes round again) */
+  const cloudSpan = c => { const span = (c.x1 - c.x0 + 1 + c.w) * TS(), x = (c.x1 + 1) * TS() - (((c.ph * span + K.clock * c.v) % span) + span) % span; return [x, x + c.w * TS()]; };
+  H.cloudAt = x => !!K && (K.L.clouds || []).some(c => { if (x < c.x0 * TS() || x >= (c.x1 + 1) * TS()) return false; const [a, b] = cloudSpan(c); return x >= a && x < b; });
+  H.noSun = x => !!K && (!H.sunAt(x) || H.cloudAt(x));
 
   /* ---------- RESET: a fresh load builds the rooms; a respawn puts every small room back as it was built and keeps THE GREAT SAND-GATE as it was left ---------- */
   const deckUp = r => (r.deck ? 1 + Math.max(0, ...r.deck.map(c => -c[3])) : 0);   /* rows the deck (and what stands on it) takes over the sand's top */
@@ -47,7 +50,7 @@ export function makeBuriedCityHands(ctx) {
   H.reset = () => {
     const L = ctx.L; if (!L || !L.buriedcity) { K = null; return; }
     const fresh = !K || K.L !== L;
-    if (fresh) K = { L, said: {}, clock: 0, wheel: { turns: 0, cd: 0, done: false }, vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
+    if (fresh) K = { L, said: {}, clock: 0, loopOpen: false, wheel: { turns: 0, cd: 0, done: false }, vault: (L.vaultDoors || []).map(v => ({ ...v, open: false })),
       n: { pulls: 0, opens: 0, shuts: 0, fills: 0, drains: 0, lifts: 0, jams: 0, turns: 0, nudges: 0, risen: 0, full: 0, kingPulls: 0, swings: 0, heaped: 0, beaten: 0, sunk: 0, wasted: 0 } };
     /* the cells under each room's sand (and over it, where a deck rides) AS BUILT: taken once on a fresh load (the grid is every room drained then) - a respawn's grid still holds the sand */
     if (fresh) K.bases = Object.fromEntries((L.rooms || []).map(r => [r.id, Array.from({ length: span(r) }, (_, k) => { const y = r.floor - 1 - k, row = []; for (let x = r.x0; x <= r.x1; x++) row.push(ctx.cellGet(x, y)); return row; })]));
@@ -108,7 +111,15 @@ export function makeBuriedCityHands(ctx) {
     for (const pp of ctx.players) if (!pp.dead && pp.x > l && pp.x < rr) unbury(pp, false, r);
     for (const e of ctx.enemies()) if (e.alive && !e.noGrav && !e.boss && e.x > l && e.x < rr) unbury(e, true, r); }
   function jam(e, r) { if (!(e.bcJam > 0)) { K.n.jams++; const P0 = ctx.hero(); if (P0 && Math.abs(P0.x - e.x) < 260 && Math.abs(P0.y - e.y) < 120 && once('jam')) number(e.x, e.y - 34, 'SAND IN ITS GEARS: IT IS JAMMED', '#8fd160'); } e.bcJam = BCS.jamT; }   /* (told once, and only where you can see it: the trap hall's fall holds its construct from the first frame) */
-  H.world = (e, s, w) => { if (e.t === 'construct') w.jam = e.bcJam > 0 ? e.bcJam : 0; };
+  H.world = (e, s, w) => { if (e.t === 'construct') w.jam = e.bcJam > 0 ? e.bcJam : 0;
+    if (e.cnSkin === 'sandbound') { s.cuts = 0; if (s.mode === 'burrow' || s.mode === 'under') { s.mode = 'walk'; s.t = 0; } } };   /* (claude/buriedcity4) THE SAND-BOUND is bound where it rose: it never burrows off ahead of you */
+  /* (claude/buriedcity4) THE SAND-BOUND (brief 2): while its glass runs it is BURIED to the chest - its machine waits (stuck: no step, no blow), a blow lands whole;
+     while its glass rests THE SAND HOLDS IT - a blow lands at 0.4 and is told (main.js: the clank and THE SAND HOLDS IT, src/boss-read.js) */
+  H.hold = (e, dt) => { if (e.cnSkin !== 'sandbound' || !FL) return false; const b = FL.bound(e) && e.st && e.st.mode !== 'buried';
+    if (b && !e.sbBuried) { K.flipN.held++; ctx.burst(e.x, e.y - 4, 12, ['#e6c98a', '#a87a40'], 70, 0.6); const P0 = ctx.hero(); if (P0 && Math.abs(P0.x - e.x) < 260 && once('boundBuried')) number(e.x, e.y - 34, 'BURIED TO THE CHEST: IT CANNOT MOVE', '#8fd160'); }
+    if (!b && e.sbBuried) ctx.burst(e.x, e.y - 8, 10, ['#e6c98a', '#a87a40'], 80, 0.5);
+    e.sbBuried = b; if (b) { e.st.frame = 8; e.frame = 8; } return b; };
+  H.takeSandBound = e => { if (!FL) return 1; const k = FL.boundTake(e); if (k < 1) { K.flipN.glanced++; const P0 = ctx.hero(); if (P0 && once('boundHolds')) number(e.x, e.y - 44, 'THE SAND HOLDS IT: TURN ITS GLASS', '#ffd36b'); } return k; };
   /* a JAMMED construct takes a blow twice over (told once) */
   H.takeConstruct = (e, dmg) => { if (e.st && e.st.mode === 'jammed') { if (!e.bcJamSaid) { e.bcJamSaid = 1; number(e.x, e.y - 30, 'JAMMED: IT CANNOT GUARD', '#8fd160'); } return dmg * BCS.jamMul; } return dmg; };
 
@@ -153,6 +164,7 @@ export function makeBuriedCityHands(ctx) {
     const lv = levers().find(q => atLever(P, q)); if (lv) { pull(lv, P); return true; }
     if (FL && FL.interact(P)) return true;   /* (claude/buriedcity3) E turns an hourglass too (a blow strikes it: src/buried-city-flip.js) */
     const W = K.L.wheel; if (W && Math.abs(px(W.x) - P.x) <= BCS.wheelR && Math.abs((W.row + 1) * ts - P.y) <= 18) { turnWheel(P); return true; }
+    const LD = K.L.loopDoor; if (LD && Math.abs(px(LD.lever[0]) - P.x) <= BCS.leverR && Math.abs((LD.lever[1] + 1) * ts - P.y) <= 20) { openLoop(P); return true; }   /* (claude/buriedcity4) THE OLD STREET's sand-gate, from the courtyard */
     const v = K.vault.find(q => !q.open && Math.abs(q.x * ts + 8 - P.x) <= BCS.vaultR && P.y > q.y0 * ts && P.y <= (q.y1 + 2) * ts);
     if (v) { if (ctx.questGot() >= v.gears) openVault(v); else number(P.x, P.y - 34, 'THE CLOCKWORK VAULT WANTS FIVE GEARS', '#9aa39a'); return true; }
     return false;
@@ -179,6 +191,10 @@ export function makeBuriedCityHands(ctx) {
     if (W.turns >= (K.L.wheel.turns || 3)) { W.done = true; number(P.x, P.y - 34, 'THE GREAT SAND-GATE IS OPEN: THE QUARTER DRAINS', '#8fd160'); ctx.shake(6); ctx.sfx.boom && ctx.sfx.boom(); }
     else number(P.x, P.y - 34, `THE GREAT GATE OPENS A NOTCH (${W.turns}/${K.L.wheel.turns || 3})`, '#ffd36b');
   }
+  /* (claude/buriedcity4, brief 10) THE LOOP BACK TO A SHRINE: the old street's sand-gate opens from the courtyard, and stays open (a respawn keeps the grid) */
+  function openLoop(P) { const LD = K.L.loopDoor; if (K.loopOpen) { number(P.x, P.y - 34, 'THE OLD STREET IS OPEN: A WAY BACK TO THE SHRINE', '#9aa39a'); return; } K.loopOpen = true; K.n.loop = 1;
+    for (let y = LD.y0; y <= LD.y1; y++) { ctx.cellSet(LD.x, y, T().AIR); ctx.burst(px(LD.x), y * TS() + 8, 4, ['#e6c98a', '#a87a40'], 60, 0.6); }
+    ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(3); number(P.x, P.y - 34, 'THE SAND-GATE OPENS: THE OLD STREET RUNS BACK TO THE SHRINE', '#8fd160'); }
   function openVault(v) { v.open = true; const ts = TS(); for (let y = v.y0; y <= v.y1; y++) { ctx.cellSet(v.x, y, T().AIR); ctx.burst(v.x * ts + 8, y * ts + 8, 3, ['#d9b36a', '#8a6a3a'], 40, 0.5); } ctx.sfx.gateLift && ctx.sfx.gateLift(); number(v.x * ts, v.y0 * ts - 20, 'THE CLOCKWORK VAULT OPENS', '#8fd160'); }
 
   /* ---------- EVERY FRAME ---------- */
@@ -236,25 +252,26 @@ export function makeBuriedCityHands(ctx) {
     const ce = roomOf('cellar'); if (ce && c > 236 && c < 246 && ce.level < ce.full - 0.05) return here(242, 38, ce.gate === 'open' ? 'talk' : null, 1, { r: 10, wait: ce.gate === 'shut' });
     const ub = roomOf('upperbulb'); if (ub && ub.level > 2 && c > 270 && c < 282) return here(278, 32, ub.gate === 'shut' ? 'talk' : null, 1, { r: 10, wait: ub.gate === 'open' });
     /* THE SAND-FALL: swing it onto the wall, wait for the heap, swing it back, climb */
-    const sl = K.chutes && chuteOf('sluice'); if (sl && c > 340 && c < 380 && feet > 34) { const hp = sl.heap.wall, full = hp && hp.rows >= heapMax(sl.to.wall);
-      if (!full && sl.at === 'grate') return here(345, 42, 'talk', 1, { r: 10 });
-      if (!full) return here(362, 42, null, 1, { r: 30, wait: true });
-      if (sl.at === 'wall') return here(366, 42, 'talk', 1, { r: 10 }); }
-    const gr = roomOf('great'); if (gr && !K.wheel.done && c > 395 && c < 411) return here(K.L.wheel.x, K.L.wheel.row, K.wheel.cd > 0 ? null : 'talk', 1, { r: 10 });
-    if (gr && gr.level > 3 && c > 395 && c < 411) return here(408, 36, null, 1, { r: 12, wait: true });
-    const yd = roomOf('yard'); if (yd && c > 489 && c < 498 && feet <= 44 && yd.level < yd.full - 0.05) return here(496, 44, yd.gate === 'open' ? 'talk' : null, 1, { r: 10, wait: yd.gate === 'shut' });
-    const sh = roomOf('shaft'); if (sh && c > 513 && c < 526 && feet > 31) { if (sh.gate === 'open') return here(516, 44, 'talk', 1); return Object.assign(here(Math.min(525, Math.max(522, Math.round(c))), sandTopRow(sh) - 1, null, 1), { r: 40, wait: true }); }
+    const sl = K.chutes && chuteOf('sluice'); if (sl && c > 412 && c < 452 && feet > 34) { const hp = sl.heap.wall, full = hp && hp.rows >= heapMax(sl.to.wall);
+      if (!full && sl.at === 'grate') return here(417, 42, 'talk', 1, { r: 10 });
+      if (!full) return here(434, 42, null, 1, { r: 30, wait: true });
+      if (sl.at === 'wall') return here(438, 42, 'talk', 1, { r: 10 }); }
+    const gr = roomOf('great'); if (gr && !K.wheel.done && c > 467 && c < 483) return here(K.L.wheel.x, K.L.wheel.row, K.wheel.cd > 0 ? null : 'talk', 1, { r: 10 });
+    if (gr && gr.level > 3 && c > 467 && c < 483) return here(480, 36, null, 1, { r: 12, wait: true });
+    const yd = roomOf('yard'); if (yd && c > 561 && c < 570 && feet <= 44 && yd.level < yd.full - 0.05) return here(568, 44, yd.gate === 'open' ? 'talk' : null, 1, { r: 10, wait: yd.gate === 'shut' });
+    const sh = roomOf('shaft'); if (sh && c > 585 && c < 598 && feet > 31) { if (sh.gate === 'open') return here(588, 44, 'talk', 1); return Object.assign(here(Math.min(597, Math.max(594, Math.round(c))), sandTopRow(sh) - 1, null, 1), { r: 40, wait: true }); }
     /* THE TRAP HALL: shut its floor-gate, swing the fall in, wait for the fill */
-    const tr = roomOf('trap'), tf = K.chutes && chuteOf('trapfall'); if (tr && c > 533 && c < 546 && tr.level < tr.full - 0.05) {
-      if (tr.gate === 'open') return here(544, 32, 'talk', 1, { r: 10 });
-      if (tf && tf.at !== 'hall') return here(538, 32, 'talk', -1, { r: 10 });
-      return here(544, 32, null, 1, { r: 10, wait: true }); }
+    const tr = roomOf('trap'), tf = K.chutes && chuteOf('trapfall'); if (tr && c > 605 && c < 618 && tr.level < tr.full - 0.05) {
+      if (tr.gate === 'open') return here(616, 32, 'talk', 1, { r: 10 });
+      if (tf && tf.at !== 'hall') return here(610, 32, 'talk', -1, { r: 10 });
+      return here(616, 32, null, 1, { r: 10, wait: true }); }
     /* THE FLIP (claude/buriedcity3): before a glass the route needs - turn it (E); THE FALL running - into it, and it carries you to the high dune */
     if (K.glasses) for (const gq of K.glasses) { const z = GLASS_ZONES[gq.id]; if (!z || c < z[0] || c > z[1] || feet < z[2] || feet > z[3]) continue;
       if (gq.t <= 0) return here(gq.x, gq.y, 'talk', 1, { r: 12 });
-      if (gq.id === 'fall') { const f = K.dfalls[0]; if (f) return here(f.x1 + 2, f.top - 1, null, 1, { r: 20 }); } }
+      { const f = K.dfalls.find(q => q.glass === gq.id); if (f) return here(f.x1 + 2, f.top - 1, null, 1, { r: 20 }); } }   /* (claude/buriedcity4: every fall that flows up - the glass works' lift too) */
     return null; };
-  const GLASS_ZONES = { stair: [96, 107, 33, 36], bank: [306, 313, 29, 32], fall: [646, 659, 11, 15], chain1: [671, 681, 3, 7], chain2: [696, 699, 8, 11], exam: [711, 722, 9, 12] };   /* (grid rows: where a player stands before each glass) */
+  const GLASS_ZONES = { stair: [96, 107, 33, 36], bank: [306, 313, 29, 32], works1: [348, 351, 30, 33], works2: [361, 367, 24, 27], works3: [370, 377, 13, 16], works4: [383, 388, 8, 11], works5: [398, 400, 19, 22],
+    fall: [718, 731, 11, 15], chain1: [743, 753, 3, 7], chain2: [768, 771, 8, 11], exam: [783, 794, 9, 12], court: [811, 820, 30, 33], ante: [822, 825, 30, 33] };   /* (grid rows: where a player stands before each glass) */
 
   /* ---------- THE GLINT AND THE NUDGE (the route list: src/stuck-spots.js STUCK_HANDS.buriedcity) ---------- */
   const handsState = name => { const [kind, id] = name.split('.');
@@ -280,7 +297,8 @@ export function makeBuriedCityHands(ctx) {
   const view = (g, cx, cy, time) => ({ g, cx, cy, vw: ctx.VW(), vh: ctx.VH(), time, L: K.L, T: T() });
   H.drawBack = () => {};   /* (the backdrop and the Hourglass Tower are src/redraw/buried_city_backdrop.js's) */
   /* THE CITY'S FOOTING KINDS (L.structures 'bc*', main.js drawStructures): what holds each ledge up - stepped corbels, a stall's poles, a pipe's brackets, a drum's rubble */
-  H.drawStructure = (g, kind, l, r, t, b) => {
+  H.drawStructure = (g, kind, l, r, t, b, x0) => {
+    if (kind === 'bcBuried' && x0 !== undefined && A4.inWorks(x0)) { A4.drawKilnStub(g, l, r, t, b, x0); return true; }   /* (claude/bc4art) the glass works' kiln stubs and chimney piers: brick, a fire-mouth, iron bands */
     const post = (x, y0, y1, w, a, hi, lo) => { g.fillStyle = a; g.fillRect(R(x), R(y0), w, R(y1 - y0)); g.fillStyle = hi; g.fillRect(R(x), R(y0), 1, R(y1 - y0)); g.fillStyle = lo; g.fillRect(R(x + w - 1), R(y0), 1, R(y1 - y0)); };
     if (kind === 'bcAwning') { post(l + 1, t + 6, b, 3, '#6a4a2a', '#a07a44', '#3a2812'); post(r - 4, t + 6, b, 3, '#6a4a2a', '#a07a44', '#3a2812');
       for (const x of [l + 1, r - 4]) { g.fillStyle = '#c49a38'; g.fillRect(R(x) - 1, R(t + 3), 5, 3); g.fillStyle = '#f0d070'; g.fillRect(R(x) - 1, R(t + 3), 5, 1); g.fillStyle = '#2a1c10'; g.fillRect(R(x), R(b - 3), 3, 3); }
@@ -300,13 +318,24 @@ export function makeBuriedCityHands(ctx) {
   H.drawWorld = (g, cx, cy, time) => {
     if (!K) return; const ts = TS(), vw = ctx.VW(), vh = ctx.VH(), L = K.L, V = view(g, cx, cy, time);
     const vis = (x0, x1) => x1 * ts - cx > -64 && x0 * ts - cx < vw + 64;
+    /* (claude/bc4art) THE OLD STREET UNDER THE DUNES (a vaulted tunnel), THE ANTECHAMBER's lapis hall, THE GLASS WORKS' pipes, racks and kiln-glow, the murals of him and the folk he froze */
+    for (const it of (L.interiors || [])) if (it[4] === 'bcUnder' && vis(it[0], it[1] + 1)) A4.drawOldStreet(V, it);
+    A4.drawAnteBack(V); A4.drawApproach(V);
+    { const cl = L.clouds; if (cl) L.cloudNow = cl.map((c, i) => { const [a, b] = cloudSpan(c); return [Math.max(a, c.x0 * ts - 40), Math.min(b, (c.x1 + 1) * ts + 40), i]; }); }   /* (the clouds the sky draws over their shadows) */
+    { const LD = L.loopDoor; if (LD && vis(LD.x - 3, LD.x + 3)) { A4.drawLoopGate(V, LD, !!K.loopOpen, time, false); const lx = R(LD.lever[0] * ts + 8 - cx), ly = R((LD.lever[1] + 1) * ts - cy);
+      const P0 = ctx.hero(); if (!K.loopOpen && P0 && Math.abs(P0.x - (lx + cx)) < 40 && Math.abs(P0.y - (ly + cy)) < 30) ctx.text('E: OPEN THE OLD STREET', lx, ly - 30, '#ffd36b', 'center', 4); } }
+    /* (claude/buriedcity4; the clouds themselves are drawn in the sky: claude/bc4art) THE CLOUDS' SHADOWS: a cool wash over the columns a cloud covers, and a hard band on the ground where it falls (you see where it ends) */
+    for (const c of (L.clouds || [])) { let [a, b] = cloudSpan(c); a = Math.max(a, c.x0 * ts); b = Math.min(b, (c.x1 + 1) * ts); if (b <= a || b - cx < -8 || a - cx > vw + 8) continue;
+      g.fillStyle = 'rgba(40,36,80,0.16)'; g.fillRect(R(a - cx), 0, R(b - a), vh);
+      for (let x = Math.floor(a / ts); x * ts < b; x++) { let y = 0; while (y < L.H - 1 && ctx.cellGet(x, y) === T().AIR) y++; const l = Math.max(a, x * ts), r = Math.min(b, (x + 1) * ts); g.fillStyle = 'rgba(30,26,70,0.35)'; g.fillRect(R(l - cx), R(y * ts - cy), R(r - l), 4); }
+      g.fillStyle = 'rgba(255,240,200,0.5)'; g.fillRect(R(a - cx), 0, 1, vh); g.fillRect(R(b - cx) - 1, 0, 1, vh); }
     if (FL) FL.draw(g, cx, cy, time);   /* THE FLIP's pieces (placeholder art): THE SAND SEA, the risers, the banks, the dune falls, the glasses and their gauges */
     /* THE LIGHT IN THE SHAFTS: slanted god-rays, drifting dust, a lit patch where they reach the floor */
     for (const z of (L.sun || [])) { if (z.x0 < 38 || !vis(z.x0, z.x1 + 1)) continue; if (z.floor === undefined) { let fy = 1; const mx = (z.x0 + z.x1) >> 1; while (fy < L.H - 1 && ctx.cellGet(mx, fy) === T().AIR) fy++; z.floor = fy; } SET.drawShaft(V, z, z.floor); }
     /* THE DECOR: spires, the sinkhole's lip, stalls, houses, domes, the great gate's grille; and (B8) THE KING everywhere - his head in the dune, his statues, his mural, his court */
     for (const d of (L.decor || [])) { const x0 = (d.x0 ?? d.x) * ts - cx; if (x0 > vw + 80 || ((d.x1 ?? d.x) + 1) * ts - cx < -80) continue;
       if (d.kind === 'spire') SET.drawSpire(V, d);
-      else if (d.kind === 'awning') { if (d.x0 >= 630) FART.drawRoofAwning(V, d, ts); else SET.drawTornCanopy(V, d); }
+      else if (d.kind === 'awning') { if (d.x0 >= 702) FART.drawRoofAwning(V, d, ts); else SET.drawTornCanopy(V, d); }
       else if (d.kind === 'stall') SET.drawStall(V, d);
       else if (d.kind === 'house') SET.drawHouse(V, d);
       else if (d.kind === 'dome') SET.drawDome(V, d);
@@ -315,12 +344,12 @@ export function makeBuriedCityHands(ctx) {
       else if (d.kind === 'arch') SET.drawArch(V, { ...d, down: d.x0 < 300 });
       else if (d.kind === 'kinghead') SET.drawKingHead(V, d.x * ts + 8, (d.y + 1) * ts);
       else if (d.kind === 'kingstatue') SET.drawKingStatue(V, d.x * ts + 8, (d.y + 1) * ts, d.h);
-      else if (d.kind === 'mural') SET.drawMural(V, d);
+      else if (d.kind === 'mural') { if (d.x0 >= 822) A4.drawKingMural(V, d.x0, d.x1, d.y * ts - 42, 'slabs'); else SET.drawMural(V, d); }   /* (claude/bc4art: the antechamber's mural is HIM raising slabs of sand toward himself - the fight foretold) */
       else if (d.kind === 'courtiers') SET.drawCourtiers(V, d);
       else if (d.kind === 'relief') SET.drawRelief(V, d);
       else if (d.kind === 'sinkhole') SET.drawSinkhole(V, d);
       else if (d.kind === 'shell') FART.drawShell(V, d, ts); }
-    if ((L.outside || []).length && cx > 560 * ts) { const T0 = T(); FART.drawDressing(V, x => { for (let y = 0; y < L.H - 1; y++) if (ctx.cellGet(x, y) === T0.SOLID && ctx.cellGet(x, y - 1) !== T0.SOLID && y > 3) return y; return -1; }); }   /* (claude/bc3art) what the desert city left on its dunes and roofs */
+    if ((L.outside || []).length && cx > 632 * ts) { const T0 = T(); FART.drawDressing(V, x => { for (let y = 0; y < L.H - 1; y++) if (ctx.cellGet(x, y) === T0.SOLID && ctx.cellGet(x, y - 1) !== T0.SOLID && y > 3) return y; return -1; }); }   /* (claude/bc3art) what the desert city left on its dunes and roofs */
     /* THE LAMPS: oil lamps and wall braziers, warm light against the sand's cold shadow */
     for (const lp of (L.lamps || [])) SET.drawLamp(V, lp);
     /* THE SAND ROOMS */
@@ -373,9 +402,11 @@ export function makeBuriedCityHands(ctx) {
     for (const v of K.vault) { if (v.open) continue; if (v.x * ts - cx < -40 || v.x * ts - cx > vw + 40) continue; RUL.drawVault(V, v.x, v.y0, v.y1 - v.y0 + 1, v.gears, ctx.questGot(), time); }
   };
   /* the route glint over everything */
-  H.drawOver = (g, cx, cy, time) => { if (!K || !K.glint || !K.glint.show) return; drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
+  /* (claude/bc4art, B10's read) THE SAND-BOUND'S SHELL: while the sand holds it a crust of sand shimmers round it (a blow glances off); buried, the sand is round its chest */
+  const drawBound = (g, cx, cy, time) => { for (const e of ctx.enemies()) { if (!e.alive || e.cnSkin !== 'sandbound' || !e.st || e.st.mode === 'buried') continue; const x = e.x - cx, y = e.y - cy; if (x < -40 || x > ctx.VW() + 40) continue; A4.drawBoundShell(g, x, y, time, !!e.sbBuried, e.x); } };
+  H.drawOver = (g, cx, cy, time) => { if (K) drawBound(g, cx, cy, time); if (!K || !K.glint || !K.glint.show) return; drawGlint(g, R(K.glint.x - cx), R(K.glint.y - 18 - cy), ctx.VW(), ctx.VH(), time); };
   H.drawHud = () => false;
-  H.read = () => K && { n: { ...K.n }, rooms: K.rooms.map(r => ({ id: r.id, level: +r.level.toFixed(2), gate: r.gate, rows: r.rows })), wheel: { ...K.wheel }, waiting: K.waiting.length, vault: K.vault.map(v => ({ id: v.id, open: v.open })),
+  H.read = () => K && { loopOpen: !!K.loopOpen, n: { ...K.n }, rooms: K.rooms.map(r => ({ id: r.id, level: +r.level.toFixed(2), gate: r.gate, rows: r.rows })), wheel: { ...K.wheel }, waiting: K.waiting.length, vault: K.vault.map(v => ({ id: v.id, open: v.open })),
     chutes: K.chutes.map(c => ({ id: c.id, at: c.at, heap: Object.fromEntries(Object.entries(c.heap).map(([k, v]) => [k, v.rows])) })), flip: FL ? FL.read() : null };
   return H;
 }

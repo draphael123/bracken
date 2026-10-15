@@ -19,7 +19,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { LEVELS, T } from '../src/level.js';
 import { floodReach } from '../src/reachcore.js';
-import { SECTIONS, ARCS, RULE, ROOMS, CHUTES, WHEEL, SUN, DY } from '../src/buried-city.js';
+import { SECTIONS, ARCS, RULE, ROOMS, CHUTES, WHEEL, SUN, DY, OUT } from '../src/buried-city.js';
 import { makeBuriedCityHands, BCS } from '../src/buried-city-hands.js';
 import * as HKM from '../src/hourglass-king.js';
 import { newConstruct, constructStep } from '../src/construct.js';
@@ -42,7 +42,7 @@ ok(ARCS.fill.teach[0] < ARCS.fill.remix[0] && ARCS.fill.remix[0] < ARCS.fill.exa
 ok(ARCS.fall.teach[0] < ARCS.fall.exam[0] && ARCS.sun.teach[0] < ARCS.sun.test[0] && ARCS.sun.test[0] < ARCS.sun.remix[0] && ARCS.sun.remix[0] < ARCS.sun.exam[0], 'the fall taught then examined; the sun under the roof taught, tested, remixed, examined');
 ok(new Set(ROOMS.map(r => r.use)).size >= 4 && CHUTES.some(c => Object.values(c.to).some(t => t.kind === 'mound')) && CHUTES.some(c => Object.values(c.to).some(t => t.kind === 'room')),
   'A4: the sand asks seven things of you (drain, ride, sink, fill, run down, pile up, feed) - a remix, not a repeat');
-ok(SECTIONS.length === 10 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'the dunes, eight sections (claude/buriedcity3: THE ROOFTOPS, outside) and the throne room, in order');
+ok(SECTIONS.length === 12 && SECTIONS.every((s, i) => i === 0 || s[1] > SECTIONS[i - 1][1]), 'the dunes, ten sections (claude/buriedcity3: THE ROOFTOPS, outside; claude/buriedcity4: THE GLASS WORKS and THE ANTECHAMBER - a stated change, 10 -> 12) and the throne room, in order');
 /* THE FLIP (claude/buriedcity3, Daniel 10-12: "the hourglass is unclear in function" - now it is the level's second verb): taught -> tested -> remixed -> examined, then the king */
 ok(ARCS.flip.teach[0] < ARCS.flip.test[0] && ARCS.flip.test[0] < ARCS.flip.remix[0] && ARCS.flip.remix[0] < ARCS.flip.exam[0] && ARCS.flip.exam[0] < ARCS.flip.boss[0], 'the flip: teach -> test -> remix -> exam -> the king, in order');
 { const uses = new Set(); for (const r of L.risers) uses.add(r.sinks ? 'sink' : 'rise'); if (L.banks.length) uses.add('bank'); if (L.dfalls.length) uses.add('fallup'); if (L.glasses.filter(g => L.risers.some(r => r.glass === g.id)).length >= 3) uses.add('chain');
@@ -59,10 +59,10 @@ ok(sign(46, 52, /SUN STILL BURNS/), 'a sign at the first shaft of sun says the s
 ok(sign(130, 144, /SHUT THE GATE/), 'a sign at the granary says SHUT THE GATE');
 ok(sign(190, 197, /OPEN ITS GATE AND IT SINKS/), 'a sign at the sinking street says OPEN ITS GATE AND IT SINKS');
 ok(sign(234, 242, /SHUT THE GATE/), 'a sign at the cellar says SHUT THE GATE');
-ok(sign(338, 345, /CHUTE LEVER SWINGS THE SAND-FALL/), 'a sign at the sand-fall says THE CHUTE LEVER SWINGS THE SAND-FALL');
-ok(sign(395, 405, /TURNS THE WHEEL/), 'a sign at the great wheel says E TURNS THE WHEEL');
-ok(sign(96, 102, /STRIKE THE HOURGLASS/) && sign(306, 311, /STRIKE THE HOURGLASS/) && sign(646, 656, /SAND-FALL FLOWS UP/) && sign(710, 719, /SINKS THE ROOF/), 'the flip is told at every new use: the first glass, the bank, the fall that flows up, the exam sinking roof');
-ok(sign(530, 539, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(540, 545, /FALL HERE IS THE END/), 'the trap hall\'s two verbs are told at their levers, and its deadly drop before its lip');
+ok(sign(410, 417, /CHUTE LEVER SWINGS THE SAND-FALL/), 'a sign at the sand-fall says THE CHUTE LEVER SWINGS THE SAND-FALL');
+ok(sign(467, 477, /TURNS THE WHEEL/), 'a sign at the great wheel says E TURNS THE WHEEL');
+ok(sign(96, 102, /STRIKE THE HOURGLASS/) && sign(306, 311, /STRIKE THE HOURGLASS/) && sign(718, 728, /SAND-FALL FLOWS UP/) && sign(782, 791, /SINKS THE ROOF/), 'the flip is told at every new use: the first glass, the bank, the fall that flows up, the exam sinking roof');
+ok(sign(602, 611, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(612, 617, /FALL HERE IS THE END/), 'the trap hall\'s two verbs are told at their levers, and its deadly drop before its lip');
 /* THE TRAP HALL'S DEATH IS TAUGHT FIRST (A10 amended: an exam death once taught, never untold - the BCREVIEW's M3): a small OPEN floor-gate before it, survivable,
    with a floor under it and its own lever and sign; and the exam hall is drawn lethal (its lamps) */
 { const yd = room0('yard'), tr = room0('trap');
@@ -74,10 +74,10 @@ ok(sign(530, 539, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(540,
   ok((tr.lamps || []).length === 2 && tr.fedBy === 'trapfall' && !tr.pour, 'the trap hall\'s lips are lamp-lit (red open, gold shut), and only the sand-fall feeds it'); }
 /* THE SECTION EXAMS ARE ELITES on footing with a hazard by them: the halls (a shaft of sun on him, stakes behind him), the quarter (a drift at his back), the throne street (a drift at yours, his gate) */
 { const el = L.ents.filter(e => e.t === 'construct' && e.elite).map(e => e.x).sort((a, b) => a - b);
-  ok(el.join() === '318,484,582,743', 'the four section exams are ELITE constructs (' + el + ') - claude/buriedcity3: THE ROOFTOPS courtyard is the fourth');
+  ok(el.join() === '318,556,654,815', 'the four section exams are ELITE constructs (' + el + ') - claude/buriedcity3: THE ROOFTOPS courtyard is the fourth');
   const sunAt = x => SUN.some(z => x >= z.x0 && x <= z.x1), spikeNear = (x, y) => { for (let dx = -8; dx <= 8; dx++) for (let dy = -1; dy <= 3; dy++) if (at(x + dx, y + dy) === T.SPIKE) return true; return false; };
   const qs = x => L.quicksand.some(q => Math.abs(q.x0 / TS - x) <= 9);
-  const e1 = L.ents.find(e => e.elite && e.x === 318), e2 = L.ents.find(e => e.elite && e.x === 484), e3 = L.ents.find(e => e.elite && e.x === 582);
+  const e1 = L.ents.find(e => e.elite && e.x === 318), e2 = L.ents.find(e => e.elite && e.x === 556), e3 = L.ents.find(e => e.elite && e.x === 654);
   ok(sunAt(e1.x) && spikeNear(e1.x, e1.y), 'the halls\' elite stands in a shaft of sun with stakes behind him (a heavy blow throws a foe onto them)');
   ok(qs(e2.x) && qs(e3.x) && e3.gate, 'the quarter\'s and the throne street\'s elites stand by a drift; the throne\'s warden holds a gate'); }
 /* REQUIRED: the reach model */
@@ -188,25 +188,25 @@ ok(room('upperbulb').level === 0 && room('lowerbulb').level >= room('lowerbulb')
 /* THE SAND-FALL: the chute lands it on the grate (nothing piles); swung onto the wall the heap piles up under the arch, lifting what stands there; in the fall a hero
    is beaten down; swung back, the heap stays and is a stair to the arch */
 { const c0 = chute0('sluice'), wall = c0.to.wall, max = Math.max(...wall.rungs.map(q => q[0])), sill = wall.floor - max;
-  ok(chute('sluice').at === 'grate' && cell(378, sill) === T.AIR, 'a fresh load: the fall runs away through the grate; no heap');
-  const e = { t: 'construct', alive: true, x: 375 * TS + 8, y: wall.floor * TS, h: 18, st: newConstruct(375 * TS + 8, wall.floor * TS) }; enemies.push(e);
+  ok(chute('sluice').at === 'grate' && cell(450, sill) === T.AIR, 'a fresh load: the fall runs away through the grate; no heap');
+  const e = { t: 'construct', alive: true, x: 447 * TS + 8, y: wall.floor * TS, h: 18, st: newConstruct(447 * TS + 8, wall.floor * TS) }; enemies.push(e);
   place(c0.levers[0][0], c0.levers[0][1]); ok(H.interact(hero) && chute('sluice').at === 'wall', 'E at the chute lever swings the fall onto the wall');
-  run(1.5); ok(chute('sluice').heap.wall.rows >= 2 && cell(370, wall.floor - 1) === T.SOFT, 'where it lands THE SAND PILES UP (' + chute('sluice').heap.wall.rows + ' rows)');
+  run(1.5); ok(chute('sluice').heap.wall.rows >= 2 && cell(442, wall.floor - 1) === T.SOFT, 'where it lands THE SAND PILES UP (' + chute('sluice').heap.wall.rows + ' rows)');
   ok(e.y < wall.floor * TS && e.bcJam > 0, 'a construct where the heap rises is lifted and JAMMED');
-  run(4); ok(chute('sluice').heap.wall.rows === max && cell(378, sill) === T.SOFT, 'the heap is up to the arch\'s sill (row ' + sill + ')');
-  place(378, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy >= BCS.fallBeat, 'in the fall a hero is BEATEN DOWN (he cannot rise in it)');
+  run(4); ok(chute('sluice').heap.wall.rows === max && cell(450, sill) === T.SOFT, 'the heap is up to the arch\'s sill (row ' + sill + ')');
+  place(450, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy >= BCS.fallBeat, 'in the fall a hero is BEATEN DOWN (he cannot rise in it)');
   ok(said.includes('THE SAND-FALL BEATS YOU DOWN: SWING IT AWAY'), 'and it is told');
   place(c0.levers[1][0], c0.levers[1][1]); H.update(1); ok(H.interact(hero) && chute('sluice').at === 'grate', 'the second chute lever swings it back off the heap');
-  place(378, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy < 0 && chute('sluice').heap.wall.rows === max, 'off the fall the heap stays: a stair to the arch'); enemies.length = 0; }
+  place(450, sill - 1); hero.vy = -320; H.update(1 / 30); ok(hero.vy < 0 && chute('sluice').heap.wall.rows === max, 'off the fall the heap stays: a stair to the arch'); enemies.length = 0; }
 /* THE GREAT SAND-GATE: three turns, the quarter drains, its foes stand up */
 const W = L.wheel; for (let i = 0; i < 3; i++) { place(W.x, W.row); H.interact(hero); run(1); }
 ok(K.wheel.done, 'three turns open THE GREAT SAND-GATE'); run(12);
-ok(room('great').level === 0 && cell(440, room0('great').floor - 12) === T.AIR, 'the quarter drains: its old street comes out');
+ok(room('great').level === 0 && cell(512, room0('great').floor - 12) === T.AIR, 'the quarter drains: its old street comes out');
 ok(spawned.length === L.ents.filter(e => e.sandWait).length, 'the quarter\'s buried foes stand up when the sand has gone off them (' + spawned.length + ')');
 /* THE TRAP HALL (THE EXAM): its floor-gate is its floor; it fills only with the gate shut AND the fall swung into it; the fall on the lip holds a construct */
-{ const r = room0('trap'), tc = chute0('trapfall'), mid = 552, gl = r.levers[0], cl = tc.levers[0];
+{ const r = room0('trap'), tc = chute0('trapfall'), mid = 624, gl = r.levers[0], cl = tc.levers[0];
   ok(cell(mid, r.floor) === T.AIR && chute('trapfall').at === 'lip', 'THE TRAP HALL\'s floor-gate is open as laid (a drop) and its fall lands on the lip');
-  const e = { t: 'construct', alive: true, x: 541 * TS + 8, y: (gl[1] + 1) * TS, h: 18, st: newConstruct(541 * TS + 8, (gl[1] + 1) * TS) }; enemies.push(e); run(0.5);
+  const e = { t: 'construct', alive: true, x: 613 * TS + 8, y: (gl[1] + 1) * TS, h: 18, st: newConstruct(613 * TS + 8, (gl[1] + 1) * TS) }; enemies.push(e); run(0.5);
   ok(e.bcJam > 0, 'the construct on the lip is held in the fall: JAMMED');
   place(cl[0], cl[1]); H.interact(hero); run(3); ok(chute('trapfall').at === 'hall' && room('trap').level === 0 && said.includes('THE SAND FALLS THROUGH THE OPEN FLOOR-GATE INTO THE DARK'), 'swung in with the floor-gate open, the sand falls through into the dark (told) - no fill');
   run(3); ok(!(e.bcJam > 0), 'and the construct it held is free');
@@ -239,7 +239,7 @@ ok(spawned.length === L.ents.filter(e => e.sandWait).length, 'the quarter\'s bur
   place(Math.round((s.x0 + s.x1) / 2), s.row + 1); H.update(1 / 30); ok(hero.hp < 100 && Math.abs(hero.x - ((s.x0 - 2) * TS + 8)) < 2, 'THE SAND SEA swallows: a bite of you and back to your last footing (hp ' + hero.hp + ')');
   let killed = 0; ctx.killHero = () => { killed++; return true; }; const se = L.seas.find(q => q.lethal); place(Math.round((se.x0 + se.x1) / 2), se.row + 1); H.update(1 / 30); ok(killed === 1, 'the exam sea is THE END (A10 amended: taught twice before)'); delete ctx.killHero;
   /* THE EXAM: the glass sinks the roof that stands and raises the rest */
-  const ge = gl('exam'), sk = L.risers.find(r => r.sinks); ok(cell(sk.x0, sk.top) === T.SOLID, 'as built the exam one roof stands');
+  const ge = gl('exam'), sk = L.risers.find(r => r.sinks && r.glass === 'exam'); ok(cell(sk.x0, sk.top) === T.SOLID, 'as built the exam one roof stands');
   place(ge.x, ge.y); H.interact(hero); run(1); ok(cell(sk.x0, sk.top) === T.AIR && rs('exam').filter(r => !r.sinks).every(r => cell(r.x0, r.top) === T.SOLID), 'turned, it SINKS the roof that stood and raises the rest');
   run(ge.dur + 1); ok(cell(sk.x0, sk.top) === T.SOLID, 'run out, the standing roof comes back up'); }
 /* THE CLOCKWORK VAULT */
@@ -247,13 +247,74 @@ const V = L.vaultDoors[0]; place(V.x + 1, V.y1); quest = 4; H.interact(hero); ok
 quest = 5; H.interact(hero); ok(cell(V.x, V.y0) === T.AIR, 'five gears open THE CLOCKWORK VAULT');
 /* A RESPAWN: the small rooms as built, the great gate kept, the falls back where they were laid and the heaps flat */
 H.reset(); ok(room('great').level === 0 && K.wheel.done, 'a respawn keeps THE GREAT SAND-GATE open'); ok(room('first').level === room('first').full && cell(66, room0('first').floor - 1) === T.SOFT, 'a respawn fills the first room again');
-ok(room('trap').gate === 'open' && cell(552, room0('trap').floor) === T.AIR && cell(552, room0('trap').floor - 3) === T.AIR, 'a respawn opens the trap hall\'s floor-gate again (and its sand is gone)');
-ok(chute('sluice').at === 'grate' && chute('sluice').heap.wall.rows === 0 && cell(370, chute0('sluice').to.wall.floor - 1) === T.AIR, 'a respawn swings the falls back and flattens the heap');
+ok(room('trap').gate === 'open' && cell(624, room0('trap').floor) === T.AIR && cell(624, room0('trap').floor - 3) === T.AIR, 'a respawn opens the trap hall\'s floor-gate again (and its sand is gone)');
+ok(chute('sluice').at === 'grate' && chute('sluice').heap.wall.rows === 0 && cell(442, chute0('sluice').to.wall.floor - 1) === T.AIR, 'a respawn swings the falls back and flattens the heap');
 ok(room('street').level === room0('street').full && cell(215, room0('street').floor - room0('street').full - 1) === T.SOLID, 'a respawn stands the street back up on its sand');
 /* THE GLINT: every route lock is a stuck spot */
 ok((STUCK_HANDS.buriedcity || []).length >= 12, 'the route\'s locks glint (' + (STUCK_HANDS.buriedcity || []).length + ' stuck spots)');
 for (const sp of STUCK_HANDS.buriedcity) for (const s of sp.steps) ok(isCallout(s.line), 'the nudge line is shown: ' + s.line);
 for (const [id, want] of [['street', /street/], ['sluice', /sluice/], ['trap', /trap/]]) ok(STUCK_HANDS.buriedcity.some(sp => want.test(sp.id) && sp.steps.length >= 2), 'the ' + id + '\'s steps are each glinted in turn');
+/* ================= BURIED CITY 4 (claude/buriedcity4, scratch/brief-buriedcity4.md items 1-3, 6-10) ================= */
+{ const sec = n => SECTIONS.find(s => s[0] === n)[1], gw0 = sec('THE GLASS WORKS'), gw1 = sec('THE SAND-FALL') - 1, half = L.W / 2;
+  /* 1. THE GLASS WORKS: flip platforming INDOORS, in the FIRST HALF, taught before the rooftops test it, with its own exam and a shrine after */
+  ok(gw0 < half && gw1 < half, 'brief 1: THE GLASS WORKS (' + gw0 + '-' + gw1 + ') is in the first half of the city (W ' + L.W + ')');
+  const inGW = x => x >= gw0 && x <= gw1, gwGlass = L.glasses.filter(g => inGW(g.x));
+  ok(gwGlass.length >= 4, 'THE GLASS WORKS turns ' + gwGlass.length + ' glasses');
+  { let open = true; for (let x = gw0; x <= gw1; x++) if (at(x, 0) === T.AIR) open = false; ok(open, 'THE GLASS WORKS is indoors: under the sand roof over every column'); }
+  ok(L.risers.some(r => inGW(r.x0) && r.sinks) && L.risers.some(r => inGW(r.x0) && !r.sinks), 'floors SINK and floors RISE with the flip in THE GLASS WORKS');
+  ok(L.dfalls.some(f => inGW(f.x0)) && L.tilts.some(t => inGW(t.x0)) && L.ents.some(e => e.cnSkin === 'sandbound' && inGW(e.x)), 'THE GLASS WORKS teaches the sand lift, the tilting dune and the sand-bound');
+  ok(ARCS.flip.test[0] <= gw0 && ARCS.flip.test[1] >= gw1 && ARCS.flip.test[1] < ARCS.flip.remix[0], 'the flip arc: THE GLASS WORKS is its test, before the rooftops remix it');
+  for (const k of ['lift', 'tilt', 'bound']) { const a = ARCS[k], ks = Object.keys(a); ok(ks.length >= 2 && inGW(a[ks[0]][0]) && a[ks[1]][0] > a[ks[0]][0], 'A14: ' + k + ' is taught in THE GLASS WORKS, then used again later (' + JSON.stringify(a) + ')'); }
+  ok(L.ents.some(e => e.t === 'check' && e.x >= gw1 - 6 && e.x <= gw1), 'THE GLASS WORKS\' exam (the relay) has a shrine after it');
+  const noRisersIn = gid => ({ ...L, sandSolid: L.sandSolid.filter(b => !L.risers.some(r => r.glass === gid && !r.sinks && b[0] === r.x0 && b[1] === r.x1)) });
+  for (const gid of ['works1', 'works4', 'works5']) ok(!reaches(noRisersIn(gid)), 'REQUIRED: without the roofs glass ' + gid + ' raises nothing reaches the throne room');
+  ok(!reaches({ ...L, sandRungs: L.sandRungs.filter(b => !L.dfalls.some(f => f.glass === 'works2' && b[0] === f.x0)) }), 'REQUIRED (brief 7): without riding THE SAND LIFT up the upper gallery is out of reach');
+  const idle = t => { const g = L.grid.slice(), n = t.x1 - t.x0 + 1; for (let i = 0; i < n; i++) { const sr = t.lo - n + i; for (let y = t.lo - n; y <= t.floor; y++) g[y * L.W + t.x0 + i] = y < sr ? T.AIR : y === sr ? T.SLOPE_L1 : T.SOLID; } return g; };
+  for (const t of L.tilts) ok(!reaches({ ...L, grid: idle(t) }), 'REQUIRED (brief 8): with THE TILTING DUNE at ' + t.x0 + ' idle (rising west) nothing reaches the throne room');
+  /* 2. THE SAND-BOUND: a variant (the drowned's machine, cnSkin), bound to a glass placed where the flip is taught and tested */
+  const sb = L.ents.filter(e => e.cnSkin === 'sandbound');
+  ok(sb.length >= 3 && sb.every(e => e.t === 'ambusher' && L.glasses.some(g => g.id === e.glass)), 'brief 2: ' + sb.length + ' SAND-BOUND, each the ambusher\'s machine bound to a glass of the level');
+  ok(sb.every(e => { const g = L.glasses.find(q => q.id === e.glass); return Math.abs(g.x - e.x) <= 12; }), 'every sand-bound stands within reach of its glass (the flip is your weapon there)');
+  ok(L.foeHit.sandbound > 0 && L.foeHp.sandbound > 0, 'the sand-bound is weighed like the drowned (foeHit / foeHp)');
+  /* 9. THE EXAM BEFORE THE THRONE: one stretch - a glass, a sand-bound, an elite, the timed slabs - and the shrine after, at the throne room's door */
+  const ex = ARCS.slab.exam, cy = ARCS.bound.exam, inEx = x => x >= cy[0] && x <= ex[1];
+  ok(L.ents.some(e => e.elite && inEx(e.x)) && sb.some(e => inEx(e.x)) && L.glasses.some(g => inEx(g.x)) && L.tplats.length >= 3 && L.tplats.every(p => inEx(p.x0)), 'brief 9: the exam before the throne has the flip, a sand-bound, an elite and ' + L.tplats.length + ' timed slabs');
+  ok(L.tplats.every((p, i) => i === 0 || p.life > L.tplats[i - 1].life) && L.tplats.every(p => p.life <= L.glasses.find(g => g.id === p.glass).dur), 'the slabs crumble one after another, the farthest last (each within its glass\'s run)');
+  ok(!reaches({ ...L, sandSolid: L.sandSolid.filter(b => !L.tplats.some(p => b[0] === p.x0 && b[1] === p.x1)) }), 'REQUIRED: without the timed slabs nothing crosses THE ANTECHAMBER');
+  { const cp = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b); ok(cp.some(x => x > ex[1] - 4 && x < L.arena.x0 / TS), 'the shrine after the exam stands at the throne room\'s door (' + cp + ')'); }
+  /* 10. THE LOOP BACK TO A SHRINE: the old street under the rooftops, its sand-gate shut as built (the route goes over the roofs) and opened from the courtyard side */
+  const LD = L.loopDoor; ok(LD && at(LD.x, LD.y0) === T.SOLID && at(LD.x, LD.y1) === T.SOLID, 'brief 10: the old street\'s sand-gate is shut as built');
+  ok(LD.lever[0] > LD.x, 'its lever is on the far (courtyard) side');
+  { const cps = L.ents.filter(e => e.t === 'check' && e.x < OUT.x0).map(e => e.x), back = Math.max(...cps), g = L.grid.slice(); for (let y = LD.y0; y <= LD.y1; y++) g[y * L.W + LD.x] = T.AIR;
+    const R0 = floodReach({ ...L, grid: g, START: { x: back, y: L.ents.find(e => e.t === 'check' && e.x === back).y } }, T); let thru = false; for (const k of R0.seen) { const [x, y] = k.split(',').map(Number); if (x === LD.lever[0] && Math.abs(y - LD.lever[1]) <= 1) thru = true; }
+    ok(thru, 'opened, the old street runs from the shrine before the rooftops (' + back + ') to the courtyard - the loop'); }
+  ok(L.seas.filter(s => s.x0 >= OUT.x0 && s.x1 <= OUT.x1).every(s => s.bottom !== undefined && s.bottom < LD.y0), 'the rooftops\' sand seas have a floor over the old street (who is in the street is not in the sea)');
+  /* 3. OUTDOOR SHADE within running reach: every glass outdoors is struck in shade, the courtyard is shaded on both sides, and clouds drift over the open sky */
+  const shaded = (x, row) => L.shade.some(([x0, x1, y0, y1]) => (x * TS + 8) >= x0 && (x * TS + 8) <= x1 && (row + 1) * TS - 1 >= y0 && (row + 1) * TS - 1 <= y1);
+  for (const g of L.glasses.filter(q => q.x >= OUT.x0 && q.x <= OUT.x1)) ok(shaded(g.x, g.y) || shaded(g.x - 1, g.y) || shaded(g.x + 1, g.y), 'brief 3: the rooftop glass ' + g.id + ' is struck in shade');
+  ok(L.clouds.filter(c => c.x0 >= OUT.x0).length >= 2 && L.clouds.some(c => c.x1 < 38), 'brief 3: cloud shadows drift over THE ROOFTOPS and the dunes');
+  /* 6. THE LANDMARK shows the flip: the great hourglass turns over while a glass near you runs, and its glass is no longer a ghost */
+  { const bd = readFileSync(new URL('../src/redraw/buried_city_backdrop.js', import.meta.url), 'utf8'), fl = readFileSync(new URL('../src/buried-city-flip.js', import.meta.url), 'utf8');
+    ok(/function drawTower\([^)]*fk = 0\)/.test(bd) && /L\.towerFlip/.test(bd) && /K\.L\.towerFlip =/.test(fl), 'brief 6: THE GREAT HOURGLASS turns over with the flip (L.towerFlip)');
+    const a = +(/glass: 'rgba\(\d+,\d+,\d+,([\d.]+)\)'/.exec(bd) || [0, 0])[1]; ok(a >= 0.5, 'brief 6: its glass is not see-through (alpha ' + a + ')'); }
+  /* THE NEW PIECES IN THE HANDS (the fake world) */
+  H.reset(); const K4 = H.state(), F = H.flip, glv = id => K4.glasses.find(g => g.id === id);
+  const t0 = L.tilts.find(t => t.glass === 'works3'), n0 = t0.x1 - t0.x0 + 1;
+  ok(cell(t0.x0, t0.lo - n0) === T.SLOPE_L1 && cell(t0.x1, t0.lo - 1) === T.SLOPE_L1, 'THE TILTING DUNE idle rises WEST (a wall from the gallery)');
+  { const g3 = glv('works3'); place(g3.x, g3.y); H.interact(hero); run(0.2); ok(cell(t0.x0, t0.lo - 1) === T.SLOPE_R1 && cell(t0.x1, t0.lo - n0) === T.SLOPE_R1, 'struck, it tilts the other way: a ramp up east');
+    const bound = { t: 'ambusher', cnSkin: 'sandbound', glass: 'works3', alive: true, x: 376 * TS + 8, y: 15 * TS, h: 18, st: { mode: 'walk', frame: 2 } };
+    ok(F.boundTake(bound) === 1 && H.hold(bound, 1 / 60) && bound.sbBuried, 'while its glass runs the sand-bound is BURIED: held (stuck) and every blow whole');
+    run(g3.dur + 0.5); ok(cell(t0.x0, t0.lo - n0) === T.SLOPE_L1, 'run out, the dune tilts back'); ok(F.boundTake(bound) === 0.4 && !H.hold(bound, 1 / 60), 'run out, THE SAND HOLDS IT: a blow lands at 0.4 (B15\'s floor, told in main.js)'); }
+  { const ga = glv('ante'), p0 = K4.tplats[0], pL = K4.tplats[K4.tplats.length - 1];
+    ok(K4.tplats.every(p => !p.up && cell(p.x0, p.y) === T.AIR), 'the timed slabs are down until their glass is struck');
+    place(ga.x, ga.y); H.interact(hero); run(0.1); ok(K4.tplats.every(p => p.up && cell(p.x0, p.y) === T.ONEWAY), 'struck, every slab rises');
+    run(p0.life); ok(!p0.up && cell(p0.x0, p0.y) === T.AIR && pL.up, 'the first crumbles on its timer while the last still stands');
+    run(pL.life); ok(K4.tplats.every(p => !p.up), 'and then the last'); }
+  { const sx = K4.seas.find(s => s.bottom !== undefined); hero.hp = 100; const x0 = hero.x; place(Math.round((sx.x0 + sx.x1) / 2), LD.y1); H.update(1 / 30); ok(hero.hp === 100 && Math.abs(hero.x - (Math.round((sx.x0 + sx.x1) / 2) * TS + 8)) < 2, 'a hero in the old street under a sand sea is not swallowed by it'); }
+  { place(LD.x - 3, LD.y1); hero.dead = false; ok(!H.interact(hero) || !K4.loopOpen, 'from the street side the sand-gate does not open (its lever is in the courtyard)');
+    place(LD.lever[0], LD.lever[1]); H.interact(hero); ok(K4.loopOpen && cell(LD.x, LD.y0) === T.AIR && cell(LD.x, LD.y1) === T.AIR, 'E at its lever in the courtyard opens the old street'); }
+  ok(L.ents.some(e => e.t === 'sign' && /SHUT FROM THE FAR SIDE/.test(e.text) && e.x < LD.x - 50), 'the old street\'s mouth says its gate is shut from the far side');
+  H.reset(); }
 /* THE HOURGLASS KING (pure) */
 const G = HKM.geom(L.arena, TS); ok(G.levers.length === 2, 'two sand-gate levers in the throne room');
 ok(HKM.HK.resist >= 0.4 && HKM.HK.wardMul >= 0.4, 'B15: outside his openings his brass takes >= 0.4 (resist ' + HKM.HK.resist + ', ward ' + HKM.HK.wardMul + ')');
@@ -284,7 +345,7 @@ ok([...mv(2)].filter(m => !mv(1).has(m)).sort().join() === 'grasp,rain', 'phase 
 ok([...mv(3)].filter(m => !mv(1).has(m) && !mv(2).has(m)).sort().join() === 'hour,slip', 'phase three brings THE TIME SLIP and THE HOUR');
 for (const m of ['surgeTell', 'graspTell', 'rainTell', 'slipTell']) ok(HKM.MOVES[m].word && HKM.MOVES[m].col, 'his new ' + m + ' is told with its own word and colour (' + HKM.MOVES[m].word + ')');
 { const cast = readFileSync(new URL('../src/redraw/buried_city_cast.js', import.meta.url), 'utf8'), hands = readFileSync(new URL('../src/hourglass-king-hands.js', import.meta.url), 'utf8');
-  ok(cast.includes("frames(W, H, 26,") && /surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19/.test(hands) && /surge: 15, grasp: 20, rain: 21, hour: 23/.test(hands) && /hourTell: 22/.test(hands), 'B16 (claude/bc3art, finished): each new move has its OWN windup AND release pose (14/15 surge, 16/20 grasp, 17/21 rain, 18/19 slip, 22/23 the hour), 24 the tide, 25 dragged into the flow'); }
+  ok(cast.includes("frames(W, H, 33,") && /surgeTell: 14, graspTell: 16, rainTell: 17, slipTell: 18, slipStrike: 19/.test(hands) && /surge: 15, grasp: 20, rain: 21, hour: 23/.test(hands) && /hourTell: 22/.test(hands), 'B16 (claude/bc3art, finished): each new move has its OWN windup AND release pose (14/15 surge, 16/20 grasp, 17/21 rain, 18/19 slip, 22/23 the hour), 24 the tide, 25 dragged into the flow'); }
 for (const m of ['pendTell', 'gearTell', 'streamTell', 'surgeTell', 'graspTell', 'rainTell', 'slipTell', 'hourTell']) ok(MARK['hourglassking|' + m] === HKM.MOVES[m].mark && ANSWER['hourglassking|' + m] === HKM.MOVES[m].answer, 'his ' + m + ' is told: ' + HKM.MOVES[m].mark + ' / ' + HKM.MOVES[m].answer);
 { const e3 = { ...e, mode: 'walk', modeT: 0.5, open: 0, hp: 590 }; const S3 = HKM.newFight(G); S3.ward = 0; c.bankOn = null; HKM.stepHourglassKing(e3, S3, 1 / 60, hero2, c);
   ok(S3.ph === 2 && c.bankOn === true, 'phase two changes the arena: the sand banks at the walls');
@@ -313,6 +374,45 @@ for (const m of ['pendTell', 'gearTell', 'streamTell', 'surgeTell', 'graspTell',
     const me = [{ x: G.x0 + 100, y: G.floorY, ground: true, alive: true, air: false, pp: {} }];
     for (let i = 0; i < 120; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, c2);
     ok(c2.hits.includes('THE BURIAL GRASP') && c2.held.length > 0, 'THE BURIAL GRASP: caught on the sand, you are struck and HELD (jump or roll out)'); } }
+/* (claude/buriedcity4) THE KING'S REWORK (brief 4: "not just pull levers and wait"): HE WITHDRAWS to a pillar at the far end, THROWS (shards, pots: told, own poses), then RAISES
+   TIMED SLABS toward himself - OPEN while they stand (to a blow from up there: src/hourglass-king-hands.js take), a ward after; PHASE THREE reads plain (the gates said dry, the
+   great hourglass called again on a stall). The pure model with a fake world (pillar/slab writes recorded) */
+{ const cast = readFileSync(new URL('../src/redraw/buried_city_cast.js', import.meta.url), 'utf8'), hands = readFileSync(new URL('../src/hourglass-king-hands.js', import.meta.url), 'utf8');
+  ok(/withdrawTell: 26, glide: 26, sink: 26, rise: 31, perch: 0, shardTell: 27, shardRel: 28, potTell: 29, potRel: 30, raiseTell: 32, hold: 31/.test(hands) && [26, 27, 28, 29, 30, 31, 32].every(k => cast.includes('else if (f === ' + k + ')')),
+    'B16: the withdraw (26), the shards (27 tell / 28 throw), the pot (29 tell / 30 throw), the rising sand (32 tell / 31 holding it) each have their OWN pose');
+  for (const m of ['shardTell', 'potTell']) ok(HKM.MOVES[m].word && HKM.MOVES[m].col && MARK['hourglassking|' + m] === HKM.MOVES[m].mark && ANSWER['hourglassking|' + m] === HKM.MOVES[m].answer, 'his ' + m + ' is told: ' + HKM.MOVES[m].word + ' ' + HKM.MOVES[m].mark + ' / ' + HKM.MOVES[m].answer);
+  ok(HKM.MOVES.withdrawTell.word && HKM.MOVES.raiseTell.word && HKM.HK_SAY.includes(HKM.MOVES.raiseTell.word) && Object.values(HKM.AL_SAY).every(t => HKM.HK_SAY.includes(t)), 'the withdraw and the rising sand are told in words, every new line routed (HK_SAY)');
+  const told = new Set([...Object.keys(HKM.MOVES).filter(m => HKM.MOVES[m].mark)]); ok(told.size >= 4, 'B17: ' + told.size + ' told attacks (>= 4)');
+  /* B12: the stair - floor -> ledge (3 rows) -> low slab (2 rows up, over the ledge's end) -> high slab (2 rows up, one column's gap) = the pillar's top */
+  for (const side of ['E', 'W']) { const Al = G.aloft[side], [s0, s1] = Al.slabs, Ld = Al.ledge, ov = side === 'E' ? Ld.x1 - s0.x0 : s0.x1 - Ld.x0, gap = side === 'E' ? s1.x0 - s0.x1 : s0.x0 - s1.x1;
+    ok(Ld.y - s0.y === 2 * TS && s0.y - s1.y === 2 * TS && ov >= TS && gap <= TS && s1.y === Al.y && (side === 'E' ? s1.x1 === Al.x0 : s1.x0 === Al.x1), 'B12 (' + side + '): two-row steps - the ledge, the low slab over its end, the high slab a column on, level with his pillar');
+    ok(Al.x0 >= G.x0 && Al.x1 <= G.x1 && !G.levers.some(lv => lv.x > Al.x0 && lv.x < Al.x1), 'his ' + side + ' pillar stands clear of the lever'); }
+  const mk4 = (hp, ph, hx) => { const S0 = HKM.newFight(G), e0 = { t: 'hourglassking', x: (G.x0 + G.x1) / 2, y: G.floorY, hp, maxHp: 1000, alive: true, mode: 'walk', modeT: 0.5, face: -1, open: 0 }; S0.ward = 0; if (ph) { S0.ph = ph; if (ph === 3) S0.glassMax = S0.glass = HKM.HK.glass3; } return [e0, S0, [{ x: hx, y: G.floorY, ground: true, alive: true, air: false, pp: {} }]]; };
+  const c4 = () => ({ said: [], hits: [], w: [], number(x, y, t) { this.said.push(t); }, mark() {}, sound() {}, fx() {}, shake() {}, music() {}, time: () => 0, banks() {}, blocks() {}, hold() {}, hit(b, d, name) { this.hits.push(name); return false; }, pillar(sd, on) { this.w.push('p' + sd + (on ? 1 : 0)); }, slab(sd, i, on) { this.w.push('s' + sd + i + (on ? 1 : 0)); } });
+  { const [e0, S0, me] = mk4(1000, 0, G.x0 + 100), cw = c4(), modes = []; let g0 = null, upAt = null, openUp = false, glassUp = null;
+    for (let i = 0; i < 60 * 45; i++) { if (e0.mode === 'turn' || S0.glass < S0.glassMax * 0.5) S0.glass = S0.glassMax; HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw); if (modes[modes.length - 1] !== e0.mode) modes.push(e0.mode);
+      if (e0.mode === 'perch' && upAt === null) { upAt = e0.y; g0 = S0.glass; } if (e0.mode === 'hold') { openUp = openUp || HKM.hkOpen(e0); glassUp = S0.glass; } if (e0.mode === 'recover' && S0.n.holds) break; }
+    const seq = modes.filter(m => /^(withdrawTell|glide|rise|perch|shardTell|shardRel|potTell|potRel|raiseTell|hold|sink)$/.test(m));
+    ok(S0.n.withdraws === 1 && seq.join(',').startsWith('withdrawTell,glide,rise,perch,shardTell,shardRel,perch,potTell,potRel,perch,raiseTell,hold,sink'), 'HE WITHDRAWS (told), glides off, rises on his pillar, throws shards then a pot (told), raises the sand, holds it, sinks: ' + seq.join(' > '));
+    ok(Math.abs(e0.x - G.aloft.E.kx) < 1 && upAt === G.aloft.E.y, 'he withdraws to the FAR end from you (a hero by the west wall: the east pillar, ' + (G.floorY - upAt) / TS + ' rows up)');
+    ok(cw.w.join(',') === 'pE1,sE01,sE11,sE00,sE10,pE0', 'the pillar is written as he rises, the two slabs as the sand rises, the LOW slab crumbles first, the pillar goes as he comes down (' + cw.w.join(',') + ')');
+    ok(openUp && glassUp === g0, 'while the slabs stand he is OPEN (B10), and his glass does not run while he is up');
+    ok(S0.ward > 0 && e0.y === G.floorY && !S0.al, 'B3: he comes down and wards');
+    ok(cw.hits.includes('THE GLASS SHARDS') && cw.hits.includes('THE SAND POT'), 'his throws reach you (the shards, the pot)'); }
+  { const [e0, S0, me] = mk4(1000, 0, G.x1 - 100), cw = c4(); S0.wdT = 0; for (let i = 0; i < 60 * 6 && !(e0.mode === 'perch'); i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw);
+    ok(S0.al && S0.al.side === 'W', 'a hero by the east wall: he withdraws WEST');
+    S0.glass = S0.glassMax * HKM.lowOf(1) - 0.1; const v = HKM.leverPulled(e0, S0, cw, G.levers[1].x);
+    ok(v === 'stall' && !S0.al && HKM.hkOpen(e0) && e0.mode === 'stall' && cw.w.includes('pW0'), 'a sand-gate pulled while he is up and his glass runs low takes him off his pillar and STALLS him (the levers keep their role)'); }
+  { const [e0, S0, me] = mk4(1000, 0, G.x0 + 100), cw = c4(); S0.wdT = 0; for (let i = 0; i < 60 * 8 && e0.mode !== 'perch'; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw);
+    ok(HKM.leverPulled(e0, S0, cw, G.levers[0].x) === 'aloft' && cw.said.includes(HKM.AL_SAY.aloft), 'a pull while he is up and his glass is full says to climb his sand'); }
+  { const [e0, S0, me] = mk4(200, 3, G.x0 + 100), cw = c4(); S0.dryT = 0.1; let up = 0; for (let i = 0; i < 60 * 30; i++) { if (S0.great.cd > 0) S0.great.cd = 0; HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw); if (S0.al) up++; }
+    ok(!up && !S0.n.withdraws, 'phase three: he does not withdraw (its opening is THE GREAT HOURGLASS)');
+    ok(cw.said.filter(t => t === HKM.AL_SAY.dry).length === 2, 'phase three: the gates are said DRY at both levers');
+    ok(S0.n.strikeHints >= 3 && cw.said.includes(HKM.AL_SAY.strike), 'phase three: THE GREAT HOURGLASS left ready is called again (STRIKE THE GREAT HOURGLASS, ' + S0.n.strikeHints + ' times in 30 s)'); }
+  { const [e0, S0, me] = mk4(1000, 0, G.x0 + 100), cw = c4(); S0.wdT = 0; for (let i = 0; i < 60 * 4 && !S0.al; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw); for (let i = 0; i < 60 * 3; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw);
+    e0.hp = 550; for (let i = 0; i < 60 * 2; i++) HKM.stepHourglassKing(e0, S0, 1 / 60, me, cw); ok(S0.ph === 2 && !S0.al && cw.w.includes('pE0'), 'a new phase brings him down off his pillar first (no phase change stranded up there)'); }
+  ok(/HE HOLDS THE SAND: open to a blow from up on the slabs/.test(hands) && /HKM.AL_SAY.climb/.test(hands), 'his hold is open to a blow from UP THERE; from below his brass takes it and says CLIMB TO HIM (B15 floor, told)');
+  ok(/leversDark/.test(hands) && /'STRIKE THE GLASS'/.test(hands) && /'DRY'/.test(hands), 'phase three is drawn plain: the levers dark + DRY, STRIKE THE GLASS and a marker over the great hourglass'); }
 const hkSrc = readFileSync(new URL('../src/hourglass-king.js', import.meta.url), 'utf8') + readFileSync(new URL('../src/hourglass-king-hands.js', import.meta.url), 'utf8');
 ok(!/ctx.spawn(?!Boss)|enemies().push|enemies.push/.test(hkSrc), 'NO ADDS: the king summons nothing');
 ok(OPEN_RULE.hourglassking && OWN_WARD.has('hourglassking'), 'the greed rule knows his opening; his brass is his own ward (no x0.05 chip)');

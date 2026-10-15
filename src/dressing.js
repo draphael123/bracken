@@ -9,6 +9,7 @@ export const GROUND_KITS = {
   "trial_warden": {"density":0.38,"kinds":["tuft","fern"]},   /* THE WARDEN'S TRIAL (2026-09-24) */
   "trial_geomancer": {"density":0.38,"kinds":["rock","stone"]},   /* THE GEOMANCER'S TRIAL: her yard is stony */
   "trial_berserker": {"density":0.38,"kinds":["tuft","stem"]},   /* THE BERSERKER'S TRIAL (claude/berserker) */
+  "trial_ranger": {"density":0.38,"kinds":["tuft","stem"]},   /* THE RANGER'S TRIAL (claude/ranger) */
   "wood": {
     "density": 0.7,
     "kinds": [
@@ -823,6 +824,11 @@ export const ALLOWED_DECORATIONS = {
     "stone"
   ],
   "trial_berserker": [
+    "snow",
+    "stem",
+    "tuft"
+  ],
+  "trial_ranger": [
     "snow",
     "stem",
     "tuft"

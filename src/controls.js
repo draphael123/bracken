@@ -155,7 +155,9 @@ const HEROES_C = {
   warden:     ['the deflect', tk => 'TAP ' + tk.c + '  (FULL: PHALANX)'],
   geomancer:  ['rune-ward', tk => 'HOLD ' + tk.c + '  (SHE IS PLANTED)'],
   berserker:  ['take it', tk => 'HOLD ' + tk.c + ' (FULL: DOWN+' + tk.c + ' FRENZY)'],
+  ranger:     ['bow-bash', tk => 'TAP ' + tk.c + ' (ON THE BEAT: PARRY)'],
 };
+import { ROW as PLUNGE_ROW } from './plunges.js';
 export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1', swapZX = false, blockToggle = false } = {}) {
   const kb = a => labelFor(binds, 'kb', a), pd = a => labelFor(binds, prof, a), k1 = a => first(binds, 'kb', a);
   const swapped = swapZX && !isCustom(binds, 'kb', 'jump') && !isCustom(binds, 'kb', 'atk');
@@ -167,11 +169,11 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['move', stock ? 'ARROWS / WASD' : k1('left') + ' ' + k1('right') + ' (MOVE)', 'STICK'],
     ['emote', k1('dance') + ': DANCE, MOVE TO STOP', pd('dance')],
     ['jump', jumpKeys, pd('jump')],
-    ['swing', atkKeys, pd('atk')],
-    ['plunge', k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
-    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : 'heavy blow', hero === 'geomancer' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
-    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/berserker2: his flurry runs five) */
-    ['rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
+    [hero === 'ranger' ? 'shoot / knife' : 'swing', atkKeys, pd('atk')],
+    [hero === 'ranger' ? 'down shot' : (PLUNGE_ROW[hero] || ['plunge'])[0], k1('down') + '+SWING IN AIR', pd('down') + '+' + pd('atk')],
+    [hero === 'knight' ? 'heavy cut' : hero === 'geomancer' ? 'fault line' : hero === 'berserker' ? 'double chop' : hero === 'ranger' ? 'draw' : 'heavy blow', hero === 'geomancer' || hero === 'ranger' ? 'HOLD SWING, LET GO' : hero === 'knight' ? 'HOLD SWING, LET GO' : 'HOLD SWING', 'HOLD ' + pd('atk')],
+    hero === 'berserker' ? ['cross-chop', 'SWING x5 IN A RUN', pd('atk') + ' x5'] : hero === 'ranger' ? ['snare', k1('down') + '+' + tk.c + ' ON GROUND', pd('down') + '+' + pd('block')] : ['third cut', 'SWING x3 IN A RUN', pd('atk') + ' x3'],   /* (claude/ranger: no run of three - her row is the snare) */   /* (claude/berserker2: his flurry runs five) */
+    [hero === 'ranger' ? 'rising shot' : 'rising cut', k1('up') + '+SWING', pd('up') + '+' + pd('atk')],
     ['low sweep', k1('down') + '+SWING', pd('down') + '+' + pd('atk')],
     /* THE CROUCH: every hero ducks (src/duck.js); the Pyromancer's PRESS of down is also the EMBER FLARE (src/ember-ward.js) */
     hero === 'berserker' ? ['pounce', 'HOLD ' + k1('down') + ', A WAY, LET GO', 'HOLD ' + pd('down')] : [hero === 'pyro' ? 'weak guard' : 'crouch', 'HOLD ' + k1('down') + ' (STILL)', 'HOLD ' + pd('down')],   /* (claude/berserker2: his crouch coils, and lets go as THE POUNCE) */
@@ -180,7 +182,8 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (A QUARTER LIGHT)', pd('up') + '+' + pd('block')], ['in circle', 'TAP ' + tk.c + ': EMPOWER / JUDGEMENT', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
-    ['dodge', hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
+    ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
+    ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
     hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (equipped)', pd('throw')],
     hero === 'reaper' ? ['his skill', kb('skill2') + ' (CHOSEN)', pd('skill2')] : ['skill two', kb('skill2') + ' (equipped)', pd('skill2')],
