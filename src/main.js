@@ -91,7 +91,7 @@ import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roste
 import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
-import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight } from './holy-ground.js'; let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
+import { makeCrouchB } from './crouch-b.js'; let CRB = null; import { makeHolyGround, HG, spendLight, pipsOf } from './holy-ground.js'; let HGR = null; import { makeHolyFx } from './holy-fx.js'; let HFX = null;   /* (claude/palart) the hammer of light, SMITE's glow and column, holy waves: src/holy-fx.js */   /* (claude/paladin2) HOLY GROUND: the paladin's circle and his spent Light */ import { makeCrouchHint } from './crouch-hint.js'; let CRH = null;   /* (claude/crouchfix) THE FIRST-CROUCH HINT: each hero is told his twist the first time he crouches */
 import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './puppeteer-hands.js'; import { bakePuppeteer, bakeMarionette, bakeHarlequin, bakeAcrobat, bakeMasterpiece } from './redraw/puppeteer_art.js'; let PUPH = null;   /* THE PUPPETEER (claude/puppeteer): the Maskwright's Theatre's boss - src/puppeteer.js the fight, src/puppeteer-hands.js its hands, src/redraw/puppeteer_art.js the art */   /* PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin kneels in prayer, the geomancer senses the earth, the death knight harvests a body */
 import { makeGuardian, TG as TGN } from './temple-guardian.js'; let TGM = null;   /* THE TEMPLE GUARDIAN, reworked (claude/monastery2): bells and its own blocks stagger it, bigger, off the x0.05 chip */
 import * as MCA from './redraw/minecart_art.js'; import * as LEM from './lantern-eater.js'; import { makeLanternEaterHands } from './lantern-eater-hands.js'; import { bakeCard as bakeLanternEaterCard } from './redraw/lanterneater_art.js'; let LEH = null;   /* THE LANTERN-EATER (claude/lanterneater, Daniel 10-07): THE FOG CANAL's boss on the raft - src/lantern-eater.js the fight, src/lantern-eater-hands.js its hands, src/redraw/lanterneater_art.js the art. (JENNY GREENTEETH, the boss before it, is benched unwired in src/benched/ - saved for a future mini) */
@@ -6514,9 +6514,9 @@ function hudMeterLabel() {
   const blink = Math.floor(time * 4) % 2;
   if (hero() === 'knight') { if (lcOn()) return { s: 'CHARGE!', col: '#ffd36b' }; return (P.resolve || 0) >= 100 ? { s: 'LAST CHARGE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null; }
   if (isPyro()) return P.full ? { s: 'PYRE: C', col: blink ? '#ffd36b' : '#fff6c8' } : null;
-  if (isPaladin()) { const lt = P.light || 0, inC = !!(HGR && HGR.standing(P)), c = HGR && HGR.of(P);   /* (claude/paladin2) what a tap of C spends, where he stands */
-    if (lt >= 100) return inC ? { s: 'JUDGEMENT: C', col: blink ? '#ffd36b' : '#fff6c8' } : { s: 'FULL: C IN CIRCLE', col: blink ? '#ffd36b' : '#fff6c8' };
-    if (inC && c && !c.emp && lt >= HG.empower.cost) return { s: 'EMPOWER: C', col: '#ffd36b' }; return null; }
+  if (isPaladin()) { const p = pipsOf(P);   /* (PALADIN 3) what a tap of C spends now */
+    if (p >= HG.conv.pips) return { s: 'SUNFALL: C', col: blink ? '#ffd36b' : '#fff6c8' };
+    if (p >= 3) return { s: 'RADIANCE: C  THROW: UP+C', col: '#ffd36b' }; if (p >= 1) return { s: 'SMITE: C', col: '#e8c870' }; return null; }
   if (isPirate()) return (P.plunder || 0) >= 100 ? { s: 'BLACK FLAG: C', col: blink ? '#ffd34a' : '#fff6c8' } : null;
   if (isRg()) { if (state !== 'play' && state !== 'talk') return null; if ((P.rgFocus || 0) >= 100) return { s: 'FOCUS: UP+C MARK', col: blink ? '#9fdc6a' : '#dfffb0' }; if (RGK && RGK.arrows() <= 0) return { s: 'QUIVER EMPTY', col: '#9aa39a' }; return null; }   /* (claude/ranger) HUNTER'S FOCUS full: the mark waits on UP+C; an empty quiver, say so */
   if (isBz()) { if (state !== 'play' && state !== 'talk') return null; if ((P.frenzyT || 0) > 0) return { s: 'FRENZY', col: blink ? '#ff4a3a' : '#ffb08a' }; if ((P.rage || 0) >= 100) return { s: 'FRENZY: DOWN+C', col: blink ? '#ff4a3a' : '#ffd0b0' };
@@ -6682,9 +6682,9 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     SFX.clank(); hitstop(0.05); sparks(P.x + P.face * 10, P.y - 12, P.face, 7); shakeCam(2, -P.face * 2);
     number(P.x, P.y - 26, 'SHOULDERED', '#ffe6a0'); ringAt(P.x + P.face * 9, P.y - 10, 14, '#ffe6a0', 0.24); return 'blocked'; }
   /* WARDED: the ward faces every way. MOVING FORTRESS: raised as the blow lands, it is a parry */
-  if (P.aegis && (frontA || tal('warded')) && !unblockable) { gainLight(5); trialEvent('aegis');
+  if (P.aegis && (frontA || tal('warded')) && !unblockable) { convGain(HG.conv.block / HG.conv.pip, false); trialEvent('aegis');   /* (PALADIN 3) A BLOCK: +1 CONVICTION */
     if (tal('fortress') ? time - (P.aegisUpT ?? -9) < 0.22 : RP.onBeat('hold', time - (P.aegisUpT ?? -9))) { const f = RP.parried(rpFoe(fromX, who)); if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 160;   /* (claude/riposte) THE LIGHT-WARD: the aegis raised on the beat is every paladin's parry now (MOVING FORTRESS: a longer beat) */
-      noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry'); gainLight(10); SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6c8', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6c8'); parryBurst(); return 'blocked'; } P.st = Math.max(0, P.st - 10 * (1 - 0.15 * tal('stalwart'))); if (tal('retribution')) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 0.9); f.flash = 0.15; } } P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
+      noteVerb('parry'); P.parryT = 0.22; parries++; trialEvent('parry'); P.light = Math.max(0, (P.light || 0) - HG.conv.block); convGain(HG.conv.parry / HG.conv.pip, true); holyFlash(f); SFX.parry();   /* (PALADIN 3) A PERFECT GUARD: +2 CONVICTION (not +1 more) and a HOLY FLASH */ hitstop(0.09); zoomKick(1.04, 0.2); ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6c8', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6c8'); parryBurst(); return 'blocked'; } P.st = Math.max(0, P.st - 10 * (1 - 0.15 * tal('stalwart'))); if (tal('retribution')) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 0.9); f.flash = 0.15; } } P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; } // the ward stops everything, even what a shield cannot
   /* (claude/paladin2) THE AEGIS COVERS HIS CIRCLE: a partner standing in a paladin's holy circle while he holds the aegis is turned for, from any
      side - it costs HIM the wind (HG.cover.st) and gives him a little Light. Never a red blow (src/holy-ground.js covering) */
   if (!unblockable && HGR && coop()) { const cv = HGR.covering(P, o => o.hero === 'paladin' && o.aegis && !o.dead && (o.st || 0) > 0);
@@ -8325,9 +8325,9 @@ function updateCharge(dt) {
   const quick = isPirate() && tal('quickHands'), can = !(isBz() && (P.braceT > 0 || P.pounceT > 0 || P.pounceRec > 0)) && !(isRg() && (P.rgBashT > 0 || P.rgCd > 0)) && (P.ground || P.swim || quick || (isRg() && tal('rgAirDraw'))) && !P.plunge && (!(P.dodge > 0) || quick) && !P.aegis && !P.block && !(P.hurt > 0) && !(P.asleep > 0) && !P.heavy && !(hero() === 'knight' && (thrown || rushing())) && !(isWarden() && wardJav);   /* QUICK HANDS: from the air, and out of a roll */   /* (the knight braces behind a shield: not while it is thrown, nor while he is still charging) */
   if (!keys.atk || !can) { // let go (or lost the footing for it): if it was wound up, it lands
     if (hero() === 'knight') { const st = cutStage(P.atkHeld || 0); P.cutShown = 0; if (st && can) { P.cutWant = st; fireHeavy(); } else if (P.charge > 0) SFX.ui(); P.atkHeld = 0; P.charge = 0; return; }   /* THE HEAVY CUT: what stage it reached is what comes down */
-    if (P.charge > (isGeo() || isRg() ? 0 : heavyWind() * 0.55) && can) fireHeavy();   /* (THE RANGER: any draw looses - the shorter, the weaker) */   /* (THE GEOMANCER: any wind at all fires - the quickest is a short crack that hits what touches her) */
+    if (P.charge > (isGeo() || isRg() || (isPaladin() && (P.verdict || []).length) ? 0 : heavyWind() * 0.55) && can) fireHeavy();   /* (THE RANGER: any draw looses - the shorter, the weaker) */   /* (THE GEOMANCER: any wind at all fires - the quickest is a short crack that hits what touches her) */
     else if (P.charge > 0) { SFX.ui(); }
-    P.atkHeld = 0; P.charge = 0; return;
+    P.atkHeld = 0; P.charge = 0; P.verdict = []; return;
   }
   P.atkHeld = (P.atkHeld || 0) + dt;
   const was = P.charge || 0;
@@ -8342,7 +8342,8 @@ function updateCharge(dt) {
       if (P.atkHeld >= CUT_AUTO) { P.cutShown = 0; P.cutWant = 3; fireHeavy(); }
       return; }
     if (k >= 1 && !P.chargeFull) { P.chargeFull = true; SFX.tell(true); ringAt(P.x, P.y - 14, 14, isPyro() ? '#ff9a5c' : isPaladin() ? '#ffe6a0' : '#dfe8ff', 0.3); shakeCam(1.5); }
-    if (k >= 1 && !(isRg() && RGK && RGK.arrows() > 0 && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold)) fireHeavy();   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
+    if (isPaladin()) verdictMark();   /* (PALADIN 3) a SIGIL a beat on the nearest foes ahead */
+    if (k >= 1 && !(isRg() && RGK && RGK.arrows() > 0 && P.atkHeld < HEAVY_START + heavyWind() + RG_K.draw.hold) && !(isPaladin() && P.atkHeld < HEAVY_START + HG.verdict.hold)) fireHeavy();   /* (VERDICT is held: up to four sigils, then it goes) */   /* (THE RANGER holds a full draw until she lets go - RG.draw.hold s, then it goes) */
   } else P.chargeFull = false;
 }
 let bloodBolts = [];
@@ -8813,6 +8814,7 @@ function fireHeavy() { noteVerb('heavy');
   P.atkHeld = 0; P.charge = 0; P.chargeFull = false;
   if (!spend(heavyCost())) { SFX.clank(); number(P.x, P.y - 26, 'NO WIND FOR IT', '#9aa39a'); return; }
   if (hero() === 'knight') { heavyCut(P.cutWant || 1); P.cutWant = 0; return; }   /* THE HEAVY CUT (it was shieldCharge(wound): THE SHIELD CHARGE) */
+  if (isPaladin()) { verdictStrike(); return; }   /* (PALADIN 3) VERDICT: no hammer swing - light strikes every marked foe */
   if (isGeo() && GEO) { P.atk = 0; P.hitSet.clear(); P.heavy = true; P.heavySwing = false; P.vx = 0; P.combo = 3; GEO.faultHeavy(wound); shakeCam(3); return; }   /* FAULT LINE: the butt struck into the ground, and the crack does the hitting (attackBox is shut for it) */
   P.atk = 0; P.hitSet.clear(); P.heavy = true;
   P.vx = P.face * (isPaladin() ? 40 : 110);
@@ -9331,7 +9333,12 @@ function updatePlayer(dt) {
     const free = !stunned && !dodging && !P.plunge && !attacking && !(P.blastT > 0);
     if (cDown && free && keys.up) { castHammer(); P.cHeld = -99; }   /* THE HAMMER THROW (Light spent) - and the hold that follows is not an aegis */
     else if (keys.block) { P.cHeld = (P.cHeld || 0) + dt; if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegisT = (P.aegisT || 0) + dt; if (P.aegisT > 1.5 && !tal('unwavering')) { P.aegisCd = 2; P.aegisT = 0; SFX.guardBreak(); ringAt(P.x, P.y - 10, 14, '#9a8a60', 0.3); } /* the ward holds a breath and a half, then it must rest */ } if (P.cHeld >= 0.16 && free && (P.ground || P.swim) && P.st > 0 && CM.guardOk(P) && !(P.aegisCd > 0)) { P.aegis = true; P.st = Math.max(0, P.st - 27.5 * dt * (1 - 0.15 * tal('stalwart'))); if (tal('sanctuary')) P.hp = Math.min(P.maxHp, P.hp + 3 * dt); P.stDelay = ST.delay; if (!P.aegisWas) { P.aegisUpT = time; SFX.block(); ringAt(P.x, P.y - 10, 18, '#fff6c8', 0.3); } } }
-    else { if (P.cHeld > 0 && P.cHeld < 0.16 && free) holyTap(); P.cHeld = 0; P.aegisT = 0; }
+    else { if (P.cHeld > 0 && P.cHeld < 0.16 && free) convictionTap(); P.cHeld = 0; P.aegisT = 0; }   /* (PALADIN 3) a tap SPENDS CONVICTION by tier */
+    P.bulwark = !!(P.aegis && P.ground && !(keys.left && keys.right) && (P.face > 0 ? keys.right : keys.left));   /* BULWARK ADVANCE: the aegis held and pressing ahead - a slow walk behind it that shoves */
+    if (P.bulwark) bulwarkShove();
+    { const c = HGR && HGR.of(P); if (c && c.aura) HGR.follow(c, P.x, P.y); }   /* THE HALLOWED AURA travels with him */
+    if (P.arcT > 0) { P.arcT -= dt; if (P.vy > 0) P.vy *= 0.6; }   /* HEAVEN'S ARC: a slight float through the whirl */
+    if (P.swingKind === 'airUp' && P.atk >= HG.arc.second && !P.arc2 && P.atk < 0.17) { P.arc2 = true; P.hitSet.clear(); ringAt(P.x, P.y - 26, 18, '#ffd36b', 0.25); motes(P.x, P.y - 28, 6, 14); }   /* ...and its SECOND hit */
     if (tal('crusade') && P.aegisWas && !P.aegis && !P.dead) { let any = false; // CRUSADE
       for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - P.y) < 34) { any = true; hurtEnemy(e, 10, P.x, false); if (e.alive && !e.maxHp) { e.stagger = Math.max(e.stagger || 0, 1.1); e.vx = (Math.sign(e.x - P.x) || 1) * 260; } }
       if (any) { SFX.judgement(); shakeCam(4); } ringAt(P.x, P.y - 10, 40, '#fff6c8', 0.35); motes(P.x, P.y - 10, 8, 8); }
@@ -9468,7 +9475,7 @@ function updatePlayer(dt) {
     if (P.st <= 0) { P.st = 0; P.block = false; P.guardTired = 0.8; P.stFlash = 0.5; SFX.guardBreak(); number(P.x, P.y - 22, 'TIRED', '#ffd36b'); }
   }
   P.rootT = Math.max(0, (P.rootT || 0) - dt); if (P.rootT > 0 && (P.ground || P.swim)) P.vx *= Math.pow(0.02, dt); // (a mend roots him)
-  const move = (stunned || dodging || (P.aegis && !tal('fortress')) || (P.warding && !tal('drainWalk')) || P.pinning || P.riding || P.spinning || P.rootT > 0 || (isPyro() && P.emberUp) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
+  const move = (stunned || dodging || (P.aegis && !tal('fortress') && !P.bulwark) || (P.warding && !tal('drainWalk')) || P.pinning || P.riding || P.spinning || P.rootT > 0 || (isPyro() && P.emberUp) || P.braceT > 0 || P.braceRec > 0 || P.pounceT > 0 || P.pounceRec > 0 || (keys.down && isBz() && CRC && CRC.coiled()) || (isRg() && (P.charge > 0 || P.rgBashT > 0) && !(P.charge > 0 && tal('rgSoftStep') && !(P.rgBashT > 0)))) ? 0 : (keys.left ? -1 : 0) + (keys.right ? 1 : 0);   /* a hero stood on the end of a spear he has pinned something with does not walk */
   /* THE UNIVERSAL DUCK (claude/duck): DOWN held on the ground with nothing else asked of it - no walk, no swing, no guard, no roll - and
      the hero is crouched: his hurt box is DUCK_H tall and a high blow goes over him (src/duck.js). On a mover he rides at its speed,
      so there it is only the keys that count. P.crouch is what the harbour lookout reads for a hero out of his sight. */
@@ -9600,7 +9607,7 @@ function updatePlayer(dt) {
   if (sprinting && P.ground && !P.sprintFx) { P.sprintFx = true; streaks(P.x, P.y - 10, -P.face, ['#e8dcc0', '#c9d1dc'], 70); SFX.skid(); }
   else if (!sprinting) P.sprintFx = false;
   if (sprinting && P.ground && Math.random() < dt * (8 + 14 * sprintK)) dust(P.x - P.face * 5, P.y, 1);   // and it keeps saying so, off his heels
-  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.ptC ? PTC.carrySpeed : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : P.syrupT > 0 && P.ground ? FT2.syrup.cap : RUN * ((P.hasteT || 0) > 0 ? 1.12 : 1) * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK) * (KRS.inked > 0 && P.ground ? KRK_INK_SLOW : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0);   /* (THE KRAKEN's ink patch: wading it, claude/kraken2) */ // a gust can carry you faster than your legs
+  const cap = (P.ballast ? (P.swim ? 54 : 58) : P.ptC ? PTC.carrySpeed : P.carry ? (P.swim ? THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeedSwim : THROW_KIND[P.carry.thrKind || 'bucket'].carrySpeed) : (P.block || P.jet || P.geoGuard) ? 32 : P.bulwark ? 26 : P.warding ? 24 : P.swim ? 96 : wading ? 46 : spored ? 40 : P.syrupT > 0 && P.ground ? FT2.syrup.cap : RUN * ((P.hasteT || 0) > 0 ? 1.12 : 1) * heroRunMul(hero(), P.ground) /* heavy on his feet, not in the air (reaper, geomancer): the levels' gaps are measured for the knight's jump; quicker pyro, slower paladin - src/hero-move.js HERO_RUN */ * (PROG.charm === 'swift' ? 1.12 : 1) * (1 + MOVE.SPRINT_BONUS * sprintK) * (KRS.inked > 0 && P.ground ? KRK_INK_SLOW : 1)) + (P.gustT > 0 && !P.ground ? 150 : 0);   /* (THE KRAKEN's ink patch: wading it, claude/kraken2) */ // a gust can carry you faster than your legs
   const onSlick = P.ground && (L.slick || []).some(z => P.x > z[0] * TS && P.x < (z[1] + 1) * TS && Math.floor((P.y + 2) / TS) === z[2]) || (P.ground && L.iceLedges && tileAt(Math.floor(P.x / TS), Math.floor((P.y + 2) / TS)) === T.CRYST); /* and its crystal ledges, which look like ice and held like rock */ // the Sunspire's ice: slow to get going, slower to stop
   /* UPHILL IS SLOWER (Daniel, 2026-09-25: "going up a slope doesn't really slow you down"): walking up a dune the legs cap at 0.6 of a run on a steep slope, 0.8 on a gentle one, and down it they run a little free (1.1). Walking only - the slide (below) keeps its own speeds. */
   const slopeK = SLOPES_ON && P.ground && move && !P.swim ? footSlope(tileAt, P) : 0, capW = slopeK ? cap * (slopeRise(slopeK) === move ? (slopeGrade(slopeK) === 1 ? UPHILL.steep : UPHILL.gentle) : UPHILL.down) : cap;
@@ -9905,7 +9912,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       else if (broke) { P.vy = POGO; P.ground = false; P.plunge = false; P.canCut = false; SFX.pPogo(); P.hitSet.clear(); squash(0.8, 1.25, 0.1); }
       else { P.plunge = false; P.plungeRec = 0.12; shakeCam(3); dust(P.x, P.y, 10); SFX.thud(); squash(1.4, 0.6, 0.14); if (isReaper()) graveFall(); if (DOWN_STRIKE[hero()] && !P.swim && !P.onMover && GS > 0) plungeWave(DOWN_STRIKE[hero()]); lessonHint('down');   /* THE WOOD'S DOWN-ATTACK LESSON: said the first time one lands on the ground in its stretch */   /* (not onto a raft, a pad or a lift: that is a ride, and the marsh roofs' crossing from the east rides one - rooted on it, the knight never made it) */
         if (isPaladin()) { P.holyLandT = PLG.HAMMER.landT; for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: (tal('shockwave') ? 2.0 : 1.0), sp: 200, hit: new Set(), hammer: true }); shakeCam(6); zoomKick(1.06, 0.2); ringAt(P.x, P.y - 2, 30, '#ffd36b', 0.3); SFX.hammerfall();
-          if (P.consecrate) { P.consecrate = false; gainLight(14); if (HGR && !HGR.of(P)) plantCircle(true);   /* (claude/paladin2) HAMMER OF DAWN: with no circle standing, it is planted where the maul lands */ // THE CONSECRATION: where the maul lands, the ground is holy for a moment
+          if (P.consecrate) { P.consecrate = false; gainLight(14);   /* (PALADIN 3: the landing no longer plants a circle - his holy ground is the HALLOWED AURA now) */ // THE CONSECRATION: where the maul lands, the ground is holy for a moment
             ringAt(P.x, P.y - 2, 46, '#ffe6a0', 0.45); motes(P.x, P.y - 8, 16, 22); SFX.medal && SFX.medal();
             for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < 46 && Math.abs(e.y - e.h / 2 - (P.y - 10)) < 30) { hurtEnemy(e, Math.round(swordDmg() * 0.5), P.x, false); e.stagger = Math.max(e.stagger || 0, 0.5); } } } } // HAMMERFALL: the maul comes down and the ground carries it both ways
     } else { const fallH = P.y - (P.airTopY ?? P.y), tier = fallH >= BIG_DROP ? 2 : prevVy > 250 ? 1 : 0, heavy = tier > 0, fellFar = P.y - (P.airTopY ?? P.y) >= EARTHSHAKER_DROP; /* fellFar is EARTHSHAKER's alone: heavy still sets every hero's landing (lag, dust, thud) as before */ if (fellFar && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
@@ -26728,6 +26735,7 @@ const UP_SLASH = { grace: 0.05, groundLeap: false,
     pirate: { w: 12, top: 42, lean: 3 }, reaper: { w: 16, top: 48, lean: 3 }, geomancer: { w: 12, top: 46, lean: 3 }, berserker: { w: 12, top: 42, lean: 3 } } };
 /* THE AIR UP-SLASH: up + attack in the air (past the jump's first 0.18 s, where the rising cut still rides it). No lift, no hang: a blow over his head */
 function airUpCut() { P.swingKind = 'airUp'; noteVerb('rise'); const c = specialCol();
+  if (isPaladin()) { P.arc2 = false; P.arcT = HG.arc.float; if (P.vy > -40) P.vy = -40; kitPose(P, 'rise', 0.3); for (let i = 0; i < 12; i++) { const a = -Math.PI + i / 11 * Math.PI * 2; parts.push({ x: P.x + Math.cos(a) * 16, y: P.y - 20 + Math.sin(a) * 16, vx: 0, vy: -10, life: 0.28, max: 0.28, col: i % 2 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 }); } SFX.lightFull(); }   /* (PALADIN 3) HEAVEN'S ARC: a full overhead whirl - a golden ring of light, two hits, a slight float */
   for (let i = 0; i < 5; i++) parts.push({ x: P.x + P.face * (8 - i * 4), y: P.y - 20 - Math.sin(i / 4 * Math.PI) * 18, vx: 0, vy: -40, life: 0.2, max: 0.2, col: c[i % c.length], size: 1, grav: 0 }); }
 function lowSweep() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKind = 'sweep'; noteVerb('sweep'); P.vx = P.face * (isPaladin() ? 60 : 130); squash(1.2, 0.8, 0.12);
   if (CA) { CA.lowSwing(!!P.ducking); if (P.caTrip || P.caPoke) return; }   /* CROUCHED AND STILL: the knight's SHIELD TRIP, the warden's LOW POKE (src/crouch-a.js) */
@@ -27112,6 +27120,52 @@ function gainLight(n) { const was = (P.light || 0) >= 100; P.light = Math.min(10
    the tap SPENDS LIGHT - the full bar is JUDGEMENT, HG.empower.cost EMPOWERS it (a flare, wider, longer, twice as hot), and with too little to
    spend it is planted again where he stands. MEND is gone from the tap: the circle mends him slowly instead (LITANY doubles it, MERCY gives
    back wind in it). The plunge plants one where the maul lands if he has none; HAMMER LEAP carries it with him. */
+/* ==== PALADIN 3 (claude/paladin3, Daniel 10-14): CONVICTION ====
+   Five pips (the Light store, HG.conv.pip a pip). A TAP OF C spends by tier: 5 = SUNFALL (the old Judgement: light out of the sky over everything near) + the
+   aura; 3 = RADIANCE (a burst all round him); 1 = SMITE (a quick holy strike in front). UP+C = the HAMMER THROW (3). Every spend lights the HALLOWED AURA -
+   his holy ground (mend, burn, x hitMul, the partner aegis) as a ring at his feet that TRAVELS WITH HIM for base + perPip s a pip spent. The planted circle is gone. */
+function convGain(n, perfect) { const was = pipsOf(P); P.light = Math.min(100, (P.light || 0) + n * HG.conv.pip); const now = pipsOf(P);
+  if (now > was) { ringAt(P.x, P.y - 12, 10 + 2 * now, '#ffd36b', 0.25); if (now >= HG.conv.pips && was < HG.conv.pips) { SFX.lightFull(); number(P.x, P.y - 30, 'CONVICTION', '#ffd36b'); } else if (perfect) number(P.x, P.y - 36, '+2', '#fff6c8'); } }
+function hallowAura(pips) { if (!HGR || P.dead) return; const n = tal('consecrate'), c0 = HGR.of(P), life = HG.aura.base + HG.aura.perPip * pips + 1.5 * n;
+  if (c0 && c0.aura) { c0.life = c0.max = Math.max(c0.life, life); return; }
+  const c = HGR.plant(P, P.x, P.y, { r: HG.aura.r + 6 * n, life }); c.aura = true; trialEvent('hallow'); }
+function convictionTap() { if (P.dead) return; const p = pipsOf(P);
+  if (p >= HG.conv.pips) { castJudgement(); hallowAura(5); number(P.x, P.y - 34, 'SUNFALL', '#fff6c8'); kitPose(P, 'sanctify', 0.45); return; }
+  if (p >= 3) { radiance(); return; }
+  if (p >= 1) { smiteQ(); return; }
+  SFX.buzz(); P.stFlash = 0.3; number(P.x, P.y - 24, 'NO CONVICTION', '#9aa39a'); }
+function smiteQ() { const S = HG.smiteQ; if (!spendLight(P, S.cost)) return; trialEvent('smite'); noteVerb('cast'); P.castT = 0.22; kitPose(P, 'hallowQ', 0.25);
+  const x0 = P.x + P.face * 14; if (HFX) HFX.smite(x0, P.y); SFX.judgement(); ringAt(x0, P.y - 10, 16, '#ffffff', 0.3); number(P.x, P.y - 30, 'SMITE', '#fff6c8');
+  const hb = P.face > 0 ? { l: P.x, r: P.x + S.reach, t: P.y - 30, b: P.y + 2 } : { l: P.x - S.reach, r: P.x, t: P.y - 30, b: P.y + 2 };
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || !overlap(hb, box(e))) continue; hurtAs('light', e, Math.round(swordDmg() * S.mul), P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, S.stagger); }
+  hallowAura(1); }
+function radiance() { const B = HG.burst; if (!spendLight(P, B.cost)) return; trialEvent('sanctify'); noteVerb('cast'); P.castT = 0.35; P.rootT = Math.max(P.rootT || 0, 0.25); kitPose(P, 'sanctify', 0.45);
+  SFX.judgement(); shakeCam(4); zoomKick(1.05, 0.2); ringAt(P.x, P.y - 8, B.r, '#ffffff', 0.45); ringAt(P.x, P.y - 8, B.r * 0.6, '#ffd36b', 0.35); motes(P.x, P.y - 8, 20, B.r); number(P.x, P.y - 30, 'RADIANCE', '#fff6c8');
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - P.x) > B.r || Math.abs(e.y - P.y) > 40) continue; hurtEnemy(e, Math.round(B.dmg * amul('consecrate') * (1 + 0.075 * LV_GROW())), P.x, false); if (e.alive && !e.maxHp && !e.mini) { e.stagger = Math.max(e.stagger || 0, B.stagger); e.burn = Math.max(e.burn || 0, 1.5); } }
+  hallowAura(3); }
+/* THE PERFECT GUARD's HOLY FLASH: the attacker staggers (a boss is left to the parry's own opening: src/riposte.js) */
+function holyFlash(f) { ringAt(P.x + P.face * 10, P.y - 12, HG.flash.r, '#ffffff', 0.3); motes(P.x + P.face * 10, P.y - 12, 10, 16); killFlash = Math.max(killFlash || 0, 0.02);
+  for (const e of enemies) { if (!e.alive || e.harmless || e.maxHp || e.mini || Math.abs(e.x - P.x) > HG.flash.r || Math.abs(e.y - P.y) > 36) continue; if (e === f || Math.sign(e.x - P.x) === P.face) { e.stagger = Math.max(e.stagger || 0, HG.flash.stagger); e.flash = 0.15; } } }
+/* BULWARK ADVANCE: walking behind the raised aegis, he SHOVES what is in front of him back - a common foe is knocked (into hazards too: the knock rules);
+   an ELITE only staggers back a little (never knocked into a hazard by it); a BOSS or a mini is not moved at all */
+function bulwarkShove() { const hb = P.face > 0 ? { l: P.x + 4, r: P.x + 16, t: P.y - 24, b: P.y } : { l: P.x - 16, r: P.x - 4, t: P.y - 24, b: P.y };
+  for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.maxHp || e.mini || e === boss || !overlap(hb, box(e))) continue;
+    if (e.elite || KNOCK_SKIP.has(e.t)) { e.stagger = Math.max(e.stagger || 0, 0.25); e.x += P.face * 0.6; continue; }
+    if (!(e.bulwarkT > time)) { e.bulwarkT = time + 0.35; e.vx = P.face * 170; e.vy = Math.min(e.vy || 0, -60); e.knock = Math.max(e.knock || 0, 0.3); e.kvx = e.vx; e.kvy = e.vy; e.knockAir = 0; e.bounced = false; e.slammed = false; e.stagger = Math.max(e.stagger || 0, 0.4); SFX.aegis(); sparks(e.x, e.y - 10, P.face, 3); trialEvent('bulwark'); } } }
+/* VERDICT (the held X): a golden SIGIL on the nearest foe ahead, one more every HG.verdict.every s up to max (reach, not through walls) */
+function sightClear(x0, y0, x1, y1) { const n = Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 6); for (let i = 1; i < n; i++) { const x = x0 + (x1 - x0) * i / n, y = y0 + (y1 - y0) * i / n; if (isSolid(Math.floor(x / TS), Math.floor(y / TS))) return false; } return true; }
+function verdictMark() { const V = HG.verdict; P.verdict = (P.verdict || []).filter(e => e.alive); const want = Math.min(V.max, 1 + Math.floor((P.charge || 0) / V.every));
+  while (P.verdict.length < want) { let best = null, bd = 1e9;
+    for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || P.verdict.includes(e)) continue; const dx = (e.x - P.x) * P.face, dy = Math.abs((e.y - (e.h || 16) / 2) - (P.y - 12));
+      if (dx < -6 || dx > V.reach || dy > V.dy || !sightClear(P.x, P.y - 12, e.x, e.y - (e.h || 16) / 2)) continue; const d = Math.abs(dx) + dy * 0.5; if (d < bd) { bd = d; best = e; } }
+    if (!best) break; P.verdict.push(best); SFX.tell(false); ringAt(best.x, best.y - (best.h || 16) - 6, 8, '#ffd36b', 0.3); } }
+function verdictStrike() { const V = HG.verdict, marked = (P.verdict || []).filter(e => e.alive); P.verdict = []; P.atk = -1; P.heavy = false; P.vx = 0; P.castT = 0.3; kitPose(P, 'sanctify', 0.4); trialEvent('verdict');
+  SFX.judgement(); shakeCam(5, P.face * 2); zoomKick(1.05, 0.2); hitstop(0.05); number(P.x, P.y - 32, marked.length ? 'VERDICT x' + marked.length : 'VERDICT', '#fff6c8');
+  const dmg = Math.round(swordDmg() * heavyMul() * V.mul);
+  const strike = e => { bolts.push({ x: e.x, y: e.y, life: 0.4, storm: true, holy: true }); ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35); hurtAs('heavy', e, dmg, P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, 0.8); };
+  if (marked.length) { for (const e of marked) strike(e); return; }
+  const x = P.x + P.face * 26; bolts.push({ x, y: P.y, life: 0.4, storm: true, holy: true });   /* nothing marked: the light comes down just ahead of him */
+  for (const e of enemies) if (e.alive && !e.harmless && e.gone <= 0 && Math.abs(e.x - x) < 12 + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 40) strike(e); }
 function holyTap() { if (!HGR) return; const c = HGR.of(P), inC = HGR.inside(c, P);
   if (inC && (P.light || 0) >= HG.judge) { castJudgement(); return; }
   if (inC && !c.emp && (P.light || 0) >= HG.empower.cost) { empowerCircle(c); return; }
@@ -27130,7 +27184,7 @@ function empowerCircle(c) { if (!spendLight(P, HG.empower.cost)) return false; c
 /* THE HAMMER THROW (UP + C): a hammer of light out HG.throw.reach px and back, striking what it passes each way. A quarter of the Light. BLESSED
    HAMMER (the passive) sends it a third further and it sets what it strikes alight */
 function castHammer() { if (P.dead || P.hurt > 0 || P.asleep > 0) return; const T = HG.throw;
-  if (!spendLight(P, T.cost)) { SFX.buzz(); P.stFlash = 0.3; number(P.x, P.y - 24, 'NO LIGHT', '#9aa39a'); return; }
+  if (!spendLight(P, T.cost)) { SFX.buzz(); P.stFlash = 0.3; number(P.x, P.y - 24, 'THROW: 3 CONVICTION', '#9aa39a'); return; } hallowAura(3);
   const bh = tal('blessedHammer') > 0; hammers.push({ x0: P.x, y0: P.y - 12, dir: P.face, t: 0, x: P.x, y: P.y - 12, hit: new Map(), reach: T.reach * (bh ? 1.33 : 1), dmg: Math.round(T.dmg * (1 + 0.075 * LV_GROW())), burn: bh });
   trialEvent('hammer'); noteVerb('throw'); SFX.throwWhoosh(); SFX.lightFull(); P.castT = 0.25; kitPose(P, 'hurlH', 0.35); }
 function castJudgement() { trialEvent('judgement'); P.light = 0; P.blastT = 0.5; P.inv = Math.max(P.inv, 0.6); P.vx = 0; judgementFall(); if (tal('doubleJudge')) P.judge2T = 0.55; }   /* DOUBLE JUDGEMENT: the sky answers twice */
@@ -29046,7 +29100,10 @@ function drawBloom(cx, cy) {
   if (isPaladin() && (P.light || 0) >= 100) bloom(P.x - cx, P.y - 12 - cy, 22, 0.28 + 0.1 * Math.sin(time * 7), 'gold'); // a full light shows on him
   if (wisp) bloom(wisp.x - cx, wisp.y - cy, 16, 0.4, 'gold');
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-  if (HFX && isPaladin() && P.charge > 0 && !P.dead && HGR && HGR.standing(P) && (P.light || 0) >= HG.smite.cost) HFX.windup(g, Math.round(P.x + P.face * 3 - cx), Math.round(P.y - 15 - cy), Math.min(1, P.charge / heavyWind()), time);   /* (claude/palart) SMITE's windup: the head of the maul lit white-gold, growing with the wind, only when the Light is there to spend */
+  if (isPaladin() && P.charge > 0 && !P.dead) for (const e of P.verdict || []) { if (!e.alive) continue; const x = Math.round(e.x - cx), y = Math.round(e.y - (e.h || 16) - 8 - cy), s = Math.floor(time * 6) % 2;   /* (PALADIN 3) VERDICT's SIGIL: a gold diamond over the foe, a cross in it (greybox) */
+    g.fillStyle = '#5a3a08'; for (let i = -4; i <= 4; i++) { g.fillRect(x + i, y - (4 - Math.abs(i)) - 1, 1, 1); g.fillRect(x + i, y + (4 - Math.abs(i)) + 1, 1, 1); }
+    g.fillStyle = s ? '#fff6c8' : '#ffd36b'; for (let i = -3; i <= 3; i++) { g.fillRect(x + i, y - (3 - Math.abs(i)), 1, 1); g.fillRect(x + i, y + (3 - Math.abs(i)), 1, 1); } g.fillStyle = '#ffffff'; g.fillRect(x, y - 1, 1, 3); g.fillRect(x - 1, y, 3, 1); }
+  if (HFX && isPaladin() && P.charge > 0 && !P.dead && false) HFX.windup(g, Math.round(P.x + P.face * 3 - cx), Math.round(P.y - 15 - cy), Math.min(1, P.charge / heavyWind()), time);   /* (claude/palart) SMITE's windup: the head of the maul lit white-gold, growing with the wind, only when the Light is there to spend */
 }
 // THE SWING. A blade leaves a crescent behind it; a staff thrust leaves a streak of flame.
 function drawBoxes(cx, cy) {
@@ -32163,7 +32220,10 @@ function render() {
       g.fillStyle = '#c9d1dc'; g.fillRect(5, hy - 3, 8, 6); g.fillRect(6, hy + 3, 6, 2); g.fillRect(8, hy + 5, 2, 1); g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 2, 2, 5);
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isPyro()) { const hy = HY; bar(15, hy, 45, 4, (P.heat || 0) / 100, P.full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#ff9a5c', (P.heat || 0) / 100); g.drawImage(PROP.fire[Math.floor(time * 12) % 3], 4, hy - 8, 10, 12); if (hudMeter) meterPrompt(hudMeter, hy); }
-    if (isPaladin()) { const hy = HY, full = (P.light || 0) >= 100; bar(15, hy, 45, 4, (P.light || 0) / 100, full ? (Math.floor(time * 10) % 2 ? '#fff6c8' : '#ffd36b') : '#f0c040', (P.light || 0) / 100); for (const cost of [HG.smite.cost, HG.throw.cost, HG.empower.cost]) { const tx = 15 + Math.round(45 * cost / 100), on = (P.light || 0) >= cost; g.fillStyle = on ? '#5a3a08' : '#a89868'; g.fillRect(tx, hy, 1, 4); g.fillStyle = on ? '#fff6c8' : '#8a7a4a'; g.fillRect(tx, hy - 1, 1, 1); g.fillRect(tx, hy + 4, 1, 1); }   /* (claude/palart) THE SPEND MARKS: SMITE 20, the throw 25, EMPOWER 35 - dark through the gold once the Light has reached them */
+    if (isPaladin()) { const hy = HY, lt = P.light || 0, pp = pipsOf(P), full = pp >= HG.conv.pips, blink = Math.floor(time * 10) % 2;   /* (PALADIN 3) CONVICTION: five pips, the next one filling under its slot (greybox) */
+      for (let i = 0; i < HG.conv.pips; i++) { const x = 16 + i * 9, on = i < pp; g.fillStyle = '#3a2808'; g.fillRect(x - 1, hy - 2, 8, 8); g.fillStyle = on ? (full && blink ? '#fff6c8' : '#ffd36b') : '#5a4a2a'; g.fillRect(x, hy - 1, 6, 6); if (on) { g.fillStyle = '#fff6c8'; g.fillRect(x + 1, hy, 2, 1); }
+        if (i === pp && !full) { const f = (lt - pp * HG.conv.pip) / HG.conv.pip; g.fillStyle = '#c8a040'; g.fillRect(x, hy + 4, Math.round(6 * f), 1); }
+        if (i === 0 || i === 2 || i === 4) { g.fillStyle = on ? '#fff6c8' : '#8a7a4a'; g.fillRect(x + 2, hy - 4, 2, 1); } }   /* (ticks over 1, 3 and 5: the tiers) */   /* (claude/palart) THE SPEND MARKS: SMITE 20, the throw 25, EMPOWER 35 - dark through the gold once the Light has reached them */
       g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (hudMeter) meterPrompt(hudMeter, hy); }
     // BREATH BELONGS ON THE PLATE. It was six pale pips floating over his head - and the half of the Shipwreck
     // Reef that has no surface to breathe at is also the half that is dark, so the pips were invisible and the

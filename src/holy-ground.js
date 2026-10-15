@@ -26,10 +26,22 @@ export const HG = {
   hitMul: 1.3,        // his blows inside his own circle
   empower: { cost: 35, r: 60, life: 12, burnMul: 2, flare: 12 },   // EMPOWERED CONSECRATE: Light spent, a flare on the tap, a bigger, longer, hotter circle
   smite: { cost: 20, mul: 1.5 },                                   // SMITE: the overhead inside the circle, its waves holy
-  throw: { cost: 25, dmg: 9, reach: 112, t: 1.4 },                 // THE HAMMER THROW: out and back
+  throw: { cost: 60, dmg: 9, reach: 112, t: 1.4 },                 // THE HAMMER THROW: out and back (PALADIN 3: three pips of Conviction)
   judge: 100,                                                      // JUDGEMENT: the whole bar
   cover: { st: 10, light: 5 },                                     // the AEGIS turning a blow for a partner in his circle: his wind, his Light
+  /* PALADIN 3 (claude/paladin3, Daniel 10-14): CONVICTION - the Light store read as FIVE PIPS (pip px of Light each). Earned by blows landing (as Light was), a
+     BLOCK (+block), a PERFECT GUARD on the beat (+parry, and a HOLY FLASH that staggers the attacker). C SPENDS BY TIER: 1 = SMITE, 3 = RADIANCE (a burst) or
+     UP+C the HAMMER THROW, 5 = SUNFALL (the finisher). Every spend lights the HALLOWED AURA: his holy ground at his feet, travelling with him, base + perPip s a pip */
+  conv: { pip: 20, pips: 5, block: 20, parry: 40 },
+  aura: { r: 34, base: 2, perPip: 0.8 },
+  smiteQ: { cost: 20, mul: 1.6, reach: 28, stagger: 0.5 },       // SMITE (1 pip): a quick holy strike in front of him
+  burst: { cost: 60, r: 56, dmg: 14, stagger: 0.7 },             // RADIANCE (3 pips): a burst of light all round him
+  verdict: { every: 0.5, max: 4, reach: 110, dy: 60, mul: 1.15, hold: 2.4 },   // VERDICT (hold X): a sigil a beat on the nearest foes ahead, then light strikes them all
+  arc: { float: 0.35, second: 0.09 },                            // HEAVEN'S ARC (up in the air): the whirl's second hit at atk s, a slight float
+  flash: { r: 34, stagger: 0.6 },                                // the PERFECT GUARD's holy flash
 };
+/* CONVICTION PIPS: whole pips held (the Light store / HG.conv.pip) */
+export const pipsOf = o => Math.floor(((o && o.light) || 0) / HG.conv.pip + 1e-6);
 /* SPEND LIGHT: true and taken if the owner has n of it, else false and nothing taken (the boss calls this on itself too) */
 export function spendLight(o, n) { if (!o || (o.light || 0) < n - 1e-9) return false; o.light -= n; return true; }
 
@@ -57,6 +69,8 @@ export function makeHolyGround(api) {
     c.emp = true; c.r = Math.max(c.r, o.r || E.r); c.life = c.max = Math.max(c.life, o.life || E.life); c.burnMul = E.burnMul; c.at = time(); stats.empowered++; return true; }
   /* MOVE: the circle comes with him (HAMMER LEAP) - same life, a new floor */
   function move(c, x, y) { if (!c || c.out) return; c.x = x; c.y = y; c.at = time(); }
+  /* FOLLOW: the HALLOWED AURA walks with him every frame (no re-plant flash: move's c.at is the plant ring) */
+  function follow(c, x, y) { if (!c || c.out) return; c.x = x; c.y = y; }
   /* A CIRCLE THAT COVERS THIS BODY and is someone else's whose owner passes ok(owner) - the aegis covering a partner */
   const covering = (b, ok) => circles.find(c => !c.out && c.owner !== b && inside(c, b) && ok(c.owner)) || null;
   function update(dt) {
@@ -139,5 +153,5 @@ export function makeHolyGround(api) {
   }
   const clear = () => { circles = []; wards = []; };
   const read = () => ({ circles: circles.map(c => ({ x: Math.round(c.x), y: Math.round(c.y), r: c.r, life: +c.life.toFixed(2), emp: c.emp, side: c.side, owner: c.owner && c.owner.n ? c.owner.n : c.owner && c.owner.t || null })), stats: { ...stats } });
-  return { plant, empower, move, inside, of, standing, covering, ward, update, draw, clear, read, list: () => circles, stats };
+  return { plant, empower, move, follow, inside, of, standing, covering, ward, update, draw, clear, read, list: () => circles, stats };
 }
