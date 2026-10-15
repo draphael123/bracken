@@ -20863,7 +20863,8 @@ const unbAdds = e => enemies.filter(q => q.alive && q.t === 'corpse' && q.from =
 function unbRaise(x, floor, who) { const n0 = enemies.length; spawnEnt({ t: 'corpse', x: Math.floor(x / TS), y: Math.round(floor / TS) - 1, face: Math.sign(P.x - x) || 1 });
   for (let i = n0; i < enemies.length; i++) { const q = enemies[i]; q.from = who; q.raisedBy = who; q.mode = 'riseTell'; q.modeT = UNBF.UNB.riseT; } burst(x, floor - 4, 10, ['#c8b6ff', '#7a8088'], 60, 0.5); }
 function unbFinish(q, msg) { if (!q.alive) return; q.scythed = true; if (msg) number(q.x, q.y - 20, msg, '#c8b6ff'); hurtEnemy(q, q.hp + 99, q.x + 1, false); }
-function unbC(e, A) { return { P, A, hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }), say: (m, col) => { if (m) number(e.x, e.y - e.h - 18, m, col || '#ffd36b'); }, sound: unbSnd, shake: n => shakeCam(n),
+function unbC(e, A) { return { P, A, hook: (x, px) => { if (P.dead || !P.ground) return; const nx = P.x + Math.sign(x - P.x) * Math.min(px, Math.abs(x - P.x)); if (!isSolid(Math.floor(nx / TS), Math.floor((P.y - 8) / TS))) { P.x = nx; P.vx = 0; } },   /* (claude/dk2b) THE HOOK: a step toward him */
+  hit: (x, d, hard, name) => damagePlayer(x, d, { unblockable: hard, who: e, name }), say: (m, col) => { if (m) number(e.x, e.y - e.h - 18, m, col || '#ffd36b'); }, sound: unbSnd, shake: n => shakeCam(n),
   move: (q, x, y) => moveBody(q, x, y, false), solid: (x, y) => isSolid(Math.floor(x / TS), Math.floor(y / TS)), cover: unbCover, finish: unbFinish, ring: (x, y, r, col) => ringAt(x, y, r, col),
   struck: unbStruck, adds: unbAdds, raise: unbRaise, dodging: () => P.dodge > 0, heroWind: () => ({ charge: P.charge || 0, atk: P.atk, combo: P.combo || 0 }),   /* (claude/dk3: THE DEATH KNIGHT reads your wind-ups and passes them) */ stand: (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); return isSolid(tx, ty) || isOneWay(tileAt(tx, ty)); }, collapse: b => UNBF.bannerFalls(b, enemies), cut: q => unbFinish(q, 'SCYTHED'),
   pull: (x, r, v, dt) => { if (P.dead || !P.ground || Math.abs(P.x - x) > r || Math.abs(P.x - x) < 12 || (A && P.y < A.floor - 20)) return; const nx = P.x + Math.sign(x - P.x) * v * dt; if (!isSolid(Math.floor(nx / TS), Math.floor((P.y - 8) / TS))) P.x = nx; } }; }
@@ -20879,7 +20880,7 @@ function updateBarrowRiderMini(e, dt) { const A = L.mini; if (!A) return; if (e.
   UNBF.updateBarrowRider(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); }
 /* THE DEATH KNIGHT, the hero turned boss (src/unburied-foes.js updateBloodKnight): the room shakes with the blade in the floor */
 function updateBloodKnightBoss(e, dt) { const A = L.arena; if (!A) return; const was = e.mode;
-  UNBF.updateBloodKnight(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x));
+  UNBF.updateBloodKnight(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor, stdX: [A.x0 + UNBF.UNB.bk.stdIn, A.x1 - UNBF.UNB.bk.stdIn] })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.heroX = P.x; e.heroY = P.y;   /* (claude/dk2b) THE CHAPEL STANDARDS stand in from the walls */
   if (e.mode === 'stuck' && was !== 'stuck') { hitstop(0.08); burst(e.x + e.face * 30, A.floor - 2, 10, ['#6a6a74', '#c0283a'], 90, 0.5); }
   if (e.mode === 'reel' && was !== 'reel') { hitstop(0.08); burst(e.x + e.wardFace * 20, A.floor - 30, 12, ['#c0283a', '#ff6b6b'], 90, 0.5); } }   /* the ward breaks */
 function updateDeathKnightBoss(e, dt) { const A = L.arena; if (!A) return;
@@ -20887,7 +20888,7 @@ function updateDeathKnightBoss(e, dt) { const A = L.arena; if (!A) return;
   UNBF.updateDeathKnight(e, dt, unbC(e, { x0: A.x0, x1: A.x1, floor: A.floor })); e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); }
 /* a blow on one of the four: the fallen only FALL under a banner (and are finished lying down); the two big ones open */
 function unbHurt(e, dmg, fromX, tag) {
-  if (e.t === 'bloodknight') { const d = UNBF.bkHurt(e, dmg, fromX); if (d === 0) { number(e.x, e.y - e.h * UNBF.BK_SCALE - 14, 'THE WARD KEEPS IT', '#ff6b6b'); SFX.clank(); sparks(e.x + e.wardFace * 18, e.y - 30, -e.wardFace, 6); return false; } return d; }   /* THE BLOOD WARD: a blow on its face is kept; from behind it finds the man */
+  if (e.t === 'bloodknight') { const d = UNBF.bkHurt(e, dmg, fromX); if (d === 0) { number(e.x, e.y - e.h * UNBF.BK_SCALE - 14, e.wardSay || 'THE WARD KEEPS IT', '#ff6b6b'); SFX.clank(); sparks(e.x + e.wardFace * 18, e.y - 30, -e.wardFace, 6); return false; } return d; }   /* THE BLOOD WARD: a blow on its face is kept; from behind it finds the man */
   if (e.t === 'corpse') { if (e.scythed) return Math.max(dmg, e.hp + 1); const r = UNBF.corpseHurt(e, dmg, unbCover(e), e.burn > 0);
     if (r === false) { number(e.x, e.y - 24, 'IT FALLS - FINISH IT', '#c8b6ff'); SFX.clank(); burst(e.x, e.y - 8, 6, COLS.corpse, 50, 0.4); } return r; }
   if (e.t === 'deathknight') { const d = UNBF.dkHurt(e, dmg); if (d === 0 && e.mode === 'ward') { number(e.x, e.y - e.h - 18, e.wardBroke ? 'IT BREAKS' : 'THE WARD KEEPS IT', e.wardBroke ? '#8fd160' : '#ff6b6b'); SFX.clank(); return false; } return d; }   /* BLOOD WARD: the blow is kept; FULL, the next one breaks it */

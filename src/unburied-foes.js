@@ -36,7 +36,7 @@ import * as SG from './redraw/unburied_siege.js';   /* the engines, the cover an
 
 export const UNB = {
   hp: { bannerbearer: 56, corpse: 30, barrowrider: 1700, deathknight: 1000, bloodknight: 1700 },   /* (claude/dk3: 950 while 19 of 20 blows were chipped to a twentieth; on FULL DAMAGE, tuned on tools/deathknight-pilot.mjs after WEIGHT + the level-up card to 9/18 - a question for Daniel) */
-  dmg: { bkSwing: 17, bkCleave: 23, bkBolt: 11, bkGrip: 8, bkBoil: 8, bkCoil: 13, bkTide: 16, bkNova: 14, bkNovaPer: 3, bkSurge: 16, pole: 12, corpseCut: 10, brRide: 40, brTrample: 30, brFire: 22, brLance: 36, brThrust: 30, /* (claude/sweep3: the Barrow Rider's 18 / 14 / 10 / 16 / 14 - the standard bot won 10/10 at L29) */ cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
+  dmg: { bkCrescent: 24, bkDrain: 5, bkSwing: 17, bkCleave: 23, bkBolt: 11, bkGrip: 8, bkBoil: 8, bkCoil: 13, bkTide: 16, bkNova: 14, bkNovaPer: 3, bkSurge: 16, pole: 12, corpseCut: 10, brRide: 40, brTrample: 30, brFire: 22, brLance: 36, brThrust: 30, /* (claude/sweep3: the Barrow Rider's 18 / 14 / 10 / 16 / 14 - the standard bot won 10/10 at L29) */ cleave: 12, grip: 6, boil: 6, pass: 12, nova: 10, novaPer: 3, surge: 10, volley: 8, cavalry: 18 },
   bannerR: 120,        /* a planted standard raises the fallen within this many pixels of its foot */
   riseT: 1.1, downT: 3.2, plantRange: 150, tether: 44,
   corpseSpeed: 21, bearerSpeed: 26,
@@ -79,8 +79,19 @@ export const UNB = {
     wardT: 1.6, wardFull: 3, reelT: 1.5, novaR: 64, novaPer: 10, guardT: 1.4, wardHeat: 2, heatFall: 1.1, wardReact: 0.65, wardCd: 5,
     dodge: { near: 80, read: 0.12, heavy: 0.45, heavyP2: 0.55, combo: 2, swing: 0.35, swingP2: 0.45, cd: 1.8, cdP2: 0.8, past: 34, back: 70, t: 0.3 },
     surgeR: 90, raise: 1, call: 3, addsMax: 3,
-    order: ['string', 'blade', 'string', 'grip', 'coil', 'string', 'boil', 'ward', 'string', 'raise'],
-    orderP2: ['string', 'tide', 'string', 'coil', 'blade', 'string', 'grip', 'surge', 'string', 'boil', 'ward', 'call'] },
+    /* (claude/dk2b, THE DEATH KNIGHT 2 - the hero's kit as it is now, scratch/brief-dk2.md):
+       REAPER'S RHYTHM - the string's 2nd cut HOOKS you hookPx toward him; its last is THE DRAG (the old cleave's commit and stuck blade), which heals
+       him dragHeal if it lands. BLOOD PRICE CLEAVE (in place of the planted blade) - told tell.price while the blade drinks HIS blood (pricePct of his
+       max health every priceEvery, floored at 1); released, a red crescent out to crescentR (crescentBack behind): it lands - he drinks back priceBack
+       x what he paid; it finds nobody - THE BLOOD IS LOST and he is OPEN spentT; in phase two a crescent paid volleyAt times looses THE RED VOLLEY
+       (the old blade's bolts). BLOOD SURGE's DRAIN, his signature: after the surge he drinks from you drainT within drainR (bkDrain a drainTick,
+       healed into him x drainHeal); strike him drainBreak times and the drain BREAKS - he reels OPEN. THE CHAPEL STANDARDS (B17, the level's own
+       banner rule): two stand stdIn in from the arena's walls; while one stands his ward is FED (a fill every stdFeed s a standard) and a full ward
+       struck does not break - CUT A STANDARD (any blade) and it falls, and a ward standing then BREAKS; the surge stands them up again. */
+    tellPrice: 1.15, priceEvery: 0.38, pricePct: 0.012, crescentR: 86, crescentBack: 18, crescentTop: 70, spentT: 1.5, priceBack: 2, volleyAt: 3, hookPx: 14, dragHeal: 14,
+    drainT: 2.2, drainR: 120, drainTick: 0.4, drainHeal: 2, drainBreak: 2, stdIn: 64, stdFeed: 0.9,
+    order: ['string', 'price', 'string', 'coil', 'grip', 'string', 'boil', 'ward', 'string', 'raise'],   /* (claude/dk2b: the leech before the chain - after the chain's drag you are at his feet, where the leech is never thrown) */
+    orderP2: ['string', 'tide', 'string', 'coil', 'price', 'string', 'grip', 'surge', 'string', 'boil', 'ward', 'call'] },
 };
 export const UNB_FOES = new Set(['bannerbearer', 'corpse', 'barrowrider', 'deathknight', 'bloodknight']);
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -381,24 +392,27 @@ export function dkFrame(e) {
    DAMAGE: every blow lands WHOLE (src/boss-greed.js FULL_DAMAGE, Daniel 10-03) - the ward's face is his one immunity, and his openings
    (the stuck blade, the broken ward) pay x openMul. After each opening he raises a short GUARD (the ward, unbreakable, no nova) so he is
    never chain-locked (design standard B3). The greed reprisal (the mash counter-burst) stays: it counts blows outside his openings. */
-const BK_TELL = { string: 'swingTell', punish: 'swingTell', cleave: 'cleaveTell', blade: 'bladeTell', grip: 'gripTell', boil: 'boilTell', coil: 'coilTell', tide: 'tideTell', ward: 'wardTell', raise: 'raiseTell', call: 'callTell', surge: 'surgeTell', nova: 'novaTell' };
-const BK_SAY = { swingTell: 'HIS GREATSWORD: GUARD IT', cleaveTell: 'THE CLEAVE: GUARD, OR DODGE IT LATE', bladeTell: 'THE PLANTED BLADE: FIND THE GAP', gripTell: 'GRAVE CHAIN: JUMP THE CHAIN',
+const BK_TELL = { string: 'swingTell', punish: 'swingTell', cleave: 'cleaveTell', price: 'priceTell', blade: 'bladeTell', grip: 'gripTell', boil: 'boilTell', coil: 'coilTell', tide: 'tideTell', ward: 'wardTell', raise: 'raiseTell', call: 'callTell', surge: 'surgeTell', nova: 'novaTell' };
+const BK_SAY = { swingTell: 'HIS GREATSWORD: GUARD IT', cleaveTell: 'THE DRAG: GUARD, OR DODGE IT LATE', priceTell: 'BLOOD PRICE: GET OUT OF REACH, OR DODGE THROUGH IT', bladeTell: 'THE RED VOLLEY: FIND THE GAP', gripTell: 'GRAVE CHAIN: JUMP THE CHAIN',
   boilTell: 'BLOOD WELL: STEP OUT', coilTell: 'BLOOD LEECH: GUARD IT, OR IT HEALS HIM', tideTell: 'GRAVE TIDE: OFF THE FLOOR', wardTell: 'BLOOD WARD: GET BEHIND HIM', novaTell: 'BLOOD NOVA: GET CLEAR',
-  raiseTell: 'SUMMON SKELETON', callTell: 'GRAVECALL', surgeTell: 'BLOOD SURGE: GET AWAY' };
-const BK_SND = { swingTell: 'whoosh', cleaveTell: 'charge', bladeTell: 'plant', gripTell: 'crank', boilTell: 'fire', coilTell: 'rise', tideTell: 'bones', wardTell: 'plant', novaTell: 'roar', raiseTell: 'rise', callTell: 'horn', surgeTell: 'roar' };
+  raiseTell: 'SUMMON SKELETON', callTell: 'GRAVECALL', surgeTell: 'BLOOD SURGE: STRIKE HIM TO BREAK THE DRAIN' };
+const BK_SND = { swingTell: 'whoosh', cleaveTell: 'charge', priceTell: 'charge', bladeTell: 'plant', gripTell: 'crank', boilTell: 'fire', coilTell: 'rise', tideTell: 'bones', wardTell: 'plant', novaTell: 'roar', raiseTell: 'rise', callTell: 'horn', surgeTell: 'roar' };
 const BK_COL = { swingTell: '#ffd36b', cleaveTell: '#ffd36b', coilTell: '#ffd36b', wardTell: '#8fd160', raiseTell: '#c8b6ff', callTell: '#c8b6ff' };
 /* the lines that teach (routed to the hint box: src/hint-lines.js) */
-export const BK_LINES = ['THE BLADE IS IN THE FLOOR: HE IS OPEN', 'THE WARD BREAKS: HE IS OPEN', 'THE WARD IS FULL: STRIKE IT AGAIN', 'HE DRINKS YOUR BLOOD', 'THE PASSING: HE SLIPS YOUR BLOW', 'HE SURGES: EVERYTHING COMES SOONER'];
-export const bkOpen = e => e.mode === 'stuck' || e.mode === 'reel';
+export const BK_LINES = ['THE BLOOD IS LOST: HE IS OPEN', 'THE DRAIN BREAKS: HE IS OPEN', 'THE STANDARD FALLS: THE WARD BREAKS', 'THE STANDARDS HOLD IT: CUT ONE', 'HE DRINKS IT BACK', 'HIS STANDARDS RISE AGAIN', 'THE BLADE IS IN THE FLOOR: HE IS OPEN', 'THE WARD BREAKS: HE IS OPEN', 'THE WARD IS FULL: STRIKE IT AGAIN', 'HE DRINKS YOUR BLOOD', 'THE PASSING: HE SLIPS YOUR BLOW', 'HE SURGES: EVERYTHING COMES SOONER'];
+export const bkOpen = e => e.mode === 'stuck' || e.mode === 'reel' || e.mode === 'spent';
+/* THE CHAPEL STANDARDS still standing (claude/dk2b): while one stands, his ward is fed and will not break to a blow */
+export const bkStdUp = e => (e.stds || []).some(s => s.up);
 /* is this blow on the ward's FACE? (the side he stood it up facing; a blow from behind finds the man) */
 export const bkWardFaces = (e, fromX) => e.mode === 'ward' && (Math.sign(fromX - e.x) || e.wardFace) === e.wardFace;
 /* A BLOW ON HIM. The ward's face keeps it (0) and fills; a FULL ward struck again breaks (0, and he reels next frame); anything else
    lands whole - more while he is open. 'heat' is how hard he is being pressed (he answers it with the ward or the passing). */
 export function bkHurt(e, dmg, fromX) { const S = UNB.bk;
   if (bkWardFaces(e, fromX ?? e.x + (e.wardFace || 1))) {
-    if (!e.wardLock && (e.wardFill || 0) >= S.wardFull) e.wardBroke = true; else e.wardFill = Math.min(S.wardFull, (e.wardFill || 0) + 1);
+    e.wardSay = null; if (!e.wardLock && (e.wardFill || 0) >= S.wardFull) { if (bkStdUp(e)) e.wardSay = 'THE STANDARDS HOLD IT: CUT ONE'; else e.wardBroke = true; } else e.wardFill = Math.min(S.wardFull, (e.wardFill || 0) + 1);
     e.wardEvt = (e.wardEvt || 0) + 1; return 0; }
   if (!bkOpen(e)) e.heat = (e.heat || 0) + 1;
+  if (e.mode === 'drain') e.drainHits = (e.drainHits || 0) + 1;   /* (claude/dk2b) a blow on him while he drinks: drainBreak of them and the drain breaks */
   return bkOpen(e) ? Math.round(dmg * S.openMul) : dmg; }
 const bkMul = e => e.phase === 2 ? UNB.bk.p2 : 1;
 export const bkReach = (e, P, floor, r = UNB.bk.cleaveR) => { const f = (P.x - e.x) * (e.face || 1); return f > -UNB.bk.cleaveBack && f < r && P.y > floor - 50; };
@@ -443,6 +457,11 @@ export function updateBloodKnight(e, dt, c) {
   e.dodgeCd = Math.max(0, (e.dodgeCd || 0) - dt); e.wardCd = Math.max(0, (e.wardCd || 0) - dt); e.heat = Math.max(0, (e.heat || 0) - S.heatFall * dt);
   e.open = bkOpen(e) ? Math.max(0, e.modeT) : 0;
   stepBkWorld(e, dt, c);
+  /* THE CHAPEL STANDARDS (claude/dk2b, B17): cut one and it falls - and a ward standing then BREAKS; while one stands, the ward is fed */
+  e.stds ??= (A.stdX || []).map(x => ({ x, up: true }));
+  for (const s of e.stds) if (s.up && c.struck && c.struck(s.x - 6, floor - 44, 12, 44, s)) { s.up = false; e.stdCuts = (e.stdCuts || 0) + 1; c.sound('crack'); c.shake?.(3);
+    if (e.mode === 'ward' && !e.wardLock) { e.wardBroke = true; e.stdBroke = (e.stdBroke || 0) + 1; c.say('THE STANDARD FALLS: THE WARD BREAKS', '#8fd160'); } else c.say('THE STANDARD FALLS', '#c8b6ff'); }
+  if (e.mode === 'ward' && !e.wardLock) { const n = e.stds.filter(s => s.up).length; e.feedT = (e.feedT || 0) + dt * n; if (e.feedT >= S.stdFeed) { e.feedT = 0; if ((e.wardFill || 0) < S.wardFull) { e.wardFill = (e.wardFill || 0) + 1; e.wardEvt = (e.wardEvt || 0) + 1; e.fed = (e.fed || 0) + 1; } } } else e.feedT = 0;
   /* WHAT YOUR HANDS ARE DOING (he reads them as a player reads a boss): a heavy being charged, a cut starting, and how far into a string */
   const W = c.heroWind ? c.heroWind() : null, wAtk0 = e.wAtk ?? -1;
   if (W) { e.wAtk = W.atk; if (!(W.charge > 0)) e.chargeRead = false; }
@@ -450,7 +469,15 @@ export function updateBloodKnight(e, dt, c) {
   if (e.phase === 1 && e.hp <= e.maxHp * S.p2At && bkFree(e)) { e.phase = 2; beginBK(e, 'surge', c); return; }
   if (e.mode === 'wake') { if (e.modeT <= 0) beginBK(e, 'raise', c); return; }
   if (e.mode === 'stuck') { if (e.modeT <= 0) { e.mode = 'wrench'; e.modeT = 0.35; c.say('HE WRENCHES IT FREE', '#ffd36b'); c.sound('crack'); } return; }
-  if (e.mode === 'wrench' || e.mode === 'reel') { if (e.modeT <= 0) bkGuard(e, c); return; }
+  if (e.mode === 'wrench' || e.mode === 'reel' || e.mode === 'spent') { if (e.modeT <= 0) bkGuard(e, c); return; }
+  if (e.mode === 'drain') {   /* (claude/dk2b) HIS SIGNATURE: he drinks from you - near him, a red thread and your blood into him, a draught a drainTick; struck drainBreak times it BREAKS */
+    if ((e.drainHits || 0) >= S.drainBreak) { e.mode = 'reel'; e.modeT = S.reelT; e.open = S.reelT; e.drainBroken = (e.drainBroken || 0) + 1; c.say('THE DRAIN BREAKS: HE IS OPEN', '#8fd160'); c.sound('crack'); c.shake(4); return; }
+    e.drainTickT = (e.drainTickT ?? S.drainTick) - dt; e.drinking = !P.dead && Math.abs(P.x - e.x) < S.drainR && P.y > floor - 60;
+    if (e.drainTickT <= 0) { e.drainTickT = S.drainTick; if (e.drinking) { const r = c.hit(e.x, UNB.dmg.bkDrain, true, 'BLOOD SURGE'); if (r !== false && r !== 'blocked') { const h = UNB.dmg.bkDrain * S.drainHeal; e.hp = Math.min(e.maxHp, e.hp + h); e.healed = (e.healed || 0) + h; e.drank = (e.drank || 0) + 1; } } }
+    if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.4; e.drinking = false; } return; }
+  if (e.mode === 'crescent') { if (e.modeT > 0) return;
+    if (e.crescentHit) { e.mode = 'rest'; e.modeT = 0.45; return; }
+    e.mode = 'spent'; e.modeT = S.spentT; e.open = S.spentT; e.spents = (e.spents || 0) + 1; c.say('THE BLOOD IS LOST: HE IS OPEN', '#8fd160'); c.sound('crack'); return; }
   if (e.mode === 'ward') {
     if (e.wardBroke) { e.wardBroke = false; e.mode = 'reel'; e.modeT = S.reelT; e.open = S.reelT; e.breaks = (e.breaks || 0) + 1; c.say('THE WARD BREAKS: HE IS OPEN', '#8fd160'); c.sound('crack'); c.sound('heavy'); c.shake(6); return; }
     if (e.wardEvt) { e.wardEvt = 0; c.sound('crank'); if (!e.wardLock && e.wardFill >= S.wardFull) c.say('THE WARD IS FULL: STRIKE IT AGAIN', '#8fd160'); }
@@ -471,6 +498,7 @@ export function updateBloodKnight(e, dt, c) {
     if (e.punish) { e.punish = false; e.mode = 'rest'; e.modeT = 0.5; return; }
     if (e.strLeft > 0) { e.mode = 'swingTell'; e.modeT = S.tell.swingNext * bkMul(e); e.face = Math.sign(P.x - e.x) || e.face; c.sound('whoosh'); return; }
     e.mode = 'cleaveTell'; e.modeT = S.tell.cleaveCombo * bkMul(e); e.committed = false; e.threat = false; e.face = Math.sign(P.x - e.x) || e.face; c.sound('charge'); return; }
+  if (e.mode === 'surge' && e.modeT <= 0) { e.mode = 'drain'; e.modeT = S.drainT; e.drainHits = 0; e.drainTickT = S.drainTick; e.drains = (e.drains || 0) + 1; c.sound('rise'); return; }   /* (claude/dk2b) and then he DRINKS */
   if (e.mode === 'cleave' || e.mode === 'blade' || e.mode === 'boil' || e.mode === 'coil' || e.mode === 'tide' || e.mode === 'raise' || e.mode === 'surge' || e.mode === 'nova' || e.mode === 'rest') {
     if (e.mode === 'rest' && bkReact(e, c, W, wAtk0, rnd)) return;
     if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = S.cd * bkMul(e); } return; }
@@ -480,18 +508,27 @@ export function updateBloodKnight(e, dt, c) {
       if (!e.committed) { e.face = Math.sign(P.x - e.x) || e.face;
         if (e.modeT <= S.tell.commit * bkMul(e)) { e.committed = true; e.threat = !P.dead && bkReach(e, P, floor); c.sound('whoosh'); } }
     } else if (e.mode === 'swingTell') { if (e.modeT > S.tell.swingTurn) e.face = Math.sign(P.x - e.x) || e.face; }
+    else if (e.mode === 'priceTell') { if (e.modeT > 0.25) e.face = Math.sign(P.x - e.x) || e.face;   /* THE BLOOD PRICE: the blade drinks HIS blood while he holds it (never his last) */
+      e.priceT = (e.priceT ?? S.priceEvery) - dt; if (e.priceT <= 0 && e.modeT > 0.1) { e.priceT = S.priceEvery * bkMul(e); const cost = Math.max(1, Math.round(e.maxHp * S.pricePct)), hp0 = e.hp; e.hp = Math.max(1, e.hp - cost); e.paid = (e.paid || 0) + (hp0 - e.hp); e.paidN = (e.paidN || 0) + 1; c.sound('rise'); } }
     else if (e.mode !== 'bladeTell' && e.mode !== 'gripTell' && e.mode !== 'boilTell' && e.mode !== 'tideTell') e.face = Math.sign(P.x - e.x) || e.face;
     if (e.mode === 'surgeTell') c.pull?.(e.x, S.surgeR + 30, 30, dt);   /* the drain takes a step of you toward him */
     if (e.modeT > 0) return;
     const ad = Math.abs(P.x - e.x);
-    if (e.mode === 'swingTell') { e.mode = 'swing'; e.modeT = S.swingRec; if (!e.punish) e.strLeft = Math.max(0, (e.strLeft || 0) - 1);
+    if (e.mode === 'priceTell') { const n = e.paidN || 0, f = (P.x - e.x) * e.face; e.mode = 'crescent'; e.modeT = 0.4; e.crescentHit = false; c.sound('heavy'); c.shake(4 + n); c.ring?.(e.x + e.face * 30, floor - 30, S.crescentR * 0.6, '#ff4a5a');
+      if (!P.dead && !(c.dodging && c.dodging()) && f > -S.crescentBack && f < S.crescentR && P.y > floor - S.crescentTop) { const r = c.hit(e.x, Math.round(UNB.dmg.bkCrescent * (1 + 0.12 * n)), true, 'BLOOD PRICE CLEAVE');
+        if (r !== false) { e.crescentHit = true; const back = (e.paid || 0) * S.priceBack; e.hp = Math.min(e.maxHp, e.hp + back); e.healed = (e.healed || 0) + back; c.say('HE DRINKS IT BACK', '#ff6b6b'); } }
+      if (e.phase === 2 && n >= S.volleyAt) { const sx = e.x + e.face * 22, sy = floor - 6, nb = S.boltsP2; for (let i = 0; i < nb; i++) { const tx = clamp(P.x + (i - (nb - 1) / 2) * S.gapP2, A.x0 + 8, A.x1 - 8), T = S.boltT + 0.05 * i; e.bolts.push({ x: sx, y: sy, t: 0, vx: (tx - sx) / T, vy: ((floor - 12) - sy - 0.5 * S.boltG * T * T) / T }); } e.volleys = (e.volleys || 0) + 1; }   /* THE RED VOLLEY */
+      e.paid = 0; e.paidN = 0; return; }
+    if (e.mode === 'swingTell') { e.mode = 'swing'; e.modeT = S.swingRec; if (!e.punish) { e.strLeft = Math.max(0, (e.strLeft || 0) - 1); e.cutN = (e.cutN || 0) + 1; }
       const nx = clamp(e.x + e.face * S.lunge, A.x0 + 20, A.x1 - 20); if (!(Math.abs(P.x - nx) < 14 && Math.sign(P.x - e.x) === e.face)) e.x = nx;   /* the step into the cut (never through you) */
-      c.sound('slash'); if (!P.dead && bkReach(e, P, floor, S.swingR)) c.hit(e.x, UNB.dmg.bkSwing, false, 'HIS GREATSWORD'); return; }
+      c.sound('slash'); if (!P.dead && bkReach(e, P, floor, S.swingR)) { const r = c.hit(e.x, UNB.dmg.bkSwing, false, e.cutN === 2 ? 'THE HOOK' : 'HIS GREATSWORD');
+        if (e.cutN === 2 && !e.punish && r !== false && r !== 'blocked') { c.hook?.(e.x + e.face * 26, S.hookPx); e.hooks = (e.hooks || 0) + 1; } }   /* (claude/dk2b) REAPER'S RHYTHM: the second cut HOOKS you a step to him */
+      return; }
     if (e.mode === 'cleaveTell') { c.shake(4); c.sound('heavy');
       const under = !P.dead && bkReach(e, P, floor);
       /* A11: he was on you when he committed, and you are not there (or you are dodging through it) - the blade goes into the floor */
       if (e.threat && (!under || (c.dodging && c.dodging()))) { e.mode = 'stuck'; e.modeT = S.stuckT; e.open = S.stuckT; e.stucks = (e.stucks || 0) + 1; c.say('THE BLADE IS IN THE FLOOR: HE IS OPEN', '#8fd160'); c.sound('crack'); c.ring(e.x + e.face * 30, floor - 2, 20, '#8fd160'); return; }
-      e.mode = 'cleave'; e.modeT = 0.55; if (under) c.hit(e.x, UNB.dmg.bkCleave, false, 'THE CLEAVE'); return; }
+      e.mode = 'cleave'; e.modeT = 0.55; if (under) { const r = c.hit(e.x, UNB.dmg.bkCleave, false, 'THE DRAG'); if (r !== false && r !== 'blocked') { e.hp = Math.min(e.maxHp, e.hp + S.dragHeal); e.healed = (e.healed || 0) + S.dragHeal; e.dragDrank = (e.dragDrank || 0) + 1; } } return; }   /* (claude/dk2b) THE DRAG drinks a sliver back if it lands */
     if (e.mode === 'bladeTell') { e.mode = 'blade'; e.modeT = 0.6; c.sound('crack'); c.shake(5);
       const sx = e.x + e.face * 22, sy = floor - 6;
       (e.boltAt || []).forEach((tx, k) => { const T = S.boltT + 0.05 * k; e.bolts.push({ x: sx, y: sy, t: 0, vx: (tx - sx) / T, vy: ((floor - 12) - sy - 0.5 * S.boltG * T * T) / T }); });
@@ -512,7 +549,7 @@ export function updateBloodKnight(e, dt, c) {
       return; }
     if (e.mode === 'surgeTell') { e.mode = 'surge'; e.modeT = 0.6; c.sound('pass'); c.shake(6); c.ring(e.x, floor - 12, S.surgeR, '#ff6b6b');
       if (!P.dead && ad < S.surgeR && P.y > floor - 44) c.hit(e.x, UNB.dmg.bkSurge, true, 'BLOOD SURGE');
-      if (!e.surged) { e.surged = true; c.say('HE SURGES: EVERYTHING COMES SOONER', '#ff6b6b'); e.turn = 0; e.raiseNext = true; } return; }
+      if (!e.surged) { e.surged = true; c.say('HE SURGES: EVERYTHING COMES SOONER', '#ff6b6b'); e.turn = 0; e.raiseNext = true; if ((e.stds || []).some(s => !s.up)) { for (const s of e.stds) s.up = true; c.say('HIS STANDARDS RISE AGAIN', '#c8b6ff'); } } return; }
   }
   /* STALKING: he moves like you - at a hero's pace (quicker once he has surged), a greatsword's length off you, never hugging you */
   if (bkReact(e, c, W, wAtk0, rnd)) return;
@@ -529,6 +566,7 @@ export function updateBloodKnight(e, dt, c) {
   if ((what === 'boil' || what === 'tide') && high) what = 'blade';
   if (what === 'coil' && ad < S.coilMin && !high) what = 'string';   /* the coil is thrown at range: at his feet it is the greatsword */
   if (what === 'surge' && ad > S.surgeR + 40) what = 'boil';
+  if (what === 'price' && ad > S.crescentR + 50) what = ad <= S.gripR && !high ? 'grip' : 'coil';   /* (claude/dk2b) the crescent is for a hero in its reach: far off, the chain or the leech */
   if ((what === 'raise' || what === 'call') && bkAdds(e, c) >= S.addsMax) what = 'blade';
   beginBK(e, what, c);
 }
@@ -545,9 +583,10 @@ function bkReact(e, c, W, wAtk0, rnd) {
   return false;
 }
 function beginBK(e, what, c) { const { P, A } = c, S = UNB.bk, rnd = c.rand || Math.random; e.face = Math.sign(P.x - e.x) || e.face || 1; e.committed = false; e.threat = false; e.punish = false;
-  if (what === 'string') { const L = e.phase === 2 ? S.stringsP2 : S.strings, n = L[Math.floor(rnd() * L.length) % L.length]; e.strLeft = n - 1; e.strings = (e.strings || 0) + 1; if (e.strLeft <= 0) what = 'cleave'; }
+  if (what === 'string') { const L = e.phase === 2 ? S.stringsP2 : S.strings, n = L[Math.floor(rnd() * L.length) % L.length]; e.strLeft = n - 1; e.strings = (e.strings || 0) + 1; e.cutN = 0; if (e.strLeft <= 0) what = 'cleave'; }
+  if (what === 'price') { e.paid = 0; e.paidN = 0; e.priceT = 0.05; }   /* (the first price as the wind starts, as the hero's) */
   if (what === 'punish') { e.punish = true; e.strLeft = 0; }
-  e.mode = BK_TELL[what]; e.modeT = (what === 'punish' ? S.tell.punish : what === 'string' ? S.tell.swing : S.tell[what]) * (what === 'surge' ? 1 : bkMul(e));
+  e.mode = BK_TELL[what]; e.modeT = (what === 'punish' ? S.tell.punish : what === 'string' ? S.tell.swing : what === 'price' ? S.tellPrice : S.tell[what]) * (what === 'surge' ? 1 : bkMul(e));
   if (what === 'blade') { const n = e.phase === 2 ? S.boltsP2 : S.bolts, gap = e.phase === 2 ? S.gapP2 : S.gap; e.boltAt = []; for (let i = 0; i < n; i++) e.boltAt.push(clamp(P.x + (i - (n - 1) / 2) * gap, A.x0 + 8, A.x1 - 8)); }
   if (what === 'boil') e.boilX = clamp(P.x, A.x0 + 16, A.x1 - 16);
   if (what === 'tide') { e.tideAt = []; for (let i = 0; i < S.tideN; i++) { const x = e.x + e.face * (S.tideFrom + i * S.tideStep); if (x < A.x0 + 8 || x > A.x1 - 8) break; e.tideAt.push(x); } }
@@ -556,23 +595,28 @@ function beginBK(e, what, c) { const { P, A } = c, S = UNB.bk, rnd = c.rand || M
 export const bkForce = (e, what, c) => beginBK(e, what, c);   /* for the harness: A3, every attack forced */
 export const bkPassForce = (e, c) => bkPass(e, c, 'forced');
 /* THE MOVE LIST, for the check (tools/unburied-fights.mjs): every move of his and the hero skill it is (src/progression-catalog.js names) */
-export const BK_KIT = { string: 'greatsword cleave (the combo)', cleave: 'greatsword cleave (the heavy)', blade: 'THE PLANTED BLADE', grip: 'GRAVE CHAIN', boil: 'BLOOD WELL', coil: 'BLOOD LEECH',
-  tide: 'GRAVE TIDE', ward: 'BLOOD WARD', nova: 'BLOOD WARD (NOVA)', pass: 'THE PASSING', punish: 'THE PASSING (the cut out of it)', raise: 'SUMMON SKELETON', call: 'GRAVECALL', surge: 'BLOOD SURGE' };
+export const BK_KIT = { string: "REAPER'S RHYTHM (the chain: the rising cut, THE HOOK)", cleave: "REAPER'S RHYTHM (THE DRAG, the chain's last cut)", price: 'BLOOD PRICE CLEAVE', blade: 'THE RED VOLLEY', grip: 'GRAVE CHAIN', boil: 'BLOOD WELL', coil: 'BLOOD LEECH',
+  tide: 'GRAVE TIDE', ward: 'BLOOD WARD', nova: 'BLOOD WARD (NOVA)', pass: 'THE PASSING', punish: 'THE PASSING (the cut out of it)', raise: 'SUMMON SKELETON', call: 'GRAVECALL', surge: 'BLOOD SURGE', drain: 'BLOOD SURGE (the drain)' };
+/* (claude/dk2b, B5) REMOVED from his fight because the hero no longer has them: the old knight-like held CLEAVE as a move of its own (the string's
+   last cut is THE DRAG now - the same committed blow, and it drinks), and THE PLANTED BLADE as a move (its bolts are THE RED VOLLEY, loosed only by a
+   deep-paid crescent in phase two - the hero's talent). Nothing invented is left. */
 /* HIS SPRITE IS THE HERO'S OWN KIT (bakeReaper, src/chars.js), a pose per frame - main.js bakes this list into SPR.bloodknight at 1.5x,
    a touch darker. [pose, frame] into the kit; the LAST row is his hurt (HAS_HURT reads the last frame of a set as the hurt pose).
    0 idle | 1-3 walk | 4 the blade back (a cut or the cleave lifted) | 5 overhead, committed | 6 the cut down | 7 the blade in the floor (stuck,
    and the planted blade driven in) | 8,9 the planted blade: lifted, overhead | 10,11 the blood ward | 12 THE PASSING | 13,14 death grip |
    15,16 blood boil | 17,18 death coil | 19,20 grave tide | 21,22 summon / gravecall | 23,24 surge and nova | 25 wrenching it free, reeling | 26 hurt */
 export const BK_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4], ['atk', 0], ['atk', 1], ['atk', 3], ['heavy', 2], ['heavy', 0], ['heavy', 1], ['block', 0], ['block', 1],
-  ['slide', 0], ['grip', 0], ['grip', 1], ['boil', 0], ['boil', 1], ['coil', 0], ['coil', 1], ['tide', 0], ['tide', 1], ['call', 1], ['call', 2], ['unholy', 0], ['unholy', 1], ['slump', 0], ['hurt', 0]];
-export const BK_SCALE = 1.5;
+  ['slide', 0], ['grip', 0], ['grip', 1], ['boil', 0], ['boil', 1], ['coil', 0], ['coil', 1], ['tide', 0], ['tide', 1], ['call', 1], ['call', 2], ['unholy', 0], ['unholy', 1], ['slump', 0],
+  ['priceHold', 0], ['priceHold', 1], ['crescent', 0], ['crescent', 1], ['crescent', 2], ['atkB', 0], ['atkB', 1], ['harvest', 1], ['hurt', 0]];   /* (claude/dk2b) 26,27 the blood price held | 28-30 the crescent | 31,32 THE HOOK | 33 THE DRAIN (the hand drawing your blood) | 34 hurt */
+export const BK_SCALE = 1.4;   /* (claude/dk2b: 1.5 -> 1.4, like the Crusader and the Pyromancer as bosses) */
 export function bkFrame(e) {
-  switch (e.mode) { case 'swingTell': return 4; case 'swing': return 6; case 'cleaveTell': return e.committed ? 5 : 4; case 'cleave': return 6; case 'stuck': case 'blade': return 7; case 'wrench': case 'reel': return 25;
+  switch (e.mode) { case 'swingTell': return (e.cutN || 0) === 1 && !e.punish ? 31 : 4; case 'swing': return e.cutN === 2 && !e.punish ? 32 : 6;
+    case 'priceTell': return (e.paidN || 0) >= 2 ? 27 : 26; case 'crescent': return e.modeT > 0.28 ? 29 : 30; case 'spent': return 30; case 'drain': return 33; case 'cleaveTell': return e.committed ? 5 : 4; case 'cleave': return 6; case 'stuck': case 'blade': return 7; case 'wrench': case 'reel': return 25;
     case 'bladeTell': return e.modeT > UNB.bk.tell.blade * bkMul(e) * 0.5 ? 8 : 9; case 'wardTell': case 'ward': return 10 + Math.floor((e.anim || 0) * 3) % 2;
     case 'pass': return 12; case 'gripTell': return 13; case 'grip': case 'drag': return 14; case 'boilTell': return 15; case 'boil': return 16; case 'coilTell': return 17; case 'coil': return 18;
     case 'tideTell': return 19; case 'tide': return 20; case 'raiseTell': case 'callTell': case 'raise': return 21 + Math.floor((e.anim || 0) * 4) % 2;
     case 'surgeTell': case 'novaTell': return 23; case 'surge': case 'nova': return 24; case 'sleep': case 'wake': return 0; }
-  if (e.hurtT > 0) return 26;
+  if (e.hurtT > 0) return 34;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 8) % 3 : 0;
 }
 /* 0 idle carrying | 1,2 walk | 3 plant tell | 4 guard (planted, pole in hand) | 5 pole tell | 6 pole | 7 hurt */
@@ -808,6 +852,19 @@ function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
   const S = UNB.bk, f = e.face || 1, k = 0.5 + 0.5 * Math.sin(time * 14);
   if (e.mode === 'swingTell') { g.globalAlpha = 0.16 + 0.18 * k; R(g, f > 0 ? x - S.cleaveBack : x - S.swingR, fy - 2, S.swingR + S.cleaveBack, 2, '#ffd36b'); g.globalAlpha = 1; }
   if (e.mode === 'cleaveTell') { g.globalAlpha = (e.committed ? 0.35 : 0.18) + 0.2 * k; R(g, f > 0 ? x - S.cleaveBack : x - S.cleaveR, fy - 2, S.cleaveR + S.cleaveBack, 2, e.committed ? '#ff6b6b' : '#ffd36b'); g.globalAlpha = 1; }
+  /* (claude/dk2b) THE BLOOD PRICE: the blade over his shoulder glowing redder with every price, and the reach the crescent will have (red: no guard) */
+  if (e.mode === 'priceTell') { const n = e.paidN || 0; g.globalAlpha = 0.3 + 0.25 * k + 0.05 * n; R(g, f > 0 ? x - S.crescentBack : x - S.crescentR, fy - 2, S.crescentR + S.crescentBack, 2, '#ff4a5a');
+    g.fillStyle = '#c0283a'; g.globalAlpha = 0.35 + 0.1 * n; g.beginPath(); g.arc(x - f * 18, fy - 62, 4 + 2 * n, 0, 7); g.fill(); g.globalAlpha = 1; R(g, x - f * 18 - 1, fy - 64 - n, 2, 4 + 2 * n, '#ffd0d0'); }
+  if (e.mode === 'crescent') { const t = 1 - Math.max(0, e.modeT) / 0.4; g.globalAlpha = 0.75 * (1 - t * 0.6); g.strokeStyle = '#ff4a5a'; g.lineWidth = 3; g.beginPath(); g.ellipse(x + f * 10, fy - 30, S.crescentR * 0.85, 34, 0, f > 0 ? -1.4 : Math.PI - 1.0, f > 0 ? 1.0 : Math.PI + 1.4); g.stroke(); g.globalAlpha = 1; }
+  /* (claude/dk2b) THE DRAIN: a red thread from you to him while he drinks, and the drops running along it */
+  if (e.mode === 'drain' && e.drinking && e.heroX !== undefined) { const px = Math.round(e.heroX - cx), py = Math.round(e.heroY - cy) - 14; g.globalAlpha = 0.45 + 0.3 * k; g.strokeStyle = '#c0283a'; g.lineWidth = 1; g.beginPath(); g.moveTo(px, py); g.lineTo(x, fy - 40); g.stroke();
+    for (let i = 0; i < 4; i++) { const u = ((time * 1.6 + i / 4) % 1); R(g, px + (x - px) * u - 1, py + (fy - 40 - py) * u - 1, 2, 2, '#ff6b6b'); } g.globalAlpha = 1; }
+  if (e.mode === 'drain') { const n = Math.max(0, UNB.bk.drainBreak - (e.drainHits || 0)); for (let i = 0; i < UNB.bk.drainBreak; i++) R(g, x - 5 + i * 6, fy - 74, 4, 4, i < n ? '#c0283a' : '#3a1418'); }   /* what is left to break it */
+  /* (claude/dk2b) THE CHAPEL STANDARDS: standing - a pole and a red standard, and while his ward stands a thread of blood from each into it; cut - lying */
+  for (const s of e.stds || []) { const sx = Math.round(s.x - cx);
+    if (s.up) { R(g, sx - 1, fy - 46, 2, 46, '#5a4a36'); R(g, sx + 1, fy - 44, 11, 14, '#8e1a22'); R(g, sx + 1, fy - 44, 11, 2, '#c8a44a'); R(g, sx + 4, fy - 39, 5, 5, '#c0283a'); R(g, sx - 3, fy - 2, 6, 2, '#3a2e22');
+      if (e.mode === 'ward' && !e.wardLock) { const wx = x + (e.wardFace || f) * 20; g.globalAlpha = 0.3 + 0.3 * k; g.strokeStyle = '#ff4a5a'; g.lineWidth = 1; g.beginPath(); g.moveTo(sx + 6, fy - 37); g.quadraticCurveTo((sx + wx) / 2, fy - 70, wx, fy - 30); g.stroke(); g.globalAlpha = 1; } }
+    else { R(g, sx - 12, fy - 3, 24, 2, '#5a4a36'); R(g, sx + 6, fy - 6, 10, 4, '#5e1418'); } }
   if (e.mode === 'bladeTell') for (const tx of e.boltAt || []) { const sx = Math.round(tx - cx); g.globalAlpha = 0.35 + 0.45 * k; R(g, sx - 5, fy - 2, 11, 2, '#ff6b6b'); R(g, sx - 1, fy - 6, 3, 4, '#c0283a'); g.globalAlpha = 1; }
   for (const b of e.bolts || []) { const bx = Math.round(b.x - cx), by = Math.round(b.y - cy); g.globalAlpha = 0.6; R(g, bx - 3 - Math.sign(b.vx) * 5, by - 1, 5, 2, '#7a1020'); g.globalAlpha = 1;
     R(g, bx - 3, by - 3, 6, 6, '#7a1020'); R(g, bx - 2, by - 2, 4, 4, '#c0283a'); R(g, bx - 1, by - 1, 2, 2, '#ff9a9a'); }
@@ -835,6 +892,7 @@ function drawBloodKnightWorld(g, e, x, fy, cx, cy, time) {
       g.globalAlpha = 0.95; g.fillStyle = lock ? '#a8a0a8' : i < H * 0.3 ? '#ffc0c8' : '#ff4a5a'; g.fillRect(wf > 0 ? wx + off : wx - off - 1, y, 1, 1); }
     g.globalAlpha = 1;
     if (e.mode === 'ward' && !lock) { for (let i = 0; i < S.wardFull; i++) R(g, wx - 7 + i * 5, top - 6, 3, 3, i < (e.wardFill || 0) ? '#ff6b6b' : '#3a1418');
+      for (let i = 0; i < (e.wardFill || 0); i++) { const cy0 = top + 8 + i * 14; R(g, wx + wf * (2 + i), cy0, 1, 6, '#ffd0d0'); R(g, wx + wf * (3 + i), cy0 + 5, 1, 5, '#ffd0d0'); R(g, wx + wf * (1 + i), cy0 + 9, 1, 4, '#ffd0d0'); }   /* (claude/dk2b) the shell CRACKS as it fills */
       if ((e.wardFill || 0) >= S.wardFull) { g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.strokeRect(wx - 9, top - 2, 18, H + 2); g.globalAlpha = 1; } } }
   /* BLOOD NOVA and BLOOD SURGE: the ring they will reach, drawing in */
   if (e.mode === 'novaTell') { const r = S.novaR + S.novaPer * (e.wardFill || 0), t = 1 - Math.max(0, e.modeT) / (S.tell.nova * bkMul(e)); g.globalAlpha = 0.25 + 0.4 * t; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 4, r, 9, 0, 0, 7); g.stroke(); g.globalAlpha = 1; }

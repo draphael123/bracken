@@ -190,7 +190,7 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
     for (const m of moves) { const skill = U.BK_KIT[m]; assert.ok(skill, 'his move "' + m + '" names no hero skill (BK_KIT)'); const name = skill.replace(/\s*\(.*\)$/, '');
       assert.ok(name === 'greatsword cleave' || SRC.includes(name), 'his move "' + m + '" claims the hero skill ' + name + ', which the hero does not have'); }
     assert.ok(!moves.some(m => /rush|charge/i.test(m)) && !/rushTell|'rush'|GREATSWORD RUSH/.test(MOD.slice(MOD.indexOf('THE DEATH KNIGHT (boss'), MOD.indexOf('export function bbFrame'))), 'THE GREATSWORD RUSH is deleted (Daniel 10-03: not in his kit)');
-    for (const t of ['swingTell', 'cleaveTell', 'bladeTell', 'gripTell', 'boilTell', 'coilTell', 'tideTell', 'wardTell', 'novaTell', 'raiseTell', 'callTell', 'surgeTell']) assert.ok(('bloodknight|' + t) in MARKS.MARK, 'his tell ' + t + ' has no mark over it (src/marks.js)'); }
+    for (const t of ['swingTell', 'cleaveTell', 'priceTell', 'bladeTell', 'gripTell', 'boilTell', 'coilTell', 'tideTell', 'wardTell', 'novaTell', 'raiseTell', 'callTell', 'surgeTell']) assert.ok(('bloodknight|' + t) in MARKS.MARK, 'his tell ' + t + ' has no mark over it (src/marks.js)'); }
   /* THE DAMAGE MODEL (FULL DAMAGE, DEFENDS HIMSELF): outside the ward every blow whole; the ward's face 0 and it fills; behind it whole; FULL and struck again it breaks and he is open */
   { const P = { x: X - 60, y: A.floor, dead: false }, e = mk(), c = bk(P);
     assert.equal(U.bkHurt(e, 20, X - 30), 20, 'outside the ward a blow lands whole'); assert.ok(!GB.chipped(e, true), 'and the boss rule never chips him (src/boss-greed.js FULL_DAMAGE)');
@@ -282,10 +282,46 @@ const run = (fn, e, c, secs, dt = 1 / 60) => { for (let i = 0; i < secs / dt; i+
   for (const phase of [1, 2]) { const e = mk({ cd: undefined, phase, mode: phase === 1 ? 'wake' : 'stalk', modeT: 1.2 }); if (phase === 2) { e.hp = e.maxHp * 0.4; e.surged = true; }   /* (he wakes in phase one: phase two starts on its feet) */
     const P = { x: X - 60, y: A.floor, dead: false }, W = { charge: 0, atk: -1, combo: 0 }, adds = [], c = bk(P, adds, { heroWind: () => W }), seen = new Set();
     for (let i = 0; i < 60 * 150; i++) { U.updateBloodKnight(e, 1 / 60, c); seen.add(e.mode); P.x = clamp(e.x + Math.sin(i / 70) * 150, A.x0 + 20, A.x1 - 20); W.charge = (i % 200) > 150 ? ((i % 200) - 150) / 60 : 0; W.atk = (i % 40) < 8 ? (i % 40) / 60 : -1; W.combo = (i / 40 | 0) % 3; if (i % 600 === 0) adds.length = 0; }
-    for (const m of phase === 1 ? ['swingTell', 'cleaveTell', 'bladeTell', 'gripTell', 'coilTell', 'boilTell', 'wardTell', 'raiseTell', 'pass'] : ['swingTell', 'cleaveTell', 'tideTell', 'coilTell', 'bladeTell', 'gripTell', 'surgeTell', 'boilTell', 'wardTell', 'callTell', 'pass'])
+    /* (claude/dk2b, B5: the hero's held blow is the BLOOD PRICE CLEAVE now - priceTell takes the planted blade's place in both phases; phase two's surge DRINKS) */
+    for (const m of phase === 1 ? ['swingTell', 'cleaveTell', 'priceTell', 'gripTell', 'coilTell', 'boilTell', 'wardTell', 'raiseTell', 'pass'] : ['swingTell', 'cleaveTell', 'tideTell', 'coilTell', 'priceTell', 'gripTell', 'surgeTell', 'drain', 'boilTell', 'wardTell', 'callTell', 'pass'])
       assert.ok(seen.has(m), 'phase ' + phase + ' never reached ' + m + ': ' + [...seen]);
     assert.ok(!seen.has(phase === 1 ? 'tideTell' : 'raiseTell'), 'phase ' + phase + ' keeps its own moves (one new move a phase): ' + [...seen]); }
-  ok('the death knight', 'his kit only (no rush): string+cleave, blade, grip, boil, coil (heals), tide, ward/nova, passing; full damage; A3, A10, A11, B3'); }
+  /* (claude/dk2b) REAPER'S RHYTHM: the string's second cut HOOKS a hero it lands on a step toward him; a guarded one does not; THE DRAG (the last) drinks a sliver if it lands */
+  { let hooked = 0, dragged = 0, guardedHook = 0; for (let s0 = 1; s0 <= 48; s0++) { const s = (s0 - 1) % 24 + 1, P = { x: X - 40, y: A.floor, dead: false }, e = mk({ hp: 900 }), hooks = []; const guard = s0 > 24;   /* (the same 24 strings, unguarded then guarded) */
+      const c = bk(P, [], { rand: seeded(s), hook: (x, px) => hooks.push(px), hit: (x, d, hard, name) => { c.hits.push({ d, hard, name }); return guard ? 'blocked' : true; } }); force(e, 'string', c);
+      for (let i = 0; i < 60 * 6 && e.mode !== 'stalk'; i++) { U.updateBloodKnight(e, 1 / 60, c); e.cd = 99; P.x = e.x - 40; }
+      if (!guard && c.hits.some(h => h.name === 'THE HOOK')) { hooked++; assert.ok(hooks.length >= 1 && hooks[0] === S.hookPx, 'THE HOOK pulled ' + hooks); }
+      if (guard && c.hits.some(h => h.name === 'THE HOOK')) { guardedHook++; assert.equal(hooks.length, 0, 'a guarded hook pulls nobody'); }
+      if (!guard && c.hits.some(h => h.name === 'THE DRAG')) { dragged++; assert.ok(e.dragDrank >= 1 && e.hp >= 900 + S.dragHeal - 1, 'THE DRAG drinks: ' + e.hp); } }
+    assert.ok(hooked >= 1 && guardedHook >= 1 && dragged >= 4,   /* (the hook is the 2nd cut of a FULL three-cut chain: a quarter of his strings in phase one) */ 'the rhythm: hooked ' + hooked + ', guarded ' + guardedHook + ', dragged ' + dragged); }
+  /* (claude/dk2b) BLOOD PRICE CLEAVE: told, he pays his OWN blood while he holds it (never his last); the red crescent out to crescentR - stayed in it, it
+     lands and he DRINKS BACK priceBack x what he paid; out of reach (or dodged through) THE BLOOD IS LOST and he is OPEN spentT; in phase two a deep price looses THE RED VOLLEY */
+  { const P = { x: X - 60, y: A.floor, dead: false }, e = mk({ hp: 1000 }), c = bk(P); force(e, 'price', c); assert.equal(e.mode, 'priceTell'); tell(e, c, S.tellPrice - 0.05);
+    const paid = e.paid; assert.ok(e.paidN >= 2 && paid >= 2 * Math.round(e.maxHp * S.pricePct) && e.hp === 1000 - paid, 'he pays his own blood while he holds it: ' + paid + ' in ' + e.paidN);
+    tell(e, c, 0.1); assert.equal(c.hits.length, 1, 'the crescent finds a hero in its reach'); assert.equal(c.hits[0].hard, true, 'red: no guard turns it'); assert.equal(e.hp, Math.min(e.maxHp, 1000 - paid + paid * S.priceBack), 'landed, he drinks back double');
+    tell(e, c, 0.6); assert.ok(!U.bkOpen(e), 'a crescent that landed opens nothing');
+    const Q = { x: X - 60, y: A.floor, dead: false }, e2 = mk({ hp: 1000 }), c2 = bk(Q); force(e2, 'price', c2); tell(e2, c2, S.tellPrice - 0.2); Q.x = X - S.crescentR - 40; tell(e2, c2, 0.3);
+    assert.equal(c2.hits.length, 0, 'out of its reach, nothing'); tell(e2, c2, 0.45); assert.equal(e2.mode, 'spent', 'THE BLOOD IS LOST'); assert.ok(U.bkOpen(e2) && e2.hp < 1000, 'and he is OPEN, poorer by the price');
+    assert.equal(U.bkHurt(e2, 10, Q.x), Math.round(10 * S.openMul), 'spent, a blow takes x' + S.openMul); tell(e2, c2, S.spentT + 0.05); assert.equal(e2.mode, 'ward', 'B3: after it he GUARDS');
+    const D = { x: X - 60, y: A.floor, dead: false }, e3 = mk(), c3 = bk(D); force(e3, 'price', c3); tell(e3, c3, S.tellPrice - 0.05); D.dodge = 0.3; tell(e3, c3, 0.5); assert.equal(c3.hits.length, 0, 'dodged through, it finds nothing'); assert.equal(e3.mode, 'spent');
+    const lo = mk({ hp: 3 }), cl = bk({ x: X - 60, y: A.floor, dead: false }); force(lo, 'price', cl); tell(lo, cl, S.tellPrice - 0.05); assert.equal(lo.hp, 1, 'HE NEVER KILLS HIMSELF: the price leaves him one');
+    const v = mk({ phase: 2, hp: 1000 }), cv = bk({ x: X - S.crescentR - 60, y: A.floor, dead: false }); force(v, 'price', cv); tell(v, cv, S.tellPrice * S.p2 + 0.05); assert.ok(v.volleys === 1 && v.bolts.length === S.boltsP2, 'phase two, a deep price looses THE RED VOLLEY: ' + v.bolts.length); }
+  /* (claude/dk2b) BLOOD SURGE'S DRAIN, his signature: after the surge he drinks from a hero near him - your blood into him - until it runs out, or until you strike him drainBreak times: then it BREAKS and he is OPEN */
+  { const P = { x: X - 60, y: A.floor, dead: false }, e = mk({ phase: 2, hp: 800 }), c = bk(P); force(e, 'surge', c); tell(e, c, S.tell.surge + 0.6 + 0.05); assert.equal(e.mode, 'drain', 'after the surge, he DRINKS');
+    const h0 = e.hp, n0 = c.hits.length; tell(e, c, S.drainTick * 2 + 0.05); assert.ok(c.hits.length - n0 >= 2 && c.hits.slice(n0).every(h => h.name === 'BLOOD SURGE' && h.hard), 'a draught a tick: ' + (c.hits.length - n0)); assert.ok(e.hp > h0, 'and it heals him');
+    for (let i = 0; i < S.drainBreak; i++) U.bkHurt(e, 10, P.x); tell(e, c, 0.02); assert.equal(e.mode, 'reel', 'struck ' + S.drainBreak + ' times, the drain BREAKS'); assert.ok(U.bkOpen(e), 'and he is OPEN');
+    const F = { x: X - S.drainR - 60, y: A.floor, dead: false }, e2 = mk({ phase: 2, hp: 800 }), c2 = bk(F); force(e2, 'surge', c2); tell(e2, c2, S.tell.surge + 0.6 + S.drainT); assert.equal(c2.hits.length, 0, 'far off, he drinks nothing'); assert.equal(e2.hp, 800); }
+  /* (claude/dk2b, B17) THE CHAPEL STANDARDS: while one stands his ward is FED and a full ward struck holds; CUT ONE while the ward stands and it BREAKS; the surge stands them up again */
+  { const P = { x: X - 60, y: A.floor, dead: false }, AS = { ...A, stdX: [A.x0 + S.stdIn, A.x1 - S.stdIn] }; let cut = null;
+    const e = mk({ cd: 9 }), c = bk(P, [], { A: AS, struck: (x, y, w, h, q) => q === cut });
+    U.updateBloodKnight(e, 1 / 60, c); assert.equal(e.stds.length, 2, 'two standards stand in the chapel'); force(e, 'ward', c); tell(e, c, S.tell.ward + 0.02); assert.equal(e.mode, 'ward');
+    tell(e, c, S.stdFeed * 0.6); assert.ok(e.fed >= 1 && e.wardFill >= 1, 'the standards feed his ward: ' + e.wardFill);
+    e.wardFill = S.wardFull; e.modeT = 1; assert.equal(U.bkHurt(e, 20, X - 30), 0); tell(e, c, 0.02); assert.equal(e.mode, 'ward', 'a full ward struck HOLDS while a standard stands'); assert.equal(e.wardSay, 'THE STANDARDS HOLD IT: CUT ONE');
+    cut = e.stds[0]; tell(e, c, 0.04); assert.ok(!e.stds[0].up, 'cut, the standard falls'); assert.equal(e.mode, 'reel', 'and the ward standing then BREAKS'); assert.ok(U.bkOpen(e));
+    cut = null; const e2 = mk({ cd: 9, hp: UNB.hp.bloodknight * (S.p2At - 0.01), stds: [{ x: AS.stdX[0], up: false }, { x: AS.stdX[1], up: false }] }), c2 = bk({ x: X - 60, y: A.floor, dead: false }, [], { A: AS, struck: () => false });
+    U.updateBloodKnight(e2, 0.02, c2); assert.equal(e2.mode, 'surgeTell'); tell(e2, c2, S.tell.surge + 0.02); assert.ok(e2.stds.every(s => s.up), 'the surge stands his standards up again');
+    const e3 = mk(), c3 = bk(P); force(e3, 'ward', c3); tell(e3, c3, S.tell.ward + 0.02); U.bkHurt(e3, 20, X - 30); U.bkHurt(e3, 20, X - 30); U.bkHurt(e3, 20, X - 30); U.bkHurt(e3, 20, X - 30); tell(e3, c3, 0.02); assert.equal(e3.mode, 'reel', 'with no standards (none placed, or all cut) the hero\'s own rule: a full ward struck again breaks'); }
+  ok('the death knight', 'his kit only (no rush): rhythm (hook, drag drinks), BLOOD PRICE CLEAVE (pays, drinks back, spent = open, red volley), grip, boil, coil (heals), tide, ward/nova, the drain (breaks open), the chapel standards, passing; full damage; A3, A10, A11, B3'); }
 
 /* ---- 5. THE FIELD ---- */
 { const F = U.newField(L, TS), P = { x: 90 * TS, y: FLOOR, dead: false }, hits = [], pegs = [];
