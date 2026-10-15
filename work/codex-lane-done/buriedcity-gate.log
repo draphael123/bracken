@@ -1,0 +1,11 @@
+buriedcity - as loaded: every solid cell drawn
+buriedcity - every gate thrown once: every solid cell drawn
+buriedcity - every gate thrown back: every solid cell drawn
+buriedcity - the great gate drained: every solid cell drawn
+buriedcity - every chute swung: every solid cell drawn
+buriedcity - every chute swung back: every solid cell drawn
+buriedcity - every hourglass flipped: every solid cell drawn
+buriedcity - every flip run out: every solid cell drawn
+buriedcity - after a respawn: every solid cell drawn
+buriedcity - after a respawn, settled: every solid cell drawn
+drawn-solids: every solid, ledge and stake cell has a picture, as built and after the rule moved it, in 1 level(s)
