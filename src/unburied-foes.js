@@ -70,7 +70,7 @@ export const UNB = {
     /* (claude/retune2, the refit bot won him 75% and Daniel calls him hard: B5 SHARPER, not walled - his own kit's tells shorter, his stuck blade and broken ward
        briefer, his passing quicker to read a string; was cleave 1.12 / combo 0.9 / after 0.62 / commit 0.36 / blade 1.06 / grip 0.84 / boil 0.95 /
        coil 0.78 / tide 1.06, stuckT 1.5, reelT 1.8, passing on a string 0.25 / 0.35 and its cooldown 2.4 s, the ward raised when pressed 0.5; his 1700 is Daniel's gate - tools/weak-bosses.mjs) */
-    tell: { swing: 0.47, swingNext: 0.34, swingTurn: 0.13, punish: 0.34, cleave: 0.95, cleaveCombo: 0.77, cleaveAfter: 0.53, commit: 0.30, blade: 0.93, grip: 0.74, boil: 0.84, coil: 0.69, tide: 0.93, ward: 0.39, nova: 0.67, raise: 1.01, call: 1.23, surge: 1.34 },
+    tell: { swing: 0.56, swingNext: 0.40, swingTurn: 0.13, punish: 0.34, cleave: 0.95, cleaveCombo: 0.77, cleaveAfter: 0.53, commit: 0.30, blade: 0.93, grip: 0.74, boil: 0.84, coil: 0.69, tide: 0.93, ward: 0.39, nova: 0.67, raise: 1.01, call: 1.23, surge: 1.34 },
     swingR: 54, swingRec: 0.34, lunge: 10, cleaveR: 62, cleaveBack: 8, stuckT: 1.25, p2At: 0.6, openMul: 1.6,   /* (claude/weakboss, Daniel: 'a bit too easy' - the stuck blade held him 2.0 s, and his phase two came at half health) */
     strings: [1, 2, 2, 3], stringsP2: [2, 3, 3],
     bolts: 3, boltsP2: 5, gap: 46, gapP2: 40, boltT: 0.85, boltG: 300,
