@@ -13,6 +13,7 @@
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as SET from './redraw/church_set.js';
+import * as C2 from './redraw/church2_art.js';
 
 /* (deadDark: the dead's blows x this in a dark room) THE NUMBERS. FLAME: life s a taper burns, takeR/useR px you reach a fire / a lamp in, glow px it lights round you. LC: litMul/darkMul a priest's blows by his room's
    light, knightLit a knight's; heal: of the healed one's health (x litHeal lit / x darkHeal dark), healCd/healTell/healR; relightT a priest's rite, acoRelightT an
@@ -366,20 +367,17 @@ export function makeLitChurchHands(ctx) {
     if (!K) return; const ts = TS(), vw = ctx.VW(), inX = (x, m = 60) => x > cx - m && x < cx + vw + m; const v = vstate(g, cx, cy, time);
     SET.paintWorld(v, K.plan);
     /* THE DOORS: the west door's bars, the hatch's bars of light (the seal), the crossing's grate, the rood screen's door, the reliquary's and the sacristy's */
-    for (const d of K.doors) { if (d.open || !inX(d.x0 * ts, 80)) continue; SET.drawDoor(v, d); }
-    /* (claude/church2, GREYBOX) HOLY FIRE: BLAZING - white-gold tongues the length of the trough; EMBERS - a low red bed and a few sparks; and the lamp's feed: a dotted line
-       of light along the floor from its lamp to the trough while it burns (the rule's state where the player stands, A3) */
+    for (const d of K.doors) { if ((d.open && !d.oneway && d.id !== 'parclose') || !inX(d.x0 * ts, 80)) continue; SET.drawDoor(v, d); }
+    /* (claude/church2art) HOLY FIRE: the channel's burner bed; BLAZING - tongues the length of the trough and sparks; EMBERS - cinders with the iron grate laid over them; and the lamp's feed - an inlaid vein along the floor
+       that runs bright toward the fire while its lamp burns and lies dead when it is snuffed (the rule's state where the player stands, A3) */
     for (const t of K.troughs) { if (!inX(t.x0 * ts, 200) && !inX(t.x1 * ts, 200)) continue; const on = blazing(t), y = R((t.row + 1) * ts - cy);
-      for (let x = t.x0 * ts; x < (t.x1 + 1) * ts; x += 2) { const sx = R(x - cx), n = Math.sin(time * 11 + x * 0.37) + Math.sin(time * 7 - x * 0.21);
-        if (on) { const h = 7 + R(4 * n); g.fillStyle = (x >> 1) % 3 === 0 ? '#ffffff' : (x >> 1) % 3 === 1 ? '#fff6c8' : '#ffd36b'; g.fillRect(sx, y - 2 - h, 2, h); g.fillStyle = '#ff9a3c'; g.fillRect(sx, y - 3, 2, 3); }
-        else { g.fillStyle = (x >> 1) % 2 ? '#7a2a1a' : '#a8401e'; g.fillRect(sx, y - 3 + (n > 1.2 ? -1 : 0), 2, 3); if (n > 1.7) { g.fillStyle = '#ff9a3c'; g.fillRect(sx, y - 6 - R(((time * 20 + x) % 6)), 1, 1); } } }
-      const l = lampOf(t.lamp); if (l && on) { const lx = px(l), ly = py(l), tx = lx < t.x0 * ts ? t.x0 * ts : (t.x1 + 1) * ts, k0 = Math.min(lx, tx), k1 = Math.max(lx, tx); g.fillStyle = '#ffd36b';
-        for (let x = k0; x < k1; x += 6) { const ph = ((x - k0) / 6 + Math.floor(time * 8)) % 3 === 0; g.globalAlpha = ph ? 0.9 : 0.4; g.fillRect(R(x - cx), R(Math.max(ly, t.row * ts) - 1 - cy), 2, 1); } g.globalAlpha = 1; } }
+      C2.drawTroughFire(g, R(t.x0 * ts - cx), R((t.x1 + 1) * ts - cx), y, on, time, { seed: t.x0 });
+      const l = lampOf(t.lamp); if (l) { const lx = px(l), ly = py(l), right = lx < t.x0 * ts, tx = right ? t.x0 * ts : (t.x1 + 1) * ts, k0 = Math.min(lx, tx), k1 = Math.max(lx, tx); C2.drawFeed(g, R(k0 - cx), R(k1 - cx), R(Math.max(ly, t.row * ts) - 1 - cy), right, on, time); } }
     /* THE GRATES: iron bars in the floor; a dark room's glows cold before its dead come up */
     for (const q of K.grates) { if (!inX(q.x * ts)) continue; SET.drawGrate(v, q); }
     /* THE FIRES (sources): the brazier, the votive stands, the vigil candle */
     for (const s of K.sources) { if (!inX(px(s))) continue; SET.drawSource(v, s); }
-    for (const l of K.lamps) if (inX(px(l))) { if (l.hang || l.fall) { const x = R(px(l) - cx), y0 = R(l.top * ts - cy), y1 = R(py(l) - 30 - cy); g.fillStyle = '#5a5048'; for (let yy = y0; yy < y1; yy += 3) g.fillRect(x - 1 + ((yy / 3) & 1), yy, 1, 2); if (l.fall) { g.fillStyle = '#8a7a60'; g.fillRect(x - 1, y1 - 2, 1, 3); } }   /* (claude/church2, GREYBOX) a chandelier's chain up to the vault; parted, its end swings */
+    for (const l of K.lamps) if (inX(px(l))) { 
       SET.drawLamp(v, l); if (l.hold && l.lit && K.dark.st === 'rising' && l.holdSaid) { const x = R(px(l) - cx), y = R(py(l) - cy), k = Math.max(0, l.hold / LC.holdT); g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 30, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 30, R(16 * k), 2); }
       if (l.kind === 'rood' && !l.lit) { const x = R(px(l) - cx), y = R(py(l) - cy); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 4); g.strokeStyle = '#ffd36b'; g.strokeRect(x - 3, y - 25, 7, 8); g.globalAlpha = 1; } }
     /* THE BELLOWS: a leather bellows on its frame and a gauge; breathing, it heaves */
@@ -407,7 +405,9 @@ export function makeLitChurchHands(ctx) {
       if (bot > 0 && top < ctx.VH()) { g.globalAlpha = 0.82; g.fillStyle = '#0a0612'; g.fillRect(x0, top, x1 - x0, bot - top); g.globalAlpha = 0.6; g.fillStyle = '#3a2a5a';
         for (let x = x0; x < x1; x += 4) g.fillRect(x, top - 2 + R(Math.sin(time * 3 + x * 0.2) * 2), 4, 3); g.globalAlpha = 1; } }
     for (const pp of ctx.players) { if (!(pp.lcFlame > 0) || pp.dead) continue; const x = R(pp.x - cx), y = R(pp.y - 30 - cy), k = Math.min(1, pp.lcFlame / FLAME.life), f = Math.sin(time * 13);
-      g.fillStyle = '#e8e0c8'; g.fillRect(x + 6, y + 2, 2, R(2 + 8 * k)); g.fillStyle = pp.lcFlame < 3 && Math.floor(time * 8) % 2 ? '#ff6b2c' : '#ff9a3c'; g.fillRect(x + 6, y - 2 - R(f), 2, 4); g.fillStyle = '#fff6c8'; g.fillRect(x + 6, y - 1 - R(f), 1, 2);
+      const dr = lifeAt(pp) < FLAME.life, lean = dr ? R(Math.sin(time * 17) * 1.2 + 1.5) : 0;   /* (church2art) a held taper: a brass dish and a wax stub that shortens; in the chantry's draught the flame leans downwind and streams sparks */
+      g.fillStyle = '#7a5c1c'; g.fillRect(x + 4, y + 12, 6, 1); g.fillStyle = '#c9a040'; g.fillRect(x + 4, y + 11, 6, 1); g.fillStyle = '#e8e0c8'; g.fillRect(x + 6, y + 2, 2, R(2 + 8 * k)); g.fillStyle = '#b8ae90'; g.fillRect(x + 7, y + 3, 1, R(1 + 8 * k));
+      g.fillStyle = pp.lcFlame < 3 && Math.floor(time * 8) % 2 ? '#ff6b2c' : '#ff9a3c'; g.fillRect(x + 6 + lean, y - 2 - R(f), 2, 4); g.fillStyle = '#fff6c8'; g.fillRect(x + 6 + lean, y - 1 - R(f), 1, 2); if (dr) for (let i = 0; i < 3; i++) { const q = (time * 2.4 + i / 3) % 1; g.globalAlpha = 1 - q; g.fillStyle = i & 1 ? '#ffd36b' : '#ff9a3c'; g.fillRect(x + 8 + lean + R(q * 14), y - 3 - R(Math.sin(q * 5 + i) * 2) - R(q * 3), 1, 1); g.globalAlpha = 1; }
       g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 8, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 8, R(16 * k), 2); } };
   /* THE HUD: the room you are in, LIT or DARK, as you come into it (and the flame's seconds) */
   H.drawHud = (g, P) => { if (!K || !K.inRoom || !(K.roomT > 0) || K.inRoom.arena) return false; const r = K.inRoom, a = Math.min(1, K.roomT);

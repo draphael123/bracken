@@ -5,6 +5,7 @@
 // other), every move its own windup + release pose of the pole; his LIGHT BAR, the holy fire of the arc, and the B10 read.
 // main.js calls: spawn, owns, idle, wake, update, take, drawBoss, drawOver, barName, end, read, show, clear, onLamp.
 import * as DCM from './deacon.js';
+import * as ART from './redraw/deacon_art.js';
 const { DC } = DCM;
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), glow: s => (s.chime || s.bell || s.tell)(false), whoosh: s => (s.whoosh || s.slash)(), slash: s => (s.slash || s.whoosh)(),
   falter: s => (s.hiss || s.crack || s.clank)(), fire: s => (s.fuse || s.ignite || s.whoosh)() };
@@ -57,55 +58,29 @@ export function makeDeaconHands(ctx) {
   H.end = () => { if (S) { S.fire = []; S.haul = null; } };
   H.read = () => S && { mode: (live() || {}).mode, ph: S.ph, light: R(S.light), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hurt: { ...(S.hurt || {}) } };
 
-  /* ---------- DRAWING (GREYBOX: the art lane paints him - scratch list in the lane report) ---------- */
-  const POLE = 34;   /* the pole's half-length in px */
-  /* the pole by mode: [angle (0 = level, + = tip down), grip x offset, grip y (from his feet), which end leads ('hook' | 'flame')] - each move its own windup + release */
-  const poleOf = e => { const m = e.mode, k = Math.max(0, e.modeT);
-    switch (m) {
-      case 'sweepTell': return [-0.9, -6, 22, 'hook'];            /* drawn back high over his shoulder, low end behind */
-      case 'sweep': return [1.25, 10, 14, 'hook'];                /* swept down low across the floor */
-      case 'hookTell': return [-0.35, -10, 26, 'hook'];           /* drawn back level at the waist, the hook leading */
-      case 'hook': return [0.05, 16, 22, 'hook'];                 /* thrust out its whole length */
-      case 'jabTell': return [0.1, -8, 24, 'hook'];
-      case 'jab': return [0.05, 18, 24, 'hook'];
-      case 'arcTell': return [-1.2, -4, 30, 'flame'];             /* turned over: the flame end up behind him */
-      case 'arc': return [1.0, 12, 12, 'flame'];                  /* dragged along the floor, the flame end down */
-      case 'kindleTell': return [-1.35, 4, 34, 'flame'];          /* raised straight up to the lamp */
-      case 'grope': return [0.5, 10, 18, 'none'];                 /* held out low before him, feeling for the way */
-      case 'reel': return [-0.6, -6, 30, 'hook'];
-    }
-    return [0, 2, 40, 'hook'];   /* ON GUARD: crosswise HIGH over his head (the read: hit him low) */ };
-  H.drawBoss = (g, e, cx, cy, time) => { if (!e.alive) return; const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy), flash = (e.hurtT || 0) > 0, open = DCM.dcOpen(e);
-    const hunch = e.mode === 'grope' ? 4 : e.mode === 'reel' ? -2 : 0, top = y - DC.h + hunch;
-    g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(x - 9, y - 1, 18, 2); g.globalAlpha = 1;
-    /* the cassock, the stole, the head */
-    g.fillStyle = flash ? '#ffffff' : '#1d1824'; g.fillRect(x - 6, top + 10, 12, DC.h - 10 - hunch); g.fillRect(x - 7, y - 6, 14, 6);
-    g.fillStyle = flash ? '#ffffff' : '#e8e0d0'; g.fillRect(x - 3, top + 11, 2, 18); g.fillRect(x + 1, top + 11, 2, 18);
-    g.fillStyle = flash ? '#ffffff' : '#c9a07a'; g.fillRect(x - 3 + f, top + 2, 6, 8); g.fillStyle = '#2a2030'; g.fillRect(x - 4, top, 8, 3);
-    /* the pole (brass): its angle and grip by move; the hook at one end, the flame at the other */
-    const [ang, gx, gy, lead] = poleOf(e), px0 = x + f * gx, py0 = y - gy, c = Math.cos(ang), s = Math.sin(ang);
-    const ax = px0 - f * c * POLE, ay = py0 - s * POLE, bx = px0 + f * c * POLE, by = py0 + s * POLE;
-    g.strokeStyle = flash ? '#ffffff' : '#c8a040'; g.lineWidth = 2; g.beginPath(); g.moveTo(ax, ay); g.lineTo(bx, by); g.stroke(); g.lineWidth = 1;
-    g.fillStyle = '#c9a07a'; g.fillRect(R(px0) - 1, R(py0) - 1, 3, 3);   /* his hands on it */
-    const hookAt = lead === 'flame' ? [ax, ay] : [bx, by], flameAt = lead === 'flame' ? [bx, by] : [ax, ay];
-    g.strokeStyle = '#d8b050'; g.beginPath(); g.arc(hookAt[0] + f * 2, hookAt[1] + 2, 3, -1.6, 1.6 * f); g.stroke();
-    if (!open) { const fl = 2 + R(Math.sin(time * 14) * 1); g.fillStyle = e.mode === 'arc' || e.mode === 'arcTell' ? '#fff6c8' : '#ff9a3c'; g.fillRect(R(flameAt[0]) - 1, R(flameAt[1]) - 3 - fl, 3, 3 + fl); g.fillStyle = '#ffd36b'; g.fillRect(R(flameAt[0]), R(flameAt[1]) - 2 - fl, 1, 2); }
-    if (e.mode === 'kindleTell') { for (let i = 0; i < 6; i++) { const t = (time * 1.4 + i / 6) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(R(flameAt[0]) - 6 + ((i * 7) % 13), R(flameAt[1] - t * 20), 1, 2); } g.globalAlpha = 1; ctx.text('KINDLE', x, top - 18, '#ffd36b', 'center', 6); }
-    if (e.guardFx > 0) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); g.fillStyle = '#ffffff'; g.fillRect(x - 14, R(y - 40) - 1, 28, 3); }
+  /* ---------- DRAWING (src/redraw/deacon_art.js: the pixel sheet; this decides WHEN, and lays the chain, the arc's fire, the light bar and the read over it) ---------- */
+  H.drawBoss = (g, e, cx, cy, time) => { if (!e.alive) return; const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy), flash = (e.hurtT || 0) > 0;
+    const r = ART.drawDeacon(g, e, x, y, f, time, flash); e.lastSet = H.bodySet || e.lastSet; e.lastFrame = 0;
+    const tipAt = r.B.hook ? r.at(r.B.hook) : null;
+    if (tipAt && (e.mode === 'hook' || e.mode === 'hookTell' || e.mode === 'jabTell' || e.mode === 'jab')) {   /* THE SNUFFER CHAIN: coiled while he draws it back, flung its whole reach, slack once it has caught */
+      if (e.mode === 'hook') ART.drawChain(g, tipAt[0], tipAt[1] + 3, x + f * DC.hook.reach, tipAt[1] + 6, time, true);
+      else if (e.mode === 'hookTell') { for (let i = 0; i < 3; i++) ART.drawChain(g, tipAt[0] - f * (2 + i * 3), tipAt[1] + 3 + i * 2, tipAt[0] - f * (2 + i * 3) + f * 2, tipAt[1] + 9 + i * 2, time, false); }
+      else ART.drawChain(g, tipAt[0], tipAt[1] + 3, tipAt[0] + f * 10, tipAt[1] + 14, time, false); }
+    if (e.guardFx > 0) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); g.globalAlpha = Math.min(1, e.guardFx * 6); g.fillStyle = '#ffffff'; g.fillRect(x + f * 10 - 2, y - 46, 4, 4); g.fillRect(x + f * 10 - 5, y - 44, 10, 1); g.fillRect(x + f * 10 - 1, y - 49, 2, 10); g.globalAlpha = 1; }
   };
   /* OVER: the holy fire of the arc, his light bar, the read */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(), e = live(); if (!S || !Ar || !e || e.mode === 'away') return; const fy = R(Ar.floor - cy);
-    for (const q of S.fire) { const x = R(q.x - cx), k = Math.min(1, q.t / 0.6); for (let i = 0; i < 3; i++) { const h = 4 + R(5 * Math.abs(Math.sin(time * 9 + q.x * 0.3 + i * 2))); g.globalAlpha = 0.85 * k; g.fillStyle = i === 1 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - 5 + i * 4, fy - h, 2, h); } g.globalAlpha = 0.35 * k; g.fillStyle = '#ff9a3c'; g.fillRect(x - 6, fy - 2, 12, 2); g.globalAlpha = 1; }
+    for (const q of S.fire) ART.drawArcPatch(g, R(q.x - cx), fy, Math.min(1, q.t / 0.6), time, q.x);
     const w = 36, x = Math.max(w / 2 + 30, Math.min(ctx.VW() - w / 2 - 4, R(e.x - cx))), by = R(e.y - DC.h - 18 - cy), k = S.light / DC.light.max;
-    g.fillStyle = '#1b1626'; g.fillRect(x - w / 2 - 1, by - 1, w + 2, 4); g.fillStyle = S.barDown > 0 ? '#8a6a30' : S.barUp > 0 ? '#fff6c8' : '#ffd36b'; g.fillRect(x - w / 2, by, R(w * k), 2);
-    ctx.text('LIGHT', x - w / 2 - 14, by - 1, '#ffd36b', 'center', 4);
+    ART.drawLightBar(g, x, by, k, S.barDown > 0 ? 'down' : S.barUp > 0 ? 'up' : '', time);
+    ctx.text('LIGHT', x - w / 2 - 14, by - 7, '#ffd36b', 'center', 4);
     const yy = R(e.y - DC.h / 2 - cy);
     if (DCM.dcOpen(e)) { const kk = Math.max(0, e.open / DC.gropeT); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 26, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
-      ctx.text('HE GROPES', x, by - 10, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by - 5, 36, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 18, by - 5, R(36 * kk), 3); }
-    if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 28, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', x, by - 10, '#c8d8e8', 'center', 5); }
-    if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, x, by - 20 - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6); };
-  /* A STILL SET FOR THE BESTIARY CARD (GREYBOX: his guard pose, two frames of the flame flickering; the art lane draws the real sheet) */
-  H.bakeSet = (canvas, flipX, whiten) => { const R0 = [0, 1].map(i => { const [c, g] = canvas(48, 56); H.drawBoss(g, { t: 'deacon', alive: true, mode: 'walk', modeT: 0, face: 1, x: 24, y: 54, anim: i }, 0, 0, i * 0.2); return c; });
-    return { R: R0, L: R0.map(flipX), white: { R: R0.map(whiten), L: R0.map(c => flipX(whiten(c))) }, ax: 24, ay: 54, w: DC.w, h: DC.h }; };
+      ctx.text('HE GROPES', x, by - 12, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by - 7, 36, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 18, by - 7, R(36 * kk), 3); }
+    if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.beginPath(); g.arc(x, yy, 28, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', x, by - 12, '#c8d8e8', 'center', 6); }
+    if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, x, by - 22 - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6); };
+  /* THE BESTIARY CARD (the guard, the pole's flame flickering, a step) and THE BODY HE LEAVES (kneeling over the planted pole: bossBodies draws it tipping over) */
+  H.bakeSet = (canvas, flipX, whiten) => { const card = ART.bakeCard(canvas, flipX, whiten), B = ART.bakePose('dead');
+    H.bodySet = { R: [B.c], L: [B.cL], white: { R: [B.cW], L: [B.cWL] }, ax: ART.AX, ay: ART.AY, w: DC.w, h: DC.h }; return card; };
   return H;
 }

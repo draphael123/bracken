@@ -8,6 +8,7 @@
 //   drawLamp / drawSource / drawBellows / drawDesk / drawGrate / drawDoor   the rule's own pieces
 // V = { g, cx, cy, vw, vh, time, L, T, lit(roomId)->bool, glow (0..1: how many chapel lamps burn), noGlow }. Only fillRect / drawImage / globalAlpha, so tools/lit-church-aloft.mjs can run it in Node.
 import * as P from './church_props.js';
+import * as C2 from './church2_art.js';
 import { CK, hash, matOf } from './church_tiles.js';
 import { canvas, px, rect, line, fillPoly, circle, ellipse, outline } from '../px.js';
 
@@ -28,14 +29,20 @@ const halo = (V, wx, wy, r, a, col) => { if (V.noGlow) return; P.glowDot(V.g, R(
 
 /* ================================================================ BAKED WALLS, WINDOWS, ROSES */
 const WALLS = { nave: { a: '#6a6a80', b: '#727288', j: '#4a4a5e', h: '#8686a0' }, gallery: { a: '#74686c', b: '#7e7074', j: '#524648', h: '#948486' }, tower: { a: '#5a5a6a', b: '#626274', j: '#3e3e4e', h: '#74748a' },
-  crypt: { a: '#3c4262', b: '#444a6c', j: '#242842', h: '#566090' }, sanct: { a: '#8a88a4', b: '#9492b0', j: '#6a6886', h: '#aaa8c8' } };
+  chantry: { a: '#6e5c68', b: '#78666f', j: '#4a3a48', h: '#90808e' }, crypt: { a: '#3c4262', b: '#444a6c', j: '#242842', h: '#566090' }, sanct: { a: '#8a88a4', b: '#9492b0', j: '#6a6886', h: '#aaa8c8' } };
 function wallCell(kind, x, y) {
+  if (kind === 'dado') return dadoCell(x, y);
   const W = WALLS[kind] || WALLS.nave, key = 'w' + kind + (x & 3) + (y & 3);
   return once(key, () => { const [c, g] = canvas(16, 16), wx0 = (x & 3) * 16, wy0 = (y & 3) * 16;
     for (let yy = 0; yy < 16; yy++) for (let xx = 0; xx < 16; xx++) { const wx = wx0 + xx, wy = wy0 + yy, r = wy >> 3, off = (r & 1) * 16, cc = Math.floor((wx + off) / 32), bx = (wx + off) % 32, by = wy % 8;
       let col = hash(cc, r + (y >> 2) * 7) % 3 ? W.a : W.b; if (by === 7 || bx === 31) col = W.j; else if (by === 0) col = W.h; else if (hash(wx, wy) % 23 === 0) col = W.j; px(g, xx, yy, col); }
     if (kind === 'crypt' && (y & 3) === 1 && (x & 3) === 2) { rect(g, 4, 2, 8, 12, '#0e0c16'); rect(g, 5, 1, 6, 1, '#0e0c16'); rect(g, 4, 2, 1, 12, '#1c1a28'); rect(g, 6, 5, 4, 3, '#cfc7ae'); rect(g, 7, 7, 2, 1, '#8a8068'); px(g, 7, 6, '#0e0c16'); px(g, 9, 6, '#0e0c16'); rect(g, 5, 10, 6, 1, '#b9af92'); rect(g, 6, 12, 5, 1, '#b9af92'); }
     return c; }); }
+/* (church2art) THE CHANTRY's choir panelling: a dado of oak boards under a moulded rail, three rows high; the top row carries the rail, the foot a skirting */
+function dadoCell(x, y) { return once('dado' + (x & 3) + (y % 3), () => { const [c, g] = canvas(16, 16), r = y % 3;
+  rect(g, 0, 0, 16, 16, '#4a2e1c'); for (let bx = 0; bx < 16; bx += 8) { rect(g, bx, 0, 1, 16, '#2a1a10'); rect(g, bx + 1, 0, 1, 16, '#6a4428'); rect(g, bx + 3, 3, 3, 10, '#3e2616'); rect(g, bx + 3, 3, 3, 1, '#2a1a10'); rect(g, bx + 3, 12, 3, 1, '#7a5230'); }
+  if (r === 0) { rect(g, 0, 0, 16, 3, '#7a5230'); rect(g, 0, 0, 16, 1, '#a0703c'); rect(g, 0, 3, 16, 1, '#2a1a10'); } if (r === 2) { rect(g, 0, 12, 16, 4, '#5a381e'); rect(g, 0, 12, 16, 1, '#7a5230'); rect(g, 0, 15, 16, 1, '#2a1a10'); }
+  return c; }); }
 /* a pointed lancet: w x h tiles, stone surround, leaded jewel glass; glow 1 = lit through, 0 = a dull night blue */
 export function bakeLancet(wt, ht, seed, glow) {
   return once('lan' + wt + ht + seed + glow, () => { const w = wt * 16, h = ht * 16, [c, g] = canvas(w, h), cx = w / 2;
@@ -61,7 +68,7 @@ export function bakeRose(r, glow) {
     return c; }); }
 
 /* ================================================================ WHICH WALL */
-const wallKindAt = (tx, ty) => (tx >= 241 ? 'sanct' : ty >= 39 && tx >= 46 && tx <= 183 ? 'crypt' : ty >= 55 ? 'crypt' : tx >= 46 && tx <= 55 && ty < 41 ? 'tower' : ty <= 18 ? 'gallery' : 'nave');
+const wallKindAt = (tx, ty) => (tx >= 275 ? 'sanct' : tx >= 180 && tx <= 213 && ty >= 20 && ty <= 41 ? (ty >= 34 && ty <= 36 ? 'dado' : 'chantry') : ty >= 39 && tx >= 46 && tx <= 183 ? 'crypt' : ty >= 55 ? 'crypt' : tx >= 46 && tx <= 55 && ty < 41 ? 'tower' : ty <= 18 ? 'gallery' : 'nave');
 const NAVE_BAYS = [68, 88, 108, 128, 148];
 
 /* THE SKY over the graveyard and the lit spire on the horizon (world coordinates scaled by a far factor) */
@@ -102,14 +109,14 @@ export function drawBackdrop(V) {
   const wins = [];   /* [tx, ty, wt, ht, room-probe] */
   for (const x of [78, 98, 118, 138]) wins.push([x - 1, 22, 3, 9, 'nave']);
   for (let x = 72; x <= 168; x += 14) if (!(x > 128 && x < 175 && true) || x < 128) wins.push([x, 8, 2, 8, 'gal']);
-  wins.push([169, 21, 3, 7, 'cross'], [190, 23, 3, 9, 'south'], [222, 23, 3, 9, 'south'], [48, 8, 2, 8, 'tower'], [52, 8, 2, 8, 'tower'], [186, 21, 2, 8, 'south'], [232, 22, 2, 8, 'south']);
+  wins.push([169, 21, 3, 7, 'cross'], [224, 23, 3, 9, 'south'], [256, 23, 3, 9, 'south'], [48, 8, 2, 8, 'tower'], [52, 8, 2, 8, 'tower'], [220, 21, 2, 8, 'south'], [266, 22, 2, 8, 'south'], [187, 24, 2, 8, 'chantry'], [200, 24, 2, 8, 'chantry'], [209, 24, 2, 8, 'chantry']);   /* (church2art: everything east of the chantry stands 34 columns on) */
   for (const [wx, wy, wt, ht, kind] of wins) { if (!vis(V, wx * TS, (wx + wt) * TS, 40)) continue; const ty = wy + ht - 1; const lit = litAt(V, wx + 1, Math.min(ty, 36));
     const sprW = bakeLancet(wt, ht, (wx * 7 + wy) % 11, lit ? 1 : 0); put(V, sprW, wx * TS, wy * TS);
     if (!lit && !V.noGlow) moonShaft(V, wx * TS + wt * 8, (wy + ht) * TS, wt * 16, Math.min(ty, 36) * TS + 16); }
   /* THE ROSE WINDOWS: the landmark. Each brightens with the chapel lamps that burn (V.glow). */
-  const roses = [[164, 24, 20], [208, 27, 22], [261, 28, 40], [64, 11, 16], [150, 24, 0]].filter(r => r[2] > 0);
+  const roses = [[164, 24, 20], [242, 27, 22], [295, 28, 40], [64, 11, 16], [150, 24, 0]].filter(r => r[2] > 0);
   for (const [wx, wy, r] of roses) { if (!vis(V, (wx - 4) * TS, (wx + 4) * TS, 60)) continue; const spr = bakeRose(r, 1), dim = bakeRose(r, 0), x = wx * TS - r - 2, y = wy * TS - r - 2;
-    const arena = wx >= 241, k = arena ? (V.paladinLight == null ? 1 : V.paladinLight) : g1; put(V, dim, x, y); alpha(V, Math.min(1, 0.15 + k * 0.85), () => put(V, spr, x, y));
+    const arena = wx >= 275, k = arena ? (V.paladinLight == null ? 1 : V.paladinLight) : g1; put(V, dim, x, y); alpha(V, Math.min(1, 0.15 + k * 0.85), () => put(V, spr, x, y));
     if (k > 0.3 && !V.noGlow) alpha(V, 0.1 * k, () => { box(V, x - 8, y + r * 2, r * 2 + 20, 90, '#ffd890'); }); }
   /* PILLARS and their vault ribs (decor 'pillar': the nave's) */
   for (const d of L.decor || []) { if (d.kind !== 'pillar') continue; const x = d.x * TS; if (!vis(V, x - 6, x + 22, 40)) continue; pillar(V, d); }
@@ -162,12 +169,12 @@ function crypt(V) {
   /* water seeping down the well's shaft */
   if (vis(V, 158 * TS, 168 * TS)) for (let k = 0; k < 6; k++) { const x = 159 * TS + 8 + (hash(k, 4) % 130), y = 40 * TS + R((V.time * 40 + k * 31) % (13 * TS)); box(V, x, y, 1, 3, '#6a82b8'); } }
 function sanctuary(V) {
-  const x0 = 241 * TS, x1 = 283 * TS; if (!vis(V, x0, x1, 40)) return; const fl = 41 * TS, ceil = 21 * TS;
-  for (const px0 of [243, 252, 270, 280]) { const x = px0 * TS; box(V, x, ceil, 12, fl - ceil, '#7a788e'); box(V, x, ceil, 3, fl - ceil, '#a8a6bc'); box(V, x + 9, ceil, 3, fl - ceil, '#52506a'); box(V, x - 3, ceil, 18, 5, '#a8a6bc'); box(V, x - 3, ceil, 18, 1, '#e8e6f4'); box(V, x - 2, fl - 7, 16, 7, '#8a88a0'); box(V, x, ceil + 5, 12, 2, C_GOLD); }
-  ribs(V, 243 * TS + 6, 252 * TS + 6, ceil + 4); ribs(V, 270 * TS + 6, 280 * TS + 6, ceil + 4); ribs(V, 252 * TS + 6, 270 * TS + 6, ceil + 4);
-  const cx = 261.5 * TS; box(V, cx - 60, fl - 70, 120, 70, '#4a486a'); box(V, cx - 60, fl - 70, 120, 3, '#d8b040');   /* the reredos behind the altar: gilt panels */
+  const x0 = 275 * TS, x1 = 317 * TS; if (!vis(V, x0, x1, 40)) return; const fl = 41 * TS, ceil = 21 * TS;
+  for (const px0 of [277, 286, 304, 314]) { const x = px0 * TS; box(V, x, ceil, 12, fl - ceil, '#7a788e'); box(V, x, ceil, 3, fl - ceil, '#a8a6bc'); box(V, x + 9, ceil, 3, fl - ceil, '#52506a'); box(V, x - 3, ceil, 18, 5, '#a8a6bc'); box(V, x - 3, ceil, 18, 1, '#e8e6f4'); box(V, x - 2, fl - 7, 16, 7, '#8a88a0'); box(V, x, ceil + 5, 12, 2, C_GOLD); }
+  ribs(V, 277 * TS + 6, 286 * TS + 6, ceil + 4); ribs(V, 304 * TS + 6, 314 * TS + 6, ceil + 4); ribs(V, 286 * TS + 6, 304 * TS + 6, ceil + 4);
+  const cx = 295.5 * TS; box(V, cx - 60, fl - 70, 120, 70, '#4a486a'); box(V, cx - 60, fl - 70, 120, 3, '#d8b040');   /* the reredos behind the altar: gilt panels */
   for (let i = 0; i < 6; i++) { const x = cx - 56 + i * 19; box(V, x, fl - 64, 15, 58, '#35334f'); box(V, x, fl - 64, 15, 1, '#d8b040'); box(V, x + 6, fl - 54, 3, 22, '#d8b040'); box(V, x + 3, fl - 46, 9, 3, '#d8b040'); }
-  for (const [bx, v] of [[247, 0], [257, 1], [266, 1], [276, 0]]) put(V, P.bakeBanner(v), bx * TS + 2, ceil + 12); }
+  for (const [bx, v] of [[281, 0], [291, 1], [300, 1], [310, 0]]) put(V, P.bakeBanner(v), bx * TS + 2, ceil + 12); }
 const C_GOLD = '#d8b040';
 
 /* ================================================================ THE PLAN: dressing and lights from the level's own ents and tops */
@@ -176,15 +183,15 @@ export function plan(L, T) {
   const dress = [], lights = [], used = [];
   const solidTop = (x, y) => (at(x, y) === T.SOLID || at(x, y) === T.ONEWAY) && at(x, y - 1) === T.AIR && at(x, y - 2) === T.AIR && at(x, y - 3) === T.AIR;
   const free = (x, y) => !L.ents.some(e => Math.abs(e.x - x) <= 1 && Math.abs(e.y - y) <= 2 && e.t !== 'check' && e.t !== 'coin') && !(L.decor || []).some(d => d.x0 !== undefined && x >= d.x0 - 1 && x <= d.x1 + 1 && Math.abs(d.y - y) < 4 && d.kind !== 'tomb') && !used.some(([ux, uy]) => uy === y && Math.abs(ux - x) < 4) && !(L.drops || []).some(([a, b]) => x >= a - 1 && x <= b + 1);
-  const zone = x => (x < 44 ? 'yard' : x < 56 ? 'narthex' : x < 152 ? 'nave' : x < 180 ? 'cross' : x < 241 ? 'south' : 'sanct');
-  const KINDS = { yard: ['headstone', 'headstone', 'cross', 'bones', 'headstone'], nave: ['rack', 'confessional', 'font', 'rack'], cross: ['rack', 'banner'], south: ['rack', 'bones', 'rack'], sanct: [] };
-  const DENS = { yard: 0.5, nave: 0.14, cross: 0.14, south: 0.16 };
-  for (let x = 6; x < 241; x++) { const z = zone(x); if (!KINDS[z] || !KINDS[z].length || (hash(x * 31 + 7, 71) >>> 9) % 100 >= DENS[z] * 100) continue;
+  const zone = x => (x < 44 ? 'yard' : x < 56 ? 'narthex' : x < 152 ? 'nave' : x < 180 ? 'cross' : x < 214 ? 'chantry' : x < 275 ? 'south' : 'sanct');
+  const KINDS = { yard: ['headstone', 'headstone', 'cross', 'bones', 'headstone'], nave: ['rack', 'confessional', 'font', 'rack'], cross: ['rack', 'banner'], chantry: ['rack', 'banner', 'rack'], south: ['rack', 'bones', 'rack'], sanct: [] };
+  const DENS = { yard: 0.5, nave: 0.14, cross: 0.14, chantry: 0.2, south: 0.16 };
+  for (let x = 6; x < 275; x++) { const z = zone(x); if (!KINDS[z] || !KINDS[z].length || (hash(x * 31 + 7, 71) >>> 9) % 100 >= DENS[z] * 100) continue;
     for (let y = 4; y < L.H - 4; y++) if (solidTop(x, y) && y <= 41 && !(y > 18 && y < 37 && false) && free(x, y - 1) && y !== 19 + 0 * 1) { const k = KINDS[z][(hash(x, y) >>> 7) % KINDS[z].length]; if (y <= 19 && k !== 'bones' && k !== 'rack') break; dress.push({ k, x, y: y - 1, v: hash(y, x) % 3 }); used.push([x, y - 1]); break; } }
   /* the crypt's: bone piles, coffins, sarcophagi, candle-less */
   for (let x = 48; x < 180; x++) { if ((hash(x * 17 + 3, 33) >>> 9) % 100 >= 14) continue; const y = 53; if (at(x, y + 1) === T.SOLID && at(x, y) === T.AIR && at(x, y - 1) === T.AIR && free(x, y)) { const kk = ['bones', 'coffin', 'sarc', 'bones', 'coffin'][(hash(x, 5) >>> 7) % 5]; dress.push({ k: kk, x, y, v: hash(x, 8) % 2 }); used.push([x, y]); } }
   /* THE CHARNEL PIT's lips: heaps of bone either side of the drop (told by a sign; drawn so it reads) */
-  for (const [x, y] of [[202, 40], [205, 40]]) if (at(x, y + 1) === T.SOLID && at(x, y) === T.AIR) { dress.push({ k: 'bones', x, y, v: x & 1 }); used.push([x, y]); }
+  for (const [x, y] of [[236, 40], [239, 40]]) if (at(x, y + 1) === T.SOLID && at(x, y) === T.AIR) { dress.push({ k: 'bones', x, y, v: x & 1 }); used.push([x, y]); }
   /* the graveyard's yews, tombs and fence: the level's decor */
   /* LIGHTS: dress candles burn with their room (kind, tile x, floor row) */
   const add = (kind, x, row, r = 56, dx = 0) => lights.push({ kind, wx: x * TS + 8 + dx, wy: (row + 1) * TS, x, row, r });
@@ -192,9 +199,9 @@ export function plan(L, T) {
   for (const x of [66, 78, 86, 98, 110, 118, 134, 146]) lights.push({ kind: 'sconce', wx: x * TS + 8, wy: 27 * TS, x, row: 26, r: 40 });                                    /* the nave's wall sconces */
   for (const x of [84, 96, 120, 148, 168]) lights.push({ kind: 'chandelier', wx: x * TS + 8, wy: 9 * TS + 14, x, row: 9, r: 70 });                                       /* the gallery's chandeliers */
   for (const x of [60, 110, 150]) lights.push({ kind: 'chandelier', wx: x * TS + 8, wy: 22 * TS + 6, x, row: 22, r: 66 });                                               /* the nave's, under the loft */
-  for (const x of [186, 200, 214, 232]) lights.push({ kind: 'sconce', wx: x * TS + 8, wy: 30 * TS, x, row: 29, r: 40 });                                                   /* the south transept's */
-  for (const x of [245, 255, 268, 278]) lights.push({ kind: 'sconce', wx: x * TS + 8, wy: 30 * TS, x, row: 29, r: 44 });                                                   /* the sanctuary's */
-  lights.push({ kind: 'altar', wx: 261.5 * TS, wy: 41 * TS - 28, x: 261, row: 38, r: 70 });
+  for (const x of [220, 234, 248, 266]) lights.push({ kind: 'sconce', wx: x * TS + 8, wy: 30 * TS, x, row: 29, r: 40 }); for (const x of [189, 195, 203, 211]) lights.push({ kind: 'sconce', wx: x * TS + 8, wy: 30 * TS, x, row: 29, r: 40 });   /* (church2art) the chantry's wall sconces */                                                   /* the south transept's */
+  for (const x of [279, 289, 302, 312]) lights.push({ kind: 'sconce', wx: x * TS + 8, wy: 30 * TS, x, row: 29, r: 44 });                                                   /* the sanctuary's */
+  lights.push({ kind: 'altar', wx: 295.5 * TS, wy: 41 * TS - 28, x: 295, row: 38, r: 70 });
   for (const x of [8, 22, 34]) lights.push({ kind: 'grave', wx: x * TS + 8, wy: 37 * TS - 4, x, row: 36, r: 24, yard: true });                                           /* a candle on a grave */
   return { dress, lights }; }
 
@@ -207,9 +214,13 @@ export function paintWorld(V, plan0) {
       case 'altar': put(V, P.bakeAltar(), d.x * TS - 14, (d.y + 7) * TS - 40); break; case 'pipe': pipeStair(V, d); break; case 'vault': break; case 'moon': break; case 'triforium': trifArcade(V, d); break; case 'shelf': shelfDress(V, d); break; } }
   if (plan0) for (const d of plan0.dress) { if (!vis(V, d.x * TS, d.x * TS + 40, 40)) continue; dressItem(V, d); }
   /* the dais of the Archdeacon: a cathedra on his block (cols 222-228, rows 39-40) */
-  if (vis(V, 220 * TS, 230 * TS)) cathedra(V);
+  if (vis(V, 254 * TS, 264 * TS)) cathedra(V);
   /* the reliquary's candle sockets (the five stubs) */
-  const rq = (L.doors || []).find(d => d.id === 'reliquary'); if (rq && vis(V, 184 * TS, 190 * TS)) reliquary(V, rq);
+  const rq = (L.doors || []).find(d => d.id === 'reliquary'); if (rq && vis(V, 218 * TS, 224 * TS)) reliquary(V, rq);
+  /* (church2art) THE CHANTRY's DRAUGHT: the belfry's bell-ropes swaying in it, and the dust it carries west to east */
+  if (vis(V, 180 * TS, 214 * TS, 40)) { const t = V.time;
+    for (const x of [190, 206]) { const sway = Math.round(Math.sin(t * 1.3 + x) * 2 + Math.sin(t * 3.1 + x * 2) * 1); put(V, C2.bakeBellRope(), x * TS + 5 + sway, 22 * TS); }
+    for (let i = 0; i < 16; i++) { const span = 34 * TS, wx = 180 * TS + ((i * 97 + t * (14 + (i % 4) * 5)) % span), wy = 27 * TS + ((i * 53) % (10 * TS)) + Math.round(Math.sin(t * 1.7 + i) * 2); alpha(V, 0.22 + 0.2 * Math.sin(t * 2 + i), () => box(V, wx, wy, i % 5 === 0 ? 2 : 1, 1, '#d8c8a0')); } }
   /* the sanctuary: the altar, a gilt floor cross and the choir stalls' fronts */
   sanctFloor(V);
   /* dress lights */
@@ -224,21 +235,21 @@ export function paintWorld(V, plan0) {
 }
 /* the chain a chandelier hangs from: up to the first solid over it */
 function chain(V, wx, row, topY) { const L = V.L; let r = row; while (r > 0 && L.grid[r * L.W + Math.floor(wx / TS)] !== V.T.SOLID) r--; const y0 = (r + 1) * TS; for (let y = y0; y < topY; y += 3) { box(V, wx - 1, y, 2, 3, ((y - y0) / 3) & 1 ? '#8a8aa0' : '#4a4a5a'); } }
-function pew(V, d) { const w = d.x1 - d.x0 + 1; if (!vis(V, d.x0 * TS, (d.x1 + 1) * TS, 20)) return; put(V, P.bakePew(w), d.x0 * TS, d.y * TS - 16); }
+function pew(V, d) { const w = d.x1 - d.x0 + 1; if (!vis(V, d.x0 * TS, (d.x1 + 1) * TS, 20)) return; put(V, d.x0 >= 180 && d.x1 <= 213 ? C2.bakeStall(w) : P.bakePew(w), d.x0 * TS, d.y * TS - 16); }   /* (church2art) the chantry's are CHOIR STALLS */
 function pipeStair(V, d) { for (let i = 0; i < 2; i++) { const x = d.x * TS + i * 16, h = d.h * TS; put(V, P.bakePipe(h - 2, d.x % 2), x + 3, (d.y - d.h) * TS + 0); } }
 function trifArcade(V, d) { const x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS; if (!vis(V, x0, x1)) return; for (let x = x0 + 2; x < x1 - 8; x += 16) { box(V, x, (d.y + 1) * TS + 8, 12, 12, '#2a2a38'); box(V, x + 1, (d.y + 1) * TS + 6, 10, 2, '#2a2a38'); box(V, x + 2, (d.y + 1) * TS + 4, 8, 2, '#2a2a38'); box(V, x + 5, (d.y + 1) * TS + 8, 2, 12, '#5a5870'); } }
 function shelfDress(V, d) { const x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS; if (!vis(V, x0, x1)) return; for (let x = x0 + 2; x < x1 - 18; x += 22) put(V, P.bakeBonePile(x >> 4 & 1), x, d.y * TS - 11); }
 function cathedra(V) {
-  const x = 222 * TS, y = 39 * TS; box(V, x, y - 38, 7 * TS, 38, '#4a2e1a'); box(V, x, y - 38, 7 * TS, 2, '#a0703c');   /* a carpeted dais is the block; the throne stands on it */
-  const tx = 225 * TS - 2; box(V, tx, y - 62, 24, 44, '#5a381e'); box(V, tx, y - 62, 24, 2, '#a0703c'); box(V, tx - 2, y - 66, 28, 5, '#8a6a2a'); box(V, tx + 10, y - 76, 4, 12, '#d8b040'); box(V, tx + 6, y - 72, 12, 3, '#d8b040'); box(V, tx + 4, y - 44, 16, 6, '#8a1c1c'); }
-function reliquary(V, rq) { const n = Math.min(5, V.stubs == null ? 0 : V.stubs); const x = 185 * TS + 1, y = 41 * TS; put(V, P.bakeReliquary(n), x, y - 26); for (let i = 0; i < n; i++) { const fx = x + 3 + i * 5 + 1, fy = y - 26 + 2; flameAt(V, 0, fx, fy + 1, i); } }
+  const x = 256 * TS, y = 39 * TS; box(V, x, y - 38, 7 * TS, 38, '#4a2e1a'); box(V, x, y - 38, 7 * TS, 2, '#a0703c');   /* a carpeted dais is the block; the throne stands on it */
+  const tx = 259 * TS - 2; box(V, tx, y - 62, 24, 44, '#5a381e'); box(V, tx, y - 62, 24, 2, '#a0703c'); box(V, tx - 2, y - 66, 28, 5, '#8a6a2a'); box(V, tx + 10, y - 76, 4, 12, '#d8b040'); box(V, tx + 6, y - 72, 12, 3, '#d8b040'); box(V, tx + 4, y - 44, 16, 6, '#8a1c1c'); }
+function reliquary(V, rq) { const n = Math.min(5, V.stubs == null ? 0 : V.stubs); const x = 219 * TS + 1, y = 41 * TS; put(V, P.bakeReliquary(n), x, y - 26); for (let i = 0; i < n; i++) { const fx = x + 3 + i * 5 + 1, fy = y - 26 + 2; flameAt(V, 0, fx, fy + 1, i); } }
 function sanctFloor(V) {
-  if (!vis(V, 241 * TS, 283 * TS)) return; const fl = 41 * TS;
-  box(V, 260 * TS, fl - 4, 3 * TS, 4, '#8a1c1c'); box(V, 260 * TS, fl - 4, 3 * TS, 1, '#c84a3a');   /* the altar step's carpet runner */
-  put(V, P.bakeAltar(), 261.5 * TS - 22, fl - 40);
-  for (const x of [247, 257, 266, 276]) { box(V, x * TS + 2, fl - 10, 12, 10, '#6a4426'); box(V, x * TS + 2, fl - 10, 12, 1, '#a0703c'); box(V, x * TS + 4, fl - 14, 8, 4, '#8a1c1c'); }   /* kneelers */
+  if (!vis(V, 275 * TS, 317 * TS)) return; const fl = 41 * TS;
+  box(V, 294 * TS, fl - 4, 3 * TS, 4, '#8a1c1c'); box(V, 294 * TS, fl - 4, 3 * TS, 1, '#c84a3a');   /* the altar step's carpet runner */
+  put(V, P.bakeAltar(), 295.5 * TS - 22, fl - 40);
+  for (const x of [281, 291, 300, 310]) { box(V, x * TS + 2, fl - 10, 12, 10, '#6a4426'); box(V, x * TS + 2, fl - 10, 12, 1, '#a0703c'); box(V, x * TS + 4, fl - 14, 8, 4, '#8a1c1c'); }   /* kneelers */
   /* the gilt cross inlaid in the floor before the altar: where the radiance lands */
-  alpha(V, 0.55, () => { box(V, 258.5 * TS, fl - 2, 6 * TS, 1, '#d8b040'); }); }
+  alpha(V, 0.55, () => { box(V, 292.5 * TS, fl - 2, 6 * TS, 1, '#d8b040'); }); }
 function dressItem(V, d) {
   const wx = d.x * TS, wy = (d.y + 1) * TS;
   switch (d.k) { case 'headstone': put(V, P.bakeHeadstone(d.v + d.x), wx + 1, wy - 18); break; case 'cross': put(V, P.bakeCross(), wx, wy - 30); break; case 'bones': put(V, P.bakeBonePile(d.v), wx - 4, wy - 12); break;
@@ -249,12 +260,27 @@ function dressItem(V, d) {
 export function drawLamp(V, l) {
   const wx = l.x * TS + 8, wy = (l.y + 1) * TS, f = Math.floor(V.time * 9 + l.x * 3);
   if (!vis(V, wx - 20, wx + 20, 40)) return;
+  if (l.deacon) return crossingLamp(V, l, wx, wy);   /* (church2art) THE CROSSING's two floor sconces and two chandeliers */
+  if (l.relay) { put(V, C2.bakeRelayBrazier(!!l.lit), wx - 13, wy - 34); if (l.lit) { flameAt(V, 2, wx, wy - 21, l.x); halo(V, wx, wy - 22, 58, 0.6); } else smoke(V, wx, wy - 22, l.x); return; }   /* the chantry's relay braziers */
   if (l.kind === 'sconce' || l.kind === 'rood') { const s = P.bakeSconce(l.kind === 'rood' ? 1 : 0); put(V, s, wx - 6, wy - 18); if (l.lit) { flameAt(V, 1, wx, wy - 15, l.x); halo(V, wx, wy - 14, 32, 0.55); } else { smoke(V, wx, wy - 17, l.x); } }
   else if (l.kind === 'chapel') { put(V, P.bakeCandelabrum(), wx - 14, wy - 34); if (l.lit) { for (const [fx, fy] of P.CANDELABRUM_WICKS) flameAt(V, 0, wx - 14 + fx + 1, wy - 34 + fy + 1, l.x + fx); flameAt(V, 1, wx, wy - 29, l.x); halo(V, wx, wy - 22, 54, 0.6, '#ffd890'); } else { smoke(V, wx, wy - 28, l.x); } }
   else if (l.kind === 'seal') { const top = (l.y + 1) * TS - 44; put(V, P.bakeSealLamp(), wx - 8, wy - 44); if (l.lit) { alpha(V, 0.8, () => { flameAt(V, 1, wx, wy - 12, l.x); }); halo(V, wx, wy - 14, 42, 0.5, '#a8c0ff'); } }
   else if (l.kind === 'arena') { put(V, P.bakeCandelabrum(), wx - 14, wy - 34); put(V, P.bakeLampstand(), wx - 8, wy - 80 + 42); if (l.lit) { for (const [fx, fy] of P.CANDELABRUM_WICKS) flameAt(V, 0, wx - 14 + fx + 1, wy - 34 + fy + 1, l.x + fx); halo(V, wx, wy - 26, 60, 0.6, '#ffd890'); } else smoke(V, wx, wy - 28, l.x); }
   else { put(V, P.bakeLampstand(), wx - 8, wy - 38); if (l.lit) { flameAt(V, 1, wx, wy - 29, l.x); halo(V, wx, wy - 26, 46, 0.55); } else { smoke(V, wx, wy - 31, l.x); } }
 }
+/* THE DEACON's lamps (src/lit-church.js: lamp(.., { deacon: true })): a floor sconce, or a chandelier on its chain - hanging, falling (the chain parted, a torn end above it), lying lit or dark */
+function crossingLamp(V, l, wx, wy) {
+  const top = (l.top == null ? l.y - 3 : l.top) * TS;
+  if (l.hang && !l.fall) { const sx = wx - 24, sy = wy - 44; C2.drawChainAnchor(V.g, wx - V.cx, top - V.cy); C2.drawChainLinks(V.g, wx - V.cx, top - V.cy, sy - V.cy + 1, V.time, 0.4); put(V, C2.bakeChandelier2(), sx, sy);
+    if (l.lit) { for (const [fx, fy] of C2.CH_WICKS) flameAt(V, 0, sx + fx + 1, sy + fy + 1, l.x + fx); halo(V, wx, wy - 26, 74, 0.6, '#ffd890'); } else smoke(V, wx, wy - 36, l.x); return; }
+  /* the chain's torn end: it hangs from the vault, the last link open, swinging */
+  C2.drawChainAnchor(V.g, wx - V.cx, top - V.cy); C2.drawChainLinks(V.g, wx - V.cx, top - V.cy, top - V.cy + 15, V.time, 2.6); box(V, wx - 2, top + 15, 4, 1, '#6a6a7c'); box(V, wx + 1, top + 16, 2, 2, '#a0a0b8');
+  if (l.fall) { const dir = l.x < 168 ? 1 : -1, sp = bakeFall(dir); put(V, sp, wx - 32, wy - 30 - 28); C2.drawChainLinks(V.g, wx - V.cx, wy - 70 - V.cy, wy - 54 - V.cy, V.time, 3); for (let i = 0; i < 4; i++) box(V, wx - 20 + i * 11, wy - 90 - (i & 1) * 6, 1, 8, '#c8c8e0');   /* the streaks of its fall */
+    if (l.lit) halo(V, wx, wy - 28, 60, 0.5, '#ffd890'); return; }
+  if (l.down) { const sx = wx - 26, sy = wy - 24; put(V, C2.bakeChandelierLying(), sx, sy); if (l.lit) { for (const [fx, fy] of C2.CH_LY_WICKS) flameAt(V, 0, sx + fx + 1, sy + fy + 1, l.x + fx); halo(V, wx, wy - 10, 46, 0.55, '#ffd890'); } return; }
+  put(V, C2.bakeFloorSconce(), wx - 7, wy - 40);   /* a floor sconce */
+  if (l.lit) { flameAt(V, 1, wx, wy - 40 + C2.SCONCE_WICK[1] + 1, l.x); halo(V, wx, wy - 30, 52, 0.6, '#ffd890'); } else smoke(V, wx, wy - 36, l.x); }
+const bakeFall = dir => C2.bakeChandelierFalling(dir);
 function smoke(V, x, y, seed) { for (let k = 0; k < 2; k++) { const t = (V.time * 0.6 + k * 0.5 + seed * 0.13) % 1; alpha(V, 0.4 * (1 - t), () => box(V, x + Math.round(Math.sin(t * 6 + seed) * 2), y - R(t * 12), 1, 1, '#9a9ab0')); } }
 export function drawSource(V, s) {
   const wx = s.x * TS + 8, wy = (s.y + 1) * TS; if (!vis(V, wx - 20, wx + 20, 40)) return;
@@ -270,7 +296,9 @@ export function drawDoor(V, d) {
   const x0 = d.x0 * TS, y0 = d.y0 * TS, w = (d.x1 - d.x0 + 1) * TS, h = (d.y1 - d.y0 + 1) * TS; if (!vis(V, x0, x0 + w, 60)) return;
   if (d.id === 'hatch') { alpha(V, 0.5 + 0.3 * Math.sin(V.time * 3), () => { for (let x = x0 + 2; x < x0 + w; x += 5) box(V, x, y0, 2, h, '#d8e0ff'); }); box(V, x0, y0, w, 2, '#a8b8e0'); return; }
   if (d.id === 'rood') { put(V, P.bakeDoorBars(w, h, 'rood'), x0, y0); return; }
-  if (d.id === 'cryptgrate') { put(V, P.bakeDoorBars(w, h, 'x'), x0, y0); return; }
+  if (d.id === 'cryptgrate') { put(V, C2.bakeCryptGrate(w, !!d.open), x0, y0); if (d.open) C2.drawGrateChains(V.g, x0 - V.cx, x0 + w - V.cx, y0 - V.cy, V.time); return; }   /* (church2art) the hatch of riveted iron; cracked, the one-way grate you stand on */
+  if (d.id === 'parclose') { put(V, C2.bakeParclose(h, !!d.open), x0, y0); return; }   /* the iron grille, shut or ajar */
+  if (d.id === 'chantry') { put(V, C2.bakeChantryDoor(h), x0, y0); return; }
   if (d.id === 'reliquary' || d.id === 'sacristy') { box(V, x0, y0, w, h, '#4a2e1a'); for (let x = x0 + 2; x < x0 + w; x += 5) box(V, x, y0, 1, h, '#3a2014'); box(V, x0, y0 + h / 2 | 0, w, 2, '#3a3846'); box(V, x0 + w - 5, y0 + (h / 2 | 0) - 1, 3, 3, '#d8b040'); return; }
   put(V, P.bakeDoorBars(w, h, 'west'), x0, y0); box(V, x0, y0, w, 3, '#6a6880'); /* the west door: iron-banded, a lit-lamp's seal */ for (let x = x0 + 4; x < x0 + w - 4; x += 12) { box(V, x, y0 + 14, 2, 2, '#d8b040'); }
 }

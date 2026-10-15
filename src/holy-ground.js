@@ -48,7 +48,7 @@ export function spendLight(o, n) { if (!o || (o.light || 0) < n - 1e-9) return f
 /* THE CIRCLE'S COLOURS by side (claude/palart). 'foe' is the same gold for now so a player reads the boss's circle as the same thing - LIT CHURCH 2 can retint
    it here (floor / rim / runes / the dark line under it) without touching the draw. */
 export const HG_PAL = { hero: { floor: '#ffd36b', hot: '#fff6c8', emp: '#ffffff', rune: '#ffe9a0', under: '#5a3a08' } };
-HG_PAL.foe = { ...HG_PAL.hero };
+HG_PAL.foe = { ...HG_PAL.hero, floor: '#ffc060', hot: '#ffe8b0', rune: '#ffd8a8', under: '#a01c2c' };   /* (claude/church2art) THE FOE'S CIRCLE: his gold runs a shade warmer and the rim's under-line is crimson, so a hero reads whose ground it is at a glance (palart's REC) */
 
 export function makeHolyGround(api) {
   let circles = [];
