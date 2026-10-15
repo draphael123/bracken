@@ -18,7 +18,8 @@ const LINK_TIMEOUT = 20000;   // ms the guest waits for the direct link before i
 /* THE ROOM CODE: four letters, no I and no O (they read as 1 and 0 when somebody says them out loud) */
 const ABC = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
 export const newCode = (n = 4) => { const a = new Uint32Array(n); (crypto.getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => { a[i] = Math.random() * 1e9; })); return [...a].map(x => ABC[x % ABC.length]).join(''); };
-export const cleanCode = s => String(s || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6);
+export const cleanCode = s => { s = String(s || ''); const m = s.match(/[?&#]join=([A-Za-z]+)/i); if (m) s = m[1]; else if (/:\/\/|\.(app|com|net|io)\b|\//i.test(s)) s = (s.match(/[A-Za-z]{4,6}(?=[^A-Za-z]*$)/) || [''])[0];   /* (Daniel 10-15) a pasted LINK is read as its join= code, not its first letters (HTTPS) */
+  return s.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6); };
 
 const local = () => { const q = new URLSearchParams(location.search); return q.get('net') === 'local' ? +(q.get('relay') || 8826) : 0; };
 let PeerCls = null, loading = null;

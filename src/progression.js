@@ -159,7 +159,7 @@ export function migrateCard(p) {
    (heroFlow 1 migration): a save with any progress keeps every starter it has played as owned and keeps co-op (coopLegacy: its sofa
    friend may still take any starter, as before). */
 export const DEFAULT_HEROES = ['knight', 'warden', 'geomancer', 'ranger'];   /* THE RANGER (claude/ranger, Daniel 10-12) is the fourth free starter; THE BERSERKER (claude/berserker, 2026-10-04) is bought now (10 silver) - a save that owns him keeps him (migrateHeroes only ever ADDS) */
-export const coopOpen = p => !!p && (!!p.coopLegacy || Object.keys(p.heroes || {}).filter(h => p.heroes[h]).length >= 2);
+export const coopOpen = p => !!p;   /* (Daniel 10-15) CO-OP IS OPEN ON EVERY SAVE: it was 'owns two heroes' (or coopLegacy) - no reason to buy a second hero first. Player two picks from the free starters too (main.js coopPickList) */
 export function migrateHeroes(p) {
  if (p.heroFlow === 1) return false;
  const played = h => ((p.xp || {})[h] || 0) > 0 || Object.keys((p.done || {})[h] || {}).length > 0;
