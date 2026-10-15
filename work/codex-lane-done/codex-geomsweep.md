@@ -21,7 +21,11 @@ The sweep reported **144 tile-top findings**, **10 mover-top findings**, and **1
 | Full 62-level drawn scan | Report-only, `geomsweep-drawn-raw.log`; 144 tile and 10 mover candidates. A targeted `marsh` rerun in `drawn-marsh-reed-probe.log` verified the reed artwork's eight-pixel draw offset and removed 26 false positives. |
 | Full 62-level visible-support scan | Report-only, `geomsweep-support-raw.log`; 1,656 unsupported overhang candidates. |
 | `node tools/check.mjs drawn-solids-sweep visible-supports` | Green in `geom-check-subset.log`: syntax plus both report-only names emitted parseable ` ok ` lines (70.4 s drawn, 59.5 s support). |
-| Full `node tools/check.mjs` | Pending on this branch. The separate Task A baseline on older `origin/master` had `tower-collapse`, `boss-jump`, `curve-gate`, `mark-integrity`, `no-hidden-hits`, and `textfit-full` red; those are not claimed as the current master verdicts. |
+| Full `node tools/check.mjs` | Completed in **3h 16m 47.6s** on this branch (`geomsweep-full-suite.log`): 381 ` ok ` and two check-summary `FAIL` lines across 383 checks. The new `drawn-solids-sweep` and `visible-supports` entries passed as report-only checks. `slopes-trace` and `textfit-full` failed. |
+| Standalone `node tools/slopes-trace.mjs` | Red again in `slopes-trace-standalone.log` (30.2 s): the `kings` trace differed at frame 715. The branch does not change `src/` or this check. |
+| Standalone `node tools/textfit.mjs --strict` | Red again in `textfit-full-standalone.log` (4m 57.2s): 14 pictures, including Hurricane arena text collisions. `textfit-full` also failed on Task A's clean older-master baseline. The branch does not change the text audit or game source. |
+
+The `slopes-trace` child's diagnostic begins `FAIL kings:` in the raw full-suite log. It is **not** a third check-summary failure; the two summary failures are `slopes-trace` and `textfit-full`. The separate `codex/suitespeed` runner buffers and indents child output to protect Daniel's release-log parser. Merge that runner before using parallel or sharded release logs; this geometry branch was deliberately cut from `origin/master`.
 
 ## QUESTIONS FOR DANIEL
 
@@ -29,3 +33,4 @@ The sweep reported **144 tile-top findings**, **10 mover-top findings**, and **1
 2. **Recommendation:** Treat mover-top findings as a review queue: a custom mover may paint its seat a few pixels away from its collision top. The raw coordinate and crop remain available; do not loosen the three-pixel rule to hide it.
 3. **Recommendation:** Use each level's material in the suggested fixes. Desert/crypt sections should keep stone, chain, bone or sand art already present; after the Goblin Queen use scenery or undead figures, not living goblins.
 4. **Recommendation:** Let Claude's art lanes choose geometry or collision changes if a crop shows the run itself is wrong. This branch made no such changes under Task B's drawing-only limit.
+5. **Recommendation:** Track the `kings` slopes trace and Hurricane `textfit-full` collisions as separate current-master check failures. Both stayed red standalone with the sweep out of the run; keep their assertions unchanged while their owners investigate.

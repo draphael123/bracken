@@ -1,0 +1,7 @@
+ok   wood: 1960 frames identical (x, y, vx, vy, ground) — 22 walks of 60 and 8 lips at 4 depths
+FAIL kings: first difference at frame 715 of 1900 (walk 11) — was [3786,199.85999999999999,63,160,0], now [3786,201.57999999999998,70,172,0]
+ok   keep: 2080 frames identical (x, y, vx, vy, ground) — 24 walks of 60 and 8 lips at 4 depths
+ok   burial: 2020 frames identical (x, y, vx, vy, ground) — 23 walks of 60 and 8 lips at 4 depths
+ok   canal: 2080 frames identical (x, y, vx, vy, ground) — 24 walks of 60 and 8 lips at 4 depths
+ok   welltown: 1960 frames identical (x, y, vx, vy, ground) — 22 walks of 60 and 8 lips at 4 depths
+slopes-trace: 1 of 6 levels DIFFER from the pre-slopes build
