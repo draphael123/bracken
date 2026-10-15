@@ -27,7 +27,7 @@ export const FOREMAN = {
   spikeRise: 0.35, spikeDmg: 18, spikeBack: 70,   /* (MISSED BOARDING, Daniel 10-12) spikes are DEADLY once risen (spikeRise s after the ward starts - drawn, a sound, 'SPIKES UP'): the full bump (spikeDmg = bumpDmg) and thrown back spikeBack px */
   stompK: 0.25, bracedK: 0.04,           /* a stomp takes this share of his health; a landing on him BRACED is turned (a clank, this much - B15) */
   armour: 0.4,                          /* B15: a blade from your cart */
-  bumpDmg: 22, ramDmg: 46, contactCd: 0.9, bumpBack: 56, ramBack: 84,
+  bumpDmg: 18, ramDmg: 46, contactCd: 0.9, bumpBack: 56, ramBack: 84,
   topDy: 15, halfW: 15,                 /* his cart's top (px over the rail) and half its width: the landing that is a STOMP */
   gap: [0.75, 0.6, 0.45],
   /* (deeprails5, Daniel 10-14: +2 told attacks, each a different answer) THE BOOM (DUCK): '!! THE BOOM: DUCK' - his cart's loading boom rises behind him, its hook circling (boomTell), then
