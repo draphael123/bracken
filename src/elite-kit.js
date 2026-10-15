@@ -58,21 +58,21 @@ export const AFFIX_AT = {
   'church|gobmage': 'WARDING', 'church|husk#amb': 'THORNED',   /* (claude/litchurch) THE ARCHDEACON's ward over his clergy (kill him first); the sealed vault's grave captain grows bone spines at a mash */
   'wood|shield#amb': 'SHIELDED',   /* (claude/order: the gated warding shield captain at 147 is THE BRIAR MAUL now - src/order-chapters.js ORDER_AT; a knight's affix rides on his ent) */
   'marsh|thorn#amb': 'VENOMOUS',   /* (claude/order: the far bank's thorned spike goblin is THE BOG BLADE now) */
-  'stockade|brute': 'SUMMONER', 'stockade|archer#amb': 'SWIFT',
-  'spore|shield': 'VENOMOUS', 'spore|shield#amb': 'THORNED',
+  'stockade|archer#amb': 'SWIFT',   /* (claude/wardens12: the camp brute is THE HORN LANCE now - his SUMMONER rides his ent) */
+  'spore|shield#amb': 'THORNED',   /* (claude/wardens12: the cap-top shield is THE SPORE MAGE now - VENOMOUS rides his ent) */
   'kings|brute': 'UNSTOPPABLE', 'kings|archer#amb': 'WARDING',
-  'underleaf|brute#1': 'WARDING', 'underleaf|brute#2': 'SWIFT', 'underleaf|shield#1': 'SHIELDED', 'underleaf|shield#2': 'WARDING', 'underleaf|pike': 'UNSTOPPABLE', 'underleaf|archer': 'SWIFT', 'underleaf|hearthgob#1': 'THORNED', 'underleaf|hearthgob#2': 'SUMMONER',   /* (claude/underleaf2) the terrace's captain at the windmill foot (his sprig takes half from the front: him first), the green's captain in the open */
-  'burning|shield': 'BURNING', 'burning|brute#amb': 'BURNING',
-  'scree|troll': 'UNSTOPPABLE', 'scree|troll#amb': 'THORNED',
-  'hanging|shield': 'SWIFT', 'hanging|brute#amb': 'UNSTOPPABLE',
-  'spire|troll': 'WARDING', 'spire|goat': 'SUMMONER', 'spire|troll#amb': 'SWIFT',
-  'moor|goat': 'SWIFT', 'moor|troll': 'UNSTOPPABLE', 'moor|goat#amb': 'WARDING',
-  'storm|pike': 'SHIELDED', 'storm|pike#amb': 'UNSTOPPABLE', 'storm|shield#1': 'SWIFT', 'storm|brute#1': 'THORNED', 'storm|brute#2': 'UNSTOPPABLE', 'storm|shield#2': 'WARDING', 'storm|shield#3': 'SUMMONER',   /* (claude/stormtough: the Road's, the Square's, Smoke Row's, the Close's far bank, the gorge's) */
+  'underleaf|brute#1': 'WARDING', 'underleaf|brute#2': 'SWIFT', 'underleaf|shield#1': 'SHIELDED', 'underleaf|shield#2': 'WARDING', 'underleaf|archer': 'SWIFT', 'underleaf|hearthgob#1': 'THORNED', 'underleaf|hearthgob#2': 'SUMMONER',   /* (claude/underleaf2) the terrace's captain at the windmill foot (his sprig takes half from the front: him first), the green's captain in the open */
+  'burning|brute#amb': 'BURNING',   /* (claude/wardens12: the crofts' shield is THE EMBER BLADE now - BURNING rides his ent) */
+  'scree|troll#amb': 'THORNED',   /* (claude/wardens12: the crag troll at 505 is THE SCREE MAUL now) */
+  'hanging|brute#amb': 'UNSTOPPABLE',   /* (claude/wardens12: the street's shield is THE ROPE BLADE now) */
+  'spire|goat': 'SUMMONER', 'spire|troll#amb': 'SWIFT',   /* (claude/wardens12: the scriptorium troll is THE GONG MAUL now) */
+  'moor|troll': 'UNSTOPPABLE', 'moor|goat#amb': 'WARDING',   /* (claude/wardens12: the Kite Field's herd billy is THE GALE LANCE now) */
+  'storm|pike#amb': 'UNSTOPPABLE', 'storm|shield#1': 'SWIFT', 'storm|brute#1': 'THORNED', 'storm|brute#2': 'UNSTOPPABLE', 'storm|shield#2': 'WARDING', 'storm|shield#3': 'SUMMONER',   /* (claude/stormtough: the Road's, the Square's, Smoke Row's, the Close's far bank, the gorge's) */
   'crown|heavy': 'UNSTOPPABLE', 'crown|hearthgob': 'BURNING', 'crown|brute#amb': 'WARDING',
   'longwater|tideguard': 'SHIELDED', 'longwater|tideguard#amb': 'SWIFT',
   'reef|tideguard': 'VENOMOUS',
   'ksar|shield': 'SHIELDED',   /* (batch82 integ: the Ksar's bridge champion, the far lip's planted shield at col 683 - ksar2 placed it without an affix) */
-  'rootway|shield#1': 'WARDING', 'rootway|shield#2': 'SHIELDED', 'rootway|shield#3': 'WARDING',
+  'rootway|shield#1': 'SHIELDED', 'rootway|shield#2': 'WARDING',   /* (claude/wardens12: the hollow trunk's shield (the old #1) is THE HOIST MAUL now; the gantry's and the lodge's keep their affixes, renumbered) */
   'flotilla|boarder': 'SWIFT', 'flotilla|boarder#amb': 'SHIELDED',
   'hurricane|boarder': 'SUMMONER', 'hurricane|cutlass': 'SWIFT', 'hurricane|cutlass#amb': 'WARDING',
   'lamplit|watch': 'WARDING', 'lamplit|watch#amb': 'SHIELDED',
@@ -91,7 +91,7 @@ export const AFFIX_AT = {
   'fair|barker#1': 'WARDING', 'fair|barker#2': 'SUMMONER', 'fair|hobbyhorse': 'SWIFT',
   'canal|gaffer': 'UNSTOPPABLE',
   'towpath|hedgeknight': 'SHIELDED', 'towpath|gaffer#1': 'SWIFT', 'towpath|gaffer#2': 'WARDING', 'towpath|gaffer#3': 'UNSTOPPABLE',
-  'glasssea|cutthroat': 'UNSTOPPABLE', 'skyroad|troll': 'THORNED',
+  'glasssea|cutthroat': 'UNSTOPPABLE', 
   'caravan|cutthroat': 'SWIFT', 'caravan|scorpion#amb': 'BURNING',
   'welltown|scorpion': 'VENOMOUS', 'redgorge|scorpion': 'BURNING', 'redgorge|shield': 'SWIFT', 'underwell|scorpion': 'UNSTOPPABLE',
   'buriedcity|construct#1': 'SHIELDED', 'buriedcity|construct#2': 'BURNING', 'buriedcity|construct#3': 'UNSTOPPABLE', 'buriedcity|construct#4': 'SWIFT',   /* (claude/buriedcity3: THE ROOFTOPS' courtyard - quick in the sun, where you cannot stand long) */   /* (claude/buriedcity: the halls' exam - go round his brass front; the foundry's - hot from the furnace yard; the throne's warden) */
