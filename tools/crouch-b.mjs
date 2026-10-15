@@ -21,6 +21,7 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { DUCK_H } from '../src/duck.js';
 import { KNEEL, SENSE, HARVEST } from '../src/crouch-b.js';
+import { HG } from '../src/holy-ground.js';   /* (claude/paladin4) PRAYER: anywhere at KNEEL.rate, x HG.pray.holyMul by a holy light */
 
 const bad = [];
 const pg = await openPage({ audio: false, fonts: false });
@@ -148,12 +149,15 @@ else {
   const Pa = R.pal;
   if (Pa.lightSettle > 0.5 || Pa.prayingEarly) bad.push(`paladin: the prayer took before he had settled (${KNEEL.settle} s): light ${Pa.lightSettle}`);
   const rate = Pa.l2 - Pa.l1;
-  if (!(Math.abs(rate - KNEEL.rate) < 2)) bad.push(`paladin: his light filled ${rate.toFixed(1)} a second kneeling (want ${KNEEL.rate})`);
+  /* (claude/paladin4, Daniel 10-15 ~17:20 - a DESIGN CHANGE, stated: PRAYER works ANYWHERE now at KNEEL.rate (a pip every HG.pray.every s), x HG.pray.holyMul by a holy light;
+   was: only by a holy light, at KNEEL.rate. The not-by-a-light trials below now want the SLOW prayer, not the plain duck) */
+const HOLYRATE = KNEEL.rate * HG.pray.holyMul, SLOWLIGHT = (4 - KNEEL.settle) * KNEEL.rate;
+if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate.toFixed(1)} a second kneeling by a holy light (want ${HOLYRATE})`);
   if (!(Pa.l4 >= 99.9)) bad.push(`paladin: four and a half seconds on his knees from empty did not fill his light (${Pa.l4.toFixed(1)})`);
   if (!Pa.praying) bad.push('paladin: down held by a holy light did not pray');
   for (const [k, W] of Object.entries(R.palElse)) { const should = k === 'near' || k === 'shrine';
-    if (should) { if (!(W.light >= 99) || !W.praying || W.pose !== 'kneel') bad.push('paladin: by a ' + k + ' light he did not pray: ' + JSON.stringify(W)); }
-    else { if (W.light > 0 || W.praying || W.kneelT > 0 || W.holy) bad.push('paladin: with ' + k + ' he still prayed: ' + JSON.stringify(W)); if (W.pose === 'kneel') bad.push('paladin: with ' + k + ' he was drawn kneeling'); }
+    if (should) { if (!(W.light >= SLOWLIGHT * HG.pray.holyMul - 3) || !W.praying || W.pose !== 'kneel' || !W.holy) bad.push('paladin: by a ' + k + ' light he did not pray three times as fast: ' + JSON.stringify(W)); }
+    else { if (!(Math.abs(W.light - SLOWLIGHT) < 3) || !W.praying || W.holy) bad.push('paladin: with ' + k + ' (no holy light) he did not pray at the slow rate (want ~' + SLOWLIGHT.toFixed(1) + '): ' + JSON.stringify(W)); if (W.pose !== 'kneel') bad.push('paladin: with ' + k + ' he was not drawn kneeling'); }
     if (W.box !== DUCK_H) bad.push('paladin: with ' + k + ' the kneel is not even the plain duck (box ' + W.box + ')'); }
 
   if (Pa.box !== DUCK_H) bad.push(`paladin: the kneel is not the duck (hurt box ${Pa.box}, DUCK_H ${DUCK_H})`);
@@ -203,7 +207,7 @@ else {
   const Bt = R.bot;
   if (!(Bt.pal.planned > 60) || !(Bt.pal.light > 50)) bad.push(`bot: calm with his light low, the paladin did not kneel for it: ${JSON.stringify(Bt.pal)}`);
   if (!(Bt.palWalk.walked < -20) || !(Bt.palWalk.light > 50)) bad.push(`bot: the paladin did not walk to a holy light four tiles off and kneel there: ${JSON.stringify(Bt.palWalk)}`);
-  if (Bt.palNone.light > 10 || Bt.palNone.planned > 0) bad.push(`bot: with no holy light near the paladin planned to kneel: ${JSON.stringify(Bt.palNone)}`);
+  if (!(Bt.palNone.light > 10) || !(Bt.palNone.planned > 0)) bad.push(`bot: with no holy light near, calm and low, the paladin did not PRAY where he stood (claude/paladin4: prayer works anywhere now - a design change, stated; was: he must not kneel): ${JSON.stringify(Bt.palNone)}`);
   if (Bt.palNear.planned > 0) bad.push(`bot: the paladin knelt with a topiary three tiles off: ${JSON.stringify(Bt.palNear)}`);
   if (!(Bt.geo.senses > 0)) bad.push(`bot: calm, the geomancer did not look: ${JSON.stringify(Bt.geo)}`);
   if (!(Bt.dk.harvests > 0) || !(Bt.dk.walked > 20)) bad.push(`bot: the death knight did not walk to the body three tiles off and draw it: ${JSON.stringify(Bt.dk)}`);
@@ -216,4 +220,4 @@ else {
   }
 }
 assert.deepEqual(bad, [], 'the crouch twists (part B):\n  ' + bad.join('\n  '));
-console.log('the crouch twists hold: the paladin kneels by a holy light only (a shrine, a lit brazier, ...) and his light fills 30 a second there, exposed to a low blow that breaks it; the geomancer\'s sense shows a buried dead man and a breakable wall inside six tiles and nothing outside, wakes nothing and lingers its after-glow; the death knight draws 7 health and 12 blood from a body in 0.6 s, once, and a broken draw pays nothing; each is still the duck, and the knight, the warden and the pyromancer are untouched');
+console.log('the crouch twists hold: the paladin PRAYS anywhere (a pip every 2.5 s, three times as fast by a holy light), exposed to a low blow that breaks it; the geomancer\'s sense shows a buried dead man and a breakable wall inside six tiles and nothing outside, wakes nothing and lingers its after-glow; the death knight draws 7 health and 12 blood from a body in 0.6 s, once, and a broken draw pays nothing; each is still the duck, and the knight, the warden and the pyromancer are untouched');
