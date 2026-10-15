@@ -59,7 +59,7 @@ export const TYPICAL_SKILLS = {   /* each hero's damaging actives, best first (t
   knight: ['swordOfRealm', 'groundSlam', 'lunge', 'whirlwind', 'disarm', 'shieldThrow'],
   warden: ['rainOfSpears', 'spearDance', 'javelin', 'setSpears', 'poleSpring', 'skewer', 'wheel', 'harrier'],
   pyro: ['meteor', 'fireWall', 'wisp', 'vent', 'flameRing', 'cinderStep'],
-  paladin: ['lightLance', 'holyCharge', 'hammerLeap'] /* (claude/paladin2: CONSECRATE is his C now, not a slot) */, pirate: [], reaper: ['boneArmor', 'soulReap'] /* (claude/dkhero) BONE ARMOR (L14) and SOUL REAP (L20): the lab's skill hands cast them for a v2 profile */, geomancer: [], berserker: [], ranger: [],
+  paladin: ['lightLance', 'holyCharge', 'hammerLeap'] /* (claude/paladin2: CONSECRATE is his C now, not a slot) */, pirate: [], reaper: ['boneArmor', 'soulReap'] /* (claude/dkhero) OSSUARY MAIL (L14) and THE REAPING (L20): the lab's skill hands cast them for a v2 profile */, geomancer: [], berserker: [], ranger: [],
 };
 export const TYPICAL_PERKS = ['iron', 'heart', 'arcane', 'light', 'lungs', 'focus'];
 export function typicalCard(lv) { const n = Math.max(0, Math.min(50, Math.floor(lv || 0))), v = Math.round(n * 0.45), m = Math.round(n * 0.35), e = Math.max(0, n - v - m), ms = {};

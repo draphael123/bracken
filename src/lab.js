@@ -817,7 +817,7 @@ async function runbossLab(BK, opts) {
         if(boss.mode==='open'&&P.ground&&Math.abs(P.x-(boss.x-3*TS))<20){BK.press('jump');P.labJump=16;}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         const tired=P.labRest||P.st<14;
-        const lead=h==='reaper'?(.12/.34):h==='paladin'?.08:.06,landingCutY=P.y+P.vy*lead+600*lead*lead;
+        const lead=h==='reaper'?(.12/.46):h==='paladin'?.08:.06,landingCutY=P.y+P.vy*lead+600*lead*lead;
         if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&(h==='reaper'||P.vy>0)&&(h==='pyro'||h==='warden'||h==='reaper'?Math.abs(landingCutY-(heart.y+3))<16:Math.abs(P.y-8-(heart.y-7))<46)&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
         else if(addNear&&!hopSoon&&!bad(P.x)&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&P.atk<0){P.face=Math.sign(add.x-P.x)||1;k.left=k.right=false;   /* (claude/harness) and the stand-off walk let go this frame: a sporeling inside the stand-off had the walk key pointing AWAY from it, which turned her round, and the warden swung 12 of 17 at the air behind her (it was hidden by a leak between lab fights: tools/lab-order.mjs) */ if(P.ground&&keyVerb(BK,h,add)==='sweep'&&P.st>=(BK.stepCost?BK.stepCost():12)+4)k.down=true;BK.press('atk');swings++;}   /* HER SPORELINGS ARE SMALL, and a small thing is cut LOW (the family table's key verb, which strike() gives every common foe): the plain cut was the only blow this pilot knew, and the Death Knight's lands a third of a second late and 31 px out - past a sporeling that has scuttled on. Measured (2026-09-24): he swung at them 14 times a fight and 8 of those met air (the other heroes: 0-5 of 4-15), and he followed them about the room, off the knot, for most of the extra 40 s his fight took */
         else if(!tired&&!hopSoon&&!bad(P.x)&&!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
@@ -1345,6 +1345,7 @@ async function runbossLab(BK, opts) {
         else if(pl.jump&&P.ground&&(P.labJumpF===undefined||f-P.labJumpF>14)){BK.press('jump');P.labJumpF=f;P.labJump=26;}
         if(P.labJump>0){P.labJump--;k.jump=true;} if(P.labDrop>0){P.labDrop--;k.down=true;}
         if(pl.gx!=null&&Math.abs(pl.gx-P.x)>6)k[pl.gx>P.x?'right':'left']=true;
+        if(pl.duck&&P.ground){k.down=true;k.left=k.right=false;}   /* (claude/deeprails5: duck in the tub under HIS BOOM) */
         if(pl.atk&&P.atk<0){P.face=1;BK.press('atk');swings++;}
         const fo=!!(S&&foremanOpen(S));if(fo&&!wasOpen)opened++;wasOpen=fo;
         const was=P.hp,m0=S?S.mode:boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:fo,why:pl.why});if(f%600===599)await yieldNow();continue;
@@ -1952,7 +1953,7 @@ async function runbossLab(BK, opts) {
          HIS CUTS (gold): guarded (a shield; the warden's deflect), or stepped back out of. THE CLEAVE: stand in its reach while he lifts it
          (that is what makes him commit), and once he has COMMITTED dodge out of it, away: the blade goes into the floor and the hands cut the
          stuck man. His recoveries (after a cut, a cleave, the bolts) are cut too: every blow lands whole now. THE PLANTED BLADE: the middle
-         of the widest gap. DEATH GRIP: jump the chain as it arrives. BLOOD BOIL: out of its ring. DEATH COIL: on the shield, or dodged as it
+         of the widest gap. GRAVE CHAIN: jump the chain as it arrives. BLOOD WELL: out of its ring. BLOOD LEECH: on the shield, or dodged as it
          arrives. GRAVE TIDE: round behind him. THE WARD: from behind his back is cut; on its face the hands FILL it and break it (he reels
          open), and back off before a nova they did not break. NOVA, SURGE: out of the ring. His dead are cut when they come close. */
       else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;
@@ -1967,7 +1968,11 @@ async function runbossLab(BK, opts) {
         const add = BK.enemies().filter(q => q.alive && q.t === 'corpse' && q.from === boss && q.mode !== 'down' && Math.abs(q.y - P.y) < 24).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
         const pool = S && (boss.pools || []).find(p => Math.abs(P.x - p.x) < S.boilR + 6);
         const coil = S && (boss.coils || []).find(q => q.t < S.coilT - 0.25 && Math.abs(q.x - P.x) < 46 && Math.abs(q.y - (P.y - 12)) < 30);   /* (seen a quarter-second after it leaves his hand) */
-        if (m === 'stuck' || m === 'wrench' || m === 'reel') { goal = boss.x; strike = true; }
+        const std = S && m === 'ward' && !boss.wardLock && (boss.wardFill || 0) >= S.wardFull - 1 ? (boss.stds || []).filter(q => q.up).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;   /* (claude/dk2b) a fed ward that will not break: CUT A STANDARD */
+        if (m === 'stuck' || m === 'wrench' || m === 'reel' || m === 'spent' || (m === 'drain' && Math.abs(P.x - boss.x) < 130)) { goal = boss.x; strike = true; }   /* (claude/dk2b) spent after a crescent that found nobody; the drain broken by blows */
+        else if (std && seen) { strike = false; goal = std.x + (P.x < std.x ? -12 : 12); if (Math.abs(P.x - std.x) < 22 && P.atk < 0 && P.st >= 25) { P.face = Math.sign(std.x - P.x) || P.face; k.left = k.right = false; BK.press('atk'); } }
+        else if (S && (m === 'priceTell' || m === 'crescent') && seen) { strike = false; const out = boss.x + side * (S.crescentR + 34), room = out > A.x0 + 20 && out < A.x1 - 20;   /* (claude/dk2b) THE BLOOD PRICE: out of its reach - or, with no room, dodged through as it comes */
+          if (room) goal = out; else { goal = null; if (m === 'priceTell' && boss.modeT < 0.16 && !(P.dodge > 0) && P.st >= 25) { k.left = side > 0; k.right = side < 0; BK.press('dodge'); } } }
         else if (coil) { strike = false; if (shield || h === 'warden') { goal = null; P.face = Math.sign(coil.x - P.x) || P.face; k.block = shield ? true : DEFLECT_TAP(f); } else if (Math.abs(coil.x - P.x) < 26 && !(P.dodge > 0) && P.st >= 10) { BK.press('dodge'); goal = null; } else goal = null; }
         else if ((shield || h === 'warden') && Math.abs(P.x - boss.x) < (S ? S.swingR : 54) + 16 && (m === 'swing' || (m === 'swingTell' && (LABP.v2 ? P.labDkPrev === 'swing' : boss.strLeft > 0 && !boss.punish)))) guard();   /* inside a string the guard stays up between its cuts (a player holds it through) */
         else if (!seen && /Tell$/.test(m)) { goal = boss.x; strike = !(P.labRest); }   /* not read yet */

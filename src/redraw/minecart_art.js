@@ -482,4 +482,5 @@ export function rig(g, rx, lanes, ceilY, o, time) {
 export * from './deeprails3_art.js';
 export * from './deeprails4_art.js';
 export * from './deeprails4_poses.js';   /* (dr4art) windup poses, the slump set, the raiders' tub, the gantry and siding */
+export * from './deeprails5_art.js';   /* (claude/deeprails5, greybox) the drill's spare cutter + rail claw, the Foreman's boom + tipped ore, the parked cart's gate */
 import { tunnelFloor } from './deeprails4_art.js';

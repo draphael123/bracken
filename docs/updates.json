@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-15",
+    "batch": 95,
+    "lines": [
+      "Deep Rails: the Spoil Pits and new drill attacks",
+      "The Death Knight pays in blood: new kit and boss",
+      "Buried City: clearer hourglasses, real gears",
+      "The Hourglass King: the sand rises in phase two",
+      "Elites in the Buried City now hold gates"
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "batch": 94,
     "lines": [
       "The Paladin: Conviction, Verdict and a moving aura",

@@ -572,30 +572,30 @@
   "lostPct": 388
  },
  "buriedcity": {
-  "hash": "0b93ca4f0871",
+  "hash": "376db2e9aefa",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 21,
-  "deaths": 12,
-  "kills": 12,
-  "lifts": 171,
+  "hits": 24,
+  "deaths": 6,
+  "kills": 9,
+  "lifts": 168,
   "walked": 100,
   "bare": true,
-  "lostPct": 506
+  "lostPct": 349
  },
  "minecart": {
-  "hash": "c14c5ba93827",
+  "hash": "46b2afcc5e15",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 49,
-  "deaths": 4,
-  "kills": 58,
-  "lifts": 32,
+  "hits": 39,
+  "deaths": 5,
+  "kills": 61,
+  "lifts": 41,
   "walked": 100,
   "bare": true,
-  "lostPct": 243
+  "lostPct": 207
  },
  "sealedpyramid": {
   "hash": "374d1b96d29b",

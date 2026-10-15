@@ -12,6 +12,7 @@
    3. THE SEAM (shared with the LEVELING lane): staminaOf(P) is the ONE place max / regen / roll-cost growth is read. main.js binds the
       level hooks (bindStamina) - this module never hard-codes the level numbers, and LEVELING's ENDURANCE feeds P.maxSt. */
 
+import { DK2 } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: REAPER'S RHYTHM and the crescent run on their own clocks */
 export const WINDOW = 0.06;   /* s: the last four frames of a recovery are the cancel window, for everything */
 
 /* RECOVERY ADDED AFTER THE SWING'S ART ENDS (s), per hero x verb. Light totals press-to-free (WEIGHT-T): freebooter 0.29, knight/warden/pyro 0.40,
@@ -33,8 +34,8 @@ export const PISTOL_BLAST = 0.45;   /* the freebooter's shot: blastT 0.34 -> 0.4
 export const PLUNGE_WHIFF = 0.10;   /* a plunge that met nothing lands this much heavier (a CAUGHT plunge - the pogo - is untouched) */
 
 /* THE SWING'S ART: P.atk runs 0 -> lim at this rate (main.js advances it with artRate, so the two can never disagree) */
-export const artLim = heavy => heavy ? 0.42 : 0.3;
-export const artRate = (h, heavy) => (h === 'paladin' ? 0.56 : h === 'pirate' ? 1.35 : h === 'reaper' ? (heavy ? 0.24 : 0.34) : 1) * (heavy && h !== 'reaper' ? 0.72 : 1);
+export const artLim = (heavy, h) => heavy ? (h === 'reaper' ? DK2.price.lim : 0.42) : 0.3;   /* (claude/dk2b: the Death Knight's crescent ends sooner than a heavy's 0.42) */
+export const artRate = (h, heavy) => (h === 'paladin' ? 0.56 : h === 'pirate' ? 1.35 : h === 'reaper' ? (heavy ? DK2.price.rate : DK2.rhythm.rate) : 1) * (heavy && h !== 'reaper' ? 0.72 : 1);
 
 /* how long the recovery after a swing's art is. An AIR swing adds none (the plunge may follow it once its active frames are out); the
    dash cut keeps its own rooted dashRec; a crouched blow (crouch-a) is a light one */
@@ -46,7 +47,7 @@ export function recoveryFor(h, { heavy = false, third = false, kind = null, air 
   return third ? c.third : c.light;
 }
 /* the whole commit of the swing he is in, press to free (the greed exemption reads it: a blow he cannot roll out of in GREED.tell) */
-export const swingTotal = (h, P) => artLim(!!P.heavy) / artRate(h, !!P.heavy) + recoveryFor(h, { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut });
+export const swingTotal = (h, P) => artLim(!!P.heavy, h) / artRate(h, !!P.heavy) + recoveryFor(h, { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut });
 
 /* THE ONE PREDICATE. Committed: the swing is out, or its recovery has more than the window left. */
 export const committed = P => P.atk >= 0 || (P.atkRec || 0) > WINDOW + 1e-6;
@@ -57,7 +58,7 @@ export const inRecovery = P => !(P.atk >= 0) && (P.atkRec || 0) > WINDOW + 1e-6;
 /* THE DEATH KNIGHT'S WARD CUTS THE END OF A SWING (claude/dkhero, Daniel 10-06): the ward may be raised out of the last DK_WARD_CUT seconds of his swing
    (the art's tail and the recovery behind it: his recovery alone is only 0.1 s), so a Bloodknight blow is not always a hit. swingLeft = time to free. */
 export const DK_WARD_CUT = 0.25;
-export const swingLeft = (h, P) => P.atk >= 0 ? Math.max(0, artLim(!!P.heavy) - P.atk) / artRate(h, !!P.heavy) + (recoveryFor(h, { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut })) : (P.atkRec || 0);
+export const swingLeft = (h, P) => P.atk >= 0 ? Math.max(0, artLim(!!P.heavy, h) - P.atk) / artRate(h, !!P.heavy) + (recoveryFor(h, { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut })) : (P.atkRec || 0);
 
 /* THE HELD BUFFER. While committed, a press of roll / jump / attack / a skill is KEPT (its buffer is held up, not aged) and only the
    LATEST press survives to the window - so a roll pressed at swing frame 2 comes out on the window's first frame, and an attack pressed
