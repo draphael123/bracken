@@ -20108,7 +20108,7 @@ function updateGQueen(e, dt) {
   // (she no longer runs for the roof: the whole fight is in her hall, and it turns on her health)
   /* ROUND TWO (66%): the storm, and HER PLATE gets its own bar (drawGqPlate); the pillars stay down - her court leaps now land anywhere.
      ROUND THREE (33%): her masons prop the hall again and her plate is whole, as the round always was (docs/briefs/goblin-queen-court.md) */
-  if (e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.plate = GQC.plate; e.plateOff = false; L.windowsOut = true; SFX.bellow(); shakeCam(6); flash = Math.max(flash, 0.2); gqSay(e, 'THE STORM COMES IN', '#dfe8ff'); }
+  if (e.phase === 1 && e.hp <= e.maxHp * 0.66) { e.phase = 2; e.plate = GQC.plate; e.plateOff = false; L.windowsOut = true; SFX.bellow(); shakeCam(6); flash = Math.max(flash, 0.2); if (bossActive && L.arena && L.arena.music === 'gqueen') music.play('gqjudge');   /* (claude/musicgq: the court rises to JUDGEMENT; phase 3 keeps it) */ gqSay(e, 'THE STORM COMES IN', '#dfe8ff'); }
   if (e.phase === 2 && e.hp <= e.maxHp * 0.33) { e.phase = 3; e.plateOff = false; SFX.bellow(); shakeCam(6); gqSay(e, 'SHE STEPS THROUGH SHADOW', '#c9a0ff'); gqPillarsStand(); }
   // THE STORM through the windows, once they are out: a gust down the hall on a beat
   if (e.phase >= 2 && L.windowsOut && e.mode !== 'pinned') { e.gustT -= dt; if (e.gustT <= 0) { e.gustT = 7.5; e.gustDir = Math.random() < 0.5 ? -1 : 1; e.gusting = 2; SFX.thunder(); flash = Math.max(flash, 0.12); }
