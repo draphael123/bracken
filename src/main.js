@@ -12344,7 +12344,7 @@ function updateTollmaster(e, dt) {
       if (Math.random() < dt * 16) parts.push({ x: e.x - e.face * 16, y: e.y - 38 - Math.random() * 6, vx: -e.face * 20, vy: -14, life: 0.35, max: 0.35, col: '#cfc6a8', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'ledger'; e.modeT = 0.34; e.vx = e.face * 110; SFX.heavy();
         // THE BOOK HITS WHERE IT IS DRAWN: 37.5 px at his scale on the striking frame, and the 5 of you in front of your middle
-        if (!P.dead && Math.sign(d) === e.face && ad < 43 && Math.abs(P.y - e.y) < 34) {
+        if (!P.dead && Math.sign(d) === e.face && ad < 43 && Math.abs(P.y - e.y) < 26) {   /* (claude/lamplit2) at body height: a hero up on a cornice (32 px) is over the book */
           const res = damagePlayer(e.x, DMG.tollLedger);
           if (res === 'blocked') tollOpen(e, 'parry');   // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
           else if (res === 'hit') { P.vx = e.face * 300; P.vy = -150; } } }
