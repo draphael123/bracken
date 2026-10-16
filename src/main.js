@@ -4242,7 +4242,7 @@ function levelUp(n, from) { lvUpN = n; PROG.cardNew = 1; if (state !== 'play') r
   SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
-const fightLive = () => !!(bossActive || miniActive || ambushLive());
+const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
   const pas = got.length ? (got.length > 1 ? ' PASSIVES: ' + got[0].name + ' +' + (got.length - 1) + ' MORE.' : ' PASSIVE: ' + got[0].name + '.') : '';
