@@ -22,7 +22,7 @@ const pg = await openPage({ audio: false, fonts: false }); const fails = [], ok 
 let r;
 try {
   r = await pg.evalp(`(async()=>{
-  const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};const H=BKT.lampHands();
+  const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};const H={get oil(){return BKT.lampHands().oil},get wax(){return BKT.lampHands().wax},get airRooms(){return BKT.lampHands().airRooms},get WICK_DRY(){return BKT.lampHands().WICK_DRY},get WICK_WET(){return BKT.lampHands().WICK_WET},drowned:p=>BKT.lampHands().drowned(p),nearAir:(x,y)=>BKT.lampHands().nearAir(x,y)};
   const idx=LEVELS.findIndex(l=>l.id==='lamplit');
   const hold=()=>{const k=BK.keys;k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=false;};
   const start=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(5);BK.reset();};
@@ -52,7 +52,7 @@ try {
   { start();const A=BK.L.arena;const b=BK.enemies().find(e=>e.t==='tollmaster');for(const e of BK.enemies())if(e!==b&&!e.maxHp&&!e.mini)e.alive=false;
     BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(240);const o={};o.awake=b.mode;
     const lampsIn=()=>BK.props().filter(p=>p.t==='lantern'&&p.city&&p.x>A.x0-8&&p.x<A.x1+8);
-    const calm=()=>{b.mode='borne';b.modeT=9;b.open=0;b.ward=0;b.openKind=null;b.collectT=99;b.scalesT=99;b.sealT=99;b.writT=99;b.ledgerT=99;b.rodT=99;b.stagger=0;b.vx=0;if(b.corners)for(const c of b.corners){c.n=0;c.cd=0;}};
+    const calm=()=>{b.mode='borne';b.modeT=9;b.open=0;b.ward=0;b.openKind=null;b.collectT=99;b.scalesT=99;b.sealT=99;b.writT=99;b.ledgerT=99;b.rodT=99;b.stagger=0;b.vx=0;b.hp=b.maxHp;b.phase=b.phase||1;if(b.corners)for(const c of b.corners){c.n=0;c.cd=0;}};
     let L=lampsIn();o.lamps=L.length;for(const p of L){p.lit=true;p.gut=0;}
     /* collect left alone: the lamp goes dark */
     calm();b.x=(A.x0+A.x1)/2;BK.P.x=A.x0+24;BK.P.y=A.floor;b.modeT=0;b.collectT=0;let lamp=null;
@@ -67,7 +67,7 @@ try {
     for(const p of L){p.lit=true;p.gut=0;}calm();const t=L.slice().sort((a,c)=>Math.abs(a.x-(A.x0+A.x1)/2)-Math.abs(c.x-(A.x0+A.x1)/2))[0];t.lit=false;b.x=t.x+40;
     relight(t);o.relit={mode:b.mode,kind:b.openKind,open:+(b.open||0).toFixed(2)};{const h0=b.hp;BKT.hurtAs('cut',b,10,b.x-20,false);o.openBlow=h0-b.hp;}
     {const h0=b.hp;for(let i=0;i<60;i++){hold();BK.P.x=A.x0+24;BK.sim(1);}o.burnt=h0-b.hp;}
-    for(let i=0;i<240&&b.open>0;i++){hold();BK.P.x=A.x0+24;BK.sim(1);}o.wardAfter=+(b.ward||0).toFixed(2);
+    for(let i=0;i<900&&b.open>0;i++){hold();BK.P.x=A.x0+24;BK.sim(1);}o.wardAfter=+(b.ward||0).toFixed(2);
     t.lit=false;b.x=t.x+40;b.modeT=9;relight(t);o.inWard={mode:b.mode,open:+(b.open||0).toFixed(2)};
     /* the bearers: three blows on one corner */
     calm();b.onFoot=false;b.phase=1;b.hp=b.maxHp;for(let i=0;i<3;i++){BKT.hurtAs('cut',b,4,b.x-30,false);BK.sim(2);}o.tilt={mode:b.mode,kind:b.openKind,open:+(b.open||0).toFixed(2)};
