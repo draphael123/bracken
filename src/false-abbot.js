@@ -126,9 +126,10 @@ export function abbotBellRung(e, bellX, c) {
 }
 /* the false light in flight: it goes on whatever he does next (it has left his hand), and bursts on its mark */
 function stepOrb(e, dt, c) {
+  if (e.flash && (e.flash.t += dt) > e.flash.T) e.flash = null;   /* the burst's gold flash (art only: it times nothing) */
   const o = e.orb; if (!o) return;
   o.t += dt; if (o.t < o.T) return;
-  e.orb = null; const { P } = c, floor = c.A.floor;
+  e.orb = null; e.flash = { x: o.tx, t: 0, T: 0.4 }; const { P } = c, floor = c.A.floor;
   c.sound('puff'); if (c.dust) c.dust(o.tx, floor);
   if (!P.dead && Math.abs(P.x - o.tx) < ABBOT.lightR && P.y > floor - 34) c.hit(o.x0, ABBOT.dmg.light, false, 'FALSE LIGHT');   /* from where it was thrown: the guard turns what is in front */
 }
@@ -241,19 +242,50 @@ export function updateFalseAbbot(e, dt, c) {
 }
 /* THE BELFRY'S ROPES: each from the roof beam to head height with its little bell at the top - the one he is about to
    take JERKS and its bell swings (the tell), and the one he is on runs to his hands. Drawn whenever the belfry is. */
+/* the helpers of the belfry's art: a twisted hemp line, a little bronze bell with its clapper, a 4-point glint */
+function twist(g, x0, y0, x1, y1, c1 = '#c8b088', c2 = '#8a6a3e') {
+  const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0)));
+  for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n);
+    g.fillStyle = c1; g.fillRect(x, y, 2, 1); g.fillStyle = (i >> 1) & 1 ? c2 : c1; g.fillRect(x + 1, y, 1, 1); g.fillStyle = '#4a3418'; g.fillRect(x + 2, y, 1, 1); } }
+function bronzeBell(g, x, y, sw, big) {   /* hung from (x,y), swinging sw px: a dome, a flared lip, the clapper */
+  const k = big ? 1.5 : 1, h = Math.round(8 * k), w = Math.round(5 * k);
+  const bx = x + sw, rows = [[-2, 2], [-3, 3], [-4, 4], [-4, 4], [-5, 5], [-6, 6]];
+  g.fillStyle = '#2a1c0c'; g.fillRect(bx - w - 1, y + 1, 2 * w + 3, h + 2);
+  for (let r = 0; r < h; r++) { const t = r / (h - 1), hw = Math.round(2 + t * (w - 2) + (r === h - 1 ? 1 : 0));
+    g.fillStyle = '#9a7634'; g.fillRect(bx - hw, y + 2 + r, 2 * hw + 1, 1);
+    g.fillStyle = '#c9a44a'; g.fillRect(bx - hw + Math.ceil(hw / 2), y + 2 + r, hw, 1);
+    g.fillStyle = '#f0dc8a'; g.fillRect(bx + 1, y + 2 + r, 1, 1); }
+  g.fillStyle = '#6a4a1e'; g.fillRect(bx - w - 1, y + h + 1, 2 * w + 3, 1);
+  g.fillStyle = '#3a2a12'; g.fillRect(bx - 1 - Math.sign(sw), y + h + 2, 3, 2); }
+function glint(g, x, y, c, r = 2) { g.fillStyle = c; g.fillRect(x, y - r, 1, 2 * r + 1); g.fillRect(x - r, y, 2 * r + 1, 1); }
+/* THE BELFRY'S ROPES: each from an iron-strapped beam bracket over a little bronze bell, a twisted rope with a striped wool SALLY and a knotted tail -
+   the one he is about to take JERKS and its bell swings and rings (the tell), the one he is on runs to his hands. Drawn whenever the belfry is. */
 export function drawAbbotRopes(g, ropes, roofY, floorY, cx, cy, time, e) {
   const ry = Math.round(roofY - cy), fy = Math.round(floorY - cy);
   for (const r of ropes || []) {
-    const x = Math.round(r - cx); if (x < -20 || x > g.canvas.width + 20) continue;
+    const x = Math.round(r - cx); if (x < -30 || x > g.canvas.width + 30) continue;
     const mine = e && e.alive && e.rope === r && (e.mode === 'swingTell' || e.mode === 'swing');
-    const jerk = mine && e.mode === 'swingTell' ? Math.round(Math.sin(time * 40) * 2) : 0;
-    g.fillStyle = '#6a4a2a'; g.fillRect(x - 6, ry, 13, 3);                                          // the beam's cleat
-    g.fillStyle = '#c9a44a'; g.fillRect(x - 3 + jerk, ry + 3, 7, 5); g.fillStyle = '#f0dc8a'; g.fillRect(x - 3 + jerk, ry + 3, 7, 1);   // its bell
-    g.strokeStyle = '#c8b088'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + jerk, ry + 8);
-    if (mine && e.mode === 'swing') g.lineTo(Math.round(e.x - cx), Math.round(e.y - cy) - 52);
-    else g.lineTo(x - jerk, fy - 44);
-    g.stroke(); g.lineWidth = 1;
-    if (!(mine && e.mode === 'swing')) { g.fillStyle = '#a88a5a'; g.fillRect(x - 2 - jerk, fy - 46, 4, 4); }   // the tail's knot
+    const tell = mine && e.mode === 'swingTell', on = mine && e.mode === 'swing';
+    const jerk = tell ? Math.round(Math.sin(time * 40) * 2) : 0;
+    const idle = Math.round(Math.sin(time * 1.3 + r * 0.05) * 1);   /* a rope hangs, and breathes */
+    /* the bracket: a timber stub off the roof with an iron strap and a pulley wheel */
+    g.fillStyle = '#2a1c0c'; g.fillRect(x - 8, ry, 17, 6); g.fillStyle = '#5a3a22'; g.fillRect(x - 7, ry, 15, 4); g.fillStyle = '#7a5232'; g.fillRect(x - 7, ry, 15, 1);
+    g.fillStyle = '#4a4a52'; g.fillRect(x - 7, ry + 2, 15, 1); g.fillStyle = '#8a8a96'; g.fillRect(x - 5, ry + 2, 1, 1); g.fillRect(x + 4, ry + 2, 1, 1);
+    bronzeBell(g, x, ry + 4, tell ? jerk : idle, false);
+    if (tell && Math.sin(time * 40) > 0.3) { glint(g, x - 9, ry + 12, '#ffe08a', 1); glint(g, x + 9, ry + 11, '#ffe08a', 1); }   /* it RINGS */
+    const top = ry + 15 + (tell ? 0 : 0);
+    if (on) {
+      const hx = Math.round(e.x - cx), hy = Math.round(e.y - cy) - 52, sag = Math.round(Math.abs(hx - x) * 0.06);
+      twist(g, x + jerk, top, (x + hx) / 2 + 1, (top + hy) / 2 + sag); twist(g, (x + hx) / 2 + 1, (top + hy) / 2 + sag, hx, hy);
+    } else {
+      const sx = x - jerk + idle * 0, sy = fy - 60;   /* the sally hangs at the height of a reaching hand */
+      twist(g, x + jerk, top, sx, sy);
+      g.fillStyle = '#2a1c0c'; g.fillRect(sx - 1, sy, 5, 15);
+      for (let k = 0; k < 13; k++) { g.fillStyle = k % 4 < 2 ? '#8e3a32' : '#efe6d2'; g.fillRect(sx, sy + 1 + k, 3, 1); }
+      g.fillStyle = '#5a1e1e'; g.fillRect(sx + 2, sy + 1, 1, 13);
+      twist(g, sx, sy + 15, sx - jerk, fy - 44);
+      g.fillStyle = '#2a1c0c'; g.fillRect(sx - jerk - 2, fy - 47, 7, 6); g.fillStyle = '#a88a5a'; g.fillRect(sx - jerk - 1, fy - 46, 5, 4); g.fillStyle = '#c8b088'; g.fillRect(sx - jerk, fy - 46, 2, 1);   /* the tail's knot */
+    }
   }
 }
 /* his chain and its head, the rope's mark, the false light, the candle ring and the sanctus bell, and the ring round him while he is down */
@@ -266,28 +298,57 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
     g.globalAlpha = 0.3 + 0.5 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2;
     g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.slamR, 5, 0, 0, Math.PI * 2); g.stroke();
     g.globalAlpha = (0.15 + 0.25 * k) * (0.6 + 0.4 * p); g.fillStyle = '#ff6b6b'; g.fillRect(mx - 2, fy - 6, 4, 6); g.lineWidth = 1; g.globalAlpha = 1; }
-  if (e.mode === 'land' && e.modeT > ABBOT.landT - 0.25) { const k = (e.modeT - (ABBOT.landT - 0.25)) / 0.25;
-    g.globalAlpha = 0.6 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 1, ABBOT.slamR + (1 - k) * 10, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
-  /* FALSE LIGHT: the censer flares a sickly gold over him, the mark follows you, and the ball arcs onto it */
-  const SICK = '#d8d860', SICKL = '#f4f0a0';
+  /* THE SLAM: a gold shock ring and a second behind it, the boards dust thrown out both ways, spark flecks */
+  if (e.mode === 'land' && e.modeT > ABBOT.landT - 0.4) { const k = (e.modeT - (ABBOT.landT - 0.4)) / 0.4, u = 1 - k;
+    for (const [d, a0] of [[0, 0.7], [7, 0.4]]) { const rr = ABBOT.slamR + u * (14 + d);
+      g.globalAlpha = a0 * k; g.strokeStyle = d ? '#ffe08a' : '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 1, rr, 5 + u * 2, 0, 0, Math.PI * 2); g.stroke(); }
+    g.lineWidth = 1; g.globalAlpha = 0.8 * k; g.fillStyle = '#d8d0c0';
+    for (let i = 0; i < 6; i++) { const dir = i < 3 ? -1 : 1, j = i % 3; g.fillRect(x + dir * (10 + u * (16 + j * 7)), fy - 3 - j * 2 - Math.round(u * 6), 3 - (j > 1), 2); }
+    g.fillStyle = '#ffe08a'; for (let i = 0; i < 4; i++) g.fillRect(x + (i - 1.5) * 9 * (0.5 + u), fy - 6 - Math.round(Math.sin(u * 3 + i) * 8 * k) - i, 1, 1);
+    g.globalAlpha = 1; }
+  /* FALSE LIGHT: the censer flares a sickly gold in front of him, the mark follows you, and the ball arcs onto it */
+  const SICK = '#d8d860', SICKL = '#f4f0a0', GOLD = '#ffe08a';
+  const gl = (px_, py_, r, col, a0) => { const gr = g.createRadialGradient(px_, py_, 0, px_, py_, r); gr.addColorStop(0, col); gr.addColorStop(1, 'rgba(216,216,96,0)'); g.globalAlpha = a0; g.fillStyle = gr; g.beginPath(); g.arc(px_, py_, r, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; };
   if (e.mode === 'gleamTell') { const k = 1 - Math.max(0, e.modeT) / ABBOT.tell.gleam, p = 0.5 + 0.5 * Math.sin(time * 18);
-    g.globalAlpha = 0.25 + 0.45 * k * p; g.fillStyle = SICK; g.beginPath(); g.arc(x + (e.face || 1) * 4, fy - 62, 5 + 5 * k, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
-    if (e.lightAim !== undefined) { const mx = Math.round(e.lightAim - cx); g.globalAlpha = 0.2 + 0.4 * k; g.strokeStyle = SICK; g.lineWidth = 1;
-      g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR, 4, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
-  if (e.orb) { const o = e.orb, s = Math.min(1, o.t / o.T), mx = Math.round(o.tx - cx);
-    g.globalAlpha = 0.45 + 0.4 * s; g.strokeStyle = SICK; g.lineWidth = 2; g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR, 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
-    const ox = Math.round(o.x0 + (o.tx - o.x0) * s - cx), oy = Math.round(o.y0 + (floorY - 6 - o.y0) * s - ABBOT.lightUp * Math.sin(Math.PI * s) - cy);
-    g.globalAlpha = 0.35; g.fillStyle = SICK; g.beginPath(); g.arc(ox, oy, 7, 0, Math.PI * 2); g.fill();
-    g.globalAlpha = 1; g.fillStyle = SICKL; g.beginPath(); g.arc(ox, oy, 3, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
-  /* THE RITE: a ring of candles round him on the boards, and the sanctus bell on its post behind him GLOWING - strike it */
+    gl(x + (e.face || 1) * 19, fy - 55, 10 + 12 * k, SICKL, 0.3 + 0.4 * k * p);
+    if (k > 0.3) for (let i = 0; i < 3; i++) glint(g, Math.round(x + (e.face || 1) * 19 + Math.cos(time * 5 + i * 2.1) * 12), Math.round(fy - 55 + Math.sin(time * 5 + i * 2.1) * 9), SICKL, 1);
+    if (e.lightAim !== undefined) { const mx = Math.round(e.lightAim - cx);
+      for (let i = 0; i < 12; i++) { const an = i / 12 * Math.PI * 2 + time * 1.5; g.globalAlpha = 0.25 + 0.45 * k; g.fillStyle = SICK; g.fillRect(Math.round(mx + Math.cos(an) * ABBOT.lightR), Math.round(fy - 1 + Math.sin(an) * 4), 2, 1); }
+      g.globalAlpha = (0.1 + 0.2 * k) * (0.6 + 0.4 * p); g.fillStyle = SICK; g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; } }
+  if (e.orb) { const o = e.orb, s = Math.min(1, o.t / o.T), mx = Math.round(o.tx - cx), p = 0.5 + 0.5 * Math.sin(time * 22);
+    /* the mark pulls TIGHT as the ball comes down: the outer ring is where it will burst, the inner ring is how long you have */
+    g.lineWidth = 2; g.globalAlpha = 0.4 + 0.45 * s; g.strokeStyle = SICK; g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR, 4, 0, 0, Math.PI * 2); g.stroke();
+    g.globalAlpha = 0.25 + 0.5 * s; g.strokeStyle = SICKL; g.lineWidth = 1; g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR * (1 - s) + 2, 4 * (1 - s) + 1, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    const at = q => ({ x: Math.round(o.x0 + (o.tx - o.x0) * q - cx), y: Math.round(o.y0 + (floorY - 6 - o.y0) * q - ABBOT.lightUp * Math.sin(Math.PI * q) - cy) });
+    for (let i = 5; i >= 1; i--) { const q = Math.max(0, s - i * 0.04), t = at(q), sm = i > 3 ? 1 : 0; g.globalAlpha = 0.5 - i * 0.08; g.fillStyle = i & 1 ? SICK : SICKL; g.fillRect(t.x - 2 + sm, t.y - 2 + sm, 5 - sm * 2, 5 - sm * 2); }
+    const ob = at(s); g.globalAlpha = 1; gl(ob.x, ob.y, 13, SICKL, 0.55 + 0.2 * p);
+    g.fillStyle = SICK; g.beginPath(); g.arc(ob.x, ob.y, 5, 0, Math.PI * 2); g.fill(); g.fillStyle = SICKL; g.beginPath(); g.arc(ob.x, ob.y, 3, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fffbe0'; g.fillRect(ob.x - 1, ob.y - 1, 2, 2);
+    glint(g, ob.x + Math.round(Math.cos(time * 9) * 7), ob.y + Math.round(Math.sin(time * 9) * 7), '#fffbe0', 1); }
+  /* THE BURST: a gold flash where it came down - a white-gold flare over the mark, a pillar of false light and a spray of sparks */
+  if (e.flash) { const f = e.flash, k = 1 - f.t / f.T, u = f.t / f.T, mx = Math.round(f.x - cx);
+    gl(mx, fy - 8, ABBOT.lightR * (0.9 + u * 0.7), '#fffbe0', 0.9 * k * k);
+    g.globalAlpha = 0.85 * k; g.fillStyle = '#fffbe0'; g.fillRect(mx - Math.round(5 * k), fy - 52, Math.max(1, Math.round(10 * k)), 52); g.globalAlpha = 0.5 * k; g.fillStyle = GOLD; g.fillRect(mx - Math.round(9 * k), fy - 44, Math.max(1, Math.round(18 * k)), 44);
+    g.globalAlpha = k; g.strokeStyle = GOLD; g.lineWidth = 2; g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR * (0.5 + u * 0.7), 5 * (0.5 + u * 0.7), 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+    g.fillStyle = SICKL; for (let i = 0; i < 10; i++) { const an = i / 10 * Math.PI, d = 8 + u * 28; g.fillRect(Math.round(mx + Math.cos(an) * d * (i & 1 ? 1 : -1)), Math.round(fy - 4 - Math.sin(an) * d * 0.9), 2, 2); }
+    g.globalAlpha = 1; }
+  /* THE RITE: a CIRCLE of candles on the boards, each a stub of wax with its drip and its flame, the front ones larger, and a ring of gold between them -
+     lit one by one as he kneels; and the sanctus bell on its post behind him GLOWING - strike it */
   if (e.mode === 'riteTell' || e.mode === 'rite') {
     const lit = e.mode === 'riteTell' ? Math.min(1, (ABBOT.tell.rite - Math.max(0, e.modeT)) / 0.4) : 1;
-    for (let i = 0; i < 8; i++) { const an = i / 8 * Math.PI * 2, cxp = Math.round(x + Math.cos(an) * 22), cyp = Math.round(fy - 2 + Math.sin(an) * 4);
-      if (i / 8 > lit) continue; g.fillStyle = '#efe6d2'; g.fillRect(cxp, cyp - 4, 2, 4); g.fillStyle = Math.sin(time * 20 + i) > 0 ? '#ffd36b' : '#ff9a3c'; g.fillRect(cxp, cyp - 6, 2, 2); } }
-  if (e.mode === 'riteTell' && e.sanctX !== undefined) { const sx = Math.round(e.sanctX - cx), p = 0.5 + 0.5 * Math.sin(time * 9);
-    g.fillStyle = '#5a3a22'; g.fillRect(sx - 1, fy - 26, 3, 26); g.fillRect(sx - 4, fy - 26, 9, 2);              // the post and its arm
-    g.globalAlpha = 0.25 + 0.35 * p; g.fillStyle = '#ffe08a'; g.beginPath(); g.arc(sx + 3, fy - 20, 8, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;   // IT GLOWS
-    g.fillStyle = '#e8a83a'; g.fillRect(sx + 1, fy - 23, 5, 5); g.fillStyle = '#ffe08a'; g.fillRect(sx + 1, fy - 23, 5, 1); g.fillRect(sx + 3, fy - 18, 1, 1); }
+    g.globalAlpha = 0.18 + 0.3 * lit; g.strokeStyle = '#e8a83a'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 2, 22, 4, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    for (let i = 0; i < 8; i++) { if (i / 8 > lit) continue; const an = i / 8 * Math.PI * 2, sn = Math.sin(an), cxp = Math.round(x + Math.cos(an) * 22), cyp = Math.round(fy - 2 + sn * 4), big = sn > 0.2 ? 1 : 0, hgt = 5 + big * 2;
+      const fl = Math.sin(time * 20 + i * 1.7) > 0;
+      gl(cxp, cyp - hgt - 2, 7, '#ffd36b', 0.3 + 0.15 * (fl ? 1 : 0));
+      g.fillStyle = '#2a1c0c'; g.fillRect(cxp - 2, cyp - hgt - 1, 4, hgt + 2); g.fillStyle = '#efe6d2'; g.fillRect(cxp - 1, cyp - hgt, 2, hgt); g.fillStyle = '#c9bda0'; g.fillRect(cxp, cyp - hgt, 1, hgt); g.fillRect(cxp - 1, cyp - 2 - (i & 1), 1, 2 + (i & 1));
+      g.fillStyle = '#ff9a3c'; g.fillRect(cxp - 1, cyp - hgt - 3 - (fl ? 1 : 0), 2, 3); g.fillStyle = '#ffe08a'; g.fillRect(cxp, cyp - hgt - 2 - (fl ? 1 : 0), 1, 2); } }
+  if (e.mode === 'riteTell' && e.sanctX !== undefined) { const sx = Math.round(e.sanctX - cx), p = 0.5 + 0.5 * Math.sin(time * 9), bx = sx + 4, by = fy - 22;
+    g.fillStyle = '#2a1c0c'; g.fillRect(sx - 6, fy - 4, 13, 4); g.fillStyle = '#8a8a96'; g.fillRect(sx - 5, fy - 4, 11, 3); g.fillStyle = '#6a6a76'; g.fillRect(sx - 5, fy - 2, 11, 1);
+    g.fillStyle = '#2a1c0c'; g.fillRect(sx - 2, fy - 31, 5, 28); g.fillStyle = '#5a3a22'; g.fillRect(sx - 1, fy - 30, 3, 26); g.fillStyle = '#7a5232'; g.fillRect(sx - 1, fy - 30, 1, 26);
+    g.fillStyle = '#2a1c0c'; g.fillRect(sx - 2, fy - 32, 14, 5); g.fillStyle = '#5a3a22'; g.fillRect(sx - 1, fy - 31, 12, 3); g.fillStyle = '#4a4a52'; g.fillRect(sx + 9, fy - 31, 2, 3);
+    g.fillStyle = '#2a1c0c'; g.fillRect(sx + 5, fy - 28, 2, 5);
+    gl(bx, by, 16 + 4 * p, GOLD, 0.35 + 0.35 * p);
+    bronzeBell(g, bx, fy - 27, Math.round(Math.sin(time * 9) * 1), true);
+    for (let i = 0; i < 3; i++) if (Math.sin(time * 6 + i * 2.2) > 0.2) glint(g, Math.round(bx + Math.cos(time * 3 + i * 2.1) * 12), Math.round(by + Math.sin(time * 3 + i * 2.1) * 9), '#fffbe0', 1); }
   if (e.mode === 'cast' || e.mode === 'castTell' || e.mode === 'haul') {
     const to = e.mode === 'castTell' ? x + e.face * 18 : Math.round((e.castX ?? e.x) - cx), k = e.mode === 'haul' ? 0.4 : 1;
     g.globalAlpha = 0.85 * k; g.strokeStyle = '#8a8478'; g.lineWidth = 1; g.beginPath();

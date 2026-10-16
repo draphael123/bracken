@@ -23849,7 +23849,7 @@ function updateMonkProps(dt, hb) {
       continue; }
     if (pr.t !== 'tbell') continue;
     if (pr.abbot && hb && boss && boss.t === 'abbot' && bossActive) { const sb = abbotSanctus(boss);   /* (claude/abbot2) THE SANCTUS BELL on its post behind the praying Abbot: strike it and the rite is spoiled */
-      if (sb && !P.hitSet.has('sanctus') && overlap(hb, { l: sb.x - 7, r: sb.x + 9, t: L.arena.floor - 30, b: L.arena.floor }) && abbotSpoil(boss, 'sanctus')) { P.hitSet.add('sanctus'); sparks(sb.x + 3, L.arena.floor - 20, P.face, 5); (SFX.mummerBell || SFX.clank)(); ringAt(sb.x + 3, L.arena.floor - 20, 22, '#ffe08a', 0.4); } }
+      if (sb && !P.hitSet.has('sanctus') && overlap(hb, { l: sb.x - 7, r: sb.x + 9, t: L.arena.floor - 30, b: L.arena.floor }) && abbotSpoil(boss, 'sanctus')) { P.hitSet.add('sanctus'); sparks(sb.x + 3, L.arena.floor - 20, P.face, 5); (SFX.sanctusBell || SFX.mummerBell || SFX.clank)(); ringAt(sb.x + 3, L.arena.floor - 20, 22, '#ffe08a', 0.4); } }
     pr.cool = Math.max(0, pr.cool - dt); pr.ring = Math.max(0, pr.ring - dt); pr.swing = Math.max(0, pr.swing - dt); pr.lowerT = Math.max(0, pr.lowerT - dt);
     const b = pr.roc && boss && boss.t === 'roc' && boss.alive && bossActive ? boss : null, over = !!(b && rocOverFork(b, pr)); if (pr.roc) pr.over = over;
     if (pr.roc && over && pr.cool <= 0 && !pr.told && !(PROG.rocForkTold > 1)) { pr.told = true; PROG.rocForkTold = (PROG.rocForkTold || 0) + 1; hintT = 4; hintMsg = 'SHE IS OVER THE NEST BELL: STRIKE IT AND THE NOTE GOES THROUGH HER.'; }
