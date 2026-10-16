@@ -5559,7 +5559,7 @@ function theLamplitStreet() {
   /* LIGHT THE WAY (claude/lamplit2, Daniel 10-08): a DEAD street lamp under the water whose main, lit, carries air back up under the vault -
      a pocket over [x0, x1] that is there only while it burns, so a swim the street did not allow becomes a route you chose */
   const lampPockets = [];
-  const wayLamp = (x, x0, x1) => { lamp(x, true); lampPockets.push([x0, x1, 28, 29, x]); };
+  const wayLamp = (x, x0, x1, silver) => { lamp(x, true); lampPockets.push([x0, x1, 28, 29, x]); if (silver) ent('silver', silver, 29); };   /* (a pocket's reward: silver up under the vault, off the road) */
   const lampUp = (x, dark) => ent('lantern', x, UP - 1, { city: true, dark: !!dark });
   const weed = (x, y, v) => ent('deco', x, y, { kind: 'cityWeed', v: v || 0 });
 
@@ -5598,7 +5598,7 @@ function theLamplitStreet() {
   for (const x of [86, 112, 150, 176]) ent('deco', x, UP - 1, { kind: 'stall', v: x % 2 });
   for (const x of [100, 124, 160]) ent('deco', x, UP - 1, { kind: 'column', v: x % 2 });
   ent('deco', 140, UP - 1, { kind: 'drownedCart' }); ent('deco', 118, UP - 1, { kind: 'sealDrift', v: 0 });
-  lamp(84); lamp(104); lamp(124, true); lamp(146); wayLamp(166, 158, 174); lamp(184);
+  lamp(84); lamp(104); lamp(124, true); lamp(146); wayLamp(166, 158, 174, 160); lamp(184);
   lampUp(90); lampUp(132, true); lampUp(172);
   ent('wight', 98, UP - 1, { face: -1 }); ent('tideguard', 154, UP - 1, { face: -1 });
   ent('watch', 136, ST - 1, { face: 1 }); ent('wight', 100, ST - 1, { face: -1 }); ent('scout', 152, ST - 1, { face: -1 });   /* the first watchman on his own, between the pillars */
@@ -5653,7 +5653,7 @@ function theLamplitStreet() {
   }
   air(260, 261, UP, 27); net(260, 261, UP, ST - 1);                      // the clerks' stair down off the roof
   air(350, 351, UP, 27); net(350, 351, UP, ST - 1);
-  lamp(258); lamp(280); lamp(296, true); wayLamp(318, 312, 324); lamp(340, true); lamp(354);
+  lamp(258); lamp(280); lamp(296, true); wayLamp(318, 312, 324, 322); lamp(340, true); lamp(354);
   ent('sign', 284, ST - 1, { text: 'A DEAD LAMP UNDER THE VAULTS: LIGHT IT AND ITS MAIN BRINGS AIR.' });
   ent('lantern', 270, 22, { city: true }); ent('lantern', 332, 22, { city: true }); // a lamp on a pocket's ledge
   ent('deco', 286, ST - 1, { kind: 'clerkDesk' }); ent('deco', 306, ST - 1, { kind: 'sealDrift', v: 1 }); ent('deco', 322, ST - 1, { kind: 'sealDrift', v: 0 });
@@ -5703,7 +5703,7 @@ function theLamplitStreet() {
   for (const [a, b] of [[470, 480], [520, 530]]) { plat(a + 1, 23, b - a - 2); plat(a + 2, 20, 3); } // two courtyards open on the water
   air(444, 445, UP, 27); net(444, 445, UP, ST - 1); air(556, 557, UP, ST - 1); net(556, 557, UP, ST - 1);
   ent('sign', 432, UP - 1, { text: 'THE PROCESSION ROAD. ITS LAMPS ARE DEAD: LIGHT THE WAY, OR WORK THE BEAM.' });
-  lamp(434); lamp(456, true); lamp(476); wayLamp(498, 490, 506); wayLamp(516, 510, 522); lamp(540); lamp(562, true);
+  lamp(434); lamp(456, true); lamp(476); wayLamp(498, 490, 506); wayLamp(516, 510, 522, 520); lamp(540); lamp(562, true);
   lampUp(440, true); lampUp(492); lampUp(546, true);
   for (const x of [452, 486, 508, 536]) ent('deco', x, ST - 1, { kind: 'column', v: x % 2 });
   ent('deco', 466, ST - 1, { kind: 'drownedCart' }); ent('deco', 504, ST - 1, { kind: 'lampWreck', v: 0 }); ent('deco', 552, ST - 1, { kind: 'lampWreck', v: 1 });
