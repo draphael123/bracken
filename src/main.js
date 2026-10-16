@@ -29,6 +29,7 @@ import * as SLD from './slide.js'; import * as RSL from './run-slide.js';   /* T
 import * as SCA from './scree-art.js';
 import * as RLD from './ram-lord.js';   /* THE RAM LORD, REWORKED (claude/scree2): a beast duelist, his horns guard his front; the fold's overhangs are his opening */   /* THE SCREE PATH's own stone: the quarry's blocks, derrick and face (claude/scree2) */
 import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } from './hero-move.js';   /* THE HEROES' BASE MOVEMENT, one copy (claude/reachcore): src/reach-hero.js reads it too */
+import * as USL from './undercrown-slabs.js';   /* THE UNDERCROWN'S SLABS (claude/undercrown2): a span on two posts that hinges into a ramp or drops flat */
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade, hillTop, hillAcc, hillBleed } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
 import * as DF from './desert-foes.js';   /* THE SUNKEN CARAVAN: the scorpion, the vulture and the sand goblin, as pure state machines */
 import { makeLesserDjinnHands } from './lesser-djinn-hands.js'; import * as LDA from './redraw/lesser_djinn_art.js'; let LDH = null;   /* (claude/djinn3) THE LESSER DJINN: the will-o'-the-wisp's AI (the ember wisp's, cold) under the Djinn's skins - sand a pour makes mud, fire a pour douses */
@@ -1357,6 +1358,7 @@ function resolveTiles() {
       tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; }
   }
   // a boss floor is a fighting floor: no fallen logs, stumps, fences, bushes, carts or campfires scattered on it (they read as things to jump or hide behind)
+  if (SLAB_MASK.size) for (const i of SLAB_MASK) tileSpr[i] = null;   /* (claude/undercrown2) a slab's ramp is drawn as the slab (drawSlabs), never by a tile kit */
   const BULKY = new Set(['log', 'stump', 'fence', 'bush', 'cart', 'tent', 'fire', 'skull']);
   // THE FROST (the Sunspire): icicles under every ledge and overhang, and little clusters of ice on the ground
   if (L.frost) { const R2 = mulberry(LW * 13 + 5);
@@ -2222,7 +2224,8 @@ function* loadLevelG(i) {
   hintT = 0;   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
-  SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
+  SLOPES_ON = levelHasSlopes(L.grid);
+  SLAB_PHYS = !!(L.slabs && L.slabs.length); SLAB_MASK = new Set(); SLAB_RT = new Map(); for (const s of (L.slabs || [])) SLAB_RT.set(s.id, { ...s, state: 'up', posts: [], heaps: [], cells: [], anim: 0 });   /* (claude/undercrown2) the slabs as built; their posts join them as they are placed */   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
   airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS }));
@@ -2644,7 +2647,9 @@ function spawnEnt(e) {
       case 'weight': props.push({ t: 'weight', x: px, y: e.y * TS, len: (e.len || 3) * TS, state: 'hang', fy: 0, vy: 0, lamp: !!e.lamp, hang: !!e.hang, gq: !!e.gq, crane: !!e.crane, unstable: !!e.unstable, downT: 0 }); break;
       case 'timber': props.push({ t: 'timber', x: px, y: py, x0: e.x0, x1: e.x1, row: e.row, floor: e.floor,
         deep: e.deep || 2, hp: e.hp || (e.state === 'cracked' ? 1 : 3), hp0: e.hp || (e.state === 'cracked' ? 1 : 3), state: e.state || 'sound', broken: !e.tomb && marks.has('tim:' + e.x), tomb: !!e.tomb, mound: e.mound,   /* A TOMB SET is put back on every attempt, and the dead set it again in the fight */
-        creakT: 0, shake: 0, armT: 0, dust: 0 }); break;
+        creakT: 0, shake: 0, armT: 0, dust: 0, ex: e.x, slab: null, end: e.end || 0 });
+        if (e.slab !== undefined && SLAB_RT.has(e.slab)) { const pr = props[props.length - 1], rt = SLAB_RT.get(e.slab); pr.slab = rt; pr.broken = !e.tomb && marks.has('tim:' + e.x); rt.posts = rt.posts.filter(q => q.end !== pr.end); rt.posts.push(pr); }   /* (claude/undercrown2) A POST UNDER A SLAB */
+        break;
       case 'ballast': props.push({ t: 'ballast', x: px, y: py, kind: e.kind || 'stone', held: false, vy: 0, ph: Math.random() * 6, home: py, hx: px, rack: !!e.rack, rope: e.rope }); break;   /* rack: the Bell Grave's (src/tribute-ship.js): it is set back when spent */
       case 'load': props.push({ t: 'load', kind: e.kind || 'sack', hoist: e.hoist, x: px, y: e.peg ? e.hy * TS : py, home: [px, py], peg: !!e.peg, pegX: e.peg ? e.peg * TS + 8 : undefined, hy: e.peg ? e.hy * TS : undefined, ropeTop: e.ropeTop !== undefined ? e.ropeTop * TS : undefined, floorY: py, state: e.peg ? 'hung' : 'free', vy: 0, vx: 0, cd: 0 }); break;   /* THE HOIST's loads: a sack, a coil or a stone, carried to a well (or hung on a peg over one) */
       case 'support': props.push({ t: 'support', x: px, y: py, top: (e.top || e.y - 5) * TS + TS, hp: 4, broken: false, shake: 0 }); break;
@@ -6372,10 +6377,11 @@ const isOneWay = t => t === T.ONEWAY || t === T.REED || t === T.PLANK || t === T
    git at the pre-slopes commit 9e0e28a (fuzz on 2,000 grids and every campaign level: 0 frames differ), and
    tools/slopes-trace.mjs proves the swap frame-for-frame in the real page on four shipped levels.
    isSolid and isOneWay above are deliberately NOT taught ids 20-25: a slope is neither solid nor a one-way. */
+let SLAB_PHYS = false, SLAB_MASK = new Set(), SLAB_RT = new Map();   /* (claude/undercrown2) a level with SLABS lands their ramps as slope tiles at run time: moveBody takes the slope path there too; the ramp cells are drawn as the slab, not by the tile painter */
 let SLOPES_ON = false;                       /* set in loadLevel off the level's own grid: 30 levels pay nothing for this */
 const MB = { allowDrop: false, P: null };    /* ONE object, reused - moveBody runs for every body every frame */
 function moveBody(b, dx, dy, allowDrop = false) {
-  if (!SLOPES_ON) return moveBodySquare(b, dx, dy, tileAt, allowDrop, P);
+  if (!SLOPES_ON && !SLAB_PHYS) return moveBodySquare(b, dx, dy, tileAt, allowDrop, P);
   MB.allowDrop = allowDrop; MB.P = P;
   return moveBodySlopes(b, dx, dy, tileAt, MB);
 }
@@ -17599,6 +17605,7 @@ function tombReset() {
   const A = L && L.arena; if (!A || A.boss !== 'prince') return;
   if (L.darkBase === undefined) L.darkBase = L.dark || 0;
   L.dark = L.darkBase;
+  for (const rt of SLAB_RT.values()) if (rt.tomb) { for (const i of (rt.cells || [])) SLAB_MASK.delete(i); rt.cells = []; rt.saved = null; rt.state = 'up'; rt.ramp = rt.flat = null; rt.heaps = []; rt.anim = 0; for (const q of rt.posts) { q.broken = false; q.hp = q.hp0; } }   /* (claude/undercrown2) his slabs as built */
   if (!grid0 || !tileSpr) return;
   let ch = false; const y0 = Math.floor((A.y0 !== undefined ? A.y0 : A.floor - 200) / TS), y1 = Math.floor(A.floor / TS);
   for (let ty = y0; ty <= y1; ty++) for (let tx = Math.floor(A.x0 / TS); tx <= Math.floor(A.x1 / TS); tx++) {
@@ -17606,12 +17613,13 @@ function tombReset() {
   if (ch) resolveTiles();
 }
 // HE IS UNDER IT. Called from dropTimber when a tomb set comes down with him beneath the span.
-function princeBuried(e) {
+function princeBuried(e, rt) {
   if (!e.alive || e.mode === 'sunk' || e.mode === 'buried' || e.mode === 'sleep' || e.mode === 'wake') return;
-  e.mode = 'buried'; e.modeT = 3; e.vx = 0; e.cuts = 0; e.flash = 0.4; e.n = e.n || {}; e.n.buried = (e.n.buried || 0) + 1;   /* counted, for the lab */
+  const pin = e.phase >= 3 ? 2.4 : e.phase === 2 ? 2.8 : 3.2;   /* (claude/undercrown2) PINNED under the slab that swung down on him: shorter each phase */
+  e.mode = 'buried'; e.modeT = pin; e.pinMax = pin; e.pinSlab = rt || null; e.vx = 0; e.cuts = 0; e.flash = 0.4; e.n = e.n || {}; e.n.buried = (e.n.buried || 0) + 1;   /* counted, for the lab */
   e.hp -= 30; if (e.hp <= 0) { e.hp = 1; hurtEnemy(e, 1, e.x + 1, false); return; }
-  number(e.x, e.y - e.h - 18, 'BURIED AGAIN', '#8fd160'); ringAt(e.x, e.y - 20, 34, '#8fd160', 0.5); SFX.bossHurt(); hitstop(0.12); zoomKick(1.08, 0.3);
-  tombHint('Buried', 'BURIED AGAIN: WHILE THE ROOF PINS HIM, EVERY BLOW LANDS TWICE.');
+  number(e.x, e.y - e.h - 18, 'PINNED', '#ffd36b'); ringAt(e.x, e.y - 20, 34, '#ffd36b', 0.5); SFX.bossHurt(); hitstop(0.12); zoomKick(1.08, 0.3);
+  tombHint('Buried', 'PINNED UNDER HIS OWN ROOF: WHILE THE SLAB HOLDS HIM, EVERY BLOW LANDS TWICE.');
 }
 // THE ROOM'S MULTIPLIERS on a blow, or null for a blow that finds nothing (he is under the floor)
 function princeHurt(e, dmg, tag) {
@@ -17619,7 +17627,7 @@ function princeHurt(e, dmg, tag) {
   let k = 1;
   if (e.mode === 'buried') k *= 2; else if (e.mode === 'reel') k *= 1.5;
   if (e.bare > 0) k *= 1.5;
-  if (princeShrouded(e)) { k *= 0.35; if (!(e.saidT > 0)) { e.saidT = 1.5; number(e.x, e.y - e.h - 8, 'THE DARK TAKES IT', '#9aa39a'); } }
+  if (princeShrouded(e)) { k *= 0.45;   /* (claude/undercrown2, B15: was 0.35, under the 0.4 floor) */ if (!(e.saidT > 0)) { e.saidT = 1.5; number(e.x, e.y - e.h - 8, 'THE DARK TAKES IT', '#9aa39a'); } }
   else if (princeLight(e)) k *= 1.25;
   return Math.max(1, Math.round(dmg * k));
 }
@@ -17646,7 +17654,7 @@ function updateCrowns(e, dt) {
 function updatePrince(e, dt) {
   const A = L.arena, floor = A.floor, p2 = e.phase === 2;
   e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.anim = (e.anim || 0) + dt; e.saidT = Math.max(0, (e.saidT || 0) - dt);
-  updateCrowns(e, dt);
+  updateCrowns(e, dt); princeRoof(e, dt);
   if (e.mode === 'sleep') { e.x = e.tombX; e.y = e.tombY; return; }
   const d = P.x - e.x, ad = Math.abs(d);
   /* THE LIGHT, every frame: the tomb is as dark as its lamps leave it, and he is as hard to hurt as it is dark */
@@ -17669,7 +17677,7 @@ function updatePrince(e, dt) {
     case 'wake': { e.x = e.tombX; e.y = e.tombY; e.vx = 0; const sc = props.find(p => p.t === 'sarcophagus');
       if (sc && !sc.open && e.modeT < 1.3) { sc.open = true; SFX.stone(); SFX.crack(); shakeCam(5); dust(e.x, e.y, 14); }
       if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; SFX.wightMoan();
-        tombHint('Sets', 'CUT A TIMBER SET WHILE HE STANDS UNDER IT: THE ROOF BURIES HIM.'); }
+        tombHint('Sets', 'CUT THE POST ON HIS SIDE WHILE HE STANDS UNDER A SLAB: IT SWINGS DOWN AND PINS HIM.'); }
       break; }
     case 'stalk': {
       e.face = Math.sign(d) || e.face;
@@ -17678,7 +17686,7 @@ function updatePrince(e, dt) {
       if (e.modeT > 0 || P.dead) break;
       const court = enemies.filter(q => q.alive && q.t === 'courtier').length;
       if (p2 && e.snuffT <= 0 && princeLit() > 0.5 && ad < 160) { e.snuffT = 14; e.mode = 'snuffTell'; e.modeT = 0.85; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 12, 'HE DRAWS BREATH', '#ff6b6b'); SFX.gasp(); }
-      else if (e.callT <= 0 && court < (p2 ? 2 : 1)) { e.callT = p2 ? 12 : 15; e.mode = 'callTell'; e.modeT = 0.9; number(e.x, e.y - e.h - 12, 'HE CALLS HIS COURT', '#c080ff'); SFX.callerChant(); }
+      else if (e.callT <= 0 && e.phase < 3 && !court && tombDown().length) { e.callT = p2 ? 11 : 14; e.mode = 'callTell'; e.modeT = 0.9; number(e.x, e.y - e.h - 12, 'DIGGERS, TO THE WINCH', '#c080ff'); SFX.callerChant(); }   /* (claude/undercrown2: no court summons - only his diggers, for a slab that is down) */
       else if (e.sinkT <= 0 && ad > 70 && !(e.noSinkT > 0)) { e.sinkT = p2 ? 7 : 9.5; e.mode = 'sinkTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.rumble(); }
       else if (e.crownT <= 0 && ad > 56 && ad < 260 && !(e.bare > 0)) { e.crownT = p2 ? 6.5 : 8.5; e.mode = 'crownTell'; e.modeT = 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.snort(); }
       else if (e.cutT <= 0 && ad < 72) { e.cutT = p2 ? 2.1 : 2.6; e.cuts = p2 ? 2 : 1; e.mode = 'cutTell'; e.modeT = p2 ? 0.45 : 0.6; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.charge(); }
@@ -17710,9 +17718,9 @@ function updatePrince(e, dt) {
     /* CALL THE COURT. No blow of his own: they claw up out of the floor either side of you */
     case 'callTell': want = 0; if (Math.random() < dt * 24) parts.push({ x: e.x + (Math.random() - 0.5) * 40, y: e.y - e.h + Math.random() * 20, vx: 0, vy: -24, life: 0.5, max: 0.5, col: '#c080ff', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'call'; e.modeT = 0.8; SFX.wightMoan(); shakeCam(3);
-        const n = p2 ? 3 : 2, ty = Math.floor(floor / TS) - 1;
-        for (let k = 0; k < n; k++) { const sx = Math.max(A.x0 + 24, Math.min(A.x1 - 24, P.x + (k % 2 ? 1 : -1) * (44 + 20 * k))); spawnEnt({ t: 'courtier', x: Math.floor(sx / TS), y: ty }); dust(sx, floor, 10); }
-        number(P.x, P.y - 34, 'THE COURT RISES', '#c080ff'); }
+        const ty = Math.floor(floor / TS) - 1;
+        for (const rt of tombDown().slice(0, 2)) { const sx = Math.max(A.x0 + 16, Math.min(A.x1 - 16, (Math.abs(P.x - rt.x0 * TS) > Math.abs(P.x - (rt.x1 + 1) * TS) ? rt.x0 - 1 : rt.x1 + 2) * TS)); spawnEnt({ t: 'courtier', x: Math.floor(sx / TS), y: ty }); const dg = enemies[enemies.length - 1]; if (dg && dg.t === 'courtier') { dg.dig = rt; dg.digT = 3.5; } dust(sx, floor, 10); }
+        number(e.x, e.y - e.h - 30, 'HIS DIGGERS RISE', '#c080ff'); }
       break;
     case 'call': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
     /* THE CROWN. Out at head height and back to his hand; bareheaded, he bleeds */
@@ -17735,7 +17743,7 @@ function updatePrince(e, dt) {
     /* BURIED AGAIN. The roof has him; it does not have him long */
     case 'buried': want = 0; e.vx = 0; if (Math.random() < dt * 12) dust(e.x + (Math.random() - 0.5) * 30, floor, 1);
       if (Math.floor(e.modeT / 0.9) !== Math.floor((e.modeT + dt) / 0.9)) number(e.x, e.y - 44, 'CUT HIM', '#8fd160');
-      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; SFX.stone(); dust(e.x, floor, 12); number(e.x, e.y - e.h - 12, 'HE THROWS IT OFF', '#9aa39a'); }
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; SFX.stone(); dust(e.x, floor, 12); number(e.x, e.y - e.h - 12, 'HE THROWS IT OFF', '#9aa39a'); slabSmash(e.pinSlab); e.pinSlab = null; }
       break;
   }
   if (e.mode === 'sunk') return;
@@ -17755,6 +17763,7 @@ function updatePrince(e, dt) {
 function updateCourtier(e, dt) {
   e.modeT -= dt; e.hitT = Math.max(0, e.hitT - dt); e.cd -= dt;
   if (!boss || boss.t !== 'prince' || !boss.alive) { e.alive = false; burst(e.x, e.y - 8, 8, COLS.courtier, 40, 0.5); return; }
+  if (e.dig && courtierDig(e, dt)) return;   /* (claude/undercrown2) a digger at the winch */
   const d = P.x - e.x, ad = Math.abs(d);
   let want = 0;
   switch (e.mode) {
@@ -17770,6 +17779,46 @@ function updateCourtier(e, dt) {
   if (e.stagger > 0) want = 0;
   e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); e.vx += (want - e.vx) * Math.min(1, dt * 8);
   const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+}
+// THE PROPPED THRONE CHAMBER (claude/undercrown2). His roof is three slabs on timber (the level's own verb): the tomb's slabs that are down,
+// his diggers who come up to the winch to prop them again between phases (killed at the winch, they never finish), and past 30% THE WHOLE
+// ROOF IS COMING DOWN - told chunks of it fall on wherever you stand, and on him if he is under one, and every post left is on its last blow.
+const tombDown = () => [...SLAB_RT.values()].filter(rt => rt.tomb && rt.state !== 'up' && rt.state !== 'swing' && rt.state !== 'fall');
+const PRINCE_CHUNK = 20;
+function princeRoof(e, dt) {
+  if (e.mode === 'sleep' || e.mode === 'wake') return;
+  const A = L.arena, ceil = A.floor - 11 * TS;
+  if (e.phase === 2 && !e.p2seen) { e.p2seen = true; e.callT = 0; }   /* the first thing he does in his second phase: the diggers to the winch */
+  if (e.phase === 2 && e.hp <= e.maxHp * 0.3) { e.phase = 3; e.chunkT = 1.6; e.n = e.n || {}; e.n.p3 = 1;
+    number(e.x, e.y - e.h - 30, 'THE WHOLE ROOF IS COMING DOWN', '#ff6b6b'); SFX.rumble(); shakeCam(8);
+    for (const rt of SLAB_RT.values()) if (rt.tomb && rt.state === 'up') for (const q of rt.posts) if (!q.broken) { q.hp = 1; q.shake = 0.4; } }
+  if (e.phase !== 3) return;
+  e.chunks = e.chunks || [];
+  e.chunkT -= dt;
+  if (e.chunkT <= 0 && !P.dead) { e.chunkT = 3.4; const x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, P.x)); e.chunks.push({ x, t: 0.95, max: 0.95 }); SFX.crack(); number(x, ceil + 14, '!!', '#ff6b6b'); }
+  for (const c of e.chunks) { c.t -= dt;
+    if (Math.random() < dt * 30) parts.push({ x: c.x + (Math.random() - 0.5) * 22, y: ceil + 2, vx: 0, vy: 40, life: 0.6, max: 0.6, col: '#8a8298', size: 1, grav: 300 });
+    if (c.t <= 0 && !c.done) { c.done = true; dust(c.x, A.floor, 14); SFX.heavy(); SFX.stone(); shakeCam(6);
+      for (let k = 0; k < 10; k++) parts.push({ x: c.x + (Math.random() - 0.5) * 20, y: A.floor - 4, vx: (Math.random() - 0.5) * 140, vy: -80 - Math.random() * 120, life: 0.8, max: 0.8, col: '#6a6478', size: 2, grav: 520 });
+      if (!P.dead && Math.abs(P.x - c.x) < 15 && P.y > A.floor - 40) damagePlayer(c.x, PRINCE_CHUNK, { up: true, unblockable: true, name: 'THE ROOF' });
+      if (e.alive && Math.abs(e.x - c.x) < 20 && e.mode !== 'sunk' && e.mode !== 'buried') princeBuried(e, null); } }
+  e.chunks = e.chunks.filter(c => !c.done);
+}
+/* A DIGGER AT THE WINCH: up out of the floor by the post of a fallen slab, three and a half seconds on the handle, and the slab is propped
+   again (less sure each phase); then he goes back into the dirt. Killed first, the slab stays down. true = this frame was his */
+function courtierDig(e, dt) {
+  const rt = e.dig; if (!rt || rt.state === 'up') { e.dig = null; return false; }
+  if (e.mode === 'rise') return false;
+  const px = (Math.abs(e.x - (rt.x0 - 0.5) * TS) < Math.abs(e.x - (rt.x1 + 1.5) * TS) ? rt.x0 - 0.5 : rt.x1 + 1.5) * TS, dx = px - e.x;
+  let want = 0;
+  if (Math.abs(dx) > 6) { want = Math.sign(dx) * 42; e.face = Math.sign(dx); }
+  else { e.digT = (e.digT || 3.5) - dt; e.face = rt.x0 * TS > e.x ? 1 : -1;
+    if (Math.random() < dt * 18) parts.push({ x: e.x + e.face * 6, y: e.y - 14, vx: 0, vy: -30, life: 0.4, max: 0.4, col: '#c080ff', size: 1, grav: 0 });
+    if (Math.floor(e.digT * 2) !== Math.floor((e.digT + dt) * 2)) { SFX.clank(); number(e.x, e.y - e.h - 8, 'AT THE WINCH', '#c080ff'); }
+    if (e.digT <= 0) { slabReprop(rt, boss && boss.phase >= 2 ? 1 : 2); number((rt.x0 + rt.x1 + 1) * TS / 2, rt.row * TS + 40, 'THE DIGGERS PROP IT AGAIN', '#c080ff'); e.alive = false; dust(e.x, e.y, 10); return true; } }
+  e.vy = Math.min(360, (e.vy || 0) + 1000 * dt); e.vx += (want - e.vx) * Math.min(1, dt * 8);
+  const r = moveBody(e, e.vx * dt, e.vy * dt, false); if (r.ground) e.vy = 0;
+  return true;
 }
 // WHICH OF HIS FRAMES: a mode is a pose, held for the whole of it, and bareheaded he walks bareheaded
 function princeFrame(e) { const F = PRINCE_F, m = e.mode, mv = Math.abs(e.vx) > 8, step = Math.floor(e.anim * 5);
@@ -17787,8 +17836,11 @@ function drawPrinceFx(e, cx, cy) {
     g.globalAlpha = 0.9; g.strokeStyle = '#1e1812'; g.lineWidth = 2; g.beginPath(); g.moveTo(sx, fy - 1);
     for (let i = 1; i <= 8; i++) { const t = i / 8; g.lineTo(Math.round(sx + (kx - sx) * t), fy - 1 - (i % 2 ? 2 : 0)); } g.stroke();
     g.globalAlpha = 0.4 + 0.5 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(mx, fy - 2, 16 + k * 3, 4, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-  if (e.mode === 'buried') { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.4 + 0.4 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), fy - 2, 34 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+  if (e.mode === 'buried') { const k = 0.5 + 0.5 * Math.sin(time * 10), bx = Math.round(e.x - cx), q = Math.max(0, Math.min(1, e.modeT / (e.pinMax || 3))); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, fy - 2, 34 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    g.fillStyle = '#000'; g.fillRect(bx - 21, fy - 82, 42, 5); g.fillStyle = '#ffd36b'; g.fillRect(bx - 20, fy - 81, Math.round(40 * q), 3); }   /* (claude/undercrown2, B10: PINNED is open - the gold ring and its timer) */
   else if (princeLight(e) && e.mode !== 'sleep' && e.mode !== 'sunk' && e.mode !== 'wake') { g.globalAlpha = 0.28 + 0.12 * Math.sin(time * 4); g.strokeStyle = '#8fd160'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(e.x - cx), fy - 2, 26, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+  for (const c of (e.chunks || [])) { const x = Math.round(c.x - cx), k = 1 - c.t / c.max; g.globalAlpha = 0.4 + 0.5 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, 14, 4, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1;
+    if (c.t < 0.35) { const y = Math.round(fy - 11 * TS + (11 * TS - 10) * (1 - c.t / 0.35)); g.fillStyle = '#3a3440'; g.fillRect(x - 9, y - 10, 18, 12); g.fillStyle = '#a89c8c'; g.fillRect(x - 9, y - 10, 18, 2); } }   /* (claude/undercrown2) THE ROOF COMING DOWN: a red ring where it lands, then the chunk */
   for (const c of (e.crowns || [])) g.drawImage(PROP.crownSpin[Math.floor(c.spin * 24) % 8], Math.round(c.x - cx) - 13, Math.round(c.y - cy) - 13);
 }
 // THE PRISE. It does not want to kill you and it is not very good at it. What it wants is what is in your
@@ -24179,6 +24231,7 @@ function updateCastleProps(dt, hb) {
 // IT COMES DOWN. Everything under the span takes it, the roof opens, and the rubble lands where it fell.
 function dropTimber(pr) {
   if (pr.broken) return;
+  if (pr.slab) { slabCut(pr); return; }   /* (claude/undercrown2) a post under a slab: the slab hinges or drops (slabCut) */
   pr.broken = true;
   /* A TOMB SET is not a mark on the level: it keeps what it changed, and the dead set it again (tombRegrow) */
   if (pr.tomb) { pr.saved = new Map(); pr.regrowT = 16; } else marks.add('tim:' + Math.round(pr.x / TS));
@@ -24226,6 +24279,97 @@ function tombRegrow(pr) {
   number(pr.x, pr.row * TS + 30, 'THE DEAD SET IT AGAIN', '#c080ff');
   for (let x = pr.x0; x <= pr.x1; x++) parts.push({ x: x * TS + 8, y: pr.row * TS + 18, vx: 0, vy: -20, life: 0.6, max: 0.6, col: '#c080ff', size: 1, grav: 0 });
 }
+// ============================================================================================
+// THE UNDERCROWN'S SLABS (claude/undercrown2; the geometry is src/undercrown-slabs.js). A slab is a span of roof course held by a
+// timber set at each end. Cut one post and its end of the slab SWINGS DOWN on the other post into a tilted ramp - the ramp is the
+// drawn slab, tile for tile; cut both and it drops FLAT (a bridge over a gap, a wall across a gallery). Whatever is under the part
+// that comes down takes it. The rubble is loose rock that scatters and leaves a small heap, never a stair.
+function slabSave(rt, i) { if (!rt.saved) rt.saved = new Map(); if (!rt.saved.has(i)) rt.saved.set(i, L.grid[i]); }
+function slabOpen(rt) {
+  for (let x = rt.x0; x <= rt.x1; x++) for (let y = rt.row; y > rt.row - rt.deep; y--) { const i = y * LW + x, t = L.grid[i];
+    if (t === T.SOLID || t === T.SOFT || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL) { slabSave(rt, i); L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } }
+  resolveTiles(); }
+function slabClear(rt) { for (const i of (rt.cells || [])) { L.grid[i] = T.AIR; tileSpr[i] = null; SLAB_MASK.delete(i); destroyed.add(i); } rt.cells = []; }
+function slabPlace(rt, cells, mask) { rt.cells = [];
+  for (const [x, y, t] of cells) { const i = y * LW + x; slabSave(rt, i); L.grid[i] = t; tileSpr[i] = null; destroyed.add(i); rt.cells.push(i); if (mask) SLAB_MASK.add(i); }
+  resolveTiles(); }
+/* which end still holds: a keyed end (anchor) or a post still standing; 0 = neither */
+const slabHolds = rt => rt.anchor || ((rt.posts.find(q => !q.broken) || {}).end || 0);
+function slabCut(pr) {
+  if (pr.broken) return; pr.broken = true; const rt = pr.slab;
+  if (!rt.tomb) marks.add('tim:' + pr.ex);
+  SFX.crack(); SFX.stone(); shakeCam(3);
+  if (rt.state === 'up') { slabOpen(rt); const h = slabHolds(rt), r = h ? USL.rampFor(tileAt, rt, h) : null;
+    if (r) { rt.state = 'swing'; rt.anim = 0; rt.ramp = r; number((r.cut + 0.5) * TS, rt.row * TS - 8, 'IT SWINGS DOWN', '#ff9a5c'); return; }
+    slabFall(rt); return; }
+  if (rt.state === 'swing') slabLand(rt);
+  if (rt.state === 'ramp' && !slabHolds(rt)) { slabClear(rt); rt.ramp = null; resolveTiles(); slabFall(rt); }
+}
+function slabFall(rt) { const f = USL.flatFor(tileAt, rt); if (!f) { rt.state = 'gone'; return; } rt.state = 'fall'; rt.anim = 0; rt.flat = f; rt.fromY = (rt.row - rt.deep + 1) * TS; number((rt.x0 + rt.x1 + 1) * TS / 2, rt.row * TS - 8, 'IT DROPS FLAT', '#ff9a5c'); }
+/* what was under the part that came down. surf(x) is the slab's top at x; a body whose head is above it and whose feet are under it took it */
+function slabHit(rt, surf, thick) {
+  const l = rt.x0 * TS - 4, r = (rt.x1 + 1) * TS + 4, inIt = (b, h) => { if (b.x < l || b.x > r || b.y <= rt.row * TS) return null; const sy = surf(b.x); if (sy === null) return null; return b.y >= sy - 1 && b.y - h < sy + thick ? sy : null; };
+  for (const e of enemies) { if (!e.alive || e.harmless) continue; const sy = inIt(e, e.h || 16); if (sy === null) continue;
+    if (e.t === 'prince') { princeBuried(e, rt); continue; }
+    hurtEnemy(e, e.maxHp ? 70 : 999, e.x + 1, false);
+    if (e.alive) { e.stagger = Math.max(e.stagger || 0, 1.4); e.y = Math.min(e.y, sy); e.vy = 0; number(e.x, e.y - e.h - 14, 'UNDER IT', '#8fd160'); } }
+  if (!P.dead) { const sy = inIt(P, P.h || 24); if (sy !== null) { damagePlayer(P.x - 1, DMG.roofFall, { up: true, unblockable: true, name: 'THE ROOF' }); P.y = Math.min(P.y, sy); P.vy = 0; } }
+}
+/* LOOSE ROCK, NOT A STAIR: it scatters with the dust and what is left is a small heap where it settled (drawn, nothing to stand on) */
+function slabRubble(rt, x, y) {
+  for (let k = 0; k < 16; k++) parts.push({ x: x + (Math.random() - 0.5) * 24, y: y - 4, vx: (Math.random() - 0.5) * 160, vy: -60 - Math.random() * 140, life: 0.9, max: 0.9, col: Math.random() < 0.5 ? '#6a6478' : '#8a8298', size: 2, grav: 520 });
+  dust(x, y, 14); rt.heaps.push({ x, y, t: 0, n: 3 + (rt.heaps.length % 3) });
+}
+function slabFx(rt, word) { SFX.heavy(); SFX.stone(); SFX.thunder(); shakeCam(9); zoomKick(1.08, 0.35); hitstop(0.05); rumble(200, 0.7);
+  for (let x = rt.x0; x <= rt.x1; x++) parts.push({ x: x * TS + Math.random() * TS, y: rt.row * TS + 6, vx: (Math.random() - 0.5) * 40, vy: 60 + Math.random() * 120, life: 0.8, max: 0.8, col: '#4a4658', size: 2, grav: 420 });
+  if (!(PROG.slabTold > 1)) { PROG.slabTold = (PROG.slabTold || 0) + 1; hintT = 5; hintMsg = word; } }
+function slabLand(rt) { const r = rt.ramp; rt.state = 'ramp'; slabPlace(rt, r.cells, true);
+  slabHit(rt, x => USL.rampY(r, x), 10); slabRubble(rt, r.foot[0] + (r.hinge > 0 ? 6 : -6), r.foot[1]);
+  slabFx(rt, 'ONE POST CUT: THE ROOF SWINGS DOWN ON THE OTHER INTO A RAMP. CUT BOTH AND IT DROPS FLAT.'); }
+function slabLandFlat(rt) { const f = rt.flat; rt.state = 'flat'; slabPlace(rt, f.cells, false);
+  slabHit(rt, () => f.row * TS, f.deep * TS); slabRubble(rt, rt.x0 * TS + 4, f.row * TS + f.deep * TS); slabRubble(rt, (rt.x1 + 1) * TS - 4, f.row * TS + f.deep * TS);
+  slabFx(rt, 'BOTH POSTS CUT: THE SLAB DROPS FLAT - A BRIDGE OVER A GAP, A WALL ACROSS A GALLERY.'); }
+/* PUT BACK UP (the Prince's diggers at the winch): the roof course, the floor under it and both posts as built */
+function slabReprop(rt, hp) {
+  for (const i of (rt.cells || [])) SLAB_MASK.delete(i);
+  if (rt.saved) for (const [i, t0] of rt.saved) { L.grid[i] = t0; tileSpr[i] = null; destroyed.delete(i); }
+  rt.saved = null; rt.cells = []; rt.state = 'up'; rt.ramp = rt.flat = null; rt.heaps = []; rt.anim = 0;
+  for (const q of rt.posts) { q.broken = false; q.hp = q.hp0 = hp || q.hp0; q.shake = 0.4; } resolveTiles(); }
+/* SMASHED: the slab that pinned the Prince is thrown off him in pieces (re-propping still puts its roof back) */
+function slabSmash(rt) { if (!rt || (rt.state !== 'ramp' && rt.state !== 'flat')) return; const mx = (rt.x0 + rt.x1 + 1) * TS / 2;
+  for (const i of (rt.cells || [])) { L.grid[i] = T.AIR; tileSpr[i] = null; SLAB_MASK.delete(i); } rt.cells = []; rt.ramp = rt.flat = null; rt.state = 'gone'; resolveTiles();
+  for (let k = 0; k < 18; k++) parts.push({ x: mx + (Math.random() - 0.5) * (rt.x1 - rt.x0) * TS, y: (rt.row + 6) * TS, vx: (Math.random() - 0.5) * 220, vy: -120 - Math.random() * 160, life: 0.9, max: 0.9, col: '#6a6478', size: 2, grav: 520 }); SFX.stone(); SFX.crack(); }
+function updateSlabs(dt) {
+  for (const rt of SLAB_RT.values()) {
+    if (rt.state === 'swing') { rt.anim += dt; if (rt.anim >= 0.5) slabLand(rt); }
+    else if (rt.state === 'fall') { rt.anim += dt; if (rt.anim >= 0.34) slabLandFlat(rt); }
+    else if (rt.state === 'up') {
+      /* THE TELL (A3): a post that has taken blows lets ITS end of the slab sag - the dust comes off that half, and it creaks */
+      for (const q of rt.posts) if (!q.broken && q.hp < q.hp0) { const half = (rt.x1 - rt.x0 + 1) / 2, a = q.end < 0 ? rt.x0 : rt.x0 + half;
+        if (Math.random() < dt * (q.hp <= 1 ? 26 : 10)) parts.push({ x: (a + Math.random() * half) * TS, y: (rt.row + 1) * TS + 2, vx: 0, vy: 30, life: 0.6, max: 0.6, col: '#8a8298', size: 1, grav: 260 });
+        q.creakT = (q.creakT || 0) - dt; if (q.creakT <= 0) { q.creakT = 1.4 + Math.random(); SFX.stone(); } } }
+    for (const h of rt.heaps) h.t = Math.min(1, h.t + dt * 2);
+  }
+}
+/* THE SLAB, DRAWN: swinging on its hinge, lying as a ramp on exactly its tiles, falling, or down flat; and an end that sags over a cut post */
+function drawSlabs(cx, cy) {
+  const R = Math.round;
+  for (const rt of SLAB_RT.values()) {
+    if ((rt.x1 + 2) * TS < cx - 20 || (rt.x0 - 1) * TS > cx + VW + 20) continue;
+    if (rt.state === 'up') { for (const q of rt.posts) if (!q.broken && q.hp < q.hp0) { const sag = 2 + 2 * (q.hp0 - q.hp), yb = R((rt.row + 1) * TS - cy), xe = R((q.end < 0 ? rt.x0 : rt.x1 + 1) * TS - cx), xm = R((rt.x0 + rt.x1 + 1) * TS / 2 - cx);
+        g.fillStyle = '#2a2026'; g.beginPath(); g.moveTo(xm, yb); g.lineTo(xe, yb); g.lineTo(xe, yb + sag); g.closePath(); g.fill(); g.fillStyle = '#ff9a5c'; g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 9); g.fillRect(xe - (q.end < 0 ? 0 : 2), yb, 2, sag); g.globalAlpha = 1; } }
+    else if (rt.state === 'swing' || rt.state === 'ramp') { const r = rt.ramp, hx = r.top[0], hy = r.top[1], fx = r.foot[0], fy = r.foot[1], len = Math.hypot(fx - hx, fy - hy), a1 = Math.atan2(fy - hy, fx - hx), a0 = Math.atan2(0, fx - hx);
+      const k = rt.state === 'swing' ? Math.min(1, rt.anim / 0.5) : 1, a = a0 + (a1 - a0) * k * k, ux = Math.cos(a), uy = Math.sin(a); let nx = -uy, ny = ux; if (ny < 0) { nx = -nx; ny = -ny; }
+      const th = 10, p = [[hx, hy], [hx + ux * len, hy + uy * len], [hx + ux * len + nx * th, hy + uy * len + ny * th], [hx + nx * th, hy + ny * th]];
+      g.fillStyle = '#3a3440'; g.beginPath(); p.forEach(([x, y], j) => j ? g.lineTo(R(x - cx), R(y - cy)) : g.moveTo(R(x - cx), R(y - cy))); g.closePath(); g.fill();
+      g.strokeStyle = '#a89c8c'; g.lineWidth = 2; g.beginPath(); g.moveTo(R(hx - cx), R(hy - cy)); g.lineTo(R(hx + ux * len - cx), R(hy + uy * len - cy)); g.stroke();
+      g.strokeStyle = '#1e1a22'; g.lineWidth = 1; for (let s = 0.2; s < 1; s += 0.27) { const qx = hx + ux * len * s, qy = hy + uy * len * s; g.beginPath(); g.moveTo(R(qx - cx), R(qy - cy) + 1); g.lineTo(R(qx + nx * th - cx), R(qy + ny * th - cy)); g.stroke(); } }
+    else if (rt.state === 'fall' || rt.state === 'flat') { const f = rt.flat, k = rt.state === 'fall' ? Math.min(1, rt.anim / 0.34) : 1, y = rt.fromY + (f.row * TS - rt.fromY) * k * k, x0 = R(rt.x0 * TS - cx), w = (rt.x1 - rt.x0 + 1) * TS, h = f.deep * TS;
+      if (rt.state === 'fall') { g.fillStyle = '#3a3440'; g.fillRect(x0, R(y - cy), w, h); }
+      g.fillStyle = '#a89c8c'; g.fillRect(x0, R(y - cy), w, 2); g.fillStyle = '#1e1a22'; for (let s = 1; s < rt.x1 - rt.x0 + 1; s += 3) g.fillRect(x0 + s * TS, R(y - cy) + 2, 1, h - 2); g.fillRect(x0, R(y - cy) + h - 1, w, 1); }
+    for (const hp of rt.heaps) for (let j = 0; j < hp.n; j++) { const ox = ((j * 7) % 11) - 5, oy = (j % 2) * 2; g.fillStyle = j % 2 ? '#6a6478' : '#8a8298'; g.fillRect(R(hp.x + ox - cx), R(hp.y - 3 - oy - cy), 4, 3 + (j % 2)); }
+  }
+}
 // A SET OF TIMBER, DRAWN. Nothing drew them: a set was a prop with a hitbox and no picture, so the Undercrown's one verb
 // had no target a player could see (rules C1) and the Buried Prince's best opening was an invisible post. Now: the post you
 // strike, a cap beam under the roof course it holds across its span, a brace between them, a split for every blow it has
@@ -24239,7 +24383,7 @@ function drawTimberSet(pr, cx, cy) {
        in the air over the drift. It runs down to the first floor under it, if there is one within fourteen rows. */
     const tx = Math.floor(pr.x / TS); for (let r = pr.row + 1; r <= pr.row + 14; r++) if (isSolid(tx, r) || isOneWay(tileAt(tx, r))) { bot = r * TS; break; } }
   const y0 = Math.round(top - cy), y1 = Math.round(bot - cy), cl = Math.min(Math.round(pr.x0 * TS - cx), px - 5), cr = Math.max(Math.round((pr.x1 + 1) * TS - cx), px + 5);
-  if (!hung) { g.fillStyle = '#1e140c'; g.fillRect(cl - 1, y0 - 1, cr - cl + 2, 8); g.fillStyle = '#5c3a1d'; g.fillRect(cl, y0, cr - cl, 6); g.fillStyle = '#8a5a32'; g.fillRect(cl, y0, cr - cl, 1); g.fillStyle = '#3a2414'; g.fillRect(cl, y0 + 5, cr - cl, 1); }
+  if (!hung && (!pr.slab || pr.slab.state === 'up')) { g.fillStyle = '#1e140c'; g.fillRect(cl - 1, y0 - 1, cr - cl + 2, 8); g.fillStyle = '#5c3a1d'; g.fillRect(cl, y0, cr - cl, 6); g.fillStyle = '#8a5a32'; g.fillRect(cl, y0, cr - cl, 1); g.fillStyle = '#3a2414'; g.fillRect(cl, y0 + 5, cr - cl, 1); }
   g.fillStyle = '#1e140c'; g.fillRect(px - 5, y0 + (hung ? 0 : 5), 10, y1 - y0 - (hung ? 0 : 5));
   g.fillStyle = '#6a4a2a'; g.fillRect(px - 4, y0 + (hung ? 0 : 6), 8, y1 - y0 - (hung ? 0 : 6));
   g.fillStyle = '#9a6a3a'; g.fillRect(px - 4, y0 + (hung ? 0 : 6), 2, y1 - y0 - (hung ? 0 : 6));
@@ -24249,6 +24393,7 @@ function drawTimberSet(pr, cx, cy) {
 }
 // a set nobody has looked at in two hundred years: it groans before it goes, and the dust comes first
 function updateTimber(dt, hb) {
+  if (SLAB_PHYS) updateSlabs(dt);
   for (const pr of props) {
     if (pr.t === 'timber' && pr.broken && pr.tomb && pr.saved) { if (bossActive && boss && boss.alive) { pr.regrowT -= dt; if (pr.regrowT <= 0) tombRegrow(pr); } continue; }
     if (pr.t !== 'timber' || pr.broken) continue;
@@ -24264,7 +24409,7 @@ function updateTimber(dt, hb) {
       if (pr.armT > 2.1) { dropTimber(pr); continue; } }
     // a cracked set goes if you land hard anywhere under it - the mine punishes a heavy landing
     if (pr.state === 'cracked' && under && P.ground && P.landT > 0 && (P.fellFrom || 0) > 3) { dropTimber(pr); continue; }
-    if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.row * TS, b: pr.floor * TS + 8 }) && !P.hitSet.has(pr)) {
+    if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: (pr.slab ? pr.row - pr.slab.deep : pr.row) * TS, b: pr.floor * TS + 8 }) && !P.hitSet.has(pr)) {
       P.hitSet.add(pr); pr.hp -= P.heavy ? 2 : 1; pr.shake = 0.3;
       SFX.crack(); SFX.stone(); sparks(pr.x, P.y - 8, P.face, 5);
       burst(pr.x, P.y - 8, 6, ['#8a5a32', '#5c3a1d'], 60, 0.5);
@@ -29823,6 +29968,7 @@ function drawWorld(cx, cy, showPlayer) {
       for (let k = 0; k < 7; k++) { const sx = x - 4 + (k * 5) % 11, off = ((time * 90 + k * 37 + pr.ph * 40) % 40); for (let y = y0 - 40 + off; y < y1; y += 40) if (y > y0) g.fillRect(sx, Math.round(y), 1, 12); }
       g.fillStyle = 'rgba(240,250,255,0.8)'; g.fillRect(x - 6, y0, 14, 2);
       if (Math.random() < 0.3) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y0 + 2, vx: (Math.random() - 0.5) * 20, vy: 10, life: 0.4, max: 0.4, col: '#e8f4ff', size: 1, grav: 60 }); } }
+  if (SLAB_PHYS) drawSlabs(cx, cy);
   for (const pr of props) {
     if (pr.x < cx - 40 || pr.x > cx + VW + 40) continue;
     if (pr.t === 'towertop') g.drawImage(PROP.towertop, Math.round(pr.x) - 16 - cx, Math.round(pr.y) - 18 - cy);
