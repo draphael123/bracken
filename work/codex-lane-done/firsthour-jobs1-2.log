@@ -1,0 +1,5 @@
+ ok  syntax              0ms  0 files parse
+ ok  firsthour       22571ms  THE BULLFROG KING: 6 spits, all told; a leap taken -> land, left late -> dazed; hide 5 vs open 20; the court g
+
+2 of 372 checks pass - A SUBSET (firsthour), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

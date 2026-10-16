@@ -1,0 +1,30 @@
+wood - as loaded: every solid cell drawn
+wood - scratch picture removed: 1 undrawn solid cell(s), e.g. 287,8,1
+wood - after a respawn: every solid cell drawn
+wood - movers: 1 with no visible top, e.g. 157,21,pushblock
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: solid cells with no picture (an invisible platform)
++ actual - expected
+
++ [
++   'wood scratch picture removed: 1 undrawn',
++   'wood: 1 undrawn mover(s)'
++ ]
+- []
+
+    at file:///C:/Users/danie/Documents/Codex/2026-10-13/https-usefountain-slack-com-archives-d05sc1rm2ud/bracken-geomsweep/tools/drawn-solids.mjs:95:8 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'wood scratch picture removed: 1 undrawn',
+    'wood: 1 undrawn mover(s)'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.11.1

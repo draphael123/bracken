@@ -1,0 +1,2 @@
+{"rows":[{"id":"wood","ph":[{"phase":"as loaded","bad":0,"cells":[],"custom":{}},{"phase":"after a respawn","bad":0,"cells":[],"custom":{}}],"movers":[[157,21,"pushblock"]]}],"errors":[]}
+drawn-solids REPORT-ONLY: 1 phase(s) with undrawn cells in 1 level(s)

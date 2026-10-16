@@ -1,0 +1,45 @@
+91 hint messages read out of src/main.js
+  scope hints             91 screens  1.3s
+  scope bestiary         289 screens  7.5s
+  scope store            792 screens  8.5s
+  scope tree             185 screens  4.4s
+  scope pick               9 screens  3.5s
+  scope trial              9 screens  2.2s
+  scope erase              5 screens  1.8s
+  scope opening            4 screens  0.1s
+  scope press              1 screens  0.0s
+  scope title              1 screens  0.0s
+  scope mapcard           47 screens  32.3s
+  scope death              7 screens  1.1s
+  scope results            1 screens  2.4s
+  scope talk[warden]     791 screens  69.0s
+  scope talk[knight]     791 screens  70.9s
+  scope card              75 screens  8.0s
+  scope slots             17 screens  0.4s
+  scope ending             1 screens  0.1s
+  scope practice           8 screens  0.2s
+  scope bossjump          69 screens  8.8s
+  scope menu              19 screens  3.1s
+  scope plates          1392 screens  88.3s
+  scope settings         150 screens  6.8s
+  scope boss            1740 screens  96.4s
+  scope soundtest        127 screens  4.9s
+  scope credits           19 screens  1.8s
+  scope whatsnew           3 screens  1.7s
+  scope hud               30 screens  11.0s
+  scope bossfix          225 screens  23.4s
+  scope talk[pyro]       791 screens  68.0s
+  scope talk[paladin]    791 screens  75.0s
+  scope talk[pirate]     791 screens  65.5s
+  scope talk[reaper]     791 screens  65.7s
+
+== COVERS (2)
+  main.js:32114   talk fallingtower sign@34,300 [knight] page 1/1              "CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND" lines 3
+  main.js:32114   talk fair sign@405,12 [knight] page 1/1                      "THE HAYLOFT. SHOW 12 TICKETS." lines 2
+
+== COLLIDE (2)
+  main.js:11219   boss fight hurricane arena                                   "HER AFT GUN IS WORKING AT ITS LASHINGS" x "FELLED BY A TRAP" (main.js:32489)  (x8)
+  main.js:11219   boss fight hurricane arena                                   "HER GUN IS LOOSE! WHEN SHE HEELS, IT RUNS" x "FELLED BY A TRAP" (main.js:32489)  (x9)
+
+10062 screens drawn, 108658 strings measured, 188s. OVERFLOW 0  OFFSCREEN 0  CLIPPED 0  TRUNCATED 0  COVERS 2  COLLIDE 2  OVERDRAWN 0  LONGHINT 0  SMUDGE 0  ERROR 0
+14 pictures in C:\Users\danie\Documents\Codex\2026-10-13\https-usefountain-slack-com-archives-d05sc1rm2ud\bracken-geomsweep\audits\readability\textfit

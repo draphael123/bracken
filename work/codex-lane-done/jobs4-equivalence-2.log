@@ -1,0 +1,524 @@
+ ok  syntax        235735ms  1186 files parse
+ ok  tells            682ms  the mark over every windup on the screen comes from this table (src/marks.js, 917 rows).
+ ok  shake-mode      9276ms  Shake mode: ON HIT shakes only when the hero is hurt; FULL keeps every shake; OFF and reduce-motion none; old 
+ ok  hero-trials     6700ms  hero trials: all 8 heroes have a yard; the Warden's and the Geomancer's are played to the last gate
+ ok  ore-road        1385ms  all ore road checks pass
+ ok  ore-ride       21652ms  every line of the ore road carries you across
+ ok  scree-rework     620ms  all scree rework checks pass
+ ok  village-stakes   476ms  all village stakes checks pass
+ ok  comments         298ms  no swallowed code found.
+ ok  homepaths        693ms  ok  homepaths     1188 source and tool files, none hardcodes a path under a user's home directory.
+ ok  dangling-paths  1068ms  ok  dangling-paths 6308 tracked files, every repo path they cite resolves in a fresh clone (19 known holes lis
+ ok  shop-gates       227ms  ok  shop-gates     17 store and hero gates, every one naming a real level of the 62 in src/level.js
+ ok  floaters        3910ms  3128 standing things checked (56 set down a row or more at load; 40 hung ones with no rock over them are left 
+ ok  redgorge2-aloft   457ms  ok  redgorge2-aloft
+ ok  audit           4553ms  == sealedpyramid (498x60) clean
+ ok  content-audit   6941ms  404 things to look at.
+ ok  talents          574ms  181 historical nodes mapped; 234 priced skills/techniques have gameplay consumers; destructive legacy resets r
+ ok  progression      238ms  Progression: all 181 node destinations, 36 legacy hero/version fixtures, exact refunds, preserved ownership, b
+ ok  progression-runtime  9001ms  Six heroes bought and equipped three skills at level 16 (a fourth slot is refused: three at most) and cast slo
+ ok  skill-menu     10324ms  {"rows":[{"hero":"knight","actives":9,"passives":22,"activeKey":"G","passiveHudHidden":true,"qBadgeHidden":tru
+ ok  skill-passives 18089ms  {"catalog":["knight/thirdCut","knight/riposte","knight/sunder","knight/bleed","knight/execute","knight/flurry"
+ ok  skill-icons     5453ms  skill-icons: 69 actives each their own, 165 passives each in the table, descriptions match the code
+ ok  skill-balance-probe 54708ms  [{"hero":"knight","id":"risingCut","cast":true,"cooldown":1.98,"stamina":25,"damage":0,"healing":0},{"hero":"k
+ ok  starter-kits   17514ms  starter kits: {"rise":{"top":55,"held":55,"keys":["rise","apex","fall","land","idle"]},"heavy":{"chop":{"st":1
+ ok  reaper-input    6311ms  Full-blood tap casts equipped F skill, hold spends only Surge, and co-op inputs remain independent.
+ ok  traps           5540ms  21 traps to fix.
+ ok  signs           8712ms  no level says the same sentence on two signs (0 known).
+ ok  killzones       4690ms  no reachable tile kills a standing hero.
+ ok  collectables    4709ms  every pickup can be picked up from some ground.
+ ok  keys            4265ms  5 levels with lock gates flooded key by key. every key comes before its gate.
+ ok  elites         21615ms  77 elites. every elite can be fought and every gate it holds opens onto the route.
+ ok  spawns          3695ms  2516 creatures checked against the built levels. none start in the rock or out of the water.
+ ok  deadends        6109ms  267 dead ends in 47 levels, and every one pays.
+ ok  rafts            294ms  rafts: grace, slow return, reboarding, far dock, toll, free ferry, frogs and bore state pass.
+ ok  raft-call       5361ms  {"rows":[{"id":"marsh-grove","from":6656,"dock":6288,"paidPreserved":true,"reboarded":true,"reusable":true},{"
+ ok  render-layers    240ms  render layers: scenery behind tiles and a continuous foreground mask.
+ ok  room-patterns    254ms  room patterns: nine interiors invariant under camera movement and clipped to room bounds.
+ ok  heat             262ms  heat: landed gain floor, grace, gentle drain, bank, pilot and dead-state checks pass.
+ ok  queen-comb       409ms  Queen: no ceiling footing, three told falling-comb pieces, unchanged grid and persistent wider view.
+ ok  crown-route     7610ms  [{"h":"knight","landings":[{"x":5434.194444444457,"y":160},{"x":5467.366666666687,"y":128},{"x":5425.355555555
+ ok  crown-requests   606ms  Highcrown: two additional encounters, three unstable chandeliers; the Queen's gallery is gone and her six chan
+ ok  gallery-runtime  6228ms  Two gallery goblins warn, drop from supported balconies and survive to join the fight; the middle javelineer h
+ ok  waterfall-joins   512ms  Waterfall paint joins live stream surfaces and keeps dry or unrelated pools separate.
+ ok  paladin-enrage   288ms    the crusader: parry 0.2 s, glint 0.32 s before, follow-up through the shield, grab rolled or hurled, brand j
+ ok  map-grammar      411ms  The map grammar holds: no retraced road, required nodes resolve forward, the margin and spur bands hold, every
+ ok  checkpoints     6743ms  246 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on pur
+ ok  additional-areas  1011ms  Both areas have reachable rewards; Burial has its final boss and Harbor retains its guardian; all map nodes me
+ ok  additional-areas-runtime  8788ms  Harbor bosses and Buried Dead activate, death opens exits, summons clear, both levels finish and music decodes
+ ok  keep            1718ms  Deep/Keep crop metadata, tribute, rewards, arrival air, campaign order, four crab attacks and counters (none o
+ ok  keep-runtime    9079ms  Deep crab and Keep king activate, attacks resolve, both defeats finish their stages, and Keep music decodes.
+ ok  keep-expansion  1292ms  Keep triples width and scoped breath; air refuges, sluices and ballast exist; no Vault Keeper; two dry halls w
+ ok  keep-passages   6403ms  Keep narrows: approach 560 tiles, 57% of the new stretch is passage (hall median 35), 8 siphons, 6 blights, 8 
+ ok  keep-expansion-runtime 11688ms  [{"h":"knight","breath":18,"refill":true,"verticalSwim":true},{"h":"warden","breath":18,"refill":true,"vertica
+ ok  storm-ship       982ms  Ship swings descend toward boarding decks; three warned collapses preserve hold exits; aft cannon faces its bu
+ ok  storm-ship-runtime  7626ms  Three deck collapses reach the hold; all three cannon bulkheads open, including the backward gun.
+ ok  haunted-coast    860ms  Five coastal attack tells, range counters, no mini or gate on the last mile, flooded hold and four Lamplit rop
+ ok  haunted-coast-runtime  6682ms  Three new foes, roof chains, flooded hold and a last mile with no mini on it work in game.
+ ok  tome             342ms  all tome checks pass
+ ok  false-abbot      351ms  all false abbot checks pass
+ ok  tower-ascent    6845ms  {"stoodAt":240,"armedOver":true,"done":true,"sealed":1,"cleared":0,"waited":true,"carpet":true,"active":true,"
+ ok  archmage-room    494ms  ok  archmage-room   the crown ends at a door; nothing up here grows grass; the floor burns and lets you out.
+ ok  skins          14914ms  ok  roofs          44 houses: every roof picture sits on the slab you stand on.
+ ok  threat-holes    3890ms  ok  threat-holes   206 creature kinds placed across 61 levels, every one weighed. Deliberately 0: dummy, folk,
+ ok  one-new-foe     3773ms        harbor     shelved on purpose - the only level in LEVELS with no map node.
+ ok  folly-runtime   7335ms  Co-op counterweight clearance and the final wizard defeat pass. ["gate","wizardDefeated"]
+ ok  deadly-water    3807ms  22 harmful pools; deadly (and marked): fallingtower@21 TRAP deadly, fallingtower@28 TRAP deadly, fallingtower@
+ ok  burning-village 21721ms  the burning village keeps its promises.
+ ok  witchlight     16530ms  THE WITCHLIGHT STAIR: five places, one verb each, encounters not a sprinkle, its own light - the Hedge Warden 
+ ok  sea-requests     434ms  Sea: permanent tentacles across all phases, block/dodge wave responses, half Deep breath drain, no Tollmaster 
+ ok  sea-runtime     7602ms  Kraken final blow: reflected water, bell and cargo all trigger defeat.
+ ok  shop-theme      3837ms  All four shops use a valid 40-second original PCM store theme.
+ ok  store-preview  12677ms  {"pixels":{"frames":156,"maxCanvases":26},"tabs":[{"pass":0,"tab":0,"ms":742.5,"canvases":223},{"pass":0,"tab"
+ ok  dressing       11399ms  no sprinkled decoration within three tiles of a fire on the floor.
+ ok  runtime-footing  8983ms  fields wight: fell 80.0px after support loss outside the active range
+ ok  bridge-props    3726ms  3636 standing props clear of breakable spans; both Kingswood sections and cuttable stand present.
+ ok  light-support   3873ms  256 authored torches and high lamps have a visible holder anchored in terrain.
+ ok  readability      448ms  Scenery behind tiles, softened outline-free art, wall-grip feedback, 13 homes and two landmarks.
+ ok  town-live       5113ms  Townsperson entered home; wall grip held at 24.8px/s.
+ ok  waymeet-cleanup   470ms  Waymeet removes eight redundant platform tiles and stepped ornaments, retains two refuges and reachable reward
+ ok  owl-lamps        514ms  Six supported lamps: 14-second fuel, continuous glow, three-second opening, hoot and dive extinguishing.
+ ok  belfry           550ms  Belfry beam/ladder, five attacks, hit-to-break carry, and seven warned phase-two roof tiles verified.
+ ok  moor-wind        430ms  Air rail carry/release, downdraft/lull/shelter, recovery ladder, the cut (703 columns in 16 sections) and the 
+ ok  watchtowers      416ms  Three watchtowers, three keys on their top decks, a ladder up each and a clear rope down to each gate; grab an
+ ok  spore-loop       509ms  Its own look: no dead trees, its own canopy and bed, the tint to 552, shelf fungus.
+ ok  mother-cap      9640ms  {"phases":[7,9],"anchors":[160,-256,272,-128],"warningAndSafeLaneChecks":true,"platforms":[{"hero":"knight","l
+ ok  mother-pilot   37736ms  {"refill":[{"lvl":"spore","boss":"mother","h":"knight","killed":true,"secs":108.3,"bossHp":8,"hpLeftPct":0,"he
+ ok  salvage-captain   237ms  Salvage Captain: four base attacks, phase-two crossfire, non-damaging warnings, cargo escape lanes, and inacti
+ ok  harbor-expansion   565ms  Harbor is 3x length with fixed reachable rewards and water exits; Warden warnings, safe responses, phase-two r
+ ok  harbor-route    8810ms  [{"h":"knight","drydock":true,"lighthouse":true},{"h":"warden","drydock":true,"lighthouse":true},{"h":"pyro","
+ ok  buried-dead      560ms  THE GAS: a burning vent scorches him once a lighting (open 3.4 s); a cold vent never; the buried stay down in 
+ ok  burial-route   33194ms  burial-route  every hero makes all 7 three-tile jumps over green water on the road, dry; the stone falls, the 
+ ok  burial-geometry  6021ms  burial geometry: the gallery drop and the gassed low pass are the ways on, vents are grates, a cold vent hurts
+ ok  burial-rework    687ms  the caverns go down: band 11-72, zombies 12, archers 12, skull-throwers 5, spiders 7
+ ok  undercrown-variety  5563ms  Undercrown variety: 154 wide, 876 standing cells (was 768), walls mine/crystal/ossuary, 26 crystal tiles that 
+ ok  boss-openings  49015ms  {"buried":{"alone":"rest","broke":0,"mode":"stuck","open":3.4},"buriedGas":{"rest":{"mode":"rest","open":0},"c
+ ok  arena-supplies  5391ms  ok  arena-supplies  62 boss rooms, 15 height conditions scored against the ground their arenas actually offer;
+ ok  undead-foes     6734ms  {"huskCount":4,"husk":{"hp":666,"w":18,"sprite":true,"walked":true,"burst":{"alive":false,"hpLost":27,"venom":
+ ok  buried-attacks 13806ms  {"novaClose":{"lost":17,"venom":2.4},"novaFar":{"lost":0,"venom":0},"throw":{"flew":true,"landed":true,"addsBe
+ ok  combat-feel      235ms  Attack commitment, escalating plunge cost, chain regeneration gate, impact scaling and finisher wiring verifie
+ ok  attack-animation 20292ms  32 real-input directional attacks render preparation, contact and recovery in both directions; greatsword and 
+ ok  attack-buffer  18654ms  {"rows":[{"h":"knight","kind":"rise","face":-1},{"h":"knight","kind":"rise","face":1},{"h":"knight","kind":"sw
+ ok  normal-health  23013ms  [{"lvl":"deep","boss":"bellcrab","h":"knight","killed":false,"secs":62.4,"bossHp":1032,"hpLeftPct":76,"health"
+ ok  ambush-single   6123ms  26 single-wave rooms: one captain, 2-4 minions, immediate roster, named lock and leader-only clear.
+ ok  reed-island    13264ms  {"entry":{"state":"fight","leader":{"t":"thorn","x":6152},"player":{"x":5997.033333333337,"y":288,"hp":100,"de
+ ok  lab-clock       5998ms  Manual combat simulation isolates yielding labs and restores the normal loop after errors.
+ ok  combat-replay  14099ms  Fresh combat replays agree on time, damage, attacks, defenses and outcome.
+ ok  combat-results-test   247ms  An opened boss guard is never reported as a kill; timing requires completion.
+ ok  king-refill     5241ms  Spent cages refill, active openings remain intact, and King Gorm crosses his fallen throne.
+ ok  pilot-actions    395ms  Freebooter uses his pistol when loaded and a usable fallback when empty.
+ ok  pyre-pilot      5976ms  {"row":{"lvl":"longwater","boss":"herald","h":"pyro","killed":true,"secs":54.3,"bossHp":454,"hpLeftPct":0,"hea
+ ok  herald-pirate   7079ms  {"row":{"lvl":"longwater","boss":"herald","h":"pirate","killed":true,"secs":49.3,"bossHp":454,"hpLeftPct":0,"h
+ ok  boss-navigation 39262ms  {"lvl":"theatre","boss":"puppeteer","h":"knight","killed":true,"secs":80.3,"bossHp":648,"hpLeftPct":0,"health"
+ ok  cdp-recovery  149356ms  Unresolved evaluations time out; twenty fresh pages initialize after recovery.
+ ok  swim-chain     11936ms  [{"hero":"knight","began":{"swim":true,"plunge":true,"chain":1,"st":65},"ended":{"swim":true,"plunge":false,"c
+ ok  temperer         635ms  ok  temperer       3 in Highcrown, each by a brazier and in company; he shoulders off, runs, heats, and comes 
+ ok  unburied        3991ms        NOT SEEN HERE: the map spur (Lane B), and the music as heard (its track is asserted above); the look is 
+ ok  unburied-fights   636ms  ok  unburied-fights the banner rule, the Barrow Rider, the Death Knight (and the benched Reaper), the bridges 
+ ok  ability-poses  63125ms  ability poses: 69 of 69 actives have a body of their own; known debt 0
+ ok  knight-rework  22936ms  the knight rework: lesson, riposte, third, guard hold.
+ ok  riposte       245453ms  the riposte: teach, heroes, elite, boss, chain hold.
+ ok  crouch-hint    21003ms  the first-crouch hint holds: each of the eight heroes is told his twist once, on his first real crouch, queued
+ ok  knock-into     21861ms  knock-into: pure, throw, hazard, anti - all hold
+ ok  order-knights  21897ms  91 checks: the order holds.
+ ok  riposte-shots 120843ms  berserker  hold1 pose keys parry,parry | strike ripo:0 ripo:1 ripo:2
+ ok  levelling        442ms  Levelling: 165 passives unsold, unslotted and on from their level; 69 abilities sold; a real version-1 save re
+ ok  levelling-runtime305429ms  Levelling runtime: 3541 passive reads through tal() on from their level with nothing owned or slotted; the PAS
+ ok  leveling         345ms  Leveling: the curve to fifty never rises, the card beats the old growth evenly spread and caps at 25, ten mile
+ ok  boss-fight-end 89190ms  Every one of 62 boss and mini fights (47 bosses, 15 minis) ends when its boss dies.
+ ok  geomancer      31302ms  geomancer: FAULT LINE hits what touches her at once, runs 160 px full, stops at a pit and a wall, hits all thr
+ ok  berserker      30804ms  berserker: ok
+ ok  burial-variety 10783ms  burial variety: two dark places lamp to lamp, two rotten spans that crack, drop, come back and never cut the r
+ ok  buried-dead-art   842ms  buried dead art: 20 frames 112x118, every tell its own pose; sheet order (six to a row): DRAG, DRAG 2, SWEEP T
+ ok  mini-names     19838ms  every mini has its own name (15 levels): kings=THE GREAT HOUND, hanging=THE WEAVER, spire=THE TEMPLE GUARDIAN,
+ ok  slopes         10209ms  slopes: all passed
+ ok  one-dodge      12583ms  one dodge: the double tap and the button are one move - grace, direction, one cost, once in the air, the dash 
+ ok  queen-chandelier 13842ms  queen-chandelier: no gallery; every hero cuts a chain from the floor, and it pins her as the gallery did (4.6 
+ ok  ambush-reach    3993ms  26 ambush rooms. every captain can be reached from where the room shuts.
+ ok  small-adds     82900ms  20 rows swung at small foes; 8 of 106 swings missed (8%); worst judged row 25% (limit 33%)
+ ok  occluders       4068ms  occluders: 61 levels, 248 rooms; nothing indoors, a tree only in the forest. trunk 4, reeds 3, rock 12, none 2
+ ok  swim-shrines    6300ms  swim-shrines: 10 underwater shrines in 3 levels; every one the swum route crosses, it lights (1 not on it).
+ ok  ground-depth    4850ms  ground-depth: 61 levels, rock and solid: no seam under any step; a narrow block casts no shadow of its own.
+ ok  hanging-hoist    562ms  hanging-hoist  4 hoists (rope:1, mill:1, nest:2, crown*:1), every well on the far side of its deck from its lo
+ ok  checkpoint-gaps 24252ms  checkpoint-gaps  47 levels, 246 checkpoints; along the walked route none is more than 200 from the next (worst
+ ok  dune-worm       5319ms  dune-worm: five told attacks forced and landed (the breath blinds), his hide turns every blade but the stun, t
+ ok  architecture    4036ms  61 levels, 549 built pieces declared; 2 grandfathered (harbor, waymeet). everything that was built stands on s
+ ok  gob-priest       532ms  ok  gob-priest     the rite (quiet, broken by any blow), the censer (!, a lob onto your ring) and the bell (!,
+ ok  ore-work       69053ms  every goblin at work in the mine is told before it fights
+ ok  spore-caps     19521ms  the caps grow into steps: the root step, the leaning cap, the dripping stair, the Gills' sprout and her jam, f
+ ok  bells          50529ms  bells: 7 alarm(s) (storm smokerow, storm bellwatch, crown leads, crown ward, crown hall, crown chapel, undercr
+ ok  moor-gusts       429ms  moor-gusts  16 gusts, every one told; 11 shove on one beat (5/1.8 s, build-up 1.2 s): ride 38-45 (8 tiles, bog
+ ok  tower-collapse  8385ms  in play: {"teach":["count","down",0,true,"whole",true],"gallery":["down",228,true],"amb":["fight","apprentice"
+ ok  sexton          5521ms  in play: {"active":true,"name":"THE SEXTON","swing":{"took":29,"mode":"stalk"},"rush":{"took":24,"mode":"rush"
+ ok  lance-support   5754ms  THE QUEEN'S LANCE: slower, two end lookouts, his bowmen told and cleared - all hold.
+ ok  footing-art    24475ms  footing-art: every floor cell you can stand on is drawn, in 35 levels; painted by their own code: fields (fiel
+ ok  reefmaw-land   12493ms  ok  reefmaw-land  the tide goes out (told), he comes ashore; a dodged lunge beaches him (jumped or from a ledg
+ ok  reefmaw-art      423ms  reefmaw land art: 11 frames 130x44, grounded, every tell its own pose; sheet order (four to a row): CRAWL, CRA
+ ok  reef-hulk       5330ms  ok  reef-hulk  the grate is down at load, three turns lift it, it stays up through a death, the hold swims out
+ ok  drowned-knights  6828ms  drowned-knights  {"drownedknight chase":69,"drownedcaptain chase":76,"combo":"two cuts, told"}  page: {"clippe
+ ok  whirlpools      6428ms  whirlpools  module: pull, drain, the niche lit on entry, the lever, the wind-down, kept through a respawn; pag
+ ok  keep-rework     1905ms  keep-rework  no Leadfoot, no Vault Keeper; 8 walls, 8 landmarks; 4 whirlpools (2 guarding air, 2 beside a knig
+ ok  deep-rework     1028ms  THE DEEP, REWORKED: 4 hold kinds (cargohold, galley, gundeck, tribute), every deck on a strake, the tribute sh
+ ok  deep-descent   12628ms  deep-descent: 14 legs played with real keys, no god mode (knight, warden): every way down the Deep goes down.
+ ok  longwater-river  3944ms  longwater-river: the river is fresh to Saltreach, the Bore is told and has stones, the lesson pool is empty, o
+ ok  bandits          333ms  bandits: all passed
+ ok  class-spurs     5629ms  Class-level side roads: walkable from their junction, shut until the Stockade is beaten in under 5:00 (the Unb
+ ok  mini-walls     29513ms  ok  mini-walls   sexton, gravewarden, hedgewarden, barrowrider: 6 seeded runs each, 30 s chased round the room
+ ok  checkpoint-stand  4544ms  ok  checkpoint-stand   246 checkpoints in 61 levels: every one stood at with a real jump (5 columns, not 6; 8 
+ ok  tower-cutouts    962ms  ok  tower-cutouts   20 cut-outs in 8 rooms ({"library":3,"reading":3,"orrery":3,"clock":3,"lab":2,"flip":3,"do
+ ok  archmage-rings  5135ms  ok  archmage-rings   the step, the bent bolts, the dodge-through opening, the stages - forced, landed and seen
+ ok  kraken-rework  11030ms  The Kraken, reworked: the tide rises, sweeps, carries, hides his arms, and goes back to the bells; stage 2 has
+ ok  uphill          5421ms  uphill: steep 92 up / 0 down, gentle 74 / 107
+ ok  desert-ledge-art  4225ms  desert-ledge-art: no ONEWAY/PLANK tile in THE SUNKEN CARAVAN draws the default plank art unless it is real tim
+ ok  gargoyle-smash  5264ms  THE GATE GARGOYLE: zoomed out, in a room of forty tiles, half as big again, and a slab left late puts him thro
+ ok  deathknight-unlock  5604ms  ok  deathknight-unlock  locked on a fresh save and on a clear; his death opens him (feat and gold route); owne
+ ok  camera-fill     8614ms  camera-fill: flat-ground footing, the ground fade by depth, and the two boss-plate arenas all hold.
+ ok  lab-reach      62289ms  Every hero, parked at its lab stand distance, reaches with its strike against a sample of 9 bosses (64 pairs c
+ ok  burial2          638ms  burial2  660 cols (528x74), 7 sections; 5 backdrops, 4 seams pillared; 11 vents, 6 candles, 6 of the dead in a
+ ok  burial-vents   14255ms  burial-vents  fire from a candle, a vent lit by a swing and not without fire, no gas while it burns, the dead 
+ ok  whelps         10565ms  THE GARGOYLE WHELP: stone on its perch, a told swoop that shoves, broken only by a stomp on the spikes; THE BA
+ ok  npc-removal     3774ms  every NPC outside the shops is gone; the ferryman and the captives are mechanics without dialogue; no relic is
+ ok  relics         28400ms  relics: none exist, no route needed one, every former spot pays a silver (<= 3 a level) or is gone, and old sa
+ ok  gargoyle-stomp  6522ms  THE GATE GARGOYLE, ROUND THREE: stone over a floor of spikes, broken only by a stomp when his own dive puts hi
+ ok  burial3          629ms  burial3  GRAVE HANDS: told 1.1 s along the line, unblockable, none in a lit vent's light, cleared by a jump; G
+ ok  burial3-keys   12651ms  burial3-keys  THE ARCADE WALK crossed with real keys by knight (21.9 s, 24 coins), pyro (19.7 s, 22 coins), pi
+ ok  zoom-coverage    926ms  zoom-coverage: 58 placed bosses (58 zoomed, 0 excluded) and 21 placed minis (21 zoomed, 0 excluded) all agree:
+ ok  tower-hall       506ms  ok  tower-hall   his hall is rows 22-38, 8 rows clear over the crown, nothing starts in it or under it, and th
+ ok  tower-flyers     449ms  ok  tower-flyers   16 flyers in the Falling Tower, every one over flat ground (6 floors), none over a stair an
+ ok  gate-alpha       220ms  ok  gate-alpha   drawHealths() glows a heart with fbloom() (globalAlpha put back to 1) and skips ones off scre
+ ok  ram-bank         444ms  ram-bank  fold 30 tiles, bank on x0; a wall crash daze 3.00s, the banked wall 3.80s - a caused opening, not a 
+ ok  stormhold2       477ms  Stormhold2: 700 columns (held branch was 672); three towers, all a real climb, keys on their decks; 1 town wal
+ ok  audio-assets    3377ms  ok  audio-assets  47 levels all have music, 47 boss arenas and 15 minis all resolve to a real track, every TRA
+ ok  marsh-exam       395ms  marsh-exam  S3: the exam 440-462, 2 pad(s), 1 gar, 1 spitter, 1 wisp; TWIST: the grove sluice at 390 drains 39
+ ok  spore-exam       403ms  Sporewood's second half and its exam: the lurker twist at 244, a leaning cap combined into the bog, a lurker a
+ ok  stockade-horns  7465ms  stockade-horns: all four beats hold - the tower-3 twist, the kennel combine, the boss horn (chief-only), and t
+ ok  gargoyle-playtest  5844ms  [marks] a windup with no row in src/marks.js: gargoyle|gustTell - it wears no mark
+ ok  answer-tags     4441ms  every one of 47 levels asks for three answers or more.
+ ok  attack-tokens  15732ms  waymeet: at most 2 of six attacking at once over 29 attacks; 142 waiting foe-seconds, none still
+ ok  untold-told    11671ms  23 foes that were untold each wound up on a mark, and none hurt the hero without one (skipped, answer-tags hol
+ ok  foe-tactics    10755ms  held wind-ups: swornsword 4 of 12 held, soldier 5 of 14 held; the waiting archer 114 px off; the waiting shiel
+ ok  finishers      12244ms  25 common foes broken with a beat and stood open; each of 8 heroes finished a broken sworn sword with one pres
+ ok  pogo-chain     10199ms  every one of 7 heroes comes back up off a head, plunge or stomp, and chains two (the Warden vaults: she never 
+ ok  hanging-exam     510ms  hanging-exam  bridge 64-75 cut by a sprig at 77 (1.31s in the cut zone at a walk); 2 failing-stone floors; a f
+ ok  monastery3-beats   478ms  THE MONASTERY (claude/monastery3): drawbridge population, bellows loose masonry, the third wheel's exam cluste
+ ok  kings2-beats     433ms  KINGSWOOD (claude/kings2): fork one's high-road plate and cage, fork two's TWIST (canopy plate, hatch, second 
+ ok  wood2-beats      402ms  BRACKEN WOOD (claude/wood2): the tarn badger (DEVELOP), the stream's flanking thorns (COMBINE), and the west-w
+ ok  ore-exam         545ms  all ore-exam checks pass.
+ ok  ambush-listed   4036ms  25 ambushes checked, 0 drop at least one listed foe TYPE entirely (excluding levels left to their own branches
+ ok  courtyard       9007ms  THE WARDED COURTYARD: a step, a bridge and a path in paving, taught before the library; every whelp over spike
+ ok  throwables      6457ms  CARRY & THROW keeps its promises.
+ ok  pyro-duel      11233ms  pyro-duel: all green
+ ok  push-blocks     3753ms  ok  push-blocks (demo)   exactly 1 placement (Bracken Wood only), and the corridor around it floods end to end
+ ok  crown-exam       957ms  crown-exam  hound under winch gate 236; bakehouse temperer at 621 (none in the siege lines); Captains Hall jav
+ ok  boss-jump     262910ms  BOSS-JUMP: all 62 boss and mini fights load through ?boss=<id> at full health with no god mode and wake at the
+FAIL archmage-folly 12086ms  1 FAILED
+ ok  tower-chase    28472ms  ok  tower-chase   his ring on the parapet to a 26x77-tile spiral stair (ten flights - the pendulum, the ice st
+ ok  dances         54754ms  ok  dances         seven heroes, one dance each: baked in every skin, on H, after every boss, on a long idle, 
+ ok  firsthour       8850ms  THE BULLFROG KING: 12 spits, all told; a leap taken -> land, left late -> dazed; hide 5 vs open 20; the court 
+ ok  death-cost     20195ms  Death cost: rules, old-save migration, save round trip, every arena door reachable, and in the page: drop, foe
+ ok  sprinkle-cap    4069ms  sprinkle-cap ok: 21 levels within the cap, a designed encounter in every section
+ ok  juice           8548ms  Juice: freeze scales with weight and only on landed blows; one shake budget; reduce-motion silences it; no kno
+ ok  folly-library  10647ms  THE RUNE LIBRARY: 150 columns, sliding bookcases, a taught lock and a timed one on the Archmage's own trick, o
+ ok  undead-realms   7907ms  ok  undead-realms   at 75/50/25% he tears FIRE, ICE and POISON in turn (told 1.2 s), warded in each till its o
+ ok  undead-moves     499ms  ok  undead-moves  bone storm (told 1.1 s, 12 skulls, gaps shown, flown out of untouched, sat in hit; changes e
+ ok  duck           17973ms  the duck holds: 594 blows tagged (52 high), 8 heroes duck to 8 px, arrows, bolts and a head-high swing go over
+ ok  chase          19395ms  the chase engine holds: the chaser advances inside its rubber band (never under 64 px, never past the leash), 
+ ok  harvest-fair   52617ms  harvest-fair ok
+ ok  wicker-queen    7397ms  wicker-queen: ok (pure, level and page)
+ ok  ember-flare    12512ms  the ember flare holds: down held 0.3 s is a 0.25 s flare (a shorter hold, down + jump and down + swing are not
+ ok  queen-court    14280ms  queen-court: no charge; her leap is a told, jumpable quake; she holds court beside a pillar, and three blows b
+ ok  crouch-b       15542ms  the crouch twists hold: the paladin kneels by a holy light only (a shrine, a lit brazier, ...) and his light f
+ ok  settings-tabs   6668ms  settings-tabs ok: 5 tabs, 76 rows, rebinding saves/loads/flags/resets, ember flare row, co-op page once
+ ok  crouch-a       13541ms  the crouch twists hold: the knight low-guards a yellow low blow with no step back (high still over, red and be
+ ok  hint-shown      9162ms  hint-shown OK: HE IS OPEN, STRIKE ITS LEVER, THE FIRE IS OUT - GO, THE GOBLIN QUEEN: OPEN and a counted line a
+ ok  weak-bosses     7637ms  weak-bosses: OK
+ ok  crouch-feet    29329ms  ok  crouch-feet     every crouch / duck frame of 7 heroes in 18 skins has its boots on the standing hero's row
+ ok  store-ui       13053ms  [{"h":"knight","acts":9,"drawn":9,"animated":9,"distinct":8,"moved":true,"items":66,"pure":true},{"h":"pyro","
+ ok  store          28740ms  ONE STORE: rules, six doors (map V/Q, wood Q, pause Store/Skills, four keepers) open the one store, fights ref
+ ok  loading-screen  6782ms  ok  console        no page errors through boot and every load above
+ ok  boss-music    106761ms  ok  boss-music   Drowned King (keep, drownedking), Winchmaster (oreroad, winchmaster), Gate Gargoyle (witchlig
+ ok  level-quality   5387ms  every gated level clears the quality bar.
+ ok  theatre        12778ms  ok  theatre  the rig (lamps, lines, flats, traps, cues) holds; the level sits between Waymeet and the fair wit
+ ok  level-jump     24078ms  ok  level-jump  ?level=theatre&hero=pyro lands in play at the entrance, at full health, no god mode; run to th
+ ok  puppeteer      11182ms  ok  puppeteer  the duo, the green window (clank otherwise; the gold cancel; limp limbs), the chained lever (fr
+ ok  frame-cost      7614ms  frame cost: no read-back in play, a view change re-bakes only the backdrop, the theatre keeps its trimmed bloc
+ ok  slide          46231ms  ok  slide           down on a slope slides feet first: starts only on slopes, speeds up, ends on release / jum
+ ok  canal          12765ms  ok  canal  the rig (locks, barge, bridges, fog and horns, the legging tunnel) and its two foes hold; the level
+ ok  boss-greed     15716ms  boss-greed: 47 bosses and 15 minis have a rule or a reason; the chip, the room's blow, the opening, the poise 
+ ok  foe-tempo      19629ms  foe-tempo: 54 tightened windups tell for x0.8 (floor 0.3 s), every one still marked; nothing else shortened
+ ok  verb-matrix    47926ms  verb-matrix: 7 heroes x up (ground, real keys, no jump) / up (air) / plunge / held heavy / dash cut / air atta
+ ok  mash-gate       3908ms  mash-gate: 47 campaign levels hold the mash gate (1 with parts report-only for their boss waves: fallingtower 
+ ok  floating-geometry  4116ms  ok  floating-geometry  theatre: nothing hangs from nothing (44 other level(s) reported)
+ ok  goblin-lint     3818ms  ok  goblin-lint    church, canal, redgorge, undercrown, lamplit, theatre, welltown, fair: no goblins (124 resk
+ ok  canal-water      557ms  ok  canal-water  14 water bodies in THE FOG CANAL: the deep ones hand you back at every level, every one you w
+ ok  map-spacing      950ms  map-spacing ok: 50 nodes, every plate clear (min node gap 16, pad 2)
+ ok  save-slots      5069ms  SAVE SLOTS: five independent slots, the three old saves and the legacy save load unchanged, the five-row scree
+ ok  weapon-skins   16936ms  weapon-skins: ok - 1168 hero x skin x weapon bakes; only weapon pixels change, the head never does, every weap
+ ok  welltown         811ms  welltown: 42 checks pass
+ ok  djinn            726ms  djinn: 123 checks pass
+ ok  djinn-pail      9919ms  djinn-pail: 43 checks pass (knight E 3s / strike 3s, warden E 3s / strike 3s, pyro E 3s / strike 3s, paladin E
+ ok  cistern-queen    391ms  cistern-queen: 116 checks pass
+ ok  redgorge         841ms  REDGORGE: the rapids and the climb lead in, the gorge climbs, its flood never traps a crossing, its jam, baske
+ ok  raptor-matriarch  1013ms  RAPTOR MATRIARCH: her ledge, her marks, the flood opening (the verb), her ward, her guard by angle, the walls,
+ ok  touch         140475ms  touch: the stick, the buttons, the action button, the tap menus, the settings, the assists, the haptics and th
+ ok  corpses        64040ms  ok  corpses  every reskinned foe's hurt frame and body are drawn in its own skin
+ ok  modulepreload    790ms  modulepreload: 445 modules listed, 0 reachable ones not yet in the list (budget 15).
+FAIL mobile-perf    79484ms  FAIL redgorge had a 642.8 ms frame (budget 600)
+ ok  gorge-basket   10599ms    ok   the told prompt CLIMB THE ROPE fired at the first rope foot
+ ok  desert-foes2   11277ms  ok  desert-foes2   the fire and venom scorpions, the sandworm, the dynamite bandit and the shield guard: told,
+ ok  stuck          40077ms  stuck (runtime) OK: 250 spots - a hero held at each one for 11 s is nudged (the hint box shows the line), the 
+ ok  ambient-landmarks  4443ms  ambient-landmarks: ok (51 levels have a deliberate ambient; the Waymeet set is Waymeet's alone)
+ ok  mash-carry       284ms  mash-carry: level-only writes keep the boss/mini rows, boss writes drop the stale level row, 47 cached rows st
+ ok  commitment    213421ms  commitment: ok (243 rows)
+ ok  unburied-look  33593ms  ok  unburied-look  all 11 look checks hold
+ ok  unburied-engines  6667ms  ok  unburied-engines  the mangonel smashes the far bank, the drawbridge is the way in, the gate stays shut
+ ok  steam-works     5098ms  steam-works: 24 checks pass
+ ok  combat-part2   64294ms  combat part 2: flank, mashed guard + riposte, heavy through the guard, whiff punished, squad roles + pincer, v
+FAIL curve-gate      4268ms    marsh: act 1 (THE GREENWOOD): a level-1 knight lost 275% health a run, 3 deaths in 3 runs (band 40-250%, 0-3
+ ok  unburied-aloft  8244ms  ok  unburied-aloft  nothing in the field hangs in the air
+ ok  unburied-bailey 11088ms  ok  unburied-bailey  the bailey's volley is told, cover and the mantlets stop it, a mantlet pushes and is the 
+ ok  fair-folk       9939ms  ok  fair-folk  11 fair foe kinds drawn alive, in their tells, hurt and dead: no goblin sheet and no goblin sil
+ ok  wicker-man     42859ms  ok  wicker-man  the facing rule on its feet, its told fire and arms, struck back by the Queen's rule (held bla
+ ok  moor-rocks     29488ms  moor-rocks OK: 3 heroes, every crevice, crossing, shaft, wind-blow and the frame behave as built.
+ ok  moor-aloft       474ms  moor aloft: 35 grounded things on the new sections all stand on a foothold; 2 decks held up by posts down to r
+ ok  rule-openings  11607ms  rule-openings: ok
+ ok  underwell      30379ms  ok  underwell      the oil burns from a thrown torch, a pour puts it out and wet oil will not catch; the nests
+ ok  underwell-aloft   484ms  underwell-aloft: nothing floats
+ ok  gear-tiers     15282ms  gear-tiers OK: 7 heroes x 5 tiers, every pose, weapon skins untouched, hide + re-bake
+ ok  ui-hud          7473ms  ui-hud ok: the toast queue (3 toasts in order, never over the HUD), status icons (shade, flame stage 3, no wor
+ ok  uiscreens      10573ms  ok  console        no page errors
+ ok  death-screen    6552ms  ok  console        no page errors
+ ok  level-complete  9952ms  ok  way out        "continue" is on the card; no page errors
+ ok  playrec        10705ms  playrec: off by default; one fight logged (frog win, 63 s, 17 hits, 71 taken from 3 moves); F9 = a local file;
+ ok  canal-aloft      474ms  canal-aloft: all held
+ ok  skyroad          667ms  skyroad: all green
+ ok  skyroad-probe  11815ms  skyroad-probe: all green
+ ok  skyroad-aloft    425ms  skyroad-aloft: nothing floats
+ ok  boss-read        213ms  boss-read: ok (turned / auto / beats / wired)
+ ok  glasssea         482ms  ok  glasssea  126 checks: the rule, the beams, the day and the night, the cast, THE GLASS COLOSSUS
+ ok  glasssea-aloft   953ms  ok  glasssea-aloft
+ ok  glasssea-slide 17886ms  ok  glasssea-slide: every hero clears the slide gap with room, and a plain jump does not
+ ok  level-walk-selftest  9381ms  level-walk-selftest: ok
+ ok  ksar-aloft       979ms  ok  ksar-aloft  the Ksar stands on its own kit and nothing hangs in the air
+ ok  ksar             930ms  ksar: 214 checks ok
+ ok  lantern-eater  11851ms  ok  lantern-eater  its four blows told and fired, one new blow a phase and one windup at a time, its keys (the
+ ok  level-reach     7137ms  Level reachability: every level is reachable from a fresh save through the map, every spur steps on from its j
+ ok  rootway          606ms  rootway: all green
+ ok  rootway-probe  16244ms  rootway-probe: all green
+ ok  rootway-aloft    824ms  rootway-aloft: nothing floats
+ ok  caravan          628ms  caravan: all passed
+ ok  caravan-level    460ms  caravan-level: all passed
+ ok  caravan-slides 16070ms  ok  caravan-slides: every hero clears every required dune slide with room, and a plain jump does not
+ ok  caravan-worms  11236ms  ok  caravan-worms: every sandworm in the caravan emerges, is told, lands and can be killed, by every hero
+ ok  minecart         488ms  minecart: 368 checks ok
+ ok  minecart-aloft   370ms  ok  minecart-aloft  the Deep Rails hang from nothing
+FAIL mark-integrity147287ms    undeadmage|markTell: PHANTOM POSE: the windup is drawn the same as the mode before it (0 px differ at most)
+ ok  gate-openers   10780ms  gate-openers (runtime) OK: Kingswood's court gate lifts from its ledge plate fresh, after a death before the p
+ ok  great-hound      400ms  great-hound: never on the chip, hit for real from every side (front x0.4, behind and above whole, open x1.5), 
+ ok  godmode        13972ms  ok  godmode  GOD MODE holds hp + stamina full through hits and a pit, jumps in the air, floats and drops, earn
+ ok  skyroad-stuck 114472ms  skyroad-stuck: all green
+ ok  village-water  10413ms  village-water: the water, the stun and its ward, the bridges and the burning town all hold
+ ok  blow-tags        300ms  blow-tags: ok (39 boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, wo
+ ok  firedrop-plunge  6110ms  firedrop-plunge: ok (the firedrop is a plunge by its tag: the Scarecrow King burns, the Bullfrog King's head c
+ ok  lit-church-aloft  1475ms  ok  lit-church-aloft  the church stands on its own kit and nothing hangs in the air
+ ok  lit-church       541ms  ok  lit-church  330 checks: the spur and the Paladin's price, the Crusader, the rule line, each verb required 
+ ok  towpath          510ms  towpath: 169 checks ok
+ ok  scree-chase    11588ms  ok  scree-chase: the rockslide runs ~175 columns, told, re-armed, and every hero outruns it with real keys dow
+ ok  ram-lord        5614ms  ok  ram-lord: a beast duelist off the chip, guarding by angle; the cliff stuns him (gold, x2), the wall too, a
+ ok  zipline       170848ms  Every hero takes Stormhold's ropes at the top, mid-line from under with UP, and from a jump; rides both ways d
+ ok  owl-swoop      11451ms  the reeve holds: 7 heroes duck under her swoop for nothing and are struck standing, the bough's shadows and th
+ ok  temple-guardian  8148ms  temple-guardian: 59 ok, 0 failed
+ ok  monk-machines   3582ms  monk-machines: 170 ok, 0 failed
+ ok  solid-islands   4339ms  ok  solid-islands  every island of every level has a drawn support or a reasoned allowance
+FAIL no-hidden-hits273700ms  FAIL no-hidden-hits: 1 place(s) where a foe hurt a hero it did not show
+ ok  unburied-secret 22529ms  The Unburied Field is a secret: 8 heroes take all three banners in the real loop; fresh save = dim spot, no pa
+ ok  fonts           4390ms  FONT PAIR ok: Press Start 2P + Silkscreen, local, preloaded, licensed, no monospace, no thin hand
+ ok  hud-default    12247ms  hud-default ok: MINIMAL is the default (a file from before takes it once), the plate HUD is <= 22% for every h
+ ok  map-scale       4747ms  map-scale ok: 50 boards clear of nodes, signs, landmarks and each other; (landmark crown under board undercrow
+ ok  flasks2        51837ms  FLASKS2: 9 store lines (3 hidden) gated right, old saves keep their flasks, finds reachable (flaskshard->130,1
+ ok  titlescene      8969ms  ok  console        no page errors
+ ok  reach-heroes   38348ms  ok  reach-heroes: 7 known crossings, nothing new
+ ok  gargoyle-spikes  6630ms  THE GATE GARGOYLE ON HIS SPIKES: stone everywhere else, every blow on the spikes, a told ward after, and no sl
+ ok  flip-actions   42506ms  TURNED OVER, EVERY HERO KEEPS EVERYTHING: the roll, his own guard, the swing, the heavy, his skill and the plu
+ ok  windcaller-gusts 64442ms  WINDCALLER-GUSTS OK: every hero rides every ledge on the told gust with real keys, and none reaches one withou
+ ok  kraken-reach   23813ms  kraken-reach: every arm, every phase, on reachable drawn road - ok
+ ok  buried-city      639ms  buried-city: 221 checks green
+ ok  buried-city-levers 32848ms  buried-city-levers: 30 pulls green - knight/warden/pyro walk to and pull both levers in all three phases (and 
+ ok  survival       15777ms  SURVIVAL: hazards 27/100 (armoured 27/100), water 27, both hand back; the exam kills and is told; 3 exam span(
+ ok  fire-room      47812ms  ok  fire-room  7 heroes: 2 s of grace untouched, then 25 s of the fire room flown by the keys - never caught b
+ ok  archmage-interrupt  5457ms  ok: an interrupted cast clears its overlay the same frame
+ ok  fallingtower2    579ms  ok  fallingtower2  the collapse chases (fuse 1.4 s; debris told 1.1 s, ahead of you, off in a fight); the libr
+ ok  fallingtower2-keys 44120ms  ok  fallingtower2-keys  7 heroes, real keys: the telescope (board it low, off it high), the outer face plank t
+ ok  walk-controls  36599ms  walk-controls: ok
+ ok  whatsnew        5372ms  ok  whatsnew       row with the date + dot, opens, dot clears and stays cleared, scrolls inside the panel, ESC
+ ok  ki-follow      11406ms  ki-follow: pure, page - all hold
+ ok  damage-pct     17815ms  damage-pct: pure, gain, weight, boss, read - all hold
+ ok  damage-caps    15775ms  damage-caps ok: 8 caps hold under the chain, the riposte opening, a broken foe and a x2 talent blow
+ ok  online-coop    71605ms  online-coop: OK - joined by code, frames crisp at 2x, guest keys + touch drive player two (own bindings, focus
+ ok  minecart-route 13812ms  knight: rode it
+ ok  save-safety     4231ms  ok  B page         CORRUPT / NEWER SAVE in the picker, FIX IT (restore, back), erase asks and keeps a copy, th
+ ok  bug-report      7439ms  ok  C limits      952 chars after a flood of 40 long errors and a 500-character note; a cut code or no code is
+ ok  ending         10203ms  ok  ending         solo and co-op: the Mage's Folly is a plain win; the last level of the road shows END OF TH
+ ok  ship-fixes       214ms  ok  5 build line   BATCH n - DATE from docs/updates.json, plus the short sha when stamped
+ ok  deploy-surface  1596ms  ok  deploy surface: 1159 files deployed, 5175 hidden; fetched by name: audio/manifest.json, tools/fixtures/cam
+ ok  sealed-pyramid   574ms  ok  sealed-pyramid: 82 checks
+ ok  lab-order     107345ms  lab-order: 5 seeded rows are the same alone and after a 4-fight batch in the same page.
+ ok  pixels         53563ms  47 levels, 2991 sprites. nothing in the air, through the ground or out of the water.
+ ok  slopes-trace   12739ms  slopes-trace: every frame of every level identical to the pre-slopes build
+ ok  textfit        91879ms  0 pictures in C:\Users\danie\Documents\Codex\2026-10-13\https-usefountain-slack-com-archives-d05sc1rm2ud\brack
+FAIL textfit-full  180360ms  19 pictures in C:\Users\danie\Documents\Codex\2026-10-13\https-usefountain-slack-com-archives-d05sc1rm2ud\brac
+ ok  map-footer      4094ms  map-footer ok: 4 footer variants, every label clear of the others (gap >= 8 px)
+ ok  soundtest       5211ms  ok  soundtest  a fresh or old save opens with only the title theme and stage-select unlocked, every other song
+ ok  canal-tunnel-route 76316ms  ok  canal-tunnel-route: every hero, every seed, stray and ride, reached Jenny's arena from the summit with rea
+ ok  profile-cleanup457638ms  [{"name":"normal","exit":0,"ready":true,"left":0,"othersInUse":0,"serverGone":true},{"name":"failure","exit":1
+ ok  profile-leaks   3419ms  {"temp":"C:\\Users\\danie\\AppData\\Local\\Temp","dryRun":false,"idleMin":30,"found":0,"deleted":0,"bytes":0,"
+
+---- archmage-folly ----
+  ok   THE FLOOD: a stack comes down over you, told (crushTell, 0.9 s)
+  ok   stood under it, a shield does not help: 27
+  ok   out from under it in the tell, it misses: 0
+  ok   THE ORRERY: the flying books come off the wall at you, told (booksTell, from 180 px)
+  ok   stood in their way, they land: 13
+  ok   and the shield turns them: 0 through a guard
+  ok   on the floor the pair is answered by the free side
+  ok   TURNED OVER: a glyph opens on the ceiling under you, told (glyphTell)
+  ok   stood on it, it takes you: the room rights itself for you (1.58 s)
+  ok   and turns you over again a breath later, back to the ceiling (after 101 frames) - never a fall to your death
+  ok   mid-jump over it, it takes you all the same
+  ok   stepped off it in the tell, it misses
+  ok   an opening blow is worth x3 again (openMul 3; the x4 of claude/followups is reverted)
+  ok   the duel still reseals in 6 s, so it still teaches (5.72 s)
+  ok   at his ward a portal opens, told (1 s), and one apprentice steps out of it (1)
+  ok   his apprentice has an apprentice's health (34 in EHP, 67 on this level's own), no more: [67,67,67,67]
+  ok   a new stage at 30%: at 33% he is still turning the room over (stage 2), at 30% it is stage 3
+  ok   THE MIRRORS: the room put right, and two images of him (2)
+  ok   they cast with him, and only his is coloured: his #ffd36b, theirs ["#a8a4b4","#a8a4b4"], their marks ["#a8a4b4","#a8a4b4"]
+  ok   their spells are harmless (0 stood in one, 43 px from his), his is not (19)
+  ok   a blow on an image breaks it (1 left)
+  ok   and it is back at his next ward (2)
+  ok   each ward, one apprentice through a told portal (1 s, 1)
+  ok   in the mirrors the ward reseals in 4 s (3.72 s)
+  ok   never a second apprentice while the first stands (1), the next one only when he is down (1); most ever at once: 1
+  ok   open in the mirrors, a blow is x3 too, and shut it is a chip: 30 against 0
+  ok   no page errors
+  ok   the page threw nothing: []
+
+1 FAILED
+
+---- mobile-perf ----
+boot: BK up at 22.4 s (title 22.4 s) under 4x CPU throttle
+boot main-thread busy: 21421 ms
+boot steps (ms): modules 203, hero 1061, art1 535, art2 1741, art3 553, art4 574, art5 683, art6 336, art7 664, art8 547, art9 256, sub 2752, sub 92, sub 60, sub 35, sub 5, sub 5, tiles 0, sub 22, sub 88, sub 237, sub 70, sub 139, props 490, sky 723, misc1 925, misc2 1207, misc3 3280, l_build 588, sub 64, sub 29, sub 63, sub 29, sub 6, sub 6, l_bake 0, sub 21, sub 69, sub 237, sub 61, sub 83, l_bake 316, l_bake 409, l_deep 201, l_rest 1573, final 140
+page: {"coarse":true,"dpr":2.625,"cv":"1201x541","set":{"parallax":"near","touchInit":1}}
+structure: {"mp":0.649741,"tl":true,"tlw":2402,"pre":445,"desync":true}
+  title     {"scene":"title","fps":56.4,"p95":18.1,"worst":18.6,"busyMsPerFrame":5.3,"scriptMs":4.3}
+  map       {"scene":"map","fps":56.1,"p95":18.1,"worst":18.6,"busyMsPerFrame":9.1,"scriptMs":8.2}
+  wood      {"scene":"wood","fps":56.1,"p95":18.1,"worst":18.5,"busyMsPerFrame":11.5,"scriptMs":10.7}
+  welltown  {"scene":"welltown","fps":55.9,"p95":18.1,"worst":18.5,"busyMsPerFrame":13.5,"scriptMs":12.6}
+  redgorge  {"scene":"redgorge","fps":47.1,"p95":18.2,"worst":642.8,"busyMsPerFrame":16.9,"scriptMs":15.6}
+input: {"firstMs":175,"stickMs":0.7}
+FAIL redgorge had a 642.8 ms frame (budget 600)
+
+---- curve-gate ----
+curve-gate FAIL:
+  wood: act 1 (THE GREENWOOD): a level-1 knight lost 215% health a run, 5 deaths in 3 runs (band 40-250%, 0-3 deaths) - 5 deaths (act 1 wants <= 3) - out of its act band and not on CURVE_REPORT_ONLY
+  marsh: act 1 (THE GREENWOOD): a level-1 knight lost 275% health a run, 3 deaths in 3 runs (band 40-250%, 0-3 deaths) - A WALL for act 1 (health lost 275% > 250) - out of its act band and not on CURVE_REPORT_ONLY
+
+---- mark-integrity ----
+boss colossus       colossus|stompTell            !!  seen 2, landed 2, posed 2/2 (px 313-314)
+boss colossus       colossus|sweepTell            !!  seen 2, landed 2, posed 2/2 (px 636-988)
+boss colossus       colossus|shardTell            !   seen 2, landed 2, posed 2/2 (px 278-921)
+boss hawkmistress   hawkmistress|lashTell         !!  seen 4, landed 4, posed 4/4 (px 563-595)
+boss hawkmistress   hawkmistress|cutTell          !   seen 3, landed 3, posed 3/3 (px 343-344)
+boss hawkmistress   hawkmistress|snareTell        !!  seen 2, landed 2, posed 2/2 (px 582-589)
+boss hawkmistress   hawkmistress|rakeTell         !   seen 3, landed 1, posed 3/3 (px 520-529)
+boss hawkmistress   hawkmistress|spotTell         !   seen 1, landed 1, posed 1/1 (px 531-531)
+boss hawkmistress   hawkmistress|markLashTell     !!  seen 1, landed 1, posed 1/1 (px 760-760)
+boss huntmaster     huntmaster|aimTell            !   seen 2, landed 2, posed 2/2 (px 380-672)
+boss huntmaster     huntmaster|netTell            !!  seen 2, landed 2, posed 2/2 (px 356-378)
+boss huntmaster     huntmaster|heavyTell          !!  seen 2, landed 2, posed 2/2 (px 526-554)
+boss huntmaster     huntmaster|volleyTell         !   seen 2, landed 2, posed 2/2 (px 467-658)
+boss huntmaster     huntmaster|flurryTell         !   seen 1, landed 1, posed 1/1 (px 580-580)
+mini brute          (no marked windup seen in 40 s)
+boss greatdrill     (no marked windup seen in 40 s)
+boss paladinboss    paladinboss|chainTell         !   seen 9, landed 9, posed 9/9 (px 84-569)
+boss paladinboss    paladinboss|chainBeatTell     !   seen 9, landed 9, posed 9/9 (px 25-182)
+boss paladinboss    paladinboss|bashTell          !   seen 3, landed 3, posed 3/3 (px 155-164)
+boss fogknight      fogknight|cutTell             !   seen 5, landed 5, posed 5/5 (px 50-91)
+boss fogknight      fogknight|lungeTell           !!  seen 3, landed 3, posed 3/3 (px 63-81)
+boss hourglassking  hourglassking|pendTell        !   seen 7, landed 7, posed 7/7 (px 276-363)
+boss hourglassking  hourglassking|gearTell        !!  seen 5, landed 3, posed 5/5 (px 219-225)
+boss hourglassking  hourglassking|streamTell      !!  seen 4, landed 4, posed 4/4 (px 754-784)
+boss scarabmother   scarabmother|chargeTell       !!  seen 4, landed 4, posed 4/4 (px 1534-1753)
+boss scarabmother   scarabmother|snapTell         !   seen 2, landed 2, posed 2/2 (px 1558-1562)
+boss scarabmother   scarabmother|spitTell         !   seen 2, landed 2, posed 2/2 (px 1458-1510)
+
+1 PHANTOM(S):
+  undeadmage|markTell: PHANTOM POSE: the windup is drawn the same as the mode before it (0 px differ at most)
+
+---- no-hidden-hits ----
+ok   burning        8/53 foes sampled, 23 blows
+ok   witchlight     8/66 foes sampled, 23 blows
+ok   oreroad        8/68 foes sampled, 9 blows
+ok   unburied       8/54 foes sampled, 34 blows
+ok   caravan        8/39 foes sampled, 11 blows
+ok   custom         0/0 foes sampled, 0 blows
+ok   trial_warden   8/9 foes sampled, 0 blows
+ok   trial_geomancer 8/8 foes sampled, 0 blows
+ok   trial_berserker 8/15 foes sampled, 0 blows
+ok   fair           8/39 foes sampled, 7 blows
+ok   theatre        7/50 foes sampled, 3 blows
+ok   canal          8/50 foes sampled, 9 blows
+ok   welltown       8/55 foes sampled, 8 blows
+ok   shopWell       0/0 foes sampled, 0 blows
+ok   redgorge       8/46 foes sampled, 8 blows
+ok   underwell      7/64 foes sampled, 4 blows
+ok   skyroad        8/27 foes sampled, 2 blows
+ok   glasssea       8/51 foes sampled, 6 blows
+ok   ksar           8/72 foes sampled, 8 blows, 1 ranged note(s)
+ok   rootway        7/52 foes sampled, 43 blows
+ok   minecart       5/27 foes sampled, 1 blows
+ok   church         8/20 foes sampled, 8 blows
+HIDE towpath        8/17 foes sampled, 9 blows
+       towpath - gaffer/bargeman (haft) at 172.5,43: a blow with nothing drawn (2 px moved, max 114), 20 px from the hero
+ok   buriedcity     8/31 foes sampled, 9 blows, 1 ranged note(s)
+ok   sealedpyramid  8/29 foes sampled, 57 blows
+ok   canal legging tunnel, lantern LIT: 82 blows over 336 s, barge reached col 339, 1 ranged note(s)
+   note canal tunnel (lantern LIT) - archer/watchman (undefined) at 331.5,15: a ranged blow from an undrawn shooter (0 px, 165 px away)
+ok   canal legging tunnel, lantern DIMMED: 80 blows over 336 s, barge reached col 339
+FAIL no-hidden-hits: 1 place(s) where a foe hurt a hero it did not show
+
+---- textfit-full ----
+  scope settings         149 screens  6.1s
+  scope boss            1710 screens  92.8s
+  scope soundtest        125 screens  4.0s
+  scope credits           17 screens  1.7s
+  scope whatsnew           3 screens  6.2s
+  scope hud               30 screens  4.6s
+  scope talk[pyro]       772 screens  62.4s
+  scope bossfix          225 screens  20.1s
+  scope talk[paladin]    772 screens  66.7s
+  scope talk[pirate]     772 screens  64.0s
+  scope talk[reaper]     772 screens  68.8s
+
+== OFFSCREEN (1)
+  main.js:32031   coophelp page 2                                              "USED TWICE IS FLAGGED RED."
+
+== COVERS (2)
+  main.js:31743   talk fallingtower sign@34,300 [knight] page 1/1              "CRACKED STONE COUNTS DOWN UNDER YOU - 3, 2, 1 - AND" lines 3
+  main.js:31743   talk fair sign@405,12 [knight] page 1/1                      "THE HAYLOFT. SHOW 12 TICKETS." lines 2
+
+== COLLIDE (4)
+  main.js:32031   coophelp page 2                                              "SETTINGS > CONTROLS > REBIND KEYS: ONE PAGE EACH FOR" x "LEFT/RIGHT page   Z next   ESC close" (main.js:32031)
+  main.js:31750   boss fight hanging mini                                      "THE WEAVER" x "!!" (main.js:32022)
+  main.js:11071   boss fight hurricane arena                                   "HER AFT GUN IS WORKING AT ITS LASHINGS" x "FELLED BY A TRAP" (main.js:32111)  (x8)
+  main.js:11071   boss fight hurricane arena                                   "HER GUN IS LOOSE! WHEN SHE HEELS, IT RUNS" x "FELLED BY A TRAP" (main.js:32111)  (x6)
+
+== OVERDRAWN (1)
+  main.js:31750   boss fight hanging mini                                      "THE WEAVER"  (x4)
+
+9855 screens drawn, 106230 strings measured, 176s. OVERFLOW 0  OFFSCREEN 1  CLIPPED 0  TRUNCATED 0  COVERS 2  COLLIDE 4  OVERDRAWN 1  LONGHINT 0  SMUDGE 0  ERROR 0
+19 pictures in C:\Users\danie\Documents\Codex\2026-10-13\https-usefountain-slack-com-archives-d05sc1rm2ud\bracken-suitespeed\audits\readability\textfit
+
+6 check(s) failed.
+SUITE_WALL_MS=4321843 EXIT_CODE=1 HEAD=e8c60f8b

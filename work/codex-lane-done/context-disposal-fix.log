@@ -1,0 +1,18 @@
+ ok  syntax            264ms  1 files parse
+ ok  unburied-bailey  11753ms  ok  unburied-bailey  the bailey's volley is told, cover and the mantlets stop it, a mantlet pushes and is the 
+
+---- syntax ----
+
+
+---- unburied-bailey ----
+  ok   1 told      horn for 1.80 s, then 1 hit in the open
+    ok   2 cover     behind the shields: 1 turned, 0 hit; behind the mantlet: 1 turned, 0 hit; a guard in the open: 1 hit (the guard does not turn it)
+    ok   3 push      the mantlet went 206 px east in 12 s, 0 hits on the hero pushing it
+    ok   4 a step    with the mantlet at its foot the hero is over ({"best":533.29,"x":6256.350000000011,"y":608}); without it he is not ({"best":557.29,"x":6139,"y":608})
+    ok   5 the dead  a zombie in the open: 1 volley on it, hp 70 -> 57
+    ok   6 glint     the guide: ub-mantlet-a, 1 nudge: "A WHEELED MANTLET IN THE MUD: THE BOWS CANNOT SEE THROUGH IT"
+  
+  ok  unburied-bailey  the bailey's volley is told, cover and the mantlets stop it, a mantlet pushes and is the step, the dead are hit, the mantlet is named
+
+2 of 372 checks pass - A SUBSET (unburied-bailey, check-context-selftest), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.
