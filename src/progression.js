@@ -176,6 +176,13 @@ export function validateProgress(p){
  if(p.progressionVersion && p.progressionVersion>PROGRESSION_VERSION)throw Error('This save needs a newer version of BRACKEN.');
  for(const k of ['coins','silverSpent'])if(p[k]!==undefined&&(!Number.isFinite(p[k])||p[k]<0))throw Error('Invalid '+k+'. Original save retained.');
  for(const k of ['xp','done','talents','skillOwned','loadouts','heroes','items','card','cardFree','skillRank'])if(p[k]!==undefined&&!object(p[k]))throw Error('Invalid '+k+'. Original save retained.');
+ if(p.bossRecords!==undefined){
+  if(!object(p.bossRecords))throw Error('Invalid boss records. Original save retained.');
+  for(const heroes of Object.values(p.bossRecords)){
+   if(!object(heroes))throw Error('Invalid boss record heroes. Original save retained.');
+   for(const record of Object.values(heroes))if(!object(record)||!Number.isFinite(record.best)||record.best<=0||typeof record.noHit!=='boolean')throw Error('Invalid boss record. Original save retained.');
+  }
+ }
  for(const [h,c] of Object.entries(p.card||{})){if(!object(c))throw Error('Invalid card: '+h);for(const k of ['v','e','m'])if(c[k]!==undefined&&(!Number.isInteger(c[k])||c[k]<0||c[k]>CARD_CAP))throw Error('Invalid card pick: '+h);if(c.ms!==undefined&&!object(c.ms))throw Error('Invalid card milestones: '+h);}
  for(const v of Object.values(p.xp||{}))if(!Number.isFinite(v)||v<0)throw Error('Invalid XP. Original save retained.');
  for(const [h,v] of Object.entries(p.skillOwned||{})){if(!object(v))throw Error('Invalid skill ownership: '+h);for(const [id,on] of Object.entries(v))if(on!==true||!skillFor(h,id))throw Error('Invalid owned skill: '+id);}
@@ -196,9 +203,9 @@ export function trimSlots(p){if(!object(p)||!object(p.loadouts))return false;let
 export function migrateProgress(raw, campaignIds=[]){
  const source=raw===null?'{}':raw;let parsed;try{parsed=JSON.parse(source);}catch{throw Error('Unreadable save. Original save retained.');}
  trimSlots(parsed);validateProgress(parsed);const p=clone(parsed);
- if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
+ if(p.progressionVersion===PROGRESSION_VERSION){normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);p.bossRecords=p.bossRecords||{};return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:false};}
  if(!(p.progressionVersion>=1))talentsToSkills(p,parsed,source,campaignIds);
- passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);
+ passivesToLevels(p,source);normalizeDeathCost(p);retireRelics(p);migrateHeroes(p);migrateCard(p);p.bossRecords=p.bossRecords||{};
  validateProgress(p);return {progress:p,receipt:p.progressionReceipt,passiveReceipt:p.passiveReceipt,changed:true};
 }
 /* VERSION 0 TO 1: the talent trees became bought skills (the step every version-0 save still takes first). */

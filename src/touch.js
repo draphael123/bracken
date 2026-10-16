@@ -40,13 +40,14 @@ const FONT = '"Silkscreen", "Press Start 2P"';   /* the body face of the strict 
 /* states where a tap anywhere means "go on" (a card, a line of talk, a result): there is nothing to aim at */
 const TAP_ANY = new Set(['talk', 'intro', 'win', 'victory', 'gameover', 'rushover', 'rushwin', 'credits', 'whatsnew', 'coophelp', 'herocard']);
 /* states where a held stick direction repeats like a held key (the lists that do not repeat themselves) */
-const REPEAT = new Set(['menu', 'store', 'title', 'slots', 'bestiary', 'soundtest', 'heropick', 'coop', 'practice', 'controls', 'rebind']);
+const REPEAT = new Set(['menu', 'store', 'title', 'slots', 'bestiary', 'soundtest', 'heropick', 'coop', 'practice', 'bossselect', 'controls', 'rebind']);
 /* what the pill buttons say in a state with no play buttons: [the press, the label] - the first is the main one */
 const ACTIONS = {
   map: [['confirm', 'ENTER'], ['dodge', 'STORE'], ['atk', 'BEASTS'], ['map', 'LEVELS'], ['throw', 'CO-OP'], ['skill2', 'ONLINE']],   /* (ONLINE CO-OP: opens the online board, as G does) */
   slots: [['confirm', 'PLAY'], ['atk', 'ERASE']],
   store: [['confirm', 'SELECT'], ['atk', 'MORE']],
   bestiary: [['confirm', 'MORE'], ['throw', 'REFIGHT']],
+  bossselect: [['confirm', 'FIGHT']],
   coop: [['confirm', 'OK'], ['atk', 'ALLY']],
   title: [],   // the rows are the buttons: a tap picks and goes in
 };

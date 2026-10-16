@@ -1,4 +1,5 @@
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
+import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, abbotFrame, abbotOpen, abbotTake, abbotBellRung } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
@@ -323,6 +324,7 @@ const coopShownAlly = () => coopWant ? !!coopWant.ally : !!(players && players[1
 const coopLent = h => coop() && h !== players[0].hero && players.some(p => p !== players[0] && p.hero === h);
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
 let bossJumpOn = false;   /* THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md): once a page has jumped into a fight it never writes a save - see saveProgress */
+let bossSelectFight = null;   /* a Boss Select fight shares the boss-jump save lock; only its guarded record writer may update the slot */
 const slotKey = i => 'bracken.progress.' + i;
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
 /* A SAVE IS NEVER LOST IN SILENCE (claude/shipfix; src/save-safety.js). slotHealthOf: a slot's text judged - empty / ok / newer / corrupt - memoised on the text. */
@@ -4017,7 +4019,7 @@ function shrineLights(s, px, py, swim) {
   for (let ty = Math.floor((py - 8) / TS); ty < Math.floor(s.y / TS); ty++) if (isSolid(tx, ty)) return false;
   return (L.pools || []).some(p => p.swim && !p.dry && s.x >= p.x0 && s.x <= p.x1 && py - 8 >= p.y);
 }
-function respawn() { lifeN++; CM.clearCommit(P); P.windRide = null; P.galeRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
+function respawn() { if (bossSelectFight) bossSelectFight.began = false; lifeN++; CM.clearCommit(P); P.windRide = null; P.galeRide = null; P.martyrUsed = false; P.airRolled = false; if (tal('phoenixTrail')) P.phoenixUsed = false;
   if (flight || P.fly) { P.fly = false; flight = null; }
   setView('normal'); applyUpgrades();
   Object.assign(P, { x: checkpoint.x, y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, atk: -1, plunge: false, pinning: null, perch: 0, runThrough: false, onMover: null, wheelT: 0, sdN: 0, springT: 0, stretchT: 0, javThrowT: 0, disarmT: 0, ironT: 0, realmT: 0, kPoseT: 0, flasks: SV.deathRefill(P.flasks, SV.flaskMax(PROG)), drinkT: 0, breakT: 0, examIn: null, face: 1, block: false, dodge: 0, deflectT: 0, deflectRec: 0, throwCd: 0, slamCd: 0, riseT: 0, riseUsed: false, torch: 0 }); wisp = null; phalanx = [];
@@ -4203,7 +4205,7 @@ let levelXp = 0, xpRun = 0, xpBoost = 0, lvAtStart = 0, lvUpT = 0, lvUpN = 0, lv
 const LEVEL_DEPTH = depthsOf(LEVELS.filter(l => !l.hidden || l.secret));
 const expectedLv = () => LEVEL_DEPTH[curId()] || 0;
 const catchingUp = () => xpWood() && heroXp() < xpFloor(expectedLv());
-const xpWood = () => !!L && !rushOn() && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
+const xpWood = () => !!L && !rushOn() && !bossSelectFight && !L.trial && !L.shop && !edTesting && !!LEVELS[levelIndex] && (!LEVELS[levelIndex].hidden || !!LEVELS[levelIndex].secret);
 function xpGot(id) { const h = hero(); PROG.xpGot = PROG.xpGot || {}; const m = (PROG.xpGot[h] = PROG.xpGot[h] || {}); return (m[id] = m[id] || {}); }
 /* WHAT THE WOOD HOLDS: every placed foe that is not its mini or its boss, and every ambusher. The share and the quest are fractions of it */
 function woodXp() { const tier = xpTierOf(curId());   /* (LEVELING: the elite's x5 is in what the wood holds - the share, the quest and the sim never counted it) */
@@ -4571,6 +4573,7 @@ function mapPanelJump() { const vis = mapPanelIdx(); const i = vis[mapPanel.sel]
   const a = PATH[NODE_AT[map.node]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55));
   SFX.uiSel(); }
 function updateMapPanel(dt) {
+  if (rightPress) { bossSelectOpen('map'); return; }
   /* HOLD TO SCROLL: a press moves one row; held, it repeats after 0.35 s, eight rows a second (the list is ~40 rows) */
   const held = keys.up ? -1 : keys.down ? 1 : 0;
   if (upPress) { mapPanelMove(-1); mapPanel.rep = 0.35; } else if (downPress) { mapPanelMove(1); mapPanel.rep = 0.35; }
@@ -4591,6 +4594,8 @@ function drawMapPanel() {
   panel(x0, y0, MAP_PANEL_W, h0, UI.sel, 'parchment');
   g.fillStyle = 'rgba(10,8,16,0.55)'; g.fillRect(x0 + 1, y0 + 1, MAP_PANEL_W - 2, 10);
   text('LEVELS', x0 + 5, y0 + 3, UI.title, 'left', 6);
+  text('BOSSES >', x0 + MAP_PANEL_W - 5, y0 + 3, UI.sel, 'right', 6);
+  TCH.hit(x0 + MAP_PANEL_W - 58, y0 + 1, 54, 10, () => { bossSelectOpen('map'); initAudio(); });
   const vis = mapPanelIdx();
   if (mapPanel.scroll < mapPanel.sel - rows + 1) mapPanel.scroll = mapPanel.sel - rows + 1;   /* a resize/reflow safety net; mapPanelMove keeps this true day to day */
   for (let i = 0; i < rows; i++) { const k = mapPanel.scroll + i; if (k >= vis.length) break;
@@ -5824,7 +5829,7 @@ const SETTING_TIPS = {
   '@TABS': 'LEFT/RIGHT or TAB: change tab',
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
-const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? PAUSE_ITEMS : tabRows(settingsTab, menuFrom);
+const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : PAUSE_ITEMS) : tabRows(settingsTab, menuFrom);
 const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
@@ -5865,6 +5870,7 @@ function menuAdjust(dir) {
 }
 function menuConfirm() {
   const k = menuItems()[menuI];
+  if (k === 'Quit to Boss Select') { bossSelectQuit(); return; }
   if (TCH.confirmRow(k)) { if (k !== 'Edit layout') { applySettings(); saveSettings(); } SFX.ui(); return; }   /* the TOUCH tab's own rows (src/touch.js) */
   if (k === 'Resume') { state = menuFrom; SFX.menuClose(); }
   else if (k === 'Map') { if (menuFrom !== 'play' || !fog) { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { mapOpen('pause'); SFX.uiSel(); } }
@@ -9061,7 +9067,7 @@ function updatePlayer(dt) {
   // The water ends an airborne chain once the downstroke has stopped; treading water must recover wind.
   if (P.ground || (P.swim && !P.plunge)) P.plungeN=0;
   if (P.down > 0) { downedPlayer(dt); return; }   /* DOWN, not dead: he crawls, and his partner can pick him up */
-  if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
+  if (P.dead) { const dw = P.dead; P.dead -= dt; if (dw > 0.6 && P.dead <= 0.6) { dust(P.x - P.face * 10, P.y, 8); SFX.thud(); } if (P.dead <= 0) { if (rushOn()) { rushDied(); } else if (SET.iron && lives <= 0 && !bossSelectFight) { state = 'gameover'; setView('normal'); music.play(menuTrack()); SFX.roar(); } else respawn(); } return; }
   if (P.fly && flight) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); flyPlayer(dt); return; }
   if (P.windRide && !L.winds) P.windRide = null;   /* (a ride never outlives its level) */
   if (P.windRide) { for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6); P.dodge = 0; P.plunge = false; return; }   /* THE WIND HAS HIM (spike-winds.js): it moves him, not his legs */
@@ -10174,13 +10180,13 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
   dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
-  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
+  if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && (L.mini.reverse?P.x < L.mini.trigger && P.x > L.mini.x0+24:P.x > L.mini.trigger && P.x < L.mini.x1 - 24) && (P.ground || (L.mini.swim && P.swim))
-    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
+    && (L.mini.y0 === undefined || (P.y > L.mini.y0 && P.y < L.mini.y1))) { const mb = miniOne(); if (mb) { bossSelectBegin('mini'); miniActive = true; miniIntroT = 1.6; if (mb.t === 'forgemaster') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.forgeHammer(); } if (mb.t === 'greathound') { mb.mode = 'idle'; mb.modeT = 1.2; } if (mb.t === 'scarabmother') { mb.mode = 'wake'; mb.modeT = 1.8; SFX.roar && SFX.roar(); } if (mb.t === 'gravewarden') { mb.mode = 'wake'; mb.modeT = 1.4; SFX.heavy(); SFX.seaBell ? SFX.seaBell() : SFX.clank(); } if (mb.t === 'hedgewarden') { mb.mode = 'wake'; mb.modeT = 1.2; SFX.rattle(); } if (mb.t === 'sexton') { mb.mode = 'wake'; mb.modeT = 1.3; (SFX.seaBell || SFX.golemChime)(); } if (mb.t === 'berserker') { mb.mode = 'wake'; mb.modeT = 0.8; SFX.roar(); } if (mb.t === 'suncatcher' || mb.t === 'golem') { mb.mode = 'wake'; mb.modeT = 1.6; SFX.golemChime(); } if (miniZooms(mb.t)) setView('zoom'); music.play(L.mini.music || 'minicharge'); setWallAt(L.mini.wallL, true, L.mini.floor); arenaShut(L.mini, mb); camLock = { x0: L.mini.x0, x1: L.mini.x1 }; number(mb.x, mb.y - 30, miniName(), '#ffd36b'); ({ greathound: SFX.bark, troll: SFX.snort, spider: SFX.hiss, sailer: SFX.puff, suncatcher: SFX.golemChime, golem: SFX.golemChime }[mb.t] || SFX.roar)(); if (mb.t !== 'suncatcher' && mb.t !== 'golem') SFX.roar(); shakeCam(4); zoomKick(1.08, 0.3); } }
   if (L.arena && boss && boss.alive && !bossActive && (L.arena.reverse?P.x < L.arena.trigger && P.x>L.arena.x0:P.x > L.arena.trigger) && (L.arena.y0 !== undefined ? P.y > L.arena.y0 && P.y <= L.arena.floor + 4 : P.ground && Math.abs(P.y - L.arena.floor) < 48)) bossStart(); // the floor check keeps a tall level's lower tiers from waking the boss
 }
 
@@ -10191,7 +10197,7 @@ const rushUnlocked = () => godMode() || !!q.get('rush') || !!((PROG.crown || {})
    level (6 rows), so the sub-list never changes its shape. titleOpts is true while the sub-list is up; every tool that wants SETTINGS / SOUND TEST / CONTROLS goes through OPTIONS. */
 let titleOpts = false;
 const titleTop = () => { const base = readSlot(slot) ? ['CONTINUE', 'CHOOSE A SAVE'] : ['NEW GAME', 'CHOOSE A SAVE'];
-  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
+  return base.concat(['LOCAL CO-OP', 'ONLINE CO-OP'], rushUnlocked() && !MODES_PARKED ? ['BOSS RUSH'] : [], ['PRACTICE', 'BOSS SELECT'], MODES_PARKED ? [] : ['THE EDITOR'], ["WHAT'S NEW", 'OPTIONS', 'CREDITS']); };
 /* REPORT A BUG (pause menu and title OPTIONS): the facts the code carries - never the save (src/bug-report.js). The board is DOM (src/bug-report-ui.js). */
 function bugSnapshot() {
   const up = WN.getUpdates()[0] || {}, inLv = !!(L && LEVELS[levelIndex]) && (state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || state === 'victory' || (state === 'menu' && menuFrom === 'play')), lv = inLv ? LEVELS[levelIndex] : null, S = {};
@@ -10264,6 +10270,79 @@ function bossJumpGo(row, h) {
     checkpoint = { x: tx * TS + 8, y: (ty + 1) * TS }; respawn(); }
   camX = P.x - VW / 2; camY = P.y - 100;
 }
+let bossSelectFrom = 'title', bossSelectI = 0, bossSelectHero = 'knight', bossSelectWait = 0;
+const bossSelectList = () => bossSelectRows(bossTable(), PROG);
+const bossSelectHeroes = () => HEROES.filter(h => PROG.heroes?.[h.id]);
+function bossSelectOpen(from = 'title') {
+  if (from === 'title') { loadSlot(slot); applySkin(); applyUpgrades(); }
+  if (coop()) coopEnd(); coopWant = null;   /* single player until the two-door co-op flow is designed */
+  bossSelectFrom = from; bossSelectI = 0; bossSelectWait = 0; bossSelectHero = PROG.heroes?.[hero()] ? hero() : (bossSelectHeroes()[0]?.id || 'knight');
+  state = 'bossselect'; music.play(menuTrack()); SFX.uiSel();
+}
+function bossSelectBegin(kind) {
+  if (!bossSelectFight || bossSelectFight.row.kind !== kind || bossSelectFight.began) return;
+  bossSelectFight.began = true; bossSelectFight.at = levelTime;
+  bossSelectFight.hits = hitsTaken; bossSelectFight.deaths = deaths;
+}
+function bossSelectRecord() {
+  const f = bossSelectFight; if (!f || !bossJumpOn || !f.began || f.slot !== slot) return;
+  f.began = false;
+  const seconds = Math.max(1 / 60, levelTime - f.at), noHit = hitsTaken === f.hits && deaths === f.deaths && !SET.invincible;
+  const raw = slotRaw(slot); if (!raw || slotHealthOf(slot).state !== 'ok') return;
+  let saved; try { saved = JSON.parse(raw); } catch { return; }
+  const records = saved.bossRecords = saved.bossRecords || {}, heroes = records[bossKey(f.row)] = records[bossKey(f.row)] || {};
+  const next = bossRecordNext(heroes[f.hero], seconds, noHit); if (!next) return;
+  heroes[f.hero] = next;
+  let result; try { result = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(saved), slotKeys()); } catch { result = { ok: false }; }
+  saveWritten(result); if (result.ok) PROG.bossRecords = structuredClone(records);
+}
+function bossSelectStart() {
+  const row = bossSelectList()[bossSelectI], h = bossSelectHero;
+  if (!row?.beaten || !PROG.heroes?.[h]) { SFX.buzz(); return false; }
+  bossSelectFight = { row: row.source, hero: h, slot, began: false };
+  const ok = bossJump(row.source.kind === 'mini' ? row.source.level + ':mini' : row.source.t, h);
+  if (!ok) { bossSelectFight = null; SFX.buzz(); return false; }
+  SFX.uiSel(); return true;
+}
+function bossSelectQuit() {
+  if (!bossSelectFight) return;
+  bossSelectFight = null; loadSlot(slot); bossJumpOn = false; applySkin(); applyUpgrades();
+  setView('normal'); state = 'bossselect'; music.play(menuTrack()); SFX.menuClose();
+}
+function updateBossSelect() {
+  if (pausePress || atkPress) { state = bossSelectFrom; SFX.menuClose(); return; }
+  if (!bjTable) { if (bossSelectWait++ >= 2) bossTable(); return; }
+  const rows = bossSelectList(), heroes = bossSelectHeroes(), n = rows.length;
+  if (upPress) { bossSelectI = (bossSelectI + n - 1) % n; SFX.ui(); }
+  if (downPress) { bossSelectI = (bossSelectI + 1) % n; SFX.ui(); }
+  if ((leftPress || rightPress) && heroes.length) { const i = heroes.findIndex(h => h.id === bossSelectHero), dir = rightPress ? 1 : -1; bossSelectHero = heroes[(i + dir + heroes.length) % heroes.length].id; SFX.ui(); }
+  if (confirmPress) bossSelectStart();
+}
+function drawBossSelect() {
+  g.fillStyle = 'rgba(10,14,12,0.82)'; g.fillRect(0, 0, VW, VH);
+  const x = 16, y = 6, w = VW - 32, h = VH - 12; panel(x, y, w, h, UI.border, 'iron');
+  text('BOSS SELECT', VW / 2, y + 6, UI.title, 'center', TYPE.head);
+  if (!bjTable) { text('LISTING THE BOSSES', VW / 2, VH / 2, UI.dim, 'center'); return; }
+  const rows = bossSelectList(), n = rows.length, shown = 9, start = Math.max(0, Math.min(Math.max(0, n - shown), bossSelectI - 4));
+  for (let i = start; i < Math.min(n, start + shown); i++) {
+    const r = rows[i], yy = y + 21 + (i - start) * 12, sel = i === bossSelectI;
+    if (sel) { g.fillStyle = 'rgba(143,209,96,0.16)'; g.fillRect(x + 5, yy - 2, w - 10, 11); text('>', x + 8, yy, UI.sel, 'left', 6); }
+    TCH.hit(x + 5, yy - 2, w - 10, 11, () => { bossSelectI = i; confirmPress = true; initAudio(); });
+    const groupStart = i === 0 || rows[i - 1].act !== r.act;
+    if (groupStart) { g.fillStyle = 'rgba(201,178,124,0.35)'; g.fillRect(x + 7, yy - 3, w - 14, 1); }
+    text(groupStart ? String(r.act) : ' ', x + 16, yy, groupStart ? UI.gold : UI.dim, 'left', 6);
+    text(r.beaten ? fitText(r.name, 158, 6) : '???', x + 29, yy, r.beaten ? (sel ? UI.title : UI.text) : '#666c70', 'left', 6);
+    if (!r.beaten) { g.fillStyle = '#4d5051'; g.fillRect(x + w - 26, yy - 1, 5, 4); g.fillRect(x + w - 29, yy + 3, 11, 3); g.fillRect(x + w - 27, yy + 6, 3, 2); g.fillRect(x + w - 22, yy + 6, 3, 2); }
+    else { const rec = PROG.bossRecords?.[r.key]?.[bossSelectHero]; if (rec) text(fmt(rec.best) + (rec.noHit ? ' *' : ''), x + w - 8, yy, UI.gold, 'right', 6); }
+  }
+  const r = rows[bossSelectI], hd = HEROES.find(q => q.id === bossSelectHero);
+  text((bossSelectI + 1) + '/' + n + '  ' + (r?.actName || ''), x + 8, y + h - 38, UI.dim, 'left', 6);
+  text('HERO  <  ' + fitText(hd?.name || bossSelectHero.toUpperCase(), 108, 6) + '  >', VW / 2, y + h - 29, UI.sel, 'center', 6);
+  TCH.hit(x + 20, y + h - 32, w / 2 - 20, 12, () => { leftPress = true; initAudio(); });
+  TCH.hit(x + w / 2, y + h - 32, w / 2 - 20, 12, () => { rightPress = true; initAudio(); });
+  text(r?.beaten ? 'Z FIGHT   * NO HIT' : 'LOCKED UNTIL BEATEN', VW / 2, y + h - 19, r?.beaten ? UI.text : UI.dim, 'center', 6);
+  text(touchOn ? 'TAP A ROW   BACK TO LEAVE' : 'ARROWS PICK   ESC BACK', VW / 2, y + h - 10, UI.dim, 'center', 6);
+}
 /* &campaign=1 (claude/levelpilot): the hero as a player ARRIVING at the level - its campaign level, the typical build, the smith's gear of the levels before it, tonics and a charm
    (src/campaign-kit.js, the SAME kit tools/level-walk.mjs gives its walker). In memory only, behind the same bossJumpOn guard; the page is a few frames in coming up (it reads
    tools/fixtures/campaign-xp.json; missing, the level falls back to its depth) - BK.campaignTag is '' until the hero stands there. */
@@ -10328,6 +10407,7 @@ const miniOne = () => L.mini ? enemies.find(e => e.alive && e.t === L.mini.boss 
 // A mini dies: the wall it closed behind you opens, and so does the gate it was standing in front of.
 function miniEnd(e) {
   if (!L.mini) return;
+  if (bossSelectFight && bossSelectFight.row.kind === 'mini' && bossSelectFight.row.t === e?.t) bossSelectRecord();
   if(e?.salvage)for(const s of seeds)if(s.owner===e||s.from===e)s.dead=true;
   if (e) for (let i = 0; i < 4; i++) bossFx.push({ t: 0.06 + i * 0.12, x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * (e.h || 20), big: i === 3 });   /* a shorter run for a named fight */
   if (!L.unburied) openGate(L.mini.gate, 0, LH - 1, true);   /* (the Unburied Field's gate stays shut: the standing tower's drawbridge is the way into the chapel, Daniel 10-03) */
@@ -10360,6 +10440,7 @@ function setWall(col, solid) {
   if (L.arena.boss === 'mother') for (let ty = 0; ty < L.arena.floor / TS - 6; ty++) { const i = ty * LW + col; L.grid[i] = solid ? T.SOLID : T.AIR; tileSpr[i] = solid ? BAR.seal(curId(), ty + col, 'mother') : null; }
 }
 function bossStart() {
+  bossSelectBegin('boss');
   BUG.evlog('boss start: ' + (boss && boss.t));
   bossActive = true; boss.mode = 'wake'; boss.modeT = 1.6; if (boss.t === 'mother') { boss.rootT = 3; boss.belchT = 8; } if (bossZooms(boss.t)) setView('zoom'); camLock = { x0: L.arena.x0, x1: L.arena.x1 }; if (boss.t === 'frog') SFX.croak(); if (boss.t === 'chief') SFX.gobDie(); if (boss.t === 'ram') SFX.bellow();
   setWall(L.arena.wallL, true); setWall(L.arena.wallR, true); arenaShut(L.arena, boss);   /* (claude/colossus3) the level's foes outside the walls are held there */
@@ -10428,6 +10509,8 @@ function queenWinded(e, blocked) {
   shakeCam(4); SFX.thud(); dust(e.x, e.y, 10); number(e.x, e.y - 20, blocked ? 'STAGGERED' : 'WINDED', '#8fd160');
 }
 function queenDies(who) {
+  if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === who?.t) bossSelectRecord();
+  if (!bossJumpOn && !rushOn() && who?.t === L.arena?.boss) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
   SFX.bossDown(); setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
   for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && e.drone) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
@@ -10653,6 +10736,8 @@ function bossEnd(e) {
 }
 // The Chieftain's death is not the end: the hall burns from the floor up and you climb the rafters to the way out.
 function chiefDies() {
+  if (bossSelectFight && bossSelectFight.row.kind === 'boss' && bossSelectFight.row.t === 'chief') bossSelectRecord();
+  if (!bossJumpOn && !rushOn()) { PROG.bossDown = PROG.bossDown || {}; PROG.bossDown[curId()] = true; saveProgress(); }
   SFX.bossDown();
   setView('normal'); bossActive = false; camLock = null; slowT = 1.0; music.play(L.music || 'theme');
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
@@ -28310,6 +28395,7 @@ function update(dt) {
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
+        else if (k === 'BOSS SELECT') bossSelectOpen('title');
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); ONL.open(); }   /* ONLINE CO-OP (src/online.js): its own board - host (the same co-op gate) or join with a code */
         else if (k === 'THE EDITOR') edEnter();
@@ -28357,6 +28443,7 @@ function update(dt) {
   if (state === 'coop') { updateCoopPick(); return; }
   if (state === 'herocard') { if (confirmPress) startTrial(hero()); else if (pausePress) { state = 'menu'; SFX.menuClose(); } return; }
   if (state === 'bossjump') { updateBossJump(); return; }
+  if (state === 'bossselect') { updateBossSelect(); return; }
   if (state === 'whatsnew') { const step = 5;
     if (upPress || leftPress) { wnScroll = Math.max(0, wnScroll - 1); SFX.ui(); } if (downPress || rightPress) { wnScroll = Math.min(wnLimit, wnScroll + 1); SFX.ui(); }
     if (confirmPress) { if (wnScroll >= wnLimit) { state = 'title'; SFX.menuClose(); } else { wnScroll = Math.min(wnLimit, wnScroll + step); SFX.ui(); } }
@@ -28417,7 +28504,7 @@ function update(dt) {
     updateParticles(dt);
     return;
   }
-  if (state === 'win') { for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
@@ -32610,6 +32697,7 @@ function render() {
   if (state === 'credits') drawCredits();
   if (state === 'whatsnew') drawWhatsNew();
   if (state === 'bossjump') drawBossJump();
+  if (state === 'bossselect') drawBossSelect();
   if (state === 'controls') drawControls();
   if (state === 'rebind') CTL.drawRebind(uiCtx(), rebindS, SET.binds);
   if (state === 'coophelp') drawCoopHelp(uiCtx(), coopHelpPage, coopHelpPages());
@@ -32847,6 +32935,7 @@ window.BK = { dk2: () => ({ DK2, bodies, corpses, enemies, box: () => attackBox(
   ramLips: () => (boss && boss.t === 'ram' && L.arena ? RLD.ramState(boss, L.arena).lips : []), ramLip: RLD,   /* (claude/scree2) the fold's overhangs, for the lab's hands and tools/ram-lord.mjs */
   chase: { on: () => chases.length > 0, demo: chaseDemo, get demoOn() { return bossJumpOn && chases.some(c => c.sp.id === 'demo'); }, stairFx: () => stairFx, states: () => chases.map(c => ({ hits: c.st.hits, knocks: c.st.knocks || 0, capI: c.st.capI, id: c.sp.id, phase: c.st.phase, pos: c.st.pos, dist: c.st.dist, speed: c.st.speed, warnT: c.st.warnT, hold: c.st.hold, gap: (chaseHero(c.sp) - c.st.pos) * c.sp.dir, music: c.sp.music })), specs: () => chases.map(c => c.sp), reset: () => { for (const c of chases) chaseReset(c.st); chaseMusicOff(); }, problems: () => chaseProblems(L.chases || [], shrines.map(s => ({ x: s.x, y: s.y })).concat([{ x: L.START.x * TS + 8, y: (L.START.y + 1) * TS }])), get beamCd() { return chaseBeamCd; }, set beamCd(v) { chaseBeamCd = v; } },   /* THE CHASE ENGINE, for tools/chase.mjs */
   bossJump: { table: () => bossTable().map(r => ({ ...r })), go: bossJump, open: bjOpen, get on() { return bossJumpOn; }, get cursor() { return bjI; }, set cursor(v) { bjI = v; }, get hero() { return bjHero; }, set hero(v) { bjHero = v; }, rows: BJ_ROWS },   /* the hidden boss list, for tools/boss-jump.mjs and tools/textfit.mjs */
+  bossSelect: { open: bossSelectOpen, rows: () => bossSelectList().map(({ source, ...view }) => view), start: bossSelectStart, quit: bossSelectQuit, get cursor() { return bossSelectI; }, set cursor(v) { bossSelectI = Math.max(0, Math.min(bossSelectList().length - 1, v | 0)); }, get hero() { return bossSelectHero; }, set hero(v) { bossSelectHero = v; }, get fighting() { return !!bossSelectFight; } },
   rushStart, get rush() { return rush; }, RUSH,   // (the rush, for the harness)
   // THE CURSORS OF EVERY LIST, so the playtest bot can walk the TABS and the ROWS of a screen and not just
   // the screen's first face. Most menu bugs live on the third tab of something.
