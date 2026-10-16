@@ -3305,7 +3305,7 @@ function highcrown() {
       grass: '#8a8a98', grassL: '#a8a8b8', grassD: '#5a5a66', dirt: '#4a4a58', dirtL: '#5e5e6c', dirtD: '#32323c',
       canopy: ['#2a2a38', '#3a3a4a', '#4a4a5c', '#5a5a6e'] },
     weather: [{ x0: 0, x1: 123 * TS, kind: 'snow' }], ambient: [{ x0: 0, x1: 123 * TS, kind: 'wind' }],
-    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'goblinroyal', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
+    arena: { x0: 208 * TS, x1: 251 * TS, floor: 20 * TS, trigger: 224 * TS, wallL: 207, wallR: 252, boss: 'gqueen', music: 'gqueen', tint: '#5a2a7a', tintA: 0.08, fx: 'dust',
       roof: 8 * TS, hole: { x0: 221, x1: 224, y0: 8, y1: 9 }, rubble: [[216, 17, 4], [221, 15, 4], [216, 13, 4], [221, 11, 4], [221, 9, 4]] },
   };
 }
