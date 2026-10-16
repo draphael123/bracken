@@ -391,10 +391,10 @@ export function updateUndeadMage(e, dt, c) {
 const STRIKE_S = 0.35, FOLLOW_S = 0.22;
 const WIND_OF = { fireTell: 'fire', bendTell: 'fire', trapTell: 'fire', wallTell: 'fire', iceTell: 'ice', stormTell: 'storm', markTell: 'storm', poisonTell: 'poison', sporeTell: 'poison', handTell: 'death', boneTell: 'bone', orbitTell: 'orbit', scriptTell: 'rune', pullTell: 'void' };
 export function undeadFrame(e, F) {
-  if (e.hurtT > 0) return F.hurt;
   const rel = { fire: F.fire, ice: F.ice, storm: F.storm, poison: F.poison, death: F.death, bone: F.plant, orbit: F.orbit, rune: F.rune, void: F.void };
   const w = WIND_OF[e.mode];
   if (w) return e.modeT > STRIKE_S ? F.wind[w] : rel[w];
+  if (e.hurtT > 0) return F.hurt;  /* a marked spell keeps its windup pose even when a hit lands during the tell */
   if (e.mode === 'markWait') return F.death; if (e.mode === 'boneWait') return F.plant; if (e.mode === 'orbitWait') return F.orbit;
   if (e.mode === 'hover' && e.spell && WIND_OF[TELL[e.spell]] && MAGE.hover / mageSpeed(e) - e.modeT < FOLLOW_S && e.modeT > 0) return rel[WIND_OF[TELL[e.spell]]];   /* the follow-through: the release held a beat */
   return ({ stepTell: F.blinkOut, decoyTell: F.blinkOut, blinkOut: F.blinkOut, blinkIn: F.blinkIn, gather: F.open, breached: F.open, reflected: F.recoil, scorched: F.open, shattered: F.open, vented: F.open, realmTell: F.blinkOut, wake: F.idle[Math.floor(e.anim * 2.5) % 2] })[e.mode]
