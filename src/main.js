@@ -28872,22 +28872,25 @@ function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
    (p.warn, default THIS WATER DROWNS; the Towpath's pools say THE LOCK WATER DROWNS). Swimmable water keeps its bright crests; this has none of them. tools/lethal-water.mjs lists the pools. */
 function drawDeadWater(p, x0, x1, y, h, cx, cy) {
   const W = x1 - x0, wx0 = cx + x0, deep = Math.max(0, h - 1);
-  g.globalAlpha = 0.66; g.fillStyle = '#04080b'; g.fillRect(x0, y + 1, W, deep); g.globalAlpha = 1;
-  const sk = Math.min(deep, 46), gr = g.createLinearGradient(0, y, 0, y + sk); gr.addColorStop(0, 'rgba(150,176,150,0.34)'); gr.addColorStop(1, 'rgba(40,70,60,0)'); g.fillStyle = gr; g.fillRect(x0, y, W, sk);   /* the sickly tint under the skin */
-  g.globalAlpha = 0.6 + 0.12 * Math.sin(time * 1.3); g.fillStyle = '#b4c4b0'; g.fillRect(x0, y, W, 2); g.fillStyle = '#6d887a'; g.fillRect(x0, y + 2, W, 2); g.globalAlpha = 1;   /* the pale fog-skin */
-  g.fillStyle = '#04080b'; g.fillRect(x0, y + 4, W, 1);
+  g.globalAlpha = 0.86; g.fillStyle = '#03070a'; g.fillRect(x0, y + 1, W, deep); g.globalAlpha = 1;   /* near-black: the fog bank lies over it and must not wash it back to blue */
+  const sk = Math.min(deep, 56), gr = g.createLinearGradient(0, y, 0, y + sk); gr.addColorStop(0, 'rgba(120,170,130,0.5)'); gr.addColorStop(1, 'rgba(30,70,50,0)'); g.fillStyle = gr; g.fillRect(x0, y, W, sk);   /* the sickly green tint under the skin */
+  g.globalAlpha = 0.18 + 0.1 * Math.sin(time * 1.9); g.fillStyle = '#9fe0b0'; g.fillRect(x0, y - 5, W, 5); g.globalAlpha = 1;   /* a sick glow standing on it (it reads from across the lock) */
+  g.globalAlpha = 0.78 + 0.12 * Math.sin(time * 1.3); g.fillStyle = '#d4e2cc'; g.fillRect(x0, y, W, 2); g.fillStyle = '#86a894'; g.fillRect(x0, y + 2, W, 2); g.globalAlpha = 1;   /* the pale fog-skin */
+  g.fillStyle = '#02050a'; g.fillRect(x0, y + 4, W, 2);
+  for (const ex of [p.x0, p.x1]) { const sx = Math.round(ex - cx); if (sx < x0 - 12 || sx > x1 + 12) continue; const dir = ex === p.x0 ? 1 : -1;   /* froth heaped at the gates and the banks */
+    for (let k = 0; k < 7; k++) { const fw = 5 + ((k * 7 + 3) % 5), fx = sx + dir * (k * 3) - (dir < 0 ? fw : 0), fy = y - 2 - (k % 3) + (Math.sin(time * 6 + k * 1.7 + ex) > 0.3 ? 1 : 0); g.fillStyle = k % 2 ? '#f0f6ee' : '#c4d4c4'; g.fillRect(fx, fy, fw, 2); } }
   for (let wx = Math.floor(wx0 / 8) * 8; wx < wx0 + W; wx += 8) {   /* the churn: froth jostling fast, and dark troughs between */
     const sx = Math.round(wx + Math.sin(time * 3.1 + wx * 0.7) * 3 - cx), hs = Math.abs(Math.sin(wx * 12.9898) * 43758.5453) % 1; if (sx < x0 || sx > x1 - 4) continue;
     g.globalAlpha = 0.55 + 0.35 * hs; g.fillStyle = hs > 0.5 ? '#e6efe6' : '#9fb3a6'; const fw = 2 + ((hs * 7) | 0) % 3;
     g.fillRect(sx, y - 1 - (Math.sin(time * 8 + wx) > 0.4 ? 1 : 0), fw, 1 + (hs > 0.7 ? 1 : 0)); if (hs > 0.55) { g.fillStyle = '#0b1a22'; g.fillRect(sx + 1, y + 4, fw + 1, 1); } }
   g.globalAlpha = 1; g.lineWidth = 1;
-  for (let wx = Math.floor(wx0 / 70) * 70 + 35; wx < wx0 + W + 20; wx += 70) {   /* the sucking eddies: rings turning on the surface, drawing in */
+  for (let wx = Math.floor(wx0 / 56) * 56 + 28; wx < wx0 + W + 20; wx += 56) {   /* the sucking eddies: rings turning on the surface, drawing in */
     const sx = Math.round(wx - cx + Math.sin(time * 0.4 + wx) * 6); if (sx < x0 + 6 || sx > x1 - 6) continue; const a = time * 2.6 + wx;
-    g.strokeStyle = 'rgba(214,230,220,0.62)'; g.beginPath(); g.ellipse(sx, y + 3, 10, 2.4, 0, a, a + 4.1); g.stroke();
-    g.strokeStyle = 'rgba(214,230,220,0.42)'; g.beginPath(); g.ellipse(sx, y + 3, 5, 1.4, 0, -a * 1.4, -a * 1.4 + 3.6); g.stroke();
-    g.fillStyle = '#02050a'; g.fillRect(sx - 1, y + 3, 3, 1); }
-  for (let wx = Math.floor(wx0 / 54) * 54 + 20; wx < wx0 + W + 30; wx += 54) {   /* what it has drowned: planks and barrel staves turning in it, and a pale hand reaching up */
-    const k = ((wx / 54) | 0) & 3, sx = Math.round(wx - cx + Math.sin(time * 0.7 + wx) * 5), by = Math.round(y + 3 + Math.sin(time * 1.5 + wx * 0.13) * 1.4); if (sx < x0 - 6 || sx > x1 + 6) continue;
+    g.strokeStyle = 'rgba(236,246,238,0.85)'; g.beginPath(); g.ellipse(sx, y + 3, 14, 3.2, 0, a, a + 4.1); g.stroke();
+    g.strokeStyle = 'rgba(214,230,220,0.6)'; g.beginPath(); g.ellipse(sx, y + 3, 7.5, 2, 0, -a * 1.4, -a * 1.4 + 3.6); g.stroke();
+    g.fillStyle = '#010305'; g.fillRect(sx - 2, y + 2, 5, 3); }
+  for (let wx = Math.floor(wx0 / 42) * 42 + 17; wx < wx0 + W + 30; wx += 42) {   /* what it has drowned: planks and barrel staves turning in it, and a pale hand reaching up */
+    const k = ((wx / 42) | 0) & 3, sx = Math.round(wx - cx + Math.sin(time * 0.7 + wx) * 5), by = Math.round(y + 3 + Math.sin(time * 1.5 + wx * 0.13) * 1.4); if (sx < x0 - 6 || sx > x1 + 6) continue;
     if (k === 0) { g.fillStyle = '#4a3a2a'; g.fillRect(sx - 5, by - 1, 11, 2); g.fillStyle = '#6a5640'; g.fillRect(sx - 5, by - 1, 11, 1); g.fillStyle = '#2a2018'; g.fillRect(sx + 1, by, 2, 1); }
     else if (k === 2) { g.fillStyle = '#3a2e22'; g.fillRect(sx - 2, by - 2, 4, 3); g.fillStyle = '#5a4a38'; g.fillRect(sx - 3, by - 3, 6, 1); }
     else if (k === 1) { const up = 3 + Math.round((Math.sin(time * 1.1 + wx) + 1) * 2.5); g.fillStyle = '#c9d6c6'; g.fillRect(sx - 1, by - up, 2, up); g.fillRect(sx - 3, by - up - 2, 1, 3); g.fillRect(sx - 1, by - up - 3, 1, 3); g.fillRect(sx + 1, by - up - 2, 1, 3); g.fillStyle = '#7d9486'; g.fillRect(sx - 1, by - 1, 2, 1); } }

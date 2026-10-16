@@ -128,6 +128,10 @@ export function buildTowpath({ painter, T, TS }) {
   sign(3, 33, 'THE TOWPATH. THE RIVER ROAD OUT OF WAYMEET.');
   ent('tplychgate', 13, 33);
   sign(15, 33, 'DOWN THE BANK: THE RIVER AND THE LOCKS.');
+  /* THE KEEPER'S GANTRY (claude/towpathchurch: it replaces the hill path's height - the second layer over the first screen): a plank walk off the lane's end, three rows up, running out over the bank and the river path
+     under it (a sworn sword in the fog below): a second height for the whole first screen, coins along it, and a drop back to the bank. On its poles (B9) */
+  boards(17, 34, 31); ent('deco', 17, 33, { kind: 'stilt' }); ent('deco', 26, 37, { kind: 'stilt' }); ent('deco', 34, 37, { kind: 'stilt' });
+  coins([21, 30], [27, 30], [31, 30], [33, 30]);
   /* THE RIVER PATH: down the bank INTO THE FOG (the mill-pond's low water lies under the bank: its bank's top edge is over your head), a sworn sword in it */
   ground(18, 23, 36); ground(24, 46, 38);
   sworn(31, 37, 'theBank', { face: -1 });
