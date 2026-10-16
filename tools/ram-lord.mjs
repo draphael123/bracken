@@ -20,14 +20,14 @@ const L = LEVELS.find(l => l.id === 'scree').build(), A = L.arena;
 ok(typeof FULL_DAMAGE.ram === 'string' && FULL_DAMAGE.ram.length > 40, 'off the chip: FULL_DAMAGE.ram with its reason');
 ok(GUARD.ram === 'horns', 'his horns guard by angle (GUARD horns)');
 ok(OPEN_RULE.ram && ramOpenMode({ mode: 'stun' }) && ramOpenMode({ mode: 'crash' }) && !ramOpenMode({ mode: 'pace' }), 'his openings: stunned (the cliff) and the wall crash');
-{ const e = { x: 100, face: 1, mode: 'pace' }; ok(ramGuard(e, 130, false) === 'horns' && ramGuard(e, 70, false) === null && ramGuard(e, 130, true) === null && ramGuard({ ...e, ward: 1 }, 70, false) === 'ward' && ramGuard({ ...e, mode: 'stun' }, 130, false) === null, 'the front at his height turns, behind or from the air lands, the ward turns everything, an opening takes everything'); }
+{ const e = { x: 100, face: 1, mode: 'pace' }; ok(ramGuard(e, 130, false) === 'horns' && ramGuard(e, 70, false) === null && ramGuard(e, 130, true) === null && ramGuard({ ...e, ward: 1 }, 70, false) === 'ward' && ramGuard({ ...e, mode: 'stun' }, 130, false) === null, 'the front at his height is turned (x0.4, B15), behind or from the air lands, the ward is turned (x0.4), an opening takes everything'); }
 const lips = ramLips(A);
 ok(lips.length === 2 && lips.every(l => l.z0 >= A.x0 + 16 && l.z1 <= A.x1 - 16 && !inZone(l, lipSpot(l)) && lipSpot(l) > A.x0 + 16 && lipSpot(l) < A.x1 - 16), 'two overhangs, their fall lines inside the fold, each knock spot inside the fold and off its own line');
 ok(lips[0].z1 < lips[1].z0, 'the two fall lines do not overlap');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'), upd = main.slice(main.indexOf('function updateRam'), main.indexOf('function traceBeams'));
 ok(!/'callTell'; e\.modeT/.test(upd) && /sweepTell/.test(upd) && /RLD\.ramStep/.test(upd), 'no flock call (no adds); the horn sweep and the overhang step are in his update');
 ok(L.ents.some(e => e.t === 'sign' && /OVERHANG/.test(e.text || '') && /PROP/.test(e.text || '')), 'the stile\'s sign tells the overhang and its prop');
-ok(RAM.stunT >= 3 && RAM.wardT >= 2.5 && RAM.wardT <= 3.5 && LIP.rearm >= 5, 'the stun is >= 3 s, the ward ~3 s (B3), a spent overhang loosens again after >= 5 s');
+ok(RAM.stunT >= 3 && RAM.wardT >= 1.5 && RAM.wardT <= 3.5 && RAM.frontMul >= 0.4 && RAM.stunMul >= 4 && RAM.crashMul >= 4 && LIP.rearm >= 5, 'the stun is >= 3 s, the ward ~3 s (B3), a spent overhang loosens again after >= 5 s');
 console.log('== PAGE');
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -55,7 +55,7 @@ try {
     /* the front, at his height: turned */
     b.ward = 0; { const f = b.face || 1, h0 = b.hp; P.x = b.x + f * 30; P.face = -f; P.y = A.floor; for (let i = 0; i < 10; i++) { hold(f, 'pace'); BK.sim(1); } BK.press('atk'); for (let i = 0; i < 30; i++) { hold(f, 'pace'); BK.sim(1); } out.frontHit = h0 - b.hp; }
     /* the stun ends: WARDED, and a blade from behind is turned */
-    b.mode = 'stun'; b.modeT = 0.05; BK.sim(8); out.ward = b.ward; out.wardHit = hit('pace');
+    b.broken = 0; b.poise = 0; b.poiseCd = 0; b.mode = 'stun'; b.modeT = 0.05; BK.sim(8); out.ward = b.ward; out.wardHit = hit('pace');
     /* the phases change the fold */
     b.ward = 0; b.hp = Math.floor(b.maxHp * 0.6); for (let i = 0; i < 4; i++) { b.modeT = 99; BK.sim(1); } out.p2 = b.phase; out.floor = (L.scree || []).some(z => z.ramFold);
     b.hp = Math.floor(b.maxHp * 0.3); let rain = 0; for (let i = 0; i < 300; i++) { b.modeT = 99; b.mode = 'pace'; BK.sim(1); rain = Math.max(rain, BK.rocks().filter(q => q.tx !== undefined && q.thrown).length); }
@@ -65,9 +65,9 @@ try {
   ok(r.awayState !== 'armed' && r.awayMode !== 'stun', 'a knock with him off the line drops the rock on nothing (' + r.awayState + ', he is ' + r.awayMode + ')');
   ok(r.stun && r.open && r.stunAt >= 25 && r.stunAt <= 70, 'a knock with him under it (the press, the swing coming round, then the creak): the overhang comes down (' + r.stunAt + ' frames from the press) and he is STUNNED - open');
   ok(r.lipAfter === 'spent', 'the overhang is spent after it falls');
-  ok(r.frontHit === 0, 'a blade from his front at his height is turned (' + r.frontHit + ')');
+  ok(r.frontHit > 0 && r.frontHit < r.behindHit, 'a blade from his front at his height is turned to x0.4, never nothing (B15): ' + r.frontHit + ' against ' + r.behindHit + ' from behind');
   ok(r.behindHit > 0 && r.stunHit >= r.behindHit * 3, 'from behind it lands (' + r.behindHit + '); stunned the same blow lands x2 the full blow - x4 the angle\'s half (' + r.stunHit + ')');
-  ok(r.ward > 1.5 && r.wardHit === 0, 'the stun over, he is WARDED (' + (+r.ward).toFixed(1) + ' s) and a blade from behind is turned');
+  ok(r.ward > 1.5 && r.wardHit > 0 && r.wardHit < r.behindHit, 'the stun over, he is WARDED (' + (+r.ward).toFixed(1) + ' s) and a blade from behind is turned to x0.4, not nothing (' + r.wardHit + ')');
   ok(r.p2 >= 2 && r.floor, 'at two-thirds the fold slides: its floor is scree');
   ok(r.p3 === 3 && r.rain >= 1, 'at a third the cliff comes down: told rocks rain on the fold (' + r.rain + ' at once)');
   ok(!pg.errors.length, 'no page errors' + (pg.errors.length ? ': ' + pg.errors[0] : ''));
