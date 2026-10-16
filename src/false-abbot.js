@@ -42,22 +42,22 @@
 // B15: warded he takes 0.4 (the floor), told by the clank and WARDED in main.js; down under the bell, double.
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 1900, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 2700, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.4, knell: 1.0 },
   dmg: { censer: 20, cast: 16, reel: 10, slam: 24, light: 16, knell: 22 },
   censerR: 46,            // the chain's reach past his body
   castRange: 210,         // how far the censer is thrown
   castPull: 34,           // and how far the chain hauls HIM when it is guarded
   reelTo: 26,             // taken, it reels you to here beside him
-  swingMin: 90, swingMax: 380, swingT: 0.8, swingH: 56, slamR: 30, landT: 0.7,   // THE BELL ROPE: how far he swings, how long in the air, how high, the slam's ring, and his recovery
+  farAt: 150, swingMin: 90, swingMax: 380, swingT: 0.8, swingH: 56, slamR: 30, landT: 0.7,   // THE BELL ROPE: how far he swings, how long in the air, how high, the slam's ring, and his recovery
   lightT: 0.8, lightR: 26, lightUp: 70,   // FALSE LIGHT: the lob's flight, the burst's ring, how high the arc
   coals: 5, coalStep: 22, coalLife: 3.4,
   bless: 6, mend: 0.3, blessR: 130, wardTake: 0.4, heal: 0.08,   // the rite: how long it holds, what it mends in his own, B15's floor while warded, and what it heals HIM
   sanctOff: 30,           // the sanctus bell's post, this far BEHIND him (away from the hero): go round him, or come down on him
-  spoilT: 1.2, riteCd: 5, // a spoiled rite: the stagger, and how long before he can kneel again
+  spoilT: 1.2, riteCd: 9, downCd: 4,   // a spoiled rite: the stagger, and how long before he can kneel again (and after the bell's window, how long he fights before he kneels)
   downT: 4.2, downMul: 2,             // the bell's window, and what a blow is worth in it
   bellUnder: 40,                      // how near the bell he has to be for the note to find him
-  adds: 3, addEvery: 6.5, addEveryP2: 4.2, daze: 2.2,
+  adds: 2, addsP2: 3, addEvery: 7.5, addEveryP2: 4.2, daze: 2.2,
   order: ['censer', 'cast', 'swing', 'gleam', 'censer', 'coals', 'cast', 'swing', 'gleam', 'knell'],   /* the rite is NOT in here: it is his heartbeat, taken the moment the ward lapses */
 };
 /* EVERY MODE IS ITS KEY PLUS 'Tell' - no exceptions, because the one exception there was (coals -> coalTell) cost two
@@ -147,11 +147,11 @@ export function updateFalseAbbot(e, dt, c) {
   // ---- THE CONGREGATION, all the way through: it does not stop for his windups ----
   if (e.mode !== 'downed' && c.adds && c.summon) {
     if (e.addT <= 0) { e.addT = e.phase === 2 ? ABBOT.addEveryP2 : ABBOT.addEvery;
-      if (c.adds() < ABBOT.adds) c.summon(); }
+      if (c.adds() < (e.phase === 2 ? ABBOT.addsP2 : ABBOT.adds)) c.summon(); }
   }
   if (e.mode === 'wake') { if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 0.9; } return; }
   // ---- THE OPENING: the note went through the rite and he is down ----
-  if (e.mode === 'downed') { e.vx = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 1.0; c.say('HE GETS UP', false); } return; }
+  if (e.mode === 'downed') { e.vx = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.cd = 1.0; e.riteCd = Math.max(e.riteCd || 0, ABBOT.downCd); c.say('HE GETS UP', false); } return; }
   // ---- the windups ----
   if (e.mode.endsWith('Tell')) {
     /* he turns to you through every windup but two: on the rope he has already chosen where he lands, and on his knees
@@ -236,6 +236,7 @@ export function updateFalseAbbot(e, dt, c) {
   if (what === 'knell' && e.phase !== 2) what = 'coals';                            /* he does not touch the rope until he is hurt */
   if (what === 'knell' && c.bellCold && c.bellCold()) what = 'swing';               /* nor while it is still ringing */
   if (what === 'swing' && ad < ABBOT.swingMin) what = 'censer';
+  if (ad > ABBOT.farAt && what !== 'knell' && what !== 'swing' && what !== 'gleam') what = (e.far = !e.far) ? 'gleam' : 'swing';   /* FAR OFF, HE GETS ABOUT BY THE BELLS: a rope to you, or the false light - he does not walk the length of the belfry */
   begin(e, what, c);
 }
 /* THE BELFRY'S ROPES: each from the roof beam to head height with its little bell at the top - the one he is about to
