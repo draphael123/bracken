@@ -193,24 +193,31 @@ function zoneDress(g, cx, cy, VW, VH, tx, z, time) {
 const dim = (cy) => Math.min(0.5, 0.04 + Math.max(0, cy) / 840 * 0.4);
 const zoneTint = [[255, 150, 60, 0.06], [30, 30, 60, 0.1], [90, 150, 60, 0.08], [255, 90, 30, 0.14], [255, 120, 50, 0.07], [60, 110, 170, 0.1], [255, 90, 30, 0.11]];   /* (deeprails2: the drift colder and darker, the goblin line greener, the cavern's lava, the flood's cold) */
 
+/* (claude/railsparallax) ONE snapped camera: every layer's offset comes from the same integer cx, cy, as round(cx * k), so no two layers tick out of step.
+   A far item belongs to the zone it stands in, not to the zone the camera is in: an item's zone is the one the camera is in when the item is at the screen's middle,
+   so a pillar, a lantern string or a scaffold never appears or vanishes while it is on screen (the camera's zone used to flip a whole screenful of them at an edge). */
+export const parZone = (xl, k, VW) => zoneOf(Math.floor(((xl - VW / 2) / k + VW / 2) / TS));
+export const frameShown = (i, zf) => !(zf === 3 || (zf === 1 && hash(i, 9) % 2 === 0) || (hash(i, 9) % 4 === 0 && zf !== 4));
 export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
+  cx = Math.round(cx); cy = Math.round(cy);
+  const O = k => Math.round(cx * k), OY = k => Math.round(cy * k);
   const tx = Math.floor((cx + VW / 2) / TS), z = zoneOf(tx), Z = zoneTint[z];
   rc(g, 0, 0, VW, VH, '#0b0809');
   /* 1. the wall */
-  { const k = 0.7, wallAt = zz => { const pat = once('wallpat' + zz, () => g.createPattern(wallTile(zz), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); return pat; };
+  { const k = 0.7, wallAt = zz => { const pat = once('wallpat' + zz, () => g.createPattern(wallTile(zz), 'repeat')); pat.setTransform(new DOMMatrix().translate(-O(k), -OY(k))); return pat; };
     g.fillStyle = wallAt(z); g.fillRect(0, 0, VW, VH);
-    { const bp = once('blotchpat', () => g.createPattern(blotchTile(), 'repeat')); bp.setTransform(new DOMMatrix().translate(-Math.round(cx * k) + 77, -Math.round(cy * k) + 31)); g.fillStyle = bp; g.fillRect(0, 0, VW, VH); }
+    { const bp = once('blotchpat', () => g.createPattern(blotchTile(), 'repeat')); bp.setTransform(new DOMMatrix().translate(-O(k) + 77, -OY(k) + 31)); g.fillStyle = bp; g.fillRect(0, 0, VW, VH); }
     /* an area's edge is a blend, not a cut: across 14 columns either side of it the next area's rock fades in */
     for (const e of ZONE_EDGES) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOf(e) : zoneOf(e - 1)); g.fillRect(0, 0, VW, VH); } break; } }
     g.globalAlpha = 1;
     /* the ore's glitter: copper and gold sparkle on and off */
     for (const [gx, gy, kind, ph] of GLINTS) { const on = Math.sin(time * (1.4 + kind * 0.7) + ph); if (on < 0.45) continue;
-      const bx = (((gx - cx * k) % 192) + 192) % 192, by = (((gy - cy * k) % 192) + 192) % 192;
+      const bx = (((gx - O(k)) % 192) + 192) % 192, by = (((gy - OY(k)) % 192) + 192) % 192;
       for (let ox = 0; ox < 2; ox++) for (let oy = 0; oy < 2; oy++) { const wxs = Math.round(bx + ox * 192), wys = Math.round(by + oy * 192); if (wxs > VW + 2 || wys > VH + 2) continue;
         g.fillStyle = kind ? MP.go3 : MP.cu3; g.fillRect(wxs, wys, 1, 1); if (on > 0.85) { g.fillStyle = kind ? MP.go2 : MP.cu2; g.fillRect(wxs - 1, wys, 3, 1); g.fillRect(wxs, wys - 1, 1, 3); } } } }
   /* 2. the far trestles, over the chasms: dark, slow (0.4), one every ~210 px at a world-anchored height */
   { const k = 0.4, per = 210, i0 = Math.floor((cx * k - 160) / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1, spr = trestleSprite();
-    g.globalAlpha = 0.85; for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 3 === 0) continue; const x = Math.round(i * per + (h % 40) - cx * k), y = Math.round(70 + (h % 5) * 18 - cy * 0.25); g.drawImage(spr, x, y); } g.globalAlpha = 1; }
+    g.globalAlpha = 0.85; for (let i = i0; i <= i1; i++) { const h = hash(i, 17); if (h % 3 === 0) continue; const x = i * per + (h % 40) - O(k), y = 70 + (h % 5) * 18 - OY(k); g.drawImage(spr, x, y); } g.globalAlpha = 1; }
   /* 5. THE LANDMARKS: they stand a long way off, so they hardly move: the smelter's chimney (from the cave-in on) and the bore's mouth (from the exam on) */
   { const smW = 922 * TS, boW = 950 * TS, f = 0.02;
     const sA = Math.max(0, Math.min(1, (tx - 440) / 40));
@@ -227,22 +234,24 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
     if (bA > 0) { const bx = Math.round(VW / 2 + (boW - cx - VW / 2) * f) - 55 + 70, by = Math.round(VH - 100 - 28 + (cy - 420) * -0.05); g.globalAlpha = bA * 0.95; g.drawImage(boreMouth(), bx, by); g.globalAlpha = 1; } }
   /* 3. the timber frames and the lantern strings on the wall's plane */
   { const k = 0.7, per = 128, spr = frameTile(), i0 = Math.floor(cx * k / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1;
-    const fy = -Math.round(cy * k) % 192;
-    for (let i = i0; i <= i1; i++) { if (z === 3 || (z === 1 && hash(i, 9) % 2 === 0) || (hash(i, 9) % 4 === 0 && z !== 4)) continue; const x = Math.round(i * per + (hash(i, 13) % 33) - 16 - cx * k); for (let yy = fy - 192; yy < VH; yy += 192) g.drawImage(spr, x, yy); }
+    const fy = -OY(k) % 192;
+    for (let i = i0; i <= i1; i++) { if (!frameShown(i, parZone(i * per + (hash(i, 13) % 33) - 16, k, VW))) continue; const x = i * per + (hash(i, 13) % 33) - 16 - O(k); for (let yy = fy - 192; yy < VH; yy += 192) g.drawImage(spr, x, yy); }
     /* lantern strings between frames: a sag of lamps hung from the cap beams (y of the cap in the tile = 38) */
     g.globalCompositeOperation = 'lighter';
-    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = Math.round(i * per + jt(i) - cx * k) + 9, x1 = Math.round((i + 1) * per + jt(i + 1) - cx * k);
-      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0 || z === 1 || z === 3) continue;
+    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = i * per + jt(i) - O(k) + 9, x1 = (i + 1) * per + jt(i + 1) - O(k);
+      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; { const zi = parZone(i * per + jt(i), k, VW); if (hash(i, 2) % 3 === 0 || zi === 1 || zi === 3) continue; }
         const n = 6; for (let j = 1; j < n; j++) { const t = j / n, lx = x0 + (x1 - x0) * t, sag = Math.sin(t * Math.PI) * 9 + Math.sin(time * 1.1 + i + j) * 0.6, ly = y0 + sag; const lit = (hash(i * 7 + j, 4) % 11) > 0;
           g.globalAlpha = lit ? 0.95 + 0.1 * Math.sin(time * 6 + i * 3 + j) : 0; if (lit) g.drawImage(glow(32, '255,160,64'), Math.round(lx) - 32, Math.round(ly) - 26); } } }
     g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
-    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = Math.round(i * per + jt(i) - cx * k) + 9, x1 = Math.round((i + 1) * per + jt(i + 1) - cx * k);
-      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; if (hash(i, 2) % 3 === 0 || z === 1 || z === 3) continue;
+    for (let i = i0; i <= i1; i++) { const jt = j_ => (hash(j_, 13) % 33) - 16, x0 = i * per + jt(i) - O(k) + 9, x1 = (i + 1) * per + jt(i + 1) - O(k);
+      for (let yy = fy - 192; yy < VH; yy += 192) { const y0 = yy + 47; if (y0 < -20 || y0 > VH + 20) continue; { const zi = parZone(i * per + jt(i), k, VW); if (hash(i, 2) % 3 === 0 || zi === 1 || zi === 3) continue; }
         g.fillStyle = MP.i1; const n = 6; let px0 = x0, py0 = y0; for (let j = 1; j <= n; j++) { const t = j / n, lx = x0 + (x1 - x0) * t, ly = y0 + Math.sin(t * Math.PI) * 9 + (j < n ? Math.sin(time * 1.1 + i + j) * 0.6 : 0); const steps = Math.max(1, Math.round(Math.abs(lx - px0))); for (let s = 0; s < steps; s++) g.fillRect(Math.round(px0 + (lx - px0) * s / steps), Math.round(py0 + (ly - py0) * s / steps), 1, 1); px0 = lx; py0 = ly; if (j < n) { const lit = (hash(i * 7 + j, 4) % 11) > 0; g.drawImage(lampSprite(lit), Math.round(lx) - 3, Math.round(ly)); } } } } }
   /* 4. THE GOBLIN WORKS: scaffolds, in the goblins' stretch and again in the crusher works, on the wall's plane */
-  if (z === 2 || z === 4 || z === 5) { const k = 0.7, per = 330, i0 = Math.floor(cx * k / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1;
-    for (let i = i0; i <= i1; i++) { const h = hash(i, 71), x = Math.round(i * per + 60 + (h % 80) - cx * k), y = Math.round(40 + (h % 3) * 26 - cy * k + Math.floor(cy * k / 192) * 192 * 0); if (x < -160 || x > VW) continue;
-      g.drawImage(worksSprite(h % 2), x, ((y % 200) + 200) % 200 - 30); } }
+  { const k = 0.7, per = 330, i0 = Math.floor(cx * k / per) - 1, i1 = Math.floor((cx * k + VW) / per) + 1;
+    for (let i = i0; i <= i1; i++) { const h = hash(i, 71), xl = i * per + 60 + (h % 80), x = xl - O(k), y = 40 + (h % 3) * 26 - OY(k); if (x < -160 || x > VW) continue;
+      const zw = parZone(xl, k, VW); if (zw !== 2 && zw !== 4 && zw !== 5) continue;
+      /* a scaffold is one of a column, 220 px apart (the sprite is 110 tall): it used to WRAP at 200 and jump 200 px at once, mid-screen */
+      for (let yy = (((y + 80) % 220) + 220) % 220 - 110; yy < VH; yy += 220) g.drawImage(worksSprite(h % 2), x, yy); } }
   /* 5b. EACH AREA'S OWN FEATURE (claude/deeprailsart): eyes in the drift, lava falls in the cavern, the lift's head frame, the flood's drips */
   zoneDress(g, cx, cy, VW, VH, tx, z, time);
   /* 6. depth, and the zone's own cast of light */
@@ -250,7 +259,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time) {
   g.fillStyle = 'rgba(' + Z[0] + ',' + Z[1] + ',' + Z[2] + ',' + Z[3] + ')'; g.fillRect(0, 0, VW, VH);
   /* 7. THE ROOF closes over the top: a dark gradient and a jagged fringe of rock and cap-timbers that moves with the wall */
   { const gr = g.createLinearGradient(0, 0, 0, 70); gr.addColorStop(0, 'rgba(4,3,3,0.78)'); gr.addColorStop(1, 'rgba(4,3,3,0)'); g.fillStyle = gr; g.fillRect(0, 0, VW, 70);
-    const r = once('fringe', () => { const a = [], rr = mulberry(55); for (let i = 0; i < 64; i++) a.push(3 + ((rr() * 11) | 0)); return a; }), off = Math.round(cx * 0.9);
+    const r = once('fringe', () => { const a = [], rr = mulberry(55); for (let i = 0; i < 64; i++) a.push(3 + ((rr() * 11) | 0)); return a; }), off = O(0.9);
     g.fillStyle = '#060404'; for (let x = 0; x < VW; x += 5) { const i = (((x + off) / 5) | 0) & 63; g.fillRect(x, 0, 5, r[i]); }
     g.fillStyle = MP.r2; for (let x = 0; x < VW; x += 5) { const i = (((x + off) / 5) | 0) & 63; g.fillRect(x, r[i], 5, 1); } }
 }
