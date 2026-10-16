@@ -12,4 +12,7 @@ Requested subset:
      levelling-runtime, leveling, mash-gate, mobile-perf, textfit, syntax
   FAIL normal-health 43940ms: 'death' !== 'win' (Pyro/Bullfrog)
   standalone normal-health fails the same assertion on codex/wardenxp
-  and on codex/whatsnewpin (clean origin/master game code).
+  and on codex/whatsnewpin (clean origin/master game code), and on
+  historical cd8a7c6c, the commit that introduced the Pyro row.
+  Current seeded probe: Paladin/Bullfrog win, 20 damage taken, 102 end HP;
+  Reaper/Bullfrog win, 63 damage taken, 53 end HP.
