@@ -54,7 +54,7 @@ try {
       for (const e of BK.enemies()) if (e !== b && !e.maxHp && !e.mini) e.alive = false;
       if (A.carpet) { BK.board(); } else if (A.start) BK.tp(A.start[0], A.start[1]); else BK.tp(Math.round(A.trigger / 16) + (A.reverse ? -1 : 1), Math.round(A.floor / 16) - 1);
       BK.sim(150); none(); return b; };
-    const freeze = b => { b.greedLog = []; b.greedT = 0; b.greedCd = 0; b.chipAcc = 0; b.poise = 0; b.broken = 0; };   /* (and his poise bar: a full one breaks him, and broken he is open) */
+    const freeze = b => { b.greedLog = []; b.greedT = 0; b.greedCd = 0; b.chipAcc = 0; b.poise = 0; b.broken = 0; b.stale = null; };   /* (claude/difficulty: and his stale-blow count - no frame passes between these forced openings, so each must start as a fresh one, src/anti-mash.js) */   /* (and his poise bar: a full one breaks him, and broken he is open) */
     const hero = (b, d) => { const h0 = b.hp; BKT.hurtAs('light', b, d, b.x - 12, false); const t = h0 - b.hp; b.hp = h0; return t; };
     const room = (b, d) => { const h0 = b.hp; BKT.hurtEnemy(b, d, b.x - 12, false); const t = h0 - b.hp; b.hp = h0; return t; };
     /* a closed mode for each sampled boss (his own idle) */

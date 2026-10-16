@@ -7664,8 +7664,9 @@ function bossBreakFill(e, m, verb) {
 }
 /* BROKEN: he stands still the bar's time (x his damage %, x the mode's opening), every hero blow lands x AM.BREAK.mul, and ONE FINISHER waits */
 function bossBroken(e, word) {
-  e.broken = DP.bossBreak(e, AM.breakSecs(e)) * DFM.df('open'); e.bkBroke = true; e.bkFinished = false; e.bkAt = time; AMS.breaks++;
-  e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
+  e.broken = DP.bossBreak(e, AM.breakSecs(e)) * DFM.df('open'); e.bkBroke = true; e.bkFinished = false; e.bkAt = time; e.bkMax = e.broken; AMS.breaks++;
+  e.bkSoft = POISE_SKIP.has(e.t);   /* A SOFT BREAK for the bosses the old poise bar left out on purpose (puzzle and flying bosses whose own clock IS the fight): x2 and the finisher, but he is not stood still - his own AI runs on (Question for Daniel) */
+  e.poise = 0; e.poiseCd = e.broken + 3; if (!e.bkSoft) { e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken); }
   number(e.x, e.y - (e.h || 16) - 20, word || 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - (e.h || 16) / 2, 30, '#ffd36b', 0.45); breakBeat(e);
 }
 /* STALE BLOWS, THE FINISHER, VARIED HITS: a hero's landed blow of 'verb' on a boss or mini */
@@ -7681,7 +7682,7 @@ function antiMash(e, dmg, verb) {
 }
 /* once a frame for a boss or mini: a new opening starts the stale count clean; the bar's BROKEN flag goes with the break; MASTER's whiffed heavy */
 function amFrame(e) {
-  AM.openTick(e, GB.openOf(e) === true); if (!(e.broken > 0)) e.bkBroke = false;
+  AM.openTick(e, GB.openOf(e) === true); if (!(e.broken > 0)) e.bkBroke = e.bkSoft = false;
   if (P.amHeavyAt != null && time - P.amHeavyAt > 0.5) { const whiff = !P.amHeavyHit; P.amHeavyAt = null; if (whiff && DFM.df('punish')) punishGreed('whiff'); }
 }
 /* MASTER: PUNISH GREED - a flask drunk or a heavy whiffed in a boss's or mini's reach is answered by his TOLD reprisal (src/boss-greed.js punish: the red !!, the closing ring, then the burst) */
@@ -25594,7 +25595,8 @@ function updateEnemies(dt) {
     if (e.t === 'thorn' && AP.thornTick(e, players || [P], dt, raAbove)) SFX.clatter();   /* (claude/knockinto) THE SPIKE GOBLIN's TOLD BRISTLE: a hero over him and his back spikes rise (~0.3 s, a clatter) */
     if (RP.tick(e, dt)) continue;   /* (claude/riposte) PARRIED: it stands reeling (its own AI waits); a boss's riposte opening, his ward, his verb on the poise bar */
     if (e.t === 'spit' && !(e.broken > 0) && raSidestep(e, players || [P], dt, RA_API)) continue;   /* (claude/knockinto, rule c) THE SPITTER SIDESTEPS a plunge, then stands OFF BALANCE (src/foe-react.js sidestepTick) */
-    if (e.broken > 0 && !(e.knock > 0 && !e.maxHp)) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out (claude/knockinto: unless a blow THREW it - it flies first, broken, and stands where it lands) */
+    if (e.broken > 0 && e.bkSoft) e.broken -= dt;   /* (claude/difficulty) a SOFT break runs down while his own AI runs on */
+    else if (e.broken > 0 && !(e.knock > 0 && !e.maxHp)) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out (claude/knockinto: unless a blow THREW it - it flies first, broken, and stands where it lands) */
     if (e.knock > 0 && !e.maxHp) { e.knock -= dt; e.kvy = Math.min(400, e.kvy + 1000 * dt); e.kvx *= Math.pow(0.25, dt);   /* THROWN: no legs under it for a moment */
       const kx0 = e.x, kvy0 = e.kvy, r = moveBody(e, e.kvx * dt, e.kvy * dt, false);
       /* IT COMES DOWN. A thrown body landed by stopping, which is nothing to look at; now the first time it meets the ground it

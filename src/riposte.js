@@ -234,7 +234,7 @@ export function makeRiposte(api) {
     const m = api.poiseMax(e); if (!m || !e) return false;
     const still = !!(api.still && api.still()), f = Math.max(0, Math.min(1, (e.poise || 0) / m)), n = Math.round(w * f), near = f >= 0.85 && !(e.broken > 0) && !(e.rpWardT > 0), blink = still || Math.floor(t() * 6) % 2;
     g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(x - 1, y - 1, w + 2, hgt + 2);
-    if (e.broken > 0) { g.fillStyle = still || Math.floor(t() * 12) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(x, y, w, hgt); }
+    if (e.broken > 0) { g.fillStyle = still || Math.floor(t() * 12) % 2 ? '#ffd36b' : '#fff6c8'; g.fillRect(x, y, e.bkBroke && e.bkMax > 0 ? Math.max(1, Math.round(w * Math.min(1, e.broken / e.bkMax))) : w, hgt); }   /* (claude/difficulty) BROKEN by the break bar: the gold bar runs down as his break does - its timer */
     else {
       const ward = e.rpWardT > 0;
       g.fillStyle = ward ? '#9a927c' : f >= 0.75 ? '#ffd36b' : f >= 0.4 ? '#e0b040' : '#c08a28'; g.fillRect(x, y, n, hgt);
