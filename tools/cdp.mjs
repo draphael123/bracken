@@ -108,6 +108,6 @@ export async function openPage(opts = {}) {
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, send, errors, PORT, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  return { evalp, send, errors, PORT, reload, dbg, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
   } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
