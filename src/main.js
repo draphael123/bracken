@@ -8465,7 +8465,7 @@ function updateCharge(dt) {
   } else P.chargeFull = false;
 }
 let bloodBolts = [];
-let dkTrail = [], dkArcs = [];   /* (claude/dk2art) THE DEATH KNIGHT's blood trail (the blade's tip, fading) and the crescent's arcs */
+let dkTrail = [], dkArcs = [], dkGraves = [];   /* (claude/dkfeel: dkGraves = THE GRAVE BURST's spikes, hands and shockwave) */   /* (claude/dk2art) THE DEATH KNIGHT's blood trail (the blade's tip, fading) and the crescent's arcs */
 let bodies = [], risen = [], rbolts = [], hands = [], thrownScythe = null, grips = [], unholy = [];
 let novas = [];   /* the BLOOD NOVA's rings, going out */
 /* BLOOD WARD, IN NUMBERS. C held a twelfth of a second stands the ward up (the blade going in); standing it up costs six wind
@@ -9861,7 +9861,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (P.atk >= 0) {
     { const twice = P.heavy && isReaper() && tal('fullCircle'), lim = P.heavy ? (isReaper() ? DK2.price.lim : 0.42) : 0.3;   /* (claude/dk2b: the crescent's follow-through is shorter than the planted blade's haul-out) */
       const was = P.atk;
-      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? DK2.price.rate : DK2.rhythm.rate) : 1) * (P.heavy && !isReaper() ? 0.72 : 1) * (isBz() && BZK ? BZK.swingMul() : 1) * ((P.hasteT || 0) > 0 ? BZ_K.swing.haste : 1);   /* (THE BERSERKER: quicker with rage, quickest in a frenzy, slower one-handed; a WAR CRY quickens anyone) */   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight's swing is the slowest in the game: he is buying the whole arc with it */
+      P.atk += dt * (isPaladin() ? 0.56 : isPirate() ? 1.35 : isReaper() ? (P.heavy ? DK2.price.rate : DK2.rhythm.rate) : 1) * (P.heavy && !isReaper() ? 0.72 : 1) * (isBz() && BZK ? BZK.swingMul() : 1) * ((P.hasteT || 0) > 0 ? BZ_K.swing.haste : 1);   /* (THE BERSERKER: quicker with rage, quickest in a frenzy, slower one-handed; a WAR CRY quickens anyone) */   /* a greatsword is SLOW: nearly a second from the shoulder to the ground */   /* the Death Knight swings at the Paladin's pace now (claude/dkfeel 10-16) */
       if (P.heavy && isReaper() && was < DK2.price.live[0] && P.atk >= DK2.price.live[0]) dkCrescentFx();   /* (claude/dk2b) THE CRESCENT comes round (the planted blade's bolts are THE RED VOLLEY now: dkLanded) */ void twice;
       if (P.heavy && hero() === 'knight' && P.cutStage === 3 && !P.cutQuaked && was < 0.2 && P.atk >= 0.2 && (P.ground || P.swim)) { P.cutQuaked = true; cutQuake(); }   /* THE KNOCKDOWN's blade into the floor */   /* the blade goes into the ground, and the ground answers */
       if (P.atk > lim) { P.atkRec = CM.recoveryFor(hero(), { heavy: !!P.heavy, third: !!P.heavySwing, kind: P.swingKind, air: !P.ground && !P.swim, dashCut: !!P.dashCut }); P.atkRecMax = P.atkRec;   /* WEIGHT: the swing is seen through (src/commit.js COMMIT) */ if (!P.heavy && P.ground && (isBz() ? P.heavySwing : (P.combo || 0) % 3 === 0)) { P.flourishT = 0.3; ringAt(P.x + P.face * 16, P.y - 12, 6, '#fff6e0', 0.2); }   /* the finisher, held */
@@ -25145,15 +25145,44 @@ function bloodSurge() { trialEvent('meter');   /* his full bar, in his trial (RE
 /* THE GRAVE FALL. His plummet did what everyone's does - a thud - on the heaviest body in the game. Now the blade goes into
    the ground point first and the ground answers: blood spikes burst out both ways, hurting and staggering what stands in
    them, and every foe they catch feeds his blood. */
+/* (claude/dkfeel) THE GRAVE BURST, DRAWN: a flat necrotic shockwave on the ground (green, a bone-pale lip, a red core under it), then BONE SPIKES jabbing up from the earth in a ring about the landing,
+   a RISEN HAND reaching between each pair (palm and four fingers, clawing), all of it sinking back into the ground as the burst fades. Deterministic from the burst's seed. */
+function drawGraveBurst(cx, cy) {
+  for (const b of dkGraves) { const k = b.t / b.life, up = Math.min(1, b.t / 0.1), down = k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4, a = Math.max(0, 1 - k), x0 = Math.round(b.x - cx), y0 = Math.round(b.y - cy), R = b.reach;
+    const wave = R * (1 - Math.pow(1 - Math.min(1, b.t / 0.28), 2));
+    g.save(); g.globalAlpha = 0.22 * a; g.fillStyle = '#0c3a20'; g.beginPath(); g.ellipse(x0, y0, wave, Math.max(2, wave * 0.18), 0, 0, 7); g.fill();
+    g.globalAlpha = 0.9 * a; g.strokeStyle = '#4fe08a'; g.lineWidth = 2; g.beginPath(); g.ellipse(x0, y0, wave, Math.max(2, wave * 0.18), 0, 0, 7); g.stroke();
+    g.globalAlpha = a; g.strokeStyle = '#d8ffe4'; g.lineWidth = 1; g.beginPath(); g.ellipse(x0, y0, Math.max(1, wave - 2), Math.max(1, wave * 0.18 - 1), 0, 0, 7); g.stroke();
+    g.globalAlpha = 0.5 * a; g.strokeStyle = '#c0283a'; g.beginPath(); g.ellipse(x0, y0, wave * 0.6, Math.max(1, wave * 0.1), 0, 0, 7); g.stroke();
+    g.restore();
+    g.save(); g.beginPath(); g.rect(x0 - R - 14, y0 - 40, 2 * R + 28, 40); g.clip();   /* nothing under the ground line */
+    for (let i = -4; i <= 4; i++) { const sd = (b.seed * (i + 7)) % 7, px = x0 + Math.round(i * (R / 4.6)), hh = Math.round((i % 2 ? 12 : 17) + sd) * up * down, w = i % 2 ? 3 : 4;
+      if (hh < 1) continue; const ph = Math.round(hh);
+      g.globalAlpha = a < 0.15 ? a * 6 : 1;
+      if (i % 2) {   /* a bone spike: a pale tapering blade with a dark edge, a green glow at its root */
+        g.fillStyle = '#1f7a44'; g.fillRect(px - w - 1, y0 - 2, w * 2 + 2, 2);
+        g.fillStyle = '#8a7a5a'; g.beginPath(); g.moveTo(px - w, y0); g.lineTo(px, y0 - ph); g.lineTo(px + w, y0); g.closePath(); g.fill();
+        g.fillStyle = '#e8dcc0'; g.beginPath(); g.moveTo(px - w + 1, y0); g.lineTo(px - 1, y0 - ph + 1); g.lineTo(px + 1, y0); g.closePath(); g.fill();
+        g.fillStyle = '#b8ffd0'; g.fillRect(px - 1, y0 - ph, 1, 1);
+      } else {   /* a risen hand: the wrist out of the earth, the palm, four clawed fingers spread and reaching, green light behind it */
+        const fy = y0 - ph; g.fillStyle = '#4fe08a'; g.globalAlpha *= 0.35; g.fillRect(px - 5, fy - 2, 10, ph + 3); g.globalAlpha = a < 0.15 ? a * 6 : 1;
+        g.fillStyle = '#6b6048'; g.fillRect(px - 1, fy + 3, 3, ph - 2);
+        g.fillStyle = '#d8ccb0'; g.fillRect(px - 2, fy + 1, 5, 3);
+        for (let f2 = -2; f2 <= 1; f2++) { const fx = px + f2 * 1.2 + (f2 < 0 ? -1 : 1) * 0.4; g.fillStyle = f2 % 2 ? '#e8dcc0' : '#d8ccb0'; g.fillRect(Math.round(fx), fy - 3 + (f2 === -2 || f2 === 1 ? 1 : 0), 1, 4); }
+        g.fillStyle = '#1f7a44'; g.fillRect(px - 1, fy + 4, 1, 1); } }
+    g.restore(); } }
 function graveFall() {
   const reach = 56, dmg = Math.round(plungeDmg() * 0.6), was = (P.harvest || 0) >= 100; let n = 0;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0) continue;
     if (Math.abs(e.x - P.x) > reach || Math.abs(e.y - P.y) > 20) continue;
     hurtEnemy(e, dmg, P.x, false); if (e.alive && !(e.maxHp || e.mini || e.big)) e.stagger = Math.max(e.stagger || 0, 0.7); n++; }
   if (n) gainHarvest(6 * n);
+  /* (claude/dkfeel) THE GRAVE BURST: bone spikes and a ring of RISEN HANDS erupt out of the ground where he lands, a necrotic shockwave goes out to the reach (drawn: drawGraveBurst); the blood still sprays */
+  dkGraves.push({ x: P.x, y: P.y, t: 0, life: 0.7, reach, seed: Math.floor(Math.random() * 1e6) });
   for (const d of [-1, 1]) for (let k = 1; k <= 6; k++) { const gx = P.x + d * k * 9;
-    for (let j = 0; j < 3; j++) parts.push({ x: gx, y: P.y, vx: d * 10, vy: -120 - (7 - k) * 22 - Math.random() * 40, life: 0.28 + k * 0.03, max: 0.45, col: j === 0 ? '#5a0a14' : j === 1 ? '#c0283a' : '#ff6b6b', size: 2, grav: 700 }); }
-  ringAt(P.x, P.y - 2, reach, '#8a1020', 0.35); shakeCam(5); zoomKick(1.04, 0.16); SFX.squelch();
+    for (let j = 0; j < 3; j++) parts.push({ x: gx, y: P.y, vx: d * 10, vy: -120 - (7 - k) * 22 - Math.random() * 40, life: 0.28 + k * 0.03, max: 0.45, col: j === 0 ? '#1f7a44' : j === 1 ? '#c0283a' : '#b8ffd0', size: 2, grav: 700 }); }
+  for (let i = 0; i < 8; i++) parts.push({ x: P.x + (Math.random() - 0.5) * reach * 1.6, y: P.y - 2, vx: 0, vy: -30 - Math.random() * 30, life: 0.7, max: 0.7, col: i % 2 ? '#8fe8b0' : '#e8dcc0', size: 1, grav: -40 });
+  ringAt(P.x, P.y - 2, reach, '#2fbf6a', 0.35); shakeCam(5); zoomKick(1.04, 0.16); SFX.squelch();
 }
 /* ==== THE DEATH KNIGHT 2 (claude/dk2b, scratch/brief-dk2.md; numbers in src/dk2.js DK2). HE PAYS IN BLOOD AND DRAINS IT BACK. ==== */
 /* THE BLOOD PRICE: one price the moment the wind starts, then one every DK2.price.every s held - his own health, floored at 1 (HE NEVER KILLS
@@ -25217,7 +25246,7 @@ function plantBlade(n) {
     bloodBolts.push({ x, y: y - 4, vx: Math.cos(a) * sp * P.face, vy: Math.sin(a) * sp, life: 0.9, dmg, hit: new Set(), trail: [] }); }
 }
 function updateBloodBolts(dt) {
-  for (const q of dkTrail) q.t += dt; dkTrail = dkTrail.filter(q => q.t < 0.24); for (const q of dkArcs) q.t += dt; dkArcs = dkArcs.filter(q => q.t < q.life);
+  for (const q of dkTrail) q.t += dt; dkTrail = dkTrail.filter(q => q.t < 0.24); for (const q of dkArcs) q.t += dt; dkArcs = dkArcs.filter(q => q.t < q.life); for (const q of dkGraves) q.t += dt; dkGraves = dkGraves.filter(q => q.t < q.life);
   for (const b of bloodBolts) { b.life -= dt; b.trail.push([b.x, b.y]); if (b.trail.length > 6) b.trail.shift();
     b.vy += 260 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || b.hit.has(e)) continue;
@@ -25243,6 +25272,7 @@ function drawBloodBolts(cx, cy) {
     g.globalAlpha = (1 - k) * 0.85; g.fillStyle = '#c8283c'; g.beginPath(); arc(R, Th, ox, a0, a1, false); arc(Math.max(4, R - th), Math.max(4, Th - th * 0.6), ox - f * 4, a1, a0, true); g.closePath(); g.fill();
     g.globalAlpha = (1 - k); g.strokeStyle = '#ffd0d0'; g.lineWidth = 1; g.beginPath(); arc(R, Th, ox, a0, a1, false); g.stroke();
     g.strokeStyle = '#5e0c18'; g.beginPath(); arc(Math.max(4, R - th), Math.max(4, Th - th * 0.6), ox - f * 4, a0, a1, false); g.stroke(); g.globalAlpha = 1; }
+  drawGraveBurst(cx, cy);   /* (claude/dkfeel) */
   /* THE NOVA, DRAWN: a ring of blood going out to its reach, a pale edge inside it, and its shadow along the ground */
   for (const n of novas) { const k = n.t / n.life, r = n.R * (1 - Math.pow(1 - k, 2.2)), x = Math.round(n.x - cx), y = Math.round(n.y - 12 - cy), a = 1 - k;
     g.globalAlpha = 0.18 * a; g.fillStyle = '#7a1020'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
@@ -27127,7 +27157,13 @@ const UP_SLASH = { grace: 0.05, groundLeap: false,
 /* THE AIR UP-SLASH: up + attack in the air (past the jump's first 0.18 s, where the rising cut still rides it). No lift, no hang: a blow over his head */
 function airUpCut() { P.swingKind = 'airUp'; noteVerb('rise'); const c = specialCol();
   if (isPaladin()) { P.arc2 = false; P.arcT = HG.arc.float; if (P.vy > -40) P.vy = -40; kitPose(P, 'rise', 0.3); for (let i = 0; i < 12; i++) { const a = -Math.PI + i / 11 * Math.PI * 2; parts.push({ x: P.x + Math.cos(a) * 16, y: P.y - 20 + Math.sin(a) * 16, vx: 0, vy: -10, life: 0.28, max: 0.28, col: i % 2 ? '#ffd36b' : '#fff6c8', size: 1, grav: 0 }); } SFX.lightFull(); }   /* (PALADIN 3) HEAVEN'S ARC: a full overhead whirl - a golden ring of light, two hits, a slight float */
+  if (isReaper()) { reapingRiseFx(); return; }   /* (claude/dkfeel) death magic: grave-green flame and soul wisps, not the shared sparks */
   for (let i = 0; i < 5; i++) parts.push({ x: P.x + P.face * (8 - i * 4), y: P.y - 20 - Math.sin(i / 4 * Math.PI) * 18, vx: 0, vy: -40, life: 0.2, max: 0.2, col: c[i % c.length], size: 1, grav: 0 }); }
+/* (claude/dkfeel) THE REAPING RISE: a rising arc of grave-green necrotic flame with a blood-red edge, and SOUL WISPS that peel off the steel and drift up (FX only; the box and damage are the up-slash's) */
+function reapingRiseFx() {
+  for (let i = 0; i < 7; i++) { const t = i / 6, a = -0.35 - 2.4 * t; parts.push({ x: P.x + P.face * Math.cos(a) * 34, y: P.y - 12 + Math.sin(a) * 34, vx: P.face * 6, vy: -26 - i * 5, life: 0.3 + t * 0.2, max: 0.5, col: i % 3 === 0 ? '#b8ffd0' : i % 3 === 1 ? '#4fe08a' : '#1f7a44', size: i % 2 ? 2 : 1, grav: -30 }); }
+  for (let i = 0; i < 4; i++) parts.push({ x: P.x + P.face * (4 - i * 3), y: P.y - 26 - i * 4, vx: -P.face * 8, vy: -40 - i * 12, life: 0.55, max: 0.55, col: i % 2 ? '#e8dcc0' : '#8fe8b0', size: 1, grav: -60 });
+  parts.push({ x: P.x, y: P.y - 16, vx: 0, vy: -20, life: 0.2, max: 0.2, col: '#c0283a', size: 2, grav: 0 }); }
 function lowSweep() { if (!spend(5)) { P.vx = P.face * 75; return; } P.swingKind = 'sweep'; noteVerb('sweep'); P.vx = P.face * (isPaladin() ? 60 : 130); squash(1.2, 0.8, 0.12);
   if (CA) { CA.lowSwing(!!P.ducking); if (P.caTrip || P.caPoke) return; }   /* CROUCHED AND STILL: the knight's SHIELD TRIP, the warden's LOW POKE (src/crouch-a.js) */
   const c = specialCol(); dust(P.x + P.face * 10, P.y, 4);
@@ -29635,7 +29671,7 @@ function drawAirUpCrescent(cx, cy) {
   if (isPaladin()) { drawHeavenArc(cx, cy); return; }
   if (P.atk < 0.02 || P.atk >= 0.24) return;
   const k = Math.min(1, (P.atk - 0.02) / 0.15), fade = P.atk < 0.17 ? 1 : 1 - (P.atk - 0.17) / 0.07, x = Math.round(P.x - cx), y = Math.round(P.y - cy) - 12, f = P.face;
-  const R = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14, head = -0.35 - 2.4 * Math.min(1, k * 1.5), tail = Math.min(-0.35, head + 1.5 - 0.5 * (1 - fade)), col = specialCol();
+  const R = (UP_SLASH.air[hero()] || UP_SLASH.air.knight).top - 14, head = -0.35 - 2.4 * Math.min(1, k * 1.5), tail = Math.min(-0.35, head + 1.5 - 0.5 * (1 - fade)), col = isReaper() ? ['#4fe08a', '#1f7a44'] : specialCol();   /* (claude/dkfeel: the Death Knight's rise is grave-green flame) */
   const ring = (rOut, w0, a0, a1) => { const n = 14, pts = [], w = w0 * Math.min(1, Math.max(0, (a0 - a1) / 1.2));   /* (a short arc is a fine line, not a blob) */
     for (let i = 0; i <= n; i++) { const t = i / n, an = a1 + (a0 - a1) * t, th = w * Math.sin(Math.PI * Math.pow(t, 0.8)); pts.push([an, th]); }
     g.beginPath();

@@ -2824,6 +2824,24 @@ function reaperRhythmPoses(F, sh, atkOnly = false) {
     K({ wide: 14, dx: 3, legs: 'runC', ...gs(X + 6, Y - 4, X + 25, Y - 5), plume: 2, bits: [a(X + 25, Y - 5, '#ffffff'), a(X + 22, Y - 4, HOT), a(X + 18, Y - 4, PINK), a(X + 12, Y - 3, RED)] }),
     K({ wide: 10, dx: 3, dy: 3, legs: 'wide', ...gs(X + 5, Y + 3, X + 20, Y + 9), plume: 0, bits: [a(X + 17, Y + 8, PINK), a(X + 12, Y + 7, RED), a(X + 21, Y + 9, '#b8a890'), a(X + 9, Y + 4, DRED)] })];
 }
+/* THE DEATH KNIGHT'S DEATH MAGIC IN THE AIR (claude/dkfeel, Daniel 10-16; B16: its own windup + release pose, not the shared knight up-cut and not a straight column):
+   THE REAPING RISE (up + attack in the air): the greatsword swept back and low behind his heel; HAULED up through the front in a reaping crescent with a grave-green
+   flame licking off the steel and soul wisps rising behind it; held straight up over his helm in both fists, the point to the sky, the green flaring; then let go behind him.
+   THE CULL, the plunge: the blade turned point-down and driven ahead of him with a necrotic glow gathering on the point and bone-white splinters trailing off the edge, the helm's lights green;
+   the second beat is the point about to bite (the glow white-hot), the spikes of the grave burst (main.js graveFall) already lifting under it. */
+function reaperGravePoses(F, sh) {
+  const top = ATTACK_HEADROOM, [X, Y] = sh, K = o => knightFrame({ top, ...o });
+  const a = (x, y, col) => [x - BX, y - BY, col], GRN = '#4fe08a', DGRN = '#1f7a44', LGRN = '#b8ffd0', BONE = '#d8ccb0', DBONE = '#8a7a5a', RED = '#c0283a', PINK = '#ff6b6b';
+  const gs = (hx, hy, tx, ty) => ({ arm: [X, Y, hx, hy], greatsword: [hx, hy, tx, ty] });
+  const along = (hx, hy, tx, ty, n, c0, c1) => Array.from({ length: n }, (_, i) => { const t = (i + 1) / (n + 1); return a(Math.round(hx + (tx - hx) * t), Math.round(hy + (ty - hy) * t), i % 2 ? c1 : c0); });
+  const hold = F.jump ? F.jump[1] || F.jump[0] : F.atk[4];
+  F.airUp = [K({ dx: -1, dy: 0, legs: 'jump2', ...gs(X - 3, Y + 2, X - 15, Y + 6), plume: 1, bits: [a(X - 14, Y + 5, DGRN), a(X - 11, Y + 4, GRN)] }),
+    K({ wide: 8, dx: 1, dy: 1, legs: 'jump2', sho: 1, ...gs(X + 4, Y - 3, X + 15, Y - 15), plume: 2, bits: [a(X + 15, Y - 15, LGRN), a(X + 16, Y - 16, GRN), a(X + 14, Y - 17, GRN), a(X + 12, Y - 11, GRN), a(X + 13, Y - 12, DGRN), a(X + 9, Y - 7, DGRN), a(X + 10, Y - 13, GRN), a(X + 17, Y - 12, DGRN), a(X - 2, Y - 14, GRN), a(X - 3, Y - 17, LGRN)] }),
+    K({ wide: 6, dx: 1, dy: 0, legs: 'tuck', sho: 1, hy: 1, ...gs(X + 2, Y - 9, X + 1, Y - 24), plume: 2, bits: [a(X + 1, Y - 25, '#ffffff'), a(X + 1, Y - 22, LGRN), a(X + 2, Y - 18, GRN), a(X - 1, Y - 14, DGRN), a(X + 5, Y - 21, GRN), a(X - 4, Y - 20, LGRN), a(X + 7, Y - 15, DGRN), a(X - 1, Y - 24, GRN), a(X + 3, Y - 23, LGRN), a(X - 2, Y - 17, GRN), a(X + 4, Y - 19, GRN), a(X - 3, Y - 23, DGRN), a(X + 5, Y - 25, DGRN), a(X + 1, Y - 28, LGRN), a(X + 2, Y - 29, GRN), [4, 3, GRN], [5, 3, GRN]] }),
+    K({ wide: 2, dx: 0, dy: 1, legs: 'tuck', ...gs(X - 2, Y - 7, X - 13, Y - 18), plume: 1, bits: [a(X - 13, Y - 18, GRN), a(X - 14, Y - 19, LGRN), a(X - 12, Y - 20, GRN), a(X - 9, Y - 14, DGRN), a(X - 10, Y - 17, GRN), a(X - 3, Y - 22, LGRN), a(X + 2, Y - 26, GRN), a(X + 4, Y - 29, DGRN)] }), hold];
+  F.plunge = K({ legs: 'tuck', hy: 1, sho: 1, arm: [X, Y, X, Y + 1], greatsword: [X, Y - 5, X, Y + 19], plume: 2,
+    bits: [a(X, Y + 19, '#ffffff'), a(X, Y + 20, '#ffffff'), a(X - 1, Y + 19, LGRN), a(X + 1, Y + 19, LGRN), a(X, Y + 21, GRN), a(X - 2, Y + 21, DGRN), a(X + 2, Y + 21, DGRN), a(X, Y + 17, LGRN), a(X + 1, Y + 14, GRN), a(X - 1, Y + 14, GRN), a(X - 2, Y + 19, DGRN), a(X + 2, Y + 20, DGRN), a(X + 3, Y + 16, BONE), a(X - 3, Y + 11, BONE), a(X + 3, Y + 8, DBONE), a(X - 2, Y + 5, BONE), [4, 3, GRN], [5, 3, GRN]] });
+}
 export function bakeReaper(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0, REAP_PAL, skin); BODY_REF = REAP_BODY; PLUME_REF = REAP_PLUME;
   const sh = [BX + 8, BY + 7];
@@ -2973,6 +2991,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
   const mirror = f => Array.isArray(f) ? f.map(flipX) : flipX(f);
   directionalPoses(F, 'greatsword', { scale: 1.22 });
   reaperKitPoses(F, sh);
+  reaperGravePoses(F, sh);   /* (claude/dkfeel) the up-air reaping rise and the Cull plunge: death magic */
   reaperRhythmPoses(F, sh);   /* (claude/dk2art) the rhythm, the kneel, the price held and the crescent: their own bodies */
   smearPass(F, SMEAR_COL.crimson);   /* the strike beats get their arc (claude/herokeys; the Death Knight's is crimson, claude/dk2art) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);

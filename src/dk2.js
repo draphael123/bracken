@@ -21,11 +21,11 @@ export const DK2 = {
   /* REAPER'S RHYTHM: rate is P.atk's speed (the old swing 0.34 -> x1.35); pull px a hooked foe is drawn toward him (never a boss or a mini,
      never through a wall); drain: the drag gives back drain x the blow's damage (drainMin..drainMax hp); ward: what one landed cut of the chain
      puts in the ward (P.wardG) - never past wardTop of a full ward, so feeding it never breaks it */
-  rhythm: { rate: 0.46, pull: 12, drain: 0.2, drainMin: 1, drainMax: 5, ward: 7, wardTop: 0.75, trail: 0.24 },
+  rhythm: { rate: 0.56, pull: 12, drain: 0.2, drainMin: 1, drainMax: 5, ward: 7, wardTop: 0.75, trail: 0.24 },
   /* BLOOD PRICE CLEAVE: a price of pct of max health the moment the wind starts, then one every `every` s held, at most `ticks`; each paid
      price adds mul to the crescent's multiplier; a crescent that lands drains back `back` x what was paid; rate is the release's P.atk speed;
      reach is the crescent's box (px in front), +grow a price; volleyAt: the price count that looses THE RED VOLLEY (with its talent) */
-  price: { every: 0.5, pct: 0.03, ticks: 6, mul: 0.22, back: 2, rate: 0.32, lim: 0.36, reach: 38, grow: 3, top: 42, live: [0.12, 0.26], volleyAt: 3 },
+  price: { every: 0.5, pct: 0.03, ticks: 6, mul: 0.22, back: 2, rate: 0.40, lim: 0.36, reach: 38, grow: 3, top: 42, live: [0.12, 0.26], volleyAt: 3 },
   /* GRAVE KNEEL: what a low blow turned on the planted blade costs him (the guard's own price, src/commit.js blockCost) */
   kneel: { said: 1.2 },
   /* THE DEAD LINGER for him: a body's life (s) and the last `fade` s it dims over */
