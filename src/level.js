@@ -2757,7 +2757,7 @@ function undercrown() {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
     waterHurts: true,   /* (claude/undercrown2, A10) a fall in the dead water costs health and hands you back to the last dry ground - not a death */
     timber: true, slabs, reachSlabs: [{ slab: 'adit', hinge: 1 }, { slab: 'flood', flat: true }, { slab: 'stope', hinge: 1 }, { slab: 'drift', hinge: 1, optional: true }],   /* the slabs the way on needs, cut as the signs say (src/reachcore.js) */
-    hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true,
+    hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true, ucKit: true,   /* (claude/undercrown2art) its own tile kit, walls, slabs, posts and lights (src/redraw/undercrown_*.js) */
     duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,
     tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
     palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34', farDim: 0.28, footLip: ['#f0be7c', 0.62],
@@ -7886,7 +7886,7 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
    lane flips this, the level keeps its old place exactly (a secret fork off Highcrown at 80% put down) and Highcrown still needs Stormhold. Flipped:
    needs 'storm', Highcrown needs it, no hidden/secret/kill count, a node on the road between the two (src/main.js CRAG_NODES), and a save that had
    Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
-export const ROAD_OPEN = { undercrown: false };
+export const ROAD_OPEN = { undercrown: true };
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
