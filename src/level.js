@@ -6182,7 +6182,7 @@ function waymeet() {
   loft('v1', 11, 13, 14, 18, 16, 'THE WAYSIDE LAMP');
   loft('v2', 86, 87, 88, 91, 90, 'THE MARKET LAMP');
   loft('v3', 291, 293, 294, 298, 296, 'THE GARDEN LAMP');
-  sign(21, 'A DARK WAYSIDE LAMP, UP ON ITS LOFT. A FLAME FROM THE BRAZIER LIGHTS IT. THREE LAMPS OPEN THE HILL ROAD TO THE LIT CHURCH.');
+  sign(21, 'A DARK WAYSIDE LAMP. A BRAZIER FLAME LIGHTS IT. THREE OPEN THE CHURCH ROAD.');
 
   /* THE LADDERS, LAST: nothing is dug after this line */
   for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);

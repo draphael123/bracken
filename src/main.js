@@ -10019,8 +10019,8 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(P.x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return P.y <= ty * TS + 4; };
   for (const p of (L.pools || [])) if (GS > 0 && !P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
     if (p.fire) { burst(P.x, p.y, 18, ['#fff6c8', '#ffd36b', '#ff6b2c'], 90, 0.6, -160, 2); SFX.puff(); number(P.x, p.y - 14, 'BURNED', '#ff9a5c'); }
-    else if (!p.mud && !p.tarn) { burst(P.x, p.y, 22, ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'], 100, 0.7, 520, 2); SFX.crack(); SFX.splash(); shakeCam(7, 0, 'hurt'); number(P.x, p.y - 14, 'SPLASH', '#e6efe6'); }   /* (lethal water bites: grey-green spray, a hard splash and a hurt shake - not the bright blue splash of water you swim: claude/towpathchurch) */
-    else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
+    else { const lethal = !p.mud && !p.tarn;   /* (lethal water bites: grey-green spray, a hard splash and a hurt shake - not the bright blue splash of water you swim: claude/towpathchurch) */
+      burst(P.x, p.y, lethal ? 22 : 16, lethal ? ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'] : ['#eefaff', '#bfe6f5', '#7fc4e0'], lethal ? 100 : 90, lethal ? 0.7 : 0.6, 520, 2); SFX.crack(); if (lethal) { SFX.splash(); shakeCam(7, 0, 'hurt'); } number(P.x, p.y - 14, 'SPLASH', lethal ? '#e6efe6' : '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
     if (L.waterHurts && L.fallRule !== 'death' && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; hazardSay(); } }
       else if (SET.invincible) godSafe();
