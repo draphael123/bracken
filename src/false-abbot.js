@@ -42,7 +42,7 @@
 // B15: warded he takes 0.4 (the floor), told by the clank and WARDED in main.js; down under the bell, double.
 // PURE: no DOM, no main.js. Everything the world does is a call on `c`. Proved by tools/false-abbot.mjs.
 export const ABBOT = {
-  hp: 2700, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
+  hp: 2850, walk: 30, keep: 44, cd: 1.5, cdP2: 1.15,
   tell: { censer: 0.55, cast: 0.7, swing: 0.8, gleam: 0.8, coals: 0.75, rite: 2.4, knell: 1.0 },
   dmg: { censer: 20, cast: 16, reel: 10, slam: 24, light: 16, knell: 22 },
   censerR: 46,            // the chain's reach past his body

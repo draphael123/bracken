@@ -18525,7 +18525,7 @@ function updateFalseAbbotBoss(e, dt) {
        comes up the ladder onto the boards, so a summon that would land in a bed steps out of it toward the Abbot. */
     summon: () => { const side = Math.random() < 0.5 ? -1 : 1, fl = Math.floor(A.floor / TS) - 1; let gx = Math.max(4, Math.min(L.W - 5, Math.floor((e.x + side * 110) / TS)));
       for (let k = 0; k < 20 && (tileAt(gx, fl) === T.SPIKE || tileAt(gx - 1, fl) === T.SPIKE || tileAt(gx + 1, fl) === T.SPIKE); k++) gx -= side;
-      const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.4 ? 'archer' : 'sprig', x: Math.max(4, Math.min(L.W - 5, gx)), y: Math.floor(A.floor / TS) - 1, face: -side });
+      const n0 = enemies.length; spawnEnt({ t: Math.random() < 0.25 /* (claude/abbot2: 0.4 - his own kit is the threat now; the knight died to the bows) */ ? 'archer' : 'sprig', x: Math.max(4, Math.min(L.W - 5, gx)), y: Math.floor(A.floor / TS) - 1, face: -side });
       for (let i = n0; i < enemies.length; i++) { enemies[i].fromAbbot = true; enemies[i].seenP = true; }
       burst(gx * TS, A.floor - 8, 8, ['#6faa4a', '#e8a83a'], 50, 0.4); },
     /* THE RITE reaches his congregation with the priest's own numbers, on the game's own blessT */
