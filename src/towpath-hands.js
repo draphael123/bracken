@@ -155,7 +155,7 @@ export function makeTowpathHands(ctx) {
   function wind(h) { if (!h || rideState('hoist', h.id) === 'moving') return null; h.to = h.y <= h.topY + 0.5 ? h.botY : h.topY; K.n.hoists++; ctx.sfx.chain ? ctx.sfx.chain() : ctx.sfx.clank && ctx.sfx.clank();
     if (once('hoist')) number(ctx.hero().x, ctx.hero().y - 34, 'THE WINCH TURNS: THE HOIST RIDES TO THE OTHER FLOOR'); return h.to === h.topY ? 'up' : 'down'; }
   function sluice(q, g) { if (!q || rideState('trough', q.id) === 'moving') return null; const ts = TS(), atW = q.x <= q.stopW * ts + 0.5, west = g && g.x < (q.stopW + q.stopE) / 2 * ts;
-    if (atW !== !!west) { if (once('sluiceFar')) number(ctx.hero().x, ctx.hero().y - 34, 'THE BARGE IS AT THE FAR STOP: ITS OWN SLUICE SENDS IT'); return null; }
+    if (atW !== !!west) { if (once('sluiceFar')) number(ctx.hero().x, ctx.hero().y - 34, 'THE BARGE IS AT THE FAR STOP: WAIT, THE BARGEMAN POLES IT BACK'); return null; }
     if (q.water < 1) q.fillT = TP.troughT; q.to = (atW ? q.stopE : q.stopW) * ts; K.n.barges++; ctx.sfx.splash ? ctx.sfx.splash() : ctx.sfx.clank && ctx.sfx.clank();
     if (once('sluice')) number(ctx.hero().x, ctx.hero().y - 34, 'THE SLUICE OPENS: THE TROUGH RUNS AND THE BARGE FLOATS'); return 'sent'; }
   function swingJib(c) { if (!c || rideState('crane', c.id) === 'moving') return null; c.goal = c.k < 0.5 ? 1 : 0; K.n.cranes++; ctx.sfx.chain ? ctx.sfx.chain() : ctx.sfx.clank && ctx.sfx.clank();

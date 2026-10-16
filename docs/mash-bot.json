@@ -8983,7 +8983,7 @@
   }
  },
  "towpath": {
-  "hash": "8730911a0046",
+  "hash": "3f28d5b6568b",
   "boss": {
    "boss": "fogknight",
    "wins": 0,
@@ -9084,59 +9084,58 @@
    ]
   },
   "carried": {
-   "from": "1e92f56b2a75",
+   "from": "8730911a0046",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 8,
+    "deaths": 7,
     "minHpPct": 0,
-    "hpLostPct": 738,
-    "hits": 30,
+    "hpLostPct": 647,
+    "hits": 24,
     "walked": 100,
-    "lifts": 38,
+    "lifts": 37,
     "held": 11,
     "duels": 3,
     "boardLifts": 5,
-    "rides": 7,
+    "rides": 6,
     "pulls": 0,
     "ridden": {
-     "punt": 6,
+     "punt": 5,
      "barge": 1
     },
     "machines": true,
-    "frames": 16350,
-    "kills": 3,
+    "frames": 16951,
+    "kills": 4,
     "heroLevel": 25
    },
    "warden": {
     "deaths": 8,
     "minHpPct": 0,
-    "hpLostPct": 759,
-    "hits": 28,
+    "hpLostPct": 745,
+    "hits": 31,
     "walked": 100,
-    "lifts": 38,
-    "held": 10,
+    "lifts": 36,
+    "held": 11,
     "duels": 3,
-    "boardLifts": 4,
+    "boardLifts": 3,
     "rides": 4,
     "pulls": 0,
     "ridden": {
-     "punt": 3,
-     "barge": 1
+     "punt": 4
     },
     "machines": true,
-    "frames": 14979,
+    "frames": 14404,
     "kills": 6,
     "heroLevel": 25
    },
    "pyro": {
     "deaths": 6,
     "minHpPct": 0,
-    "hpLostPct": 542,
-    "hits": 32,
+    "hpLostPct": 548,
+    "hits": 31,
     "walked": 100,
     "lifts": 33,
     "held": 11,
@@ -9148,8 +9147,8 @@
      "punt": 6
     },
     "machines": true,
-    "frames": 15813,
-    "kills": 5,
+    "frames": 15842,
+    "kills": 3,
     "heroLevel": 25
    }
   }
