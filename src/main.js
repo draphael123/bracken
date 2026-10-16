@@ -10013,6 +10013,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(P.x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return P.y <= ty * TS + 4; };
   for (const p of (L.pools || [])) if (GS > 0 && !P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
     if (p.fire) { burst(P.x, p.y, 18, ['#fff6c8', '#ffd36b', '#ff6b2c'], 90, 0.6, -160, 2); SFX.puff(); number(P.x, p.y - 14, 'BURNED', '#ff9a5c'); }
+    else if (!p.mud && !p.tarn) { burst(P.x, p.y, 22, ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'], 100, 0.7, 520, 2); SFX.crack(); SFX.splash(); shakeCam(7, 0, 'hurt'); number(P.x, p.y - 14, 'SPLASH', '#e6efe6'); }   /* (lethal water bites: grey-green spray, a hard splash and a hurt shake - not the bright blue splash of water you swim: claude/towpathchurch) */
     else { burst(P.x, p.y, 16, ['#eefaff', '#bfe6f5', '#7fc4e0'], 90, 0.6, 500, 2); SFX.crack(); number(P.x, p.y - 14, 'SPLASH', '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
     if (L.waterHurts && L.fallRule !== 'death' && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; hazardSay(); } }
@@ -28852,17 +28853,36 @@ function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
 // WATER WITH NO BOTTOM. Deep pools kill on contact and they were drawn exactly like water you can swim in.
 // This one has no foam, no crests and no light in it: a black sheen, a cold rim, and the slow turn of
 // something moving a long way down.
+/* LETHAL WATER MUST READ AS LETHAL (claude/towpathchurch, Daniel 10-16, live: the Towpath's lock water looked like the swimmable water of the earlier levels). Every pool you can neither
+   swim nor wade - the wood's and the marsh's deep ponds, the canal's locks and cuts, the Towpath's locks, pounds and river - is drawn as WATER THAT TAKES YOU: near-black, a pale
+   sick fog-skin lying on it, a churning froth, sucking eddies turning on it, drowned wreckage and a pale hand reaching up out of it - and the first time it is on the screen it says so
+   (p.warn, default THIS WATER DROWNS; the Towpath's pools say THE LOCK WATER DROWNS). Swimmable water keeps its bright crests; this has none of them. tools/lethal-water.mjs lists the pools. */
 function drawDeadWater(p, x0, x1, y, h, cx, cy) {
-  g.globalAlpha = 0.5; g.fillStyle = '#050a10'; g.fillRect(x0, y + 1, x1 - x0, Math.max(0, h - 1)); g.globalAlpha = 1;
-  g.fillStyle = '#243642'; g.fillRect(x0, y, x1 - x0, 2);
-  g.fillStyle = '#0b1a22'; g.fillRect(x0, y + 2, x1 - x0, 2);
-  g.globalAlpha = 0.5; g.fillStyle = '#38566a';
-  for (let x = Math.floor(p.x0 / 18) * 18; x < p.x1; x += 18) { const sx = Math.round(x + Math.sin(time * 0.5 + x * 0.11) * 7 - cx);
-    if (sx > x0 && sx < x1 - 6) g.fillRect(sx, y + 1 + (Math.sin(time * 0.9 + x) > 0 ? 0 : 1), 6, 1); }
+  const W = x1 - x0, wx0 = cx + x0, deep = Math.max(0, h - 1);
+  g.globalAlpha = 0.66; g.fillStyle = '#04080b'; g.fillRect(x0, y + 1, W, deep); g.globalAlpha = 1;
+  const sk = Math.min(deep, 46), gr = g.createLinearGradient(0, y, 0, y + sk); gr.addColorStop(0, 'rgba(150,176,150,0.34)'); gr.addColorStop(1, 'rgba(40,70,60,0)'); g.fillStyle = gr; g.fillRect(x0, y, W, sk);   /* the sickly tint under the skin */
+  g.globalAlpha = 0.6 + 0.12 * Math.sin(time * 1.3); g.fillStyle = '#b4c4b0'; g.fillRect(x0, y, W, 2); g.fillStyle = '#6d887a'; g.fillRect(x0, y + 2, W, 2); g.globalAlpha = 1;   /* the pale fog-skin */
+  g.fillStyle = '#04080b'; g.fillRect(x0, y + 4, W, 1);
+  for (let wx = Math.floor(wx0 / 8) * 8; wx < wx0 + W; wx += 8) {   /* the churn: froth jostling fast, and dark troughs between */
+    const sx = Math.round(wx + Math.sin(time * 3.1 + wx * 0.7) * 3 - cx), hs = Math.abs(Math.sin(wx * 12.9898) * 43758.5453) % 1; if (sx < x0 || sx > x1 - 4) continue;
+    g.globalAlpha = 0.55 + 0.35 * hs; g.fillStyle = hs > 0.5 ? '#e6efe6' : '#9fb3a6'; const fw = 2 + ((hs * 7) | 0) % 3;
+    g.fillRect(sx, y - 1 - (Math.sin(time * 8 + wx) > 0.4 ? 1 : 0), fw, 1 + (hs > 0.7 ? 1 : 0)); if (hs > 0.55) { g.fillStyle = '#0b1a22'; g.fillRect(sx + 1, y + 4, fw + 1, 1); } }
+  g.globalAlpha = 1; g.lineWidth = 1;
+  for (let wx = Math.floor(wx0 / 70) * 70 + 35; wx < wx0 + W + 20; wx += 70) {   /* the sucking eddies: rings turning on the surface, drawing in */
+    const sx = Math.round(wx - cx + Math.sin(time * 0.4 + wx) * 6); if (sx < x0 + 6 || sx > x1 - 6) continue; const a = time * 2.6 + wx;
+    g.strokeStyle = 'rgba(214,230,220,0.62)'; g.beginPath(); g.ellipse(sx, y + 3, 10, 2.4, 0, a, a + 4.1); g.stroke();
+    g.strokeStyle = 'rgba(214,230,220,0.42)'; g.beginPath(); g.ellipse(sx, y + 3, 5, 1.4, 0, -a * 1.4, -a * 1.4 + 3.6); g.stroke();
+    g.fillStyle = '#02050a'; g.fillRect(sx - 1, y + 3, 3, 1); }
+  for (let wx = Math.floor(wx0 / 54) * 54 + 20; wx < wx0 + W + 30; wx += 54) {   /* what it has drowned: planks and barrel staves turning in it, and a pale hand reaching up */
+    const k = ((wx / 54) | 0) & 3, sx = Math.round(wx - cx + Math.sin(time * 0.7 + wx) * 5), by = Math.round(y + 3 + Math.sin(time * 1.5 + wx * 0.13) * 1.4); if (sx < x0 - 6 || sx > x1 + 6) continue;
+    if (k === 0) { g.fillStyle = '#4a3a2a'; g.fillRect(sx - 5, by - 1, 11, 2); g.fillStyle = '#6a5640'; g.fillRect(sx - 5, by - 1, 11, 1); g.fillStyle = '#2a2018'; g.fillRect(sx + 1, by, 2, 1); }
+    else if (k === 2) { g.fillStyle = '#3a2e22'; g.fillRect(sx - 2, by - 2, 4, 3); g.fillStyle = '#5a4a38'; g.fillRect(sx - 3, by - 3, 6, 1); }
+    else if (k === 1) { const up = 3 + Math.round((Math.sin(time * 1.1 + wx) + 1) * 2.5); g.fillStyle = '#c9d6c6'; g.fillRect(sx - 1, by - up, 2, up); g.fillRect(sx - 3, by - up - 2, 1, 3); g.fillRect(sx - 1, by - up - 3, 1, 3); g.fillRect(sx + 1, by - up - 2, 1, 3); g.fillStyle = '#7d9486'; g.fillRect(sx - 1, by - 1, 2, 1); } }
   g.globalAlpha = 0.28;
   for (let k = 0; k < 5; k++) { const t2 = (time * 0.16 + k * 0.23) % 1, dx = p.x0 + 20 + ((k * 137) % Math.max(1, p.x1 - p.x0 - 40)) - cx, dy = y + 8 + t2 * 26;
     if (dx > x0 && dx < x1) { g.fillStyle = '#1e3a48'; g.fillRect(dx, dy, 5, 2); g.fillRect(dx + 1, dy - 2, 3, 2); } }
   g.globalAlpha = 1;
+  if (!L.drownTold && x1 > 24 && x0 < VW - 24 && y > 10 && y < VH - 10) { L.drownTold = true; number(Math.max(p.x0 + 40, Math.min(p.x1 - 40, P.x)), p.y - 26, p.warn || (L.towpath ? 'THE LOCK WATER DROWNS' : 'THIS WATER DROWNS'), '#ff6b6b'); SFX.buzz(); }   /* (told once a level, the first time one is on the screen: A3) */
 }
 // AND THE CURRENT, DRAWN: streaks that travel the way it goes, so the water tells you before it takes you
 function drawFlow(p, x0, x1, y, h, cx, cy) {

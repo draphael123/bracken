@@ -154,6 +154,7 @@ export function buildTowpath({ painter, T, TS }) {
   block(47, 47, 38, BOT);
   lock('A', 48, 55, 44, 40, 34, 'lo', { gate: [47, 33, 37], shallowLo: true });
   punt('A', 48, 8); paddle(54, 39, 'A'); paddle(46, 37, 'A');   /* (its twin on the lower bank: a punt that rode up without you comes back down) */
+  sign(40, 37, 'THE LOCK WATER DROWNS. IT IS NO WATER TO SWIM: STAY ON THE BANK AND THE BOATS.');   /* (1b, 10-16: the lethal water is told before the first lock: it is drawn dark under a pale skin, with eddies and a reaching hand) */
   sign(45, 37, 'THE FOG LIES ON THE LOW WATER. STRIKE THE PADDLE: THE LOCK LIFTS YOU OUT OF IT.');
   bank(24, 58, 40, 0.5);   /* the mill pond's bank: over the low towpath, the hut and the chamber at its low water */
   ground(56, 99, 34);
