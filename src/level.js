@@ -2587,7 +2587,7 @@ function undercrown() {
   //         and the only way up is the slab of roof between them: one post, the other end keyed into the rock. Cut the post. ----
   gallery(2, 39, 24, 4);
   ent('sign', 4, 23, { text: 'NOTHING DOWN HERE IS HOLDING ITSELF UP. EVERY ROOF IS A SLAB ON A POST.' });
-  ent('check', 6, 23);
+  /* (claude/undercrown2art: no shrine on the start tile - it is the spawn already - so the shrines are the flooded level's, the stope's shaft foot, the barrow's and the tomb's: level-quality wants one per 90 route tiles on average and checkpoint-gaps no gap over 200) */
   ent('deco', 10, 23, { kind: 'barrels' }); ent('minerlamp', 14, 23, { lit: true }); ent('deco', 16, 23, { kind: 'wares' });
   ent('minerlamp', 30, 23, { lit: true }); ent('deco', 37, 23, { kind: 'barrels' });
   rail(26, 39, 24); ent('cart', 36, 23);

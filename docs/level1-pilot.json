@@ -420,13 +420,13 @@
   "bare": true
  },
  "undercrown": {
-  "hash": "0dc983662848",
+  "hash": "a8ba0dc46aa6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 28,
+  "hits": 34,
   "deaths": 4,
-  "kills": 89,
+  "kills": 86,
   "lifts": 94,
   "walked": 100,
   "bare": true
