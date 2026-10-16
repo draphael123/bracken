@@ -147,6 +147,7 @@ export function makeCrouchB(api) {
   }
   /* HIS POSE while it works: [key, frame] or null (the plain crouch) */
   function pose(R) { const p = P(), h = api.hero(); if (!p.ducking) return null;
+    if (h === 'paladin' && R.pray && p.kneelT >= KNEEL.settle) return ['pray', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];   /* (claude/paladin4art) PRAYER's own pose: both hands clasped on the haft, a halo over the bowed helm */
     if (h === 'paladin' && R.kneel && p.kneelT >= KNEEL.settle) return ['kneel', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];
     if (h === 'geomancer' && R.sense && p.senseT >= SENSE.settle) return ['sense', Math.floor(p.senseT * 3) % 2];
     if (h === 'reaper' && R.harvest && p.harvBody) return ['harvest', p.harvT > HARVEST.time * 0.5 ? 1 : 0];

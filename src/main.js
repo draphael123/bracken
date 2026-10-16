@@ -9241,7 +9241,7 @@ function updatePlayer(dt) {
   /* (PALADIN 4, Daniel 10-15 ~20:45) SPEAR OF LIGHT, rebuilt like a thrown lightning spear: a told WINDUP (HG.lance.wind s, his own draw-back, slowed while he winds, a hit
      cancels it - the wind is spent), then a VISIBLE spear of light thrown at HG.lance.sp px/s out to HG.lance.range px that STOPS AT THE FIRST FOE (a second rank of the skill
      would let it pierce: not sold yet) for HG.lance.dmg. Was: an instant 230 px beam through everything on the press frame, 22 */
-  if (isPaladin() && skillPress('lightLance') && cdReady('lightLance') && canAct() && !(P.lanceWind > 0)) { if (spend(25)) { cdSet('lightLance'); P.lanceWind = HG.lance.wind; P.lanceFace = P.face; kitPose(P, 'hurlH', HG.lance.wind); SFX.tell(false); ringAt(P.x - P.face * 8, P.y - 16, 8, '#fff6c8', 0.3); } else tired(); }
+  if (isPaladin() && skillPress('lightLance') && cdReady('lightLance') && canAct() && !(P.lanceWind > 0)) { if (spend(25)) { cdSet('lightLance'); P.lanceWind = HG.lance.wind; P.lanceFace = P.face; kitPose(P, 'lanceDraw', HG.lance.wind); SFX.tell(false); ringAt(P.x - P.face * 8, P.y - 16, 8, '#fff6c8', 0.3); } else tired(); }
   // DIVINE SHIELD: nothing touches you
   if (isPaladin() && skillPress('divineShield') && cdReady('divineShield') && !P.dead && !(P.asleep > 0)) { if (P.winded || !spend(30)) { P.stFlash = 0.35; tired(); } else { cdSet('divineShield');   /* WEIGHT (10-03): it cost nothing and worked on an empty bar - 30 stamina, never while EXHAUSTED */ P.divineT = 2 + 0.5 * (tal('divineShield') - 1); if (!(P.atk >= 0) && !(P.hurt > 0)) kitPose(P, 'halo', 0.5); SFX.aegis(); SFX.lightFull(); ringAt(P.x, P.y - 10, 24, '#ffd36b', 0.4); } }
   if (P.divineT > 0) P.divineT -= dt;
@@ -26345,7 +26345,7 @@ CRB = makeCrouchB({ get P() { return P; }, get L() { return L; }, get enemies() 
   PROG, TS, SFX, hero: () => hero(), hint: m => { hintT = 5; hintMsg = m; }, number: (x, y, t, c) => number(x, y, t, c), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), dust: (x, y, n) => dust(x, y, n),
   shrines: () => shrines, props: () => props, deco: () => deco, extraHoly: () => (LCH && LCH.on() ? LCH.holyLights() : []),   /* (claude/crouchfix) THE HOLY LIGHTS the paladin kneels at (src/crouch-b.js HOLY) */
   shakeCam: (n, k) => shakeCam(n, k), burst: (...a) => burst(...a), meterReady: c => meterReady(c),
-  prayPip: p => { trialEvent('pray'); ringAt(p.x, p.y - 10, 12, '#ffd36b', 0.25); },   /* (PALADIN 4) PRAYER: a pip earned on his knees */
+  prayPip: p => { trialEvent('pray'); ringAt(p.x, p.y - 10, 12, '#ffd36b', 0.25); if (HFX) HFX.pray(p.x, p.y); },   /* (PALADIN 4) PRAYER: a pip earned on his knees */
   lightReady: () => { SFX.lightFull(); number(P.x, P.y - 30, 'READY', '#ffd36b'); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } });
 /* (claude/paladin2) HOLY GROUND (src/holy-ground.js): the hero side - his circle burns foes and mends the heroes in it. LIT CHURCH 2's hero-boss makes
    its own makeHolyGround with side 'foe' and its own targets/hurt (the module never reaches into main.js) */
@@ -27237,13 +27237,13 @@ function convictionTap() { if (P.dead) return; const p = pipsOf(P);
   if (p >= 1) { smiteQ(); return; }
   SFX.buzz(); P.stFlash = 0.3; number(P.x, P.y - 24, 'NO CONVICTION', '#9aa39a'); }
 /* SMITE's strike (no spend): a quick holy strike in front of him. second: TWIN SMITE's second blow */
-function smiteStrike(second) { const S = HG.smiteQ; noteVerb('cast'); P.castT = 0.22; kitPose(P, 'smiteQ', 0.25);
-  const x0 = P.x + P.face * 14; if (HFX) HFX.smite(x0, P.y); SFX.judgement(); ringAt(x0, P.y - 10, second ? 20 : 16, '#ffffff', 0.3); if (!second) number(P.x, P.y - 30, P.twinT > 0 ? 'TWIN SMITE' : 'SMITE', '#fff6c8');
+function smiteStrike(second) { const S = HG.smiteQ; noteVerb('cast'); P.castT = 0.22; const emp = second || P.twinT > 0; kitPose(P, second ? 'smiteB' : 'smiteQ', 0.25);   /* (PALADIN 4 ART) TWIN SMITE: both blows are the EMPOWERED look, the second its own backhand pose */
+  const x0 = P.x + P.face * 14; if (HFX) HFX.smite(x0, P.y, emp); SFX.judgement(); ringAt(x0, P.y - 10, second ? 20 : 16, '#ffffff', 0.3); if (!second) number(P.x, P.y - 30, P.twinT > 0 ? 'TWIN SMITE' : 'SMITE', '#fff6c8');
   const hb = P.face > 0 ? { l: P.x, r: P.x + S.reach, t: P.y - 30, b: P.y + 2 } : { l: P.x - S.reach, r: P.x, t: P.y - 30, b: P.y + 2 };
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || !overlap(hb, box(e))) continue; hurtAs('light', e, Math.round(swordDmg() * S.mul), P.x, false); if (e.alive && !e.maxHp && !e.mini) e.stagger = Math.max(e.stagger || 0, S.stagger); } }
 function smiteQ() { if (!spendLight(P, HG.smiteQ.cost)) return; trialEvent('smite'); smiteStrike(false); hallowAura(1); }
 function twinSmite() { if (!spendLight(P, HG.twin.cost)) return; trialEvent('twinsmite'); P.twinT = HG.twin.gap; smiteStrike(false); hallowAura(2); }   /* (the second blow: the paladin block's P.twinT) */
-function radiance(plus) { const B = plus ? HG.burstPlus : HG.burst; if (!spendLight(P, B.cost)) return; trialEvent(plus ? 'radiancePlus' : 'sanctify'); noteVerb('cast'); P.castT = 0.35; P.rootT = Math.max(P.rootT || 0, 0.25); kitPose(P, 'radiance', 0.45); if (HFX) HFX.radiance(P.x, P.y - 8, B.r);
+function radiance(plus) { const B = plus ? HG.burstPlus : HG.burst; if (!spendLight(P, B.cost)) return; trialEvent(plus ? 'radiancePlus' : 'sanctify'); noteVerb('cast'); P.castT = 0.35; P.rootT = Math.max(P.rootT || 0, 0.25); kitPose(P, plus ? 'radiancePlus' : 'radiance', plus ? 0.55 : 0.45); if (HFX) HFX.radiance(P.x, P.y - 8, B.r, plus);
   SFX.judgement(); shakeCam(plus ? 5 : 4); zoomKick(plus ? 1.07 : 1.05, 0.2); ringAt(P.x, P.y - 8, B.r, '#ffffff', 0.45); ringAt(P.x, P.y - 8, B.r * 0.6, '#ffd36b', 0.35); motes(P.x, P.y - 8, plus ? 28 : 20, B.r); number(P.x, P.y - 30, plus ? 'RADIANCE+' : 'RADIANCE', '#fff6c8');
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || Math.abs(e.x - P.x) > B.r || Math.abs(e.y - P.y) > 40) continue; hurtEnemy(e, Math.round(B.dmg * amul('consecrate') * (1 + 0.075 * LV_GROW())), P.x, false); if (e.alive && !e.maxHp && !e.mini) { e.stagger = Math.max(e.stagger || 0, B.stagger); e.burn = Math.max(e.burn || 0, 1.5); } }
   if (plus && P.hp > 0) { const n = Math.max(1, Math.round(P.maxHp * B.mend)); P.hp = Math.min(P.maxHp, P.hp + n); number(P.x, P.y - 22, '+' + n, '#8fd160'); ringAt(P.x, P.y - 10, 12, '#8fd160', 0.3); }   /* RADIANCE+: and it mends him a little */
@@ -27261,8 +27261,8 @@ function lightWardTakes(fromX, dmg, pierce, who) { const W = HG.ward, beat = tal
   const lands = dmg * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1);
   if (P.st < CM.blockCost(dmg, tal('steady')) || lands >= W.big * P.maxHp) {   /* BROKEN: the knight's rules */
     P.st = 0; P.stFlash = 0.5; P.aegis = false; P.aegisT = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); ringAt(P.x, P.y - 10, 18, '#9a8a60', 0.3);
-    P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'WARD BROKEN', '#ffd36b'); P.wardBroken = (P.wardBroken || 0) + 1; return 'half'; }
-  blocks++; P.wardBlocks = (P.wardBlocks || 0) + 1; if (P.wardBlocks % W.per === 0) convGain(1, false);   /* +1 CONVICTION every second block */
+    P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'WARD BROKEN', '#ffd36b'); if (HFX) HFX.shatter(P.x, P.y - 12); P.wardBroken = (P.wardBroken || 0) + 1; return 'half'; }
+  blocks++; P.wardHitAt = time; P.wardBlocks = (P.wardBlocks || 0) + 1; if (P.wardBlocks % W.per === 0) convGain(1, false);   /* +1 CONVICTION every second block */
   if (tal('retribution')) { const f = nearFoe(fromX); if (f && !f.maxHp) { f.stagger = Math.max(f.stagger || 0, 0.9); f.flash = 0.15; } }
   P.stDelay = ST.delay; hitstop(0.05); shakeCam(1.5); SFX.aegis(); ringAt(P.x, P.y - 10, 16, '#ffd36b', 0.25); streaks(P.x + P.face * 10, P.y - 12, 8, ['#fff6c8', '#ffd36b'], 150); const sd = Math.sign(fromX - P.x) || P.face; sparks(P.x + sd * 11, P.y - 10, sd, 6); return 'blocked'; }
 /* (PALADIN 4, Daniel 10-15 ~17:20) SANCTUARY STEP - his dodge, NOT a brace: a quick step the way he holds (a roll's grace, a little shorter), and a small patch of holy
@@ -27278,12 +27278,12 @@ function sanctuaryStep(dir, air) { const S = HG.step; P.sStep = true; P.shoulder
 function dawnfall(x, y, struck) { const D = HG.dawn; let hit = !!struck;
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e === struck || Math.abs(e.x - x) > D.r + (e.w || 12) / 2 || Math.abs((e.y - (e.h || 16) / 2) - (y - 10)) > D.dy) continue;
     hurtAs('light', e, Math.round(swordDmg() * D.mul), x, false); hit = true; if (e.alive && !e.maxHp && !e.mini && !e.elite) e.stagger = Math.max(e.stagger || 0, D.stagger); }
-  if (HFX) HFX.verdict(x, y); ringAt(x, y - 2, D.r, '#ffe6a0', 0.4); ringAt(x, y - 2, D.r * 0.5, '#fff6c8', 0.3); motes(x, y - 8, 14, 18); SFX.medal && SFX.medal();
+  if (HFX) HFX.dawn(x, y, D.r); ringAt(x, y - 2, D.r, '#ffe6a0', 0.4); ringAt(x, y - 2, D.r * 0.5, '#fff6c8', 0.3); motes(x, y - 8, 14, 18); SFX.medal && SFX.medal();
   if (hit) convGain(1, false);
   if (HGR && !P.dead) { const c0 = HGR.of(P); if (c0 && c0.aura) { c0.life = c0.max = Math.max(c0.life, D.aura); HGR.flare(c0); } else { const c = HGR.plant(P, P.x, P.y, { r: HG.aura.r + 6 * tal('consecrate'), life: D.aura }); c.aura = true; } }
   P.dawnN = (P.dawnN || 0) + 1; }
 /* (PALADIN 4) SPEAR OF LIGHT's throw and flight (the wind-up is the paladin block's P.lanceWind) */
-function throwSpear() { const Ln = HG.lance; P.lanceWind = 0; P.castT = 0.25; kitPose(P, 'beam', 0.3); SFX.lightFull(); SFX.throwWhoosh(); shakeCam(2, P.face * 2); trialEvent('lance');
+function throwSpear() { const Ln = HG.lance; P.lanceWind = 0; P.castT = 0.25; kitPose(P, 'lanceThrow', 0.3); SFX.lightFull(); SFX.throwWhoosh(); shakeCam(2, P.face * 2); trialEvent('lance');
   lanceBeams.push({ spear: true, x: P.x + P.face * 10, y: P.y - 11, x0: P.x + P.face * 10, dir: P.face, t: 9, hit: new Set(), dmg: Math.round(Ln.dmg * amul('lightLance')), pierce: tal('lightLance') >= 2 }); }
 function spearStep(b, dt) { const Ln = HG.lance, step = Ln.sp * dt, n = Math.max(1, Math.ceil(step / 4));
   for (let i = 0; i < n && b.t > 0; i++) { b.x += b.dir * step / n;
@@ -27291,7 +27291,7 @@ function spearStep(b, dt) { const Ln = HG.lance, step = Ln.sp * dt, n = Math.max
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || b.hit.has(e) || Math.abs(e.x - b.x) > (e.w || 12) / 2 + 3 || b.y < e.y - (e.h || 16) - 2 || b.y > e.y + 2) continue;
       b.hit.add(e); hurtAs('shot', e, b.dmg, b.x - b.dir * 10, false); sparks(e.x, b.y, b.dir, 8); ringAt(e.x, b.y, 10, '#fff6c8', 0.25); b.hits = (b.hits || 0) + 1; if (!b.pierce) { b.t = 0; break; } } }
   if (b.t > 0 && Math.random() < dt * 40) parts.push({ x: b.x - b.dir * 6, y: b.y + (Math.random() - 0.5) * 2, vx: -b.dir * 30, vy: -6, life: 0.25, max: 0.25, col: '#ffe6a0', size: 1, grav: 0, glow: true }); }
-function drawSpear(b, cx, cy) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), d = b.dir;
+function drawSpear(b, cx, cy) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), d = b.dir; if (HFX) { HFX.spear(g, x, y, d, time); return; }   /* (PALADIN 4 ART: the baked spear sprite + trail, src/holy-fx.js; the lines below are the greybox kept for a page without HFX) */
   g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.fillRect(d > 0 ? x - 26 : x + 1, y - 1, 25, 3);   /* the light it leaves */
   g.globalAlpha = 1; g.fillStyle = '#ffd36b'; g.fillRect(d > 0 ? x - 14 : x, y - 1, 15, 2); g.fillStyle = '#fff6c8'; g.fillRect(d > 0 ? x - 12 : x, y - 1, 13, 1);
   g.fillStyle = '#ffffff'; g.fillRect(x - (d > 0 ? 0 : 2), y - 2, 3, 1); g.fillRect(x + d * 2 - (d > 0 ? 0 : 0), y - 1, 1, 2); g.fillRect(x - (d > 0 ? 0 : 2), y + 1, 3, 1);   /* the head */
@@ -27312,13 +27312,13 @@ function verdictMark() { const V = HG.verdict; P.verdict = (P.verdict || []).fil
     for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat || P.verdict.includes(e)) continue; const dx = (e.x - P.x) * P.face, dy = Math.abs((e.y - (e.h || 16) / 2) - (P.y - 12));
       if (dx < -6 || dx > V.reach || dy > V.dy || !sightClear(P.x, P.y - 12, e.x, e.y - (e.h || 16) / 2)) continue; const d = Math.abs(dx) + dy * 0.5; if (d < bd) { bd = d; best = e; } }
     if (!best) break; P.verdict.push(best); best.sigilT = time; SFX.tell(false); ringAt(best.x, best.y - (best.h || 16) - 6, 8, '#ffd36b', 0.3); } }
-function verdictStrike() { const V = HG.verdict, marked = (P.verdict || []).filter(e => e.alive); P.verdict = []; P.atk = -1; P.heavy = false; P.vx = 0; P.castT = 0.3; kitPose(P, 'vRel', 0.3); trialEvent('verdict');
+function verdictStrike() { const V = HG.verdict, marked = (P.verdict || []).filter(e => e.alive); P.verdict = []; P.atk = -1; P.heavy = false; P.vx = 0; P.castT = 0.3; trialEvent('verdict');
   /* (PALADIN 4, Daniel 10-15 ~18:45) VERDICT SCALES WITH CONVICTION AND NEVER SPENDS IT: 3-4 pips - each strike leaves a small patch of holy light; 5 = JUDGED - the
      strikes go through a guard (a raised guard is broken, the struck foe left off balance) and stagger an elite */
-  const pp = pipsOf(P), judged = pp >= HG.verdictUp.judged, patches = pp >= HG.verdictUp.from; if (judged) trialEvent('judged');
+  const pp = pipsOf(P), judged = pp >= HG.verdictUp.judged, patches = pp >= HG.verdictUp.from; if (judged) trialEvent('judged'); kitPose(P, judged ? 'vRelJ' : 'vRel', 0.3);
   SFX.judgement(); shakeCam(judged ? 7 : 5, P.face * 2); zoomKick(1.05, 0.2); hitstop(0.05); number(P.x, P.y - 32, judged ? 'JUDGED' : marked.length ? 'VERDICT x' + marked.length : 'VERDICT', '#fff6c8');
   const dmg = Math.round(swordDmg() * heavyMul() * V.mul);
-  const strike = e => { if (HFX) HFX.verdict(e.x, e.y); ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35);
+  const strike = e => { if (HFX) { if (judged) HFX.judged(e.x, e.y); else HFX.verdict(e.x, e.y); } ringAt(e.x, e.y - 2, 12, '#fff6c8', 0.35);
     if (judged && !e.maxHp && !e.mini && (e.rxGuard > 0 || e.guardT > 0 || (e.raHigh || 0) >= 1)) { e.rxGuard = 0; e.guardT = 0; e.raHigh = 0; e.broken = Math.max(e.broken || 0, 1.2); e.vx = 0; number(e.x, e.y - (e.h || 16) - 26, 'GUARD BROKEN', '#ffd36b'); }   /* JUDGED: through the guard */
     hurtAs('heavy', e, dmg, P.x, false); if (e.alive && !e.maxHp && !e.mini && (!e.elite || judged)) e.stagger = Math.max(e.stagger || 0, e.elite ? HG.verdictUp.eliteStagger : 0.8);
     if (patches && HGR) HGR.patch(P, e.x, e.y); };
@@ -30795,7 +30795,8 @@ function drawWorld(cx, cy, showPlayer) {
         g.strokeStyle = '#fff6c8'; g.lineWidth = a > 0.6 ? 2 : 1; g.beginPath(); g.moveTo(Math.round(s.x0 - cx), Math.round(s.y0 - cy)); g.lineTo(Math.round(s.x1 - cx), Math.round(s.y1 - cy)); g.stroke(); g.globalAlpha = 1; }
       if (isPyro() && EMBER) EMBER.draw(g, cx, cy); if (CA) CA.draw(g, cx, cy);   /* THE EMBER FLARE, DRAWN: the burst, the catch, the mistime's smoke and bar */
       if (CRB) CRB.draw(g, cx, cy); if (CRC) CRC.draw(g, cx, cy); if (BZK) BZK.draw(g, cx, cy); if (RGK) RGK.draw(g, cx, cy);   /* (claude/ranger) HER ARROWS (flying, stuck and glinting), the snares, the hawk, the rain (THE MARK is drawn on the late pass, drawMarks) */   /* (THE BERSERKER: the thrown axe and its glint, the hatchets, the frenzy's glow, the brace; a war cry's haste on anyone) */   /* THE CROUCH TWISTS, DRAWN: the prayer's glow, what the earth showed her, the draw out of a body */
-      if (P.aegis) { const k = 0.5 + 0.5 * Math.sin(time * 8), ex = Math.round(P.x - cx), ey = Math.round(P.y - cy) - 12; g.globalAlpha = 0.14 + 0.08 * k; g.fillStyle = '#fff6c8'; g.beginPath(); g.ellipse(ex, ey, 17, 19, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.55 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 17 + k, 19 + k, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } // the AEGIS
+      if (P.aegis && isPaladin() && HFX) HFX.ward(g, Math.round(P.x - cx), Math.round(P.y - cy) - 12, time, Math.max(0, 1 - (time - (P.wardHitAt ?? -9)) / 0.25));   /* (PALADIN 4 ART) THE LIGHT-WARD: an all-round dome, a back half and ribs, brighter a beat after a blow */
+      else if (P.aegis) { const k = 0.5 + 0.5 * Math.sin(time * 8), ex = Math.round(P.x - cx), ey = Math.round(P.y - cy) - 12; g.globalAlpha = 0.14 + 0.08 * k; g.fillStyle = '#fff6c8'; g.beginPath(); g.ellipse(ex, ey, 17, 19, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.55 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.beginPath(); g.ellipse(ex, ey, 17 + k, 19 + k, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } // the AEGIS
       if (isPyro() && P.full) { const k = 0.5 + 0.5 * Math.sin(time * 9); g.globalAlpha = 0.18 + 0.14 * k; g.fillStyle = '#ffd36b'; g.beginPath(); g.ellipse(Math.round(P.x - cx), Math.round(P.y - cy) - 9, 11 + k * 2, 14 + k * 2, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
       if (isPyro() && P.jet) { const jx = Math.round(P.x - cx) + P.face * 8, jy = Math.round(P.y - cy) - 9, f = time * 30; g.globalAlpha = 0.55; for (let i = 0; i < 6; i++) { const k = i / 6, w = 7 + k * 7 + Math.sin(f + i) * 2, len = jetLen() / 6 + 2; g.fillStyle = k < 0.25 ? '#fff6c8' : k < 0.6 ? '#ffd36b' : '#ff9a5c'; g.fillRect(Math.round(P.face > 0 ? jx + k * jetLen() : jx - k * jetLen() - len), Math.round(jy - w / 2 + Math.sin(f * 0.7 + i * 2) * 1.5), len, Math.round(w)); } g.globalAlpha = 1; }
       if (P.candle > 0) drawHandFire(g, P, cx, cy, time);   /* THE BURIAL CAVERNS: fire in hand, for a gas vent */
@@ -32421,7 +32422,11 @@ function render() {
         for (let r = 0; r < 7; r++) for (let c = 0; c < 7; c++) { const ch = SUN[r][c]; if (ch === '.') continue;
           const lightUp = on || (fill > 0 && r >= 7 - Math.ceil(7 * fill));
           g.fillStyle = lightUp ? (ch === 'W' ? (lit ? '#ffffff' : '#fff6c8') : ch === 'r' ? (lit ? '#fff6c8' : '#ffe9a0') : '#ffd36b') : (ch === 'W' ? '#7a6a3c' : ch === 'r' ? '#6a5a30' : '#5a4a28'); g.fillRect(x + c, hy - 1 + r, 1, 1); }
-        { const first = i === 0 || i === 2 || i === 4, ready = pp >= i + 1; g.fillStyle = ready ? '#fff6c8' : '#8a7a4a'; g.fillRect(first ? x + 1 : x - 2, hy - 4, first ? 6 : 8, 1); if (first) { g.fillStyle = ready ? '#ffd36b' : '#5a4a2a'; g.fillRect(x + 1, hy - 3, 1, 1); } if (i === 1 || i === 3 || i === 4) { g.fillStyle = ready ? '#ffd36b' : '#5a4a2a'; g.fillRect(x + 5, hy - 3, 1, 1); } } }   /* (PALADIN 4) the tier groups over 1-2 / 3-4 / 5: a bar over each group, its second pip the EMPOWERED version (lit as it can be spent) */
+        { const grp = i < 2 ? 0 : i < 4 ? 1 : 2, gA = [0, 2, 4][grp], gB = [1, 3, 4][grp], first = i === gA, last = i === gB, ready = pp >= i + 1, gOn = pp >= gA + 1;   /* (PALADIN 4 ART) THE GROUP BARS: one bar over each of 1-2 / 3-4 / 5 with a drop at each end; the bar lights when the group's first tier can be spent, the second pip's half of it (the EMPOWERED version) when that can */
+          g.fillStyle = '#2a1c04'; g.fillRect(x - 1, hy - 5, 9, 3);   /* its dark underlay, so it reads over any plate */
+          g.fillStyle = ready ? (i === gB && gA !== gB ? '#fff6c8' : '#ffd36b') : gOn && i === gB ? '#b99a4a' : '#6a5a30'; g.fillRect(x, hy - 4, first && last ? 7 : first ? 9 : 7, 1);
+          if (first) { g.fillStyle = gOn ? '#fff6c8' : '#8a7a4a'; g.fillRect(x, hy - 3, 1, 2); } if (last) { g.fillStyle = ready ? '#fff6c8' : '#8a7a4a'; g.fillRect(x + 6, hy - 3, 1, 2); }
+          } }   /* (PALADIN 4) the tier groups over 1-2 / 3-4 / 5: a bar over each group, its second pip the EMPOWERED version (lit as it can be spent) */
       g.fillStyle = '#ffd36b'; g.fillRect(8, hy - 3, 2, 9); g.fillRect(5, hy, 8, 2); if (hudMeter) meterPrompt(hudMeter, hy); }
     // BREATH BELONGS ON THE PLATE. It was six pale pips floating over his head - and the half of the Shipwreck
     // Reef that has no surface to breathe at is also the half that is dark, so the pips were invisible and the

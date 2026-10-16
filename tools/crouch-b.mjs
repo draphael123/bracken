@@ -156,13 +156,13 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
   if (!(Pa.l4 >= 99.9)) bad.push(`paladin: four and a half seconds on his knees from empty did not fill his light (${Pa.l4.toFixed(1)})`);
   if (!Pa.praying) bad.push('paladin: down held by a holy light did not pray');
   for (const [k, W] of Object.entries(R.palElse)) { const should = k === 'near' || k === 'shrine';
-    if (should) { if (!(W.light >= SLOWLIGHT * HG.pray.holyMul - 3) || !W.praying || W.pose !== 'kneel' || !W.holy) bad.push('paladin: by a ' + k + ' light he did not pray three times as fast: ' + JSON.stringify(W)); }
-    else { if (!(Math.abs(W.light - SLOWLIGHT) < 3) || !W.praying || W.holy) bad.push('paladin: with ' + k + ' (no holy light) he did not pray at the slow rate (want ~' + SLOWLIGHT.toFixed(1) + '): ' + JSON.stringify(W)); if (W.pose !== 'kneel') bad.push('paladin: with ' + k + ' he was not drawn kneeling'); }
+    if (should) { if (!(W.light >= SLOWLIGHT * HG.pray.holyMul - 3) || !W.praying || W.pose !== 'pray' || !W.holy) bad.push('paladin: by a ' + k + ' light he did not pray three times as fast: ' + JSON.stringify(W)); }
+    else { if (!(Math.abs(W.light - SLOWLIGHT) < 3) || !W.praying || W.holy) bad.push('paladin: with ' + k + ' (no holy light) he did not pray at the slow rate (want ~' + SLOWLIGHT.toFixed(1) + '): ' + JSON.stringify(W)); if (W.pose !== 'pray') bad.push('paladin: with ' + k + ' he was not drawn kneeling'); }
     if (W.box !== DUCK_H) bad.push('paladin: with ' + k + ' the kneel is not even the plain duck (box ' + W.box + ')'); }
 
   if (Pa.box !== DUCK_H) bad.push(`paladin: the kneel is not the duck (hurt box ${Pa.box}, DUCK_H ${DUCK_H})`);
   if (Pa.aegis || Pa.block) bad.push('paladin: a guard stood up while he knelt');
-  if (Pa.pose !== 'kneel') bad.push(`paladin: praying, he is drawn as '${Pa.pose}', not his kneel`);
+  if (Pa.pose !== 'pray') bad.push(`paladin: praying, he is drawn as '${Pa.pose}', not his prayer pose`);
   if (Pa.stood !== 30) bad.push(`paladin: his light moved while he stood (30 -> ${Pa.stood})`);
   if (Pa.walked !== 30 || Pa.walkPray) bad.push(`paladin: his light moved while he walked with down held (30 -> ${Pa.walked})`);
   const PL = R.palLow;
