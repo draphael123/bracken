@@ -166,6 +166,7 @@ import { rimSet, needsRim } from './contrast-rim.js';   /* a light rim for a dar
 import { deathBurst, stepDeathFx, drawDeathFx, materialOf } from './death-fx.js';   /* what a foe was made of, as it goes */
 import { TOME, newTome, newToken as newTomeToken, tomeStep, tomeBlocked, tomeHurt, tomeFrame } from './tome.js';   /* THE TOME, the Falling Tower's floating book (2026-09-22) */
 import { bakeTome } from './redraw/tome.js';
+import * as OWA from './owl-crown-art.js';   /* (claude/owl3art) THE OWL REEVE 3's drops, wind, pellets and lamps (draw only) */
 import * as CRR from './redraw/crag_redress.js';   /* THE REDRESS (docs/visual-audit.md): Scree, the Hanging Village and Stormhold each get their own sky, backdrops, rock and dressing */
 import * as RD2 from './redraw/redress2.js';      /* ... and Highcrown, the Undercrown, the tower, the Monastery and the three shops */   /* THE MAGE'S FOLLY: the tower's skins, rooms, furniture and the potion machinery */
 import * as MF from './redraw/mage_foes.js';   /* its creatures, the Homunculus, the Archmage and his familiar, and the three forms */
@@ -17523,16 +17524,13 @@ function drawOwlReads(e, cx, cy) { const A = L.arena, fl = A.floor, R = Math.rou
      comes); in the gust the streaks run the boards from her to the arena's end, the way they will carry you - toward THE DROP */
   if ((e.mode === 'gustTell' || e.mode === 'gust') && e.alive) { const d = e.gustDir || 1, tell = e.mode === 'gustTell', T0 = OWL_GUST.tell[e.phase === 2 ? 1 : 0], k = tell ? 1 - Math.max(0, e.modeT) / T0 : 1;
     const xa = e.x, xb = d > 0 ? A.x1 : A.x0, span = Math.abs(xb - xa), reach = tell ? span * (0.15 + 0.55 * k) : span, nS = tell ? 10 + Math.round(18 * k) : 40;
-    g.fillStyle = '#f4faf6'; for (let i = 0; i < nS; i++) { const sp = tell ? 90 + (i * 29) % 60 : 300 + (i * 37) % 160, len = 8 + (i * 13) % 16, yy = fl - 3 - (i * 53) % 84; let t = ((i * 97 + time * sp) % (reach + 30)); const px = xa + d * t;
-      g.globalAlpha = (tell ? 0.2 + 0.4 * k : 0.5) + (i % 3) * 0.12; g.fillRect(R(px - cx - (d > 0 ? len : 0)), R(yy - cy), len, i % 4 ? 1 : 2); } g.globalAlpha = 1;
-    if (A.drops) for (const [x0, x1] of A.drops) if ((x0 * TS - e.x) * d > 0) { const xm = R((x0 + x1 + 1) * TS / 2 - cx), y = R(fl - cy), kk = 0.5 + 0.5 * Math.sin(time * 14);   /* the drop it blows toward: a red edge on its lip */
-      g.globalAlpha = 0.45 + 0.4 * kk; g.fillStyle = '#ff6b6b'; g.fillRect(R(x0 * TS - cx), y - 1, 2, 3); g.fillRect(R((x1 + 1) * TS - cx) - 2, y - 1, 2, 3); g.globalAlpha = 1; text('THE DROP', xm, y - 22, '#ff9a5c', 'center', 6); } }
+    OWA.drawWind(g, { e, A, cx, cy, time, tell, k, d, xa, reach, TS, text });   /* (claude/owl3art) needles, leaves and dust on the blow; the drops' lips take it over the edge */ }
   /* (claude/owl3) THE BONE PELLET LOB: the marks on the boards (red rings with a cross) from her cough until each pellet bursts, and the pellets in the air */
-  if (e.pMarks && (e.mode === 'pelletTell' || e.mode === 'pellet')) for (let i = 0; i < e.pMarks.length; i++) { const p = e.pel && e.pel[i]; if (p && p.done) continue; const x = R(e.pMarks[i] - cx), y = R(fl - cy) - 1, k = 0.5 + 0.5 * Math.sin(time * 16 + i);
-    g.globalAlpha = 0.3 + 0.2 * k; g.fillStyle = '#2a0c0c'; g.beginPath(); g.ellipse(x, y, OWL_PELLET.r, 3, 0, 0, 7); g.fill();
-    g.globalAlpha = 0.55 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, OWL_PELLET.r, 3.5, 0, 0, 7); g.stroke(); g.fillStyle = '#ff6b6b'; g.fillRect(x - 3, y - 1, 7, 1); g.fillRect(x, y - 3, 1, 5); g.globalAlpha = 1; }
-  for (const p of e.pel || []) if (!p.done && p.t >= 0) { const k = Math.min(1, p.t / OWL_PELLET.fly), x = R(p.x0 + (p.x1 - p.x0) * k - cx), y = R(p.y0 + (fl - 4 - p.y0) * k - OWL_PELLET.arc * 4 * k * (1 - k) - cy);
-    g.fillStyle = '#3a3026'; g.fillRect(x - 2, y - 2, 5, 5); g.fillStyle = '#e8e0cc'; g.fillRect(x - 1, y - 1, 3, 3); g.fillStyle = '#a8997a'; g.fillRect(x, y, 1, 1); }
+  if (e.pMarks && (e.mode === 'pelletTell' || e.mode === 'pellet')) { const urge = e.mode === 'pellet' ? 1 : 1 - Math.max(0, e.modeT) / OWL_PELLET.tell[e.phase === 2 ? 1 : 0];   /* (claude/owl3art) the marks: talon-scored rings that turn faster as the cough comes to its end */
+    for (let i = 0; i < e.pMarks.length; i++) { const p = e.pel && e.pel[i]; if (p && p.done) continue; OWA.drawMark(g, R(e.pMarks[i] - cx), R(fl - cy) - 1, OWL_PELLET.r, time, i, Math.max(0, Math.min(1, urge)), time + i); } }
+  for (const p of e.pel || []) { if (p.done) { OWA.drawBurst(g, p, p.x1, fl, cx, cy, time); continue; } if (p.t < 0) continue; const k = Math.min(1, p.t / OWL_PELLET.fly), at = kk => [R(p.x0 + (p.x1 - p.x0) * kk - cx), R(p.y0 + (fl - 4 - p.y0) * kk - OWL_PELLET.arc * 4 * kk * (1 - kk) - cy)], [x, y] = at(k);
+    OWA.drawPelletTrail(g, [0.05, 0.1, 0.15].filter(d => k - d > 0).map(d => at(k - d))); OWA.drawPellet(g, x, y, time, k, R(fl - cy) - 1); }
+  OWA.drawScuffs(g, fl, cx, cy, time);   /* what the pellets left in the boards */
 }
 // The Forgemaster. Layers: the hammer stamps on a rhythm, carts roll through on the rail, slag drips at marked spots. Moves: piston lunge, steam spray, a kicked cart. Window: burst his boiler.
 // THE PROPMAN. Everything else in the Undercrown wants to kill you; he wants to keep the roof on. That
@@ -29764,6 +29762,7 @@ function drawWorld(cx, cy, showPlayer) {
     const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0) + (WRD.size ? WR.dipOf(WRD, ty * LW + tx) : 0));
     if (lip && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = lip; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = lip2; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
   }
+  if (L.arena && L.arena.drops) OWA.drawDrops(g, L.arena, cx, cy, time, TS, bossActive && boss && boss.t === 'owl' && boss.alive && (boss.mode === 'gustTell' || boss.mode === 'gust') ? 1 : 0);   /* (claude/owl3art) THE DROP: the void, the broken planks, the rope ends */
   if (L.fields) drawFieldsTiles(cx, cy);   /* the phantom planks, the bales, the buildings' skins */
   if (L.mage) { drawMageTiles(cx, cy); drawArchImages(cx, cy); }   /* THE MAGE'S FOLLY: the tower's skins, the hedges, the holes, the cracks, the stacks and the ice; and the Archmage's images, behind every creature */
   drawCrumbles(cx, cy);   /* THE FALLING TOWER's failing stone: over its own skin, so its cracks are never painted out */
@@ -30069,7 +30068,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'lantern') { const lit = pr.lit && !(pr.owl && pr.lampT < OWL_LAMP.flick && Math.sin(time * 38 + pr.x) < -0.15);   /* (claude/owl3) THE GUTTER: her lamp's last OWL_LAMP.flick s stutters dark and bright */ if (lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (pr.owl && !pr.perch) { const px = Math.round(pr.x - cx), py = Math.round(pr.y - cy); g.globalAlpha = lit ? 0.22 + 0.05 * Math.sin(time * 4 + pr.x) : 0.12; g.fillStyle = lit ? '#ffd36b' : '#141020'; g.beginPath(); g.ellipse(px, py - 1, lit ? 40 : 14, lit ? 6 : 3, 0, 0, 7); g.fill(); if (lit) { g.globalAlpha = 0.18; g.fillStyle = '#fff2c0'; g.beginPath(); g.ellipse(px, py - 1, 18, 3, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }   /* (claude/owl2) HER FLOOR LAMPS' GLOW POOLS on the boards: a lit lamp is where she crashes */
       if (pr.perch) g.drawImage(PROP.crownLantern[lit ? 1 : 0], 0, 0, 12, 11, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy, 12, 11);   /* (claude/owl2) HER PERCH LAMPS HANG: the lamp alone, on its chain off a limb of the bough (src/hanging-village.js drawCrown) - they stood on posts that floated over the planks */
-      else g.drawImage(PROP.crownLantern[lit ? 1 : 0], Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy); }
+      else g.drawImage(PROP.crownLantern[lit ? 1 : 0], Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy);
+      if (pr.owl && !pr.perch) OWA.lampFx(g, Math.round(pr.x - cx), Math.round(pr.y - 31 - cy), time, { lit: pr.lit, gut: pr.lit ? (pr.lampT < OWL_LAMP.flick ? pr.lampT / OWL_LAMP.flick : undefined) : undefined, cool: pr.cool, coolMax: OWL_LAMP.cool }); }   /* (claude/owl3art) THE GUTTER's tongue and sparks, THE SMOKING WICK */
     else if (pr.t === 'gas') g.drawImage(PROP.gasSeam, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 6 - cy);
     else if (pr.t === 'minerlamp') g.drawImage(PROP.minerLamp[pr.lit ? 1 : 0], Math.round(pr.x) - 4 - cx, Math.round(pr.y) - 14 - cy);
     else if (pr.t === 'sarcophagus') g.drawImage(PROP.sarcophagus[pr.open ? 1 : 0], Math.round(pr.x) - 26 - cx, Math.round(pr.y) - 31 - cy);
