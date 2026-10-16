@@ -4768,11 +4768,13 @@ function branchStep(dir, key) { key = key || (dir < 0 ? 'up' : 'down');
     SFX.buzz(); lockedSay(child); raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap) and the tip says it again */
   hopTo(NODES.indexOf(child)); return true;
 }
+let mapPreloadNode = -1;
+const mapPreloadTracks = new Map();
 function updateMap(dt) {
   if (mapTip.t > 0) mapTip.t -= dt;
   if (map.glide && map.glide.node !== map.node) map.glide = null;   /* (a jump from the panel, the title or a reset leaves no glide behind) */
   if (map.glide && (leftPress || rightPress || upPress || downPress || confirmPress || mapPress || pausePress)) map.glide = null;   /* a key during the glide lands the token at once and is taken: nothing waits on the animation */
-  if (map.glide) { map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(0, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
+  if (map.glide) { mapPreloadNode = -1; map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(0, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
   if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
@@ -4802,6 +4804,13 @@ function updateMap(dt) {
   if (skill2Press && !map.walking) ONL.open();   /* ONLINE CO-OP: G on the map (the touch pill ONLINE) opens the same board as the title row; the board holds its own gate (coopOk) */
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id;
+  if (map.walking) mapPreloadNode = -1;
+  else if (mapPreloadNode !== map.node) { const nd = NODES[map.node]; mapPreloadNode = map.node;
+    if ((nd.kind === 'level' || nd.kind === 'store') && !nodeLocked(nd)) {
+      const li = Number.isInteger(nd.level) ? nd.level : LEVELS.findIndex(l => l.id === (nd.shop || 'shop'));
+      if (li >= 0) { if (!mapPreloadTracks.has(li)) mapPreloadTracks.set(li, LEVELS[li].build().music); music.preload(mapPreloadTracks.get(li)); }
+    }
+  }
   { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = Math.max(0, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
 }
 /* THE MAP'S PLATES AND INFO PANEL (src/map-plates.js): one layout for every board, and for each node a camera height and panel corner that cover no node or board around it */

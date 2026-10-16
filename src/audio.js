@@ -469,11 +469,26 @@ const PAL = {
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
 
 // ---------- music: files, with the synth loop as a fallback for the theme ----------
+const trackWarned = new Set();
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
   trackPending[name] = true;
   if (TRACK_LAYER[name]) loadTrack(TRACK_LAYER[name].file);   /* the layer under a track loads with it */
-  fetch(TRACKS[name]).then(r => r.ok ? r.arrayBuffer() : Promise.reject(r.status)).then(ab => ac.decodeAudioData(ab)).then(b => { trackBuf[name] = b; trackEnd[name] = audibleEnd(b); if (wantTrack === name) playFile(name); else addLayer(wantTrack); }).catch(() => {}).finally(() => { trackPending[name] = false; });
+  (async () => {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        const r = await fetch(TRACKS[name]);
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        const b = await ac.decodeAudioData(await r.arrayBuffer());
+        trackBuf[name] = b; trackEnd[name] = audibleEnd(b);
+        if (wantTrack === name) playFile(name); else addLayer(wantTrack);
+        return;
+      } catch (e) {
+        if (!trackWarned.has(name)) { trackWarned.add(name); console.warn('Music track ' + name + ' failed to load; retrying up to twice (' + String(e) + ')'); }
+        if (attempt < 2) await new Promise(r => setTimeout(r, 250 * (1 << attempt)));
+      }
+    }
+  })().finally(() => { trackPending[name] = false; });
 }
 // A LOOP ENDS WHERE THE MUSIC DOES, NOT WHERE THE FILE DOES. Copies are played back to back, so a silent tail
 // on a file is a hole in the music every time it comes round: the Hurricane's ran 1.77 s of nothing. A tail
@@ -534,6 +549,15 @@ function playFile(name) {
   chain(true); addLayer(name);
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
+function fadeUnloadedTrack() {
+  if (!ac || !currentTrack || !trackG) return;
+  const oldGain = trackG, oldSources = musicSrcs;
+  try { oldGain.gain.cancelScheduledValues(ac.currentTime); } catch {}
+  oldGain.gain.setTargetAtTime(0, ac.currentTime, 0.11);
+  if (musicTimer) clearTimeout(musicTimer);
+  musicTimer = null; musicSrcs = []; musicSrc = null; musicGen++; currentTrack = null; trackG = null; layerFor = null;
+  setTimeout(() => { for (const s of oldSources) { try { s.stop(); } catch {} } try { oldGain.disconnect(); } catch {} }, 650);
+}
 // THE SOUND TEST'S LOCK (Daniel's design, 2026-09-27): a song unlocks once it is actually heard in play - a level,
 // a boss arena or a menu track - never by browsing the Sound Test itself. main.js owns the save (PROG.heardMusic)
 // and hands this module one callback; every call to music.play() with a real name reports it here, heard or not,
@@ -547,7 +571,7 @@ export const music = {
     // and nothing was clearing it. So walking into UNDERLEAF left the PREVIOUS level's file playing and
     // the level had no theme of its own at all, which is exactly what it sounded like.
     if (!TRACKS[name]) { stopMusic(); currentTrack = null; nextT = ac.currentTime + 0.05; step = 0; if (bossSynthOf(name) && musicGain) musicGain.gain.value = musicOn ? synthBossGain() : 0; return; }
-    loadTrack(name); },
+    fadeUnloadedTrack(); loadTrack(name); },
   preload(name) { if (ac) loadTrack(name); },
   act(n) { theatreAct(n); },   /* THE MASKWRIGHT'S THEATRE: which act the show is in (0 the overture, 1-3 the acts): the waltz is told lighter and faster */
   stop() { wantTrack = null; silenced = true; stopMusic(); currentTrack = null; },

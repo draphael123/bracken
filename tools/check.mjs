@@ -259,6 +259,7 @@ if ((!WANT.length || WANT.includes('textfit-full')) && take('textfit-full')) {
    sound effects are always open): tools/soundtest.mjs */
 if (take('map-footer')) results.push(run('map-footer', process.execPath, ['tools/map-footer.mjs'], { PORT: String(portFor(9)) }));
 if (take('soundtest')) results.push(run('soundtest', process.execPath, ['tools/soundtest.mjs'], { PORT: String(portFor(8)) }));
+if (take('music-start')) results.push(run('music-start', process.execPath, ['tools/music-start.mjs'], { PORT: String(portFor(8)) }));
 /* THE LEGGING TUNNEL WITH REAL KEYS (claude/canal5, Daniel 10-06: "the raft didn't follow me... I couldn't get to the boss"): the boss heroes, a stray run
    (leaves her at every ledge and ladder, falls in, dies mid-tunnel) and a ride run each, from the summit to Jenny's arena. All seven heroes x 3 seeds by hand:
    node tools/canal-tunnel-route.mjs --seeds=3 */
