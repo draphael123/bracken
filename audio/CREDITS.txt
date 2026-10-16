@@ -4,7 +4,7 @@ Music (CC0 / public domain, and - from 2026-10-01, with Daniel's say-so - CC-BY 
 
 - theme3.mp3 = "Level 3", boss2.ogg = "Level 2", ending.ogg = "Ending" from "Retro Game Music Pack" (5 Action Chiptunes) by Juhani Junkala (CC0)
   https://opengameart.org/content/5-chiptunes-action
-- boss.ogg = "3. Boss Fight" and select.ogg = "4. Stage Select" from the same pack (CC0)
+- boss.ogg = "3. Boss Fight" from the same pack (CC0); select.ogg is no longer the Stage Select chiptune (REPLACED 2026-10-15, claude/music1015: see the block at the end of this file)
 
 - boss3.ogg = "battle_music_01-loop.ogg" from "Chiptune Battle Music" by pmiller (CC0)
   https://opengameart.org/content/chiptune-battle-music
@@ -125,7 +125,7 @@ THE MAGE'S FOLLY (2026-09-15) plays two files already in the set, both CC0 and c
 NOTE: boss4.ogg and king.mp3 are the same recording ("Great Boss"), and musSailor.ogg is longwater.ogg's Sailor Waltz; no level or boss now plays boss4.
 
 Original procedural music created for BRACKEN:
-- store.wav = "The Warm Counter", a 40-second, 96 BPM loop with plucked arpeggios, flute melody, bass and brushed percussion. Generated locally for this change; no sampled recordings. All three shops share this theme.
+- (REPLACED 2026-10-15, claude/music1015: the shops now play "The Bard's Tale" as audio/store.ogg, see the block at the end of this file; store.wav is deleted) store.wav = "The Warm Counter", a 40-second, 96 BPM loop with plucked arpeggios, flute melody, bass and brushed percussion. Generated locally for this change; no sampled recordings. All three shops share this theme.
 
 Stormwreck Harbor (48s, 6/8) and The Burial Caverns (53.33s, 4/4): original synthesized compositions created for BRACKEN by Codex, 2026-09-19; no external samples. (SUPERSEDED 2026-09-20: both were replaced by the CC0 recordings credited further down, and stormharbor.wav is deleted; audio/stormharbor.ogg is "wowchapter1" by yd.)
 - underkeep.wav = "Under the Vaults", original synthesized brass-bell and bass score created for BRACKEN (Codex, 2026-09-19).
@@ -342,3 +342,15 @@ TWO LEVEL TRACKS (2026-10-14, claude/music1014b, Daniel's picks; he approved the
   Credit: "The Eternal Sands" by HitCtrl (OpenGameArt.org), licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). Changes: -0.8 dB with a peak limiter (to about -13 LUFS); re-encoded to OGG Vorbis q4 stereo (115.2 s, the author's own loop; the whole file loops).
 - towpath.ogg = "Kokopelli's Graveyard Theme" by Cleyton Kauffman, CC0 (public domain, credited all the same) - https://opengameart.org/content/kokopellis-graveyard-theme (kokopellis_graveyard_theme.zip, the "Kokopelli's Graveyard.ogg" loop only; WAV and MP3 not used) - THE TOWPATH's level track (replaces the in-code synth; the Fog Knight keeps his own boss theme).
   Credit: "Kokopelli's Graveyard Theme" by Cleyton Kauffman (OpenGameArt.org), CC0. Changes: +13.2 dB with a peak limiter (to about -12.8 LUFS); re-encoded to OGG Vorbis q4 stereo (86.4 s, the author's own seamless loop; the whole file loops).
+
+FIVE TRACKS (2026-10-15, claude/music1015, Daniel's picks; he approved the downloads and each licence was re-read on the track's own page today):
+- gorm.ogg = "Determined Pursuit (epic orchestra loop)" by Emma_MA, CC0 (public domain, credited all the same) - https://opengameart.org/content/determined-pursuit-epic-orchestra-loop (determined_pursuit_loop.wav) - KING GORM's fight in Kingswood (replaces the in-code synth 'goblinroyal' there; the Goblin Queen keeps it).
+  Credit: "Determined Pursuit" by Emma_MA (OpenGameArt.org), CC0. Changes: +0.3 dB with a peak limiter (to about -12.5 LUFS); encoded to OGG Vorbis q4 stereo (108.0 s, the author's own loop; the whole file loops).
+- store.ogg = "Medieval: The Bard's Tale" by RandomMind, CC0 (public domain, credited all the same) - https://opengameart.org/content/medieval-the-bards-tale (Loop_The_Bards_Tale.wav only; the MP3 not used) - the music of all the shops.
+  Credit: "The Bard's Tale" by RandomMind (OpenGameArt.org), CC0. Changes: -0.5 dB with a peak limiter (to about -12.6 LUFS); encoded to OGG Vorbis q4 stereo (57.7 s, the author's own loop; the whole file loops).
+- select.ogg = "A Small Fire Will Do (Calming Loop)" by Trex0n, CC0 (public domain, credited all the same; the page asks for credit to Cal McEachern and a link to what is made with it: that credit is on the credits page; the link to the game is left for Daniel to supply once it has a public page) - https://opengameart.org/content/a-small-fire-will-do-calming-loop (a_small_fire_will_do.wav, 24-bit) - the TITLE / MENU / MAP tune (replaces the Stage Select chiptune; the store's music item keeps the id 'select').
+  Credit: "A Small Fire Will Do" by Trex0n (Cal McEachern), OpenGameArt.org, CC0. Changes: +9.6 dB with a peak limiter (source was -22.1 LUFS; to about -12.7 LUFS); encoded to OGG Vorbis q4 stereo (64.0 s, the author's own loop; the whole file loops).
+- brackenwood.ogg = "(Orchestral) Round Glasses" by Clement Panchout, CC-BY 4.0 (CREDIT REQUIRED) - https://opengameart.org/content/orchestral-round-glasses (clement_panchout_round_glasses_2016.wav) - BRACKEN WOOD's level track (it played the Stage 1 chiptune).
+  Credit, as the page asks: "Credits : Clement Panchout http://www.clementpanchout.com/"; licensed under CC-BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Changes: the single (non-looping) track made loopable by a 4 s equal-power crossfade of its last 4 s onto its first 4 s (the first pass plays the original opening; later passes loop from 4.0 s); -0.5 dB with a peak limiter (to about -12.7 LUFS); encoded to OGG Vorbis q4 stereo (61.3 s).
+- folly.ogg = "Loop: Lonely Witch" by HorrorPen, CC-BY 3.0 (CREDIT REQUIRED) - https://opengameart.org/content/loop-lonely-witch (Lonely Witch.ogg; MP3 and MIDI not used) - THE MAGE'S FOLLY's level track (replaces MintoDog's musUnder there; the Archmage keeps his own theme).
+  Credit: "Loop: Lonely Witch" by HorrorPen (OpenGameArt.org), licensed under CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/). Changes: -2.6 dB (to about -12.5 LUFS); re-encoded to OGG Vorbis q4 stereo (55.4 s, the author's own loop; the whole file loops).
