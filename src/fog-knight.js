@@ -80,7 +80,7 @@ export const STANCE_HOW = { high: 'GUARDS HIGH: HIT LOW', low: 'GUARDS LOW: HIT 
    local columns 0..51, the floor's surface row R (the hero stands on R-1). THE CUT (16-20) under its SWING BRIDGE (capstans 14 and 22); three BOLLARDS (two rows
    high: over the surge); the GATE BEAMS (one-way: the plunge's heights, over the surge and the spears); THE ARENA LOCK (41-47) with its punt - its lower gate at
    40, its upper quay (48-51) six rows up; its paddles: on the bank (39), on the punt (47), on the quay (49); two LOCK LAMPS (phase three) */
-export const FK_STAGE = { W: 52, door: 5, cut: [16, 20], caps: [14, 22], bollards: [8, 27, 34],
+export const FK_STAGE = { W: 52, door: 5, exit: 38, cut: [16, 20], caps: [14, 22], bollards: [8, 27, 34],
   beams: [{ x0: 3, x1: 9, dy: 4 }, { x0: 24, x1: 31, dy: 4 }, { x0: 33, x1: 39, dy: 5 }, { x0: 44, x1: 51, dy: 9 }],
   lock: { x0: 41, x1: 47, gate: 40, bed: 4, lo: 1, hi: -6, quay: 48 }, paddles: [39, 47, 49], lamps: [6, 36], him: 30 };
 export function stageFogKnight(W, T, TS, sx, R, O = 22) {

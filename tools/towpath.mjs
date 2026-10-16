@@ -123,6 +123,19 @@ for (const e of ents('fogwraith')) ok(D.banks.some(b => e.x >= b.x0 && e.x <= b.
     ok(H.sluice('aq', true) === 'sent', 'the west sluice opens'); run(0.5); ok(H.rideState('trough', 'aq') === 'moving', 'the trough runs');
     run(20); ok(H.rideState('trough', 'aq') === 'east' && Math.abs(m.x - q.stopE * TS) < 1 && Math.abs(m.y - (q.surf * TS - 2)) < 1, 'the barge floats over the break to the east stop, on the water');
     ok(H.sluice('aq', false) === 'sent', 'the east sluice sends it back'); run(20); ok(H.rideState('trough', 'aq') === 'west', 'and it is back at the west stop'); }
+  /* THE MISSED BOAT (claude/towpathchurch, Daniel 10-16): strike the west sluice, do NOT board - the barge docks empty at the east stop and the far sluice is across the
+     break. The bargeman poles it back to the hero stranded at the west end; a hero aboard (or at the east end) is never robbed of it */
+  { const q = D.troughs[0], keep = ctx.players.slice(); ctx.players.length = 0;
+    const west = { n: 1, x: (q.stopW - 3) * TS, y: (q.bed - 2) * TS, dead: false, face: 1 }; ctx.players.push(west); ctx.hero = () => west;
+    ok(H.sluice('aq', true) === 'sent', 'missed boat: the west sluice sends the barge with nobody aboard'); run(20);
+    ok(H.rideState('trough', 'aq') === 'east' || H.rideState('trough', 'aq') === 'west' || H.rideState('trough', 'aq') === 'moving', 'missed boat: the barge ran');
+    run(TP.bargeBackT + 20); ok(H.rideState('trough', 'aq') === 'west', 'missed boat: docked empty at the east stop with the hero left at the west, the barge comes BACK to him (never a dead end)');
+    ok(H.sluice('aq', true) === 'sent', 'and the boat can be tried again'); run(1);
+    const m2 = movers.find(z => z.kind === 'barge'); for (let i = 0; i < 4 * (TP.bargeBackT + 25); i++) { west.x = m2.x + 20; west.y = m2.y - 10; run(0.25); }
+    ok(H.rideState('trough', 'aq') === 'east', 'a hero aboard is carried across and the barge is not poled away from under him');
+    const east = { n: 1, x: (q.stopE + q.w + 3) * TS, y: (q.bed - 2) * TS, dead: false, face: -1 }; ctx.players.length = 0; ctx.players.push(east); ctx.hero = () => east;
+    run(TP.bargeBackT + 3); ok(H.rideState('trough', 'aq') === 'east', 'a hero standing at the far end: it waits for him');
+    ctx.players.length = 0; ctx.players.push(...keep); ctx.hero = () => keep[0] || { x: 0, y: 0, face: 1 }; H.sluice('aq', false); run(20); }
   { const c = D.cranes[0], m = movers.find(z => z.kind === 'hook'), caps = ents('tpcrane'); ok(H.rideState('crane', 'jib') === 'quay' && Math.abs(m.y - c.fromPx) < 1 && m.y > (c.from[1] - 1) * TS, 'the hook hangs in its notch, a step down from the quay (boarded from above)');
     ok(caps.some(e => Math.abs(e.x - c.from[0]) <= 1 && e.y + 1 === c.from[1] - 1) && caps.some(e => Math.abs(e.x - (c.to[0] + c.w)) <= 3 && e.y + 1 === c.to[1]), 'a capstan by the hook at the quay and on the roof');
     ok(H.jib('jib') === 'up', 'the capstan swings the jib'); run(4); ok(H.rideState('crane', 'jib') === 'roof' && Math.abs(m.y - c.toPx) < 1 && c.toPx === c.to[1] * TS && at(c.to[0] + c.w, c.to[1]) === T.SOLID, 'the hook rides up to the roof\'s edge, flush with it');
@@ -193,6 +206,13 @@ for (const id of ['tp-hoist', 'tp-aq', 'tp-crane']) ok(STUCK_HANDS.towpath.some(
 const A = L.arena; ok(A && A.boss === 'fogknight' && L.ents.some(e => e.t === 'fogknight'), 'THE FOG KNIGHT stands at the towpath\'s end');
 const G = FK.geom(A);
 ok(at(Math.floor(G.cut[0] / TS), A.fk.R) === T.ONEWAY, 'his cut is spanned by the swing bridge'); ok(G.caps.length === 2 && L.ents.filter(e => e.t === 'tpcapstan' && e.arena).length === 2, 'a capstan on each bank');
+/* THE EXIT (claude/towpathchurch, Daniel 10-16: "you cannot leave the boss room"): the gate was buried in the upper quay's solid block (W-2 at row R-1, the quay's top is R-6).
+   It must stand on the arena FLOOR, in clear air, with a floor under it, inside the room east of the cut, before the arena lock's gate - walkable once he falls (gateAfterBoss) */
+{ const gts = L.ents.filter(e => e.t === 'gate'), g = gts[0], R = A.fk.R, sx = A.fk.sx; ok(gts.length === 1 && L.gateAfterBoss, 'one gate, opened by his fall (gateAfterBoss)');
+  ok(g.x === sx + FK.FK_STAGE.exit && g.y === R - 1, 'the gate stands on the boss floor row (the hero row)');
+  ok(g.x > sx + FK.FK_STAGE.cut[1] + 2 && g.x < sx + FK.FK_STAGE.lock.gate, 'east of the cut and its bridge, west of the arena lock gate: reachable on foot from the floor');
+  ok([0, -1, -2].every(d => at(g.x, g.y + d) === T.AIR) && at(g.x, g.y + 1) === T.SOLID, 'in clear air (three rows) with solid floor under it - never inside a block (the old gate was)');
+  ok(g.x < A.wallR, 'inside the arena walls'); }
 ok(FK.FK_STAGE.beams.every(b => at(A.fk.sx + b.x0, A.fk.R - b.dy) === T.ONEWAY), 'the gate beams: the plunge\'s heights, over the surge');
 ok(FK.FK_STAGE.bollards.every(c => at(A.fk.sx + c, A.fk.R - 2) === T.SOLID && at(A.fk.sx + c, A.fk.R - 3) === T.AIR), 'the bollards: two rows over the towpath, a step up out of the surge');
 const AL = D.locks.find(k => k.id === 'fkLock'); ok(AL && AL.arena && AL.gate && L.moversExtra.some(m => m.towpath === 'fkLock' && m.kind === 'punt') && ents('tppaddle').filter(p => p.lock === 'fkLock').length === 3, 'THE ARENA LOCK: a real chamber, its punt, its gate, a paddle on the bank, the punt and the quay');

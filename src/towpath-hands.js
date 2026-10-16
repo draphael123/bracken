@@ -27,10 +27,10 @@ import { drawChill } from './redraw/fog_wraith_art.js';
 /* THE NUMBERS. fill: px/s a chamber's water moves; swing: s a bridge takes to turn; reach: px a hero's E reaches a gadget; hitCd: s before the same gadget
    answers another blow; litR / dimR: px a lantern burns its clearing (lit / dimmed); lampR: a lamp's; sightW / sightD: px a watchman / a dozer sees a LIT hero
    at; elbow: px anyone sees anyone; wheelDmg: the turning wheel's blades; wheelCd: s between its bites; hoistV / bargeV: px/s the hoist's deck and the barge go;
-   troughT: s the dry trough takes to run full; craneT: s the hook takes from the quay to the roof; eye: px over his feet a hero's eyes are (in the fog or not);
+   troughT: s the dry trough takes to run full; bargeBackT: s a barge docked EMPTY waits before the bargeman poles it back to a hero stranded at the other end; craneT: s the hook takes from the quay to the roof; eye: px over his feet a hero's eyes are (in the fog or not);
    edge: px of a bank's soft top edge */
 export const TP = { fill: 36, swing: 0.9, reach: 26, hitCd: 0.4, litR: 92, dimR: 34, lampR: 72, sightW: 230, sightD: 150, elbow: 44, wheelDmg: 14, wheelCd: 0.9,
-  hoistV: 44, bargeV: 46, troughT: 1.1, craneT: 3.0, eye: 20, edge: 10 };
+  hoistV: 44, bargeV: 46, troughT: 1.1, bargeBackT: 4, craneT: 3.0, eye: 20, edge: 10 };
 
 export function makeTowpathHands(ctx) {
   let K = null;
@@ -122,6 +122,17 @@ export function makeTowpathHands(ctx) {
     for (const h of K.hoists) if (Math.abs(h.to - h.y) > 0.3) h.y += Math.sign(h.to - h.y) * Math.min(Math.abs(h.to - h.y), TP.hoistV * dt);
     for (const q of K.troughs) { if (q.fillT > 0) { q.fillT = Math.max(0, q.fillT - dt); q.water = Math.min(1, q.water + dt / TP.troughT); }
       else if (Math.abs(q.to - q.x) > 0.3) { q.x += Math.sign(q.to - q.x) * Math.min(Math.abs(q.to - q.x), TP.bargeV * dt); if (Math.random() < dt * 10) ctx.burst(q.x + (q.to > q.x ? 0 : q.w * TS()), q.surfY, 1, ['#cfe6f0', '#9ac0d0'], 16, 0.4); } }
+    /* THE MISSED BOAT (claude/towpathchurch, Daniel 10-16: "you miss the boat in this section - it never comes back to you"): a barge docked EMPTY, with a living hero at
+       the other end of the span, is poled back to him after bargeBackT s - the sluice on his bank was the only way and the far sluice sits across the break */
+    for (const q of K.troughs) { const ts = TS(), idle = q.fillT <= 0 && Math.abs(q.to - q.x) <= 0.3;
+      if (!idle) { q.idleT = 0; continue; }
+      const midX = (q.stopW + q.stopE + q.w) / 2 * ts, atW = q.x <= q.stopW * ts + 0.5, deck = bargeDeck(q);
+      const aboard = ctx.players.some(pp => !pp.dead && pp.x > q.x - 10 && pp.x < q.x + q.w * ts + 10 && pp.y > deck - 60 && pp.y < deck + 20);
+      const stranded = ctx.players.some(pp => !pp.dead && (atW ? pp.x > midX : pp.x < midX) && pp.x > (q.stopW - 14) * ts && pp.x < (q.stopE + q.w + 14) * ts && pp.y < (q.bed + 6) * ts);
+      if (aboard || !stranded) { q.idleT = 0; continue; }
+      q.idleT = (q.idleT || 0) + dt;
+      if (q.idleT >= TP.bargeBackT) { q.idleT = 0; q.fillT = q.water < 1 ? TP.troughT : 0; q.to = (atW ? q.stopE : q.stopW) * ts; K.n.barges++; K.n.polesBack = (K.n.polesBack || 0) + 1;
+        if (once('bargePoled')) number(q.x + q.w * ts / 2, q.surfY - 40, 'THE BARGEMAN POLES THE BARGE BACK TO YOU'); } }
     for (const c of K.cranes) if (Math.abs(c.goal - c.k) > 1e-3) c.k += Math.sign(c.goal - c.k) * Math.min(Math.abs(c.goal - c.k), dt / TP.craneT);
   }
   function wheelCells(w) { const still = !!w.still || w.v < 0.05; for (const [a, b, row] of w.steps) for (let x = a; x <= b; x++) ctx.cellSet(x, row, still ? T().ONEWAY : T().AIR); }

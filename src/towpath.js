@@ -338,7 +338,9 @@ export function buildTowpath({ painter, T, TS }) {
   bridges.push(...stage.bridges.map(b => ({ ...b, row: b.row + O }))); lamps.push(...stage.lamps.map(l => ({ ...l, y: l.y + O })));
   for (const m of stage.movers) { moversExtra.push(m.mover); rigBands.push(m.band); }
   block(AX + FK_STAGE.W, W - 1, 0, BOT);
-  ent('gate', AX + FK_STAGE.W - 2, AR - 1);
+  /* THE EXIT (claude/towpathchurch, Daniel 10-16: "you cannot leave the boss room"): the gate stood at W-2, row AR-1 - INSIDE the upper quay's solid block (hi = AR-6 up to the
+     wall): buried, no hero could ever reach it. It stands on the FLOOR now, east of the cut and its bridge, before the arena lock's gate (FK_STAGE.exit): every hero walks to it once he falls (gateAfterBoss) */
+  ent('gate', AX + FK_STAGE.exit, AR - 1);
 
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
