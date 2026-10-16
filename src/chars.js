@@ -200,24 +200,25 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = staff.map((v, i) => v + (i & 1 ? dy : dx));
     line(g, x0, y0, x1, y1, KP.w, 2); px(g, x1, y1, KP.y); px(g, x1 + Math.sign(x1 - x0), y1 + Math.sign(y1 - y0), KP.r); px(g, x1 - Math.sign(y1 - y0), y1 + Math.sign(x1 - x0), KP.r);
   }
-  if (maul) { // THE PALADIN'S MAUL (claude/paladinmace): a HEAVY TWO-HANDED FLANGED MACE. A long oak haft wound with leather at the grip, a gold socket, and a big
-    // head of two flanges round a studded core with a spike for a tip - read by its silhouette at game scale. BOTH hands are on the haft in every pose (the sword
+  if (maul) { // THE PALADIN'S WAR HAMMER (claude/paladin3art, was the flanged maul): ~70% of the old maul. The long oak haft wound with leather stays; the head is now a COMPACT
+    // SQUARE BLOCK - a flat strike face with a bright rim, a narrower back with a gold collar behind it, a rivet band - read by its square silhouette at game scale. BOTH hands are on the haft in every pose (the sword
     // arm at the grip, the off hand a stride up the haft, or wherever an ability's own off arm lands). ONLY the head (core, flanges, stud, spike) takes a weapon
     // skin (WT); the haft, wrap, socket and gauntlets keep their own colours.
     const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
-    line(g, ...at(-5), ...at(len - 2), '#6a4428', 2);                                       // the haft, its butt five past the hand
+    line(g, ...at(-8), ...at(len - 2), '#6a4428', 2);                                       // the LONG haft, its butt eight past the hand (the head is small; the haft is the weapon)
+    px(g, ...at(-7), '#8a5a34'); px(g, ...at(-6, 1), '#3a2412');
     for (let t = -4; t <= 6; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap
-    px(g, ...at(-5), KP.y);                                                                  // the pommel
-    const hx = x1 - ax * 3.5, hy = y1 - ay * 3.5;
-    const ROWS = { '-4': 1.5, '-3': 2.5, '-2': 4.5, '-1': 3, 0: 3, 1: 3, 2: 4.5, 3: 2.5, 4: 1.5, 5: 0.5 };                  // half-width by step along the haft: socket, flange, core, core+stud, flange, core, spike
+    px(g, ...at(-8), KP.y); px(g, ...at(-8, 1), KP.y);                                       // the gold butt-cap
+    const hx = x1 - ax * 1.5, hy = y1 - ay * 1.5;
+    const ROWS = { '-3': 1.5, '-2': 2.5, '-1': 3.5, 0: 3.5, 1: 3.5, 2: 3.5, 3: 3.5 };                                      // half-width by step along the haft: gold collar, the back, the block (three rows), the strike face
     const inside = new Map(), key = (X, Y) => X + ',' + Y;
     for (let X = Math.floor(hx) - 6; X <= Math.ceil(hx) + 6; X++) for (let Y = Math.floor(hy) - 6; Y <= Math.ceil(hy) + 6; Y++) {
       const ox = X - hx, oy = Y - hy, t = Math.round(ox * ax + oy * ay), o = ox * qx + oy * qy, hw = ROWS[t];
       if (hw === undefined || Math.abs(o) > hw + 0.01) continue;
-      const lit = o < -0.5, dark = o > 0.5, edge = Math.abs(o) > hw - 0.6 && hw >= 2;
-      inside.set(key(X, Y), t === -4 ? KP.y : t >= 4 ? WT('#e8eef6', 1) : (t === -2 || t === 2) ? WT('#aab6c6', edge ? 0.15 : lit ? 1 : dark ? 0.4 : 0.7) : (t === 0 && Math.abs(o) < 0.8) ? WT('#e8eef6', 1) : WT('#aab6c6', lit ? 0.85 : dark ? 0.25 : 0.55));
+      const lit = o < -0.5, dark = o > 0.5, rim = Math.abs(o) > hw - 0.9;
+      inside.set(key(X, Y), t === -3 ? KP.y : t === 3 ? WT('#e8eef6', rim ? 0.55 : 1) : t === -2 ? WT('#aab6c6', lit ? 0.7 : dark ? 0.2 : 0.45) : (t === 0 && !rim && Math.abs(o) < 1.2) ? KP.y : t === 1 && rim ? WT('#aab6c6', 0.1) : WT('#aab6c6', lit ? 0.95 : dark ? 0.3 : 0.6));
     }
     for (const k of [...inside.keys()]) { const [X, Y] = k.split(',').map(Number); for (const [u, v] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) if (!inside.has(key(X + u, Y + v))) px(g, X + u, Y + v, KP.o); }
     for (const [k, c] of inside) { const [X, Y] = k.split(',').map(Number); px(g, X, Y, c); }
@@ -456,11 +457,11 @@ const AIRUP_BODY = [
 ];
 const AIRUP_ANG = [4, 48, 102, 134], AIRUP_HAND = [[4, -9], [7, -15], [3, -22], [-1, -18]];
 const AIRUP_WEAPON = { sword: { len: 21 }, cutlass: { len: 19, free: true }, greatsword: { len: 23, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] },
-  maul: { len: 21, two: true, hand: [[3, -8], [6, -14], [2, -20], [-1, -17]] }, spear: { len: 27, free: true, hand: [[3, -8], [6, -13], [2, -17], [-1, -15]] },
+  maul: { len: 19, two: true, hand: [[2, -9], [4, -19], [1, -21], [4, -13]], ang: [335, 118, 72, 205] }, spear: { len: 27, free: true, hand: [[3, -8], [6, -13], [2, -17], [-1, -15]] },
   staff: { len: 22, two: true }, stave: { len: 23, two: true }, axe: { len: 11 } };   /* (THE BERSERKER: a hand axe; the off one stays at his guard, given in extra) */
 function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = false, scale = 1 } = {}) {
   padHeroFrames(F);
-  const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : ['maul', 'greatsword', 'staff'].includes(weapon) ? 34 : 28;
+  const ay = pyro ? 20 : 22, ax = 16, reach = weapon === 'spear' ? 40 : weapon === 'maul' ? 29 : ['greatsword', 'staff'].includes(weapon) ? 34 : 28;   /* (the war hammer: -15%, PALADIN 3 ART) */
   const pose = (kind, i) => {
     /* THE AIR UP-SLASH, hand-drawn (claude/airupart; combat3 had a procedural stand-in): the blade from low in front, up through the front,
        over his head and on behind it, in the four beats the timing already has (wind-up 0.02 s, the rise to 0.08, the blade OVER him until 0.17 -
@@ -476,6 +477,7 @@ function directionalPoses(F, weapon, { make = knightFrame, extra = {}, pyro = fa
       return make({ ...extra, ...(W2.extra ? W2.extra[i] : {}), top: ATTACK_HEADROOM, wide: 32, dx: B.dx, dy: B.dy, legs: B.legs, legsDy: B.legsDy, hy: B.hy, sho: B.sho, plume: B.plume, arm: armA, ...(arm2 ? { arm2 } : {}), [weapon]: [...gA, ...tA] }); }
     const rise = kind === 'rise', dx = [-1, 1, 2, 1][i], dy = rise ? [2, 0, -1, 0][i] : [2, 3, 3, 1][i];
     const end = rise ? [[18, -3], [weapon === 'spear' ? 14 : 24, -25], [weapon === 'spear' ? 8 : 12, weapon === 'spear' ? -43 : -39], [18, -24]][i] : [[14, -12], [reach - 5, -5], [reach - 1, -4], [20, -10]][i];
+    if (rise && weapon === 'maul') end[0] = Math.round(end[0] * 0.85);   /* (the war hammer's rising cut reaches 24, not 28) */
     const hand = rise ? [[1, -7], [6, -15], [5, -21], [4, -12]][i] : [[1, -9], [5, -6], [7, -6], [3, -8]][i];
     const xy = ([x, y]) => [ax + Math.round(x / scale) - dx, ay + Math.round(y / scale) - dy];
     const grip = xy(hand), tip = xy(end), arm = [16, 12, ...grip];
@@ -1888,6 +1890,78 @@ function paladinKitPoses(F, sh) {
   F.wrath = [K({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 3, Y - 3], arm2: [OFF[0], OFF[1], X - 5, Y - 3], maul: [X - 3, Y - 3, X - 13, Y - 9], plume: 1 }),
     K({ wide: 6, dx: 2, dy: 1, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 6, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y], maul: [X + 6, Y - 1, X + 17, Y - 3], glow: [X + 19, Y - 3], plume: 2, bits: fire }),
     K({ dy: 1, legs: 'wide', hy: -1, arm: [X, Y, X + 3, Y - 2], arm2: [OFF[0], OFF[1], X + 2, Y - 1], maul: [X + 3, Y - 2, X + 6, Y - 9], plume: 2, bits: fire.slice(0, 6) })];
+  /* ==== PALADIN 3 ART (claude/paladin3art, Daniel 10-15; B16: every tier of CONVICTION has its OWN windup + release - none borrows 'sanctify' or the consecrate kneel) ====
+     A ring of sun-rays round a point (the head of the maul, or his helm): n spokes at radius r, alternating white / cream / gold, the long ones horizontal. */
+  const sunAt = (cx, cy, r, n = 8, k = 0) => { const o = []; for (let i = 0; i < n; i++) { const an = k + i * Math.PI * 2 / n, c = i % 4 === 0 ? W : i % 2 ? C : G; o.push(a(Math.round(cx + Math.cos(an) * r), Math.round(cy + Math.sin(an) * r * 0.8), c)); if (r > 6) o.push(a(Math.round(cx + Math.cos(an) * (r + 3)), Math.round(cy + Math.sin(an) * (r + 3) * 0.8), i % 2 ? G : D)); } return o; };
+  /* SMITE (1 pip, the quick strike): the war hammer drawn back low at the hip, a short sharp step in behind it; then snapped forward and up with the head lit
+     and a spark of light off the face of it - the column comes down where it points. A flick, not a swing: it is a pip's worth. */
+  F.smiteQ = [K({ dx: -1, dy: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], arm2: [OFF[0], OFF[1], X - 2, Y + 4], maul: [X - 1, Y + 3, X - 8, Y + 9], plume: 1 }),
+    K({ wide: 8, dx: 2, legs: 'runC', sho: 1, arm: [X, Y, X + 5, Y - 3], arm2: [OFF[0], OFF[1], X + 4, Y - 1], maul: [X + 5, Y - 3, X + 14, Y - 11], glow: [X + 17, Y - 13], plume: 2,
+      bits: [a(X + 20, Y - 14, W), a(X + 22, Y - 11, C), a(X + 19, Y - 17, G), a(X + 22, Y - 15, G), a(X + 16, Y - 8, C)] })];
+  /* RADIANCE (3 pips, the burst): the hammer stood upright before him in both hands, helm bowed, the light gathering at the head; then the helm thrown back and
+     the head lifted, the light going off round his chest in a ring of spokes; and the glow settling on the plate */
+  F.radiance = [K({ hy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X + 2, Y + 2], maul: [X + 3, Y + 9, X + 4, Y - 5], glow: [X + 4, Y - 9], plume: 1, bits: [a(X + 1, Y - 9, C), a(X + 7, Y - 9, C)] }),
+    K({ hy: -1, sho: 1, dy: -1, legs: 'wide', arm: [X, Y, X + 2, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y - 2], maul: [X + 2, Y + 2, X + 3, Y - 12], glow: [X + 3, Y - 16], plume: 2, bits: [...sunAt(X + 1, Y + 2, 9), ...sunAt(X + 1, Y + 2, 14, 8, 0.39)] }),
+    K({ legs: 'wide', arm: [X, Y, X + 3, Y], arm2: [OFF[0], OFF[1], X + 2, Y + 1], maul: [X + 3, Y + 4, X + 4, Y - 8], plume: 1, bits: [a(X - 6, Y + 2, G), a(X + 10, Y + 2, C), a(X + 4, Y - 11, G), a(X - 3, Y + 6, D), a(X + 9, Y + 6, D)] })];
+  /* SUNFALL (5 pips, the finisher): up on his toes with the hammer stretched straight up in both arms and his helm thrown right back, a sun of spokes standing over
+     the head of it; lifted off the ground on the light of it, the sun full and white; then the hammer driven into the turf and him down on a knee over it, a
+     column going up off the ground on both sides (the sun he called falling) */
+  F.sunfall = [K({ dy: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 1, Y - 9], arm2: [OFF[0], OFF[1], X, Y - 9], maul: [X + 1, Y - 8, X + 1, Y - 20], glow: [X + 1, Y - 23], plume: 2, bits: sunAt(X + 1, Y - 22, 6) }),
+    K({ dy: -3, legsDy: -2, hy: -1, sho: 1, legs: 'jump2', arm: [X, Y, X + 1, Y - 10], arm2: [OFF[0], OFF[1], X, Y - 10], maul: [X + 1, Y - 9, X + 1, Y - 21], glow: [X + 1, Y - 24], plume: 1, bits: [...sunAt(X + 1, Y - 23, 7), ...sunAt(X + 1, Y - 23, 12, 8, 0.39), a(X + 1, Y - 17, W), a(X, Y - 15, W), a(X + 2, Y - 15, W)] }),
+    K({ dy: 2, hy: 1, legs: 'kneel', arm: [X, Y, X + 4, Y - 1], arm2: [OFF[0], OFF[1], X + 3, Y], maul: [X + 4, Y - 2, X + 6, Y + 6], plume: 2, bits: [...colm(4, 17, 2), ...colm(29, 14, 2), ab(X + 5, 22, W, 2), ab(X + 8, 22, G, 2), ab(10, 6, C, 2), ab(24, 8, W, 2), ab(2, 12, G, 2), ab(32, 11, C, 2)] })];
+  /* VERDICT (hold X): THREE poses. WIND (played by how far the hold has come, three beats): the hammer lifted off the ground at his side, then stood upright
+     beside his shoulder in the strong hand, then carried up to arm's length with the helm tipped back to it and a halo of light opening over the head;
+     HOLD (once a sigil is down or the wind is full): the hammer held aloft, the halo turning (two frames, the second brighter), his stance set wide;
+     RELEASE: the head of the hammer brought down level and pointed at them like a gavel, the light leaving it downward in lines - he does not swing it. */
+  const halo = (r, k) => { const o = [], cx = X + 1, cy = Y - 25; for (let i = -r; i <= r; i++) { const hy2 = Math.round(Math.sqrt(Math.max(0, r * r - i * i)) * 0.35); o.push(a(cx + i, cy - hy2, (i + k) & 2 ? C : G), a(cx + i, cy + hy2, (i + k) & 2 ? G : D)); } o.push(a(cx, cy, W)); return o; };
+  F.vWind = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 1, Y - 2], arm2: [OFF[0], OFF[1], X - 2, Y - 1], maul: [X - 1, Y - 1, X - 5, Y - 11], plume: 1 }),
+    K({ legs: 'wide', sho: 1, arm: [X, Y, X + 1, Y - 6], arm2: [OFF[0], OFF[1], X, Y - 5], maul: [X + 1, Y - 5, X + 2, Y - 17], glow: [X + 2, Y - 20], plume: 2 }),
+    K({ dy: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 1, Y - 8], arm2: [OFF[0], OFF[1], X, Y - 8], maul: [X + 1, Y - 7, X + 1, Y - 19], glow: [X + 1, Y - 22], plume: 2, bits: halo(5, 0) })];
+  F.vHold = [0, 1].map(i => K({ dy: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 1, Y - 8], arm2: [OFF[0], OFF[1], X, Y - 8], maul: [X + 1, Y - 7, X + 1, Y - 19], glow: [X + 1, Y - 22], plume: i ? 1 : 2,
+    bits: [...halo(i ? 7 : 6, i * 2), a(X - 5, Y - 18, i ? W : C), a(X + 7, Y - 18, i ? C : W), a(X + 1, Y - 29 - i, G)] }));
+  F.vRel = [K({ wide: 8, dx: 1, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 5, Y - 4], arm2: [OFF[0], OFF[1], X + 4, Y - 2], maul: [X + 5, Y - 4, X + 15, Y + 2], glow: [X + 18, Y + 3], plume: 2,
+      bits: [a(X + 19, Y + 6, W), a(X + 19, Y + 9, C), a(X + 19, Y + 12, G), a(X + 21, Y + 5, G), a(X + 21, Y + 11, C), a(X + 17, Y + 8, G)] }),
+    K({ dx: 1, dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X + 2, Y + 2], maul: [X + 3, Y + 1, X + 5, Y + 9], plume: 1, bits: [a(X + 9, Y + 9, G), a(X + 11, Y + 7, C)] })];
+  /* BULWARK ADVANCE (the aegis held, pressing ahead): a stride cycle behind the hammer stood upright before him, shoulder leaning into it, a leaf of light standing
+     in the air ahead of the haft that the foes are shoved off. Four frames, the bob on every other one. */
+  const leaf = [a(X + 8, Y - 8, C), a(X + 9, Y - 5, G), a(X + 9, Y - 2, C), a(X + 9, Y + 1, G), a(X + 9, Y + 4, C), a(X + 8, Y + 7, G), a(X + 7, Y - 11, W), a(X + 7, Y + 9, W)];
+  F.bulwark = ['run1', 'run3', 'run4', 'run6'].map((lg, i) => K({ dx: 2, dy: i & 1 ? 1 : 0, legs: lg, sho: 1, arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 3, Y + 3], maul: [X + 3, Y + 9, X + 3, Y - 5], glow: [X + 3, Y - 9], plume: i & 1 ? 1 : 2, bits: i & 1 ? leaf.slice(0, 6) : leaf }));
+  /* ==== PALADIN 4 ART (claude/paladin4art, Daniel 10-15): the poses the Paladin 4 kit borrowed ====
+     ln(): a line of loose pixels from (x0, y0) to (x1, y1) at absolute points (a spear shaft, a streak of light) */
+  const ln = (x0, y0, x1, y1, col, every = 1) => { const o = [], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) if (i % every === 0) o.push(a(Math.round(x0 + (x1 - x0) * i / (n || 1)), Math.round(y0 + (y1 - y0) * i / (n || 1)), col)); return o; };
+  const halo4 = (cx, cy, r, k) => { const o = []; for (let j = -r; j <= r; j++) { const hy2 = Math.round(Math.sqrt(Math.max(0, r * r - j * j)) * 0.3); o.push(a(cx + j, cy - hy2, (j + k) & 2 ? C : G)); } return o; };
+  /* SANCTUARY STEP (the dodge, 0.26 s): PLANT - the lead foot set, the hammer brought across his body level in both hands (a bar before him, not a brace), weight dropping; PUSH - driven off the back
+     foot, long and low, the hammer still across, a smear of light left where he stood; LAND - the step finished, the weight settled, the hammer lowered, a spark off the heel */
+  F.sStep = [K({ dx: -1, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 2, Y + 1], arm2: [OFF[0], OFF[1], X + 1, Y + 2], maul: [X - 5, Y + 2, X + 9, Y - 1], plume: 1, bits: [a(X - 7, Y + 12, G), a(X - 9, Y + 13, C)] }),
+    K({ wide: 8, dx: 3, dy: 1, legs: 'runC', sho: 1, arm: [X, Y, X + 5, Y + 1], arm2: [OFF[0], OFF[1], X + 4, Y + 2], maul: [X - 1, Y + 2, X + 13, Y - 1], plume: 2, bits: [...ln(X - 12, Y + 9, X - 5, Y + 9, G, 2), ...ln(X - 14, Y + 5, X - 8, Y + 5, C, 2), a(X - 6, Y + 13, W), a(X - 10, Y + 12, G)] }),
+    K({ dx: 1, dy: 2, legs: 'land', arm: [X, Y, X + 3, Y + 3], arm2: [OFF[0], OFF[1], X + 2, Y + 4], maul: [X - 2, Y + 4, X + 9, Y + 3], plume: 0, bits: [a(X - 3, Y + 13, G), a(X - 5, Y + 12, C), a(X + 6, Y + 13, D)] })];
+  /* PRAYER: down on one knee, the maul planted upright with BOTH hands clasped on the haft at his brow, helm bowed to them; a thin halo set over the bowed head and light gathering at the head of the
+     maul. The second beat breathes: the halo wider, motes rising off the hands, a cross of light at the head of the haft (held there once his bar is full) */
+  const crossAt = (cx, cy, r) => [a(cx, cy, W), a(cx - 1, cy, C), a(cx + 1, cy, C), a(cx, cy - 1, C), a(cx, cy + 1, C), a(cx - r, cy, G), a(cx + r, cy, G), a(cx, cy - r, G), a(cx, cy + r, G)];
+  F.pray = [0, 1].map(i => K({ dy: 3, hy: 2, legs: 'kneel', arm: [X, Y, X + 3, Y], arm2: [OFF[0], OFF[1], X + 3, Y + 1], maul: [X + 4, Y + 9, X + 4, Y - 9], glow: [X + 4, Y - 13 - i], plume: 0,
+    bits: i ? [...halo4(X - 2, Y - 8, 6, 1), ...crossAt(X + 4, Y - 18, 3), a(X + 8, Y - 4, C), a(X + 9, Y - 8, G), a(X, Y - 11, W), a(X + 7, Y - 12, C)] : [...halo4(X - 2, Y - 8, 5, 0), a(X + 4, Y - 16, C), a(X + 7, Y - 3, G)] }));
+  /* TWIN SMITE's second blow (smiteB): the hammer back across the OTHER shoulder, the whole body turned into it; then the backhand - brought flat through and up, the head lit white, a second spark off the face */
+  F.smiteB = [K({ dx: -2, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X - 3, Y - 4], arm2: [OFF[0], OFF[1], X - 4, Y - 2], maul: [X - 3, Y - 4, X - 9, Y - 12], plume: 1 }),
+    K({ wide: 10, dx: 3, legs: 'runC', sho: 1, arm: [X, Y, X + 6, Y - 1], arm2: [OFF[0], OFF[1], X + 5, Y + 1], maul: [X + 6, Y - 1, X + 17, Y - 9], glow: [X + 20, Y - 11], plume: 2,
+      bits: [a(X + 23, Y - 12, W), a(X + 24, Y - 9, C), a(X + 21, Y - 15, G), a(X + 25, Y - 13, G), a(X + 18, Y - 6, C), a(X + 12, Y - 2, G), a(X + 9, Y, C)] })];
+  /* RADIANCE+ (4 pips, the empowered burst): the hammer lifted high in both hands over a bowed helm, a second ring of light standing about the head of it; then the helm thrown right back, the double ring of
+     spokes out to a wider radius with a halo over the head and a glint on the plate; then the settle, a green mote (the mend) rising off the chest */
+  F.radiancePlus = [K({ dy: -1, hy: 1, sho: 1, legs: 'wide', arm: [X, Y, X + 2, Y - 6], arm2: [OFF[0], OFF[1], X + 1, Y - 5], maul: [X + 2, Y - 5, X + 3, Y - 17], glow: [X + 3, Y - 20], plume: 2, bits: [...sunAt(X + 3, Y - 20, 5), a(X + 3, Y - 26, C)] }),
+    K({ dy: -2, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 2, Y - 4], arm2: [OFF[0], OFF[1], X + 1, Y - 3], maul: [X + 2, Y + 1, X + 3, Y - 14], glow: [X + 3, Y - 18], plume: 2, bits: [...sunAt(X + 1, Y + 2, 10), ...sunAt(X + 1, Y + 2, 15, 12, 0.26), ...halo4(X + 1, Y - 12, 6, 0), a(X - 4, Y - 6, W), a(X + 7, Y - 5, W)] }),
+    K({ legs: 'wide', arm: [X, Y, X + 3, Y], arm2: [OFF[0], OFF[1], X + 2, Y + 1], maul: [X + 3, Y + 4, X + 4, Y - 8], plume: 1, bits: [a(X - 7, Y + 2, G), a(X + 11, Y + 2, C), a(X - 3, Y - 2, '#8fd160'), a(X + 3, Y - 6, '#8fd160'), a(X + 7, Y - 1, '#8fd160'), a(X - 4, Y + 6, D), a(X + 10, Y + 6, D)] })];
+  /* JUDGED (the Verdict at five pips): the hammer's head brought level like a gavel with a crown of light standing over it and a pair of scales hung above (a bar, two pans), light leaving it in a wider fan;
+     then the long recover with the scales still ringing */
+  const scales = (cx, cy) => [...ln(cx - 6, cy, cx + 6, cy, G), a(cx, cy - 1, W), a(cx, cy - 2, C), ...ln(cx - 6, cy + 1, cx - 6, cy + 3, C), ...ln(cx + 6, cy + 1, cx + 6, cy + 3, C), ...ln(cx - 8, cy + 4, cx - 4, cy + 4, G), ...ln(cx + 4, cy + 4, cx + 8, cy + 4, G)];
+  F.vRelJ = [K({ wide: 8, dx: 1, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 5, Y - 4], arm2: [OFF[0], OFF[1], X + 4, Y - 2], maul: [X + 5, Y - 4, X + 15, Y + 2], glow: [X + 18, Y + 3], plume: 2,
+      bits: [...halo4(X + 11, Y - 13, 7, 0), ...scales(X + 11, Y - 18), a(X + 19, Y + 6, W), a(X + 19, Y + 9, C), a(X + 19, Y + 12, G), a(X + 21, Y + 5, G), a(X + 21, Y + 11, C), a(X + 16, Y + 8, G), a(X + 23, Y + 8, C)] }),
+    K({ dx: 1, dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 1], arm2: [OFF[0], OFF[1], X + 2, Y + 2], maul: [X + 3, Y + 1, X + 5, Y + 9], plume: 1, bits: [...scales(X + 6, Y - 14).filter((_, j) => j % 2 === 0), a(X + 9, Y + 9, G), a(X + 11, Y + 7, C)] })];
+  /* SPEAR OF LIGHT: LANCE DRAW (the 0.5 s told wind-up, two beats) - the strong hand reaching up and back over the shoulder and a spear of light FORMING in it: a short gold shaft and a spark of a head, the
+     off hand out ahead sighting; then the full spear drawn back level behind his ear, long, white at the head, the stance wide and low. LANCE THROW - the arm flung forward and the weight
+     behind it, the spear gone and its first streak still standing before the hand; then the follow-through, arm out and a bar of light fading */
+  F.lanceDraw = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 3, Y - 5], arm2: [OFF[0], OFF[1], X + 5, Y - 1], maul: rest(), plume: 1, bits: [...ln(X - 4, Y - 7, X + 3, Y - 10, G), a(X + 4, Y - 10, W), a(X + 5, Y - 11, C), a(X - 5, Y - 8, C)] }),
+    K({ dx: -2, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X - 4, Y - 4], arm2: [OFF[0], OFF[1], X + 5, Y - 2], maul: rest(), plume: 2, bits: [...ln(X - 12, Y - 5, X + 4, Y - 9, G), ...ln(X - 11, Y - 5, X + 3, Y - 8, C, 2), a(X + 5, Y - 9, W), a(X + 6, Y - 9, W), a(X + 4, Y - 11, C), a(X + 4, Y - 7, C), a(X + 7, Y - 9, G), a(X - 13, Y - 4, G), a(X - 3, Y - 12, G)] })];
+  F.lanceThrow = [K({ wide: 8, dx: 3, legs: 'runC', sho: 1, arm: [X, Y, X + 6, Y - 3], arm2: [OFF[0], OFF[1], X + 1, Y + 1], maul: rest(), plume: 2, bits: [...ln(X + 7, Y - 4, X + 17, Y - 5, C, 2), a(X + 18, Y - 5, W), a(X + 19, Y - 5, G)] }),
+    K({ wide: 4, dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 5, Y - 2], arm2: [OFF[0], OFF[1], X + 2, Y + 1], maul: rest(), plume: 1, bits: [a(X + 8, Y - 3, G), a(X + 11, Y - 3, C), a(X + 14, Y - 3, G)] })];
   riposteKit(F, 'paladin', K, { X, Y, OFF });
 }
 /* EVERY ABILITY HAS A BODY: THE FREEBOOTER'S BOUGHT ACTIVES (lane P, 2026-09-24). THE BLACK SPOT and KEELHAUL played beside an idle

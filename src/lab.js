@@ -36,7 +36,7 @@ import { sweepFront as wqSweepFront } from './wicker-queen.js';   /* (claude/fai
 import { WINCH as WM_K, winchFloors } from './winchmaster.js';   /* THE WINCHMASTER's phase three (claude/winch4): his reaches and the floors he fights on, read off his own module (winchFloors reads OR.ARENA) */   /* THE MARK TABLE: every red !! in it is a tell the bot steps out of, never guards */
 
 // LAB_REACH is each hero's real reach (attackBox in main.js): how far the blow actually lands.
-export const LAB_REACH = { knight: 22, pyro: 30, paladin: 24, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
+export const LAB_REACH = { knight: 22, pyro: 30, paladin: 20, pirate: 20, reaper: 29, warden: 40, geomancer: 24, berserker: 18, ranger: 16 };   /* (claude/ranger: her KNIFE lands 17 out; with arrows in the quiver the hands stand off at RANGER_STAND - rgReach below) */   /* (claude/berserker2: THE FLURRY lands 19 out - shorter than his old chop's 21) */   /* (berserker: his chop lands its head 19-21 out: he has almost no reach) */   /* (geomancer: the stone of her stave lands 21-26 out) */   /* her point lands at 44: the bot stands just inside it, where the TIP zone is */
 /* LAB_STAND, THE HAND'S CHOSEN DISTANCE (BOT BUG A, Daniel, 2026-09-25: "stands one pixel outside its own reach").
    It used to be a second, independently hand-set table - close to LAB_REACH for six heroes, but off by only 2 px
    for the warden (stand 38, reach 40). The generic goal math (below, "desired") walks to boss.x +/- (LAB_STAND[h] +
@@ -143,9 +143,9 @@ export function crouchBPlan(BK, h) {
   const P = BK.P; P.crbF = (P.crbF || 0) + 1;
   if (!crouchCalm(BK)) { P.crbLook = 0; return null; }
   if (h === 'paladin') { if ((P.light || 0) >= (C.praying ? 100 : CRB_LOW)) return null;
-    if (C.holy) return 'down';   /* (claude/crouchfix) he kneels only BY A HOLY LIGHT (src/crouch-b.js HOLY): by one, kneel; a light within CRB_WALK_HOLY, walk to it; else nothing */
+    if (C.holy || C.praying) return 'down';   /* (PALADIN 4) PRAYER: he kneels anywhere now - by a holy light (three times as fast), else a light within CRB_WALK_HOLY is walked to first, else he kneels where he stands */
     let b = null; for (const q of C.lights || []) if (Math.abs(q.x - P.x) < CRB_WALK_HOLY && (!b || Math.abs(q.x - P.x) < Math.abs(b.x - P.x))) b = q;
-    return b ? (b.x > P.x ? 'right' : 'left') : null; }
+    return b ? (b.x > P.x ? 'right' : 'left') : 'down'; }
   if (h === 'geomancer') { if (P.crbLook > 0) { P.crbLook--; return 'down'; }
     if (P.crbF - (P.crbLookAt ?? -1e9) > CRB_EVERY * 60) { P.crbLookAt = P.crbF; P.crbLook = Math.round(CRB_LOOK * 60); return 'down'; } return null; }
   if ((P.hp >= P.maxHp && (P.harvest || 0) >= 100) || !C.bodies.length) return null;
@@ -628,7 +628,7 @@ async function runbossLab(BK, opts) {
        C to plant one; standing in it with Light to spend (empower, or the full bar's judgement) he taps again. One frame of C: a tap, never the aegis's hold */
     const palHG={t:0},palHallow=()=>{const kk=BK.keys;if(palHG.t>0){palHG.t--;kk.block=palHG.t>0;return;}if(P.dead||!P.ground||P.labRest||P.atk>=0||kk.block||P.aegis||(P.dodge>0))return;
       const H=BK.holy(),own=H.circles.find(c=>c.owner===P.n||c.owner===1||c.owner===null),inC=own&&Math.abs(P.x-own.x)<=own.r&&Math.abs(P.y-own.y)<=30,lt=P.light||0;
-      if((lt>=100&&Math.abs(P.x-boss.x)<110)||(lt>=60&&lt<80&&Math.abs(P.x-boss.x)<56)){palHG.t=2;kk.block=true;}};   /* (PALADIN 3) SUNFALL at five pips, RADIANCE at three when close (own/inC kept for the read) */
+      if((lt>=100&&Math.abs(P.x-boss.x)<110)||(lt>=80&&lt<100&&Math.abs(P.x-boss.x)<64)){palHG.t=2;kk.block=true;}};   /* (PALADIN TUNE) tried TWIN SMITE at two pips in smite reach: the bot went 12/12 on marsh + burning (knight 11 / 8) - left out, see the lane report */   /* (PALADIN 4) SUNFALL at five pips, RADIANCE+ at four when close (the bot holds through three for the empowered burst; own/inC kept for the read) */
     const advance=(n,draw=false)=>{const before=P.hp,a0=P.atk,aim=a0<0?smallAim():null;if(h==='paladin'&&BK.holy&&LABP.v2)palHallow();BK[draw?'step':'sim'](n);health.damageTaken+=Math.max(0,before-Math.max(0,P.hp));health.healthRecovered+=Math.max(0,P.hp-before);smallWatch(a0,aim);};
     P.labPogo=0;P.labNextPogo=0;P.labPogoJump=-100;P.labHeavyAt=0;P.labShipVault=0;P.labRest=false;P.labJump=0;P.labHold=0;P.labMageLanding=null;P.labMageTap=-99;
     // the old roof boards in the roc's nest, once: her dive sticks in them

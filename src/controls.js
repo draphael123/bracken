@@ -180,7 +180,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     ['slide', 'HOLD ' + k1('down') + ' ON A SLOPE', 'HOLD ' + pd('down')],   /* THE BUTT-SLIDE (src/slide.js): down on any slope, feet first; it wins over the weak guard there */
     ...(hero === 'pyro' ? [['ember flare', 'TAP ' + k1('down') + ' ON A HIT', 'TAP ' + pd('down')]] : []),
     [cRow[0], cRow[1](tk), pd('block')],
-    ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1  RADIANCE 3  SUNFALL 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
+    ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2  RADIANCE 3-4  SUNFALL 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
     ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['stance', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],

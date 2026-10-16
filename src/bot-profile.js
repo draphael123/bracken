@@ -74,5 +74,5 @@ export function typicalWalkCard(h, lv, ownAt = n => null) { const c = typicalCar
   if (n >= 30) { const own = ownAt(30); if (own) c.ms[30] = own; }
   return c; }
 /* RANGE of a skill for the hands, px from the hero to the boss's near edge: a cast at range, or a blow in his face */
-export const SKILL_RANGE = { shieldThrow: 150, javelin: 170, harrier: 150, rainOfSpears: 140, meteor: 150, wisp: 140, fireWall: 90, vent: 60, lightLance: 150,
+export const SKILL_RANGE = { shieldThrow: 150, javelin: 170, harrier: 150, rainOfSpears: 140, meteor: 150, wisp: 140, fireWall: 90, vent: 60, lightLance: 240,
   swordOfRealm: 70, groundSlam: 50, lunge: 80, whirlwind: 40, disarm: 40, spearDance: 50, setSpears: 60, poleSpring: 60, skewer: 50, wheel: 45, flameRing: 50, cinderStep: 50, holyCharge: 90, consecrate: 40, boneArmor: 160, soulReap: 110 };

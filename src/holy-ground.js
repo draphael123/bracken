@@ -22,7 +22,7 @@ export const HG = {
   burn: 4,            // damage a burn (before the host's own skill multiplier)
   bossOutMul: 1.0,    // (claude/paltune) his blow on a boss while OFF his ground
   bossBurn: 0.3,      // (claude/paltune) the burn on a BOSS: x this (a slow boss stands in the circle all fight; wood fell 75 -> 38 s)
-  heal: 0.02,         // of max health a second, mended standing in his own circle (a partner in it: half)
+  heal: 0.004,        // (PALADIN TUNE: was 0.02, cut 80%) of max health a second, mended ONLY in the HALLOWED AURA (lit by SPENDING Conviction), not in a plain circle (a partner in a circle: half)
   hitMul: 1.3,        // his blows inside his own circle
   empower: { cost: 35, r: 60, life: 12, burnMul: 2, flare: 12 },   // EMPOWERED CONSECRATE: Light spent, a flare on the tap, a bigger, longer, hotter circle
   smite: { cost: 20, mul: 1.5 },                                   // SMITE: the overhead inside the circle, its waves holy
@@ -39,6 +39,29 @@ export const HG = {
   verdict: { every: 0.5, max: 4, reach: 110, dy: 60, mul: 1.15, hold: 2.4 },   // VERDICT (hold X): a sigil a beat on the nearest foes ahead, then light strikes them all
   arc: { float: 0.35, second: 0.09 },                            // HEAVEN'S ARC (up in the air): the whirl's second hit at atk s, a slight float
   flash: { r: 34, stagger: 0.6 },                                // the PERFECT GUARD's holy flash
+  /* PALADIN 4 (claude/paladin4, Daniel 10-15, scratch/brief-heroidentity.md '!! 10-15' lines): the Friday hero pass */
+  /* EVERY PIP COUNTS: the in-between pips EMPOWER the tier below. A tap spends what its version costs: 1 SMITE, 2 TWIN SMITE, 3 RADIANCE, 4 RADIANCE+, 5 SUNFALL */
+  twin: { cost: 40, gap: 0.16 },                                 // TWIN SMITE (2 pips): SMITE, and the same strike again a beat later
+  burstPlus: { cost: 80, r: 72, dmg: 18, stagger: 0.8, mend: 0.012 },   // RADIANCE+ (4 pips): a bigger burst, and it mends him a little (of max health)
+  /* THE LIGHT-WARD (the aegis, Daniel 10-15 ~18:00): ALL ROUND (front + back), turns projectiles, a steady wind a second while held (not a price a blow), a
+     PIERCING blow goes through it as through the knight's shield, a big enough blow BREAKS it (the knight's rules: staggered + exhausted, half the blow lands):
+     a blow bigger than the wind he has left for it (the shield's price, commit.js blockCost) or one that would land big (of his max health). +1 CONVICTION a 2 blocks */
+  ward: { drain: 27.5, big: 0.25, per: 2 },   /* (PALADIN TUNE: 0.18 measured, no gain on the 12-seed rates - see claude-paladintune.md) */
+  /* SANCTUARY STEP (the dodge, Daniel 10-15 ~17:20 - NOT a brace): a quick step in the held direction, a roll's grace a little shorter, and a small patch of holy
+     light left where he stood: foes crossing it are slowed (a common foe or an elite, never a boss or a mini), a PARTNER in it mends */
+  step: { t: 0.26, inv: 0.2, speed: 240 },   // s (a roll is 0.30), s of grace (a roll 0.26), px/s
+  patch: { r: 16, life: 2, slow: 0.5, heal: 0.006 },            // (PALADIN TUNE: was 0.03) the patch: px either side, s, foes' pace in it (x), a partner's mend (of max health a second)
+  /* PRAYER (crouch, Daniel 10-15 ~17:20): kneel anywhere; after settle s still, +1 pip every 'every' s (x holyMul at a holy light: src/crouch-b.js HOLY) */
+  pray: { settle: 0.6, every: 2.5, holyMul: 3 },
+  /* DAWNFALL (the plunge, Daniel 10-15 ~17:30, replaces HAMMER OF DAWN): the landing plants a PILLAR OF LIGHT - a small burst round it (damage + a common foe
+     staggered; the slam on the struck foe keeps its guard / poise break), his HALLOWED AURA lit at the landing for aura s, +1 CONVICTION if it struck a foe.
+     The spike safe-landing is DROPPED */
+  dawn: { r: 30, dy: 26, mul: 0.6, stagger: 0.6, aura: 2 },
+  /* VERDICT SCALES WITH CONVICTION, NEVER SPENDS (Daniel 10-15 ~18:45): 0-2 pips as before; 3-4 a sigil every fast s and each strike leaves a patch; 5 = JUDGED:
+     the strikes go through guards and stagger elites */
+  /* SPEAR OF LIGHT (the lightLance skill, Daniel 10-15 ~20:45): a told wind-up (s; his pace capped at slow px/s), then a thrown spear sp px/s out to range px, stopping at the first foe, dmg */
+  lance: { wind: 0.5, sp: 520, range: 260, dmg: 34, slow: 40 },
+  verdictUp: { fast: 0.35, from: 3, judged: 5, eliteStagger: 0.8 },
 };
 /* CONVICTION PIPS: whole pips held (the Light store / HG.conv.pip) */
 export const pipsOf = o => Math.floor(((o && o.light) || 0) / HG.conv.pip + 1e-6);
@@ -57,11 +80,11 @@ export function makeHolyGround(api) {
   /* IS THIS BODY STANDING IN IT? (its feet inside the rim, near the floor) */
   const inside = (c, b) => !!(c && b && !c.out && Math.abs(b.x - c.x) <= c.r && Math.abs(b.y - c.y) <= HG.dy);
   /* the owner's circle while it stands, or null */
-  const of = o => circles.find(c => c.owner === o && !c.out) || null;
+  const of = o => circles.find(c => c.owner === o && !c.out && !c.patch) || null;
   const standing = o => inside(of(o), o);
-  /* PLANT: one circle per owner - the old one goes out where it was. o: { r, life, side } */
+  /* PLANT: one circle per owner - the old one goes out where it was. o: { r, life, side } (PALADIN 4: a PATCH is not his circle - never put out by a plant) */
   function plant(owner, x, y, o = {}) {
-    for (const c of circles) if (c.owner === owner) c.out = true;
+    for (const c of circles) if (c.owner === owner && !c.patch) c.out = true;
     const c = { owner, x, y, r: o.r || HG.r, r0: o.r || HG.r, life: o.life || HG.life, max: o.life || HG.life, tick: HG.tick, side: o.side || 'hero', emp: false, at: time(), burnMul: 1 };
     circles.push(c); stats.planted++; return c; }
   /* EMPOWER: bigger, longer, twice as hot (the Light is the caller's to spend - spendLight) */
@@ -70,16 +93,24 @@ export function makeHolyGround(api) {
   /* MOVE: the circle comes with him (HAMMER LEAP) - same life, a new floor */
   function move(c, x, y) { if (!c || c.out) return; c.x = x; c.y = y; c.at = time(); }
   /* FOLLOW: the HALLOWED AURA walks with him every frame (no re-plant flash: move's c.at is the plant ring) */
+  const flare = c => { if (c && !c.out) c.flareT = time(); };
   function follow(c, x, y) { if (!c || c.out) return; c.x = x; c.y = y; }
   /* A CIRCLE THAT COVERS THIS BODY and is someone else's whose owner passes ok(owner) - the aegis covering a partner */
-  const covering = (b, ok) => circles.find(c => !c.out && c.owner !== b && inside(c, b) && ok(c.owner)) || null;
+  const covering = (b, ok) => circles.find(c => !c.out && !c.patch && c.owner !== b && inside(c, b) && ok(c.owner)) || null;
+  /* (PALADIN 4) A PATCH OF HOLY LIGHT: small, short, many may stand (SANCTUARY STEP leaves one where he stood; a VERDICT strike at 3+ pips leaves one under the foe).
+     It burns nothing: foes crossing it are SLOWED (api.slow), a PARTNER in it mends (the owner does not - his mend is the aura) */
+  function patch(owner, x, y, o = {}) { const P0 = HG.patch, c = { owner, x, y, r: o.r || P0.r, r0: o.r || P0.r, life: o.life || P0.life, max: o.life || P0.life, tick: 0, side: o.side || 'hero', emp: false, at: time(), burnMul: 0, patch: true, aura: true };
+    circles.push(c); stats.patches = (stats.patches || 0) + 1; return c; }
   function update(dt) {
     for (const w of wards) w.t += dt; wards = wards.filter(w => w.t < w.max);
     for (const c of circles) { if (c.out) continue; c.life -= dt; c.tick -= dt;
       if (c.life <= 0) { c.out = true; continue; }
+      if (c.patch) { for (const t of api.targets(c)) if (inside(c, { x: t.x, y: t.y }) && api.slow) { api.slow(t, c); stats.slowed = (stats.slowed || 0) + 1; }
+        for (const b of api.healers(c)) if (b !== c.owner && inside(c, b) && api.heal) { const n = HG.patch.heal * dt; stats.healed += n; api.heal(b, n, c); }
+        continue; }
       if (c.tick <= 0) { c.tick = HG.tick;
         for (const t of api.targets(c)) if (inside(c, { x: t.x, y: t.y })) { const d = Math.max(1, Math.round(HG.burn * c.burnMul)); stats.burns++; stats.burnDmg += d; api.hurt(t, d, c); } }
-      for (const b of api.healers(c)) if (inside(c, b) && api.heal) { const n = (b === c.owner ? 1 : 0.5) * HG.heal * dt; stats.healed += n; api.heal(b, n, c); }
+      for (const b of api.healers(c)) if (inside(c, b) && api.heal) { const own = b === c.owner; if (own && !c.aura) continue; const n = (own ? 1 : 0.5) * HG.heal * dt; stats.healed += n; api.heal(b, n, c); }
       if (api.parts && Math.random() < dt * (c.emp ? 26 : 14)) api.parts({ x: c.x + (Math.random() - 0.5) * c.r * 2, y: c.y - 1, vx: 0, vy: -24 - Math.random() * 20, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#fff6c8' : '#ffd36b', size: 1, grav: -6, glow: true }); }
     circles = circles.filter(c => !c.out);
   }
@@ -96,8 +127,36 @@ export function makeHolyGround(api) {
      second ring, taller posts and two more behind, motes rising off the whole floor; PLANTED or MOVED: a 1 px ring runs out from the middle to the rim;
      GOING OUT: the rim blinks and the runes go dark one after another, clockwise, the sun last. Owner-agnostic: the colours come from HG_PAL[c.side], so
      LIT CHURCH 2's boss circle ('foe') is this same draw in its own tint. */
+  /* THE HALLOWED AURA (PALADIN 3 ART, claude/paladin3art): not a planted circle - a SOFT RING OF LIGHT at his feet that goes where he goes. A faint floor glow that is
+     brightest at the middle, two thin rims (the outer one a ring of long dashes running slowly round it, so a still ring still reads as alive), six motes orbiting on it
+     with a short tail, a little light rising off it; it fades out over its last 0.7 s (no blinking, no runes, no posts). WHEN IT IS LIT (a spend, or a spend while it
+     stands: c.flareT) a FLARE: two rings running out past the rim, a cross glint on the floor and a spray of motes. Same pal as the circle (the owner's side tints it). */
+  /* (PALADIN 4 ART) THE PATCH OF HOLY LIGHT: not the aura (no ring of motes) - a small CROSS OF LIGHT lying on the floor where he stood, a soft pool round it, four corner ticks, a mote lifting, fading away (and flickering out in its last half second) */
+  function drawPatch(c, cx, cy, now, g) { const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), age = now - c.at, k = Math.min(1, c.life / 0.6) * Math.min(1, age / 0.08 + 0.2), fl = c.life < 0.5 && Math.floor(now * 16) % 2 ? 0.45 : 1, r = Math.max(5, c.r * Math.min(1, 0.35 + age / 0.14)), ar = Math.round(r * 0.62), av = 2;
+    g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.34 * k * fl; g.fillStyle = pal.floor; g.beginPath(); g.ellipse(x, y - 1, r, r * 0.22 + 1.5, 0, 0, 7); g.fill();   /* the pool */
+    g.globalAlpha = 0.5 * k * fl; g.strokeStyle = pal.hot; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, r, r * 0.22 + 1.5, 0, 0, 7); g.stroke();
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 0.5 * k * fl; g.fillStyle = pal.under; g.fillRect(x - ar, y, ar * 2 + 1, 1); g.fillRect(x + 1, y - av, 1, av * 2 + 1);   /* the cross, its dark underlay first so it reads on a bright floor */
+    g.globalAlpha = 0.95 * k * fl; g.fillStyle = pal.rune; g.fillRect(x - ar, y - 1, ar * 2 + 1, 1); g.fillRect(x, y - 1 - av, 1, av * 2 + 1); g.fillStyle = pal.emp; g.fillRect(x - 1, y - 1, 3, 1); g.fillRect(x, y - 2, 1, 3);
+    g.globalAlpha = 0.7 * k * fl; g.fillStyle = pal.hot; for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) g.fillRect(x + dx * (ar - 1), y - 1 + dy * 2, 1, 1);
+    for (let i = 0; i < 2; i++) { const u = (now * 0.9 + i * 0.5) % 1; g.globalAlpha = (1 - u) * 0.8 * k * fl; g.fillStyle = pal.emp; g.fillRect(x + (i ? 3 : -3), Math.round(y - 3 - u * 9), 1, 1); }
+    if (age < 0.3) { const u = age / 0.3; g.globalCompositeOperation = 'lighter'; g.globalAlpha = (1 - u); g.strokeStyle = pal.emp; g.beginPath(); g.ellipse(x, y - 1, r * (0.4 + 0.9 * u), (r * (0.4 + 0.9 * u)) * 0.22 + 1, 0, 0, 7); g.stroke(); }
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
+  function drawAura(c, cx, cy, now, g) { if (c.patch) { drawPatch(c, cx, cy, now, g); return; } const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), k = Math.min(1, c.life / 0.7) * (c.patch ? 0.75 : 1), age = now - Math.max(c.at, c.flareT || 0), grow = Math.min(1, (now - c.at) / 0.2), r = Math.max(4, c.r * (0.4 + 0.6 * grow)), ry = r * 0.2 + 1;
+    g.globalCompositeOperation = 'lighter';
+    const gr = g.createRadialGradient(x, y - 1, 1, x, y - 1, r); gr.addColorStop(0, 'rgba(255,230,150,0.32)'); gr.addColorStop(0.7, 'rgba(255,211,107,0.14)'); gr.addColorStop(1, 'rgba(255,211,107,0)');
+    g.save(); g.translate(0, 0); g.globalAlpha = k; g.fillStyle = gr; g.beginPath(); g.ellipse(x, y - 1, r, ry + 1.5, 0, 0, 7); g.fill(); g.restore();
+    g.globalAlpha = 0.5 * k; g.strokeStyle = pal.hot; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y - 1, r, ry, 0, 0, 7); g.stroke();                                    /* the outer rim */
+    g.globalAlpha = 0.85 * k; g.setLineDash([7, 9]); g.lineDashOffset = -now * 14; g.strokeStyle = pal.emp; g.beginPath(); g.ellipse(x, y - 1, r - 1, Math.max(1, ry - 0.6), 0, 0, 7); g.stroke(); g.setLineDash([]);   /* the running dashes */
+    g.globalAlpha = 0.28 * k; g.strokeStyle = pal.floor; g.beginPath(); g.ellipse(x, y - 1, r * 0.66, ry * 0.66, 0, 0, 7); g.stroke();                                    /* the inner line */
+    for (let i = 0; i < 6; i++) { const a = now * 1.3 + i * 1.0472, sx = x + Math.cos(a) * r, sy = y - 1 + Math.sin(a) * ry, front = Math.sin(a) > 0;                                 /* six motes going round, a tail behind each */
+      for (let t = 0; t < 3; t++) { const a2 = a - t * 0.16; g.globalAlpha = (front ? 0.95 : 0.55) * k * (1 - t * 0.3); g.fillStyle = t ? pal.floor : pal.emp; g.fillRect(Math.round(x + Math.cos(a2) * r), Math.round(y - 1 + Math.sin(a2) * ry), 1, 1); } }
+    for (let i = 0; i < 4; i++) { const u = (now * 0.7 + hash(i * 3.7)) % 1; g.globalAlpha = (1 - u) * 0.7 * k; g.fillStyle = pal.hot; g.fillRect(Math.round(x + (hash(i + 2) - 0.5) * 1.6 * r), Math.round(y - 2 - u * 11), 1, 1); }   /* a little light rising off it */
+    if (age < 0.45) { const u = age / 0.45; for (let q = 0; q < 2; q++) { const uu = Math.max(0, u - q * 0.14); if (uu <= 0) continue; g.globalAlpha = (1 - uu) * (q ? 0.55 : 0.95); g.strokeStyle = q ? pal.hot : pal.emp; g.beginPath(); g.ellipse(x, y - 1, r * (0.3 + 1.0 * uu), (r * (0.3 + 1.0 * uu)) * 0.2 + 1, 0, 0, 7); g.stroke(); }   /* THE FLARE: two rings out past the rim... */
+      g.globalAlpha = (1 - u) * 0.9; g.fillStyle = pal.emp; const ar = Math.round(4 + 8 * (1 - u)); g.fillRect(x - ar, y - 1, ar * 2 + 1, 1); g.fillRect(x, y - 1 - Math.round(ar * 0.5), 1, Math.round(ar) + 1);   /* ...a cross glint on the floor... */
+      g.globalAlpha = (1 - u) * 0.45; g.fillStyle = pal.floor; g.beginPath(); g.ellipse(x, y - 1, r * 0.9, ry + 2, 0, 0, 7); g.fill(); }   /* ...and the floor brightening */
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   function draw(cx, cy) { const g = api.g(), now = time();
-    for (const c of circles) { const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), k = Math.min(1, c.life / 0.5), going = c.life < HG.warn, blinkOff = going && Math.floor(now * 8) % 2 === 0;
+    for (const c of circles) { if (c.aura) { drawAura(c, cx, cy, now, g); continue; } const pal = HG_PAL[c.side] || HG_PAL.hero, x = Math.round(c.x - cx), y = Math.round(c.y - cy), k = Math.min(1, c.life / 0.5), going = c.life < HG.warn, blinkOff = going && Math.floor(now * 8) % 2 === 0;
       const grow = Math.min(1, (now - c.at) / 0.18), r = Math.max(4, c.r * grow), hot = c.emp ? pal.emp : pal.hot, N = c.emp ? 16 : 12, lit = going ? Math.ceil(N * c.life / HG.warn) : N;
       g.globalAlpha = 0.4 * k; g.strokeStyle = pal.under; g.lineWidth = 1; g.beginPath(); g.ellipse(x, y, r, 6, 0, 0, 7); g.stroke();   /* the dark line under the rim, a pixel below it */
       g.globalCompositeOperation = 'lighter';
@@ -152,6 +211,6 @@ export function makeHolyGround(api) {
       g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
   }
   const clear = () => { circles = []; wards = []; };
-  const read = () => ({ circles: circles.map(c => ({ x: Math.round(c.x), y: Math.round(c.y), r: c.r, life: +c.life.toFixed(2), emp: c.emp, side: c.side, owner: c.owner && c.owner.n ? c.owner.n : c.owner && c.owner.t || null })), stats: { ...stats } });
-  return { plant, empower, move, follow, inside, of, standing, covering, ward, update, draw, clear, read, list: () => circles, stats };
+  const read = () => ({ circles: circles.map(c => ({ x: Math.round(c.x), y: Math.round(c.y), r: c.r, life: +c.life.toFixed(2), emp: c.emp, side: c.side, patch: !!c.patch, owner: c.owner && c.owner.n ? c.owner.n : c.owner && c.owner.t || null })), stats: { ...stats } });
+  return { plant, patch, empower, move, follow, flare, inside, of, standing, covering, ward, update, draw, clear, read, list: () => circles, stats };
 }

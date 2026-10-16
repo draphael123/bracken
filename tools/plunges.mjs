@@ -1,6 +1,6 @@
 // tools/plunges.mjs - THE FOUR NEW PLUNGES (claude/plunges, scratch/brief-plunges.md; src/plunges.js). Each hero's plunge owns ONE job, and every one still
 // produces the B14 FROM ABOVE key (hurtAs('plunge', ...)). Played in the real page, headless, on the Stockade's open floor:
-//   HAMMER OF DAWN (paladin)  POISE: a guarded shield goblin's guard is BROKEN by one slam where the knight's plunge leaves it standing; a heavy foe's bar breaks
+//   DAWNFALL (paladin, was HAMMER OF DAWN; claude/paladin4 dropped its safe landing - he is bitten like the knight now)  POISE: a guarded shield goblin's guard is BROKEN by one slam where the knight's plunge leaves it standing; a heavy foe's bar breaks
 //                             where the knight's does not; HOLY LIGHT lands him safe on spikes and on a spiked foe where the knight is bitten
 //   BOARDING (freebooter)     CONTROL: lands on a small foe's back and rides it (the stick walks it), into SPIKES by knock-into's rule (the foe dies, INTO THE
 //                             SPIKES, the rider unhurt), leaps off with a second jump when the time is up / off a ledge / on jump; a brute, a flyer, an elite, a mini or
@@ -108,12 +108,13 @@ const bad = [], H = R.hammer, B = R.board, E = R.earth, S = R.spin;
 /* HAMMER */
 if (!(H.paladinShield.broken > 0)) bad.push('HAMMER: the slam did not break a guarded shield goblin (' + JSON.stringify(H.paladinShield) + ')');
 if (H.knightShield.broken > 0) bad.push('HAMMER: the knight\'s plunge broke the same guard (the control must stand): ' + JSON.stringify(H.knightShield));
-if (!(H.paladinHeavy.poise >= H.knightHeavy.poise + 30)) bad.push("HAMMER: a heavy bar must take far more than the knights plunge does (" + JSON.stringify([H.paladinHeavy, H.knightHeavy]) + ")");
+if (!(H.paladinHeavy.broken > 0 || H.paladinHeavy.poise >= H.knightHeavy.poise + 30))   /* (claude/paladin4: the slam now BREAKS the heavy bar outright - a broken bar resets its poise to 0, which is more than "far more", not less) */ bad.push("HAMMER: a heavy bar must take far more than the knights plunge does (" + JSON.stringify([H.paladinHeavy, H.knightHeavy]) + ")");
 if (!(H.knightThorn.hp < H.knightThorn.maxHp)) bad.push("HOLY LIGHT control: the knight was NOT bitten by the bristling spiked foe (" + JSON.stringify(H.knightThorn) + ")");
 if (!H.paladinShield.tagged) bad.push('HAMMER: the slam is not tagged plunge (B14 FROM ABOVE)');
-if (H.paladinSpikes.hp < H.paladinSpikes.maxHp || H.paladinSpikes.dead) bad.push('HOLY LIGHT: the paladin was bitten by the spikes (' + JSON.stringify(H.paladinSpikes) + ')');
+/* (claude/paladin4, Daniel 10-15 ~17:30: DAWNFALL DROPS the safe landing - a DESIGN CHANGE, stated: the paladin is now bitten by spikes and by a bristling foe as the knight is) */
+if (!(H.paladinSpikes.hp < H.paladinSpikes.maxHp || H.paladinSpikes.dead)) bad.push('DAWNFALL: the safe landing is dropped, but the paladin was NOT bitten by the spikes (' + JSON.stringify(H.paladinSpikes) + ')');
 if (!(H.knightSpikes.hp < H.knightSpikes.maxHp || H.knightSpikes.dead)) bad.push('HOLY LIGHT control: the knight was NOT bitten by the same spikes (' + JSON.stringify(H.knightSpikes) + ') - the test proves nothing');
-if (H.paladinThorn.hp < H.paladinThorn.maxHp) bad.push('HOLY LIGHT: the spiked foe bit the paladin (' + JSON.stringify(H.paladinThorn) + ')');
+if (!(H.paladinThorn.hp < H.paladinThorn.maxHp)) bad.push('DAWNFALL: the safe landing is dropped, but the bristling foe did NOT bite the paladin (' + JSON.stringify(H.paladinThorn) + ')');
 /* BOARDING */
 if (!B.rode || !B.ridden) bad.push('BOARDING: no ride began (' + JSON.stringify(B) + ')');
 if (!B.alive || !(B.hpLoss > 0)) bad.push('BOARDING: the landing must hurt and not kill (' + B.hpLoss + ')');
@@ -144,4 +145,4 @@ if (!S.tagged) bad.push('AXE SPIN: the landing is not tagged plunge (B14)');
 if (S.miniMax !== 3) bad.push('AXE SPIN: a mini takes three cuts, not ' + S.miniMax);
 if (!(S.berserkerLoss > S.knightLoss * 1.5)) bad.push('AXE SPIN: it must shred - the berserker did ' + S.berserkerLoss + ' to the knight\'s ' + S.knightLoss);
 assert.deepEqual(bad, [], 'plunges:\n  ' + bad.join('\n  '));
-console.log('plunges: hammer of dawn breaks guards, poise and lands safe; boarding rides, steers into knock-into hazards and leaps; earthfall rises, steps, expires and is never a way; axe spin shreds and stacks rend');
+console.log('plunges: dawnfall breaks guards and poise (no safe landing); boarding rides, steers into knock-into hazards and leaps; earthfall rises, steps, expires and is never a way; axe spin shreds and stacks rend');

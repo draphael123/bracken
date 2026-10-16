@@ -39,6 +39,15 @@ export const POSE_BEATS = {
   hallow: [0.12],              /* CONSECRATE: the maul lifted, then down on one knee with the head set in the turf */
   hallowQ: [0.07],             /* CONSECRATE again, with one already standing (claude/palart): the same two frames on a 0.25 s beat so it reads as planting when tapped often */
   sanctify: [0.16],            /* EMPOWER (claude/palart): up on his toes, the maul straight up over the helm, the head lit; then driven down into his circle with a column of light going up either side */
+  smiteQ: [0.07],              /* SMITE (1 pip, claude/paladin3art): the war hammer drawn back low at the hip, then snapped forward and up with the head lit */
+  radiance: [0.12, 0.28],      /* RADIANCE (3 pips): the hammer stood upright and the light gathering; the helm thrown back and the ring of spokes going off; the settle */
+  sunfall: [0.14, 0.3],        /* SUNFALL (5 pips): up on his toes under a sun of spokes; lifted on the light of it; the hammer driven into the turf, the columns going up either side */
+  vRel: [0.14],                /* VERDICT's release: the head of the hammer brought level and pointed at them like a gavel, light leaving it in lines; then lowered */
+  smiteB: [0.07],              /* TWIN SMITE's second blow (claude/paladin4art): the hammer back across the other shoulder, then the backhand through and up */
+  radiancePlus: [0.12, 0.3],   /* RADIANCE+ (4 pips): the hammer high over a bowed helm in a second ring; the helm thrown back, the double ring and the halo; the settle with the mend rising */
+  vRelJ: [0.14],               /* JUDGED (5 pips): the gavel with a crown over it and the scales hung above; the long recover with them ringing */
+  lanceDraw: [0.25],           /* SPEAR OF LIGHT's wind-up: the spear forming in the hand over the shoulder; the full spear drawn back level */
+  lanceThrow: [0.1],           /* SPEAR OF LIGHT's throw: the arm flung out with the weight behind it; the follow-through */
   beam: [0.1],                 /* SPEAR OF LIGHT: drawn back with the off hand out, then the maul driven straight out level */
   hurlH: [0.1],                /* BLESSED HAMMER: the off hand low behind him, then flung through with the light leaving it */
   /* THE PYROMANCER */
