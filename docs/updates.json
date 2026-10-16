@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-16",
+    "batch": 97,
+    "lines": [
+      "The Paladin: Light-ward, Prayer and Dawnfall",
+      "Every hero dodges their own way",
+      "New moves: shield bash, wall plant, arrow snatch",
+      "Break a boss, then land the finisher",
+      "Undercrown reworked: prop the roof, face the Prince",
+      "Scree Path and Lit Church redrawn"
+    ]
+  },
+  {
+    "date": "2026-10-16",
     "batch": 96,
     "lines": [
       "The Cistern Queen returns: strike the stinger, set her alight",
