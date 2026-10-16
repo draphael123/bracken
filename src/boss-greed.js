@@ -223,6 +223,12 @@ export function noteGreed(e, time, isBoss, isMini) {
   e.greedLog = []; e.greedT = GREED.tell; e.greedCd = time + GREED.tell + (isBoss ? GREED.cool : GREED.coolMini); e.greedMini = !isBoss; e.greedN = (e.greedN || 0) + 1;
   return true;
 }
+/* (claude/difficulty) MASTER: PUNISH GREED - a flask drunk or a heavy whiffed in his reach starts the same TOLD reprisal (the !!, the ring, GREED.tell, then the burst) */
+export function punish(e, time, isBoss) {
+  if (!e || !e.alive || e.mode === 'sleep' || NO_OPENING[e.t] || NO_GREED.has(e.t) || openOf(e) || e.greedT > 0 || (e.greedCd || 0) > time) return false;
+  e.greedLog = []; e.greedT = GREED.tell; e.greedCd = time + GREED.tell + (isBoss ? GREED.cool : GREED.coolMini); e.greedMini = !isBoss; e.greedN = (e.greedN || 0) + 1; e.punishN = (e.punishN || 0) + 1;
+  return true;
+}
 /* how many greedy blows he has taken toward the next reprisal (the boss lab's bot reads it, as a player reads the boss) */
 export const greedCount = (e, time) => (e && e.greedLog ? e.greedLog.filter(t => time - t <= GREED.window).length : 0);
 

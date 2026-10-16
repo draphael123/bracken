@@ -115,6 +115,7 @@ import { TOKENS, tokenBoard, tokenPre, tokenHold, tokenPost, release as tokenRel
 import * as GB from './boss-greed.js'; import { makeBossRead, ANGLE as BR_ANGLE, ROLL_SOON, roomBlow as brRoomBlow, GUARD as BR_GUARD } from './boss-read.js'; import { TEMPO, installTempo } from './foe-tempo.js';   /* THE GLOBAL BOSS RULE: x0.05 outside an opening, and the greed reprisal (claude/combat3, Daniel 2026-10-01) */
 import { installTactics, braceHit } from './foe-tactics.js'; import { installReact, actOf as bpActOf } from './foe-react.js'; import { gapFactor as bpGap, dmgFactor as bpDmg, capBoost as bpCap } from './boss-pressure.js';   /* (claude/flasklever) THE GLOBAL BOSS PRESSURE DIAL: one table per act (src/boss-pressure.js) */ import { installEliteKit, AFFIX as ELITE_AFFIX, tuneOf } from './elite-kit.js';   /* (ELITES2) the elite's affix, guard, opening and escalation */   /* THE COMBAT PASS, PART 2b: reactive foes, varied swings, squads, the ramp by act (src/foe-react.js) */
 import { POISE_EXTRA, POISE_EXTRA_HEAVY, OPEN, openCommon, broke, staggerPose, drawOpen } from './poise-break.js';
+import * as AM from './anti-mash.js'; import * as DFM from './difficulty.js';   /* (claude/difficulty) ANTI-MASH INSIDE OPENINGS (stale blows, the universal break bar + finisher, varied hits refill abilities) and THE DIFFICULTY MODES' table */
 import { makePartnerThrow, WORDS as PT_WORDS, PT as PTC } from './partner-throw.js';   /* (claude/partnerthrow) CO-OP: GRAB YOUR PARTNER, CARRY HIM (he dangles and screams), THROW HIM (src/partner-throw.js) */
 import { makeKnockInto, throwWhy as kiWhy, guardedOf as kiGuarded, WORDS as KI_WORDS, weightOf as kiWeight } from './knock-into.js'; import { COVER as RX_COVER, heroAbove as raAbove, sidestepTick as raSidestep, REACT_AIR as RX_AIR } from './foe-react.js'; import * as AP from './anti-plunge.js'; import * as KA from './ki-art.js'; import { knockRows as kiRows } from './knock-data.js';   /* (claude/kifollow) the knock-into ART (spines, armed states, poses, entry FX: src/ki-art.js) and the per-act hazard DATA (src/knock-data.js) */   /* (claude/knockinto) ANTI-PLUNGE: the THORNED elite's and the Spike Goblin's spines drawn on the body and told, the spitter's sidestep (src/anti-plunge.js, src/foe-react.js REACT_AIR) */   /* (claude/knockinto) KNOCK FOES INTO THE LEVEL: the throw along the blow, weight-scaled, and the hazard it lands in (src/knock-into.js) */
 import * as OKD from './order-chapters.js'; import { installOrder, bakeBase as okBakeBase, bakeCardFor as okBakeCard, frameOf as okFrame } from './order-knights.js';   /* (claude/order) THE ROAD WARDENS: four knight bodies as ELITE KINDS (src/order-knights.js) and who holds which level (src/order-chapters.js) */
@@ -335,7 +336,7 @@ const slotKeys = () => Array.from({ length: SLOTS }, (_, j) => slotKey(j));
 let saveFail = '';   /* the last write that did not land ('SAVE FAILED - STORAGE FULL'), '' once one does: a banner shows it and every save retries */
 let ROSTER = HR.STARTERS.slice(), rosterReady = false;   /* THE DEVICE-LEVEL HERO ROSTER (claude/heroroster, src/hero-roster.js): every hero any slot has ever owned, on this device */
 function rosterNote() { if (!rosterReady) return; try { ROSTER = HR.addHeroes(localStorage, ROSTER, Object.keys(PROG.heroes || {}).filter(h => PROG.heroes[h])).heroes; } catch {} }
-function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
+function progDefaults() { DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) the save's mode (PROG.mode: story / normal / master; ?difficulty= overrides) */ if (!PROG.heroes) PROG.heroes = { knight: true }; if (!PROG.hero) PROG.hero = 'knight'; if (!PROG.music) PROG.music = { select: true }; if (!PROG.music.select) PROG.music.select = true; PROG.coins = PROG.coins || 0; PROG.hedgeHint = PROG.hedgeHint || 0; if (!PROG.deathCost) PROG.deathCost = freshDeathCost(); PROG.skins = PROG.skins || { bracken: true }; PROG.skin = PROG.skin || 'bracken'; PROG.swords = PROG.swords || { steel: true }; PROG.sword = PROG.sword || 'steel'; PROG.items = PROG.items || {}; PROG.charms = PROG.charms || {}; PROG.done = PROG.done || {}; PROG.charmOf = PROG.charmOf || {};
   if (!PROG.perHero) { PROG.perHero = 1;                     /* the save's progress belongs to whoever was carrying it */
     const h = PROG.hero || 'knight', d = PROG.done[h] = PROG.done[h] || {};
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
@@ -490,7 +491,7 @@ const ST = { swing: 15, plunge: 35, dodge: 20, blockHit: 14, hold: 7.5, knightHo
    shield raised on the beat costs nothing at all (and the parry pays wind back); after that it drains ST.hold a second, half
    that with STEADY ARM (it made holding free, which made holding the default). HEAVY BLOWS PUSH HIM: a blow on the shield
    shoves him back by how hard it was, from a light one's step to a heavy one's slide (guardPush). */
-const perfectWindow = () => (tal('parry') ? 0.22 : 0.11) + 0.012 * prk('kguard');
+const perfectWindow = () => ((tal('parry') ? 0.22 : 0.11) + 0.012 * prk('kguard')) * DFM.df('parry');   /* (claude/difficulty) the mode's parry window: Story looser, Master narrower (Normal x1) */
 /* THE KNIGHT'S rework only (docs/briefs/knight-rework.md). ST.hold was raised globally at first, and the Death Knight
    and the Paladin - who hold C too - paid the knight's tax: the Spore Mother pilot lost the reaper's fight to the clock.
    Every other hero keeps the drain it always had. */
@@ -693,7 +694,7 @@ const GEO_LIFE0 = GEO_K.life, GEO_PERFECT0 = GEO_K.ward.perfect;   /* her stone'
 const cdOf = k => (k === 'summonSkeleton' && tal('gleaner') ? 12 : CD_MAX[k] || 3) * (perk('focus') ? 0.85 : 1);
 const amul = k => grow(hero(), heroLevel()).skillMultiplier * (1 + RANK_MUL * Math.max(0, skillRank(PROG, hero(), k) - 1)); // skill damage grows (and MASTERY, a perk, and the skill's RANK), cooldowns and invulnerability do not
 let treeResetT = 0, talentsBackT = 0, talentsBackWho = '', talentsBackWhy = '';   /* RESET POINTS asks twice; the trees-have-changed notice shows once */
-window.BKT = { lights: () => lights, get PROG() { return PROG; }, krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
+window.BKT = { shrineFill: () => shrineFill(),   /* (claude/difficulty) tools/difficulty.mjs: a shrine's refill per mode */ lights: () => lights, get PROG() { return PROG; }, krkArmPts: a => krkArmPts(a, L.arena.floor, 0), krakLimp: (e, t) => krakenArmsLimp(e, t), krkTop: (x, n) => krkTop(x, n), krkRoadEnds: () => krkRoadEnds(),   /* (tools/kraken-reach.mjs, tools/kraken-rework.mjs) */
   /* THE HARNESS LEVEL (HARNESSCARD): a bot hero at level n is n XP-levels AND n card picks spread evenly (the migrated-save spread), the stats a real player who spent his picks has; xp alone reads a no-card hero (-8 hp a Vigor pick, -12 stamina an Endurance pick, -1 damage a Might). Tools only: a real player chooses his own picks. */
   setHeroLevel: (h, n) => { PROG.xp = PROG.xp || {}; PROG.card = PROG.card || {}; PROG.xp[h] = n > 0 ? xpFloor(n) : 0; PROG.card[h] = evenCard(n > 0 ? n : 0); return heroLevel(h); }, TREE, TBR, TREE_WHO, tal, skillIcon: k => skillIcon(k), talIcon: (i, w) => talIcon(i, w), TAL_KIND: (i, w) => TAL_KIND(i, w), ptsTotal, ptsSpent, ptsLeft, branchPts, nodeState, capOf, resetTalents, heroLevel, LV_GROW, CAP_NEED, PTS_CAP,
   skillNow: () => skillNow(), skill2Now: () => skill2Now(), skillAt: i => skillAt(i), loadoutSafe: () => loadoutSafe(), get saveBlocked() { return saveBlocked; }, get saveFail() { return saveFail; }, saveNow: () => saveProgress(), eraseAskNow: () => eraseAsk, slotHealth: i => slotHealthOf(i), get fixAsk() { return fixAsk; }, get fixI() { return fixI; }, get bugSnapshot() { return bugSnapshot; }, inputSnapshot: ()=>pressRead(), padState: gp=>padState(gp), touchPress: k=>touchPressName(k), tipPay: e => tipPay(e), swordDmg: () => swordDmg(), dodgeCost: () => dodgeCost(), get P() { return P; },
@@ -6824,7 +6825,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1)));   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1)));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
   dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (PROG.items.mail2 ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
@@ -6848,7 +6849,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
   else if (armoured) { dmg = Math.max(1, Math.round(dmg * 0.75)); number(P.x, P.y - 30, 'SWUNG THROUGH', '#ffd36b'); SFX.clank(); if (isReaper()) P.plateFlash = 0.22; }
   // and the mercy window comes down: a second and a tenth of nothing-can-touch-you was a reward for failing
   if (isReaper() && P.boneArmor > 0 && dmg > 0) { P.boneArmor--; dmg = Math.max(1, Math.round(dmg * 0.4)); 0; SFX.clank(); sparks(P.x, P.y - 12, Math.sign(fromX - P.x) || P.face, 6); if (P.boneArmor <= 0) P.boneArmorT = 0; }   /* OSSUARY MAIL (claude/herokit): three blows at two fifths */
-  if (pct > 0) dmg = Math.max(1, Math.round(P.maxHp * pct));   /* A HAZARD'S SHARE (src/survival.js HAZARD): a share of the bar, past the difficulty, tier, co-op and armour chain above */
+  if (pct > 0) dmg = Math.max(1, Math.round(P.maxHp * pct * DFM.df('take')));   /* (claude/difficulty: x the mode's damage taken) */   /* A HAZARD'S SHARE (src/survival.js HAZARD): a share of the bar, past the difficulty, tier, co-op and armour chain above */
   if (isBz() && BZK) dmg = BZK.lethal(dmg, pct > 0 ? 0 : (P.bzSur || 0));   /* LAST STAND / UNBOWED hold him at one - and HIS OWN COST never kills him: the frenzy's surcharge (claude/berserker2) */
   if (window.BK && window.BK.hitLog) { const q = who || updFoe; window.BK.hitLog.push([Math.round(time * 10) / 10, q ? q.t + " " + (q.mode || "") : "?", blow || name || "?", Math.round(dmg), Math.round(P.hp - dmg), "blk" + (P.block ? 1 : 0), "st" + Math.round(P.st), "atk" + P.atk, "x" + Math.round(P.x - (q ? q.x : 0)), "prev" + P.labDkPrev, "gt" + (P.guardTired || 0), "str" + (q ? q.strLeft : ""), "blkT" + (P.blockT || 0).toFixed(2), "kw" + (typeof knightWinding !== "undefined" ? knightWinding : "")]); }
   P.hp -= dmg; RP.hitReset(P); if (isBz() && BZK) BZK.took(dmg);   /* (claude/riposte: a blow taken resets the mix-up chain) */ P.inv = (armoured ? 0.55 : 0.8) + (perk('grit') ? 0.15 : 0); P.hurt = armoured ? 0 : Math.max(P.hurt, 0.35);
@@ -6891,7 +6892,7 @@ function tryDrink() {
   if (!(P.ground || P.carpet) || P.swim || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry || P.ptC) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
   const T = F2.drinkTimes(PROG, SV.FLASK);
   P.flasks--; P.drinkDur = T.drinkT; P.swallowAt = T.swallowAt; P.drinkT = T.drinkT; P.drunk = false; P.gulps = 0; P.corked = true; P.drinkHp = P.hp; P.block = false; P.vx = 0; P.dance = 0; SFX.ui(); PROG.drinkTold = Math.max(PROG.drinkTold || 0, 2);
-  flaskHud.levelDrinks++; BUG.evlog('flask drunk (' + P.flasks + ' left)'); return true;
+  flaskHud.levelDrinks++; BUG.evlog('flask drunk (' + P.flasks + ' left)'); if (DFM.df('punish')) punishGreed('drink'); return true;   /* (claude/difficulty) MASTER: a drink in his reach is answered */
 }
 function drinkTick(dt) {
   if (flaskPress) { flaskPress = false; tryDrink(); }
@@ -6943,7 +6944,7 @@ function drawFlaskDrink(cx, cy) {
 /* A SHRINE IS DRY (claude/survival): it lights the checkpoint, banks what you carry, fills the stamina - it does not heal. Said twice a save.
    (claude/survival2, Daniel 10-07 A10b) It gives back ONE flask, once a shrine a LIFE (lifeN: a death, never R, starts a new one): no touch-farming */
 let lifeN = 0, litSeq = 0;
-function shrineFill() { P.st = P.maxSt; const fm = SV.flaskMax(PROG); const give = F2.shrineGives(PROG); for (const p of players) { const was = p.flasks | 0; for (let i = 0; i < give; i++) p.flasks = SV.shrineRefill(p.flasks, fm); if (p === P && (p.flasks | 0) > was) flaskHud.flashT = 0.8; }   /* (claude/flasks2) SHRINE BLESSING gives back two */
+function shrineFill() { P.st = P.maxSt; const fm = SV.flaskMax(PROG); const shr = DFM.df('shrine'), give = shr === 'all' ? fm : shr === 'none' ? 0 : F2.shrineGives(PROG);   /* (claude/difficulty) Story: a shrine refills ALL; Master: NONE (a death still restores all) */ for (const p of players) { const was = p.flasks | 0; for (let i = 0; i < give; i++) p.flasks = SV.shrineRefill(p.flasks, fm); if (p === P && (p.flasks | 0) > was) flaskHud.flashT = 0.8; }   /* (claude/flasks2) SHRINE BLESSING gives back two */
   if ((PROG.shrineTold || 0) < 2) { PROG.shrineTold = (PROG.shrineTold || 0) + 1; hintT = 5; hintMsg = SV.LINES.shrine.replace('(KEY)', '(' + flaskKeyName() + ')'); } }
 /* BREAK THE SHRINE (claude/survival2, Daniel 10-07; src/survival.js SHRINE): HOLD the interact key at a lit shrine - told by the prompt over it.
    Never a bot (keys.talk is only ever a person's key or pad), never in a boss fight, its arena or at the pre-boss shrine (SV.breakBlock) */
@@ -7028,9 +7029,9 @@ function dcBank() { const c = carryOf(P); if (!carryHas(c)) return; P.dcCarry = 
 function dcBankAll() { for (const q of players) q.dcCarry = emptyCarry(); dcMirror(); }
 /* THE DEATH ITSELF. p is the hero who fell (P inside his own pass); killer is what killerOf wrote down at the blow. */
 function deathCost(p, killer) {
-  if (!dcOn() || p.dcDone) return; p.dcDone = true; p.dcLost = false;
+  if (!dcOn() || p.dcDone) return; p.dcDone = true; p.dcLost = false; if (!(DFM.df('death') > 0)) return;   /* (claude/difficulty) VERY EASY: no death cost - you keep your silver */
   const c = carryOf(p), lone = p === players[0], h = hero(), old = bundleOf(p);
-  if (lone && !(L && L.trial)) c.purse += bankStake((PROG.coins || 0) - (c.purse || 0));   /* THE BANK'S STAKE (src/death-cost.js): the gold half bites when the bank is big */
+  if (lone && !(L && L.trial)) { const bank = (PROG.coins || 0) - (c.purse || 0); c.purse += Math.min(Math.max(0, bank), Math.round(bankStake(bank) * DFM.df('death'))); }   /* (claude/difficulty: MASTER's stake bites harder - x the mode's death cost, never more than the bank) */   /* THE BANK'S STAKE (src/death-cost.js): the gold half bites when the bank is big */
   const t = dcDrop(c, { got, purse: PROG.coins || 0, xp: heroXp(h) });
   p.dcCarry = emptyCarry();
   if (old && (t.coins || t.purse || t.xp)) { dcSet(p, null); p.dcLost = true; }   /* ONLY ONE BUNDLE EVER EXISTS: dying AGAIN and dropping something new before you got it back is the end of the old one. Dying with nothing carried leaves it where it lies (Daniel, 2026-09-29) */
@@ -7337,9 +7338,10 @@ const POISE_SKIP = new Set(['winchmaster', 'huntmaster', 'greatdrill', 'colossus
    riposte, a dash attack or a third cut lean on it - so a heavy blow visibly ROCKS a goblin instead of shoving it like a cut does.
    (Not the things one blow of anything brings down, and not POISE_SKIP: those were left out on purpose.) */
 const POISE_LIGHT = 24;
-const poiseMax = e => POISE_SKIP.has(e.t) ? 0 : e.maxHp ? (e.mini ? 70 : 100) : e.elite ? EL.poise : (e.big || e.mini) ? 60 : (POISE_HEAVY.has(e.t) || POISE_EXTRA_HEAVY.has(e.t)) ? 40 : ((FAMILY_OF[e.t] || POISE_EXTRA.has(e.t)) && !ONE_HIT.has(e.t) && !e.harmless) ? POISE_LIGHT : 0;   /* (part 2: POISE_EXTRA, the common foes the family table left without a bar - src/poise-break.js) */   /* an elite carries a bar whatever its kind: even the bullfrog can be broken */
-function addPoise(e, dmg, fromX, plunge) {
+const poiseMax = e => dpBossLike(e) ? AM.breakMax(e) : POISE_SKIP.has(e.t) ? 0 :   /* (claude/difficulty) THE UNIVERSAL BREAK BAR: every boss and mini carries one (src/anti-mash.js BREAK_SKIP: the few with no body) */ e.maxHp ? (e.mini ? 70 : 100) : e.elite ? EL.poise : (e.big || e.mini) ? 60 : (POISE_HEAVY.has(e.t) || POISE_EXTRA_HEAVY.has(e.t)) ? 40 : ((FAMILY_OF[e.t] || POISE_EXTRA.has(e.t)) && !ONE_HIT.has(e.t) && !e.harmless) ? POISE_LIGHT : 0;   /* (part 2: POISE_EXTRA, the common foes the family table left without a bar - src/poise-break.js) */   /* an elite carries a bar whatever its kind: even the bullfrog can be broken */
+function addPoise(e, dmg, fromX, plunge, verb = null) {
   const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0 || dmg <= 0) return;
+  if (dpBossLike(e)) { bossBreakFill(e, m, verb); return; }   /* (claude/difficulty) a boss or mini: the break bar's own table (src/anti-mash.js) */
   let n = P.jetHit ? 0 : 6 + dmg * 0.25;   /* the jet leans on nothing: it burns, it does not break (09-17) */
   if (isBz() && BZK && !P.jetHit && P.atk >= 0) { if (P.heavy) n += BZ_K.poise.heavy * (e.maxHp || e.mini ? BZ_K.poise.bossMul : 1) * (P.bzAxe ? BZ_K.poise.one : 1); if (BZK.raging()) n *= BZ_K.poise.rage; }   /* (one axe: half) */   /* THE DOUBLE CHOP leans HARD on the bar - he is the poise-breaker - and rage leans harder (src/berserker.js BZ.poise) */
   n += hammerPoise(e);   /* (claude/plunges) HAMMER OF DAWN: the poise breaker */
@@ -7649,8 +7651,50 @@ const RP = makeRiposte({ time: () => time, P: () => P, isBoss: e => e === boss, 
   sfx: (k, n) => { if (k === 'chime') { if (SFX.mixPip) SFX.mixPip(n); } else if (SFX[k]) SFX[k](); }, hitstop: t => hitstop(t), lessonHint: k => lessonHint(k), perfectWindow: () => perfectWindow(), squash: (a, b, t) => squash(a, b, t), still: () => !!SET.reduceMotion, parryFx: () => rpParryFx() });
 const DP = makeDamagePct({ time: () => time, fullHp: e => fullHp(e), bossLike: e => dpBossLike(e), text: (s, x, y, c, a, z, st) => text(s, x, y, c, a, z, st), textW: (s, z) => textW(s, z), still: () => !!SET.reduceMotion });   /* (claude/damagepct) */
 const dpBossLike = e => e === boss || e.xpRole === 'mini' || e.xpRole === 'boss' || !!e.mini;   /* (claude/damagepct) never thrown: his % lengthens his break */
-function rpBreak(e, word) { const m = poiseMax(e); if (!m || e.broken > 0 || !e.alive) return; e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; if (dpBossLike(e)) e.broken = DP.bossBreak(e, e.broken);   /* (claude/damagepct) his % lengthens it */ e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
+function rpBreak(e, word) { const m = poiseMax(e); if (!m || e.broken > 0 || !e.alive) return; if (dpBossLike(e)) { bossBroken(e, word); return; }   /* (claude/difficulty) a boss's break is the break bar's */ e.broken = e.maxHp && !e.mini ? 1.8 : 2.4; if (dpBossLike(e)) e.broken = DP.bossBreak(e, e.broken);   /* (claude/damagepct) his % lengthens it */ e.poise = 0; e.poiseCd = e.broken + 3; e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken);
   number(e.x, e.y - e.h - 20, word || 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - e.h / 2, 26, '#ffd36b', 0.4); breakBeat(e); }
+/* ==== (claude/difficulty) ANTI-MASH INSIDE OPENINGS - the hooks (the rules and numbers: src/anti-mash.js; Daniel 10-15 ~12:55) ====
+   THE UNIVERSAL BREAK BAR: what a blow of 'verb' adds to a boss's or mini's bar - the bar's own table, then the hero's own poise talents (the hammer, the
+   berserker's chop, the right tool, MIGHT's heavy hand), the mix-up chain and the mode's poise. Full: BROKEN (bossBroken). */
+const AMS = { stale: 0, staleLost: 0, breaks: 0, finishers: 0, varied: 0, punish: { drink: 0, whiff: 0 }, verbs: {} };   /* the tools' ear (BK.antiMash) */
+function bossBreakFill(e, m, verb) {
+  const open = GB.openOf(e) === true;
+  let n = P.jetHit ? 0 : AM.breakFill(e, verb, open) + hammerPoise(e) + (e.keyHit === time ? 12 : 0);
+  if (n && isBz() && BZK && P.heavy && P.atk >= 0) { n += BZ_K.poise.heavy * BZ_K.poise.bossMul * (P.bzAxe ? BZ_K.poise.one : 1); if (BZK.raging()) n *= BZ_K.poise.rage; }   /* the poise-breaker leans hard on it */
+  if (n && thr('m', 0) && verb === 'heavy') n *= 1.25;   /* MIGHT 10: HEAVY HAND */
+  if (n && !P.jetHit) n *= RP.chainMul(P) * DFM.df('poise');
+  if (n > 0) { e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; }
+  if ((e.poise || 0) >= m) bossBroken(e, 'BROKEN');
+}
+/* BROKEN: he stands still the bar's time (x his damage %, x the mode's opening), every hero blow lands x AM.BREAK.mul, and ONE FINISHER waits */
+function bossBroken(e, word) {
+  e.broken = DP.bossBreak(e, AM.breakSecs(e)) * DFM.df('open'); e.bkBroke = true; e.bkFinished = false; e.bkAt = time; e.bkMax = e.broken; AMS.breaks++;
+  e.bkSoft = POISE_SKIP.has(e.t);   /* A SOFT BREAK for the bosses the old poise bar left out on purpose (puzzle and flying bosses whose own clock IS the fight): x2 and the finisher, but he is not stood still - his own AI runs on (Question for Daniel) */
+  e.poise = 0; e.poiseCd = e.broken + 3; if (!e.bkSoft) { e.vx = 0; e.stagger = Math.max(e.stagger || 0, e.broken); }
+  number(e.x, e.y - (e.h || 16) - 20, word || 'BROKEN', '#ffd36b'); ringAt(e.x, e.y - (e.h || 16) / 2, 30, '#ffd36b', 0.45); breakBeat(e);
+}
+/* STALE BLOWS, THE FINISHER, VARIED HITS: a hero's landed blow of 'verb' on a boss or mini */
+function antiMash(e, dmg, verb) {
+  const open = GB.openOf(e) === true, k = AM.staleMul(e, verb, open, DFM.df('stale') || AM.STALE.pay);
+  AMS.verbs[verb] = (AMS.verbs[verb] || 0) + 1;
+  if (k < 1) { const d0 = dmg; dmg = Math.max(1, Math.round(dmg * k)); e.amStaleAt = time; AMS.stale++; AMS.staleLost += d0 - dmg; }   /* (the read: a duller sound and a dimmer spark, below - no word) */
+  if (e.bkAt !== time && AM.finisherNow(e, verb)) {   /* (not the blow that broke him: the NEXT heavy or ability is the finisher) */ dmg = Math.round(dmg * AM.BREAK.finisher); AMS.finishers++; hitstop(AM.BREAK.finisherStop); if (!SET.reduceMotion) shakeCam(7); zoomKick(1.08, 0.25);
+    number(e.x, e.y - (e.h || 16) - 26, 'FINISHER', '#ffd36b'); ringAt(e.x, e.y - (e.h || 16) / 2, 34, '#fff6c8', 0.4); if (SFX.hitHeavy) SFX.hitHeavy(); }
+  if (AM.varied(P, verb)) { AMS.varied++; if (P.cds) for (const id in P.cds) if (P.cds[id] > 0) P.cds[id] = Math.max(0, P.cds[id] - AM.CD_REFILL); }   /* VARIED HITS REFILL ABILITIES a little faster */
+  if (verb === 'heavy') P.amHeavyHit = true;
+  return dmg;
+}
+/* once a frame for a boss or mini: a new opening starts the stale count clean; the bar's BROKEN flag goes with the break; MASTER's whiffed heavy */
+function amFrame(e) {
+  AM.openTick(e, GB.openOf(e) === true); if (!(e.broken > 0)) e.bkBroke = e.bkSoft = false;
+  if (P.amHeavyAt != null && time - P.amHeavyAt > 0.5) { const whiff = !P.amHeavyHit; P.amHeavyAt = null; if (whiff && DFM.df('punish')) punishGreed('whiff'); }
+}
+/* MASTER: PUNISH GREED - a flask drunk or a heavy whiffed in a boss's or mini's reach is answered by his TOLD reprisal (src/boss-greed.js punish: the red !!, the closing ring, then the burst) */
+function punishGreed(why) {
+  for (const e of enemies) { if (!e.alive || !((e === boss && bossActive) || (e.xpRole === 'mini' && miniActive))) continue;
+    if (Math.abs(P.x - e.x) > GB.GREED.reach + (e.w || 20) / 2 + 24 || Math.abs(P.y - e.y) > 64) continue;
+    if (GB.punish(e, time, e === boss)) { AMS.punish[why]++; SFX.tell(true); } }
+}
 function rpLean(e, n) { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) rpBreak(e, 'BROKEN'); }
 /* (claude/riposteart) THE PARRY'S FLASH, every hero: a ring and a star of his colour at the weapon hand, a breath of gold over his body (P.rpTintT, drawn in the player pass), a short screen flash
    (only with flashes on and motion allowed), and the layer of sound that is HIS (SFX.parryTone) under the parry sound his branch already played */
@@ -7660,7 +7704,7 @@ function rpParryFx() { const A = RP_ART[hero()] || RP_ART.knight, x = P.x + P.fa
 const rpCut = () => P.riposteT > 0 || (!!P.swingRiposte && P.atk >= 0);   /* (claude/riposte) the riposte cut itself leans on the bar (P.riposteT is spent the moment it starts) */
 /* (claude/riposte) IS THE HERO'S ANSWER ON THE BEAT RIGHT NOW? - asked only to say TOO STRONG when a red blow (or a bolt) meets it */
 function rpAnswerUp() { return hero() === 'knight' ? !!P.block && (P.blockT || 0) < perfectWindow() : isPaladin() ? !!P.aegis && time - (P.aegisUpT ?? -9) < perfectWindow() : isPirate() ? P.parryW > 0
-  : isWarden() ? (P.deflectT || 0) > 0 && time - (P.deflectAt ?? -9) <= RP_K.tap : isBz() ? !!(BZK && BZK.onBeat()) : isRg() ? !!(RGK && RGK.onBeat()) : isPyro() ? !!P.emberUp : isGeo() ? !!(GEO && GEO.wardUp() && GEO.wardPerfect()) : isReaper() ? !P.warding && (P.wardSince ?? 9) < WARD_BEAT : false; }
+  : isWarden() ? (P.deflectT || 0) > 0 && time - (P.deflectAt ?? -9) <= RP_K.tap * DFM.df('parry') : isBz() ? !!(BZK && BZK.onBeat()) : isRg() ? !!(RGK && RGK.onBeat()) : isPyro() ? !!P.emberUp : isGeo() ? !!(GEO && GEO.wardUp() && GEO.wardPerfect()) : isReaper() ? !P.warding && (P.wardSince ?? 9) < WARD_BEAT : false; }
 const rpSkillBlow = () => P.atk < 0 && !P.plunge && time - (P.skillAt ?? -9) < 1.5;
 function hurtEnemy(e, dmg, fromX, plunge) { const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null;
   if (RGK && dmg > 0 && (e.rgMarkT || 0) > time) dmg = Math.round(dmg * RGK.markMul(e));   /* (claude/ranger) THE RANGER'S MARK: every blow on her quarry lands harder (src/ranger.js) */   /* taken at once, so nothing this blow sets off inherits it */
@@ -7884,8 +7928,9 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if(finishCut){if(e.rpPaidAt!==time)dmg=Math.round(dmg*COMBAT.finishMul);   /* (claude/riposte) a PARRY's riposte is paid ONCE, by the shared x2 (src/riposte.js payoff) - the finisher's x2.2 no longer stacks on it; it still finishes a low foe */
   if(e.hp-dmg<=fullHp(e)*COMBAT.finishHealth){dmg=e.hp;number(e.x,e.y-e.h-32,P.swingRiposte?'RIPOSTE':'BACKSTAB','#ffd36b');finisher(e);}}
   if (dmg > 0 && !e.trainer && !glance && canFinish(e, dmg)) { dmg = e.hp; finisher(e); }
-  if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * 1.5);   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
-  if (!glance) addPoise(e, dmg, fromX, plunge);   /* a glancing blow moves nothing, the bar included */
+  const amV = blow && tag && !P.jetHit ? rpVerbOf(tag, rpSkillBlow()) : null;   /* (claude/difficulty) this blow's verb, for the break bar and stale blows */
+  if (e.broken > 0 && dmg > 0 && e.offBalAt !== time) dmg = Math.round(dmg * (e.bkBroke && dpBossLike(e) ? AM.BREAK.mul : 1.5));   /* (claude/difficulty) a boss or mini BROKEN by the bar: x2 */   /* broken: nothing between the blow and the body (and not the blow that threw it OFF BALANCE: that one is paid once, as a key) */
+  if (!glance) addPoise(e, dmg, fromX, plunge, amV);   /* a glancing blow moves nothing, the bar included */
   if(e.t==='undeadmage'&&mageOpen(e))dmg=Math.round(dmg*(e.realm?REALM.openMul:LICH.openMul));   /* (claude/archmage4) a realm's opening at REALM.openMul, his hall's at MAGE.openMul */
   if(e.t==='undeadmage'&&e.realm){const f=realmFloor(e);if(f>0&&e.hp>f)dmg=Math.min(dmg,e.hp-f);}   /* a realm takes him no lower than the next realm's mark: each one is had */   /* the mark come back on him, or a dodge through his own ring (round 2) */
   /* (THE OWL REEVE, lamp-struck: double - owlTake, above, claude/owl2) */   /* THE OPENING: the mark came back on him, and he is open while he gathers himself */
@@ -7899,12 +7944,13 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));   /* (claude/keyscore) round or over THE DUELIST'S WALL a blow lands at ANGLE.wall (his openings pay whole) */   /* every ward and every opening, in ONE place so that BURN goes through them too (see wardedDamage) */
    if (angB && e.t === 'ram') dmg = Math.max(1, Math.round(dmg / BR_ANGLE.mul));   /* (claude/ramtune) round the horns (behind, the flank, above) he is cut WHOLE: his front is x0.4, so the angle is worth going round for (B15) */
   greedHit(e, fromX, blow);
+  if (amV && dmg > 0 && !glance && e.alive && dpBossLike(e)) dmg = antiMash(e, dmg, amV);   /* (claude/difficulty) STALE BLOWS inside an opening, THE FINISHER into a broken boss, varied hits refill abilities (src/anti-mash.js) */
   if (e.t === 'matriarch' && MTH && MTH.hold) dmg = MTH.hold(e, dmg);   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's HOLD on what LANDS (after the riposte, the chain...): until the sluice has stunned her once she will not break past phase one */
   if (capFix && dmg > capD0) dmg = capFix(e, capD0, dmg);   /* (claude/batch86, claude/capsfix) A BOSS'S OPENING CAP holds against what multiplies a blow after it was counted (the mix-up chain, the riposte x1.5, a broken foe, cutthroat / turncoat x2, the quake): the cap is on what LANDS. One fix per boss that counts early (Wicker Man, Grandmother, Huntmaster, Colossus, Great Drill, Archmage); the others count in wardedDamage, after every multiplier */
   if (e.t === 'greatdrill' && GDH) dmg = GDH.gate(e, dmg);   /* (claude/deeprails4) THE GEARS HOLD IT: no blow takes the drill past a phase line while its gears hold (the blow is held, not lost) */
   const dpV = blow && tag ? rpVerbOf(tag, rpSkillBlow()) : null; if (blow && dmg > 0 && !glance && !P.jetHit) DP.gain(e, Math.min(dmg, Math.max(0, e.hp)), dpV, RP.chainOf(P));   /* (claude/damagepct) THE DAMAGE %: a landed hero blow adds its verb's weight of what it took (a burn, a hazard, a foe's fire add nothing) */
   const dpHeavy = !!P.heavy || dpV === 'heavy' || dpV === 'riposte' || dpV === 'plunge', dpP = dpBossLike(e) ? 0 : DP.pctOf(e);   /* (claude/damagepct) a boss's % only lengthens his break */
-  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy);   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
+  e.hp -= dmg; if (e.trainer && e.hp <= 0) e.hp = e.hp0;   /* a trial's man is straw inside */ e.flash = glance ? 0.05 : 0.12; e.hitDir = Math.sign(e.x - fromX) || e.face || 1; if (e.t !== 'queen' && !glance && !P.jetHit) e.stagger = hitStagger(dmg, P.heavy) * DP_stun(dpP, dpHeavy) * DFM.df('stagger');   /* (claude/difficulty) x the mode's stagger */   /* (claude/damagepct) the hitstun grows with the % (a light blow's a little, a heavy's a lot) */ e.sq = glance ? 0.06 : 0.16;
   impactAt(e.x + (Math.sign(e.x - fromX) || 1) * -3, e.y - e.h / 2 - (plunge ? 4 : 0), plunge ? 'plunge' : MAT[e.t] === 'steel' ? 'steel' : 'hit');
   if (e.t === 'gill' || e.t === 'heart') P.grace = Math.max(P.grace, 0.7); else if (e.t === 'queen' || e.t === 'frog' || e.t === 'chief' || e.t === 'ram') P.grace = Math.max(P.grace, 0.3); // landing a hit on a boss is never punished
   if (e.t === 'thorn' && e.mode === 'charge') { e.mode = 'rest'; e.modeT = 0.7; }
@@ -7956,12 +8002,12 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
     if (e.t === 'shaman' && e.hp > 0) { burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); const dir2 = Math.sign(e.x - P.x) || 1; let nx = e.x + dir2 * 70; if (isSolid(Math.floor(nx / TS), Math.floor((e.y - 1) / TS)) || !isSolid(Math.floor(nx / TS), Math.floor((e.y + 1) / TS))) nx = e.x - dir2 * 70; e.x = nx; e.flash = 0.3; burst(e.x, e.y - 6, 12, ['#4aa0b0', '#e8e0f0'], 70, 0.5); number(e.x, e.y - 18, 'POOF', '#4aa0b0'); }
     if (glance) { /* IT GLANCED: no cry, no stop worth the name, no hurt pose, no flinch and no shove - it did not feel that, and it shows */ }
     else {
-    const voice = SFX.hurtOf(voiceOf(e)); if (voice) voice(); else SFX.hit(); // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
-    if (!P.jetHit) { const jc = blowKind(e, dmg), JR = JUICE[jc]; if (jc === 'heavy') SFX.hitHeavy(); blowStop(e, dmg, false); shakeCam(JR.shake, dir * JR.kick); e.flash = Math.max(e.flash, JR.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = 0.14; e.recD = dir; e.recA = JR.recoil; }   /* a flame ticking over them does not stop the world ten times a second */
-    sparks(e.x - dir * 2, e.y - e.h / 2, dir, P.heavy ? 9 : 5);
+    const voice = SFX.hurtOf(voiceOf(e)), staleNow = e.amStaleAt === time; if (staleNow && SFX.hitDull) SFX.hitDull(); else if (voice) voice(); else SFX.hit();   /* (claude/difficulty) A STALE BLOW is heard duller (no word) */ // every creature is hurt in its own voice if (e.t === 'thorn' || e.t === 'sprig' || e.t === 'archer' || e.t === 'sapper' || e.t === 'shield' || e.t === 'brute' || e.t === 'chief') SFX.hit();
+    if (!P.jetHit) { const jc = blowKind(e, dmg), JR = JUICE[jc]; if (jc === 'heavy' && !staleNow) SFX.hitHeavy(); blowStop(e, dmg, false); shakeCam(JR.shake, dir * JR.kick); e.flash = Math.max(e.flash, JR.flash); e.sq = Math.max(e.sq || 0, JR.squash); e.rec = 0.14; e.recD = dir; e.recA = JR.recoil; }   /* a flame ticking over them does not stop the world ten times a second */
+    sparks(e.x - dir * 2, e.y - e.h / 2, dir, Math.max(1, Math.round((P.heavy ? 9 : 5) * (staleNow ? AM.STALE.dimSparks : 1))));   /* (claude/difficulty) and seen dimmer */
     if (P.heavy) { ringAt(e.x, e.y - e.h / 2, 16, '#fff6e0', 0.22); impactAt(e.x, e.y - e.h / 2, 'steel'); }
     e.hurtT = HAS_HURT.has(e.t) && !(e.t === 'masthead' && windingUp(e)) && !(e.t === 'prince' && (windingUp(e) || e.mode === 'buried' || e.mode === 'rise' || e.mode === 'cut')) ? 0.2 : 0;
-    if (!P.jetHit && !e.maxHp && !e.big && !e.mini && !e.elite && !POISE_HEAVY.has(e.t)) { flinch(e); e.sq = Math.max(e.sq || 0, 0.22); }   /* A SMALL ONE FLINCHES: a real blow knocks it out of whatever it was winding up */   /* a big one keeps its tell pose when struck in it */
+    if (!P.jetHit && !e.maxHp && !e.big && !e.mini && !e.elite && !POISE_HEAVY.has(e.t) && (DFM.df('flinch') || P.heavy || !windingUp(e))) { flinch(e);   /* (claude/difficulty) MASTER: a light blow no longer flinches a foe out of its swing */ e.sq = Math.max(e.sq || 0, 0.22); }   /* A SMALL ONE FLINCHES: a real blow knocks it out of whatever it was winding up */   /* a big one keeps its tell pose when struck in it */
     }
     if (!glance && !P.jetHit && e.t !== 'wasp' && e.t !== 'spit' && e.t !== 'queen' && e.t !== 'ram' && e.t !== 'harpy') {   /* (the jet burns, it does not push) */
       // THE PUSH IS THE BLOW'S: a tap nudges, a heavy blow throws, and a heavy blow from below lifts them
@@ -8866,7 +8912,7 @@ function reloadPistol(why) {
   SFX.ui(); ringAt(P.x, P.y - 12, 12, '#ffd36b', 0.22);
   if (why) number(P.x, P.y - 28, why, '#ffd34a');
 }
-function fireHeavy() { noteVerb('heavy');
+function fireHeavy() { noteVerb('heavy'); P.amHeavyAt = time; P.amHeavyHit = false;   /* (claude/difficulty) a heavy that lands on nothing is a WHIFF (MASTER punishes one in a boss's reach) */
   if (isPirate()) { P.atkHeld = 0; P.charge = 0; P.chargeFull = false; firePistol(); return; }
   if (isRg() && RGK && RGK.bowReady()) { const w = Math.min(1, (P.charge || 0) / heavyWind()); P.atkHeld = 0; P.charge = 0; P.chargeFull = false;   /* (claude/ranger) THE DRAW, LET GO: the arrow (src/ranger.js release) - empty, the knife's heavy below */
     if (!spend(RG_K.draw.st)) { SFX.clank(); P.stFlash = 0.35; return; } RGK.release(w); return; }   /* (no wind: the bar's red flash says so) */
@@ -10439,6 +10485,7 @@ function queenDies(who) {
   SFX.bossDown(); setView('normal'); bossWon = 2.2; bossActive = false; camLock = null; tongue = null; slowT = 1.0; fires = fires.filter(f => f.life < 900); music.play(L.music || 'theme');
   for (const e of enemies) if (e.alive && (((e.t === 'wasp' || e.t === 'hopper') && e.drone) || e.archCalled)) { e.alive = false; burst(e.x, e.y - 3, 8, COLS[e.t], 70, 0.5); spawnCorpse(e, 1); }   /* (and the Archmage's apprentice goes down with him) */
   setWall(L.arena.wallL, false); setWall(L.arena.wallR, false);
+  if (DFM.mode() === 'normal' && !rushOn() && !bossJumpOn && curId() === CAMPAIGN_END) DFM.unlockMaster();   /* (claude/difficulty) MASTER UNLOCKS once any save beats the current final main-road boss on Normal (device-wide) */
   bossEnd(who);
 }
 
@@ -25502,6 +25549,7 @@ function updateEnemies(dt) {
        boss in the game answers to whichever of them walked into it, with no branch of its own. (P is put back to
        player one at the call site the moment the sweep is over.) */
     if (coop()) P = nearestHero(e);
+    if (e === boss || e.xpRole === 'mini' || e.mini) amFrame(e);   /* (claude/difficulty) a new opening starts the stale count clean; MASTER's whiffed-heavy punish */
     if (e.greedT > 0 || e.chipT > 0) { GREED_API.dt = dt; GB.greedStep(e, GREED_API); } if (e.capLeft !== undefined || e.capShut) GB.capStep(e);   /* (claude/bosswave2) a mini's opening over: his third is full again */   /* HIS REPRISAL, told and then thrown (src/boss-greed.js) */
     tokenPre(TK, e, P, tkApi); if (e.tokFrame >= 0) RX.pre(e, P, dt);   /* ATTACK TOKENS: may it ask for a blow at this hero? (RX: its feint, backing off a charging heavy) */
     emitAt(sndAt(e.x, e.y - e.h / 2, !!e.maxHp)); // everything this one does is heard from where it is
@@ -25555,7 +25603,8 @@ function updateEnemies(dt) {
     if (e.t === 'thorn' && AP.thornTick(e, players || [P], dt, raAbove)) SFX.clatter();   /* (claude/knockinto) THE SPIKE GOBLIN's TOLD BRISTLE: a hero over him and his back spikes rise (~0.3 s, a clatter) */
     if (RP.tick(e, dt)) continue;   /* (claude/riposte) PARRIED: it stands reeling (its own AI waits); a boss's riposte opening, his ward, his verb on the poise bar */
     if (e.t === 'spit' && !(e.broken > 0) && raSidestep(e, players || [P], dt, RA_API)) continue;   /* (claude/knockinto, rule c) THE SPITTER SIDESTEPS a plunge, then stands OFF BALANCE (src/foe-react.js sidestepTick) */
-    if (e.broken > 0 && !(e.knock > 0 && !e.maxHp)) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out (claude/knockinto: unless a blow THREW it - it flies first, broken, and stands where it lands) */
+    if (e.broken > 0 && e.bkSoft) e.broken -= dt;   /* (claude/difficulty) a SOFT break runs down while his own AI runs on */
+    else if (e.broken > 0 && !(e.knock > 0 && !e.maxHp)) { e.broken -= dt; e.vx = 0; if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * (e.w || 12), y: e.y - (e.h || 16) - 4, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); continue; }   /* BROKEN: it stands where the bar ran out (claude/knockinto: unless a blow THREW it - it flies first, broken, and stands where it lands) */
     if (e.knock > 0 && !e.maxHp) { e.knock -= dt; e.kvy = Math.min(400, e.kvy + 1000 * dt); e.kvx *= Math.pow(0.25, dt);   /* THROWN: no legs under it for a moment */
       const kx0 = e.x, kvy0 = e.kvy, r = moveBody(e, e.kvx * dt, e.kvy * dt, false);
       /* IT COMES DOWN. A thrown body landed by stopping, which is nothing to look at; now the first time it meets the ground it
@@ -25585,6 +25634,7 @@ function updateEnemies(dt) {
     if (e.t === 'oathblade' || e.t === 'oathmaul' || e.t === 'oathlance' || e.t === 'oathmage') { if (!(e.elite && OK.elite(e, dt))) OK.walk(e, dt); continue; }   /* (claude/order) a knight: his moves when he is an elite (src/order-knights.js elite - his body's two, his chapter's, his level's twist, his anti-plunge pose), else between them: to his own distance, facing you, never off a ledge (src/order-knights.js walk) */
     if (e.work && oreWorkStep(e, dt)) continue;   /* MINE LIFE: a goblin at work is not fighting - nothing of his runs until his told alert has played out */
     if (e.t === 'dummy') { e.vx = 0; e.hp = e.hp0; continue; } // a straw man stands there
+    if (DFM.df('open') !== 1) { dt = DT_FRAME; if (e === boss && bossActive && !windingUp(e) && GB.openOf(e) === true) dt = DT_FRAME / DFM.df('open'); }   /* (claude/difficulty) the bosses run below before the act dial's line (the Archmage, the Buried Dead, the Dune Worm, the Pyromancer, the False Abbot): their told openings x the mode's open too (Normal: untouched) */
     if(e.t==='magechase'){chaseMage(e,dt);continue;}   /* THE SPIRAL STAIR: he runs ahead of you, and is never frozen by the 420 px rule - he waits on the screen or not at all */
     if(e.t==='undeadmage'){if(bossActive){beastSeen(e.t);updateUndeadMage(e,dt);}continue;}
     if(e.t==='burieddead'){if(bossActive){beastSeen(e.t);updateBuriedDead(e,dt);}continue;}
@@ -25600,7 +25650,7 @@ function updateEnemies(dt) {
     if (e.t === 'duneworm') { if (bossActive) { beastSeen('duneworm'); updateDuneWormBoss(e, dt); } continue; }   /* THE DUNE WORM (not in the Rush: it is parked) */
     if (e.t === 'pyromancer') { if (bossActive) { beastSeen('pyromancer'); updatePyromancer(e, dt); } continue; }
     if (e.t === 'abbot') { if (bossActive || rushOn()) { beastSeen('abbot'); updateFalseAbbotBoss(e, dt); } continue; }
-    dt = DT_FRAME; if ((e === boss && bossActive) || (e.xpRole === 'mini' && miniActive)) dt = DT_FRAME * bpGap(e, bpAct, e !== boss, windingUp(e));
+    dt = DT_FRAME; if ((e === boss && bossActive) || (e.xpRole === 'mini' && miniActive)) { const g = bpGap(e, bpAct, e !== boss, windingUp(e)); dt = DT_FRAME * (g > 1 ? g * DFM.df('gap') : g === 1 && DFM.df('open') !== 1 && !windingUp(e) && GB.openOf(e) === true ? 1 / DFM.df('open') : g); }   /* (claude/difficulty) MASTER's gap on top of the act's dial; while he is OPEN his clock runs at 1/open, so the told opening (and its gold bar) lasts x open */   /* (claude/flasklever) the act's gap dial, in his idle moments only */
     if (e.hallowSlowT > time && e !== boss && !e.maxHp && !e.mini && e.xpRole !== 'mini') dt = DT_FRAME * HG.patch.slow;   /* (PALADIN 4) A PATCH OF HOLY LIGHT (SANCTUARY STEP, VERDICT at 3+): a common foe or an elite crossing it moves at HG.patch.slow - never a boss or a mini */   /* (claude/flasklever) the act's gap dial, in his idle moments only */
     if (GLH && GLH.owns(e)) { if (miniActive) { beastSeen('gangleader'); GLH.update(e, dt); } continue; }   /* THE GANG LEADER (src/gang-leader.js): the courtyard's mini */
     if (CQH && CQH.owns(e)) { if (bossActive && e === boss) { beastSeen('cisternqueen'); CQH.update(e, dt); } continue; }
@@ -26289,7 +26339,7 @@ BZK = makeBerserker({ get P() { return P; }, get enemies() { return enemies; }, 
   ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), squash: (a, b, c) => squash(a, b, c), streaks: (...a) => streaks(...a),
   kitPose: (p, k, t) => kitPose(p, k, t), meterReady: c => meterReady(c), trialEvent: k => trialEvent(k), teach: k => bzTeach(k), parried: f => RP.parried(f),
   /* (claude/berserker2) TAKE IT: the shared tap beat, a block's stamina, the guard break, and what a blow is scaled by on its way to him (the chip is a tenth of it) */
-  tap: () => RP_K.tap, blockCost: d => CM.blockCost(d, 0), canPay: c => P.st >= c, pay: c => { P.st -= c; P.stDelay = ST.delay; },
+  tap: () => RP_K.tap * DFM.df('parry'), blockCost: d => CM.blockCost(d, 0), canPay: c => P.st >= c, pay: c => { P.st -= c; P.stDelay = ST.delay; },
   guardBreak: () => { P.st = 0; P.stFlash = 0.5; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b'); },
   takeScale: () => diffNow().take * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => !!(L && L.trial),
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
@@ -26327,7 +26377,7 @@ RGK = makeRanger({ get P() { return P; }, get enemies() { return enemies; }, get
   hurtAs: (b, e, d, x, pl) => hurtAs(b, e, d, x, pl), swordDmg: () => swordDmg(), amul: k => amul(k), number: (x, y, t, c) => number(x, y, t, c), sparks: (x, y, d, n) => sparks(x, y, d, n), dust: (x, y, n) => dust(x, y, n),
   ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), shakeCam: (n, k) => shakeCam(n, k), hitstop: t => hitstop(t), zoomKick: (a, b) => zoomKick(a, b), streaks: (...a) => streaks(...a),
   kitPose: (p, k, t) => kitPose(p, k, t), meterReady: c => meterReady(c), trialEvent: k => trialEvent(k), teach: k => rgTeach(k), teachShot: () => rgTeach('shot'), noteVerb: v => noteVerb(v),
-  parried: f => RP.parried(f), noteParry: () => { noteVerb('parry'); parries++; }, tap: () => RP_K.tap, finishNear: () => enemies.some(e => finishReady(e, P, e === boss || bossActive || miniActive)),   /* (claude/riposte: her BOW-BASH on the beat is the shared parry) */
+  parried: f => RP.parried(f), noteParry: () => { noteVerb('parry'); parries++; }, tap: () => RP_K.tap * DFM.df('parry'), finishNear: () => enemies.some(e => finishReady(e, P, e === boss || bossActive || miniActive)),   /* (claude/riposte: her BOW-BASH on the beat is the shared parry) */
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 HPK = makeHeroPass({ get P() { return P; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get boss() { return boss; }, TS, SFX, CM,
   hero: () => hero(), tal: k => tal(k), spend: c => spend(c), tired: () => { P.stFlash = 0.35; }, stDelay: () => ST.delay, blocked: () => { blocks++; },
@@ -33006,6 +33056,7 @@ window.BK = { dk2: () => ({ DK2, bodies, corpses, enemies, box: () => attackBox(
   playerLight: () => playerLight(), litNear: (x, y, r) => litNear(x, y, r),   /* claude/weakboss: the Lampreeve's dark, asked by tools/weak-bosses.mjs and the lab */
   /* (claude/combat3) ONE PREDICATE FOR EVERY BOSS AND MINI NOW (src/boss-greed.js OPEN_RULE): the chip, the lab's bot and the mash probe ask the same one */
   tempo: TEMPO,   /* (claude/combat3) the common foes' tempo knob, for tools/foe-tempo.mjs */
+  antiMash: () => AMS, difficulty: DFM,   /* (claude/difficulty) the anti-mash counts and the mode's table (tools/anti-mash.mjs, tools/difficulty.mjs, the bots' --difficulty) */
   greed: { chipped: e => GB.chipped(e, e === boss), open: e => GB.openOf(e), count: e => GB.greedCount(e, time), limit: e => (e === boss ? GB.GREED.n : GB.GREED.nMini), reach: GB.GREED.reach, G: GB.GREED, rules: GB },
   bossWall: e => !!e && GUARD_WALL(e) && wallUp(e),   /* (claude/keyscore) a duelist whose front is a wall (src/boss-read.js GUARD): the boss bot goes round or over */
   callerWind() { const z = callerZone(), G = callerGustNow(); if (!z || !L.arena) return null; const nx = gustDir(z, time + Math.max(0.05, z.period - ((time + (z.phase || 0)) % z.period + z.period) % z.period) + 0.01);   /* THE WINDCALLER 3's summit as a player reads it (the bots): the told gust (blowing / its build-up / the way the next one blows, as the flags show it), the updrafts, the ledges (claude/windcaller3) */

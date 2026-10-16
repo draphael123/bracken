@@ -18,6 +18,7 @@ const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x
 const rowsArg = args.includes('--all') ? BOSS_ROWS : args.filter(a => !a.startsWith('-')).flatMap(a => a.split(','));
 const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 6), secs = +opt('secs', 240), jobs = Math.max(1, +opt('jobs', 2));
 const ways = opt('ways', 'practiced,first,built').split(','), prof = opt('profile', STANDARD), OUT = opt('out', ''), flasks = opt('flasks', process.env.BOSS_FLASKS || 'kit');   /* (claude/flasks2) kit: the campaign kit's flasks (B6); bare: one flask at 35% (the old rows) */
+if (opt('difficulty', '')) process.env.DIFFICULTY = opt('difficulty', '');   /* (claude/difficulty) --difficulty=easy|normal|master (default normal) */
 const seedsOf = { practiced: seeds, first: +opt('first-seeds', Math.max(2, Math.ceil(seeds / 2))), built: +opt('built-seeds', Math.max(2, Math.ceil(seeds / 2))) };
 const fights = [];
 for (const r of rowsArg) for (const way of ways) for (const h of heroes) for (let s = 1; s <= seedsOf[way]; s++) fights.push({ r, way, h, s, profile: prof, flasks });
@@ -30,7 +31,7 @@ export function summarize(rows) {
   return Object.values(by);
 }
 const band = r => r.includes(':mini') ? [75, 85] : [60, 70];   /* B6 amended: with flasks bosses 60-70, minis 75-85 */
-console.log('\nBOSS RATES  profile ' + prof + '  flasks ' + flasks + '  (' + out.length + ' fights, ' + Math.round((Date.now() - t0) / 60000) + ' min)');
+console.log('\nBOSS RATES  profile ' + prof + '  flasks ' + flasks + '  difficulty ' + (process.env.DIFFICULTY || 'normal') + '  (' + out.length + ' fights, ' + Math.round((Date.now() - t0) / 60000) + ' min)');
 console.log('row'.padEnd(18) + 'L'.padStart(3) + '  ' + ways.map(w => (w + ' ' + heroes.map(h => h.slice(0, 2)).join('/')).padEnd(26)).join('') + 'band');
 for (const B of summarize(out)) { const cells = ways.map(w => { const W = B.ways[w] || {}; let tw = 0, tn = 0; const per = heroes.map(h => { const H = W[h] || { w: 0, n: 0 }; tw += H.w; tn += H.n; return H.w + '/' + H.n; });
     return (per.join(' ') + ' = ' + (tn ? Math.round(100 * tw / tn) : '-') + '%').padEnd(26); });

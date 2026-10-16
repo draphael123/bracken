@@ -394,6 +394,7 @@ export const SFX = {
   win() { [523, 659, 784, 1047, 784, 1047, 1319].forEach((f, i) => tone('triangle', f, f, 0.3, 0.2, i * 0.12)); },
   block() { tone('square', 520, 380, 0.07, 0.2); noise(0.09, 0.26, 900, 0.5); tone('sine', 260, 170, 0.12, 0.12, 0.01); }, // a dull wooden-backed shield taking it
   /* THE WEIGHT CLASSES (src/juice.js): a heavy blow landing (a low body-thump over a crack), the blow that kills (a bright snap, the world's stopped for it), a shield taking a heavy one (iron, then the arm behind it), the hero taking a heavy one (lower, longer) */
+  hitDull() { tone('triangle', 150, 90, 0.07, 0.1); noise(0.05, 0.1, 380, 0.6); },   /* (claude/difficulty) A STALE BLOW: a dull thud, no ring */
   hitHeavy() { tone('sine', 95, 38, 0.2, 0.34); noise(0.09, 0.3, 320, 0.7); tone('square', 260, 110, 0.08, 0.16, 0.01); },
   hitFinish() { tone('sine', 120, 42, 0.26, 0.34); noise(0.14, 0.32, 600, 0.5); tone('triangle', 1000, 1900, 0.1, 0.13, 0.03); },
   blockHeavy() { file('clang', 0.5) || (tone('square', 1200, 700, 0.06, 0.2), noise(0.06, 0.24, 2600)); tone('sine', 150, 60, 0.22, 0.3, 0.01); noise(0.1, 0.2, 400, 0.6, 0.02); },

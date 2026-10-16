@@ -577,16 +577,37 @@ function humanGuard(BK, h, boss) {
   P.labGuardT = boss.modeT;
   if (P.labGuardTry) { if (boss.modeT > (LABP.parryLead ?? 0.09)) k.block = false; else if (!P.labGuardUp) { P.labGuardUp = true; if (GSTATS) GSTATS.raised = (GSTATS.raised || 0) + 1; } }
 }
+/* (claude/difficulty) THE BOT ROTATES (src/anti-mash.js, Daniel 10-15): inside one of his openings a player who has landed the same plain CUT twice
+   knows a third pays less (STALE.pay) and that a heavy fills his break bar fast - so the hands wind a HEAVY instead of the third cut. Any branch's
+   press of the attack is turned into the hold (the branches stay as they were); the hold is let go when the heavy goes (the knight at his guard-break
+   cut, KNIGHT_CUT), when he is hurt or rolls, or when the boss winds up outside an opening. Not the pirate (his heavy is his pistol) or the reaper
+   (his swing is a commitment the dkPunish rule reads). v2 profiles; prof.rotate false turns it off (the old rows). */
+function rotateWanted(BK) {
+  if (!LABP.v2 || LABP.rotate === false || !HUMAN_H || HUMAN_H === 'pirate' || HUMAN_H === 'reaper') return false;
+  const P = BK.P, b = ROWBOSS || BK.boss; if (!P || !b || !b.alive || !(P.ground || P.swim) || P.atkHeld > 0 || P.charge > 0 || P.heavy || P.labRotHold > 0) return false;
+  if (OPEN(b, BK) !== true) return false;
+  const s = b.stale, fin = b.broken > 0 && b.bkBroke && !b.bkFinished;   /* (and BROKEN with the finisher waiting: a player winds the heavy for it) */
+  if (!fin && (!s || s.k !== (b.stOpenN || 0) || s.verb !== 'cut' || s.n < 2)) return false;
+  if (ROT) ROT.want++; const ok = P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 4; if (!ok && ROT) ROT.lowSt++; return ok;
+}
+function rotHold(BK) {
+  const P = BK.P; if (!P || !(P.labRotHold > 0)) return; const b = ROWBOSS || BK.boss, k = BK.keys;
+  if (ROT) { const why = P.heavy ? 'heavy' : P.hurt > 0 ? 'hurt' : P.dodge > 0 ? 'dodge' : P.labRotHold > 110 ? 'long' : BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true ? 'tell' : null; if (why) ROT[why] = (ROT[why] || 0) + 1; }
+  if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
+  if (HUMAN_H === 'knight' && P.atkHeld >= KNIGHT_CUT) { k.atk = false; P.labRotHold = 0; return; }   /* the guard-break cut, let go */
+  P.labRotHold++; k.atk = true; k.block = false; P.face = Math.sign(b.x - P.x) || P.face; if (ROT) ROT.holds += P.labRotHold === 2 ? 1 : 0;
+}
+let ROT = null;   /* the rotation's count, per row (out.rot) */
 export async function bossLab(BK, opts = {}) {
   const previous = BK.manualSimulation, press0 = BK.press, sim0 = BK.sim, step0 = BK.step;
-  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : press0.call(BK, k);
+  BK.press = k => (k === 'atk' && !humanSwingOk(BK)) || (k === 'dodge' && (!humanRollOk(BK) || callerRollBad(BK))) ? undefined : k === 'atk' && rotateWanted(BK) ? void (BK.P.labRotHold = 1) : press0.call(BK, k);   /* (claude/difficulty) THE ROTATION: a third stale cut becomes a held heavy */
   LABP = profileOf(opts.profile ?? BK.labProfile);
   const clocks0 = []; if (LABP.v2 && LABP.perceive && LABP.planReact) { for (const o of PLAN_CLOCKS) { clocks0.push([o, o.react]); o.react = LABP.planReact; } clocks0.push([RT_ROC, RT_ROC.base]); RT_ROC.base = Math.max(0.2, LABP.planReact - 0.075); }   /* (claude/flasklever) every plan reads its non-mode things a HUMAN reaction late, not 0.25 s */   /* (BK.labProfile: a page-wide default a measuring tool sets - tools/boss-level.mjs openLevelPage sets the standard) */   /* opts.profile: 'legacy' (or none) = the old bot exactly; 'human' = the boss standard; '+first' = a first attempt */
   /* WITH EYES (a perceiving profile) the world steps one frame at a time: the hands decide on what was SEEN, the seen state comes off, the world steps, and what is seen now goes back on */
-  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC && ROWBOSS) humanGuard(BK, HUMAN_H, ROWBOSS); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
+  const stepEyes = (fn, n) => { let r; for (let i = 0; i < (n || 1); i++) { rotHold(BK); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); if (SKH) SKH.step(); if (PERC && ROWBOSS) humanGuard(BK, HUMAN_H, ROWBOSS); if (PERC) PERC.restore(); r = fn.call(BK, 1); if (PERC) { PERC.update(); PERC.apply(); } if (OBS && ROWBOSS) OBS(BK, ROWBOSS, HUMAN_H); } return r; };   /* (OBS: opts.observe, a watcher called after every world frame on the real state - tools/boss-read-audit.mjs) */
   const OBS = opts.observe || null;
-  BK.sim = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(sim0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
-  BK.step = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(step0, n); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
+  BK.sim = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(sim0, n); rotHold(BK); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return sim0.call(BK, n); };
+  BK.step = n => { if (PERC || (OBS && ROWBOSS)) return stepEyes(step0, n); rotHold(BK); if (BK.labHuman !== false && HUMAN_H) rollWhenDue(BK, press0); return step0.call(BK, n); };
   const miniBefore=opts.mini?Object.fromEntries(Object.entries(BK.PROG).filter(([,v])=>v&&typeof v==='object').map(([k,v])=>[k,v.mini])):null;
   BK.manualSimulation = true;
   try { return await runbossLab(BK, opts); }
@@ -670,7 +691,7 @@ async function runbossLab(BK, opts) {
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
     if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); GUARDR = mulberry(seedOf('guard|' + lvId + '|' + h + '|' + (opts.seed || '') + '|' + (opts.salt || ''))); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; }
-    ROWBOSS = boss; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
+    ROWBOSS = boss; ROT = { holds: 0, want: 0, lowSt: 0 }; if (typeof window !== 'undefined') window.__labRot = ROT; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
