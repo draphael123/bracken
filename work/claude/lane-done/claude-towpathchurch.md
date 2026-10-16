@@ -57,3 +57,6 @@ theatre, harvest-fair, boss-rows, combat-damage, curve (16 out of line, same as 
 1. After a trip the aqueduct's water stays full, so the poled-back barge floats two rows over the west walkway: boarding is a running jump (every hero has the rise). REC (built): keep. Alternative: drain the trough when the barge docks empty so it sits on its bed again.
 2. The votive lamps use the church's own lamp-stand and brazier art and greybox lofts (ladder + plank). REC: a small art pass for a "wayside shrine" lamp (a votive niche), not blocking.
 3. The Towpath lychgate remains as scenery with no church behind it. REC: leave until the Towpath art/room rework next week, then re-skin it as the town gate.
+
+## ADDENDUM (coordinator restart)
+drawDeadWater specks are batched into one path per colour (textfit records every fillRect: the talk scope hung >1700 s per hero with ~hundreds a frame; now 377 s, 4800 screens, 0 issues, same 2 pre-existing COVERS as master). Re-run: node --check, lethal-water ok, towpath 323 ok, textfit talk ok, mobile-perf no FAIL (welltown/redgorge 16 ms busy while a suite ran beside it).
