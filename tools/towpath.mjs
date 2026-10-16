@@ -2,7 +2,7 @@
 // built level, the pure fight, the wraith and the hands in a fake world (src/towpath-hands.js takes a context; here it is the built grid, its pools and movers,
 // and a list of men):
 //   - the rule line is the code's (LEVELS row == src/towpath.js); the road: waymeet > towpath > canal; it is appended to LEVELS (saves count by index);
-//     the arcs teach -> test -> exam for the lock, the fog, the bridge, the lantern and the platforming; eight sections; the LYCHGATE FORK's hook stands at the start
+//     the arcs teach -> test -> exam for the lock, the fog, the bridge, the lantern and the platforming; eight sections; the lychgate stands at the start (the church fork is gone: WAYMEET's votive lamps)
 //   - THE FOG ON THE LOW WATER (claude/towpath2): every lock's low water and every pound carries a bank FOG_H rows deep; a punt at its lock's low water lies IN
 //     the fog and at its high water ABOVE it (the lock lifts you out); in the fog a watchman sees only the lit, above it he sees a dim hero too; the last lock's
 //     floor of irons lies in thick fog; every wraith stands in a bank
@@ -46,7 +46,9 @@ ok(L.W === TOWPATH.W && L.H === TOWPATH.H && L.H <= 60, 'the sheet is TOWPATH\'s
 for (const [verb, a] of Object.entries(ARCS)) { ok(a.teach && a.test && a.exam, verb + ': taught, tested, examined'); ok(a.teach[0] < a.test[0] && a.test[0] < a.exam[0], verb + ': in that order'); }
 ok(SECTIONS.length === 8 && SECTIONS.every((s, i) => !i || s[1] > SECTIONS[i - 1][1]), 'eight sections, in order');
 /* THE FORK */
-ok(L.ents.some(e => e.t === 'tplychgate' && e.x < 40) && L.ents.some(e => e.t === 'tpchurch' && e.x < 40 && e.to === 'church'), 'the lychgate fork at the start: the church door (claude/litchurch\'s level id \'church\')');
+/* STATED ASSERTION CHANGE (claude/towpathchurch, Daniel 10-08 / 10-16): the hill path to THE LIT CHURCH is no longer the Towpath's first-screen fork (the church road opens on WAYMEET's three votive lamps, src/votive-hands.js). The first screen keeps the lychgate and has NO church door, no hill path, and the LEVELS row for the church no longer hangs off the Towpath */
+ok(L.ents.some(e => e.t === 'tplychgate' && e.x < 40) && !L.ents.some(e => e.t === 'tpchurch') && !D.fork, 'the first screen: the lychgate, the river road - and no church door (the church road is the votive lamps of WAYMEET)');
+{ const ch = LEVELS.find(l => l.id === 'church'); ok(ch.needs === 'waymeet' && ch.spurOf === 'waymeet' && ch.votiveLamps === 'waymeet' && !ch.opensOn, 'the church hangs off WAYMEET (needs + spurOf), opens on its votive lamps, and has no Towpath medal gate'); }
 /* THE PIECES */
 const ents = t => L.ents.filter(e => e.t === t);
 for (const k of D.locks) ok(ents('tppaddle').some(p => p.lock === k.id), 'lock ' + k.id + ' has a paddle');

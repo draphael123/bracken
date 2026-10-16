@@ -458,6 +458,19 @@ export const STUCK_HANDS = {
       { key: 'rood3fire', is: ['need.rood3', 'fire'], at: [176, 28], line: 'LAMP ONE BURNS ON: A FLAME FOR THE THIRD SCONCE' } ] },
     { id: 'lc-reliquary', zone: [180, 31, 200, 40], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [188, 40], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
   ],
+  /* WAYMEET'S VOTIVE LAMPS (claude/towpathchurch; src/votive-hands.js handsState: need.<lamp> fire | lamp | done): each of the three lofts glints its brazier while your hand is empty and its dark
+     lamp while it holds a flame (the lamps are optional - the glint only shows near their loft); after 10 s of standing there the nudge says it (A6) */
+  waymeet: [
+    { id: 'wm-v1', zone: [8, 28, 22, 36], steps: [
+      { key: 'fire-v1', is: ['need.v1', 'fire'], at: [11, 35], line: 'A WAYSIDE BRAZIER BURNS: E TAKES A FLAME' },
+      { key: 'lamp-v1', is: ['need.v1', 'lamp'], at: [16, 30], line: 'THE WAYSIDE LAMP IS DARK: CLIMB TO IT, E LIGHTS IT' } ] },
+    { id: 'wm-v2', zone: [83, 28, 95, 36], steps: [
+      { key: 'fire-v2', is: ['need.v2', 'fire'], at: [86, 35], line: 'A WAYSIDE BRAZIER BURNS: E TAKES A FLAME' },
+      { key: 'lamp-v2', is: ['need.v2', 'lamp'], at: [90, 30], line: 'THE MARKET LAMP IS DARK: CLIMB TO IT, E LIGHTS IT' } ] },
+    { id: 'wm-v3', zone: [288, 28, 301, 36], steps: [
+      { key: 'fire-v3', is: ['need.v3', 'fire'], at: [291, 35], line: 'A WAYSIDE BRAZIER BURNS: E TAKES A FLAME' },
+      { key: 'lamp-v3', is: ['need.v3', 'lamp'], at: [296, 30], line: 'THE GARDEN LAMP IS DARK: CLIMB TO IT, E LIGHTS IT' } ] },
+  ],
   /* THE TOWPATH (claude/towpath; THE TOWPATH 2, claude/towpath2): every lock, the race, the hoist, the aqueduct's sluice, the crane and every swing bridge the route
      needs glints until its water (or its ride) stands where the way needs it (src/towpath-hands.js handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across |
      open, hoist.<id> bot | top | moving, trough.<id> west | east | moving, crane.<id> quay | roof | moving); rows are the sheet's (the design rows + 9) */

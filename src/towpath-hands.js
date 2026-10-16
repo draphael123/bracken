@@ -12,8 +12,8 @@
 // its paddles are a stair), THE SACK HOIST (a winch on each floor sends its deck to the other), THE AQUEDUCT (a sluice runs the dry trough and the current
 // floats the barge to the far stop), THE BASIN CRANE (its capstan swings the jib: the hook rides between the quay and the roof's edge), THE SWING BRIDGES (a
 // capstan, struck or E, swings the deck across or clear: clear, its cells are air and whoever stands on it goes in), THE LANTERN (the lock-keeper's, taken at
-// his hut: E with no gadget in reach lights or dims it; a blow that lands on you gutters it; a wraith's smother puts it out), THE FORK (the hill path's door to
-// THE LIT CHURCH: claude/litchurch's level - enterChurch is the hook), the glint and the 10 s nudge (STUCK_HANDS.towpath), the walker's hands (walkHint), and
+// his hut: E with no gadget in reach lights or dims it; a blow that lands on you gutters it; a wraith's smother puts it out), THE LYCHGATE (scenery since claude/towpathchurch 10-16: the hill
+// path to THE LIT CHURCH is gone - the church road opens on WAYMEET's votive lamps, src/votive-hands.js), the glint and the 10 s nudge (STUCK_HANDS.towpath), the walker's hands (walkHint), and
 // the drawing (GREYBOX shapes until the art pass). In THE FOG KNIGHT's arena the bridge, the lock and the lamps are his rule's (ctx.boss*: src/fog-knight-hands.js).
 // main.js calls: reset, on, update, mover, hold, seen, interact, surfaceAt, lanternOf, guttered, smother, fogTop, hardLight, drawWorld, drawOver, drawHud, read,
 // handsState, walkHint.
@@ -56,7 +56,7 @@ export function makeTowpathHands(ctx) {
     K.troughs = (D.troughs || []).map(q => ({ ...q, x: q.stopW * ts, to: q.stopW * ts, water: 0, fillT: 0, bedY: q.bed * ts, surfY: q.surf * ts + 4 }));
     K.cranes = (D.cranes || []).map(c => ({ ...c, k: 0, goal: 0 }));   /* (k: where the hook is between the quay (0) and the roof (1); goal: where its capstan sent it) */
     K.gadgets = []; K.cd = new Map(); K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = [];
-    for (const e of L.ents) if (/^tp(paddle|capstan|lamp|lantern|church|lychgate|winch|sluice|crane)$/.test(e.t))
+    for (const e of L.ents) if (/^tp(paddle|capstan|lamp|lantern|lychgate|winch|sluice|crane)$/.test(e.t))
       K.gadgets.push({ t: e.t, x: e.x * ts + 8, y: (e.y + 1) * ts, lock: e.lock, bridge: e.bridge, hoist: e.hoist, trough: e.trough, crane: e.crane, arena: !!e.arena, to: e.to, ex: e.x, ey: e.y, flash: 0, dark: !!e.dark });
     K.decor = (D.decor || []).map(d => ({ ...d, a: d.kind === 'fogKnight' ? 1 : 0, gone: false }));
     for (const k of K.locks) { gateCells(k); syncPool(k); }
@@ -240,7 +240,6 @@ export function makeTowpathHands(ctx) {
       if (l.lit && once('lamp')) number(g.x, g.y - 44, 'THE LAMP BURNS THE FOG OFF ROUND IT'); if (l.arena && ctx.bossLamp) ctx.bossLamp(l); return true; }
     if (g.t === 'tplantern') { const q = lantern(P); if (q.has) return false; q.has = true; q.lit = true; K.n.lights++; ctx.sfx.pickup ? ctx.sfx.pickup() : ctx.sfx.clank && ctx.sfx.clank();
       number(P.x, P.y - 34, "THE LOCK-KEEPER'S LANTERN: E LIGHTS IT, OR DIMS IT"); return true; }
-    if (g.t === 'tpchurch') { K.n.church++; if (ctx.enterLevel && ctx.enterLevel(g.to || K.D.fork.church)) return true; number(g.x, g.y - 40, 'THE LIT CHURCH: THE WAY UP IS NOT OPEN YET'); return true; }
     return false;
   }
   /* E: the nearest gadget in reach; else the lantern (lit <-> dim) */
@@ -386,7 +385,7 @@ export function makeTowpathHands(ctx) {
       else if (q.t === 'tplamp') { const l = K.lamps.find(z => z.x * ts + 8 === q.x && Math.abs((z.y + 1) * ts - q.y) < ts * 1.5) || K.lamps.find(z => z.x * ts + 8 === q.x), gut = !!(l && l.gutter > 0 && Math.sin(time * 40) > 0); TPG.drawLamp(g, x, y, !!(l && l.lit), gut, time); }
       else if (q.t === 'tplantern') { if (lantern(ctx.hero()).has) continue; TPG.drawHookLantern(g, x, y, time); }
       else if (q.t === 'tplychgate') TPG.drawLychgate(g, x, y, time);
-      else if (q.t === 'tpchurch') { TPG.drawChurchDoor(g, x, y, time); if (Math.abs(ctx.hero().x - q.x) < 40 && Math.abs(ctx.hero().y - q.y) < 40) ctx.text('THE LIT CHURCH', x, y - 44, '#ffe9a0', 'center', 5); } }
+      }
     /* THE DECOR: milestones, drowned willows, cattle, bollards, eel traps, the gibbet, the keeper's armour, the knight's shape in the fog */
     for (const d of K.decor) { if (!inX(d.x * ts, 120)) continue; TPG.drawDecor(g, d, R(d.x * ts + 8 - cx), R((d.y + 1) * ts - cy), time); }
     /* THE DOZERS: a 'z' over a dozing man; awake, nothing */

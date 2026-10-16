@@ -107,6 +107,7 @@ import { makeGlassSeaHands } from './glass-sea-hands.js'; import { makeColossusH
 import { makeBuriedCityHands } from './buried-city-hands.js'; import { makeHourglassKingHands } from './hourglass-king-hands.js'; import * as HKG from './hourglass-king.js'; import * as CON from './construct.js'; import * as SPT from './redraw/sealed_pyramid_tiles.js'; import * as SPB from './redraw/sealed_pyramid_backdrop.js'; import * as BCA from './redraw/buried_city_art.js'; import * as BCB from './redraw/buried_city_backdrop.js'; import * as BCT from './redraw/buried_city_tiles.js'; import * as BCFA from './redraw/buried_city_fix_art.js'; let BCH = null, HGK = null; import { makeSealedPyramidHands } from './sealed-pyramid-hands.js'; import { makeScarabMotherHands } from './scarab-mother-hands.js'; import * as SMG from './scarab-mother.js'; import * as MUM from './mummy.js'; import * as SPA from './redraw/sealed_pyramid_art.js'; let PYH = null, SMH = null, TKH = null; import { makeTombKingHands } from './tomb-king-hands.js'; import * as TKG from './tomb-king.js';   /* THE COFFIN KING (claude/pyramidboss): THE SEALED PYRAMID's boss (src/tomb-king.js + hands); the Scarab Mother is its mini */   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the traps, the plates, the counterweights, the storm, the sealed tomb (src/sealed-pyramid-hands.js); the mummy (src/mummy.js); THE SCARAB MOTHER (src/scarab-mother.js + hands) */   /* THE BURIED CITY (claude/buriedcity, the greybox): the sand rooms, the levers, the great sand-gate, the clockwork vault (src/buried-city-hands.js); the clockwork construct (src/construct.js); THE HOURGLASS KING (src/hourglass-king.js + hands) */
 import { makeKsarHands } from './ksar-hands.js'; import { makeHawkMistressHands } from './hawk-mistress-hands.js'; import * as HMG from './hawk-mistress.js'; import * as KSF from './ksar-foes.js'; import * as KSA from './redraw/ksar_art.js'; import * as KST from './redraw/ksar_tiles.js'; let KSH = null, HMH = null, WRK = null;   /* THE BANDIT KSAR (claude/ksar, the greybox): the gongs, the throw, the gate winch; THE HAWK-MISTRESS */
 import * as MCK from './redraw/minecart_skins.js'; import * as MCB from './redraw/minecart_backdrop.js'; import * as MCT from './redraw/minecart_tiles.js'; import { makeMinecartHands } from './minecart-hands.js'; import { makeDrillHands } from './great-drill-hands.js'; import * as GDG from './great-drill.js'; let MCH = null, GDH = null;   /* THE DEEP RAILS (claude/minecart, the greybox): the cart, the points, the hazards, the goblin carts; THE GREAT DRILL */
+import { makeVotiveHands, VOTIVE_IDS, VOTIVE_N } from './votive-hands.js'; let VTH = null;   /* WAYMEET's three votive lamps (claude/towpathchurch): light them, the hill road to THE LIT CHURCH opens */
 import { makeLitChurchHands } from './lit-church-hands.js'; import { makePaladinHands } from './paladin-boss-hands.js'; import * as PBG from './paladin-boss.js'; import * as CHS from './redraw/church_skins.js'; import * as CHT from './redraw/church_tiles.js'; import * as CHP from './redraw/church_props.js'; let LCH = null, PBH = null;   /* THE LIT CHURCH (claude/litchurch, the greybox): the light, the organ, the crypt, the dark rising; THE PALADIN */
 import { makeTowpathHands } from './towpath-hands.js'; import { makeFogKnightHands, bakeFogKnightCard } from './fog-knight-hands.js'; import * as FKG from './fog-knight.js'; import * as FWR from './fog-wraith.js'; let TPH = null, FKH = null;   /* THE TOWPATH (claude/towpath, the greybox): the locks, the punts, the swing bridges, the lantern in the fog; THE FOG KNIGHT */
 import { makeUnderwellHands } from './underwell-hands.js'; import * as UWA from './redraw/underwell_art.js'; import * as UWT from './redraw/underwell_tiles.js'; import * as UWB from './redraw/underwell_backdrop.js'; let UWH = null;   /* THE UNDERWELL (claude/underwell): its hands (the oil, the torches, the great lamp, the nests, the dry fountain, the cast's twists) */
@@ -341,6 +342,8 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     if (PROG.charm) PROG.charmOf[h] = PROG.charm; }
   /* THE UNBURIED FIELD'S BANNERS (claude/unburiedsecret): the road used to open on a silver medal at the Witchlight Stair. A save that had it open (silver or better there, or the field cleared) keeps it - once, so a fresh profile that earns silver later still needs its banners */
   if (!PROG.bannerMig) { PROG.bannerMig = 1; const w = PROG.witchlight || {}; if ((w.medal || 0) >= 2 || (PROG.unburied && PROG.unburied.cleared)) PROG.fieldOpen = 1; }
+  /* THE LIT CHURCH'S ROAD (claude/towpathchurch): it used to open on a BRONZE medal on THE TOWPATH; it opens on WAYMEET's three votive lamps now. A save that had it open (that medal, or the church cleared) keeps it - once */
+  if (!PROG.churchMig) { PROG.churchMig = 1; if (((PROG.towpath || {}).medal || 0) >= 1 || (PROG.church && PROG.church.cleared)) PROG.churchOpen = 1; }
   /* a secret wood cleared before secret woods counted: credit it to the hero carrying the save, once */
   for (const lv of LEVELS) if (lv.secret && PROG[lv.id] && PROG[lv.id].cleared && !Object.values(PROG.done || {}).some(dd => dd && dd[lv.id])) { const hh = PROG.hero || 'knight'; PROG.done[hh] = PROG.done[hh] || {}; PROG.done[hh][lv.id] = 1; }
   /* THE LEVEL CAME TO BE XP (xpVersion 1). A hero's level was the woods he had walked; it is his XP now (src/xp.js). Every hero keeps
@@ -2302,7 +2305,7 @@ function spawnEntities() {
   ambushReset();
   tomeToken = newTomeToken();   /* ONE TOKEN A LEVEL: every tome on every shelf shares it, so only one is ever winding up or darting (one windup at a time) */
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; } });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
-  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); canalReset(); if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (UWH) UWH.reset(); if (GSH) GSH.reset(); if (KSH) KSH.reset(); if (WRK) WRK.reset(); if (TPH) TPH.reset(); if (LCH) LCH.reset(); if (BCH) BCH.reset(); if (PYH) PYH.reset(); if (MCH) MCH.reset(); if (MRH) MRH.reset(); if (SKY) SKY.reset(); if (RWH) RWH.reset(); if (SNR) SNR.reset(); if (HPD) HPD.reset(); if (HUH) HUH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (STK) STK.reset(curId()); eliteGates();
+  spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); canalReset(); if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (UWH) UWH.reset(); if (GSH) GSH.reset(); if (KSH) KSH.reset(); if (WRK) WRK.reset(); if (TPH) TPH.reset(); if (LCH) LCH.reset(); if (VTH) VTH.reset(); if (BCH) BCH.reset(); if (PYH) PYH.reset(); if (MCH) MCH.reset(); if (MRH) MRH.reset(); if (SKY) SKY.reset(); if (RWH) RWH.reset(); if (SNR) SNR.reset(); if (HPD) HPD.reset(); if (HUH) HUH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (STK) STK.reset(curId()); eliteGates();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
 }
 function spawnEnt(e) {
@@ -4410,7 +4413,10 @@ const bannersLocked = lv => !!lv.secretBanners && bannersOwned() < Object.keys(L
 function takeLostBanner(b) { b.got = true; PROG.lostBanners = PROG.lostBanners || {}; PROG.lostBanners[b.id] = 1; const n = bannersOwned(), all = n >= Object.keys(LOST_BANNERS).length; saveProgress();
   { const cr = ['booDrift', 'haunt', 'bellow'].find(k => typeof SFX[k] === 'function'); if (cr) SFX[cr](); else SFX.sting(); } number(b.x, b.y - 18, 'LOST BANNER ' + n + '/' + Object.keys(LOST_BANNERS).length, '#c9463d'); burst(b.x, b.y, 10, ['#8f2f28', '#c9463d', '#5a1a18'], 50, 0.7, -24, 1); ringAt(b.x, b.y, 18, '#c9463d', 0.5);
   if (all) { hintMsg = 'THE FIELD REMEMBERS'; hintT = 6; number(b.x, b.y - 32, 'THE FIELD REMEMBERS', '#c8b6ff'); } }
-const levelLocked = lv => !godMode() && (!!lv.locked || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
+/* THE LIT CHURCH'S ROAD OPENS ON WAYMEET'S THREE VOTIVE LAMPS (claude/towpathchurch, src/votive-hands.js): PROG.votive[id] per lamp, PROG.churchOpen once all burn (or the old Towpath medal / a cleared church: progDefaults' churchMig) */
+const votiveOwned = () => VOTIVE_IDS.filter(id => (PROG.votive || {})[id]).length;
+const votiveLocked = lv => !!lv.votiveLamps && votiveOwned() < VOTIVE_N && !PROG.churchOpen && !(PROG[lv.id] && PROG[lv.id].cleared);
+const levelLocked = lv => !godMode() && (!!lv.locked || (votiveLocked(lv) && !q.get('unlock')) || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
 // Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
@@ -4521,12 +4527,12 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
 const junctionId = lv => (lv.opensOn && lv.opensOn.level) || lv.spurOf || gateOf(lv);
 const spursAt = id => NODES.filter(n => n.spur && n.kind === 'level' && LEVELS[n.level] && junctionId(LEVELS[n.level]) === id && !nodeSecret(n));
 const spurAt = id => spursAt(id)[0];   /* (a secret spur nobody has earned is not a spur yet: no step onto it, no tip) */
-const spurReqText = lv => { const o = lv.opensOn; if (!o) return secretWants(lv)[0]; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
+const spurReqText = lv => { const o = lv.opensOn; if (lv.votiveLamps) return "LIGHT WAYMEET'S VOTIVE LAMPS " + votiveOwned() + '/' + VOTIVE_N; if (!o) return secretWants(lv)[0]; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
   return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
 /* THE LOCKED-ROAD TIP (Daniel 10-07: the rule must be SHOWN). Pressing toward a shut side road, or tapping/clicking its node, raises this for a few seconds: what it asks and the best time you hold on that level. */
 const mapTip = { id: null, t: 0 };
-const spurTip = lv => { const o = lv.opensOn; if (!o) return secretWants(lv); const p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
+const spurTip = lv => { const o = lv.opensOn; if (lv.votiveLamps) return ['LOCKED: ' + spurReqText(lv), 'THREE DARK LAMPS ON LOFTS IN WAYMEET: A BRAZIER GIVES THE FLAME']; if (!o) return secretWants(lv); const p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
 const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
@@ -22003,6 +22009,7 @@ function updateVillage(dt) {
   if (STK && state === 'play') STK.update(dt);   /* THE GLINT + STALL NUDGE for the route list (src/stuck-guide.js) */
   if (WTH && WTH.on()) WTH.update(dt);
   if (UWH && UWH.on()) UWH.update(dt);
+  if (VTH && VTH.on()) VTH.update(dt);   /* WAYMEET's votive lamps (src/votive-hands.js): the flame burns down, the glint and the nudge */
   if (LCH && LCH.on()) LCH.update(dt);   /* THE LIT CHURCH (src/lit-church-hands.js): the light, the flame, the clergy, the grates, the organ, the dark rising */
   if (KSH && KSH.on()) KSH.update(dt);   /* THE BANDIT KSAR (src/ksar-hands.js): the gongs, the calls, the kegs and flasks, the smoke, the gate */
   if (TPH && TPH.on()) TPH.update(dt);   /* THE TOWPATH (src/towpath-hands.js): the locks, the wheel, the bridges, the lantern, the fog's eyes */
@@ -22252,6 +22259,7 @@ function drawVillage(cx, cy) {
   drawUnburied(cx, cy); drawCaravan(cx, cy); drawFair(cx, cy);
   if (WTH && WTH.on()) WTH.drawWorld(g, cx, cy, time);
   if (UWH && UWH.on()) UWH.drawWorld(g, cx, cy, time);
+  if (VTH && VTH.on()) VTH.drawWorld(g, cx, cy, time);   /* WAYMEET's votive braziers and lamps */
   if (LCH && LCH.on()) LCH.drawWorld(g, cx, cy, time);   /* THE LIT CHURCH: the lamps, the fires, the bellows, the key desk, the grates, the doors, the clergy's tells */
   if (KSH && KSH.on()) KSH.drawWorld(g, cx, cy, time);   /* THE BANDIT KSAR: the gongs, the arches, the gate, the stacks, the chain, the fort's men's marks */
   if (TPH && TPH.on()) TPH.drawWorld(g, cx, cy, time);   /* THE TOWPATH: the gates and gauges, the punts, the wheel, the bridges, the paddles, capstans and lamps */
@@ -26378,7 +26386,7 @@ function emberTeach() { if ((PROG.emberTold || 0) >= 2 || emberTaughtIn === leve
    geomancer's and the death knight's duck does besides duck. Called from updatePlayer (update), the hero's pose pick and draw, and a respawn (clear) */
 CRB = makeCrouchB({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get bodies() { return bodies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; },
   PROG, TS, SFX, hero: () => hero(), hint: m => { hintT = 5; hintMsg = m; }, number: (x, y, t, c) => number(x, y, t, c), ringAt: (x, y, r, c, l) => ringAt(x, y, r, c, l), dust: (x, y, n) => dust(x, y, n),
-  shrines: () => shrines, props: () => props, deco: () => deco, extraHoly: () => (LCH && LCH.on() ? LCH.holyLights() : []),   /* (claude/crouchfix) THE HOLY LIGHTS the paladin kneels at (src/crouch-b.js HOLY) */
+  shrines: () => shrines, props: () => props, deco: () => deco, extraHoly: () => (LCH && LCH.on() ? LCH.holyLights() : VTH && VTH.on() ? VTH.holyLights() : []),   /* (claude/crouchfix) THE HOLY LIGHTS the paladin kneels at (src/crouch-b.js HOLY) */
   shakeCam: (n, k) => shakeCam(n, k), burst: (...a) => burst(...a), meterReady: c => meterReady(c),
   lightReady: () => { SFX.lightFull(); number(P.x, P.y - 30, 'READY', '#ffd36b'); ringAt(P.x, P.y - 10, 22, '#fff6c8', 0.4); } });
 /* (claude/paladin2) HOLY GROUND (src/holy-ground.js): the hero side - his circle burns foes and mends the heroes in it. LIT CHURCH 2's hero-boss makes
@@ -26555,6 +26563,10 @@ LCH = makeLitChurchHands({ boss: () => boss, get L() { return L; }, get players(
   keys: () => keys, questGot: () => straysGot.size,
   spawn: (t, tx, ty) => { const n0 = enemies.length; spawnEnt({ t, x: tx, y: ty, face: -1 }); const q = enemies[n0] || null; if (q) { q.woke = 1; q.summoned = true; } return q; },
   bossLamp: () => { if (PBH) PBH.onLamp(); }, bossKindled: () => { if (PBH) PBH.onKindled(); } });
+/* WAYMEET's VOTIVE LAMPS (claude/towpathchurch, src/votive-hands.js): the church's flame, shared (src/flame.js); a lit lamp is SAVED (PROG.votive), the third opens the hill road (PROG.churchOpen) */
+VTH = makeVotiveHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, time: () => time, VW: () => VW, VH: () => VH,
+  number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), shake: n => shakeCam(n), owned: () => (PROG.votive = PROG.votive || {}),
+  lit: id => { PROG.votive = PROG.votive || {}; PROG.votive[id] = 1; const n = votiveOwned(); if (n >= VOTIVE_N) PROG.churchOpen = 1; saveProgress(); return n; } });
 PBH = makePaladinHands({ burnTick: () => BURN_TICK, get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); }, blowHas: (b, v) => blowHas(b, v), answered: res => answered(res),
@@ -26566,7 +26578,7 @@ TPH = makeTowpathHands({ get L() { return L; }, get players() { return players; 
   bodies: () => players.filter(p => !p.dead).concat(enemies.filter(e => e.alive && !e.noGrav)), near: (x, y, r) => Math.abs(x - P.x) < r && Math.abs(y - P.y) < r,
   mark: (e, txt, col) => number(e.x, e.y - (e.h || 10) - 10, txt, col), drown: e => hazardFoe(e),
   bossBridge: b => { if (FKH) FKH.onBridge(b); }, bossLock: what => { if (FKH) FKH.onLock(what); }, bossLamp: l => {}, shroud: x => (FKH ? FKH.shroudAt(x) : 0), arenaFogTop: x => (FKH ? FKH.fogTopAt(x) : null), get bossActive() { return bossActive; },
-  enterLevel: id => { const i = LEVELS.findIndex(l => l.id === id); if (i < 0) return false; loadThen(i, () => { startGame(); SFX.uiSel(); }); return true; } });   /* THE FORK: the hill path's door to THE LIT CHURCH (claude/litchurch's level, id 'church') */
+  });   /* (claude/towpathchurch: the Towpath's hill-path fork ctx.enterLevel is gone with the fork) */
 FKH = makeFogKnightHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(), music: n => { if (bossActive) music.play(n); },
@@ -27437,6 +27449,7 @@ function updateProps(dt) {
   if (talkPress && state === 'play' && !P.dead && CQH && CQH.on() && CQH.interact(P)) talkPress = false;   /* (claude/cisternqueen3) THE CISTERN QUEEN's water jars: E takes one (or sets it down), before the torch and the skin's pour */
   if (talkPress && state === 'play' && !P.dead && UWH && UWH.on() && UWH.interact(P)) talkPress = false;
   if (talkPress && state === 'play' && !P.dead && KSH && KSH.on() && KSH.interact(P)) talkPress = false;
+  if (talkPress && state === 'play' && !P.dead && VTH && VTH.on() && VTH.interact(P)) talkPress = false;   /* WAYMEET's votive lamps: E at a brazier takes a flame, E at a dark lamp with it lights the lamp */
   if (talkPress && state === 'play' && !P.dead && LCH && LCH.on() && LCH.interact(P)) talkPress = false;   /* THE LIT CHURCH: E takes a flame at a fire, lights a dark lamp, plays the key desk's chord, opens the reliquary */   /* THE BANDIT KSAR: E rings a gong, takes a keg or a flask, sets one down, hauls the winch, opens the strongroom */
   if (talkPress && state === 'play' && !P.dead && TPH && TPH.on() && TPH.interact(P)) talkPress = false;   /* THE TOWPATH: E works a paddle or a capstan, lights a lamp, takes the lantern, opens the church door - or lights / dims your lantern */
   if (talkPress && state === 'play' && !P.dead && KSH && KSH.on() && KSH.interact(P)) talkPress = false;
@@ -30875,6 +30888,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (UWH && UWH.on()) UWH.holes(hole, cx, cy);
     if (RWH && RWH.on() && RWH.holes) RWH.holes(hole, cx, cy);   /* THE ROOTWAY (claude/rootway2art): the cellar's spore glows and the trunk foot's caps are holes in its dark */
     if (MCH && MCH.on()) MCH.holes(hole, cx, cy, dg);   /* (claude/deeprails2) THE DARK DRIFT: the cart's headlamp cone, the goblins' lanterns, every lever's and crusher's lamp */
+    if (VTH && VTH.on()) VTH.holes(hole, cx, cy);
     if (LCH && LCH.on()) LCH.holes(hole, cx, cy);   /* THE LIT CHURCH: every lit lamp, every fire, the flame in your hand */   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
     g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);
@@ -30899,6 +30913,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (GSH && GSH.on()) GSH.drawOver(g, cx, cy, time);   /* THE GLASS SEA: the night's dark, a hole for every fire */
   if (COH && COH.on()) COH.drawOver(g, cx, cy, time); if (HNH && HNH.on()) HNH.drawOver(g, cx, cy, time);   /* THE GOBLIN HUNTMASTER: his arrows (gold and red), the poisoned floor, the hoist-drop shot's shadow */   /* THE GLASS COLOSSUS: the lance's line, the rings, the shards, the wave, and the read */
   if (MTH && MTH.on()) MTH.drawOver(g, cx, cy, time);
+  if (VTH && VTH.on()) VTH.drawOver(g, cx, cy, time);
   if (LCH && LCH.on()) LCH.drawOver(g, cx, cy, time);   /* THE LIT CHURCH: the rising dark, the flame in your hand */
   if (PBH && PBH.on()) PBH.drawOver(g, cx, cy, time);   /* THE PALADIN: his marks, the holy floor, his light bar, the read */
   if (KSH && KSH.on()) KSH.drawOver(g, cx, cy, time);   /* THE BANDIT KSAR: the smoke, the blasts, the flashes, the told arc */

@@ -1,6 +1,6 @@
 // tools/lit-church.mjs - THE LIT CHURCH's own check (claude/litchurch). Node only: no page, no port, no Chrome. The built level, the pure modules, and the hands in
 // a fake world (src/lit-church-hands.js takes a context; here it is the built grid, a hero and a few clergy):
-//   - the road: an optional class spur (needs waymeet until THE TOWPATH lands - FORK says 'towpath' then), the Paladin sold for 800 coins after it; Waymeet's boss is
+//   - the road: an optional class spur off WAYMEET that opens on its three votive lamps (src/votive-hands.js), the Paladin sold for 800 coins after it; Waymeet's boss is
 //     THE CRUSADER now (names only)
 //   - the rule line is the code's (LEVELS row == src/lit-church.js header); the verbs' arcs teach -> test -> remix -> exam; EACH VERB REQUIRED: LIGHT (the west door,
 //     the rood screen's three sconces - no way over either), SNUFF (the seal lamp holds the crypt hatch: the crypt has no other way in), THE ORGAN (the bellows are
@@ -26,8 +26,9 @@ import { isCallout } from '../src/hint-lines.js';
 import { ROLES } from './level-quality.mjs';
 const TS = 16; let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 const lv = LEVELS.find(l => l.id === 'church'); ok(lv, 'church is in LEVELS');
-ok(['waymeet', 'towpath'].includes(lv.needs) && lv.classFor === 'paladin' && lv.opensOn && [FORK.now, FORK.then].includes(lv.opensOn.level), 'THE LIT CHURCH is the Paladin\'s optional class spur off ' + lv.needs + ' (the fork: ' + FORK.why + ')');
-ok(FORK.then === 'towpath', 'the fork hook names THE TOWPATH for the integrator');
+/* STATED ASSERTION CHANGE (claude/towpathchurch, Daniel 10-08 / 10-16): the road is an optional spur off WAYMEET that opens on its three votive lamps, not a fork on THE TOWPATH's first screen behind its bronze medal */
+ok(lv.needs === 'waymeet' && lv.spurOf === 'waymeet' && lv.votiveLamps === 'waymeet' && lv.classFor === 'paladin' && !lv.opensOn, 'THE LIT CHURCH is the Paladin optional class spur off WAYMEET, opened by its votive lamps (' + FORK.why + ')');
+ok(FORK.now === 'waymeet' && FORK.then === 'waymeet', 'the road hook names WAYMEET (no Towpath fork)');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 ok(/\{ id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, coinPrice: 800, coinNeeds: 'church',/.test(main), 'clearing the church sells the Paladin for 800 coins (beside his 10 silver)');
 ok(/\{ t: 'closedhelm', name: 'THE CRUSADER',/.test(main) && !/'THE PALADIN  THE WARD IS DOWN'/.test(main) && /closedhelm: 'THE CRUSADER'/.test(main), 'Waymeet\'s boss is THE CRUSADER (bestiary, short name, plate)');

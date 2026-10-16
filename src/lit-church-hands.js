@@ -13,13 +13,14 @@
 import { newStall, stallTick, drawGlint, resolve } from './stuck-guide.js';
 import { STUCK_HANDS } from './stuck-spots.js';
 import * as SET from './redraw/church_set.js';
+import { FLAME, flameNear, takeFlame, tickFlame, flameHoles, drawFlameHand } from './flame.js';   /* (claude/towpathchurch) the flame in the hand is shared with WAYMEET's votive lamps (src/votive-hands.js) */
+export { FLAME };
 
 /* (deadDark: the dead's blows x this in a dark room) THE NUMBERS. FLAME: life s a taper burns, takeR/useR px you reach a fire / a lamp in, glow px it lights round you. LC: litMul/darkMul a priest's blows by his room's
    light, knightLit a knight's; heal: of the healed one's health (x litHeal lit / x darkHeal dark), healCd/healTell/healR; relightT a priest's rite, acoRelightT an
    acolyte's, priestV/acoV their walk; riseEvery/riseTell/riseCap/riseNear a dark room's grates; burnDps the light on the dead; bellowsT/lift a bellows' breath;
    chordTell/chordT/gustAir/gustGround the key desk's chord; darkV px/s the rising dark climbs, darkTick/darkPct its bite, holdT s a sconce holds it, darkSpawn its
    dead; archHealCd/archHealTell/archHeal THE ARCHDEACON's prayer over his room */
-export const FLAME = { life: 14, takeR: 24, useR: 26, glow: 70 };
 export const LC = { litMul: 1.3, darkMul: 0.7, knightLit: 1.15, heal: 0.16, litHeal: 1.5, darkHeal: 0.5, healCd: 7, healTell: 1.0, healR: 130, relightT: 1.5, acoRelightT: 0.6,
   priestV: 44, acoV: 92, riseEvery: 4.5, riseTell: 1.0, riseCap: 3, deadDark: 1.8, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
   darkV: 24, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0 };
@@ -117,7 +118,7 @@ export function makeLitChurchHands(ctx) {
   /* ---------- THE FLAME IN YOUR HAND ---------- */
   const fires = () => K.sources.map(s => ({ x: px(s), y: py(s), src: s })).concat(K.lamps.filter(l => l.lit && l.kind !== 'rood').map(l => ({ x: px(l), y: py(l), lamp: l })));
   H.holyLights = () => (K ? fires().map(f => ({ x: f.x, y: f.y })) : []);   /* (claude/crouchfix) every flame that burns - the paladin kneels at them to fill his Light (src/crouch-b.js HOLY) */
-  const near = (P, x, y, r) => Math.abs(P.x - x) <= r && P.y > y - 40 && P.y < y + 20;
+  const near = flameNear;
   H.interact = P => {
     if (!K || P.dead) return false;
     /* a DARK LAMP with a flame in hand: light it */
@@ -128,8 +129,7 @@ export function makeLitChurchHands(ctx) {
       else if (K.clock - (K.needSaid || -9) > 2.5) { K.needSaid = K.clock; number(P.x, P.y - 40, 'A FLAME LIGHTS IT: E AT A FIRE TAKES ONE', '#9aa39a'); } return true; }
     /* A FIRE: take a flame */
     const f = fires().filter(q => near(P, q.x, q.y, FLAME.takeR)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (f) { P.lcFlame = FLAME.life; P.lcHp = P.hp; K.n.flames++; ctx.sfx.ignite ? ctx.sfx.ignite() : ctx.sfx.whoosh && ctx.sfx.whoosh(); ctx.burst(P.x, P.y - 30, 6, ['#ffd36b', '#ff9a3c'], 30, 0.4);
-      if (once('flame')) number(P.x, P.y - 44, 'A FLAME: IT BURNS DOWN. A BLOW PUTS IT OUT', '#ffd36b'); return true; }
+    if (f) { K.n.flames++; takeFlame(P, ctx, () => { if (once('flame')) number(P.x, P.y - 44, 'A FLAME: IT BURNS DOWN. A BLOW PUTS IT OUT', '#ffd36b'); }); return true; }
     /* THE KEY DESK: a chord */
     const d = K.desks.find(q => near(P, px(q), py(q), 24));
     if (d) { if (d.tell <= 0 && d.on <= 0) { d.tell = LC.chordTell; K.n.chords++; ctx.sfx.organ ? ctx.sfx.organ() : ctx.sfx.horn && ctx.sfx.horn(); if (once('chord')) number(P.x, P.y - 44, 'THE CHORD: THE GUST BLOWS WEST', '#ffd36b'); } return true; }
@@ -251,9 +251,8 @@ export function makeLitChurchHands(ctx) {
     if (!K.bound || K.boundN !== ctx.enemies().length) { bind(); K.bound = 1; K.boundN = ctx.enemies().length; for (const e of ctx.enemies()) if (e.lc && !e.maxHp0) e.maxHp0 = e.maxHp || e.hp; }
     for (const f of K.fx) f.t -= dt; K.fx = K.fx.filter(f => f.t > 0);
     /* THE FLAME burns down, and a blow that lands puts it out */
-    for (const pp of ctx.players) { if (pp.lcFlame > 0) { pp.lcFlame = Math.max(0, pp.lcFlame - dt); if (pp.lcFlame <= 0) { K.n.flamesDied++; if (once('flameDied') || K.clock - (K.diedSaid || -9) > 6) { K.diedSaid = K.clock; ctx.number(pp.x, pp.y - 36, 'THE FLAME BURNS OUT', '#9aa39a'); } }
-        else if (pp.hp < (pp.lcHp ?? pp.hp) - 0.01 || pp.dead) { pp.lcFlame = 0; K.n.flamesOut++; ctx.number(pp.x, pp.y - 36, 'THE BLOW PUTS YOUR FLAME OUT', '#ff9a5c'); } }
-      pp.lcHp = pp.hp; }
+    tickFlame(ctx.players, dt, (what, pp) => { if (what === 'died') { K.n.flamesDied++; if (once('flameDied') || K.clock - (K.diedSaid || -9) > 6) { K.diedSaid = K.clock; ctx.number(pp.x, pp.y - 36, 'THE FLAME BURNS OUT', '#9aa39a'); } }
+      else { K.n.flamesOut++; ctx.number(pp.x, pp.y - 36, 'THE BLOW PUTS YOUR FLAME OUT', '#ff9a5c'); } });
     /* A BLADE THROUGH A LIT LAMP SNUFFS IT; A BLOW ON A BELLOWS MAKES ITS PIPE BREATHE */
     for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (P.dead || !(P.atk >= 0)) return; const hb = ctx.attackBox(); if (!hb) return;
       for (const l of K.lamps) if (l.lit && ctx.overlap(hb, { l: px(l) - 7, r: px(l) + 7, t: py(l) - (l.kind === 'sconce' ? 26 : 34), b: py(l) - 6 })) snuff(l, 'hero');
@@ -309,7 +308,7 @@ export function makeLitChurchHands(ctx) {
     for (const l of K.lamps) if (l.lit && inX(px(l))) hole(px(l) - cx, py(l) - (l.kind === 'sconce' || l.kind === 'rood' ? 18 : 26) - cy, l.kind === 'arena' ? 90 : l.kind === 'chapel' ? 96 : l.kind === 'sconce' || l.kind === 'rood' ? 56 : 84);
     for (const s of K.sources) if (inX(px(s))) hole(px(s) - cx, py(s) - 12 - cy, 64);
     if (K.plan) for (const l of K.plan.lights) if (inX(l.wx) && (l.yard || lit(roomIdOf(l)))) hole(l.wx - cx, l.wy - 16 - cy, l.r, l.kind === 'grave' ? 0.6 : 0.85);   /* the dressing's candles burn with their room */
-    for (const pp of ctx.players) if (pp.lcFlame > 0 && !pp.dead) hole(pp.x - cx, pp.y - 30 - cy, FLAME.glow * (0.6 + 0.4 * Math.min(1, pp.lcFlame / 4)));
+    flameHoles(hole, ctx.players, cx, cy);
     for (const b of K.bellows) if (b.air > 0 && inX(b.x * TS())) hole(b.x * TS() + 8 - cx, (b.y + 1) * TS() - 30 - cy, 30, 0.4); };
 
   /* ---------- DRAWING (the art pass: src/redraw/church_set.js draws every piece; this decides WHEN and keeps the rule's overlays) ---------- */
@@ -355,9 +354,7 @@ export function makeLitChurchHands(ctx) {
     if (ro && (D.st === 'rising' || D.st === 'tell'))   /* (once you are out it sinks back into the crypt's own dark: a respawn at the altar is not a black room) */ { const alt = K.L.rooms.find(r => r.id === 'altar') || ro, x0 = R(alt.x0 * ts - cx), x1 = R((alt.x1 + 1) * ts - cx), top = R(D.y - cy), bot = R((ro.rises.floor + 1) * ts - cy);
       if (bot > 0 && top < ctx.VH()) { g.globalAlpha = 0.82; g.fillStyle = '#0a0612'; g.fillRect(x0, top, x1 - x0, bot - top); g.globalAlpha = 0.6; g.fillStyle = '#3a2a5a';
         for (let x = x0; x < x1; x += 4) g.fillRect(x, top - 2 + R(Math.sin(time * 3 + x * 0.2) * 2), 4, 3); g.globalAlpha = 1; } }
-    for (const pp of ctx.players) { if (!(pp.lcFlame > 0) || pp.dead) continue; const x = R(pp.x - cx), y = R(pp.y - 30 - cy), k = Math.min(1, pp.lcFlame / FLAME.life), f = Math.sin(time * 13);
-      g.fillStyle = '#e8e0c8'; g.fillRect(x + 6, y + 2, 2, R(2 + 8 * k)); g.fillStyle = pp.lcFlame < 3 && Math.floor(time * 8) % 2 ? '#ff6b2c' : '#ff9a3c'; g.fillRect(x + 6, y - 2 - R(f), 2, 4); g.fillStyle = '#fff6c8'; g.fillRect(x + 6, y - 1 - R(f), 1, 2);
-      g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 8, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 8, R(16 * k), 2); } };
+    drawFlameHand(g, ctx.players, cx, cy, time); };
   /* THE HUD: the room you are in, LIT or DARK, as you come into it (and the flame's seconds) */
   H.drawHud = (g, P) => { if (!K || !K.inRoom || !(K.roomT > 0) || K.inRoom.arena) return false; const r = K.inRoom, a = Math.min(1, K.roomT);
     g.globalAlpha = a; ctx.text(r.name + (r.lit ? ': LIT' : ': DARK'), R(ctx.VW() / 2), 30, r.lit ? '#ffd36b' : '#9ab0c0', 'center', 6); g.globalAlpha = 1; return false; };

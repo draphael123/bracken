@@ -5904,7 +5904,7 @@ function waymeet() {
   ent('deco', 188, R - 1, { kind: 'waterButt' }); ent('deco', 196, R - 1, { kind: 'dovecote' });
   post(96); post(186);
   ent('dog', 122, R - 1); ent('dog', 200, R - 1);
-  sign(88, 'THE MARKET CROSS. NOBODY HERE IS YOUR ENEMY, AND EVERYONE IS IN THE WAY.');
+  sign(93, 'THE MARKET CROSS. NOBODY HERE IS YOUR ENEMY, AND EVERYONE IS IN THE WAY.');   /* (was 88: the second votive loft stands over 86-91) */
   /* THE MARKET HALL (x 95-123) is the square's crowd, locked in by AMBUSH; the men placed in it here stand down when the room
      fills. THE HORSE FAIR (x 181-209) was a second room and is ground again: its men are the fair's own crowd. */
   for (const x of [96, 106, 114, 122, 190, 202]) ent('swornsword', x, R - 1, { face: -1 });
@@ -5978,10 +5978,10 @@ function waymeet() {
   ent('deco', 267, R - 1, { kind: 'fence', v: 0 }); post(269); post(297);
   for (const x of [272, 283, 294]) ent('deco', x, R - 7, { kind: 'bunting', hang: true });
   ent('deco', 276, R - 1, { kind: 'longTable', v: 0 }); ent('deco', 273, R - 1, { kind: 'bench' }); ent('deco', 279, R - 1, { kind: 'bench' });
-  ent('deco', 288, R - 1, { kind: 'longTable', v: 1 }); ent('deco', 285, R - 1, { kind: 'bench' }); ent('deco', 291, R - 1, { kind: 'bench' });
+  ent('deco', 288, R - 1, { kind: 'longTable', v: 1 }); ent('deco', 285, R - 1, { kind: 'bench' });   /* (the bench at 291 and its guest gave way to the third votive brazier) */
   ent('deco', 295, R - 1, { kind: 'barrels' }); ent('deco', 299, R - 1, { kind: 'caskRack' });
   ent('guest', 273, R - 1, { v: 0, face: 1 }); ent('guest', 279, R - 1, { v: 1, face: -1 });
-  ent('guest', 285, R - 1, { v: 2, face: 1 }); ent('guest', 291, R - 1, { v: 1, face: -1 });
+  ent('guest', 285, R - 1, { v: 2, face: 1 });
   ent('guest', 282, R - 1, { v: 3, face: 1 }); ent('guest', 270, R - 1, { v: 4, face: 1 });
   
   sign(266, 'THE BEER GARDEN. THEY DRINK TO YOUR HEALTH HERE: THE PURSE IS FOR YOU ALIVE.');
@@ -6167,6 +6167,23 @@ function waymeet() {
   ent('closedhelm', 738, R - 1, { face: -1 });
   ent('gate', 770, R - 1);
 
+  // ---------------- 9. WAYMEET'S VOTIVE LAMPS (claude/towpathchurch, Daniel 10-08 / 10-16): THE ROAD TO THE LIT CHURCH ----------------
+  /* THREE DARK WAYSIDE LAMPS, each on a short loft over the street (a ladder up beside it, a plank on its poles: a detour off the road, never on it), each with a
+     BRAZIER a few steps from its ladder. Carry a flame (E at a brazier: the church's own taper, src/flame.js, shared with src/lit-church-hands.js) up and light the lamp
+     (E at it). All three lit opens THE HILL ROAD to THE LIT CHURCH on the map (PROG.votive / PROG.churchOpen, src/votive-hands.js). One loft in each stretch of the town that
+     has no fight in it: the west road, the market cross before its hall, the beer garden. Spacing along the road ~100 columns apart. */
+  const votive = { lamps: [], sources: [] };
+  const loft = (id, fireX, ladderX, b0, b1, lampX, name) => {
+    votive.sources.push({ id: 'fire-' + id, x: fireX, y: R - 1, kind: 'brazier' });
+    ladder(ladderX, R - 6); board(b0, b1, R - 5);
+    ent('deco', b0, R - 1, { kind: 'stilt' }); ent('deco', b1, R - 1, { kind: 'stilt' });                  /* (B9: a board stands on its poles) */
+    votive.lamps.push({ id, x: lampX, y: R - 6, kind: 'lamp', name });
+    coins([b0 + 1, R - 6]); };
+  loft('v1', 11, 13, 14, 18, 16, 'THE WAYSIDE LAMP');
+  loft('v2', 86, 87, 88, 91, 90, 'THE MARKET LAMP');
+  loft('v3', 291, 293, 294, 298, 296, 'THE GARDEN LAMP');
+  sign(21, 'A DARK WAYSIDE LAMP, UP ON ITS LOFT. A FLAME FROM THE BRAZIER LIGHTS IT. THREE LAMPS OPEN THE HILL ROAD TO THE LIT CHURCH.');
+
   /* THE LADDERS, LAST: nothing is dug after this line */
   for (const [x, y0, y1] of ladders) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
 
@@ -6183,6 +6200,7 @@ function waymeet() {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: R - 1 }, pools, falls: [], moversExtra: movers, interiors, roofs, houses,
     indoorRow: 24,                                 /* rows 0-24 are insides: never shown from the street */
+    votive,                                        /* WAYMEET'S VOTIVE LAMPS (src/votive-hands.js): { lamps: [{ id, x, y, kind, name }], sources: [{ id, x, y, kind }] } */
     music: 'waymeet', duskStart: 0.55, duskLen: 0.45,
 
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'dusk', far: 'town', mid: 'town', near: 'town', nearSet: 'town',
@@ -8015,7 +8033,7 @@ export const LEVELS = [
      where LIGHT is the level; THE PALADIN (src/paladin-boss.js) is its boss and clearing it sells the Paladin hero for 800 coins (classFor). APPENDED, so no index and no
      save moves. AN OPTIONAL SPLIT PATH whose fork is THE TOWPATH's first screen (claude/towpath, in parallel): until the integrator joins them it hangs off WAYMEET
      (needs + opensOn); then both become 'towpath' (src/lit-church.js FORK) */
-  { id: 'church', arc: 'the road inland', name: 'THE LIT CHURCH', sub: 'the chapel the paladins were sworn to', rule: CHURCH_RULE, build: () => buildLitChurch({ painter, T, TS }), needs: 'towpath', classFor: 'paladin', opensOn: { level: 'towpath', medal: 'bronze' } },
+  { id: 'church', arc: 'the road inland', name: 'THE LIT CHURCH', sub: 'the chapel the paladins were sworn to', rule: CHURCH_RULE, build: () => buildLitChurch({ painter, T, TS }), needs: 'waymeet', spurOf: 'waymeet', votiveLamps: 'waymeet', classFor: 'paladin' },   /* (claude/towpathchurch, Daniel 10-08 / 10-16: the road is an optional spur off WAYMEET - it opens on its three votive lamps (src/votive-hands.js), not on the Towpath's bronze medal, and the Towpath's first-screen fork is gone) */
   { id: 'towpath', arc: 'the road inland', name: 'THE TOWPATH', sub: 'the river road out of Waymeet, lock by lock into the fog', rule: 'THE FOG LIES ON THE LOW WATER. THE LOCKS LIFT YOU OUT OF IT.', build: () => buildTowpath({ painter, T, TS }), needs: 'waymeet' },   /* THE TOWPATH (claude/towpath, the greybox, 2026-10-08): appended (saves count levels by index); in the road between WAYMEET and THE FOG CANAL by its needs */
   /* THE BURIED CITY (claude/buriedcity, the OPUS GREYBOX, 2026-10-08; Daniel's desert-arc concept 10-01, to today's rules): a city of the living buried whole under the dunes past
      THE BANDIT KSAR - its rooms fill with sand. APPENDED, so no index and no save moves. THE HOURGLASS KING (src/hourglass-king.js) is its boss; THE SEALED PYRAMID will need it */
