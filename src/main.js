@@ -29767,7 +29767,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = '#bff0f0'; for (const dx of [-9, -2, 6]) g.fillRect(cxm + dx + wob, top + 1 - (dx === -2 ? 2 : 0), 2, 2); g.fillStyle = '#1b1626'; g.fillRect(x + wob, top + 6, m.w, 1);
       if (m.state === 'bud' && !(m.cd > 0) && Math.floor(time * 2) % 2) { g.globalAlpha = 0.5; g.strokeStyle = '#bff0f0'; g.lineWidth = 1; g.beginPath(); g.moveTo(cxm - 3, top - 5); g.lineTo(cxm, top - 9); g.lineTo(cxm + 3, top - 5); g.stroke(); g.globalAlpha = 1; } } // an up-arrow over a bud that is ready
     else if (m.canal) CNH.drawCanalMover(CANAL, g, CNX, m, cx, cy, time);   /* THE FOG CANAL: the barge */
-    else if (m.theatre) THH.drawTheatreMover(g, m, cx, cy, time);   /* THE MASKWRIGHT'S THEATRE */
+    else if (m.theatre) THH.drawTheatreMover(g, m, cx, cy, time, movers);   /* THE MASKWRIGHT'S THEATRE */
     else if (m.mage) drawMageMover(m, cx, cy);   /* THE MAGE'S FOLLY: the books and the planets */
     else if (m.kind === 'hexvine') drawHexVine(m, cx, cy);   /* THE HEXED FIELDS */
     else if (m.kind === 'haycart') drawHayCart(m, cx, cy);

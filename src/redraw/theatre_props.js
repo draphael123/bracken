@@ -107,18 +107,54 @@ const batten = () => once('batten', () => { const [c, g] = canvas(16, 6);
   rect(g, 0, 1, 16, 4, TH.iron2); rect(g, 0, 1, 16, 1, TH.iron4); rect(g, 0, 4, 16, 1, TH.iron0); rect(g, 0, 0, 2, 6, TH.brass2); rect(g, 14, 0, 2, 6, TH.brass2); return c; });
 
 // ------------------------------------------------------------ THE MOVERS
-export function drawMover(g, m, cx, cy, time) {
+export function drawMover(g, m, cx, cy, time, all) {
   const x = Math.round(m.x - cx), y = Math.round(m.y - cy), w = m.w, top = Math.round(4 * TS - cy), col = lineCol(m.line);
   if (m.chandelier) { const ch = chandelier(), at = Math.round(x + w / 2 - ch.width / 2);
     g.fillStyle = TH.brass1; g.fillRect(Math.round(x + w / 2) - 1, top, 2, Math.max(0, y - top)); g.fillStyle = TH.brass3; g.fillRect(Math.round(x + w / 2), top, 1, Math.max(0, y - top));   // its chain, to the grid
     g.drawImage(ch, at, y - 6);
     glowAt(g, x + w / 2, y + 6, 70, '255,225,150', 0.16 + 0.04 * Math.sin(time * 3)); return; }
-  // its two lines to the grid: hemp, twisted, in the line's own colour where they meet the load
-  for (const lx of [x + 3, x + w - 4]) { g.fillStyle = TH.rope; g.fillRect(lx, top, 1, Math.max(0, y - top)); g.fillStyle = TH.ropeD; for (let yy = top + 1; yy < y; yy += 3) g.fillRect(lx, yy, 1, 1); }
-  if (m.role === 'bag') { const sk = sack(); const n = Math.max(1, Math.round((w - 2) / 28)); for (let i = 0; i < n; i++) g.drawImage(sk, x + 1 + i * 0, y + m.h - 16 + 2 - (i ? 0 : 0), Math.min(w - 2, 30), 16);
+  // its line: UP to a head-block (pulley) hung from a gridiron beam, ACROSS the grid to its partner's head-block, DOWN to the partner (one rope: what one
+  // takes, the other pays out). A batten hangs by two short bridle lines that meet in one line; a sandbag hangs by a hook and a ring. (claude/theatrelines)
+  const partner = (all || []).find(o => o !== m && o.theatre && o.line === m.line), cxL = x + w / 2, R = 4, hy0 = headY(m, partner), hy = Math.round(hy0 - cy);
+  const px0 = partner ? (partner.x + partner.w / 2 < m.x + w / 2 ? -1 : 1) : 1, wx = Math.round(cxL + px0 * R), pwx = partner ? Math.round(partner.x - cx + partner.w / 2 - px0 * R) : wx + px0 * 26;
+  const x0 = Math.min(wx, pwx), x1 = Math.max(wx, pwx);
+  drawGrid(g, x0 - 5, x1 + 5, hy, 4 * TS - cy);
+  const loadTop = m.role === 'bag' ? y - 5 : y - 11;      // where the single line meets the load's tackle: the ring over a bag's hook, the apex of a batten's bridle
+  rope(g, Math.round(cxL), hy, loadTop - hy);
+  rope(g, Math.min(wx, pwx), hy - R, x1 - x0 + 1, true);   // the run across the grid, over the tops of the wheels
+  if (!partner) { const ex = pwx; g.fillStyle = TH.iron2; g.fillRect(ex - 1, hy - 6, 3, 8); g.fillStyle = TH.iron4; g.fillRect(ex - 1, hy - 6, 3, 1); rope(g, ex, hy + 2, 5); g.fillStyle = TH.rope; g.fillRect(ex - 2, hy + 7, 5, 2); g.fillStyle = TH.ropeD; g.fillRect(ex - 1, hy + 9, 3, 1); }   // a line with no partner is made off on a cleat, its tail coiled
+  const spin = (m.y / R) * (m.role === 'bag' ? -1 : 1) * (partner ? 1 : 0.4); drawWheel(g, wx, hy, R, spin, col);
+  if (m.role === 'bag') {   // a ring and a hook at the neck of the sack
+    g.fillStyle = TH.iron4; g.fillRect(Math.round(cxL) - 1, y - 6, 3, 1); g.fillStyle = TH.iron2; g.fillRect(Math.round(cxL) - 1, y - 5, 1, 4); g.fillRect(Math.round(cxL) + 1, y - 5, 1, 3); g.fillStyle = TH.iron1; g.fillRect(Math.round(cxL) - 1, y - 2, 3, 1);
+    const sk = sack(); const n = Math.max(1, Math.round((w - 2) / 28)); for (let i = 0; i < n; i++) g.drawImage(sk, x + 1 + i * 0, y + m.h - 16 + 2, Math.min(w - 2, 30), 16);
     g.fillStyle = col; g.fillRect(x + Math.floor(w / 2) - 2, y + 2, 4, 3); return; }
+  // the bridle: two short lines from the batten's ends to the apex
+  const ax = Math.round(cxL), apexY = y - 11;
+  for (const bx of [x + 3, x + w - 4]) { const dx = ax - bx, n = Math.max(1, Math.abs(Math.round(dx))), dy = 11; for (let i = 0; i <= n; i++) { const fx = bx + dx * i / n, fy = y - dy * i / n; g.fillStyle = i % 3 ? TH.rope : TH.ropeD; g.fillRect(Math.round(fx), Math.round(fy), 1, 1); if (Math.abs(dx) < 2) g.fillRect(Math.round(fx), Math.round(fy), 1, 1); } }
+  g.fillStyle = TH.iron3; g.fillRect(ax - 1, apexY - 1, 3, 3); g.fillStyle = TH.iron4; g.fillRect(ax - 1, apexY - 1, 3, 1);
   const bt = batten(); g.drawImage(bt, x, y, w, 6); g.fillStyle = col; g.fillRect(x + 2, y + 1, 4, 4); g.fillRect(x + w - 6, y + 1, 4, 4);                            // pipe batten, the line's colour on both ends
   g.fillStyle = TH.brass3; for (let k = 8; k < w - 8; k += 12) g.fillRect(x + k, y + 1, 4, 1);
+}
+/* where a line's head-blocks hang: over the highest the pair ever reaches, clear of the heads of whoever rides them (and never above the grid's own top, row 4) */
+function headY(m, p) { let top = Math.min(m.yIn, m.yOut); if (p) top = Math.min(top, p.yIn, p.yOut); return Math.max(4 * TS + 10, top - 46); }
+/* a hemp line, twisted, vertical (len down from y) or, with horiz, a run of len across from x */
+function rope(g, x, y, len, horiz) { if (len <= 0) return; g.fillStyle = TH.rope; if (horiz) g.fillRect(x, y, len, 1); else g.fillRect(x, y, 1, len);
+  g.fillStyle = TH.ropeD; for (let i = 1; i < len; i += 3) { if (horiz) g.fillRect(x + i, y, 1, 1); else g.fillRect(x, y + i, 1, 1); } }
+/* the gridiron: an iron beam with a lattice below its flange, hung from the top grid by rods */
+function drawGrid(g, x0, x1, hy, gridY) {
+  const by = hy - 9, w = x1 - x0 + 1;
+  g.fillStyle = TH.iron1; g.fillRect(x0, by, w, 4); g.fillStyle = TH.iron4; g.fillRect(x0, by, w, 1); g.fillStyle = TH.iron0; g.fillRect(x0, by + 3, w, 1);
+  g.fillStyle = TH.iron2; for (let k = x0 + 2; k < x1 - 2; k += 6) g.fillRect(k, by + 1, 2, 2);   // rivets
+  const top = Math.min(gridY, by - 1);
+  for (const rx of [x0 + 1, x1 - 2, Math.round((x0 + x1) / 2)]) { g.fillStyle = TH.iron1; g.fillRect(rx, top, 2, by - top); g.fillStyle = TH.iron3; g.fillRect(rx, top, 1, by - top); }   // hangers up to the top grid
+  g.fillStyle = TH.iron0; g.fillRect(x0 - 1, by - 1, w + 2, 1);
+}
+/* a head-block: a cheek plate hung from the beam, a grooved sheave that turns with the line, the line's colour on its hub */
+function drawWheel(g, cx, cy, R, ang, col) {
+  g.fillStyle = TH.iron0; g.fillRect(cx - 1, cy - 6, 3, 6 - 0); g.fillStyle = TH.iron2; g.fillRect(cx - 1, cy - 6, 1, 6);   // the bracket from the beam
+  g.fillStyle = TH.iron1; for (let a = 0; a < 16; a++) { const t = a / 16 * Math.PI * 2; g.fillRect(Math.round(cx + Math.cos(t) * R), Math.round(cy + Math.sin(t) * R), 1, 1); }
+  g.fillStyle = TH.iron3; for (let k = 0; k < 4; k++) { const t = ang + k * Math.PI / 2; g.fillRect(Math.round(cx + Math.cos(t) * (R - 1)), Math.round(cy + Math.sin(t) * (R - 1)), 1, 1); g.fillRect(Math.round(cx + Math.cos(t) * (R - 2.2)), Math.round(cy + Math.sin(t) * (R - 2.2)), 1, 1); }
+  g.fillStyle = TH.iron4; g.fillRect(cx - 4 - 1 + 4, cy - 1, 1, 1); g.fillStyle = col; g.fillRect(cx, cy, 1, 1);
 }
 
 // ------------------------------------------------------------ light
