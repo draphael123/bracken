@@ -434,10 +434,10 @@ Object.assign(DMG, {
   krakSlam: 33, krakSweep: 33, krakRoar: 23, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 20, krakQuake: 12, krakShake: 14, krakCoSweep: 26, krakSlam1: 26, krakSweep1: 28,   /* (roar 26 -> 23: the climb's double roar was the warden's death at 2-9% left) */   /* (the first stage has more going on now: its own slam and sweep weigh a little less) */   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
-  tollmaster: 3200,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s); 980 on the x0.05 chip. (claude/lamplit2) 3200: off the chip at 0.4 (B15) the knight cut 980 in 20 s */
+  tollmaster: 3000,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s); 980 on the x0.05 chip. (claude/lamplit2) 3000: off the chip at 0.4 (B15) the knight cut 980 in 20 s; 3200 measured 7/12 */
   prince: 2000,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights) */
   closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
-  lampreeve: 1300,   /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75); 560 on the 0.25 coat. (claude/lamplit2) 1300: his coat at 0.45 (B15) and the relight stun x1.7 - 560 died in 15-24 s */
+  lampreeve: 2000,   /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75); 560 on the 0.25 coat. (claude/lamplit2) his coat at 0.45 (B15) and the relight stun x1.7: 560 died in 15-24 s, 1300 in 20-50 s at 12/12, 1800 12/12 (no threat close in: his flask now lands at your feet too) */
   quarter: 1150,     /* (claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
   captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
@@ -12450,12 +12450,12 @@ function updateLampreeve(e, dt) {
         e.target = best; e.mode = 'toLamp'; e.modeT = 4.5; e.snuffT = p2 ? 6.5 : 8;
         number(e.x, e.y - 42, 'HE GOES FOR THE LAMP', '#ff9a5c'); SFX.heard(); }
       /* THE LUNGE FROM THE DARK: only at a hero out of the light */
-      else if (dark && level && ad > 48 && ad < (p2 ? 240 : 190) && e.lungeT <= 0 && !P.dead) { e.mode = 'lungeTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p2 ? 0.62 : 0.75; e.lungeT = p2 ? 3.6 : 5.5; e.lungeX = P.x;
+      else if (dark && level && ad > 48 && ad < (p2 ? 240 : 190) && e.lungeT <= 0 && !P.dead) { e.mode = 'lungeTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p2 ? 0.62 : 0.75; e.lungeT = p2 ? 3 : 4.4; e.lungeX = P.x;
         number(e.x, e.y - 42, 'FROM THE DARK', '#ff6b6b'); SFX.hiss(); }
-      else if (level && ad < 46 && e.sweepT <= 0) { e.mode = 'sweepTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.46; e.sweepT = p2 ? 2.4 : 2.8; number(e.x, e.y - 42, 'LOW: JUMP IT', '#ffd36b'); SFX.charge(); }
-      else if (e.flaskT <= 0 && ad < 220 && ad > 40 && !e.flask && !P.dead) { e.mode = 'flaskTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = REEVE.flaskTell; e.flaskT = p2 ? 5 : 6.4;
+      else if (level && ad < 46 && e.sweepT <= 0) { e.mode = 'sweepTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.46; e.sweepT = p2 ? 2 : 2.4; number(e.x, e.y - 42, 'LOW: JUMP IT', '#ffd36b'); SFX.charge(); }
+      else if (e.flaskT <= 0 && ad < 220 && ad > 12 && !e.flask && !P.dead)   /* (claude/lamplit2) at your feet too: crowding him is no answer to it */ { e.mode = 'flaskTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = REEVE.flaskTell; e.flaskT = p2 ? 3.4 : 4.4;   /* (claude/lamplit2) the flask is his pressure now the douse is gone: oftener, a quarter lighter */
         e.flaskX = Math.max(A.x0 + 16, Math.min(A.x1 - 16, P.x)); number(e.x, e.y - 42, 'THE OIL FLASK', '#c9a85a'); SFX.flaskClink ? SFX.flaskClink() : SFX.charge(); }
-      else if (e.hookT <= 0 && ad > 70 && ad < 300) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p2 ? 6 : 7.5; number(e.x, e.y - 42, 'THE HOOK', '#ff9a5c'); SFX.grapple(); }
+      else if (e.hookT <= 0 && ad > 70 && ad < 300) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p2 ? 5 : 6.2; number(e.x, e.y - 42, 'THE HOOK', '#ff9a5c'); SFX.grapple(); }
       break; }
     case 'toLamp': { const t = e.target;
       if (!t || !t.lit || t.gut > 0) { e.mode = 'stalk'; e.modeT = 0.4; break; }
