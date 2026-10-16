@@ -9155,7 +9155,7 @@
   }
  },
  "buriedcity": {
-  "hash": "376db2e9aefa",
+  "hash": "09cb68eae630",
   "boss": {
    "boss": "hourglassking",
    "wins": 0,
@@ -9256,7 +9256,7 @@
    ]
   },
   "carried": {
-   "from": "18e2752143b4",
+   "from": "376db2e9aefa",
    "parts": [
     "boss"
    ]
@@ -9283,8 +9283,8 @@
    "warden": {
     "deaths": 35,
     "minHpPct": 0,
-    "hpLostPct": 3501,
-    "hits": 150,
+    "hpLostPct": 3497,
+    "hits": 151,
     "walked": 100,
     "lifts": 81,
     "held": 102,
@@ -9294,7 +9294,7 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 85391,
+    "frames": 85287,
     "kills": 2,
     "heroLevel": 40
    },
@@ -9312,7 +9312,7 @@
     "pulls": 0,
     "ridden": {},
     "machines": true,
-    "frames": 33772,
+    "frames": 33705,
     "kills": 4,
     "heroLevel": 40
    }
