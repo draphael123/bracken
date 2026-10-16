@@ -94,13 +94,14 @@ export function slabHint(BK, P) {
   const L = BK.L; if (!L || !L.reachSlabs || !P) return null;
   const props = BK.props();
   for (const rs of L.reachSlabs) {
+    if (rs.optional) continue;   /* (the tithe's ramp is off the way: the walker leaves it) */
     const posts = props.filter(p => p.t === 'timber' && p.slab && p.slab.id === rs.slab); if (!posts.length) continue; const sb = posts[0].slab;
     if (sb.state !== 'up' && !(rs.flat && sb.state === 'ramp')) continue;
     let post, stand, face;
     if (sb.state === 'up') { const end = rs.flat ? (rs.first || 1) : -rs.hinge; post = posts.find(p => p.end === end && !p.broken); if (!post) continue; face = -end; stand = post.x + end * 13; }
     else { post = posts.find(p => !p.broken); if (!post) continue; face = post.end; stand = post.x - post.end * 22; }
     if (Math.abs(stand - P.x) > 14 * TS || Math.abs(post.y - P.y) > (sb.state === 'ramp' ? 12 : 3) * TS) continue;
-    return { x: stand, y: post.y, key: 'atk', face, r: 14 };
+    return { x: stand, y: sb.state === 'ramp' ? sb.row * TS : post.y, key: 'atk', face, r: 14 };   /* (from the ramp, his feet are at its top) */
   }
   return null;
 }

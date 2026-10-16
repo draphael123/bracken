@@ -107,7 +107,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
      which every hero has - so the fill has its roof course out and its ramp down, a stair of boards (a slope with no rock under it is not footing to the model) */
   for (const rs of (L.reachSlabs || [])) { const sb = (L.slabs || []).find(s => s.id === rs.slab); if (!sb) continue;
     const st = reachStair((x, y) => (x < 0 || x >= W || y < 0 || y >= H) ? T.SOLID : g[y * W + x], sb, rs.hinge, !!rs.flat);
-    for (const [x, y] of st.clear) g[y * W + x] = T.AIR; for (const [x, y] of st.solid) g[y * W + x] = T.SOLID; for (const [x, y] of st.stair) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
+    for (const [x, y] of st.clear) g[y * W + x] = T.AIR; for (const [x, y] of st.solid) g[y * W + x] = T.SOLID; for (const [x, y] of st.stair) { const i = y * W + x; if (g[i] === T.AIR) g[i] = rs.optional ? T.ONEWAY : T.SOLID; } }   /* (solid steps: a slope is not dropped through, so the model may not drop through the ramp either) */
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
   const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder

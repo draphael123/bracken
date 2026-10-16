@@ -128,9 +128,9 @@ export const STUCK = {
   undercrown: [
     /* (claude/undercrown2) THE SLABS: every post the way on needs - the adit's (the only way up), the flooded level's two (a ramp, then the bridge), the stope's hung walkway */
     { id: 'uc-slab-adit', zone: [2, 19, 39, 24], at: [23, 23], glint: 'stall', done: ['timber', 23, 23, 'broken'], line: 'THE POST UNDER THE SLAB: CUT IT AND THE ROOF SWINGS DOWN' },
-    { id: 'uc-slab-flood', zone: [44, 48, 60, 56], steps: [
-      { at: [45, 53], done: ['timber', 45, 53, 'broken'], line: 'THE NEAR POST: ITS END OF THE SLAB COMES DOWN AS A RAMP' },
-      { zone: [28, 44, 52, 56], at: [29, 53], done: ['timber', 29, 53, 'broken'], line: 'THE FAR POST, FROM THE RAMP\'S TOP: BOTH DOWN IS A BRIDGE' } ] },
+    { id: 'uc-slab-flood', zone: [28, 47, 60, 55], steps: [
+      { zone: [53, 50, 60, 55], at: [45, 53], done: ['timber', 45, 53, 'broken'], line: 'THE NEAR POST: ITS END OF THE SLAB COMES DOWN AS A RAMP' },
+      { zone: [28, 47, 46, 53], at: [29, 53], done: ['timber', 29, 53, 'broken'], line: 'THE FAR POST, FROM THE RAMP\'S TOP: BOTH DOWN IS A BRIDGE' } ] },
     { id: 'uc-slab-stope', zone: [22, 104, 44, 112], at: [39, 111], glint: 'stall', done: ['timber', 39, 111, 'broken'], line: 'THE HUNG WALKWAY\'S NEAR POST: CUT IT, IT SWINGS DOWN TO YOU' },
   ],
   /* (claude/stuckguides) FIELDS: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
