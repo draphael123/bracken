@@ -345,7 +345,9 @@ async function main() {
   units.filter(u => u.sc === 'talk').forEach(u => jobs.push([u]));
   units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
   const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
-  const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 5));
+  /* TWO pages, not five (10-16 leakfix): every page is its own headless Chrome and a talk page grows to 1.5-3 GB of baked level canvases, so five
+     at once peaked near 9 GB on a 16 GB PC (the 14:53 hang). Scopes are independent pages with their own timers; fewer at a time only makes the whole run longer. */
+  const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 2));
   const pages = [pg]; for (let k = 1; k < nPages; k++) pages.push(await openPage());   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
   const closeAll = async () => { for (const p of pages) { try { await p.close(); } catch {} } };
   const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
