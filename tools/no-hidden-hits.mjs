@@ -27,6 +27,10 @@ try {
     const { LEVELS, T } = await import('/src/level.js'); const TS = 16; const ONLY = ${JSON.stringify(ONLY)}, FOES = ${FOES}, TUNNEL = ${!has('no-tunnel')}, TUNNEL_ONLY = ${has('tunnel-only')};
     const MIN_D = 60, MIN_PX = 3, MELEE = 72, SHOTS = ${has('shots')}, shots = [];
     BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true });
+    /* The oracle samples AFTER dmgP. The full-screen red hit flash can cover both foe-in and foe-out pictures,
+       making a visible attacker look like 0 changed pixels. Turn off only that optional flash; all foe pixels
+       and the original visibility thresholds remain under test. */
+    BK.ui.settings().flashes = false;
     const grab = () => { const c = BK.view.buf; return c.getContext('2d').getImageData(0, 0, c.width, c.height).data; };
     const moved = (a, b) => { let n = 0, mx = 0; for (let i = 0; i < a.length; i += 4) { const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); if (d > mx) mx = d; if (d >= MIN_D) n++; } return { n, mx }; };
     /* is this foe on the picture: drawn twice, once without it */
