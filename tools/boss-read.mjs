@@ -22,4 +22,7 @@ assert.strictEqual(BR.wordOf({ t: 'golem' }, 0), TURN.STONE); assert.strictEqual
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 assert.ok(/BR\.auto\(e, fromX, \{ hp: hp0, mode: mode0, broken: br0 \}\)/.test(main), 'main.js hurtEnemy calls BR.auto');
 assert.ok(/angB \? Math\.max\(1, Math\.round\(wardedDamage\(e, dmg(?:, blow(?:, tag)?)?\) \* BR_ANGLE\.mul\)\) : bossChip\(/.test(main), 'the angle blow skips the chip');
+/* (claude/ramtune, B15 - a STATED design change) the Ram Lord's horns and ward TURN a blow to x0.4 (clank + GO ROUND / WARDED), they no longer swallow it: the front lands, the fire lands, a plunge on his ward lands */
+assert.ok(main.includes('hurtAs(meleeBlow(false), e, Math.max(1, Math.round(swingDmg(e) * RLD.RAM.frontMul))'), 'the Ram Lord front blow lands at RAM.frontMul (x0.4), it is not swallowed');
+assert.ok(main.includes("const rk = e.t === 'ram' && !ramOpen(e) ? RLD.RAM.frontMul : 1;") && !main.includes("'HIS HIDE TURNS IT', '#9aa39a'); } else if"), 'the Ram Lord fire and ball in his hide land too (x0.4)');
 console.log('boss-read: ok (turned / auto / beats / wired)');
