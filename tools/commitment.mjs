@@ -28,7 +28,7 @@ const LIGHT_TOTAL = { pirate: 0.29, knight: 0.40, warden: 0.40, pyro: 0.40, geom
 const DK_WARD_CUT = 0.25, PISTOL = 0.45, WINDOW = 0.06, PLUNGE_ADD = 0.10, WHIFF = { knight: 0.26, warden: 0.3, pyro: 0.22, paladin: 0.18, pirate: 0.22, reaper: 0.3, geomancer: 0.3, berserker: 0.26 };
 const ROLL_COST = { knight: 22, warden: 22, pyro: 22, geomancer: 22, pirate: 20, paladin: 25, reaper: 25, berserker: 22 }, STEP_BACK = 15, DELAY_F = 18;   /* the regen's delay, 0.3 s */
 const SKILL = { knight: 'whirlwind', warden: 'skewer', pyro: 'flameRing', geomancer: 'boulder', paladin: 'lightLance', pirate: 'grapeshot', reaper: 'harvestMoon', berserker: 'bzSpin' };
-const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 11, pirate: 15, reaper: 7, berserker: 12 };   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/10 (paladin at 22)/14/6; the knight did 13 in FOUR seconds before) */
+const MASH_MAX = { knight: 12, warden: 12, pyro: 12, geomancer: 12, paladin: 11, pirate: 15, reaper: 9, berserker: 12 };   /* (claude/dkfeel: the Death Knight swings at the Paladin's pace now - 8 in 6 s, was 6) */   /* 6 s of attack pressed every frame: the built numbers + 1 (measured 11/11/11/11/10 (paladin at 22)/14/6; the knight did 13 in FOUR seconds before) */
 const ONLY = process.argv.find(a => a.startsWith('--only=')); const only = ONLY ? ONLY.slice(7).split(',') : null;
 
 const pg = await openPage({ audio: false, fonts: false });
