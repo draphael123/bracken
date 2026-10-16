@@ -65,6 +65,10 @@ const trace = async pg => pg.evalp(`(async () => {
   const { LEVELS, T } = await import('./src/level.js');
   const script = ${SCRIPT};
   const out = {};
+  /* Anchor the title clock before any level load: otherwise its variable number of live rAF frames moves
+     Kingswood's Great Hound tell hitstop across trace frames 714/715. One fixed title step preserves
+     the recorded pre-slopes path, including the pause, without changing the frame oracle. */
+  BK.manualSimulation = true; BK.reset({ fresh: true }); BK.sim(1);
   for (const id of ${JSON.stringify(IDS)}) {
     const i = LEVELS.findIndex(l => l.id === id);
     if (i < 0) throw new Error('no level ' + id);
