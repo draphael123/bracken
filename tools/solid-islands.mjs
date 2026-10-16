@@ -26,7 +26,13 @@ export const ALLOW = {
   fair: [4, 'stage-roof and slide islands of the fairground: the rest are drawn rides/stalls (src/fair-*.js, six spots screenshot-checked); listed for the fair lane'],
   minecart: [1, 'one rail pair at 960-981: listed for the minecart lane'],
   undercrown: [3, 'three ledges over pit shafts, void under them: listed for the undercrown lane'],
-  mage: [7, 'library ledges and one plinth high in the hall, void under: listed for the mage lane'], fallingtower: [1, 'a loose slate plank run high in the tower: listed for the fallingtower lane'],
+  mage: [8, 'library ledges and one plinth high in the hall, void under, and a rope ladder: listed for the mage lane'], fallingtower: [1, 'a loose slate plank run high in the tower: listed for the fallingtower lane'],
+  /* mage 7 -> 8: the rope-ladder island (NET column 284, rows 17-29) was credited to the neighbouring board's post by the box test; the post-reach rule asks for the post's own column. The rope is its support: listed for the mage lane */
+  /* THE POST-REACH RULE'S FIRST RUN (claude/screefix, 2026-10-16): what it newly flagged, each with its reason - none of it is a slab on a drawn post that stops short */
+  skyroad: [5, 'cloud-stone pillars that end in a drawn cloud puff (src/forest-supports.js FREE_LEN): the sky road floats by design, there is no ground under it; the post-reach rule flags the free end'],
+  witchlight: [12, 'rune-stone pillars of the Witchlight Stair that end free in the dark (FREE_LEN): the stair hangs in a void by design; the post-reach rule flags the free end'],
+  glasssea: [1, 'one glass pedestal ending free over the sea (FREE_LEN): the post-reach rule flags the free end'],
+  hanging: [1, 'one slab at 70,63 over the chasm held by a vine bough that tapers free (FREE_LEN): listed for the hanging lane'],
   canal: [2, 'warehouse and lock masses in fog: listed for the canal lane'], welltown: [3, 'sandstone towers: listed for the welltown lane'], redgorge: [1, 'a timber slab of the gorge camp: listed for the redgorge lane'],
 };
 
@@ -35,12 +41,29 @@ const SUPPORT_ENT = new Set(['scaffold', 'timber', 'chainpost', 'treehouse', 'fe
 
 export const islands = L => islandsOf(L, T);
 
+/* THE POST-REACH RULE (claude/screefix, Daniel 2026-10-15: "the drawn posts end short of the slab or of the ground below"). A routeSupports post only counts as a support when
+     TOP   the island has a cell in the post's own column at the post's row (+-1): the post starts under the slab it holds, not in the air beside it;
+     FOOT  the post is not 'free' (a tapering end in open air is the art's choice, not ground) and the first tile under its foot (row p.bottom) is not air: it REACHES a
+           solid, a board or another island within POST_REACH_PX = 8 px (half a tile: no whole row of air under the foot, the art's own seam).
+   Run across every level: what it newly flags is fixed or ratcheted in ALLOW with a reason (see work/claude/lane-done/claude-screefix.md). The visible half (does the INK
+   reach?) is tools/visible-supports.mjs; this is the cheap geometry half, run by check.mjs on all levels. */
+export const POST_REACH_PX = 8;
+function postHolds(L, s, p) {
+  const W = L.W, H = L.H, g = L.grid, cells = s.set || (s.set = new Set(s.cells));
+  let top = false; for (let y = p.y - 1; y <= p.y + 1; y++) if (cells.has(y * W + p.x)) { top = true; break; }
+  if (!top || p.free) return false;
+  if ((L.pools || []).some(q => p.x * 16 + 8 >= q.x0 && p.x * 16 + 8 < q.x1 && p.bottom * 16 > q.y)) return true;   /* a pile driven into a pool: its foot is under the water, on the bed the map does not draw */
+  let r = p.bottom, gap = 0; if (r >= H) return true;
+  while (r < H && (g[r * W + p.x] === T.AIR || g[r * W + p.x] === T.NET)) { r++; gap += 16; if (gap > POST_REACH_PX) return false; }
+  return r < H;
+}
+
 /* what holds island `s` up: [] when nothing drawn does */
 export function supportsOf(L, s) {
   const W = L.W, why = [], inR = (x, y, a, b, c, d, pad = 0) => x >= a - pad && x <= b + pad && y >= c - pad && y <= d + pad;
   const anyCell = (a, b, c, d, pad = 0) => s.cells.some(j => inR(j % W, (j / W) | 0, a, b, c, d, pad));
   const overlap = (a, b, c, d, pad = 0) => s.x1 >= a - pad && s.x0 <= b + pad && s.y1 >= c - pad && s.y0 <= d + pad;
-  for (const p of L.routeSupports || []) if (p.x >= s.x0 && p.x <= s.x1 && p.y >= s.y0 && p.y <= s.y1 && p.bottom > p.y + 1) { why.push('post'); break; }
+  for (const p of L.routeSupports || []) if (p.x >= s.x0 && p.x <= s.x1 && p.y >= s.y0 && p.y <= s.y1 && p.bottom > p.y + 1 && postHolds(L, s, p)) { why.push('post'); break; }
   for (const h of (L.monk && L.monk.hangers) || []) if (h[0] >= s.x0 - 1 && h[0] <= s.x1 + 1 && h[1] <= s.y1 + 1 && h[2] >= s.y0 - 1) { why.push('hanger'); break; }
   for (const r of L.ropes || []) { if (Array.isArray(r)) { if (overlap(r[0], r[1], r[2] - 2, r[2] + 2)) { why.push('rope'); break; } }
     else if (r.x0 !== undefined && r.y0 !== undefined && r.x1 !== undefined) { if (overlap(Math.min(r.x0, r.x1) / 16 - 1, Math.max(r.x0, r.x1) / 16 + 1, Math.min(r.y0, r.y1) / 16 - 3, Math.max(r.y0, r.y1) / 16 + 3)) { why.push('rope'); break; } } }

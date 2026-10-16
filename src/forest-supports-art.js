@@ -1,10 +1,12 @@
 /* src/forest-supports-art.js - the drawn supports of the forest and crag levels (see src/forest-supports.js). p = {x, y, bottom, kind, free}; tile coords. Drawn behind the tiles. */
+import { drawRockPier } from './scree-rock.js';
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
 const PAL = {
   rock: ['#4b4640', '#7d756b', '#2e2a27', '#5f7d3b'], vine: ['#44331f', '#7a5c36', '#2c2214', '#3e8040'], pile: ['#2f2a24', '#5d5446', '#1c1915', '#8a5f93'],
   cloud: ['#b9c4dc', '#f0f5ff', '#8392b5', '#dfe8f8'], root: ['#4d3622', '#85633b', '#2e1f13', '#6a8f3a'], ice: ['#4fa9c4', '#d5f6ff', '#2a6f8f', '#8fe0ee'], rune: ['#2e2842', '#524a73', '#1a1626', '#b790ff'],
 };
 export function drawForestSupport(g, p, cx, cy) {
+  if (p.kind === 'rock') { drawRockPier(g, p, cx, cy); return; }   /* THE SCREE PATH's own rock piers (claude/screefix, src/scree-rock.js) */
   const k = p.kind, c = PAL[k], h0 = Math.round(p.y * 16 + 10 - cy), bot = Math.round(p.bottom * 16 - cy), len = bot - h0;
   if (len < 3) return;
   const sd = (p.x * 7 + p.y * 13) & 7, w = k === 'rock' ? 8 : k === 'cloud' ? 8 : k === 'ice' ? 6 : k === 'rune' ? 6 : 5, x = Math.round(p.x * 16 + 8 - w / 2 - cx);

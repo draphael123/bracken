@@ -1,3 +1,4 @@
+import { drawArm, drawSlab, drawProp } from './scree-lip.js';
 // ram-lord.js - THE RAM LORD, REWORKED (claude/scree2; scratch/brief-scree2.md item 3, Daniel 10-08: "the boss could be better").
 // A BEAST DUELIST (design-standard B11) WITH A RULE OPENING (B1). Header, as B11 asks: HE IS A DUELIST - always hittable, guarding by angle.
 //   HIS HORNS GUARD HIS FRONT: a blow from the front at his height is turned (clank + GO ROUND, src/boss-read.js); from behind, from the flank or from
@@ -92,20 +93,17 @@ export function drawLip(g, L, floor, cx, cy, t) {
   {
     const px = Math.round(L.x - cx), fy = Math.round(floor - cy), lipX0 = Math.round(Math.min(L.x, L.x + L.side * (LIP.gap + LIP.zone)) - cx), lipW = LIP.gap + LIP.zone + 10;
     const up = L.state === 'armed' || L.state === 'creak', shake = L.state === 'creak' ? Math.round(Math.sin(t * 60) * 2) : 0, drop = L.state === 'fall' ? Math.round((1 - L.t / LIP.fall) * 50) : 0;
-    { const wx = L.side > 0 ? lipX0 : lipX0 + lipW, ay = fy - 58; g.fillStyle = '#4e3c2c'; g.beginPath(); g.moveTo(wx, ay + 16); g.lineTo(wx + L.side * 16, ay); g.lineTo(wx - L.side * 6, ay - 200); g.lineTo(wx - L.side * 34, ay - 200); g.lineTo(wx - L.side * 14, ay + 16); g.closePath(); g.fill(); g.fillStyle = '#6b5238'; g.fillRect(Math.round(wx - L.side * 14), ay - 60, 2, 70); }   /* THE CRAG ARM it leans out on, up out of the view */
+    { const wx = L.side > 0 ? lipX0 : lipX0 + lipW, ay = fy - 58; drawArm(g, wx, ay, L.side); }   /* THE CRAG ARM it leans out on, up out of the view: rock, not a flat polygon (claude/screefix, src/scree-lip.js) */
     if (up || L.state === 'fall') {   /* THE LIP: a slab of ochre rock out of the cliff, its underside ragged */
-      const ly = fy - 58 + drop; g.fillStyle = '#6b5238'; g.fillRect(lipX0 + shake, ly, lipW, 16); g.fillStyle = '#8a6a48'; g.fillRect(lipX0 + shake, ly, lipW, 4); g.fillStyle = '#c8a070'; g.fillRect(lipX0 + shake, ly, lipW, 1);
-      for (let i = 0; i < lipW; i += 6) { g.fillStyle = '#5a4632'; g.fillRect(lipX0 + shake + i, ly + 16, 4, 3 + ((i * 7) % 5)); }
-      g.fillStyle = '#2e2218'; for (let i = 4; i < lipW - 4; i += 11) g.fillRect(lipX0 + shake + i, ly + 5, 1, 8);   /* its cracks */
-      if (L.state === 'armed' && Math.floor(t * 3 + L.x) % 2 === 0) { g.fillStyle = '#a8865a'; g.fillRect(lipX0 + ((t * 40) % lipW | 0), ly + 20 + ((t * 70) % 90 | 0), 1, 2); } }
-    else { g.fillStyle = '#3e3024'; g.fillRect(lipX0, fy - 58, lipW, 3); }   /* the scar where it came away */
+      const ly = fy - 58 + drop; drawSlab(g, lipX0 + shake, ly, lipW);   /* THE LIP: a slab of the hill's rock, a stalactite fringe under it (src/scree-lip.js) */
+      if (L.state === 'armed' && Math.floor(t * 3 + L.x) % 2 === 0) { g.fillStyle = '#b0a090'; g.fillRect(lipX0 + ((t * 40) % lipW | 0), ly + 20 + ((t * 70) % 90 | 0), 1, 2); } }
+    else { g.fillStyle = '#4a3e3a'; g.fillRect(lipX0, fy - 58, lipW, 3); }   /* the scar where it came away */
     /* THE PROP: a dry-stone pillar under it, cracked; gold while he is in the fall line */
     if (up) { const gl = L.glow > 0 || L.state === 'creak';   /* THE PROP: a dry-stone pier, its stones in courses, wider at the foot, a crack up its middle */
-      for (let k = 0; k < 7; k++) { const y = fy - 4 - k * 4, w = 14 - Math.floor(k / 2) * 2, off = k % 2 ? 1 : -1; for (let q = 0; q < 3; q++) { const bw = Math.ceil(w / 3), bx = px - w / 2 + q * bw + off; g.fillStyle = (k + q) % 2 ? '#7a6046' : '#8a7058'; g.fillRect(Math.round(bx), y, bw - 1, 4); g.fillStyle = '#b8956a'; g.fillRect(Math.round(bx), y, bw - 1, 1); } }
-      g.fillStyle = '#2e2218'; g.fillRect(px - 1, fy - 22, 1, 6); g.fillRect(px, fy - 16, 1, 6); g.fillRect(px - 1, fy - 10, 1, 5);
+      drawProp(g, px, fy);
       if (gl) { const k = 0.5 + 0.5 * Math.sin(t * 12); g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(px - 8, fy - LIP.propH - 2, 16, LIP.propH + 2); g.fillStyle = '#fff6c8'; g.fillRect(px - 1, fy - 22, 2, 2);
         g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(L.z0 - cx), fy - 1, Math.round(L.z1 - L.z0), 1); g.globalAlpha = 1; } }
-    else { g.fillStyle = '#5a4632'; g.fillRect(px - 7, fy - 5, 14, 5); }   /* the prop's rubble */
+    else { g.fillStyle = '#7a6a62'; g.fillRect(px - 7, fy - 5, 14, 5); g.fillStyle = '#5a4a58'; g.fillRect(px - 6, fy - 2, 12, 2); }   /* the prop's rubble */
   }
 }
 /* THE SHARED READ (B10): open = a GOLD ring and a timer bar; warded = a pale shell; P3's horn sweep tell = a red arc both ways */

@@ -19,6 +19,7 @@ import { buildOreRoad } from './ore-road.js';
 import { reworkScree } from './scree-rework.js';
 import { applyReachGaps, GAPS } from './reach-gaps.js';
 import { chaseScree } from './scree-chase.js';
+import { dressScree } from './scree-dress.js';   /* its lamps: L.dressExtra, not level data (claude/screefix) */
 import { reliefScree } from './scree-relief.js';   /* the Scree Path's knolls, ledges and road overhangs (claude/scree2) */   /* THE ROCKSLIDE CHASE (claude/scree2) */
 import {hauntedCoast} from './haunted-coast.js';
 import {stormShipPolish} from './storm-ship.js';
@@ -1510,7 +1511,7 @@ function screePath() {
   Q.ent('rockfall', 456, 4, { every: 2.6 });
   Q.ent('goat', 449, 8, { face: 1 });                          // charges down the chute ahead of you
   /* (the Suncatcher lived here: he is gone from the scree, and his code is kept for a frost level) */
-  return reliefScree(chaseScree(reworkScree(Q.done(), T), T, grow), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
+  return dressScree(reliefScree(chaseScree(reworkScree(Q.done(), T), T, grow), T), T);   /* THE SCREE PATH REWORK (2026-09-23): loose rock, broken stone, and the road under fire - src/scree-rework.js; then THE ROCKSLIDE CHASE (claude/scree2): the old scree steps repainted as a hillside run and 96 columns grown in after them - src/scree-chase.js */
 ;
 }
 
