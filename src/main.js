@@ -11241,7 +11241,7 @@ function drawSea(cx, cy) {
 /* THE HUD OF IT: the counted roll warning and the HEEL marker (drawn flat, after the tilted world), and the set-piece cues */
 function drawSeaHud() {
   if (state !== 'play' || !L || (!L.roll && !L.felled && !L.eye)) return;
-  if (seaMsg && seaMsg.t > 0) { g.globalAlpha = Math.max(0, Math.min(1, seaMsg.t * 3, (seaMsg.max - seaMsg.t) * 8 + 0.2));
+  if (seaMsg && seaMsg.t > 0 && !P.dead && !deathRecap) { g.globalAlpha = Math.max(0, Math.min(1, seaMsg.t * 3, (seaMsg.max - seaMsg.t) * 8 + 0.2));
     g.fillStyle = 'rgba(10,12,20,0.55)'; g.fillRect(8, 52, VW - 16, 14); text(seaMsg.txt, VW / 2, 55, seaMsg.col, 'center', 7); g.globalAlpha = 1; }
   if (!roll || !L.roll || P.dead || P.y > 21 * TS + 8 || seaCalm() > 0.3) return;
   if (roll.state === 'tell') { const n = Math.max(1, Math.ceil(roll.t)), late = roll.t < 0.9;
@@ -31569,8 +31569,11 @@ function drawWhatsNew() {
   const rs = WN.rows((s, mw) => wrap(s, mw, 6), w - 24), top = y + 22, RH = 8, vis = Math.max(3, Math.floor((h - 22 - 24) / RH));
   wnLimit = Math.max(0, rs.length - vis); wnScroll = Math.min(wnScroll, wnLimit);
   if (!rs.length) text('nothing to report yet', VW / 2, top + 6, UI.dim, 'center', 6);
-  let yy = top;
-  for (let i = wnScroll; i < rs.length && yy + RH <= y + h - 22; i++) { const r = rs[i]; if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= y + h - 22) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
+  let yy = top, first = wnScroll;
+  while (first > 0 && rs[first]?.kind === 'line' && !rs[first].first) first--;
+  for (let i = first; i < rs.length && yy + RH <= y + h - 22; i++) { const r = rs[i];
+    if (r.kind === 'line' && yy + RH * (r.remaining + 1) > y + h - 22) break;  /* a wrapped update stays together on one scroll view */
+    if (r.kind === 'head') { if (r.gap && i > first && yy + RH * 2 <= y + h - 22) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
   if (wnScroll > 0) text('^', x + w - 10, top, UI.dim, 'right', 6);
   if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 30, UI.dim, 'right', 6);
   text(wnScroll < wnLimit ? 'UP/DOWN scroll  Z more  ESC back' : 'UP/DOWN scroll  Z or ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);
@@ -32285,7 +32288,7 @@ function render() {
   if (state === 'play' || (state === 'talk' && !talkOverHud) || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
+    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k), top = SET.iron ? 52 : 40; g.fillStyle = '#0a0810'; g.fillRect(0, top, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, top + Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD sits below the HUD so the two never write over each other. */
     const hudMin = SET.hud === 'minimal', HS = hudMin ? 'outline' : 'shadow', HY = SET.iron ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
     const hudMeter = hudMeterLabel(), hudPW = 66, xpRow = xpWood() ? 8 : 0, hudPH = HY + 7 + xpRow;   /* ONE slim plate: 66 wide (~20% of the 320 view) however long a meter's prompt is - the prompt goes beside it, on a strip (meterPrompt) */
     const hudIdle = hudMin && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !hudMeter && !P.swim && !(P.torch > 0) && heroMeterFrac() < 0.01 && !Object.values(P.cds || {}).some(v => v > 0);   /* nothing to say: the bars wait out of sight until something changes */

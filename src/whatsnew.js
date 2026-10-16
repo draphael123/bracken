@@ -29,6 +29,7 @@ export const hasNew = () => !!newestDate() && readSeen() < newestDate();
 export const rows = (wrapFn, maxW) => {
   const out = [];
   updates.forEach((e, i) => { out.push({ kind: 'head', s: shortDate(e.date), gap: i > 0 });
-    for (const ln of e.lines) wrapFn('- ' + ln, maxW).forEach((part, j) => out.push({ kind: 'line', s: j ? '  ' + part : part })); });
+    for (const ln of e.lines) { const parts = wrapFn('- ' + ln, maxW - 12);
+      parts.forEach((part, j) => out.push({ kind: 'line', s: j ? '  ' + part : part, first: j === 0, remaining: parts.length - j - 1 })); } });
   return out;
 };

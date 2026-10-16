@@ -147,7 +147,7 @@ async function pageTextFit(input) {
     for (const h of (input.talkHeroes || HEROES)) for (const [l, i] of campaign) { try { toPlay(i, h); } catch (e) { issues.push({ type: 'ERROR', screen: 'talk ' + l.id, s: 'load: ' + e.message, n: 1 }); continue; }
       for (const t of TL.talkers()) { const key = t.lines.join('|') + '|' + t.name; if (done.has(key)) continue; done.add(key);
         const lines = t.lines.filter(Boolean);
-        for (let p = 0; p < lines.length; p++) frame('talk ' + l.id + ' ' + t.kind + '@' + t.x + ',' + t.y + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.size === 8 && lines[p].includes(q.s.trim()) });
+        for (let p = 0; p < lines.length; p++) frame('talk ' + l.id + ' ' + t.kind + '@' + t.x + ',' + t.y + ' [' + h + '] page ' + (p + 1) + '/' + lines.length, () => { BK.state = 'play'; TL.talk(lines, t.name); if (TL.talking) TL.talking.i = p; }, { cover: q => q.at === input.talkAt && lines[p].includes(q.s.trim()) });
         BK.state = 'play'; }
       await yieldNow(); } }
 
@@ -326,7 +326,11 @@ async function pageTextFit(input) {
 
 async function main() {
   const pg = await openPage();
-  const input = { only, hints: hints(), levels: process.env.TEXTFIT_LEVELS ? process.env.TEXTFIT_LEVELS.split(',') : null };
+  const mainLines = readFileSync(join(ROOT, 'src/main.js'), 'utf8').split(/\r?\n/);
+  /* A sign can contain a one-character HUD label (for example "3"). Cover only the sign's own draw site, not matching HUD text. */
+  const talkLine = mainLines.findIndex(s => s.includes('lines.forEach((ln, k) => text(ln, bx + 8'));
+  if (talkLine < 0) throw new Error('talk text draw site not found');
+  const input = { only, hints: hints(), talkAt: 'main.js:' + (talkLine + 1), levels: process.env.TEXTFIT_LEVELS ? process.env.TEXTFIT_LEVELS.split(',') : null };
   console.log(input.hints.length + ' hint messages read out of src/main.js');
   const t0 = Date.now();
   /* EACH SCOPE UNDER ITS OWN TIMER, THE HEAVY ONES ON THEIR OWN PAGES. The whole sweep used to be ONE evaluate (30-minute ceiling) over
