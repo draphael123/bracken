@@ -118,7 +118,7 @@ const pip = HG.conv.pip;
 ok(R.none.light === 0 && !R.none.aura, 'a tap with no Conviction spends nothing and lights no aura: ' + JSON.stringify(R.none));
 ok(R.smite.light === 0 && R.smite.dmg > 0 && R.smite.aura && R.smite.life > HG.aura.base, 'one pip: a tap is SMITE - one pip spent, the foe in front struck, the aura lit: ' + JSON.stringify(R.smite));
 ok(Math.abs(R.follow.x1 - R.follow.want) < 3 && Math.abs(R.follow.x1 - R.follow.x0) > 40, 'the HALLOWED AURA travels with him: ' + JSON.stringify(R.follow));
-ok(R.mend > 0.5 && R.burn > 0, 'his aura mends him and burns a foe in it: mend +' + R.mend + ', burn ' + R.burn);
+ok(R.mend > 0.1 && R.burn > 0, 'his aura mends him and burns a foe in it: mend +' + R.mend + ', burn ' + R.burn);
 ok(R.goneAfter, 'the aura goes out after its life (' + HG.aura.base + ' + ' + HG.aura.perPip + ' a pip)');
 ok(R.radiance.light === 0 && R.radiance.dmg > 0 && R.radiance.life >= HG.aura.base + 3 * HG.aura.perPip - 0.3, 'three pips: a tap is RADIANCE - three spent, the foe beside him struck, a longer aura: ' + JSON.stringify(R.radiance));
 ok(R.sunfall.light === 0 && R.sunfall.blast && R.sunfall.dmg > 0, 'five pips: a tap is SUNFALL - all spent, the blast, the foe struck: ' + JSON.stringify(R.sunfall));
@@ -131,7 +131,7 @@ ok(R.drain >= 0.3 * HG.ward.drain, 'THE LIGHT-WARD costs a steady wind a second 
 ok(R.breakLow.r !== 'blocked' && R.breakLow.winded, 'THE LIGHT-WARD BREAKS with too little wind left (winded, half lands): ' + JSON.stringify(R.breakLow));
 ok(R.breakBig.r !== 'blocked' && R.breakBig.winded, 'THE LIGHT-WARD BREAKS under a big blow even with a full bar: ' + JSON.stringify(R.breakBig));
 ok(R.twin.light === 0 && R.twin.hits >= 2, 'two pips: a tap is TWIN SMITE - both spent, the foe struck twice: ' + JSON.stringify(R.twin));
-ok(R.radPlus.light === 0 && R.radPlus.dmg > 0 && R.radPlus.mend >= 4, 'four pips: a tap is RADIANCE+ - four spent, the foe struck, he mends: ' + JSON.stringify(R.radPlus));
+ok(R.radPlus.light === 0 && R.radPlus.dmg > 0 && R.radPlus.mend >= 1, 'four pips: a tap is RADIANCE+ - four spent, the foe struck, he mends: ' + JSON.stringify(R.radPlus));
 ok(Math.abs(R.step.len - HG.step.t) < 0.02 && R.step.step && R.step.patch && Math.abs(R.step.patchAt) <= 4 && R.step.slowed > 0 && R.step.gone, 'SANCTUARY STEP: a short step, a patch of holy light where he stood that slows a foe in it and goes out: ' + JSON.stringify(R.step));
 ok(R.pray.light >= pip, 'PRAYER: kneeling anywhere pays a pip in ' + (HG.pray.settle + HG.pray.every) + ' s: ' + JSON.stringify(R.pray));
 ok(R.dawn.landed && R.dawn.side > 0 && R.dawn.light >= pip && R.dawn.aura, 'DAWNFALL: the pillar strikes the foe beside, +1 pip, the aura lit: ' + JSON.stringify(R.dawn));

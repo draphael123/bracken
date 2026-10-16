@@ -22,7 +22,7 @@ export const HG = {
   burn: 4,            // damage a burn (before the host's own skill multiplier)
   bossOutMul: 1.0,    // (claude/paltune) his blow on a boss while OFF his ground
   bossBurn: 0.3,      // (claude/paltune) the burn on a BOSS: x this (a slow boss stands in the circle all fight; wood fell 75 -> 38 s)
-  heal: 0.02,         // of max health a second, mended standing in his own circle (a partner in it: half)
+  heal: 0.004,        // (PALADIN TUNE: was 0.02, cut 80%) of max health a second, mended ONLY in the HALLOWED AURA (lit by SPENDING Conviction), not in a plain circle (a partner in a circle: half)
   hitMul: 1.3,        // his blows inside his own circle
   empower: { cost: 35, r: 60, life: 12, burnMul: 2, flare: 12 },   // EMPOWERED CONSECRATE: Light spent, a flare on the tap, a bigger, longer, hotter circle
   smite: { cost: 20, mul: 1.5 },                                   // SMITE: the overhead inside the circle, its waves holy
@@ -42,7 +42,7 @@ export const HG = {
   /* PALADIN 4 (claude/paladin4, Daniel 10-15, scratch/brief-heroidentity.md '!! 10-15' lines): the Friday hero pass */
   /* EVERY PIP COUNTS: the in-between pips EMPOWER the tier below. A tap spends what its version costs: 1 SMITE, 2 TWIN SMITE, 3 RADIANCE, 4 RADIANCE+, 5 SUNFALL */
   twin: { cost: 40, gap: 0.16 },                                 // TWIN SMITE (2 pips): SMITE, and the same strike again a beat later
-  burstPlus: { cost: 80, r: 72, dmg: 18, stagger: 0.8, mend: 0.06 },   // RADIANCE+ (4 pips): a bigger burst, and it mends him a little (of max health)
+  burstPlus: { cost: 80, r: 72, dmg: 18, stagger: 0.8, mend: 0.012 },   // RADIANCE+ (4 pips): a bigger burst, and it mends him a little (of max health)
   /* THE LIGHT-WARD (the aegis, Daniel 10-15 ~18:00): ALL ROUND (front + back), turns projectiles, a steady wind a second while held (not a price a blow), a
      PIERCING blow goes through it as through the knight's shield, a big enough blow BREAKS it (the knight's rules: staggered + exhausted, half the blow lands):
      a blow bigger than the wind he has left for it (the shield's price, commit.js blockCost) or one that would land big (of his max health). +1 CONVICTION a 2 blocks */
@@ -50,7 +50,7 @@ export const HG = {
   /* SANCTUARY STEP (the dodge, Daniel 10-15 ~17:20 - NOT a brace): a quick step in the held direction, a roll's grace a little shorter, and a small patch of holy
      light left where he stood: foes crossing it are slowed (a common foe or an elite, never a boss or a mini), a PARTNER in it mends */
   step: { t: 0.26, inv: 0.2, speed: 240 },   // s (a roll is 0.30), s of grace (a roll 0.26), px/s
-  patch: { r: 16, life: 2, slow: 0.5, heal: 0.03 },             // the patch: px either side, s, foes' pace in it (x), a partner's mend (of max health a second)
+  patch: { r: 16, life: 2, slow: 0.5, heal: 0.006 },            // (PALADIN TUNE: was 0.03) the patch: px either side, s, foes' pace in it (x), a partner's mend (of max health a second)
   /* PRAYER (crouch, Daniel 10-15 ~17:20): kneel anywhere; after settle s still, +1 pip every 'every' s (x holyMul at a holy light: src/crouch-b.js HOLY) */
   pray: { settle: 0.6, every: 2.5, holyMul: 3 },
   /* DAWNFALL (the plunge, Daniel 10-15 ~17:30, replaces HAMMER OF DAWN): the landing plants a PILLAR OF LIGHT - a small burst round it (damage + a common foe
@@ -110,7 +110,7 @@ export function makeHolyGround(api) {
         continue; }
       if (c.tick <= 0) { c.tick = HG.tick;
         for (const t of api.targets(c)) if (inside(c, { x: t.x, y: t.y })) { const d = Math.max(1, Math.round(HG.burn * c.burnMul)); stats.burns++; stats.burnDmg += d; api.hurt(t, d, c); } }
-      for (const b of api.healers(c)) if (inside(c, b) && api.heal) { const n = (b === c.owner ? 1 : 0.5) * HG.heal * dt; stats.healed += n; api.heal(b, n, c); }
+      for (const b of api.healers(c)) if (inside(c, b) && api.heal) { const own = b === c.owner; if (own && !c.aura) continue; const n = (own ? 1 : 0.5) * HG.heal * dt; stats.healed += n; api.heal(b, n, c); }
       if (api.parts && Math.random() < dt * (c.emp ? 26 : 14)) api.parts({ x: c.x + (Math.random() - 0.5) * c.r * 2, y: c.y - 1, vx: 0, vy: -24 - Math.random() * 20, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#fff6c8' : '#ffd36b', size: 1, grav: -6, glow: true }); }
     circles = circles.filter(c => !c.out);
   }

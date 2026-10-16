@@ -1334,7 +1334,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "SANCTUARY",
     "max": 1,
-    "desc": "while you hold the aegis you mend, 3 health a second",
+    "desc": "while you hold the aegis you mend, a little over half a health a second",
     "parent": "retribution",
     "active": false,
     "cap": false,
