@@ -67,7 +67,7 @@ export const HP = {
   },
   pyro: { blink: { t: 0.16, inv: 0.12, speed: 375, hide: [0.03, 0.13] } },
   pirate: { flash: { r: 46, dazzle: 0.6, elite: 0.3, boss: 0.12 } },
-  reaper: { step: { t: 0.2, speed: 350 } },
+  reaper: { step: { t: 0.2, inv: 0.14, speed: 350 } },
   geomancer: { shrug: { t: 0.4 } },
   warden: { hop: { lift: 5 }, plant: { st: 10, life: 2.2, w: 14, reach: 8, cd: 0.3 }, counter: { to: 34 } },
 };
@@ -87,7 +87,7 @@ export function makeHeroPass(api) {
 
   /* ---- THE DODGE (main.js dodge block, after the shared set-up and before trialEvent('dodge')): the hero's own, on the ground ---- */
   function start(dir, air, back, burrow, face0) {
-    const p = P(), h = H(); p.kStepG = 0; p.wHopT = 0; p.blinkT = 0; p.shrugT = 0;
+    const p = P(), h = H(); p.kStepG = 0; p.wHopT = 0; p.blinkT = 0; p.shrugT = 0; p.ownDodge = h !== 'warden';
     if (h === 'paladin' || h === 'ranger' || p.swim) return;   /* (PALADIN 4's SANCTUARY STEP is his branch in main.js; the Ranger's backflip is hers) */
     if (h === 'geomancer') { if (!air) return;   /* on the floor: THE BURROW */
       const S = HP.geomancer.shrug; p.dodge = p.dodgeMax = S.t; p.dodgeInv = 0; p.dash = 0; p.dashDur = 0; p.shrugT = S.t; p.vx *= 0.25; stats.shrugs++;
@@ -103,7 +103,7 @@ export function makeHeroPass(api) {
       p.blinkT = S.t; p.blinkX0 = p.x; stats.blinks++; api.kitPose(p, 'eBlink', S.t);
       api.burst(p.x, p.y - 10, 10, ['#fff6c8', '#ffd36b', '#ff9a5c'], 80, 0.3, -40, 1); api.ringAt(p.x, p.y - 10, 10, '#ffd36b', 0.18); return; }
     if (h === 'pirate') { powderFlash(p, face0); return; }
-    if (h === 'reaper') { const S = HP.reaper.step; p.dodge = p.dodgeMax = S.t; p.dodgeInv = Math.min(S.t, api.CM.STAM.rollInv); p.vx = dir * S.speed; p.dash = p.dodge; p.dashDur = p.dash;
+    if (h === 'reaper') { const S = HP.reaper.step; p.dodge = p.dodgeMax = S.t; p.dodgeInv = Math.min(S.inv, api.CM.STAM.rollInv); if (p.inv > S.inv && p.inv <= api.CM.STAM.rollInv + 1e-6) p.inv = S.inv;   /* (his roll's P.inv becomes the step's own grace: its tail is hittable, the wake takes the rest) */ p.vx = dir * S.speed; p.dash = p.dodge; p.dashDur = p.dash;
       stats.shadows++; api.kitPose(p, 'shadowStep', S.t); return; }
     if (h === 'berserker') { stats.barges++; api.kitPose(p, 'bzBarge', p.dodge); api.number(p.x, p.y - 26, 'BARGE', '#ff9a5c'); return; }
   }
