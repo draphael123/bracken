@@ -105,7 +105,7 @@ async function clearContexts(port) {
   } finally { ws.close(); }
 }
 
-export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
+export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone = () => {} }) {
   const answer = new Map(rows.filter(r => 'ok' in r).map(r => [r.name, r]));
   const time = JSON.parse(readFileSync(join(ROOT, 'tools/check-timings.json'), 'utf8'));
   /* A few tools use their own CDP driver and must keep their own browser/profile. Run them after the shared browsers
@@ -144,7 +144,7 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
       }
       if (!busy.size) break;
       const { slot, result } = await Promise.race(busy.values()); busy.delete(slot); free.push(slot); free.sort((a, b) => a - b);
-      answer.set(result.name, result);
+      answer.set(result.name, result); onDone(result);
     }
     for (const b of shared.values()) await b.run.close(); shared.clear();
     for (const job of tail) {
@@ -153,7 +153,7 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor }) {
          browser lifecycle, while the rest of the pool still reuses Chrome where that answer stays stable. */
       for (const b of shared.values()) await b.run.close(); shared.clear();
       if (job.name === 'profile-cleanup') await stopServers();
-      answer.set(job.name, await launch(job, 0));
+      const tr = await launch(job, 0); answer.set(job.name, tr); onDone(tr);
     }
   } finally { for (const b of shared.values()) await b.run.close(); await stopServers(); }
   return rows.map(r => answer.get(r.name));

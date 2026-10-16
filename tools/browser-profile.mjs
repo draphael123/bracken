@@ -86,6 +86,11 @@ export function launchBrowser(exe, args, kind = 'look') {
   const prof = mkdtempSync(join(TEMP, 'bracken-' + kind + '-' + (tag ? tag + '-' : '')));
   let child;
   args = args.map(a => a === '--remote-debugging-port=auto' ? '--remote-debugging-port=0' : a);
+  /* A RENDERER JS HEAP CAP (10-16: one test renderer reached 8.8 GB, the 16 GB PC hung and the watchdog reset it). --js-flags reaches every renderer, so
+     a page that leaks JS objects now throws "out of memory" in-page, loudly and by name, instead of eating the machine. BRACKEN_HEAP_MB overrides
+     (0 = no cap); a tool that passes its own --js-flags keeps it. Native memory (canvas backing, GPU, ArrayBuffers) is outside V8's heap and not capped. */
+  const heapMb = process.env.BRACKEN_HEAP_MB === undefined ? 2048 : +process.env.BRACKEN_HEAP_MB;
+  if (heapMb > 0 && !args.some(a => /^--js-flags/.test(a))) args = [...args, '--js-flags=--max-old-space-size=' + heapMb];
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }
   let exited = false; const gone = new Promise(r => { child.once('exit', () => { exited = true; r(); }); child.once('error', () => { exited = true; r(); }); });

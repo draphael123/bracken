@@ -169,7 +169,8 @@
 //   deploy-surface .vercelignore hides tools/ docs/ work/ audits/ src/benched and keeps everything the game loads (docs/updates.json, tools/fixtures/campaign-xp.json, src/draft)
 // The labs (fight and boss) need the page: run BK.bossLab() in the browser after a combat change.
 import { execSync, spawn, spawnSync } from 'child_process';
-import { readFileSync, readdirSync, statSync } from 'fs';
+import { readFileSync, readdirSync, statSync, unlinkSync } from 'fs';
+import { tmpdir } from 'os';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -203,10 +204,27 @@ if (SHARD) for (const [name, ms] of Object.entries(timings).sort((a, b) => b[1] 
 const belongs = name => !SHARD || (assigned.has(name) ? assigned.get(name) === SHARD[0]
   : [...name].reduce((h, c) => (Math.imul(h, 33) + c.charCodeAt(0)) >>> 0, 5381) % SHARD[1] + 1 === SHARD[0]);
 let skipped = 0; const take = name => { const y = wanted(name) && belongs(name); if (!y) skipped++; return y; };
+/* LIVE LOG (10-16, after a runaway browser took the PC down and the end-of-run summary could not say which check did it): one line per check
+   AS IT FINISHES, flushed at once, with the peak working set of this run's test browsers while it ran. The lines start with '[live]', never
+   ' ok' or 'FAIL', so scratch/release.sh's greps of the summary below are untouched. Peak = sampled every 3 s by tools/rss-sampler.ps1
+   (Windows); parallel hands overlap, so there it is the peak while the check ran, not the check's alone. */
+const RSS_FILE = join(tmpdir(), 'bracken-rss-' + process.pid + '.txt');
+let sampler = null;
+const startSampler = () => { if (process.platform !== 'win32' || sampler) return;
+  try { sampler = spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(ROOT, 'tools/rss-sampler.ps1'), '-Out', RSS_FILE, '-Tag', process.env.BRACKEN_RUN, '-ParentPid', String(process.pid)], { stdio: 'ignore', windowsHide: true });
+    sampler.on('error', () => { sampler = null; });
+    process.on('exit', () => { try { if (sampler && sampler.pid) spawnSync('taskkill', ['/PID', String(sampler.pid), '/T', '/F'], { stdio: 'ignore' }); } catch {} try { unlinkSync(RSS_FILE); } catch {} }); } catch { sampler = null; } };
+const PEAKS = new Map();
+const peakBetween = (t0, t1) => { let tot = 0, max = 0, any = false;
+  try { for (const line of readFileSync(RSS_FILE, 'utf8').split(String.fromCharCode(10))) { const [t, a, b] = line.split(' ').map(Number); if (t >= t0 - 3500 && t <= t1 + 500) { any = true; tot = Math.max(tot, a || 0); max = Math.max(max, b || 0); } } } catch {}
+  return any ? { tot, max } : null; };
+const live = (name, ok, ms) => { const t1 = Date.now(), pk = peakBetween(t1 - ms, t1); PEAKS.set(name, pk);
+  console.log('[live] ' + (ok ? 'ok  ' : 'FAIL') + ' ' + name + ' ' + (ms / 1000).toFixed(1) + 's' + (pk ? ' peak-rss total=' + pk.tot + 'MB biggest-process=' + pk.max + 'MB' : ' peak-rss n/a')); };
 const runSync = (name, cmd, args, env) => {
   const t0 = Date.now(), r = spawnSync(cmd, args, { cwd: ROOT, encoding: 'utf8', env: env ? { ...process.env, ...env } : process.env });
   const out = ((r.stdout || '') + (r.stderr || '')).trim().split('\n');
-  return { name, ok: r.status === 0, ms: Date.now() - t0, last: out[out.length - 1] || '', out };
+  const ms = Date.now() - t0; live(name, r.status === 0, ms);
+  return { name, ok: r.status === 0, ms, last: out[out.length - 1] || '', out };
 };
 const run = (name, cmd, args, env) => JOBS === 1 ? runSync(name, cmd, args, env) : { name, cmd, args, env };
 const files = [];
@@ -227,9 +245,9 @@ let results = [];
    leak check below counts only profiles wearing it - so another session's crashed browser can no longer be reported
    as this run's leak, which is exactly the false red that threw away a full run on 2026-09-22. */
 process.env.BRACKEN_RUN = process.env.BRACKEN_RUN || newRunTag();
-const SUITE_T0 = Date.now(); runSync('profile-sweep', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--run', process.env.BRACKEN_RUN]);
+const SUITE_T0 = Date.now(); startSampler(); runSync('profile-sweep', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--run', process.env.BRACKEN_RUN]);
 if ((WANT.length && !SHARD) || take('syntax')) { const t0 = Date.now(); const bad = files.map(f => [f, spawnSync(process.execPath, ['--check', f], { cwd: ROOT, encoding: 'utf8' })]).filter(([, r]) => r.status !== 0);
-  results.push({ name: 'syntax', ok: !bad.length, ms: Date.now() - t0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
+  live('syntax', !bad.length, Date.now() - t0); results.push({ name: 'syntax', ok: !bad.length, ms: Date.now() - t0, last: bad.length ? bad.map(([f]) => f).join(', ') : files.length + ' files parse', out: bad.map(([f, r]) => f + ': ' + r.stderr) }); }
 for (const t of ['tells', 'shake-mode', 'hero-trials', 'ore-road', 'ore-ride', 'scree-rework', 'village-stakes', 'comments', 'homepaths', 'dangling-paths', 'shop-gates', 'floaters', 'redgorge2-aloft', 'audit', 'content-audit', 'talents', 'progression', 'progression-runtime', 'skill-menu', 'skill-passives', 'skill-icons', 'skill-balance-probe', 'starter-kits', 'reaper-input', 'traps', 'signs', 'killzones', 'collectables', 'keys', 'elites', 'spawns', 'deadends', 'rafts', 'raft-call', 'render-layers', 'room-patterns', 'heat', 'queen-comb', 'crown-route', 'crown-requests', 'gallery-runtime', 'waterfall-joins', 'paladin-enrage', 'map-grammar', 'map-forks', 'checkpoints', 'additional-areas', 'additional-areas-runtime', 'keep', 'keep-runtime', 'keep-expansion', 'keep-passages', 'keep-expansion-runtime', 'storm-ship', 'storm-ship-runtime', 'haunted-coast', 'haunted-coast-runtime', 'tome', 'false-abbot', 'tower-ascent', 'archmage-room', 'skins', 'threat-holes', 'one-new-foe', 'folly-runtime', 'deadly-water', 'burning-village', 'witchlight', 'sea-requests', 'sea-runtime', 'shop-theme', 'store-preview', 'dressing', 'runtime-footing', 'bridge-props', 'light-support', 'readability', 'town-live', 'waymeet-cleanup', 'owl-lamps', 'belfry', 'moor-wind', 'watchtowers', 'spore-loop', 'mother-cap', 'mother-pilot', 'salvage-captain', 'harbor-expansion', 'harbor-route', 'buried-dead', 'burial-route', 'burial-geometry', 'burial-rework', 'undercrown-variety', 'boss-openings', 'arena-supplies', 'undead-foes', 'buried-attacks', 'combat-feel', 'attack-animation', 'attack-buffer', 'normal-health', 'ambush-single', 'reed-island', 'lab-clock', 'combat-replay', 'combat-results-test', 'king-refill', 'pilot-actions', 'pyre-pilot', 'herald-pirate', 'boss-navigation', 'cdp-recovery', 'swim-chain', 'temperer', 'unburied', 'unburied-fights', 'ability-poses', 'knight-rework', 'riposte', 'crouch-hint', 'knock-into', 'order-knights', 'riposte-shots', 'levelling', 'levelling-runtime', 'leveling', 'boss-fight-end', 'geomancer', 'berserker', 'ranger', 'dk2', 'burial-variety', 'buried-dead-art', 'mini-names', 'slopes', 'one-dodge', 'queen-chandelier', 'ambush-reach', 'small-adds', 'occluders', 'swim-shrines', 'ground-depth', 'hanging-hoist', 'checkpoint-gaps', 'dune-worm', 'architecture', 'gob-priest', 'ore-work', 'spore-caps', 'bells', 'moor-gusts', 'tower-collapse', 'sexton', 'lance-support', 'footing-art', 'reefmaw-land', 'buriedcity-exit', 'reefmaw-art', 'reef-hulk', 'drowned-knights', 'whirlpools', 'keep-rework', 'deep-rework', 'deep-descent', 'longwater-river', 'bandits', 'class-spurs', 'mini-walls', 'checkpoint-stand', 'tower-cutouts', 'archmage-rings', 'kraken-rework', 'uphill', 'desert-ledge-art', 'gargoyle-smash', 'deathknight-unlock', 'camera-fill', 'lab-reach', 'burial2', 'burial-vents', 'whelps', 'npc-removal', 'relics', 'gargoyle-stomp', 'burial3', 'burial3-keys', 'zoom-coverage', 'tower-hall', 'tower-flyers', 'gate-alpha', 'ram-bank', 'stormhold2', 'audio-assets', 'marsh-exam', 'spore-exam', 'stockade-horns', 'gargoyle-playtest', 'answer-tags', 'attack-tokens', 'untold-told', 'foe-tactics', 'finishers', 'pogo-chain', 'hanging-exam', 'monastery3-beats', 'kings2-beats', 'wood2-beats', 'ore-exam', 'ambush-listed', 'courtyard', 'throwables', 'pyro-duel', 'push-blocks', 'crown-exam', 'boss-jump', 'archmage-folly', 'tower-chase', 'dances', 'firsthour', 'death-cost', 'sprinkle-cap', 'juice', 'folly-library', 'undead-realms', 'undead-moves', 'duck', 'chase', 'harvest-fair', 'wicker-queen', 'ember-flare', 'queen-court', 'crouch-b', 'settings-tabs', 'crouch-a', 'hint-shown', 'weak-bosses', 'crouch-feet', 'store-ui', 'store', 'loading-screen', 'boss-music', 'level-quality', 'theatre', 'level-jump', 'puppeteer', 'frame-cost', 'slide', 'canal', 'boss-greed', 'foe-tempo', 'verb-matrix', 'mash-gate', 'floating-geometry', 'goblin-lint', 'canal-water', 'map-spacing', 'save-slots', 'weapon-skins', 'welltown', 'djinn', 'djinn-pail', 'cistern-queen', 'redgorge', 'raptor-matriarch', 'touch', 'corpses', 'modulepreload', 'mobile-perf', 'gorge-basket', 'desert-foes2', 'stuck', 'ambient-landmarks', 'mash-carry', 'commitment', 'unburied-look', 'unburied-engines', 'steam-works', 'combat-part2', 'curve-gate', 'unburied-aloft', 'unburied-bailey', 'fair-folk', 'wicker-man', 'moor-rocks', 'moor-aloft', 'rule-openings', 'underwell', 'underwell-aloft', 'gear-tiers', 'ui-hud', 'uiscreens', 'death-screen', 'level-complete', 'playrec', 'canal-aloft', 'skyroad', 'skyroad-probe', 'skyroad-aloft', 'boss-read', 'glasssea', 'glasssea-aloft', 'glasssea-slide', 'level-walk-selftest', 'ksar-aloft', 'ksar', 'sun-floor', 'lantern-eater', 'level-reach', 'rootway', 'rootway-probe', 'rootway-aloft', 'caravan', 'caravan-level', 'caravan-slides', 'caravan-worms', 'minecart', 'minecart-aloft', 'railsparallax', 'mark-integrity', 'gate-openers', 'great-hound', 'godmode', 'skyroad-stuck', 'village-water', 'blow-tags', 'firedrop-plunge', 'lit-church-aloft', 'lit-church', 'towpath', 'scree-chase', 'ram-lord', 'zipline', 'owl-swoop', 'temple-guardian', 'monk-machines', 'solid-islands', 'no-hidden-hits', 'unburied-secret', 'fonts', 'hud-default', 'map-scale', 'flasks2', 'titlescene', 'reach-heroes', 'gargoyle-spikes', 'flip-actions', 'windcaller-gusts', 'kraken-reach', 'buried-city', 'buried-city-levers', 'survival', 'fire-room', 'archmage-interrupt', 'fallingtower2', 'fallingtower2-keys', 'walk-controls', 'whatsnew', 'ki-follow', 'damage-pct', 'damage-caps', 'online-coop', 'drawn-solids', 'minecart-route', 'save-safety', 'bug-report', 'ending', 'ship-fixes', 'deploy-surface', 'sealed-pyramid', 'hero-roster', 'hero-pass']) if (take(t)) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
 /* THE LAB DOES NOT REMEMBER THE FIGHT BEFORE (claude/harness): a seeded bossLab row is the same alone and after a batch in one page (tools/lab-order.mjs) */
 /* Whole-game geometry inventory while the art lanes clear the backlog. The existing Buried City drawn-solids gate above
@@ -259,6 +277,7 @@ if ((!WANT.length || WANT.includes('textfit-full')) && take('textfit-full')) {
   if (JOBS > 1) results.push({ name: 'textfit-full', cmd: process.execPath, args: ['tools/textfit.mjs', '--strict'], env: { PORT: String(portFor(5)) }, timeout: 600000 });
   else { const t0 = Date.now(), r = spawnSync(process.execPath, ['tools/textfit.mjs', '--strict'], { cwd: ROOT, encoding: 'utf8', timeout: 600000, env: { ...process.env, PORT: String(portFor(5)) } });
     const out = ((r.stdout || '') + (r.stderr || '')).trim().split(String.fromCharCode(10)), timedOut = r.error && r.error.code === 'ETIMEDOUT';
+    live('textfit-full', r.status === 0 && !timedOut, Date.now() - t0);
     results.push({ name: 'textfit-full', ok: r.status === 0 && !timedOut, ms: Date.now() - t0, last: timedOut ? 'TIMED OUT after 10 min' : out[out.length - 1] || '', out }); }
 } else if (WANT.length && !WANT.includes('textfit-full')) skipped++;
 /* THE SOUND TEST'S LOCK, in the page (docs: a song unlocks on being heard in play, never by browsing the menu itself;
@@ -272,7 +291,7 @@ if (take('canal-tunnel-route')) results.push(run('canal-tunnel-route', process.e
 if (!WANT.length && take('profile-cleanup')) results.push(run('profile-cleanup', process.execPath, ['tools/profile-cleanup.mjs']));   /* every way a tool can end leaves nothing in Temp */
 if (!WANT.length && take('profile-leaks')) results.push(run('profile-leaks', process.execPath, ['tools/profile-sweep.mjs', '--kill-orphans', '--since', String(SUITE_T0), '--run', process.env.BRACKEN_RUN, '--check']));
 
-if (JOBS > 1) results = await runPool(results, { ROOT, jobs: JOBS, maxBrowsers: MAX_BROWSERS, portFor });
+if (JOBS > 1) results = await runPool(results, { ROOT, jobs: JOBS, maxBrowsers: MAX_BROWSERS, portFor, onDone: r => live(r.name, r.ok, r.ms) });
 
 let failed = 0;
 for (const r of results) { if (!r.ok) failed++; console.log((r.ok ? ' ok  ' : 'FAIL ') + r.name.padEnd(14) + ' ' + String(r.ms).padStart(6) + 'ms  ' + r.last.slice(0, 110)); }
