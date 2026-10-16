@@ -2298,6 +2298,7 @@ function spawnEntities() {
   if (L.arena && L.arena.boss === 'queen') L.arena.comb = { rows: [], n: 0 };
   crumbleReset(L, { setSpr: (i, s) => { if (tileSpr) tileSpr[i] = s; } });   /* THE ROTTEN BRIDGES are whole again on every attempt (B4) */
   for (const v of L.gasVents || []) { v.litT = 0; v.burnt = false; } if (typeof P !== 'undefined' && P) { P.candle = 0; P.snuffed = false; } for (const pp of (players || [])) { pp.dance = 0; pp.danceCue = 0; pp.danceMax = 0; pp.idleLongT = 0; }   /* and every gas vent cold, the fire out of your hand */ whirlInit(L, marks);   /* a whirlpool whose lever was struck stays still through a death: marks keeps it */ if (L.keepCrumbles) keepCrumbleReset(); washReset(); strikeReset(); tideReset(); causeReset(); lamps = []; deathFx = []; if (typeof P !== 'undefined' && P) P.wick = 0; webs = []; shards = []; crackAt = {}; crystT = {}; enemies = []; eliteList = []; seeds = []; movers = []; corpses = []; waves = []; bombs = []; fires = []; props = []; lights = []; bridges = []; foxes = []; clouds2 = []; roots = []; shelfT = {}; mother = null; boss = null; throneBlock = null; talkTo = null; talk = null; slide = null; flood = null; burnT = {}; beams = []; meltT = {}; bossActive = false; bossWon = 0; camLock = null; impacts = []; rings = []; escape = null; thrown = null; deco = []; pwaves = []; rain = []; bolts = []; vines = []; rocks = []; glassPatches = []; miniActive = false; miniDone = false;
+  miniIntroT = 0;   /* the previous level's mini name card cannot follow a level load */
   if((L.harborSections||L.reverseTower)&&!rushOn()){miniDone=!!(PROG[LEVELS[levelIndex].id]||{}).mini;if(miniDone&&L.mini)for(let y=0;y<LH;y++){const i=y*LW+L.mini.gate;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}}
   ambushReset();
   tomeToken = newTomeToken();   /* ONE TOKEN A LEVEL: every tome on every shelf shares it, so only one is ever winding up or darting (one windup at a time) */
@@ -30915,7 +30916,11 @@ function drawWorld(cx, cy, showPlayer) {
   if (killFlash > 0 && SET.flashes && !SET.reduceMotion) { g.fillStyle = 'rgba(255,255,255,' + (killFlash * 9) + ')'; g.fillRect(0, 0, VW, VH); }
   for (const n of nums) { if (isTell(n)) { tellQ.push({ txt: n.txt, x: n.x - cx, y: n.y - cy, col: n.col, a: Math.min(1, n.life * 3) }); continue; }   /* the tells go on after everything: drawTells() */
     const nx = n.x - cx, ny = n.y - cy, nw = inkW(String(n.txt), TYPE.popup); if (nx + nw / 2 < 0 || nx - nw / 2 > VW || ny + 8 < 0 || ny > VH) continue;   /* a number off a target off the screen is not shown; one half on is kept on */
-    g.globalAlpha = Math.min(1, n.life * 3); const px = Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))); let py = Math.round(Math.max(1, Math.min(VH - 9, ny)));
+    g.globalAlpha = Math.min(1, n.life * 3); let px = Math.round(Math.max(nw / 2 + 1, Math.min(VW - nw / 2 - 1, nx))); let py = Math.round(Math.max(1, Math.min(VH - 9, ny)));
+    for (const t of tellQ) { const tw = t.txt === '!!' ? 18 : 8;
+      if (!boxHit([px - nw / 2, py, nw, 8], [t.x - tw / 2, t.y - 4, tw, 18])) continue;
+      const left = Math.floor(t.x - tw / 2 - nw / 2 - 3), right = Math.ceil(t.x + tw / 2 + nw / 2 + 3);
+      px = left >= nw / 2 + 1 ? left : right <= VW - nw / 2 - 1 ? right : px;   /* keep the number beside a windup mark, never on its answer */ }
     for (let pass = 0; pass < 3; pass++) for (const r of hudRects) if (boxHit([px - nw / 2, py, nw, 8], r)) py = r[1] + r[3] + 1;   /* a damage number never lands on the HUD plate (the -20 over LV 0 x3 in the Witchlight): it is set just under the plate, as the tells are */
     text(String(n.txt), px, Math.min(VH - 9, py), n.col, 'center', TYPE.popup, 'outline'); }
   g.globalAlpha = 1; g.__world = false;
