@@ -180,14 +180,14 @@
   "bare": true
  },
  "towpath": {
-  "hash": "8730911a0046",
+  "hash": "a494972ad32b",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 34,
-  "deaths": 10,
-  "kills": 3,
-  "lifts": 80,
+  "hits": 33,
+  "deaths": 9,
+  "kills": 5,
+  "lifts": 77,
   "walked": 100,
   "bare": true
  },
@@ -300,14 +300,14 @@
   "bare": true
  },
  "waymeet": {
-  "hash": "1cc82f1a473e",
+  "hash": "43e5775a43a4",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 41,
+  "hits": 29,
   "deaths": 9,
-  "kills": 13,
-  "lifts": 127,
+  "kills": 11,
+  "lifts": 154,
   "walked": 100,
   "bare": true
  },
