@@ -7,7 +7,7 @@ import { join } from 'path';
 import { LEVELS, T } from '../src/level.js';
 import { islandsOf } from '../src/island-posts.js';
 const id = process.argv[2]; let pts = process.argv.slice(3).map(s => s.split(',').map(Number));
-const out = join(ROOT, 'work/claude/screefix'); mkdirSync(out, { recursive: true });
+const out = join(ROOT, process.env.OUT || 'work/claude/screefix'); mkdirSync(out, { recursive: true });
 if (!pts.length) { const L = LEVELS.find(l => l.id === id).build(); const is = islandsOf(L, T).sort((a, b) => a.x0 - b.x0); const n = 6;
   for (let i = 0; i < n; i++) { const s = is[Math.floor((i + 0.5) * is.length / n)]; pts.push([(s.x0 + s.x1) >> 1, s.y0 - 2]); } }
 const pg = await openPage({ audio: false });
@@ -15,7 +15,7 @@ try {
   const r = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const res = [];
     BK.manualSimulation = true; BK.SET.hud = 'minimal'; BK.setHero('knight'); BK.reset({ fresh: true });
     const fi = LEVELS.findIndex(l => l.id === ${JSON.stringify(id)}); BK.load(fi); BK.state = 'play'; BK.god = true; BK.sim(420); for (const e of BK.enemies()) e.alive = false;
-    const snap = (name) => { const c = document.createElement('canvas'); c.width = BK.view.VW * 2; c.height = BK.view.VH * 2; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
+    const snap = (name) => { const c = document.createElement('canvas'); const SC = ${+(process.env.SCALE || 2)}; c.width = BK.view.VW * SC; c.height = BK.view.VH * SC; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, c.width, c.height); res.push([name, c.toDataURL('image/png')]); };
     const run = n => { for (let i = 0; i < n; i++) { BK.P.hp = BK.P.maxHp; BK.sim(1); if (i % 4 === 0) BK.step(1); } BK.step(1); };
     const P = ${JSON.stringify(pts)}; P.forEach(([x, y], i) => { BK.tp(x, y); run(14); BK.sim(120); BK.look(x, y); snap(${JSON.stringify(id)} + '-' + (i + 1) + '-' + x + '_' + y); });
     return res; })()`, 900000);
