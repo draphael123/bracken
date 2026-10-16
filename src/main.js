@@ -1369,6 +1369,7 @@ function resolveTiles() {
     for (let y = 1; y < LH - 1; y++) for (let x = 1; x < LW - 1; x++) { const t = tileAt(x, y), below = tileAt(x, y + 1);
       if ((isSolid(x, y) || isOneWay(t)) && below === T.AIR && R2() < 0.5) { const ow = isOneWay(t) && t !== T.CRYST, n = 1 + ((R2() * 2) | 0); for (let k = 0; k < n; k++) decor.push({ k: 'icicle', x: x * TS + 1 + ((R2() * 9) | 0), y: y * TS + (ow ? 7 : TS) - 1, c: PROP.icicle[(R2() * 3) | 0] }); }
       if (isSolid(x, y) && tileAt(x, y - 1) === T.AIR && R2() < 0.07) decor.push({ k: 'frost', x: x * TS + ((R2() * 6) | 0), y: y * TS - 7, c: PROP.frost[(R2() * 2) | 0] }); } }
+  if (L.ucKit) UCA.dress(decor, L, tileAt, T);   /* THE UNDERCROWN's dressing (claude/undercrown2art): rubble, puddles, bones, picks, crystal, webs, chains - static sprites */
   for (const A of [L.arena, L.mini]) if (A) for (let i = decor.length - 1; i >= 0; i--) { const d = decor[i]; if (BULKY.has(d.k) && d.x > A.x0 - TS && d.x < A.x1 + TS) { decor.splice(i, 1); if (d.fire) for (let j = lights.length - 1; j >= 0; j--) if (lights[j].x === d.x + 7 && lights[j].y === d.y + 8) lights.splice(j, 1); } }
 }
 
@@ -17839,7 +17840,7 @@ function courtierDig(e, dt) {
 function princeFrame(e) { const F = PRINCE_F, m = e.mode, mv = Math.abs(e.vx) > 8, step = Math.floor(e.anim * 5);
   if (m === 'wake') return e.modeT > 1.0 ? F.sunk : F.rise;
   const pose = { cutTell: F.cutTell, cut: F.cut, sinkTell: F.sinkTell, sunk: F.sunk, rise: F.rise, callTell: F.callTell, call: F.call, crownTell: F.crownTell,
-    crownThrow: F.crownThrow, heaveTell: F.sinkTell, snuffTell: F.snuffTell, snuff: F.snuff, buried: F.buried, reel: F.reel }[m];
+    crownThrow: F.crownThrow, heaveTell: F.heave, snuffTell: F.snuffTell, snuff: F.snuff, buried: F.buried, reel: F.reel }[m];
   if (pose !== undefined) return pose;
   if (e.bare > 0) return mv ? F.bareWalk[step % 2] : F.bareIdle;
   return mv ? F.walk[step % 3] : (Math.floor(e.anim * 0.8) % 2 ? F.idleB : F.idle); }

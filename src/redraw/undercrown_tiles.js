@@ -122,7 +122,7 @@ function ceilTile(zone, x, y, eL, eR) {
       rect(g, 0, 13, 16, 3, Z.s[1]); rect(g, 0, 12, 16, 1, Z.s[4]); rect(g, 0, 15, 16, 1, Z.joint);
       if ((x + 1) % 4 === 0) { rect(g, 5, 8, 6, 7, Z.s[3]); rect(g, 5, 8, 6, 1, Z.s[5]); rect(g, 5, 14, 6, 1, Z.joint); rect(g, 7, 9, 2, 5, Z.s[2]); } }
     else {   /* rock: stalactite teeth and a wet bead on each */
-      for (let k = 0; k < 6; k++) { const nx = (r() * 15) | 0, nl = 1 + ((r() * 4) | 0); rect(g, nx, 15 - nl, 1, nl, Z.s[3]); px2(g, nx, 15, Z.s[0]); if (zone === 1 || zone === 2) px2(g, nx, 15 - nl, Z.moss[2]); }
+      for (let k = 0; k < 6; k++) { const nx = (r() * 15) | 0, nl = 1 + ((r() * 4) | 0); rect(g, nx, 15 - nl, 1, nl, Z.s[3]); px2(g, nx, 15, Z.s[0]); }
       rect(g, 0, 15, 16, 1, Z.s[0]); }
     /* TIMBER LAGGING under the roof of a working: three boards across, the grain along them, a nail in each (zones 0 and 3, a third of the tiles) */
     if ((zone === 0 || zone === 3) && ((hash(x >> 2, y) % 3) === 0)) {

@@ -101,28 +101,34 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY, VW, V
     return true; }
   const zone = zoneOf(tx0 + ((w / TS / 2) | 0), ty0 + ((h / TS / 2) | 0)), ossuary = st === 'ossuary', tomb = ty0 >= 143, big = h >= 20 * TS;
   wallFill(g, ossuary ? 3 : tomb ? 4 : zone, true, 0, 0, w, h, wx0, wy0);
-  const hh = (time || 0);
+  const hh = (time || 0), vx0 = camX - wx0 - 80, vx1 = vx0 + VW + 160, vy0 = camY - wy0 - 80, vy1 = vy0 + VH + 160;   /* what of this room is on the screen, in its own coordinates: nothing off it is drawn */
+  if (vy1 < 0 || vy0 > h || vx1 < 0 || vx0 > w) return true;
   /* THE BACK WALL BY PLACE */
+  if (tx0 === 54 && ty0 === 132) {   /* THE PRINCE'S TITHE: a vault nobody walled up - royal ashlar, a gold band, shelves of the tribute he was owed, a crown cut over them */
+    const Z = ZONE[4]; wallFill(g, 4, true, 0, 0, w, h, wx0, wy0); rc(g, 0, 9, w, 3, Z.acc); g.globalAlpha = 0.45; rc(g, 0, 9, w, 3, Z.s[2]); g.globalAlpha = 1;
+    for (let x = 12; x < w - 20; x += 30) { rc(g, x, h - 30, 22, 2, Z.s[5]); rc(g, x, h - 28, 22, 1, Z.joint); for (let k = 0; k < 4; k++) { rc(g, x + 2 + k * 5, h - 34 - (k % 2) * 2, 4, 4 + (k % 2) * 2, '#c9a040'); rc(g, x + 2 + k * 5, h - 34 - (k % 2) * 2, 4, 1, '#ffe08a'); } }
+    const mx = (w / 2) | 0; rc(g, mx - 11, 20, 22, 4, Z.acc); for (const dx of [-11, -4, 3, 10]) rc(g, mx + dx, 14, 3, 7, Z.acc); rc(g, mx - 11, 24, 22, 1, Z.joint);
+    return true; }
   if (tomb) {   /* THE PRINCE'S VAULT: an arcade of dark pillars every 8 tiles, the royal frieze between, the throne alcove behind the middle slab */
-    for (let x = 0; x < w; x += 8 * TS) tombPillar(g, x + 2 * TS, 6, h - 6 - 0);
+    for (let x = 0; x < w; x += 8 * TS) if (x + 2 * TS + 30 > vx0 && x + 2 * TS < vx1) tombPillar(g, x + 2 * TS, 6, h - 6 - 0);
     const Z = ZONE[4]; rc(g, 0, 22, w, 3, Z.acc); g.globalAlpha = 0.5; rc(g, 0, 22, w, 3, Z.s[2]); g.globalAlpha = 1; rc(g, 0, 25, w, 1, Z.joint);
-    for (let x = 4 * TS; x < w; x += 8 * TS) { /* a recessed alcove between pillars: a dark arch with a carved lintel */ const ax = x + 2, aw = 5 * TS - 4; rc(g, ax, 32, aw, h - 38, '#07050c'); rc(g, ax, 32, aw, 2, Z.s[4]); g.globalAlpha = 0.5; rc(g, ax, 34, aw, 24, '#000'); g.globalAlpha = 1;
+    for (let x = 4 * TS; x < w; x += 8 * TS) { if (x + 5 * TS < vx0 || x > vx1) continue; /* a recessed alcove between pillars: a dark arch with a carved lintel */ const ax = x + 2, aw = 5 * TS - 4; rc(g, ax, 32, aw, h - 38, '#07050c'); rc(g, ax, 32, aw, 2, Z.s[4]); g.globalAlpha = 0.5; rc(g, ax, 34, aw, 24, '#000'); g.globalAlpha = 1;
       for (let k = 0; k < aw - 4; k += 8) rc(g, ax + 2 + k, 28, 4, 3, Z.acc);
       rc(g, ax, 32, 3, h - 38, Z.s[3]); rc(g, ax + aw - 3, 32, 3, h - 38, Z.s[0]); }
     return true; }
   if (st === 'crystal') {   /* THE GLITTER VEIN: violet rock with the glass running through it - great crystal clusters standing out of the wall, the lit ones breathing */
-    for (let x = 4; x < w; x += 7 * TS) { const gx = Math.floor((wx0 + x) / (7 * TS)), hv = hash(gx, 21), cxp = x + (hv % 40), up = hv % 2 === 0, base = up ? h - 2 : 2, n = 3 + (hv % 3);
+    for (let x = 4; x < w; x += 7 * TS) { if (x + 80 < vx0 || x - 20 > vx1) continue; const gx = Math.floor((wx0 + x) / (7 * TS)), hv = hash(gx, 21), cxp = x + (hv % 40), up = hv % 2 === 0, base = up ? h - 2 : 2, n = 3 + (hv % 3);
       for (let k = 0; k < n; k++) { const kh = 22 + ((hv >> (k * 3)) % 30), kw = 5 + (k % 2) * 2, bx = cxp + (k - n / 2) * 7, tip = up ? base - kh : base + kh, d = up ? 1 : -1; g.fillStyle = '#2c2250'; g.beginPath(); g.moveTo(bx - kw, base); g.lineTo(bx, tip); g.lineTo(bx + kw, base); g.closePath(); g.fill(); g.fillStyle = '#7c6cb8'; g.beginPath(); g.moveTo(bx - kw, base); g.lineTo(bx, tip); g.lineTo(bx, base); g.closePath(); g.fill(); g.fillStyle = '#d8d0ff'; g.fillRect(bx - 1, tip + (d > 0 ? 1 : -3), 1, 3); }
       const tw = 0.5 + 0.5 * Math.sin(hh * 2.2 + gx); g.globalAlpha = 0.25 * tw; g.fillStyle = '#b0a0ff'; g.beginPath(); g.arc(cxp, up ? h - 30 : 30, 26, 0, 7); g.fill(); g.globalAlpha = 1; }
     return true; }
   if (ossuary) {   /* THE BARROW: rows of niches, three high, with the bodies in them */
-    for (let row = 0; row < 3; row++) for (let x = 6; x < w - 24; x += 34) { const gx = Math.floor((wx0 + x) / 34), v = hash(gx, row) % 3; niche(g, x, h - 50 - row * 19, 3, v); }   /* counted up from the floor: the view hangs low in this room */
+    for (let row = 0; row < 3; row++) for (let x = 6; x < w - 24; x += 34) { if (x + 26 < vx0 || x > vx1) continue; const gx = Math.floor((wx0 + x) / 34), v = hash(gx, row) % 3; niche(g, x, h - 50 - row * 19, 3, v); }   /* counted up from the floor: the view hangs low in this room */
     return true; }
   if (zone === 0) {   /* THE FOOTINGS: bays of pier and rib, lagged timber ribs at the third points */
     const first = Math.floor((wx0 - 60) / BAY) - 1, last = Math.floor((wx0 + w + 60) / BAY) + 1;
-    for (let b = first; b <= last; b++) { const wxp = b * BAY + 3 * TS, lx = wxp - wx0; if (lx > w + 20 || lx < -80) continue; pier(g, lx, 0, h, 0, true); if (lx + BAY > -20) rib(g, lx + 48, lx + BAY, 0, 0); }
+    for (let b = first; b <= last; b++) { const wxp = b * BAY + 3 * TS, lx = wxp - wx0; if (lx > vx1 || lx + BAY < vx0) continue; if (lx + 60 > vx0 && lx < vx1) pier(g, lx, 0, h, 0, true); if (lx + BAY > -20) rib(g, lx + 48, lx + BAY, 0, 0); }
     /* timber ribs of the working between the piers: a squared set every 7 tiles with a cap */
-    for (let b = Math.floor(wx0 / (7 * TS)) - 1; b <= Math.floor((wx0 + w) / (7 * TS)) + 1; b++) { const lx = b * 7 * TS - wx0 + 2 * TS; if (hash(b, 4) % 3 === 0) continue; if (Math.abs(((b * 7 * TS + 2 * TS) % BAY) - 3 * TS) < 70) continue; const wood = ['#0c0804', '#241608', '#3e2a14', '#5a3e20']; rc(g, lx, 0, 6, h, wood[1]); rc(g, lx, 0, 1, h, wood[3]); rc(g, lx + 5, 0, 1, h, wood[0]); rc(g, lx - 4, 0, 14, 5, wood[2]); rc(g, lx - 4, 0, 14, 1, wood[3]); }
+    for (let b = Math.floor(wx0 / (7 * TS)) - 1; b <= Math.floor((wx0 + w) / (7 * TS)) + 1; b++) { const lx = b * 7 * TS - wx0 + 2 * TS; if (lx < vx0 - 20 || lx > vx1) continue; if (hash(b, 4) % 3 === 0) continue; if (Math.abs(((b * 7 * TS + 2 * TS) % BAY) - 3 * TS) < 70) continue; const wood = ['#0c0804', '#241608', '#3e2a14', '#5a3e20']; rc(g, lx, 0, 6, h, wood[1]); rc(g, lx, 0, 1, h, wood[3]); rc(g, lx + 5, 0, 1, h, wood[0]); rc(g, lx - 4, 0, 14, 5, wood[2]); rc(g, lx - 4, 0, 14, 1, wood[3]); }
     return true; }
   if (zone === 1 || zone === 3 || zone === 2) {
     if (big) {   /* THE GREAT STOPE: the castle's foundation hangs over the void - stepped inverted piers, chains, the cellar's own beams through the stone */
@@ -130,15 +136,15 @@ export function paintRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY, VW, V
       for (let i = 0; i < 4; i++) { const w2 = 26 * TS - i * 6 * TS, x0 = ((w - w2) / 2) | 0; rc(g, x0, i * 12, w2, 14, Z.s[2]); rc(g, x0, i * 12, w2, 2, Z.s[5]); rc(g, x0, i * 12 + 12, w2, 2, Z.joint);
         for (let x = 8; x < w2; x += 26) rc(g, x0 + x, i * 12 + 2, 1, 10, Z.joint); }
       /* inverted piers hanging from the course: pointed like a plumb-bob */
-      for (let x = 2 * TS; x < w - 2 * TS; x += 11 * TS + (hash(x, 9) % 20)) { const len = 60 + (hash(x, 3) % 70); for (let y = 0; y < len; y++) { const half = Math.max(2, Math.round(16 * (1 - y / len))); rc(g, x - half, 46 + y, half * 2, 1, y % 12 === 0 ? Z.joint : Z.s[y < 3 ? 5 : 2]); rc(g, x - half, 46 + y, 2, 1, Z.s[4]); } rc(g, x - 1, 46 + len, 2, 6, '#3a3a42'); }
+      for (let x = 2 * TS; x < w - 2 * TS; x += 11 * TS + (hash(x, 9) % 20)) { if (x + 20 < vx0 || x - 20 > vx1 || vy1 < 46 || vy0 > 190) continue; const len = 60 + (hash(x, 3) % 70); for (let y = 0; y < len; y++) { const half = Math.max(2, Math.round(16 * (1 - y / len))); rc(g, x - half, 46 + y, half * 2, 1, y % 12 === 0 ? Z.joint : Z.s[y < 3 ? 5 : 2]); rc(g, x - half, 46 + y, 2, 1, Z.s[4]); } rc(g, x - 1, 46 + len, 2, 6, '#3a3a42'); }
       /* the cellar's beams through the stone, a chain with its hook, an iron tie-rod */
-      for (let x = 3 * TS; x < w - 3 * TS; x += 9 * TS) { rc(g, x, 30, 9, 3, '#3e2a14'); rc(g, x, 30, 9, 1, '#5a3e20'); rc(g, x + 11, 28, 3, 7, '#241608'); }
-      const sw = Math.sin(hh * 0.7) * 1.2; g.strokeStyle = '#5a5a66'; g.lineWidth = 1; for (let x = 6 * TS; x < w - 4 * TS; x += 17 * TS) { g.beginPath(); g.moveTo(x, 40); g.lineTo(x + sw, 120 + (hash(x, 1) % 40)); g.stroke(); for (let y = 44; y < 110; y += 5) rc(g, x + sw * (y - 40) / 80 - 1, y, 3, 2, '#7a7a88'); }
+      for (let x = 3 * TS; x < w - 3 * TS; x += 9 * TS) { if (x + 20 < vx0 || x > vx1) continue; rc(g, x, 30, 9, 3, '#3e2a14'); rc(g, x, 30, 9, 1, '#5a3e20'); rc(g, x + 11, 28, 3, 7, '#241608'); }
+      const sw = Math.sin(hh * 0.7) * 1.2; g.strokeStyle = '#5a5a66'; g.lineWidth = 1; for (let x = 6 * TS; x < w - 4 * TS; x += 17 * TS) { if (x + 20 < vx0 || x - 20 > vx1) continue; g.beginPath(); g.moveTo(x, 40); g.lineTo(x + sw, 120 + (hash(x, 1) % 40)); g.stroke(); for (let y = 44; y < 110; y += 5) rc(g, x + sw * (y - 40) / 80 - 1, y, 3, 2, '#7a7a88'); }
       /* its gloom below, and the dead water's green breathing up from the bottom */
       const gr = g.createLinearGradient(0, topH, 0, h); gr.addColorStop(0, 'rgba(0,0,0,0.25)'); gr.addColorStop(1, 'rgba(20,60,10,0.12)'); g.fillStyle = gr; g.fillRect(0, topH, w, h - topH);
       void seed; return true; }
     /* a working over the dead water / the drift: cribbed timber, lamp-black */
-    for (let x = Math.floor(wx0 / (9 * TS)) - 1; x <= Math.floor((wx0 + w) / (9 * TS)) + 1; x++) { if (hash(x, 8) % 4 === 0) continue; const lx = x * 9 * TS - wx0 + 2 * TS; if (lx < -80 || lx > w + 20) continue; cribbing(g, lx, 0, 58, h, zone === 2 ? 2 : zone, x * 5 + 1); }
+    for (let x = Math.floor(wx0 / (9 * TS)) - 1; x <= Math.floor((wx0 + w) / (9 * TS)) + 1; x++) { if (hash(x, 8) % 4 === 0) continue; const lx = x * 9 * TS - wx0 + 2 * TS; if (lx + 58 < vx0 || lx > vx1) continue; cribbing(g, lx, 0, 58, h, zone === 2 ? 2 : zone, x * 5 + 1); }
     if (zone === 1) { g.globalAlpha = 0.22; rc(g, 0, h - 14, w, 14, '#1a4a10'); g.globalAlpha = 1; }   /* the low places hold the dead water's colour */
     return true; }
   return false;
@@ -285,4 +291,43 @@ export function drawShafts(g, cx, cy, VW, VH, time, at, T) {
     g.fillStyle = gr; g.beginPath(); g.moveTo(x - 2, y0); g.lineTo(x + 2, y0); g.lineTo(x + w, y1); g.lineTo(x - w, y1); g.closePath(); g.fill();
     for (let k = 0; k < 3; k++) { const t = ((time * 0.12 + k * 0.33 + (hv % 100) / 100) % 1); g.fillStyle = 'rgba(255,230,180,0.5)'; g.fillRect(R(x - w * t + k * 2), R(y0 + (y1 - y0) * t), 1, 1); } }
   g.restore();
+}
+
+/* ============================ DRESSING (static sprites in the decor list) ============================ */
+const sprite = (k, w, h, fn) => once('sp' + k, () => { const [c, g] = canvas(w, h); fn(g); return c; });
+const px3 = (g, x, y, c) => { if (x >= 0 && y >= 0) px(g, x, y, c); };
+const SPR = {
+  rubble: v => sprite('rub' + v, 14, 6, g => { const r = mulberry(v * 13 + 5); for (let i = 0; i < 5; i++) { const x = (r() * 10) | 0, w = 2 + ((r() * 3) | 0), h = 1 + ((r() * 3) | 0); rc(g, x, 6 - h, w + 1, h, '#0c0806'); rc(g, x + 1, 6 - h, w, h - 1 < 1 ? 1 : h - 1, i % 2 ? STONE[3] : STONE[4]); px3(g, x + 1, 6 - h, STONE[6]); } }),
+  puddle: v => sprite('pud' + v, 14, 3, g => { rc(g, 1, 1, 12, 1, '#10240c'); rc(g, 3, 0, 8, 1, '#1c3a10'); rc(g, 4, 2, 6, 1, '#0c1a08'); px3(g, 5, 0, '#a6e04a'); px3(g, 9, 1, '#8ac03a'); px3(g, 3, 1, '#4a7a24'); }),
+  bones: v => sprite('bon' + v, 12, 5, g => { rc(g, 1, 3, 6, 1, '#e0d4b4'); rc(g, 3, 2, 4, 1, '#bcae90'); rc(g, 8, 2, 3, 3, '#e0d4b4'); px3(g, 9, 3, '#0a0604'); px3(g, 10, 3, '#0a0604'); rc(g, 0, 4, 12, 1, '#7a6c52'); px3(g, 5, 1, '#e0d4b4'); }),
+  pick: () => sprite('pick', 10, 14, g => { rc(g, 4, 2, 2, 12, WOOD[3]); rc(g, 4, 2, 1, 12, WOOD[5]); rc(g, 1, 1, 8, 2, '#5a5a66'); rc(g, 0, 2, 2, 2, '#8a8a96'); rc(g, 8, 2, 2, 2, '#8a8a96'); rc(g, 1, 1, 8, 1, '#9a9aa8'); }),
+  offcut: v => sprite('off' + v, 14, 4, g => { rc(g, 0, 1, 14, 3, WOOD[1]); rc(g, 0, 1, 14, 1, WOOD[4]); rc(g, 0, 3, 14, 1, WOOD[0]); rc(g, 12 - v, 1, 2, 3, '#c89a58'); rc(g, 3, 0, 5, 1, WOOD[2]); }),
+  crystal: v => sprite('cry' + v, 12, 12, g => { const hs = [10, 7, 9]; for (let k = 0; k < 3; k++) { const x = 1 + k * 4, h = hs[(k + v) % 3]; g.fillStyle = '#3e3668'; g.beginPath(); g.moveTo(x, 12); g.lineTo(x + 1.5, 12 - h); g.lineTo(x + 3, 12); g.fill(); g.fillStyle = '#aa9ae4'; g.beginPath(); g.moveTo(x, 12); g.lineTo(x + 1.5, 12 - h); g.lineTo(x + 1.5, 12); g.fill(); px3(g, x + 1, 12 - h + 1, '#ffffff'); } }),
+  web: left => sprite('web' + left, 14, 14, g => { g.strokeStyle = 'rgba(200,196,184,0.55)'; g.lineWidth = 1; for (let k = 1; k <= 3; k++) { g.beginPath(); g.arc(left ? 0 : 14, 0, k * 4, left ? 0 : Math.PI / 2, left ? Math.PI / 2 : Math.PI); g.stroke(); } for (let a = 0; a <= 2; a++) { const an = (a / 2) * Math.PI / 2 + (left ? 0 : Math.PI / 2); g.beginPath(); g.moveTo(left ? 0 : 14, 0); g.lineTo((left ? 0 : 14) + Math.cos(an) * 13, Math.sin(an) * 13); g.stroke(); } }),
+  chain: n => sprite('chn' + n, 7, n * 5 + 6, g => { rc(g, 2, 0, 3, 3, '#3a3a42'); rc(g, 2, 0, 3, 1, '#8a8a96'); for (let k = 0; k < n; k++) { const y = 3 + k * 5; rc(g, 3, y, 1, 5, '#5a5a66'); rc(g, k % 2 ? 2 : 4, y + 1, 1, 3, '#7a7a88'); rc(g, 2, y + 2, 3, 1, '#8a8a96'); } rc(g, 1, n * 5 + 3, 5, 3, '#3a3a42'); rc(g, 2, n * 5 + 2, 3, 1, '#7a7a88'); }),
+  urn: () => sprite('urn', 9, 11, g => { rc(g, 2, 0, 5, 2, STONE[3]); rc(g, 1, 2, 7, 6, STONE[2]); rc(g, 1, 2, 2, 6, STONE[4]); rc(g, 2, 8, 5, 3, STONE[2]); rc(g, 1, 5, 7, 1, '#c9a040'); rc(g, 4, 0, 3, 1, '#07050c'); px3(g, 6, 3, '#07050c'); px3(g, 7, 4, '#07050c'); }),
+};
+export function dress(decor, L, at, T) {
+  const LW = L.W, LH = L.H, slabs = L.slabs || [];
+  const nearPost = x => slabs.some(s => x >= s.x0 - 2 && x <= s.x1 + 2);
+  const add = (c, x, y) => decor.push({ k: 'ucdress', x: Math.round(x), y: Math.round(y), c, bg: true, sway: 0 });
+  for (let y = 2; y < LH - 2; y++) for (let x = 2; x < LW - 2; x++) {
+    const t = at(x, y), hv = hash(x * 7 + 3, y * 5 + 1), z = zoneOf(x, y);
+    if (t === T.SOLID) {
+      const up = at(x, y - 1) === T.AIR, down = at(x, y + 1) === T.AIR;
+      if (up && !nearPost(x)) {   /* a floor cell */
+        const r = hv % 100;
+        if (z === 0) { if (r < 6) add(SPR.rubble(hv % 3), x * TS + 1, y * TS - 6); else if (r < 8) add(SPR.offcut(hv % 3), x * TS + 1, y * TS - 4); }
+        else if (z === 1) { if (r < 8) add(SPR.puddle(hv % 2), x * TS + 1, y * TS - 2); else if (r < 12) add(SPR.rubble(hv % 3), x * TS + 1, y * TS - 6); }
+        else if (z === 2) { if (r < 10) add(SPR.crystal(hv % 3), x * TS + 2, y * TS - 12); }
+        else if (z === 3) { if (r < 7) add(SPR.bones(hv % 2), x * TS + 2, y * TS - 5); else if (r < 9) add(SPR.pick(), x * TS + 4, y * TS - 14); else if (r < 12) add(SPR.rubble(hv % 3), x * TS + 1, y * TS - 6); }
+        else if (z === 4) { if (r < 3) add(SPR.urn(), x * TS + 3, y * TS - 11); else if (r < 6) add(SPR.bones(hv % 2), x * TS + 2, y * TS - 5); }
+      }
+      if (down && !nearPost(x)) {   /* a ceiling cell: a web in a corner, a hung chain */
+        const r = (hv >> 4) % 100, wallL = at(x - 1, y + 1) === T.SOLID, wallR = at(x + 1, y + 1) === T.SOLID;
+        if ((z === 0 || z === 3 || z === 4) && r < 14 && (wallL || wallR)) add(SPR.web(wallL ? 1 : 0), wallL ? x * TS : x * TS + 2, (y + 1) * TS);
+        else if ((z === 0 || z === 1) && r >= 14 && r < 20) { let n = 0; while (n < 4 && at(x, y + 1 + n) === T.AIR) n++; if (n >= 2) add(SPR.chain(n - 1), x * TS + 4, (y + 1) * TS - 1); }
+      }
+    }
+  }
 }
