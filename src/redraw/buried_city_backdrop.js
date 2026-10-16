@@ -90,7 +90,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
     for (let x = ax - 384; x < VW + 384; x += 384) g.drawImage(at, R(x), ay);
     /* the arcade's floor of dark fog: the far bays sink into it */
     const fg = g.createLinearGradient(0, VH * 0.55, 0, VH); fg.addColorStop(0, 'rgba(14,12,22,0)'); fg.addColorStop(1, 'rgba(14,12,22,0.55)'); g.fillStyle = fg; g.fillRect(0, VH * 0.55, VW, VH * 0.45);
-    drawTower(g, cx, VW, VH, levelW, time, dY, 1, L.towerFlip || 0);
+    drawTower(g, cx, VW, VH, levelW, time, dY, 1, L.towerFlip || 0, true);   /* (claude/bc4fix: indoors it is FAR - dimmed, no cage, no plinth) */
     const rt = roofStrip(), rx = -((cx * 0.6) % 480 + 480) % 480, band = R(-14 - cy * 0.04);
     for (let x = rx - 480; x < VW + 480; x += 480) g.drawImage(rt, R(x), band);
     A4.drawWorksBack({ g, cx, cy, vw: VW, vh: VH, time });   /* (claude/bc4art) THE GLASS WORKS' furnaces, shelves, racks and pipes on its walls (behind the tiles) */
@@ -104,16 +104,19 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY = 0) {
 /* THE HOURGLASS TOWER: k = how far along the level you are (its upper bulb empties, it comes nearer) */
 /* (claude/buriedcity4, brief 6: THE LANDMARK SHOWS THE FLIP) fk 0..1: while a glass near you runs, THE GREAT HOURGLASS TURNS OVER (half a turn about its neck, eased) and its sand runs the other way
    - up the screen; when the glass runs out it turns back. src/buried-city-flip.js eases L.towerFlip */
-function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1, fk = 0) {
+/* (claude/bc4fix, Daniel 10-15: a caged hourglass by a SHUT gate in his photo - indoors the tower read as a prop, a switch beside the lever) far: indoors, under the sand roof, it is
+   CLEARLY BACKGROUND - drawn faint (FAR_A), with no cage of pillars and no plinth, a glass and its sand far off through the arcade; under the sky it stays the full landmark */
+const FAR_A = 0.38;
+function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1, fk = 0, far = false) {
   const k = Math.max(0, Math.min(1, cx / Math.max(1, levelW - VW)));
   /* (claude/buriedcity3, Daniel 10-12: "the hourglass takes up too much of the screen" - it was 0.8-1.3 scale and 52-72% of the view tall: now a LANDMARK at backdrop scale,
      about a fifth of the view, far off and hazed; it drifts from the right of the view toward its middle as you near the throne at its foot - parallax 0.035 in spirit, by progress) */
   const sc = 0.36 + k * 0.12, X = R(VW * (0.84 - 0.36 * k) - (cx * 0.035) % 1), Wh = R(30 * sc), top = R(VH * 0.16), bot = R(top + VH * (0.15 + k * 0.05)), neck = (top + bot) / 2, nw = 2;
-  const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha;   /* (claude/buriedcity4: no longer hazed to a ghost - it is the landmark) */
+  const a0 = g.globalAlpha; g.globalAlpha = a0 * alpha * (far ? FAR_A : 1);   /* (claude/buriedcity4: no longer hazed to a ghost - it is the landmark; claude/bc4fix: indoors, far) */
   /* the warm glow the sand throws on the stone behind it */
   const gl = g.createRadialGradient(X, neck, 4, X, neck, Wh * 3.4); gl.addColorStop(0, 'rgba(255,184,86,0.30)'); gl.addColorStop(1, 'rgba(255,184,86,0)'); g.fillStyle = gl; g.fillRect(X - Wh * 3.4, neck - Wh * 3.4, Wh * 6.8, Wh * 6.8);
   /* the base the city is built round: a stepped stone plinth under the frame, running off the bottom */
-  g.fillStyle = '#2a2638'; g.fillRect(X - Wh - 18, bot + 6, Wh * 2 + 36, VH); g.fillStyle = '#3a3650'; g.fillRect(X - Wh - 18, bot + 6, Wh * 2 + 36, 2); g.fillStyle = '#322e44'; g.fillRect(X - Wh - 10, bot - 2, Wh * 2 + 20, 8);
+  if (!far) { g.fillStyle = '#2a2638'; g.fillRect(X - Wh - 18, bot + 6, Wh * 2 + 36, VH); g.fillStyle = '#3a3650'; g.fillRect(X - Wh - 18, bot + 6, Wh * 2 + 36, 2); g.fillStyle = '#322e44'; g.fillRect(X - Wh - 10, bot - 2, Wh * 2 + 20, 8); }
   const turn = fk <= 0.001 ? 0 : fk >= 0.999 ? 1 : fk * fk * (3 - 2 * fk); g.save(); if (turn) { g.translate(X, neck); g.rotate(Math.PI * turn); g.translate(-X, -neck); }
   /* the glass: scanline by scanline, an outline, a pale body, a streak of light down its left */
   const half = u => { const v = u < 0.5 ? u / 0.5 : (1 - u) / 0.5, gv = Math.max(Math.sin(Math.PI * Math.pow(v, 0.75)), 0.5 * Math.pow(1 - v, 4) * 1.2); return nw + (Wh - nw) * Math.min(1, gv); };
@@ -133,7 +136,7 @@ function drawTower(g, cx, VW, VH, levelW, time, dY, alpha = 1, fk = 0) {
   /* the brass frame: four pillars (two seen), top and bottom plates with rivets, a collar on the neck */
   const pil = (x, w) => { g.fillStyle = PAL.brass; g.fillRect(x, top - 4, w, bot - top + 12); g.fillStyle = PAL.brassHi; g.fillRect(x, top - 4, 1, bot - top + 12); g.fillStyle = PAL.brassLo; g.fillRect(x + w - 1, top - 4, 1, bot - top + 12);
     for (let y = top + 6; y < bot; y += 12) { g.fillStyle = PAL.brassHi; g.fillRect(x + 1, y, 1, 1); g.fillStyle = PAL.brassDeep; g.fillRect(x + w - 2, y + 1, 1, 1); } };
-  pil(X - Wh - 8, 5); pil(X + Wh + 3, 5); pil(X - Wh + 1, 3); pil(X + Wh - 4, 3);
+  if (!far) { pil(X - Wh - 8, 5); pil(X + Wh + 3, 5); pil(X - Wh + 1, 3); pil(X + Wh - 4, 3); }   /* (indoors: no cage of pillars) */
   const plate = (y, h) => { g.fillStyle = PAL.brass; g.fillRect(X - Wh - 12, y, Wh * 2 + 24, h); g.fillStyle = PAL.brassHi; g.fillRect(X - Wh - 12, y, Wh * 2 + 24, 1); g.fillStyle = PAL.brassLo; g.fillRect(X - Wh - 12, y + h - 1, Wh * 2 + 24, 1);
     for (let x = X - Wh - 9; x < X + Wh + 9; x += 8) { g.fillStyle = PAL.brassHi; g.fillRect(x, y + 2, 1, 1); } };
   plate(top - 8, 6); plate(bot, 8);

@@ -30,8 +30,8 @@ export const POSE_BEATS = {
   wrath: [0.1, 0.24],          /* HOLY WRATH: the maul cocked back over the shoulder, brought round level, and held out with the light up off both shoulders */
   keg: [0.1, 0.22],            /* POWDER KEG: the lit cask held low on his heels, the underhand lob, and the follow-through */
   seas: [0.1, 0.24],           /* HEAVY SEAS: the cutlass taken back to brace, swept low with the sea standing up off the point, the wave rolling on */
-  bone: [0.12, 0.3],           /* BONE ARMOR: both arms crossed on the flat of the blade, plates of bone closing over him, the last plate seated */
-  reap: [0.1, 0.22],           /* SOUL REAP: the blade drawn back, the great scything cut with a green crescent, the off hand drawing the soul in */
+  bone: [0.12, 0.3],           /* OSSUARY MAIL: both arms crossed on the flat of the blade, plates of bone closing over him, the last plate seated */
+  reap: [0.1, 0.22],           /* THE REAPING: the blade drawn back, the great scything cut with a green crescent, the off hand drawing the soul in */
   /* THE PALADIN (lane P, 2026-09-24) */
   charge: [0.08, 0.22],        /* HOLY CHARGE: the maul levelled like a ram, the full stretch behind the lit head, the pull-up */
   halo: [0.1, 0.22],           /* DIVINE SHIELD: the maul lifted to his chest, raised overhead across both hands, and the light closing round him */
@@ -56,12 +56,12 @@ export const POSE_BEATS = {
   rum: [0.12, 0.3],            /* RUM: the bottle up, his head back, and the back of the hand across his mouth */
   board: [0.1],                /* BOARDING PARTY: the hook flung high, then swung in on the line with his knees up */
   /* THE DEATH KNIGHT */
-  boil: [0.1, 0.25],           /* BLOOD BOIL: hunched over the blade, then flung open with the blood coming up round him */
+  boil: [0.1, 0.25],           /* BLOOD WELL: hunched over the blade, then flung open with the blood coming up round him */
   call: [0.12, 0.28],          /* GRAVECALL: the blade stood in the ground, the off hand raised, and the green coming up */
-  coil: [0.1],                 /* DEATH COIL: the off hand drawn back, then flung out with the coil leaving it */
+  coil: [0.1],                 /* BLOOD LEECH: the off hand drawn back, then flung out with the coil leaving it */
   tide: [0.12],                /* GRAVE TIDE: down on the haunches with the fist in the ground, and the green running off along it */
   unholy: [0.1],               /* UNHOLY GROUND: the blade low behind him, then swept flat along the floor */
-  grip: [0.12],                /* DEATH GRIP: the off hand out clawed, then the fist hauled back to his chest */
+  grip: [0.12],                /* GRAVE CHAIN: the off hand out clawed, then the fist hauled back to his chest */
   /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */
   gStep: [0.08],               /* STONE STEP: the stave jabbed down under her boots, then up off the stone that met it */
   gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */

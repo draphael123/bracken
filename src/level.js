@@ -3802,9 +3802,10 @@ function trialYard(hero) {
       ['tells', 2, 'ONE YELLOW ! : ROLL THROUGH IT. TWO RED !! : ROLL THROUGH OR GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
       DASH, RISE, SWEEP, SKILL],
     reaper: [
-      ['hit', 3, 'THE CLEAVE: X COMES DOWN SLOW AND HARD THROUGH WHAT IS IN FRONT OF HIM. HIT THREE.', [['dummy', 16], ['dummy', 20]], 'X'],
-      ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN, SLOW AS IT IS. THE THIRD LANDS HEAVY. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['heavyblow', 2, 'HOLD X: HE PLANTS THE BLADE, AND BLOOD BOLTS FAN OUT THROUGH ANY GUARD. LAND IT TWICE.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
+      ['hit', 3, 'REAPER\'S RHYTHM: X. A RISING CUT, A HOOK, A DRAG THAT DRINKS. HIT THREE.', [['dummy', 16], ['dummy', 20]], 'X'],
+      ['third', 2, 'THE DRAG: X THREE TIMES. THE THIRD COMES DOWN HEAVY AND DRINKS BACK. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['heavyblow', 2, 'BLOOD PRICE: HOLD X: THE BLADE DRINKS (SHOWN, NOT TAKEN). LET GO: THE CRESCENT. LAND TWO.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
+      ['kneel', 2, 'GRAVE KNEEL: HOLD DOWN. THE PLANTED BLADE TURNS A LOW BLOW, NOT A HIGH ONE. TURN TWO.', [['waterthief', 18]], 'HOLD DOWN'],
       REAPER_C.ward,
       ['dodge', 2, 'THE PASSING: TAP A WAY TWICE, OR V. HE GOES THIN AND NOTHING TOUCHES HIM. TWICE.', [], 'B, OR THE STICK TWICE'],
       ['flash', 2, 'THE BEAT: ROLL THROUGH HIS CUT WITH V AS THE SWORD FLASHES WHITE, AND HE REELS. TWICE.', [['swornsword', 18]], 'B AS THE SWORD FLASHES'],

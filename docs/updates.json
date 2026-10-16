@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-15",
+    "batch": 95,
+    "lines": [
+      "Deep Rails: the Spoil Pits and new drill attacks",
+      "The Death Knight pays in blood: new kit and boss",
+      "Buried City: clearer hourglasses, real gears",
+      "The Hourglass King: the sand rises in phase two",
+      "Elites in the Buried City now hold gates"
+    ]
+  },
+  {
+    "date": "2026-10-15",
     "batch": 94,
     "lines": [
       "The Paladin: Conviction, Verdict and a moving aura",
@@ -16,7 +27,7 @@
     "batch": 93,
     "lines": [
       "New hero: the Ranger, a bow and a knife",
-      "Buried City reworked: glass works, sand-bound foes and shade",
+      "Buried City reworked: glass works and shade",
       "The Hourglass King raises slabs",
       "Ksar: Falconer and Plated Bandit",
       "Every hero now has their own plunge",
@@ -153,7 +164,7 @@
       "Underleaf 2, Scree 2, Owl 2 and Monastery 2",
       "Winchmaster 5, with new music",
       "Zip lines in Stormhold and the Rootway",
-      "A scout horn, new Rootway music, elite gates, the Homunculus and a pilot barge"
+      "A scout horn, elite gates, the Homunculus"
     ]
   }
 ]

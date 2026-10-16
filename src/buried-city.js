@@ -124,6 +124,9 @@ export function buildBuriedCity({ painter, T, TS }) {
   const slinger = (x, y, squad, o) => foe('slinger', x, y, squad, Object.assign({ cnSkin: 'sandslinger' }, o || {}));                       /* THE SAND-FOLK SLINGER: the ranged one (a man of the city's last folk) */
   const scorpion = (x, y, squad, o) => foe('scorpion', x, y, squad, Object.assign({ cnSkin: 'brassscorpion' }, o || {}));                   /* THE BRASS SCORPION: the city's clockwork vermin */
   const gear = (x, y) => ent('stray', x, y, { kind: 'gear' });
+  /* (claude/bc4fix, brief item 3 - Daniel 10-15 found a way under an elite: every elite exam is a GATE he holds now - it opens when he falls - and behind it a COIN CACHE:
+     a heap of coin spilled from a casket (decor 'coincache', drawn by src/redraw/buried_city_fix_art.js) with five coins on it; told when you first see it (the hands) */
+  const cache = (x, floor, gateCol) => { decor.push({ kind: 'coincache', x, y: floor, gate: gateCol }); for (const [dx, dy] of [[-1, 1], [0, 1], [1, 1], [0, 2], [1, 2]]) ent('coin', x + dx, floor - dy); };
   const decor = [], interiors = [], vaultDoors = [], shade = [], crumbles = [], quicksand = [], structures = [], plats = [], lamps = [];
   /* THE CITY'S FOOTING (brief 4, PLATFORM VARIETY - not one plank): every built ledge says what it is (L.plats, for the art lane) and what holds it up (L.structures:
      a drawn support, tools/solid-islands.mjs). balcony: stone on corbels to the wall under it; awning: a stall's cloth on two poles; pipe: a brass pipe on brackets;
@@ -272,7 +275,8 @@ export function buildBuriedCity({ painter, T, TS }) {
   shaft(316, 320, 25);
   air(323, 324, CO, CO + 1); set(323, CO + 2, T.SPIKE); set(324, CO + 2, T.SPIKE);
   sign(312, CO - 1, 'STAKES IN THE FLOOR: A HEAVY BLOW THROWS A FOE ONTO THEM.');
-  construct(318, CO - 1, 'hallsEnd', { elite: true }); drowned(321, CO - 1, 'hallsEnd');   /* (and a drowned by the stakes: a heavy blow throws HIM onto them - INTO THE SPIKES; the construct is too heavy to throw) */
+  construct(318, CO - 1, 'hallsEnd', { elite: true, gate: 325 }); drowned(321, CO - 1, 'hallsEnd');   /* (claude/bc4fix: HIS GATE at 325, past the stakes - the halls' exam is fought, not run past) */
+  cache(327, CO, 325);   /* (and a drowned by the stakes: a heavy blow throws HIM onto them - INTO THE SPIKES; the construct is too heavy to throw) */
   /* THE SECOND HOURGLASS (claude/buriedcity3, THE FLIP - TEST: a new use): a BANK of drifted sand shuts the corridor wall to wall (314-315) before the halls'
      exam. Strike the glass and the sand runs out of it - for six seconds; then it drifts back in behind you (never on a body: it waits till the bank is clear) */
   sign(310, CO - 1, 'A BANK OF SAND SHUTS THE HALL. STRIKE THE HOURGLASS: IT RUNS OUT.');
@@ -301,7 +305,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   /* BEAT THREE - THE SAND-BOUND AND THE TILTING DUNE: one glass holds both. Resting, the sand holds the sand-bound (a blow glances off: THE SAND HOLDS IT) and the
      dune by the gallery rises WEST - a wall from here. Struck, the sand-bound is buried to the chest (stuck, every blow whole) and the dune tilts the other way: a
      ramp up to the high kiln */
-  sign(370, 14, 'THE SAND HOLDS THE SAND-BOUND. TURN THE GLASS AND IT IS BURIED.');
+  sign(370, 14, 'THE SAND HOLDS THE SAND-BOUND. STRIKE THE GLASS AND IT IS BURIED.');
   glass('works3', 372, 14, 9); sandBound(376, 14, 'works3', 'worksBound');
   tilt('works3', 378, 382, 15, H - 1 - DY);
   deep('house', 383, 388, 10);                                                 /* THE HIGH KILN (row 10) */
@@ -350,7 +354,8 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(540, 584, LO); roof(540, 584, 32);
   plat('pipe', 541, 545, 41); plat('pipe', 547, 551, 38); plat('pipe', 559, 563, 41); plat('pipe', 565, 569, 38); plat('balcony', 575, 579, 41);
   drift(562, 564, LO);                                                             /* a drift in the foundry yard, by the elite */
-  construct(556, LO - 1, 'foundry', { elite: true }); slinger(561, 40, 'foundrySling');   /* THE QUARTER'S EXAM: an ELITE construct with the drift at his back (held in it, you are his mark) and a slinger over it */
+  construct(553, LO - 1, 'foundry', { elite: true, gate: 558 }); slinger(561, 40, 'foundrySling');   /* (claude/bc4fix: HIS GATE at 558, clear of the pipes - over them there was a way past him) */
+  block(558, 558, 33, 33); cache(576, LO, 558);   /* (the yard is eleven rows tall and a gate is ten: a lintel over it, so no hero (fourteen px) slips over its top under the roof) */   /* THE QUARTER'S EXAM: an ELITE construct with the drift at his back (held in it, you are his mark) and a slinger over it */
   /* THE FOUNDRY'S FLOOR-GATE (the TEACH of the trap hall): a small OPEN floor-gate in the yard's street (570-572): a drop of three rows onto the foundry's floor -
      a quarter of you and back to the lip (src/buried-city-hands.js dropBack). Its lever on the west lip shuts it and the sand bridges it */
   air(570, 572, LO, LO + 2);
@@ -384,6 +389,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   decor.push({ kind: 'courtiers', x0: 635, x1: 651, y: TH - 1 }, { kind: 'kingstatue', x: 665, y: TH - 1, h: 9 }, { kind: 'kingstatue', x: 684, y: TH - 1, h: 9 });
   drift(647, 649, TH); plat('balcony', 648, 652, 29);
   construct(654, TH - 1, 'throneGuard', { elite: true, gate: 661 }); scorpion(658, TH - 1, 'throneGuard');
+  block(661, 661, 21, 21);   /* (claude/bc4fix: the street is eleven rows tall and his gate ten - a hero (fourteen px) could go over its top under the roof, off the balcony: a lintel shuts it) */
   plat('balcony', 655, 659, 26); slinger(657, 25, 'throneGuardSling');             /* THE THRONE'S WARDEN (an ELITE construct: his gate at 661 shuts the street until he falls - the drift at your back), a scorpion, a slinger over them */
   /* THE CLOCKWORK VAULT: a low cellar under the street, WEST of a hatch in it (drop in; its door opens on five gears). The cellar is two rows deep and ends at
      the hatch's east edge, and a one-way step stands under the hatch: a hero who drops in by mistake lands on it, two rows under the street */
@@ -446,9 +452,9 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(809, 810, 10); ground(811, 820, TH);
   plat('lintel', 812, 814, 15); plat('balcony', 817, 819, 19); plat('lintel', 812, 814, 23); plat('balcony', 817, 819, 27);
   decor.push({ kind: 'shell', x0: 809, x1: 821, y: 10 }); shadeBox(809, 814, 11, TH - 1); shadeBox(817, 821, 11, TH - 1);   /* (claude/buriedcity4, brief 3: the dome's broken shell shades both sides of the courtyard - its hole lets the sun in over the middle, where the elite stands) */
-  construct(815, TH - 1, 'courtyard', { elite: true }); slinger(818, 26, 'courtyardSling', { face: -1 });
+  construct(815, TH - 1, 'courtyard', { elite: true, gate: 821 }); slinger(818, 26, 'courtyardSling', { face: -1 });   /* (claude/bc4fix: HIS GATE is the antechamber's door - down the ribs past him there was a way round) */
   glass('court', 814, TH - 1, 8); sandBound(819, TH - 1, 'court', 'courtyardBound');
-  sign(812, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: TURN THE GLASS.');
+  sign(812, TH - 1, 'THE SAND HOLDS THE SAND-BOUND: STRIKE THE GLASS.');
   /* THE OLD STREET UNDER THE DUNES (brief 10, the LOOP BACK TO A SHRINE): the throne street runs on under the rooftops (rows 28-31, 710-810) to the courtyard - sealed
      at the courtyard end by a sand-gate that only opens FROM THE COURTYARD (E). Opened once, it stays open: a death past the rooftops walks back from the fourth
      shrine (693) under them in a few seconds. Under THE SAND SEA's troughs its floor (bottom 26) is the street's vault: the sea's bones are stakes (the reach model's
@@ -464,9 +470,10 @@ export function buildBuriedCity({ painter, T, TS }) {
      after it is the last before the king */
   block(821, 821, 10, 26); roof(822, 843, 21); ground(821, 821, TH); ground(844, 844, TH);   /* (claude/buriedcity4: the courtyard's and the throne room's doors had a one-column hole in the floor down out of the world since BC3 - floored) */                                     /* (the courtyard's east wall over the door; the hall's roof) */
   ground(822, 825, TH); sea(826, 838, TH); ground(839, 843, TH); interiors.push([822, 843, 22, TH - 1, 'bcAnte']);
-  sign(822, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
+  sign(823, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
   glass('ante', 824, TH - 1, 7);
   tplat('ante', 827, 829, 31, 3.4); tplat('ante', 831, 833, 30, 4.6); tplat('ante', 835, 837, 31, 5.8);
+  cache(839, TH, 821);   /* (claude/bc4fix) the courtyard elite's purse: by the throne room's door, past his gate and the slabs */
   decor.push({ kind: 'mural', x0: 840, x1: 843, y: 25 });                          /* (B8: the art lane draws HIM raising slabs of sand toward himself - foreshadowing his fight) */
   lamp(841, 24, 'brazier');
   ent('check', 842, TH - 1);                                                        /* CHECKPOINT FIVE, past the exam before the throne, at the throne room's door */

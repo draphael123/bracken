@@ -13,9 +13,12 @@
 import * as SET from './redraw/buried_city_set.js';
 import * as ART from './redraw/buried_city_flip_art.js';
 import * as A4 from './redraw/buried_city_bc4_art.js';   /* (claude/bc4art) the slabs, the tilt, the pit's skin */
+import * as FIX from './redraw/buried_city_fix_art.js';   /* (claude/bc4fix) the glass's link to what it moves, its STRIKE glint */
 
 export const FLIP = { warn: 2.0, rise: 2.2, liftV: -160, beat: 130, bite: 0.27, swallow: 6, strikeR: 12, talkR: 18, refillWait: 0.25, spinT: 0.6,
-  boundShield: 0.4, boundBuried: 1.0, slabWarn: 0.8 };   /* (claude/buriedcity4) THE SAND-BOUND: a blow on it while the sand holds it lands at 0.4 (B15's floor; told), buried whole; a timed slab's last 0.8 s is red */
+  boundShield: 0.4, boundBuried: 1.0, slabWarn: 0.8,
+  linkRun: 0.9, linkHold: 1.6, camT: 1.8, camR: 30, reachR: 44, ghostR: 80, backT: 0.5 };   /* (claude/bc4fix) THE GLASS READS: its link's run (s) and full strength after a strike, the camera's look at what it moved (s, within camR tiles),
+     the STRIKE glint's reach (px) and the idle ghost link's (px), the sand's fall back into the bottom bulb when it runs out (s) */   /* (claude/buriedcity4) THE SAND-BOUND: a blow on it while the sand holds it lands at 0.4 (B15's floor; told), buried whole; a timed slab's last 0.8 s is red */
 
 export function makeFlip(api) {
   const { ctx, number, once } = api, TS = () => ctx.TS, T = () => ctx.T;
@@ -68,12 +71,12 @@ export function makeFlip(api) {
   const raiseSlabs = id => { for (const p of K.tplats) if (p.glass === id) { p.t = p.life; if (!p.up) { writeSlab(p, true); K.flipN.slabs++; ctx.burst(px((p.x0 + p.x1) / 2), p.y * TS(), 8, ['#e6c98a', '#a87a40'], 60, 0.5); } } };
   /* ---------- STRIKE / TURN: a blow or E on a glass ---------- */
   function flip(g, P) {
-    if (g.cd > 0) return false; g.cd = 0.35; g.spin = FLIP.spinT; K.flipN.strikes++;
+    if (g.cd > 0) return false; g.cd = 0.35; g.spin = FLIP.spinT; K.flipN.strikes++; g.linkT = 0; g.byHero = !!P;   /* (claude/bc4fix) THE LINK runs from the glass to what it moves; struck by a hero, the camera looks at it */
     const was = g.t > 0; g.t = g.dur; g.warned = false; g.runs++; if (!was) K.flipN.runs++; else K.flipN.turns++; raiseSlabs(g.id);
     ctx.sfx.ratchet && ctx.sfx.ratchet(); ctx.sfx.gateLift && ctx.sfx.gateLift(); ctx.shake(2);
     ctx.burst(px(g.x), (g.y + 1) * TS() - 14, 10, ['#f8dc90', '#e6bc68'], 60, 0.5);
     const y = (P ? P.y : (g.y + 1) * TS()) - 34, x = P ? P.x : px(g.x);
-    if (was) number(x, y, 'TURNED BACK: THE GLASS IS FULL AGAIN', '#ffd36b');
+    if (was) number(x, y, 'STRUCK AGAIN: ITS SAND RUNS UP FROM THE START', '#ffd36b');
     else if (once('flip' + g.id)) {
       if (g.id === 'stair') number(x, y, 'THE SAND RUNS BACK UP: A BURIED ROOF RISES', '#8fd160');
       else if (g.id === 'bank') number(x, y, 'THE SAND RUNS OUT OF THE BANK', '#8fd160');
@@ -84,7 +87,7 @@ export function makeFlip(api) {
       else if (g.id === 'works3' || g.id === 'court') number(x, y, 'THE SAND-BOUND IS BURIED: STRIKE IT NOW', '#8fd160');
       else if (g.id === 'ante') number(x, y, 'THE SAND RISES: CROSS BEFORE EACH SLAB CRUMBLES', '#8fd160');
       else number(x, y, 'THE SAND RUNS BACKWARD: THE ROOFS RISE', '#8fd160');
-    } else number(x, y, 'THE GLASS IS TURNED', '#ffd36b');
+    } else number(x, y, 'THE GLASS IS STRUCK: ITS SAND RUNS UP', '#ffd36b');
     return true;
   }
   const glassBox = g => ({ l: px(g.x) - 9, r: px(g.x) + 9, t: (g.y + 1) * TS() - 26, b: (g.y + 1) * TS() });
@@ -99,11 +102,11 @@ export function makeFlip(api) {
     if (!K) return; const P0 = ctx.hero();
     strikes();
     { const on = !!P0 && K.glasses.some(q => q.t > 0 && Math.abs(P0.x - px(q.x)) < 40 * TS()), f0 = K.L.towerFlip || 0; K.L.towerFlip = on ? Math.min(1, f0 + dt * 1.6) : Math.max(0, f0 - dt * 1.6); }   /* (claude/buriedcity4, brief 6) THE GREAT HOURGLASS on the skyline turns over while a glass near you runs (src/redraw/buried_city_backdrop.js drawTower) */
-    for (const g of K.glasses) { g.cd = Math.max(0, (g.cd || 0) - dt); g.spin = Math.max(0, (g.spin || 0) - dt); if (g.t <= 0) continue;
+    for (const g of K.glasses) { g.cd = Math.max(0, (g.cd || 0) - dt); g.spin = Math.max(0, (g.spin || 0) - dt); g.linkT = (g.linkT ?? 99) + dt; g.back = Math.max(0, (g.back || 0) - dt); if (g.t <= 0) continue;
       const t0 = g.t; g.t = Math.max(0, g.t - dt);
       if (g.t <= FLIP.warn && !g.warned) { g.warned = true; const near = P0 && Math.abs(P0.x - px(g.x)) < 520; if (near) number(P0.x, P0.y - 34, 'THE GLASS RUNS OUT', '#ff9a5c'); }
       if (g.t <= FLIP.warn && Math.floor(t0 * 2) !== Math.floor(g.t * 2)) ctx.sfx.clank && ctx.sfx.clank();
-      if (g.t === 0) { K.flipN.ranOut++; ctx.sfx.gateDrop && ctx.sfx.gateDrop(); } }
+      if (g.t === 0) { K.flipN.ranOut++; g.back = FLIP.backT; ctx.sfx.gateDrop && ctx.sfx.gateDrop(); } }
     /* the risers rise (or the sinkers sink) while their glass runs; back the other way when it runs out */
     for (const r of K.risers) { const on = running(r.glass), want = r.sinks ? (on ? 0 : 1) : (on ? 1 : 0);
       if (r.up !== want) r.up = want > r.up ? Math.min(want, r.up + FLIP.rise * dt) : Math.max(want, r.up - FLIP.rise * dt);
@@ -122,7 +125,7 @@ export function makeFlip(api) {
     for (const f of K.dfalls) { const on = running(f.glass), l = f.x0 * TS() - 2, r = (f.x1 + 1) * TS() + 2, top = f.top * TS(), bot = (f.bottom + 1) * TS();
       for (const p of ctx.players) { if (p.dead || p.x < l || p.x > r || p.y < top - 4 || p.y - (p.h || 14) > bot) continue;
         if (on) { if (p.y > top + 1) { if (!(p.vy <= FLIP.liftV)) p.vy = FLIP.liftV; if (!p.bcLift) { p.bcLift = 1; K.flipN.lifted++; } } else { p.y = top; if (p.vy > 0) p.vy = 0; } }
-        else { if (!(p.vy >= FLIP.beat)) p.vy = FLIP.beat; if (!p.bcBeat) { p.bcBeat = 1; K.flipN.beaten++; } if (p === P0 && once('dfallBeat')) number(p.x, p.y - 34, 'THE SAND-FALL BEATS YOU DOWN: TURN ITS GLASS', '#ffd36b'); } }
+        else { if (!(p.vy >= FLIP.beat)) p.vy = FLIP.beat; if (!p.bcBeat) { p.bcBeat = 1; K.flipN.beaten++; } if (p === P0 && once('dfallBeat')) number(p.x, p.y - 34, 'THE SAND-FALL BEATS YOU DOWN: STRIKE ITS GLASS', '#ffd36b'); } }
       for (const p of ctx.players) if (p.x < l || p.x > r) { p.bcLift = 0; p.bcBeat = 0; } }
     /* THE SAND SEA: footing that does not move is where you go back to; sunk into the sea you are swallowed */
     for (const p of ctx.players) { if (p.dead) continue; const tx = Math.floor(p.x / TS()), fy = Math.floor((p.y + 1) / TS());
@@ -146,6 +149,23 @@ export function makeFlip(api) {
   F.read = () => K && { glasses: K.glasses.map(g => ({ id: g.id, t: +g.t.toFixed(2), runs: g.runs })), risers: K.risers.map(r => ({ glass: r.glass, x0: r.x0, up: +r.up.toFixed(2), solid: r.solid })), banks: K.banks.map(b => ({ glass: b.glass, full: +b.full.toFixed(2) })), tilts: K.tilts.map(t => ({ glass: t.glass, dir: t.dir })), tplats: K.tplats.map(p => ({ glass: p.glass, x0: p.x0, up: p.up, t: +p.t.toFixed(2) })), n: { ...K.flipN } };
   /* the tools' hand: every glass struck at once (tools/drawn-solids.mjs) */
   F.flipAll = () => { for (const g of K.glasses) flip(g, null); };
+  /* (claude/bc4fix, brief item 4 - Daniel 10-15: "I still don't understand what the hourglass does") WHAT A GLASS MOVES, as world rects (px): its risers and sinkers,
+     its banks, its sand-falls, its tilting dunes, its timed slabs, and the sand-bound it holds. The link is drawn to each; the camera looks at them */
+  const targetsOf = g => { const ts = TS(), out = [], box = (x0, x1, y0, y1) => out.push({ l: x0 * ts, r: (x1 + 1) * ts, t: y0 * ts, b: (y1 + 1) * ts });
+    for (const r of K.risers) if (r.glass === g.id) box(r.x0, r.x1, r.top, r.top + r.rows - 1);
+    for (const b of K.banks) if (b.glass === g.id) box(b.x0, b.x1, b.y0, b.y1);
+    for (const f of K.dfalls) if (f.glass === g.id) box(f.x0, f.x1, f.top, Math.min(f.bottom, f.top + 6));
+    for (const t of K.tilts) if (t.glass === g.id) box(t.x0, t.x1, t.lo - (t.x1 - t.x0 + 1), t.lo - 1);
+    for (const p of K.tplats) if (p.glass === g.id) box(p.x0, p.x1, p.y, p.y);
+    for (const e of ctx.enemies()) if (e.alive && e.cnSkin === 'sandbound' && e.glass === g.id) out.push({ l: e.x - 9, r: e.x + 9, t: e.y - (e.h || 18) - 2, b: e.y, foe: true });
+    return out; };
+  F.targetsOf = id => { const g = glassOf(id); return g ? targetsOf(g) : []; };
+  /* THE CAMERA LOOKS AT WHAT IT MOVED (A3: draw the state where the player stands): for FLIP.camT s after a hero's strike, the middle of what the glass moves (main.js
+     updateCamera leans toward it, never losing the hero) */
+  F.cam = () => { if (!K) return null; const P0 = ctx.hero(); if (!P0 || P0.dead) return null;
+    const g = K.glasses.filter(q => q.byHero && (q.linkT ?? 99) < FLIP.camT && Math.abs(px(q.x) - P0.x) < FLIP.camR * TS()).sort((a, b) => a.linkT - b.linkT)[0]; if (!g) return null;
+    const ts = targetsOf(g).filter(q => !q.foe); if (!ts.length) return null; const x = ts.reduce((a, q) => a + (q.l + q.r) / 2, 0) / ts.length, y = ts.reduce((a, q) => a + (q.t + q.b) / 2, 0) / ts.length;
+    return { x, y, k: Math.min(1, (FLIP.camT - g.linkT) / 0.4) }; };
   /* ---------- DRAWING (claude/bc3art: src/redraw/buried_city_flip_art.js - the hourglasses, risers, banks, dune falls, the sea, the gauges) ---------- */
   const R = Math.round;
   F.draw = (g, cx, cy, time) => {
@@ -160,9 +180,15 @@ export function makeFlip(api) {
       ART.drawRiser(V, r, { l: r.x0 * ts - cx, top: r.top * ts - cy, w: (r.x1 - r.x0 + 1) * ts, h: r.rows * ts, near: !!(P0 && gl && Math.abs(P0.x - px(gl.x)) < 22 * ts), moving: r.up > 0.02 && r.up < 0.98 }); }
     for (const b of K.banks) { if (!vis(b.x0, b.x1) || b.full >= 0.999) continue; const l = b.x0 * ts, w = (b.x1 - b.x0 + 1) * ts, bot = (b.y1 + 1) * ts, h = (b.y1 - b.y0 + 1) * ts * b.full; if (h > 1) { SET.sandBody(V, l, bot - h, w, bot); ART.drawBankRunning(V, l - cx, bot - cy, w, h, b.full); } }
     for (const f of K.dfalls) { if (!vis(f.x0, f.x1)) continue; ART.drawDuneFall(V, running(f.glass), f.x0 * ts - cx, f.top * ts - cy, (f.x1 - f.x0 + 1) * ts, (f.bottom + 1) * ts - cy); }
-    for (const gq of K.glasses) { const x = px(gq.x) - cx, y = (gq.y + 1) * ts - cy; if (x < -40 || x > vw + 40) continue; const k = gq.t > 0 ? gq.t / gq.dur : 0, warn = gq.t > 0 && gq.t <= FLIP.warn;
+    for (const gq of K.glasses) { const gx = px(gq.x), gy = (gq.y + 1) * ts, x = gx - cx, y = gy - cy, run = gq.t > 0; if (x < -40 || x > vw + 40) continue;
+      const k = run ? gq.t / gq.dur : (gq.back > 0 ? gq.back / FLIP.backT : 0), warn = run && gq.t <= FLIP.warn;   /* (claude/bc4fix) running: the sand left below; run out: the top's sand falls back down */
       ART.drawGlass(V, gq, { k, warn, spin: Math.max(0, (gq.spin || 0) / FLIP.spinT), x, y });
-      if (gq.t <= 0 && P0 && Math.abs(P0.x - px(gq.x)) < 40 && Math.abs(P0.y - (gq.y + 1) * ts) < 30) ctx.text('STRIKE', R(x), R(y - 44), '#ffd36b', 'center', 4); }
+      /* (claude/bc4fix) THE LINK TO WHAT IT MOVES: struck, a trail of gold grains runs to each thing (FLIP.linkRun s) and brackets pulse on them; it stays faint while the glass runs;
+         idle and near, a pale ghost of it shows what the glass is tied to before you strike (Rootway's "shows its target first") */
+      const dP = P0 && !P0.dead ? Math.hypot(P0.x - gx, (P0.y - gy) * 1.5) : 1e9, lt = gq.linkT ?? 99, struck = lt < FLIP.linkHold, ghost = !run && !struck && dP < FLIP.ghostR;
+      if (run || struck || ghost) { const kk = ghost ? 1 : Math.min(1, lt / FLIP.linkRun), a = ghost || struck ? 1 : 0.6;
+        for (const q of targetsOf(gq)) { FIX.drawGlassLink(V, gx, gy - 20, (q.l + q.r) / 2, q.t, kk, a, ghost); if (kk >= 1) FIX.drawLinkTarget(V, q.l, q.t, q.r - q.l, q.b - q.t, a, ghost); } }
+      if (!run && dP < FLIP.reachR) { FIX.drawStrikeGlint(V, gx, gy - 35); ctx.text('STRIKE / E', R(x), R(y - 46), '#ffd36b', 'center', 4); } }   /* THE STRIKE GLINT + PROMPT in reach (A6) */
     /* THE GAUGE OVER YOUR HEAD (A3: what runs off-screen is shown where you stand): the nearest running glass */
     if (P0 && !P0.dead) { const gq = K.glasses.filter(q => q.t > 0 && Math.abs(P0.x - px(q.x)) < 40 * ts).sort((a, b) => Math.abs(P0.x - px(a.x)) - Math.abs(P0.x - px(b.x)))[0];
       if (gq) ART.drawHeadGauge(V, R(P0.x - cx), R(P0.y - (P0.h || 20) - 12 - cy), gq.t / gq.dur, gq.t <= FLIP.warn); }

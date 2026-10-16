@@ -114,17 +114,70 @@ function deckTile(x, y) {
     return c; });
 }
 
+/* ============ THE SPOIL PITS' OWN KIT (deeprails5 art lane): the goblins' old spoil workings, x 976-1069 on foot ============
+   THE HEAP     tailings (dark crushed rock, a lit crest) with broken PIT-PROPS driven through it, splintered ends up, lashed with a rag of old rope - it bites (SPIKE on a line)
+   THE PIT      the pit floor (SPIKE at row 33+): a bed of black slime and bone with the props that fell in standing up through it, ends pale as teeth
+   THE CATWALK  (ONEWAY, row 26) heavy timber planks, three to a tile, iron strapped, a lit toe-board edge; the trestles down to the floor are drawn by pitTrestle (deeprails5_art.js)
+   THE PIER     (SOLID, the walk and the steps) a coursed rock pier: squared courses with staggered joints, a lit cap of packed tailings, a shoring post up the side facing a pit */
+export const inPits = x => x >= 970 && x <= 1069;
+function heapTile(x) {
+  return once('hp5_' + (x & 3), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, 41));
+    /* the tailings mound: dark crushed rock, lit along its crest */
+    for (let xx = 0; xx < 16; xx++) { const h = 7 + Math.round(3 * Math.sin((xx + (x & 3) * 3) * 0.55) + (r() < 0.3 ? 1 : 0)); for (let yy = 16 - h; yy < 16; yy++) px2(g, xx, yy, yy === 16 - h ? '#7a604c' : r() < 0.18 ? '#4a382c' : r() < 0.5 ? '#2e2119' : '#3a2a20'); }
+    for (let i = 0; i < 9; i++) { const sx = (r() * 15) | 0, sy = 10 + ((r() * 5) | 0); px2(g, sx, sy, '#5a4636'); px2(g, sx + 1, sy, '#1a1210'); }
+    /* the broken props, driven in at angles: a timber body, a lit edge, a splintered pale end */
+    const props = [[2, 15, -0.25, 11], [6, 15, 0.2, 14], [10, 15, -0.12, 10], [13, 15, 0.3, 12]];
+    for (const [px_, py, lean, len] of props) { for (let k = 0; k < len; k++) { const xx = Math.round(px_ + lean * k), yy = py - k; px2(g, xx, yy, MP.t2); px2(g, xx + 1, yy, MP.t1); if (k % 5 === 2) px2(g, xx, yy, MP.t4); }
+      const ex = Math.round(px_ + lean * len), ey = py - len; px2(g, ex, ey, '#e8d8b0'); px2(g, ex + 1, ey - 1, '#c8b890'); px2(g, ex - 1, ey - 1, '#f4ead0'); px2(g, ex, ey - 2, '#c8b890'); }   /* the splinters */
+    rect(g, 4, 11, 7, 1, '#9a8a64'); px2(g, 8, 12, '#9a8a64'); px2(g, 7, 13, '#7a6a48');   /* a frayed rag of rope lashing two props */
+    return c; });
+}
+function pitFloorTile(x, y) {
+  return once('pf5_' + (x & 3) + '_' + (y > 34 ? 1 : 0), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, 57));
+    rect(g, 0, 0, 16, 16, '#0c0809');
+    if (y <= 34) { rect(g, 0, 11, 16, 5, '#1a1210'); rect(g, 0, 10, 16, 1, '#2c2018');   /* the slime-black bed, a wet line along its top */
+      for (let i = 0; i < 4; i++) px2(g, (r() * 15) | 0, 11 + ((r() * 4) | 0), '#3c5a3c');   /* the green of old damp */
+      for (const sx of [1, 5, 9, 13]) { const h = 4 + ((r() * 5) | 0), lean = (r() < 0.5 ? -1 : 1) * (r() < 0.5 ? 1 : 0); for (let k = 0; k < h; k++) { const xx = sx + (k > h / 2 ? lean : 0), yy = 11 - k; px2(g, xx, yy, MP.t1); px2(g, xx + 1, yy, MP.t0); } px2(g, sx + lean, 11 - h, '#e8d8b0'); px2(g, sx + lean - 1, 12 - h, '#b8a888'); px2(g, sx + lean + 1, 12 - h, '#b8a888'); }   /* the fallen props, standing */
+      for (let i = 0; i < 2; i++) { const bx = 2 + ((r() * 11) | 0); px2(g, bx, 12, '#cfc7ae'); px2(g, bx + 1, 12, '#cfc7ae'); px2(g, bx + 2, 13, '#9a927c'); } }   /* old bone */
+    else { for (let i = 0; i < 10; i++) px2(g, (r() * 15) | 0, (r() * 15) | 0, '#16100f'); }
+    return c; });
+}
+function plankTile(x) {
+  return once('pk5_' + (x & 3), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, 63));
+    rect(g, 0, 0, 16, 8, MP.t2); rect(g, 0, 0, 16, 1, MP.t5); rect(g, 0, 1, 16, 1, MP.t4); rect(g, 0, 7, 16, 1, MP.t0);   /* the lit toe-board edge */
+    for (const yy of [3, 5]) rect(g, 0, yy, 16, 1, MP.t1);   /* the plank seams: three planks to a tile */
+    for (let i = 0; i < 5; i++) px2(g, (r() * 15) | 0, 2 + ((r() * 5) | 0), MP.t3);   /* grain */
+    if ((x & 3) === 1) { rect(g, 6, 0, 3, 8, MP.i2); rect(g, 6, 0, 3, 1, MP.i4); px2(g, 7, 2, MP.i5); px2(g, 7, 5, MP.i5); }   /* an iron strap and its rivets */
+    rect(g, 0, 8, 16, 1, '#0a0604'); rect(g, 0, 9, 16, 1, 'rgba(0,0,0,0.35)');   /* the shadow under the deck */
+    return c; });
+}
+function pierTile(x, y, kind, eL, K) {   /* kind: 'cap' (open above), 'face' (open to a side; eL the open side) */
+  return once('pr5_' + kind + '_' + eL + '_' + (x & 3) + '_' + (y & 3), () => { const [c, g] = canvas(16, 16), r = mulberry(hash(x & 3, 71));
+    const ramp = K.R[0];
+    rect(g, 0, 0, 16, 16, ramp[1]);
+    for (let yy = 0; yy < 16; yy += 5) { rect(g, 0, yy + 4, 16, 1, ramp[0]); const off = ((yy / 5) & 1) * 5 + (x & 3);   /* squared courses, joints staggered */
+      for (let xx = off % 10; xx < 16; xx += 10) rect(g, xx, yy, 1, 5, ramp[0]);
+      for (let xx = 0; xx < 16; xx++) if (r() < 0.2) px2(g, xx, yy + ((r() * 4) | 0), ramp[2]); px2(g, (off + 2) % 16, yy, ramp[3]); }
+    if (kind === 'cap') { rect(g, 0, 0, 16, 3, '#33231b'); rect(g, 0, 0, 16, 1, GP.lip); for (let i = 0; i < 16; i++) if (r() < 0.4) px2(g, i, 0, GP.lipL); rect(g, 0, 3, 16, 1, ramp[0]);   /* a lit cap of packed tailings */
+      for (let i = 0; i < 5; i++) px2(g, (r() * 15) | 0, 1 + ((r() * 2) | 0), '#4a382c'); }
+    else { const x0 = eL ? 0 : 12; rect(g, x0, 0, 4, 16, MP.t2); rect(g, x0, 0, 1, 16, MP.t4); rect(g, x0 + 3, 0, 1, 16, MP.t0); if ((y & 3) === 1) { rect(g, x0, 6, 4, 2, MP.i2); rect(g, x0, 6, 4, 1, MP.i4); } }   /* the shoring post on the pit side */
+    return c; });
+}
 // ================================ THE HOOK ================================
 export function mineTile(t, x, y, at, T, L) {
   const zone = zoneOf(x), op = open(at, T);
-  if (t === T.RAIL) return deckTile(x, y);
+  if (t === T.ONEWAY && inPits(x)) return plankTile(x);   /* (deeprails5 art) THE SPOIL PITS' catwalk: its own plank deck */
+  if (t === T.RAIL || t === T.ONEWAY) return deckTile(x, y);
+  if (t === T.SPIKE) return y >= 33 ? pitFloorTile(x, y) : heapTile(x);   /* (deeprails5 art) a pit floor (row 34) / a spoil heap on a line (rows 25, 29) */
   if (isSlope(t)) return slopeTile(t, x, y, zone, 0);
   if (t !== T.SOLID) return null;
   const up = op(0, -1, x, y), down = op(0, 1, x, y), eL = op(-1, 0, x, y), eR = op(1, 0, x, y);
   const upSlope = isSlope(at(x, y - 1));
   if (upSlope) return massTile(x, y, 2, zone);
+  if (up && inPits(x) && y < 33) return pierTile(x, y, 'cap', 0, KIT[zone] || KIT[0]);   /* (deeprails5 art) the rock piers' coursed cap */
   if (up) return floorTile(x, y, eL ? 1 : 0, eR ? 1 : 0, zone);
   if (down) return ceilTile(x, y, zone);
+  if ((eL || eR) && inPits(x)) return pierTile(x, y, 'face', eL ? 1 : 0, KIT[zone] || KIT[0]);   /* (deeprails5 art) a pier's shored face over a pit */
   if (eL || eR) return wallTile(x, y, eL ? 1 : 0, eR ? 1 : 0, zone);
   let d = 6; for (let k = 1; k <= 5 && d === 6; k++) for (let dy = -k; dy <= k && d === 6; dy++) for (let dx = -k; dx <= k; dx++) { if (Math.max(Math.abs(dx), Math.abs(dy)) !== k) continue; if (op(dx, dy, x, y)) { d = k; break; } }
   return massTile(x, y, d, zone);
