@@ -6,7 +6,7 @@
 //   once in the air before you land (a second only with SLIPSTREAM)
 //   X early in it is the DASH ATTACK, and ends it; a jump out of it is a running jump
 //   the Warden's button is her back-step (no turn, no dash in it); her double tap forward carries the vault
-//   the Geomancer burrows on the floor and dashes in the air
+//   the Geomancer burrows on the floor and, in the air, shrugs (THE STONE SHRUG, claude/heropassa)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 const pg = await openPage({ audio: false, fonts: false });
@@ -53,7 +53,9 @@ try {
   t(r.wBack.dodge > 0 && r.wBack.vx < 0 && r.wBack.face === 1 && r.wBack.dash === 0, 'the Warden\'s button is her back-step: no turn, no dash in it: ' + JSON.stringify(r.wBack));
   t(r.wFwd.dodge > 0 && r.wFwd.vx > 0 && r.wFwd.dash > 0 && r.wVault.vaultT > 0, 'the Warden tapped forward steps in, and a jump out of it vaults: ' + JSON.stringify(r.wFwd) + ' ' + JSON.stringify(r.wVault));
   t(r.gFloor.burrow && r.gFloor.dash === 0, 'the Geomancer burrows on the floor: ' + JSON.stringify(r.gFloor));
-  t(!r.gAir.ground && r.gAir.dodge > 0 && !r.gAir.burrow && r.gAir.dash > 0, 'in the air her dodge is a plain dash: ' + JSON.stringify(r.gAir));
+  /* (claude/heropassa, DESIGN CHANGE - brief-heroidentity item 1 + the audit's rec: her AIR dodge is THE STONE SHRUG now, not a plain dash: she does not move, no grace, the first blow in it
+     is shrugged off - src/hero-pass.js, held by tools/hero-pass.mjs. Was: 'in the air her dodge is a plain dash' (dash > 0)) */
+  t(!r.gAir.ground && r.gAir.dodge > 0 && !r.gAir.burrow && r.gAir.dash === 0 && r.gAir.inv === 0, 'in the air her dodge is the STONE SHRUG (no dash, no grace): ' + JSON.stringify(r.gAir));
   assert.deepEqual(pg.errors, []);
   if (fail.length) { console.log(fail.join('\n')); process.exit(1); }
   console.log('one dodge: the double tap and the button are one move - grace, direction, one cost, once in the air, the dash attack and the jump out of it; the Warden steps and the Geomancer burrows');

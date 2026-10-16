@@ -139,8 +139,8 @@ export function refund(P, n) { if ((P.exhaustT || 0) > 0 || !(n > 0)) return 0; 
 export const blockCost = (dmg, steady = 0) => Math.round(Math.min(STAM.blockCap, STAM.blockBase + STAM.blockPerDmg * Math.max(0, dmg || 0)) * (1 - 0.15 * steady));
 /* may a guard (shield, aegis, ward, rune-ward) be RAISED? */
 export const guardOk = P => !P.winded;
-/* regen is paused while he is committed (the whole recovery, window and all), rolling or holding a guard */
-export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || (P.dodge > 0 && !(STAM.stepFree && (P.dodgeMax || 0) <= 0.2)) || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard || (P.braceT || 0) > 0 || (P.braceRec || 0) > 0;   /* (THE BERSERKER's brace and its beat: a guard of his own) */
+/* regen is paused while he is committed (the whole recovery, window and all), rolling or holding a guard (claude/heropassa: a SHORT dodge of a hero's own - the ember blink, the shadow-step - is a roll here, not the warden's free step: P.ownDodge) */
+export const regenPaused = P => P.atk >= 0 || (STAM.pauseRecovery && (P.atkRec || 0) > 0) || (P.dodge > 0 && !(STAM.stepFree && (P.dodgeMax || 0) <= 0.2 && !P.ownDodge)) || !!P.block || !!P.aegis || !!P.warding || !!P.geoGuard || (P.braceT || 0) > 0 || (P.braceRec || 0) > 0;   /* (THE BERSERKER's brace and its beat: a guard of his own) */
 
 /* ONE FRAME OF THE BAR (every player-update path calls this instead of its own regen line). `extra` multiplies the regen
    (the venom's slow); `hold` is true where regen must wait anyway (a live plunge chain). */

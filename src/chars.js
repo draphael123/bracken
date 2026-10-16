@@ -747,6 +747,27 @@ function knightKitPoses(F, KF, sh) {
   const high = { top, dy: -1, legs: 'wide', hy: -1, sho: 1, ...S(0, -8, 1, -20) };
   F.realm = [KF({ ...high, plume: 1, bits: halo.slice(0, 1) }), KF({ ...high, plume: 2, bits: [...halo, o(-1, -24, C), o(3, -24, C)] }),
     KF({ top, wide: 6, dx: 2, dy: 1, legs: 'runC', ...S(4, 1, 15, 8), plume: 2, bits: [o(16, 8, G), o(17, 8, W)] })];
+  const ab = (x, y, col) => [x - BX, y - BY, col];
+  /* ==== HERO PASS A ART (claude/heropassaart): the knight's three new moves. hpLn(): a line of loose pixels between two ABSOLUTE points (the blade's aura, a streak) ==== */
+  const hpLn = (x0, y0, x1, y1, col, every = 1) => { const bits = [], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) if (i % every === 0) bits.push([Math.round(x0 + (x1 - x0) * i / n) - BX, Math.round(y0 + (y1 - y0) * i / n) - BY, typeof col === 'function' ? col(i, n) : col]); return bits; };
+  const STEEL = '#c9d1dc', RIM = '#e8eef8';
+  /* SHIELD-STEP (the dodge, 0.24 s): PLANT - the lead boot set and the kite brought square across him, the blade trailed low behind so nothing of him is ahead of the oak; SLIDE - driven off the back foot with the
+     shield fixed in front of the step, a bright bar down its leading rim and the steel streaks left behind; SET - the step finished, weight dropped behind the shield, a glint on the rim and the dust off the heel */
+  F.kStep = [KF({ top, dx: -1, dy: 1, legs: 'wide', shield: true, sword: [X - 4, Y + 4, X - 10, Y + 8], plume: 1, bits: [[-2, 16, D], [-4, 15, D], [-6, 16, D]] }),
+    KF({ top, wide: 4, dx: 3, dy: 1, legs: 'runC', shield: true, sword: [X - 4, Y + 3, X - 11, Y + 6], plume: 2, bits: [...[5, 6, 7, 8, 9, 10, 11, 12].map(y => [16, y, RIM]), [17, 8, W], [17, 9, C], ...[[-4, 7, STEEL], [-5, 7, STEEL], [-6, 7, STEEL], [-7, 7, '#8a98ac'], [-8, 7, '#8a98ac'], [-5, 10, STEEL], [-6, 10, STEEL], [-7, 10, '#8a98ac'], [-8, 10, '#8a98ac'], [-9, 10, '#8a98ac']], [-3, 16, D], [-4, 16, D], [-5, 16, D]] }),
+    KF({ top, wide: 4, dx: 2, dy: 2, legs: 'wide', shield: true, sword: [X - 3, Y + 5, X - 8, Y + 9], plume: 0, bits: [[15, 4, W], [14, 3, C], [16, 5, C], [15, 5, C], [1, 17, D], [-1, 16, D], [4, 17, D]] })];
+  /* SHIELD BASH (UP+C, 0.3 s, a half step in): COCK - the whole kite hauled back into his chest with the off arm bent behind it and his weight on the back foot; PUNCH - thrown out flat and square at the full reach of the arm,
+     the rim white, a star of sparks where the oak met the thing's wind-up; RECOVER - the shield coming back, the shock still ringing off the rim in two short ticks */
+  F.kBash = [KF({ top, dx: -3, dy: 1, legs: 'wide', shield: true, sword: [X - 6, Y + 3, X - 12, Y + 7], plume: 1 }),
+    KF({ top, wide: 8, dx: 5, dy: 1, legs: 'runC', sho: 1, shield: true, sword: [X - 3, Y + 3, X - 10, Y + 6], plume: 2, bits: [...[4, 5, 6, 7, 8, 9, 10, 11, 12, 13].map(y => [16, y, RIM]), [19, 8, W], [18, 8, W], [20, 8, C], [19, 7, C], [19, 9, C], [21, 8, G], [20, 5, C], [20, 11, C], [22, 6, G], [22, 10, G], [18, 3, C], [18, 13, C]] }),
+    KF({ top, wide: 8, dx: 3, legs: 'wide', shield: true, sword: [X - 4, Y + 3, X - 10, Y + 7], plume: 1, bits: [[18, 6, C], [18, 10, C], [19, 8, G], [17, 4, STEEL], [17, 12, STEEL]] })];
+  /* VALIANT STRIKE (a full bar, the heavy cut): the blade taken up over the helm in both hands with a flame of gold standing along it; thrown through with the gold dragged out behind the edge and a white core; and
+     the follow-through, the steel still lit down to the point and gold falling off it */
+  const auraAt = (x0, y0, x1, y1, k) => [...hpLn(x0 + 1, y0 - 1, x1 + 1, y1 - 1, (i, n) => i % 2 ? G : C), ...hpLn(x0 - 1, y0 + 1, x1 - 1, y1 + 1, G, 2), ab(x1 + 1, y1 - 2, W), ab(x1, y1 - 3, C), ab(x1 + 2, y1 - 3, G), ...(k ? [ab(x1 + 3, y1 - 1, G), ab(x0 - 2, y0 - 3, C)] : [])];
+  F.valiant = [KF({ top, wide: 10, dx: 0, dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 1, Y - 8], sword: [X + 1, Y - 8, X + 5, Y - 19], plume: 1, bits: auraAt(X + 1, Y - 8, X + 5, Y - 19, 0) }),
+    KF({ top, wide: 10, dx: 2, legs: 'runC', arm: [X, Y, X + 5, Y - 4], sword: [X + 5, Y - 4, X + 16, Y - 8], plume: 2, bits: [...auraAt(X + 5, Y - 4, X + 16, Y - 8, 1), ...hpLn(X + 1, Y - 12, X + 8, Y - 15, G, 2)] }),
+    KF({ top, wide: 10, dx: 3, dy: 1, legs: 'wide', arm: [X, Y, X + 4, Y + 1], sword: [X + 4, Y + 1, X + 14, Y + 9], plume: 0, bits: [...auraAt(X + 4, Y + 1, X + 14, Y + 9, 1), ab(X + 15, Y + 10, W), ab(X + 16, Y + 8, C), ab(X + 17, Y + 11, G), ab(X + 12, Y + 12, G)] }),
+    KF({ top, wide: 10, dx: 2, dy: 1, legs: 'wide', arm: [X, Y, X + 3, Y + 2], sword: [X + 3, Y + 2, X + 10, Y + 10], plume: 1, bits: [...hpLn(X + 3, Y + 2, X + 10, Y + 10, G, 3), ab(X + 11, Y + 12, G), ab(X + 9, Y + 13, C)] })];
   riposteKit(F, 'knight', KF, { X, Y, OFF });
 }
 
@@ -1813,6 +1834,12 @@ function pyroKitPoses(F, up) {
       sparks: [[2, -3, 'r'], [3, -1, 'y'], [1, 4, 'r'], [30, 4, 'y'], [31, -1, 'r'], [4, 9, 'y'], [29, 10, 'r'], [2, 14, 'y'], [31, 15, 'r'], [13, -6, 'y'], [17, -5, 'r']] }),
     P({ sit: 2, hemW: 13, staff: [17, 20, 18, 4], arm: [16, 12, 17, 10], arm2: [11, 12, 16, 11], cowl: 1,
       sparks: [[4, 2, 'r'], [28, 5, 'y'], [8, 9, 'y'], [26, 12, 'r'], [3, 15, 'r'], [30, 16, 'y']] })];
+  /* ==== HERO PASS A ART (claude/heropassaart): the EMBER BLINK. OUT - thrown flat and long off the toes with the staff trailed behind, the whole robe stretched into a streak and a rope of embers left on the line she
+     came down; IN - arrived (she is not drawn between the two), the robe still belled, the cowl thrown back and the flare going off around her as she lands ==== */
+  F.eBlink = [P({ lean: 5, sit: 3, trail: 8, hemW: 15, feet: [[7, 18], [20, 18]], staff: [3, 17, 24, 8, 'back'], arm: [17, 12, 23, 12], cowl: 1, flick: 1, flare: [25, 11, true],
+      sparks: [[2, 13, 'y'], [-1, 15, 'r'], [4, 10, 'r'], [0, 18, 'y'], [-3, 16, 'r'], [-2, 12, 'y'], [-5, 14, 'y'], [-6, 17, 'r'], [27, 8, 'y'], [28, 13, 'r']] }),
+    P({ lean: -2, dy: -1, bell: 3, hemW: 14, staff: up(), arm: [16, 10, 20, 7], arm2: [11, 10, 8, 8], cowl: 2, flick: 1,
+      sparks: [[3, 5, 'r'], [24, 4, 'y'], [2, 11, 'y'], [25, 10, 'r'], [13, -2, 'y'], [6, 1, 'r'], [21, 0, 'r'], [4, 16, 'r'], [23, 16, 'y'], [9, -3, 'y'], [18, -4, 'r']] })];
   riposteKit(F, 'pyro', P, { X: 19, Y: 13, OFF: [13, 13], up });
 }
 /* EVERY ABILITY HAS A BODY: THE PALADIN'S BOUGHT ACTIVES (lane P, 2026-09-24). Divine Shield played beside an idle paladin, Holy
@@ -2028,6 +2055,13 @@ function pirateKitPoses(F, sh, holster, carry) {
     K({ wide: 4, dy: 4, legs: 'crouch', legsDy: 4, hy: -1, arm: [X, Y, X + 5, Y + 5], arm2: [OFF[0], OFF[1], X + 4, Y + 6], cutlass: [X, Y - 4, X - 2, Y - 17], pistol: holster(), plume: 2 })];
   F.boardLeap = [K({ wide: 4, dx: 1, dy: 2, legs: 'tuck', arm: [X, Y, X + 3, Y + 7], cutlass: [X - 1, Y - 2, X - 5, Y - 12], pistol: holster(), plume: 1 }),
     K({ wide: 4, dy: -2, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 2, Y - 9], arm2: [OFF[0], OFF[1], X - 2, Y - 8], cutlass: [X + 2, Y - 9, X + 6, Y - 20], pistol: holster(), plume: 2, bits: [a(X - 3, Y + 12, PALE), a(X + 5, Y + 13, PALE)] })];
+  /* ==== HERO PASS A ART (claude/heropassaart): the POWDER FLASH. FLING - down on one heel with the flask of black powder dashed at the floor under him and the fuse lit; FLASH - he is a hunched shape in the roll inside a
+     white-hot burst, the black smoke standing up off it; OUT - up and through the smoke at a run with the grit still in the air behind him ==== */
+  const FLASK = '#3a2a22', GRIT = '#2a2630', FLASHW = '#ffffff', FLASHY = '#ffd36b', FLASHO = '#ff9a5c';
+  const burst = (cx, cy, r) => { const o = []; for (let k = 0; k < 12; k++) { const an = k / 12 * Math.PI * 2; for (const rr of [r - 2, r]) o.push(a(Math.round(cx + Math.cos(an) * rr), Math.round(cy + Math.sin(an) * rr * 0.8), rr === r ? (k & 1 ? FLASHO : FLASHY) : FLASHW)); } return o; };
+  F.powder = [K({ wide: 4, dx: 1, dy: 2, legs: 'wide', arm: [X, Y, X + 4, Y + 6], cutlass: carry(), pistol: holster(), plume: 1, bits: [a(X + 5, Y + 8, FLASK), a(X + 6, Y + 8, FLASK), a(X + 5, Y + 9, FLASK), a(X + 7, Y + 7, FLASHY), a(X + 8, Y + 6, FLASHW)] }),
+    K({ wide: 6, dx: 1, dy: 4, hy: 2, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 2, Y + 6], cutlass: carry(), plume: 2, bits: [...burst(X + 4, Y + 7, 6), a(X + 4, Y + 7, FLASHW), a(X + 5, Y + 7, FLASHW), a(X + 3, Y + 7, FLASHW), a(X + 4, Y + 6, FLASHW), a(X + 4, Y + 8, FLASHW), a(X + 3, Y - 2, SMOKE), a(X + 4, Y - 3, GRIT), a(X + 6, Y - 3, SMOKE), a(X + 5, Y - 5, PALE)] }),
+    K({ wide: 6, dx: 2, dy: 1, sho: 1, legs: 'runC', arm: [X, Y, X + 3, Y + 3], cutlass: carry(), plume: 2, bits: [a(X - 6, Y + 2, GRIT), a(X - 7, Y + 3, SMOKE), a(X - 9, Y + 1, GRIT), a(X - 8, Y + 6, SMOKE), a(X - 10, Y + 5, PALE), a(X - 5, Y - 3, SMOKE), a(X - 7, Y - 4, GRIT), a(X - 3, Y + 9, GRIT), a(X - 12, Y + 3, SMOKE)] })];
   riposteKit(F, 'pirate', K, { X, Y, OFF, holster });
 }
 /* EVERY ABILITY HAS A BODY: THE DEATH KNIGHT'S BOUGHT ACTIVES (lane P, 2026-09-24). BLOOD WELL and GRAVECALL played beside an idle
@@ -2088,6 +2122,12 @@ function reaperKitPoses(F, sh) {
   F.reap = [K({ dx: -1, legs: 'wide', arm: [X, Y, X - 4, Y - 5], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 1], greatsword: [X - 4, Y - 5, X - 16, Y - 15], plume: 1 }),
     K({ wide: 12, dx: 3, dy: 1, legs: 'runC', arm: [X, Y, X + 6, Y - 2], arm2: [OFF[0], OFF[1], X + 4, Y - 1], greatsword: [X + 6, Y - 2, X + 20, Y + 9], plume: 2, bits: ARC }),
     K({ dx: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 2, Y - 2], plume: 2, bits: [...lit, a(X + 4, Y - 4, LIT), a(X + 6, Y - 6, GRN), a(X + 8, Y - 9, DGRN), a(X + 3, Y - 3, GRN)] })];
+  /* ==== HERO PASS A ART (claude/heropassaart): the SHADOW-STEP. UNMOOR - his edges coming away into shade at the feet and the lights in the helm flaring, the blade hauled low behind him; STEP - flat, long and gone forward
+     with the blade trailing a dozen pixels and the shade he leaves a dark ribbon down his back; REFORM - the shade falling off him as he comes together, the green flick in the helm ==== */
+  const SHADE = '#3a2850', SHADE2 = '#241a34', SHADEG = '#2e4a3a';
+  F.shadowStep = [K({ wide: 4, dx: -1, legs: 'wide', arm: [X, Y, X - 3, Y + 3], arm2: [OFF[0], OFF[1], X - 4, Y + 3], greatsword: [X - 4, Y + 4, X - 17, Y + 8], plume: 1, bits: [...lit, a(X - 2, Y + 14, SHADE), a(X, Y + 15, SHADE2), a(X + 3, Y + 14, SHADE), a(X - 5, Y + 12, SHADE2), a(X + 6, Y + 15, SHADE2)] }),
+    K({ wide: 10, dx: 4, dy: 2, legs: 'runC', sho: 1, arm: [X, Y, X + 3, Y + 4], arm2: [OFF[0], OFF[1], X + 2, Y + 4], greatsword: [X - 2, Y + 5, X - 22, Y + 9], plume: 2, bits: [...lit, ...[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => a(X - 6 - i, Y + 1 + (i >> 1), i % 3 ? SHADE : SHADE2)), ...[0, 1, 2, 3, 4, 5].map(i => a(X - 5 - i, Y + 9 - (i >> 1), SHADE2)), a(X - 14, Y + 4, SHADEG), a(X - 17, Y + 6, SHADEG), a(X - 12, Y + 12, SHADE)] }),
+    K({ wide: 6, dx: 2, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 1, Y + 3], arm2: [OFF[0], OFF[1], X, Y + 3], greatsword: [X - 2, Y + 3, X + 10, Y + 7], plume: 1, bits: [...lit, a(X - 7, Y + 2, SHADE), a(X - 8, Y + 6, SHADE2), a(X - 6, Y + 10, SHADE), a(X - 9, Y + 9, SHADEG), a(X - 4, Y + 15, SHADE2)] })];
   riposteKit(F, 'reaper', K, { X, Y, OFF });
 }
 export function bakePyro(skin = {}, previewOnly = false) {
@@ -3241,6 +3281,21 @@ function wardenKitPoses(F, sh, WIDE) {
     KF({ wide: WIDE + 4, dx: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 2], spear: [X - 3, Y + 2, X + 22, Y + 1], plume: 2, bits: [o(6, 1, G), o(12, 1, G)] }),
     KF({ wide: WIDE + 6, dx: -2, dy: 1, sho: -1, legs: 'wide', arm: [X, Y, X - 3, Y + 2], arm2: [OFF[0], OFF[1], X - 4, Y + 2], spear: [X - 4, Y + 2, X + 25, Y + 1], plume: 0,
       bits: [o(8, 1, G), o(14, 1, C), o(20, 1, G)] })];
+  /* ==== HERO PASS A ART (claude/heropassaart): the warden's new moves ==== */
+  const ab = (x, y, col) => [x - BX, y - BY, col];
+  const hpLn = (x0, y0, x1, y1, col, every = 1) => { const bits = [], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1); for (let i = 0; i <= n; i++) if (i % every === 0) bits.push([Math.round(x0 + (x1 - x0) * i / n) - BX, Math.round(y0 + (y1 - y0) * i / n) - BY, typeof col === 'function' ? col(i, n) : col]); return bits; };
+  const level = (dy = 0) => [X - 6, Y + 4 + dy, 44, Y + 3 + dy];   /* the spear laid LEVEL at hip height, point out: what a low blow passes under */
+  /* LOW HOP (the dodge): COIL - down on both heels with the spear laid level and the whole of her sunk behind it; HOP - both knees tucked to the belt, the spear still LEVEL under the line of the blow and a
+     green glint on the point; LAND - the knees giving, the point dipped and her weight forward. The five-pixel lift is the draw's (hero-pass.js drawMod); the dust under her is the world's. */
+  F.wHop = [KF({ wide: WIDE, dx: -1, dy: 3, legs: 'crouch', legsDy: 3, arm: [X, Y, X + 2, Y + 3], arm2: [OFF[0], OFF[1], X, Y + 4], spear: level(1), plume: 1 }),
+    KF({ wide: WIDE, dx: 1, dy: -1, legs: 'tuck', arm: [X, Y, X + 3, Y + 2], arm2: [OFF[0], OFF[1], X + 1, Y + 3], spear: level(), plume: 2, bits: [ab(44, Y + 2, C), ab(45, Y + 3, W), ab(24, Y + 5, G), ab(14, Y + 5, G)] }),
+    KF({ wide: WIDE, dx: 2, dy: 2, legs: 'land', arm: [X, Y, X + 4, Y + 3], spear: [X - 3, Y + 4, 43, Y + 7], plume: 0, bits: [[0, 17, D], [-2, 16, D], [5, 17, D]] })];
+  /* WALL PLANT: REACH - in the air and side-on to the wall with the spear drawn back level in both hands for the drive; DRIVEN - arms locked straight out, the point gone into the stone with the chips flying off
+     it, and a white flash where it bit. Her spear is the foothold now, so she is bare-handed on the second beat. */
+  F.wPlant = [KF({ wide: WIDE, dx: -2, legs: 'jump', sho: 1, arm: [X, Y, X - 2, Y + 2], arm2: [OFF[0], OFF[1], X - 3, Y + 3], spear: [X - 10, Y + 3, X + 14, Y + 2], plume: 1 }),
+    KF({ wide: WIDE, dx: 3, legs: 'jump2', arm: [X, Y, X + 8, Y + 1], arm2: [OFF[0], OFF[1], X + 7, Y + 3], plume: 2, bits: [ab(X + 11, Y + 1, W), ab(X + 12, Y + 1, C), ab(X + 12, Y - 1, G), ab(X + 12, Y + 3, G), ab(X + 14, Y - 2, C), ab(X + 14, Y + 4, C), ab(X + 15, Y + 1, G)] })];
+  /* PERCHED ON THE SHAFT (while she stands on the foothold): bare-handed, knees a little bent, both arms out for her balance and the cloak swaying - the spear itself is drawn in the world under her boots */
+  F.wPerch = [0, 1].map(i => KF({ wide: WIDE, dy: 1, legs: i ? 'stand' : 'crouch', legsDy: i ? 0 : 1, sho: i, arm: [X, Y, X + 5, Y - 2 + i], arm2: [OFF[0], OFF[1], X - 6, Y - 1 - i], plume: i ? 2 : 0 }));
   riposteKit(F, 'warden', KF, { X, Y, OFF, WIDE });
 }
 // HEATHER BALE — a round bale of cut heather the wind rolls about the moor. 12x12, four turns of the straw.
@@ -5062,6 +5117,14 @@ function rgKitPoses(F, h) {
     F.rgRestock2 = low({ sho: 1, hy: 1, arm: [X, Y, X + 2, Y + 4], arm2: [OFF[0], OFF[1], X - 7, Y - 5], plume: 0, bits: [...pouch, o(-7, -8, '#cfa86a'), o(-7, -9, '#f0ead8'), o(-5, -9, '#ffffff'), o(-8, -11, '#fff6c8'), o(-4, -11, '#fff6c8'), o(-6, -12, '#ffffff')] });
     F.rgRestock = [F.rgRestock0, F.rgRestock1, F.rgRestock2]; }
   /* THE PARRY AND THE RIPOSTE ARROW (the shared key names): drawn in riposteKit('ranger') below */
+  /* ==== HERO PASS A ART (claude/heropassaart). ARROW SNATCH: CATCH - the bow flung out of the way and the free hand shot straight out ahead with a seed's arrow closed in the fingers and a gold star off the fist; HELD - the hand
+     drawn back with it, the arrow already across the string. KNEELING DRAW: down on one knee with the bow held LEVEL and low, the draw hand coming back along the ground-line of the shot in three beats (a quieter
+     body than the standing draw: no rise on the toes, the cloak pooled behind her) ==== */
+  F.rgSnatch = [KF({ legs: 'wide', dx: 1, ...carry(), arm: [X, Y, X + 2, Y + 4], arm2: [OFF[0], OFF[1], X + 8, Y - 3], plume: 2, bits: [...shaft(8, -3, 16, -4), o(18, -4, C), o(19, -4, W2), o(17, -6, C), o(17, -2, C), o(20, -3, GR)] }),
+    KF({ legs: 'wide', ...aimed(2), plume: 1, bits: [o(5, -4, GR), o(4, -6, C), o(2, -6, W2)] })];
+  F.rgKneelDraw = [KF({ dy: 3, legs: 'kneel', ...aimed(5, { stave: [X + 6, Y + 8, X + 6, Y - 12] }), plume: 1 }),
+    KF({ dy: 3, legs: 'kneel', ...aimed(0, { stave: [X + 7, Y + 8, X + 7, Y - 12] }), plume: 2, bits: [o(9, 12, D), o(5, 13, D)] }),
+    KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-3, { stave: [X + 7, Y + 8, X + 7, Y - 12] }), plume: 0, bits: [o(14, -3, C), o(15, -3, W2), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] })];
   riposteKit(F, 'ranger', KF, { X, Y, OFF, aimed, knife });
 }
 /* ==== THE GEOMANCER (2026-09-24, docs/briefs/geomancer.md). A hood and a stone mantle, and (round 3) a TALL STAFF with an amber geode.
@@ -5533,6 +5596,12 @@ function bzKitPoses(F, sh) {
   /* AXE STORM: a hatchet from the belt flung underhand, then another overhand - the fan comes out of his arm */
   F.bzStorm = [KF({ dx: -1, legs: 'wide', ...lead(-2, 3, -6, -5), arm2: [OFF[0], OFF[1], X - 2, Y + 6], plume: 1, bits: [o(-2, 7, '#8c8a7e')] }),
     KF({ wide: 6, dx: 2, legs: 'runC', ...lead(4, -1, 8, -9), arm2: [OFF[0], OFF[1], X + 7, Y - 2], plume: 2, bits: [o(10, -4, W2), o(12, -2, W2), o(11, 0, W2)] })];
+  /* ==== HERO PASS A ART (claude/heropassaart): the SHOULDER BARGE. WIND - weight dropped on the back foot, both axes hauled up and back out of the way, the shoulder dipping; DRIVE - head tucked behind the shoulder and the whole
+     of him thrown forward, the axes trailing, a white bar down the line of the shoulder and the wind torn off it; SHOVE - the shoulder in, dust off the heels and the impact stars where it met them ==== */
+  const bargeLines = [[11, 5, W2], [12, 5, W2], [13, 5, D], [11, 8, W2], [12, 8, D], [11, 11, D]];
+  F.bzBarge = [KF({ dx: -2, dy: 2, sho: 1, legs: 'wide', ...lead(-1, -3, -8, -9, -1), ...off(-3, -2, -10, -7, -1), plume: 1 }),
+    KF({ wide: 8, dx: 5, dy: 2, hy: 2, sho: 1, legs: 'run1', ...lead(-3, -2, -11, -9, -1), ...off(-4, -1, -12, -5, -1), plume: 2, bits: [...bargeLines, [-4, 6, D], [-6, 6, D], [-8, 7, '#8a7a5a'], [-5, 10, D], [-7, 10, '#8a7a5a']] }),
+    KF({ wide: 8, dx: 4, dy: 1, hy: 1, sho: 1, legs: 'wide', ...lead(-2, -1, -10, -8, -1), ...off(-3, 0, -11, -4, -1), plume: 1, bits: [[16, 6, W2], [17, 5, R], [17, 8, W2], [18, 7, R], [16, 10, R], [18, 4, D], [19, 9, D], [-2, 16, D], [-4, 15, D], [0, 17, D]] })];
   riposteKit(F, 'berserker', KF, { X, Y, OFF, lead, off });
 }
 /* EVERY ABILITY HAS A BODY: THE GEOMANCER'S NINE (src/hero-poses.js plays them; tools/ability-poses.mjs holds her to it). Every
@@ -5576,6 +5645,11 @@ function geoKitPoses(F, sh) {
   /* AVALANCHE: both arms up and the stave held flat at the sky, the hood thrown back - then brought down and the butt hammered in */
   F.gAval = [KF({ dy: -2, legs: 'wide', sho: 1, hy: -1, arm: [X, Y, X + 3, Y - 10], arm2: [OFF[0], OFF[1], X - 4, Y - 10], stave: [X - 7, Y - 12, X + 6, Y - 13], plume: 2, bits: [o(-4, -18, M), o(4, -20, M), o(9, -17, M)] }),
     KF({ dy: 3, legs: 'crouch', arm: [X, Y, X + 4, Y], arm2: [OFF[0], OFF[1], X + 3, Y + 1], stave: [X + 6, Y + 9, X + 5, Y - 8], plume: 0, bits: [o(3, 9, D), o(9, 9, D), o(1, 8, M), o(11, 8, M), o(5, -14, A)] })];
+  /* ==== HERO PASS A ART (claude/heropassaart): the STONE SHRUG (her air dodge: she does not move). GATHER - hunched in the air with the stave brought flat across her shoulders and the first plates of stone lifting off
+     her; SET - the stone skin shut over head, shoulders and back like a shell, the amber heart showing through the seam ==== */
+  const plate = (x, y) => [o(x, y, M), o(x + 1, y, M), o(x, y + 1, D), o(x + 1, y + 1, M)];
+  F.gShrug = [KF({ dy: -2, hy: 2, sho: 1, legs: 'tuck', arm: [X, Y, X + 3, Y - 5], arm2: [OFF[0], OFF[1], X - 2, Y - 5], stave: [X - 9, Y - 6, X + 9, Y - 7], plume: 1, bits: [...plate(-4, -9), ...plate(4, -9), o(-7, -3, M), o(8, -2, D), o(0, -12, M)] }),
+    KF({ dy: -2, hy: 3, sho: 1, legs: 'tuck', arm: [X, Y, X + 3, Y - 4], arm2: [OFF[0], OFF[1], X - 2, Y - 4], stave: [X - 9, Y - 5, X + 9, Y - 6], plume: 0, bits: [...plate(-4, -10), ...plate(0, -12), ...plate(4, -10), ...plate(-8, -5), ...plate(8, -5), ...plate(-8, 1), ...plate(9, 0), o(-6, -8, D), o(6, -8, D), o(0, -4, A), o(1, -4, A), o(-2, -2, M), o(4, -2, D)] })];
   riposteKit(F, 'geomancer', KF, { X, Y, OFF });
 }
 

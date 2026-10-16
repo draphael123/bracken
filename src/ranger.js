@@ -40,6 +40,12 @@ export const RG = {
   bash: { t: 0.22, rec: 0.18, st: 8, reach: 17, push: 210, dmg: 0.45, beat: 1 },   /* THE BOW-BASH: s up, s after; the shove; beat x the shared tap beat */
   flip: { vx: 175, vy: -235, high: 1.25, shots: 1 },  /* THE BACKFLIP: off the ground; HIGH FLIP x high */
   snare: { st: 12, life: 14, hold: 1.6, eliteHold: 0.8, bossLean: 22, dmg: 0.5, cd: 0.7, toothed: 4 / 3 },
+  /* (claude/heropassa, Daniel 10-15 interview) ARROW SNATCH: the bow-bash ON THE BEAT against a PROJECTILE catches it - nothing taken, +1 arrow to her quiver; with the quiver
+     full it is FLUNG BACK the way it came as her riposte arrow (a free arrow, the 'riposte' tag). r: px from her middle it is caught at. KNEELING DRAW: crouched still for
+     settle s, a held X is drawn FROM THE KNEE - wind x wind (~30% faster), the arrow x vx flatter (vy) and further, the sweet spot's Focus x focus; the crouch is the low
+     profile (a HIGH blow goes over her, src/duck.js). Distinct from the Death Knight's GRAVE KNEEL (it turns a LOW blow) and the Paladin's prayer (no guard at all) */
+  snatch: { r: 18, dy: 16, flingVx: 380, flingDmg: 1.2 },
+  kneel: { settle: 0.15, wind: 0.7, vx: 1.15, vy: 0.45, g: 0.85, focus: 1.5 },
   restock: { delay: 0.4, each: 1.3 },                 /* CROUCH TO RESTOCK (Daniel 10-14): DOWN held STILL on the ground delay s, then an arrow from the hip pouch every each s up to full; moving, a swing, a jump, a roll, a draw or a hit cancels it and resets the delay */
   perk: { quiver: 1, focus: 1 },                      /* LEVELING2's hero perks (FULL QUIVER, PATIENT EYE): main.js applyUpgrades sets these from the card; 1 = none */
   /* WEIGHT (claude/weight): her row of its commit table (src/commit.js reads COMMIT.ranger) - kept here as the record */
@@ -49,7 +55,7 @@ const ARROW_HIT = 3;   /* half-size of an arrow's point, px */
 
 export function makeRanger(api) {
   const stats = { quick: 0, draws: 0, full: 0, rises: 0, downs: 0, pierces: 0, knife: 0, hits: 0, sweet: 0, focusFull: 0, marks: 0, markHits: 0, bashes: 0, parries: 0, tooStrong: 0,
-    snares: 0, snared: 0, restocked: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0 };
+    snares: 0, snared: 0, restocked: 0, snatched: 0, flung: 0, kneels: 0, kneelHits: 0, flips: 0, flipShots: 0, picked: 0, refilled: 0, lost: 0, stuckWall: 0, stuckFoe: 0, empty: 0, riposteShots: 0 };
   const P = () => api.P, T = () => api.tal();
   const maxQ = () => RG.quiver.n + (T().deep ? 1 : 0);
   const refillT = () => (T().fletch ? RG.quiver.fletch : RG.quiver.refill) / RG.perk.quiver;
@@ -99,7 +105,7 @@ export function makeRanger(api) {
     if (a.kind === 'draw' && a.full && T().bodkin && e.guardT > 0) { e.guardT = 0; api.number(e.x, e.y - (e.h || 16) - 14, 'THROUGH', '#ffd36b'); }   /* BODKIN POINTS: as a ball does */
     api.hurtAs(a.tag, e, Math.max(1, Math.round(dmg)), a.x - Math.sign(a.vx || p.face) * 20, false); stats.hits++;
     const landed = e.hp < hp0 || !e.alive;
-    if (e.t === 'dummy') api.trialEvent(a.kind === 'down' ? 'down' : a.kind === 'draw' && a.full ? 'heavyblow' : 'hit');   /* (her yard: the straw men count her arrows) */
+    if (e.t === 'dummy') { api.trialEvent(a.kind === 'down' ? 'down' : a.kind === 'draw' && a.full ? 'heavyblow' : 'hit'); if (a.kneel) api.trialEvent('kdraw'); }   /* (claude/heropassa: a kneeling draw's arrow on the far straw) */ if (a.kneel) stats.kneelHits++;   /* (her yard: the straw men count her arrows) */
     if (landed && sweet) { stats.sweet++; focusGain(p, a.focus); if (!p.rgSweetSaid || api.time - p.rgSweetSaid > 1.2) { p.rgSweetSaid = api.time; api.ringAt(e.x, e.y - (e.h || 16) / 2, 10, '#9fdc6a', 0.2); } }
     if (landed && a.wild) markFoe(p, e);
     if (landed && a.kind === 'draw' && e.alive && !e.maxHp && !e.mini && !e.elite) { e.stagger = Math.max(e.stagger || 0, a.full ? 0.5 : 0.25); e.vx = Math.sign(a.vx || p.face) * (a.full ? 140 : 70); }
@@ -163,12 +169,14 @@ export function makeRanger(api) {
       loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg, tag: ['heavy', 'shot'], pierce: true, range: RG.pierce.range * far });
       api.number(p.x, p.y - 28, 'PIERCING SHOT', '#9fdc6a'); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, p.face, ['#dfffb0', '#9fdc6a'], 160);
     } else {
-      const vx = (RG.draw.vx0 + (RG.draw.vx1 - RG.draw.vx0) * k) * Math.sqrt(far), a = loose(p, { kind: 'draw', vx: p.face * vx, vy: RG.draw.vy, g: RG.draw.g / Math.sqrt(far), dmg: dmgBase() * (RG.draw.dmg0 + (RG.draw.dmg1 - RG.draw.dmg0) * k), tag: heavy ? ['heavy', 'shot'] : 'shot', focus: RG.sweet.draw * (0.5 + 0.5 * k) });
+      const kn = p.rgKneel ? RG.kneel : null;   /* (claude/heropassa) THE KNEELING DRAW: flatter, further, more Focus from the sweet spot, loosed low */
+      const vx = (RG.draw.vx0 + (RG.draw.vx1 - RG.draw.vx0) * k) * Math.sqrt(far) * (kn ? kn.vx : 1), a = loose(p, { kind: 'draw', vx: p.face * vx, vy: RG.draw.vy * (kn ? kn.vy : 1), g: RG.draw.g / Math.sqrt(far) * (kn ? kn.g : 1), dmg: dmgBase() * (RG.draw.dmg0 + (RG.draw.dmg1 - RG.draw.dmg0) * k), tag: heavy ? ['heavy', 'shot'] : 'shot', focus: RG.sweet.draw * (0.5 + 0.5 * k) * (kn ? kn.focus : 1), low: !!kn });
+      if (kn) a.kneel = true;
       a.full = full;
       if (full && T().twin && takeArrow(p)) { const b = loose(p, { kind: 'draw', vx: p.face * vx * 0.94, vy: RG.draw.vy + 30, g: RG.draw.g / Math.sqrt(far), dmg: a.dmg * 0.8, tag: a.tag, focus: 0 }); b.full = true; b.y += 3; }
       if (full) { api.shakeCam(2, p.face * 2); api.zoomKick(1.03, 0.14); }
     }
-    p.rgCd = RG.draw.rec; pose(p, 'rgLoose', 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); return true; }
+    p.rgKneel = false; p.rgCd = RG.draw.rec; pose(p, 'rgLoose', 0.22); api.SFX.rgLoose && api.SFX.rgLoose(full ? 2 : 1); return true; }
 
   /* ---- X, PRESSED (main.js: her X before the swing). Returns true when the press is hers (a shot is nocked or loosed); false: it is the knife ---- */
   function pointBlank(p) { for (const e of api.enemies) { if (!e.alive || e.harmless || e.gone > 0 || e.turncoat) continue; const dx = (e.x - p.x) * p.face, hw = (e.w || 12) / 2;
@@ -181,14 +189,14 @@ export function makeRanger(api) {
     if (air && aim.low) { if (p.rgQ > 0) return downShot(p) ? 'shot' : 'eat'; return false; }   /* empty: a knife plunge */
     if (p.dash > 0 && !p.rgFlip) return false;                            /* X early in a FORWARD roll: the knife's dash attack (the backflip has no dash in it) */
     if (p.rgQ <= 0) { if (!p.rgEmptySaid || api.time - p.rgEmptySaid > 3) { p.rgEmptySaid = api.time; api.number(p.x, p.y - 26, 'OUT OF ARROWS', '#9aa39a'); api.teach('empty'); } return false; }
-    if (aim.low && !air) return false;                                     /* DOWN+X on her feet: the knife's low sweep */
+    if (aim.low && !air) { if ((p.rgDuckT || 0) >= RG.kneel.settle && !pointBlank(p) && !(api.finishNear && api.finishNear())) { p.rgNock = { t: 0, air: false, kneel: true }; return 'nock'; } return false; }   /* DOWN+X on her feet: the knife's low sweep - unless she is already KNELT (crouched still RG.kneel.settle s): then it is THE KNEELING DRAW's nock (claude/heropassa) */
     if (aim.up) return riseShot(p) ? 'shot' : 'eat';
     if (pointBlank(p) && !(p.dodge > 0)) return false;                    /* TOO CLOSE TO DRAW: the knife */
     if (api.finishNear && api.finishNear()) return false;                 /* A BROKEN FOE IN REACH IS FINISHED WITH THE KNIFE (src/finishers.js: the execution is a melee blow) */
     p.rgNock = { t: 0, air, flip: p.dodge > 0 }; return 'nock'; }         /* (the quick shot goes when X is let go before the draw; held, it is the draw) */
   /* every frame, before main.js updateCharge: the nock becomes a quick shot when X is let go, unless the draw has begun */
   function nockStep(p, dt, keyAtk) { const n = p.rgNock; if (!n) return;
-    n.t += dt; if (p.charge > 0) { p.rgNock = null; return; }
+    n.t += dt; if (p.charge > 0) { p.rgKneel = !!n.kneel; if (p.rgKneel) { stats.kneels++; api.SFX.rgTick && api.SFX.rgTick(); } p.rgNock = null; return; }   /* (claude/heropassa) the draw begun from the knee is THE KNEELING DRAW */
     if (p.dead || p.hurt > 0) { p.rgNock = null; return; }
     if (!keyAtk) { p.rgNock = null; quickShot(p, n.air || (!p.ground && !p.swim)); } }
 
@@ -219,6 +227,17 @@ export function makeRanger(api) {
     api.ringAt(p.x + p.face * 9, p.y - 12, 16, '#c8e89a', 0.3); api.sparks(p.x + p.face * 9, p.y - 12, p.face, 8); api.number(p.x, p.y - 28, 'BOW-BASH', '#c8e89a');
     api.noteParry(); api.trialEvent('parry'); return 'blocked'; }
 
+  /* ---- ARROW SNATCH (claude/heropassa): main.js calls it before the seeds meet her body, as the ember flare's catch. The bash ON THE BEAT takes a yellow
+     projectile out of the air in front of her: nothing taken, +1 arrow - or, the quiver full, it is flung straight back as her riposte arrow. A red one (noBlock,
+     unblockable) and a chain (a haul, not a missile) go on to her ---- */
+  function snatchSeeds() { const p = P(); if (!onBeat(p) || !api.seeds) return;
+    for (const s of api.seeds) { if (s.dead || s.reflected || s.chain || s.noBlock || s.unblockable || s.owner === p) continue;
+      const dx = (s.x - p.x) * p.face; if (dx < -4 || dx > RG.snatch.r || Math.abs(s.y - (p.y - 10)) > RG.snatch.dy) continue;
+      s.dead = true; stats.snatched++; p.parryT = 0.22; api.kitPose(p, 'rgSnatch', 0.22); p.rgSnatchFx = { x: s.x, y: s.y, hx: p.x + p.face * 14, t: 0.34, max: 0.34, fling: !(p.rgQ < maxQ()) };   /* (claude/heropassaart) the catch star */
+      api.SFX.rgPick && api.SFX.rgPick(); api.hitstop(0.05); api.ringAt(p.x + p.face * 9, p.y - 12, 14, '#e8dcb0', 0.25); api.sparks(s.x, s.y, -p.face, 5);
+      if (giveArrow(p, 1, 'snatch')) api.number(p.x, p.y - 28, 'SNATCHED', '#e8dcb0');
+      else { stats.flung++; loose(p, { kind: 'quick', vx: p.face * RG.snatch.flingVx, vy: -20, g: RG.quick.g * 0.6, dmg: dmgBase() * RG.snatch.flingDmg, tag: ['riposte', 'shot'], free: true }); api.number(p.x, p.y - 28, 'FLUNG BACK', '#e8dcb0'); }
+      api.noteParry(); api.trialEvent('snatch'); return; } }
   /* ---- THE SNARE (DOWN+C) ---- */
   function setSnare(p) { if (!(p.ground) || p.rgSnareCd > 0) return false; if (!api.spend(RG.snare.st)) { api.tired(); return false; }
     ensure(p); const n = T().snares ? 2 : 1; while (p.rgSnares.length >= n) p.rgSnares.shift();
@@ -239,7 +258,7 @@ export function makeRanger(api) {
     if (T().cover && api.time - (p.rgCoverAt ?? -9) >= 3 && giveArrow(p, 1, 'cover')) p.rgCoverAt = api.time;
     api.SFX.rgFlip && api.SFX.rgFlip(); return RG.flip.vx * k; }
 
-  function restock(dt, keys) { const p = P(); ensure(p);
+  function restock(dt, keys) { const p = P(); ensure(p); p.rgDuckT = p.ducking && p.ground && !p.swim ? (p.rgDuckT || 0) + dt : 0; if (p.rgKneel && !p.ducking && !(p.charge > 0)) p.rgKneel = false;   /* (claude/heropassa) how long she has been knelt: THE KNEELING DRAW's settle */
     /* CROUCH TO RESTOCK (main.js calls it right after P.ducking is known this frame): a held, still duck on the ground (main.js sets p.ducking: no walk, swing, guard or roll) draws from the pouch; anything else resets the delay */
     if (p.ducking && p.ground && !p.swim && !p.dead && !(p.hurt > 0) && !(p.dodge > 0) && !p.rgNock && !(p.atk > 0) && !keys.atk && p.rgQ < maxQ()) { p.rgRsT = (p.rgRsT || 0) + dt;
       if (p.rgRsT >= RG.restock.delay) { p.rgRsE = (p.rgRsE || 0) + dt; const ph = p.rgRsE / RG.restock.each; api.kitPose(p, 'rgRestock' + (ph < 0.4 ? 0 : ph < 0.8 ? 1 : 2), 0.1); if (p.rgRsE >= RG.restock.each) { p.rgRsE = 0; if (giveArrow(p, 1, 'restock')) { stats.restocked++; api.trialEvent('restock'); api.SFX.rgTick ? api.SFX.rgTick() : api.SFX.rgPick && api.SFX.rgPick(); } } } }
@@ -249,6 +268,7 @@ export function makeRanger(api) {
   function update(dt, keys, ctx) {
     const p = P(), t = T(); ensure(p);
     for (const k of ['rgBashT', 'rgCd', 'rgSnareCd', 'rgWildT', 'parryT', 'blastT']) p[k] = Math.max(0, (p[k] || 0) - dt);
+    if (p.rgSnatchFx) { p.rgSnatchFx.t -= dt; if (p.rgSnatchFx.t <= 0) p.rgSnatchFx = null; }
     if (p.rgQ > maxQ()) p.rgQ = maxQ();
     if (p.rgQ < maxQ()) { p.rgRefT = (p.rgRefT || 0) + dt; if (p.rgRefT >= refillT()) { p.rgRefT = 0; giveArrow(p, 1, 'refill'); stats.refilled++; api.SFX.rgPick && api.SFX.rgPick(); } } else p.rgRefT = 0;
     if (p.rgFlip) { p.rgFlip.t += dt; if (!(p.dodge > 0) && (p.ground || p.swim || p.rgFlip.t > 0.8)) p.rgFlip = null; }
@@ -309,7 +329,14 @@ export function makeRanger(api) {
     P2(0, '#c9d4e0'); P2(1, '#ffffff'); P2(-1, '#8a96a8', 1);                                                                /* the steel head and its barb */
     if (!dim) { P2(-len, '#f0ead8'); P2(-len + 1, '#c9352a'); P2(-len, '#f0ead8', 1); P2(-len, '#c9352a', -1); P2(-len + 1, '#f0ead8', 1); P2(-len + 1, '#f0ead8', -1); }
     else { P2(-len, '#e8e0c8'); P2(-len - 1, '#c03a2a'); } }
+  /* (claude/heropassaart) THE SNATCH, drawn: a gold four-point star on the fist where the arrow was taken, a pale ghost of the shaft drawn into the hand along its line, and a ring - the catch at game scale */
+  function drawSnatchFx(g, cx, cy, f) { const k = 1 - f.t / f.max, x = Math.round(f.hx - cx), y = Math.round(f.y - cy), r = 2 + Math.round(k * 5);
+    g.globalAlpha = Math.max(0, 1 - k * 1.2); g.fillStyle = '#fff6c8'; g.fillRect(x, y, 1, 1);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.fillStyle = '#ffd36b'; g.fillRect(x + dx * (1 + Math.round(k * 4)), y + dy * (1 + Math.round(k * 4)), 1, 1); }
+    g.fillStyle = '#e8dcb0'; const x0 = Math.round(f.x - cx), n = Math.max(1, Math.abs(x0 - x)); for (let i = 0; i < n; i += 2) { const q = i / n; if (q > k * 1.6) break; g.fillRect(Math.round(x0 + (x - x0) * q), Math.round(y + (Math.round(f.y - cy) - y) * (1 - q)), 1, 1); }
+    g.strokeStyle = f.fling ? '#ffd36b' : '#e8dcb0'; g.beginPath(); g.arc(x + 0.5, y + 0.5, r, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
   function render(g, cx, cy) { const p = P(); if (!api.isRg()) return; ensure(p);
+    if (p.rgSnatchFx) drawSnatchFx(g, cx, cy, p.rgSnatchFx);
     for (const a of p.rgArrows) { const x = a.x - cx, y = a.y - cy, ang = a.state === 'fly' ? angleOf(a) : (a.ang ?? 0);
       if (a.state === 'foe' && a.foe) drawArrowAt(g, x, y, (a.foe.face || 1) > 0 ? ang : Math.PI - ang, 5, true);
       else { const len = a.kind === 'pierce' || (a.kind === 'skill' && a.pierce) ? 9 : 7;
@@ -355,7 +382,7 @@ export function makeRanger(api) {
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };
   return { RG, arrows, maxQ, toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: w => release(P(), w), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
-    bashTakes, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
+    bashTakes, snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }

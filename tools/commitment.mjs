@@ -122,10 +122,12 @@ try {
   }
 
   /* ---- 5. the roll's grace and its price ---- */
+  /* (claude/heropassa, a SAMPLING change for a design change: the knight's shield-step 0.24 s, the ember blink 0.16 s and the shadow-step 0.2 s end before 0.25 s,
+     so each tail is sampled in its own last ~0.03 s - still REQUIRED to be hittable; every dodge that lasts 0.28 s is sampled at 0.28 s as before) */
   for (const h of HEROES) { if (only && !only.includes(h)) continue;
     const r = await pg.evalp(`(()=>{const h=${JSON.stringify(h)};__prep(h,0);const P=BK.P;P.face=1;const s0=P.st;BK.press('dodge');BK.sim(1);const cost=Math.round(s0-P.st);
       BK.sim(5);P.inv=0;P.grace=0;const early=BKT.damagePlayer(P.x+10,5,{unblockable:true});
-      __prep(h,0);P.face=1;BK.press('dodge');BK.sim(1);for(let i=0;i<(h==='paladin'?13:16);i++)BK.sim(1);P.inv=0;P.grace=0;const inRoll=P.dodge>0;const late=h==='warden'?null:BKT.damagePlayer(P.x+10,5,{unblockable:true});
+      __prep(h,0);P.face=1;BK.press('dodge');BK.sim(1);const tailF=(P.dodgeMax||0.3)>=0.28?16:Math.round(((P.dodgeMax||0.3)-0.03)*60);for(let i=0;i<tailF;i++)BK.sim(1);P.inv=0;P.grace=0;const inRoll=P.dodge>0;const late=h==='warden'?null:BKT.damagePlayer(P.x+10,5,{unblockable:true});
       let back=null;if(h==='warden'){__prep(h,0);P.face=1;const b0=P.st;BK.keys.left=false;BK.press('dodge');BK.sim(1);back=Math.round(b0-P.st);}
       return {cost,early,late,inRoll,back}})()`);
     check(r.early === false, `${h}: a blow 0.1 s into the roll was '${r.early}', not a miss`);

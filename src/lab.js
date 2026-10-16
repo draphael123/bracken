@@ -68,6 +68,18 @@ const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 /* THE CO-OP ALLY IS THIS BOT. main.js imports threatOf, SHIELDED and HARD_TELLS below and plays a hero
    with them, so the ally and the labs answer a wind-up by ONE set of rules. When two files answer the same question
    one of them is wrong and nobody knows which - so there is one, and it lives here with the bot that earned it. */
+/* (claude/heropassa) HERO PASS A IN THE HANDS. THE KNIGHT's SHIELD BASH (UP+C): a common foe or an elite in a yellow wind-up, in the bash's reach, early
+   enough that the punch lands before the blow (its modeT over KBASH_LEAD) - he punches the blow out of it instead of raising the shield. THE RANGER's ARROW SNATCH:
+   a yellow projectile coming at her, a beat out - she taps the bash so it is ON THE BEAT as it arrives. Both edge-pressed (C is read on the frame it goes down) */
+const RG_KNEEL = 0.17, RG_DRAW_ST = 12;   /* s knelt before the bot draws (src/ranger.js RG.kneel.settle 0.15, and a frame) */
+export const KBASH_REACH = 26, KBASH_LEAD = 0.18, SNATCH_LEAD = 0.1;
+export function knightBashNow(BK, h, e, ad) { const P = BK.P; if (h !== 'knight' || !e || !e.alive || e === BK.boss || e.mini || e.xpRole === 'mini' || !P.ground || P.swim) return false;
+  if ((P.kBashCd || 0) > 0 || (P.kBashT || 0) > 0 || (P.st || 0) < 20 || P.atk >= 0) return false;
+  if (!/Tell$/.test(e.mode || '') || !(e.modeT > KBASH_LEAD) || HARD_TELLS.has(e.t + '|' + e.mode) || (BK.markOf && BK.markOf(e) === '!!')) return false;
+  return ad < KBASH_REACH + (e.w || 12) / 2 && Math.abs(e.y - P.y) < 20; }
+export function snatchNow(BK, h) { const P = BK.P; if (h !== 'ranger' || P.dead || (P.rgBashT || 0) > 0 || (P.rgCd || 0) > 0 || (P.st || 0) < 10 || (P.hurt || 0) > 0 || P.dodge > 0) return null;
+  return BK.seeds().find(s => !s.dead && !s.reflected && !s.noBlock && !s.unblockable && !s.chain && (s.x - P.x) * (s.vx || 0) < 0 && Math.abs(s.y - (P.y - 10)) < 16
+    && Math.abs(s.x - P.x) < 14 + Math.abs(s.vx || 0) * SNATCH_LEAD) || null; }
 export const threatOf = e => e.alive && ((e.mode && /Tell|tell|wind|aim|draw|charge|lunge|raise/.test(e.mode)) || e.draw > 0 || e.liftT > 0);
 const yieldNow = () => new Promise(r => setTimeout(r, 0));
 export const SHIELDED = h => h === 'knight' || h === 'paladin' || h === 'reaper' || h === 'geomancer';   // C holds a guard; the others roll (THE GEOMANCER's RUNE-WARD, round 3: a held guard like his)
@@ -238,6 +250,11 @@ export function strike(BK, h, e, f) {
   const level = Math.abs(dy) < 26, free = P.atk < 0 && !P.plunge && !(P.rush > 0);
   if (verb === 'heavy') {
     const winding = P.charge > 0 || P.atkHeld > 0;
+    /* (claude/heropassa) THE KNEELING DRAW: with arrows and room, she kneels (DOWN held still) before she draws, and stays down through it - the draw only begins once she is knelt */
+    if (h === 'ranger' && rgArrows() > 0 && P.ground && !P.swim && ad < want + 4 && level) {
+      if (winding) k.down = true;   /* (knelt through the draw: the hold below keeps X) */
+      else if ((P.rgDuckT || 0) < RG_KNEEL) { if (Math.abs(P.vx) < 30) k.down = true; return { verb, want, swing }; }   /* (stopped first: DOWN at a run is the slide) */
+      else if (free && P.st >= RG_DRAW_ST) { k.down = true; BK.press('atk'); k.atk = true; return { verb, want, swing: 1 }; } }   /* the nock from the knee: X pressed, then held */
     if (h === 'knight' && winding && P.atkHeld >= knightCutAt(e)) { /* let go: THE HEAVY CUT comes down */ }
     else if (h === 'geomancer' && P.charge > 0 && GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4) { /* let go: the crack will run past his near edge */ }
     else if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
@@ -305,6 +322,7 @@ function labBotFrame(BK, h, e, f) {
     else if (h === 'pyro') { if (f % 20 === 0) { k[d > 0 ? 'left' : 'right'] = true; BK.press('dodge'); } }
     else if (h === 'pirate') { if (f % 12 === 0) k.block = true; }
     else if (DEFLECTS(h)) { if (HARD_TELLS.has(e.t + '|' + e.mode)) { if (f % 14 === 0) BK.press('dodge'); } else k.block = ON_THE_BEAT(e) && DEFLECT_TAP(f); }
+    else if (knightBashNow(BK, h, e, ad)) { k.up = true; k.block = !P.cWas; }   /* (claude/heropassa) THE SHIELD BASH: the blow punched out of its wind-up */
     else k.block = true;
   } else if (reloadCrouchNow(BK, h, e)) { k.down = true; }   /* THE FREEBOOTER DUCKS AND RELOADS, well out of the cutlass's reach */
   else {
@@ -315,6 +333,7 @@ function labBotFrame(BK, h, e, f) {
   }
   { const fire = fireAt(BK, P.x, P.y); if (fire && !(h === 'pyro')) { const away = Math.sign(P.x - fire.x) || -Math.sign(d) || 1; k.left = away < 0; k.right = away > 0; k.atk = false; k.block = false; } }   /* (her own fire does not burn her) */
   if (h === 'knight' && !threat && !k.atk && !(P.charge > 0) && LAST_CHARGE(P, ad, e.y - P.y)) { k.left = false; k.right = false; k.block = true; }
+  { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; k.up = false; k.down = false; } }   /* (claude/heropassa) ARROW SNATCH */
   return { defend, swing };
 }
 
@@ -2420,7 +2439,11 @@ async function runbossLab(BK, opts) {
       if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
-      if (h === 'knight' && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
+      /* (claude/heropassa) VALIANT STRIKE: a full RESOLVE against a duelist's wall is spent on a heavy cut (it goes through the wall), not on the last charge */
+      const valiantWall = h === 'knight' && (P.resolve || 0) >= 100 && BK.bossWall && BK.bossWall(boss);
+      if (valiantWall && !tell && !rushing && P.ground && ad <= reach + 4 && !cutGo) { P.face = Math.sign(d) || P.face; k.left = k.right = false; k.block = false; k.atk = true; }
+      { const sn = snatchNow(BK, h); if (sn) { P.face = Math.sign(sn.x - P.x) || P.face; k.block = !P.cWas; } }   /* (claude/heropassa) ARROW SNATCH */
+      if (h === 'knight' && !valiantWall && open && !tell && !rushing && !k.block && LAST_CHARGE(P, ad, boss.y - P.y)) { P.face = Math.sign(d) || P.face; k.left = false; k.right = false; k.jump = false; k.block = true; }
       /* (claude/bztune) THE BERSERKER'S OWN KEYS. FRENZY IS DOWN+C at a full bar (a plain C there is TAKE IT, which the beat-taps already use);
          the bar is spent as a player spends it - near the boss, between his tells. THE POUNCE: coiled (DOWN held 0.4 s) then DOWN let go with a way held,
          a gap-closer used from range, a few times a fight (not a spam). TAKE IT stays on the beat taps above. */
