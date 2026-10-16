@@ -24,7 +24,7 @@ const KNOWN = {};
 const ONLY = (process.env.MI_ONLY || '').split(',').filter(Boolean), SECS = +(process.env.MI_SECS || 40);
 const pg = await openPage({ audio: false, fonts: false, seed: 20261007 });
 const FIGHT = String.raw`async (row, secs) => {
-  BK.manualSimulation = true; const M = await import('/src/marks.js');
+  BK.manualSimulation = true; const M = await import('/src/marks.js'), UM = await import('/src/undead-mage.js');
   const go = row.kind === 'mini' ? row.level + ':mini' : row.t; if (!BK.bossJump.go(go)) return { err: 'go failed' };
   const live = () => row.kind === 'mini' ? BK.miniActive : BK.bossActive;
   const find = () => BK.enemies().find(q => q.t === row.t && q.alive && (row.kind === 'boss' || q.mini || q.t === 'greathound'));
@@ -40,7 +40,14 @@ const FIGHT = String.raw`async (row, secs) => {
   /* the windup, drawn: this instant as it is, and as it was before the windup, the mark hidden in both */
   const poseDiff = (e, prevMode) => { const k = M.tellKey(e), had = k in M.MARK, was = M.MARK[k]; M.MARK[k] = '';
     const snap = Object.assign({}, e), keys = new Set(Object.keys(e));
-    try { const a = shot(); e.mode = prevMode; const b = shot(); let n = 0; for (let i = 0; i < a.length; i += 4) if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 30) n++; return n; }
+    try { const a = shot(); e.mode = prevMode; const b = shot(); let n = 0; for (let i = 0; i < a.length; i += 4) if (Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]) > 30) n++;
+      /* The mage can blink beyond the camera while a marked spell is winding up. A zero-pixel viewport then proves only that he is offscreen. Draw the exact baked sprite frame selected by the game's undeadFrame in a centered test canvas; the same 20-pixel pose assertion below still applies. */
+      if (n === 0 && e.t === 'undeadmage') { const v = BK.view, off = e.x < v.x - 32 || e.x > v.x + v.VW + 32 || e.y < v.y - 48 || e.y > v.y + v.VH + 32;
+        if (off) { const c = document.createElement('canvas'); c.width = c.height = 128; const g = c.getContext('2d');
+          const draw = () => { const set = BK.SPR.undeadmage, frame = UM.undeadFrame(e, UM.UNDEADMAGE_F), c0 = set[e.face < 0 ? 'L' : 'R'][frame]; g.clearRect(0, 0, 128, 128); g.drawImage(c0, 64 - (e.face < 0 ? c0.width - set.ax : set.ax), 96 - set.ay); return g.getImageData(0, 0, 128, 128).data; };
+          Object.assign(e, snap); const pa = draw(); e.mode = prevMode; const pb = draw();
+          for (let i = 0; i < pa.length; i += 4) if (Math.abs(pa[i] - pb[i]) + Math.abs(pa[i + 1] - pb[i + 1]) + Math.abs(pa[i + 2] - pb[i + 2]) > 30) n++; } }
+      return n; }
     finally { for (const q of Object.keys(e)) if (!keys.has(q)) delete e[q]; Object.assign(e, snap); if (had) M.MARK[k] = was; else delete M.MARK[k]; BK.step(0); } };
   const rows = {}, open = []; let prevMode = null, curKey = null, cur = null, lastP = [p.x, p.y], tpd = false;
   const A = row.kind === 'mini' ? BK.L.mini : BK.L.arena;
