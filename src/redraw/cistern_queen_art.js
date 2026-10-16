@@ -9,7 +9,7 @@
 // walk a SIX-FRAME gait wave keyed to the ground she covers (no moonwalking on the spot), and standing she breathes (a four-beat heave).
 // Also: the hall's windlass, the shaft's bucket and rope, the two side tunnels, and over everything her tells on the floor and what she throws.
 //   drawQueen(g, e, S, x, y, time)   x, y = her feet on screen.   bakeCisternQueen() -> a sprite set for the bestiary and her body (CQ_F names its frames)
-import { CQ, TAIL, tailPose, view, qOpen, stingerOut } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
+import { CQ, TAIL, tailPose, view, qOpen, stingerOut, burstAt } from '../cistern-queen.js';   /* (claude/underwell3) her tail's one table, and the pose that picks a path */
 import { canvas, flipX, whiten, outline } from '../px.js';
 import { OUT } from '../art.js';
 
@@ -36,7 +36,8 @@ export function drawBody(g, o) {
      covered (o.gait) or, scrabbling up or down a wall, from the clock - stepped to six frames so it reads as drawn frames, not a wobble */
   const STEP = Math.PI / 3, gait = o.walk ? Math.floor((o.gait != null ? o.gait : t * 12) / STEP) * STEP : null;
   const heat = o.heat || 0, soaked = wet >= 0.7, charr = o.char || 0;   /* (claude/cqart) which shell she wears: DOUSED over BLACKENED over HOT */
-  const C = o.flash ? WHITE : soaked ? { ...QC, ...PAL_WET } : charr > 0 ? { ...QC, ...PAL_CHAR } : heat > 0 ? { ...QC, ...PAL_HOT } : QC;
+  let C = o.flash ? WHITE : soaked ? { ...QC, ...PAL_WET } : charr > 0 ? { ...QC, ...PAL_CHAR } : heat > 0 ? { ...QC, ...PAL_HOT } : QC;
+  if (o.back && soaked) C = { ...C, belly: '#8fa0a6', bellyL: '#c4d4da' };   /* (claude/cq3art) on her back and wet: the underbelly lit pale against the dark shell */
   /* THE LEGS (polish): thick, lighter than the floor and the body, a dark edge under a lit one, a knee and a pale foot-claw - they read on the dark hall */
   const legs = o.legs || 'walk';
   for (let i = 0; i < 4; i++) { const bx = -26 + i * 15;
@@ -44,7 +45,11 @@ export function drawBody(g, o) {
       let pts;
       if (legs === 'kick') { const a = Math.sin(t * 16 + i * 1.7 + side) * 6; pts = [[bx, -14], [bx - 6 + a, -34], [bx + 4 + a, -46]]; }
       else if (legs === 'perch') { const sp = (i - 1.5) * 11 + (side ? 6 : -6), br = Math.sin(t * 2.2 + i) * 0.6; pts = [[bx, -14 - sh], [bx + sp * 1.5, -32 + sh * 3 + br], [bx + sp * 1.9 - 3, -2]]; }   /* (claude/cqart) THE PERCH: knees up and wide, a crouch on the beam, the foot-claws hooked down over its lip */
-      else if (legs === 'reel') { const tr = Math.sin(t * 34 + i * 2 + side) * 1.6; pts = i >= 2 ? [[bx, -14 - sh], [bx + 7 + tr, -40], [bx + 17, -50 + tr]] : [[bx, -14 - sh], [bx - 13, -24 + sh * 3], [bx - 23 + tr, -3]]; }   /* (claude/cqart) REEL: the front legs snatched up off the floor, the back ones buckled out */
+      else if (legs === 'thrashA') { const tr = Math.sin(t * 40 + i * 2 + side) * 1.8; const d = i - 1.5; pts = [[bx, -14 - sh], [bx - 8 + d * 6 + tr, -34], [bx + d * 13 + (side ? 5 : -5), -50 + tr]]; }   /* (claude/cq3art) THRASH, the windup: the legs snatched up and back, shuddering */
+      else if (legs === 'thrashB') { const d = i - 1.5, tr = Math.sin(t * 40 + i + side) * 1.5; pts = [[bx, -14 - sh], [bx + d * 12 + 6, -20 + tr], [bx + d * 22 + 8, 0]]; }   /* (claude/cq3art) THRASH, the release: stamped wide and down on the hot sand */
+      else if (legs === 'sag') { const k = i < 2 ? 1 : -1, w = side ? 1 : 0.7, br = Math.sin(t * 2.4 + i) * 0.8; pts = [[bx, -13 - sh], [bx + k * 11 * w, -8 + br], [bx + k * 23 * w, -1]]; }   /* (claude/cq3art) THE SAG: the legs gone slack and splayed flat out along the floor, the belly down */
+      else if (legs === 'skid') { pts = [[bx, -14 - sh], [bx + 16 + i * 2, -26 + sh * 3], [bx + 32 + i * 3, -12 + side * 5]]; }   /* (claude/cq3art) THE SLIP, the skid: every foot shot out in front of her on the wet */
+      else if (legs === 'upkick') { const a = Math.sin(t * 13 + i * 1.7 + side * 2) * 7; const d = (i - 1.5) * 1.5; pts = [[bx, -14], [bx + d * 4 + a * 0.5, 0], [bx + d * 11 + a, 15 + side * 6 + Math.abs(a) * 0.6]]; }   /* (claude/cq3art) ON HER BACK: drawn in her flipped frame, +y is UP - the legs paddle at the air */
       else { const fx = bx + (legs === 'splay' ? (i - 1.5) * 9 : ph * 5 - 4), lift = legs === 'walk' ? Math.max(0, ph) * 4 : 0; pts = [[bx, -14 - sh], [fx - 7, -30 + sh * 2], [fx - 11, -lift]]; }
       ln(g, C.chit0, 7, pts); ln(g, col, 4.6, pts); ln(g, hi, 1.4, pts.map(([x, y]) => [x - 0.8, y - 1]));
       const [kx, ky] = pts[1], [fx2, fy2] = pts[2]; ell(g, hi, kx, ky, 2.6, 2.6); fr(g, C.rim, kx - 1, ky - 3, 2, 2); ell(g, C.legL, fx2, fy2, 2.4, 1.6); fr(g, C.rim, fx2 - 3, fy2 - 1, 5, 1);
@@ -53,31 +58,21 @@ export function drawBody(g, o) {
   const tail = o.tail || 'curl', segs = [];
   { let px = -42, py = -22; segs.push([px, py]);
     const path = TAIL[tail] || null; /* (claude/underwell3: the one table, src/cistern-queen.js TAIL - the stinger a blow must find is the one drawn) */
-    if (tail === 'lance' && o.lanceTo) { const [tx, ty] = o.lanceTo; for (let i = 1; i <= 6; i++) { const q = i / 6, ax = px + (tx - px) * q, ay = py + (ty - py) * q - Math.sin(q * Math.PI) * 70; segs.push([ax, ay]); } }
+    if (tail === 'lance' && o.lanceTo) { const [tx, ty] = o.lanceTo; for (let i = 1; i <= 6; i++) { const q = i / 6, ax = px + (tx - px) * q, ay = py + (ty - py) * q - (o.flat ? (o.flip ? -1 : 1) * (Math.sin(q * Math.PI) * 6 + Math.sin(q * Math.PI * 3) * 2.5) : Math.sin(q * Math.PI) * 70); segs.push([ax, ay]); } }
     else for (const [ax, ay] of path || []) segs.push([ax + (tail === 'curl' ? Math.sin(t * 2.2) * 2 : 0), ay + (tail === 'curl' ? Math.cos(t * 2.2) * 2 : 0)]); }
-  if (o.broken && segs.length > 3) segs.pop();   /* (claude/cqueenrework) broken: a segment short */
-  for (let i = segs.length - 1; i >= 1; i--) { const [x0, y0] = segs[i - 1], [x1, y1] = segs[i], r = 10.5 - i * 0.7;
+  if (o.target) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.3 + 0.12 * Math.sin(t * 7); ln(g, '#c88a2a', 15, segs); g.globalAlpha = 0.45 + 0.2 * Math.sin(t * 7); ln(g, '#ffc85a', 6, segs); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }   /* (claude/cq3art) THE TAIL ON THE FLOOR IS THE TARGET (B10): a gold light along its whole length, pulsing */
+  for (let i = segs.length - 1; i >= 1; i--) { const [x0, y0] = segs[i - 1], [x1, y1] = segs[i], r = o.flat ? 9 - i * 1.15 : 10.5 - i * 0.7;
     ln(g, C.chit0, r * 2 + 3, [[x0, y0], [x1, y1]]); ln(g, C.chit2, r * 2, [[x0, y0], [x1, y1]]);
-    ell(g, C.chit0, x1, y1, r + 1.4, r * 0.85 + 1.4); ell(g, C.chit2, x1, y1, r, r * 0.85); ell(g, C.chit3, x1 - 1, y1 - r * 0.35, r * 0.62, r * 0.36); fr(g, C.rim, x1 - r * 0.6, y1 - r * 0.9, r * 1.2, 1.5); }
+    ell(g, C.chit0, x1, y1, r + 1.4, r * 0.85 + 1.4); ell(g, C.chit2, x1, y1, r, r * 0.85); ell(g, C.chit3, x1 - 1, y1 - r * 0.35, r * 0.62, r * 0.36); fr(g, o.target ? '#ffe39a' : C.rim, x1 - r * 0.6, y1 - r * 0.9, r * 1.2, 1.5); }
   /* THE STINGER (polish): an amber bulb in a real halo (a gradient, not a flat disc), a pale hook and a core - and white-hot, bigger and ringed while it is told */
-  if (o.broken) { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx);   /* (claude/cqart) HER STINGER BROKEN: a torn stump - a jagged collar of shell, the pale inside, venom welling and dripping */
-    const ichor = 0.6 + 0.4 * Math.abs(Math.sin(t * 5));
-    g.save(); g.translate(sx, sy); g.rotate(a); g.scale(1.5, 1.5);
-    g.fillStyle = C.chit0; g.beginPath(); [[-3, -9], [3, -10], [2, -6], [7, -6], [5, -2], [9, 0], [5, 3], [7, 8], [1, 7], [-3, 9]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
-    g.fillStyle = C.chit2; g.beginPath(); [[-3, -7], [2, -8], [1, -5], [5, -4], [3, -1], [6, 0], [3, 3], [4, 6], [-1, 5], [-3, 7]].forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); g.fill();
-    ell(g, '#e6bfa4', 4.5, 0, 2.4, 4.4); ell(g, '#8a2a24', 5, 0.5, 1.5, 3); fr(g, '#fff0d8', 3, -3, 1, 2);   /* the torn end: pale flesh, a dark core, a glint */
-    ln(g, C.rim, 1, [[-3, -8], [2, -9]]); g.restore();
-    for (let i = 0; i < 3; i++) { const k = (t * 1.1 + i * 0.37) % 1, dx = Math.sin(i * 2.3) * 2; g.globalAlpha = 1 - k * 0.7; fr(g, QC.venomD, sx + 2 + i * 4 + dx, sy + 6 + k * 30, 4, 5 - k * 2); fr(g, QC.venom, sx + 3 + i * 4 + dx, sy + 6 + k * 30, 2, 4 - k * 2); fr(g, '#eaffb0', sx + 3 + i * 4 + dx, sy + 6 + k * 30, 1, 1); }
-    g.globalAlpha = ichor; fr(g, QC.venomD, sx + 1, sy + 2, 6, 5); fr(g, QC.venom, sx + 2, sy + 3, 4, 3); fr(g, '#eaffb0', sx + 3, sy + 3, 1, 1); g.globalAlpha = 1;
-    if ((o.reelT || 0) > 1.2) { const k = Math.min(1, (o.reelT - 1.2) / 0.4), r = 6 + (1 - k) * 12; g.globalAlpha = k; for (let i = 0; i < 8; i++) { const an = i * Math.PI / 4 + 0.3; ln(g, i % 2 ? '#ffe9a0' : '#ffffff', 2, [[sx + Math.cos(an) * r * 0.5, sy + Math.sin(an) * r * 0.5], [sx + Math.cos(an) * r, sy + Math.sin(an) * r]]); } g.globalAlpha = 1; } }   /* the snap: a star on the stump the instant it goes */
-  else { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx), green = o.venomHot;
-    const hot = o.hot ? 0.6 + 0.4 * Math.abs(Math.sin(t * 18)) : 0, glow = 0.55 + 0.2 * Math.abs(Math.sin(t * 3)) + hot * 0.35, R0 = 22 + hot * 12;
+  { const [sx, sy] = segs[segs.length - 1], [qx, qy] = segs[segs.length - 2] || [sx - 4, sy + 4], a = Math.atan2(sy - qy, sx - qx), green = o.venomHot;
+    const hot = o.hot ? 0.6 + 0.4 * Math.abs(Math.sin(t * 18)) : 0, glow = 0.55 + 0.2 * Math.abs(Math.sin(t * 3)) + hot * 0.35, Z = o.target ? 1.35 : 1, R0 = (22 + hot * 12) * Z;
     const cA = green ? '166,224,74' : '255,184,74', cH = green ? '214,255,140' : '255,242,192';
     const gr = g.createRadialGradient(sx, sy, 2, sx, sy, R0); gr.addColorStop(0, 'rgba(' + (o.hot ? cH : cA) + ',' + Math.min(1, glow) + ')'); gr.addColorStop(0.45, 'rgba(' + cA + ',' + (glow * 0.4) + ')'); gr.addColorStop(1, 'rgba(' + cA + ',0)');
     g.fillStyle = gr; g.fillRect(sx - R0, sy - R0, R0 * 2, R0 * 2);
     if (o.hot) { g.strokeStyle = 'rgba(' + cH + ',' + (0.5 + 0.4 * hot) + ')'; g.lineWidth = 1.5; g.beginPath(); g.arc(sx, sy, 11 + hot * 5, 0, Math.PI * 2); g.stroke(); }
-    ell(g, QC.chit0, sx, sy, 11, 10, a); ell(g, green ? QC.venom : QC.stingCore, sx, sy, 9, 8, a); ell(g, o.hot ? (green ? '#eaffb0' : QC.stingHot) : (green ? '#d6f8a0' : '#ffd070'), sx - 1, sy - 1, 5, 4, a);
-    const bx = sx + Math.cos(a) * 15, by = sy + Math.sin(a) * 15, h1 = [bx + Math.cos(a + 1.9) * 7, by + Math.sin(a + 1.9) * 7];
+    ell(g, QC.chit0, sx, sy, 11 * Z, 10 * Z, a); ell(g, green ? QC.venom : QC.stingCore, sx, sy, 9 * Z, 8 * Z, a); ell(g, o.hot ? (green ? '#eaffb0' : QC.stingHot) : (green ? '#d6f8a0' : '#ffd070'), sx - 1, sy - 1, 5 * Z, 4 * Z, a);
+    const bx = sx + Math.cos(a) * 15 * Z, by = sy + Math.sin(a) * 15 * Z, h1 = [bx + Math.cos(a + 1.9) * 7 * Z, by + Math.sin(a + 1.9) * 7 * Z];
     ln(g, QC.chit0, 5, [[sx + Math.cos(a) * 5, sy + Math.sin(a) * 5], [bx, by], h1]); ln(g, o.hot ? QC.stingHot : '#ffe2a0', 2.2, [[sx + Math.cos(a) * 6, sy + Math.sin(a) * 6], [bx, by], h1]);
     /* (claude/cqart) ARMOURED (outside her openings, B15 x0.4): a STEEL sleeve and two cap plates riveted over the bulb, the glow showing between them - bare and gold when it pays (HOT, stuck, an opening) */
     if (o.armour && !green) { g.save(); g.translate(sx, sy); g.rotate(a);
@@ -89,6 +84,7 @@ export function drawBody(g, o) {
   for (let i = 0; i < 5; i++) { const x = -38 + i * 16; ell(g, C.chit0, x, -26, 12.4, 15.4); ell(g, i % 2 ? C.chit3 : C.chit2, x, -26, 11, 14); fr(g, C.chit3, x - 6, -34 + Math.abs(i - 2), 10, 2); }
   ln(g, C.rim, 2, [[-46, -36], [-36, -40], [-20, -42], [-4, -42], [12, -41], [28, -38], [38, -34]]);
   ell(g, C.bellyL, -6, -12, 40, 3);
+  if (o.back) { ell(g, C.chit0, -4, -15, 46, 11); ell(g, C.bellyL, -4, -15, 44, 9.5); ell(g, C.belly, -4, -13.5, 42, 7.5); for (let i = 0; i < 8; i++) { const x = -38 + i * 10; ln(g, C.chit1, 1.3, [[x, -22], [x + 2, -15], [x, -8]]); fr(g, C.rim, x + 3, -17, 1, 1); } ln(g, C.rim, 1, [[-34, -22], [-12, -24], [10, -23], [30, -20]]); }   /* (claude/cq3art) THE UNDERBELLY: pale plates in rows, bare to the hall */
   /* THE HEAD and the eyes (a cluster, lit) */
   ell(g, C.chit0, 40, -24, 17.5, 14.5); ell(g, C.chit3, 40, -24, 16, 13); fr(g, C.rim, 30, -36, 20, 2);
   for (const [ex, ey] of [[46, -30], [50, -28], [43, -27]]) { ell(g, QC.eye, ex, ey, 2.4, 2.4); fr(g, QC.eyeL, ex - 1, ey - 1, 1.5, 1.5); }
@@ -101,7 +97,10 @@ export function drawBody(g, o) {
     else if (claw === 'down') { el = [60, -14 + dy]; hand = [74, -6 + dy]; open = 0.1; }
     else if (claw === 'up') { el = [56, -60 + dy]; hand = [50 + side * 14, -88 + dy]; open = 0.6 + 0.3 * Math.sin(t * 20 + side * 2); }
     else if (claw === 'snap') { el = [70, -28 + dy]; hand = [94, -26 + dy]; open = side ? 0.05 : 0.9; }
-    else if (claw === 'reel') { const sh2 = Math.sin(t * 28 + side * 2) * 1.5; if (side) { el = [40, -64]; hand = [20 + sh2, -92]; open = 1; } else { el = [74, -30]; hand = [96, -8 + sh2]; open = 0.95; } }   /* (claude/cqart) REEL: the near claw flung up and back over her shoulder, the far one thrown wide and low, both gaping - the body's recoil */
+    else if (claw === 'thrashA') { const sh2 = Math.sin(t * 28 + side * 2) * 1.5; if (side) { el = [40, -64]; hand = [20 + sh2, -92]; open = 1; } else { el = [74, -30]; hand = [96, -8 + sh2]; open = 0.95; } }   /* (claude/cq3art) THRASH, the windup: the near claw flung up and back over her shoulder, the far one thrown wide and low, both gaping */
+    else if (claw === 'thrashB') { el = [64, -16 + dy]; hand = [88, -3 + dy]; open = 0.95; }   /* (claude/cq3art) THRASH, the release: both claws slammed down on the floor ahead of her, gaping */
+    else if (claw === 'sprawl') { el = [62, -9 + dy]; hand = [84, -3 + dy * 0.5]; open = 0.15 + 0.05 * Math.sin(t * 2.4 + side); }   /* (claude/cq3art) THE SAG: the claws lie limp on the floor, the guard gone */
+    else if (claw === 'airup') { const w = Math.sin(t * 5 + side * 2); el = [58, 10 + dy]; hand = [62 + side * 10 + w * 4, 34 + dy + w * 4]; open = 0.6 + 0.3 * Math.sin(t * 9 + side); }   /* (claude/cq3art) ON HER BACK (her flipped frame, +y UP): the claws wave at the air */
     else { el = [70, -26 + dy]; hand = [86 + reach, -22 + dy]; open = 0.75; }
     ln(g, C.chit0, 11, [sh, el, hand]); ln(g, col, 8, [sh, el, hand]); ln(g, colL, 2, [[sh[0], sh[1] - 3], [el[0], el[1] - 3], [hand[0], hand[1] - 3]]); ell(g, colL, el[0], el[1] - 1, 4, 3); fr(g, C.rim, el[0] - 2, el[1] - 4, 4, 1);
     /* the pincer: a heavy palm and two long fingers that open, the tips bright */
@@ -131,6 +130,8 @@ export function drawBody(g, o) {
     g.globalAlpha = 0.95; for (const sm of SEAMS) { ln(g, '#050403', 2.6, sm); ln(g, '#8a8279', 0.7, sm.map(([x, y]) => [x + 1.4, y - 0.6])); }
     if (ember > 0) SEAMS.forEach((sm, i) => { const [x, y] = sm[Math.floor(t * 1.6 + i) % sm.length]; g.globalAlpha = Math.min(1, ember) * (0.5 + 0.5 * Math.sin(t * 9 + i * 2)); fr(g, '#e0551c', x - 1, y - 1, 2, 2); });
     g.globalAlpha = 1; }
+  /* (claude/cq3art) THE SAG: the char is split along its seams with the last of the fire - glowing cracks that pulse and dim as the opening runs out */
+  if ((o.ember || 0) > 0 && !o.flash) { const em = o.ember; g.globalCompositeOperation = 'lighter'; SEAMS.forEach((sm, i) => { const k = em * (0.55 + 0.45 * Math.sin(t * 5 + i * 1.3)); g.globalAlpha = k * 0.7; ln(g, '#b82a08', 4.2, sm); g.globalAlpha = k; ln(g, '#ff8a2a', 1.7, sm); g.globalAlpha = k * 0.9; ln(g, '#ffe0a0', 0.8, sm); }); g.globalAlpha = em * 0.18; ell(g, '#ff6a22', -4, -24, 50, 15); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; }
 }
 
 /* HER ON THE SCREEN, by pose */
@@ -166,20 +167,20 @@ export function drawQueen(g, e, S, x, y, time, cx, cy) {
   /* (claude/underwell3) HER TAIL by src/cistern-queen.js tailPose - the same choice the hit on her stinger makes; the stinger stuck in the floor (a sting, the slam, the slip) runs the tail down to it, hot-white */
   { const tp = tailPose(e, S); o.tail = tp.tail; o.lanceTo = tp.lanceTo; if (tp.tail === 'lance') o.hot = true; }
   if (m === 'sslamTell') { o.claw = 'up'; o.hot = true; } if (m === 'planted') { o.claw = 'down'; o.legs = 'still'; }
-  if (m === 'slip') { o.claw = 'down'; o.legs = 'splay'; o.wet = 1; o.walk = false; }
-  if (e.scorch > 0) { o.scorch = Math.min(1, e.scorch); o.heat = Math.min(1, e.scorch / CQ.scorchT); o.hot = true; }   /* (claude/cqart) HOT: how much of her burn is left (the seams sink as it dies), and her stinger bare and glowing */
-  if (m === 'fallen') { o.legs = 'kick'; o.claw = 'up'; o.tail = 'down'; }
-  /* (claude/cqart) DOUSED: a dark, wet-lit shell with water running off it; BLACKENED: ash-grey and split with soot; STINGER BROKEN: the torn stump; REEL: its own frame, thrown back off the stump */
-  if (S.wet > 0) o.wet = Math.max(o.wet || 0, 0.8);
+  if (m === 'slip') { const age = CQ.slipT - Math.max(0, e.open || 0); o.wet = 1; o.walk = false; if (age < 0.22) { o.claw = 'up'; o.legs = 'skid'; } else { o.claw = 'airup'; o.legs = 'upkick'; o.back = true; } }   /* (claude/cq3art) SHE SLIPS: the skid (every foot out in front, the claws flung up), the flip, then ON HER BACK, paddling at the air */   /* (claude/cisternqueen3) SHE SLIPS ONTO HER BACK: drawn as the fall (greybox - the art lane draws her own slip) */
+  if (m === 'thrash') { const rel = Math.floor(time * 7) % 2 === 1; o.claw = rel ? 'thrashB' : 'thrashA'; o.legs = rel ? 'thrashB' : 'thrashA'; o.walk = false; o.heat = 1; o.hot = true; }   /* (claude/cq3art, B16) ALIGHT: its own windup (rared back, claws and legs thrown up) and release (slammed down) frames, the burning shell on */   /* (claude/cisternqueen3) ABLAZE, THRASHING (greybox: the reel frame) */
+  if (m === 'ablaze') { o.claw = 'sprawl'; o.legs = 'sag'; o.walk = false; o.char = 1; o.ember = Math.max(0.25, Math.min(1, (e.open || 0) / CQ.ablazeT)); }   /* (claude/cq3art) THE SAG: down on her belly, legs and claws slack, the char split with glowing seams that dim as the opening runs out */   /* (claude/cisternqueen3) ABLAZE, SAGGED: down, the shell charred (greybox) */
+  if (e.scorch > 0) { o.scorch = Math.min(1, e.scorch); o.heat = 1; o.hot = true; }   /* (claude/cq3art: CQ.scorchT was retired - heat read NaN; alight, the shell burns whole until she sags) */   /* (claude/cqart) HOT: how much of her burn is left (the seams sink as it dies), and her stinger bare and glowing */
+  if (m === 'fallen') { o.legs = 'upkick'; o.claw = 'airup'; o.tail = 'down'; o.back = true; }   /* (claude/cq3art) ON HER BACK, off her wall: belly bare, legs and claws at the air */
+  /* (claude/cq3art) the stinger-broken stump, its reel and the DOUSED drip are gone (the stinger is never broken now); the wet shell stays for THE SLIP and the flood */
   if (S.charT > 0 && !(e.scorch > 0)) o.char = Math.min(1, S.charT / CQ.charT);
   if (S.pose === 'floor') o.floor = true;
-  if (S.broken) o.broken = true;
+  /* (claude/cq3art) THE TAIL ON THE FLOOR IS THE TARGET (B10): in every opening it lies flat to the stinger - tapered, gold-lit along its length, the stinger big (and the gold ring and its clock over it: src/cistern-queen-hands.js) */
+  o.flip = V.sy < 0; if (o.tail === 'lance' && qOpen(e) && S.stinger) { o.flat = true; o.target = true; }
   /* THE ARMOURED STINGER: steel-capped while a blow on it is turned to CQ.tailMul (outside her openings, not HOT, not stuck in the floor); bare and gold when it pays */
-  o.armour = !S.broken && !(e.scorch > 0) && !qOpen(e) && !stingerOut(S) && !(S.ward > 0);
+  o.armour = !qOpen(e) && !stingerOut(S) && ((S.ward > 0) || (S.tipAct === S.act && (S.tipTaken || 0) >= (e.maxHp || 1) * CQ.tipCap - 0.01));   /* (claude/cisternqueen3: it pays whenever it is out - steel only in her ward, or once she has curled it away for this move) */
   /* THE PERCH: on THE WELLHEAD she is crouched on the beam, her knees up and wide, the toes hooked over its lip */
-  if (S.pose === 'shaft' && !(e.gone > 0) && m !== 'leap' && m !== 'pounce' && m !== 'drop' && m !== 'fallen' && m !== 'soaked' && m !== 'reel') { o.legs = 'perch'; o.walk = false; }
-  /* REEL (B16): its own frame - the near claw flung up over her shoulder, the far one wide and low, the front legs snatched off the floor, the stump limp; the white hit-flash only on the first beat */
-  if (m === 'reel') { const rt = Math.max(0, e.modeT || 0); o.reel = true; o.reelT = rt; o.claw = 'reel'; o.legs = 'reel'; o.walk = false; o.tail = 'curl'; o.broken = true; o.flash = rt > 1.3 && Math.floor(time * 14) % 2 === 0; }
+  if (S.pose === 'shaft' && !(e.gone > 0) && m !== 'leap' && m !== 'pounce' && m !== 'drop' && m !== 'fallen' && m !== 'soaked' && m !== 'thrash') { o.legs = 'perch'; o.walk = false; }
   /* STANDING, SHE BREATHES: a four-beat heave of the carapace (walking, clinging, hanging, getting up) */
   const idle = !moving && (m === 'walk' || m === 'cling' || m === 'hang' || m === 'recover' || m === 'planted' || m === 'stuck'), breath = idle ? 1 + 0.03 * [0, 1, 0, -1][Math.floor(time * 2.6 / (2 * Math.PI) * 4) % 4] : 1;
   g.save();
@@ -275,6 +276,25 @@ export function drawOver(g, e, S, cx, cy, time, CQ) {
     for (let i = 0; i < 5; i++) fr(g, '#d8b47a', x - 20 + ((time * 60 + i * 11) % 40), R(F - 6 - ((time * 30 + i * 7) % 8)), 1, 1);
     if (hot) { g.strokeStyle = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, R(F - 2), 30, 6, 0, 0, Math.PI * 2); g.stroke(); }
     fr(g, '#ffb84a', x + 10, R(F - bul - 6), 3, 3); }
+  /* (claude/cq3art) THE BURST, TOLD: while she digs up to the spot the sand ripples out from it and cracks (the bulge above); the instant the window opens a WET RING the size of the splash
+     zone lights on the sand with a water drop bobbing over it - THROW NOW - and it closes (greys, shrinks) as the window does. A pale ring is the sand; a BLUE one is the water's */
+  { const w = burstAt(e, S), pre = e.mode === 'strikeTell' && S.cur && S.cur.x != null && S.pose === 'burrow';
+    if (pre || w) { const wx = w ? w.x : S.cur.x, x = X(wx), fy = R(F), late = w && e.mode !== 'strikeTell', k = late ? Math.max(0, Math.min(1, (S.surfT || 0) / (CQ.strikeT + CQ.burstLate))) : 1;
+      if (!w || !late) for (let j = 0; j < 3; j++) { const q = (time * 1.6 + j / 3) % 1; g.globalAlpha = (1 - q) * 0.7; g.strokeStyle = '#ead7a8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, 8 + q * 30, 1.5 + q * 4, 0, 0, Math.PI * 2); g.stroke(); }
+      g.globalAlpha = 0.8; g.fillStyle = '#6e5230'; for (const [dx, dy] of [[-17, 2], [-9, 0], [8, 1], [16, 3], [0, -1]]) { fr(g, x + dx, fy + dy - 1, 1, 2); fr(g, x + dx + (dx < 0 ? -1 : 1), fy + dy, 2, 1); }   /* the sand cracking over her back */
+      if (w) { const pu = 0.5 + 0.5 * Math.sin(time * 18), RR = CQ.burstR * (0.55 + 0.45 * k), c1 = late ? '170,190,205' : '140,200,240';
+        g.globalAlpha = (late ? 0.18 : 0.26) * k; g.fillStyle = 'rgb(' + c1 + ')'; g.beginPath(); g.ellipse(x, fy - 1, RR, 6, 0, 0, Math.PI * 2); g.fill();
+        g.globalAlpha = (0.55 + 0.4 * pu) * (late ? 0.4 + 0.6 * k : 1); g.strokeStyle = late ? '#b8c8d4' : pu > 0.5 ? '#e8f4f8' : '#7ab8e8'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 1, RR, 6, 0, 0, Math.PI * 2); g.stroke();
+        g.lineWidth = 1; g.beginPath(); g.ellipse(x, fy - 1, RR * 0.62, 3.6, 0, 0, Math.PI * 2); g.stroke();
+        if (!late) { const by = fy - 40 - R(Math.sin(time * 9) * 3), DROP = [[0, -1, 2], [1, -1, 2], [2, -2, 4], [3, -2, 4], [4, -3, 6], [5, -3, 6], [6, -4, 8], [7, -4, 8], [8, -4, 8], [9, -3, 6], [10, -2, 4]];   /* the drop, bobbing: THROW WATER HERE */
+          g.globalAlpha = 1; for (const [ox, oy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) for (const [ry, rx, rw] of DROP) fr(g, '#0e1620', x + rx + ox, by + ry + oy, rw, 1);
+          for (const [ry, rx, rw] of DROP) { fr(g, '#4a9ad8', x + rx, by + ry, rw, 1); if (rw > 2) fr(g, '#2a6aa8', x + rx + rw - 2, by + ry, 2, 1); } for (let r = 5; r <= 8; r++) fr(g, '#e8f4f8', x - 3, by + r, 1, 1); fr(g, '#e8f4f8', x - 2, by + 4, 1, 1);
+          for (let c = 0; c < 3; c++) { const cy2 = by + 15 + c * 5 + R((time * 14) % 5); g.globalAlpha = c === 0 ? 0.35 : c === 1 ? 0.95 : 0.6; for (const [ox, oy, w] of [[-4, 0, 2], [-2, 1, 2], [0, 1, 2], [2, 0, 2]]) { fr(g, '#0e1620', x + ox - 1, cy2 + oy - 1, w + 2, 3); } for (const [ox, oy, w] of [[-4, 0, 2], [-2, 1, 2], [0, 1, 2], [2, 0, 2]]) fr(g, '#e8f4f8', x + ox, cy2 + oy, w, 1); } } }
+      g.globalAlpha = 1; } }
+  /* (claude/cq3art) THE SLIP, wet: the water she slipped on spreads under her for the opening - a dark sheen, rings that run out and fade */
+  if (e.mode === 'slip' && e.open > 0) { const x = X(e.x), fy = R(F), age = CQ.slipT - e.open, sp = Math.min(1, age / 0.4), fade = Math.min(1, e.open / 1.2);
+    g.globalAlpha = 0.4 * fade; g.fillStyle = '#1c3a56'; g.beginPath(); g.ellipse(x, fy, 20 + 46 * sp, 3.5, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.85 * fade; fr(g, '#7ab8e8', x - R(36 * sp), fy - 1, R(72 * sp), 1);
+    for (let j = 0; j < 2; j++) { const q = (time * 0.9 + j * 0.5) % 1; g.globalAlpha = 0.6 * (1 - q) * fade; g.strokeStyle = '#9fd0ee'; g.beginPath(); g.ellipse(x, fy - 1, 24 + q * 34, 2 + q * 3, 0, 0, Math.PI * 2); g.stroke(); } g.globalAlpha = 1; }
   /* HER TELLS ON THE FLOOR */
   const cur = S.cur || {}, m = e.mode, blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
   if (m === 'lanceTell' && cur.x != null) { const x = X(cur.x), k = 1 - Math.max(0, e.modeT) / CQ.lanceTell; g.strokeStyle = blink; g.lineWidth = 1; g.beginPath(); g.ellipse(x, R(F - 1), 16 - k * 8, 3, 0, 0, Math.PI * 2); g.stroke(); fr(g, '#ff6b6b', x - 1, R(F - 3), 2, 2); }
@@ -319,6 +339,59 @@ export function drawOver(g, e, S, cx, cy, time, CQ) {
   if (e.open > 0) { const x = X(e.x), y = R(e.y - 92 - cy), k = Math.max(0, e.open / CQ.openT); g.fillStyle = '#1b1626'; g.fillRect(x - 20, y, 40, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 20, y, R(40 * k), 3); }
 }
 
+/* ---------- (claude/cq3art) THE WATER JARS, THE RACK, THE SHATTER, THE OIL'S GLOW, THE TARGET'S CUE (src/cistern-queen-hands.js drawOver calls these) ---------- */
+const CL = { out: '#2a1810', base: '#a8603a', shade: '#7a4228', lite: '#d89a62', rim: '#e8b878', band: '#4a2a18', tick: '#e8c27a', water: '#7ab8e8', waterD: '#3a7ab8', white: '#e8f4f8' };
+/* A WATER JAR: a clay amphora, 13 x 17 - a round belly, a banded shoulder, two handles, a lipped neck, the water lit at the brim. (x, y) = the bottom middle; ang tumbles it in flight */
+export function drawJarArt(g, x, y, o = {}) {
+  const full = o.full !== false, t = o.t || 0; g.save(); g.translate(R(x), R(y)); if (o.ang) { g.translate(0, -8); g.rotate(o.ang); g.translate(0, 8); }
+  ell(g, CL.out, 0, -6.5, 7.5, 7); ell(g, CL.base, 0, -6.5, 6.4, 6); ell(g, CL.shade, 2, -5, 4.2, 4.6); ell(g, CL.lite, -2.4, -8, 1.8, 2.6);   /* the belly: dark edge, clay, shade, a lit shoulder */
+  fr(g, CL.out, -4, -15, 8, 6); fr(g, CL.base, -3, -15, 6, 6); fr(g, CL.shade, 1, -15, 2, 6); fr(g, CL.lite, -3, -14, 1, 5);   /* the neck */
+  fr(g, CL.out, -5, -18, 10, 4); fr(g, CL.rim, -4, -18, 8, 2); fr(g, CL.base, -4, -16, 8, 1);   /* the lip */
+  fr(g, CL.out, -9, -13, 3, 6); fr(g, CL.shade, -8, -12, 1, 4); fr(g, CL.out, 6, -13, 3, 6); fr(g, CL.shade, 7, -12, 1, 4); fr(g, CL.base, -8, -13, 2, 1); fr(g, CL.base, 6, -13, 2, 1);   /* the handles */
+  fr(g, CL.band, -6, -8, 12, 2); for (let i = 0; i < 4; i++) fr(g, CL.tick, -5 + i * 3, -8, 1, 1);   /* the painted band */
+  if (full) { fr(g, CL.waterD, -3, -18, 6, 1); fr(g, CL.water, -3, -19, 6, 1); fr(g, CL.white, -2 + R(Math.sin(t * 6) * 1.5), -19, 2, 1);   /* the water at the brim */
+    if (o.slosh) { const k = (t * 3) % 1; g.globalAlpha = 1 - k; fr(g, CL.water, 3 + k * 3, -21 - k * 2, 1, 2); g.globalAlpha = 1; } }
+  g.restore(); }
+/* THE RACK: a squat stone block, an iron cradle (two uprights, a strap, rivets) and the spring's brass nozzle above it - full: the jar sits in it, lit; empty: the nozzle drips
+   and a ghost of the jar fills up. r = { full, t }, y = the floor */
+export function drawRack(g, x, y, r, time, back, glint) {
+  fr(g, '#16110b', x - 14, y - 6, 28, 6); fr(g, '#6e5c42', x - 13, y - 5, 26, 5); fr(g, '#a58a5e', x - 13, y - 5, 26, 1); fr(g, '#4a3c2a', x - 13, y - 1, 26, 1); fr(g, '#2a2016', x - 1, y - 5, 1, 4); fr(g, '#8a7656', x, y - 5, 1, 3);   /* the block: a lit top, a dark foot, a joint */
+  for (const s of [-1, 1]) { const ux = x + s * 8 - (s < 0 ? 1 : 0); fr(g, '#2a3038', ux, y - 17, 3, 12); fr(g, '#8995a3', ux + (s < 0 ? 0 : 2), y - 17, 1, 12); fr(g, '#d6e0ea', ux + 1, y - 17, 1, 1); }   /* the uprights */
+  fr(g, '#2a3038', x - 9, y - 9, 18, 2); fr(g, '#8995a3', x - 9, y - 9, 18, 1); fr(g, '#d6e0ea', x - 7, y - 9, 1, 1); fr(g, '#d6e0ea', x + 6, y - 9, 1, 1);   /* the strap and its rivets */
+  fr(g, '#2a3038', x - 12, y - 24, 9, 3); fr(g, '#56606c', x - 12, y - 24, 9, 1); fr(g, '#2a3038', x - 6, y - 21, 3, 3); fr(g, '#b8903a', x - 5, y - 21, 1, 3); fr(g, '#e8c27a', x - 5, y - 21, 1, 1);   /* the spring's pipe and its brass nozzle */
+  if (r.full) { drawJarArt(g, x, y - 5, { t: time + x * 0.01 });
+    if (glint) { const k = (time * 0.9 + x * 0.013) % 1;   /* a glint runs over the clay, then a twinkle at the brim */
+      if (k < 0.3) { const gx = x - 6 + R(k / 0.3 * 12); g.globalAlpha = 0.85; fr(g, '#ffffff', gx, y - 15 + R(k / 0.3 * 6), 1, 3); g.globalAlpha = 1; }
+      if (k > 0.3 && k < 0.5) { const q = (k - 0.3) / 0.2, s = q < 0.5 ? q * 2 : 2 - q * 2; fr(g, '#ffffff', x + 1, y - 24, 1, 1 + R(s * 4)); fr(g, '#ffffff', x - R(s * 2), y - 23, 1 + R(s * 4), 1); }
+      g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.1 + 0.05 * Math.sin(time * 3 + x); g.fillStyle = '#7ab8e8'; g.beginPath(); g.ellipse(x, y - 12, 16, 12, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; } }
+  else { const k = Math.max(0, Math.min(1, 1 - r.t / (back || 4))); g.globalAlpha = 0.28; drawJarArt(g, x, y - 5, { full: false, t: time }); g.globalAlpha = 1;
+    fr(g, CL.out, x - 8, y - 13, 16, 2); fr(g, CL.water, x - 8, y - 12, R(16 * k), 1);   /* the jar filling: a line of water under the lip */
+    const d = (time * 2.2) % 1; fr(g, CL.water, x - 5, y - 20 + R(d * 14), 1, 2); fr(g, CL.white, x - 5, y - 20 + R(d * 14), 1, 1);   /* a drop falling from the nozzle */ } }
+/* THE SHATTER: the jar bursts on the stone - a white-blue flash, a ring running out along the floor, spray thrown up in arcs, clay shards tumbling down, then the wet dark where it fell.
+   f = { x, y, t (0..1) } y = where it burst; fy = the floor under it (the shards come to rest there) */
+export function drawShatter(g, f, cx, cy, fy) {
+  const a = f.t, X0 = f.x - cx, Y0 = f.y - cy, FY = (fy != null ? fy : f.y) - cy, soft = !!f.soft;
+  if (a < 0.12) { g.globalAlpha = 1 - a / 0.12; g.fillStyle = '#e8f4f8'; g.beginPath(); g.arc(R(X0), R(Y0 - 4), soft ? 6 : 11 * (0.5 + a / 0.12 * 0.5), 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
+  g.globalAlpha = 0.45 * (1 - a); g.fillStyle = '#1c3a56'; g.beginPath(); g.ellipse(R(X0), R(FY), 8 + a * 22, 2 + a * 2, 0, 0, Math.PI * 2); g.fill();   /* the wet it leaves */
+  g.globalAlpha = 1 - a; g.strokeStyle = '#e8f4f8'; g.lineWidth = 1.5; g.beginPath(); g.ellipse(R(X0), R(FY - 1), 6 + a * 46, 1.5 + a * 6, 0, 0, Math.PI * 2); g.stroke(); g.strokeStyle = '#7ab8e8'; g.beginPath(); g.ellipse(R(X0), R(FY - 1), 3 + a * 30, 1 + a * 4, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;
+  const n = soft ? 6 : 14; for (let i = 0; i < n; i++) { const an = (i / n) * Math.PI * 0.9 + 0.1 * Math.PI, sp = 55 + (i * 37 % 40), dxx = Math.cos(an) * sp * (i % 2 ? 1 : -1), tt = a * 0.9, px = X0 + dxx * tt, py = Y0 - Math.sin(an) * sp * tt * 1.15 + 160 * tt * tt;
+    if (py > FY) continue; g.globalAlpha = 1 - a * 0.8; fr(g, i % 3 ? CL.water : CL.white, px, py, 2, 2); fr(g, CL.waterD, px, py + 2, 1, 1); }
+  if (!soft) for (let i = 0; i < 7; i++) { const an = (i / 7) * Math.PI * 0.8 + 0.1 * Math.PI, sp = 40 + (i * 29 % 30), dxx = Math.cos(an) * sp * (i % 2 ? 1 : -1), tt = Math.min(a * 0.9, 0.55), px = X0 + dxx * tt, py = Math.min(FY - 1, Y0 - Math.sin(an) * sp * tt * 0.9 + 190 * tt * tt);
+    g.globalAlpha = 1 - Math.max(0, a - 0.6) / 0.4; fr(g, CL.out, px - 1, py - 1, 4, 3); fr(g, i % 2 ? CL.base : CL.shade, px, py, 3, 2); fr(g, CL.lite, px, py, 1, 1); }   /* the shards: dark-edged clay, the lit face up */
+  g.globalAlpha = 1; }
+/* THE OIL'S GLOW (it will catch: SET HER ALIGHT): over the pool's top, a warm light, a shimmer running along it, heat-wisps and an ember lifting off - drawn per 16 px cell */
+export function drawOilGlow(g, x, y, time, p, seed) {
+  g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.14 + 0.1 * p; g.fillStyle = '#ff7a22'; g.beginPath(); g.ellipse(R(x + 8), R(y - 1), 13, 4.5, 0, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'source-over';
+  g.globalAlpha = 0.55 + 0.3 * p; fr(g, '#ffb070', x, y - 2, 16, 1);
+  const k = (time * 0.7 + seed * 0.37) % 1; g.globalAlpha = 0.9 * Math.sin(k * Math.PI); fr(g, '#ffe6b8', x + R(k * 13), y - 3, 3, 1);   /* the shimmer sliding along it */
+  const w = (time * 0.9 + seed * 0.21) % 1; if ((seed + Math.floor(time * 0.9 + seed * 0.21)) % 3 === 0) { g.globalAlpha = 0.9 * (1 - w); fr(g, '#ffcf80', x + 4 + (seed * 5) % 8 + R(Math.sin(w * 6) * 1.5), y - 4 - R(w * 14), 1, 1); }   /* an ember lifting off */
+  g.globalAlpha = 1; }
+/* THE TARGET'S CUE on the stinger of an OPENING (B10): a gold light on the floor under it and a bobbing gold arrow over it, pointing down - STRIKE HERE (the ring and the clock are the hands'). x, y = the stinger on screen */
+export function drawTargetCue(g, x, y, fy, time, p) {
+  g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.26 + 0.14 * p; g.fillStyle = '#ffc85a'; g.beginPath(); g.ellipse(R(x), R(fy - 1), 34, 5, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.12 + 0.08 * p; g.beginPath(); g.ellipse(R(x), R(fy - 1), 52, 7, 0, 0, Math.PI * 2); g.fill(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+  const by = R(y - 32 - Math.sin(time * 8) * 3); fr(g, '#1b1626', x - 7, by - 1, 14, 4); fr(g, '#1b1626', x - 5, by + 3, 10, 2); fr(g, '#1b1626', x - 3, by + 5, 6, 2); fr(g, '#1b1626', x - 1, by + 7, 2, 2);   /* the arrow: dark edge, gold body, a white lit edge */
+  fr(g, '#ffd36b', x - 6, by, 12, 2); fr(g, '#ffd36b', x - 4, by + 2, 8, 2); fr(g, '#ffd36b', x - 2, by + 4, 4, 2); fr(g, '#ffd36b', x - 1, by + 6, 2, 1); fr(g, '#fff6c8', x - 6, by, 12, 1); }
+
 /* THE SPRITE SET for the bestiary card and the body she leaves: her body drawn into canvases (frame 0 standing in guard, 1 rearing, 2 on her back) */
 export const CQ_F = { stand: 0, rear: 1, dead: 2 };
 let SET = null;
@@ -327,7 +400,7 @@ export function bakeCisternQueen() {
   const W = 200, H = 130, ax = 100, ay = 124;
   const F = [0, 1, 2].map(f => { const [c, g] = canvas(W, H); g.save(); g.translate(ax, ay);
     if (f === 1) { g.translate(-10, 0); g.rotate(-0.5); drawBody(g, { t: 0.3, claw: 'up', legs: 'kick' }); }
-    else if (f === 2) { g.translate(0, -30); g.scale(1, -1); drawBody(g, { t: 0.3, claw: 'down', legs: 'splay', tail: 'down' }); }
+    else if (f === 2) { g.translate(0, -38); g.scale(1, -1); drawBody(g, { t: 0.3, claw: 'airup', legs: 'upkick', tail: 'down', back: true }); }
     else drawBody(g, { t: 0.3, claw: 'guard', legs: 'still' });
     g.restore(); outline(c, OUT); return c; });
   SET = { R: F, L: F.map(c => flipX(c)), white: { R: F.map(c => whiten(c)), L: F.map(c => flipX(whiten(c))) }, ax, ay, w: CQ_W, h: CQ_H };

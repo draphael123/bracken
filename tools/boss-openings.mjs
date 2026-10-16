@@ -247,12 +247,13 @@ try {
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips,dryWet=(S.wet||0)>0;
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
      let peak=o;for(let i=0;i<60*4&&b.mode===how;i++){P.hp=P.maxHp;BK.sim(1);}op[how]=+peak.toFixed(1);};
-   take('slip',()=>S.pose==='burrow'&&S.mound&&b.mode==='burrow',()=>{P.skin.sips=3;P.x=S.mound.x-30;P.y=G.floor;P.vy=0;P.face=1;BK.press('talk');});
+   take('slip',()=>b.mode==='strikeTell'&&b.modeT<=0.4&&S.cur&&S.cur.x!=null,()=>{P.skin.sips=3;P.x=S.cur.x-30;P.y=G.floor;P.vy=0;P.face=1;BK.press('talk');});   /* (claude/cisternqueen3, Daniel 10-14: water as she BURSTS OUT - the skin's pour on her spot in the window) */
+   take('ablaze',()=>S.pose==='floor'&&!b.gone&&b.mode==='walk'&&!(S.charT>0)&&!(S.ward>0),()=>{b.burn=1;});   /* (claude/cisternqueen3) SET HER ALIGHT: a hero's own fire held on her - she thrashes, then sags open */
    b.hp=Math.round(b.maxHp*0.6);
    take('fallen',()=>S.pose==='wall'&&b.mode==='cling',()=>{P.skin.sips=3;P.x=S.wall==='W'?G.ledgeW[0]+30:G.ledgeE[1]-30;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=S.wall==='W'?-1:1;BK.press('talk');});
    b.hp=Math.round(b.maxHp*0.3);
    take('rear',()=>b.mode==='grab'&&S.claw,()=>{P.x=S.claw.x-(b.face>0?16:-16);P.y=G.floor;P.face=b.face>0?1:-1;if(P.atk<0)BK.press('atk');});
-   out.cisternqueen={alone:+alone.toFixed(1),dry:+dry.toFixed(1),drySips,dryWet,open:op,n:{slip:S.n.slip,soaked:S.n.soaked,fallen:S.n.fallen,rear:S.n.rear,countered:S.n.countered}};}
+   out.cisternqueen={alone:+alone.toFixed(1),dry:+dry.toFixed(1),drySips,dryWet,open:op,n:{slip:S.n.slip,soaked:S.n.soaked,fallen:S.n.fallen,rear:S.n.rear,ablaze:S.n.ablaze,countered:S.n.countered}};}
   /* THE GANG LEADER (claude/welltown3, a mini): a minute of him left alone (his bottles land and burn) opens nothing; his bottle struck back sets him
      alight - open; and one burning takes no more than a third of him (Daniel's mini rule) */
   {BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='welltown'));BK.state='play';BK.god=true;const M=BK.L.mini,P=BK.P;
@@ -417,8 +418,8 @@ try {
   assert.ok(r.djinn.open.mud >= 3.3 && r.djinn.open.doused >= 3.8 && r.djinn.open.bailed >= 3.8, 'his three water openings (claude/djinn3, Daniel 10-04: stunned longer - mud >= 3.3 s, the douse and the bail >= 3.8; the bail is two steps: wind the bucket up, drop it when he is under the shaft) (mud >= 2.4 s - claude/djinn2, Daniel 10-03: the mud window 3.2 -> ~2.5 s; the douse and the bail 3 s or more) are not that long: ' + JSON.stringify(r.djinn));
   if (r.cisternqueen) {
   assert.equal(r.cisternqueen.alone, 0, 'THE CISTERN QUEEN: a minute of her left alone opened her: ' + JSON.stringify(r.cisternqueen));
-  assert.ok(r.cisternqueen.dry === 0 && r.cisternqueen.drySips === 2 && r.cisternqueen.dryWet, 'E at her on the open floor opened her - or spent its sip on nothing (claude/cqueenrework, DELIBERATE design change from Daniel 10-13 "fire and water are not used effectively": a pour on her shell now DOUSES her - one sip, told, slowed - and opens nothing): ' + JSON.stringify(r.cisternqueen));
-  } if (r.cisternqueen) assert.ok(r.cisternqueen.open.slip >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her three openings (her mound wet - she SLIPS, Daniel 10-07; a pour down her wall; a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
+  assert.ok(r.cisternqueen.dry === 0 && !r.cisternqueen.dryWet, 'E at her on the open floor opened her (claude/cisternqueen3, DELIBERATE design change from Daniel 10-14: DOUSED is gone - water opens her only as she bursts out of the sand, so a pour on her shell does nothing to her): ' + JSON.stringify(r.cisternqueen));
+  } if (r.cisternqueen) assert.ok(r.cisternqueen.open.slip >= 3 && r.cisternqueen.open.ablaze >= 3 && r.cisternqueen.open.fallen >= 3 && r.cisternqueen.open.rear >= 3, 'her four openings (water as she bursts out - she SLIPS; set alight - she SAGS, claude/cisternqueen3; a pour down her wall; a grab broken) are not each 3 s or more (the boss rule): ' + JSON.stringify(r.cisternqueen));
   assert.equal(r.gangleader.alone, 0, 'THE GANG LEADER: a minute of him left alone opened him: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.open >= 3 && r.gangleader.reflects >= 1, 'his bottle struck back did not set him alight for 3 s or more: ' + JSON.stringify(r.gangleader));
   assert.ok(r.gangleader.took <= r.gangleader.cap + 1 && r.gangleader.took >= r.gangleader.cap * 0.6, 'one burning took more than his cap (GL.capK, inside the third Daniel allows) or nothing like it: ' + JSON.stringify(r.gangleader));

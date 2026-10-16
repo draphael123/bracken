@@ -9,6 +9,7 @@
 //   THE GANG LEADER                            a mini: no charge, two swords (cuts told !), the whirl !!, the bottle reflectable, his opening capped at a third
 // node tools/cistern-queen.mjs
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import * as CQG from '../src/cistern-queen.js';
 import * as GLM from '../src/gang-leader.js';
 import { MARK, HEIGHT, BY_HAND } from '../src/marks.js';
@@ -90,14 +91,17 @@ for (const [ph, hp] of [[1, null], [2, 600], [3, 300]]) { const r = run(120, hp 
 ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + CQ.openT + ' s (>= 3) and one takes no more than ' + CQ.openCap * 100 + '% of her');
 { const e = { x: 100, face: 1, mode: 'walk', open: 0 }; ok(CQG.guarded(e, 140) && !CQG.guarded(e, 40), 'outside an opening her raised claws turn a blow from the front, not one from behind');
   e.mode = 'soaked'; e.open = 2; ok(!CQG.guarded(e, 140) && CQG.qOpen(e), 'soaked, the front is open too'); }
-{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'burrow', modeT: 2, open: 0, alive: true }; S.pose = 'burrow'; S.mound = { x: G.mid }; S.cur = {};
+/* (claude/cisternqueen3, Daniel 10-14 - DELIBERATE DESIGN CHANGE: water opens her only AS SHE BURSTS OUT of the sand - "throw water when she comes out of a burrow so she
+   slips"; a pour on the running mound used to open her any time) */
+{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'strikeTell', modeT: CQ.burstEarly - 0.1, open: 0, alive: true }; S.pose = 'burrow'; S.mound = { x: G.mid }; S.cur = { x: G.mid };
   const c = { number() {}, sound() {}, fx() {}, shake() {} };
-  ok(CQG.pourAim(e, S, { x: G.mid - 30, y: G.floor, face: 1 }) && !CQG.pourAim(e, S, { x: G.mid - 30, y: G.floor, face: -1 }), 'a pour lands on her mound only when you face it, near it');
-  ok(CQG.pourAt(e, S, { x: G.mid - 30, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'slip' && e.open >= 3 && S.stinger && S.stinger.big && S.stinger.t >= 3, 'a pour on her mound wets the sand she comes up through: she SLIPS - open, her stinger flung out on the floor (claude/underwell3: Daniel 10-07 design change, was SOAKED; the bucket still soaks her)');
+  ok(CQG.pourAim(e, S, { x: G.mid - 30, y: G.floor, face: 1 }) && !CQG.pourAim(e, S, { x: G.mid - 30, y: G.floor, face: -1 }), 'a pour lands on the spot she bursts from only when you face it, near it');
+  const e0 = { ...e, mode: 'burrow', modeT: 2 }; ok(!CQG.pourAim(e0, S, { x: G.mid - 30, y: G.floor, face: 1 }) && !CQG.pourAim({ ...e, modeT: CQ.burstEarly + 0.2 }, S, { x: G.mid - 30, y: G.floor, face: 1 }), 'while her mound still runs, or before the window opens, a pour finds nothing (E is not spent on her for nothing)');
+  ok(CQG.pourAt(e, S, { x: G.mid - 30, y: G.floor, face: 1 }, c) === 'open' && e.mode === 'slip' && e.open >= 3 && S.stinger && S.stinger.big && S.stinger.t >= 3, 'a pour on her spot AS SHE BURSTS OUT: she SLIPS onto her back - open ' + e.open.toFixed(1) + ' s, her stinger flung out on the floor');
   const S2 = CQG.newShow(G), e2 = { ...e, mode: 'cling', modeT: 1, open: 0 }; S2.pose = 'wall'; S2.wall = 'W'; S2.script = []; S2.step = 0;
   ok(!CQG.pourAim(e2, S2, { x: G.ledgeW[0] + 30, y: G.ledgeY, face: -1, onLedge: 'E' }) && CQG.pourAt(e2, S2, { x: G.ledgeW[0] + 30, y: G.ledgeY, face: -1, onLedge: 'W' }, c) === 'open' && e2.mode === 'fallen',
     'on her wall: a pour from THAT wall\'s ledge brings her down on her back (the other ledge does nothing)'); }
-/* (claude/underwell3, Daniel 10-07: "I wanted her STINGER to be the VULNERABLE part") HER STINGER, THE SLAM, THE FIRE, THE SLIP */
+/* (claude/underwell3, Daniel 10-07: "I wanted her STINGER to be the VULNERABLE part") HER STINGER, THE SLAM */
 { const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: 1, mode: 'walk', modeT: 1, open: 0, alive: true };
   const tp = CQG.tipOf(e, S); ok(tp && tp.y < G.floor - 50 && tp.y > G.floor - 100 && Math.abs(tp.x - e.x) < 30, 'her stinger is always somewhere a blow can find (curled over her back: ' + (tp ? Math.round(tp.x - e.x) + ',' + Math.round(tp.y - G.floor) : '-') + ' from her feet - a jump and a cut)');
   S.pose = 'wall'; S.wall = 'W'; e.mode = 'cling'; e.x = G.x0 + 20; e.y = G.floor - 4; const tw = CQG.tipOf(e, S); ok(tw && tw.x > G.x0 + 40 && tw.y > G.floor - 110, 'up on her wall the stinger hangs out over the hall, in a jump\'s reach (' + (tw ? Math.round(tw.x - G.x0) + ',' + Math.round(tw.y - G.floor) : '-') + ')');
@@ -108,12 +112,22 @@ ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + 
   for (let t = 0; t < 6; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero, c); if (e.mode === 'planted') planted += 1 / 60; if (S.stinger && S.stinger.big) maxSt = Math.max(maxSt, S.stinger.t); if (e.mode === 'walk' && planted > 0) break; }
   ok(said.includes('STINGER SLAM: OFF THE RED RING, THEN CUT IT') && marks.includes('!!') && hit > 0 && CQ.sslamTell >= 0.75, 'THE STINGER SLAM is told: the word, a red !! (no shield takes it), ' + CQ.sslamTell + ' s, the spot on the floor - and it strikes there');
   ok(planted >= 2 && planted <= 3.2 && maxSt >= 2 && CQ.plantR > CQ.stingR, 'then the stinger STAYS PLANTED ' + planted.toFixed(1) + ' s - a big target (' + CQ.plantR + ' px)'); ok(!(e.open > 0), 'the slam opens nothing else: it is her stinger you cut'); }
-{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 1, open: 0, alive: true }; S.script = ['pincer', 'flick']; S.step = 0; S.ph = 1;
-  let lit = false; const said = []; const c = { hit() {}, band() {}, number: (x, y, t) => said.push(t), sound() {}, fx() {}, shake() {}, music() {}, mark() {}, water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, spawnBrood: () => null, drown() {}, fire: x => lit && Math.abs(x - G.mid) < 30 };
-  const hero = [{ x: G.mid - 200, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }]; for (let i = 0; i < 30; i++) CQG.stepQueen(e, S, 1 / 60, hero, c); ok(!CQG.qScorched(e), 'no fire, no scorch');
-  lit = true; let modes = new Set(), sc = 0; for (let t = 0; t < 9; t += 1 / 60) { e.x = G.mid; CQG.stepQueen(e, S, 1 / 60, hero, c); if (CQG.qScorched(e)) { sc += 1 / 60; modes.add(e.mode); lit = false; } }
-  ok(sc >= CQ.scorchT - 0.1 && said.includes('THE FIRE CRACKS HER SHELL: CUT HER ANYWHERE') && !(e.open > 0), 'fire on her oil touches her: SCORCHED ' + sc.toFixed(1) + ' s, told - and it is not a stun: she is never down for it');
-  ok([...modes].some(m => /Tell$/.test(m) || m === 'pincer'), 'scorched, she FIGHTS ON (' + [...modes].join(',') + ')'); ok(S.ward > 0 || S.n.wards > 0, 'and after it, her told ward (B3)'); }
+/* (claude/cisternqueen3, Daniel 10-14 - DELIBERATE DESIGN CHANGE: "fire stuns her" - was SCORCHED, her body whole and she fought on) SET HER ALIGHT: fire on her oil - she
+   THRASHES (told, her heat close), then SAGS: open, her tail on the floor; then her ward, BLACKENED (no fire takes her, told) until it cools (told) */
+{ const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 1, open: 0, alive: true }; S.script = ['pincer', 'flick', 'pincer', 'flick', 'pincer', 'flick', 'pincer', 'flick']; S.step = 0; S.ph = 1;
+  let lit = false; const said = [], heat = []; const c = { hit: (b, d, n) => { if (n === CQG.MOVE_NAME.heat && b[0] < G.mid - 200 && b[1] > G.mid - 200) heat.push(d); }, band() {}, number: (x, y, t) => said.push(t), sound() {}, fx() {}, shake() {}, music() {}, mark() {}, water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, fire: x => lit && Math.abs(x - G.mid) < 30 };
+  const hero = [{ x: G.mid - 200, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }]; for (let i = 0; i < 30; i++) CQG.stepQueen(e, S, 1 / 60, hero, c); ok(!CQG.qScorched(e) && e.mode !== 'thrash', 'no fire, no burning');
+  lit = true; let thrash = 0, ablaze = 0, maxOpen = 0, stOnFloor = false, refusedAt = -1, cooled = -1, relit = -1, t = 0, wardSeen = false;
+  for (; t < 30; t += 1 / 60) { e.x = G.mid; CQG.stepQueen(e, S, 1 / 60, hero, c); if (e.mode === 'thrash' && ablaze === 0) { thrash += 1 / 60; lit = false; } if (e.mode === 'ablaze') { ablaze += 1 / 60; maxOpen = Math.max(maxOpen, e.open); if (S.stinger && S.stinger.big && S.stinger.y >= G.floor - 8) stOnFloor = true; }
+    if (ablaze > 0 && e.mode !== 'ablaze' && S.ward > 0) wardSeen = true; if (ablaze > 0 && e.mode !== 'ablaze' && refusedAt < 0 && S.charT > 0) { lit = true; if (said.includes('HER SHELL IS BLACKENED: NOT YET')) refusedAt = t; }
+    if (refusedAt > 0 && cooled < 0 && said.includes('HER SHELL COOLS: FIRE TAKES HER AGAIN')) cooled = t; if (cooled > 0 && relit < 0 && e.mode === 'thrash') relit = t; }
+  ok(said.includes('SET ALIGHT: SHE THRASHES') && said.includes('SET HER ALIGHT: SHE FALLS') && thrash >= CQ.thrashT - 0.05 && thrash <= CQ.thrashT + 0.1, 'fire on her oil SETS HER ALIGHT (told): she thrashes ' + thrash.toFixed(2) + ' s');
+  { const S2 = CQG.newShow(G), e2 = { t: 'cisternqueen', x: G.mid, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 1, open: 0, alive: true }; S2.script = []; S2.step = 0; const near = []; const c2 = { ...c, hit: (b, d, n) => { if (n === CQG.MOVE_NAME.heat && b[0] < G.mid - 40 && b[1] > G.mid - 40) near.push(d); }, number() {}, fire: () => false };
+    CQG.scorchUp(e2, S2, c2, 'oil'); for (let i = 0; i < 60; i++) CQG.stepQueen(e2, S2, 1 / 60, [{ ...hero[0], x: G.mid - 40 }], c2);
+    ok(heat.length === 0 && near.length >= 1, 'thrashing, her heat is on whoever stands close (' + near.length + ' heat blow at 40 px), not on a hero who stood off (' + heat.length + ' at 200 px)'); }
+  ok(ablaze >= 3 && maxOpen >= 3 && stOnFloor && said.includes('SHE SAGS: HER TAIL DROOPS. STRIKE THE STINGER'), 'then she SAGS: open ' + maxOpen.toFixed(1) + ' s (>= 3), her tail drooped to the floor - the stinger there, big (told)');
+  ok(wardSeen && said.includes('SHE BURNS OUT: HER SHELL BLACKENS'), 'she burns out: told, and her ward (B3)');
+  ok(refusedAt > 0 && cooled > refusedAt && relit >= cooled && cooled - refusedAt >= CQ.charT - CQ.wardT - 1.5, 'BLACKENED: fire under her again does not take her (told) - it takes her again only once her shell cools (told, ' + (cooled - refusedAt).toFixed(1) + ' s later; charT ' + CQ.charT + ')'); }
 /* THE GANG LEADER */
 { const chains = Object.values(GLM.CHAINS).flat(), all = new Set(chains.flat());
   ok(!all.has('charge') && all.has('cut') && all.has('cross') && all.has('whirl') && all.has('throw'), 'THE GANG LEADER: two swords (the cut, the cross cut), the whirl, the molotov - and no charge');
@@ -157,41 +171,63 @@ ok(CQ.openT >= 3 && CQ.openCap > 0 && CQ.openCap <= 0.2, 'her openings last ' + 
   ok(plain && plain.stacks === 1 && plain.mode === 'plain' && plain.slow === 0 && plain.drops[0] < 1, 'any other poison (P.venomT) is ONE draining drop and no slowdown');
   const ops = []; const g = { fillRect: (...a) => ops.push(a), set fillStyle(v) {}, set globalAlpha(v) {} }, said = [];
   drawVenomIcon(g, (t, ...r) => said.push(t), 16, 21, three, 0); ok(ops.length > 60 && said.join() === '-75%' && ops.every(([x, y]) => y >= 20 && y <= 28 && x >= 16), 'it draws in the gap under the stamina bar (rows 20-28) and says -75%'); }
-/* ================= THE REWORK (claude/cqueenrework, Daniel's 10-13 playtest) =================
-   1. FIRE AND WATER, ONE LOOP: HOT (fire) / DOUSED (water) / STEAM (water on her HOT) - told, timed, and the pyro's own fire lights her no oftener than a torch
-   2. THE WELLHEAD: wherever she perches there is a beam under her (no more hung on nothing), a rope up to it, and a pour from it or the bucket brings her down
-   3. HER STINGER: always hittable, armoured (x0.4, told) outside her openings, x1.75 stuck/HOT, a PURSE a phase on what lands; spent, it BREAKS - her stinger moves gone for the phase */
+/* ================= CISTERN QUEEN 3 (claude/cisternqueen3, Daniel 10-14: "unclear"; "destroying the tail should NOT be a mechanic - the tail is how you hit her;
+   fire stuns her; throw water when she comes out of a burrow so she slips") - DELIBERATE DESIGN CHANGE: the rework's loop (HOT / DOUSED / STEAM) and its stinger
+   PURSE / BREAK / MOULT are REMOVED; these checks replace the ones that held them (same strictness: told, timed, capped, every opening >= 3 s) =================
+   1. GONE: no purse, no break, no moult, no douse, no steam - in her code, her cycles, her lines
+   2. SET HER ALIGHT: the pyro's own fire too, never while blackened, never in the flood (told)
+   3. SHE SURFACES: THROW WATER - early or late a splash (told); in the window she slips onto her back (drawn flipped, the stinger drawn where it is struck)
+   4. THE WELLHEAD (kept from the rework)   5. HER STINGER is the damage (the hands' take)   6. THE JARS (the hands) */
 const quietC = (said = [], marks = [], o = {}) => ({ hit() {}, band() {}, number: (x, y, t) => said.push(t), sound() {}, fx() {}, shake() {}, music() {}, mark: m => marks.push(m), water() {}, grab: () => null, free: () => true, holdAt() {}, release() {}, ...o });
 const fresh = (o = {}) => { const S = CQG.newShow(G), e = { t: 'cisternqueen', x: G.mid - 120, y: G.floor, hp: 1000, maxHp: 1000, face: -1, mode: 'walk', modeT: 0.2, open: 0, alive: true, ...o }; S.script = []; S.step = 0; return { S, e }; };
 const hero0 = (x = G.mid - 260) => [{ x, y: G.floor, ground: true, alive: true, onLedge: null, pp: { snare: 0 } }];
-/* 1a. HOT: fire under her - told, timed, her body whole from any side; her stinger tells slower; burnt out: her ward and a BLACKENED shell no fire takes (told) until it clears */
-{ const { S, e } = fresh(); S.ph = 1; S.script = ['lance', 'lance', 'lance', 'lance', 'lance', 'lance']; let lit = true; const said = [];
-  const c = quietC(said, [], { fire: x => lit && Math.abs(x - e.x) < 40 }); const tells = []; let hot = 0, sawWard = false, refusedAt = -1, relit = -1, t = 0;
-  for (; t < 30; t += 1 / 60) { const m0 = e.mode, T0 = e.modeT; e.x = G.mid - 120; CQG.stepQueen(e, S, 1 / 60, hero0(), c); if (e.mode === 'lanceTell' && m0 !== 'lanceTell') tells.push({ hot: CQG.qHot(S), t: e.modeT });
-    if (CQG.qHot(S)) hot += 1 / 60; if (S.ward > 0 && hot > 0) sawWard = true; if (S.charT > 0 && refusedAt < 0 && said.includes('HER SHELL IS BLACKENED: NOT YET')) refusedAt = t; if (refusedAt > 0 && relit < 0 && CQG.qHot(S)) relit = t; }
-  const th = tells.find(q => q.hot), tc = tells.find(q => !q.hot);
-  ok(said.includes('THE FIRE CRACKS HER SHELL: CUT HER ANYWHERE') && said.includes('HOT: WATER ON HER NOW CRACKS HER OPEN') && CQG.qScorched(e) !== undefined, 'HOT is told: the fire cracks her shell, and the next step is said (water on her now cracks her open)');
-  ok(th && tc && Math.abs(th.t / tc.t - CQ.hotTellK) < 0.05, 'HOT, her stinger tells come slower (x' + CQ.hotTellK + ': ' + (th ? th.t.toFixed(2) : '-') + ' s against ' + (tc ? tc.t.toFixed(2) : '-') + ' s cold)');
-  ok(sawWard && said.includes('SHE BURNS OUT: HER SHELL BLACKENS'), 'she burns out after ' + CQ.scorchT + ' s: told, and her ward (B3)');
-  ok(refusedAt > 0 && relit > refusedAt && relit - refusedAt >= CQ.charT - CQ.wardT - 1, 'BLACKENED: fire under her again does not take her (told: HER SHELL IS BLACKENED) - it takes her again only once it clears (' + (relit - refusedAt).toFixed(1) + ' s later; charT ' + CQ.charT + ')'); }
-/* 1b. THE PYRO'S OWN FIRE: the same rule - HOT once, then not again while she is blackened or wet */
-{ const { S, e } = fresh(); const c = quietC(); ok(CQG.fireOn(e, S, c, 'hero') && S.scorchWhy === 'hero' && CQG.qHot(S), 'a hero\'s own fire (the pyro) makes her HOT, as a torch\'s does');
-  S.scorch = 0; S.charT = CQ.charT; ok(!CQG.fireOn(e, S, c, 'hero'), 'and not again while her shell is blackened'); S.charT = 0; S.wet = 3; ok(!CQG.fireOn(e, S, c, 'hero') && !CQG.hotOK(e, S), 'nor while she is wet (the firebreak)');
-  ok(CQ.charT + CQ.scorchT >= 14 && CQ.scorchT <= 7, 'so HOT is at most ' + CQ.scorchT + ' s in every ' + (CQ.charT + CQ.scorchT + CQ.wardT) + ' or so - the pyro\'s fire does not trivialise her'); }
-/* 1c. DOUSED: a pour on her from the floor - told; she slows (tells, walk); no fire takes her; her burrow floods (she dives and SLIPS: open); it dries, told */
-{ const { S, e } = fresh({ face: -1, x: G.mid }); S.ph = 1; const said = [], c = quietC(said, [], { fire: x => true });
-  const h = { x: G.mid + 60, y: G.floor, face: -1, onLedge: null }; const a = CQG.pourAim(e, S, h);
-  ok(a && a.what === 'shell' && CQG.pourAt(e, S, h, c) === 'douse' && CQG.qWet(S) && !(e.open > 0) && said.includes('DOUSED: SHE SLOWS, AND HER SAND IS WET'), 'a pour on her from the floor DOUSES her (told) - it opens nothing by itself');
-  ok(CQG.pourAim(e, S, h) === null, 'already dripping, a second pour finds nothing to do (E is never spent on her for nothing)');
-  S.script = ['lance']; S.step = 0; e.mode = 'walk'; e.modeT = 0; CQG.stepQueen(e, S, 1 / 60, hero0(), c); ok(e.mode === 'lanceTell' && Math.abs(e.modeT - CQ.lanceTell * CQ.wetTellK) < 0.05, 'DOUSED she tells slower (x' + CQ.wetTellK + ')');
-  ok(!CQG.qHot(S) && said.includes('SHE IS WET: THE FIRE WILL NOT TAKE HER'), 'and the fire under her does not take her while she drips (told)');
-  const { S: S2, e: e2 } = fresh({ x: G.mid - 100 }); S2.ph = 1; S2.wet = 5; S2.script = ['burrow:strike']; const said2 = []; let slip = false; for (let t = 0; t < 3 && !slip; t += 1 / 60) { CQG.stepQueen(e2, S2, 1 / 60, hero0(), quietC(said2)); slip = e2.mode === 'slip'; }
-  ok(slip && e2.open >= 3 && said2.includes('HER BURROW FLOODS: SHE SLIPS. CUT HER'), 'DOUSED, HER BURROW FLOODS: she dives into wet sand and comes up SLIPPING - open ' + e2.open.toFixed(1) + ' s');
-  const { S: S3, e: e3 } = fresh(); S3.wet = 0.1; const said3 = []; for (let i = 0; i < 20; i++) CQG.stepQueen(e3, S3, 1 / 60, hero0(), quietC(said3)); ok(!CQG.qWet(S3) && said3.includes('SHE DRIES: THE FIRE CAN TAKE HER AGAIN'), 'and she dries in ' + CQ.douseT + ' s, told'); }
-/* 1d. STEAM: water on her while she is HOT - the big opening, then DOUSED */
-{ const { S, e } = fresh({ x: G.mid, face: -1 }); const said = [], c = quietC(said); CQG.scorchUp(e, S, c); const h = { x: G.mid + 60, y: G.floor, face: -1, onLedge: null };
-  ok(CQG.pourAim(e, S, h).what === 'steam' && CQG.pourAt(e, S, h, c) === 'open' && e.mode === 'soaked' && e.openWhy === 'steam' && e.open >= 3 && said.includes('STEAM: HER HOT SHELL CRACKS. CUT HER'), 'HOT THEN WATER = STEAM: she is SOAKED, open ' + e.open.toFixed(1) + ' s (told)');
-  ok(!CQG.qHot(S) && CQG.qWet(S) && S.charT > 0, 'and after the steam she is DOUSED and blackened - no fire at once (the loop goes round again)'); }
+/* 1. GONE */
+{ const src = readFileSync(new URL('../src/cistern-queen.js', import.meta.url), 'utf8') + readFileSync(new URL('../src/cistern-queen-hands.js', import.meta.url), 'utf8');
+  ok(!('tailPurse' in CQ) && !('breakT' in CQ) && !('douseT' in CQ) && !('hotTellK' in CQ) && !CQG.breakStinger && !CQG.douse && !CQG.tailLeft && !CQG.STING_MOVES && !CQG.qWet,
+    'her stinger has no PURSE, no BREAK, no MOULT; there is no DOUSED and no STEAM (no constant, no export)');
+  ok(!/'(HER STINGER BREAKS|SHE MOULTS|STEAM: HER HOT SHELL|DOUSED: SHE SLOWS|HOT: WATER ON HER NOW)/.test(src), 'and none of their lines is said any more');
+  const r = run(120); ok(!r.seen.has('reel') && !r.seen.has('soaked'), 'two minutes of her: she never reels off a broken stinger'); }
+/* 2. SET HER ALIGHT, by any fire: the pyro's own too - not while blackened, not in the flood (told) */
+{ const { S, e } = fresh(); const said = [], c = quietC(said); ok(CQG.fireOn(e, S, c, 'hero') && S.scorchWhy === 'hero' && e.mode === 'thrash' && said.includes('YOUR FIRE TAKES HER: SHE BURNS'), 'a hero\'s own fire (the pyro) sets her alight, as a torch\'s does (told)');
+  const { S: S2, e: e2 } = fresh(); S2.charT = 5; const s2 = []; ok(!CQG.fireOn(e2, S2, quietC(s2), 'hero') && s2.includes('HER SHELL IS BLACKENED: NOT YET'), 'not while her shell is blackened (told)');
+  const { S: S3, e: e3 } = fresh(); S3.flood = true; const s3 = []; ok(!CQG.fireOn(e3, S3, quietC(s3), 'oil') && !CQG.hotOK(e3, S3) && s3.includes('SHE IS WET: THE FIRE WILL NOT TAKE HER'), 'nor in the flood - she is wet (told)');
+  const { S: S4, e: e4 } = fresh({ x: G.x0 + 20, y: G.floor - 4, mode: 'cling', modeT: 2, face: 1 }); S4.ph = 2; S4.pose = 'wall'; S4.wall = 'W'; S4.script = ['spit']; CQG.fireOn(e4, S4, quietC(), 'hero');
+  ok(e4.mode === 'thrash' && S4.pose === 'floor' && e4.y === G.floor && S4.script[0] === 'wall:W', 'alight on her wall she drops to the floor burning (and goes back up after)');
+  ok(CQ.charT + CQ.ablazeT + CQ.thrashT >= 14 && CQ.ablazeT >= 3, 'so she is stunned ' + CQ.ablazeT + ' s at most once in every ' + (CQ.charT + CQ.ablazeT + CQ.thrashT + CQ.wardT).toFixed(1) + ' s or so - the pyro\'s fire does not trivialise her'); }
+/* 3. SHE SURFACES: THROW WATER */
+{ const step = (S, e, secs, c) => { for (let t = 0; t < secs; t += 1 / 60) CQG.stepQueen(e, S, 1 / 60, hero0(G.mid - 100), c); };
+  const burst = () => { const { S, e } = fresh({ x: G.mid - 100 }); S.ph = 1; S.script = ['burrow:strike']; return { S, e }; };
+  /* early: the mound still running at you */
+  { const { S, e } = burst(), said = [], c = quietC(said); let early = null, told = false, marks = 0;
+    for (let t = 0; t < 4 && !early; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero0(G.mid + 160), c); if (e.mode === 'burrow' && S.mound && S.mound.t > 0.3) early = CQG.waterAt(e, S, S.mound.x, G.floor - 4, c, 'jar'); }
+    ok(early === 'splash' && !(e.open > 0) && said.includes('A SPLASH: THROW AS SHE SURFACES'), 'water on her running mound is a splash (told: throw as she surfaces) - it opens nothing'); }
+  /* the burst is told: the spot, dust, a rumble and the first time the line */
+  { const { S, e } = burst(), said = [], fx = [], sh = []; const c = quietC(said, [], { fx: (k, x) => fx.push(k), shake: n => sh.push(n) }); let tell = null;
+    for (let t = 0; t < 4 && !tell; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero0(G.mid - 100), c); if (e.mode === 'strikeTell') tell = { x: S.cur.x, t: e.modeT }; }
+    step(S, e, 0.3, c);
+    ok(tell && said.includes('SHE SURFACES: THROW WATER') && sh.length >= 1 && fx.filter(k => k === 'dig').length >= 3 && CQ.strikeTell >= CQ.burstEarly + 0.3, 'her burst is TOLD: the spot (' + (tell ? Math.round(tell.x - G.mid) : '-') + '), dust and a rumble, ' + CQ.strikeTell + ' s ahead - the window opens ' + CQ.burstEarly + ' s before she is out (and the first time: SHE SURFACES: THROW WATER)'); }
+  /* in the window: she slips onto her back - drawn flipped, the stinger drawn where it is struck */
+  { const { S, e } = burst(), said = [], c = quietC(said); let r = null;
+    for (let t = 0; t < 5 && !r; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero0(G.mid - 100), c); if (e.mode === 'strike') r = CQG.waterAt(e, S, S.burstX + 10, G.floor - 4, c, 'jar'); }
+    ok(r === 'open' && e.mode === 'slip' && e.open >= 3 && said.includes('SHE SLIPS ONTO HER BACK: STRIKE THE STINGER'), 'water as she BURSTS OUT: she SLIPS onto her back - open ' + (e.open || 0).toFixed(1) + ' s (told)');
+    step(S, e, 0.4, c); const V = S.view, tp = CQG.tailPose(e, S), drawn = CQG.framePoint(e, V, tp.lanceTo[0], tp.lanceTo[1]);
+    ok(V.sy < -0.9 && tp.tail === 'lance' && Math.hypot(drawn.x - S.stinger.x, drawn.y - S.stinger.y) < 6 && S.stinger.big, 'she is DRAWN on her back (flipped) and her stinger is drawn on the floor where a blow finds it (' + Math.round(drawn.x - S.stinger.x) + ',' + Math.round(drawn.y - S.stinger.y) + ' px)'); }
+  /* late: up and walking at you again */
+  { const { S, e } = burst(), c = quietC(); let late = null, outT = -1;
+    for (let t = 0; t < 6 && !late; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero0(G.mid - 100), c); if (e.mode === 'strike' && outT < 0) outT = t; if (outT > 0 && t - outT > CQ.strikeT + CQ.burstLate + 0.1) late = CQG.waterAt(e, S, e.x, G.floor - 4, c, 'jar'); }
+    ok(late === 'splash' && !(e.open > 0), 'water ' + CQ.burstLate + ' s after she is out: a splash'); }
+  /* the dune wave's surfacing and (phase two) her skitter out of a tunnel are bursts too */
+  { const { S, e } = fresh({ x: G.mid - 100 }); S.ph = 1; S.script = ['burrow:charge']; const c = quietC(); let r = null;
+    for (let t = 0; t < 8 && !r; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero0(G.mid - 100), c); if (e.mode === 'surface') r = CQG.waterAt(e, S, e.x, G.floor - 4, c, 'jar'); }
+    const { S: S2, e: e2 } = fresh({ x: G.x0 + 20, y: G.floor - 4, mode: 'cling', modeT: 0.1, face: 1 }); S2.ph = 2; S2.pose = 'wall'; S2.wall = 'W'; S2.script = ['ambush']; let r2 = null;
+    for (let t = 0; t < 4 && !r2; t += 1 / 60) { CQG.stepQueen(e2, S2, 1 / 60, hero0(G.mid), c); if (e2.mode === 'ambush') r2 = CQG.waterAt(e2, S2, e2.x, G.floor - 4, c, 'jar'); }
+    ok(r === 'open' && r2 === 'open' && e.mode === 'slip' && e2.mode === 'slip', 'the dune wave\'s surfacing and her skitter out of a tunnel are bursts too: water then and she slips'); }
+  /* the shaft's bucket on her burrow by the sump floods it: she slips */
+  { const { S, e } = fresh({ x: G.mid, mode: 'burrow', modeT: 2 }); S.pose = 'burrow'; S.mound = { x: G.mid, t: 0 }; S.cur = { k: 'burrow', how: 'strike' }; e.gone = 1; CQG.strikeWindlass(e, S, quietC()); for (let i = 0; i < 40; i++) CQG.stepQueen(e, S, 1 / 60, hero0(), quietC());
+    ok(e.mode === 'slip' && S.n.bucketHits === 1, 'the bucket down the shaft on her burrow by the sump: she comes up slipping'); }
+  /* every opening lays her stinger on the floor - the blow that pays */
+  for (const how of ['slip', 'fallen', 'rear', 'ablaze', 'soaked']) { const { S, e } = fresh({ x: G.mid, face: 1 }); S.pose = how === 'fallen' ? 'wall' : 'floor'; S.wall = 'W'; S.script = []; CQG.openUp(e, S, how, quietC());
+    ok(CQG.qOpen(e) && e.open >= 3 && S.stinger && S.stinger.big && S.stinger.y >= G.floor - 8 && S.stinger.t >= e.open, 'in her opening \'' + how + '\' (' + e.open.toFixed(1) + ' s) her tail lies on the floor: the stinger, big and gold, for the whole of it'); } }
 /* 2. THE WELLHEAD: a beam in her hall under the shaft, a rope up it; she perches ON it (upright, not hung on nothing); the bucket and a pour from the beam bring her down */
 { const T = { AIR: 0, SOLID: 1, ONEWAY: 2, NET: 3 }, grid = new Map(), ents = []; const W = { set: (x, y, t) => grid.set(x + ',' + y, t), block() {}, ent: (t, x, y, o) => ents.push({ t, x, y, ...o }), air: (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) grid.set(x + ',' + y, T.AIR); } };
   const st = CQG.stageCisternQueen(W, T, 16, 100, 60, 30), q = st.arena.queen, G2 = CQG.geom(st.arena, 16), beamTiles = []; for (let x = 100 + CQG.STAGE.beam[0]; x <= 100 + CQG.STAGE.beam[1]; x++) beamTiles.push(grid.get(x + ',' + q.lr));
@@ -205,28 +241,42 @@ const hero0 = (x = G.mid - 260) => [{ x, y: G.floor, ground: true, alive: true, 
   ok(CQG.pourAim(eb, Sb, hb) && CQG.pourAim(eb, Sb, hb).what === 'perch' && CQG.pourAt(eb, Sb, hb, quietC()) === 'open' && eb.mode === 'fallen' && eb.y === G.floor, 'a pour on her from the beam beside her knocks her off it: ON HER BACK on the floor');
   const { S: Sc, e: ec } = fresh({ x: G.mid, y: G.beamY, mode: 'spitTell', modeT: 2 }); Sc.ph = 2; Sc.pose = 'shaft'; Sc.script = []; CQG.strikeWindlass(ec, Sc, quietC()); for (let i = 0; i < 60; i++) CQG.stepQueen(ec, Sc, 1 / 60, hero0(), quietC());
   ok(ec.mode === 'fallen' && Sc.n.bucketHits === 1, 'the bucket down the shaft onto the wellhead knocks her off it too'); }
-/* 3. HER STINGER, through her hands' take (the take runs after every multiplier in main.js, so the blows here are already multiplied: x1, x2.93, x5.86) */
+/* 5. HER STINGER IS THE DAMAGE (claude/cisternqueen3), through her hands' take (it runs after every multiplier in main.js, so the blows here are already multiplied) */
 { const { makeCisternQueenHands } = await import('../src/cistern-queen-hands.js');
   const arena = { boss: 'cisternqueen', x0: G.x0, x1: G.x1, floor: G.floor, queen: A.queen }, P = { x: G.mid - 200, y: G.floor, face: 1, hp: 200, maxHp: 200, skin: { sips: 3, max: 3 } }; let box = null; const words = [], said = [];
   const ctx = { L: { arena, ents: [] }, players: [P], boss: null, bossActive: true, TS: 16, EHP: { cisternqueen: 1000 }, sfx: {}, hero: () => P, enemies: () => [], time: () => 0, number: (x, y, t) => said.push(t), text() {}, burst() {}, sparks() {}, dust() {}, shake() {},
     damagePlayer() {}, asPlayer: (p, fn) => fn(), upright: () => true, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, box: q => ({ l: q.x - (q.w || 10) / 2, r: q.x + (q.w || 10) / 2, t: q.y - (q.h || 20), b: q.y }), duckBox: q => ({ l: q.x - 5, r: q.x + 5, t: q.y - 10, b: q.y }),
     attackBox: () => box, turned: (e, x, w) => words.push(w) };
-  const H = makeCisternQueenHands(ctx), e = H.spawnBoss({ x: G.mid, y: G.floor, alive: true }); e.alive = true; ctx.boss = e; const S = H.show(); e.mode = 'walk'; e.modeT = 5; e.face = -1; S.ph = 1; S.script = ['pincer']; S.step = 0;
+  const H = makeCisternQueenHands(ctx), e = H.spawnBoss({ x: G.mid, y: G.floor, alive: true }); e.alive = true; ctx.boss = e; const S = H.show(); e.mode = 'walk'; e.modeT = 5; e.face = -1; S.ph = 1; S.script = ['pincer']; S.step = 0; S.act = 7;
   const atTip = () => { const tp = CQG.tipOf(e, S); box = { l: tp.x - 4, r: tp.x + 4, t: tp.y - 4, b: tp.y + 4 }; }, atBody = (x) => { box = { l: x - 4, r: x + 4, t: G.floor - 20, b: G.floor - 10 }; P.x = x + (x < e.x ? -10 : 10); };
-  atTip(); const d0 = H.take(e, 10, 'light'); ok(Math.abs(d0 - 10 * CQ.tailMul) < 0.01 && words.includes('WHEN IT STICKS'), 'outside her openings her free stinger is ARMOURED: a blow of 10 lands ' + d0 + ' (x' + CQ.tailMul + ', B15 - never nothing) with a clank and WHEN IT STICKS');
+  atTip(); const d0 = H.take(e, 10, 'light'); ok(Math.abs(d0 - 10 * CQ.tipMul) < 0.01 && CQ.tipMul >= 1 && H.tipPays(e), 'HER STINGER, wherever her tail carries it, takes a blow WHOLE (10 lands ' + d0 + ') - it is how you hurt her');
+  let got = d0, n0 = 1; while (H.tipPays(e) && n0 < 40) { atTip(); got += H.take(e, 10, 'light'); n0++; } atTip(); const dc = H.take(e, 10, 'light');
+  ok(got <= CQ.tipCap * e.maxHp + 10 * CQ.tailMul + 0.01 && Math.abs(dc - 10 * CQ.tailMul) < 0.01 && words.includes('SHE CURLS IT AWAY'), 'a move\'s worth at most (' + got.toFixed(1) + ' of a cap of ' + CQ.tipCap * e.maxHp + ' in ' + n0 + ' blows): then she curls it away - x' + CQ.tailMul + ', told (B15, never nothing, not a melt)');
+  S.act++; atTip(); ok(Math.abs(H.take(e, 10, 'light') - 10 * CQ.tipMul) < 0.01, 'her next move, it pays whole again');
   atBody(e.x - 30); P.x = e.x - 60; const df = H.take(e, 10, 'light'); atBody(e.x + 30); P.x = e.x + 60; const db = H.take(e, 10, 'light');
-  ok(Math.abs(df - 10 * CQ.shellFront) < 0.01 && Math.abs(db - 10 * CQ.shellBack) < 0.01 && words.includes('GO ROUND') && CQ.shellFront >= 0.4, 'her shell: her claws turn a frontal blow to x' + CQ.shellFront + ' (GO ROUND), her back x' + CQ.shellBack + ' - never nothing (B15)');
-  S.ward = 2; atTip(); const dw = H.take(e, 10, 'light'); ok(Math.abs(dw - 10 * CQ.wardMul) < 0.01 && words.includes('WARDED'), 'in her ward x' + CQ.wardMul + ' (WARDED) - her stinger too'); S.ward = 0;
-  CQG.scorchUp(e, S, quietC()); atTip(); const dh = H.take(e, 10, 'light'); atBody(e.x - 30); const dhb = H.take(e, 10, 'light'); ok(Math.abs(dh - 10 * CQ.tailOpenMul) < 0.01 && Math.abs(dhb - 10) < 0.01, 'HOT, her stinger takes x' + CQ.tailOpenMul + ' and her body whole from the front');
-  S.scorch = 0; S.stinger = { x: e.x + 60, y: G.floor - 6, t: 2, k: 'lance' }; S.stingTaken = 0; box = { l: e.x + 56, r: e.x + 64, t: G.floor - 12, b: G.floor }; const ds = H.take(e, 10, 'light'); ok(Math.abs(ds - 10 * CQ.tailOpenMul) < 0.01, 'stuck in the floor after a sting it is THE way in: x' + CQ.tailOpenMul);
-  /* THE PURSE, on what lands: blows grown x2.93 and x5.86 after the count (the chain, a riposte, a poise-broken blow, a x2 talent) never take more than CQ.tailPurse of her a phase */
-  S.stinger = null; S.tailTaken = 0; let tail = 0, n2 = 0; for (let i = 0; i < 60 && !S.broken; i++) { S.ward = 0; S.scorch = i % 2 ? CQ.scorchT : 0; e.mode = 'walk'; e.modeT = 5; atTip(); tail += H.take(e, i % 3 ? 29.3 : 58.6, 'light'); n2++; }
-  ok(S.broken && tail <= CQ.tailPurse * e.maxHp + 0.01 && tail >= CQ.tailPurse * e.maxHp - 0.01, 'HER STINGER\'S PURSE: blows grown x2.93 and x5.86 took ' + tail.toFixed(1) + ' of her (the purse: ' + CQ.tailPurse * e.maxHp + ', ' + CQ.tailPurse * 100 + '% a phase) in ' + n2 + ' blows - then it BREAKS');
-  ok(e.mode === 'reel' && said.includes('HER STINGER BREAKS: SHE FIGHTS WITH HER CLAWS') && !CQG.tipOf(e, S), 'broken: told, she REELS (a stall of ' + CQ.breakT + ' s), and there is no stinger left to cut');
-  const after0 = e.hp; box = null; const left = []; for (let t = 0; t < 40; t += 1 / 60) { e.hp = 900; CQG.stepQueen(e, S, 1 / 60, hero0(), quietC()); if (S.cur) left.push(S.cur.k); }
-  ok(left.length > 10 && !left.some(k => CQG.STING_MOVES.has(k)) && !(CQG.stingerOut(S)), 'for the rest of the phase every stinger move is gone (the Great Drill\'s gears): ' + [...new Set(left)].join(','));
-  e.hp = 600; let moulted = false; for (let t = 0; t < 20 && !moulted; t += 1 / 60) { CQG.stepQueen(e, S, 1 / 60, hero0(), quietC(said)); moulted = S.ph === 2 && !S.broken; }
-  ok(moulted && CQG.tailLeft(e, S) === CQ.tailPurse * e.maxHp && said.includes('SHE MOULTS: HER STINGER IS WHOLE AGAIN'), 'a new phase: she MOULTS - her stinger whole again and its purse full (told)'); }
+  ok(Math.abs(df - 10 * CQ.shellFront) < 0.01 && Math.abs(db - 10 * CQ.shellBack) < 0.01 && CQ.shellFront === 0.4 && CQ.shellBack === 0.4 && words.filter(w => w === 'STRIKE THE STINGER').length >= 2 && said.includes('HER SHELL TURNS IT: STRIKE THE STINGER'), 'her shell and her claws, front or back: x0.4 (B15, never nothing) and the clank SAYS STRIKE THE STINGER');
+  S.ward = 2; atTip(); const dw = H.take(e, 10, 'light'); ok(Math.abs(dw - 10 * CQ.wardMul) < 0.01 && words.includes('WARDED') && !H.tipPays(e), 'in her ward x' + CQ.wardMul + ' (WARDED) - her stinger too'); S.ward = 0;
+  S.stinger = { x: e.x + 60, y: G.floor - 6, t: 2, k: 'lance' }; S.stingTaken = 0; box = { l: e.x + 56, r: e.x + 64, t: G.floor - 12, b: G.floor }; const ds = H.take(e, 10, 'light'); ok(Math.abs(ds - 10 * CQ.tailOpenMul) < 0.01, 'stuck in the floor after a sting: x' + CQ.tailOpenMul + ' (one sting\'s cap)');
+  S.stinger = null; CQG.openUp(e, S, 'slip', quietC()); const st = S.stinger; box = { l: st.x - 4, r: st.x + 4, t: st.y - 4, b: st.y + 2 }; const dO = H.take(e, 10, 'light'); atBody(e.x + (e.face || 1) * 20); const dB = H.take(e, 10, 'light');
+  ok(Math.abs(dO - 10 * CQ.openMul) < 0.01 && Math.abs(dB - 10 * CQ.openBody) < 0.01 && CQ.openMul > CQ.openBody, 'in an opening her stinger on the floor pays x' + CQ.openMul + ', her body x' + CQ.openBody + ' - the same opening\'s cap');
+  ok(e.cqBare && (() => { box = { l: st.x - 4, r: st.x + 4, t: st.y - 4, b: st.y + 2 }; return e.cqBare(); })(), 'a blow on her stinger is the right blow (boss-greed\'s OPEN_RULE never counts it greed)');
+/* 6. THE WATER JARS: two racks by the springs; E takes one (thrown as the jug flies); thrown at her spot as she bursts out she slips, else a splash; a blow spills it; the rack fills again */
+  e.open = 0; e.mode = 'walk'; e.modeT = 5; S.stinger = null; S.ward = 0; box = null;
+  ok(S.racks.length === 2 && S.racks.every(r => r.full) && Math.abs(S.racks[0].x - G.basinW) < 48 && Math.abs(S.racks[1].x - G.basinE) < 48, 'two jar racks, each by a spring (' + S.racks.map(r => Math.round((r.x - G.x0) / 16)).join(', ') + ' tiles in), full');
+  P.x = S.racks[0].x; P.y = G.floor; P.face = 1; P.skin.sips = 0; ok(H.interact(P) && P.carry && P.carry.t === 'cqjar' && P.carry.thrKind === 'jug' && !S.racks[0].full && P.carry.noClimb && typeof P.carry.launch === 'function', 'E at a rack takes a water jar (the jug\'s throw; no climbing with it)');
+  const arc = H.arcFor(P, 'mid'); ok(arc && arc.land && arc.land.x > P.x + 40, 'the told arc: where it will land (' + (arc && arc.land ? Math.round(arc.land.x - P.x) : '-') + ' px ahead)');
+  const c = quietC(said); const throwAt = () => { const j = P.carry, v = j.launch(P); j.state = 'fly'; j.vx = v.vx; j.vy = v.vy; P.carry = null; return j; };
+  /* thrown at nothing: a splash */
+  e.x = G.mid + 200; S.splashSaid = -99; throwAt(); for (let i = 0; i < 120; i++) H.update(e, 1 / 60); ok(S.n.jarLands === 1 && !(e.open > 0) && said.includes('A SPLASH: THROW AS SHE SURFACES'), 'thrown when she is not bursting out: a splash (told)');
+  for (let i = 0; i < 60 * (CQ.jarBack + 0.2); i++) H.update(e, 1 / 60); ok(S.racks[0].full, 'the rack is filled again ' + CQ.jarBack + ' s after');
+  /* thrown at her spot as she bursts out */
+  H.interact(P); const lx = H.arcFor(P, 'mid').land.x; e.mode = 'strikeTell'; e.modeT = CQ.burstEarly - 0.05; S.pose = 'burrow'; e.gone = 1; S.mound = { x: lx, t: 0 }; S.cur = { k: 'burrow', how: 'strike', x: lx, id: 99 }; e.x = lx; S.act = 99;
+  throwAt(); let slipped = false; for (let i = 0; i < 90 && !slipped; i++) { H.update(e, 1 / 60); slipped = e.mode === 'slip'; }
+  ok(slipped && S.n.jarHits === 1 && e.open >= 3 && S.stinger && S.stinger.big, 'thrown on her spot AS SHE BURSTS OUT: she slips onto her back - open, her stinger on the floor');
+  /* a blow spills it */
+  for (let i = 0; i < 60 * (CQ.jarBack + 0.2); i++) { e.open = 0; e.mode = 'walk'; e.modeT = 5; H.update(e, 1 / 60); } P.x = S.racks[0].x; H.interact(P); P.hurt = 0.3; H.update(e, 1 / 60); ok(!P.carry && S.n.jarSpilt === 1, 'a blow on you spills the jar');
+  P.hurt = 0; P.x = S.racks[1].x; H.interact(P); const j2 = P.carry; ok(H.interact(P) && !P.carry && j2.state === 'lie' && H.interact(P) && P.carry === j2, 'E again sets it down where you stand, and E takes it up');
+  H.end(e); ok(!P.carry, 'the fight\'s end takes the jar from your hands'); }
 /* 1e. THE OPENING'S CAP holds on what lands (x2.93) */
 { const { makeCisternQueenHands } = await import('../src/cistern-queen-hands.js'); const arena = { boss: 'cisternqueen', x0: G.x0, x1: G.x1, floor: G.floor, queen: A.queen }, P = { x: G.mid - 60, y: G.floor, face: 1 };
   const ctx = { L: { arena, ents: [] }, players: [P], TS: 16, EHP: { cisternqueen: 1000 }, sfx: {}, hero: () => P, number() {}, burst() {}, sparks() {}, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, attackBox: () => null, upright: () => true, asPlayer: (p, fn) => fn() };
