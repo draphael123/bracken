@@ -10,10 +10,14 @@
 //
 // bakeFalseAbbot()  0 idle | 1,2 walk | 3 CENSER TELL (the pot drawn back over the shoulder) | 4 CENSER (swung through)
 //                   | 5 CAST TELL (wound across the body) | 6 CAST (arm out, chain flat) | 7 HAUL (pulled onto his front
-//                   foot, the chain taut) | 8 PROCESSION TELL (both hands to the chain, head up) | 9,10 PROCESSION
-//                   (striding, the pot whirling) | 11 COALS TELL (the pot tipped, lid open) | 12 COALS (coals falling)
+//                   foot, the chain taut) | 8 ROPE TELL (crouched to leap, both hands up for the rope) | 9 SWINGING
+//                   (hung from the rope, knees up, the pot flung out) | 10 SLAM (landed, the pot smashed down on the boards)
+//                   | 11 COALS TELL (the pot tipped, lid open) | 12 COALS (coals falling)
 //                   | 13 RITE TELL (the pot raised two-handed over the mitre) | 14 RITE (the flare) | 15 KNELL (both
 //                   hands on the bell rope, hauling) | 16 DOWNED (THE OPENING: on one knee, mitre off, pot spilled)
+//                   | 18 FALSE LIGHT TELL (the pot held high, flaring a sickly gold) | 19 FALSE LIGHT (thrown, arm out)
+//                   | 20 RITE SPOILED (knocked off his knees, hands flung up). 13 is now THE PRAYER: kneeling, hands joined,
+//                   the pot set down smoking beside him (claude/abbot2: the procession's frames became the rope's, B16)
 //                   | 17 hurt
 import { canvas, px, rect, fillPoly, line, ellipse, circle, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
@@ -81,7 +85,7 @@ export function bakeFalseAbbot() {
   };
   const smoke = (g, x, y, n = 3) => { for (let k = 0; k < n; k++) px(g, x + (k % 2 ? 1 : -1) * (1 + k), y - 3 - k * 3, k > 1 ? A.smoke : A.coalL); };
 
-  const F = Array.from({ length: 18 }, (_, f) => {
+  const F = Array.from({ length: 21 }, (_, f) => {
     const [c, g] = canvas(W, H); const floor = H - 2, hip = floor - 26, sh = hip - 6, hd = sh - 12;
     if (f === 16) {   // DOWNED - THE OPENING: the bell's note went through the rite. On one knee, mitre off, the pot spilled
       rect(g, cx - 14, floor - 4, 10, 4, A.G);
@@ -93,8 +97,37 @@ export function bakeFalseAbbot() {
       for (let k = 0; k < 3; k++) px(g, cx + 12 + k * 3, hd + 8 - k, A.Yl);                            // stars: he is open
       outline(c, OUT); return settle(c);
     }
-    const ph = f === 1 ? 1 : f === 2 ? 2 : (f === 9 ? 1 : f === 10 ? 2 : 0);
-    const bend = [3, 8, 13].includes(f) ? -3 : [4, 6, 9, 10, 11, 12].includes(f) ? 4 : f === 7 ? 7 : f === 17 ? -5 : 0;
+    if (f === 9) {    // SWINGING: hung from the rope by both hands over his head, knees drawn up under the cope, the pot flung out behind
+      const top = 8;
+      arm(g, cx + 4, top + 22, cx + 1, top); arm(g, cx - 4, top + 22, cx - 1, top + 1);
+      cope(g, cx, top + 18, 0); rect(g, cx - 9, top + 47, 7, 3, A.G); rect(g, cx + 3, top + 46, 7, 3, A.G);
+      mitre(g, cx + 1, top + 4, -2); head(g, cx + 3, top + 12);
+      chainTo(g, cx - 4, top + 26, cx - 18, top + 34); censer(g, cx - 22, top + 34, 1); smoke(g, cx - 24, top + 32, 3);
+      outline(c, OUT); return settle(c);
+    }
+    if (f === 10 || f === 13 || f === 20) {   // the LOW frames: landed in a crouch (10), kneeling in prayer (13), thrown off his knees (20)
+      const low = f === 20 ? 6 : 10, s2 = hip - 6 + low, h2 = s2 - 12;
+      if (f === 13) { rect(g, cx - 12, floor - 4, 9, 4, A.G); rect(g, cx + 4, floor - 3, 8, 3, A.G); }
+      else { rect(g, cx - 10, floor - 3, 7, 3, A.G); rect(g, cx + 5, floor - 3, 7, 3, A.G); }
+      cope(g, cx, s2, f === 10 ? 6 : f === 20 ? -6 : 1);
+      if (f === 10) {   // THE SLAM: bent over the pot he brought down on the boards, the coals jumping out of it both ways
+        mitre(g, cx + 8, h2 + 1, 3); head(g, cx + 10, h2 + 9);
+        arm(g, cx + 6, s2 + 4, cx + 18, floor - 8); censer(g, cx + 22, floor - 8, 1, 1); chainTo(g, cx + 18, floor - 8, cx + 22, floor - 9);
+        for (const [dx, dy] of [[14, -5], [30, -6], [34, -3], [12, -2], [27, -10]]) px(g, cx + dx, floor + dy, dy < -5 ? A.coalL : A.coal);
+      } else if (f === 13) {   // THE PRAYER: upright on his knees, hands joined before his face, the censer set down smoking
+        mitre(g, cx + 1, h2 - 3, 0); head(g, cx + 3, h2 + 5);
+        arm(g, cx + 5, s2 + 5, cx + 7, h2 + 9); arm(g, cx - 4, s2 + 5, cx + 6, h2 + 10); rect(g, cx + 6, h2 + 7, 3, 4, A.g);
+        censer(g, cx + 17, floor - 8, 1); smoke(g, cx + 17, floor - 10, 5);
+      } else {   // SPOILED: rocked back off his knees, both hands flung up, the mitre knocked crooked, the pot swinging loose behind
+        mitre(g, cx - 5, h2 - 2, 5); head(g, cx - 3, h2 + 6);
+        arm(g, cx + 4, s2 + 4, cx + 12, h2 - 4); arm(g, cx - 4, s2 + 4, cx - 10, h2 - 2);
+        chainTo(g, cx - 10, h2 - 2, cx - 18, s2 + 10); censer(g, cx - 20, s2 + 12, 1);
+        for (let k = 0; k < 3; k++) px(g, cx + 4 + k * 3, h2 - 6 - k, A.Yl);
+      }
+      outline(c, OUT); return settle(c);
+    }
+    const ph = f === 1 ? 1 : f === 2 ? 2 : 0;
+    const bend = [3, 18].includes(f) ? -3 : [4, 6, 11, 12, 19].includes(f) ? 4 : f === 7 ? 7 : f === 8 ? 5 : f === 17 ? -5 : 0;
     const bob = (f === 1 || f === 9) ? -1 : 0;   /* the whole mass lifts a pixel on the step: under a cope that reaches the floor, the BOB is the walk */
     legs(g, cx, floor - 3, ph); cope(g, cx, sh + bob, bend); mitre(g, cx + bend, hd - 3 + bob, f === 17 ? 5 : bend > 3 ? 2 : 0);
     head(g, cx + 2 + bend, hd + 5 + bob);
@@ -104,13 +137,19 @@ export function bakeFalseAbbot() {
       case 5:  arm(g, cx + 5, sh + 5, cx - 4, sh + 10); censer(g, cx - 8, sh + 14, 1); chainTo(g, cx - 4, sh + 10, cx - 8, sh + 13); break;
       case 6:  arm(g, cx + 6, sh + 4, cx + 18, sh + 8);  censer(g, cx + 34, sh + 12, 1); chainTo(g, cx + 18, sh + 8, cx + 34, sh + 11); break;
       case 7:  arm(g, cx + 4, sh + 6, cx + 14, sh + 14); censer(g, cx + 26, sh + 20, 1); chainTo(g, cx + 14, sh + 14, cx + 26, sh + 19); break;
-      case 8:  arm(g, cx + 5, sh + 3, cx + 10, sh - 6); arm(g, cx - 5, sh + 3, cx + 8, sh - 4); censer(g, cx + 14, sh - 12, 1); chainTo(g, cx + 10, sh - 6, cx + 14, sh - 13); smoke(g, cx + 14, sh - 16, 4); break;
-      case 9:
-      case 10: { const s = f === 9 ? -1 : 1; arm(g, cx + 6, sh + 4, cx + 16, sh + 2 + s * 6); censer(g, cx + 26, sh + 4 + s * 12, 1); chainTo(g, cx + 16, sh + 2 + s * 6, cx + 26, sh + 3 + s * 12); break; }
+      case 8:  /* THE ROPE TELL: crouched to spring, both hands thrown up and forward for the rope, the pot hooked on his wrist */
+               arm(g, cx + 6, sh + 3, cx + 16, hd - 14); arm(g, cx - 3, sh + 3, cx + 12, hd - 12); rect(g, cx + 14, hd - 17, 3, 3, A.g);
+               censer(g, cx - 8, sh + 18, 1); chainTo(g, cx - 3, sh + 6, cx - 8, sh + 17); break;
+      case 18: /* FALSE LIGHT TELL: the pot held HIGH in one hand over the mitre, the other thrown back - and it flares a sickly gold */
+               arm(g, cx + 5, sh + 3, cx + 8, hd - 14); arm(g, cx - 5, sh + 4, cx - 12, sh + 8); censer(g, cx + 9, hd - 22, 1, 1); chainTo(g, cx + 8, hd - 14, cx + 9, hd - 21);
+               for (const [r, col] of [[7, '#f4f0a0'], [11, '#d8d860']]) for (let t = 0; t < 22; t++) { const an = t / 22 * Math.PI * 2;
+                 if (t & 1) px(g, Math.round(cx + 9 + Math.cos(an) * r), Math.round(hd - 19 + Math.sin(an) * r * 0.8), col); } break;
+      case 19: /* FALSE LIGHT: thrown - the arm whipped out and up, the pot at the end of the chain, the light leaving it */
+               arm(g, cx + 6, sh + 3, cx + 20, sh - 8); censer(g, cx + 30, sh - 14, 1, 1); chainTo(g, cx + 20, sh - 8, cx + 30, sh - 15);
+               for (let k = 0; k < 4; k++) px(g, cx + 34 + k * 3, sh - 18 - k * 2, k & 1 ? '#d8d860' : '#f4f0a0'); break;
       case 11: arm(g, cx + 6, sh + 4, cx + 16, sh + 10); censer(g, cx + 22, sh + 16, 1, 1); chainTo(g, cx + 16, sh + 10, cx + 22, sh + 12); break;
       case 12: arm(g, cx + 6, sh + 4, cx + 17, sh + 12); censer(g, cx + 24, sh + 18, 1, 1); chainTo(g, cx + 17, sh + 12, cx + 24, sh + 14);
                for (let k = 0; k < 4; k++) px(g, cx + 24 + k * 2, sh + 24 + k * 3, k & 1 ? A.coal : A.coalL); break;
-      case 13: arm(g, cx + 5, sh + 3, cx + 7, hd - 8); arm(g, cx - 5, sh + 3, cx - 1, hd - 8); censer(g, cx + 3, hd - 18, 1, 1); chainTo(g, cx + 7, hd - 8, cx + 3, hd - 12); smoke(g, cx + 3, hd - 22, 4); break;
       case 14: arm(g, cx + 5, sh + 3, cx + 7, hd - 10); arm(g, cx - 5, sh + 3, cx - 1, hd - 10); censer(g, cx + 3, hd - 20, 1, 1); chainTo(g, cx + 7, hd - 10, cx + 3, hd - 14);
                /* THE FLARE: RINGS of saffron off the censer, not discs - px.js's circle() is a FILLED one and its fifth
                   argument is the COLOUR, so asking it for an outline painted half the frame magenta. */
