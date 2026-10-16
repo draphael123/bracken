@@ -1,0 +1,5 @@
+ ok  syntax              0ms  0 files parse
+ ok  fallingtower2-keys  67850ms  ok  fallingtower2-keys  7 heroes, real keys: the telescope (board it low, off it high), the outer face plank t
+
+2 of 372 checks pass - A SUBSET (fallingtower2-keys), NOT THE SUITE.
+Run `npm run check` with no arguments before a commit that matters, and before any deploy.

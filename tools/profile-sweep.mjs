@@ -49,7 +49,9 @@ if (ORPHANS) {
   const alive = { has: pid => { const q = byPid.get(pid); return !!q; } };
   const parentLives = c => { const q = byPid.get(c.ppid); return !!q && !(q.born && c.born && q.born > c.born); };
   const killed = [];
-  for (const p of procs) if (/--user-data-dir=\S*bracken-(look|headless|prof|video|prod)-/i.test(p.cmd) && !/--type=/.test(p.cmd) && /--headless/.test(p.cmd) && !parentLives(p)) { if (!DRY) { killTreeSync(p.pid); killed.push(p.pid); } report.orphansKilled++; }
+  /* A suite asks only about its OWN tag. The older orphan pass ran before the --run filter below and could end another
+     checkout's abandoned browser by PID; this lane must not touch a process it did not start. */
+  for (const p of procs) if ((!RUN || p.cmd.includes('-' + RUN + '-')) && /--user-data-dir=\S*bracken-(look|headless|prof|video|prod)-/i.test(p.cmd) && !/--type=/.test(p.cmd) && /--headless/.test(p.cmd) && !parentLives(p)) { if (!DRY) { killTreeSync(p.pid); killed.push(p.pid); } report.orphansKilled++; }
   if (report.orphansKilled && !DRY) {
     /* WAIT FOR THEM TO BE GONE (2026-10-06, FLAKESWEEP). taskkill /T returns before a loaded machine has finished tearing the tree down, so a
        snapshot taken at once still listed the renderers on the profile: it read as IN USE, was kept, and 'the sweep removes what a killed tool

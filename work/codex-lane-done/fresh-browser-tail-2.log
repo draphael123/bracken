@@ -1,0 +1,101 @@
+ ok  syntax            171ms  1 files parse
+FAIL archmage-folly  38892ms  1 FAILED
+ ok  firsthour       28467ms  THE BULLFROG KING: 9 spits, all told; a leap taken -> land, left late -> dazed; hide 5 vs open 20; the court g
+ ok  unburied-look   62209ms  ok  unburied-look  all 11 look checks hold
+ ok  fallingtower2-keys  72616ms  ok  fallingtower2-keys  7 heroes, real keys: the telescope (board it low, off it high), the outer face plank t
+
+---- syntax ----
+
+
+---- archmage-folly ----
+  ok   archmage|crushTell wears !! and is answered by dodge (MARK "!!", ANSWER "dodge")
+    ok   archmage|booksTell wears ! and is answered by block (MARK "!", ANSWER "block")
+    ok   archmage|glyphTell wears !! and is answered by dodge (MARK "!!", ANSWER "dodge")
+    ok   archmage|pairTell wears !! and is answered by dodge (MARK "!!", ANSWER "dodge")
+  {"notes":[],"cfg":true,"gates":[0.66,0.54,0.42,0.3],"openMul":3,"calledHps":[67,67,67,67],"hp":914,"wardMode":"ward","runes":3,"portal1":1,"calledAtWard":0,"stackRune":false,"stack":false,"runeAt":[{"x":12258,"up":14,"inWall":false},{"x":12378,"up":17,"inWall":false},{"x":12498,"up":17,"inWall":false}],"runesStay":true,"firstCut":true,"reseal":5.72,"resealed":true,"stillWard":true,"opened":true,"openLen":3,"landed":3,"openFrames":51,"openTook":73,"openT":3,"called1":1,"blink":{"starts":[25,625,1226,1827,2428,3029,3630],"told":[true,true,true,true,true,true,true],"lands":[{"x":12208,"to":12208,"hero":12120,"onIt":false},{"x":12576,"to":12576,"hero":12120,"onIt":false},{"x":12330,"to":12298,"hero":12298,"onIt":true},{"x":12208,"to":12208,"hero":12298,"onIt":false},{"x":12478,"to":12478,"hero":12298,"onIt":false},{"x":12208,"to":12208,"hero":12298,"onIt":false},{"x":12118,"to":12118,"hero":12298,"onIt":false}],"onHero":0,"tellLens":[0.52,0.57,0.57,0.57,0.57,0.57,0.57],"spread":[12478,12298,12478,12576,12478,12388,12478,12576,12388,12576],"wardBlinks":[{"x":12388,"lo":12378,"hi":12618},{"x":12576,"lo":12378,"hi":12618},{"x":12388,"lo":12378,"hi":12618}],"backToWard":true},"pace":{"bolts":[249,500,751,1002,1253],"tell":[0.82,0.82,0.82,0.82,0.82],"cfg":0.83,"rendTell":0.87},"duelPairs":0,"floodSub":1,"crushTell":"crushTell","crushAt":0,"crushTellLen":0.9,"crushStill":27,"crushOut":0,"pairTell":"pairTell","pair":{"red":"#ff6b6b","yellow":"#ffd36b","gap":48,"onYou":0},"pairStill":27,"pairJump":0,"orrerySub":2,"ride":true,"booksTell":"booksTell","booksFrom":180,"booksStill":13,"booksBlocked":0,"pairSide":0,"overSub":3,"flipped":true,"glyphTell":"glyphTell","glyphAt":0,"glyphTook":true,"glyphLost":11,"flipBack":1.58,"turnedAgain":101,"glyphMidJump":true,"glyphStepped":true,"s3":{"at33":2,"stage":3,"flip":false,"imgs":2,"tell":"boltTell","real":"#ffd36b","fakes":["#a8a4b4","#a8a4b4"],"imgTells":["#a8a4b4","#a8a4b4"],"fakeGap":60,"fakeLost":0,"tell2":"boltTell","realLost":19,"dispelled":true,"afterDispel":1,"bossHpKept":274,"ward":"ward","imgsBack":2,"portal":1,"calledAtOnce":0,"called":1,"reseal":3.72,"calledSecond":1,"calledNext":1,"shut":0,"opened":30},"calledMax":1,"levelAppHp":67,"errors":null}
+    ok   the page carries his numbers (BK.archCfg)
+    ok   his health is 640 (Daniel 10-06, was 720): 640 in EHP, 914 in the fight
+    ok   he wards with three plain runes, none on a stack of books, and no stack rises (mode ward, runes 3, stack rune false, stack false)
+    ok   every rune is where a sword reaches it: [{"x":12258,"up":14,"inWall":false},{"x":12378,"up":17,"inWall":false},{"x":12498,"up":17,"inWall":false}]
+    ok   they stand around the room, not in one place and not round him: [12258,12378,12498] stay true
+    ok   the ward stack is gone from the code (archStack*, ARCH.stackH)
+    ok   his bestiary card says nothing of a stack: He blinks round his room every few seconds - a flash shows where he will stand. He draws circles under you (yellow the s
+    ok   the first rune cut starts the count (5.72 s)
+    ok   left standing, the ward seals again: every rune back
+    ok   all three cut in time and he is open - for 3 s (was 4.6)
+    ok   he blinks on a cadence, at most once a ~10 s cycle (B12), with you far from him: 7 blinks in 64 s, gaps [10,10,10,10,10,10]
+    ok   each blink is told: the flash where he will stand is up for the whole tell ([0.52,0.57,0.57,0.57,0.57,0.57,0.57])
+    ok   he lands where the flash was: [{"x":12208,"to":12208,"hero":12120,"onIt":false},{"x":12576,"to":12576,"hero":12120,"onIt":false},{"x":12330,"to":12298,"hero":12298,"onIt":true},{"x":12208,"to":12208,"hero":12298,"onIt":false},{"x":12478,"to":12478,"hero":12298,"onIt":false},{"x":12208,"to":12208,"hero":12298,"onIt":false},{"x":12118,"to":12118,"hero":12298,"onIt":false}]
+    ok   never onto the hero - not even one standing on the flash (0)
+    FAIL the spots are spread across the room: [12478,12298,12478,12576,12478,12388,12478,12576,12388,12576]
+    ok   warded, he blinks among his runes and back into his ward: [{"x":12388,"lo":12378,"hi":12618},{"x":12576,"lo":12378,"hi":12618},{"x":12388,"lo":12378,"hi":12618}] true
+    ok   the gaps between his casts are x0.83 (15-20% shorter): a bolt every 4.18 s, tell to tell (4.77 on the base)
+    ok   and every tell is as long as it was: bolt [0.82,0.82,0.82,0.82,0.82], rend 0.87
+    ok   an opening is three clean blows (claude/easethree: openHits 2 -> 3, the window 2.6/3.2 -> 3.0/3.5 s): 3 landed before he recovered (73 taken, 51 frames)
+    ok   no paired spells in the duel (stage one): 0
+    ok   from the second stage he casts a pair: a red circle on you and a yellow one a stride aside ({"red":"#ff6b6b","yellow":"#ffd36b","gap":48,"onYou":0})
+    ok   a pair stood in lands: 27
+    ok   a jump straight up clears a pair: 0
+    ok   and so does the side away from the yellow circle: 0
+    ok   THE FLOOD: a stack comes down over you, told (crushTell, 0.9 s)
+    ok   stood under it, a shield does not help: 27
+    ok   out from under it in the tell, it misses: 0
+    ok   THE ORRERY: the flying books come off the wall at you, told (booksTell, from 180 px)
+    ok   stood in their way, they land: 13
+    ok   and the shield turns them: 0 through a guard
+    ok   on the floor the pair is answered by the free side
+    ok   TURNED OVER: a glyph opens on the ceiling under you, told (glyphTell)
+    ok   stood on it, it takes you: the room rights itself for you (1.58 s)
+    ok   and turns you over again a breath later, back to the ceiling (after 101 frames) - never a fall to your death
+    ok   mid-jump over it, it takes you all the same
+    ok   stepped off it in the tell, it misses
+    ok   an opening blow is worth x3 again (openMul 3; the x4 of claude/followups is reverted)
+    ok   the duel still reseals in 6 s, so it still teaches (5.72 s)
+    ok   at his ward a portal opens, told (1 s), and one apprentice steps out of it (1)
+    ok   his apprentice has an apprentice's health (34 in EHP, 67 on this level's own), no more: [67,67,67,67]
+    ok   a new stage at 30%: at 33% he is still turning the room over (stage 2), at 30% it is stage 3
+    ok   THE MIRRORS: the room put right, and two images of him (2)
+    ok   they cast with him, and only his is coloured: his #ffd36b, theirs ["#a8a4b4","#a8a4b4"], their marks ["#a8a4b4","#a8a4b4"]
+    ok   their spells are harmless (0 stood in one, 60 px from his), his is not (19)
+    ok   a blow on an image breaks it (1 left)
+    ok   and it is back at his next ward (2)
+    ok   each ward, one apprentice through a told portal (1 s, 1)
+    ok   in the mirrors the ward reseals in 4 s (3.72 s)
+    ok   never a second apprentice while the first stands (1), the next one only when he is down (1); most ever at once: 1
+    ok   open in the mirrors, a blow is x3 too, and shut it is a chip: 30 against 0
+    ok   no page errors
+    ok   the page threw nothing: []
+  
+  1 FAILED
+
+---- firsthour ----
+  {"bareStay":{"modes":["dive","skim","rise"],"mode":"rise"},"bareLate":{"modes":["dive","skim","rise"],"mode":"rise"},"woodLate":{"modes":["dive","stuck"],"mode":"stuck"},"wood":6,"biteSkim":{"n":2,"took":5},"biteStuck":{"n":2,"took":15},"p2":{"phase":2,"modes":["hover","call","aim","dive","skim","rise","volleyUp","volley","sweepStart","sweep"],"hoverLow":89,"hov":155},"spit":{"spits":9,"untold":0,"tells":3},"leapTaken":{"mode":"land","modes":["crouch","leap","land"]},"leapLate":{"mode":"dazed","modes":["leap","dazed"]},"hide":{"idle":5,"dazed":20},"half":{"hpPct":48,"phase":3,"drained":true}}
+  THE HORNET QUEEN: bare earth skims (rise), wood sticks her sting (stuck, 6 wood tiles), a blow through two drones 5 in the skim and 15 stuck; at half she hangs 89 px up and never slams.
+  THE BULLFROG KING: 9 spits, all told; a leap taken -> land, left late -> dazed; hide 5 vs open 20; the court goes out at 48%.
+
+---- unburied-look ----
+  ok    1 no borrowed tiles         5380 cells, 0 drawn from the forest kit {}
+    ok    3 a set piece on every screen25/25 screens hold one (101 pieces listed)
+    ok    4 the landmark              1104 silhouette px at col 4, mean luminance delta 13.9 (>= 9); width 87 -> 240 at col 300 (>= x1.25)
+    ok    5 dressing reads            81 deco on the 25 screens, 0 under the margin
+    ok    2 no floating ledge         53 ledge runs: 44 at a structure/set piece, 9 against rock, 0 with drawn support, 0 floating
+    ok    2 architecture (the field)  lists nothing
+    ok    6 the glint                 8 route needs checked
+    ok    7 light                     3 fires; luminance gain wagon-184 +28.2, wagon-210 +29.4, camp-brazier +35.7
+    ok    9 readability holds         warn 49, cover 29 px, shadow 99, glass 9/2688
+    ok    8 sound                     zones battlefield/hall, 'battlefield' in AMBIENT_NAMES, source list holds no horn
+    ok   10 tells unchanged           tools/unburied.mjs green
+  
+  ok  unburied-look  all 11 look checks hold
+
+---- fallingtower2-keys ----
+  {"h":"knight","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":27,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,439,827,0,0],[3,442,813,0,0],[6,445,802,0,0],[9,448,794,0,0],[12,453,788,0,0],[15,458,784,0,0],[18,462,783,0,0],[21,467,783,0,0],[24,471,784,0,0],[27,476,787,0,0],[30,481,793,0,0],[33,485,801,0,0],[36,490,813,0,0]],"minY":783,"parapet":true,"end":[494,816,50,false],"ringX":80}
+  {"h":"warden","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":9,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,439,827,0,0],[3,442,813,0,0],[6,445,802,0,0],[9,448,794,0,0],[12,453,788,0,0],[15,458,784,0,0],[18,462,783,0,0],[21,467,783,0,0],[24,471,784,0,0],[27,476,787,0,0],[30,481,793,0,0],[33,485,801,0,0],[36,490,813,0,0]],"minY":783,"parapet":true,"end":[494,816,50,false],"ringX":80}
+  {"h":"pyro","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":9,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,440,827,0,0],[3,443,813,0,0],[6,443,802,0,0],[9,444,794,0,0],[12,446,788,0,0],[15,450,784,0,0],[18,455,783,0,0],[21,461,783,0,0],[24,466,784,0,0],[27,471,787,0,0],[30,476,793,0,0],[33,482,801,0,0],[36,487,813,0,0]],"minY":783,"parapet":true,"end":[492,816,50,false],"ringX":80}
+  {"h":"paladin","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":9,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,439,827,0,0],[3,442,813,0,0],[6,444,802,0,0],[9,447,794,0,0],[12,451,788,0,0],[15,455,784,0,0],[18,459,783,0,0],[21,463,783,0,0],[24,467,784,0,0],[27,471,787,0,0],[30,476,793,0,0],[33,480,801,0,0],[36,484,813,0,0]],"minY":783,"parapet":true,"end":[488,816,50,false],"ringX":80}
+  {"h":"pirate","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":9,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,439,827,0,0],[3,442,813,0,0],[6,445,802,0,0],[9,448,794,0,0],[12,453,788,0,0],[15,458,784,0,0],[18,462,783,0,0],[21,467,783,0,0],[24,471,784,0,0],[27,476,787,0,0],[30,481,793,0,0],[33,485,801,0,0],[36,490,813,0,0]],"minY":783,"parapet":true,"end":[494,816,50,false],"ringX":80}
+  {"h":"reaper","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":31,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,438,827,0,0],[3,441,813,0,0],[6,443,802,0,0],[9,445,794,0,0],[12,449,788,0,0],[15,453,784,0,0],[18,458,783,0,0],[21,463,783,0,0],[24,467,784,0,0],[27,472,787,0,0],[30,476,793,0,0],[33,481,801,0,0],[36,486,813,0,0]],"minY":783,"parapet":true,"end":[490,816,50,false],"ringX":80}
+  {"h":"geomancer","scopeStart":true,"boarded":true,"scope":true,"faceStart":true,"tries":9,"face":9,"faceN":9,"chunk":true,"snap":"done","tr":[[0,439,827,0,0],[3,442,813,0,0],[6,444,802,0,0],[9,447,794,0,0],[12,451,788,0,0],[15,456,784,0,0],[18,460,783,0,0],[21,465,783,0,0],[24,470,784,0,0],[27,474,787,0,0],[30,479,793,0,0],[33,483,801,0,0],[36,488,813,0,0]],"minY":783,"parapet":true,"end":[492,816,50,false],"ringX":80}
+  ok  fallingtower2-keys  7 heroes, real keys: the telescope (board it low, off it high), the outer face plank to plank in the storm, the snap to the parapet
+
+1 check(s) failed.

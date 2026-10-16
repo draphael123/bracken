@@ -1,0 +1,36 @@
+ ok  syntax            189ms  1 files parse
+FAIL archmage-folly  35575ms  1 FAILED
+
+---- archmage-folly ----
+    ok   THE FLOOD: a stack comes down over you, told (crushTell, 0.9 s)
+    ok   stood under it, a shield does not help: 27
+    ok   out from under it in the tell, it misses: 0
+    ok   THE ORRERY: the flying books come off the wall at you, told (booksTell, from 180 px)
+    ok   stood in their way, they land: 13
+    ok   and the shield turns them: 0 through a guard
+    ok   on the floor the pair is answered by the free side
+    ok   TURNED OVER: a glyph opens on the ceiling under you, told (glyphTell)
+    ok   stood on it, it takes you: the room rights itself for you (1.58 s)
+    ok   and turns you over again a breath later, back to the ceiling (after 101 frames) - never a fall to your death
+    ok   mid-jump over it, it takes you all the same
+    ok   stepped off it in the tell, it misses
+    ok   an opening blow is worth x3 again (openMul 3; the x4 of claude/followups is reverted)
+    ok   the duel still reseals in 6 s, so it still teaches (5.72 s)
+    ok   at his ward a portal opens, told (1 s), and one apprentice steps out of it (1)
+    ok   his apprentice has an apprentice's health (34 in EHP, 67 on this level's own), no more: [67,67,67,67]
+    ok   a new stage at 30%: at 33% he is still turning the room over (stage 2), at 30% it is stage 3
+    ok   THE MIRRORS: the room put right, and two images of him (2)
+    ok   they cast with him, and only his is coloured: his #ffd36b, theirs ["#a8a4b4","#a8a4b4"], their marks ["#a8a4b4","#a8a4b4"]
+    ok   their spells are harmless (0 stood in one, 54 px from his), his is not (19)
+    ok   a blow on an image breaks it (1 left)
+    ok   and it is back at his next ward (2)
+    ok   each ward, one apprentice through a told portal (1 s, 1)
+    ok   in the mirrors the ward reseals in 4 s (3.72 s)
+    ok   never a second apprentice while the first stands (1), the next one only when he is down (1); most ever at once: 1
+    ok   open in the mirrors, a blow is x3 too, and shut it is a chip: 30 against 0
+    ok   no page errors
+    ok   the page threw nothing: []
+  
+  1 FAILED
+
+1 check(s) failed.
