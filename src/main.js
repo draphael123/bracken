@@ -437,7 +437,7 @@ Object.assign(DMG, {
 });
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
-  prince: 2700,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights); (claude/undercrown2) 2000 -> 2500: the slab pins pay x2, and the fights ran 35-65 s */
+  prince: 3150,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights); (claude/undercrown2) 2000 -> 2500: the slab pins pay x2, and the fights ran 35-65 s */
   closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
   lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
   quarter: 1150,     /* (claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
@@ -17687,7 +17687,11 @@ function updatePrince(e, dt) {
       e.face = Math.sign(d) || e.face;
       want = ad > 50 ? e.face * (p2 ? 58 : 44) : ad < 24 ? -e.face * 30 : 0;
       for (const k of ['cutT', 'sinkT', 'callT', 'crownT', 'snuffT']) e[k] -= dt;
+      /* (claude/undercrown2) NO SAFE PERCH: a hero up a fallen slab out of his reach is not left there - he heaves at the slab and it comes off its hinge */
+      e.perchT = (!P.dead && P.y < floor - 48 && Math.abs(P.x - e.x) < 220) ? (e.perchT || 0) + dt : 0;
       if (e.modeT > 0 || P.dead) break;
+      if (e.perchT > 1.5) { const hv = [...SLAB_RT.values()].filter(s => s.tomb && (s.state === 'ramp' || s.state === 'flat')).sort((a, b) => Math.abs((a.x0 + a.x1 + 1) * 8 - P.x) - Math.abs((b.x0 + b.x1 + 1) * 8 - P.x))[0];
+        if (hv) { e.perchT = 0; e.heave = hv; e.mode = 'heaveTell'; e.modeT = 0.8; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE HEAVES AT THE SLAB', '#ff6b6b'); SFX.rumble(); break; } }
       const court = enemies.filter(q => q.alive && q.t === 'courtier').length;
       if (p2 && e.snuffT <= 0 && princeLit() > 0.5 && ad < 160) { e.snuffT = 14; e.mode = 'snuffTell'; e.modeT = 0.85; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 12, 'HE DRAWS BREATH', '#ff6b6b'); SFX.gasp(); }
       else if (e.callT <= 0 && e.phase < 3 && !court && tombDown().length) { e.callT = p2 ? 11 : 14; e.mode = 'callTell'; e.modeT = 0.9; number(e.x, e.y - e.h - 12, 'DIGGERS, TO THE WINCH', '#c080ff'); SFX.callerChant(); }   /* (claude/undercrown2: no court summons - only his diggers, for a slab that is down) */
@@ -17734,6 +17738,8 @@ function updatePrince(e, dt) {
         number(e.x, e.y - e.h - 8, 'BAREHEADED', '#8fd160'); }
       break;
     case 'crownThrow': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.4; } break;
+    case 'heaveTell': want = 0; e.vx = 0; if (Math.random() < dt * 20) dust(e.x + (Math.random() - 0.5) * 20, floor, 1);
+      if (e.modeT <= 0) { slabSmash(e.heave); e.heave = null; e.mode = 'stalk'; e.modeT = 0.5; shakeCam(6); SFX.heavy(); } break;
     /* SNUFF THE LAMPS. A grave-wind: the tomb goes dark, and the breath of it takes you off your feet */
     case 'snuffTell': want = 0; e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'snuff'; e.modeT = 0.9; SFX.gust(); SFX.hiss(); shakeCam(5);
@@ -17831,7 +17837,7 @@ function courtierDig(e, dt) {
 function princeFrame(e) { const F = PRINCE_F, m = e.mode, mv = Math.abs(e.vx) > 8, step = Math.floor(e.anim * 5);
   if (m === 'wake') return e.modeT > 1.0 ? F.sunk : F.rise;
   const pose = { cutTell: F.cutTell, cut: F.cut, sinkTell: F.sinkTell, sunk: F.sunk, rise: F.rise, callTell: F.callTell, call: F.call, crownTell: F.crownTell,
-    crownThrow: F.crownThrow, snuffTell: F.snuffTell, snuff: F.snuff, buried: F.buried, reel: F.reel }[m];
+    crownThrow: F.crownThrow, heaveTell: F.sinkTell, snuffTell: F.snuffTell, snuff: F.snuff, buried: F.buried, reel: F.reel }[m];
   if (pose !== undefined) return pose;
   if (e.bare > 0) return mv ? F.bareWalk[step % 2] : F.bareIdle;
   return mv ? F.walk[step % 3] : (Math.floor(e.anim * 0.8) % 2 ? F.idleB : F.idle); }

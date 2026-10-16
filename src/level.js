@@ -2592,7 +2592,7 @@ function undercrown() {
   ent('minerlamp', 30, 23, { lit: true }); ent('deco', 37, 23, { kind: 'barrels' });
   rail(26, 39, 24); ent('cart', 36, 23);
   coins([8, 22], [12, 22], [16, 22], [28, 22], [32, 22]);
-  ent('sign', 19, 23, { text: 'CUT THE POST: ITS END OF THE SLAB SWINGS DOWN INTO A RAMP. THE WORKING OVER IT IS THE WAY ON.' });
+  ent('sign', 19, 23, { text: 'CUT THE POST: ITS END OF THE SLAB SWINGS DOWN INTO A RAMP UP TO THE WORKING.' });
   cut(16, 52, 15, 18); interiors.push([16, 52, 15, 18, 'mine']);   /* the working over the adit; row 19 between them is the slab and its course */
   slab('adit', 24, 35, 19, 24, { anchor: 1 });                     /* keyed in at the east end: it can only swing down at the post (x 23) */
   ent('miner', 25, 23, { face: 1, cnSkin: 'navvy' });             /* stood where the slab's end comes down: the first thing it does is kill */
@@ -2621,7 +2621,7 @@ function undercrown() {
   ent('sentry', 79, 33, { section: 'works', range: 9, face: -1, cnSkin: 'minewarden' });
   ent('bell', 76, 33, { section: 'works' });
   ent('deco', 62, 33, { kind: 'wares' }); ent('deco', 77, 33, { kind: 'barrels' });
-  ent('sign', 44, 33, { text: 'THE WARDEN\'S BELL DROPS THE GALLERY SHUT OVER THE SHAFT. THE WORKING OVERHEAD STILL GOES THROUGH.' });
+  ent('sign', 44, 33, { text: 'THE WARDEN\'S BELL SHUTS THE GALLERY. THE WORKING OVERHEAD STILL GOES THROUGH.' });
   coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32]);
   coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27]);
   ent('deco', 59, 28, { kind: 'barrels' }); ent('minerlamp', 74, 28, { lit: false });
@@ -2736,7 +2736,7 @@ function undercrown() {
   block(29, 75, 144, 155);
   block(29, 29, 156, 160); block(75, 75, 156, 160);
   ent('check', 16, 166);
-  ent('sign', 20, 166, { text: 'THE PRINCE\'S TOMB. CUT THE POST ON HIS SIDE WHILE HE IS UNDER THE SLAB, AND KEEP THE LAMPS LIT.' });
+  ent('sign', 20, 166, { text: 'THE PRINCE\'S TOMB. CUT THE POST ON HIS SIDE WHILE HE IS UNDER A SLAB.' });
   ent('minerlamp', 12, 166, { lit: true }); ent('minerlamp', 86, 166, { lit: true });
   ent('deco', 24, 166, { kind: 'barrels' }); ent('deco', 78, 166, { kind: 'wares' }); ent('deco', 8, 166, { kind: 'coffer' });
   ent('bonegob', 22, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1, cnSkin: 'bonechucker' });
