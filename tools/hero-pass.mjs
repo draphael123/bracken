@@ -16,7 +16,7 @@
 //            arrow); KNEELING DRAW: knelt, a held X draws faster, the arrow flies flatter and further, and a high blow goes over her
 // Run: node tools/hero-pass.mjs [dodges,knight,warden,tip,ranger]
 import { openPage } from './cdp.mjs';
-const WANT = (process.argv[2] || 'dodges,knight,warden,tip,ranger').split(',');
+const WANT = (process.argv[2] || 'dodges,knight,warden,tip,ranger,bot').split(',');
 const pg = await openPage({ audio: false, fonts: false });
 const fail = [], t = (ok, msg) => { if (!ok) fail.push(msg); };
 try {
@@ -140,6 +140,20 @@ try {
     t(r.knelt.kneel && r.knelt.duck && r.knelt.framesToFull < r.stand.framesToFull * 0.8, 'ranger: knelt, the draw comes ~30% faster and she stays low: ' + JSON.stringify([r.stand, r.knelt]));
     t(r.knelt.vx > r.stand.vx && Math.abs(r.knelt.vy) < Math.abs(r.stand.vy), 'ranger: the kneeling arrow is flatter and faster: ' + JSON.stringify([r.stand, r.knelt]));
     console.log('ranger ' + JSON.stringify(r));
+  }
+  if (WANT.includes('bot')) {
+    const r = await pg.evalp(`(async()=>{const L=await import('/src/lab.js'),o={};
+      const duel=(h,foe,frames,still,shots)=>{const [e]=__set(h,[foe]);e.hp=e.hp0=still?50000:400;e.cd=still?99:0;e.elT=still?99:0;if(still){e.speed=0;e.timer=99;}BK.hpass().resetStats();if(BK.rg&&BK.rg()&&BK.rgK)BK.rgK().resetStats();const s0=BK.rg&&BK.rg()?{...BK.rg().stats}:{};
+        for(let f=0;f<frames&&e.alive&&!BK.P.dead;f++){const P=BK.P;P.hp=P.maxHp;if(still){e.vx=0;}if(shots&&f%90===30)BK.seeds().push({x:P.x+90,y:P.y-10,vx:-170,vy:0,life:3,arrow:true,g:0,dead:false});L.labDuelFrame(BK,h,e,f,'human');BK.sim(1);}
+        const s1=BK.rg&&BK.rg()?BK.rg().stats:{};const dr={};for(const k in s1)dr[k]=(s1[k]||0)-(s0[k]||0);return {hp:{...BK.hpass().stats},rg:dr,alive:e.alive};};
+      { const d=duel('knight',['swornsword',40],1800);o.knight={interrupts:d.hp.interrupts,bashes:d.hp.bashes}; }
+      { const d=duel('ranger',['shield',220],900,true,true);o.snatch={snatched:d.rg.snatched,flung:d.rg.flung}; }
+      { const d=duel('ranger',['shield',150],900,true);o.kneel={kneels:d.rg.kneels,draws:d.rg.draws}; }
+      return o;})()`);
+    t(r.knight.interrupts > 0, "bot: the knight's hands bash a wind-up out of a sword foe: " + JSON.stringify(r.knight));
+    t((r.snatch.snatched || 0) + (r.snatch.flung || 0) > 0, "bot: the ranger's hands snatch an archer's arrow: " + JSON.stringify(r.snatch));
+    t(r.kneel.kneels > 0, "bot: the ranger's hands kneel to draw: " + JSON.stringify(r.kneel));
+    console.log('bot ' + JSON.stringify(r));
   }
   if (pg.errors.length) fail.push('page errors: ' + JSON.stringify(pg.errors.slice(0, 4)));
 } finally { pg.close(); }
