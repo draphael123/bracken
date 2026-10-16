@@ -6,6 +6,9 @@
 //   THE CHAPEL KNIGHT  the sworn sword in a white surcoat with a red cross on the breast, cream shield
 //   THE TEMPLAR     the hedge knight in white over the plate, the gold trim and a red cross
 //   THE CHAPEL CROSSBOW  the crossbowman's white with a red cross on the chest
+//   (claude/church2, LIT CHURCH 2: the goblin PRIEST's machine - the rite, the censer, the bell - as HUMAN clergy; GREYBOX recolour, the art lane redraws the heads)
+//   THE THURIFER    a white cotta over a red cassock (the red at the hem), a gold stole, a human face under the hood; his censer is the machine's
+//   THE BELL-RINGER a black cassock with a grey hood and a pale rope girdle, a white collar; his hand bell is the machine's
 import { canvas, flipX, whiten } from '../px.js';
 
 const pack = (R, ax, ay, w, h) => ({ R, L: R.map(c => flipX(c)), white: { R: R.map(c => whiten(c)), L: R.map(c => flipX(whiten(c))) }, ax, ay, w, h });
@@ -42,13 +45,41 @@ export const CHURCH_SKINS = {
   chapelknight: { base: 'swornsword', map: { '#3a5a8a': '#e4dccc', '#22355a': '#a49c88' }, fx: (fi, g, b) => cross(g, b) },
   templar: { base: 'hedgeknight', map: { '#9a3a3a': '#e4dccc', '#8a6a4a': '#c9a050' }, fx: (fi, g, b) => cross(g, b) },
   chapelbow: { base: 'crossbow', map: { '#3a5a8a': '#e4dccc', '#22355a': '#a49c88' }, fx: (fi, g, b) => cross(g, b) },
+  thurifer: { base: 'gobpriest', map: { '#6faa4a': '#d8a880', '#3f6e2c': '#9a6a4a', '#8e3a32': '#e8e0d0', '#5a1e1e': '#8a2a2a', '#b8584a': '#ffffff' },
+    fx: (fi, g, b, src) => { humanHead(g, src, 'thurifer'); for (let x = b.x0 + 1; x < b.x1; x++) { dot(g, x, b.y1 - 3, RED); dot(g, x, b.y1 - 2, '#5a1a1a'); } } },   /* the red cassock below the cotta */
+  bellringer: { base: 'gobpriest', map: { '#6faa4a': '#d8a880', '#3f6e2c': '#9a6a4a', '#8e3a32': '#2c2634', '#5a1e1e': '#16121c', '#b8584a': '#4e4658', '#e8a83a': '#c8c0a8', '#a8681c': '#8a8270' },
+    fx: (fi, g, b, src) => { humanHead(g, src, 'bellringer'); const mid = (b.x0 + b.x1) >> 1; for (let x = mid - 2; x <= mid + 2; x++) dot(g, x, b.y0 + 12, CREAM); } },   /* the white collar */
 };
+/* (claude/church2art) A HUMAN HEAD for the clergy made from the goblin priest's machine: the goblin hood's peak and its wide pale eyes are found in the ORIGINAL frame (its hood and face colours; the staff and censer have their own), that box is cleared and a rounded head is painted in its place with its own 1 px outline:
+   THE THURIFER  a bare tonsured pate in a ring of brown hair, a ruddy face, small dark eyes, a nose;   THE BELL-RINGER  a rounded grey cowl drawn close round a pale face, shaded eyes, a nose, a grizzled chin. The staff, the censer, the bell, the arms are the machine's, untouched. */
+const GOB_HOOD = new Set(['8e3a32', '5a1e1e', 'b8584a', '6faa4a', '3f6e2c', 'f3f0d2']);
+function humanHead(g, src, kind) {
+  const W = src.width, d = src.getContext('2d').getImageData(0, 0, W, src.height).data, col = (x, y) => { const i = (y * W + x) * 4; return d[i + 3] ? [d[i], d[i + 1], d[i + 2]].map(v => v.toString(16).padStart(2, '0')).join('') : ''; };
+  let ey = -1, ex0 = 99, ex1 = -1; for (let y = 4; y < 16 && ey < 0; y++) { for (let x = 2; x < W - 2; x++) if (col(x, y) === 'f3f0d2') { ey = y; if (x < ex0) ex0 = x; if (x > ex1) ex1 = x; } } if (ey < 0) return;
+  let r0 = 99; for (let y = 2; y <= ey + 1; y++) for (let x = ex0 - 4; x <= ex1 + 4; x++) if (GOB_HOOD.has(col(x, y)) && y < r0) r0 = y;
+  const cx = (ex0 + ex1) / 2, bot = ey + 1, n = 7, top = bot - n + 1, hw = 3.5;
+  g.clearRect(Math.round(cx - 5.5), r0 - 1, 11, bot - r0 + 2);
+  const P = kind === 'thurifer' ? { skin: '#d8a880', shade: '#b88860', hi: '#efc8a0', hair: '#6a4426', hairHi: '#8a6040', eye: '#2a1a14', nose: '#b0704e', mouth: '#8a4a3a' } : { skin: '#d0b090', shade: '#a88868', hi: '#e4c8a8', hair: '#4e4658', hairHi: '#6a627a', eye: '#1e1820', nose: '#a8806a', mouth: '#7a5a4a', dark: '#2c2634' };
+  const at = (x, y, c) => { g.fillStyle = c; g.fillRect(Math.round(x), y, 1, 1); };
+  const OUT = '#1b1626';
+  for (let r = 0; r < n; r++) { const y = top + r, wr = r === 0 ? 5 : r === 1 ? 7 : r === n - 1 ? 5 : 9, l = Math.round(cx + 0.5 - wr / 2), rr = l + wr - 1;
+    for (let x = l; x <= rr; x++) {
+      if (x === l || x === rr || r === 0 || r === n - 1) { at(x, y, OUT); continue; }
+      const ix = x - l, jx = rr - x, side = ix === 1 || jx === 1; let c;
+      if (kind === 'thurifer') { c = r === 1 ? P.hi : r === 2 ? (side ? P.hair : P.skin) : r === 3 ? (side ? P.hair : P.hi) : P.skin; if (r >= 4 && side) c = P.shade; }
+      else { const face = ix >= 2 && jx >= 2 && r >= 3; c = face ? (r === 3 ? P.hi : P.skin) : (r <= 2 ? (r === 1 ? P.hairHi : P.hair) : P.dark); if (!face && r === 2 && ix === 2) c = P.hairHi; }
+      at(x, y, c); }
+  }
+  at(cx - 1.9, top + 4, P.eye); at(cx + 1.4, top + 4, P.eye);                       /* eyes */
+  if (kind === 'bellringer') { at(cx - 1.9, top + 3, P.shade); at(cx + 1.4, top + 3, P.shade); at(cx - 1.4, top + 5, P.hair); at(cx + 1, top + 5, P.hair); }   /* a heavy brow, a grizzled chin */
+  at(cx - 0.3, top + 4, P.nose); at(cx - 0.3, top + 5, kind === 'thurifer' ? P.mouth : P.nose);
+}
 const isTunic = (g, x, y) => { const d = g.getImageData(x, y, 1, 1).data; return d[0] > d[2] + 30 && d[0] > 70; };   /* a red/brown body pixel (not skin, steel or outline) */
 function cross(g, b) { const mx = (b.x0 + b.x1) >> 1, my = b.y0 + Math.round((b.y1 - b.y0) * 0.5); for (const [dx, dy] of [[0, -1], [-1, 0], [0, 0], [1, 0], [0, 1]]) dot(g, mx + dx, my + dy, RED); }
 export function bakeChurchSkins(SPR) {
   const out = {};
   for (const [skin, { base, map, fx }] of Object.entries(CHURCH_SKINS)) { const s = SPR[base]; if (!s || !s.R) continue;
-    out[skin] = pack(s.R.map((c, fi) => { const [o, g] = recolour(c, map); if (fx) { const b = bbox(o); if (b.x1 >= 0) fx(fi, g, b); } return o; }), s.ax, s.ay, s.w, s.h); }
+    out[skin] = pack(s.R.map((c, fi) => { const [o, g] = recolour(c, map); if (fx) { const b = bbox(o); if (b.x1 >= 0) fx(fi, g, b, c); } return o; }), s.ax, s.ay, s.w, s.h); }
   return out;
 }
 export async function sheetItems() {

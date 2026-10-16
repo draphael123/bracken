@@ -32,7 +32,7 @@ const PL = SET.plan(L, T);
     else if (l.kind === 'chandelier') { let held = false; for (let y = l.row; y >= Math.max(0, l.row - 16); y--) if (at(l.x, y) === T.SOLID) held = true; if (!held) bad.push('chandelier@' + l.x + ',' + l.row + ' hangs from nothing'); }
     else if (l.kind === 'sconce') { if (at(l.x, l.row) !== T.AIR) bad.push('sconce@' + l.x + ',' + l.row + ' inside a solid'); }
     else if (l.kind === 'grave') { if (!standable(l.x, l.row + 1)) bad.push('grave candle@' + l.x); } }
-  for (const l of L.lamps) { if (l.kind === 'sconce' || l.kind === 'rood' || l.kind === 'seal') continue; if (!standable(l.x, l.y + 1)) bad.push('lamp ' + l.id + '@' + l.x + ',' + l.y); }
+  for (const l of L.lamps) { if (l.kind === 'sconce' || l.kind === 'rood' || l.kind === 'seal') continue; if (l.hang) { let held = false; for (let y = l.y; y >= Math.max(0, l.y - 16); y--) if (at(l.x, y) === T.SOLID) held = true; if (!held) bad.push('chandelier lamp ' + l.id + ' hangs from nothing'); continue; } if (!standable(l.x, l.y + 1)) bad.push('lamp ' + l.id + '@' + l.x + ',' + l.y); }
   for (const s of L.sources) if (!standable(s.x, s.y + 1)) bad.push('fire ' + s.id); for (const b of L.bellows) if (!standable(b.x, b.y + 1)) bad.push('bellows ' + b.id); for (const d of L.desks) if (!standable(d.x, d.y + 1)) bad.push('desk ' + d.id);
   ok(bad.length === 0, PL.lights.length + ' dressing lights, ' + L.lamps.length + ' lamps, ' + L.sources.length + ' fires, ' + L.bellows.length + ' bellows and the key desk all stand on a top or hang from a ceiling' + (bad.length ? ': ' + bad.slice(0, 6).join('; ') : '')); }
 /* D */

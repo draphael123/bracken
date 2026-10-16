@@ -456,7 +456,10 @@ export const STUCK_HANDS = {
     { id: 'lc-rood', zone: [152, 30, 178, 36], steps: [
       { key: 'rood3', is: ['need.rood3', 'lamp'], at: [178, 34], line: 'THE ROOD SCREEN\'S THIRD SCONCE IS DARK' },
       { key: 'rood3fire', is: ['need.rood3', 'fire'], at: [176, 28], line: 'LAMP ONE BURNS ON: A FLAME FOR THE THIRD SCONCE' } ] },
-    { id: 'lc-reliquary', zone: [180, 31, 200, 40], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [188, 40], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
+    { id: 'lc-chantry', zone: [180, 22, 213, 37], steps: [   /* (claude/church2) THE CHANTRY's relay: the votive stand, the braziers, the door's lamp */
+      { key: 'votive3', is: ['need.chantryDoor', 'fire'], at: [181, 36], line: 'A VOTIVE STAND BURNS BY THE CHANTRY DOOR' },
+      { key: 'chantryDoor', is: ['need.chantryDoor', 'lamp'], at: [210, 36], line: 'THE CHANTRY DOOR\'S LAMP IS DARK: CARRY A FLAME TO IT' } ] },
+    { id: 'lc-reliquary', zone: [214, 31, 234, 40], steps: [ { key: 'reliquary', is: ['stubs', 'due'], at: [222, 40], line: 'THE RELIQUARY: FIVE STUBS OPEN IT' } ] },
   ],
   /* THE TOWPATH (claude/towpath; THE TOWPATH 2, claude/towpath2): every lock, the race, the hoist, the aqueduct's sluice, the crane and every swing bridge the route
      needs glints until its water (or its ride) stands where the way needs it (src/towpath-hands.js handsState: lock.<id> lo | hi | dry | up | down, bridge.<id> across |

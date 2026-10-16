@@ -23,7 +23,7 @@ const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, 
 export const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
 
 /* the level's own map of materials (the cross: nave floor row 37, gallery row 19, crypt floor row 54, south transept floor 41) */
-export const ZONES = { nf: 37, gf: 19, cf: 54, sf: 41, yardTo: 43, sanctFrom: 241, cryptX: [46, 178], cryptY0: 39 };
+export const ZONES = { nf: 37, gf: 19, cf: 54, sf: 41, yardTo: 43, sanctFrom: 275, cryptX: [46, 178], cryptY0: 39 };
 export const matOf = (x, y) => {
   const Z = ZONES;
   if (x <= Z.yardTo && y >= Z.nf) return y >= Z.nf + 5 ? 'footing' : 'earth';
