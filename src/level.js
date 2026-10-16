@@ -5556,6 +5556,10 @@ function theLamplitStreet() {
   // a flooded stretch of street. The tide runs down all of them and turns on a timer.
   const flood = (x0, x1) => pools.push({ x0: x0 * TS, x1: x1 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true });
   const lamp = (x, dark) => ent('lantern', x, ST - 1, { city: true, dark: !!dark });
+  /* LIGHT THE WAY (claude/lamplit2, Daniel 10-08): a DEAD street lamp under the water whose main, lit, carries air back up under the vault -
+     a pocket over [x0, x1] that is there only while it burns, so a swim the street did not allow becomes a route you chose */
+  const lampPockets = [];
+  const wayLamp = (x, x0, x1) => { lamp(x, true); lampPockets.push([x0, x1, 28, 29, x]); };
   const lampUp = (x, dark) => ent('lantern', x, UP - 1, { city: true, dark: !!dark });
   const weed = (x, y, v) => ent('deco', x, y, { kind: 'cityWeed', v: v || 0 });
 
@@ -5594,13 +5598,17 @@ function theLamplitStreet() {
   for (const x of [86, 112, 150, 176]) ent('deco', x, UP - 1, { kind: 'stall', v: x % 2 });
   for (const x of [100, 124, 160]) ent('deco', x, UP - 1, { kind: 'column', v: x % 2 });
   ent('deco', 140, UP - 1, { kind: 'drownedCart' }); ent('deco', 118, UP - 1, { kind: 'sealDrift', v: 0 });
-  lamp(84); lamp(104); lamp(124, true); lamp(146); lamp(166, true); lamp(184);
+  lamp(84); lamp(104); lamp(124, true); lamp(146); wayLamp(166, 158, 174); lamp(184);
   lampUp(90); lampUp(132, true); lampUp(172);
   ent('wight', 98, UP - 1, { face: -1 }); ent('tideguard', 154, UP - 1, { face: -1 });
   ent('watch', 136, ST - 1, { face: 1 }); ent('wight', 100, ST - 1, { face: -1 }); ent('scout', 152, ST - 1, { face: -1 });   /* the first watchman on his own, between the pillars */
   ent('sign', 108, ST - 1, { text: 'THE WATCH THRUSTS FROM RANGE. GET INSIDE AND HE SWEEPS YOUR FEET: JUMP IT.' });
   ent('eel', 158, 33); ent('eel', 172, 31); ent('urchin', 164, ST - 1); ent('crab', 178, ST - 1); ent('urchin', 186, ST - 1);
-  ent('snuffer', 120, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
+  ent('snuffer', 123, UP - 1, { face: -1 });    // it only comes where the light has gone, and it takes more of it
+  /* THE WATCH HATE LIGHT, taught (claude/lamplit2): a dead roof lamp with a watchman on his beat beside it, and a burning one back along the roofs at 90 */
+  lampUp(116, true); ent('watch', 119, UP - 1, { face: -1 });
+  ent('sign', 113, UP - 1, { text: 'THE WATCH HATE LIGHT. RELIGHT A LAMP BESIDE ONE: HE REELS, BLIND.' });
+  ent('sign', 142, ST - 1, { text: 'UNDER THE WATER A FLAME LASTS FIVE SECONDS. GO LAMP TO LAMP.' });
   
   ent('deco', 156, ST - 1, { kind: 'plunder', v: 1 });
   ent('check', 88, UP - 1); ent('check', 134, 22); ent('check', 180, ST - 1);   /* (at 130 the step over the ledge went through the lamp on it) */
@@ -5620,7 +5628,7 @@ function theLamplitStreet() {
   port(240, 16, 21);                            // the gate itself, shut until he is down
   interiors.push([196, 239, 14, 21, 'drowned']);
   darkZones.push({ x0: 196 * TS, x1: 240 * TS, y0: 13 * TS, y1: 23 * TS, dark: 0.66 });
-  ent('sign', 190, UP - 1, { text: 'HE HOODS THE LAMPS ONE BY ONE. STRIKE THE LAMP UNDER HIS HOOD: ITS FLARE BLINDS HIM.' });
+  ent('sign', 190, UP - 1, { text: 'HE PUTS OUT THE LAMPS. RELIGHT ONE BESIDE HIM: THE FLARE STUNS HIM.' });   /* (claude/lamplit2) the relight is the big opening now; the hood strike the small one */
   ent('check', 190, UP - 1);                    // the one outside his wall
   for (const x of [200, 210, 220, 230, 237]) lampUp(x);
   ent('deco', 206, UP - 1, { kind: 'stall', v: 1 }); ent('deco', 226, UP - 1, { kind: 'drownedCart' });
@@ -5645,7 +5653,8 @@ function theLamplitStreet() {
   }
   air(260, 261, UP, 27); net(260, 261, UP, ST - 1);                      // the clerks' stair down off the roof
   air(350, 351, UP, 27); net(350, 351, UP, ST - 1);
-  lamp(258); lamp(280); lamp(296, true); lamp(318); lamp(340, true); lamp(354);
+  lamp(258); lamp(280); lamp(296, true); wayLamp(318, 312, 324); lamp(340, true); lamp(354);
+  ent('sign', 284, ST - 1, { text: 'A DEAD LAMP UNDER THE VAULTS: LIGHT IT AND ITS MAIN BRINGS AIR.' });
   ent('lantern', 270, 22, { city: true }); ent('lantern', 332, 22, { city: true }); // a lamp on a pocket's ledge
   ent('deco', 286, ST - 1, { kind: 'clerkDesk' }); ent('deco', 306, ST - 1, { kind: 'sealDrift', v: 1 }); ent('deco', 322, ST - 1, { kind: 'sealDrift', v: 0 });
   ent('key', 292, ST - 1, { kind: 'bone' });                            // on the clerk who was locking up
@@ -5693,8 +5702,8 @@ function theLamplitStreet() {
   darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.44 });
   for (const [a, b] of [[470, 480], [520, 530]]) { plat(a + 1, 23, b - a - 2); plat(a + 2, 20, 3); } // two courtyards open on the water
   air(444, 445, UP, 27); net(444, 445, UP, ST - 1); air(556, 557, UP, ST - 1); net(556, 557, UP, ST - 1);
-  ent('sign', 432, UP - 1, { text: 'THE PROCESSION ROAD. THE LAMPS ALONG IT ARE MOSTLY DEAD.' });
-  lamp(434); lamp(456, true); lamp(476); lamp(498, true); lamp(516, true); lamp(540); lamp(562, true);
+  ent('sign', 432, UP - 1, { text: 'THE PROCESSION ROAD. ITS LAMPS ARE DEAD: LIGHT THE WAY, OR WORK THE BEAM.' });
+  lamp(434); lamp(456, true); lamp(476); wayLamp(498, 490, 506); wayLamp(516, 510, 522); lamp(540); lamp(562, true);
   lampUp(440, true); lampUp(492); lampUp(546, true);
   for (const x of [452, 486, 508, 536]) ent('deco', x, ST - 1, { kind: 'column', v: x % 2 });
   ent('deco', 466, ST - 1, { kind: 'drownedCart' }); ent('deco', 504, ST - 1, { kind: 'lampWreck', v: 0 }); ent('deco', 552, ST - 1, { kind: 'lampWreck', v: 1 });
@@ -5719,10 +5728,12 @@ function theLamplitStreet() {
   // from. He puts the rings out one at a time; in his last phase he calls the water up into the square itself.
   mass(570, W - 1); block(570, W - 1, 28, 37);   // his gate stands on a solid mole: the street stops under it
   block(574, 575, 6, 21); block(696, 698, 6, 21); block(576, 695, 6, 7);
-  air(574, 575, 18, 21);
+  air(574, 575, 18, 21); port(575, 18, 21);      /* THE TOLL GATE (claude/lamplit2): its lamp, lit, lifts it */
+  lampUp(560); ent('lantern', 570, UP - 1, { city: true, dark: true, gate: 575 });
   interiors.push([576, 695, 8, 21, 'drowned']);
   darkZones.push({ x0: 576 * TS, x1: 698 * TS, y0: 7 * TS, y1: 23 * TS, dark: 0.66 });
-  ent('sign', 572, UP - 1, { text: 'THE TOLLMASTER DOUSES LAMPS. PARRY THE BOOK, JUMP THE ROD, NEVER BLOCK THE WEIGHT.' });
+  ent('sign', 566, UP - 1, { text: 'THE TOLL GATE LIFTS FOR A LIT LAMP. CARRY FIRE TO IT.' });   /* (claude/lamplit2) */
+  ent('sign', 580, UP - 1, { text: 'THE TOLLMASTER COLLECTS THE LAMPS. RELIGHT ONE BESIDE HIM AND HIS ROBES CATCH.' });
   ent('check', 578, UP - 1);                     // the one outside his walls
   ent('deco', 584, UP - 1, { kind: 'tollPost' }); ent('deco', 596, UP - 1, { kind: 'magistrate' });
   ent('deco', 604, UP - 1, { kind: 'sealDrift', v: 1 }); ent('deco', 614, UP - 1, { kind: 'grating' });
@@ -5731,10 +5742,10 @@ function theLamplitStreet() {
   ent('watch', 592, UP - 1, { face: -1 }); ent('watch', 608, UP - 1, { face: 1 });
   ent('watch', 632, UP - 1, { face: -1 }); ent('snuffer', 644, UP - 1, { face: -1 });
   ent('check', 646, UP - 1);                     // three tiles outside his wall: a death costs the square, not the road
-  ent('sign', 616, UP - 1, { text: 'HIS BRAZIERS NEVER GO OUT. TAKE FIRE FROM ONE TO RELIGHT THE LAMPS HE TAKES.' });
+  ent('sign', 616, UP - 1, { text: 'HIS BRAZIERS NEVER GO OUT. STAND AT ONE TO TAKE FIRE.' });
   coins([582, 21], [590, 19], [598, 21], [606, 19], [614, 21], [622, 19], [630, 21], [638, 19], [646, 21]);
   // HIS SQUARE: 44 tiles, two rings of lamps, the braziers at the edges, and the pool that fills it
-  ent('brazier', 652, UP - 1); ent('brazier', 690, UP - 1);
+  ent('brazier', 652, UP - 1, { city: true }); ent('brazier', 690, UP - 1, { city: true });   /* his, and they never go out or tip (claude/lamplit2) */
   for (const x of [656, 664, 672, 683, 688]) lampUp(x);   /* 680 stood under the cornice at 678, and its post ran up through the cornice */
   ent('deco', 646, 7, { kind: 'lampMain', v: 0, hang: true }); ent('deco', 670, 7, { kind: 'lampMain', v: 1, hang: true });
   ent('deco', 658, UP - 1, { kind: 'column', v: 0 }); ent('deco', 636, UP - 1, { kind: 'column', v: 1 });
@@ -5817,6 +5828,7 @@ function theLamplitStreet() {
     W, H, grid: L.grid, ents: L.ents, START: { x: 10, y: 9 }, pools, falls: [], moversExtra: movers,
     duskStart: 99999, duskLen: 1, music: 'drowned', night: false, glowNight: true, dark: 0.32, darkZones, edgeLit: 'rgba(190,236,232,0.75)',   /* the readability pass: the flooded street was teal on teal (its walkways at a third of the contrast they need) under dark 0.5, so less of it, and a cold lit lip on every edge you can stand on */
     lampAir: true,                               // THE RULE: a lit lamp is a lungful of air
+    airRooms: lampPockets,                       // LIGHT THE WAY: the pockets the dead street lamps bring back (claude/lamplit2)
     // the cold of the place, as banks over the dry street: only a lamp opens a hole in it
     fog: [{ x0: 44 * TS, x1: 152 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.5 },
       { x0: 190 * TS, x1: 290 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.52 },

@@ -427,16 +427,17 @@ const LANCER_MINI_X = 3.7;   /* THE SERJEANT as the Waymeet mini: his health is 
 Object.assign(DMG, {
   kingAnchor: 16, kingSlamD: 22,   /* THE DROWNED KING: 20, 26 */
   lanceCharge: 18, lanceThrust: 14, lanceVault: 12, lanceSweep: 14, lanceRush: 14, lanceBash: 8, lanceGuard: 16, lanceJav: 9, lanceWhirl: 10,   /* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */
-  reeveSweep: 31, reeveLunge: 42, reeveHook: 25, reeveDouse: 25,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14 */
+  reeveSweep: 23, reeveLunge: 32, reeveHook: 19, reeveFlask: 19,   /* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14; (claude/lamplit2, Daniel 10-08 "too powerful": 31/42/25 a quarter lighter, his DOUSE cut, the OIL FLASK in its place) */
+  tollScales: 24, tollSeal: 22, tollStream: 8,   /* THE TOLLMASTER's new told blows (claude/lamplit2): THE SCALES' counterweight, the SEAL OF DEBT, and the toll's stream to a hero who stands in it */
   bellLeap: 18, bellClaw: 22, bellPressure: 20,   /* THE DIVING BELL: 24, 26, 24 */
   palLeap: 26, palDelay: 24, palFollow: 18, palGrab: 26, palBrand: 22,   /* (claude/crusader) the delayed overhead, the follow-up after a missed parry, the grab's throw, the brand's fire */
   krakSlam: 33, krakSweep: 33, krakRoar: 23, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 20, krakQuake: 12, krakShake: 14, krakCoSweep: 26, krakSlam1: 26, krakSweep1: 28,   /* (roar 26 -> 23: the climb's double roar was the warden's death at 2-9% left) */   /* (the first stage has more going on now: its own slam and sweep weigh a little less) */   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
-  tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
+  tollmaster: 3200,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s); 980 on the x0.05 chip. (claude/lamplit2) 3200: off the chip at 0.4 (B15) the knight cut 980 in 20 s */
   prince: 2000,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights) */
   closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
-  lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
+  lampreeve: 1300,   /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75); 560 on the 0.25 coat. (claude/lamplit2) 1300: his coat at 0.45 (B15) and the relight stun x1.7 - 560 died in 15-24 s */
   quarter: 1150,     /* (claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
   captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
@@ -2225,7 +2226,7 @@ function* loadLevelG(i) {
   SLOPES_ON = levelHasSlopes(L.grid);   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
-  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS }));
+  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1, lampX]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS, lampX, goneUntil: lampX !== undefined ? 1e9 : undefined }));   /* (claude/lamplit2) lampX: LIGHT THE WAY - a pocket that is there only while the street lamp under it burns */
   BREATHCUE = { gulpCd: 0, inAir: false, last: 99, told: new Set() };   /* a new level is told its air again */
   deepLoad();
   { const sl = SEA.seaLoad(LEVELS[i].id, L); if (sl && sl.mid) BG.mid = sl.mid; if (sl && sl.murk) { MURK = sl.murk; MURK_ID = LEVELS[i].id; } }   /* a sea level that paints its own middle distance (or, in a dark one, its own murk) */
@@ -2304,6 +2305,7 @@ function spawnEntities() {
   L.ents.forEach((e, k) => { const n0 = enemies.length; spawnEnt(e); for (let i = n0; i < enemies.length; i++) { enemies[i].xpKey = k + '.' + (i - n0); if (e.squad) enemies[i].squad = e.squad; } });   /* XP KEYS: which placed thing a foe is, so the second time it falls it pays a fifth (xpKill). A foe with no key was summoned, and pays nothing */
   spawnEntitiesTail(); seaReset(); fieldsReset(); mageReset(); villageReset(); canalReset(); if (WTH) WTH.reset(); if (RGH) RGH.reset(); if (UWH) UWH.reset(); if (GSH) GSH.reset(); if (KSH) KSH.reset(); if (WRK) WRK.reset(); if (TPH) TPH.reset(); if (LCH) LCH.reset(); if (BCH) BCH.reset(); if (PYH) PYH.reset(); if (MCH) MCH.reset(); if (MRH) MRH.reset(); if (SKY) SKY.reset(); if (RWH) RWH.reset(); if (SNR) SNR.reset(); if (HPD) HPD.reset(); if (HUH) HUH.reset(); if (DF2H) DF2H.reset(); if (MYH) MYH.reset(); if (STK) STK.reset(curId()); eliteGates();
   lamps = props.filter(pr => pr.t === 'lantern' && pr.city); // THE LAMPLIT STREET gathers its lamps once
+  lampHandsReset();
 }
 function spawnEnt(e) {
   if (e.ifDrained !== undefined && !marks.has('pool:' + e.ifDrained * TS)) return; // lives on the channel floor: only once the water is gone
@@ -2383,8 +2385,8 @@ function spawnEnt(e) {
       case 'knell': props.push({ t: 'knell', x: px, y: py, swing: 0, cool: 0 }); break;
       case 'masthead': boss = { ...base, t: 'masthead', w: 20, h: 34, hp: EHP.masthead, maxHp: EHP.masthead, mode: 'sleep', modeT: 0, face: -1, phase: 1, slashT: 1.2, sailT: 2.4, dropT: 8, boomT: 4.2, sailDir: 1 }; enemies.push(boss); break;
       case 'quarter': boss = { ...base, t: 'quarter', w: 12, h: 22, hp: EHP.quarter, maxHp: EHP.quarter, mode: 'sleep', modeT: 0, face: -1, phase: 1, deck: 0, shotT: 1.2, slashT: 1, cutT: 0, guard: false, guardT: 0 }; enemies.push(boss); break;
-      case 'tollmaster': boss = { ...base, t: 'tollmaster', w: 20, h: 30, hp: EHP.tollmaster, maxHp: EHP.tollmaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, onFoot: false, open: 0, ring: 0, ledgerT: 1.4, tollT: 3, rodT: 5.5, darkT: 9, flooded: false }; enemies.push(boss); break;
-      case 'lampreeve': enemies.push({ ...base, t: 'lampreeve', w: 12, h: 28, hp: EHP.lampreeve, maxHp: EHP.lampreeve, mini: true, mode: 'sleep', modeT: 0, face: -1, phase: 1, snuffT: 2.4, sweepT: 2, douseT: 5, hookT: 7, lungeT: 3.5, open: 0, target: null }); break;
+      case 'tollmaster': boss = { ...base, t: 'tollmaster', w: 20, h: 30, hp: EHP.tollmaster, maxHp: EHP.tollmaster, mode: 'sleep', modeT: 0, face: -1, phase: 1, onFoot: false, open: 0, ring: 0, ledgerT: 1.4, rodT: 5.5, flooded: false, ward: 0 }; enemies.push(boss); break;
+      case 'lampreeve': enemies.push({ ...base, t: 'lampreeve', w: 12, h: 28, hp: EHP.lampreeve, maxHp: EHP.lampreeve, mini: true, mode: 'sleep', modeT: 0, face: -1, phase: 1, snuffT: 2.4, sweepT: 2, flaskT: 4, hookT: 7, lungeT: 3.5, open: 0, ward: 0, target: null }); break;
       case 'watch': enemies.push({ ...base, t: 'watch', w: 12, h: 22, hp: EHP.watch, speed: 24, mode: 'walk', modeT: 0, cd: 1 + Math.random() * 0.6, guardT: 0, heard: 0 }); break;
       case 'sailor': { const rs = !!(e.rise || (L.risers && e.garrison && e.y <= 20)); enemies.push({ ...base, t: 'sailor', w: 10, h: 18, hp: EHP.sailor, speed: 20, mode: 'walk', modeT: 0, cd: 1, rise: rs, gone: rs ? 1 : 0 }); break; }   /* on the Hurricane's deck a drowned hand comes up over her rail */
       case 'netter': enemies.push({ ...base, t: 'netter', w: 10, h: 18, hp: EHP.netter, speed: 26, mode: 'walk', modeT: 0, cd: 1 + Math.random(), hasNet: true }); break;
@@ -2420,7 +2422,7 @@ function spawnEnt(e) {
       case 'chief': boss = { ...base, t: 'chief', w: 22, h: 34, hp: EHP.chief, maxHp: EHP.chief, mode: 'sleep', modeT: 0, face: -1, phase: 1, last: '', stance: 'club', swapN: 0, leapT: 3 }; enemies.push(boss); break;
       case 'cage': { const op = marks.has('cage:' + e.x); props.push({ t: 'cage', x: px, y: py, kind: e.kind || 'bird', open: op, hp: 2, tx: e.x }); if (op && e.kind === 'squire') props.push({ t: 'npc', x: px, y: py, kind: 'squire', anim: 0 }); break; }
       case 'barrel': props.push({ t: 'barrel', x: px, y: py, x0: px, y0: py, vx: 0, rolling: false, fuse: 0, gone: false, respawnT: 0 }); break;
-      case 'brazier': props.push({ t: 'brazier', x: px, y: py, lit: true, tipped: false }); break;
+      case 'brazier': props.push({ t: 'brazier', x: px, y: py, lit: true, tipped: false, city: !!e.city }); break;   /* city: the Tollmaster's, which never go out and never tip (claude/lamplit2) */
       case 'rack': props.push({ t: 'rack', x: px, y: py, kind: e.kind || 'club', hp: 3, broken: false }); break;
       case 'wisp': props.push({ t: 'wisp', x: px, y: py, y0: py, cut: false, ph: Math.random() * 6 }); break;
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
@@ -2610,7 +2612,7 @@ function spawnEnt(e) {
       case 'spider': enemies.push({ ...base, t: 'spider', w: e.big ? 20 : 10, h: e.big ? 16 : 8, hp: e.big ? EHP.spider * 12 : EHP.spider, maxHp: e.big ? EHP.spider * 12 : undefined, big: !!e.big, mini: !!e.mini, restY: py, drop: e.drop || 100, mode: 'hang', modeT: 0, cd: 0, face: 1 }); break;
       case 'squirrel': enemies.push({ ...base, t: 'thief', squirrel: true, w: 8, h: 9, hp: EHP.spider, speed: 92, loot: 0, mode: 'stalk' }); break;
       case 'owl': boss = { ...base, t: 'owl', w: 44, h: 26,   /* he is twice the bird he was */ hp: EHP.owl, maxHp: EHP.owl, mode: 'sleep', modeT: 0, face: -1, phase: 1, px: px, py: py, tx: px, ty: py, swoopT: 2, screechT: 6, gustT: 9, featherT: 4, skimCd: 5, hitT: 0 }; enemies.push(boss); break;
-      case 'lantern': { const pr = { t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, owl: !!e.owl, lampT: 0, perch: !!e.perch, city: !!e.city, gut: 0 }; props.push(pr);
+      case 'lantern': { const pr = { t: 'lantern', x: px, y: py, lit: !e.dark, hits: 0, owl: !!e.owl, lampT: 0, perch: !!e.perch, city: !!e.city, gut: 0, gate: e.gate }; props.push(pr);   /* (claude/lamplit2) gate: the column of PORT a lit lamp lifts (THE TOLL GATE) */
         lights.push(pr.city ? { x: px, y: py - 40, r: 66, lantern: pr } : { x: px, y: py - 30, r: pr.owl ? 78 : 50, glow: true, lantern: pr }); break; }
       case 'shardling': enemies.push({ ...base, t: 'shardling', w: 9, h: 11, hp: EHP.shardling, speed: 40, mode: 'walk', modeT: 0 }); break;
       case 'fledgling': enemies.push({ ...base, t: 'fledgling', w: 10, h: 9, hp: EHP.fledgling, speed: 44, mode: 'walk', modeT: 0.6 + Math.random(), hopT: 0 }); break;
@@ -5401,8 +5403,8 @@ const BEASTS = [
   { t: 'bosun', name: 'BOSUN', sub: 'he calls the watch', desc: 'Hits like a door with a belaying pin, and if he sees you before you are on him he puts the whistle to his mouth and the whole town knows. Close the distance or lose the level. The Salvage Captain also aims a grapnel, drops marked cargo and fires low quay guns: block the pin and hook, leave the cargo marks, jump the shots. Half wounded, both guns fire and three cargo lanes drop. Strike during his recovery.' },
   { t: 'lookout', name: 'LOOKOUT', sub: 'eyes, and a whistle', desc: 'Cannot fight at all. All he does is see you, and then fill his lungs. He needs a breath and a bit to do it: that is how long you have.' },
   { t: 'watch', name: 'THE DROWNED WATCH', sub: "a constable on his beat", desc: 'Still walking a beat in a city that drowned a hundred years ago. He guards with the haft of the halberd, so a light blow turns on it and only a HEAVY one gets through. He cannot see you under a burning lamp, and out of the light he hears you from twice as far and comes faster. His thrust has the longest reach of any foot soldier: step in or step out, never back. Crowd him and he takes your feet with the butt of the spear.' },
-  { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it. STRIKE THE LAMP UNDER HIS HOOD: it flares in his face and he is blind, and open; otherwise his wet coat takes most of a blow. Jump the low sweep; the black water blinds you; a line beats the hook. Out of the light he lunges, red. At half health he takes YOUR light: relight it at a lamp.' },
-  { t: 'tollmaster', name: 'THE TOLLMASTER', sub: 'the magistrate of a drowned city', desc: 'He never stopped collecting. He is carried on a bier, which keeps him out of an easy reach, and the room is his weapon: he puts out a ring of lamps at a time, so the light you breathe and the light you see his tells by are the same light. PARRY the chained ledger and it staggers him outright. The coin weight cannot be blocked, only dodged. Jump the rod. Half down he sets the bier on the stones and the four bearers come off it, and that is the only time he is slow. Last of all he fills the square, and then the last lamp is the only air in the room.' },
+  { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it. CARRY FIRE TO A LAMP HE PUT OUT AND RELIGHT IT BESIDE HIM: the flare stuns him, open. Strike the lamp under his hood and it flares in his face, a shorter opening; otherwise his wet coat takes most of a blow. Jump the low sweep; step off the shadow of the oil flask - its slick sends a relit flare wide; a line beats the hook. Out of the light he lunges, red. At half health he takes YOUR light: relight it at a lamp.' },
+  { t: 'tollmaster', name: 'THE TOLLMASTER', sub: 'the magistrate of a drowned city', desc: 'He never stopped collecting. THE TOLL IS YOUR LIGHT: he COLLECTS the lamps of the square - stand in the stream or strike his box and the lamp keeps its flame. Carry fire from his braziers and RELIGHT a lamp beside him: his robes catch, and he is stunned and open. PARRY the chained ledger and the book turns. Jump the rod and the low swing of the scales; duck the high one. Carried, three blows on one corner fell its bearer and the bier tilts. On his feet he stamps a SEAL OF DEBT under you: step off its shadow, and off the wax. Last of all he fills the square: the lamps are the only air, and a WRIT OF DROWNING floods the hoods on your half.' },
   { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'Four things, and he tells you every one: two cuts of the sabre up close, a brace of pistols levelled across her deck, a grapnel that hauls you in unless you have a hand on a line, and a lit keg kicked down her planking. He can call the sea himself and ride it: the wave guards his front, so cut him from behind it or from above, and when it leaves him beached cut him whole.' },
   /* THE HEXED FIELDS */
   { t: 'scarecrow', name: 'SCARECROW', sub: 'the hexed fields', desc: 'It only moves while your back is to it: a twitch, then a lurch nearer. Face it and it stands like straw. Close in, it swings its sickle on a yellow mark.' },
@@ -7733,8 +7735,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
       if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
         PROG.qSwarmTold = (PROG.qSwarmTold || 0) + 1;
         if (PROG.qSwarmTold <= 3) { hintT = 4.5; hintMsg = 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. THIN THEM, OR STICK HER STING IN WOOD.'; } } } }
-  if (e.t === 'tollmaster' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 40, Math.sign(e.x - fromX) || 1, 7); } // both hands over his head
-  else if (e.t === 'tollmaster' && !e.onFoot) { dmg = Math.max(1, Math.round(dmg * 0.7)); } // up on the bier, out of an easy reach
+  if (e.t === 'tollmaster') dmg = tollHurt(e, dmg, fromX, blow);   /* (claude/lamplit2) his openings (the parry, the relit flare, a stumbling bearer) and the toll box; outside them the global rule's 0.4 */
   if (e.t === 'temperer' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 6); }   /* THE TEMPERER at his fire: both hands on the blade, his back to the room, and you are the reason he is standing there */
   if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX, tag);   /* blind in the flare of the lamp you struck he takes the blow; out of it his wet coat takes most of it (claude/weakboss) */
   if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, pl, tag); if (kd === false) return; dmg = kd; }
@@ -9847,7 +9848,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
         if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true, name: 'DROWNED' }); } } }
     else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3 * (L.breathScale||1)); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
   } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; }
-  snareTick(dt);
+  snareTick(dt); waxTick(dt);
   if (P.whirlFree > 0) P.whirlFree = Math.max(0, P.whirlFree - dt);   /* the stroke that broke the Drowned King's current keeps you out of it a moment */
   if (P.soot > 0) P.soot = Math.max(0, P.soot - dt);   // the black water runs off the lens
   if (!P.climb && !P.swim) { // THE ARC: light at the apex, heavier coming down, heaviest if you ask for it
@@ -10156,7 +10157,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   for (const s of seeds) if (!s.dead && !s.reflected && s.chain && overlap(cb, { l: s.x - 3, r: s.x + 3, t: s.y - 3, b: s.y + 3 })) { s.dead = true;
     const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS)); // HIS CHAIN: a line beats it, and that is the lesson of the level
     if (t === T.NET || t === T.CLIMB) { number(P.x, P.y - 30, 'THE LINE HOLDS', '#8fd160'); SFX.clank(); sparks(P.x, P.y - 10, 1, 5); }
-    else { const res = damagePlayer(s.x, s.boot ? DMG.capHook : s.reel ? DMG.weaverReel : s.flail ? DMG.strikerChain : DMG.drownChain);
+    else { const res = damagePlayer(s.x, s.reeve ? DMG.reeveHook : s.boot ? DMG.capHook : s.reel ? DMG.weaverReel : s.flail ? DMG.strikerChain : DMG.drownChain);
       if (res !== 'blocked' && s.from && s.from.alive) { P.vx = Math.sign(s.from.x - P.x) * 380; P.vy = -60; P.ground = false; number(P.x, P.y - 30, 'HAULED IN', '#ff6b6b'); SFX.ropeHaul();
         if (s.boot) { P.hauled = { who: s.from, t: 0.45 }; } } } }
   for (const s of seeds) if (!s.dead && !s.reflected && overlap(cb, { l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 }) && !(seedOver(P, s) && duckedUnder(s.x, s))) { s.dead = true; if (s.net) { const res = damagePlayer(s.x, DMG.netterNet); if (res !== 'blocked') { P.snare = Math.max(P.snare || 0, 1.6); number(P.x, P.y - 26, 'NETTED', '#c9b27c'); burst(s.x, s.y, 10, ['#c9b27c', '#8a7a54'], 50, 0.6, 40, 2); SFX.thud(); } continue; } if (s.web) { const res = damagePlayer(s.x, DMG.web); if (res === 'hit') { P.vx *= 0.1; P.vy = Math.max(P.vy, 40); P.stDelay = 1.1; number(P.x, P.y - 24, 'STUCK', '#e8dcc0'); burst(s.x, s.y, 8, ['#e8dcc0', '#b8a888'], 40, 0.6, 60, 2); } continue; } const sres = damagePlayer(s.x - s.vx * 0.1, s.drunkLob ? s.dmg : s.rubble ? DMG.wardenRubble : s.mawSpit ? DMG.mawSpit : s.timber ? DMG.propTimber : s.weight ? DMG.tollWeight : s.shot ? (s.dmg || DMG.quarterShot) : s.slate ? DMG.gqSlate : s.rocFeather ? DMG.rocFeather : s.sunshard ? DMG.sunShard : s.venom ? DMG.venom : s.bolt ? (s.dmg || DMG.bolt) : s.jav ? DMG.lanceJav : s.granStick ? DMG.granStick : s.arrow ? DMG.arrow : s.spore ? DMG.sporeRain : s.skull ? DMG.skull : s.shard ? DMG.shard : s.pitch ? DMG.scalderPour : s.soot ? DMG.sweep : s.acid ? DMG.acid : s.lantern ? DMG.lantern : s.goblet ? DMG.goblet : s.feather ? DMG.feather : s.steam ? DMG.steam : s.slag ? DMG.fire : DMG.seed, { geo: true, unblockable: !!(s.noBlock || s.unblockable), pierce: !!s.pierce, who: s.owner || s.from || null, blow: s.pitch ? 'THE PITCH' : s.arrow ? 'THE ARROW' : s.jav ? 'THE JAVELIN' : s.bolt ? 'THE BOLT' : s.shot ? 'THE SHOT' : s.skull ? 'THE SKULL' : s.lantern ? 'THE LANTERN' : s.goblet ? 'THE GOBLET' : null });   /* a pistol ball marked unblockable is: the Captain's and the Quartermaster's !! shots were being turned on the shield */ if (sres === 'blocked' && s.bolt) returnBolt(s); else if (sres === 'blocked' && ((P.block && tal('bulwark')) || (P.aegis && tal('reflect')))) reflectSeed(s); }
@@ -12224,139 +12225,225 @@ function cutLine(e, k) {
 // too: OUT OF THE LIGHT HE HEARS YOU. In the dark he wakes at twice the distance, walks faster and thrusts
 // sooner; under a burning lamp he is half blind and keeps to his beat.
 // THE LAMPREEVE. The officer of the city's lamps, and the level's own rule turned on you: he walks the street
-// putting the lamps out behind him, and you fight him in a shrinking pool of light. Four told things:
+// putting the lamps out behind him, and you fight him in a shrinking pool of light. (claude/lamplit2, Daniel 10-08: "too
+// powerful" - the fast black-water DOUSE that came out of nowhere and took the lamps with it is CUT, and his blows land a
+// quarter lighter.) Five told things:
 //   SNUFF  he goes to the nearest burning lamp and hoods it. Kill him before the last one goes.
 //   SWEEP  the pole at shin height, the whole width of him. Jump it; you cannot walk out of it.
-//   DOUSE  a cone of black water out of his mouth. It hurts, and for two seconds you cannot see past it.
+//   FLASK  (red !!) a flask of whale oil lobbed at where you stand: its landing SHADOW follows you and then holds, and you step
+//          off it. It leaves a SLICK on the boards - and a lamp relit beside a slick flares WIDE.
 //   HOOK   the wick hook, thrown the length of the street, and it hauls you in. A line beats it.
-//   LUNGE  (claude/weakboss) out of the dark, the pole level at your middle, red !!: he only does it while you
-//          stand OUT OF THE LIGHT, and nothing turns it. Roll through it, or be under a lamp.
-// His opening (A11, claude/weakboss): it is CAUSED. STRIKE THE LAMP HE IS HOODING, while the hood is on it, and
-// the flame flares up into his face: he is BLIND, open, and a blow lands 1.4 times. Leave it and the lamp goes
-// out and he walks on, whole. Out of the flare his sodden coat takes three quarters of any blow.
+//   LUNGE  out of the dark, the pole level at your middle, red !!: he only does it while you stand OUT OF THE LIGHT, and
+//          nothing turns it. Roll through it, or be under a lamp.
+// HIS OPENINGS ARE CAUSED (A11 / B1 - the level's verb): RELIGHT A LAMP HE PUT OUT while he is beside it (fire carried from a
+// burning one) and the flare STUNS him - the gold ring and a clock, every blow x1.7. STRIKE THE LAMP HE IS HOODING, while the
+// hood is on it, and it flares in his face: the smaller opening, x1.3. Each ends in a told WARD (B3): a pale shell for 3 s in
+// which no flare opens him. Out of them his sodden coat takes the rest: 0.45 of a blow (B15, never less than 0.4).
 // PHASE TWO (half health) changes the room: HE TAKES YOUR LIGHT. The fire in your hand goes out and the light you
 // carry shrinks to nothing until you relight it at a burning lamp; out of the light he lunges sooner and oftener.
-// THE TOLLMASTER. The magistrate of a city that drowned a hundred years ago and never stopped collecting. He
-// does not swim and he does not walk: he is carried on a bier, and the room's rule is his weapon.
-//   THE LEDGER  (close) the chained book, wide and slow. A PARRY is the answer and it staggers him outright.
-//   THE TOLL    (mid) he names a due and the weight comes off its chain. Lead on a chain: it cannot be blocked.
-//   THE ROD     (anywhere) the rod of office into the stones, and it runs along them both ways. Jump it.
-//   THE DARK    (the signature) he puts out a ring of lamps, and the room gets smaller. While he does it he is
-//               stood still with both hands over his head and everything lands DOUBLE on him.
-// Phase two he sets the bier down and the four bearers come off it, and that is the only time he is slow.
-// At low health he blacks out the lamps; relighting them restores the room.
-/* HIS OPENING IS THE PARRY (claude/bosswave1, Daniel 10-02). THE DARK came on his own clock whenever a lamp burned, and it was open at double for 2 s -
-   the mash bot took 70-77% of him in it and beat him. A clock is not an earned window. Now his one opening is THE LEDGER turned on a shield, on the
-   beat: THE BOOK TURNS: CUT HIM, and he reels TOLL_OPEN s (it was 1.2) taking double. Through THE DARK he is chipped like anywhere else (and his
-   poise bar still breaks him open to the heavy blows and plunges that fill it: the hero with no shield's way in). */
-const TOLL_OPEN = 2.0;   /* (claude/sweep2) was 3.0: one parried ledger and the knight cut a third of him; 2 s is still four cuts at double */
+const REEVE = { flaskTell: 0.7, flaskLock: 0.28, flaskFly: 0.8, flaskR: 20, slickW: 30, slickLife: 10,
+  relitOpen: 2.4, relitMul: 1.7, hoodOpen: 1.2, hoodMul: 1.3, coat: 0.45, ward: 3.0, relitR: 84, relitRWide: 150 };
+// THE TOLLMASTER (claude/lamplit2, Daniel 10-08 redesign: "design really cool, mechanically poor; a random AoE you can't dodge;
+// a generic projectile that doesn't fit; doesn't play into the lanterns"). THE TOLL IS YOUR LIGHT: he takes the square's
+// lamps and you RELIGHT them, carrying fire from his braziers - and a lamp relit BESIDE him flares into his robes and his
+// ledger: STUNNED and BURNING, the gold ring and a clock, every blow x2 - then a told WARD (B3). A PUZZLE boss on the level's
+// verb (B1, B17); outside his openings every blow lands at 0.4 (B15, GREED.chipBy) and clanks. THE DARK (the room AoE) and the
+// coin weight (the generic projectile) are CUT.
+//   LEDGER LASH   (close, yellow !) the chained book, wide and slow. PARRY it and the book turns: he reels open x2.
+//   ROD OF OFFICE (yellow !) the rod into the stones, and a wave runs along them each way. Jump it.
+//   COLLECT THE TOLL (told, no mark: it strikes nobody) he raises the toll box and the nearest lamp's flame STREAMS to it over
+//                 1.5 s, drawn. Stand in the stream (it burns) or strike the box, and the lamp keeps its flame; else it goes dark.
+//   THE SCALES    (red !!) the brass counterweight swings on its chain: swung LOW, jump it; swung HIGH, duck it.
+//   SEAL OF DEBT  (phase two, red !!) the wax seal: its shadow follows you, holds, and stamps - and leaves WAX that slows you.
+//   WRIT OF DROWNING (phase three, told, no mark) he reads a writ and the water rises into the lamp hoods on YOUR half of the
+//                 square: for 4.5 s those lamps hold no air. Go to the other half.
+// PHASE ONE he is carried from lamp to lamp on a bier by four bearers who are part of him (no adds): three blows on one corner
+// and its bearer stumbles - the bier TILTS and he is open x1.5. PHASE TWO (62%) they set him down and he walks. PHASE THREE
+// (30%) the square floods to its roof: the lit lamps are the only air, so every relight is a breath AND an opening.
+const TOLL = { coat: 0.4, open: { parry: 2.0, relit: 2.8, tilt: 1.3 }, mul: { parry: 2, relit: 2, tilt: 1.5 }, ward: 3.0,
+  relitR: 76, burnEvery: 0.5, burnPct: 0.012, bearerHits: 3, bearerWin: 4, bearerCd: 7,
+  collect: { tell: 0.6, T: 1.5, reach: 230, cd: [8.5, 8, 7] }, scales: { tell: 0.7, T: 0.75, chain: 110, swing: 1.05, cd: [6.5, 6, 5.5] },
+  seal: { tell: 0.85, lock: 0.32, T: 0.45, r: 20, patch: 4.5, patchW: 24, cd: [99, 7.5, 7] }, writ: { tell: 1.0, T: 4.5, cd: [99, 99, 10] },
+  ledger: [2.8, 2.8, 2.2], rod: [6, 6, 4.6], speed: [62, 38, 46] };
+let oilSlicks = [], tollWax = [];   /* the Lampreeve's oil on his boards, the Tollmaster's wax on his square: both cleared with the level */
+function lampHandsReset() { oilSlicks = []; tollWax = [];
+  for (const pr of lamps) if (pr.gate !== undefined && marks.has('gate:' + pr.gate)) { pr.lit = true; pr.gateOpen = true; openGateCol(pr.gate); } }   /* THE TOLL GATE stays open once its lamp was lit */
+const tollSay = (e, s, c) => number(e.x, e.y - 52, s, c);
+const segDist = (px, py, ax, ay, bx, by) => { const vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy || 1, k = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / l2)); return Math.hypot(px - ax - vx * k, py - ay - vy * k); };
+const inArena = (pr, A) => pr.x > A.x0 - 8 && pr.x < A.x1 + 8;
+/* AN OPENING, and what it is: the parry (x2), the relit flare (x2, burning) or a stumbling bearer (x1.5). Never inside a ward. */
+function tollOpen(e, kind, side) {
+  if (e.ward > 0 || e.open > 0) { tollSay(e, 'WARDED', '#e8f0f8'); SFX.clank(); return false; }
+  e.open = TOLL.open[kind]; e.openKind = kind; e.openMax = e.open; e.vx = 0; e.stagger = 0; e.collectLamp = null; e.burnT = 0;
+  e.mode = kind === 'parry' ? 'reel' : kind === 'relit' ? 'flared' : 'tilt'; e.modeT = e.open; e.tiltSide = side || 0;
+  if (kind === 'parry') { tollSay(e, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
+  else if (kind === 'relit') { tollSay(e, 'HIS ROBES CATCH: CUT HIM', '#8fd160'); SFX.sting(); flash = Math.max(flash, 0.2); shakeCam(4); ringAt(e.x, e.y - 30, 44, '#ffd36b', 0.5);
+    burst(e.x, e.y - 30, 24, ['#ff9a3c', '#ffd36b', '#fff6c8'], 120, 0.7, -30, 1); }
+  else { tollSay(e, 'A BEARER STUMBLES: CUT HIM', '#8fd160'); SFX.heavy(); shakeCam(3); dust(e.x + (side || 1) * 14, e.y, 8); }
+  return true;
+}
+function tollLit(e) { const A = L.arena; let best = null, bd = 1e9;
+  for (const pr of lamps) if (pr.lit && !(pr.gut > 0) && inArena(pr, A)) { const q = Math.abs(pr.x - e.x); if (q < bd && q < TOLL.collect.reach) { bd = q; best = pr; } } return best; }
+/* carried, he makes his round: the next burning lamp along from him in the way he is facing, else the other way */
+function tollRound(e) { const A = L.arena, lit = lamps.filter(pr => pr.lit && !(pr.gut > 0) && inArena(pr, A) && Math.abs(pr.x - e.x) > 30);
+  if (!lit.length) return null; const ahead = lit.filter(pr => Math.sign(pr.x - e.x) === (e.round || 1));
+  if (!ahead.length) { e.round = -(e.round || 1); return lit.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; }
+  return ahead.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; }
+/* the scales' weight: a pendulum on a 110 px chain from a pivot in front of him, swung from behind to in front; LOW it skims the
+   stones (jump), HIGH it passes at the height of a standing hero's head (duck) */
+function tollWeightAt(e) { const hi = e.mode === 'scalesHigh' || e.mode === 'scalesHighTell', A = L.arena, C = TOLL.scales.chain, f = e.face || 1;
+  const k = e.mode === 'scalesLow' || e.mode === 'scalesHigh' ? 1 - Math.max(0, e.modeT) / TOLL.scales.T : 0, th = -TOLL.scales.swing + 2 * TOLL.scales.swing * k;
+  const px = e.x + f * 40, py = A.floor - (hi ? 12 : 4) - C;
+  return { x: px + f * C * Math.sin(th), y: py + C * Math.cos(th), px, py, hi }; }
+/* does the swinging weight meet the hero's body (his DUCKED body, if he is ducked)? once a swing */
+function tollScaleMeets(e, w) { if (e.scaleHit || P.dead) return false; const hb = duckBox(P); if (w.x + 6 > hb.l && w.x - 6 < hb.r && w.y + 5 > hb.t && w.y - 5 < hb.b) { e.scaleHit = true; return true; } return false; }
 function updateTollmaster(e, dt) {
-  const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
-  const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 46;
+  const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt;
+  if (e.open > 0) { e.open -= dt;
+    if (e.openKind === 'relit') { e.burnT = (e.burnT || 0) - dt; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 18, y: e.y - 12 - Math.random() * 30, vx: 0, vy: -40, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a3c' : '#ffd36b', size: 2, grav: -40 });
+      if (e.burnT <= 0) { e.burnT = TOLL.burnEvery; hurtEnemy(e, Math.max(1, Math.round(e.maxHp * TOLL.burnPct)), e.x, false); } }
+    if (e.open <= 0) { e.open = 0; e.openKind = null; e.ward = TOLL.ward; tollSay(e, 'WARDED', '#e8f0f8'); SFX.aegis ? SFX.aegis() : SFX.clank(); } }
+  else if (e.ward > 0) e.ward -= dt;
+  if (e.writ) { e.writ.t -= dt; if (e.writ.t <= 0) e.writ = null; }
+  if (!e.corners) e.corners = [{ n: 0, t: -9, cd: 0 }, { n: 0, t: -9, cd: 0 }];
+  for (const c of e.corners) if (c.cd > 0) c.cd -= dt;
+  const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < (e.flooded ? 64 : 46);
   if (e.mode === 'sleep') { e.y = floor; return; }
-  if (e.phase === 1 && e.hp < e.maxHp * 0.62) { e.phase = 2; e.mode = 'setDown'; e.modeT = 1.4; e.vx = 0;
-    SFX.gateDrop ? SFX.gateDrop() : SFX.heavy(); shakeCam(6); number(e.x, e.y - 52, 'SET HIM DOWN', '#ffd36b'); }
-  if (e.phase === 2 && e.hp < e.maxHp * 0.3) { e.phase = 3; e.mode = 'blackoutTell'; number(e.x,e.y-e.h-12,'!','#ffd36b'); e.modeT = 1.6; e.vx = 0;
-    SFX.waveCrash ? SFX.waveCrash() : SFX.wave(); number(e.x, e.y - 52, 'HE TAKES THE LIGHT', '#ff6b6b'); }
-  const p2 = e.phase >= 2, p3 = e.phase >= 3;
+  if (e.collectT === undefined) { e.collectT = 3.2; e.scalesT = 2.2; e.sealT = 2.5; e.writT = 2.5; e.ledgerT = 0; e.rodT = 1.5; e.round = -1; }
+  /* A PHASE WAITS FOR HIS BLOW TO FINISH, never for an opening: crossed in one, the opening ends there (he gathers himself into the next phase) */
+  const busy = e.mode !== 'borne' && e.mode !== 'reel' && e.mode !== 'flared' && e.mode !== 'tilt';
+  const toPhase = () => { e.open = 0; e.openKind = null; e.ward = 0; e.collectLamp = null; };
+  if (e.phase === 1 && e.hp < e.maxHp * 0.62 && !busy) { toPhase(); e.phase = 2; e.mode = 'setDown'; e.modeT = 1.4; e.vx = 0;
+    SFX.gateDrop ? SFX.gateDrop() : SFX.heavy(); shakeCam(6); tollSay(e, 'SET HIM DOWN', '#ffd36b'); }
+  if (e.phase === 2 && e.hp < e.maxHp * 0.3 && !busy) { toPhase(); e.phase = 3; e.mode = 'floodTell'; e.modeT = 1.6; e.vx = 0;
+    SFX.waveCrash ? SFX.waveCrash() : SFX.wave(); tollSay(e, 'HE CALLS THE WATER UP', '#7cc8c8'); }
+  const ph = Math.min(2, e.phase - 1), p3 = e.phase >= 3;
   let want = 0;
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.8; } break;
     case 'borne': { // carried, or on his own feet: the same decision tree, different speed
       e.face = Math.sign(d) || e.face;
-      e.ledgerT -= dt; e.tollT -= dt; e.rodT -= dt; e.darkT -= dt;
-      const sp = e.onFoot ? (p3 ? 46 : 38) : 66;
-      want = level && ad > 42 ? e.face * sp : level && ad < 26 ? -e.face * 30 : e.face * sp * 0.5;
-      if (e.darkT <= 0 && litLamps()) { e.mode = 'darkTell'; e.modeT = 0.8; e.darkT = p3 ? 9 : 12; number(e.x, e.y - 48, 'THE DARK', '#9a5aa8'); SFX.callerChant(); }
-      else if (level && ad < 56 && e.ledgerT <= 0) { e.mode = 'ledgerTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = p3 ? 0.38 : 0.5; e.ledgerT = p3 ? 2 : 2.8; number(e.x, e.y - 48, 'THE LEDGER', '#ffd36b'); SFX.charge(); }
-      else if (e.rodT <= 0 && ad > 30) { e.mode = 'rodTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.54; e.rodT = p3 ? 4.2 : 6; number(e.x, e.y - 48, 'THE ROD: JUMP', '#ff9a5c'); SFX.charge(); }
-      else if (e.tollT <= 0 && ad > 64 && ad < 300) { e.mode = 'tollTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.62; e.tollT = p3 ? 2.8 : 4.2; e.aimY = P.y - 10; number(e.x, e.y - 48, 'HE NAMES A DUE', '#ff9a5c'); SFX.tollBell(); }
+      for (const k of ['ledgerT', 'rodT', 'collectT', 'scalesT', 'sealT', 'writT']) e[k] -= dt;
+      const sp = TOLL.speed[ph];
+      let goal = P.x; if (!e.onFoot && ad > 110) { const r = tollRound(e); if (r) goal = r.x; }   /* carried, he makes his round of the lamps */
+      const gd = goal - e.x; want = Math.abs(gd) > 36 ? Math.sign(gd) * sp : level && ad < 26 ? -e.face * 30 : 0;
+      if (e.modeT > 0 || P.dead) break;
+      const lit = tollLit(e);
+      if (level && ad < 56 && e.ledgerT <= 0) { e.mode = 'ledgerTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = p3 ? 0.42 : 0.5; e.ledgerT = TOLL.ledger[ph]; tollSay(e, 'THE LEDGER', '#ffd36b'); SFX.charge(); }
+      else if (lit && e.collectT <= 0) { e.mode = 'collectTell'; e.modeT = TOLL.collect.tell; e.collectT = TOLL.collect.cd[ph]; e.collectLamp = lit; e.collectBroken = null; tollSay(e, 'HE COLLECTS THE TOLL', '#e6b94a'); SFX.tollBell(); }
+      else if (e.scalesT <= 0 && ad < 96 && ad > 14 && level) { e.scaleN = (e.scaleN || 0) + 1; const hi = e.scaleN % 2 === 0; e.face = Math.sign(d) || e.face;
+        if (hi) { e.mode = 'scalesHighTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); tollSay(e, 'THE SCALES: DUCK', '#ff9a5c'); }
+        else { e.mode = 'scalesLowTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); tollSay(e, 'THE SCALES: JUMP', '#ff9a5c'); }
+        e.modeT = TOLL.scales.tell; e.scalesT = TOLL.scales.cd[ph]; SFX.charge(); }
+      else if (e.phase >= 2 && e.sealT <= 0 && ad > 36 && ad < 260) { e.mode = 'sealTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = TOLL.seal.tell; e.sealT = TOLL.seal.cd[ph]; e.sealX = P.x; tollSay(e, 'SEAL OF DEBT', '#c9463d'); SFX.charge(); }
+      else if (p3 && e.writT <= 0) { e.mode = 'writTell'; e.modeT = TOLL.writ.tell; e.writT = TOLL.writ.cd[ph]; e.writHalf = P.x < (A.x0 + A.x1) / 2 ? 0 : 1; tollSay(e, 'A WRIT OF DROWNING', '#7cc8c8'); SFX.seaBell ? SFX.seaBell() : SFX.tollBell(); }
+      else if (e.rodT <= 0 && ad > 30) { e.mode = 'rodTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.54; e.rodT = TOLL.rod[ph]; tollSay(e, 'THE ROD: JUMP', '#ff9a5c'); SFX.charge(); }
       break; }
     case 'ledgerTell': { want = -e.face * 14;
       if (Math.random() < dt * 16) parts.push({ x: e.x - e.face * 16, y: e.y - 38 - Math.random() * 6, vx: -e.face * 20, vy: -14, life: 0.35, max: 0.35, col: '#cfc6a8', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'ledger'; e.modeT = 0.34; e.vx = e.face * 110; SFX.heavy();
-        // THE BOOK HITS WHERE IT IS DRAWN: 37.5 px at his scale on the striking frame, and the 5 of you in front of your middle.
-        // It used to land 17.5 px past the end of it
+        // THE BOOK HITS WHERE IT IS DRAWN: 37.5 px at his scale on the striking frame, and the 5 of you in front of your middle
         if (!P.dead && Math.sign(d) === e.face && ad < 43 && Math.abs(P.y - e.y) < 34) {
           const res = damagePlayer(e.x, DMG.tollLedger);
-          // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
-          if (res === 'blocked') { e.stagger = Math.max(e.stagger || 0, TOLL_OPEN); e.open = Math.max(e.open, TOLL_OPEN); e.mode = 'reel'; e.modeT = TOLL_OPEN; number(e.x, e.y - 48, 'THE BOOK TURNS: CUT HIM', '#8fd160'); SFX.parry ? SFX.parry() : SFX.clank(); }
+          if (res === 'blocked') tollOpen(e, 'parry');   // a parry on the ledger is the showcase: it knocks the book out of his swing and opens him
           else if (res === 'hit') { P.vx = e.face * 300; P.vy = -150; } } }
       break; }
     case 'ledger': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
-    case 'reel': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.4; } break;
-    case 'tollTell': { want = 0; e.face = Math.sign(d) || e.face;
-      if (Math.random() < dt * 24) parts.push({ x: e.x + e.face * 16, y: e.y - 30, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#e6b94a', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'toll'; e.modeT = 0.4; tollWeight(e); } break; }
-    case 'toll': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
+    case 'reel': case 'flared': case 'tilt': want = 0; if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.4; } break;
+    case 'collectTell': { want = 0; const pr = e.collectLamp;
+      if (!pr || !pr.lit || e.collectBroken) { e.mode = 'borne'; e.modeT = 0.4; e.collectLamp = null; break; }
+      if (Math.random() < dt * 24) parts.push({ x: e.x + e.face * 10, y: e.y - 36, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#e6b94a', size: 1, grav: 0 });
+      if (e.modeT <= 0) { e.mode = 'collect'; e.modeT = TOLL.collect.T; SFX.hiss(); } break; }
+    case 'collect': { want = 0; const pr = e.collectLamp;
+      if (!pr || !pr.lit) { e.mode = 'borne'; e.modeT = 0.4; e.collectLamp = null; break; }
+      const bx = e.x + e.face * 10, by = e.y - 34, lx = pr.x, ly = pr.y - 40;
+      if (Math.random() < dt * 50) { const q = Math.random(); parts.push({ x: lx + (bx - lx) * q, y: ly + (by - ly) * q + (Math.random() - 0.5) * 4, vx: (bx - lx) * 0.9, vy: (by - ly) * 0.9, life: 0.25, max: 0.25, col: Math.random() < 0.5 ? '#ffd36b' : '#ff9a3c', size: 1, grav: 0 }); }
+      /* STAND IN IT: it burns, and it is broken */
+      if (!e.collectBroken && !P.dead && segDist(P.x, P.y - 10, lx, ly, bx, by) < 11) { e.collectBroken = 'stood'; damagePlayer(bx, DMG.tollStream, { unblockable: true, noKnock: true, name: 'THE TOLL' }); number(P.x, P.y - 30, 'YOU STAND IN THE TOLL', '#ff9a3c'); }
+      if (e.collectBroken) { pr.tollK = 0; number(pr.x, pr.y - 54, 'THE LAMP KEEPS ITS FLAME', '#ffd36b'); SFX.clank(); ringAt(lx, ly, 18, '#ffd36b', 0.3);
+        e.mode = 'borne'; e.modeT = 0.6; if (e.collectBroken === 'box') e.stagger = Math.max(e.stagger || 0, 0.5); e.collectLamp = null; break; }
+      pr.tollK = 1 - Math.max(0, e.modeT) / TOLL.collect.T;
+      if (e.modeT <= 0) { pr.lit = false; pr.gut = 0; pr.tollK = 0; SFX.puff(); number(pr.x, pr.y - 50, 'TOLL TAKEN', '#e6b94a'); burst(pr.x, pr.y - 40, 10, ['#2b403c', '#14201e'], 40, 0.6, -20, 1);
+        e.tolls = (e.tolls || 0) + 1; e.mode = 'borne'; e.modeT = 0.5; e.collectLamp = null; }
+      break; }
+    case 'scalesLowTell': want = 0; if (e.modeT > 0.25) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'scalesLow'; e.modeT = TOLL.scales.T; e.scaleHit = false; SFX.throwWhoosh(); } break;
+    case 'scalesHighTell': want = 0; if (e.modeT > 0.25) e.face = Math.sign(d) || e.face;
+      if (e.modeT <= 0) { e.mode = 'scalesHigh'; e.modeT = TOLL.scales.T; e.scaleHit = false; SFX.throwWhoosh(); } break;
+    case 'scalesLow': { want = 0; const w = tollWeightAt(e);   /* swung LOW: it skims the stones - be in the air */
+      if (tollScaleMeets(e, w)) { const res = damagePlayer(w.x, DMG.tollScales, { unblockable: true, name: 'THE SCALES' }); if (res === 'hit') { P.vx = e.face * 220; P.vy = -110; } }
+      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break; }
+    case 'scalesHigh': { want = 0; const w = tollWeightAt(e);   /* swung HIGH: it passes at a standing head - be ducked */
+      if (tollScaleMeets(e, w)) { const res = damagePlayer(w.x, DMG.tollScales, { unblockable: true, name: 'THE SCALES' }); if (res === 'hit') { P.vx = e.face * 220; P.vy = -110; } }
+      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break; }
+    case 'sealTell': want = 0; if (e.modeT > TOLL.seal.lock && !P.dead) e.sealX = Math.max(A.x0 + 20, Math.min(A.x1 - 20, P.x));
+      if (e.modeT <= 0) { e.mode = 'seal'; e.modeT = TOLL.seal.T; SFX.heavy(); SFX.stone(); shakeCam(4); dust(e.sealX, floor, 8);
+        if (!P.dead && Math.abs(P.x - e.sealX) < TOLL.seal.r && P.y > floor - 40) damagePlayer(e.sealX, DMG.tollSeal, { unblockable: true, name: 'SEAL OF DEBT' });
+        tollWax.push({ x: e.sealX, w: TOLL.seal.patchW, y: floor, life: TOLL.seal.patch, max: TOLL.seal.patch }); number(e.sealX, floor - 26, 'SEALED', '#c9463d'); } break;
+    case 'seal': want = 0; if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
+    case 'writTell': want = 0;
+      if (e.modeT <= 0) { const mid = (A.x0 + A.x1) / 2; e.writ = { x0: e.writHalf ? mid : A.x0, x1: e.writHalf ? A.x1 : mid, t: TOLL.writ.T, max: TOLL.writ.T };
+        e.mode = 'writ'; e.modeT = 0.6; number((e.writ.x0 + e.writ.x1) / 2, floor - 70, 'THE WATER RISES INTO THE HOODS', '#7cc8c8'); SFX.waveBreak(); } break;
+    case 'writ': want = 0; if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.4; } break;
     case 'rodTell': { want = 0; e.face = Math.sign(d) || e.face;
       if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 12 + (Math.random() - 0.5) * 10, y: e.y - 4, vx: 0, vy: -30, life: 0.35, max: 0.35, col: '#8a96a0', size: 2, grav: 200 });
       if (e.modeT <= 0) { e.mode = 'rod'; e.modeT = 0.45; SFX.heavy(); SFX.stone(); shakeCam(7); zoomKick(1.07, 0.2); dust(e.x, e.y, 12);
         for (const dd of [-1, 1]) waves.push({ x: e.x + dd * 16, y: floor, dir: dd, life: 1.8, sp: p3 ? 190 : 155 }); } break; }
     case 'rod': if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break;
-    case 'darkTell': { want = 0;
-      if (Math.random() < dt * 26) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - 44 - Math.random() * 10, vx: 0, vy: -20, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#2b403c' : '#9a5aa8', size: 2, grav: -18 });
-      if (e.modeT <= 0) { e.mode = 'dark'; e.modeT = p3 ? 1.5 : 2; tollDark(e); } break; }   /* (claude/bosswave1) no longer an opening: see TOLL_OPEN */
-    case 'dark': { want = 0;
-      if (Math.random() < dt * 14) parts.push({ x: e.x + (Math.random() - 0.5) * 26, y: e.y - 40, vx: 0, vy: -12, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.5; } break; }
-    case 'setDown': { want = 0; // THE BEARERS come off the bier: four of the watch, and he walks from here
-      if (e.modeT <= 0 && !e.onFoot) { e.onFoot = true;
-        for (let i = 0; i < 4; i++) { const bx = Math.max(A.x0 + 20, Math.min(A.x1 - 20, e.x + (i < 2 ? -1 : 1) * (22 + (i % 2) * 20)));
-          enemies.push({ x: bx, y: floor, vx: 0, vy: 0, face: i < 2 ? 1 : -1, alive: true, dying: 0, anim: Math.random() * 3, flash: 0, stagger: 0,
-            t: 'watch', w: 12, h: 22, hp: EHP.watch, speed: 24, mode: 'walk', modeT: 0, cd: 0.6 + i * 0.3, guardT: 0, heard: 1, bearer: true });
-          burst(bx, floor - 10, 8, COLS.watch, 60, 0.6); }
-        SFX.gobBark ? SFX.gobBark() : SFX.clank(); number(e.x, e.y - 50, 'THEY COME OFF THE BIER', '#ff9a5c');
-        e.mode = 'borne'; e.modeT = 0.6; }
-      break; }
-    case 'blackoutTell': want = 0;
-      if (e.modeT <= 0) { tollDark(e); e.mode = 'dark'; e.modeT = 2; }
+    case 'setDown': want = 0; // THE BEARERS set the bier down and step back into the dark: they were part of him, and he walks from here
+      if (e.modeT <= 0 && !e.onFoot) { e.onFoot = true; tollSay(e, 'HE WALKS', '#ff9a5c'); SFX.clank(); for (const s of [-1, 1]) burst(e.x + s * 14, floor - 10, 8, COLS.watch, 50, 0.6); e.mode = 'borne'; e.modeT = 0.6; }
       break;
+    case 'floodTell': { want = 0; // THE SQUARE FILLS. The lamps are the only air left in it.
+      if (Math.random() < dt * 40) parts.push({ x: A.x0 + Math.random() * (A.x1 - A.x0), y: floor - Math.random() * 10, vx: 0, vy: -60, life: 0.6, max: 0.6, col: '#7cc8c8', size: 2, grav: -40 });
+      if (e.modeT <= 0) { e.mode = 'borne'; e.modeT = 0.8; e.flooded = true; e.onFoot = true;
+        const sq = (L.pools || []).find(q => q.square);
+        if (sq) { sq.base = floor + 8; sq.swim = true; sq.shallow = false; sq.dry = false; sq.rising = floor - 256; number(P.x, P.y - 50, 'THE SQUARE IS FILLING: THE LAMPS ARE YOUR AIR', '#7cc8c8'); }
+        SFX.waveBreak(); shakeCam(8); }
+      break; }
     case 'dead': return;
   }
-  if (e.stagger > 0) want = 0;
+  if (e.stagger > 0 || e.open > 0) want = 0;
   e.vx += (want - e.vx) * Math.min(1, dt * (e.onFoot ? 7 : 10));
   e.x = Math.max(A.x0 + 18, Math.min(A.x1 - 18, e.x + e.vx * dt));
-  e.y = e.onFoot ? floor : floor - 4 + Math.sin(time * 2.4) * 1.5;   // while he is carried he rides a little high and sways
+  e.y = e.onFoot ? floor : floor - 4 + Math.sin(time * 2.4) * 1.5 + (e.mode === 'tilt' ? 3 : 0);   // while he is carried he rides a little high and sways
 }
-// THE TOLL: a bearer's hand swings the coin weight out on its chain. Lead on a chain is not a thing you block.
-function tollWeight(e) {
-  SFX.clank(); shakeCam(2);
-  const sx = e.x + e.face * 18, sy = e.y - 26, ty = e.aimY !== undefined ? e.aimY : P.y - 10;
-  const dd = Math.hypot(P.x - sx, ty - sy) || 1, sp = 300;
-  seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * sp, vy: (ty - sy) / dd * sp - 60, g: 420, life: 2.2, weight: true, noBlock: true, spin: 0 });
-  for (let i = 0; i < 6; i++) parts.push({ x: sx, y: sy, vx: e.face * (40 + Math.random() * 70), vy: -20 - Math.random() * 40, life: 0.35, max: 0.35, col: '#e6b94a', size: 2, grav: 160 });
-}
-// THE DARK: a ring of lamps at a time, working out from him. The room gets smaller and you have to spend the
-// seconds he wants to get it back.
-function tollDark(e) {
-  const A = L.arena;
-  const lit = lamps.filter(pr => pr.lit && !(pr.gut > 0) && pr.x > A.x0 - 8 && pr.x < A.x1 + 8);
-  if (!lit.length) return;
-  lit.sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x));
-  const n = e.phase >= 3 ? 3 : e.phase === 2 ? 2 : 1;
-  for (let i = 0; i < Math.min(n, lit.length); i++) snuffLamp(lit[i], 1.3);
-  SFX.puff(); ringAt(e.x, e.y - 40, 40, '#9a5aa8', 0.4);
-  for (let i = 0; i < 16; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 40, y: e.y - 30 - Math.random() * 20, vx: (Math.random() - 0.5) * 90, vy: -20, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#2b403c' : '#14201e', size: 2, grav: -10 });
+/* A HERO'S BLOW ON HIM: his opening's multiplier; outside one the global rule lands it at 0.4 (GREED.chipBy). Carried, the blows
+   on one corner fell its bearer; in his COLLECT a blow is on the box, and the toll is broken. */
+function tollHurt(e, dmg, fromX, blow) {
+  if (e.open > 0) { sparks(e.x, e.y - 34, Math.sign(e.x - fromX) || 1, 7); return Math.round(dmg * (TOLL.mul[e.openKind] || 1)); }
+  if (!blow || e.mode === 'sleep') return dmg;
+  if ((e.mode === 'collect' || e.mode === 'collectTell') && !e.collectBroken) { e.collectBroken = 'box'; number(e.x + e.face * 10, e.y - 44, 'THE BOX IS STRUCK', '#ffd36b'); }
+  if (!e.onFoot && !(e.ward > 0)) { const side = Math.sign(fromX - e.x) || 1, c = e.corners && e.corners[side > 0 ? 1 : 0];
+    if (c && !(c.cd > 0)) { if (time - c.t > TOLL.bearerWin) c.n = 0; c.n++; c.t = time;
+      if (c.n >= TOLL.bearerHits) { c.n = 0; c.cd = TOLL.bearerCd; tollOpen(e, 'tilt', side); } } }
+  if (e.ward > 0 && !(e.wardSaid > time)) { e.wardSaid = time + 1.2; tollSay(e, 'WARDED', '#e8f0f8'); }
+  return dmg;
 }
 function updateLampreeve(e, dt) {
   const A = L.mini || { x0: 0, x1: LW * TS, floor: e.y }; const floor = A.floor;
-  e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt;
+  e.modeT -= dt; e.anim += dt; if (e.open > 0) e.open -= dt; if (e.ward > 0) e.ward -= dt;
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 40;
   if (e.mode === 'sleep') { e.y = floor; if (miniActive) { e.mode = 'wake'; e.modeT = 1.2; SFX.hiss(); number(e.x, e.y - 48, 'HE PUTS THEM OUT BEHIND HIM', '#ff9a5c'); } return; }
   const inRoom = pr => pr.x > A.x0 - 8 && pr.x < A.x1 + 8;
   const burning = lamps.filter(pr => pr.lit && !(pr.gut > 0) && inRoom(pr));
   /* PHASE TWO: HE TAKES YOUR LIGHT (A10: the room changes, not his speed) */
-  const busy = e.mode === 'blinded' || /Tell$/.test(e.mode) || e.mode === 'lunge' || e.mode === 'snuff';
+  const busy = e.mode === 'blinded' || /Tell$/.test(e.mode) || e.mode === 'lunge' || e.mode === 'snuff' || e.mode === 'flask';
   if (e.phase === 1 && e.hp < fullHp(e) * 0.5 && !busy) { e.phase = 2; e.mode = 'takeTell'; e.modeT = 1.1; e.vx = 0; e.face = Math.sign(d) || e.face; SFX.gasp && SFX.gasp();
     number(e.x, e.y - 44, 'HE REACHES FOR YOUR LIGHT', '#ff6b6b'); }
   const p2 = e.phase >= 2, dark = !litNear(P.x, P.y - 10, 110);
+  /* HIS FLASK IN THE AIR: it comes down where its shadow held */
+  if (e.flask) { const f = e.flask; f.t += dt;
+    if (f.t >= f.T) { e.flask = null; SFX.splash ? SFX.splash() : SFX.puff(); shakeCam(2);
+      burst(f.tx, floor - 4, 14, ['#3a3020', '#6a5a30', '#c9a85a'], 70, 0.5, 260, 2);
+      if (!P.dead && Math.abs(P.x - f.tx) < REEVE.flaskR && P.y > floor - 34) { const res = damagePlayer(f.tx, DMG.reeveFlask, { unblockable: true, name: 'THE OIL FLASK' }); if (res === 'hit') number(P.x, P.y - 30, 'OIL', '#c9a85a'); }
+      oilSlicks = oilSlicks.filter(s => Math.abs(s.x - f.tx) > REEVE.slickW); oilSlicks.push({ x: f.tx, y: floor, w: REEVE.slickW, life: REEVE.slickLife, max: REEVE.slickLife }); } }
   let want = 0;
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
-    case 'stalk': { e.sweepT -= dt; e.douseT -= dt; e.hookT -= dt; e.snuffT -= dt; e.lungeT -= dt;
+    case 'stalk': { e.sweepT -= dt; e.flaskT = (e.flaskT ?? 2.5) - dt; e.hookT -= dt; e.snuffT -= dt; e.lungeT -= dt;
       e.face = Math.sign(d) || e.face;
       want = level && ad > 44 ? e.face * 62 : level && ad < 26 ? -e.face * 40 : e.face * 30;
+      if (e.modeT > 0) break;
       if (e.snuffT <= 0 && burning.length) { // the nearest one TO HIM, so you can read which way he is going
         let best = null, bd = 1e9; for (const pr of burning) { const q = Math.abs(pr.x - e.x); if (q < bd) { bd = q; best = pr; } }
         e.target = best; e.mode = 'toLamp'; e.modeT = 4.5; e.snuffT = p2 ? 6.5 : 8;
@@ -12365,7 +12452,8 @@ function updateLampreeve(e, dt) {
       else if (dark && level && ad > 48 && ad < (p2 ? 240 : 190) && e.lungeT <= 0 && !P.dead) { e.mode = 'lungeTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p2 ? 0.62 : 0.75; e.lungeT = p2 ? 3.6 : 5.5; e.lungeX = P.x;
         number(e.x, e.y - 42, 'FROM THE DARK', '#ff6b6b'); SFX.hiss(); }
       else if (level && ad < 46 && e.sweepT <= 0) { e.mode = 'sweepTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.46; e.sweepT = p2 ? 2.4 : 2.8; number(e.x, e.y - 42, 'LOW: JUMP IT', '#ffd36b'); SFX.charge(); }
-      else if (e.douseT <= 0 && ad < 150 && ad > 34) { e.mode = 'drawTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.6; e.douseT = p2 ? 5 : 6.4; number(e.x, e.y - 42, 'HE TAKES A BREATH', '#bfe6f5'); SFX.gasp && SFX.gasp(); }
+      else if (e.flaskT <= 0 && ad < 220 && ad > 40 && !e.flask && !P.dead) { e.mode = 'flaskTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = REEVE.flaskTell; e.flaskT = p2 ? 5 : 6.4;
+        e.flaskX = Math.max(A.x0 + 16, Math.min(A.x1 - 16, P.x)); number(e.x, e.y - 42, 'THE OIL FLASK', '#c9a85a'); SFX.flaskClink ? SFX.flaskClink() : SFX.charge(); }
       else if (e.hookT <= 0 && ad > 70 && ad < 300) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p2 ? 6 : 7.5; number(e.x, e.y - 42, 'THE HOOK', '#ff9a5c'); SFX.grapple(); }
       break; }
     case 'toLamp': { const t = e.target;
@@ -12386,7 +12474,7 @@ function updateLampreeve(e, dt) {
     case 'blinded': { want = 0; // the opening: the flare in his face, his hands over his eyes, and he cannot find you
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * 12, y: e.y - 30, vx: 0, vy: -18, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#fff6c8' : '#ffd36b', size: 1, grav: 0 });
       e.vx = Math.sin(e.anim * 5) * 18;
-      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; e.open = 0; } break; }
+      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; e.open = 0; e.ward = REEVE.ward; e.flareKind = null; number(e.x, e.y - 46, 'WARDED', '#e8f0f8'); } break; }   /* B3: the told ward after the opening */
     case 'lungeTell': { want = -e.face * 16; e.face = Math.sign(d) || e.face; // he goes back into the dark to come out of it
       if (Math.random() < dt * 20) parts.push({ x: e.x + (Math.random() - 0.5) * 14, y: e.y - 10 - Math.random() * 20, vx: -e.face * 20, vy: -6, life: 0.4, max: 0.4, col: '#14201e', size: 2, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'lunge'; e.modeT = 0.55; e.hitP = false; e.vx = e.face * 340; SFX.pole(); } break; }
@@ -12403,17 +12491,15 @@ function updateLampreeve(e, dt) {
       if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = 0.3; e.vx = e.face * 150; SFX.pole();
         reeveSweep(e); } break; }
     case 'sweep': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.45; } break;
-    case 'drawTell': { want = 0; e.face = Math.sign(d) || e.face;
-      if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * 10 + (Math.random() - 0.5) * 8, y: e.y - 26, vx: -e.face * 30, vy: 0, life: 0.3, max: 0.3, col: '#bfe6f5', size: 1, grav: 0 });
-      if (e.modeT <= 0) { e.mode = 'draw'; e.modeT = 0.3; } break; }
-    case 'draw': if (e.modeT <= 0) { e.mode = 'douse'; e.modeT = 0.6; SFX.hiss(); reeveDouse(e); } break;
-    case 'douse': { want = 0;
-      if (Math.random() < dt * 40) parts.push({ x: e.x + e.face * (14 + Math.random() * 40), y: e.y - 22 + (Math.random() - 0.5) * 26, vx: e.face * 70, vy: 0, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#14201e' : '#2b403c', size: 3, grav: -12 });
-      if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.6; } break; }
+    case 'flaskTell': { want = 0; e.face = Math.sign(d) || e.face;   /* the shadow follows you, then holds: step off it late */
+      if (e.modeT > REEVE.flaskLock && !P.dead) e.flaskX = Math.max(A.x0 + 16, Math.min(A.x1 - 16, P.x));
+      if (e.modeT <= 0) { e.mode = 'flask'; e.modeT = REEVE.flaskFly + 0.15; SFX.throwWhoosh();
+        e.flask = { sx: e.x + e.face * 8, sy: e.y - 30, tx: e.flaskX, t: 0, T: REEVE.flaskFly }; } break; }
+    case 'flask': want = 0; if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
     case 'hookTell': { want = 0; e.face = Math.sign(d) || e.face;
       if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.5; SFX.ropeHaul();
         const sx = e.x + e.face * 12, sy = e.y - 30, dd = Math.hypot(P.x - sx, (P.y - 10) - sy) || 1;
-        seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * 340, vy: ((P.y - 10) - sy) / dd * 340, g: 0, life: 1, chain: true, from: e, boot: true }); } break; }
+        seeds.push({ x: sx, y: sy, vx: (P.x - sx) / dd * 340, vy: ((P.y - 10) - sy) / dd * 340, g: 0, life: 1, chain: true, from: e, boot: true, reeve: true }); } break; }
     case 'hook': if (e.modeT <= 0) { e.mode = 'stalk'; e.modeT = 0.5; } break;
     case 'dead': return;
   }
@@ -12422,20 +12508,30 @@ function updateLampreeve(e, dt) {
   e.x = Math.max(A.x0 + 14, Math.min(A.x1 - 14, e.x + e.vx * dt)); e.y = floor;
   e.alpha = e.mode === 'lungeTell' ? Math.max(0.35, e.modeT / 0.75) : undefined;   /* he goes back into the dark before he comes out of it */
 }
-/* THE OPENING (A11): a blow on the lamp he is hooding, while the hood is on it, flares it into his face. Called from the prop loop */
+/* THE SMALLER OPENING (A11): a blow on the lamp he is hooding, while the hood is on it, flares it into his face. Called from the prop loop */
 function reeveAt(pr) { return enemies.find(e => e.t === 'lampreeve' && e.alive && e.target === pr && (e.mode === 'snuffTell' || e.mode === 'snuff')) || null; }
 function reeveFlare(e, pr) {
-  pr.lit = true; pr.gut = 0; e.target = null; e.mode = 'blinded'; e.modeT = e.phase >= 2 ? 1.6 : 1.9; e.open = e.modeT; e.vx = 0; e.stagger = 0;
-  e.flares = (e.flares || 0) + 1;
-  SFX.sting(); SFX.lampUp(); flash = Math.max(flash, 0.25); shakeCam(3); ringAt(pr.x, pr.y - 40, 60, '#fff6c8', 0.45);
-  burst(pr.x, pr.y - 40, 22, ['#fff6c8', '#ffd36b', '#ffffff'], 130, 0.6, -20, 1);
+  pr.lit = true; pr.gut = 0; e.target = null;
+  if (e.ward > 0) { e.mode = 'stalk'; e.modeT = 0.4; number(e.x, e.y - 46, 'WARDED', '#e8f0f8'); SFX.clank(); return; }
+  reeveBlind(e, 'hood', e.phase >= 2 ? 1.0 : REEVE.hoodOpen);
+  ringAt(pr.x, pr.y - 40, 60, '#fff6c8', 0.45); burst(pr.x, pr.y - 40, 22, ['#fff6c8', '#ffd36b', '#ffffff'], 130, 0.6, -20, 1);
   number(pr.x, pr.y - 56, 'THE LAMP FLARES', '#ffd36b'); number(e.x, e.y - 46, 'BLIND: CUT HIM', '#8fd160');
 }
-/* HIS COAT: out of the flare it takes three quarters of any blow; blind, 1.4 times gets through */
+function reeveBlind(e, kind, t) { e.mode = 'blinded'; e.modeT = t; e.open = t; e.openMax = t; e.flareKind = kind; e.vx = 0; e.stagger = 0; e.target = null;
+  e.flares = (e.flares || 0) + 1; SFX.sting(); SFX.lampUp(); flash = Math.max(flash, 0.25); shakeCam(3); }
+/* THE BIG ONE: a lamp he put out, RELIT beside him - by your fire, not his hood - flares into him and STUNS him */
+function reeveRelit(e, pr, wide) {
+  if (e.ward > 0) { number(e.x, e.y - 46, 'WARDED', '#e8f0f8'); SFX.clank(); return; }
+  if (e.mode === 'dead' || e.mode === 'wake' || e.mode === 'takeTell') return;
+  reeveBlind(e, 'relit', REEVE.relitOpen); number(e.x, e.y - 46, wide ? 'THE OIL GOES UP: STUNNED' : 'THE FLARE: STUNNED', '#8fd160');
+  ringAt(e.x, e.y - 24, 30, '#ffd36b', 0.5);
+}
+/* HIS COAT: out of a flare it takes most of a blow, never all of it (B15: 0.45); blind, the flare's multiplier */
 function reeveHurt(e, dmg, fromX, tag) {   /* (tag: the blow's name, B14 - claude/keyscore) */
-  if (e.open > 0) { sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); return Math.round(dmg * 1.4); }
-  if ((PROG.reeveCoat || 0) < 2 && Math.random() < 0.25) { PROG.reeveCoat = (PROG.reeveCoat || 0) + 1; hintT = 4; hintMsg = 'HIS WET COAT TAKES MOST OF IT. STRIKE THE LAMP HE HOODS, AND THE FLARE BLINDS HIM.'; }
-  return Math.max(1, Math.round(dmg * 0.25));
+  if (e.open > 0) { sparks(e.x, e.y - 30, Math.sign(e.x - fromX) || 1, 6); return Math.round(dmg * (e.flareKind === 'relit' ? REEVE.relitMul : REEVE.hoodMul)); }
+  if (e.ward > 0) { if (!(e.wardSaid > time)) { e.wardSaid = time + 1.2; number(e.x, e.y - 46, 'WARDED', '#e8f0f8'); } }
+  else if ((PROG.reeveCoat || 0) < 2 && Math.random() < 0.25) { PROG.reeveCoat = (PROG.reeveCoat || 0) + 1; hintT = 4; hintMsg = 'HIS WET COAT TAKES MOST OF IT. RELIGHT A LAMP HE PUT OUT WHILE HE STANDS BESIDE IT: THE FLARE STUNS HIM.'; }
+  return Math.max(1, Math.round(dmg * REEVE.coat));
 }
 // the pole along the stones: it is a low attack, so the answer is up and not back
 function reeveSweep(e) {
@@ -12447,18 +12543,100 @@ function reeveSweep(e) {
   if (res === 'blocked') { e.stagger = Math.max(e.stagger, 0.6); number(e.x, e.y - 42, 'TURNED', '#8fd160'); }
   else if (res === 'hit') { P.vx = e.face * 250; P.vy = -90; }
 }
-// the black water out of him: it hurts once, and then you cannot see for two seconds
-function reeveDouse(e) {
-  if (P.dead) return;
-  const d = P.x - e.x;
-  if (Math.sign(d) === e.face && Math.abs(d) < 80 && Math.abs(P.y - e.y) < 34) {
-    const res = damagePlayer(e.x, DMG.reeveDouse);
-    if (res !== 'blocked') { P.soot = 2; number(P.x, P.y - 34, 'BLINDED', '#2b403c'); }
-  }
-  for (const pr of lamps) if (pr.lit && Math.sign(pr.x - e.x) === e.face && Math.abs(pr.x - e.x) < 90) snuffLamp(pr, 0.8); // and it takes any lamp it reaches
+/* THE RELIGHT FLARE (the level's verb, claude/lamplit2): a lamp lit by fire you carried flares - and what stands beside it pays.
+   THE WATCH HATE LIGHT (stunned and blind: their guard drops), THE LAMPREEVE is stunned, THE TOLLMASTER's robes catch. A slick of
+   the Lampreeve's oil under the lamp sends the flare wide. */
+function relightFlare(pr) {
+  const wide = oilSlicks.some(s => Math.abs(s.x - pr.x) < s.w + 24 && Math.abs(s.y - pr.y) < 24);
+  const R = wide ? REEVE.relitRWide : REEVE.relitR;
+  if (wide) { number(pr.x, pr.y - 64, 'THE OIL CATCHES', '#ff9a3c'); ringAt(pr.x, pr.y - 12, R, '#ff9a3c', 0.5); for (const s of oilSlicks) if (Math.abs(s.x - pr.x) < s.w + 24) { s.burn = 1.2; s.life = Math.min(s.life, 1.2); } }
+  else ringAt(pr.x, pr.y - 30, R * 0.6, '#ffd36b', 0.35);
+  for (const e of enemies) { if (!e.alive || e.dying > 0 || Math.abs(e.y - pr.y) > 70) continue; const dx = Math.abs(e.x - pr.x);
+    if (e.t === 'lampreeve' && dx < R) reeveRelit(e, pr, wide);
+    else if (e.t === 'tollmaster' && dx < TOLL.relitR && e.mode !== 'sleep' && e.mode !== 'floodTell' && e.mode !== 'setDown') tollOpen(e, 'relit');
+    else if (e.t === 'watch' && dx < R) watchFlare(e); }
+}
+/* THE WATCH HATE LIGHT: the flare beside a drowned watchman blinds him - he drops his guard and reels (it teaches the Lampreeve) */
+const WATCH_FLARE = 2.6;
+function watchFlare(e) { e.flareT = WATCH_FLARE; e.stagger = Math.max(e.stagger || 0, WATCH_FLARE); e.guardT = 0; e.vx = 0; if (/Tell$/.test(e.mode) || e.mode === 'thrust' || e.mode === 'sweep') { e.mode = 'walk'; e.modeT = 0; }
+  number(e.x, e.y - 34, 'BLINDED', '#ffd36b'); ringAt(e.x, e.y - 14, 18, '#ffd36b', 0.4); SFX.sting(); }
+/* THE OIL AND THE WAX, every frame (claude/lamplit2): they dry; a burning slick burns out */
+function updateLampHands(dt) {
+  /* LIGHT THE WAY (claude/lamplit2): a pocket under the vault is there only while its street lamp burns - the lamp mains carry its air up */
+  for (const r of airRooms) if (r.lampX !== undefined) { if (!r.lamp) r.lamp = lamps.find(pr => Math.abs(pr.x - (r.lampX * TS + 8)) < 12 && pr.y > r.t && pr.y < r.b + 240) || null;
+    const on = !!(r.lamp && r.lamp.lit && !(r.lamp.gut > 0));
+    if (on && r.goneUntil) { r.goneUntil = 0; const mx = (r.l + r.r) / 2; number(mx, r.t + 6, 'THE AIR COMES BACK UP THE MAIN', '#bfe6f5'); SFX.lampUp(); for (let i = 0; i < 18; i++) parts.push({ x: r.lamp.x + (Math.random() - 0.5) * 8, y: r.lamp.y - 40, vx: (mx - r.lamp.x) * 0.3 + (Math.random() - 0.5) * 30, vy: -90 - Math.random() * 60, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -30 }); }
+    else if (!on && !r.goneUntil) r.goneUntil = 1e9; }
+  /* THE TOLL GATE: its lamp lit, the gate goes up (the one REQUIRED relight before his square, A4) */
+  for (const pr of lamps) if (pr.gate !== undefined && pr.lit && !pr.gateOpen) { pr.gateOpen = true; marks.add('gate:' + pr.gate); openGateCol(pr.gate);
+    number(pr.gate * TS + 8, pr.y - 60, 'THE TOLL GATE LIFTS', '#8fd160'); SFX.heavy(); SFX.stone(); shakeCam(4); }
+  if (!oilSlicks.length && !tollWax.length) return;
+  for (const s of oilSlicks) { s.life -= dt; if (s.burn > 0) { s.burn -= dt; if (Math.random() < dt * 50) parts.push({ x: s.x + (Math.random() - 0.5) * s.w * 2, y: s.y - 2, vx: 0, vy: -50 - Math.random() * 40, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ff9a3c' : '#ffd36b', size: 2, grav: -30 }); } }
+  oilSlicks = oilSlicks.filter(s => s.life > 0);
+  for (const w of tollWax) w.life -= dt; tollWax = tollWax.filter(w => w.life > 0);
+}
+/* THE WAX HOLDS YOUR FEET: on a patch of the Seal of Debt's wax a hero on the ground goes at a crawl (called beside snareTick) */
+const WAX_CAP = 58;
+function waxTick(dt) {
+  if (!tollWax.length || P.dead || !P.ground) return;
+  if (!tollWax.some(w => Math.abs(P.x - w.x) < w.w && Math.abs(P.y - w.y) < 10)) return;
+  if (Math.abs(P.vx) > WAX_CAP) P.vx = Math.sign(P.vx) * WAX_CAP;
+  if (time - (P.waxSaid ?? -9) > 2.5) { P.waxSaid = time; number(P.x, P.y - 26, 'WAX', '#c9463d'); }
+}
+/* B10, THE SHARED READ for both of them: OPEN = a gold ring, OPEN over him and a clock that empties; WARDED = a pale shell */
+function lampRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy), h = e.t === 'tollmaster' ? 34 : 28;
+  if (e.open > 0) { const kk = Math.max(0, Math.min(1, e.open / (e.openMax || 2)));
+    g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - h / 2, h * 0.75, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+    const by = y - h - 26; text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, Math.round(36 * kk), 3); }
+  else if (e.ward > 0) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 8); g.strokeStyle = '#e8f0f8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - h / 2, h * 0.7, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; } }
+function drawLampMarks(e, cx, cy) {
+  const k = 0.5 + 0.5 * Math.sin(time * 16);
+  if (e.t === 'lampreeve') { const fl = (L.mini || {}).floor || e.y;
+    if (e.mode === 'flaskTell' || e.flask) { const tx = e.flask ? e.flask.tx : e.flaskX, locked = !!e.flask || e.modeT <= REEVE.flaskLock;   /* the flask's SHADOW: it follows you, then holds */
+      tellRing(Math.round(tx - cx), Math.round(fl - cy) - 2, REEVE.flaskR + (locked ? 0 : Math.round(k * 2)), 5, locked ? 1 : 0.3 + 0.3 * k, '#ff6b6b');
+      if (e.flask) { const f = e.flask, q = Math.min(1, f.t / f.T), fx = f.sx + (f.tx - f.sx) * q, fy = f.sy + (fl - 4 - f.sy) * q - 70 * Math.sin(Math.PI * q);
+        g.globalAlpha = 0.2 + 0.4 * q; g.fillStyle = '#14201e'; g.beginPath(); g.ellipse(Math.round(f.tx - cx), Math.round(fl - cy) - 1, 4 + 10 * q, 2 + q, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+        const X = Math.round(fx - cx), Y = Math.round(fy - cy); g.fillStyle = '#56898a'; g.fillRect(X - 2, Y - 2, 5, 6); g.fillStyle = '#e6b94a'; g.fillRect(X - 1, Y + 1, 3, 2); g.fillStyle = (time * 20 | 0) % 2 ? '#ffe9a8' : '#f0c05a'; g.fillRect(X, Y - 4, 1, 2); } } }
+  if (e.t === 'tollmaster') { const A = L.arena, fl = A.floor;
+    if ((e.mode === 'collectTell' || e.mode === 'collect') && e.collectLamp) { const pr = e.collectLamp, bx = Math.round(e.x + e.face * 10 - cx), by = Math.round(e.y - 34 - cy), lx = Math.round(pr.x - cx), ly = Math.round(pr.y - 40 - cy);   /* THE TOLL: the stream from the hood to the box */
+      g.save(); g.globalAlpha = e.mode === 'collect' ? 0.75 : 0.35 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = e.mode === 'collect' ? 2 : 1; if (e.mode !== 'collect') g.setLineDash([3, 3]);
+      g.beginPath(); g.moveTo(lx + 0.5, ly + 0.5); g.quadraticCurveTo((lx + bx) / 2, Math.min(ly, by) - 16, bx + 0.5, by + 0.5); g.stroke(); g.restore(); }
+    if (e.mode === 'scalesLowTell' || e.mode === 'scalesHighTell' || e.mode === 'scalesLow' || e.mode === 'scalesHigh') { const W = tollWeightAt(e), C = TOLL.scales.chain, f = e.face || 1, px = Math.round(W.px - cx), py = Math.round(W.py - cy);
+      if (/Tell$/.test(e.mode)) { g.save(); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ff6b6b'; g.setLineDash([3, 3]); g.beginPath();   /* its path, told: where it will pass and at what height */
+        for (let i = 0; i <= 16; i++) { const th = -TOLL.scales.swing + 2 * TOLL.scales.swing * i / 16, x = px + f * C * Math.sin(th), y = py + C * Math.cos(th); if (i) g.lineTo(x, y); else g.moveTo(x, y); } g.stroke(); g.restore(); }
+      else { const wx = Math.round(W.x - cx), wy = Math.round(W.y - cy); g.strokeStyle = '#47515b'; g.lineWidth = 1; g.beginPath(); g.moveTo(px + 0.5, py + 0.5); g.lineTo(wx + 0.5, wy + 0.5); g.stroke();
+        g.fillStyle = '#9c7619'; g.fillRect(wx - 6, wy - 4, 12, 8); g.fillStyle = '#e6b94a'; g.fillRect(wx - 5, wy - 3, 10, 2); g.fillStyle = '#47515b'; g.fillRect(px - 1, py - 1, 3, 3); } }
+    if (e.mode === 'sealTell' && e.sealX !== undefined) { const locked = e.modeT <= TOLL.seal.lock; tellRing(Math.round(e.sealX - cx), Math.round(fl - cy) - 2, TOLL.seal.r + (locked ? 0 : Math.round(k * 2)), 5, locked ? 1 : 0.3 + 0.3 * k, '#c9463d');
+      g.globalAlpha = 0.25 + 0.35 * (1 - Math.max(0, e.modeT) / TOLL.seal.tell); g.fillStyle = '#14201e'; g.beginPath(); g.ellipse(Math.round(e.sealX - cx), Math.round(fl - cy) - 1, TOLL.seal.r - 6, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+    if (!e.onFoot && e.corners) for (const [i, s] of [[0, -1], [1, 1]]) { const c = e.corners[i]; if (!(c.n > 0) || time - c.t > TOLL.bearerWin) continue;   /* a bearer's corner, struck: one gold pip a blow */
+      for (let j = 0; j < c.n; j++) { g.fillStyle = '#ffd36b'; g.fillRect(Math.round(e.x + s * 15 - cx) - 4 + j * 3, Math.round(e.y - cy) + 2, 2, 2); } } }
+  lampRead(e, cx, cy);
+}
+/* THE STREET'S HANDS, drawn under the creatures (greybox: the art lane draws them properly): the oil and the wax on the boards, the writ's
+   water standing in the hoods, every dead lamp's flare reach while you carry fire and something stands near it, and the fuse on a flame
+   under the water */
+function drawLampWorld(cx, cy) {
+  if (!lamps.length) return;
+  for (const s of oilSlicks) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), a = Math.min(1, s.life / 2);
+    g.globalAlpha = 0.6 * a; g.fillStyle = '#1e1a10'; g.beginPath(); g.ellipse(x, y - 1, s.w, 3, 0, 0, 7); g.fill();
+    g.globalAlpha = (0.25 + 0.15 * Math.sin(time * 3 + s.x)) * a; g.fillStyle = '#c9a85a'; g.fillRect(x - Math.round(s.w * 0.5), y - 2, Math.round(s.w * 0.6), 1); g.fillStyle = '#7aa8c0'; g.fillRect(x + 4, y - 2, 6, 1); g.globalAlpha = 1; }
+  for (const w of tollWax) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); g.globalAlpha = 0.75 * Math.min(1, w.life); g.fillStyle = '#6a1e1a'; g.beginPath(); g.ellipse(x, y - 1, w.w, 3, 0, 0, 7); g.fill();
+    g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(x, y - 2, 7, 2, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+  const tm = boss && boss.t === 'tollmaster' && boss.alive ? boss : null;
+  if (tm && tm.mode === 'writTell') { const mid = (L.arena.x0 + L.arena.x1) / 2, x0 = tm.writHalf ? mid : L.arena.x0, x1 = tm.writHalf ? L.arena.x1 : mid, q = 1 - Math.max(0, tm.modeT) / TOLL.writ.tell;
+    g.globalAlpha = 0.25 + 0.2 * q; g.fillStyle = '#2a6a7a'; g.fillRect(Math.round(x0 - cx), Math.round(L.arena.floor - 70 - cy), Math.round(x1 - x0), Math.round(70 * q)); g.globalAlpha = 1; }   /* the writ: the water standing up in that half, told */
+  if (tm && tm.writ) { const w = tm.writ, a = Math.min(1, w.t); g.globalAlpha = 0.28 * a; g.fillStyle = '#1a4a5a'; g.fillRect(Math.round(w.x0 - cx), Math.round(L.arena.floor - 70 - cy), Math.round(w.x1 - w.x0), 70);
+    g.globalAlpha = 0.6 * a; g.fillStyle = '#9fd6d2'; g.fillRect(Math.round(w.x0 - cx), Math.round(L.arena.floor - 70 - cy), Math.round(w.x1 - w.x0), 1); g.globalAlpha = 1; }
+  if (P.wick > 0) for (const pr of lamps) { if (pr.lit || Math.abs(pr.x - P.x) > 240) continue;   /* WHERE THE FLARE REACHES: a dead lamp, your fire, and one of them beside it */
+    const R = enemies.some(e => e.alive && e.t === 'tollmaster' && Math.abs(e.x - pr.x) < TOLL.relitR + 60 && Math.abs(e.y - pr.y) < 70) ? TOLL.relitR
+      : enemies.some(e => e.alive && (e.t === 'lampreeve' || e.t === 'watch') && Math.abs(e.x - pr.x) < REEVE.relitR + 60 && Math.abs(e.y - pr.y) < 70) ? REEVE.relitR : 0;
+    if (!R) continue; g.save(); g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 6); g.strokeStyle = '#ffd36b'; g.setLineDash([2, 4]); g.beginPath(); g.ellipse(Math.round(pr.x - cx), Math.round(pr.y - cy) - 1, R, 5, 0, 0, 7); g.stroke(); g.restore(); }
+  if (P.wick > 0 && P.wickWet && !P.dead) { const x = Math.round(P.x - cx - (P.face || 1) * 5), y = Math.round(P.y - 30 - cy), q = Math.max(0, Math.min(1, P.wick / WICK_DRY));   /* YOUR FLAME DROWNS: its fuse */
+    g.strokeStyle = '#1b1626'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.stroke(); g.strokeStyle = q < 0.35 ? '#7fd0ff' : '#ffd36b'; g.beginPath(); g.arc(x, y, 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * q); g.stroke(); g.lineWidth = 1; }
 }
 function updateWatch(e, dt) {
   e.modeT -= dt; e.anim += dt; if (e.guardT > 0) e.guardT -= dt;
+  if (e.flareT > 0) { e.flareT -= dt; e.guardT = 0; e.vx += (0 - e.vx) * Math.min(1, dt * 9); if (Math.random() < dt * 10) parts.push({ x: e.x + (Math.random() - 0.5) * 10, y: e.y - 20, vx: 0, vy: -16, life: 0.4, max: 0.4, col: '#ffd36b', size: 1, grav: 0 }); return; }   /* THE WATCH HATE LIGHT (claude/lamplit2): blinded by a relit lamp's flare, he reels with his guard down */
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - e.y) < 30;
   const dark = lamps.length ? !litNear(e.x, e.y - 10, 130) : false;   /* off the lamplit street there is no dark of his to hunt in: he walks his beat like any watchman */                 // his own patch of street: lit, or not
   const see = dark ? 260 : 130;
@@ -16122,10 +16300,13 @@ function nearAir(x, y) { // a hold, a diving bell, a vent, or a lamp that is sti
   for (const r of airRooms) if (x > r.l && x < r.r && y > r.t && y < r.b && !(r.goneUntil > time)) return { x, y: r.t + 10, deep: 'room' };   /* the room IS the pocket - and drawAirSigns hangs a mouth on the water line of it, so it can be read from outside before anybody swims in */
   for (const b of airBells) if (Math.abs(b.x - x) < 26 && Math.abs(b.y - y) < 22 && !(b.goneUntil > time)) return { x: b.x, y: b.y, deep: 'bell' };
   { const da = L.deep && deepAir(x, y); if (da) return da; }   /* the Deep's vents, wrecks and the breath a struck clam lets go */
-  for (const pr of lamps) if (pr.lit && Math.abs(pr.x - x) < 24 && Math.abs(pr.y - 40 - y) < 34) return lampAir(pr);
+  for (const pr of lamps) if (pr.lit && Math.abs(pr.x - x) < 24 && Math.abs(pr.y - 40 - y) < 34 && !lampDrowned(pr)) return lampAir(pr);
   return null;
 }
-const airList = () => lamps.length ? airBells.concat(lamps.filter(pr => pr.lit).map(lampAir)) : airBells;
+const airList = () => lamps.length ? airBells.concat(lamps.filter(pr => pr.lit && !lampDrowned(pr)).map(lampAir)) : airBells;
+/* THE WRIT OF DROWNING (the Tollmaster's phase three, claude/lamplit2): on the half of his flooded square the writ names, the water stands up
+   inside the lamp hoods and those lamps hold no air until it goes down again */
+function lampDrowned(pr) { const b = boss; return !!(b && b.t === 'tollmaster' && b.writ && b.alive && pr.x > b.writ.x0 && pr.x < b.writ.x1); }
 // is this spot in the light? The watch hunt by ear, and what they hear is you out of it.
 function litNear(x, y, r = 150) {
   for (const pr of lamps) if (pr.lit && Math.hypot(pr.x - x, (pr.y - 30) - y) < r) return true;
@@ -16149,17 +16330,24 @@ function litLamps() { let n = 0; for (const pr of lamps) if (pr.lit) n++; return
 // THE FIRE IN YOUR HAND. Stand at a burning lamp and you take a light off it; it lasts fourteen seconds, it
 // dies if you are hit, and it is the only way to light a dead lamp. Carry it down a street and you have opened
 // a route that was not there.
+/* YOUR FLAME DROWNS (claude/lamplit2): under the water, out of a lamp's air, the fire in your hand gutters out in WICK_WET s, not 14 - so a
+   swim with fire in it is lamp to lamp, and the fuse is drawn on the flame (drawWickFuse) */
+const WICK_DRY = 14, WICK_WET = 5;
 function updateWick(dt) {
   if (!lamps.length) return;
   if (P.wick > 0 && !P.dead) {
-    P.wick -= dt;
+    P.wickWet = !!(P.swim && !nearAir(P.x, P.y - 8));
+    P.wick -= dt * (P.wickWet ? WICK_DRY / WICK_WET : 1);
     if (Math.random() < dt * 18) parts.push({ x: P.x + P.face * -5 + (Math.random() - 0.5) * 3, y: P.y - 20 - Math.random() * 4, vx: (Math.random() - 0.5) * 14, vy: -26, life: 0.45, max: 0.45, col: Math.random() < 0.5 ? '#ffd36b' : '#fff6c8', size: 1, grav: -30 });
-    if (P.wick <= 0) { P.wick = 0; number(P.x, P.y - 32, 'THE FIRE IS OUT', '#6a7a7a'); SFX.puff(); }
+    if (P.wick <= 0) { P.wick = 0; number(P.x, P.y - 32, P.wickWet ? 'THE WATER TAKES YOUR FIRE' : 'THE FIRE IS OUT', '#6a7a7a'); SFX.puff(); }
   } else if (P.wick) P.wick = 0;
+  if (!P.dead) for (const pr of props) if (pr.t === 'brazier' && pr.city && Math.abs(pr.x - P.x) < 20 && Math.abs(pr.y - P.y) < 30 && !(P.wick > 6)) {   /* HIS BRAZIERS NEVER GO OUT: fire from them too */
+    if (P.snuffed) { P.snuffed = false; number(P.x, P.y - 46, 'YOUR LIGHT AGAIN', '#ffd36b'); SFX.lampUp(); }
+    if (!(P.wick > 0)) { number(P.x, P.y - 36, 'FIRE IN HAND', '#ffd36b'); SFX.spark(); } P.wick = WICK_DRY; }
   if (P.dead) return;
   for (const pr of lamps) if (pr.lit && !(pr.gut > 0) && Math.abs(pr.x - P.x) < 24 && Math.abs((pr.y - 26) - (P.y - 8)) < 34) {
     if (P.snuffed) { P.snuffed = false; number(P.x, P.y - 46, 'YOUR LIGHT AGAIN', '#ffd36b'); SFX.lampUp(); }
-    if (!(P.wick > 6)) { if (!(P.wick > 0)) { number(P.x, P.y - 36, 'FIRE IN HAND', '#ffd36b'); SFX.spark(); } P.wick = 14; }
+    if (!(P.wick > 6)) { if (!(P.wick > 0)) { number(P.x, P.y - 36, 'FIRE IN HAND', '#ffd36b'); SFX.spark(); } P.wick = WICK_DRY; }
   }
 }
 // THE TIDE IN THE STREET. It runs one way down the road for a while and then it turns, and between the two
@@ -27476,7 +27664,7 @@ function updateProps(dt) {
     if (p.drainT > 0) { p.drainT -= dt; k = Math.min(k, Math.max(0, (2 - p.drainT) * 0.5)); } // the sluice holds it out
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
-  updateBore(dt); updateTideGates(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateAscent(dt); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); if (L.gasVents) updateBurialFire(dt, hb); if (L.crumble) updateCrumble(L,P,dt,{air:T.AIR,spr:i=>tileSpr[i],setSpr:(i,s)=>{tileSpr[i]=s;},emit:p=>parts.push(p),crack:(tx,ty)=>{SFX.crack();burst(tx*TS+8,ty*TS+2,4,['#6a5436','#e8d8b0'],30,0.3);},fall:(tx,ty)=>{SFX.crumble();burst(tx*TS+8,ty*TS+6,8,['#6a5436','#3a2a1c','#a6e04a'],60,0.6);},back:z=>{if(SFX.stone)SFX.stone();for(let x=z.x0;x<=z.x1;x+=2)burst(x*TS+8,z.row*TS+2,2,['#e8d8b0'],20,0.3);}});   /* THE ROTTEN BRIDGES (burial-variety.js): a board cracks with a sound under you and drops half a second later */ if (L.siphons || L.blight) updateKeepPassages(L,P,dt,time,{breathMax:breathCapacity(L),inAir:(x,y)=>!!nearAir(x,y),move:(dx,dy)=>moveBody(P,dx,dy,false),emit:p=>parts.push(p),poison:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss&&SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);}}); if (L.whirlpools) updateWhirls(dt, hb); if (L.keepCrumbles) updateCrumbles(dt); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateRush(dt);
+  updateBore(dt); updateTideGates(dt); updateDeckFall(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateAscent(dt); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); if (L.gasVents) updateBurialFire(dt, hb); if (L.crumble) updateCrumble(L,P,dt,{air:T.AIR,spr:i=>tileSpr[i],setSpr:(i,s)=>{tileSpr[i]=s;},emit:p=>parts.push(p),crack:(tx,ty)=>{SFX.crack();burst(tx*TS+8,ty*TS+2,4,['#6a5436','#e8d8b0'],30,0.3);},fall:(tx,ty)=>{SFX.crumble();burst(tx*TS+8,ty*TS+6,8,['#6a5436','#3a2a1c','#a6e04a'],60,0.6);},back:z=>{if(SFX.stone)SFX.stone();for(let x=z.x0;x<=z.x1;x+=2)burst(x*TS+8,z.row*TS+2,2,['#e8d8b0'],20,0.3);}});   /* THE ROTTEN BRIDGES (burial-variety.js): a board cracks with a sound under you and drops half a second later */ if (L.siphons || L.blight) updateKeepPassages(L,P,dt,time,{breathMax:breathCapacity(L),inAir:(x,y)=>!!nearAir(x,y),move:(dx,dy)=>moveBody(P,dx,dy,false),emit:p=>parts.push(p),poison:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss&&SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);}}); if (L.whirlpools) updateWhirls(dt, hb); if (L.keepCrumbles) updateCrumbles(dt); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateLampHands(dt); updateRush(dt);
   { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });
@@ -27587,7 +27775,7 @@ function updateProps(dt) {
     /* THE LAMPREEVE'S OPENING (A11): the lamp he is hooding, struck while the hood is on it, flares into his face */
     if (pr.t === 'lantern' && pr.city && pr.lit && hb && overlap(hb, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 50, b: pr.y }) && !P.hitSet.has(pr)) { const rv = reeveAt(pr); if (rv) { P.hitSet.add(pr); reeveFlare(rv, pr); } }
     if (pr.t === 'lantern' && pr.city && !pr.lit && hb && overlap(hb, { l: pr.x - 9, r: pr.x + 9, t: pr.y - 50, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr);
-      if (P.wick > 0) { lightLamp(pr); P.wick = 0; }
+      if (P.wick > 0) { lightLamp(pr); P.wick = 0; relightFlare(pr); }   /* (claude/lamplit2) THE RELIGHT FLARE: what stands beside it pays */
       else { SFX.clank(); sparks(pr.x, pr.y - 40, P.face, 3); number(pr.x, pr.y - 50, 'NO FIRE IN HAND', '#9aa39a'); } }
     if (pr.t === 'lantern' && pr.gut > 0) { pr.gut -= dt;
       if (Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 14, y: pr.y - 40, vx: 0, vy: -34, life: 0.5, max: 0.5, col: '#a8d8c8', size: 1, grav: -26 });
@@ -27609,7 +27797,7 @@ function updateProps(dt) {
     if (pr.t === 'mirror') { pr.turnT = Math.max(0, pr.turnT - dt); pr.glow = Math.max(0, (pr.glow || 0) - dt); if (!pr.fixed && hb && !P.hitSet.has(pr) && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y })) { P.hitSet.add(pr); pr.o = 1 - pr.o; pr.turnT = 0.25; SFX.clank(); SFX.spark(); sparks(pr.x, pr.y - 8, P.face, 5); number(pr.x, pr.y - 22, 'TURNED', '#bfe6f5'); } }
     if (pr.t === 'rack' && !pr.broken && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 18, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x, pr.y - 10, P.face, 4); if (pr.hp <= 0) { pr.broken = true; SFX.crack(); burst(pr.x, pr.y - 8, 12, ['#8b6a2a', '#c9b27c', '#5c3a1d'], 70, 0.6); number(pr.x, pr.y - 26, (pr.kind === 'club' ? 'THE CLUB' : 'THE BOW') + ' IS GONE', '#8fd160'); const ch = enemies.find(q => q.alive && q.t === 'chief'); if (ch && ch.mode === 'toRack' && ch.next === pr.kind) { ch.mode = 'swap'; ch.modeT = 0.6; chiefSwap(ch, 'sword'); } } }
     if (pr.t === 'wisp' && !pr.cut) { pr.y = pr.y0 + Math.sin(time * 1.7 + pr.ph) * 4; if (hb && overlap(hb, { l: pr.x - 6, r: pr.x + 6, t: pr.y - 10, b: pr.y + 2 })) { pr.cut = true; SFX.spark(); SFX.sting(); burst(pr.x, pr.y - 4, 14, ['#bfe6f5', '#e8fff8', '#8fd160'], 60, 0.7, -20, 1); number(pr.x, pr.y - 20, 'THE FOG THINS', '#bfe6f5'); } }
-    if (pr.t === 'brazier' && pr.lit && !pr.tipped && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y })) {
+    if (pr.t === 'brazier' && pr.lit && !pr.tipped && !pr.city && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 16, b: pr.y })) {
       pr.tipped = true; pr.lit = false; SFX.crack(); const dir = P.face; number(pr.x, pr.y - 22, 'OIL!', '#ff9a5c');
       for (let i = 1; i <= 5; i++) fires.push({ x: pr.x + dir * i * 14, y: pr.y, life: 6 + i * 0.3, delay: i * 0.12 });
     }
@@ -29998,7 +30186,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'firepit') g.drawImage(PROP.grate, Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 5 - cy);
     else if (pr.t === 'lantern' && pr.city) { // THE STREETLAMP: a halo while it burns, a cold one while it gutters
       const st = pr.lit ? (pr.gut > 0 ? 2 : 1) : 0;
-      if (st) { const lx = Math.round(pr.x - cx), ly = Math.round(pr.y - 40 - cy), R0 = st === 2 ? 26 : 46;
+      if (st) { const lx = Math.round(pr.x - cx), ly = Math.round(pr.y - 40 - cy), R0 = (st === 2 ? 26 : 46) * (1 - 0.6 * (pr.tollK || 0)) * (lampDrowned(pr) ? 0.5 : 1);   /* (claude/lamplit2) a lamp being COLLECTED shrinks to the box; a lamp the WRIT drowned burns small */
         const k = st === 2 ? 0.24 + 0.16 * Math.sin(time * 22) : 0.42 + 0.06 * Math.sin(time * 3.4 + pr.x);
         const gr = g.createRadialGradient(lx, ly, 1, lx, ly, R0);
         gr.addColorStop(0, (st === 2 ? 'rgba(191,230,245,' : 'rgba(255,231,168,') + (k * 0.85).toFixed(3) + ')');
@@ -30095,6 +30283,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */
   if (HUH && L.hush) HUH.drawWorld(g, cx, cy, time);   /* UNDERLEAF 2: the pots, the streets' gates, alarms and caches, the toll, the key's nail, her bell-pulls and rugs */
   for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if ((f.pillar || f.barrier) && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
+  drawLampWorld(cx, cy);   /* (claude/lamplit2) the Lamplit Street's oil, wax, writ, flare reach and fuse */
   for (const e of enemies) if (e.alive && (e.t === 'spider' || e.t === 'weaver')) { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
   for (const b of pyres) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), pulse = Math.sin(time * 30) * 1.2;
     g.globalAlpha = 0.35; g.fillStyle = '#ff6b2c'; g.beginPath(); g.arc(x - b.dir * 6, y, 9 + pulse, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
@@ -30352,12 +30541,13 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'lance') { const p2 = e.phase === 2, mv = Math.abs(e.vx) > 6;
       frame = ({ reel: 18, stumble: 19, planted: 12, couch: 5, thrustTell: 8, thrust: 9, sweepTell: 10, sweep: 11, bashTell: p2 ? 13 : 25, bash: p2 ? 16 : 26, vaultTell: 20, vault: 21, javTell: 22, javThrow: 23, rise: 24, guardTell: 14, guardSwing: 15, rushTell: 16 })[e.mode];
       if (frame === undefined) frame = e.mode === 'charge' ? 6 + Math.floor(e.anim * 12) % 2 : e.mode === 'rush' ? 16 + Math.floor(e.anim * 12) % 2 : e.mode === 'recover' ? (p2 ? 15 : 9) : (p2 || e.mode === 'guard') ? (mv ? 27 + Math.floor(e.anim * 8) % 2 : 13) : (mv ? 1 + Math.floor(e.anim * 9) % 4 : 0); }
-    else if (e.t === 'tollmaster') frame = e.mode === 'ledgerTell' ? 1 : e.mode === 'ledger' ? 2 : e.mode === 'tollTell' ? 3 : e.mode === 'toll' ? 4
-      : e.mode === 'darkTell' ? 5 : e.mode === 'dark' ? 6 : e.mode === 'setDown' ? 7 : e.mode === 'blackoutTell' ? 10
-      : e.dying > 0 ? 12 : (e.stagger > 0 || e.mode === 'reel') ? 11 : e.mode === 'rodTell' ? 5 : e.mode === 'rod' ? 7
+    else if (e.t === 'tollmaster') frame = e.dying > 0 ? 12 : e.mode === 'ledgerTell' ? 1 : e.mode === 'ledger' ? 2 : e.mode === 'rodTell' ? 3 : e.mode === 'rod' ? 4   /* (claude/lamplit2) the rod has its own pair now (B16: it borrowed THE DARK's) */
+      : e.mode === 'collectTell' ? 13 : e.mode === 'collect' ? 14 : e.mode === 'scalesLowTell' ? 15 : e.mode === 'scalesHighTell' ? 16 : (e.mode === 'scalesLow' || e.mode === 'scalesHigh') ? 17
+      : e.mode === 'sealTell' ? 18 : e.mode === 'seal' ? 19 : e.mode === 'writTell' ? 20 : e.mode === 'writ' ? 21 : e.mode === 'flared' ? (e.onFoot ? 23 : 22) : e.mode === 'tilt' ? 24
+      : e.mode === 'setDown' ? 7 : e.mode === 'floodTell' ? 10 : (e.stagger > 0 || e.mode === 'reel') ? 11
       : e.onFoot ? (Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2 ? 9 : 8) : 8) : 0;
     else if (e.t === 'lampreeve') frame = e.mode === 'snuffTell' ? 4 : e.mode === 'snuff' ? 5 : e.mode === 'blinded' ? 14 : e.mode === 'lungeTell' ? 12 : (e.mode === 'lunge' || e.mode === 'lungeEnd') ? 13 : e.mode === 'takeTell' ? 8
-      : e.mode === 'sweepTell' ? 6 : e.mode === 'sweep' ? 7 : (e.mode === 'drawTell' || e.mode === 'draw') ? 8 : e.mode === 'douse' ? 9
+      : e.mode === 'sweepTell' ? 6 : e.mode === 'sweep' ? 7 : e.mode === 'flaskTell' ? 15 : e.mode === 'flask' ? 16   /* (claude/lamplit2) the OIL FLASK's own windup and throw */
       : e.dying > 0 ? 11 : e.stagger > 0 ? 10 : Math.abs(e.vx) > 6 ? Math.floor(e.anim * 8) % 4 : 0;
     else if (e.t === 'watch') frame = (e.mode === 'thrust' || e.mode === 'sweep') ? 6 : (e.mode === 'thrustTell' || e.mode === 'sweepTell') ? 5 : (e.mode === 'guard' || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? [1, 0, 4, 0][Math.floor(e.anim * 9) % 4] : 0;
@@ -30423,6 +30613,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'drownedking' && e.alive) drawKingMarks(e, cx, cy);
     if ((e.t === 'drownedknight' || e.t === 'drownedcaptain') && e.alive) drawKnightMarks(e, cx, cy);
     if (e.t === 'whelp' && e.alive) drawWhelpMarks(e, cx, cy);
+    if ((e.t === 'lampreeve' || e.t === 'tollmaster') && e.alive) drawLampMarks(e, cx, cy);   /* (claude/lamplit2) the flask's shadow, the scales, the seal, the toll's stream; OPEN and WARDED */
     if (e.t === 'roc' && e.alive && (e.mode === 'diveTell' || e.mode === 'dive') && e.tx !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 16), fy = Math.round(L.arena.floor - cy); g.globalAlpha = 0.25 + 0.25 * k; g.fillStyle = '#1b1626'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 16 + k * 3, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }
     if (e.t === 'manta' && e.alive && (e.mode === 'diveTell' || e.mode === 'dive') && e.tx !== undefined && e.landY !== undefined) { const k = 0.5 + 0.5 * Math.sin(time * 14), fy = Math.round(e.landY - cy); g.globalAlpha = 0.3 + 0.3 * k; g.fillStyle = '#0e1420'; g.beginPath(); g.ellipse(Math.round(e.tx - cx), fy - 1, 14 + k * 4, 4, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1; }   /* HER SHADOW is the tell: it runs on the deck under her before she ever leaves the air, the same trick the Roc's dive uses off a cliff */
     // WHILE SHE IS WARDED SHE WEARS IT: a violet shell round her that turns over slowly and flares white

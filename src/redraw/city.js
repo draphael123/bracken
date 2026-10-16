@@ -369,6 +369,9 @@ export function bakeLampreeve() {
       for (let t = 2; t < len; t += 1) { const sp = 1 + t * 0.42;
         for (let s = -sp; s <= sp; s += 1) if (((t + s) & 1) === 0 || t < 5) put(g, ...A(t, s).map(Math.round), Math.abs(s) > sp - 1.2 ? 'T' : Math.abs(s) > sp - 2.4 ? 'Z' : 'z'); } });
     if (o.puff) layer(G, g => { const [ux, uy] = P(o.puff); for (const [a, b, k] of [[0, 0, 'z'], [2, -1, 'Z'], [-2, 1, 'z'], [4, 1, 'Z'], [-1, -3, 'z'], [3, -4, 'Z'], [6, -2, 'z']]) put(g, ux + a, uy + b, k); });
+    if (o.flask) layer(G, g => { const [fx, fy] = P(o.flask);   /* (claude/lamplit2) THE OIL FLASK: a glass of whale oil, corked, a rag of wick in its neck */
+      for (let j = 0; j < 5; j++) for (let i = -2; i <= 2; i++) if (!(j === 4 && Math.abs(i) === 2)) put(g, fx + i, fy + j, Math.abs(i) === 2 ? 'T' : j < 2 ? 't' : 'y');
+      put(g, fx, fy - 1, 'u'); put(g, fx, fy - 2, 'u'); put(g, fx + 1, fy - 3, 'x'); put(g, fx, fy - 3, 'X'); });
     const c = q(G);
     if (o.smear) smear(c, ...o.smear);
     return c;
@@ -403,7 +406,13 @@ export function bakeLampreeve() {
     smear: [1 + X + 6, 1 + 22, 8, -60, 0] });
   const blinded = frame({ legs: 'stand', dx: -1, up: true, ladder: true,
     far: [[-2, 18], [1, 14]], near: [[3, 18], [4, 14]], pole: [[-4, 24], -120, 20, 'back'] });
-  return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel, lungeTell, lunge, blinded], X + 1, H + 1, 14, 30);
+  /* (claude/lamplit2, greybox for the art lane) THE OIL FLASK: drawn back over his shoulder, the pole low in the other hand - then lobbed */
+  const flaskTell = frame({ legs: 'coil', dx: -1, up: true, ladder: true, hx: -1,
+    far: [[-3, 23], [-1, 27]], near: [[0, 19], [-5, 14]], pole: [[-1, 27], 20, 20, 'back'], flask: [-6, 9] });
+  const flaskThrow = frame({ legs: 'lunge', dx: 1, dy: 1, ladder: true,
+    far: [[-3, 23], [-1, 27]], near: [[5, 19], [10, 13]], pole: [[-1, 27], 30, 20, 'back'],
+    smear: [1 + X + 6, 1 + 16, 10, -150, -60] });
+  return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel, lungeTell, lunge, blinded, flaskTell, flaskThrow], X + 1, H + 1, 14, 30);
 }
 
 // ---------- THE TOLLMASTER ----------
@@ -461,8 +470,10 @@ export function bakeTollmaster() {
   ];
   // THE BIER: four poles on four shoulders, a board, and him on it. Drawn under him while he is carried, and
   // gone the moment he steps off, which is the only way phase two can be read from across the room.
-  const bier = (G, B, dy) => {
+  const bier = (G, B, dy, tilt = 0) => {
     const y0 = 30 + dy;
+    if (tilt) { for (let x = B - 16; x <= B + 16; x++) { const t = Math.round((x - B) * tilt * 0.22); put(G, x, y0 + t, 'w'); put(G, x, y0 + 1 + t, 'W'); put(G, x, y0 + 2 + t, 'U'); }   /* (claude/lamplit2) A BEARER STUMBLES: the bier goes down at his corner */
+      for (const sx of [-13, -9, 9, 13]) { const t = Math.round(sx * tilt * 0.22), n = Math.sign(sx) === Math.sign(tilt) ? 3 : 6; for (let j = 3; j < 3 + n; j++) put(G, B + sx, y0 + j + t, j & 1 ? 'W' : 'w'); } return; }
     for (let x = B - 14; x <= B + 14; x++) { put(G, x, y0, 'w'); put(G, x, y0 + 1, 'W'); put(G, x, y0 + 2, 'U'); }
     for (const sx of [-13, -9, 9, 13]) { for (let j = 3; j < 8; j++) put(G, B + sx, y0 + j, j & 1 ? 'W' : 'w'); }
     for (let x = B - 16; x <= B + 16; x += 1) put(G, x, y0 - 1, (x & 3) === 0 ? 'U' : 'u');   // the rail along it
@@ -519,7 +530,7 @@ export function bakeTollmaster() {
   const frame = o => {
     const G = blank(W, H), B = X + (o.dx || 0), dy = o.dy || 0, O = B - 5;
     const P = v => [B + v[0], v[1] + dy];
-    if (o.bier) bier(G, B, dy);
+    if (o.bier) bier(G, B, dy, o.tilt || 0);
     if (o.book && o.book[3] === 'back') layer(G, g => { const c = ledger(g, P(o.book[0]), o.book[1], o.book[2]); chain(g, P(o.wrist), c.map(Math.round)); });
     if (o.rod && o.rod[3] === 'back') layer(G, g => rod(g, P(o.rod[0]), o.rod[1], o.rod[2], o.weight));
     skirt(G, B, dy, o.skirt);
@@ -529,6 +540,14 @@ export function bakeTollmaster() {
     if (o.rod && o.rod[3] !== 'back') layer(G, g => rod(g, P(o.rod[0]), o.rod[1], o.rod[2], o.weight));
     if (o.book && o.book[3] !== 'back') layer(G, g => { const c = ledger(g, P(o.book[0]), o.book[1], o.book[2]); chain(g, P(o.wrist), c.map(Math.round)); });
     arm(G, P([3, 22]), P(o.near[0]), P(o.near[1]), false);
+    if (o.box) layer(G, g => { const [bx, by] = P(o.box);   /* (claude/lamplit2) THE TOLL BOX: brass-bound, a coin slot in its lid - the flames go into it */
+      for (let j = -3; j <= 2; j++) for (let i = -3; i <= 3; i++) put(g, bx + i, by + j, j === -3 ? 'y' : (i === -3 || i === 3 || j === 2) ? 'Y' : 'U');
+      put(g, bx, by - 3, 'j'); put(g, bx + 1, by - 3, 'j'); if (o.box[2]) for (const [a, b] of [[-1, -5], [1, -6], [0, -7], [2, -5]]) put(g, bx + a, by + b, (a + b) & 1 ? 'x' : 'X'); });
+    if (o.seal) layer(G, g => { const [sx, sy] = P(o.seal);   /* THE SEAL OF DEBT: a brass handle and a disc of red wax */
+      gline(g, sx, sy - 5, sx, sy, 'y'); for (let j = 0; j <= 2; j++) for (let i = -4; i <= 4; i++) if (Math.abs(i) + j < 5) put(g, sx + i, sy + 1 + j, j === 2 ? 'R' : 'r'); });
+    if (o.writ) layer(G, g => { const [wx, wy] = P(o.writ);   /* THE WRIT OF DROWNING: a scroll held open, its seal hanging */
+      for (let j = -6; j <= 6; j++) for (let i = -3; i <= 3; i++) put(g, wx + i, wy + j, (i === -3 || i === 3) ? 'L' : (j & 1) ? 'l' : 'A'); put(g, wx, wy + 7, 'r'); put(g, wx, wy + 8, 'R'); });
+    if (o.burn) layer(G, g => { for (const [a, b] of [[-8, 26], [-5, 22], [6, 24], [9, 28], [-3, 30], [4, 31], [0, 20], [-10, 32], [11, 33]]) { put(g, B + a, b + dy, (a & 1) ? 'x' : 'X'); put(g, B + a, b + dy - 1, 'x'); } });   /* HIS ROBES CATCH: the relit flare in the purple */
     if (o.out) layer(G, g => { // the light going out of him: black beads coming off his hands
       for (const [a, b] of [[-9, -6], [-5, -9], [0, -11], [5, -9], [9, -6], [-7, -2], [7, -2]]) put(g, B + a, 18 + dy + b, (a & 1) ? 'z' : 'Z'); });
     const c = q(G);
@@ -576,5 +595,33 @@ export function bakeTollmaster() {
   const kneel = frame({ skirt: 'pooled', dy: 4, down: true,
     far: [[-6, 29], [-9, 32]], near: [[4, 29], [6, 33]],
     book: [[-1, 36], 0, false], wrist: [4, 29], rod: [[6, 33], 84, 14] });
-  return pack([idle, ledgerTell, ledgerHit, tollTell, toll, darkTell, dark, setDown, walkA, walkB, floodTell, hurtF, kneel], X + 1, H + 1, 18, 30);
+  /* (claude/lamplit2, greybox for the art lane: B16 - every new move its OWN windup and release) */
+  const collectTell = frame({ bier: true, skirt: 'bier', up: true, dy: -1,
+    far: [[-5, 24], [-3, 27]], near: [[5, 20], [7, 13]], book: [[-2, 28], 0, false], wrist: [-5, 24], box: [8, 10] });
+  const collect = frame({ bier: true, skirt: 'bier', dx: 1,
+    far: [[-5, 24], [-3, 27]], near: [[5, 22], [11, 19]], book: [[-2, 28], 0, false], wrist: [-5, 24], box: [13, 18, true] });
+  const scalesLowTell = frame({ bier: true, skirt: 'bier', dx: -1, hx: -1,
+    far: [[-5, 24], [-3, 27]], near: [[1, 23], [-6, 27]], book: [[-2, 28], 0, false], wrist: [-5, 24], rod: [[-6, 27], 196, 12, 'back'], weight: true });
+  const scalesHighTell = frame({ bier: true, skirt: 'bier', dx: -1, up: true,
+    far: [[-5, 24], [-3, 27]], near: [[1, 20], [-7, 15]], book: [[-2, 28], 0, false], wrist: [-5, 24], rod: [[-7, 15], -160, 12, 'back'], weight: true });
+  const scalesSwing = frame({ bier: true, skirt: 'bier', dx: 1,
+    far: [[-5, 24], [-3, 27]], near: [[5, 23], [11, 23]], book: [[-2, 28], 0, false], wrist: [-5, 24], rod: [[11, 23], 6, 12], weight: true,
+    smear: [1 + X + 10, 1 + 26, 16, -70, 50] });
+  const sealTell = frame({ skirt: 'stand', up: true, dy: -1,
+    far: [[-6, 25], [-8, 28]], near: [[5, 19], [6, 10]], book: [[-2, 31], 0, false], wrist: [-6, 25], seal: [6, 8] });
+  const sealHit = frame({ skirt: 'wide', dx: 1, dy: 2, down: true,
+    far: [[-6, 26], [-9, 29]], near: [[5, 26], [12, 33]], book: [[-2, 33], 0, false], wrist: [-6, 26], seal: [13, 34],
+    smear: [1 + X + 12, 1 + 22, 14, -80, 60] });
+  const writTell = frame({ skirt: 'stand', down: true,
+    far: [[-6, 24], [-2, 22]], near: [[5, 24], [5, 21]], wrist: [-2, 22], book: [[-6, 31], 0, false], writ: [2, 21] });
+  const writRead = frame({ skirt: 'wide', up: true, dy: -1,
+    far: [[-6, 21], [-1, 15]], near: [[5, 21], [6, 15]], wrist: [-1, 15], book: [[-6, 31], 0, false], writ: [3, 13] });
+  const flared = frame({ bier: true, skirt: 'bier', dx: -2, up: true, burn: true,
+    far: [[-6, 21], [-11, 15]], near: [[5, 21], [10, 15]], book: [[-14, 22], -60, true], wrist: [-11, 15], rod: [[10, 15], -30, 14] });
+  const flaredFoot = frame({ skirt: 'pooled', dx: -2, dy: 1, up: true, burn: true,
+    far: [[-6, 22], [-11, 16]], near: [[5, 22], [10, 16]], book: [[-14, 24], -60, true], wrist: [-11, 16], rod: [[10, 16], -30, 14] });
+  const tiltL = frame({ bier: true, skirt: 'bier', dx: -2, dy: 2, tilt: -1, up: true,
+    far: [[-6, 25], [-11, 29]], near: [[5, 24], [9, 19]], book: [[-12, 32], 30, false], wrist: [-11, 29], rod: [[9, 19], -40, 14] });
+  return pack([idle, ledgerTell, ledgerHit, tollTell, toll, darkTell, dark, setDown, walkA, walkB, floodTell, hurtF, kneel,
+    collectTell, collect, scalesLowTell, scalesHighTell, scalesSwing, sealTell, sealHit, writTell, writRead, flared, flaredFoot, tiltL], X + 1, H + 1, 18, 30);
 }
