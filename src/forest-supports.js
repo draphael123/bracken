@@ -17,8 +17,14 @@ export function addForestSupports(L, id, T, islandsOf) {
     for (const j of s.cells) { const x = j % W, y = (j / W) | 0; if (cellSet.has(j + W)) continue; if (!low.has(x) || low.get(x) < y) low.set(x, y); }
     const xs = [...low.keys()].sort((a, b) => a - b), runs = []; let cur = null;
     for (const x of xs) { if (cur && x === cur[cur.length - 1] + 1) cur.push(x); else { cur = [x]; runs.push(cur); } }
-    const picks = [];
+    const picks = [], widths = new Map();
     for (const r of runs) {
+      if (kind === 'rock') {   /* THE SCREE PATH (claude/screefix): a hoodoo of the hill's rock under the slab, as wide as the slab lets it - one for a short ledge, a pier set in a tile from each end of a long one */
+        const n = r.length, grounded = x => { let b = low.get(x) + 1; while (b < H - 1 && b - low.get(x) <= GROUND && g[b * W + x] === T.AIR) b++; return g[b * W + x] !== T.AIR && b - low.get(x) <= GROUND; },   /* the pier stands where there is ground to stand on: the nearest column to its ideal spot that has some */
+          near = (x, d) => { for (const dx of [0, -1, 1, -2, 2]) { const q = x + dx; if (low.has(q) && q >= r[0] && q <= r[n - 1] && Math.abs(q - x) <= d && grounded(q)) return q; } return x; };
+        if (n <= 5) { const x = near(r[(n - 1) >> 1], 2); picks.push(x); widths.set(x, n <= 2 ? 12 : Math.min(24, 10 + n * 3)); }
+        else { const a = near(r[1], 2), b = near(r[n - 2], 2); picks.push(a, b); widths.set(a, 18); widths.set(b, 18); for (let k = a + 9; k < b - 4; k += 9) { const q = near(k, 2); picks.push(q); widths.set(q, 16); } }
+        continue; }
       if (r.length <= 3) picks.push(r[(r.length - 1) >> 1]);
       else { picks.push(r[0], r[r.length - 1]); for (let k = STEP; k < r.length - 4; k += STEP) picks.push(r[k]); }
     }
@@ -27,7 +33,7 @@ export function addForestSupports(L, id, T, islandsOf) {
       let free = false;
       if (g[b * W + x] === T.AIR || b - y > GROUND) { free = true; b = y + 1; const n = FREE_LEN[kind]; while (b - y <= n && b < H - 1 && g[b * W + x] === T.AIR) b++; b = Math.min(b, y + 1 + n); }
       if (b - y < 2) continue;
-      L.routeSupports.push({ x, y, bottom: b, kind, free }); have.add(x + ',' + y); }
+      L.routeSupports.push(widths.has(x) ? { x, y, bottom: b, kind, free, w: widths.get(x) } : { x, y, bottom: b, kind, free }); have.add(x + ',' + y); }
   }
   return L;
 }

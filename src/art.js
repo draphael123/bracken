@@ -1221,11 +1221,13 @@ export function bakeShelf(seed) { const rnd = mulberry(seed); const [c, g] = can
 /* LOOSE ROCK (THE SCREE PATH, 2026-09-23): the snapping shelf in stone - a slab of the hill split off its bed, a crack across it,
    grit already trickling off its underside. It must read as footing AND as a slab that is not holding. */
 export function bakeLooseRock(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T);
-  /* (claude/scree2: OCHRE - only the Scree Path has loose rock, and its cold blue-grey read as ice) */
-  rect(g, 0, 1, T, 6, '#7a6046'); rect(g, 0, 1, T, 1, '#c8a070'); rect(g, 0, 6, T, 1, '#3e3024'); rect(g, 1, 7, T - 3, 1, '#5a4632');
-  const cx = 4 + ((rnd() * 8) | 0); for (let y = 1; y < 7; y++) px(g, cx + ((y % 2) ? 1 : 0), y, '#2e2218');   /* the crack */
-  for (let i = 0; i < 5; i++) px(g, (rnd() * T) | 0, 2 + ((rnd() * 4) | 0), '#a8865a');
-  for (let i = 0; i < 3; i++) px(g, 1 + ((rnd() * (T - 2)) | 0), 8 + ((rnd() * 4) | 0), '#6b5238');             /* grit under it */
+  /* (claude/screefix: it was a brown ochre slab with a dark crack - "a wooden plank ledge on a mountain path". Now a SLAB OF THE HILL'S OWN ROCK that is plainly BROKEN: the ground's strata and rim, two jagged cracks right through it, a chipped lip, pale grit sifting from the seams - the snapping shelf reads as rock about to go) */
+  const R = ['#8a7a70', '#9c8b7e', '#7a6a62', '#6c5d56'], rim = '#d8aa7c', dark = '#3a2e38', dust = '#d8c0a0';
+  rect(g, 0, 1, T, 7, R[0]); rect(g, 0, 1, T, 1, rim); rect(g, 0, 2, T, 1, R[1]); rect(g, 0, 4, T, 1, R[2]); rect(g, 0, 6, T, 1, R[3]); rect(g, 0, 7, T, 1, dark); rect(g, 1, 8, T - 3, 1, R[3]); rect(g, 3, 9, T - 7, 1, R[2]);   /* the slab: lit rim, strata, shaded underside, a ragged lower lip */
+  g.clearRect(0, 1, 1, 1); g.clearRect(T - 1, 1, 1, 1); g.clearRect(T - 1, 7, 1, 2);   /* chipped corners */
+  for (let k = 0; k < 2; k++) { let x = 3 + k * 6 + ((rnd() * 4) | 0); for (let y = 1; y < 9; y++) { px(g, x, y, dark); if (y % 2 === 0) x += rnd() < 0.5 ? -1 : 1; if (y > 3 && rnd() < 0.5) px(g, x + 1, y, R[3]); } }   /* two cracks right through it */
+  for (let i = 0; i < 6; i++) px(g, (rnd() * T) | 0, 2 + ((rnd() * 4) | 0), i % 2 ? R[1] : R[3]);
+  for (let i = 0; i < 4; i++) { const x = 2 + ((rnd() * (T - 4)) | 0); px(g, x, 10 + ((rnd() * 2) | 0), dust); if (rnd() < 0.6) px(g, x, 12 + ((rnd() * 3) | 0), '#b8a088'); }   /* grit sifting from the seams */
   return c; }
 // Puffball: a pale ball that bursts into spores.
 export function bakePuffball() { const [c, g] = canvas(14, 12); ellipse(g, 7, 7, 6.5, 5, '#e8e0d0', '#c8bcb0'); ellipse(g, 5, 5, 3, 2, '#fff8f0'); px(g, 7, 2, '#b8a8a0'); rect(g, 5, 11, 4, 1, '#a89890'); return outline(c, OUT); }
@@ -1868,7 +1870,14 @@ function cairnStones(g, rnd, STONES) {
 export function bakeDrystone(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 0; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } return c; }
 export function bakeDrystoneTop(seed) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#4a4f5a'); for (let y = 3; y < T; y += 4) { let x = (y / 4) % 2 ? 2 : 0; while (x < T) { const w = 3 + ((rnd() * 4) | 0); rect(g, x, y, Math.min(w, T - x), 3, rnd() < 0.5 ? '#7c8797' : '#6a707c'); px(g, x, y, '#9aa3b0'); x += w + 1; } } for (let x = 0; x < T; x += 3) { rect(g, x, 0, 2, 3, '#8a919c'); px(g, x, 0, '#b0b8c4'); } return c; }
 // Scree: a loose grey top tile. Anything standing on it slides.
-export function bakeScreeTop(seed, dir) { const rnd = mulberry(seed); const [c, g] = canvas(T, T); rect(g, 0, 0, T, T, '#5a4632'); rect(g, 0, 0, T, 5, '#7a6046'); for (let i = 0; i < 14; i++) { const x = (rnd() * T) | 0, y = (rnd() * T) | 0; rect(g, x, y, 2, 1, rnd() < 0.5 ? '#a8865a' : '#6b5238'); } for (let i = 0; i < 3; i++) { const x = 2 + i * 5; px(g, x + (dir > 0 ? 1 : 0), 2, '#d8b888'); px(g, x, 3, '#c8a070'); } return c; }   /* (claude/scree2: OCHRE scree - its blue-grey read as ice; the arrows of light pebbles still run the way it slides) */
+export function bakeScreeTop(seed, dir) {   /* (claude/screefix, Daniel 2026-10-15: "a wooden plank ledge on a mountain path"): LOOSE SHALE, not a board. A heap of tumbled stones in the ground rock's own colours (src/redraw/crag_redress.js CRAG_PAL.scree) under a lit rim, with pale dust streaming off behind the pebbles that are moving - the direction it slides is told by the dust trails and one leading chip, never an arrow on a plank */
+  const rnd = mulberry(seed), [c, g] = canvas(T, T), R = ['#8a7a70', '#9c8b7e', '#7a6a62', '#6c5d56'], rim = '#d8aa7c', dark = '#4a3e3a', dust = '#dcc4a4', dustD = '#b8a088';
+  rect(g, 0, 0, T, T, R[2]);
+  for (let x = 0; x < T;) { const w = 2 + ((rnd() * 3) | 0), h = 3 + ((rnd() * 3) | 0), y = (rnd() * 2) | 0, col = R[(rnd() * 3) | 0]; rect(g, x, y, w, h, col); rect(g, x, y, w, 1, rnd() < 0.55 ? R[1] : rim); rect(g, x + w - 1, y + 1, 1, h - 1, R[3]); rect(g, x, y + h, w, 1, dark); x += w; }   /* the top course: stones, each lit above and shaded under */
+  for (let k = 0; k < 46; k++) px(g, (rnd() * T) | 0, 6 + ((rnd() * 10) | 0), R[(rnd() * 4) | 0]);   /* the heap below: gravel */
+  for (let k = 0; k < 4; k++) { const x = 1 + ((rnd() * 12) | 0), y = 7 + ((rnd() * 7) | 0); rect(g, x, y, 3, 2, R[(rnd() * 2) | 0 ? 1 : 0]); rect(g, x, y, 3, 1, R[1]); px(g, x + 2, y + 1, dark); }   /* chips set in it */
+  for (let k = 0; k < 3; k++) { const y = 1 + k * 2, x = 3 + ((rnd() * 9) | 0), len = 3 + ((rnd() * 3) | 0); for (let i = 1; i <= len; i++) { const xx = dir > 0 ? x - i : x + i; if (xx >= 0 && xx < T) px(g, xx, y, i < 3 ? dust : dustD); } px(g, x, y, '#f0e0c0'); }   /* a pebble on the move, its dust streaming back behind it */
+  return c; }   /* (the old board: #5a4632 / #7a6046 ochre with light arrows, which read as a plank) */
 // A falling boulder, 14×12, and its shatter is particles.
 export function bakeBoulder() { const [c, g] = canvas(14, 12); ellipse(g, 7, 6, 6.5, 5.5, '#6a707c', '#4a4f5a'); ellipse(g, 5, 4, 3, 2, '#9aa3b0'); px(g, 9, 8, '#4a4f5a'); px(g, 3, 8, '#4a4f5a'); return outline(c, OUT); }
 // The shepherd's bothy: a stone hut with a turf roof, a lit window and a chimney. 56×40.

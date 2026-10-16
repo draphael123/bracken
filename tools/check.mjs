@@ -24,7 +24,9 @@
 //   floaters  no prop standing on nothing
 //   temple-guardian  THE TEMPLE GUARDIAN 2: its raised blocks are solid (no fall-through), a bell in reach or its own thrown stone staggers it, its ward, B15 damage
 //   monk-machines  every prayer-wheel stair can be stood on and climbed, no bare SOLID slab in a monk level's sky
-//   solid-islands  no loose board / slab in the air without a DRAWN support (post, hanger, frame, machine) or a reasoned allowance (tools/solid-islands.mjs)
+//   solid-islands  no loose board / slab in the air without a DRAWN support (post, hanger, frame, machine) or a reasoned allowance (tools/solid-islands.mjs);
+//                  a post only counts when it starts under its slab and its foot reaches a solid within 8 px (POST_REACH_PX, claude/screefix)
+//   visible-supports-strict  (headless) scree + spire: every overhang has a support whose INK a player can see, deck to ground (tools/visible-supports.mjs --strict)
 //   audit     signs, NPCs and ledges on ground; no one-way ledge no jump can reach
 //   content   the gaps that fail silently (sprites, tables, names)
 //   talents   every talent node is read somewhere
@@ -234,6 +236,9 @@ for (const t of ['tells', 'shake-mode', 'hero-trials', 'ore-road', 'ore-ride', '
    stays a gate: adding a report-only sweep must not turn a shipped assertion off. Each name is a standalone tool so the
    release script can rerun a reported failure by the same check-name field it has always used. */
 for (const t of ['drawn-solids-sweep', 'visible-supports']) if (take(t)) results.push(run(t, process.execPath, ['tools/' + t + '.mjs']));
+/* THE SCREE PATH AND THE MONASTERY ARE A GATE (claude/screefix, Daniel 2026-10-15: floating slabs on thin posts, floating architecture): every overhang of the two has a VERIFIED visible
+   support - the strict run, on a port of its own so it never shares the report-only sweep's server. Other levels stay report-only until their art lanes clear the backlog. */
+if (take('visible-supports-strict')) results.push(run('visible-supports-strict', process.execPath, ['tools/visible-supports.mjs', 'scree', 'spire', '--strict'], { PORT: String(portFor(1)) }));
 if (take('lab-order')) results.push(run('lab-order', process.execPath, ['tools/lab-order.mjs']));
 /* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));

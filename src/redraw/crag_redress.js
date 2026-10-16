@@ -88,7 +88,7 @@ export function bakeCragFar(theme = 'scree') {
   const W = 320, H = 90, [c, g] = canvas(W, H);
   if (theme === 'scree') { circle(g, 236, 60, 9, '#ffe8b0'); circle(g, 236, 60, 7, '#fff6d8');                          // the low sun, behind the range
     range(g, W, H, x => 44 + 12 * per(W, 2, x) + 8 * per(W, 5, x, 1) + 4 * per(W, 11, x), '#a67890', '#c898a8', '#e8c8d0', 44);
-    range(g, W, H, x => 60 + 10 * per(W, 3, x, 2) + 5 * per(W, 7, x) , '#7e5a7e', '#a07a98', null, 0); }
+    range(g, W, H, x => 60 + 10 * per(W, 3, x, 2) + 5 * per(W, 7, x) , '#7e5a7e', '#a07a98', null, 0);  }
   else if (theme === 'hanging') { range(g, W, H, x => 38 + 16 * per(W, 2, x, 0.5) + 6 * per(W, 6, x) + 3 * per(W, 13, x), '#9ab0c8', '#c0d0e0', '#f4f6fa', 44);
     range(g, W, H, x => 58 + 9 * per(W, 3, x, 1) + 5 * per(W, 8, x, 2), '#7e94ae', '#a0b4c8', '#e0e8f0', 56); }
   else { range(g, W, H, x => 34 + 18 * Math.abs(per(W, 3, x)) + 8 * per(W, 9, x) + 5 * per(W, 17, x), '#2c3040', '#8a9ab8', null, 0);   // jagged, lit at the rim by the lightning
@@ -104,7 +104,8 @@ export function bakeCragMid(theme = 'scree') {
     range(g, W, H, x => 62 + 18 * per(W, 2, x, 0.3) + 8 * per(W, 5, x) + 3 * per(W, 13, x), '#6a4e6a', '#b0788a', null, 0);    // the foothills, west faces warm
     for (let k = 0; k < 6; k++) { const x0 = 30 + k * 80; for (let y = 0; y < 50; y++) { const w = 2 + (y >> 2); for (let x = 0; x < w; x += 2) px(g, x0 + x - (y >> 3), 80 + y, '#8a6a7e'); } }   // scree fans down the slopes
     for (let k = 0; k < 26; k++) { const x = (k * 37 + 11) % W, b = 90 + ((k * 13) % 40); pine(g, x, b, 12 + (k % 4) * 3, '#3e3448', '#54465e'); }
-    rect(g, 330, 58, 10, 26, '#5a4458'); rect(g, 328, 56, 14, 3, '#6e5470'); rect(g, 333, 64, 3, 5, '#2a2030'); px(g, 334, 66, '#ffc860');   // a ruined watchtower, one lamp still lit
+    const ridge = x => 62 + 18 * per(W, 2, x, 0.3) + 8 * per(W, 5, x) + 3 * per(W, 13, x);   /* THE LANDMARKS (claude/screefix, A8): they stand ON the foothill ridge so they rise into the sky - the far sheet is hidden behind this one. 118 / 214 / 330 are 100 apart: two of the three are on every screen (the mid sheet shows two thirds of its 480) */
+    windmillFar(g, 118, Math.round(ridge(118)) + 8); cragBeacon(g, 214, Math.round(ridge(214)) + 6, 30); ruinedKeep(g, 330, Math.round(ridge(330)) + 8);
   } else if (theme === 'hanging') {
     range(g, W, H, x => 18 + 8 * per(W, 3, x) + 4 * per(W, 11, x, 1), '#7e7468', '#b0a490', null, 0);                          // the cliff face the village hangs on (warm, and a step darker than the sky)
     for (let k = 0; k < 16; k++) { const y = 34 + k * 7, x0 = (k * 71) % W; for (let x = 0; x < 90 + (k % 3) * 30; x++) { px(g, (x0 + x) % W, y + Math.round(Math.sin(x * 0.1) * 1.5), '#a8a498'); px(g, (x0 + x) % W, y + 1 + Math.round(Math.sin(x * 0.1) * 1.5), '#6e6c66'); } }   // ledges along the strata, lit over shaded
@@ -123,10 +124,49 @@ export function bakeCragMid(theme = 'scree') {
   }
   return c; }
 
+// ---------------- THE LANDMARKS AND ROCK (claude/screefix) ----------------
+const glowDisc = (g, x, y, r, rgb, a) => { for (let k = r; k > 0; k -= 2) circle(g, x, y, k, 'rgba(' + rgb + ',' + (a * (1 - k / r) + 0.04).toFixed(3) + ')'); };
+/* THE DROVERS' BEACON: a stone signal tower on the back range, a lit slit and a cresset fire with its glow */
+function cragBeacon(g, x, base, th = 22) {
+  rect(g, x - 5, base - th, 10, th + 3, '#5a4062'); rect(g, x - 5, base - th, 2, th + 3, '#8a6a8a'); rect(g, x + 3, base - th, 2, th + 3, '#3e2c48');
+  for (let y = base - th + 4; y < base; y += 5) rect(g, x - 5, y, 10, 1, '#4a3454');          // courses
+  rect(g, x - 7, base - th - 3, 14, 3, '#6c5278'); for (let k = 0; k < 3; k++) rect(g, x - 7 + k * 5, base - th - 5, 3, 2, '#6c5278');   // the parapet
+  rect(g, x - 1, base - th + 6, 2, 5, '#ffc860'); rect(g, x - 1, base - th + 6, 2, 1, '#fff0b0');   // the lit slit
+  rect(g, x - 5, base + 1, 10, 3, '#46324e'); fillPoly(g, [[x - 9, base + 6], [x - 5, base], [x + 5, base], [x + 9, base + 6]], '#4a3458');   // its mound
+  glowDisc(g, x, base - th - 9, 12, '255,170,80', 0.22);
+  rect(g, x - 2, base - th - 9, 4, 4, '#ff9a3c'); rect(g, x - 1, base - th - 12, 2, 4, '#ffd070'); px(g, x, base - th - 14, '#fff0b0');   // the flame
+}
+/* THE RUINED KEEP (mid): a broken tower, a lean-to wall, two lamps still burning, a torn pennant */
+function ruinedKeep(g, x, base) {
+  const col = '#5a4458', dk = '#46344a', lt = '#8a6a82';
+  rect(g, x, base - 44, 16, 46, col); rect(g, x, base - 44, 2, 46, lt); rect(g, x + 13, base - 44, 3, 46, dk);
+  fillPoly(g, [[x - 1, base - 44], [x + 3, base - 49], [x + 6, base - 45], [x + 9, base - 51], [x + 13, base - 46], [x + 17, base - 48], [x + 17, base - 44]], col);   // the broken crown
+  rect(g, x - 40, base - 14, 40, 16, col); rect(g, x - 40, base - 14, 40, 1, lt); for (let k = 0; k < 5; k++) rect(g, x - 40 + k * 9, base - 17, 4, 3, col);   // the wall
+  for (const [dx, dy] of [[5, -30], [5, -16], [-22, -7]]) { rect(g, x + dx, base + dy, 3, 5, '#1e1626'); if ((dx + dy) % 2 === 0) { rect(g, x + dx, base + dy + 1, 3, 3, '#ffc860'); glowDisc(g, x + dx + 1, base + dy + 2, 8, '255,190,90', 0.2); } }
+  line(g, x + 12, base - 49, x + 12, base - 58, '#3a2c3a'); fillPoly(g, [[x + 12, base - 58], [x + 21, base - 56], [x + 17, base - 54], [x + 20, base - 52], [x + 12, base - 53]], '#a04a4a');
+}
+/* THE HILL FARM'S MILL (mid): a tapering tower, a cap and four sails */
+function windmillFar(g, x, base) {
+  const col = '#5e485c', lt = '#8a6a82';
+  fillPoly(g, [[x - 7, base], [x - 4, base - 30], [x + 4, base - 30], [x + 7, base]], col); rect(g, x - 6, base - 20, 1, 20, lt); rect(g, x + 3, base - 24, 3, 24, '#46344a');
+  fillPoly(g, [[x - 6, base - 30], [x, base - 38], [x + 6, base - 30]], '#4a3450');
+  const hx = x, hy = base - 28; for (const [dx, dy] of [[-16, -12], [16, 12], [12, -16], [-12, 16]]) { line(g, hx, hy, hx + dx, hy + dy, '#3a2c3a'); line(g, hx + (dx > 0 ? 2 : -2), hy + (dy > 0 ? 1 : -1), hx + dx * 0.9 + (dy < 0 ? 3 : -3), hy + dy * 0.9 + (dx > 0 ? -3 : 3), '#7a5a72'); }
+  rect(g, hx - 1, hy - 1, 3, 3, '#2a2030');
+}
+/* A NEAR OUTCROP: a crag standing up out of the foot - strata that run level, a lit west face, a lit rim, shade under, cracks, a few tufts on it */
+function nearOutcrop(g, x0, w, h, H, dark, lit) {
+  const pts = [[0, H], [6, H - h + 20], [w * 0.4, H - h], [w * 0.8, H - h + 14], [w, H]], top = xx => { for (let i = 0; i < pts.length - 1; i++) { const [a, b] = [pts[i], pts[i + 1]]; if (xx >= a[0] && xx <= b[0]) return a[1] + (b[1] - a[1]) * ((xx - a[0]) / Math.max(1, b[0] - a[0])); } return H; };
+  const bands = [dark, '#44344a', dark, '#2e2230', dark, '#3e3042'], rnd = mulberry(x0 + h);
+  for (let dx = 0; dx < w; dx++) { const t = Math.round(top(dx)); for (let y = t; y < H; y++) px(g, x0 + dx, y, bands[(((y + Math.round(Math.sin(dx * 0.4) * 1.4)) / 5) | 0) % 6]);
+    px(g, x0 + dx, t, lit); if (dx < 3) for (let y = t; y < H; y++) px(g, x0 + dx, y, y % 3 ? lit : '#5a4050'); if (dx > w - 6) for (let y = t; y < H; y++) px(g, x0 + dx, y, '#241a28'); }
+  for (let k = 0; k < 5; k++) { let x = x0 + 8 + ((rnd() * (w - 16)) | 0), y = Math.round(top(x - x0)) + 6 + ((rnd() * 20) | 0); for (let n = 0; n < 14 && y < H; n++, y++) { px(g, x, y, '#1e1424'); if (rnd() < 0.4) x += rnd() < 0.5 ? -1 : 1; } }
+}
+
 // ---------------- THE NEAR SHAPES (640 x 300: clear but for the foot) ----------------
 export function bakeCragNear(theme = 'scree') {
   const W = 640, H = 300, [c, g] = canvas(W, H), P = CRAG_PAL[theme], dark = { scree: '#3a2c3a', hanging: '#4e4c50', storm: '#1a1c24' }[theme], lit = { scree: '#6a4a52', hanging: '#76747a', storm: '#3a4050' }[theme];
-  for (const [x, w, h] of [[0, 70, 150], [180, 50, 90], [330, 90, 120], [520, 80, 170]]) {                                   /* buttresses and boulders standing up out of the foot */
+  if (theme === 'scree') for (const [x, w, h] of [[0, 70, 150], [180, 50, 90], [330, 90, 120], [520, 80, 170]]) nearOutcrop(g, x, w, h, H, dark, lit);   /* strata, a lit west face and a lit rim, not a flat polygon (claude/screefix) */
+  else for (const [x, w, h] of [[0, 70, 150], [180, 50, 90], [330, 90, 120], [520, 80, 170]]) {                                   /* buttresses and boulders standing up out of the foot */
     fillPoly(g, [[x, H], [x + 6, H - h + 20], [x + w * 0.4, H - h], [x + w * 0.8, H - h + 14], [x + w, H]], dark);
     line(g, x + 6, H - h + 20, x + w * 0.4, H - h, lit); }
   if (theme !== 'hanging') for (let k = 0; k < 10; k++) { const x = 20 + k * 64 + ((k * 17) % 30); pine(g, x, H - 20 - ((k * 23) % 40), 30 + (k % 3) * 12, dark, lit); }
