@@ -27173,7 +27173,8 @@ function tipPay(e) {
     if (gap) sparks(e.x, e.y - e.h / 2, P.face, 5);
     /* (claude/heropassa, Daniel 10-15 ~12:40) THE TIP UP TO 2x: x1.6 at the point rising to x2.0 at full extension (DEEP SET reaches it in half the ramp - it replaces
        its +20%), x2.0 into a boss's or a mini's opening (TIP_GAP), FULL STRETCH the point's own ramp (at least x1.6). src/hero-pass.js TIP */
-    return gap ? TIP_GAP : tipMul(stretch ? Math.max(d, TIP_AT) : d, TIP_AT, !!tal('deepSet'));
+    const mulT = gap ? TIP_GAP : tipMul(stretch ? Math.max(d, TIP_AT) : d, TIP_AT, !!tal('deepSet')); if (HPK) HPK.tipFx(e, mulT);   /* (claude/heropassaart) the star is the multiplier */
+    return mulT;
   }
   if (d >= SHAFT_AT) return TIP_K.mid;   /* (claude/heropassa) the middle of the shaft: x0.7 (was 0.75) */
   /* THE HAFT: she has let it get inside the spear, and all this blow does is buy the ground back */
@@ -30641,6 +30642,7 @@ function drawWorld(cx, cy, showPlayer) {
       else if ((P.rush > 0 || P.lcLeft > 0) && K.R.rush) { key = 'rush'; frame = Math.floor(time * (P.lcLeft > 0 ? 18 : 14)) % 2; }
       else if (P.rushRec > 0 && K.R.recover) key = 'recover';
       else if (isReaper() && P.heavy && P.atk >= 0 && K.R.crescent) { key = 'crescent'; frame = P.atk < DK2.price.live[0] ? 0 : P.atk < DK2.price.live[1] ? 1 : 2; }   /* (claude/dk2b) THE CRESCENT CLEAVE: its own three frames */
+      else if (P.valiant && P.heavy && P.atk >= 0 && K.R.valiant) { key = 'valiant'; frame = P.atk < 0.05 ? 0 : P.atk < 0.2 ? 1 : P.atk < 0.26 ? 2 : 3; }   /* (claude/heropassaart) VALIANT STRIKE: the heavy cut with the gold standing on the blade */
       else if (P.heavy && P.atk >= 0) { key = 'heavy'; frame = P.atk < 0.05 ? 0 : P.atk < (isReaper() ? 0.16 : 0.2) ? 1 : 2;
         /* and a heavy blow has a FOLLOW-THROUGH: once it has landed he hauls the weapon back up through the swing's recover frame, instead of freezing on the strike until the timer runs out */
         if (P.atk >= (isReaper() ? 0.36 : isWarden() ? 0.30 : isGeo() ? 0.34 : 0.26) && K.R.atk && K.R.atk[3]) { key = isGeo() || isBz() ? 'heavy' : 'atk'; frame = isGeo() || isBz() ? 2 : 3; } }   /* (she stays down on the stave while her crack runs) */
@@ -30656,6 +30658,7 @@ function drawWorld(cx, cy, showPlayer) {
         if (!P.heavy && K.R.follow && (key === 'atk' || key === 'atkB' || key === 'atkC') && P.atkRecMax > 0) { key = 'follow'; frame = P.atkRec / P.atkRecMax > 0.5 ? 0 : 1; } }   /* FOLLOW-THROUGH (heroanim): the spent weapon carried on, then back to guard, inside the same recovery (art only) */   /* WEIGHT: the recovery holds the swing's last pose (a recover pose per hero is an optional art lane) */
       else if (P.rpPoseT > 0 && K.R.parry && !P.dodge && !P.swim) { key = 'parry'; frame = RP.parryFrame(P); }   /* (claude/riposteart) THE PARRY POSE: the catch the moment the blow lands on the beat, then the hold - each hero's own look */
       else if (kitPoseFrame(P, K.R)) { [key, frame] = kitPoseFrame(P, K.R); }   /* EVERY ABILITY HAS A BODY (hero-poses.js): the active that just fired, in a pose of its own - DISARM's hook among them, which borrowed the combo's backhand */
+      else if (isWarden() && P.onFoot && P.ground && K.R.wPerch && !(P.atk >= 0)) { key = 'wPerch'; frame = Math.floor(time * 2.2) % 2; }   /* (claude/heropassaart) STOOD ON THE SHAFT: bare-handed, arms out for her balance */
       else if (isWarden() && wardPose()) { const wp = wardPose(); key = wp[0]; frame = wp[1]; }   /* THE WARDEN'S BOUGHT ACTIVES (wardenKit) */
       else if (P.riseT > 0) { if (K.R.rise) { key = 'rise'; frame = P.riseT > 0.26 ? 0 : P.riseT > 0.19 ? 1 : 2; } else { key = 'atk'; frame = P.riseT > 0.2 ? 1 : 2; } }   /* THE BOUGHT RISING CUT: hip, then the blade overhead - the upward cut's own frames, never the forward swing's */
       else if (CA && CA.shotPose(K.R)) { [key, frame] = CA.shotPose(K.R); }   /* THE STEADY SHOT: fired from the crouch, the arm braced level */

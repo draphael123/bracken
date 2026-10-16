@@ -233,7 +233,7 @@ export function makeRanger(api) {
   function snatchSeeds() { const p = P(); if (!onBeat(p) || !api.seeds) return;
     for (const s of api.seeds) { if (s.dead || s.reflected || s.chain || s.noBlock || s.unblockable || s.owner === p) continue;
       const dx = (s.x - p.x) * p.face; if (dx < -4 || dx > RG.snatch.r || Math.abs(s.y - (p.y - 10)) > RG.snatch.dy) continue;
-      s.dead = true; stats.snatched++; p.parryT = 0.22; api.kitPose(p, 'rgSnatch', 0.22);
+      s.dead = true; stats.snatched++; p.parryT = 0.22; api.kitPose(p, 'rgSnatch', 0.22); p.rgSnatchFx = { x: s.x, y: s.y, hx: p.x + p.face * 14, t: 0.34, max: 0.34, fling: !(p.rgQ < maxQ()) };   /* (claude/heropassaart) the catch star */
       api.SFX.rgPick && api.SFX.rgPick(); api.hitstop(0.05); api.ringAt(p.x + p.face * 9, p.y - 12, 14, '#e8dcb0', 0.25); api.sparks(s.x, s.y, -p.face, 5);
       if (giveArrow(p, 1, 'snatch')) api.number(p.x, p.y - 28, 'SNATCHED', '#e8dcb0');
       else { stats.flung++; loose(p, { kind: 'quick', vx: p.face * RG.snatch.flingVx, vy: -20, g: RG.quick.g * 0.6, dmg: dmgBase() * RG.snatch.flingDmg, tag: ['riposte', 'shot'], free: true }); api.number(p.x, p.y - 28, 'FLUNG BACK', '#e8dcb0'); }
@@ -268,6 +268,7 @@ export function makeRanger(api) {
   function update(dt, keys, ctx) {
     const p = P(), t = T(); ensure(p);
     for (const k of ['rgBashT', 'rgCd', 'rgSnareCd', 'rgWildT', 'parryT', 'blastT']) p[k] = Math.max(0, (p[k] || 0) - dt);
+    if (p.rgSnatchFx) { p.rgSnatchFx.t -= dt; if (p.rgSnatchFx.t <= 0) p.rgSnatchFx = null; }
     if (p.rgQ > maxQ()) p.rgQ = maxQ();
     if (p.rgQ < maxQ()) { p.rgRefT = (p.rgRefT || 0) + dt; if (p.rgRefT >= refillT()) { p.rgRefT = 0; giveArrow(p, 1, 'refill'); stats.refilled++; api.SFX.rgPick && api.SFX.rgPick(); } } else p.rgRefT = 0;
     if (p.rgFlip) { p.rgFlip.t += dt; if (!(p.dodge > 0) && (p.ground || p.swim || p.rgFlip.t > 0.8)) p.rgFlip = null; }
@@ -328,7 +329,14 @@ export function makeRanger(api) {
     P2(0, '#c9d4e0'); P2(1, '#ffffff'); P2(-1, '#8a96a8', 1);                                                                /* the steel head and its barb */
     if (!dim) { P2(-len, '#f0ead8'); P2(-len + 1, '#c9352a'); P2(-len, '#f0ead8', 1); P2(-len, '#c9352a', -1); P2(-len + 1, '#f0ead8', 1); P2(-len + 1, '#f0ead8', -1); }
     else { P2(-len, '#e8e0c8'); P2(-len - 1, '#c03a2a'); } }
+  /* (claude/heropassaart) THE SNATCH, drawn: a gold four-point star on the fist where the arrow was taken, a pale ghost of the shaft drawn into the hand along its line, and a ring - the catch at game scale */
+  function drawSnatchFx(g, cx, cy, f) { const k = 1 - f.t / f.max, x = Math.round(f.hx - cx), y = Math.round(f.y - cy), r = 2 + Math.round(k * 5);
+    g.globalAlpha = Math.max(0, 1 - k * 1.2); g.fillStyle = '#fff6c8'; g.fillRect(x, y, 1, 1);
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { g.fillStyle = '#ffd36b'; g.fillRect(x + dx * (1 + Math.round(k * 4)), y + dy * (1 + Math.round(k * 4)), 1, 1); }
+    g.fillStyle = '#e8dcb0'; const x0 = Math.round(f.x - cx), n = Math.max(1, Math.abs(x0 - x)); for (let i = 0; i < n; i += 2) { const q = i / n; if (q > k * 1.6) break; g.fillRect(Math.round(x0 + (x - x0) * q), Math.round(y + (Math.round(f.y - cy) - y) * (1 - q)), 1, 1); }
+    g.strokeStyle = f.fling ? '#ffd36b' : '#e8dcb0'; g.beginPath(); g.arc(x + 0.5, y + 0.5, r, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
   function render(g, cx, cy) { const p = P(); if (!api.isRg()) return; ensure(p);
+    if (p.rgSnatchFx) drawSnatchFx(g, cx, cy, p.rgSnatchFx);
     for (const a of p.rgArrows) { const x = a.x - cx, y = a.y - cy, ang = a.state === 'fly' ? angleOf(a) : (a.ang ?? 0);
       if (a.state === 'foe' && a.foe) drawArrowAt(g, x, y, (a.foe.face || 1) > 0 ? ang : Math.PI - ang, 5, true);
       else { const len = a.kind === 'pierce' || (a.kind === 'skill' && a.pierce) ? 9 : 7;

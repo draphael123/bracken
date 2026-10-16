@@ -85,6 +85,12 @@ export function makeHeroPass(api) {
   const live = e => e && e.alive && !e.harmless && !(e.gone > 0) && !e.turncoat;
   const nearFoe = (p, r) => { let best = null, bd = r; for (const e of api.enemies) { if (!live(e) || e.t === 'dummy' || Math.abs(e.y - p.y) > 40) continue; const d = Math.abs(e.x - p.x); if (d < bd) { bd = d; best = e; } } return best; };
 
+  /* ---- (claude/heropassaart) THE ART'S FX LIST: timed world-space marks drawn by draw() - the ember streak, the shade, the powder flash and its smoke, the tip's star, the counter-thrust's chevrons, the bash's star.
+     Art only: nothing here reads a box, a cost or a timer of the game (a hitstop freezes updatePlayer, so they hold still with the world). ---- */
+  const fx = [];
+  const addFx = o => { fx.push({ t: 0, ...o }); if (fx.length > 24) fx.shift(); };
+  const star = (x, y, size, life, col = '#ffffff', col2 = '#dff0d8') => addFx({ k: 'star', x, y, size, life, col, col2 });
+
   /* ---- THE DODGE (main.js dodge block, after the shared set-up and before trialEvent('dodge')): the hero's own, on the ground ---- */
   function start(dir, air, back, burrow, face0) {
     const p = P(), h = H(); p.kStepG = 0; p.wHopT = 0; p.blinkT = 0; p.shrugT = 0; p.ownDodge = h !== 'warden';
@@ -100,17 +106,17 @@ export function makeHeroPass(api) {
       stats.steps++; api.kitPose(p, 'kStep', S.t); api.SFX.clank && api.SFX.clank(); api.dust(p.x - dir * 6, p.y, 3); return; }
     if (h === 'warden') { if (back) return; p.wHopT = p.dodge; p.wHopMax = p.dodge; stats.hops++; api.kitPose(p, 'wHop', p.dodge); api.dust(p.x, p.y, 4); return; }
     if (h === 'pyro') { const S = HP.pyro.blink; p.dodge = p.dodgeMax = S.t; p.dodgeInv = Math.min(S.inv, api.CM.STAM.rollInv); p.vx = dir * S.speed; p.dash = p.dodge; p.dashDur = p.dash;
-      p.blinkT = S.t; p.blinkX0 = p.x; stats.blinks++; api.kitPose(p, 'eBlink', S.t);
-      api.burst(p.x, p.y - 10, 10, ['#fff6c8', '#ffd36b', '#ff9a5c'], 80, 0.3, -40, 1); api.ringAt(p.x, p.y - 10, 10, '#ffd36b', 0.18); return; }
+      p.blinkT = S.t; p.blinkX0 = p.x; stats.blinks++; api.kitPose(p, 'eBlink', S.t); addFx({ k: 'ember', x0: p.x, x1: p.x, y: p.y - 9, dir, life: 0.5, live: true });
+      api.burst(p.x, p.y - 10, 6, ['#fff6c8', '#ffd36b', '#ff9a5c'], 80, 0.22, -40, 1); api.ringAt(p.x, p.y - 10, 10, '#ffd36b', 0.18); return; }
     if (h === 'pirate') { powderFlash(p, face0); return; }
     if (h === 'reaper') { const S = HP.reaper.step; p.dodge = p.dodgeMax = S.t; p.dodgeInv = Math.min(S.inv, api.CM.STAM.rollInv); if (p.inv > S.inv && p.inv <= api.CM.STAM.rollInv + 1e-6) p.inv = S.inv;   /* (his roll's P.inv becomes the step's own grace: its tail is hittable, the wake takes the rest) */ p.vx = dir * S.speed; p.dash = p.dodge; p.dashDur = p.dash;
-      stats.shadows++; api.kitPose(p, 'shadowStep', S.t); return; }
+      stats.shadows++; api.kitPose(p, 'shadowStep', S.t); addFx({ k: 'shade', x0: p.x, x1: p.x, y: p.y, dir, life: 0.55, live: true }); return; }
     if (h === 'berserker') { stats.barges++; api.kitPose(p, 'bzBarge', p.dodge); api.number(p.x, p.y - 26, 'BARGE', '#ff9a5c'); return; }
   }
   /* THE POWDER FLASH: the puff is thrown where he stood, at what was in front of him */
   function powderFlash(p, face0) { const S = HP.pirate.flash, x0 = p.x, y0 = p.y - 10; stats.flashes++;
     for (let i = 0; i < 16; i++) api.parts.push({ x: x0 + face0 * (4 + Math.random() * 18), y: y0 + (Math.random() - 0.5) * 12, vx: face0 * (20 + Math.random() * 60), vy: -10 - Math.random() * 20, life: 0.8, max: 0.8, col: Math.random() < 0.6 ? '#2a2620' : '#5a5448', size: 3, grav: -10 });
-    api.ringAt(x0 + face0 * 14, y0, 18, '#fff6e0', 0.18); api.SFX.puff && api.SFX.puff(); api.SFX.spark && api.SFX.spark(); api.kitPose(p, 'powder', p.dodge || 0.3);
+    api.ringAt(x0 + face0 * 14, y0, 18, '#fff6e0', 0.18); api.SFX.puff && api.SFX.puff(); api.SFX.spark && api.SFX.spark(); api.kitPose(p, 'powder', p.dodge || 0.3); addFx({ k: 'powder', x: x0 + face0 * 6, y: y0 + 2, dir: face0, life: 0.7 });
     for (const e of api.enemies) { if (!live(e)) continue; const dx = (e.x - x0) * face0; if (dx < -6 || dx > S.r + (e.w || 12) / 2 || Math.abs((e.y - (e.h || 16) / 2) - y0) > 26) continue;
       stats.dazzled++; e.flash = 0.2; e.dazzleT = api.time + (big(e) ? S.boss : e.elite ? S.elite : S.dazzle);
       if (big(e)) { e.stagger = Math.max(e.stagger || 0, S.boss); api.number(e.x, e.y - (e.h || 16) - 16, 'FLINCHES', '#d8d0c0'); continue; }
@@ -134,12 +140,18 @@ export function makeHeroPass(api) {
     return null;
   }
 
+  /* THE POINT'S STAR (main.js tipPay, right after the pay is known): the size is the multiplier - x1.6 a small bright star, x2.0 a big one with a long streak back down the shaft and a second ring */
+  function tipFx(e, mul) { const p = P(), k = Math.max(0, Math.min(1, (mul - TIP.base) / (TIP.full - TIP.base))), x = e.x - p.face * 3, y = e.y - (e.h || 16) / 2;
+    addFx({ k: 'tip', x, y, dir: p.face, life: 0.2 + 0.1 * k, kk: k, px: p.x, py: p.y - 11 });
+    if (k > 0.55) api.ringAt(x, y, 20 + 6 * k, '#ffffff', 0.26); }
+
   /* ---- EVERY FRAME (main.js updatePlayer, after the dodge block) ---- */
   function update(dt, keys, ctx) {
     const p = P(), h = H();
+    for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.t += dt; if (f.live) { if (f.k === 'ember' ? p.blinkT > 0 : p.dodge > 0 && p.kPoseK === 'shadowStep') f.x1 = p.x; else f.live = false; } if (f.t >= f.life) fx.splice(i, 1); }
     if (p.kFaceT > 0) { p.kFaceT -= dt; p.faceLock = Math.max(0, Math.min(p.faceLock || 0, p.kFaceT)); }
     p.kStepG = Math.max(0, (p.kStepG || 0) - dt); p.wHopT = Math.max(0, (p.wHopT || 0) - dt); p.shrugT = Math.max(0, (p.shrugT || 0) - dt); p.kBashCd = Math.max(0, (p.kBashCd || 0) - dt);
-    if (p.blinkT > 0) { p.blinkT -= dt; if (Math.random() < dt * 60) api.parts.push({ x: p.x + (Math.random() - 0.5) * 8, y: p.y - 4 - Math.random() * 14, vx: -p.vx * 0.15, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: Math.random() < 0.5 ? '#ff9a5c' : '#fff6c8', size: 2, grav: -30, fire: true });
+    if (p.blinkT > 0) { p.blinkT -= dt; if (Math.random() < dt * 60) api.parts.push({ x: p.x + (Math.random() - 0.5) * 8, y: p.y - 4 - Math.random() * 14, vx: -p.vx * 0.15, vy: -20 - Math.random() * 20, life: 0.22, max: 0.22, col: Math.random() < 0.5 ? '#ff9a5c' : '#fff6c8', size: 1, grav: -30 });
       if (p.blinkT <= 0) { api.burst(p.x, p.y - 10, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 70, 0.3, -30, 1); api.ringAt(p.x, p.y - 10, 10, '#ff9a5c', 0.18); } }
     if (h === 'reaper' && p.dodge > 0 && Math.random() < dt * 40) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 2 - Math.random() * 18, vx: -p.vx * 0.1, vy: -6, life: 0.35, max: 0.35, col: Math.random() < 0.6 ? '#141a16' : '#2a1838', size: 2, grav: 0 });
     if (h === 'knight') bashStep(p, dt);
@@ -159,7 +171,7 @@ export function makeHeroPass(api) {
     for (const e of api.enemies) { if (!live(e) || p.kBashHit.has(e) || !api.overlap(hb, api.box(e))) continue; p.kBashHit.add(e); stats.bashHits++;
       const winding = api.windingUp(e) || /Tell$/.test(e.mode || '');
       api.hurtAs('light', e, Math.max(1, Math.round(api.swordDmg() * B.dmg)), p.x, false);
-      api.SFX.clank && api.SFX.clank(); api.hitstop(0.06); api.shakeCam(2.5, p.face * 2); api.sparks(e.x - p.face * 4, e.y - (e.h || 16) / 2, p.face, 8); api.ringAt(p.x + p.face * 12, p.y - 11, 12, '#fff6e0', 0.22);
+      api.SFX.clank && api.SFX.clank(); api.hitstop(0.06); api.shakeCam(2.5, p.face * 2); api.sparks(e.x - p.face * 4, e.y - (e.h || 16) / 2, p.face, 8); api.ringAt(p.x + p.face * 12, p.y - 11, 12, '#fff6e0', 0.22); star(p.x + p.face * (B.reach - 2), p.y - 11, 6, 0.24, '#ffffff', '#ffd36b');
       if (!e.alive) continue;
       if (big(e)) { api.poiseLean(e, B.bossLean); e.flash = 0.15; stats.braced++; api.number(e.x, e.y - (e.h || 16) - 18, 'BRACED', '#c9d1dc'); continue; }
       if (winding) { stats.interrupts++; api.flinch(e); e.stagger = Math.max(e.stagger || 0, e.elite ? B.eliteStagger : B.stagger); if (e.elite) e.stagger = Math.min(e.stagger, B.eliteStagger + 0.05);
@@ -184,7 +196,7 @@ export function makeHeroPass(api) {
 
   /* ---- THE WARDEN: COUNTER-THRUST (heroCut -> counterPost, after the riposte thrust has landed) ---- */
   function counterPost(e) { const p = P(); if (H() !== 'warden' || !p.swingRiposte || !(p.atk >= 0) || p.swingKind || !e || !e.alive || big(e)) return;
-    const d = api.tipReach(e), want = HP.warden.counter.to; stats.counters++; api.number(p.x, p.y - 30, 'COUNTER-THRUST', '#dff0d8'); api.trialEvent('counter');
+    const d = api.tipReach(e), want = HP.warden.counter.to; stats.counters++; api.number(p.x, p.y - 30, 'COUNTER-THRUST', '#dff0d8'); api.trialEvent('counter'); addFx({ k: 'chev', x: p.x + p.face * 14, y: e.y - (e.h || 16) / 2, dir: p.face, life: 0.34 });
     if (d >= want - 2) return;
     if (api.knockFoe(e, p.face, 150, { slide: true })) e.kvx = p.face * Math.max(60, (want - d) / 0.335); }   /* (a thrown foe's knock bleeds off 0.25^t over 0.45 s: ~0.335 s of its speed is the distance) */
 
@@ -197,7 +209,7 @@ export function makeHeroPass(api) {
     if (!api.spend(HP.warden.plant.st)) { api.tired(); return true; }
     const S = HP.warden.plant, TS = api.TS, wallX = p.face > 0 ? tx * TS : (tx + 1) * TS, y = Math.round(p.y - 2);
     p.foot = { x0: Math.min(wallX, wallX - p.face * S.w), x1: Math.max(wallX, wallX - p.face * S.w), y, wallX, dir: p.face, life: S.life }; p.plantUsed = true; stats.plants++;
-    p.vy = Math.min(p.vy, 0); api.SFX.braceSet && api.SFX.braceSet(); api.SFX.clank && api.SFX.clank(); api.sparks(wallX, y, -p.face, 6); api.dust(wallX, y, 3);
+    p.vy = Math.min(p.vy, 0); api.SFX.braceSet && api.SFX.braceSet(); api.SFX.clank && api.SFX.clank(); api.sparks(wallX, y, -p.face, 6); api.dust(wallX, y, 3); star(wallX - p.face * 2, y, 5, 0.22, '#ffffff', '#c9b27c');
     api.kitPose(p, 'wPlant', 0.25); api.number(p.x, p.y - 26, 'WALL PLANT', '#dff0d8'); api.trialEvent('plant'); return true; }
   /* she lands on the shaft (main.js, after the movers): the same footing rule as a mover */
   function footLand(prevY) { const p = P(), f = p.foot; if (!f || p.ground || p.vy < 0) return;
@@ -216,22 +228,55 @@ export function makeHeroPass(api) {
     if (p.wHopT > 0 && p.wHopMax > 0) { const k = 1 - p.wHopT / p.wHopMax; out.dY = -Math.round(Math.sin(k * Math.PI) * HP.warden.hop.lift); }
     if (p.blinkT > 0) { const el = HP.pyro.blink.t - p.blinkT; out.hide = el > HP.pyro.blink.hide[0] && el < HP.pyro.blink.hide[1]; }
     return out; }
+  /* (claude/heropassaart) THE WORLD-SPACE ART. All of it is plain rects on the game buffer (no new canvases, nothing per frame but a few fillRects). */
+  const rc = (g, x, y, w, h, col, a = 1) => { g.globalAlpha = a; g.fillStyle = col; g.fillRect(Math.round(x), Math.round(y), w, h); g.globalAlpha = 1; };
+  function drawFx(g, cx, cy, f) { const k = f.t / f.life, fade = Math.max(0, 1 - k);
+    if (f.k === 'ember') { const xa = Math.min(f.x0, f.x1) - cx, xb = Math.max(f.x0, f.x1) - cx, y = f.y - cy, n = Math.max(2, Math.round((xb - xa) / 3));   /* a rope of embers down the line she came, cooling from white to red and sinking */
+      for (let i = 0; i <= n; i++) { const u = i / n, x = xa + (xb - xa) * u, near = f.dir > 0 ? u : 1 - u, h = ((i * 7 + 3) % 5) - 2, col = near > 0.7 && k < 0.3 ? '#fff6c8' : (i & 1) ? '#ff9a5c' : '#ffd36b';
+        rc(g, x, y + h + k * 4 * ((i % 3) + 1) / 2, 2, 1, col, fade * (0.5 + 0.5 * near)); if (i % 3 === 0) rc(g, x, y + h - 2 - k * 6, 1, 1, '#ff6a3c', fade * 0.8); }
+      if (k < 0.35) rc(g, xa, y - 1, xb - xa, 1, '#fff6c8', fade * 0.55); }
+    else if (f.k === 'shade') { const xa = Math.min(f.x0, f.x1) - cx, xb = Math.max(f.x0, f.x1) - cx, y = f.y - cy;   /* THE SHADE HE LEAVES: three dark figures down the step, each fainter, two green lights in the nearest, and a ribbon along the floor */
+      rc(g, xa, y - 1, xb - xa, 1, '#2a1838', fade * 0.55);
+      for (let j = 0; j < 3; j++) { const u = (j + 0.5) / 3, x = xa + (xb - xa) * (f.dir > 0 ? 1 - u : u), a = fade * (0.34 - j * 0.09);
+        rc(g, x - 3, y - 17, 7, 16, '#1c1426', a); rc(g, x - 4, y - 13, 9, 7, '#241a34', a * 0.8); rc(g, x - 2, y - 20, 5, 4, '#1c1426', a); if (j === 0) { rc(g, x - 1, y - 18, 1, 1, '#dfffc0', fade); rc(g, x + 1, y - 18, 1, 1, '#dfffc0', fade); } } }
+    else if (f.k === 'powder') { const x = f.x - cx, y = f.y - cy, d = f.dir;   /* THE FLASH (the first 0.1 s: eight rays, white to orange) then the smoke: black powder smoke standing up and rolling forward, thinning to nothing */
+      if (f.t < 0.1) { const r = 4 + f.t * 120; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; rc(g, x + Math.cos(an) * r + d * 8, y + Math.sin(an) * r * 0.8, 2, 2, q & 1 ? '#ff9a5c' : '#ffd36b', 1 - f.t * 6); } rc(g, x + d * 8 - 3, y - 2, 6, 5, '#ffffff', 1 - f.t * 7); }
+      for (let q = 0; q < 7; q++) { const sz = 5 + q % 3 * 2 + k * 7, px = x + d * (6 + q * 4 + k * 16), py = y - 2 - k * (10 + q * 2) + ((q * 5) % 7) - 3; rc(g, px - sz / 2, py - sz / 2, sz, sz, q % 3 === 0 ? '#5a5448' : '#2a2620', fade * 0.55); } }
+    else if (f.k === 'star') { const x = f.x - cx, y = f.y - cy, r = Math.round(f.size * (0.5 + 0.8 * Math.min(1, k * 2.5)));
+      rc(g, x - r, y, r * 2 + 1, 1, f.col2, fade); rc(g, x, y - r, 1, r * 2 + 1, f.col2, fade); rc(g, x - 1, y - 1, 3, 3, f.col, fade); const d = Math.round(r * 0.6); rc(g, x - d, y - d, 1, 1, f.col, fade); rc(g, x + d, y - d, 1, 1, f.col, fade); rc(g, x - d, y + d, 1, 1, f.col, fade); rc(g, x + d, y + d, 1, 1, f.col, fade); }
+    else if (f.k === 'chev') { const x = f.x - cx, y = f.y - cy, d = f.dir;   /* THE COUNTER-THRUST: two green chevrons pushed out ahead of the point along the line the foe is driven back down */
+      for (let q = 0; q < 2; q++) { const o = d * (q * 7 + k * 16); for (let j = 0; j < 4; j++) { rc(g, x + o - d * j, y - 3 + j, 1, 1, q ? '#8fd160' : '#dff0d8', fade); rc(g, x + o - d * j, y + 3 - j, 1, 1, q ? '#8fd160' : '#dff0d8', fade); } } }
+    else if (f.k === 'tip') { const x = f.x - cx, y = f.y - cy, kk = f.kk, r = Math.round(4 + 6 * kk + 3 * Math.min(1, k * 3));   /* THE POINT'S STAR: bigger and whiter the further out it landed; the 2x one also drags a pale line back down the shaft to her hand */
+      rc(g, x - r, y, r * 2 + 1, 1, '#dff0d8', fade); rc(g, x, y - r, 1, r * 2 + 1, '#dff0d8', fade); rc(g, x - 1, y - 1, 3, 3, '#ffffff', fade);
+      if (kk > 0.4) { const d = Math.round(r * 0.65); for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) rc(g, x + sx * d, y + sy * d, 1, 1, '#ffffff', fade); }
+      if (kk > 0.7) { const x0 = f.px - cx, n = Math.round(Math.abs(x - x0) / 2); for (let i = 0; i < n; i += 2) if (i / n < k * 2.2) rc(g, x0 + (x - x0) * (i / n) + (f.dir > 0 ? 6 : -6), y, 1, 1, '#ffffff', fade * 0.7); } } }
+  function drawStoneSkin(g, cx, cy, p) { const x = p.x - cx, y = p.y - cy - 10, a = Math.min(1, p.shrugT * 5), t = api.time;   /* THE STONE SKIN: six chips of grey stone turning slowly round her like plates of a shell, the amber heart in a seam */
+    for (let q = 0; q < 6; q++) { const an = t * 2.2 + q * Math.PI / 3, px = x + Math.cos(an) * 11, py = y + Math.sin(an) * 9, front = Math.sin(an) > 0; rc(g, px - 1, py - 1, 3, 3, q & 1 ? '#8c8a7e' : '#c8bca8', a * (front ? 0.95 : 0.5)); rc(g, px, py, 1, 1, '#e8dcc8', a * (front ? 0.9 : 0.3)); }
+    rc(g, x - 9, y - 8, 1, 14, '#6f6a5c', a * 0.35); rc(g, x + 9, y - 8, 1, 14, '#6f6a5c', a * 0.35); rc(g, x - 1, y - 4, 2, 1, '#e8a83a', a * 0.8); }
   function draw(g, cx, cy) { const p = P(); const f = p.foot;
-    if (f) { const x0 = Math.round(f.x0 - cx), x1 = Math.round(f.x1 - cx), y = Math.round(f.y - cy);   /* THE SPEAR IN THE WALL: the shaft out level, the butt toward her */
-      g.fillStyle = '#6a4a2a'; g.fillRect(x0, y, x1 - x0, 2); g.fillStyle = '#c9b27c'; g.fillRect(x0, y, x1 - x0, 1);
-      g.fillStyle = '#dff0d8'; g.fillRect(f.dir > 0 ? x1 - 1 : x0, y - 1, 2, 3);
-      if (f.life < 0.6 && Math.floor(f.life * 10) % 2) { g.fillStyle = '#ffd36b'; g.fillRect(f.dir > 0 ? x0 : x1 - 1, y - 1, 1, 1); } }
-    if (p.kStepG > 0 && H() === 'knight' && !p.dead) { const x = Math.round(p.x - cx + p.face * 9), y = Math.round(p.y - cy) - 16;   /* THE SHIELD UP THROUGH THE STEP: a bright edge on its face */
-      g.globalAlpha = Math.min(0.7, p.kStepG * 4); g.fillStyle = '#e8eef8'; g.fillRect(x, y, 1, 12); g.globalAlpha = 1; }
-    if (p.shrugT > 0 && H() === 'geomancer') { g.globalAlpha = 0.35; g.strokeStyle = '#c8bca8'; g.beginPath(); g.arc(Math.round(p.x - cx), Math.round(p.y - cy) - 10, 12, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-    if (p.valiant && p.heavy && H() === 'knight') { g.globalAlpha = 0.5; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(p.x - cx + p.face * 14), Math.round(p.y - cy) - 24, 2, 2); g.globalAlpha = 1; } }
+    if (f) { const x0 = Math.round(f.x0 - cx), x1 = Math.round(f.x1 - cx), y = Math.round(f.y - cy), w = x1 - x0, hd = f.dir > 0 ? x1 : x0;   /* THE SPEAR IN THE WALL: the shaft out level with its grip wraps, the butt cap toward her, the leaf-head gone into the stone with cracks round it */
+      g.fillStyle = '#2a1a0e'; g.fillRect(x0, y - 1, w, 4); g.fillStyle = '#6a4a2a'; g.fillRect(x0, y, w, 2); g.fillStyle = '#c9b27c'; g.fillRect(x0, y, w, 1);
+      g.fillStyle = '#3e2a16'; for (let i = 3; i < w - 3; i += 5) g.fillRect(x0 + i, y, 2, 2);
+      const bx = f.dir > 0 ? x0 : x1 - 2; g.fillStyle = '#dff0d8'; g.fillRect(bx, y - 1, 2, 4); g.fillStyle = '#8fd160'; g.fillRect(bx, y, 2, 2);
+      g.fillStyle = '#e8eef8'; g.fillRect(hd - (f.dir > 0 ? 3 : -1), y, 2, 2); g.fillStyle = '#1a1620'; g.fillRect(hd + (f.dir > 0 ? 0 : -1), y - 2, 1, 6); g.fillRect(hd + f.dir * 2, y - 3, 1, 3); g.fillRect(hd + f.dir * 2, y + 3, 1, 3);
+      if (f.life < 0.6 && Math.floor(f.life * 10) % 2) { g.fillStyle = '#ffd36b'; g.fillRect(f.dir > 0 ? x0 : x1 - 1, y - 2, 2, 1); g.fillRect(f.dir > 0 ? x0 : x1 - 1, y + 3, 2, 1); }
+      else if (p.onFoot) rc(g, x0 + 1, y - 1, w - 2, 1, '#8fd160', 0.5 + 0.3 * Math.sin(api.time * 8)); }
+    if (p.kStepG > 0 && H() === 'knight' && !p.dead) { const x = Math.round(p.x - cx + p.face * 9), y = Math.round(p.y - cy) - 17, a = Math.min(0.85, p.kStepG * 5);   /* THE SHIELD UP THROUGH THE STEP: the whole face goes bright, a white bar down its rim, a glint at the top, a steel streak behind */
+      rc(g, x + (p.face > 0 ? 1 : -3), y + 1, 3, 12, '#c9d1dc', a * 0.55); rc(g, x + (p.face > 0 ? 3 : -4), y, 1, 14, '#ffffff', a); rc(g, x + (p.face > 0 ? 3 : -5), y - 1, 2, 1, '#fff6c8', a);
+      for (let q = 0; q < 3; q++) rc(g, x - p.face * (8 + q * 4) - (p.face > 0 ? 0 : 2), y + 4 + q * 3, 4, 1, '#c9d1dc', a * 0.45); }
+    if (p.shrugT > 0 && H() === 'geomancer') drawStoneSkin(g, cx, cy, p);
+    if (H() === 'knight' && !p.dead && (p.valiant || ((p.resolve || 0) >= 100 && !api.lcOn()))) { const t = api.time, hot = p.valiant && p.heavy;   /* VALIANT: a full bar and the blade is lit - three gold motes rising off it; in the heavy cut, a gold bar through the air ahead of the edge */
+      const bx = Math.round(p.x - cx + p.face * 10), by = Math.round(p.y - cy) - 12;
+      for (let q = 0; q < 3; q++) { const u = (t * 1.6 + q / 3) % 1; rc(g, bx + p.face * (3 + q * 2), by - 4 - u * 14 + q * 2, 1, 1, q ? '#ffd36b' : '#fff6c8', (1 - u) * (hot ? 1 : 0.75)); }
+      if (hot) rc(g, p.face > 0 ? bx + 4 : bx - 18, by - 2, 14, 1, '#ffd36b', 0.6); }
+    for (const q of fx) drawFx(g, cx, cy, q); }
   /* the dodge's body (main.js pose pick, the posed-dodge line): the key, or null for the shared roll */
   function poseKey(p) { if (!(p.dodge > 0)) return null; const h = H();
     if (h === 'knight' && p.kStepG > 0) return 'kStep'; if (h === 'warden' && p.wHopT > 0) return 'wHop'; if (h === 'pyro' && p.blinkT > 0) return 'eBlink';
     if (h === 'pirate' && p.kPoseK === 'powder') return 'powder'; if (h === 'reaper' && p.kPoseK === 'shadowStep') return 'shadowStep'; if (h === 'geomancer' && p.shrugT > 0) return 'gShrug';
     if (h === 'berserker' && p.kPoseK === 'bzBarge') return 'bzBarge'; return null; }
 
-  function clear() { const p = P(); p.kStepG = 0; p.wHopT = 0; p.blinkT = 0; p.shrugT = 0; p.kBashT = 0; p.kBashCd = 0; p.valiant = false; p.foot = null; p.onFoot = false; p.plantUsed = false; }
+  function clear() { fx.length = 0; const p = P(); p.kStepG = 0; p.wHopT = 0; p.blinkT = 0; p.shrugT = 0; p.kBashT = 0; p.kBashCd = 0; p.valiant = false; p.foot = null; p.onFoot = false; p.plantUsed = false; }
   return { HP, TIP, stats, start, takes, update, bashPress, bashing: () => (P().kBashT || 0) > 0, valiantArm, valiantPre, valiantPost, valiantEnd, counterPost,
-    plantPress, footLand, footJump, planted, drawMod, draw, poseKey, clear, resetStats: () => { for (const k in stats) stats[k] = 0; } };
+    plantPress, footLand, footJump, planted, drawMod, draw, poseKey, clear, tipFx, fxCount: () => fx.length, resetStats: () => { for (const k in stats) stats[k] = 0; } };
 }
