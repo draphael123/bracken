@@ -204,7 +204,7 @@ import * as GHD from './great-hound.js';   /* THE GREAT HOUND's own rules (claud
 import { bakeHoundMaster } from './redraw/hunt.js';
 import { bakeBuriedPrince, bakeCourtier, bakeSarcophagus, bakeCrownSpin, PRINCE_F } from './redraw/prince.js';
 import { bakePaladinBoss, bakeLancer, bakeLancerHorse, bakeGuests, bakeBarkeep, bakeDrunk, bakeTownSpikes } from './redraw/waymeet.js';
-import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS } from './level.js';
+import { LEVELS, T, TS, CUSTOM, eliteGate, FRESH_TWIN, LOST_BANNERS, ROAD_OPEN } from './level.js';
 import { floodReach } from './reachcore.js';
 import { updateMageChase, drawRingDoor, inSpiral, newStairFx, updateStairFx, drawStairFx, drawOrrery, ORRERY as STAIR_ORRERY } from './spiral-chase.js';
 import { drawActs as drawMageActs } from './archmage-acts.js';   /* (claude/archmage3) THE UNDEAD ARCHMAGE's ward, and his phase changes, drawn */   /* THE SPIRAL STAIR: the Falling Tower's chase up to the Undead Archmage's carpet (Daniel, 2026-09-29) */
@@ -341,6 +341,8 @@ function progDefaults() { if (!PROG.heroes) PROG.heroes = { knight: true }; if (
     for (const lv of LEVELS) if (!lv.hidden && PROG[lv.id] && PROG[lv.id].cleared) d[lv.id] = 1;
     if (PROG.charm) PROG.charmOf[h] = PROG.charm; }
   /* THE UNBURIED FIELD'S BANNERS (claude/unburiedsecret): the road used to open on a silver medal at the Witchlight Stair. A save that had it open (silver or better there, or the field cleared) keeps it - once, so a fresh profile that earns silver later still needs its banners */
+  /* (claude/undercrown2) THE UNDERCROWN ON THE ROAD: Highcrown needs it now. A save that had Highcrown open (Stormhold or Highcrown cleared) when the road changed keeps it open - once, so a fresh profile walks the new road */
+  if (ROAD_OPEN.undercrown && !PROG.ucRoadMig) { PROG.ucRoadMig = 1; if ((PROG.storm && PROG.storm.cleared) || (PROG.crown && PROG.crown.cleared)) PROG.crownOpen = 1; }
   if (!PROG.bannerMig) { PROG.bannerMig = 1; const w = PROG.witchlight || {}; if ((w.medal || 0) >= 2 || (PROG.unburied && PROG.unburied.cleared)) PROG.fieldOpen = 1; }
   /* a secret wood cleared before secret woods counted: credit it to the hero carrying the save, once */
   for (const lv of LEVELS) if (lv.secret && PROG[lv.id] && PROG[lv.id].cleared && !Object.values(PROG.done || {}).some(dd => dd && dd[lv.id])) { const hh = PROG.hero || 'knight'; PROG.done[hh] = PROG.done[hh] || {}; PROG.done[hh][lv.id] = 1; }
@@ -4415,13 +4417,14 @@ const bannersLocked = lv => !!lv.secretBanners && bannersOwned() < Object.keys(L
 function takeLostBanner(b) { b.got = true; PROG.lostBanners = PROG.lostBanners || {}; PROG.lostBanners[b.id] = 1; const n = bannersOwned(), all = n >= Object.keys(LOST_BANNERS).length; saveProgress();
   { const cr = ['booDrift', 'haunt', 'bellow'].find(k => typeof SFX[k] === 'function'); if (cr) SFX[cr](); else SFX.sting(); } number(b.x, b.y - 18, 'LOST BANNER ' + n + '/' + Object.keys(LOST_BANNERS).length, '#c9463d'); burst(b.x, b.y, 10, ['#8f2f28', '#c9463d', '#5a1a18'], 50, 0.7, -24, 1); ringAt(b.x, b.y, 18, '#c9463d', 0.5);
   if (all) { hintMsg = 'THE FIELD REMEMBERS'; hintT = 6; number(b.x, b.y - 32, 'THE FIELD REMEMBERS', '#c8b6ff'); } }
-const levelLocked = lv => !godMode() && (!!lv.locked || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
+const levelLocked = lv => !godMode() && (!!lv.locked || (bannersLocked(lv) && !q.get('unlock')) || (lv.needs && !(PROG[lv.needs] && PROG[lv.needs].cleared) && !(PROG[lv.id] && PROG[lv.id].cleared) && !(lv.id === 'crown' && PROG.crownOpen) && !q.get('unlock')) || (opensLocked(lv) && !q.get('unlock')) || ((timeLocked(lv) || killLocked(lv)) && !q.get('unlock')));
 
 // ---------- world map ----------
 // Five sheets stacked into one tall canvas: the Desert on top, then the road inland, the coast, the crags, the wood at the
 // bottom. Play runs bottom to top; the sheet order above is top to bottom, which is why every offset below reads backwards
 // from the walk.
 const MAPW = 320, MAPH = 900, DESERT_Y = 0, INLAND_Y = 180, COAST_Y = 360, CRAG_Y = 540, WOOD_Y = 720;
+const UC_ROAD = !!(LEVELS.find(l => l.id === 'undercrown') || {}).needs;   /* (claude/undercrown2) THE UNDERCROWN on the road (level.js ROAD_OPEN): a node between Stormhold and Highcrown, not a stub off Highcrown */
 const WOOD_NODES = [
   { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, plate: 'left', name: 'BRACKEN WOOD' },
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 68, plate: 'left', name: 'THE STORE' },
@@ -4451,13 +4454,14 @@ const CRAG_NODES = [
   { id: 'minecart', kind: 'level', level: LEVELS.findIndex(l => l.id === 'minecart'), x: 239, y: 80, plate: 'above', board: 'DEEP RAILS', name: 'THE DEEP RAILS' },   /* THE DEEP RAILS (claude/minecart; claude/deeprails2, Daniel 10-09): ON THE ROAD, between THE ORE ROAD and STORMHOLD - down into the mine and up into the hold */   /* AFTER GALE MOOR, BEFORE STORMHOLD (Daniel 2026-09-23): the two swapped places on the climb, coordinates kept so the road still walks in play order */
   { id: 'storm', kind: 'level', level: 9, x: 264, y: 55, plate: 'leftup', name: 'STORMHOLD' },   /* (claude/deeprails2: the road comes up to it from THE DEEP RAILS) */
   { id: 'crown', kind: 'level', level: 10, x: 260, y: 26, plate: 'below', name: 'HIGHCROWN' },
-  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), x: 276, y: 8, plate: 'above', spur: true, name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
+  { id: 'undercrown', kind: 'level', level: LEVELS.findIndex(l => l.id === 'undercrown'), ...(UC_ROAD ? { x: 230, y: 40, plate: 'left' } : { x: 276, y: 8, plate: 'above', spur: true }), name: 'THE UNDERCROWN' },   /* a short stub off Highcrown, ~27px clear of the Ore Road */
 ];
 /* THE CRAG TAIL history: map-redesign §6 first fixed the corner-dive; the integrator then caught that fix
    self-crossing near the entrance and a local patch (moving only the entry) read as a tangle near HIGHSTORE with
    no clean alternative below it (exhaustive search, work/claude/crag-route-search.mjs) - so this whole sheet was
    relaid instead (docs/crag-options.png, option B). See the comment on CRAG_NODES above for this option's shape. */
-const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,109], [239,80], [264,55], [260,26]];   /* (batch83 integ: Stormhold vertex on its node 264,55) (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
+if (UC_ROAD) { const a = CRAG_NODES.findIndex(n => n.id === 'crown'), b = CRAG_NODES.findIndex(n => n.id === 'undercrown'); CRAG_NODES.splice(a, 0, CRAG_NODES.splice(b, 1)[0]); }   /* (claude/undercrown2) on the road it comes BEFORE Highcrown: the map's required nodes are listed in road order (tools/map-grammar.mjs) - saves find their node by id (mapToSaved) */
+const CRAG_PATH = [[40,152], [47,104], [76,113], [105,106], [149,71], [191,90], [268,140], [281,109], [239,80], [264,55], ...(UC_ROAD ? [[230,40]] : []), [260,26]];   /* (batch83 integ: Stormhold vertex on its node 264,55) (claude/deeprails2: THE DEEP RAILS on the road between the Ore Road and Stormhold) */   /* (claude/skyroad: up to THE SKY ROAD and down to THE ORE ROAD) */
 /* THE ROAD INLAND HAS A SHEET OF ITS OWN. The four woods past the Deep were packed onto the coast, and every name lay across
    another; the coast's own eight are spread over the whole sheet now, and the road climbs off its top edge onto the inland one. */
 const COAST_NODES = [{ id: 'longwater', kind: 'level', level: LEVELS.findIndex(l => l.id === 'longwater'), x: 158, y: 154, plate: 'right', name: 'THE LONG WATER' },

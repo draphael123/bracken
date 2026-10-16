@@ -2617,7 +2617,7 @@ function undercrown() {
   slab('works2', 72, 83, 29, 34, { states: { '-1': 'cracked' } });
   /* THE SQUAD UNDER THE SPAN: a timberman keeping it up and two navvies at the west end of it */
   ent('propman', 64, 33, { face: -1, cnSkin: 'timberman' }); ent('miner', 58, 33, { face: -1, cnSkin: 'navvy' }); ent('miner', 60, 33, { face: -1, cnSkin: 'navvy' });
-  ent('rockgoblin', 75, 33, { face: -1, cnSkin: 'bonechucker' }); ent('snuffer', 68, 33, { face: -1 });
+  ent('rockgoblin', 75, 33, { face: -1, cnSkin: 'bonechucker' }); ent('snuffer', 68, 33, { face: -1, cnSkin: 'lampsnuffer' });
   ent('sentry', 79, 33, { section: 'works', range: 9, face: -1, cnSkin: 'minewarden' });
   ent('bell', 76, 33, { section: 'works' });
   ent('deco', 62, 33, { kind: 'wares' }); ent('deco', 77, 33, { kind: 'barrels' });
@@ -2670,9 +2670,9 @@ function undercrown() {
   for (let x = 40; x <= 56; x++) set(x, 100, T.PLANK);             /* the hung walkway: the slab (its posts stand on the walkways under it) */
   slab('stope', 40, 56, 100, 112);
   ent('sign', 32, 111, { text: 'CUT THE NEAR POST AND THE HUNG WALKWAY SWINGS DOWN TO YOU. MIND WHAT IS UNDER ITS FAR END.' });
-  ent('brute', 60, 111, { face: -1 });                            /* the far walkway's elite: on footing, the water behind him */
+  ent('troll', 61, 111, { face: -1 });                            /* the far walkway's elite, a crag troll come down the old workings: on footing, the water behind him */
   ent('miner', 54, 111, { face: -1, cnSkin: 'navvy' }); ent('rockgoblin', 64, 111, { face: -1, cnSkin: 'bonechucker' });
-  ent('shardling', 34, 111, { face: 1 }); ent('snuffer', 42, 111, { face: -1 });
+  ent('shardling', 34, 111, { face: 1 }); ent('snuffer', 42, 111, { face: -1, cnSkin: 'lampsnuffer' });
   ent('gas', 18, 121);   /* the stope's floor breathes too */
   ent('rockgoblin', 26, 121, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 90, 121, { face: -1, cnSkin: 'navvy' }); ent('bonegob', 84, 121, { face: -1 });
   ent('bat', 40, 94); ent('bat', 62, 96);
@@ -2718,8 +2718,8 @@ function undercrown() {
   cut(10, 95, 137, 140); interiors.push([10, 95, 137, 140, 'mine']);
   ent('sign', 82, 140, { text: 'THE LAST DRIFT. BOTH POSTS DOWN AND THE SLAB IS A WALL ACROSS IT: WHAT WALKS CANNOT FOLLOW.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
-  ent('rockgoblin', 30, 140, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' }); ent('brute', 24, 140, { face: 1 });
-  ent('gobpriest', 34, 140, { face: 1 });
+  ent('rockgoblin', 30, 140, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' });
+  ent('snuffer', 34, 140, { face: 1, cnSkin: 'lampsnuffer' });
   slab('drift', 58, 66, 136, 141, { deep: 1, thick: 2 });   /* (thick: down flat it is a wall two courses high) */
   /* THE PRINCE'S TITHE: a working over the drift that nobody walled up because nobody could reach it. ONE post and the slab is a ramp up into it */
   cut(54, 72, 132, 135); interiors.push([54, 72, 132, 135, 'mine']);
@@ -7880,6 +7880,12 @@ function follyLibrary(L0, ret) {
    One clearly commented ent per level, added here so the levels' own builders (other lanes edit them) are untouched; src/main.js picks the pickup up. */
 const withBanner = (build, id, x, y) => (...a) => { const L = build(...a); L.ents.push({ t: 'lostbanner', id, x, y }); return L; };
 export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [249, 76] };
+/* THE ROADS THAT ARE BUILT BUT NOT OPEN YET (claude/undercrown2, Daniel 10-15). THE UNDERCROWN goes on the MAIN ROAD - Stormhold -> THE UNDERCROWN ->
+   Highcrown, a default level and the way IN, under the castle - but only once it is graded B or better (the ship rule: art before live). Until its art
+   lane flips this, the level keeps its old place exactly (a secret fork off Highcrown at 80% put down) and Highcrown still needs Stormhold. Flipped:
+   needs 'storm', Highcrown needs it, no hidden/secret/kill count, a node on the road between the two (src/main.js CRAG_NODES), and a save that had
+   Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
+export const ROAD_OPEN = { undercrown: false };
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -7891,7 +7897,7 @@ export const LEVELS = [
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'minecart' },   /* (claude/deeprails2, Daniel 10-09: THE DEEP RAILS is on the main road - Ore Road -> Deep Rails -> Stormhold) */
-  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
+  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: ROAD_OPEN.undercrown ? 'undercrown' : 'storm' },   /* (claude/undercrown2: through THE UNDERCROWN once its road is open) */   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
@@ -7916,7 +7922,7 @@ export const LEVELS = [
   { id: 'harbor', name: 'STORMWRECK HARBOR', sub: 'from broken quay to lighthouse', rule: 'CROSS THE MARKET, DRYDOCK AND STORM WALL. THE WARDEN HOLDS THE SEA GATE.', build: ()=>stormwreckHarbor({painter,T,TS}), needs: 'causeway' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
-  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
+  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, ...(ROAD_OPEN.undercrown ? { needs: 'storm', leadsTo: 'crown' } : { hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } }) },   /* (claude/undercrown2: the main road between STORMHOLD and HIGHCROWN once ROAD_OPEN says so; until then the old secret fork) */
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: withBanner(theHexedFields, 'fields', ...LOST_BANNERS.fields), needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */
