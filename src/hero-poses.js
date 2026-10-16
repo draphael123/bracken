@@ -4,6 +4,8 @@
    after the swing: a blow in progress still wins). This chooses ART ONLY: no timer here touches a box, a cost or a cooldown.
    BEATS are the elapsed seconds at which each next frame starts; CYCLE poses loop at a rate instead. */
 export const POSE_BEATS = {
+  /* (claude/heropassa) HERO PASS A: each new move's beats (greybox frames via POSE_ALIAS below until the art pass) */
+  rgSnatch: [0.1], kStep: [0.08, 0.16], kBash: [0.08, 0.16], wHop: [0.06, 0.12], wPlant: [0.1], eBlink: [0.13], powder: [0.08, 0.18], shadowStep: [0.07, 0.14], gShrug: [0.12], bzBarge: [0.08, 0.18],
   /* THE FOUR NEW PLUNGES' RELEASES (claude/plunges, B16: each has its own windup - the plunge frames - and its own release/leap, played as kit poses) */
   hammerHit: [0.08],           /* HAMMER OF DAWN: the head of the maul in the ground and a gold star off it; then him coming up off it */
   boardLeap: [0.1],            /* BOARDING: the heel off its back and a hand pushing down; then both arms flung up - the second jump */
@@ -111,12 +113,27 @@ export function landPose(P, frames) {
   return ['land', el < 0.06 ? 0 : el < 0.13 ? 1 : 2];
 }
 export function kitPose(P, key, t) { P.kPoseK = key; P.kPoseT = t; P.kPoseMax = t; }
+/* (claude/heropassa) GREYBOX BODIES: a new move names ITS OWN pose key (B16) and, until the Sonnet art pass bakes frames under that key, borrows the
+   first of these that the hero has. The art lane only has to add the key: nothing here changes. THE ART LIST: work/claude/lane-done/claude-heropassa.md */
+export const POSE_ALIAS = {
+  kStep: ['block', 'brace', 'roll'],          /* THE KNIGHT's SHIELD-STEP: a step with the shield square in front (wants: kStep - plant, slide, set) */
+  kBash: ['toss', 'bash', 'block'],           /* THE SHIELD BASH: the shield cocked in, punched out, recovered (wants: kBash) */
+  wHop: ['vault', 'roll'],                    /* THE WARDEN's LOW HOP: knees up, the point kept level (wants: wHop) */
+  wPlant: ['plant', 'skewer', 'cast'],        /* THE WALL PLANT: the spear driven in sideways, then her stood on it (wants: wPlant, wPerch) */
+  eBlink: ['cinder', 'roll'],                 /* THE EMBER BLINK: the flash out and the flare in (wants: eBlink - out, in) */
+  powder: ['roll'],                           /* THE POWDER FLASH: the flask thrown down, the roll through the smoke (wants: powder) */
+  shadowStep: ['run', 'roll'],                /* THE SHADOW-STEP: the shade sliding (wants: shadowStep) */
+  gShrug: ['ward', 'block', 'cast', 'jump'],  /* THE STONE SHRUG: hunched in the air, stone over her shoulders (wants: gShrug) */
+  bzBarge: ['bzRoll', 'rush', 'roll'],
+  rgSnatch: ['rgBash', 'parry'],             /* THE RANGER's ARROW SNATCH: the hand out, the shaft caught (wants: rgSnatch) */        /* THE SHOULDER BARGE: the shoulder down and in (wants: bzBarge) */
+};
+const aliasOf = (frames, k) => { if (frames[k] || !POSE_ALIAS[k]) return k; const a = POSE_ALIAS[k].find(q => frames[q]); return a || k; };
 /* the frame of the pose now playing, or null when there is none */
 export function kitPoseFrame(P, frames) {
-  if (!(P.kPoseT > 0) || !frames[P.kPoseK]) return null;
-  const el = P.kPoseMax - P.kPoseT, n = frames[P.kPoseK].length;
-  if (POSE_PICK[P.kPoseK]) { const f = POSE_PICK[P.kPoseK](P); return f == null ? null : [P.kPoseK, Math.min(n - 1, f)]; }
-  if (POSE_CYCLE[P.kPoseK]) return [P.kPoseK, Math.floor(el * POSE_CYCLE[P.kPoseK]) % n];
+  if (!(P.kPoseT > 0)) return null; const K = aliasOf(frames, P.kPoseK); if (!frames[K]) return null;   /* (claude/heropassa: POSE_ALIAS) */
+  const el = P.kPoseMax - P.kPoseT, n = frames[K].length;
+  if (POSE_PICK[P.kPoseK]) { const f = POSE_PICK[P.kPoseK](P); return f == null ? null : [K, Math.min(n - 1, f)]; }
+  if (POSE_CYCLE[P.kPoseK]) return [K, Math.floor(el * POSE_CYCLE[P.kPoseK]) % n];
   const f = (POSE_BEATS[P.kPoseK] || []).filter(b => el >= b).length;
-  return [P.kPoseK, Math.min(n - 1, f)];
+  return [K, Math.min(n - 1, f)];
 }

@@ -47,6 +47,17 @@ try {
       else if(kind==='board'){while(!st.done&&tries++<8){const e=F()[tries%2]||F()[0];BK.sim(20);P.x=e.x;P.y=e.y-(e.h||8)-40;P.vx=0;P.vy=40;P.ground=false;P.face=1;__fresh();K.down=true;BK.press('atk');
           let f=0;while(!P.riding&&f++<120)BK.sim(1);K.down=false;run(10);BK.press('jump');run(40);}}   /* BOARDING: onto a goblin, then off it */
       else if(kind==='meter'){run(10);__fresh();__tapC();run(90);}
+      /* (claude/heropassa) HERO PASS A's stations: THE SHIELD BASH into his wind-up, VALIANT STRIKE (the bar filled) on the shield, THE COUNTER-THRUST (deflect on his flash, then X),
+         THE WALL PLANT (jump at the gate, hold into it, C), ARROW SNATCH (the bash as his arrow arrives), THE KNEELING DRAW (knelt, a full draw at the far straw) */
+      else if(kind==='kbash'){const e=F()[0];for(let f=0;f<frames&&!st.done;f++){P.face=Math.sign(e.x-P.x)||1;__fresh();const gap=Math.abs(e.x-P.x);K.right=gap>30&&e.x>P.x;K.left=gap>30&&e.x<P.x;
+          if(e.mode==='cutTell'&&e.modeT<0.45&&!(P.kBashT>0)&&!(P.kBashCd>0)&&gap<34){K.left=K.right=false;K.up=true;__tapC();K.up=false;continue;}BK.sim(1);}K.left=K.right=false;}
+      else if(kind==='valiant'){while(!st.done&&tries++<4){const e=F()[0];run(10);__fresh();P.resolve=100;P.x=e.x-18;P.face=1;P.vx=0;BK.sim(2);K.atk=true;let f=0;while(f++<80&&!(P.atkHeld>=0.9)){BK.sim(1);P.x=e.x-18;}K.atk=false;run(50);}}
+      else if(kind==='counter'){const e=F()[0];let glintAt=-1,pressed=0,wait=-1;for(let f=0;f<frames&&!st.done;f++){P.face=Math.sign(e.x-P.x)||1;__fresh();const gap=Math.abs(e.x-P.x);if(wait<0){K.right=gap>30&&e.x>P.x;K.left=gap>30&&e.x<P.x;}
+          if(wait>=0){if(wait>16&&P.riposteT>0)wait=16;if(--wait===0){K.left=K.right=false;if(P.riposteT>0)BK.press('atk');}BK.sim(1);continue;}
+          if(e.mode==='cutTell'&&e.modeT<0.12){if(!pressed){__tapC();pressed=1;wait=60;continue;}}else if(e.mode!=='cutTell'){pressed=0;}BK.sim(1);}K.left=K.right=false;}   /* (the tap ON THE BEAT: in the last beat of his cut, so the blow lands inside it - a parry, not only a turn) */
+      else if(kind==='plant'){while(!st.done&&tries++<6){P.x=st.gate*16-30;P.face=1;P.vx=0;BK.sim(10);__fresh();K.right=true;BK.press('jump');K.jump=true;run(14);K.jump=false;__tapC();K.right=false;run(40);BK.press('jump');run(40);}}
+      else if(kind==='snatch'){const e=F()[0];P.x=e.x-130;P.vx=0;for(let f=0;f<frames&&!st.done;f++){P.face=1;__fresh();const s=BK.seeds().find(q=>!q.dead&&q.x>P.x&&q.x-P.x<30&&Math.abs(q.y-(P.y-10))<16&&(q.vx||0)<0);if(s&&!(P.rgBashT>0)){__tapC();continue;}BK.sim(1);}}
+      else if(kind==='kdraw'){while(!st.done&&tries++<6){const e=F()[0];P.x=e.x-130;P.face=1;P.vx=0;BK.sim(10);__fresh();K.down=true;run(14);BK.press('atk');K.atk=true;let f=0;while(f++<90&&!P.chargeFull)BK.sim(1);run(4);K.atk=false;run(2);K.down=false;run(80);}}
       else if(kind==='skill'){run(10);__fresh();BK.press('throw');run(60);__fresh();BK.press('skill2');run(60);}
       else if(kind==='flash'||kind==='tells'){const e=F()[0],late=early?-99:h==='geomancer'?2:3;let pressed=0,glintAt=-1,awayT=0;
         for(let f=0;f<frames&&!st.done;f++){P.face=Math.sign(e.x-P.x)||1;__fresh();const gap=Math.abs(e.x-P.x);if(awayT<=0){K.right=gap>30&&e.x>P.x;K.left=gap>30&&e.x<P.x;}
@@ -57,8 +68,8 @@ try {
         K.left=K.right=false;}
       return {kind,got:st.got||0,n:st.n,done:!!st.done,have:st.have||null};};
     return 1})()`);
-  const NEWP = { paladin: ['hammerfall'], pirate: ['board'], berserker: ['spin'] };   /* (claude/plunges) the three yards that teach a new plunge: just that station is played */
-  for (const h of ['warden', 'geomancer', 'paladin', 'pirate', 'berserker']) {
+  const NEWP = { paladin: ['hammerfall'], pirate: ['board'], berserker: ['spin'], knight: ['kbash', 'valiant'], ranger: ['snatch', 'kdraw'] };   /* (claude/heropassa: the knight's and the ranger's new stations) */   /* (claude/plunges) the three yards that teach a new plunge: just that station is played */
+  for (const h of ['warden', 'geomancer', 'paladin', 'pirate', 'berserker', 'knight', 'ranger']) {
     if (!(await pg.evalp(`__yard('${h}')`))) { out[h] = 'no yard'; continue; }
     const n = await pg.evalp('BK.L.trial.length'), rows = [];
     for (let i = 0; i < n; i++) { const kd = await pg.evalp(`BK.L.trial[${i}].kind`); if (NEWP[h] ? !NEWP[h].includes(kd) : ONLY && !ONLY.includes(kd)) continue; rows.push(await pg.evalp(`__play('${h}',${i})`)); }

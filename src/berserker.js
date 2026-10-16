@@ -38,12 +38,12 @@ export const BZ = {
   rend: { n: 4, decay: 2.5 },                         /* REND: the n-th frenzied blow on one foe cracks it (counts as a HEAVY); stacks fall off after decay s without one */
   take: { min: 0.25, chip: 0.1, beat: 1 },            /* TAKE IT: a tap holds it up min s; a blow on it costs him chip of it; beat x the shared tap beat */
   brace: { live: 0.3, rec: 0.28, won: 0.1, st: 10, stagger: 0.7, back: 1.2 },   /* (kept for the bots and old saves' readers: braceRec is never set now) */
-  roll: { t: 0.28, speed: 250, shove: 200, stagger: 0.55, dmg: 0.4 },
+  roll: { t: 0.28, speed: 300, shove: 200, stagger: 0.55, dmg: 0.4 },   /* (claude/heropassa) THE SHOULDER BARGE (his distinct dodge): 250 -> 300, a fifth further into them; brutes, elites, minis and bosses are not shoved (smallFoe) */
   axe: { st: 18, vx: 300, vy: -10, g: 600, flat: 0.5, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
   perk: { rage: 1, brace: 1 },                        /* LEVELING2's hero perks (STOKED, STOUT BRACE): main.js applyUpgrades sets these from the card; 1 = none */
   poise: { heavy: 30, bossMul: 1.4, rage: 1.25, one: 0.5 },
   /* WEIGHT (claude/weight): his row of its commit table (src/commit.js reads COMMIT.berserker) - kept here as the record */
-  commit: { light: 0.14, third: 0.2, up: 0.14, heavy: 0.27, roll: 24, rollInv: 0.2, rollT: 0.28, brace: 0.28 },
+  commit: { light: 0.14, third: 0.2, up: 0.14, heavy: 0.27, roll: 22, rollInv: 0.26, rollT: 0.28, brace: 0.28 },   /* (claude/heropassa: the record now matches what is live - src/commit.js ROLL_COST 22 and STAM.rollInv 0.26 win; this row was never read) */
 };
 /* WHO MAY BE ROLLED THROUGH AND KNOCKED ASIDE (and knocked along by the pounce): a small common foe, never a boss, a mini, an elite, a big one or one that cannot be moved */
 export const smallFoe = (e, knockSkip) => !!(e && e.alive && !e.harmless && !e.maxHp && !e.mini && !e.elite && !e.big && !e.xpRole && !(knockSkip && knockSkip(e)));
