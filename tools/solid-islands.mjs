@@ -52,6 +52,7 @@ function postHolds(L, s, p) {
   const W = L.W, H = L.H, g = L.grid, cells = s.set || (s.set = new Set(s.cells));
   let top = false; for (let y = p.y - 1; y <= p.y + 1; y++) if (cells.has(y * W + p.x)) { top = true; break; }
   if (!top || p.free) return false;
+  if (p.kind === 'chain') { let r = p.top - 1; return r >= 0 && r < H && g[r * W + p.x] !== T.AIR && g[r * W + p.x] !== T.NET; }   /* (b97base merge: claude/church2 vs claude/screefix) a CHAIN hangs from the stone over it, its foot is free by design: it holds when its anchor row (p.top - 1... the row above its first link) is solid, not when its foot meets ground */
   if ((L.pools || []).some(q => p.x * 16 + 8 >= q.x0 && p.x * 16 + 8 < q.x1 && p.bottom * 16 > q.y)) return true;   /* a pile driven into a pool: its foot is under the water, on the bed the map does not draw */
   let r = p.bottom, gap = 0; if (r >= H) return true;
   while (r < H && (g[r * W + p.x] === T.AIR || g[r * W + p.x] === T.NET)) { r++; gap += 16; if (gap > POST_REACH_PX) return false; }
