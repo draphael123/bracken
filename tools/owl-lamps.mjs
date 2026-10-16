@@ -9,10 +9,12 @@ for(const p of lamps)assert([T.SOLID,T.ONEWAY,T.PLANK].includes(L.grid[(p.y+1)*L
 const noop=()=>{}, props=lamps.map(p=>({...p,t:'lantern',x:p.x*16+8,y:(p.y+1)*16}));
 const c=vm.createContext({L,props,TS:16,P:{x:100,y:320,dead:true},enemies:[],SFX:new Proxy({},{get:()=>noop}),number:noop,burst:noop,ringAt:noop,dust:noop,shakeCam:noop,flash:0});
 vm.runInContext(s.slice(s.indexOf('function lightOwlLamp'),s.indexOf('// The Forgemaster.',s.indexOf('function lightOwlLamp'))),c);
-const pr=props[0];c.lightOwlLamp(pr);assert.equal(pr.lampT,14);assert(pr.lit);
+/* (claude/owl3, Daniel 10-15: a lit lamp burns ~2 s, not 14; out, its wick smokes and will not take a light; one crash or dazzle spends it) */
+const pr=props[0];c.lightOwlLamp(pr);assert(pr.lampT>=1.5&&pr.lampT<=2.5,'a struck lamp burns about two seconds ('+pr.lampT+')');assert(pr.lit);
 const b={mode:'hootTell',modeT:0,phase:1,x:pr.x+118,y:pr.y-30,face:1,perches:[{x:pr.x,y:pr.y-30}],perchI:0};c.updateOwl(b,1/60);assert(!pr.lit,'hoot snuffs near lamps');
-c.lightOwlLamp(pr);Object.assign(b,{mode:'fly',modeT:3,x:pr.x,y:pr.y-30});c.updateOwl(b,1/60);assert.equal(b.mode,'dazzled');
+assert(pr.cool>0,'a lamp put out smokes');assert.equal(c.lightOwlLamp(pr),false,'a smoking wick will not take a light');assert(!pr.lit);pr.cool=0;
+c.lightOwlLamp(pr);Object.assign(b,{mode:'fly',modeT:3,x:pr.x,y:pr.y-30});c.updateOwl(b,1/60);assert.equal(b.mode,'dazzled');assert(!pr.lit&&pr.cool>0,'the lamp that dazzled her is spent');pr.cool=0;
 for(let i=0;i<40;i++)c.updateOwl(b,1/60);assert.equal(b.mode,'grounded');assert(b.modeT<=3&&b.modeT>2);
-c.lightOwlLamp(pr);Object.assign(b,{mode:'douseDive',modeT:2,x:pr.x+111,y:pr.y-30,douseTarget:pr,phase:2});c.updateOwl(b,1/60);assert(!pr.lit,'phase two dive reaches the lamp and beats it out');
-assert(s.includes('pr.lampT-=dt;if(pr.lampT<=0)snuffOwlLamp(pr)'));
-console.log('Six supported lamps: 14-second fuel, continuous glow, three-second opening, hoot and dive extinguishing.');
+pr.cool=0;c.lightOwlLamp(pr);Object.assign(b,{mode:'douseDive',modeT:2,x:pr.x+111,y:pr.y-30,douseTarget:pr,phase:2});c.updateOwl(b,1/60);assert(!pr.lit,'phase two dive reaches the lamp and beats it out');
+assert(s.includes('if(pr.lit){pr.lampT-=dt;if(pr.lampT<=0){snuffOwlLamp(pr);'),'the prop update burns a lit lamp down and puts it out');
+console.log('Six supported lamps: two-second fuel, a smoking wick after, spent by a dazzle, three-second opening, hoot and dive extinguishing.');

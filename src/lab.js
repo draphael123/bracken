@@ -671,7 +671,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'){   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -2266,7 +2266,14 @@ async function runbossLab(BK, opts) {
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
       if (boss.t === 'owl') {
         const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
-        if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];if(lamp){goal=lamp.x;if(!lamp.lit&&Math.abs(P.x-lamp.x)<22&&P.atk<0){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
+        /* (claude/owl3) A LAMP IS A MOMENT: it burns two seconds and one crash spends it, so a player waits by a lamp and strikes it AS SHE COMES -
+           her swoop or skim told and set on its line (she runs through him, and the lamp beside him), or her shadow over him for the plunge - never before */
+        const comes = (boss.mode === 'swoopTell' && boss.swAt) || (boss.mode === 'skimTell' && boss.skimAt) || boss.mode === 'stalk';
+        if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];const run=(boss.mode==='swoopTell'&&boss.swAt)||(boss.mode==='skimTell'&&boss.skimAt);if(lamp){goal=run?lamp.x+(Math.sign(lamp.x-boss.x)||1)*12:lamp.x+(Math.sign((A.x0+A.x1)/2-lamp.x)||1)*10;   /* (set on her line: to the lamp's far side from her, so she meets the light before him) */   /* (stood on the lamp's inner side, away from the drop: a goal that flipped sides of the lamp each frame set off the stuck-hop, and the hop carried him into the drop) */if(comes&&!lamp.lit&&!(lamp.cool>0)&&Math.abs(P.x-lamp.x)<22&&P.atk<0&&(!run||(P.x-lamp.x)*(lamp.x-boss.x)>=0)){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
+        /* (claude/owl3) HER PLUNGE with no lamp to give her (the nearest one lit already, or its wick still smoking): out from under her shadow */
+        if ((boss.mode === 'stalk' || boss.mode === 'plunge') && P.ground) { const lp = BK.props().filter(p => p.owl && !p.perch).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; if (!lp || lp.cool > 0 || Math.abs(lp.x - P.x) > 24 || (lp.lit && lp.lampT < 0.6)) { goal = P.x + (Math.sign(P.x - boss.x) || 1) * 44; strike = false; } }
+        /* (claude/owl3) HER SKIM, LED: a player who has read the mantle and its low line jumps as she will arrive - its hold, then her run to him - not when he first sees her moving (a reaction late, she is on him) */
+        if (boss.mode === 'skimTell' && boss.skimAt && P.ground && !(P.labJump > 0) && (boss.modeT || 0) + Math.abs(boss.x - P.x) / (boss.phase === 2 ? 380 : 330) < 0.3) { BK.press('jump'); P.labJump = 14; }
         if (boss.mode === 'skim' && Math.abs(boss.x-P.x)<64 && (boss.x-P.x)*boss.vx<0 && P.ground){k.jump=true;BK.press('jump');}
         /* (claude/owl2) HER SWOOP RUNS HEAD HIGH: under it, as it comes (a shield hero too - no shield turns her talons; duckNow lets a guard-holder off once the red mark has gone from her tell) */
         /* (claude/owl2) OFF THE CHIP: she takes 0.4 of a blow wherever she is at his height - a player cuts her as she mantles beside him for her skim or her swoop */
@@ -2280,9 +2287,18 @@ async function runbossLab(BK, opts) {
         if ((boss.mode === 'shakeTell' || boss.mode === 'shake') && boss.shade) { const sh = boss.shade.filter((x, i) => !(boss.cones && boss.cones[i] && boss.cones[i].done)), free = x => sh.every(s => Math.abs(s - x) >= 15);
           if (!free(P.x)) { let best = null; for (let dx = 2; dx <= 70 && best === null; dx += 2) for (const x of [P.x - dx, P.x + dx]) if (best === null && x > A.x0 + 14 && x < A.x1 - 14 && free(x)) best = x; if (best !== null) { goal = best; strike = false; } }
           else if (!down) { goal = P.x; strike = false; } }
+        /* (claude/owl3) HER PELLETS' MARKS, as drawn: off every mark to the nearest clear board (the marks are on the boards, red: read off the floor, not off her pose) */
+        if (boss.pMarks && boss.pMarks.length) { const mk = boss.pMarks.filter((x, i) => !(boss.pel && boss.pel[i] && boss.pel[i].done)), free = x => mk.every(m => Math.abs(m - x) >= 30) && !(A.drops || []).some(([a, b]) => x > a * 16 - 10 && x < (b + 1) * 16 + 10);
+          if (!free(P.x)) { let best = null; for (let dx = 2; dx <= 90 && best === null; dx += 2) for (const x of [P.x - dx, P.x + dx]) if (best === null && x > A.x0 + 14 && x < A.x1 - 14 && free(x)) best = x; if (best !== null) { goal = best; strike = false; } }
+          else if (!down) { goal = P.x; strike = false; } }
+        /* (claude/owl3) HER WING BEAT: braced (down held on the boards) from late in its windup to its end - or caught on a vine, where it cannot take him */
+        if ((boss.mode === 'gust' || (boss.mode === 'gustTell' && boss.modeT < 0.3)) && P.ground) owlDuck = true;
         { const st = boss.oil ? [boss.oil.x0, boss.oil.x1] : (boss.mode === 'lampTell' || boss.mode === 'lampFall') && boss.dropX !== undefined ? [boss.dropX - 40, boss.dropX + 40] : null;
           if (st && P.x > st[0] - 8 && P.x < st[1] + 8) { const l = st[0] - 16, r = st[1] + 16; goal = (P.x - st[0] < st[1] - P.x && l > A.x0 + 14) || r > A.x1 - 14 ? l : r; strike = false; }
           else if (st && goal !== null && goal > st[0] - 8 && goal < st[1] + 8) { goal = P.x; } }
+        /* (claude/owl3) THE DROP: never a goal in it, and its edge jumped on the way over (a player hops a three-tile break in the boards) */
+        for (const [a, b] of (A.drops || [])) { const l = a * 16, r = (b + 1) * 16; if (goal !== null && goal > l - 10 && goal < r + 10) goal = P.x < (l + r) / 2 ? l - 14 : r + 14;
+          if (goal !== null && P.ground && !owlDuck) { const dir = Math.sign(goal - P.x), edge = dir > 0 ? l : r, ahead = (edge - P.x) * dir; if (dir && ahead > 0 && ahead < 26 && (goal - edge) * dir > 0 && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } } }
       }
       /* THE WINDCALLER'S HOWL (claude/bosswave1: his fall is now his only opening): HE CALLS THE WIND is told, and a player braces through it -
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
@@ -2456,8 +2472,8 @@ async function runbossLab(BK, opts) {
          P.st untouched, so it was never a stamina question - the ward was ripped down by this check, not run dry. Excluded here, not
          removed: every OTHER stuck state (the spring, a jump held with no ground contact) never sets P.warding, so this still catches
          them exactly as before. */
-      /* (claude/windcaller3) THE WINDCALLER's hands wait for a gust beside an updraft on purpose: that stillness is a plan, not a stuck bot */
-      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && boss.t !== 'windcaller' && !(boss.t === 'grandmother' && ['listenTell', 'listen', 'turned', 'lureTell', 'lash'].includes(boss.mode)) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
+      /* (claude/windcaller3) THE WINDCALLER's hands wait for a gust beside an updraft on purpose: that stillness is a plan, not a stuck bot */   /* (claude/owl3) and THE OWL REEVE's wait by a dark lamp for her to come: the stuck hop off it carried him into THE DROP */
+      if (f % 30 === 0) { const stuck = !P.warding && !(LABP.v2 && MA && MA.wait) && boss.t !== 'windcaller' && boss.t !== 'owl' && !(boss.t === 'grandmother' && ['listenTell', 'listen', 'turned', 'lureTell', 'lash'].includes(boss.mode)) && Math.abs(P.x - (P.labStuckX ?? P.x)) < 6 && boss.hp === (P.labStuckHp ?? boss.hp);
         P.labStuckF = stuck ? (P.labStuckF || 0) + 1 : 0; P.labStuckX = P.x; P.labStuckHp = boss.hp; }
       /* HOLDING JUMP DOWN FOREVER IS ITS OWN STUCK STATE (found chasing this same herald-pirate check, claude/botfix
          follow-up): this used to set k.jump = true directly, with nothing to ever let it go again while P.labStuckF
@@ -2487,6 +2503,11 @@ async function runbossLab(BK, opts) {
         if (P.ground) { BK.press('jump'); P.labJump = 18; if (!(LABP.v2 && h === 'warden') || Math.abs((boss.y - (boss.h || 16) / 2) - (P.y - 9)) < 30) BK.press('dodge'); } }   /* (claude/wardenkit, v2: the warden's step here only when he is at her height - it is her BACK-step, it carries ~45 px now, and a warden waiting under the Owl at her lamp read as 'stuck' 48 times a fight and was stepped off it each time; the jump unsticks her) */
       { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
       if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
+      /* (claude/owl3) THE DROP'S LIP: on the boards within a few steps of a break in them, nothing the hands asked for this frame carries him over it - no step,
+         hop, roll or held jump toward it - unless the drop is what he means to cross (his goal is past it). A player minds the edge; the other hands do not know it is there */
+      if (boss.t === 'owl' && P.ground) for (const [a, b] of (A.drops || [])) { const l = a * 16, r = (b + 1) * 16, cross = goal !== null && ((P.x < l && goal > r) || (P.x > r && goal < l)); if (cross) continue;
+        const side = P.x >= r - 2 && P.x < r + 36 ? -1 : P.x <= l + 2 && P.x > l - 36 ? 1 : 0; if (!side) continue;
+        if (side < 0) k.left = false; else k.right = false; if (P.face === side || k.jump || P.labJump > 0) { k.jump = false; P.labJump = 0; BK.unpress(); } }
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }

@@ -1657,8 +1657,8 @@ export function bakeSquirrel() {
 export function bakeOwl() {
   // HER OFFICE OUTLASTS THE CLOTH: a tarnished chain over a torn tabard, pale eyes inside dark sails.
   const frames=[];
-  for(let f=0;f<13;f++) {
-    const [c,g]=canvas(116,66), down=[4,10].includes(f), spread=![0,11].includes(f), lift=[1,7,8,12].includes(f)?-18:0;
+  for(let f=0;f<17;f++) {   /* (claude/owl3, GREYBOX for the art pass) 13 the wing beat's windup (wings flung up and back), 14 its release (wings driven down and forward), 15 the pellet cough (hunched, the throat full), 16 the pellet out (beak wide, the pellet in it) */
+    const [c,g]=canvas(116,66), down=[4,10].includes(f), spread=![0,11,15,16].includes(f), lift=[1,7,8,12].includes(f)?-18:f===13?-26:f===14?12:0;
     const poly=(p,col)=>{g.fillStyle=col;g.beginPath();p.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();};
     for(const side of [-1,1]) {
       const X=n=>58+side*n;
@@ -1675,6 +1675,8 @@ export function bakeOwl() {
     for(const x of [47,64]){g.fillStyle='#b79a60';g.fillRect(x,53,3,7);for(let k=0;k<3;k++){g.fillRect(x-3+k*3,59,2,3);g.fillStyle='#e4cf99';g.fillRect(x-3+k*3,61,2,2);g.fillStyle='#b79a60';}}
     if(f===10){g.fillStyle='#513b30';g.fillRect(22,42,72,7);g.fillStyle='#83613c';g.fillRect(25,43,65,2);}
     if(f===3){g.fillStyle='#34202b';g.fillRect(56,32,5,5);}
+    if(f===15){g.fillStyle='#cfc3a6';g.beginPath();g.ellipse(58,40,7,5,0,0,7);g.fill();g.fillStyle='#a8997a';g.fillRect(53,42,10,1);}   /* the throat full */
+    if(f===16){g.fillStyle='#34202b';g.fillRect(55,31,7,7);g.fillStyle='#e8e0cc';g.fillRect(57,34,4,3);g.fillStyle='#a8997a';g.fillRect(58,36,2,1);}   /* the beak wide, the pellet in it */
     frames.push(outline(c,OUT));
   }
   return pack(frames,58,63,44,26);
