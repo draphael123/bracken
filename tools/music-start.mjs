@@ -4,11 +4,12 @@ import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
 const target = 'brackenwood', deadlineMs = 10000;
-let pg, requests = 0, failed = 0, interceptError = null;
+let pg, requests = 0, failed = 0, heldRetry = null, interceptError = null;
 try {
   pg = await openPage({ audio: true, fonts: false, onEvent: ev => {
     if (ev.method !== 'Fetch.requestPaused') return;
     requests++;
+    if (requests === 2) { heldRetry = ev.params.requestId; return; } // keep the new file unloaded until after the map-entry assertion
     const method = requests === 1 ? 'Fetch.failRequest' : 'Fetch.continueRequest';
     if (requests === 1) failed++;
     const params = method === 'Fetch.failRequest' ? { requestId: ev.params.requestId, errorReason: 'Failed' } : { requestId: ev.params.requestId };
@@ -31,7 +32,10 @@ try {
   assert.equal(before.state, 'play', 'the map choice enters a level: ' + JSON.stringify(before));
   assert.equal(before.levelMusic, target, 'the map choice entered Brackenwood');
   assert.equal(before.want, target, 'the level requested its own music');
-  assert.notEqual(before.track, 'select', 'the map music fades immediately while the level track loads');
+  assert.equal(before.track, null, 'the map music fades immediately while the level track is still unloaded');
+  for (const until = Date.now() + 3000; !heldRetry && Date.now() < until;) await new Promise(r => setTimeout(r, 25));
+  assert.ok(heldRetry, 'the failed preload is retried');
+  await pg.send('Fetch.continueRequest', { requestId: heldRetry });
   const until = Date.now() + deadlineMs;
   let track = before.track;
   while (track !== target && Date.now() < until) {
