@@ -438,7 +438,7 @@ Object.assign(DMG, {
 });
 Object.assign(EHP, {
   tollmaster: 980,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s) */
-  prince: 3150,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights); (claude/undercrown2) 2000 -> 2500: the slab pins pay x2, and the fights ran 35-65 s */
+  prince: 2550,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights); (claude/undercrown2) 2000 -> 2500: the slab pins pay x2, and the fights ran 35-65 s; 3150 -> 2550 (claude/undercrown2art): on the road before the Queen (campaign L15, 2 flasks) the 3150 fight read 53% with flasks (knight 3/12), 2850 read 56% (knight 2/12) */
   closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
   lampreeve: 560,    /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75) */
   quarter: 1150,     /* (claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */ /* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */

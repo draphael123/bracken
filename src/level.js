@@ -2674,6 +2674,7 @@ function undercrown() {
   ent('miner', 54, 111, { face: -1, cnSkin: 'navvy' }); ent('rockgoblin', 64, 111, { face: -1, cnSkin: 'bonechucker' });
   ent('shardling', 34, 111, { face: 1 }); ent('snuffer', 42, 111, { face: -1, cnSkin: 'lampsnuffer' });
   ent('gas', 18, 121);   /* the stope's floor breathes too */
+  ent('check', 10, 121);   /* (claude/undercrown2art) the shrine at the shaft's foot, on the stope's dry west floor (where a fall down the shaft or the walkway ladder lands you): the route from the flooded level's shrine to the barrow's had 238 tiles with none (checkpoint-gaps) */
   ent('rockgoblin', 26, 121, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 90, 121, { face: -1, cnSkin: 'navvy' }); ent('bonegob', 84, 121, { face: -1 });
   ent('bat', 40, 94); ent('bat', 62, 96);
   ent('clinger', 95, 104, { face: -1 });

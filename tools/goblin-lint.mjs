@@ -23,8 +23,8 @@ import { SKIN_MAPS } from '../src/redraw/undercrown_skins.js';   /* the recolour
 export const GOBLIN_KINDS = new Set(['sprig', 'shield', 'thorn', 'archer', 'sapper', 'brute', 'rockgoblin', 'gobpriest', 'gobmage', 'assassin', 'berserker',
   'burngob', 'hearthgob', 'stormshaman', 'sailer', 'horn', 'thief', 'miner', 'sheargob', 'gaffer', 'kite', 'sandgob', 'chief', 'lance', 'snuffer',
   'propman', 'tippler', 'scalder', 'sentry', 'pike', 'temperer']);
-/* the levels whose goblins are reskinned (a lane adds its level here when it fixes it) */
-export const FIXED = ['church', 'canal', 'redgorge', 'undercrown', 'lamplit', 'theatre', 'welltown', 'fair'];   /* (claude/fairfix6: THE HARVEST FAIR - its strongman, juggler and stallholder; tools/fair-folk.mjs asks their PICTURES too) */   /* (claude/desertfoes: THE RED GORGE's dynamite bandit and shield guard under men's skins; claude/goblinsweep: the Undercrown's miners, rock goblins, sprigs, propmen and sentry; Lamplit Street's snuffers) */
+/* the levels whose goblins are reskinned (a lane adds its level here when it fixes it). THE UNDERCROWN left this list (claude/undercrown2art, ROAD_OPEN.undercrown): on the main road it comes BEFORE the Goblin Queen, so its goblins are living goblins in a goblin level and the lint no longer measures it (its navvies, timbermen and lamp-snuffers keep their skins anyway). */
+export const FIXED = ['church', 'canal', 'redgorge', 'lamplit', 'theatre', 'welltown', 'fair'];   /* (claude/fairfix6: THE HARVEST FAIR - its strongman, juggler and stallholder; tools/fair-folk.mjs asks their PICTURES too) */   /* (claude/desertfoes: THE RED GORGE's dynamite bandit and shield guard under men's skins; claude/goblinsweep: the Undercrown's miners, rock goblins, sprigs, propmen and sentry; Lamplit Street's snuffers) */
 
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 const beasts = main.slice(main.indexOf('const BEASTS = ['), main.indexOf('];', main.indexOf('const BEASTS = [')));
