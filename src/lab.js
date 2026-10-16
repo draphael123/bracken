@@ -567,12 +567,14 @@ function rotateWanted(BK) {
   if (!LABP.v2 || LABP.rotate === false || !HUMAN_H || HUMAN_H === 'pirate' || HUMAN_H === 'reaper') return false;
   const P = BK.P, b = ROWBOSS || BK.boss; if (!P || !b || !b.alive || !(P.ground || P.swim) || P.atkHeld > 0 || P.charge > 0 || P.heavy || P.labRotHold > 0) return false;
   if (OPEN(b, BK) !== true) return false;
-  const s = b.stale; if (!s || s.k !== (b.stOpenN || 0) || s.verb !== 'cut' || s.n < 2) return false;
-  return P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 4;
+  const s = b.stale, fin = b.broken > 0 && b.bkBroke && !b.bkFinished;   /* (and BROKEN with the finisher waiting: a player winds the heavy for it) */
+  if (!fin && (!s || s.k !== (b.stOpenN || 0) || s.verb !== 'cut' || s.n < 2)) return false;
+  if (ROT) ROT.want++; const ok = P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 4; if (!ok && ROT) ROT.lowSt++; return ok;
 }
 function rotHold(BK) {
   const P = BK.P; if (!P || !(P.labRotHold > 0)) return; const b = ROWBOSS || BK.boss, k = BK.keys;
-  if (P.heavy || P.heavySwing || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
+  if (ROT) { const why = P.heavy ? 'heavy' : P.hurt > 0 ? 'hurt' : P.dodge > 0 ? 'dodge' : P.labRotHold > 110 ? 'long' : BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true ? 'tell' : null; if (why) ROT[why] = (ROT[why] || 0) + 1; }
+  if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
   if (HUMAN_H === 'knight' && P.atkHeld >= KNIGHT_CUT) { k.atk = false; P.labRotHold = 0; return; }   /* the guard-break cut, let go */
   P.labRotHold++; k.atk = true; k.block = false; P.face = Math.sign(b.x - P.x) || P.face; if (ROT) ROT.holds += P.labRotHold === 2 ? 1 : 0;
 }
@@ -670,7 +672,7 @@ async function runbossLab(BK, opts) {
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
     if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); GUARDR = mulberry(seedOf('guard|' + lvId + '|' + h + '|' + (opts.seed || '') + '|' + (opts.salt || ''))); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; }
-    ROWBOSS = boss; ROT = { holds: 0 }; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
+    ROWBOSS = boss; ROT = { holds: 0, want: 0, lowSt: 0 }; if (typeof window !== 'undefined') window.__labRot = ROT; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
