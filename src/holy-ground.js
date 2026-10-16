@@ -46,7 +46,7 @@ export const HG = {
   /* THE LIGHT-WARD (the aegis, Daniel 10-15 ~18:00): ALL ROUND (front + back), turns projectiles, a steady wind a second while held (not a price a blow), a
      PIERCING blow goes through it as through the knight's shield, a big enough blow BREAKS it (the knight's rules: staggered + exhausted, half the blow lands):
      a blow bigger than the wind he has left for it (the shield's price, commit.js blockCost) or one that would land big (of his max health). +1 CONVICTION a 2 blocks */
-  ward: { drain: 27.5, big: 0.25, per: 2 },
+  ward: { drain: 27.5, big: 0.18, per: 2 },   /* (PALADIN TUNE: big was 0.25) */
   /* SANCTUARY STEP (the dodge, Daniel 10-15 ~17:20 - NOT a brace): a quick step in the held direction, a roll's grace a little shorter, and a small patch of holy
      light left where he stood: foes crossing it are slowed (a common foe or an elite, never a boss or a mini), a PARTNER in it mends */
   step: { t: 0.26, inv: 0.2, speed: 240 },   // s (a roll is 0.30), s of grace (a roll 0.26), px/s
