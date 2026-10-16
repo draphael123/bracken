@@ -74,10 +74,10 @@ ok(sign(602, 611, /CHUTE LEVER SWINGS THE SAND-FALL INTO THE HALL/) && sign(612,
   ok((tr.lamps || []).length === 2 && tr.fedBy === 'trapfall' && !tr.pour, 'the trap hall\'s lips are lamp-lit (red open, gold shut), and only the sand-fall feeds it'); }
 /* THE SECTION EXAMS ARE ELITES on footing with a hazard by them: the halls (a shaft of sun on him, stakes behind him), the quarter (a drift at his back), the throne street (a drift at yours, his gate) */
 { const el = L.ents.filter(e => e.t === 'construct' && e.elite).map(e => e.x).sort((a, b) => a - b);
-  ok(el.join() === '318,556,654,815', 'the four section exams are ELITE constructs (' + el + ') - claude/buriedcity3: THE ROOFTOPS courtyard is the fourth');
+  ok(el.join() === '318,553,654,815', 'the four section exams are ELITE constructs (' + el + ') - claude/buriedcity3: THE ROOFTOPS courtyard is the fourth');
   const sunAt = x => SUN.some(z => x >= z.x0 && x <= z.x1), spikeNear = (x, y) => { for (let dx = -8; dx <= 8; dx++) for (let dy = -1; dy <= 3; dy++) if (at(x + dx, y + dy) === T.SPIKE) return true; return false; };
   const qs = x => L.quicksand.some(q => Math.abs(q.x0 / TS - x) <= 9);
-  const e1 = L.ents.find(e => e.elite && e.x === 318), e2 = L.ents.find(e => e.elite && e.x === 556), e3 = L.ents.find(e => e.elite && e.x === 654);
+  const e1 = L.ents.find(e => e.elite && e.x === 318), e2 = L.ents.find(e => e.elite && e.x === 553), e3 = L.ents.find(e => e.elite && e.x === 654);
   ok(sunAt(e1.x) && spikeNear(e1.x, e1.y), 'the halls\' elite stands in a shaft of sun with stakes behind him (a heavy blow throws a foe onto them)');
   ok(qs(e2.x) && qs(e3.x) && e3.gate, 'the quarter\'s and the throne street\'s elites stand by a drift; the throne\'s warden holds a gate'); }
 /* REQUIRED: the reach model */

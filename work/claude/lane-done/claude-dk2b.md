@@ -37,7 +37,7 @@ Confirmed: the live fight is **'bloodknight' only** (THE DEATH KNIGHT, updateBlo
 - **tools/commitment.mjs**: reaper LIGHT_TOTAL 0.98 -> 0.76 (Daniel 10-14 LATE, REAPER'S RHYTHM ~35% quicker - the brief's own number); MASH_MAX unchanged and green.
 - **tools/verb-matrix.mjs**: fresh() now ends any swing carried in from the row before (the held crescent was let go on the heavy row's last frames and still swinging into the dash row) - state hygiene, every assertion unchanged.
 - **GREEN, no edits**: hint-shown, crouch-b, duck, crouch-a, crouch-hint, talents, skill-passives, progression, skill-menu, skill-icons, attack-animation, ability-poses, blow-tags, boss-read, lab-reach, reaper-input, boss-greed, weak-bosses, unburied, corpses, attack-buffer, untold-told, no-hidden-hits, rule-openings, deathknight-unlock, boss-openings; textfit hints,tree,menu,hud,boss,pick,practice,store,bestiary --strict: 3163 screens, 0 issues.
-- NOT run: the full suite (check.mjs), cast-poses (tools/cast-poses.mjs does not exist yet), 12-seed tuning, level-quality.
+- NOT run: the full suite (check.mjs), cast-poses (that tool does not exist yet), 12-seed tuning, level-quality.
 
 ## 3-SEED SANITY + MASH
 tools/boss-rates.mjs, profile human, kit flasks, campaign level (NOT tuning):

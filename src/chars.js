@@ -2664,7 +2664,7 @@ const REAP_PAL = { s: '#b9c2cf', S: '#68707e', b: '#232a38', B: '#141824', r: '#
    fists on the pommel, a red gleam at the point), THE BLOOD PRICE held (four beats - the blade drinking, longer and redder with every price) and THE CRESCENT CLEAVE
    (hauled up from behind, round through the whole front of him, and the follow-through). The beats are the attack-animation table's: 0 anticipation, 1 strike
    (smear), 2 extended (the live box), 3 recover, then the settle. Built with the headroom (an overhead blade needs the room), after directionalPoses padded the rest. */
-function reaperRhythmPoses(F, sh) {
+function reaperRhythmPoses(F, sh, atkOnly = false) {
   const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7], K = o => knightFrame({ top, ...o });
   const a = (x, y, col) => [x - BX, y - BY, col], RED = '#c0283a', DRED = '#7a1020', PINK = '#ff6b6b', HOT = '#ffd0d0';
   const gs = (hx, hy, tx, ty) => ({ arm: [X, Y, hx, hy], greatsword: [hx, hy, tx, ty] });
@@ -2675,6 +2675,7 @@ function reaperRhythmPoses(F, sh) {
     K({ wide: 6, dx: 1, legs: 'runC', ...gs(X + 3, Y + 3, X + 16, Y + 5), plume: 2 }),
     K({ wide: 10, dx: 2, legs: 'runC', ...gs(X + 5, Y - 1, X + 18, Y - 14), plume: 2, bits: [a(X + 17, Y - 13, HOT), a(X + 14, Y - 9, PINK), a(X + 9, Y - 4, RED)] }),
     K({ wide: 4, dx: 1, legs: 'wide', ...gs(X + 3, Y - 5, X + 6, Y - 19), plume: 1, bits: [a(X + 6, Y - 18, PINK), a(X + 5, Y - 14, RED)] }), rest];
+  if (atkOnly) return;   /* (batch95 integ: the store card builds only the rising cut, so its frames are the game's) */
   /* 2 THE HOOK: the blade drawn back flat behind him, at the shin; laid out along the shins past the foe; the point left out there; and HAULED BACK in a curl, the foe with it */
   F.atkB = [K({ dx: -2, dy: 2, legs: 'wide', hy: 1, ...gs(X - 3, Y + 5, X - 16, Y + 8), plume: 1, bits: [a(X - 15, Y + 7, RED)] }),
     K({ wide: 8, dx: 1, dy: 2, legs: 'runC', ...gs(X + 4, Y + 6, X + 19, Y + 8), plume: 2 }),
@@ -2733,7 +2734,10 @@ export function bakeReaper(skin = {}, previewOnly = false) {
       () => (knightFrame({ greatsword: rest(), plume: 0 }))
     ].map((make, i) => (previewOnly === 'weaponIcon' && i > 1) || (previewOnly === 'atk' && i > 2) ? null : make()))
   };
-  if (previewOnly) return storeFrames(card, false, previewOnly, SMEAR_COL.blood);
+  if (previewOnly) { const out = storeFrames(card, false, previewOnly, SMEAR_COL.crimson);   /* (batch95 integ: claude/dk2art gave the full bake the rising cut and a crimson smear; the store card must draw the same frames - tools/store-preview.mjs) */
+    if (out.R.atk) { KP = Object.assign({}, KP0, REAP_PAL, skin); BODY_REF = REAP_BODY; PLUME_REF = REAP_PLUME;   /* (storeFrames put the palette back) */
+      const F2 = { atk: out.R.atk }; reaperRhythmPoses(F2, sh, true); smearPass(F2, SMEAR_COL.crimson); out.R.atk = F2.atk; KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME; }
+    return out; }
   const F = {
     /* HIS BREATH: the pauldrons lift, the torn surcoat drags a beat behind, the long point sinks after the hands, and once
        in the cycle the green in the helm goes out and comes back. The point is held a pixel short so it clears the frame. */
