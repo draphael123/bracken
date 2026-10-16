@@ -53,7 +53,7 @@ try {
       let ch = true, g = 0; while (ch && g++ < 80) { ch = false; const mm = BK.mapNodes(); mm.ids.forEach((nid, i) => { const L = LEVELS.find(l => l.id === nid); if (!L || mm.spur[i] || mm.locked[i] || (P[nid] && P[nid].cleared)) return; P[nid] = { cleared: true, medal: 0 }; ch = true; }); if (P[j] && P[j].cleared) break; }
       /* clear only up to the junction level: drop everything cleared after it on the road */
       const order = LEVELS.map(l=>l.id); 
-      out.steps.push({ id, junction: j, from: goTo(j), dir: null, onSpur: null, jctCleared: !!(P[j] && P[j].cleared) });
+      out.steps.push({ id, junction: j, from: goTo(j), dir: null, onSpur: null, jctCleared: !!(P[j] && P[j].cleared), ruled: !!(lv.opensOn && (lv.opensOn.medal || lv.opensOn.time)) });
       const s = out.steps[out.steps.length - 1];
       /* SHOWN: with the junction cleared at bronze the road is shut and pressing at it raises the tip naming the rule and the player's best time */
       if (secret) { /* a SECRET has no rule on show: no tip, and the press does not step onto it until the three banners are in hand */
@@ -79,7 +79,8 @@ try {
   assert.deepEqual(orphans, [], 'levels unreachable from a fresh save by normal play: ' + orphans.join(', '));
   for (const sc of r.secrets) assert.ok(sc.onMap && sc.secret && sc.locked && !sc.hit, 'a fresh save: the secret ' + sc.id + ' must be a dim spot (secret, locked, not hit-testable): ' + JSON.stringify(sc));
   for (const s of r.steps) if (s.secret) assert.ok(!s.tipWhileSecret && !s.stepWhileSecret, s.id + ': a secret showed a tip or could be stepped onto before its banners (' + JSON.stringify(s) + ')');
-  for (const s of r.steps) if (!s.secret) assert.ok(s.tip && /LOCKED/.test(s.tip[0]) && /12:57/.test(s.tip[1]), s.id + ': the shut road does not SHOW its rule and the player best time (' + JSON.stringify(s.tip) + ')');
+  /* DANIEL 10-15 (mapforks): the Burning Village has NO rule any more (opens on a Stockade clear), so only a spur that still asks for a medal or time has a rule to show */
+  for (const s of r.steps) if (!s.secret && s.ruled) assert.ok(s.tip && /LOCKED/.test(s.tip[0]) && /12:57/.test(s.tip[1]), s.id + ': the shut road does not SHOW its rule and the player best time (' + JSON.stringify(s.tip) + ')');
   for (const s of r.steps) assert.ok(s.onSpur, s.id + ' (a spur off ' + s.junction + ') cannot be stepped onto from its junction with the map keys once the junction is cleared');
   /* UNDERLEAF IS A MAIN-ROAD LEVEL (Daniel 10-08): Kingswood -> Underleaf -> the Scree Path, a node ON the road, no secret and no clock */
   for (const u of r.road) { assert.ok(!u.hidden && !u.secret && !u.timed && u.needs === 'kings' && u.next === 'scree' && u.onMap && !u.spur, 'underleaf is not a plain main-road level between kings and scree: ' + JSON.stringify(u)); }
