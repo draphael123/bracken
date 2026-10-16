@@ -132,7 +132,7 @@ import * as SV from './survival.js'; import * as F2 from './flasks2.js';   /* FL
 import { JUICE, blowClass, takenClass, blockClass, stopFor, shakeAdd, safeKnock } from './juice.js';   /* THE JUICE TABLE: one row per weight class, read by every landed blow and every blow the hero takes (tools/juice.mjs) */
 import { LEGACY_NODES, growthNodes, SKILLS, importProgress, exportProgress, loadProgress, migrateProgress, growthAt, skillScale, slotsAt, skillFor, skillsFor, equipped, buySkill, equipSkill, passiveOn, passiveLadder, passivesArriving, CARD, CARD_CAP, PERKS, RESPEC_SILVER, skillRank, rankUp, rankPrice, rankLevel, RANK_MAX, RANK_MUL, cardOf, evenCard, picksSpent, picksOwed, milestonesOwed, perkOffer, perkOn, perkRank, thrOn, thrNext, THRESH, MINOR_PERKS, ALL_HERO_PERKS, HERO_PERK_MAX, levelsToPerk, nextMilestone, techniquesArriving, pickCard, pickMilestone, respecCard, coopOpen, DEFAULT_HEROES, MAX_SLOTS } from './progression.js';
 import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titleregion): which region the last-played slot has reached */
-import { depthsOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
+import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
 import { bakeFrog } from './redraw/frogking.js';
@@ -4517,13 +4517,16 @@ const NODE_AT = NODES.map(n=>PATH.reduce((best,p,i)=>Math.hypot(p[0]-n.x,p[1]-n.
 /* THE SPUR OFF A JUNCTION, if it declares one (opensOn.level === nd.id). Any future class level just declares its
    own opensOn and this finds it - nothing here names 'burning' or 'unburied'. The Undercrown has no
    opensOn (it gates on needsKills, unchanged), so they are never returned here and stay panel-only. */
-const spurAt = id => NODES.find(n => n.spur && n.kind === 'level' && LEVELS[n.level] && ((LEVELS[n.level].opensOn && LEVELS[n.level].opensOn.level === id) || LEVELS[n.level].spurOf === id) && !nodeSecret(n));   /* (a secret spur nobody has earned is not a spur yet: no step onto it, no tip) */
-const spurReqText = lv => { const o = lv.opensOn; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
+/* THE JUNCTION A SPUR HANGS OFF IS ITS GATE (campaign-order gateOf: needs / needsTime / needsKills), unless it names one of its own (opensOn / spurOf). It used to be opensOn or spurOf ONLY, so a spur gated any other way - THE UNDERCROWN, on a kill count at HIGHCROWN - was never found by the map walk: open, on the map, and reachable from the side panel alone (claude/mapforks). A new fork appears by being gated. */
+const junctionId = lv => (lv.opensOn && lv.opensOn.level) || lv.spurOf || gateOf(lv);
+const spursAt = id => NODES.filter(n => n.spur && n.kind === 'level' && LEVELS[n.level] && junctionId(LEVELS[n.level]) === id && !nodeSecret(n));
+const spurAt = id => spursAt(id)[0];   /* (a secret spur nobody has earned is not a spur yet: no step onto it, no tip) */
+const spurReqText = lv => { const o = lv.opensOn; if (!o) return secretWants(lv)[0]; if (o.time) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'BEAT ' + (j ? j.name : o.level.toUpperCase()) + ' IN ' + fmt(o.time) + ' TO OPEN THIS ROAD'; } if (!o.medal) { const j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return 'CLEAR ' + (j ? j.name : o.level.toUpperCase()) + ' TO OPEN THIS ROAD'; } const rank = MEDAL_RANK[o.medal] || o.medal; const t = (MEDALS[o.level] || [300, 450, 660])[3 - rank];
   const jn = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); const nm = jn ? jn.name : o.level.toUpperCase();
   return 'BEAT ' + nm + ' IN ' + fmt(t) + ' TO OPEN THIS ROAD'; };
 /* THE LOCKED-ROAD TIP (Daniel 10-07: the rule must be SHOWN). Pressing toward a shut side road, or tapping/clicking its node, raises this for a few seconds: what it asks and the best time you hold on that level. */
 const mapTip = { id: null, t: 0 };
-const spurTip = lv => { const o = lv.opensOn, p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
+const spurTip = lv => { const o = lv.opensOn; if (!o) return secretWants(lv); const p = PROG[o.level] || {}, j = NODES.find(n => n.level === LEVELS.findIndex(l => l.id === o.level)); return ['LOCKED: ' + spurReqText(lv), p.best !== undefined ? 'YOUR BEST ' + (j ? j.name : o.level.toUpperCase()) + ': ' + fmt(p.best) : 'YOU HAVE NOT CLEARED IT YET']; };
 const raiseTip = nd => { mapTip.id = nd.id; mapTip.t = 6; };
 const MAPC = ART.bakeWorldMap(MAPW, MAPH, [{ x: 0, y: DESERT_Y, w: 320, h: 180, nodes: DESERT_NODES, path: DESERT_PATH, seed: 59, style: 'desert', seam: { y: INLAND_Y, gold: true } }, { x: 0, y: INLAND_Y, w: 320, h: 180, nodes: INLAND_NODES, path: INLAND_PATH, seed: 47, style: 'haunted', seam: COAST_Y }, { x: 0, y: COAST_Y, w: 320, h: 180, nodes: COAST_NODES, path: COAST_PATH, seed: 31, style: 'coast', seam: CRAG_Y }, { x: 0, y: CRAG_Y, w: 320, h: 180, nodes: CRAG_NODES, path: CRAG_PATH, seed: 23, style: 'crag', seam: WOOD_Y }, { x: 0, y: WOOD_Y, w: 320, h: 180, nodes: WOOD_NODES, path: WOOD_PATH, seed: 11, style: 'wood' }], [[[40, 64 + WOOD_Y], [40, 200 + CRAG_Y]], [[40, 200 + CRAG_Y], [40, 152 + CRAG_Y]], [[260, 26 + CRAG_Y], [260, 172 + COAST_Y]], [[140, 8 + COAST_Y], [140, 176 + INLAND_Y]], [[260, 34 + INLAND_Y], [274, 174 + DESERT_Y], 'sand']]);   /* the last connector is sand-coloured, not road-brown: the road changes material crossing into the desert, answering the gold portal on the level side (map-redesign §5) */
 let mapCamY = MAPH - 180;
@@ -4695,6 +4698,7 @@ function drawMapLife() {
 /* WHERE THE WALKER IS. On the road, between two of its points. STOOD ON A SPUR he is on the NODE, off the road -
    he walked to the junction and then stepped off it, which is the whole point of a spur being a spur. */
 function mapPos() { const nd = NODES[map.node];
+  if (map.glide && map.glide.node === map.node) { const k = Math.min(1, map.glide.t / map.glide.dur); return [map.glide.x0 + (map.glide.x1 - map.glide.x0) * k, map.glide.y0 + (map.glide.y1 - map.glide.y0) * k]; }
   if (!map.walking && nd && nd.spur) return [nd.x, nd.y];
   const a = PATH[map.seg], b = PATH[Math.min(PATH.length - 1, map.seg + 1)]; return [a[0] + (b[0] - a[0]) * map.t, a[1] + (b[1] - a[1]) * map.t]; }
 // A SECRET IS ONLY HIDDEN UNTIL YOU HAVE WALKED THE LEVEL IT HANGS OFF. After that it is a door on
@@ -4718,8 +4722,8 @@ let mapGoal = null;
 const lockedSay = nd => number(nd.x, nd.y - 14, LEVELS[nd.level].secret ? 'NOT YET' : 'LOCKED', '#9aa39a');   /* what a shut node says when it is walked onto or tapped */
 function mapTap(nd) { if (mapPanel.open || map.walking || state !== 'map') return; const i = NODES.indexOf(nd);
   if (i === map.node) { confirmPress = true; return; }
-  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); lockedSay(nd); if (nd.spur && LEVELS[nd.level].opensOn) raiseTip(nd); return; }
-  if (nd.spur) { map.node = i; map.seg = NODE_AT[i]; map.t = 0; PROG.mapNode = i; PROG.mapNodeId = nd.id; const a = PATH[NODE_AT[i]]; if (a) mapCamY = Math.max(0, Math.min(MAPH - VH, a[1] - VH * 0.55)); SFX.uiSel(); return; }
+  if (nodeLocked(nd) && nd.kind === 'level') { SFX.buzz(); lockedSay(nd); if (nd.spur) raiseTip(nd); return; }
+  if (nd.spur) { hopTo(i); return; }
   mapGoal = i; }
 function mapGo(dir) {
   if (map.walking) return;
@@ -4739,20 +4743,36 @@ function mapGo(dir) {
    makes (a spur is off the road, so there is nothing to walk: mapPos() already special-cases a spur as "stood on
    the node, not the path" (see above)). The list panel keeps working; this is a second door onto the same room.
    Returns true when it handled the press, so updateMap's difficulty toggle does not also fire on that keypress. */
-function branchStep(dir) {
+/* THE TOKEN GLIDES onto and off a side road along its stub (map.glide), a few frames at the walk's own speed, instead of blinking there: the stub is a road and now it is walked. Input waits for it. */
+function hopTo(i) { const [x0, y0] = mapPos(); map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; PROG.mapNode = i; PROG.mapNodeId = NODES[i].id;
+  const nd = NODES[i], len = Math.hypot(nd.x - x0, nd.y - y0); if (len > 1) map.glide = { node: i, x0, y0, x1: nd.x, y1: nd.y, t: 0, dur: Math.max(0.12, Math.min(0.5, len / 90)) }; SFX.uiSel(); }
+/* WHICH WAY A KEY POINTS AT A SIDE ROAD. UP/DOWN keep their old rule (the side the spur hangs on). LEFT/RIGHT - the keys the road itself uses - take a spur only when the spur lies on that side of the junction and the road offers nothing as good that way: the Burning Village hangs RIGHT of the Stockade while the road leaves LEFT, and pressing RIGHT used to walk straight past it to the next road node. */
+const spurDir = (from, to) => { const dx = to.x - from.x, dy = to.y - from.y, l = Math.hypot(dx, dy) || 1; return [dx / l, dy / l]; };
+const roadStep = (from, dir) => { let nx = NODES.indexOf(from) + dir; while (nx >= 0 && nx < NODES.length && (NODES[nx].spur || nodeSecret(NODES[nx]))) nx += dir; return nx >= 0 && nx < NODES.length ? NODES[nx] : null; };
+function spurFor(nd, key) { const kids = spursAt(nd.id); if (!kids.length) return null;
+  const vec = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[key];
+  if (key === 'up' || key === 'down') return kids.find(c => (key === 'up') === (c.y < nd.y)) || null;
+  let best = null, bv = 0.5; for (const c of kids) { const d = spurDir(nd, c), cs = d[0] * vec[0] + d[1] * vec[1]; if (cs > bv) { bv = cs; best = c; } }
+  if (!best) return null;
+  const road = roadStep(nd, key === 'left' ? -1 : 1), rd = road ? spurDir(nd, road) : null, rc = rd ? rd[0] * vec[0] + rd[1] * vec[1] : -1;
+  return rc >= 0 ? null : best; }   /* the road's own step that way (forward or sideways, rc >= 0) wins: THE LIT CHURCH is DOWN/UP, because RIGHT at the Towpath is the road on to the Canal. The stub shows the way (drawMap pulses it) */
+function branchStep(dir, key) { key = key || (dir < 0 ? 'up' : 'down');
   const nd = NODES[map.node];
-  if (nd.spur) { const lv = nd.kind === 'level' ? LEVELS[nd.level] : null, o = lv && (lv.opensOn || (lv.spurOf && { level: lv.spurOf })); if (!o) return false;
-    const j = NODES.find(n => n.id === o.level); if (!j || dir !== (nd.y < j.y ? 1 : -1)) return false;   /* only the direction back the way in: the opposite of the one that led here */
-    map.node = NODES.indexOf(j); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
-    PROG.mapNode = map.node; PROG.mapNodeId = j.id; SFX.uiSel(); return true; }
-  const child = spurAt(nd.id); if (!child) return false;
-  if (dir !== (child.y < nd.y ? -1 : 1)) return false;
-  if (nodeLocked(child)) { SFX.buzz(); if (LEVELS[child.level].opensOn) raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap); no popup to lose */
-  map.node = NODES.indexOf(child); map.seg = NODE_AT[map.node]; map.t = 0; map.walking = 0;
-  PROG.mapNode = map.node; PROG.mapNodeId = child.id; SFX.uiSel(); return true;
+  if (nd.spur) { const lv = nd.kind === 'level' ? LEVELS[nd.level] : null, jid = lv && junctionId(lv); if (!jid) return false;
+    const j = NODES.find(n => n.id === jid); if (!j) return false;
+    const back = spurDir(nd, j), vec = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[key];
+    if (key === 'up' || key === 'down' ? dir !== (nd.y < j.y ? 1 : -1) : back[0] * vec[0] + back[1] * vec[1] < 0.5) return false;   /* only the direction back the way in: the opposite of the one that led here */
+    hopTo(NODES.indexOf(j)); return true; }
+  const child = spurFor(nd, key); if (!child) return false;
+  if (nodeLocked(child)) { if (key === 'left' || key === 'right') { raiseTip(child); return false; }   /* (a shut side road never swallows the road's own keys: it says what it wants and the walk goes on) */
+    SFX.buzz(); lockedSay(child); raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap) and the tip says it again */
+  hopTo(NODES.indexOf(child)); return true;
 }
 function updateMap(dt) {
   if (mapTip.t > 0) mapTip.t -= dt;
+  if (map.glide && map.glide.node !== map.node) map.glide = null;   /* (a jump from the panel, the title or a reset leaves no glide behind) */
+  if (map.glide && (leftPress || rightPress || upPress || downPress || confirmPress || mapPress || pausePress)) map.glide = null;   /* a key during the glide lands the token at once and is taken: nothing waits on the animation */
+  if (map.glide) { map.glide.t += dt; if (map.glide.t >= map.glide.dur) map.glide = null; else { PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; const [, gy] = mapPos(); mapCamY += (Math.max(0, Math.min(MAPH - VH, gy - VH * 0.55)) - mapCamY) * Math.min(1, dt * 4); return; } }
   if (!map.walking && !mapPanel.open && PROG.cardNew && cardOwed(hero()) && openCard('map')) return;   /* THE CARD, on the map, after a level was gained and not chosen (PROG.cardNew: levelUp sets it, closing the card clears it) */
   if (mapPress && !map.walking) mapPanelToggle();
   if (mapPanel.open) { updateMapPanel(dt); PROG.mapNode = map.node; PROG.mapNodeId = NODES[map.node].id; return; }
@@ -4764,7 +4784,7 @@ function updateMap(dt) {
     if (map.walking < 0 && map.t <= 0) { if (map.seg <= goal) { map.seg = goal; map.t = 0; map.node = map.target; map.walking = 0; SFX.uiSel(); } else { map.seg--; map.t = 1; } }
     if (Math.random() < dt * 10) { const [px, py] = mapPos(); parts.push({ x: px + camX + (Math.random() - 0.5) * 4, y: py + camY, vx: 0, vy: -8, life: 0.3, max: 0.3, col: '#c9b27c', size: 1, grav: 0 }); }
   }
-  if (leftPress) mapGo(-1); if (rightPress) mapGo(1);
+  if ((leftPress || rightPress) && !map.walking && !branchStep(leftPress ? -1 : 1, leftPress ? 'left' : 'right')) { if (leftPress) mapGo(-1); if (rightPress) mapGo(1); }
   if (mapGoal !== null && !map.walking) { if (mapGoal === map.node) mapGoal = null; else { mapGo(mapGoal > map.node ? 1 : -1); if (!map.walking) mapGoal = null; } }   /* (a tap on a far node: one step a frame the walk is idle) */
   // up and down set the difficulty of the wood you are standing at - UNLESS this press instead steps onto/off a class-level side road (branchStep)
   if ((upPress || downPress) && !map.walking) { const dir = upPress ? -1 : 1; const nd = NODES[map.node];
@@ -4871,6 +4891,17 @@ function drawMap() {
       const lx = Math.max(tw / 2 + 4, Math.min(VW - tw / 2 - 4, child.x)), ly = child.y + (child.y < here.y ? -24 : 14);
       g.fillStyle = 'rgba(18,14,24,0.85)'; g.fillRect(Math.round(lx - tw / 2), ly, Math.round(tw), 9);
       text(msg, Math.round(lx), ly + 1, '#c9463d', 'center', 6); } }
+  if (!map.walking && !map.glide) { const here = NODES[map.node]; if (here && !here.spur) for (const c of spursAt(here.id)) { if (nodeLocked(c)) continue;   /* THE WAY ONTO A SIDE ROAD: a few bright dots run out along its stub from the junction you stand on */
+      const dx = c.x - here.x, dy = c.y - here.y, len = Math.hypot(dx, dy) || 1; for (let d = 8, k = 0; d < len - 8; d += 6, k++) { g.globalAlpha = 0.35 + 0.65 * Math.max(0, Math.sin(time * 5 - k * 0.9)); g.fillStyle = '#fff4c8'; g.fillRect(Math.round(here.x + dx * d / len) - 1, Math.round(here.y + dy * d / len) - 1, 2, 2); } g.globalAlpha = 1;
+      /* THE KEY PROMPT: the key that enters, drawn beside the side road's node - an arrow cap on a keyboard (square), on a pad (round), and TAP on touch */
+      const key = ['right', 'left', 'down', 'up'].find(k => spurFor(here, k) === c), ux = dx / len, uy = dy / len;
+      if (key) { const cw = touchOn ? 17 : 11, chh = 11, cx0 = Math.max(2, Math.min(VW - cw - 2, Math.round(c.x + ux * 15 + (ux < 0 ? -cw : 0) - (Math.abs(ux) < 0.5 ? cw / 2 : 0)))), cy0 = Math.max(2, Math.min(VH - 16, Math.round(c.y + uy * 14 - 5 - (Math.abs(uy) < 0.5 ? 0 : 0))));
+        g.fillStyle = '#1a1420'; g.fillRect(cx0, cy0, cw, chh); g.fillStyle = '#e8dcc0'; g.fillRect(cx0 + 1, cy0, cw - 2, 1); g.fillRect(cx0 + 1, cy0 + chh - 1, cw - 2, 1); g.fillRect(cx0, cy0 + 1, 1, chh - 2); g.fillRect(cx0 + cw - 1, cy0 + 1, 1, chh - 2);
+        if (padLast) { g.fillStyle = '#1a1420'; g.fillRect(cx0, cy0, 1, 1); g.fillRect(cx0 + cw - 1, cy0, 1, 1); g.fillRect(cx0, cy0 + chh - 1, 1, 1); g.fillRect(cx0 + cw - 1, cy0 + chh - 1, 1, 1); }
+        if (touchOn) text('TAP', cx0 + (cw >> 1), cy0 + 3, '#fff4c8', 'center', 6);
+        else { const mx = cx0 + (cw >> 1), my = cy0 + (chh >> 1); g.fillStyle = '#fff4c8'; const v = { right: [1, 0], left: [-1, 0], down: [0, 1], up: [0, -1] }[key], px = -v[1], py = v[0];
+          for (let a = -2; a <= 2; a++) g.fillRect(mx + v[0] * a - (a === 0 ? 0 : 0), my + v[1] * a, 1, 1);   /* the shaft */
+          g.fillRect(mx - v[0] * 2, my - v[1] * 2, 1, 1); for (let a = 1; a <= 2; a++) { g.fillRect(mx + v[0] * (2 - a) + px * a, my + v[1] * (2 - a) + py * a, 1, 1); g.fillRect(mx + v[0] * (2 - a) - px * a, my + v[1] * (2 - a) - py * a, 1, 1); } } } } }
   const [px, py] = mapPos();
   updateMapLife(0.016, px, py); drawMapLife();
   g.drawImage(PROP.shadow, Math.round(px) - 6, Math.round(py) - 1);

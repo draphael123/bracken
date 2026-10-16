@@ -31,10 +31,10 @@ try {
     out.freshTry = BKT.PROG.mapNodeId;
 
     // SILVER MET: the same press now walks the branch, and back again
-    BKT.PROG.stockade = { cleared: true, medal: 3, best: 301 };   /* a gold-medal time is not enough: the Stockade road asks for UNDER 5:00 */
+    BKT.PROG.stockade = { cleared: true, medal: 3, best: 301 };   /* DANIEL'S DESIGN CHANGE 10-15: no clock - a cleared Stockade opens the Burning Village, however slow */
     press('ArrowUp');
     out.slowTry = BKT.PROG.mapNodeId;
-    BKT.PROG.stockade = { cleared: true, medal: 1, best: 299 };
+    press('ArrowDown'); BKT.PROG.stockade = { cleared: true, medal: 1, best: 299 };
     press('ArrowUp');
     out.afterSilver = BKT.PROG.mapNodeId;
     press('ArrowDown');
@@ -80,8 +80,8 @@ try {
   })()`);
   assert.equal(r.at1, 'stockade', 'gotoLevelNode did not land on the Stockade');
   assert.equal(r.freshTry, 'stockade', 'a fresh save let the branch open with no silver on the Stockade');
-  assert.equal(r.slowTry, 'stockade', 'a 5:01 Stockade clear (gold medal time or not) opened the Burning Village: the road asks for UNDER 5:00');
-  assert.equal(r.afterSilver, 'burning', 'a sub-5:00 Stockade clear did not open the walkable branch to the Burning Village');
+  assert.equal(r.slowTry, 'burning', "DANIEL'S DESIGN CHANGE 10-15: a slow (5:01) but CLEARED Stockade must open the Burning Village - there is no clock any more");
+  assert.equal(r.afterSilver, 'burning', 'a fast Stockade clear did not open the walkable branch to the Burning Village');
   assert.equal(r.afterBack, 'stockade', 'pressing back off the spur did not return to its junction');
   assert.equal(r.coinRoute, true, "the Pyromancer's shop gate (coinNeeds: 'burning') broke under the new lock");
   assert.equal(r.migAt, 'stockade', 'gotoLevelNode did not land on the Stockade for the migration case');
@@ -91,7 +91,7 @@ try {
   assert.equal(r.wOpen, 'unburied', 'a save holding the three lost banners did not open the Unburied Field');
   assert.equal(r.wBack, 'witchlight', 'pressing back off the Unburied Field did not return to the Witchlight Stair');
   assert.equal(r.bronzeAt, 'stockade', 'gotoLevelNode did not land on the Stockade for the bronze case');
-  assert.equal(r.bronzeTry, 'stockade', 'a Stockade clear with no sub-5:00 time opened the Burning Village (the time is what opensOn asks for)');
+  assert.equal(r.bronzeTry, 'burning', "DANIEL'S DESIGN CHANGE 10-15: any clear of the Stockade (bronze, no best time) opens the Burning Village");
   assert.deepEqual(pg.errors, []);
-  console.log('Class-level side roads: walkable from their junction, shut until the Stockade is beaten in under 5:00 (the Unburied Field is a banner-gated secret, tools/unburied-secret.mjs), open after, and the old-cleared-spur migration stays open with no extra step.');
+  console.log('Class-level side roads: walkable from their junction, shut until the Stockade is CLEARED (no clock, Daniel 10-15) (the Unburied Field is a banner-gated secret, tools/unburied-secret.mjs), open after, and the old-cleared-spur migration stays open with no extra step.');
 } finally { pg.close(); }
