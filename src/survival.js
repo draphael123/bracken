@@ -16,11 +16,12 @@
 //                  the exam says so as you walk in, and tools/survival.mjs fails a span that has no hurt spikes before it to teach them.
 
 /* (claude/flasklever 10-13 FLASK LEVER: the human bot with the campaign kit won ~94% of boss rows; a drink is longer - 1.17 s on the clock, the swallow at 0.92 s, so a blow has a longer window to SPILL it - and heals less: 25% (tiers 30/35/40). Was heal 0.35, richHeal 0.45, drinkT 0.45, swallowAt 0.3.) */
+import { df, FLASK_MIN } from './difficulty.js';
 export const FLASK = { base: 1, extraMax: 3, heal: 0.25, richHeal: 0.30, drinkT: 0.70, swallowAt: 0.55 };   /* GAME seconds: at the default game speed (0.6) the drink is 0.75 s on the clock, the swallow at 0.5 s */
 /* (claude/survival2, Daniel 10-07 A10b, after playing the pilot Marsh) ONE flask to start; the smith's EXTRA FLASK makes two more (PROG.flaskUp
    0..extraMax -> max 3). A SHRINE REACHED gives back ONE (once a shrine a life); a DEATH gives back ALL (to max); a BROKEN shrine gives +1 that may
    stand over the max until it is drunk (a death keeps a flask over the max that was not drunk: max(held, max)). */
-export const flaskMax = prog => FLASK.base + Math.max(0, Math.min(FLASK.extraMax, (prog && prog.flaskUp) | 0));
+export const flaskMax = prog => Math.max(FLASK_MIN, FLASK.base + Math.max(0, Math.min(FLASK.extraMax, (prog && prog.flaskUp) | 0)) + df('flaskAdd'));   /* (claude/difficulty) + the mode's flasks (Story +1, Master -1, never under one) */
 /* a shrine reached: one flask back, never over the max, never taking a broken shrine's extra away */
 export const shrineRefill = (held, max) => Math.max(held | 0, Math.min(max, (held | 0) + 1));
 /* a death: all of them back, and a broken shrine's extra that was not drunk stays */
