@@ -29,7 +29,7 @@ export const TAB_ITEMS = {
     '- WORLD -', 'Ground light', 'The air', 'Parallax', 'Arena tint', 'Weather', 'Ambient life', 'Look down', 'Look ahead',
     '- EFFECTS -', 'Particles', 'Impact FX', 'Boss intro'],
   gameplay: ['- RULES -', 'Difficulty', 'Game speed', 'Hit stop', 'Iron Knight',
-    '- HELPERS -', 'Jump assist', 'Way-on arrow', 'Text speed',
+    '- HELPERS -', 'Jump assist', 'Way-on arrow', 'Text speed', 'Unlock all levels',
     '- SAVE -', 'Export save', 'Import save', 'Erase this save',
     '- TESTING -', 'Unlock everything', 'God mode', 'Hitboxes'],
   controls: ['Controls', 'Rebind keys', 'Block', 'Swap Z / X', 'Rumble', 'Co-op guide', 'Reset controls'],
