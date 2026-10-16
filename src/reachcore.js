@@ -6,7 +6,7 @@
 // It follows doorways (each names the doorway it lets out at) and vents (ride the column, steer off the
 // top). It cannot model a mover, a swing or a gust, so a level that leans on those comes back ASSISTED and
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
-import { slopeReachGrid } from './reach-slopes.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
+import { slopeReachGrid } from './reach-slopes.js'; import { reachStair } from './undercrown-slabs.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
 import { heroJumps, slideSpeeds, hillSpeeds } from './reach-hero.js';
 import { MOVE } from './hero-move.js';   /* PER HERO (opts.hero, claude/reachcore): each hero's own jump, the run-up, the slide, the clearance over a gap */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
@@ -103,6 +103,11 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   /* A LEVEL'S OWN DOORS (claude/litchurch): L.reachDoors [{ x0, x1, y0, y1 }] are barred as laid (T.PORT) and opened by the level's rule - a lit lamp, a snuffed
      seal - which every hero can do: the full fill has them open (the plain fill is legs and nothing else, so they stay shut there) */
   if (!plain) for (const d of (L.reachDoors || [])) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) { const i = y * W + x; if (g[i] === T.PORT) g[i] = T.AIR; }
+  /* THE UNDERCROWN'S SLABS (claude/undercrown2, src/undercrown-slabs.js): a slab the route needs (L.reachSlabs [{ slab, hinge }]) is cut - three blows on a post,
+     which every hero has - so the fill has its roof course out and its ramp down, a stair of boards (a slope with no rock under it is not footing to the model) */
+  for (const rs of (L.reachSlabs || [])) { const sb = (L.slabs || []).find(s => s.id === rs.slab); if (!sb) continue;
+    const st = reachStair((x, y) => (x < 0 || x >= W || y < 0 || y >= H) ? T.SOLID : g[y * W + x], sb, rs.hinge, !!rs.flat);
+    for (const [x, y] of st.clear) g[y * W + x] = T.AIR; for (const [x, y] of st.solid) g[y * W + x] = T.SOLID; for (const [x, y] of st.stair) { const i = y * W + x; if (g[i] === T.AIR) g[i] = rs.optional ? T.ONEWAY : T.SOLID; } }   /* (solid steps: a slope is not dropped through, so the model may not drop through the ramp either) */
   const solid = t => t === T.SOLID || t === T.CRATE || t === T.PALISADE || t === T.PORT || t === T.SOFT || t === T.ICE || t === T.WEB || t === T.CLIMB;
   const stand = t => solid(t) || t === T.ONEWAY || t === T.PLANK || t === T.SHELF || t === T.RAIL || t === T.BOUNCER || t === T.REED || t === T.CRYST || t === T.NET;
   const climbable = t => t === T.CLIMB; // a NET is one-way rungs: a rope ladder is climbed by hopping rung to rung, so it is footing, not a ladder

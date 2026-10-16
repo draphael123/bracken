@@ -2546,166 +2546,151 @@ function theMonastery() {
    the chimney gorge, the houses-as-places pass, the Lance's wind phases) live on in src/stormhold-town.js
    and src/lance-support.js where this rework kept or adapted them. */
 // ============================================================================================
-// THE UNDERCROWN - the secret level under Highcrown, and the only one in the game that goes DOWN.
+// THE UNDERCROWN - the hole Highcrown stands on, and the only level in the game that goes DOWN.
 //
 // The castle stands on a hill that is not there any more. They dug the iron out from under it for two
 // hundred years and stopped only because the diggers stopped coming back, and what is left is a hole
 // with a castle balanced on it. NOTHING DOWN HERE IS HOLDING ITSELF UP: every gallery is a span of roof
 // on a set of timber, and a set of timber is three blows of your own.
 //
-// THE VERB IS THE COLLAPSE, and it is never simply good. Cutting a set does three things at once:
-//   IT KILLS whatever was standing under the span. That is the weapon.
-//   IT OPENS A HOLE where the roof was, which is the way down - or the way something comes down at you.
-//   IT LEAVES A MOUND of rubble on the floor, which is a stair you did not have and a wall across a
-//   gallery you may still have wanted.
-// So you are not clearing a mine. You are choosing which parts of it still exist, and you are doing it
-// in one direction, because everything you break is behind you the moment you use it.
-//
-// It opens on the ONE THING Highcrown can be asked for that its gold time cannot: four goblins in five,
-// the opposite instruction to the same castle. (Underleaf used to ask for a quick Kingswood; it is on the main road now.)
+// THE VERB IS THE SLAB (THE UNDERCROWN 2, claude/undercrown2; Daniel 10-08: "the pillars you knock down are a good mechanic, but HOW THEY
+// GENERATE GROUND doesn't make sense"). Every roof here is a SLAB of rock on a timber set at each end (src/undercrown-slabs.js):
+//   CUT ONE POST and that end of the slab swings down on the other post: a TILTED RAMP from the course it hung in to whatever it lands on.
+//   CUT BOTH and it drops FLAT: a BRIDGE over a gap, or a WALL across a gallery that a walker cannot climb.
+//   Whatever stands under the part that comes down takes it. That is the weapon.
+// Which end you cut is the puzzle, and everything you bring down stays down: you are choosing which parts of the mine still exist.
+// TEACH (the adit: one post, the other end keyed into the rock - a ramp up is the only way on) -> TEST (the first workings: two posts and a
+// squad under the span; the end you cut is the end that falls) -> REMIX (the flooded level: a ramp to reach the far post, and the slab
+// down flat as the bridge) -> EXAM (the great stope: a hung walkway cut into a ramp over the poison, a brute under it) -> the last drift
+// (a wall across it, behind you) -> THE GOBLIN PRINCE, pinned under his own roof.
+// It is the way IN to Highcrown now: the hole the castle stands on, walked from the Stormhold road up into the castle's foundations.
 // ============================================================================================
 function undercrown() {
   const L = painter(154, 196);
-  const { block, floor, plat, ent, coins, set, spikes } = L;
-  const movers = [], interiors = [], pools = [];
+  const { block, floor, plat, ent, coins, set } = L;
+  const movers = [], interiors = [], pools = [], slabs = [];
   block(0, 153, 0, 195);                             // it is all rock until something is dug out of it
   const cut = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
-  // A GALLERY: a level driven into the rock, timbered, with a roof course over it that can be brought down.
-  const gallery = (x0, x1, fl, h = 4) => { cut(x0, x1, fl - h, fl - 1); interiors.push([x0, x1, fl - h, fl - 1, 'mine']);   /* 'mine', not the burrows' 'earth': the mine's wall is lit enough to stand a walkway off (drawRoom) */ };
+  const gallery = (x0, x1, fl, h = 4) => { cut(x0, x1, fl - h, fl - 1); interiors.push([x0, x1, fl - h, fl - 1, 'mine']); };
   const shaft = (x, w, y0, y1) => { cut(x, x + w - 1, y0, y1); };
   const ladder = (x, y0, y1) => { for (let y = y0; y <= y1; y++) set(x, y, T.NET); };
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
   const boards = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.PLANK); };
-  const shelf = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); };
-  /* A POOL WITH NO BOTTOM IS PAINTED TO THE FOOT OF THE SCREEN: drawWater has nothing else to stop at, so from the tomb a hundred
-     rows under it the flooded level's one course of water washed half the Prince's fight blue. `bottom` is the rock it lies on. */
-  /* AND IT IS POISON. This water is not swum: it kills whoever goes in, and it was drawn as clean blue water, which says "swim".
-     `harm` + `poison` give it drawFoul's scum and gas in a sick green, with no wrecks and no fins in it (a look only: harm hurts a
-     swimmer, and nobody swims here). */
   const water = (x0, x1, yTop, d, bottom) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, depth: d || 40, harm: true, poison: true, foulCol: '#5c8a24', foulColL: '#a6e04a', foulColD: '#1c3212', ...(bottom !== undefined ? { bottom: bottom * TS } : {}) });
-  // A SET OF TIMBER. `state` says what it will take: sound wants three blows of your own, cracked wants
-  // one (or a heavy landing anywhere under it), going is already failing and drops on its own once you
-  // walk under it. deep is how many courses of roof come out when it goes.
-  const timber = (x, fl, x0, x1, row, o = {}) => ent('timber', x, fl - 1, { x0, x1, row, floor: fl - 1, deep: o.deep || 2, state: o.state || 'sound', ...(o.tomb ? { tomb: true, hp: o.hp, mound: o.mound } : {}) });
+  /* A SLAB: the roof course x0..x1 at `row` (deep courses thick) on a POST just outside each end, the post standing on row `fl` (fl - 1 is the
+     air it stands in). o.anchor: -1 / 1 = that end is keyed into the rock (no post: it only ever hinges there). o.states: { '-1': 'cracked' }. */
+  const slab = (id, x0, x1, row, fl, o = {}) => {
+    slabs.push({ id, x0, x1, row, floor: fl - 1, deep: o.deep || 1, ...(o.thick ? { thick: o.thick } : {}), anchor: o.anchor || 0, tomb: !!o.tomb });
+    for (const end of [-1, 1]) { if (o.anchor === end) continue; const px = end < 0 ? x0 - 1 : x1 + 1, pfl = (o.postFloor || {})[end] || fl;
+      ent('timber', px, pfl - 1, { x0, x1, row, floor: pfl - 1, deep: o.deep || 1, state: (o.states || {})[end] || 'sound', slab: id, end, ...(o.tomb ? { tomb: true, hp: o.hp } : {}) }); } };
 
-  // ---- 1. THE ADIT (rows 10-24). In under the castle's own footings, and the first set teaches it. ----
-  gallery(2, 46, 24, 4);
-  ent('sign', 4, 23, { text: 'CUT A TIMBER SET AND THE ROOF FALLS ON WHAT IS UNDER, LEAVING A MOUND TO CLIMB.' });
-  ent('check', 6, 23);
-  ent('deco', 10, 23, { kind: 'barrels' }); ent('minerlamp', 14, 23, { lit: true }); ent('deco', 18, 23, { kind: 'wares' });
-  ent('minerlamp', 30, 23, { lit: true }); ent('minerlamp', 42, 23, { lit: true });
-  rail(20, 46, 24); ent('cart', 44, 23);
-  coins([8, 22], [12, 22], [16, 22], [22, 22], [28, 22], [34, 22], [40, 22]);
-  ent('sign', 20, 23, { text: 'THREE BLOWS DROP THIS ROOF ON THEM. THE MOUND IT LEAVES IS YOUR WAY UP.' });
-  timber(30, 24, 24, 36, 19, { deep: 3 });
-  ent('miner', 28, 23, { face: 1, cnSkin: 'navvy' }); ent('bonegob', 34, 23, { face: -1 });
-  ent('propman', 20, 23, { face: 1, cnSkin: 'timberman' });
-  ent('rockgoblin', 40, 23, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 44, 23, { face: -1, cnSkin: 'navvy' }); ent('shardling', 36, 23, { face: -1 });
-  ent('bat', 22, 20); ent('bat', 38, 20);
-  ent('deco', 26, 23, { kind: 'barrels' }); ent('deco', 38, 23, { kind: 'wares' }); ent('deco', 12, 23, { kind: 'coffer' });
-  
-  ent('check', 22, 23);
-  cut(24, 36, 15, 18); interiors.push([24, 36, 15, 18, 'mine']);   /* the working above it, and row 19 between them is the roof the set holds */
-  coins([26, 17], [30, 17], [34, 17], [28, 17], [32, 17]); ent('silver', 30, 17);
-  ent('minerlamp', 26, 18, { lit: false }); ent('deco', 34, 18, { kind: 'barrels' });
+  // ---- 1. THE ADIT (rows 15-24) - TEACH. In under the castle's own footings. The gallery ends in rock; the way on is the working over it,
+  //         and the only way up is the slab of roof between them: one post, the other end keyed into the rock. Cut the post. ----
+  gallery(2, 39, 24, 4);
+  ent('sign', 4, 23, { text: 'NOTHING DOWN HERE IS HOLDING ITSELF UP. EVERY ROOF IS A SLAB ON A POST.' });
+  /* (claude/undercrown2art: no shrine on the start tile - it is the spawn already - so the shrines are the flooded level's, the stope's shaft foot, the barrow's and the tomb's: level-quality wants one per 90 route tiles on average and checkpoint-gaps no gap over 200) */
+  ent('deco', 10, 23, { kind: 'barrels' }); ent('minerlamp', 14, 23, { lit: true }); ent('deco', 16, 23, { kind: 'wares' });
+  ent('minerlamp', 30, 23, { lit: true }); ent('deco', 37, 23, { kind: 'barrels' });
+  rail(26, 39, 24); ent('cart', 36, 23);
+  coins([8, 22], [12, 22], [16, 22], [28, 22], [32, 22]);
+  ent('sign', 19, 23, { text: 'CUT THE POST: ITS END OF THE SLAB SWINGS DOWN INTO A RAMP UP TO THE WORKING.' });
+  cut(16, 52, 15, 18); interiors.push([16, 52, 15, 18, 'mine']);   /* the working over the adit; row 19 between them is the slab and its course */
+  slab('adit', 24, 35, 19, 24, { anchor: 1 });                     /* keyed in at the east end: it can only swing down at the post (x 23) */
+  ent('miner', 25, 23, { face: 1, cnSkin: 'navvy' });             /* stood where the slab's end comes down: the first thing it does is kill */
+  ent('miner', 11, 23, { face: 1, cnSkin: 'navvy' });
+  ent('bat', 30, 21);
+  coins([26, 17], [30, 17], [34, 17], [40, 17], [44, 17]);
+  ent('minerlamp', 38, 18, { lit: true }); ent('deco', 42, 18, { kind: 'barrels' });
+  // THE OLD STOWAGE, west off the working, behind its props: the first silver, off the way
+  cut(8, 15, 16, 18); interiors.push([8, 15, 16, 18, 'mine']);
+  ent('silver', 10, 17); ent('deco', 13, 18, { kind: 'coffer' }); ent('minerlamp', 9, 18, { lit: false });
 
-  // ---- 2. THE FIRST WORKINGS (rows 24-58). Galleries stacked three deep, joined by a shaft. ----
+  // ---- 2. THE FIRST WORKINGS (rows 25-58) - TEST. Two slabs with a post at each end, a squad under the first. THE END YOU CUT IS THE END
+  //         THAT COMES DOWN. Ring the sentry's bell and the gallery's end drops shut over the shaft: the way on is then up a slab and over. ----
   shaft(46, 6, 16, 44);
   gallery(40, 86, 34, 4);
-  ent('check', 50, 33);
-  rail(50, 84, 34); ent('cart', 82, 33, { auto: true, dir: -1, speed: 110 });
-  boards(47, 49, 34);   /* a landing off the ladder: the gallery floor stopped three tiles short of it, over the drop, and every trip down was a jump from a rung */
-  ent('minerlamp', 54, 33, { lit: true }); ent('minerlamp', 70, 33, { lit: true }); ent('minerlamp', 84, 33, { lit: true });
-  ent('deco', 58, 33, { kind: 'barrels' });
-  ent('sign', 52, 33, { text: 'THE PROPMAN KEEPS THE TIMBER UP. KILL THE MAN FIRST, THEN CUT THE WOOD.' });
-  timber(62, 34, 56, 70, 29, { deep: 2 });
-  timber(78, 34, 72, 84, 29, { deep: 2, state: 'cracked' });
-  ent('propman', 68, 33, { face: -1, cnSkin: 'timberman' }); ent('propman', 80, 33, { face: -1, cnSkin: 'timberman' });
-  ent('rockgoblin', 62, 33, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 74, 33, { face: 1, cnSkin: 'navvy' });
-  ent('bonegob', 44, 33, { face: 1 }); ent('shardling', 56, 33, { face: -1 }); ent('miner', 54, 33, { face: -1, cnSkin: 'navvy' });
-  ent('rockgoblin', 44, 33, { face: -1, cnSkin: 'bonechucker' }); ent('sentry', 66, 33, { section: 'works', range: 9, face: 1, cnSkin: 'minewarden' });
-  ent('bell', 44, 33, { section: 'works' });
-  ent('deco', 64, 33, { kind: 'wares' }); ent('deco', 76, 33, { kind: 'barrels' }); ent('deco', 44, 33, { kind: 'coffer' });
-  ent('check', 68, 33);
-  ent('sign', 74, 33, { text: 'THE SENTRY\'S BELL AT THE SHAFT HEAD CARRIES TO EVERYTHING BELOW.' });
-  coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32], [84, 32], [42, 32], [46, 32], [50, 32], [57, 32], [63, 32], [69, 32], [75, 32], [81, 32]);
-  cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'mine']);   /* row 29 is the roof over the gallery below */
-  coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27], [61, 27], [67, 27], [73, 27], [79, 27]);
-  
-  ent('deco', 57, 28, { kind: 'barrels' }); ent('minerlamp', 72, 28, { lit: false });
-  ent('bat', 60, 27); ent('bat', 76, 27);
-
+  rail(56, 84, 34); ent('cart', 82, 33, { auto: true, dir: -1, speed: 110 });
+  boards(47, 49, 34);   /* a landing off the ladder */
+  ent('minerlamp', 54, 33, { lit: true }); ent('minerlamp', 70, 33, { lit: true });
+  ent('sign', 52, 33, { text: 'A POST AT EACH END. THE END YOU CUT IS THE END THAT COMES DOWN, ON WHATEVER IS UNDER IT.' });
+  cut(56, 84, 25, 28); interiors.push([56, 84, 25, 28, 'mine']);   /* the working over the gallery: row 29 is the slabs' course */
+  slab('works1', 57, 69, 29, 34);
+  slab('works2', 72, 83, 29, 34, { states: { '-1': 'cracked' } });
+  /* THE SQUAD UNDER THE SPAN: a timberman keeping it up and two navvies at the west end of it */
+  ent('propman', 64, 33, { face: -1, cnSkin: 'timberman' }); ent('miner', 58, 33, { face: -1, cnSkin: 'navvy' }); ent('miner', 60, 33, { face: -1, cnSkin: 'navvy' });
+  ent('rockgoblin', 75, 33, { face: -1, cnSkin: 'bonechucker' }); ent('snuffer', 68, 33, { face: -1, cnSkin: 'lampsnuffer' });
+  ent('sentry', 79, 33, { section: 'works', range: 9, face: -1, cnSkin: 'minewarden' });
+  ent('bell', 76, 33, { section: 'works' });
+  ent('deco', 62, 33, { kind: 'wares' }); ent('deco', 77, 33, { kind: 'barrels' });
+  ent('sign', 44, 33, { text: 'THE WARDEN\'S BELL SHUTS THE GALLERY. THE WORKING OVERHEAD STILL GOES THROUGH.' });
+  coins([54, 32], [60, 32], [66, 32], [72, 32], [78, 32]);
+  coins([58, 27], [64, 27], [70, 27], [76, 27], [82, 27]);
+  ent('deco', 59, 28, { kind: 'barrels' }); ent('minerlamp', 74, 28, { lit: false });
+  ent('rockgoblin', 80, 28, { face: -1, cnSkin: 'bonechucker' });
   shaft(86, 6, 26, 56);
-  ent('clinger', 87, 34, { face: 1 }); ent('clinger', 87, 46, { face: 1 });
-  ent('sign', 84, 33, { text: 'CLINGERS DROP WHEN YOU ARE IN THE AIR BESIDE THEM. SWING TO SHAKE ONE OFF.' });
+  ent('clinger', 87, 44, { face: 1 });
+  ent('sign', 84, 28, { text: 'CLINGERS DROP WHEN YOU ARE IN THE AIR BESIDE THEM. SWING TO SHAKE ONE OFF.' });
 
-  // ---- 3. THE FLOODED LEVEL (rows 46-84). They stopped pumping a long time ago. ----
+  // ---- 3. THE FLOODED LEVEL (rows 46-62) - REMIX. The planks stop short of each other over the dead water. The slab over the gap has a
+  //         post on each plank: cut the near one and it swings down into a ramp up to the far post; cut that from the top of it and the
+  //         slab comes down FLAT across the planks - the bridge. ----
   gallery(10, 90, 56, 6);
   ent('check', 84, 55);
   for (let x = 20; x <= 52; x++) set(x, 56, T.AIR);
   block(20, 52, 57, 62); water(20, 52, 56, 60, 57);
-  ent('sign', 80, 55, { text: 'THE PLANKS ARE THE ONLY DRY WAY, AND THE TIMBER OVER THEM IS ALREADY GOING.' });
-  boards(20, 32, 54); boards(38, 52, 54);                          /* the dry way: two courses over the water, and reachable off either bank */
-  plat(34, 52, 4);                                                 /* and the step over the gap in the middle of it */
-  timber(28, 54, 22, 34, 49, { deep: 2, state: 'going' });         /* the sets stand ON the planks, and the course they hold is the gallery's own roof */
-  timber(44, 54, 38, 50, 49, { deep: 2 });
-  ent('propman', 54, 55, { face: -1, cnSkin: 'timberman' }); ent('propman', 70, 55, { face: 1, cnSkin: 'timberman' });
-  ent('rockgoblin', 66, 55, { face: -1, cnSkin: 'bonechucker' }); ent('rockgoblin', 14, 55, { face: 1, cnSkin: 'bonechucker' });
-  ent('miner', 74, 55, { face: -1, cnSkin: 'navvy' }); ent('miner', 58, 55, { face: 1, cnSkin: 'navvy' }); ent('bonegob', 18, 55, { face: 1 });
-  ent('grub', 82, 55, { face: -1 }); ent('grub', 12, 55, { face: 1 });
-  ent('bat', 64, 50); ent('bat', 78, 50); ent('bat', 34, 50);
-  ent('rockgoblin', 60, 55, { face: 1, cnSkin: 'bonechucker' }); ent('shardling', 76, 55, { face: -1 });
-  ent('check', 62, 55);
-  ent('deco', 70, 55, { kind: 'barrels' }); ent('deco', 16, 55, { kind: 'wares' }); ent('deco', 84, 55, { kind: 'coffer' });
-  ent('sign', 66, 55, { text: 'GAS SITS IN THE LOW PLACES. SOMETHING OLD LIVES IN THE WATER.' });
-  ent('vault', 80, 55);                          /* still burning, which is the worst of the three */
-  ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true });
-  ent('gas', 44, 55); ent('gas', 30, 55);
-  coins([26, 51], [30, 51], [40, 51], [46, 51], [60, 54], [68, 54], [76, 54], [86, 54], [28, 51], [42, 51], [56, 54], [64, 54], [72, 54], [82, 54], [12, 54], [16, 54]);
-  ent('silver', 36, 50);   /* it was set INTO the rock course over the gallery; one row down it hangs over the ledge */
-  ent('clinger', 9, 62, { face: 1 });
+  boards(20, 30, 54); boards(44, 52, 54);                          /* the dry way stops at both ends of the gap */
+  slab('flood', 30, 44, 49, 54, { deep: 2, postFloor: { '-1': 54, '1': 54 } });   /* posts on the planks' ends (x 29 and 45); the course under the old working is two deep */
+  ent('sign', 80, 55, { text: 'THE PLANKS STOP SHORT OVER THE WATER. ONE POST MAKES A RAMP. TWO MAKE A BRIDGE.' });
+  ent('miner', 46, 53, { face: 1, cnSkin: 'navvy' });              /* on the near plank, under where the cut end comes down */
+  ent('rockgoblin', 24, 53, { face: 1, cnSkin: 'bonechucker' });   /* across the water, throwing while you work the posts */
+  ent('propman', 60, 55, { face: -1, cnSkin: 'timberman' }); ent('bonegob', 70, 55, { face: -1 });
+  ent('rockgoblin', 66, 55, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 74, 55, { face: -1, cnSkin: 'navvy' });
+  ent('grub', 14, 55, { face: 1 }); ent('bonegob', 16, 55, { face: 1 });
+  ent('bat', 58, 51); ent('bat', 36, 51);
+  ent('deco', 70, 54, { kind: 'barrels' }); ent('deco', 16, 55, { kind: 'wares' }); ent('deco', 86, 55, { kind: 'coffer' });
+  ent('sign', 64, 55, { text: 'GAS SITS IN THE LOW PLACES. THE WATER IS DEAD: NOBODY SWIMS IT.' });
+  ent('vault', 80, 55);
+  ent('minerlamp', 62, 55, { lit: true }); ent('minerlamp', 78, 55, { lit: true }); ent('minerlamp', 12, 55, { lit: true });
+  ent('gas', 56, 55); ent('gas', 14, 55);
+  coins([22, 53], [26, 53], [48, 53], [52, 53], [60, 54], [68, 54], [76, 54], [86, 54], [12, 54], [16, 54]);
   shaft(6, 6, 56, 88);
-  ent('clinger', 7, 70, { face: 1 }); ent('clinger', 7, 80, { face: 1 });
+  ent('clinger', 7, 74, { face: 1 });
 
-  // ---- 4. THE GREAT STOPE (rows 84-124). One void, crossed on the timber itself. ----
+  // ---- 4. THE GREAT STOPE (rows 88-124) - EXAM. One void with dead water in the bottom of it. Two walkways over the water do not meet;
+  //         the third, a slab of planking hung over the gap on two posts, is out of reach above them. Cut its near post from the near
+  //         walkway and it swings down into a ramp up over the gap; or cut the far one later and it drops flat across both - a bridge.
+  //         A brute holds the far walkway. ----
   cut(6, 96, 88, 122); interiors.push([6, 96, 88, 122, 'mine']);
   block(0, 103, 123, 128);
   floor(6, 30, 122); floor(80, 96, 122);
-  ent('check', 12, 121);
-  ent('sign', 10, 121, { text: 'THE GREAT STOPE. EVERY SPAN IS A SET THAT CAN FALL, EVEN THE ONE YOU STAND ON.' });
-  boards(30, 44, 112); boards(52, 66, 112); boards(40, 56, 100);
-  plat(46, 106, 6); plat(24, 106, 6); plat(68, 106, 6);
-  plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 8); plat(33, 100, 7);   /* the stages down the west wall: off the rope, and onto the top walkway */
-  ent('propman', 36, 111, { face: 1, cnSkin: 'timberman' });   /* he was THE OVERMAN, the stope's mini: cut 2026-09-21 (Daniel). A propman like the rest now */
-  ent('propman', 60, 111, { face: -1, cnSkin: 'timberman' });
-  ent('rockgoblin', 46, 99, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 54, 99, { face: -1, cnSkin: 'navvy' });
-  ent('rockgoblin', 26, 121, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 94, 121, { face: -1, cnSkin: 'navvy' }); ent('bonegob', 82, 121, { face: -1 });
-  ent('shardling', 32, 111, { face: 1 }); ent('miner', 64, 111, { face: -1, cnSkin: 'navvy' });
-  ent('check', 46, 105);
-  ent('sign', 30, 111, { text: 'THE PROPMEN RESET WHAT YOU CUT. TAKE THEM OFF THE SPAN FIRST; MIND YOUR OWN.' });
-  ent('clinger', 7, 96, { face: 1 }); ent('clinger', 95, 104, { face: -1 });
-  ent('bat', 40, 92); ent('bat', 62, 92); ent('bat', 52, 94); ent('bat', 30, 96); ent('bat', 74, 96);
-  ent('rockgoblin', 52, 111, { face: -1, cnSkin: 'bonechucker' }); ent('bonegob', 44, 99, { face: 1 });
-  timber(37, 112, 30, 44, 112, { deep: 1 });
-  timber(59, 112, 52, 66, 112, { deep: 1, state: 'cracked' });
-  timber(48, 100, 40, 56, 100, { deep: 1 });
-  coins([32, 111], [38, 111], [44, 111], [54, 111], [60, 111], [66, 111], [42, 99], [48, 99], [54, 99], [26, 105], [70, 105], [35, 111], [41, 111], [57, 111], [63, 111], [45, 99], [51, 99], [28, 105], [72, 105], [48, 105]);
-  ent('silver', 48, 97);
-  ent('minerlamp', 14, 121, { lit: true }); ent('minerlamp', 88, 121, { lit: true });
-  ent('deco', 20, 121, { kind: 'barrels' }); ent('deco', 92, 121, { kind: 'wares' });
-  ent('deco', 26, 121, { kind: 'coffer' }); ent('minerlamp', 32, 121, { lit: false }); ent('minerlamp', 76, 121, { lit: true });
-  coins([18, 120], [24, 120], [84, 120], [90, 120]);
+  water(31, 79, 122, 20, 123);                                     /* the stope's bottom: the flooded level's water came down here */
+  ent('check', 31, 111);
+  ent('sign', 10, 121, { text: 'THE GREAT STOPE. THE WALKWAYS DO NOT MEET. THE ONE OVERHEAD HANGS ON TWO POSTS.' });
+  boards(30, 44, 112); boards(52, 66, 112);
+  plat(10, 90, 6); plat(17, 94, 6); plat(24, 98, 6); plat(22, 106, 6);   /* the stages down the west wall: off the rope, and down to the near walkway */
+  for (let x = 40; x <= 56; x++) set(x, 100, T.PLANK);             /* the hung walkway: the slab (its posts stand on the walkways under it) */
+  slab('stope', 40, 56, 100, 112);
+  ent('sign', 32, 111, { text: 'CUT THE NEAR POST AND THE HUNG WALKWAY SWINGS DOWN TO YOU. MIND WHAT IS UNDER ITS FAR END.' });
+  ent('troll', 61, 111, { face: -1 });                            /* the far walkway's elite, a crag troll come down the old workings: on footing, the water behind him */
+  ent('miner', 54, 111, { face: -1, cnSkin: 'navvy' }); ent('rockgoblin', 64, 111, { face: -1, cnSkin: 'bonechucker' });
+  ent('shardling', 34, 111, { face: 1 }); ent('snuffer', 42, 111, { face: -1, cnSkin: 'lampsnuffer' });
+  ent('gas', 18, 121);   /* the stope's floor breathes too */
+  ent('check', 10, 121);   /* (claude/undercrown2art) the shrine at the shaft's foot, on the stope's dry west floor (where a fall down the shaft or the walkway ladder lands you): the route from the flooded level's shrine to the barrow's had 238 tiles with none (checkpoint-gaps) */
+  ent('rockgoblin', 26, 121, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 90, 121, { face: -1, cnSkin: 'navvy' }); ent('bonegob', 84, 121, { face: -1 });
+  ent('bat', 40, 94); ent('bat', 62, 96);
+  ent('clinger', 95, 104, { face: -1 });
+  coins([32, 111], [38, 111], [44, 111], [54, 111], [60, 111], [66, 111], [26, 105], [18, 120], [24, 120], [84, 120], [90, 120]);
+  ent('minerlamp', 14, 121, { lit: true }); ent('minerlamp', 88, 121, { lit: true }); ent('minerlamp', 62, 111, { lit: true });
+  ent('deco', 20, 121, { kind: 'barrels' }); ent('deco', 92, 121, { kind: 'wares' }); ent('deco', 26, 121, { kind: 'coffer' });
   plat(74, 100, 6);
-  ent('check', 94, 121);
+  ent('silver', 76, 98);   /* up the east ladder, off the way: the stope's foreman's shelf */
 
-  // ---- 4b. THE GLITTER VEIN (rows 106-121, east of the stope). The iron ran out into THIS: a cavern of glass. They
-  //          crossed its poison on ledges of the stuff, and a crystal ledge takes your weight for about a breath
-  //          before it crazes and goes - it grows back, slowly. (CRYST: the Sunspire's tile, and hasCryst below.)
+  // ---- 4b. THE GLITTER VEIN (rows 106-121, east of the stope). The iron ran out into THIS: a cavern of glass. They crossed its poison on
+  //          ledges of the stuff, and a crystal ledge takes your weight for about a breath before it crazes and goes - it grows back. ----
   cut(97, 150, 106, 121); interiors.push([97, 150, 106, 121, 'crystal']);
-  ent('check', 99, 121);
   ent('sign', 101, 121, { text: 'THE GLITTER VEIN. THE IRON RAN OUT INTO GLASS. IT WILL NOT HOLD YOU FOR LONG.' });
   for (let x = 106; x <= 140; x++) set(x, 122, T.AIR);
-  water(106, 140, 122, 20, 123);                                   /* the vein's floor is the same dead water as the flooded level */
+  water(106, 140, 122, 20, 123);
   const glass = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.CRYST); };
   glass(107, 109, 120); glass(113, 115, 119); glass(119, 121, 120); glass(125, 127, 119); glass(131, 133, 120); glass(137, 139, 119);
   glass(116, 119, 116); glass(128, 131, 116);                      /* the high way: two more, for the silver and the brave */
@@ -2713,83 +2698,76 @@ function undercrown() {
   coins([108, 118], [114, 117], [120, 118], [126, 117], [132, 118], [138, 117], [117, 114], [118, 114], [129, 114]);
   ent('minerlamp', 102, 121, { lit: true }); ent('minerlamp', 146, 121, { lit: true }); ent('minerlamp', 104, 121, { lit: false });
   ent('deco', 99, 121, { kind: 'barrels' }); ent('deco', 148, 121, { kind: 'wares' });
-  ent('shardling', 103, 121, { face: -1 }); ent('rockgoblin', 144, 121, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 142, 121, { face: -1, cnSkin: 'navvy' }); ent('shardling', 149, 121, { face: -1 });
-  ent('bat', 112, 110); ent('bat', 124, 108); ent('bat', 136, 110);
-  // THE WAY DOWN is a shaft off the east bank, into the barrow the miners broke into last and walled up first.
+  ent('shardling', 103, 121, { face: -1 }); ent('rockgoblin', 144, 121, { face: -1, cnSkin: 'bonechucker' }); ent('shardling', 149, 121, { face: -1 });
+  ent('bat', 124, 108);
   shaft(144, 6, 122, 130);
 
-  // ---- 4c. THE GOBLIN BARROW (rows 131-140). The Prince's people, buried in rows in the rock, and what is left of
-  //          them getting up. The miners walled it up; the drift you want goes west out of it.
+  // ---- 4c. THE GOBLIN BARROW (rows 131-140). The Prince's people, buried in rows in the rock, and what is left of them getting up. ----
   cut(96, 150, 131, 140); interiors.push([96, 150, 131, 140, 'ossuary']);
   ent('check', 146, 140);
   ent('sign', 142, 140, { text: 'THE GOBLIN BARROW. HIS PEOPLE WERE BURIED IN ROWS. THEY ARE NOT STAYING DOWN.' });
-  plat(104, 137, 5); plat(120, 136, 6); plat(134, 137, 5);         /* the biers: three stone shelves the dead were laid on */
+  plat(104, 137, 5); plat(120, 136, 6); plat(134, 137, 5);
   ent('bonegob', 138, 140, { face: -1 }); ent('bonegob', 124, 140, { face: -1 }); ent('bonegob', 110, 140, { face: 1 });
   ent('bonearcher', 122, 135, { face: -1 }); ent('bonegob', 100, 140, { face: 1 });
-  ent('bat', 116, 133); ent('bat', 130, 133);
-  ent('gas', 116, 140); ent('gas', 130, 140);                       /* barrow air, in the low places between the biers */
+  ent('bat', 130, 133);
+  ent('gas', 116, 140); ent('gas', 130, 140);
   for (const [x, k, v] of [[102, 'stone', 0], [108, 'bones', 0], [114, 'stone', 1], [118, 'bones', 1], [128, 'stone', 0], [132, 'bones', 0], [140, 'stone', 1], [106, 'banner', 0]]) ent('deco', x, 140, { kind: k, ...(v ? { v } : {}) });
   ent('minerlamp', 144, 140, { lit: true }); ent('minerlamp', 112, 140, { lit: false }); ent('minerlamp', 98, 140, { lit: true });
   coins([106, 136], [122, 135], [124, 135], [136, 136], [142, 139], [128, 139], [114, 139], [102, 139]);
 
-  // ---- 5. THE LAST DRIFT AND THE PIT. A boss arena is entered from the LEFT - the trigger is a line you
-  //         cross going right - so nothing drops you into his pit. The barrow lets out into a low drift over it,
-  //         and you walk the whole length of that drift to the ladder at the far end before you meet him.
+  // ---- 5. THE LAST DRIFT. West along a low drift over the Prince's pit, the barrow's dead behind you. Its last slab is a WALL: cut both
+  //         posts and it drops across the drift, and nothing that walks gets over it. ----
   cut(10, 95, 137, 140); interiors.push([10, 95, 137, 140, 'mine']);
-  ent('check', 86, 140);
-  ent('sign', 82, 140, { text: 'THE LAST DRIFT. THE LADDER DOWN IS AT THE FAR END.' });
+  ent('sign', 82, 140, { text: 'THE LAST DRIFT. BOTH POSTS DOWN AND THE SLAB IS A WALL ACROSS IT: WHAT WALKS CANNOT FOLLOW.' });
   ent('minerlamp', 74, 140, { lit: false }); ent('minerlamp', 40, 140, { lit: true }); ent('deco', 62, 140, { kind: 'barrels' });
-  ent('rockgoblin', 68, 140, { face: -1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' }); ent('shardling', 30, 140, { face: 1 });
-  ent('propman', 58, 140, { face: -1, cnSkin: 'timberman' });
-  timber(44, 141, 36, 54, 136, { deep: 2 });
-  coins([78, 139], [70, 139], [62, 139], [54, 139], [46, 139], [38, 139], [30, 139], [22, 139], [16, 139]);
+  ent('rockgoblin', 30, 140, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 50, 140, { face: 1, cnSkin: 'navvy' });
+  ent('snuffer', 34, 140, { face: 1, cnSkin: 'lampsnuffer' });
+  slab('drift', 58, 66, 136, 141, { deep: 1, thick: 2 });   /* (thick: down flat it is a wall two courses high) */
+  /* THE PRINCE'S TITHE: a working over the drift that nobody walled up because nobody could reach it. ONE post and the slab is a ramp up into it */
+  cut(54, 72, 132, 135); interiors.push([54, 72, 132, 135, 'mine']);
+  ent('silver', 70, 134); ent('deco', 56, 135, { kind: 'coffer' }); ent('minerlamp', 64, 135, { lit: false });
+  ent('gas', 46, 140);
+  coins([78, 139], [70, 139], [54, 139], [46, 139], [38, 139], [22, 139], [16, 139]);
   shaft(10, 6, 141, 166);
 
   cut(4, 98, 144, 166); interiors.push([4, 98, 144, 166, 'mine']);
   floor(4, 98, 167);
-  // THE PRINCE'S TOMB. The vault at the bottom of the mine that they walled a goblin prince into and then forgot. Its roof
-  // is LOW and it stands on three timber sets, and that is the fight: cut a set while he is under it and the roof buries
-  // him again. Four dead men's lamps burn round it; past half he breathes them out, and the dark is his until you light
-  // them. The doorways are exactly the height of the arena's walls, so a shut tomb is shut.
-  block(29, 75, 144, 155);                                          /* the vault roof: eleven courses of room under it */
-  block(29, 29, 156, 160); block(75, 75, 156, 160);                 /* the lintels over its two doors */
+  // THE PRINCE'S TOMB - a PROPPED THRONE CHAMBER. The vault they walled a goblin prince into is roofed with three slabs on timber, and that
+  // is the fight: cut the post on his side of the span he stands under and the slab swings down ON him - PINNED. Between phases his diggers
+  // work the winch and prop the roof again; each time it stands less sure, and at the end the whole roof is coming down.
+  block(29, 75, 144, 155);
+  block(29, 29, 156, 160); block(75, 75, 156, 160);
   ent('check', 16, 166);
-  ent('sign', 20, 166, { text: 'THE PRINCE\'S TOMB. CUT A SET WHILE HE IS UNDER IT, AND KEEP THE LAMPS LIT.' });
+  ent('sign', 20, 166, { text: 'THE PRINCE\'S TOMB. CUT THE POST ON HIS SIDE WHILE HE IS UNDER A SLAB.' });
   ent('minerlamp', 12, 166, { lit: true }); ent('minerlamp', 86, 166, { lit: true });
   ent('deco', 24, 166, { kind: 'barrels' }); ent('deco', 78, 166, { kind: 'wares' }); ent('deco', 8, 166, { kind: 'coffer' });
-  ent('bonegob', 20, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1, cnSkin: 'bonechucker' }); ent('miner', 26, 166, { face: 1, cnSkin: 'navvy' });
+  ent('bonegob', 22, 166, { face: 1 }); ent('rockgoblin', 14, 166, { face: 1, cnSkin: 'bonechucker' });
   coins([16, 165], [22, 165], [8, 165], [80, 165], [84, 165], [90, 165]);
-  // the tomb itself: the sets, each post just OUTSIDE its span so the hand that cuts it is not under the roof it drops
-  timber(36, 167, 37, 44, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
-  timber(59, 167, 51, 58, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
-  timber(64, 167, 65, 72, 155, { deep: 1, tomb: true, hp: 2, mound: 1 });
-  /* two of the four have gone out down the years: lighting them is the first thing the tomb asks of you, and all four lit is when THE LIGHT FINDS HIM */
-  ent('minerlamp', 33, 166, { lit: true }); ent('minerlamp', 46, 166, { lit: false }); ent('minerlamp', 61, 166, { lit: false }); ent('minerlamp', 73, 166, { lit: true });
-  ent('deco', 41, 166, { kind: 'stone' }); ent('deco', 55, 166, { kind: 'stone', v: 1 }); ent('deco', 69, 166, { kind: 'stone' });   /* the grave slabs of whoever went down with him */
-  ent('deco', 39, 166, { kind: 'bones' }); ent('deco', 67, 166, { kind: 'bones', v: 1 }); ent('deco', 71, 166, { kind: 'banner' });   /* and his banner, what is left of it */
+  slab('tombW', 31, 42, 155, 167, { tomb: true, hp: 2, deep: 2 });
+  slab('tombC', 45, 57, 155, 167, { tomb: true, hp: 2, deep: 2 });
+  slab('tombE', 60, 71, 155, 167, { tomb: true, hp: 2, deep: 2 });
+  ent('minerlamp', 34, 166, { lit: true }); ent('minerlamp', 50, 166, { lit: false }); ent('minerlamp', 64, 166, { lit: false }); ent('minerlamp', 73, 166, { lit: true });
+  ent('deco', 39, 166, { kind: 'bones' }); ent('deco', 67, 166, { kind: 'bones', v: 1 }); ent('deco', 70, 166, { kind: 'banner' });
   coins([40, 165], [54, 165], [68, 165]);
-  ent('prince', 49, 166, { face: -1 });                             /* in his sarcophagus, between the first two sets */
+  ent('prince', 51, 166, { face: -1 });                            /* in his sarcophagus, under the middle slab */
   ent('gate', 90, 166);
 
-  // EVERY LADDER IS HUNG LAST. A gallery cut after a ladder erases the rungs it runs through and does it
-  // silently: the shaft still looks like a shaft, and there is a four-course gap in the middle of it that
-  // you only find by falling down it. Nothing is dug after this line.
-  ladder(46, 18, 43); ladder(90, 28, 55); ladder(10, 56, 87); ladder(146, 121, 139); ladder(14, 141, 166); ladder(78, 100, 121);
+  // EVERY LADDER IS HUNG LAST (a gallery cut after a ladder erases its rungs). Nothing is dug after this line.
+  ladder(46, 18, 43); ladder(90, 28, 55); ladder(10, 56, 87); ladder(146, 121, 139); ladder(14, 141, 166); ladder(78, 100, 121); ladder(29, 112, 121);   /* (and back up to the near walkway from the stope's dry west floor) */
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
-    timber: true, hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true,   /* hasCryst: the Glitter Vein's ledges craze under you (updateCrystal) */   /* it was too dark to see the floor: less black, and every edge you can stand on is lit */
-    duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,   /* the readability pass: under the night wash, the tall gloom and the murk the open air measured L* 6-9 (a walkway needs 20 to read): the washes thinner, the far wall a lit brown, and the gloom a mine's grey, not the canopy's green */
+    waterHurts: true,   /* (claude/undercrown2, A10) a fall in the dead water costs health and hands you back to the last dry ground - not a death */
+    timber: true, slabs, reachSlabs: [{ slab: 'adit', hinge: 1 }, { slab: 'flood', flat: true }, { slab: 'stope', hinge: 1 }, { slab: 'drift', hinge: 1, optional: true }],   /* the slabs the way on needs, cut as the signs say (src/reachcore.js) */
+    hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true, ucKit: true,   /* (claude/undercrown2art) its own tile kit, walls, slabs, posts and lights (src/redraw/undercrown_*.js) */
+    duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,
     tall: { top: 10 * TS, bottom: 168 * TS, col: '18,16,22', deepest: 0.12 },
-
-    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34', farDim: 0.28, footLip: ['#f0be7c', 0.62],   /* a mine's platform is staging: sawn boards over a joist, not a felled tree */
+    palette: { sky: 'crag', far: 'crag', mid: 'crag', near: 'crag', dress: 'none', ledges: 'staging', haze: 'rgba(30,26,34,0.2)', murkCol: '#3e3846', murkLit: '#7a5a34', farDim: 0.28, footLip: ['#f0be7c', 0.62],
       grass: '#5a4a3a', grassL: '#6e5c48', grassD: '#3a2e22', dirt: '#3a3028', dirtL: '#4a3e32', dirtD: '#241d18',
       canopy: ['#1a1620', '#241e28', '#2e2632', '#3a303e'] },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
-    /* THE WORKS BELL, which its own sign has promised since the day the level was built ("everything below here can hear it") and
-       which never had an alarm: rung, the gallery's end drops shut over the shaft down, and the works below come up it
-       (tools/bells.mjs found it, asking every level what it had asked of Highcrown) */
-    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33, cnSkin: 'navvy' }, { t: 'rockgoblin', x: 80, y: 33, cnSkin: 'bonechucker' }, { t: 'bonegob', x: 82, y: 33 }] }],
+    /* THE WORKS BELL: rung, the gallery's end drops shut over the shaft down, and the works below come up it - the working overhead is the way round */
+    alarms: [{ id: 'works', gates: [[85, 30, 33]], garrison: [{ t: 'miner', x: 83, y: 33, cnSkin: 'navvy' }, { t: 'rockgoblin', x: 80, y: 33, cnSkin: 'bonechucker' }] }],
     arena: { x0: 30 * TS, x1: 74 * TS, floor: 167 * TS, trigger: 34 * TS, wallL: 29, wallR: 75, boss: 'prince', music: 'musDungeon', tint: '#1e2420', tintA: 0.14, fx: 'dust', y0: 144 * TS, y1: 168 * TS },
   };
 }
@@ -7915,6 +7893,12 @@ function follyLibrary(L0, ret) {
    One clearly commented ent per level, added here so the levels' own builders (other lanes edit them) are untouched; src/main.js picks the pickup up. */
 const withBanner = (build, id, x, y) => (...a) => { const L = build(...a); L.ents.push({ t: 'lostbanner', id, x, y }); return L; };
 export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [249, 76] };
+/* THE ROADS THAT ARE BUILT BUT NOT OPEN YET (claude/undercrown2, Daniel 10-15). THE UNDERCROWN goes on the MAIN ROAD - Stormhold -> THE UNDERCROWN ->
+   Highcrown, a default level and the way IN, under the castle - but only once it is graded B or better (the ship rule: art before live). Until its art
+   lane flips this, the level keeps its old place exactly (a secret fork off Highcrown at 80% put down) and Highcrown still needs Stormhold. Flipped:
+   needs 'storm', Highcrown needs it, no hidden/secret/kill count, a node on the road between the two (src/main.js CRAG_NODES), and a save that had
+   Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
+export const ROAD_OPEN = { undercrown: true };
 export const LEVELS = [
   { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", build: brackenWood },
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
@@ -7926,7 +7910,7 @@ export const LEVELS = [
   { id: 'spire', name: 'THE MONASTERY', sub: 'and the goblin in its chair', rule: 'WHAT THE MONKS BUILT STILL ANSWERS A BLOW. CLIMB.', build: theMonastery, needs: 'hanging' },
   { id: 'moor', name: 'GALE MOOR', sub: 'the high moor', rule: 'THE WIND COMES IN GUSTS, AND YOU CAN HEAR EACH ONE COMING.', build: galeMoor, needs: 'spire' },
   { id: 'storm', name: 'STORMHOLD', sub: 'the last hold', rule: 'THREE GATES. EVERY KEY HANGS IN A WATCHTOWER.', build: () => stormholdTown({ painter, T, TS }), needs: 'minecart' },   /* (claude/deeprails2, Daniel 10-09: THE DEEP RAILS is on the main road - Ore Road -> Deep Rails -> Stormhold) */
-  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: 'storm' },   /* (2026-09-23: the Ore Road is the way to her gate now) */
+  { id: 'crown', name: 'HIGHCROWN', sub: 'the goblin queen\'s castle', rule: 'EVERY HALL HAS A BELL, AND A GATE THAT DROPS WITH IT.', build: highcrownWhole, needs: ROAD_OPEN.undercrown ? 'undercrown' : 'storm' },   /* (claude/undercrown2: through THE UNDERCROWN once its road is open) */   /* (2026-09-23: the Ore Road is the way to her gate now) */
   { id: 'longwater', arc: 'the sea', name: 'THE LONG WATER', sub: 'the river to the sea', rule: 'THE TIDE DECIDES WHERE THE FLOOR IS.', build: longWater, needs: 'crown' },
   { id: 'reef', name: 'THE SHIPWRECK REEF', sub: 'the road out to sea', rule: 'BREATH IS THE CLOCK. THE AIR IS IN BELLS, A SWIM APART.', build: shipwreckReef, needs: 'longwater' },
   { id: 'flotilla', name: 'THE FLOTILLA', sub: 'the town of ships', rule: 'FOUR HULLS LASHED TOGETHER: THE WAY PAST IS OVER THEM, NOT THROUGH.', build: theFlotilla, needs: 'reef' },
@@ -7951,7 +7935,7 @@ export const LEVELS = [
   { id: 'harbor', name: 'STORMWRECK HARBOR', sub: 'from broken quay to lighthouse', rule: 'CROSS THE MARKET, DRYDOCK AND STORM WALL. THE WARDEN HOLDS THE SEA GATE.', build: ()=>stormwreckHarbor({painter,T,TS}), needs: 'causeway' },
   { id: 'waymeet', name: 'WAYMEET', sub: 'where the roads meet, and everyone stops', arc: 'the road inland',
     rule: 'THE SHIELD IS NOT A WALL HERE. IT IS A BEAT.', build: waymeet, needs: 'causeway' },   /* the causeway again: Stormwreck Harbor is out of the campaign (Daniel, 2026-09-20: 'it offers nothing new') */
-  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } },
+  { id: 'undercrown', name: 'THE UNDERCROWN', sub: 'the hole the castle stands on', rule: 'NOTHING DOWN HERE IS HOLDING ITSELF UP.', build: undercrown, ...(ROAD_OPEN.undercrown ? { needs: 'storm', leadsTo: 'crown' } : { hidden: true, secret: true, needsKills: { id: 'crown', pct: 0.8 } }) },   /* (claude/undercrown2: the main road between STORMHOLD and HIGHCROWN once ROAD_OPEN says so; until then the old secret fork) */
   /* THE HEXED FIELDS: the road inland leaves the coast through the farms under the Archmage's hill, and the Hunt waits past them */
   { id: 'fields', name: 'THE HEXED FIELDS', sub: "the farms under the archmage's hill", rule: 'IF IT GLOWS GREEN, YOU CAN USE IT. THE MOON DECIDES THE REST.', build: withBanner(theHexedFields, 'fields', ...LOST_BANNERS.fields), needs: 'fair' },
   /* THE MAGE'S FOLLY: the tower on the hill the runoff came down from. The room is what changes, never the hero */

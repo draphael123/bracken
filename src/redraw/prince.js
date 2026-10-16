@@ -348,13 +348,18 @@ export function bakeBuriedPrince() {
   const hurt = frame({ chest: [X - 2, FL - 42], hip: [X, FL - 28], head: [X - 1, FL - 55], ha: -24, crown: 'on', eyes: 'flare', jaw: 'open', sw: 2,
     legs: { near: [[X + 4, FL - 15], [X + 6, FL]], far: [[X - 4, FL - 15], [X - 7, FL]] },
     near: { el: [X + 7, FL - 43], hd: [X + 15, FL - 47] }, far: { el: [X - 7, FL - 39], hd: [X - 13, FL - 41] }, swordN: [[X + 15, FL - 47], -30, 24] });
+  /* (claude/undercrown2art, B16) HIS HEAVE: crouched under the slab with both hands flat on its edge and the whole body driving up - not the sink tell's hand-in-the-dirt */
+  const heave = frame({ chest: [X + 3, FL - 38], hip: [X, FL - 24], head: [X + 4, FL - 50], ha: -14, crown: 'on', eyes: 'flare', jaw: 'open', sw: 1, lean: 1,
+    legs: { near: [[X + 10, FL - 12], [X + 12, FL]], far: [[X - 8, FL - 12], [X - 11, FL]] },
+    near: { el: [X + 9, FL - 52], hd: [X + 10, FL - 67] }, far: { el: [X - 3, FL - 51], hd: [X - 4, FL - 66] }, beam: [[X - 16, FL - 71], [X + 22, FL - 70]],
+    fx: [[X - 14, FL - 4, ['n.N']], [X + 16, FL - 3, ['.N', 'n.']], [X + 2, FL - 60, ['N']], [X - 10, FL - 64, ['.n']]] });
   const frames = [frame(idleO), frame(idleBO), frame(walkA), frame(walkB), frame(walkC), cutTell, cut, sinkTell, sunk, rise, callTell, call,
-    crownTell, crownThrow, snuffTell, snuff, frame(bare(idleO)), frame(bare(walkA)), frame(bare(walkC)), buried, reel, collapse, hurt];
+    crownTell, crownThrow, snuffTell, snuff, frame(bare(idleO)), frame(bare(walkA)), frame(bare(walkC)), buried, reel, collapse, hurt, heave];
   return pack(frames, X + 1, FL + 2, 22, 60);
 }
 // the names main.js reads frames by, in the order bakeBuriedPrince packs them
 export const PRINCE_F = { idle: 0, idleB: 1, walk: [2, 3, 4], cutTell: 5, cut: 6, sinkTell: 7, sunk: 8, rise: 9, callTell: 10, call: 11,
-  crownTell: 12, crownThrow: 13, snuffTell: 14, snuff: 15, bareIdle: 16, bareWalk: [17, 18], buried: 19, reel: 20, dead: 21, hurt: 22 };
+  crownTell: 12, crownThrow: 13, snuffTell: 14, snuff: 15, bareIdle: 16, bareWalk: [17, 18], buried: 19, reel: 20, dead: 21, hurt: 22, heave: 23 };
 
 // ---------- A COURTIER ----------
 const CP = { o: OUT, x: '#f2ecd6', b: '#d8cfb4', B: '#9a9078', q: '#120e16', e: '#b8ffb4', c: '#7a4a70', C: '#4e2c48', y: '#c9a84a', Y: '#7e6630', n: '#6c5a44', N: '#3e3228' };

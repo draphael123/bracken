@@ -19,6 +19,7 @@ import { ORDER_MARKS, TYPES as ORDER_TYPES } from './order-chapters.js';   /* (c
 
 export const THROWN = new Set(['updateWindcaller|stoneTell', 'updateForgemaster|hurlTell', 'updateForgemaster|dragTell',
   'updateGrandmother|knellTell',    /* (claude/underleaf2) THE GRANDMOTHER's KNELL: the handbell throws a ring along the boards both ways (src/hush-hands.js granKnell) - no shield turns it, jump it */
+  'updatePrince|heaveTell',         /* (claude/undercrown2art) THE PRINCE HEAVES THE SLAB OFF ITS HINGE (slabSmash): the roof he breaks is the blow - rock thrown by nobody, no shield turns it; the hero up the slab is dropped, not struck */
   'updateTippler|heaveTell',        /* THE TIPPLER heaves the bar and a SKIP OF ORE goes over: falling rock, thrown by nobody, and no shield turns it */
   'updateCaptain|shootTell',        // capShoot: a shot seed, unblockable
   'updateCaptain|kegTell',          // the keg: a bomb, and a blast turns on no shield
@@ -271,7 +272,7 @@ export const MARK = {
   'paladinboss|empowerTell': '!!', 'paladinboss|judgeTell': '!!', 'paladinboss|leapTell': '!!', 'paladinboss|plantTell': '', 'paladinboss|smiteTell': '!!', 'paladinboss|throwTell': '!',
   'paladinboss|vigilTell': '', 'petrel|biteTell': '!', 'petrel|castTell': '!', 'petrel|dive': '!', 'petrel|diveTell': '!', 'petrel|hookTell': '!',
   'petrel|swellTell': '!', 'piece|nipTell': '!', 'pike|ekLongTell': '!', 'pike|elSweepTell': '!', 'pike|tell': '!', 'ploughman|chargeTell': '!!',
-  'ploughman|furrowTell': '!!', 'ploughman|goadTell': '!', 'ploughman|headTell': '!!', 'prince|callTell': '', 'prince|crownTell': '!', 'prince|cutTell': '!',
+  'ploughman|furrowTell': '!!', 'ploughman|goadTell': '!', 'ploughman|headTell': '!!', 'prince|heaveTell': '!!', 'prince|callTell': '', 'prince|crownTell': '!', 'prince|cutTell': '!',
   'prince|sinkTell': '!!', 'prince|snuffTell': '!!', 'prise|reachTell': '!', 'propman|raise': '!', 'propman|setTell': '', 'propman|throwTell': '!',
   'puffer|biteTell': '!', 'puffer|castTell': '!', 'puffer|dive': '!', 'puffer|hookTell': '!', 'puffer|swellTell': '!', 'pumpkin|biteTell': '!',
   'pumpkin|puffTell': '!!', 'puppeteer|dropTell': '!!', 'puppeteer|snareHighTell': '!!', 'puppeteer|snareLowTell': '!!', 'pyromancer|bellowsTell': '!!', 'pyromancer|cutTell': '!',

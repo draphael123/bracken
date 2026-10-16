@@ -87,4 +87,22 @@ function spire(BK, P, mem) {
     const side = (x0 + x1) / 2 * TS > b.x ? -1 : 1; return { x: b.x + side * 12, y: b.y, key: 'atk', face: -side, r: 12 }; }
   return null;
 }
-export const WALK_HINTS = { glasssea: glassSea, underleaf, spire };
+/* THE UNDERCROWN'S SLABS (claude/undercrown2, src/undercrown-slabs.js): the slabs the way on needs (L.reachSlabs) cut as a player cuts them. A ramp
+   slab: the post at the end that must come down (hinge h: the post at -h), struck from outside the span. A bridge (flat): the near post first (rs.first,
+   default the east one), then the far one struck from the top of the ramp the first cut made. Only when the post is near and on the hero's floor. */
+export function slabHint(BK, P) {
+  const L = BK.L; if (!L || !L.reachSlabs || !P) return null;
+  const props = BK.props();
+  for (const rs of L.reachSlabs) {
+    if (rs.optional) continue;   /* (the tithe's ramp is off the way: the walker leaves it) */
+    const posts = props.filter(p => p.t === 'timber' && p.slab && p.slab.id === rs.slab); if (!posts.length) continue; const sb = posts[0].slab;
+    if (sb.state !== 'up' && !(rs.flat && sb.state === 'ramp')) continue;
+    let post, stand, face;
+    if (sb.state === 'up') { const end = rs.flat ? (rs.first || 1) : -rs.hinge; post = posts.find(p => p.end === end && !p.broken); if (!post) continue; face = -end; stand = post.x + end * 13; }
+    else { post = posts.find(p => !p.broken); if (!post) continue; face = post.end; stand = post.x - post.end * 22; }
+    if (Math.abs(stand - P.x) > 14 * TS || Math.abs(post.y - P.y) > (sb.state === 'ramp' ? 12 : 3) * TS) continue;
+    return { x: stand, y: sb.state === 'ramp' ? sb.row * TS : post.y, key: 'atk', face, r: 14 };   /* (from the ramp, his feet are at its top) */
+  }
+  return null;
+}
+export const WALK_HINTS = { glasssea: glassSea, underleaf, spire, undercrown: slabHint };

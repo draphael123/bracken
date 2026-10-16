@@ -11,7 +11,7 @@
 //      except the shelved ones named below.
 // usage: PORT=<free port> node tools/map-forks.mjs
 import { openPage } from './cdp.mjs';
-import { LEVELS } from '../src/level.js';
+import { LEVELS, ROAD_OPEN } from '../src/level.js';
 import { chainOf, gateOf } from '../src/campaign-order.js';
 const SHELVED = { harbor: 'STORMWRECK HARBOR: out of the campaign (level.js: "it offers nothing new"); no map node, no road; a save that stood on it is put on THE CAUSEWAY (mapToSaved)' };
 const pg = await openPage({ audio: false });
@@ -52,16 +52,35 @@ try {
     const wipe = () => { BK.reset({ fresh: true }); for (const l of LEVELS) delete BKT.PROG[l.id]; delete BKT.PROG.lostBanners; delete BKT.PROG.fieldOpen; }; wipe(); for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'undercrown', 'harbor'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 };
     BKT.PROG.stockade = { best: 250 };   /* NOT cleared */ out.unclearedStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
     BKT.PROG.stockade = { cleared: true, medal: 1, best: 400 }; out.slowStockade = { info: info('burning'), up: go('stockade', 'up'), right: go('stockade', 'right') };
+    const { ROAD_OPEN } = await import('/src/level.js');
+    if (ROAD_OPEN.undercrown) {   /* (claude/undercrown2, DANIEL'S DESIGN CHANGE 10-15) the Undercrown is ON THE ROAD: Stormhold -> THE UNDERCROWN -> Highcrown */
+      const road = () => { for (const l of LEVELS) if (!['burning', 'church', 'unburied', 'harbor', 'undercrown', 'crown', 'storm'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 3, best: 400, silver: 7 }; };
+      wipe(); road(); delete BKT.PROG.crownOpen; out.ucBefore = { uc: info('undercrown'), crown: info('crown') };
+      BKT.PROG.storm = { cleared: true, medal: 1, best: 400 }; out.ucOpen = { uc: info('undercrown'), crown: info('crown'), right: go('storm', 'right') };
+      BKT.PROG.undercrown = { cleared: true, medal: 1, best: 400 }; out.ucDone = { crown: info('crown'), right: go('undercrown', 'right') };
+      /* GRANDFATHERED: a save made before the road changed, Stormhold cleared and Highcrown open, keeps Highcrown open (once: PROG.ucRoadMig) */
+      { const K = 'bracken.progress.4', raw = JSON.parse(JSON.stringify(BKT.PROG)); delete raw.ucRoadMig; delete raw.crownOpen; delete raw.undercrown; delete raw.crown; raw.storm = { cleared: true, medal: 1, best: 400 };
+        localStorage.setItem(K, JSON.stringify(raw)); BK.loadSlot(4); out.grand = { open: !!BKT.PROG.crownOpen, crown: info('crown') };
+        const raw2 = { ...raw, ucRoadMig: 1 }; localStorage.setItem(K, JSON.stringify(raw2)); BK.loadSlot(4); out.fresh = { open: !!BKT.PROG.crownOpen, crown: info('crown') }; localStorage.removeItem(K); }
+    } else {
     wipe(); out.crownUnseen = info('undercrown');
     BKT.PROG.crown = { cleared: true, medal: 1, best: 400, slain: 10, slainOf: 100 }; out.crownFew = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
     BKT.PROG.crown.slain = 90; out.crownMany = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
+    }
     return out; })()`, 300000);
   // DANIEL'S DESIGN CHANGE 10-15 (never weaken): the Burning Village opens as soon as the Stockade is CLEARED - no best-time clock.
   S.unclearedStockade.info.locked && S.unclearedStockade.up === 'stockade' && S.unclearedStockade.right === 'spore' ? ok('burning shut while the Stockade is not cleared: UP stays, RIGHT walks the road on') : fail('burning, Stockade not cleared: ' + JSON.stringify(S.unclearedStockade));
   !S.slowStockade.info.locked && S.slowStockade.up === 'burning' && S.slowStockade.right === 'burning' ? ok('burning open once the Stockade is cleared, even slowly (best 6:40): UP and RIGHT walk onto it') : fail('burning open: ' + JSON.stringify(S.slowStockade));
+  if (ROAD_OPEN.undercrown) {
+    !S.ucBefore.uc.secret && S.ucBefore.uc.locked && S.ucBefore.crown.locked ? ok('undercrown on the road: shown and shut before Stormhold is cleared, Highcrown shut behind it') : fail('undercrown before stormhold: ' + JSON.stringify(S.ucBefore));
+    !S.ucOpen.uc.locked && S.ucOpen.crown.locked && S.ucOpen.right === 'undercrown' ? ok('Stormhold cleared: the road walks on to THE UNDERCROWN, and Highcrown waits for it') : fail('undercrown after stormhold: ' + JSON.stringify(S.ucOpen));
+    !S.ucDone.crown.locked && S.ucDone.right === 'crown' ? ok('THE UNDERCROWN cleared: Highcrown opens and the road walks on to it') : fail('highcrown after the undercrown: ' + JSON.stringify(S.ucDone));
+    S.grand.open && !S.grand.crown.locked && !S.fresh.open && S.fresh.crown.locked ? ok('an old save with Stormhold cleared keeps Highcrown open (grandfathered once); a save made on the new road must walk the Undercrown first') : fail('grandfathering: ' + JSON.stringify({ grand: S.grand, fresh: S.fresh }));
+  } else {
   S.crownUnseen.secret ? ok('undercrown not shown before highcrown is cleared') : fail('undercrown shown early: ' + JSON.stringify(S.crownUnseen));
   !S.crownFew.info.secret && S.crownFew.info.locked && S.crownFew.up === 'crown' && S.crownFew.right !== 'undercrown' ? ok('undercrown shown but shut at 10%: UP stays on highcrown, RIGHT walks the road on (' + S.crownFew.right + ')') : fail('undercrown at 10%: ' + JSON.stringify(S.crownFew));
   !S.crownMany.info.locked && S.crownMany.up === 'undercrown' && S.crownMany.right === 'undercrown' ? ok('undercrown open at 90%: UP and RIGHT walk onto it') : fail('undercrown at 90%: ' + JSON.stringify(S.crownMany));
+  }
   // the gate tree against the nodes
   const C = chainOf(LEVELS.filter(l => !l.hidden || l.secret)); const noNode = LEVELS.filter(l => !ids.includes(l.id) && !(l.id in SHELVED) && !l.locked && !/^(shop|shopCrag|shopWell)$/.test(l.id)).map(l => l.id);
   const stray = noNode.filter(id => !lv[id].hidden || lv[id].secret);

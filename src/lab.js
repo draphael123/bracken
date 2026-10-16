@@ -496,8 +496,12 @@ function princeTarget(BK, boss, A, P) {
   for (const p of lamps) if (!p.lit && Math.abs(p.x - P.x) < 24) p.labTried = (p.labTried || 0) + 1;
   const cold = lamps.filter(p => !p.lit && !((p.labTried || 0) > 180));
   if (cold.length && (cold.length * 2 > lamps.length || Math.abs(boss.x - P.x) > 120)) { const lp = cold.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; return { x: lp.x + (P.x < lp.x ? -12 : 12), at: lp.x }; }
-  const set = BK.props().find(p => p.t === 'timber' && p.tomb && !p.broken && boss.x > p.x0 * 16 && boss.x < (p.x1 + 1) * 16 && Math.abs(boss.y - A.floor) < 8);
-  if (set) { const side = Math.sign((set.x0 + set.x1 + 1) * 8 - set.x) || 1; return { x: set.x - side * 14, at: set.x }; }
+  /* (claude/undercrown2) HIS ROOF IS SLABS ON TWO POSTS: the slab he stands under, and the post on HIS side of it (that end swings down on
+     him), struck from outside the span; the other post if that one is down */
+  const slabs = [...new Set(BK.props().filter(p => p.t === 'timber' && p.tomb && p.slab && p.slab.state === 'up').map(p => p.slab))];
+  const sb = slabs.find(s => boss.x > s.x0 * 16 + 4 && boss.x < (s.x1 + 1) * 16 - 4 && Math.abs(boss.y - A.floor) < 8);
+  if (sb) { const mid = (sb.x0 + sb.x1 + 1) * 8, want = boss.x < mid ? -1 : 1, posts = sb.posts.filter(q => !q.broken), post = posts.find(q => q.end === want) || posts[0];
+    if (post) return { x: post.x + post.end * 13, at: post.x }; }
   return null;
 }
 /* THE BOSSES A RUN OPENS. One so far: the Queen's Lance, whose plate turns every blade until he is committed - and whose

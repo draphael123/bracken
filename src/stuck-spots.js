@@ -126,12 +126,12 @@ export const STUCK = {
   ],
   /* (claude/stuckguides) UNDERCROWN: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   undercrown: [
-    { id: 'uc-timber-30-23', zone: [18, 14, 42, 28], at: [30, 23], glint: 'stall', done: ['timber', 30, 23, 'broken'], line: 'THE TIMBER SET: BRING THE ROOF DOWN, CLIMB THE MOUND' },
-    { id: 'uc-timber-62-33', zone: [48, 24, 90, 38], at: [62, 33], glint: 'stall', done: ['timber', 62, 33, 'broken'], line: 'THE TIMBER SET: BRING THE ROOF DOWN, CLIMB THE MOUND' },
-    { id: 'uc-timber-48-99', zone: [36, 90, 60, 104], at: [48, 99], glint: 'stall', done: ['timber', 48, 99, 'broken'], line: 'THE TIMBER SET OVER THE SPAN: CUT IT, CLIMB THE MOUND' },
-    { id: 'uc-timber-37-111', zone: [26, 104, 50, 116], at: [37, 111], glint: 'stall', done: ['timber', 37, 111, 'broken'], line: 'THE TIMBER SET: CUT IT, AND THE MOUND IS YOUR STEP' },
-    { id: 'uc-timber-59-111', zone: [52, 104, 70, 116], at: [59, 111], glint: 'stall', done: ['timber', 59, 111, 'broken'], line: 'THE CRACKED TIMBER SET: CUT IT, CLIMB THE MOUND' },
-    { id: 'uc-timber-44-140', zone: [34, 132, 58, 144], at: [44, 140], glint: 'stall', done: ['timber', 44, 140, 'broken'], line: 'THE LAST DRIFT: CUT THE TIMBER SET, CLIMB THE MOUND' },
+    /* (claude/undercrown2) THE SLABS: every post the way on needs - the adit's (the only way up), the flooded level's two (a ramp, then the bridge), the stope's hung walkway */
+    { id: 'uc-slab-adit', zone: [2, 19, 39, 24], at: [23, 23], glint: 'stall', done: ['timber', 23, 23, 'broken'], line: 'THE POST UNDER THE SLAB: CUT IT AND THE ROOF SWINGS DOWN' },
+    { id: 'uc-slab-flood', zone: [28, 47, 60, 55], steps: [
+      { zone: [53, 50, 60, 55], at: [45, 53], done: ['timber', 45, 53, 'broken'], line: 'THE NEAR POST: ITS END OF THE SLAB COMES DOWN AS A RAMP' },
+      { zone: [28, 47, 46, 53], at: [29, 53], done: ['timber', 29, 53, 'broken'], line: 'THE FAR POST, FROM THE RAMP\'S TOP: BOTH DOWN IS A BRIDGE' } ] },
+    { id: 'uc-slab-stope', zone: [22, 104, 44, 112], at: [39, 111], glint: 'stall', done: ['timber', 39, 111, 'broken'], line: 'THE HUNG WALKWAY\'S NEAR POST: CUT IT, IT SWINGS DOWN TO YOU' },
   ],
   /* (claude/stuckguides) FIELDS: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   fields: [
