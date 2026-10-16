@@ -340,23 +340,35 @@ async function main() {
   const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'], LONG = ['talk', 'plates', 'bossfix', 'boss'];
   const units = [];   /* in report order */
   for (const sc of SCOPES) if (want(sc)) { if (sc === 'talk') for (const h of HEROES) units.push({ sc, heroes: [h], label: 'talk[' + h + ']' }); else units.push({ sc, label: sc }); }
+  /* RECYCLE THE PAGE EVERY BATCH OF LOADS (10-16 leakfix): BK.load leaks ~40-65 MB of NATIVE memory per call (not the JS heap), so one page doing a whole
+     scope's loads (talk: 37 per hero, boss/plates: ~48) grew past 3 GB (a boss level costs ~250 MB: 90 drawn frames each; a talk load ~60 MB). The long scopes now run in batches of
+     levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB, and the
+     page is closed and reopened between batches. Same levels, same checks, same order in the report; each batch's issues and shots are merged below like any other part. */
+  const BATCH_OF = { boss: 4, plates: 6, talk: 12 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
+  let allIds = await pg.evalp("import('/src/level.js').then(m => m.LEVELS.filter(l => (!l.hidden || l.secret) && l.id !== 'custom').map(l => l.id))", 60000);
+  if (input.levels) allIds = allIds.filter(id => input.levels.includes(id));
+  for (let k = units.length - 1; k >= 0; k--) { const u = units[k]; if (!BATCHED.includes(u.sc) || allIds.length <= batchOf(u.sc)) continue;
+    const BATCH = batchOf(u.sc), n = Math.ceil(allIds.length / BATCH), parts = [];
+    for (let b = 0; b < n; b++) parts.push({ ...u, levels: allIds.slice(b * BATCH, (b + 1) * BATCH), recycle: true, label: u.label + ' ' + (b + 1) + '/' + n });
+    units.splice(k, 1, ...parts); }
   const jobs = [];    /* a job is a run of units on one page */
-  for (const sc of ['boss', 'plates']) units.filter(u => u.sc === sc).forEach(u => jobs.push([u]));
-  units.filter(u => u.sc === 'talk').forEach(u => jobs.push([u]));
+  for (const sc of ['boss', 'plates']) { const us = units.filter(u => u.sc === sc); if (us.length) jobs.push(us); }
+  for (const h of HEROES) { const us = units.filter(u => u.sc === 'talk' && u.heroes[0] === h); if (us.length) jobs.push(us); }
   units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
   const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
   /* TWO pages, not five (10-16 leakfix): every page is its own headless Chrome and a talk page grows to 1.5-3 GB of baked level canvases, so five
      at once peaked near 9 GB on a 16 GB PC (the 14:53 hang). Scopes are independent pages with their own timers; fewer at a time only makes the whole run longer. */
   const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 2));
-  const pages = [pg]; for (let k = 1; k < nPages; k++) pages.push(await openPage());   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
-  const closeAll = async () => { for (const p of pages) { try { await p.close(); } catch {} } };
+  const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openPage() });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
+  const closeAll = async () => { for (const slot of pages) { try { await slot.p.close(); } catch {} } };
   const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
-  const worker = async p => { for (let job; (job = queue.shift());) for (const u of job) { const ts = Date.now(); let part;
-    try { part = await p.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify({ ...input, only: [u.sc], talkHeroes: u.heroes, maxShots: shotBudget }) + ')', SCOPE_TIMEOUT_S * 1000); }
+  const worker = async slot => { for (let job; (job = queue.shift());) for (const [ui, u] of job.entries()) { const ts = Date.now(); let part, p = slot.p;
+    try { part = await p.evalp('(' + pageTextFit.toString() + ')(' + JSON.stringify({ ...input, only: [u.sc], talkHeroes: u.heroes, levels: u.levels || input.levels, maxShots: shotBudget }) + ')', SCOPE_TIMEOUT_S * 1000); }
     catch (e) { console.error('\nTEXTFIT SCOPE "' + u.label + '" FAILED after ' + Math.round((Date.now() - ts) / 1000) + 's (limit ' + SCOPE_TIMEOUT_S + 's; TEXTFIT_SCOPE_TIMEOUT changes it): ' + e.message);
       await closeAll(); process.exit(1); }
     part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); shotBudget = Math.max(0, shotBudget - part.shots.length);
-    results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's'); } };
+    results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's');
+    if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage(); } } };
   await Promise.all(pages.map(worker));
   const r = { issues: [], stats: { frames: 0, texts: 0, screens: {} }, shots: [] }, shotUrls = [], seen = new Set();
   for (const u of units) { const part = results.get(u);
