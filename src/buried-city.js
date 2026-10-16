@@ -354,7 +354,7 @@ export function buildBuriedCity({ painter, T, TS }) {
   ground(540, 584, LO); roof(540, 584, 32);
   plat('pipe', 541, 545, 41); plat('pipe', 547, 551, 38); plat('pipe', 559, 563, 41); plat('pipe', 565, 569, 38); plat('balcony', 575, 579, 41);
   drift(562, 564, LO);                                                             /* a drift in the foundry yard, by the elite */
-  construct(556, LO - 1, 'foundry', { elite: true, gate: 558 }); slinger(561, 40, 'foundrySling');   /* (claude/bc4fix: HIS GATE at 558, clear of the pipes - over them there was a way past him) */
+  construct(553, LO - 1, 'foundry', { elite: true, gate: 558 }); slinger(561, 40, 'foundrySling');   /* (claude/bc4fix: HIS GATE at 558, clear of the pipes - over them there was a way past him) */
   block(558, 558, 33, 33); cache(576, LO, 558);   /* (the yard is eleven rows tall and a gate is ten: a lintel over it, so no hero (fourteen px) slips over its top under the roof) */   /* THE QUARTER'S EXAM: an ELITE construct with the drift at his back (held in it, you are his mark) and a slinger over it */
   /* THE FOUNDRY'S FLOOR-GATE (the TEACH of the trap hall): a small OPEN floor-gate in the yard's street (570-572): a drop of three rows onto the foundry's floor -
      a quarter of you and back to the lip (src/buried-city-hands.js dropBack). Its lever on the west lip shuts it and the sand bridges it */
@@ -470,7 +470,7 @@ export function buildBuriedCity({ painter, T, TS }) {
      after it is the last before the king */
   block(821, 821, 10, 26); roof(822, 843, 21); ground(821, 821, TH); ground(844, 844, TH);   /* (claude/buriedcity4: the courtyard's and the throne room's doors had a one-column hole in the floor down out of the world since BC3 - floored) */                                     /* (the courtyard's east wall over the door; the hall's roof) */
   ground(822, 825, TH); sea(826, 838, TH); ground(839, 843, TH); interiors.push([822, 843, 22, TH - 1, 'bcAnte']);
-  sign(822, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
+  sign(823, TH - 1, 'STRIKE THE GLASS: THE SAND RISES. EACH SLAB CRUMBLES ON ITS TIMER.');
   glass('ante', 824, TH - 1, 7);
   tplat('ante', 827, 829, 31, 3.4); tplat('ante', 831, 833, 30, 4.6); tplat('ante', 835, 837, 31, 5.8);
   cache(839, TH, 821);   /* (claude/bc4fix) the courtyard elite's purse: by the throne room's door, past his gate and the slabs */

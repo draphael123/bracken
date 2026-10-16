@@ -472,7 +472,8 @@ export function updateBloodKnight(e, dt, c) {
   if (e.mode === 'wrench' || e.mode === 'reel' || e.mode === 'spent') { if (e.modeT <= 0) bkGuard(e, c); return; }
   if (e.mode === 'drain') {   /* (claude/dk2b) HIS SIGNATURE: he drinks from you - near him, a red thread and your blood into him, a draught a drainTick; struck drainBreak times it BREAKS */
     if ((e.drainHits || 0) >= S.drainBreak) { e.mode = 'reel'; e.modeT = S.reelT; e.open = S.reelT; e.drainBroken = (e.drainBroken || 0) + 1; c.say('THE DRAIN BREAKS: HE IS OPEN', '#8fd160'); c.sound('crack'); c.shake(4); return; }
-    e.drainTickT = (e.drainTickT ?? S.drainTick) - dt; e.drinking = !P.dead && Math.abs(P.x - e.x) < S.drainR && P.y > floor - 60;
+    /* (batch95 integ: was floor - 60, a height the room cannot supply - a jump tops out at 51.2 and the arena has no tier over 48 - so the drain had no answer by leaping; 40 is cleared by a plain jump, A12) */
+    e.drainTickT = (e.drainTickT ?? S.drainTick) - dt; e.drinking = !P.dead && Math.abs(P.x - e.x) < S.drainR && P.y > floor - 40;
     if (e.drainTickT <= 0) { e.drainTickT = S.drainTick; if (e.drinking) { const r = c.hit(e.x, UNB.dmg.bkDrain, true, 'BLOOD SURGE'); if (r !== false && r !== 'blocked') { const h = UNB.dmg.bkDrain * S.drainHeal; e.hp = Math.min(e.maxHp, e.hp + h); e.healed = (e.healed || 0) + h; e.drank = (e.drank || 0) + 1; c.sound('drain'); } } }
     if (e.modeT <= 0) { e.mode = 'rest'; e.modeT = 0.4; e.drinking = false; } return; }
   if (e.mode === 'crescent') { if (e.modeT > 0) return;
