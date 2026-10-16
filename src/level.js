@@ -2755,6 +2755,7 @@ function undercrown() {
 
   return {
     W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 4, y: 23 }, pools, falls: [], moversExtra: movers, interiors,
+    waterHurts: true,   /* (claude/undercrown2, A10) a fall in the dead water costs health and hands you back to the last dry ground - not a death */
     timber: true, slabs, reachSlabs: [{ slab: 'adit', hinge: 1 }, { slab: 'flood', flat: true }, { slab: 'stope', hinge: 1 }, { slab: 'drift', hinge: 1 }],   /* the slabs the way on needs, cut as the signs say (src/reachcore.js) */
     hasCryst: true, dark: 0.14, edgeLit: 'rgba(255,226,176,0.9)', underground: true,
     duskStart: -1, duskLen: 1, music: 'barrows', night: true, glowNight: true, nightA: 0.12,

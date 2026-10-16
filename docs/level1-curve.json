@@ -286,17 +286,17 @@
   "lostPct": 322
  },
  "undercrown": {
-  "hash": "e9f4c40b9d34",
+  "hash": "2ee42a8043cc",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 26,
-  "deaths": 9,
-  "kills": 92,
-  "lifts": 86,
+  "hits": 29,
+  "deaths": 4,
+  "kills": 85,
+  "lifts": 92,
   "walked": 100,
   "bare": true,
-  "lostPct": 345
+  "lostPct": 221
  },
  "fields": {
   "hash": "9bbe759e073b",

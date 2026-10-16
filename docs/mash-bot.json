@@ -4394,63 +4394,7 @@
   }
  },
  "undercrown": {
-  "hash": "e9f4c40b9d34",
-  "level": {
-   "knight": {
-    "deaths": 4,
-    "minHpPct": 0,
-    "hpLostPct": 420,
-    "hits": 6,
-    "walked": 100,
-    "lifts": 40,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9600,
-    "kills": 22,
-    "heroLevel": 12
-   },
-   "warden": {
-    "deaths": 3,
-    "minHpPct": 0,
-    "hpLostPct": 320,
-    "hits": 8,
-    "walked": 100,
-    "lifts": 40,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9600,
-    "kills": 15,
-    "heroLevel": 12
-   },
-   "pyro": {
-    "deaths": 3,
-    "minHpPct": 0,
-    "hpLostPct": 316,
-    "hits": 8,
-    "walked": 100,
-    "lifts": 39,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 9582,
-    "kills": 15,
-    "heroLevel": 12
-   }
-  },
+  "hash": "2ee42a8043cc",
   "boss": {
    "boss": "prince",
    "wins": 0,
@@ -4549,6 +4493,74 @@
      "chip": []
     }
    ]
+  },
+  "carried": {
+   "from": "e9f4c40b9d34",
+   "parts": [
+    "boss"
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 218,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 41,
+    "held": 1,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "cart": 2
+    },
+    "machines": true,
+    "frames": 11149,
+    "kills": 30,
+    "heroLevel": 16
+   },
+   "warden": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 215,
+    "hits": 13,
+    "walked": 100,
+    "lifts": 41,
+    "held": 1,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "cart": 2
+    },
+    "machines": true,
+    "frames": 11744,
+    "kills": 25,
+    "heroLevel": 16
+   },
+   "pyro": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 215,
+    "hits": 12,
+    "walked": 100,
+    "lifts": 38,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 3,
+    "rides": 1,
+    "pulls": 1,
+    "ridden": {
+     "cart": 1
+    },
+    "machines": true,
+    "frames": 11547,
+    "kills": 28,
+    "heroLevel": 16
+   }
   }
  },
  "fields": {
