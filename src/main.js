@@ -6707,7 +6707,7 @@ const DRONE_HIT = 0.55;
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
 Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.55 /* (claude/crusader: 1.4; the bot reads his new tells well - 83% n=18 with flasks) */, greathound: 1.5, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 1.45 /* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
 BOSS_HIT.bloodknight = 0.9;
-BOSS_HIT.captain = 0.6;   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
+BOSS_HIT.captain = 1.2;   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
   { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
@@ -12612,7 +12612,7 @@ function updateWatch(e, dt) {
      THE SKY    in his fight the lightning marks the deck BETWEEN you: let him walk into the mark and he is STRUCK: OPEN x1.5 ('reel').
    After either opening, a TOLD WARD (CAP2.ward s, the pale shell, WARDED): every blow lands at 0.4 and neither verb takes him again (B3).
    Never totally invulnerable (B15): 0.4 is the floor everywhere outside his openings. */
-const CAP2 = { hpK: 1.45, lead: 1.35, leadP3: 1.15, brace: 118, flat: 2.6, flatP3: 2.1, struck: 1.7, ward: 3, lineGrab: 7, lineTaken: 18 };
+const CAP2 = { hpK: 1.1, turned: 1.6, lead: 1.35, leadP3: 1.15, brace: 118, flat: 2.6, flatP3: 2.1, struck: 1.7, ward: 3, lineGrab: 7, lineTaken: 18 };
 function capLines() { const A = L.arena; return (A && A.lines || []).map(x => (x + 1) * TS); }
 /* which line he makes for: the nearest one you are not holding */
 function capLineFor(e) { let best = null, bd = 1e9; for (const lx of capLines()) { if (Math.abs(P.x - lx) < CAP2.lineTaken && !P.dead) continue; const d = Math.abs(lx - e.x); if (d < bd) { bd = d; best = lx; } } return best; }
@@ -12705,7 +12705,7 @@ function capCut(e, reach, dmg) { // a cut of his, and what the shield does about
   const d = P.x - e.x;
   if (P.dead || Math.sign(d) !== e.face || Math.abs(d) > reach || Math.abs(P.y - e.y) > 32) return;
   const res = damagePlayer(e.x, dmg);
-  if (res === 'blocked') { e.mode = 'reel'; e.modeT = 0.9; e.stagger = 0.9; number(e.x, e.y - 42, 'TURNED', '#8fd160'); }
+  if (res === 'blocked') { e.mode = 'reel'; e.modeT = CAP2.turned; e.openFor = CAP2.turned; e.stagger = CAP2.turned; number(e.x, e.y - 42, 'TURNED: CUT HIM', '#8fd160'); }   /* (claude/hurricane2) a cut taken on the shield throws him off his stroke: OPEN x1.5 (the knight's answer: his pistols and grapnel no shield turns) */
   else if (res === 'hit') { P.vx = e.face * 280; P.vy = -140; }
 }
 function capShoot(e) {

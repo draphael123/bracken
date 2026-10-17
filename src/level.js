@@ -5303,7 +5303,7 @@ function theHurricane() {
   // her after hold is stove in at 475: the store opens on the sea, and the stern's last breach is swum or flown
   breach(475, 500); air(475, 475, 21, 26);
   // CROSSING 4: A ROPE SWING ONTO HER MIZZEN, and her topmast breaking behind you
-  net(484, 485, 5, 33); ent('deco', 484, 27, { kind: 'mastTall', v: 0 });
+  net(484, 485, 5, 33);   /* (ART: her mizzen itself, from the bar to its top, is the art lane's: no stock mastTall reaches the bar) */
   for (const [x, ph] of [[478, 0.2], [490, 0.6]]) ent('mover', x, 21, { len: 4, vert: true, rise: 1.5, period: 3.6, ph, hatch: true });   /* her after hatch covers: out of the store and onto her mizzen without a swim */   /* her mizzen stands out of the stove-in stern, ratlines to the water */
   movers.push({ kind: 'swing', px: 477 * TS + 8, py: 3 * TS, arm: 112, x: 476 * TS, y: 14 * TS, w: 32, h: 8, period: 3.4, phase: 0.2, deck: 16 });
   ent('sign', 471, 14, { text: 'TAKE THE SWING. HER MIZZEN CATCHES YOU. RUN HER TOPMAST AND DO NOT STOP.' });
