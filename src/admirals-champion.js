@@ -30,6 +30,10 @@
 // FIERCER IN PHASE TWO: quicker between blows (CH.gap). Every tell at least half a second.
 // PURE: no DOM, no main.js. The world is a context `c` (src/admirals-champion-hands.js binds it). chPlan is the boss lab's HUMAN bot (src/lab.js).
 
+/* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. The bot gaps are fixed first (the bowman's backflips and
+   knife openings in chPlan); this is what is left. Heroes not listed are 1 / 1. */
+export const TUNE = { knight: { in: 1, out: 1.15 }, warden: { in: 0.9, out: 1 }, pyro: { in: 1.2, out: 1 }, paladin: { in: 0.85, out: 1.1 }, ranger: { in: 0.65, out: 2.1 } };
+export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const CH = {
   hp: 2300, w: 24, h: 44, markH: 70,
   gunHot: 10, plate: 0.5, ward: 0.4, stuckMul: 1.5, flatMul: 2, flatCap: 0.09, flatT: 3.0, wardT: 3.0, stuckT: 1.6, stuckAT: 1.4,
@@ -271,10 +275,11 @@ export function landed(e, S) { S.n.landed++; }
    the chain; walks up the tilting deck. THE RULE: when a deck gun is cool and he stands in its line on its deck, it goes to the breech and strikes it; flat,
    it cuts him hard; warded, it waits off him. On guard it cuts his plate now and then (a human does).
    s = { P: { x, y, face, ground, atk }, e, S, reach, shield, t, rng, mem, v2, hero, rest, noRoll, guns: [{ x, y, cool, aim }] } -> { gx, face, atk, jump, dodge, block, down, why } */
-export const PLAN = { react: 0.25, miss: 0.12, gunSeen: 0.5, chip: 0.5 };
+export const PLAN = { react: 0.25, miss: 0.12, gunSeen: 0.5, chip: 0.5, kite: 112, knife: 18 };
 export function chPlan(s) { const o = chPlan0(s); if (s.S) s.S.botWhy = o.why; return o; }
 function chPlan0(s) {
-  const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, why: '' };
+  const { P, e, S } = s, G = S.G, reach = s.hero === 'ranger' && (chOpen(e) || committed(e)) ? PLAN.knife : s.reach,   /* (tune) the bowman goes in with the KNIFE (it lands 17 out) for his openings and his recoveries, and is off him again after */
+    out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
   const seenFor = (key, d = s.v2 ? 0 : PLAN.react) => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= d; };
@@ -294,7 +299,7 @@ function chPlan0(s) {
     const miss = s.v2 ? false : roll('m' + S.act + e.mode, PLAN.miss), seen = seenFor('a' + S.act + e.mode);
     if (seen && !miss) {
       if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap) { const d = Math.abs(P.x - S.leap.x1);
-        if (d < CH.landR + 24) { const to = clamp(S.leap.x1 + (Math.sign(P.x - S.leap.x1) || 1) * (CH.landR + 40)); out.gx = Math.abs(to - S.leap.x1) < CH.landR + 10 ? clamp(S.leap.x1 - (Math.sign(P.x - S.leap.x1) || 1) * (CH.landR + 40)) : to; out.why = 'off the leap\'s mark'; return out; }
+        if (d < CH.landR + 24) { const to = clamp(S.leap.x1 + (Math.sign(P.x - S.leap.x1) || 1) * (CH.landR + 40)); out.gx = Math.abs(to - S.leap.x1) < CH.landR + 10 ? clamp(S.leap.x1 - (Math.sign(P.x - S.leap.x1) || 1) * (CH.landR + 40)) : to; out.why = 'off the leap\'s mark'; if (s.hero === 'ranger' && P.ground) out.dodge = true; return out; }   /* (tune) and the bowman backflips out of it */
         out.gx = P.x; out.face = Math.sign(S.leap.x1 - P.x) || 1; out.why = 'wait for him to land'; return out; }
       if ((e.mode === 'hookTell' || e.mode === 'hook') && same) { if (S.hook && !S.hook.back) { const ad = Math.abs(S.hook.x - P.x);
           if (ad < 120 && P.ground) { if (s.noRoll || rng() < 0.7) { out.jump = true; out.gx = P.x; out.why = 'jump the chain'; } else { out.dodge = true; out.gx = clamp(P.x + side * 30); out.why = 'roll the chain'; } return out; } }
@@ -312,6 +317,7 @@ function chPlan0(s) {
         if (e.mode === 'thrust' && P.ground) { if (s.noRoll) out.jump = true; else out.dodge = true; out.gx = clamp(P.x - side * 30); out.why = 'roll through the thrust (late)'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'wait for the thrust\'s last beat'; return out; }
       if ((e.mode === 'comboTell' || e.mode === 'combo') && dx < CH.comboReach + 24 && same) {
+        if (s.hero === 'ranger' && P.ground) { out.dodge = true; out.gx = away(CH.comboReach + 60); if (Math.abs(out.gx - kx) < dx + 20) out.gx = clamp(kx - side * 50);   /* (cornered at the hull's end: the flip goes THROUGH him, not into the harbour) */ out.face = Math.sign(kx - P.x) || 1; out.why = 'backflip the combo'; return out; }   /* (tune) she has no guard: the backflip is her answer, as a player's */
         if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the cut'; return out; }
         out.gx = away(CH.comboReach + 34); out.why = 'back off the combo'; return out; }
     }
@@ -329,6 +335,8 @@ function chPlan0(s) {
   if (s.rest) { out.gx = away(CH.comboReach + 40); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
   if (airborne(e)) { out.gx = P.x; out.why = 'he is in the air'; return out; }
   /* 5. THE DUEL: in on his recovery; on guard, chip his plate now and then */
+  const kite = s.hero === 'ranger' && !committed(e);   /* (tune) a bowman keeps off his reach (the combo's 60 + his half width) between his blows and shoots */
+  if (kite && same && dx < PLAN.kite + 30 && Math.abs(away(PLAN.kite + 14) - kx) > dx + 20) {   /* (and only while there is deck behind her to kite along) */ out.face = Math.sign(kx - P.x) || 1; out.gx = dx < PLAN.kite ? away(PLAN.kite + 14) : P.x; out.atk = P.atk < 0 && dx > 60; out.why = 'kite: shoot from off his reach'; return out; }
   if (!same) { out.gx = hullOf(G, kx) === myHull ? clamp(kx + side * (hitR - 6)) : P.x; out.why = 'on the other hull: let him come'; return out; }
   if (committed(e)) { if (dx < hitR) { swing(kx); out.gx = P.x; out.why = 'cut him in his recovery'; return out; } out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in on his recovery'; return out; }
   if (dx > hitR + 26) { out.gx = clamp(kx + side * (hitR - 6)); out.face = Math.sign(kx - P.x) || 1; out.why = 'in to him'; return out; }

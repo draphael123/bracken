@@ -58,7 +58,7 @@ export function makeChampionHands(ctx) {
   function world(e) {
     const hitOne = (pp, bx, d, name, o) => { let any = false; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
         if (bx && !ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P))) return; if (o.ground && !P.ground) return; if (keyed(pp, o.key || name)) return;
-        const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, blow: name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) { any = true;
+        const hp0 = P.hp; hurt(name, () => ctx.damagePlayer(e.x, d * ACM.tuneOf(ctx.heroId && ctx.heroId()).in, { who: e, name, blow: name, unblockable: !o.blockable, noKnock: !!o.noKnock })); if (P.hp < hp0) { any = true;
           if (S.landedOn) { S.landedOn.push({ name, dx: R(P.x - e.x), dy: R(P.y - e.y), ground: !!P.ground, dodge: +(P.dodge || 0).toFixed(2), mode: e.mode, bot: S.botWhy || '' }); if (S.landedOn.length > 40) S.landedOn.shift(); } } }); return any; };
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), time: () => ctx.time(),
@@ -98,7 +98,8 @@ export function makeChampionHands(ctx) {
   H.onBall = (e, b) => { if (!S || !e || e.t !== 'champion') return false; const r = ACM.cannonHit(e, S, world(e)); if (r === 'air') return false; if (r === 'flat') { ctx.shake(7); ctx.hitstop && ctx.hitstop(0.12); for (const g of ctx.props()) if (g.t === 'cannon' && g.deck && g.x > S.G.x0 - 16 && g.x < S.G.x1 + 16) g.cool = Math.max(g.cool || 0, CH.gunHot); ctx.number(e.x, e.y - 96, 'HIS GUNS ARE HOT: THEY WILL NOT SPEAK AGAIN A WHILE', '#9aa39a'); }   /* (claude/flotilla2 tune) a knockdown heats every gun on the lashings: one knockdown a gun-cycle, not two */ return true; };
   /* A BLOW ON HIM: never nothing (B15) - his plate CH.plate, his ward CH.ward, his recovery x1, stuck x CH.stuckMul, flat x CH.flatMul (one knockdown CH.flatCap of him at most) */
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
-    const r = ACM.takeAt(e, S);
+    const r = ACM.takeAt(e, S), tn = ACM.tuneOf(ctx.heroId && ctx.heroId()).out; dmg *= tn;
+    if (typeof window !== 'undefined' && window.BK && window.BK.chTally) { const T = window.BK.chTally, k = (e.mode || '?') + '|' + (blow || '?') + '|x' + r.k; T[k] = T[k] || [0, 0]; T[k][0]++; T[k][1] += dmg * r.k; }   /* (tune diag) */
     if (r.k <= 0) return 0;
     if (r.word) { S.n[S.ward > 0 ? 'warded' : 'plated']++; e.guardFx = 0.25; e.guardWord = r.word; ctx.turned(e, P.x, r.word, { stop: false }); }
     if (ACM.chFlat(e)) { const cap = e.maxHp * CH.flatCap, d = Math.min(dmg * r.k, Math.max(0, cap - S.taken)); S.taken += d;
@@ -107,7 +108,7 @@ export function makeChampionHands(ctx) {
   H.barName = e => "THE ADMIRAL'S CHAMPION" + (ACM.chFlat(e) ? '  KNOCKED FLAT' : ACM.chStuck(e) ? (e.mode === 'stuck' ? '  BLADE STUCK' : '  ANCHOR STUCK') : S && S.ward > 0 ? '  WARDED' : S && S.ph === 2 ? '  THE ANCHOR' : '');
   H.end = e => { if (S && e && e.t === 'champion' && (!e.alive || e.hp <= 0)) S.dead = { x: e.x, y: S.G.floorY, f: e.face || 1, t0: null, anchor: !!S.anchor };
     if (S) { S.hook = null; S.hooked = null; S.sweep = null; S.tilt = null; S.leap = null; if (GAP.open) setGap(false, true); } BOSS_PHASE.champion = 1; };
-  H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, gap: GAP.open, tilt: S.tilt ? { ...S.tilt } : null,
+  H.read = () => S && { why: S.botWhy, mode: ctx.boss && ctx.boss.mode, ph: S.ph, cycle: S.cycle, n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, open: ctx.boss ? ctx.boss.open : 0, gap: GAP.open, tilt: S.tilt ? { ...S.tilt } : null,
     hook: !!S.hook, hooked: !!S.hooked, leap: S.leap ? R(S.leap.x1) : null, anchor: !!S.anchor, hurt: { ...(S.hurt || {}) }, landedOn: (S.landedOn || []).slice(), G: S.G };
 
   /* ---------- DRAWING (GREYBOX: src/redraw/champion_art.js) ---------- */

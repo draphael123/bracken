@@ -1538,7 +1538,7 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
-        if(S&&P.y>S.G.floorY+8){k.up=true;if(P.climb){k.left=k.right=false;}}   /* out of the harbour: up the hull's net */
+        if(S&&P.y>S.G.floorY+8){k.up=true;if(P.climb){k.left=k.right=false;}else if(P.ground&&(P.labNetF===undefined||f-P.labNetF>20)){BK.press('jump');P.labNetF=f;P.labJump=14;}}   /* (flotilla2tune) standing on the net a step below the deck lip (the harbour hauls only past 20 px): a player hops up onto the deck */   /* out of the harbour: up the hull's net */
         if(pl.down)k.down=true;if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(chOpen(boss)&&!wasOpen)opened++;wasOpen=chOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:chOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
