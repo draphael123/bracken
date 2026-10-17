@@ -84,6 +84,11 @@ export function makeChampionHands(ctx) {
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - 96, "THE ADMIRAL'S CHAMPION: THE FLEET'S LAST WORD", '#ffd36b'); }
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 130, 'HIS PLATE TURNS A BLADE. HIS OWN GUNS WILL PUT HIM DOWN', '#ffd36b'); }
     if (GAP.retry && S) setGap(false);
+    /* THE HARBOUR IN THE LASHING (design standard A10): a hero who goes in costs the hazard's share of his health and is HAULED OUT onto the deck he fell from - never a
+       long swim in a duel (the told hazard; the tilt is what puts you there) */
+    for (const pp of ctx.players) { if (pp.dead || !(pp.y > S.G.floorY + 20) || pp.x < S.G.gap[0] - 20 || pp.x > S.G.gap[1] + 20) continue;
+      const k = (pp.vx || 0) >= 0 && pp.x < S.G.gapMid ? 0 : pp.x < S.G.gapMid ? 0 : 1, to = k === 0 ? S.G.gap[0] - 34 : S.G.gap[1] + 34;
+      ctx.hazard(pp, to, S.G.floorY); S.n.hauled = (S.n.hauled || 0) + 1; ctx.number(to, S.G.floorY - 40, 'HAULED OUT OF THE HARBOUR', '#bfe6f5'); }
     ACM.stepChampion(e, S, dt, heroes(), world(e));
     e.phase = S.ph;
     if (WORD && (!/Tell$/.test(e.mode) || ctx.time() - WORD.t > 2)) WORD = null;

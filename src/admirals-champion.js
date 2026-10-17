@@ -88,7 +88,7 @@ export function newFight(G) {
   return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, ward: 0, taken: 0, behindT: 0, otherT: 0, cuts: 0, cutsLeft: 0, told: {}, why: '',
     thrust: null, leap: null, hook: null, hooked: null, sweep: null, tilt: null, gapT: 0, anchor: false,
     n: { cycles: 0, flats: 0, stucks: 0, wards: 0, plated: 0, warded: 0, landed: 0, glanced: 0, combos: 0, cuts: 0, slams: 0, slamHits: 0, thrusts: 0, leaps: 0, landHits: 0,
-      sweeps: 0, sweepHits: 0, hooks: 0, hooked: 0, tilts: 0, tiltHits: 0, slid: 0, gapOpens: 0, moves: {} } };
+      sweeps: 0, sweepHits: 0, hooks: 0, hooked: 0, tilts: 0, tiltHits: 0, slid: 0, gapOpens: 0, hauled: 0, moves: {} } };
 }
 export const fPhase = e => (e.hp <= e.maxHp * CH.p2 ? 2 : 1);
 export const chFlat = e => !!e && e.mode === 'flat' && (e.open || 0) > 0;
