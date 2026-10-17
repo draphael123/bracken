@@ -25,7 +25,7 @@ try {
   await pg.evalp(`(async()=>{ await BK.WN.loadUpdates(); try { localStorage.removeItem(BK.WN.SEEN_KEY); } catch {} BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true }); BK.ui.pressCard = false; BK.state = 'title'; BK.step(150); return 1; })()`, 60000);
   const REC = `(()=>{ window.__textRec = []; BK.step(2); const r = window.__textRec.filter(x => x.kind === 'text').map(x => ({ s: x.s, x0: x.x0, y0: x.y0, w: x.w, h: x.h })); window.__textRec = null; return r; })()`;
   const newest = await pg.evalp('BK.WN.shortDate(BK.WN.newestDate())');
-  assert.equal(newest, '16 OCT', 'the newest entry is 16 OCT, shown as ' + newest);
+  assert.equal(newest, '17 OCT', 'the newest entry is 17 OCT, shown as ' + newest);
   assert.ok((await pg.evalp('BK.ui.titleTop()')).includes("WHAT'S NEW"), "the title board has the WHAT'S NEW row");
   let r = await pg.evalp(REC);
   assert.ok(r.some(x => x.s === newest), "the row shows the newest date: " + r.map(x => x.s).join(' / '));
@@ -38,8 +38,8 @@ try {
   assert.equal(await pg.evalp('BK.WN.hasNew()'), false, 'opening it clears the dot');
   r = await pg.evalp(REC);
   assert.ok(r.some(x => x.s === newest), 'the newest date heads the list: ' + r.map(x => x.s).join(' / '));
-  /* (batch96) the newest date moved to 16 OCT and the pinned newest line to batch 96's 'The Cistern Queen returns' line (a deliberate new batch entry). (batch95) the pinned newest line moved to batch 95's 'Deep Rails: the Spoil Pits' line (a deliberate new batch entry; the newest date stays 15 OCT). (batch93) the newest date moved to 15 OCT and the pinned newest line to batch 93's 'New hero: the Ranger' line (a deliberate new batch entry). (batch92) the newest date moved to 14 OCT and the pinned newest line to batch 92's 'Sealed Pyramid rebuilt' line. (batch89) the pinned newest line moved to batch 89's SEALED PYRAMID line and the newest date to 13 OCT. (batch88) the pinned newest line moved from batch 87's Road Wardens line to batch 88's Berserker line; the newest date stays 12 OCT */
-  assert.ok(r.some(x => /THE CISTERN QUEEN RETURNS/i.test(x.s)), 'and its lines are there');
+  /* (batch98) the newest date moved to 17 OCT and the pinned newest line to batch 98's 'Owl Reeve and False Abbot return' line (a deliberate new batch entry). (batch96) the newest date moved to 16 OCT and the pinned newest line to batch 96's 'The Cistern Queen returns' line (a deliberate new batch entry). (batch95) the pinned newest line moved to batch 95's 'Deep Rails: the Spoil Pits' line (a deliberate new batch entry; the newest date stays 15 OCT). (batch93) the newest date moved to 15 OCT and the pinned newest line to batch 93's 'New hero: the Ranger' line (a deliberate new batch entry). (batch92) the newest date moved to 14 OCT and the pinned newest line to batch 92's 'Sealed Pyramid rebuilt' line. (batch89) the pinned newest line moved to batch 89's SEALED PYRAMID line and the newest date to 13 OCT. (batch88) the pinned newest line moved from batch 87's Road Wardens line to batch 88's Berserker line; the newest date stays 12 OCT */
+  assert.ok(r.some(x => /OWL REEVE AND FALSE ABBOT RETURN/i.test(x.s)), 'and its lines are there');
   const { VW, VH } = await pg.evalp('BK.view');
   for (const x of r) assert.ok(x.x0 >= 24 && x.x0 + x.w <= VW - 24 && x.y0 >= 6 && x.y0 + x.h <= VH - 6, 'inside the panel: ' + x.s + ' ' + JSON.stringify(x));
   /* scrolling: DOWN moves, and it never goes past the end */

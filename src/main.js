@@ -1054,6 +1054,7 @@ function retireBakes() { if (!BAKE_OLD.length) return;
   while (stack.length) { const o = stack.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);
     if (o instanceof HTMLCanvasElement) { keep.add(o); continue; } if (ArrayBuffer.isView(o)) continue;
     for (const k in o) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } }
+  const old = new Set(BAKE_OLD); for (const k in TITLE_LAYERS) { const T = TITLE_LAYERS[k]; if ([T.sky, T.far, T.near].some(c => c && old.has(c) && !keep.has(c))) delete TITLE_LAYERS[k]; }   /* (batch98 integ: a title layer that borrows a retired sheet - BG.skyDusk - was drawn empty on the way back to the title; it is rebuilt on its next draw) */
   const audit = window.__bakeAudit;   /* tools/load-leak.mjs: a weak note of every sheet given back, to prove after a collection that nothing kept one */
   for (const c of BAKE_OLD) if (!keep.has(c)) { c.width = 0; c.height = 0; if (audit) audit.push({ w: new WeakRef(c), at: BAKE_PATH.get(c) || 'not under TILE/PROP/BG' }); }
   BAKE_OLD = []; }
@@ -28035,14 +28036,14 @@ function updateProps(dt) {
     if (pr.t === 'lantern' && pr.owl) {
       if(pr.cool>0)pr.cool=Math.max(0,pr.cool-dt);
       if(pr.lit&&!pr.wasBurning){pr.cool=0;lightOwlLamp(pr);}   /* (lit by her waking: THE VILLAGE LIGHTS UP) */
-      if(pr.lit){pr.lampT-=dt;if(pr.lampT<=0){snuffOwlLamp(pr);if(bossActive)number(pr.x,pr.y-42,'OUT','#8a8090');}}   /* (claude/owl3) OWL_LAMP: two seconds, then out */
+      if(pr.lit){pr.lampT-=dt;if(pr.lampT<=0){snuffOwlLamp(pr);if(bossActive)number(pr.x,pr.y-42,'THE LAMP GOES OUT','#8a8090');}}   /* (claude/owl3) OWL_LAMP: two seconds, then out */
       else if(pr.cool>0&&Math.random()<dt*10)parts.push({x:pr.x+(Math.random()-.5)*3,y:pr.y-32,vx:(Math.random()-.5)*6,vy:-14-Math.random()*10,life:.8,max:.8,col:Math.random()<.5?'#6a6470':'#8a8490',size:1,grav:-6});   /* THE WICK SMOKES: it will not take a light yet */
       const lampBox={l:pr.x-9,r:pr.x+9,t:pr.y-38,b:pr.y};
       const melee=hb&&overlap(hb,lampBox)&&!P.hitSet.has(pr);
       const projectile=[...embers,...pyres,...pwaves,...bolts,...bloodBolts,...rbolts,...hammers].some(b=>b.life>0&&Math.abs(b.x-pr.x)<14&&b.y>pr.y-40&&b.y<pr.y+4);
       const shot=shots.some(b=>b.life>0&&Math.min(b.x0,b.x1)<=pr.x+9&&Math.max(b.x0,b.x1)>=pr.x-9&&Math.min(b.y0,b.y1)<pr.y&&Math.max(b.y0,b.y1)>pr.y-38);
       const body=(P.plunge||P.dashStrike)&&Math.abs(P.x-pr.x)<18&&Math.abs(P.y-pr.y)<34;
-      if(!P.dead&&(melee||projectile||shot||body||(P.jet&&inJet(pr.x,pr.y-16,12)))){if(melee)P.hitSet.add(pr);if(!pr.lit){if(lightOwlLamp(pr)){SFX.spark();number(pr.x,pr.y-42,'LIT','#ffd36b');}else if(melee){SFX.clank();number(pr.x,pr.y-42,'THE WICK SMOKES','#8a8090');}}}
+      if(!P.dead&&(melee||projectile||shot||body||(P.jet&&inJet(pr.x,pr.y-16,12)))){if(melee)P.hitSet.add(pr);if(!pr.lit){if(lightOwlLamp(pr)){SFX.spark();number(pr.x,pr.y-42,'LAMP LIT','#ffd36b');}else if(melee){SFX.clank();number(pr.x,pr.y-42,'THE WICK SMOKES','#8a8090');}}}
     }
     if (pr.t === 'lantern' && !pr.owl) { if (pr.flareCd > 0) pr.flareCd -= dt;
       if (pr.lit && !pr.perch && boss && boss.t === 'owl' && bossActive && !(pr.flareCd > 0)) { const nearOwl = Math.hypot(boss.x - pr.x, boss.y - (pr.y - 30)) < 120; if (nearOwl && Math.random() < dt * 20) parts.push({ x: pr.x + (Math.random() - 0.5) * 20, y: pr.y - 30 + (Math.random() - 0.5) * 20, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#fff6c8', size: 1, grav: 0, glow: true }); /* it is close: strike me */

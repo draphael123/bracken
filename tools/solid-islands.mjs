@@ -31,7 +31,7 @@ export const ALLOW = {
   skyroad: [5, 'cloud-stone pillars that end in a drawn cloud puff (src/forest-supports.js FREE_LEN): the sky road floats by design, there is no ground under it; the post-reach rule flags the free end'],
   witchlight: [12, 'rune-stone pillars of the Witchlight Stair that end free in the dark (FREE_LEN): the stair hangs in a void by design; the post-reach rule flags the free end'],
   glasssea: [1, 'one glass pedestal ending free over the sea (FREE_LEN): the post-reach rule flags the free end'],
-  hanging: [1, 'one slab at 70,63 over the chasm held by a vine bough that tapers free (FREE_LEN): listed for the hanging lane'],
+  hanging: [3, 'one slab at 70,63 over the chasm held by a vine bough that tapers free (FREE_LEN): listed for the hanging lane; + the two crown perch ledges at 24-26 and 84-86 row 17 (batch98 integ, claude/owl3): THE DROP breaks the boards under each, so the ledge post is a vine hanging 7 rows into the night that ends free - drawn, but one row past FREE_LEN; listed for the owl lane'],
   canal: [2, 'warehouse and lock masses in fog: listed for the canal lane'], welltown: [3, 'sandstone towers: listed for the welltown lane'], redgorge: [1, 'a timber slab of the gorge camp: listed for the redgorge lane'],
 };
 

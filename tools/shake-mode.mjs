@@ -1,6 +1,6 @@
 // tools/shake-mode.mjs - SCREEN SHAKE MODE (claude/shake, 2026-10-01). Daniel: the camera shook on every landing. The default is now ON HIT: the
 // camera shakes ONLY when the hero is hurt (a blow taken, going down in co-op, dying). FULL is the old behaviour, OFF and reduce-motion are none.
-//   - static: exactly three shakeCam call sites carry the 'hurt' tag (hurt line, goDown, die); every other call in src/ is untagged, so ON HIT silences it
+//   - static: exactly four shakeCam call sites carry the 'hurt' tag (hurt line, goDown, die, the lethal-water splash - towpathchurch); every other call in src/ is untagged, so ON HIT silences it
 //   - page, ON HIT: a hard landing, a plunge, a landed blow on a foe, a boss-sized slam (untagged shakeCam) all leave BK.shake at 0; damagePlayer shakes
 //   - page, FULL: the same events shake, at the strength setting; LOW halves it; OFF and reduce-motion: nothing at all, not even a hurt
 //   - old saves: no shakeMode -> ON HIT, unless shake was OFF (shake false / shakeAmt 0) -> OFF; the strength survives
@@ -13,7 +13,7 @@ const must = (c, m) => { if (!c) bad.push(m); };
 const dir = new URL('../src/', import.meta.url);
 let tagged = 0;
 for (const f of readdirSync(dir)) { if (!f.endsWith('.js')) continue; const s = readFileSync(new URL(f, dir), 'utf8'); tagged += (s.match(/shakeCam\([^;\n)]*'hurt'\)/g) || []).length; }
-must(tagged === 3, `${tagged} shakeCam calls carry the 'hurt' tag (want 3: the hero hurt, down, dead)`);
+must(tagged === 4, `${tagged} shakeCam calls carry the 'hurt' tag (want 4: the hero hurt, down, dead, drowned in bitter water)`);
 const m = readFileSync(new URL('main.js', dir), 'utf8');
 must(/function shakeCam\([^)]*tag[^)]*\)\s*\{[^\n]*'hurt'[^\n]*shakeAdd\(/.test(m), 'shakeCam does not gate on the hurt tag');
 

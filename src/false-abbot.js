@@ -126,10 +126,10 @@ export function abbotBellRung(e, bellX, c) {
 }
 /* the false light in flight: it goes on whatever he does next (it has left his hand), and bursts on its mark */
 function stepOrb(e, dt, c) {
-  if (e.flash && (e.flash.t += dt) > e.flash.T) e.flash = null;   /* the burst's gold flash (art only: it times nothing) */
+  if (e.orbFlash && (e.orbFlash.t += dt) > e.orbFlash.T) e.orbFlash = null;   /* the burst's gold flash (art only: it times nothing) */
   const o = e.orb; if (!o) return;
   o.t += dt; if (o.t < o.T) return;
-  e.orb = null; e.flash = { x: o.tx, t: 0, T: 0.4 }; const { P } = c, floor = c.A.floor;
+  e.orb = null; e.orbFlash = { x: o.tx, t: 0, T: 0.4 }; const { P } = c, floor = c.A.floor;
   c.sound('puff'); if (c.dust) c.dust(o.tx, floor);
   if (!P.dead && Math.abs(P.x - o.tx) < ABBOT.lightR && P.y > floor - 34) c.hit(o.x0, ABBOT.dmg.light, false, 'FALSE LIGHT');   /* from where it was thrown: the guard turns what is in front */
 }
@@ -325,7 +325,7 @@ export function drawFalseAbbot(g, e, cx, cy, time, floorY) {
     g.fillStyle = SICK; g.beginPath(); g.arc(ob.x, ob.y, 5, 0, Math.PI * 2); g.fill(); g.fillStyle = SICKL; g.beginPath(); g.arc(ob.x, ob.y, 3, 0, Math.PI * 2); g.fill(); g.fillStyle = '#fffbe0'; g.fillRect(ob.x - 1, ob.y - 1, 2, 2);
     glint(g, ob.x + Math.round(Math.cos(time * 9) * 7), ob.y + Math.round(Math.sin(time * 9) * 7), '#fffbe0', 1); }
   /* THE BURST: a gold flash where it came down - a white-gold flare over the mark, a pillar of false light and a spray of sparks */
-  if (e.flash) { const f = e.flash, k = 1 - f.t / f.T, u = f.t / f.T, mx = Math.round(f.x - cx);
+  if (e.orbFlash) { const f = e.orbFlash, k = 1 - f.t / f.T, u = f.t / f.T, mx = Math.round(f.x - cx);
     gl(mx, fy - 8, ABBOT.lightR * (0.9 + u * 0.7), '#fffbe0', 0.9 * k * k);
     g.globalAlpha = 0.85 * k; g.fillStyle = '#fffbe0'; g.fillRect(mx - Math.round(5 * k), fy - 52, Math.max(1, Math.round(10 * k)), 52); g.globalAlpha = 0.5 * k; g.fillStyle = GOLD; g.fillRect(mx - Math.round(9 * k), fy - 44, Math.max(1, Math.round(18 * k)), 44);
     g.globalAlpha = k; g.strokeStyle = GOLD; g.lineWidth = 2; g.beginPath(); g.ellipse(mx, fy - 1, ABBOT.lightR * (0.5 + u * 0.7), 5 * (0.5 + u * 0.7), 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1;

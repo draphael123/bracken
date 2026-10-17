@@ -63,7 +63,7 @@ function sandbox() {
   const noop = () => {};
   const c = { TS: 16, LW: 200, LH: 200, movers: [], props: [], keys: {}, PROG: {}, P: null, players: null, hb: null, hintT: 0, hintMsg: '', numbers: [],
     talkPress: false, atkPress: false, THROW_KIND,   /* CARRY & THROW (2026-09-28): INTERACT picks a load up, ATTACK throws it */
-    SFX: new Proxy({}, { get: () => noop }), burst: noop, shakeCam: noop, sparks: noop, dust: noop,
+    SFX: new Proxy({}, { get: () => noop }), hintSay: noop, burst: noop, shakeCam: noop, sparks: noop, dust: noop,
     overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, tileAt: (x, y) => (y >= 50 ? 1 : 0), isSolid: (x, y) => y >= 50, isOneWay: () => false,
     Math, Object, Array, Set };
   c.number = (x, y, s) => c.numbers.push(s); c.attackBox = () => c.hb;
@@ -122,7 +122,7 @@ function owlBox(phase, lamp) {
   const noop = () => {}; let seed = 7; const rnd = () => (seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0) / 4294967296;
   const A = { x0: 20 * 16, x1: 90 * 16, floor: 20 * 16 }, H = { hoist: 'crown', arena: true, x: 57 * 16, wheelX: 916, wheelY: 90, hs: { state: 'rest' } };
   const c = { L: { arena: A, perches: [[42, 9], [54, 12], [65, 9]] }, props: lamp ? [lamp] : [], movers: [H], TS: 16, enemies: [], P: { x: 30 * 16, y: 320, w: 10, h: 14, dead: false }, duckBox, seeds: [], hits: [], cuts: [], flash: 0,
-    SFX: new Proxy({}, { get: () => noop }), number: noop, burst: noop, ringAt: noop, dust: noop, shakeCam: noop, zoomKick: noop, sparks: noop, parts: [], camX: 0, VW: 320, DMG: new Proxy({}, { get: () => 10 }), EHP: { spider: 10 }, COLS: { owl: [] } };
+    SFX: new Proxy({}, { get: () => noop }), hintSay: noop, number: noop, burst: noop, ringAt: noop, dust: noop, shakeCam: noop, zoomKick: noop, sparks: noop, parts: [], camX: 0, VW: 320, DMG: new Proxy({}, { get: () => 10 }), EHP: { spider: 10 }, COLS: { owl: [] } };
   c.damagePlayer = (...a) => c.hits.push(a); c.cutHoist = m => { c.cuts.push(m); m.hs.state = 'cut'; };
   c.Math = Object.create(Math); c.Math.random = rnd; vm.createContext(c); vm.runInContext(src.slice(o0, o1), c);
   const e = { t: 'owl', mode: 'sit', modeT: 1, phase, hp: 100, maxHp: 200, x: 54 * 16 + 8, y: 12 * 16, face: 1, hitT: 0, anim: 0, alive: true };

@@ -44,7 +44,7 @@ export const QUIET = new Set(['updateBellcrab|broodTell',   // the rim lifting t
   'updateTollmaster|floodTell', 'updateTollmaster|darkTell', 'updateLampreeve|snuffTell',
   'updateLampreeve|takeTell',       // THE LAMPREEVE TAKES YOUR LIGHT (his phase two, claude/weakboss): the light in your hand goes out, and nobody is struck
   'updateHerald|callTell', 'updateMiner|smashTell', 'updateWindcaller|howlTell', 'updatePropman|setTell',
-  'updateForgemaster|leapTell', 'updateGolem|shroudTell', 'updateGQueen|gLeapTell', 'updateRoc|gustTell',
+  'updateForgemaster|leapTell', 'updateGolem|shroudTell', 'updateGQueen|gLeapTell', 'updateRoc|gustTell', 'updateOwl|gustTell',   /* (claude/owl3) THE OWL REEVE's WING BEAT: a shove toward the drop, no blow */
   'updateGrandmother|listenTell', 'updateGrandmother|vanishTell', 'updateLance|galeTell', 'updateSnuffer|snuffTell',
   'updateMaster|whistleTell', 'updateWhipper|whistleTell',   // the whistle throws no blow: the dogs it calls bite for themselves
   'updatePrince|callTell',          // the Buried Prince calls his court: the courtiers rake for themselves, on their own yellow marks
@@ -267,7 +267,7 @@ export const MARK = {
   'oathmaul|galeTell': '!', 'oathmaul|gongTell': '!', 'oathmaul|haulTell': '!', 'oathmaul|hoistTell': '!!', 'oathmaul|hornTell': '!', 'oathmaul|kickTell': '!!',
   'oathmaul|lungeTell': '!', 'oathmaul|mudTell': '!!', 'oathmaul|plankTell': '!!', 'oathmaul|potTell': '!!', 'oathmaul|rustTell': '!!', 'oathmaul|shoveTell': '!',
   'oathmaul|slamTell': '!!', 'oathmaul|snareTell': '!!', 'oathmaul|snuffTell': '', 'oathmaul|sweepTell': '!', 'oathmaul|thrustTell': '!', 'oathmaul|timberTell': '!!',
-  'oathmaul|updraftTell': '!!', 'oathmaul|vineTell': '!', 'owl|fanTell': '!', 'owl|gustTell': '!', 'owl|hootTell': '!!', 'owl|lampTell': '!!',
+  'oathmaul|updraftTell': '!!', 'oathmaul|vineTell': '!', 'owl|fanTell': '!', 'owl|gustTell': '', 'owl|hootTell': '!!', 'owl|lampTell': '!!',
   'owl|pelletTell': '!!', 'owl|riseUp': '!!', 'owl|ropeTell': '', 'owl|screechTell': '!', 'owl|shakeTell': '!!', 'owl|skimTell': '!!',
   'owl|swoopTell': '!!', 'paladinboss|chainBeatTell': '!', 'paladinboss|chainTell': '!', 'paladinboss|chargeTell': '!', 'paladinboss|empowerTell': '!!', 'paladinboss|judgeTell': '!!',
   'paladinboss|leapTell': '!!', 'paladinboss|plantTell': '', 'paladinboss|smiteTell': '!!', 'paladinboss|throwTell': '!', 'paladinboss|vigilTell': '', 'petrel|biteTell': '!',
