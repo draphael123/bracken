@@ -32,6 +32,8 @@ try {
       K.down = true; BK.sim(6); none(); BK.sim(10); r.stumbleTold = BK.crouchHint().stats.told;
       /* the crouch: held 1 s */
       for (const k of ['crouchTold_knight', 'crouchTold_warden', 'crouchTold_pirate', 'kneelTold', 'senseTold', 'harvestTold', 'workTold', 'pounceTold']) delete BKT.PROG[k];   /* (the contextual lines are tested in their own checks) */
+      /* (batch97 integ 10-17, PALADIN 4) the paladin's own PRAYER teach (src/crouch-b.js) fires the moment he stands calm with his Conviction under 40, which is always on a fresh save, so it pre-empted the first-crouch line and flagged it seen. A paladin with Conviction in hand is not taught PRAYER, so the first-crouch line is what this check measures. */
+      if (h === 'paladin') BK.P.light = 99;
       K.down = true; { let n = 0; while (BK.crouchHint().stats.told < 1 && n < 2000) { BK.sim(10); n += 10; } r.after = n; }   /* (the stockade's own toasts are up first: it waits for them) */
       r.msg = BKT.hintNow.msg; r.t = BKT.hintNow.t; r.told = BK.crouchHint().stats.told; r.flag = BKT.PROG.crouchFirst && BKT.PROG.crouchFirst[h]; none();
       /* again: never twice (a minute later, and after a level load) */

@@ -144,7 +144,7 @@ const KITE = ['.SSS.', 'SswwS', 'SwywS', 'SyyyS', 'SwywS', 'SwwwS', '.SwS.', '..
    The rule this serves is the one the greatsword learned: the blow may not reach where the art never went. */
 let SPEARLESS = false;
 let ONEAXE = false;   /* THE BERSERKER's BARE set (his off axe is thrown): every frame, the lead axe only */   /* baking the Warden's BARE set (her JAVELIN is out of her hands): every frame, no spear */
-function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null, nock = null }) {
+function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null, plume = 0, shield = false, legsDy = 0, staff = null, maul = null, glow = null, cutlass = null, pistol = null, hook = null, scythe = null, greatsword = null, spear = null, wide = 0, hy = 0, sho = 0, bits = null, kite = null, top = 0, arm2 = null, stave = null, axe = null, axe2 = null, nock = null, butt = 8 }) {   /* (butt: how far the war hammer's haft runs past the hand - 8, or less where the butt stands on the floor: batch97 integ, crouch-feet) */
   const [c, g] = canvas(W + wide, H + top); g.translate(0, top);
   const BZ = BODY_REF === BZ_BODY, rgo = BZ ? [[BX + dx + 4, top + BY + dy + hy + 3, '#ff2a1a'], [BX + dx + 5, top + BY + dy + hy + 3, '#c01c14']] : null;   /* (claude/bzart) his RAGE overlay: red eyes and veins, laid over him by drawSet while his rage is up */
   if (GEAR >= 1) gearCape(g, BX + dx, BY + dy, legs, plume, GEAR >= 4);   /* (tier 1+: behind everything, the body covers all but the strip at his back) */
@@ -207,10 +207,10 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     const [x0, y0, x1, y1] = maul.map((v, i) => v + (i & 1 ? dy : dx));
     const len = Math.hypot(x1 - x0, y1 - y0) || 1, ax = (x1 - x0) / len, ay = (y1 - y0) / len, qx = -ay, qy = ax;
     const at = (t, o = 0) => [Math.round(x0 + ax * t + qx * o), Math.round(y0 + ay * t + qy * o)];
-    line(g, ...at(-8), ...at(len - 2), '#6a4428', 2);                                       // the LONG haft, its butt eight past the hand (the head is small; the haft is the weapon)
-    px(g, ...at(-7), '#8a5a34'); px(g, ...at(-6, 1), '#3a2412');
+    line(g, ...at(-butt), ...at(len - 2), '#6a4428', 2);                                       // the LONG haft, its butt eight past the hand (the head is small; the haft is the weapon)
+    px(g, ...at(-butt + 1), '#8a5a34'); px(g, ...at(-butt + 2, 1), '#3a2412');
     for (let t = -4; t <= 6; t++) { px(g, ...at(t), t & 1 ? '#8a5a34' : '#3a2412'); px(g, ...at(t, 1), t & 1 ? '#3a2412' : '#8a5a34'); }   // the grip wrap
-    px(g, ...at(-8), KP.y); px(g, ...at(-8, 1), KP.y);                                       // the gold butt-cap
+    px(g, ...at(-butt), KP.y); px(g, ...at(-butt, 1), KP.y);                                       // the gold butt-cap
     const hx = x1 - ax * 1.5, hy = y1 - ay * 1.5;
     const ROWS = { '-3': 1.5, '-2': 2.5, '-1': 3.5, 0: 3.5, 1: 3.5, 2: 3.5, 3: 3.5 };                                      // half-width by step along the haft: gold collar, the back, the block (three rows), the strike face
     const inside = new Map(), key = (X, Y) => X + ',' + Y;
@@ -3396,7 +3396,7 @@ export function bakePaladin(skin = {}, previewOnly = false) {
     slide: [0, 1].map(i => knightFrame({ dx: -3, dy: 3, legs: 'slide', legsDy: 3, plume: i * 2, arm: [sh[0], sh[1], sh[0] - 1, sh[1]], maul: [sh[0] - 1, sh[1], sh[0] - 12, sh[1] - 3] })),
     /* KNEEL IN PRAYER (src/crouch-b.js): down on one knee, the maul planted upright before him with both hands on the haft and his helm
        bowed to it, the light gathering at its head - brighter, and a mote off it, on the second beat (and held there once his bar is full) */
-    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1], sh[0] + 4, sh[1] - 10], glow: [sh[0] + 4, sh[1] - 15 - i], plume: 0,
+    kneel: [0, 1].map(i => knightFrame({ dy: 3, hy: 1, legs: 'kneel', butt: 3, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 1], maul: [sh[0] + 4, sh[1], sh[0] + 4, sh[1] - 10], glow: [sh[0] + 4, sh[1] - 15 - i], plume: 0,
       bits: i ? [[10, -6, '#ffd36b'], [15, -8, '#fff6c8']] : null })),
     // AEGIS: the maul planted upright before him, both hands on the haft
     block: [0, 1].map(i => knightFrame({ legs: 'wide', dy: i, arm: [sh[0], sh[1], sh[0] + 3, sh[1] + 2], maul: [sh[0] + 3, sh[1] + 9, sh[0] + 3, sh[1] - 5], glow: [sh[0] + 3, sh[1] - 9] })),

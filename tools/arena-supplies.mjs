@@ -167,12 +167,17 @@ for (const lv of LEVELS) {
   const seeds = [];
   for (const [, A] of here) { const r = Math.round(A.floor / TS) - 1; for (let x = Math.ceil(A.x0 / TS); x <= Math.floor(A.x1 / TS); x++) seeds.push([x, r]); }
   const { seen } = floodReach(L, T, { rides: true, seeds });
-  for (const [k, A] of here) rooms.push({ id: lv.id, which: k, boss: A.boss, heights: heightsOf(L, A, seen) });
+  for (const [k, A] of here) rooms.push({ id: lv.id, which: k, boss: A.boss, heights: heightsOf(L, A, seen), slabs: (L.slabs || []).filter(q => q.tomb).length });
 }
 
 assert.ok(rooms.length > 30, 'only ' + rooms.length + ' boss rooms were found in LEVELS: the arena/mini parse has stopped working and this check is now guarding nothing');
 
 const LIST = process.argv.includes('--list');   /* every room, every guard, and the ground it has: for reading by hand */
+/* GROUND THAT DOES NOT EXIST UNTIL THE FIGHT MAKES IT (batch97 integ 10-17). The flood above sees the room's tiles at load. THE BURIED PRINCE's room (undercrown) has
+   TOMB SLABS that come down as ramps and flats during the fight (src/undercrown-slabs.js, L.slabs); his NO-SAFE-PERCH guard (`P.y < floor - 48` in his stalk,
+   claude/undercrown2) only exists to punish a hero who climbed one - it is not an attack the room owes an answer to. So a guard on the Prince that reads
+   `up` is allowed exactly when the level declares tomb slabs. Nothing else is exempt. */
+const DYNAMIC_GROUND = (r, u) => r.boss === 'prince' && u.dir === 'up' && r.slabs > 0;
 const fail = [], unreadable = [], noCode = [], scoredRooms = new Set();
 let scored = 0, guardsRead = 0, guardsScored = 0, bandSkipped = 0, bossRelSkipped = 0, withGuards = 0;
 const overreach = [];
@@ -204,7 +209,7 @@ for (const r of rooms) {
       + (r.heights.size > 1 ? tall + 'px' : 'the floor itself') + '.\n' + ' '.repeat(29) + 'A jump off the floor tops out at ' + APEX + 'px, so there is nowhere in the room to answer it. '
       + (above.length > 1 ? 'Nor its ' + above.slice(1).map(x => x.mode + ' (' + x.n + 'px)').join(', ') + '. ' : '')
       + 'Give the room a tier at ' + above[0].n + 'px or more (' + Math.ceil(above[0].n / TS) + ' rows), or bring the attack down to something a jump answers.');
-  for (const u of up) if (tall < u.n)
+  for (const u of up) if (tall < u.n && !DYNAMIC_GROUND(r, u))
     fail.push('  ' + (r.id + '/' + r.boss).padEnd(26) + ' its ' + u.mode + ' ONLY lands on a hero ' + u.n + 'px or more over the floor, and the tallest ground in that room is '
       + (r.heights.size > 1 ? tall + 'px' : 'the floor itself') + ' - so it can never fire, and nothing will tell you.\n' + ' '.repeat(29)
       + 'Give the room ground at ' + u.n + 'px, or take the height condition off the attack.');

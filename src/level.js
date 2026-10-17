@@ -2629,7 +2629,7 @@ function undercrown() {
   ent('rockgoblin', 80, 28, { face: -1, cnSkin: 'bonechucker' });
   shaft(86, 6, 26, 56);
   ent('clinger', 87, 44, { face: 1 });
-  ent('sign', 84, 28, { text: 'CLINGERS DROP WHEN YOU ARE IN THE AIR BESIDE THEM. SWING TO SHAKE ONE OFF.' });
+  ent('sign', 83, 28, { text: 'CLINGERS DROP WHEN YOU ARE IN THE AIR BESIDE THEM. SWING TO SHAKE ONE OFF.' });
 
   // ---- 3. THE FLOODED LEVEL (rows 46-62) - REMIX. The planks stop short of each other over the dead water. The slab over the gap has a
   //         post on each plank: cut the near one and it swings down into a ramp up to the far post; cut that from the top of it and the
@@ -3762,9 +3762,9 @@ function trialYard(hero) {
       ['hit', 3, 'THE SWING. X STRIKES. HIT THE STRAW MAN THREE TIMES.', [['dummy', 16], ['dummy', 20]], 'X'],
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['block', 3, 'THE SHIELD. HOLD C TO RAISE IT, AND FACE THE ARCHER. TURN THREE OF HIS ARROWS.', [['archer', 22]], 'HOLD LB'],
-      ['dodge', 2, 'THE SHIELD-STEP: TAP A WAY TWICE, OR V. A SHORT STEP, THE SHIELD UP THROUGH IT. STEP TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
+      ['dodge', 2, 'THE SHIELD-STEP: TAP A WAY TWICE, OR V. THE SHIELD STAYS UP. STEP TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE BEAT: RAISE C AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TURN HIS CUT TWICE.', [['swornsword', 18]], 'LB AS THE SWORD FLASHES'],
-      ['kbash', 2, 'THE SHIELD BASH: UP+C AS HE WINDS UP. IT KNOCKS THE BLOW OUT OF HIM. INTERRUPT IT TWICE.', [['swornsword', 18]], 'UP + LB AS HE WINDS UP'],   /* (claude/heropassa) */
+      ['kbash', 2, 'THE SHIELD BASH: UP+C AS HE WINDS UP. IT KNOCKS THE BLOW OUT. DO IT TWICE.', [['swornsword', 18]], 'UP + LB AS HE WINDS UP'],   /* (claude/heropassa) */
       ['tells', 2, 'ONE YELLOW ! : THE SHIELD TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'LB FOR !    B OR A FOR !!', MARKS],
       ['pogo', 3, 'THE PLUNGE: JUMP, THEN DOWN+X. BOUNCE OFF THE STRAW MEN THREE TIMES.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
       ['heavyblow', 2, 'THE SHIELD CHARGE: HOLD X TO BRACE, LET GO TO RUSH. THE BASH BREAKS A GUARD. LAND IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X, LET GO'],
@@ -3797,7 +3797,7 @@ function trialYard(hero) {
       ['hit', 3, 'THE CUTLASS: X AND KEEP GOING, A RUN OF FIVE. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'X'],
       ['third', 2, 'THE THIRD CUT: X THREE TIMES IN A RUN. THE THIRD LANDS HEAVY AND SHOVES. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['parry', 3, 'NO SHIELD: TAP C TO PARRY. IT TURNS A YELLOW BLOW AND LOADS THE PISTOL. TURN THREE.', [['archer', 22]], 'TAP LB'],
-      ['dodge', 2, 'THE POWDER FLASH: TAP A WAY TWICE, OR V. A PUFF OF POWDER DAZZLES WHAT IS IN FRONT. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
+      ['dodge', 2, 'THE POWDER FLASH: TAP A WAY TWICE, OR V. POWDER DAZZLES THE FOE AHEAD. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE BEAT: TAP C AS HIS SWORD FLASHES WHITE. THE PARRY LEAVES HIM OPEN. TURN IT TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : A PARRY TURNS IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['heavyblow', 2, 'HOLD X: THE PISTOL GOES THROUGH ANY GUARD, THEN RELOADS. FIRE IT TWICE.', [['dummy', 14], ['dummy', 20]], 'HOLD X'],
@@ -3808,7 +3808,7 @@ function trialYard(hero) {
       SKILL],
     paladin: [
       ['third', 2, 'THE MAUL: X, THREE IN A RUN. EVERY THIRD BLOW STAGGERS AND EVERY BLOW BUILDS CONVICTION.', [['dummy', 18]], 'X, X, X'],
-      ['aegis', 3, 'THE LIGHT-WARD: HOLD C. IT TURNS BLOWS FROM ANY SIDE AND COSTS WIND WHILE HELD. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],   /* (PALADIN 4: the aegis is the all-round Light-ward) */
+      ['aegis', 3, 'THE LIGHT-WARD: HOLD C. IT TURNS BLOWS FROM ANY SIDE. TURN THREE ARROWS.', [['archer', 22]], 'HOLD LB'],   /* (PALADIN 4: the aegis is the all-round Light-ward) */
       ['flash', 2, 'THE BEAT: HOLD C FOR THE AEGIS AS HIS SWORD FLASHES WHITE, AND HE REELS OPEN. TWICE.', [['swornsword', 18]], 'HOLD LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE AEGIS TAKES IT. TWO RED !! : NOTHING DOES, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'HOLD LB FOR !    B OR A FOR !!', MARKS],
       ['smite', 1, 'SMITE: ONE CONVICTION, TAP C. ANY SPEND LIGHTS YOUR AURA: IN IT YOU HIT HARDER AND MEND.', [['dummy', 6], ['dummy', 14]], 'TAP LB'],   /* (PALADIN 3: the planted circle is gone - the first tier, and the aura it lights) */
@@ -3816,9 +3816,9 @@ function trialYard(hero) {
       ['sanctify', 1, 'RADIANCE: THREE CONVICTION, TAP C. A BURST OF LIGHT ALL ROUND YOU.', [['dummy', 9], ['dummy', 12]], 'TAP LB WITH THREE'],
       ['radiancePlus', 1, 'RADIANCE+: FOUR CONVICTION, TAP C. A WIDER BURST, AND IT MENDS YOU.', [['dummy', 8], ['dummy', 13]], 'TAP LB WITH FOUR'],   /* (PALADIN 4: the empowered second tier) */   /* (claude/palart) two straw men for the circle to burn: one circle planted between them holds both (5.5 tiles across) */
       ['hammer', 2, 'THE HAMMER: UP AND C THROWS IT, OUT AND BACK. THREE CONVICTION. THROW IT TWICE.', [['dummy', 8], ['dummy', 12]], 'UP + LB'],   /* (claude/palart) the first inside the throw's 7 tiles from the sign (out and back both strike it), the second a step on (or BLESSED HAMMER's longer reach) */
-      ['hammerfall', 2, 'DAWNFALL: JUMP, THEN DOWN+X. THE SLAM BREAKS A GUARD; A PILLAR OF LIGHT STRIKES ROUND IT. HIT TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
+      ['hammerfall', 2, 'DAWNFALL: JUMP, THEN DOWN+X. IT BREAKS A GUARD, LIGHT STRIKES ROUND IT. HIT TWO.', [['dummy', 12], ['dummy', 22]], 'A, THEN DOWN+X'],
       ['verdict', 1, 'VERDICT: HOLD X. A SIGIL A BEAT ON WHAT IS AHEAD. LET GO: THE LIGHT STRIKES THEM ALL.', [['dummy', 8], ['dummy', 13]], 'HOLD X, LET GO'],   /* (PALADIN 3: the held X is VERDICT, not the overhead) */
-      ['dodge', 2, 'THE SANCTUARY STEP: TAP A WAY TWICE, OR V. A QUICK STEP, AND HOLY LIGHT WHERE YOU STOOD SLOWS THEM. TWICE.', [], 'B, OR THE STICK TWICE'],
+      ['dodge', 2, 'THE SANCTUARY STEP: TAP A WAY TWICE, OR V. HOLY LIGHT WHERE YOU STOOD SLOWS FOES. TWICE.', [], 'B, OR THE STICK TWICE'],
       ['pray', 1, 'PRAYER: HOLD DOWN AND STAY STILL. A PIP OF CONVICTION COMES. A HIT OR A STEP BREAKS IT.', [], 'HOLD DOWN'],   /* (PALADIN 4: kneel anywhere) */
       DASH, RISE, SWEEP,
       ['judgement', 1, 'SUNFALL: FIVE CONVICTION, TAP C. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['dummy', 20]], 'LB WITH FIVE'],   /* (PALADIN 3: the old Judgement, renamed; its trial key stays) */

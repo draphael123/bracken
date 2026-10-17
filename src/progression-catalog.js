@@ -1215,7 +1215,7 @@ export const LEGACY_NODES = [
     "col": 2,
     "name": "WARDED",
     "max": 1,
-    "desc": "the aegis covers your back as well as your front",
+    "desc": "the patch of holy light your Sanctuary Step leaves lasts longer",
     "parent": null,
     "active": false,
     "cap": false,

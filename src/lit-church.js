@@ -256,7 +256,7 @@ export function buildLitChurch({ painter, T, TS }) {
   /* THE STALLS (one-way benches on their legs: src/church-supports.js), gaps of three over the fire; one a row higher (the variety) */
   for (const [x0, x1, y] of [[186, 188, NF - 2], [192, 194, NF - 4], [196, 199, NF - 2], [203, 205, NF - 3]]) { boards(x0, x1, y); decor.push({ kind: 'pew', x0, x1, y }); }
   lamp('relay1', 193, NF - 5, 'chantry', 'lamp', { relay: true }); lamp('chantryB', 198, NF - 3, 'chantry', 'lamp', { lit: true }); lamp('relay2', 204, NF - 4, 'chantry', 'lamp', { relay: true });
-  sign(185, NF - 1, 'A DRAUGHT HERE: A TAPER BURNS FAST. LIGHT THE BRAZIERS.');
+  sign(184, NF - 1, 'A DRAUGHT HERE: A TAPER BURNS FAST. LIGHT THE BRAZIERS.');
   lamp('chantryDoor', 210, NF - 1, 'chantry', 'lamp', { opens: 'chantry' });
   sign(209, NF - 1, 'THE CHANTRY DOOR OPENS TO A LIT LAMP.');
   doors.push({ id: 'chantry', x0: 213, x1: 213, y0: NF - 5, y1: NF - 1, by: 'chantryDoor' });
@@ -306,7 +306,8 @@ export function buildLitChurch({ painter, T, TS }) {
   ent('gate', AX + PB_STAGE.W - 2, SF - 1);
 
   /* INDOORS: every room but the graveyard is under the church's roof (the weather, the reverb, and src/architecture's load path: a room carries its ceiling) */
-  for (const r of rooms) if (!r.outside) interiors.push([r.x0, r.x1, Math.max(0, r.y0), r.y1, 'church']);
+  for (const r of rooms) if (!r.outside) interiors.push([r.x0, r.x1, Math.max(0, r.y0), r.id === 'chantry' ? NF : r.y1, 'church']);   /* (batch97 integ: the chantry's floor is its TROUGH row NF, a pit two thirds air, with the rock one row under it: the hall's declared floor is that rock, or architecture finds its roof standing on nothing) */
+  interiors.push([184, 183 + Q, 39, 40, 'church']);   /* (batch97 integ: the sacristy passage under the chantry is a hall of its own, floor on row 41 - without it the chantry's floor slab spans 34 columns over open air) */
   interiors.push([46, 54, 6, NF - 1, 'church']);   /* (the west tower's shaft and the narthex under it are one hall: its floor is the narthex's) */
   /* THE DOORS are barred as laid (T.PORT): the hands lift them (src/lit-church-hands.js) */
   for (const d of doors) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) set(x, y, T.PORT);

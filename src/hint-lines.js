@@ -12,6 +12,8 @@ import { HK_SAY } from './hourglass-king.js';
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* batch97 integ 10-17: THE BURIED PRINCE's slab-heave and the diggers' winch calls (claude/undercrown2) - teaching lines, routed as hint-shown requires */
+  'HE HEAVES AT THE SLAB', 'DIGGERS, TO THE WINCH', 'HIS DIGGERS RISE', 'THE WHOLE ROOF IS COMING DOWN', 'AT THE WINCH', 'GET OFF IT', 'THE DIGGERS PROP IT AGAIN', 'IT SWINGS DOWN', 'IT DROPS FLAT',
   /* claude/slope (batch88 integ): THE RUNNING SLIDE tip (src/run-slide.js), said once - routed so the player can see it */
   'RUNNING SLIDE: LOW, AND UNDER HIGH BLOWS',
   /* claude/burnvillage2: THROW WATER and THE PYROMANCER's stun and steam ward (src/village-water.js) - routed so the player can see them */

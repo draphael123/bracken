@@ -212,7 +212,7 @@ const RSS_FILE = join(tmpdir(), 'bracken-rss-' + process.pid + '.txt');
 let sampler = null;
 const startSampler = () => { if (process.platform !== 'win32' || sampler) return;
   try { sampler = spawn('powershell', ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', join(ROOT, 'tools/rss-sampler.ps1'), '-Out', RSS_FILE, '-Tag', process.env.BRACKEN_RUN, '-ParentPid', String(process.pid)], { stdio: 'ignore', windowsHide: true });
-    sampler.on('error', () => { sampler = null; });
+    sampler.on('error', () => { sampler = null; }); sampler.unref();   /* the sampler waits for check.mjs to die, so it must not keep check.mjs alive (batch97 integ 10-17: every run hung after its last line) */
     process.on('exit', () => { try { if (sampler && sampler.pid) spawnSync('taskkill', ['/PID', String(sampler.pid), '/T', '/F'], { stdio: 'ignore' }); } catch {} try { unlinkSync(RSS_FILE); } catch {} }); } catch { sampler = null; } };
 const PEAKS = new Map();
 const peakBetween = (t0, t1) => { let tot = 0, max = 0, any = false;

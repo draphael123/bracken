@@ -31,7 +31,7 @@ ok(LEVELS.find(l => l.id === 'storm').needs === 'minecart', 'Stormhold needs THE
 ok(!lv.hidden && !lv.secret && !lv.needsKills && !lv.needsTime, 'no hidden, secret or kill/time gate: a main-road level');
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 { const line = main.split(/\r?\n/).find(l => /\{ id: 'minecart', kind: 'level'/.test(l)); ok(line && !/spur: true/.test(line), 'its map node is ON THE ROAD (not a spur)');
-  const m = /x: (\d+), y: (\d+)/.exec(line), path = /const CRAG_PATH = (\[\[.*?\]\]);/.exec(main); ok(m && path && JSON.parse(path[1]).some(([x, y]) => x === +m[1] && y === +m[2]), 'and the crag road runs through its node'); }
+  const m = /x: (\d+), y: (\d+)/.exec(line), path = /const CRAG_PATH = (\[\[.*?\]\]);/.exec(main); ok(m && path && new Function('UC_ROAD', 'return ' + path[1])(!!(LEVELS.find(l => l.id === 'undercrown') || {}).needs).some(([x, y]) => x === +m[1] && y === +m[2]), 'and the crag road runs through its node'); }
 const L = lv.build(), at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H ? T.SOLID : L.grid[y * L.W + x]);
 const stand = t => t === T.SOLID || t === T.RAIL || t === T.ONEWAY || (t >= 20 && t <= 25);
 /* THE RULE LINE is the code's */

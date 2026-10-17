@@ -62,7 +62,7 @@ try {
   BK.rootway().cutHoist('hmL');let caught=false;for(let i=0;i<90&&!caught;i++){BK.sim(1);caught=b.mode==='caught';}out.caught=caught;
   /* (claude/rootway2) THE HIT CAP: open, the first three blows land (x1.5) and the third ends it - his told ward follows */
   for(let i=0;i<300;i++)BK.sim(1);b.mode='stand';b.modeT=9;b.ward=0;b.open=0;F.sinceOpen=99;b.x=420*16;b.perch=-1;b.y=A.floor;F.arrows.push({id:997,kind:'gold',x:b.x-30,y:b.y-16,vx:-290,vy:0,life:2,back:true,said:false});for(let i=0;i<40&&b.mode!=='open';i++)BK.sim(1);
-  out.cap={open:b.mode==='open',t:+(b.open||0).toFixed(2),hits:[]};P.x=b.x+20;for(let k=0;k<3;k++){const h1=b.hp;BKT.hurtAs('light',b,20,P.x,false);out.cap.hits.push(+(h1-b.hp).toFixed(1));}BK.sim(30);out.cap.after={mode:b.mode,ward:+(b.ward||0).toFixed(2)};
+  out.cap={open:b.mode==='open',t:+(b.open||0).toFixed(2),hits:[]};P.x=b.x+20;for(let k=0;k<3;k++){const h1=b.hp;b.stale=null;/* (batch97 integ: claude/difficulty STALE BLOWS pay a second blow of the same verb in one opening x0.85 - this probe measures the CAP, so each blow starts fresh, as tools/boss-greed.mjs freeze() does) */BKT.hurtAs('light',b,20,P.x,false);out.cap.hits.push(+(h1-b.hp).toFixed(1));}BK.sim(30);out.cap.after={mode:b.mode,ward:+(b.ward||0).toFixed(2)};
   /* A THROWN SPORE POD: his long stagger, off his perch */
   for(let i=0;i<300;i++)BK.sim(1);{const p1=F.perches[1];b.perch=1;b.x=(p1.x0+p1.x1)/2;b.y=p1.y;b.mode='stand';b.modeT=9;b.ward=0;b.open=0;F.sinceOpen=99;const r0=H.podHit(b,b.x);for(let i=0;i<40;i++)BK.sim(1);out.pod={r:r0,mode:b.mode,open:+(b.open||0).toFixed(2),perch:b.perch,onFloor:Math.abs(b.y-A.floor)<2};}
   /* HIS NET: a hero it catches is held, and the heavy arrow comes */
