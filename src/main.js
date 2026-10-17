@@ -14146,7 +14146,7 @@ const archResealLen = e => (e && e.stage >= 2 ? ARCH.resealLate : ARCH.reseal) *
 /* PER-HERO CLASS (claude/follyfix, B6 - 60-70% for EVERY hero, flasks): the ward's runes break only to what the hero's own swing reaches and he opens at the same pace for everyone, so the walker heroes were short of damage
    (knight 5/12, warden 5/11, 240 s timeouts with a fifth of him left) and the ranged fire hero cut all three runes from where he stood (12/12 in a minute). hp: his health, cap: the share of it ONE opening may take,
    reseal: the ward's reseal timer. Numbers only; every move and tell is the same for all three. */
-const ARCH_TUNE = { knight: { hp: 1, dmg: 0.9, mul: 1.22, cap: 0.18, reseal: 1.25 }, warden: { hp: 1, dmg: 1.05, mul: 1.15, cap: 0.18, reseal: 1.3 }, pyro: { hp: 1.45, dmg: 1.4, mul: 1, cap: 0.115, reseal: 0.65 } };   /* dmg: what his spells take off the hero; mul: what his blows are worth in an opening (ARCH.openMul x this) */
+const ARCH_TUNE = { knight: { hp: 1, dmg: 0.9, mul: 1.22, cap: 0.18, reseal: 1.25 }, warden: { hp: 1, dmg: 1.05, mul: 1.15, cap: 0.18, reseal: 1.3 }, pyro: { hp: 1.55, dmg: 1.4, mul: 1, cap: 0.115, reseal: 0.65 } };   /* dmg: what his spells take off the hero; mul: what his blows are worth in an opening (ARCH.openMul x this) */
 const archTune = () => ARCH_TUNE[hero()] || { hp: 1, dmg: 1, mul: 1, cap: 0.18, reseal: 1 };
 const archDmg = d => Math.round(d * archTune().dmg);
 const archRunesUp = R => !!R && R.runes.some(r => r.hp > 0);

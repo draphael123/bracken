@@ -13,3 +13,4 @@ QUESTIONS (rec first)
 1. Keep per-hero ARCH_TUNE as the pattern? Rec yes until item 4 rebuilds the fight; then fold it into the new stages.
 2. Pyro rate sits low 44-56%: rec accept for now, bump hp to 1.6 if Daniel feels it is too hard.
 3. Exit gate door uses the shared lantern/dawn glow; rec the item 5 art pass adds the far-layer dawn behind it.
+pyro 1.55 unmeasured -> re-measure in BATCH99 integ
