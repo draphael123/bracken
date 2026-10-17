@@ -16,7 +16,7 @@
 //           4 GUARD (haft across the body, head down behind it)
 //           5 thrust tell (halberd drawn back level, both hands, front foot planted)
 //           6 thrust (driven out straight — the longest reach of any foot soldier in the game)
-//           7 hurt (head back, halberd dropping, weed flying off him)
+//           7 BLINDED (claude/lamplit2art: both hands over the dead eyes, head back, the flare spilling gold round the helm), 8 hurt (head back, halberd dropping, weed flying off him; the LAST frame is the hurt frame)
 //   canvas 38x32   anchor ax 18, ay 31
 //   reach: walk the axe head ax+2..ax+6, ay-26..ay-20 (up by his ear, nowhere near you);
 //          GUARD the haft stands across ax-2..ax+4, ay-24..ay-4;
@@ -36,7 +36,8 @@
 //           10 hurt, 11 kneel
 //           12 lunge tell (claude/weakboss: back into the dark, crouched, the pole levelled at your middle)
 //           13 lunge (driven out of the dark, the cone ahead of him at chest height, a smear behind)
-//           14 blinded (the flare in his face: head back, both hands up over his eyes, the pole let fall across his back)
+//           15 flaskTell, 16 flaskThrow, 17 hoodFlare (the lesser flare: one arm across the eyes, the pole still in his fist); art pass 10-17
+//           14 blinded (the relit stun: the flare in his face: head back, both hands up over his eyes, the pole let fall across his back)
 //   canvas 44x40   anchor ax 21, ay 39
 //   reach: stride the cone ax-1..ax+5, ay-38..ay-30;
 //          SNUFF TELL cone ax+8..ax+16, ay-36..ay-28 — up and out over the lamp;
@@ -59,7 +60,7 @@
 //           7 set down (the bier on the stones, him stepping off it — the frame where phase two starts)
 //           8 walk (on his own feet, the robe dragging), 9 walk (other foot)
 //           10 flood tell (arms wide, head back, the water coming up the square)
-//           11 hurt, 12 kneel
+//           11 hurt, 12 kneel, 13-25 the lamplit2 moves (collect, scales, seal, writ, flared, tilt L/R; art pass 10-17)
 //   canvas 56x44   anchor ax 27, ay 43
 //   reach: idle the ledger ax-2..ax+8, ay-22..ay-14, the rod ax+10..ax+14, ay-30..ay-8;
 //          LEDGER TELL the book ax-18..ax-8, ay-36..ay-26 — behind and over him;
@@ -253,6 +254,7 @@ export function bakeWatch() {
     if (o.pole && o.pole[3] !== 'back') layer(G, g => halberd(g, P(o.pole[0]), o.pole[1], o.pole[2]));
     arm(G, P([2, 14]), P(o.near[0]), P(o.near[1]), false);
     if (o.eye) { const E = P(o.eye); put(G, E[0], E[1], 'q'); }    // he has seen you: the lamplight catches in it
+    if (o.glare) layer(G, g => { const [gx, gy] = P(o.glare); for (const [a, b, k] of [[0, 0, 'x'], [-3, -2, 'X'], [3, -3, 'x'], [5, 0, 'X'], [-4, 3, 'X'], [2, 3, 'x'], [-1, -5, 'X'], [6, -4, 'x']]) put(g, gx + a, gy + b, k); });   /* (claude/lamplit2 art) the flare in his face */
     const c = q(G);
     if (o.smear) smear(c, ...o.smear);
     return c;
@@ -268,7 +270,10 @@ export function bakeWatch() {
     smear: [1 + X + 13, 1 + 15, 8, -50, 50] });
   const hurtF = frame({ legs: 'fall', dx: -2, dy: 2, up: true,
     far: [[-5, 18], [-8, 21]], near: [[2, 17], [5, 21]], pole: [[5, 21], 44, 26], lant: [-9, 20] });
-  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, thrust, hurtF], X + 1, H + 1, 12, 22);
+  /* (claude/lamplit2 art) THE WATCH HATE LIGHT: the relit lamp's flare in his face - both hands thrown over the dead eyes, head back, the halberd let go to hang by its strap, the light spilling gold round the helm */
+  const blinded = frame({ legs: 'brace', dx: -1, up: true, hx: -1, glare: [3, 9],
+    far: [[-3, 13], [0, 8]], near: [[3, 13], [3, 8]], pole: [[-2, 17], 70, 24, 'back'], lant: [-9, 18] });
+  return pack([walk(0), walk(1), walk(2), walk(3), guard, tell, thrust, blinded, hurtF], X + 1, H + 1, 12, 22);
 }
 
 // ---------- THE LAMPLIGHTER ----------
@@ -369,9 +374,13 @@ export function bakeLampreeve() {
       for (let t = 2; t < len; t += 1) { const sp = 1 + t * 0.42;
         for (let s = -sp; s <= sp; s += 1) if (((t + s) & 1) === 0 || t < 5) put(g, ...A(t, s).map(Math.round), Math.abs(s) > sp - 1.2 ? 'T' : Math.abs(s) > sp - 2.4 ? 'Z' : 'z'); } });
     if (o.puff) layer(G, g => { const [ux, uy] = P(o.puff); for (const [a, b, k] of [[0, 0, 'z'], [2, -1, 'Z'], [-2, 1, 'z'], [4, 1, 'Z'], [-1, -3, 'z'], [3, -4, 'Z'], [6, -2, 'z']]) put(g, ux + a, uy + b, k); });
-    if (o.flask) layer(G, g => { const [fx, fy] = P(o.flask);   /* (claude/lamplit2) THE OIL FLASK: a glass of whale oil, corked, a rag of wick in its neck */
-      for (let j = 0; j < 5; j++) for (let i = -2; i <= 2; i++) if (!(j === 4 && Math.abs(i) === 2)) put(g, fx + i, fy + j, Math.abs(i) === 2 ? 'T' : j < 2 ? 't' : 'y');
-      put(g, fx, fy - 1, 'u'); put(g, fx, fy - 2, 'u'); put(g, fx + 1, fy - 3, 'x'); put(g, fx, fy - 3, 'X'); });
+    if (o.flask) layer(G, g => { const [fx, fy] = P(o.flask);   /* (claude/lamplit2 art) THE OIL FLASK in his fist: a round glass of whale oil, amber behind the glass, a cork, and a rag of wick in the neck that is already burning */
+      const R = [' ..TTT.. ', ' .TttttT. ', 'TtyyyytT', 'Tyyxyyyt', 'Tyyyyyyt', 'TYyyyyYT', ' TYYYYT ', '  TTTT  '];
+      for (let j = 0; j < R.length; j++) for (let i = 0; i < R[j].length; i++) { const k = R[j][i]; if (k !== ' ' && k !== '.') put(g, fx - 3 + i, fy + j, k === 'y' ? 'X' : k === 'Y' ? 'q' : k === 'x' ? 'x' : k); }
+      put(g, fx - 1, fy - 1, 'u'); put(g, fx, fy - 1, 'u'); put(g, fx - 1, fy - 2, 'U'); put(g, fx, fy - 2, 'U');
+      put(g, fx + 1, fy - 3, 'p'); put(g, fx + 1, fy - 4, 'x'); put(g, fx + 2, fy - 5, 'X'); put(g, fx + 1, fy - 5, 'x'); });
+    if (o.glare) layer(G, g => { const [gx, gy] = P(o.glare); for (const [a, b2, k] of [[0, 0, 'x'], [-3, -2, 'X'], [3, -3, 'x'], [5, 0, 'X'], [-4, 3, 'X'], [2, 3, 'x'], [-1, -5, 'X'], [6, -5, 'x'], [-6, -1, 'x']]) put(g, gx + a, gy + b2, k); });
+    if (o.scorch) layer(G, g => { for (const [a, b2, k] of [[-2, 24, 'z'], [-1, 25, 'Z'], [0, 27, 'z'], [3, 26, 'Z'], [1, 23, 'z'], [-3, 28, 'X'], [4, 24, 'x'], [2, 29, 'X']]) put(g, B + a, b2 + dy, k); });   /* the flare's burn on the coat */
     const c = q(G);
     if (o.smear) smear(c, ...o.smear);
     return c;
@@ -404,15 +413,18 @@ export function bakeLampreeve() {
   const lunge = frame({ legs: 'lunge', dx: 1, dy: 2, down: true, ladder: true,
     far: [[0, 21], [3, 22]], near: [[3, 22], [7, 22]], pole: [[7, 22], 2, 15],
     smear: [1 + X + 6, 1 + 22, 8, -60, 0] });
-  const blinded = frame({ legs: 'stand', dx: -1, up: true, ladder: true,
+  const blinded = frame({ legs: 'stand', dx: -1, up: true, ladder: true, scorch: true, glare: [2, 9],
     far: [[-2, 18], [1, 14]], near: [[3, 18], [4, 14]], pole: [[-4, 24], -120, 20, 'back'] });
-  /* (claude/lamplit2, greybox for the art lane) THE OIL FLASK: drawn back over his shoulder, the pole low in the other hand - then lobbed */
-  const flaskTell = frame({ legs: 'coil', dx: -1, up: true, ladder: true, hx: -1,
-    far: [[-3, 23], [-1, 27]], near: [[0, 19], [-5, 14]], pole: [[-1, 27], 20, 20, 'back'], flask: [-6, 9] });
-  const flaskThrow = frame({ legs: 'lunge', dx: 1, dy: 1, ladder: true,
-    far: [[-3, 23], [-1, 27]], near: [[5, 19], [10, 13]], pole: [[-1, 27], 30, 20, 'back'],
-    smear: [1 + X + 6, 1 + 16, 10, -150, -60] });
-  return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel, lungeTell, lunge, blinded, flaskTell, flaskThrow], X + 1, H + 1, 14, 30);
+  /* (claude/lamplit2 art) THE OIL FLASK: the wind-up has him leaning right back with the flask cocked behind his hat, a burning wick and all, the pole trailing low in the other hand (his weight on the back foot is the tell); the throw is the release - the whole arm flung out and up, open hand, the body thrown after it, the oil still shaking off the fingers */
+  const flaskTell = frame({ legs: 'coil', dx: -2, up: true, ladder: true, hx: -2,
+    far: [[-3, 23], [-1, 28]], near: [[-1, 17], [-8, 10]], pole: [[-1, 28], 18, 20, 'back'], flask: [-12, 5] });
+  const flaskThrow = frame({ legs: 'lunge', dx: 2, dy: 1, ladder: true, hx: 1,
+    far: [[-3, 23], [-1, 28]], near: [[5, 18], [13, 12]], pole: [[-1, 28], 22, 20, 'back'], glare: [16, 11],
+    smear: [1 + X + 9, 1 + 13, 9, -170, -70] });
+  /* the HOOD's flare (the lesser opening): one arm thrown up across the eyes, the pole still in the other fist, flinching away; the RELIT flare (frame 14) takes both hands and the pole out of him */
+  const hoodFlare = frame({ legs: 'stand', dx: -1, up: true, ladder: true, hx: -1, glare: [3, 8],
+    far: [[-3, 21], [-1, 27]], near: [[3, 16], [5, 11]], pole: [[-1, 27], 28, 18, 'back'] });
+  return pack([stride(0), stride(1), stride(2), stride(3), snuffTell, snuff, sweepTell, sweep, draw, douse, hurtF, kneel, lungeTell, lunge, blinded, flaskTell, flaskThrow, hoodFlare], X + 1, H + 1, 14, 30);
 }
 
 // ---------- THE TOLLMASTER ----------
@@ -504,8 +516,12 @@ export function bakeTollmaster() {
     const A = axis(hand, deg);
     limb(G, A(-2), A(len), 2.0, ['z', 'j', 'I']);
     put(G, ...A(len).map(Math.round), 'y'); put(G, ...A(len - 1).map(Math.round), 'Y');
-    if (weight) { const wp = A(len + 4); for (let j = -2; j <= 2; j++) for (let i = -2; i <= 2; i++) if (Math.abs(i) + Math.abs(j) < 4) put(G, Math.round(wp[0] + i), Math.round(wp[1] + j), (i + j) & 1 ? 'j' : 'I');
-      chain(G, A(len).map(Math.round), [Math.round(wp[0]), Math.round(wp[1] - 2)]); }
+    if (weight) { const wp = A(len + 7), wx = Math.round(wp[0]), wy = Math.round(wp[1]);   /* (claude/lamplit2 art) THE COUNTERWEIGHT: a brass drum the size of a loaf on four links of chain, a banded rim and the city's scale cut into its face */
+      const D = ['..yyyy..', '.yxyyyY.', 'yxyYYyYy', 'yyY..Yyy', 'yyYjjYyY', 'yyYYYYyY', '.yYyyYY.', '..YYYY..'];
+      for (let j = 0; j < 8; j++) for (let i = 0; i < 8; i++) { const k = D[j][i]; if (k !== '.') put(G, wx - 4 + i, wy - 4 + j, k); }
+      put(G, wx - 3, wy - 3, 'x'); put(G, wx - 2, wy - 3, 'x');
+      const top = [Math.round(wp[0] + (A(len)[0] - wp[0]) * 0.55), Math.round(wp[1] + (A(len)[1] - wp[1]) * 0.55)];
+      chain(G, A(len).map(Math.round), [wx, wy - 4]); put(G, wx, wy - 5, 'i'); put(G, top[0], top[1], 'I'); }
   };
   const arm = (G, sh, el, hd, far) => layer(G, g => {
     limb(g, sh, el, 3.4, far ? ['R', 'R', 'r'] : ['R', 'r', 'd']);
@@ -540,14 +556,22 @@ export function bakeTollmaster() {
     if (o.rod && o.rod[3] !== 'back') layer(G, g => rod(g, P(o.rod[0]), o.rod[1], o.rod[2], o.weight));
     if (o.book && o.book[3] !== 'back') layer(G, g => { const c = ledger(g, P(o.book[0]), o.book[1], o.book[2]); chain(g, P(o.wrist), c.map(Math.round)); });
     arm(G, P([3, 22]), P(o.near[0]), P(o.near[1]), false);
-    if (o.box) layer(G, g => { const [bx, by] = P(o.box);   /* (claude/lamplit2) THE TOLL BOX: brass-bound, a coin slot in its lid - the flames go into it */
-      for (let j = -3; j <= 2; j++) for (let i = -3; i <= 3; i++) put(g, bx + i, by + j, j === -3 ? 'y' : (i === -3 || i === 3 || j === 2) ? 'Y' : 'U');
-      put(g, bx, by - 3, 'j'); put(g, bx + 1, by - 3, 'j'); if (o.box[2]) for (const [a, b] of [[-1, -5], [1, -6], [0, -7], [2, -5]]) put(g, bx + a, by + b, (a + b) & 1 ? 'x' : 'X'); });
-    if (o.seal) layer(G, g => { const [sx, sy] = P(o.seal);   /* THE SEAL OF DEBT: a brass handle and a disc of red wax */
-      gline(g, sx, sy - 5, sx, sy, 'y'); for (let j = 0; j <= 2; j++) for (let i = -4; i <= 4; i++) if (Math.abs(i) + j < 5) put(g, sx + i, sy + 1 + j, j === 2 ? 'R' : 'r'); });
-    if (o.writ) layer(G, g => { const [wx, wy] = P(o.writ);   /* THE WRIT OF DROWNING: a scroll held open, its seal hanging */
-      for (let j = -6; j <= 6; j++) for (let i = -3; i <= 3; i++) put(g, wx + i, wy + j, (i === -3 || i === 3) ? 'L' : (j & 1) ? 'l' : 'A'); put(g, wx, wy + 7, 'r'); put(g, wx, wy + 8, 'R'); });
-    if (o.burn) layer(G, g => { for (const [a, b] of [[-8, 26], [-5, 22], [6, 24], [9, 28], [-3, 30], [4, 31], [0, 20], [-10, 32], [11, 33]]) { put(g, B + a, b + dy, (a & 1) ? 'x' : 'X'); put(g, B + a, b + dy - 1, 'x'); } });   /* HIS ROBES CATCH: the relit flare in the purple */
+    if (o.box) layer(G, g => { const [bx, by] = P(o.box);   /* (claude/lamplit2 art) THE TOLL BOX: an iron-banded strongbox, brass corner plates, a hasp, and a slot in the lid the flames go into (it glows when they do) */
+      for (let j = -4; j <= 3; j++) for (let i = -4; i <= 4; i++) put(g, bx + i, by + j, j <= -3 ? 'i' : (i === -4 || i === 4 || j === 3) ? 'j' : (i === -1 || i === 1) ? 'I' : (j & 1) ? 'u' : 'U');
+      for (const [a, b] of [[-4, -4], [4, -4], [-4, 3], [4, 3]]) put(g, bx + a, by + b, 'y');
+      put(g, bx, by - 1, 'y'); put(g, bx, by, 'Y');
+      put(g, bx - 1, by - 4, o.box[2] ? 'x' : 'z'); put(g, bx, by - 4, o.box[2] ? 'x' : 'z'); put(g, bx + 1, by - 4, o.box[2] ? 'x' : 'z');
+      if (o.box[2]) for (const [a, b, k] of [[-1, -5, 'X'], [1, -6, 'x'], [0, -7, 'X'], [2, -5, 'x'], [-2, -6, 'X'], [0, -9, 'x'], [1, -8, 'X']]) put(g, bx + a, by + b, k); });
+    if (o.seal) layer(G, g => { const [sx, sy] = P(o.seal);   /* (claude/lamplit2 art) THE SEAL OF DEBT: a turned brass handle with a knob, and under it a disc of red wax, the city's scale pressed into its face */
+      for (let j = -8; j <= -3; j++) put(g, sx, sy + j, j & 1 ? 'y' : 'Y'); for (const i of [-2, -1, 0, 1, 2]) put(g, sx + i, sy - 9, i === 0 ? 'x' : 'y'); put(g, sx - 2, sy - 8, 'Y'); put(g, sx + 2, sy - 8, 'Y');
+      for (let i = -3; i <= 3; i++) put(g, sx + i, sy - 2, 'y');
+      for (let j = -1; j <= 3; j++) for (let i = -5; i <= 5; i++) if (Math.abs(i) + Math.abs(j) * 1.4 < 6.2) put(g, sx + i, sy + j, j === 3 ? 'R' : (j === 1 && Math.abs(i) < 3) ? 'y' : j === -1 ? 'd' : 'r'); });
+    if (o.writ) layer(G, g => { const [wx, wy] = P(o.writ);   /* (claude/lamplit2 art) THE WRIT OF DROWNING: a long scroll unrolled to its length, the black ink in lines, a roller of ash at each end, and the red seal hanging on a cord */
+      for (let j = -6; j <= 6; j++) for (let i = -3; i <= 3; i++) put(g, wx + i, wy + j, (i === -3 || i === 3) ? 'A' : (j & 1) ? 'a' : (i === 0 || (i + j) % 3 === 0) ? 'z' : 'a');
+      for (const j of [-7, 7]) for (let i = -4; i <= 4; i++) put(g, wx + i, wy + j, (i === -4 || i === 4) ? 'y' : 'w');
+      put(g, wx + 4, wy + 8, 'p'); put(g, wx + 4, wy + 9, 'p'); for (const [a, b] of [[3, 10], [4, 10], [5, 10], [4, 11], [3, 11], [5, 11]]) put(g, wx + a, wy + b, b === 11 ? 'R' : 'r'); });
+    if (o.burn) layer(G, g => { const t = [[-9, 33, 5], [-5, 31, 4], [-1, 33, 6], [4, 32, 4], [9, 33, 5], [-7, 25, 3], [7, 26, 3], [-3, 23, 3], [2, 22, 4], [11, 31, 3], [-11, 30, 3]];   /* (claude/lamplit2 art) HIS ROBES CATCH: tongues of fire along the hem and up the shoulders, hot gold at the root and a white-gold tip */
+      for (const [a, b, h] of t) for (let j = 0; j < h; j++) { const w = j < h - 2 ? 1 : 0; for (let i = -w; i <= w; i++) put(g, B + a + i, b + dy - j, j === 0 ? 'X' : j < h - 1 ? ((i + j) & 1 ? 'x' : 'X') : 'x'); } });
     if (o.out) layer(G, g => { // the light going out of him: black beads coming off his hands
       for (const [a, b] of [[-9, -6], [-5, -9], [0, -11], [5, -9], [9, -6], [-7, -2], [7, -2]]) put(g, B + a, 18 + dy + b, (a & 1) ? 'z' : 'Z'); });
     const c = q(G);
@@ -622,6 +646,7 @@ export function bakeTollmaster() {
     far: [[-6, 22], [-11, 16]], near: [[5, 22], [10, 16]], book: [[-14, 24], -60, true], wrist: [-11, 16], rod: [[10, 16], -30, 14] });
   const tiltL = frame({ bier: true, skirt: 'bier', dx: -2, dy: 2, tilt: -1, up: true,
     far: [[-6, 25], [-11, 29]], near: [[5, 24], [9, 19]], book: [[-12, 32], 30, false], wrist: [-11, 29], rod: [[9, 19], -40, 14] });
+  const tiltR = flipX(tiltL);   /* the other corner: the bier goes down on the right (main picks 24 or 25 by the stumbling bearer's side) */
   return pack([idle, ledgerTell, ledgerHit, tollTell, toll, darkTell, dark, setDown, walkA, walkB, floodTell, hurtF, kneel,
-    collectTell, collect, scalesLowTell, scalesHighTell, scalesSwing, sealTell, sealHit, writTell, writRead, flared, flaredFoot, tiltL], X + 1, H + 1, 18, 30);
+    collectTell, collect, scalesLowTell, scalesHighTell, scalesSwing, sealTell, sealHit, writTell, writRead, flared, flaredFoot, tiltL, tiltR], X + 1, H + 1, 18, 30);
 }

@@ -184,7 +184,7 @@ import * as DPP from './deep_props.js';
 import { airBoxes } from './deepair.js';
 import * as SEA from './sea_looks.js';   /* EVERY SEA LEVEL A LOOK OF ITS OWN: the trench, the living water, the reef's sun, the drowned city, the river into the sea */
 import * as TWN from './town_art.js';
-import * as CTP from './city_props.js';
+import * as CTP from './city_props.js'; import * as LA from './lamplit2-art.js';   /* (claude/lamplit2art) THE LAMPLIT STREET 2's art: the flask, the slick, the toll's stream, the scales, the seal and its wax, the writ's water, the fuse, the pockets, the toll gate */
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
 import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.js';
 import { bakeRimewright } from './redraw/frost.js';
@@ -276,7 +276,7 @@ const SPEED_DEFAULT = 0.6, SPEED_MIGRATE = false;
 const SET = { ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'minimal', hudV2: 1, filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: SPEED_DEFAULT, lookAhead: true, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
 const TIER = { sealedpyramid: 2.7, church: 2.0, rootway: 0.52, minecart: 1.2, skyroad: 1.12, welltown: 2.45, redgorge: 2.5, glasssea: 2.55, ksar: 2.6, towpath: 1.9, buriedcity: 2.65, caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75, underwell: 2.47 }; // how far up the slope a level sits
 const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
-const portSpr = n => BAR.gate(curId(), n) || TILE.port[((n % 2) + 2) % 2];   /* a gate column's tile: the region's own (src/barriers.js), the iron portcullis in the storm */
+const portSpr = n => (curId() === 'lamplit' ? LA.tollGate(n) : BAR.gate(curId(), n)) || TILE.port[((n % 2) + 2) % 2];   /* (claude/lamplit2art) the Lamplit Street's gates are brass-bound iron portcullises (the toll gate) */   /* a gate column's tile: the region's own (src/barriers.js), the iron portcullis in the storm */
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
 // you have not set; from the pause menu it sets the wood you are in.
@@ -12565,6 +12565,7 @@ function watchFlare(e) { e.flareT = WATCH_FLARE; e.stagger = Math.max(e.stagger 
 function updateLampHands(dt) {
   /* LIGHT THE WAY (claude/lamplit2): a pocket under the vault is there only while its street lamp burns - the lamp mains carry its air up */
   for (const r of airRooms) if (r.lampX !== undefined) { if (!r.lamp) r.lamp = lamps.find(pr => Math.abs(pr.x - (r.lampX * TS + 8)) < 12 && pr.y > r.t && pr.y < r.b + 240) || null;
+    if (r.lamp && !r.lamp.wayRoom) r.lamp.wayRoom = r;   /* (art: the air main is drawn up the lamp to its pocket) */
     const on = !!(r.lamp && r.lamp.lit && !(r.lamp.gut > 0));
     if (on && r.goneUntil) { r.goneUntil = 0; const mx = (r.l + r.r) / 2; number(mx, r.t + 6, 'THE AIR COMES BACK UP THE MAIN', '#bfe6f5'); SFX.lampUp(); for (let i = 0; i < 18; i++) parts.push({ x: r.lamp.x + (Math.random() - 0.5) * 8, y: r.lamp.y - 40, vx: (mx - r.lamp.x) * 0.3 + (Math.random() - 0.5) * 30, vy: -90 - Math.random() * 60, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -30 }); }
     else if (!on && !r.goneUntil) r.goneUntil = 1e9; }
@@ -12594,46 +12595,45 @@ function drawLampMarks(e, cx, cy) {
   const k = 0.5 + 0.5 * Math.sin(time * 16);
   if (e.t === 'lampreeve') { const fl = (L.mini || {}).floor || e.y;
     if (e.mode === 'flaskTell' || e.flask) { const tx = e.flask ? e.flask.tx : e.flaskX, locked = !!e.flask || e.modeT <= REEVE.flaskLock;   /* the flask's SHADOW: it follows you, then holds */
+      const sq = e.flask ? Math.min(1, e.flask.t / e.flask.T) : 0.15 + 0.45 * (1 - Math.max(0, e.modeT) / REEVE.flaskTell);
+      LA.flaskShadow(g, Math.round(tx - cx), Math.round(fl - cy) - 1, REEVE.flaskR, sq, locked, time);
       tellRing(Math.round(tx - cx), Math.round(fl - cy) - 2, REEVE.flaskR + (locked ? 0 : Math.round(k * 2)), 5, locked ? 1 : 0.3 + 0.3 * k, '#ff6b6b');
       if (e.flask) { const f = e.flask, q = Math.min(1, f.t / f.T), fx = f.sx + (f.tx - f.sx) * q, fy = f.sy + (fl - 4 - f.sy) * q - 70 * Math.sin(Math.PI * q);
-        g.globalAlpha = 0.2 + 0.4 * q; g.fillStyle = '#14201e'; g.beginPath(); g.ellipse(Math.round(f.tx - cx), Math.round(fl - cy) - 1, 4 + 10 * q, 2 + q, 0, 0, 7); g.fill(); g.globalAlpha = 1;
-        const X = Math.round(fx - cx), Y = Math.round(fy - cy); g.fillStyle = '#56898a'; g.fillRect(X - 2, Y - 2, 5, 6); g.fillStyle = '#e6b94a'; g.fillRect(X - 1, Y + 1, 3, 2); g.fillStyle = (time * 20 | 0) % 2 ? '#ffe9a8' : '#f0c05a'; g.fillRect(X, Y - 4, 1, 2); } } }
+        LA.flask(g, fx - cx, fy - cy, Math.sign(f.tx - f.sx) || 1, time, q); } } }
   if (e.t === 'tollmaster') { const A = L.arena, fl = A.floor;
     if ((e.mode === 'collectTell' || e.mode === 'collect') && e.collectLamp) { const pr = e.collectLamp, bx = Math.round(e.x + e.face * 10 - cx), by = Math.round(e.y - 34 - cy), lx = Math.round(pr.x - cx), ly = Math.round(pr.y - 40 - cy);   /* THE TOLL: the stream from the hood to the box */
-      g.save(); g.globalAlpha = e.mode === 'collect' ? 0.75 : 0.35 + 0.3 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = e.mode === 'collect' ? 2 : 1; if (e.mode !== 'collect') g.setLineDash([3, 3]);
-      g.beginPath(); g.moveTo(lx + 0.5, ly + 0.5); g.quadraticCurveTo((lx + bx) / 2, Math.min(ly, by) - 16, bx + 0.5, by + 0.5); g.stroke(); g.restore(); }
+      LA.tollStream(g, lx, ly, bx, by, e.mode === 'collect', time); }
     if (e.mode === 'scalesLowTell' || e.mode === 'scalesHighTell' || e.mode === 'scalesLow' || e.mode === 'scalesHigh') { const W = tollWeightAt(e), C = TOLL.scales.chain, f = e.face || 1, px = Math.round(W.px - cx), py = Math.round(W.py - cy);
       if (/Tell$/.test(e.mode)) { g.save(); g.globalAlpha = 0.3 + 0.35 * k; g.strokeStyle = '#ff6b6b'; g.setLineDash([3, 3]); g.beginPath();   /* its path, told: where it will pass and at what height */
-        for (let i = 0; i <= 16; i++) { const th = -TOLL.scales.swing + 2 * TOLL.scales.swing * i / 16, x = px + f * C * Math.sin(th), y = py + C * Math.cos(th); if (i) g.lineTo(x, y); else g.moveTo(x, y); } g.stroke(); g.restore(); }
-      else { const wx = Math.round(W.x - cx), wy = Math.round(W.y - cy); g.strokeStyle = '#47515b'; g.lineWidth = 1; g.beginPath(); g.moveTo(px + 0.5, py + 0.5); g.lineTo(wx + 0.5, wy + 0.5); g.stroke();
-        g.fillStyle = '#9c7619'; g.fillRect(wx - 6, wy - 4, 12, 8); g.fillStyle = '#e6b94a'; g.fillRect(wx - 5, wy - 3, 10, 2); g.fillStyle = '#47515b'; g.fillRect(px - 1, py - 1, 3, 3); } }
-    if (e.mode === 'sealTell' && e.sealX !== undefined) { const locked = e.modeT <= TOLL.seal.lock; tellRing(Math.round(e.sealX - cx), Math.round(fl - cy) - 2, TOLL.seal.r + (locked ? 0 : Math.round(k * 2)), 5, locked ? 1 : 0.3 + 0.3 * k, '#c9463d');
-      g.globalAlpha = 0.25 + 0.35 * (1 - Math.max(0, e.modeT) / TOLL.seal.tell); g.fillStyle = '#14201e'; g.beginPath(); g.ellipse(Math.round(e.sealX - cx), Math.round(fl - cy) - 1, TOLL.seal.r - 6, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+        for (let i = 0; i <= 16; i++) { const th = -TOLL.scales.swing + 2 * TOLL.scales.swing * i / 16, x = px + f * C * Math.sin(th), y = py + C * Math.cos(th); if (i) g.lineTo(x, y); else g.moveTo(x, y); } g.stroke(); g.restore();
+        LA.scalesWeight(g, px, py, Math.round(W.x - cx), Math.round(W.y - cy), time, false); }
+      else LA.scalesWeight(g, px, py, Math.round(W.x - cx), Math.round(W.y - cy), time, true); }
+    if (e.mode === 'sealTell' && e.sealX !== undefined) { const locked = e.modeT <= TOLL.seal.lock, sq = 1 - Math.max(0, e.modeT) / TOLL.seal.tell; tellRing(Math.round(e.sealX - cx), Math.round(fl - cy) - 2, TOLL.seal.r + (locked ? 0 : Math.round(k * 2)), 5, locked ? 1 : 0.3 + 0.3 * k, '#c9463d');
+      g.globalAlpha = 0.25 + 0.35 * sq; g.fillStyle = '#14201e'; g.beginPath(); g.ellipse(Math.round(e.sealX - cx), Math.round(fl - cy) - 1, TOLL.seal.r - 6, 3, 0, 0, 7); g.fill(); g.globalAlpha = 1;
+      LA.sealGhost(g, Math.round(e.sealX - cx), Math.round(fl - cy), TOLL.seal.r, sq, locked, time); }
     if (!e.onFoot && e.corners) for (const [i, s] of [[0, -1], [1, 1]]) { const c = e.corners[i]; if (!(c.n > 0) || time - c.t > TOLL.bearerWin) continue;   /* a bearer's corner, struck: one gold pip a blow */
       for (let j = 0; j < c.n; j++) { g.fillStyle = '#ffd36b'; g.fillRect(Math.round(e.x + s * 15 - cx) - 4 + j * 3, Math.round(e.y - cy) + 2, 2, 2); } } }
   lampRead(e, cx, cy);
 }
-/* THE STREET'S HANDS, drawn under the creatures (greybox: the art lane draws them properly): the oil and the wax on the boards, the writ's
-   water standing in the hoods, every dead lamp's flare reach while you carry fire and something stands near it, and the fuse on a flame
-   under the water */
+/* THE STREET'S HANDS, drawn under the creatures (claude/lamplit2art, src/lamplit2-art.js): the oil and the wax on the boards, the bier left on the stones, the writ's
+   water standing in the hoods, every dead lamp's flare reach while you carry fire and something stands near it, and the fuse on a flame under the water */
 function drawLampWorld(cx, cy) {
   if (!lamps.length) return;
-  for (const s of oilSlicks) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), a = Math.min(1, s.life / 2);
-    g.globalAlpha = 0.6 * a; g.fillStyle = '#1e1a10'; g.beginPath(); g.ellipse(x, y - 1, s.w, 3, 0, 0, 7); g.fill();
-    g.globalAlpha = (0.25 + 0.15 * Math.sin(time * 3 + s.x)) * a; g.fillStyle = '#c9a85a'; g.fillRect(x - Math.round(s.w * 0.5), y - 2, Math.round(s.w * 0.6), 1); g.fillStyle = '#7aa8c0'; g.fillRect(x + 4, y - 2, 6, 1); g.globalAlpha = 1; }
-  for (const w of tollWax) { const x = Math.round(w.x - cx), y = Math.round(w.y - cy); g.globalAlpha = 0.75 * Math.min(1, w.life); g.fillStyle = '#6a1e1a'; g.beginPath(); g.ellipse(x, y - 1, w.w, 3, 0, 0, 7); g.fill();
-    g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(x, y - 2, 7, 2, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+  for (const s of oilSlicks) LA.slick(g, Math.round(s.x - cx), Math.round(s.y - cy), s.w, Math.min(1, s.life / 2), time, s.burn || 0, s.burn > 0 ? 1 - s.burn / 1.2 : 0, s.x);
+  for (const w of tollWax) LA.wax(g, Math.round(w.x - cx), Math.round(w.y - cy), w.w, w.life / Math.max(0.01, w.max || 4.5), time);
   const tm = boss && boss.t === 'tollmaster' && boss.alive ? boss : null;
+  if (tm && (tm.mode === 'setDown' || tm.onFoot)) { if (tm.bierX === undefined) tm.bierX = tm.x;   /* THE BIER STAYS WHERE HE STEPPED OFF IT; the bearers back away into the dark */
+    const bs = LA.bier(); g.drawImage(bs, Math.round(tm.bierX - cx) - (bs.width >> 1), Math.round(L.arena.floor - cy) - bs.height + 1);
+    if (tm.mode === 'setDown') LA.bearers(g, Math.round(tm.bierX - cx), Math.round(L.arena.floor - cy), 1 - Math.max(0, tm.modeT) / 1.4); }
   if (tm && tm.mode === 'writTell') { const mid = (L.arena.x0 + L.arena.x1) / 2, x0 = tm.writHalf ? mid : L.arena.x0, x1 = tm.writHalf ? L.arena.x1 : mid, q = 1 - Math.max(0, tm.modeT) / TOLL.writ.tell;
-    g.globalAlpha = 0.25 + 0.2 * q; g.fillStyle = '#2a6a7a'; g.fillRect(Math.round(x0 - cx), Math.round(L.arena.floor - 70 - cy), Math.round(x1 - x0), Math.round(70 * q)); g.globalAlpha = 1; }   /* the writ: the water standing up in that half, told */
-  if (tm && tm.writ) { const w = tm.writ, a = Math.min(1, w.t); g.globalAlpha = 0.28 * a; g.fillStyle = '#1a4a5a'; g.fillRect(Math.round(w.x0 - cx), Math.round(L.arena.floor - 70 - cy), Math.round(w.x1 - w.x0), 70);
-    g.globalAlpha = 0.6 * a; g.fillStyle = '#9fd6d2'; g.fillRect(Math.round(w.x0 - cx), Math.round(L.arena.floor - 70 - cy), Math.round(w.x1 - w.x0), 1); g.globalAlpha = 1; }
+    LA.writWater(g, x0 - cx, x1 - cx, L.arena.floor - cy, 70 * q, 0.55 + 0.45 * q, time); }   /* the writ: the water standing up in that half, told */
+  if (tm && tm.writ) { const w = tm.writ, a = Math.min(1, w.t); LA.writWater(g, w.x0 - cx, w.x1 - cx, L.arena.floor - cy, 70, a, time); }
   if (P.wick > 0) for (const pr of lamps) { if (pr.lit || Math.abs(pr.x - P.x) > 240) continue;   /* WHERE THE FLARE REACHES: a dead lamp, your fire, and one of them beside it */
     const R = enemies.some(e => e.alive && e.t === 'tollmaster' && Math.abs(e.x - pr.x) < TOLL.relitR + 60 && Math.abs(e.y - pr.y) < 70) ? TOLL.relitR
       : enemies.some(e => e.alive && (e.t === 'lampreeve' || e.t === 'watch') && Math.abs(e.x - pr.x) < REEVE.relitR + 60 && Math.abs(e.y - pr.y) < 70) ? REEVE.relitR : 0;
-    if (!R) continue; g.save(); g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 6); g.strokeStyle = '#ffd36b'; g.setLineDash([2, 4]); g.beginPath(); g.ellipse(Math.round(pr.x - cx), Math.round(pr.y - cy) - 1, R, 5, 0, 0, 7); g.stroke(); g.restore(); }
+    if (!R) continue; LA.flareReach(g, Math.round(pr.x - cx), Math.round(pr.y - cy) - 1, R, time); }
   if (P.wick > 0 && P.wickWet && !P.dead) { const x = Math.round(P.x - cx - (P.face || 1) * 5), y = Math.round(P.y - 30 - cy), q = Math.max(0, Math.min(1, P.wick / WICK_DRY));   /* YOUR FLAME DROWNS: its fuse */
-    g.strokeStyle = '#1b1626'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, 5, 0, Math.PI * 2); g.stroke(); g.strokeStyle = q < 0.35 ? '#7fd0ff' : '#ffd36b'; g.beginPath(); g.arc(x, y, 5, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * q); g.stroke(); g.lineWidth = 1; }
+    LA.fuse(g, x, y, q, time); }
 }
 function updateWatch(e, dt) {
   e.modeT -= dt; e.anim += dt; if (e.guardT > 0) e.guardT -= dt;
@@ -24858,6 +24858,7 @@ function drawAirSigns(cx, cy) {
   // is what lets a swimmer read it as AIR from outside and spend a breath on the swim in.
   for (const r of airRooms) {
     const w = r.r - r.l, mx = (r.l + r.r) / 2;
+    if (r.lampX !== undefined && on(mx, r.b, w / 2 + 70)) LA.pocket(g, { l: r.l - cx, r: r.r - cx, t: r.t - cy, b: r.b - cy }, !(r.goneUntil > time), time);   /* (claude/lamplit2art) a LIGHT THE WAY pocket: air while its lamp burns, a dashed ghost and weed while it is out */
     if (!on(mx, r.b, w / 2 + 70) || r.goneUntil > time) continue;
     const below = r.b + 6;
     if (!(inWater(mx, below) && tileAt(Math.floor(mx / TS), Math.floor(below / TS)) === T.AIR)) continue;   /* a ship's hold whose floor is her own deck is not a mouth */
@@ -30026,6 +30027,7 @@ function drawWorld(cx, cy, showPlayer) {
         if (pr.lane) { const ly = pr.lane - cy, y0 = Math.round(pr.y - cy) + 4; g.beginPath(); g.ellipse(rx, ly - 1, 12 - k * 3, 3, 0, 0, Math.PI * 2); g.stroke(); g.fillStyle = '#ff6b4a'; g.globalAlpha = 0.4 + 0.5 * k;
           for (let yy = y0 + ((time * 60) % 8); yy < ly - 6; yy += 8) g.fillRect(rx - 1, Math.round(yy), 2, 4); }   /* THE ORE ROAD: where it crosses the cable, and the fall line down to it, marching */
         g.globalAlpha = 1; } }
+    else if (pr.t === 'brazier' && pr.city) { g.drawImage(PROP.city.cityBrazier[1], Math.round(pr.x) - 12 - cx, Math.round(pr.y) - 28 - cy); LA.brazierReach(g, Math.round(pr.x - cx), Math.round(pr.y - cy), Math.sign(P.x - pr.x) || 1, !P.dead && Math.abs(pr.x - P.x) < 20 && Math.abs(pr.y - P.y) < 30, time); }   /* (claude/lamplit2art) the Tollmaster's city brazier: its own iron, never the camp's; it leans to your hand */
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
     else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
       if (pr.raftCall) { g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(Math.round(pr.x - cx) - 31, Math.round(pr.y - cy) - 46, 62, 12); text('CALL RAFT', pr.x - cx, pr.y - 38 - cy, '#ffe6a0', 'center', 6); } }
@@ -30195,7 +30197,12 @@ function drawWorld(cx, cy, showPlayer) {
         gr.addColorStop(1, st === 2 ? 'rgba(120,180,200,0)' : 'rgba(200,140,40,0)');
         g.fillStyle = gr; g.fillRect(lx - R0, ly - R0, R0 * 2, R0 * 2);
         if (st === 1 && SET.ambient && Math.random() < 0.5) parts.push({ x: pr.x + (Math.random() - 0.5) * 26, y: pr.y - 44 + Math.random() * 30, vx: 0, vy: -4 - Math.random() * 6, life: 1.4, max: 1.4, col: '#ffe9a8', size: 1, grav: 0 }); }
-      g.drawImage(PROP.city.lamp[st], Math.round(pr.x) - 9 - cx, Math.round(pr.y) - 55 - cy); }
+      const lx0 = Math.round(pr.x) - 9 - cx, ly0 = Math.round(pr.y) - 55 - cy;
+      if (pr.wayRoom) LA.airMain(g, lx0 + 8, ly0, (pr.y - 55) - pr.wayRoom.b, st === 1 && !(pr.gut > 0), time);   /* (claude/lamplit2art) A WAY LAMP's air main, run up to the pocket it feeds */
+      if (pr.gate !== undefined) { if (pr.gateTopY === undefined) { let gt = -1; for (let ty = 0; ty < LH; ty++) if (L.grid[ty * LW + pr.gate] === T.PORT) { gt = ty; break; } if (gt >= 0) pr.gateTopY = gt * TS; } if (pr.gateTopY !== undefined) LA.gateChain(g, lx0 + 8, ly0 + 2, pr.gate * TS + 8 - cx, pr.gateTopY - cy + 3, !!pr.gateOpen, time); }   /* the toll gate's lamp is chained to the gate it lifts */
+      g.drawImage(PROP.city.lamp[st], Math.round(pr.x) - 9 - cx, Math.round(pr.y) - 55 - cy);
+      if (st === 1 && pr.tollK > 0) LA.lampDrain(g, lx0, ly0, pr.tollK);   /* its flame drawn out to the toll box */
+      if (lampDrowned(pr)) LA.hoodWater(g, lx0, ly0, time, Math.round(pr.x) & 7); }   /* the writ's water standing in its hood */
     else if (pr.t === 'lantern') { if (pr.lit) { g.globalAlpha = 0.18 + 0.05 * Math.sin(time * 4 + pr.x); g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 30 - cy), 26, 0, 7); g.fill(); g.globalAlpha = 1; }
       if (pr.owl && !pr.perch) { const px = Math.round(pr.x - cx), py = Math.round(pr.y - cy); g.globalAlpha = pr.lit ? 0.22 + 0.05 * Math.sin(time * 4 + pr.x) : 0.12; g.fillStyle = pr.lit ? '#ffd36b' : '#141020'; g.beginPath(); g.ellipse(px, py - 1, pr.lit ? 40 : 14, pr.lit ? 6 : 3, 0, 0, 7); g.fill(); if (pr.lit) { g.globalAlpha = 0.18; g.fillStyle = '#fff2c0'; g.beginPath(); g.ellipse(px, py - 1, 18, 3, 0, 0, 7); g.fill(); } g.globalAlpha = 1; }   /* (claude/owl2) HER FLOOR LAMPS' GLOW POOLS on the boards: a lit lamp is where she crashes */
       if (pr.perch) g.drawImage(PROP.crownLantern[pr.lit ? 1 : 0], 0, 0, 12, 11, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 36 - cy, 12, 11);   /* (claude/owl2) HER PERCH LAMPS HANG: the lamp alone, on its chain off a limb of the bough (src/hanging-village.js drawCrown) - they stood on posts that floated over the planks */
@@ -30544,13 +30551,13 @@ function drawWorld(cx, cy, showPlayer) {
       if (frame === undefined) frame = e.mode === 'charge' ? 6 + Math.floor(e.anim * 12) % 2 : e.mode === 'rush' ? 16 + Math.floor(e.anim * 12) % 2 : e.mode === 'recover' ? (p2 ? 15 : 9) : (p2 || e.mode === 'guard') ? (mv ? 27 + Math.floor(e.anim * 8) % 2 : 13) : (mv ? 1 + Math.floor(e.anim * 9) % 4 : 0); }
     else if (e.t === 'tollmaster') frame = e.dying > 0 ? 12 : e.mode === 'ledgerTell' ? 1 : e.mode === 'ledger' ? 2 : e.mode === 'rodTell' ? 3 : e.mode === 'rod' ? 4   /* (claude/lamplit2) the rod has its own pair now (B16: it borrowed THE DARK's) */
       : e.mode === 'collectTell' ? 13 : e.mode === 'collect' ? 14 : e.mode === 'scalesLowTell' ? 15 : e.mode === 'scalesHighTell' ? 16 : (e.mode === 'scalesLow' || e.mode === 'scalesHigh') ? 17
-      : e.mode === 'sealTell' ? 18 : e.mode === 'seal' ? 19 : e.mode === 'writTell' ? 20 : e.mode === 'writ' ? 21 : e.mode === 'flared' ? (e.onFoot ? 23 : 22) : e.mode === 'tilt' ? 24
+      : e.mode === 'sealTell' ? 18 : e.mode === 'seal' ? 19 : e.mode === 'writTell' ? 20 : e.mode === 'writ' ? 21 : e.mode === 'flared' ? (e.onFoot ? 23 : 22) : e.mode === 'tilt' ? ((e.tiltSide || 0) * (e.face || 1) > 0 ? 25 : 24)
       : e.mode === 'setDown' ? 7 : e.mode === 'floodTell' ? 10 : (e.stagger > 0 || e.mode === 'reel') ? 11
       : e.onFoot ? (Math.abs(e.vx) > 6 ? (Math.floor(e.anim * 5) % 2 ? 9 : 8) : 8) : 0;
-    else if (e.t === 'lampreeve') frame = e.mode === 'snuffTell' ? 4 : e.mode === 'snuff' ? 5 : e.mode === 'blinded' ? 14 : e.mode === 'lungeTell' ? 12 : (e.mode === 'lunge' || e.mode === 'lungeEnd') ? 13 : e.mode === 'takeTell' ? 8
+    else if (e.t === 'lampreeve') frame = e.mode === 'snuffTell' ? 4 : e.mode === 'snuff' ? 5 : e.mode === 'blinded' ? (e.flareKind === 'hood' ? 17 : 14) : e.mode === 'lungeTell' ? 12 : (e.mode === 'lunge' || e.mode === 'lungeEnd') ? 13 : e.mode === 'takeTell' ? 8
       : e.mode === 'sweepTell' ? 6 : e.mode === 'sweep' ? 7 : e.mode === 'flaskTell' ? 15 : e.mode === 'flask' ? 16   /* (claude/lamplit2) the OIL FLASK's own windup and throw */
       : e.dying > 0 ? 11 : e.stagger > 0 ? 10 : Math.abs(e.vx) > 6 ? Math.floor(e.anim * 8) % 4 : 0;
-    else if (e.t === 'watch') frame = (e.mode === 'thrust' || e.mode === 'sweep') ? 6 : (e.mode === 'thrustTell' || e.mode === 'sweepTell') ? 5 : (e.mode === 'guard' || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
+    else if (e.t === 'watch') frame = e.flareT > 0 ? 7 : (e.mode === 'thrust' || e.mode === 'sweep') ? 6 : (e.mode === 'thrustTell' || e.mode === 'sweepTell') ? 5 : (e.mode === 'guard' || e.guardT > 0) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 7) % 4 : 0;
     else if (e.t === 'snuffer') frame = e.mode === 'snuffTell' ? 2 : (e.mode === 'swipeTell' || e.mode === 'swipe') ? 3 : Math.abs(e.vx) > 4 ? [1, 0, 4, 0][Math.floor(e.anim * 9) % 4] : 0;
     else if (e.t === 'sailer') frame = e.mode === 'tumble' ? 2 : e.mode === 'sail' ? 1 : 0;
     else if (e.t === 'troll') frame = e.mode === 'throwTell' || e.mode === 'throw' || e.mode === 'hurlTell' || e.mode === 'hurl' || e.mode === 'heave' || e.mode === 'slamTell' ? 3 : e.mode === 'swatTell' || e.mode === 'swat' || e.mode === 'ripTell' ? 4 : e.mode === 'slam' || e.mode === 'pinned' ? 0 : Math.abs(e.vx) > 4 ? 1 + Math.floor(e.anim * 5) % 2 : 0;
