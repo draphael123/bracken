@@ -77,7 +77,7 @@ import { creditPages, CC_BY, FONT_CREDITS, FONT_LICENCE } from './credits.js';  
 import { lanceSupport, LANCE_SUPPORT, gateHas, gateCatch, gateStep, drawLanceGate } from './lance-support.js';   /* THE QUEEN'S BOWS: the archers he calls to the end lookouts (docs/briefs/lance-support.md) */
 // BRACKEN — a 16-bit forest platformer with a knight, a sword, a shield, and a plunge.
 import {fallBounds} from './waterfalls.js';
-import { canvas, mulberry, fromGrid, outline, flipX, whiten } from './px.js';
+import { canvas, mulberry, fromGrid, outline, flipX, whiten, bakeScope, bakeScopeEnd } from './px.js';
 import { REC } from './playrec.js';   /* THE PLAYTEST RECORDER (claude/bot2): off unless ?rec=1 / SHIFT+F9; F9 saves its log as a file, nothing is sent */
 import { markOf, marksMissed, tellKey, laneOf, heightOf } from './marks.js';   /* THE MARK OVER A WINDUP: one table, written and audited by tools/tells.mjs */
 import * as MU from './mummer.js'; import * as FG from './redraw/fair_art.js'; import * as FAW from './redraw/fair_world.js'; import * as WQN from './wicker-queen.js'; import { bakeWickerQueen, drawSpear as wqDrawSpear } from './redraw/wicker_queen.js';   /* THE HARVEST FAIR: the facing rule (pure, tools/harvest-fair.mjs) and its art */
@@ -1027,7 +1027,28 @@ let TILE, PROP, BG, VILL = null, SHORE = null, REEF = null, FLOT = null, CITY = 
 /* UNDER THE GROUND: a level that is all cave (L.underground) and the Ore Road's mine, which draws its own cave */
 function belowGround(Lv) { return !!(Lv && (Lv.underground || Lv.oreRoad)); }
 function bakeAll(pal = {}) { for (const _ of bakeAllG(pal)); }   /* synchronous, as it always was */
-function* bakeAllG(pal = {}) {   /* the same bake as a generator: it yields a step after the tiles, the props and the sky, and the loading screen drives it */
+/* THE OLD BAKE IS GIVEN BACK (claude/loadleak, 10-16). Every level load bakes its tiles, props and backdrop again (~750 sheets), and the sheets
+   of the last bake were simply dropped. A dropped canvas keeps its native memory (pixels, raster state: ~30-50 MB a bake here) until a MAJOR
+   garbage collection, and V8 cannot see that memory, so it is in no hurry: a session of loads stood on hundreds of MB of dead sheets, and a page
+   that loaded level after level without stopping (the tools) grew ~50 MB a load to several GB. Now the sheets a bake made (only while the
+   bake itself runs: px.js bakeScope) are written down, and once the next level is fully loaded every one of them that the new TILE/PROP/BG
+   and the caches below no longer reach is emptied (width 0 frees it at once). tools/load-leak.mjs holds the growth a load to a few MB and
+   proves none of the emptied sheets is still held anywhere else (a sheet still held would be drawn empty). */
+let BAKE_CUR = null, BAKE_OLD = []; const BAKE_PATH = new WeakMap();
+function* bakeAllG(pal = {}) { const it = bakeAllG0(pal), own = [];
+  for (;;) { let r; bakeScope(); try { r = it.next(); } finally { own.push(...bakeScopeEnd()); } if (r.done) break; yield r.value; }   /* a sheet made between the steps (the loading screen's frames) is not the bake's */
+  if (BAKE_CUR) BAKE_OLD.push(...BAKE_CUR); BAKE_CUR = own;
+  if (window.__bakeAudit) { const st = [[TILE, 'TILE'], [PROP, 'PROP'], [BG, 'BG']], seen = new Set(); while (st.length) { const [o, p] = st.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);   /* (the audit only: where each sheet sat, so a sheet still held is named) */
+    if (o instanceof HTMLCanvasElement) { BAKE_PATH.set(o, p + ' (' + curId() + ')'); continue; } if (ArrayBuffer.isView(o)) continue; for (const k in o) st.push([o[k], p + '.' + k]); } } }
+function retireBakes() { if (!BAKE_OLD.length) return;
+  const keep = new Set(), seen = new Set(), stack = [TILE, PROP, BG, LEDGE_SETS, REDRESS_GROUND, REDRESS_PROPS, CROWN, VILL, SHORE, REEF, FLOT, CITY, MONK, RAINART, typeof KRKP === 'undefined' ? null : KRKP];
+  while (stack.length) { const o = stack.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);
+    if (o instanceof HTMLCanvasElement) { keep.add(o); continue; } if (ArrayBuffer.isView(o)) continue;
+    for (const k in o) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } }
+  const audit = window.__bakeAudit;   /* tools/load-leak.mjs: a weak note of every sheet given back, to prove after a collection that nothing kept one */
+  for (const c of BAKE_OLD) if (!keep.has(c)) { c.width = 0; c.height = 0; if (audit) audit.push({ w: new WeakRef(c), at: BAKE_PATH.get(c) || 'not under TILE/PROP/BG' }); }
+  BAKE_OLD = []; }
+function* bakeAllG0(pal = {}) {   /* the same bake as a generator: it yields a step after the tiles, the props and the sky, and the loading screen drives it */
   Object.assign(ART.C, PAL0, pal);
   TILE = {
     dirt: [0, 1, 2, 3, 4, 5].map(i => ART.bakeDirt(10 + i)), deep: [0, 1, 2].map(b => [0, 1, 2, 3, 4, 5, 6, 7].map(i => ART.bakeDirtDeep(140 + b * 17 + i, b))), top: {}, edge: {},   /* eight ways to be a foot of earth instead of four: the deep fill is the biggest mass on the screen */
@@ -2270,6 +2291,7 @@ function* loadLevelG(i) {
   /* ...and built HERE when the arrow is on: the fill with its rides takes a quarter of a second on the Deep, and on the arrow's first ask in
      play that was fifteen frames of hitch. Inside a load nobody sees it. (Off by default, so the labs and tools never pay for it.) */
   if (SET.wayOn && !L.trial) { try { wayRoute = wayBuild(); } catch (err) { wayRoute = null; } }
+  retireBakes();   /* the last level's sheets, now that nothing of it is left on screen (claude/loadleak) */
   yield 'rest';
 }
 /* THE CONTRAST RIM (src/contrast-rim.js, docs/sprite-quality-audit.md): on each level, a common foe whose body sits in the same value as
@@ -32429,7 +32451,7 @@ function edMount(rebake) {
   L = edLevelObj(edDoc, false); LW = L.W; LH = L.H;
   if (rebake) bakeAll(L.palette || {});
   grid0 = new Uint8Array(L.grid); destroyed = new Set(); cutBridges = new Set(); mending = []; marks = new Set();
-  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); resolveTiles();
+  tileSpr = new Array(LW * LH).fill(null); tileDeep = new Uint8Array(LW * LH); resolveTiles(); retireBakes();
   acorns = []; signs = []; shrines = []; gate = null; total = 0; silvers = [];
   edRespawn();
 }
