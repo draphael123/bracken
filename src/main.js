@@ -14146,8 +14146,8 @@ const archResealLen = e => (e && e.stage >= 2 ? ARCH.resealLate : ARCH.reseal) *
 /* PER-HERO CLASS (claude/follyfix, B6 - 60-70% for EVERY hero, flasks): the ward's runes break only to what the hero's own swing reaches and he opens at the same pace for everyone, so the walker heroes were short of damage
    (knight 5/12, warden 5/11, 240 s timeouts with a fifth of him left) and the ranged fire hero cut all three runes from where he stood (12/12 in a minute). hp: his health, cap: the share of it ONE opening may take,
    reseal: the ward's reseal timer. Numbers only; every move and tell is the same for all three. */
-const ARCH_TUNE = { knight: { hp: 0.8, dmg: 0.7, cap: 0.18, reseal: 1 }, warden: { hp: 0.85, dmg: 1.1, cap: 0.18, reseal: 1 }, pyro: { hp: 1.7, dmg: 1.3, cap: 0.13, reseal: 0.7 } };   /* dmg: what his spells take off the hero */
-const archTune = () => ARCH_TUNE[hero()] || { hp: 1, dmg: 1, cap: 0.18, reseal: 1 };
+const ARCH_TUNE = { knight: { hp: 1, dmg: 0.85, mul: 1.6, cap: 0.22, reseal: 1 }, warden: { hp: 1, dmg: 1.05, mul: 1.15, cap: 0.18, reseal: 1 }, pyro: { hp: 1.7, dmg: 1.5, mul: 1, cap: 0.1, reseal: 0.6 } };   /* dmg: what his spells take off the hero; mul: what his blows are worth in an opening (ARCH.openMul x this) */
+const archTune = () => ARCH_TUNE[hero()] || { hp: 1, dmg: 1, mul: 1, cap: 0.18, reseal: 1 };
 const archDmg = d => Math.round(d * archTune().dmg);
 const archRunesUp = R => !!R && R.runes.some(r => r.hp > 0);
 /* what his room-attacks and paired spells were holding: dropped whenever he is opened, and when the room changes */
@@ -14328,7 +14328,7 @@ function archHurt(e, dmg, fromX, blow, tag) {
   if (R && archRunesUp(R)) { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); number(e.x, e.y - 46, 'THE RUNES HOLD', MVIO[2]); return false; }
   if (R && R.ride && e.stage === 2) { SFX.clank(); sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 4); if (Math.random() < 0.3) number(e.x, e.y - 46, 'THE COUNTERWEIGHT', '#e0b050'); return false; }   /* on the orrery's arm: the counterweight brings him down, a blow does not */
   let out = dmg; archCapE = null;
-  if (e.open > 0) { archCapE = e; sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 6); out = Math.round(dmg * (e.fam ? 3.2 : ARCH.openMul));
+  if (e.open > 0) { archCapE = e; sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 6); out = Math.round(dmg * (e.fam ? 3.2 : ARCH.openMul * archTune().mul));
     /* ONE OPENING IS ONE PIECE OF HIM: under a fifth of his health in the duel, a twelfth through the eye. A hero who hits hard
        ends the window sooner and waits for the next, so the fight is the same number of readings for everyone, not one lucky flurry */
     const cap = e.maxHp * (e.fam ? 0.08 : archTune().cap) - (e.openTaken || 0); out = Math.max(0, Math.min(out, Math.floor(cap)));
