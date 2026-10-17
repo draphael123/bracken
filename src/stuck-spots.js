@@ -89,7 +89,7 @@ export const STUCK = {
     { id: 'fl-bowsprit', zone: [14, 18, 30, 30], at: [28, 24], glint: 'stall', line: "THE GALLEY'S BOWSPRIT REACHES BACK OVER THE GAP" },
     { id: 'fl-bench-teach', zone: [96, 18, 103, 26], mover: { bench: 'b0' }, glint: 'stall', line: 'HER BENCHES RIDE UP AND DOWN: STEP ON AT THE TOP' },
     { id: 'fl-bench-test', zone: [113, 18, 120, 26], mover: { bench: 'b1' }, glint: 'stall', line: 'WATCH THE BENCHES: THEY RISE OUT OF STEP' },
-    { id: 'fl-castle', zone: [150, 14, 173, 34], mover: { bench: 'b6' }, glint: 'stall', line: 'THE LAST BENCH RISES TO THE CASTLE: FREE ITS ROWER AT THE TOP' },
+    { id: 'fl-castle', zone: [150, 14, 170, 34], mover: { bench: 'b6' }, glint: 'stall', line: 'THE LAST BENCH RISES TO THE CASTLE: FREE ITS ROWER AT THE TOP' },
     { id: 'fl-swing-214', zone: [203, 12, 216, 32], at: [214, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE HULK' },
     { id: 'fl-swing-220', zone: [214, 12, 224, 32], at: [220, 20], glint: 'stall', line: 'THE NEXT LINE SWINGS OVER THE GAP' },
     { id: 'fl-rigging', zone: [272, 14, 287, 22], at: [286, 14], glint: 'stall', line: "THE WAY ON IS UP THE MAST: THERE IS NO DECK TO THE NEXT SHIP" },

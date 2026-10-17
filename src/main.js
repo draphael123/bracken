@@ -9998,8 +9998,10 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   else if (r.hitY) P.vy = 0;
   if (!P.ground && wasGround) P.coyote = SET.assist ? MOVE.COYOTE_ASSIST : MOVE.COYOTE; // (a mover counts: walking off a raft used to give no grace at all)
   if (HPK) HPK.footLand(prevY);   /* (claude/heropassa) THE WALL PLANT's shaft is footing, as a mover is */
+  /* (claude/flotilla2) A RISING MOVER CATCHES A FALLING HERO: its top swept up through his feet this frame (m.dy < 0), so he was over where it WAS - the old test allowed
+     only a falling mover's travel (max(0, dy)), and a hero landing on THE GALLEY HULL's rising benches fell through them (tools/flotilla-route.mjs) */
   if (GS > 0 && !P.ground && P.vy >= 0) for (const m of movers) { if (m.broken) continue;
-    if (prevY <= m.y + 1 + Math.max(0, m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
+    if (prevY <= m.y + 1 + Math.abs(m.dy || 0) && P.y >= m.y && P.y <= m.y + 12 && P.x + 4 > m.x && P.x - 4 < m.x + m.w) { P.y = m.y; P.vy = 0; P.ground = true; P.groundTile = m.cap ? T.BOUNCER : T.SOLID; P.onMover = m; P.coyote = 0.1; P.kicked = false; }
   }
   /* THE BUD PAD throws you. Landing is the trigger, not a press: the sign says LAND ON IT, and a pad that wanted a button
      would be a jump with extra steps. -420 rises 89 px, where the jump rises 51: enough for the stages a tier over the

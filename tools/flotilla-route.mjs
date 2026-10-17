@@ -12,11 +12,11 @@ const HEROES = opt('heroes', 'knight,warden,pyro,ranger,paladin,reaper,geomancer
 const CHAINS = [
   { name: 'GALLEY HULL: the teach well', start: [100, 23], links: [{ bench: 'b0' }, { ledge: [110, 117, 23] }] },
   { name: 'GALLEY HULL: the test well', start: [116, 23], links: [{ bench: 'b1' }, { bench: 'b2' }, { bench: 'b3' }, { ledge: [139, 152, 23] }] },
-  { name: 'GALLEY HULL: up to the stern castle', start: [151, 23], links: [{ bench: 'b4' }, { bench: 'b5' }, { bench: 'b6' }, { ledge: [174, 186, 14] }] },
+  { name: 'GALLEY HULL: up to the stern castle', start: [151, 23], links: [{ bench: 'b4' }, { bench: 'b5' }, { bench: 'b6' }, { ledge: [171, 186, 14] }] },
   { name: 'GALLEY HULL: the exam well', start: [185, 14], links: [{ bench: 'b7' }, { bench: 'b8' }, { bench: 'b9' }, { ledge: [205, 208, 23] }] },
   { name: 'RIGGING RUN: teach + test', start: [289, 8], links: [{ yard: 289 }, { ledge: [301, 305, 8] }, { yard: 305 }, { yard: 313 }, { ledge: [321, 325, 7] }] },
   { name: 'RIGGING RUN: the lashing and the remix', start: [323, 7], links: [{ ledge: [325, 336, 10] }, { ledge: [337, 341, 8] }, { yard: 341 }, { ledge: [356, 360, 7] }] },
-  { name: 'RIGGING RUN: the exam', start: [358, 7], links: [{ yard: 361 }, { yard: 368 }, { yard: 376 }, { ledge: [385, 389, 6] }] },
+  { name: 'RIGGING RUN: the exam', start: [358, 7], links: [{ yard: 361 }, { yard: 368 }, { yard: 376 }, { ledge: [385, 389, 8] }] },
 ];
 const pg = await openPage({ audio: false, fonts: false });
 let R;
@@ -27,7 +27,7 @@ try {
       for(const c of CH){BK.setHero(h);BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=false;BK.sim(5);for(const e of BK.enemies())e.alive=false;
         const P=BK.P,K=BK.keys,none=()=>{for(const k of ['left','right','up','down','jump','block','atk','dodge'])K[k]=false;};
         BK.tp(c.start[0],c.start[1]);BK.sim(20);P.hp=P.maxHp;let done=0,why='';const t0=performance.now();
-        const footedOn=L=>L.bench?(P.onMover&&P.onMover.bench===L.bench):L.yard?(P.onMover&&P.onMover.flot==='yard'&&Math.round(P.onMover.x0/16)===L.yard):(P.ground&&!P.onMover&&P.x>=L.ledge[0]*16&&P.x<=(L.ledge[1]+1)*16&&Math.abs(P.y-L.ledge[2]*16-16)<3);
+        const footedOn=L=>L.bench?(P.ground&&P.onMover&&P.onMover.bench===L.bench&&Math.abs(P.y-P.onMover.y)<3):L.yard?(P.ground&&P.onMover&&P.onMover.flot==='yard'&&Math.round(P.onMover.x0/16)===L.yard&&Math.abs(P.y-P.onMover.y)<3):(P.ground&&!P.onMover&&P.x>=L.ledge[0]*16&&P.x<=(L.ledge[1]+1)*16&&Math.abs(P.y-L.ledge[2]*16-16)<3);
         const tgt=L=>{if(L.ledge)return {l:L.ledge[0]*16,r:(L.ledge[1]+1)*16,y:L.ledge[2]*16+16,m:null};const m=BK.movers().find(q=>L.bench?q.bench===L.bench:(q.flot==='yard'&&Math.round(q.x0/16)===L.yard));return m?{l:m.x,r:m.x+m.w,y:m.y,m}:null;};
         for(const L of c.links){let ok=false;
           const TR=[];for(let f=0;f<60*30&&!ok;f++){none();if(f%4===0){const T0=tgt(L)||{};const nb=BK.movers().filter(q=>q.flot).sort((a,b)=>Math.abs(a.x+a.w/2-P.x)-Math.abs(b.x+b.w/2-P.x))[0];TR.push([f,Math.round(P.x),Math.round(P.y),Math.round(P.vy),P.ground?1:0,P.onMover?(P.onMover.bench||'y'):'-',K.left?'L':K.right?'R':'.',nb?Math.round(nb.x)+'/'+Math.round(nb.y):''].join(','));if(TR.length>14)TR.shift();}if(P.dead||P.swim||P.y>30*16){why='fell at link '+JSON.stringify(L)+' TRACE '+TR.join(' | ');break;}
@@ -37,15 +37,16 @@ try {
             if(P.ground){
               /* A PLAYER'S READ: the target's top is within a plain jump up (40 px) or a drop below, and near enough across */
               const hOK=kind==='ledge'?dy>-40&&dy<200:kind==='bench'?dy>-36&&dy<(on?40:230)&&(T.m.dy<=0.3||T.m.y<=T.m.y0-T.m.rise+6||T.m.halted):dy>-40&&dy<48;
-              const hOK2=hOK&&(!on||on.flot!=='bench'||dy>-20);   /* (off a moving bench: wait for the next to come level, as a player does) */
+              const hOK2=hOK&&(!on||on.flot!=='bench'||dy>-20||(dy>-36&&(on.halted||on.y<=on.y0-on.rise+2)));   /* (at the top of its stroke, or stopped, a bench is as good as the deck) */   /* (off a moving bench: wait for the next to come level, as a player does) */
               if(hOK2&&gapX<=2&&dy>=-4){K[dir>0?'right':'left']=true;BK.sim(1);continue;}   /* over it already, or the edge touches it: step on */
               if(hOK2&&gapX<=58){K[dir>0?'right':'left']=true;BK.press('jump');K.jump=true;
                 for(let i=0;i<80&&!(P.ground&&i>4)&&!P.swim;i++){const T2=tgt(L)||T,m2=(T2.l+T2.r)/2;K.jump=i<18;K.right=K.left=false;if(P.x<T2.l+6)K.right=true;else if(P.x>T2.r-6)K.left=true;else if(Math.abs(P.x-m2)>4&&P.vy<0)K[m2>P.x?'right':'left']=true;BK.sim(1);}none();BK.sim(2);continue;}
+              if(dy<-40&&[9,13].includes(BK.L.grid[Math.floor((P.y-4)/16)*BK.L.W+Math.floor(P.x/16)])){K.up=true;BK.sim(1);continue;}   /* under it on a net or shrouds: climb */
               /* not yet: ride to the edge of what we stand on nearest it, and wait there */
               const edge=on?(dir>0?on.x+on.w-6:on.x+6):null;if(edge!==null){if(Math.abs(P.x-edge)>3)K[edge>P.x?'right':'left']=true;}
               else{const G=BK.L.grid,W=BK.L.W,c=Math.floor((P.x+dir*10)/16),r=Math.floor((P.y+2)/16),t=G[r*W+c];if(t===1||t===2||t===4||t===14||t===11)K[dir>0?'right':'left']=true;}}
             BK.sim(1);}
-          if(ok){for(let i=0;i<20;i++){none();BK.sim(1);}}   /* settle on what we landed on, as a player does, before the next */
+          if(ok){for(let i=0;i<20;i++){none();BK.sim(1);}if(!footedOn(L))ok=false,why='slid off after landing on '+JSON.stringify(L)+' at '+[Math.round(P.x),Math.round(P.y),P.ground?'g':'a'].join(',');}   /* settle on what we landed on, as a player does, before the next */
           if(!ok){if(!why){const T=tgt(L)||{};why='timed out at '+JSON.stringify(L)+' hero '+[Math.round(P.x),Math.round(P.y),P.ground?'g':'a',P.onMover?(P.onMover.bench||P.onMover.flot||'m'):'-'].join(',')+' target '+[Math.round(T.l),Math.round(T.r),Math.round(T.y)].join(',');}break;}done++;}
         out[h].push({chain:c.name,links:c.links.length,done,why});}}
     /* THE VERB: free the castle bench's rower at the top of its stroke and it is a fixed step to the castle */
