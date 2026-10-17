@@ -22,7 +22,7 @@ import { realmBox } from './mage-realms.js';   /* HIS SPELL REALMS' rooms, for t
 import { GEO as GEO_K } from './geomancer.js';
 import { hiding as crouchHiding } from './crouch-b.js';   /* THE CROUCH TWISTS (claude/crouchb): what the geomancer's sense counts as hidden, so the bot's calm does not count it as near */   /* THE GEOMANCER's FAULT LINE: how far the crack will run is read off the same numbers the kit uses */
 import { lanternPlan, leOpen } from './lantern-eater.js';   /* THE LANTERN-EATER (claude/lanterneater): the bot reads its lights, jaws, marks and the lantern off its own module */
-import { OR } from './ore-road.js';   /* THE ORE ROAD's arena, for the Winchmaster's hands */
+import { OR } from './ore-road.js'; import { ABBOT as ABBOT_K } from './false-abbot.js';   /* (claude/abbot2) THE FALSE ABBOT's rope slam, false light and sanctus bell, for his branch */   /* THE ORE ROAD's arena, for the Winchmaster's hands */
 import { puppetPlan } from './puppeteer.js';
 import { queenPlan, qOpen } from './cistern-queen.js'; /* (claude/underwell3, v2) THE CISTERN QUEEN's hall fire as the hands see it: the torch in hand, her two cressets, her two floor pools of oil (and whether they will catch), and where an aim would land */ const labCqFire=(P,f)=>{const UH=BK.underwellHands&&BK.underwellHands(),UW=BK.underwell&&BK.underwell();if(!UH||!UW||!UH.on())return null;if(f===0||!P.labCqPools){const cs=UW.list.filter(c=>c.arena&&!c.vertical).sort((a,b)=>a.y-b.y||a.x-b.x),runs=[];for(const c of cs){const r=runs[runs.length-1];if(r&&r.y===c.y&&c.x===r.x1+1){r.x1=c.x;r.cells.push(c);}else runs.push({y:c.y,x0:c.x,x1:c.x,cells:[c]});}P.labCqPools=runs.filter(r=>r.cells.length>=3);}return{held:!!(P.carry&&P.carry.t==='uwtorch'),cressets:UW.sconces.filter(q=>/^queen/.test(q.id||'')).map(q=>({x:q.x*16+8,up:q.st==='up'})),pools:P.labCqPools.map(r=>({x0:r.x0*16,x1:(r.x1+1)*16,oil:r.cells.filter(c=>c.st==='oil').length>=r.cells.length/2,fire:r.cells.some(c=>c.st==='fire')})),land:aim=>{const a=UH.arcFor(P,aim);return a&&a.land?a.land.x:null;}};}; import { glPlan, glOpen } from './gang-leader.js'; import { djinnPlan, djOpen } from './djinn.js';   /* (claude/welltown5) THE DJINN OF THE GREAT WELL: the bot works the skin on him, the crank and his hand */   /* THE CISTERN QUEEN and THE GANG LEADER (claude/welltown3): the bot reads their tells off their own modules, and works the skin */
 import { rocEyriePlan } from './roc-eyrie.js';   /* THE ROC on her EYRIE (claude/skyroad): the bot rides the thermals and plunges, waits out her dive on the nest, turns the storm's stone */
@@ -664,7 +664,8 @@ async function runbossLab(BK, opts) {
        at them met air, and no number anywhere said so. It only watches: it presses nothing and draws no dice. */
     const smallFoes=()=>BK.enemies().filter(e=>e!==boss&&e.alive&&BK.keyOf&&(BK.keyOf(e)||{}).family==='small');
     let smallSw=null,smallSwings=0,smallMissed=0;
-    const smallAim=()=>{let best=null,bd=1e9;const bossEdge=Math.abs(boss.x-P.x)-(boss.w||20)/2,bossIn=bossEdge<=LAB_REACH[h]+8&&Math.abs(boss.y-P.y)<40;for(const e of smallFoes()){const dx=e.x-P.x,ad=Math.abs(dx);if(ad>LAB_REACH[h]+(e.w||12)/2+8||Math.abs(e.y-P.y)>=24||(ad>=6&&Math.sign(dx)!==P.face)||(bossIn&&ad-(e.w||12)/2>bossEdge))continue;if(ad<bd){bd=ad;best=e;}}return best;};   /* (and nearer than the boss, when he is in reach too: a swing at him with a hopper behind it is a swing at him) */
+    const smallAim=()=>{if(boss.t==='abbot'&&boss.mode==='riteTell'&&boss.sanctX!==undefined&&Math.abs(boss.sanctX-P.x)<=LAB_REACH[h]+12)return null;   /* (claude/abbot2) a swing at the praying Abbot's SANCTUS BELL is a swing at the bell, not at the sprig beside it - the same rule as a swing at him with a hopper behind it */
+    let best=null,bd=1e9;const bossEdge=Math.abs(boss.x-P.x)-(boss.w||20)/2,bossIn=bossEdge<=LAB_REACH[h]+8&&Math.abs(boss.y-P.y)<40;for(const e of smallFoes()){const dx=e.x-P.x,ad=Math.abs(dx);if(ad>LAB_REACH[h]+(e.w||12)/2+8||Math.abs(e.y-P.y)>=24||(ad>=6&&Math.sign(dx)!==P.face)||(bossIn&&ad-(e.w||12)/2>bossEdge))continue;if(ad<bd){bd=ad;best=e;}}return best;};   /* (and nearer than the boss, when he is in reach too: a swing at him with a hopper behind it is a swing at him) */
     const smallEnd=()=>{const s=smallSw;smallSw=null;if(!s||(!s.hit&&s.other))return;smallSwings++;if(!s.hit)smallMissed++;};
     const smallWatch=(a0,aim)=>{if(a0<0&&P.atk>=0){smallEnd();if(aim)smallSw={aim,hp:aim.hp,set:new Set(smallFoes().concat([aim])),hit:false,other:false};}
       if(smallSw){for(const x of P.hitSet||[]){if(smallSw.set.has(x))smallSw.hit=true;else smallSw.other=true;}if(smallSw.aim.hp<smallSw.hp)smallSw.hit=true;if(P.atk<0)smallEnd();}};
@@ -2210,16 +2211,23 @@ async function runbossLab(BK, opts) {
         const add = BK.enemies().filter(q => q.alive && q !== boss && !q.boss && Math.abs(q.y - P.y) < 26 && Math.abs(q.x - P.x) < (far ? 150 : LAB_REACH[h] + 18)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
         const arrow = BK.seeds().find(s => s.arrow && !s.dead && !s.reflected && Math.abs(s.x - P.x) < 60 && Math.abs(s.y - (P.y - 8)) < 40 && (s.x - P.x) * (s.vx || 0) < 0);   /* HIS ARCHERS: 18 a shaft, and the old guard only watched for rubble and shot */
         const chain = boss.mode === 'castTell' || (boss.mode === 'cast' && !boss.castHit);
-        const proc = (boss.mode === 'process' || boss.mode === 'processTell') && (P.x - boss.x) * (boss.procDir || boss.face) > 0 && ad < 44;
-        if (bl) { const under = Math.abs(boss.x - bl.x) < 40;
+        /* (claude/abbot2) THE BELL ROPE: off the red mark he will come down on - on the far side of it from where he leapt, so a bait past the bell stays a bait */
+        const slam = (boss.mode === 'swingTell' || boss.mode === 'swing') && boss.swTo !== undefined && Math.abs(P.x - boss.swTo) < ABBOT_K.slamR + 10;
+        const orb = boss.orb && Math.abs(P.x - boss.orb.tx) < ABBOT_K.lightR + 8 && boss.orb.t > boss.orb.T * 0.35;   /* FALSE LIGHT: off its mark, or the guard up */
+        const sanct = boss.mode === 'riteTell' && boss.sanctX !== undefined && boss.modeT > 0.25;   /* THE RITE: go round him and strike the sanctus bell */
+        if (bl) { const under = Math.abs(boss.x - bl.x) < 40 && boss.mode !== 'swing';
           if (under && bl.cool <= 0 && Math.abs(bl.x - P.x) < 26 && P.atk < 0 && !chain) { k.block = false; P.face = Math.sign(bl.x - P.x) || 1; BK.press('atk'); swings++; }
           else if (boss.open > 0) { goal = boss.x; strike = true; }              /* downed: get on him, the window is worth three blows */
           else if (chain) { goal = null; P.face = Math.sign(boss.x - P.x) || P.face;
             if (SHIELDED(h)) { k.block = true; if (h === 'paladin') holdC = f + 20; }
             else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f);
             else if (boss.mode === 'castTell' && boss.modeT < 0.12 && P.ground) { BK.press('jump'); P.labJump = 14; } }   /* the chain is judged the frame it flies: be off the boards by then */
-          else if (proc) { if (P.ground) { BK.press('jump'); P.labJump = 16; } goal = boss.x + (boss.procDir || boss.face) * 30; }
+          else if (slam) { const away = Math.sign(boss.swTo - (boss.sw0 ?? boss.x)) || 1; goal = boss.swTo + away * (ABBOT_K.slamR + 18); }
+          else if (orb) { if (SHIELDED(h)) { goal = null; P.face = Math.sign(boss.orb.x0 - P.x) || P.face; k.block = true; } else goal = boss.orb.tx + (Math.sign(P.x - boss.orb.tx) || 1) * (ABBOT_K.lightR + 14); }
+          else if (sanct) { const side = Math.sign(boss.sanctX - boss.x) || 1, at = boss.sanctX + side * Math.max(8, LAB_REACH[h] - 8);
+            if (Math.abs(P.x - at) < 10 && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; }
           else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
+          else if (add && Math.abs(add.x - P.x) < 6 && P.atk < 0) { goal = add.x + (Math.sign(P.x - add.x) || -P.face) * 16; }   /* (claude/abbot2) one standing ON you is stepped off first: a cut at nothing but its own feet met air (the pirate, 3 of his 4 misses at the far end of the floor) */
           else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep, same as the Mother's sporelings (see the ledger's own comment) - this is the spire/abbot pilot's own add-branch, and the plain cut it threw before missed the knight 6 of 16 (tools/small-adds.mjs) */
           else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
           if (P.labJump > 0) { P.labJump--; k.jump = true; }

@@ -1101,6 +1101,9 @@ Object.assign(SFX, {
   priestCenserTell() { for (let i = 0; i < 3; i++) noise(0.04, 0.05, 3600, 1.4, i * 0.09); pad('sawtooth', 220, 247, 0.5, 0.04, 0, 900); },   /* the chain rattles as the pot goes back over its shoulder, and it hums */
   priestCenser() { noise(0.08, 0.12, 2200, 1.1); tone('triangle', 900, 420, 0.22, 0.06); bell(1760, 0.18, 0.02, 0.05); },          /* thrown: the whoosh, and the pot's own ring */
   priestBellTell() { bell(2349, 0.2, 0.03); bell(2349, 0.2, 0.03, 0.14); },                                                          /* the hand bell lifted, rung twice small */
+  /* (claude/abbot2art) THE SANCTUS BELL, struck: the Abbot's own little altar bell on its post - a dry bronze CLANG (clapper on rim), a bright inharmonic ring that hangs and beats, and a low sweetness under it so it reads as a CHURCH bell, not the cap bells' jingle or the tolling due (tollBell) */
+  sanctusBell() { if (!gate('sanctus', 0.2)) return; noise(0.025, 0.16, 3400, 1.6); tone('square', 880, 520, 0.05, 0.07);
+    bell(1318, 1.1, 0.09, 0.005); bell(1318 * 1.007, 0.9, 0.05, 0.012); tone('sine', 2093, 2088, 0.7, 0.04, 0.02); tone('sine', 3520, 3510, 0.35, 0.02, 0.02); tone('sine', 659, 656, 1.3, 0.06, 0.01); },
   priestBell() { bell(1976, 0.35, 0.07); noise(0.06, 0.1, 1200, 0.8); tone('square', 300, 160, 0.1, 0.06); },                         /* and swung into you */
   priestBreak() { tone('sine', 2093, 1500, 0.2, 0.06); SFX.clatter(); noise(0.3, 0.12, 700, 0.5, 0.05); },
   /* THE GOBLIN MAGE reads out of a book it cannot read: pages riffled and a goblin's shout pitched up into something it thinks

@@ -1,0 +1,65 @@
+THE FALSE ABBOT
+  ok   all 7 windups come up: castTell, censerTell, coalsTell, gleamTell, knellTell, riteTell, swingTell
+  ok   and every one is told at least 0.5 s ahead (shortest 0.55 s)
+  ok   each windup says itself as it starts (7/7)
+  ok   THE BELL ROPE, THE COALS and THE KNELL wear the red mark: nothing turns them
+  ok   THE CENSER, THE CHAIN and FALSE LIGHT wear the yellow one: a shield turns them
+  ok   and THE RITE wears none at all - it throws no blow (the QUIET list) - but it says what to do: HE PRAYS: STRIKE HIS BELL
+  ok   the censer, the chain and the false light are blows a shield can turn (3 landed, none unblockable)
+  ok   the rope's censer slam and the knell are not (2 landed, all unblockable)
+  ok   FALSE LIGHT is told 0.8 s, its mark on you
+  ok   it is thrown at the spot you stood on (600)
+  ok   stepped off the mark, the burst finds nobody
+  ok   stood on it, it lands
+  ok   THE COALS lay 5 fires along the boards
+  ok   spread over 88 px, not in a heap
+  ok   THE BELL, with him under it: the note goes through the rite and he is DOWN
+  ok   and every blessing on the roof breaks at once, and the congregation is dazed
+  ok   a blow in that window is worth 2x
+  ok   THE SAME BELL, with him anywhere else: nothing. The opening is the PLACE, not the bell
+  ok   and it breaks nothing
+  ok   and swinging OVER it on the rope is not under it
+  ok   THE CHAIN GUARDED HAULS HIM: 48 px toward the shield that turned it
+  ok   and it says so
+  ok   TAKEN, the chain reels YOU in instead, and he does not move (1 reel, he moved 0 px)
+  ok   THE BELL ROPE swings toward you, onto your spot: from 1009 to 700
+  ok   the rope jerks and its bell clangs first (the tell is heard)
+  ok   he is off the boards, on the rope (56 px up)
+  ok   he lands ON THE MARK (700), and a hero who stepped off it is not slammed
+  ok   with you on his other side he swings the other way: it is always TOWARD you
+  ok   STAND PAST THE BELL AND HE LANDS UNDER IT: -25 px from it
+  ok   and the bell rung then puts him down
+  ok   THE RITE blesses HIM, not only his goblins
+  ok   and the prayer HEALS him ~8% (244 of 3050)
+  ok   a warded Abbot takes 0.4 of every blow: B15's floor, never a wall
+  ok   his congregation is blessed with him (3)
+  ok   SWINGING ALONE, in a best case nobody gets: 400 s of unbroken hitting (it was 19 s when the ward was half and the rite was one move in ten)
+  ok   AND THE BELL IS THE FIGHT, not decoration: 57 s with it against 400 s without - it has to be worth at least double
+  ok   the ward is his STANDING condition, not an event: up 62% of two minutes
+  ok   THE PRAYER is a clear kneel, 2.4 s long
+  ok   its SANCTUS BELL stands on a post BEHIND him (30 px; you are on the other side): go round, or come down on him
+  ok   on his knees he does not turn round to follow you, so the bell stays where it is
+  ok   a blow on the sanctus bell takes
+  ok   STRIKE IT and the RITE IS SPOILED: nobody is blessed
+  ok   and he is NOT healed (0)
+  ok   and it says so
+  ok   and he cannot kneel again for a while (9 s): he fights unwarded - that is what spoiling it buys
+  ok   A PLUNGE on him spoils it the same way
+  ok   and the old way stays: a blow that staggers him on it spoils it too
+  ok   a sanctus blow when he is not praying does nothing
+  ok   left alone, the same prayer wards him
+  ok   THE CONGREGATION never has more than 2 on the floor at once (worst 2)
+  ok   and it keeps coming: 2 up the ladder in two minutes
+  ok   at full health he does not touch the rope
+  ok   under half he takes it himself, and says so
+  ok   THE KNELL rings the great bell for him - and spends it, so the room owes you a wait for your own
+  ok   the frame table answers every mode (0-20)
+  ok   and hurt is frame 17, over everything but a named mode
+  ok   B16: the rope, the light and the prayer each have their own poses (8,9,10,18,19,13,20)
+  ok   the burn tick is still in main.js
+  ok   BURN BYPASSES EVERY WARD AGAIN: the tick must go through wardedDamage, not write e.hp directly
+  ok   the burn tick writes e.hp directly again
+  ok   wardedDamage is gone: the wards are inline again and burn will be skipping them
+  ok   a burn tick through the rite should be 1, not 1
+
+all false abbot checks pass

@@ -1,0 +1,67 @@
+ok   wood           8/55 foes sampled, 34 blows
+ok   marsh          8/50 foes sampled, 39 blows
+ok   stockade       8/30 foes sampled, 5 blows
+ok   spore          7/59 foes sampled, 29 blows
+ok   kings          8/67 foes sampled, 5 blows
+ok   scree          8/67 foes sampled, 14 blows
+ok   hanging        7/39 foes sampled, 25 blows
+ok   spire          8/60 foes sampled, 24 blows
+ok   moor           8/43 foes sampled, 7 blows
+ok   storm          8/98 foes sampled, 18 blows
+ok   crown          8/100 foes sampled, 29 blows
+ok   longwater      8/69 foes sampled, 50 blows
+ok   reef           8/57 foes sampled, 7 blows, 1 ranged note(s)
+ok   flotilla       8/37 foes sampled, 7 blows
+HIDE hurricane      7/94 foes sampled, 9 blows
+       hurricane - cutlass (slash) at 70,27: a blow with nothing drawn (0 px moved, max 0), 25 px from the hero
+ok   lamplit        8/78 foes sampled, 23 blows
+ok   underleaf      8/73 foes sampled, 4 blows
+ok   shop           0/0 foes sampled, 0 blows
+ok   trial_open     8/10 foes sampled, 4 blows
+ok   trial_knight   8/21 foes sampled, 0 blows
+ok   trial_pyro     8/17 foes sampled, 0 blows
+ok   trial_paladin  8/22 foes sampled, 0 blows
+ok   trial_pirate   8/19 foes sampled, 0 blows
+ok   trial_reaper   8/21 foes sampled, 0 blows
+ok   shopCrag       0/0 foes sampled, 0 blows
+ok   shopSea        0/0 foes sampled, 0 blows
+ok   deep           8/115 foes sampled, 15 blows, 1 ranged note(s)
+ok   keep           6/85 foes sampled, 14 blows
+ok   causeway       8/93 foes sampled, 36 blows
+ok   harbor         8/113 foes sampled, 4 blows
+ok   waymeet        7/7 foes sampled, 4 blows, 1 ranged note(s)
+ok   undercrown     7/77 foes sampled, 7 blows
+ok   fields         8/56 foes sampled, 6 blows
+ok   burial         6/59 foes sampled, 13 blows
+ok   mage           7/68 foes sampled, 3 blows
+ok   fallingtower   7/64 foes sampled, 5 blows
+ok   burning        8/53 foes sampled, 4 blows, 1 ranged note(s)
+ok   witchlight     8/66 foes sampled, 29 blows
+ok   oreroad        8/68 foes sampled, 8 blows
+ok   unburied       8/54 foes sampled, 23 blows
+ok   caravan        8/39 foes sampled, 11 blows
+ok   custom         0/0 foes sampled, 0 blows
+ok   trial_warden   8/9 foes sampled, 0 blows
+ok   trial_geomancer 8/8 foes sampled, 0 blows
+ok   trial_berserker 8/17 foes sampled, 0 blows
+ok   trial_ranger   8/13 foes sampled, 0 blows
+ok   fair           8/39 foes sampled, 6 blows
+ok   theatre        7/50 foes sampled, 4 blows
+ok   canal          8/50 foes sampled, 8 blows
+ok   welltown       8/55 foes sampled, 8 blows
+ok   shopWell       0/0 foes sampled, 0 blows
+ok   redgorge       8/51 foes sampled, 8 blows
+ok   underwell      7/64 foes sampled, 4 blows
+ok   skyroad        8/27 foes sampled, 3 blows
+ok   glasssea       8/51 foes sampled, 6 blows
+ok   ksar           8/77 foes sampled, 8 blows, 1 ranged note(s)
+ok   rootway        7/52 foes sampled, 32 blows
+ok   minecart       5/33 foes sampled, 2 blows
+ok   church         8/20 foes sampled, 7 blows
+ok   towpath        8/21 foes sampled, 7 blows
+ok   buriedcity     8/39 foes sampled, 8 blows, 1 ranged note(s)
+ok   sealedpyramid  8/48 foes sampled, 44 blows
+ok   canal legging tunnel, lantern LIT: 82 blows over 336 s, barge reached col 339, 1 ranged note(s)
+   note canal tunnel (lantern LIT) - archer/watchman (undefined) at 331.5,15: a ranged blow from an undrawn shooter (0 px, 165 px away)
+ok   canal legging tunnel, lantern DIMMED: 80 blows over 336 s, barge reached col 339
+FAIL no-hidden-hits: 1 place(s) where a foe hurt a hero it did not show
