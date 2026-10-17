@@ -33,7 +33,7 @@ export const CURVE_REPORT_ONLY = {
   /* (claude/underleafroad, 10-08: underleaf is act I now - the road puts it between Kingswood and the Scree Path - and its 45% lost / 0 deaths is inside act I's band) */
   storm: 'act 2: 26% lost, 0 deaths - EASY for act II (floor 70%): the level-1 pilot is lifted past most of it',
   /* (claude/undercrown2: undercrown is back in its band - 221% lost, 4 deaths in 3 runs: the dead water hands you back (A10) and the slabs carry the route - gated by the curve again) */
-  ksar: 'act 5: 671% lost, 13-17 deaths in 3 runs (master measured 9-14, stamped 10) - over the act V death ceiling (12) after the pressure dial (batch91): the bare knight now also dies at cols 257 / 339 / 531 of the route (master: 143 / 482 / 766 only); cause not isolated (the act-5 dial is 1.35 gap / 1.55 dmg on minis). Needs a ksar level pass, not a gate change',
+  /* (codex/standingreds, 10-18: seeded isolated Ksar pilot measured 447% lost / 8 deaths; the stale exception is removed) */
   /* (claude/levelpilot: causeway is back in its band - 276% lost, 6 deaths in 3 runs - and gated by the curve again) */
   /* (claude/survival, 10-07: kings 185%/2, scree 376%/5, crown 307%/4 and fair 370%/3 are back in their bands under the FLASK + dry shrines - gated again) */
   /* (claude/redgorge2: redgorge is back in its band - 246% lost, 6 deaths in 3 runs - and gated by the curve again) */

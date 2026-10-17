@@ -8445,9 +8445,9 @@ const AMBUSH = {
        "shield covering an archer" pattern; the duplicate thief/hound and sprig are cut (say so) to stay inside the four-foe rule. */
     waves: [[['archer', 305], ['shield', 296], ['thief', 282], ['hound', 286]]] }],
   scree: [{ name: 'THE GOAT TRACK', row: 13, wallL: 173, wallR: 202, check: [168, 13],
-    /* ambush-listed: 7 distinct foes listed for a 4-foe room; troll/goat/sprig/harpy was already the built room's own pick (AMBUSH_CAPTAINS.scree
-       ='troll'), kept as-is; shield/archer/rockgoblin/the duplicate goat are cut here (say so) rather than left to vanish silently. */
-    waves: [[['troll', 180], ['goat', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
+    /* The former troll captain could throw aimed rocks into the locked exit while the player dealt with the room. The goat captain keeps
+       the four-foe ambush but removes that repeated ranged hit; the shield takes the second ground slot. */
+    waves: [[['goat', 180], ['shield', 178], ['sprig', 191], ['harpy', 185, 8]]] }],
   hanging: [{ name: 'THE CLIFF HALL', row: 65, wallL: 43, wallR: 69, y0: 56, check: false,
     /* THE CUTTER HAS A ROPE NOW (2026-09-28, coordinator follow-up on claude/hanging2): 'bridge: 50' names the room's own L.bridges span
        (50-56, row 66, in hangingVillage() below), the same rule at work mid-fight, not just on the road or in the boss.

@@ -63,8 +63,8 @@ export const AFFIX_AT = {
   'kings|brute': 'UNSTOPPABLE', 'kings|archer#amb': 'WARDING',
   'underleaf|brute#1': 'WARDING', 'underleaf|brute#2': 'SWIFT', 'underleaf|shield#1': 'SHIELDED', 'underleaf|shield#2': 'WARDING', 'underleaf|archer': 'SWIFT', 'underleaf|hearthgob#1': 'THORNED', 'underleaf|hearthgob#2': 'SUMMONER',   /* (claude/underleaf2) the terrace's captain at the windmill foot (his sprig takes half from the front: him first), the green's captain in the open */
   'burning|brute#amb': 'BURNING',   /* (claude/wardens12: the crofts' shield is THE EMBER BLADE now - BURNING rides his ent) */
-  'scree|troll#amb': 'THORNED',   /* (claude/wardens12: the crag troll at 505 is THE SCREE MAUL now) */
   'hanging|brute#amb': 'UNSTOPPABLE',   /* (claude/wardens12: the street's shield is THE ROPE BLADE now) */
+  'scree|goat#amb': 'THORNED',   /* (codex/standingreds: the Goat Track captain keeps its original THORNED affix) */
   'spire|goat': 'SUMMONER', 'spire|troll#amb': 'SWIFT',   /* (claude/wardens12: the scriptorium troll is THE GONG MAUL now) */
   'moor|troll': 'UNSTOPPABLE', 'moor|goat#amb': 'WARDING',   /* (claude/wardens12: the Kite Field's herd billy is THE GALE LANCE now) */
   'storm|pike#amb': 'UNSTOPPABLE', 'storm|shield#1': 'SWIFT', 'storm|brute#1': 'THORNED', 'storm|brute#2': 'UNSTOPPABLE', 'storm|shield#2': 'WARDING', 'storm|shield#3': 'SUMMONER',   /* (claude/stormtough: the Road's, the Square's, Smoke Row's, the Close's far bank, the gorge's) */

@@ -1,16 +1,16 @@
 {
  "wood": {
-  "hash": "46a26d2fe1dc",
+  "hash": "b1da033ee099",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 1,
-  "kills": 34,
-  "lifts": 96,
+  "hits": 20,
+  "deaths": 0,
+  "kills": 38,
+  "lifts": 94,
   "walked": 100,
   "bare": true,
-  "lostPct": 111
+  "lostPct": 107
  },
  "marsh": {
   "hash": "064de4159658",
@@ -26,30 +26,30 @@
   "lostPct": 227
  },
  "stockade": {
-  "hash": "c88404798755",
+  "hash": "c11eee9948cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
+  "hits": 32,
   "deaths": 1,
-  "kills": 11,
+  "kills": 17,
   "lifts": 99,
   "walked": 100,
   "bare": true,
-  "lostPct": 116
+  "lostPct": 117
  },
  "spore": {
-  "hash": "6ca829f1d6ef",
+  "hash": "20d82d427559",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 11,
+  "hits": 13,
   "deaths": 0,
-  "kills": 54,
+  "kills": 70,
   "lifts": 103,
   "walked": 100,
   "bare": true,
-  "lostPct": 51
+  "lostPct": 41
  },
  "kings": {
   "hash": "11a3b329f288",
@@ -65,69 +65,69 @@
   "lostPct": 131
  },
  "scree": {
-  "hash": "925f7a4ea76c",
+  "hash": "98f81b100509",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 40,
-  "deaths": 6,
-  "kills": 41,
-  "lifts": 139,
+  "hits": 27,
+  "deaths": 5,
+  "kills": 29,
+  "lifts": 136,
   "walked": 100,
   "bare": true,
-  "lostPct": 325
+  "lostPct": 244
  },
  "hanging": {
-  "hash": "5d99f57af11e",
+  "hash": "6eaa57b237df",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 22,
+  "hits": 21,
   "deaths": 3,
   "kills": 30,
   "lifts": 94,
   "walked": 100,
   "bare": true,
-  "lostPct": 152
+  "lostPct": 145
  },
  "spire": {
-  "hash": "f752dda491b2",
+  "hash": "20e1d5c2d349",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
-  "deaths": 1,
-  "kills": 23,
-  "lifts": 95,
+  "hits": 18,
+  "deaths": 0,
+  "kills": 24,
+  "lifts": 99,
   "walked": 100,
   "bare": true,
-  "lostPct": 135
+  "lostPct": 77
  },
  "moor": {
-  "hash": "d291f455268f",
+  "hash": "c8adb154a8b5",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 52,
-  "deaths": 4,
-  "kills": 23,
-  "lifts": 115,
+  "hits": 54,
+  "deaths": 6,
+  "kills": 18,
+  "lifts": 109,
   "walked": 100,
   "bare": true,
-  "lostPct": 347
+  "lostPct": 366
  },
  "storm": {
-  "hash": "64712a95a1d8",
+  "hash": "601546e739c6",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 2,
+  "hits": 3,
   "deaths": 0,
-  "kills": 11,
-  "lifts": 155,
+  "kills": 9,
+  "lifts": 154,
   "walked": 100,
   "bare": true,
-  "lostPct": 14
+  "lostPct": 15
  },
  "crown": {
   "hash": "2eecb57b32ac",
@@ -208,17 +208,17 @@
   "lostPct": 114
  },
  "underleaf": {
-  "hash": "e5cf1d597a9b",
+  "hash": "86ddf67c0658",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 12,
+  "hits": 13,
   "deaths": 0,
-  "kills": 20,
-  "lifts": 116,
+  "kills": 14,
+  "lifts": 129,
   "walked": 100,
   "bare": true,
-  "lostPct": 88
+  "lostPct": 78
  },
  "deep": {
   "hash": "f26c65d342aa",
@@ -351,30 +351,30 @@
   "lostPct": 521
  },
  "burning": {
-  "hash": "676515e906cb",
+  "hash": "6c27f5f56b81",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 44,
-  "deaths": 1,
-  "kills": 56,
-  "lifts": 94,
+  "hits": 49,
+  "deaths": 0,
+  "kills": 67,
+  "lifts": 85,
   "walked": 100,
   "bare": true,
-  "lostPct": 156
+  "lostPct": 136
  },
  "witchlight": {
-  "hash": "a2eec68bdc33",
+  "hash": "7fcd84c38afa",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 39,
-  "deaths": 2,
-  "kills": 9,
-  "lifts": 132,
+  "hits": 27,
+  "deaths": 1,
+  "kills": 7,
+  "lifts": 121,
   "walked": 100,
   "bare": true,
-  "lostPct": 217
+  "lostPct": 128
  },
  "oreroad": {
   "hash": "22d06c9289d8",
@@ -494,17 +494,17 @@
   "lostPct": 255
  },
  "skyroad": {
-  "hash": "5f209187c7c4",
+  "hash": "64ef8bf3885c",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 24,
-  "deaths": 3,
-  "kills": 8,
-  "lifts": 55,
+  "deaths": 1,
+  "kills": 7,
+  "lifts": 51,
   "walked": 100,
   "bare": true,
-  "lostPct": 135
+  "lostPct": 112
  },
  "glasssea": {
   "hash": "19662ab324ba",
@@ -520,30 +520,30 @@
   "lostPct": 296
  },
  "ksar": {
-  "hash": "f1c48b3601cd",
-  "hero": "knight",
-  "steps": 30000,
-  "runs": 3,
-  "hits": 36,
-  "deaths": 15,
-  "kills": 5,
-  "lifts": 143,
-  "walked": 100,
-  "bare": true,
-  "lostPct": 556
- },
- "rootway": {
-  "hash": "bcecbe519d8c",
+  "hash": "248ad37248ed",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 35,
-  "deaths": 0,
-  "kills": 42,
-  "lifts": 88,
+  "deaths": 9,
+  "kills": 20,
+  "lifts": 144,
   "walked": 100,
   "bare": true,
-  "lostPct": 123
+  "lostPct": 397
+ },
+ "rootway": {
+  "hash": "60a847a7bab1",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 30,
+  "deaths": 0,
+  "kills": 45,
+  "lifts": 83,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 75
  },
  "church": {
   "hash": "5c49441ef20d",
@@ -598,16 +598,16 @@
   "lostPct": 207
  },
  "sealedpyramid": {
-  "hash": "374d1b96d29b",
+  "hash": "60a8498518ab",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 70,
-  "deaths": 12,
-  "kills": 66,
-  "lifts": 167,
+  "hits": 34,
+  "deaths": 10,
+  "kills": 29,
+  "lifts": 212,
   "walked": 100,
   "bare": true,
-  "lostPct": 557
+  "lostPct": 392
  }
 }
