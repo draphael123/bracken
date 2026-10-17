@@ -448,7 +448,7 @@ Object.assign(EHP, {
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
   captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
   forgemaster: 520,  /* THE FORGEMASTER (crown mini): 480 (83-92%) */
-  reefmaw: 830,
+  reefmaw: 700,   /* (claude/underwater: 830 -> 700 with the committed bite and his blows x0.85) */
   herald: 370,
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
   lance: 800,        /* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */ /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
@@ -6704,6 +6704,7 @@ const DRONE_HIT = 0.55;
 /* THE ACT I RETUNE (claude/sweep1, the standard: tools/boss-rates.mjs, human profile, campaign level): ONE NUMBER PER BOSS for how hard his own
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
+Object.assign(BOSS_HIT, { reefmaw: 0.85 });   /* (claude/underwater 10-16) */
 Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.55 /* (claude/crusader: 1.4; the bot reads his new tells well - 83% n=18 with flasks) */, greathound: 1.5, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 1.45 /* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
 BOSS_HIT.bloodknight = 0.9;   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
@@ -15977,7 +15978,7 @@ function updateMaw(e, dt) {
   if (e.phase === 2 && e.hp < e.maxHp * 0.33) { e.phase = 3; e.mode = 'smash'; e.modeT = 1.4; e.rise = Math.max(e.rise || 0, 0.5); SFX.boreRoar(); shakeCam(6);
     number(e.x, e.y - 60, 'THE REEF BREAKS', '#7cc8c8'); number(e.x, e.y - 72, 'THE TIDE IS GOING OUT', '#7cc8c8'); }
   const p2 = e.phase >= 2, p3 = e.phase >= 3;
-  if (!e.land) e.face = Math.sign(d) || e.face;   /* on land he turns like a boat: 'turn' does it, and only when you have been behind him a while */
+  if (!e.land && e.mode !== 'bite') e.face = Math.sign(d) || e.face;   /* (claude/underwater: the BITE is committed - its way is fixed at its first frame, so a roll or a step past him beats it; it used to swing round to wherever you were) */ /* on land he turns like a boat: 'turn' does it, and only when you have been behind him a while */
   const setHole = () => { let best = e.hole; // it moves to the hole nearest you, but never the one it just used
     let bs = 1e9; for (let i = 0; i < holes.length; i++) { if (i === e.hole) continue; const s2 = Math.abs(holes[i] - P.x); if (s2 < bs) { bs = s2; best = i; } }
     e.hole = best; e.x = holes[best]; };
