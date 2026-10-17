@@ -4122,7 +4122,7 @@
   }
  },
  "waymeet": {
-  "hash": "1cc82f1a473e",
+  "hash": "43e5775a43a4",
   "boss": {
    "boss": "closedhelm",
    "wins": 0,
@@ -4322,7 +4322,7 @@
    ]
   },
   "carried": {
-   "from": "5522d3f6d436",
+   "from": "1cc82f1a473e",
    "parts": [
     "boss",
     "mini"
@@ -4330,10 +4330,30 @@
   },
   "level": {
    "knight": {
+    "deaths": 4,
+    "minHpPct": 0,
+    "hpLostPct": 434,
+    "hits": 29,
+    "walked": 100,
+    "lifts": 60,
+    "held": 11,
+    "duels": 0,
+    "boardLifts": 4,
+    "rides": 3,
+    "pulls": 1,
+    "ridden": {
+     "mover": 3
+    },
+    "machines": true,
+    "frames": 17846,
+    "kills": 2,
+    "heroLevel": 25
+   },
+   "warden": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 123,
-    "hits": 8,
+    "hpLostPct": 141,
+    "hits": 11,
     "walked": 100,
     "lifts": 63,
     "held": 37,
@@ -4344,32 +4364,14 @@
     "ridden": {},
     "machines": true,
     "frames": 15120,
-    "kills": 1,
-    "heroLevel": 24
-   },
-   "warden": {
-    "deaths": 1,
-    "minHpPct": 0,
-    "hpLostPct": 100,
-    "hits": 6,
-    "walked": 100,
-    "lifts": 63,
-    "held": 35,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 15120,
-    "kills": 1,
-    "heroLevel": 24
+    "kills": 5,
+    "heroLevel": 25
    },
    "pyro": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 175,
-    "hits": 14,
+    "hpLostPct": 130,
+    "hits": 10,
     "walked": 100,
     "lifts": 63,
     "held": 39,
@@ -4380,13 +4382,13 @@
     "ridden": {},
     "machines": true,
     "frames": 15120,
-    "kills": 3,
-    "heroLevel": 24
+    "kills": 4,
+    "heroLevel": 25
    }
   }
  },
  "undercrown": {
-  "hash": "a8ba0dc46aa6",
+  "hash": "3df76dadf0eb",
   "boss": {
    "boss": "prince",
    "wins": 0,
@@ -4487,7 +4489,7 @@
    ]
   },
   "carried": {
-   "from": "459e4170802a",
+   "from": "a8ba0dc46aa6",
    "parts": [
     "boss"
    ]
@@ -4496,8 +4498,8 @@
    "knight": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 159,
-    "hits": 14,
+    "hpLostPct": 145,
+    "hits": 13,
     "walked": 100,
     "lifts": 41,
     "held": 3,
@@ -4516,8 +4518,8 @@
    "warden": {
     "deaths": 3,
     "minHpPct": 0,
-    "hpLostPct": 222,
-    "hits": 17,
+    "hpLostPct": 215,
+    "hits": 16,
     "walked": 100,
     "lifts": 41,
     "held": 3,
@@ -4530,14 +4532,14 @@
     },
     "machines": true,
     "frames": 11815,
-    "kills": 29,
+    "kills": 35,
     "heroLevel": 15
    },
    "pyro": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 142,
-    "hits": 16,
+    "hpLostPct": 129,
+    "hits": 14,
     "walked": 100,
     "lifts": 40,
     "held": 3,
@@ -4549,8 +4551,8 @@
      "cart": 1
     },
     "machines": true,
-    "frames": 11721,
-    "kills": 29,
+    "frames": 11741,
+    "kills": 30,
     "heroLevel": 15
    }
   }
@@ -8823,7 +8825,7 @@
   }
  },
  "church": {
-  "hash": "5c49441ef20d",
+  "hash": "37d0707f9626",
   "boss": {
    "boss": "paladinboss",
    "wins": 0,
@@ -8923,68 +8925,6 @@
     }
    ]
   },
-  "carried": {
-   "from": "d58ae4a4c416",
-   "parts": [
-    "boss"
-   ]
-  },
-  "level": {
-   "knight": {
-    "deaths": 5,
-    "minHpPct": 0,
-    "hpLostPct": 473,
-    "hits": 20,
-    "walked": 100,
-    "lifts": 31,
-    "held": 7,
-    "duels": 2,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 13113,
-    "kills": 2,
-    "heroLevel": 26
-   },
-   "warden": {
-    "deaths": 4,
-    "minHpPct": 0,
-    "hpLostPct": 373,
-    "hits": 17,
-    "walked": 100,
-    "lifts": 33,
-    "held": 10,
-    "duels": 2,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 13088,
-    "kills": 1,
-    "heroLevel": 26
-   },
-   "pyro": {
-    "deaths": 4,
-    "minHpPct": 0,
-    "hpLostPct": 373,
-    "hits": 18,
-    "walked": 100,
-    "lifts": 43,
-    "held": 1,
-    "duels": 0,
-    "boardLifts": 0,
-    "rides": 0,
-    "pulls": 0,
-    "ridden": {},
-    "machines": true,
-    "frames": 11251,
-    "kills": 3,
-    "heroLevel": 26
-   }
-  },
   "mini": {
    "boss": "deacon",
    "wins": 0,
@@ -9083,6 +9023,69 @@
      "chip": []
     }
    ]
+  },
+  "carried": {
+   "from": "5c49441ef20d",
+   "parts": [
+    "boss",
+    "mini"
+   ]
+  },
+  "level": {
+   "knight": {
+    "deaths": 5,
+    "minHpPct": 0,
+    "hpLostPct": 473,
+    "hits": 20,
+    "walked": 100,
+    "lifts": 31,
+    "held": 7,
+    "duels": 2,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 13113,
+    "kills": 2,
+    "heroLevel": 26
+   },
+   "warden": {
+    "deaths": 4,
+    "minHpPct": 0,
+    "hpLostPct": 466,
+    "hits": 21,
+    "walked": 100,
+    "lifts": 35,
+    "held": 6,
+    "duels": 1,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 12480,
+    "kills": 1,
+    "heroLevel": 26
+   },
+   "pyro": {
+    "deaths": 4,
+    "minHpPct": 0,
+    "hpLostPct": 373,
+    "hits": 18,
+    "walked": 100,
+    "lifts": 43,
+    "held": 1,
+    "duels": 0,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 0,
+    "ridden": {},
+    "machines": true,
+    "frames": 11251,
+    "kills": 3,
+    "heroLevel": 26
+   }
   }
  },
  "towpath": {
