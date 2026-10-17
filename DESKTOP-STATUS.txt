@@ -1,0 +1,2 @@
+# BRACKEN desktop lane host status (one line per event: <date time> <lane> STARTED|DONE|STOPPED <sha> <note>). No game code on this branch.
+10-17 09:57 surface-coordinator SETUP - branch created; prompt = DESKTOP-LANES-1017.md
