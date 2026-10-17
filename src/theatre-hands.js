@@ -174,7 +174,7 @@ export function theatreMover(st, H, m, dt) {
 }
 
 /* ================= THE LOOK: src/redraw/theatre_props.js (the dressing and the machines), theatre_rooms.js (the rooms), theatre_tiles.js (the tile kit) ================= */
-export const drawTheatreMover = (g, m, cx, cy, time) => TP.drawMover(g, m, cx, cy, time);
+export const drawTheatreMover = (g, m, cx, cy, time, all) => TP.drawMover(g, m, cx, cy, time, all);
 export const drawTheatre = (st, g, H, cx, cy, VW, VH, time) => { if (st) TP.drawScene(st, g, H, cx, cy, VW, VH, time); };
 export const drawTheatreFront = (st, g, H, cx, cy, VW, VH, time) => { if (st) TP.drawFront(st, g, H, cx, cy, VW, VH, time, (x, y) => litAt(st, H, x, y)); };
 export const paintTheatreRoom = (g, st, sx, sy, w, h, tx0, ty0, time, camX, camY) => TRM.paintTheatreRoom(g, st, w, h, tx0, ty0, time, camX, camY, tx0 * TS, ty0 * TS);
