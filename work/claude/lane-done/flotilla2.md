@@ -95,7 +95,7 @@ The lab.js branch adds climbing out of the harbour.
 - The split between heroes is wide: the warden wins every time and the knight 2 in 5.
 - Tuning ran six rounds. Health 2300, damage +50% over the first cut, the flat cap 11% -> 9%, guns heated after a knockdown, a narrower arena, and the sweep changed from 'everywhere in its radius' to one visible pass.
 
-**Mash bot:** the boss went 0/6 (heroes died in 21-28 s with him at 93-98%). In the level every hero dies (28 / 28 / 8 deaths). Both rows were re-stamped, level then boss.
+**Mash bot:** the boss went 0/6 (heroes died in 21-28 s with him at 93-98%). In the level every hero dies (8 / 27 / 8 deaths). Both rows were re-stamped, level then boss.
 
 ## Checks run
 
@@ -107,7 +107,7 @@ The lab.js branch adds climbing out of the harbour.
 - Checkpoints: checkpoint-gaps, -stand, -thin, checkpoints.
 - Level contents: collectables, keys, spawns, elites, ambush-listed, ambush-reach.
 - Guidance: stuck (static + runtime), content-audit.
-- level-quality: flotilla is now in GATE and CLEARS THE BAR. That run predates the last geometry tweak; the re-run is in the addendum.
+- level-quality: flotilla is now in GATE and CLEARS THE BAR. It was re-run on the final geometry and still clears (5 height bands, 5 gadget kinds).
 - level1-pilot row written.
 
 **Pre-existing, not from this branch:**
