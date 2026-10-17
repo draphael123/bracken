@@ -1,4 +1,4 @@
-# Task D — parallel proof (partial; fresh full proof pending)
+# Task D — parallel proof (completed with named non-equivalence)
 
 Base: `origin/master` (`7ade0605`), which contains `claude/codexmerge`. Branch: `codex/parallelproof`. Do not merge this branch yet.
 
@@ -30,10 +30,23 @@ The fixed scoped Weaver text audit passed in the serial and all three parallel f
 
 On the pushed seed fix `fff40350`, three pooled subsets (`archmage-folly,unburied-look,reed-island,textfit` at `--jobs=3 --max-browsers=1`) passed 5/5 each, with zero scoped text pictures and wall times 295, 277, and 281 seconds (`work/parallelproof-postseed-pool-{1,2,3}.log`, outside this checkout).
 
-## Remaining work
+## Fresh full proof on one commit
 
-Repeat the one-serial/three-parallel proof on the new Reed Island seed commit and compare exact verdict sets. If differences remain, isolate them before calling the target release setting equivalent. Do not merge this branch yet.
+All four fresh runs used unchanged branch head `39a2e304` (code fix `fff40350`) on October 17. Each processed 386 checks; complete logs are outside this checkout at `work/parallelproof-seed-full-serial.log` and `work/parallelproof-seed-full-jobs3-{1,2,3}.log`.
+
+| Run | Wall time | Pass | Exact FAIL names |
+| --- | ---: | ---: | --- |
+| Serial | 12,089 s | 383 | `normal-health`, `slopes-trace`, `textfit-full` |
+| jobs=3, browsers=1 #1 | 7,007 s | 382 | `normal-health`, `no-hidden-hits`, `slopes-trace`, `textfit-full` |
+| jobs=3, browsers=1 #2 | 7,923 s | 382 | `normal-health`, `mark-integrity`, `no-hidden-hits`, `textfit-full` |
+| jobs=3, browsers=1 #3 | 7,743 s | 383 | `normal-health`, `mark-integrity`, `textfit-full` |
+
+Parallel averaged 7,558 s here, about 1.60x the serial throughput (37.5% less wall time). `reed-island`, seeded by this branch, passed in all four runs. Scoped `textfit`, including the Weaver plate case, passed with zero pictures in all four. `firsthour` and `fallingtower2-keys` passed in the serial tail of all three parallel runs.
+
+**Verdict: the exact sets still differ.** The differences are `slopes-trace` (serial and parallel #1 red), `mark-integrity` (parallel #2/#3 red), and `no-hidden-hits` (parallel #1/#2 red). The same checks fluctuated in standalone or earlier full runs, and Task C has their cause-specific fixes on `codex/standingreds`: deterministic trace clock; undead-mage spell-tell pose priority plus offscreen sprite-frame comparison; optional hit-flash disabled while checking the already unchanged visible-foe pixel assertion. Parallel #1's `no-hidden-hits` detail is the original Hurricane sailor hook `0 px` case. None is a pool-only failure. `normal-health` is the independently reproduced Pyro/Bullfrog red; `textfit-full` has layout fixes on Task C, which is not in this branch's code. No result threshold or assertion was relaxed here.
+
+The wrapper and the scoped race/seed fixes are ready for integration. To claim exact full-suite equivalence, merge Task C's separate fixes and rerun the target proof on the combined commit. Do not claim equivalence from these four logs.
 
 ## QUESTIONS FOR DANIEL
 
-- Recommendation: keep the target release setting at `--jobs=3 --max-browsers=1` provisional until fresh same-commit verdict sets match or every remaining difference is proven. I built the release wrapper, removed the Weaver harness contamination, and pinned the ambush lab's row dice; full equivalence remains unproved.
+- Recommendation: keep `--jobs=3 --max-browsers=1` provisional, merge the cause fixes from `codex/standingreds`, then rerun a combined release proof before enabling parallel by default. I built the release wrapper, removed the Weaver harness contamination, seeded the pooled audits and Reed Island ambush rows, and measured all four required full runs; the three remaining changing verdict names and their causes are above.
