@@ -62,7 +62,7 @@ export function makeChampionHands(ctx) {
           if (S.landedOn) { S.landedOn.push({ name, dx: R(P.x - e.x), dy: R(P.y - e.y), ground: !!P.ground, dodge: +(P.dodge || 0).toFixed(2), mode: e.mode, bot: S.botWhy || '' }); if (S.landedOn.length > 40) S.landedOn.shift(); } } }); return any; };
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n), time: () => ctx.time(),
-      music: ph => { BOSS_PHASE.champion = ph; if (ctx.music) ctx.music(ph > 1 ? 'champion:p' + ph : 'champion'); },
+      music: ph => { BOSS_PHASE.champion = ph; if (ctx.music) ctx.music('admiral'); },
       mark: m => ctx.number(e.x, e.y - CH.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       word: (ee, line, mode) => { WORD = { line, mode, t: ctx.time() }; },
       fx: (k, x, y) => {
