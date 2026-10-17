@@ -5127,7 +5127,7 @@ function theFlotilla() {
   // doors: fire, let it cool under their charge, fire again) -> EXAM (the Admiral's men on his lashing, a heavy whose guard only a round shot breaks) -> the shrine.
   const P0 = 386;
   block(P0, 563, 25, 37); hullZones.push([P0, 563, 25, 37]);   /* (her stern runs on into THE LASHINGS: his west deck) */
-  mast(386, 6, 24, 5); ent('deco', 386, 5, { kind: 'pennant', v: 2 });   /* her foremast: you come down it off the rigging run */
+  mast(386, 7, 24, 5); ent('deco', 386, 6, { kind: 'pennant', v: 2 });   /* (her top at row 7: a plain jump up off the last yard) */   /* her foremast: you come down it off the rigging run */
   ent('check', 390, 24);   /* THE RIGGING RUN's shrine, on the Powder Ship's forecastle (A10c) */
   ent('sign', 392, 24, { text: 'THE POWDER SHIP. HER DOORS ARE COPPER: NO BLADE OPENS ONE. HER GUNS DO.' });
   /* the copper door: two tiles of door in a wall that runs up to the forecastle deck (nothing goes over it) */

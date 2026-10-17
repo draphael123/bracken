@@ -94,7 +94,7 @@ export function makeChampionHands(ctx) {
     if (WORD && (!/Tell$/.test(e.mode) || ctx.time() - WORD.t > 2)) WORD = null;
   };
   /* A ROUND SHOT met him (src/main.js updateBalls): true = it is spent on him */
-  H.onBall = (e, b) => { if (!S || !e || e.t !== 'champion') return false; const r = ACM.cannonHit(e, S, world(e)); if (r === 'air') return false; if (r === 'flat') { ctx.shake(7); ctx.hitstop && ctx.hitstop(0.12); } return true; };
+  H.onBall = (e, b) => { if (!S || !e || e.t !== 'champion') return false; const r = ACM.cannonHit(e, S, world(e)); if (r === 'air') return false; if (r === 'flat') { ctx.shake(7); ctx.hitstop && ctx.hitstop(0.12); for (const g of ctx.props()) if (g.t === 'cannon' && g.deck && g.x > S.G.x0 - 16 && g.x < S.G.x1 + 16) g.cool = Math.max(g.cool || 0, CH.gunHot); ctx.number(e.x, e.y - 96, 'HIS GUNS ARE HOT: THEY WILL NOT SPEAK AGAIN A WHILE', '#9aa39a'); }   /* (claude/flotilla2 tune) a knockdown heats every gun on the lashings: one knockdown a gun-cycle, not two */ return true; };
   /* A BLOW ON HIM: never nothing (B15) - his plate CH.plate, his ward CH.ward, his recovery x1, stuck x CH.stuckMul, flat x CH.flatMul (one knockdown CH.flatCap of him at most) */
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
     const r = ACM.takeAt(e, S);

@@ -16,7 +16,7 @@ const CHAINS = [
   { name: 'GALLEY HULL: the exam well', start: [185, 14], links: [{ bench: 'b7' }, { bench: 'b8' }, { bench: 'b9' }, { ledge: [205, 208, 23] }] },
   { name: 'RIGGING RUN: teach + test', start: [289, 8], links: [{ yard: 289 }, { ledge: [301, 305, 8] }, { yard: 305 }, { yard: 313 }, { ledge: [321, 325, 7] }] },
   { name: 'RIGGING RUN: the lashing and the remix', start: [323, 7], links: [{ ledge: [325, 336, 10] }, { ledge: [337, 341, 8] }, { yard: 341 }, { ledge: [356, 360, 7] }] },
-  { name: 'RIGGING RUN: the exam', start: [358, 7], links: [{ yard: 361 }, { yard: 368 }, { yard: 376 }, { ledge: [385, 389, 5] }] },
+  { name: 'RIGGING RUN: the exam', start: [358, 7], links: [{ yard: 361 }, { yard: 368 }, { yard: 376 }, { ledge: [385, 389, 6] }] },
 ];
 const pg = await openPage({ audio: false, fonts: false });
 let R;
@@ -37,8 +37,9 @@ try {
             if(P.ground){
               /* A PLAYER'S READ: the target's top is within a plain jump up (40 px) or a drop below, and near enough across */
               const hOK=kind==='ledge'?dy>-40&&dy<200:kind==='bench'?dy>-36&&dy<(on?40:230)&&(T.m.dy<=0.3||T.m.y<=T.m.y0-T.m.rise+6||T.m.halted):dy>-40&&dy<48;
-              if(hOK&&gapX<=2){K[dir>0?'right':'left']=true;BK.sim(1);continue;}   /* over it already, or the edge touches it: step on */
-              if(hOK&&gapX<=58){K[dir>0?'right':'left']=true;BK.press('jump');K.jump=true;
+              const hOK2=hOK&&(!on||dy>-20);   /* (off a moving bench: wait for the next to come level, as a player does) */
+              if(hOK2&&gapX<=2&&dy>=-4){K[dir>0?'right':'left']=true;BK.sim(1);continue;}   /* over it already, or the edge touches it: step on */
+              if(hOK2&&gapX<=58){K[dir>0?'right':'left']=true;BK.press('jump');K.jump=true;
                 for(let i=0;i<80&&!(P.ground&&i>4)&&!P.swim;i++){const T2=tgt(L)||T,m2=(T2.l+T2.r)/2;K.jump=i<18;K.right=K.left=false;if(P.x<T2.l+6)K.right=true;else if(P.x>T2.r-6)K.left=true;else if(Math.abs(P.x-m2)>4&&P.vy<0)K[m2>P.x?'right':'left']=true;BK.sim(1);}none();BK.sim(2);continue;}
               /* not yet: ride to the edge of what we stand on nearest it, and wait there */
               const edge=on?(dir>0?on.x+on.w-6:on.x+6):null;if(edge!==null){if(Math.abs(P.x-edge)>3)K[edge>P.x?'right':'left']=true;}
