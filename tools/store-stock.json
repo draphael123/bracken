@@ -35,7 +35,7 @@
     "price": 10,
     "silver": true,
     "needs": null,
-    "feat": null
+    "feat": "boss:church"
    },
    {
     "id": "geomancer",

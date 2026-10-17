@@ -118,14 +118,14 @@ try {
    out.light=blow(40,'light');
    /* WATER STUNS HIM: thrown from his floor */
    b.mode='stalk';b.heat=40;b.open=0;b.ward=0;b.wetT=0;b.wetSeen=undefined;freeze();P().x=b.x-50;P().y=A.floor;P().vy=0;
-   const pr=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr);P().face=1;for(let i=0;i<6;i++){P().x=b.x-50;freeze();BK.sim(1);}BK.press('atk');let st=false;for(let i=0;i<60&&!st;i++){P().x=b.x-50;freeze();BK.sim(1);st=b.mode==='doused';}
+   const pr=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket').sort((p,q)=>Math.abs(p.x-b.x)-Math.abs(q.x-b.x))[0];   /* (batch97 integ: the NEAREST bucket to the fight - the first in the list is 6000 px away in this build, and a taken bucket throws from where it stood) */V().take(pr);P().face=1;for(let i=0;i<6||(i<180&&Math.abs(pr.x-P().x)>12);i++){P().x=b.x-50;freeze();BK.sim(1);}/* (batch97 integ: wait until the held bucket is in his hands - it follows the hero on the first frames the village update runs) */BK.press('atk');let st=false;for(let i=0;i<60&&!st;i++){P().x=b.x-50;freeze();BK.sim(1);st=b.mode==='doused';}
    for(let i=0;i<2;i++){freeze();BK.step(1);}
    out.stun={mode:b.mode,open:+(b.open||0).toFixed(2),bossOpen:BK.bossOpen(b),read:b.readNow,x2:blow(20,'light'),hint:BKT.hintNow.msg,words:BK.textLab.nums().map(n=>n.txt)};
    /* the stun runs out: THE STEAM WARD, told */
    for(let i=0;i<60*4&&b.mode==='doused';i++){freeze();BK.sim(1);}
    for(let i=0;i<2;i++){freeze();BK.step(1);}
    const words=BK.textLab.nums().map(n=>n.txt);
-   const wardBlade=blow(40);const wordsAfter=BK.textLab?BK.textLab.nums().map(n=>n.txt):[];
+   const wardBlade=blow(40);const wordsAfter=BK.textLab?BK.textLab.nums().map(n=>n.txt):[];b.poise=0;b.broken=0;b.poiseCd=0;/* (batch97 integ: claude/difficulty gave every boss a break bar - the blows measured above filled it and a soft break reads as open; this step is about the ward, so the bar starts clean) */
    /* water in the ward: turned, no stun */
    const pr2=V().buckets().filter(q=>q.state==='rest'&&q.thrKind==='bucket')[0];V().take(pr2);pr2.state='fly';pr2.x=b.x;pr2.y=b.y-12;pr2.vx=1;pr2.vy=10;for(let i=0;i<12&&pr2.state==='fly';i++){if(i){pr2.x=b.x;pr2.y=b.y-12;pr2.vy=10;}freeze();BK.sim(1);}const hit2=pr2.state;
    out.ward={ward:+(b.ward||0).toFixed(2),mode:b.mode,read:b.readNow,told:words,blade:wardBlade,said:wordsAfter,waterMode:b.mode,hit:hit2,bossOpen:BK.bossOpen(b)};

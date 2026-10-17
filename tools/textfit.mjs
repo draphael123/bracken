@@ -74,7 +74,7 @@ async function pageTextFit(input) {
   const yieldNow = () => new Promise(r => setTimeout(r, 0));
   /* THE PLATES: every filled or stroked rectangle drawn while recording */
   const orig = {};
-  for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = window.__textRec; if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
+  for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = (m === 'fillRect' && typeof this.fillStyle !== 'string') ? null : window.__textRec;   /* (batch97 integ: a GRADIENT or pattern fill is a soft glow - a lamp's bloom, a sun - not a plate a word can overflow; fillRect of a flat colour still records) */ if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
     else if (r && m === 'fillRect' && Math.abs(w) >= 12 && Math.abs(h) >= 1 && this.globalAlpha >= 0.3) r.push({ kind: 'bar', x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });   /* a METER: too thin to be a plate, wide enough to lie across a word (OVERDRAWN) */
     return orig[m].call(this, x, y, w, h, ...rest); }; }
   const report = (type, screen, t, extra = {}) => { const key = type + '|' + t.s + '|' + t.at + '|' + (extra.other || ''); if (seenIssue.has(key)) { const it = issues.find(q => q.key === key); if (it) it.n++; return; }

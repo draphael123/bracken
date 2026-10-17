@@ -130,7 +130,7 @@ export function makePaladinHands(ctx) {
     const w = 44, bx = Math.max(w / 2 + 30, Math.min(ctx.VW() - w / 2 - 4, x)), by = R(e.y - PB.h * PB.scale - 14 - cy), k = S.light / PB.light.max;   /* (kept on the screen at the room's walls, its label too) */
     PAL.drawLightBar(g, bx, by, w, k, { open: PBM.pbOpen(e), up: S.barUp > 0, down: S.barDown > 0 });
     g.fillStyle = '#1b1626'; for (const c of [HG.smite.cost, HG.throw.cost, HG.empower.cost]) g.fillRect(R(bx - w / 2 + w * c / 100), by - 1, 1, 4);
-    ctx.text('LIGHT', bx - w / 2 - 15, by - 1, '#ffd36b', 'center', 4);
+    { const pl = 295.5 * 16 - 60 + 14 - cx, pr = 295.5 * 16 + 60 - 14 - cx; const nat = bx - w / 2 - 15, lx = Math.max(pl, Math.min(pr, nat)); ctx.text('LIGHT', lx, lx === nat ? by - 1 : by - 9, '#ffd36b', 'center', 4); }   /* (batch97 integ: the label stays over the sanctuary's reredos panel (src/redraw/church_set.js: x 295.5 tiles +-60) - walking out with the bar it ran 6 px past the panel, tools/textfit OVERFLOW) */
     /* THE READ (B10) */
     const yy = R(e.y - PB.h * PB.scale / 2 - cy);
     if (PBM.pbOpen(e)) { const kk = Math.max(0, e.open / PB.falterT);

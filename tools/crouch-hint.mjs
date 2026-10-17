@@ -32,8 +32,6 @@ try {
       K.down = true; BK.sim(6); none(); BK.sim(10); r.stumbleTold = BK.crouchHint().stats.told;
       /* the crouch: held 1 s */
       for (const k of ['crouchTold_knight', 'crouchTold_warden', 'crouchTold_pirate', 'kneelTold', 'senseTold', 'harvestTold', 'workTold', 'pounceTold']) delete BKT.PROG[k];   /* (the contextual lines are tested in their own checks) */
-      /* (batch97 integ 10-17, PALADIN 4) the paladin's own PRAYER teach (src/crouch-b.js) fires the moment he stands calm with his Conviction under 40, which is always on a fresh save, so it pre-empted the first-crouch line and flagged it seen. A paladin with Conviction in hand is not taught PRAYER, so the first-crouch line is what this check measures. */
-      if (h === 'paladin') BK.P.light = 99;
       K.down = true; { let n = 0; while (BK.crouchHint().stats.told < 1 && n < 2000) { BK.sim(10); n += 10; } r.after = n; }   /* (the stockade's own toasts are up first: it waits for them) */
       r.msg = BKT.hintNow.msg; r.t = BKT.hintNow.t; r.told = BK.crouchHint().stats.told; r.flag = BKT.PROG.crouchFirst && BKT.PROG.crouchFirst[h]; none();
       /* again: never twice (a minute later, and after a level load) */
@@ -59,9 +57,11 @@ else {
   for (const h of HEROES) { const r = R[h];
     if (r.walkTold || r.stumbleTold) bad.push(h + ': told while standing, walking or on a ' + SETTLE + ' s stumble: ' + JSON.stringify(r));
     /* (claude/berserker2) THE BERSERKER's crouch is THE COIL and THE POUNCE now - taught here like everyone's; WORKING UP moved off the crouch to his idle WHETSTONE, which teaches itself standing */
-    if (r.told !== 1 || r.msg !== FIRST[h] || !(r.t > 0)) bad.push(h + ': the first crouch did not say ' + JSON.stringify(FIRST[h]) + ': ' + JSON.stringify(r));
+    /* (batch97 integ 10-17, PALADIN 4) the paladin kneels anywhere now and src/crouch-b.js teaches PRAYER the moment he stands calm (Conviction under 40, always true on a fresh save): that line IS his first-crouch teaching - the first-crouch line is skipped and flagged seen, never said on top of it. */
+    const prayed = h === 'paladin' && r.told === 0 && /^PRAYER: /.test(r.msg || '') && r.t > 0;
+    if (!prayed && (r.told !== 1 || r.msg !== FIRST[h] || !(r.t > 0))) bad.push(h + ': the first crouch did not say ' + JSON.stringify(FIRST[h]) + ': ' + JSON.stringify(r));
     if (r.flag !== 1) bad.push(h + ': PROG.crouchFirst not set (it must save with the slot)');
-    if (r.toldAfter !== 1 || r.toldAfterLoad !== 1) bad.push(h + ': told a second time: ' + JSON.stringify(r)); }
+    if (r.toldAfter !== (prayed ? 0 : 1) || r.toldAfterLoad !== (prayed ? 0 : 1)) bad.push(h + ': told a second time: ' + JSON.stringify(r)); }
   const B = R.behind;
   if (!B.up) bad.push('the test did not get a hint up');
   if (B.toldWhileBusy !== 0 || B.waiting !== 'knight') bad.push('the crouch hint cut in on a hint that was showing: ' + JSON.stringify(B));
