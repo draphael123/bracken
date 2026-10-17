@@ -14414,7 +14414,7 @@ const MAGE_FRAME = {
   turret: e => e.mode === 'chargeTell' ? 1 : e.mode === 'fire' ? 2 : 0,
   homunculus: e => { const F = MF.HOMUNCULUS_F; return ({ swipeTell: F.swipeTell, swipe: F.swipe, scuttleTell: F.scuttleTell, scurry: F.scurry, flaskTell: F.flaskTell, lob: F.lob, pounceTell: F.pounceTell, leap: F.pounceTell, dive: F.dive, poundTell: F.poundTell, pound: F.pound, spent: F.spent, bare: F.bare, gloat: F.idle, hide: F.scuttleTell })[e.mode] ?? (Math.abs(e.vx) > 4 ? F.walk[Math.floor(e.anim * 5) % 2] : F.idle); },
   archmage: e => { if (e.fam) { const F = MF.FAMILIAR_F; return ({ swipeTell: F.swipeTell, swipe: F.swipe, slamTell: F.slamTell, slam: F.slam, spitTell: F.spitTell, spit: F.spit, open: F.open, openTell: F.idle })[e.mode] ?? F.idle; }
-    const F = MF.ARCHMAGE_F; return ({ blinkTell: F.blink, blink: F.blink, change: F.blink, swallow: F.blink, boltTell: F.boltTell, bolt: F.bolt, rendTell: F.rendTell, rend: F.rend, ward: F.shield, wardTell: F.boltTell, open: F.open })[e.mode] ?? (Math.abs(e.vx) > 4 ? F.drift : F.idle); },
+    const F = MF.ARCHMAGE_F; return ({ blinkTell: F.blink, blink: F.blink, change: F.blink, swallow: F.blink, boltTell: F.boltTell, bolt: F.bolt, rendTell: F.rendTell, rend: F.rend, ward: F.shield, wardTell: F.wardTell, crushTell: F.crushTell, booksTell: F.booksTell, glyphTell: F.glyphTell, pairTell: F.pairTell, open: F.open })[e.mode] ?? (Math.abs(e.vx) > 4 ? F.drift : F.idle); },
 };
 /* ---------- THE DRAWING ---------- */
 function drawMageBack(cx, cy) {
