@@ -8,7 +8,8 @@
 //     (x from x0 to x0 + span); its two lines are drawn up to the stay over it.
 //   THE ROUND SHOT AND THE KEG (L.flot2.ballKegs): a deck gun's ball that meets a keg on the deck blows it (src/main.js updateBalls calls ballKeg) - how a crate hatch is
 //     blown from across the deck.
-// main.js calls: on, clear, strike(hb), stepMover(m, time, oldY), drawMover(g, m, cx, cy, time), drawWorld(g, cx, cy, time).
+// main.js calls: on, clear, strike(hb), stepMover(m, time, oldY), drawMover(g, m, cx, cy, time), drawBack(g, cx, cy, time), drawDoor / drawGun (src/flotilla2-art.js draws them all).
+import { makeFlotilla2Art } from './flotilla2-art.js';
 const R = Math.round;
 export function makeFlotilla2(ctx) {
   const H = {}; let freed = new Set();
@@ -35,35 +36,14 @@ export function makeFlotilla2(ctx) {
     if (m.flot === 'yard') { const oldX = m.x, u = 0.5 - 0.5 * Math.cos(2 * Math.PI * (time / m.period + (m.phase || 0)));
       m.x = m.x0 + m.span * u; m.dx = m.x - oldX; m.dy = 0; return true; }
     return false; };
-  /* ---------- DRAWING (GREYBOX) ---------- */
+  /* ---------- DRAWING (the art pass: src/flotilla2-art.js) ---------- */
+  const ART = makeFlotilla2Art(ctx);
   H.drawMover = (g, m, cx, cy, time) => {
-    const x = R(m.x - cx), y = R(m.y - cy);
-    if (m.flot === 'bench') {
-      /* the frame it rides in (two uprights down to the bilge), the bench, its oar loom, and the stroke marks (the low and high of its ride) */
-      const lowY = R(m.y0 - cy), hiY = R(m.y0 - m.rise - cy);
-      g.fillStyle = '#4a3a28'; g.fillRect(x + 2, hiY - 2, 3, lowY - hiY + 30); g.fillRect(x + m.w - 5, hiY - 2, 3, lowY - hiY + 30);
-      g.fillStyle = '#8a7454'; g.fillRect(x + 1, lowY + 3, 5, 1); g.fillRect(x + m.w - 6, lowY + 3, 5, 1); g.fillRect(x + 1, hiY + 3, 5, 1); g.fillRect(x + m.w - 6, hiY + 3, 5, 1);
-      g.fillStyle = '#6a5034'; g.fillRect(x, y, m.w, 6); g.fillStyle = '#9a7c54'; g.fillRect(x, y, m.w, 2); g.fillStyle = '#3a2a1a'; g.fillRect(x, y + 6, m.w, 2);
-      const r = (F() && F().rowers.find(q => q.bench === m.bench)) || null;
-      if (r) drawRower(g, R(r.x - cx), y, r.freed, time + m.phase * 3);
-      else { g.fillStyle = '#5a4a34'; g.fillRect(x + 6, y - 8, m.w - 12, 2); }   /* an empty bench: the oar shipped */
-      return true; }
-    if (m.flot === 'yard') {
-      /* the yard (a spar, tapered), its two lines up to the stay, and the footrope under it */
-      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 4.5, y); g.lineTo(x + m.w / 2 + 0.5, y - 64); g.lineTo(x + m.w - 3.5, y); g.stroke();
-      g.fillStyle = '#5a4630'; g.fillRect(x, y, m.w, 5); g.fillStyle = '#8a6e4a'; g.fillRect(x + 1, y, m.w - 2, 2); g.fillStyle = '#3a2c1c'; g.fillRect(x - 2, y + 1, 2, 3); g.fillRect(x + m.w, y + 1, 2, 3);
-      g.strokeStyle = 'rgba(201,178,124,0.6)'; g.beginPath(); g.moveTo(x + 0.5, y + 6.5); g.quadraticCurveTo(x + m.w / 2, y + 11, x + m.w - 0.5, y + 6.5); g.stroke();
-      return true; }
+    if (m.flot === 'bench') { const r = (F() && F().rowers.find(q => q.bench === m.bench)) || null; ART.bench(g, m, cx, cy, time, r, r ? r.freed : false); return true; }
+    if (m.flot === 'yard') { ART.yard(g, m, cx, cy, time); return true; }
     return false; };
-  /* a pressed fisherman at his oar: pulling (a rocking lean), the chain from his ankle to the bench's ring; freed, he stands, the chain broken */
-  function drawRower(g, x, y, free, t) {
-    const lean = free ? 0 : R(Math.sin(t * 2.4) * 3);
-    g.fillStyle = '#2a2a30'; g.fillRect(x - 3, y - 4, 6, 4);   /* legs */
-    g.fillStyle = free ? '#7a8a9a' : '#5a6a7a'; g.fillRect(x - 3 + lean, y - (free ? 14 : 11), 6, free ? 10 : 7);   /* jerkin */
-    g.fillStyle = '#d8b090'; g.fillRect(x - 2 + lean, y - (free ? 18 : 15), 4, 4);   /* head */
-    g.fillStyle = '#c9b27c'; g.fillRect(x - 3 + lean, y - (free ? 19 : 16), 6, 1);   /* a fisher's cap */
-    if (!free) { g.strokeStyle = '#8a6e4a'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + lean + 2, y - 9); g.lineTo(x + lean + 16, y - 2 + lean); g.stroke(); g.lineWidth = 1;   /* the oar's loom */
-      g.fillStyle = '#9aa0a8'; for (let i = 0; i < 4; i++) g.fillRect(x + 3 + i * 2, y - 1 + (i % 2), 1, 1); }   /* the chain */
-    else { g.fillStyle = '#9aa0a8'; g.fillRect(x + 4, y - 1, 1, 1); g.fillRect(x + 8, y, 1, 1); g.fillStyle = '#8fd160'; g.fillRect(x - 1, y - 24, 2, 2); } }
+  H.drawBack = (g, cx, cy, time) => { if (F()) ART.back(g, cx, cy, time); };   /* the static rigging, the copper, the hatch, the magazine: behind the bodies */
+  H.drawDoor = (g, pr, cx, cy, time) => ART.door(g, pr, cx, cy, time);
+  H.drawGun = (g, pr, cx, cy, time) => ART.gun(g, pr, cx, cy, time);
   return H;
 }

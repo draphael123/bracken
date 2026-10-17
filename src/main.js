@@ -26751,7 +26751,7 @@ CHH = makeChampionHands({ get L() { return L; }, get players() { return players;
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
   cellSet: (x, y, t) => cellSet(x, y, t), grid0: (x, y) => grid0[y * LW + x], resolve: () => resolveTiles(), turned: (e, x, w, o) => BR.turned(e, x, w, o), props: () => props,
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */
-FL2H = makeFlotilla2({ get L() { return L; }, hero: () => P, movers: () => movers, sfx: SFX, number: (x, y, t, c) => number(x, y, t, c), sparks: (...a) => sparks(...a), overlap: (a, b) => overlap(a, b), hint: m => { hintT = 4.5; hintMsg = m; } });   /* THE FLOTILLA 2 (claude/flotilla2) */
+FL2H = makeFlotilla2({ get L() { return L; }, tileAt: (x, y) => tileAt(x, y), crate: T.CRATE, hero: () => P, movers: () => movers, sfx: SFX, number: (x, y, t, c) => number(x, y, t, c), sparks: (...a) => sparks(...a), overlap: (a, b) => overlap(a, b), hint: m => { hintT = 4.5; hintMsg = m; } });   /* THE FLOTILLA 2 (claude/flotilla2) */
 UWH = makeUnderwellHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, enemies: () => enemies, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n), attackBox: () => attackBox(), overlap: (a, b) => overlap(a, b),
   asPlayer: (p, fn) => asPlayer(p, fn), hurtHero: (x, d, o) => damagePlayer(x, d, o), hurtFoe: (e, d, tag) => (tag ? hurtAs(tag, e, d, e.x, false) : hurtEnemy(e, d, e.x, false)), standable: (tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), cellGet: (x, y) => tileAt(x, y),
@@ -29998,7 +29998,8 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   if (L.walls) drawWalls(g, L.walls, cx, cy, TS, time);   /* THE BREAKABLE-WALL ENGINE's own look, over the rock the tile renderer already drew */
   if (FAIR && L.ring) CRG.drawRingBack(g, cx, cy, VW, L.ring, L.green, L.arena, time, L.ring.quickT > 0);   /* THE WICKER QUEEN'S CAROUSEL: the canopy, the column, the firebox, the back of the ride, under its horses */
-  if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time);   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
+  if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time); if (FL2H && FL2H.on()) FL2H.drawBack(g, cx, cy, time);   /* THE FLOTILLA 2 (claude/flotilla2art): spars, hawser, wreck-bone masts, hatch, magazine, mainmast wall (src/flotilla2-art.js) */
+  //   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
   for (const m of movers) {
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
     if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
@@ -30187,6 +30188,7 @@ function drawWorld(cx, cy, showPlayer) {
       else { const k2 = 1 - pr.cool / (pr.coolMax || 6); g.fillStyle = '#3e4a58'; g.fillRect(x - 5, y - 32, 10, 2);
         g.fillStyle = '#7aa8c8'; g.fillRect(x - 5, y - 32, Math.round(10 * k2), 2); }
       continue; }
+    else if (pr.t === 'bulkhead' && FL2H && FL2H.on()) { FL2H.drawDoor(g, pr, cx, cy, time); continue; }
     else if (pr.t === 'bulkhead') { if (pr.open) continue;
       const [sx0, sx1, sy0, sy1] = pr.span;
       const jx = pr.shake > 0 ? Math.round((Math.random() - 0.5) * 3) : 0;
@@ -30200,6 +30202,7 @@ function drawWorld(cx, cy, showPlayer) {
       g.fillStyle = '#20262a'; g.fillRect(x0, y0 + Math.floor(h / 2) + 2, w, 1);
       if (pr.hit > 0) { g.globalAlpha = pr.hit; g.fillStyle = '#e8dcc0'; g.fillRect(x0, y0 + Math.floor(h / 2) - 2, w, 4); g.globalAlpha = 1; }
       continue; }
+    else if (pr.t === 'cannon' && pr.deck && FL2H && FL2H.on()) { FL2H.drawGun(g, pr, cx, cy, time); }
     else if (pr.t === 'cannon') { if (!PROP.flot) continue; const c = PROP.flot.cannon[pr.fired ? 1 : 0]; g.drawImage(c, Math.round(pr.x - 15 - cx), Math.round(pr.y - c.height - cy));
       if (pr.smoke > 0 && Math.random() < 0.5) parts.push({ x: pr.x + 18, y: pr.y - 10, vx: 40 + Math.random() * 60, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, col: '#9aa39a', size: 2, grav: -10 }); }
     else if (pr.t === 'plank') { if (!PROP.flot) continue; const c = PROP.flot.gangplank[pr.down ? 1 : 0];

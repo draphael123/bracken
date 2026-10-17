@@ -21,10 +21,11 @@ export function bakeChampionCard() {
   const W = 72, Hh = 84, [c, g] = canvas(W, Hh);
   const bg = g.createLinearGradient(0, 0, 0, Hh); bg.addColorStop(0, '#3a2a30'); bg.addColorStop(1, '#141018'); g.fillStyle = bg; g.fillRect(0, 0, W, Hh);
   g.fillStyle = '#4a3a2a'; g.fillRect(0, 76, W, 8); g.fillStyle = '#8a7454'; g.fillRect(0, 76, W, 1);
-  ART.drawChampion(g, 34, 76, 1, { mode: 'walk', p: 0 }, 0);
+  ART.drawChampion(g, 34, 78, 1, { mode: 'card', p: 0 }, 0.3);
   return { R: [c], L: [c], w: 40, h: 62 };
 }
 export function makeChampionHands(ctx) {
+  const splashes = [];   /* (flotilla2art) the HAULED OUT splashes: where a hero went in, and the deck he is hauled up onto */
   let S = null, WORD = null, GAP = { open: false, want: false };
   const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'champion' ? ctx.L.arena : null);
@@ -88,7 +89,7 @@ export function makeChampionHands(ctx) {
        long swim in a duel (the told hazard; the tilt is what puts you there) */
     for (const pp of ctx.players) { if (pp.dead || !(pp.y > S.G.floorY + 20) || pp.x < S.G.gap[0] - 20 || pp.x > S.G.gap[1] + 20) continue;
       const k = (pp.vx || 0) >= 0 && pp.x < S.G.gapMid ? 0 : pp.x < S.G.gapMid ? 0 : 1, to = k === 0 ? S.G.gap[0] - 34 : S.G.gap[1] + 34;
-      ctx.hazard(pp, to, S.G.floorY); S.n.hauled = (S.n.hauled || 0) + 1; ctx.number(to, S.G.floorY - 40, 'HAULED OUT OF THE HARBOUR', '#bfe6f5'); }
+      splashes.push({ x: pp.x, hx: to, t: ctx.time() }); ctx.hazard(pp, to, S.G.floorY); S.n.hauled = (S.n.hauled || 0) + 1; ctx.number(to, S.G.floorY - 40, 'HAULED OUT OF THE HARBOUR', '#bfe6f5'); }
     ACM.stepChampion(e, S, dt, heroes(), world(e));
     e.phase = S.ph;
     if (WORD && (!/Tell$/.test(e.mode) || ctx.time() - WORD.t > 2)) WORD = null;
@@ -110,25 +111,28 @@ export function makeChampionHands(ctx) {
     hook: !!S.hook, hooked: !!S.hooked, leap: S.leap ? R(S.leap.x1) : null, anchor: !!S.anchor, hurt: { ...(S.hurt || {}) }, landedOn: (S.landedOn || []).slice(), G: S.G };
 
   /* ---------- DRAWING (GREYBOX: src/redraw/champion_art.js) ---------- */
-  const TELL_T = { comboTell: CH.comboTell, slamTell: CH.slamTell, thrustTell: CH.thrustTell, leapTell: CH.leapTell, tearTell: CH.tearTell, sweepTell: CH.sweepTell, hookTell: CH.hookTell, tiltTell: CH.tiltTell, wake: 1.6 };
+  const TELL_T = { comboTell: CH.comboTell, slamTell: CH.slamTell, thrustTell: CH.thrustTell, leapTell: CH.leapTell, tearTell: CH.tearTell, sweepTell: CH.sweepTell, hookTell: CH.hookTell, tiltTell: CH.tiltTell, wake: 1.6,
+    /* (claude/flotilla2art) the release and recovery poses ride their own progress too, so every blow is a little film: windup, release, recovery */
+    combo: CH.comboT, slam: CH.slamT, thrust: CH.thrustT, leap: CH.leapT, sweep: CH.sweepT, comboRec: CH.comboRec, slamRec: CH.slamRec, thrustRec: CH.thrustRec, landRec: CH.landRec, sweepRec: CH.sweepRec, hookRec: CH.hookRec, tilt: CH.slamT, tiltRec: 0.7, stuck: CH.stuckT, stuckA: CH.stuckAT };
   const prog = e => { const T = TELL_T[e.mode]; return T ? Math.max(0, Math.min(1, 1 - Math.max(0, e.modeT) / T)) : 0; };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, flash = (e.hurtT || 0) > 0;
     g.globalAlpha = 0.3; g.fillStyle = '#04080a'; g.beginPath(); g.ellipse(x, R(S.G.floorY - cy), 22, 3, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
-    ART.drawChampion(g, x, y, f, { mode: e.mode, p: prog(e), flash, anchor: !!S.anchor && e.mode !== 'tearTell' }, time);
+    ART.drawChampion(g, x, y, f, { mode: e.mode, p: prog(e), flash, anchor: !!S.anchor, ward: S.ward > 0 ? S.ward : 0 }, time);
     if (e.mode === 'sleep') ctx.text('...', x + 10 * f, y - 70, '#c8d8e8', 'center', 6);
     if (e.guardFx > 0) { g.fillStyle = '#ffffff'; g.fillRect(x + f * 14 - 3, y - 54, 6, 22); }
   };
   H.drawDead = (g, cx, cy, time) => { if (!S || !S.dead) return; const D = S.dead; if (D.t0 === null) D.t0 = time; ART.drawDeadChampion(g, R(D.x - cx), R(D.y - cy), D.f, (time - D.t0) / 1.6, time, D.anchor); };
   /* THE LASHING, THE TILT, THE CHAIN, THE MARKS AND THE READ */
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const G = S.G, fy = R(G.floorY - cy);
+    for (let i = splashes.length - 1; i >= 0; i--) { const k = (time - splashes[i].t) / 0.9; if (k > 1 || k < 0) { splashes.splice(i, 1); continue; } ART.drawHaulSplash(g, R(splashes[i].x - cx), fy, R(splashes[i].hx - cx), k); }
     ART.drawLashing(g, R(G.gap[0] - cx) - (GAP.open ? 16 : 0), R(G.gap[1] - cx) + (GAP.open ? 16 : 0), fy, time, GAP.open);
     if (!ctx.bossActive) return; const e = ctx.boss; if (!e || e.t !== 'champion') return;
     if (S.tilt) { const [a, b] = G.hulls[S.tilt.hull]; ART.drawTilt(g, R(a - cx), R(b - cx), fy, S.tilt.dir, S.tilt.t / CH.tiltT, time); if (Math.floor(time * 4) % 2) ctx.text('THE DECK TILTS', R((a + b) / 2 - cx), fy - 70, '#ffd36b', 'center', 5); }
     if (S.hook) { const L = S.hook; ART.drawChain(g, R(e.x + (e.face || 1) * 14 - cx), R(e.y - 30 - cy), R(L.x - cx), R(L.y - cy), time, !!S.hooked); ART.drawAnchor(g, R(L.x - cx), R(L.y - cy), Math.atan2(L.uy, L.ux), 1); }
     if ((e.mode === 'slamTell' || e.mode === 'tiltTell') && S.slamX != null) ART.drawSlamMark(g, R(S.slamX - cx), fy, CH.slamFar - CH.slamNear, prog(e), time);
     if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap) { ART.drawLeapMark(g, R(S.leap.x1 - cx), fy, CH.landR, prog(e), time); if (Math.floor(time * 8) % 2) ctx.text('!!', R(S.leap.x1 - cx), fy - 40, '#ff6b6b', 'center', 7); }
-    if (e.mode === 'sweepTell' || e.mode === 'sweep') { g.globalAlpha = e.mode === 'sweep' ? 0.5 : 0.18 + 0.2 * prog(e); g.strokeStyle = '#ff9a7a'; g.beginPath(); g.ellipse(R(e.x - cx), fy - 12, CH.sweepR, 8, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    if (e.mode === 'sweepTell' || e.mode === 'sweep') ART.drawSweepArc(g, R(e.x - cx), fy, CH.sweepR, e.mode === 'sweep', prog(e), time);
     if (S.sweep) { const ax = R(S.sweep.x - cx); ART.drawChain(g, R(e.x - cx), fy - 26, ax, fy - 10, time, true); ART.drawAnchor(g, ax, fy - 10, Math.PI / 2, 1.1); }   /* the anchor where it is on its pass (the bot reads S.sweep.x) */
     const x = R(e.x - cx), y = R(e.y - CH.h / 2 - cy), top = R(e.y - CH.h - cy);
     if (WORD && /Tell$/.test(e.mode)) ctx.text(WORD.line, x, top - 58, Math.floor(time * 6) % 2 ? '#ff9a7a' : '#ffffff', 'center', 5);
