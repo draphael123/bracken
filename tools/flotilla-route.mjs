@@ -45,6 +45,7 @@ try {
               const edge=on?(dir>0?on.x+on.w-6:on.x+6):null;if(edge!==null){if(Math.abs(P.x-edge)>3)K[edge>P.x?'right':'left']=true;}
               else{const G=BK.L.grid,W=BK.L.W,c=Math.floor((P.x+dir*10)/16),r=Math.floor((P.y+2)/16),t=G[r*W+c];if(t===1||t===2||t===4||t===14||t===11)K[dir>0?'right':'left']=true;}}
             BK.sim(1);}
+          if(ok){for(let i=0;i<20;i++){none();BK.sim(1);}}   /* settle on what we landed on, as a player does, before the next */
           if(!ok){if(!why){const T=tgt(L)||{};why='timed out at '+JSON.stringify(L)+' hero '+[Math.round(P.x),Math.round(P.y),P.ground?'g':'a',P.onMover?(P.onMover.bench||P.onMover.flot||'m'):'-'].join(',')+' target '+[Math.round(T.l),Math.round(T.r),Math.round(T.y)].join(',');}break;}done++;}
         out[h].push({chain:c.name,links:c.links.length,done,why});}}
     /* THE VERB: free the castle bench's rower at the top of its stroke and it is a fixed step to the castle */
