@@ -231,7 +231,7 @@ export function stepColossus(e, S, dt, heroes, c) {
   for (const m of S.mirrors) m.turnedT = (m.turnedT || 0) + dt;
   /* (fix pass) THE ARENA STALL NUDGE: no mirror on a notch that can open it this phase for 10 s -> the line, again every 10 s (never a once-only line) */
   { const fl = flank(S), ok = S.ph === 2 ? relaying(S) : S.ph === 3 ? fl.some(m => m && m.notch === 'sky') || S.mirrors.some(m => m.notch === 'face') : S.mirrors.some(m => m.notch === 'face');   /* (claude/colossusrework: the fire and the dawn from his FLANK) */
-    if (!colOpen(e) && S.ward <= 0 && !ok) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= 10) { S.stallT = 0; S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE CRACK' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN THE MIRROR TO HIM', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
+    if (!colOpen(e) && S.ward <= 0 && !ok) { S.stallT = (S.stallT || 0) + dt; if (S.stallT >= NUDGE.after) { S.stallT = 0; markStall(true); S.n.nudge = (S.n.nudge || 0) + 1; c.number(e.x, G.crownY - 20, S.ph === 2 ? 'TURN A MIRROR TO THE FIRE: ITS LIGHT HOLDS THE CRACK' : S.ph === 3 ? 'TURN A MIRROR TO THE SKY, OR TO FACE ITS LANCE' : 'TURN THE MIRROR TO HIM', '#ffd36b');   /* (= STALL_LINE[S.ph]; literals for tools/hint-shown) */ } } else S.stallT = 0; }
   /* the travelling hazards: stomp rings, the shard wave */
   for (const r of S.rings) { r.x += r.dir * COL.stompV * dt; if (r.x < G.x0 || r.x > G.x1) r.dead = true; else c.hit([r.x - 10, r.x + 10, G.floor - COL.stompH, G.floor], COL.stompDmg, 'THE STOMP', { key: 'ring' + r.id });   /* (!!: a ring of shards along the ground - JUMP it; no shield turns it) */ }
   S.rings = S.rings.filter(r => !r.dead);
@@ -450,3 +450,4 @@ export function colPlan({ P, e, S, reach, shield, rng = Math.random, mem = {}, t
   if (S.ward > 0) mem.after = t + 1.4;
   return out;
 }
+import { NUDGE } from './stuck-guide.js'; import { markStall } from './hints.js';   /* (claude/hintlevel) the arena nudge waits as long as the Hints level says: 10 s on HIGH */
