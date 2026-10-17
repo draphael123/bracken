@@ -5196,6 +5196,9 @@ function theHurricane() {
 
   // ---- HER HULL, the length of her: solid timber under her deck, with a hold only where the level goes below ----
   block(16, 606, 20, 27); hullZones.push([16, 606, 20, 27]);
+  /* SHE IS AGROUND: the storm has driven her onto the bar, and the sand comes up to her keel the length of her - so the sea under her is not a road from
+     bow to stern (it was: a swim under her keel walked round every crossing). Her breaches are open to the sea down to the bar; past her bow and her stern the sea is open */
+  block(16, 606, 28, 41);
   net(14, 15, 19, 30); net(607, 608, 19, 30);   // HER LIFELINES over the bow and the stern
   rail(53, 546, 19);
 
@@ -5218,7 +5221,7 @@ function theHurricane() {
   ent('marine', 34, 26, { face: 1 }); ent('silver', 22, 26);
   coins([58, 25], [50, 25], [42, 25], [28, 25]);
   // THE BOW'S EXAM: one weighty foe on the open deck with the sea behind him, and the shrine after
-  ent('tideguard', 106, 19, { face: -1 });
+  ent('tideguard', 106, 18, { face: -1 });
   ent('check', 114, 19);
   coins([64, 18], [70, 18], [84, 18], [96, 18], [104, 18], [110, 18]);
   ent('deco', 112, 19, { kind: 'boardingNet' });
@@ -5235,6 +5238,7 @@ function theHurricane() {
   ent('torch', 184, 19); ent('deco', 188, 19, { kind: 'kegStack' }); ent('deco', 180, 19, { kind: 'chickenCoop' });
   ent('seawitch', 190, 16, { caller: true, face: -1 });   /* on the galley roof: she calls the sky down on the crossing */
   coins([142, 17], [150, 16], [158, 15], [166, 15], [178, 16], [186, 16]);
+  ent('petrel', 156, 11, { gull: true, face: -1 });   /* a gull off the galley roof, coming at you down the mast */
   // the waist past the galley: the wave AND the sky now, taken in turns
   for (const x of [206, 222]) shroud(x);
   ent('sailor', 204, 19, { rise: true, face: -1 }); ent('scout', 216, 19, { face: -1 }); ent('cutlass', 228, 19, { face: -1 });
@@ -5277,6 +5281,7 @@ function theHurricane() {
   for (const [x, ph] of [[388, 0], [395, 0.33], [402, 0.66]]) ent('mover', x, 20, { len: 5, vert: true, rise: 1.6, period: 3.6, ph, hatch: true });
   ent('sign', 381, 19, { text: 'HER HATCH COVERS RIDE THE SWELL. STEP ON AS ONE COMES UP.' });
   coins([390, 17], [397, 16], [404, 17]);
+  ent('petrel', 398, 13, { gull: true, face: -1 });   /* and over the covers, while you time them */
   // THE AFT GUN: as she heels it parts its breechings, and every roll after runs it down her deck into the cargo lashed across it
   ent('loosegun', 420, 18, { trigger: 414 }); ent('cargowall', 438, 18, { span: [438, 439, 16, 19] });
   ent('sign', 416, 19, { text: 'HER AFT GUN IS WORKING LOOSE. WHEN SHE HEELS IT RUNS: LET IT SMASH THE CARGO.' });
@@ -5306,9 +5311,10 @@ function theHurricane() {
   for (const x0 of [486, 489, 492, 495, 498]) deckBreaks.push({ x0, x1: x0 + 2, row: 7, t: -1, down: false, onTop: true, fuse: 0.8, reset: true });
   net(504, 505, 6, 19);   // the stern stay, down to her after deck
   coins([488, 6], [492, 6], [496, 6], [500, 6]);
+  ent('petrel', 498, 2, { gull: true, face: -1 });   /* one over her topmast: no stopping for it */
   // THE STERN'S EXAM: her last hands on the after deck with the storm at its worst, and the shrine before his deck
   for (const x of [516, 532]) shroud(x);
-  ent('boarder', 524, 19, { face: -1 }); ent('sailor', 514, 19, { rise: true, face: -1 }); ent('seawitch', 538, 19, { caller: true, face: -1 });
+  ent('boarder', 524, 18, { face: -1 }); ent('sailor', 514, 19, { rise: true, face: -1 }); ent('seawitch', 530, 19, { caller: true, face: -1 });
   ent('cargo', 520, 18, { kind: 'barrel' });
   coins([510, 18], [518, 18], [528, 18], [536, 18]);
   ent('check', 542, 19);
@@ -8490,7 +8496,7 @@ const ELITES = {
   longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */
   reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
   flotilla: [['boarder', 162, 21, { gate: 175 }]],
-  hurricane: [['tideguard', 106, 19, { face: -1 }], ['boarder', 524, 19, { face: -1 }]],   /* (claude/hurricane2) the two exams: the bow's, with the sea behind him, and the stern's with the storm at its worst */
+  hurricane: [['tideguard', 106, 18, { face: -1 }], ['boarder', 524, 18, { face: -1, gate: 538 }]],   /* (claude/hurricane2: the stern's boarding net is down until he falls) the two exams: the bow's, with the sea behind him, and the stern's with the storm at its worst */
   lamplit: [['watch', 595, 21]],
   deep: [['watch', 30, 27, { gate: 41 }]],
   causeway: [['tideguard', 66, 23, { gate: 79, affix: 'SUMMONER' }], ['tideguard', 530, 23, { gate: 538, affix: 'UNSTOPPABLE' }]],   /* (claude/levelpilot: the second holds THE LAST MILE, the road's exam, in the breakers; two of a kind key by column, so each names its own affix) */
