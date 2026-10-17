@@ -16949,7 +16949,7 @@ function gustShove(dir, speed, dt) { if (braced()) { if (Math.abs(P.vx) > GUST_B
    on the arena's side of it, with a breath before the next gust takes you (P.dropT). A spider that falls in is gone. */
 function owlDropStep(dt) { const A = L.arena; if (!A || !A.drops) return; P.dropT = Math.max(0, (P.dropT || 0) - dt);
   for (const e of enemies) if (e.alive && e.t === 'spider' && owlDropAt(e.x) && e.y > A.floor + 20) e.alive = false;
-  if (P.dead || !(P.y > A.floor + 20) || !owlDropAt(P.x)) return; const dr = A.drops.find(([a, b]) => P.x > a * TS - 2 && P.x < (b + 1) * TS + 2), mid = (A.x0 + A.x1) / 2;
+  if (P.dead || !(P.y > A.floor + 20 && P.y < A.floor + 140) || !owlDropAt(P.x)) return;   /* (batch98 integ: only the first 140 px under the boards - the fall itself. Without the band a hero walking the village far below the crown, under a drop column, was hurt and put back on the arena: order-knights hanging) */ const dr = A.drops.find(([a, b]) => P.x > a * TS - 2 && P.x < (b + 1) * TS + 2), mid = (A.x0 + A.x1) / 2;
   damagePlayer(P.x, 1, { unblockable: true, pct: SV.HAZARD.pct, name: 'THE DROP' }); if (P.dead || P.hp <= 0) return;
   P.x = dr[0] * TS < mid ? (dr[1] + 1) * TS + 56 : dr[0] * TS - 56; P.y = A.floor; P.vx = 0; P.vy = 0; P.ground = true; P.onMover = null; P.climb = false; P.inv = Math.max(P.inv || 0, 1); P.dropT = 1.2;
   number(P.x, P.y - 30, 'THE DROP', '#ff9a5c'); dust(P.x, P.y, 8); hazardSay(); }

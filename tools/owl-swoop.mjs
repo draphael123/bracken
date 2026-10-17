@@ -65,7 +65,7 @@ try {
       lamp.lit = false; return { lost, took, burned, oil: oilSeen, dropX }; };
     out.dropIn = drop(true); out.dropOut = drop(false);
     /* THE NUMBERS: a blow on her in a lamp crash, on the boards, outside an opening, and in her ward */
-    boot('knight'); home(); const blow = (set) => { Object.assign(owl, { mode: 'screech', modeT: 9, next: 1, lampT: 0, ward: 0, broken: 0, poise: 0, greedLog: [], greedT: 0, greedCd: 1e9, chipAcc: 0, x: X + 10, y: BK.L.arena.floor - 8 }, set); const h0 = owl.hp; BKT.hurtAs('light', owl, 20, owl.x - 12, false); const t = h0 - owl.hp; owl.hp = h0; return t; };
+    boot('knight'); home(); const blow = (set) => { Object.assign(owl, { mode: 'screech', modeT: 9, next: 1, lampT: 0, ward: 0, broken: 0, poise: 0, greedLog: [], stale: null, stOpenN: 0, greedT: 0, greedCd: 1e9, chipAcc: 0, x: X + 10, y: BK.L.arena.floor - 8 }, set); const h0 = owl.hp; BKT.hurtAs('light', owl, 20, owl.x - 12, false); const t = h0 - owl.hp; owl.hp = h0; return t; };
     out.dmg = { lampCrash: blow({ mode: 'crash', modeT: 2.5, lampT: 4 }), boards: blow({ mode: 'grounded', modeT: 3 }), outside: blow({}), ward: blow({ ward: 3 }) };
     { let s = 0; for (let i = 0; i < 10; i++) s += blow({}); out.dmg.outside10 = s; }
     /* the ward comes up as an opening ends, told */
