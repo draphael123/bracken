@@ -30,14 +30,14 @@ try {
         const footedOn=L=>L.bench?(P.onMover&&P.onMover.bench===L.bench):L.yard?(P.onMover&&P.onMover.flot==='yard'&&Math.round(P.onMover.x0/16)===L.yard):(P.ground&&!P.onMover&&P.x>=L.ledge[0]*16&&P.x<=(L.ledge[1]+1)*16&&Math.abs(P.y-L.ledge[2]*16-16)<3);
         const tgt=L=>{if(L.ledge)return {l:L.ledge[0]*16,r:(L.ledge[1]+1)*16,y:L.ledge[2]*16+16,m:null};const m=BK.movers().find(q=>L.bench?q.bench===L.bench:(q.flot==='yard'&&Math.round(q.x0/16)===L.yard));return m?{l:m.x,r:m.x+m.w,y:m.y,m}:null;};
         for(const L of c.links){let ok=false;
-          for(let f=0;f<60*30&&!ok;f++){none();if(P.dead||P.swim||P.y>30*16){why='fell at link '+JSON.stringify(L);break;}
+          const TR=[];for(let f=0;f<60*30&&!ok;f++){none();if(f%4===0){const T0=tgt(L)||{};const nb=BK.movers().filter(q=>q.flot).sort((a,b)=>Math.abs(a.x+a.w/2-P.x)-Math.abs(b.x+b.w/2-P.x))[0];TR.push([f,Math.round(P.x),Math.round(P.y),Math.round(P.vy),P.ground?1:0,P.onMover?(P.onMover.bench||'y'):'-',K.left?'L':K.right?'R':'.',nb?Math.round(nb.x)+'/'+Math.round(nb.y):''].join(','));if(TR.length>14)TR.shift();}if(P.dead||P.swim||P.y>30*16){why='fell at link '+JSON.stringify(L)+' TRACE '+TR.join(' | ');break;}
             if(footedOn(L)){ok=true;break;}
             const T=tgt(L);if(!T){why='no target '+JSON.stringify(L);break;}
             const kind=L.bench?'bench':L.yard?'yard':'ledge',mid=(T.l+T.r)/2,dir=Math.sign(mid-P.x)||1,gapX=dir>0?T.l-P.x:P.x-T.r,dy=T.y-P.y,on=P.onMover;
             if(P.ground){
               /* A PLAYER'S READ: the target's top is within a plain jump up (40 px) or a drop below, and near enough across */
               const hOK=kind==='ledge'?dy>-40&&dy<200:kind==='bench'?dy>-36&&dy<(on?40:230)&&(T.m.dy<=0.3||T.m.y<=T.m.y0-T.m.rise+6||T.m.halted):dy>-40&&dy<48;
-              const hOK2=hOK&&(!on||dy>-20);   /* (off a moving bench: wait for the next to come level, as a player does) */
+              const hOK2=hOK&&(!on||on.flot!=='bench'||dy>-20);   /* (off a moving bench: wait for the next to come level, as a player does) */
               if(hOK2&&gapX<=2&&dy>=-4){K[dir>0?'right':'left']=true;BK.sim(1);continue;}   /* over it already, or the edge touches it: step on */
               if(hOK2&&gapX<=58){K[dir>0?'right':'left']=true;BK.press('jump');K.jump=true;
                 for(let i=0;i<80&&!(P.ground&&i>4)&&!P.swim;i++){const T2=tgt(L)||T,m2=(T2.l+T2.r)/2;K.jump=i<18;K.right=K.left=false;if(P.x<T2.l+6)K.right=true;else if(P.x>T2.r-6)K.left=true;else if(Math.abs(P.x-m2)>4&&P.vy<0)K[m2>P.x?'right':'left']=true;BK.sim(1);}none();BK.sim(2);continue;}

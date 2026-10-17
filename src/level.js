@@ -5110,7 +5110,7 @@ function theFlotilla() {
   ent('netter', 339, 8, { face: -1 }); ent('sign', 325, 10, { text: 'A LASHING: THE HAWSER THAT HOLDS THE HULLS TOGETHER. WALK IT.' });
   coins([328, 10], [332, 10], [336, 10]);
   // REMIX: a long yard under a marine's fire from the next top, and a swing line out of it
-  yard(341, 10, 9, 4.6, 0.2, 4); ent('marine', 359, 7, { face: -1 });
+  yard(341, 10, 9, 5.6, 0.2, 4); ent('marine', 359, 7, { face: -1 });
   mast(357, 8, 29, 5); block(356, 359, 30, 37);
   movers.push({ kind: 'swing', px: 366 * TS, py: 4 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 2.1, deck: 12 });
   coins([346, 9], [352, 9], [360, 6]);
