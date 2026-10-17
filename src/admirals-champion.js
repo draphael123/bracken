@@ -32,7 +32,7 @@
 
 export const CH = {
   hp: 2300, w: 24, h: 44, markH: 70,
-  plate: 0.5, ward: 0.4, stuckMul: 1.5, flatMul: 2, flatCap: 0.11, flatT: 3.2, wardT: 3.0, stuckT: 1.6, stuckAT: 1.4,
+  plate: 0.5, ward: 0.4, stuckMul: 1.5, flatMul: 2, flatCap: 0.09, flatT: 3.2, wardT: 3.0, stuckT: 1.6, stuckAT: 1.4,
   p2: 0.5,
   walk: 44, keep: 40, turn: 0.45, gap: [0.62, 0.5],
   /* THE COMBO: first cut told comboTell s, the next comboNext s; each cut comboT s at comboReach px; a step of comboStep px between */
@@ -49,7 +49,7 @@ export const CH = {
   hookTell: 0.85, hookV: 380, hookLen: 250, dragV: 280, dragT: 0.75, dragTo: 34, hookRec: 0.6,
   /* THE ANCHOR SLAM: told tiltTell s; the anchor falls slamT s over [slamNear, slamFar]; THE TILT: tiltT s, heroes on that deck slide tiltV px/s to the lashing; gapOpen s apart */
   tiltTell: 1.0, tiltT: 2.2, tiltV: 64, gapOpen: 2.6,
-  dmg: { combo: 30, slam: 44, thrust: 38, leap: 38, sweep: 34, hook: 18, tilt: 42 },
+  dmg: { combo: 33, slam: 48, thrust: 41, leap: 41, sweep: 37, hook: 20, tilt: 46 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass by phase (cycle k uses [k % n]); 'combo3' = the three-cut combo */
 export const CYCLES = {

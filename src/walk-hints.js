@@ -105,4 +105,16 @@ export function slabHint(BK, P) {
   }
   return null;
 }
-export const WALK_HINTS = { glasssea: glassSea, underleaf, spire, undercrown: slabHint };
+/* THE FLOTILLA 2 (claude/flotilla2): THE POWDER SHIP's copper doors and its crate hatch open only to a deck gun's round shot. Ahead of the walker on his deck,
+   a shut door (or a keg on the crate hatch) with a gun laid at it from the west: stand at the gun's breech, face down its line, strike (the ranger: DOWN+X, her knife's
+   low sweep). A gun still hot: wait at it. */
+function flotilla(BK, P, mem) {
+  if (!P || !BK.props) return null; const pr = BK.props(), L = BK.L, near = (a, b) => Math.abs(a - b) < 40;
+  const tgt = pr.filter(q => ((q.t === 'bulkhead' && !q.open) || (q.t === 'keg' && !q.gone && L.grid[Math.floor(q.y / TS) * L.W + Math.floor(q.x / TS)] === 4)) && q.x > P.x - 16 && q.x < P.x + 30 * TS && near(q.y, P.y)).sort((a, b) => a.x - b.x)[0];
+  if (!tgt) return null;
+  const gun = pr.filter(q => q.t === 'cannon' && q.deck && (q.aim || 1) === 1 && q.x < tgt.x && tgt.x - q.x < 24 * TS && near(q.y, tgt.y) && !pr.some(d => d.t === 'bulkhead' && !d.open && d !== tgt && d.x > q.x && d.x < tgt.x)).sort((a, b) => b.x - a.x)[0];
+  if (!gun) return null;
+  if (gun.cool > 0) return { x: gun.x - 14, y: gun.y, key: null, face: 1, r: 20, hold: true };
+  return { x: gun.x - 14, y: gun.y, key: 'atk', face: 1, r: 20 };
+}
+export const WALK_HINTS = { glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla };

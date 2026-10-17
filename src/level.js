@@ -5006,11 +5006,10 @@ function theFlotilla() {
   // his bench stops where it is (src/flotilla2.js). TEACH (one bench, a cheap fall) -> TEST (three out of step) -> REMIX (a bench that has to be stopped HIGH to reach
   // the stern castle) -> EXAM (four benches under the bosun's eye, a marine in the mizzen) -> the shrine on her stern.
   block(97, 208, 24, 37);
-  air(101, 111, 24, 33); air(118, 140, 24, 33); air(153, 176, 24, 33); air(187, 202, 24, 33);   // the four wells, down to her bilge (the harbour is in her: rows 30+ are foul)
-  for (const [a, b] of [[101, 111], [118, 140], [153, 176], [187, 202]]) { net(a, a, 25, 33); net(b, b, 25, 33); }   /* her ribs: a net up each end of every well, out of the bilge */
-  rail(97, 100, 23);
+  air(101, 109, 24, 33); air(118, 138, 24, 33); air(153, 173, 24, 33); air(187, 204, 24, 33);   // the four wells, down to her bilge (the harbour is in her: rows 30+ are foul)
+  for (const [a, b] of [[101, 109], [118, 138], [153, 173], [187, 204]]) { net(a, a, 25, 33); net(b, b, 25, 33); }   /* her ribs: a net up each end of every well, out of the bilge */
   // TEACH: one bench in a narrow well. Up, it is level with the deck; down, it is five rows under. Its rower is the lesson.
-  bench(105, 29, 5, 4.2, 0.0);
+  bench(104, 29, 5, 4.2, 0.0);   /* (every gap in her wells is three tiles at most: the climb is the timing, not the reach) */
   ent('sign', 99, 23, { text: 'HER BENCHES RIDE UP AND DOWN WITH THE OARS. A PRESSED FISHERMAN ROWS EACH ONE.' });
   ent('sign', 113, 23, { text: 'STRIKE A ROWER\'S CHAIN AND HE LETS GO: HIS BENCH STOPS WHERE IT IS.' });
   coins([106, 22], [114, 23]);
@@ -5023,21 +5022,21 @@ function theFlotilla() {
   ent('sign', 142, 23, { text: 'THE OARS PULL TOGETHER, THE BENCHES DO NOT. WATCH THEM BEFORE YOU GO.' });
   coins([122, 23], [128, 22], [134, 22], [146, 23]);
   // REMIX: her STERN CASTLE stands high over the last of her - a bench on a tall frame, stopped at the top, is the step up to it
-  block(177, 186, 15, 23);   /* the stern castle, built up off her deck: its deck at row 15, nine rows over her well */
-  net(176, 176, 16, 24);   /* the rib net runs on up the castle's face: the SWIMMER'S way up (the bilge bites all the way), the benches are the dry one */
-  bench(156, 29, 4, 3.4, 0.1); bench(162, 27, 4, 3.8, 0.55); bench(169, 22, 5, 4.4, 0.3);   /* the last one rides on its tall frame from row 22 up to 17: two rows under the castle's deck at 15 */
+  block(174, 186, 15, 23);   /* the stern castle, built up off her deck: its deck at row 15, nine rows over her well */
+  net(173, 173, 16, 24);   /* the rib net runs on up the castle's face: the SWIMMER'S way up (the bilge bites all the way), the benches are the dry one */
+  bench(156, 29, 4, 3.4, 0.1); bench(162, 27, 4, 3.8, 0.55); bench(168, 22, 5, 4.4, 0.3);   /* the last one rides on its tall frame from row 22 up to 17: two rows under the castle's deck at 15 */
   ent('sign', 151, 23, { text: 'HER STERN CASTLE IS HIGH. STOP THE LAST BENCH AT THE TOP OF ITS STROKE.' });
   ent('marine', 182, 14, { face: -1 }); ent('lookout', 179, 14, { face: -1 });
   ent('deco', 184, 14, { kind: 'lanternDeck', v: 0 }); ent('deco', 180, 14, { kind: 'chartTable' });
-  coins([157, 23], [163, 22], [170, 16], [178, 14], [184, 14]);
+  coins([157, 23], [163, 22], [169, 16], [178, 14], [184, 14]);
   mast(180, 3, 14, 5);   /* her mizzen, off the castle: a marine's perch, and a silver up top (off the route: a secret) */ ent('silver', 182, 2);
   // EXAM: down off the castle into her last well - four benches under the bosun's eye; a marine in the mizzen top; the shrine on her stern
-  bench(189, 29, 4, 3.0, 0.0); bench(193, 28, 5, 3.4, 0.5); bench(197, 29, 4, 2.8, 0.25, false); bench(201, 27, 3, 3.6, 0.7);
+  bench(189, 29, 4, 3.0, 0.0); bench(194, 28, 5, 3.4, 0.5, false); bench(199, 27, 4, 2.8, 0.25);
   ent('marine', 179, 2, { face: 1 }); ent('bosun', 205, 23, { face: -1 }); ent('cutlass', 206, 23, { face: -1 });
   ent('sign', 186, 14, { text: 'THE BOSUN WHIPS THEM FASTER HERE. ONE BENCH HAS NO ROWER: IT NEVER STOPS.' });
-  coins([190, 23], [194, 22], [198, 23], [202, 22], [207, 23]);
-  ent('deco', 203, 23, { kind: 'oarBench' }); ent('deco', 205, 9, { kind: 'pennant', v: 2 });
-  for (const x of [104, 124, 136, 160, 172, 192]) ent('deco', x, 34, { kind: 'oar' });   /* oars down in the bilge, between the benches */
+  coins([190, 23], [195, 22], [200, 22], [207, 23]);
+  ent('deco', 206, 23, { kind: 'oarBench' }); ent('deco', 205, 9, { kind: 'pennant', v: 2 });
+  for (const x of [103, 124, 136, 160, 171, 192]) ent('deco', x, 34, { kind: 'oar' });   /* oars down in the bilge, between the benches */
   ent('check', 207, 23);   /* THE GALLEY HULL's shrine: on her stern, after its exam (A10c) */
   ent('coin', 140, 33); ent('coin', 139, 33);   /* down in the bilge at the far end of the wide well, for a swimmer who climbs back out by the rib */
 
