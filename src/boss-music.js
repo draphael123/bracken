@@ -606,6 +606,8 @@ function champion(i, delay, variant, env) {
   const anchor = variant === 'p2' || (BOSS_PHASE.champion || 1) >= 2, bar = Math.floor(i / ACM_LEN), s = i % ACM_LEN, g = env.gain;
   if (s === 0 || s === 3) { pluck(env, 'sine', s === 0 ? 72 : 64, 0.42, 0.62 * g, delay, { to: 34 }); noise(env, 0.05, 0.1 * g, 220, 0.7, delay); }
   if (anchor && (s === 1 || s === 4)) pluck(env, 'sine', 58, 0.25, 0.32 * g, delay, { to: 30 });
+  if (!anchor && (s === 2 || s === 5)) noise(env, 0.04, 0.035 * g, 5200, 2, delay);   /* the rigging's creak on the off-beat: the pulse never stops */
+  if (!anchor && (s === 1 || s === 4)) pluck(env, 'triangle', nf('D3'), ACM_STEP * 0.8, 0.03 * g, delay, { lp: 700 });   /* a low pulse under the call */
   if (anchor && (s === 2 || s === 5)) { noise(env, 0.06, 0.09 * g, 4200, 3, delay); noise(env, 0.05, 0.06 * g, 6100, 4, delay + 0.05); }   /* the chain */
   if (s === 0 && bar % 2 === 0) for (const n of ['D2', 'A2']) held(env, 'sawtooth', nf(n), ACM_STEP * ACM_LEN * 2 * 0.95, 0.02 * g, delay, { lp: 420, att: ACM_STEP * 3, hold: 0.7, det: 10 });
   if (s === 0) pluck(env, 'triangle', nf(ACM_BASS[bar % 8]), ACM_STEP * 2.5, 0.16 * g, delay, { lp: 600 });

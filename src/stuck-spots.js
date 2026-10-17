@@ -86,14 +86,14 @@ export const STUCK = {
   /* (claude/flotilla2) THE FLOTILLA 2, rebuilt x2: every route need - the bowsprit, the benches (the rowers), the stern castle, the long gap's lines, the rigging run's
      mast and yards, the Powder Ship's copper doors and crate hatch (a gun opens each) */
   flotilla: [
-    { id: 'fl-bowsprit', zone: [14, 18, 30, 30], at: [28, 22], glint: 'stall', line: "THE GALLEY'S BOWSPRIT REACHES BACK OVER THE GAP" },
+    { id: 'fl-bowsprit', zone: [14, 18, 30, 30], at: [28, 24], glint: 'stall', line: "THE GALLEY'S BOWSPRIT REACHES BACK OVER THE GAP" },
     { id: 'fl-bench-teach', zone: [96, 18, 103, 26], mover: { bench: 'b0' }, glint: 'stall', line: 'HER BENCHES RIDE UP AND DOWN: STEP ON AT THE TOP' },
     { id: 'fl-bench-test', zone: [113, 18, 120, 26], mover: { bench: 'b1' }, glint: 'stall', line: 'WATCH THE BENCHES: THEY RISE OUT OF STEP' },
     { id: 'fl-castle', zone: [150, 14, 173, 34], mover: { bench: 'b6' }, glint: 'stall', line: 'THE LAST BENCH RISES TO THE CASTLE: FREE ITS ROWER AT THE TOP' },
     { id: 'fl-swing-214', zone: [203, 12, 216, 32], at: [214, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE HULK' },
     { id: 'fl-swing-220', zone: [214, 12, 224, 32], at: [220, 20], glint: 'stall', line: 'THE NEXT LINE SWINGS OVER THE GAP' },
-    { id: 'fl-rigging', zone: [272, 8, 288, 22], at: [286, 14], glint: 'stall', line: "THE WAY ON IS UP THE MAST: THERE IS NO DECK TO THE NEXT SHIP" },
-    { id: 'fl-yard', zone: [284, 6, 300, 22], mover: { flot: 'yard' }, glint: 'stall', line: 'A YARD RIDES OUT TO YOU: STEP ON WHEN IT COMES' },
+    { id: 'fl-rigging', zone: [272, 14, 287, 22], at: [286, 14], glint: 'stall', line: "THE WAY ON IS UP THE MAST: THERE IS NO DECK TO THE NEXT SHIP" },
+    { id: 'fl-yard', zone: [284, 4, 300, 12], mover: { flot: 'yard' }, glint: 'stall', line: 'A YARD RIDES OUT TO YOU: STEP ON WHEN IT COMES' },
     { id: 'fl-door-406', zone: [390, 18, 405, 26], at: [398, 24], glint: 'stall', done: ['bulkhead', 406, 24, 'open'], line: 'THE COPPER DOOR: THE GUN BEHIND IT OPENS IT' },
     { id: 'fl-hatch', zone: [444, 18, 457, 26], ats: [[448, 24], [454, 24]], glint: 'stall', line: 'THE HATCH IS POWDER CRATES: BLOW THE KEG ON IT' },
     { id: 'fl-doors-490', zone: [478, 18, 499, 26], at: [482, 24], glint: 'stall', done: ['bulkhead', 500, 24, 'open'], line: 'ONE GUN, TWO DOORS: FIRE, LET IT COOL, FIRE AGAIN' },
