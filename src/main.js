@@ -2360,7 +2360,7 @@ function spawnEnt(e) {
       case 'marine': enemies.push({ ...base, t: 'marine', w: 10, h: 18, hp: EHP.marine, speed: 20, mode: 'perch', modeT: 1 + Math.random(), cd: 1.4, hx: px, hy: py }); break;
       case 'bosun': enemies.push({ ...base, t: 'bosun', w: 12, h: 20, hp: e.salvage ? SALVAGE_HP : EHP.bosun, salvage: !!e.salvage, phase: 1, salvageN: 0, cargo: [], speed: 26, mode: 'walk', modeT: 0, cd: 1.2, called: false }); break;
       case 'lookout': enemies.push({ ...base, t: 'lookout', w: 8, h: 16, hp: EHP.lookout, speed: 24, mode: 'scan', modeT: 1.5, cd: 0, seen: 0 }); break;
-      case 'captain': boss = { ...base, t: 'captain', w: 18, h: 28, hp: EHP.captain, maxHp: EHP.captain, mode: 'sleep', modeT: 0, face: -1, phase: 1, sabreT: 1.2, shotT: 2.6, hookT: 4.5, kegT: 7, callT: 10, ride: false, shots: 0 }; enemies.push(boss); break;
+      case 'captain': boss = { ...base, t: 'captain', w: 18, h: 28, hp: Math.round(EHP.captain * CAP2.hpK), maxHp: Math.round(EHP.captain * CAP2.hpK), mode: 'sleep', modeT: 0, face: -1, phase: 1, sabreT: 1.2, shotT: 2.6, hookT: 4.5, kegT: 7, callT: 10, ride: false, shots: 0 }; enemies.push(boss); break;
       /* THE MAGE'S FOLLY */
       case 'topiary': enemies.push({ ...base, t: 'topiary', w: 16, h: 22, hp: EHP.topiary, mode: 'still', modeT: 0.5, cd: 0.5 }); break;
       case 'armour': enemies.push({ ...base, t: 'armour', w: 12, h: 26, hp: EHP.armour, mode: 'walk', modeT: 0, cd: 1, ...(e.ceiling ? { ceiling: true, gs: -1, y: e.y * TS + 26 } : {}) }); break;   /* ceiling: THE WITCHLIGHT STAIR's cloister armour, which falls whichever way the hero falls */
@@ -6706,7 +6706,8 @@ const DRONE_HIT = 0.55;
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
 Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.55 /* (claude/crusader: 1.4; the bot reads his new tells well - 83% n=18 with flasks) */, greathound: 1.5, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 1.45 /* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */, abbot: 1.5, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
-BOSS_HIT.bloodknight = 0.9;   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
+BOSS_HIT.bloodknight = 0.9;
+BOSS_HIT.captain = 0.6;   /* (claude/hurricane2) THE CAPTAIN 2: tied to the storm, his openings earned off the sea and the sky - tuned WITH flasks (tools/boss-rates.mjs --profile=human); on its own line (merge care) */   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
   { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
@@ -10821,13 +10822,13 @@ function updateWash(dt) {
     number(P.x, P.y - 44, 'A SEA TO WINDWARD', '#a8cfc6'); SFX.wave(); shakeCam(3); }
   if (wash.state === 'tell' && wash.t <= 0) { wash.state = 'run';
     wash.x = Math.max(W.x0 - 60, Math.min(W.x1 + 60, P.x - wash.dir * 300)); // it comes out of the weather to windward of YOU
-    wash.end = wash.x + wash.dir * 700;                                      // and goes by: a wave is two seconds, not half a minute
+    wash.end = wash.x + wash.dir * 700; wash.gotP = false;                                      // and goes by: a wave is two seconds, not half a minute
     SFX.waveBreak(); shakeCam(6); rumble(300, 0.7); }
   if (wash.state === 'run') {
     wash.x += wash.dir * W.speed * stormK('speed') * dt;
     { const [by0, by1] = washBand(wash.x); for (let i = 0; i < 3; i++) parts.push({ x: wash.x + (Math.random() - 0.5) * 30, y: by1 - Math.random() * (by1 - by0), vx: wash.dir * 120, vy: -40 - Math.random() * 60, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#dff0f5' : '#a8cfc6', size: 2, grav: 300 }); }
     const [py0, py1] = washBand(P.x), hit = Math.abs(P.x - wash.x) < 26 && P.y > py0 && P.y < py1 + 12;
-    if (hit && !P.dead && !P.washed && W.push) { // (claude/hurricane2) THE WAVE KNOCKS YOU FLAT: it shoves you down her deck - a line in your hand, a roll under the crest, or the hold keep you
+    if (hit && !P.dead && !P.washed && W.push && !wash.gotP) { wash.gotP = true; // (claude/hurricane2) THE WAVE KNOCKS YOU FLAT: it shoves you down her deck - a line in your hand, a roll under the crest, or the hold keep you
       const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS)), held = t === T.NET || t === T.CLIMB || P.onRope || P.climb;
       P.washed = 0.8;
       if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash(); shakeCam(4); }
@@ -12611,7 +12612,7 @@ function updateWatch(e, dt) {
      THE SKY    in his fight the lightning marks the deck BETWEEN you: let him walk into the mark and he is STRUCK: OPEN x1.5 ('reel').
    After either opening, a TOLD WARD (CAP2.ward s, the pale shell, WARDED): every blow lands at 0.4 and neither verb takes him again (B3).
    Never totally invulnerable (B15): 0.4 is the floor everywhere outside his openings. */
-const CAP2 = { lead: 1.35, leadP3: 1.15, brace: 118, flat: 2.6, flatP3: 2.1, struck: 1.7, ward: 3, lineGrab: 7, lineTaken: 18 };
+const CAP2 = { hpK: 1.45, lead: 1.35, leadP3: 1.15, brace: 118, flat: 2.6, flatP3: 2.1, struck: 1.7, ward: 3, lineGrab: 7, lineTaken: 18 };
 function capLines() { const A = L.arena; return (A && A.lines || []).map(x => (x + 1) * TS); }
 /* which line he makes for: the nearest one you are not holding */
 function capLineFor(e) { let best = null, bd = 1e9; for (const lx of capLines()) { if (Math.abs(P.x - lx) < CAP2.lineTaken && !P.dead) continue; const d = Math.abs(lx - e.x); if (d < bd) { bd = d; best = lx; } } return best; }
