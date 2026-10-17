@@ -30132,6 +30132,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.zipLines && L.zipLines.length) ZL.drawZips(g, L, cx, cy, VW, VH, time, P);   /* THE ZIP LINES: rope, poles, a handle at each end, the glint (src/zipline.js) */
   drawShards(cx, cy);
   drawWater(cx, cy, false);
+  if (H2A.on()) H2A.drawBack(g, cx, cy, time);   /* THE HURRICANE DECK 2 (claude/hurricane2art): masts, yards, stays, breaches, deckhouse roofs, the powder store's seams (src/hurricane2-art.js) */
   if (CQH && CQH.on()) CQH.drawBack(g, cx, cy, time);
   if (MTH && MTH.on()) MTH.drawBack(g, cx, cy, time);   /* THE RAPTOR MATRIARCH's ledge: the canyon wall, the nest, the rope bridges, the levers, the water */
   if (DJH && DJH.on()) DJH.drawBack(g, cx, cy, time);   /* THE DJINN's hall: the windlass, the crank, the great bucket down the shaft */   /* THE CISTERN QUEEN's hall: the windlass, the shaft's bucket and its rope, the side tunnels (claude/welltown3) */
@@ -30139,7 +30140,6 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   if (L.walls) drawWalls(g, L.walls, cx, cy, TS, time);   /* THE BREAKABLE-WALL ENGINE's own look, over the rock the tile renderer already drew */
   if (FAIR && L.ring) CRG.drawRingBack(g, cx, cy, VW, L.ring, L.green, L.arena, time, L.ring.quickT > 0);   /* THE WICKER QUEEN'S CAROUSEL: the canopy, the column, the firebox, the back of the ride, under its horses */
-  if (H2A.on()) H2A.drawBack(g, cx, cy, time);   /* THE HURRICANE DECK 2 (claude/hurricane2art): masts, yards, stays, breaches, deckhouse roofs, the powder store's seams (src/hurricane2-art.js) */
   if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time);   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
   for (const m of movers) {
     if (H2A.on() && (m.kind === 'swing' || (!m.kind && m.vert))) { if (m.x + m.w > cx - 40 && m.x < cx + VW + 40 || m.kind === 'swing') { if (m.kind === 'swing') H2A.swing(g, m, cx, cy, time); else H2A.hatch(g, m, cx, cy, time); } continue; }   /* her rope swings and her hatch covers (claude/hurricane2art) */

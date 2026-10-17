@@ -231,7 +231,7 @@ export function makeHurricane2Art(ctx) {
     /* the sling: two bridle legs up from the ends to a shackle, and one hawser from the shackle out of sight, up to the yard/gantry that is working her */
     const bx = x + m.w / 2, by = y - 16;
     line(g, x + 4, y + 1, bx, by, 0, 1, ROPE); line(g, x + m.w - 4, y + 1, bx, by, 0, 1, ROPE);
-    for (let yy = by - 200; yy < by; yy++) { const ph = (yy >> 1) % 3; rc(g, bx - 1, yy - 0, 3, 1, ph === 0 ? ROPE[0] : ph === 1 ? ROPE[1] : ROPE[2]); rc(g, bx + 1, yy, 1, 1, ROPE[3]); }
+    for (let yy = Math.max(-2, by - 700); yy < by; yy++) { const ph = (yy >> 1) % 3; rc(g, bx - 1, yy - 0, 3, 1, ph === 0 ? ROPE[0] : ph === 1 ? ROPE[1] : ROPE[2]); rc(g, bx + 1, yy, 1, 1, ROPE[3]); }
     rc(g, bx - 2, by - 2, 5, 5, IRON[1]); rc(g, bx - 2, by - 2, 5, 1, IRON[0]); rc(g, bx - 1, by - 1, 3, 3, '#14141a');   /* the shackle */
     g.drawImage(s, x, y);
     /* wet: rain runs off the slats, and what she ships comes off her edges as she comes up */
