@@ -8,21 +8,25 @@
 // The canal feeds the same glint / stall clock from its own live target (holdTarget); the Red Gorge (src/red-gorge-hands.js, claude/gorgemodule) runs resolve
 // over its own list STUCK_HANDS (levels whose hands drive the glint themselves, so the global guide below skips them) with the same stallTick and drawGlint. Greybox art: a star and a ring, plain shapes.
 import { STUCK } from './stuck-spots.js';
+import { markStall, glintOn } from './hints.js';   /* (claude/hintlevel) Settings > Hints: NUDGE.after follows the level (10 / 20 / 45 s / never), and the glint is gated here, in the one place every route draws it */
 
-export const NUDGE = { after: 10, again: 25, near: 48 };   /* s without headway before the nudge, s before it says it again, px of headway that counts (3 tiles) */
+export const NUDGE = { after: 10,   /* (main.js sets after from the Hints level: HIGH 10, MEDIUM 20, LOW 45, NONE never) */
+   again: 25, near: 48 };   /* s without headway before the nudge, s before it says it again, px of headway that counts (3 tiles) */
 export const NUDGE_MAX = 62;                               /* one line of the hint box */
 
 /* THE STALL CLOCK, one per thing the route needs: C = { t, best, said }. d = the hero's distance to it; a hero a few tiles nearer than he has been, or one who
    works it (reset), starts the clock again. True when the nudge is due now (the caller says the line) */
 export const newStall = () => ({ key: null, t: 0, best: 1e9, said: -1 });
+let stallSeen = 0;   /* the latest stall clock any route ticked: how long the route has stood still, for the glint (LOW shows it only after 45 s) */
 export function stallTick(C, d, dt, clock, reset) {
   if (d < C.best - NUDGE.near) { C.best = d; C.t = 0; } if (reset) C.t = 0;
-  C.t += dt; if (C.t >= NUDGE.after && (C.said < 0 || clock - C.said >= NUDGE.again)) { C.said = clock; return true; }
-  return false;
+  C.t += dt; stallSeen = C.t; if (C.t >= NUDGE.after && (C.said < 0 || clock - C.said >= NUDGE.again)) { C.said = clock; markStall(true); return true; }
+  markStall(false); return false;
 }
 
 /* THE GLINT at screen (x, y): a pulsing ring and star; off the screen, a chevron at its edge pointing the way */
 export function drawGlint(g, x, y, VW, VH, time) {
+  if (!glintOn(stallSeen)) return;
   const k = 0.5 + 0.5 * Math.sin(time * 5);
   if (x >= -8 && x <= VW + 8 && y >= -8 && y <= VH + 8) { g.globalAlpha = 0.35 + 0.45 * k; g.strokeStyle = '#ffe9a0'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 9 + 3 * k, 0, Math.PI * 2); g.stroke();
     g.fillStyle = '#fff6c8'; const r = 3 + Math.round(3 * k); g.fillRect(x - r, y, r * 2 + 1, 1); g.fillRect(x, y - r, 1, r * 2 + 1); g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 1; return; }

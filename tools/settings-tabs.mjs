@@ -20,6 +20,7 @@ assert.deepEqual(TABS.map(t => t.name), ['AUDIO', 'DISPLAY', 'GAMEPLAY', 'CONTRO
 const seen = new Map();
 for (const t of TABS) for (const k of TAB_ITEMS[t.id]) { if (isHeaderRow(k)) continue; assert(!seen.has(k), `row "${k}" is on two tabs (${seen.get(k)} and ${t.id})`); seen.set(k, t.id); }
 for (const k of LEGACY_ROWS) assert(tabOf(k), `the old Settings row "${k}" is on no tab`);
+assert.equal(tabOf('Hints'), 'gameplay'); /* (claude/hintlevel) NONE / LOW / MEDIUM / HIGH, in Helpers; its behaviour is tools/hintlevel.mjs */
 assert.equal(tabOf('Difficulty'), 'gameplay'); assert.equal(tabOf('Sound test'), 'audio'); assert.equal(tabOf('Reduce motion'), 'access'); assert.equal(tabOf('Rebind keys'), 'controls');
 
 /* ---- 4a. the defaults are the old key lists ---- */
