@@ -54,6 +54,7 @@ import * as KLK from './keep-looks.js';   /* THE UNDERWATER KEEP's walls and lan
 import { crumbleInit } from './tower-collapse.js';   /* THE DROWNED KNIGHT and THE DROWNED CAPTAIN: their numbers and their art (docs/briefs/keep-rework-2.md) */
 import * as UNBF from './unburied-foes.js';   /* THE UNBURIED FIELD: the fallen, the bearers, the Barrow Rider, the First Death Knight, and the battle round them */
 import {breathCapacity} from './deepair.js';
+import { makeDrains } from './drain.js';   /* (claude/underwater) OUT OF BREATH is a source on the shared environment drain (A13): no stagger, no knock */
 import {drawHarborLandmarks} from './harbor-landmarks.js';
 import {updateWarden,wardenFrame,bakeHarbormaster,drawWarden} from './harbor-boss.js';
 import { attackPose } from './attack-animation.js'; import * as CM from './commit.js';   /* WEIGHT (Daniel 10-02): COMMITMENT + STAMINA - the commit, the held buffer, the bar's rules (src/commit.js) */
@@ -451,7 +452,7 @@ Object.assign(EHP, {
   harbormaster: 2350,   /* THE BREAKWATER WARDEN: 1400 (83%) */
   captain: 1700,     /* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */ /* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */
   forgemaster: 520,  /* THE FORGEMASTER (crown mini): 480 (83-92%) */
-  reefmaw: 830,
+  reefmaw: 700,   /* (claude/underwater: 830 -> 700 with the committed bite and his blows x0.85) */
   herald: 370,
   drownedking: 500,  /* THE DROWNED KING (keep): 560 (33-42%, warden 0) */
   lance: 800,        /* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */ /* THE QUEEN'S LANCE (storm): 380 (25%) */       /* THE TIDE HERALD: 340 (67%) */      /* THE REEFMAW: 500 (75-83%: 22-54 s) */
@@ -1493,7 +1494,7 @@ function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + (P.n === 2 ? 14 : -14), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); P.hitSet.clear(); }); }
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + (P.n === 2 ? 14 : -14), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); }); }
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
@@ -2288,7 +2289,7 @@ function* loadLevelG(i) {
   total += (L.veins || []).reduce((a, v) => a + (v.coins || 0), 0);   /* THE ORE ROAD's seams: what they spill is counted like a crate's */
   yield 'deep';
   spawnEntities(); applyLevelRims();
-  P.breath=breathCapacity(L);P.drownT=0;
+  P.breath=breathCapacity(L);P.drownT=0;BRD.clear(P);
   P.x = checkpoint.x; P.y = checkpoint.y; P.face = 1; P.climb = false; camX = 0; camY = LH * TS - VH;
   chasesLoad();
   fogReset(); wayRoute = null; wayTgt = null; wayMe = 0;   /* the map remembers this level from the save; the arrow's route is built again */
@@ -4067,7 +4068,7 @@ function respawn() { lifeN++; CM.clearCommit(P); P.windRide = null; P.galeRide =
   mendAll(); wallsMendAll(); resetCastle(); spawnEntities(); seeds = []; javHolds = []; if (GEO) GEO.clear(); if (CRB) CRB.clear(); if (CRC) CRC.clear(); if (BZK && isBz()) BZK.clear(); if (RGK && isRg()) RGK.clear(); wardJav = null; spearRain = []; droppedArms = []; realmWaves = []; gateFx = []; if (HGR) HGR.clear(); if (HFX) HFX.clear(); hammers = []; kegs = []; sceptres = []; embers = []; pyres = []; P.full = false; P.fullT = 0; P.heatGrace = 0; P.lcBrace = 0; P.lcLeft = 0; nums = []; ghosts = []; wisp = null; rain = []; P.heat = 0; P.overheat = 0; P.light = 0; P.cHeld = 0; music.play(L.music || 'theme'); setReverb(L.dark ? 0.34 : (L.interiors && L.interiors.length) ? 0.16 : (L.palette && L.palette.hall) ? 0.12 : 0.04);
   for (const m of movers) if (m.kind === 'raft' && P.x < m.x0 + 40) { m.x = m.x0; m.moving = false; m.done = false; m.returning = false; m.called = false; m.offT = 0; m.bored = false; m.frogT = 0; } // EVERY RAFT AHEAD OF THE SHRINE POLES BACK TO ITS DOCK: only the Ferryman's did, so a fall off the marsh rafts left them docked on the far bank and the stream uncrossable
   if (escape) { escape.t = 0; escape.fireY = L.arena.floor + 6; for (const e of enemies) if (e.t === 'chief') e.alive = false; boss = null; bossActive = false; setWall(L.arena.wallL, false); setWall(L.arena.wallR, false); }
-  P.breath=breathCapacity(L);P.drownT=0;
+  P.breath=breathCapacity(L);P.drownT=0;BRD.clear(P);
   dcRespawn();
   coopRegroup();   /* the room is back: whoever else is in the party is stood up at the same shrine, not left in the old one */
   chaseRespawn();
@@ -6366,7 +6367,7 @@ const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
-const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && (P.ground || P.carpet) ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
+const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && (P.ground || P.carpet || P.swim) ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
   doorOpen: pr => !pr.mirror || FK.mirrorDoorOpen(L, pr, P), ferryOwes: () => { const fm = movers.find(mv => mv.ferry); return !!(fm && !fm.paid && !fm.free && fm.toll); } });
 const touchVerbNow = () => interactVerb(touchCtxObj());
 /* THE SECOND CONTEXTUAL BUTTON (a lane fills it: BK.touchCtx.push(c => ... ? { label: 'THROW', key: 'throw' } : null), see src/touch-interact.js) */
@@ -6734,6 +6735,7 @@ const DRONE_HIT = 0.55;
 /* THE ACT I RETUNE (claude/sweep1, the standard: tools/boss-rates.mjs, human profile, campaign level): ONE NUMBER PER BOSS for how hard his own
    blows land (x, on what damagePlayer0 is handed - his strikes, and what he throws where the throw names him). The bosses' own tables are left alone */
 const BOSS_HIT = { golem: 2.2, grandmother: 0.55, king: 1.5, queen: 1.5, abbot: 1.8, pyromancer: 0.75 };
+Object.assign(BOSS_HIT, { reefmaw: 0.85 });   /* (claude/underwater 10-16) */
 Object.assign(BOSS_HIT, { undeadmage: 1.8, captain: 0.4, gargoyle: 0.75, burieddead: 0.7, queen: 1.1, grandmother: 0.42, wickerqueen: 0.9, gangleader: 0.75, herald: 1.4, closedhelm: 1.55 /* (claude/crusader: 1.4; the bot reads his new tells well - 83% n=18 with flasks) */, greathound: 1.5, ploughman: 1.3, spider: 0.75, lance: 1.4, lampreeve: 1.15, barrowrider: 1.05, golem: 1, harbormaster: 0.85, owl: 1.2 /* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */ /* (claude/owl3: 1.45 -> 1.2 - her lamps are a moment now and she has two more moves to land, the wing beat's drop and the pellets; tuned with the flask) */, abbot: 1.35 /* (claude/abbot2: 1.5 - his own kit is the threat now, not his congregation; fights run longer at 2700) */, winchmaster: 0.85, gravewarden: 0.85, hedgewarden: 0.9 });   /* (claude/retune2) THE REFIT RETUNE: one number per boss for how hard his own blows land, on its own line (merge care) - before -> after in work/claude/lane-done/claude-retune2.md */
 BOSS_HIT.bloodknight = 0.9;   /* (claude/dk2tune) THE DEATH KNIGHT: how hard his own blows land - the knight went 0/N (3 flasks and all) at 1.0; on its own line (merge care) */
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
@@ -6939,8 +6941,8 @@ function tryDrink() {
   if (state !== 'play' || !P || P.dead || P.down > 0 || (L && L.trial) || P.drinkT > 0) return false;
   if (!((P.flasks | 0) > 0)) { SFX.buzz(); number(P.x, P.y - 30, 'NO FLASKS', '#9aa39a'); return false; }
   if (P.hp >= P.maxHp) { SFX.buzz(); number(P.x, P.y - 30, 'FULL', '#9aa39a'); return false; }
-  if (!(P.ground || P.carpet) || P.swim || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry || P.ptC) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
-  const T = F2.drinkTimes(PROG, SV.FLASK);
+  if (!(P.ground || P.carpet || P.swim) || P.climb || P.plunge || P.hurt > 0 || P.asleep > 0 || P.dodge > 0 || CM.committed(P) || P.carry || P.ptC) { SFX.buzz(); return false; }   /* (claude/ft2art: the carpet HOVERS, still - the Archmage's whole fight is flown, and a flask that only worked on foot made 'with flasks' dry there) */
+  const T0 = F2.drinkTimes(PROG, SV.FLASK), SWIM_DRINK = 1.5, T = P.swim ? { drinkT: T0.drinkT * SWIM_DRINK, swallowAt: T0.swallowAt * SWIM_DRINK } : T0;   /* (claude/underwater, Daniel 10-16 Q2) SWIMMING: a flask can be drunk in the water at 1.5x the drink time - he keeps drifting, a blow spills it as on land; the air and a jump stay refused */
   P.flasks--; P.drinkDur = T.drinkT; P.swallowAt = T.swallowAt; P.drinkT = T.drinkT; P.drunk = false; P.gulps = 0; P.corked = true; P.drinkHp = P.hp; P.block = false; P.vx = 0; P.dance = 0; SFX.ui(); PROG.drinkTold = Math.max(PROG.drinkTold || 0, 2);
   flaskHud.levelDrinks++; BUG.evlog('flask drunk (' + P.flasks + ' left)'); if (DFM.df('punish')) punishGreed('drink'); return true;   /* (claude/difficulty) MASTER: a drink in his reach is answered */
 }
@@ -9946,13 +9948,14 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (P.jbuf > 0 && P.ballast) { P.jbuf = 0; dropBallast(true); }
     else if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
-    if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5 * (L.breathScale||1)); P.drownT = 0; }
-    else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1) * (curId() === 'deep' ? 0.5 : 1); if (Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
-      if (P.breath <= 0) { P.breath = 0; P.drownT = (P.drownT || 0) - dt;
-        if (Math.random() < dt * 26) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - 14, vx: 0, vy: -50, life: 0.5, max: 0.5, col: '#e8f4f0', size: 1, grav: -40 });
-        if (P.drownT <= 0) { P.drownT = 1.3; P.inv = 0; SFX.gasp && SFX.gasp(); number(P.x, P.y - 30, 'NO AIR', '#ff6b6b'); damagePlayer(P.x, 4, { unblockable: true, noKnock: true, name: 'DROWNED' }); } } }
-    else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3 * (L.breathScale||1)); P.drownT = 0; if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
-  } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; }
+    if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }
+    else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1) * (curId() === 'deep' ? 0.5 : 1); if (P.breath > 0 && Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
+      if (P.breath <= 0) { P.breath = 0; P.drownT = 1;   /* OUT OF BREATH (Daniel 10-16): a QUIET health drain on the shared environment drain (src/drain.js, A13) - no blow, so no stagger, no knock, no hurt flash, no mercy window, no hitstop */
+        BRD.set(P, 'breath', breathRate() / Math.max(1, P.maxHp), { name: 'OUT OF BREATH', col: '#7fd0ff' });
+        P.drownT = 1; }   /* the bubbles stop: nothing is left to breathe out */ }
+    else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
+  } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }
+  BRD.step(dt);   /* the drain's step, for this hero (players: () => [P]) */
   snareTick(dt);
   if (P.whirlFree > 0) P.whirlFree = Math.max(0, P.whirlFree - dt);   /* the stroke that broke the Drowned King's current keeps you out of it a moment */
   if (P.soot > 0) P.soot = Math.max(0, P.soot - dt);   // the black water runs off the lens
@@ -10425,6 +10428,17 @@ function hazardSay() { if ((PROG.hazTold || 0) < 2) { PROG.hazTold = (PROG.hazTo
 /* (claude/ksar2) THE SUN'S DRAIN (src/sun-hands.js): health straight off the bar - no blow, so no flinch, no knock, no hurt pose, no mercy window and no swing
    cancelled. It kills (THE SUN) when it takes the last of it. The drain is a share of max health (src/sunstroke.js drainRate), as a hazard's is: past the difficulty and armour chain */
 function sunDrain(n) { if (P.dead || !(n > 0)) return; P.hp = Math.max(0, P.hp - n); if (P.hp <= 0) die({ name: 'THE SUN', red: false, rule: '' }); }
+/* (claude/underwater, Daniel 10-16) OUT OF BREATH IS A QUIET DRAIN: the same shared environment drain as the sun (A13), on every water level. About what the old 4-hp DROWNED blow did a 1.3 s
+   (~3 hp/s at Normal), but smooth - whole hp off the bar every third of a second - and with NONE of a blow's reactions. The tick is a soft gasp and a small '-n' a second. A flask's drink is not a blow, so
+   the drain moves its spill-guard (P.drinkHp) with it. */
+const BREATH_DRAIN_HP = 3.1;
+const breathRate = () => BREATH_DRAIN_HP * diffNow().take * DFM.df('take') * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1);   /* hp a second, past the same chain every hazard's damage goes through */
+function breathTake(n) {
+  if (P.dead || !(n > 0)) return;
+  P.hp = Math.max(0, P.hp - n); if (P.drinkT > 0) P.drinkHp = P.hp;
+  if (P.hp <= 0) die({ name: 'DROWNED', red: false, rule: '' }); }
+const BRD = makeDrains({ players: () => [P], take: (pp, n) => breathTake(n), god: () => !!(SET.invincible || (window.BK && window.BK.god) || (L && L.trial)),
+  onBeat: (pp, n) => { SFX.gaspTick && SFX.gaspTick(); number(pp.x, pp.y - 30, '-' + n, '#8fd4ff'); } });
 function hazardBack() { const s = P.safe; if (!s || s.L !== L || (MG && P.flip)) return; P.x = s.x; P.y = s.y; if (bossActive && boss && boss.t === 'windcaller' && L.arena && L.arena.safe && P.x > L.arena.x0 && P.x < L.arena.x1) { P.x = callerFallX(P.x); P.y = L.arena.floor; }   /* (claude/windcaller3) HIS THORNS HAND YOU BACK TO A FLOOR, never to a ledge's end with the gust still blowing off it - that was a second thorn, and a third */ P.vx = 0; P.vy = 0; P.onMover = null; P.ground = true; hazardSay(); }
 const spikeBite = (tx, name) => { const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
   if (!t && !P.dead && SV.spikeRule(L, P.x, TS) === 'death' && !SET.invincible && !(window.BK && window.BK.god)) { die({ name: name || 'THE SPIKES', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; return; }   /* IN AN EXAM THE SPIKES KILL (src/survival.js; told as you walk in) */
@@ -15996,7 +16010,7 @@ function updateMaw(e, dt) {
   if (e.phase === 2 && e.hp < e.maxHp * 0.33) { e.phase = 3; e.mode = 'smash'; e.modeT = 1.4; e.rise = Math.max(e.rise || 0, 0.5); SFX.boreRoar(); shakeCam(6);
     number(e.x, e.y - 60, 'THE REEF BREAKS', '#7cc8c8'); number(e.x, e.y - 72, 'THE TIDE IS GOING OUT', '#7cc8c8'); }
   const p2 = e.phase >= 2, p3 = e.phase >= 3;
-  if (!e.land) e.face = Math.sign(d) || e.face;   /* on land he turns like a boat: 'turn' does it, and only when you have been behind him a while */
+  if (!e.land && e.mode !== 'bite') e.face = Math.sign(d) || e.face;   /* (claude/underwater: the BITE is committed - its way is fixed at its first frame, so a roll or a step past him beats it; it used to swing round to wherever you were) */ /* on land he turns like a boat: 'turn' does it, and only when you have been behind him a while */
   const setHole = () => { let best = e.hole; // it moves to the hole nearest you, but never the one it just used
     let bs = 1e9; for (let i = 0; i < holes.length; i++) { if (i === e.hole) continue; const s2 = Math.abs(holes[i] - P.x); if (s2 < bs) { bs = s2; best = i; } }
     e.hole = best; e.x = holes[best]; };

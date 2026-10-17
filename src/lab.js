@@ -2007,6 +2007,7 @@ async function runbossLab(BK, opts) {
         let side=Math.sign(P.x-boss.x)||1;if(boss.x+side*116>A.x1-14||boss.x+side*116<A.x0+14)side=-side;
         if(['biteTell','bite','thrashTell','thrash'].includes(boss.mode)){
           goal=boss.mode==='bite'&&P.y<boss.y-65?boss.x+side*40:boss.x+side*116;strike=false;k.block=false;
+          if(boss.mode==='biteTell'&&boss.modeT<0.3&&f%10===0)BK.press('dodge');   /* (claude/underwater) the bite is a ROLL's to dodge: its tell is half a second and a walk out of an arm's reach is longer */
           if(P.ground||P.swim){BK.press('jump');P.labJump=24;}if(P.swim)k.up=true;
         }else if(['stuck','reel','recoil'].includes(boss.mode)){goal=mawIn;strike=true;}
         else {goal=mawIn;strike=true;}
