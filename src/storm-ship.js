@@ -1,10 +1,10 @@
 export function stormShipPolish(L,id,T){
  if(!['flotilla','hurricane'].includes(id))return L;
  L.palette.ledges='cargo';
- if(id==='flotilla')for(const e of L.ents)if(e.t==='sign'&&e.x===306&&e.y===15)e.x=308;
+ 
  // Lower the swing's entire arc toward its boarding deck; its rope length and travel remain unchanged.
  for(const m of L.moversExtra||[])if(m.kind==='swing'){
-  const deck=id==='hurricane'?20:(m.px<50*16?26:m.px<130*16?24:23);
+  const deck=m.deck??(id==='hurricane'?20:(m.px<50*16?26:m.px<130*16?24:23));   /* (claude/flotilla2) a swing may name its own boarding deck */
   m.py=Math.max(m.py,(deck-2)*16-m.arm);m.nautical=true;
  }
  if(id==='hurricane'){

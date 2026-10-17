@@ -41,7 +41,7 @@ export const GUARD = {
   lance: 'wall',          // THE QUEEN'S LANCE: plate and shield on his front - round him or over him; committed (planted, thrusting, reeling) he is open
   closedhelm: 'wall',     // THE WAYMEET PALADIN: his ward faces you - round him or over him; his sword met on the beat still breaks it (x2)
   captain: 'wall',        // THE SALVAGE CAPTAIN: on his own wave the sea is in front of him - cut him from behind it or from above; beached he is open
-  quarter: 'wall',        // THE QUARTERMASTER: EN GARDE (and her deck guard) offers the blade to the front - a cut into it is answered; round her or over her lands
+  /* (claude/flotilla2) THE QUARTERMASTER is benched (src/benched/quartermaster.js): her 'wall' row went with her. THE ADMIRAL'S CHAMPION is not on GUARD - his plate takes every angle at x0.5 in his own take (src/admirals-champion.js) */
 };
 export const ROLL_SOON = 'TOO SOON';   /* (claude/sweep2) the Waymeet Paladin: a roll that started before the last beat of his swing passes through and opens nothing */
 export const ANGLE = { mul: 0.5, wall: 1, front: 0.4 };   /* (claude/keyscore, B15) THE DUELIST'S WALL (GUARD 'wall'): round or over it a blow lands WHOLE (wall); into it at his height ANGLE.front (0.4: somewhat resistant, never invulnerable) */
@@ -76,6 +76,7 @@ export const TURN_WORD = {
   hawkmistress: e => (e.ward > 0 ? TURN.WARDED : 'THE HAWK GUARDS'),   /* (claude/ksarhawk) her hawk over her is her guard: fire brings it down (src/hawk-mistress.js) */
   deacon: e => (e.ward > 0 ? TURN.WARDED : 'GUARDS HIGH: HIT LOW'),   // (claude/church2) THE DEACON's pole held crosswise high: a low blow or his back
   paladinboss: e => (e.ward > 0 ? TURN.WARDED : 'HIS AEGIS'),   // (claude/litchurch) his aegis turns the front while he guards (and drinks the blow into his light): go round, or come down on him   // (claude/ksar) her falconer's gauntlet turns the front while she is on guard: go round, or come down on her
+  champion: e => (e.ward > 0 ? TURN.WARDED : 'HIS PLATE'),   // (claude/flotilla2) THE ADMIRAL'S CHAMPION: his plate takes most of a blow (B15: x0.5, never nothing) until his blade sticks or a deck gun knocks him flat
   fogknight: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'dissolve' ? TURN.NOT_THERE : 'HIS STANCE'),   // (claude/towpath) his stance turns the wrong angle: his own take names it (GUARDS HIGH / GUARDS LOW / FULL GUARD)
   lanterneater: e => (e.mode === 'open' ? TURN.WARDED : ['gulpTell', 'huntTell'].includes(e.mode) && e.part === 'lure' ? 'TOO LOW' : ['jaws', 'snapTell'].includes(e.mode) ? 'TOO HIGH' : TURN.WARDED),   // (claude/lanterneater) B14 keys: its lure HIGH, its gums LOW - the word names the wrong height (src/lantern-eater.js KEY_WORD)
   /* (claude/rootway) THE GOBLIN HUNTMASTER: the bow across him guards his front between moves (GO ROUND, or from a jump); in his ward after an opening, HE GUARDS */
