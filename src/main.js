@@ -180,7 +180,8 @@ import * as FLT from './flot_tiles.js';
 import * as CTT from './city_tiles.js';
 import * as HB from './redraw/harbour.js';   /* THE FLOTILLA in harbour light: the port, the moored hulls, the market, and everything on them that moves */
 import * as CAB from './redraw/cabins.js';   /* rooms of their own below decks: the galley, the magazine, the brig, the cabin and the chart room */
-import * as SM from './redraw/storm.js';   /* THE HURRICANE DECK: one ship in a storm - the open sea, the swells, the rain, the rags, the spray and the lightning */
+import * as SM from './redraw/storm.js';
+import { makeHurricane2Art } from './hurricane2-art.js';   /* (claude/hurricane2art) THE HURRICANE DECK 2's rigging, hull, houses, hatch covers and Captain's world art */   /* THE HURRICANE DECK: one ship in a storm - the open sea, the swells, the rain, the rags, the spray and the lightning */
 import * as CRT from './crown_tiles.js';
 import { bossZooms, miniZooms } from './boss-view.js';
 import { hallHolds } from './tower-hall.js';   /* THE FALLING TOWER's hall at the top of the tower: nothing from the crown wanders into it (round 3) */   /* WHICH FIGHTS ARE FOUGHT ZOOMED OUT: one list for the wake and for desiredView() */
@@ -279,7 +280,7 @@ const q = new URLSearchParams(location.search);
 const SPEED_DEFAULT = 0.6, SPEED_MIGRATE = false;
 const SET = { ink: 'parchment', uiTheme: 'oak', music: true, sfx: 0.5, musicVol: 0.8, shake: true, shakeMode: 'hit', sfxFiles: true, voices: true, hitstop: true, numbers: true, timer: true, ambient: true, difficulty: 'normal', iron: false, zoom: 'close', hud: 'minimal', hudV2: 1, filter: 'none', foeBars: true, bossHp: 'bar', lookDown: true, bossIntro: true, rumble: true, tenths: true, flashes: true, vignette: true, weather: true, impact: true, tips: true, blockToggle: false, textFast: false, reduceMotion: false, swapZX: false, skill3Key: '3', skill4Key: '4', scanlines: false, scale: 'auto', speed: SPEED_DEFAULT, lookAhead: true, assist: false, ambVol: 1, uiVol: 0.8, bigText: false, colorSafe: false, fps: false, bright: 1, shakeAmt: 1, parallax: 'full', tint: 'full', parts: 'normal', rim: false, grain: false, boxes: 'off', wayOn: false, wayStall: true };
 const TIER = { sealedpyramid: 2.7, church: 2.0, rootway: 0.52, minecart: 1.2, skyroad: 1.12, welltown: 2.45, redgorge: 2.5, glasssea: 2.55, ksar: 2.6, towpath: 1.9, buriedcity: 2.65, caravan: 2.4, unburied: 2.1, oreroad: 1.15, witchlight: 2.3, burning: 0.38, fallingtower:2.35, keep: 2.25, harbor: 2.3, burial: 2.25, mage: 2.35, fields: 2.1, causeway: 2.25, frost: 2.2, hunt: 2.0, quarry: 2.1, skyship: 2.3, waymeet: 1.9, deep: 2.2, undercrown: 1.5, underleaf: 0.7, lamplit: 2.05, hurricane: 1.9, wood: 0, marsh: 0.15, stockade: 0.3, spore: 0.45, kings: 0.6, scree: 0.75, hanging: 0.9, spire: 1, moor: 1.1, storm: 1.2, crown: 1.3, longwater: 1.45, reef: 1.6, flotilla: 1.75, underwell: 2.47 }; // how far up the slope a level sits
-const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
+const H2A = makeHurricane2Art({ on: () => !!L && curId() === 'hurricane', VW: () => VW, glow: () => (skyGlow > 0 ? Math.min(1, skyGlow / 0.7) : strike && strike.state === 'tell' ? 0.25 : 0), felled: i => { const F = felledAll()[i]; return !!F && F.state === 'down'; }, heelDir: () => (roll && roll.dir) || 0 });   /* (claude/hurricane2art) */ const tierOf = id => TIER[id] || 0; const curId = () => (LEVELS[levelIndex] || {}).id;
 const portSpr = n => BAR.gate(curId(), n) || TILE.port[((n % 2) + 2) % 2];   /* a gate column's tile: the region's own (src/barriers.js), the iron portcullis in the storm */
 // DIFFICULTY is chosen per wood, on the map (up and down on a level's card): how much everything hurts you,
 // how much it takes to put a foe down, and a boss on its own dial. The Settings value is the default for a wood
@@ -1242,6 +1243,7 @@ function resolveTiles() {
     if (L.ksar && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = KST.ksarTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BANDIT KSAR's own ground (claude/ksar art pass, src/redraw/ksar_tiles.js): mud-brick, ashlar, bedrock, flagstones, the breaches' stakes, the beams */
     if (L.sealedpyramid && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
     if (L.buriedcity && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.SOFT)) { const ts = BCT.bcTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BURIED CITY's own ground (claude/bc2art, src/redraw/buried_city_tiles.js): the sand roof, each district's masonry, every footing kind, the stakes, the light on each tile */
+    if ((t === T.SOLID || t === T.ONEWAY || t === T.NET) && H2A.on()) { const ts = H2A.tile(t, x, y, tileAt, T); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE HURRICANE DECK 2's own rigging, spars, houses and bar (claude/hurricane2art, src/hurricane2-art.js) */
     if (L.towpath && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE || t === T.NET)) { const ts = TPT.towpathTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE TOWPATH's tile kit (claude/towpath2art, src/redraw/towpath_tiles.js): wet moonlit stone, turf banks, black-green lock walls, iron, brick, the old irons */
     if (L.litchurch && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = CHT.churchTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE LIT CHURCH's own ground (claude/churchart, src/redraw/church_tiles.js): cut stone, chequered flags, marble, the crypt's bone-niched stone, turf, the pews and corbels */
     if (L.glasssea && (t === T.SOLID || isSlope(t))) { const ts = GST.glassTileFor(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE GLASS SEA's own ground (claude/glasssea art pass, src/redraw/glasssea_tiles.js): fused glass, slick diagonals; the first columns stay sand */
@@ -11305,7 +11307,7 @@ function updateGullFlock(e, dt) {
 
 // ---- WHAT YOU SEE OF IT ----
 function drawSea(cx, cy) {
-  drawDeckBreaks(g,L,cx,cy,time);
+  if (H2A.on()) { for (const z of (L.deckBreaks || [])) H2A.breakCrack(g, z, cx, cy, time); } else drawDeckBreaks(g,L,cx,cy,time);   /* (claude/hurricane2art) her topmast cracks span by span */
   drawGasVents(g,L,cx,cy,time); drawDrownedHands(g,L,cx,cy,time); drawCrumble(g,L,cx,cy,time);   /* THE ROTTEN BRIDGES: the rot on every board, and the crack in the one you stood on */
   drawKeepPassages(g,L,cx,cy,time,VW,VH); drawWhirlpools(g,L,cx,cy,time,VW,VH);
   const R = L.roll, FL = felledAll();
@@ -11325,6 +11327,7 @@ function drawSea(cx, cy) {
     for (let xx = bx0 + 4; xx < bx1; xx += 18) text('!', Math.round(xx), by - 14 - Math.round(k * 3), '#ff6b6b', 'center', 6); }
   if (F.state === 'down') {
     const xa = F.foot[0] * TS, ya = rampY(F, xa), xb = (F.head[0] + 1) * TS, yb = rampY(F, xb), ang = Math.atan2(yb - ya, xb - xa), len = Math.hypot(xb - xa, yb - ya) + 30;
+    if (H2A.on()) { if (xb - cx > -60 && xa - cx < VW + 60) H2A.felled(g, F, xa, ya, xb, yb, cx, cy, time); } else   /* (claude/hurricane2art) the fallen mast is rigging: hooped, with its yard lashed at the head and its shrouds trailing */
     if (xb - cx > -60 && xa - cx < VW + 60) {
       g.save(); g.translate(Math.round(xa - cx), Math.round(ya - cy)); g.rotate(ang);
       g.fillStyle = '#3a2a1c'; g.fillRect(-10, 0, len, 8); g.fillStyle = '#6a5a44'; g.fillRect(-10, 0, len, 5); g.fillStyle = '#8a7658'; g.fillRect(-10, 0, len, 1);
@@ -11342,6 +11345,7 @@ function drawSea(cx, cy) {
   }
   for (const pr of props) {
     if (pr.x < cx - 60 || pr.x > cx + VW + 60) continue;
+    if (H2A.on() && (pr.t === 'cargo' || pr.t === 'loosegun' || pr.t === 'cargowall')) { if (pr.t === 'cargo') { if (!pr.gone) H2A.cargo(g, pr, cx, cy, heeling() && onDeck(pr.x, pr.y), time); } else if (pr.t === 'loosegun') H2A.loosegun(g, pr, cx, cy, time, text); else if (pr.open) H2A.cargoWreck(g, pr, cx, cy); else H2A.cargoWall(g, pr, cx, cy, time); continue; }   /* (claude/hurricane2art) lashed cargo, her aft gun on its breechings, the wall and its wreck */
     if (pr.t === 'cargo' && !pr.gone) { const x = Math.round(pr.x - cx), y = Math.round(pr.y - cy);
       if (pr.kind === 'crate') { g.fillStyle = '#5c3a1d'; g.fillRect(x - 6, y - 12, 12, 12); g.fillStyle = '#8a5a32'; g.fillRect(x - 5, y - 11, 10, 10); g.fillStyle = '#5c3a1d'; g.fillRect(x - 5, y - 7, 10, 2); g.fillRect(x - 1, y - 11, 2, 10); }
       else if (PROP.barrel) { g.save(); g.translate(x, y - 7); g.rotate(pr.rot); g.drawImage(PROP.barrel, -6, -7); g.restore(); }
@@ -12697,9 +12701,10 @@ function capRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y
   if (capOpenNow(e)) { const kk = Math.max(0, Math.min(1, e.modeT / (e.openFor || 0.9)));
     g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 14, 22, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
     const by = y - (e.h || 28) - 22; text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, Math.round(36 * kk), 3); }
-  else if (e.ward > 0) { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 8); g.strokeStyle = '#e8f0f8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 16, 20, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
-  if ((e.mode === 'brace' || e.mode === 'held') && e.line !== null && e.line !== undefined) { const lx = Math.round(e.line - cx), ly = Math.round(L.arena.floor - cy);   /* the line he wants: a pale-green tick at its foot */
-    g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 12); g.fillStyle = '#a8cfc6'; g.fillRect(lx - 6, ly - 2, 12, 2); g.fillRect(lx - 1, ly - 30, 2, 28); g.globalAlpha = 1; }
+  else if (e.ward > 0) { H2A.ward(g, x, y - 16, time); }   /* (claude/hurricane2art) HIS WARD: a faceted pale shell, its rim turning */
+  if ((e.mode === 'brace' || e.mode === 'held') && e.line !== null && e.line !== undefined) { const lx = Math.round(e.line - cx), ly = Math.round(L.arena.floor - cy);   /* the line he wants: lit, and the way to it marked (claude/hurricane2art) */
+    H2A.lineWant(g, lx, ly, x, time, text); }
+  if (e.mode === 'beach') H2A.flatSea(g, x, y, time);   /* knocked flat: the sea running off him */
 }
 function capCut(e, reach, dmg) { // a cut of his, and what the shield does about it
   const d = P.x - e.x;
@@ -29954,7 +29959,7 @@ function softScenery(c){
 const HIDE = {};   /* (claude/unburiedart) BK.hide.deco / .facades / .structures: a layer the look checks switch off to see what it was holding up (tools/unburied-look.mjs) */
 function drawScenery(cx,cy){
   g.save();g.globalAlpha=.78;
-  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx+(d.sw>0?WR.swayPx(d.sw,time,d.ph):0),d.y-cy);
+  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;if(d.kind==='mastTall'&&H2A.on())continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx+(d.sw>0?WR.swayPx(d.sw,time,d.ph):0),d.y-cy);
     if(d.kind==='hangingHouse'||d.kind==='villageHall'){paintHouseSmoke(g,d.x+d.c.width-25-cx,d.y+10-cy,time+d.ph);g.globalAlpha=.78;}}
   for(const d of decor){if(d.x<cx-d.c.width||d.x>cx+VW)continue;const c=d.fire?PROP.campfire[Math.floor(time*9+d.x)%3]:d.c;const sway=d.sway>0?Math.round(Math.sin(time*28)*d.sway*3):0;g.drawImage(softScenery(c),d.x-cx+sway,d.y-cy);}
   g.restore();
@@ -30134,8 +30139,10 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.cableway) { drawCables(g, L.cableway, cx, cy, time, VW); drawOreVeins(g, L, cx, cy, time, VW, VH); }   /* THE ORE ROAD's cables, and the empties coming back behind them */
   if (L.walls) drawWalls(g, L.walls, cx, cy, TS, time);   /* THE BREAKABLE-WALL ENGINE's own look, over the rock the tile renderer already drew */
   if (FAIR && L.ring) CRG.drawRingBack(g, cx, cy, VW, L.ring, L.green, L.arena, time, L.ring.quickT > 0);   /* THE WICKER QUEEN'S CAROUSEL: the canopy, the column, the firebox, the back of the ride, under its horses */
+  if (H2A.on()) H2A.drawBack(g, cx, cy, time);   /* THE HURRICANE DECK 2 (claude/hurricane2art): masts, yards, stays, breaches, deckhouse roofs, the powder store's seams (src/hurricane2-art.js) */
   if (PUPH && PUPH.on()) PUPH.drawBack(cx, cy, time);   /* THE PUPPETEER's fly rail and his painted flats, behind the bodies (claude/puppeteer2) */
   for (const m of movers) {
+    if (H2A.on() && (m.kind === 'swing' || (!m.kind && m.vert))) { if (m.x + m.w > cx - 40 && m.x < cx + VW + 40 || m.kind === 'swing') { if (m.kind === 'swing') H2A.swing(g, m, cx, cy, time); else H2A.hatch(g, m, cx, cy, time); } continue; }   /* her rope swings and her hatch covers (claude/hurricane2art) */
     if (m.kind === 'carhorse') { if (!m.broken && L.ring && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.ring, m.i); continue; }
     if (m.kind === 'galhorse') { if (!m.broken && L.galRing && m.x + m.w > cx - 16 && m.x < cx + VW + 16) CRG.drawRingHorse(g, m, cx, cy, L.galRing, m.i); continue; }   /* (claude/fairfix5) the gallopers, on their poles */
     if (m.leRaft || m.ft2) continue;   /* (the raft is drawn by its hands: LEH.drawBack; the falling tower's telescope and chunk by ftDraw) */
@@ -30652,9 +30659,9 @@ function drawWorld(cx, cy, showPlayer) {
     else if(e.t==='undeadmage'||e.t==='magechase')frame=undeadFrame(e,UNDEADMAGE_F);
     else if(e.t==='burieddead'||e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){frame=e.t==="burieddead"?deadKingFrame(e):deadFrame(e);if((e.t==='zombie'||e.t==='apprentice')&&frame<=1&&Math.abs(e.vx)>2)frame=[0,1,0,7][Math.floor(e.anim*6)%4];}   /* the redrawn dead walk on both feet */
     else if (e.t === 'harbormaster') frame = wardenFrame(e);
-    else if (e.t === 'captain') frame = e.mode === 'held' ? 10 : e.mode === 'sabreTell' ? 3 : e.mode === 'sabre1' ? 4 : (e.mode === 'sabre2' || e.mode === 'keg') ? 5
-      : e.mode === 'shootTell' ? 6 : e.mode === 'shoot' ? 7 : (e.mode === 'hookTell' || e.mode === 'kegTell') ? 8 : e.mode === 'hook' ? 9
-      : e.mode === 'call' ? 10 : e.mode === 'ride' ? 11 : e.mode === 'beach' ? 12 : Math.abs(e.vx) > 4 ? (Math.floor(e.anim * 7) % 2 ? 1 : 2) : 0;
+    else if (e.t === 'captain') frame = e.mode === 'held' ? 13 : e.mode === 'brace' ? 14 : e.mode === 'sabreTell' ? 3 : e.mode === 'sabre1' ? 4 : e.mode === 'sabre2' ? 5
+      : e.mode === 'shootTell' ? 6 : e.mode === 'shoot' ? 7 : e.mode === 'hookTell' ? 8 : e.mode === 'hook' ? 9 : e.mode === 'kegTell' ? 16 : e.mode === 'keg' ? 17
+      : e.mode === 'call' ? 10 : e.mode === 'reel' ? (e.struck ? 15 : 18) : e.mode === 'beach' ? 19 : e.mode === 'ride' ? 11 : Math.abs(e.vx) > 4 ? (Math.floor(e.anim * 7) % 2 ? 1 : 2) : 0;   /* (claude/hurricane2art) every storm move has its own pose: held 13, brace 14, struck 15, keg 16/17, turned 18, flat 19 (src/redraw/pirates.js bakeCaptain) */
     else if (e.t === 'acolyte') frame = Math.abs(e.vx) > 6 ? (Math.floor((e.anim || 0) * 9) % 2) : 0;   /* (claude/litchurch) the runner's sheet, recoloured: his run */
     else if (e.t === 'lurker') frame = e.mode === 'hide' ? 0 : e.mode === 'rest' ? 2 : 1;
     else if (FIELD_FRAME[e.t]) frame = FIELD_FRAME[e.t](e);   /* THE HEXED FIELDS */

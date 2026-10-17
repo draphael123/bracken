@@ -951,7 +951,13 @@ export function bakeCaptain() {
     wide: ['.....UUuu......', '..UUU.....uuu..', '..vv.......uu..', '.vv.........uu.', '.vv.........uu.', 'vv..........uu.', 'vv..........uuU', 'vvv........uuuu'],
     kneel: ['...............', '.....UUuu......', '....UU..uu.....', '...Uv...uu.....', '..vv....uu.....', '..vv....uu.....', '.vvvvv..uu.....', 'vvvvvvv.uuuU...'],
   };
-  // his coat: a long skirt of deep red, its tails thrown by the step and streaming when the sea has him
+  /* (claude/hurricane2art) a lit keg, six wide: a fuse and its spark on top, oak staves, two iron hoops */
+  const KEG = ['..X...', '..y...', '.UuuU.', 'IuUUuI', 'jUuuUj', 'IuUUuI', '.UuuU.'];
+  /* the sky's own line through a figure: a jagged white-and-blue bolt laid on the finished canvas, over the body, outline and all */
+  const bolt = (c, pts) => { const g = c.getContext('2d');
+    for (let i = 0; i + 1 < pts.length; i++) { const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0), 1);
+      for (let k = 0; k <= n; k++) { const x = Math.round(x0 + (x1 - x0) * k / n), y = Math.round(y0 + (y1 - y0) * k / n);
+        if (x >= 0 && y >= 0 && x < c.width && y < c.height) { px(g, x + 1, y, '#7a9cff'); px(g, x - 1, y, '#7a9cff'); px(g, x, y, k % 3 === 1 ? '#ffffff' : '#dfe8ff'); } } } };  // his coat: a long skirt of deep red, its tails thrown by the step and streaming when the sea has him
   const coat = (G, B, dy, pose) => {
     const top = 20 + dy, HH = Math.max(3, FL - top), Y = f => top + Math.round(f * HH);
     const pts = {
@@ -1012,12 +1018,14 @@ export function bakeCaptain() {
     if (o.gun && o.gun[3] !== 'back') layer(G, g => pistol(g, P(o.gun[0]), o.gun[1], o.gun[2]));
     if (o.hook && o.hook[2] !== 'back') layer(G, g => stamp(g, P(o.hook[0])[0] - 3, P(o.hook[0])[1] - 3, o.hook[1] ? GRAP_U : GRAP_D));
     if (o.coil) layer(G, g => stamp(g, P(o.coil)[0] - 3, P(o.coil)[1] - 2, COIL));
+    if (o.keg) layer(G, g => stamp(g, B + o.keg[0], o.keg[1] + dy, KEG));   /* (claude/hurricane2art) the lit keg in his hands */
     if (o.rope) layer(G, g => { for (let e = 0; e < 2; e++) gline(g, P(o.rope[0])[0], P(o.rope[0])[1] + e, P(o.rope[1])[0], P(o.rope[1])[1] + e, i => ((i + e) % 3 ? 'P' : 'p')); });
     if (o.trill) layer(G, g => { const [tx, ty] = P(o.trill); call(g, tx, ty, tx - 3, ty + 2); stamp(g, tx + 3, ty - 2, TRILL); });
     if (o.flash) { const F = P(o.flash);
       layer(G, g => { stamp(g, F[0], F[1], ['..X..', '.XxX.', 'XxxxX', '.XxX.', '..X..']); stamp(g, F[0] + 5, F[1], ['.zZz.', 'zZZzZ', '.zZz.']); }); }
     const c = q(G);
     if (o.smear) smear(c, ...o.smear);
+    if (o.arcs) for (const pl of o.arcs) bolt(c, pl.map(([x, y]) => [B + 1 + x, y + 1 + dy]));   /* (claude/hurricane2art) the sky in him */
     return c;
   };
   const idle = frame({ boots: 'stand', coat: 'stand',
@@ -1061,7 +1069,49 @@ export function bakeCaptain() {
   const beach = frame({ boots: 'kneel', dy: 3, hx: 1, coat: 'pooled', down: true,
     far: [[-4, 20], [-6, 22]], near: [[4, 19], [6, 24]],
     blade: [[6, 24], 88, 15], hook: [[-6, 22], 0, 'back'] });
-  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, beach], X, FL, 16, 26);
+  /* ---- (claude/hurricane2art) THE STORM MOVES, each with its own pose (B16): 13 braced on a line, 14 making for it, 15 struck by the sky, 16 and 17 the keg's windup and release,
+     18 a cut turned on the shield, 19 knocked flat. 12 (kneeling) is left for the old ride mode and nothing draws it any more. ---- */
+  // HELD: both fists up on the two shrouds beside his head, knees bent, head down under the brim, the coat torn out sideways by the sea
+  const held = frame({ boots: 'plant', dy: 2, hx: 0, coat: 'stream', down: true,
+    far: [[-6, 15], [-8, 7]], near: [[6, 15], [8, 6]], hook: [[-2, 21], 0, 'back'] });
+  // BRACE: running at the line, near hand reaching out for it, the sabre trailing, no time for a cut
+  const brace = frame({ boots: 'lunge', dx: 2, dy: 1, hx: 2, coat: 'stream',
+    far: [[-2, 17], [-6, 19]], near: [[6, 13], [12, 9]], blade: [[-6, 19], 152, 13, 'back'], hook: [[-6, 19], 0, 'back'] });
+  // STRUCK: head thrown back, both arms flung wide with the sabre aloft, boots off the deck's grip, the sky's bolt through him
+  const struck = frame({ boots: 'wide', dy: -1, up: true, coat: 'spread',
+    far: [[-7, 13], [-12, 7]], near: [[7, 13], [12, 6]], blade: [[12, 6], -58, 15], hook: [[-12, 7], 1, 'back'],
+    arcs: [[[9, 0], [6, 6], [10, 11], [5, 17], [8, 22], [3, 27], [6, 31]], [[-10, 3], [-6, 8], [-9, 14], [-4, 19], [-7, 25]]] });
+  // KEG, windup: the lit keg heaved back low behind him on a straight arm, the far hand out to aim, a spark running up the fuse
+  const kegTell = frame({ boots: 'tell', dx: -2, dy: 1, hx: -1, coat: 'swing', down: true,
+    far: [[1, 17], [5, 17]], near: [[-4, 18], [-9, 21]], keg: [-14, 17], hook: [[1, 17], 0, 'back'] });
+  // KEG, release: the keg gone off his hand down the deck, the arm swung through low, a puff where it left
+  const kegRel = frame({ boots: 'lunge', dx: 3, dy: 2, hx: 2, coat: 'stream',
+    far: [[-2, 18], [-5, 20]], near: [[6, 19], [11, 25]], hook: [[-5, 20], 0, 'back'], flash: [11, 22] });
+  // TURNED: the cut caught on a shield and thrown wide, blade flung high over his shoulder, head back and rocking off balance
+  const turned = frame({ boots: 'wide', dx: -3, dy: 1, hx: -2, coat: 'spread', up: true,
+    far: [[-3, 17], [-8, 18]], near: [[2, 12], [5, 5]], blade: [[5, 5], -72, 15], hook: [[-8, 18], 0, 'back'] });
+  // FLAT: on his back along the planking with the sea running off him: hat rolled off, the sabre loose, one arm flung up, the other under him, a deck's boots to the sky
+  const flat = (() => {
+    const G = blank(W, H), fl = FL - 1;
+    gpoly(G, [[2, fl], [43, fl], [45, fl - 3], [36, fl - 6], [12, fl - 7], [3, fl - 4]], (x, y) => ((Math.floor(x * 0.55 + y * 0.3) % 5 + 5) % 5 === 0 ? 'B' : 'b'));   // the boat cloak under him
+    for (let x = 2; x < 45; x += 3) put(G, x, fl - 4 + (x % 2), 'y');
+    layer(G, g => {
+      limb(g, [26, fl - 4], [33, fl - 4], 5, ['m', 'R', 'r']);                       // his hips, in the coat
+      limb(g, [33, fl - 5], [39, fl - 9], 3.2, ['v', 'U', 'u']); limb(g, [39, fl - 9], [43, fl - 6], 3.4, ['v', 'U', 'u']); limb(g, [44, fl - 5], [44, fl - 5], 3, ['v', 'v', 'U']);   // one boot cocked up
+      limb(g, [33, fl - 3], [41, fl - 2], 3, ['v', 'U', 'u']); limb(g, [42, fl - 2], [43, fl - 1], 3.2, ['v', 'v', 'U']);   // the other along the deck
+      limb(g, [13, fl - 5], [27, fl - 5], 8, ['m', 'R', 'r']);                       // chest and coat
+      for (let x = 15; x < 26; x += 3) put(g, x, fl - 6, 'y');
+      limb(g, [14, fl - 8], [10, fl - 14], 2.6, ['m', 'R', 'r']); limb(g, [10, fl - 14], [14, fl - 19], 2.6, ['m', 'R', 'r']); limb(g, [14, fl - 19], [14, fl - 19], 3, ['S', 's', 'h']);   // the near arm flung up
+      limb(g, [18, fl - 3], [22, fl - 1], 2.6, ['m', 'R', 'r']);                     // the far arm trapped under him
+      limb(g, [8, fl - 5], [8, fl - 5], 8, ['s', 'h', 'h']);                           // his head, face to the sky
+      put(g, 6, fl - 6, 'e'); put(g, 9, fl - 6, 'e'); put(g, 7, fl - 7, 'k'); put(g, 10, fl - 7, 'k'); gline(g, 6, fl - 3, 10, fl - 3, 'm');
+      for (let x = 4; x < 12; x++) put(g, x, fl - 9, x % 2 ? 'k' : 'K');
+    });
+    gpoly(G, [[0, fl], [6, fl], [6, fl - 2], [0, fl - 2]], () => 'b'); put(G, 1, fl - 3, 'B'); put(G, 3, fl - 3, 'B'); gline(G, 0, fl - 4, 4, fl - 4, 'y');   // his hat, rolled off beside him
+    layer(G, g => gline(g, 20, fl, 36, fl - 1, i => (i < 3 ? 'y' : i < 6 ? 'Y' : i % 2 ? 'i' : 'I')));   // the sabre lying loose along the deck
+    return q(G);
+  })();
+  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, beach, held, brace, struck, kegTell, kegRel, turned, flat], X, FL, 16, 26);
 }
 
 export function bakeQuarter() {
