@@ -121,17 +121,17 @@ export function buildTowpath({ painter, T, TS }) {
     moversExtra.push({ kind: 'hook', towpath: id, x: from[0] * TS, y: R(from[1]) - 6, w: w * TS, h: 6 }); rigBands.push([Math.min(from[0], to[0]), Math.max(from[0], to[0]) + w - 1, Math.min(from[1], to[1]) + O, Math.max(from[1], to[1]) + O]);
     for (const [cx, cy] of caps) ent('tpcrane', cx, cy, { crane: id }); };
 
-  // ================= 0. THE LYCHGATE (0-46): THE FORK, THE HUT, THE FIRST WRAITH =================
-  /* WAYMEET's last lane, at dusk. The first screen asks: which way - up the hill to the lit church on its hill, or down the bank to the river. The lychgate
-     is the CHURCH's own (its roof and lamp, src/towpath-hands.js draws it), not Waymeet's (A8) */
+  // ================= 0. THE LYCHGATE (0-46): THE HUT, THE FIRST WRAITH =================
+  /* WAYMEET's last lane, at dusk, and the river road down the bank. (claude/towpathchurch, 10-16: the HILL PATH to THE LIT CHURCH that forked off this first screen - four steps up to a
+     church door, and the Towpath's hidden bronze-medal gate behind it - is gone: the church road opens on WAYMEET's three votive lamps, src/votive-hands.js, and hangs off WAYMEET on the map.) */
   ground(0, 17, 34);
   sign(3, 33, 'THE TOWPATH. THE RIVER ROAD OUT OF WAYMEET.');
   ent('tplychgate', 13, 33);
-  /* THE HILL PATH: four steps up to the church's lane (the hook: src/towpath-hands.js enterChurch - THE LIT CHURCH is claude/litchurch's level) */
-  boards(17, 20, 31); boards(22, 25, 28); boards(27, 30, 25); boards(32, 39, 22);
-  sign(15, 33, 'UP THE HILL: THE LIT CHURCH. DOWN THE BANK: THE RIVER AND THE LOCKS.');
-  ent('tpchurch', 38, 21, { to: 'church' });
-  coins([23, 27], [28, 24]);
+  sign(15, 33, 'DOWN THE BANK: THE RIVER AND THE LOCKS.');
+  /* THE KEEPER'S GANTRY (claude/towpathchurch: it replaces the hill path's height - the second layer over the first screen): a plank walk off the lane's end, three rows up, running out over the bank and the river path
+     under it (a sworn sword in the fog below): a second height for the whole first screen, coins along it, and a drop back to the bank. On its poles (B9) */
+  boards(17, 34, 31); ent('deco', 17, 33, { kind: 'stilt' }); ent('deco', 26, 37, { kind: 'stilt' }); ent('deco', 34, 37, { kind: 'stilt' });
+  coins([21, 30], [27, 30], [31, 30], [33, 30]);
   /* THE RIVER PATH: down the bank INTO THE FOG (the mill-pond's low water lies under the bank: its bank's top edge is over your head), a sworn sword in it */
   ground(18, 23, 36); ground(24, 46, 38);
   sworn(31, 37, 'theBank', { face: -1 });
@@ -154,6 +154,7 @@ export function buildTowpath({ painter, T, TS }) {
   block(47, 47, 38, BOT);
   lock('A', 48, 55, 44, 40, 34, 'lo', { gate: [47, 33, 37], shallowLo: true });
   punt('A', 48, 8); paddle(54, 39, 'A'); paddle(46, 37, 'A');   /* (its twin on the lower bank: a punt that rode up without you comes back down) */
+  sign(40, 37, 'THE LOCK WATER DROWNS. IT IS NO WATER TO SWIM: STAY ON THE BANK AND THE BOATS.');   /* (1b, 10-16: the lethal water is told before the first lock: it is drawn dark under a pale skin, with eddies and a reaching hand) */
   sign(45, 37, 'THE FOG LIES ON THE LOW WATER. STRIKE THE PADDLE: THE LOCK LIFTS YOU OUT OF IT.');
   bank(24, 58, 40, 0.5);   /* the mill pond's bank: over the low towpath, the hut and the chamber at its low water */
   ground(56, 99, 34);
@@ -338,7 +339,9 @@ export function buildTowpath({ painter, T, TS }) {
   bridges.push(...stage.bridges.map(b => ({ ...b, row: b.row + O }))); lamps.push(...stage.lamps.map(l => ({ ...l, y: l.y + O })));
   for (const m of stage.movers) { moversExtra.push(m.mover); rigBands.push(m.band); }
   block(AX + FK_STAGE.W, W - 1, 0, BOT);
-  ent('gate', AX + FK_STAGE.W - 2, AR - 1);
+  /* THE EXIT (claude/towpathchurch, Daniel 10-16: "you cannot leave the boss room"): the gate stood at W-2, row AR-1 - INSIDE the upper quay's solid block (hi = AR-6 up to the
+     wall): buried, no hero could ever reach it. It stands on the FLOOR now, east of the cut and its bridge, before the arena lock's gate (FK_STAGE.exit): every hero walks to it once he falls (gateAfterBoss) */
+  ent('gate', AX + FK_STAGE.exit, AR - 1);
 
   // ================= THE LADDERS, LAST =================
   for (const [x, y0, y1] of nets) for (let y = y0; y <= y1; y++) set(x, y, T.NET);
@@ -347,7 +350,7 @@ export function buildTowpath({ painter, T, TS }) {
   const arena = stage.arena;
   return {
     W, H, grid: L.grid, ents: L.ents, START, pools, falls: [], moversExtra, rigBands, interiors, arena, gateAfterBoss: true,
-    towpath: { O, FOG_H, locks, bridges, wheels, banks, lamps, decor, hoists, troughs, cranes, arcs: ARCS, sections: SECTIONS, lantern: { x: 41, y: 37 + O }, fork: { church: 'church', door: [37, 21 + O], lych: [13, 33 + O] } },
+    towpath: { O, FOG_H, locks, bridges, wheels, banks, lamps, decor, hoists, troughs, cranes, arcs: ARCS, sections: SECTIONS, lantern: { x: 41, y: 37 + O } },
     waterHurts: true, noWade: true,   /* the locks', the cuts' and the river's deep water bites (A10: ~27% and back to the bank) and is no floor to the reach model - the punts, the barge, the hook and the hoist (rigBands) are */
     examSpans: [[394, 427]],          /* THE LAST LOCK: the old gate irons kill (told as you walk in: src/survival.js examAt) */
     calm: [[0, W - 1, 0, H - 1]],     /* placed wholly by hand: nothing sprinkled */
@@ -363,8 +366,7 @@ export function buildTowpath({ painter, T, TS }) {
       { kind: 'tplamp', opens: 'a lamp on the towpath: lit, it burns the fog off round it (and hardens a wraith in it)', hud: 'A LAMP ON THE TOWPATH: STRUCK, IT LIGHTS - OR GOES OUT.' },
       { kind: 'tpwinch', opens: 'the mill\'s sack hoist: up to the sack floor, or down to the loft', hud: 'THE WINCH TURNS: THE HOIST RIDES TO THE OTHER FLOOR.' },
       { kind: 'tpsluice', opens: 'the aqueduct\'s sluice: the trough runs and floats the barge over the broken span', hud: 'THE SLUICE OPENS: THE TROUGH RUNS AND THE BARGE FLOATS.' },
-      { kind: 'tpcrane', opens: 'the basin crane: its jib swings the hook up out of the fog to the warehouse roofs', hud: 'THE CRANE SWINGS: THE HOOK RIDES UP OUT OF THE FOG.' },
-      { kind: 'tpchurch', opens: 'the hill path to THE LIT CHURCH', hud: 'THE HILL PATH: THE LIT CHURCH.' } ],
+      { kind: 'tpcrane', opens: 'the basin crane: its jib swings the hook up out of the fog to the warehouse roofs', hud: 'THE CRANE SWINGS: THE HOOK RIDES UP OUT OF THE FOG.' } ],
     bgSpan: 200,   /* (claude/towpath2art: the backdrop rides within 200 px whatever storey the camera is on, as the canal's) */
     music: 'towpath', night: true, nightA: 0.22, duskStart: 99999, duskLen: 1,   /* (claude/towpath2art) THE RIVER ROAD BY NIGHT: cold blue-green, moonlit */
     palette: { set: 'village', dress: 'village', ledges: 'staging', sky: 'night', far: 'town', mid: 'town', near: 'town', nearSet: 'town', noFg: true, noNear: true,

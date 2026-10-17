@@ -2,8 +2,8 @@
 // light rule, the organ, the crypt, the encounters, the wiring; greybox art only - no art pass until the review). Concept: .claude/briefs/the-lit-church-
 // concept.md (Daniel 10-01) + the 10-07 settled lines (HANDOFF 12:30 / 12:55 / 13:00): cruciform; the organ gallery's bellows and chord gust KEPT; THE
 // ARCHDEACON elite KEPT; the reliquary pays a SILVER and opens a shortcut (no relic); THE PALADIN a B11 duelist with a light bar (src/paladin-boss.js).
-// THE ROAD: an OPTIONAL SPLIT PATH. Its fork is meant to stand at the start of THE TOWPATH (claude/towpath, built in parallel): a hill path to the church,
-// the river path to the canal. Until the integrator joins the two, `needs: 'waymeet'` (the LEVELS row). FORK HOOK: export FORK below says where it goes.
+// THE ROAD: an OPTIONAL SPUR OFF WAYMEET on the map (claude/towpathchurch, Daniel 10-08 / 10-16): `needs: 'waymeet'`, `spurOf: 'waymeet'`, and it opens on WAYMEET'S THREE VOTIVE LAMPS
+// (src/votive-hands.js - the flame verb taught cheaply, src/flame.js shared with this level's hands). It no longer forks off THE TOWPATH's first screen and has no Towpath medal gate.
 //
 // THE RULE: LIGHT IS THE CLERGY'S: A LIT ROOM MAKES THE PRIESTS STRONG, A DARK ONE LETS THE DEAD UP. CARRY A FLAME TO LIGHT A LAMP; A BLOW SNUFFS IT.
 // Every ROOM is LIT (a lamp in it burns) or DARK (all out). LIT: a priest's bolt lands x1.3 and his heal x1.5, and the dead in the room burn and sink.
@@ -39,10 +39,9 @@ export const CHURCH = { W: 324, H: 60, nave: 37, gallery: 19, crypt: 54, south: 
 export const RULE = 'LIGHT IS THE CLERGY\'S: A LIT ROOM MAKES THE PRIESTS STRONG, A DARK ONE LETS THE DEAD UP. CARRY A FLAME TO LIGHT A LAMP; A BLOW SNUFFS IT.';
 export const SECTIONS = [['THE GRAVEYARD', 0], ['THE NAVE', 45], ['THE NORTH TRANSEPT', 152], ['THE ORGAN GALLERY', 1000], ['THE CRYPT', 2000], ['THE CRYPT WELL', 3000], ['THE CHANTRY', 180], ['THE SOUTH TRANSEPT', 214], ['THE SANCTUARY', 275]];   /* (the gallery, the crypt and the well stack over the nave: their order is the route's, see ROUTE_ORDER) */
 export const ROUTE_ORDER = ['THE GRAVEYARD', 'THE NAVE', 'THE NORTH TRANSEPT', 'THE ORGAN GALLERY', 'THE CRYPT', 'THE CRYPT WELL', 'THE CHANTRY', 'THE SOUTH TRANSEPT', 'THE SANCTUARY'];
-/* THE FORK HOOK (for the integrator, when THE TOWPATH lands - claude/towpath): the church is an OPTIONAL split path. Its map node stands up the hill from the
-   Towpath's first screen; the LEVELS row's needs becomes 'towpath' (the fork is the Towpath's start: its lychgate / hill path). Nothing here reads it - it is
-   the note in code (tools/lit-church.mjs only checks that the row needs one of these). */
-export const FORK = { now: 'waymeet', then: 'towpath', node: { sheet: 'inland', x: 12, y: 138 }, why: 'THE TOWPATH\'s lychgate: the hill path to THE LIT CHURCH, the river path to the canal' };
+/* THE ROAD'S HOOK (claude/towpathchurch): the church is an OPTIONAL spur off WAYMEET. Its map node hangs off Waymeet's (between it and THE TOWPATH); it opens on WAYMEET's three votive lamps.
+   Nothing here reads it - it is the note in code (tools/lit-church.mjs checks the LEVELS row says the same). */
+export const FORK = { now: 'waymeet', then: 'waymeet', why: 'the three votive lamps of WAYMEET (src/votive-hands.js): a spur between Waymeet and THE TOWPATH' };
 /* each verb's arc (tile columns; the gallery, crypt and well are stacked, so their spans name rows too) - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/lit-church.mjs */
 export const ARCS = {
   light: { teach: [6, 44], test: [62, 178], remix: [56, 178], exam: [214, 270], boss: [275, 316] },     /* the porch lamp; the nave + lamp one; lamp two and the crypt candles; the Archdeacon's room; the sanctuary's lamps */

@@ -102,6 +102,7 @@ const ROUTE = { check: 'checkpoint', gate: 'the gate', key: 'a key' };
 export function sweepLevel(L, hs = heroes, o = {}) {
   const base = floodReach(L, T, { rides: true, glassBeds: true }), W = L.W, key = (x, y) => x + ',' + y;   /* (glassBeds: the Glass Sea's fused beds and shard vault, as the hero fill has them - without it the shared fill stops at column 47 and the sweep had no target there) */
   const targets = L.ents.filter(e => ROUTE[e.t] || (e.elite && e.gate)).map(e => ({ x: e.x, y: e.y, what: ROUTE[e.t] || 'the elite ' + e.t }));
+  for (const v of L.votive ? [...L.votive.sources, ...L.votive.lamps] : []) targets.push({ x: v.x, y: v.y, what: v.kind === 'brazier' ? 'a votive brazier' : 'a votive lamp' });   /* (claude/towpathchurch: WAYMEET's three lamps and the braziers that give the flame - every hero must reach each on his own legs) */
   if (L.arena && L.arena.boss) { const b = L.ents.find(e => e.t === L.arena.boss || e.t === L.arena.boss + 'lord'); if (b) targets.push({ x: b.x, y: b.y, what: 'the boss' }); }
   const tg = targets.filter(t => base.near(t.x, t.y));
   /* the shared fill's own tree, from the start: who reached whom */

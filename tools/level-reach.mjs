@@ -17,10 +17,10 @@ const OFF_MAP = {
 const pg = await openPage({ port: portFor(8) });
 try {
   const r = await pg.evalp(`(async()=>{
-    const {LEVELS, LOST_BANNERS} = await import('/src/level.js');
+    const {LEVELS, LOST_BANNERS} = await import('/src/level.js'); const { VOTIVE_IDS } = await import('/src/votive-hands.js');
     const P = BKT.PROG;
     for (const l of LEVELS) delete P[l.id];
-    delete P.bossDown; delete P.lostBanners; delete P.fieldOpen; P.bannerMig = 1;
+    delete P.bossDown; delete P.lostBanners; delete P.fieldOpen; P.bannerMig = 1; delete P.votive; delete P.churchOpen; P.churchMig = 1;
     const out = { opened: [], steps: [], secrets: [] };
     /* A SECRET IS A DEFINED STATE (claude/unburiedsecret): a fresh save shows it as a dim spot (BK.mapNodes().secret), locked, and nothing walks onto it */
     { const m0 = BK.mapNodes(); for (const l of LEVELS.filter(q => q.secretBanners)) { const i = m0.ids.indexOf(l.id); out.secrets.push({ id: l.id, onMap: i >= 0, secret: m0.secret[i], locked: m0.locked[i], hit: m0.hitOrder.includes(i) }); } }
@@ -38,6 +38,8 @@ try {
         P[id] = { cleared: true, medal: need, ...(tmin < 1e9 ? { best: tmin } : {}) }; out.opened.push(id); changed = true; });
       /* THE LOST BANNERS lie in levels that are themselves reached by normal play (their reachability from the road is tools/unburied-secret.mjs's geometry + real-loop check): once those levels are cleared the banners are in hand */
       for (const l of LEVELS) if (l.secretBanners) { const ids = Object.keys(LOST_BANNERS); if (ids.every(i => P[i] && P[i].cleared) && !(P.lostBanners && ids.every(i => P.lostBanners[i]))) { P.lostBanners = Object.fromEntries(ids.map(i => [i, 1])); changed = true; } }
+      /* WAYMEET'S VOTIVE LAMPS (claude/towpathchurch) are lit INSIDE Waymeet, a level that is itself reached by normal play (their reach, their flame and their save are tools/church-road.mjs and tools/reach-heroes.mjs): once Waymeet is cleared the three burn */
+      for (const l of LEVELS) if (l.votiveLamps && P[l.votiveLamps] && P[l.votiveLamps].cleared && !P.churchOpen) { P.votive = Object.fromEntries(VOTIVE_IDS.map(i => [i, 1])); P.churchOpen = 1; changed = true; }
       /* THE SECRETS (needsTime / needsKills): earned by a feat on a level that is itself reached, so satisfy the feat once its level is cleared */
       for (const l of LEVELS) { const n = l.needsTime || l.needsKills; if (!n || !(P[n.id] && P[n.id].cleared) || (P[l.id] && P[l.id].cleared)) continue;
         if (l.needsTime) { if (!(P[n.id].best <= n.t)) { P[n.id].best = n.t; changed = true; } } else if (!(P[n.id].slain)) { P[n.id].slain = 10; P[n.id].slainOf = 10; changed = true; } } }
@@ -46,9 +48,9 @@ try {
     out.offCampaign = LEVELS.filter(l => l.hidden && !l.secret && (/^(shop|trial_)/.test(l.id) || l.id === 'custom')).map(l => l.id);
     out.reached = LEVELS.map(l => l.id).filter(id => P[id] && P[id].cleared);
     /* every spur: stand on its junction and step on with the map's own press, the way the player does */
-    const spurs = m.ids.filter((id, i) => m.spur[i] && LEVELS.some(l => l.id === id && (l.opensOn || l.secretBanners)));
-    for (const id of spurs) { const lv = LEVELS.find(l => l.id === id), j = lv.opensOn ? lv.opensOn.level : lv.spurOf, secret = !!lv.secretBanners;
-      for (const l of LEVELS) delete P[l.id]; delete P.bossDown; delete P.lostBanners; delete P.fieldOpen;
+    const spurs = m.ids.filter((id, i) => m.spur[i] && LEVELS.some(l => l.id === id && (l.opensOn || l.secretBanners || l.votiveLamps)));
+    for (const id of spurs) { const lv = LEVELS.find(l => l.id === id), j = lv.opensOn ? lv.opensOn.level : lv.spurOf, secret = !!lv.secretBanners, votive = !!lv.votiveLamps;
+      for (const l of LEVELS) delete P[l.id]; delete P.bossDown; delete P.lostBanners; delete P.fieldOpen; delete P.votive; delete P.churchOpen; P.churchMig = 1;
       /* fresh save but the road up to the junction cleared, as a player would have */
       let ch = true, g = 0; while (ch && g++ < 80) { ch = false; const mm = BK.mapNodes(); mm.ids.forEach((nid, i) => { const L = LEVELS.find(l => l.id === nid); if (!L || mm.spur[i] || mm.locked[i] || (P[nid] && P[nid].cleared)) return; P[nid] = { cleared: true, medal: 0 }; ch = true; }); if (P[j] && P[j].cleared) break; }
       /* clear only up to the junction level: drop everything cleared after it on the road */
@@ -60,11 +62,16 @@ try {
         P[j] = { cleared: true, medal: 3, best: 777 }; s.secret = true; s.tipWhileSecret = null; s.stepWhileSecret = false;
         for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); const tp = BK.mapTip(); if (tp.id === id) s.tipWhileSecret = tp.lines || true; if (BKT.PROG.mapNodeId === id) s.stepWhileSecret = true; }
         P.lostBanners = Object.fromEntries(Object.keys(LOST_BANNERS).map(i => [i, 1])); }
+      else if (votive) { /* A VOTIVE ROAD (the church): shut with Waymeet cleared and the lamps dark - the tip says LIGHT WAYMEET'S VOTIVE LAMPS n/3 and the press does not step onto it; with the three lit it steps on */
+        P[j] = { cleared: true, medal: 3, best: 777 }; s.votive = true; s.tipShut = null; s.stepWhileShut = false;
+        for (const key of ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight']) { goTo(j); press(key); const tp = BK.mapTip(); if (tp.id === id && tp.lines) s.tipShut = tp.lines; if (BKT.PROG.mapNodeId === id) s.stepWhileShut = true; }
+        P.votive = Object.fromEntries(VOTIVE_IDS.map(i => [i, 1])); P.churchOpen = 1; }
       else {
       P[j] = { cleared: true, medal: 0, best: 777 };
       for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); const tp = BK.mapTip(); if (tp.id === id && tp.lines) { s.tip = tp.lines; break; } }
       P[j] = { cleared: true, medal: { bronze: 1, silver: 2, gold: 3 }[lv.opensOn.medal] || 0, ...(lv.opensOn.time ? { best: lv.opensOn.time } : {}) }; }
-      for (const key of ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); if (BKT.PROG.mapNodeId === id) { s.dir = key; s.onSpur = true; break; } }
+      if (votive) P[j] = { cleared: true, medal: 3, best: 777 };
+      for (const key of votive ? ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'] : ['ArrowUp', 'ArrowDown']) { goTo(j); press(key); if (BKT.PROG.mapNodeId === id) { s.dir = key; s.onSpur = true; break; } }
       if (!s.onSpur) s.onSpur = false; }
     out.road = LEVELS.filter(l => l.id === 'underleaf').map(l => ({ id: l.id, hidden: !!l.hidden, secret: !!l.secret, needs: l.needs, timed: !!(l.needsTime || l.needsKills), spur: !!m.spur[m.ids.indexOf(l.id)], onMap: m.ids.includes(l.id), next: (LEVELS.find(c => c.needs === l.id) || {}).id }));
     out.coin = BK.store.coinHeroes().map(h => ({ ...h, level: LEVELS.some(l => l.id === h.needs) }));
@@ -80,7 +87,9 @@ try {
   for (const sc of r.secrets) assert.ok(sc.onMap && sc.secret && sc.locked && !sc.hit, 'a fresh save: the secret ' + sc.id + ' must be a dim spot (secret, locked, not hit-testable): ' + JSON.stringify(sc));
   for (const s of r.steps) if (s.secret) assert.ok(!s.tipWhileSecret && !s.stepWhileSecret, s.id + ': a secret showed a tip or could be stepped onto before its banners (' + JSON.stringify(s) + ')');
   /* DANIEL 10-15 (mapforks): the Burning Village has NO rule any more (opens on a Stockade clear), so only a spur that still asks for a medal or time has a rule to show */
-  for (const s of r.steps) if (!s.secret && s.ruled) assert.ok(s.tip && /LOCKED/.test(s.tip[0]) && /12:57/.test(s.tip[1]), s.id + ': the shut road does not SHOW its rule and the player best time (' + JSON.stringify(s.tip) + ')');
+  /* STATED (claude/towpathchurch): the church's road is a VOTIVE road - shut until WAYMEET's three lamps burn, SHOWN by its tip (n/3), and open the moment they do */
+  for (const s of r.steps) if (s.votive) assert.ok(!s.stepWhileShut && s.tipShut && s.tipShut[0].includes('LOCKED: LIGHT WAYMEET' + String.fromCharCode(39) + 'S VOTIVE LAMPS 0/3'), s.id + ': the votive road must stay shut with its lamps dark and SHOW the lamp count (' + JSON.stringify(s) + ')');
+  for (const s of r.steps) if (!s.secret && !s.votive && s.ruled) assert.ok(s.tip && /LOCKED/.test(s.tip[0]) && /12:57/.test(s.tip[1]), s.id + ': the shut road does not SHOW its rule and the player best time (' + JSON.stringify(s.tip) + ')');
   for (const s of r.steps) assert.ok(s.onSpur, s.id + ' (a spur off ' + s.junction + ') cannot be stepped onto from its junction with the map keys once the junction is cleared');
   /* UNDERLEAF IS A MAIN-ROAD LEVEL (Daniel 10-08): Kingswood -> Underleaf -> the Scree Path, a node ON the road, no secret and no clock */
   for (const u of r.road) { assert.ok(!u.hidden && !u.secret && !u.timed && u.needs === 'kings' && u.next === 'scree' && u.onMap && !u.spur, 'underleaf is not a plain main-road level between kings and scree: ' + JSON.stringify(u)); }

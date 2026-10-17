@@ -12,8 +12,8 @@
 // its paddles are a stair), THE SACK HOIST (a winch on each floor sends its deck to the other), THE AQUEDUCT (a sluice runs the dry trough and the current
 // floats the barge to the far stop), THE BASIN CRANE (its capstan swings the jib: the hook rides between the quay and the roof's edge), THE SWING BRIDGES (a
 // capstan, struck or E, swings the deck across or clear: clear, its cells are air and whoever stands on it goes in), THE LANTERN (the lock-keeper's, taken at
-// his hut: E with no gadget in reach lights or dims it; a blow that lands on you gutters it; a wraith's smother puts it out), THE FORK (the hill path's door to
-// THE LIT CHURCH: claude/litchurch's level - enterChurch is the hook), the glint and the 10 s nudge (STUCK_HANDS.towpath), the walker's hands (walkHint), and
+// his hut: E with no gadget in reach lights or dims it; a blow that lands on you gutters it; a wraith's smother puts it out), THE LYCHGATE (scenery since claude/towpathchurch 10-16: the hill
+// path to THE LIT CHURCH is gone - the church road opens on WAYMEET's votive lamps, src/votive-hands.js), the glint and the 10 s nudge (STUCK_HANDS.towpath), the walker's hands (walkHint), and
 // the drawing (GREYBOX shapes until the art pass). In THE FOG KNIGHT's arena the bridge, the lock and the lamps are his rule's (ctx.boss*: src/fog-knight-hands.js).
 // main.js calls: reset, on, update, mover, hold, seen, interact, surfaceAt, lanternOf, guttered, smother, fogTop, hardLight, drawWorld, drawOver, drawHud, read,
 // handsState, walkHint.
@@ -27,10 +27,10 @@ import { drawChill } from './redraw/fog_wraith_art.js';
 /* THE NUMBERS. fill: px/s a chamber's water moves; swing: s a bridge takes to turn; reach: px a hero's E reaches a gadget; hitCd: s before the same gadget
    answers another blow; litR / dimR: px a lantern burns its clearing (lit / dimmed); lampR: a lamp's; sightW / sightD: px a watchman / a dozer sees a LIT hero
    at; elbow: px anyone sees anyone; wheelDmg: the turning wheel's blades; wheelCd: s between its bites; hoistV / bargeV: px/s the hoist's deck and the barge go;
-   troughT: s the dry trough takes to run full; craneT: s the hook takes from the quay to the roof; eye: px over his feet a hero's eyes are (in the fog or not);
+   troughT: s the dry trough takes to run full; bargeBackT: s a barge docked EMPTY waits before the bargeman poles it back to a hero stranded at the other end; craneT: s the hook takes from the quay to the roof; eye: px over his feet a hero's eyes are (in the fog or not);
    edge: px of a bank's soft top edge */
 export const TP = { fill: 36, swing: 0.9, reach: 26, hitCd: 0.4, litR: 92, dimR: 34, lampR: 72, sightW: 230, sightD: 150, elbow: 44, wheelDmg: 14, wheelCd: 0.9,
-  hoistV: 44, bargeV: 46, troughT: 1.1, craneT: 3.0, eye: 20, edge: 10 };
+  hoistV: 44, bargeV: 46, troughT: 1.1, bargeBackT: 4, craneT: 3.0, eye: 20, edge: 10 };
 
 export function makeTowpathHands(ctx) {
   let K = null;
@@ -56,7 +56,7 @@ export function makeTowpathHands(ctx) {
     K.troughs = (D.troughs || []).map(q => ({ ...q, x: q.stopW * ts, to: q.stopW * ts, water: 0, fillT: 0, bedY: q.bed * ts, surfY: q.surf * ts + 4 }));
     K.cranes = (D.cranes || []).map(c => ({ ...c, k: 0, goal: 0 }));   /* (k: where the hook is between the quay (0) and the roof (1); goal: where its capstan sent it) */
     K.gadgets = []; K.cd = new Map(); K.glint = null; K.stalls = {}; K.stallKey = null; K.fx = [];
-    for (const e of L.ents) if (/^tp(paddle|capstan|lamp|lantern|church|lychgate|winch|sluice|crane)$/.test(e.t))
+    for (const e of L.ents) if (/^tp(paddle|capstan|lamp|lantern|lychgate|winch|sluice|crane)$/.test(e.t))
       K.gadgets.push({ t: e.t, x: e.x * ts + 8, y: (e.y + 1) * ts, lock: e.lock, bridge: e.bridge, hoist: e.hoist, trough: e.trough, crane: e.crane, arena: !!e.arena, to: e.to, ex: e.x, ey: e.y, flash: 0, dark: !!e.dark });
     K.decor = (D.decor || []).map(d => ({ ...d, a: d.kind === 'fogKnight' ? 1 : 0, gone: false }));
     for (const k of K.locks) { gateCells(k); syncPool(k); }
@@ -122,6 +122,17 @@ export function makeTowpathHands(ctx) {
     for (const h of K.hoists) if (Math.abs(h.to - h.y) > 0.3) h.y += Math.sign(h.to - h.y) * Math.min(Math.abs(h.to - h.y), TP.hoistV * dt);
     for (const q of K.troughs) { if (q.fillT > 0) { q.fillT = Math.max(0, q.fillT - dt); q.water = Math.min(1, q.water + dt / TP.troughT); }
       else if (Math.abs(q.to - q.x) > 0.3) { q.x += Math.sign(q.to - q.x) * Math.min(Math.abs(q.to - q.x), TP.bargeV * dt); if (Math.random() < dt * 10) ctx.burst(q.x + (q.to > q.x ? 0 : q.w * TS()), q.surfY, 1, ['#cfe6f0', '#9ac0d0'], 16, 0.4); } }
+    /* THE MISSED BOAT (claude/towpathchurch, Daniel 10-16: "you miss the boat in this section - it never comes back to you"): a barge docked EMPTY, with a living hero at
+       the other end of the span, is poled back to him after bargeBackT s - the sluice on his bank was the only way and the far sluice sits across the break */
+    for (const q of K.troughs) { const ts = TS(), idle = q.fillT <= 0 && Math.abs(q.to - q.x) <= 0.3;
+      if (!idle) { q.idleT = 0; continue; }
+      const midX = (q.stopW + q.stopE + q.w) / 2 * ts, atW = q.x <= q.stopW * ts + 0.5, deck = bargeDeck(q);
+      const aboard = ctx.players.some(pp => !pp.dead && pp.x > q.x - 10 && pp.x < q.x + q.w * ts + 10 && pp.y > deck - 60 && pp.y < deck + 20);
+      const stranded = ctx.players.some(pp => !pp.dead && (atW ? pp.x > midX : pp.x < midX) && pp.x > (q.stopW - 14) * ts && pp.x < (q.stopE + q.w + 14) * ts && pp.y < (q.bed + 6) * ts);
+      if (aboard || !stranded) { q.idleT = 0; continue; }
+      q.idleT = (q.idleT || 0) + dt;
+      if (q.idleT >= TP.bargeBackT) { q.idleT = 0; q.fillT = q.water < 1 ? TP.troughT : 0; q.to = (atW ? q.stopE : q.stopW) * ts; K.n.barges++; K.n.polesBack = (K.n.polesBack || 0) + 1;
+        if (once('bargePoled')) number(q.x + q.w * ts / 2, q.surfY - 40, 'THE BARGEMAN POLES THE BARGE BACK TO YOU'); } }
     for (const c of K.cranes) if (Math.abs(c.goal - c.k) > 1e-3) c.k += Math.sign(c.goal - c.k) * Math.min(Math.abs(c.goal - c.k), dt / TP.craneT);
   }
   function wheelCells(w) { const still = !!w.still || w.v < 0.05; for (const [a, b, row] of w.steps) for (let x = a; x <= b; x++) ctx.cellSet(x, row, still ? T().ONEWAY : T().AIR); }
@@ -144,7 +155,7 @@ export function makeTowpathHands(ctx) {
   function wind(h) { if (!h || rideState('hoist', h.id) === 'moving') return null; h.to = h.y <= h.topY + 0.5 ? h.botY : h.topY; K.n.hoists++; ctx.sfx.chain ? ctx.sfx.chain() : ctx.sfx.clank && ctx.sfx.clank();
     if (once('hoist')) number(ctx.hero().x, ctx.hero().y - 34, 'THE WINCH TURNS: THE HOIST RIDES TO THE OTHER FLOOR'); return h.to === h.topY ? 'up' : 'down'; }
   function sluice(q, g) { if (!q || rideState('trough', q.id) === 'moving') return null; const ts = TS(), atW = q.x <= q.stopW * ts + 0.5, west = g && g.x < (q.stopW + q.stopE) / 2 * ts;
-    if (atW !== !!west) { if (once('sluiceFar')) number(ctx.hero().x, ctx.hero().y - 34, 'THE BARGE IS AT THE FAR STOP: ITS OWN SLUICE SENDS IT'); return null; }
+    if (atW !== !!west) { if (once('sluiceFar')) number(ctx.hero().x, ctx.hero().y - 34, 'THE BARGE IS AT THE FAR STOP: WAIT, THE BARGEMAN POLES IT BACK'); return null; }
     if (q.water < 1) q.fillT = TP.troughT; q.to = (atW ? q.stopE : q.stopW) * ts; K.n.barges++; ctx.sfx.splash ? ctx.sfx.splash() : ctx.sfx.clank && ctx.sfx.clank();
     if (once('sluice')) number(ctx.hero().x, ctx.hero().y - 34, 'THE SLUICE OPENS: THE TROUGH RUNS AND THE BARGE FLOATS'); return 'sent'; }
   function swingJib(c) { if (!c || rideState('crane', c.id) === 'moving') return null; c.goal = c.k < 0.5 ? 1 : 0; K.n.cranes++; ctx.sfx.chain ? ctx.sfx.chain() : ctx.sfx.clank && ctx.sfx.clank();
@@ -229,7 +240,6 @@ export function makeTowpathHands(ctx) {
       if (l.lit && once('lamp')) number(g.x, g.y - 44, 'THE LAMP BURNS THE FOG OFF ROUND IT'); if (l.arena && ctx.bossLamp) ctx.bossLamp(l); return true; }
     if (g.t === 'tplantern') { const q = lantern(P); if (q.has) return false; q.has = true; q.lit = true; K.n.lights++; ctx.sfx.pickup ? ctx.sfx.pickup() : ctx.sfx.clank && ctx.sfx.clank();
       number(P.x, P.y - 34, "THE LOCK-KEEPER'S LANTERN: E LIGHTS IT, OR DIMS IT"); return true; }
-    if (g.t === 'tpchurch') { K.n.church++; if (ctx.enterLevel && ctx.enterLevel(g.to || K.D.fork.church)) return true; number(g.x, g.y - 40, 'THE LIT CHURCH: THE WAY UP IS NOT OPEN YET'); return true; }
     return false;
   }
   /* E: the nearest gadget in reach; else the lantern (lit <-> dim) */
@@ -375,7 +385,7 @@ export function makeTowpathHands(ctx) {
       else if (q.t === 'tplamp') { const l = K.lamps.find(z => z.x * ts + 8 === q.x && Math.abs((z.y + 1) * ts - q.y) < ts * 1.5) || K.lamps.find(z => z.x * ts + 8 === q.x), gut = !!(l && l.gutter > 0 && Math.sin(time * 40) > 0); TPG.drawLamp(g, x, y, !!(l && l.lit), gut, time); }
       else if (q.t === 'tplantern') { if (lantern(ctx.hero()).has) continue; TPG.drawHookLantern(g, x, y, time); }
       else if (q.t === 'tplychgate') TPG.drawLychgate(g, x, y, time);
-      else if (q.t === 'tpchurch') { TPG.drawChurchDoor(g, x, y, time); if (Math.abs(ctx.hero().x - q.x) < 40 && Math.abs(ctx.hero().y - q.y) < 40) ctx.text('THE LIT CHURCH', x, y - 44, '#ffe9a0', 'center', 5); } }
+      }
     /* THE DECOR: milestones, drowned willows, cattle, bollards, eel traps, the gibbet, the keeper's armour, the knight's shape in the fog */
     for (const d of K.decor) { if (!inX(d.x * ts, 120)) continue; TPG.drawDecor(g, d, R(d.x * ts + 8 - cx), R((d.y + 1) * ts - cy), time); }
     /* THE DOZERS: a 'z' over a dozing man; awake, nothing */
