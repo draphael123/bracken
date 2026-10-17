@@ -1,6 +1,6 @@
 // tools/dk2.mjs — THE DEATH KNIGHT 2 (claude/dk2b, scratch/brief-dk2.md; src/dk2.js). On flat Stockade floor, the hero held where he
 // stands, this fails when:
-//   - REAPER'S RHYTHM is not ~35% quicker than the old swing (src/commit.js artRate 0.34 -> DK2.rhythm.rate), a swing in the page takes as long
+//   - REAPER'S RHYTHM is not the Paladin's pace (src/commit.js artRate = DK2.rhythm.rate 0.56; claude/dkfeel, was ~35% quicker than the old 0.34), a swing in the page takes as long
 //     as it did, the HOOK (the 2nd cut) does not pull a straw man a step toward him, the DRAG (the 3rd) gives back no health, or a landed
 //     chain does not FEED THE BLOOD WARD (P.wardG) - or feeds it to full
 //   - THE BLOOD PRICE: holding X does not cost DK2.price.pct of his max health every DK2.price.every s, it can take his last point (floored
@@ -20,7 +20,7 @@ import { artRate } from '../src/commit.js';
 
 const bad = [];
 const ok = (c, m) => { if (!c) bad.push(m); };
-ok(Math.abs(artRate('reaper', false) / 0.34 - 1.35) < 0.02, 'REAPER\'S RHYTHM: the swing clock is ' + artRate('reaper', false) + ', not ~1.35 x the old 0.34');
+ok(Math.abs(artRate("reaper", false) - artRate("paladin", false)) < 0.01 && Math.abs(artRate("reaper", true) - artRate("paladin", true)) < 0.02, "REAPERS RHYTHM (claude/dkfeel, Daniel 10-16): the swing clock is " + artRate("reaper", false) + " and the crescent " + artRate("reaper", true) + ", not the Paladins " + artRate("paladin", false) + " / " + artRate("paladin", true));
 const pg = await openPage({ audio: false, fonts: false });
 let R;
 try {
