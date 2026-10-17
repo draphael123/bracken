@@ -28,6 +28,8 @@ The fixed scoped Weaver text audit passed in the serial and all three parallel f
 
 `firsthour` stays in the serial tail: one pooled run reached 47% Bullfrog health and phase 2 but the court had not drained after the check's 30 simulation frames; five fresh-profile reruns passed, and the cause is not isolated. `fallingtower2-keys` stays in the serial tail: one pooled run began the Pyromancer's outer-face section off its intended floor and climbed only 2/9 planks; five fresh-profile reruns passed, and the cause is not isolated. Task C is awaiting a Scree curve decision, so its fixes are not in this branch's `origin/master` base.
 
+On the pushed seed fix `fff40350`, three pooled subsets (`archmage-folly,unburied-look,reed-island,textfit` at `--jobs=3 --max-browsers=1`) passed 5/5 each, with zero scoped text pictures and wall times 295, 277, and 281 seconds (`work/parallelproof-postseed-pool-{1,2,3}.log`, outside this checkout).
+
 ## Remaining work
 
 Repeat the one-serial/three-parallel proof on the new Reed Island seed commit and compare exact verdict sets. If differences remain, isolate them before calling the target release setting equivalent. Do not merge this branch yet.
