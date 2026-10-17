@@ -35,7 +35,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'slots', 'ending', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -81,6 +81,7 @@ async function pageTextFit(input) {
     seenIssue.add(key); issues.push(Object.assign({ key, type, screen, s: t.s, at: t.at, via: t.via, n: 1 }, extra)); };
   function analyse(screen, rec, opts = {}) {
     stats.frames++; const VW = BK.view.VW, VH = BK.view.VH;
+    if (opts.fromPlate) { const k = rec.findIndex(r => r.kind === 'rect' && r.w >= VW - 2 && Math.abs(r.y0 - (VH / 2 - 22)) < 1 && r.h >= opts.fromPlate[0] && r.h <= opts.fromPlate[1]); if (k >= 0) rec = rec.slice(k); else issues.push({ type: 'ERROR', screen, s: 'the title card plate was not drawn', n: 1 }); }   /* (claude/storyremove: the level title card is a plate of its own over the world - what the world drew UNDER it, a talk prompt or a lamp's halo, is covered by it, not laid across it) */
     rec.forEach((r, i) => { r.i = i; });
     const texts = rec.filter(r => r.kind === 'text' && !r.world && r.s.trim() && r.alpha > 0.05 && (opts.band === undefined || r.y0 >= opts.band));   /* opts.band: only the words from that row down (the boss plate) */
     stats.texts += texts.length;
@@ -193,6 +194,8 @@ async function pageTextFit(input) {
   if (want('results')) { toPlay(0, 'knight'); frame('level complete', () => { BK.xpWin(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 230; i++) BK.step(1); window.__textRec = rec; }, { settle: 1 });   /* (a step(n) draws once: the card counts its own drawn frames, so it is stepped one at a time) */ BK.reset(); await yieldNow(); }
   /* THE LEVEL-UP CARD (LEVELING, 2026-10-03): the three stat cards with counts and the stats they give, a milestone's three perks, a full card's perk
      line (the longest), the respec prompt and message, and the co-op lock card. The save is put back after. */
+  /* THE LEVEL TITLE CARD (claude/storyremove): the name and its one-line rule that fade in as a wood starts - on every level, a second in, in full: it is the one text a level opens with, so it must fit and must not need a story line under it */
+  if (want('levelcard')) { for (const [l, i] of campaign) { if (l.shop) continue; frame('levelcard ' + l.id, () => { BK.setHero('knight'); BK.load(i); BK.god = true; BK.start(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 40; i++) BK.step(1); window.__textRec = rec; }, { settle: 1, fromPlate: [24, 60] }); } BK.reset(); await yieldNow(); }
   if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });
     const CARDS = [[4, { v: 1, e: 1, m: 1, ms: {} }], [25, { v: 9, e: 8, m: 7, ms: {} }], [45, { v: 25, e: 19, m: 0, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane' } }], [50, { v: 25, e: 15, m: 10, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane', 45: 'heart', 50: 'leech' } }]];
     for (const h of [...HEROES, 'geomancer', 'berserker', 'ranger']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }

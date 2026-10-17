@@ -5803,15 +5803,7 @@ function drawBestiary() {
     text(line, VW / 2, VH - 9, '#9aa39a', 'center', 6); }
 }
 
-// ---------- intro ----------
-const INTRO = [
-  'The forest of Bracken has gone quiet. No birds, no woodcutters. Only the hum of wasps.',
-  'Every knight the king sent came back with the same story. Most did not come back at all.',
-  'Beyond the old gate lies whatever silenced the wood. You are the last one he can spare.',
-];
-const intro = { card: 0, chars: 0, t: 0, kx: -20 };
-function startIntro() { state = 'intro'; intro.card = 0; intro.chars = 0; intro.t = 0; intro.kx = -20; introSeen = true; camX = 0; camY = LH * TS - VH; music.play(L.music || 'theme'); }
-function introNext() { const line = INTRO[intro.card]; if (intro.chars < line.length) { intro.chars = line.length; return; } intro.card++; intro.chars = 0; if (intro.card >= INTRO.length) startGame(); }
+// (claude/storyremove) the first-wood story (INTRO: three cards of Bracken lore, the knight walking in) is removed: a level starts into play under its title card
 
 // ---------- menu ----------
 // Two menus: a short PAUSE menu in a level (the things you reach for), and the full SETTINGS list (from the title, or via Settings in the pause menu).
@@ -6156,7 +6148,7 @@ function drawCoopPick() {
 function selectStart() {
   const lv = LEVELS[selI];
   if (levelLocked(lv)) { SFX.buzz(); return; }
-  const go = () => { SFX.uiSel(); if (lv.hidden || introSeen || q.get('tx') || PROG[lv.id]) startGame(); else startIntro(); };
+  const go = () => { SFX.uiSel(); startGame(); };   /* (claude/storyremove) the three-card Bracken story that played on the first wood is gone: every level starts straight into play under its title card */
   if (levelIndex !== selI || !L) loadThen(selI, go); else go();
 }
 
@@ -28731,15 +28723,6 @@ function update(dt) {
     if (pausePress) { if (menuKind === 'settings' && menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.menuClose(); } else { state = menuFrom; SFX.menuClose(); } }
     return;
   }
-  if (state === 'intro') {
-    intro.t += dt; const line = INTRO[intro.card];
-    if (intro.chars < line.length) { const n = intro.chars; intro.chars = Math.min(line.length, intro.chars + dt * (SET.textFast ? 70 : 28)); if (Math.floor(intro.chars) > Math.floor(n) && line[Math.floor(n)] !== ' ') SFX.text(); }
-    intro.kx = Math.min(56, intro.kx + 14 * dt);
-    if (confirmPress || atkPress) introNext();
-    if (pausePress) startGame();
-    updateParticles(dt);
-    return;
-  }
   if (state === 'win') { for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
@@ -32629,16 +32612,7 @@ function render() {
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
   const cx = Math.round(Math.max(0, Math.min(LW * TS - VW, camX)) + kick + (sh ? (Math.random() - 0.5) * sh * 2 : 0)), cy = Math.round(Math.max(0, Math.min(LH * TS - VH, camY)) + (sh ? (Math.random() - 0.5) * sh * 2 : 0)); /* never past the level's edge, whatever moved the camera */
-  if (state === 'intro') {
-    drawWorld(cx, cy, false);
-    drawSet(K, 'run', Math.floor(intro.t * 8) % 4, intro.kx - cx, checkpoint.y - cy, 1, false);
-    const bx = 16, by = VH - 52, bw = VW - 32, bh = 40;
-    g.fillStyle = 'rgba(14,10,22,0.88)'; g.fillRect(bx, by, bw, bh); g.strokeStyle = '#ffd36b'; g.strokeRect(bx + 0.5, by + 0.5, bw - 1, bh - 1);
-    const line = INTRO[intro.card].slice(0, Math.floor(intro.chars)); const lines = wrap(line, bw - 16);
-    lines.forEach((l, i) => text(l, bx + 8, by + 7 + i * 11, '#fff6e0'));
-    if (intro.chars >= INTRO[intro.card].length && Math.floor(time * 3) % 2 === 0) text('Z', bx + bw - 12, by + bh - 11, '#8fd160', 'right');
-    text('ESC skip', VW - 6, 4, '#9aa39a', 'right');
-  } else if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH);
+  if (state === 'opening') OP.drawPanel(g, opening.i, opening.t, VW, VH);
   else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
@@ -32884,8 +32858,8 @@ function render() {
       g.fillStyle = 'rgba(12,10,20,0.85)'; g.fillRect(VW / 2 - w2 / 2, 14, w2, 11);
       g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, 14.5, w2 - 1, 10);
       text(rushMsg, VW / 2, 17, '#ffd36b', 'center', 6); }
-    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? 20 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 40 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 17 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); text(LEVELS[levelIndex].sub, VW / 2, VH / 2 + 4, '#c9d1dc', 'center');
-      { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 2).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 20 + i * 9, '#ffd36b', 'center', 6)); }
+    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
+      { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
       g.globalAlpha = 1; }
     }
     if (state === 'menu' || state === 'win' || state === 'gameover') { /* the plates own the screen: the boss bar waits */ }
@@ -33158,7 +33132,7 @@ window.BK = { dk2: () => ({ DK2, bodies, corpses, enemies, box: () => attackBox(
      the old fight's last tell, and every windup in reach was stretched 0.35 s. The elite lab calls this after its reset (the other labs: see
      the elitemoves lane report, a question for Daniel). */
   clearTellClock() { lastTellT = -9; },
-  get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, intro() { startIntro(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
+  get state() { return state; }, set state(v) { state = v; }, start() { introSeen = true; startGame(); }, load: loadLevel, loadG: loadLevelG, loadThen,   /* the loading screen, for tools/loading-screen.mjs */
   /* THE SOUND TEST, for tools/soundtest.mjs: a harness can put the cursor straight on a category and a row without
      hunting for the up/down flags press() does not carry. */
   get wnScroll() { return wnScroll; }, set wnScroll(v) { wnScroll = v; }, WN,
