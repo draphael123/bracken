@@ -5422,7 +5422,7 @@ const BEASTS = [
   { t: 'watch', name: 'THE DROWNED WATCH', sub: "a constable on his beat", desc: 'Still walking a beat in a city that drowned a hundred years ago. He guards with the haft of the halberd, so a light blow turns on it and only a HEAVY one gets through. He cannot see you under a burning lamp, and out of the light he hears you from twice as far and comes faster. His thrust has the longest reach of any foot soldier: step in or step out, never back. Crowd him and he takes your feet with the butt of the spear.' },
   { t: 'lampreeve', name: 'THE LAMPREEVE', sub: 'he goes the other way now', desc: 'He lit this street for forty years and has been putting it out ever since. He walks to the nearest burning lamp and hoods it. STRIKE THE LAMP UNDER HIS HOOD: it flares in his face and he is blind, and open; otherwise his wet coat takes most of a blow. Jump the low sweep; the black water blinds you; a line beats the hook. Out of the light he lunges, red. At half health he takes YOUR light: relight it at a lamp.' },
   { t: 'tollmaster', name: 'THE TOLLMASTER', sub: 'the magistrate of a drowned city', desc: 'He never stopped collecting. He is carried on a bier, which keeps him out of an easy reach, and the room is his weapon: he puts out a ring of lamps at a time, so the light you breathe and the light you see his tells by are the same light. PARRY the chained ledger and it staggers him outright. The coin weight cannot be blocked, only dodged. Jump the rod. Half down he sets the bier on the stones and the four bearers come off it, and that is the only time he is slow. Last of all he fills the square, and then the last lamp is the only air in the room.' },
-  { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'Four things, and he tells you every one: two cuts of the sabre up close, a brace of pistols levelled across her deck, a grapnel that hauls you in unless you have a hand on a line, and a lit keg kicked down her planking. He can call the sea himself and ride it: the wave guards his front, so cut him from behind it or from above, and when it leaves him beached cut him whole.' },
+  { t: 'captain', name: 'THE CAPTAIN', sub: 'he has not left her', desc: 'He tells you every one: two cuts of the sabre, a brace of pistols, a grapnel that hauls you in unless you hold a line, a lit keg down her planking - and he calls the sea. His front is a wall: go round or over. When the sea comes he makes for a line: take it from him and the wave knocks him flat. In his fight the sky marks the deck between you: let him walk into it.' },
   /* THE HEXED FIELDS */
   { t: 'scarecrow', name: 'SCARECROW', sub: 'the hexed fields', desc: 'It only moves while your back is to it: a twitch, then a lurch nearer. Face it and it stands like straw. Close in, it swings its sickle on a yellow mark.' },
   { t: 'rook', name: 'FIELD ROOK', sub: 'the hexed fields', desc: 'Perched on the fences until you come near. It circles, marks a spot on the ground under you, and dives at it. One blow brings it down, and it makes a fine step.' },
@@ -7828,7 +7828,8 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (UNBF.UNB_FOES.has(e.t)) { const ud = unbHurt(e, dmg, fromX, tag); if (ud === false) return; dmg = ud; }   /* THE UNBURIED FIELD: the fallen only fall under a banner; the Death Knight and the Barrow Rider open */   /* ON HIS KNEES IN THE GRAVE: double */
   if (e.t === 'pyromancer') { if (e.ward > 0) { BR.turned(e, fromX, 'WARDED'); return; }   /* (claude/burnvillage2) HIS STEAM WARD (B3): told, short, and it says so (B10) */
     if (pyroReads(e, blow, plunge, tag)) return; dmg = Math.round(dmg * VWA.pyroMul(e)); e.heat = Math.min(100, (e.heat || 0) + 3); e.calmT = 0; }   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; STUNNED by water x2, overheated x1.5 (src/village-water.js) - and outside them a hero's blow lands WHOLE (FULL_DAMAGE: never invulnerable, B11/B13) */   /* STRUCK, HE STOKES: every blow heats him and keeps him from venting; overheated he takes half as much again */
-  if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // beached on his own planking
+  if (e.t === 'captain' && e.mode === 'beach') dmg = Math.round(dmg * 2); // KNOCKED FLAT on his own planking (claude/hurricane2: the wave, baited)
+  if (e.t === 'captain' && e.ward > 0 && blow && !capOpenNow(e) && BR.beats(e, fromX, pl || (!P.ground && P.y < e.y - e.h * 0.5), false)) { dmg = Math.max(1, Math.round(dmg * 0.4)); BR.turned(e, fromX, 'WARDED', { stop: false }); }   /* (claude/hurricane2) HIS WARD after an opening: round him or over him it is 0.4 too (B3; B15 floor - his front wall already takes a blow into it to 0.4) */
   if (e.t === 'captain' && e.mode === 'reel') dmg = Math.round(dmg * 1.5);
   /* THE CLOSED HELM (claude/keyscore, B13): his ward was a NO - nothing reached him until his own sword was met on the beat. It FACES you now (the duelist's
      wall, THE DUELIST'S WALL below): round him or over him it lands, and his sword met on the beat still breaks it (open, x2) */
@@ -9781,13 +9782,14 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // jump lets go with a hop, a step sideways lets go, and at the top you step off onto the last rung.
   { const netAt = (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.NET;
     const here = netAt(P.x, P.y - 8) || netAt(P.x, P.y - 2), below = P.ground && netAt(P.x, P.y + 2);
-    if (GS > 0 && !P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && !(P.carry && P.carry.noClimb) && !P.ptC /* (claude/partnerthrow: a partner overhead needs both hands) */ /* (claude/underwell2: a torch needs a hand - throw it or set it down to climb) */ && ((keys.up && here) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; SFX.pStep(); }
+    if (GS > 0 && !P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && !(P.carry && P.carry.noClimb) && !P.ptC /* (claude/partnerthrow: a partner overhead needs both hands) */ /* (claude/underwell2: a torch needs a hand - throw it or set it down to climb) */ && ((keys.up && here) || (L.autoGrab && here && !P.ground && P.vy > -30 && !keys.down && (!move || P.washV) && !(P.grabCD > 0)) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { if (!keys.up && L.autoGrab) number(P.x, P.y - 30, 'CAUGHT', '#8fd160'); P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; P.washV = 0; SFX.pStep(); }   /* (claude/hurricane2) L.autoGrab: THE RIGGING CATCHES YOU - falling into a line with no sideways key held (or shoved by the sea) takes hold of it */
+    P.grabCD = Math.max(0, (P.grabCD || 0) - dt);
     if (P.climb) {
       const lx = Math.floor(P.x / TS) * TS + 8; P.x += (lx - P.x) * Math.min(1, dt * 14); P.vx = 0; P.abuf = 0;
-      const cy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = cy * 74 * (perk('climber') ? 1.25 : 1); P.climbA = (P.climbA || 0) + Math.abs(P.vy) * dt;
+      const cy = (keys.down ? 1 : 0) - (keys.up ? 1 : 0); P.vy = cy * 74 * (perk('climber') ? 1.25 : 1) * (L.autoGrab ? 1.35 : 1);   /* (claude/hurricane2) her ratlines climb without stopping */ P.climbA = (P.climbA || 0) + Math.abs(P.vy) * dt;
       if (cy && Math.floor(P.climbA / 7) !== Math.floor((P.climbA - Math.abs(P.vy) * dt) / 7)) SFX.pStep();
-      if (P.jbuf > 0) { P.jbuf = 0; P.climb = false; P.vy = JUMPV * 0.72; P.vx = move * 110; P.canCut = true; SFX.pJump(); }
-      else if (move && !keys.up && !keys.down) { P.climb = false; P.drop = 0.12; }
+      if (P.jbuf > 0) { P.jbuf = 0; P.climb = false; P.vy = JUMPV * 0.72; P.vx = move * 110; P.canCut = true; P.grabCD = 0.45; SFX.pJump(); }
+      else if (move && !keys.up && !keys.down) { P.climb = false; P.drop = 0.12; P.grabCD = 0.45; }
       else if (stunned || P.hurt > 0 || !(here || netAt(P.x, P.y + 2))) P.climb = false;
       else if (cy < 0 && !netAt(P.x, P.y - 1) && netAt(P.x, P.y + 1)) { P.climb = false; P.y = Math.floor((P.y + 1) / TS) * TS; P.vy = 0; P.ground = true; } // over the top: stand on the last rung
     } }
@@ -10802,7 +10804,11 @@ function drawBalls(cx, cy) {
 // then it goes down the whole deck. Hold a line (any rigging: net or climbing tile), get up into the yards above
 // it, or get below, and it only soaks you. Stand on the open deck and it takes you with it.
 let wash = null;
-function washReset() { wash = null; }
+function washReset() { wash = null; if (P) P.washV = 0; }
+/* (claude/hurricane2) THE SEA'S DRAIN: a wave that knocks you flat costs health the way the sun does - no flinch, no stun, no i-frames (A13) */
+function seaDrain(n) { if (P.dead || !(n > 0) || SET.invincible || (window.BK && window.BK.god)) return; P.hp = Math.max(0, P.hp - n); number(P.x, P.y - 20, '-' + n, '#7cc8c8'); flash = Math.max(flash, 0.08); if (P.hp <= 0) die({ name: 'THE SEA', red: false, rule: '' }); }
+/* the Captain's phases bring the sea quicker (was a write to L.wash.every that outlived a death) */
+const capSeaK = () => bossActive && boss && boss.alive && boss.t === 'captain' ? (boss.phase >= 3 ? 0.6 : boss.phase >= 2 ? 0.78 : 1) : 1;
 /* THE DECK A SEA BREAKS ON. L.wash.y0-y1 is the waist of the ship, but the Captain's quarterdeck is a row higher than it,
    and a wave at the waist's height passed under every hero standing in his arena. Inside his room the band is his deck. */
 const washBand = x => { const W = L.wash, A = L.arena; return A && A.boss === 'captain' && x > A.x0 && x < A.x1 ? [A.floor - (W.y1 - W.y0), A.floor] : [W.y0, W.y1]; };
@@ -10821,7 +10827,15 @@ function updateWash(dt) {
     wash.x += wash.dir * W.speed * stormK('speed') * dt;
     { const [by0, by1] = washBand(wash.x); for (let i = 0; i < 3; i++) parts.push({ x: wash.x + (Math.random() - 0.5) * 30, y: by1 - Math.random() * (by1 - by0), vx: wash.dir * 120, vy: -40 - Math.random() * 60, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#dff0f5' : '#a8cfc6', size: 2, grav: 300 }); }
     const [py0, py1] = washBand(P.x), hit = Math.abs(P.x - wash.x) < 26 && P.y > py0 && P.y < py1 + 12;
-    if (hit && !P.dead && !P.washed) { // holding a line, or up in the yards, or below: the deck is the only bad place
+    if (hit && !P.dead && !P.washed && W.push) { // (claude/hurricane2) THE WAVE KNOCKS YOU FLAT: it shoves you down her deck - a line in your hand, a roll under the crest, or the hold keep you
+      const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS)), held = t === T.NET || t === T.CLIMB || P.onRope || P.climb;
+      P.washed = 0.8;
+      if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash(); shakeCam(4); }
+      else if (P.dodge > 0) { number(P.x, P.y - 30, 'UNDER IT', '#8fd160'); SFX.splash(); shakeCam(3); P.washV = wash.dir * 90; }
+      else { seaDrain(Math.round(W.dmg * stormK('dmg'))); P.washV = wash.dir * 330; P.vy = Math.min(P.vy, -170); P.ground = false; P.heelV = 0;
+        number(P.x, P.y - 30, 'KNOCKED FLAT: GRAB A LINE', '#ff6b6b'); SFX.splash(); shakeCam(8); rumble(240, 0.6); }
+    }
+    else if (hit && !P.dead && !P.washed) { // holding a line, or up in the yards, or below: the deck is the only bad place
       const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS));
       const held = t === T.NET || t === T.CLIMB || P.onRope;
       P.washed = 0.8;
@@ -10835,18 +10849,20 @@ function updateWash(dt) {
         P.vx = wash.dir * Math.max(120, Math.min(420, room * 2.2)); P.vy = -180; P.ground = false;
         number(P.x, P.y - 30, 'SHE SHIPS ONE', '#ff6b6b'); SFX.splash(); shakeCam(8); hitstop(0.06); }
     }
-    for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - wash.x) < 26 && e.y > washBand(e.x)[0] && e.y < washBand(e.x)[1] + 12) { e.vx = wash.dir * 260; e.vy = -120; e.stagger = Math.max(e.stagger, 0.5); }
-    if ((wash.dir > 0 ? wash.x > wash.end : wash.x < wash.end) || wash.x < W.x0 - 100 || wash.x > W.x1 + 100) { wash.state = 'wait'; wash.t = W.every * stormK('wash'); }
+    for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - wash.x) < 26 && e.y > washBand(e.x)[0] && e.y < washBand(e.x)[1] + 12) { e.vx = wash.dir * 260; e.vy = -120; e.stagger = Math.max(e.stagger, 0.5); if (W.push) e.heeled = 2.5; }   /* (claude/hurricane2) knocked into the sea, they drown (seaFoe) */
+    if ((wash.dir > 0 ? wash.x > wash.end : wash.x < wash.end) || wash.x < W.x0 - 100 || wash.x > W.x1 + 100) { wash.state = 'wait'; wash.t = W.every * stormK('wash') * capSeaK(); }
   }
   P.washed = Math.max(0, (P.washed || 0) - dt);
+  if (P.washV) { if (P.dead || P.climb || P.swim || P.onMover) P.washV = 0; else { const into = (keys.left ? -1 : keys.right ? 1 : 0) === -Math.sign(P.washV);
+      const r = moveBody(P, P.washV * (into ? 0.55 : 1) * dt, 0, false); if (r.hitX) P.washV = 0; P.washV *= Math.pow(P.ground ? 0.04 : 0.25, dt); if (Math.abs(P.washV) < 8) P.washV = 0; } }
 }
 // HER MASTS COME DOWN ONE AT A TIME. Lightning finds the fore first, then the main. Each one that goes is a
 // bridge across the waist you did not have, a hole into her hold you did not have, and a way up you no longer
 // have: the level is never the same shape twice.
-let stormLit = 0, strike = null, surge = [];
-function strikeReset() { strike = null; surge = []; stormLit = 0; }
+let stormLit = 0, strike = null, surge = [], skyGlow = 0;
+function strikeReset() { strike = null; surge = []; stormLit = 0; skyGlow = 0; }
 function updateStrikes(dt) {
-  stormLit = Math.max(0, stormLit - dt);
+  stormLit = Math.max(0, stormLit - dt); skyGlow = Math.max(0, skyGlow - dt);
   for (const q of surge) q.t -= dt; surge = surge.filter(q => q.t > 0);
   const S = L.storm2; if (!S) return;
   if (!strike) strike = { t: S.every * 0.6, state: 'wait', x: 0, y: 0 };
@@ -10856,6 +10872,7 @@ function updateStrikes(dt) {
     const z = (S.zones || []).find(zz => P.x >= zz[0] - 60 && P.x <= zz[1] + 60) || (S.zones || [])[0];
     if (!z) { strike.t = S.every; return; }
     strike.x = Math.max(z[0], Math.min(z[1], P.x + (Math.random() - 0.5) * 150));
+    { const cb = bossActive && boss && boss.alive && boss.t === 'captain' && !(boss.ward > 0) ? boss : null; if (cb && Math.abs(cb.x - P.x) > 56) strike.x = P.x + (cb.x - P.x) * (0.45 + Math.random() * 0.25); }   /* (claude/hurricane2) IN HIS FIGHT THE SKY MARKS THE DECK BETWEEN YOU: let him walk into it */
     { const bt = P.onMover && P.onMover.kind === 'lifeboat' && P.onMover.state === 'ride' ? P.onMover : null; if (bt) strike.x = Math.max(z[0], Math.min(z[1], bt.x + bt.w / 2 + bt.speed * (S.tell || 1.1) + (Math.random() < 0.5 ? -12 : 12))); }   /* A BOAT ON THE OIL IS THE TALLEST THING THERE: the sky marks where she is going */
     const p = (L.pools || []).find(q => q.swim && strike.x > q.x0 && strike.x < q.x1);
     strike.y = p ? p.y : (S.y !== undefined ? S.y : P.y);
@@ -10864,12 +10881,13 @@ function updateStrikes(dt) {
   if (strike.state === 'tell') {
     if (Math.random() < dt * 30) parts.push({ x: strike.x + (Math.random() - 0.5) * 16, y: strike.y - Math.random() * 30, vx: 0, vy: -60, life: 0.3, max: 0.3, col: '#dfe8ff', size: 1, grav: -40 });
     if (strike.t <= 0) { // and then it hits
-      strike.state = 'wait'; strike.t = (S.every || 8) * stormK('storm') * (0.8 + Math.random() * 0.4);
+      strike.state = 'wait'; strike.t = (bossActive && S.bossEvery ? S.bossEvery : (S.every || 8)) * stormK('storm') * (0.8 + Math.random() * 0.4); skyGlow = 1.3;
       bolts.push({ x: strike.x, y: strike.y, life: 0.3, storm: true });
       SFX.thunder(); flash = Math.max(flash, 0.55); stormLit = 0.25; shakeCam(7); rumble(260, 0.8);
       burst(strike.x, strike.y, 16, ['#dfe8ff', '#9ab8ff', '#ffffff'], 120, 0.6);
       if (!P.dead && Math.abs(P.x - strike.x) < 22 && Math.abs(P.y - strike.y) < 60) { damagePlayer(strike.x, DMG.skybolt, { up: true, unblockable: true }); number(P.x, P.y - 34, 'STRUCK', '#dfe8ff'); }
       for (const e of enemies) if (e.alive && !e.maxHp && Math.abs(e.x - strike.x) < 22) hurtEnemy(e, 30, strike.x, false);
+      if (bossActive && boss && boss.alive && boss.t === 'captain' && Math.abs(boss.x - strike.x) < 24) capStruck(boss);
       if (strike.onWater) { surge.push({ x: strike.x, y: strike.y, t: 0.9, r: 86 }); SFX.zap ? SFX.zap() : SFX.crack(); } // IT RUNS ALONG THE WATER
     }
   }
@@ -10968,6 +10986,8 @@ function drawWash(cx, cy) {
 //             stack only the gun goes through), 'davit' (the winch that lowers her 'lifeboat' mover to the oil).
 Object.assign(DMG, { heelGun: 22, cargo: 10, callerBolt: 18, boatBeam: 14, mastFall: 20 });
 let roll = null, seaMsg = null, eyeWas = 0, gullLast = -9;
+/* (claude/hurricane2) L.felled may be ONE mast or a LIST of them (the Hurricane 2's foremast across the breach); every reader goes through this */
+const felledAll = () => !L || !L.felled ? [] : Array.isArray(L.felled) ? L.felled : [L.felled];
 /* WHAT THE SEA DOES NOT DROWN: anything that already lives in it, or is already dead in it */
 const HEEL_SWIMS = new Set(['sailor', 'netter', 'eel', 'angler', 'siren', 'urchin', 'turtle', 'crab', 'petrel', 'gull', 'heronfoe', 'scout', 'tideguard']);
 function seaCue(txt, col, t) { seaMsg = { txt, col, t: t || 2, max: t || 2 }; }
@@ -10998,12 +11018,14 @@ function stormRails() { if (L._rails) return L._rails; const out = [];
   return (L._rails = out); }
 function seaSunk(b) { return (L.pools || []).some(p => p.swim && !p.dry && b.x > p.x0 && b.x < p.x1 && b.y > p.y + 6 && (p.bottom === undefined || b.y < p.bottom + 24)); }
 function seaReset() {
-  roll = null; seaMsg = null; eyeWas = seaCalm();
-  const F = L.felled; if (!F) return;
+  roll = null; seaMsg = null; eyeWas = seaCalm(); skyGlow = 0;
+  for (const z of (L.deckBreaks || [])) if (z.reset) { z.down = false; z.t = -1; }   /* (claude/hurricane2) her topmast is whole again: the grid has been put back */
+  for (const F of felledAll()) {
   F.decoHidden = false;
   /* THE MAST ON A RESPAWN. The grid has just been put back (spawnEntitiesTail), so she is standing again. She stays
      standing if you woke before her trigger, and is laid down again, quietly, if you woke past it. */
   if (F.state === 'down' && checkpoint.x > F.zone[1] * TS) felledLay(F, false); else F.state = 'up';
+  }
 }
 function updateSea(dt, hb) {
   if (!L.roll && !L.felled && !L.eye) return;
@@ -11074,8 +11096,9 @@ function heelStart() {
 function rampY(F, px) { const x0 = F.foot[0] * TS, x1 = (F.head[0] + 1) * TS, k = Math.max(0, Math.min(1, (px - x0) / (x1 - x0))); return F.foot[1] * TS + (F.head[1] - F.foot[1]) * TS * k; }
 function felledCells(F) { const out = [];
   for (let y = 4; y <= 19; y++) for (const x of [F.x, F.x + 1]) { const i = y * LW + x; if (L.grid[i] === T.NET) out.push([i, T.AIR]); }
-  const [wx0, wx1, wy0, wy1] = F.wall;
-  for (let y = wy0; y <= wy1; y++) for (let x = wx0; x <= wx1; x++) { const i = y * LW + x; if (L.grid[i] !== T.SOLID) out.push([i, T.SOLID]); }
+  if (F.wall) { const [wx0, wx1, wy0, wy1] = F.wall;
+  for (let y = wy0; y <= wy1; y++) for (let x = wx0; x <= wx1; x++) { const i = y * LW + x; if (L.grid[i] !== T.SOLID) out.push([i, T.SOLID]); } }
+  for (const [cx0, cx1, cy0, cy1] of (F.clear || [])) for (let y = cy0; y <= cy1; y++) for (let x = cx0; x <= cx1; x++) { const i = y * LW + x; if (L.grid[i] !== T.AIR) out.push([i, T.AIR]); }   /* (claude/hurricane2) her yard goes down with her */
   for (let x = F.foot[0]; x <= F.head[0]; x++) { const i = Math.round(rampY(F, x * TS + 8) / TS) * LW + x; if (L.grid[i] === T.AIR) out.push([i, T.ONEWAY]); }
   return out; }
 function hideMastDeco(F) { F.decoHidden = true;
@@ -11086,11 +11109,11 @@ function felledLay(F) {
   /* and the swing she carried on her main yard goes with her: it swept through her ramp and carried you off it */
   movers = movers.filter(q => !(q.kind === 'swing' && q.px >= F.band[0] * TS && q.px <= (F.band[1] + 1) * TS)); if (P.onMover && !movers.includes(P.onMover)) P.onMover = null;
 }
-function updateFelled(dt) {
-  const F = L.felled; if (!F) return;
+function updateFelled(dt) { for (const F of felledAll()) felledStep(F, dt); }
+function felledStep(F, dt) {
   if (!F.state) F.state = 'up';
   if (F.state === 'up') { const tx = P.x / TS;
-    if (!P.dead && !bossActive && tx >= F.zone[0] && tx <= F.zone[1] && P.y <= 20 * TS + 4) { F.state = 'tell'; F.t = F.tell; SFX.strikeTell(); SFX.rumble(); shakeCam(2); seaCue('LIGHTNING ON HER MAIN: STAND CLEAR OF IT', '#ff6b6b', F.tell + 0.4); } }
+    if (!P.dead && !bossActive && tx >= F.zone[0] && tx <= F.zone[1] && P.y <= 20 * TS + 4) { F.state = 'tell'; F.t = F.tell; SFX.strikeTell(); SFX.rumble(); shakeCam(2); seaCue(F.say || 'LIGHTNING ON HER MAIN: STAND CLEAR OF IT', '#ff6b6b', F.tell + 0.4); } }
   else if (F.state === 'tell') { F.t -= dt;
     if (Math.random() < dt * 24) parts.push({ x: (F.x + 1) * TS + (Math.random() - 0.5) * 10, y: 5 * TS + Math.random() * 60, vx: (Math.random() - 0.5) * 40, vy: 30, life: 0.8, max: 0.8, col: Math.random() < 0.5 ? '#c9b27c' : '#dfe8ff', size: 1, grav: 200 });
     if (F.t <= 0) felledCrash(F); }
@@ -11106,15 +11129,15 @@ function felledCrash(F) {
   for (const e of enemies) if (e.alive && !e.maxHp && e.x > bx0 && e.x < bx1 && e.y > 3 * TS && e.y <= 20 * TS + 2) hurtEnemy(e, Math.max(1, e.hp) + 999, mx, false);
   if (!P.dead && P.x > bx0 && P.x < bx1 && P.y > 3 * TS && P.y <= 20 * TS + 2) { damagePlayer(mx, DMG.mastFall, { unblockable: true, up: true }); P.vx = -200; P.vy = -160; P.ground = false; }
   /* and nobody is left standing inside the pile */
-  const [wx0, wx1, wy0, wy1] = F.wall;
-  if (P.x > wx0 * TS - 6 && P.x < (wx1 + 1) * TS + 6 && P.y > wy0 * TS && P.y <= (wy1 + 1) * TS + 2) P.x = P.x < (wx0 + wx1 + 1) / 2 * TS ? wx0 * TS - 7 : (wx1 + 1) * TS + 7;
-  seaCue('THE MAIN IS DOWN. HER MAST IS YOUR ROAD UP', '#ffd36b', 2.6);
+  if (F.wall) { const [wx0, wx1, wy0, wy1] = F.wall;
+  if (P.x > wx0 * TS - 6 && P.x < (wx1 + 1) * TS + 6 && P.y > wy0 * TS && P.y <= (wy1 + 1) * TS + 2) P.x = P.x < (wx0 + wx1 + 1) / 2 * TS ? wx0 * TS - 7 : (wx1 + 1) * TS + 7; }
+  seaCue(F.down || 'THE MAIN IS DOWN. HER MAST IS YOUR ROAD UP', '#ffd36b', 2.6);
 }
 /* WALKING HER MAST: a slope is not a tile, so the hero is put on the line of it (called from updatePlayer after the move) */
 function rampFoot(prevY) {
-  const F = L.felled; P.onRamp = false;
-  if (!F || F.state !== 'down' || P.vy < 0 || P.drop > 0 || P.climb || P.swim || P.dead) return;
-  if (P.x < F.foot[0] * TS || P.x > (F.head[0] + 1) * TS) return;
+  P.onRamp = false;
+  const F = felledAll().find(f => f.state === 'down' && P.x >= f.foot[0] * TS && P.x <= (f.head[0] + 1) * TS);
+  if (!F || P.vy < 0 || P.drop > 0 || P.climb || P.swim || P.dead) return;
   const yl = rampY(F, P.x);
   if (P.y < yl - 10 || P.y > yl + 10 || prevY > yl + 4) return;
   P.y = yl; P.vy = 0; P.ground = true; P.groundTile = T.ONEWAY; P.coyote = 0.1; P.onRamp = true;
@@ -11284,21 +11307,22 @@ function drawSea(cx, cy) {
   drawDeckBreaks(g,L,cx,cy,time);
   drawGasVents(g,L,cx,cy,time); drawDrownedHands(g,L,cx,cy,time); drawCrumble(g,L,cx,cy,time);   /* THE ROTTEN BRIDGES: the rot on every board, and the crack in the one you stood on */
   drawKeepPassages(g,L,cx,cy,time,VW,VH); drawWhirlpools(g,L,cx,cy,time,VW,VH);
-  const R = L.roll, F = L.felled;
-  if (!R && !F) return;
+  const R = L.roll, FL = felledAll();
+  if (!R && !FL.length) return;
   if (R) {
     for (const [a, b] of (R.grip || [])) for (let tx = a; tx <= b; tx++) { const x = tx * TS - cx; if (x < -16 || x > VW) continue;   /* SAND strewn on her planking */
       for (let k = 0; k < 7; k++) { g.fillStyle = k % 3 ? '#c9b27c' : '#efe0b0'; g.fillRect(Math.round(x + ((tx * 7 + k * 5) % 15)), Math.round(R.y0 * TS - 1 - (k % 2) - cy), 1 + (k % 2), 1); } }
     for (const [bx, by] of (R.bitts || [])) { const x = bx * TS - cx, y = by * TS - cy; if (x < -20 || x > VW + 20) continue;   /* HER BITTS: iron you can put your back to */
       g.fillStyle = '#2a2630'; g.fillRect(x + 3, y + 3, 10, 13); g.fillStyle = '#4a4650'; g.fillRect(x + 4, y + 4, 3, 12); g.fillStyle = '#1b1626'; g.fillRect(x + 1, y, 14, 4); g.fillStyle = '#6a6670'; g.fillRect(x + 2, y, 11, 1); }
   }
-  if (F && F.state === 'tell') { const k = 1 - Math.max(0, F.t) / F.tell, x = Math.round((F.x + 1) * TS - cx), y1 = Math.round(4 * TS - cy);
+  for (const F of FL) {
+  if (F.state === 'tell') { const k = 1 - Math.max(0, F.t) / F.tell, x = Math.round((F.x + 1) * TS - cx), y1 = Math.round(4 * TS - cy);
     g.globalAlpha = 0.2 + 0.35 * k; g.fillStyle = '#9ab8ff'; g.fillRect(x - 2 - Math.round(k * 2), 0, 4 + Math.round(k * 4), Math.max(0, y1)); g.globalAlpha = 1;
     /* and the deck she will land on */
     const bx0 = F.band[0] * TS - cx, bx1 = (F.band[1] + 1) * TS - cx, by = Math.round(19 * TS - cy);
     g.globalAlpha = 0.25 + 0.3 * (Math.floor(time * 10) % 2); g.fillStyle = '#ff6b6b'; g.fillRect(Math.round(bx0), by - 2, Math.round(bx1 - bx0), 3); g.globalAlpha = 1;
     for (let xx = bx0 + 4; xx < bx1; xx += 18) text('!', Math.round(xx), by - 14 - Math.round(k * 3), '#ff6b6b', 'center', 6); }
-  if (F && F.state === 'down') {
+  if (F.state === 'down') {
     const xa = F.foot[0] * TS, ya = rampY(F, xa), xb = (F.head[0] + 1) * TS, yb = rampY(F, xb), ang = Math.atan2(yb - ya, xb - xa), len = Math.hypot(xb - xa, yb - ya) + 30;
     if (xb - cx > -60 && xa - cx < VW + 60) {
       g.save(); g.translate(Math.round(xa - cx), Math.round(ya - cy)); g.rotate(ang);
@@ -11306,13 +11330,14 @@ function drawSea(cx, cy) {
       g.fillStyle = '#2a2630'; for (let k = 14; k < len - 10; k += 34) g.fillRect(k, 0, 3, 8);   /* her iron hoops */
       g.fillStyle = '#efe6d2'; g.fillRect(len - 22, -10, 3, 18); g.fillRect(len - 36, 4, 22, 3);   /* a broken yard at the head of her */
       g.restore();
-      const [wx0, wx1, wy0, wy1] = F.wall, hx = wx0 * TS - cx, hy = wy0 * TS - cy, hw = (wx1 + 1 - wx0) * TS, hh = (wy1 + 1 - wy0) * TS;   /* her tops and canvas, in a heap across the waist */
+      if (F.wall) { const [wx0, wx1, wy0, wy1] = F.wall, hx = wx0 * TS - cx, hy = wy0 * TS - cy, hw = (wx1 + 1 - wx0) * TS, hh = (wy1 + 1 - wy0) * TS;   /* her tops and canvas, in a heap across the waist */
       g.fillStyle = '#b8ae98'; g.fillRect(hx - 4, hy + 6, hw + 8, hh - 6); g.fillStyle = '#efe6d2'; g.fillRect(hx - 2, hy + 2, hw + 2, 10); g.fillRect(hx + 6, hy + 16, hw - 6, 8);
       g.fillStyle = '#6a5a44'; g.fillRect(hx - 6, hy + 20, hw + 12, 4); g.fillRect(hx + hw - 10, hy - 4, 4, hh + 4);
-      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx - 4, hy + 4); g.lineTo(hx + hw + 6, hy + hh - 4); g.moveTo(hx + hw, hy); g.lineTo(hx, hy + hh); g.stroke();
+      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(hx - 4, hy + 4); g.lineTo(hx + hw + 6, hy + hh - 4); g.moveTo(hx + hw, hy); g.lineTo(hx, hy + hh); g.stroke(); }
       const sx = Math.round(F.x * TS - cx), sy = Math.round(19 * TS - cy);   /* the stump, split */
       g.fillStyle = '#4a3a2a'; g.fillRect(sx + 4, sy - 18, 24, 18); g.fillStyle = '#8a7658'; g.fillRect(sx + 4, sy - 20, 6, 4); g.fillRect(sx + 14, sy - 24, 5, 8); g.fillRect(sx + 22, sy - 19, 6, 3);
     }
+  }
   }
   for (const pr of props) {
     if (pr.x < cx - 60 || pr.x > cx + VW + 60) continue;
@@ -12577,41 +12602,74 @@ function updateWatch(e, dt) {
   if (e.stagger > 0) want = 0;
   e.vx += (want - e.vx) * Math.min(1, dt * 9);
 }
+/* THE CAPTAIN 2 (claude/hurricane2, brief item 6: HE IS TIED TO THE STORM). A duelist on his quarterdeck (B11: his front is a wall - round
+   him or over him lands whole, into it 0.4, GO ROUND), with FIVE told moves: two cuts of the sabre (!), a brace of pistols (!!), the
+   grapnel that hauls you in unless you have a hand on a line (!), a lit keg kicked down his deck (!!, from phase 2) and HE CALLS THE SEA.
+   HIS OPENINGS ARE THE LEVEL'S OWN TWO VERBS:
+     THE WAVE   when the sea comes he MAKES FOR A LINE (told: the word, and the line he wants marked). Hold that line yourself, or keep him
+                fighting out on the open deck, and the wave KNOCKS HIM FLAT: OPEN x2 (the gold ring and its clock, 'beach').
+     THE SKY    in his fight the lightning marks the deck BETWEEN you: let him walk into the mark and he is STRUCK: OPEN x1.5 ('reel').
+   After either opening, a TOLD WARD (CAP2.ward s, the pale shell, WARDED): every blow lands at 0.4 and neither verb takes him again (B3).
+   Never totally invulnerable (B15): 0.4 is the floor everywhere outside his openings. */
+const CAP2 = { lead: 1.35, leadP3: 1.15, brace: 118, flat: 2.6, flatP3: 2.1, struck: 1.7, ward: 3, lineGrab: 7, lineTaken: 18 };
+function capLines() { const A = L.arena; return (A && A.lines || []).map(x => (x + 1) * TS); }
+/* which line he makes for: the nearest one you are not holding */
+function capLineFor(e) { let best = null, bd = 1e9; for (const lx of capLines()) { if (Math.abs(P.x - lx) < CAP2.lineTaken && !P.dead) continue; const d = Math.abs(lx - e.x); if (d < bd) { bd = d; best = lx; } } return best; }
+function capOpenNow(e) { return e.mode === 'beach' || e.mode === 'reel'; }
+function capFlat(e) {   /* the sea took his feet */
+  const p3 = e.phase >= 3; e.mode = 'beach'; e.modeT = p3 ? CAP2.flatP3 : CAP2.flat; e.openFor = e.modeT; e.vx = wash ? wash.dir * 120 : 0; e.stagger = e.modeT; e.line = null;
+  SFX.waveCrash ? SFX.waveCrash() : SFX.splash(); SFX.thud(); shakeCam(6); number(e.x, e.y - 48, 'KNOCKED FLAT: CUT HIM', '#ffd36b'); burst(e.x, e.y - 8, 16, ['#dff0f5', '#a8cfc6', '#ffd36b'], 90, 0.6);
+}
+function capStruck(e) {   /* the sky found him: called from updateStrikes */
+  if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'dead' || e.ward > 0 || capOpenNow(e)) return;
+  e.mode = 'reel'; e.modeT = CAP2.struck; e.openFor = e.modeT; e.struck = true; e.stagger = e.modeT; e.vx = 0;
+  SFX.stormZap ? SFX.stormZap() : SFX.crack(); shakeCam(5); number(e.x, e.y - 48, 'STRUCK: CUT HIM', '#ffd36b'); burst(e.x, e.y - 20, 18, ['#dfe8ff', '#9ab8ff', '#ffd36b'], 110, 0.6);
+}
 function updateCaptain(e, dt) {
-  const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt;
+  const A = L.arena, floor = A.floor; e.modeT -= dt; e.anim += dt; e.ward = Math.max(0, (e.ward || 0) - dt);
   const d = P.x - e.x, ad = Math.abs(d), level = Math.abs(P.y - floor) < 34;
   if (e.mode === 'sleep') { e.y = floor; return; }
-  if (e.phase === 1 && e.hp < e.maxHp * 0.62) { e.phase = 2; e.mode = 'call'; e.modeT = 1.2; SFX.whistleCall(); number(e.x, e.y - 48, 'ALL HANDS AND A KEG', '#ffd36b'); if (L.wash) L.wash.every = 7; }
-  if (e.phase === 2 && e.hp < e.maxHp * 0.32) { e.phase = 3; e.mode = 'call'; e.modeT = 1.2; SFX.whistleCall(); number(e.x, e.y - 48, 'HE WILL GO DOWN WITH HER', '#ff6b6b'); if (L.wash) { L.wash.every = 5.4; L.wash.dmg = Math.round(L.wash.dmg * 1.15); } }
+  if (e.phase === 1 && e.hp < e.maxHp * 0.62) { e.phase = 2; e.mode = 'call'; e.modeT = 1.2; e.line = null; SFX.whistleCall(); number(e.x, e.y - 48, 'ALL HANDS AND A KEG', '#ffd36b'); }
+  if (e.phase === 2 && e.hp < e.maxHp * 0.32) { e.phase = 3; e.mode = 'call'; e.modeT = 1.2; e.line = null; SFX.whistleCall(); number(e.x, e.y - 48, 'HE WILL GO DOWN WITH HER', '#ff6b6b'); }
   const p2 = e.phase >= 2, p3 = e.phase >= 3;
-  // HE RIDES THE ONE HE CALLED, and while he is on it he is nothing you can cut
-  if (wash && wash.state === 'run' && wash.called && e.mode !== 'ride' && e.mode !== 'dead') {
-    e.mode = 'ride'; e.ride = true; e.stagger = 0; SFX.waveBreak(); number(e.x, e.y - 48, 'HE RIDES IT IN', '#7cc8c8');
-  }
+  // THE SEA COMES: in the last beat of its tell he leaves what he is doing (never a blow already swinging) and makes for a line
+  const busy = ['sabre1', 'sabre2', 'shoot', 'hook', 'keg', 'beach', 'reel', 'call', 'dead'].includes(e.mode);
+  if (wash && wash.state === 'tell' && wash.t <= (p3 ? CAP2.leadP3 : CAP2.lead) && !busy && e.mode !== 'brace' && e.mode !== 'held') {
+    e.line = capLineFor(e); if (e.line !== null) { e.mode = 'brace'; e.modeT = 4; number(e.x, e.y - 42, 'HE MAKES FOR A LINE', '#a8cfc6'); } }
+  // and when it runs, it takes him off his feet unless he is holding one (a ward is his own feet under him too)
+  if (wash && wash.state === 'run' && Math.abs(wash.x - e.x) < 26 && !e.washedT && e.mode !== 'held' && !(e.ward > 0) && !capOpenNow(e) && e.mode !== 'dead') { e.washedT = 1.2; capFlat(e); }
+  e.washedT = Math.max(0, (e.washedT || 0) - dt); if (!e.washedT) e.washedT = 0;
   let want = 0;
   switch (e.mode) {
     case 'wake': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.6; } break;
     case 'call': { e.vx = 0;
       if (Math.random() < dt * 20) parts.push({ x: e.x + e.face * 10, y: e.y - 26, vx: e.face * 40, vy: -20, life: 0.4, max: 0.4, col: '#dff0f5', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5; e.callT = p3 ? 9 : 13;
-        if (wash && wash.state === 'wait') { wash.state = 'tell'; wash.called = true; wash.t = L.wash.tell; wash.dir = P.x > e.x ? -1 : 1; SFX.wave(); number(e.x, e.y - 40, 'HE CALLS IT UP', '#7cc8c8'); } } break; }
+        if (wash && wash.state === 'wait') { wash.state = 'tell'; wash.called = true; wash.t = L.wash.tell; wash.dir = P.x > e.x ? 1 : -1; SFX.wave(); number(e.x, e.y - 40, 'HE CALLS THE SEA', '#7cc8c8'); } } break; }   /* (it comes from behind him, at you: hold a line - or his) */
+    case 'brace': { const lx = e.line; if (lx === null || lx === undefined) { e.mode = 'stride'; break; }
+      if (Math.abs(P.x - lx) < CAP2.lineTaken && !P.dead) { e.line = capLineFor(e); if (e.line === null) { e.mode = 'stride'; break; } number(e.x, e.y - 42, 'YOU HAVE HIS LINE', '#8fd160'); }
+      e.face = Math.sign(e.line - e.x) || e.face; want = e.face * CAP2.brace * (p3 ? 1.15 : 1);
+      if (Math.abs(e.line - e.x) < CAP2.lineGrab) { e.x = e.line; e.mode = 'held'; e.modeT = 4; want = 0; SFX.ropeHaul(); }
+      if (e.modeT <= 0 || !wash || wash.state === 'wait') { e.mode = 'stride'; e.modeT = 0.3; } break; }
+    case 'held': { e.vx = 0; want = 0; e.face = Math.sign(d) || e.face;
+      if (Math.abs(P.x - e.x) < CAP2.lineTaken * 0.6 && !P.dead && P.climb) { e.mode = 'stride'; e.modeT = 0.3; }   /* you are on his line with him: he lets go to fight you */
+      if (!wash || wash.state === 'wait' || e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.35; } break; }
     case 'stride': { e.face = Math.sign(d) || e.face;
       e.sabreT -= dt; e.shotT -= dt; e.hookT -= dt; e.kegT -= dt; e.callT -= dt;
       want = level && ad > 40 ? e.face * (p3 ? 88 : 70) : level && ad < 28 ? -e.face * 40 : e.face * 40;
-      if (level && ad < 52 && e.sabreT <= 0) { e.mode = 'sabreTell'; e.modeT = p3 ? 0.4 : 0.5;   /* (claude/sweep2) was 0.32/0.42: under a reaction and a roll for a hero with no shield (the pyro 0/4) */ e.sabreT = p3 ? 1.7 : 2.5; number(e.x, e.y - 42, '!', '#ffd36b'); SFX.charge(); }
+      if (level && ad < 52 && e.sabreT <= 0) { e.mode = 'sabreTell'; e.modeT = p3 ? 0.4 : 0.5; e.sabreT = p3 ? 1.7 : 2.5; number(e.x, e.y - 42, '!', '#ffd36b'); SFX.charge(); }
       else if (e.hookT <= 0 && ad > 54 && ad < 230) { e.mode = 'hookTell'; number(e.x, e.y - e.h - 24, '!', '#ffd36b'); e.modeT = 0.55; e.hookT = p3 ? 4 : 5.5; number(e.x, e.y - 42, 'THE GRAPNEL', '#ff9a5c'); SFX.grapple(); }
-      else if (p2 && e.kegT <= 0 && ad > 56) { e.mode = 'kegTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.5; e.kegT = p3 ? 5 : 7.5; number(e.x, e.y - 42, 'A KEG', '#ff6b6b'); SFX.fuse(); } // (the keg is asked for FIRST of the ranged three, or the pistols would never leave it a turn)
+      else if (p2 && e.kegT <= 0 && ad > 56) { e.mode = 'kegTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = 0.5; e.kegT = p3 ? 5 : 7.5; number(e.x, e.y - 42, 'A KEG', '#ff6b6b'); SFX.fuse(); }
       else if (e.shotT <= 0 && ad > 40) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 24, '!!', '#ff6b6b'); e.modeT = p3 ? 0.4 : 0.55; e.shotT = p3 ? 2.4 : 3.4; e.shots = p2 ? 2 : 1; e.aimY = P.y - 9; number(e.x, e.y - 42, 'TAKING AIM', '#ff9a5c'); }
-      else if (e.callT <= 0) { e.mode = 'call'; e.modeT = 1.1; e.callT = p3 ? 9 : 13; SFX.whistleCall(); }
+      else if (e.callT <= 0 && (!wash || wash.state === 'wait')) { e.mode = 'call'; e.modeT = 1.1; e.callT = p3 ? 9 : 13; SFX.whistleCall(); number(e.x, e.y - e.h - 24, '!', '#7cc8c8'); }
       break; }
-    case 'sabreTell': if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.foeSlash(); e.vx = e.face * 150;
-      capCut(e, 56, DMG.capSabre); } break;
+    case 'sabreTell': if (e.modeT <= 0) { e.mode = 'sabre1'; e.modeT = 0.26; SFX.foeSlash(); e.vx = e.face * 150; capCut(e, 56, DMG.capSabre); } break;
     case 'sabre1': if (e.modeT <= 0) { e.mode = 'sabre2'; e.modeT = 0.3; SFX.foeSlash(); e.vx = e.face * 90; capCut(e, 50, Math.round(DMG.capSabre * 0.8)); } break;
     case 'sabre2': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.4; } break;
     case 'shootTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
       if (Math.random() < dt * 26) parts.push({ x: e.x + e.face * 14, y: e.y - 18, vx: 0, vy: -18, life: 0.3, max: 0.3, col: '#ffd36b', size: 1, grav: 0 });
       if (e.modeT <= 0) { e.mode = 'shoot'; e.modeT = 0.3; capShoot(e); } break; }
-    case 'shoot': if (e.modeT <= 0) { if (e.shots > 0) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; }   /* the second pistol: 0.26 s was under any readable tell */ else { e.mode = 'stride'; e.modeT = 0.45; } } break;
+    case 'shoot': if (e.modeT <= 0) { if (e.shots > 0) { e.mode = 'shootTell'; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); e.modeT = 0.45; } else { e.mode = 'stride'; e.modeT = 0.45; } } break;
     case 'hookTell': { e.face = Math.sign(d) || e.face; e.vx = 0;
       if (e.modeT <= 0) { e.mode = 'hook'; e.modeT = 0.5; SFX.ropeHaul();
         const sx = e.x + e.face * 14, sy = e.y - 20, dd = Math.hypot(P.x - sx, (P.y - 10) - sy) || 1;
@@ -12623,24 +12681,24 @@ function updateCaptain(e, dt) {
         bombs.push({ x: e.x + e.face * 16, y: e.y - 6, vx: e.face * 150, vy: -50, fuse: 1.9, barrel: true });
         if (p3) bombs.push({ x: e.x + e.face * 16, y: e.y - 6, vx: e.face * 95, vy: -30, fuse: 2.6, barrel: true }); } break; }
     case 'keg': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5; } break;
-    case 'ride': { // the wave carries him past you, never to the far end of her
-      if (!wash || wash.state !== 'run') { e.ride = false; e.mode = 'beach'; e.modeT = p3 ? 1.9 : 2.6; e.vx = 0;
-        e.x = Math.max(A.x0 + 24, Math.min(A.x1 - 24, Math.max(P.x - 120, Math.min(P.x + 120, e.x)))); e.y = floor;
-        SFX.thud(); shakeCam(5); number(e.x, e.y - 48, 'HE IS DOWN: CUT HIM', '#8fd160'); break; }
-      const ridex = Math.max(A.x0 + 20, Math.min(A.x1 - 20, Math.max(P.x - 150, Math.min(P.x + 150, wash.x))));
-      e.x += (ridex - e.x) * Math.min(1, dt * 6);
-      e.y = floor - 8 + Math.sin(time * 8) * 2; e.face = wash.dir;
-      if (Math.random() < dt * 26) parts.push({ x: e.x + (Math.random() - 0.5) * 28, y: e.y - Math.random() * 28, vx: wash.dir * 90, vy: -30, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#a8cfc6' : '#dff0f5', size: 2, grav: 120 });
-      break; }
-    case 'beach': { e.vx = 0; e.y = floor;
+    case 'beach': { e.vx *= Math.pow(0.05, dt); e.y = floor;   /* KNOCKED FLAT on his own planking: still (B4), the sea running off him */
       if (Math.random() < dt * 12) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - 4, vx: 0, vy: -14, life: 0.5, max: 0.5, col: '#a8cfc6', size: 1, grav: 60 });
-      if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.4; number(e.x, e.y - 42, 'HE IS UP', '#ff9a5c'); } break; }
-    case 'reel': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5; } break;
+      if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.4; e.ward = CAP2.ward; e.sabreT = Math.max(e.sabreT, 0.6); number(e.x, e.y - 42, 'HE IS UP: WARDED', '#e8f0f8'); SFX.clank(); } break; }
+    case 'reel': if (e.modeT <= 0) { e.mode = 'stride'; e.modeT = 0.5; if (e.struck) { e.struck = false; e.ward = CAP2.ward; number(e.x, e.y - 42, 'HE SHAKES IT OFF: WARDED', '#e8f0f8'); SFX.clank(); } } break;
     case 'dead': return;
   }
-  if (e.stagger > 0) want = 0;
-  e.vx += (want - e.vx) * Math.min(1, dt * 8);
-  if (e.mode !== 'ride') { e.x += e.vx * dt; e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.y = floor; }
+  if (e.stagger > 0 && e.mode !== 'beach') want = 0;
+  if (e.mode !== 'beach') e.vx += (want - e.vx) * Math.min(1, dt * 8);
+  e.x += e.vx * dt; e.x = Math.max(A.x0 + 16, Math.min(A.x1 - 16, e.x)); e.y = floor;
+}
+/* B10, THE SHARED READ: OPEN = a gold ring round him, OPEN over him and a clock that empties; WARDED = a pale shell; the line he wants, marked */
+function capRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y - cy);
+  if (capOpenNow(e)) { const kk = Math.max(0, Math.min(1, e.modeT / (e.openFor || 0.9)));
+    g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(x, y - 14, 22, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
+    const by = y - (e.h || 28) - 22; text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, Math.round(36 * kk), 3); }
+  else if (e.ward > 0) { g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 8); g.strokeStyle = '#e8f0f8'; g.lineWidth = 1; g.beginPath(); g.arc(x, y - 16, 20, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+  if ((e.mode === 'brace' || e.mode === 'held') && e.line !== null && e.line !== undefined) { const lx = Math.round(e.line - cx), ly = Math.round(L.arena.floor - cy);   /* the line he wants: a pale-green tick at its foot */
+    g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 12); g.fillStyle = '#a8cfc6'; g.fillRect(lx - 6, ly - 2, 12, 2); g.fillRect(lx - 1, ly - 30, 2, 28); g.globalAlpha = 1; }
 }
 function capCut(e, reach, dmg) { // a cut of his, and what the shield does about it
   const d = P.x - e.x;
@@ -30593,7 +30651,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if(e.t==='undeadmage'||e.t==='magechase')frame=undeadFrame(e,UNDEADMAGE_F);
     else if(e.t==='burieddead'||e.t==='zombie'||e.t==='husk'||e.t==='apprentice'){frame=e.t==="burieddead"?deadKingFrame(e):deadFrame(e);if((e.t==='zombie'||e.t==='apprentice')&&frame<=1&&Math.abs(e.vx)>2)frame=[0,1,0,7][Math.floor(e.anim*6)%4];}   /* the redrawn dead walk on both feet */
     else if (e.t === 'harbormaster') frame = wardenFrame(e);
-    else if (e.t === 'captain') frame = e.mode === 'sabreTell' ? 3 : e.mode === 'sabre1' ? 4 : (e.mode === 'sabre2' || e.mode === 'keg') ? 5
+    else if (e.t === 'captain') frame = e.mode === 'held' ? 10 : e.mode === 'sabreTell' ? 3 : e.mode === 'sabre1' ? 4 : (e.mode === 'sabre2' || e.mode === 'keg') ? 5
       : e.mode === 'shootTell' ? 6 : e.mode === 'shoot' ? 7 : (e.mode === 'hookTell' || e.mode === 'kegTell') ? 8 : e.mode === 'hook' ? 9
       : e.mode === 'call' ? 10 : e.mode === 'ride' ? 11 : e.mode === 'beach' ? 12 : Math.abs(e.vx) > 4 ? (Math.floor(e.anim * 7) % 2 ? 1 : 2) : 0;
     else if (e.t === 'acolyte') frame = Math.abs(e.vx) > 6 ? (Math.floor((e.anim || 0) * 9) % 2) : 0;   /* (claude/litchurch) the runner's sheet, recoloured: his run */
@@ -30758,7 +30816,8 @@ function drawWorld(cx, cy, showPlayer) {
     const bob = e.t === 'spit' ? Math.round(Math.sin(e.anim * 3) * 0.6 - (e.ssLift || 0)) : e.t === 'sexton' ? -sextonHover(e) : 0;   /* THE SEXTON glides a hand over his deck (round 3) */
     if (e.t === 'queen') { g.globalAlpha = 0.3; g.drawImage(PROP.shadow, Math.round(e.x) - 6 - cx, L.arena.floor - 2 - cy); g.globalAlpha = 1; }
     if (e.t === 'kite' && e.alive) { const kx = Math.round(e.x - cx), ky = Math.round(e.y - e.h - 26 - cy) + (e.mode === 'fall' ? 10 : 0); g.strokeStyle = '#e8dcc0'; g.lineWidth = 1; g.beginPath(); g.moveTo(kx + 0.5, Math.round(e.y - e.h - cy)); g.lineTo(kx + 0.5, ky + 8); g.stroke(); g.fillStyle = e.col; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky + 8); g.lineTo(kx - 7, ky); g.closePath(); g.fill(); g.fillStyle = '#2a2230'; g.fillRect(kx, ky - 8, 1, 16); g.fillRect(kx - 7, ky, 14, 1); for (let k = 1; k < 4; k++) { g.fillStyle = k % 2 ? '#ffd36b' : e.col; g.fillRect(kx - 1 + Math.round(Math.sin(time * 6 + k) * 2), ky + 8 + k * 4, 2, 2); } }
-    if (e.t === 'windcaller' && e.alive) callerRead(e, cx, cy);   /* B10 (claude/windcaller3): OPEN = a gold ring, OPEN and its clock; WARDED = a pale shell */
+    if (e.t === 'windcaller' && e.alive) callerRead(e, cx, cy);
+    if (e.t === 'captain' && e.alive && bossActive) capRead(e, cx, cy);   /* (claude/hurricane2) B10: OPEN ring + clock, WARDED shell, the line he wants */   /* B10 (claude/windcaller3): OPEN = a gold ring, OPEN and its clock; WARDED = a pale shell */
     if (e.t === 'windcaller' && e.alive && callerOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 18 + k * 3, 5, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     if (e.t === 'forgemaster' && forgeOpen(e)) { const k = 0.5 + 0.5 * Math.sin(time * 10); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#8fd160'; g.lineWidth = 2; g.beginPath(); g.ellipse(Math.round(e.x - cx), Math.round(e.y - cy) - 2, 30 + k * 3, 7, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
     /* THE FORGEMASTER'S CHAIN, drawn: its reach marked on the floor while he coils it, then the chain going round him at the height it is at */
@@ -31191,9 +31250,9 @@ function drawWorld(cx, cy, showPlayer) {
        teleport - the way the near layer does. It only ever eased, from wherever the last level left it (0.5 at the start of the
        game), and it eases in the DRAW, so the first half-second of every dark level wore the last one's dark, and the readability
        pass - which draws a frame or two per place - measured the Undercrown at 0.44 when its dark is 0.14. */
-    { let dk = L.dark || 0; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) dk = z.dark;
+    { let dk = L.dark || 0, sky = false; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) { dk = z.dark; if (z.storm && (skyGlow > 0 || (strike && strike.state === 'tell'))) { dk = z.dark * (skyGlow > 0 ? Math.max(0.12, 1 - skyGlow / 0.7) : 0.7); sky = true; } }   /* (claude/hurricane2) THE LIGHTNING SHOWS YOU THE WAY: down her seams into the powder store, and it lingers a breath */
       const jump = Math.abs(cx - DARK_A.cx) > VW / 2 || Math.abs(cy - DARK_A.cy) > VH / 2 || DARK_A.id !== curId(); DARK_A.cx = cx; DARK_A.cy = cy; DARK_A.id = curId();
-      darkNow += (dk - darkNow) * (jump ? 1 : 0.08); }
+      darkNow += (dk - darkNow) * (jump ? 1 : sky ? 0.3 : 0.08); }
     dg.fillStyle = 'rgba(' + ((L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';
     const hole = (x, y, r, a = 1) => { const gr = dg.createRadialGradient(x, y, r * 0.15, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
     for (const lt of lights) { if (lt.ref && lt.ref.t === 'grub') { if (!lt.ref.alive) continue; lt.x = lt.ref.x; lt.y = lt.ref.y - 4; } if (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0)) continue; if (lt.r > 0 && lt.x > cx - 120 && lt.x < cx + VW + 120 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit) && !(lt.bracket && lt.bracket.taken)) hole(lt.x - cx, lt.y - cy, lt.r * 1.3); }

@@ -61,7 +61,7 @@ export const TURN_WORD = {
   greathound: TURN.ROUND,                                   // (claude/hound) his jaws turn part of a blow into his face: go round, or come down on him
   queen: 'THE SWARM',                                       // her drones close over her
   /* (claude/sweep2) ACT II */
-  captain: TURN.ROUND,                                      // (claude/keyscore, B13) on his wave or on his feet his front is a wall: round him or over him (was ON THE WAVE: wait for the beach)
+  captain: e => (e.ward > 0 ? TURN.WARDED : TURN.ROUND),   // (claude/hurricane2: WARDED after an opening) (claude/keyscore, B13) on his wave or on his feet his front is a wall: round him or over him (was ON THE WAVE: wait for the beach)
   reefmaw: e => ['lurk', 'sink', 'sleep', 'drain'].includes(e.mode) ? 'IN ITS HOLE' : TURN.WARDED,   // in its hole: make it come out (the bait, the jaw)
   lance: TURN.ROUND,                                        // (claude/keyscore, B13) his plate faces you: round him or over him (was HIS PLATE: plate all round until he committed)
   kraken: 'NOT THE BODY',                                   // the body is out at sea: cut the arms on the road
