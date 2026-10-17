@@ -2372,7 +2372,7 @@ function spawnEnt(e) {
       case 'tome': enemies.push({ ...base, ...newTome(px, py - 20), t: 'tome', w: 12, h: 10, hp: EHP.tome, noGrav: true, alive: true, dying: 0, flash: 0, stagger: 0 }); break;
       case 'turret': enemies.push({ ...base, t: 'turret', w: 12, h: 14, hp: EHP.turret, mode: 'idle', modeT: 0.5, cd: 1, noGrav: true, ceiling: !!e.ceiling }); break;
       case 'homunculus': enemies.push({ ...base, t: 'homunculus', w: 14, h: 22, hp: EHP.homunculus, mode: 'sleep', modeT: 0, face: -1, phase: 1, open: 0, mini: true }); break;
-      case 'archmage': boss = { ...base, t: 'archmage', w: 16, h: 34, hp: EHP.archmage, maxHp: EHP.archmage, mode: 'sleep', modeT: 0, face: -1, phase: 1, stage: 1, open: 0, count: 0 }; enemies.push(boss); break;
+      case 'archmage': boss = { ...base, t: 'archmage', w: 16, h: 34, hp: Math.round(EHP.archmage * archTune().hp), maxHp: Math.round(EHP.archmage * archTune().hp), mode: 'sleep', modeT: 0, face: -1, phase: 1, stage: 1, open: 0, count: 0 }; enemies.push(boss); break;
       case 'glyph': props.push({ t: 'glyph', x: px, y: e.ceiling ? e.y * TS : py, cool: 0, ceiling: !!e.ceiling, brief: e.brief || 0 }); break;   /* brief: the Witchlight Stair's, which let go after that many seconds */
       case 'gplate': props.push({ t: 'gplate', x: px, y: py, gate: e.gate, down: false, open: false, hold: 0 }); break;
       case 'vatspit': props.push({ t: 'vatspit', x: px, y: py, state: 'rest', t2: 1 + Math.random() }); break;
@@ -14128,7 +14128,7 @@ function clearRunes(e) { const R = MG && MG.A; if (!R) return; for (const r of R
         cuts, not a free combo. Each blow is worth ARCH.openMul while he is open, so the fight is about as many readings as it
         was, each one shorter and each one earned. His health is as it was.
    ============================================================================================================ */
-const ARCH = { reseal: 6, resealLate: 4, wardLen: 22, wardAgain: 4.5, open1: 3.0, open2: 3.5, openHits: 3, openHitsKnight: 1, openMul: 3, hitGap: 0.15,
+const ARCH = { reseal: 6, resealLate: 4, wardLen: 22, wardAgain: 4.5, open1: 3.0, open2: 3.5, openHits: 3, openMul: 3, hitGap: 0.15,
   roomFirst: 2.5, roomEvery: 6.5, pairFirst: 4, pairEvery: 5.5, pairGap: 48, crushW: 26, books: 3, bookGap: 0.3, bookSpeed: 210, bookFrom: 180, glyphR: 16, flipBack: 1.6,
   tell: { crush: 0.9, books: 0.8, glyph: 0.9, pair: 0.9 },
   /* claude/folly3 (Daniel played him, 2026-09-29: "he is too easy"): where each part ends, as a fraction of his health - the duel, the
@@ -14142,7 +14142,12 @@ const ARCH = { reseal: 6, resealLate: 4, wardLen: 22, wardAgain: 4.5, open1: 3.0
      (blinkTell, 0.5 s as ever), to a spot never within blinkClear of you */
   runeFrom: 90, runeGap: 120, runeUp: 16, pace: 0.83, boltEvery: 3.4, rendEvery: 4.5, blinkEvery: 4.8, blinkJit: 1.0, blinkClear: 56, blinkGap: 10, afterOpen: 3 };   /* blinkGap 10: B12 - one blink per ~10 s cycle, never during or 3 s after his opening (Daniel 10-06) */
 /* THE WARD RESEALS FASTER once the duel is behind him (4 s, not 6): the duel still teaches it */
-const archResealLen = e => e && e.stage >= 2 ? ARCH.resealLate : ARCH.reseal;
+const archResealLen = e => (e && e.stage >= 2 ? ARCH.resealLate : ARCH.reseal) * archTune().reseal;
+/* PER-HERO CLASS (claude/follyfix, B6 - 60-70% for EVERY hero, flasks): the ward's runes break only to what the hero's own swing reaches and he opens at the same pace for everyone, so the walker heroes were short of damage
+   (knight 5/12, warden 5/11, 240 s timeouts with a fifth of him left) and the ranged fire hero cut all three runes from where he stood (12/12 in a minute). hp: his health, cap: the share of it ONE opening may take,
+   reseal: the ward's reseal timer. Numbers only; every move and tell is the same for all three. */
+const ARCH_TUNE = { knight: { hp: 0.8, cap: 0.18, reseal: 1 }, warden: { hp: 0.8, cap: 0.18, reseal: 1 }, pyro: { hp: 1.5, cap: 0.13, reseal: 0.7 } };
+const archTune = () => ARCH_TUNE[hero()] || { hp: 1, cap: 0.18, reseal: 1 };
 const archRunesUp = R => !!R && R.runes.some(r => r.hp > 0);
 /* what his room-attacks and paired spells were holding: dropped whenever he is opened, and when the room changes */
 function archDrop(R) { if (!R) return; R.circle = null; R.circle2 = null; R.crush = null; R.books = null; R.glyph = null; }
@@ -14313,7 +14318,7 @@ function archWeightLive(w) { const R = MG && MG.A, m = movers.find(q => q.arm &&
 let archCapE = null;
 function archRecovers(e) { e.open = 0; e.modeT = Math.min(e.modeT, 0.15); number(e.x, e.y - (e.fam ? 70 : 50), 'HE RECOVERS', MVIO[3]); }   /* (batch88) ONE say-so for both ways an opening closes: the blow count (archHurt) and the cap (archFix) */
 function archFix(e, d0, d1) { let extra = d1 - d0; const gate = archGate(e); if (gate > 0) extra = Math.min(extra, Math.floor(e.hp - gate) - d0);
-  if (archCapE === e) { const lim = e.maxHp * (e.fam ? 0.08 : 0.18); extra = Math.min(extra, Math.max(0, Math.floor(lim - (e.openTaken || 0)))); extra = Math.max(0, extra); e.openTaken = (e.openTaken || 0) + extra;
+  if (archCapE === e) { const lim = e.maxHp * (e.fam ? 0.08 : archTune().cap); extra = Math.min(extra, Math.max(0, Math.floor(lim - (e.openTaken || 0)))); extra = Math.max(0, extra); e.openTaken = (e.openTaken || 0) + extra;
     if (e.openTaken >= lim - 1) archRecovers(e); }
   return d0 + Math.max(0, extra); }
 function archHurt(e, dmg, fromX, blow, tag) {
@@ -14325,12 +14330,12 @@ function archHurt(e, dmg, fromX, blow, tag) {
   if (e.open > 0) { archCapE = e; sparks(e.x, e.y - 20, Math.sign(e.x - fromX) || 1, 6); out = Math.round(dmg * (e.fam ? 3.2 : ARCH.openMul));
     /* ONE OPENING IS ONE PIECE OF HIM: under a fifth of his health in the duel, a twelfth through the eye. A hero who hits hard
        ends the window sooner and waits for the next, so the fight is the same number of readings for everyone, not one lucky flurry */
-    const cap = e.maxHp * (e.fam ? 0.08 : 0.18) - (e.openTaken || 0); out = Math.max(0, Math.min(out, Math.floor(cap)));
+    const cap = e.maxHp * (e.fam ? 0.08 : archTune().cap) - (e.openTaken || 0); out = Math.max(0, Math.min(out, Math.floor(cap)));
     e.openTaken = (e.openTaken || 0) + out;
     /* TWO CLEAN BLOWS AND HE RECOVERS (Daniel, 2026-09-29): an opening is a reading answered, not a free combo. A blow is the hero's own
        (a burn ticking on him is not one), and a sweep that finds him twice in a breath is one blow */
     if (out > 0 && blow && !e.fam && time - (e.openHitT ?? -9) > ARCH.hitGap) { e.openHits = (e.openHits || 0) + 1; e.openHitT = time; }
-    if (e.openTaken >= e.maxHp * (e.fam ? 0.08 : 0.18) - 1 || (!e.fam && e.openHits >= ARCH.openHits + (hero() === 'knight' ? ARCH.openHitsKnight : 0))) archRecovers(e);
+    if (e.openTaken >= e.maxHp * (e.fam ? 0.08 : archTune().cap) - 1 || (!e.fam && e.openHits >= ARCH.openHits)) archRecovers(e);
     if (out <= 0) return false; }
   else if (e.fam) { if ((PROG.mgHide || 0) < 2 && Math.random() < 0.25) { PROG.mgHide = (PROG.mgHide || 0) + 1; hintT = 3.5; hintMsg = 'THE HIDE TAKES LITTLE. THE EYE, WHEN THE HEAD COMES DOWN.'; } out = Math.max(1, Math.round(dmg * 0.3)); }
   /* THE NEXT ROOM IS A FLOOR UNDER HIS HEALTH: no blow takes him past a spell he has not cast yet */
