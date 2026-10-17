@@ -5006,8 +5006,8 @@ function theFlotilla() {
   // his bench stops where it is (src/flotilla2.js). TEACH (one bench, a cheap fall) -> TEST (three out of step) -> REMIX (a bench that has to be stopped HIGH to reach
   // the stern castle) -> EXAM (four benches under the bosun's eye, a marine in the mizzen) -> the shrine on her stern.
   block(97, 208, 24, 37);
-  air(101, 109, 24, 33); air(118, 138, 24, 33); air(153, 170, 24, 33); air(187, 204, 24, 33);   // the four wells, down to her bilge (the harbour is in her: rows 30+ are foul)
-  for (const [a, b] of [[101, 109], [118, 138], [153, 170], [187, 204]]) { net(a, a, 25, 33); net(b, b, 25, 33); }   /* her ribs: a net up each end of every well, out of the bilge */
+  air(101, 109, 24, 33); air(118, 138, 24, 33); air(153, 170, 24, 33); air(187, 203, 24, 33);   /* (flotilla2tune: the last well ends a tile sooner, 204 -> 203, so the bench to the stern deck is two tiles like every other gap: the paladin's jump is 58 px and three tiles left it 4 px) */ // the four wells, down to her bilge (the harbour is in her: rows 30+ are foul)
+  for (const [a, b] of [[101, 109], [118, 138], [153, 170], [187, 203]]) { net(a, a, 25, 33); net(b, b, 25, 33); }   /* her ribs: a net up each end of every well, out of the bilge */
   // TEACH: one bench in a narrow well. Up, it is level with the deck; down, it is five rows under. Its rower is the lesson.
   bench(104, 29, 5, 4.2, 0.0);   /* (every gap in her wells is three tiles at most: the climb is the timing, not the reach) */
   ent('sign', 99, 23, { text: 'HER BENCHES RIDE UP AND DOWN WITH THE OARS. A PRESSED FISHERMAN ROWS EACH ONE.' });

@@ -32,7 +32,7 @@
 
 /* (tune) THE PER-HERO TUNE: { in: x what his blows take off this hero, out: x what this hero's blows take off him }. The bot gaps are fixed first (the bowman's backflips and
    knife openings in chPlan); this is what is left. Heroes not listed are 1 / 1. */
-export const TUNE = { knight: { in: 1, out: 1.15 }, warden: { in: 0.9, out: 1 }, pyro: { in: 1.2, out: 1 }, paladin: { in: 0.85, out: 1.1 }, ranger: { in: 0.65, out: 2.1 } };
+export const TUNE = { knight: { in: 1, out: 1.15 }, warden: { in: 0.9, out: 1 }, pyro: { in: 1.15, out: 1 }, paladin: { in: 0.85, out: 1.1 }, ranger: { in: 0.65, out: 2 } };
 export const tuneOf = h => TUNE[h] || { in: 1, out: 1 };
 export const CH = {
   hp: 2300, w: 24, h: 44, markH: 70,

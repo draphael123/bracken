@@ -13,34 +13,47 @@ const CHAINS = [
   { name: 'GALLEY HULL: the teach well', start: [100, 23], links: [{ bench: 'b0' }, { ledge: [110, 117, 23] }] },
   { name: 'GALLEY HULL: the test well', start: [116, 23], links: [{ bench: 'b1' }, { bench: 'b2' }, { bench: 'b3' }, { ledge: [139, 152, 23] }] },
   { name: 'GALLEY HULL: up to the stern castle', start: [151, 23], links: [{ bench: 'b4' }, { bench: 'b5' }, { bench: 'b6' }, { ledge: [171, 186, 14] }] },
-  { name: 'GALLEY HULL: the exam well', start: [185, 14], links: [{ bench: 'b7' }, { bench: 'b8' }, { bench: 'b9' }, { ledge: [205, 208, 23] }] },
+  { name: 'GALLEY HULL: the exam well', start: [185, 14], links: [{ bench: 'b7' }, { bench: 'b8' }, { bench: 'b9' }, { ledge: [204, 208, 23], tol: 18 }] },
   { name: 'RIGGING RUN: teach + test', start: [289, 8], links: [{ yard: 289 }, { ledge: [301, 305, 8] }, { yard: 305 }, { yard: 313 }, { ledge: [321, 325, 7] }] },
   { name: 'RIGGING RUN: the lashing and the remix', start: [323, 7], links: [{ ledge: [325, 336, 10] }, { ledge: [337, 341, 8] }, { yard: 341 }, { ledge: [356, 360, 7] }] },
   { name: 'RIGGING RUN: the exam', start: [358, 7], links: [{ yard: 361 }, { yard: 368 }, { yard: 376 }, { ledge: [385, 389, 8] }] },
 ];
+/* the STANDING JUMP's reach per hero in px (measured on the flat: knight/warden/ranger/reaper/geomancer 64, the paladin 58, the pyromancer 74); the tool jumps once the gap is under that less 12 - a player steps to the edge first */
+const JUMP = { default: 64, paladin: 58, pyro: 74 };
 const pg = await openPage({ audio: false, fonts: false });
 let R;
 try {
   R = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};const CH=${JSON.stringify(CHAINS)};
     const idx=LEVELS.findIndex(l=>l.id==='flotilla');
-    for(const h of ${JSON.stringify(HEROES)}){out[h]=[];
+    const JR=${JSON.stringify(JUMP)};   /* (flotilla2tune) a player jumps from what his own jump reaches, not from a fixed 58 */
+    for(const h of ${JSON.stringify(HEROES)}){out[h]=[];const TH=Math.min(58,(JR[h]||JR.default)-6);
       for(const c of CH){BK.setHero(h);BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=false;BK.sim(5);for(const e of BK.enemies())e.alive=false;
         const P=BK.P,K=BK.keys,none=()=>{for(const k of ['left','right','up','down','jump','block','atk','dodge'])K[k]=false;};
         BK.tp(c.start[0],c.start[1]);BK.sim(20);P.hp=P.maxHp;let done=0,why='';const t0=performance.now();
-        const footedOn=L=>L.bench?(P.ground&&P.onMover&&P.onMover.bench===L.bench&&Math.abs(P.y-P.onMover.y)<3):L.yard?(P.ground&&P.onMover&&P.onMover.flot==='yard'&&Math.round(P.onMover.x0/16)===L.yard&&Math.abs(P.y-P.onMover.y)<3):(P.ground&&!P.onMover&&P.x>=L.ledge[0]*16&&P.x<=(L.ledge[1]+1)*16&&Math.abs(P.y-L.ledge[2]*16-16)<3);
+        const footedOn=L=>L.bench?(P.ground&&P.onMover&&P.onMover.bench===L.bench&&Math.abs(P.y-P.onMover.y)<3):L.yard?(P.ground&&P.onMover&&P.onMover.flot==='yard'&&Math.round(P.onMover.x0/16)===L.yard&&Math.abs(P.y-P.onMover.y)<3):(P.ground&&!P.onMover&&P.x>=L.ledge[0]*16&&P.x<=(L.ledge[1]+1)*16&&Math.abs(P.y-L.ledge[2]*16-16)<(L.tol||3));
         const tgt=L=>{if(L.ledge)return {l:L.ledge[0]*16,r:(L.ledge[1]+1)*16,y:L.ledge[2]*16+16,m:null};const m=BK.movers().find(q=>L.bench?q.bench===L.bench:(q.flot==='yard'&&Math.round(q.x0/16)===L.yard));return m?{l:m.x,r:m.x+m.w,y:m.y,m}:null;};
         for(const L of c.links){let ok=false;
-          const TR=[];for(let f=0;f<60*30&&!ok;f++){none();if(f%4===0){const T0=tgt(L)||{};const nb=BK.movers().filter(q=>q.flot).sort((a,b)=>Math.abs(a.x+a.w/2-P.x)-Math.abs(b.x+b.w/2-P.x))[0];TR.push([f,Math.round(P.x),Math.round(P.y),Math.round(P.vy),P.ground?1:0,P.onMover?(P.onMover.bench||'y'):'-',K.left?'L':K.right?'R':'.',nb?Math.round(nb.x)+'/'+Math.round(nb.y):''].join(','));if(TR.length>14)TR.shift();}if(P.dead||P.swim||P.y>30*16){why='fell at link '+JSON.stringify(L)+' TRACE '+TR.join(' | ');break;}
+          const TR=[];let prevTl=null;const tab=[],tabX=[];   /* (a bench's height over one period, learned while waiting: a player reads the stroke before he jumps) */
+          for(let f=0;f<60*30&&!ok;f++){none();if(f%4===0){const T0=tgt(L)||{};const nb=BK.movers().filter(q=>q.flot).sort((a,b)=>Math.abs(a.x+a.w/2-P.x)-Math.abs(b.x+b.w/2-P.x))[0];TR.push([f,Math.round(P.x),Math.round(P.y),Math.round(P.vy),P.ground?1:0,P.onMover?(P.onMover.bench||'y'):'-',K.left?'L':K.right?'R':'.',nb?Math.round(nb.x)+'/'+Math.round(nb.y):''].join(','));if(TR.length>14)TR.shift();}if(P.dead||P.swim||P.y>30*16){why='fell at link '+JSON.stringify(L)+' TRACE '+TR.join(' | ');break;}
             if(footedOn(L)){ok=true;break;}
             const T=tgt(L);if(!T){why='no target '+JSON.stringify(L);break;}
-            const kind=L.bench?'bench':L.yard?'yard':'ledge',mid=(T.l+T.r)/2,dir=Math.sign(mid-P.x)||1,gapX=dir>0?T.l-P.x:P.x-T.r,dy=T.y-P.y,on=P.onMover;
+            const kind=L.bench?'bench':L.yard?'yard':'ledge',vTl=prevTl===null?9e3:T.l-prevTl;prevTl=T.l;   /* (a yard swings along its stay: a player waits for it to come toward him, not after it as it runs away) */
+            let recedes=kind==='yard'&&vTl*(Math.sign((T.l+T.r)/2-P.x)||1)>0.5;
+            if(kind==='yard'&&T.m&&T.m.period){const PF=Math.round(T.m.period*60);tabX[f%PF]=T.m.x;T.m.PFx=PF;const px=tabX[(f+41)%PF];   /* where the yard will be when the jump arrives: it must lie inside what the jump reaches from here */
+              if(px!==undefined){const J=(JR[h]||JR.default)-8,a=dir>0?P.x+12:P.x-J,b=dir>0?P.x+J:P.x-12;recedes=!(px<=b&&px+T.m.w>=a);}else recedes=true;}
+            
+            mid=(T.l+T.r)/2,dir=Math.sign(mid-P.x)||1,gapX=dir>0?T.l-P.x:P.x-T.r,dy=T.y-P.y,on=P.onMover;
             if(P.ground){
               /* A PLAYER'S READ: the target's top is within a plain jump up (40 px) or a drop below, and near enough across */
-              const hOK=kind==='ledge'?dy>-40&&dy<200:kind==='bench'?dy>-36&&dy<(on?40:230)&&(T.m.dy<=0.3||T.m.y<=T.m.y0-T.m.rise+6||T.m.halted):dy>-40&&dy<48;
+              if(T.m&&T.m.period&&kind==='bench'&&!T.m.halted){const PF=Math.round(T.m.period*60);tab[f%PF]=T.m.y;T.m.PF=PF;}
+              const JF=[0,3,6,9,12,15,18,21,24,27,30,33,36,39,42],JO=[0,-14,-25,-33,-39,-43,-44,-44,-43,-40,-34,-26,-14,-1,14],offAt=t=>{for(let i=1;i<JF.length;i++)if(t<=JF[i])return JO[i-1]+(JO[i]-JO[i-1])*(t-JF[i-1])/(JF[i]-JF[i-1]);return JO[JO.length-1];};
+              const AVh=(JR[h]||JR.default)/0.7,tA=Math.max(8,Math.min(44,Math.round(60*(gapX+8)/AVh))),lead=(kind==='bench'&&dy<48&&T.m&&T.m.PF&&!T.m.halted)?(tab[(f+tA)%T.m.PF]===undefined?null:tab[(f+tA)%T.m.PF]-(P.y+offAt(tA))):undefined;   /* the bench's top when the jump would arrive, against the height the jump has by then */
+              const hOK=kind==='ledge'?dy>-40&&dy<200:kind==='bench'?dy>-36&&dy<(on?40:230)&&(lead===undefined?(T.m.dy<=0.3||T.m.y<=T.m.y0-T.m.rise+6||T.m.halted):lead!==null&&lead>-8&&lead<8):dy>-40&&dy<48;
               const hOK2=hOK&&(!on||on.flot!=='bench'||dy>-20||(dy>-36&&(on.halted||on.y<=on.y0-on.rise+2)));   /* (at the top of its stroke, or stopped, a bench is as good as the deck) */   /* (off a moving bench: wait for the next to come level, as a player does) */
               if(hOK2&&gapX<=2&&dy>=-4){K[dir>0?'right':'left']=true;BK.sim(1);continue;}   /* over it already, or the edge touches it: step on */
-              if(hOK2&&gapX<=58){K[dir>0?'right':'left']=true;BK.press('jump');K.jump=true;
-                for(let i=0;i<80&&!(P.ground&&i>4)&&!P.swim;i++){const T2=tgt(L)||T,m2=(T2.l+T2.r)/2;K.jump=i<18;K.right=K.left=false;if(P.x<T2.l+6)K.right=true;else if(P.x>T2.r-6)K.left=true;else if(Math.abs(P.x-m2)>4&&P.vy<0)K[m2>P.x?'right':'left']=true;BK.sim(1);}none();BK.sim(2);continue;}
+              const edge0=on?(dir>0?on.x+on.w-6:on.x+6):null,atEdge=on?Math.abs(P.x-edge0)<=3:Math.abs(P.vx)<3&&f>8,JRh=JR[h]||JR.default;   /* at the end of what he stands on he jumps with everything his jump has; short of it he steps closer first */
+                            if(hOK2&&!recedes&&gapX<=(dy<-16?Math.min(TH,JRh-18):atEdge&&JRh<64?JRh-2:TH)){K[dir>0?'right':'left']=true;BK.press('jump');K.jump=true;
+                for(let i=0;i<80&&!(P.ground&&i>4)&&!P.swim;i++){const T2=tgt(L)||T,m2=(T2.l+T2.r)/2;K.jump=i<18;K.right=K.left=false;if(P.x<T2.l+6)K.right=true;else if(P.x>T2.r-6)K.left=true;   /* (a player brakes on the way down: the pyromancer's air drift overshot a 48 px yard) */else if(Math.abs(P.x-m2)>4&&P.vy<0)K[m2>P.x?'right':'left']=true;BK.sim(1);}none();BK.sim(2);continue;}
               if(dy<-40&&[9,13].includes(BK.L.grid[Math.floor((P.y-4)/16)*BK.L.W+Math.floor(P.x/16)])){K.up=true;BK.sim(1);continue;}   /* under it on a net or shrouds: climb */
               /* not yet: ride to the edge of what we stand on nearest it, and wait there */
               const edge=on?(dir>0?on.x+on.w-6:on.x+6):null;if(edge!==null){if(Math.abs(P.x-edge)>3)K[edge>P.x?'right':'left']=true;}

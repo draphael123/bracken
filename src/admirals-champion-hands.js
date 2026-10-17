@@ -99,7 +99,6 @@ export function makeChampionHands(ctx) {
   /* A BLOW ON HIM: never nothing (B15) - his plate CH.plate, his ward CH.ward, his recovery x1, stuck x CH.stuckMul, flat x CH.flatMul (one knockdown CH.flatCap of him at most) */
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
     const r = ACM.takeAt(e, S), tn = ACM.tuneOf(ctx.heroId && ctx.heroId()).out; dmg *= tn;
-    if (typeof window !== 'undefined' && window.BK && window.BK.chTally) { const T = window.BK.chTally, k = (e.mode || '?') + '|' + (blow || '?') + '|x' + r.k; T[k] = T[k] || [0, 0]; T[k][0]++; T[k][1] += dmg * r.k; }   /* (tune diag) */
     if (r.k <= 0) return 0;
     if (r.word) { S.n[S.ward > 0 ? 'warded' : 'plated']++; e.guardFx = 0.25; e.guardWord = r.word; ctx.turned(e, P.x, r.word, { stop: false }); }
     if (ACM.chFlat(e)) { const cap = e.maxHp * CH.flatCap, d = Math.min(dmg * r.k, Math.max(0, cap - S.taken)); S.taken += d;
