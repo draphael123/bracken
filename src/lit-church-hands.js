@@ -62,6 +62,7 @@ export function makeLitChurchHands(ctx) {
     rooms();
     if (typeof window !== 'undefined' && window.BK) Object.assign(window.BK, { litChurch: () => K, litChurchHands: () => H, walkHint: () => H.walkHint(ctx.hero()) });
   };
+  const CRYPT_ROOMS = new Set(['ossuary', 'vault', 'altar', 'well']);   /* (the undercity: src/lit-church.js rooms; the sealed vault and the altar are in it, the Deacon's crossing above is not) */
   const lampOf = id => K.lamps.find(l => l.id === id);
   const roomOf = id => K.rooms.find(r => r.id === id);
   /* the room a point is in: the smallest box that holds it (the well stands inside the altar room) */
@@ -296,7 +297,9 @@ export function makeLitChurchHands(ctx) {
     rooms(); stepOrgan(dt); stepGrates(dt); stepDark(dt); stepFalls(dt); stepHolyFire(dt);
     if (K.roodWait && !(ctx.miniOn && ctx.miniOn())) { K.roodWait = false; openDoor('rood'); }
     /* THE FIRST LOOK at a room: its name and its state, once */
-    if (P0 && !P0.dead) { const r = roomAt(P0.x, P0.y); if (r && r !== K.inRoom) { K.inRoom = r; K.roomT = 2.2; } K.roomT = Math.max(0, (K.roomT || 0) - dt); }
+    if (P0 && !P0.dead) { const r = roomAt(P0.x, P0.y); if (r && r !== K.inRoom) { K.inRoom = r; K.roomT = 2.2; } K.roomT = Math.max(0, (K.roomT || 0) - dt);
+      /* THE ZONE SWITCH (claude/musicchurch): the crypt's four rooms (the ossuary, the sealed vault, the crypt altar and its well - the undercity, structural, not the lamps' lit/dark state) play 'churchcrypt'; every other room plays the level's 'litchurch'. The host only honours it while the level track is up (not in a fight or a chase) and crossfades like any music.play. */
+      if (r && ctx.zoneMusic) ctx.zoneMusic(CRYPT_ROOMS.has(r.id) ? 'churchcrypt' : 'litchurch', ['litchurch', 'churchcrypt']); }
     stall(P0, dt);
   };
 

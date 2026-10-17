@@ -29,6 +29,10 @@ assert.ok(!('archmage:undead' in BM.SYNTH_VARIANT), 'the undead synth voicing is
 assert.equal(arena('kings').music, 'gorm', "KING GORM's arena is not on his own recording (claude/music1015: audio/gorm.ogg, Emma_MA's Determined Pursuit)");
 assert.equal(arena('crown').music, 'gqueen', "the Goblin Queen's arena is not on her own recording (claude/musicgq: audio/gqueen.ogg, Spring Spring's Courtroom with cynicmusic's entrance)");
 assert.ok(A.MUSIC_NAMES.includes('gqueen') && A.MUSIC_NAMES.includes('gqjudge') && A.MUSIC_NAMES.includes('gqescape') && /Spring Spring/.test(A.MUSIC_CREDITS.gqueen || '') && /Matyas/.test(A.MUSIC_CREDITS.gqescape || ''), 'the Goblin Queen tracks (gqueen, gqjudge, gqescape) are not in the Sound Test with their credits (claude/musicgq)');
+assert.equal(arena('church').music, 'paladin', "THE PALADIN's sanctuary is not on his own recording (claude/musicchurch: audio/paladin.ogg, tcarisland's Final Confrontation)");
+assert.equal(LEVELS.find(l => l.id === 'church').build().music, 'litchurch', "the lit nave is not on 'litchurch' (claude/musicchurch: Yubatake's Wendale Abbey)");
+assert.equal(LEVELS.find(l => l.id === 'church').build().mini.music, 'churchcrypt', "THE DEACON's crossing is not on the crypt track (claude/musicchurch: Machine's Crypt, shared with the undercity)");
+assert.ok(['litchurch', 'churchcrypt', 'paladin'].every(n => A.MUSIC_NAMES.includes(n)) && /Yubatake/.test(A.MUSIC_CREDITS.litchurch || '') && /Machine/.test(A.MUSIC_CREDITS.churchcrypt || '') && /tcarisland/.test(A.MUSIC_CREDITS.paladin || ''), 'the three church tracks have no credited Sound Test rows (claude/musicchurch)');
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
