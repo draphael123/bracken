@@ -97,7 +97,7 @@ export const STUCK = {
     { id: 'hu-ratlines-240', zone: [228, 8, 252, 20], at: [240, 19], glint: 'stall', line: 'UP HER RATLINES AND OUT ALONG THE YARD' },
     { id: 'hu-covers-388', zone: [368, 14, 385, 21], at: [388, 20], glint: 'stall', line: 'HER HATCH COVERS RIDE THE SWELL: STEP ON AS ONE RISES' },
     { id: 'hu-loosegun', zone: [412, 10, 437, 21], ats: [[420, 18], [434, 14]], glint: 'stall', line: 'WHEN SHE HEELS, THE GUN SMASHES THE CARGO. OR TAKE THE YARD' },
-    { id: 'hu-poop', zone: [440, 8, 451, 21], ats: [[450, 20], [447, 9]], glint: 'stall', line: 'THE HATCH TO THE DARK STORE, OR THE SHROUD UP TO THE SWING' },
+    { id: 'hu-poop', zone: [440, 8, 451, 21], ats: [[441, 20], [448, 9]], glint: 'stall', line: 'THE HATCH TO THE DARK STORE, OR THE SHROUD UP TO THE SWING' },
     { id: 'hu-mizzen', zone: [473, 4, 486, 34], at: [484, 12], glint: 'stall', line: 'CLIMB HER MIZZEN AND RUN THE TOPMAST - DO NOT STOP' },
   ],
   /* (claude/stuckguides) DEEP: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */

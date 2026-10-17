@@ -5188,7 +5188,7 @@ function theHurricane() {
   const clam = (x, y) => D.clams.push({ x, y });
   const wreck = (x, y) => D.wrecks.push({ x, y });
   /* A BREACH: her deck and hull stove in to the sea. Nets down both broken edges into the water, so a swim is never a room with no door */
-  const breach = (x0, x1) => { air(x0, x1, 20, 27); net(x0 - 2, x0 - 1, 20, 33); net(x1 + 1, x1 + 2, 20, 33); };
+  const breach = (x0, x1, near = 20) => { air(x0, x1, 19, 41); net(x0 - 2, x0 - 1, near, 33); net(x1 + 1, x1 + 2, 20, 33); };   /* near: where the near side's net starts (a breach you are meant to go INTO has its net below the lip, not a rope you stand on at the edge) */   /* (her rail goes with her side: nothing spans a breach but what the level puts over it) */
 
   // THE SEA. Swimmable, and the worst place to be in a storm: the lightning runs along it.
   pools.push({ x0: 0, x1: W * TS, y: 28 * TS, bottom: 42 * TS, shallow: false, swim: true, clear: true, sea: true });
@@ -5215,7 +5215,7 @@ function theHurricane() {
   ent('cargo', 72, 18, { kind: 'barrel' }); ent('cargo', 90, 18, { kind: 'crate' });   /* loose on her deck: the wave and the roll both take them */
   ent('sailor', 76, 19, { rise: true, face: -1 }); ent('cutlass', 92, 19, { face: -1 });   /* the wave takes them too: let it */
   // HER FOREPEAK, under the bow: a hatch down, her stores, a silver at the head of her (a dead end that pays)
-  air(20, 64, 21, 26); air(66, 67, 20, 20); net(66, 67, 20, 26);
+  air(20, 64, 21, 26); air(66, 67, 19, 20); net(66, 67, 20, 26);
   ent('deco', 56, 26, { kind: 'coiledCable', v: 0 }); ent('deco', 48, 26, { kind: 'kegStack' }); ent('deco', 40, 26, { kind: 'rumBarrels', v: 1 });
   ent('deco', 30, 26, { kind: 'plunder', v: 2 }); ent('deco', 24, 26, { kind: 'chartTable' }); ent('torch', 38, 26);
   ent('marine', 34, 26, { face: 1 }); ent('silver', 22, 26);
@@ -5255,14 +5255,14 @@ function theHurricane() {
   for (let x = 242; x <= 296; x++) set(x, 12, T.ONEWAY);
   for (const x of [254, 268, 282]) net(x, x, 5, 11);   // her lifts
   for (const [x, ph] of [[256, 0.1], [266, 0.45], [276, 0.8]]) ent('mover', x, 21, { len: 4, vert: true, rise: 1.5, period: 3.6, ph, hatch: true });   /* her main hatch covers, still on their lashings: the low road under the yard */
-  net(297, 298, 6, 19);                                 // the main stay, down to the deck past the breach
+  net(297, 298, 12, 19);                                // the main stay, from the yard's end down to the deck past the breach
   ent('sign', 236, 19, { text: 'UP THE RATLINES AND OUT ALONG THE YARD. THEY ARE COMING THE OTHER WAY.' });
-  ent('boarder', 274, 11, { face: -1 }); ent('cutlass', 290, 11, { face: -1 });   /* on the yard, coming at you: knock them into the sea */
+  ent('boarder', 274, 11, { face: -1 }); ent('tideguard', 290, 11, { face: -1 });   /* on the yard, coming at you: knock them into the sea */
   ent('silver', 241, 3);   /* in her main top, over the crow's nest: up the ratlines past the yard */
   ent('petrel', 262, 7, { gull: true, face: -1 }); ent('petrel', 286, 6, { gull: true, face: -1 });
   coins([246, 11], [252, 11], [258, 11], [264, 11], [276, 11], [288, 11], [294, 11]);
   // ---- THE WEATHER DECK (the level's one ambush room, src/level.js AMBUSH below): out in her own storm, the rail and the sea to throw them over ----
-  for (const x of [304, 320]) shroud(x);
+  shroud(316);
   ent('sign', 300, 19, { text: 'SHE ROLLS. WHEN SHE HEELS, HOLD A LINE, PUT A BITT AT YOUR BACK, OR STAND ON THE SAND.' });
   ent('cargo', 312, 18, { kind: 'crate' });
   coins([302, 18], [310, 18], [318, 18], [326, 18]);
@@ -5273,28 +5273,28 @@ function theHurricane() {
   ent('check', 356, 19);
   coins([340, 17], [346, 16], [352, 17], [362, 17], [368, 16], [374, 17]);
   // a hatch down to her bread room: a pocket that pays
-  air(358, 376, 21, 26); air(372, 373, 20, 20); net(372, 373, 20, 26); ent('deco', 362, 26, { kind: 'plunder', v: 1 }); ent('silver', 360, 26); ent('torch', 366, 26);
+  air(358, 376, 21, 26); air(372, 373, 19, 20); net(372, 373, 20, 26); ent('deco', 362, 26, { kind: 'plunder', v: 1 }); ent('silver', 360, 26); ent('torch', 366, 26);
 
   // ================= 5. THE STERN: the storm back, twice as hard =================
   // CROSSING 3, THE SWELL: her after hatch is stove in, and its covers are still lashed to the coamings, riding the sea in her
-  breach(386, 410);
+  breach(386, 410, 24);
   for (const [x, ph] of [[388, 0], [395, 0.33], [402, 0.66]]) ent('mover', x, 20, { len: 5, vert: true, rise: 1.6, period: 3.6, ph, hatch: true });
   ent('sign', 381, 19, { text: 'HER HATCH COVERS RIDE THE SWELL. STEP ON AS ONE COMES UP.' });
   coins([390, 17], [397, 16], [404, 17]);
   ent('petrel', 398, 13, { gull: true, face: -1 });   /* and over the covers, while you time them */
   // THE AFT GUN: as she heels it parts its breechings, and every roll after runs it down her deck into the cargo lashed across it
-  ent('loosegun', 420, 18, { trigger: 414 }); ent('cargowall', 438, 18, { span: [438, 439, 16, 19] });
+  ent('loosegun', 420, 18, { trigger: 414 }); ent('cargowall', 438, 18, { span: [438, 439, 16, 19] }); block(438, 439, 16, 19);   /* the cargo lashed across her waist: only the gun goes through it */
   ent('sign', 416, 19, { text: 'HER AFT GUN IS WORKING LOOSE. WHEN SHE HEELS IT RUNS: LET IT SMASH THE CARGO.' });
-  shroud(434, 12); for (let x = 434; x <= 446; x++) set(x, 12, T.ONEWAY);   // or over it: the crossjack yard, on its shroud and the mizzen's
+  shroud(434, 12); for (let x = 434; x <= 440; x++) set(x, 12, T.ONEWAY);   // or over it: the crossjack yard, on its shroud and the mizzen's
   ent('boarder', 428, 19, { face: -1 }); ent('sailor', 446, 19, { rise: true, face: -1 });
   coins([424, 18], [430, 18], [442, 18], [446, 18]);
   // HER POOP BREAK: a house across her waist. Over it on the yards (the swing onto the mizzen), or under it through her powder store.
-  block(452, 474, 15, 19); net(447, 448, 9, 19); plat(447, 9, 5);   // the mizzen shroud and its top
+  block(452, 474, 15, 19); net(448, 449, 9, 19); plat(448, 9, 4);   // the mizzen shroud and its top
   ent('deco', 462, 14, { kind: 'lanternDeck', v: 0 });
   // THE DARK POWDER STORE: no lamp of hers burns back here; the only light is what comes down her seams when the sky goes off
-  air(440, 474, 21, 26); air(450, 451, 20, 20); net(450, 451, 20, 26);
+  air(440, 474, 21, 26); air(441, 442, 19, 20);   // the hatch down, clear of the shroud: an open hatch you drop through (the store's way out is forward, to the sea)
   darkZones.push({ x0: 440 * TS, x1: 476 * TS, y0: 20 * TS, y1: 28 * TS, dark: 0.92, storm: true });
-  ent('check', 443, 19);   /* past the gun, before the poop break: over it or under it from here */
+  ent('check', 445, 19);   /* past the gun, before the poop break: over it or under it from here */
   ent('sign', 446, 19, { text: 'HER POWDER STORE IS DARK. WAIT FOR THE SKY, AND WALK WHILE IT IS WHITE.' });
   ent('deco', 456, 26, { kind: 'kegStack' }); ent('deco', 468, 26, { kind: 'kegStack' }); ent('deco', 444, 26, { kind: 'bones', v: 1 });
   ent('marine', 458, 26, { face: -1 }); ent('cutlass', 470, 26, { face: -1 });
@@ -5351,7 +5351,7 @@ function theHurricane() {
     duskStart: 99999, duskLen: 1, music: 'hurricane', night: false, dark: 0.06,
     swell: { amp: 3, period: 3.8 }, stormClouds: true,
     // THE WAVE: it builds to windward, it tells you, and it shoves the open deck down her length (no stun: a drain, src/main.js updateWash)
-    wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 606 * TS, every: 9, tell: 3, speed: 210, dmg: 10, push: true },
+    wash: { y0: 17 * TS, y1: 20 * TS, x0: 16 * TS, x1: 606 * TS, every: 9, tell: 3, speed: 210, dmg: 14, push: true },
     // THE LIGHTNING: it picks somewhere near you, says so, and hits it. Over water it runs along the surface. (Not over the bow: the wave is taught alone.)
     storm2: { every: 8, tell: 1.2, y: 20 * TS, bossEvery: 6.5, zones: [[116 * TS, 334 * TS], [380 * TS, 606 * TS]] },
     hullZones, darkZones, airRooms, deep: D, deckBreaks,
@@ -5367,12 +5367,12 @@ function theHurricane() {
     // lying from the deck at 127 across the breach onto the galley's roof - the sky's road over. Before her trigger, the breach is a swim.
     felled: [{ x: 124, zone: [127, 135], band: [136, 176], foot: [126, 20], head: [173, 17], tell: 1.8, clear: [[117, 133, 10, 10]],
       say: 'LIGHTNING ON HER FOREMAST: STAND CLEAR', down: 'THE SKY FELLS HER FOREMAST: THERE IS YOUR ROAD' }],
-    eye: { x0: 336, x1: 378, hard: { wash: 0.55, speed: 1.25, dmg: 1.2, storm: 0.55, roll: 0.7, push: 1.15 } },   /* "twice as hard": waves and strikes come about twice as often past the eye */
+    eye: { x0: 336, x1: 378, hard: { wash: 0.55, speed: 1.25, dmg: 1.4, storm: 0.5, roll: 0.7, push: 1.15 } },   /* "twice as hard": waves and strikes come about twice as often past the eye */
     calm: [[336, 378, 10, 20]],
     // SHE ROLLS: every ~15 s (x0.7 past the eye) a 2.4 s counted tell, then 3.4 s heeled over. Her open deck, rows 19-20.
     roll: { every: 15, tell: 2.4, hold: 3.4, heel: 0.05, push: 92, x0: 53, x1: 548, y0: 19, y1: 20, not: [[336, 378]], grip: [[300, 303], [516, 519]], bitts: BITTS },
     autoGrab: true,   /* THE RIGGING CATCHES YOU (src/main.js): a hero falling into a line with no sideways key held takes hold of it; the wave's shove is caught the same way */
-    routeVia: [[130, 19], [176, 16], [241, 10], [296, 11], [356, 19], [420, 19], [452, 26], [484, 20], [484, 6], [504, 6], [542, 19]],   /* the designed road: the foremast's foot, the galley roof, up the main and out the yard, the eye, the gun, down through the dark store, out onto her mizzen, up it and along the topmast (the swing over the poop is the other way) */
+    routeVia: [[130, 19], [176, 16], [241, 10], [296, 11], [356, 19], [420, 19], [446, 26], [484, 20], [484, 6], [504, 6], [542, 19]],   /* the designed road: the foremast's foot, the galley roof, up the main and out the yard, the eye, the gun, down through the dark store, out onto her mizzen, up it and along the topmast (the swing over the poop is the other way) */
     risers: true, callers: true, gulls: true,
   };
 }
