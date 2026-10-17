@@ -124,6 +124,7 @@ export function makeChampionHands(ctx) {
     if ((e.mode === 'slamTell' || e.mode === 'tiltTell') && S.slamX != null) ART.drawSlamMark(g, R(S.slamX - cx), fy, CH.slamFar - CH.slamNear, prog(e), time);
     if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap) { ART.drawLeapMark(g, R(S.leap.x1 - cx), fy, CH.landR, prog(e), time); if (Math.floor(time * 8) % 2) ctx.text('!!', R(S.leap.x1 - cx), fy - 40, '#ff6b6b', 'center', 7); }
     if (e.mode === 'sweepTell' || e.mode === 'sweep') { g.globalAlpha = e.mode === 'sweep' ? 0.5 : 0.18 + 0.2 * prog(e); g.strokeStyle = '#ff9a7a'; g.beginPath(); g.ellipse(R(e.x - cx), fy - 12, CH.sweepR, 8, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }
+    if (S.sweep) { const ax = R(S.sweep.x - cx); ART.drawChain(g, R(e.x - cx), fy - 26, ax, fy - 10, time, true); ART.drawAnchor(g, ax, fy - 10, Math.PI / 2, 1.1); }   /* the anchor where it is on its pass (the bot reads S.sweep.x) */
     const x = R(e.x - cx), y = R(e.y - CH.h / 2 - cy), top = R(e.y - CH.h - cy);
     if (WORD && /Tell$/.test(e.mode)) ctx.text(WORD.line, x, top - 58, Math.floor(time * 6) % 2 ? '#ff9a7a' : '#ffffff', 'center', 5);
     if (ACM.chOpen(e)) { const T = ACM.chFlat(e) ? CH.flatT : e.mode === 'stuckA' ? CH.stuckAT : CH.stuckT, kk = Math.max(0, e.open / T);

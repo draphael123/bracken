@@ -4928,10 +4928,10 @@ function theFlotilla() {
        fisherman's chain and HIS BENCH STOPS where it is) | THE LONG GAP 209-224 | 2. THE HULK 225-288 (grey planks go through) | THE RIGGING RUN 289-388 (her
        yards and lashings over the harbour, rocking apart and together with the hulls) | 3. THE POWDER SHIP 389-539 (STRIKE A DECK GUN'S BREECH: the round
        shot opens her copper doors, blows the keg on her crate hatch, and clears whatever stands down its line - THE KEY the boss is put down with) |
-       THE LASHINGS 540-615 (the Powder Ship's stern lashed to 4. THE FLAGSHIP's waist: THE ADMIRAL'S CHAMPION, src/admirals-champion.js) | the flagship 616-627.
+       THE LASHINGS 540-591 (the Powder Ship's stern lashed to 4. THE FLAGSHIP's waist: THE ADMIRAL'S CHAMPION, src/admirals-champion.js) | the flagship 592-603.
      NO FLOATING WOOD (brief item 2): the crates that rode the swell in mid-air are gone - every crossing is a spar off a hull, a line from a mast, or a yard on
      its stays (the yards are src/flotilla2.js 'yard' movers, drawn with their lines; the benches are 'bench' movers, drawn with their rowers). */
-  const W = 628, H = 40; const L = painter(W, H);
+  const W = 604, H = 40; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
@@ -4954,7 +4954,7 @@ function theFlotilla() {
   const mast = (x, top, deck, topW = 0) => { net(x, x + 1, top + 1, deck); if (topW) plat(x - Math.floor(topW / 2) + 1, top, topW); ent('deco', x, deck, { kind: 'mastTall', v: x % 2 }); };
 
   // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
-  block(0, W - 1, 38, H - 1); block(626, W - 1, 11, 37); // past the flagship the level ends: no water, nowhere to fall
+  block(0, W - 1, 38, H - 1); block(602, W - 1, 11, 37); // past the flagship the level ends: no water, nowhere to fall
   pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true, foulCol: '#7a8a3a', foulColL: '#b8c85a', foulColD: '#3a4a1e' }); // tar, bilge and worse: swim it and it eats you, so cross above it
 
   // ================= THE ROCK: the Ferryman will not go closer than this =================
@@ -4969,7 +4969,7 @@ function theFlotilla() {
   coins([24, 24], [27, 21], [29, 21]);
 
   // ================= 1. THE GALLEY: long, low, and full of other people's neighbours =================
-  block(31, 96, 24, 37); hullZones.push([31, 96, 24, 37]); // her hull goes to the bottom: the way past is over her, not under
+  block(31, 96, 24, 37); hullZones.push([31, 208, 24, 37]);   /* (her stern - THE GALLEY HULL - runs on to 208: one hull) */ // her hull goes to the bottom: the way past is over her, not under
   air(34, 93, 26, 29); // her oar deck
   air(58, 60, 24, 25); net(59, 59, 24, 29); // the hatch down to it, and the ladder back up
   rail(31, 34, 23);
@@ -5005,7 +5005,7 @@ function theFlotilla() {
   // a pressed fisherman to every oar, the benches riding up and down on their frames over the bilge. The way on is over them. STRIKE A ROWER'S CHAIN and he lets go:
   // his bench stops where it is (src/flotilla2.js). TEACH (one bench, a cheap fall) -> TEST (three out of step) -> REMIX (a bench that has to be stopped HIGH to reach
   // the stern castle) -> EXAM (four benches under the bosun's eye, a marine in the mizzen) -> the shrine on her stern.
-  block(97, 208, 24, 37); hullZones.push([97, 208, 24, 37]);
+  block(97, 208, 24, 37);
   air(101, 111, 24, 33); air(118, 140, 24, 33); air(153, 176, 24, 33); air(187, 202, 24, 33);   // the four wells, down to her bilge (the harbour is in her: rows 30+ are foul)
   for (const [a, b] of [[101, 111], [118, 140], [153, 176], [187, 202]]) { net(a, a, 25, 33); net(b, b, 25, 33); }   /* her ribs: a net up each end of every well, out of the bilge */
   rail(97, 100, 23);
@@ -5126,7 +5126,7 @@ function theFlotilla() {
   // the deck in a line: let them line up) -> REMIX 1 (no door this time - a keg on her crate hatch: blow the deck open and go under) -> REMIX 2 (one gun, two
   // doors: fire, let it cool under their charge, fire again) -> EXAM (the Admiral's men on his lashing, a heavy whose guard only a round shot breaks) -> the shrine.
   const P0 = 386;
-  block(P0, 539, 25, 37); hullZones.push([P0, 539, 25, 37]);
+  block(P0, 563, 25, 37); hullZones.push([P0, 563, 25, 37]);   /* (her stern runs on into THE LASHINGS: his west deck) */
   mast(386, 6, 24, 5); ent('deco', 386, 5, { kind: 'pennant', v: 2 });   /* her foremast: you come down it off the rigging run */
   ent('check', 390, 24);   /* THE RIGGING RUN's shrine, on the Powder Ship's forecastle (A10c) */
   ent('sign', 392, 24, { text: 'THE POWDER SHIP. HER DOORS ARE COPPER: NO BLADE OPENS ONE. HER GUNS DO.' });
@@ -5171,19 +5171,19 @@ function theFlotilla() {
   ent('check', 535, 24);   /* the shrine before the boss's lashing (A10c: +1 before the boss) */
   ent('sign', 537, 24, { text: 'THE LASHINGS. HE WAITS ON THE FLAGSHIP\'S SIDE. HIS GUNS ARE AT EITHER END.' });
 
-  // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/admirals-champion.js CH_STAGE) =================
-  const AS = 540, AR = 25, S = { W: 76, gap: [37, 39], guns: [4, 71], him: 60 };
-  block(580, 625, 25, 37); hullZones.push([580, 625, 25, 37]);
+  // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/admirals-champion.js CH_STAGE: 52 columns, a duel's room) =================
+  const AS = 540, AR = 25, S = { W: 52, gap: [24, 26], guns: [3, 48], him: 40 };
+  block(567, 601, 25, 37); hullZones.push([567, 601, 25, 37]);
   air(AS + S.gap[0], AS + S.gap[1], AR, 37);   /* the lashing: foul harbour between the hulls */
   net(AS + S.gap[0], AS + S.gap[0], AR + 1, 33); net(AS + S.gap[1], AS + S.gap[1], AR + 1, 33);   /* a net down each hull's side, out of the water */
   /* (no coamings on his decks: a round shot runs the length of them, and the champion stands on the planking - the art lane dresses the decks, nothing solid) */
   ent('cannon', AS + S.guns[0], AR - 1, { deck: true, aim: 1 }); ent('cannon', AS + S.guns[1], AR - 1, { deck: true, aim: -1 });
   ent('champion', AS + S.him, AR - 1, { face: -1 });
-  for (const [x, v] of [[AS + 22, 0], [AS + 52, 1]]) ent('deco', x, AR - 1, { kind: 'mastTall', v });
-  ent('deco', AS + 30, AR - 1, { kind: 'kegStack' }); ent('deco', AS + 64, AR - 1, { kind: 'coiledCable', v: 1 }); ent('deco', AS + 46, AR - 1, { kind: 'wheel' });
+  for (const [x, v] of [[AS + 12, 0], [AS + 36, 1]]) ent('deco', x, AR - 1, { kind: 'mastTall', v });
+  ent('deco', AS + 18, AR - 1, { kind: 'kegStack' }); ent('deco', AS + 44, AR - 1, { kind: 'coiledCable', v: 1 }); ent('deco', AS + 31, AR - 1, { kind: 'wheel' });
   // THE FLAGSHIP's tail, and the way out
-  ent('deco', 618, 24, { kind: 'sternWindows' }); ent('gate', 622, 24);
-  ent('deco', 600, 9, { kind: 'pennant', v: 1 }); ent('deco', 592, 15, { kind: 'sailRag', v: 1 });
+  ent('deco', 595, 24, { kind: 'sternWindows' }); ent('gate', 598, 24);
+  ent('deco', 597, 9, { kind: 'pennant', v: 1 });
 
   // ================= HER MASTS, WHICH WERE NOT THERE (kept from the first flotilla) =================
   // Every flag and rag of canvas hung in open sky gets shrouds from the flag down to the first thing solid - twenty tiles of rigging to climb.
@@ -5204,7 +5204,7 @@ function theFlotilla() {
     palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(255,196,140,0.08)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
-    sections: [[0, 30, 'THE ROCK'], [31, 96, 'THE GALLEY'], [97, 208, 'THE GALLEY HULL'], [209, 288, 'THE HULK'], [289, 385, 'THE RIGGING RUN'], [386, 539, 'THE POWDER SHIP'], [540, 627, 'THE LASHINGS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
+    sections: [[0, 30, 'THE ROCK'], [31, 96, 'THE GALLEY'], [97, 208, 'THE GALLEY HULL'], [209, 288, 'THE HULK'], [289, 385, 'THE RIGGING RUN'], [386, 539, 'THE POWDER SHIP'], [540, 603, 'THE LASHINGS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
     arena: { x0: AS * TS, x1: (AS + S.W) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + S.W, boss: 'champion', music: 'champion', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
       start: [AS + 8, AR - 1], ac: { sx: AS, R: AR } },
   };

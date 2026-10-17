@@ -74,12 +74,12 @@ export function drawChampion(g, x, y, f, o, time) {
     /* PHASE TWO: the anchor on its chain */
     let ax = hx + 10 * f, ay = y - 6, aa = Math.PI / 2;
     if (m === 'sweepTell') { ax = bx - (20 + 10 * p) * f; ay = top + 34; aa = Math.PI; }
-    else if (m === 'sweep') { const u = (time * 14) % (Math.PI * 2); ax = bx + Math.cos(u) * 60; ay = y - 14 + Math.sin(u) * 6; aa = u; }
+    else if (m === 'sweep') { ax = bx + 4 * f; ay = top + 30; aa = Math.PI; }   /* (the anchor itself is drawn on its pass by the hands: S.sweep.x) */
     else if (m === 'hookTell') { const u = time * 12; ax = bx + Math.cos(u) * 18; ay = top - 10 + Math.sin(u) * 6; aa = u; }
     else if (m === 'tiltTell') { ax = bx; ay = top - 14 - 6 * p; aa = -Math.PI / 2; }
     else if (m === 'tilt' || m === 'stuckA' || m === 'tiltRec') { ax = bx + 30 * f; ay = y - 4; aa = Math.PI / 2; }
     else if (m === 'tearTell') { ax = bx + (14 + 10 * p) * f; ay = top + 30 - 10 * p; aa = Math.PI / 2 + 0.4 * f; }
-    if (m !== 'hook') { drawChain(g, hx, hy, ax, ay, time, m === 'sweep' || m === 'tilt'); drawAnchor(g, ax, ay, aa, 1.1); }
+    if (m !== 'hook' && m !== 'sweep') { drawChain(g, hx, hy, ax, ay, time, m === 'sweep' || m === 'tilt'); drawAnchor(g, ax, ay, aa, 1.1); }
     line(g, bx + 6 * f, top + 16, hx, hy, PAL.plate1, 5);
     if (m === 'stuckA') rc(g, ax - 10, y - 2, 20, 2, PAL.rust);
   }

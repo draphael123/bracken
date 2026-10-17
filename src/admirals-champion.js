@@ -31,7 +31,7 @@
 // PURE: no DOM, no main.js. The world is a context `c` (src/admirals-champion-hands.js binds it). chPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const CH = {
-  hp: 1900, w: 24, h: 44, markH: 70,
+  hp: 2300, w: 24, h: 44, markH: 70,
   plate: 0.5, ward: 0.4, stuckMul: 1.5, flatMul: 2, flatCap: 0.11, flatT: 3.2, wardT: 3.0, stuckT: 1.6, stuckAT: 1.4,
   p2: 0.5,
   walk: 44, keep: 40, turn: 0.45, gap: [0.62, 0.5],
@@ -44,12 +44,12 @@ export const CH = {
   /* THE LEAP: told leapTell s (the mark where he lands, fixed), leapT s in the air (leapH px over the deck), the landing's throw landR px; landRec s after */
   leapTell: 0.72, leapT: 0.78, leapH: 96, landR: 34, landRec: 0.8, otherHull: 0.7,
   /* PHASE TWO: the anchor torn off the rail (tearTell s, told); THE SWEEP (sweepR px round him at the knees, sweepT s, sweepH px over the deck clears it) */
-  tearTell: 1.5, sweepTell: 0.9, sweepT: 0.42, sweepR: 100, sweepH: 26, sweepRec: 0.7,
+  tearTell: 1.5, sweepTell: 0.9, sweepT: 0.6, sweepR: 100, sweepH: 22, sweepRec: 0.7,
   /* THE CHAIN HOOK: told hookTell s; the anchor flies hookV px/s up to hookLen px; a hook drags dragV px/s for at most dragT s to dragTo px off him */
   hookTell: 0.85, hookV: 380, hookLen: 250, dragV: 280, dragT: 0.75, dragTo: 34, hookRec: 0.6,
   /* THE ANCHOR SLAM: told tiltTell s; the anchor falls slamT s over [slamNear, slamFar]; THE TILT: tiltT s, heroes on that deck slide tiltV px/s to the lashing; gapOpen s apart */
   tiltTell: 1.0, tiltT: 2.2, tiltV: 64, gapOpen: 2.6,
-  dmg: { combo: 24, slam: 36, thrust: 30, leap: 30, sweep: 28, hook: 14, tilt: 34 },
+  dmg: { combo: 30, slam: 44, thrust: 38, leap: 38, sweep: 34, hook: 18, tilt: 42 },
 };
 /* EVERY CYCLE CHANGES: the order of each pass by phase (cycle k uses [k % n]); 'combo3' = the three-cut combo */
 export const CYCLES = {
@@ -71,8 +71,8 @@ export const MOVE_WORD = { slamTell: 'OVERHEAD: STEP OUT OF IT', thrustTell: 'TH
 /* ---------- THE LASHINGS (the arena) ----------
    local columns 0..S.W-1, the decks' surface row R (the hero stands on R-1): THE FLAGSHIP's main deck (west hull, 0..g0-1), THE LASHING (g0..g1: foul
    harbour, two lines drawn over it), THE CONSORT's deck (east hull, g1+1..W-1); a DECK GUN at each hull's outer end laid along the deck toward the lashing;
-   a NET down each hull's inner side (out of the water); the companion hatch-coaming on each deck (one row: something to jump on). */
-export const CH_STAGE = { W: 76, gap: [37, 39], guns: [4, 71], coamings: [[14, 16], [58, 60]], nets: [36, 40], him: 60, gunDy: 0 };
+   a NET down each hull's inner side (out of the water). Nothing solid stands on the decks: a round shot runs their length. */
+export const CH_STAGE = { W: 52, gap: [24, 26], guns: [3, 48], him: 40 };
 /* the arena in world px */
 export function geom(A, TS = 16) {
   const q = A.ac, X = c => (q.sx + c) * TS, S = CH_STAGE;
@@ -209,7 +209,7 @@ function stepMove(e, S, dt, P, h, c) {
         if (c.hit([e.x - CH.landR, e.x + CH.landR, G.floorY - 14, G.floorY + 2], CH.dmg.leap, MOVE_NAME.leap, { key: 'leap' + S.act, ground: true })) S.n.landHits++;
         S.leap = null; e.face = Math.sign(P.x - e.x) || f; setMode(e, 'landRec', CH.landRec); } return; }
     case 'landRec': if (e.modeT <= 0) after(); return;
-    case 'sweepTell': if (e.modeT <= 0) { setMode(e, 'sweep', CH.sweepT); S.n.sweeps++; c.sound('chain'); S.sweep = { t: 0, key: 'sweep' + S.act, a0: f > 0 ? Math.PI : 0 }; } return;
+    case 'sweepTell': if (e.modeT <= 0) { setMode(e, 'sweep', CH.sweepT); S.n.sweeps++; c.sound('chain'); S.sweep = { t: 0, key: 'sweep' + S.act, f, x: e.x - f * CH.sweepR }; } return;
     case 'sweep': if (e.modeT <= 0) { S.sweep = null; setMode(e, 'sweepRec', CH.sweepRec); } return;
     case 'sweepRec': if (e.modeT <= 0) after(); return;
     /* THE CHAIN HOOK: he whirls it (told), then hurls it at where you stand, at your height: a jump clears it on the deck, a roll passes it */
@@ -245,10 +245,13 @@ function stepHook(e, S, dt, h, c) {
     if (L.len >= CH.hookLen || L.y > S.G.floorY + 4 || L.x < S.G.x0 || L.x > S.G.x1) L.back = true; }
   else { const hx = e.x + (e.face || 1) * 14, hy = e.y - 26, ddx = hx - L.x, ddy = hy - L.y, dd = Math.hypot(ddx, ddy); if (dd < sp * 1.5) { S.hook = null; return; } L.x += ddx / dd * sp * 1.5; L.y += ddy / dd * sp * 1.5; }
 }
-/* THE SWEEP: the anchor goes once round him on its chain at the knees - a hero on the deck inside its radius is struck (a jump over CH.sweepH, or a roll, clears it) */
+/* THE SWEEP: the anchor goes round him on its chain at the knees, ONE PASS from behind him to in front of him (its x runs -R..+R over CH.sweepT) - a hero on the deck
+   is struck where the anchor passes him; a jump over CH.sweepH as it comes, or a roll, clears it. W.x is where the anchor is (drawn, and read by the bot) */
+export const sweepX = (e, W) => e.x - W.f * CH.sweepR * Math.cos(Math.PI * Math.min(1, W.t / CH.sweepT));
 function stepSweep(e, S, dt, h, c) {
-  const W = S.sweep; if (!W) return; W.t += dt;
-  for (const q of h) { if (!q.alive || q.dodge) continue; if (Math.abs(q.x - e.x) > CH.sweepR || q.y < S.G.floorY - CH.sweepH) continue;
+  const W = S.sweep; if (!W) return; const x0 = W.x; W.t += dt; W.x = sweepX(e, W);
+  for (const q of h) { if (!q.alive || q.dodge) continue; if (q.y < S.G.floorY - CH.sweepH || q.y > S.G.floorY + 4) continue;
+    if (q.x < Math.min(x0, W.x) - 10 || q.x > Math.max(x0, W.x) + 10) continue;
     if (c.hit([q.x - 2, q.x + 2, q.y - 10, q.y], CH.dmg.sweep, MOVE_NAME.sweep, { key: W.key })) S.n.sweepHits++; }
 }
 /* THE TILT and THE GAP: heroes on the heeling deck slide to the lashing (walking against it holds you; a line held, or the air, is not on the deck) */
@@ -297,8 +300,10 @@ function chPlan0(s) {
           if (ad < 120 && P.ground) { if (s.noRoll || rng() < 0.7) { out.jump = true; out.gx = P.x; out.why = 'jump the chain'; } else { out.dodge = true; out.gx = clamp(P.x + side * 30); out.why = 'roll the chain'; } return out; } }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'watch the chain'; return out; }
       if ((e.mode === 'sweepTell' || e.mode === 'sweep') && dx < CH.sweepR + 20 && same) {
-        if (e.mode === 'sweepTell' && e.modeT > 0.2) { if (dx < CH.sweepR - 30) { out.gx = away(CH.sweepR + 30); out.why = 'out of the sweep'; return out; } out.gx = P.x; out.why = 'wait for the sweep'; return out; }
-        if (P.ground) { if (!s.noRoll && rng() < 0.25) { out.dodge = true; out.gx = away(CH.sweepR + 30); out.why = 'roll the sweep'; } else { out.jump = true; out.gx = P.x; out.why = 'jump the sweep'; } } return out; }
+        if (e.mode === 'sweepTell') { if (e.modeT > 0.3 && dx > CH.sweepR - 40) { out.gx = away(CH.sweepR + 30); out.why = 'out of the sweep'; return out; } out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'watch the anchor'; return out; }
+        const W = S.sweep; if (W && P.ground) { const ax = W.x, vx = (W.f || 1) * CH.sweepR * Math.PI / CH.sweepT * Math.sin(Math.PI * Math.min(1, W.t / CH.sweepT)), eta = vx ? (P.x - ax) / vx : 9;
+          if (eta > 0 && eta < 0.16) { if (!s.noRoll && rng() < 0.25) { out.dodge = true; out.gx = P.x; out.why = 'roll the anchor'; } else { out.jump = true; out.gx = P.x; out.why = 'jump the anchor'; } return out; } }
+        out.gx = P.x; out.why = 'the anchor is coming'; return out; }
       if ((e.mode === 'slamTell' || e.mode === 'slam' || e.mode === 'tiltTell' || e.mode === 'tilt') && same) {
         const inBox = Math.sign(P.x - kx) === (e.face || 1) && dx < CH.slamFar + 16; if (inBox) { out.gx = dx < 30 ? clamp(kx - (e.face || 1) * 30) : away(CH.slamFar + 30); out.why = 'out from under the slam'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'let it fall'; return out; }
@@ -318,7 +323,7 @@ function chPlan0(s) {
   const guns = (s.guns || []).filter(g => !(g.cool > 0) && hullOf(G, g.x) === hullOf(G, kx) && Math.sign(kx - g.x) === g.aim && Math.abs(kx - g.x) < 360);
   if (guns.length && !airborne(e) && seenFor('gun' + guns[0].x + '.' + Math.floor(t / 6), PLAN.gunSeen)) { const g = guns.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
     const at = g.x - g.aim * 14;   /* the breech side: the gun between you and nothing, him down its muzzle */
-    if (hullOf(G, P.x) === hullOf(G, g.x) && Math.abs(P.x - at) < 10 && P.ground) { out.face = g.aim; out.gx = P.x; out.atk = P.atk < 0; out.why = 'fire the gun down his line'; return out; }
+    if (hullOf(G, P.x) === hullOf(G, g.x) && Math.abs(P.x - at) < 10 && P.ground) { out.face = g.aim; out.gx = P.x; out.atk = P.atk < 0; if (s.hero === 'ranger') out.down = true; out.why = 'fire the gun down his line'; return out; }   /* (the ranger strikes the breech with her knife's low sweep, DOWN+X: an arrow is not a blow on it) */
     if (hullOf(G, P.x) === hullOf(G, g.x) && Math.abs(P.x - g.x) < Math.abs(kx - g.x)) { out.gx = at; out.why = 'to the gun: he is in its line'; return out; } }
   /* 4. WINDED: off him */
   if (s.rest) { out.gx = away(CH.comboReach + 40); out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
