@@ -332,7 +332,7 @@ export function makeHurricane2Art(ctx) {
     const y = 21 * TS - cy;
     for (let sx = x0 + 10; sx < x1 - 8; sx += 22 + (((sx >> 4) * 7) % 9)) { const x = sx - cx, len = 8 + (((sx >> 3) * 5) % 8);
       rc(g, x, y - 5, 2, 5 + (len >> 3), glow > 0 ? '#eaf4ff' : '#1a2228');   /* the gap between two planks of her deck */
-      if (glow > 0) { g.globalAlpha = Math.min(0.5, 0.18 + glow * 0.5); g.fillStyle = '#dfe8ff'; g.beginPath(); g.moveTo(x - 0.5, y); g.lineTo(x + 2.5, y); g.lineTo(x + 16 + len * 1.6, y + 70 + len); g.lineTo(x - 14 - len * 1.6, y + 70 + len); g.closePath(); g.fill(); g.globalAlpha = 1; } }
+      if (glow > 0) { g.globalAlpha = Math.min(0.4, 0.1 + glow * 0.3); g.fillStyle = '#dfe8ff'; g.beginPath(); g.moveTo(x - 0.5, y); g.lineTo(x + 2.5, y); g.lineTo(x + 7 + len * 0.9, y + 70 + len); g.lineTo(x - 5 - len * 0.9, y + 70 + len); g.closePath(); g.fill(); g.globalAlpha = 1; } }
     for (let sx = x0 + 22; sx < x1 - 12; sx += 66) { const x = sx - cx; rc(g, x, y - 1, 1, 14 + ((sx >> 4) % 6), '#2a2218'); for (let k = 0; k < 3; k++) rc(g, x - 1, y + 13 + ((sx >> 4) % 6) + k * 3, 3, 2, IRON[1]); }   /* a hanging-knee's chain, never lit */
   };
 
@@ -383,7 +383,7 @@ export function makeHurricane2Art(ctx) {
     if (lashed) { line(g, 2, 14, 2, 30, 0, 2, ROPE); rc(g, 0, 29, 5, 3, IRON[1]); rc(g, 1, 30, 3, 1, '#14141a'); line(g, 52, 18, 55, 30, 0, 2, ROPE); rc(g, 52, 29, 4, 3, IRON[1]); }   /* breechings and a tackle to her ring-bolts */
   });
   A.loosegun = (g, pr, cx, cy, time, text) => {
-    const lashed = pr.lashed, jig = pr.strain > 0 && lashed ? R(Math.sin(time * 50) * 1.5) : 0, s = gunSpr(lashed), x = R(pr.x - 26 - cx) + jig, y = R(pr.y - 31 - cy);
+    const lashed = pr.lashed, jig = pr.strain > 0 && lashed ? R(Math.sin(time * 50) * 1.5) : 0, s = gunSpr(lashed), gy = lashed ? ctx.floorAt(pr.x, pr.y) : pr.y, x = R(pr.x - 26 - cx) + jig, y = R(gy - 31 - cy);   /* (while it is lashed it is drawn on her deck: the prop itself waits a row up until it parts) */
     g.drawImage(s, x, y);
     /* the trucks' spokes turn with her */
     if (!lashed) for (const wx of [12, 38]) { const a = (pr.rot || 0) * 3, cxw = x + wx, cyw = y + 27; for (let k = 0; k < 2; k++) { const ax = Math.cos(a + k * Math.PI / 2) * 3, ay = Math.sin(a + k * Math.PI / 2) * 3; rc(g, cxw + ax, cyw + ay, 1, 1, SP[0]); rc(g, cxw - ax, cyw - ay, 1, 1, SP[0]); } }
@@ -435,13 +435,14 @@ export function makeHurricane2Art(ctx) {
 
   /* ============ THE CAPTAIN'S READ: his WARD (a faceted pale shell) and the LINE HE WANTS (the line lit, the way to it marked) ============ */
   A.ward = (g, x, y, time) => {   /* x, y: screen centre of his body */
-    const rx = 21, ry = 25, a = 0.5 + 0.2 * Math.sin(time * 8);
-    g.globalAlpha = 0.1; g.fillStyle = '#d8ecf8'; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fill();
-    for (let i = 0; i < 44; i++) { if (((i + R(time * 6)) % 4) === 3) continue; const t = i / 44 * Math.PI * 2; g.globalAlpha = a; rc(g, x + Math.cos(t) * rx, y + Math.sin(t) * ry, 1, 1, i % 2 ? '#e8f0f8' : '#9ab8d0'); }   /* the rim, in dashes that turn */
-    g.globalAlpha = a * 0.7;
-    for (let i = 0; i < 28; i++) { const t = i / 28 * Math.PI * 2; rc(g, x + Math.cos(t) * rx * 0.45, y + Math.sin(t) * ry, 1, 1, '#c8dcea'); rc(g, x + Math.cos(t) * rx, y + Math.sin(t) * ry * 0.45, 1, 1, '#c8dcea'); }   /* the facets: a meridian and a parallel */
+    const rx = 21, ry = 25, a = 0.7 + 0.25 * Math.sin(time * 8);
+    g.globalAlpha = 0.17; g.fillStyle = '#cfe6f6'; g.beginPath(); g.ellipse(x, y, rx, ry, 0, 0, Math.PI * 2); g.fill();
+    g.globalAlpha = 0.09; g.beginPath(); g.ellipse(x, y, rx - 5, ry - 6, 0, 0, Math.PI * 2); g.fill();
+    for (let i = 0; i < 56; i++) { if (((i + R(time * 6)) % 4) === 3) continue; const t = i / 56 * Math.PI * 2, c = i % 2 ? '#f2f8ff' : '#9ab8d0'; g.globalAlpha = a; rc(g, x + Math.cos(t) * rx, y + Math.sin(t) * ry, 1, 1, c); rc(g, x + Math.cos(t) * (rx - 1), y + Math.sin(t) * (ry - 1), 1, 1, '#bcd4e8'); }   /* a double rim, in dashes that turn */
+    g.globalAlpha = a * 0.85;
+    for (let i = 0; i < 30; i++) { const t = i / 30 * Math.PI * 2; rc(g, x + Math.cos(t) * rx * 0.45, y + Math.sin(t) * ry, 1, 1, '#dcecf8'); rc(g, x + Math.cos(t) * rx, y + Math.sin(t) * ry * 0.45, 1, 1, '#dcecf8'); rc(g, x + Math.cos(t) * rx * 0.8, y + Math.sin(t) * ry * 0.8, 1, 1, '#b8d0e4'); }   /* the facets: a meridian, a parallel and a lattice */
     g.globalAlpha = 1;
-    const gl = (R(time * 14) % 22) - 11; rc(g, x + gl, y - 14 + Math.abs(gl) * 0.7, 2, 2, '#ffffff');   /* a glint running across the shell */
+    const gl = (R(time * 14) % 22) - 11; rc(g, x + gl, y - 14 + Math.abs(gl) * 0.7, 3, 3, '#ffffff'); rc(g, x + gl + 1, y - 15 + Math.abs(gl) * 0.7, 1, 5, '#ffffff');   /* a glint running across the shell */
   };
   A.lineWant = (g, lx, floorY, bx, time, text) => {   /* lx, floorY: the line's foot on screen; bx: the Captain's screen x */
     const a = 0.5 + 0.4 * Math.sin(time * 12), dir = Math.sign(lx - bx) || 1;

@@ -18,7 +18,8 @@ try {
       const fl = flags.split(','); if (fl.includes('k')) for (const e of BK.enemies()) if (!e.boss) e.alive = false;
       for (const f of fl) if (f.startsWith('cut=')) { const [id, end] = f.slice(4).split('/'); const pr = BK.props().find(p => p.t === 'timber' && p.slab && p.slab.id === id && p.end === +end); if (pr) BK.cutPost(pr); else console.log('no post', id, end); BK.sim(+((fl.find(q => q.startsWith('wait=')) || 'wait=70').slice(5))); }
       for (const f of fl) if (f.startsWith('dmg=')) { const [id, end, n] = f.slice(4).split('/'); const pr = BK.props().find(p => p.t === 'timber' && p.slab && p.slab.id === id && p.end === +end); if (pr) { pr.hp = pr.hp0 - (+n); pr.shake = 0.3; } }
-      for (let k = 0; k < (+sims || 60) + 60; k++) { if (BK.state === 'card') BK.cardClose(); BK.step(1); }
+      for (let k = 0; k < (sims === "0" ? 0 : (+sims || 60) + 60); k++) { if (BK.state === 'card') BK.cardClose(); BK.step(1); }
+      { const fin = ${process.env.FIN || "{}"}[name]; if (fin) { (0, eval)(fin); BK.draw1(); } }
       const crop = ${JSON.stringify((process.env.CROP || '').split(',').map(Number))}; const c = document.createElement('canvas'); let g;
       if (crop.length === 5) { c.width = crop[2] * crop[4]; c.height = crop[3] * crop[4]; g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, crop[0], crop[1], crop[2], crop[3], 0, 0, c.width, c.height); }
       else { c.width = 640; c.height = 360; g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(BK.buf, 0, 0, 640, 360); }
