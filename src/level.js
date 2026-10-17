@@ -2075,7 +2075,8 @@ function hangingVillage() {
   band(1, W - 2, tops.crown); hole(2, 5, tops.crown); ladder(3, 4, tops.crown, tops.t5 - 1); ent('spider', 7, 29, { drop: 90 });
 
   // ---- The crown: THE OWL REEVE. Three perches on the high branches with a dark lantern on each; ledges climb to every one. ----
-  ent('sign', 8, 19, { text: 'STRIKE A LAMP. ITS GLOW DROPS THE REEVE. HIT HER WHILE SHE LIES DAZZLED.' });
+  ent('sign', 8, 19, { text: 'A STRUCK LAMP BURNS TWO BREATHS. LIGHT IT AS SHE COMES AND SHE CRASHES INTO IT.' });   /* (claude/owl3: OWL_LAMP) */
+  ent('sign', 10, 19, { text: 'HER WING BEAT BLOWS YOU TO THE DROP. HOLD DOWN TO BRACE, OR HOLD A ROPE.' });   /* (claude/owl3: THE DROP, below) */
   ent('sign', 16, 19, { text: 'DEAD BOUGHS HANG ON PEGS. CUT A PEG WHEN THE REEVE IS LOW UNDER ITS BOUGH.' });
   ent('check', 12, 19);
   for (const x of [32, 54, 76]) ent('lantern', x, 19, {owl: true, dark: true}); // two lit lanterns on the floor: a swooping owl still crashes into light
@@ -2085,7 +2086,8 @@ function hangingVillage() {
   for (const [x, y] of [[42, 8], [54, 11], [65, 8]]) ent('lantern', x, y, { dark: true, perch: true, owl: true }); // a dark lantern on each perch: light it and the perch is denied
   vine(48, 12, 19); vine(61, 11, 19); // two vines from the floor up to the links
   ent('deco', 38, 19, { kind: 'stone', v: 0 }); ent('deco', 70, 19, { kind: 'cairn' });
-  const CROWN_BOUGH = [22, 88, 3];   /* the dead pine's great bough across the top of the crown (drawn by src/hanging-village.js drawCrown): ropes, chains and festoons hang off it */
+  const CROWN_BOUGH = [22, 88, 3];
+  const CROWN_DROPS = [[24, 26], [83, 85]];   /* (claude/owl3) THE DROP: tile columns, at each end of the crown, open to the night */   /* the dead pine's great bough across the top of the crown (drawn by src/hanging-village.js drawCrown): ropes, chains and festoons hang off it */
   /* THE CROWN HOIST, PAID OFF: one stone and it lifts you level with her middle perch. At half blood she cuts its rope (updateOwl, ropeGo) */
   hoist('crown', 57, 19, 11, 56, 1, { topRow: 5, arena: true }); ent('load', 65, 19, { kind: 'stone', hoist: 'crown' }); ent('load', 67, 19, { kind: 'stone', hoist: 'crown' });
   ent('sign', 6, 19, { text: 'THE HOIST LIFTS YOU TO HER PERCH. SHE WILL NOT SUFFER IT FOR LONG.' });
@@ -2094,6 +2096,10 @@ function hangingVillage() {
   ent('deadfall', 41, 10, { peg: 44, pegY: 19, hang: true }); ent('deadfall', 66, 10, { peg: 63, pegY: 19, hang: true });
   coins([25, 16], [30, 13], [35, 10], [85, 16], [80, 13], [75, 10], [47, 10], [61, 9], [71, 10]);
   ent('owl', 54, 11);
+  /* THE DROP (claude/owl3, Daniel 10-15: her wing beat pushes you "toward the drop"): two breaks in the crown's boards, one toward each end, clean
+     through to the night under the crown. Falling in costs a hazard's quarter and hands you back on the arena's side (src/main.js owlDropStep).
+     Three tiles: a hero jumps one walking in and walking out. */
+  for (const [x0, x1] of CROWN_DROPS) hole(x0, x1, tops.crown);
   ent('gate', 100, 19);
   coins([103, 51], [104, 50], [105, 51], [107, 51], [103, 43], [104, 43]); // the nook past the rock face pays
 
@@ -2127,7 +2133,7 @@ function hangingVillage() {
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
 
-    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', music: 'owlreeve', tint: '#ffd36b', tintA: 0.08, fx: 'motes' },
+    arena: { x0: 20 * TS, x1: 90 * TS, floor: 20 * TS, trigger: 21 * TS, y0: 4 * TS, wallL: 19, wallR: 90, boss: 'owl', music: 'owlreeve', tint: '#ffd36b', tintA: 0.08, fx: 'motes', drops: CROWN_DROPS },
     mini: { x0: 32 * TS, x1: 70 * TS, floor: 129 * TS, trigger: 35 * TS, wallL: 31, gate: 70, boss: 'spider', y0: 114 * TS, y1: 131 * TS },   /* thirty-eight wide (A7); the tunnel's mouth shuts behind you */
   };
 }

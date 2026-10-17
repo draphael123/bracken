@@ -1680,27 +1680,63 @@ export function bakeSquirrel() {
 export function bakeOwl() {
   // HER OFFICE OUTLASTS THE CLOTH: a tarnished chain over a torn tabard, pale eyes inside dark sails.
   const frames=[];
-  for(let f=0;f<13;f++) {
-    const [c,g]=canvas(116,66), down=[4,10].includes(f), spread=![0,11].includes(f), lift=[1,7,8,12].includes(f)?-18:0;
+  for(let f=0;f<17;f++) {   /* (claude/owl3art) 13 the WING BEAT's windup (the sails hoisted up and back, the body crouched under them), 14 its release (the sails driven down, the tips trailing up, the air torn off them), 15 the PELLET cough (hunched, the throat full), 16 the pellet out (beak wide, the pellet in it) - each its own body (B16) */
+    const [c,g]=canvas(116,66), down=[4,10,15].includes(f), spread=![0,11,15,16].includes(f), lift=[1,7,8,12].includes(f)?-18:0;
     const poly=(p,col)=>{g.fillStyle=col;g.beginPath();p.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();};
-    for(const side of [-1,1]) {
+    /* THE SAILS, for the two beat poses: an arm from the shoulder to the wrist, then the primaries fanned from the wrist (angle in degrees, 0 out, -90 up, +90 down; length; width) and the secondaries hung off the arm */
+    const sail=(side,S,W,prim,sec)=>{const X=n=>58+side*n;
+      const tips=prim.map(([ang,len])=>[W[0]+Math.cos(ang*Math.PI/180)*len,W[1]+Math.sin(ang*Math.PI/180)*len]);poly([[X(S[0]),S[1]-4],[X(W[0]),W[1]-3],...tips.map(([x,y])=>[X(x),y]),[X(S[0]+2),S[1]+13]],'#2a2634');   /* the sail's mass first, the feathers over it */
+      g.strokeStyle='#302c3c';g.lineWidth=7;g.lineCap='round';g.beginPath();g.moveTo(X(S[0]),S[1]);g.lineTo(X(W[0]),W[1]);g.stroke();
+      sec.forEach(([t,ang,len,wd],i)=>{const a=ang*Math.PI/180,bx=S[0]+(W[0]-S[0])*t,by=S[1]+(W[1]-S[1])*t,tx=bx+Math.cos(a)*len,ty=by+Math.sin(a)*len,nx=-Math.sin(a),ny=Math.cos(a);
+        poly([[X(bx+nx*wd/2),by+ny*wd/2],[X(tx+nx*wd*.2),ty+ny*wd*.2],[X(tx-nx*wd*.2),ty-ny*wd*.2],[X(bx-nx*wd/2),by-ny*wd/2]],i%2?'#4a4152':'#3a3342');});
+      prim.forEach(([ang,len,wd],i)=>{const a=ang*Math.PI/180,tx=W[0]+Math.cos(a)*len,ty=W[1]+Math.sin(a)*len,nx=-Math.sin(a),ny=Math.cos(a);
+        poly([[X(W[0]+nx*wd/2),W[1]+ny*wd/2],[X(tx+nx*wd*.22),ty+ny*wd*.22],[X(tx+Math.cos(a)*2),ty+Math.sin(a)*2],[X(tx-nx*wd*.22),ty-ny*wd*.22],[X(W[0]-nx*wd/2),W[1]-ny*wd/2]],i%2?'#665a6c':'#4a4152');
+        g.strokeStyle='#8a7a86';g.lineWidth=1;g.beginPath();g.moveTo(X(W[0]),W[1]);g.lineTo(X(W[0]+(tx-W[0])*.8),W[1]+(ty-W[1])*.8);g.stroke();});
+      g.fillStyle='#8a7a86';g.fillRect(Math.round(X(W[0]))-1,W[1]-1,3,3);};   /* the wrist's pale knuckle */
+    if(f===13||f===14) for(const side of [-1,1]) {
+      if(f===13) sail(side,[9,36],[28,28],[[-14,26,12],[-34,27,12],[-54,26,12],[-74,26,12],[-94,25,11],[-114,22,10]],[[.25,-40,16,10],[.5,-8,18,10],[.75,20,17,10]]);
+      else sail(side,[9,30],[30,38],[[96,24,12],[78,25,12],[58,25,12],[38,25,12],[18,24,11],[0,23,10]],[[.3,-95,14,9],[.55,-75,15,9],[.8,-52,14,9]]);
+    } else for(const side of [-1,1]) {
       const X=n=>58+side*n;
       poly([[X(8),28],[X(spread?50:22),14+lift],[X(spread?55:25),27+lift],[X(spread?42:21),44],[X(15),51]],'#302c3c');
       for(let k=0;k<7;k++){const x=14+k*(spread?5:1.4),y=29+k*.9+lift*(k/7);poly([[X(x),y],[X(x+8),y-5],[X(x+3),y+15],[X(x-2),y+10]],k%2?'#554b5d':'#403747');g.fillStyle='#81717c';g.fillRect(Math.round(X(x)),Math.round(y+5),side*5,2);}
+      if(f===16||f===15){ /* the wings are drawn round the cough: the shoulders ride up and the tips come out under the hunch */
+        poly([[X(10),24],[X(26),27+(f===15?2:0)],[X(24),38],[X(12),36]],'#403747');g.fillStyle='#81717c';g.fillRect(Math.round(X(13)),30,side*7,2); }
     }
     poly([[43,23],[71,23],[78,44],[69,57],[46,57],[38,44]],'#4a3d4e');
     poly([[46,39],[69,39],[70,56],[64,53],[60,59],[55,54],[47,57]],'#374b54');
+    if(f===13){ /* crouched under the sails: the chest drawn in */ g.fillStyle='#3a3040';g.fillRect(44,30,3,22);g.fillRect(70,30,3,22); }
+    const hdy=f===13?3:f===14?-2:f===15?7:f===16?5:0;
+    g.save();g.translate(0,hdy);
     poly([[42,20],[41,4],[51,13],[64,13],[75,4],[73,24]],'#302c3c');
+    if(f===13) { /* the tufts flattened back by the effort */ poly([[42,20],[39,9],[51,14],[64,14],[77,9],[73,24]],'#302c3c'); }
     poly([[43,18],[51,14],[58,19],[66,14],[74,19],[71,31],[63,36],[57,33],[49,35],[42,27]],'#d9ceb2');
-    for(const x of [48,63]){g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,8);g.fillStyle='#edb24e';g.fillRect(x,down?24:21,6,down?1:5);if(!down){g.fillStyle='#241d28';g.fillRect(x+2,21,2,5);}}
-    poly([[55,28],[62,27],[60,35],[56,33]],'#b49a5e');
+    for(const x of [48,63]){g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,8);g.fillStyle='#edb24e';
+      if(f===13){g.fillRect(x,23,6,3);g.fillStyle='#241d28';g.fillRect(x+2,23,2,3);g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,3);}   /* narrowed, brows down: she sets herself */
+      else if(f===14){g.fillRect(x-1,20,8,8);g.fillStyle='#241d28';g.fillRect(x+1,22,4,5);g.fillStyle='#fff2c8';g.fillRect(x,21,2,2);}   /* eyes huge and round: the beat is thrown */
+      else if(f===15){g.fillRect(x,24,6,1);g.fillStyle='#241d28';g.fillRect(x+1,25,4,1);}   /* screwed shut */
+      else if(f===16){g.fillRect(x-1,21,8,6);g.fillStyle='#241d28';g.fillRect(x+3,21,2,6);g.fillStyle='#fff2c8';g.fillRect(x,21,1,1);}   /* strained wide, the pupils pulled to a slit */
+      else {g.fillRect(x,down?24:21,6,down?1:5);if(!down){g.fillStyle='#241d28';g.fillRect(x+2,21,2,5);}}}
+    if(f===16){ /* THE PELLET OUT: the upper beak thrown up, the lower dropped, the mouth dark and the pellet held in it */
+      poly([[53,28],[63,28],[61,33],[56,33]],'#b49a5e');g.fillStyle='#d6bc78';g.fillRect(55,29,5,1);
+      g.fillStyle='#34202b';g.fillRect(54,33,9,8);g.fillStyle='#6a2c38';g.fillRect(56,38,5,2);
+      poly([[54,41],[63,41],[61,46],[56,46]],'#9a8450');g.fillStyle='#c4aa68';g.fillRect(56,42,4,1);
+      g.fillStyle='#e8e0cc';g.beginPath();g.ellipse(58.5,37,4,2.6,0,0,7);g.fill();g.fillStyle='#a8997a';g.fillRect(55,37,3,1);g.fillRect(59,38,3,1);g.fillStyle='#fffbea';g.fillRect(57,35,2,1);g.fillRect(61,36,1,1);   /* the fur, the bone */
+      g.fillStyle='#bcd2d8';g.fillRect(58,46,1,3);g.fillRect(60,47,1,2); }   /* spit */
+    else if(f===15){ poly([[55,31],[62,30],[61,36],[56,35]],'#b49a5e');g.fillStyle='#34202b';g.fillRect(56,35,5,2);   /* the beak just cracked */ }
+    else poly([[55,28],[62,27],[60,35],[56,33]],'#b49a5e');
+    g.restore();
+    if(f===14){ /* the thrown beat: pale wind-lines torn off the wing tips */ g.strokeStyle='#c9d1dc';g.lineWidth=1;for(const side of [-1,1]){const X=n=>58+side*n;for(let k=0;k<3;k++){g.globalAlpha=.7-k*.18;g.beginPath();g.moveTo(X(30+k*7),38+k*6);g.quadraticCurveTo(X(46+k*5),32+k*8,X(52+k*4),22+k*9);g.stroke();}}g.globalAlpha=1; }
     for(let k=0;k<9;k++){g.fillStyle=k%2?'#b59a55':'#756448';g.fillRect(46+k*3,35+Math.round(Math.sin(k/8*Math.PI)*7),2,3);}g.fillStyle='#bea15c';g.fillRect(56,42,5,5);
     for(const x of [47,64]){g.fillStyle='#b79a60';g.fillRect(x,53,3,7);for(let k=0;k<3;k++){g.fillRect(x-3+k*3,59,2,3);g.fillStyle='#e4cf99';g.fillRect(x-3+k*3,61,2,2);g.fillStyle='#b79a60';}}
     if(f===10){g.fillStyle='#513b30';g.fillRect(22,42,72,7);g.fillStyle='#83613c';g.fillRect(25,43,65,2);}
     if(f===3){g.fillStyle='#34202b';g.fillRect(56,32,5,5);}
+    if(f===15){ /* THE THROAT FULL: a lump under the beak the width of her neck, the ruff stood up round it, the gag lines at the beak */
+      g.fillStyle='#4a3d4e';g.beginPath();g.ellipse(58.5,47,8,5.5,0,0,7);g.fill();g.fillStyle='#cfc3a6';g.beginPath();g.ellipse(58.5,47,5.5,3.6,0,0,7);g.fill();g.fillStyle='#a8997a';g.fillRect(55,48,7,1);g.fillRect(57,45,3,1);g.fillStyle='#fffbea';g.fillRect(56,46,2,1);
+      g.fillStyle='#bcd2d8';g.fillRect(52,38,1,3);g.fillRect(65,39,1,2); }
     frames.push(outline(c,OUT));
   }
-  return pack(frames,58,63,44,26);
+return pack(frames,58,63,44,26);
 }
 
 // ---------- The Pyromancer. Not the knight in a hood any more: her own body, drawn from scratch. ----------
