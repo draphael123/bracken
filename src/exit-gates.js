@@ -31,11 +31,11 @@ export const KIND_OF = {
   storm: 'storm', crown: 'storm', undercrown: 'storm',
   longwater: 'coast', reef: 'coast', flotilla: 'coast', hurricane: 'coast', lamplit: 'coast', deep: 'coast', keep: 'coast', causeway: 'coast', harbor: 'coast',
   waymeet: 'canal', towpath: 'canal', canal: 'canal', theatre: 'canal', fair: 'canal',
-  church: 'inland', fields: 'inland', burial: 'inland', witchlight: 'inland', mage: 'inland', fallingtower: 'inland', unburied: 'inland',
+  church: 'inland', fields: 'inland', burial: 'inland', witchlight: 'inland', mage: 'mage', fallingtower: 'inland', unburied: 'inland',
   caravan: 'desert', welltown: 'desert', underwell: 'desert', redgorge: 'desert', glasssea: 'desert', ksar: 'desert', buriedcity: 'desert', sealedpyramid: 'desert',
 };
 export const DEFAULT = 'forest';
-export const KINDS = ['forest', 'marsh', 'fungus', 'crag', 'mine', 'storm', 'coast', 'canal', 'inland', 'desert'];
+export const KINDS = ['forest', 'marsh', 'fungus', 'crag', 'mine', 'storm', 'coast', 'canal', 'inland', 'desert', 'mage'];
 export const kindOf = id => KIND_OF[id] || DEFAULT;
 
 /* ---- bake helpers (clamped to the canvas: nothing can land at y < 0) ---- */
@@ -309,7 +309,29 @@ function bakeDesert() {
   return { frame: outline(F.c, OUT), door: D.c, op: [20, 20, 16, 38], lamp: [28, 8], mech: 'rise', glow: '#ffe0a0' };
 }
 
-const BAKERS = { forest: bakeForest, marsh: bakeMarsh, fungus: bakeFungus, crag: bakeCrag, mine: bakeMine, storm: bakeStorm, coast: bakeCoast, canal: bakeCanal, inland: bakeInland, desert: bakeDesert };
+/* THE MAGE'S FOLLY: the OBSERVATORY DOOR. A round arch of violet tower-stone with a brass astrolabe ring over the lintel, rune-lit jambs, and two leaves
+   of dark star-strewn wood that part on a doorway full of DAWN (rose to gold), not the lantern's warm yellow. */
+function bakeMage() {
+  const F = mk(), D = mk(), g = F.g, base = '#5a4a7a';
+  stone(g, 7, 22, 12, 38, base, 71, 6, 8); stone(g, 37, 22, 12, 38, base, 72, 6, 8);
+  R(g, 6, 20, 14, 3, '#7a6a9a'); R(g, 36, 20, 14, 3, '#7a6a9a'); R(g, 6, 20, 14, 1, '#a090c8'); R(g, 36, 20, 14, 1, '#a090c8');
+  for (let k = 0; k < 7; k++) { R(g, 6 + k, 19 - k, 44 - k * 2, 1, k % 2 ? '#4a3a6a' : '#3a2a5a'); }
+  R(g, 9, 12, 38, 1, '#2a1a40');
+  /* the astrolabe: a brass ring on the lintel with three notches and a star */
+  for (let a = 0; a < 40; a++) { const t = a / 40 * 6.2832; P(g, 28 + Math.round(Math.cos(t) * 6), 11 + Math.round(Math.sin(t) * 5), a % 10 < 2 ? '#fff0b0' : '#e0b050'); }
+  R(g, 27, 10, 3, 3, '#ffd36b'); P(g, 28, 11, '#ffffff'); R(g, 18, 22, 20, 1, '#2a1a40');
+  /* rune lights on the jambs */
+  for (const x of [11, 15, 40, 44]) for (let y = 28; y < 56; y += 7) { R(g, x, y, 2, 1, '#b07cf0'); R(g, x, y + 2, 1, 2, '#b07cf0'); P(g, x + 1, y + 3, '#e0c8ff'); }
+  R(g, 4, 58, 48, 2, '#3a2a5a'); R(g, 4, 58, 48, 1, '#7a6a9a');
+  CLR(g, 19, 23, 18, 35);
+  const d = D.g; /* the leaves: night-blue planks, a brass band and a scatter of stars */
+  planks(d, 19, 23, 18, 35, '#2a2a5a', 73, 3); R(d, 19, 36, 18, 2, '#a8782a'); R(d, 19, 50, 18, 2, '#a8782a'); R(d, 27, 23, 2, 35, '#1a1a3a');
+  for (const [x, y] of [[22, 28], [32, 31], [24, 42], [33, 45], [21, 54], [34, 26]]) { P(d, x, y, '#fff0b0'); P(d, x + 1, y, '#e0b050'); }
+  R(d, 25, 40, 2, 3, '#e0b050'); R(d, 29, 40, 2, 3, '#e0b050');
+  return { frame: outline(F.c, OUT), door: D.c, op: [19, 23, 18, 35], lamp: [28, 6], mech: 'swing', glow: '#ffb8a0' };
+}
+
+const BAKERS = { mage: bakeMage, forest: bakeForest, marsh: bakeMarsh, fungus: bakeFungus, crag: bakeCrag, mine: bakeMine, storm: bakeStorm, coast: bakeCoast, canal: bakeCanal, inland: bakeInland, desert: bakeDesert };
 const CACHE = {};
 export function sprite(kind) { const k = BAKERS[kind] ? kind : DEFAULT; return CACHE[k] || (CACHE[k] = BAKERS[k]()); }
 /* main.js calls this when a level loads: bake the kind NOW, at load, never on a frame */
