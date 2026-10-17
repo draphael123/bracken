@@ -53,6 +53,7 @@ function hints() {
     return parts.join(''); };
   src.forEach((line, k) => {
     for (const m of line.matchAll(/hintMsg = /g)) { const e = exprAt(line, m.index + 10); if (!/'/.test(e)) continue; for (const v of new Set([build(e, true), build(e, false)])) out.push({ at: 'main.js:' + (k + 1), s: v }); }
+    for (const m of line.matchAll(/hintSay\('\w+', [\d.]+, /g)) { const e = exprAt(line, m.index + m[0].length); if (!/'/.test(e)) continue; for (const v of new Set([build(e, true), build(e, false)])) out.push({ at: 'main.js:' + (k + 1), s: v }); }   /* (claude/hintlevel) every hint box line goes through hintSay(tier, seconds, text) now */
     for (const m of line.matchAll(/tombHint\('\w+', /g)) { const e = exprAt(line, m.index + m[0].length); for (const v of new Set([build(e, true), build(e, false)])) out.push({ at: 'main.js:' + (k + 1), s: v }); }
   });
   for (const [h, s] of Object.entries(CROUCH_FIRST)) out.push({ at: 'crouch-hint.js:' + h, s });   /* (claude/crouchfix) the first-crouch hint of each hero */

@@ -116,3 +116,34 @@ try {
   assert.equal(mid.highAgain, 'MECH ONE low', 'back on HIGH a line told on LOW says again'); assert.equal(mid.n[0], mid.n[1], 'HIGH writes nothing to the save');
   console.log('hintlevel OK: gate, source ' + JSON.stringify(tiers) + ', stall clock 10/20/45/never, row, defaults, ' + out.length + ' levels');
 } finally { pg.close(); }
+
+/* ---- 5. THE STALL, in a real level: a hero held still at a listed spot is nudged at 10 s (HIGH) / 20 (MEDIUM) / 45 (LOW) / never (NONE), and the glint over
+   what the route needs is as it was on HIGH and MEDIUM, only after 45 s on LOW, never on NONE (src/stuck-guide.js, the shared clock) ---- */
+{ const { STUCK } = await import('../src/stuck-spots.js'); const { T } = await import('../src/level.js');
+  const TS = 16, SOLIDS = new Set([T.SOLID, T.SPIKE, T.CRATE, T.PALISADE, T.PLANK, T.PORT, T.SOFT, T.ICE, T.CRYST, T.SHELF, T.BOUNCER, T.RAIL]);
+  const solid = (L, x, y) => x < 0 || y < 0 || x >= L.W || y >= L.H || SOLIDS.has(L.grid[y * L.W + x]);
+  let plan = null;
+  for (const [id, spots] of Object.entries(STUCK)) { if (plan) break; const lv = LEVELS.find(l => l.id === id); if (!lv || !lv.build) continue; let L; try { L = lv.build(); } catch { continue; }
+    for (const sp of spots) { if (sp.steps || sp.glint === 'stall' || !sp.at || !sp.zone) continue; const [c0, r0, c1, r1] = sp.zone;
+      for (let r = r0; r <= r1 && !plan; r++) for (let c = c0; c <= c1 && !plan; c++) { if (solid(L, c, r) || solid(L, c, r - 1) || !solid(L, c, r + 1) || Math.hypot(c - sp.at[0], r - sp.at[1]) < 3) continue; plan = { id, spot: sp.id, line: sp.line, p: [c, r] }; }
+      if (plan) break; } }
+  assert.ok(plan, 'a plain single-step spot to hold a hero at');
+  const pg2 = await openPage({ audio: false, fonts: false });
+  try {
+    const R = await pg2.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});const q=${JSON.stringify(plan)};const out={};
+      const stub=()=>({n:0,globalAlpha:1,strokeStyle:'',fillStyle:'',lineWidth:1,beginPath(){},arc(){this.n++},stroke(){},fillRect(){this.n++}});
+      for(const lv of ['high','medium','low','none']){BK.setHints(lv);BK.load(LEVELS.findIndex(l=>l.id===q.id));BK.state='play';BK.god=true;BK.sim(30);BKT.guide.reset(q.id);BK.uiHud.hint('',0);BK.enemies().length=0;
+        const rec={said:null,glint:[]};const per=lv==='none'?6500:lv==='low'?4800:2300;
+        for(let i=0;i<per&&rec.said===null;i++){if(i%10===0){BK.tp(q.p[0],q.p[1]);BK.P.vx=0;BK.P.vy=0;if(BK.chase&&BK.chase.on())BK.chase.reset();}BK.sim(1);
+          if(i===500||i===4400){const g=stub();BKT.guide.draw(g,0,0,320,180,1);rec.glint.push([Math.round(i/60*BK.ui.settings().speed),g.n>0]);}
+          const t=BKT.hintNow;if(t&&t.msg===q.line)rec.said=Math.round(i/60*BK.ui.settings().speed*10)/10;}
+        {const g=stub();BKT.guide.draw(g,0,0,320,180,1);rec.after=g.n>0;}out[lv]=rec;}
+      BK.setHints('high');return out;})()`, 1200000);
+    const near = (v, want, tol) => v !== null && Math.abs(v - want) <= tol;
+    assert.ok(near(R.high.said, 10, 1.5), 'HIGH: nudged at 10 s: ' + JSON.stringify(R.high)); assert.ok(near(R.medium.said, 20, 1.5), 'MEDIUM: nudged at 20 s: ' + JSON.stringify(R.medium));
+    assert.ok(near(R.low.said, 45, 1.5), 'LOW: nudged at 45 s: ' + JSON.stringify(R.low)); assert.equal(R.none.said, null, 'NONE: never nudged in 60 s: ' + JSON.stringify(R.none));
+    assert.ok(R.high.glint[0][1] && R.medium.glint[0][1], 'HIGH and MEDIUM: the glint shows at 5 s, as it always did'); assert.ok(!R.low.glint[0][1], 'LOW: no glint at 5 s'); assert.ok(!(R.low.glint[1] && R.low.glint[1][1]), 'LOW: still no glint at 44 s'); assert.ok(R.low.after, 'LOW: the glint shows once the nudge has come (45 s)');
+    assert.ok(!R.none.glint[0][1] && !R.none.glint[1][1], 'NONE: no glint at all');
+    console.log('hintlevel stall OK (' + plan.id + ' / ' + plan.spot + '): nudge at ' + [R.high.said, R.medium.said, R.low.said, R.none.said].join(' / ') + ' s (HIGH / MEDIUM / LOW / NONE)');
+  } finally { pg2.close(); }
+}
