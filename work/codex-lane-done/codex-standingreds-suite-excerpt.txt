@@ -1,0 +1,21 @@
+Task C full serial on a62e2edb, 2026-10-17 18:12:39-21:52:12 Eastern
+ ok  curve-gate       3148ms  curve-gate: 47 campaign levels; 2 out of their act band and report-only
+ ok  mark-integrity 186441ms  every mark seen belongs to a windup that is drawn and lands.
+ ok  no-hidden-hits 271365ms  ok  no-hidden-hits: every blow sampled came from a foe on the picture
+ ok  slopes-trace    41118ms  slopes-trace: every frame of every level identical to the pre-slopes build
+ ok  textfit-full   362088ms  0 pictures
+FAIL dangling-paths
+FAIL signs
+FAIL elites
+FAIL store-preview
+FAIL arena-supplies
+FAIL normal-health
+FAIL level-quality
+FAIL theatre
+FAIL mash-gate
+FAIL mobile-perf
+FAIL unburied-look
+FAIL whatsnew
+FAIL pixels
+13 check(s) failed.
+After this run, the measured Scree mash row was refreshed and standalone mash-gate passed.

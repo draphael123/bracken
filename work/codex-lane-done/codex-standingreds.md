@@ -1,4 +1,4 @@
-# Task C — standing reds (full suite pending)
+# Task C — standing reds (five target checks green; full serial red)
 
 Base: `origin/claude/codexmerge` (`2b06d610`); `origin/master` did not yet contain it when this branch was made. Branch: `codex/standingreds`. The coordinator must still run the release suite after integration.
 
@@ -14,9 +14,13 @@ Two more consecutive full strict text sweeps passed on October 16: `work/standin
 
 ## Checks and remaining work
 
-Run a serial `npm run check` and record its exact verdict before claiming Task C done. This branch began at the requested codexmerge base; master has advanced through batch98 since then, so integration needs a fresh release-suite run. Do not merge this branch locally. Tasks D, E, F, H and I are pushed on separate branches; J has a pre-existing `normal-health` red documented in its branch report. Optional G has not started.
+On commit `a62e2edb`, the full serial `npm run check` ran October 17 from 6:12:39 to 9:52:12 p.m. Eastern (about 3 h 40 m): **371 `ok`, 13 `FAIL`, exit 1**. All five named Task C checks were `ok`: `curve-gate`, `mark-integrity`, `no-hidden-hits`, `slopes-trace`, and strict `textfit-full` (zero pictures). The 13 full-suite reds were `dangling-paths`, `signs`, `elites`, `store-preview`, `arena-supplies`, `normal-health`, `level-quality`, `theatre`, `mash-gate`, `mobile-perf`, `unburied-look`, `whatsnew`, and `pixels`. The full log is `work/standingreds-full-serial-a62e2edb.log` outside this checkout; a short verdict excerpt is beside this report. The suite was not green, and the other 12 failures have not all been individually isolated on this older base.
+
+The `mash-gate` failure was this branch's own Scree level-hash change. I reran the unchanged `node tools/mash-bot.mjs scree --level scree --write` pilot: knight/warden/pyro each died 1/1/2 times and reached all waypoints; `node tools/mash-gate.mjs` then passed for 47 campaign levels. The measured `docs/mash-bot.json` Scree row is included in the subsequent commit. No mash assertion was changed. The full serial run predates this measurement; the other 12 failure verdicts refer to `a62e2edb`.
+
+This branch began at the requested codexmerge base; master has advanced through batch98 since then. A read-only `git merge-tree --write-tree origin/master codex/standingreds` preview found content conflicts in `docs/level1-curve.json` and `tools/rule-state.mjs`. Integration needs those resolved and a fresh release-suite run on the combined tree; I did not merge this branch locally. Latest master also has Task F's What's New change and `b079f847`'s `normal-health` Paladin row, so the coordinator should judge the combined verdict rather than this old-base count. Tasks D, E, F, H and I are pushed on separate branches; J is pushed with the later-master update in its report. Optional G has not started.
 
 ## QUESTIONS FOR DANIEL
 
-- Recommendation: integrate this branch only after reviewing the full serial suite verdict and rechecking it on the batch98 base. The five requested standing checks now pass standalone with their original requirements.
+- Recommendation: integrate this branch after resolving the two named conflicts, then run the release suite on the combined batch98 tree. I built and verified fixes for all five named standing checks; the old-base full serial suite still had 12 failures after its Scree mash baseline was refreshed.
 - Recommendation: retain the Scree captain change; repeated pilot evidence puts the room back in its act-II band while keeping four foes and the locked fight. Built: the encounter edit, preserved THORNED affix, and measured curve row.
