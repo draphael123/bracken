@@ -27206,7 +27206,8 @@ LPF = makeLamplitFire({ L: () => L, TS, T, hero: () => P, players: () => players
   takeFire: pp => { pp.wick = WICK_DRY; pp.snuffed = false; SFX.spark(); },
   talkBusy: () => !!talkTo || !!talk || props.some(q => q.t === 'doorway' && Math.abs(q.x - P.x) < 13 && Math.abs(q.y - P.y) < 22),
   isWickling: e => e.t === 'wickling', wicklingFire: e => WKH && WKH.struck(e) });
-WKH = makeWicklingHands({ hero: () => P, players: () => players, lamps: () => (lamps.length ? lamps : props.filter(q => q.t === 'lantern' || q.t === 'minerlamp')),
+const wkRoom = pr => [L.arena, L.mini].some(A => A && pr.x >= A.x0 - 32 && pr.x <= A.x1 + 32);   /* (a wickling never drinks a boss's or a mini's lamps: those are the fight's) */
+WKH = makeWicklingHands({ hero: () => P, players: () => players, lamps: () => (lamps.length ? lamps : props.filter(q => q.t === 'lantern' || q.t === 'minerlamp')).filter(pr => !wkRoom(pr)),
   water: (x, y) => (L.pools || []).some(p => p.swim && !p.square && x >= p.x0 && x < p.x1 && y > p.y && y < (p.bottom ?? p.y + 64)),
   floorBelow: (x, y) => { const tx = Math.floor(x / TS); let ty = Math.max(0, Math.floor(y / TS)); while (ty < LH - 1 && !(isSolid(tx, ty) || (tileAt(tx, ty) !== T.NET && isOneWay(tileAt(tx, ty))))) ty++; return ty * TS; },
   hasFlame: pp => (pp.wick || 0) > 0 || (pp.lcFlame || 0) > 0,
