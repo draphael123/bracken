@@ -50,6 +50,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     if (L.redgorge) for (const m of [...(L.jams || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     /* THE UNDERWELL (src/underwell.js, claude/underwell): a BROOD NEST seals a tunnel until a torch burns it (the oil and the torch are on the road before it: tools/underwell.mjs proves each nest burns) and THE DRY FOUNTAIN's vault opens on the three taps the level lays down: both count as done, like the gorge's jams (the plain fill: legs only) */
     if (L.underwell) for (const m of [...(L.nests || []), ...(L.vaultDoors || [])]) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    /* THE LAMPLIT STREET 3 (src/lamplit-fire.js, claude/lamplit3): a TAR NET burns away on fire from the road before it (a brazier or a lamp in reach: tools/lamplit3.mjs proves each net has its oil and its fire): done, like the gorge's jams (the plain fill: legs only) */
+    if (L.lpFire) for (const m of (L.lpSnags || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     /* THE SKY ROAD (src/sky-road.js, claude/skyroad): THE RIDERS' LOFT opens on the four kite cloths the level lays down: done, like the old nest (tools/skyroad.mjs proves it is a lock) */
     if (L.skyroad) for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
     /* THE BURIED CITY (src/buried-city.js, claude/buriedcity): its grid is every sand room DRAINED (the hands write the sand in at load), so a drain-to-pass room is
