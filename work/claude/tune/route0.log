@@ -1,0 +1,51 @@
+ok   knight   GALLEY HULL: the teach well             2/2
+ok   knight   GALLEY HULL: the test well              4/4
+ok   knight   GALLEY HULL: up to the stern castle     4/4
+ok   knight   GALLEY HULL: the exam well              4/4
+ok   knight   RIGGING RUN: teach + test               5/5
+ok   knight   RIGGING RUN: the lashing and the remix  4/4
+ok   knight   RIGGING RUN: the exam                   4/4
+ok   warden   GALLEY HULL: the teach well             2/2
+ok   warden   GALLEY HULL: the test well              4/4
+ok   warden   GALLEY HULL: up to the stern castle     4/4
+ok   warden   GALLEY HULL: the exam well              4/4
+ok   warden   RIGGING RUN: teach + test               5/5
+ok   warden   RIGGING RUN: the lashing and the remix  4/4
+ok   warden   RIGGING RUN: the exam                   4/4
+ok   pyro     GALLEY HULL: the teach well             2/2
+ok   pyro     GALLEY HULL: the test well              4/4
+ok   pyro     GALLEY HULL: up to the stern castle     4/4
+ok   pyro     GALLEY HULL: the exam well              4/4
+ok   pyro     RIGGING RUN: teach + test               5/5
+ok   pyro     RIGGING RUN: the lashing and the remix  4/4
+FAIL pyro     RIGGING RUN: the exam                   1/4  fell at link {"yard":368} TRACE 0,5863,144,0,1,y,.,5835/144 | 4,5992,341,270,0,-,.,5968/160 | 8,5997,359,270,0,-,.,5963/160 | 12,6002,377,270,0,-,.,5957/160 | 16,6005,395,270,0,-,.,5951/160 | 20,6008,413,270,0,-,.,5944/160 | 24,6009,431,270,0,-,.,6029/144 | 28,6010,449,270,0,-,.,6025/144 | 32,6010,467,270,0,-,.,6023/144
+ok   ranger   GALLEY HULL: the teach well             2/2
+ok   ranger   GALLEY HULL: the test well              4/4
+ok   ranger   GALLEY HULL: up to the stern castle     4/4
+ok   ranger   GALLEY HULL: the exam well              4/4
+ok   ranger   RIGGING RUN: teach + test               5/5
+ok   ranger   RIGGING RUN: the lashing and the remix  4/4
+ok   ranger   RIGGING RUN: the exam                   4/4
+ok   paladin  GALLEY HULL: the teach well             2/2
+ok   paladin  GALLEY HULL: the test well              4/4
+FAIL paladin  GALLEY HULL: up to the stern castle     1/4  fell at link {"bench":"b5"} TRACE 0,2504,409,0,1,b4,.,2496/409 | 4,2507,411,0,1,b4,.,2496/411 | 8,2512,414,0,1,b4,.,2496/414 | 12,2518,418,0,1,b4,.,2496/418
+FAIL paladin  GALLEY HULL: the exam well              1/4  fell at link {"bench":"b8"} TRACE 0,3047,422,0,1,b7,.,3024/422
+FAIL paladin  RIGGING RUN: teach + test               3/5  slid off after landing on {"yard":313} at 5024,160,g
+FAIL paladin  RIGGING RUN: the lashing and the remix  3/4  timed out at {"ledge":[356,360,7]} hero 5709,192,g,- target 5696,5776,128
+FAIL paladin  RIGGING RUN: the exam                   3/4  timed out at {"ledge":[385,389,8]} hero 6174,208,g,- target 6160,6240,144
+ok   reaper   GALLEY HULL: the teach well             2/2
+ok   reaper   GALLEY HULL: the test well              4/4
+ok   reaper   GALLEY HULL: up to the stern castle     4/4
+ok   reaper   GALLEY HULL: the exam well              4/4
+ok   reaper   RIGGING RUN: teach + test               5/5
+ok   reaper   RIGGING RUN: the lashing and the remix  4/4
+ok   reaper   RIGGING RUN: the exam                   4/4
+ok   geomancerGALLEY HULL: the teach well             2/2
+ok   geomancerGALLEY HULL: the test well              4/4
+ok   geomancerGALLEY HULL: up to the stern castle     4/4
+ok   geomancerGALLEY HULL: the exam well              4/4
+ok   geomancerRIGGING RUN: teach + test               5/5
+ok   geomancerRIGGING RUN: the lashing and the remix  4/4
+ok   geomancerRIGGING RUN: the exam                   4/4
+ok   the castle bench stopped high by freeing its rower stays a step ({"freed":true,"still":true,"top":272,"y":272})
+6 FAILED

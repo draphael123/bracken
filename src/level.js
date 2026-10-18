@@ -4924,246 +4924,295 @@ function shipwreckReef() {
 // THE FLOTILLA. A pirate fleet lashed into a floating town over the drowned city, working the wrecks and paying the
 // sea for the right. Four ships and the water between them: THE GALLEY (her oar deck full of Saltreach's missing
 // fisherfolk), THE HULK (a rotted prize whose deck goes through under you, and whose hold is full), THE POWDER HOY
-// (kegs, and a gun pointed at the flagship's side) and THE FLAGSHIP, where the Quartermaster falls back deck by deck
-// and cuts the lines behind her. What moves is the water between the hulls: ropes to swing, planks to drop, nets to
+// (kegs, copper doors and her deck guns) and THE FLAGSHIP, where the Admiral's Champion holds the lashing (claude/flotilla2;
+// the Quartermaster is benched). What moves is the water between the hulls: ropes to swing, planks to drop, nets to
 // climb, and a long way down into the sea if you misjudge it.
 function theFlotilla() {
-  const W = 400, H = 40; const L = painter(W, H);
+  /* THE FLOTILLA 2 (claude/flotilla2, the OPUS greybox, 2026-10-17; scratch/brief-flotilla2.md): x2 LENGTH ('way too short'). The rule is kept: FOUR HULLS LASHED
+     TOGETHER, THE WAY PAST IS OVER THEM, NOT THROUGH. Six NAMED AREAS, each one verb taught -> tested -> remixed -> examined, a shrine closing the big ones:
+       THE ROCK 0-30 | 1. THE GALLEY 31-96 (the press gang) | THE GALLEY HULL 97-208 (her rowing benches pump up and down over the bilge: free a pressed
+       fisherman's chain and HIS BENCH STOPS where it is) | THE LONG GAP 209-224 | 2. THE HULK 225-288 (grey planks go through) | THE RIGGING RUN 289-388 (her
+       yards and lashings over the harbour, rocking apart and together with the hulls) | 3. THE POWDER SHIP 389-539 (STRIKE A DECK GUN'S BREECH: the round
+       shot opens her copper doors, blows the keg on her crate hatch, and clears whatever stands down its line - THE KEY the boss is put down with) |
+       THE LASHINGS 540-591 (the Powder Ship's stern lashed to 4. THE FLAGSHIP's waist: THE ADMIRAL'S CHAMPION, src/admirals-champion.js) | the flagship 592-603.
+     NO FLOATING WOOD (brief item 2): the crates that rode the swell in mid-air are gone - every crossing is a spar off a hull, a line from a mast, or a yard on
+     its stays (the yards are src/flotilla2.js 'yard' movers, drawn with their lines; the benches are 'bench' movers, drawn with their rowers). */
+  const W = 604, H = 40; const L = painter(W, H);
   const { block, plat, ent, coins, set } = L;
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const net = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.NET); };
   const rail = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.RAIL); };
   const rot = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.SHELF); }; // planking that goes through under a standing weight
-  const pools = [], movers = [], hullZones = [], airRooms = [];
-  /* WHERE THE AIR IS, in the one list the breath clock and tools/breath.mjs both read (src/deepair.js) */
+  const crates = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.CRATE); }; // powder crates laid flush as a hatch cover: a keg's blast takes them
+  const pools = [], movers = [], hullZones = [], airRooms = [], benches = [], rowers = [], yards = [];
   const D = { vents: [], clams: [], bulbs: [], wrecks: [], pockets: [] };
   const pocket = (x0, x1, y0, y1) => { airRooms.push([x0, x1, y0, y1]); D.pockets.push([x0, x1, y0, y1]); };
   const vent = (x, y, h) => D.vents.push({ x, y, h });
   const clam = (x, y) => D.clams.push({ x, y });
+  /* A ROWING BENCH (src/flotilla2.js): its top rides from row `low` up `rise` rows and back, every `period` s; a pressed fisherman pulls its oar - strike his chain
+     and he lets go: the bench stops WHERE IT IS. id ties the rower to his bench. */
+  const bench = (x, low, rise, period, ph, rower = true) => { const id = 'b' + benches.length;
+    benches.push(id); movers.push({ flot: 'bench', bench: id, x: x * TS, x0: x * TS, y: low * TS, y0: low * TS, w: 3 * TS, h: 8, vert: true, rise: rise * TS, period, phase: ph, range: 0, speed: 0 });
+    if (rower) rowers.push({ bench: id, x: x * TS + 8, freed: false }); return id; };
+  /* A YARD ON ITS STAYS (src/flotilla2.js): it rides out from one mast and back as the hulls rock apart and together - x from x0 to x0 + span tiles */
+  const yard = (x, row, span, period, ph, len = 3) => { yards.push([x, row, span]); movers.push({ flot: 'yard', x: x * TS, x0: x * TS, y: row * TS, y0: row * TS, w: len * TS, h: 8, span: span * TS, period, phase: ph, range: 0, speed: 0 }); };
+  /* A MAST: shrouds to climb from its deck up to its top (row), a top to stand on */
+  const mast = (x, top, deck, topW = 0) => { net(x, x + 1, top + 1, deck); if (topW) plat(x - Math.floor(topW / 2) + 1, top, topW); ent('deco', x, deck, { kind: 'mastTall', v: x % 2 }); };
 
   // the sea the whole town floats on: fall in and you swim, and the nets down every side are how you get back up
-  block(0, W - 1, 38, H - 1); block(377, W - 1, 11, 37); // past her stern the level ends: no water, nowhere to fall
+  block(0, W - 1, 38, H - 1); block(602, W - 1, 11, 37); // past the flagship the level ends: no water, nowhere to fall
   pools.push({ x0: 0, x1: W * TS, y: 30 * TS, bottom: 38 * TS, shallow: false, swim: true, clear: true, sea: true, harm: true, foulCol: '#7a8a3a', foulColL: '#b8c85a', foulColD: '#3a4a1e' }); // tar, bilge and worse: swim it and it eats you, so cross above it
 
-  // ---- THE ROCK: the Ferryman will not go closer than this ----
+  // ================= THE ROCK: the Ferryman will not go closer than this =================
   block(0, 22, 26, 37);
-  
   ent('sign', 2, 25, { text: 'THE FLOTILLA: FOUR SHIPS LASHED INTO A TOWN. PRESSED FISHERFOLK WORK THE OARS.' });
-  ent('check', 8, 25); ent('deco', 17, 25, { kind: 'rowboat' });
+  ent('deco', 17, 25, { kind: 'rowboat' });
   ent('sign', 14, 25, { text: 'CLIMB THE NETS ON THE HULLS TO GET OUT OF THE WATER. YOU WILL BE SEEN.' });
   coins([6, 25], [12, 25], [18, 25]);
+  // FROM THE ROCK TO THE GALLEY: a spar lashed off the rock, then up onto the galley's BOWSPRIT (no crates in the air: brief item 2)
+  plat(23, 26, 4); net(29, 30, 26, 37);   /* the spar lashed to the rock's lip, and the net up the galley's bow out of the water */
+  plat(27, 24, 4); ent('deco', 28, 24, { kind: 'rigging', v: 0 });   /* her bowsprit, off her bow at 31: a spar you can stand on, stayed to her foremast */
+  coins([24, 25], [28, 23], [30, 23]);
 
-  // ---- the first crossing: a lashed spar, then a rope ----
-  // FROM THE ROCK TO THE GALLEY: a spar, two crates riding the swell, and a rope to swing the last of it
-  plat(23, 25, 4); net(29, 30, 26, 36);
-  ent('mover', 26, 23, { len: 2, range: 0, bob: true }); ent('mover', 28, 20, { len: 2, range: 3, speed: 20, bob: true });
-  coins([26, 22], [28, 18]);
-  movers.push({ kind: 'swing', px: 29 * TS, py: 13 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 });
-
-  // ---- 1. THE GALLEY: long, low, and full of other people's neighbours ----
-  block(31, 96, 24, 37); hullZones.push([31, 96, 24, 37]); // her hull goes to the bottom: the way past is over her, not under
+  // ================= 1. THE GALLEY: long, low, and full of other people's neighbours =================
+  block(31, 96, 24, 37); hullZones.push([31, 208, 24, 37]);   /* (her stern - THE GALLEY HULL - runs on to 208: one hull) */ // her hull goes to the bottom: the way past is over her, not under
   air(34, 93, 26, 29); // her oar deck
   air(58, 60, 24, 25); net(59, 59, 24, 29); // the hatch down to it, and the ladder back up
-  rail(31, 34, 23); rail(93, 96, 23);
+  rail(31, 34, 23);
   net(50, 51, 12, 23); plat(47, 11, 7); // her shrouds and the crow's nest
   ent('lookout', 50, 10, { face: 1 });
   ent('sign', 36, 23, { text: 'THE GALLEY. STOP THE LOOKOUT BEFORE HIS WHISTLE WAKES THE TOWN.' });
   ent('vault', 82, 29);
   for (const x of [38, 60, 80]) ent('deco', x, 29, { kind: 'oarBench' });
   ent('deco', 44, 29, { kind: 'oar' }); ent('deco', 70, 29, { kind: 'oar' });
-  // THE PRESS GANG: eight of them in the open with a bosun whistling them onto you. They come in a crowd
-  // because a crowd is the only way they take anybody, and the crowd is the problem to solve.
+  // THE PRESS GANG: a crowd in the open with a bosun whistling them onto you - the crowd is the problem to solve
   ent('sailor', 44, 23, { face: -1 }); ent('netter', 50, 23, { face: -1 }); ent('crab', 56, 23, { face: 1 });
   ent('cutlass', 61, 23, { face: 1 }); ent('cutlass', 68, 23, { face: -1 }); ent('cutlass', 74, 23, { face: -1 });
   ent('sailor', 84, 23, { face: 1 }); ent('cutlass', 90, 23, { face: -1 });
-  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('lookout', 51, 10, { face: -1 });   /* the crow's nest's own: a lookout, not a merrow scout off the tide (level review, 2026-09-24) */
+  ent('bosun', 78, 23, { face: -1 }); ent('bosun', 66, 29, { face: -1 }); ent('lookout', 51, 10, { face: -1 });
   ent('sign', 42, 23, { text: 'THE PRESS GANG: BACK TO THE MAST AND SWING WIDE, OR KILL THE BOSUN FIRST.' });
   ent('sign', 56, 23, { text: 'THEIR GALLEY FIRE IS STILL LIT. WHOEVER WAS COOKING LEFT IN A HURRY.' });
   ent('deco', 54, 23, { kind: 'cookPot' }); ent('deco', 84, 23, { kind: 'washing' }); ent('deco', 88, 23, { kind: 'waterButt' });
   ent('deco', 66, 23, { kind: 'hammock', v: 0 }); ent('deco', 46, 23, { kind: 'coiledCable', v: 0 });
-  // THE GALLEY'S RIG: two masts, her mainsail, shrouds either side, her colours at the truck
   for (const [x, v] of [[50, 0], [78, 1]]) ent('deco', x, 23, { kind: 'mastTall', v });
   ent('deco', 44, 16, { kind: 'sailRag', v: 0 }); ent('deco', 72, 15, { kind: 'sailRag', v: 1 });
   ent('deco', 56, 20, { kind: 'rigging', v: 0 }); ent('deco', 86, 20, { kind: 'rigging', v: 1 });
   ent('deco', 50, 9, { kind: 'pennant', v: 0 }); ent('deco', 78, 10, { kind: 'pennant', v: 2 });
   for (const x of [36, 48, 62, 76, 88]) ent('deco', x, 26, { kind: 'gunport', v: x % 2 });
-  ent('deco', 33, 23, { kind: 'figurehead' }); ent('deco', 92, 23, { kind: 'boardingNet' });
-  ent('check', 34, 23); ent('check', 88, 23);
+  ent('deco', 33, 23, { kind: 'figurehead' });
   coins([36, 23], [42, 23], [48, 23], [56, 23], [64, 23], [72, 23], [80, 23], [90, 23]);
   coins([36, 29], [48, 29], [56, 29], [74, 29], [88, 29]);
   coins([50, 17], [50, 14], [49, 10], [52, 10]);
+  /* THE CHAMPION, FORESHADOWED (B8): told on the first deck, and again at every hull */
+  ent('sign', 92, 23, { text: "THE ADMIRAL'S CHAMPION HOLDS HIS LASHING. ONLY HIS OWN GUNS PUT HIM DOWN." });
 
-  // ---- the second crossing: a rope over open water, and a net up the prize's side ----
-  // THE LONG GAP: their washing line of spars, two swinging ropes out of the tops, and nothing under it but the harbour
-  movers.push({ kind: 'swing', px: 100 * TS, py: 9 * TS, arm: 112, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2 });
-  movers.push({ kind: 'swing', px: 108 * TS, py: 8 * TS, arm: 120, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.2 });
-  ent('mover', 98, 22, { len: 2, range: 0, bob: true }); ent('mover', 104, 19, { len: 2, range: 4, speed: 22, bob: true });
-  ent('mover', 109, 22, { len: 2, range: 0, bob: true });
-  net(110, 111, 18, 36);
-  coins([98, 21], [104, 17], [109, 21]);
-  ent('manta', 104, 29);   /* skims the harbour under the swinging ropes and dives at whoever lands on the Galley or the Hulk */
+  // ================= THE GALLEY HULL: her stern, where they keep the oars =================
+  // Her stern deck burned off in some old fight and they never planked it again: you look straight down into her rowing well, and the benches are WORKING -
+  // a pressed fisherman to every oar, the benches riding up and down on their frames over the bilge. The way on is over them. STRIKE A ROWER'S CHAIN and he lets go:
+  // his bench stops where it is (src/flotilla2.js). TEACH (one bench, a cheap fall) -> TEST (three out of step) -> REMIX (a bench that has to be stopped HIGH to reach
+  // the stern castle) -> EXAM (four benches under the bosun's eye, a marine in the mizzen) -> the shrine on her stern.
+  block(97, 208, 24, 37);
+  air(101, 109, 24, 33); air(118, 138, 24, 33); air(153, 170, 24, 33); air(187, 203, 24, 33);   /* (flotilla2tune: the last well ends a tile sooner, 204 -> 203, so the bench to the stern deck is two tiles like every other gap: the paladin's jump is 58 px and three tiles left it 4 px) */ // the four wells, down to her bilge (the harbour is in her: rows 30+ are foul)
+  for (const [a, b] of [[101, 109], [118, 138], [153, 170], [187, 203]]) { net(a, a, 25, 33); net(b, b, 25, 33); }   /* her ribs: a net up each end of every well, out of the bilge */
+  // TEACH: one bench in a narrow well. Up, it is level with the deck; down, it is five rows under. Its rower is the lesson.
+  bench(104, 29, 5, 4.2, 0.0);   /* (every gap in her wells is three tiles at most: the climb is the timing, not the reach) */
+  ent('sign', 99, 23, { text: 'HER BENCHES RIDE UP AND DOWN WITH THE OARS. A PRESSED FISHERMAN ROWS EACH ONE.' });
+  ent('sign', 113, 23, { text: 'STRIKE A ROWER\'S CHAIN AND HE LETS GO: HIS BENCH STOPS WHERE IT IS.' });
+  coins([106, 22], [114, 23]);
+  // the deck between: an overseer and a hand
+  ent('bosun', 115, 23, { face: -1 }); ent('sailor', 116, 23, { face: -1 });
+  ent('deco', 112, 23, { kind: 'coiledCable', v: 1 });
+  // TEST: three benches out of step across a wide well, a netter on the far side
+  bench(121, 29, 4, 3.6, 0.0); bench(127, 28, 4, 3.2, 0.45); bench(133, 29, 5, 4.0, 0.2);
+  ent('netter', 144, 23, { face: -1 }); ent('cutlass', 148, 23, { face: -1 });
+  ent('sign', 142, 23, { text: 'THE OARS PULL TOGETHER, THE BENCHES DO NOT. WATCH THEM BEFORE YOU GO.' });
+  coins([122, 23], [128, 22], [134, 22], [146, 23]);
+  // REMIX: her STERN CASTLE stands high over the last of her - a bench on a tall frame, stopped at the top, is the step up to it
+  block(171, 186, 15, 23);   /* the stern castle, built up off her deck: its deck at row 15, nine rows over her well */
+  net(170, 170, 16, 24);   /* the rib net runs on up the castle's face: the SWIMMER'S way up (the bilge bites all the way), the benches are the dry one */
+  bench(156, 29, 4, 3.4, 0.1); bench(161, 27, 4, 3.8, 0.55); bench(166, 22, 5, 4.4, 0.3);   /* the last one rides on its tall frame from row 22 up to 17: two rows under the castle's deck at 15 */
+  ent('sign', 151, 23, { text: 'HER STERN CASTLE IS HIGH. STOP THE LAST BENCH AT THE TOP OF ITS STROKE.' });
+  ent('marine', 182, 14, { face: -1 }); ent('lookout', 179, 14, { face: -1 });
+  ent('deco', 184, 14, { kind: 'lanternDeck', v: 0 }); ent('deco', 180, 14, { kind: 'chartTable' });
+  coins([157, 23], [162, 22], [167, 16], [178, 14], [184, 14]);
+  mast(180, 3, 14, 5);   /* her mizzen, off the castle: a marine's perch, and a silver up top (off the route: a secret) */ ent('silver', 182, 2);
+  // EXAM: down off the castle into her last well - four benches under the bosun's eye; a marine in the mizzen top; the shrine on her stern
+  bench(189, 29, 4, 3.0, 0.0); bench(194, 28, 5, 3.4, 0.5, false); bench(199, 27, 4, 2.8, 0.25);
+  ent('marine', 179, 2, { face: 1 }); ent('bosun', 205, 23, { face: -1 }); ent('cutlass', 206, 23, { face: -1 });
+  ent('sign', 186, 14, { text: 'THE BOSUN WHIPS THEM FASTER HERE. ONE BENCH HAS NO ROWER: IT NEVER STOPS.' });
+  coins([190, 23], [195, 22], [200, 22], [207, 23]);
+  ent('deco', 206, 23, { kind: 'oarBench' }); ent('deco', 205, 9, { kind: 'pennant', v: 2 });
+  for (const x of [103, 124, 136, 159, 169, 192]) ent('deco', x, 34, { kind: 'oar' });   /* oars down in the bilge, between the benches */
+  ent('check', 207, 23);   /* THE GALLEY HULL's shrine: on her stern, after its exam (A10c) */
+  ent('coin', 140, 33); ent('coin', 139, 33);   /* down in the bilge at the far end of the wide well, for a swimmer who climbs back out by the rib */
 
-  // ---- 2. THE HULK: a prize they never finished stripping ----
-  block(113, 176, 22, 37); hullZones.push([113, 176, 22, 37]);
-  rot(120, 130, 22); rot(146, 156, 22); // her planking is rotten through here
-  air(116, 173, 24, 29); air(134, 138, 22, 23); // the hold, and the hole down into it
-  pools.push({ x0: 116 * TS, x1: 174 * TS, y: 26 * TS, bottom: 30 * TS, shallow: false, swim: true, clear: true });
-  net(170, 171, 22, 29); net(120, 121, 22, 29); // her ladders: up out of the flooded hold at either end
-  ent('silver', 150, 29);
-  ent('sign', 116, 21, { text: 'THE HULK. GREY PLANKS WILL NOT HOLD YOU: STAND ON ONE AND YOU GO THROUGH.' });
-  ent('boarder', 128, 21, { face: -1 }); ent('boarder', 162, 21, { face: -1 });
-  // THE CHOKE: her boarding net is the only quick way through the hulk's waist and they are standing in the
-  // doorway of it, where a wide swing catches the frame and a heavy blow does not.
-  ent('boarder', 152, 21, { face: -1 }); ent('boarder', 156, 21, { face: -1 }); ent('bosun', 160, 21, { face: -1 });
-  ent('sapper', 168, 21, { face: -1, cnSkin: 'powderboy' }); ent('netter', 130, 29, { face: 1 });   /* (claude/variety) THE POWDER MONKEY: the second hull's gun-deck, by the deck gun at 192 */
-  ent('sign', 148, 21, { text: 'NO ROOM TO SWING IN THE NET DOORWAY: GO THROUGH HEAVY, OR ROUND BY THE HOLD.' });
-  net(145, 146, 10, 21); ent('marine', 146, 9, { face: -1 });
-  ent('sign', 144, 21, { text: 'THE HOLD IS FLOODED. THERE IS A LADDER AT EITHER END.' });
-  ent('deco', 140, 21, { kind: 'plunder', v: 1 }); ent('deco', 168, 21, { kind: 'rumBarrels', v: 0 });
-  ent('coin', 172, 28); // down in her flooded hold, under the rotten planking
-  ent('deco', 124, 29, { kind: 'hammock', v: 1 }); ent('deco', 145, 9, { kind: 'crowNest' });
-  net(145, 146, 10, 20); plat(144, 10, 3); // her mast is climbable and her top is a place to stand: the lookout up there was standing on nothing
-  // THE HULK'S RIG: one mast still standing, her canvas in rags, her shrouds hanging off her
-  ent('deco', 145, 21, { kind: 'mastTall', v: 1 }); ent('deco', 152, 14, { kind: 'sailRag', v: 1 });
-  ent('deco', 122, 19, { kind: 'rigging', v: 1 }); ent('deco', 166, 19, { kind: 'rigging', v: 0 });
-  ent('deco', 145, 8, { kind: 'pennant', v: 1 });
-  for (const x of [120, 136, 150, 164]) ent('deco', x, 24, { kind: 'gunport', v: (x / 2) % 2 });
-  ent('deco', 176, 21, { kind: 'boardingNet' }); ent('deco', 114, 21, { kind: 'boardingNet' });
-  ent('check', 118, 21); ent('check', 168, 21);
-  coins([118, 21], [134, 21], [142, 21], [160, 21], [172, 21]);
-  coins([120, 28], [126, 28], [154, 28], [166, 28]);
-  coins([145, 16], [146, 12]);
+  // ================= THE LONG GAP: the galley's stern boom, two lines out of the tops, the hulk's bow boom =================
+  plat(209, 22, 4); ent('deco', 210, 22, { kind: 'rigging', v: 1 });   /* the galley's stern boom (a spar off her taffrail, stayed to her mizzen) */
+  movers.push({ kind: 'swing', px: 214 * TS, py: 9 * TS, arm: 112, x: 0, y: 0, w: 32, h: 8, period: 3.4, phase: 1.2, deck: 24 });
+  movers.push({ kind: 'swing', px: 220 * TS, py: 8 * TS, arm: 120, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0.2, deck: 23 });
+  net(222, 223, 18, 37); plat(220, 21, 3);   /* the hulk's bow boom and the net up her side */
+  coins([210, 21], [214, 19], [221, 20]);
+  ent('manta', 216, 29);   /* skims the harbour under the swinging ropes and dives at whoever lands on the Galley or the Hulk */
 
-  // ---- the third crossing: their boarding plank, stowed upright until somebody drops it ----
-  ent('plank', 176, 21, { span: [177, 182], row: 21 });
-  ent('sign', 173, 21, { text: 'KNOCK THE PLANK DOWN TO REACH THE POWDER HOY, OR SWIM AND CLIMB HER NET.' });
-  net(181, 182, 24, 36); net(183, 184, 24, 29);
-  ent('mover', 179, 22, { len: 2, range: 0, bob: true }); coins([179, 21]); // a hatch cover riding the swell, for anyone who will not drop the plank
-  ent('manta', 181, 28);   /* the same harbour, under the plank crossing */
+  // ================= 2. THE HULK: a prize they never finished stripping (the old hulk, moved 112 east) =================
+  const K = 112;   /* the hulk's old columns + K */
+  block(113 + K, 176 + K, 22, 37); hullZones.push([113 + K, 176 + K, 22, 37]);
+  rot(120 + K, 130 + K, 22); rot(146 + K, 156 + K, 22); // her planking is rotten through here
+  air(116 + K, 173 + K, 24, 29); air(134 + K, 138 + K, 22, 23); // the hold, and the hole down into it
+  pools.push({ x0: (116 + K) * TS, x1: (174 + K) * TS, y: 26 * TS, bottom: 30 * TS, shallow: false, swim: true, clear: true });
+  net(170 + K, 171 + K, 22, 29); net(120 + K, 121 + K, 22, 29); // her ladders: up out of the flooded hold at either end
+  ent('silver', 150 + K, 29);
+  ent('sign', 116 + K, 21, { text: 'THE HULK. GREY PLANKS WILL NOT HOLD YOU: STAND ON ONE AND YOU GO THROUGH.' });
+  ent('boarder', 128 + K, 21, { face: -1 }); ent('boarder', 162 + K, 21, { face: -1 });
+  ent('boarder', 152 + K, 21, { face: -1 }); ent('boarder', 156 + K, 21, { face: -1 }); ent('bosun', 160 + K, 21, { face: -1 });
+  ent('sapper', 168 + K, 21, { face: -1, cnSkin: 'powderboy' }); ent('netter', 130 + K, 29, { face: 1 });
+  ent('sign', 148 + K, 21, { text: 'NO ROOM TO SWING IN THE NET DOORWAY: GO THROUGH HEAVY, OR ROUND BY THE HOLD.' });
+  ent('marine', 146 + K, 9, { face: -1 });
+  ent('sign', 144 + K, 21, { text: 'THE HOLD IS FLOODED. THERE IS A LADDER AT EITHER END.' });
+  ent('deco', 140 + K, 21, { kind: 'plunder', v: 1 }); ent('deco', 168 + K, 21, { kind: 'rumBarrels', v: 0 });
+  ent('coin', 172 + K, 28);
+  ent('deco', 124 + K, 29, { kind: 'hammock', v: 1 }); ent('deco', 145 + K, 9, { kind: 'crowNest' });
+  net(145 + K, 146 + K, 10, 20); plat(144 + K, 10, 3);
+  ent('deco', 145 + K, 21, { kind: 'mastTall', v: 1 }); ent('deco', 152 + K, 14, { kind: 'sailRag', v: 1 });
+  ent('deco', 122 + K, 19, { kind: 'rigging', v: 1 }); ent('deco', 166 + K, 19, { kind: 'rigging', v: 0 });
+  ent('deco', 145 + K, 8, { kind: 'pennant', v: 1 });
+  for (const x of [120, 136, 150, 164]) ent('deco', x + K, 24, { kind: 'gunport', v: (x / 2) % 2 });
+  ent('deco', 114 + K, 21, { kind: 'boardingNet' });
+  coins([118 + K, 21], [134 + K, 21], [142 + K, 21], [160 + K, 21], [172 + K, 21]);
+  coins([120 + K, 28], [126 + K, 28], [154 + K, 28], [166 + K, 28]);
+  coins([145 + K, 16], [146 + K, 12]);
+  // HER GUN, AND WHERE YOU FIRST SEE ONE: one blow on the breech and it fires down the deck - the deck clears, and you know what the Powder Ship's are for
+  ent('cannon', 118 + K, 21, { deck: true, aim: 1 });
+  ent('sign', 114 + K, 21, { text: 'STRIKE THE BREECH AND THE GUN FIRES DOWN THE DECK. THEN IT IS TOO HOT A WHILE.' });
+  { const gat = (x, y) => L.grid[y * W + x];   /* THE AIR IN THE HULK: up under her deck beams, leaking off the bed of her, and in the clams (the old hulk's, moved with her) */
+    const hold = x => gat(x, 28) === T.AIR && gat(x, 29) === T.AIR && gat(x, 30) === T.SOLID;
+    const roofed = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 23) === T.SOLID && gat(x + q, 24) === T.AIR && gat(x + q, 26) === T.AIR)) return false; return true; };
+    for (const x of [122 + K, 150 + K]) if (roofed(x, 6)) pocket(x, x + 5, 24, 26);
+    for (const x of [126 + K, 140 + K, 154 + K, 166 + K]) if (hold(x)) vent(x, 29, 4);
+    for (const x of [132 + K, 160 + K]) if (hold(x)) clam(x, 29);
+    for (const x of [130 + K, 162 + K]) if (hold(x)) ent('deco', x, 29, { kind: 'airBell' }); }
 
-  // ---- 3. THE POWDER HOY: what they blast wrecks open with ----
-  block(183, 240, 25, 37); hullZones.push([183, 240, 25, 37]);
-  rail(183, 186, 24);
-  ent('keg', 196, 24); ent('keg', 206, 24); ent('keg', 220, 24);   /* 196: at 192 the first keg stood in the deck gun's own tile (level review, 2026-09-24) */
-  ent('deco', 198, 24, { kind: 'kegStack' }); ent('deco', 212, 24, { kind: 'chickenCoop' });
-  ent('deco', 206, 24, { kind: 'mastTall', v: 0 }); ent('deco', 200, 17, { kind: 'sailRag', v: 0 });
-  ent('deco', 206, 11, { kind: 'pennant', v: 2 }); ent('deco', 228, 22, { kind: 'rigging', v: 0 });
-  for (const x of [190, 204, 218, 232]) ent('deco', x, 27, { kind: 'gunport', v: x % 2 });
-  ent('deco', 184, 24, { kind: 'boardingNet' }); ent('deco', 240, 24, { kind: 'boardingNet' });
-  ent('cannon', 232, 24, { hole: [245, 247, 24, 26] });
-  ent('sign', 228, 24, { text: 'STRIKE THE GUN TO OPEN THE FLAGSHIP\'S SIDE. KEGS BLOW IF HIT: MIND YOUR FEET.' });
-  // THE RIGGING: three marines above her deck, shooting down it while you cross, and a spar to go up after them
-  ent('marine', 198, 14, { face: -1 }); ent('marine', 210, 14, { face: -1 }); ent('lookout', 222, 14, { face: -1 });
-  ent('crab', 200, 24, { face: -1 }); ent('sapper', 224, 24, { face: -1, cnSkin: 'powderboy' });   /* ...and one beside the three kegs (196 / 206 / 220): what he throws lights them */ ent('bosun', 214, 24, { face: 1 });
-  ent('boarder', 236, 24, { face: -1 }); ent('sailor', 190, 24, { face: 1 });
-  net(196, 197, 15, 23); net(210, 211, 15, 23); net(224, 225, 15, 23);
-  for (let x = 197; x <= 224; x++) set(x, 14, T.ONEWAY);
-  coins([200, 13], [210, 13], [220, 13]);
-  ent('sign', 194, 24, { text: 'MARINES SHOOT DOWN THE DECK AND THE SHOTS SKIP OFF THE PLANKS. TAKE THE LINES UP.' });
-  ent('lookout', 188, 24, { face: 1 });
-  ent('check', 186, 24);
-  coins([190, 24], [196, 24], [204, 24], [216, 24], [226, 24], [236, 24]);
+  // ================= THE RIGGING RUN: over the harbour on her yards and lashings =================
+  // Between the Hulk and the Powder Ship there is no deck at all: the two are lashed at the tops. You go UP the hulk's last mast and across on what the riggers
+  // left - YARDS ON THEIR STAYS that ride out and back as the two hulls rock apart and together (src/flotilla2.js), a LASHING you walk, a line to swing. The
+  // harbour is under all of it, and a fall is the foul water and a climb back up a hull's net. TEACH (one slow yard, a net under it) -> TEST (two yards out of
+  // step) -> REMIX (a yard under a marine's fire) -> EXAM (three yards and a swing, petrels diving) -> down the Powder Ship's foremast to her deck.
+  mast(286, 9, 21, 5);   /* the hulk's mizzen: up her shrouds to the top at row 9 */
+  ent('sign', 283, 21, { text: 'THE RIGGING RUN: NO DECK BETWEEN THESE TWO. UP THE MAST, AND ACROSS ON HER YARDS.' });
+  // TEACH: one yard, slow, over a net strung between the hulls (a fall here is cheap)
+  yard(289, 10, 7, 5.0, 0.0);
+  for (let x = 288; x <= 301; x++) set(x, 20, T.NET);   /* the boarding net strung under the first yard: a fall is a climb, not the water */
+  mast(302, 9, 29, 5); block(301, 304, 30, 37);   /* a mast stepped on a sunken wreck's bones (the wreck is under the water: it stands on something) */
+  ent('sign', 300, 8, { text: 'HER YARDS RIDE OUT AND BACK AS THE HULLS ROCK. STEP ON WHEN ONE COMES TO YOU.' });
+  coins([292, 9], [296, 9], [302, 8]);
+  // TEST: two yards out of step to the next mast
+  yard(305, 10, 6, 4.2, 0.0); yard(313, 9, 6, 3.6, 0.5);
+  mast(322, 8, 29, 5); block(321, 324, 30, 37);
+  ent('petrel', 314, 4, { face: -1 });
+  coins([308, 9], [316, 8], [322, 7]);
+  // THE LASHING: a hawser from the mast down to the next, taut enough to walk (a ledge of rope: plat), a netter at its far end
+  plat(324, 11, 14); ent('deco', 330, 11, { kind: 'coiledCable', v: 0 });
+  mast(338, 9, 29, 5); block(337, 340, 30, 37);
+  ent('netter', 339, 8, { face: -1 }); ent('sign', 325, 10, { text: 'A LASHING: THE HAWSER THAT HOLDS THE HULLS TOGETHER. WALK IT.' });
+  coins([328, 10], [332, 10], [336, 10]);
+  // REMIX: a long yard under a marine's fire from the next top, and a swing line out of it
+  yard(341, 10, 9, 5.6, 0.2, 4); ent('marine', 359, 7, { face: -1 });
+  mast(357, 8, 29, 5); block(356, 359, 30, 37);
+  movers.push({ kind: 'swing', px: 366 * TS, py: 4 * TS, arm: 96, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 2.1, deck: 12 });
+  coins([346, 9], [352, 9], [360, 6]);
+  // EXAM: three yards in a chain over the open harbour, petrels diving, the Powder Ship's foremast at the end
+  yard(361, 9, 5, 3.4, 0.0); yard(368, 10, 6, 3.0, 0.4); yard(376, 9, 5, 3.6, 0.75);
+  ent('petrel', 368, 3, { face: -1 }); ent('petrel', 378, 4, { face: -1 }); ent('manta', 370, 29);
+  ent('sign', 359, 6, { text: 'THE LAST OF HER RIGGING. THE YARDS RIDE FASTER WHERE THE SWELL RUNS UNDER THEM.' });
+  coins([364, 8], [371, 9], [379, 8]);
 
-  // ---- the last crossing: her side, and the nets they board from ----
-  net(243, 244, 16, 36);
-  movers.push({ kind: 'swing', px: 242 * TS, py: 9 * TS, arm: 104, x: 0, y: 0, w: 32, h: 8, period: 3.2, phase: 2.1 });
-  ent('mover', 242, 21, { len: 2, range: 0, bob: true }); coins([242, 20]);
+  // ================= 3. THE POWDER SHIP: what they blast wrecks open with =================
+  // Her decks are walled off by COPPER DOORS that no blade moves, and her deck guns are laid and loaded down every one of them. STRIKE A GUN'S BREECH: the round
+  // shot opens a copper door, blows the keg on a crate hatch, and clears whatever stands in its line. TEACH (the gun in front of the door) -> TEST (they come down
+  // the deck in a line: let them line up) -> REMIX 1 (no door this time - a keg on her crate hatch: blow the deck open and go under) -> REMIX 2 (one gun, two
+  // doors: fire, let it cool under their charge, fire again) -> EXAM (the Admiral's men on his lashing, a heavy whose guard only a round shot breaks) -> the shrine.
+  const P0 = 386;
+  block(P0, 563, 25, 37); hullZones.push([P0, 563, 25, 37]);   /* (her stern runs on into THE LASHINGS: his west deck) */
+  mast(386, 9, 24, 5); net(384, 385, 25, 37);   /* a net down her bow into the harbour: a swimmer climbs out onto her forecastle */ ent('deco', 386, 8, { kind: 'pennant', v: 2 });   /* (her top at row 9, level with the last yard: you step across) */   /* her foremast: you come down it off the rigging run */
+  ent('check', 390, 24);   /* THE RIGGING RUN's shrine, on the Powder Ship's forecastle (A10c) */
+  ent('sign', 392, 24, { text: 'THE POWDER SHIP. HER DOORS ARE COPPER: NO BLADE OPENS ONE. HER GUNS DO.' });
+  /* the copper door: two tiles of door in a wall that runs up to the forecastle deck (nothing goes over it) */
+  const door = (x, top = 14) => { block(x, x + 1, top, 20); for (let y = 21; y <= 24; y++) { set(x, y, T.SOLID); set(x + 1, y, T.SOLID); } ent('bulkhead', x, 24, { span: [x, x + 1, 21, 24] }); };
+  // TEACH: the gun right in front of the door, nobody about
+  ent('cannon', 398, 24, { deck: true, aim: 1 }); door(406);
+  ent('sign', 396, 24, { text: 'STAND BEHIND THE GUN, FACE THE DOOR AND STRIKE THE BREECH.' });
+  coins([400, 24], [403, 24]);
+  // TEST: THE POWDER LINE - a long deck, a gun at its end, and her crew coming down it toward you in a line
+  ent('cannon', 410, 24, { deck: true, aim: 1 });
+  ent('sign', 409, 24, { text: 'THEY COME DOWN THE DECK IN A LINE. LET THEM LINE UP, THEN FIRE.' });
+  ent('cutlass', 424, 24, { face: -1 }); ent('sailor', 430, 24, { face: -1 }); ent('cutlass', 436, 24, { face: -1 }); ent('boarder', 442, 24, { face: -1 });
+  ent('keg', 428, 24); ent('sapper', 446, 24, { face: -1, cnSkin: 'powderboy' });
+  ent('marine', 432, 16, { face: -1 }); plat(428, 17, 9); net(436, 436, 18, 24);   /* a fighting top over the waist, its shrouds to the deck */
+  ent('deco', 418, 24, { kind: 'kegStack' }); ent('deco', 438, 24, { kind: 'chickenCoop' });
+  coins([416, 24], [426, 24], [434, 16], [440, 24]);
+  // REMIX 1: THE CRATE HATCH - her mainmast stands in a wall across the deck, no door in it; the way on is UNDER, through the hatch of powder crates in front of
+  // it. A keg sits on the hatch: blow it (strike it and step back, or fire the gun into it) and the deck opens into her 'tween deck.
+  block(458, 460, 10, 24); mast(458, 4, 9); ent('deco', 459, 3, { kind: 'pennant', v: 1 });   /* the mainmast's partners: a wall across her, deck to top */
+  crates(452, 456, 25); ent('keg', 454, 24);
+  ent('cannon', 448, 24, { deck: true, aim: 1 });
+  ent('sign', 449, 23, { text: 'THE HATCH IS POWDER CRATES: BLOW THE KEG ON IT. STRIKE IT, OR SHOOT IT.' });
+  air(452, 478, 26, 29);   /* her 'tween deck, under the mainmast wall */
+  ent('sapper', 466, 28, { face: -1, cnSkin: 'powderboy' }); ent('netter', 472, 28, { face: -1 });
+  ent('deco', 462, 28, { kind: 'kegStack' }); ent('deco', 468, 28, { kind: 'lanternDeck', v: 1 });
+  net(477, 478, 25, 29); air(477, 478, 25, 25);   /* the ladder up through her hatch beyond the wall */
+  coins([456, 28], [462, 27], [470, 28]);
+  // REMIX 2: ONE GUN, TWO DOORS - fire, and the first door goes; the gun is hot; her men come through it; fire again and the second goes
+  ent('cannon', 482, 24, { deck: true, aim: 1 }); door(490); door(500);
+  ent('cutlass', 495, 24, { face: -1 }); ent('marine', 497, 24, { face: -1 });
+  ent('sign', 480, 24, { text: 'ONE GUN, TWO DOORS. THE FIRST SHOT TAKES THE FIRST. LET IT COOL, AND KEEP THEM OFF IT.' });
+  coins([486, 24], [494, 24], [497, 24]);
+  // EXAM: THE ADMIRAL'S MEN, on the deck before his lashing: a gun behind you, a heavy elite coming at you down its line, a marine in the mizzen
+  ent('cannon', 504, 24, { deck: true, aim: 1 });
+  ent('cutlass', 520, 24, { face: -1 }); ent('cutlass', 526, 24, { face: -1 }); ent('keg', 516, 24);
+  mast(522, 8, 24, 5); ent('marine', 522, 7, { face: -1 });
+  ent('sign', 506, 24, { text: 'THE ADMIRAL\'S MEN GUARD HIS LASHING. A ROUND SHOT PUTS DOWN WHAT NO BLADE WILL.' });
+  ent('deco', 512, 24, { kind: 'kegStack' }); ent('deco', 530, 24, { kind: 'plunder', v: 0 });
+  coins([510, 24], [518, 24], [524, 24], [532, 24]);
+  for (const x of [394, 414, 434, 466, 488, 512, 530]) ent('deco', x, 27, { kind: 'gunport', v: x % 2 });
+  ent('check', 535, 24);   /* the shrine before the boss's lashing (A10c: +1 before the boss) */
+  ent('sign', 537, 24, { text: 'THE LASHINGS. HE WAITS ON THE FLAGSHIP\'S SIDE. HIS GUNS ARE AT EITHER END.' });
 
-  // ---- 4. THE FLAGSHIP ----
-  block(245, 376, 22, 37); hullZones.push([245, 376, 22, 37]);
-  air(248, 340, 24, 26); // her gun deck, behind the side the hoy's gun opens
-  // HER DECKS: the fight wants a flat floor with things to jump onto, not walls to be cornered against, so
-  // the quarterdeck and the poop are PLATFORMS on a few posts and the main deck runs clear from end to end.
-  plat(300, 16, 77); block(300, 301, 17, 21); block(372, 376, 17, 21);
-  plat(336, 11, 41); block(370, 371, 12, 15);
-  ent('deco', 352, 15, { kind: 'sternWindows' });
-  net(302, 303, 11, 21); net(330, 331, 6, 16); // the two quick ways up her: she cuts one, then the other
-  net(366, 367, 11, 15); // and the stern ladder she cannot cut: whatever she does, there is a way after her
-  block(292, 295, 19, 21); block(296, 299, 17, 21); // and the broken stair she cannot cut, up to her quarterdeck
-  net(310, 311, 17, 26); // the ladder up out of her gun deck, for anyone the falling deck drops into it
-  rail(245, 248, 21); rail(296, 299, 15);
-  ent('sign', 250, 21, { text: 'THE QUARTERMASTER WILL NOT FIGHT ON ONE DECK: SHE CLIMBS AND CUTS THE WAY UP.' });
-  ent('marine', 306, 15, { face: -1 }); ent('marine', 340, 10, { face: -1 }); // they were standing in the air over her quarterdeck
-  ent('cutlass', 262, 21, { face: -1 }); ent('sapper', 284, 21, { face: -1, cnSkin: 'powderboy' });   /* ...and one on the flagship's deck among her four guns (266 / 322 / 312 / 348) */ ent('boarder', 320, 15, { face: -1 });
-  ent('cutlass', 274, 21, { face: 1 }); ent('bosun', 284, 21, { face: -1 }); ent('lookout', 316, 15, { face: 1 }); ent('cutlass', 344, 15, { face: -1 });
-  for (const [x, y] of [[266, 21], [322, 21], [312, 15], [348, 10]]) ent('cannon', x, y, { deck: true });
-  // HER AFT GUN DECK: it was fifty tiles of empty corridor under her quarterdeck. It is her magazine now.
-  ent('deco', 334, 21, { kind: 'plunder', v: 1 }); ent('deco', 352, 21, { kind: 'kegStack' }); ent('deco', 344, 21, { kind: 'lanternDeck', v: 0 });
-  ent('silver', 360, 21); ent('cutlass', 340, 21, { face: -1 }); ent('marine', 356, 21, { face: -1 });
-  // ================= HER GUNS, AND WHERE YOU LEARN THEM =================
-  // Every gun in the fleet is laid and loaded, and one blow on the breech fires it. The first two are out
-  // here with six of her own crew standing down the line of the first, so the lesson arrives whole: a gun
-  // goes off, the deck clears, and you know what the four in her arena are for.
-  ent('cannon', 118, 21, { deck: true });
-  ent('sign', 114, 21, { text: 'STRIKE THE BREECH AND THE GUN FIRES DOWN THE DECK. THEN IT IS TOO HOT A WHILE.' });
-  ent('cannon', 192, 24, { deck: true });
-  ent('sign', 188, 24, { text: 'THE FLEET IS FULL OF THEM, AND SO IS HER SHIP. A BALL WILL BREAK A GUARD NOTHING ELSE WILL.' });
-  coins([330, 20], [338, 20], [346, 20], [354, 20], [362, 20]); ent('sign', 326, 21, { text: 'HER MAGAZINE: POWDER AFT, GUNS FORWARD. DO NOT LINGER.' }); // HER OWN GUNS: when she goes behind her guard, bring one to bear
-  ent('sign', 306, 15, { text: 'HER CHART MARKS THE WRECKS, AND A RING ROUND SOMETHING DEEPER: THEIR SHARE.' });
-  ent('deco', 312, 15, { kind: 'chartTable' }); ent('deco', 344, 10, { kind: 'plunder', v: 0 });
-  ent('deco', 360, 10, { kind: 'plunder', v: 2 });
-  ent('deco', 256, 26, { kind: 'lanternDeck', v: 1 }); ent('deco', 288, 26, { kind: 'rumBarrels', v: 1 });
-  // THE FLAGSHIP: three masts, full canvas, and the black flag at her main truck
-  for (const [x, v] of [[268, 0], [306, 1], [344, 0]]) ent('deco', x, 21, { kind: 'mastTall', v });
-  ent('deco', 262, 13, { kind: 'sailRag', v: 0 }); ent('deco', 300, 8, { kind: 'sailRag', v: 1 }); ent('deco', 338, 4, { kind: 'sailRag', v: 0 });
-  ent('deco', 268, 9, { kind: 'pennant', v: 1 }); ent('deco', 306, 4, { kind: 'pennant', v: 1 }); ent('deco', 344, 0, { kind: 'pennant', v: 1 });
-  ent('deco', 280, 19, { kind: 'rigging', v: 0 }); ent('deco', 326, 19, { kind: 'rigging', v: 1 });
-  // ================= HER MASTS, WHICH WERE NOT THERE =================
-  // Every flag and every rag of canvas on the fleet was hung in open sky: mastTall is a five-tile prop and
-  // the masts it stands for are twenty, so the pennants flew on nothing at all. Each one gets a mast under
-  // it now - shrouds from the flag down to the first thing solid - which is also twenty tiles of rigging to
-  // climb that the level never had.
+  // ================= THE LASHINGS: the Powder Ship's stern lashed to the Flagship's waist (src/admirals-champion.js CH_STAGE: 52 columns, a duel's room) =================
+  const AS = 540, AR = 25, S = { W: 52, gap: [24, 26], guns: [3, 48], him: 40 };
+  block(567, 601, 25, 37); hullZones.push([567, 601, 25, 37]);
+  air(AS + S.gap[0], AS + S.gap[1], AR, 37);   /* the lashing: foul harbour between the hulls */
+  net(AS + S.gap[0], AS + S.gap[0], AR + 1, 33); net(AS + S.gap[1], AS + S.gap[1], AR + 1, 33);   /* a net down each hull's side, out of the water */
+  /* (no coamings on his decks: a round shot runs the length of them, and the champion stands on the planking - the art lane dresses the decks, nothing solid) */
+  ent('cannon', AS + S.guns[0], AR - 1, { deck: true, aim: 1 }); ent('cannon', AS + S.guns[1], AR - 1, { deck: true, aim: -1 });
+  ent('champion', AS + S.him, AR - 1, { face: -1 });
+  for (const [x, v] of [[AS + 12, 0], [AS + 36, 1]]) ent('deco', x, AR - 1, { kind: 'mastTall', v });
+  ent('deco', AS + 18, AR - 1, { kind: 'kegStack' }); ent('deco', AS + 44, AR - 1, { kind: 'coiledCable', v: 1 }); ent('deco', AS + 31, AR - 1, { kind: 'wheel' });
+  // THE FLAGSHIP's tail, and the way out
+  ent('deco', 595, 24, { kind: 'sternWindows' }); ent('gate', 598, 24);
+  ent('deco', 597, 9, { kind: 'pennant', v: 1 });
+
+  // ================= HER MASTS, WHICH WERE NOT THERE (kept from the first flotilla) =================
+  // Every flag and rag of canvas hung in open sky gets shrouds from the flag down to the first thing solid - twenty tiles of rigging to climb.
   for (const e of L.ents) {
     if (e.t !== 'deco' || (e.kind !== 'pennant' && e.kind !== 'sailRag')) continue;
+    if (e.x >= AS && e.x < AS + S.W) continue;   /* (not over the lashings: his arena keeps its sky) */
     for (let y = e.y + 1; y < H; y++) { const i2 = y * W + e.x;
       if (L.grid[i2] !== T.AIR) break;
       L.grid[i2] = T.NET; if (e.x + 1 < W && L.grid[y * W + e.x + 1] === T.AIR) L.grid[y * W + e.x + 1] = T.NET; }
   }
 
-  for (const x of [252, 264, 276, 288, 316, 330]) ent('deco', x, 24, { kind: 'gunport', v: x % 2 });
-  ent('deco', 246, 21, { kind: 'figurehead' }); ent('deco', 292, 18, { kind: 'wheel' });   /* on the deck: 296,21 was inside the quarterdeck */
-  ent('deco', 244, 21, { kind: 'boardingNet' });
-  ent('check', 254, 21); ent('silver', 300, 26);   /* (304,15 went: it was inside the Quartermaster's walls and PAST her trigger, B6's own case - 254 is outside) */
-
-  coins([258, 21], [266, 21], [274, 21], [282, 21], [290, 21]);
-  coins([252, 26], [266, 26], [278, 26], [296, 26]);
-  coins([306, 15], [314, 15], [322, 15], [330, 15]);
-  coins([342, 10], [350, 10], [358, 10], [366, 10]);
-  /* A WAY UP SHE CANNOT CUT (rule B4). Her two cuts take the lines at 302 and 330; the shrouds at 306 now run all the way down
-     to the main deck, so a player who loses sight of her in the rigging can always follow her onto the second deck.
-     (Laid last: nothing is dug after it.) */
-  for (let y = 16; y <= 21; y++) for (const x of [306, 307]) { const i3 = y * W + x; if (L.grid[i3] === T.AIR || L.grid[i3] === T.ONEWAY) L.grid[i3] = T.NET; }
-  ent('quarter', 288, 21);
-  ent('gate', 374, 10);
-
-  // ================= THE AIR IN THE HULK (nothing is dug after this: it reads the finished grid) =================
-  // The flotilla had NO air in it at all - not one box in the whole level - and the one place you actually go under is
-  // the prize's flooded hold, which you cross twice. Her harbour is tar and bilge and kills whatever swims in it, so
-  // there is deliberately none out there: air in the foul water would be a promise the level does not keep. In her hold
-  // there is air where a hold keeps it - trapped up under her deck beams, leaking off the bed of her, and in the clams
-  // that have grown on her since she was taken.
-  { const gat = (x, y) => L.grid[y * W + x];
-    const hold = x => gat(x, 28) === T.AIR && gat(x, 29) === T.AIR && gat(x, 30) === T.SOLID;
-    const roofed = (x, n) => { for (let q = 0; q < n; q++) if (!(gat(x + q, 23) === T.SOLID && gat(x + q, 24) === T.AIR && gat(x + q, 26) === T.AIR)) return false; return true; };
-    for (const x of [122, 150]) if (roofed(x, 6)) pocket(x, x + 5, 24, 26);   /* up under her deck beams, over the flood */
-    for (const x of [126, 140, 154, 166]) if (hold(x)) vent(x, 29, 4);
-    for (const x of [132, 160]) if (hold(x)) clam(x, 29);
-    for (const x of [130, 162]) if (hold(x)) ent('deco', x, 29, { kind: 'airBell' });   /* what they went down in to strip her */
-  }
-
   const ret = {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 25 }, pools, falls: [], moversExtra: movers, hullZones, airRooms, deep: D,
     duskStart: 99999, duskLen: 1, music: 'flotilla', night: false, swell: { amp: 2, period: 4.6 },
-    interiors: [[34, 93, 26, 30, 'ship'], [116, 173, 24, 30, 'ship'], [248, 340, 24, 27, 'ship'], [340, 372, 12, 15, 'ship']],
-    // ROOMS OF THEIR OWN (dressing only: [x0, x1, top row, floor row, kind]): the first hull's galley, the second's flooded brig,
-    // the powder room under the Quartermaster's deck, and her own cabin up under her poop with the charts on the table
-    cabins: [[36, 70, 26, 30, 'galley'], [118, 172, 26, 30, 'brig'], [288, 338, 24, 27, 'magazine'], [341, 371, 12, 16, 'cabin']],
-
-    palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(255,196,140,0.08)',   /* a town of ships at the end of the day (src/redraw/harbour.js) */
+    flot2: { rowers, benches, yards, ballKegs: true }, checkRun: 190,   /* (fewer checkpoints, Daniel 10-07: one shrine closes each named area's exam - the filler never puts one back between them) */   /* src/flotilla2.js: the pressed fisherfolk at the oars, the benches, the yards */
+    interiors: [[34, 93, 26, 30, 'ship'], [116 + K, 173 + K, 24, 30, 'ship'], [452, 478, 26, 30, 'ship']],
+    cabins: [[36, 70, 26, 30, 'galley'], [118 + K, 172 + K, 26, 30, 'brig'], [460, 476, 26, 30, 'magazine']],
+    palette: { set: 'ship', sky: 'harbour', far: 'harbour', mid: 'harbour', near: 'harbour', fg: 'rig', dress: 'ship', haze: 'rgba(255,196,140,0.08)',
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
-    arena: { x0: 258 * TS, x1: 374 * TS, floor: 22 * TS, y0: 8 * TS, trigger: 262 * TS, wallL: 257, wallR: 374, boss: 'quarter', music: 'quartermaster', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
-      decks: [[22 * TS, 260, 370], [16 * TS, 304, 370], [11 * TS, 338, 368]], cuts: [[302, 303, 11, 21], [330, 331, 6, 16]], fallFrom: 366, fallTo: 304 },
+    sections: [[0, 30, 'THE ROCK'], [31, 96, 'THE GALLEY'], [97, 208, 'THE GALLEY HULL'], [209, 288, 'THE HULK'], [289, 385, 'THE RIGGING RUN'], [386, 539, 'THE POWDER SHIP'], [540, 603, 'THE LASHINGS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
+    arena: { x0: AS * TS, x1: (AS + S.W) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + S.W, boss: 'champion', music: 'champion', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
+      start: [AS + 8, AR - 1], ac: { sx: AS, R: AR } },
   };
   return ret;
 }
@@ -8672,7 +8721,7 @@ const ELITES = {
   crown: [['heavy', 208, 63], ['hearthgob', 710, 51]],
   longwater: [['tideguard', 507, 26, { gate: 515 }]],   /* +88 (the river grew, 2026-09-25) */
   reef: [['tideguard', 435, 25, { gate: 441 }]],   /* (final columns: the bell-pool and the hulk grew the reef by 80 before the keel) */   /* on the dry ledge out of the last of the water, holding the climb to the wreck */
-  flotilla: [['boarder', 162, 21, { gate: 175 }]],
+  flotilla: [['boarder', 274, 21, { gate: 285, affix: 'SWIFT' }], ['boarder', 528, 24, { affix: 'UNSTOPPABLE' }]],   /* (claude/flotilla2) the hulk's doorway boarder (moved 112 east with her) and THE POWDER SHIP's exam: the Admiral's heavy on his lashing - no blade throws him, a round shot down the deck does (B14: the boss's key, taught on an elite first) */
   hurricane: [['boarder', 38, 19, { gate: 46 }], ['cutlass', 456, 18]],   /* the only column on the ship a gate holds is the passage out of the cabin: everything past it has three ways round */
   lamplit: [['watch', 595, 21]],
   deep: [['watch', 30, 27, { gate: 41 }]],

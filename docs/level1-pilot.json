@@ -430,5 +430,17 @@
   "lifts": 96,
   "walked": 100,
   "bare": true
+ },
+ "flotilla": {
+  "hash": "3f76297d3f87",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 219,
+  "deaths": 22,
+  "kills": 11,
+  "lifts": 109,
+  "walked": 100,
+  "bare": true
  }
 }

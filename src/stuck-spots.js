@@ -83,13 +83,20 @@ export const STUCK = {
     { id: 'sp-bud-477', zone: [465, 10, 489, 27], at: [477, 19], glint: 'stall', line: 'A BUD CAP RISES UNDER YOU: STAND ON IT' },
   ],
   /* (claude/stuckguides) FLOTILLA: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  /* (claude/flotilla2) THE FLOTILLA 2, rebuilt x2: every route need - the bowsprit, the benches (the rowers), the stern castle, the long gap's lines, the rigging run's
+     mast and yards, the Powder Ship's copper doors and crate hatch (a gun opens each) */
   flotilla: [
-    { id: 'fl-swing-29', zone: [14, 12, 34, 30], at: [29, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP BETWEEN THE SHIPS' },
-    { id: 'fl-swing-100', zone: [86, 12, 104, 32], at: [100, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE HULK' },
-    { id: 'fl-swing-108', zone: [104, 12, 120, 32], at: [108, 20], glint: 'stall', line: 'THE NEXT LINE SWINGS OVER THE GAP' },
-    { id: 'fl-plank', zone: [160, 14, 180, 32], at: [176, 21], glint: 'stall', done: ['plank', 176, 21, 'down'], line: 'THE PLANK BARS THE POWDER HOY: BRING IT DOWN, OR SWIM' },
-    { id: 'fl-flagship-gun', zone: [216, 14, 236, 32], at: [232, 24], glint: 'stall', done: ['cannon', 232, 24, 'fired'], line: "THE FLAGSHIP'S SIDE IS SHUT: THE GUN OPENS IT" },
-    { id: 'fl-swing-242', zone: [236, 12, 256, 30], at: [242, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE QUARTERDECK' },
+    { id: 'fl-bowsprit', zone: [14, 18, 30, 30], at: [28, 24], glint: 'stall', line: "THE GALLEY'S BOWSPRIT REACHES BACK OVER THE GAP" },
+    { id: 'fl-bench-teach', zone: [96, 18, 103, 26], mover: { bench: 'b0' }, glint: 'stall', line: 'HER BENCHES RIDE UP AND DOWN: STEP ON AT THE TOP' },
+    { id: 'fl-bench-test', zone: [113, 18, 120, 26], mover: { bench: 'b1' }, glint: 'stall', line: 'WATCH THE BENCHES: THEY RISE OUT OF STEP' },
+    { id: 'fl-castle', zone: [150, 14, 170, 34], mover: { bench: 'b6' }, glint: 'stall', line: 'THE LAST BENCH RISES TO THE CASTLE: FREE ITS ROWER AT THE TOP' },
+    { id: 'fl-swing-214', zone: [203, 12, 216, 32], at: [214, 20], glint: 'stall', line: 'A LINE SWINGS OVER THE GAP TO THE HULK' },
+    { id: 'fl-swing-220', zone: [214, 12, 224, 32], at: [220, 20], glint: 'stall', line: 'THE NEXT LINE SWINGS OVER THE GAP' },
+    { id: 'fl-rigging', zone: [272, 14, 287, 22], at: [286, 14], glint: 'stall', line: "THE WAY ON IS UP THE MAST: THERE IS NO DECK TO THE NEXT SHIP" },
+    { id: 'fl-yard', zone: [284, 4, 300, 12], mover: { flot: 'yard' }, glint: 'stall', line: 'A YARD RIDES OUT TO YOU: STEP ON WHEN IT COMES' },
+    { id: 'fl-door-406', zone: [390, 18, 405, 26], at: [398, 24], glint: 'stall', done: ['bulkhead', 406, 24, 'open'], line: 'THE COPPER DOOR: THE GUN BEHIND IT OPENS IT' },
+    { id: 'fl-hatch', zone: [444, 18, 457, 26], ats: [[448, 24], [454, 24]], glint: 'stall', line: 'THE HATCH IS POWDER CRATES: BLOW THE KEG ON IT' },
+    { id: 'fl-doors-490', zone: [478, 18, 499, 26], at: [482, 24], glint: 'stall', done: ['bulkhead', 500, 24, 'open'], line: 'ONE GUN, TWO DOORS: FIRE, LET IT COOL, FIRE AGAIN' },
   ],
   /* (claude/stuckguides) HURRICANE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   hurricane: [

@@ -1,0 +1,34 @@
+== pilot
+flotilla: big hp events (>=12%): 18 from the bot (3 within 90 frames of a lift); 0 of 110 lifts met hazard water (0 put on a mover, 0 on dry footing)
+flotilla (knight, fresh save, 3 runs summed): 216 hits taken, 20 deaths, 15 kills, walked 100% of the waypoints, 788% hp lost a run, 110 lifts (34000 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-flotilla2tune\docs\level1-pilot.json
+errors []
+== curve
+flotilla: big hp events (>=12%): 17 from the bot (2 within 90 frames of a lift); 0 of 107 lifts met hazard water (0 put on a mover, 0 on dry footing)
+flotilla (knight, fresh save, 3 runs summed): 215 hits taken, 20 deaths, 8 kills, walked 100% of the waypoints, 775% hp lost a run, 107 lifts (33893 frames)
+wrote C:\Users\Daniel Raphael\.claude\bracken-lanes\bracken-flotilla2tune\docs\level1-curve.json
+errors []
+== mash level
+flotilla: level hash changed: carried the boss row(s) of the old hash (re-run the boss to refresh them: node tools/mash-bot.mjs <id> --write)
+flotilla LEVEL L19 knight: lowest hp 0%, hp lost 721%, deaths 7, walked 100% of waypoints, 5 rides {"vmover":4,"swing":1}, 0 pulls, 8 boarding lifts, 43 lifts (1 HELD: put back by a room it could not finish), 130 blows taken
+flotilla LEVEL L19 warden: lowest hp 0%, hp lost 721%, deaths 7, walked 100% of waypoints, 5 rides {"vmover":5}, 0 pulls, 7 boarding lifts, 40 lifts (1 HELD: put back by a room it could not finish), 141 blows taken
+flotilla LEVEL L19 pyro: lowest hp 0%, hp lost 744%, deaths 7, walked 100% of waypoints, 5 rides {"vmover":4,"swing":1}, 0 pulls, 6 boarding lifts, 38 lifts (13 HELD: put back by a room it could not finish), 122 blows taken
+wrote docs/mash-bot.json
+errors []
+== mash boss
+flotilla BOSS expected L19 knight#1: DEAD 21.1s, hero lost 100%, boss left 97%, 20/489 blows
+flotilla BOSS expected L19 knight#2: DEAD 21.1s, hero lost 100%, boss left 97%, 20/489 blows
+flotilla BOSS expected L19 warden#1: DEAD 27.4s, hero lost 100%, boss left 96%, 14/827 blows
+flotilla BOSS expected L19 warden#2: DEAD 27.4s, hero lost 100%, boss left 96%, 14/827 blows
+flotilla BOSS expected L19 pyro#1: DEAD 26s, hero lost 100%, boss left 93%, 33/775 blows
+flotilla BOSS expected L19 pyro#2: DEAD 26s, hero lost 100%, boss left 93%, 33/775 blows
+wrote docs/mash-bot.json
+errors []
+== level-quality
+  ok   mash       boss holds (0/6 mash wins); level: best mash hero knight lowest hp 0%, 7 deaths, walked 100%, 5 rides, 0 pulls, 43 lifts
+  ok   ruleFight  19 of 19 designed encounters stand where the rule is active (>=2; rule state from airRooms, hullZones, pools, ents:keg)
+  FAIL curve      act 3 (THE SEA): a level-1 knight lost 775% health a run, 20 deaths in 3 runs (band 100-500%, 1-9 deaths) - A WALL for act 3 (health lost 775% > 500); 20 deaths (act 3 wants <= 9)
+  ok   route      route spans 16 rows, 0 tiles back, 13 branches/pockets (>=2)
+
+1 level(s) miss the quality bar (docs/LEVEL-QUALITY.md).
+STAMPDONE

@@ -1,0 +1,127 @@
+== floaters
+
+3219 standing things checked (65 set down a row or more at load; 40 hung ones with no rock over them are left out). every one can be set down.
+exit 0
+== solid-islands
+skyroad             5       5     0   
+glasssea            1       1     0   
+ksar               32      32     0   
+minecart            1       1     0   
+towpath             2       2     0   
+ok  solid-islands  every island of every level has a drawn support or a reasoned allowance
+exit 0
+== killzones
+no reachable tile kills a standing hero.
+exit 0
+== traps
+  TRAP  x 356-358, y 52-52  (3 tiles)
+== buriedcity: 2 pockets you cannot get out of
+  TRAP  x 530-531, y 39-39  (2 tiles)
+  TRAP  x 530-531, y 44-44  (2 tiles)
+
+21 traps to fix.
+exit 0
+== deadends
+== sealedpyramid: 3 dead ends
+  paid    74,13     6 tiles  land  edge         5 coins
+  paid    100,26   18 tiles  land  wall         3 coins, stray
+  paid    393,50    8 tiles  land  wall         silver
+
+283 dead ends in 47 levels, and every one pays.
+exit 0
+== collectables
+  fair       ASSISTED   silver@194,12 mend@192,12 mend@400,11 silver@600,34
+  underwell  NOT ROUTED silver@125,33 stray:tap@129,33 silver@355,40
+  glasssea   NOT ROUTED silver@117,21 stray:glassshard@119,21 stray:glassshard@258,33 stray:glassshard@371,24 silver@488,27 stray:glassshard@483,30 stray:glassshard@536,33 silver@595,18
+  ksar       NOT ROUTED stray:caravanseal@77,33 stray:caravanseal@266,33 silver@284,26 stray:caravanseal@427,31 stray:caravanseal@519,16 silver@571,33 mend@558,20 mend@441,24 mend@672,31 mend@597,33 mend@649,33 mend@693,33
+
+every pickup can be picked up from some ground.
+exit 0
+== keys
+ ok  crown      4 gates, keys held brass,iron,bone of brass,iron,bone
+ ok  lamplit    1 gate, keys held bone of bone
+ ok  underleaf  3 gates, keys held brass,iron,bone of brass,iron,bone
+ ok  mage       1 gate, keys held brass of brass
+
+5 levels with lock gates flooded key by key. every key comes before its gate.
+exit 0
+== spawns
+
+2507 creatures checked against the built levels. none start in the rock or out of the water.
+exit 0
+== elites
+  thorn         0/3        5/6
+  tideguard     0/3        9/12
+  troll         0/3        10/12
+  watch         0/3        12/12
+
+85 elites. every elite can be fought and every gate it holds opens onto the route.
+exit 0
+== checkpoint-gaps
+  glasssea (5 shrines, gaps 163/143/151/100/53/12): DENSE: the shrine at route 557 is 100 from the one at 457
+  ksar (7 shrines, gaps 168/108/119/96/99/121/122/7): DENSE: the shrine at route 276 is 108 from the one at 168; DENSE: the shrine at route 395 is 119 from the one at 276; DENSE: the shrine at route 491 is 96 from the one at 395; DENSE: the shrine at route 590
+  rootway (4 shrines, gaps 86/121/102/86/11): DENSE: the shrine at route 86 is 86 from the start; DENSE: the shrine at route 207 is 121 from the one at 86; DENSE: the shrine at route 309 is 102 from the one at 207
+  buriedcity (6 shrines, gaps 166/168/94/182/120/176/6): DENSE: the shrine at route 428 is 94 from the one at 334; DENSE: the shrine at route 730 is 120 from the one at 610
+  sealedpyramid (8 shrines, gaps 169/92/85/112/168/125/123/145/12): DENSE: the shrine at route 261 is 92 from the one at 169; DENSE: the shrine at route 346 is 85 from the one at 261; DENSE: the shrine at route 751 is 125 from the one at 626; DENSE: the shrine
+checkpoint-gaps  47 levels, 255 checkpoints; along the walked route none is more than 200 from the next (worst underleaf 197), none closer than 80 except a door one, and one stands before every boss, mini and ambush room.
+exit 0
+== checkpoint-stand
+ok  checkpoint-stand   255 checkpoints in 62 levels: every one stood at with a real jump (5 columns, not 6; 8 gaps in the model listed), none in view of a flight arena.
+exit 0
+== checkpoint-thin
+minecart     route  1145 checks  7 ->  7 worst 164 at 157,305,469,632,772*,924,1055* 
+church       route   607 checks  4 ->  4 worst 162 at 155*,272*,421,583* 
+towpath      route   464 checks  3 ->  3 worst 154 at 154,302,437* 
+buriedcity   route   930 checks  6 ->  4 worst 478 at 166,334,428,906*   NEEDS: a run of 478 from route 428
+sealedpyramid route  1043 checks  8 ->  8 worst 169 at 169,261,346,458*,626,751,874,1019* 
+total checkpoints 455 -> 228
+exit 0
+== checkpoints
+255 checkpoints in 62 levels, every one on floor under its foot (centre tile and a neighbour), none inside rock; where three tiles were within reach it stands on three.
+255 checkpoints: none inside an arena's, a mini's or an ambush room's walls, none on a flight (0 inside on purpose, listed).
+exit 0
+== stuck
+stuck (static) OK: 2437 checks - 283 steps in 255 spots over 37 levels resolve a glint target and a nudge from their stall point
+stuck (runtime) OK: 255 spots - a hero held at each one for 11 s is nudged (the hint box shows the line), the glint targets read back, and the way arrow is handed its target
+exit 0
+== tells
+== the mark audit ==
+425 tells checked across 284 creature functions
+
+every mark agrees with the blow behind it.
+
+the mark over every windup on the screen comes from this table (src/marks.js, 1005 rows).
+exit 0
+== boss-greed
+{"wood":{"t":"queen","bossActive":true,"openShut":false,"heroShut":40,"roomShut":40,"heroRun":400,"heroBroken":60,"openOpen":true,"heroOpen":80,"greedBegan":4,"markUp":true,"hurtAfter":0.72,"hurt":18,"farMin":218.60201687696463,"hurtFar":0,"greedInOpen":false,
+boss-greed: 47 bosses and 17 minis have a rule or a reason; the chip, the room's blow, the opening, the poise break, the own ward, the no-opening boss, the told reprisal, the burn and the mini all hold
+exit 0
+== boss-read
+boss-read: ok (turned / auto / beats / wired)
+exit 0
+== admirals-champion
+admirals-champion: ok (knight, warden, pyro, ranger, paladin)
+exit 0
+== reach-heroes
+  underwell    8 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (1609ms)
+  skyroad      7 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (2112ms)
+  glasssea     0 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (2086ms)
+  ksar         1 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (590ms)
+  rootway      7 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (1098ms)
+  minecart     9 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (3619ms)
+  church       6 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (1610ms)
+  towpath      5 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (1589ms)
+  buriedcity   12 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (2634ms)
+  sealedpyramid14 route targets  knig 0  ward 0  pyro 0  pala 0  pira 0  reap 0  geom 0  bers 0  rang 0  (3033ms)
+
+ok  reach-heroes: 0 known crossings, nothing new
+exit 0
+== level-quality
+  FAIL mash       the level changed since the mash bot ran: re-run node tools/mash-bot.mjs flotilla --level flotilla --write
+  ok   ruleFight  19 of 19 designed encounters stand where the rule is active (>=2; rule state from airRooms, hullZones, pools, ents:keg)
+  ok   curve      the level changed since its curve row (re-run node tools/level1-pilot.mjs flotilla --curve)
+  ok   route      route spans 16 rows, 0 tiles back, 13 branches/pockets (>=2)
+
+1 level(s) miss the quality bar (docs/LEVEL-QUALITY.md).
+exit 1
+ALLDONE

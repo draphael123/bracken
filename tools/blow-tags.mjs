@@ -94,15 +94,15 @@ assert.ok(/BR\.keyOf\(e\)\) BR\.drawKey\(g, e, cx, cy, time\);/.test(main), 'mai
 assert.ok(/const kt = tag && \(e === boss \|\| e\.xpRole === 'mini'\) \? BR\.takes\(e, tag, fromX\) : null; if \(kt\) \{ if \(kt\.ok\) e\.keyHit = time; else if \(!GB\.openOf\(e\)\) BR\.turnedKey\(e, fromX, kt\.key\); \}/.test(main), 'hurtEnemy0 asks the key once, before the per-boss ladder');
 /* 5. B13, THE DUELIST'S WALL (claude/keyscore): the four waiting rooms are always hittable, guarded by angle */
 {
-  for (const t of ['lance', 'closedhelm', 'captain', 'quarter']) {
+  for (const t of ['lance', 'closedhelm', 'captain']) {   /* (claude/flotilla2: the Quartermaster is benched - THE ADMIRAL'S CHAMPION is not a wall duelist: his plate takes every angle at x0.5, tools/admirals-champion.mjs) */
     assert.strictEqual(GUARD[t], 'wall', t + ': his front is a wall (B11), not a flat NO');
     const e = { t, x: 100, y: 200, w: 24, h: 40, face: 1, alive: true };
     assert.ok(BR.beats(e, 60, false) && BR.beats(e, 140, true) && !BR.beats(e, 140, false), t + ': beaten from behind or from above, turned from the front at his height'); }
   for (const gone of ["number(e.x, e.y - 44, 'THE SEA HAS HIM'", "number(e.x, e.y - 30, 'HER GUARD HOLDS'", "number(e.x, e.y - e.h - 8, 'HIS PLATE TURNS IT'", "hintMsg = 'NOTHING GETS THROUGH HIS WARD."])
     assert.ok(!main.includes(gone), 'the flat NO is gone: ' + gone);
-  assert.ok(main.includes("if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));") && main.includes("const wallUp = e => e.t !== 'quarter' || !!e.guard || e.mode === 'stride' || e.mode === 'stanceTell';"), 'round or over the wall a blow lands at ANGLE.wall; the Quartermaster drops hers to commit');
+  assert.ok(main.includes("if (angB && GUARD_WALL(e)) dmg = Math.max(1, Math.round(dmg * BR_ANGLE.wall / BR_ANGLE.mul));") && main.includes('const wallUp = e => true;') && !GUARD.quarter && !GUARD.champion, 'round or over the wall a blow lands at ANGLE.wall; every wall duelist keeps his up (the Quartermaster, who dropped hers to commit, is benched; the Champion is no wall)');
   assert.ok(/if \(blow && GUARD_WALL\(e\) && wallUp\(e\) && e\.mode !== 'sleep' && !\(P\.valiant && P\.heavy\) && !GB\.openOf\(e\) && !BR\.beats\(e, fromX, pl \|\| \(!P\.ground && P\.y < e\.y - e\.h \* 0\.5\), false\)\) \{/.test(main), 'the wall turns a front blow at his height, outside his openings (and outside the knight\'s VALIANT STRIKE: claude/heropassa, the full-RESOLVE heavy cut is unblockable - a stated design change)');
   { const { ANGLE } = await import('../src/boss-read.js'); assert.ok(ANGLE.front >= 0.4 && ANGLE.wall >= 1, 'B15 (Daniel 10-08): never invulnerable - 0.4 or more into the wall, whole round or over it'); }
   assert.ok(main.includes('dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));'), 'B15: the wall takes ANGLE.front of a front blow - it never returns nothing');
-  assert.ok(/if \(e\.t === 'quarter'\) e\.flash = Math\.max\(e\.flash \|\| 0, 0\.06\);/.test(main), 'the Quartermaster still answers a cut into her EN GARDE'); }
-console.log('blow-tags: ok (' + hooks + ' boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, words, glyphs; no boss keyed yet; B13: the Lance, the Paladin, the Captain and the Quartermaster guard by angle)');
+  assert.ok(!main.includes("e.t === 'quarter'"), 'the benched Quartermaster is wired nowhere in main.js'); }
+console.log('blow-tags: ok (' + hooks + ' boss hooks get the tag; no boolean plunge gate; throw / reflect / riposte tagged; 8 keys, words, glyphs; no boss keyed yet; B13: the Lance, the Paladin and the Captain guard by angle)');

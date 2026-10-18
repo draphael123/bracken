@@ -94,6 +94,10 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
        plain fill has the stair as it was built and nothing else: a climb that needs it turned is a climb on the --plain list */
     /* A BLOCK WITH A PLACE TO GO (claude/unburied4, the Unburied Field's mantlets): pushed to the foot of the wall it is there for, it is a step - one walk, so done, like the gun's hole */
     if (e.t === 'pushblock' && e.stepAt) { const i = e.stepAt[1] * W + e.stepAt[0]; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
+    /* THE FLOTILLA 2's POWDER SHIP (claude/flotilla2, L.flot2): a copper door with a deck gun laid at it from its own deck is one blow on the breech, and a keg on the crate hatch is one
+       blow (or one round shot) - both done, like the gun's hole. Only there: the Hurricane's bulkheads keep the routes round them they were built with */
+    if (L.flot2 && e.t === 'bulkhead' && e.span && (L.ents || []).some(q => q.t === 'cannon' && q.deck && q.y === e.y && (q.aim || 1) === Math.sign(e.x - q.x) && Math.abs(q.x - e.x) <= 24)) { const [x0, x1, y0, y1] = e.span; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
+    if (L.flot2 && e.t === 'keg') for (let y = e.y + 1; y <= e.y + 2; y++) for (let x = e.x - 2; x <= e.x + 2; x++) { const i = y * W + x; if (g[i] === T.CRATE) g[i] = T.AIR; }
     if (e.t === 'pwheel' && !plain)for (const [x0, y, w] of [...(e.a || []), ...(e.b || [])]) for (let x = x0; x < x0 + w; x++) { const i = y * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
   }
   /* FAILING STONE THAT IS THE WAY ON (the Falling Tower's observers' gallery, src/tower-collapse.js): stand on it and it counts

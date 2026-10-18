@@ -36,7 +36,7 @@
 //   'lanterneater' THE LANTERN-EATER (claude/lanterneater): A Phrygian, 4/4 at 84, 16 bars = 46 s - a heartbeat under the water, a drone, the LURE's glassy
 //                swaying pendulum (E5 - F5) and drips; BOSS_PHASE.lanterneater 2 = it surfaces (teeth clack, bass doubled), 3 = the lamps snuffed (the lure thins out, the drone drops).
 //   (THE RAPTOR MATRIARCH has no synth theme: "Volatile Reaction" by Kevin MacLeod is her file, claude/redgorge2 art pass; her phases still set BOSS_PHASE.matriarch)
-export const BOSS_SYNTH_BASE = { sealedpyramid: 1, scarabmother: 1, tombking: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
+export const BOSS_SYNTH_BASE = { champion: 1, sealedpyramid: 1, scarabmother: 1, tombking: 1, hourglassking: 1, greatdrill: 1, lanterneater: 1, towpath: 1, fogknight: 1, hawkmistress: 1, colossus: 1, archmage: 1, goblinroyal: 1, drownedking: 1, winchmaster: 1, gargoyle: 1, banditking: 1, cisternqueen: 1, gorgecrab: 1, djinn: 1 };
 
 /* 'banditking:p2' is one name for the sound test and two for the scheduler: split it once, here. */
 /* ...and it has a clock of its own (slower than the living theme's), so a variant may carry its own step / loop / voice. */
@@ -343,7 +343,7 @@ function cisternqueen(i, delay, variant, env) {
 // next comes back in on a double tom. The second eight bars bring the lead an octave up with a fifth under it.
 // PHASE TWO (src/gorge-crab-hands.js sets BOSS_PHASE.gorgecrab = 2 when he turns): the hat clacks double, and every fourth bar a FLOOD SURGE
 // sweeps up under the stop (rising noise and a saw sliding up an octave).
-export const BOSS_PHASE = { scarabmother: 1, tombking: 1, hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
+export const BOSS_PHASE = { champion: 1, scarabmother: 1, tombking: 1, hourglassking: 1, gorgecrab: 1, matriarch: 1, hawkmistress: 1, lanterneater: 1, fogknight: 1, paladin: 1, litchurch: 1 };
 const GCM_STEP = 60 / 110 / 2, GCM_LEN = 8, GCM_BARSN = 16;
 const GCM_BASS = [['A1', 2], ['-', 0], ['A1', 1], ['Bb1', 1], ['-', 0], ['A1', 2], ['G1', 1], ['A1', 1]];   // [note, 1 = one stroke / 2 = a stuttered pair]
 const GCM_LEAD = [['E4', 1.6], ['-'], ['F4', 0.9], ['E4', 0.9], ['-'], ['Eb4', 0.9], ['E4', 1.8], ['-']];   // the sidestep: E, up a half, back, down a half, back
@@ -594,7 +594,30 @@ function fogknight(i, delay, variant, env) {
   const c = FKM_LINE[bar % 4][s]; if (c !== '-' && bar >= 2) { pluck(env, 'triangle', nf(c), step * 2.2, 0.09 * g, delay, { lp: 2200 }); if (dbl) pluck(env, 'triangle', nf(c) * Math.pow(2, -7 / 12), step * 2.2, 0.06 * g, delay + step * 2, { lp: 1600 }); }
 }
 
+// ---------------------------------------------------------------- THE ADMIRAL'S CHAMPION (claude/flotilla2, a composed-in-code theme until Daniel picks a track - B12)
+// D Dorian, 6/8, dotted-quarter = 66 (eighth = 0.303 s), 16 bars = 29 s. A WAR SHANTY ON THE LASHINGS: the big drum on one and four (a sine thump), a SHIP'S BELL
+// struck twice every fourth bar, a low drone of detuned saws (D and A) that swells over two bars, and the shanty's call in a square lead with a war horn
+// (detuned saws, lowpassed) answering at the end of each eight. 'champion:p2' THE ANCHOR: the chain clanks on the off-beats, the drum doubles, the call goes up a fourth.
+const ACM_STEP = 60 / 66 / 3, ACM_LEN = 6, ACM_BARSN = 16;
+const ACM_CALL = [['D4', '-', 'F4', 'A4', '-', 'G4'], ['F4', '-', 'E4', 'D4', '-', '-'], ['C4', '-', 'E4', 'G4', '-', 'F4'], ['E4', '-', 'D4', 'C4', '-', 'A3'],
+  ['D4', '-', 'F4', 'A4', '-', 'C5'], ['B4', '-', 'A4', 'G4', '-', 'F4'], ['E4', '-', 'G4', 'F4', '-', 'E4'], ['D4', '-', '-', '-', '-', '-']];
+const ACM_BASS = ['D2', 'D2', 'C2', 'C2', 'D2', 'G2', 'A2', 'D2'];
+function champion(i, delay, variant, env) {
+  const anchor = variant === 'p2' || (BOSS_PHASE.champion || 1) >= 2, bar = Math.floor(i / ACM_LEN), s = i % ACM_LEN, g = env.gain;
+  if (s === 0 || s === 3) { pluck(env, 'sine', s === 0 ? 72 : 64, 0.42, 0.62 * g, delay, { to: 34 }); noise(env, 0.05, 0.1 * g, 220, 0.7, delay); }
+  if (anchor && (s === 1 || s === 4)) pluck(env, 'sine', 58, 0.25, 0.32 * g, delay, { to: 30 });
+  if (!anchor && (s === 2 || s === 5)) noise(env, 0.04, 0.035 * g, 5200, 2, delay);   /* the rigging's creak on the off-beat: the pulse never stops */
+  if (!anchor && (s === 1 || s === 4)) pluck(env, 'triangle', nf('D3'), ACM_STEP * 0.8, 0.03 * g, delay, { lp: 700 });   /* a low pulse under the call */
+  if (anchor && (s === 2 || s === 5)) { noise(env, 0.06, 0.09 * g, 4200, 3, delay); noise(env, 0.05, 0.06 * g, 6100, 4, delay + 0.05); }   /* the chain */
+  if (s === 0 && bar % 2 === 0) for (const n of ['D2', 'A2']) held(env, 'sawtooth', nf(n), ACM_STEP * ACM_LEN * 2 * 0.95, 0.02 * g, delay, { lp: 420, att: ACM_STEP * 3, hold: 0.7, det: 10 });
+  if (s === 0) pluck(env, 'triangle', nf(ACM_BASS[bar % 8]), ACM_STEP * 2.5, 0.16 * g, delay, { lp: 600 });
+  if (s === 0 && bar % 4 === 0) for (const d of [0, 0.32]) { pluck(env, 'sine', 988, 1.6, 0.05 * g, delay + d, { to: 984 }); pluck(env, 'sine', 2470, 0.9, 0.02 * g, delay + d, { to: 2460 }); }   /* the ship's bell */
+  const c = ACM_CALL[bar % 8][s]; if (c !== '-' && bar >= 2) { const fr = nf(c) * (anchor ? Math.pow(2, 5 / 12) : 1); held(env, 'square', fr, ACM_STEP * 1.7, 0.026 * g, delay, { lp: 1500, att: 0.03, hold: 0.6, from: 0.99 }); }
+  if (bar % 8 === 7 && s === 0) for (const n of ['D3', 'A3']) held(env, 'sawtooth', nf(n), ACM_STEP * 5, 0.03 * g, delay, { lp: 900, att: 0.12, hold: 0.7, det: 14 });   /* the war horn */
+}
+
 export const SYNTH_BOSS = {
+  champion: { step: ACM_STEP, total: ACM_LEN * ACM_BARSN, play: champion },   /* (claude/flotilla2) THE ADMIRAL'S CHAMPION */
   towpath: { step: TPM_STEP, total: TPM_LEN * TPM_BARSN, play: towpath }, fogknight: { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the greybox level bed and his theme */
   lanterneater: { step: LEM_STEP, total: LEM_LEN * LEM_BARSN, play: lanterneater },   /* (claude/lanterneater) */
   sealedpyramid: { step: SPM_STEP, total: SPM_LEN * SPM_BARSN, play: sealedpyramid }, scarabmother: { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the greybox level bed and her theme */
@@ -615,6 +638,7 @@ export const SYNTH_BOSS = {
 };
 /* the variants that are a piece of their own: their own step, loop length and voice (the level matches the living theme: BOSS_SYNTH_GAIN applies to both) */
 export const SYNTH_VARIANT = {
+  'champion:p2': { step: ACM_STEP, total: ACM_LEN * ACM_BARSN, play: champion },   /* (claude/flotilla2) THE ANCHOR */
   'fogknight:p2': { step: FKM_STEP, total: FKM_LEN * FKM_BARSN, play: fogknight }, 'fogknight:p3': { step: FKM_STEP3, total: FKM_LEN * FKM_BARSN, play: fogknight },   /* (claude/towpath) the double, the shroud */
   'tombking:p2': { step: CKM_STEP2, total: CKM_LEN * CKM_BARSN, play: tombking }, 'tombking:p3': { step: CKM_STEP3, total: CKM_LEN * CKM_BARSN, play: tombking },   /* (claude/pyramidboss) placeholders: lane C */
   'scarabmother:p2': { step: SMM_STEP, total: SMM_LEN * SMM_BARSN, play: scarabmother }, 'scarabmother:p3': { step: SMM_STEP3, total: SMM_LEN * SMM_BARSN, play: scarabmother },   /* (claude/sealedpyramid) the brood, the tomb shaking */
