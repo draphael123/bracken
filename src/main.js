@@ -9935,7 +9935,8 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
 
   // SWIMMING (the Long Water's deep pools): the water holds you at the surface; up rises, down dives, jump at the surface
   // climbs out. Under the surface the breath runs down (the Tide Charm doubles it) and then the water starts to take you.
-  const swimP = GS > 0 && !P.dead && !P.climb && (L.pools || []).find(p => p.swim && !p.shallow && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 8 && (p.bottom === undefined || P.y <= p.bottom + 4));
+  const swimP = GS > 0 && !P.dead && !P.climb && (L.pools || []).find(p => !p.shallow && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 8 && (p.swim ? (p.bottom === undefined || P.y <= p.bottom + 4) : (DEAD_SWIM(p) && inPoolAt(p, P.x, P.y))));
+  if (swimP && !P.swim && !swimP.swim) { burst(P.x, swimP.y, 22, ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'], 100, 0.7, 520, 2); SFX.splash(); number(P.x, swimP.y - 14, 'SPLASH', '#e6efe6'); }   /* (lethal water: grey-green spray and a splash - and then it only drains) */
   if (swimP && !P.swim) { if (P.vy > 90) { burst(P.x, swimP.y, 12, ['#e8f4f0', '#7cc8c8'], 80, 0.5, 400, 1); SFX.splash(); } P.plunge = false; P.vy *= 0.35; }
   P.swim = !!swimP; const breathMax = breathCapacity(L);
   if (P.swim && swimP.flow) { // THE CURRENT: it carries you, and it carries you whether you are swimming or not
@@ -9960,13 +9961,15 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (P.jbuf > 0 && P.ballast) { P.jbuf = 0; dropBallast(true); }
     else if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
-    if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }
+    if (!swimP.swim) { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }   /* lethal water drains by the second instead (WATER_DRAIN): no breath to count */
+    else if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1) * (curId() === 'deep' ? 0.5 : 1); if (P.breath > 0 && Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
       if (P.breath <= 0) { P.breath = 0; P.drownT = 1;   /* OUT OF BREATH (Daniel 10-16): a QUIET health drain on the shared environment drain (src/drain.js, A13) - no blow, so no stagger, no knock, no hurt flash, no mercy window, no hitstop */
         BRD.set(P, 'breath', breathRate() / Math.max(1, P.maxHp), { name: 'OUT OF BREATH', col: '#7fd0ff' });
         P.drownT = 1; }   /* the bubbles stop: nothing is left to breathe out */ }
     else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 3 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); if (Math.random() < dt * 3 && Math.abs(P.vx) > 20) ripples.push({ x: P.x, life: 1 }); }
   } else { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }
+  if (swimP && !swimP.swim && !P.dead) BRD.set(P, 'water', waterRate(), { name: 'THE WATER', die: 'DROWNED', col: '#ff6b6b', tick: '#ff6b6b' }); else BRD.stop(P, 'water');   /* (claude/deadwater) in lethal water: a steady drain, nothing else */
   BRD.step(dt);   /* the drain's step, for this hero (players: () => [P]) */
   snareTick(dt); waxTick(dt);
   if (P.whirlFree > 0) P.whirlFree = Math.max(0, P.whirlFree - dt);   /* the stroke that broke the Drowned King's current keeps you out of it a moment */
@@ -10133,10 +10136,10 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
      floor (its bottom, or the first rock under its surface) you are not in it. */
   const inPool = p => { if (p.bottom !== undefined) return P.y <= p.bottom + 4; if (p.depth) return P.y <= p.y + p.depth + 6;   /* depth 0 is NOT a floor: it was read as one, so no deep pond in the Marsh could drown anyone */
     let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(P.x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return P.y <= ty * TS + 4; };
-  for (const p of (L.pools || [])) if (GS > 0 && !P.dead && !p.shallow && !p.swim && !p.dry && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
+  for (const p of (L.pools || [])) if (GS > 0 && !P.dead && !p.shallow && !p.swim && !p.dry && !DEAD_SWIM(p) && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 9 && inPool(p)) {
     if (p.fire) { burst(P.x, p.y, 18, ['#fff6c8', '#ffd36b', '#ff6b2c'], 90, 0.6, -160, 2); SFX.puff(); number(P.x, p.y - 14, 'BURNED', '#ff9a5c'); }
     else { const lethal = !p.mud && !p.tarn;   /* (lethal water bites: grey-green spray, a hard splash and a hurt shake - not the bright blue splash of water you swim: claude/towpathchurch) */
-      burst(P.x, p.y, lethal ? 22 : 16, lethal ? ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'] : ['#eefaff', '#bfe6f5', '#7fc4e0'], lethal ? 100 : 90, lethal ? 0.7 : 0.6, 520, 2); SFX.crack(); if (lethal) { SFX.splash(); shakeCam(7, 0, 'hurt'); } number(P.x, p.y - 14, 'SPLASH', lethal ? '#e6efe6' : '#bfe6f5'); }
+      burst(P.x, p.y, lethal ? 22 : 16, lethal ? ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'] : ['#eefaff', '#bfe6f5', '#7fc4e0'], lethal ? 100 : 90, lethal ? 0.7 : 0.6, 520, 2); SFX.crack(); if (lethal) { SFX.splash(); shakeCam(7); } number(P.x, p.y - 14, 'SPLASH', lethal ? '#e6efe6' : '#bfe6f5'); }
     /* A WATER THAT HURTS AND HANDS YOU BACK. In a wood that says so, a fall in costs health and puts you on the last dry ground you stood on, not the whole way back at the checkpoint */
     if (L.waterHurts && L.fallRule !== 'death' && P.safe && P.safe.L === L) { const s = P.safe; damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = s.x; P.y = s.y; P.vx = 0; P.vy = 0; P.onMover = null; hazardSay(); } }
       else if (SET.invincible) godSafe();
@@ -10447,12 +10450,19 @@ function sunDrain(n) { if (P.dead || !(n > 0)) return; P.hp = Math.max(0, P.hp -
    the drain moves its spill-guard (P.drinkHp) with it. */
 const BREATH_DRAIN_HP = 3.1;
 const breathRate = () => BREATH_DRAIN_HP * diffNow().take * DFM.df('take') * (1 + 0.28 * tierOf(curId())) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1);   /* hp a second, past the same chain every hazard's damage goes through */
-function breathTake(n) {
+function breathTake(n, src) {
   if (P.dead || !(n > 0)) return;
   P.hp = Math.max(0, P.hp - n); if (P.drinkT > 0) P.drinkHp = P.hp;
-  if (P.hp <= 0) die({ name: 'DROWNED', red: false, rule: '' }); }
-const BRD = makeDrains({ players: () => [P], take: (pp, n) => breathTake(n), god: () => !!(SET.invincible || (window.BK && window.BK.god) || (L && L.trial)),
-  onBeat: (pp, n) => { SFX.gaspTick && SFX.gaspTick(); number(pp.x, pp.y - 30, '-' + n, '#8fd4ff'); } });
+  if (P.hp <= 0) die({ name: (src && src.die) || 'DROWNED', red: false, rule: '' }); }
+const BRD = makeDrains({ players: () => [P], take: (pp, n, src) => breathTake(n, src), god: () => !!(SET.invincible || (window.BK && window.BK.god) || (L && L.trial)),
+  onBeat: (pp, n, src) => { if (src && src.id === 'water') { SFX.splash(); burst(pp.x, pp.y - 6, 6, ['#e6efe6', '#9fb3a6', '#2a3a38'], 50, 0.4, 200, 1); } else if (src && src.id === 'foul') SFX.hiss(); else SFX.gaspTick && SFX.gaspTick(); number(pp.x, pp.y - 30, '-' + n, src && src.tick ? src.tick : '#8fd4ff'); } });
+/* (claude/deadwater, Daniel 10-18) DEADLY WATER IS A QUIET DRAIN TOO (A13): while a hero is in a lethal / poison / foul pool it takes WATER_DRAIN of his MAX health a second (0.11 base = ~9% a real second at Normal after the difficulty chain: a short dip hurts, ~11 s kills), straight off the bar on the same shared
+   drain as the breath - NO knockback, NO stagger, NO shove, NO hand-back; he swims and climbs out as in any other pool. The red tick and the splash/hiss are the drain's beat. */
+const WATER_DRAIN = 0.11;
+const waterRate = () => WATER_DRAIN / (SET.speed || 1) * diffNow().take * DFM.df('take') * (perk('iron') ? 0.9 : 1);   /* 9% of max hp per REAL second at any Game speed (the world clock runs at SET.speed) */
+const DEAD_SWIM = p => !p.swim && !p.shallow && !p.dry && !p.fire && !p.mud && !p.tarn && !p.rapids && !p.capped && !p.streetTide && !p.deadly;   /* a lethal-look pool you can swim in and climb out of (tools/lethal-water.mjs) */
+function inPoolAt(p, x, y) { if (p.bottom !== undefined) return y <= p.bottom + 4; if (p.depth) return y <= p.y + p.depth + 6;
+  let ty = Math.floor((p.y + 1) / TS); const tx = Math.floor(x / TS); while (ty < LH && !isSolid(tx, ty)) ty++; return y <= ty * TS + 4; }
 function hazardBack() { const s = P.safe; if (!s || s.L !== L || (MG && P.flip)) return; P.x = s.x; P.y = s.y; if (bossActive && boss && boss.t === 'windcaller' && L.arena && L.arena.safe && P.x > L.arena.x0 && P.x < L.arena.x1) { P.x = callerFallX(P.x); P.y = L.arena.floor; }   /* (claude/windcaller3) HIS THORNS HAND YOU BACK TO A FLOOR, never to a ledge's end with the gust still blowing off it - that was a second thorn, and a third */ P.vx = 0; P.vy = 0; P.onMover = null; P.ground = true; hazardSay(); }
 const spikeBite = (tx, name) => { const d = L.bellDeck, t = d && !P.dead ? bellPitThrow(d, P.x, P.y, c => ![1, 2].some(k => { const q = tileAt(c, d.deck - k); return q === T.SOLID || q === T.PORT; })) : null;
   if (!t && !P.dead && SV.spikeRule(L, P.x, TS) === 'death' && !SET.invincible && !(window.BK && window.BK.god)) { die({ name: name || 'THE SPIKES', red: false, rule: '' }); if (!(P.down > 0)) P.dead = 0.6; return; }   /* IN AN EXAM THE SPIKES KILL (src/survival.js; told as you walk in) */
@@ -28136,11 +28146,13 @@ function updateProps(dt) {
     poolLevel(p, p.base + p.tideLo + (p.tideHi - p.tideLo) * k);
     if (p.bell !== false && p.lastK !== undefined && (p.lastK < 0.97) !== (k < 0.97) && Math.abs(P.x - p.x0) < 900) SFX.seaBell(); p.lastK = k; }
   updateBore(dt); updateTideGates(dt); updateBalls(dt); updateWash(dt); updateMasts(dt); updateSea(dt, hb); updateAscent(dt); updateGasVents(L,P,dt,time,x=>{damagePlayer(x,9,{unblockable:true,noKnock:true,name:'THE GAS'});P.venomT=Math.max(P.venomT||0,2.4);number(P.x,P.y-30,'POISONED','#a6e04a');}); if (L.gasVents) updateBurialFire(dt, hb); if (L.crumble) updateCrumble(L,P,dt,{air:T.AIR,spr:i=>tileSpr[i],setSpr:(i,s)=>{tileSpr[i]=s;},emit:p=>parts.push(p),crack:(tx,ty)=>{SFX.crack();burst(tx*TS+8,ty*TS+2,4,['#6a5436','#e8d8b0'],30,0.3);},fall:(tx,ty)=>{SFX.crumble();burst(tx*TS+8,ty*TS+6,8,['#6a5436','#3a2a1c','#a6e04a'],60,0.6);},back:z=>{if(SFX.stone)SFX.stone();for(let x=z.x0;x<=z.x1;x+=2)burst(x*TS+8,z.row*TS+2,2,['#e8d8b0'],20,0.3);}});   /* THE ROTTEN BRIDGES (burial-variety.js): a board cracks with a sound under you and drops half a second later */ if (L.siphons || L.blight) updateKeepPassages(L,P,dt,time,{breathMax:breathCapacity(L),inAir:(x,y)=>!!nearAir(x,y),move:(dx,dy)=>moveBody(P,dx,dy,false),emit:p=>parts.push(p),poison:()=>{if(!(P.venomT>0)){number(P.x,P.y-30,'POISONED','#a6e04a');SFX.hiss&&SFX.hiss();}P.venomT=Math.max(P.venomT||0,2.4);}}); if (L.whirlpools) updateWhirls(dt, hb); if (L.keepCrumbles) updateCrumbles(dt); updateStrikes(dt); updateStreetTide(dt); updateCauseTide(dt); updateFields(dt, hb); updateMage(dt, hb); updateWick(dt); updateLampHands(dt); updateRush(dt);
-  { const fp = (L.pools || []).find(p => p.harm && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
+  { const fp = (L.pools || []).find(p => p.harm && p.swim && P.swim && P.x > p.x0 && P.x < p.x1 && P.y > p.y); // THE FOUL WATER between the hulls: tar, bilge and whatever they tip over the side
     if (fp && !P.dead) { P.foulT = (P.foulT || 0) - dt;
       if (Math.random() < dt * 24) parts.push({ x: P.x + (Math.random() - 0.5) * 14, y: P.y - Math.random() * 14, vx: 0, vy: -20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#7a8a4a' : '#4a5a2a', size: 1, grav: -10 });
-      if (P.foulT <= 0) { P.foulT = 1.1; P.inv = 0; number(P.x, P.y - 28, fp.poison ? 'POISONED' : 'THE WATER IS FOUL', '#8fd160'); damagePlayer(P.x, DMG.foul, { unblockable: true }); }
-      if (fp.poison) { P.venomT = 2.4; if (!keys.up) P.vy = Math.max(P.vy, 22); } }
+      if (P.foulT <= 0) { P.foulT = 1.1; number(P.x, P.y - 28, fp.poison ? 'POISONED' : 'THE WATER IS FOUL', '#8fd160'); }
+      BRD.set(P, 'foul', waterRate(), { name: fp.poison ? 'POISONED' : 'FOUL WATER', die: 'THE WATER', col: '#8fd160', tick: '#ff6b6b' });   /* (claude/deadwater) was a 9 hp blow every 1.1 s that threw him about; now the same drain, no knock */
+      if (fp.poison) { if (!keys.up) P.vy = Math.max(P.vy, 22); } }   /* (no venom carried out: the drain is the whole cost, and venom ticks as a blow) */
+    if (!fp || P.dead) BRD.stop(P, 'foul');
   /* THE POISON KEEPS ON: out of the water it still costs, so the crossing is a wound and not a toll */
   if (P.venomT > 0 && !P.dead) { P.venomT -= dt; P.venomTick = (P.venomTick || 0) - dt;
     if (P.venomTick <= 0) { P.venomTick = 0.9; if (P.hp > 6) damagePlayer(P.x, DMG.venomTick, { unblockable: true, noKnock: true }); number(P.x, P.y - 26, 'POISON', '#a6e04a'); }
