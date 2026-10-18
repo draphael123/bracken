@@ -5211,7 +5211,7 @@ function theFlotilla() {
       grass: '#8a9a5a', grassL: '#b4c47a', grassD: '#5a6a3a', dirt: '#6a5a44', dirtL: '#9a8464', dirtD: '#43382a', canopy: ['#2a4a44', '#3a5e54', '#4a7264', '#6a8a70'] },
     ambient: [{ x0: 0, x1: 99999, kind: 'ship' }],
     sections: [[0, 30, 'THE ROCK'], [31, 96, 'THE GALLEY'], [97, 208, 'THE GALLEY HULL'], [209, 288, 'THE HULK'], [289, 385, 'THE RIGGING RUN'], [386, 539, 'THE POWDER SHIP'], [540, 603, 'THE LASHINGS']].map(([x0, x1, name]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    arena: { x0: AS * TS, x1: (AS + S.W) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + S.W, boss: 'champion', music: 'champion', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
+    arena: { x0: AS * TS, x1: (AS + S.W) * TS, floor: AR * TS, y0: (AR - 18) * TS, trigger: (AS + 3) * TS, wallL: AS - 1, wallR: AS + S.W, boss: 'champion', music: 'admiral', tint: '#c9b27c', tintA: 0.06, fx: 'motes',
       start: [AS + 8, AR - 1], ac: { sx: AS, R: AR } },
   };
   return ret;
