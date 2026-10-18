@@ -28,8 +28,7 @@ export const CURVE_BANDS = {
    tools/curve-gate.mjs (and level-quality for a gated level); a listed level that is back in its band fails too - take it out, as MASH_REPORT_ONLY.
    Each entry: what it measured, and which way it misses. */
 export const CURVE_REPORT_ONLY = {
-  /* (claude/flotilla2tune, 10-17) the Flotilla 2: 775% lost, 20 deaths in 3 runs (act III band: 150-500%, 1-9 deaths) with the level-1 knight pilot. The pilot cannot ride a bench or a yard (tools/flotilla-route.mjs, which does, passes seven heroes) so it keeps falling into the foul bilge (110 lifts); the same 20-22 deaths on the art lane's tip, so it is not from the tune. Needs a pilot that rides movers, or a level pass - not a gate change */
-  flotilla: 'act 3: 775% lost, 20 deaths in 3 runs - over act III (500% / 9): the level-1 pilot falls off the benches and yards it cannot ride',
+  /* (claude/pilotmovers, 10-18: flotilla is back in its act III band - the level pilot now waits for, rides and steps off the benches and yards (tools/mover-hands.mjs) and its lifts keep out of the harm bilge: 335% lost, 8 deaths in 3 runs (was 775% / 20) - gated by the curve again) */
   /* (claude/underleafroad, 10-08: underleaf is act I now - the road puts it between Kingswood and the Scree Path - and its 45% lost / 0 deaths is inside act I's band) */
   storm: 'act 2: 26% lost, 0 deaths - EASY for act II (floor 70%): the level-1 pilot is lifted past most of it',
   /* (claude/undercrown2: undercrown is back in its band - 221% lost, 4 deaths in 3 runs: the dead water hands you back (A10) and the slabs carry the route - gated by the curve again) */

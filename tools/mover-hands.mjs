@@ -7,7 +7,7 @@
      flight) is where the jump arrives. A mover well below is stepped off onto. Nothing in reach: false (the bot's plain gap jump).
    - ON A MOVER: stand still (the mover carries you: main.js matches its dx / dy), go to the deck's far edge, and jump to the next mover or ledge when it is level and in reach.
    - IN THE AIR after its jump: hold the jump 18 frames, steer over the target, brake over it.
-   Movers it rides: benches, yards, swings, wheels and the plain back-and-forth / up-and-down platforms. Not: carts, pads, lifts, growcaps, buckets (their own pilots / the bot's rules). */
+   Movers it rides: benches, yards and the plain back-and-forth / up-and-down platforms (swings and wheels only with o.swings: the bot's own ride rules did better on them - kings 3 -> 5 deaths with the hands). Not: carts, pads, lifts, growcaps, buckets (their own pilots / the bot's rules). */
 export const MOVER_HANDS = `
 const makeMoverHands = (BK, T, o) => {
   o = o || {}; const TS = 16, JR = o.jump || 64, AV = JR / 0.7;
@@ -16,7 +16,7 @@ const makeMoverHands = (BK, T, o) => {
   const SOL = new Set([T.SOLID, T.CRATE, T.PALISADE, T.PORT, T.CLIMB, T.SOFT, T.ICE, T.WEB]);
   const tile = (tx, ty) => (tx < 0 || tx >= BK.L.W) ? T.SOLID : (ty < 0 || ty >= BK.L.H) ? T.AIR : BK.L.grid[ty * BK.L.W + tx];
   const solid = (tx, ty) => SOL.has(tile(tx, ty)), stand = (tx, ty) => solid(tx, ty) || [T.ONEWAY, T.PLANK, T.SHELF].includes(tile(tx, ty));
-  const rideable = m => !!m && m.w > 0 && !m.ghost && !m.gone && m.done !== 'gone' && !(m.sink > 0.55) && !m.spring && (m.flot || !m.kind || m.kind === 'swing' || m.kind === 'wheel');
+  const rideable = m => !!m && m.w > 0 && !m.ghost && !m.gone && m.done !== 'gone' && !(m.sink > 0.55) && !m.spring && (m.flot || !m.kind || (o.swings && (m.kind === 'swing' || m.kind === 'wheel')));
   const S = { air: 0, tgt: null, wait: 0, walk: false };
   const none = () => { const K = BK.keys; K.left = K.right = K.up = K.down = K.jump = false; };
   const resolve = (t, k) => t.m ? { l: t.m.x + (t.m.dx || 0) * k, r: t.m.x + (t.m.dx || 0) * k + t.m.w, y: t.m.y + (t.m.dy || 0) * k } : t;
