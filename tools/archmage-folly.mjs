@@ -37,7 +37,7 @@ for (const [m, [mk, an]] of Object.entries(want)) ok(MARK['archmage|' + m] === m
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const LIB=${LIB};
-    /* The blink spots share Math.random with particles and room dressing. Fix the stream before any build or fight step so spread is replayable. */
+    /* Fix gameplay dice before any build or fight step so the blink checks replay identically. */
     BK.manualSimulation=true;
     const realRandom=Math.random;let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
     const { LEVELS, T } = await import('/src/level.js');
@@ -92,7 +92,8 @@ try {
         if (onIt && to && e.mode === 'blinkTell') BK.P.x = to.x;
         was = e.mode; }
       /* THE SPREAD, sampled on its own (the cadence above is one blink in ~10 s: too few to show the room): ten blinks, the gap waived by the test's hand */
-      bl.spread = []; BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); for (let n = 0; n < 10; n++) { e.blinkAt = -99; e.T.blink = 0; for (let i = 0; i < 150 && e.mode !== 'blink'; i++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; step(1); } bl.spread.push(Math.round(e.x)); for (let i = 0; i < 40; i++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; e.T.blink = 99; step(1); } }
+      /* Give the spread probe its own fixed dice; earlier pose and cadence probes must not shift its sample. */
+      seed = 1919; bl.spread = []; BK.tp(Math.round((A.x0 + 70) / TS), fl / TS - 1); for (let n = 0; n < 10; n++) { e.blinkAt = -99; e.T.blink = 0; for (let i = 0; i < 150 && e.mode !== 'blink'; i++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; step(1); } bl.spread.push(Math.round(e.x)); for (let i = 0; i < 40; i++) { e.T.ward = 99; e.T.bolt = 99; e.T.rend = 99; e.T.pair = 99; e.T.blink = 99; step(1); } }
       /* warded, he blinks too - but only among his runes, so the last one cut never leaves him a room away */
       e.T.ward = 0; for (let i = 0; i < 200 && e.mode !== 'ward'; i++) { e.T.blink = 99; step(1); } const W = R(), xs = W.runes.map(q => q.x); bl.wardBlinks = [];
       for (let n = 0; n < 3; n++) { e.blinkAt = -99; e.T.blink = 0; for (let i = 0; i < 120 && e.mode !== 'blink'; i++) { e.T.bolt = 99; step(1); } bl.wardBlinks.push({ x: Math.round(e.x), lo: Math.min(...xs), hi: Math.max(...xs) }); for (let i = 0; i < 60 && e.mode !== 'ward'; i++) { e.T.bolt = 99; e.T.blink = 99; step(1); } } bl.backToWard = e.mode === 'ward'; }

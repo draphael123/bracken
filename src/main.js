@@ -6441,15 +6441,15 @@ const overlap = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
 // ---------- feel helpers ----------
 function burst(x, y, n, cols, spd = 70, life = 0.5, grav = 300, size = 2) {
   n = Math.max(1, Math.round(n * partScale()));
-  for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, s = spd * (0.4 + Math.random() * 0.8); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - spd * 0.3, life: life * (0.6 + Math.random() * 0.6), max: life, col: cols[(Math.random() * cols.length) | 0], size, grav }); }
+  for (let i = 0; i < n; i++) { const a = fxRand() * Math.PI * 2, s = spd * (0.4 + fxRand() * 0.8); parts.push({ x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - spd * 0.3, life: life * (0.6 + fxRand() * 0.6), max: life, col: cols[(fxRand() * cols.length) | 0], size, grav }); }
 }
-function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (Math.random() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + Math.random() * 120; parts.push({ streak: true,  x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + Math.random() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
+function sparks(x, y, dir, n = 8) { for (let i = 0; i < n; i++) { const a = (fxRand() - 0.5) * 1.6 + (dir > 0 ? 0 : Math.PI); const s = 90 + fxRand() * 120; parts.push({ streak: true,  x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s - 30, life: 0.25 + fxRand() * 0.2, max: 0.4, col: i & 1 ? '#fff6c8' : '#ffd36b', size: i % 3 === 0 ? 2 : 1, grav: 200 }); } }
 // FIRE, LIGHT AND SPARKS. Particles with a life of their own: drawParts() ramps a flame from white-hot through orange
 // and red to a puff of smoke, draws a spark as a streak along its flight, and lays a soft glow over anything hot.
-function flame(x, y, n = 4, spread = 5, up = 50, size = 3) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.3 + Math.random() * 0.35; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 24, vy: -up * (0.5 + Math.random() * 0.7), life: l, max: l, col: '#ffd36b', size, grav: -30, fire: true, drag: 1.5 }); } }
-function motes(x, y, n = 6, spread = 10, cols = ['#fff6c8', '#ffd36b']) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.7 + Math.random() * 0.5; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 16, vy: -20 - Math.random() * 40, life: l, max: l, col: cols[(Math.random() * cols.length) | 0], size: Math.random() < 0.3 ? 2 : 1, grav: -8, glow: true }); } }
-function streaks(x, y, n = 6, cols = ['#fff6c8', '#ffd36b'], spd = 160) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const a = Math.random() * Math.PI * 2, v = spd * (0.5 + Math.random() * 0.6), l = 0.22 + Math.random() * 0.18; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: l, max: l, col: cols[(Math.random() * cols.length) | 0], size: 1, grav: 260, streak: true }); } }
-function smoke(x, y, n = 4, spread = 8) { for (let i = 0; i < n; i++) { const l = 0.8 + Math.random() * 0.5; parts.push({ x: x + (Math.random() - 0.5) * spread * 2, y: y + (Math.random() - 0.5) * spread, vx: (Math.random() - 0.5) * 14, vy: -18 - Math.random() * 16, life: l, max: l, col: Math.random() < 0.5 ? '#5a5460' : '#4a4450', size: 3, grav: -6, drag: 0.8 }); } }
+function flame(x, y, n = 4, spread = 5, up = 50, size = 3) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.3 + fxRand() * 0.35; parts.push({ x: x + (fxRand() - 0.5) * spread * 2, y: y + (fxRand() - 0.5) * spread, vx: (fxRand() - 0.5) * 24, vy: -up * (0.5 + fxRand() * 0.7), life: l, max: l, col: '#ffd36b', size, grav: -30, fire: true, drag: 1.5 }); } }
+function motes(x, y, n = 6, spread = 10, cols = ['#fff6c8', '#ffd36b']) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const l = 0.7 + fxRand() * 0.5; parts.push({ x: x + (fxRand() - 0.5) * spread * 2, y: y + (fxRand() - 0.5) * spread, vx: (fxRand() - 0.5) * 16, vy: -20 - fxRand() * 40, life: l, max: l, col: cols[(fxRand() * cols.length) | 0], size: fxRand() < 0.3 ? 2 : 1, grav: -8, glow: true }); } }
+function streaks(x, y, n = 6, cols = ['#fff6c8', '#ffd36b'], spd = 160) { const m = Math.max(1, Math.round(n * partScale())); for (let i = 0; i < m; i++) { const a = fxRand() * Math.PI * 2, v = spd * (0.5 + fxRand() * 0.6), l = 0.22 + fxRand() * 0.18; parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v - 40, life: l, max: l, col: cols[(fxRand() * cols.length) | 0], size: 1, grav: 260, streak: true }); } }
+function smoke(x, y, n = 4, spread = 8) { for (let i = 0; i < n; i++) { const l = 0.8 + fxRand() * 0.5; parts.push({ x: x + (fxRand() - 0.5) * spread * 2, y: y + (fxRand() - 0.5) * spread, vx: (fxRand() - 0.5) * 14, vy: -18 - fxRand() * 16, life: l, max: l, col: fxRand() < 0.5 ? '#5a5460' : '#4a4450', size: 3, grav: -6, drag: 0.8 }); } }
 const HOT = new Set(['#fff6c8', '#ffd36b', '#ff9a5c', '#ff6b2c', '#dfffa0', '#c9a0ff', '#f0e4ff', '#bfe6f5', '#eefaff', '#fff6e0', '#9ab8ff', '#ffd34a']);
 function drawParts(cx, cy) {
   for (const p of parts) { const f = Math.max(0, p.life / p.max), x = Math.round(p.x - cx), y = Math.round(p.y - cy);
@@ -6474,7 +6474,7 @@ function dipUnderfoot(tier) { if (!L || P.onMover || P.swim) return; const ty = 
   for (const tx of new Set([Math.floor((P.x - 4) / TS), Math.floor((P.x + 4) / TS)])) { const i = ty * LW + tx; if (WR.dippable(L.grid[i], T, sf)) idx.push(i); }
   if (!idx.length) return; if (creakT <= 0 && (tier > 0 || fxRand() < 0.5)) { creakT = 0.6; SFX.creak(); }
   if (SET.reduceMotion) return; WR.dipLand(WRD, idx, tier ? 0.2 : 0.14); P.dipT = tier ? 0.2 : 0.14; }
-function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (Math.random() - 0.5) * 8, y, vx: (Math.random() - 0.5) * 40, vy: -20 - Math.random() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
+function dust(x, y, n = 4) { for (let i = 0; i < n; i++) parts.push({ x: x + (fxRand() - 0.5) * 8, y, vx: (fxRand() - 0.5) * 40, vy: -20 - fxRand() * 20, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 60 }); }
 /* THE PICKUPS ARE BIGGER. A key or a quest item is why you went down that side passage, and at ten pixels it
    was the size of a coin lying on the floor. Each small icon is drawn at twice its size, baked once, pixel for pixel. */
 const big2 = (() => { const m = new WeakMap(); return c => { if (!c || !c.width) return c; let b = m.get(c);
@@ -14306,7 +14306,7 @@ function updateArchmage(e, dt) {
     case 'sleep': e.vx = 0; grounded(); break;
     case 'wake': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'idle'; number(e.x, e.y - 50, 'YOU BROKE MY HEDGES', MVIO[3]); } break;
     /* ---- STAGE I ---- */
-    case 'blinkTell': e.vx = 0; if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 20, y: e.y - Math.random() * 34, vx: (Math.random() - 0.5) * 30, vy: -20, life: 0.4, max: 0.4, col: MVIO[2], size: 2, grav: -20 });
+    case 'blinkTell': e.vx = 0; if (fxRand() < dt * 30) parts.push({ x: e.x + (fxRand() - 0.5) * 20, y: e.y - fxRand() * 34, vx: (fxRand() - 0.5) * 30, vy: -20, life: 0.4, max: 0.4, col: MVIO[2], size: 2, grav: -20 });
       if (e.modeT <= 0) { e.mode = 'blink'; e.modeT = 0.35; burst(e.x, e.y - 18, 14, [MVIO[1], MVIO[2]], 80, 0.5); const [nx, ny] = archBlinkLand(e); e.x = nx; e.y = ny; e.vy = 0; e.blinkTo = null; e.face = Math.sign(P.x - e.x) || e.face; ringAt(e.x, e.y - 18, 30, MVIO[3], 0.4); burst(e.x, e.y - 18, 14, [MVIO[2], MVIO[3]], 80, 0.5); SFX.zap(); e.T.blink = ARCH.blinkEvery + (Math.random() - 0.5) * ARCH.blinkJit; } break;
     case 'blink': e.vx = 0; grounded(); if (e.modeT <= 0) { const back = e.wardBack && R.runes.length; e.wardBack = false; e.mode = back ? 'ward' : 'idle'; if (back) e.modeT = Math.max(1, e.wardLeft || 0); } break;   /* a blink out of his ward goes back into it */
     case 'boltTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'bolt'; e.modeT = 0.4; const c = R.circle; if (c) { bolts.push({ x: c.x, y: c.y, life: 0.3, storm: false }); burst(c.x, c.y - 4, 14, [MVIO[2], MVIO[3]], 90, 0.5); SFX.zap(); SFX.thunder(); if (!P.dead && Math.abs(P.x - c.x) < 16 && P.y > c.y - 40 && P.y - P.h < c.y + 8) damagePlayer(c.x + (P.x < c.x ? 8 : -8), archDmg(DMG.archBolt)); } R.circle = null; } break;
@@ -14325,7 +14325,7 @@ function updateArchmage(e, dt) {
         else if (e.stage === 2 && (R.sub === 1 || R.sub === 3) && archReached(R.sub)) { archThrow(); R.reopen = 1.5; }
         e.T.bolt = Math.max(e.T.bolt, 1.2); e.T.rend = Math.max(e.T.rend, 2); } break;
     /* ---- STAGE II: THE ROOM CHANGES ---- */
-    case 'change': e.vx = 0; grounded(); if (Math.random() < dt * 30) parts.push({ x: e.x + (Math.random() - 0.5) * 30, y: e.y - Math.random() * 40, vx: 0, vy: -50, life: 0.5, max: 0.5, col: MVIO[3], size: 1, grav: 0 });
+    case 'change': e.vx = 0; grounded(); if (fxRand() < dt * 30) parts.push({ x: e.x + (fxRand() - 0.5) * 30, y: e.y - fxRand() * 40, vx: 0, vy: -50, life: 0.5, max: 0.5, col: MVIO[3], size: 1, grav: 0 });
       if (e.modeT <= 0 && e.stage === 2 && R.sub === 3) { archMirrors(e); break; }   /* the last room's line: THE MIRRORS */
       if (e.modeT <= 0) { e.stage = 2; e.phase = 2; R.sub++; R.subHp = e.hp; archRoom(e, R.sub); e.mode = 'blink'; e.modeT = 0.4; const [nx, ny] = spots()[spots().length - 1]; e.x = nx; e.y = ny; e.vy = 0; e.ceiling = R.sub === 3;   /* turned over, he hangs from the ceiling like the room does */
         R.ride = R.sub === 2; if (R.ride) archRide(e); R.reopen = 1; ringAt(e.x, e.y - 18, 30, MVIO[3], 0.4); SFX.zap(); } break;
@@ -14335,7 +14335,7 @@ function updateArchmage(e, dt) {
          THE ORRERY     the library's flying books come off the wall at you, one after another at your chest (yellow: the shield)
          TURNED OVER    a glyph opens on the ceiling under your feet and takes you, standing or mid-jump: the room rights itself for
                         you alone and you fall to the floor, and a breath later it turns you over again (red: be off it) */
-    case 'crushTell': e.vx = 0; grounded(); if (R.crush && Math.random() < dt * 30) parts.push({ x: R.crush.x + (Math.random() - 0.5) * R.crush.w, y: 2 * TS + 4, vx: 0, vy: 40, life: 0.6, max: 0.6, col: '#6a5038', size: 1, grav: 200 });
+    case 'crushTell': e.vx = 0; grounded(); if (R.crush && fxRand() < dt * 30) parts.push({ x: R.crush.x + (fxRand() - 0.5) * R.crush.w, y: 2 * TS + 4, vx: 0, vy: 40, life: 0.6, max: 0.6, col: '#6a5038', size: 1, grav: 200 });
       if (e.modeT <= 0) { e.mode = 'crush'; e.modeT = 0.55; const c = R.crush; if (c) { c.land = 0; SFX.golemStomp(); SFX.stone(); shakeCam(7); burst(c.x, c.fy - 4, 16, ['#4a3624', '#6a5038', MVIO[2]], 90, 0.5); if (!P.dead && archInCrush(c)) damagePlayer(c.x, archDmg(DMG.archCrush), { unblockable: true }); } } break;
     case 'crush': e.vx = 0; grounded(); if (R.crush) R.crush.land += dt; if (e.modeT <= 0) { e.mode = 'idle'; R.crush = null; e.T.room = ARCH.roomEvery * ARCH.pace; e.T.pair = Math.max(e.T.pair, 1.5); } break;
     case 'booksTell': e.vx = 0; grounded(); if (e.modeT <= 0) { e.mode = 'books'; e.modeT = 0.3 + ARCH.bookGap * (ARCH.books - 1); const b = R.books; if (b) { for (let i = 0; i < ARCH.books; i++) MG.shots.push({ x: b.x, y: b.y, vx: -b.side * ARCH.bookSpeed, vy: 0, g: 0, t: 4, wait: i * ARCH.bookGap, book: true, dmg: archDmg(DMG.archBook) }); SFX.throwWhoosh(); } R.books = null; } break;
@@ -28225,7 +28225,7 @@ function updateProps(dt) {
       if (pr.needs && !hasKey(pr.needs)) { if (talkPress) { number(pr.x, pr.y - 30, 'BARRED. ' + (KEY_NAME[pr.needs] || 'A KEY') + ' OPENS IT', '#ff9a5c'); SFX.clank(); } }
       else if (talkPress) warpTo(pr);
     }
-    if (pr.t === 'firepit') { const ph = ((time + pr.phase) % pr.period), on = ph < pr.on; if (on && !pr.lit) { pr.lit = true; fires.push({ x: pr.x, y: pr.y, life: pr.on, delay: 0, pit: true }); SFX.puff(); } if (!on) pr.lit = false; if (!on && ph > pr.period - 0.5 && Math.random() < dt * 24) parts.push({ x: pr.x + (Math.random() - 0.5) * 10, y: pr.y - 2, vx: 0, vy: -30, life: 0.3, max: 0.3, col: '#ff9a5c', size: 1, grav: 0 }); }
+    if (pr.t === 'firepit') { const ph = ((time + pr.phase) % pr.period), on = ph < pr.on; if (on && !pr.lit) { pr.lit = true; fires.push({ x: pr.x, y: pr.y, life: pr.on, delay: 0, pit: true }); SFX.puff(); } if (!on) pr.lit = false; if (!on && ph > pr.period - 0.5 && fxRand() < dt * 24) parts.push({ x: pr.x + (fxRand() - 0.5) * 10, y: pr.y - 2, vx: 0, vy: -30, life: 0.3, max: 0.3, col: '#ff9a5c', size: 1, grav: 0 }); }
     if (pr.t === 'chainpost' && !pr.cut && hb && overlap(hb, { l: pr.x - 8, r: pr.x + 10, t: pr.y - 24, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.clank(); sparks(pr.x + 6, pr.y - 12, P.face, 5); number(pr.x, pr.y - 30, pr.hp > 0 ? pr.hp + ' MORE' : 'LOOSE', '#ffd36b'); if (pr.hp <= 0) { pr.cut = true; marks.add('chain:' + pr.tx); SFX.crack(); SFX.bark(); const mb = enemies.find(q => q.alive && q.t === 'greathound'); enemies.push({ t: 'hound', x: pr.x + 8, y: pr.y, vx: 0, vy: -100, w: 12, h: 7, hp: 30, hp0: 30, speed: 120, face: mb ? Math.sign(mb.x - pr.x) || 1 : 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 0, air: false, turncoat: true, retreat: 0, biteT: 0 }); number(pr.x + 8, pr.y - 20, 'IT HATES THE BIG ONE', '#8fd160'); } }
     // striking a crystal ledge is how you open a route, and how you drop one on a goblin
     if (L.hasCryst && hb && !P.crystHit) { const tx0 = Math.floor(hb.l / TS), tx1 = Math.floor(hb.r / TS), ty0 = Math.floor(hb.t / TS), ty1 = Math.floor(hb.b / TS);
@@ -28407,7 +28407,7 @@ function updateProps(dt) {
         if (isSolid(tx, gy) && !isSolid(tx, gy - 1) && !(L.interiors || []).some(([x0, x1, y0, y1]) => tx >= x0 && tx <= x1 && gy - 1 >= y0 && gy - 1 <= y1) && !(L.pools || []).some(p => nx > p.x0 && nx < p.x1 && f.y > p.y - 4) && !fires.some(q => Math.abs(q.x - nx) < 8 && Math.abs(q.y - f.y) < 8))
           fires.push({ x: nx, y: f.y, life: 2.2, delay: 0.3, own: true, gen: (f.gen || 0) + 1 }); }
       if ((f.gen || 0) === 0 && time - (P.grassSaidAt || -9) > 4) { P.grassSaidAt = time; number(f.x, f.y - 24, 'THE GRASS CATCHES', '#ff9a5c'); } }
-    if (!f.vent && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
+    if (!f.vent && Math.abs(f.x - P.x) < 260 && fxRand() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
     { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - Math.max(14, f.tall || 0) && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, f.dmg || DMG.fire, { up: true, unblockable: true, name: 'THE FIRE' }); } for (const e of enemies) if (e.alive && !f.still && !FIREPROOF.has(e.t) && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, Math.round(10*(f.own ? amul('fireWall') : 1)), f.x, false); } }
   fires = fires.filter(f => f.life > 0);
   for (const e of enemies) if (e.fireT > 0) e.fireT -= dt;
@@ -28628,14 +28628,14 @@ function updatePolish(dt) {
   coinComboT = Math.max(0, coinComboT - dt);
   for (const f of flyCoins) f.t += dt * 2.4; flyCoins = flyCoins.filter(f => f.t < 1);
   for (const r of ripples) r.life -= dt * 1.4; ripples = ripples.filter(r => r.life > 0);
-  for (const e of enemies) if (e.alive && e.t === 'hopper' && !e.air && Math.random() < dt * 0.5) for (const p of (L.pools || [])) if (p.shallow && e.x > p.x0 && e.x < p.x1 && Math.abs(e.y - (p.y + 12)) < 8) ripples.push({ x: e.x, life: 1 });
+  for (const e of enemies) if (e.alive && e.t === 'hopper' && !e.air && fxRand() < dt * 0.5) for (const p of (L.pools || [])) if (p.shallow && e.x > p.x0 && e.x < p.x1 && Math.abs(e.y - (p.y + 12)) < 8) ripples.push({ x: e.x, life: 1 });
   if (P.hp > 0 && P.hp <= 30 && !P.dead) { heartT -= dt; if (heartT <= 0) { heartT = P.hp <= 15 ? 0.55 : 0.85; SFX.heart(); } } else heartT = 0;
-  if (L.dark && SET.ambient && state === 'play') { dripT -= dt; if (dripT <= 0) { dripT = 0.35 + Math.random() * 0.5; const tx = Math.floor((camX + Math.random() * VW) / TS); let ty = Math.floor(camY / TS); while (ty < LH - 1 && tileAt(tx, ty) !== T.AIR) ty++; if (ty < LH - 1 && tileAt(tx, ty) === T.AIR && tileAt(tx, ty - 1) === T.SOLID) { parts.push({ x: tx * TS + 4 + Math.random() * 8, y: ty * TS + 1, vx: 0, vy: 10, life: 1.4, max: 1.4, col: '#8ab0c8', size: 1, grav: 420, drip: true }); if (Math.random() < 0.35) SFX.drip(); } } }
+  if (L.dark && SET.ambient && state === 'play') { dripT -= dt; if (dripT <= 0) { dripT = 0.35 + fxRand() * 0.5; const tx = Math.floor((camX + fxRand() * VW) / TS); let ty = Math.floor(camY / TS); while (ty < LH - 1 && tileAt(tx, ty) !== T.AIR) ty++; if (ty < LH - 1 && tileAt(tx, ty) === T.AIR && tileAt(tx, ty - 1) === T.SOLID) { parts.push({ x: tx * TS + 4 + fxRand() * 8, y: ty * TS + 1, vx: 0, vy: 10, life: 1.4, max: 1.4, col: '#8ab0c8', size: 1, grav: 420, drip: true }); if (fxRand() < 0.35) SFX.drip(); } } }
   if (L.witch && state === 'play' && !L.colosseum) { witchMotes(parts, stairProgress(L, (camX + VW / 2) / TS), dt, camX, camY, VW, VH); libraryBooks(parts, L.witch, dt); }   /* THE WITCHLIGHT STAIR's loose magic in the air */
-  if (dusk() > 0.5 && SET.ambient && !(L && L.glasssea)) { cricketT -= dt; if (cricketT <= 0) { cricketT = 0.5 + Math.random() * 1.2; SFX.cricket(); } }
+  if (dusk() > 0.5 && SET.ambient && !(L && L.glasssea)) { cricketT -= dt; if (cricketT <= 0) { cricketT = 0.5 + fxRand() * 1.2; SFX.cricket(); } }
   for (const c of clouds) { c.x += c.sp * dt; if (c.x > camX * 0.1 + VW + 80) c.x -= VW + 160; }
   fishT -= dt;
-  if (fishT <= 0) { fishT = 3 + Math.random() * 5; const pools = (L.pools || []).filter(p => !p.shallow && p.x1 > camX && p.x0 < camX + VW); if (pools.length) { const p = pools[(Math.random() * pools.length) | 0]; const x = Math.max(p.x0 + 12, Math.min(p.x1 - 12, camX + Math.random() * VW)); fish.push({ x, y: p.y + 2, vx: (Math.random() < 0.5 ? -1 : 1) * 30, vy: -110, sy: p.y + 2, life: 1.5 }); SFX.fish(); burst(x, p.y, 4, ['#eefaff', '#bfe6f5'], 40, 0.3, 300, 1); } }
+  if (fishT <= 0) { fishT = 3 + fxRand() * 5; const pools = (L.pools || []).filter(p => !p.shallow && p.x1 > camX && p.x0 < camX + VW); if (pools.length) { const p = pools[(fxRand() * pools.length) | 0]; const x = Math.max(p.x0 + 12, Math.min(p.x1 - 12, camX + fxRand() * VW)); fish.push({ x, y: p.y + 2, vx: (fxRand() < 0.5 ? -1 : 1) * 30, vy: -110, sy: p.y + 2, life: 1.5 }); SFX.fish(); burst(x, p.y, 4, ['#eefaff', '#bfe6f5'], 40, 0.3, 300, 1); } }
   for (const f of fish) { f.vy += 380 * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.life -= dt; if (f.vy > 0 && f.y >= f.sy) { f.life = 0; burst(f.x, f.sy, 5, ['#eefaff', '#bfe6f5'], 50, 0.3, 300, 1); } }
   fish = fish.filter(f => f.life > 0);
 }
@@ -28842,7 +28842,7 @@ function updateParticles(dt) {
   for (const i of impacts) i.t += dt; impacts = impacts.filter(i => i.t < 0.16);
   for (const r of rings) r.t += dt; rings = rings.filter(r => r.t < r.life);
   updateCritters(dt);
-  for (const p of parts) { p.life -= dt; p.vy += p.grav * dt; if (p.drag) { const k = 1 - p.drag * dt; p.vx *= k; p.vy *= k; } if (p.fire) p.vx += (Math.random() - 0.5) * 90 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
+  for (const p of parts) { p.life -= dt; p.vy += p.grav * dt; if (p.drag) { const k = 1 - p.drag * dt; p.vx *= k; p.vy *= k; } if (p.fire) p.vx += (fxRand() - 0.5) * 90 * dt; p.x += p.vx * dt; p.y += p.vy * dt; }
   parts = parts.filter(p => p.life > 0);
   for (const n of nums) { n.life -= dt; n.y += n.vy * dt; n.vy *= Math.pow(0.05, dt); }
   settleNums(); nums = nums.filter(n => n.life > 0);
@@ -28850,13 +28850,13 @@ function updateParticles(dt) {
   for (const t of trail) t.life -= dt; trail = trail.filter(t => t.life > 0);
   killFlash = Math.max(0, killFlash - dt);
   const want = SET.ambient && !(L && L.glasssea) ? 6 + Math.round(dusk() * 14) : 0;   /* (the glass sea has no fireflies: its air is shards and chimes) */
-  if (fireflies.length < want && Math.random() < dt * 3) fireflies.push({ x: camX + Math.random() * VW, y: camY + 20 + Math.random() * (VH - 60), t: Math.random() * 6, life: 6 + Math.random() * 6 });
+  if (fireflies.length < want && fxRand() < dt * 3) fireflies.push({ x: camX + fxRand() * VW, y: camY + 20 + fxRand() * (VH - 60), t: fxRand() * 6, life: 6 + fxRand() * 6 });
   for (const f of fireflies) { f.t += dt; f.life -= dt; f.x += Math.sin(f.t * 1.7) * 14 * dt; f.y += Math.cos(f.t * 1.3) * 10 * dt; }
   fireflies = fireflies.filter(f => f.life > 0 && f.x > camX - 20 && f.x < camX + VW + 20);
   const autumn = L.palette && L.palette.near === 'autumn';
   /* nothing on THE UNBURIED FIELD has leaves to drop (look pass 2026-09-24): what comes down over it is ash off the old fires, and an ember now and then */
   const leafCols = L.glasssea ? ['#e6fff6', '#9ae8d0', '#ffffff', '#b8f4e0', '#8af0ff'] : L.palette && L.palette.dress === 'battlefield' ? ['#8a8278', '#6a625c', '#a8a098', '#b0603a'] : autumn ? ['#d9782a', '#c9463d', '#e0b040', '#f0a040', '#8a3a1a'] : ['#8fd160', '#e0b040', '#c9463d', '#5aa33e'];
-  if (SET.ambient && SET.weather && Math.random() < dt * (autumn ? 9 : 2.5)) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: leafCols[(Math.random() * leafCols.length) | 0] });
+  if (SET.ambient && SET.weather && fxRand() < dt * (autumn ? 9 : 2.5)) leaves.push({ x: camX + fxRand() * (VW + 60) - 30, y: camY - 6, t: fxRand() * 6, life: 9, col: leafCols[(fxRand() * leafCols.length) | 0] });
   for (const l of leaves) { l.t += dt; l.life -= dt; l.y += 22 * dt; l.x += Math.sin(l.t * 2.2) * 18 * dt + 6 * dt; }
   leaves = leaves.filter(l => l.life > 0 && l.y < camY + VH + 10);
 }

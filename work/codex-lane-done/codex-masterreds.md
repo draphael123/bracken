@@ -42,7 +42,19 @@ The `archmage-folly` test left live rAF frames running during an awaited module 
 
 Three standalone runs all exit 0 and report the same ten locations: `[12388,12208,12478,12208,12388,12298,12388,12208,12388,12576]`. Logs: `../masterreds-archmage-freeze-1.log` through `-3.log`.
 
-Remaining: resolve slopes-trace Kingswood and run the relevant gates before this branch is ready for a merge.
+The remaining Kingswood trace and follow-on checks are addressed in the October 18 verification below. The original standalone results above remain the before/after evidence for each named red.
+
+## October 18: Kingswood trace and seeded follow-on checks
+
+The Great Hound's backstep uses gameplay `Math.random`, but sounds and visual particles also consumed that stream. Whether an audio file decoded before a swing and how many fireflies or sparks were active shifted the Hound's choice at Kingswood frame 715. Audio now uses a private random stream; visual-only effects in `src/main.js` use its existing `fxRand`. The Archmage's blink tell, room-change, and crush particles were three further visual consumers and now use `fxRand` too. No AI odds, attack timing, trace tolerance, or stored trace changed. Before the visual change, audio isolation alone still failed Kingswood 1/3 runs; after it, five consecutive uninstrumented standalone `slopes-trace` runs and the targeted serial gate all exited 0 against the unchanged baseline. The targeted gate also passed `no-hidden-hits` and `mark-integrity`.
+
+This random-stream separation exposed two checker issues, which were fixed without changing expectations. First, `archmage-folly` initially failed its unchanged 300-pixel spread assertion because the prior probes advanced its seeded gameplay stream. The spread probe now resets its own fixed seed, and the Archmage's cosmetic tell particles cannot advance that stream. Three complete standalone runs exited 0 with the identical ten-spot sample `[12576,12388,12478,12208,12478,12208,12576,12298,12576,12208]`. Second, the Abbot/Warden row of `small-adds` read 2 misses in 5 swings. A diagnostic showed both were low pokes that damaged the sprig in the same simulation frame they began; the ledger captured the foe's health **after** that frame. It now compares against health captured before `BK.sim(1)`. The focused row became 0/5 misses; the full unchanged `small-adds` assertion passed with 6 misses in 103 swings, worst judged row 33% against the existing 33% limit.
+
+Follow-on checks exited 0: `lab-order` (five seeded rows identical alone and after a batch), `pixels` (47 levels, 3049 sprites, no float/ground/water defect), `unburied-look` (11 look checks), `audio-assets` (references, decode skipped), `soundtest`, `boss-music`, and `node --check` on all four edited JS files. The pre-change targeted gate was red only on `small-adds` and `archmage-folly`; its other named checks (`berserker`, `dune-worm`, `bells`, `curve-gate`, `rule-openings`, `mark-integrity`, `no-hidden-hits`, `lab-order`, `slopes-trace`) passed. The corrected small-adds and Archmage checks were then run standalone as stated above. Short logs are outside Git at `../masterreds-fx-targets.log`, `../masterreds-small-adds-ledger-after.log`, `../masterreds-archmage-fx-cosmetic-{2,3}.log`, and corresponding named follow-on logs.
+
+`dangling-paths` was another pre-existing full-suite red on master: the batch100 historical report still cited a checker file it said never existed. Rewording that single line preserves its meaning, and `node tools/dangling-paths.mjs` now exits 0 over 9388 tracked files. That narrow report fix is commit `1de54669`.
+
+The branch is not claimed full-suite green. The coordinator must integrate and run its release gate; `normal-health` remains a pre-existing master red in the separate standingreds full run.
 
 ## QUESTIONS FOR DANIEL
 
