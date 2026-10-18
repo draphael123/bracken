@@ -22,6 +22,7 @@
 //   card      THE LEVEL-UP CARD (LEVELING): every hero's stat card, a milestone, a full card with every perk, the respec line, and the co-op lock
 //   practice  THE PRACTICE YARDS list, each row selected in turn
 //   bossjump  THE HIDDEN BOSS LIST (SHIFT+B on the title): each row selected in turn, and every hero on the hero line
+//   bossselect  THE SAVE'S BOSS LIST: locked and beaten rows, records, and every owned hero
 //   trial     THE TRIAL PROMPT after a hero is taken ("TAKE THE TRIAL FIRST?"), for every hero
 //   erase     THE ERASE QUESTION on the saves screen, for each slot
 //   slots     THE FIVE SAVE SLOTS (title > play): five full saves with the longest words, then a mix of full and empty, each card selected in turn
@@ -35,7 +36,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'bossjump', 'bossselect', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -236,6 +237,14 @@ async function pageTextFit(input) {
     for (let i = 0; i < n; i++) frame('bossjump #' + i, () => { BK.state = 'bossjump'; BK.bossJump.cursor = i; BK.bossJump.hero = 'knight'; }, { settle: 20 });
     for (const h of HEROES) frame('bossjump hero ' + h, () => { BK.state = 'bossjump'; BK.bossJump.cursor = 0; BK.bossJump.hero = h; }, { settle: 20 });
     BK.state = 'play'; await yieldNow(); }
+  if (want('bossselect')) { const pr = BK.PROG, keep = JSON.stringify(pr), table = BK.bossJump.table();
+    BK.bossSelect.open('map'); frame('bossselect locked', () => { BK.state = 'bossselect'; BK.bossSelect.cursor = 0; }, { settle: 20 });
+    for (const h of HEROES) pr.heroes[h] = true;
+    pr.bossRecords = pr.bossRecords || {};
+    for (const row of table) { pr[row.level] = { ...(pr[row.level] || {}), cleared: true, mini: true }; pr.bossRecords[row.level + ':' + row.kind] = Object.fromEntries(HEROES.map(h => [h, { best: 3599.9, noHit: true }])); }
+    for (let i = 0; i < table.length; i++) frame('bossselect #' + i, () => { BK.state = 'bossselect'; BK.bossSelect.cursor = i; BK.bossSelect.hero = 'knight'; }, { settle: 20 });
+    for (const h of HEROES) frame('bossselect hero ' + h, () => { BK.state = 'bossselect'; BK.bossSelect.cursor = 0; BK.bossSelect.hero = h; }, { settle: 20 });
+    for (const k of Object.keys(pr)) delete pr[k]; Object.assign(pr, JSON.parse(keep)); BK.state = 'title'; await yieldNow(); }
 
   if (want('menu')) { toPlay(0, 'knight'); BK.state = 'menu'; const n = BK.ui.menuCount();
     for (let i = 0; i < n; i++) frame('menu #' + i, () => { BK.state = 'menu'; BK.ui.menuKind = 'pause'; BK.ui.menuI = i; }, { settle: 40 });
