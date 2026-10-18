@@ -27126,11 +27126,11 @@ LCH = makeLitChurchHands({ boss: () => boss, get L() { return L; }, get players(
   moveFoe: (e, dx) => { moveBody(e, dx, 0, false); if (e.st) e.st.x = e.x; }, moveFoeY: (e, dy) => { const r = moveBody(e, 0, dy, false); if (r && (r.ground || r.hitY)) e.vy = 0; if (e.st) e.st.y = e.y; },
   keys: () => keys, questGot: () => straysGot.size,
   spawn: (t, tx, ty) => { const n0 = enemies.length; spawnEnt({ t, x: tx, y: ty, face: -1 }); const q = enemies[n0] || null; if (q) { q.woke = 1; q.summoned = true; } return q; },
-  bossLamp: l => { if (PBH) PBH.onLamp(l); if (DCH) DCH.onLamp(l); }, bossKindled: l => { if (PBH) PBH.onKindled(l); }, miniOn: () => !!(miniActive && L.mini && L.mini.boss === 'deacon'), zoneMusic: (n, own) => { if (state === 'play' && !bossActive && !miniActive && music.want !== n && own.includes(music.want)) music.play(n); } });
+  bossLamp: l => { if (PBH) PBH.onLamp(l); if (DCH) DCH.onLamp(l); }, bossKindled: l => { if (PBH) PBH.onKindled(l); if (DCH) DCH.onKindled(l); }, extraFires: () => (DCH && miniActive ? DCH.fires() : []), miniOn: () => !!(miniActive && L.mini && L.mini.boss === 'deacon'), zoneMusic: (n, own) => { if (state === 'play' && !bossActive && !miniActive && music.want !== n && own.includes(music.want)) music.play(n); } });
 DCH = makeDeaconHands({ burnTick: () => BURN_TICK, VW: () => VW, get L() { return L; }, get players() { return players; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), sparks: (...a) => sparks(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hurtFoe: (e, d) => hurtEnemy(e, d, e.x, false),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), blowHas: (b, v) => blowHas(b, v), answered: res => answered(res),
-  lamps: () => (LCH && LCH.on() ? LCH.deaconLamps() : []), kindle: id => (LCH && LCH.on() ? LCH.light(id) : false) });
+  lamps: () => (LCH && LCH.on() ? LCH.deaconLamps() : []), kindle: id => (LCH && LCH.on() ? LCH.light(id) : false), douse: id => (LCH && LCH.on() ? LCH.douse(id) : false) });
 SPR.deacon = DCH.bakeSet(canvas, flipX, whiten);   /* (claude/church2) THE DEACON's bestiary card (greybox, his guard pose) */
 /* WAYMEET's VOTIVE LAMPS (claude/towpathchurch, src/votive-hands.js): the church's flame, shared (src/flame.js); a lit lamp is SAVED (PROG.votive), the third opens the hill road (PROG.churchOpen) */
 VTH = makeVotiveHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, time: () => time, VW: () => VW, VH: () => VH,

@@ -28,3 +28,18 @@ export function drawFlameHand(g, players, cx, cy, time, lifeOf) {   /* lifeOf(pp
       g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 8, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 8, R(16 * k), 2); continue; }
     g.fillStyle = '#e8e0c8'; g.fillRect(x + 6, y + 2, 2, R(2 + 8 * k)); g.fillStyle = pp.lcFlame < 3 && Math.floor(time * 8) % 2 ? '#ff6b2c' : '#ff9a3c'; g.fillRect(x + 6, y - 2 - R(f), 2, 4); g.fillStyle = '#fff6c8'; g.fillRect(x + 6, y - 1 - R(f), 1, 2);
     g.fillStyle = '#1b1626'; g.fillRect(x - 8, y - 8, 16, 2); g.fillStyle = '#ffd36b'; g.fillRect(x - 8, y - 8, R(16 * k), 2); } }
+/* ---------- THE FLAME IN A FIGHT (claude/church3, Daniel 10-17: "flames in the boss and the mini"; new undead foes that fear it) ----------
+   The same taper, read by the fights and the foes - one verb, not four copies:
+     THE DEACON (src/deacon.js)        a lamp HE DOUSED, lit again by your flame: the light comes back on him and he FALTERS (open)
+     THE PALADIN (src/paladin-boss.js) a brazier lit BESIDE him (FIGHT.beside px): the holy fire breaks his LIGHT-WARD (his opening)
+     THE UNDEAD PRIEST (src/undead-priest.js)  a hero carrying a flame near him (FIGHT.scare px): his casting breaks off and he FLEES
+     THE UNDEAD PALADIN (src/order-paladin.js) a blow struck with a flame in the hand cracks his DIVINE SHIELD open (as a gleamed parry does)
+   FIGHT.beside: how close to a foe a lamp / brazier must be lit to count as "beside him"; FIGHT.scare: how near a carried flame frightens the dead */
+export const FIGHT = { beside: 64, scare: 72 };
+/* does this hero carry a burning flame */
+export const carrying = pp => !!pp && !pp.dead && (pp.lcFlame || 0) > 0;
+/* the nearest hero carrying a flame within r px of (x, y) (y: the foe's feet), or null */
+export function flameBy(players, x, y, r) { let best = null, bd = 1e9;
+  for (const pp of players || []) { if (!carrying(pp)) continue; const d = Math.abs(pp.x - x); if (d <= r && Math.abs(pp.y - y) <= 48 && d < bd) { bd = d; best = pp; } } return best; }
+/* is a light at lampX "beside" a foe at foeX */
+export const beside = (lampX, foeX, r = FIGHT.beside) => Math.abs(lampX - foeX) <= r;

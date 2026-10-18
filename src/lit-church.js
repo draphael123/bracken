@@ -163,6 +163,9 @@ export function buildLitChurch({ painter, T, TS }) {
   lamp('dcSconceW', 166, NF - 1, 'crossing', 'arena', { lit: true, deacon: true }); lamp('dcSconceE', 175, NF - 1, 'crossing', 'arena', { lit: true, deacon: true });
   lamp('dcChanW', 163, 33, 'crossing', 'arena', { lit: true, deacon: true, hang: true, top: 30, floorRow: NF - 1 }); lamp('dcChanE', 171, 33, 'crossing', 'arena', { lit: true, deacon: true, hang: true, top: 30, floorRow: NF - 1 });
   ent('deacon', 173, NF - 1, { face: -1 });
+  /* (claude/church3) TWO WAYS: his crossing's own GRATES (the dark lets the dead up - when all four of his lamps are out) and a VOTIVE STAND by the parclose (a flame to light
+     again what he douses; his arc's fire and his lit lamps are fires too) */
+  grate(168, NF, 'crossing', { deacon: true }); grate(177, NF, 'crossing', { deacon: true }); source('dcVotive', 161, NF - 1, 'votive');
   room('crossing', 'THE CROSSING', 152, 30, 178, NF - 1);
   /* THE NORTH TRANSEPT CHAPEL (rows 29-36): LAMP ONE on its altar, a votive stand by the door, the priest pair, their knight, an acolyte; the BELLOWS at the
      organ's foot (col 166): struck, a column of air lifts you up its pipe through the gallery's floor */

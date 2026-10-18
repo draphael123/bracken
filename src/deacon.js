@@ -14,28 +14,34 @@
 //       SNUFFER HOOK !   the hook out at your waist: it CATCHES and hauls you in, then the jab   answer: a shield, or roll / jump it
 //       KINDLE       ~   (quiet: the word, a glow on the pole) he walks to a dark lamp and lights it again - committed: a blow that lands cuts it
 //   P2 (< DC.p2) NEW MOVE: FLAME ARC !! he drags the pole's flame along the floor - a line of the church's HOLY FIRE for DC.arc.life s   answer: jump it, keep off it
+// TWO WAYS (claude/church3, Daniel 10-17: "make it two-way" - the hero carries a flame too, src/flame.js FIGHT): P2 is THE FLAME END DOWN - the rule turns. He stops
+//   keeping his lamps and DOUSES them (a quiet told move with its own windup + release: the snuffer cap raised at a lamp, then brought down on it; a blow cuts it) -
+//   and a dark crossing lets THE DEAD UP through its grates (the level's rule: src/lit-church-hands.js). LIGHT A LAMP HE DOUSED with a flame (E: his own arc's fire,
+//   a lit lamp or the crossing's votive stand give you one) and the light comes back on him: HE FALTERS - the grope's open (B10 ring + timer, x DC.gropeMul, capped,
+//   still, then a told ward). In P2 his pole's own flame keeps his light from guttering out on its own (DC.light.pole a second): the douse is his choice, not a gift.
 // Mini numbers (B6): a duel ~40-75 s, modest health, 75-85% WITH FLASKS (self-tuned here: DIAL_EXEMPT), mash 0/6.
 // PURE: no DOM, no main.js. The world is a context `c` (src/deacon-hands.js binds it). dcPlan is the boss lab's HUMAN bot (src/lab.js).
 
 export const DC = {
   hp: 1650, w: 14, h: 40, markH: 58,
   walk: 66, keep: 48, turn: 0.45, gap: [0.4, 0.32],
-  light: { max: 100, start: 85, regen: 2.2, drain: 6, drainHeavy: 11, lampDim: 18, refill: 60 },
+  light: { max: 100, start: 85, regen: 2.2, drain: 6, drainHeavy: 11, lampDim: 18, refill: 60, pole: 1.4 },   /* pole: P2, his pole's own flame a second (claude/church3) */
   guardTake: 0.4, gropeT: 3.0, gropeMul: 1.8, gropeCap: 0.18, wardT: 3.0, reelT: 0.7,
   kindleT: 1.3, kindleCd: 6, kindleWalkT: 3,
   sweep: { tell: 0.55, t: 0.25, reach: 58, dmg: 47 },
   hook: { tell: 0.6, t: 0.3, reach: 92, dmg: 14, haul: 380, jabTell: 0.5, jab: 42 },
   arc: { tell: 0.8, t: 0.55, len: 128, life: 3.2, tick: 0.4, dmg: 15 },
+  douse: { tell: 0.7, t: 0.3, reach: 150, cd: 6.5, first: 1.5 },   /* (claude/church3) P2: the snuffer cap on a lit floor lamp within reach px of him - every cd s (first: s into P2) */
   drop: { dmg: 0.07, stun: 1.2 },   /* a chandelier brought down on him: of his health, and the stagger (B4: he stands) */
   p2: 0.5,
 };
 export const CYCLES = { 1: [['sweep', 'hook', 'sweep'], ['hook', 'sweep', 'hook'], ['sweep', 'sweep', 'hook']], 2: [['arc', 'sweep', 'hook'], ['hook', 'arc', 'sweep'], ['sweep', 'hook', 'arc', 'sweep']] };
-export const MOVES = { sweepTell: { mark: '!', answer: 'jump' }, hookTell: { mark: '!', answer: 'block' }, jabTell: { mark: '!', answer: 'block' }, arcTell: { mark: '!!', answer: 'jump' }, kindleTell: { mark: '', answer: '' } };
-export const MOVE_NAME = { sweep: 'THE POLE SWEEP', hook: 'THE SNUFFER HOOK', jab: 'THE POLE', arc: 'THE FLAME ARC', fire: 'THE HOLY FIRE' };
+export const MOVES = { sweepTell: { mark: '!', answer: 'jump' }, hookTell: { mark: '!', answer: 'block' }, jabTell: { mark: '!', answer: 'block' }, arcTell: { mark: '!!', answer: 'jump' }, kindleTell: { mark: '', answer: '' }, douseTell: { mark: '', answer: '' } };
+export const MOVE_NAME = { sweep: 'THE POLE SWEEP', hook: 'THE SNUFFER HOOK', jab: 'THE POLE', arc: 'THE FLAME ARC', fire: 'THE HOLY FIRE', douse: 'THE DOUSING' };
 
 /* ---------- ONE FIGHT ---------- */
-export function newFight(G) { return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, light: DC.light.start, ward: 0, gropeTaken: 0, behindT: 0, starved: false, kindleCd: 2, fire: [], haul: null, told: {}, lastLight: DC.light.start,
-  n: { gropes: 0, wards: 0, warded: 0, guarded: 0, landed: 0, low: 0, behind: 0, kindles: 0, kindlesCut: 0, lampsOut: 0, drops: 0, dropsOnHim: 0, sweeps: 0, hooks: 0, hauls: 0, arcs: 0, moves: {} } }; }
+export function newFight(G) { return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, light: DC.light.start, ward: 0, gropeTaken: 0, behindT: 0, starved: false, kindleCd: 2, douseCd: DC.douse.first, fire: [], haul: null, told: {}, lastLight: DC.light.start,
+  n: { douses: 0, dousesCut: 0, relit: 0, gropes: 0, wards: 0, warded: 0, guarded: 0, landed: 0, low: 0, behind: 0, kindles: 0, kindlesCut: 0, lampsOut: 0, drops: 0, dropsOnHim: 0, sweeps: 0, hooks: 0, hauls: 0, arcs: 0, moves: {} } }; }
 export const dPhase = e => (e.hp <= e.maxHp * DC.p2 ? 2 : 1);
 export const dcOpen = e => !!e && e.mode === 'grope' && (e.open || 0) > 0;
 const STRIKE = new Set(['sweep', 'hook', 'jab', 'arc']);
@@ -50,6 +56,10 @@ function takeLight(S, n) { const was = S.light; setLight(S, S.light - n); if (S.
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : mv && mv.mark ? 'tell' : 'glow'); }
 function grope(e, S, c) { setMode(e, 'grope', DC.gropeT + 0.05); e.open = DC.gropeT; S.gropeTaken = 0; S.starved = false; S.n.gropes++; S.haul = null; c.fx('open', e.x, e.y); c.sound('falter'); c.shake(3);
   c.number(e.x, e.y - 72, 'HIS LAMPS ARE OUT: HE GROPES IN THE DARK - STRIKE', '#8fd160'); }
+/* (claude/church3) A LAMP HE DOUSED, LIT AGAIN BY A HERO'S FLAME: the light comes back on him - he FALTERS (the grope's open, its own word). true if it took */
+export function relit(e, S, c) { if (!e || !e.alive || (e.mode === 'away' || e.mode === 'sleep') || e.mode === 'wake' || dcOpen(e) || S.ward > 0) return false; S.n.relit++;
+  setMode(e, 'grope', DC.gropeT + 0.05); e.open = DC.gropeT; S.gropeTaken = 0; S.starved = false; S.n.gropes++; S.haul = null; c.fx('open', e.x, e.y); c.sound('falter'); c.shake(3);
+  c.number(e.x, e.y - 72, 'THE LAMP HE DOUSED BURNS: HE FALTERS - STRIKE', '#8fd160'); return true; }
 function endGrope(e, S, c) { e.open = 0; S.ward = DC.wardT; S.n.wards++; setLight(S, DC.light.refill); c.fx('ward', e.x, e.y); c.sound('tell'); c.number(e.x, e.y - 72, 'HE FINDS HIS FLAME: HE IS WARDED', '#9ab0c0'); }
 
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
@@ -61,6 +71,7 @@ export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy, low) {
   if (guarded(e, hx, hy, airborne, low)) { S.n.guarded++; if (!S.told.guard || S.n.guarded % 4 === 0) { S.told.guard = 1; c.number(e.x, e.y - 64, 'HIS POLE GUARDS HIGH: HIT LOW', '#ffd36b'); } return { dmg: Math.max(1, Math.round(dmg * DC.guardTake)), read: 'guard' }; }
   S.n.landed++; if (low && !airborne) S.n.low++; else if ((e.face || 1) * (hx - e.x) < -6) S.n.behind++;
   takeLight(S, heavy ? DC.light.drainHeavy : DC.light.drain);
+  if (e.mode === 'douseTell') { S.n.dousesCut++; setMode(e, 'recover', 0.5); S.douseCd = DC.douse.cd * 0.5; c.number(e.x, e.y - 64, 'THE DOUSING IS CUT', '#8fd160'); }
   if (e.mode === 'kindleTell') { S.n.kindlesCut++; setMode(e, 'recover', 0.5); S.kindleCd = DC.kindleCd * 0.5; c.number(e.x, e.y - 64, 'THE KINDLING IS CUT', '#8fd160'); }
   if (!S.told.land) { S.told.land = 1; c.number(e.x, e.y - 64, 'IT LANDS: HIS LIGHT GUTTERS', '#8fd160'); }
   return { dmg, read: 'landed' };
@@ -81,7 +92,7 @@ export function lampOut(e, S, c, o = {}) { if (!e || !e.alive || (e.mode === 'aw
 /* ---------- ONE FRAME. h = heroes [{ x, y, ground, alive, pp }], c: hit(box, dmg, name, o) -> landed, haul(pp, x), number, mark, sound, fx, shake, lamps() -> [{ id, x, lit, hang }], kindle(id) ---------- */
 export function stepDeacon(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
-  e.modeT -= dt; e.y = G.floorY; e.anim = (e.anim || 0) + dt; S.kindleCd = Math.max(0, S.kindleCd - dt);
+  e.modeT -= dt; e.y = G.floorY; e.anim = (e.anim || 0) + dt; S.kindleCd = Math.max(0, S.kindleCd - dt); if (S.ph >= 2) S.douseCd = Math.max(0, S.douseCd - dt);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
   if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; e.dcLight = S.light;
   stepFire(e, S, dt, c);
@@ -90,12 +101,12 @@ export function stepDeacon(e, S, dt, h, c) {
   const lamps = c.lamps ? c.lamps() : [], lit = lamps.filter(l => l.lit).length;
   if (S.starved && S.light <= 0 && e.mode !== 'grope' && S.ward <= 0 && !STRIKE.has(e.mode)) { grope(e, S, c); return; }
   if (S.light > 0) S.starved = false;
-  if (!dcOpen(e) && S.ward <= 0) setLight(S, S.light + DC.light.regen * lit * dt);
-  if (lit === 0 && S.light <= 0 && !dcOpen(e) && S.ward <= 0 && !STRIKE.has(e.mode)) S.starved = true;
+  if (!dcOpen(e) && S.ward <= 0) setLight(S, S.light + (DC.light.regen * lit + (S.ph >= 2 ? DC.light.pole : 0)) * dt);
+  if (lit === 0 && S.ph < 2 && S.light <= 0 && !dcOpen(e) && S.ward <= 0 && !STRIKE.has(e.mode)) S.starved = true;
   if (e.broken > 0 && !dcOpen(e) && (GUARD_MODES.has(e.mode) || /Tell$/.test(e.mode))) { e.modeT += dt; e.vx = 0; return; }
   const want = dPhase(e);
   if (want > S.ph && !dcOpen(e) && (e.mode === 'walk' || e.mode === 'recover')) { S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want;
-    c.number((G.x0 + G.x1) / 2, G.floorY - 100, 'THE DEACON TURNS HIS POLE: THE FLAME END DOWN', '#ff6b6b'); c.sound('tellHard'); c.shake(3); setMode(e, 'recover', 0.7); return; }
+    c.number((G.x0 + G.x1) / 2, G.floorY - 100, 'THE DEACON TURNS HIS POLE: THE FLAME END DOWN', '#ff6b6b'); c.number((G.x0 + G.x1) / 2, G.floorY - 86, 'HE DOUSES HIS LAMPS: LIGHT THEM AGAIN', '#ffd36b'); c.sound('tellHard'); c.shake(3); setMode(e, 'recover', 0.7); return; }
   switch (e.mode) {
     case 'grope': e.vx = 0; if (e.open <= 0) { endGrope(e, S, c); setMode(e, 'recover', 0.4); } return;
     case 'recover': e.vx = 0; if (e.modeT <= 0) nextMove(e, S, P, c); return;
@@ -108,6 +119,9 @@ export function stepDeacon(e, S, dt, h, c) {
       const d = l.x - e.x; e.face = Math.sign(d) || e.face; if (Math.abs(d) > (l.hang ? 22 : 14)) { const x0 = e.x; e.x = clampX(G, e.x + Math.sign(d) * DC.walk * 1.25 * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt); if (e.modeT <= 0) setMode(e, 'walk', 0.3); return; }
       e.vx = 0; S.n.kindles++; tell(e, S, c, 'kindleTell', DC.kindleT); c.number(e.x, e.y - 64, 'HE KINDLES THE LAMP: CUT IT', '#ffd36b'); return; }
     case 'kindleTell': e.vx = 0; if (e.modeT <= 0) { if (c.kindle) c.kindle(S.kindleId); S.kindleCd = DC.kindleCd; setMode(e, 'recover', 0.35); } return;
+    case 'douseTell': e.vx = 0; if (e.modeT <= 0) { const l = lamps.find(q => q.id === S.douseId); setMode(e, 'douse', DC.douse.t); c.sound('whoosh');
+      if (l && l.lit && c.douse && c.douse(S.douseId)) { S.n.douses++; c.number(l.x, e.y - 60, S.told.douse ? 'HE DOUSES IT' : 'HE DOUSES THE LAMP: THE DEAD STIR. LIGHT IT AGAIN', '#ff9a5c'); S.told.douse = 1; } } return;
+    case 'douse': e.vx = 0; if (e.modeT <= 0) setMode(e, 'recover', 0.45); return;
   }
   stepMove(e, S, dt, P, c);
 }
@@ -115,7 +129,10 @@ function nextMove(e, S, P, c) {
   const lamps = c.lamps ? c.lamps() : [], dark = lamps.filter(l => !l.lit), dx = P.x - e.x, ad = Math.abs(dx);
   e.face = Math.sign(dx) || e.face;
   /* THE DARK IS HIS ENEMY: a lamp out, and he goes to light it again (not in his ward; a beat between, so he always fights) */
-  if (dark.length && S.ward <= 0 && S.kindleCd <= 0) { const l = dark.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; S.kindleId = l.id; S.kindleCd = DC.kindleCd; setMode(e, 'kindleWalk', DC.kindleWalkT); return; }
+  /* (claude/church3) THE FLAME END DOWN (P2): he DOUSES a lit floor lamp in his pole's reach - the one nearest you (a hung chandelier is out of his cap's reach); he kindles no more */
+  if (S.ph >= 2 && S.ward <= 0 && S.douseCd <= 0) { const can = lamps.filter(l => l.lit && !l.hang && Math.abs(l.x - e.x) <= DC.douse.reach).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    if (can) { S.douseId = can.id; S.douseCd = DC.douse.cd; e.face = Math.sign(can.x - e.x) || e.face; tell(e, S, c, 'douseTell', DC.douse.tell); if (!S.told.douseTell) { S.told.douseTell = 1; c.number(e.x, e.y - 64, 'HE RAISES THE SNUFFER CAP: CUT IT', '#ffd36b'); } return; } }
+  if (S.ph < 2 && dark.length && S.ward <= 0 && S.kindleCd <= 0) { const l = dark.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; S.kindleId = l.id; S.kindleCd = DC.kindleCd; setMode(e, 'kindleWalk', DC.kindleWalkT); return; }
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++];
   if (m === 'sweep' && ad > DC.sweep.reach + 30) m = ad < DC.hook.reach + 10 ? 'hook' : 'walk';
@@ -155,10 +172,11 @@ function stepFire(e, S, dt, c) { for (const q of S.fire) { q.t -= dt; q.tick -= 
 /* ---------- THE BOT (src/lab.js): a human's reading. It jumps the sweep and the fire, takes the hook on a shield or steps out of its reach, cuts his kindling,
    snuffs his lamps when he is off them (a sconce with a cut, a chandelier from a jump), hits him LOW (the sweep: down + X) or from behind, and hard while he
    gropes; warded, it waits off him.
-   s = { P: { x, y, face, ground, atk }, e, S, lamps: [{ id, x, y, lit, hang }], reach, shield, t, rng, mem, v2, rest } -> { gx, face, atk, jump, dodge, block, down, why } ---------- */
+   (claude/church3) P2: a lamp he doused - it takes a flame at the nearest fire and lights it (E: out.talk), and he falters.
+   s = { P: { x, y, face, ground, atk }, e, S, lamps: [{ id, x, y, lit, hang, doused }], fires: [{ x, y, patch }], flame, reach, shield, t, rng, mem, v2, rest } -> { gx, face, atk, jump, dodge, block, down, talk, why } ---------- */
 export const PLAN = { react: 0.25, miss: 0.12, lampR: 130 };
 export function dcPlan(s) {
-  const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, why: '' };
+  const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, talk: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
   const seenFor = (key, d = s.v2 ? 0 : PLAN.react) => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= d; };
@@ -180,6 +198,13 @@ export function dcPlan(s) {
     } }
   if (dcOpen(e)) { out.gx = clamp(kx + side * 14); if (dx < hitR + 4) swing(false); out.why = 'hit him: he gropes'; return out; }
   if (S.ward > 0) { out.gx = clamp(kx + side * 70); out.why = 'his ward: wait'; return out; }
+  /* (claude/church3) TWO WAYS: a lamp he DOUSED - take a flame (a lit lamp, the crossing's votive stand, his arc's own fire) and light it again: he falters */
+  const doused = (s.lamps || []).filter(l => !l.lit && l.doused && !l.hang);
+  if (doused.length && e.mode !== 'kindleTell' && e.mode !== 'douseTell') { const l = doused.slice().sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    if ((s.flame || 0) > 0.6) { if (Math.abs(l.x - P.x) > 12) { out.gx = safe(l.x); out.face = Math.sign(l.x - P.x) || P.face; out.why = 'carry the flame to the doused lamp'; return out; }
+      out.talk = true; out.gx = P.x; out.why = 'light the lamp he doused'; return out; }
+    const fire = (s.fires || []).filter(q => Math.abs(q.y - P.y) < 40).map(q => ({ ...q, at: q.patch ? clamp(q.x + (P.x < q.x ? -16 : 16)) : q.x })).sort((a, b) => Math.abs(a.at - P.x) - Math.abs(b.at - P.x))[0];
+    if (fire && Math.abs(fire.at - P.x) < 240) { if (Math.abs(fire.at - P.x) > 8) { out.gx = fire.patch ? fire.at : safe(fire.at); out.why = 'to a fire for a flame'; return out; } out.talk = true; out.gx = P.x; out.why = 'take a flame'; return out; } }
   if (e.mode === 'kindleTell' && !roll('cut' + S.act, 0.15)) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to cut the kindling'; return out; } swing(false); out.gx = P.x; out.why = 'cut the kindling'; return out; }
   /* SNUFF HIS LAMPS: when he is off them (a chandelier: a jump and a cut under it) */
   const lit = (s.lamps || []).filter(l => l.lit);

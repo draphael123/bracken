@@ -28,7 +28,7 @@ export function makeDeaconHands(ctx) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
       mark: m => ctx.number(e.x, e.y - DC.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
-      lamps: () => (ctx.lamps ? ctx.lamps() : []), kindle: id => (ctx.kindle ? ctx.kindle(id) : false),
+      lamps: () => (ctx.lamps ? ctx.lamps() : []), kindle: id => (ctx.kindle ? ctx.kindle(id) : false), douse: id => (ctx.douse ? ctx.douse(id) : false),
       fx: (k, x, y) => { if (k === 'open') ctx.ring(x, y - 22, 30, '#ffd36b'); else if (k === 'ward') ctx.ring(x, y - 22, 34, '#c8d8e8'); },
       haul: (x, v) => { for (const pp of ctx.players) { if (pp.dead || !ctx.upright(pp)) continue; const d = x - pp.x; if (Math.abs(d) < 2) continue; pp.x += Math.sign(d) * Math.min(Math.abs(d), v); pp.vx = 0; } },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
@@ -47,6 +47,10 @@ export function makeDeaconHands(ctx) {
   /* THE RULE ON HIM: one of his lamps snuffed, or a chandelier brought down (src/lit-church-hands.js) */
   H.onLamp = l => { const e = live(); if (!S || !e || e.mode === 'away' || !l || !l.deacon) return; const under = !!l.dropped && Math.abs(e.x - (l.x * ctx.TS + 8)) < 20;
     const d = DCM.lampOut(e, S, world(e), { id: l.id, dropped: !!l.dropped, under }); if (d > 0 && ctx.hurtFoe) ctx.hurtFoe(e, d); };
+  /* (claude/church3) TWO WAYS: a lamp he doused, lit again by a hero's flame - he falters (src/lit-church-hands.js lightLamp -> ctx.bossKindled) */
+  H.onKindled = l => { const e = live(); if (!S || !e || !l || !l.deacon || l.by !== 'hero' || !l.wasDoused) return; DCM.relit(e, S, world(e)); };
+  /* HIS ARC'S HOLY FIRE is a fire: E beside a patch takes a flame (src/lit-church-hands.js fires) */
+  H.fires = () => (S && live() ? S.fire.filter(q => q.t > 0.4).map(q => ({ x: q.x, y: S.G.floorY, patch: true })) : []);
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
     if (!blow && ctx.burnTick && ctx.burnTick()) return DCM.burnOn(e, S, dmg).dmg;
     const heavy = ctx.blowHas ? ctx.blowHas(blow, 'heavy') : false, low = ctx.blowHas ? (ctx.blowHas(blow, 'sweep') || ctx.blowHas(blow, 'low')) : false;
@@ -56,7 +60,7 @@ export function makeDeaconHands(ctx) {
     e.angleHit = ctx.time(); return r.dmg; };
   H.barName = e => 'THE DEACON' + (DCM.dcOpen(e) ? '  OPEN' : S && S.ward > 0 ? '  WARDED' : '');
   H.end = () => { if (S) { S.fire = []; S.haul = null; } };
-  H.read = () => S && { mode: (live() || {}).mode, ph: S.ph, light: R(S.light), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hurt: { ...(S.hurt || {}) } };
+  H.read = () => S && { mode: (live() || {}).mode, ph: S.ph, light: R(S.light), douseCd: +S.douseCd.toFixed(2), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (src/redraw/deacon_art.js: the pixel sheet; this decides WHEN, and lays the chain, the arc's fire, the light bar and the read over it) ---------- */
   H.drawBoss = (g, e, cx, cy, time) => { if (!e.alive) return; const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy), flash = (e.hurtT || 0) > 0;
@@ -66,6 +70,9 @@ export function makeDeaconHands(ctx) {
       if (e.mode === 'hook') ART.drawChain(g, tipAt[0], tipAt[1] + 3, x + f * DC.hook.reach, tipAt[1] + 6, time, true);
       else if (e.mode === 'hookTell') { for (let i = 0; i < 3; i++) ART.drawChain(g, tipAt[0] - f * (2 + i * 3), tipAt[1] + 3 + i * 2, tipAt[0] - f * (2 + i * 3) + f * 2, tipAt[1] + 9 + i * 2, time, false); }
       else ART.drawChain(g, tipAt[0], tipAt[1] + 3, tipAt[0] + f * 10, tipAt[1] + 14, time, false); }
+    if (e.mode === 'douseTell' || e.mode === 'douse') { const tl = (ctx.lamps ? ctx.lamps() : []).find(q => q.id === S.douseId), up = e.mode === 'douseTell', tx = tl ? R(tl.x - cx) : x + f * 40, ty = up ? y - 58 : y - 30;   /* (claude/church3, GREYBOX) THE SNUFFER CAP: raised over the lamp (windup), brought down on it (release) */
+      g.strokeStyle = '#c8a040'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + f * 4, y - 34); g.lineTo(tx, ty); g.stroke(); g.lineWidth = 1; g.fillStyle = '#8a6a28'; g.fillRect(tx - 4, ty, 8, 5); g.fillStyle = '#e8c870'; g.fillRect(tx - 3, ty, 6, 1);
+      if (up) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); g.fillStyle = '#ffd36b'; g.fillRect(tx - 1, ty - 4, 2, 2); g.globalAlpha = 1; } }
     if (e.guardFx > 0) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); g.globalAlpha = Math.min(1, e.guardFx * 6); g.fillStyle = '#ffffff'; g.fillRect(x + f * 10 - 2, y - 46, 4, 4); g.fillRect(x + f * 10 - 5, y - 44, 10, 1); g.fillRect(x + f * 10 - 1, y - 49, 2, 10); g.globalAlpha = 1; }
   };
   /* OVER: the holy fire of the arc, his light bar, the read */
