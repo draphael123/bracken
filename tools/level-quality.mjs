@@ -31,8 +31,6 @@ export const GATE = ['lamplit', 'flotilla', 'hurricane', 'theatre', 'fair', 'can
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  /* (claude/lamplit3) TODO: THE LAMPLIT STREET 3 was rebuilt with no browser allowed (the PC's memory); its level-1 pilot row and its mash rows are measured on integ / the TUNE lane (node tools/level1-pilot.mjs lamplit --write; node tools/mash-bot.mjs lamplit --level lamplit --write). Lift both once stamped */
-  lamplit: ['pilot', 'mash'],
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
   skyroad: ['music'],
   /* (rootway: the music row is lifted - its own track, Tsorthan Grove's "Lanterns in the Hollowed Forest", CC0) */   /* (claude/rootway, the greybox) TODO: THE ROOTWAY plays the benched 'cave' track as a placeholder (Sporewood's old theme) - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */   /* (claude/skyroad, the greybox) TODO: THE SKY ROAD plays the retired sky ship's track and THE ROC her old track (the Monastery's arena still plays it) as placeholders - Daniel picks the level's own CC0/CC-BY track (no download until he says yes) */
