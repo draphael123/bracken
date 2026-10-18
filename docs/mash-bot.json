@@ -2950,15 +2950,15 @@
   }
  },
  "lamplit": {
-  "hash": "8b8313ef2813",
+  "hash": "748c394aeaf3",
   "boss": {
    "boss": "tollmaster",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/95",
-     "dead:100/95"
+     "dead:100/94",
+     "dead:100/94"
     ],
     "warden": [
      "dead:100/98",
@@ -2975,12 +2975,12 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 38.9,
+     "secs": 45.2,
      "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 38,
-     "swings": 1109,
-     "reprisalPct": 24,
+     "bossLeftPct": 94,
+     "landed": 49,
+     "swings": 1364,
+     "reprisalPct": 22,
      "chip": []
     },
     {
@@ -2988,12 +2988,12 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 38.9,
+     "secs": 45.2,
      "hpLostPct": 100,
-     "bossLeftPct": 95,
-     "landed": 38,
-     "swings": 1109,
-     "reprisalPct": 24,
+     "bossLeftPct": 94,
+     "landed": 49,
+     "swings": 1364,
+     "reprisalPct": 22,
      "chip": []
     },
     {
@@ -3074,11 +3074,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 19.7,
+     "secs": 23.2,
      "hpLostPct": 100,
      "bossLeftPct": 98,
-     "landed": 7,
-     "swings": 366,
+     "landed": 12,
+     "swings": 511,
      "reprisalPct": 0,
      "chip": []
     },
@@ -3087,11 +3087,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 19.7,
+     "secs": 23.2,
      "hpLostPct": 100,
      "bossLeftPct": 98,
-     "landed": 7,
-     "swings": 366,
+     "landed": 12,
+     "swings": 511,
      "reprisalPct": 0,
      "chip": []
     },
@@ -3149,13 +3149,6 @@
     }
    ]
   },
-  "carried": {
-   "from": "defebfab3ba4",
-   "parts": [
-    "boss",
-    "mini"
-   ]
-  },
   "level": {
    "knight": {
     "deaths": 3,
@@ -3182,7 +3175,7 @@
     "deaths": 2,
     "minHpPct": 0,
     "hpLostPct": 209,
-    "hits": 18,
+    "hits": 17,
     "walked": 100,
     "lifts": 50,
     "held": 1,
@@ -3194,8 +3187,8 @@
      "vmover": 3
     },
     "machines": true,
-    "frames": 17237,
-    "kills": 2,
+    "frames": 17344,
+    "kills": 5,
     "heroLevel": 21
    },
    "pyro": {
