@@ -9,7 +9,8 @@
 //   gargoyle  THE WITCHLIGHT STAIR (RUNES LIFT): the rune column struck while he flies in it turns him over - he crashes onto the spikes and
 //             lies STUNNED (his one opening) 3 s or more; struck while he is out of it, nothing happens to him and it goes dark to recharge
 //   herald    under WEIGHT: one mire is at most HERALD_MIRE_TAKE of him - he drags himself out after it
-//   poise     a boss outside his opening: a tap fills nothing of his bar, a held heavy blow does
+//   poise     a boss outside his opening: a tap fills nothing of his bar, a held heavy blow fills 15.6,
+//             and a cut inside fills 3 (97206a12 moved bosses to the verb-based universal break bar)
 //   minicap   (node) a mini's opening shuts after a third of him (src/boss-greed.js miniCap): the rest is his outside value, until it ends
 // PROVED RED FIRST on master 2423ff42 (no gate, bell, rune or cap there: every row of the page fails, and the node rows throw).
 import assert from 'node:assert/strict';
@@ -61,9 +62,9 @@ try {
     { const {q}=setup('longwater','knight','herald');q.mode='mired';q.modeT=3.6;q.mireHp0=q.hp;const cut=Math.ceil(q.maxHp*0.3);q.hp-=cut;BK.sim(2);
       out.herald={mode:q.mode,maxHp:q.maxHp}; }
     /* ---- POISE: taps fill nothing outside his opening; a held heavy does ---- */
-    { const {q,P}=setup('stockade','knight','chief');q.mode='walk';hold(q);q.poise=0;q.poiseCd=0;q.broken=0;P.heavySwing=false;P.combo=1;P.atk=-1;
-      BKT.hurtEnemy(q,8,q.x-10,false);const tap=q.poise||0;q.poise=0;P.heavySwing=true;P.atk=0.05;BKT.hurtEnemy(q,8,q.x-10,false);const heavy=q.poise||0;P.heavySwing=false;P.atk=-1;
-      q.mode='planted';q.modeT=5;q.poise=0;BKT.hurtEnemy(q,8,q.x-10,false);const inOpen=q.poise||0;out.poise={tap,heavy,inOpen}; }
+    { const measure=(mode,blow,heavy)=>{const {q,P}=setup('stockade','knight','chief');q.mode=mode;hold(q);q.poise=0;q.poiseCd=0;q.broken=0;P.heavySwing=heavy;P.combo=1;P.atk=heavy?0.05:-1;
+        BKT.hurtAs(blow,q,8,q.x-10,false);return q.poise||0;};
+      out.poise={tap:measure('walk','light',false),heavy:measure('walk','heavy',true),inOpen:measure('planted','light',false)}; }
     return out;})()`, 300000);
   r.errors = pg.errors.slice(0, 3);
 } finally { pg.close(); }
@@ -77,7 +78,7 @@ ok(r.gqueenAway && r.gqueenAway.mode !== 'pinned', 'THE GOBLIN QUEEN: rung with 
 ok(r.gargIn && r.gargIn.crash && r.gargIn.stunned >= 3 && r.gargIn.caught === 1, 'THE GARGOYLE: the rune struck while he flies in it turns him onto the spikes, stunned 3 s+: ' + JSON.stringify(r.gargIn || r.gargoyle));
 ok(r.gargOut && !r.gargOut.crash && r.gargOut.lit === 1 && r.gargOut.caught === 0, 'THE GARGOYLE: struck while he is out of it, it flares on nothing and goes dark: ' + JSON.stringify(r.gargOut));
 ok(r.herald && r.herald.mode !== 'mired', 'THE HERALD: a third of him taken in one mire and he drags himself out: ' + JSON.stringify(r.herald));
-ok(r.poise && r.poise.tap === 0 && r.poise.heavy >= 30 && r.poise.inOpen > 0, 'POISE: a tap outside his opening fills none of a boss\'s bar, a held heavy does, and inside an opening any blow does: ' + JSON.stringify(r.poise));
+ok(r.poise && r.poise.tap === 0 && r.poise.heavy === 15.6 && r.poise.inOpen === 3, 'POISE: a tap outside his opening fills none of a boss\'s bar, a held heavy fills the universal bar by 15.6, and a cut inside fills it by 3 (97206a12): ' + JSON.stringify(r.poise));
 ok(!r.errors.length, 'page errors: ' + JSON.stringify(r.errors));
 if (fails.length) { for (const f of fails) console.error('FAIL ' + f); process.exit(1); }
 console.log('rule-openings: ok');

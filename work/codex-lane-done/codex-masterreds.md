@@ -24,7 +24,13 @@ The automatic mine cart starts two tiles east of the bell sentry and runs him do
 
 Before: `tools/bells.mjs` exit 1; `undercrown works#0` had `ran:false`, `on:false`. Temporary diagnostic showed `alive:false`, `hp:-8`, cart within 8 px at frame 25. After: the unmodified `tools/bells.mjs` exits 0; UnderCrown sentry runs, rings at frame 208, drops the gate, calls two guards, lifts, stays quiet when broken, and resets after death. `tools/level1-pilot.mjs undercrown --write`, `tools/mash-bot.mjs undercrown --level undercrown --write`, and `tools/mash-bot.mjs undercrown --write` refreshed the changed level hash; `tools/level-quality.mjs undercrown` exits 0. No checker assertion changed. Short logs: `../masterreds-bells-before.log`, `../masterreds-bells-after.log`, `../masterreds-undercrown-pilot.log`, `../masterreds-undercrown-mash.log`, `../masterreds-undercrown-mash-boss.log`, `../masterreds-undercrown-quality-after.log`.
 
-Remaining: reproduce and fix rule-openings POISE, slopes-trace Kingswood, small-adds Pirate/Abbot, and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
+### Verified step: POISE checker
+
+Commit `97206a12` deliberately replaced the old boss poise calculation with the verb-based universal break bar (`src/anti-mash.js`). The older `rule-openings` harness called untagged `hurtEnemy`, so all three measured values were zero. It now delivers real tagged cut/heavy blows in independent fresh fights. The old `heavy >= 30` expectation was for the retired bar; this deliberate game change sets a heavy outside an opening to exactly `26 x 0.6 = 15.6`, and a cut inside to exactly 3. These exact values, plus the zero outside cut, remain asserted. No boss tuning was changed for this check.
+
+Before: `tools/rule-openings.mjs` exit 1, `poise:{tap:0,heavy:0,inOpen:0}`. After: exit 0, `poise:{tap:0,heavy:15.6,inOpen:3}`; other gate/bell/rune and mini cap assertions stayed green. Logs: `../masterreds-rule-openings-before.log` and `../masterreds-rule-openings-after2.log`.
+
+Remaining: reproduce and fix slopes-trace Kingswood, small-adds Pirate/Abbot, and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
 
 ## QUESTIONS FOR DANIEL
 
