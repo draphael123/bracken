@@ -253,3 +253,44 @@ export function gateChain(g, x0, y0, x1, y1, open, time) {
   if (open) { const t = (time * 1.4) % 1, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t + Math.sin(t * Math.PI) * 5; R(g, x - 1, y - 1, 2, 2, '#fff6c8'); }
   R(g, x1 - 2, y1 - 1, 5, 3, '#9c7619'); R(g, x1 - 2, y1 - 1, 5, 1, '#e6b94a');
 }
+
+// ================= THE BELL HOUSINGS (claude/airpockets) =================
+/* THE BELL HOUSING: an alcove cut up into the roof slab of the Tollmaster's square, hooded in riveted iron like the inside of a bell, a brass collar
+   at its mouth and a chain stub up through the stone. r is the alcove in screen px {l, r, t, b} (t = its crown, b = the water line the air hangs to).
+   state: 'dry' (the square is not flooded: just the iron), 'air' (a pale lens of held air under the hood, a bright water line, bubbles),
+   'spent' (drunk dry: the dashed ghost of the lens and the hood sweating), 'drowned' (the writ's water standing up inside it).
+   use 0..1 is how much of it has been drunk: the lens sinks as it goes. */
+export function tollHousing(g, r, state, time, use) {
+  const w = r.r - r.l, x0 = rd(r.l), y0 = rd(r.t), y1 = rd(r.b);
+  const wet = state !== 'dry', hood = 16;
+  /* the back of the alcove: wet cold stone behind the air, darker toward the crown */
+  g.globalAlpha = 1; R(g, x0, y0, w, y1 - y0 - 16, '#1c262b'); for (let y = 0; y < y1 - y0 - 16; y += 8) R(g, x0, y0 + y, w, 1, '#242f35');
+  for (let x = 0; x < w; x += 12) R(g, x0 + x + (x & 4), y0 + 8, 1, y1 - y0 - 24, '#161e22');
+  /* the iron hood: a dome of riveted plates with a lighter lip and a dark underside */
+  R(g, x0, y0, w, hood, '#3a444b'); R(g, x0, y0, w, 2, '#5a6870'); R(g, x0, y0 + hood - 3, w, 3, '#222a2f'); R(g, x0 + 2, y0 + hood - 2, w - 4, 1, '#14191c');
+  for (let x = 4; x < w - 2; x += 8) { P(g, x0 + x, y0 + 5, '#8a98a0'); P(g, x0 + x, y0 + 6, '#1a2024'); P(g, x0 + x, y0 + 11, '#8a98a0'); P(g, x0 + x, y0 + 12, '#1a2024'); }
+  for (let x = 8; x < w - 4; x += 16) R(g, x0 + x, y0 + 2, 1, hood - 5, '#2a3238');   /* plate seams */
+  R(g, x0, y0 + 2, 2, hood, '#2a3238'); R(g, x0 + w - 2, y0 + 2, 2, hood, '#2a3238');   /* the hood's flanks */
+  /* the brass collar at the mouth of the housing, where the air hangs */
+  const cy = y1 - 18; R(g, x0 - 1, cy, w + 2, 3, '#7f6320'); R(g, x0 - 1, cy, w + 2, 1, wet && state !== 'spent' ? '#f2d88e' : '#9c7619'); P(g, x0 - 1, cy + 1, '#16191c'); P(g, x0 + w, cy + 1, '#16191c');
+  for (let x = 3; x < w; x += 10) P(g, x0 + x, cy + 1, '#3d2f0a');
+  if (state === 'dry') return;
+  const top = y0 + hood, bot = cy;   /* the lens hangs between the hood and the collar */
+  if (state === 'air') {
+    const sink = rd(use * 6);
+    g.globalAlpha = 0.24; g.fillStyle = '#dff6ee'; g.fillRect(x0 + 2, top, w - 4, bot - top + 14);
+    g.globalAlpha = 0.14; for (let x = 0; x < w - 4; x += 6) R(g, x0 + 2 + x, top, 3, bot - top + 14, '#ffffff');
+    g.globalAlpha = 0.95; for (let x = 2; x < w - 2; x++) { const wv = Math.sin(time * 3.2 + (x0 + x) * 0.22); R(g, x0 + x, bot + 13 - sink + (wv > 0.4 ? 1 : 0), 1, 1, wv > 0.4 ? '#ffffff' : '#bfe6f5'); }
+    g.globalAlpha = 0.8; for (let x = 2; x < w - 2; x += 2) P(g, x0 + x, top, '#a8d8c8');
+    for (let i = 0; i < Math.floor(w / 14); i++) { const bx = x0 + 6 + i * 14, t = (time * 20 + i * 9) % 30; g.globalAlpha = 0.9; P(g, bx, bot + 18 - t, '#dff6ee'); P(g, bx + 1, bot + 17 - t, '#8fc6d0'); }
+    g.globalAlpha = 1;
+  } else if (state === 'spent') {
+    g.globalAlpha = 0.3; for (let x = 0; x < w; x += 4) { R(g, x0 + x, top, 2, 1, '#bfe6f5'); R(g, x0 + x, bot + 13, 2, 1, '#6aa0a8'); }
+    g.globalAlpha = 0.9; for (let x = 5; x < w - 3; x += 9) { const l = 3 + (x * 7 % 4); for (let j = 0; j < l; j++) P(g, x0 + x + (j & 1), top + j, j & 1 ? '#1e3d30' : '#2f5a46'); }   /* weed already hanging in it */
+    g.globalAlpha = 1;
+  } else {   /* drowned: the writ's water stood up inside the hood */
+    g.globalAlpha = 0.55; g.fillStyle = '#3a8a9a'; g.fillRect(x0 + 2, top, w - 4, bot - top + 14);
+    g.globalAlpha = 0.5; for (let x = 2; x < w - 2; x++) R(g, x0 + x, top + 4 + (rd(Math.sin(time * 4 + x * 0.4) * 2)) + ((time * 20 + x * 3) % 12 | 0), 1, 1, '#bfe6f5');
+    g.globalAlpha = 1;
+  }
+}

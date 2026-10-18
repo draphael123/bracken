@@ -450,7 +450,7 @@ Object.assign(DMG, {
   krakSlam: 33, krakSweep: 33, krakRoar: 23, krakJet: 29, krakHurl: 30, krakBeak: 32, krakRake: 26, krakSnap: 22, krakWave: 20, krakQuake: 12, krakShake: 14, krakCoSweep: 26, krakSlam1: 26, krakSweep1: 28,   /* (roar 26 -> 23: the climb's double roar was the warden's death at 2-9% left) */   /* (the first stage has more going on now: its own slam and sweep weigh a little less) */   /* (claude/kraken2: THE WAVE, the slam's shockwave, the shaken ramp) */   /* THE KRAKEN: 26, 22, 16, 18, 22, 26, 20, 18 (his health stays 480: every opening takes a share of it, so it does not move the rate) */
 });
 Object.assign(EHP, {
-  tollmaster: 2850,   /* THE TOLLMASTER: 520 (100%: the knight killed him in 7-18 s); 980 on the x0.05 chip. (claude/lamplit2) 3000: off the chip at 0.4 (B15) the knight cut 980 in 20 s; 3200 7/12 (4 seeds), 3000 13/36, 3000 with the ledger 17 10/18, 2700 15/18 */
+  tollmaster: 3450,   /* THE TOLLMASTER (claude/airpockets 10-18: 2850 -> 3450, the housings took the bot from 63% to 75% with flasks):  520 (100%: the knight killed him in 7-18 s); 980 on the x0.05 chip. (claude/lamplit2) 3000: off the chip at 0.4 (B15) the knight cut 980 in 20 s; 3200 7/12 (4 seeds), 3000 13/36, 3000 with the ledger 17 10/18, 2700 15/18 */
   prince: 2550,      /* THE BURIED PRINCE: 960 (100%: 17-35 s fights); (claude/undercrown2) 2000 -> 2500: the slab pins pay x2, and the fights ran 35-65 s; 3150 -> 2550 (claude/undercrown2art): on the road before the Queen (campaign L15, 2 flasks) the 3150 fight read 53% with flasks (knight 3/12), 2850 read 56% (knight 2/12) */
   closedhelm: 2800,  /* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */ /* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */
   lampreeve: 2000,   /* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75); 560 on the 0.25 coat. (claude/lamplit2) his coat at 0.45 (B15) and the relight stun x1.7: 560 died in 15-24 s, 1300 in 20-50 s at 12/12, 1800 12/12 (no threat close in: his flask now lands at your feet too) */
@@ -2274,7 +2274,7 @@ function* loadLevelG(i) {
   SLAB_PHYS = !!(L.slabs && L.slabs.length); SLAB_MASK = new Set(); SLAB_RT = new Map(); for (const s of (L.slabs || [])) SLAB_RT.set(s.id, { ...s, state: 'up', posts: [], heaps: [], cells: [], anim: 0 });   /* (claude/undercrown2) the slabs as built; their posts join them as they are placed */   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
   airBells = (L.ents || []).filter(q => q.t === 'deco' && q.kind === 'airBell').map(q => ({ x: q.x * TS + 8, y: q.y * TS - 14 }));
-  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1, lampX]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS, lampX, goneUntil: lampX !== undefined ? 1e9 : undefined }));   /* (claude/lamplit2) lampX: LIGHT THE WAY - a pocket that is there only while the street lamp under it burns */
+  airRooms = (L.airRooms || []).map(([x0, x1, y0, y1, lampX, toll]) => ({ l: x0 * TS, r: (x1 + 1) * TS, t: y0 * TS, b: (y1 + 1) * TS, lampX, toll: !!toll, use: 0, goneUntil: lampX !== undefined ? 1e9 : undefined }));   /* (claude/lamplit2) lampX: LIGHT THE WAY - a pocket that is there only while the street lamp under it burns */
   BREATHCUE = { gulpCd: 0, inAir: false, last: 99, told: new Set() };   /* a new level is told its air again */
   deepLoad();
   { const sl = SEA.seaLoad(LEVELS[i].id, L); if (sl && sl.mid) BG.mid = sl.mid; if (sl && sl.murk) { MURK = sl.murk; MURK_ID = LEVELS[i].id; } }   /* a sea level that paints its own middle distance (or, in a dark one, its own murk) */
@@ -2477,6 +2477,7 @@ function spawnEnt(e) {
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
       case 'crank': props.push({ t: 'crank', x: px, y: py, wall: e.wall, raftCall: e.raftCall, hits: 0, open: false }); break;
       case 'torch': lights.push({ x: px, y: py - 10, r: 46, torch: true, holder: true }); break;
+      case 'airhood': lights.push({ x: px, y: py - 6, r: 40, glow: true }); break;   /* (claude/airpockets) a bell housing in the Tollmaster's roof is a pale light you can find in the dark */
       case 'treehouse': { /* A HOUSE IS HELD UP BY SOMETHING: find what is under it - water, or ground - so its stilts or its trunk can reach it */
         let gy = e.y + 1; while (gy < L.H && !isSolid(e.x, gy) && tileAt(e.x, gy) !== T.PLANK && tileAt(e.x, gy) !== T.ONEWAY) gy++;
         const pool = (L.pools || []).find(q => px >= q.x0 && px < q.x1 && q.y >= py && q.y <= gy * TS);
@@ -9961,6 +9962,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (P.jbuf > 0 && P.ballast) { P.jbuf = 0; dropBallast(true); }
     else if (P.jbuf > 0 && under < 34) { P.jbuf = 0; P.vy = -360; P.swim = false; burst(P.x, swimP.y, 8, ['#e8f4f0', '#7cc8c8'], 60, 0.4, 400, 1); SFX.pJump(); }
     const bell = nearAir(P.x, P.y - 8);
+    for (const r of airRooms) if (r.toll) tollPocketTick(r, dt, !!(bell && bell.o === r));
     if (!swimP.swim) { P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 4 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }   /* lethal water drains by the second instead (WATER_DRAIN): no breath to count */
     else if (bell) { if (Math.random() < dt * 26) parts.push({ x: bell.x + (Math.random() - 0.5) * 14, y: bell.y, vx: 0, vy: -40, life: 0.6, max: 0.6, col: '#e8f4f0', size: 1, grav: -20 }); P.breath = Math.min(breathMax, (P.breath ?? breathMax) + dt * 5 * (L.breathScale||1)); P.drownT = 0; BRD.stop(P, 'breath'); }
     else if (under > 24) { P.breath = (P.breath ?? breathMax) - dt * (swimP.capped ? 0.55 : 1) * (curId() === 'deep' ? 0.5 : 1); if (P.breath > 0 && Math.random() < dt * 4) parts.push({ x: P.x + (Math.random() - 0.5) * 6, y: P.y - 16, vx: 0, vy: -30, life: 0.9, max: 0.9, col: '#e8f4f0', size: 1, grav: -20 });
@@ -12427,7 +12429,7 @@ const TOLL = { coat: 0.4, open: { parry: 2.0, relit: 2.8, tilt: 1.3 }, mul: { pa
   seal: { tell: 0.85, lock: 0.32, T: 0.45, r: 20, patch: 4.5, patchW: 24, cd: [99, 7.5, 7] }, writ: { tell: 1.0, T: 4.5, cd: [99, 99, 10] },
   ledger: [2.8, 2.8, 2.2], rod: [6, 6, 4.6], speed: [62, 38, 46] };
 let oilSlicks = [], tollWax = [];   /* the Lampreeve's oil on his boards, the Tollmaster's wax on his square: both cleared with the level */
-function lampHandsReset() { oilSlicks = []; tollWax = [];
+function lampHandsReset() { oilSlicks = []; tollWax = []; for (const r of airRooms) if (r.toll) { r.use = 0; r.spent = false; r.goneUntil = 0; }
   for (const pr of lamps) if (pr.gate !== undefined && marks.has('gate:' + pr.gate)) { pr.lit = true; pr.gateOpen = true; openGateCol(pr.gate); } }   /* THE TOLL GATE stays open once its lamp was lit */
 const tollSay = (e, s, c) => number(e.x, e.y - 52, s, c);
 const segDist = (px, py, ax, ay, bx, by) => { const vx = bx - ax, vy = by - ay, l2 = vx * vx + vy * vy || 1, k = Math.max(0, Math.min(1, ((px - ax) * vx + (py - ay) * vy) / l2)); return Math.hypot(px - ax - vx * k, py - ay - vy * k); };
@@ -16428,7 +16430,7 @@ let BREATHCUE = { gulpCd: 0, inAir: false, last: 99, told: new Set() };
 let lamps = [];
 const lampAir = pr => ({ x: pr.x, y: pr.y - 40 });            // where the bubble sits: up under the iron hood
 function nearAir(x, y) { // a hold, a diving bell, a vent, or a lamp that is still burning
-  for (const r of airRooms) if (x > r.l && x < r.r && y > r.t && y < r.b && !(r.goneUntil > time)) return { x, y: r.t + 10, deep: 'room' };   /* the room IS the pocket - and drawAirSigns hangs a mouth on the water line of it, so it can be read from outside before anybody swims in */
+  for (const r of airRooms) if (x > r.l && x < r.r && y > r.t && y < r.b && !(r.goneUntil > time) && !(r.toll && tollRoomDrowned(r))) return { x, y: r.t + 10, deep: 'room', o: r };   /* the room IS the pocket - and drawAirSigns hangs a mouth on the water line of it, so it can be read from outside before anybody swims in */
   for (const b of airBells) if (Math.abs(b.x - x) < 26 && Math.abs(b.y - y) < 22 && !(b.goneUntil > time)) return { x: b.x, y: b.y, deep: 'bell' };
   { const da = L.deep && deepAir(x, y); if (da) return da; }   /* the Deep's vents, wrecks and the breath a struck clam lets go */
   for (const pr of lamps) if (pr.lit && Math.abs(pr.x - x) < 24 && Math.abs(pr.y - 40 - y) < 34 && !lampDrowned(pr)) return lampAir(pr);
@@ -16437,6 +16439,15 @@ function nearAir(x, y) { // a hold, a diving bell, a vent, or a lamp that is sti
 const airList = () => lamps.length ? airBells.concat(lamps.filter(pr => pr.lit && !lampDrowned(pr)).map(lampAir)) : airBells;
 /* THE WRIT OF DROWNING (the Tollmaster's phase three, claude/lamplit2): on the half of his flooded square the writ names, the water stands up
    inside the lamp hoods and those lamps hold no air until it goes down again */
+/* THE BELL HOUSINGS (claude/airpockets): the writ drowns a housing on the half it names as it does a lamp hood; a housing is SPENT after TOLL_POCKET.spend s of drinking and comes back TOLL_POCKET.back s later (14: four of them drunk in turn are 10 s of air, so a hero cannot just rotate) */
+const TOLL_POCKET = { spend: 2.5, back: 14, rest: 0.5 };
+function tollRoomDrowned(r) { const b = boss; return !!(b && b.t === 'tollmaster' && b.writ && b.alive && (r.l + r.r) / 2 > b.writ.x0 && (r.l + r.r) / 2 < b.writ.x1); }
+function tollPocketTick(r, dt, drinking) {
+  if (r.goneUntil > 0 && r.goneUntil <= time && r.spent) { r.spent = false; r.goneUntil = 0; r.use = 0; number((r.l + r.r) / 2, r.t + 4, 'THE HOUSING FILLS AGAIN', '#bfe6f5'); }
+  if (r.spent) return;
+  if (drinking) { r.use += dt; if (r.use >= TOLL_POCKET.spend) { r.spent = true; r.goneUntil = time + TOLL_POCKET.back; number((r.l + r.r) / 2, r.t + 4, 'THE HOUSING IS SPENT', '#9fb4bd'); SFX.clank(); } }
+  else r.use = Math.max(0, r.use - dt * TOLL_POCKET.rest);
+}
 function lampDrowned(pr) { const b = boss; return !!(b && b.t === 'tollmaster' && b.writ && b.alive && pr.x > b.writ.x0 && pr.x < b.writ.x1); }
 // is this spot in the light? The watch hunt by ear, and what they hear is you out of it.
 function litNear(x, y, r = 150) {
@@ -25202,6 +25213,7 @@ function drawAirSigns(cx, cy) {
   // is what lets a swimmer read it as AIR from outside and spend a breath on the swim in.
   for (const r of airRooms) {
     const w = r.r - r.l, mx = (r.l + r.r) / 2;
+    if (r.toll) { if (on(mx, r.b, 90)) LA.tollHousing(g, { l: r.l - cx, r: r.r - cx, t: r.t - cy, b: r.b - cy }, !inWater(mx, r.b + 6) ? 'dry' : r.spent ? 'spent' : tollRoomDrowned(r) ? 'drowned' : 'air', time, r.use / TOLL_POCKET.spend); continue; }   /* (claude/airpockets) the iron-hooded alcoves of the Tollmaster's roof */
     if (r.lampX !== undefined && on(mx, r.b, w / 2 + 70)) LA.pocket(g, { l: r.l - cx, r: r.r - cx, t: r.t - cy, b: r.b - cy }, !(r.goneUntil > time), time);   /* (claude/lamplit2art) a LIGHT THE WAY pocket: air while its lamp burns, a dashed ghost and weed while it is out */
     if (!on(mx, r.b, w / 2 + 70) || r.goneUntil > time) continue;
     const below = r.b + 6;
