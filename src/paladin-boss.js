@@ -32,12 +32,12 @@
 import { FIGHT } from './flame.js';
 
 export const PB = {
-  hp: 2100, w: 18, h: 36,
-  heroHp: { knight: 1.4, warden: 0.72, pyro: 1.5 }, heroDmg: { knight: 2.0, pyro: 1.35 },   /* heroDmg: his blows on that hero (the shield hero turns his yellow ones; the red ones must cost him) */   /* (claude/church3) THE DUEL PER HERO (the wardgap lane's accepted pattern): the shield hero turns every yellow blow of his, so he stands longer against her - B15's wall unchanged */ scale: 1.5, markH: 62,
+  hp: 1850, w: 18, h: 36,
+  heroHp: { knight: 1.35, warden: 0.64, pyro: 0.95 }, heroDmg: { knight: 2.6, warden: 1.4, pyro: 2.0 },   /* heroDmg: his blows on that hero (the shield hero turns his yellow ones; the red ones must cost him) */   /* (claude/church3) THE DUEL PER HERO (the wardgap lane's accepted pattern): the shield hero turns every yellow blow of his, so he stands longer against her - B15's wall unchanged */ scale: 1.5, markH: 62,
   walk: 64, keep: 40, turn: 0.42, gap: [0.62, 0.52, 0.44],
   conv: { pips: 5, start: 2, land: 0.5, turned: 0.34, blocked: 0.3, kneel: 1.25, anywhere: 0.4, refill: 2 },   /* blocked: his blow taken on a shield still earns (the hero's rule: a blow that meets you) */   /* pips: his hammer landing +land, a blow his ward turns +turned, prayer a second (kneel at a lit brazier, anywhere slow) */
   ward: { take: 0.4 },                                      /* B15: a turned blow still bites x take */
-  falterT: 3.4, falterMul: 1.7, falterCap: 0.15, wardT: 3.0, reelT: 0.8,
+  falterT: 3.4, falterMul: 1.7, falterCap: 0.15, wardT: 2.0, reelT: 0.8,
   aura: { r: 52, base: 3, perPip: 1.1, burnK: 0.32, mend: 0.18 },   /* his HALLOWED AURA: HG.aura scaled to a boss; lit for base + perPip s a pip spent; burnK x the hero's burn on a hero in it; mend x HG.heal */
   chain: { tell: 0.55, beat: 0.4, t: 0.18, n: [2, 3, 3], reach: 40, step: 120, dmg: 22 },
   smite: { tell: 0.5, t: 0.22, reach: 46, dmg: 26, cost: 1 },

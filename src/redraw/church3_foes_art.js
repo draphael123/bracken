@@ -97,6 +97,7 @@ function helm(g, P, kind, bd, o = {}) {
 /* the arm: a vambrace line from the shoulder to a hand; the hand a gauntlet */
 function arm(g, P, sx, sy, hx, hy, back) { ln(g, sx, sy, hx, hy, back ? P.dp : P.lo, 3); ln(g, sx, sy + 1, hx, hy + 1, back ? P.lo : P.pl, 1); bx(g, hx - 1, hy - 1, 3, 3, back ? P.lo : P.pl); pp(g, hx, hy, P.dp); }
 function paladinFrame(i, kind) {
+  if (i === 10) return paladinDead(kind);   /* (claude/church3tune) the death frame, after the hurt */
   const P = PAL[kind], [c, g] = mk(), dead = kind === 'deadpaladin';
   let bd; const draw = o => { bd = knight(g, P, kind, o); return bd; };
   switch (i) {
@@ -139,6 +140,7 @@ function censer(g, P, hx, hy, cx, cy, glow) {
   bx(g, cx - 1, cy - 7, 2, 2, P.censerHi); pp(g, cx, cy - 8, P.censerLo);                                                                                   /* the knop */
   for (let k = 0; k < (glow ? 6 : 3); k++) { const y = cy + 1 + k * 2; pp(g, cx - 1 + ((k * 3) % 3), y, k % 2 ? P.smoke : P.smokeHi); } }
 function priestFrame(i) {
+  if (i === 13) return priestDead();   /* (claude/church3tune) the death frame, after the hurt */
   const P = PAL.deadpriest, [c, g] = mk();
   const st = { 0: [0, 0], 1: [2, 0], 2: [-2, 0] }[i] || [0, 0];
   const o = { 0: {}, 1: { stride: 2, lean: 1 }, 2: { stride: -2, lean: 1 }, 3: { lean: -2 }, 4: { lean: 4, stride: 2 }, 5: { cr: 6, lean: 3, kneel: true }, 6: { lean: -1, tip: 2 }, 7: { lean: 1 }, 8: { lean: 0 }, 9: { lean: 3 }, 10: { lean: 5, stride: 2 }, 11: { cr: 5, lean: -4, stride: 1 }, 12: { lean: -4, cr: 1, stride: 2 } }[i] || {};
@@ -181,6 +183,37 @@ function priestFrame(i) {
   }
   return done(c);
 }
+/* ---------------------------------------------------------------- THE DEATH FRAMES (claude/church3tune): what each leaves on the floor */
+/* THE PALADIN, down: on his back, the plate sprawled, the helm turned, the mace flung out, the shield face-up beside him; the dead one's cold light gone out */
+function paladinDead(kind) {
+  const P = PAL[kind], [c, g] = mk(), dead = kind === 'deadpaladin';
+  bx(g, -14, 0, 30, 1, P.cloak); bx(g, -12, 1, 24, 1, P.cloakLo); if (dead) for (let k = 0; k < 4; k++) bx(g, -10 + k * 6, 0, 2, 1, '#14101a');   /* the cloak spread under him */
+  bx(g, -17, 1, 11, 4, P.pl); bx(g, -17, 1, 11, 1, P.dp); bx(g, -16, 4, 10, 1, P.hi); bx(g, -11, 2, 1, 3, P.dp); bx(g, -19, 1, 3, 3, P.dp); bx(g, -20, 0, 2, 2, P.dp);   /* the legs: greaves, the knee cop, the sabaton */
+  bx(g, -10, 5, 8, 1, P.lo); bx(g, -9, 1, 9, 4, P.tab); bx(g, -9, 1, 9, 1, P.tabLo); bx(g, -9, 4, 9, 1, P.tabHi); if (dead) { bx(g, -6, 2, 1, 2, '#14101a'); bx(g, -3, 3, 1, 1, '#14101a'); }   /* the tabard */
+  bx(g, -2, 1, 11, 6, P.pl); bx(g, -2, 1, 11, 1, P.dp); bx(g, -2, 6, 11, 1, P.hi); bx(g, 0, 2, 6, 4, P.tab); bx(g, 0, 5, 6, 1, P.tabHi); bx(g, 2, 3, 2, 2, dead ? P.goldLo : P.gold); pp(g, 2, 4, P.goldHi);   /* the breastplate, the sun */
+  bx(g, 5, 7, 6, 2, P.lo); bx(g, 5, 8, 6, 1, P.pl);   /* the arm across the chest */
+  bx(g, 9, 1, 8, 7, P.pl); bx(g, 9, 1, 1, 7, P.dp); bx(g, 10, 7, 7, 1, P.hi); bx(g, 14, 3, 3, 2, '#0e0b14'); bx(g, 9, 0, 9, 1, P.dp);   /* the helm, on its side, the visor slit */
+  if (dead) { pp(g, 15, 3, '#2a3a44'); ln(g, 11, 7, 13, 4, '#14101a'); bx(g, 10, 4, 1, 2, P.bone); } else { pp(g, 15, 3, '#3a3040'); bx(g, 4, 1, 6, 2, P.plume); bx(g, 3, 0, 5, 1, P.plumeLo); bx(g, 9, 8, 3, 1, P.gold); }   /* (the light gone from the dead man's visor) | the plume spilled */
+  bx(g, 17, 1, 9, 2, P.wood); bx(g, 25, 0, 5, 4, P.dp); bx(g, 26, 1, 3, 2, dead ? P.lo : P.pl); pp(g, 27, 3, dead ? P.pl : P.hi);   /* the mace flung out, its head down */
+  bx(g, -4, 7, 9, 1, P.shieldLo); bx(g, -3, 8, 8, 2, P.shield); bx(g, -1, 8, 4, 1, P.boss); bx(g, -3, 9, 8, 1, P.hi); if (dead) { ln(g, -2, 10, 1, 8, '#14101a'); }   /* the shield, fallen across him, face up */
+  return done(c);
+}
+/* THE UNDEAD PRIEST, down: a heap of robe, the skull rolled out of the cowl, one bone hand open, the censer on its side with a last thread of cold smoke */
+function priestDead() {
+  const P = PAL.deadpriest, [c, g] = mk();
+  bx(g, -15, 0, 24, 1, P.robeDp); bx(g, -16, 1, 24, 3, P.robe); bx(g, -16, 1, 24, 1, P.robeLo); bx(g, -13, 4, 18, 2, P.robe); bx(g, -11, 6, 12, 1, P.robeHi); bx(g, -16, 3, 24, 1, P.robeHi);   /* the long robe, collapsed */
+  for (let k = 0; k < 6; k++) bx(g, -15 + k * 4, 1, 1, 2, P.robeDp); bx(g, -17, 0, 2, 1, P.robeLo); bx(g, -18, 1, 2, 1, P.robeLo);   /* folds, the torn hem */
+  bx(g, -4, 2, 10, 1, P.gold); bx(g, 0, 1, 2, 5, P.gold); bx(g, 0, 4, 2, 1, P.goldHi); bx(g, -1, 5, 4, 1, P.goldLo);   /* the orphrey cross, gone askew */
+  bx(g, -10, 5, 9, 2, P.robeLo); bx(g, -6, 7, 5, 1, P.robe);   /* the gaunt shoulders under the chasuble */
+  bx(g, 8, 0, 8, 7, P.robeLo); bx(g, 8, 0, 1, 7, P.robeDp); bx(g, 9, 6, 6, 1, P.robe);   /* the cowl, empty */
+  bx(g, 11, 1, 7, 6, P.skull); bx(g, 11, 1, 7, 1, P.skullLo); bx(g, 17, 2, 1, 4, '#f2f0de'); bx(g, 12, 3, 2, 2, '#0e0b14'); bx(g, 15, 3, 2, 2, '#0e0b14'); bx(g, 13, 1, 4, 1, P.skullDp); for (let k = 0; k < 3; k++) pp(g, 13 + k, 1, '#f2f0de');   /* the skull rolled out, sockets dark, teeth */
+  bx(g, 6, 1, 6, 2, P.bone); pp(g, 12, 1, P.bone); pp(g, 12, 3, P.bone); pp(g, 7, 2, P.boneLo); bx(g, 5, 1, 2, 2, P.wrap);   /* a hand open on the floor */
+  bx(g, 19, 0, 7, 5, P.censer); bx(g, 19, 4, 7, 1, P.censerHi); bx(g, 20, 0, 5, 1, P.censerLo); bx(g, 26, 1, 2, 2, P.censerHi); pp(g, 21, 2, '#0e0b14'); pp(g, 23, 2, '#0e0b14');   /* the censer on its side */
+  for (let k = 0; k < 5; k++) { pp(g, 20 + (k % 2), 6 + k, k & 1 ? P.smoke : P.smokeHi); }   /* its last thread of cold smoke */
+  for (let k = 0; k < 6; k++) bx(g, 14 + k, 0, 1, 1, '#34343e');   /* the chain run out along the floor */
+  return done(c);
+}
+
 /* THE SETS: { R, L, white, ax, ay, w, h } as main.js's drawSet wants them */
 export function bakeSet(kind, n, w, h) { const Rr = []; for (let i = 0; i < n; i++) Rr.push(kind === 'deadpriest' ? priestFrame(i) : paladinFrame(i, kind));
   const Wt = Rr.map(c => whiten(c)); return { R: Rr, L: Rr.map(flipX), white: { R: Wt, L: Wt.map(flipX) }, ax: AX, ay: AY, w, h }; }
@@ -222,4 +255,4 @@ export function drawOver(g, foes, cx, cy, time, isPal, isPri) {
         g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 12); g.fillStyle = col; g.beginPath(); g.arc(x, y - 18, 14, 0, Math.PI * 2); g.fill(); g.globalAlpha = 0.9; g.fillStyle = col;
         for (let i = 0; i < 6; i++) { const t = (time * 1.3 + i / 6) % 1, an = i / 6 * Math.PI * 2 + time * 3; g.fillRect(R(x + Math.cos(an) * (16 - t * 8)), R(y - 18 + Math.sin(an) * (18 - t * 9)), 2, 2); } g.globalAlpha = 1; }
       if (e.mode === 'raiseTell' || e.mode === 'raise') { const fl = e.mode === 'raise'; g.globalAlpha = 0.6; g.fillStyle = '#6a80c0'; for (let i = 0; i < 5; i++) g.fillRect(x + f * (14 + i * 3) - 1, y - 2 - (fl ? ((i * 3) % 7) : 0), 2, 2 + (i & 1)); g.globalAlpha = 1; } } } }
-export function sheetItems() { const out = []; for (const k of ['orderpaladin', 'deadpaladin']) for (let i = 0; i < 10; i++) out.push(paladinFrame(i, k)); for (let i = 0; i < 13; i++) out.push(priestFrame(i)); return out; }
+export function sheetItems() { const out = []; for (const k of ['orderpaladin', 'deadpaladin']) for (let i = 0; i < 11; i++) out.push(paladinFrame(i, k)); for (let i = 0; i < 14; i++) out.push(priestFrame(i)); return out; }
