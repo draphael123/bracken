@@ -1593,7 +1593,7 @@ function coopWatch() {
   asPlayer(players[0], () => respawn());
 }
 /* (claude/tavern) ON YOUR FEET: a tavern down that runs out (or the whole room down) - up at full health with a breath of grace, nobody charged */
-function tavernStandUp(p) { Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: p.maxHp, hpShown: p.maxHp, st: p.maxSt, inv: 1, killer: null }); number(p.x, p.y - 32, 'ON YOUR FEET', '#c9b27c'); SFX.mend(); }
+function tavernStandUp(p) { Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: p.maxHp, hpShown: p.maxHp, st: p.maxSt, inv: 1, killer: null }); callout('ON YOUR FEET'); SFX.mend(); }
 /* THE EXIT NEEDS BOTH OF THEM: one hero standing in the gate with the other forty tiles back is not a wood finished */
 const atGate = () => !coop() || players.every(p => upright(p) && gate && Math.abs(gate.x - p.x) < 22 && Math.abs(gate.y - p.y) < 36);
 /* THE SHARED SCREEN. One camera for the pair and NO ZOOM - the buffer is a fixed 320x180, so there is nothing to
@@ -1643,7 +1643,7 @@ function leashPull(p, lead) {
   asPlayer(p, () => { Object.assign(P, { x: lead.x + side * PARTY.LEASH.side, y: lead.y, vx: 0, vy: 0, inv: Math.max(P.inv || 0, PARTY.LEASH.inv), onMover: null, atk: -1, plunge: false, dodge: 0 }); if (BRD && BRD.clear) BRD.clear(P); });
   if (moveBodyClear(p)) { p.x = lead.x; }
   burst(p.x, p.y - 8, 12, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30);
-  number(p.x, p.y - 32, 'PULLED ALONG', PARTY.colourOf(PROG.tavern, p.n).c); SFX.puff ? SFX.puff() : SFX.ui();
+  callout(PARTY.tagOf(p) + ' PULLED ALONG'); SFX.puff ? SFX.puff() : SFX.ui();
   p.leash = 0; p.leashes = (p.leashes || 0) + 1; leashFx.push({ t: 0.5, x0: from.x, y0: from.y, x1: p.x, y1: p.y });
 }
 /* the spot beside the leader is inside a wall (a narrow ledge): stand him on the leader instead */
@@ -6525,7 +6525,7 @@ function tavernJoin(src, h) {
   const fy = (TAV_START.y + 1) * TS;
   Object.assign(p, { x: tavDoorX(), y: fy, vx: 0, vy: 0, face: 1, ground: true, walkIn: TAV_WALK.t, inv: 1 });
   if (TAVO) TAVO.door(); SFX.uiSel(); SFX.sting();
-  number(p.x + 10, p.y - 34, PARTY.tagOf(p) + ' JOINS', PARTY.colourOf(PROG.tavern, p.n).c);
+  callout(PARTY.tagOf(p) + ' JOINS THE PARTY');
   partyToWant(); tavJoins++;
   if (players.length === 2 && coopTipDue(PROG, 'tavern')) { hintSay('mechanic', 5, 'ONE CAMERA FOR THE PARTY: IT STEPS OUT TO FIT YOU, AND A PLAYER LEFT FAR BEHIND IS PULLED ALONG.'); saveProgress(); }
   return p;
@@ -6560,11 +6560,11 @@ function tavSetWeapon(p, id) {
   else { p.sword = id; seatBake(p); partyToWant(); }
 }
 TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress(), players: () => players, time: () => time, tagOf: p => PARTY.tagOf(p),
-  number: (x, y, s, c) => number(x, y, s, c), text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'),
+  number: (x, y, s) => callout(String(s)), text:   /* (the inn's words go in the hint box: words do not float in play, src/hint-lines.js) */ (s, x, y, c, a, z) => text(s, x, y, c, a, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'),
   hint: (m, t) => hintSay('tip', t, m), sfx: k => { const f = k === 'bell' ? (SFX.seaBell || SFX.golemChime) : SFX[k]; if (f) f(); },
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
-  leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); number(p.x, p.y - 34, PARTY.tagOf(p) + ' LEAVES', '#9aa39a'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
+  leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
   openOnline: () => ONL.open(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
@@ -32937,7 +32937,7 @@ function drawTransition() {
   } else { g.fillStyle = 'rgba(8,6,14,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function desiredView() { if (state === 'editor') return 'zoom';
-  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? 'zoom' : coop() && partyCam.wide ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
+  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? 'zoom' : typeof partyCam !== 'undefined' && partyCam.wide && coop() ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
 
 // ==================================================================================
 // THE EDITOR
