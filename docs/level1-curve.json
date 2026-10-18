@@ -195,17 +195,17 @@
   "lostPct": 346
  },
  "lamplit": {
-  "hash": "34b4ca0f396e",
+  "hash": "8b8313ef2813",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 14,
-  "deaths": 3,
-  "kills": 7,
-  "lifts": 110,
+  "hits": 37,
+  "deaths": 8,
+  "kills": 4,
+  "lifts": 102,
   "walked": 100,
   "bare": true,
-  "lostPct": 114
+  "lostPct": 331
  },
  "underleaf": {
   "hash": "e5cf1d597a9b",
