@@ -129,7 +129,7 @@ function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
 const VOK = (kit, act) => { const fb = { alert: 'attack', effort: 'heavy', heavy: 'attack', jump: 'attack', die: 'hurt', attack: 'alert' };
   for (const a of [act, fb[act]]) { const n = 'vo_' + kit + '_' + a; if (clips[n] && clips[n].some(Boolean)) return n; } return 'vo_' + kit; };
 // THE HEROES' OWN VOICES. The knight grunted with a pitched goblin; now each hero is a person.
-const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'm4', rate: 0.86, lp: 2600 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'f3', rate: 0.93 }, geomancer: { kit: 'f3', rate: 0.82, lp: 3200 }, berserker: { kit: 'm5', rate: 0.8, lp: 2300 }, ranger: { kit: 'f3', rate: 1.08, lp: 3600 } };   /* THE RANGER (claude/ranger): the women's kit, pitched a little up and lightened */   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
+const HERO_KIT = { knight: { kit: 'm5', rate: 1 }, paladin: { kit: 'm3', rate: 0.88 }, pirate: { kit: 'm1', rate: 1 }, reaper: { kit: 'dk', rate: 0.92, lp: 3400 }, pyro: { kit: 'f3', rate: 1 }, warden: { kit: 'wd', rate: 1 }, geomancer: { kit: 'gm', rate: 0.82, lp: 3200 }, berserker: { kit: 'ob', rate: 0.95, lp: 4200 }, ranger: { kit: 'rg', rate: 1 } };   /* (claude/audiovoices 10-18) NINE HEROES, NINE THROATS: only the knight, the paladin, the pirate and the pyromancer share a kit with nobody; the Death Knight (Little Robot evil voices), the berserker (orc growls), the warden and the ranger (each their own pack takes, see tools/build-voices-1018.mjs) no longer borrow the knight's man or the pyromancer's three clips. The geomancer is the one kit that is still the women's f3 pitched down for effort (hurt and death are her own low takes). */   /* THE RANGER (claude/ranger): the women's kit, pitched a little up and lightened */   /* THE BERSERKER: the knight's man, pitched down and roughened - the loudest throat of them */   /* THE GEOMANCER: the same woman's kit again, pitched lowest and darkened: the heaviest of the three */   /* the same voice as the pyromancer, pitched down: a steadier woman, and not a second of the same one */
 function heroVo(act, v) { const k = HERO_KIT[heroVoice] || HERO_KIT.knight; return voice(VOK(k.kit, act), v, k.rate, k.lp || 0); }
 
 // ---------- synth ----------
@@ -229,7 +229,7 @@ export const SFX = {
     noise(0.18, 0.18, 1600, 0.7); tone('square', vary(200), vary(90), 0.16, 0.12); chain(0.035, 3); tone('triangle', vary(700), 1100, 0.08, 0.05, 0.02); },
   /* AND WHAT IT HITS: a heavy blunt thump, a shade lower when it is stopped dead than when it carries on through */
   pDashHit(stopped) { tone('sine', stopped ? 80 : 120, 40, 0.18, 0.28); noise(0.09, 0.26, stopped ? 600 : 1100, 0.7); if (stopped) tone('square', vary(300), 120, 0.08, 0.08); },
-  pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, heroVoice === 'pyro' ? 1.75 : 1.35); },
+  pEffort() { if (gate('heroEffort', 1.5)) heroVo('effort', 0.4); },   /* (claude/audiovoices) no goblin grunt under a hero any more; one effort a 1.5 s at most */
   /* ---------- THE WARDEN'S SPEAR ---------- */
   /* THE TIP RANG. Her one rule is WHERE along the shaft it landed, and this is how that is heard: a small struck
      bell over a hard tick of steel, the same note every time. The ear learns the good hit before the eye does, and
@@ -468,7 +468,7 @@ const PAL = {
   // THE SHIELDLESS CHARGE: no shield to throw a shoulder in behind, so it is plate on plate, a maul-heavy grunt and
   // the same iron feet as the shield charge slower and lower - the biggest, slowest dash attack in the wood.
   pDashStrike() { noise(0.2, 0.2, 1200, 0.7); tone('square', vary(140), vary(70), 0.2, 0.14); plate(0.08); tone('triangle', vary(500), 800, 0.08, 0.05, 0.03); },
-  pEffort() { heroVo('effort', 0.4) || file('effort', 0.22, 1.1); },
+  pEffort() { if (gate('heroEffort', 1.5)) heroVo('effort', 0.4); },
 };
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
 
@@ -1672,6 +1672,48 @@ const CAST = {
   spit: { kit: 'slime', rate: 1.4 }, grub: { kit: 'slime', rate: 0.9 },
   wight: { kit: 'zom', rate: 0.9, lp: 2200 }, drowned: { kit: 'zom', rate: 0.8, lp: 1600 }, siren: { kit: 'alien', rate: 1.1 }, scout: { kit: 'alien', rate: 1 }, herald: { kit: 'alien', rate: 0.8 },
 };
+/* (claude/audiovoices 10-18) THE ~120 FOES THAT HAD NO VOICE: every bestiary type now has a hurt AND a death, by family. People take the men's kits
+   (m1-m6, hd) or the pack's evil voices (ev, for priests, mystics, snuffers); the dead take the zombie takes (zb, Little Robot); scorpions, scarabs,
+   spiders and little things take sc; big beasts and the worm take di; imps and djinn take dm; goblins keep the goblin throats (gobbig); the wooden,
+   glass, stone and clockwork things have no throat at all, so they are synthesised below (the same HURT / DIE tables as the rest). */
+Object.assign(CAST, {
+  oathblade: { kit: 'm5', rate: 0.95, mat: 'plate', human: true }, oathmaul: { kit: 'm4', rate: 0.8, lp: 1500, mat: 'plate', human: true }, oathlance: { kit: 'm3', rate: 0.95, mat: 'mail', human: true }, oathmage: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true },
+  familiar: { kit: 'sc', rate: 0.8 }, lanternshade: { kit: 'zb', rate: 1.35, lp: 2600 }, bonegob: { kit: 'zb', rate: 1.45, lp: 2400 }, husk: { kit: 'zb', rate: 0.75, lp: 1800 }, apprentice: { kit: 'zb', rate: 1.1, lp: 2600, mat: 'cloth' },
+  bonecorsair: { kit: 'zb', rate: 1, lp: 2400, mat: 'cloth' }, tidemarauder: { kit: 'zb', rate: 0.9, lp: 2000, mat: 'cloth' }, drowneddead: { kit: 'zb', rate: 0.85, lp: 1700 }, bonechucker: { kit: 'zb', rate: 1.3, lp: 2400 },
+  bellman: { kit: 'm6', rate: 0.95, mat: 'cloth', human: true }, gravewarden: { kit: 'ev', rate: 0.8, lp: 2400, mat: 'mail', human: true, boss: true }, banditmystic: { kit: 'ev', rate: 1, mat: 'cloth', human: true, boss: true },
+  sanddjinn: { kit: 'dm', rate: 1 }, firedjinn: { kit: 'dm', rate: 1.15 }, djinn: { kit: 'dm', rate: 0.55, lp: 2000, boss: true }, cisternqueen: { kit: 'dm', rate: 0.8, boss: true }, fireimp: { kit: 'dm', rate: 1.3 }, venomimp: { kit: 'dm', rate: 1.45 }, hourglassking: { kit: 'dm', rate: 0.6, lp: 1800, mat: 'cloth', boss: true },
+  lampbearer: { kit: 'm2', rate: 1, mat: 'cloth', human: true }, oilthief: { kit: 'm6', rate: 1.1, mat: 'cloth', human: true },
+  firescorpion: { kit: 'sc', rate: 0.9 }, venomscorpion: { kit: 'sc', rate: 1 }, oilscorpion: { kit: 'sc', rate: 0.85 }, dustscorpion: { kit: 'sc', rate: 1.1 }, thirstscorpion: { kit: 'sc', rate: 1.2 }, glassscorpion: { kit: 'sc', rate: 1, mat: 'plate' }, spitscorpion: { kit: 'sc', rate: 1.1 }, brassscorpion: { kit: 'sc', rate: 0.8, mat: 'plate' },
+  scarab: { kit: 'sc', rate: 1.45 }, scarabmother: { kit: 'sc', rate: 0.55, boss: true }, tidecrab: { kit: 'sc', rate: 0.7 }, rootspider: { kit: 'sc', rate: 0.9 }, cisternbat: { kit: 'bug', rate: 1.7 }, skitter: { kit: 'bug', rate: 1.3 }, rootweaver: { kit: 'bug', rate: 0.85 },
+  rootlurker: { kit: 'slime', rate: 0.7 }, grindylow: { kit: 'slime', rate: 0.7 }, shockeel: { kit: 'slime', rate: 1.3 },
+  gobrider: { kit: 'gobbig', rate: 1.5 }, foremancart: { kit: 'gobbig', rate: 1, mat: 'plate' }, gobcaster: { kit: 'gobbig', rate: 1.4 }, gobscout: { kit: 'gobbig', rate: 1.6 }, kiterider: { kit: 'gobbig', rate: 1.5 }, trophyhunter: { kit: 'gobbig', rate: 1.25 }, huntmaster: { kit: 'gobbig', rate: 0.85, boss: true },
+  shardthrower: { kit: 'm6', rate: 1.05, mat: 'cloth', human: true }, nighthunter: { kit: 'di', rate: 1.2 }, colossus: { kit: 'di', rate: 0.45, lp: 1400, boss: true }, sandworm: { kit: 'di', rate: 0.55 }, raptor: { kit: 'di', rate: 1.3 }, gorgecrab: { kit: 'di', rate: 0.5, boss: true },
+  shieldguard: { kit: 'm5', rate: 0.85, mat: 'plate', human: true }, dynamiter: { kit: 'm2', rate: 1, mat: 'cloth', human: true }, waterthief: { kit: 'm6', rate: 1.2, mat: 'cloth', human: true },
+  matriarch: { kit: 'scream', rate: 0.8, boss: true }, tombking: { kit: 'zb', rate: 0.55, lp: 1400, mat: 'plate', boss: true }, mummy: { kit: 'zb', rate: 0.8, lp: 1800, mat: 'cloth' }, tombskel: { kit: 'zb', rate: 1.1, lp: 2000 },
+  dartblower: { kit: 'ev', rate: 1.15, mat: 'cloth', human: true }, jackal: { kit: 'bark', rate: 1.25 }, gravehound: { kit: 'bark', rate: 0.75 },
+  sanddrowned: { kit: 'zb', rate: 0.8, lp: 1500 }, sandbound: { kit: 'zb', rate: 0.7, lp: 1300 }, fogwraith: { kit: 'zb', rate: 1.5, lp: 2200 }, sandslinger: { kit: 'm6', rate: 1.1, mat: 'cloth', human: true },
+  hawkmistress: { kit: 'f3', rate: 0.95, mat: 'cloth', human: true, boss: true }, paladinboss: { kit: 'm3', rate: 0.8, mat: 'plate', human: true, boss: true },
+  priest: { kit: 'ev', rate: 0.95, mat: 'cloth', human: true }, thurifer: { kit: 'ev', rate: 1.05, mat: 'cloth', human: true }, bellringer: { kit: 'm3', rate: 1.1, mat: 'cloth', human: true }, archdeacon: { kit: 'ev', rate: 0.8, mat: 'cloth', human: true, boss: true }, deacon: { kit: 'ev', rate: 0.85, mat: 'cloth', human: true, boss: true }, acolyte: { kit: 'm6', rate: 1.15, mat: 'cloth', human: true },
+  chapelknight: { kit: 'm4', rate: 0.9, mat: 'plate', human: true }, templar: { kit: 'm4', rate: 0.85, mat: 'plate', human: true }, chapelbow: { kit: 'm5', rate: 1.05, mat: 'mail', human: true }, fogknight: { kit: 'm4', rate: 0.7, lp: 1200, mat: 'plate', human: true, boss: true },
+  hawkscout: { kit: 'm6', rate: 1, mat: 'cloth', human: true }, gonglookout: { kit: 'm6', rate: 1.2, mat: 'cloth', human: true }, ksarblade: { kit: 'm2', rate: 1.05, mat: 'cloth', human: true }, falconer: { kit: 'm3', rate: 1, mat: 'cloth', human: true }, ksarplate: { kit: 'm4', rate: 1, mat: 'plate', human: true },
+  whipapprentice: { kit: 'm6', rate: 1.25, mat: 'cloth', human: true }, shieldsentry: { kit: 'm5', rate: 0.9, mat: 'plate', human: true }, smokethrower: { kit: 'm2', rate: 0.95, mat: 'cloth', human: true }, wallslinger: { kit: 'm6', rate: 1, mat: 'cloth', human: true },
+  gangleader: { kit: 'm1', rate: 0.85, mat: 'mail', human: true, boss: true }, stagehand: { kit: 'm6', rate: 0.9, mat: 'cloth', human: true }, lampsnuffer: { kit: 'ev', rate: 0.9, mat: 'cloth', human: true },
+  strongman: { kit: 'm5', rate: 0.8, mat: 'cloth', human: true }, bandit: { kit: 'm2', rate: 0.95, mat: 'cloth', human: true }, flyman: { kit: 'm6', rate: 1, mat: 'cloth', human: true }, prompter: { kit: 'm3', rate: 1.15, mat: 'cloth', human: true }, powderboy: { kit: 'm6', rate: 1.3, mat: 'cloth', human: true },
+  navvy: { kit: 'm5', rate: 0.95, mat: 'cloth', human: true }, timberman: { kit: 'm5', rate: 0.8, mat: 'cloth', human: true }, minewarden: { kit: 'm4', rate: 0.95, mat: 'mail', human: true }, bargeman: { kit: 'm5', rate: 0.9, mat: 'cloth', human: true }, riverrat: { kit: 'm6', rate: 1.15, mat: 'cloth', human: true },
+  deckforeman: { kit: 'm1', rate: 0.9, mat: 'cloth', human: true }, watchman: { kit: 'm5', rate: 1, mat: 'mail', human: true }, lamplighter: { kit: 'm3', rate: 0.95, mat: 'cloth', human: true },
+  abbot: { kit: 'ev', rate: 0.85, mat: 'cloth', human: true, boss: true }, undeadmage: { kit: 'zb', rate: 0.75, lp: 2200, mat: 'cloth', boss: true }, burieddead: { kit: 'zb', rate: 0.95, lp: 1900 }, zombie: { kit: 'zom', rate: 1 },
+  juggler: { kit: 'm6', rate: 1.05, mat: 'cloth', human: true }, shy: { kit: 'hd', rate: 1, human: true }, barker: { kit: 'm1', rate: 1.05, mat: 'cloth', human: true }, acrobat: { kit: 'm6', rate: 1.3, mat: 'cloth', human: true }, harlequin: { kit: 'f3', rate: 1.1, mat: 'cloth', human: true },
+});
+{ /* the bodies with no throat: wood and string, glass and stone, brass and clock-work, paper. A blow is what they say; a death is what they were made of coming apart. */
+  const wood = { h: () => { file('crack', 0.26, 1.5) || noise(0.08, 0.14, 1400, 0.8); tone('triangle', vary(300), 170, 0.07, 0.06); }, d: () => { file('crack', 0.42, 0.85) || noise(0.3, 0.16, 900, 0.6); file('slam', 0.14, 1.2); tone('square', vary(190), 70, 0.22, 0.06); noise(0.18, 0.08, 2600, 1.1, 0.1); } };
+  const stone = { h: () => { file('stone', 0.3, 1.1) || noise(0.07, 0.16, 700, 0.6); tone('sine', vary(140), 80, 0.09, 0.08); }, d: () => { file('crack', 0.46, 0.55) || noise(0.4, 0.2, 500, 0.6); file('stone', 0.34, 0.8); tone('sine', vary(90), 38, 0.5, 0.14); noise(0.35, 0.08, 1800, 0.7, 0.12); } };
+  const glass = { h: () => { file('clang', 0.14, 1.9); tone('triangle', vary(2600), 1900, 0.1, 0.035); noise(0.05, 0.1, 5200, 1.4); }, d: () => { file('clang', 0.2, 1.6); noise(0.4, 0.12, 5000, 1.2, 0.02); for (let i = 0; i < 5; i++) tone('triangle', vary(3600 - i * 380), 2100, 0.07, 0.04, 0.03 + i * 0.05); } };
+  const brass = { h: () => { file('clang', 0.2, 1.1) || chain(0.04, 3); tone('square', vary(420), 300, 0.05, 0.04); }, d: () => { file('clang', 0.3, 0.6); chain(0.05, 5); tone('sawtooth', vary(220), 40, 0.5, 0.07); noise(0.3, 0.1, 700, 0.6, 0.05); } };
+  const paper = { h: () => { noise(0.1, 0.12, 4200, 0.9); tone('triangle', vary(900), 600, 0.05, 0.03); }, d: () => { noise(0.35, 0.14, 3800, 0.8); noise(0.25, 0.1, 1800, 0.8, 0.12); tone('sine', vary(160), 70, 0.14, 0.08, 0.05); } };
+  const wisp = { h: () => { tone('sine', vary(1500), 1100, 0.09, 0.05); tone('triangle', vary(2300), 1700, 0.06, 0.025, 0.02); }, d: () => { tone('sine', vary(1400), 300, 0.4, 0.06); noise(0.3, 0.06, 4200, 1.2, 0.05); tone('triangle', vary(2000), 600, 0.3, 0.03, 0.08); } };
+  const put = (names, k) => { for (const n of names) { if (!HURT[n]) HURT[n] = k.h; if (!DIE[n]) DIE[n] = k.d; } };
+  put(['stringjack', 'marionette', 'masterpiece', 'wickerman'], wood); put(['glasssentinel'], glass); put(['colossus'], stone); put(['greatdrill', 'construct'], brass); put(['tome'], paper); put(['willowisp'], wisp);
+}
 const vbody = (mat, die) => { if (mat === 'plate') file('clang', die ? 0.26 : 0.14, die ? 0.6 : 0.78); else if (mat === 'mail') chain(die ? 0.04 : 0.025, die ? 5 : 3); else if (mat === 'cloth') noise(0.08, die ? 0.08 : 0.05, 900, 0.5); };
 SFX.dieOf = t => { const c = CAST[t], d = DIE[t]; if (!c) return d || null;
   return () => { const roll = Math.random(), pool = c.human && c.kit !== 'hd' && roll < 0.25 && clips.vo_dp_die ? 'vo_dp_die' : c.human && c.kit !== 'hd' && roll < 0.45 && clips.vo_ex_die ? 'vo_ex_die' : VOK(c.kit, 'die');

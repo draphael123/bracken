@@ -190,7 +190,10 @@
  ],
  "vo_f3_die": [
   "audio/sfx/vo/f3_die_0.ogg",
-  "audio/sfx/vo/f3_die_1.ogg"
+  "audio/sfx/vo/f3_die_1.ogg",
+  "audio/sfx/vo/f3_die_2.ogg",
+  "audio/sfx/vo/f3_die_3.ogg",
+  "audio/sfx/vo/f3_die_4.ogg"
  ],
  "vo_dp_die": [
   "audio/sfx/vo/dp_die_0.ogg",
@@ -810,5 +813,255 @@
   "audio/sfx/r_wqF_0.ogg",
   "audio/sfx/r_wqF_1.ogg",
   "audio/sfx/r_wqF_2.ogg"
+ ],
+ "vo_wd_effort": [
+  "audio/sfx/vo/wd_effort_0.ogg",
+  "audio/sfx/vo/wd_effort_1.ogg",
+  "audio/sfx/vo/wd_effort_2.ogg",
+  "audio/sfx/vo/wd_effort_3.ogg",
+  "audio/sfx/vo/wd_effort_4.ogg"
+ ],
+ "vo_wd_attack": [
+  "audio/sfx/vo/wd_effort_0.ogg",
+  "audio/sfx/vo/wd_effort_1.ogg",
+  "audio/sfx/vo/wd_effort_2.ogg",
+  "audio/sfx/vo/wd_effort_3.ogg",
+  "audio/sfx/vo/wd_effort_4.ogg"
+ ],
+ "vo_rg_effort": [
+  "audio/sfx/vo/rg_effort_0.ogg",
+  "audio/sfx/vo/rg_effort_1.ogg",
+  "audio/sfx/vo/rg_effort_2.ogg",
+  "audio/sfx/vo/rg_effort_3.ogg",
+  "audio/sfx/vo/rg_effort_4.ogg"
+ ],
+ "vo_rg_attack": [
+  "audio/sfx/vo/rg_effort_0.ogg",
+  "audio/sfx/vo/rg_effort_1.ogg",
+  "audio/sfx/vo/rg_effort_2.ogg",
+  "audio/sfx/vo/rg_effort_3.ogg",
+  "audio/sfx/vo/rg_effort_4.ogg"
+ ],
+ "vo_dk_effort": [
+  "audio/sfx/vo/dk_effort_0.ogg",
+  "audio/sfx/vo/dk_effort_1.ogg",
+  "audio/sfx/vo/dk_effort_2.ogg",
+  "audio/sfx/vo/dk_effort_3.ogg",
+  "audio/sfx/vo/dk_effort_4.ogg"
+ ],
+ "vo_dk_attack": [
+  "audio/sfx/vo/dk_effort_0.ogg",
+  "audio/sfx/vo/dk_effort_1.ogg",
+  "audio/sfx/vo/dk_effort_2.ogg",
+  "audio/sfx/vo/dk_effort_3.ogg",
+  "audio/sfx/vo/dk_effort_4.ogg"
+ ],
+ "vo_ob_effort": [
+  "audio/sfx/vo/ob_effort_0.ogg",
+  "audio/sfx/vo/ob_effort_1.ogg",
+  "audio/sfx/vo/ob_effort_2.ogg",
+  "audio/sfx/vo/ob_effort_3.ogg",
+  "audio/sfx/vo/ob_effort_4.ogg",
+  "audio/sfx/vo/ob_effort_5.ogg"
+ ],
+ "vo_ob_attack": [
+  "audio/sfx/vo/ob_effort_0.ogg",
+  "audio/sfx/vo/ob_effort_1.ogg",
+  "audio/sfx/vo/ob_effort_2.ogg",
+  "audio/sfx/vo/ob_effort_3.ogg",
+  "audio/sfx/vo/ob_effort_4.ogg",
+  "audio/sfx/vo/ob_effort_5.ogg"
+ ],
+ "vo_wd_hurt": [
+  "audio/sfx/vo/wd_hurt_0.ogg",
+  "audio/sfx/vo/wd_hurt_1.ogg",
+  "audio/sfx/vo/wd_hurt_2.ogg",
+  "audio/sfx/vo/wd_hurt_3.ogg",
+  "audio/sfx/vo/wd_hurt_4.ogg",
+  "audio/sfx/vo/wd_hurt_5.ogg"
+ ],
+ "vo_wd_die": [
+  "audio/sfx/vo/wd_die_0.ogg",
+  "audio/sfx/vo/wd_die_1.ogg",
+  "audio/sfx/vo/wd_die_2.ogg",
+  "audio/sfx/vo/wd_die_3.ogg",
+  "audio/sfx/vo/wd_die_4.ogg"
+ ],
+ "vo_rg_hurt": [
+  "audio/sfx/vo/rg_hurt_0.ogg",
+  "audio/sfx/vo/rg_hurt_1.ogg",
+  "audio/sfx/vo/rg_hurt_2.ogg",
+  "audio/sfx/vo/rg_hurt_3.ogg",
+  "audio/sfx/vo/rg_hurt_4.ogg"
+ ],
+ "vo_rg_die": [
+  "audio/sfx/vo/rg_die_0.ogg",
+  "audio/sfx/vo/rg_die_1.ogg",
+  "audio/sfx/vo/rg_die_2.ogg",
+  "audio/sfx/vo/rg_die_3.ogg"
+ ],
+ "vo_gm_hurt": [
+  "audio/sfx/vo/gm_hurt_0.ogg",
+  "audio/sfx/vo/gm_hurt_1.ogg",
+  "audio/sfx/vo/gm_hurt_2.ogg",
+  "audio/sfx/vo/gm_hurt_3.ogg"
+ ],
+ "vo_gm_die": [
+  "audio/sfx/vo/gm_die_0.ogg",
+  "audio/sfx/vo/gm_die_1.ogg",
+  "audio/sfx/vo/gm_die_2.ogg",
+  "audio/sfx/vo/gm_die_3.ogg"
+ ],
+ "vo_ob_hurt": [
+  "audio/sfx/vo/ob_hurt_0.ogg",
+  "audio/sfx/vo/ob_hurt_1.ogg",
+  "audio/sfx/vo/ob_hurt_2.ogg",
+  "audio/sfx/vo/ob_hurt_3.ogg",
+  "audio/sfx/vo/ob_hurt_4.ogg",
+  "audio/sfx/vo/ob_hurt_5.ogg",
+  "audio/sfx/vo/ob_hurt_6.ogg"
+ ],
+ "vo_ob_die": [
+  "audio/sfx/vo/ob_die_0.ogg",
+  "audio/sfx/vo/ob_die_1.ogg",
+  "audio/sfx/vo/ob_die_2.ogg",
+  "audio/sfx/vo/ob_die_3.ogg"
+ ],
+ "vo_dk_hurt": [
+  "audio/sfx/vo/dk_hurt_0.ogg",
+  "audio/sfx/vo/dk_hurt_1.ogg",
+  "audio/sfx/vo/dk_hurt_2.ogg"
+ ],
+ "vo_dk_die": [
+  "audio/sfx/vo/dk_die_0.ogg",
+  "audio/sfx/vo/dk_die_1.ogg",
+  "audio/sfx/vo/dk_die_2.ogg",
+  "audio/sfx/vo/dk_die_3.ogg",
+  "audio/sfx/vo/dk_die_4.ogg"
+ ],
+ "vo_ev_hurt": [
+  "audio/sfx/vo/ev_hurt_0.ogg",
+  "audio/sfx/vo/ev_hurt_1.ogg",
+  "audio/sfx/vo/ev_hurt_2.ogg"
+ ],
+ "vo_ev_die": [
+  "audio/sfx/vo/ev_die_0.ogg",
+  "audio/sfx/vo/ev_die_1.ogg",
+  "audio/sfx/vo/ev_die_2.ogg"
+ ],
+ "vo_zb_hurt": [
+  "audio/sfx/vo/zb_hurt_0.ogg",
+  "audio/sfx/vo/zb_hurt_1.ogg",
+  "audio/sfx/vo/zb_hurt_2.ogg",
+  "audio/sfx/vo/zb_hurt_3.ogg",
+  "audio/sfx/vo/zb_hurt_4.ogg",
+  "audio/sfx/vo/zb_hurt_5.ogg",
+  "audio/sfx/vo/zb_hurt_6.ogg",
+  "audio/sfx/vo/zb_hurt_7.ogg"
+ ],
+ "vo_zb_die": [
+  "audio/sfx/vo/zb_die_0.ogg",
+  "audio/sfx/vo/zb_die_1.ogg",
+  "audio/sfx/vo/zb_die_2.ogg",
+  "audio/sfx/vo/zb_die_3.ogg",
+  "audio/sfx/vo/zb_die_4.ogg"
+ ],
+ "vo_dm_hurt": [
+  "audio/sfx/vo/dm_hurt_0.ogg",
+  "audio/sfx/vo/dm_hurt_1.ogg",
+  "audio/sfx/vo/dm_hurt_2.ogg",
+  "audio/sfx/vo/dm_hurt_3.ogg",
+  "audio/sfx/vo/dm_hurt_4.ogg",
+  "audio/sfx/vo/dm_hurt_5.ogg",
+  "audio/sfx/vo/dm_hurt_6.ogg",
+  "audio/sfx/vo/dm_hurt_7.ogg"
+ ],
+ "vo_dm_die": [
+  "audio/sfx/vo/dm_die_0.ogg",
+  "audio/sfx/vo/dm_die_1.ogg",
+  "audio/sfx/vo/dm_die_2.ogg",
+  "audio/sfx/vo/dm_die_3.ogg",
+  "audio/sfx/vo/dm_die_4.ogg"
+ ],
+ "vo_di_hurt": [
+  "audio/sfx/vo/di_hurt_0.ogg",
+  "audio/sfx/vo/di_hurt_1.ogg",
+  "audio/sfx/vo/di_hurt_2.ogg",
+  "audio/sfx/vo/di_hurt_3.ogg",
+  "audio/sfx/vo/di_hurt_4.ogg",
+  "audio/sfx/vo/di_hurt_5.ogg",
+  "audio/sfx/vo/di_hurt_6.ogg",
+  "audio/sfx/vo/di_hurt_7.ogg"
+ ],
+ "vo_di_die": [
+  "audio/sfx/vo/di_die_0.ogg",
+  "audio/sfx/vo/di_die_1.ogg",
+  "audio/sfx/vo/di_die_2.ogg",
+  "audio/sfx/vo/di_die_3.ogg",
+  "audio/sfx/vo/di_die_4.ogg"
+ ],
+ "vo_sc_hurt": [
+  "audio/sfx/vo/sc_hurt_0.ogg",
+  "audio/sfx/vo/sc_hurt_1.ogg",
+  "audio/sfx/vo/sc_hurt_2.ogg",
+  "audio/sfx/vo/sc_hurt_3.ogg",
+  "audio/sfx/vo/sc_hurt_4.ogg",
+  "audio/sfx/vo/sc_hurt_5.ogg",
+  "audio/sfx/vo/sc_hurt_6.ogg",
+  "audio/sfx/vo/sc_hurt_7.ogg",
+  "audio/sfx/vo/sc_hurt_8.ogg"
+ ],
+ "vo_sc_die": [
+  "audio/sfx/vo/sc_die_0.ogg",
+  "audio/sfx/vo/sc_die_1.ogg",
+  "audio/sfx/vo/sc_die_2.ogg",
+  "audio/sfx/vo/sc_die_3.ogg",
+  "audio/sfx/vo/sc_die_4.ogg",
+  "audio/sfx/vo/sc_die_5.ogg"
+ ],
+ "vo_ob_heavy": [
+  "audio/sfx/vo/ob_heavy_0.ogg",
+  "audio/sfx/vo/ob_heavy_1.ogg",
+  "audio/sfx/vo/ob_heavy_2.ogg",
+  "audio/sfx/vo/ob_heavy_3.ogg"
+ ],
+ "vo_zb_alert": [
+  "audio/sfx/vo/zb_alert_0.ogg",
+  "audio/sfx/vo/zb_alert_1.ogg",
+  "audio/sfx/vo/zb_alert_2.ogg"
+ ],
+ "vo_dm_alert": [
+  "audio/sfx/vo/dm_alert_0.ogg",
+  "audio/sfx/vo/dm_alert_1.ogg",
+  "audio/sfx/vo/dm_alert_2.ogg"
+ ],
+ "vo_di_alert": [
+  "audio/sfx/vo/di_alert_0.ogg",
+  "audio/sfx/vo/di_alert_1.ogg",
+  "audio/sfx/vo/di_alert_2.ogg"
+ ],
+ "vo_gm_effort": [
+  "audio/sfx/vo/f3_attack_0.ogg",
+  "audio/sfx/vo/f3_attack_1.ogg",
+  "audio/sfx/vo/f3_attack_2.ogg"
+ ],
+ "vo_gm_attack": [
+  "audio/sfx/vo/f3_attack_0.ogg",
+  "audio/sfx/vo/f3_attack_1.ogg",
+  "audio/sfx/vo/f3_attack_2.ogg"
+ ],
+ "vo_gm_jump": [
+  "audio/sfx/vo/f3_jump_0.ogg",
+  "audio/sfx/vo/f3_jump_1.ogg",
+  "audio/sfx/vo/f3_jump_2.ogg"
+ ],
+ "vo_m1_effort": [
+  "audio/sfx/vo/m1_attack_0.ogg",
+  "audio/sfx/vo/m1_attack_2.ogg"
+ ],
+ "vo_f3_effort": [
+  "audio/sfx/vo/f3_attack_0.ogg",
+  "audio/sfx/vo/f3_attack_1.ogg",
+  "audio/sfx/vo/f3_attack_2.ogg"
  ]
 }

@@ -372,3 +372,11 @@ TWO TRACKS FOR THE KRAKEN (2026-10-17, claude/musickraken, Daniel's pick; he app
   Credit: as above ("Ready Cannons and Fire" by Leonardo Paz (leohpaz), Ocean music pack, CC-BY 4.0). Changes: +0.9 dB with a peak limiter (to about -12.6 LUFS); 24-bit WAV encoded to OGG Vorbis q4 stereo (32.0 s, the author's own loop; the whole file loops).
 - admiral.ogg = "Pirate Indenture" by Eldritch Grim, CC0 - https://opengameart.org/content/pirate-indenture (pirate_indenture.wav for the 21.3 s opening, pirate_indenture_loop.wav for the loop) - THE ADMIRAL'S CHAMPION (THE FLOTILLA); replaces his code-composed theme
   Credit: "Pirate Indenture" by Eldritch Grim (OpenGameArt.org), CC0. Changes: the full track's first 21.3 s joined to the author's own loop file (the loop plays from 21.3 s on every later pass); +0.7 dB with a peak limiter (to about -12.7 LUFS); encoded to OGG Vorbis q5 stereo (35.8 s).
+
+VOICES, 2026-10-18 (claude/audiovoices; the recipe is tools/build-voices-1018.mjs, every file cut / levelled / encoded as the others in audio/sfx/vo):
+- "Voices Sound Effects Library" by Little Robot Sound Factory, CC-BY 3.0 (credit required: www.littlerobotsoundfactory.com) - https://opengameart.org/content/voices-sound-effects-library
+  the Berserker's orc growls (vo_ob_*), the Death Knight (vo_dk_*), the Warden and Ranger effort grunts (vo_wd_/vo_rg_ effort and hurt), and the foe voices ev_ (priests, mystics),
+  zb_ (the dead), dm_ (imps, djinn), di_ (big beasts), sc_ (scorpions, scarabs, little things)
+- "Dying Voices - Female - RPG" by Galacti-Chron (CC0 and CC-BY 3.0 on the page; used under CC0, credited all the same) - https://opengameart.org/content/dying-voices-female-rpg
+  the deaths and the first sound of the hurts for the Warden, Ranger and Geomancer (wd_ rg_ gm_), and the high deaths added to the Pyromancer (f3_die_2-4)
+- The knight's effort / laugh no longer use the goblin grunts: no hero grunts with a goblin clip now.
