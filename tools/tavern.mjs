@@ -17,7 +17,7 @@
 // node tools/tavern.mjs [pure,join,stations,camera,leash,rings,save]   (PORT from the environment)
 import { MAX_PLAYERS, COLOURS, SEAT_DEFAULT, cleanTavern, colourOf, stepColour, coopViewSize, camStep, CAM, leashWhy, leashStep, leaderOf, LEASH, DRILL_IDS, spreadOf } from '../src/party.js';
 import { STATIONS, TAVERN_ART, ROOM, DUMMIES, TARGET, START } from '../src/tavern.js';
-const ALL = ['pure', 'join', 'stations', 'camera', 'leash', 'rings', 'save', 'online'];
+const ALL = ['pure', 'join', 'stations', 'camera', 'leash', 'rings', 'save', 'online', 'fixes'];
 const WANT = process.argv[2] ? process.argv[2].split(',') : ALL;
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 
@@ -191,6 +191,45 @@ if (PAGE.length) {
       const touchVerb = await E(`(()=>{BK.state='play';const a=__P(1);__at(a,${STATIONS.find(s => s.id === 'table').x});BK.sim(2);return BK.touchVerb?BK.touchVerb():null;})()`).catch(() => null);
       if (touchVerb !== null) ok(touchVerb && /ROAD/.test(JSON.stringify(touchVerb)), 'the touch USE button names the station (touch-friendly): ' + JSON.stringify(touchVerb));
     }
+
+    if (PAGE.includes('fixes')) {
+      /* claude/tavernfix (Daniel 10-18): the four-column win/victory card, the party pips under the map token, Practice back to the inn */
+      console.log('fixes');
+      const SHOT = process.env.TAVERN_SHOTS || ''; const fsx = await import('node:fs');
+      const shot = async name => { if (!SHOT) return; const d = await E("document.querySelector('canvas').toDataURL('image/png')"); fsx.mkdirSync(SHOT, { recursive: true }); fsx.writeFileSync(SHOT + '/' + name + '.png', Buffer.from(d.split(',')[1], 'base64')); };
+      const woodI = await E("(async()=>{const {LEVELS}=await import('/src/level.js');return LEVELS.findIndex(l=>l.id==='wood');})()");
+      const VALS = '[[9,40,31,2,0,0],[22,70,12,0,3,1],[14,10,5,1,1,0],[30,90,20,0,0,2]]';
+      const seat = (n, st) => "(()=>{BK.tavern.join({kind:'pad',pad:3});" + (n > 3 ? "BK.tavern.join({kind:'pad',pad:4});" : "") + "BK.sim(90);BK.load(" + woodI + ");BK.start();BK.sim(5);const ps=BK.players();const v=" + VALS + ";ps.forEach((p,i)=>{const [k,d,c,r,t,x]=v[i];p.score={kills:k,dmg:d,coins:c,revives:r,turns:t,deaths:x};p.total={kills:k*3,dmg:d*3,coins:c*3,revives:r*3,turns:t*3,deaths:x*3};});BK.state='" + st + "';for(let i=0;i<240;i++)BK.draw1();return ps.length;})()";
+      for (const [n, st, nm] of [[4, 'win', 'win-4'], [3, 'win', 'win-3'], [2, 'win', 'win-2'], [4, 'victory', 'victory-4'], [3, 'victory', 'victory-3'], [2, 'victory', 'victory-2']]) {
+        await E('__fresh()');
+        const e0 = pg.errors.length;
+        const got = await E(seat(n, st)).catch(e => 'ERR ' + String(e.message || e).slice(0, 120));
+        ok(got === n && pg.errors.length === e0, 'the ' + st + ' card for ' + n + ' players draws (' + nm + '): ' + got + ' ' + pg.errors.slice(e0, e0 + 2).join(' | '));
+        await shot(nm);
+      }
+      /* the table of who is ahead, for three or four (the card's winner line) */
+      await E('__fresh()');
+      /* THE MAP TOKEN: a pip for every seat. Count the seat colours' pixels on the map frame with the party and without */
+      const COLS = { blue: [0x6b, 0xb8, 0xff], rose: [0xff, 0x7a, 0x9a] };
+      const count = "(()=>{BK.draw1();const c=document.querySelector('canvas'),t=document.createElement('canvas');t.width=c.width;t.height=c.height;const x=t.getContext('2d');x.drawImage(c,0,0);const d=x.getImageData(0,0,t.width,t.height).data,o={blue:0,rose:0};for(let i=0;i<d.length;i+=4){if(d[i]===107&&d[i+1]===184&&d[i+2]===255)o.blue++;if(d[i]===255&&d[i+1]===122&&d[i+2]===154)o.rose++;}return o;})()";
+      const toMap = n => "(()=>{" + (n > 1 ? "BK.tavern.join({kind:'pad',pad:3});" : "") + (n > 2 ? "BK.tavern.join({kind:'pad',pad:4});" : "") + (n > 3 ? "BK.tavern.join({kind:'pad',pad:5});" : "") + "BK.sim(90);const a=__P(1);__at(a," + STATIONS[0].x + ");BK.sim(3);__talk(a);BK.sim(2);return BK.state;})()";
+      const m1 = await E('__fresh()').then(() => E(toMap(1))); const c1 = await E(count); await shot('map-pips-1');
+      const m4 = await E('__fresh()').then(() => E(toMap(4))); const c4 = await E(count); await shot('map-pips-4');
+      const m3 = await E('__fresh()').then(() => E(toMap(3))); const c3 = await E(count); await shot('map-pips-3');
+      ok(m1 === 'map' && m3 === 'map' && m4 === 'map', 'the door takes the party to the map: ' + [m1, m3, m4]);
+      ok(c4.blue >= c1.blue + 4 && c4.rose >= c1.rose + 4, 'four seats: the blue (P3) and rose (P4) pips are on the map under the token: ' + JSON.stringify(c1) + ' -> ' + JSON.stringify(c4));
+      ok(c3.blue >= c1.blue + 4 && c3.rose === c1.rose, 'three seats: P3 blue is there and P4 rose is not: ' + JSON.stringify(c3));
+      /* PRACTICE, from the inn: leaving it goes back to the inn with the party; from the title it still goes to the title */
+      await E('__fresh()');
+      const esc = "(async()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));BK.step(1);for(let i=0;i<200&&!(BK.state==='play'&&BK.L&&BK.L.tavern);i++)await new Promise(r=>setTimeout(r,50));return {st:BK.state,tav:!!(BK.L&&BK.L.tavern),n:BK.players().length};})()";
+      const pr = await E("(()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(90);const b=__P(1);__at(b," + STATIONS.find(s => s.id === 'practice').x + ");BK.sim(3);__talk(b);BK.sim(1);return BK.state;})()");
+      const back = await E(esc);
+      ok(pr === 'practice' && back.st === 'play' && back.tav && back.n === 2, 'PRACTICE entered from the inn: ESC returns to the INN with the party: ' + pr + ' ' + JSON.stringify(back));
+      const t0 = await E("(()=>{BK.coopEnd();BK.load(0);BK.state='practice';BK.step(1);return BK.state;})()");
+      const t1 = await E("(()=>{document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));BK.step(1);return BK.state;})()");
+      ok(t0 === 'practice' && t1 === 'title', 'PRACTICE entered any other way: ESC still goes to the title: ' + t0 + ' -> ' + t1);
+    }
+
 
     if (PAGE.includes('camera')) {
       console.log('camera');
