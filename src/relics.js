@@ -17,7 +17,7 @@
 export const VAULT_SILVER = {
   wood: { x: 344, y: 4, idx: 2 }, marsh: { x: 125, y: 10, idx: 2 }, spore: { x: 92, y: 6, idx: 0 }, kings: { x: 592, y: 6, idx: 2 },
   spire: { x: 38, y: 29, idx: 2 }, moor: { x: 200, y: 15, idx: 1, add: true, extra: [{ x: 416, y: 22 }] }, storm: { x: 130, y: 7, idx: 0 },
-  crown: { x: 695, y: 13, idx: 2 }, longwater: { x: 512, y: 26, idx: 2 }, reef: { x: 472, y: 20, idx: 1 }, flotilla: { x: 82, y: 29, idx: 2 },
+  crown: { x: 695, y: 13, idx: 2 }, longwater: { x: 512, y: 26, idx: 2 }, reef: { x: 472, y: 20, idx: 1 }, flotilla: { x: 82, y: 29, idx: 2, add: true },   /* (batch100 integ: flotilla2 builds two silvers; the galley vault pays the third) */
   hurricane: { x: 448, y: 26, idx: 1 }, lamplit: { x: 386, y: 21, idx: 1 }, underleaf: { x: 368, y: 27, idx: 0 }, deep: { x: 20, y: 145, idx: 2 },
   waymeet: { x: 626, y: 29, idx: 0 }, undercrown: { x: 80, y: 55, idx: 1 }, fields: { x: 418, y: 13, idx: 2 }, mage: { x: 562, y: 8, idx: 1 },
   caravan: { x: 359, y: 26, idx: 2 },

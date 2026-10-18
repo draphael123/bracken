@@ -5098,7 +5098,7 @@ function theFlotilla() {
   // harbour is under all of it, and a fall is the foul water and a climb back up a hull's net. TEACH (one slow yard, a net under it) -> TEST (two yards out of
   // step) -> REMIX (a yard under a marine's fire) -> EXAM (three yards and a swing, petrels diving) -> down the Powder Ship's foremast to her deck.
   mast(286, 9, 21, 5);   /* the hulk's mizzen: up her shrouds to the top at row 9 */
-  ent('sign', 283, 21, { text: 'THE RIGGING RUN: NO DECK BETWEEN THESE TWO. UP THE MAST, AND ACROSS ON HER YARDS.' });
+  ent('sign', 282, 21, { text: 'THE RIGGING RUN: NO DECK BETWEEN THESE TWO. UP THE MAST, AND ACROSS ON HER YARDS.' });
   // TEACH: one yard, slow, over a net strung between the hulls (a fall here is cheap)
   yard(289, 10, 7, 5.0, 0.0);
   for (let x = 288; x <= 301; x++) set(x, 20, T.NET);   /* the boarding net strung under the first yard: a fall is a climb, not the water */

@@ -18,7 +18,7 @@ Edits outside art files: src/main.js, one-line hooks (import, H2A ctx, tile pass
 
 ## CHECKS (targeted, one page at a time)
 Green: storm-ship, storm-ship-runtime (foremast, wave, line, topmast, Captain flat/ward/struck), frame-cost (no read-backs; 8-14 canvases are the one-time bakes), boss-read, solid-islands, floating-geometry, floaters, node --check on every file touched. A hurricane page run: no page errors in any shot.
-Same as the base (not this lane): tells reports the Captain's call '!' teal mark and the src/marks.js table (a23fed35 prints the same); level-quality hurricane says the pilot and mash rows are stale against hash 31e107d77e05 on a23fed35 too. textfit has no hurricane scope (0 screens). No tools/cast-poses.mjs or pixels check exists in this tree.
+Same as the base (not this lane): tells reports the Captain's call '!' teal mark and the src/marks.js table (a23fed35 prints the same); level-quality hurricane says the pilot and mash rows are stale against hash 31e107d77e05 on a23fed35 too. textfit has no hurricane scope (0 screens). No cast-poses tool or pixels check existed in this tree.
 Not run: the full suite, boss-rates (nothing numeric changed), mark-integrity.
 
 ## NOT DONE / HONEST

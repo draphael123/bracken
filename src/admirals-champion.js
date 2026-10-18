@@ -130,7 +130,7 @@ export function cannonHit(e, S, c) {
   if (S.ward > 0) { S.n.glanced++; c.number(e.x, e.y - 70, 'THE BALL GLANCES OFF HIS GUARD: NOT YET', '#9ab0c0'); c.sound('clank'); return 'ward'; }
   setMode(e, 'flat', CH.flatT + 0.05); e.open = CH.flatT; S.taken = 0; S.n.flats++; S.thrust = null; S.hook = null; S.hooked = null; S.sweep = null; S.leap = null; S.cutsLeft = 0;
   c.fx('flat', e.x, e.y); c.sound('flat'); c.shake(7); c.number(e.x, e.y - 80, 'KNOCKED FLAT: CUT HIM NOW', '#8fd160');
-  if (!S.told.flat) { S.told.flat = 1; c.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 140, 'THE GUNS PUT HIM DOWN. HE GETS UP WARY: WAIT FOR HIS GUARD TO DROP', '#ffd36b'); }
+  if (!S.told.flat) { S.told.flat = 1; c.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 140, 'HE GETS UP WARY: WAIT FOR HIS GUARD TO DROP', '#ffd36b'); }
   return 'flat';
 }
 

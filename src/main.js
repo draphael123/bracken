@@ -7957,7 +7957,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
      behind or from above it beats the wall and lands at ANGLE.wall, whole (the angB line below: no greed); in his openings 1.5-2x. FULL_DAMAGE: no chip. The Quartermaster still answers a cut
      into her EN GARDE (she reads the flash). The room's blows (a cannon ball, a throw) are not a hero's hand and land as before. */
   if (blow && GUARD_WALL(e) && wallUp(e) && e.mode !== 'sleep' && !(P.valiant && P.heavy) && !wallOpen(e) && !BR.beats(e, fromX, pl || (!P.ground && P.y < e.y - e.h * 0.5), false)) {   /* (above him: a plunge, or a hero in the air with his feet over the duelist's waist - OVER the guard, not a hop into it) */
-    BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));   /* B15 (Daniel 10-08): never totally invulnerable - the wall takes most of it (ANGLE.front), told by the clank and GO ROUND; greed still counts below */ if (e.t === 'closedhelm') { e.wardHit = 0.35; SFX.aegis(); } if (e.t === 'quarter') e.flash = Math.max(e.flash || 0, 0.06);
+    BR.turned(e, fromX, undefined, { stop: false }); e.wallTurned = (e.wallTurned || 0) + 1; dmg = Math.max(1, Math.round(dmg * BR_ANGLE.front));   /* B15 (Daniel 10-08): never totally invulnerable - the wall takes most of it (ANGLE.front), told by the clank and GO ROUND; greed still counts below */ if (e.t === 'closedhelm') { e.wardHit = 0.35; SFX.aegis(); }
     if (!(e.wallSaid > time)) { e.wallSaid = time + 8; PROG.wallTold = (PROG.wallTold || 0) + 1; if (PROG.wallTold <= 3) { hintSay('tip', 4.5, WALL_HINT[e.t] || WALL_HINT.lance); } }
     }
   if (e.t === 'forgemaster') { if (forgeOpen(e)) dmg *= 2; else { dmg = Math.max(1, Math.round(dmg * 0.5)); SFX.clank(); sparks(e.x + (Math.sign(fromX - e.x) || 1) * 14, e.y - 16, Math.sign(e.x - fromX) || 1, 3); } } // his iron turns half of every cut; stunned or scalded he takes it doubled
@@ -9823,7 +9823,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // jump lets go with a hop, a step sideways lets go, and at the top you step off onto the last rung.
   { const netAt = (x, y) => tileAt(Math.floor(x / TS), Math.floor(y / TS)) === T.NET;
     const here = netAt(P.x, P.y - 8) || netAt(P.x, P.y - 2), below = P.ground && netAt(P.x, P.y + 2);
-    if (GS > 0 && !P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && !(P.carry && P.carry.noClimb) && !P.ptC /* (claude/partnerthrow: a partner overhead needs both hands) */ /* (claude/underwell2: a torch needs a hand - throw it or set it down to climb) */ && ((keys.up && here) || (L.autoGrab && here && !P.netWas && !P.ground && P.vy > -30 && !keys.down && (!move || P.washV) && !(P.grabCD > 0)) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { if (!keys.up && L.autoGrab) number(P.x, P.y - 30, 'CAUGHT', '#8fd160'); SFX.ropeHaul(); P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; P.washV = 0; SFX.pStep(); }   /* (claude/hurricane2) L.autoGrab: THE RIGGING CATCHES YOU - falling INTO a line (not already in it: let go of one and you drop) with no sideways key held, or shoved by the sea, takes hold of it */
+    if (GS > 0 && !P.climb && !stunned && !P.plunge && !dodging && !(P.hurt > 0) && !P.fly && P.atk < 0 && !(P.carry && P.carry.noClimb) && !P.ptC /* (claude/partnerthrow: a partner overhead needs both hands) */ /* (claude/underwell2: a torch needs a hand - throw it or set it down to climb) */ && ((keys.up && here) || (L.autoGrab && here && !P.netWas && !P.ground && P.vy > -30 && !keys.down && (!move || P.washV) && !(P.grabCD > 0)) || (keys.down && below && !move && !(P.onMover && (P.onMover.kind === 'lifeboat' || P.onMover.canal))))) { SFX.ropeHaul(); P.climb = true; P.vx = 0; P.vy = 0; P.climbA = 0; P.cling = false; P.washV = 0; SFX.pStep(); }   /* (claude/hurricane2) L.autoGrab: THE RIGGING CATCHES YOU - falling INTO a line (not already in it: let go of one and you drop) with no sideways key held, or shoved by the sea, takes hold of it */
     P.grabCD = Math.max(0, (P.grabCD || 0) - dt); P.netWas = here;
     if (P.climb) {
       const lx = Math.floor(P.x / TS) * TS + 8; P.x += (lx - P.x) * Math.min(1, dt * 14); P.vx = 0; P.abuf = 0;
@@ -10887,7 +10887,7 @@ function updateWash(dt) {
     if (hit && !P.dead && !P.washed && W.push && !wash.gotP) { wash.gotP = true; // (claude/hurricane2) THE WAVE KNOCKS YOU FLAT: it shoves you down her deck - a line in your hand, a roll under the crest, or the hold keep you
       const t = tileAt(Math.floor(P.x / TS), Math.floor((P.y - 8) / TS)), held = t === T.NET || t === T.CLIMB || P.onRope || P.climb;
       P.washed = 0.8;
-      if (held) { number(P.x, P.y - 30, 'HOLD ON', '#8fd160'); SFX.splash(); shakeCam(4); }
+      if (held) { SFX.splash(); shakeCam(4); }
       else if (P.dodge > 0) { number(P.x, P.y - 30, 'UNDER IT', '#8fd160'); SFX.splash(); shakeCam(3); P.washV = wash.dir * 90; }
       else { seaDrain(Math.round(W.dmg * stormK('dmg'))); P.washV = wash.dir * 330; P.vy = Math.min(P.vy, -170); P.ground = false; P.heelV = 0;
         number(P.x, P.y - 30, 'KNOCKED FLAT: GRAB A LINE', '#ff6b6b'); SFX.splash(); shakeCam(8); rumble(240, 0.6); }
