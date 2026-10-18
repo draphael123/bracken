@@ -35,7 +35,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'party', 'bossjump', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -228,6 +228,12 @@ async function pageTextFit(input) {
   if (want('ending')) { const pr = BKT.PROG, keep = JSON.stringify(pr); for (const l of lvm.LEVELS) if (!l.hidden) pr[l.id] = { cleared: true, medal: 3, best: 3599, deaths: 999 };
     frame('end of the road solo', () => { BK.state = 'victory'; }, { settle: 5 });
     for (const k of Object.keys(pr)) delete pr[k]; Object.assign(pr, JSON.parse(keep)); BK.state = 'title'; await yieldNow(); }
+  /* (claude/tavernfix) THE FOUR-COLUMN CARDS: the level's win tally and the end of the road for a party of four with the longest names and three-digit figures */
+  if (want('party')) { const li = lvm.LEVELS.findIndex(l => l.id === 'wood'); toPlay(li, 'reaper'); BK.coopStart('geomancer', false, [{ hero: 'geomancer' }, { hero: 'berserker' }, { hero: 'reaper' }]);
+    const worst = () => { const v = { kills: 999, dmg: 99999, coins: 9999, revives: 999, turns: 999, deaths: 999 }; for (const p of BK.players()) { p.score = { ...v }; p.total = { ...v }; } };
+    for (const n of [4, 3]) { if (n === 3) BK.coopEnd(), BK.coopStart('geomancer', false, [{ hero: 'reaper' }]);
+      worst(); frame('win card x' + n, () => { BK.state = 'win'; worst(); for (let i = 0; i < 200; i++) BK.draw1(); window.__textRec.length = 0; }, { settle: 0 }); frame('end of the road x' + n, () => { BK.state = 'victory'; worst(); }, { settle: 5 }); }
+    BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
     for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
     await yieldNow(); }
