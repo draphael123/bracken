@@ -12,6 +12,8 @@ import { HK_SAY } from './hourglass-king.js';
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* batch101 integ 10-18: THE BELL HOUSINGS (claude/airpockets) - the housing is spent / fills again, routed as hint-shown requires */
+  'THE HOUSING IS SPENT', 'THE HOUSING FILLS AGAIN',
   /* batch100 integ 10-18: THE CAPTAIN 2 (claude/hurricane2) - the wave, the lightning, his line and ward, routed as hint-shown requires */
   'KNOCKED FLAT: GRAB A LINE', 'KNOCKED FLAT: CUT HIM', 'STRUCK: CUT HIM', 'HE MAKES FOR A LINE', 'HE CALLS THE SEA', 'YOU HAVE HIS LINE', 'HIS WHISTLE', 'HE IS UP: WARDED', 'HE SHAKES IT OFF: WARDED', 'TURNED: CUT HIM',
   /* batch99 integ 10-18: THE LAMPREEVE and THE TOLLMASTER (claude/lamplit2) - toll, oil, wax and air lines, routed as hint-shown requires */

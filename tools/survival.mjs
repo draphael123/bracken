@@ -63,10 +63,10 @@ const spikeRun=(armour)=>{go('wood');const P=BK.P,PR=BKT.PROG;PR.items.mail=PR.i
  BK.tp(st[0],st[1]);BK.sim(30);const safe=P.safe&&{x:P.safe.x,y:P.safe.y};P.inv=0;P.hp=P.maxHp;const hp0=P.hp;BK.tp(s[0],s[1]-1);P.vy=60;let n=0;while(n<40&&P.hp===hp0){BK.sim(1);n++;}BK.sim(2);
  return {spike:s,stand:st,lost:hp0-P.hp,max:P.maxHp,want:Math.round(P.maxHp*SV.HAZARD.pct),back:safe&&Math.abs(P.x-safe.x)<2&&Math.abs(P.y-safe.y)<2,safe,at:[P.x,P.y],dead:!!P.dead,safeBy:BK.P.safe?[BK.P.safe.x,BK.P.safe.y]:null};};
 out.spike=spikeRun(false);out.spikeArmour=spikeRun(true);
-/* 1b. DEEP WATER in a waterHurts wood (the marsh): the same share, and back to dry ground */
+/* 1b. DEEP WATER in a waterHurts wood (the marsh). DESIGN CHANGE (claude/deadwater, Daniel 10-18): a lethal-look pool is SWUM IN and drains ~9% of max hp a real second - no 27% blow, no hand-back to dry ground. Here: one second in it costs 3-15% of the bar, he is still in the water (swimming), alive. */
 {go('marsh');const P=BK.P,L=BK.L;const p=(L.pools||[]).find(q=>!q.shallow&&!q.swim&&!q.dry&&!q.fire&&q.x1-q.x0>48);out.water={pool:!!p};
  if(p){const c=Math.floor((p.x0-24)/16);let r=Math.floor(p.y/16)-4;while(r<L.H-1&&!(at(c,r+1)===T.SOLID&&at(c,r)===T.AIR))r++;BK.tp(c,r);BK.sim(30);const safe=P.safe&&{x:P.safe.x,y:P.safe.y};P.inv=0;P.hp=P.maxHp;const hp0=P.hp;
-  P.x=(p.x0+p.x1)/2;P.y=p.y+30;P.vy=0;let n=0;while(n<30&&P.hp===hp0){BK.sim(1);n++;}BK.sim(2);Object.assign(out.water,{lost:hp0-P.hp,want:Math.round(P.maxHp*SV.HAZARD.pct),back:!!safe&&Math.abs(P.x-safe.x)<2&&Math.abs(P.y-safe.y)<2,dead:!!P.dead});}}
+  P.x=(p.x0+p.x1)/2;P.y=p.y+30;P.vy=0;for(let n=0;n<60;n++){P.y=Math.max(P.y,p.y+30);BK.sim(1);}Object.assign(out.water,{lost:hp0-P.hp,max:P.maxHp,back:!!safe&&Math.abs(P.x-safe.x)<2&&Math.abs(P.y-safe.y)<2,dead:!!P.dead,swim:!!P.swim});}}
 /* 2. THE EXAM: the fair's spike yard kills, and walking in said so */
 {go('fair');const P=BK.P,ex=BK.L.examSpans[0];const s=spikeAt(ex[0],ex[1]);BK.tp(ex[0]-3,26);BK.sim(2);P.hp=P.maxHp;P.inv=0;BK.tp(s[0],s[1]-1);P.vy=60;let n=0,told=null;while(n<40&&!P.dead){BK.sim(1);n++;if(!told&&BK.hint&&BK.hint.msg===SV.LINES.exam)told=n;}
  out.exam={spike:s,dead:!!P.dead,killer:P.killer&&P.killer.name,told};}
@@ -115,8 +115,8 @@ return out;})()`);
     assert.equal(s.lost, s.want, k + ': spikes cost ' + s.lost + ' of ' + s.max + ', not ' + s.want + ' (' + SV.HAZARD.pct * 100 + '% of the bar): ' + JSON.stringify(s));
     assert.ok(s.back && !s.dead, k + ': spikes did not hand the hero back to his last safe footing: ' + JSON.stringify(s)); }
   assert.ok(r.water.pool, 'the marsh has no deep pool to fall in');
-  assert.equal(r.water.lost, r.water.want, 'deep water costs ' + r.water.lost + ', not ' + r.water.want + ': ' + JSON.stringify(r.water));
-  assert.ok(r.water.back && !r.water.dead, 'deep water did not hand the hero back: ' + JSON.stringify(r.water));
+  assert.ok(r.water.lost >= r.water.max * 0.03 && r.water.lost <= r.water.max * 0.15, 'a second in deep water costs ' + r.water.lost + ' of ' + r.water.max + ', want 3-15% (the quiet drain): ' + JSON.stringify(r.water));
+  assert.ok(r.water.swim && !r.water.back && !r.water.dead, 'deep water is swum in, not a hand-back (claude/deadwater): ' + JSON.stringify(r.water));
   assert.ok(r.exam.dead && r.exam.killer === 'THE SPIKES', 'the fair\'s exam spikes did not kill: ' + JSON.stringify(r.exam));
   assert.ok(r.exam.told, 'walking into the exam did not say the spikes kill: ' + JSON.stringify(r.exam));
   const f = r.flask, d = r.dry;
@@ -150,5 +150,5 @@ return out;})()`);
   assert.deepEqual(pg.errors, []);
   console.log('SURVIVAL: flask +' + f.heal + ' at frame ' + f.swallowF + ', committed, spills, U/LT/phone; shrines dry, death full, R carries, heart +' + d.heart + ', charm +' + d.kill + '.');
   console.log('SURVIVAL2: one flask (smith: 3), a shrine gives one a life, a death all; BREAK held ' + b.broke.frames + ' f -> ' + b.broke.flasks + '/' + b.broke.max + ', checkpoint back, walks past, pre-boss and fight refused; stamina ' + r.stam.rate.toFixed(1) + '/s.');
-  console.log('SURVIVAL: hazards ' + r.spike.lost + '/' + r.spike.max + ' (armoured ' + r.spikeArmour.lost + '/' + r.spikeArmour.max + '), water ' + r.water.lost + ', both hand back; the exam kills and is told; ' + spans + ' exam span(s), none untold.');
+  console.log('SURVIVAL: hazards ' + r.spike.lost + '/' + r.spike.max + ' (armoured ' + r.spikeArmour.lost + '/' + r.spikeArmour.max + '), water ' + r.water.lost + ' a second (quiet drain, swum); the exam kills and is told; ' + spans + ' exam span(s), none untold.');
 } finally { pg.close(); }

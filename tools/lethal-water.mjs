@@ -33,11 +33,11 @@ if (process.env.PAGE !== '0') {
   const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
   const pg = await openPage({ audio: false, fonts: false }); const E = (e, t = 300000) => pg.evalp(e, t);
   const BOOT = idx => `BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});BK.load(${idx});BK.state='play';BK.start();BK.god=false;BK.SET.invincible=false;BK.SET.godmode=false;BK.enemies().forEach(e=>{e.alive=false;});BK.sim(20);const P=BK.P;`;
-  const DEAD = '!q.dry&&!q.shallow&&!q.swim&&!q.harm&&!q.mud&&!q.tarn&&!q.rapids&&!q.capped&&!q.streetTide&&!q.fire';
+  const DEAD = '!q.dry&&!q.shallow&&!q.swim&&!q.harm&&!q.mud&&!q.tarn&&!q.rapids&&!q.capped&&!q.streetTide&&!q.fire&&!q.canal&&!q.leWater';   /* (batch101 integ: the Fog Canal's barge water and the Lantern-Eater's basin keep their hand-back: DEAD_SWIM in src/main.js) */
   try {
     await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/' });
     for (let i = 0; i < 300; i++) { if (await E('typeof window.BK === "object" && !!window.BK.lookPass').catch(() => false)) break; await new Promise(r => setTimeout(r, 200)); }
-    for (const [id, sel] of [['towpath', DEAD], ['canal', DEAD], ['marsh', DEAD], ['burial', '!q.dry&&q.harm&&q.swim']]) {
+    for (const [id, sel] of [['towpath', DEAD], ['marsh', DEAD], ['burial', '!q.dry&&q.harm&&q.swim']]) {
       const idx = LEVELS.findIndex(l => l.id === id);
       const r = await E(`(()=>{${BOOT(idx)}const pools=(BK.L.pools||[]).filter(q=>${sel});
         for(const p of pools)for(const f of [0.5,0.3,0.7,0.2,0.85]){P.x=p.x0+(p.x1-p.x0)*f;P.y=p.y+30;P.vx=0;P.vy=0;P.hp=P.maxHp;P.inv=0;P.hurt=0;P.dead=0;P.drains&&P.drains.clear();BK.sim(2);

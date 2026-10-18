@@ -61,9 +61,9 @@ try {
      BK.keys.right=false;BK.sim(40);let gone=0;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)!==8)gone++;
      out.walk={fell:low>0,cracked,gone,of:z.x1-z.x0+1,venom:+(P().venomT||0).toFixed(2),x:Math.round(P().x/16)};}
     /* 3b. STAND ON ONE: the board holds while it cracks, then it goes and so do you */
-    {const L=boot(),z=L.crumble[0],x=z.x0+6;BK.tp(x,z.row-1);BK.sim(3);const y0=P().y;let heldFor=0,fellAt=null;
+    {const L=boot(),z=L.crumble[0],x=z.x0+6;BK.tp(x,z.row-1);BK.sim(3);const y0=P().y,hp0=P().hp;let heldFor=0,fellAt=null;
      for(let f=0;f<120;f++){BK.sim(1);if(fellAt===null&&P().y>y0+4)fellAt=f;else if(fellAt===null)heldFor=f;}
-     BK.sim(60);out.stand={heldFor:+(heldFor/60).toFixed(2),fellAt,venom:+(P().venomT||0).toFixed(2),inWater:P().y>(z.row+1)*16};}
+     BK.sim(60);out.stand={heldFor:+(heldFor/60).toFixed(2),fellAt,venom:+(P().venomT||0).toFixed(2),lost:+(hp0-P().hp).toFixed(1),inWater:P().y>(z.row+1)*16};}
     /* 4a. IT COMES BACK: out of its way on the pier, the span is whole again after it has been quiet */
     {const L=boot(),z=L.crumble[0];BK.tp(z.x0+4,z.row-1);BK.sim(90);BK.tp(z.x1+3,z.row-1);let backAt=null;
      for(let f=0;f<60*10;f++){BK.sim(1);let whole=true;for(let x=z.x0;x<=z.x1;x++)if(board(L,x)!==8)whole=false;if(whole){backAt=f;break;}}
@@ -91,7 +91,7 @@ try {
   assert.ok(r.walk.gone >= 8, 'and went, behind him: ' + JSON.stringify(r.walk));
   assert.ok(r.stand.heldFor >= CRUMBLE.hold - 0.1, 'a board holds for its told half-second: ' + JSON.stringify(r.stand));
   assert.ok(r.stand.fellAt !== null && r.stand.fellAt < 60, 'and then drops whoever is standing on it: ' + JSON.stringify(r.stand));
-  assert.ok(r.stand.venom > 0, 'into the poison: ' + JSON.stringify(r.stand));
+  assert.ok(r.stand.lost > 0 && r.stand.inWater, 'into the poison (DESIGN CHANGE claude/deadwater 10-18: the green water is a quiet health drain now, not venom carried out): ' + JSON.stringify(r.stand));
   assert.ok(r.back.secs !== null && r.back.secs <= CRUMBLE.back + 2, 'the span comes back once it is quiet: ' + JSON.stringify(r.back));
   assert.ok(r.respawn.broke > 0 && r.respawn.whole === r.respawn.of, 'and is whole on a respawn: ' + JSON.stringify(r.respawn));
   assert.ok(r.dark.on < r.dark.off * 0.7, 'THE BLIND VAULT is dark: ' + JSON.stringify(r.dark));

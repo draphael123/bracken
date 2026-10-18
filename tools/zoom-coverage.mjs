@@ -58,7 +58,7 @@ for (const t of ZOOM_MINI_EXCLUDE) ok(minis.has(t), "ZOOM_MINI_EXCLUDE names '" 
    function, not their own per-name test (that is the drift the Gate Gargoyle's lane found in the first place). */
 const cut = (from, to) => { const i = src.indexOf(from); return i < 0 ? '' : src.slice(i, src.indexOf(to, i + from.length)); };
 const bossWake = cut('function bossStart()', '\nfunction ');
-const miniWake = (src.match(/[^\n]*const mb = miniOne\(\); if \(mb\) \{ miniActive = true;[^\n]*/) || [''])[0];
+const miniWake = (src.match(/[^\n]*const mb = miniOne\(\); if \(mb\) \{ (?:bossSelectBegin\('mini'\); )?miniActive = true;[^\n]*/) || [''])[0];
 ok(bossWake.length > 0, 'bossStart() not found');
 ok(miniWake.length > 0, 'the mini wake (miniActive = true) not found');
 ok(/if \(bossZooms\(boss\.t\)\) setView\('zoom'\)/.test(bossWake), "bossStart() no longer zooms through bossZooms(boss.t) - a literal per-boss test would drift from desiredView() again");

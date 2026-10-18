@@ -37,7 +37,7 @@ const pg = await openPage({ audio: false, fonts: false }); try {
    const p=BK.P,v=BK.L.gasVents.find(v=>v.x===${pass.x});BK.tp(v.x,v.y-1);BK.sim(4);const hits={idle:0,warn:0,puff:0,lit:0};
    for(let f=0;f<420;f++){p.hp=p.maxHp||100;p.venomT=0;p.candle=0;const h0=p.hp;BK.sim(1);if(p.hp<h0||p.venomT>0)hits[v.state]++;}
    BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='burial'));BK.state='play';BK.god=false;for(const e of BK.enemies())e.alive=false;
-   const pit=BK.L.pools.find(q=>q.poison);BK.P.x=(pit.x0+pit.x1)/2;BK.P.y=pit.y+24;let poisoned=false;for(let f=0;f<60;f++){BK.sim(1);if(BK.P.venomT>0)poisoned=true;}
+   const pit=BK.L.pools.find(q=>q.poison);BK.P.x=(pit.x0+pit.x1)/2;BK.P.y=pit.y+24;let poisoned=false;const hp0=BK.P.hp;for(let f=0;f<60;f++){BK.sim(1);if(BK.P.venomT>0||BK.P.hp<hp0)poisoned=true;}   /* (claude/deadwater 10-18: the pit is a quiet drain now - hp falls - and no venom is carried out) */
    return{hits,poisoned};})()`);
   assert.equal(r.hits.idle, 0, 'an idle vent never hurts'); assert.equal(r.hits.warn, 0, 'a hissing vent never hurts');
   assert.ok(r.hits.puff > 0, 'a puffing vent does'); assert.ok(r.poisoned, 'the green water poisons');
