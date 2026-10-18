@@ -876,7 +876,7 @@ export function bakeLookout() {
 //           5 sabre backhand (the return cut, smear), 6 pistol tell (levelled, off eye shut), 7 pistol shot
 //           (flash, recoil), 8 grapnel tell (hook wound up overhead, rope coiled), 9 grapnel thrown (arm out,
 //           hand empty, rope trailing), 10 the call (head back, his whistle up, trills in front of his face),
-//           11 riding the sea (arms wide, coat streaming, blade up), 12 beached (down on one knee, blade planted)
+//           11 riding the sea (arms wide, coat streaming, blade up); 12..18 the storm moves (below)
 //   canvas 46x32 (grid 44x30)   anchor ax 21, ay 31   pack w/h 16x26
 export function bakeCaptain() {
   const W = 46, H = 32, X = 21, FL = H - 1;
@@ -949,7 +949,6 @@ export function bakeCaptain() {
     lunge: ['.....UUuu......', '....UU.....uu..', '...vv.......uu.', '..vv........uu.', '..vv........uu.', '.vv.........uu.', '.vv.........uuU', 'vvv........uuuu'],
     plant: ['.....UUuu......', '...UUU..uu.....', '..Uv.....uu....', '..vv.....uu....', '.vv......uu....', '.vv......uu....', 'vv.......uuU...', 'vvv.....uuuuU..'],
     wide: ['.....UUuu......', '..UUU.....uuu..', '..vv.......uu..', '.vv.........uu.', '.vv.........uu.', 'vv..........uu.', 'vv..........uuU', 'vvv........uuuu'],
-    kneel: ['...............', '.....UUuu......', '....UU..uu.....', '...Uv...uu.....', '..vv....uu.....', '..vv....uu.....', '.vvvvv..uu.....', 'vvvvvvv.uuuU...'],
   };
   /* (claude/hurricane2art) a lit keg, six wide: a fuse and its spark on top, oak staves, two iron hoops */
   const KEG = ['..X...', '..y...', '.UuuU.', 'IuUUuI', 'jUuuUj', 'IuUUuI', '.UuuU.'];
@@ -965,7 +964,6 @@ export function bakeCaptain() {
       swing: [[-7, 0], [6, 0], [5, 0.66], [3, 0.92], [-10, 1], [-13, 0.6], [-8, 0.25]],
       stream: [[-7, 0], [6, 0], [6, 0.55], [4, 0.78], [-13, 0.92], [-17, 0.5], [-8, 0.18]],
       spread: [[-8, 0], [6, 0], [7, 0.4], [3, 0.62], [-10, 0.8], [-18, 0.42], [-12, 0.1]],
-      pooled: [[-7, 0], [6, 0], [7, 1], [-12, 1], [-14, 0.5], [-9, 0.2]],
     }[pose];
     gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
       const f = ((Math.floor((x - B) * 0.8 + (y - top) * 0.4) % 4) + 4) % 4;
@@ -989,7 +987,6 @@ export function bakeCaptain() {
       swing: [[-8, 0], [6, 0], [9, 0.55], [10, 0.8], [-16, 0.88], [-18, 0.5], [-12, 0.2]],
       stream: [[-8, 0], [6, 0], [8, 0.45], [9, 0.7], [-20, 0.82], [-23, 0.42], [-13, 0.15]],
       spread: [[-10, 0], [7, 0], [15, 0.32], [11, 0.55], [-16, 0.72], [-24, 0.38], [-17, 0.08]],
-      pooled: [[-8, 0], [6, 0], [12, 0.92], [-17, 0.92], [-19, 0.48], [-12, 0.18]],
     }[pose] || [[-8, 0], [6, 0], [9, 0.62], [11, 0.86], [-12, 0.86], [-11, 0.58]];
     gpoly(G, pts.map(([x, f]) => [B + x, Y(f)]), (x, y) => {
       const f = ((Math.floor((x - B) * 0.5 + (y - top) * 0.25) % 5) + 5) % 5;
@@ -1066,11 +1063,8 @@ export function bakeCaptain() {
   const ride = frame({ boots: 'wide', dy: -2, coat: 'spread',
     far: [[-6, 14], [-11, 11]], near: [[6, 14], [10, 9]],
     blade: [[10, 9], -66, 16], hook: [[-11, 11], 1, 'back'] });
-  const beach = frame({ boots: 'kneel', dy: 3, hx: 1, coat: 'pooled', down: true,
-    far: [[-4, 20], [-6, 22]], near: [[4, 19], [6, 24]],
-    blade: [[6, 24], 88, 15], hook: [[-6, 22], 0, 'back'] });
-  /* ---- (claude/hurricane2art) THE STORM MOVES, each with its own pose (B16): 13 braced on a line, 14 making for it, 15 struck by the sky, 16 and 17 the keg's windup and release,
-     18 a cut turned on the shield, 19 knocked flat. 12 (kneeling) is left for the old ride mode and nothing draws it any more. ---- */
+  /* ---- (claude/hurricane2art) THE STORM MOVES, each with its own pose (B16): 12 braced on a line, 13 making for it, 14 struck by the sky, 15 and 16 the keg's windup and release,
+     17 a cut turned on the shield, 18 knocked flat. (The old kneeling 'beached' frame is gone: claude/hurricane2tune.) ---- */
   // HELD: both fists up on the two shrouds beside his head, knees bent, head down under the brim, the coat torn out sideways by the sea
   const held = frame({ boots: 'plant', dy: 2, hx: 0, coat: 'stream', down: true,
     far: [[-6, 15], [-8, 7]], near: [[6, 15], [8, 6]], hook: [[-2, 21], 0, 'back'] });
@@ -1111,7 +1105,7 @@ export function bakeCaptain() {
     layer(G, g => gline(g, 20, fl, 36, fl - 1, i => (i < 3 ? 'y' : i < 6 ? 'Y' : i % 2 ? 'i' : 'I')));   // the sabre lying loose along the deck
     return q(G);
   })();
-  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, beach, held, brace, struck, kegTell, kegRel, turned, flat], X, FL, 16, 26);
+  return pack([idle, walk1, walk2, slashTell, slash1, slash2, shootTell, shoot, hookTell, hook, callT, ride, held, brace, struck, kegTell, kegRel, turned, flat], X, FL, 16, 26);
 }
 
 export function bakeQuarter() {

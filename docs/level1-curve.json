@@ -182,17 +182,17 @@
   "lostPct": 255
  },
  "hurricane": {
-  "hash": "90a79afb6d49",
+  "hash": "31e107d77e05",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 38,
-  "deaths": 8,
-  "kills": 16,
-  "lifts": 114,
+  "hits": 32,
+  "deaths": 7,
+  "kills": 15,
+  "lifts": 112,
   "walked": 100,
   "bare": true,
-  "lostPct": 371
+  "lostPct": 346
  },
  "lamplit": {
   "hash": "34b4ca0f396e",
