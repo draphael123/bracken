@@ -71,9 +71,10 @@ export function makeDeaconHands(ctx) {
       if (e.mode === 'hook') ART.drawChain(g, tipAt[0], tipAt[1] + 3, x + f * DC.hook.reach, tipAt[1] + 6, time, true);
       else if (e.mode === 'hookTell') { for (let i = 0; i < 3; i++) ART.drawChain(g, tipAt[0] - f * (2 + i * 3), tipAt[1] + 3 + i * 2, tipAt[0] - f * (2 + i * 3) + f * 2, tipAt[1] + 9 + i * 2, time, false); }
       else ART.drawChain(g, tipAt[0], tipAt[1] + 3, tipAt[0] + f * 10, tipAt[1] + 14, time, false); }
-    if (e.mode === 'douseTell' || e.mode === 'douse') { const tl = (ctx.lamps ? ctx.lamps() : []).find(q => q.id === S.douseId), up = e.mode === 'douseTell', tx = tl ? R(tl.x - cx) : x + f * 40, ty = up ? y - 58 : y - 30;   /* (claude/church3, GREYBOX) THE SNUFFER CAP: raised over the lamp (windup), brought down on it (release) */
-      g.strokeStyle = '#c8a040'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + f * 4, y - 34); g.lineTo(tx, ty); g.stroke(); g.lineWidth = 1; g.fillStyle = '#8a6a28'; g.fillRect(tx - 4, ty, 8, 5); g.fillStyle = '#e8c870'; g.fillRect(tx - 3, ty, 6, 1);
-      if (up) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); g.fillStyle = '#ffd36b'; g.fillRect(tx - 1, ty - 4, 2, 2); g.globalAlpha = 1; } }
+    if (e.mode === 'douseTell' || e.mode === 'douse') { const tl = (ctx.lamps ? ctx.lamps() : []).find(q => q.id === S.douseId);   /* (claude/church3art) the cap is in his sheet (deacon_art: douseTell / douse); here the lamp it is bound for - a gold ring pulsing over the wick while it is raised, a puff of cold smoke where it came down */
+      if (tl) { const lx = R(tl.x - cx), ly = R(tl.y - 32 - cy);
+        if (e.mode === 'douseTell') { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); const d = 5 + (Math.floor(time * 6) % 2); g.fillStyle = '#ffd36b'; g.fillRect(lx - d, ly - d, d * 2 + 1, 1); g.fillRect(lx - d, ly + d, d * 2 + 1, 1); g.fillRect(lx - d, ly - d, 1, d * 2 + 1); g.fillRect(lx + d, ly - d, 1, d * 2 + 1); g.globalAlpha = 1; }
+        else for (let k = 0; k < 5; k++) { const t = (1 - e.modeT / DC.douse.t) * 0.9 + k * 0.1; g.globalAlpha = Math.max(0, 0.8 - t * 0.7); g.fillStyle = k & 1 ? '#9ab0e0' : '#e0eaff'; g.fillRect(lx - 4 + ((k * 5) % 9), ly - R(t * 14), 2, 2); } g.globalAlpha = 1; } }
     if (e.guardFx > 0) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); g.globalAlpha = Math.min(1, e.guardFx * 6); g.fillStyle = '#ffffff'; g.fillRect(x + f * 10 - 2, y - 46, 4, 4); g.fillRect(x + f * 10 - 5, y - 44, 10, 1); g.fillRect(x + f * 10 - 1, y - 49, 2, 10); g.globalAlpha = 1; }
   };
   /* OVER: the holy fire of the arc, his light bar, the read */

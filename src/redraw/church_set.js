@@ -9,6 +9,7 @@
 // V = { g, cx, cy, vw, vh, time, L, T, lit(roomId)->bool, glow (0..1: how many chapel lamps burn), noGlow }. Only fillRect / drawImage / globalAlpha, so tools/lit-church-aloft.mjs can run it in Node.
 import * as P from './church_props.js';
 import * as C2 from './church2_art.js';
+import * as C3 from './church3_art.js';   /* (claude/church3art) the sanctuary's braziers, the altar fire, the votive racks, the crossing's grates and their ghost, the doused lamp */
 import { CK, hash, matOf } from './church_tiles.js';
 import { canvas, px, rect, line, fillPoly, circle, ellipse, outline } from '../px.js';
 
@@ -261,6 +262,11 @@ export function drawLamp(V, l) {
   const wx = l.x * TS + 8, wy = (l.y + 1) * TS, f = Math.floor(V.time * 9 + l.x * 3);
   if (!vis(V, wx - 20, wx + 20, 40)) return;
   if (l.deacon) return crossingLamp(V, l, wx, wy);   /* (church2art) THE CROSSING's two floor sconces and two chandeliers */
+  if (l.kind === 'arena' && l.brazier) { const st = l.lit ? 'lit' : l.snuffed ? 'snuffed' : 'dark';   /* (claude/church3art) THE PALADIN's three: their own brazier of the order - dark (a taper laid by it), lit, or snuffed under his hammer (dented, smoking) */
+    put(V, C3.bakeSanctuaryBrazier(st), wx - 16, wy - 46);
+    if (l.lit) { C3.drawLightPool(V.g, R(wx - V.cx), R(wy - V.cy) - 1, 46, 1, V.time); flameAt(V, 2, wx, wy - 34, l.x); halo(V, wx, wy - 38, 66, 0.65, '#ffd890'); }
+    else if (l.snuffed) C3.drawSnuffedSmoke(V.g, R(wx - V.cx), R(wy - 34 - V.cy), V.time, l.x); else C3.drawWants(V.g, R(wx - V.cx), R(wy - 52 - V.cy), V.time);
+    return; }
   if (l.relay || l.brazier) { put(V, C2.bakeRelayBrazier(!!l.lit), wx - 13, wy - 34); if (l.lit) { flameAt(V, 2, wx, wy - 21, l.x); halo(V, wx, wy - 22, 58, 0.6); } else smoke(V, wx, wy - 22, l.x); return; }   /* the chantry's relay braziers, and (claude/church3) THE PALADIN's three in the sanctuary (GREYBOX: the same brazier until the art lane gives them their own) */
   if (l.kind === 'sconce' || l.kind === 'rood') { const s = P.bakeSconce(l.kind === 'rood' ? 1 : 0); put(V, s, wx - 6, wy - 18); if (l.lit) { flameAt(V, 1, wx, wy - 15, l.x); halo(V, wx, wy - 14, 32, 0.55); } else { smoke(V, wx, wy - 17, l.x); } }
   else if (l.kind === 'chapel') { put(V, P.bakeCandelabrum(), wx - 14, wy - 34); if (l.lit) { for (const [fx, fy] of P.CANDELABRUM_WICKS) flameAt(V, 0, wx - 14 + fx + 1, wy - 34 + fy + 1, l.x + fx); flameAt(V, 1, wx, wy - 29, l.x); halo(V, wx, wy - 22, 54, 0.6, '#ffd890'); } else { smoke(V, wx, wy - 28, l.x); } }
@@ -279,19 +285,23 @@ function crossingLamp(V, l, wx, wy) {
     if (l.lit) halo(V, wx, wy - 28, 60, 0.5, '#ffd890'); return; }
   if (l.down) { const sx = wx - 26, sy = wy - 24; put(V, C2.bakeChandelierLying(), sx, sy); if (l.lit) { for (const [fx, fy] of C2.CH_LY_WICKS) flameAt(V, 0, sx + fx + 1, sy + fy + 1, l.x + fx); halo(V, wx, wy - 10, 46, 0.55, '#ffd890'); } return; }
   put(V, C2.bakeFloorSconce(), wx - 7, wy - 40);   /* a floor sconce */
+  if (l.doused && !l.lit) C3.drawDoused(V.g, R(wx - V.cx), R(wy - 40 + C2.SCONCE_WICK[1] - V.cy), V.time, l.x);   /* (claude/church3art) HIS: cold smoke and a ring - yours to relight */
   if (l.lit) { flameAt(V, 1, wx, wy - 40 + C2.SCONCE_WICK[1] + 1, l.x); halo(V, wx, wy - 30, 52, 0.6, '#ffd890'); } else smoke(V, wx, wy - 36, l.x); }
 const bakeFall = dir => C2.bakeChandelierFalling(dir);
 function smoke(V, x, y, seed) { for (let k = 0; k < 2; k++) { const t = (V.time * 0.6 + k * 0.5 + seed * 0.13) % 1; alpha(V, 0.4 * (1 - t), () => box(V, x + Math.round(Math.sin(t * 6 + seed) * 2), y - R(t * 12), 1, 1, '#9a9ab0')); } }
 export function drawSource(V, s) {
   const wx = s.x * TS + 8, wy = (s.y + 1) * TS; if (!vis(V, wx - 20, wx + 20, 40)) return;
   if (s.kind === 'brazier') { put(V, P.bakeBrazier(), wx - 12, wy - 26); flameAt(V, 2, wx, wy - 16, s.x); halo(V, wx, wy - 18, 56, 0.6); }
+  else if (s.id === 'pbAltar') { put(V, C3.bakeAltarFire(), wx - 20, wy - 34); for (const [fx, fy] of C3.AF_WICKS) flameAt(V, 1, wx - 20 + fx + 1, wy - 34 + fy + 1, s.x + fx); C3.drawLightPool(V.g, R(wx - V.cx), R(wy - V.cy) - 1, 64, 1, V.time); halo(V, wx, wy - 28, 70, 0.6, '#ffd890'); }   /* (claude/church3art) THE ALTAR FIRE */
+  else if (s.id === 'pbVotive' || s.id === 'dcVotive') { put(V, C3.bakeVotiveRack(), wx - 12, wy - 30); for (const [fx, fy] of C3.VR_WICKS) flameAt(V, 0, wx - 12 + fx + 2, wy - 30 + fy - 1, s.x + fx); halo(V, wx, wy - 18, 44, 0.55); }   /* (claude/church3art) the red-glass votive rack */
   else if (s.kind === 'vigil') { put(V, P.bakeVigil(), wx - 7, wy - 30); flameAt(V, 1, wx, wy - 31, s.x); halo(V, wx, wy - 26, 44, 0.55); }
   else { put(V, P.bakeVotive(), wx - 11, wy - 22); for (const [fx, fy] of P.VOTIVE_WICKS) flameAt(V, 0, wx - 11 + fx + 1, wy - 22 + fy, s.x + fx); halo(V, wx, wy - 16, 40, 0.55); }
 }
 export function drawBellows(V, b) { const wx = b.x * TS + 8, wy = (b.y + 1) * TS, k = b.air > 0 ? Math.abs(Math.sin(V.time * 10)) : 0; if (!vis(V, wx - 20, wx + 20)) return;
   put(V, P.bakeBellows(), wx - 11, wy - 16 + R(k * 3)); if (b.air > 0) { box(V, wx - 3, wy - 20, 6, 3, '#e8dcc0'); } }
 export function drawDesk(V, d) { const wx = d.x * TS + 8, wy = (d.y + 1) * TS; if (!vis(V, wx - 20, wx + 20)) return; put(V, P.bakeConsole(), wx - 13, wy - 26); if (d.tell > 0 || d.on > 0) for (let i = 0; i < 4; i++) box(V, wx - 9 + i * 6, wy - 28 - R((V.time * 20 + i * 5) % 8), 1, 2, '#e8dcc0'); }
-export function drawGrate(V, q) { const wx = q.x * TS, wy = q.y * TS; if (!vis(V, wx, wx + 16)) return; put(V, P.bakeGrate(0), wx, wy - 2); if (q.glow > 0) { alpha(V, 0.45 + 0.4 * Math.sin(V.time * 14), () => { box(V, wx + 1, wy - 12, 14, 12, '#9ab0e0'); box(V, wx + 4, wy - 8, 8, 8, '#e0eaff'); }); } }
+export function drawGrate(V, q) { const wx = q.x * TS, wy = q.y * TS; if (!vis(V, wx, wx + 16)) return;
+  if (q.deacon) { put(V, C3.bakeCrossGrate(), wx, wy - 4); if (q.glow > 0) C3.drawGrateRise(V.g, R(wx - V.cx), R(wy - 4 - V.cy), Math.max(0.15, q.k || 0), V.time, q.x); return; }   /* (claude/church3art) THE CROSSING's grates: a stone kerb and a cross of iron, a ghost coming up it */ put(V, P.bakeGrate(0), wx, wy - 2); if (q.glow > 0) { alpha(V, 0.45 + 0.4 * Math.sin(V.time * 14), () => { box(V, wx + 1, wy - 12, 14, 12, '#9ab0e0'); box(V, wx + 4, wy - 8, 8, 8, '#e0eaff'); }); } }
 export function drawDoor(V, d) {
   const x0 = d.x0 * TS, y0 = d.y0 * TS, w = (d.x1 - d.x0 + 1) * TS, h = (d.y1 - d.y0 + 1) * TS; if (!vis(V, x0, x0 + w, 60)) return;
   if (d.id === 'hatch') { alpha(V, 0.5 + 0.3 * Math.sin(V.time * 3), () => { for (let x = x0 + 2; x < x0 + w; x += 5) box(V, x, y0, 2, h, '#d8e0ff'); }); box(V, x0, y0, w, 2, '#a8b8e0'); return; }

@@ -11,6 +11,7 @@
 import * as PBM from './paladin-boss.js';
 import { makeHolyGround } from './holy-ground.js';
 import { BOSS_PHASE } from './boss-music.js';
+import * as C3 from './redraw/church3_art.js';   /* (claude/church3art) his conviction pips, light-ward, ward-broken, brazier flare, verdict + dawn marks, prayer */
 const { PB } = PBM;
 
 const SOUND = { tell: s => s.tell && s.tell(false), tellHard: s => s.tell && s.tell(true), slam: s => (s.heavy || s.slash)(), glow: s => (s.chime || s.bell || s.tell)(false),
@@ -78,7 +79,7 @@ export function makePaladinHands(ctx) {
     if (S.conv > S.lastConv + 0.3) S.barUp = 0.35; else if (S.conv < S.lastConv - 0.3) S.barDown = 0.35; S.lastConv = S.conv; S.barUp = Math.max(0, (S.barUp || 0) - dt); S.barDown = Math.max(0, (S.barDown || 0) - dt);
   };
   /* THE RULE ON HIM: a brazier lit by a hero (src/lit-church-hands.js lightLamp -> ctx.bossKindled): beside him it breaks his light-ward */
-  H.onKindled = l => { const e = live(); if (!S || !e || !ctx.bossActive || !l || (l.room && l.room !== 'sanctuary') || l.by !== 'hero') return; PBM.brazierLit(e, S, world(e), l.x * ctx.TS + 8); };
+  H.onKindled = l => { const e = live(); if (!S || !e || !ctx.bossActive || !l || (l.room && l.room !== 'sanctuary') || l.by !== 'hero') return; { const r = PBM.brazierLit(e, S, world(e), l.x * ctx.TS + 8); if (r === 'break') S.broke = { t: ctx.time(), bx: l.x * ctx.TS + 8, ex: e.x, ey: e.y }; } };   /* (claude/church3art) the ward breaks: the shell's shards and the brazier's fire thrown into him */
   /* a brazier put out by a hero's blade (it cuts his prayer at it) */
   H.onLamp = l => { const e = live(); if (!S || !e || !ctx.bossActive || (l && l.room && l.room !== 'sanctuary')) return; PBM.brazierOut(e, S, world(e), l && l.id); };
   /* A BLOW ON HIM: src/paladin-boss.js blowOn - the ward turns everything; his light-ward turns every side on guard (and feeds him); open, x falterMul */
@@ -110,29 +111,30 @@ export function makePaladinHands(ctx) {
     for (const mk of S.marks) { const mx = R(mk.x - cx);
       if (m === 'sunfallTell') { g.strokeStyle = blink; g.beginPath(); g.moveTo(mx - 6, fy - 8); g.lineTo(mx + 6, fy); g.moveTo(mx + 6, fy - 8); g.lineTo(mx - 6, fy); g.stroke(); g.globalAlpha = 0.16 + 0.1 * Math.sin(time * 10); g.fillStyle = '#fff6c8'; g.fillRect(mx - PB.sunfall.r, R(G.roofY - cy), PB.sunfall.r * 2, fy - R(G.roofY - cy)); g.globalAlpha = 1; } }
     /* VERDICT: a sigil hangs where you stood, a dotted line down to the floor (the hero's own sigil) */
-    if (m === 'verdictTell') for (const sg of S.sigils) { const sx = R(sg.x - cx); if (X && X.sigil) X.sigil(g, sx, fy - 46, 1, time, fy); g.strokeStyle = blink; g.beginPath(); g.ellipse(sx, fy - 1, PB.verdict.r, 3, 0, 0, Math.PI * 2); g.stroke(); }
+    if (m === 'verdictTell') for (const sg of S.sigils) { const sx = R(sg.x - cx); if (X && X.sigil) X.sigil(g, sx, fy - 46, 1, time, fy); C3.drawVerdictFloor(g, sx, fy, PB.verdict.r, time, blink); }
     /* DAWNFALL: the red ring where he will land */
-    if (S.leap && (m === 'dawnTell' || m === 'dawn')) { const lx = R(S.leap.x - cx); g.strokeStyle = blink; g.lineWidth = 2; g.beginPath(); g.ellipse(lx, fy - 1, PB.dawn.r, 5, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; }
+    if (S.leap && (m === 'dawnTell' || m === 'dawn')) { const lx = R(S.leap.x - cx); C3.drawDawnRing(g, lx, fy, PB.dawn.r, time, blink, m === 'dawn' ? 1 : Math.max(0, 1 - e.modeT / PB.dawn.tell)); }
     /* HIS LIGHT-WARD: the hero's all-round dome round him while he guards (brighter a beat after it turns a blow), raised whiter */
     if (PBM.isGuardMode(m) && !(S.ward > 0)) { const hitK = Math.max(0, 1 - (time - (e.wardHitAt ?? -9)) / 0.25);
-      if (X && X.ward) { g.save(); g.translate(x, y - 26); g.scale(PB.scale, PB.scale); X.ward(g, 0, 0, time, m === 'guard' ? Math.max(0.5, hitK) : hitK); g.restore(); }
-      else { g.globalAlpha = 0.3 + 0.3 * hitK; g.strokeStyle = m === 'guard' ? '#ffffff' : '#fff6c8'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 26, 26, 30, 0, 0, Math.PI * 2); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; } }
+      C3.drawBossWard(g, x, y, PB.scale, time, m === 'guard' ? Math.max(0.5, hitK) : hitK); }
+
     /* THE SMITE'S WINDUP (the hero's bloom on the hammer's head) and the radiance's gathering light */
     if (X && (m === 'smiteTell' || m === 'twinTell')) X.windup(g, x + f * 10, y - 40, Math.min(1, 1 - e.modeT / PB.smite.tell), time);
     if (m === 'radianceTell' || m === 'sunfallTell') { for (let i = 0; i < 8; i++) { const t = (time * 0.9 + i / 8) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 16 + ((i * 19) % 33), R(fy - 4 - t * 46), 1, 2); } g.globalAlpha = 1;
       ctx.text(m === 'sunfallTell' ? 'SUNFALL' : e.plus ? 'RADIANCE+' : 'RADIANCE', x, y - 88, '#ff6b6b', 'center', 6); }
     /* HIS PRAYER: gold rising off the brazier (or the floor) into him */
-    if (m === 'pray' || m === 'prayTell') { for (let i = 0; i < 7; i++) { const t = (time * 1.2 + i / 7) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 12 + ((i * 19) % 25), R(y - 6 - t * 40), 1, 2); } g.globalAlpha = 1; ctx.text('PRAYER', x, y - 88, '#ffd36b', 'center', 6); }
+    if (m === 'pray' || m === 'prayTell') { const kb = S.kneelId && G.lamps ? G.lamps.find(q => q.id === S.kneelId) : null;
+      if (kb) C3.drawPrayerLight(g, R(kb.x - cx), fy - 34, x, y - 30, time); else { for (let i = 0; i < 7; i++) { const t = (time * 1.2 + i / 7) % 1; g.globalAlpha = 0.9 * (1 - t); g.fillStyle = i & 1 ? '#ffd36b' : '#fff6c8'; g.fillRect(x - 12 + ((i * 19) % 25), R(y - 6 - t * 40), 1, 2); } g.globalAlpha = 1; }
+      ctx.text('PRAYER', x, y - 88, '#ffd36b', 'center', 6); }
     if (m === 'guard') ctx.text('LIGHT-WARD', x, y - 88, '#fff6c8', 'center', 6);
     if (m === 'snuffTell') ctx.text('SNUFF', x, y - 88, '#ffd36b', 'center', 6);
     if (m === 'sleep') ctx.text('Z', x + 8 * f, y - 60 - R((time * 8) % 8), '#c8d8e8', 'center', 6);
     if (e.guardFx > 0) e.guardFx = Math.max(0, e.guardFx - 1 / 60);
-    /* HIS CONVICTION: five pips over him (GREYBOX suns: the art lane draws the hero's HUD pips here) - gold up when one fills, a dark notch when he spends */
-    const by = R(e.y - PB.h * PB.scale - 14 - cy), bx = Math.max(40, Math.min(ctx.VW() - 40, x)), pw = 6, gap = 2, tot = PB.conv.pips * pw + (PB.conv.pips - 1) * gap, k = S.conv;
-    for (let i = 0; i < PB.conv.pips; i++) { const px = bx - R(tot / 2) + i * (pw + gap), fill = Math.max(0, Math.min(1, k - i));
-      g.fillStyle = '#1b1626'; g.fillRect(px - 1, by - 1, pw + 2, pw + 2); g.fillStyle = '#4a4030'; g.fillRect(px, by, pw, pw);
-      if (fill > 0) { g.fillStyle = fill >= 1 ? (S.barUp > 0 && i === Math.floor(k - 0.01) ? '#ffffff' : '#ffd36b') : '#b89a48'; g.fillRect(px, by + R(pw * (1 - fill)), pw, pw - R(pw * (1 - fill))); } }
-    if (S.barDown > 0) { g.globalAlpha = S.barDown / 0.35; g.fillStyle = '#ff9a5c'; g.fillRect(bx - R(tot / 2), by + pw + 2, tot, 1); g.globalAlpha = 1; }
+    /* HIS CONVICTION: five suns in a brass plaque over him (the hero's HUD pips; src/redraw/church3_art.js) - a white flash when one fills, a notch when he spends */
+    const by = R(e.y - PB.h * PB.scale - 18 - cy), bx = Math.max(40, Math.min(ctx.VW() - 40, x));
+    C3.drawPips(g, bx, by, S.conv, PB.conv.pips, S.barUp || 0, S.barDown || 0, time);
+    /* WARD BROKEN: a brazier lit beside him - the shell's shards and the brazier's holy fire thrown into him */
+    if (S.broke) { const k = (time - S.broke.t) / 0.8; if (k >= 1) S.broke = null; else { C3.drawWardBreak(g, x, y, k); C3.drawBrazierBreak(g, R(S.broke.bx - cx), fy - 34, x, y - 26, k); } }
     /* THE READ (B10) */
     const yy = R(e.y - PB.h * PB.scale / 2 - cy);
     if (PBM.pbOpen(e)) { const kk = Math.max(0, e.open / PB.falterT);

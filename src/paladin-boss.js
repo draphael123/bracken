@@ -92,7 +92,7 @@ export const PAL_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4],
   ['heavy', 0], ['heavy', 2],                              /* 32,33 THE SNUFF: the hammer hauled up over the brazier, driven down into it */
   ['sStep', 0],                                            /* 34    SANCTUARY STEP */
   ['slump', 0], ['hurt', 0]];                              /* 35 slump (he falters) | 36 hurt */
-export const PAL_IDX = { falter: 35, hurt: 36 };
+export const PAL_IDX = { falter: 35, hurt: 36, snuffTell: 32, snuff: 33 };
 export function palFrame(e) {
   const m = e.mode;
   switch (m) {
