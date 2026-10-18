@@ -99,16 +99,13 @@ export const STUCK = {
     { id: 'fl-doors-490', zone: [478, 18, 499, 26], at: [482, 24], glint: 'stall', done: ['bulkhead', 500, 24, 'open'], line: 'ONE GUN, TWO DOORS: FIRE, LET IT COOL, FIRE AGAIN' },
   ],
   /* (claude/stuckguides) HURRICANE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
-  hurricane: [
-    { id: 'hu-bulkhead-208', zone: [186, 19, 212, 32], ats: [[194, 26], [208, 26]], glint: 'stall', done: ['bulkhead', 208, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
-    { id: 'hu-line-150', zone: [128, 10, 176, 20], at: [150, 14], glint: 'stall', line: 'A LINE SWINGS OVER THE FLOODED WAIST: TAKE HOLD' },
-    { id: 'hu-breech-264', zone: [254, 22, 267, 26], at: [264, 26], glint: 'stall', line: 'THE LAST GUN AIMS AT THE MAGAZINE WALL: STRIKE ITS BREECH' },
-    { id: 'hu-line-504', zone: [486, 10, 534, 20], ats: [[504, 14], [528, 14]], glint: 'stall', line: 'THE ROPES OVER THE OIL CARRY YOU TO THE FAR SHIP' },
-    { id: 'hu-pump-246', zone: [228, 12, 252, 30], at: [246, 19], glint: 'stall', line: 'THE PUMP BRAKE DRAINS THE HOLD' },
-    { id: 'hu-bulkhead-372', zone: [350, 19, 376, 32], ats: [[358, 26], [372, 26]], glint: 'stall', done: ['bulkhead', 372, 26, 'open'], line: 'THE IRON BULKHEAD: THE GUN BEHIND YOU OPENS IT' },
-    { id: 'hu-davit', zone: [462, 12, 486, 26], at: [481, 19], glint: 'stall', line: "THE DAVIT'S WINCH LOWERS HER BOAT TO THE FAR SHIP" },
-    { id: 'hu-pump-508', zone: [490, 14, 514, 30], at: [508, 23], glint: 'stall', line: 'THE PUMP BEAM SINKS THE OIL A WHILE' },
-    { id: 'hu-loosegun', zone: [572, 12, 618, 28], ats: [[586, 18], [614, 18]], glint: 'stall', line: 'THE LOOSE GUN BREAKS THE CARGO WALL AHEAD' },
+  hurricane: [   /* (claude/hurricane2) THE HURRICANE DECK 2: the four crossings, the gun, the poop break */
+    { id: 'hu-foremast', zone: [118, 12, 137, 21], at: [127, 19], glint: 'stall', line: 'STAND AT THE BREACH: THE SKY FELLS HER FOREMAST INTO A ROAD' },
+    { id: 'hu-ratlines-240', zone: [228, 8, 252, 20], at: [240, 19], glint: 'stall', line: 'UP HER RATLINES AND OUT ALONG THE YARD' },
+    { id: 'hu-covers-388', zone: [368, 14, 385, 21], at: [388, 20], glint: 'stall', line: 'HER HATCH COVERS RIDE THE SWELL: STEP ON AS ONE RISES' },
+    { id: 'hu-loosegun', zone: [412, 10, 437, 21], ats: [[420, 18], [434, 14]], glint: 'stall', line: 'WHEN SHE HEELS, THE GUN SMASHES THE CARGO. OR TAKE THE YARD' },
+    { id: 'hu-poop', zone: [440, 8, 451, 21], ats: [[441, 20], [448, 9]], glint: 'stall', line: 'THE HATCH TO THE DARK STORE, OR THE SHROUD UP TO THE SWING' },
+    { id: 'hu-mizzen', zone: [473, 4, 486, 34], at: [484, 12], glint: 'stall', line: 'CLIMB HER MIZZEN AND RUN THE TOPMAST - DO NOT STOP' },
   ],
   /* (claude/stuckguides) DEEP: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   deep: [

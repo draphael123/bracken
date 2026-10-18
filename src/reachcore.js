@@ -104,6 +104,13 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
      down and goes, every time, so it is a floor you can go DOWN through and nothing else - a one-way to the model. Only `opens`:
      every other failing section is footing that comes back, and the model is right to stand on it. */
   for (const c of (L.crumbles || [])) if (c.opens) for (let y = c.row; y < c.row + (c.rows || 1); y++) for (let x = c.x0; x <= c.x1; x++) { const i = y * W + x; if (g[i] === T.SOLID) g[i] = y === c.row ? T.ONEWAY : T.AIR; }
+  /* A MAST THE SKY FELLS (claude/hurricane2, L.felled - one or a list): it comes down on its own the first time you walk up to it, every time, so the fill has it
+     DOWN - its ratlines and its yard gone, its length a walk of one-way footing on the line from its foot to its head (src/main.js felledCells, the same cells) */
+  if (!plain) for (const F of (Array.isArray(L.felled) ? L.felled : L.felled ? [L.felled] : [])) { const x0 = F.foot[0] * 16, x1 = (F.head[0] + 1) * 16, ry = px => F.foot[1] * 16 + (F.head[1] - F.foot[1]) * 16 * Math.max(0, Math.min(1, (px - x0) / (x1 - x0)));
+    for (let y = 4; y <= 19; y++) for (const x of [F.x, F.x + 1]) { const i = y * W + x; if (g[i] === T.NET) g[i] = T.AIR; }
+    for (const [cx0, cx1, cy0, cy1] of (F.clear || [])) for (let y = cy0; y <= cy1; y++) for (let x = cx0; x <= cx1; x++) g[y * W + x] = T.AIR;
+    if (F.wall) { const [wx0, wx1, wy0, wy1] = F.wall; for (let y = wy0; y <= wy1; y++) for (let x = wx0; x <= wx1; x++) g[y * W + x] = T.SOLID; }
+    for (let x = F.foot[0]; x <= F.head[0]; x++) { const i = Math.round(ry(x * 16 + 8) / 16) * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
   /* A LEVEL'S OWN DOORS (claude/litchurch): L.reachDoors [{ x0, x1, y0, y1 }] are barred as laid (T.PORT) and opened by the level's rule - a lit lamp, a snuffed
      seal - which every hero can do: the full fill has them open (the plain fill is legs and nothing else, so they stay shut there) */
   if (!plain) for (const d of (L.reachDoors || [])) for (let y = d.y0; y <= d.y1; y++) for (let x = d.x0; x <= d.x1; x++) { const i = y * W + x; if (g[i] === T.PORT) g[i] = T.AIR; }

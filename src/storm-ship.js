@@ -7,18 +7,7 @@ export function stormShipPolish(L,id,T){
   const deck=m.deck??(id==='hurricane'?20:(m.px<50*16?26:m.px<130*16?24:23));   /* (claude/flotilla2) a swing may name its own boarding deck */
   m.py=Math.max(m.py,(deck-2)*16-m.arm);m.nautical=true;
  }
- if(id==='hurricane'){
-  for(const e of L.ents)if(e.t==='cannon'&&e.deck){const door=L.ents.filter(q=>q.t==='bulkhead').sort((a,b)=>Math.abs(a.x-e.x)-Math.abs(b.x-e.x))[0];if(door&&Math.abs(door.x-e.x)<18)e.aim=Math.sign(door.x-e.x);}
-  for(const e of L.ents){if(e.t==='check'&&e.x===96&&e.y===19)e.x=98;if(e.t==='sign'&&e.x===580&&e.y===19)e.x=581;}
-  L.deckBreaks=[];
-  for(const [x0,x1,ladder,warn]of [[90,94,95,'THE DECK IS SPLITTING. THE HOLD IS UNDER IT; THE ROPES LEAD BACK UP.'],[238,242,243,'IT SPLITS AGAIN. DROP INTO THE HOLD AND CLIMB THE NETS OUT.'],[572,578,579,'THE LAST SPLIT. THE HOLD IS THE WAY THROUGH; THE ROPES LEAD UP.']]){
-   L.deckBreaks.push({x0,x1,row:20,t:-1,down:false});
-   // A safe hold floor and a rope out remain after the upper deck comes down.
-   for(let y=19;y<=26;y++)for(let x=ladder;x<=ladder+1;x++)L.grid[y*L.W+x]=T.NET;
-   L.ents.push({t:'sign',x:x0===238?235:x0-2,y:19,text:warn});
-   L.ents.push({t:'cutlass',x:x0+2,y:26,face:-1},{t:'deco',x:x1,y:26,kind:'rumBarrels',v:0});
-  }
- }
+ /* (claude/hurricane2) THE HURRICANE DECK 2 builds its own: no bulkhead guns, no splitting waist (the chores are cut); her topmast's breaks are L.deckBreaks from the level */
  return L;
 }
 export function updateDeckBreaks(L,P,dt,change,crash){
