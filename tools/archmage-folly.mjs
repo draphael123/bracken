@@ -37,6 +37,9 @@ for (const [m, [mk, an]] of Object.entries(want)) ok(MARK['archmage|' + m] === m
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const LIB=${LIB};
+    /* The blink spots share Math.random with particles and room dressing. Fix the stream before any build or fight step so spread is replayable. */
+    BK.manualSimulation=true;
+    const realRandom=Math.random;let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
     const { LEVELS, T } = await import('/src/level.js');
     BK.manualSimulation = true; BK.SET.speed = 1; const out = { notes: [] };   /* a frame is a sixtieth of a second of the fight: the numbers below are in frames */
     const P = () => BK.P, TS = 16;
@@ -169,7 +172,7 @@ try {
       } }
     out.calledMax = calledMax; out.levelAppHp = (BK.enemies().find(q => q.t === 'apprentice' && !q.archCalled) || {}).hp0 ?? null;
     out.errors = BK.errors ? BK.errors() : null;
-    return out; })()`, 600000);
+    Math.random=realRandom;return out; })()`, 600000);
   console.log(JSON.stringify(r));
   ok(r.cfg, 'the page carries his numbers (BK.archCfg)');
   { const ehp = (readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/^const EHP = .*?[ ,]archmage: ([0-9]+),/m) || [])[1]; ok(ehp === '640', 'his health is 640 (Daniel 10-06, was 720): ' + ehp + ' in EHP, ' + r.hp + ' in the fight'); }

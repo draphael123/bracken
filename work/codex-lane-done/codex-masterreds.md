@@ -36,7 +36,13 @@ The Abbot pilot's special add branch pressed attack whenever an add was horizont
 
 Before: `tools/small-adds.mjs` exit 1, Pirate versus Abbot missed 2 of 5. After: exit 0 over all four bosses and nine heroes: 4 of 110 small-foe swings missed (4%), worst judged row 20% against the unchanged 33% cap. Logs: `../masterreds-small-adds-before.log` and `../masterreds-small-adds-band.log`.
 
-Remaining: reproduce and fix slopes-trace Kingswood and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
+### Verified step: Archmage blink spots
+
+The `archmage-folly` test left live rAF frames running during an awaited module import, then let the game's random stream choose blink locations. Freezing live frames before the import and seeding the same LCG used by other page checks makes the spread repeatable without changing the Archmage or the unchanged spread assertion.
+
+Three standalone runs all exit 0 and report the same ten locations: `[12388,12208,12478,12208,12388,12298,12388,12208,12388,12576]`. Logs: `../masterreds-archmage-freeze-1.log` through `-3.log`.
+
+Remaining: resolve slopes-trace Kingswood and run the relevant gates before this branch is ready for a merge.
 
 ## QUESTIONS FOR DANIEL
 
