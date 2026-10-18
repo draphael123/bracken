@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-18",
+    "batch": 102,
+    "lines": [
+      "Foes get tougher act by act; fixed in Canal",
+      "Act cards and a boss-kill beat",
+      "New swing, hit and block sounds",
+      "Every hero and foe has its own voice",
+      "Footsteps change with the surface"
+    ]
+  },
+  {
+    "date": "2026-10-18",
     "batch": 101,
     "lines": [
       "Deadly water now drains you; no more shoving",
