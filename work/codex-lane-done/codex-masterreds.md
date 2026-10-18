@@ -30,7 +30,13 @@ Commit `97206a12` deliberately replaced the old boss poise calculation with the 
 
 Before: `tools/rule-openings.mjs` exit 1, `poise:{tap:0,heavy:0,inOpen:0}`. After: exit 0, `poise:{tap:0,heavy:15.6,inOpen:3}`; other gate/bell/rune and mini cap assertions stayed green. Logs: `../masterreds-rule-openings-before.log` and `../masterreds-rule-openings-after2.log`.
 
-Remaining: reproduce and fix slopes-trace Kingswood, small-adds Pirate/Abbot, and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
+### Verified step: Pirate versus Abbot small adds
+
+The Abbot pilot's special add branch pressed attack whenever an add was horizontally close, bypassing the vertical sweep/cut reach check already used by the general small-foe pilot. It now waits when both attack bands miss and selects the cut when only the cut band reaches. This changes the pilot's inputs, not the checker threshold or the game kit.
+
+Before: `tools/small-adds.mjs` exit 1, Pirate versus Abbot missed 2 of 5. After: exit 0 over all four bosses and nine heroes: 4 of 110 small-foe swings missed (4%), worst judged row 20% against the unchanged 33% cap. Logs: `../masterreds-small-adds-before.log` and `../masterreds-small-adds-band.log`.
+
+Remaining: reproduce and fix slopes-trace Kingswood and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
 
 ## QUESTIONS FOR DANIEL
 
