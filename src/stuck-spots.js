@@ -309,7 +309,13 @@ export const STUCK = {
     { id: 'or-skip-6', zone: [472, 11, 490, 23], at: [483, 17], glint: 'stall', line: 'A BUCKET WITH SOMEONE IN IT STOPS THE DRUM' },
   ],
   lamplit: [
+    { id: 'lp-net1', zone: [44, 6, 76, 23], at: [72, 21], done: ['tarnet', 74, 21, 'burnt'], line: 'THE TAR NET BURNS: THROW FIRE ON THE OIL AT ITS FOOT' },   /* (claude/lamplit3) the first required throw */
+    { id: 'lp-house', zone: [80, 8, 104, 23], at: [94, 23], line: 'THE HOUSE SHUTS THE ROOF: DOWN THE SHAFT INTO THE STREET' },   /* (claude/lamplit3) */
     { id: 'lp-stair', zone: [236, 8, 262, 22], at: [260, 21], line: 'THE ROOFS END HERE: THE WAY ON IS DOWN THE STAIR' },
+    { id: 'lp-sealgate', zone: [328, 10, 347, 23], at: [342, 21], done: ['lantern', 349, 21, 'lit'], line: 'FIRE IN THE GUTTER RUNS UNDER THE GATE TO ITS LAMP' },   /* (claude/lamplit3) or the key, by the vaults */
+    { id: 'lp-window', zone: [396, 11, 426, 22], at: [424, 15], line: 'THE WORKS DOOR IS BRICKED: UP THE GANTRIES TO THE WINDOW' },   /* (claude/lamplit3) */
+    { id: 'lp-wall', zone: [462, 8, 482, 30], at: [476, 26], line: 'THE WALL SHUTS THE ROAD: DIVE UNDER IT, LAMP TO LAMP' },   /* (claude/lamplit3) */
+    { id: 'lp-net3', zone: [530, 6, 553, 23], at: [550, 21], done: ['tarnet', 552, 21, 'burnt'], line: 'THE TAR NET: FIRE IN ITS GUTTER, OR BURST THE WICKLING' },   /* (claude/lamplit3) */
     { id: 'lp-tollgate', zone: [548, 14, 576, 23], at: [570, 21], done: ['lantern', 570, 21, 'lit'], line: 'THE TOLL GATE LIFTS FOR A LIT LAMP' },   /* (claude/lamplit2) the one required relight */
     { id: 'lp-key', zone: [262, 18, 345, 45], steps: [
       { at: [292, 37], done: ['key', 292, 37, 'got'], line: 'THE LOCKGATE WANTS A KEY: THE CLERK HAS IT' },
