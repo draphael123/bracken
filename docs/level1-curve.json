@@ -546,17 +546,17 @@
   "lostPct": 123
  },
  "church": {
-  "hash": "5c49441ef20d",
+  "hash": "65a003c5ca55",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 35,
-  "deaths": 11,
-  "kills": 10,
-  "lifts": 102,
+  "hits": 52,
+  "deaths": 14,
+  "kills": 15,
+  "lifts": 112,
   "walked": 100,
   "bare": true,
-  "lostPct": 480
+  "lostPct": 616
  },
  "towpath": {
   "hash": "a494972ad32b",

@@ -229,7 +229,7 @@ export function buildLitChurch({ painter, T, TS }) {
   block(150, 152, CF - 2, CF - 1); boards(146, 149, 52);
   lamp('candleC', 154, CF - 1, 'altar', 'sconce');
   ent('deadpaladin', 157, CF - 1, { room: 'altar', face: -1 }); ent('haunt', 150, 44, { room: 'altar', lc: 'dead' });   /* (claude/church3) the altar's undead paladin (the vigil candle's flame cracks him) */
-  ent('deadpriest', 168, CF - 1, { room: 'altar', face: -1 });   /* (claude/church3) and a priest of the dark by lamp three: he reaches for the corpse candle */
+
   source('vigil', 172, CF - 1, 'vigil'); lamp('chapel3', 175, CF - 1, 'altar', 'chapel', { cracks: true });
   sign(170, CF - 1, 'LAMP THREE: THE LIGHT THE CHURCH KEEPS OVER ITS DEAD.');
   grate(158, CF, 'altar');

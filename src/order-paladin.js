@@ -15,8 +15,8 @@
 //   THE GLEAM    !   the overhead mace, the star on his shield first (a shield turns it; ON THE BEAT it is the break)   answer: PARRY it
 // PURE: no DOM, no main.js. step(e, dt, X) with X = { heroes(), strike(e, box, dmg, name, o) -> 'parry' | 'block' | 'hit' | null, walk(e, dx) -> moved px (never off an
 //   edge), fall(e, dt), number(x, y, line, col), mark(e, m), sfx, burst(...) }; take(e, dmg, X, o) -> the damage that lands (o: { flame }).
-export const OPL = { hp: { orderpaladin: 110, deadpaladin: 96 }, w: 14, h: 26, notice: 190, walk: 38, keep: 28, cd: [1.1, 1.6],
-  bash: { tell: 0.55, t: 0.2, reach: 30, dmg: 16 }, gleam: { tell: 0.8, t: 0.24, reach: 34, dmg: 24, every: 2, maxGap: 6 },
+export const OPL = { hp: { orderpaladin: 110, deadpaladin: 64 }, w: 14, h: 26, notice: 190, walk: 38, keep: 28, cd: [1.1, 1.6],
+  bash: { tell: 0.55, t: 0.2, reach: 30, dmg: 12 }, gleam: { tell: 0.8, t: 0.24, reach: 34, dmg: 18, every: 2, maxGap: 6 },
   cracked: 0.4, whole: 0, broken: 4.5, stun: 1.0, mendT: 0.9, recover: 0.5 };
 export const OPL_T = new Set(['orderpaladin', 'deadpaladin']);
 export const isPaladinFoe = e => !!e && OPL_T.has(e.t);

@@ -58,6 +58,6 @@ const pri = () => UPF.newDeadPriest({ t: 'deadpriest', x: 220, y: 200, hp: UPF.U
 for (const [m, mv] of Object.entries(UPF.MOVES)) ok(BY_HAND['deadpriest|' + m] === mv.mark && (!mv.answer || ANSWER['deadpriest|' + m] === mv.answer), 'deadpriest ' + m + ' wears ' + (mv.mark || 'no mark') + ' in src/marks.js');
 
 /* ---------- PLACED, AND IN THE BOOK ---------- */
-ok((lc.match(/ent\('deadpaladin'/g) || []).length >= 2 && (lc.match(/ent\('deadpriest'/g) || []).length >= 2, 'THE LIT CHURCH\'s crypt has them: two undead paladins and two undead priests');
+ok((lc.match(/ent\('deadpaladin'/g) || []).length >= 2 && (lc.match(/ent\('deadpriest'/g) || []).length >= 1, 'THE LIT CHURCH\'s crypt has them: two undead paladins and an undead priest');
 for (const t of ['orderpaladin', 'deadpaladin', 'deadpriest']) ok(new RegExp("\\{ t: '" + t + "', name: ").test(main) && new RegExp('SPR\\.' + t + ' = C3A\\.bakeSet').test(main) && new RegExp(t + ": '").test(main), t + ': a bestiary card, a sheet (greybox) and a short name');
 console.log('ok  church3-foes  ' + n + ' checks: one AI two skins (whole / cracked divine shield), the gleam and its parry, the flame cracks the undead, B4 stagger then a told mend, the undead priest (raise capped, mend, snuff, the bolt, a blow cuts a cast, a flame breaks it and he flees), B16 frames, marks, placed + carded');

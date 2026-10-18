@@ -13,7 +13,7 @@
 //   mark(e, m), sfx }; take(e, dmg, X) -> the damage that lands (a cast cut).
 export const UPR = { hp: 46, w: 12, h: 24, notice: 220, keep: [96, 150], walk: 40, flee: 2.2, fleeV: 78, scareCd: 2.6,
   bolt: { tell: 0.7, t: 0.25, v: 150, dmg: 14, life: 2.2, cd: 2.6 },
-  raise: { tell: 1.4, t: 0.4, cap: 2, cd: 9, first: 2.5 },
+  raise: { tell: 1.4, t: 0.4, cap: 2, cd: 12, first: 4 },
   mend: { tell: 1.0, t: 0.35, r: 120, k: 0.3, cd: 7 },
   snuff: { tell: 0.8, t: 0.3, r: 140, cd: 6 } };
 export const isDeadPriest = e => !!e && e.t === 'deadpriest';
