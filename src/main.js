@@ -7836,7 +7836,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
       if (!(e.swarmSaid > 0)) { e.swarmSaid = 2.4; number(e.x, e.y - e.h - 14, 'THE SWARM CLOSES', '#ffd36b');
         PROG.qSwarmTold = (PROG.qSwarmTold || 0) + 1;
         if (PROG.qSwarmTold <= 3) { hintSay('tip', 4.5, 'HER DRONES CLOSE OVER HER AND TURN MOST OF A BLOW. THIN THEM, OR STICK HER STING IN WOOD.'); } } } }
-  if (e.t === 'tollmaster') dmg = tollHurt(e, dmg, fromX, blow);   /* (claude/lamplit2) his openings (the parry, the relit flare, a stumbling bearer) and the toll box; outside them the global rule's 0.4 */
+  if (e.t === 'tollmaster') dmg = tollHurt(e, dmg, fromX, blow, tag);   /* (claude/lamplit2) his openings (the parry, the relit flare, a stumbling bearer) and the toll box; outside them the global rule's 0.4 */
   if (e.t === 'temperer' && e.open > 0) { dmg = Math.round(dmg * 2); sparks(e.x, e.y - 14, Math.sign(e.x - fromX) || 1, 6); }   /* THE TEMPERER at his fire: both hands on the blade, his back to the room, and you are the reason he is standing there */
   if (e.t === 'lampreeve') dmg = reeveHurt(e, dmg, fromX, tag);   /* blind in the flare of the lamp you struck he takes the blow; out of it his wet coat takes most of it (claude/weakboss) */
   if (e.t === 'kraken' || e.t === 'krakenarm' || e.t === 'feeler') { const kd = krakenHurt(e, dmg, fromX, pl, tag); if (kd === false) return; dmg = kd; }
@@ -12531,7 +12531,7 @@ function updateTollmaster(e, dt) {
 }
 /* A HERO'S BLOW ON HIM: his opening's multiplier; outside one the global rule lands it at 0.4 (GREED.chipBy). Carried, the blows
    on one corner fell its bearer; in his COLLECT a blow is on the box, and the toll is broken. */
-function tollHurt(e, dmg, fromX, blow) {
+function tollHurt(e, dmg, fromX, blow, tag) {
   if (e.open > 0) { sparks(e.x, e.y - 34, Math.sign(e.x - fromX) || 1, 7); return Math.round(dmg * (TOLL.mul[e.openKind] || 2)); }
   if (!blow || e.mode === 'sleep') return dmg;
   if ((e.mode === 'collect' || e.mode === 'collectTell') && !e.collectBroken) { e.collectBroken = 'box'; number(e.x + e.face * 10, e.y - 44, 'THE BOX IS STRUCK', '#ffd36b'); }

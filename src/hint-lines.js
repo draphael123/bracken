@@ -12,6 +12,8 @@ import { HK_SAY } from './hourglass-king.js';
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* batch99 integ 10-18: THE LAMPREEVE and THE TOLLMASTER (claude/lamplit2) - toll, oil, wax and air lines, routed as hint-shown requires */
+  'YOU STAND IN THE TOLL', 'THE LAMP KEEPS ITS FLAME', 'TOLL TAKEN', 'SEALED', 'THE WATER RISES INTO THE HOODS', 'THE SQUARE IS FILLING: THE LAMPS ARE YOUR AIR', 'THE BOX IS STRUCK', 'OIL', 'THE OIL FLASK', 'THE OIL GOES UP: STUNNED', 'THE FLARE: STUNNED', 'THE AIR COMES BACK UP THE MAIN', 'THE TOLL GATE LIFTS', 'WAX', 'THE WATER TAKES YOUR FIRE', 'FIRE IN HAND',
   /* batch98 integ 10-17: THE OWL REEVE's lamp and wing-beat lines (claude/owl3) - teaching lines, routed as hint-shown requires */
   'THE DROP', 'WING BEAT: BRACE', 'BONE PELLETS: OFF THE MARKS', 'THE LAMP IS SPENT', 'BLOWN OUT', 'THE WICK SMOKES', 'THE LAMP GOES OUT', 'LAMP LIT',
   /* batch97 integ 10-17: THE BURIED PRINCE's slab-heave and the diggers' winch calls (claude/undercrown2) - teaching lines, routed as hint-shown requires */
@@ -64,7 +66,7 @@ export const CALL_LINES = new Set([
   'THE GOBLIN QUEEN  OPEN', "THE QUEEN'S LANCE  OPEN", 'THE CRUSADER  THE WARD IS DOWN', 'THE CRUSADER  HIS OATH', 'THE CRUSADER', 'THE ROC  GROUNDED', 'THE RIMEWRIGHT  THAWED',
   'THE BURIED PRINCE  BAREHEADED', 'THE BURIED PRINCE  IN THE LIGHT', 'THE FORGEMASTER  STUNNED', 'THE FORGEMASTER  SCALDED', 'THE WINDCALLER  HOLD ON',
   /* the openings that say what to do */
-  'CUT HIM', 'HIT IT', 'HOLD HIM', 'HIT THE TALON', 'HE IS DOWN: CUT HIM', 'THE BOOK TURNS: CUT HIM',
+  'CUT HIM', 'HIT IT', 'HOLD HIM', 'HIT THE TALON', 'HE IS DOWN: CUT HIM',
   'IN THE MUD: CUT HIM', 'DOWN: CUT HER', 'THE LANCE STICKS: CUT HIM', 'THE POINT STICKS: CUT HIM', 'INTO THE STONE: CUT HER', 'THE RIME RUNS OFF IT: CUT IT',
   'IT FALLS - FINISH IT', 'IT SKIDS: HIT IT', 'IT LANDS: HIT IT', 'IT WHINES: HIT IT', 'INTO THE LANTERN: HIT IT', 'PINNED: HIT IT', 'ON THE GROUND: HIT IT',
   'DAZED: HIT HIM', 'SCALDED: HIT HIM', 'STUCK: JUMP ON IT', 'STRIKE ITS LEVER', 'STRIKE IT AGAIN', 'KILL THE PUPS FAST', 'THE BOUGHS: GET CLEAR', 'HIS WARD: HE SHAKES IT OFF',
@@ -72,7 +74,7 @@ export const CALL_LINES = new Set([
   'HE FALLS: CUT HIM', 'HE RISES ON THE WIND', 'SHE RAPS THE FLOOR: CUT HER', 'HE SHAKES IT OFF', 'IT GATHERS ITS GLASS', 'IT SHAKES IT OFF', 'HE GATHERS HIMSELF', 'THE GATE HAS HIM: CUT HIM', 'HE DRAGS HIMSELF OUT', 'THE RUNE TURNS HIM OVER', 'THE GRATE COMES DOWN ON HER',   /* (claude/bosswave2) a mini's opening shut after a third of him (src/boss-greed.js miniCap) */
   'STUNG: HIS ARMS LIE STILL', 'HER GUARD IS UP: GO ROUND HER, OR BRING A GUN TO BEAR', 'HIS ARM FALLS - CLIMB IT', 'THE COLD TAKES YOUR FIRE: A CANDLE AT THE WALL',
   /* the ones that say what to do about a hazard */
-  'THE ROD: JUMP', 'LOW: JUMP IT', 'JUMP THE FLOCK', 'FROM BOTH WALLS: JUMP', 'JUMP! AND KEEP JUMPING', 'GET CLEAR', 'GET ABOVE THE ROOTS - AND THE SPORES',
+  'LOW: JUMP IT', 'JUMP THE FLOCK', 'FROM BOTH WALLS: JUMP', 'JUMP! AND KEEP JUMPING', 'GET CLEAR', 'GET ABOVE THE ROOTS - AND THE SPORES',
   'GET ABOVE THE ROOTS', 'STAY LOW OR CLIMB', 'LEAVE THE MARKS - SEEDS FALLING', 'LEAVE THE MARKS', 'LOOK UP', 'HURRY!', 'HELP! CUT THE BOARDS!', 'HELP! THE DOOR IS HOT!',
   /* a way that is open */
   'THE FIRE IS OUT - GO', 'IT BURNS DOWN - THE STREET IS OPEN', 'THE HEART OPENS. TAKE THE SPRING.', 'HER CAP JAMS. THE HEART OPENS.', 'THE TOWER BREAKS OPEN AT THE FOOT',

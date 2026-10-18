@@ -25,6 +25,8 @@
 import { MARK, ANSWER } from '../src/marks.js';
 import { openPage } from './cdp.mjs';
 import { readFileSync } from 'node:fs';
+/* (claude/follyfix ARCH_TUNE per hero) the ward's reseal count is ARCH.reseal x the hero's tune; the knight is the hero this test plays */
+const RT = +((readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/^const ARCH_TUNE = { knight: {[^}]*reseal: ([0-9.]+) }/m) || [])[1]);
 const LIB = 150;   /* THE RUNE LIBRARY (claude/follylib) is cut in at column 64: the Archmage's room slid right by this, and the columns below are its old numbers */
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok   ' : '  FAIL ') + m); };
 
@@ -65,7 +67,7 @@ try {
       /* cut one: the count starts */
       const q0 = W.runes[0]; for (let i = 0; i < 12 && q0.hp > 0; i++) { BK.P.y = footY(q0.x, q0.y); swingAt(q0.x - 14, 1); step(18); e.T.blink = 99; } out.firstCut = q0.hp <= 0; out.reseal = +(W.reseal || 0).toFixed(2);
       /* and leave the other two standing: the ward seals again */
-      BK.tp(622 + LIB, fl / TS - 1); for (let i = 0; i < Math.round((cfg ? cfg.reseal : 6) * 60) + 30; i++) { step(1); e.T.blink = 99; }
+      BK.tp(622 + LIB, fl / TS - 1); for (let i = 0; i < Math.round((cfg ? cfg.reseal : 6) * ${RT} * 60) + 30; i++) { step(1); e.T.blink = 99; }
       out.resealed = W.runes.every(q => q.hp > 0); out.stillWard = e.mode === 'ward';
       /* now cut all three in time, walking the room from rune to rune (the test's hand puts him beside each) */
       let frames = 0; for (; frames < 600 && e.mode === 'ward'; frames++) { const q = W.runes.find(r => r.hp > 0); if (!q) { step(1); continue; } BK.P.x = q.x - 14; BK.P.y = footY(q.x, q.y); BK.P.vy = 0; BK.P.face = 1; if (frames % 10 === 0) BK.press('atk'); step(1); e.T.blink = 99; }
@@ -218,7 +220,8 @@ try {
   // 5. claude/folly3 (Daniel, 2026-09-29: "he is too easy")
   const s3 = r.s3 || {}, appHp = +((readFileSync(new URL('../src/main.js', import.meta.url), 'utf8').match(/^const EHP = .*?[ ,]apprentice: ([0-9]+),/m) || [])[1]);
   ok(r.openMul === 3, 'an opening blow is worth x3 again (openMul ' + r.openMul + '; the x4 of claude/followups is reverted)');
-  ok(r.reseal > 5.5 && r.reseal <= 6.05, 'the duel still reseals in 6 s, so it still teaches (' + r.reseal + ' s)');
+  /* STATED ASSERTION CHANGE (claude/follyfix, ARCH_TUNE per hero): the reseal count is ARCH.reseal x the hero's tune (the knight this test plays: 6 s x 1.25), so it still teaches */
+  ok(RT >= 1 && r.reseal > 6 * RT - 0.5 && r.reseal <= 6 * RT + 0.05, 'the duel reseals in 6 s x the knight tune (' + RT + '), so it still teaches (' + r.reseal + ' s)');
   ok(r.portal1 >= 0.8 && r.calledAtWard === 0 && r.called1 === 1, 'at his ward a portal opens, told (' + r.portal1 + ' s), and one apprentice steps out of it (' + r.called1 + ')');
   ok(r.calledHps.length > 0 && r.calledHps.every(h => h === (r.levelAppHp ?? appHp)), 'his apprentice has an apprentice\'s health (' + appHp + ' in EHP, ' + r.levelAppHp + ' on this level\'s own), no more: ' + JSON.stringify(r.calledHps));
   ok(Math.abs((r.gates[3] || 0) - 0.30) < 1e-9 && s3.at33 === 2 && s3.stage === 3, 'a new stage at 30%: at 33% he is still turning the room over (stage ' + s3.at33 + '), at 30% it is stage ' + s3.stage);
@@ -229,7 +232,7 @@ try {
   ok(s3.dispelled && s3.afterDispel === 1, 'a blow on an image breaks it (' + s3.afterDispel + ' left)');
   ok(s3.ward === 'ward' && s3.imgsBack === 2, 'and it is back at his next ward (' + s3.imgsBack + ')');
   ok(s3.portal >= 0.8 && s3.called === 1, 'each ward, one apprentice through a told portal (' + s3.portal + ' s, ' + s3.called + ')');
-  ok(s3.reseal > 3.5 && s3.reseal <= 4.05, 'in the mirrors the ward reseals in 4 s (' + s3.reseal + ' s)');
+  ok(s3.reseal > 4 * RT - 0.5 && s3.reseal <= 4 * RT + 0.05, 'in the mirrors the ward reseals in 4 s x the knight tune (' + RT + ') (' + s3.reseal + ' s)');
   ok(s3.calledSecond === 1 && s3.calledNext === 1 && r.calledMax === 1, 'never a second apprentice while the first stands (' + s3.calledSecond + '), the next one only when he is down (' + s3.calledNext + '); most ever at once: ' + r.calledMax);
   /* RULES CHANGE (claude/combat3): this asked that a shut blow land whole and an open one at x3 of it (opened / shut = 3). Daniel's 10-01 difficulty
      decision put every boss at x0.05 outside his openings (src/boss-greed.js), so the shut blow is now a chip of the same raw blow the open one triples:
