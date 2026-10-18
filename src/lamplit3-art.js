@@ -179,3 +179,23 @@ export function poolDraw(g, lamps, cx, cy, VW, VH, time, floorY) {
     g.globalAlpha = 1; }
   g.restore();
 }
+
+/* ---------------------------------------------------------------- THE SIGNS (claude/lamplit3tune: no timber) ----------------------------------------------------------------
+   a PAINTED TIN sign on a cast-iron post: a teal enamel plate with a cream border, lettering lines, a chipped corner showing rust, rivets, a finial on the post. 18 x 18, cached; the caller draws it at (x - 9, y - 18). */
+let SIGN = null;
+export function lpSign() {
+  if (SIGN) return SIGN; const c = document.createElement('canvas'); c.width = 18; c.height = 18; const g = c.getContext('2d');
+  rc(g, 8, 9, 2, 9, '#252b30'); rc(g, 8, 9, 1, 9, '#56626a'); rc(g, 6, 16, 6, 2, '#2c3338'); rc(g, 7, 15, 4, 1, '#56626a'); rc(g, 8, 8, 2, 1, '#8a949a');   /* the post: fluted, a collar, a footing, a finial */
+  rc(g, 1, 1, 16, 8, '#102a30'); rc(g, 2, 2, 14, 6, '#1d5a60');                                   /* the enamel plate and its field */
+  rc(g, 1, 1, 16, 1, '#e8e2c8'); rc(g, 1, 8, 16, 1, '#e8e2c8'); rc(g, 1, 1, 1, 8, '#e8e2c8'); rc(g, 16, 1, 1, 8, '#e8e2c8');   /* the cream border */
+  rc(g, 3, 3, 8, 1, '#f1ecd2'); rc(g, 3, 5, 11, 1, '#f1ecd2'); rc(g, 3, 6, 5, 1, '#c9c2a2');   /* painted lines */
+  rc(g, 14, 7, 2, 1, '#8a4a28'); rc(g, 15, 6, 1, 1, '#8a4a28'); rc(g, 16, 8, 1, 1, '#6a3a20');   /* a chip worn to rust */
+  for (const [x, y] of [[2, 2], [15, 2], [2, 7]]) rc(g, x, y, 1, 1, '#9aa4a8');                  /* rivets */
+  return (SIGN = c);
+}
+/* a cradle's CHAIN: links down a rope-length, alternating flat and edge-on, iron grey with a lit edge. (x0, y0) hang point, (x1, y1) the deck corner, screen pixels */
+export function chainDraw(g, x0, y0, x1, y1) {
+  const n = Math.max(2, Math.round(Math.hypot(x1 - x0, y1 - y0) / 3));
+  for (let i = 0; i <= n; i++) { const t = i / n, x = R(x0 + (x1 - x0) * t), y = R(y0 + (y1 - y0) * t);
+    if (i % 2) { rc(g, x - 1, y, 3, 2, '#2a3036'); rc(g, x, y, 1, 2, '#8a949a'); } else { rc(g, x, y - 1, 1, 3, '#56626a'); rc(g, x + 1, y - 1, 1, 3, '#20262b'); } }
+}

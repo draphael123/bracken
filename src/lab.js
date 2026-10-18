@@ -2203,7 +2203,9 @@ async function runbossLab(BK, opts) {
          (his phase two), go to the nearest burning lamp and stand at it until it is back. Nothing is flared for the bot: a real swing on the lamp. */
       else if ((boss.t === 'tollmaster' || boss.t === 'lampreeve') && !open && (lampT = lampPlan(BK, boss, A, P, boss.t === 'tollmaster' ? 60 : 70)) && (boss.t === 'tollmaster' || lampT.hit || P.wick > 0)) { goal = lampT.goal; strike = false;
         if (lampT.swimY !== undefined) P.labSwimY = lampT.swimY;
-        if (lampT.hit && Math.abs(P.x - lampT.hit.x) < 16 && P.atk < 0) { P.face = Math.sign(lampT.hit.x - P.x) || P.face; k.left = k.right = false; goal = null; BK.press('atk'); swings++; } }
+        if (lampT.hit && Math.abs(P.x - lampT.hit.x) < 16 && P.atk < 0) { P.face = Math.sign(lampT.hit.x - P.x) || P.face; k.left = k.right = false; goal = null;
+          /* (claude/lamplit3tune) THE ONE VERB: E beside the dead lamp with fire in hand lights it with the full relight (no swing, no stamina); a blade through it still does when the press finds no fire */
+          if (P.wick > 0 && P.ground) BK.press('talk'); else { BK.press('atk'); swings++; } } }
       else if (boss.t === 'lampreeve' && !open) { const t = boss.target, hooding = t && (boss.mode === 'toLamp' || boss.mode === 'snuffTell' || boss.mode === 'snuff');
         if (hooding) { const side = Math.sign(boss.x - t.x) || 1; goal = t.x - side * 12; strike = false;
           if (boss.mode !== 'toLamp' && Math.abs(P.x - t.x) < 20 && P.ground && P.atk < 0) { P.face = side; k.left = k.right = false; goal = null; BK.press('atk'); swings++; } }
