@@ -56,6 +56,9 @@ Follow-on checks exited 0: `lab-order` (five seeded rows identical alone and aft
 
 The branch is not claimed full-suite green. The coordinator must integrate and run its release gate; `normal-health` remains a pre-existing master red in the separate standingreds full run.
 
+An additional integration watch item surfaced after the pushed code: the rebased standingreds serial suite reported `combat-part2` with 0 punished whiffs in six swings. A fresh standalone on this `codex/masterreds` head also exited 1, but on a different stochastic row: 7 held swings, **0 quick swings**, 3 feint stamps in 39 turns (`../masterreds-combat-part2-followup.log`). The test seeds `Math.random` per case; the visual RNG separation can change the gameplay draw sequence, but the exact cause of these two different outcomes is not yet isolated. No assertion, probability, or combat design was changed to make a single sample pass. The coordinator should keep `combat-part2` in the combined gate and treat a red as unresolved.
+
 ## QUESTIONS FOR DANIEL
 
 - **Recommended: keep the Berserker's 60-point held-heavy expectation.** The player-facing kit says the double chop breaks big poise especially well; the narrow multiplier repair restores that behavior.
+- **Recommended: review `combat-part2` on the combined tree before release.** I isolated its two different seeded failures above and left the combat odds and test expectations intact; the combined branch needs a cause-backed repair if it remains red.
