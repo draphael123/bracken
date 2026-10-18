@@ -315,7 +315,7 @@ export function buildLitChurch({ painter, T, TS }) {
   const OUT = {
     W, H, grid: L.grid, ents: L.ents, START, pools: [], falls: [], moversExtra: [], interiors,
     arena: stage.arena, gateAfterBoss: true,
-    mini: { name: 'THE DEACON', x0: 160 * TS, x1: 179 * TS, floor: NF * TS, y0: 29 * TS, y1: (NF + 1) * TS, trigger: 161 * TS, wallL: 159, gate: 159, boss: 'deacon', start: [163, NF - 1] },   /* (claude/church2) THE DEACON at the top of the crypt well (behind the parclose until lamp three) */
+    mini: { name: 'THE DEACON', music: 'churchcrypt', x0: 160 * TS, x1: 179 * TS, floor: NF * TS, y0: 29 * TS, y1: (NF + 1) * TS, trigger: 161 * TS, wallL: 159, gate: 159, boss: 'deacon', start: [163, NF - 1] },   /* (claude/church2) THE DEACON at the top of the crypt well (behind the parclose until lamp three) */
     litchurch: true, rows: { nave: NF, gallery: GF, crypt: CF, south: SF }, dark: 0.08,   /* dark: the base under the rooms' own (src/lit-church-hands.js sets each room's darkZones value from its lamps every frame) */
     darkZones: rooms.map(r => ({ x0: r.x0 * TS, x1: (r.x1 + 1) * TS, y0: r.y0 * TS, y1: (r.y1 + 1) * TS, dark: r.dark ? 0.78 : 0.3, room: r.id })),
     rooms, lamps, sources, bellows, desks, grates, doors, decor, vaultDoors, drops, troughs,
