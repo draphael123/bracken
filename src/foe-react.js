@@ -31,9 +31,9 @@ export const ACTS = [
   /* act: the purse (TOKENS.cap), the damage tier on a common foe's blow, and the cut of a flurry that raises a mashed foe's guard */
   { act: 1, name: 'THE GREENWOOD', cap: 2, dmg: 1.0, mashAt: 3, levels: ['wood', 'marsh', 'stockade', 'spore', 'rootway', 'burning', 'kings', 'underleaf'] },   /* (claude/underleafroad, Daniel 10-08: UNDERLEAF is on the road between KINGSWOOD and THE SCREE PATH, and the crags begin at the Scree Path (LEVELS arc: 'the crags') - it was act 2 as a secret) */   /* (claude/rootway: THE ROOTWAY, between Sporewood and Kingswood) */
   { act: 2, name: 'THE CRAGS', cap: 2, dmg: 1.1, mashAt: 3, levels: ['scree', 'hanging', 'spire', 'moor', 'skyroad', 'oreroad', 'minecart', 'storm', 'crown', 'undercrown'] },
-  { act: 3, name: 'THE SEA', cap: 2, dmg: 1.2, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
-  { act: 4, name: 'THE OLD KINGDOM', cap: 2, dmg: 1.25, mashAt: 2, levels: ['waymeet', 'towpath', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower', 'church'] },
-  { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.3, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar', 'buriedcity', 'sealedpyramid'] },
+  { act: 3, name: 'THE SEA', cap: 2, dmg: 1.25, mashAt: 2, levels: ['longwater', 'reef', 'flotilla', 'hurricane', 'lamplit', 'deep', 'keep', 'causeway', 'harbor'] },
+  { act: 4, name: 'THE OLD KINGDOM', cap: 2, dmg: 1.4, mashAt: 2, levels: ['waymeet', 'towpath', 'canal', 'theatre', 'fair', 'fields', 'burial', 'witchlight', 'mage', 'unburied', 'fallingtower', 'church'] },
+  { act: 5, name: 'THE DESERT', cap: 3, dmg: 1.55, mashAt: 2, levels: ['caravan', 'welltown', 'underwell', 'redgorge', 'glasssea', 'ksar', 'buriedcity', 'sealedpyramid'] },
 ];
 /* THE DIFFICULTY PILOT'S WEIGHT (claude/levelpilot, scratch/brief-levelsweep.md v2: SALT & SANCTUARY - fewer, weightier foes, every one a 1v1 threat at the
    campaign level; 'act damage scaling, no hp sponges'). A level reworked to the v2 recipe may stand its common foes' blows a step over its act's tier

@@ -39,7 +39,11 @@ export function normalizeDeathCost(p) {
    this much of the BANKED gold into the bundle: a quarter of everything over STAKE_FLOOR, never more than STAKE_MAX. It comes back with the
    bundle like the rest, and is lost with it. bank = the save's gold not already carried. */
 export const STAKE_FLOOR = 500, STAKE_SHARE = 0.25, STAKE_MAX = 300;
-export const bankStake = bank => Math.min(STAKE_MAX, Math.round(STAKE_SHARE * Math.max(0, num(bank) - STAKE_FLOOR)));
+/* BY ACT (claude/curvefix1, Daniel 10-18 A3): the stake's share and its ceiling both scale with the act, so the road bites harder as it goes (carry rules unchanged, no flask change).
+   Acts I-II x1 (25% / 300), III x1.25 (31% / 375), IV x1.5 (38% / 450), V x1.75 (44% / 525). The mode's death factor (Master x1.5) still multiplies on top in main.js. */
+export const ACT_STAKE = { 1: 1, 2: 1, 3: 1.25, 4: 1.5, 5: 1.75 };
+export const actStake = act => ACT_STAKE[act] || (act > 5 ? ACT_STAKE[5] : 1);
+export const bankStake = (bank, m = 1) => Math.min(Math.round(STAKE_MAX * m), Math.round(STAKE_SHARE * m * Math.max(0, num(bank) - STAKE_FLOOR)));
 /* THE DROP. What a death takes out of the totals, and what is left: the bundle holds exactly what left them. XP can never take a hero
    under what he banked (the carried part is always the part above the last shrine), and the purse can never go below zero. */
 export function drop(carry, totals) {
