@@ -2625,7 +2625,7 @@ function undercrown() {
   /* THE SQUAD UNDER THE SPAN: a timberman keeping it up and two navvies at the west end of it */
   ent('propman', 64, 33, { face: -1, cnSkin: 'timberman' }); ent('miner', 58, 33, { face: -1, cnSkin: 'navvy' }); ent('miner', 60, 33, { face: -1, cnSkin: 'navvy' });
   ent('rockgoblin', 75, 33, { face: -1, cnSkin: 'bonechucker' }); ent('snuffer', 68, 33, { face: -1, cnSkin: 'lampsnuffer' });
-  ent('sentry', 79, 33, { section: 'works', range: 9, face: -1, cnSkin: 'minewarden' });
+  ent('sentry', 84, 33, { section: 'works', range: 9, face: -1, cnSkin: 'minewarden' });
   ent('bell', 76, 33, { section: 'works' });
   ent('deco', 62, 33, { kind: 'wares' }); ent('deco', 77, 33, { kind: 'barrels' });
   ent('sign', 44, 33, { text: 'THE WARDEN\'S BELL SHUTS THE GALLERY. THE WORKING OVERHEAD STILL GOES THROUGH.' });
