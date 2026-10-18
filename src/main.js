@@ -12926,7 +12926,7 @@ function capRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y
     const by = y - (e.h || 28) - 22; text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, Math.round(36 * kk), 3); }
   else if (e.ward > 0) { H2A.ward(g, x, y - 16, time); }   /* (claude/hurricane2art) HIS WARD: a faceted pale shell, its rim turning */
   if ((e.mode === 'brace' || e.mode === 'held') && e.line !== null && e.line !== undefined) { const lx = Math.round(e.line - cx), ly = Math.round(L.arena.floor - cy);   /* the line he wants: lit, and the way to it marked (claude/hurricane2art) */
-    H2A.lineWant(g, lx, ly, x, time, text); }
+    H2A.lineWant(g, lx, ly, x, time, lx >= 0 && lx < VW ? textInside : null); }
   if (e.mode === 'beach') H2A.flatSea(g, x, y, time);   /* knocked flat: the sea running off him */
 }
 function capCut(e, reach, dmg) { // a cut of his, and what the shield does about it
@@ -27153,7 +27153,7 @@ FKH = makeFogKnightHands({ get L() { return L; }, get players() { return players
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(), music: n => { if (bossActive) music.play(n); },
   lanternOf: pp => (TPH ? TPH.lanternOf(pp) : null), gutter: pp => { if (TPH) TPH.guttered(pp); }, isPyro: () => isPyro(), lock: id => (TPH ? TPH.lock(id) : null), lamps: () => (TPH && TPH.state() ? TPH.state().lamps : []), lightAt: (x, y) => (TPH && TPH.on() ? TPH.lightAt(x, y) : 0), turned: (e, x, w) => BR.turned(e, x, w) });
 CHH = makeChampionHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time,
-  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
+  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => textInside(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
   cellSet: (x, y, t) => cellSet(x, y, t), grid0: (x, y) => grid0[y * LW + x], resolve: () => resolveTiles(), turned: (e, x, w, o) => BR.turned(e, x, w, o), props: () => props,
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */
@@ -29244,6 +29244,11 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
 function textW(s, size = 8) { s = String(s); const face = faceOf(size); let w = 0; for (const ch of s) w += advOf(face, ch); return w * face.k; }
 /* ITS INK: what is actually lit, left edge to right edge */
 function inkW(s, size = 8) { s = String(s); if (!s) return 0; const face = faceOf(size); return textW(s, size) - face.k; }
+/* Boss words follow their target, but long words remain fully readable when that target reaches the camera edge. */
+function textInside(s, x, y, col, align = 'center', size = 8, style = 'shadow') {
+  const w = inkW(s, size), left = w / 2 + 2, right = VW - left;
+  text(s, align === 'center' ? Math.max(left, Math.min(right, x)) : x, y, col, align, size, style);
+}
 function fitText(s, maxW, size = 8) { if (textW(s, size) <= maxW) return s; let t = s; while (t.length > 1 && textW(t, size) > maxW) t = t.slice(0, -1); if (window.__textRec) textRec('cut', { s, out: t, maxW, size }); return t; }
 /* MEASURED WITH THE FACE IT IS DRAWN IN, so a wrapped line is never wider than the box it was wrapped for. A word too long for the
    line on its own is broken, not left hanging out of the box. */
