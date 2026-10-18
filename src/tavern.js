@@ -17,6 +17,7 @@
 // main.js owns the bodies, the room's load and the screens; this module owns the stations: makeTavern(api) -> { on, layout, tick, hands, draw,
 // drawHud, dummyHit, thrown, revived, debug }. The greybox furniture is drawn here with plain fills (ART list: TAVERN_ART below).
 import { DRILLS, DRILL_IDS, TEAM_WINDOW, cleanTavern, COLOURS, stepColour, colourOf } from './party.js';
+import * as TA from './tavern-art.js';   /* (claude/tavernart) the stations' art */
 
 /* THE ROOM, in tiles (src/level.js theTavern paints it from this): floor top at row FLOOR, everything stands on row FLOOR - 1 */
 export const ROOM = { W: 68, H: 26, FLOOR: 20, CEIL: 12, wallL: 1, wallR: 66 };
@@ -158,52 +159,21 @@ export function makeTavern(api) {
     api.number(x, y, word + '  ' + t.drills[id], '#8fd160'); api.sfx('sting');
   }
 
-  /* ===== the furniture, in the world (greybox fills), behind the heroes ===== */
+  /* ===== the stations, in the world, behind the heroes (the room itself - wall, fire, window, tables, bar, yard - is src/redraw/tavern_backdrop.js; each station's art is src/tavern-art.js) ===== */
   function draw(g, cx, cy, time) {
     if (!on()) return;
-    const fy = floorY() - cy, X = tx => Math.round(tx * TS + TS / 2 - cx);
-    const box = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); };
-    /* THE DOOR (west wall): oak, iron straps, open while someone walks in */
-    { const x = X(STATIONS[0].x) - 7, open = api.players().some(p => p.walkIn > 0) || st.doorT > 0;
-      box(x - 2, fy - 34, 18, 34, '#2a1a0e'); box(x, fy - 32, 14, 32, open ? '#0e0c16' : '#6a4424');
-      if (open) { box(x + 1, fy - 20, 12, 1, '#c9b27c'); box(x + 2, fy - 12, 3, 12, '#3a5a24'); } else { box(x, fy - 26, 14, 2, '#3a3040'); box(x, fy - 10, 14, 2, '#3a3040'); box(x + 11, fy - 17, 2, 2, '#c9d1dc'); }
-      box(x + 4, fy - 40, 6, 4, '#ffd36b'); }
-    /* THE INVITE BOARD: cork in timber, bills, and the chalk slate with the room code */
-    { const x = X(STATIONS[1].x) - 13, y = fy - 40, code = api.roomCode();
-      box(x, y, 26, 22, '#5c3a1d'); box(x + 2, y + 2, 22, 18, '#a07a4a'); box(x + 4, y + 4, 7, 6, '#e8dcc0'); box(x + 14, y + 3, 8, 5, '#d8c8a0');
-      box(x + 4, y + 12, 18, 7, '#1e2a22'); if (code) api.text(code, x + 13, y + 13, '#e8f0e8', 'center', 6); else box(x + 7, y + 15, 12, 1, '#4a5a4a');
-      box(x + 11, y + 22, 4, 18, '#3a2410'); }
-    /* THE CAMPAIGN TABLE: the map on a heavy table, a candle */
-    { const x = X(STATIONS[2].x) - 16; box(x, fy - 14, 32, 4, '#5c3a1d'); box(x + 2, fy - 10, 3, 10, '#3a2410'); box(x + 27, fy - 10, 3, 10, '#3a2410');
-      box(x + 3, fy - 16, 26, 2, '#d8c8a0'); box(x + 8, fy - 16, 3, 1, '#3a6a2a'); box(x + 17, fy - 16, 5, 1, '#2a5a8a'); box(x + 13, fy - 17, 1, 1, '#c9463d');
-      box(x + 26, fy - 21, 2, 5, '#e8e0d0'); if (Math.floor(time * 6) % 2) box(x + 26, fy - 23, 2, 2, '#ffd36b'); else box(x + 26, fy - 23, 2, 2, '#ff9a4a'); }
-    /* THE WARDROBE: a tall cupboard, doors open on cloaks in the four colours; the mirror */
-    { const x = X(STATIONS[3].x) - 11; box(x, fy - 42, 22, 42, '#4a2c18'); box(x + 2, fy - 40, 18, 36, '#1a120c');
-      COLOURS.slice(0, 4).forEach((c, i) => box(x + 3 + i * 4, fy - 36, 3, 14, c.c)); box(x + 3, fy - 38, 16, 1, '#8a6a3a');
-      box(x + 24, fy - 26, 7, 26, '#3a2410'); box(x + 25, fy - 25, 5, 16, '#8aa8b8'); box(x + 26, fy - 24, 1, 8, '#dfe8ff'); }
-    /* THE DRILLS BOARD: a chalkboard with the three drills and their tallies */
-    { const x = X(STATIONS[4].x) - 14, y = fy - 38, t = tav();
-      box(x, y, 28, 20, '#3a2410'); box(x + 2, y + 2, 24, 16, '#1e2a22');
-      DRILL_IDS.forEach((k, i) => { const n = Math.min(10, t.drills[k] | 0); box(x + 4, y + 4 + i * 5, 3, 3, ['#ffd36b', '#8fd160', '#6bb8ff'][i]); for (let j = 0; j < n; j++) box(x + 9 + j * 2, y + 4 + i * 5, 1, 3, '#e8f0e8'); });
-      box(x + 12, y + 20, 4, 18, '#3a2410'); }
-    /* THE SPARRING BELL on its post */
-    { const x = X(STATIONS[5].x), sw = st.bellT > 0 ? Math.round(Math.sin(time * 30) * 2) : 0;
-      box(x - 1, fy - 30, 3, 30, '#3a2410'); box(x - 6, fy - 31, 12, 2, '#3a2410');
-      box(x - 3 + sw, fy - 29, 7, 6, '#c9962a'); box(x - 4 + sw, fy - 23, 9, 1, '#ffe27a'); box(x + sw, fy - 22, 1, 6, '#c9b27c'); }
-    /* THE HAY TARGET on the yard floor */
-    { const x = X(TARGET.x); for (const [r, c] of [[22, '#c9a040'], [14, '#e0c088'], [6, '#c9463d']]) { g.globalAlpha = 0.85; g.fillStyle = c; g.beginPath(); g.ellipse(x, fy - 1, r, 3, 0, 0, Math.PI * 2); g.fill(); } g.globalAlpha = 1;
-      box(x - 26, fy - 8, 8, 8, '#c9a040'); box(x + 18, fy - 8, 8, 8, '#c9a040'); box(x - 25, fy - 6, 6, 1, '#8a6a1d'); box(x + 19, fy - 6, 6, 1, '#8a6a1d'); }
-    /* THE PRACTICE DOOR: an arch with the yards' light in it */
-    { const x = X(STATIONS[6].x) - 9; box(x, fy - 36, 18, 36, '#5a5a64'); box(x + 3, fy - 32, 12, 32, '#2a2a34'); const k = 0.5 + 0.5 * Math.sin(time * 2);
-      g.globalAlpha = 0.35 + 0.3 * k; box(x + 4, fy - 30, 10, 30, '#ffd36b'); g.globalAlpha = 1; }
-    /* THE ARENA PIT: roped off, COMING SOON */
-    { const x = X(STATIONS[7].x) - 20; box(x, fy - 2, 40, 2, '#8a6a3a'); box(x + 2, fy - 1, 36, 1, '#c9a040');
-      for (const px of [x, x + 13, x + 26, x + 39]) box(px, fy - 14, 2, 14, '#3a2410');
-      g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 1, fy - 12); g.quadraticCurveTo(x + 7, fy - 8, x + 14, fy - 12); g.quadraticCurveTo(x + 20, fy - 8, x + 27, fy - 12); g.quadraticCurveTo(x + 33, fy - 8, x + 40, fy - 12); g.stroke();
-      box(x + 8, fy - 34, 24, 13, '#5c3a1d'); box(x + 9, fy - 33, 22, 11, '#2a1a0e'); api.text('SOON', x + 20, fy - 31, '#ff9a5c', 'center', 6); }
-    /* THE GLINTS: a sparkle and a bobbing mark over every station not used yet */
-    for (const s of STATIONS) if (!seen(s.id)) { const x = X(s.x), y = fy - 50 + Math.round(Math.sin(time * 4 + s.x) * 2), k = Math.floor(time * 8 + s.x) % 4;
-      g.fillStyle = '#fff6c8'; if (k < 2) { g.fillRect(x - 3 + k, y - 9, 1, 1); g.fillRect(x + 3 - k, y - 6, 1, 1); } g.fillStyle = '#ffd36b'; g.fillRect(x, y - 6, 2, 5); g.fillRect(x, y, 2, 2); }
+    const fy = floorY() - cy, X = tx => Math.round(tx * TS + TS / 2 - cx), at = id => X(STATIONS.find(s => s.id === id).x);
+    const open = api.players().some(p => p.walkIn > 0) || st.doorT > 0, code = api.roomCode(), t = tav();
+    TA.door(g, at('door'), fy, open, time);
+    TA.board(g, at('board'), fy, code, time, api.text);
+    TA.tally(g, at('drills'), fy, DRILL_IDS.map(k => t.drills[k] | 0));
+    TA.bell(g, at('bell'), fy, st.bellT, time);
+    TA.gate(g, at('practice'), fy, time);
+    TA.target(g, X(TARGET.x), fy, time);
+    TA.arena(g, at('arena'), fy, time, api.text);
+    TA.mirror(g, at('wardrobe'), fy, time);
+    /* THE GLINTS: a bobbing gold plate and a sparkle over every station not used yet */
+    for (const s of STATIONS) if (!seen(s.id)) TA.glint(g, X(s.x), fy - 56, time, s.x);
     /* THE PROMPT over the station a player stands at: his key and the verb, in his colour */
     for (const p of api.players()) { const s = st.near.get(p); if (!s || st.cardFor.has(p)) continue; const lab = keyFor(p) + ' ' + (s.id === 'door' && p.n !== 1 ? 'LEAVE PARTY' : s.verb);
       api.text(lab, X(s.x), fy - 60 - (p.n - 1) * 8, colourOf(api.PROG().tavern, p.n).c, 'center', 6); }

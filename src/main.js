@@ -100,7 +100,7 @@ import * as PM from './puppeteer.js'; import { makePuppeteerHands } from './pupp
 import { makeGuardian, TG as TGN } from './temple-guardian.js'; let TGM = null;   /* THE TEMPLE GUARDIAN, reworked (claude/monastery2): bells and its own blocks stagger it, bigger, off the x0.05 chip */
 import * as MCA from './redraw/minecart_art.js'; import * as LEM from './lantern-eater.js'; import { makeLanternEaterHands } from './lantern-eater-hands.js'; import { bakeCard as bakeLanternEaterCard } from './redraw/lanterneater_art.js'; let LEH = null;   /* THE LANTERN-EATER (claude/lanterneater, Daniel 10-07): THE FOG CANAL's boss on the raft - src/lantern-eater.js the fight, src/lantern-eater-hands.js its hands, src/redraw/lanterneater_art.js the art. (JENNY GREENTEETH, the boss before it, is benched unwired in src/benched/ - saved for a future mini) */
 import { makeWellTownHands } from './well-town-hands.js'; import * as WTA from './redraw/welltown_art.js'; let WTH = null;   /* THE WELL TOWN (claude/welltown): its hands (the skin, mud, fire, the windlass, the dry cistern, the water-thief) */ import * as GLM from './gang-leader.js'; import { bakeGangLeader } from './redraw/gang_leader_art.js'; import * as CQG from './cistern-queen.js'; import { makeCisternQueenHands } from './cistern-queen-hands.js'; import { venomIcon, drawVenomIcon } from './venom-hud.js';   /* (claude/welltown-polish) THE VENOM ICON under the stamina bar: a drop a stack */ import * as CQA from './redraw/cistern_queen_art.js'; let GLH = null, CQH = null; import * as DJG from './djinn.js'; import { makeDjinnHands } from './djinn-hands.js'; import * as DJA from './redraw/djinn_art.js'; let DJH = null;   /* (claude/welltown5) THE DJINN OF THE GREAT WELL, the town's boss (src/djinn.js the fight, src/djinn-hands.js its hands); the Queen is benched, still wired */   /* (claude/welltown3) THE GANG LEADER, the courtyard's mini (src/gang-leader.js), and THE CISTERN QUEEN, the town's boss (src/cistern-queen.js the fight, src/cistern-queen-hands.js its hands) */
-import * as WTT from './redraw/welltown_tiles.js'; import * as WTB from './redraw/welltown_backdrop.js';   /* THE WELL TOWN's tile kit and backdrop (claude/welltown3-art) */
+import * as WTT from './redraw/welltown_tiles.js'; import * as WTB from './redraw/welltown_backdrop.js'; import * as TVT from './redraw/tavern_tiles.js'; import * as TVB from './redraw/tavern_backdrop.js'; import * as TVA from './tavern-art.js';   /* (claude/tavernart) THE CROSSROADS INN's art: its tile kit, its room (wall, fire, window, tables, bar, yard) and its stations, rings and tags */   /* THE WELL TOWN's tile kit and backdrop (claude/welltown3-art) */
 import * as ZL from './zipline.js';   /* THE ZIP LINE (src/zipline.js) */
 import { makeGuide, NUDGE as STUCK_NUDGE } from './stuck-guide.js'; let STK = null;   /* THE SHARED GLINT + STALL NUDGE + WAY-ARROW FEED (claude/stuckfix, src/stuck-guide.js; the route list is src/stuck-spots.js) */
 import * as RGA2 from './redraw/redgorge2_art.js'; import { makeRedGorgeHands } from './red-gorge-hands.js'; import { makeMatriarchHands } from './raptor-matriarch-hands.js'; import { bakeMatriarch } from './redraw/matriarch_cast.js'; import { bakeYoung } from './redraw/matriarch_young.js'; import * as RMG from './raptor-matriarch.js'; let MTH = null;   /* THE RAPTOR MATRIARCH (claude/redgorge2): the gorge's boss now; the crab below is benched, unplaced */ import { makeGorgeCrabHands } from './gorge-crab-hands.js'; import * as GCB from './gorge-crab.js'; import * as RGA from './redraw/redgorge_art.js'; import * as RGT from './redraw/redgorge_tiles.js'; import * as RGB from './redraw/redgorge_backdrop.js'; let RGH = null, GCH = null;   /* THE RED GORGE (claude/redgorge, the greybox): its hands (the flood, the sluice gates, the jams, the baskets, the old nest, the raptor) and THE GREAT RED CRAB's (src/gorge-crab.js the fight) */   /* THE WELL TOWN (claude/welltown, the greybox): its hands (the skin, mud, fire, the windlass, the dry cistern, the water-thief) and THE BANDIT KING's (src/bandit-king.js the fight) */
@@ -229,7 +229,7 @@ import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames,
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
-import * as PARTY from './party.js'; import { makeTavern, STATIONS as TAV_STATIONS, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
+import * as PARTY from './party.js'; import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
 // ---------- display ----------
@@ -1274,6 +1274,7 @@ function resolveTiles() {
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
+    if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
     if (L.welltown && t === T.SOLID) { const ts = WTT.wellTownTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE WELL TOWN's solids (the street, the houses, the cisterns) are its own kit, ahead of the caravan's sand skin; slopes stay the sand's */
     if (L.ksar && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = KST.ksarTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE BANDIT KSAR's own ground (claude/ksar art pass, src/redraw/ksar_tiles.js): mud-brick, ashlar, bedrock, flagstones, the breaches' stakes, the beams */
     if (L.sealedpyramid && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = SPT.spTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE SEALED PYRAMID's own sandstone (claude/spart, src/redraw/sealed_pyramid_tiles.js) */
@@ -1467,6 +1468,7 @@ function creditTurn(fromX) {
   P.score.turns++;
 }
 var PTK = null;   /* (claude/partnerthrow) the partner-throw hands, made below the knock-into helper */
+const TVA_REPLACED = new Set(['hearth', 'longTable', 'bench', 'counter', 'caskRack', 'mugShelf', 'kegStack', 'hallWindow']);   /* (claude/tavernart) the greybox furniture the inn's room paints itself (src/redraw/tavern_backdrop.js) */
 var TAVO = null;   /* (claude/tavern) THE TAVERN's stations (src/tavern.js makeTavern), made beside the online host's api */
 let partyCam = { wide: false, t: 0 };   /* (claude/tavern) the shared camera's step out (src/party.js camStep) */
 players = [P]; P.n = 1; P.hero = PROG.hero || 'knight'; P.press = {}; P.score = freshScore();
@@ -6579,10 +6581,9 @@ function drawPartyMarks(cx, cy, phase = 'back') {
   const tv = PARTY.cleanTavern(PROG.tavern), front = phase === 'front';
   for (const p of players) { if (p.dead) continue;
     const c = PARTY.colourOf(tv, p.n), x = Math.round(p.x - cx), y = Math.round(p.y - cy);
-    if (tv.ring) { const a0 = front ? 0 : Math.PI, a1 = front ? Math.PI : Math.PI * 2; g.globalAlpha = 0.8 + 0.2 * Math.sin(time * 4 + p.n); g.strokeStyle = c.c; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 9, 3, 0, a0, a1); g.stroke();
-      if (front) { g.globalAlpha = 0.35; g.fillStyle = c.c; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 8, 2, 0, a0, a1); g.fill(); } g.globalAlpha = 1; }
+    if (tv.ring) TVA.ring(g, x, y, c.c, c.d, front, time, p.n);   /* (claude/tavernart) the floor ring in pixels: two halves, a shimmer, a dark rim for the pale sand (src/tavern-art.js) */
     if (!front) continue;
-    if (!(p.down > 0)) text(PARTY.tagOf(p), x, y - 34, p.ai ? '#c9a0ff' : c.c, 'center', 6);
+    if (!(p.down > 0)) TVA.tag(g, x, y - 34, c.c, c.d, text, PARTY.tagOf(p), p.ai);   /* (claude/tavernart) the name plate: a dark slate edged in his colour (the letters are still the game's own text) */
     if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down })), gate ? gate.x : null), ld = players[li];
       g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
       if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);
@@ -30448,7 +30449,7 @@ function softScenery(c){
 const HIDE = {};   /* (claude/unburiedart) BK.hide.deco / .facades / .structures: a layer the look checks switch off to see what it was holding up (tools/unburied-look.mjs) */
 function drawScenery(cx,cy){
   g.save();g.globalAlpha=.78;
-  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;if(d.kind==='mastTall'&&H2A.on())continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx+(d.sw>0?WR.swayPx(d.sw,time,d.ph):0),d.y-cy);
+  if(!HIDE.deco)for(const d of deco){if(d.x<cx-d.c.width-8||d.x>cx+VW+8)continue;if(L.tavern&&TVA_REPLACED.has(d.kind))continue;if(d.kind==='mastTall'&&H2A.on())continue;const c=d.anim?d.anim[Math.floor(time*3+d.ph)%d.anim.length]:d.c;if(d.moor)drawMoor(d,cx,cy);g.drawImage(softScenery(c),d.x-cx+(d.sw>0?WR.swayPx(d.sw,time,d.ph):0),d.y-cy);
     if(d.kind==='hangingHouse'||d.kind==='villageHall'){paintHouseSmoke(g,d.x+d.c.width-25-cx,d.y+10-cy,time+d.ph);g.globalAlpha=.78;}}
   for(const d of decor){if(d.x<cx-d.c.width||d.x>cx+VW)continue;const c=d.fire?PROP.campfire[Math.floor(time*9+d.x)%3]:d.c;const sway=d.sway>0?Math.round(Math.sin(time*28)*d.sway*3):0;g.drawImage(softScenery(c),d.x-cx+sway,d.y-cy);}
   g.restore();
@@ -30572,6 +30573,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (st === 'church' || (L.buriedcity && String(st).startsWith('bc'))) continue;   /* (claude/bc2art: THE BURIED CITY's rooms are its own backdrop - src/redraw/buried_city_backdrop.js - not the shared plank room) */   /* THE LIT CHURCH paints its own far walls (src/redraw/church_set.js drawBackdrop); the shared brick room would cover them */
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
     if (sx > VW || sx + w < 0) continue;
+    if (L.tavern) { TVB.drawRoom(g, Math.round(sx), Math.round(sy), cx, VW, time); continue; }   /* THE CROSSROADS INN paints its own room (claude/tavernart, src/redraw/tavern_backdrop.js): wall, beams, fire, window, tables and drinkers, bar, yard */
     drawRoom(st, sx, sy, w, h, x0, y0);
   }
   if (L.palette && L.palette.farDim) { g.globalAlpha = L.palette.farDim; g.fillStyle = '#000'; g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; }   /* VALUE PASS (opt-in, palette.farDim = black alpha; 0.28 = x0.72): the back wall a step darker so the footing, foes and hazards read against it (lane claude/footlip) */
@@ -31027,7 +31029,7 @@ function drawWorld(cx, cy, showPlayer) {
         const jig = P.dance > 0 && Math.abs(P.x - pr.x) < 110 && talkTo !== pr;   /* AND THE TOWN DANCES WITH YOU: anyone friendly nearby picks up the beat */
         drawSet(set, null, talkTo === pr ? Math.floor(time * 3) % 2 : 0, pr.x - cx, pr.y - cy - (jig ? Math.round(Math.abs(Math.sin(P.dance * 4.2 * Math.PI + pr.x)) * 4) : 0), jig ? (Math.floor(P.dance * 2.1 + (pr.anim || 0)) % 2 ? 1 : -1) : face, false, 1, breathe); } if (talkTo !== pr && !P.dead && state === 'play' && Math.abs(P.x - pr.x) < 24 && Math.abs(P.y - pr.y) < 24) text(talkGlyph(), pr.x - cx, pr.y - 28 - cy + Math.round(Math.sin(time * 5)), '#ffe6a0', 'center', 6); }
   /* THE BEER GARDEN. They drink, they sway, they laugh: every one of them on its own clock, and never off its bench */
-  for (const pr of props) if (pr.t === 'guest' && SPR.guests && pr.x > cx - 30 && pr.x < cx + VW + 30) { const set = SPR.guests[pr.v % SPR.guests.length], ph = (time + pr.anim) % 7, fr = ph > 4.2 && ph < 5.1 ? 1 : ph > 5.4 && ph < 6.5 ? 2 : 0;
+  for (const pr of props) if (pr.t === 'guest' && !(L && L.tavern) && SPR.guests && pr.x > cx - 30 && pr.x < cx + VW + 30) { const set = SPR.guests[pr.v % SPR.guests.length], ph = (time + pr.anim) % 7, fr = ph > 4.2 && ph < 5.1 ? 1 : ph > 5.4 && ph < 6.5 ? 2 : 0;
     const sway = pr.v >= 3 ? Math.round(Math.sin((time + pr.anim) * 1.6)) : 0;
     drawSet(set, null, fr, pr.x - cx + sway, pr.y - cy, pr.face, false);
     if (fr === 2) { drawEmote({ emote: 'laugh', emoteT: 0.5 }, Math.round(pr.x - cx), Math.round(pr.y - cy) - 32); g.globalAlpha = 1; } }
@@ -31420,6 +31422,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.t === 'sandworm' && L.underwell && e.st && e.st.fast && SPR.fastworm) sprSet = SPR.fastworm;   /* (claude/underwellart) THE FAST SANDWORM: slate violet, ivory bands, red-eyed */
     if (e.lamplighter && SPR.lamplighter) sprSet = SPR.lamplighter; if (e.cnSkin && SPR[e.cnSkin]) sprSet = SPR[e.cnSkin]; if (e.skinNow && SPR[e.skinNow]) sprSet = SPR[e.skinNow];   /* (claude/ksarfoes) */ if (e.t === 'construct' && e.elite && SPR.constructelite) sprSet = SPR.constructelite; if (e.cnSkin === 'foremancart' && e.alive && MCH && MCH.foremanFrame) frame = MCH.foremanFrame(e);   /* (claude/canalfix3) a canal tough: the goblin's AI, a man's skin; (dr3art) THE FOREMAN's tell poses */   /* THE LAMPLIGHTER (THE FOG CANAL, claude/canalart): the snuffer's walk in a lamplighter's coat and cap */
     if (L.theatre) sprSet = THF.foeSet(e) || sprSet;
+    if (L.tavern && e.t === 'dummy') sprSet = TVA.dummySet(Math.floor(e.x / TS) !== TAV_DUMMIES[0]);   /* (claude/tavernart) the inn's own straw men: a sack head, and a dented pot helm */
     if (e.t === 'mummer' && FAIR && !L.theatre && SPR.harvestMummer) sprSet = SPR.harvestMummer;   /* (claude/fairfix5) the harvest skin */
     if (e.shy && SPR.shy) sprSet = SPR.shy; else if (e.juggler && SPR.juggler) sprSet = SPR.juggler; else if (e.bandit && SPR.banditArcher) sprSet = SPR.banditArcher;   /* THE HARVEST FAIR's ranged pair (claude/fairfix2) */   /* THE THEATRE's own cast: the masked patron, the usher, the house's ghosts, the flying props */
     if (e.cnSkin === 'tidecrab' && e.alive && (e.mode === 'buried' || e.mode === 'rise' || e.mode === 'sink')) { drawTideCrab(e, sprSet, cx, cy); g.globalAlpha = 1; continue; }   /* (claude/tidecrab) lying in the sand: a mound and two eyes */
