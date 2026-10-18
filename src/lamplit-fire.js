@@ -17,7 +17,8 @@
 // (routed in src/hint-lines.js SAY_LINES).
 import { FLAME_THROW, throwFlame, stepThrownFlame, thrownHoles, drawThrownFlame } from './flame.js';
 import * as CT from './carry-throw.js';
-import { lpPostDraw, lpBracketDraw } from './redraw/lamplit3_tiles.js';
+import { lpPostDraw, lpBracketDraw, lpRailDraw } from './redraw/lamplit3_tiles.js';
+import * as LA3 from './lamplit3-art.js';   /* (claude/lamplit3art) the fire's finished look: oil, casks, valves, nets, thrown fire, the told arc, the lamp pools */
 
 /* THE NUMBERS. OIL: catch = s a cell smoulders before it burns; burn s it burns (gutter: a fuse burns shorter); spread s before it lights the cells beside it; back s
    before spent oil seeps back (caskBack under a cask); tick s between two burns on what stands in it; dmg on a hero (unblockable), foeDmg on a foe; lampR px a dead
@@ -72,14 +73,14 @@ export function makeLamplitFire(ctx) {
   function ignite(c, from) { if (!c || c.st !== 'oil') return false; c.st = 'catch'; c.t = OIL.catch; c.from = from || null; F.n.catches++; return true; }
   function igniteNear(px, py, r) { let any = false; for (const c of F.list) if (c.st === 'oil' && Math.abs(cxOf(c) - px) <= r && Math.abs(cyOf(c) - py) <= Math.max(14, r * 0.7)) { ignite(c); any = true; } return any; }
   const burning = c => c.st === 'burn';
-  function burnAway(s, quiet) { s.st = 'gone'; s.pr.burnt = true; ctx.marks.add('lpsnag:' + s.s.id); F.n.nets++;
+  function burnAway(s, quiet) { s.st = 'gone'; s.ash = quiet ? 0 : 4; s.pr.burnt = true; ctx.marks.add('lpsnag:' + s.s.id); F.n.nets++;
     for (let y = s.s.y0; y <= s.s.y1; y++) for (let x = s.s.x0; x <= s.s.x1; x++) ctx.cellSet(x, y, ctx.T.AIR);
     if (!quiet) { const mx = (s.s.x0 + s.s.x1 + 1) / 2 * TS(), my = (s.s.y0 + s.s.y1 + 1) / 2 * TS(); say(mx, my - 20, 'netGone', '#8fd160'); ctx.sfx('crack'); ctx.burst(mx, my, 24, ['#1a1a1e', '#ff9a3c', '#ffd36b', '#4a5058'], 80, 0.9); ctx.shake(3); } }
   function netCatch(s) { if (s.st !== 'whole') return; s.st = 'catch'; s.t = SNAG.catch; ctx.sfx('ignite'); const mx = (s.s.x0 + s.s.x1 + 1) / 2 * TS(); say(mx, s.s.y0 * TS() - 8, 'netCatch', '#ff9a3c'); }
   const snagAt = (tx, ty) => F.snags.find(s => s.st === 'whole' && tx >= s.s.x0 - 1 && tx <= s.s.x1 + 1 && ty >= s.s.y0 - 1 && ty <= s.s.y1 + 1) || null;
   function caskBurst(cs) { if (cs.st !== 'full') return; cs.st = 'tell'; cs.t = CASK.tell; say(cs.pr.x, cs.pr.y - 40, 'caskTell', '#ff6b6b'); ctx.sfx('gutter'); }
   function caskPop(cs) {
-    cs.st = 'empty'; cs.cool = CASK.cool; F.n.bursts++; const x = cs.pr.x, y = cs.pr.y - 10;
+    cs.st = 'empty'; cs.cool = CASK.cool; cs.pop = 0.5; F.n.bursts++; const x = cs.pr.x, y = cs.pr.y - 10;
     say(x, y - 30, 'caskBurst', '#ff9a3c'); ctx.sfx('boom'); ctx.shake(6); ctx.ring(x, y, CASK.burstR, '#ff9a3c', 0.5); ctx.burst(x, y, 30, ['#ff9a3c', '#ffd36b', '#fff6c8', '#3a2418'], 140, 0.8);
     igniteNear(x, y + 10, CASK.burstR); fireAt(x, y, CASK.burstR, CASK.burstDmg, CASK.burstFoe, 'THE CASK');
     for (const c of cs.cells) if (c.st === 'oil') ignite(c);
@@ -138,11 +139,13 @@ export function makeLamplitFire(ctx) {
     }
     if (P && !P.dead && !(P.wick > 0) && H.takeAt(P.x, P.y - 4)) { ctx.takeFire(P); if (once('takeOil')) say(P.x, P.y - 40, 'takeOil'); }
     /* the casks: a told burst, the slow refill */
-    for (const cs of F.casks) { if (cs.st === 'tell') { cs.t -= dt; if (cs.t <= 0) caskPop(cs); } else if (cs.st === 'empty') { cs.cool -= dt; if (cs.cool <= 0) { cs.st = 'full'; for (const c of cs.cells) if (c.st === 'spent') { c.st = 'oil'; c.t = 0; } } }
+    for (const cs of F.casks) { if (cs.pop > 0) cs.pop -= dt;
+      if (cs.st === 'tell') { cs.t -= dt; if (cs.t <= 0) caskPop(cs); } else if (cs.st === 'empty') { cs.cool -= dt; if (cs.cool <= 0) { cs.st = 'full'; for (const c of cs.cells) if (c.st === 'spent') { c.st = 'oil'; c.t = 0; } } }
       else if (cs.st === 'full' && hb && !P.hitSet.has(cs.pr) && overlap(hb, { l: cs.pr.x - 10, r: cs.pr.x + 10, t: cs.pr.y - 26, b: cs.pr.y })) { P.hitSet.add(cs.pr); spill(cs); }
       if (cs.st === 'full' && Math.random() < dt * 1.6) ctx.parts({ x: cs.pr.x + (Math.random() - 0.5) * 8, y: cs.pr.y - 4, vx: 0, vy: 20, life: 0.4, max: 0.4, col: '#2a2a30', size: 1, grav: 300 }); }
     /* the valves: a blow or E fills the gutter */
     for (const v of F.valves) { if (v.cd > 0) v.cd -= dt; if (v.cd <= 0 && hb && !P.hitSet.has(v.pr) && overlap(hb, { l: v.pr.x - 9, r: v.pr.x + 9, t: v.pr.y - 22, b: v.pr.y })) { P.hitSet.add(v.pr); turnValve(v); } }
+    for (const s of F.snags) if (s.st === 'gone' && s.ash > 0) s.ash -= dt;
     /* the nets: catching, then gone */
     for (const s of F.snags) if (s.st === 'catch') { s.t -= dt; if (Math.random() < dt * 40) ctx.parts({ x: (s.s.x0 + Math.random() * (s.s.x1 - s.s.x0 + 1)) * TS(), y: (s.s.y0 + Math.random() * (s.s.y1 - s.s.y0 + 1)) * TS(), vx: (Math.random() - 0.5) * 10, vy: -40, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#ff9a3c' : '#ffd36b', size: 2, grav: -20, fire: true }); if (s.t <= 0) burnAway(s); }
     /* the thrown fire */
@@ -184,32 +187,27 @@ export function makeLamplitFire(ctx) {
   /* ---------- DRAWING (GREYBOX shapes until the art pass: tools/lamplit3.mjs lists them) ---------- */
   H.drawBack = (g, cx, cy, time) => { if (!F) return; const vw = ctx.VW();
     for (const [x, r0, r1] of F.posts) { const px = x * TS() + 8; if (px < cx - 20 || px > cx + vw + 20) continue; lpPostDraw(g, px - cx, (r0 + 1) * TS() - cy, (r1 + 1) * TS() - cy, time); }
+    for (const [x0, x1, y, kind] of ctx.L().lpLedges || []) { if (kind !== 'balcony') continue; const a = x0 * TS() - cx, b = (x1 + 1) * TS() - cx; if (b < -10 || a > vw + 10) continue; lpRailDraw(g, a + 1, b - 1, y * TS() - cy, time); }
     for (const [x, y, dir] of ctx.L().lpBrackets || []) { const px = x * TS() + 8 + dir * 7; if (px < cx - 20 || px > cx + vw + 20) continue; lpBracketDraw(g, px - cx, (y + 1) * TS() - 10 - cy, -dir); } };
   H.drawWorld = (g, cx, cy, time) => {
     if (!F) return; const vw = ctx.VW(), R = Math.round;
-    for (const c of F.list) { const x = c.x * TS(), y = cyOf(c); if (x < cx - 20 || x > cx + vw + 20) continue; const X = R(x - cx), Y = R(y - cy);
-      if (c.st === 'oil') { g.fillStyle = c.float ? '#14181c' : '#0e0e12'; g.fillRect(X, Y - 2, 16, 2); g.fillStyle = c.float ? '#7a6a9a' : '#5a5a72'; g.fillRect(X + ((c.x * 5) % 9), Y - 2, 4, 1); if (c.float) { g.fillStyle = '#3a6a6a'; g.fillRect(X + ((c.x * 3) % 11), Y - 1, 3, 1); } if (c.gutter) { g.fillStyle = '#2a3036'; g.fillRect(X, Y, 16, 1); } }
-      else if (c.st === 'catch') { g.fillStyle = '#0e0e12'; g.fillRect(X, Y - 2, 16, 2); g.fillStyle = '#ff6b2c'; for (let i = 0; i < 16; i += 4) if ((Math.floor(time * 20) + i) % 3 === 0) g.fillRect(X + i, Y - 3, 2, 1); }
-      else if (c.st === 'burn') { g.fillStyle = '#2a140a'; g.fillRect(X, Y - 1, 16, 1); const k = Math.min(1, c.t / 1.2); for (let i = 0; i < 16; i += 3) { const h = R((3 + ((Math.sin(time * 13 + (c.x * 16 + i) * 0.7) + 1) * 3)) * (0.5 + 0.5 * k)); g.fillStyle = ((c.x * 16 + i) >> 2) & 1 ? '#ff9a3c' : '#ffd36b'; g.fillRect(X + i, Y - 1 - h, 2, h); } }
-      else { g.fillStyle = '#1a1614'; g.fillRect(X, Y - 1, 16, 1); } }
-    for (const cs of F.casks) { const x = R(cs.pr.x - cx), y = R(cs.pr.y - cy); if (x < -30 || x > vw + 30) continue;   /* a riveted whale-oil tank on iron feet (no staves: this city's casks are iron) */
-      const full = cs.st === 'full' || cs.st === 'tell', tell = cs.st === 'tell', fl = Math.floor(time * 16) % 2;
-      g.fillStyle = '#16191c'; g.fillRect(x - 8, y - 2, 3, 2); g.fillRect(x + 5, y - 2, 3, 2);
-      g.fillStyle = tell && fl ? '#5a2a1a' : '#2b3136'; g.fillRect(x - 9, y - 24, 18, 22); g.fillStyle = '#454e55'; g.fillRect(x - 9, y - 24, 18, 2); g.fillRect(x - 9, y - 14, 18, 1); g.fillRect(x - 9, y - 5, 18, 1);
-      g.fillStyle = '#94a4ae'; for (let i = -7; i <= 7; i += 4) { g.fillRect(x + i, y - 23, 1, 1); g.fillRect(x + i, y - 13, 1, 1); }
-      g.fillStyle = '#5e3622'; g.fillRect(x - 6, y - 12, 2, 5); g.fillRect(x + 3, y - 20, 2, 4);
-      g.fillStyle = full ? '#0e0e12' : '#2a2a30'; g.fillRect(x - 1, y - 6, 3, 2); if (full) { g.fillStyle = '#3a3a48'; g.fillRect(x, y - 4, 1, 2 + (Math.floor(time * 3) % 2)); }
-      if (tell) { const q = 1 - Math.max(0, cs.t) / CASK.tell; g.globalAlpha = 0.4 + 0.4 * fl; g.strokeStyle = '#ff6b6b'; g.setLineDash([3, 3]); g.beginPath(); g.arc(x, y - 10, CASK.burstR * (0.6 + 0.4 * q), 0, 7); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
-      if (cs.st === 'empty') { g.globalAlpha = 0.5; g.fillStyle = '#0e0e12'; g.fillRect(x - 7, y - 22, 14, 6); g.globalAlpha = 1; } }
-    for (const v of F.valves) { const x = R(v.pr.x - cx), y = R(v.pr.y - cy); if (x < -20 || x > vw + 20) continue; if (v.pr.spin > 0) v.pr.spin = Math.max(0, v.pr.spin - 1 / 60);   /* a brass wheel on the lamp main */
-      g.fillStyle = '#2b3136'; g.fillRect(x - 2, y - 14, 4, 14); g.fillStyle = '#16191c'; g.fillRect(x - 10, y - 4, 20, 3); const a = (v.pr.spin || 0) * 12 + time * 0.2;
-      g.strokeStyle = '#c9a040'; g.lineWidth = 1; g.beginPath(); g.arc(x + 0.5, y - 16.5, 6, 0, 7); g.stroke(); g.fillStyle = '#e8c870'; for (let k = 0; k < 4; k++) g.fillRect(R(x + Math.cos(a + k * 1.57) * 5), R(y - 16 + Math.sin(a + k * 1.57) * 5), 1, 1); g.fillStyle = '#7a5c1c'; g.fillRect(x - 1, y - 17, 3, 3); }
-    for (const s of F.snags) if (s.st === 'catch') { const x0 = s.s.x0 * TS() - cx, y0 = s.s.y0 * TS() - cy, w = (s.s.x1 - s.s.x0 + 1) * TS(), h = (s.s.y1 - s.s.y0 + 1) * TS(); g.globalAlpha = 0.35; g.fillStyle = '#ff9a3c'; g.fillRect(R(x0), R(y0), w, h); g.globalAlpha = 1; }
-    drawThrownFlame(g, F.thrown, cx, cy, time);
+    for (const c of F.list) { const x = c.x * TS(), y = cyOf(c); if (x < cx - 20 || x > cx + vw + 20) continue; const l = cellAt(c.x - 1, c.y), r = cellAt(c.x + 1, c.y);
+      LA3.oilCell(g, c, R(x - cx), R(y - cy), time, !!l && !!l.float === !!c.float, !!r && !!r.float === !!c.float); }
+    for (const cs of F.casks) { const x = R(cs.pr.x - cx), y = R(cs.pr.y - cy); if (x < -40 || x > vw + 40) continue;   /* a riveted whale-oil tank on iron feet (no staves: this city's casks are iron) */
+      LA3.caskDraw(g, cs.st, x, y, time, { q: cs.st === 'tell' ? 1 - Math.max(0, cs.t) / CASK.tell : 0, r: CASK.burstR });
+      if (cs.pop > 0) LA3.caskPop(g, x, y - 10, 1 - cs.pop / 0.5, CASK.burstR); }
+    for (const v of F.valves) { const x = R(v.pr.x - cx), y = R(v.pr.y - cy); if (x < -24 || x > vw + 24) continue; if (v.pr.spin > 0) v.pr.spin = Math.max(0, v.pr.spin - 1 / 60);   /* a brass wheel on the lamp main */
+      let full = 1; if (v.run) { const [x0, x1, ry] = v.run; let n = 0, k = 0; for (let q = x0; q <= x1; q++) { const c = cellAt(q, ry); if (c) { n++; if (c.st === 'oil') k++; } } full = n ? k / n : 1; }
+      LA3.valveDraw(g, x, y, time, v.pr.spin || 0, full); }
+    for (const s of F.snags) { if (s.st === 'catch') LA3.netFire(g, s.s, 1 - Math.max(0, s.t) / SNAG.catch, cx, cy, time, TS()); else if (s.st === 'gone') LA3.netRemains(g, s.s, s.ash || 0, cx, cy, time, TS()); }
+    LA3.thrownDraw(g, F.thrown, cx, cy, time, FLAME_THROW.lie);
   };
   H.drawOver = (g, cx, cy, time) => { if (!F) return; const P = ctx.hero(); if (!P || P.dead || !(P.wick > 0) || ctx.talkBusy()) return;
     if (ctx.lamps().some(q => !q.lit && Math.abs(q.x - P.x) <= USE.lampR && P.y > q.y - 56 && P.y < q.y + 20)) return;   /* beside a dead lamp E lights it: no arc */
-    CT.drawArc(g, arcFor(P), cx, cy, time, '#ffb060'); };
+    LA3.arcDraw(g, arcFor(P), cx, cy, time); };
+  /* (lamplit3art) the lit lamps' pools on the wet paving, over the dark and its warm wash */
+  const floorY = (x, y) => { const tx = Math.floor(x / TS()); for (let ty = Math.floor(y / TS()); ty < ctx.L().H && ty < Math.floor(y / TS()) + 8; ty++) { const t = ctx.cellGet(tx, ty); if (t === ctx.T.SOLID || t === ctx.T.ONEWAY) return ty * TS(); } return -1; };
+  H.drawPools = (g, cx, cy, time) => { if (!F) return; LA3.poolDraw(g, ctx.lamps(), cx, cy, ctx.VW(), ctx.VH ? ctx.VH() : 180, time, floorY); };
   H.read = () => F && { n: { ...F.n }, cells: F.list.length, burning: F.list.filter(burning).length, oil: F.list.filter(c => c.st === 'oil').length, casks: F.casks.map(c => c.st), valves: F.valves.length,
     nets: F.snags.map(s => ({ id: s.s.id, st: s.st })), thrown: F.thrown.map(f => ({ x: Math.round(f.x), y: Math.round(f.y), st: f.st })) };
   H.cellsRaw = () => F ? F.list : [];

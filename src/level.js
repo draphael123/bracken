@@ -5525,7 +5525,7 @@ function theLamplitStreet() {
   air(114, 115, UP, 27); net(114, 115, UP, ST - 1);   // and the stair back up behind it
   ent('sign', 90, UP - 1, { text: 'THE MARKET HOUSE STANDS ON THE ROAD. GO DOWN INTO THE STREET AND UP BEHIND IT.' });
   ent('sign', 82, UP - 1, { text: "THE FISH MARKET. THE BEST TAKINGS ARE DOWN ON THE STREET, WITH THE WATCH." });
-  for (const x of [86, 150, 176]) ent('deco', x, UP - 1, { kind: 'stall', v: x % 2 });
+  for (const x of [86, 150, 176]) ent('deco', x, UP - 1, { kind: 'lpStall', v: x % 2 });   /* (lamplit3art) iron poles and a slab, no timber: src/redraw/lamplit3_barriers.js */
   ledge(84, 18, 4, 'awning'); ledge(148, 18, 5, 'awning'); ledge(173, 18, 4, 'awning'); ledge(154, 15, 4, 'awning');   /* the stalls' awnings: the market's own high road */
   for (const x of [124, 160]) ent('deco', x, UP - 1, { kind: 'column', v: x % 2 });
   ent('deco', 142, UP - 1, { kind: 'drownedCart' }); ent('deco', 118, UP - 1, { kind: 'sealDrift', v: 0 });
@@ -5645,9 +5645,9 @@ function theLamplitStreet() {
   mass(430, 470); mass(480, 520); mass(530, 568);
   pools.push({ x0: 468 * TS, x1: 524 * TS, y: WL, bottom: ST * TS, shallow: false, swim: true, clear: true, runTide: true, pumpRoad: true, roadHi: WL, roadLo: 37 * TS });
   darkZones.push({ x0: 428 * TS, x1: 572 * TS, y0: 26 * TS, y1: 42 * TS, dark: 0.88 });
-  ledge(471, 23, 2, 'cobble'); standard(476, 21, 3, true);   /* the first courtyard: a step down to the water, and a lamp standard in it */
+  ledge(471, 23, 2, 'step'); standard(476, 21, 3, true);   /* the first courtyard: a step down to the water, and a lamp standard in it */
   block(480, 482, 5, UP - 1);                               /* THE PROCESSION WALL: the road goes under it */
-  ledge(521, 23, 8, 'cobble'); ledge(522, 20, 3, 'balcony'); net(528, 529, 24, ST - 1);   /* the second courtyard: up out of the water */
+  ledge(521, 23, 8, 'step'); ledge(522, 20, 3, 'balcony'); net(528, 529, 24, ST - 1);   /* the second courtyard: up out of the water */
   air(444, 445, UP, 27); net(444, 445, UP, ST - 1); air(556, 557, UP, ST - 1); net(556, 557, UP, ST - 1);
   ent('sign', 432, UP - 1, { text: 'THE PROCESSION ROAD. ITS LAMPS ARE DEAD: LIGHT THE WAY, OR WORK THE BEAM.' });
   ent('sign', 474, 22, { text: 'THE WALL SHUTS THE ROAD. THE WAY ON IS UNDER IT, LAMP TO LAMP.' });
@@ -5779,6 +5779,9 @@ function theLamplitStreet() {
   storey(618, 626, 18); ledge(615, 20, 3, 'balcony'); chain(627, 18, 21);
   coins([616, 19], [622, 16], [628, 19]);
 
+  /* (lamplit3art) THE BARRIERS, drawn as places (src/redraw/lamplit3_barriers.js): where the level's blocks stand - the market house, the procession wall, the works' east wall (bricked door, window) and west door, the works' roof girder. Art only: the grid is the blocks above. */
+  const lpBarriers = [{ id: 'house', kind: 'house', x0: 100, x1: 104, y0: 3, y1: UP - 1 }, { id: 'wall', kind: 'wall', x0: 480, x1: 482, y0: 5, y1: UP - 1 },
+    { id: 'works-e', kind: 'brickE', x0: 424, x1: 426, y0: 10, y1: 21, air: [13, 15] }, { id: 'works-w', kind: 'brickW', x0: 362, x1: 363, y0: 10, y1: 21, air: [18, 21] }, { id: 'works-roof', kind: 'girder', x0: 364, x1: 423, y0: 10, y1: 11 }];
   /* (lamplit3) every iron balcony / awning hangs off something: a bracket back to the wall face where its end stands out in the air */
   for (const [x0, x1, y, kind] of lpLedges) if (kind === 'balcony' || kind === 'awning') for (const [x, d] of [[x0, -1], [x1, 1]]) { const out = L.grid[y * W + x + d]; if (out === T.AIR && L.grid[(y + 1) * W + x] === T.AIR) lpBrackets.push([x, y, d]); }
 
@@ -5787,7 +5790,7 @@ function theLamplitStreet() {
     duskStart: 99999, duskLen: 1, music: 'drowned', night: false, glowNight: true, dark: 0.8, darkZones, edgeLit: 'rgba(190,236,232,0.75)',   /* (lamplit3) DARK UNTIL LIT: the city is near-black; a lamp lit opens a wide pool (lpDark.lampR) and the route round it */
     lampAir: true,                               // THE RULE: a lit lamp is a lungful of air
     airRooms: lampPockets,                       // LIGHT THE WAY: the pockets the dead street lamps bring back (claude/lamplit2)
-    lpFire: true, lpKit: true, lpLedges, lpPosts, lpOil, lpSnags, lpBrackets,   /* (claude/lamplit3) the fire verbs (src/lamplit-fire.js) and the city's own footing (src/redraw/lamplit3_tiles.js) */
+    lpFire: true, lpKit: true, lpLedges, lpPosts, lpOil, lpSnags, lpBrackets, lpBarriers,   /* (claude/lamplit3) the fire verbs (src/lamplit-fire.js) and the city's own footing (src/redraw/lamplit3_tiles.js) */
     lpDark: { lampR: 96 },
     // the cold of the place, as banks over the dry street: only a lamp opens a hole in it
     fog: [{ x0: 44 * TS, x1: 152 * TS, y0: 24 * TS, y1: 42 * TS, alpha: 0.5 },

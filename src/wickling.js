@@ -42,26 +42,67 @@ export function wicklingStep(s, w, dt) {
 }
 /* a blow, thrown fire or burning oil on it: it swells, told, and bursts (once) */
 export function wicklingStruck(s) { if (s.mode === 'burstTell' || s.mode === 'gone') return false; s.mode = 'burstTell'; s.modeT = WK.burstTell; return true; }
-/* ITS POSES (B16: its own windup and release for every move - greybox shapes, the art lane draws them): drift, snuffTell (leaning into the flame, drinking), stealTell
-   (crouched back, the flame flaring - the windup), dart (stretched forward - the release), recoil, burstTell (swollen white-hot) */
+/* ITS POSES (B16: its own windup and release for every move; finished by claude/lamplit3art):
+     drift      a teardrop flame swaying over a stub of grey wax, two drip-arms hanging, a wick thread between them; a tail of sparks
+     snuffTell  leaning in, mouth open: the lamp's flame is drawn in as wisps spiralling to it (more as the drink goes on), the flame swelling
+     stealTell  crouched back on its stub, arms flung out behind, the flame flared tall with red-edged spikes, eyes narrowed: the windup
+     dart       stretched flat along its flight: a comet of flame laid back, the face forward, a spark tail: the release
+     recoil     squashed small, the flame ducked low and dim, eyes screwed shut, sparks scattered
+     burstTell  swollen white-hot: cracks of light across body and flame, eyes wide, mouth gaping, sparks radiating (and the dashed ring)
+   in the dark only the flame and its halo show (the body where the host says it is seen) */
+const CORE = ['#ff6b2c', '#ff9a3c', '#ffd36b', '#fff6c8'];
+function flameShape(g, X, yb, h, w, lean, time, hot) {
+  const R = Math.round;
+  for (let r = 0; r < h; r++) { const f = r / h, wf = f < 0.28 ? 0.62 + f * 1.35 : Math.sqrt(Math.max(0, 1 - Math.pow((f - 0.28) / 0.72, 1.7))), ww = Math.max(1, R(w * wf)), sh = R(lean * f * f + Math.sin(time * 10 + r * 0.55) * 0.7 * f), x = X - (ww >> 1) + sh, y = yb - r - 1;
+    g.fillStyle = hot ? '#ffb040' : CORE[0]; g.fillRect(x, y, ww, 1);
+    if (ww >= 3) { g.fillStyle = hot ? '#ffe090' : CORE[1]; g.fillRect(x + 1, y, ww - 2, 1); }
+    if (ww >= 4 && f < 0.7) { g.fillStyle = hot ? '#fff6c8' : CORE[2]; g.fillRect(x + 1, y, ww - 2, 1); }
+    if (ww >= 5 && f < 0.42) { g.fillStyle = hot ? '#ffffff' : CORE[3]; g.fillRect(x + 2, y, ww - 4, 1); } }
+}
 export function drawWickling(g, s, x, y, time, seen) {
-  const R = Math.round, fl = Math.floor(time * 14 + x) % 2, fed = s.fed || 0, f = s.face || 1, X = R(x), Y = R(y);
-  const sw = s.mode === 'burstTell' ? 1 + (1 - Math.max(0, s.modeT) / WK.burstTell) * 0.8 : 1;
-  const lean = s.mode === 'snuffTell' ? 3 : s.mode === 'dart' ? 4 : s.mode === 'stealTell' ? -2 : 0, crouch = s.mode === 'stealTell' ? 2 : 0;
-  const fh = R((5 + fed + (s.mode === 'stealTell' ? 3 : 0) + (fl ? 1 : 0)) * sw);
-  /* the flame head - all that shows in the dark */
-  g.globalAlpha = 0.28; g.fillStyle = s.mode === 'burstTell' ? '#fff6c8' : '#ff9a3c'; g.beginPath(); g.arc(X + f * lean, Y - 8 + crouch, R((7 + fed * 2) * sw), 0, 7); g.fill(); g.globalAlpha = 1;
-  g.fillStyle = s.mode === 'burstTell' ? (fl ? '#ffffff' : '#fff6c8') : fl ? '#ff6b2c' : '#ff9a3c'; g.fillRect(X - 2 + f * lean, Y - 8 - fh + crouch, R(5 * sw), fh);
-  g.fillStyle = '#ffd36b'; g.fillRect(X - 1 + f * lean, Y - 7 - R(fh * 0.6) + crouch, 3, R(fh * 0.6)); g.fillStyle = '#fff6c8'; g.fillRect(X + f * lean, Y - 6 + crouch, 1, 2);
-  if (s.mode === 'snuffTell') { g.fillStyle = '#ffd36b'; for (let k = 0; k < 3; k++) g.fillRect(X + f * (4 + k * 2), Y - 10 - k, 1, 1); }   /* the lamp's flame drawn into it */
-  if (!seen && s.mode !== 'burstTell') return;
-  /* the wax body: a stub of grey wick-wax, two arms of drip */
-  const by = Y - 6 + crouch;
-  g.fillStyle = '#8a8478'; g.fillRect(X - 2 + R(f * lean * 0.5), by, 4, 6 - crouch); g.fillStyle = '#b8b0a0'; g.fillRect(X - 2 + R(f * lean * 0.5), by, 1, 6 - crouch); g.fillStyle = '#4a4640'; g.fillRect(X + 1 + R(f * lean * 0.5), by + 1, 1, 5 - crouch);
-  const arm = s.mode === 'stealTell' ? -1 : s.mode === 'dart' ? 2 : 0;
-  g.fillStyle = '#8a8478'; g.fillRect(X - 4 + f * arm, by + 2, 2, 1); g.fillRect(X + 2 + f * arm, by + 2, 2, 1);
-  g.fillStyle = '#1b1626'; g.fillRect(X - 1 + f * (lean + 1), Y - 7 + crouch, 1, 1); g.fillRect(X + 1 + f * (lean + 1), Y - 7 + crouch, 1, 1);   /* its two black wick-eyes in the flame */
-  if (s.mode === 'burstTell') { g.globalAlpha = 0.5 + 0.4 * fl; g.strokeStyle = '#ff6b6b'; g.setLineDash([3, 3]); g.beginPath(); g.arc(X, Y - 4, burstRadius(s), 0, 7); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+  const R = Math.round, fl = Math.floor(time * 14 + x) % 2, fed = s.fed || 0, f = s.face || 1, X = R(x), Y = R(y), m = s.mode;
+  const tellK = m === 'burstTell' ? 1 - Math.max(0, s.modeT) / WK.burstTell : 0, sw = 1 + tellK * 0.8;
+  const drink = m === 'snuffTell' ? 1 - Math.max(0, s.modeT) / WK.snuffTell : 0;
+  const lean = m === 'snuffTell' ? 3 : m === 'dart' ? 6 : m === 'stealTell' ? -3 : m === 'recoil' ? -1 : R(Math.sin(time * 2.1 + x * 0.2) * 1.4);
+  const crouch = m === 'stealTell' ? 3 : m === 'recoil' ? 4 : 0;
+  const fh = m === 'recoil' ? 4 : R(((m === 'dart' ? 5 : 7) + fed + (m === 'stealTell' ? 5 : 0) + drink * 4 + (fl ? 1 : 0)) * sw);
+  const fw = m === 'dart' ? 4 : R((5 + (fed > 1 ? 1 : 0) + (m === 'stealTell' ? 1 : 0)) * sw);
+  const yb = Y - 8 + crouch;                                                       /* where the flame stands on the wick */
+  /* the halo: all that tells you it is there in the dark */
+  const hr = (11 + fed * 3 + drink * 4) * sw, hx = X + f * lean, hy = yb - fh * 0.5;
+  g.save(); g.globalAlpha = m === 'burstTell' ? 0.55 : m === 'recoil' ? 0.2 : 0.34; const gr = g.createRadialGradient(hx, hy, 1, hx, hy, hr); gr.addColorStop(0, m === 'burstTell' ? '#fff6c8' : '#ffb050'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(hx - hr, hy - hr, hr * 2, hr * 2); g.restore();
+  /* the comet tail of a dart: the flame laid back along its flight */
+  if (m === 'dart') { const vx = s.vx || f, vy = s.vy || 0, sp = Math.hypot(vx, vy) || 1, tx = -vx / sp, ty = -vy / sp; for (let k = 1; k < 11; k++) { const w = Math.max(1, 5 - (k >> 1)); g.globalAlpha = 1 - k / 12; g.fillStyle = k < 4 ? '#ffd36b' : k < 7 ? '#ff9a3c' : '#ff6b2c'; g.fillRect(R(X + tx * k * 2.2 - w / 2), R(yb - 4 + ty * k * 2.2 - w / 2), w, w); } g.globalAlpha = 1; }
+  /* the wax body (where it is seen): a stub of wick-wax on a melted foot, two drip-arms, a black wick thread */
+  if (seen || m === 'burstTell') {
+    const by = Y - 8 + crouch, bh = 8 - crouch, bx = X - 3 + R(f * lean * 0.4);
+    g.fillStyle = '#6a655a'; g.fillRect(bx - 2, Y - 1, 10, 2); g.fillStyle = '#8a8478'; g.fillRect(bx - 1, Y - 1, 8, 1);                          /* the melted foot */
+    g.fillStyle = m === 'burstTell' ? '#e8e0c8' : '#8a8478'; g.fillRect(bx, by, 6, bh); g.fillStyle = m === 'burstTell' ? '#fffbe8' : '#b8b0a0'; g.fillRect(bx, by, 2, bh); g.fillStyle = '#4a4640'; g.fillRect(bx + 5, by + 1, 1, bh - 1);
+    g.fillStyle = m === 'burstTell' ? '#fff6c8' : '#b8b0a0'; g.fillRect(bx + 1, by + 3, 1, 4 + (fl && m === 'drift' ? 1 : 0)); g.fillRect(bx + 4, by + 4, 1, 3);   /* wax runs */
+    g.fillStyle = m === 'burstTell' ? '#fff6c8' : '#2a2620'; g.fillRect(bx + 2, by - 1, 2, 2);                                                         /* the wick */
+    const arm = m === 'stealTell' ? -3 : m === 'dart' ? 4 : m === 'snuffTell' ? 2 : m === 'recoil' ? -1 : 0, ay = by + 2 + (m === 'stealTell' ? -1 : m === 'snuffTell' ? -2 : 0);
+    g.fillStyle = '#8a8478'; g.fillRect(bx - 3 + f * arm - (m === 'stealTell' ? 1 : 0), ay, 3, 1); g.fillRect(bx + 6 + f * arm, ay, 3, 1); g.fillStyle = '#b8b0a0'; g.fillRect(bx - 3 + f * arm, ay, 1, 1); g.fillRect(bx + 6 + f * arm, ay, 1, 1);
+    if (m === 'stealTell') { g.fillStyle = '#8a8478'; g.fillRect(bx - 4 - f, ay - 2, 1, 2); g.fillRect(bx + 9 - f, ay - 2, 1, 2); }                           /* claws spread */
+  }
+  /* the flame head */
+  flameShape(g, X + f * lean, yb, fh, fw, lean * f * 0.6, time, m === 'burstTell');
+  if (m === 'stealTell') { for (let k = -2; k <= 2; k += 2) { g.fillStyle = '#ff5030'; g.fillRect(X + f * lean + k * 2, yb - fh - 2 - Math.abs(k), 1, 3); } }   /* the flare's red spikes */
+  /* its face, in the flame: two dark eyes, and what it is doing with them */
+  const ex = X + f * (lean + 1), ey = yb - 4 - (m === 'dart' ? 1 : 0);
+  g.fillStyle = '#1b1626';
+  if (m === 'stealTell') { g.fillRect(ex - 2, ey, 2, 1); g.fillRect(ex + 1, ey, 2, 1); g.fillRect(ex - 2, ey - 1, 1, 1); g.fillRect(ex + 2, ey - 1, 1, 1); g.fillRect(ex - 1, ey + 2, 3, 1); }           /* narrowed, angry, teeth */
+  else if (m === 'recoil') { g.fillRect(ex - 2, ey - 1, 1, 1); g.fillRect(ex - 1, ey, 1, 1); g.fillRect(ex - 2, ey + 1, 1, 1); g.fillRect(ex + 1, ey - 1, 1, 1); g.fillRect(ex, ey, 1, 1); g.fillRect(ex + 1, ey + 1, 1, 1); }   /* >< */
+  else if (m === 'burstTell') { g.fillStyle = '#fff'; g.fillRect(ex - 2, ey - 1, 2, 3); g.fillRect(ex + 1, ey - 1, 2, 3); g.fillStyle = '#1b1626'; g.fillRect(ex - 1, ey, 1, 1); g.fillRect(ex + 1, ey, 1, 1); g.fillRect(ex - 1, ey + 3, 3, 2); }   /* wide eyes, a gaping mouth */
+  else if (m === 'snuffTell') { g.fillRect(ex - 1, ey, 1, 2); g.fillRect(ex + 1, ey, 1, 2); g.fillRect(ex, ey + 3, 1, 1 + (Math.floor(time * 10) & 1)); }   /* eyes shut tight on it, a small mouth working */
+  else { g.fillRect(ex - 1, ey, 1, 2); g.fillRect(ex + 1, ey, 1, 2); }
+  /* what is happening round it */
+  if (m === 'snuffTell') { for (let k = 0; k < 6; k++) { const q = (drink * 1.2 + k / 6) % 1, ang = k * 1.05 + time * 5, rad = 14 * (1 - q); g.globalAlpha = 0.4 + 0.6 * q; g.fillStyle = q > 0.6 ? '#fff6c8' : q > 0.3 ? '#ffd36b' : '#ff9a3c'; g.fillRect(R(X + f * lean + Math.cos(ang) * rad), R(yb - 5 + Math.sin(ang) * rad * 0.8), 1 + (q > 0.5 ? 1 : 0), 1); } g.globalAlpha = 1; }   /* the lamp's flame drawn into it */
+  if (m === 'recoil') { for (let k = 0; k < 4; k++) { const q = (time * 3 + k / 4) % 1; g.globalAlpha = 1 - q; g.fillStyle = k & 1 ? '#ffd36b' : '#ff6b2c'; g.fillRect(R(X + (k - 1.5) * 4 + Math.sin(q * 5 + k) * 3), R(yb - 3 - q * 9), 1, 1); } g.globalAlpha = 1; }
+  if (m === 'burstTell') {
+    g.fillStyle = '#ffffff'; for (let k = 0; k < 4; k++) { const ax = X - 2 + k * 2 - 1, ao = Math.floor(time * 20 + k) % 2; g.fillRect(ax + ao, Y - 7 + k, 1, 3); }                                  /* cracks of white light across the body */
+    for (let k = 0; k < 10; k++) { const ang = k * 0.63 + time * 9, rad = (7 + tellK * 12) * (1 + (k & 1) * 0.3); g.fillStyle = k & 1 ? '#fff6c8' : '#ffd36b'; g.fillRect(R(X + Math.cos(ang) * rad), R(Y - 8 + Math.sin(ang) * rad), 1, 1); }   /* sparks radiating */
+    g.globalAlpha = 0.5 + 0.4 * fl; g.strokeStyle = '#ff6b6b'; g.setLineDash([3, 3]); g.beginPath(); g.arc(X, Y - 4, burstRadius(s), 0, 7); g.stroke(); g.setLineDash([]); g.globalAlpha = 1; }
+  if (m === 'drift' || m === 'snuffTell') for (let k = 0; k < 2; k++) { const q = (time * 1.4 + k * 0.5 + x * 0.01) % 1; g.globalAlpha = 0.8 * (1 - q); g.fillStyle = '#ffd36b'; g.fillRect(R(X + Math.sin(q * 7 + k * 3) * 4), R(yb - fh - q * 8), 1, 1); g.globalAlpha = 1; }   /* sparks off the tip */
 }
 /* THE HANDS: ctx = { hero(), players(), lamps(), water(x, y), floorBelow(x, y), snuff(lamp), steal(pp), touch(pp, x), burst(x, y, r, e), mark(e, txt, col), number(x, y, txt, col), sfx(k), seen(e) -> bool (lit or in the hero's glow), parts(p) } */
 export function makeWicklingHands(ctx) {
