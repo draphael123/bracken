@@ -1514,13 +1514,14 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const PH=BK.paladinHands(),S=PH&&PH.show(),LCX=BK.litChurchHands?BK.litChurchHands():null;
         if(f===0||!P.labPbMem)P.labPbMem={};
-        const lamps=LCX&&LCX.on()?LCX.lampsOf('sanctuary'):[];
-        const pl=S?pbPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,lamps,circle:PH.circle?PH.circle():null,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labPbMem}):{gx:null,face:P.face};
+        const lamps=LCX&&LCX.on()?LCX.lampsOf('sanctuary'):[],fires=S&&LCX&&LCX.on()&&LCX.firesIn?LCX.firesIn(S.G.x0,S.G.x1).map(q=>q.x):[];   /* (claude/church3) his braziers, and the fires a flame is taken at (the votive stand, the altar fire, a lit brazier) */
+        const pl=S?pbPlan({tip:h==='warden'?WARDEN_TIP:0,noRoll:h==='warden'&&!LABP.v2,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,lamps,fires,flame:P.lcFlame||0,aura:PH.aura?PH.aura():null,reach:LAB_REACH[h],shield:SHIELDED(h),t:f/60,rng:Math.random,mem:P.labPbMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.talk&&(P.labTalkF===undefined||f-P.labTalkF>12)){BK.press('talk');P.labTalkF=f;}   /* (claude/church3) E: a flame taken, a brazier lit beside him */
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(pbOpen(boss)&&!wasOpen)opened++;wasOpen=pbOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:pbOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;

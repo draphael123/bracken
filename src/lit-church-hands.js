@@ -122,6 +122,8 @@ export function makeLitChurchHands(ctx) {
   /* (claude/church3) THE DEACON DOUSES a floor lamp of his (P2, src/deacon.js): out, marked his - your flame lit in it again is his falter. A boss's snuff: no fall, no word of the room's */
   H.douse = id => { if (!K) return false; const l = lampOf(id); if (!l || !l.lit || l.hang) return false; l.lit = false; l.by = ''; l.doused = true; K.n.snuffed++; K.n.doused = (K.n.doused || 0) + 1;
     ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(px(l), py(l) - 22, 6, ['#6a6a7a', '#3a3a4a', '#c8c8d0'], 40, 0.6); rooms(); return true; };
+  /* (claude/church3) THE LIGHTS A HAND CAN PUT OUT near x (THE UNDEAD PRIEST's snuff, src/undead-priest.js): lit standing lamps and sconces - not a chapel lamp, a rood sconce, a seal, a fight's own */
+  H.lightsNear = (x, r) => (K ? K.lamps.filter(l => l.lit && !l.hang && !l.deacon && l.kind !== 'chapel' && l.kind !== 'rood' && l.kind !== 'seal' && l.kind !== 'arena' && Math.abs(px(l) - x) <= r).sort((a, b) => Math.abs(px(a) - x) - Math.abs(px(b) - x)).map(l => ({ id: l.id, x: px(l) })) : []);
   /* (claude/church3) A BOSS SNUFFS ONE OF HIS OWN (THE PALADIN's brazier in his second phase, src/paladin-boss.js): out, no fall, no word of the room's */
   H.snuffBy = (id, by) => { if (!K) return false; const l = lampOf(id); if (!l || !l.lit) return false; l.lit = false; l.by = ''; K.n.snuffed++; K.n.bossSnuffs = (K.n.bossSnuffs || 0) + 1;
     ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(px(l), py(l) - 22, 8, ['#6a6a7a', '#3a3a4a', '#c8c8d0'], 50, 0.6); rooms(); return true; };

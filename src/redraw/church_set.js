@@ -261,7 +261,7 @@ export function drawLamp(V, l) {
   const wx = l.x * TS + 8, wy = (l.y + 1) * TS, f = Math.floor(V.time * 9 + l.x * 3);
   if (!vis(V, wx - 20, wx + 20, 40)) return;
   if (l.deacon) return crossingLamp(V, l, wx, wy);   /* (church2art) THE CROSSING's two floor sconces and two chandeliers */
-  if (l.relay) { put(V, C2.bakeRelayBrazier(!!l.lit), wx - 13, wy - 34); if (l.lit) { flameAt(V, 2, wx, wy - 21, l.x); halo(V, wx, wy - 22, 58, 0.6); } else smoke(V, wx, wy - 22, l.x); return; }   /* the chantry's relay braziers */
+  if (l.relay || l.brazier) { put(V, C2.bakeRelayBrazier(!!l.lit), wx - 13, wy - 34); if (l.lit) { flameAt(V, 2, wx, wy - 21, l.x); halo(V, wx, wy - 22, 58, 0.6); } else smoke(V, wx, wy - 22, l.x); return; }   /* the chantry's relay braziers, and (claude/church3) THE PALADIN's three in the sanctuary (GREYBOX: the same brazier until the art lane gives them their own) */
   if (l.kind === 'sconce' || l.kind === 'rood') { const s = P.bakeSconce(l.kind === 'rood' ? 1 : 0); put(V, s, wx - 6, wy - 18); if (l.lit) { flameAt(V, 1, wx, wy - 15, l.x); halo(V, wx, wy - 14, 32, 0.55); } else { smoke(V, wx, wy - 17, l.x); } }
   else if (l.kind === 'chapel') { put(V, P.bakeCandelabrum(), wx - 14, wy - 34); if (l.lit) { for (const [fx, fy] of P.CANDELABRUM_WICKS) flameAt(V, 0, wx - 14 + fx + 1, wy - 34 + fy + 1, l.x + fx); flameAt(V, 1, wx, wy - 29, l.x); halo(V, wx, wy - 22, 54, 0.6, '#ffd890'); } else { smoke(V, wx, wy - 28, l.x); } }
   else if (l.kind === 'seal') { const top = (l.y + 1) * TS - 44; put(V, P.bakeSealLamp(), wx - 8, wy - 44); if (l.lit) { alpha(V, 0.8, () => { flameAt(V, 1, wx, wy - 12, l.x); }); halo(V, wx, wy - 14, 42, 0.5, '#a8c0ff'); } }
