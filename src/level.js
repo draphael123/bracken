@@ -28,6 +28,7 @@ import {addIslandPosts} from './island-posts.js';
 import {crabTrench,underwaterKeep} from './deep-split.js';
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
+import { applyExits } from './exit-doors.js';   /* THE WAY OUT AFTER THE BOSS (claude/exitgates2): a themed gate per boss level, opened by the kill (src/exit-doors.js) */
 import { vaultSilver } from './relics.js';   /* WHAT A FORMER RELIC CACHE PAYS NOW: one of the level's three silvers (a 'vault' marker holds the spot through the build) */
 import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
@@ -8727,3 +8728,4 @@ import { applyStuckSigns } from './stuck-spots.js';   /* THE STUCK-POINT SIGNS (
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function') lv.build = (...a) => applyStuckSigns(b(...a), lv.id); }
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && (VARIETY[lv.id] || TIDE_CRABS[lv.id])) lv.build = (...a) => varietyPass(b(...a), lv.id); }   /* (claude/variety) before the sweep wrapper: sweep still sees the finished ents */
 for (const lv of LEVELS) { const b = lv.build; if (typeof b === 'function' && SWEEP_SKINS[lv.id]) lv.build = (...a) => sweepSkins(b(...a), lv.id); }   /* (claude/goblinsweep) the sprinkled goblins' reskins: the last wrapper, so the sprinkler's foes are seen */
+applyExits(LEVELS);   /* (claude/exitgates2) LAST, outermost: the finished level (review pass, dressing, signs, mix) gets its gate and its gateAfterBoss; src/exit-doors.js */
