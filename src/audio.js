@@ -1,4 +1,8 @@
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
+// Sound variation has its own random stream. A late sample decode must not change combat AI or a seeded simulation.
+const Math = Object.create(globalThis.Math);
+let audioSeed = globalThis.crypto?.getRandomValues(new Uint32Array(1))[0] || 1;
+Math.random = () => { audioSeed = (globalThis.Math.imul(audioSeed, 1664525) + 1013904223) >>> 0; return audioSeed / 4294967296; };
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
 import { bossSynthOf, splitTrack, BOSS_SYNTH_GAIN } from './boss-music.js';   /* THE ARCHMAGES' and THE GOBLIN ROYALS' themes: synth tracks with no file (claude/bossmusic) */
