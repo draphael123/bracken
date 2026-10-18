@@ -28,7 +28,7 @@ export const HOLY = { pct: 0.27, cd: 0.6 };
 export const LC = { litMul: 1.3, darkMul: 0.7, knightLit: 1.15, heal: 0.16, litHeal: 1.5, darkHeal: 0.5, healCd: 7, healTell: 1.0, healR: 130, relightT: 1.5, acoRelightT: 0.6,
   priestV: 44, acoV: 92, riseEvery: 4.5, riseTell: 1.0, riseCap: 3, deadDark: 1.8, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
   darkV: 24, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0,
-  dcRiseEvery: 5.5, dcRiseCap: 2 };   /* (claude/church3) THE DEACON's dark crossing: a ghost every dcRiseEvery s from his grates, at most dcRiseCap up */
+  dcRiseEvery: 8, dcRiseCap: 1 };   /* (claude/church3) THE DEACON's dark crossing: a ghost every dcRiseEvery s from his grates, at most dcRiseCap up */
 /* what a dark room's grates bring up (by room; the rest bring wights and haunts) */
 const RISE = { chantry: ['wight', 'haunt'], graveyard: ['wight'], narthex: ['haunt'], nave: ['wight', 'haunt', 'boo'], transept: ['haunt', 'wight'], gallery: ['boo', 'haunt'], ossuary: ['wight', 'haunt'], altar: ['wight', 'haunt'], south: ['wight', 'haunt', 'boo'], tower: ['boo'] };
 const RELIGHT = new Set(['lamp', 'sconce', 'arena']);   /* what the clergy light again (a chapel lamp, the rood screen's sconces and the seal are not theirs) */

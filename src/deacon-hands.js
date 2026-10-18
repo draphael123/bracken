@@ -20,7 +20,8 @@ export function makeDeaconHands(ctx) {
   H.clear = () => { S = null; };
   const geom = Ar => ({ x0: Ar.x0, x1: Ar.x1, floorY: Ar.floor, roofY: Ar.y0 });
   H.spawn = base => { const Ar = A(); S = Ar ? DCM.newFight(geom(Ar)) : null;
-    return { ...base, t: 'deacon', mini: true, xpRole: 'mini', w: DC.w, h: DC.h, hp: ctx.EHP.deacon, maxHp: ctx.EHP.deacon, noGrav: true, markH: DC.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, vx: 0 }; };
+    const hp = Math.round(ctx.EHP.deacon * ((DC.heroHp && ctx.heroT && DC.heroHp[ctx.heroT()]) || 1));
+    return { ...base, t: 'deacon', mini: true, xpRole: 'mini', w: DC.w, h: DC.h, hp, maxHp: hp, noGrav: true, markH: DC.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, vx: 0 }; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.dcKeys = pp.dcKeys || new Map(); if (pp.dcKeys.size > 80) pp.dcKeys.clear(); if (pp.dcKeys.has(key)) return true; pp.dcKeys.set(key, 1); return false; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
