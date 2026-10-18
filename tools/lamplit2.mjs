@@ -88,7 +88,16 @@ try {
       for(const p of L){p.lit=true;p.gut=0;}const l0=L[0];o.p3.airAtLamp=!!H.nearAir(l0.x,l0.y-40);
       calm();b.writT=0;b.modeT=0;BK.P.x=l0.x;for(let i=0;i<120&&!b.writ;i++){hold();BK.P.x=l0.x;BK.sim(1);}
       o.p3.writ=!!b.writ;o.p3.drowned=!!(b.writ&&H.drowned(l0));o.p3.airInWrit=!!H.nearAir(l0.x,l0.y-40);}
-    {const seen=new Set();calm();b.collectT=0;b.scalesT=0;b.ledgerT=0;b.rodT=0;b.sealT=0;b.writT=0;b.modeT=0;for(let i=0;i<2400;i++){hold();BK.P.x=b.x+60;BK.sim(1);seen.add(b.mode);if(i%600===0)for(const p of L){p.lit=true;p.gut=0;}}o.modes=[...seen];}
+    /* THE BELL HOUSINGS (claude/airpockets): four iron-hooded alcoves in the roof; air while the square is flooded, spent after ~2.5 s of drinking, drowned by the writ on their half */
+    {calm();b.writ=null;b.writT=99;const hs=H.airRooms.filter(r=>r.toll);const q={n:hs.length,sides:[0,0]};const mid=(A.x0+A.x1)/2;for(const r of hs)q.sides[(r.l+r.r)/2<mid?0:1]++;
+      const r0=hs[0],mx=(r0.l+r0.r)/2;q.air=!!H.nearAir(mx,r0.b-8);
+      const sw=()=>{BK.P.x=mx;BK.P.y=r0.b-6;BK.P.vx=0;BK.P.vy=0;BK.P.breath=0.5;hold();};
+      let t=0;for(let i=0;i<60*4&&!r0.spent;i++){sw();BK.sim(1);t++;}q.spentAfter=+(t/60).toFixed(2);q.spent=!!r0.spent;q.airWhenSpent=!!H.nearAir(mx,r0.b-8);q.breathGot=+(BK.P.breath||0).toFixed(1);
+      for(let i=0;i<60*16&&r0.spent;i++){sw();BK.sim(1);}q.back=!r0.spent&&!!H.nearAir(mx,r0.b-8);
+      /* the writ on the left half drowns the left housings and leaves the right */
+      const lh=hs.filter(r=>(r.l+r.r)/2<mid),rh=hs.filter(r=>(r.l+r.r)/2>=mid);b.writ={x0:A.x0,x1:mid,t:4,max:4};
+      q.leftDrowned=lh.every(r=>!H.nearAir((r.l+r.r)/2,r.b-8));q.rightAir=rh.every(r=>!!H.nearAir((r.l+r.r)/2,r.b-8));b.writ=null;BK.P.x=b.x+60;BK.P.y=A.floor;BK.P.breath=6;o.pockets=q;}
+    {const seen=new Set();calm();b.collectT=0;b.scalesT=0;b.ledgerT=0;b.rodT=0;b.sealT=0;b.writT=0;b.modeT=0;for(let i=0;i<2400;i++){hold();BK.P.x=b.x+60;BK.P.y=A.floor;BK.P.vy=0;BK.sim(1);seen.add(b.mode);if(i%600===0)for(const p of L){p.lit=true;p.gut=0;}}o.modes=[...seen];}
     out.toll=o; }
   /* ---------------- THE LEVEL ---------------- */
   { start();const o={};const rooms=H.airRooms.filter(r=>r.lampX!==undefined);o.pockets=rooms.length;
@@ -134,6 +143,9 @@ ok(T.seal.told === 'sealTell' && T.seal.hurt > 0 && T.seal.wax > 0, 'THE SEAL OF
 ok(T.p2.phase === 2 && T.p2.onFoot && T.p2.adds <= 0, 'phase two: set down, on his feet, and no adds (the bearers are part of him): ' + JSON.stringify(T.p2));
 ok(T.p3.phase === 3 && T.p3.flooded && T.p3.swim && T.p3.top < T.p3.floor - 200, 'phase three floods the square to its roof: ' + JSON.stringify(T.p3));
 ok(T.p3.airAtLamp && T.p3.writ && T.p3.drowned && !T.p3.airInWrit, 'a lit lamp is air - until the writ drowns its half: ' + JSON.stringify(T.p3));
+ok(T.pockets.n >= 3 && T.pockets.sides[0] >= 1 && T.pockets.sides[1] >= 1 && T.pockets.air, 'BELL HOUSINGS: at least three roof alcoves, on both halves of the square, holding air once it floods: ' + JSON.stringify(T.pockets));
+ok(T.pockets.spent && T.pockets.spentAfter > 2 && T.pockets.spentAfter < 3.2 && !T.pockets.airWhenSpent && T.pockets.back, 'a housing is spent after ~2.5 s of drinking and fills again (not a place to sit): ' + JSON.stringify(T.pockets));
+ok(T.pockets.leftDrowned && T.pockets.rightAir, 'the writ drowns the housings on the half it names and leaves the other: ' + JSON.stringify(T.pockets));
 ok(!T.modes.some(m => /dark|toll$|tollTell|blackout/.test(m)), 'THE DARK and the coin weight are gone: ' + T.modes.join(','));
 ok(['collect', 'scalesLow', 'scalesHigh', 'seal', 'ledger', 'rod'].filter(m => T.modes.includes(m)).length >= 5, 'his told moves come round: ' + T.modes.join(','));
 console.log('THE LEVEL');

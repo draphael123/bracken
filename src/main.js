@@ -16428,8 +16428,8 @@ function nearAir(x, y) { // a hold, a diving bell, a vent, or a lamp that is sti
 const airList = () => lamps.length ? airBells.concat(lamps.filter(pr => pr.lit && !lampDrowned(pr)).map(lampAir)) : airBells;
 /* THE WRIT OF DROWNING (the Tollmaster's phase three, claude/lamplit2): on the half of his flooded square the writ names, the water stands up
    inside the lamp hoods and those lamps hold no air until it goes down again */
-/* THE BELL HOUSINGS (claude/airpockets): the writ drowns a housing on the half it names as it does a lamp hood; a housing is SPENT after TOLL_POCKET.spend s of drinking and comes back TOLL_POCKET.back s later */
-const TOLL_POCKET = { spend: 2.5, back: 8, rest: 0.5 };
+/* THE BELL HOUSINGS (claude/airpockets): the writ drowns a housing on the half it names as it does a lamp hood; a housing is SPENT after TOLL_POCKET.spend s of drinking and comes back TOLL_POCKET.back s later (14: four of them drunk in turn are 10 s of air, so a hero cannot just rotate) */
+const TOLL_POCKET = { spend: 2.5, back: 14, rest: 0.5 };
 function tollRoomDrowned(r) { const b = boss; return !!(b && b.t === 'tollmaster' && b.writ && b.alive && (r.l + r.r) / 2 > b.writ.x0 && (r.l + r.r) / 2 < b.writ.x1); }
 function tollPocketTick(r, dt, drinking) {
   if (r.goneUntil > 0 && r.goneUntil <= time && r.spent) { r.spent = false; r.goneUntil = 0; r.use = 0; number((r.l + r.r) / 2, r.t + 4, 'THE HOUSING FILLS AGAIN', '#bfe6f5'); }
