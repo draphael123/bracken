@@ -29,6 +29,8 @@ assert.ok(!('archmage:undead' in BM.SYNTH_VARIANT), 'the undead synth voicing is
 assert.equal(arena('kings').music, 'gorm', "KING GORM's arena is not on his own recording (claude/music1015: audio/gorm.ogg, Emma_MA's Determined Pursuit)");
 assert.equal(arena('crown').music, 'gqueen', "the Goblin Queen's arena is not on her own recording (claude/musicgq: audio/gqueen.ogg, Spring Spring's Courtroom with cynicmusic's entrance)");
 assert.ok(A.MUSIC_NAMES.includes('gqueen') && A.MUSIC_NAMES.includes('gqjudge') && A.MUSIC_NAMES.includes('gqescape') && /Spring Spring/.test(A.MUSIC_CREDITS.gqueen || '') && /Matyas/.test(A.MUSIC_CREDITS.gqescape || ''), 'the Goblin Queen tracks (gqueen, gqjudge, gqescape) are not in the Sound Test with their credits (claude/musicgq)');
+assert.equal(arena('causeway').music, 'kraken', "THE KRAKEN's arena is not on his own recording (claude/musickraken: audio/kraken.ogg, leohpaz's The Kraken; it replaced madameberry's Castle Boss, which fit nothing)");
+assert.ok(A.MUSIC_NAMES.includes('kraken') && A.MUSIC_NAMES.includes('kraken2') && /Leonardo Paz/.test(A.MUSIC_CREDITS.kraken || '') && /Leonardo Paz/.test(A.MUSIC_CREDITS.kraken2 || ''), 'the Kraken tracks (kraken, kraken2) are not in the Sound Test with their credits (claude/musickraken)');
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
 assert.equal(arena('oreroad').music, 'winchmaster', "the Winchmaster's arena is not on his mine-cart chase");
 assert.equal(arena('witchlight').music, 'gargoyle', "the Gate Gargoyle's arena is not on his stone-grind theme");
