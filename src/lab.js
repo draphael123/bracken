@@ -489,6 +489,24 @@ for (const [k, v] of Object.entries(MARK)) if (v === '!!') HARD_TELLS.add(k);
 { const has = HARD_TELLS.has.bind(HARD_TELLS); HARD_TELLS.has = k => has(k) || has('*|' + String(k).slice(String(k).indexOf('|') + 1)); }
 // WHAT THE BOT GOES TO IN THE PRINCE'S TOMB, or null to fight him: a cold lamp while the tomb is mostly dark (or any cold lamp
 // while he is far off), else the post of the intact set he is standing under. { x: where to stand, at: what to strike }
+/* THE LAMPLIT STREET'S VERB, played (claude/lamplit2): RELIGHT A LAMP BESIDE HIM. With fire in hand and a dead lamp he can be brought to, stand at
+   it on the side away from him and strike it as he comes beside it (R: his flare reach, less a margin); with no fire and a lamp to give back,
+   go and take some - from his braziers or a burning lamp near enough. In the Tollmaster's flooded square the AIR comes first: under half a
+   breath, to the nearest lamp the writ has not drowned. Nothing is flared for the bot: a real swing on the lamp. */
+function lampAirFor(BK, boss, A, P) { const L = BK.props().filter(p => p.t === 'lantern' && p.city && p.lit && !(p.gut > 0) && p.x > A.x0 - 8 && p.x < A.x1 + 8 && !(boss.writ && p.x > boss.writ.x0 && p.x < boss.writ.x1)).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+  return L ? { x: L.x, y: L.y - 34 } : null; }
+function lampPlan(BK, boss, A, P, R) {
+  if (['sleep', 'wake', 'setDown', 'floodTell', 'dead'].includes(boss.mode)) return null;
+  const all = BK.props().filter(p => p.t === 'lantern' && p.city && p.x > A.x0 - 8 && p.x < A.x1 + 8 && Math.abs(p.y - A.floor) < 30);
+  const drowned = p => !!(boss.writ && p.x > boss.writ.x0 && p.x < boss.writ.x1);
+  const lit = all.filter(p => p.lit && !(p.gut > 0)), dark = all.filter(p => !p.lit), near = (L, x) => L.slice().sort((a, b) => Math.abs(a.x - x) - Math.abs(b.x - x))[0];
+  if (boss.flooded && P.swim && (P.breath ?? 6) < 2.6) { const l = near(lit.filter(p => !drowned(p)), P.x); if (l) return { goal: l.x, swimY: l.y - 34 }; }
+  if (boss.ward > 0 || boss.open > 0) return null;
+  if (P.wick > 0 && dark.length) { const l = near(dark, boss.x);
+    if (l && Math.abs(l.x - boss.x) < 220) { const away = Math.sign(l.x - boss.x) || 1; return { goal: l.x + away * 8, hit: Math.abs(boss.x - l.x) < R ? l : null }; } }
+  if (!(P.wick > 0) && dark.length) { const s = near(BK.props().filter(p => p.t === 'brazier' && p.city).concat(lit), P.x); if (s && Math.abs(s.x - P.x) < 260) return { goal: s.x }; }
+  return null;
+}
 function princeTarget(BK, boss, A, P) {
   if (['sunk', 'buried', 'sleep', 'wake', 'rise'].includes(boss.mode)) return null;
   /* A LAMP IS TRIED FOR THREE SECONDS AND THEN LEFT: a bot that never lights it must not spend the fight walking to it and back */
@@ -1839,7 +1857,7 @@ async function runbossLab(BK, opts) {
       if (h === 'reaper') { k.throw = false;   /* F: SUMMON SKELETON (when his tree has it) near the boss with none of his up; with a full bar and the boss close, HOLD F for the surge */
         if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); }
         else if (f % 20 === 0 && ad < 110 && BK.skillNow() === 'summonSkeleton' && !(P.cds && P.cds.summonSkeleton > 0) && !BK.risen().some(r => r.life > 0)) BK.press('throw'); }
-      let goal = null, strike = false, princeT = null;
+      let goal = null, strike = false, princeT = null, lampT = null; P.labSwimY = undefined;
       /* HER DRONES, while two of them are up: the nearest one, and the queen's own openings come first */
       const swarm = boss.t === 'queen' ? BK.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone) : [];
       const swarmT = swarm.length >= 2 && boss.mode !== 'winded' && boss.mode !== 'stuck' ? swarm.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
@@ -2164,6 +2182,9 @@ async function runbossLab(BK, opts) {
       /* THE LAMPREEVE (claude/weakboss), played the way his hall teaches it: when he goes for a lamp, get to that lamp first, on its far side
          from him, and strike it while the hood is on it - the flare blinds him, and then he is open (the branch below). With your light taken
          (his phase two), go to the nearest burning lamp and stand at it until it is back. Nothing is flared for the bot: a real swing on the lamp. */
+      else if ((boss.t === 'tollmaster' || boss.t === 'lampreeve') && !open && (lampT = lampPlan(BK, boss, A, P, boss.t === 'tollmaster' ? 60 : 70)) && (boss.t === 'tollmaster' || lampT.hit || P.wick > 0)) { goal = lampT.goal; strike = false;
+        if (lampT.swimY !== undefined) P.labSwimY = lampT.swimY;
+        if (lampT.hit && Math.abs(P.x - lampT.hit.x) < 16 && P.atk < 0) { P.face = Math.sign(lampT.hit.x - P.x) || P.face; k.left = k.right = false; goal = null; BK.press('atk'); swings++; } }
       else if (boss.t === 'lampreeve' && !open) { const t = boss.target, hooding = t && (boss.mode === 'toLamp' || boss.mode === 'snuffTell' || boss.mode === 'snuff');
         if (hooding) { const side = Math.sign(boss.x - t.x) || 1; goal = t.x - side * 12; strike = false;
           if (boss.mode !== 'toLamp' && Math.abs(P.x - t.x) < 20 && P.ground && P.atk < 0) { P.face = side; k.left = k.right = false; goal = null; BK.press('atk'); swings++; } }
@@ -2448,7 +2469,7 @@ async function runbossLab(BK, opts) {
            right, so when the Tollmaster fills his square the bot floated at the surface with him on the stones below
            it: every hero stalled between 3% and 27% of him, which is his flood phase and nothing else. A swimmer
            strokes up and down as well. */
-        if (P.swim) { const dyb = (boss.y - 10) - P.y; if (dyb < -12) k.up = true; else if (dyb > 12) k.down = true; } }
+        if (P.swim) { const dyb = (P.labSwimY ?? (boss.y - 10)) - P.y; if (dyb < -12) k.up = true; else if (dyb > 12) k.down = true; } }   /* (claude/lamplit2: or up under a lamp's hood for air) */
       if(shipAscending){
         if(P.climb && P.y<17.5*TS && P.y>15.2*TS && Math.abs(P.x-311*TS)<20 && !(P.labShipVault>0)){BK.press('jump');P.labShipVault=32;}
         if(P.ground&&(k.left||k.right)){const dir=k.right?1:-1,tx=Math.floor((P.x+dir*20)/TS),ty=Math.floor((P.y+2)/TS);if(!L.grid[ty*L.W+tx]){BK.press('jump');P.labShipVault=32;}}
@@ -2504,7 +2525,12 @@ async function runbossLab(BK, opts) {
         if (!nearSmall || inSweep || inCut) {
           if (nearSmall && inSweep && keyVerb(BK, h, nearSmall) === 'sweep') k.down = true;
           BK.press('atk'); swings++; } }
-      if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air'].join(' ')); }
+      /* (claude/lamplit2) THE FLOODED SQUARE: the water lifts a swimmer to its roof, so a player strokes DOWN to him - and, under half a breath,
+         goes up under the nearest lamp's hood the writ has not drowned, whatever else he was doing (the air comes before the tell) */
+      if (boss.t === 'tollmaster' && boss.flooded && P.swim) { const air = (P.breath ?? 6) < 2.6 ? lampAirFor(BK, boss, A, P) : null;
+        if (air) { k.left = air.x < P.x - 6; k.right = air.x > P.x + 6; P.labSwimY = air.y; k.block = false; }
+        const dyb = (P.labSwimY ?? (boss.y - 10)) - P.y; k.up = dyb < -10; k.down = dyb > 10; if (k.down) k.jump = false; }
+      if (opts.samples && f % 45 === 0) { out.samples = out.samples || []; out.samples.push([h, Math.round(f / 60), boss.mode, Math.round(d), Math.round(boss.y - P.y), k.block ? 'B' : '-', goal === null ? '·' : Math.round(goal - P.x), P.hurt > 0 ? 'hurt' : '', P.ground ? 'g' : 'air', 'hp' + Math.round(P.hp), 'b' + Math.round(100 * boss.hp / (boss.maxHp || 1)) + '%p' + (boss.phase || ''), P.swim ? 'br' + (P.breath ?? 0).toFixed(1) : '', P.wick > 0 ? 'wick' + P.wick.toFixed(0) : ''].join(' ')); }   /* (claude/lamplit2: his health, your health, breath and fire) */
       if (f % 30 === 0 && boss.y < P.y - 12 && strike && ad < reach + 20) { BK.press('jump'); if(boss.t==='herald')P.labJump=18; }   /* a boss standing a tile up (the roc in the glass) is cut from a hop */
       /* THE LAST CHARGE, spent as a player spends it: at the boss while he is in front of the knight, open, and not winding up or rushing him */
       /* (claude/heropassa) VALIANT STRIKE: a full RESOLVE against a duelist's wall is spent on a heavy cut (it goes through the wall), not on the last charge */

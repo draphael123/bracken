@@ -306,6 +306,7 @@ export const STUCK = {
   ],
   lamplit: [
     { id: 'lp-stair', zone: [236, 8, 262, 22], at: [260, 21], line: 'THE ROOFS END HERE: THE WAY ON IS DOWN THE STAIR' },
+    { id: 'lp-tollgate', zone: [548, 14, 576, 23], at: [570, 21], done: ['lantern', 570, 21, 'lit'], line: 'THE TOLL GATE LIFTS FOR A LIT LAMP' },   /* (claude/lamplit2) the one required relight */
     { id: 'lp-key', zone: [262, 18, 345, 45], steps: [
       { at: [292, 37], done: ['key', 292, 37, 'got'], line: 'THE LOCKGATE WANTS A KEY: THE CLERK HAS IT' },
       { at: [326, 37], done: ['lockgate', 326, 37, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },

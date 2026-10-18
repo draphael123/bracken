@@ -105,7 +105,7 @@ try {
   if (r.reeve) { const o = r.reeve;
     ok(o.lamps >= 3, 'the Lampreeve\'s hall has its lamps: ' + o.lamps);
     ok(o.alone.sawSnuff && o.alone.open === 0 && o.alone.lampOut, 'a hood left alone opens nothing and the lamp goes out: ' + JSON.stringify(o.alone));
-    ok(o.struck.struck && o.struck.open > 1.5 && o.struck.lampLit, 'a lamp struck under the hood flares, he is blinded and open, the lamp burns on: ' + JSON.stringify(o.struck));
+    ok(o.struck.struck && o.struck.open >= 1.0 && o.struck.lampLit, 'a lamp struck under the hood flares, he is blinded and open, the lamp burns on: ' + JSON.stringify(o.struck));   /* (claude/lamplit2, Daniel's 10-08 brief: the hood strike is now the SMALLER opening, 1.2 s x1.3 - the RELIGHT stun is the big one, 2.4 s x1.7, asked by tools/lamplit2.mjs) */
     ok(o.openBlow >= 2 * o.shutBlow && o.shutBlow <= 5, 'blind he takes the blow, out of the flare his coat takes most of it: ' + o.openBlow + ' vs ' + o.shutBlow);
     ok(o.lungeStand.told === 'lungeTell' && o.lungeStand.hurt > 0, 'the lunge from the dark is told and hurts a hero who stands: ' + JSON.stringify(o.lungeStand));
     ok(o.lungeRoll.told === 'lungeTell' && o.lungeRoll.hurt === 0, 'a hero who rolls through the lunge is not hurt: ' + JSON.stringify(o.lungeRoll));

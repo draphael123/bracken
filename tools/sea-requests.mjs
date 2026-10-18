@@ -16,5 +16,8 @@ for(const dodge of [0,.3])for(const result of ['blocked','hit']){
 }
 const expr=s.match(/P\.breath = \(P\.breath \?\? breathMax\) - dt \* ([^;]+);/)[1];
 for(const capped of [true,false]){const rate=id=>vm.runInNewContext(expr,{swimP:{capped},curId:()=>id});assert.equal(rate('deep'),rate('reef')/2);}
-const toll=source('updateTollmaster','tollWeight');assert(!toll.includes('sq.rising'));assert(toll.includes("case 'blackoutTell'"));
-console.log('Sea: permanent tentacles across all phases, block/dodge wave responses, half Deep breath drain, no Tollmaster flooding.');
+/* (claude/lamplit2) THE TOLLMASTER REDESIGN (Daniel 10-08, scratch/brief-lamplit2.md, all approved) supersedes the old "no flooding" request: phase three floods
+   his square again, and the lit lamps are its only air - so every relight is a breath and an opening. What this still holds: THE DARK (the room AoE) and the
+   coin weight are gone, and the flood is told (floodTell) before it rises. */
+const toll=source('updateTollmaster','tollHurt');assert(!toll.includes('tollDark(')&&!toll.includes('tollWeight('));assert(toll.includes("case 'floodTell'")&&toll.includes('sq.rising'));
+console.log('Sea: permanent tentacles across all phases, block/dodge wave responses, half Deep breath drain, the Tollmaster flood told and lamp-lit (claude/lamplit2).');
