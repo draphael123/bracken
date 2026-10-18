@@ -13036,7 +13036,7 @@ function capRead(e, cx, cy) { const x = Math.round(e.x - cx), y = Math.round(e.y
     const by = y - (e.h || 28) - 22; text('OPEN', x, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(x - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(x - 18, by, Math.round(36 * kk), 3); }
   else if (e.ward > 0) { H2A.ward(g, x, y - 16, time); }   /* (claude/hurricane2art) HIS WARD: a faceted pale shell, its rim turning */
   if ((e.mode === 'brace' || e.mode === 'held') && e.line !== null && e.line !== undefined) { const lx = Math.round(e.line - cx), ly = Math.round(L.arena.floor - cy);   /* the line he wants: lit, and the way to it marked (claude/hurricane2art) */
-    H2A.lineWant(g, lx, ly, x, time, text); }
+    H2A.lineWant(g, lx, ly, x, time, (s, tx, ty, ...r) => text(s, Math.max(textW(s, 6) / 2 + 4, Math.min(VW - textW(s, 6) / 2 - 4, tx)), ty, ...r)); }   /* (batch101 integ: the label stays whole on screen when the line stands at the view's edge - textfit OFFSCREEN) */
   if (e.mode === 'beach') H2A.flatSea(g, x, y, time);   /* knocked flat: the sea running off him */
 }
 function capCut(e, reach, dmg) { // a cut of his, and what the shield does about it
@@ -27274,7 +27274,7 @@ FKH = makeFogKnightHands({ get L() { return L; }, get players() { return players
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(), music: n => { if (bossActive) music.play(n); },
   lanternOf: pp => (TPH ? TPH.lanternOf(pp) : null), gutter: pp => { if (TPH) TPH.guttered(pp); }, isPyro: () => isPyro(), lock: id => (TPH ? TPH.lock(id) : null), lamps: () => (TPH && TPH.state() ? TPH.state().lamps : []), lightAt: (x, y) => (TPH && TPH.on() ? TPH.lightAt(x, y) : 0), turned: (e, x, w) => BR.turned(e, x, w) });
 CHH = makeChampionHands({ get L() { return L; }, get players() { return players; }, get boss() { return boss; }, get bossActive() { return bossActive; }, TS, EHP, sfx: SFX, hero: () => P, heroId: () => hero(), time: () => time,
-  number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
+  number: (x, y, t, c) => number(x, y, t, c), text: (s, x, ...a) => text(s, Math.max(textW(s, 5) / 2 + 4, Math.min(VW - textW(s, 5) / 2 - 4, x)), ...a),   /* (batch101 integ: a tell word at the view's edge is pulled in so it is whole - textfit OFFSCREEN) */ burst: (...a) => burst(...a), shake: n => shakeCam(n), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.5), hitstop: t => hitstop(t),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), music: n => { if (bossActive) music.play(n); },
   cellSet: (x, y, t) => cellSet(x, y, t), grid0: (x, y) => grid0[y * LW + x], resolve: () => resolveTiles(), turned: (e, x, w, o) => BR.turned(e, x, w, o), props: () => props,
   hazard: (pp, x, y) => asPlayer(pp, () => { damagePlayer(P.x, DMG.splash, { unblockable: true, pct: SV.HAZARD.pct }); if (!P.dead && P.hp > 0) { P.x = x; P.y = y; P.vx = 0; P.vy = 0; P.onMover = null; P.climb = false; P.swim = false; P.inv = Math.max(P.inv || 0, 0.8); } }) });   /* THE ADMIRAL'S CHAMPION (claude/flotilla2) */
