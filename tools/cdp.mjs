@@ -50,11 +50,12 @@ export async function openPage(opts = {}) {
   const mine = readFileSync(join(ROOT, 'src/lookpass.js'), 'utf8');
   const served = await (await fetch(URL0 + 'src/lookpass.js', {signal:AbortSignal.timeout(5000)})).text().catch(() => '');
   if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
-  const exe = browserExecutable(); if (!exe && !process.env.BRACKEN_BROWSER_PORT) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER to its executable)');
+  const borrowedPort = opts.browserPort || process.env.BRACKEN_BROWSER_PORT;
+  const exe = browserExecutable(); if (!exe && !borrowedPort) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER to its executable)');
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
-  const borrowed = !!process.env.BRACKEN_BROWSER_PORT;
+  const borrowed = !!borrowedPort;
   const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
-  const dbg = borrowed ? +process.env.BRACKEN_BROWSER_PORT : await run.devtoolsPort();
+  const dbg = borrowed ? +borrowedPort : await run.devtoolsPort();
   let loan = null;
   try {
   loan = borrowed ? await borrowedTarget(dbg) : null;
@@ -108,6 +109,6 @@ export async function openPage(opts = {}) {
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, send, errors, PORT, reload, dbg, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
   } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }

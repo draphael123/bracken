@@ -27,16 +27,19 @@ export function fightJs({ r, way, h, s, profile, flasks }, secs = 240) {
 /* (claude/difficulty) THE MODE A FIGHT IS PLAYED ON: DIFFICULTY=easy|normal|master (--difficulty= on boss-rates / mash-bot / level-walk sets it); set in the page after every reload (src/difficulty.js setOverride) */
 export const diffJs = () => 'BK.difficulty&&BK.difficulty.setOverride(' + JSON.stringify(process.env.DIFFICULTY || 'normal') + ')';
 /* a page, tried three times: under a loaded machine a first navigate can miss its 15 s */
-export async function openRetry() { let e0; for (let i = 0; i < 3; i++) { try { return await openPage({ audio: false, fonts: false }); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; }
+export async function openRetry(opts = {}) { let e0; for (let i = 0; i < 3; i++) { try { return await openPage({ audio: false, fonts: false, ...opts }); } catch (e) { e0 = e; await new Promise(r => setTimeout(r, 3000)); } } throw e0; }
 export const won = x => x.outcome === 'win' || x.outcome === 'trade';
 export async function runFights(list, { jobs = 2, secs = 240, onRow = null } = {}) {
-  const queue = list.slice(), out = [], pages = [await openRetry()];
-  for (let i = 1; i < Math.min(jobs, list.length); i++) pages.push(await openRetry());
-  const worker = async i => { for (;;) { const F = queue.shift(); if (!F) return; let row; const { lvl, js } = fightJs(F, secs);
-    try { await pages[i].reload(); await pages[i].evalp(diffJs()); row = await pages[i].evalp(js, 1200000); }
-    catch (e) { row = { err: String(e.message).slice(0, 120) }; try { pages[i].close(); } catch {} pages[i] = await openRetry(); }
+  if (!list.length) return [];
+  const queue = list.slice(), out = [], keeper = await openRetry();
+  /* One browser owns the server and profile. Each seed gets a fresh, disposable browser context,
+     so no fight inherits localStorage or page state and we skip the old page's extra reload. */
+  const worker = async () => { for (;;) { const F = queue.shift(); if (!F) return; let row, pg; const { lvl, js } = fightJs(F, secs);
+    try { pg = await openRetry({ browserPort: keeper.browserPort }); await pg.evalp(diffJs()); row = await pg.evalp(js, 1200000); }
+    catch (e) { row = { err: String(e.message).slice(0, 120) }; }
+    finally { if (pg) await pg.close(); }
     const rec = { row: F.r, way: F.way, hero: F.h, seed: F.s, lvl, tag: F.tag, ...row }; out.push(rec); if (onRow) onRow(rec, out); } };
-  try { await Promise.all(pages.map((_, i) => worker(i))); } finally { for (const p of pages) try { p.close(); } catch {} }
+  try { await Promise.all(Array.from({ length: Math.min(jobs, list.length) }, () => worker())); } finally { await keeper.close(); }
   return out;
 }
 export const line = x => x.row + ' ' + x.way + ' ' + x.hero + ' s' + x.seed + ' L' + x.lvl + ': ' + (x.err ? 'ERR ' + x.err : x.outcome + ' ' + x.secs + 's left ' + x.bossLeft + '% taken ' + x.taken
