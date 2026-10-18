@@ -151,7 +151,7 @@ function onMsg(m) {
   else if (m.t === 'st') { G.grab = m.g === 'GRAB' || m.g === 'THROW' ? m.g : null; G.hostState = m.s; G.paused = !!m.paused; if (+m.n) G.seat = +m.n; showBanner(); stripView(); }
   else if (m.t === 'pong') { G.rtt = Math.round(performance.now() - m.t0); if (link) link.send({ t: 'rtt', ms: G.rtt }); stripView(); }
   else if (m.t === 'full') { G.why = 'full'; }
-  else if (m.t === 'end') { G.why = 'ended'; end('ended'); }
+  else if (m.t === 'end') { const k = m.why === 'party' ? 'left' : 'ended'; G.why = k; end(k); }   /* (claude/tavern) walked out of the tavern door: he left, the host did not end it */
 }
 setInterval(() => { if (link && link.open) link.send({ t: 'ping', t0: performance.now() }); }, 1000);   /* the ping is the heartbeat too: the host drops a guest who goes quiet */
 function pick(h) { if (!link || !link.open || !G.roster.some(r => r.id === h)) return false; link.send({ t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }

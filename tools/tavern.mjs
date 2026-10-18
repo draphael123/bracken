@@ -17,7 +17,7 @@
 // node tools/tavern.mjs [pure,join,stations,camera,leash,rings,save]   (PORT from the environment)
 import { MAX_PLAYERS, COLOURS, SEAT_DEFAULT, cleanTavern, colourOf, stepColour, coopViewSize, camStep, CAM, leashWhy, leashStep, leaderOf, LEASH, DRILL_IDS, spreadOf } from '../src/party.js';
 import { STATIONS, TAVERN_ART, ROOM, DUMMIES, TARGET, START } from '../src/tavern.js';
-const ALL = ['pure', 'join', 'stations', 'camera', 'leash', 'rings', 'save'];
+const ALL = ['pure', 'join', 'stations', 'camera', 'leash', 'rings', 'save', 'online'];
 const WANT = process.argv[2] ? process.argv[2].split(',') : ALL;
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 
@@ -76,7 +76,7 @@ if (WANT.includes('pure')) {
   }
 }
 
-const PAGE = ALL.slice(1).filter(k => WANT.includes(k));
+const PAGE = ALL.slice(1).filter(k => k !== 'online' && WANT.includes(k));
 if (PAGE.length) {
   const { openPage } = await import('./cdp.mjs');
   const pg = await openPage({ audio: false, fonts: false });
@@ -253,6 +253,58 @@ if (PAGE.length) {
     ok(pg.errors.length === 0, 'no page error: ' + pg.errors.slice(0, 3).join(' | '));
   } catch (e) { fails.push('aborted: ' + String(e && e.message || e).split('\n')[0]); console.log('ABORT ' + (e && e.stack || e)); }
   finally { pg.close(); }
+}
+
+/* ONLINE IN THE INN (two browsers over the local signalling stub, as tools/online-coop.mjs): a guest who picks his hero WALKS IN THROUGH THE DOOR as a
+   seat beside local pads (mixed); his own hands drive his seat; with the party full a guest is told THAT GAME IS FULL; when he goes, his seat goes */
+if (WANT.includes('online')) {
+  console.log('online');
+  const { openPage } = await import('./cdp.mjs'); const { startStub } = await import('./online-stub.mjs'); const { PORT_BASE } = await import('./ports.mjs');
+  const PORT = +(process.env.PORT || PORT_BASE), RELAY = +(process.env.ONLINE_RELAY || PORT + 1), URL0 = 'http://localhost:' + PORT + '/';
+  const ARGS = ['--disable-features=WebRtcHideLocalIpsWithMdns', '--allow-loopback-in-peer-connection'];
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const until = async (pg, expr, ms = 20000, what = expr) => { const t0 = Date.now(); let v; while (Date.now() - t0 < ms) { try { v = await pg.evalp(expr, 5000); } catch { v = undefined; } if (v) return v; await sleep(150); } throw new Error('timed out waiting for ' + what); };
+  async function nav(pg, url, ready) { const t0 = await pg.evalp('performance.timeOrigin', 5000).catch(() => 0); await pg.send('Page.navigate', { url }); await until(pg, 'performance.timeOrigin !== ' + t0 + ' && location.href === ' + JSON.stringify(url) + ' && (' + ready + ')', 90000, 'the page at ' + url); }
+  let stub = null, host = null, guest = null;
+  try {
+    stub = await startStub(RELAY);
+    host = await openPage({ audio: true, fonts: false, args: ARGS });
+    guest = await openPage({ audio: false, fonts: false, args: ARGS, noWait: true });
+    await nav(host, URL0 + '?net=local&relay=' + RELAY, 'typeof window.BK === "object" && !!window.BK.lookPass && !!window.BKONLINE');
+    const H = e => host.evalp(e, 60000), Gu = e => guest.evalp(e, 60000);
+    await H('(async()=>{BK.SET.speed=1;BK.reset({fresh:true});await BK.tavern.enter();BK.tavern.join({kind:"pad",pad:3});return true})()');
+    await until(host, 'BK.players().length===2&&!(BK.players()[1].walkIn>0)', 15000, 'the local P2 in');
+    await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="HOST A GAME")?1:(BKONLINE.open(),1)');
+    await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="HOST A GAME").click()');
+    const code = await until(host, 'BKONLINE.debug().sess && BKONLINE.debug().sess.phase === "waiting" && BKONLINE.debug().sess.code', 15000, 'the room');
+    await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY, '!!window.BKGUEST');
+    await until(guest, 'BKGUEST.state().phase === "pick"', 25000, 'the guest pick');
+    const chalk = await H('(async()=>{const b=document.getElementById("olhost");if(b)b.style.display="none";const p=BK.players()[0];p.x=7*16+8;await new Promise(r=>setTimeout(r,400));window.__textRec=[];await new Promise(r=>setTimeout(r,300));const t=(window.__textRec||[]).filter(x=>x.kind==="text").map(x=>x.s);window.__textRec=null;if(b)b.style.display="";return t.find(s=>/^[A-Z]{4}$/.test(s)&&s===BKONLINE.debug().sess.code)||t.join(",").slice(0,80)})()');
+    ok(chalk === code, 'the room code is the one chalked on the invite board: ' + chalk);
+    await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.textContent==="PYRO"||b.textContent==="RANGER"||b.textContent==="GEOMANCER").click()');
+    const w = await until(host, '(()=>{const p=BK.players()[2];return p&&p.src&&p.src.kind==="online"&&{n:p.n,x:p.x,walk:p.walkIn,hero:p.hero,door:BK.tavern.debug().stations[0].x}})()', 15000, 'the guest seated');
+    ok(w.n === 3 && w.walk > 0 && Math.abs(w.x - w.door) < 24, 'the online guest WALKS IN THROUGH THE DOOR as P3, beside the local P2 (mixed): ' + JSON.stringify(w));
+    await until(guest, 'BKGUEST.state().phase === "play" && BKGUEST.state().seat === 3', 10000, 'the guest told he is P3');
+    ok(true, '...and the guest page says P3');
+    await until(host, '!(BK.players()[2].walkIn>0)', 5000, 'walked in');
+    const x0 = await H('BK.players()[2].x');
+    await guest.send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+    const moved = await until(host, '(()=>{const p=BK.players()[2];return p.x-' + x0 + '>12&&Math.round(p.x)})()', 6000, 'P3 moving').catch(() => 0);
+    await guest.send('Input.dispatchKeyEvent', { type: 'keyUp', key: 'ArrowRight', code: 'ArrowRight', windowsVirtualKeyCode: 39 });
+    ok(moved > 0, "the guest's own keys drive HIS seat (P3): " + Math.round(x0) + ' -> ' + moved);
+    /* a fourth (local) fills the party; the guest leaves and comes back: THAT GAME IS FULL */
+    await H('BK.tavern.join({kind:"pad",pad:4})');
+    await nav(guest, URL0 + 'manifest.webmanifest', 'true');
+    await until(host, 'BK.players().length===3 && !BK.players().some(p=>p.src&&p.src.kind==="online")', 15000, 'his seat to go');
+    ok(true, 'the guest leaving takes his seat away; the local seats stay');
+    await H('BK.tavern.join({kind:"pad",pad:5})');
+    await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY, '!!window.BKGUEST');
+    const full = await until(guest, 'BKGUEST.state().phase === "ended" && BKGUEST.state().err', 25000, 'the guest told').catch(e => String(e));
+    ok(full === 'full', 'with four in the party a joining guest is told THAT GAME IS FULL: ' + full);
+    ok(host.errors.length === 0 && guest.errors.length === 0, 'no page error: ' + host.errors.concat(guest.errors).slice(0, 2).join(' | '));
+    await H('BKONLINE.end()');
+  } catch (e) { fails.push('online aborted: ' + String(e && e.message || e).split('\n')[0]); }
+  finally { for (const pg of [guest, host]) if (pg) try { await pg.close(); } catch {} if (stub) await stub.close(); }
 }
 if (fails.length) { console.log('tavern: ' + fails.length + ' failed'); for (const f of fails) console.log('FAIL ' + f); process.exit(1); }
 console.log('tavern: OK - four seats (pads walk in through the door), every station, the shared camera\'s step out, the leash, rings + tags, old saves fine');
