@@ -14,16 +14,12 @@ import { browserExecutable } from './cdp.mjs';
 export const SERIAL_TAIL = {
   'mobile-perf': 'frame timing must be measured without other labs on the GPU',
   'boss-music': 'its mock audio clock uses real timers to check two complete loops',
-  /* These three pages rehearse long, stateful fights or a hero-by-hero climb. In the pooled borrowed browser, the court
-     once failed to drain at half health, the Pyromancer began the tower climb on the wrong floor, and one Archmage
-     assertion failed. Five --jobs=1 reruns of EACH passed in fresh browser profiles. Keep their answer measured alone,
-     after the pool has closed, until the underlying game-state flake is understood; no test rule has changed. */
+  /* These two pages rehearse long, stateful fights or a hero-by-hero climb. In the pooled borrowed browser, the court
+     once failed to drain at half health and the Pyromancer began the tower climb on the wrong floor. Five --jobs=1
+     reruns of each passed in fresh browser profiles. Keep their answer measured alone until the cause is understood. */
   'firsthour': 'the court half-health phase needs a fresh browser profile after a pooled-only failure',
   'fallingtower2-keys': 'the seven-hero climb needs a fresh profile after a pooled-only checkpoint failure',
-  'archmage-folly': 'the staged boss rehearsal needs a fresh profile after a pooled-only failure',
-  /* The field's real-frame dressing margin produced one borderline mean-luminance miss in a pooled browser. Its full
-     eleven-part look check passed five fresh-profile reruns, so measure the picture after the pool has shut down. */
-  'unburied-look': 'the real-frame dressing margin needs a fresh profile after a pooled-only pixel miss',
+  /* archmage-folly and unburied-look now pin their random streams and run in the browser pool. Their thresholds remain unchanged. */
   'online-coop': 'host and guest need two simultaneous browsers of their own',
   'cdp-recovery': 'tests protocol timeouts and twenty fresh-page reloads without pool contention',
   'textfit': 'opens many game pages and needs its own fresh browser for the picture verdict',

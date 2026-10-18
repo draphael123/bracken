@@ -34,11 +34,12 @@ const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok
 const want = { crushTell: ['!!', 'dodge'], booksTell: ['!', 'block'], glyphTell: ['!!', 'dodge'], pairTell: ['!!', 'dodge'] };
 for (const [m, [mk, an]] of Object.entries(want)) ok(MARK['archmage|' + m] === mk && ANSWER['archmage|' + m] === an, 'archmage|' + m + ' wears ' + mk + ' and is answered by ' + an + ' (MARK ' + JSON.stringify(MARK['archmage|' + m]) + ', ANSWER ' + JSON.stringify(ANSWER['archmage|' + m]) + ')');
 
-const pg = await openPage({ audio: false, fonts: false });
+const pg = await openPage({ audio: false, fonts: false, seed: 1919 });   /* the ten blink samples need the same random stream on every run */
 try {
   const r = await pg.evalp(`(async()=>{const LIB=${LIB};
     const { LEVELS, T } = await import('/src/level.js');
-    BK.manualSimulation = true; BK.SET.speed = 1; const out = { notes: [] };   /* a frame is a sixtieth of a second of the fight: the numbers below are in frames */
+    BK.manualSimulation = true; { let seed = 1919; Math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; }; }
+    BK.SET.speed = 1; const out = { notes: [] };   /* a frame is a sixtieth of a second of the fight: the numbers below are in frames */
     const P = () => BK.P, TS = 16;
     let lost = 0;
     /* one frame, the hero's health kept topped up and what he lost counted (no god mode: god mode turns every blow away) */

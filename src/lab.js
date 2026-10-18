@@ -354,6 +354,10 @@ async function runambushLab(BK, opts) {
   const rows = [], out = { rows, started: Date.now() };
   if (typeof window !== 'undefined') window.__ambushLab = out;
   for (const lvId of levels) for (const h of heroes) for (let rep = 0; rep < reps; rep++) {
+    /* Pin each row's dice before load/start as bossLab does; unrelated browser timing must not decide whether a room opens. */
+    const realRandom = Math.random;
+    Math.random = mulberry(seedOf('ambush|' + lvId + '|' + h + '|' + rep));
+    try {
     BK.setHero(h); BK.reset({ fresh: true }); if (BK.clearTellClock) BK.clearTellClock(); BK.load(lvm.LEVELS.findIndex(l => l.id === lvId)); BK.start(); BK.god = false; BK.sim(300);
     const A = BK.ambushes()[opts.room || 0]; if (!A) { rows.push({ lvl: lvId, h, skipped: 'no ambush room' }); continue; }
     const P = BK.P, k = BK.keys, x0 = A.trigger !== undefined ? A.trigger : A.wallL + 3, mid = (A.wallL + A.wallR) / 2 * 16 + 8;
@@ -394,6 +398,7 @@ async function runambushLab(BK, opts) {
     if (elite && eliteSecs === null && !elite.alive) eliteSecs = +((f - eliteFrom) * spd / 60).toFixed(1);
     const secs = shutAt === null ? null : +((f - shutAt) * spd / 60).toFixed(1);
     rows.push({ lvl: lvId, room: A.name, h, opened: A.st === 'done', secs, inTarget: A.st==='done' && secs>=AMBUSH_TARGET.min && secs<=AMBUSH_TARGET.max, leader: elite ? elite.t : null, eliteSecs, taken: Math.round(taken), takenPct: +(100 * taken / P.maxHp).toFixed(0), slow });
+    } finally { Math.random = realRandom; }
     await yieldNow();
   }
   out.done = true; out.ms = Date.now() - out.started;

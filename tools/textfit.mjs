@@ -295,7 +295,9 @@ async function pageTextFit(input) {
   /* THE BOSS PLATES, every boss and mini fight in the campaign: its name, its health and any meter of its own, at the foot of the
      screen - the band under VH - 40 only, so the fights' own world captions (the long run, 'boss') are not asked here. In the suite. */
   if (want('plates')) for (const [l, i] of campaign) { try { toPlay(i, 'knight'); } catch (e) { continue; } const Lb = BK.L;
-    for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue; const boss = BK.enemies().find(e => e.t === A.boss && e.alive); if (!boss) continue;
+    for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue;
+      if (nm === 'mini' && Lb.arena) toPlay(i, 'knight');   /* the arena fight cannot still be active at the mini's door */
+      const boss = BK.enemies().find(e => e.t === A.boss && e.alive); if (!boss) continue;
       for (const e of BK.enemies()) if (e !== boss && !e.maxHp) e.alive = false;
       BK.tp(Math.round((A.trigger || (A.x0 + A.x1) / 2) / 16) + 1, Math.round(A.floor / 16) - 1);
       for (let f = 0; f < 24; f++) { BK.sim(12); if (boss.heat !== undefined) boss.heat = 20 + f * 3; frame('boss plate ' + l.id + ' ' + nm, () => { BK.state = 'play'; }, { band: BK.view.VH - 40 }); if (BK.P.dead) BK.reset(); } }
@@ -311,6 +313,7 @@ async function pageTextFit(input) {
   if (want('boss') || want('bossfix')) { const meas = document.createElement('canvas').getContext('2d');
     for (const [l, i] of campaign) { if (!want('boss') && !FIX.includes(l.id)) continue; let Lb; try { toPlay(i, 'knight'); Lb = BK.L; } catch (e) { continue; }
       for (const [nm, A] of [['arena', Lb.arena], ['mini', Lb.mini]]) { if (!A) continue;
+        if (nm === 'mini' && Lb.arena) toPlay(i, 'knight');   /* measure each real fight from its own level entry */
         const boss = BK.enemies().find(e => e.t === A.boss && e.alive);
         const names = nm === 'mini' ? [TL.miniName()] : boss ? [TL.bossTitle(boss), TL.bossTitle(Object.assign({}, boss, { phase: 3 })), TL.bossTitle(Object.assign({}, boss, { need: 'violet' }))] : [];
         for (const s of new Set(names)) { let w; if (TL.cardFit) w = TL.cardFit(s)[1]; else { meas.font = '12px "Press Start 2P", monospace'; w = Math.ceil(meas.measureText(s).width); }   /* the size the card really draws it at */

@@ -26,7 +26,7 @@ const BUILT = LEVELS.find(l => l.id === 'unburied').build();   /* (the build add
 const want = process.argv.slice(2).map(Number).filter(Boolean), run = n => !want.length || want.includes(n);
 const results = [];
 const note = (n, name, ok, detail) => { results.push([n, name, ok]); console.log((ok ? '  ok   ' : '  FAIL ') + String(n).padStart(2) + ' ' + name.padEnd(26) + (detail || '')); };
-const PRELUDE = `const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.hud='minimal';BK.SET.weather=false;
+const PRELUDE = `const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;{let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};}BK.SET.hud='minimal';BK.SET.weather=false;
   const fi=LEVELS.findIndex(l=>l.id==='unburied');
   const fresh=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(fi);BK.state='play';BK.god=true;BK.sim(260);BK.step(1);for(const e of BK.enemies())e.alive=false;};   /* 2.6 s: the level's fade-in is over */
   const L=()=>BK.L; const TS=16, TPS=100;   /* one sim tick is a hundredth of a second */
@@ -36,7 +36,7 @@ const PRELUDE = `const {LEVELS}=await import('/src/level.js');BK.manualSimulatio
   const lum=(d,i)=>0.299*d[i]+0.587*d[i+1]+0.114*d[i+2];
   const stand=(x,y)=>{const P=BK.P;P.x=x*TS+8;P.y=(y+1)*TS;P.vx=P.vy=0;};`;
 
-const pg = await openPage({ audio: false });
+const pg = await openPage({ audio: false, seed: 1919 });   /* the dressing's lighting and particles get the same random stream */
 const ev = (body, t = 900000) => pg.evalp(`(async()=>{${PRELUDE}\n${body}\n})()`, t);
 try {
   /* ---------------- 1. NO BORROWED TILES ---------------- */
