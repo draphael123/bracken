@@ -534,6 +534,9 @@ function playFile(name) {
   const chain = first => {
     if (gen !== musicGen || currentTrack !== name) return;
     const off = first ? 0 : Math.min(TRACK_INTRO[name] || 0, end - 1), len = end - off;   /* AN INTRO, ONCE: every pass after the first starts at the loop (TRACK_INTRO) */
+    // A busy tab can delay this timer beyond an entire loop. Web Audio clamps both past
+    // fade curves to "now", where they overlap and throw; restart the next copy ahead.
+    at = Math.max(at, ac.currentTime + LOOP_XF);
     const s = loopCopy(ac, b, len, tg, at, first, off); musicSrcs.push(s); musicSrc = s; warpAttach(s, name);
     s.addEventListener('ended', () => { musicSrcs = musicSrcs.filter(q => q !== s); });
     const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
