@@ -2477,6 +2477,7 @@ function spawnEnt(e) {
       case 'dog': props.push({ t: 'dog', x: px, y: py, vx: 0, vy: 0, w: 12, h: 7, face: 1, anim: 0, barkT: 0, sit: 0 }); break;
       case 'crank': props.push({ t: 'crank', x: px, y: py, wall: e.wall, raftCall: e.raftCall, hits: 0, open: false }); break;
       case 'torch': lights.push({ x: px, y: py - 10, r: 46, torch: true, holder: true }); break;
+      case 'airhood': lights.push({ x: px, y: py - 6, r: 40, glow: true }); break;   /* (claude/airpockets) a bell housing in the Tollmaster's roof is a pale light you can find in the dark */
       case 'treehouse': { /* A HOUSE IS HELD UP BY SOMETHING: find what is under it - water, or ground - so its stilts or its trunk can reach it */
         let gy = e.y + 1; while (gy < L.H && !isSolid(e.x, gy) && tileAt(e.x, gy) !== T.PLANK && tileAt(e.x, gy) !== T.ONEWAY) gy++;
         const pool = (L.pools || []).find(q => px >= q.x0 && px < q.x1 && q.y >= py && q.y <= gy * TS);
