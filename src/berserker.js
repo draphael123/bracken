@@ -41,7 +41,7 @@ export const BZ = {
   roll: { t: 0.28, speed: 300, shove: 200, stagger: 0.55, dmg: 0.4 },   /* (claude/heropassa) THE SHOULDER BARGE (his distinct dodge): 250 -> 300, a fifth further into them; brutes, elites, minis and bosses are not shoved (smallFoe) */
   axe: { st: 18, vx: 300, vy: -10, g: 600, flat: 0.5, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
   perk: { rage: 1, brace: 1 },                        /* LEVELING2's hero perks (STOKED, STOUT BRACE): main.js applyUpgrades sets these from the card; 1 = none */
-  poise: { heavy: 30, bossMul: 1.4, rage: 1.25, one: 0.5 },
+  poise: { heavy: 30, bossMul: 1.5, rage: 1.25, one: 0.5 },
   /* WEIGHT (claude/weight): his row of its commit table (src/commit.js reads COMMIT.berserker) - kept here as the record */
   commit: { light: 0.14, third: 0.2, up: 0.14, heavy: 0.27, roll: 22, rollInv: 0.26, rollT: 0.28, brace: 0.28 },   /* (claude/heropassa: the record now matches what is live - src/commit.js ROLL_COST 22 and STAM.rollInv 0.26 win; this row was never read) */
 };
