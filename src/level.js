@@ -5656,6 +5656,10 @@ function theLamplitStreet() {
   ent('deco', 658, UP - 1, { kind: 'column', v: 0 }); ent('deco', 636, UP - 1, { kind: 'column', v: 1 });
   plat(632, 20, 4); plat(638, 18, 3); plat(678, 20, 4);      // cornices over the square: the dash and the mantle
   ent('tollmaster', 684, UP - 1, { face: -1 });
+  /* THE BELL HOUSINGS (claude/airpockets, Daniel 10-18): four iron-hooded alcoves cut up into the roof slab, two in each half of the square. When the
+     square floods to its roof the air stays in them - a breath, drawn, in the stone. Each holds only so much (it is SPENT after ~2.5 s of drinking and
+     comes back in ~8 s) and the WRIT drowns the ones on the half it names, so the fight is a choice of which to swim to, not a place to sit. */
+  for (const a of [657, 665, 677, 685]) { block(a - 1, a + 3, 4, 5); air(a, a + 2, 5, 7); lampPockets.push([a, a + 2, 5, 8, undefined, true]); }
   pools.push({ x0: 650 * TS, x1: 695 * TS, y: UP * TS + 8, bottom: UP * TS + 8, base: UP * TS + 8, shallow: true, depth: 0, dry: true, swim: false, clear: true, square: true });
   coins([633, 19], [639, 17], [656, 19], [668, 19], [679, 19], [688, 19]);
   ent('deco', 668, UP - 1, { kind: 'plunder', v: 0 });
