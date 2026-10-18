@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-17",
+    "batch": 99,
+    "lines": [
+      "Lamplit Street reworked: oil flasks, the Tollmaster",
+      "Lampreeve and the Tollmaster redrawn",
+      "New church music: the nave, the crypts, the Paladin",
+      "The Kraken has a new sea theme",
+      "Mage's Folly: new Archmage poses and an exit gate"
+    ]
+  },
+  {
+    "date": "2026-10-17",
     "batch": 98,
     "lines": [
       "Owl Reeve and False Abbot return, redrawn",
