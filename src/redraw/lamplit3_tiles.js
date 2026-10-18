@@ -60,8 +60,9 @@ function crossbar(v, end) {
   return once('xb' + v + end, () => { const [c, g] = canvas(16, 16);
     rect(g, 0, 0, 16, 1, LC.ir4); rect(g, 0, 1, 16, 2, LC.ir2); rect(g, 0, 3, 16, 1, LC.ir0);
     for (let x = 3; x < 16; x += 5) p2(g, x, 1, LC.ir3);
-    if (end === 'L') { g.clearRect(0, 0, 2, 4); p2(g, 2, 4, LC.ir2); p2(g, 1, 5, LC.ir2); p2(g, 2, 6, LC.ir3); p2(g, 3, 5, LC.ir2); }
-    if (end === 'R') { g.clearRect(14, 0, 2, 4); p2(g, 13, 4, LC.ir2); p2(g, 14, 5, LC.ir2); p2(g, 13, 6, LC.ir3); p2(g, 12, 5, LC.ir2); }
+    /* the arm's ends: a round iron boss, no legs under it (in the lamp's warm wash curled ends read as a table's legs) */
+    if (end === 'L') { g.clearRect(0, 0, 1, 4); rect(g, 1, 1, 2, 2, LC.ir3); p2(g, 1, 1, LC.ir4); }
+    if (end === 'R') { g.clearRect(15, 0, 1, 4); rect(g, 13, 1, 2, 2, LC.ir3); p2(g, 14, 1, LC.ir4); }
     if (end === 'M') { rect(g, 6, 3, 4, 2, LC.ir1); rect(g, 7, 4, 2, 12, LC.ir2); p2(g, 7, 4, LC.ir3); rect(g, 9, 4, 1, 12, LC.ir0); for (let y = 6; y < 16; y += 3) p2(g, 7, y, LC.ir3); }
     return c; });
 }

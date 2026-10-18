@@ -188,7 +188,7 @@ export function makeLamplitFire(ctx) {
   H.drawWorld = (g, cx, cy, time) => {
     if (!F) return; const vw = ctx.VW(), R = Math.round;
     for (const c of F.list) { const x = c.x * TS(), y = cyOf(c); if (x < cx - 20 || x > cx + vw + 20) continue; const X = R(x - cx), Y = R(y - cy);
-      if (c.st === 'oil') { g.fillStyle = c.float ? '#14181c' : '#0e0e12'; g.fillRect(X, Y - 2, 16, 2); g.fillStyle = c.float ? '#5a4a7a' : '#3a3a48'; g.fillRect(X + ((c.x * 5) % 9), Y - 2, 4, 1); if (c.float) { g.fillStyle = '#3a6a6a'; g.fillRect(X + ((c.x * 3) % 11), Y - 1, 3, 1); } if (c.gutter) { g.fillStyle = '#2a3036'; g.fillRect(X, Y, 16, 1); } }
+      if (c.st === 'oil') { g.fillStyle = c.float ? '#14181c' : '#0e0e12'; g.fillRect(X, Y - 2, 16, 2); g.fillStyle = c.float ? '#7a6a9a' : '#5a5a72'; g.fillRect(X + ((c.x * 5) % 9), Y - 2, 4, 1); if (c.float) { g.fillStyle = '#3a6a6a'; g.fillRect(X + ((c.x * 3) % 11), Y - 1, 3, 1); } if (c.gutter) { g.fillStyle = '#2a3036'; g.fillRect(X, Y, 16, 1); } }
       else if (c.st === 'catch') { g.fillStyle = '#0e0e12'; g.fillRect(X, Y - 2, 16, 2); g.fillStyle = '#ff6b2c'; for (let i = 0; i < 16; i += 4) if ((Math.floor(time * 20) + i) % 3 === 0) g.fillRect(X + i, Y - 3, 2, 1); }
       else if (c.st === 'burn') { g.fillStyle = '#2a140a'; g.fillRect(X, Y - 1, 16, 1); const k = Math.min(1, c.t / 1.2); for (let i = 0; i < 16; i += 3) { const h = R((3 + ((Math.sin(time * 13 + (c.x * 16 + i) * 0.7) + 1) * 3)) * (0.5 + 0.5 * k)); g.fillStyle = ((c.x * 16 + i) >> 2) & 1 ? '#ff9a3c' : '#ffd36b'; g.fillRect(X + i, Y - 1 - h, 2, h); } }
       else { g.fillStyle = '#1a1614'; g.fillRect(X, Y - 1, 16, 1); } }
