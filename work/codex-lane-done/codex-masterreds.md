@@ -11,7 +11,14 @@ After: `tools/berserker.mjs` exit 0, `most:60.6, heavy:true`; `tools/anti-mash.m
 
 ## Remaining work
 
-Reproduce and fix dune-worm, bells, rule-openings POISE, slopes-trace Kingswood, small-adds Pirate/Abbot, and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
+### Verified step: Dune Worm opening
+
+`amFrame` samples openings before a boss updates. When the Worm becomes stunned during that update, a blow on that same frame could reuse the previous opening's stale-hit count: its 20-point blow dealt 26 instead of 30. `antiMash` now records a new opening immediately before the blow's stale calculation; the existing per-frame sampler still handles openings with no hit.
+
+Before: `tools/dune-worm.mjs` exit 1, `stun.dealt:26` with `stun:true`, `openRead:true`, and `took:0`.
+After: `tools/dune-worm.mjs` exit 0, `stun.dealt:30`; `tools/anti-mash.mjs` exit 0. Logs: `../masterreds-dune-worm-before.log`, `../masterreds-dune-worm-after.log`, `../masterreds-anti-mash-dune.log`.
+
+Remaining: reproduce and fix bells, rule-openings POISE, slopes-trace Kingswood, small-adds Pirate/Abbot, and archmage-folly spots spread. Run the relevant gates and report each result before this branch is ready for a merge.
 
 ## QUESTIONS FOR DANIEL
 

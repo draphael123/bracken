@@ -7735,7 +7735,8 @@ function bossBroken(e, word) {
 }
 /* STALE BLOWS, THE FINISHER, VARIED HITS: a hero's landed blow of 'verb' on a boss or mini */
 function antiMash(e, dmg, verb) {
-  const open = GB.openOf(e) === true, k = AM.staleMul(e, verb, open, DFM.df('stale') || AM.STALE.pay);
+  const open = GB.openOf(e) === true; AM.openTick(e, open);   /* a blow on the first frame of a new opening must start its own count */
+  const k = AM.staleMul(e, verb, open, DFM.df('stale') || AM.STALE.pay);
   AMS.verbs[verb] = (AMS.verbs[verb] || 0) + 1;
   if (k < 1) { const d0 = dmg; dmg = Math.max(1, Math.round(dmg * k)); e.amStaleAt = time; AMS.stale++; AMS.staleLost += d0 - dmg; }   /* (the read: a duller sound and a dimmer spark, below - no word) */
   if (e.bkAt !== time && AM.finisherNow(e, verb)) {   /* (not the blow that broke him: the NEXT heavy or ability is the finisher) */ dmg = Math.round(dmg * AM.BREAK.finisher); AMS.finishers++; hitstop(AM.BREAK.finisherStop); if (!SET.reduceMotion) shakeCam(7); zoomKick(1.08, 0.25);
