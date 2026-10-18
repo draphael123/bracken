@@ -31,6 +31,7 @@ export const TABLE = {
   coast:  { gate: 'net',      seal: 'shipplank',  lock: 'brass' },
   canal:  { gate: 'stopplank', seal: 'lockleaf',  lock: 'wheel' },
   inland: { gate: 'railing',  seal: 'yew',        lock: 'black' },
+  mage:   { gate: 'railing',  seal: 'ironslab',   lock: 'black' },   /* THE MAGE'S FOLLY's own exit-gate kind (src/exit-gates.js): the barriers stay the inland set, the tower's iron slab for the seal */
   desert: { gate: 'slab',     seal: 'sandfall',   lock: 'scarab' },
 };
 /* A BOSS'S OWN TOUCH, where it is obvious (boss id -> seal look; baked like any other). */

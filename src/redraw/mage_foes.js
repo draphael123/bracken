@@ -423,13 +423,21 @@ export function bakeArchmage() {
     for (let i = 0; i < 6; i++) seg(B, bx - 8 + i * 3, F - 4, bx - 9 + i * 3, F - 1, ROBE[0]);
     /* sleeves and hands */
     const ARMC = ROBE;
-    if (pose === 'boltTell') { limb(B, [bx + 4, by - 2 + bend], [bx + 6, by - 18], 5, ARMC); ball(B, bx + 6, by - 19, 2, 2, SKIN); }
+    const NEWP = ['crushTell', 'booksTell', 'glyphTell', 'pairTell', 'wardTell'].includes(pose);
+    if (pose === 'crushTell') { limb(B, [bx + 4, by - 2], [bx + 12, by - 10], 5, ARMC); ball(B, bx + 13, by - 11, 2, 2, SKIN); limb(B, [bx - 4, by - 2], [bx - 9, by - 12], 5, ARMC); ball(B, bx - 10, by - 13, 2, 2, SKIN); }   /* B16: the staff swung up at the shelves, the free hand lifted: the stacks move */
+    else if (pose === 'booksTell') { limb(B, [bx + 4, by - 3], [bx + 15, by - 6], 4, ARMC); ball(B, bx + 16, by - 6, 2, 2, SKIN); limb(B, [bx - 4, by - 3], [bx - 15, by - 6], 4, ARMC); ball(B, bx - 16, by - 6, 2, 2, SKIN); }   /* both arms flung wide, the staff crossed behind: the books rise */
+    else if (pose === 'glyphTell') { limb(B, [bx + 4, by - 1], [bx + 9, by + 10], 5, ARMC); ball(B, bx + 10, by + 11, 2, 2, SKIN); limb(B, [bx - 4, by - 1], [bx - 8, by + 9], 5, ARMC); ball(B, bx - 9, by + 10, 2, 2, SKIN); }   /* the staff and both hands pointed DOWN at the floor under you */
+    else if (pose === 'pairTell') { limb(B, [bx + 4, by - 3], [bx + 14, by - 12], 4, ARMC); ball(B, bx + 15, by - 13, 2, 2, SKIN); limb(B, [bx - 4, by - 3], [bx - 14, by - 12], 4, ARMC); ball(B, bx - 15, by - 13, 2, 2, SKIN); }   /* two hands splayed, one red and one gold: the pair */
+    else if (pose === 'wardTell') { limb(B, [bx + 4, by - 2], [bx + 9, by - 16], 5, ARMC); ball(B, bx + 10, by - 17, 2, 2, SKIN); limb(B, [bx - 4, by - 2], [bx - 4, by - 18], 5, ARMC); ball(B, bx - 4, by - 19, 2, 2, SKIN); }   /* the staff planted, both hands raised round it: the runes stand up */
+    else if (pose === 'boltTell') { limb(B, [bx + 4, by - 2 + bend], [bx + 6, by - 18], 5, ARMC); ball(B, bx + 6, by - 19, 2, 2, SKIN); }
     else if (pose === 'rendTell') { limb(B, [bx + 4, by - 2], [bx + 10, by + 8], 5, ARMC); ball(B, bx + 11, by + 9, 2, 2, SKIN); }
     else if (pose === 'shield') { limb(B, [bx + 5, by - 2], [bx - 4, by + 2], 5, ARMC); limb(B, [bx - 5, by - 2], [bx + 4, by + 2], 5, ARMC); }
     else if (pose === 'open') { limb(B, [bx + 4, by + 4], [bx + 9, by + 12], 5, ARMC); limb(B, [bx - 4, by + 4], [bx - 8, by + 12], 5, ARMC); }
     else { limb(B, [bx + 4, by - 2], [bx + 9, by + 6], 5, ARMC); ball(B, bx + 10, by + 7, 2, 2, SKIN); }
     /* the staff, unless dropped */
-    if (pose !== 'open') { const sx = pose === 'boltTell' ? bx + 7 : pose === 'rendTell' ? bx + 12 : pose === 'bolt' ? bx + 12 : bx + 10, sy0 = pose === 'boltTell' ? by - 36 : pose === 'rendTell' || pose === 'rend' ? by - 4 : by - 20, sy1 = pose === 'boltTell' ? by - 4 : pose === 'rendTell' || pose === 'rend' ? F - 1 : F - 4;
+    if (NEWP) { const st = { crushTell: [bx + 13, by - 11, bx + 24, by - 30, ['#6a3a10', '#e0a040', '#fff0b0']], booksTell: [bx - 16, by - 5, bx + 17, by - 8, ['#7a5a10', '#ffd36b', '#ffffff']], glyphTell: [bx + 10, by + 11, bx + 17, F - 1, ['#7a1020', '#ff6b6b', '#ffd0d0']], pairTell: [bx - 12, F - 3, bx - 12, F - 22, VIOLET], wardTell: [bx + 8, by - 16, bx + 8, F - 2, ['#2a5a30', '#8fd160', '#e0ffd0']] }[pose];
+      layer(B, T => { seg(T, st[0], st[1], st[2], st[3], BRASS[1]); seg(T, st[0] + 1, st[1], st[2] + 1, st[3], BRASS[0]); const tip = pose === 'pairTell' || pose === 'wardTell' ? [st[2], st[3]] : [st[2], st[3]]; ball(T, tip[0], tip[1] - (pose === 'glyphTell' ? 0 : 2), 3, 3, st[4], { flat: true }); }); }
+    else if (pose !== 'open') { const sx = pose === 'boltTell' ? bx + 7 : pose === 'rendTell' ? bx + 12 : pose === 'bolt' ? bx + 12 : bx + 10, sy0 = pose === 'boltTell' ? by - 36 : pose === 'rendTell' || pose === 'rend' ? by - 4 : by - 20, sy1 = pose === 'boltTell' ? by - 4 : pose === 'rendTell' || pose === 'rend' ? F - 1 : F - 4;
       layer(B, T => { seg(T, sx, sy0, sx, sy1, BRASS[1]); seg(T, sx + 1, sy0, sx + 1, sy1, BRASS[0]); ball(T, sx, sy0 - 2, 3, 3, pose === 'boltTell' || pose === 'bolt' ? ['#7a3fbf', '#e0c8ff', '#ffffff'] : pose === 'rendTell' || pose === 'rend' ? ['#7a1020', '#ff6b6b', '#ffd0d0'] : VIOLET, { flat: true }); }); }
     else { seg(B, bx - 12, F - 3, bx + 14, F - 6, BRASS[1]); ball(B, bx + 15, F - 7, 3, 3, VIOLET, { flat: true }); }
     /* the head: beard, face, the hat */
@@ -441,14 +449,19 @@ export function bakeArchmage() {
     floorCut(B, F);
     const c = toCanvas(B);
     if (blink) afterDots(c, [[bx - 10, F - 6, VIOLET[2]], [bx + 12, F - 8, VIOLET[3]], [bx - 12, by, VIOLET[1]], [bx + 13, by - 4, VIOLET[2]], [bx - 8, hy - 18, VIOLET[3]], [bx + 10, hy - 20, VIOLET[2]]]);
+    if (pose === 'crushTell') afterDots(c, [[bx + 22, by - 36, '#c07a20'], [bx + 26, by - 33, '#e0a040'], [bx + 18, by - 34, '#fff0b0'], [bx + 10, by - 40, '#6a5038'], [bx + 3, by - 38, '#6a5038']]);
+    if (pose === 'booksTell') afterDots(c, [[bx - 19, by - 11, '#ffd36b'], [bx - 18, by - 14, '#fff0b0'], [bx + 19, by - 12, '#ffd36b'], [bx + 20, by - 9, '#fff0b0'], [bx, by - 12, '#ffd36b'], [bx - 2, by - 16, '#fff0b0']]);
+    if (pose === 'glyphTell') afterDots(c, [[bx + 12, F, '#ff6b6b'], [bx + 15, F, '#ffd0d0'], [bx + 19, F, '#ff6b6b'], [bx + 22, F, '#ffd0d0'], [bx + 17, F - 4, '#ff6b6b'], [bx - 9, by + 14, '#c8b6ff'], [bx - 10, by + 17, '#7a3fbf']]);
+    if (pose === 'pairTell') afterDots(c, [[bx - 16, by - 17, '#ff6b6b'], [bx - 18, by - 15, '#ffd0d0'], [bx - 14, by - 16, '#ff6b6b'], [bx + 16, by - 17, '#ffd36b'], [bx + 18, by - 15, '#fff0b0'], [bx + 14, by - 16, '#ffd36b']]);
+    if (pose === 'wardTell') afterDots(c, [[bx - 12, by - 22, '#8fd160'], [bx + 14, by - 24, '#8fd160'], [bx + 1, hy - 28, '#e0ffd0'], [bx - 9, by - 8, '#8fd160'], [bx + 15, by - 6, '#e0ffd0']]);
     if (pose === 'bolt') afterDots(c, [[bx + 16, by - 24, VIOLET[3]], [bx + 15, by - 20, VIOLET[2]], [bx + 17, by - 27, '#ffffff']]);
     if (pose === 'rend') afterDots(c, [[bx + 16, F - 3, '#ff6b6b'], [bx + 18, F - 5, '#ffd0d0'], [bx + 20, F - 3, '#ff6b6b']]);
     if (pose === 'hurt') afterDots(c, [[bx - 10, by - 6, ROBE[3]], [bx + 12, by - 8, ROBE[2]], [bx + 2, hy - 26, BRASS[2]]]);
     return c;
   };
-  return pack(['idle', 'drift', 'blink', 'boltTell', 'bolt', 'rendTell', 'rend', 'shield', 'open', 'hurt', 'dead'].map(frame), X, F + 1, 16, 34);
+  return pack(['idle', 'drift', 'blink', 'boltTell', 'bolt', 'rendTell', 'rend', 'shield', 'open', 'hurt', 'dead', 'crushTell', 'booksTell', 'glyphTell', 'pairTell', 'wardTell'].map(frame), X, F + 1, 16, 34);
 }
-export const ARCHMAGE_F = { idle: 0, drift: 1, blink: 2, boltTell: 3, bolt: 4, rendTell: 5, rend: 6, shield: 7, open: 8, hurt: 9, dead: 10 };
+export const ARCHMAGE_F = { idle: 0, drift: 1, blink: 2, boltTell: 3, bolt: 4, rendTell: 5, rend: 6, shield: 7, open: 8, hurt: 9, dead: 10, crushTell: 11, booksTell: 12, glyphTell: 13, pairTell: 14, wardTell: 15 };
 
 // =====================================================================================================================
 // THE FAMILIAR UNBOUND. His cat, grown into a hill: a round grey body, forelegs like columns, a huge head with ONE great

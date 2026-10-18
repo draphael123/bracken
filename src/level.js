@@ -7794,6 +7794,7 @@ function theMagesFolly() {
   block(632, 640, F - 1, F - 1);                                     /* his dais: one step up, so a stone man can climb it */
   deco('orreryBase', 624, F - 1, { arena: true });
   ent('archmage', 636, F - 2, { face: -1 });
+  ent('gate', 643, F - 1);   /* THE OBSERVATORY DOOR (exit gate, kind 'mage' in src/exit-gates.js): behind his dais, it opens when he falls (gateAfterBoss), onto the dawn */
   /* the flood, built dry: it fills in his second stage (tools/newlevel.mjs and killzones ignore a pool that starts dry) */
   pools.push({ x0: 611 * TS, x1: 632 * TS, y: F * TS, base: F * TS, bottom: F * TS, dry: true, depth: 0, arenaTide: true, swim: true, clear: true, harm: true, foulCol: '#4a1e6a', wash: 0.5, acid: true, magePool: true });
   /* his ceiling cage, for the room turned over: two bars on chains from the dome. The course at their roots is left
@@ -7827,6 +7828,7 @@ function theMagesFolly() {
     noCoin: [[64, 208, 0, 13], [209, 326, 0, 21], [51, 57, 0, 25], [327, 446, 0, 5]],   /* the tower's roofs and the gatehouse top: the sprinkler treats an assisted level as all reachable */
     calm: [[0, 70, 0, 47], [90, 104, 0, 47], [122, 160, 26, 47], [179, 210, 0, 47], [236, 264, 22, 47], [264, 292, 0, 47], [308, 318, 0, 47], [332, 382, 30, 47], [382, 448, 0, 47], [447, 536, 0, 47], [537, 602, 0, 47]],   /* no garrison on the lanes, the flipped floor or the test room, nor on the three floors thinned by hand (the stacks' crossing, the bench, the gilded armour's) */
     arena: { x0: 603 * TS, x1: 646 * TS, floor: F * TS, y0: 0, trigger: 608 * TS, wallL: 602, wallR: 646, boss: 'archmage', music: 'archmage', tint: '#2a1a40', tintA: 0.04, fx: 'motes' },
+    gateAfterBoss: true,
   };
   return follyLibrary(L, ret);
 }

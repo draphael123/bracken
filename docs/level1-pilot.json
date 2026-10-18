@@ -1,13 +1,13 @@
 {
  "mage": {
-  "hash": "f96dbf989ba7",
+  "hash": "75dc252c7a95",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 15,
+  "hits": 26,
   "deaths": 3,
-  "kills": 7,
-  "lifts": 146,
+  "kills": 8,
+  "lifts": 133,
   "walked": 100,
   "bare": true
  },
