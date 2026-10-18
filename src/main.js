@@ -229,6 +229,7 @@ import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames,
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
+import * as PARTY from './party.js'; import { makeTavern, STATIONS as TAV_STATIONS, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
 // ---------- display ----------
@@ -248,6 +249,7 @@ const [buf, g0] = canvas(VW, VH, true); let g = g0;   /* `g` is the sheet being 
 // the zoom drops the scale by a third and fills the display with it, capped at 640x360 (twice the world).
 let viewMode = 'normal';
 function viewFor(mode) {
+  if (mode === 'coop') return PARTY.coopViewSize(innerWidth || 1280, innerHeight || 720);   /* THE PARTY'S VIEW (claude/tavern): one whole pixel-scale step out, capped at 1.25x - src/party.js CAM */
   if (mode !== 'zoom') return [320, 180];
   const dw = innerWidth || 1280, dh = innerHeight || 720;
   const S0 = Math.max(1, Math.floor(Math.min(dw / 320, dh / 180))), S1 = Math.max(1, Math.floor(S0 / 1.5));
@@ -275,7 +277,7 @@ function resize() {
   offX = Math.floor((disp.width - VW * S) / 2); offY = Math.floor((disp.height - VH * S) / 2);
   dg.imageSmoothingEnabled = false;
 }
-addEventListener('resize', () => { if (viewMode === 'zoom') setView('zoom'); resize(); }); resize();
+addEventListener('resize', () => { if (viewMode === 'zoom' || viewMode === 'coop') setView(viewMode); resize(); }); resize();
 const q = new URLSearchParams(location.search);
 
 // ---------- settings + progress ----------
@@ -1465,6 +1467,8 @@ function creditTurn(fromX) {
   P.score.turns++;
 }
 var PTK = null;   /* (claude/partnerthrow) the partner-throw hands, made below the knock-into helper */
+var TAVO = null;   /* (claude/tavern) THE TAVERN's stations (src/tavern.js makeTavern), made beside the online host's api */
+let partyCam = { wide: false, t: 0 };   /* (claude/tavern) the shared camera's step out (src/party.js camStep) */
 players = [P]; P.n = 1; P.hero = PROG.hero || 'knight'; P.press = {}; P.score = freshScore();
 let coopFall = false;      /* a down clock ran out: read once, after the passes */
 const upright = p => !p.dead && !(p.down > 0);
@@ -1487,15 +1491,52 @@ function nearestHero(e) { let b = null, bd = 1e9;
   return b || players[0]; }
 /* THE SECOND HERO JOINS, out of the same body the first one is made of, dressed in his own hero's baked frames
    and lent player one's level (heroLevel) with his own talents where the save has them. */
-function coopStart(h2, ally) {
+function coopStart(h2, ally, more) {
   players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = freshScore(); players[0].total = players[0].total || freshScore();
-  const p = freshBody();
-  Object.assign(p, { hero: h2, n: 2, keys: {}, press: {}, score: freshScore(), total: freshScore(), ai: !!ally, down: 0, reviveT: 0, cds: {} });
-  players = [players[0], p];
-  { const wasH = PROG.hero; PROG.hero = h2; p.set = heroSet(PROG.skin, PROG.sword); PROG.hero = wasH; }
-  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; });
-  if (ally) { allyWalk = null; allyLoad(); }   /* a fresh walker for a fresh wood, and the bot's two modules on their way */
+  players = [players[0]];
+  seatAdd({ hero: h2, ally: !!ally, ...(more && more[0] ? more[0] : {}) });
+  for (const s of (more || []).slice(1)) seatAdd(s);   /* (claude/tavern) seats three and four */
 }
+/* ==== THE PARTY (claude/tavern, co-op phase 2): UP TO FOUR. Seat n is players[n-1]; each body carries where its hands come from:
+   src { kind: 'pad', pad: <gamepad index> | null } (a local pad; null = the next free pad, today's rule for player two), { kind: 'online', gid } (an
+   online guest, src/online.js), or the ALLY (ai: the computer partner, seat two only). Its look is its own: hero, weapon (p.sword), colour (seat n's
+   in PROG.tavern). coopWant.seats holds the same list for the NEXT wood, so a party formed in the tavern takes the road as it stands. */
+function seatAdd(s) {
+  if (players.length >= PARTY.MAX_PLAYERS) return null;
+  if (s.ally && players.some(q => q.ai)) return null;   /* one computer partner */
+  const p = freshBody(), h = s.hero || 'knight';
+  Object.assign(p, { hero: h, n: players.length + 1, keys: {}, press: {}, score: freshScore(), total: freshScore(), ai: !!s.ally, down: 0, reviveT: 0, cds: {}, padSt: { prev: {} },
+    src: s.ally ? { kind: 'ally' } : s.src ? { ...s.src } : { kind: 'pad', pad: null }, sword: s.sword || PROG.sword, leash: 0 });
+  players.push(p);
+  partyColours();
+  seatBake(p);
+  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; });
+  if (s.ally) { allyWalk = null; allyLoad(); }   /* a fresh walker for a fresh wood, and the bot's two modules on their way */
+  return p;
+}
+/* NO TWO SEATS SHARE A COLOUR: walking the seats in order, a seat whose colour an earlier one wears steps to the next free one (the wardrobe's own step) */
+function partyColours() {
+  const tv = PARTY.cleanTavern(PROG.tavern), taken = []; let moved = false;
+  for (const q of players) { const k = (q.n - 1) % PARTY.MAX_PLAYERS; if (taken.includes(tv.colours[k])) { tv.colours[k] = PARTY.stepColour(tv.colours[k], 1, taken); moved = true; } taken.push(tv.colours[k]); }
+  if (moved || !PROG.tavern) PROG.tavern = tv;
+}
+function seatBake(p) { const wasH = PROG.hero; PROG.hero = p.hero; try { p.set = heroSet(PROG.skin, p.sword || PROG.sword); } finally { PROG.hero = wasH; } }
+/* A SEAT GOES (he walked out of the tavern door, his pad left, an online guest dropped): the others close up (seat numbers follow the list), and the
+   last one out ends co-op exactly as the pause menu's CO-OP OFF does */
+function seatDrop(p) {
+  const i = players.indexOf(p); if (i <= 0) return false;
+  if (PTK) PTK.reset();
+  players.splice(i, 1); players.forEach((q, k) => { q.n = k + 1; }); partyColours();
+  if (players.length === 1) coopEnd();
+  partyToWant(); return true;
+}
+/* the party as it stands, for the next wood (coopWant.hero/ally stay seat two's: every older reader of coopWant reads those) */
+function partyToWant() {
+  const seats = players.slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, sword: p.sword, src: p.src && p.src.kind !== 'ally' ? { ...p.src } : undefined }));
+  coopWant = seats.length ? { hero: seats[0].hero, ally: seats[0].ally, seats } : null;
+}
+const wantSeats = () => !coopWant ? [] : coopWant.seats && coopWant.seats.length ? coopWant.seats : [{ hero: coopWant.hero, ally: !!coopWant.ally }];
+function partyStart() { const seats = wantSeats(); if (!seats.length) { if (coop()) coopEnd(); return; } coopStart(seats[0].hero, seats[0].ally, seats); }
 function coopEnd() { if (PTK) PTK.reset(); players = [players[0]]; coopFall = false; }
 /* WHEREVER ONE OF THEM WAKES, THEY ALL DO. A respawn puts the whole room back, so leaving the other lying where
    the old room used to be would leave him in a wood that no longer exists. */
@@ -1503,14 +1544,14 @@ function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + (P.n === 2 ? 14 : -14), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); }); }
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); }); }
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
    third of his health with a moment of grace. If the clock runs out with nobody there, or both of them are down
    at once, the pair of them wake at the last shrine and each is charged a death. */
 function goDown(killer) {
-  P.down = DOWN_T; P.reviveT = 0; P.hp = 0; P.killer = killer || null;
+  P.down = L && L.tavern ? DOWN_T_TAVERN : DOWN_T; P.reviveT = 0;   /* (claude/tavern) the sparring bell's down is shorter, and harmless */ P.hp = 0; P.killer = killer || null;
   P.atk = -1; P.block = false; P.plunge = false; P.dodge = 0; P.aegis = false; P.warding = false; P.emberUp = false; P.emberHeat = 0; P.emberLock = 0; P.deflectT = 0; P.deflectRec = 0; P.perch = 0; P.vaultCarry = 0;
   P.inv = 0.6; P.vx = 0; P.hitSet.clear();
   SFX.gasp(); SFX.thud(); shakeCam(5, 0, 'hurt'); number(P.x, P.y - 30, 'DOWN', '#ff6b6b');
@@ -1518,7 +1559,7 @@ function goDown(killer) {
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
-  P.down -= dt; if (P.down <= 0) coopFall = true;
+  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } coopFall = true; }   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
   P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
   P.hpShown += (0 - P.hpShown) * Math.min(1, dt * 6);
   const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);          /* THE CRAWL: a third of a walk, along the floor and nowhere else */
@@ -1535,7 +1576,7 @@ function downedPlayer(dt) {
 function reviveBy(helper) {
   P.down = 0; P.reviveT = 0; P.dead = 0; P.hp = Math.max(1, Math.round(P.maxHp / (thrOn(PROG, helper.hero || PROG.hero, 'v', 1) ? 2 : 3))); P.hpShown = P.hp;
   P.st = P.maxSt; P.inv = 2; P.killer = null;
-  helper.score.revives++;
+  helper.score.revives++; if (TAVO) TAVO.revived(helper, P);   /* (claude/tavern) the REVIVE drill */
   SFX.mend(); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); motes(P.x, P.y - 10, 12, 10);
   number(P.x, P.y - 32, 'UP', '#8fd160');
   if (coopTipDue(PROG, 'revive')) { hintSay('mechanic', 4.5, 'UP AGAIN AT A THIRD OF YOUR HEALTH, BRIEFLY SAFE. A REVIVE SCORES BEST.'); saveProgress(); }   /* (the first two lifts of a save say it) */
@@ -1544,12 +1585,15 @@ function coopWatch() {
   if (!coop()) return;
   if (!coopFall && players.some(upright)) return;
   coopFall = false;
+  if (L && L.tavern) { for (const p of players) if (p.down > 0) tavernStandUp(p); return; }   /* (claude/tavern) all of them down in the inn: everybody up, no shrine, no cost */
   for (const p of players) p.score.deaths++; for (const p of players) if (!p.dcDone) asPlayer(p, () => deathCost(P, p.killer));
   deaths++;                                                          /* the run's own count: one fall, however many of them went down in it */
   number(players[0].x, players[0].y - 40, 'BACK TO THE SHRINE', '#ff6b6b');
   for (const p of players) { p.down = 0; p.reviveT = 0; p.dead = 0; }
   asPlayer(players[0], () => respawn());
 }
+/* (claude/tavern) ON YOUR FEET: a tavern down that runs out (or the whole room down) - up at full health with a breath of grace, nobody charged */
+function tavernStandUp(p) { Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: p.maxHp, hpShown: p.maxHp, st: p.maxSt, inv: 1, killer: null }); number(p.x, p.y - 32, 'ON YOUR FEET', '#c9b27c'); SFX.mend(); }
 /* THE EXIT NEEDS BOTH OF THEM: one hero standing in the gate with the other forty tiles back is not a wood finished */
 const atGate = () => !coop() || players.every(p => upright(p) && gate && Math.abs(gate.x - p.x) < 22 && Math.abs(gate.y - p.y) < 36);
 /* THE SHARED SCREEN. One camera for the pair and NO ZOOM - the buffer is a fixed 320x180, so there is nothing to
@@ -1572,10 +1616,38 @@ function coopSoftStop() {
   }
   const lo = camX + COOP_EDGE, hi = camX + VW - COOP_EDGE;
   for (const p of players) {
-    if (p.x < lo) { p.x = lo; if (p.vx < 0) p.vx = 0; }
-    else if (p.x > hi) { p.x = hi; if (p.vx > 0) p.vx = 0; }
+    if (p.x < lo) { if (p.x < lo - 0.01 || p.vx < 0 || p.keys && p.keys.left || p === players[0] && keys.left) p.edgeT = time; p.edgeDir = -1; p.x = lo; if (p.vx < 0) p.vx = 0; }   /* (claude/tavern) edgeT: when he last pushed on the frame's wall, for the leash */
+    else if (p.x > hi) { if (p.x > hi + 0.01 || p.vx > 0 || p.keys && p.keys.right || p === players[0] && keys.right) p.edgeT = time; p.edgeDir = 1; p.x = hi; if (p.vx > 0) p.vx = 0; }
   }
 }
+/* THE LEASH (claude/tavern, src/party.js LEASH): a hero too far behind - off the picture up or down, or at the back edge while the leader pushes on at
+   the front - is told (a rope to the leader, CATCH UP over his head) for LEASH.build s and then PULLED UP beside the leader in a puff. Never a downed,
+   dead, carried or thrown hero; never into the air (it waits for the leader's feet). */
+let leashFx = [];
+function coopLeash(dt) {
+  leashFx = leashFx.filter(f => (f.t -= dt) > 0);
+  if (!coop() || state !== 'play') { for (const p of players) p.leash = 0; return; }
+  const li = PARTY.leaderOf(players.map(p => ({ x: p.x, dead: p.dead, down: p.down })), gate ? gate.x : null), lead = players[li];
+  const cam = { x: camX, y: camY, w: VW, h: VH }, ld = { x: lead.x, y: lead.y, pushing: time - (lead.edgeT ?? -9) < 0.25 };
+  for (const p of players) {
+    if (p === lead) { p.leash = 0; p.leashWhy = ''; continue; }
+    const why = PARTY.leashWhy({ x: p.x, y: p.y, dead: p.dead, down: p.down, held: !!p.ptH, flying: !!p.ptF }, ld, cam, COOP_EDGE);
+    const r = PARTY.leashStep(p.leash || 0, why, dt, lead.ground && !lead.swim && !lead.ptH && !lead.ptF);
+    p.leash = r.m; p.leashWhy = why;
+    if (r.pull) leashPull(p, lead);
+  }
+}
+function leashPull(p, lead) {
+  const from = { x: p.x, y: p.y }, side = lead.face > 0 ? -1 : 1;
+  burst(p.x, p.y - 8, 12, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30);
+  asPlayer(p, () => { Object.assign(P, { x: lead.x + side * PARTY.LEASH.side, y: lead.y, vx: 0, vy: 0, inv: Math.max(P.inv || 0, PARTY.LEASH.inv), onMover: null, atk: -1, plunge: false, dodge: 0 }); if (BRD && BRD.clear) BRD.clear(P); });
+  if (moveBodyClear(p)) { p.x = lead.x; }
+  burst(p.x, p.y - 8, 12, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30);
+  number(p.x, p.y - 32, 'PULLED ALONG', PARTY.colourOf(PROG.tavern, p.n).c); SFX.puff ? SFX.puff() : SFX.ui();
+  p.leash = 0; p.leashes = (p.leashes || 0) + 1; leashFx.push({ t: 0.5, x0: from.x, y0: from.y, x1: p.x, y1: p.y });
+}
+/* the spot beside the leader is inside a wall (a narrow ledge): stand him on the leader instead */
+function moveBodyClear(p) { const tx = Math.floor(p.x / TS), ty = Math.floor((p.y - 8) / TS); return isSolid(tx, ty) || isSolid(tx, ty - 1); }
 /* A HERO ON THE FLOOR, told so it reads from across the room: his own frames gone over on his side, a red ring of
    the clock he has left, and a green one inside it that fills while his partner stands on him. */
 function drawDowned(cx, cy) {
@@ -1583,24 +1655,25 @@ function drawDowned(cx, cy) {
   g.drawImage(PROP.shadow, x - 6, y - 2);
   const key = K.R.crouch ? 'crouch' : K.R.hurt ? 'hurt' : 'idle';
   drawSet(K, key, 0, P.x - cx, P.y - cy + 1, P.face, false, 1, 1, 0.9, -P.face * Math.PI / 2 * 0.8);
-  const k = Math.max(0, Math.min(1, P.down / DOWN_T));
+  const k = Math.max(0, Math.min(1, P.down / (L && L.tavern ? DOWN_T_TAVERN : DOWN_T)));
   g.strokeStyle = P.down < 5 && Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b'; g.lineWidth = 1;
   g.beginPath(); g.arc(x, y - 16, 11, -Math.PI / 2, -Math.PI / 2 + k * Math.PI * 2); g.stroke();
   if (P.reviveT > 0) { g.strokeStyle = '#8fd160'; g.beginPath(); g.arc(x, y - 16, 8, -Math.PI / 2, -Math.PI / 2 + (P.reviveT / REVIVE_T) * Math.PI * 2); g.stroke(); }
-  text('P' + P.n, x, y - 34, '#ff6b6b', 'center', 6);
+  text(PARTY.tagOf(P), x, y - 34, PARTY.colourOf(PROG.tavern, P.n).c, 'center', 6);
 }
 /* PLAYER TWO'S PLATE, small and out of the way between player one's and the purse: who he is, what is left of him,
    and the clock instead while he is down. */
-function drawCoopHud() {
-  const p = players[1]; if (!p) return;
+function drawCoopHud() { for (let i = 1; i < players.length; i++) drawSeatPlate(players[i], i - 1); }   /* (claude/tavern) a plate a seat, stacked down the right */
+function drawSeatPlate(p, slotI) {
+  if (!p) return;
   /* UNDER THE PURSE, not over the clock. The top middle is the level timer and the garrison and ambush counters
      under it, the bottom middle is the boss bar, and the left is player one's - so player two's plate sits on the
      right, below the purse and the quest line. It goes in hudRects like the others, so the tells keep off it. */
-  const x0 = VW - 91, y0 = 45, w = 84, h = 20;
+  const x0 = VW - 91, y0 = 45 + slotI * 31, w = 84, h = 20, pc = PARTY.colourOf(PROG.tavern, p.n).c;
   board(x0, y0, w, h, UI.border, 'rgba(10,8,20,0.5)', true);
   if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([x0, y0, w + 2, h + 2]);
-  text(p.ai ? 'ALLY' : 'P2', x0 + 5, y0 + 4, p.ai ? '#c9a0ff' : '#8fd160', 'left', 6);
-  if (p.down > 0) { const k = p.down / DOWN_T;
+  text(p.ai ? 'ALLY' : 'P' + p.n, x0 + 5, y0 + 4, p.ai ? '#c9a0ff' : pc, 'left', 6);
+  if (p.down > 0) { const k = p.down / (L && L.tavern ? DOWN_T_TAVERN : DOWN_T);
     bar(x0 + 27, y0 + 5, 38, 4, k, Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b', k);
     text('DOWN', x0 + 68, y0 + 4, '#ff6b6b', 'left', 6); }
   else { bar(x0 + 27, y0 + 5, 38, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
@@ -1616,7 +1689,7 @@ function drawCoopHud() {
 const CAMPAIGN_END = roadEndId(LEVELS);
 const campaignDone = () => !!LEVELS[levelIndex] && LEVELS[levelIndex].id === CAMPAIGN_END;
 const scoreRows = s => [['foes', s.kills], ['hurt', s.dmg], ['gold', s.coins], ['revives', s.revives], ['turned', s.turns], ['deaths', s.deaths]];
-const coopName = p => (p.ai ? 'ALLY ' : p.n === 1 ? 'P1 ' : 'P2 ') + (HERO_SHORT[p.hero] || String(p.hero).toUpperCase());
+const coopName = p => (p.ai ? 'ALLY ' : 'P' + (p.n || 1) + ' ') + (HERO_SHORT[p.hero] || String(p.hero).toUpperCase());
 /* WHO CAME OUT AHEAD, in words. The ally is tallied but never wins: it is not a player, and losing to the
    computer on a card you asked for company on is nobody's idea of a good evening. */
 function coopWinner(key) {
@@ -4239,7 +4312,8 @@ function startGame() {
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
      Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
-  if (coopWant && L && !L.trial && !L.shop && !rushOn()) coopStart(coopWant.hero, coopWant.ally); else if (coop()) coopEnd();
+  if (coopWant && L && !L.trial && !L.shop && !rushOn()) partyStart(); else if (coop()) coopEnd();   /* (claude/tavern) the whole party: up to four seats (coopWant.seats) */
+  if (TAVO) TAVO.reset();
   dcStart(); for (const p of players) p.score = freshScore();   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
   state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
@@ -4854,10 +4928,8 @@ function updateMap(dt) {
   if (dodgePress && !map.walking) openStore('map', 'heroes');
   /* THE MAP'S OWN CO-OP TOGGLE, on F: off arms the same picker LOCAL CO-OP uses (a pick returns here, unlike the
      title's own flow), on ends it at once - nothing else to ask, same as the pause menu's line. */
-  if (throwPress && !map.walking) {
-    if (coopShown()) { coopWant = null; if (coop()) coopEnd(); const [mx, my] = mapPos(); number(mx, my - 16, 'CO-OP OFF', '#9aa39a'); SFX.ui(); }
-    else { coopPickFrom = 'map'; coopPick = { i: 0, ally: false }; state = 'coop'; SFX.uiSel(); }
-  }
+  /* (claude/tavern) F IS THE TAVERN now: co-op's home (the party, the wardrobe, the drills); CO-OP OFF lives in the pause menu and the tavern door */
+  if (throwPress && !map.walking) { SFX.uiSel(); enterTavern(); }
   if (skill2Press && !map.walking) ONL.open();   /* ONLINE CO-OP: G on the map (the touch pill ONLINE) opens the same board as the title row; the board holds its own gate (coopOk) */
   if (pausePress) { state = 'title'; SFX.ui(); }
   PROG.mapNode = map.node; PROG.mapNodeId=NODES[map.node].id;
@@ -4868,7 +4940,7 @@ let mapPlateCache = null;
 function mapPlates() { if (!mapPlateCache) { const pn = plateNodes(NODES, n2 => LEVELS[n2.level].name); mapPlateCache = { pn, plates: layoutPlates(pn, VW), panels: new Map() }; } return mapPlateCache; }
 function mapPanelFor(nd) { const c = mapPlates(); let r = c.panels.get(nd.id); if (!r) { r = placePanel(c.pn.find(n2 => n2.id === nd.id), c.pn, c.plates); c.panels.set(nd.id, r); } return r; }
 /* THE FOOTER'S LABELS: the controls on the left, the co-op switch on the right; tools/map-spacing.mjs measures them (BK.mapFooter) and fails if they touch */
-function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'CO-OP ' + (on ? 'ON' : 'OFF') : 'F CO-OP ' + (on ? 'ON' : 'OFF') + ' G ONLINE', x: VW - 4, right: true }]; }
+function mapFooter(open, on) { return [{ t: touchOn ? (open ? 'TAP A ROAD TO JUMP' : 'TAP TO WALK  TAP AGAIN TO ENTER') : open ? '↑↓ SELECT  Z JUMP  TAB CLOSE' : 'ARROWS  Z ENTER  TAB LEVELS  X BEASTS', x: 4 }, { t: touchOn ? 'TAVERN' + (on ? ' (PARTY)' : '') : 'F TAVERN' + (on ? ' (PARTY)' : '') + ' G ONLINE', x: VW - 4, right: true }]; }
 /* THE MAP'S LANDMARK CRITTERS (the Queen over her wood, the frog, the chief...) at the map's own pixel size. They were boss sprites drawn at 0.42-0.75 of their size: a fractional
    scale on a pixel sprite, so every one smeared against the hero and the hut. Now each is shrunk by a WHOLE factor (the nearest to the height it should stand: about a hero) with the
    block-vote downsample (src/map-pixel.js), outlined, and drawn 1:1. A cleared place's critter goes grey (never see-through). */
@@ -6297,17 +6369,36 @@ function padIntoPlayer(gp, st, p) {
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
   st.prev = now;
 }
+/* (claude/tavern) THE WALK-IN, local: in the inn a pad nobody plays on (not a seat's, not the one player one last used) pressing JUMP or START is a new player -
+   he walks in through the door (tavernJoin). Up to four in the party. */
+let p1Pad = null; const joinPrev = new Map();
+function tavernPadJoin(gps, claimed) {
+  for (const gq of gps) {
+    const now = padState(gq, 'pad2'), was = joinPrev.get(gq.index) || {}; joinPrev.set(gq.index, now);
+    if (claimed.has(gq.index) || gq.index === p1Pad) continue;
+    if ((now.jump && !was.jump) || (now.pause && !was.pause)) { const p = tavernJoin({ kind: 'pad', pad: gq.index }); if (p) { claimed.add(gq.index); p.padSt = { prev: now }; } }
+  }
+}
 function pollGamepad() {
   const gps = padsNow();
   const used = padRawTick(gps);   /* the tab shoulders and a button being chosen for an action */
-  const far = coop() && players[1] && !players[1].ai && ONL.remote();   /* ONLINE CO-OP: an online guest's keys are player two's hands (src/online.js), not the first pad */
-  if (far) ONL.intoPlayer(players[1]); else if (coop() && players[1] && !players[1].ai && gps.length) padIntoPlayer(gps[0], pad2, players[1]);
-  const gp = coop() && !far ? gps[1] : gps[0];
+  /* (claude/tavern) THE PARTY'S HANDS, up to four: an online seat takes its guest's keys (src/online.js, by guest id); a local seat bound to a pad takes that
+     pad; a local seat with no pad named takes the next free pad in seat order (today's rule: player two the first pad); PLAYER ONE takes the first pad left */
+  const claimed = new Set();
+  if (coop()) {
+    for (const p of players.slice(1)) { if (p.ai || !p.src) continue;
+      if (p.src.kind === 'online') { if (ONL.remote(p.src.gid)) ONL.intoPlayer(p, p.src.gid); continue; }
+      if (p.src.pad != null) { const gq = gps.find(x => x.index === p.src.pad); if (gq) { claimed.add(gq.index); padIntoPlayer(gq, p.padSt || (p.padSt = { prev: {} }), p); } } }
+    for (const p of players.slice(1)) { if (p.ai || !p.src || p.src.kind !== 'pad' || p.src.pad != null) continue;
+      const gq = gps.find(x => !claimed.has(x.index)); if (gq) { claimed.add(gq.index); padIntoPlayer(gq, p === players[1] ? pad2 : (p.padSt || (p.padSt = { prev: {} })), p); } }
+  }
+  if (L && L.tavern && state === 'play' && !used) tavernPadJoin(gps, claimed);   /* a free pad's JUMP or START walks a new player in through the door */
+  const gp = gps.find(x => !claimed.has(x.index));
   if (!gp) return;
   const now = padState(gp, 'pad1');
   if (used) { pad.prev = now; return; }
   const rose = k => now[k] && !pad.prev[k];
-  if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; } }
+  if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; p1Pad = gp.index; } }   /* (claude/tavern) p1Pad: the pad player one plays on, never a joiner's */
   if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
@@ -6385,9 +6476,119 @@ const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: ()
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 /* ONLINE CO-OP (src/online.js): what the host's half may read and do. arm() is the co-op pick's own confirm (coopWant; in a wood he stands up beside player one, as the
    pause menu's pick does); drop() is the pause menu's 'co-op off'. The save, the map and the unlocks are this page's own - the guest's page never runs the game. */
-ONL.init({ grab: () => (PTK && players[1] ? PTK.label(players[1]) : null),   /* (claude/partnerthrow) the guest's touch GRAB / THROW button, from the host's state */
-  buf, state: () => state, paused: () => state === 'menu' && menuKind === 'pause', coopOk: () => coopOk(), initAudio: () => initAudio(), art: h => heroPreviewSet(h).R.idle[0], heroName: () => HERO_SHORT[hero()] || String(hero()).toUpperCase(), nameOf: h => HERO_SHORT[h] || String(h).toUpperCase(), roster: () => coopPickList().map(h => ({ id: h, name: HERO_SHORT[h] || String(h).toUpperCase() })), drop: () => { coopWant = null; if (coop()) coopEnd(); },
-  arm: h => { coopWant = { hero: h, ally: false }; if ((state === 'play' || (state === 'menu' && menuFrom === 'play')) && L && !L.trial && !L.shop && !rushOn() && !coop()) { coopStart(h, false); const p2 = players[1]; if (p2) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p2, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); } } else if (state === 'title' || state === 'coop') state = 'map'; } });
+/* (claude/tavern) THE SEATS ONLINE GUESTS TAKE: seatOf(gid) is his seat number; arm() seats him (in the tavern he walks in through the door, in a wood he stands up
+   beside player one, on the title / map he joins the party for the next wood) and returns his seat; drop() takes his seat away; free() is how many more can come in */
+const onlineSeat = gid => players.find(p => p.src && p.src.kind === 'online' && p.src.gid === gid) || null;
+const partyRoom = () => PARTY.MAX_PLAYERS - (inWoodNow() ? players.length : 1 + wantSeats().length);
+const inWoodNow = () => (state === 'play' || state === 'win' || (state === 'menu' && menuFrom === 'play')) && !!L && !L.trial && !L.shop && !rushOn();
+function onlineArm(h, gid, snap) {
+  if (snap && typeof snap.colour === 'string' && PARTY.COLOURS.some(c => c.id === snap.colour)) onlineColour = { gid, c: snap.colour };   /* THE JOIN SNAPSHOT: his colour, if it is free (read at seating) */
+  if (L && L.tavern && state === 'play') { const p = tavernJoin({ kind: 'online', gid }, h); seatColour(p, gid); return p ? p.n : 0; }
+  if (inWoodNow()) {
+    if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
+    const p = seatAdd({ hero: h, src: { kind: 'online', gid } });
+    if (p) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); seatColour(p, gid); partyToWant(); return p.n; }
+    return 0;
+  }
+  const seats = wantSeats().concat([{ hero: h, ally: false, src: { kind: 'online', gid } }]).slice(0, PARTY.MAX_PLAYERS - 1);
+  coopWant = { hero: seats[0].hero, ally: !!seats[0].ally, seats };
+  if (state === 'title' || state === 'coop') state = 'map';
+  return seats.length + 1;
+}
+let onlineColour = null;
+function seatColour(p, gid) {
+  if (!p || !onlineColour || onlineColour.gid !== gid) return; const tv = PARTY.cleanTavern(PROG.tavern), want = onlineColour.c; onlineColour = null;
+  if (players.some(q => q !== p && tv.colours[q.n - 1] === want)) return; tv.colours[p.n - 1] = want; PROG.tavern = tv;
+}
+function onlineDrop(gid) {
+  const p = onlineSeat(gid);
+  if (p) { seatDrop(p); return; }
+  const seats = wantSeats().filter(s => !(s.src && s.src.kind === 'online' && s.src.gid === gid));
+  coopWant = seats.length ? { hero: seats[0].hero, ally: !!seats[0].ally, seats } : null;
+}
+ONL.init({ grab: gid => { const p = gid ? onlineSeat(gid) : players[1]; return PTK && p ? PTK.label(p) : null; },   /* (claude/partnerthrow) the guest's touch GRAB / THROW button, from the host's state */
+  buf, state: () => state, paused: () => state === 'menu' && menuKind === 'pause', coopOk: () => coopOk(), initAudio: () => initAudio(), art: h => heroPreviewSet(h).R.idle[0], heroName: () => HERO_SHORT[hero()] || String(hero()).toUpperCase(), nameOf: h => HERO_SHORT[h] || String(h).toUpperCase(), roster: () => coopPickList().map(h => ({ id: h, name: HERO_SHORT[h] || String(h).toUpperCase() })),
+  drop: gid => onlineDrop(gid), arm: (h, gid, snap) => onlineArm(h, gid, snap), free: () => partyRoom(),
+  seatOf: gid => { const p = onlineSeat(gid); if (p) return p.n; const i = wantSeats().findIndex(s => s.src && s.src.kind === 'online' && s.src.gid === gid); return i >= 0 ? i + 2 : 0; } });
+/* ==================== THE TAVERN (claude/tavern, co-op phase 2): the glue between the inn's stations (src/tavern.js) and the game ====================
+   THE CROSSROADS INN is a hidden level ('tavern') reached from the title (LOCAL CO-OP, ONLINE CO-OP) and the map (F). In it the party forms: a free pad's
+   JUMP/START or an online guest's pick walks a new player in through the door (tavernJoin), the stations dress them and drill them, the campaign table
+   takes them all to the map armed for the next wood. */
+const tavernIndex = () => LEVELS.findIndex(l => l.id === 'tavern');
+const freeStarter = () => { const list = coopPickList(), used = players.map(p => p.hero); return list.find(h => !used.includes(h)) || list[0] || 'knight'; };
+const tavDoorX = () => TAV_STATIONS[0].x * TS + 8 - TAV_WALK.from * TS + TS;
+function tavernJoin(src, h) {
+  if (!L || !L.tavern || state !== 'play') return null;
+  if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE INN IS FULL: FOUR TO A PARTY.'); return null; }
+  if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
+  const p = seatAdd({ hero: h || freeStarter(), src }); if (!p) return null;
+  const fy = (TAV_START.y + 1) * TS;
+  Object.assign(p, { x: tavDoorX(), y: fy, vx: 0, vy: 0, face: 1, ground: true, walkIn: TAV_WALK.t, inv: 1 });
+  if (TAVO) TAVO.door(); SFX.uiSel(); SFX.sting();
+  number(p.x + 10, p.y - 34, PARTY.tagOf(p) + ' JOINS', PARTY.colourOf(PROG.tavern, p.n).c);
+  partyToWant(); tavJoins++;
+  if (players.length === 2 && coopTipDue(PROG, 'tavern')) { hintSay('mechanic', 5, 'ONE CAMERA FOR THE PARTY: IT STEPS OUT TO FIT YOU, AND A PLAYER LEFT FAR BEHIND IS PULLED ALONG.'); saveProgress(); }
+  return p;
+}
+let tavJoins = 0;
+/* in a hero's own pass: a joiner walking in is walked by the room; a hero at the wardrobe has his keys taken by its card */
+function tavHands(pp) {
+  if (!TAVO || !TAVO.on()) return;
+  const pr = pressRead(), walk = TAVO.walking(pp, keys), card = !walk && TAVO.hands(pp, pr, keys);
+  if (walk) for (const k in pr) pr[k] = false;
+  if (walk || card) pressWrite(pr);
+}
+/* INTO THE INN, from wherever: the party (coopWant) comes in with P1; then cont() (the online board, from the title's ONLINE CO-OP) */
+function enterTavern(cont) {
+  const i = tavernIndex(); if (i < 0) return;
+  rush = null; trialLend = null;
+  loadThen(i, () => { introSeen = true; startGame(); bannerT = 0; music.play('store'); if (cont) cont(); });
+}
+function tavernToMap(say) {
+  partyToWant(); setView('normal'); mapToSaved(); state = 'map'; music.play(menuTrack()); SFX.uiSel();
+  if (say) { const [mx, my] = mapPos(); number(mx, my - 16, say, '#ffd36b'); }
+}
+const tavHeroes = p => (p.n === 1 ? PICK.filter(h => PROG.heroes[h] || godMode()) : coopPickList());
+function tavSetHero(p, h) {
+  if (p.n === 1) { PROG.hero = h; applySkin(); applyUpgrades(); players[0].hero = h; players[0].set = K; P.hp = P.maxHp; saveProgress(); }
+  else { p.hero = h; seatBake(p); asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; }); partyToWant(); }
+}
+const tavWeapons = () => SWORDS.filter(s => s.price === 0 || owns({ owned: 'swords' }, s.id)).map(s => s.id);
+const tavWeaponOf = p => (p.n === 1 ? PROG.sword : p.sword) || 'steel';
+function tavSetWeapon(p, id) {
+  if (p.n === 1) { PROG.sword = id; applySkin(); players[0].set = K; saveProgress(); }
+  else { p.sword = id; seatBake(p); partyToWant(); }
+}
+TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress(), players: () => players, time: () => time, tagOf: p => PARTY.tagOf(p),
+  number: (x, y, s, c) => number(x, y, s, c), text: (s, x, y, c, a, z) => text(s, x, y, c, a, z), board: (x, y, w, h) => board(x, y, w, h, UI.border, 'rgba(16,13,24,0.94)'),
+  hint: (m, t) => hintSay('tip', t, m), sfx: k => { const f = k === 'bell' ? (SFX.seaBell || SFX.golemChime) : SFX[k]; if (f) f(); },
+  p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
+  toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
+  leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); number(p.x, p.y - 34, PARTY.tagOf(p) + ' LEAVES', '#9aa39a'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
+  openOnline: () => ONL.open(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
+  down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
+  heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
+  heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
+/* the touch USE button reads the station a phone player stands at */
+VERB_HOOKS.push(c => { if (!TAVO || !TAVO.on() || !c.P) return null; const s = TAVO.stationNear(c.P); return s ? { verb: s.id === 'door' && c.P.n > 1 ? 'LEAVE' : s.verb, key: 'talk' } : null; });
+/* THE PARTY'S MARKS in the world (before the heroes): each hero's floor ring and his tag over his head, in his colour; the leash's rope and its puffs */
+/* TWO PASSES: 'back' (before the heroes) is the ring's far half and the leash rope; 'front' (after the near layer, which paints over the floor line in
+   the halls) is the ring's near half - under his feet, never over his legs - and the tags, so neither is ever hidden */
+function drawPartyMarks(cx, cy, phase = 'back') {
+  if (!coop()) return;
+  const tv = PARTY.cleanTavern(PROG.tavern), front = phase === 'front';
+  for (const p of players) { if (p.dead) continue;
+    const c = PARTY.colourOf(tv, p.n), x = Math.round(p.x - cx), y = Math.round(p.y - cy);
+    if (tv.ring) { const a0 = front ? 0 : Math.PI, a1 = front ? Math.PI : Math.PI * 2; g.globalAlpha = 0.8 + 0.2 * Math.sin(time * 4 + p.n); g.strokeStyle = c.c; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 9, 3, 0, a0, a1); g.stroke();
+      if (front) { g.globalAlpha = 0.35; g.fillStyle = c.c; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 8, 2, 0, a0, a1); g.fill(); } g.globalAlpha = 1; }
+    if (!front) continue;
+    if (!(p.down > 0)) text(PARTY.tagOf(p), x, y - 34, p.ai ? '#c9a0ff' : c.c, 'center', 6);
+    if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down })), gate ? gate.x : null), ld = players[li];
+      g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
+      if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);
+      bar(Math.max(18, Math.min(VW - 30, x - 10)), Math.max(16, Math.min(VH - 22, y - 37)), 20, 2, p.leash, c.c); } }
+  for (const f of leashFx) { g.globalAlpha = Math.min(1, f.t * 2) * 0.6; g.strokeStyle = '#e8e0d0'; g.beginPath(); g.moveTo(Math.round(f.x0 - cx), Math.round(f.y0 - cy) - 8); g.lineTo(Math.round(f.x1 - cx), Math.round(f.y1 - cy) - 8); g.stroke(); g.globalAlpha = 1; }
+}
 Object.assign(SETTING_TIPS, TCH.tips);
 {
   if (touchOn && !SET.touchInit) { SET.touchInit = 1; if (SET.parts === 'normal' && SET.parallax === 'full') TCH.applyLite(true); saveSettings(); } }   /* A PHONE'S FIRST RUN: lighter particles and fewer backdrop layers, unless the player had already chosen */
@@ -7766,7 +7967,7 @@ const rpCut = () => P.riposteT > 0 || (!!P.swingRiposte && P.atk >= 0);   /* (cl
 function rpAnswerUp() { return hero() === 'knight' ? !!P.block && (P.blockT || 0) < perfectWindow() : isPaladin() ? !!P.aegis && time - (P.aegisUpT ?? -9) < perfectWindow() : isPirate() ? P.parryW > 0
   : isWarden() ? (P.deflectT || 0) > 0 && time - (P.deflectAt ?? -9) <= RP_K.tap * DFM.df('parry') : isBz() ? !!(BZK && BZK.onBeat()) : isRg() ? !!(RGK && RGK.onBeat()) : isPyro() ? !!P.emberUp : isGeo() ? !!(GEO && GEO.wardUp() && GEO.wardPerfect()) : isReaper() ? !P.warding && (P.wardSince ?? 9) < WARD_BEAT : false; }
 const rpSkillBlow = () => P.atk < 0 && !P.plunge && time - (P.skillAt ?? -9) < 1.5;
-function hurtEnemy(e, dmg, fromX, plunge) { const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null;
+function hurtEnemy(e, dmg, fromX, plunge) { const tag = BLOW, blow = brRoomBlow(tag) ? null : tag; BLOW = null; if (e && e.t === 'dummy' && TAVO && L && L.tavern) TAVO.dummyHit(e, passOn || players[0]);   /* (claude/tavern) the TEAM HIT drill: whose blow */
   if (RGK && dmg > 0 && (e.rgMarkT || 0) > time) dmg = Math.round(dmg * RGK.markMul(e));   /* (claude/ranger) THE RANGER'S MARK: every blow on her quarry lands harder (src/ranger.js) */   /* taken at once, so nothing this blow sets off inherits it */
   /* (claude/keyscore, B14) THE TAG IS EVERY BLOW'S NAME, the BLOW is a HERO'S HAND: a thrown prop ('throw') and a seed sent back ('reflect') reach every boss hook by their tag,
      but they are the ROOM's blow (src/boss-read.js ROOM_TAGS) - never chipped, never greed, never turned - exactly as they were before they had a name */
@@ -28940,6 +29141,7 @@ function updateCamera(dt) {
   { const c = chases.find(q => q.st.phase === 'run' && q.sp.autoscroll);   /* THE CHASE'S AUTOSCROLL: the camera is pushed by the chaser's front (src/chase.js chaseCam) */
     if (c) { if (c.sp.axis === 'x') camX = Math.max(0, Math.min(LW * TS - VW, chaseCam(c.sp, c.st, camX, VW, chaseHero(c.sp)))); else camY = Math.max(0, Math.min(LH * TS - VH, chaseCam(c.sp, c.st, camY, VH, chaseHero(c.sp)))); } }
   if (coop()) coopSoftStop();   /* and then the frame is a wall (see the co-op block): last, so it answers the camera wherever the boss intro left it */
+  partyCam = PARTY.camStep(partyCam, PARTY.spreadOf(players), coop() ? players.length : 1, dt); coopLeash(dt);   /* (claude/tavern) the party's step out, and the leash */
   shake = Math.max(0, shake - dt * 18); kick *= Math.pow(0.002, dt);
 }
 
@@ -28972,8 +29174,8 @@ function update(dt) {
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
         else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
-        else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); coopPickFrom = 'title'; coopPick = { i: 0, ally: false }; state = 'coop'; }
-        else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); ONL.open(); }   /* ONLINE CO-OP (src/online.js): its own board - host (the same co-op gate) or join with a code */
+        else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
+        else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */   /* ONLINE CO-OP (src/online.js): its own board - host (the same co-op gate) or join with a code */
         else if (k === 'THE EDITOR') edEnter();
         else if (k === 'OPTIONS') { titleOpts = true; titleI = 0; }
         else if (k === 'BACK') { titleOpts = false; titleI = Math.max(0, titleTop().indexOf('OPTIONS')); }
@@ -29084,6 +29286,7 @@ function update(dt) {
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
   for (const pp of players) asPlayer(pp, () => {
+    tavHands(pp);   /* (claude/tavern) FIRST: a joiner walking in is walked by the room, a hero at the wardrobe has his keys taken by its card (before a double tap could read as a roll) */
     const ptSaved = ptPass();   /* (claude/partnerthrow) GRAB / THROW / WIGGLE: the press is read here, before the buffers; a held or thrown partner's hands are masked for the pass */
     /* CARRY & THROW (src/throwables.js, 2026-09-28): ATTACK throws whatever is carried, the way the hero faces, and is
        eaten FIRST, before the line below buffers a swing off the same press (P.abuf), and before updateCharge ever
@@ -29116,7 +29319,7 @@ function update(dt) {
      A press is read once (the first sub-step); a hitstop or a screen change ends the frame's remaining sub-steps; the camera and the weather run once, on world time. */
   const sub = wdtAll > dt * 1.0001 ? Math.ceil(wdtAll / dt - 1e-6) : 1, stateIn = state;
   for (let si = 0; si < sub; si++) { const wdt = wdtAll / sub; if (si) { clearPresses(); if (stop > 0 || state !== stateIn) break; }
-  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
+  updateMovers(wdt); danceAfterBoss(); for (const pp of players) asPlayer(pp, () => ptMasked(pp, () => { if (!PTK.before(pp, wdt)) { HERO_HAND = true; try { updatePlayer(wdt); } finally { HERO_HAND = false; } } PTK.after(pp, wdt); })); coopWatch(); if (TAVO) TAVO.tick(wdt); PTK.tick(wdt); updateEnemies(wdt); tokenPost(TK, enemies, tkApi, wdt); P = players[0]; emitAt(null); updateWisp(wdt); updateSlide(wdt); updateOverhangs(wdt); updateChase(wdt); updateStairs(wdt); updateFlood(wdt); traceBeams(wdt); updateProps(wdt); updateVillage(wdt); if (L.timber) updateTimber(wdt, attackBox()); if (L.ballast) updateBallast(wdt); if (L.hoists) updateHoists(wdt); if (L.deep) updateDeep(wdt); updateBreathCue(wdt); if (L.hush) updateHush(wdt); updateCrystal(wdt); updateSpans(wdt); updatePyres(wdt); updateCorpses(wdt); updateShots(wdt); updateParticles(wdt); }
   updateWeather(dt); updateCamera(dt * Math.max(1, SET.speed || 1));
   updatePolish(dt); fogMark(dt);
   flash = Math.max(0, flash - dt);
@@ -31320,6 +31523,7 @@ function drawWorld(cx, cy, showPlayer) {
      one knee, he goes over, and he fades where he fell. Every hero has hurt and crouch, so every hero falls. */
   /* EACH HERO IN HIS OWN PASS. The hundred lines below are the same hundred lines, with P, the hero he is and his
      baked frames set to whoever is being painted. One in the list and asPlayer calls straight through. */
+  if (TAVO) TAVO.draw(g, cx, cy, time); drawPartyMarks(cx, cy);   /* (claude/tavern) the inn's stations, and each hero's floor ring + tag */
   for (const pDraw of players) asPlayer(pDraw, () => {
   if (showPlayer && P.down > 0 && K && K.R) drawDowned(cx, cy);   /* on the floor, with his clock and his partner's ring */
   if (showPlayer && P.dead > 0 && K && K.R) { const k = 1.2 - P.dead, hs = isReaper() ? 1.22 : 1;
@@ -32733,7 +32937,7 @@ function drawTransition() {
   } else { g.fillStyle = 'rgba(8,6,14,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function desiredView() { if (state === 'editor') return 'zoom';
-  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? 'zoom' : 'normal'; }   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
+  const inLevel = state === 'play' || state === 'talk' || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play'); if (!inLevel) return 'normal'; return (SET.zoom === 'wide' || (bossActive && boss && bossZooms(boss.t)) || (miniActive && miniZooms((miniOne() || {}).t)) || (typeof chaseView === 'function' && chaseView())) ? 'zoom' : coop() && partyCam.wide ? 'coop' : 'normal'; }   /* (claude/tavern) THE PARTY'S VIEW: a little wider when they spread out, always with three or four (src/party.js CAM) */   /* (the Gate Gargoyle, 2026-09-25: render() asks this every frame, so a boss zoomed only at its wake is back to normal by the first drawn frame; since 2026-09-27 the wake and this read ONE list, src/boss-view.js) */
 
 // ==================================================================================
 // THE EDITOR
@@ -33011,6 +33215,7 @@ function render() {
     if (tilt) { g.save(); g.fillStyle = '#1a2230'; g.fillRect(0, 0, VW, VH); g.translate(VW / 2, VH * 0.55); g.rotate(tilt); const ts = 1 + Math.abs(tilt) * 1.4; g.scale(ts, ts); g.translate(-VW / 2, -VH * 0.55); }   /* SHE ROLLS: the horizon goes over with her */
     if (z > 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
     drawWorld(cx, cy, !heroHidden);   /* (the readability pass draws the frame once without him, to know which pixels are him) */
+    if (!heroHidden) drawPartyMarks(cx, cy, 'front');   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
     if (z > 1) g.restore();
     if (tilt) g.restore();
     drawSeaHud();
@@ -33072,7 +33277,8 @@ function render() {
       if (state === 'play') { flaskHud.flashT = Math.max(0, flaskHud.flashT - dt0); flaskHud.spillT = Math.max(0, flaskHud.spillT - dt0); }
       flaskRowEnd = R.x + R.w + 1; flaskRowRect = [R.x - sh, R.y, R.w, R.h]; }
     if (campaignTag) text(campaignTag, 4, VH - 9, '#e8d9a0', 'left', 6, 'outline');   /* ?level=/?boss= with &campaign=1 (claude/levelpilot) */
-    if (coop()) drawCoopHud();   // and player two's small plate beside his
+    if (coop()) drawCoopHud();
+    if (TAVO) TAVO.drawHud(VW, VH);   /* (claude/tavern) the wardrobe cards */   // and player two's small plate beside his
     hudG();
     // UNDER THE PLATE, NOT THROUGH IT. y=30 was clear when the plate was 24 tall; the heroes who carry a third
     // bar (pyre, light, plunder, harvest) made it 34, and the label has been lying across their resource ever since.
@@ -33546,6 +33752,12 @@ window.BK = { dk2: () => ({ DK2, bodies, corpses, enemies, box: () => attackBox(
   /* LOCAL CO-OP, for a harness driving the page: the list, whether it is on, and a way to arm and start it */
   players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },
   coopStart: (h, ally) => { coopStart(h, ally); return players.map(p => p.hero); }, coopEnd: () => { coopWant = null; coopEnd(); return players.length; },
+  /* THE TAVERN + THE PARTY (claude/tavern), for tools/tavern.mjs: the stations, a walk-in join, a seat's leaving, the camera's step out and the leash */
+  tavern: { debug: () => TAVO.debug(), enter: () => new Promise(res => enterTavern(() => res(true))), join: (src, h) => { const p = tavernJoin(src || { kind: 'pad', pad: null }, h); return p ? p.n : 0; },
+    leave: n => seatDrop(players[n - 1]), use: (id, n) => TAVO.use(id, players[(n || 1) - 1]), seatAdd: s => { if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); } const p = seatAdd(s || {}); partyToWant(); return p ? p.n : 0; },
+    cam: () => ({ wide: partyCam.wide, view: viewMode, VW, VH, want: desiredView() }), leash: () => players.map(p => ({ n: p.n, m: p.leash || 0, why: p.leashWhy || '', pulls: p.leashes || 0 })), leashFx: () => leashFx.length,
+    party: () => players.map(p => ({ n: p.n, hero: p.hero, src: p.src || null, ai: !!p.ai, sword: p.sword || null, colour: PARTY.colourOf(PROG.tavern, p.n).id, x: p.x, y: p.y, walkIn: p.walkIn || 0, down: p.down || 0 })),
+    want: () => coopWant, seats: () => wantSeats(), joins: () => tavJoins, hint: () => ({ t: hintT, msg: hintMsg }), record: v => { if (v !== undefined) PROG.tavern = v === null ? undefined : v; return PROG.tavern; }, prog: () => PROG, save: () => { saveProgress(); return true; }, drawMarks: () => drawPartyMarks, toMap: () => tavernToMap(), padJoin: (gps, claimed) => tavernPadJoin(gps, claimed || new Set()), p1Pad: v => { if (v !== undefined) p1Pad = v; return p1Pad; } },
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
   allyReady: () => allyLoad(),   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it

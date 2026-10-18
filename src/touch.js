@@ -43,7 +43,7 @@ const TAP_ANY = new Set(['talk', 'win', 'victory', 'gameover', 'rushover', 'rush
 const REPEAT = new Set(['menu', 'store', 'title', 'slots', 'bestiary', 'soundtest', 'heropick', 'coop', 'practice', 'controls', 'rebind']);
 /* what the pill buttons say in a state with no play buttons: [the press, the label] - the first is the main one */
 const ACTIONS = {
-  map: [['confirm', 'ENTER'], ['dodge', 'STORE'], ['atk', 'BEASTS'], ['map', 'LEVELS'], ['throw', 'CO-OP'], ['skill2', 'ONLINE']],   /* (ONLINE CO-OP: opens the online board, as G does) */
+  map: [['confirm', 'ENTER'], ['dodge', 'STORE'], ['atk', 'BEASTS'], ['map', 'LEVELS'], ['throw', 'TAVERN'], ['skill2', 'ONLINE']],   /* (ONLINE CO-OP: opens the online board, as G does; claude/tavern: F / TAVERN goes to the inn) */
   slots: [['confirm', 'PLAY'], ['atk', 'ERASE']],
   store: [['confirm', 'SELECT'], ['atk', 'MORE']],
   bestiary: [['confirm', 'MORE'], ['throw', 'REFIGHT']],
