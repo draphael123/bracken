@@ -21,6 +21,8 @@ const notes = [];
 // what main.js knows
 const tierTable = (main.match(/const TIER = \{([^}]*)\}/) || [, ''])[1];
 const tiers = new Set([...tierTable.matchAll(/(\w+):/g)].map(m => m[1]));
+const tierBossTable = (main.match(/const TIER_BOSS = \{([^}]*)\}/) || [, ''])[1];
+const tiersBoss = new Set([...tierBossTable.matchAll(/(\w+):/g)].map(m => m[1]));   /* (claude/curvefix1) the frozen map bosses, minis and XP read */
 const tracks = new Set([...(audio.match(/const TRACKS = \{([^}]*)\}/) || [, ''])[1].matchAll(/(\w+):/g)].map(m => m[1]));
 const synthNames = new Set([...(audio.match(/MUSIC_NAMES = \[([^\]]*)\]/) || [, ''])[1].matchAll(/'([^']+)'/g)].map(m => m[1]));
 const voices = new Set([...audio.matchAll(/^  (\w+)\(\) \{/gm)].map(m => m[1]));
@@ -49,6 +51,8 @@ for (const lv of LEVELS) {
 
   // 1. THE SLOPE: without this its foes fight at first-wood strength
   if (!tiers.has(id)) say(id, 'is not in the TIER table in main.js: its foes and their blows never scale');
+  /* TIER_BOSS (claude/curvefix1): a boss/mini's hp and blows and the XP read the frozen map. canal/theatre/fair are the only levels absent from it (tier 0 by design). A NEW level copies its TIER there so its boss is tuned on numbers that do not drift when TIER rises. */
+  if (!tiersBoss.has(id) && !['canal', 'theatre', 'fair'].includes(id)) say(id, 'is not in the TIER_BOSS table in main.js: its boss and minis would stand at tier 0 (copy its TIER value there)');
 
   // 2. ITS OWN THEME
   if (!L.music) say(id, 'has no music set');

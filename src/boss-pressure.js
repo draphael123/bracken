@@ -13,8 +13,8 @@ export const PRESSURE = {
   1: { gap: 1.12, dmg: 1.2, mini: { gap: 1.15, dmg: 1.25 } },   /* ACT 1 = the v2 values (measured 78%; v3 1.17/1.3 measured 50% and would wall new players - coordinator 10-13) */
   2: { gap: 1.25, dmg: 1.42, mini: { gap: 1.33, dmg: 1.5 } },
   3: { gap: 1.6, dmg: 1.9, mini: { gap: 1.4, dmg: 1.65 } },
-  4: { gap: 1.45, dmg: 1.7, mini: { gap: 1.45, dmg: 1.7 } },
-  5: { gap: 1.3, dmg: 1.5, mini: { gap: 1.35, dmg: 1.55 } },
+  4: { gap: 1.6, dmg: 1.9, mini: { gap: 1.5, dmg: 1.8 } },   /* curvefix 10-18: was 1.45/1.7 mini 1.45/1.7 - monotone, plateau from act 3 */
+  5: { gap: 1.6, dmg: 1.9, mini: { gap: 1.5, dmg: 1.8 } },   /* curvefix 10-18: was 1.3/1.5 mini 1.35/1.55 */
 };   /* v3 (10-13 evening): v2 measured act medians 78/56/56/50/22 (minis 78/100/89/89/78) - interpolated toward 60-70 (minis 75-85) off the v0/v1/v2 response curve */
 /* the modes whose clock is NEVER scaled (told, open, ward, phase change, down): everything else of a boss's runs the dial's gap */
 const FROZEN = /Tell$|^(sleep|wake|phase|dead|dying|stuck|downed|stun|stunned|open|broken|ward|warded|reel|reeling|intro|rest0)$/;

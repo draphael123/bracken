@@ -87,7 +87,7 @@ try {
     if (!r.err && !(r.helds >= 1 && r.quicks >= 1 && r.stamps >= 1)) bad.push(`varied: ${r.helds} held, ${r.quicks} quick, ${r.stamps} feint stamps over ${r.grants} turns (want all three)`); }
 
   /* ACTS: the purse and the damage tier by act */
-  for (const [lvl, cap, mul] of [['stockade', 2, 1], ['longwater', 2, 1.2], ['redgorge', 3, 1.3]]) {
+  for (const [lvl, cap, mul] of [['stockade', 2, 1], ['longwater', 2, 1.25], ['redgorge', 3, 1.55]]) {
     const r = await run('act-' + lvl, lvl, `BK.sim(1); return { cap: T.TOKENS.cap(P), act: T.RX.act().act, dmg: T.RX.tier({ t: 'cutlass', alive: true }, 100) / 100 };`);
     if (!r.err && (r.cap !== cap || Math.abs(r.dmg - mul) > 0.001)) bad.push(`acts: ${lvl} (act ${r.act}) has a purse of ${r.cap} (want ${cap}) and a damage tier x${r.dmg} (want x${mul})`); }
   assert.deepEqual(pg.errors, [], 'page errors');
