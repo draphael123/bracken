@@ -8,6 +8,8 @@ Base: `origin/master` at `e0436ee8`. No master merge or deployment was performed
 
 Validation: `node tools/resolve-generated-merge.mjs --selftest` passed (authored edits merged; check names unioned); `node --check tools/resolve-generated-merge.mjs` passed; `node tools/tells.mjs --write` and `node tools/tells.mjs` both exited 0 on current master, 1011 mark rows. The selftest did not start a real merge.
 
+October 18 follow-up: I also ran a temporary real Git fixture outside the repository. Both `src/marks.js` and `tools/check.mjs` conflicted on `git merge --no-commit`; the helper then merged disjoint authored marks changes, regenerated MARK through the fixture's `tells --write`, unioned `alpha` and `beta` check names, and left no unmerged paths. A first fixture put authored changes on adjacent lines and correctly stopped with `STOPPED: authored content conflicts` rather than guessing. The scratch fixture was removed after verification.
+
 ## Gate receipt
 
 `node tools/gate-watch.mjs --log=PATH -- [check flags]` runs `tools/check.mjs`, copies its output to the log, and writes a terminal line: `gate done / PASS`, `gate done / FAIL`, or `gate done / STOPPED` on an interrupt or timeout. It signals only the child it started. A short selftest wrote `gate done / PASS`; a timeout selftest wrote `gate done / STOPPED timeout 0.005 min` and exited 130. Logs are outside git at `../gatewatch-selftest.log` and `../gatewatch-stopped-selftest.log`.
