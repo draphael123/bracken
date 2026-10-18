@@ -2271,7 +2271,7 @@ function* loadLevelG(i) {
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
   hintT = 0; HINTS.newLevel((LEVELS[i] || {}).id || i);   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);
   SLAB_PHYS = !!(L.slabs && L.slabs.length); SLAB_MASK = new Set(); SLAB_RT = new Map(); for (const s of (L.slabs || [])) SLAB_RT.set(s.id, { ...s, state: 'up', posts: [], heaps: [], cells: [], anim: 0 });   /* (claude/undercrown2) the slabs as built; their posts join them as they are placed */   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
@@ -4834,7 +4834,7 @@ function branchStep(dir, key) { key = key || (dir < 0 ? 'up' : 'down');
     SFX.buzz(); lockedSay(child); raiseTip(child); return true; }   /* the requirement text is drawn continuously at this junction (drawMap) and the tip says it again */
   hopTo(NODES.indexOf(child)); return true;
 }
-let mapPreloadNode = -1;
+let mapPreloadNode = -1, mapPreloadTimer = 0;
 const mapPreloadTracks = new Map();
 function updateMap(dt) {
   if (mapTip.t > 0) mapTip.t -= dt;
@@ -4874,7 +4874,7 @@ function updateMap(dt) {
   else if (mapPreloadNode !== map.node) { const nd = NODES[map.node]; mapPreloadNode = map.node;
     if ((nd.kind === 'level' || nd.kind === 'store') && !nodeLocked(nd)) {
       const li = Number.isInteger(nd.level) ? nd.level : LEVELS.findIndex(l => l.id === (nd.shop || 'shop'));
-      if (li >= 0) { if (!mapPreloadTracks.has(li)) mapPreloadTracks.set(li, LEVELS[li].build().music); music.preload(mapPreloadTracks.get(li)); }
+      if (li >= 0 && mapPreloadTracks.has(li)) { const tr = mapPreloadTracks.get(li), at = map.node; clearTimeout(mapPreloadTimer); mapPreloadTimer = setTimeout(() => { if (state === 'map' && map.node === at && !map.walking) music.preload(tr); }, 350); }   /* (a REAL half-second of rest first: a cursor run past ten nodes, or a tool that draws every node in one breath - tools/textfit.mjs's mapcard - decodes nothing but the node it stops on: every rest used to start a ~60 MB track decode and the textfit page crashed (Inspector.targetCrashed) once enough were cached) */   /* (batch101 integ 10-18: the track name is remembered when a level LOADS - the first wood at boot, every level once played. It was LEVELS[li].build() on the first rest at each node: a 100-450 ms build and a native-memory leak per node, 47 of them across a map walk - it crashed tools/textfit.mjs's page at 'mapcard' - for a name the level hands over for free) */
     }
   }
   { const [, py] = mapPos(); const sit = !map.walking && NODES[map.node], want = Math.max(0, Math.min(MAPH - VH, py - VH * (sit ? mapPanelFor(sit).anchor : 0.55))); mapCamY += (want - mapCamY) * Math.min(1, dt * 4); }
@@ -11547,7 +11547,7 @@ function drawSea(cx, cy) {
 /* THE HUD OF IT: the counted roll warning and the HEEL marker (drawn flat, after the tilted world), and the set-piece cues */
 function drawSeaHud() {
   if (state !== 'play' || !L || (!L.roll && !L.felled && !L.eye)) return;
-  if (seaMsg && seaMsg.t > 0) { g.globalAlpha = Math.max(0, Math.min(1, seaMsg.t * 3, (seaMsg.max - seaMsg.t) * 8 + 0.2));
+  if (seaMsg && seaMsg.t > 0 && !P.dead && !deathRecap) {   /* (batch101 integ: silent while the death card or its recap is up - they share the top of the screen; textfit COLLIDE) */ g.globalAlpha = Math.max(0, Math.min(1, seaMsg.t * 3, (seaMsg.max - seaMsg.t) * 8 + 0.2));
     g.fillStyle = 'rgba(10,12,20,0.55)'; g.fillRect(8, 52, VW - 16, 14); text(seaMsg.txt, VW / 2, 55, seaMsg.col, 'center', 7); g.globalAlpha = 1; }
   if (!roll || !L.roll || P.dead || P.y > 21 * TS + 8 || seaCalm() > 0.3) return;
   if (roll.state === 'tell') { const n = Math.max(1, Math.ceil(roll.t)), late = roll.t < 0.9;

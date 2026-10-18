@@ -69,6 +69,7 @@ async function pageTextFit(input) {
   if (!window.__tfCpuCanvas) { window.__tfCpuCanvas = true; const gc = HTMLCanvasElement.prototype.getContext;
     HTMLCanvasElement.prototype.getContext = function (t, o) { return gc.call(this, t, t === '2d' ? Object.assign({ willReadFrequently: true }, o) : o); }; }
   const BK = window.BK, TL = BK.textLab, lvm = await import('/src/level.js'), G = BK.g;
+  { const { music } = await import('/src/audio.js'); music.preload = () => {}; }   /* (batch101 integ 10-18) a LAYOUT tool decodes no music ahead: with codex/musicstart's map-cursor preload the page decoded tracks while drawing the map, boss and plate pages, and its renderer crashed (Inspector.targetCrashed; Runtime.evaluate never answered, 480 s) */
   const issues = [], stats = { frames: 0, texts: 0, screens: {} }, seenIssue = new Set();
   const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
   const campaign = lvm.LEVELS.map((l, i) => [l, i]).filter(([l]) => (!l.hidden || l.secret) && l.id !== 'custom' && (!input.levels || input.levels.includes(l.id)));   /* (claude/buriedcity4: TEXTFIT_LEVELS=a,b - a lane's SCOPED run over its own levels' signs and pages; unset, every level as before) */
