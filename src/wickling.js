@@ -2,7 +2,7 @@
 // Lantern-Eater 2, the haunted manor). A small living lamp-flame: a wick-stub body of grey wax with a flame for a head, drifting a hand over the ground.
 //   IT DRINKS LAMPS     it drifts to the nearest lit lamp and curls round the flame (snuffTell, told: the flame leans into it, 'IT DRINKS THE LAMP'); the lamp
 //                       gutters out (the host's own told gutter) and the Wickling burns brighter (fed, up to WK.fedMax)
-//   IT STEALS YOUR FIRE a hero carrying a flame within WK.sight is what it wants most: it hovers and flares (stealTell, a yellow '!'), then darts; a touch takes the
+//   IT STEALS YOUR FIRE a hero carrying a flame within WK.sight is what it wants most: it hovers and flares (stealTell, a red '!!': no shield keeps a flame), then darts; a touch takes the
 //                       flame out of your hand ('IT TAKES YOUR FLAME') - with no flame to take, the touch only scorches
 //   STRUCK, IT BURSTS   any blow (or thrown fire, or burning oil) and it SWELLS (burstTell, a red '!!' and a ring: step clear) and bursts into fire - a burst that
 //                       catches oil, lights the dead lamps in reach, burns a tar net and burns whoever stands in it. A threat and a tool: pop it beside the oil
@@ -72,7 +72,7 @@ export function makeWicklingHands(ctx) {
   H.reset = () => { for (const k in said) delete said[k]; };
   H.step = (e, dt) => {
     const s = st(e), P = ctx.hero(); if (!P || Math.abs(e.x - P.x) > 460) return;
-    if (Math.abs(e.x - P.x) < 220 && once('seen')) ctx.number(P.x, P.y - 40, WK_SAY.seen, '#ffd36b');
+    if (Math.abs(e.x - P.x) < 220) { if (ctx.beast) ctx.beast(); if (once('seen')) ctx.number(P.x, P.y - 40, WK_SAY.seen, '#ffd36b'); }
     s.x = e.x; s.y = e.y - 6;
     const evs = wicklingStep(s, { heroes: ctx.players().filter(p => !p.dead).map(p => ({ x: p.x, y: p.y, flame: ctx.hasFlame(p), pp: p })), lamps: ctx.lamps(), water: ctx.water, floorBelow: ctx.floorBelow }, dt);
     e.x += s.dx; e.y += s.dy; s.x = e.x; s.y = e.y - 6; e.face = s.face; e.mode = s.mode; e.vx = s.dx / Math.max(dt, 1e-4); e.stagger = 0;
@@ -80,7 +80,7 @@ export function makeWicklingHands(ctx) {
     for (const v of evs) {
       if (v.t === 'snuffTell') { ctx.number(e.x, e.y - 30, WK_SAY.drink, '#ff9a5c'); ctx.sfx('gutter'); }
       else if (v.t === 'snuff') { H.n.snuffs++; ctx.snuff(v.lamp.ref || v.lamp); }
-      else if (v.t === 'stealTell') { ctx.mark(e, '!', '#ffd36b'); ctx.sfx('snuffer'); }
+      else if (v.t === 'stealTell') { ctx.mark(e, '!!', '#ff6b6b'); ctx.sfx('snuffer'); }
       else if (v.t === 'dart') ctx.sfx('throwWhoosh');
       else if (v.t === 'steal') { H.n.steals++; ctx.steal(v.hero.pp); ctx.number(v.hero.x, v.hero.y - 36, WK_SAY.steal, '#ff9a5c'); }
       else if (v.t === 'touch') { H.n.touches++; ctx.touch(v.hero.pp, e.x); }

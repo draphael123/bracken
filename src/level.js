@@ -5607,7 +5607,7 @@ function theLamplitStreet() {
   /* THE SEAL GATE (REMIX): a portcullis on the roof road, its lamp on an iron balcony high on the vault - over a gutter that runs from the brazier's side to its foot */
   block(345, 347, 6, 11); port(346, 12, UP - 1); ent('lantern', 349, UP - 1, { city: true, dark: true, gate: 346 });   /* its lamp stands BEHIND it: only the gutter's fire reaches it */
   brazier(320, UP - 1); oil(341, 348, UP - 1, { gutter: true }); valve(343, UP - 1, [341, 348, UP - 1]); cask(283, UP - 1); oil(281, 285, UP - 1);
-  ent('sign', 316, UP - 1, { text: 'THE SEAL GATE LIFTS FOR ITS LAMP BEHIND IT. FIRE IN THE GUTTER RUNS UNDER THE GATE TO IT. THE WHEEL FILLS THE GUTTER.' });
+  ent('sign', 316, UP - 1, { text: 'FIRE IN THE GUTTER RUNS UNDER THE SEAL GATE TO ITS LAMP. THE WHEEL REFILLS IT.' });
   wick(296, UP - 1, 1);
   ent('check', 263, UP - 1); ent('check', 271, 22); ent('check', 348, ST - 1);   /* (at 266 it was under the pocket's lip) */
   coins([258, 36], [266, 34], [274, 36], [282, 34], [290, 36], [298, 34], [306, 36], [314, 34], [322, 36], [338, 34], [346, 36],

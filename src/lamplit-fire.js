@@ -65,7 +65,7 @@ export function makeLamplitFire(ctx) {
     }
     for (const s of F.snags) if (ctx.marks.has('lpsnag:' + s.s.id) && s.st !== 'gone') burnAway(s, true);
     for (const s of F.snags) s.pr.burnt = s.st === 'gone';
-    if (window.BK) window.BK.lamplitFire = () => H;
+    if (typeof window !== 'undefined' && window.BK) window.BK.lamplitFire = () => H;
   };
 
   /* ---------- THE OIL ---------- */
