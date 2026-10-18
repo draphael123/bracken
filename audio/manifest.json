@@ -24,7 +24,14 @@
  "clang": [
   "audio/sfx/clang_0.ogg",
   "audio/sfx/clang_1.ogg",
-  "audio/sfx/clang_2.ogg"
+  "audio/sfx/clang_2.ogg",
+  "audio/sfx/clang2_0.ogg",
+  "audio/sfx/clang2_1.ogg",
+  "audio/sfx/clang2_2.ogg",
+  "audio/sfx/clang2_3.ogg",
+  "audio/sfx/clang2_4.ogg",
+  "audio/sfx/clang2_5.ogg",
+  "audio/sfx/clang2_6.ogg"
  ],
  "parry": [
   "audio/sfx/parry_0.ogg",
@@ -33,7 +40,13 @@
  "crack": [
   "audio/sfx/crumble_0.ogg",
   "audio/sfx/crumble_1.ogg",
-  "audio/sfx/crumble_2.ogg"
+  "audio/sfx/crumble_2.ogg",
+  "audio/sfx/crack2_0.ogg",
+  "audio/sfx/crack2_1.ogg",
+  "audio/sfx/crack2_2.ogg",
+  "audio/sfx/crack2_3.ogg",
+  "audio/sfx/crack2_4.ogg",
+  "audio/sfx/crack2_5.ogg"
  ],
  "stagger": [
   "audio/sfx/stagger_0.ogg",
@@ -41,7 +54,11 @@
  ],
  "slam": [
   "audio/sfx/slam_0.ogg",
-  "audio/sfx/slam_1.ogg"
+  "audio/sfx/slam_1.ogg",
+  "audio/sfx/slam2_0.ogg",
+  "audio/sfx/slam2_1.ogg",
+  "audio/sfx/slam2_2.ogg",
+  "audio/sfx/slam2_3.ogg"
  ],
  "coin": [
   "audio/sfx/gem_0.ogg"
@@ -87,7 +104,14 @@
  ],
  "stone": [
   "audio/sfx/stoneHit_0.ogg",
-  "audio/sfx/stoneHit_1.ogg"
+  "audio/sfx/stoneHit_1.ogg",
+  "audio/sfx/stone2_0.ogg",
+  "audio/sfx/stone2_1.ogg",
+  "audio/sfx/stone2_2.ogg",
+  "audio/sfx/stone2_3.ogg",
+  "audio/sfx/stone2_4.ogg",
+  "audio/sfx/stone2_5.ogg",
+  "audio/sfx/stone2_6.ogg"
  ],
  "effort": [
   "audio/sfx/gobGrunt_0.ogg",
@@ -810,5 +834,77 @@
   "audio/sfx/r_wqF_0.ogg",
   "audio/sfx/r_wqF_1.ogg",
   "audio/sfx/r_wqF_2.ogg"
+ ],
+ "sw_blade": [
+  "audio/sfx/sw_blade_0.ogg",
+  "audio/sfx/sw_blade_1.ogg",
+  "audio/sfx/sw_blade_2.ogg",
+  "audio/sfx/sw_blade_3.ogg",
+  "audio/sfx/sw_blade_4.ogg",
+  "audio/sfx/sw_blade_5.ogg",
+  "audio/sfx/sw_blade_6.ogg",
+  "audio/sfx/sw_blade_7.ogg",
+  "audio/sfx/sw_blade_8.ogg",
+  "audio/sfx/sw_blade_9.ogg"
+ ],
+ "blk_clash": [
+  "audio/sfx/blk_clash_0.ogg",
+  "audio/sfx/blk_clash_1.ogg",
+  "audio/sfx/blk_clash_2.ogg",
+  "audio/sfx/blk_clash_3.ogg",
+  "audio/sfx/blk_clash_4.ogg",
+  "audio/sfx/blk_clash_5.ogg",
+  "audio/sfx/blk_clash_6.ogg",
+  "audio/sfx/blk_clash_7.ogg",
+  "audio/sfx/blk_clash_8.ogg",
+  "audio/sfx/blk_clash_9.ogg"
+ ],
+ "bd_flesh": [
+  "audio/sfx/bd_flesh_0.ogg",
+  "audio/sfx/bd_flesh_1.ogg",
+  "audio/sfx/bd_flesh_2.ogg",
+  "audio/sfx/bd_flesh_3.ogg",
+  "audio/sfx/bd_flesh_4.ogg",
+  "audio/sfx/bd_flesh_5.ogg",
+  "audio/sfx/bd_flesh_6.ogg"
+ ],
+ "bd_heavy": [
+  "audio/sfx/bd_heavy_0.ogg",
+  "audio/sfx/bd_heavy_1.ogg",
+  "audio/sfx/bd_heavy_2.ogg",
+  "audio/sfx/bd_heavy_3.ogg",
+  "audio/sfx/bd_heavy_4.ogg",
+  "audio/sfx/bd_heavy_5.ogg",
+  "audio/sfx/bd_heavy_6.ogg",
+  "audio/sfx/bd_heavy_7.ogg"
+ ],
+ "bd_plate": [
+  "audio/sfx/bd_plate_0.ogg",
+  "audio/sfx/bd_plate_1.ogg",
+  "audio/sfx/bd_plate_2.ogg",
+  "audio/sfx/bd_plate_3.ogg",
+  "audio/sfx/bd_plate_4.ogg"
+ ],
+ "bd_stone": [
+  "audio/sfx/bd_stone_0.ogg",
+  "audio/sfx/bd_stone_1.ogg",
+  "audio/sfx/bd_stone_2.ogg",
+  "audio/sfx/bd_stone_3.ogg",
+  "audio/sfx/bd_stone_4.ogg"
+ ],
+ "bd_wood": [
+  "audio/sfx/bd_wood_0.ogg",
+  "audio/sfx/bd_wood_1.ogg",
+  "audio/sfx/bd_wood_2.ogg",
+  "audio/sfx/bd_wood_3.ogg",
+  "audio/sfx/bd_wood_4.ogg",
+  "audio/sfx/bd_wood_5.ogg"
+ ],
+ "ld_jump": [
+  "audio/sfx/ld_jump_0.ogg",
+  "audio/sfx/ld_jump_1.ogg",
+  "audio/sfx/ld_jump_2.ogg",
+  "audio/sfx/ld_jump_3.ogg",
+  "audio/sfx/ld_jump_4.ogg"
  ]
 }
