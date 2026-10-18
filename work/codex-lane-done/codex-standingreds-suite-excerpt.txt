@@ -19,3 +19,28 @@ FAIL whatsnew
 FAIL pixels
 13 check(s) failed.
 After this run, the measured Scree mash row was refreshed and standalone mash-gate passed.
+
+Task C rebased serial on d08ea9ca, 2026-10-18 (pre-layout/audio timer fixes)
+ ok  curve-gate
+ ok  mark-integrity
+ ok  no-hidden-hits
+ ok  slopes-trace
+FAIL dangling-paths
+FAIL normal-health
+FAIL berserker
+FAIL dune-worm
+FAIL bells
+FAIL level-quality
+FAIL mash-gate
+FAIL combat-part2
+FAIL rule-openings
+FAIL visible-supports-strict
+FAIL lab-order
+FAIL textfit           OFFSCREEN 2: Flotilla / Hurricane
+FAIL textfit-full      OFFSCREEN 2: Flotilla / Hurricane; Web Audio page error
+398 checks, 13 failed, exit 1.
+
+After 9bf0cbfb + 8a8d7fef:
+node tools/textfit.mjs --strict: 10,338 screens, 110,393 strings,
+OVERFLOW 0 OFFSCREEN 0 CLIPPED 0 TRUNCATED 0 COVERS 0 COLLIDE 0
+OVERDRAWN 0 SMUDGE 0 ERROR 0; 0 pictures; no page errors; exit 0.
