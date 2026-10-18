@@ -380,3 +380,11 @@ COMBAT LAYERS + MIX (2026-10-18, claude/audiocombat; Daniel approved exactly the
 - ld_jump_0-2 (a drop's landing) = "Jump Landing" (Jump 1-3) by Macro (Dan Knoflicek), CC0 - https://opengameart.org/content/jump-landing
 - clang2_0-5, crack2_0-2 (wood breaks), crack2_3-5 (rock breaks), stone2_0-5, slam2_0-3, bd_wood_1-3, (all added to the clang / crack / stone / slam pools in manifest.json so the 3-take workhorses stop repeating) = "75 CC0 breaking / falling / hit sfx" by rubberduck, CC0 - https://opengameart.org/content/75-cc0-breaking-falling-hit-sfx
 - bd_flesh_2-6 (punch), bd_heavy_0-7 (punch heavy, soft heavy), bd_plate_0-4 (plate), bd_stone_1-4 (mining), bd_wood_4-5 (plank), ld_jump_3-4 (soft heavy) = Kenney "Impact Sounds", CC0 (already credited above; files already on this PC)
+
+VOICES, 2026-10-18 (claude/audiovoices; the recipe is tools/build-voices-1018.mjs, every file cut / levelled / encoded as the others in audio/sfx/vo):
+- "Voices Sound Effects Library" by Little Robot Sound Factory, CC-BY 3.0 (credit required: www.littlerobotsoundfactory.com) - https://opengameart.org/content/voices-sound-effects-library
+  the Berserker's orc growls (vo_ob_*), the Death Knight (vo_dk_*), the Warden and Ranger effort grunts (vo_wd_/vo_rg_ effort and hurt), and the foe voices ev_ (priests, mystics),
+  zb_ (the dead), dm_ (imps, djinn), di_ (big beasts), sc_ (scorpions, scarabs, little things)
+- "Dying Voices - Female - RPG" by Galacti-Chron (CC0 and CC-BY 3.0 on the page; used under CC0, credited all the same) - https://opengameart.org/content/dying-voices-female-rpg
+  the deaths and the first sound of the hurts for the Warden, Ranger and Geomancer (wd_ rg_ gm_), and the high deaths added to the Pyromancer (f3_die_2-4)
+- The knight's effort / laugh no longer use the goblin grunts: no hero grunts with a goblin clip now.
