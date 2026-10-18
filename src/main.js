@@ -1696,6 +1696,13 @@ const coopName = p => (p.ai ? 'ALLY ' : 'P' + (p.n || 1) + ' ') + (HERO_SHORT[p.
    computer on a card you asked for company on is nobody's idea of a good evening. */
 function coopWinner(key) {
   const a = players[0], b = players[1]; if (!b) return '';
+  if (players.length > 2) {   /* (claude/tavernfix) THREE OR FOUR: the best score wins; a shared top says so; all level is a dead heat */
+    const sc = players.map(p => scoreOf(p[key])), top = Math.max(...sc), lead = players.filter((p, i) => sc[i] === top);
+    const rest = sc.filter(v => v !== top), second = rest.length ? Math.max(...rest) : top;
+    if (lead.length === players.length) return 'A DEAD HEAT   ' + top + ' EACH';
+    if (lead.length > 1) return lead.map(p => 'P' + p.n).join(' + ') + ' TIE   ' + top + ' TO ' + second;
+    return 'P' + lead[0].n + ' ' + (HERO_SHORT[lead[0].hero] || lead[0].hero) + ' WINS   ' + top + ' TO ' + second;
+  }
   const sa = scoreOf(a[key]), sb = scoreOf(b[key]);
   if (b.ai) return 'P1 ' + (HERO_SHORT[a.hero] || a.hero) + '   ' + sa;
   if (sa === sb) return 'A DEAD HEAT   ' + sa + ' EACH';
@@ -1705,6 +1712,7 @@ function coopWinner(key) {
    themselves up the way the single-player card's do, with the winner named under them. */
 function coopTally(px0, pw, at, cnt) {
   const a = players[0], b = players[1]; if (!b) return;
+  if (players.length > 2) return coopTally4(px0, pw, at, cnt);
   const L0 = px0 + 8, R0 = px0 + pw - 8, MID = px0 + pw / 2;
   { const k = at(0.2); if (k > 0) { g.globalAlpha = k;
     text(fitText(coopName(a), pw / 2 - 16, 6), L0, 60, '#8fd160', 'left', 6);
@@ -1716,6 +1724,22 @@ function coopTally(px0, pw, at, cnt) {
     text(lab, MID, 71 + i * 8, UI.dim, 'center', 6);
     text(String(Math.round(cnt(t0, av))), L0, 71 + i * 8, col, 'left', 6);
     text(String(Math.round(cnt(t0, bv))), R0, 71 + i * 8, col, 'right', 6);
+    g.globalAlpha = 1; });
+  { const k = at(1.15); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
+}
+/* (claude/tavernfix) THE FOUR-COLUMN TALLY for three or four players: a label column on the left, one right-aligned column per seat
+   in the same rows and heights as the two-column card, each column headed by its seat and short hero name in his own colour. */
+const tallyCols = (px0, pw, n) => { const x0 = px0 + 48, cw = (px0 + pw - 6 - x0) / n; return { lab: px0 + 8, cw, right: i => Math.round(x0 + cw * (i + 1) - 4), left: i => Math.round(x0 + cw * i) }; };
+const tallyHead = (p, w) => fitText('P' + p.n + ' ' + (COOP_TAG[p.hero] || HERO_SHORT[p.hero] || String(p.hero).toUpperCase()), w, 6);
+function coopTally4(px0, pw, at, cnt) {
+  const n = players.length, C = tallyCols(px0, pw, n);
+  { const k = at(0.2); if (k > 0) { g.globalAlpha = k;
+    players.forEach((p, i) => text(tallyHead(p, C.cw - 3), C.right(i), 60, PARTY.colourOf(PROG.tavern, p.n).c, 'right', 6));
+    g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 68, pw - 12, 1); g.globalAlpha = 1; } }
+  scoreRows(players[0].score).forEach(([lab], r) => { const t0 = 0.3 + r * 0.12, k = at(t0); if (k <= 0) return;
+    const col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0';
+    g.globalAlpha = k; text(lab, C.lab, 71 + r * 8, UI.dim, 'left', 6);
+    players.forEach((p, i) => text(String(Math.round(cnt(t0, scoreRows(p.score)[r][1]))), C.right(i), 71 + r * 8, col, 'right', 6));
     g.globalAlpha = 1; });
   { const k = at(1.15); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
 }
@@ -1753,6 +1777,7 @@ function drawVictory() {
     g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 96, pw - 12, 1); text('completion', VW / 2, 102, UI.dim, 'center', 6); text(T.pct + '%', VW / 2, 112, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', 12);
     text('MORE ROAD IS COMING', VW / 2, 138, UI.text, 'center', 6);
     if (Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  back to the map' : 'Z  back to the map', VW / 2, VH - 20, UI.sel, 'center', 6); if (touchOn) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; }); return; }
+  if (players.length > 2) { drawVictory4(px0, pw); return; }
   const L0 = px0 + 8, R0 = px0 + pw - 8, MID = px0 + pw / 2;
   text(fitText(coopName(a), pw / 2 - 16, 6), L0, 44, '#8fd160', 'left', 6);
   text(fitText(coopName(b), pw / 2 - 16, 6), R0, 44, b.ai ? '#c9a0ff' : '#8fd160', 'right', 6);
@@ -1770,6 +1795,28 @@ function drawVictory() {
   { const s = coopWinner('total'); text(s, VW / 2, 128, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', fitSize(s, pw - 12, [12, 8, 6])); }   /* DEATH KNIGHT is a long name: the line drops a size rather than losing its end */
   text('MORE ROAD IS COMING', VW / 2, 148, UI.dim, 'center', 6);
   if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, VH - 18, UI.sel, 'center', 6);
+}
+/* (claude/tavernfix) THE END OF THE ROAD FOR THREE OR FOUR: the same card with a column per seat. The figures stand in their columns (the
+   leader dances, the rest look at the floor), so the table starts lower than the two-player card's. */
+function drawVictory4(px0, pw) {
+  const n = players.length, C = tallyCols(px0, pw, n);
+  const sc = players.map(p => scoreOf(p.total)), top = Math.max(...sc), even = sc.every(v => v === top);
+  const step = Math.floor(time * 10), breath = Math.floor(time * 1.4);
+  players.forEach((p, i) => {
+    text(tallyHead(p, C.cw - 3), C.right(i), 40, PARTY.colourOf(PROG.tavern, p.n).c, 'right', 6);
+    const set = p.set || K, glad = !even && sc[i] === top, key = glad ? 'dance' : 'slump';
+    if (set && set.R && set.R[key]) drawSet(set, key, glad ? step : breath, Math.round(C.right(i) - C.cw / 2 + 2), 72, 1);
+  });
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 46, pw - 12, 1);
+  scoreRows(players[0].total || freshScore()).forEach(([lab], r) => { const y = 78 + r * 8, col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0';
+    text(lab, C.lab, y, UI.dim, 'left', 6);
+    players.forEach((p, i) => text(String(scoreRows(p.total || freshScore())[r][1]), C.right(i), y, col, 'right', 6)); });
+  g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 127, pw - 12, 1);
+  text('score', C.lab, 130, UI.dim, 'left', 6);
+  players.forEach((p, i) => text(String(sc[i]), C.right(i), 130, UI.gold, 'right', 6));
+  { const s = coopWinner('total'); text(s, VW / 2, 142, Math.floor(time * 3) % 2 ? UI.gold : '#fff6e0', 'center', fitSize(s, pw - 12, [8, 6])); }
+  text('MORE ROAD IS COMING', VW / 2, 153, UI.dim, 'center', 6);
+  if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, VH - 14, UI.sel, 'center', 6);
 }
 /* ==================== THE ALLY, for a player with no friend ====================
    It is THE LAB BOT. src/lab.js drives a hero with real key presses, and its rules are the ones the boss lab
@@ -5060,6 +5107,11 @@ function drawMap() {
       drawSet(K2, map.walking ? 'run' : 'idle', Math.floor(time * (map.walking ? 12 : 4.5)) % (map.walking ? 6 : K2.R.idle.length), x2, py + 2, dir2, false);
       g.fillStyle = coopShownAlly() ? '#c9a0ff' : '#8fd160'; g.fillRect(Math.round(x2) - 1, Math.round(py) - 21, 3, 3);
     } }
+  /* (claude/tavernfix) A PIP FOR EVERY SEAT under the token, in his colour (the ally's violet): P1 first, then each friend in the party. */
+  { const seatsOn = coopWant ? wantSeats() : players.slice(1).map(p => ({ ally: !!p.ai }));
+    if (seatsOn.length) { const n = seatsOn.length + 1, x0 = Math.round(px) - Math.floor((n * 4 - 1) / 2), y0 = Math.round(py) + 5;
+      for (let i = 0; i < n; i++) { const al = i > 0 && seatsOn[i - 1].ally, c = al ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, i + 1).c;
+        g.fillStyle = ART.OUT; g.fillRect(x0 + i * 4 - 1, y0 - 1, 4, 4); g.fillStyle = c; g.fillRect(x0 + i * 4, y0, 2, 2); } } }
   // node labels
   // node plates. The name is on a board you can read over the trees, and what you have taken out of that
   // wood is written under it, so the map answers "what have I left there?" without walking to it.
@@ -6567,7 +6619,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
+  openOnline: () => ONL.open(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -29174,7 +29226,7 @@ function update(dt) {
         else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
-        else if (k === 'PRACTICE') { rush = null; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
+        else if (k === 'PRACTICE') { rush = null; practiceFromInn = false; loadSlot(slot); applySkin(); applyUpgrades(); practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; }
         else if (k === 'LOCAL CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(); }   /* (claude/tavern) CO-OP LIVES IN THE TAVERN now: friends walk in there (a pad's JUMP) */
         else if (k === 'ONLINE CO-OP') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); enterTavern(() => ONL.open()); }   /* ONLINE CO-OP (src/online.js): the tavern, with its invite board's room card up - host (the same co-op gate) or join with a code */   /* ONLINE CO-OP (src/online.js): its own board - host (the same co-op gate) or join with a code */
         else if (k === 'THE EDITOR') edEnter();
@@ -32435,7 +32487,8 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
     text('Z  TAKE THIS HERO TRIAL', VW / 2, y + h - 14, UI.sel, 'center', 6); }
 }
-let practiceI = 0;
+let practiceI = 0, practiceFromInn = false;   /* (claude/tavernfix) the Practice list was opened from the inn's gate: leaving it goes back there */
+const practiceLeave = () => { if (practiceFromInn) { practiceFromInn = false; enterTavern(); } else state = 'title'; SFX.menuClose(); };
 const YARD_DRILLS = {
   knight: 'shield, the beat, dash attack, rise and sweep',
   pyro: 'ember, the pyre, dash attack, rise and sweep',
@@ -32455,9 +32508,9 @@ function updatePractice() {
   if (practiceI >= rows.length) practiceI = 0;
   if (upPress) { practiceI = (practiceI + rows.length - 1) % rows.length; SFX.ui(); }
   if (downPress) { practiceI = (practiceI + 1) % rows.length; SFX.ui(); }
-  if (pausePress) { state = 'title'; SFX.menuClose(); return; }
+  if (pausePress) { practiceLeave(); return; }
   if (menuTake()) {
-    const h = rows[practiceI];
+    const h = rows[practiceI]; practiceFromInn = false;   /* (going INTO a yard: the way back out is that yard's own) */
     if (h.free) { const i = LEVELS.findIndex(l => l.id === 'trial_open'); if (i >= 0) { rush = null; loadThen(i, () => { introSeen = true; startGame(); SFX.uiSel(); }); } return; }
     if (!(PROG.heroes && PROG.heroes[h.id])) { SFX.buzz(); menuMsg = 'not yours yet'; menuMsgT = 2; return; }
     PROG.hero = h.id; applySkin(); applyUpgrades(); saveProgress();
