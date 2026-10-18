@@ -247,7 +247,7 @@ function reliquary(V, rq) { const n = Math.min(5, V.stubs == null ? 0 : V.stubs)
 function sanctFloor(V) {
   if (!vis(V, 275 * TS, 317 * TS)) return; const fl = 41 * TS;
   box(V, 294 * TS, fl - 4, 3 * TS, 4, '#8a1c1c'); box(V, 294 * TS, fl - 4, 3 * TS, 1, '#c84a3a');   /* the altar step's carpet runner */
-  put(V, P.bakeAltar(), 295.5 * TS - 22, fl - 40);
+  put(V, P.bakeAltar(), 292.5 * TS - 22, fl - 40);   /* (claude/church3tune) off the middle brazier (col 296) */
   for (const x of [281, 291, 300, 310]) { box(V, x * TS + 2, fl - 10, 12, 10, '#6a4426'); box(V, x * TS + 2, fl - 10, 12, 1, '#a0703c'); box(V, x * TS + 4, fl - 14, 8, 4, '#8a1c1c'); }   /* kneelers */
   /* the gilt cross inlaid in the floor before the altar: where the radiance lands */
   alpha(V, 0.55, () => { box(V, 292.5 * TS, fl - 2, 6 * TS, 1, '#d8b040'); }); }
