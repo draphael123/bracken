@@ -14,6 +14,8 @@ October 18 follow-up: I also ran a temporary real Git fixture outside the reposi
 
 `node tools/gate-watch.mjs --log=PATH -- [check flags]` runs `tools/check.mjs`, copies its output to the log, and writes a terminal line: `gate done / PASS`, `gate done / FAIL`, or `gate done / STOPPED` on an interrupt or timeout. It signals only the child it started. A short selftest wrote `gate done / PASS`; a timeout selftest wrote `gate done / STOPPED timeout 0.005 min` and exited 130. Logs are outside git at `../gatewatch-selftest.log` and `../gatewatch-stopped-selftest.log`.
 
+An actual `tells` subset through the watcher exited 0 and the saved log ends `gate done / PASS | 1.7s | 2026-10-18T16:52:47.902Z` (`../gate-watch-real-tells.log`). This checks the child handoff and log readback in addition to the synthetic PASS/STOPPED paths.
+
 ## Remaining
 
 The Claude coordinator must wire the merge helper and gate watcher into its release script outside this repository. Serial/parallel verdict equivalence remains on `codex/parallelproof` and is not claimed here.
