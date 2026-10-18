@@ -60,7 +60,7 @@ export const FONT_CREDITS = [['Press Start 2P', 'Cody "CodeMan38" Boisclair', 'd
 export const FONT_LICENCE = 'SIL OFL 1.1 (OFL): scripts.sil.org/OFL';
 /* THE RECORDED SOUND EFFECTS (claude/sfx, Daniel 10-11): CC0 packs, credited as a courtesy beside the composers - the exact packs and links are in audio/CREDITS.txt */
 /* (claude/shipfix: the other CC0 authors audio/CREDITS.txt names - voices, grunts, ambience, one-shots and two chiptune loops - are on the page too; HaelDB's page lists both CC0 and OGA-BY 3.0, checked 2026-10-13, and it is used under CC0) */
-export const SFX_CREDIT_NAMES = ['Kenney', 'rubberduck', 'StumpyStrust', 'artisticdude', 'HaelDB', 'cicifyre', 'thebardofblasphemy', 'Badre-Eddine', 'Ogrebane', 'Rango Mango', 'wolfwoot', 'ArcadeParty', 'Exewin', 'StarNinjas', 'RandomMind', 'Zane Little Music', 'jasinski', 'Independent.nu'];
+export const SFX_CREDIT_NAMES = ['Kenney', 'rubberduck', 'StumpyStrust', 'artisticdude', 'HaelDB', 'cicifyre', 'thebardofblasphemy', 'Badre-Eddine', 'Ogrebane', 'Rango Mango', 'wolfwoot', 'ArcadeParty', 'Exewin', 'StarNinjas', 'RandomMind', 'Zane Little Music', 'jasinski', 'Independent.nu', 'TinyWorlds', 'Fantozzi', 'Corsica_S'];
 export const CCBY_PER = 2;
 export const CREDIT_ROWS = 8;
 export function creditPages(credits) {

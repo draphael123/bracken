@@ -21,7 +21,7 @@ const heroes = [...kit[1].matchAll(/(?:^|[,{ ])(\w+): \{ kit:/g)].map(m => m[1])
 for (const h of heroes.filter(h => h !== 'knight')) assert.ok(voice[1].includes("'" + h + "'"), 'setHeroVoice does not know ' + h + ': he would speak with the knight\'s voice');
 console.log('ok  1 voices       setHeroVoice accepts all ' + heroes.length + ' heroes in HERO_KIT, the Berserker among them');
 
-const CC0 = ['artisticdude', 'HaelDB', 'cicifyre', 'thebardofblasphemy', 'Badre-Eddine', 'Ogrebane', 'Rango Mango', 'wolfwoot', 'ArcadeParty', 'Exewin', 'StarNinjas', 'RandomMind', 'Zane Little Music', 'jasinski', 'Independent.nu', 'Kenney', 'rubberduck', 'StumpyStrust'];
+const CC0 = ['artisticdude', 'HaelDB', 'cicifyre', 'thebardofblasphemy', 'Badre-Eddine', 'Ogrebane', 'Rango Mango', 'wolfwoot', 'ArcadeParty', 'Exewin', 'StarNinjas', 'RandomMind', 'Zane Little Music', 'jasinski', 'Independent.nu', 'TinyWorlds', 'Fantozzi', 'Corsica_S', 'Kenney', 'rubberduck', 'StumpyStrust'];
 const txt = rd('audio/CREDITS.txt').toLowerCase(), listed = creditPages({}).filter(p => p.kind === 'names').flatMap(p => p.names);
 for (const n of CC0) { assert.ok(txt.includes(n.toLowerCase()), n + ' is not in audio/CREDITS.txt (the list drifted)'); assert.ok(listed.includes(n), n + ' is not on the in-game credits page'); }
 assert.ok(creditPages({}).filter(p => p.kind === 'names').every(p => p.names.length <= 16), 'a names page holds at most 16');

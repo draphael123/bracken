@@ -8137,10 +8137,19 @@ function surface() { // what is underfoot, for the step and the landing
   if (!L) return 'grass'; if ((L.pools || []).some(p => p.shallow && P.x > p.x0 && P.x < p.x1 && P.y > p.y + 2)) return 'water';
   const m = P.onMover; if (m && (m.kind === 'cart' || m.kind === 'orelift')) return 'iron'; if (m) return 'wood';
   const tx = Math.floor(P.x / TS), ty = Math.floor((P.y + 1) / TS), t = tileAt(tx, ty);
-  if (L.glasssea && P.x >= (L.glassFrom || 0) * TS && (t === T.ONEWAY || t === T.SOLID || (t >= 20 && t <= 25))) return 'stone';   /* (claude/glasssea art pass) glass underfoot rings as stone, never as the planks its shelves used to be */
-  if (t === T.RAIL) return 'iron'; if (t === T.CRYST) return 'stone'; if (t === T.ONEWAY || t === T.PLANK || t === T.SHELF) return 'wood';
+  if (L.glasssea && P.x >= (L.glassFrom || 0) * TS && (t === T.ONEWAY || t === T.SOLID || (t >= 20 && t <= 25))) return 'glass';   /* (claude/glasssea art pass) glass underfoot rings as stone, never as the planks its shelves used to be (claude/footsteps: its own surface now: stone's step with a glass tick) */
+  if (t === T.RAIL) return 'iron'; if (t === T.CRYST) return 'stone'; if (t === T.ICE) return 'glass'; if (t === T.ONEWAY || t === T.PLANK || t === T.SHELF) return 'wood';
   if (L.snowLine !== undefined && ty <= L.snowLine) return 'snow';
-  if (L.dark || (L.stone || []).some(z => tx >= z[0] && tx <= z[1] && ty >= z[2] && ty <= z[3]) || (L.palette && (L.palette.dress === 'crag' || L.palette.hall))) return 'stone';
+  const pal = L.palette || {}, dress = pal.dress;   /* (claude/footsteps) what the ground is made of, from the level's own dressing */
+  if (dress === 'myc') return 'dirt';   /* the fungus wood is dark and soft underfoot: before the dark rule, which would call it stone */
+  if (/^shop/.test(LEVELS[levelIndex] ? LEVELS[levelIndex].id : '')) return 'carpet';   /* the shops: rugs and boards */
+  if (L.dark || (L.stone || []).some(z => tx >= z[0] && tx <= z[1] && ty >= z[2] && ty <= z[3]) || pal.hall) return 'stone';
+  if (dress === 'crag') return pal.set ? 'stone' : 'gravel';   /* the crag outside its paved zones: scree and shingle (a built crag - Stormhold's village set - stays stone) */
+  if (dress === 'ship') return 'wood';   /* a deck */
+  if (pal.set === 'desert' || dress === 'desert' || L.sandWalk || dress === 'shore' || pal.set === 'shore') return 'sand';
+  if (dress === 'marsh') return 'mud';
+  if (dress === 'village' || dress === 'camp' || dress === 'fair' || dress === 'battlefield') return 'dirt';
+  if (dress === 'canal') return 'stone';
   return 'grass';
 }
 const JET_BASE = 56; const jetLen = () => Math.round(JET_BASE * (1 + 0.11 * tal('longFlame')) * (P.infernoT > 0 ? 1.5 : 1)); // (LONG FLAME) // three and a half tiles of flame: a staff's reach, not a hose
@@ -10090,7 +10099,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     } else { const fallH = P.y - (P.airTopY ?? P.y), tier = fallH >= BIG_DROP ? 2 : prevVy > 250 ? 1 : 0, heavy = tier > 0, fellFar = P.y - (P.airTopY ?? P.y) >= EARTHSHAKER_DROP; /* fellFar is EARTHSHAKER's alone: heavy still sets every hero's landing (lag, dust, thud) as before */ if (fellFar && isPaladin() && tal('earthshaker')) { for (const d of [-1, 1]) pwaves.push({ x: P.x + d * 8, y: P.y, dir: d, life: 0.9, sp: 200, hit: new Set() }); shakeCam(4); SFX.hammerfall(); ringAt(P.x, P.y - 2, 22, '#ffd36b', 0.25); } // EARTHSHAKER
       /* LANDINGS BY HEIGHT (Daniel 10-12, claude/feelplatform): a hop is a PUFF (a little dust, a shallow squash); a drop is what it always was (dust, thud, shake, a ring, the three landing frames);
          a BIG drop (BIG_DROP, five tiles and more) is a DUST RING + a deeper thump + a stronger shake + a longer crouch-recover. Nothing here locks the controls (landT clears on the next press, above). */
-      dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 4); SFX.pLand(surface()); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
+      dust(P.x, P.y, tier === 2 ? 11 : heavy ? 9 : 4); SFX.pLand(surface(), tier); if (L.hush) noiseAt(P.x, P.y, groundVol() * (heavy ? 2.1 : 1.15), null);
       squash(tier === 2 ? 1.5 : heavy ? 1.4 : 1.15, tier === 2 ? 0.52 : heavy ? 0.6 : 0.86, tier === 2 && !SET.reduceMotion ? 0.2 : 0.1); P.landT = tier === 2 ? 0.2 : heavy ? 0.16 : 0.07; P.landArt = P.landArtMax = tier === 2 ? 0.34 : heavy ? 0.26 : 0.16;
       if (heavy) { SFX.thud(); shakeCam(tier === 2 ? 3.5 : 2); if (prevVy > 250) hitstop(0.035); ringAt(P.x, P.y - 1, tier === 2 ? 20 : 12, '#c9b27c', 0.2); }
       if (tier === 2 && !SET.reduceMotion) { dustRing(P.x, P.y, 14); SFX.thud(); }
@@ -10105,7 +10114,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   // counts a fraction of your own top speed now, and it is kept (not grown) while you are in the air.
   if (Math.abs(P.vx) > RUN * MOVE.SPRINT_HOLD) { if (P.ground) P.runT = (P.runT || 0) + dt; } else P.runT = 0; P.ashT = Math.max(0, (P.ashT || 0) - dt);
   if (P.ground && Math.abs(P.vx) > 90 && Math.sign(P.vx) !== P.face && !dodging) { if (Math.random() < dt * 30) dust(P.x + P.face * 3, P.y, 1); SFX.skid(); } // turning at a run: the boots skid
-  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = 0.18; dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface()); if (L.hush) { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail' || d.k === 'bush') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
+  if (P.ground && Math.abs(P.vx) > 40 && !dodging) { P.dust -= dt; if (P.dust <= 0) { P.dust = Math.max(0.14, Math.min(0.34, 16.6 / Math.abs(P.vx))); dust(P.x - P.face * 4, P.y, 1); SFX.pStep(surface(), Math.abs(P.vx));   /* (claude/footsteps) THE STRIDE SETS THE BEAT: 0.18 s at a run (92), 0.157 s at a sprint, slower as the legs slow; pStep hears the speed for weight */ if (L.hush) { noiseAt(P.x, P.y, groundVol() * (P.block ? 0.4 : 1), null); footMark(); } } for (const d of decor) if ((d.k === 'tuft' || d.k === 'flower' || d.k === 'fern' || d.k === 'cattail' || d.k === 'bush') && Math.abs(d.x + 4 - P.x) < 12 && Math.abs(d.y + 5 - P.y) < 10) d.sway = 0.45; }
   if (!SET.reduceMotion && SET.parts !== 'low' && P.ground && Math.abs(P.vx) > 50 && !dodging) { pebT -= dt; if (pebT <= 0) { pebT = 0.3 + fxRand() * 0.5; const dr = Math.sign(P.vx), sf = surface(); if (sf !== 'wood' && sf !== 'water' && sf !== 'iron' && WR.ledgeAhead((tx, ty) => isSolid(tx, ty) || isOneWay(tileAt(tx, ty)), P.x, P.y, dr, TS)) WR.pebbles(parts, P.x + dr * 8, P.y, dr, 1 + (fxRand() < 0.4 ? 1 : 0), fxRand); } }   /* (feelplatform) loose pebbles skitter off the ledge you run along */
   for (const d of decor) if (d.k === 'bush' && d.birds && Math.abs(d.x + 13 - P.x) < 26 && Math.abs(d.y + 16 - P.y) < 24) { d.birds = false; SFX.bird(); for (let i = 0; i < 2 + (Math.random() * 2 | 0); i++) birds.push({ x: d.x + 6 + Math.random() * 14, y: d.y + 4, vx: (Math.random() < 0.5 ? -1 : 1) * (40 + Math.random() * 40), vy: -70 - Math.random() * 40, t: Math.random() * 3, life: 3 }); }
   P.anim += dt;
