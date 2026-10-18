@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-18",
+    "batch": 101,
+    "lines": [
+      "Deadly water now drains you; no more shoving",
+      "The Tollmaster has air pockets in his roof",
+      "Boss Select on the title menu",
+      "Menu music starts reliably",
+      "Warden XP and level-ups fixed"
+    ]
+  },
+  {
+    "date": "2026-10-18",
     "batch": 100,
     "lines": [
       "The Flotilla rebuilt: face the Admiral's Champion",
