@@ -59,7 +59,7 @@ src/level.js (theLamplitStreet rewritten; arcade keeps piers out of shafts), src
 ## 7. Checks
 Run (node, green): **tools/lamplit3.mjs** (new: no wood, dark, route + reach, every net's oil/fire, the fire on the built level, E light / throw / water / lamp hit / told arc, the Wickling), level-quality lamplit (CLEARS, pilot/mash report-only), tells, hint-shown, stuck --static, signs, checkpoints, reach (everything reachable), boss-read, boss-fight-end, ground-depth, deadends, ambush-listed, sea-requests, geom-report, node --check on every touched file. Static map renders of every section reviewed (work/tmp, not committed).
 By mistake: tools/corpses.mjs turned out to open a page (cdp) - it ran once at ~13:05, green ("every reskinned foe ... own skin"), and left no process behind.
-dangling-paths: red only on master's own `batch100-integ.md -> tools/cast-poses.mjs` (not this lane).
+dangling-paths: red only on the citation master already carries in batch100-integ.md (the cast-poses tool, never committed; not this lane).
 NOT run (need a page): tools/lamplit2.mjs (the Lampreeve/Tollmaster/level page test - my changes keep every position it reads), reach-heroes, stuck runtime, textfit, mobile-perf, mark-integrity, untold-told, answer-tags, weak-bosses, boss-greed, solid-islands, floaters, visible-supports, footing-art, frame-cost, readability, level1-pilot --curve, mash-bot, boss-rates.
 
 ## 8. What the TUNE lane (sonnet) must measure
