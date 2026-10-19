@@ -1,0 +1,590 @@
+{
+ "date": "2026-10-19",
+ "base": "45d7d8a1",
+ "profile": "human (flasks=kit) / human+dry",
+ "rows": [
+  {
+   "boss": "spire:mini",
+   "note": "Golem",
+   "act": "II",
+   "band": [
+    74,
+    82
+   ],
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 10,
+     "warden": 12,
+     "pyro": 4
+    },
+    "pct": 72,
+    "meanSecs": 80,
+    "errs": 0,
+    "outcomes": {
+     "win": 26,
+     "death": 10
+    }
+   },
+   "lvl": 9,
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "LOW",
+   "floorMiss": false
+  },
+  {
+   "boss": "hanging:mini",
+   "note": "Spider",
+   "act": "II",
+   "band": [
+    74,
+    82
+   ],
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 12,
+     "warden": 8,
+     "pyro": 11
+    },
+    "pct": 86,
+    "meanSecs": 33,
+    "errs": 0,
+    "outcomes": {
+     "win": 31,
+     "death": 5
+    }
+   },
+   "lvl": 8,
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "HIGH",
+   "floorMiss": false
+  },
+  {
+   "boss": "spore",
+   "note": "",
+   "act": "I",
+   "band": [
+    60,
+    70
+   ],
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 11,
+     "warden": 11,
+     "pyro": 9
+    },
+    "pct": 86,
+    "meanSecs": 105,
+    "errs": 0,
+    "outcomes": {
+     "win": 31,
+     "death": 5
+    }
+   },
+   "lvl": 3,
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "HIGH",
+   "floorMiss": false
+  },
+  {
+   "boss": "kings",
+   "note": "",
+   "act": "I",
+   "band": [
+    60,
+    70
+   ],
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 7,
+     "warden": 12,
+     "pyro": 10
+    },
+    "pct": 81,
+    "meanSecs": 54,
+    "errs": 0,
+    "outcomes": {
+     "death": 7,
+     "win": 29
+    }
+   },
+   "lvl": 5,
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "HIGH",
+   "floorMiss": false
+  },
+  {
+   "boss": "kings:mini",
+   "note": "Great Hound",
+   "act": "I",
+   "band": [
+    75,
+    85
+   ],
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 9,
+     "warden": 10,
+     "pyro": 11
+    },
+    "pct": 83,
+    "meanSecs": 28,
+    "errs": 0,
+    "outcomes": {
+     "win": 30,
+     "death": 6
+    }
+   },
+   "lvl": 5,
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "IN",
+   "floorMiss": false
+  },
+  {
+   "boss": "moor",
+   "note": "",
+   "act": "II",
+   "band": [
+    62,
+    68
+   ],
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 1,
+     "warden": 12,
+     "pyro": 0
+    },
+    "pct": 36,
+    "meanSecs": 100,
+    "errs": 0,
+    "outcomes": {
+     "death": 23,
+     "win": 13
+    }
+   },
+   "lvl": 10,
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "LOW",
+   "floorMiss": true
+  },
+  {
+   "boss": "skyroad",
+   "note": "",
+   "act": "II",
+   "band": [
+    62,
+    68
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  },
+  {
+   "boss": "oreroad",
+   "note": "",
+   "act": "II",
+   "band": [
+    62,
+    68
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  },
+  {
+   "boss": "storm",
+   "note": "",
+   "act": "II",
+   "band": [
+    62,
+    68
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  },
+  {
+   "boss": "crown",
+   "note": "FINALE Goblin Queen",
+   "act": "II",
+   "band": [
+    60,
+    65
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  },
+  {
+   "boss": "crown:mini",
+   "note": "Forgemaster",
+   "act": "II",
+   "band": [
+    74,
+    82
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  },
+  {
+   "boss": "longwater",
+   "note": "",
+   "act": "III",
+   "band": [
+    60,
+    65
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  },
+  {
+   "boss": "reef",
+   "note": "",
+   "act": "III",
+   "band": [
+    60,
+    65
+   ],
+   "flasks": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "dry": {
+    "n": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 0,
+     "pyro": 0
+    },
+    "pct": null,
+    "meanSecs": null,
+    "errs": 0,
+    "outcomes": {}
+   },
+   "verdict": "PENDING",
+   "floorMiss": false
+  }
+ ]
+}
