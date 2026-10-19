@@ -30,13 +30,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 35,
-  "deaths": 2,
-  "kills": 16,
+  "hits": 23,
+  "deaths": 0,
+  "kills": 9,
   "lifts": 135,
   "walked": 100,
   "bare": true,
-  "lostPct": 127
+  "lostPct": 85
  },
  "spore": {
   "hash": "6ca829f1d6ef",
