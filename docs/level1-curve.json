@@ -26,17 +26,17 @@
   "lostPct": 129
  },
  "stockade": {
-  "hash": "c11eee9948cd",
+  "hash": "f7bc642b7ffe",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 28,
-  "deaths": 1,
+  "hits": 35,
+  "deaths": 2,
   "kills": 16,
-  "lifts": 93,
+  "lifts": 135,
   "walked": 100,
   "bare": true,
-  "lostPct": 111
+  "lostPct": 127
  },
  "spore": {
   "hash": "6ca829f1d6ef",

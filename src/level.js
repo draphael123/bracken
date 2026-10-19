@@ -600,6 +600,7 @@ function theStockade() {
   // ---- 1. The outer wood: first signs of the goblins ----
   floor(0, 70, 20);
   ent('sign', 4, 19, { text: 'THE GOBLINS BUILT HERE. BREAK IT.' });
+  plat(1, 15, 5); coins([2, 14], [4, 14]);   /* (claude/stockade2) their first lookout, over the road in */
   ent('sign', 324, 19, { text: 'CHIEFTAIN: RED IS THE CLUB, BLUE THE SWORD, GREEN THE BOW. BREAK A RACK TO END ONE.' });
   /* THE DASH ATTACK, taught (the wood teaches the heavy and the down attack; this is the third key). One guard alone on the flat
      road with room to run at him: a light cut rings off his shield, a dash with a swing out of it knocks him OFF BALANCE
@@ -633,8 +634,8 @@ function theStockade() {
   coins([47, 15], [51, 12], [64, 18]);
 
   // ---- 3. Rope bridge over the ravine, with a goblin at the far end holding a knife ----
-  planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20);
-  net(71, 90, 25); coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('vault', 86, 24); ent('silver', 73, 24); // the ravine cache, on the net
+  planks(71, 74, 20); planks(75, 86, 21); planks(87, 90, 20); set(74, 21, T.PLANK); set(87, 21, T.PLANK);   /* (claude/stockade2) the sag's boards lashed on to its end boards: no floating run */
+  net(71, 90, 25); set(79, 24, T.NET); set(84, 24, T.NET);   /* (claude/stockade2) and its two ledges hung off the net on a rope each */ coins([76, 24], [79, 24], [82, 24], [85, 24]); ent('vault', 86, 24); ent('silver', 73, 24); // the ravine cache, on the net
   plat(78, 23, 3); plat(83, 23, 3); block(87, 90, 23, 27); block(89, 90, 22, 27);
   ent('bridge', 71, 20, { x1: 90 });
   floor(91, 185, 20);
@@ -651,6 +652,7 @@ function theStockade() {
   // ---- 5. The yard: every tool in one room. Free the fox, tip the brazier on the hounds, roll the barrel into the inner gate. ----
   ent('treehouse', 122, 7); ent('treehouse', 150, 6); ent('treehouse', 176, 8);
   block(120, 128, 17, 19); coins([121, 15], [126, 15]);
+  plat(104, 15, 4); plat(136, 15, 5); plat(146, 15, 4); coins([105, 14], [138, 14], [147, 14]);   /* (claude/stockade2) a lookout and two shed roofs over the yard: a second height (level-quality bands) */
   ent('check', 131, 19);
   ent('sign', 133, 19, { text: 'THE YARD IS A WEAPON: FREE THE FOX, TIP THE BRAZIER, ROLL THE BARREL.' });
   ent('hound', 136, 19, { face: -1 }); ent('cage', 139, 19, { kind: 'fox' });
@@ -677,14 +679,14 @@ function theStockade() {
 
   // ---- 6. The lift to the upper walkway ----
   for (let y = 20; y <= 27; y++) { set(250, y, 0); set(251, y, 0); } net(250, 251, 26); for (let y = 21; y <= 25; y++) set(250, y, T.NET); // miss the lift and the net catches you: rungs up to where it waits
-  movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30, ridden: true });
   block(252, 269, 12, 27);
   coins([256, 10], [264, 10]);   /* (a sapper met you off the lift: a fight at a landing) */
 
   // ---- 7. The high bridge and the second tower: THE TWIST. This one won't stand and blow it - he runs. ----
   planks(270, 273, 12); planks(274, 281, 13); planks(282, 285, 12);
   net(270, 285, 17); ent('silver', 278, 16);
-  plat(272, 15, 2); plat(280, 15, 2); plat(283, 13, 2); // the way back up once the ropes are cut: net → ledge → bank, either side
+  plat(272, 15, 2); plat(280, 15, 2); plat(283, 13, 2); set(280, 16, T.NET); // the way back up once the ropes are cut: net → ledge → bank, either side (claude/stockade2: the far ledge hangs off the net on a rope)
   ent('bridge', 270, 12, { x1: 285 });
   block(286, 314, 12, 27);
   ent('sign', 286, 11, { text: 'HE RUNS FOR THE TOWER HORN. CATCH HIM ON THE BRIDGE.' });
@@ -700,13 +702,14 @@ function theStockade() {
 
   // ---- 8. Down to the great hall ----
   for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26); for (let y = 20; y <= 25; y++) set(316, y, T.NET); // and rungs up out of this one to the floor
-  movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
+  movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30, ridden: true });
   floor(317, 365, 20);
-  ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);   /* the EXAM's last beat: a hound on the landing, off the lift */
+  ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);
+  ent('sign', 321, 19, { text: 'AT HIS SECOND WIND HE TAKES HIS WAR TOWER. CUT BOTH LASHINGS.' });   /* (claude/stockade2) the war tower, told at the door */   /* the EXAM's last beat: a hound on the landing, off the lift */
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
   // the rafter climb, both sides, two tiles a jump, for when the hall burns; the gate sits on the top beam
-  plat(327, 18, 2); plat(329, 16, 3); plat(333, 14, 2); plat(336, 12, 2); plat(334, 10, 4); plat(338, 11, 3); plat(342, 9, 5);
+  plat(327, 18, 2); plat(329, 16, 3); plat(333, 14, 2); plat(334, 12, 2); plat(334, 10, 4);   /* (claude/stockade2: the step at 336,12 moved two left - his war tower stands on the dais under it) */ plat(338, 11, 3); plat(342, 9, 5);
   plat(360, 18, 2); plat(356, 16, 3); plat(353, 14, 2); plat(350, 12, 2); plat(350, 10, 4); plat(347, 11, 3);
   ent('archer', 344, 9, { face: -1, horn: true, rafters: true });   /* THE RULE, IN THE BOSS: a blower up the escape-gate climb. Reach him before the Chieftain's second wind, or he calls a sapper wave down on you */
   ent('brazier', 354, 19); ent('torch', 328, 19); ent('torch', 361, 19);
@@ -770,8 +773,108 @@ function theStockade() {
   C.ent('sprig', 53, 19, { face: -1 }); C.ent('shield', 59, 19, { face: -1 });
   C.ent('catapult', 64, 19, { every: 2.6 }); C.ent('torch', 61, 19); C.ent('torch', 68, 19);
   C.coins([38, 18], [44, 17], [50, 18], [56, 18], [62, 17]);
-  return C.done();
+  return stockadeWatchtowers(C.done());
 ;
+}
+
+/* ---- 7b. THE WATCHTOWERS (claude/stockade2, Daniel 10-14: scratch/brief-stockade2-1014.md). EVERY COLUMN HERE IS FINAL: the section is grown in at
+   443, between tower 3's plateau and the lift down into the hall, after every other grow() of the level. The camp's inner palisade, walked along
+   its top and up its towers - the level's real platforming section (A14) and the rule turned into a verb you USE (A2):
+     THE CAPTURED HORN (u 0-33)   a dozing blower on the walkway: silence him and his horn is yours (E blows it). Below, three goblins at a cook fire;
+                                   blow it beside the log pile and they run to the sound, under it - strike its lashing. TAUGHT SAFE: you are on the walk.
+     THE BARRED GATE (u 33-56)     the inner gate is barred from inside and they open it only for their own horn: the horn is REQUIRED here. Blow it from
+                                   the gate tower and the gate's crew come out under the second pile.
+     THE THREE TOWERS (u 56-110)   THE EXAM: climb the first tower and all three blowers wind their horns at once (src/stockade-hands.js EXAM) - cross
+                                   rope bridge and hanging walk, tower to tower, over a netted stake pit, silencing each before it sounds. A sounded exam
+                                   horn wakes its own pack on the planks ahead (packOnly: never the camp squad behind you). A fall is a net and a climb.
+                                   The second tower's crow's nest holds the level's high silver (moved, not added: VAULT order is kept).
+   src/stockade-hands.js works the horn, the piles, the gate, the exam and the Chieftain's war tower; src/stuck-spots.js guides each one. */
+function stockadeWatchtowers(R3) {
+  const O = 443, N = 124, WT = grow(R3, R3, O, N), X = u => O + u;
+  const set = (u, y, v) => WT.set(X(u), y, v), block = (u0, u1, y0, y1) => WT.block(X(u0), X(u1), y0, y1);
+  const run = (u0, u1, y, v) => { for (let u = u0; u <= u1; u++) set(u, y, v); }, col = (u, y0, y1, v) => { for (let y = y0; y <= y1; y++) set(u, y, v); };
+  const ent = (t, u, y, o) => WT.ent(t, X(u), y, o || {}), coins = (...p) => p.forEach(([u, y]) => WT.ent('coin', X(u), y));
+  const posts = [];   /* the walkways' lashed poles, down to what is under them (src/route-art.js draws routeSupports) */
+  const post = (u, y, bottom) => posts.push({ x: X(u), y, bottom, kind: 'stkpost' });   /* (claude/stockade2art) a lashed pole (src/redraw/stockade2_art.js) */
+  const sup = (x, y, bottom, kind, o) => posts.push({ x, y, bottom, kind, ...(o || {}) });   /* FINAL columns: the Stockade's drawn footings (art only - no tile changes) */
+
+  // ---- THE CAPTURED HORN: the walk along the inner palisade, and the cook fire under it ----
+  block(0, 3, 12, 27);                                             /* the plateau runs on to the palisade */
+  col(4, 13, 19, T.PALISADE); col(5, 13, 19, T.PALISADE); block(4, 56, 20, 27);   /* the inner palisade, and the yard floor under the walk */
+  run(4, 31, 12, T.PLANK);                                         /* THE WALK: lashed boards on poles over the yard */
+  for (const u of [9, 15, 21, 27]) post(u, 12, 20);
+  ent('sign', 7, 11, { text: 'A BLOWER DOZES ON THE WALK. SILENCE HIM AND HIS HORN IS YOURS.' });
+  ent('archer', 12, 11, { face: 1, horn: true, stk: { dozing: true, drops: true } });   /* THE FIRST HORN YOU TAKE: asleep at his post, back to the road */
+  ent('sign', 16, 11, { text: 'E BLOWS THE HORN: THE CAMP RUNS TO THE SOUND. BLOW IT BY THE LOGS.' });
+  ent('logpile', 22, 11, { id: 'pile-1' });                        /* lashed at the walk's edge over the cook fire: strike the lashing and it drops */
+  ent('sprig', 15, 19, { face: 1, stk: { cook: true } }); ent('sprig', 19, 19, { face: -1, stk: { cook: true } }); ent('shield', 25, 19, { face: -1, stk: { cook: true } });
+  ent('deco', 20, 19, { kind: 'cookSpit' }); ent('torch', 13, 19); ent('torch', 28, 19);
+  coins([10, 10], [18, 10], [24, 10], [29, 10]);
+  col(32, 12, 19, T.NET);                                          /* the rope down off the end of the walk */
+  ent('check', 30, 19);                                            /* THE SHRINE: the horn is yours and the yard is quiet - the gate and the towers are the exam ahead */
+
+  // ---- THE BARRED GATE: the gate tower, its pile over the gate's mouth, and the crew behind ----
+  ent('sign', 34, 19, { text: 'THE GATE IS BARRED FROM INSIDE. THEY OPEN IT ONLY FOR THEIR OWN HORN.' });
+  col(35, 9, 19, T.NET); block(36, 38, 9, 19); run(35, 41, 8, T.PLANK); ent('towertop', 37, 8);   /* the gate tower: a rope up its face, its deck four rows over the walk (out of a jump from it: the way on is the yard floor) */
+  ent('logpile', 41, 7, { id: 'pile-2' });
+  col(43, 1, 12, T.PALISADE); col(43, 13, 19, T.PORT);            /* THE BARRED GATE (src/stockade-hands.js opens it to a horn) */
+  ent('brute', 46, 19, { face: -1, stk: { gateGuard: true } }); ent('hound', 48, 19, { face: -1, stk: { gateGuard: true } });   /* (a pike held the line here and held the hands with it: the crew run at the horn, and a hound runs best) */
+  ent('sprig', 50, 19, { face: -1, stk: { gateGuard: true } }); ent('sprig', 52, 19, { face: -1, stk: { gateGuard: true } });
+  ent('torch', 45, 19); coins([39, 7], [47, 18], [51, 18]);
+
+  // ---- THE THREE TOWERS: the exam over the stake pit ----
+  block(55, 109, 26, 27); run(55, 109, 25, T.NET);                 /* the pit: a net over the stakes catches you, and each chamber has its rope back up */
+  ent('sign', 54, 19, { text: 'THREE TOWERS. CLIMB THE FIRST AND ALL THREE WIND THEIR HORNS. CROSS FAST.' });
+  /* tower one: a rope up its face from the yard, the deck at row 10 */
+  col(57, 11, 24, T.NET); block(58, 60, 11, 25); run(57, 62, 10, T.PLANK); ent('towertop', 59, 10);
+  ent('archer', 61, 9, { face: -1, horn: true, stk: { exam: 1, packOnly: true }, pack: [{ dx: 6, y: 10, t: 'sprig' }, { dx: 8, y: 10, t: 'sprig' }] });
+  /* the rope bridge to tower two, sagging a row over the pit */
+  run(63, 65, 10, T.PLANK); run(65, 70, 11, T.PLANK); run(70, 71, 10, T.PLANK); ent('bridge', 63, 10, { x1: X(71) });
+  /* tower two: its deck at row 10, a rope up its mast to the crow's nest (the high silver), and a rope up its far face from the pit */
+  block(72, 74, 11, 25); run(72, 76, 10, T.PLANK); ent('towertop', 73, 10); col(75, 11, 24, T.NET);
+  col(72, 3, 9, T.NET); run(71, 73, 2, T.PLANK); ent('silver', 72, 1, { nest: true });   /* THE CROW'S NEST (a dead end off the exam: the second secret, A11) */
+  ent('archer', 76, 9, { face: -1, horn: true, stk: { exam: 2, packOnly: true }, pack: [{ dx: 4, y: 7, t: 'sprig' }, { dx: 9, y: 7, t: 'sprig' }] });
+  /* the hanging walk to tower three: a row up, and a gap in its boards */
+  run(77, 80, 8, T.PLANK); run(83, 88, 8, T.PLANK); ent('bridge', 77, 8, { x1: X(80) }); ent('bridge', 83, 8, { x1: X(87) });   /* two spans, the gap between them (the far one lashed to tower three's deck) */
+  /* tower three: its deck at row 7, a rope up its far face from the pit */
+  block(89, 91, 8, 25); run(88, 93, 7, T.PLANK); ent('towertop', 90, 7); col(92, 8, 24, T.NET);
+  ent('archer', 93, 6, { face: -1, horn: true, stk: { exam: 3, packOnly: true }, pack: [{ dx: 6, y: 11, t: 'brute' }, { dx: 9, y: 11, t: 'sprig' }] });
+  coins([60, 8], [67, 10], [79, 6], [85, 6], [91, 5], [71, 1], [73, 1]);
+  /* the walk down off tower three to the hall's outer wall and the lift */
+  run(94, 109, 12, T.PLANK); for (const u of [97, 103]) post(u, 12, 25);
+  block(110, 123, 12, 27); coins([100, 11], [106, 11], [114, 11]);
+
+  /* (claude/stockade2) A ROPE UP BESIDE THE FIRST LIFT (final 377): the pulley lift stays the easy way up, the rope is the way when it is down
+     (the walker - and a player who stepped off it - never had a second way; the walker was STUCK there on master too) */
+  for (let y = 12; y <= 19; y++) WT.set(377, y, T.NET);
+  /* (claude/stockade2art) THE FIFTEEN OVERHANGS tools/visible-supports.mjs listed, each given a drawn footing in the camp's timber (art only: background poles, no tiles) */
+  sup(515, 2, 11, 'stkmast', { nest: true });                                    /* the crow's nest on tower two's mast (514-516,2) */
+  sup(505, 10, 26, 'stkleg', { gap: 16 }); sup(519, 10, 26, 'stkleg', { gap: 16 }); sup(536, 7, 26, 'stkleg', { gap: 16 });   /* the decks' tails on outrigger legs braced to their towers (504-507,10; 519,10; 536,7) */
+  sup(511, 11, 26, 'stktrestle'); sup(522, 8, 26, 'stktrestle'); sup(529, 8, 26, 'stktrestle');   /* a trestle driven into the pit under the rope bridge's sag (508-513,11) and each hanging walk (520-523,8; 526-531,8) */
+  sup(506, 10, 11, 'stkrope', { x1: 514 }); sup(520, 8, 9, 'stkrope', { x1: 523 }); sup(526, 8, 9, 'stkrope', { x1: 531 });   /* their hand-lines and hangers (drawn off the grid's planks) */
+  sup(428, 8, 12, 'stkpost'); sup(411, 13, 17, 'stkpost');                          /* the lookout ledge over the road in (427-428,8); the net-bridge's last steps (410,12; 411-412,13) */
+  sup(102, 12, 20, 'stkpost'); sup(105, 12, 20, 'stkpost');                          /* the shed roof over the yard (102-105,12) */
+  sup(114, 21, 28, 'stkpost'); sup(120, 21, 28, 'stkpost'); sup(127, 21, 26, 'stkpost');   /* the plank bridge over the ditch (114-127,21) */
+  sup(232, 17, 22, 'stkpost'); sup(238, 17, 22, 'stkpost'); sup(244, 17, 22, 'stkpost');   /* the kennels' wall walk on its poles (232-244,17) */
+  for (const x of [337, 344, 351, 358, 365, 372]) sup(x, 21, 25, 'stkprop');         /* the sappers' tunnel roof, shored (336-373,21) */
+  const R = WT.done();
+  R.routeSupports = (R.routeSupports || []).concat(posts);
+  R.stkKit = true; R.stkPit = { row: 25, x0: X(55), x1: X(109) };   /* (claude/stockade2art) the lashed-timber tower bodies and the netted stake pit's stakes (src/redraw/stockade2_art.js stkTile) */
+  R.stkTowers = [[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 10, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor }));
+  R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
+  /* the gate is barred as laid (T.PORT) and opened by the horn, which every hero can blow: the reach fill has it open (src/reachcore.js reachDoors) */
+  R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 13, y1: 19 }]);
+  const chief = R.ents.find(e => e.t === 'chief'), twx = (chief.x - 5) * TS;   /* HIS WAR TOWER: on the dais (final 588-591), its deck five rows over the hall floor, a lashing to a peg four tiles out either side */
+  R.stockade = {
+    tower: { x: twx, deck: 15 * TS, base: 18 * TS, foot: 20 * TS, pegs: [twx - 4 * TS, twx + 4 * TS] },
+    gate: { x: X(43), y0: 13, y1: 19 },
+    exam: { x0: X(56), x1: X(62), y0: 0, y1: 24, end: X(110), draw: [6.5, 10, 13.5] },
+    areas: [['THE OUTER CAMP', 0, 131], ['THE YARD', 131, 226], ['THE WALL WALK AND THE KENNELS', 226, 334], ["THE SAPPERS' TUNNEL", 334, 378], ['THE WATCHTOWERS', 378, X(N)], ['THE GREAT HALL', X(N), 9999]],
+  };
+  /* THE HIGH SILVER moves to the crow's nest: the level's third silver (the high bridge's net, ents order idx 2) goes up the mast, so every save keeps its bits */
+  const sv = R.ents.filter(e => e.t === 'silver'), nest = sv.find(e => e.nest), net = sv.find(e => !e.nest && e.x === 406 && e.y === 16);
+  if (nest && net) { net.x = nest.x; net.y = nest.y; delete net.nest; R.ents = R.ents.filter(e => e !== nest); for (const dx of [-1, 0, 1]) R.ents.push({ t: 'coin', x: 406 + dx, y: 16 }); }
+  return R;
 }
 
 

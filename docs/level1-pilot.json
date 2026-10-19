@@ -372,14 +372,14 @@
   "bare": true
  },
  "stockade": {
-  "hash": "c11eee9948cd",
+  "hash": "f7bc642b7ffe",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 38,
-  "deaths": 3,
-  "kills": 22,
-  "lifts": 90,
+  "hits": 40,
+  "deaths": 1,
+  "kills": 16,
+  "lifts": 135,
   "walked": 100,
   "bare": true
  },

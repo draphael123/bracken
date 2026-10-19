@@ -352,7 +352,13 @@ export const STUCK = {
   ],
   stockade: [
     { id: 'sk-crank', zone: [118, 10, 141, 26], at: [138, 19], line: 'THE PALISADE HOLDS: FIND ITS CRANK' },
-    { id: 'sk-lift-2', zone: [420, 4, 449, 24], at: [443, 12], glint: 'stall', line: 'THE HORN TOWER LIFT TAKES YOU UP OR BACK DOWN' },
+    { id: 'sk-lift-2', zone: [553, 4, 572, 24], at: [567, 12], glint: 'stall', line: 'THE LIFT AT THE HALL WALL TAKES YOU DOWN TO THE HALL' },   /* (claude/stockade2: the Watchtowers grew in at 443 - it stands at 567 now) */
+    /* (claude/stockade2) THE WATCHTOWERS: the horn the gate wants, the barred gate itself, the rope up the first tower and the ropes out of the pit (the horn's state rides on the piles: src/stockade-hands.js props) */
+    { id: 'sk-horn-gate', zone: [443, 0, 486, 20], steps: [
+      { done: ['logpile', 465, 11, 'held'], at: [455, 11], line: 'THE DOZING BLOWER ON THE WALK CARRIES A HORN' },
+      { when: ['logpile', 465, 11, 'held'], done: ['logpile', 484, 7, 'gateOpen'], at: [486, 16], glint: 'stall', line: 'THE BARRED GATE OPENS ONLY TO THEIR OWN HORN' } ] },
+    { id: 'sk-tower-1', zone: [487, 4, 499, 20], at: [500, 17], glint: 'stall', line: 'THE ROPE UP THE FIRST TOWER IS THE WAY ON' },
+    { id: 'sk-pit', zone: [498, 20, 552, 25], ats: [[500, 22], [518, 22], [535, 22]], glint: 'stall', line: 'A ROPE UP EACH TOWER LEADS OUT OF THE PIT' },
     { id: 'sk-lift-1', zone: [360, 8, 388, 26], at: [378, 19], glint: 'stall', line: 'THE LIFT AT THE FOOT OF THE TOWER CARRIES YOU UP' },
     { id: 'sk-crank-3', zone: [290, 10, 316, 26], at: [313, 19], glint: 'stall', line: 'THE LAST PALISADE GATE HAS A CRANK OF ITS OWN' },
     { id: 'sk-crank-2', zone: [186, 10, 211, 26], at: [207, 19], glint: 'stall', line: 'THE SECOND CRANK WORKS THE NEXT PALISADE GATE' },

@@ -11,9 +11,9 @@ const HOVER = 6;
 const HOVER_ID = { fair: 30 };   /* (claude/theatrelines) the fair's stage and slide are timber: a stilt may run the whole way down to the ground */   /* rows of air under a laid wall / stone stub that a stilt may cover */
 const DROP = { fields: 24, lamplit: 20, fair: 30 };   /* the Hexed Fields: its planks ride up in the dead trees, twenty rows over the stubble */
 
-/* levels that get the posts: the BUILT places. The organic ones (the Wood, the Marsh, the Stockade, the Spore Forest, Kingswood, the crags and passes,
+/* levels that get the posts: the BUILT places (THE STOCKADE joined them, claude/stockade2: a goblin camp is lashed poles). The organic ones (the Wood, the Marsh, the Spore Forest, Kingswood, the crags and passes,
    the Hanging Gardens, the Rootway, the Glass Sea, the Witchlight) draw logs, caps, reeds and slabs that grow where they are: tools/solid-islands.mjs ALLOW. */
-export const POST_LEVELS = new Set(['storm', 'underleaf', 'lamplit', 'deep', 'causeway', 'fields', 'burning', 'canal', 'welltown', 'redgorge', 'underwell', 'minecart', 'fair', 'caravan', 'unburied', 'mage', 'fallingtower', 'keep', 'harbor', 'undercrown', 'towpath']);   /* (claude/towpath2: THE TOWPATH 2's gantries, racks, beams and lofts stand on posts) */
+export const POST_LEVELS = new Set(['stockade', 'storm', 'underleaf', 'lamplit', 'deep', 'causeway', 'fields', 'burning', 'canal', 'welltown', 'redgorge', 'underwell', 'minecart', 'fair', 'caravan', 'unburied', 'mage', 'fallingtower', 'keep', 'harbor', 'undercrown', 'towpath']);   /* (claude/towpath2: THE TOWPATH 2's gantries, racks, beams and lofts stand on posts) */
 
 export function islandsOf(L, T) {
   const W = L.W, H = L.H, g = L.grid, seen = new Uint8Array(W * H), out = [];

@@ -1115,7 +1115,10 @@ export function bakeArcher(over = {}) {   /* over: a palette on top of his - the
   const bodyLoose = ['..bbbbbb....', '..bbbbbbbaa.', '..rrrrrr....', '..GG..GG....', '.GG....GG...'];
   const hurtRows = ['............', '....HHHH....', '...HHHHHH...', '..HHgoggog..', '..HHgg..gg..', '..bbbbbb....', '.bbbbbb.....', '..rrrrrr....', '.GG...GG....', 'GG.....GG...'];
   return pack([spr(bow([...hood, ...bodyIdle])), spr(bow([...hood, ...bodyDraw], true)), spr(bow([...hood, ...walk1])), spr(bow([...hood, ...walk2])), spr(bow([...hoodLook, ...bodyIdle])),
-    spr(bow([...hood, ...bodyFull], 2)), spr(bow([...hood, ...bodyLoose])), spr(bow(hurtRows))], 6, 13, 8, 10);
+    spr(bow([...hood, ...bodyFull], 2)), spr(bow([...hood, ...bodyLoose])), spr(bow(hurtRows)),
+    /* (claude/stockade2art) 8 DOZE: sat on the walk, hood down over the face, the bow across his knees, the horn at his belt | 9 WIND: the horn blower's own pose - head back, cheeks full, the bow slung, one arm up to the horn (the horn is drawn at his mouth) */
+    spr(['............', '............', '............', '............', '............', '....HHHH....', '...HHHHHH...', '..HHHHHHHH..', '..HHggHHHH..', '..bbbbbbbaa.', '.wwwwwwwwwwl', 'GGGGGGGGGGG.']),
+    spr(['............', '............', '....HHHH....', '...HHHHHH...', '.wHHgeoggeH.', '.wHHggooggg.', '.w.HgGGGg...', '.wbbbbbb.aa.', '.wbbbbbbaa..', '..rrrrrr....', '..GG..GG....', '.GG....GG...'])], 6, 13, 8, 10);
 }
 
 // Bird — scatters from bushes. 6×4, two wing frames.

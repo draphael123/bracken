@@ -360,6 +360,15 @@ export function bakeChief() {
     f({ legs: 'pass', dy: 1, ...GUARD(1) }),                                                                              // 12 guard walk 2
     f({ legs: 'stride', ...BOW() }),                                                                                      // 13 bow walk
     f({ legs: 'pass', dy: 1, ...BOW(1) }),                                                                                // 14 bow walk 2
+    /* (claude/stockade2art) THE WAR TOWER: his own poses on it - 15/16 the CLIMB up the rope ladder (a hand over hand), 17 HOLD ON when a lashing is cut (crouched, both hands gripping the rail, roaring),
+       18 the DECK AIM (braced, leaning back, the string at his cheek), 19 the FALL (thrown off, arms up), 20 the DECK LOOSE (the string snapped forward, the draw arm thrown back), 21 the DECK WAIT (braced, string slack) */
+    f({ legs: 'stride', dy: 1, lean: 1, near: [[X + 12, Y - 35], [X + 14, Y - 43]], far: [[X + 1, Y - 22], [X + 4, Y - 29]] }),                         // 15 climb A
+    f({ legs: 'pass', dy: 1, lean: 1, near: [[X + 12, Y - 24], [X + 14, Y - 30]], far: [[X - 3, Y - 35], [X, Y - 43]] }),                              // 16 climb B
+    f({ legs: 'crouch', dy: 4, lean: 2, mouth: 'roar', near: [[X + 14, Y - 17], [X + 17, Y - 11]], far: [[X - 8, Y - 17], [X - 12, Y - 11]] }),        // 17 hold on
+    f({ legs: 'stride', dy: 1, lean: -1, near: [[X + 12, Y - 23], [X + 18, Y - 23]], far: [[X, Y - 21], [X + 5, Y - 26]], bow: { at: [X + 18, Y - 23], draw: [X + 5, Y - 26] } }),   // 18 deck aim
+    f({ legs: 'stride', lean: -3, mouth: 'roar', near: [[X + 14, Y - 36], [X + 18, Y - 44]], far: [[X - 7, Y - 36], [X - 10, Y - 44]] }),             // 19 fall
+    f({ legs: 'stride', dy: 1, lean: 1, near: [[X + 12, Y - 23], [X + 19, Y - 23]], far: [[X - 3, Y - 22], [X - 8, Y - 24]], bow: { at: [X + 19, Y - 23], draw: [X + 16, Y - 23] } }),   // 20 deck loose
+    f({ legs: 'stride', dy: 1, near: [[X + 12, Y - 23], [X + 17, Y - 23]], far: [[X + 2, Y - 20], [X + 8, Y - 22]], bow: { at: [X + 17, Y - 23], draw: [X + 14, Y - 23] } }),         // 21 deck wait
   ];
   return pack(frames, ax, H - 1, 22, 34);
 }

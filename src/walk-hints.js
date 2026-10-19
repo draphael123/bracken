@@ -117,4 +117,18 @@ function flotilla(BK, P, mem) {
   if (gun.cool > 0) return { x: gun.x - 14, y: gun.y, key: null, face: 1, r: 20, hold: true };
   return { x: gun.x - 14, y: gun.y, key: 'atk', face: 1, r: 20 };
 }
-export const WALK_HINTS = { glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla };
+/* THE STOCKADE 2 (claude/stockade2, src/stockade-hands.js): the barred gate opens only to the goblins' own horn. The walker takes the dozing blower's horn
+   (it falls at his feet, on the walk: walking over it takes it) and blows it (E) in the yard before the gate; a fallen horn off the walk is walked to */
+function stockade(BK, P) {
+  /* ITS TWO PULLEY LIFTS ride toward the far stop only while you stand on them: on one, a player stands still until it is there (the hands jumped for the
+     route's next tile eight rows up and stepped off it - the walker was STUCK at the first lift on master too) */
+  const m = P && P.onMover; if (m && m.kind === 'lift' && m.y1 !== undefined && Math.abs(m.y - m.y1) > 3) return { x: P.x, y: P.y, key: null, hold: true, r: 99 };
+  /* ITS THREE CRANKS: a crank just ahead on his floor, its gate still standing, is struck open (the hands walked past the third and jumped at its palisade) */
+  const cr = P && (BK.props() || []).find(o => o.t === 'crank' && !o.open && o.x > P.x - 20 && o.x - P.x < 5 * TS && Math.abs(o.y - P.y) < 24);
+  if (cr) return { x: cr.x - 12, y: P.y, key: 'atk', face: 1, r: 6 };
+  const S = BK.stockade ? BK.stockade() : null; if (!S || !P || S.gateOpen) return null;
+  if (!S.held) { const k = (S.pickups || []).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; return k ? { x: k.x, y: k.y, key: null, face: 0, r: 14 } : null; }
+  const gx = 483 * TS + 8; if (P.x < 466 * TS || P.x > 487 * TS) return null;
+  return { x: gx, y: 20 * TS, key: 'talk', face: 1, r: 18 };
+}
+export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla };
