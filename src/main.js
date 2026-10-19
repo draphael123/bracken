@@ -30839,6 +30839,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
   else if (L.redgorge) RGB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE RED GORGE's own sky slit, far mesas and shaded back wall (src/redraw/redgorge_backdrop.js) */
   else if (L.rootway) RWB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), dusk());   /* THE ROOTWAY's own sky that warms with the climb, far and mid trunks, the goblins' lanterns, the great root and the gallows on the skyline, the canopy's light (claude/rootway art pass, src/redraw/rootway_backdrop.js) */
+  else if (L.lumberKit) LTB.drawFarMid(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/lumberbackdrop) THE LUMBER TRAIL's own far + mid layers: the straight-pine ridge, the cut-back camp, the grey tarn (src/redraw/lumber_trail_far.js), not the shared forest */
   else if (L.skyroad) SKB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SKY ROAD's own far mesas, kite fleet, landmark spires and the Eyrie on the horizon (claude/skyroadart, src/redraw/skyroad_backdrop.js) */
   else if (L.buriedcity) {}   /* (claude/buriedcity2) THE BURIED CITY drew its own backdrop above: no far dunes under the sand roof */
   else if (L.minecart) MCB.drawBackdrop(g, cx, cy, VW, VH, L, time);   /* THE DEEP RAILS' own deep mine: the rock wall, ore veins, timber frames, lantern strings, the goblin works, the smelter's chimney and the bore's mouth (claude/minecartart, src/redraw/minecart_backdrop.js) */
@@ -30869,8 +30870,9 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
-  if (BG.nearTrees && !L.colosseum && !L.rootway) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
+  else if (L.lumberKit) { if (SET.parallax !== 'off') LTB.drawNearTrunks(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/lumberbackdrop) the trail's own near trunks + boughs, not the shared leafy trees */
   else if (!L.castle && !L.colosseum && !FAIR && !L.canal && !L.towpath && !L.rootway && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
   if (L.cloudSea !== undefined) drawSkyRig(cx, cy); if (SKY && SKY.on()) SKY.drawSky(g, cx, cy, VW, VH, time);   /* THE SKY ROAD: the cloud banks and their shadows */   /* the sky ship: her cloud, her gasbags, her sails */

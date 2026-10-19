@@ -2,6 +2,8 @@
 // (the Queen's pine, her comb hung in its crown) and GROWS as you come: small and blue-grey over the cabin, huge and dark over the tarn. Along the way the camp's
 // smoke columns rise out of the far trees (the woodsmen's fires) and the tarn's drowned snags stand grey against the sky. Art only, far layers, a handful of fills a frame.
 import { canvas, mulberry } from '../px.js';
+import { drawBackdrop as drawFarMid, drawNear as drawNearTrunks, campChimneys } from './lumber_trail_far.js';
+export { drawFarMid, drawNearTrunks };   /* the trail's own far + mid layers (claude/lumberbackdrop) */
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
@@ -41,8 +43,8 @@ export function drawLandmark(g, cx, cy, VW, VH, L, time, dY) {
   if (mx < 40) { const t = (time * 0.42) % 1; if (t < 0.5) { g.fillStyle = t < 0.08 ? '#fff2b0' : '#e2cb92'; for (let i = 0; i < 6; i++) { const a = -1.1 + i * 0.5, v = 26 + (i % 3) * 8, u = t * 1.2; g.fillRect(Math.round(248 - cx + Math.cos(a) * v * u), Math.round(338 - cy + Math.sin(a) * v * u + 40 * u * u), 1 + (i & 1), 1); } } }
   if (mx > 214 && mx < 246) { for (let i = 0; i < 8; i++) { const t = (time * 0.6 + i / 8) % 1; g.globalAlpha = 0.8 * (1 - t); g.fillStyle = i % 2 ? '#e2cb92' : '#f4e6bd'; g.fillRect(Math.round(3688 - cx - 10 + ((i * 7) % 22)), Math.round(268 - cy + t * 34), 1, 1); } g.globalAlpha = 1; }
   /* THE CAMP: three smoke columns standing out of the far trees (the woodsmen's fires), only while the camp is in view */
-  if (mx > 186 && mx < 322) { const fade = Math.min(1, (mx - 186) / 24, (322 - mx) / 24), base = VH - 118 + dd;
-    for (const [wx, k] of [[222, 0], [248, 1], [276, 2]]) { const X = sxOf(wx * 16, 0.3);
+  if (mx > 186 && mx < 322) { const fade = Math.min(1, (mx - 186) / 24, (322 - mx) / 24), chim = campChimneys(VH, dY || 0);
+    for (const [wx, k] of [[222, 0], [248, 1], [276, 2]]) { const X = sxOf(wx * 16, 0.3), base = chim[k].y;
       for (let i = 0; i < 12; i++) { const t = (time * 0.18 + i / 12 + k * 0.31) % 1, yy = base - t * 96, xx = X + Math.round(Math.sin(t * 5 + k * 2 + i) * 5 + t * 18), rr = 2 + t * 5;
         g.globalAlpha = (1 - t) * 0.30 * fade; g.fillStyle = k === 1 ? '#bfb8a8' : '#a8a89c'; g.fillRect(Math.round(xx - rr), Math.round(yy - rr * 0.6), Math.round(rr * 2), Math.round(rr * 1.2)); }
       g.globalAlpha = 1; } }
