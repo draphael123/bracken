@@ -24,7 +24,7 @@ Base: claude/church3 33830c91. Art only: geometry and hash unchanged, no AI or n
 - The risen wight's "claw-up" is the priest's raise fx (cold claws at his feet); the wight keeps its existing sheet.
 - Dawnfall/verdict shots were forced modes, not played fights.
 ## CHECKS (PORT 8745, one page at a time, all closed)
-GREEN: tells (marks unchanged, no --write needed), paladin-boss (170), lit-church (369), church3-foes (35), frame-cost, dangling-paths (my new files add no hole; the one red is pre-existing: work/claude/lane-done/batch100-integ.md cites tools/cast-poses.mjs, which is on no branch yet).
+GREEN: tells (marks unchanged, no --write needed), paladin-boss (170), lit-church (369), church3-foes (35), frame-cost, dangling-paths (my new files add no hole; the one red is pre-existing: work/claude/lane-done/batch100-integ.md cites the cast-poses tool (not in the tree), which is on no branch yet).
 ## SCREENSHOTS (work/claude/church3-art/)
 Arenas: s01-sanctuary-start, s02-braziers-dark-lit-snuffed, s03-ward, s04-smite-windup, s05-radiance-windup, s06-falter-ward-broken, s07-prayer-at-brazier, s08-snuff-windup, s09-verdict, s10-dawn; d01-deacon-arena, d02-douse-windup, d03-douse-release, d04-dark-grates (doused rings). Foes in the crypt: f01-ossuary-undead, f02-ossuary-priest, f03-altar-paladin. Sheets: foes.png (all 33 frames), props.png, deacon.png, palboss_snuff.png. Tools: tools/church3art-sheet.mjs (Node), church3art-pal-sheet.mjs, church3art-shots.mjs (PORT=8745).
 ## QUESTIONS FOR DANIEL (rec first; what I built)

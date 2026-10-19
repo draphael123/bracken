@@ -1054,7 +1054,7 @@ GROUND_KITS.canal={density:0,kinds:[]};   /* THE FOG CANAL: a night city street 
 ALLOWED_DECORATIONS.canal=[...ALLOWED_DECORATIONS.waymeet,'rowboat'];   /* off Waymeet's road: its barrels, crates and lanterns on the wharves, and a rowboat tied up */
 ALLOWED_DECORATIONS.reef.push('coiledCable','rumBarrels','capstanWreck','bellWreck');   /* the wreck junk: a capstan and a bell nobody will turn or ring (docs/briefs/reef-longer.md) */
 
-ALLOWED_DECORATIONS.lamplit.push('kegStack','coiledCable','barrels','seaChest');
+ALLOWED_DECORATIONS.lamplit.push('kegStack','coiledCable','barrels','seaChest','lpStall');   /* + the Lamplit market stalls (claude/lamplit3) */
 ALLOWED_DECORATIONS.causeway.push('coiledCable','rumBarrels','pennant');
 
 GROUND_KITS.mage={density:0,kinds:[]};
@@ -1067,6 +1067,8 @@ GROUND_KITS.welltown={density:0,kinds:[]};   /* THE WELL TOWN (claude/welltown, 
 ALLOWED_DECORATIONS.welltown=['awning','awningTorn','cargoChest','rug','amphora','cargoSack','scrub','oxSkull'];   /* the caravan's desert props, placed: the market's awnings and wares */
 GROUND_KITS.shopWell={density:0,kinds:[]};   /* THE WELL STORE (claude/welltown): a walk-in room, nothing sprinkled */
 ALLOWED_DECORATIONS.shopWell=['wares','counter','lanternPost','barrels','waterButt'];
+GROUND_KITS.tavern={density:0,kinds:[]};   /* THE CROSSROADS INN (claude/tavern): a hidden walk-in room, nothing sprinkled */
+ALLOWED_DECORATIONS.tavern=['hearth','hallWindow','longTable','bench','counter','caskRack','mugShelf','kegStack'];   /* the inn's own furniture (claude/tavern) */
 GROUND_KITS.redgorge={density:0,kinds:[]};   /* THE RED GORGE (claude/redgorge, the greybox): no grass kit on red rock - its props are the hands' own (src/red-gorge-hands.js: nests, painted hands) and these, placed */
 ALLOWED_DECORATIONS.redgorge=['scrub','oxSkull','oxRibs','deadTreeD'];
 GROUND_KITS.underwell={density:0,kinds:[]};   /* THE UNDERWELL (claude/underwell): flagstone and oil under a roof of rock - nothing grows, nothing is sprinkled; its dressing is src/redraw/underwell_dress.js (read off the grid) and the hands' own */

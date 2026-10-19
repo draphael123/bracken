@@ -33,6 +33,7 @@ export const CURVE_REPORT_ONLY = {
   storm: 'act 2: 26% lost, 0 deaths - EASY for act II (floor 70%): the level-1 pilot is lifted past most of it',
   /* (claude/undercrown2: undercrown is back in its band - 221% lost, 4 deaths in 3 runs: the dead water hands you back (A10) and the slabs carry the route - gated by the curve again) */
   ksar: 'act 5: 671% lost, 13-17 deaths in 3 runs (master measured 9-14, stamped 10) - over the act V death ceiling (12) after the pressure dial (batch91): the bare knight now also dies at cols 257 / 339 / 531 of the route (master: 143 / 482 / 766 only); cause not isolated (the act-5 dial is 1.35 gap / 1.55 dmg on minis). Needs a ksar level pass, not a gate change',
+  church: 'act 4: 616% lost, 14 deaths in 3 runs (master 480%, 11) - over the act IV ceiling (600% / 12) after the Lit Church 3 foes (undead paladin, undead priest, braziers) and the church tune; Daniel 10-18 approved "church curve red -> curve-fix lanes" (brief-church3-1017). REPORT-ONLY until a curve-fix lane brings the L1 knight back under 12 deaths',
   /* (claude/levelpilot: causeway is back in its band - 276% lost, 6 deaths in 3 runs - and gated by the curve again) */
   /* (claude/survival, 10-07: kings 185%/2, scree 376%/5, crown 307%/4 and fair 370%/3 are back in their bands under the FLASK + dry shrines - gated again) */
   /* (claude/redgorge2: redgorge is back in its band - 246% lost, 6 deaths in 3 runs - and gated by the curve again) */

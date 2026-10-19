@@ -45,7 +45,7 @@ try {
         if (l.needsTime) { if (!(P[n.id].best <= n.t)) { P[n.id].best = n.t; changed = true; } } else if (!(P[n.id].slain)) { P[n.id].slain = 10; P[n.id].slainOf = 10; changed = true; } } }
     const m = BK.mapNodes(); out.nodeIds = m.ids; out.lockedAtEnd = m.ids.filter((id, i) => m.locked[i]);
     out.levelIds = LEVELS.map(l => l.id);
-    out.offCampaign = LEVELS.filter(l => l.hidden && !l.secret && (/^(shop|trial_)/.test(l.id) || l.id === 'custom')).map(l => l.id);
+    out.offCampaign = LEVELS.filter(l => l.hidden && !l.secret && (/^(shop|trial_)/.test(l.id) || l.id === 'custom' || l.id === 'tavern')).map(l => l.id);   /* (claude/tavern) the Inn is reached from the title and the map's F, not the road; tools/tavern.mjs reads that way in */
     out.reached = LEVELS.map(l => l.id).filter(id => P[id] && P[id].cleared);
     /* every spur: stand on its junction and step on with the map's own press, the way the player does */
     const spurs = m.ids.filter((id, i) => m.spur[i] && LEVELS.some(l => l.id === id && (l.opensOn || l.secretBanners || l.votiveLamps)));

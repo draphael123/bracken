@@ -444,7 +444,7 @@ export const ANSWER = {
   'scorpion|clawTell': 'block', 'scorpion|tailTell': 'dodge',
   'deacon|sweepTell': 'jump', 'deacon|hookTell': 'block', 'deacon|jabTell': 'block', 'deacon|arcTell': 'jump',   /* (claude/church2) */
   'paladinboss|chainTell': 'block', 'paladinboss|chainBeatTell': 'block', 'paladinboss|smiteTell': 'block', 'paladinboss|twinTell': 'block', 'paladinboss|spearTell': 'jump', 'paladinboss|arcTell': 'dodge', 'paladinboss|radianceTell': 'dodge', 'paladinboss|sunfallTell': 'dodge', 'paladinboss|verdictTell': 'dodge', 'paladinboss|dawnTell': 'dodge',   /* (claude/church2; claude/church3: the Paladin 4 kit) */
-  'orderpaladin|bashTell': 'block', 'orderpaladin|gleamTell': 'block', 'deadpaladin|bashTell': 'block', 'deadpaladin|gleamTell': 'block', 'deadpriest|boltTell': 'jump',   /* (claude/church3) */
+  'orderpaladin|bashTell': 'block', 'orderpaladin|gleamTell': 'block', 'deadpaladin|bashTell': 'block', 'deadpaladin|gleamTell': 'block', 'deadpriest|boltTell': 'block',   /* (claude/church3) */
   'hawkmistress|lashTell': 'jump', 'hawkmistress|cutTell': 'block', 'hawkmistress|markLashTell': 'dodge', 'hawkmistress|snareTell': 'jump', 'hawkmistress|fanTell': 'block', 'hawkmistress|kegTell': 'jump', 'hawkmistress|rakeTell': 'block', 'hawkmistress|hawkGrabTell': 'block', 'hawkscout|diveTell': 'dodge',   /* (claude/ksar) */
   'champion|comboTell': 'block', 'champion|slamTell': 'dodge', 'champion|thrustTell': 'dodge', 'champion|leapTell': 'dodge', 'champion|sweepTell': 'jump', 'champion|hookTell': 'jump', 'champion|tiltTell': 'dodge',   /* (claude/flotilla2) */
   'fogknight|cutTell': 'block', 'fogknight|lungeTell': 'dodge', 'fogknight|stepTell': 'block',   /* (claude/towpath) */

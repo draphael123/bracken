@@ -33,7 +33,7 @@ export const CHECK_DROP = {
   reef: [[9,27],[152,17],[272,11],[414,29]],
   flotilla: [],   /* (claude/flotilla2) the rebuilt flotilla places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
   hurricane: [],   /* (claude/hurricane2) THE HURRICANE DECK 2 places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
-  lamplit: [[10,9],[52,21],[134,22],[180,37],[246,21],[263,21],[348,37],[420,21],[436,21],[522,22],[578,21]],
+  lamplit: [[10,9],[180,37],[246,21],[263,21],[348,37],[436,21],[522,22],[578,21]],
   deep: [[8,27],[12,209],[14,237],[16,81],[40,129],[40,176],[54,41],[60,242],[62,63],[66,103],[76,137],[78,47],[86,121]],
   keep: [[4,58],[60,58],[194,43],[327,43],[562,58]],
   causeway: [[9,17],[163,23],[318,23],[499,18]],

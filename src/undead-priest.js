@@ -17,7 +17,7 @@ export const UPR = { hp: 46, w: 12, h: 24, notice: 220, keep: [96, 150], walk: 4
   mend: { tell: 1.0, t: 0.35, r: 120, k: 0.3, cd: 7 },
   snuff: { tell: 0.8, t: 0.3, r: 140, cd: 6 } };
 export const isDeadPriest = e => !!e && e.t === 'deadpriest';
-export const MOVES = { boltTell: { mark: '!', answer: 'jump' }, raiseTell: { mark: '', answer: '' }, mendTell: { mark: '', answer: '' }, snuffTell: { mark: '', answer: '' } };
+export const MOVES = { boltTell: { mark: '!', answer: 'block' }, raiseTell: { mark: '', answer: '' }, mendTell: { mark: '', answer: '' }, snuffTell: { mark: '', answer: '' } };
 export const NAME = { bolt: 'A GRAVE BOLT' };
 /* FRAMES (src/redraw/church3_foes_art.js): 0 idle | 1,2 walk | 3 bolt windup | 4 bolt release | 5 raise windup (arms down, the censer low) | 6 raise release (arms up) |
    7 mend windup (hands together) | 8 mend release (hands spread) | 9 snuff windup (a hand out, the fingers open) | 10 snuff release (the pinch) | 11 flee (cowering) | 12 hurt */

@@ -3988,7 +3988,7 @@ function theTavern() {
   const R = TAV.ROOM, F = R.FLOOR, s = R.FLOOR - 1; const L = painter(R.W, R.H);
   const { block, floor, ent } = L;
   floor(0, R.W - 1, F); block(0, R.wallL, 0, R.H - 1); block(R.wallR, R.W - 1, 0, R.H - 1); block(0, R.W - 1, 0, R.CEIL);
-  ent('sign', 9, s, { text: "THE CROSSROADS INN. FRIENDS JOIN HERE: A PAD PRESSES JUMP, A FAR FRIEND COMES BY THE BOARD'S CODE. UP AT A STATION TO USE IT." });
+  ent('sign', 9, s, { text: "THE INN. A PAD PRESSES JUMP TO JOIN; A FAR FRIEND USES THE BOARD'S CODE. UP AT A STATION." });
   ent('torch', 11, s); ent('torch', 33, s); ent('torch', 43, s); ent('torch', 60, s);
   ent('deco', 14, s, { kind: 'hearth' }); ent('deco', 11, s - 3, { kind: 'hallWindow' });
   ent('deco', 19, s, { kind: 'longTable' }); ent('deco', 25, s, { kind: 'longTable' }); ent('deco', 17, s, { kind: 'bench' }); ent('deco', 22, s, { kind: 'bench' }); ent('deco', 28, s, { kind: 'bench' });

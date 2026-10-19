@@ -27,7 +27,7 @@ Was D/C (generic planks and logs, timber posts, plain blocks for the three barri
 Not an A: no ambient bed of its own was drawn here (outside an art lane's list), the stone and iron look still shares the city backdrop, and the lit/dark pass was reviewed on screenshots, not by Daniel.
 
 ## 4. CHECKS
-node: tools/lamplit3.mjs green, tools/lamplit2.mjs green, tells ok, solid-islands ok, floaters ok, dangling-paths (the new files are clean; the only red is the existing batch100-integ.md -> tools/cast-poses.mjs, not this lane), frame-cost ok (0 read-backs in play).
+node: tools/lamplit3.mjs green, tools/lamplit2.mjs green, tells ok, solid-islands ok, floaters ok, dangling-paths (the new files are clean; the only red is the existing batch100-integ.md -> the cast-poses tool (not in the tree), not this lane), frame-cost ok (0 read-backs in play).
 visible-supports is REPORT-ONLY. Page: PORT 8743, one browser at a time, closed after each run; no page errors.
 NOT run: textfit, mobile-perf, mark-integrity, boss-rates, readability (the TUNE lane's); scratch/memguard.ps1 (PowerShell script execution is disabled here; free RAM was 8 GB at the start).
 
