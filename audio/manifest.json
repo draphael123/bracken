@@ -1159,5 +1159,101 @@
   "audio/sfx/vo/f3_attack_0.ogg",
   "audio/sfx/vo/f3_attack_1.ogg",
   "audio/sfx/vo/f3_attack_2.ogg"
+ ],
+ "step_arm": [
+  "audio/sfx/step_arm_0.ogg",
+  "audio/sfx/step_arm_1.ogg",
+  "audio/sfx/step_arm_2.ogg",
+  "audio/sfx/step_arm_3.ogg"
+ ],
+ "step_carpet": [
+  "audio/sfx/step_carpet_0.ogg",
+  "audio/sfx/step_carpet_1.ogg",
+  "audio/sfx/step_carpet_2.ogg",
+  "audio/sfx/step_carpet_3.ogg"
+ ],
+ "step_cloth": [
+  "audio/sfx/step_cloth_0.ogg",
+  "audio/sfx/step_cloth_1.ogg",
+  "audio/sfx/step_cloth_2.ogg"
+ ],
+ "step_dirt": [
+  "audio/sfx/step_dirt_0.ogg",
+  "audio/sfx/step_dirt_1.ogg",
+  "audio/sfx/step_dirt_2.ogg",
+  "audio/sfx/step_dirt_3.ogg",
+  "audio/sfx/step_dirt_4.ogg",
+  "audio/sfx/step_dirt_5.ogg",
+  "audio/sfx/step_dirt_6.ogg"
+ ],
+ "step_glass": [
+  "audio/sfx/step_glass_0.ogg",
+  "audio/sfx/step_glass_1.ogg",
+  "audio/sfx/step_glass_2.ogg"
+ ],
+ "step_grass": [
+  "audio/sfx/step_grass_0.ogg",
+  "audio/sfx/step_grass_1.ogg",
+  "audio/sfx/step_grass_2.ogg",
+  "audio/sfx/step_grass_3.ogg",
+  "audio/sfx/step_grass_4.ogg"
+ ],
+ "step_gravel": [
+  "audio/sfx/step_gravel_0.ogg",
+  "audio/sfx/step_gravel_1.ogg",
+  "audio/sfx/step_gravel_2.ogg"
+ ],
+ "step_iron": [
+  "audio/sfx/step_iron_0.ogg",
+  "audio/sfx/step_iron_1.ogg",
+  "audio/sfx/step_iron_2.ogg",
+  "audio/sfx/step_iron_3.ogg"
+ ],
+ "step_lth": [
+  "audio/sfx/step_lth_0.ogg",
+  "audio/sfx/step_lth_1.ogg",
+  "audio/sfx/step_lth_2.ogg"
+ ],
+ "step_mud": [
+  "audio/sfx/step_mud_0.ogg",
+  "audio/sfx/step_mud_1.ogg",
+  "audio/sfx/step_mud_2.ogg"
+ ],
+ "step_sand": [
+  "audio/sfx/step_sand_0.ogg",
+  "audio/sfx/step_sand_1.ogg",
+  "audio/sfx/step_sand_2.ogg",
+  "audio/sfx/step_sand_3.ogg",
+  "audio/sfx/step_sand_4.ogg"
+ ],
+ "step_snow": [
+  "audio/sfx/step_snow_0.ogg",
+  "audio/sfx/step_snow_1.ogg",
+  "audio/sfx/step_snow_2.ogg",
+  "audio/sfx/step_snow_3.ogg",
+  "audio/sfx/step_snow_4.ogg",
+  "audio/sfx/step_snow_5.ogg",
+  "audio/sfx/step_snow_6.ogg",
+  "audio/sfx/step_snow_7.ogg"
+ ],
+ "step_stone": [
+  "audio/sfx/step_stone_0.ogg",
+  "audio/sfx/step_stone_1.ogg",
+  "audio/sfx/step_stone_2.ogg",
+  "audio/sfx/step_stone_3.ogg",
+  "audio/sfx/step_stone_4.ogg",
+  "audio/sfx/step_stone_5.ogg",
+  "audio/sfx/step_stone_6.ogg",
+  "audio/sfx/step_stone_7.ogg",
+  "audio/sfx/step_stone_8.ogg"
+ ],
+ "step_wood": [
+  "audio/sfx/step_wood_0.ogg",
+  "audio/sfx/step_wood_1.ogg",
+  "audio/sfx/step_wood_2.ogg",
+  "audio/sfx/step_wood_3.ogg",
+  "audio/sfx/step_wood_4.ogg",
+  "audio/sfx/step_wood_5.ogg",
+  "audio/sfx/step_wood_6.ogg"
  ]
 }

@@ -1890,6 +1890,70 @@ Object.assign(SFX, {
   rgMark() { tone('triangle', 660, 990, 0.14, 0.06); bell(1320, 0.3, 0.04, 0.08); },
   rgHawk() { tone('triangle', 1600, 2400, 0.12, 0.05); tone('triangle', 2200, 1500, 0.16, 0.05, 0.12); noise(0.2, 0.06, 4000, 1.4); },
 });
+// ---------- FOOTSTEPS AND LANDINGS BY SURFACE (claude/footsteps, Daniel's packs 10-17) ----------
+// What is underfoot decides the step: main.js surface() names it (grass stone wood iron snow sand gravel dirt mud
+// glass carpet water), FOOT maps it to a recorded pool (step_<surface> in the manifest; all foley for the mix cap and
+// SFX_TRIM) and a level. The hero adds the body: plate and mail chink, boots creak, robes whisper (FOOT_HERO), and the
+// stride sets the weight - a walk is quiet and low, a sprint is hard and bright (pStep gets |vx|). A landing is the
+// same sound lower and louder by the fall (tier 0 hop / 1 drop / 2 big drop, passed by main.js). Everything here is
+// wrapped AFTER every per-hero table; while the files are still loading (or "sound files" is off) the old synth plays.
+const FOOT = {
+  grass: { p: 'step_grass', v: 0.2 }, stone: { p: 'step_stone', v: 0.17, hard: 1 }, wood: { p: 'step_wood', v: 0.17, hard: 1 },
+  iron: { p: 'step_iron', v: 0.15, hard: 1 }, snow: { p: 'step_snow', v: 0.22 }, sand: { p: 'step_sand', v: 0.22 },
+  gravel: { p: 'step_gravel', v: 0.2, hard: 0.5 }, dirt: { p: 'step_dirt', v: 0.2 }, mud: { p: 'step_mud', v: 0.26, r: 0.9, under: 'r_squelch', uv: 0.1 },
+  glass: { p: 'step_glass', v: 0.13, hard: 0.6, under: 'step_stone', uv: 0.08 }, carpet: { p: 'step_carpet', v: 0.2 }, water: { p: 'r_splash', v: 0.09, r: 1.5 },
+};
+const FOOT_HERO = {   /* w: weight (volume), r: pitch, l: the gear layer (arm = plate and mail, lth = leather, cloth = robe), a: its level */
+  knight: { w: 1, l: 'arm', a: 0.7 }, paladin: { w: 1.25, r: 0.9, l: 'arm', a: 1 }, reaper: { w: 1.3, r: 0.8, l: 'arm', a: 0.9 }, berserker: { w: 1.1, r: 0.88, l: 'arm', a: 0.45 },
+  pirate: { w: 1, l: 'lth', a: 0.8 }, ranger: { w: 0.8, l: 'lth', a: 0.6 }, warden: { w: 0.9, l: 'lth', a: 0.6 }, geomancer: { w: 0.8, l: 'cloth', a: 0.7 }, pyro: { w: 0.65, r: 1.08, l: 'cloth', a: 0.8 },
+};
+let footHero = false, footSpd = 0, footTier = 0;   /* set by the pStep / pLand wrappers for the call; foes and the skid call SFX.step / SFX.land bare */
+const footReady = () => !!(ac && sfxFiles && clips.step_grass && clips.step_grass.some(Boolean));
+const footGait = () => footSpd ? Math.max(0.65, Math.min(1.2, footSpd / 92)) : 1;   /* 92 = MOVE.RUN: under it a walk, over it the sprint */
+function footfall(surf, land) {
+  const S = FOOT[surf]; if (!S) return false;
+  const H = footHero ? (FOOT_HERO[heroVoice] || FOOT_HERO.knight) : null, gait = footGait(), T = footTier;
+  const v = S.v * (H ? H.w : 1) * (land ? [1.6, 2.1, 2.7][T] : gait), r = (S.r || 1) * (H && H.r || 1) * (land ? [0.88, 0.78, 0.68][T] : 0.88 + 0.12 * gait);
+  if (!file(S.p, v, r)) return false;
+  if (S.under) file(S.under, S.uv * (land ? 1.6 : 1), r * 1.1);
+  if (land && S.hard) file('land', S.hard * [0.16, 0.24, 0.32][T], r);   /* the old Kenney landing, a thump under the hard ones */
+  return true;
+}
+function footGear(land) {
+  const H = FOOT_HERO[heroVoice] || FOOT_HERO.knight, gait = footGait();
+  if (!land && gait < 1.1 && stepN % 2) return;   /* gear speaks on alternate steps, and on every stride of a sprint */
+  file('step_' + H.l, 0.17 * H.a * (land ? [1.5, 1.9, 2.4][footTier] : gait), (H.r || 1) * (land ? 0.9 : 0.95 + 0.1 * gait));
+}
+{ const baseStep = SFX.step;
+  SFX.step = function (surf) { if (footReady() && footfall(surf || 'grass', false)) return; return baseStep.call(this, surf); }; }
+{ const baseLand = SFX.land;
+  SFX.land = function (surf) {
+    if (!surf || !FOOT[surf] || !footReady()) return baseLand.apply(this, arguments);
+    footfall(surf, true);
+    if (surf === 'water') return baseLand.apply(this, arguments);   /* the splash keeps its synth body */
+    if (footTier >= 1) { const big = footTier === 2; file('ld_jump', big ? 0.46 : 0.3, big ? 0.72 : 0.9); file('bd_heavy', big ? 0.34 : 0.2, big ? 0.7 : 0.9); }   /* claude/audiocombat's drop body (pools exist once it is merged) */
+  }; }
+{ const baseP = SFX.pStep;
+  SFX.pStep = function (surf, spd) {
+    if (!footReady()) return baseP.call(this, surf);
+    footHero = true; footSpd = spd > 0 ? spd : 0;
+    try {
+      if (heroVoice === 'paladin') baseP.call(this, surf || 'wood');   /* PAL.pStep: the count, SFX.step, its own thud and plate */
+      else { stepN++; SFX.step(surf || 'wood'); if (heroVoice === 'reaper') tone('sine', 88, 48, 0.09, 0.07); }   /* (no surface = a rope or a ladder: wood) */
+      footGear(false);
+    } finally { footHero = false; footSpd = 0; }
+  }; }
+{ const baseL = SFX.pLand;
+  SFX.pLand = function (surf, tier = 0) {
+    footTier = Math.max(0, Math.min(2, tier | 0)); footHero = true;
+    try {
+      baseL.call(this, surf, tier);
+      if (footReady()) { if (heroVoice === 'pyro' && surf && surf !== 'water') SFX.land(surf); footGear(true); }   /* her own landing never reached SFX.land */
+    } finally { footTier = 0; footHero = false; }
+  }; }
+/* Sound Test rows, one per surface: three strides (walk, run, sprint) and a drop, in the hero picked in the game */
+for (const s of Object.keys(FOOT)) SFX['foot' + s[0].toUpperCase() + s.slice(1)] = () => { [60, 92, 112].forEach((sp, i) => setTimeout(() => { stepN = i; SFX.pStep(s, sp); }, i * 380)); setTimeout(() => SFX.pLand(s, 1), 1250); };
+
 // ---------- RECORDED TAKES OVER THE SYNTH (claude/sfx) ----------
 // Each name below plays a take from its recorded pool when the pool has loaded and sfxFiles is on; otherwise (pool still
 // loading, sfxFiles OFF, voices OFF for a cry) the synth above plays exactly as before. { layer } plays the take AND the synth.
