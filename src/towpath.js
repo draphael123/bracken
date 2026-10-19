@@ -355,7 +355,7 @@ export function buildTowpath({ painter, T, TS }) {
     examSpans: [[394, 427]],          /* THE LAST LOCK: the old gate irons kill (told as you walk in: src/survival.js examAt) */
     calm: [[0, W - 1, 0, H - 1]],     /* placed wholly by hand: nothing sprinkled */
     /* THE CANAL MEN'S WEIGHT (difficulty v2: fewer, weightier foes): a bargeman's hook and a watchman's bolt hit like the act's, and they stand a blow or two longer (main.js reads L.foeHit / L.foeHp by cnSkin) */
-    foeHit: { bargeman: 2.3, riverrat: 2.3, watchman: 1.9, deckforeman: 2.4, hedgechampion: 1.1, bargechampion: 2.4, ratchampion: 2.4 },
+    foeHit: { bargeman: 1.6, riverrat: 1.6, watchman: 1.3, deckforeman: 1.7, hedgechampion: 0.8, bargechampion: 1.7, ratchampion: 1.7 },
     foeHp: { bargeman: 1.8, riverrat: 1.6, watchman: 1.4, deckforeman: 2.4, hedgechampion: 2.0, bargechampion: 2.2, ratchampion: 2.2 },
     checkRun: 200,
     squadBands: [{ lo: AX, hi: W - 1, spots: 0, why: "THE FOG KNIGHT's towpath: no squad stands in a boss arena" }],
