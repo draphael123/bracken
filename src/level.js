@@ -679,7 +679,7 @@ function theStockade() {
 
   // ---- 6. The lift to the upper walkway ----
   for (let y = 20; y <= 27; y++) { set(250, y, 0); set(251, y, 0); } net(250, 251, 26); for (let y = 21; y <= 25; y++) set(250, y, T.NET); // miss the lift and the net catches you: rungs up to where it waits
-  movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30 });
+  movers.push({ kind: 'lift', x: 250 * TS, y: 20 * TS, y0: 20 * TS, y1: 12 * TS, w: 32, h: 8, speed: 30, ridden: true });
   block(252, 269, 12, 27);
   coins([256, 10], [264, 10]);   /* (a sapper met you off the lift: a fight at a landing) */
 
@@ -702,7 +702,7 @@ function theStockade() {
 
   // ---- 8. Down to the great hall ----
   for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26); for (let y = 20; y <= 25; y++) set(316, y, T.NET); // and rungs up out of this one to the floor
-  movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
+  movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30, ridden: true });
   floor(317, 365, 20);
   ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);
   ent('sign', 321, 19, { text: 'AT HIS SECOND WIND HE TAKES HIS WAR TOWER. CUT BOTH LASHINGS.' });   /* (claude/stockade2) the war tower, told at the door */   /* the EXAM's last beat: a hound on the landing, off the lift */
@@ -843,6 +843,9 @@ function stockadeWatchtowers(R3) {
   run(94, 109, 12, T.PLANK); for (const u of [97, 103]) post(u, 12, 25);
   block(110, 123, 12, 27); coins([100, 11], [106, 11], [114, 11]);
 
+  /* (claude/stockade2) A ROPE UP BESIDE THE FIRST LIFT (final 377): the pulley lift stays the easy way up, the rope is the way when it is down
+     (the walker - and a player who stepped off it - never had a second way; the walker was STUCK there on master too) */
+  for (let y = 12; y <= 19; y++) WT.set(377, y, T.NET);
   const R = WT.done();
   R.routeSupports = (R.routeSupports || []).concat(posts);
   R.watchtowers = (R.watchtowers || []).concat([[36, 38, 10, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
