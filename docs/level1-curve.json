@@ -17,26 +17,26 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 40,
-  "deaths": 2,
-  "kills": 45,
-  "lifts": 86,
+  "hits": 27,
+  "deaths": 1,
+  "kills": 39,
+  "lifts": 68,
   "walked": 100,
   "bare": true,
-  "lostPct": 227
+  "lostPct": 129
  },
  "stockade": {
-  "hash": "c88404798755",
+  "hash": "c11eee9948cd",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
+  "hits": 28,
   "deaths": 1,
-  "kills": 11,
-  "lifts": 99,
+  "kills": 16,
+  "lifts": 93,
   "walked": 100,
   "bare": true,
-  "lostPct": 116
+  "lostPct": 111
  },
  "spore": {
   "hash": "6ca829f1d6ef",
@@ -381,13 +381,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 24,
-  "deaths": 4,
-  "kills": 21,
-  "lifts": 46,
+  "hits": 16,
+  "deaths": 3,
+  "kills": 29,
+  "lifts": 49,
   "walked": 100,
   "bare": true,
-  "lostPct": 225
+  "lostPct": 144
  },
  "unburied": {
   "hash": "339823434226",
