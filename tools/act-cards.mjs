@@ -48,7 +48,9 @@ if (process.argv.includes('--browser')) {
     ok('card gone after 2 s', r.cardGone); ok('no card on replay', r.replay); ok('another act still gets its card', r.otherAct);
     const b = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); const out = {};
       for (const rm of [false, true]) { BK.SET.reduceMotion = rm; BK.setHero('knight'); BK.reset({ fresh: true }); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.start(); BK.sim(30);
-        BK.slay && BK.slay(); let first = null, beats = 0, last = null;
+        const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + (A.reverse ? -1 : 1), Math.round(A.floor / 16) - 1); BK.sim(200);
+        for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); }
+        let first = null, beats = 0, last = null;
         for (let i = 0; i < 400; i++) { BK.sim(1); const bb = BK.bossBeat; if (bb && bb !== last) { beats++; last = bb; first = { slow: bb.plan.slow, push: bb.plan.push }; } if (BK.state === 'win') { out['win' + rm] = i; break; } }
         out['beats' + rm] = beats; out['plan' + rm] = first; }
       BK.SET.reduceMotion = false; return out; })()`);
