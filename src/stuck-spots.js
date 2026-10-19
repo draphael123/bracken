@@ -57,7 +57,7 @@ export const STUCK = {
   /* (claude/stuckguides) WOOD: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   wood: [   /* (claude/lumbertrail) THE LUMBER TRAIL: every required fell and the first ride (src/lumber-trail.js FELLS) */
     { id: 'wd-gully', zone: [14, 18, 27, 22], at: [25, 21], glint: 'stall', done: ['felltree', 25, 21, 'felled'], line: 'THE MARKED PINE BY THE GULLY IS THE WAY ACROSS' },
-    { id: 'wd-raft', zone: [124, 16, 130, 22], ats: [[130, 21], [131, 21]], glint: 'stall', line: 'THE LOG RAFT IS THE WAY OVER THE DEEP POOL' },
+    { id: 'wd-raft', zone: [112, 16, 130, 26], ats: [[130, 21], [131, 21]], glint: 'stall', line: 'THE LOG RAFT IS THE WAY OVER THE DEEP POOL' },
     { id: 'wd-leanto', zone: [262, 12, 276, 17], at: [266, 16], glint: 'stall', done: ['felltree', 266, 16, 'felled'], line: 'THE MARKED PINE UNDER THE CLIFF IS THE WAY UP' },
     { id: 'wd-tarn', zone: [405, 8, 416, 13], at: [415, 12], glint: 'stall', done: ['felltree', 415, 12, 'felled'], line: 'THE MARKED PINE AT THE TARN IS THE WAY ACROSS' },
     { id: 'wd-tarn-out', zone: [418, 14, 428, 22], at: [417, 15], line: 'THE STONE AT THE NEAR SIDE IS THE WAY OUT OF THE TARN' },   /* in the water: swim back to the stone */

@@ -51,6 +51,9 @@ for (const p of [g, lt, tn]) ok(p.req && !reachGate(p), 'the ' + p.role + ' pine
 ok(!dr.req && reachGate(dr), 'the drop is optional: the gate is reached without it');
 const under = ents.filter(e => !['sign', 'coin', 'deco', 'check', 'felltree', 'silver', 'vault', 'cage'].includes(e.t) && underTrunk(dr, e.x * TS + 8, (e.y + 1) * TS));
 ok(under.length >= 2, 'at least two foes stand under the drop\'s line (a fight during the rule): ' + under.map(e => e.t + '@' + e.x).join(' '));
+const st = pine('sett');   /* (the reviewer's gap: no fell from the gully to the camp) the ford's far bank drops a small pine on the crew's hollow by col 160 */
+ok(st && st.drop && st.x <= 160 && !st.req && ents.filter(e => !['sign', 'coin', 'deco', 'check', 'felltree'].includes(e.t) && underTrunk(st, e.x * TS + 8, (e.y + 1) * TS)).length >= 2, 'the verb comes back by col 160: a drop over the ford crew (optional, two foes under it)');
+for (let i = 1, xs = pines.filter(p => p.role !== 'hive').map(p => p.x).sort((a, b) => a - b); i < xs.length; i++) ok(xs[i] - xs[i - 1] <= 130, 'no stretch of more than 130 columns without a marked pine (' + xs[i - 1] + ' -> ' + xs[i] + ')');
 for (const p of [g, lt, dr, tn]) ok(fellCells(p, L.grid, W, T).length >= 6, 'the ' + p.role + ' pine lays a trunk of at least six cells');
 
 /* ---- C. guides on every required verb, the first ride signed ---- */
