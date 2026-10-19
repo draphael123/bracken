@@ -16,7 +16,7 @@ import { depthsOf, gateOf } from './campaign-order.js';
    when the frost, volcano and demon levels land, give each level `titleRegion: 'frost'` (or add it to SPINE) and fill that row's art. */
 export const REGIONS = [
   { id: 'forest',  name: 'THE WOOD',        music: 'theme',     wash: 'rgba(120,80,140,0.45)', sky: 'dusk',   far: 'wood',   near: 'wood' },
-  { id: 'marsh',   name: 'THE MARSH',       music: 'theme2',    wash: 'rgba(96,120,120,0.50)', sky: 'dusk',   far: 'wood',   near: 'marsh' },
+  { id: 'marsh',   name: 'THE MARSH',       music: 'marsh',     wash: 'rgba(96,120,120,0.50)', sky: 'dusk',   far: 'wood',   near: 'marsh' },
   { id: 'fungus',  name: 'THE DEEP WOOD',   music: 'sporewood', wash: 'rgba(110,70,150,0.50)', sky: 'dusk',   far: 'wood',   near: 'mushroom' },
   { id: 'crag',    name: 'THE CRAGS',       music: 'mountain',  wash: 'rgba(130,90,150,0.40)', sky: 'crag',   far: 'crag',   near: 'crag' },
   { id: 'mine',    name: 'THE MINES',       music: 'oreroad',   wash: 'rgba(150,100,70,0.50)', sky: 'night',  far: 'crag',   near: 'crag' },

@@ -54,7 +54,7 @@ export function crabTrench(source,T,TS=16){
  R.ents.push({t:'bellcrab',x:142,y:198,face:-1},{t:'gate',x:159,y:198},{t:'sign',x:108,y:198,text:'THE BELL GRAVE. LEAVE THE MARKED FLOOR, GUARD THE PINCER, AND STRIKE WHEN ITS SHELL VENTS.'});
  for(const x of [116,133,149]){R.airRooms.push([x,x+3,180,183]);R.deep.pockets.push([x,x+3,180,183]);R.deep.vents.push({x:x+1,y:198,h:9,hot:false,drain:false});}
  R.deep.zones.push({name:'THE BELL GRAVE',x0:112,x1:160,y0:180,y1:198,col:[120,195,190],a:0.12});
- R.arena={x0:112*TS,x1:155*TS,floor:199*TS,trigger:114*TS,wallL:111,wallR:155,boss:'bellcrab',music:'boss3',tint:'#14343a',tintA:0.12,fx:'motes',y0:180*TS,y1:199*TS};
+ R.arena={x0:112*TS,x1:155*TS,floor:199*TS,trigger:114*TS,wallL:111,wallR:155,boss:'bellcrab',music:'bellcrab',tint:'#14343a',tintA:0.12,fx:'motes',y0:180*TS,y1:199*TS};
  return reworkDeep(R,T,TS);   /* the holds, the tribute ship, the knights, the Bell's stone racks (src/tribute-ship.js) */
 }
 

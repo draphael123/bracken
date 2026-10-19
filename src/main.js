@@ -24237,7 +24237,7 @@ function chaseDemo(heroId) {
   for (let y = fy - 10; y <= fy + 1; y++) for (let x = x0; x <= x1; x++) L.grid[y * LW + x] = (y >= fy || x === x0 || x === x1) ? T.SOLID : T.AIR;
   L.ents = (L.ents || []).filter(e => !(e.x >= x0 - 2 && e.x <= x1 + 2 && e.y >= fy - 12 && e.y <= fy + 2)); grid0.set(L.grid);
   L.chases = [{ id: 'demo', name: 'THE DEMO CHASE', axis: 'x', dir: 1, trigger: (sx + 6) * CHASE_TS, end: (sx + 58) * CHASE_TS, gap0: 200, curve: [[0, 60], [150, 78, 'THE ROOF GROANS'], [380, 96, 'IT QUICKENS']],
-    contact: 'kill', autoscroll: true, look: 'rock', music: 'boss', beams: [{ x0: (sx + 34) * CHASE_TS, x1: (sx + 37) * CHASE_TS, y: fy * CHASE_TS - 11, th: 6, period: 3, up: 1.2 }] }];
+    contact: 'kill', autoscroll: true, look: 'rock', music: 'chase', beams: [{ x0: (sx + 34) * CHASE_TS, x1: (sx + 37) * CHASE_TS, y: fy * CHASE_TS - 11, th: 6, period: 3, up: 1.2 }] }];
   chasesLoad(); shrines.push({ x: (sx + 1) * CHASE_TS + 8, y: fy * CHASE_TS, lit: false, noBreak: true });   /* the checkpoint right before the start line */
   checkpoint = { x: (sx + 1) * CHASE_TS + 8, y: (fy) * CHASE_TS }; respawn();
   camX = P.x - VW / 2; camY = P.y - 100;
