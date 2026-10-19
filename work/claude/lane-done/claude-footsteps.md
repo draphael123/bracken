@@ -40,7 +40,7 @@ Four packs downloaded 10-18, each into its own new folder `bracken-lanes/sfx-dl-
 - Not all of each pack is used (leather 3 of 4, cloth 3 of 4, snow 3 of 41: Kenney's five already do the job).
 
 ## Checks run (static)
-node --check audio.js, main.js, credits.js ok; `tools/audio-assets.mjs` ok; `tools/footsteps-check.mjs` ok (12 surfaces, 12 pools, 9 heroes); `tools/ship-fixes.mjs` ok; a node mock-AudioContext smoke (not committed): 9 heroes x 12 surfaces x walk/run/sprint x 3 landing tiers all play a surface file, paladin keeps its plate on top, bare `SFX.step()/land()/pStep()` still work, the 12 new Sound Test rows run. `tools/audio-mix.mjs` is not on this base (audiocombat's): run it after the merge (pools are levelled to about -19 dB mean). `tools/dangling-paths.mjs` is red on the BASE too (batch100-integ.md cites tools/cast-poses.mjs), not from this lane.
+node --check audio.js, main.js, credits.js ok; `tools/audio-assets.mjs` ok; `tools/footsteps-check.mjs` ok (12 surfaces, 12 pools, 9 heroes); `tools/ship-fixes.mjs` ok; a node mock-AudioContext smoke (not committed): 9 heroes x 12 surfaces x walk/run/sprint x 3 landing tiers all play a surface file, paladin keeps its plate on top, bare `SFX.step()/land()/pStep()` still work, the 12 new Sound Test rows run. `tools/audio-mix.mjs` is not on this base (audiocombat's): run it after the merge (pools are levelled to about -19 dB mean). `tools/dangling-paths.mjs` is red on the BASE too (batch100-integ.md cites a cast-poses tool that is in no commit), not from this lane.
 
 ## Merge notes (mechanical)
 - main.js: my `SFX.pLand(surface(), tier)` line is IDENTICAL to audiocombat's (git takes it once). My other main.js edits are in surface() and the P.dust line only.
