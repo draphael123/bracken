@@ -8341,7 +8341,7 @@ function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg,
   if (!(e.chipHit === time && dmg < 1)) number(e.x, e.y - e.h - 6, dmg, glance || e.chipHit === time ? '#9aa39a' : plunge ? '#ffd36b' : '#fff6e0');   /* (a scratch under a whole point shows no 0: the clank and the grey spark say it) */
   const dir = Math.sign(e.x - fromX) || 1;
   if (!glance) hitSpray(e, dir);   /* (a glance has its own spark and its own sound: glanceBeat) */
-  if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * ((weaponOf(hero()) || {}).shove || 2);   /* (claude/foepass) a greatsword shoves it further off the blow */
+  if (!e.maxHp && e.alive && !isSolid(Math.floor((e.x + dir * (e.w / 2 + 3)) / TS), Math.floor((e.y - 4) / TS))) e.x += dir * (KNOCK_SKIP.has(e.t) ? 2 : (weaponOf(hero()) || {}).shove || 2);   /* (claude/foepass) a greatsword shoves it further off the blow */
   if (dmg > 0 && e.alive && tal('bleed') && !isPyro() && !isPaladin()) { e.bleed = 3; e.bleedN = tal('bleed'); } // OPEN WOUND
   if (dmg > 0 && e.alive && isReaper() && tal('rend') && (e.mark || 0) > 0) { e.bleed = Math.max(e.bleed || 0, 3); e.bleedN = Math.max(e.bleedN || 0, 2); } // REND: the mark is a wound waiting for the blade
   if (e.hp <= 0) {
