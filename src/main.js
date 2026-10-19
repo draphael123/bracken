@@ -4626,7 +4626,7 @@ const levelLocked = lv => !godMode() && !SET.allLevels && (!!lv.locked || (votiv
 const MAPW = 320, MAPH = 900, DESERT_Y = 0, INLAND_Y = 180, COAST_Y = 360, CRAG_Y = 540, WOOD_Y = 720;
 const UC_ROAD = !!(LEVELS.find(l => l.id === 'undercrown') || {}).needs;   /* (claude/undercrown2) THE UNDERCROWN on the road (level.js ROAD_OPEN): a node between Stormhold and Highcrown, not a stub off Highcrown */
 const WOOD_NODES = [
-  { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, plate: 'left', name: 'BRACKEN WOOD' },
+  { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, plate: 'left', name: 'THE LUMBER TRAIL' }   /* (claude/lumbertrail: BRACKEN WOOD became THE LUMBER TRAIL) */,
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 68, plate: 'left', name: 'THE STORE' },
   { id: 'marsh', kind: 'level', level: 1, x: 251, y: 129, plate: 'right', name: 'MARSH WOOD' },
   { id: 'stockade', kind: 'level', level: 2, x: 288, y: 47, plate: 'right', name: 'THE STOCKADE' },
