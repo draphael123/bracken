@@ -334,7 +334,7 @@
   }
  },
  "stockade": {
-  "hash": "8584432fb190",
+  "hash": "f7bc642b7ffe",
   "boss": {
    "boss": "chief",
    "wins": 0,
@@ -435,7 +435,7 @@
    ]
   },
   "carried": {
-   "from": "c11eee9948cd",
+   "from": "8584432fb190",
    "parts": [
     "boss"
    ]

@@ -817,7 +817,7 @@ function stockadeWatchtowers(R3) {
   col(35, 9, 19, T.NET); block(36, 38, 9, 19); run(35, 41, 8, T.PLANK); ent('towertop', 37, 8);   /* the gate tower: a rope up its face, its deck four rows over the walk (out of a jump from it: the way on is the yard floor) */
   ent('logpile', 41, 7, { id: 'pile-2' });
   col(43, 1, 12, T.PALISADE); col(43, 13, 19, T.PORT);            /* THE BARRED GATE (src/stockade-hands.js opens it to a horn) */
-  ent('brute', 46, 19, { face: -1, stk: { gateGuard: true } }); ent('pike', 48, 19, { face: -1, stk: { gateGuard: true } });
+  ent('brute', 46, 19, { face: -1, stk: { gateGuard: true } }); ent('hound', 48, 19, { face: -1, stk: { gateGuard: true } });   /* (a pike held the line here and held the hands with it: the crew run at the horn, and a hound runs best) */
   ent('sprig', 50, 19, { face: -1, stk: { gateGuard: true } }); ent('sprig', 52, 19, { face: -1, stk: { gateGuard: true } });
   ent('torch', 45, 19); coins([39, 7], [47, 18], [51, 18]);
 
