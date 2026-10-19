@@ -87,7 +87,8 @@ export const SIG_BUILT = new Set(Object.keys(SIG));
 /* THE TWISTS: one small change from THAT level's rule. level: where it is wired; rule: the level's rule line it comes from (src/level.js);
    what: what the player sees; n: its numbers (src/order-knights.js TWIST_RUN). */
 export const TWISTS = {
-  timber: { level: 'wood', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", mark: '!!', word: 'TIMBER',
+  timber: { level: 'wood', rule: 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.',   /* (claude/lumbertrail: THE LUMBER TRAIL's rule, src/level.js RULE_WOOD) */
+    mark: '!!', word: 'TIMBER',
     what: 'once he is ROUSED he fells the pine beside him across the yard (a red strip: be off it). It lies there for the rest of the fight - and a SWEEP or a SLAM swung across it STICKS IN THE WOOD: his long opening. Fight from behind the trunk.',
     n: { tell: 0.95, len: 3, dmg: 18, stuck: 1.7 } },
   channel: { level: 'marsh', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', mark: '!', word: 'SHOVE',
@@ -143,7 +144,8 @@ export const TWISTS = {
    (review-first2: knights REPLACE, not add). gate = the column he holds shut until he falls (src/level.js eliteGate, batch81's elite gates);
    at = [col, row] in the level's final columns. Only the three wired chapters' exams are rows; the roll-out lanes add theirs. */
 export const ORDER_AT = {
-  wood: { body: 'oathmaul', chapter: 'forest', twist: 'timber', sig: ['vine'], affix: 'WARDING', hp: 0.85, at: [147, 21], gate: 157, replaces: 'shield',
+  wood: { body: 'oathmaul', chapter: 'forest', twist: 'timber', sig: ['vine'], affix: 'WARDING', hp: 0.85, at: [254, 16], gate: 260, replaces: 'shield',   /* (claude/lumbertrail) THE LUMBER CAMP's yard, the area's exam: his gate holds the way to the lean-to */
+   
     name: 'THE BRIAR MAUL', why: 'the first knight you meet: slow, heavy, readable - the knock-into target that stays put; the wood already has its duelist (the sworn sword)' },
   marsh: { body: 'oathblade', chapter: 'marsh', twist: 'channel', sig: ['mud', 'wade'], affix: 'VENOMOUS', hp: 1.0, at: [98, 15], gate: 105, replaces: 'thorn',
     name: 'THE BOG BLADE', why: 'the duelist teaches the parry early, one on one on the far bank; not a battle mage (the marsh is ~36% ranged already)' },

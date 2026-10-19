@@ -114,6 +114,6 @@ for (const [id, R] of otherLevels) assert.equal((R.ents || []).filter(e => e.t =
 // with the ledge tile in the grid, a hero who never once pushes the block still gets through.
 const ACROSS = 5; // checkpoint-stand.mjs's own figure: about 3.5 tiles, inside the measured 3.2-4.5, not the model's 6
 const R = floodReach(L, T, { rides: true, across: ACROSS });
-const before = R.key(103, 21), past = R.key(109, 21); // the sign before the demo, and the thorn right past it - column 111 on is its own pre-existing gap in the flood model (the crates), nothing to do with this demo
-assert.ok(R.seen.has(before) && R.seen.has(past), 'the corridor around the pushblock demo (x103-116) does not flood through on a real jump - something in the demo narrows the walkway itself');
+const before = R.key(88, 17), past = R.key(97, 17); // (claude/lumbertrail: THE LUMBER TRAIL's log round at the top of the skid road, 90,17 under the ledge at 94,14) the floor before the demo and past it
+assert.ok(R.seen.has(before) && R.seen.has(past), 'the corridor around the pushblock demo (x88-97) does not flood through on a real jump - something in the demo narrows the walkway itself');
 console.log(`ok  push-blocks (demo)   exactly 1 placement (Bracken Wood only), and the corridor around it floods end to end without it (no soft-lock: the block is optional).`);

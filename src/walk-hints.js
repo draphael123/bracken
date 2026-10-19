@@ -117,4 +117,13 @@ function flotilla(BK, P, mem) {
   if (gun.cool > 0) return { x: gun.x - 14, y: gun.y, key: null, face: 1, r: 20, hold: true };
   return { x: gun.x - 14, y: gun.y, key: 'atk', face: 1, r: 20 };
 }
-export const WALK_HINTS = { glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla };
+/* THE LUMBER TRAIL (claude/lumbertrail, src/felling.js): a MARKED pine ahead on his floor that is not down yet - stand at its stump on the near side, face the way it
+   leans, strike (four strokes; the ranger's tap is an arrow into the trunk). A player fells the trail's pines as he meets them: the bridges and the lean-to are the way on, the
+   drop is a blow on the crew under it. Out from under a drop's line first (it comes down on whoever stands there). */
+function lumberTrail(BK, P) {
+  if (!P || P.dead || !BK.props) return null;
+  const tree = BK.props().filter(q => q.t === 'felltree' && q.mark && !q.felled && q.fall <= 0 && Math.abs(q.y - P.y) < 3 * TS && q.x > P.x - 3 * TS && q.x < P.x + 16 * TS).sort((a, b) => a.x - b.x)[0];
+  if (!tree) return null;
+  return { x: tree.x - tree.dir * 12, y: tree.y, key: 'atk', face: tree.dir, r: 16 };
+}
+export const WALK_HINTS = { glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail };

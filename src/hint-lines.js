@@ -13,6 +13,8 @@ import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerewo
 import { TK_SAY } from './tomb-king.js';
 import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* claude/lumbertrail: THE LUMBER TRAIL's felling (src/felling.js) - the first stroke and the fall, routed as hint-shown requires */
+  'THE PINE CREAKS AND LEANS', 'THE PINE FALLS: A BRIDGE', 'THE PINE FALLS: A WAY UP', 'TIMBER: IT CRUSHES WHAT STOOD UNDER IT',
   /* batch101 integ 10-18: THE BELL HOUSINGS (claude/airpockets) - the housing is spent / fills again, routed as hint-shown requires */
   'THE HOUSING IS SPENT', 'THE HOUSING FILLS AGAIN',
   /* batch100 integ 10-18: THE CAPTAIN 2 (claude/hurricane2) - the wave, the lightning, his line and ward, routed as hint-shown requires */

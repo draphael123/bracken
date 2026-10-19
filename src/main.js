@@ -233,6 +233,7 @@ import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames,
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
+import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js';   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
 import * as PARTY from './party.js'; import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
 
 await LS.step('modules');   /* every script is in and run: the fetch part of the bar is done */
@@ -2382,7 +2383,7 @@ function drawGateFx(cx, cy) { for (const f of gateFx) { const top = Math.min(...
     g.restore(); } }
 function openGateCol(col) { openGate(col, 0, LH - 1, true); }
 function applyWorld() { let ch = false;
-  for (const e of L.ents) if (e.t === 'lockgate' && marks.has('gate:' + e.x)) { for (let ty = 0; ty < LH; ty++) { const i = ty * LW + e.x; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); ch = true; } } } for (const e of L.ents) if (e.t === 'felltree' && marks.has('tree:' + e.x)) for (let x = e.x + 1; x <= e.x + (e.len || 12); x++) { const i = e.y * LW + x; if (L.grid[i] !== T.PLANK) { L.grid[i] = T.PLANK; tileSpr[i] = null; ch = true; } } for (const e of L.ents) if (e.t === 'tbell' && e.span && marks.has('tbell:' + e.x + ',' + e.y)) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.PLANK; tileSpr[i] = null; ch = true; } } } return ch; }   /* a bridge a bell brought down stays down */
+  for (const e of L.ents) if (e.t === 'lockgate' && marks.has('gate:' + e.x)) { for (let ty = 0; ty < LH; ty++) { const i = ty * LW + e.x; if (L.grid[i] === T.PORT) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); ch = true; } } } for (const e of L.ents) if (e.t === 'felltree' && marks.has('tree:' + e.x)) for (const [x, y, t] of fellCells(e, L.grid, LW, T)) { const i = y * LW + x; L.grid[i] = t; tileSpr[i] = null; ch = true; }   /* (claude/lumbertrail) a bridge, a lean-to or a drop: src/felling.js says which cells */ for (const e of L.ents) if (e.t === 'tbell' && e.span && marks.has('tbell:' + e.x + ',' + e.y)) { const [x0, x1, row] = e.span; for (let x = x0; x <= x1; x++) { const i = row * LW + x; if (L.grid[i] === T.AIR) { L.grid[i] = T.PLANK; tileSpr[i] = null; ch = true; } } } return ch; }   /* a bridge a bell brought down stays down */
 const questOf = () => L.quest || (L.strays ? { n: L.strays, item: 'sheep', name: 'EWE', done: 'THE FLOCK IS WHOLE' } : { n: 3, item: 'none', name: 'ITEM', done: 'DONE' });
 function questDone(x, y) {
   const Q = questOf(); number(x, y - 30, Q.done, '#ffd36b'); SFX.medal(); slowT = 0.4;
@@ -2959,7 +2960,7 @@ function spawnEnt(e) {
       case 'gill': enemies.push({ ...base, t: 'gill', w: 16, h: 14, hp: EHP.gill, y: py }); break;
       case 'mother': boss = { ...base, t: 'mother', w: 28, h: 96, hp: EHP.mother, maxHp: EHP.heart, mode: 'sleep', modeT: 0, rootT: 2.5, belchT: 6, rainT: 6, tipped: false, phase: 1, gillsOpen: false, openT: 0, broodT: 0 }; mother = boss; enemies.push(boss); break;
       case 'puffball': props.push({ t: 'puffball', x: px, y: py, popped: false }); break;
-      case 'felltree': { const f = marks.has('tree:' + e.x); props.push({ t: 'felltree', x: px, y: py, hp: 4, len: e.len || 12, dir: e.dir || 1, fall: f ? 1 : 0, felled: f, tx: e.x, ty: e.y, shake: 0 }); break; }
+      case 'felltree': { const f = marks.has('tree:' + e.x), R = fellRamp(e); props.push({ t: 'felltree', x: px, y: py, hp: FELL_STROKES, len: e.len || 12, dir: e.dir || 1, fall: f ? 1 : 0, felled: f, tx: e.x, ty: e.y, shake: 0, ent: e, ramp: R ? { ...R, state: 'down' } : null, drop: !!e.drop, mark: !!e.mark, lean: 0, said: false }); break; }   /* (claude/lumbertrail) ramp: a lean-to or a drop lies as a slope (src/felling.js); mark: the woodsman's blaze is drawn on it */
       case 'catapult': props.push({ t: 'catapult', x: px, y: py, hp: 5, every: e.every || 2.6, timer: 1.4, fired: 0, wrecked: marks.has('cat:' + e.x), tx: e.x }); break;
       case 'nest': props.push({ t: 'nest', x: px, y: py, every: e.every || 2.4, dir: e.dir || -1, timer: 1, puff: 0 }); break;
       case 'firepit': props.push({ t: 'firepit', x: px, y: py, period: e.period || 3, on: e.on || 1.4, phase: e.phase || 0, lit: false }); break;
@@ -10382,7 +10383,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     m.cd = 1; m.fired = 0.35; squash(0.7, 1.35, 0.14); SFX.budSpring(); ringAt(m.x + m.w / 2, m.y0 + 3, 22, '#dff7c8', 0.35);
     burst(m.x + m.w / 2, m.y0, 10, ['#ffd0dc', '#dff7c8', '#eefaff'], 70, 0.4); dust(P.x, P.y, 3);
   }
-  if (GS > 0 && L.felled && !P.onMover) rampFoot(prevY);   /* THE HURRICANE'S FELLED MAST: a slope, walked on its line */
+  if (GS > 0 && (L.felled || L.fellRamps) && !P.onMover) rampFoot(prevY);   /* THE HURRICANE'S FELLED MAST: a slope, walked on its line */
   if (camLock) { P.x = Math.max(camLock.x0 + 6, Math.min(camLock.x1 - 6, P.x)); }
   if (!P.ground) P.fallV = Math.max(P.fallV || 0, P.vy);
   if (P.ground && !wasGround && P.groundTile === T.BOUNCER) { // springy cap
@@ -11597,10 +11598,43 @@ function felledCrash(F) {
   if (P.x > wx0 * TS - 6 && P.x < (wx1 + 1) * TS + 6 && P.y > wy0 * TS && P.y <= (wy1 + 1) * TS + 2) P.x = P.x < (wx0 + wx1 + 1) / 2 * TS ? wx0 * TS - 7 : (wx1 + 1) * TS + 7; }
   seaCue(F.down || 'THE MAIN IS DOWN. HER MAST IS YOUR ROAD UP', '#ffd36b', 2.6);
 }
+/* (claude/lumbertrail) THE FELLING (src/felling.js). A marked pine takes FELL_STROKES strokes; each one is DRAWN: it creaks, it LEANS a little further the way it will fall,
+   a notch is cut in its stroke tally, and the line it will lie along is drawn on the ground (gold: a bridge or a way up; red: it comes down on whoever stands under it).
+   It falls the way it leans: a BRIDGE (a level trunk), a LEAN-TO (a ramp up onto a ledge) or a DROP (a ramp down over a hollow - what stands under its line is crushed). */
+function fellStroke(pr) { pr.hp--; pr.lean = (FELL_STROKES - pr.hp) * 0.045; SFX.crack(); SFX.creak(); sparks(pr.x, pr.y - 20, P.face, 5); burst(pr.x, pr.y - 24, 6, ['#c9b27c', '#8a5a32'], 60, 0.5); pr.shake = 0.25;
+  if (!pr.said) { pr.said = true; number(pr.x, pr.y - 70, 'THE PINE CREAKS AND LEANS', '#ffd36b'); }
+  if (pr.hp <= 0) { pr.fall = 0.001; SFX.crack(); SFX.creak(); } }
+function fellLay(pr) { for (const [x, y, t] of fellCells(pr.ent || { x: pr.tx, y: pr.ty, len: pr.len, dir: pr.dir }, L.grid, LW, T)) { const i = y * LW + x; L.grid[i] = t; tileSpr[i] = null; }
+  resolveTiles(); shakeCam(pr.drop ? 8 : 5); SFX.heavy(); SFX.thud();
+  const R = pr.ramp, mx = R ? (R.foot[0] + R.head[0] + 1) / 2 * TS : pr.x + pr.dir * pr.len * 8, my = R ? (R.foot[1] + R.head[1]) / 2 * TS : pr.y - 16;
+  dust(mx, my, 14); burst(R ? (pr.dir > 0 ? (R.head[0] + 1) * TS : R.foot[0] * TS) : pr.x + pr.dir * pr.len * 14, R ? (pr.dir > 0 ? R.head[1] : R.foot[1]) * TS - 8 : pr.y - 20, 10, ['#57964f', '#2f5e3a'], 60, 0.6);
+  number(mx, my - 24, pr.drop ? 'TIMBER: IT CRUSHES WHAT STOOD UNDER IT' : R ? 'THE PINE FALLS: A WAY UP' : 'THE PINE FALLS: A BRIDGE', '#8fd160');
+  if (pr.drop) fellCrush(pr); }
+/* A DROP comes down on whoever stands under its line: a common foe is crushed, an elite takes half its health and reels; the hero, told by the red line, takes a blow */
+function fellCrush(pr) { const e0 = pr.ent; if (!e0) return; zoomKick(1.06, 0.3); hitstop(0.08);
+  for (const e of enemies) { if (!e.alive || e === boss || e.mini || e.boss || e.harmless || !underTrunk(e0, e.x, e.y)) continue;
+    hurtAs('throw', e, e.elite ? Math.max(1, Math.round(e.hp * 0.5)) : e.hp + 999, pr.x, false); if (e.alive) { e.stagger = Math.max(e.stagger || 0, 1.4); e.vx = 0; } }
+  if (!P.dead && underTrunk(e0, P.x, P.y)) damagePlayer(pr.x, 12, { unblockable: true, up: true, name: 'THE PINE' }); }
+/* the pine on the ground: a level trunk at its row, or a ramp along its line (the crown at the far end from the stump) */
+const FALLEN_PINE = {}; const fallenPineOf = n => FALLEN_PINE[n] || (FALLEN_PINE[n] = ART.bakeFallenPine(Math.max(4, n)));
+function drawFelled(pr, cx, cy) { const e = pr.ent || {}, R = pr.ramp;
+  if (!R) { const row = e.row !== undefined ? e.row : pr.ty, c = pr.len === 14 ? PROP.fallenPine : fallenPineOf(pr.len), y = (row + 1) * TS - 18 - cy;
+    if (pr.dir > 0) g.drawImage(c, Math.round(pr.x) + 8 - cx, y); else { g.save(); g.translate(Math.round(pr.x) - 8 - cx, y); g.scale(-1, 1); g.drawImage(c, 0, 0); g.restore(); } return; }
+  const rx = pr.dir > 0 ? R.foot[0] * TS : (R.head[0] + 1) * TS, ry = (pr.dir > 0 ? R.foot[1] : R.head[1]) * TS, kx = pr.dir > 0 ? (R.head[0] + 1) * TS : R.foot[0] * TS, ky = (pr.dir > 0 ? R.head[1] : R.foot[1]) * TS;
+  const a = Math.atan2(ky - ry, kx - rx), n = Math.round(Math.hypot(kx - rx, ky - ry) / TS), c = fallenPineOf(n);
+  g.save(); g.translate(Math.round(rx - cx), Math.round(ry - cy)); g.rotate(a); if (Math.cos(a) < 0) g.scale(1, -1); g.drawImage(c, 0, -4); g.restore(); }
+/* STATE, DRAWN (A3): where it will lie, and how many strokes it has taken. Near it, the line it will lie along; the woodsman's blaze on a marked trunk */
+function drawFellLine(pr, cx, cy) { const e = pr.ent || {}, R = pr.ramp, near = Math.abs(P.x - pr.x) < 14 * TS && Math.abs(P.y - pr.y) < 9 * TS; if (!near) return;
+  const hot = pr.hp < FELL_STROKES, col = pr.drop ? '#ff6b6b' : '#ffd36b'; g.save(); g.globalAlpha = (hot ? 0.8 : 0.4) * (0.75 + 0.25 * Math.sin(time * 5)); g.fillStyle = col;
+  if (!R) { const row = e.row !== undefined ? e.row : pr.ty; for (let k = 1; k <= pr.len; k++) { const x = (pr.tx + pr.dir * k) * TS - cx; if (k % 2) g.fillRect(Math.round(x + 3), Math.round(row * TS - 2 - cy), 10, 2); } }
+  else { const x0 = R.foot[0] * TS, x1 = (R.head[0] + 1) * TS, y0 = R.foot[1] * TS, y1 = R.head[1] * TS; for (let t = 0; t <= 1.0001; t += 6 / Math.max(6, Math.hypot(x1 - x0, y1 - y0))) g.fillRect(Math.round(x0 + (x1 - x0) * t - cx), Math.round(y0 + (y1 - y0) * t - 2 - cy), 3, 2);
+    if (pr.drop) { const hx = (R.foot[0] + R.head[0] + 1) / 2 * TS - cx, hy = Math.min(y0, y1) - 30 - cy; g.fillRect(Math.round(hx - 1), Math.round(hy), 3, 7); g.fillRect(Math.round(hx - 1), Math.round(hy + 9), 3, 3); } }   /* (a red !! over a drop: be out from under it) */
+  g.globalAlpha = 1; for (let k = 0; k < FELL_STROKES; k++) { const cut = k < FELL_STROKES - pr.hp; g.fillStyle = cut ? '#ffd36b' : 'rgba(30,20,10,0.6)'; g.fillRect(Math.round(pr.x - 2 * FELL_STROKES + k * 4 - cx), Math.round(pr.y - 74 - cy), 3, 3); }   /* the stroke tally: a notch a stroke */
+  g.restore(); }
 /* WALKING HER MAST: a slope is not a tile, so the hero is put on the line of it (called from updatePlayer after the move) */
 function rampFoot(prevY) {
   P.onRamp = false;
-  const F = felledAll().find(f => f.state === 'down' && P.x >= f.foot[0] * TS && P.x <= (f.head[0] + 1) * TS);
+  const F = (L.fellRamps ? felledAll().concat(props.filter(q => q.t === 'felltree' && q.felled && q.ramp).map(q => q.ramp)) : felledAll()).find(f => f.state === 'down' && P.x >= f.foot[0] * TS && P.x <= (f.head[0] + 1) * TS);   /* (claude/lumbertrail) and a felled pine's lean-to or drop */
   if (!F || P.vy < 0 || P.drop > 0 || P.climb || P.swim || P.dead) return;
   const yl = rampY(F, P.x);
   if (P.y < yl - 10 || P.y > yl + 10 || prevY > yl + 4) return;
@@ -28639,8 +28673,9 @@ function updateProps(dt) {
       if (hb) P.hitSet.add(pr);
     }
     if (pr.t === 'felltree' && !pr.felled) { // four strokes, then it falls across the gap and its trunk is a bridge
-      if (pr.fall > 0) { pr.fall += dt / 0.7; if (pr.fall >= 1) { pr.fall = 1; pr.felled = true; marks.add('tree:' + pr.tx); for (let x = pr.tx + 1; x <= pr.tx + pr.len; x++) { const i = pr.ty * LW + x; L.grid[i] = T.PLANK; tileSpr[i] = null; } resolveTiles(); shakeCam(5); SFX.heavy(); SFX.thud(); dust(pr.x + pr.dir * pr.len * 8, pr.y - 16, 14); burst(pr.x + pr.dir * pr.len * 14, pr.y - 20, 10, ['#57964f', '#2f5e3a'], 60, 0.6); number(pr.x + pr.dir * 48, pr.y - 34, 'A BRIDGE', '#8fd160'); } }
-      else if (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 60, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hp--; SFX.crack(); sparks(pr.x, pr.y - 20, P.face, 5); burst(pr.x, pr.y - 24, 6, ['#c9b27c', '#8a5a32'], 60, 0.5); pr.shake = 0.25; number(pr.x, pr.y - 70, pr.hp > 0 ? pr.hp + ' MORE' : 'TIMBER', '#ffd36b'); if (pr.hp <= 0) { pr.fall = 0.001; SFX.crack(); } }
+      if (pr.fall > 0) { pr.fall += dt / 0.7; if (pr.fall >= 1) { pr.fall = 1; pr.felled = true; marks.add('tree:' + pr.tx); fellLay(pr); } }
+      else { const arrow = (P.rgArrows || []).find(a => a.state === 'fly' && a.x > pr.x - 8 && a.x < pr.x + 8 && a.y > pr.y - 60 && a.y < pr.y);   /* (claude/lumbertrail) THE RANGER's arrow bites the trunk too: every hero can fell a marked pine */
+        if (arrow || (hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 60, b: pr.y }) && !P.hitSet.has(pr))) { if (arrow) { arrow.state = 'drop'; arrow.vx *= -0.1; arrow.vy = -40; } else P.hitSet.add(pr); fellStroke(pr); } }
       if (pr.shake > 0) pr.shake -= dt;
     }
     if (pr.t === 'sluice' && pr.pool !== undefined && !pr.open && hb && overlap(hb, { l: pr.x - 7, r: pr.x + 7, t: pr.y - 22, b: pr.y }) && !P.hitSet.has(pr)) { P.hitSet.add(pr); pr.hits++; SFX.stone(); sparks(pr.x, pr.y - 12, P.face, 4); number(pr.x, pr.y - 28, pr.hits >= 3 ? 'THE GATE GIVES' : (3 - pr.hits) + ' MORE', '#ffd36b'); if (pr.hits >= 3) drainPool(pr); }
@@ -31178,7 +31213,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'npc') { /* drawn after the scenery, below, so counters and shelves never hide them */ }
     else if (pr.t === 'stray' && pr.kind === 'scarabseal' && PYH && PYH.on()) { if (!pr.got) PYH.drawSeal(g, pr.x - cx, pr.y - cy, time); }   /* (claude/sealedpyramid) a SCARAB SEAL */
     else if (pr.t === 'stray') { if (!pr.got) { if (pr.kind === 'seal' || pr.kind === 'manifest') { const c = big2(pr.kind === 'manifest' ? PROP.reef.manifest : PROP.reef.seal), bob = Math.sin(time * 3 + pr.x) * 2; g.drawImage(c, Math.round(pr.x - c.width / 2 - cx), Math.round(pr.y - c.height - cy + bob)); if (Math.random() < 0.06) motes(pr.x, pr.y - 8, 1, 4); } else if (pr.kind === 'fisher') drawSet(SPR.fisher[Math.floor(pr.x / TS) % 2], null, 2, pr.x - cx, pr.y - cy, Math.sign(P.x - pr.x) || 1, false); else if (pr.kind === 'sheep') drawSet(SPR.sheep, null, Math.floor(time * 0.7 + pr.anim) % 3 === 1 ? 1 : 0, pr.x - cx, pr.y - cy, 1, false); else if (pr.kind === 'gear') { const cb = big2(BCFA.gearFrame(time, pr.anim)), bob = Math.round(Math.sin(time * 2.2 + pr.anim) * 1.5), gx = Math.round(pr.x) - (cb.width >> 1) - cx, gy = Math.round(pr.y) - cb.height - cy - 2 + bob; g.drawImage(cb, gx, gy); BCFA.gearGlint(g, gx + 7, gy + 5, time, pr.anim); }   /* (claude/bc4fix, Daniel 10-15: the gears drew as the fallback blue mushroom) THE CLOCKWORK VAULT's GEAR: brass, turning, a glint */ else { const c = pr.kind === 'pot' ? PROP.honeyPot : pr.kind === 'trap' ? PROP.fishTrap[0] : pr.kind === 'coffer' ? PROP.coffer : pr.kind === 'glassshard' ? (PROP.glassShardIcon || (PROP.glassShardIcon = GSAR.bakeShardIcon())) : pr.kind === 'orenugget' ? (PROP.oreIcon || (PROP.oreIcon = MCH.bakeOreIcon())) : pr.kind === 'tap' ? (PROP.tapIcon || (PROP.tapIcon = UWA.bakeTapIcon())) : pr.kind === 'feather' ? (PROP.featherIcon || (PROP.featherIcon = RGA.bakeFeatherIcon())) : pr.kind === 'waterskin' ? (PROP.waterskinIcon || (PROP.waterskinIcon = WTA.bakeSkinIcon())) : pr.kind === 'lamp' ? PROP.lampIcon : pr.kind === 'folk' ? PROP.folkIcon : pr.kind === 'shard' ? PROP.sunshardIcon : pr.kind === 'bead' ? mo().bead : pr.kind === 'seal' ? PROP.sealIcon : pr.kind === 'cup' ? PROP.cupIcon : pr.kind === 'lens' ? PROP.lensIcon : pr.kind === 'canary' ? PROP.canary[Math.floor(time * 3 + pr.anim) % 2] : pr.kind === 'pick' ? (PROP.pickIcon || (PROP.pickIcon = bakePickIcon())) : pr.kind === 'tag' ? (PROP.tagIcon || (PROP.tagIcon = RWA.bakeTagIcon())) : pr.kind === 'kite' ? (PROP.kiteIcon || (PROP.kiteIcon = bakeKiteIcon())) : pr.kind === 'pigeon' ? (PROP.pigeonIcon || (PROP.pigeonIcon = bakePigeonIcon()))[Math.floor(time * 2 + pr.anim) % 2] : pr.kind === 'candlestub' ? CHP.bakeStubIcon() : pr.kind === 'caravanseal' ? (PROP.caravanSealIcon || (PROP.caravanSealIcon = KSA.bakeCaravanSealIcon())) : PROP.brightCap;   /* (claude/ksarhawk) THE KSAR's caravan seals had no branch: they fell to the mushroom */ if (pr.kind === 'cap') { g.globalAlpha = 0.25 + 0.1 * Math.sin(time * 4); g.fillStyle = '#7fe0e8'; g.beginPath(); g.arc(Math.round(pr.x - cx), Math.round(pr.y - 12 - cy), 16, 0, 7); g.fill(); g.globalAlpha = 1; } { const cb = pr.kind === 'folk' ? c : big2(c); g.drawImage(cb, Math.round(pr.x) - (cb.width >> 1) - cx, Math.round(pr.y) - cb.height - cy); }   /* a villager is a person, not a pickup: people stay their own size */ } const by = Math.round(pr.y - 32 + Math.sin(time * 4 + pr.anim) * 2 - cy); g.fillStyle = '#ffe6a0'; g.fillRect(Math.round(pr.x - cx) - 1, by, 2, 4); g.fillRect(Math.round(pr.x - cx) - 2, by + 1, 4, 2); } }
-    else if (pr.t === 'felltree') { if (pr.felled) g.drawImage(PROP.fallenPine, Math.round(pr.x) + 8 - cx, pr.y - 18 - cy); else { g.save(); g.translate(Math.round(pr.x - cx), Math.round(pr.y - cy)); g.rotate(pr.fall > 0 ? Math.pow(pr.fall, 2) * Math.PI / 2 * pr.dir : (pr.shake > 0 ? Math.sin(time * 40) * 0.03 : 0)); g.drawImage(PROP.pine, -9, -66); g.restore(); } }
+    else if (pr.t === 'felltree') { if (pr.felled) drawFelled(pr, cx, cy); else { const R = pr.ramp, to = R ? Math.atan2(Math.abs(((pr.dir > 0 ? R.head[0] + 1 : R.foot[0]) * TS) - pr.x), pr.y - (pr.dir > 0 ? R.head[1] : R.foot[1]) * TS) : Math.PI / 2;   /* (claude/lumbertrail) a lean-to stops short of flat, a drop goes past it */
+      if (pr.fall <= 0) drawFellLine(pr, cx, cy); g.save(); g.translate(Math.round(pr.x - cx), Math.round(pr.y - cy)); g.rotate(pr.fall > 0 ? (pr.lean + Math.pow(pr.fall, 2) * (to - pr.lean)) * pr.dir : pr.lean * pr.dir + (pr.shake > 0 ? Math.sin(time * 40) * 0.03 : 0)); g.drawImage(PROP.pine, -9, -66); if (pr.mark) { g.fillStyle = '#e8d6a8'; g.fillRect(-2, -30, 4, 6); g.fillStyle = '#8a5a32'; g.fillRect(-1, -28, 2, 2); } g.restore(); } }   /* the woodsman's blaze (pr.mark): a pale axe-cut on the trunk */
     else if (pr.t === 'sluice') g.drawImage(PROP.sluice[pr.open ? 1 : 0], Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 24 - cy);
     else if (pr.t === 'catapult') g.drawImage(PROP.catapult[pr.wrecked ? 2 : pr.fired > 0 ? 1 : 0], Math.round(pr.x) - 18 - cx, Math.round(pr.y) - 26 - cy);
     else if (pr.t === 'chainpost') { g.drawImage(PROP.chainPost, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 28 - cy); if (!pr.cut) drawSet(SPR.hound, null, Math.floor(time * 3) % 2, pr.x + 12 - cx, pr.y - cy, 1, false); }

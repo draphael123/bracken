@@ -11,6 +11,7 @@ import { buildHarvestFair } from './harvest-fair.js';   /* THE HARVEST FAIR (doc
 import { buildFogCanal } from './fog-canal.js';   /* THE FOG CANAL (docs/briefs/fog-canal.md): the main road out of WAYMEET, by night barge; its machinery is src/canal-rig.js */
 import { buildWellTown } from './well-town.js';   /* THE WELL TOWN (claude/welltown, the greybox; docs/concepts/the-well-town.md): desert arc level 2, after THE SUNKEN CARAVAN; its mini is THE GANG LEADER (src/gang-leader.js) and its boss THE CISTERN QUEEN (src/cistern-queen.js, claude/welltown3) */
 import { buildRedGorge } from './red-gorge.js'; import { buildSkyRoad } from './sky-road.js'; import { buildGlassSea } from './glass-sea.js'; import { buildKsar } from './ksar.js'; import { buildTowpath } from './towpath.js';   /* THE TOWPATH (claude/towpath, the greybox): the bridge level WAYMEET -> THE TOWPATH -> THE FOG CANAL; its boss is THE FOG KNIGHT (src/fog-knight.js) */ import { buildLitChurch, RULE as CHURCH_RULE } from './lit-church.js';   /* THE BANDIT KSAR (claude/ksar, the greybox): the main road past THE GLASS SEA; its boss is THE HAWK-MISTRESS */   /* THE GLASS SEA (claude/glasssea, the greybox): desert arc level 4, past THE RED GORGE; its boss is THE GLASS COLOSSUS */   /* THE SKY ROAD (claude/skyroad, the greybox; docs/concepts/sky-road.md): after GALE MOOR on the main road; its boss is THE ROC (src/roc-eyrie.js) */   /* THE RED GORGE (claude/redgorge, the greybox; docs/concepts/red-gorge.md): desert arc level 3, after THE WELL TOWN; its boss is THE RAPTOR MATRIARCH (src/raptor-matriarch.js, claude/redgorge2 - THE GREAT RED CRAB, src/gorge-crab.js, is benched) */ import { buildBuriedCity } from './buried-city.js'; import { buildSealedPyramid, RULE as PYRAMID_RULE } from './sealed-pyramid.js';   /* THE SEALED PYRAMID (claude/sealedpyramid, the greybox): the main road past THE BURIED CITY; its boss is THE SCARAB MOTHER */   /* THE BURIED CITY (claude/buriedcity, the greybox): the main road past THE BANDIT KSAR; its boss is THE HOURGLASS KING */
+import { buildLumberTrail } from './lumber-trail.js';   /* THE LUMBER TRAIL (claude/lumbertrail, the OPUS greybox; scratch/brief-first2.md sec.1): BRACKEN WOOD reworked - level id 'wood', its boss THE HORNET QUEEN */
 import { buildRootway } from './rootway.js';   /* THE ROOTWAY (claude/rootway, the greybox; .claude/briefs/brief-rootway.md): the bridge between SPOREWOOD and KINGSWOOD; its boss is THE GOBLIN HUNTMASTER (src/huntmaster.js) */
 import { buildMinecart } from './minecart.js';   /* THE DEEP RAILS (claude/minecart, the greybox): the side road off the Ore Road; its boss is THE GREAT DRILL (src/great-drill.js) */
 import { buildUnderwell } from './underwell.js';   /* THE UNDERWELL (claude/underwell, the greybox; docs/concepts/the-underwell.md): desert arc, between THE WELL TOWN and THE RED GORGE; its boss is THE CISTERN QUEEN */
@@ -39,6 +40,8 @@ import { stormholdTown } from './stormhold-town.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
 import { buildCaravan } from './sunken-caravan.js';
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
+/* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
+export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
 // level.js — the level registry. Each level paints a tile grid with a tiny DSL and returns it.
 export const TS = 16;
 export const T = { AIR: 0, SOLID: 1, ONEWAY: 2, SPIKE: 3, CRATE: 4, REED: 5, PALISADE: 7, PLANK: 8, NET: 9, BOUNCER: 10, SHELF: 11, PORT: 12, CLIMB: 13, RAIL: 14, SOFT: 15, ICE: 16, WEB: 17, CRYST: 18 };
@@ -101,253 +104,7 @@ function grow(L, ret, col, n) {
   return P;
 }
 
-function brackenWood() {
-  const L = painter(324, 28);
-  const { block, floor, plat, spikes, crate, ent, coins, set } = L;
-
-  // ---- 1. Glade: learn to move, jump, swing ----
-  floor(0, 30, 22);
-  ent('sign', 5, 21, { text: 'ARROWS/WASD MOVE   Z JUMP   X SWING', pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: AN EMBER   HOLD C: THE JET', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' }); 
-  ent('sign', 284, 8, { text: 'THE HIVE. THE QUEEN DIVES TO STING: JUMP IT, THEN CUT HER WHILE SHE PULLS FREE.' });
-  ent('deco', 10, 21, { kind: 'cabin' }); // the woodsman's cabin: an empty cabin now, deep in the wood
-  coins([12, 20], [13, 19], [14, 20]);
-  ent('sprig', 22, 21, { face: -1 }); ent('sign', 26, 21, { text: 'TAP A WAY TWICE TO DODGE: IT CLEARS A GAP.' });   /* the gap, and a sprig past the crates. (The dash ATTACK is the Stockade's lesson now: the first wood teaches two keys, the heavy and the down attack) */
-  floor(34, 49, 22);
-  coins([31, 19], [32, 18], [33, 19]);
-  crate(40, 21); crate(44, 21); crate(44, 20);
-  ent('sprig', 47, 21, { face: -1 });
-  floor(53, 84, 22);
-  coins([50, 19], [51, 18], [52, 19]);
-
-  // ---- 2. Spitter ledge, then the shieldbearer step ----
-  block(58, 63, 20, 21);
-  ent('spit', 58, 19, { face: -1 });
-  ent('coin', 62, 19);
-  block(66, 75, 20, 21);
-  ent('shield', 71, 19, { face: -1 });   /* the heavy blow's second beat, and its exam: the lone guard on the flat before this taught it (THE LESSONS, at the end of this function), so this one has no sign of its own */
-  plat(64, 18, 6);
-  coins([66, 17], [68, 17]);
-  ent('sign', 78, 21, { text: 'DOWN+X IN THE AIR: PLUNGE. LAND ON A FOE TO BOUNCE; HOLD JUMP TO BOUNCE HIGHER.', pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF WHAT YOU HIT; HOLD JUMP TO GO HIGHER.', warden: 'DOWN+X IN THE AIR: PLUNGE. PIN A FOE ON THE GROUND; OVER A DROP, VAULT OFF IT.' });
-  ent('check', 82, 21);
-
-  // ---- 3. Wasp pit: pogo chain ----
-  ent('wasp', 87, 19, { pogo: true }); ent('wasp', 90, 19, { pogo: true }); ent('wasp', 93, 19, { pogo: true }); ent('wasp', 96, 19, { pogo: true });   /* a pogo chain: THE MIX leaves these wasps */
-  plat(88, 22, 2); plat(92, 22, 2); plat(96, 22, 2);   /* STUMPS IN THE POND. The wasps were the only way over, so the wood could not be finished by anyone who killed them first. The wasps went up out of the way: a pogo is a shortcut now, not the road */
-  floor(98, 120, 22);
-  coins([99, 20], [100, 19], [101, 20]);
-  ent('sign', 103, 21, { text: 'C BLOCKS AND STAGGERS. V DODGES. SPINED BACKS BREAK A PLUNGE: CUT THEM SIDE-ON.', pyro: 'V DODGES. TAP C: EMBER. HOLD C: JET. SPINED BACKS BREAK A PLUNGE: BURN THEM SIDE-ON.', paladin: 'TAP C: SPEND CONVICTION. HOLD C: AEGIS. V: HEAVY STEP. SPINED BACKS BREAK A PLUNGE.' });
-  // A STONE BLOCK (teaching use, backlog #12: PUSHABLE BLOCKS). A ledge floats over the path at row 18 - four
-  // tiles up, a real jump reaches about 3.2 - with a coin on it. Push the block two tiles snug underneath, stand
-  // on it, and the last tile is one jump away. The ledge is a single floating tile (rows 19-21 under it stay
-  // open air, same as the rest of this corridor), so it never narrows the walkway: the block itself is the only
-  // thing at ground level, and it stands off to the side, low enough to hop clean over - nothing here gates the
-  // level, it is only shown once before the design lanes place the rest of it.
-  ent('pushblock', 105, 21); block(107, 107, 18, 18); ent('coin', 107, 17);
-  ent('thorn', 109, 21, { face: -1 });
-  crate(111, 21); crate(112, 21); crate(112, 20);
-  ent('sprig', 116, 21, { face: -1 });   /* (the rising cut's sign stood here: a first wood seven lessons deep teaches none of them, so it teaches two) */
-
-  // ---- 4. Thorn climb ----
-  floor(121, 129, 22);
-  /* (a bed of spikes lay under the zigzag climb here: in the wood that teaches the game, a missed hop costs the climb, not a life) */
-  plat(119, 20, 3); plat(123, 18, 3); plat(127, 16, 3); plat(123, 14, 3); plat(127, 12, 3); plat(124, 10, 2); plat(127, 8, 2); ent('silver', 128, 7); coins([125, 9]); // the silver sits above the canopy: up is worth looking
-  coins([124, 17], [128, 15], [124, 13]);
-
-  // ---- 5. Plateau ----
-  block(130, 160, 12, 27);
-  ent('check', 133, 11);
-  coins([136, 10], [138, 10], [140, 10]);
-  block(144, 146, 10, 11);
-  ent('spit', 145, 9, { face: -1 });
-  ent('wasp', 145, 7);
-  /* THE CROWN STAYS WITHIN REACH AFTER THE WASP FALLS: permanent branch steps keep the cache a climb, not a spent enemy. */
-  plat(147, 8, 2); plat(145, 6, 2);
-  plat(148, 5, 5); coins([147, 7], [145, 5], [149, 4], [150, 4], [151, 4], [152, 4]); ent('vault', 150, 4);
-  ent('thorn', 153, 11, { face: -1 });
-  crate(157, 11);
-  ent('mover', 161, 12, { len: 3, range: 8 });
-  coins([164, 9], [167, 9]);
-
-  // ---- 6. Arena ----
-  block(172, 199, 12, 27);
-  ent('check', 174, 11);
-  ent('thorn', 178, 11, { face: -1 });
-  ent('shield', 184, 11, { face: -1 });
-  ent('sprig', 189, 11, { face: -1 });
-  ent('thorn', 196, 11, { face: -1 });
-  block(191, 194, 9, 11);
-  ent('spit', 192, 8, { face: -1 });
-  plat(186, 8, 4);
-  coins([176, 9], [187, 7], [188, 7]);
-
-  // ---- 7. The hollow: a drop, a stream, a shrine ----
-  block(200, 214, 15, 27);
-  ent('sprig', 206, 14, { face: -1 });
-  coins([203, 13], [209, 12], [212, 13]);
-  // design-audit plan item 2 (wood-to-highcrown-design.md, BRACKEN WOOD): a thorn on each lip of the stream, so the
-  // "a held jump is higher than a tapped one" sign further up finally asks for one that can fail - miss it and you
-  // land in the water, not on a hazard tile: the first level stays gentle, only the crossing costs you a swim back.
-  ent('thorn', 214, 14, { face: 1 }); ent('thorn', 218, 14, { face: -1 });
-  block(218, 234, 15, 27);
-  coins([215, 12], [216, 11], [217, 12]);
-  ent('check', 221, 14);
-  ent('thorn', 228, 14, { face: -1 });
-  crate(232, 14); crate(232, 13);
-
-  // ---- 8. The ridge: log climb under fire, a wasp gap, then the helm pit ----
-  plat(236, 13, 3); plat(240, 11, 3);
-  coins([237, 12], [241, 10]);
-  block(243, 252, 9, 27); // a longer takeoff lip puts the two paid bounces inside their reach
-  ent('spit', 244, 8, { face: 1 });
-  ent('wasp', 255, 7, { pogo: true }); ent('wasp', 259, 7, { pogo: true });
-  block(255, 323, 9, 27);
-  // the helm pit: four shieldbearers on posts over spikes. Their helms clank and bounce you across.
-  for (let x = 258; x <= 266; x++) for (let y = 9; y <= 12; y++) set(x, y, 0);
-  spikes(258, 266, 12);
-  for (const x of [259, 262, 265]) { block(x, x + 1, 11, 12); ent('shield', x, 10, { face: -1 }); }
-  ent('sign', 256, 8, { text: 'SHIELD GOBLINS HIDE BEHIND IRON. PLUNGE THE HELM, LAND BEHIND, CUT.', pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. ARC AN EMBER OVER, OR FIREDROP THE HELM.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
-  plat(262, 5, 4); coins([263, 4], [264, 4], [260, 8], [264, 8]); ent('silver', 265, 4);
-  // the quiet walk: nothing to fight between the pit and the gate
-  coins([270, 7], [273, 7], [276, 7]);
-  ent('check', 280, 8);
-  ent('gate', 284, 8);
-
-  // ---- 9. The hive clearing: the Hornet Queen. Two low combs to fight from. ----
-  // Vine walls at 287 and 321 close once you step in past 292.
-  block(323, 323, 0, 8);
-  plat(292, 6, 3); plat(315, 6, 3);
-  ent('deco', 296, 8, { kind: 'hiveBg' }); ent('deco', 314, 8, { kind: 'hiveBg' });
-  ent('deco', 293, 5, { kind: 'drip', hang: true }); ent('deco', 300, 4, { kind: 'drip', hang: true }); ent('deco', 309, 5, { kind: 'drip', hang: true }); ent('deco', 318, 4, { kind: 'drip', hang: true });
-  /* The comb hangs as wax, not footing: the Queen shakes pieces loose, but nobody can stand on her ceiling. */
-  ent('queen', 304, 3);
-  // design-audit plan item 3, TWIST (wood-to-highcrown-design.md, BRACKEN WOOD): a dead pine at the west wall, inside
-  // the vines and before the fight's own trigger so it can be felled any time. Four strokes (already taught at the
-  // tarn) lay it across the near comb as a third perch, close to the Queen's own height, so the level's own machine
-  // reaches the fight it built toward.
-  ent('felltree', 289, 6, { len: 10, dir: 1 });
-
-  const ret = {
-    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 },
-    pools: [{ x0: 85 * TS, x1: 98 * TS, y: 23 * TS }, { x0: 161 * TS, x1: 172 * TS, y: 13 * TS }, { x0: 215 * TS, x1: 218 * TS, y: 16 * TS }, { x0: 251 * TS, x1: 255 * TS, y: 10 * TS }],
-    falls: [],
-    duskStart: 2700, duskLen: 1000, music: 'brackenwood',
-
-    weather: [{ x0: 0, x1: 1500, kind: 'pollen' }, { x0: 3150, x1: 3800, kind: 'mist' }, { x0: 4540, x1: 99999, kind: 'rain' }],
-    ambient: [{ x0: 0, x1: 3150, kind: 'forest' }, { x0: 3150, x1: 3800, kind: 'water' }, { x0: 3800, x1: 4540, kind: 'forest' }, { x0: 4540, x1: 99999, kind: 'hive' }],
-    arena: { x0: 288 * TS, x1: 321 * TS, floor: 9 * TS, trigger: 292 * TS, wallL: 287, wallR: 321, boss: 'queen', tint: '#e0b040', tintA: 0.12, fx: 'bees' },
-  }
-  // ---- 5a. THE WASP ORCHARD: a fallen giant across the path (over it through the hives, or through it past the thorns), then a hive glade ----
-  // ---- 8b. THE FELLED PINE: a tarn in a cleft between the hollow and the ridge. Four strokes drop the pine across it; wasps hover for the pogo route. ----
-  const G0 = grow(L, ret, 235, 36);
-  G0.block(235, 241, 15, 27);
-  G0.ent('sign', 236, 14, { text: 'FOUR STROKES FELL A PINE TO BRIDGE THE GAP. OR POGO ACROSS THE WASPS.' });
-  G0.ent('felltree', 241, 14, { len: 14, dir: 1 });
-  G0.R.pools.push({ x0: 242 * TS, x1: 253 * TS, y: 21 * TS, depth: 3 * TS });
-  G0.block(242, 255, 24, 27);
-  G0.ent('wasp', 245, 13, { pogo: true }); G0.ent('wasp', 248, 13, { pogo: true }); G0.ent('wasp', 253, 13, { pogo: true }); // (level with the wasp pit's: just under the bank, so a jump off it gets above them; they hung too high to reach)
-  G0.coins([244, 13], [248, 13], [252, 13]);
-  G0.block(253, 270, 15, 27); // the far lip is inside two paid bounces, even under the paladin's heavier feet
-  // design-audit plan item 1, DEVELOP (wood-to-highcrown-design.md, BRACKEN WOOD): a badger on the far bank, right at
-  // the log's landing. It charges back along the one-tile pine, and its hit throws you the way it is running - back
-  // over the water you just crossed. Miss the jump (or the parry) and it is a swim and a walk back, not a hit worse
-  // than the ones this level already hands out.
-  G0.ent('badger', 257, 14, { face: -1 });
-  G0.ent('check', 259, 14); G0.ent('sprig', 265, 14, { face: -1 }); G0.coins([262, 13], [268, 13]);
-  const R0 = G0.done();
-  const G = grow(R0, R0, 130, 46);
-  G.block(130, 175, 12, 27);
-  G.ent('sign', 131, 11, { text: 'THE FALLEN GIANT: OVER THE TOP FOR COINS, OR THROUGH THE HOLLOW FOR QUIET.' });
-  G.ent('check', 133, 11); G.coins([135, 10], [137, 10]);
-  G.block(139, 152, 8, 11); for (let x = 139; x <= 152; x++) { G.set(x, 9, 0); G.set(x, 10, 0); G.set(x, 11, 0); } // the hollow runs the whole trunk
-  G.ent('spit', 150, 11, { face: -1 }); /* (the spikes inside the trunk sat under a roof too low to jump them) */ G.coins([144, 10], [148, 10]); G.ent('silver', 152, 10);
-  G.plat(136, 9, 2); G.coins([137, 8], [141, 6]); // up onto the trunk
-  G.ent('wasp', 146, 6); G.ent('wasp', 150, 5); G.coins([146, 4], [150, 3]); G.ent('sprig', 144, 7, { face: -1 });
-  G.plat(153, 9, 2); G.coins([154, 8]);
-  G.ent('deco', 158, 11, { kind: 'hiveBg' }); G.ent('deco', 168, 11, { kind: 'hiveBg' });
-  G.spikes(159, 167, 11); G.block(161, 162, 10, 11); G.block(165, 166, 10, 11); // a bed of thorns under the hives, and two mounds of earth up out of it to hop across
-  G.ent('wasp', 163, 7); G.ent('wasp', 167, 7); G.coins([161, 9], [165, 9], [163, 5], [167, 5]); // the wasps over the gaps are for the gold above them
-  G.ent('shield', 171, 11, { face: -1 }); G.crate(174, 11); G.coins([170, 9], [173, 10]);
-  // (the honey pot quest was removed: this cache is empty scenery now)
-  const R1 = G.done();
-  // ---- 3b. THE BADGER SETT: the road forks. Below, a dug run under the ridge: dark, spitters and thorns, a pot. Above, the ridge itself: wasps, a spitter on a hump, spikes, a cache with the third pot. ----
-  const G2 = grow(R1, R1, 121, 44);
-  G2.block(121, 126, 22, 27);
-  G2.ent('sign', 122, 21, { text: 'THE SETT BELOW IS DARK AND FULL OF SPRIGS. THE RIDGE ABOVE IS WASPS.' });
-  G2.plat(122, 19, 2); G2.plat(125, 16, 2); // up onto the ridge
-  G2.block(127, 158, 14, 17); G2.block(127, 158, 22, 27); G2.block(159, 164, 22, 27);
-  G2.R.interiors = (G2.R.interiors || []).concat([[127, 158, 18, 21, 'earth']]);
-  G2.ent('glow', 129, 21); G2.ent('glow', 145, 21); G2.ent('glow', 156, 21);
-  G2.ent('thorn', 133, 21, { face: -1 }); G2.block(139, 141, 21, 21); G2.ent('spit', 140, 20, { face: -1 });
-  G2.spikes(146, 147, 22); G2.crate(150, 21); G2.crate(151, 21); G2.crate(151, 20); G2.ent('sprig', 154, 21, { face: -1 });
-  
-  G2.coins([131, 20], [137, 20], [144, 19], [149, 19], [155, 19]);
-  // the ridge
-  G2.block(133, 135, 13, 13); G2.ent('spit', 134, 12, { face: -1 });
-  G2.ent('wasp', 141, 10); G2.ent('wasp', 149, 10); G2.spikes(145, 146, 13); G2.ent('thorn', 152, 13, { face: -1 });
-  G2.plat(140, 11, 2); G2.plat(143, 9, 3);
-  G2.coins([130, 12], [138, 12], [143, 8], [145, 8], [151, 11], [157, 12]);
-  G2.ent('check', 162, 21); G2.coins([160, 20], [163, 20]);
-  // THE LEVEL THAT TEACHES THE GAME HAD THE LEAST TO SAY IN IT: eight signs, and a hundred and fifty-one
-  // columns of silence through the hive, the crown and the whole run home. There is no tutorial in this
-  // game, there are signs. (These columns were final when G2 was the last grow; the three lesson grows below
-  // come after and slide them, like every entity, by 104: four lessons of 26.)
-  G2.ent('sign', 200, 11, { text: 'THE HIVE IS A CEILING, AND ALL UNDER IT IS ANGRY. DO NOT STAND UNDER A HOLE.' });
-  G2.ent('sign', 249, 11, { text: 'A CROWN IN A WOOD, AND NOBODY LEFT TO WEAR IT. WHAT LIES HERE IS YOURS.' });
-  G2.ent('sign', 288, 11, { text: 'THORNS NEVER MOVE: GO OVER THEM. A HELD JUMP IS HIGHER THAN A TAPPED ONE.' });
-  const R2 = G2.done();
-  // ---- THE LESSONS. The yard (THE HERO'S TRIAL) is optional, and the wood threw a new player into real fights without
-  // the things that matter most. It taught seven (dash, shield, pogo, heavy, sweep, third cut, dash attack), and a first
-  // wood seven lessons deep teaches none of them, so it teaches TWO KEYS: the heavy blow through a guard, and the down
-  // attack - the pogo off a body, then the same blow onto the ground among a crowd. Each is a moment of its own on the
-  // road: a checkpoint, a sign, the foe on flat ground with nothing else in reach, and a hint the first time it happens
-  // (lessonHint in main.js, once a save, never if the trial taught it). The third stretch is not a key: it is where the
-  // wood's own charging foe, the badger, is met alone, before the sett it comes out of. (The sweep and the third cut
-  // are still hinted where a guard turns a blow; the dash attack is the Stockade's lesson.)
-  // Grown LAST and in DESCENDING column order, so every number below is a column of the level as G2 left it:
-  // the badger at 121 (between the crate sprig and the sett fork), the down attack at 98 (the far bank of the wasp pond,
-  // straight after the pogo chain), the heavy blow at 53 (past the second dash gap, before the spitter's ledge). 26 each. ----
-  const LC = grow(R2, R2, 121, 26);   // c. THE BADGER: out of a scrape in the bank, on flat ground, alone
-  LC.floor(121, 146, 22);
-  LC.ent('check', 123, 21); LC.ent('deco', 125, 21, { kind: 'stump', v: 0 });
-  LC.ent('sign', 127, 21, { text: 'A BADGER OUT OF ITS SETT. ON ITS ! IT CHARGES: JUMP IT, THEN COME DOWN ON ITS BACK.' });
-  LC.coins([130, 20], [132, 19], [134, 20]);
-  LC.ent('badger', 139, 21, { face: -1 });
-  LC.coins([142, 18], [145, 20]);
-  const RC = LC.done();
-  // d. THE PERFECT GUARD (the knight rework): straight after the sign that teaches C, a lone SWORN SWORD on the flat - the slowest
-  // blow in the game, one at a time, and his sword FLASHES on the beat (e.lesson: the trial's long tell, and for a knight the flash
-  // comes a reaction's length before the blow lands). Raised as it flashes, the shield turns it for nothing, he reels, and the next
-  // cut is heavy. Grown at 121 AFTER the badger, so it comes BEFORE the badger on the road.
-  const LD = grow(RC, RC, 121, 26);
-  LD.floor(121, 146, 22);
-  LD.ent('check', 123, 21); LD.ent('deco', 125, 21, { kind: 'fern', v: 0 });
-  /* (claude/riposte) THE UNIVERSAL PARRY, TAUGHT HERE FOR EVERY HERO: each sign names that hero's own parry and the riposte it opens (src/riposte.js PARRY_LOOK) */
-  LD.ent('sign', 127, 21, { text: 'A PERFECT GUARD: RAISE C AS HIS SWORD FLASHES. HE REELS - YOUR RIPOSTE CUT IS HEAVY.', pyro: 'PARRY: HOLD DOWN AS HIS SWORD RISES. THE FLARE CATCHES IT - THEN RIPOSTE.', reaper: 'PARRY: HOLD THE WARD, LET GO AS HIS SWORD FLASHES. HE REELS - THEN RIPOSTE.', paladin: 'PARRY: RAISE THE AEGIS AS HIS SWORD FLASHES. HE REELS - THEN RIPOSTE.', pirate: 'PARRY: TAP C AS HIS SWORD FLASHES. THE CUTLASS BINDS IT - THEN RIPOSTE.', warden: 'PARRY: TAP C AS HIS SWORD FLASHES. THE SHAFT TURNS IT - THEN RIPOSTE.', geomancer: 'PARRY: RAISE THE WARD AS HIS SWORD FLASHES. STONE TURNS IT - THEN RIPOSTE.', berserker: 'PARRY: TAP C AS HIS SWORD FLASHES. BRACE AND TAKE IT - THEN RIPOSTE.' });
-  LD.coins([130, 20], [132, 19], [134, 20]);
-  LD.ent('swornsword', 139, 21, { face: -1, lesson: 'parry' });
-  LD.ent('deco', 143, 21, { kind: 'stump', v: 1 }); LD.coins([145, 20]);
-  LD.R.lessons = (LD.R.lessons || []).concat([{ kind: 'parry', x0: 122, x1: 146 }]);
-  const RD = LD.done();
-  const LB = grow(RD, RD, 98, 26);    // b. THE DOWN ATTACK: three sprigs bunched on the flat - come down among them and the ground throws them
-  LB.floor(98, 123, 22);
-  LB.ent('check', 100, 21); LB.ent('deco', 102, 21, { kind: 'fern', v: 0 });
-  LB.ent('sign', 104, 21, { text: 'DOWN+X IN THE AIR, ONTO THE GROUND: IT KNOCKS WHAT STANDS BESIDE YOU OFF ITS FEET.', warden: 'DOWN+X IN THE AIR, ONTO THE GROUND: THE CRACK RUNS AHEAD AND TRIPS WHAT IT MEETS.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. THE GROUND CARRIES IT BOTH WAYS UNDER THEIR FEET.', pyro: 'DOWN+X IN THE AIR: FIREDROP. THE FIRE GOES DOWN AHEAD OF YOU: LAND AMONG THEM.', pirate: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.', reaper: 'DOWN+X IN THE AIR: COME DOWN AMONG THEM. MISS, AND YOU STAND THERE A BEAT.' });
-  LB.coins([107, 18], [109, 17], [111, 18]);
-  LB.ent('sprig', 113, 21, { face: -1 }); LB.ent('sprig', 115, 21, { face: -1 }); LB.ent('sprig', 117, 21, { face: -1 });
-  LB.ent('deco', 121, 21, { kind: 'stump', v: 1 }); LB.coins([122, 20]);
-  LB.R.lessons = (LB.R.lessons || []).concat([{ kind: 'down', x0: 99, x1: 123 }]);
-  const RB = LB.done();
-  const LA = grow(RB, RB, 53, 26);    // a. THE HEAVY BLOW: a lone shield goblin on the flat, and a held swing goes through what he turns
-  LA.floor(53, 78, 22);
-  LA.ent('check', 55, 21); LA.ent('deco', 57, 21, { kind: 'stump', v: 0 });
-  LA.ent('sign', 59, 21, { text: 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
-  LA.coins([62, 20], [64, 19], [66, 20]);
-  LA.ent('shield', 68, 21, { face: -1 });
-  LA.ent('deco', 73, 21, { kind: 'fern', v: 1 }); LA.coins([74, 20], [77, 20]);
-  LA.R.lessons = (LA.R.lessons || []).concat([{ kind: 'heavyblow', x0: 54, x1: 78 }]);
-  return LA.done();
-}
-
+/* (claude/lumbertrail) THE OLD BRACKEN WOOD builder (the lesson-bay corridor grown by seven grow() splices) is gone: THE LUMBER TRAIL replaces it, built in final columns by src/lumber-trail.js */
 function marshWood() {
   const L = painter(406, 28);
   const { block, floor, plat, reeds, crate, ent, coins } = L;
@@ -7930,7 +7687,7 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
    Highcrown open keeps it (src/main.js progDefaults, PROG.crownOpen). Every check that asks about the Undercrown's road reads this flag. */
 export const ROAD_OPEN = { undercrown: true };
 export const LEVELS = [
-  { id: 'wood', name: 'BRACKEN WOOD', sub: 'forest and hive', rule: "FELL THE PINE FOR A BRIDGE. THE QUEEN'S STING STICKS IN WOOD.", build: brackenWood },
+  { id: 'wood', name: 'THE LUMBER TRAIL', sub: 'down the woodsmen\'s trail through bracken wood, to the hive', rule: RULE_WOOD, build: () => buildLumberTrail({ painter, T, TS }) },   /* (claude/lumbertrail) BRACKEN WOOD becomes THE LUMBER TRAIL: one rule, one sentence - what main.js fellStroke/fellLay do (src/felling.js) */
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
@@ -8059,7 +7816,7 @@ export const LEVELS = [
    flying off is a gap in the chain. It still counts, so nothing else in the crowd changes. A creature marked fat is a
    LESSON (the wood's old fat sprig, placed by hand for the third cut) and is left alone the same way. */
 const MIX = {
-  wood: [['wasp', 'crow', 4], ['sprig', 'lurker', 3], ['spit', 'hopper', 3]],
+  /* (claude/lumbertrail: THE LUMBER TRAIL places its own crows and lurkers by hand - no wood row) */
   moor: [['harpy', 'crow', 3]],
   waymeet: [['swornsword', 'hedgeknight', 4], ['swornsword', 'heavy', 8]],   /* a KNIGHT'S town: the hedge knight and the heavy, never the drowned watch or a goblin soldier */
   hunt: [['sprig', 'thief', 2], ['archer', 'javelin', 4]],
@@ -8095,23 +7852,7 @@ const rv = L => ({
 });
 const REVIEW = {
   // a checkpoint in the long run between the thorn cut and the high path
-  wood: L => { const R = rv(L); R.ent('check', 166, 21);
-    /* THE BADGER's own ground: one in the sett's dark run, where the corridor is four rows tall and a jump over it is still
-       a jump (it is met alone on the flat at 217 first, and it is in the Bramble Ride's first wave) */
-    /* EVERY COLUMN IN THIS TABLE PAST 173 IS 26 ON FROM WHERE IT WAS WRITTEN (level review, 2026-09-24): the perfect-guard lesson was grown
-       at 173 after this table was laid, and nothing moved it - the badger stood on the badger LESSON's flat beside its own (so the
-       lesson was not met alone) and two combs hung in the air. Re-derived against the pre-lesson build, column for column. */
-    R.ent('badger', 235, 21, { face: -1 });
-    /* THE HIVE IS FELT FROM THE START ("most of these honeycombs added throughout the level with wasps around them"). Its
-       paper combs hang in the trees behind five stretches of the wood, not only in the Queen's hall and the giant's glade,
-       and each keeps a couple of wasps posted high over it: never over a landing, a crate hop or the mover's gap, and at
-       least five rows over the floor, so the hop that reaches a crate does not reach them. The sett ridge and the helm
-       ridge have wasps of their own already, so their combs bring none. */
-    R.ent('deco', 38, 21, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 37, 15); R.ent('wasp', 39, 14);
-    R.ent('deco', 240, 13, { kind: 'hiveBg', v: 2 });
-    R.ent('deco', 374, 11, { kind: 'hiveBg', v: 1 }); R.ent('wasp', 370, 7); R.ent('wasp', 373, 6);
-    R.ent('deco', 458, 14, { kind: 'hiveBg', v: 2 }); R.ent('wasp', 456, 9); R.ent('wasp', 461, 8);
-    R.ent('deco', 478, 8, { kind: 'hiveBg', v: 0 }); },   /* not 171: the log step is right over it there, and the shrine ran up through it. (114 before the four lessons grew the wood by 104 columns ahead of it) */
+  /* (claude/lumbertrail) THE LUMBER TRAIL lays its own shrines, badgers and hive combs (src/lumber-trail.js): no wood row */
   // a checkpoint by the old stones, and lily pads over the King's shallow pond (hop them and you are across
   // before a wader is halfway), with gold on the way. (Design audit MARSH WOOD #3, 2026-09-28: the pads this review
   // once laid over the WADING SHALLOWS at 115-127 came back out - "the wading lesson then teaches wading", not a
@@ -8500,12 +8241,7 @@ const mulberryL = a => () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul
    the room put back. check: [x, y] places that checkpoint by hand; false when one already stands at the door. The engine
    is updateAmbush in src/main.js, and section Q of RULES-LEVELS-AND-BOSSES.md says what makes a good one. */
 const AMBUSH = {
-  wood: [{ name: 'THE BRAMBLE RIDE', row: 11, wallL: 314, wallR: 351, check: [304, 11],   /* (every column here is 104 past what it was: the FOUR lessons grew the wood ahead of the giant. It said 78 and stood
-     26 short for a day after the perfect-guard lesson went in - its walls shut round the bramble bed itself and put a thorn goblin in the thorns) */
-    /* ambush-listed (claude/ambushaudit, 2026-09-28): the wave table listed 8 foes across two waves but singleAmbush() only ever spawns 1 elite + 3 -
-       badger was silently dropped every time. Trimmed to what the room's own budget can actually hold: shield leads, badger restored for variety,
-       spit/crow/the duplicate sprig+thorn cut (say so, not silently) since they never fit the four-foe rule. */
-    waves: [[['shield', 342], ['sprig', 320], ['thorn', 334], ['badger', 326]]] }],
+  /* (claude/lumbertrail) THE BRAMBLE RIDE went with the old wood's giant's glade: THE LUMBER TRAIL's fights are placed by hand, at its fells (src/lumber-trail.js) */
   marsh: [{ name: 'THE REED ISLAND', row: 17, wallL: 371, wallR: 389, check: false,
     /* ambush-listed: 6 distinct foes listed, only 4 fit the 1-elite+3 rule; thorn/hopper/turtle/archer is already the most-varied set the
        budget allows - heronfoe and spit are cut here (not silently) rather than left in the table to vanish on their own. */
