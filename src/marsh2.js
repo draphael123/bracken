@@ -52,5 +52,6 @@ export function applyMarsh2(M, T, TS) {
   /* the shallows boardwalk has a rope rail on posts, as the river's stages do (the sign there always said KEEP TO THE PLANKS) */
   M.ropes = (M.ropes || []).concat([{ x0: 112 * TS, y0: 16 * TS - 11, x1: 130 * TS, y1: 16 * TS - 11, posts: [[112 * TS + 4, 16 * TS - 9, 18 * TS], [121 * TS + 8, 16 * TS - 9, 19 * TS + 3], [129 * TS + 12, 16 * TS - 9, 18 * TS]] }]);
   M.calm = M.calm.concat(STILTS.map(([x0, x1, y]) => [x0, x1, y - 4, y - 1]));     /* the walks stay quiet: the road's fights are the road's */
+  M.marsh2Kit = true;   /* (claude/marsh2art) the art pass's switch: src/redraw/marsh2_art.js reads the dam, bed and walks off these columns */
   return M;
 }
