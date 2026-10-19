@@ -55,10 +55,13 @@ export const STUCK = {
     { id: 'ub-drawbridge', zone: [338, 18, 348, 25], at: [346, 23], dy: -8, done: ['drawbridge', 346, 23, 'used'], line: 'THE DRAWBRIDGE IS TIED OFF: ITS ROPE HOLDS IT UP' },
   ],
   /* (claude/stuckguides) WOOD: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
-  wood: [
-    { id: 'wd-pine-gap', zone: [417, 6, 438, 22], at: [435, 14], glint: 'stall', done: ['felltree', 435, 14, 'felled'], line: 'THE GREAT PINE AT THE GAP IS THE WAY ACROSS' },
-    { id: 'wd-pond-log', zone: [340, 4, 368, 20], ats: [[355, 12], [362, 12]], glint: 'stall', line: 'THE DRIFTING LOG IS THE WAY OVER THE POND' },
-    { id: 'wd-pine-hive', zone: [499, 0, 521, 16], at: [519, 6], glint: 'stall', done: ['felltree', 519, 6, 'felled'], line: 'THE PINE BY THE HIVE IS THE WAY ON' },
+  wood: [   /* (claude/lumbertrail) THE LUMBER TRAIL: every required fell and the first ride (src/lumber-trail.js FELLS) */
+    { id: 'wd-gully', zone: [14, 18, 27, 22], at: [25, 21], glint: 'stall', done: ['felltree', 25, 21, 'felled'], line: 'THE MARKED PINE BY THE GULLY IS THE WAY ACROSS' },
+    { id: 'wd-raft', zone: [112, 16, 130, 26], ats: [[130, 21], [131, 21]], glint: 'stall', line: 'THE LOG RAFT IS THE WAY OVER THE DEEP POOL' },
+    { id: 'wd-leanto', zone: [262, 12, 276, 17], at: [266, 16], glint: 'stall', done: ['felltree', 266, 16, 'felled'], line: 'THE MARKED PINE UNDER THE CLIFF IS THE WAY UP' },
+    { id: 'wd-tarn', zone: [405, 8, 416, 13], at: [415, 12], glint: 'stall', done: ['felltree', 415, 12, 'felled'], line: 'THE MARKED PINE AT THE TARN IS THE WAY ACROSS' },
+    { id: 'wd-tarn-out', zone: [418, 14, 428, 22], at: [417, 15], line: 'THE STONE AT THE NEAR SIDE IS THE WAY OUT OF THE TARN' },   /* in the water: swim back to the stone */
+    { id: 'wd-ford-out', zone: [130, 22, 146, 26], ats: [[129, 21], [147, 21]], line: 'CLIMB OUT ONTO A BANK: THE DEEP POOL DRAINS YOU' },
   ],
   /* (claude/stuckguides) MARSH: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   marsh: [

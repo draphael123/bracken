@@ -15,7 +15,7 @@
    HAD found a relic whose spot is now a vault silver is given that silver (its bit, so the cap of three holds by construction;
    a save that already holds all three has nothing to be paid). Idempotent: it runs on every load, and the second run finds nothing. */
 export const VAULT_SILVER = {
-  wood: { x: 344, y: 4, idx: 2 }, marsh: { x: 125, y: 10, idx: 2 }, spore: { x: 92, y: 6, idx: 0 }, kings: { x: 592, y: 6, idx: 2 },
+  wood: { x: 199, y: 9, idx: 2, add: true },   /* (claude/lumbertrail) THE LUMBER TRAIL: the ford's vine pocket pays the third silver (the old crown cache went with the old wood) */ marsh: { x: 125, y: 10, idx: 2 }, spore: { x: 92, y: 6, idx: 0 }, kings: { x: 592, y: 6, idx: 2 },
   spire: { x: 38, y: 29, idx: 2 }, moor: { x: 200, y: 15, idx: 1, add: true, extra: [{ x: 416, y: 22 }] }, storm: { x: 130, y: 7, idx: 0 },
   crown: { x: 695, y: 13, idx: 2 }, longwater: { x: 512, y: 26, idx: 2 }, reef: { x: 472, y: 20, idx: 1 }, flotilla: { x: 82, y: 29, idx: 2, add: true },   /* (batch100 integ: flotilla2 builds two silvers; the galley vault pays the third) */
   hurricane: { x: 448, y: 26, idx: 1 }, lamplit: { x: 386, y: 21, idx: 1 }, underleaf: { x: 368, y: 27, idx: 0 }, deep: { x: 20, y: 145, idx: 2 },

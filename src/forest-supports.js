@@ -1,11 +1,11 @@
 /* src/forest-supports.js - THE FOREST AND CRAG LEVELS STAND THEIR SLABS ON THEIR OWN SUPPORTS (claude/forestsupports, Daniel 2026-10-08: "no genre exception").
    Every board run, rock slab or stone block that floats (src/island-posts.js islandsOf) gets routeSupports entries with a `kind`, drawn by src/forest-supports-art.js:
      scree rock pillars / corbels, hanging vine-wrapped boughs, moor bog-oak piles, skyroad cloud-stone pillars, rootway gnarled roots,
-     glasssea glass pedestals, witchlight rune-stone pillars.
+     glasssea glass pedestals, witchlight rune-stone pillars, THE LUMBER TRAIL (wood) woodsmen's timber cribs (claude/lumbertrail).
    A support runs down to the first tile under it (<= GROUND rows); with nothing near, it ends free in the level's own manner (a tapering stalactite, dangling roots, a cloud).
    NO tile changes: route, walker and mash rows are untouched. tools/solid-islands.mjs counts these as drawn supports. */
-export const FOREST_KIT = { scree: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', glasssea: 'ice', witchlight: 'rune' };
-export const FREE_LEN = { rock: 5, vine: 6, pile: 3, cloud: 6, root: 6, ice: 5, rune: 6 };
+export const FOREST_KIT = { wood: 'crib', scree: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', glasssea: 'ice', witchlight: 'rune' };
+export const FREE_LEN = { crib: 4, rock: 5, vine: 6, pile: 3, cloud: 6, root: 6, ice: 5, rune: 6 };
 const GROUND = 16, STEP = 10;
 
 export function addForestSupports(L, id, T, islandsOf) {

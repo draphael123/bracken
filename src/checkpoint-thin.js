@@ -18,7 +18,7 @@ export const CHECK_PIN = {
   marsh: [[391, 17]],   /* tools/raft-call.mjs: the dock checkpoint - a death on the Grove raft wakes you on the dock, and the raft comes back to you */
 };
 export const CHECK_DROP = {
-  wood: [[55,21],[126,21],[166,21],[175,21],[266,21],[281,11],[368,11],[453,14]],
+  wood: [],   /* (claude/lumbertrail) THE LUMBER TRAIL places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
   marsh: [[47,21],[163,17],[206,17],[216,17],[313,17]],
   stockade: [[36,19],[135,19],[224,19],[299,19],[331,19],[421,11]],
   spore: [[63,11],[132,19],[283,13],[371,13],[408,13]],

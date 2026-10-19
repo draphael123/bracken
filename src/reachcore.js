@@ -8,7 +8,7 @@
 // its misses may be a ride away. A level can say L.reachExact when its movers are only boss props.
 import { slopeReachGrid } from './reach-slopes.js'; import { reachStair } from './undercrown-slabs.js';   /* THE SLOPES REACH RULE, one line inside floodReach below */
 import { heroJumps, slideSpeeds, hillSpeeds } from './reach-hero.js';
-import { MOVE } from './hero-move.js';   /* PER HERO (opts.hero, claude/reachcore): each hero's own jump, the run-up, the slide, the clearance over a gap */
+import { MOVE } from './hero-move.js'; import { fellCells } from './felling.js';   /* (claude/lumbertrail) a felled pine: a bridge, a lean-to or a drop */   /* PER HERO (opts.hero, claude/reachcore): each hero's own jump, the run-up, the slide, the clearance over a gap */
 const RUN = 92, JUMPV = -320, G = 1000, TSZ = 16;        // the knight's numbers from main.js
 const JUMP_UP = Math.floor((JUMPV * JUMPV) / (2 * G) / TSZ);  // 3 tiles of rise (ceil made it 4: a jump nobody can make)
 const JUMP_ACROSS = 6;                                        // with a run-up, about six tiles of float
@@ -87,6 +87,8 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   // model treats them as already done rather than calling the far side unreachable
   for (const e of (L.ents || [])) {
     if (e.t === 'cannon' && e.hole) { const [x0, x1, y0, y1] = e.hole; for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) g[y * W + x] = T.AIR; }
+    /* THE LUMBER TRAIL's MARKED PINES (src/felling.js, claude/lumbertrail): four strokes every hero has, and the trunk STAYS where it fell - a bridge, a lean-to up a cliff, a drop into a hollow - so the fill has it down (the plain fill: legs only). tools/lumber-trail.mjs proves the required ones are locks */
+    if (!plain && e.t === 'felltree') for (const [x, y, t] of fellCells(e, g, W, T)) g[y * W + x] = t;
     if (e.t === 'plank' && e.span) { for (let x = e.span[0]; x <= e.span[1]; x++) { const i = e.row * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; } }
     /* GALE MOOR's half-built frame (claude/moor2, src/moor-rocks-hands.js): one blow on its rope as the gust blows lays it over the gap - a plank that waits for the wind */
     if (e.t === 'gustframe' && e.span) { for (let x = e.span[0]; x <= e.span[1]; x++) { const i = e.row * W + x; if (g[i] === T.AIR) g[i] = T.PLANK; } }

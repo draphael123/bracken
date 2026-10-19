@@ -336,14 +336,14 @@
   "bare": true
  },
  "wood": {
-  "hash": "46a26d2fe1dc",
+  "hash": "bb4a0cebe9ec",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 1,
-  "kills": 40,
-  "lifts": 97,
+  "hits": 29,
+  "deaths": 2,
+  "kills": 32,
+  "lifts": 84,
   "walked": 100,
   "bare": true
  },
