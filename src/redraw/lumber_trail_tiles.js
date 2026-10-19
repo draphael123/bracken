@@ -73,7 +73,7 @@ function rockTile(x, y, top, eL, eR, ceil, wet) {
 function gravelTile(x, y, top, dark) {
   return once('gv' + (x & 7) + '_' + y + (top ? 't' : '') + (dark ? 'd' : ''), () => tile((px, py) => {
     const ax = x * 16 + px, ay = y * 16 + py, cell = (Math.floor(ax / 3) + Math.floor(ay / 3) * 7) ; const h = hash(Math.floor(ax / 3), Math.floor(ay / 3)) % 6;
-    let c = dark ? ['#1c262a', '#26343a', '#34454c', '#44585e', '#5a7078', '#6f858c'][h] : ['#4e4b44', '#6a665c', '#827d70', '#9a9584', '#b2ad98', '#c8c2aa'][h];
+    let c = dark ? ['#1c262a', '#26343a', '#2e3e45', '#3a4d54', '#4a5f67', '#5a7078'][h] : ['#5e5a4e', '#6e6a5c', '#7c7766', '#8a8573', '#98927e', '#a8a38c'][h];
     if ((ax + ay * 2) % 5 === 0) c = dark ? '#16201f' : '#3a3730';
     if (top && py < 2) c = dark ? '#34454c' : '#a9a48e'; return c;
   }));
@@ -165,6 +165,8 @@ export function lumberTile(t, x, y, at, T, L) {
   /* THE HOLLOW LOG */
   if (x >= 353 && x <= 385 && y >= 11 && y <= 13) return logTile(x, y, y - 11, x === 353, x === 385);
   if (x >= 350 && x <= 351 && y >= 14 && y <= 16) { if (y === 14 && topEx) return stumpTop(x, y, 350, 351, 0); if (y === 15) return stumpTop(x, y, 350, 351, 1); return null; }
+  /* THE HIVE KNOLL: rock the honey has run down */
+  if (x >= 483 && x <= 492 && y === 8) return rockTile(x, y, true, eL, eR, false, false);
   /* THE TARN: slate */
   if (x >= 416 && x <= 429 && y >= 14 && y <= 27) { if (y >= 23 && x >= 417 && x <= 428) return gravelTile(x, y, y === 23, true); return rockTile(x, y, topEx && x === 417, eL, eR, ceil, true); }
   /* THE HELM PIT: two big stumps over the thorns */
@@ -214,5 +216,8 @@ export function dress(decor, lights, L, at, T) {
   { const [c, g] = canvas(28, 12); for (const [x, y, w] of [[2, 9, 8], [12, 7, 10], [6, 4, 8]]) { R(g, BARK[2], x, y, w, 3); R(g, CUT[1], x, y, 2, 3); } R(g, '#3a3028', 4, 10, 18, 2); R(g, '#8a8478', 8, 9, 4, 1); prop(331 * 16 - 4, 17 * 16 - 11, c); }
   /* the hollow log's tunnel: its far wall, dim and wet, a shaft of light at each end */
   { const x0 = 353, x1 = 385; dark(x0, x1, 14, 16, 0.78); }
+  /* the gully's trickle: a thread of water down the bed between the rocks, and the stones it has rounded */
+  { const w = 8 * 16, [c, g] = canvas(w, 10); for (let x = 0; x < w; x++) { const y = 5 + Math.round(Math.sin(x / 9) * 1.4); g.globalAlpha = 0.85; R(g, '#5a8aa0', x, y, 1, 2); g.globalAlpha = 1; if (x % 6 < 2) P(g, '#c8e6ee', x, y); }
+    for (const [x, r] of [[10, 3], [44, 4], [78, 3], [110, 4]]) { R(g, '#6a747a', x, 8 - r, r * 2 + 1, r); R(g, '#8a969c', x + 1, 8 - r, r, 1); R(g, '#3a4248', x, 7, r * 2 + 1, 1); } prop(29 * 16, 27 * 16 - 8, c); }
   /* tarn: nothing in the grid; the bed's lost purse is a coin pile */
 }

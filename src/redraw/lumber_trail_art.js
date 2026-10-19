@@ -106,10 +106,16 @@ function bakeTrunk(len, role) {
 export function trunkSprite(len, role) { return once('trunk' + len + (role === 'hive' ? 'h' : ''), () => bakeTrunk(len, role)); }
 
 /* ===== THE FALL LINE: chalk ticks the woodsman laid along the ground, an arrowhead at the crown's end, and the LANDING MARK (a chalk X in a ring, a peg and rag for a drop) ===== */
-export function fallLine(g, o) {   /* o: { pts: [[x, y]...] (world px, the line), kx, ky (the landing), drop, hot, time, cx, cy, tick } */
-  const { pts, kx, ky, drop, hot, time, cx, cy } = o, col = drop ? '#ff7a6b' : '#ffe08a', dim = drop ? '#8a2f2a' : '#a8884a';
-  g.save(); g.globalAlpha = (hot ? 0.95 : 0.6) * (0.78 + 0.22 * Math.sin(time * 5));
-  for (let i = 0; i < pts.length; i++) { const [x, y] = pts[i], X = Math.round(x - cx), Y = Math.round(y - cy); if (i % 2) continue; R(g, dim, X, Y, 4, 3); R(g, col, X, Y, 4, 2); P(g, '#fff6d8', X + 1, Y); }
+export function fallLine(g, o) {   /* o: { pts: [[x, y]...] (world px, the line), kx, ky (the landing), drop, hot, time, cx, cy, gy (the trunk's top under the line) } */
+  const { pts, kx, ky, drop, hot, time, cx, cy } = o, col = drop ? '#ff7a6b' : '#ffe08a', dim = drop ? '#8a2f2a' : '#a8884a', gy = o.gy === undefined ? 3 : o.gy;
+  g.save();
+  /* THE GHOST OF THE TRUNK: a translucent band where it will lie, dashed gold edges (red for a drop) - the bridge you are about to make */
+  if (pts.length > 1) { const [x0, y0] = pts[0], [x1, y1] = pts[pts.length - 1], len = Math.hypot(x1 - x0, y1 - y0), an = Math.atan2(y1 - y0, x1 - x0);
+    g.translate(Math.round(x0 - cx), Math.round(y0 - cy + gy)); g.rotate(an);
+    g.globalAlpha = (hot ? 0.28 : 0.16) * (0.8 + 0.2 * Math.sin(time * 5)); g.fillStyle = col; g.fillRect(0, 0, Math.round(len), 9);
+    g.globalAlpha = hot ? 1 : 0.8; for (let k = 0; k < len; k += 8) { g.fillStyle = dim; g.fillRect(k, 1, 5, 1); g.fillRect(k, 9, 5, 1); g.fillStyle = col; g.fillRect(k, 0, 5, 1); g.fillRect(k, 8, 5, 1); }
+    g.fillStyle = col; const tip = Math.round(len); g.fillRect(tip - 1, 0, 2, 9); for (let k = 1; k <= 4; k++) { g.fillRect(tip - k * 2, 4 - k + 1, 2, 1 + (k - 1) * 2 > 9 ? 9 : 1); }   /* the arrowhead at the crown's end */
+    g.rotate(-an); g.translate(-Math.round(x0 - cx), -Math.round(y0 - cy + gy)); }
   g.globalAlpha = hot ? 1 : 0.85;
   const lx = Math.round(kx - cx), ly = Math.round(ky - cy), pulse = 1 + Math.round(Math.sin(time * 4));
   /* the ring and the X, chalked on the ground where the crown will lie */
@@ -134,6 +140,8 @@ function bakeCage(open) {
   return c;
 }
 export function cageSprite(open) { return once('cage' + (open ? 1 : 0), () => bakeCage(open)); }
+/* the pay-out, shown: the purse's coin glints now and then (a twinkle every couple of seconds), so the cage reads as something worth opening */
+export function cageGlint(g, x, y, time) { const t = (time * 0.55 + (x * 0.013)) % 1; if (t > 0.18) return; const k = t < 0.09 ? 1 : 0, X = Math.round(x), Y = Math.round(y); g.fillStyle = '#fff6c8'; g.fillRect(X, Y - 1, 1, 3); g.fillRect(X - 1, Y, 3, 1); if (k) { g.fillStyle = '#ffd36b'; g.fillRect(X - 2, Y, 1, 1); g.fillRect(X + 2, Y, 1, 1); g.fillRect(X, Y - 2, 1, 1); g.fillRect(X, Y + 2, 1, 1); } }
 /* the songbird inside: a small blue-grey finch on its perch (the game's bird sprite is drawn by main.js; this is the perch) */
 export function drawPerch(g, x, y) { R(g, BARK[2], x - 4, y, 8, 1); }
 
@@ -268,7 +276,7 @@ export function sledSprite() { return once('sled', bakeSled); }
 /* ===== THE CAMP TENT (deco campTent): a canvas lean-to, rain-greyed, two lashed poles, a bedroll and a billy-can ===== */
 function bakeTent() {
   const W = 56, H = 36, [c, g] = canvas(W, H);
-  fillPoly(g, [[4, 35], [28, 2], [52, 35]], '#b8a888'); fillPoly(g, [[28, 2], [52, 35], [34, 35]], '#8e8068'); R(g, '#6a5c46', 28, 2, 1, 33); fillPoly(g, [[24, 35], [29, 15], [34, 35]], '#2a2118');
+  fillPoly(g, [[4, 35], [28, 2], [52, 35]], '#a8885a'); fillPoly(g, [[28, 2], [52, 35], [34, 35]], '#7a6040'); R(g, '#4a3a26', 28, 2, 1, 33); for (const k of [8, 14, 20, 26]) { R(g, '#bfa070', 5 + (k >> 2), k + 6, 20 - (k >> 1), 1); R(g, '#5a4630', 30 + (k >> 3), k + 6, 14 - (k >> 2), 1); } fillPoly(g, [[24, 35], [29, 15], [34, 35]], '#2a2118');
   R(g, BARK[3], 26, 0, 4, 3); R(g, BARK[3], 0, 33, 56, 2);
   for (let k = 0; k < 5; k++) R(g, '#9a8a6a', 10 + k * 5, 14 + k * 3 - (k > 2 ? (k - 2) * 6 : 0), 3, 1);
   R(g, '#3c424a', 46, 30, 6, 5); R(g, '#8a929a', 46, 30, 6, 1); R(g, BARK[0], 47, 28, 4, 2);
