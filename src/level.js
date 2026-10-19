@@ -8285,7 +8285,7 @@ export const DRESS = {
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
-  marsh: [['hopper', 5], ['spit', 2], ['archer', 2], ['thorn', 2], ['turtle', 4], ['heronfoe', 4]],   /* (claude/marsh2: ranged under 30% - review-first2 had it at 36%; the turtle and the heron take the places) */   // 46 was thirteen under the level before it
+  marsh: [['hopper', 5], ['spit', 2], ['archer', 1], ['thorn', 2], ['turtle', 4], ['heronfoe', 4]],   /* (claude/marsh2: ranged under 30% - review-first2 had it at 36%; the turtle and the heron take the places) */   // 46 was thirteen under the level before it
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
   moor: [['goat', 4], ['rockgoblin', 3], ['harpy', 3], ['kite', 3], ['troll', 1], ['sailer', 2]],   /* twenty-three over NINE HUNDRED AND NINETY-SIX columns; sixteen over seven hundred and three, after the cut (docs/briefs/gale-moor-rework.md): the same density */
   scree: [['harpy', 2], ['goat', 1], ['rockgoblin', 2]],

@@ -11,10 +11,10 @@
       boards over the river's second half, a hut walk on the reed island and the grove bank. Every board stands on a drawn pile (src/forest-supports.js
       'marsh': reed bundles under tufts, bog-oak stilts under boards) - solid-islands 0.
    3. THE MILLER'S LOFT: the court's silver moved up the sluice house (a second secret off the route; the King's court kept none). */
-export const SLUICE_HOUSE = { dam: [347, 349], gate: [347, 10], ladder: 349, basinA: [325, 347], basinB: [350, 370], bed: 25, drainTo: 24, loft: [341, 6] };
+export const SLUICE_HOUSE = { dam: [347, 349], gate: [347, 10], ladder: 349, basinA: [325, 347], basinB: [350, 370], bed: 25, drainTo: 24, loft: [340, 7] };
 export const STILTS = [   /* [x0, x1, row, how] - the plank row; you stand one row above it. how: a 'net' column to climb, or 'step' (reachable by a jump) */
-  [6, 21, 19, 'step'], [57, 70, 11, 'net:57'], [78, 88, 11, 'net:81'], [112, 129, 16, 'step'], [133, 142, 15, 'step'], [148, 158, 15, 'step'],
-  [262, 269, 15, 'step'], [293, 300, 15, 'step'], [378, 388, 14, 'step'], [426, 443, 15, 'step'],
+  [5, 23, 19, 'step'], [57, 70, 11, 'net:57'], [112, 129, 16, 'step'], [132, 137, 15, 'step'], [150, 158, 15, 'step'],
+  [261, 271, 15, 'step'], [293, 300, 15, 'step'], [378, 388, 14, 'step'], [429, 443, 15, 'step'], [226, 236, 15, 'step'],
 ];
 export function applyMarsh2(M, T, TS) {
   const W = M.W, H = M.H, g = M.grid, set = (x, y, v) => { if (x >= 0 && y >= 0 && x < W && y < H) g[y * W + x] = v; }, at = (x, y) => g[y * W + x];
@@ -31,9 +31,7 @@ export function applyMarsh2(M, T, TS) {
   for (let y = S.gate[1] + 1; y <= 17; y++) set(S.ladder, y, T.NET);                /* the sluice house's ladder, up the dam's east face */
   for (let x = S.gate[0] - 1; x <= S.gate[0] + 1; x++) set(x, S.gate[1] + 1, T.PLANK);   /* the gate deck */
   ent('sluice', S.gate[0], S.gate[1], { pool: S.basinB[0], to: S.drainTo, sluiceHouse: true });
-  for (let y = S.loft[1] + 1; y <= S.gate[1]; y++) set(S.ladder, y, T.NET);        /* and on up to the miller's loft */
-  for (let x = S.loft[0]; x <= S.loft[0] + 3; x++) set(x, S.loft[1] + 1, T.PLANK);
-  for (let x = S.loft[0] + 4; x < S.ladder; x++) set(x, S.loft[1] + 1, T.PLANK);
+  for (let x = S.loft[0]; x <= S.loft[0] + 3; x++) set(x, S.loft[1] + 1, T.PLANK);   /* the miller's loft: a hop up and back off the gate deck */
   M.ents = M.ents.filter(e => !(e.t === 'silver' && M.arena && e.x * TS >= M.arena.x0 && e.x * TS <= M.arena.x1));   /* the court's silver ... */
   ent('silver', S.loft[0], S.loft[1]);                                              /* ... is the miller's now */
   /* the way out of the mud: boards stepping up to the checkpoint plank */
@@ -42,7 +40,7 @@ export function applyMarsh2(M, T, TS) {
   ent('sign', 346, 17, { text: 'THE SLUICE HOUSE. NO BOARDS BEYOND: BREAK ITS GATE UP TOP AND THE BASIN DRAINS.' });
   /* what the mud gives up, once the water is gone */
   ent('gar', 356, S.drainTo, { face: -1, ifDrained: S.basinB[0] }); ent('eel', 361, S.drainTo, { leap: true, ifDrained: S.basinB[0] }); ent('hopper', 359, S.drainTo, { face: -1, color: 'yellow', ifDrained: S.basinB[0] });
-  M.calm = (M.calm || []).concat([[S.loft[0] - 1, S.basinB[1], 5, 26]]);
+  M.calm = (M.calm || []).concat([[S.loft[0] - 1, S.basinB[1], 5, 26], [44, 57, 12, 22], [79, 84, 12, 16], [309, 314, 12, 17], [424, 430, 12, 17]]);   /* (and the landings the walk showed foes standing on: the island's edge, the river's lip, the grove's bank) */
   M.routeVia = (M.routeVia || []).concat([[S.gate[0], S.gate[1]], [358, S.drainTo]]);   /* ... and down through the mud: before the drain the stair out is under deep water */              /* the route goes up to the gate: the far basin is only walked once it is drained */
   /* ---- 2. THE STILTS ---- */
   const moveCoins = () => { for (const e of M.ents) if (e.t === 'coin') while (e.y > 0 && at(e.x, e.y) !== T.AIR) e.y--; };   /* a coin a new board was laid through sits on the board */
