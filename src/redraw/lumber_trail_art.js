@@ -18,7 +18,7 @@ export const ROPE = ['#7a6238', '#a8905a', '#d2bd82'];
 const OUT = '#0e1a12';
 
 /* ===== THE STANDING MARKED PINE: foot at (CX, H); one sprite per (strokes taken, lean direction, role) ===== */
-const PW = 40, PH = 104, CX = 20;
+const PW = 58, PH = 104, CX = 29; export const PINE_CX = CX, PINE_H = PH;
 function bakePine(s, dir, role) {
   const [c, g] = canvas(PW, PH), rr = mulberry(77 + (role === 'hive' ? 9 : 0));
   const hw = y => { const t = (PH - y) / PH; let w = 4.4 - t * 2.0; if (y > PH - 9) w += (y - (PH - 9)) * 0.42; return w; };   /* half-width of the trunk at row y: tapering, flaring into roots at the foot */
@@ -27,28 +27,28 @@ function bakePine(s, dir, role) {
     for (let x = x0; x < x1; x++) { const k = (x - x0) / Math.max(1, x1 - x0 - 1); let sh = k < 0.2 ? 5 : k < 0.45 ? 4 : k < 0.7 ? 3 : k < 0.9 ? 2 : 1; const gr = hash(x, (y >> 3) + 3) % 7; if (gr === 0) sh = Math.max(0, sh - 1); else if (gr === 5 && k < 0.8) sh = Math.min(6, sh + 1); P(g, BARK[sh], x, y); }
     P(g, BARK[0], x0, y); P(g, BARK[0], x1 - 1, y); }
   for (let y = 30; y < PH - 6; y += 9 + (hash(y, 4) % 5)) { const x = CX - 3 + (hash(y, 9) % 6); R(g, BARK[1], x, y, 1, 3 + (hash(y, 2) % 3)); }   /* the bark's furrows */
-  for (const ky of [58, 84]) { const kx = CX + (ky === 58 ? 1 : -2); R(g, BARK[1], kx, ky, 3, 3); P(g, BARK[4], kx, ky); P(g, BARK[5], kx + 1, ky + 1); }   /* knots */
+  for (const ky of [62, 99]) { const kx = CX + (ky === 58 ? 1 : -2); R(g, BARK[1], kx, ky, 3, 3); P(g, BARK[4], kx, ky); P(g, BARK[5], kx + 1, ky + 1); }   /* knots */
   /* the boughs: seven drooping tiers, a scalloped hem, lit from the upper left, needle-flecked */
-  const tiers = [[8, 5], [18, 8], [29, 11], [41, 14], [53, 17], [64, 19]];
+  const tiers = [[7, 6], [17, 10], [27, 14], [38, 18], [49, 22], [59, 26]];
   for (let i = tiers.length - 1; i >= 0; i--) { const [ty, tw] = tiers[i], seed = hash(i, 31);
-    const hem = []; for (let k = -tw; k <= tw; k++) { const e = Math.abs(k) / tw, sag = Math.round(10 - e * 7 + ((hash(k + 40, i) % 3) - 1)); hem.push([k, sag]); }
-    for (const [k, sag] of hem) { const top = Math.round(ty - 8 + Math.abs(k) * 0.35), bot = Math.round(ty + sag - 4);
+    const hem = []; for (let k = -tw; k <= tw; k++) { const e = Math.abs(k) / tw, jag = ((k & 1) ? 1 : -1) * (1 + (hash(k + 40, i) % 2)) * (e > 0.3 ? 1 : 0.4), sag = Math.round(11 - e * 6 + jag); hem.push([k, sag]); }
+    for (const [k, sag] of hem) { const top = Math.round(ty - 9 + Math.abs(k) * 0.5), bot = Math.round(ty + sag - 3);
       for (let y = top; y <= bot; y++) { const t = (y - top) / Math.max(1, bot - top); let sh = t < 0.25 ? 3 : t < 0.6 ? 2 : 1; if (k < -tw * 0.25) sh += 1; if (k > tw * 0.4) sh -= 1; if ((hash(k + 99, y + i * 13) % 9) === 0) sh += 1; if (t > 0.82) sh = Math.max(0, sh - 1); P(g, NEEDLE[Math.max(0, Math.min(5, sh))], CX + k, y); } }
     for (let n = 0; n < tw; n++) { const k = ((hash(n, seed) % (2 * tw + 1)) - tw), e = Math.abs(k) / tw; P(g, NEEDLE[5], CX + k, Math.round(ty - 5 + Math.abs(k) * 0.35 + (hash(n, seed + 1) % 4))); P(g, NEEDLE[0], CX + k, Math.round(ty + (10 - e * 7) - 5)); } }
   /* the apex */
   R(g, NEEDLE[3], CX, 0, 1, 4); P(g, NEEDLE[5], CX, 1);
   /* the woodsman's blaze: a pale axe-cut, with the ochre band painted under it (only a marked pine wears it) */
-  const by = 66; R(g, BARK[0], CX - 3, by - 1, 6, 11); R(g, CUT[1], CX - 2, by, 4, 9); R(g, CUT[0], CX - 2, by, 1, 9); R(g, CUT[3], CX + 1, by + 1, 1, 8); P(g, CUT[4], CX - 1, by + 4); P(g, CUT[4], CX, by + 4);
-  R(g, '#c4552d', CX - 4, by + 12, 8, 2); R(g, '#e07a45', CX - 4, by + 12, 8, 1);
+  const by = 72; R(g, BARK[0], CX - 3, by - 1, 6, 11); R(g, CUT[1], CX - 2, by, 4, 9); R(g, CUT[0], CX - 2, by, 1, 9); R(g, CUT[3], CX + 1, by + 1, 1, 8); P(g, CUT[4], CX - 1, by + 4); P(g, CUT[4], CX, by + 4);
+  R(g, '#c4552d', CX - 4, by + 11, 8, 2); R(g, '#e07a45', CX - 4, by + 11, 8, 1);
   /* the tally board nailed over the boughs' hem: four slits, a stroke fills one */
-  { const tx = CX - 7, ty = 76; R(g, BARK[0], tx - 1, ty - 1, 16, 9); R(g, '#a8814a', tx, ty, 14, 7); R(g, '#c9a468', tx, ty, 14, 1); R(g, '#6a4a28', tx, ty + 6, 14, 1); P(g, '#2a1a0c', tx + 1, ty + 1); P(g, '#2a1a0c', tx + 12, ty + 1);
+  { const tx = CX - 7, ty = 87; R(g, BARK[0], tx - 1, ty - 1, 16, 9); R(g, '#a8814a', tx, ty, 14, 7); R(g, '#c9a468', tx, ty, 14, 1); R(g, '#6a4a28', tx, ty + 6, 14, 1); P(g, '#2a1a0c', tx + 1, ty + 1); P(g, '#2a1a0c', tx + 12, ty + 1);
     for (let k = 0; k < 4; k++) { const cut = k < s; R(g, cut ? '#ffd36b' : '#2a1a0c', tx + 2 + k * 3, ty + 2, 2, 4); if (cut) { P(g, '#fff2b0', tx + 2 + k * 3, ty + 2); } } }
   /* the stroke's bite: a wedge out of the trunk's lean side, deeper a stroke at a time, raw wood in it; chips on the ground; the splintered crack above it at the last strokes */
-  if (s > 0) { const by2 = 90, d = Math.min(5, 1 + s), sd = dir > 0 ? 1 : -1, edge = x => (sd > 0 ? CX + Math.round(hw(by2)) - 1 - x : CX - Math.round(hw(by2)) + x);
+  if (s > 0) { const by2 = 96, d = Math.min(5, 1 + s), sd = dir > 0 ? 1 : -1, edge = x => (sd > 0 ? CX + Math.round(hw(by2)) - 1 - x : CX - Math.round(hw(by2)) + x);
     for (let k = 0; k < 7; k++) { const depth = Math.max(0, Math.round(d * (1 - Math.abs(k - 3) / 3.4))); for (let x = 0; x < depth; x++) { const wx = edge(x); g.clearRect(wx, by2 + k, 1, 1); }
       if (depth > 0) { const wx = edge(depth); P(g, k === 3 ? CUT[3] : CUT[k < 3 ? 0 : 2], wx, by2 + k); if (depth > 1) P(g, CUT[1], edge(depth - 1) + (sd > 0 ? 0 : 0), by2 + k); } }
     for (let n = 0; n < 2 + s * 2; n++) { const x = CX + sd * (5 + (hash(n, s) % 9)) , y = PH - 2 - (hash(n, 7) % 2); R(g, n % 3 ? CUT[1] : CUT[0], x, y, 1 + (n & 1), 1); }
-    if (s >= 3) { R(g, BARK[0], CX + sd * 2, by2 - 7, 1, 7); P(g, CUT[0], CX + sd * 3, by2 - 4); P(g, CUT[1], CX + sd * 4, by2 - 2); } }
+    if (s >= 3) { P(g, CUT[0], CX + sd * 5, by2 - 1); P(g, CUT[1], CX + sd * 6, by2 + 1); P(g, CUT[2], CX + sd * 5, by2 + 3); } }
   /* the Queen's pine carries her comb on its lean-side bough (the pine you fell is the one her comb hangs from) */
   if (role === 'hive') drawComb(g, CX + (dir > 0 ? 6 : -16), 36, 1);
   return outline(c, OUT);
@@ -263,16 +263,6 @@ function bakeLogPile() {
   return outline(c, OUT);
 }
 export function logPileSprite() { return once('logpile', bakeLogPile); }
-/* the skid sled: a log sled with a chain and a half-load of logs, a drag rope, left on the camp's yard */
-function bakeSled() {
-  const W = 56, H = 24, [c, g] = canvas(W, H);
-  R(g, BARK[1], 2, 20, 52, 3); R(g, BARK[3], 2, 19, 52, 1); for (const x of [8, 26, 44]) R(g, BARK[2], x, 14, 5, 6);
-  for (let i = 0; i < 3; i++) { R(g, BARK[4 - (i & 1)], 6 + i * 2, 9 - i * 6 + 6, 44 - i * 4, 5); R(g, BARK[6], 6 + i * 2, 9 - i * 6 + 6, 44 - i * 4, 1); R(g, CUT[1], 6 + i * 2, 9 - i * 6 + 7, 2, 3); }
-  R(g, '#5a6068', 5, 13, 46, 1); R(g, ROPE[1], 0, 21, 8, 1);
-  return outline(c, OUT);
-}
-export function sledSprite() { return once('sled', bakeSled); }
-
 /* ===== THE CAMP TENT (deco campTent): a canvas lean-to, rain-greyed, two lashed poles, a bedroll and a billy-can ===== */
 function bakeTent() {
   const W = 56, H = 36, [c, g] = canvas(W, H);
@@ -284,17 +274,6 @@ function bakeTent() {
 }
 export function tentSprite() { return once('tent', bakeTent); }
 
-/* ===== the store and den mouths: a timber lintel on two posts over a cave, a lantern in the dark (store) or a bone-and-rag charm (den) ===== */
-export function bakeMouth(wTiles, hTiles, den) {
-  const W = wTiles * 16 + 12, H = hTiles * 16 + 10, [c, g] = canvas(W, H);
-  for (const x of [0, W - 7]) { R(g, BARK[3], x, 4, 7, H - 4); R(g, BARK[5], x, 4, 1, H - 4); R(g, BARK[1], x + 6, 4, 1, H - 4); for (let y = 10; y < H - 4; y += 9) R(g, BARK[1], x + 1, y, 5, 1); }
-  R(g, BARK[2], 0, 0, W, 7); R(g, BARK[5], 0, 0, W, 1); R(g, BARK[1], 0, 6, W, 1); for (let x = 4; x < W - 4; x += 10) R(g, BARK[1], x, 3, 3, 1);
-  if (!den) { R(g, BARK[0], W / 2 - 1, 7, 1, 5); R(g, '#ffd36b', W / 2 - 3, 12, 5, 5); R(g, '#fff2b0', W / 2 - 2, 13, 2, 2); R(g, BARK[0], W / 2 - 3, 17, 5, 1); }
-  else { R(g, ROPE[1], 8, 7, 1, 9); R(g, '#d8d0c0', 6, 15, 5, 4); R(g, '#2a1c14', 7, 16, 1, 1); R(g, '#2a1c14', 9, 16, 1, 1); R(g, '#7a3a8a', W - 18, 7, 6, 8); R(g, '#a85ab8', W - 18, 7, 6, 1); R(g, '#7a3a8a', W - 16, 15, 2, 3); }
-  return outline(c, OUT);
-}
-export function mouthSprite(w, h, den) { return once('mouth' + w + '_' + h + (den ? 'd' : ''), () => bakeMouth(w, h, den)); }
-
 /* ===== THE DECO TABLE: [sprite, bg] by kind, this level's own ===== */
 export function decoOf(e) {
   switch (e.kind) {
@@ -304,10 +283,7 @@ export function decoOf(e) {
     case 'sawFrame': return [sawFrameSprite(), true];
     case 'fence': return [palisadeSprite(e.v === 1), true];
     case 'logPile': return [logPileSprite(), false];
-    case 'skidSled': return [sledSprite(), false];
     case 'campTent': return [tentSprite(), true];
-    case 'storeMouth': return [mouthSprite(9, 3, false), true];
-    case 'denMouth': return [mouthSprite(10, 3, true), true];
     default: return null;
   }
 }
