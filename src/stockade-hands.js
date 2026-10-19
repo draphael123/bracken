@@ -167,7 +167,7 @@ export function makeStockadeHands(ctx) {
   }
   const chiefUp = e => !!(tower && e && (e.mode === 'tower' || e.mode === 'towerAim' || e.mode === 'towerLoose' || e.mode === 'towerClimb'));
   /* a blow on him on the tower: the B15 floor, told */
-  function towerTake(e) { if (!chiefUp(e)) return 1; ctx.turned(e, hero() ? hero().x : e.x, STK_SAY.taut); return TOWER.take; }
+  function towerTake(e, tag) { if (!chiefUp(e)) return 1; ctx.turned(e, hero() ? hero().x : e.x, STK_SAY.taut); return TOWER.take; }
 
   /* ---- drawing (claude/stockade2art: src/redraw/stockade2_art.js) ---- */
   function drawWorld(g, cx, cy, time) {

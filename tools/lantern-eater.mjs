@@ -169,7 +169,7 @@ ok(M.PLAN.react >= 0.2 && M.PLAN.missDodge > 0 && M.PLAN.wrongAngle > 0 && M.PLA
 if (!process.argv.includes('--pure')) {
 const pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const {HERO_IDS}=await import('/src/progression.js');BK.manualSimulation=true;BK.SET.speed=1;const out={heroes:{}};
+  const r = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const {HERO_IDS}=await import('/src/progression.js');BK.manualSimulation=true;BK.SET.speed=1;/* (batch104 integ) no hit-stop in this staging: the reaper's greatsword freeze (src/juice.js WEAPON stop x1.3) outlasted the 8 settling frames after a teleport and his low sweep fired from the air (read HIGH). Angles and keys are what this proves, not feel. */BK.SET.hitstop=false;const out={heroes:{}};
     const boot=h=>{BK.setHero(h);BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id==='canal'));BK.start();BK.god=true;BK.sim(10);
       const A=BK.L.arena;BK.tp(A.lock.sx+2,A.lock.R-1);BK.sim(20);BK.tp(A.start[0],A.start[1]);BK.sim(60*4);return BK.boss;};
     const e=boot('knight'),S=BK.lanternEaterHands().show(),P=BK.P,m=BK.movers().find(q=>q.leRaft);

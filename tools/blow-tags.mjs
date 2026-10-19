@@ -24,7 +24,7 @@ const NOT_BOSS = {
   'EK.take': 'an ELITE (src/elite-kit.js): it already reads the hero blow (blow), and an elite is not a boss',
   'CNF.grindylowTake': 'THE GRINDYLOW, a common canal foe', 'CNF.wispTake': 'THE WILL-O-WISP, a common canal foe', 'FWR.wraithTake': 'THE FOG WRAITH, a common towpath foe (light, not the blow, makes it solid: claude/towpath2)',
   'WMH.take': 'THE WICKER MAN, a fair prop-foe (not on OPEN_RULE)', 'LDH.take': 'THE LESSER DJINN, a common welltown foe',
-  'GEO.tombHit': 'the geomancer tomb', 'MYH.ward': "the bandit mystics' lamp", 'SKY.riderHurt': 'THE KITE-RIDER, a common Sky Road foe (a blow cuts his line)',
+  'FOA.shellTake': 'THE SHIELDED AFFIX (src/foe-affix.js), a common foe affix: it reads the blow VERB (amV), not a boss key', 'GEO.tombHit': 'the geomancer tomb', 'MYH.ward': "the bandit mystics' lamp", 'SKY.riderHurt': 'THE KITE-RIDER, a common Sky Road foe (a blow cuts his line)',
 };
 let hooks = 0; const missing = [];
 for (const fn of ['hurtEnemy0', 'wardedDamage']) { const b = bodyOf(fn); let m; HOOK.lastIndex = 0;

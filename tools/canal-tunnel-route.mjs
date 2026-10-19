@@ -120,7 +120,7 @@ try {
         const far = () => P().x > 287 * TS && Math.round(P().y / TS) === 15 && P().ground;
         for (let a = 0; a < 5 && !far(); a++) { if (onBarge() || Math.round(P().y / TS) !== 15) { walk(284, { tol: 3, noFight: true }); ledgeUp(15); } walk(285, { tol: 2, noFight: true }); hop(1, { hold: 30 }); settle(); }   /* a knock into the water is a hand-back onto her deck: up again and over */
         const gapAt = log.length; stage('over the gap to the far ledge', far());
-        for (let i = 0; i < 40 && BK.enemies().some(e => e.alive && Math.abs(e.y - P().y) < 20 && e.x > 287 * TS && e.x < 299 * TS); i++) { const e = BK.enemies().filter(e => e.alive && Math.abs(e.y - P().y) < 20 && e.x > 287 * TS && e.x < 299 * TS)[0]; walk(Math.round(e.x / TS), { tol: 10 }); if (!fight()) tick(10); }
+        for (let i = 0; i < 40 && BK.enemies().some(e => e.alive && Math.abs(e.y - P().y) < 20 && e.x > 287 * TS && e.x < 299 * TS); i++) { const e = BK.enemies().filter(e => e.alive && Math.abs(e.y - P().y) < 20 && e.x > 287 * TS && e.x < 299 * TS)[0]; walk(Math.min(296, Math.round(e.x / TS)), { tol: 10 }); if (!fight()) tick(10); }   /* (batch104 integ) never walk onto the ledge's east TIP (297+): the squad-role pass leaves the archer standing there and walk()'s stand-still jump took the hand off the end onto the barge, 2000 frames of climbing back per try */
         for (let a = 0; a < 4 && !(Math.abs(P().x - (294 * TS + 8)) < 6 && far()); a++) { if (!far()) { walk(284, { tol: 3, noFight: true }); ledgeUp(15); walk(285, { tol: 2, noFight: true }); hop(1, { hold: 30 }); settle(); } walk(294, { tol: 3 }); } strike(1); for (let i = 0; i < 120 && C().stops[0].k < 0.9; i++) tick(1);
         if (!stage('the windlass struck: the planks wound up', C().stops[0].k > 0.9)) return false;
         if (!log[gapAt].ok) { log[gapAt].ok = true; log[gapAt].name += ' (on a later try: knocked back onto her deck first)'; }
@@ -195,7 +195,7 @@ try {
         for (let i = 0; i < 60 * 15 && !(B().holdWhy === 'end' || B().x > 383 * TS); i++) { clear(); if (NF || !fight({ r: 40 })) tick(1); }
         if (NF) { let on = false; for (let i = 0; i < 60 * 6 && !on; i++) { clear(); tick(1); const f = FMAN(); on = !!f && !!f.cnDeck && f.x >= B().x && f.x <= B().x + B().w && doorShut(); }
           stage('SKIPPED HIM: up the lock under his shut door, the deck foreman LEAPS ABOARD her - on her deck, in reach', on); SPARE = false; if (!on) return false; }
-        walk(388, { tol: 3, noFight: true }); strike(1); for (let i = 0; i < 60 * 8 && !full('L5'); i++) { clear(); if (NF) tick(1); else if (!fight({ r: 40 })) tick(1); } stage('basin: its lock filled', full('L5'));
+        walk(388, { tol: 3, noFight: true }); strike(1); for (let t = 0; t < 3 && Math.abs(reach('L5').y - reach('L5').to) < 0.5 && !full('L5'); t++) strike(1);   /* (batch104 integ) a swing that did not take is swung again, as a player does: with a gaffer's hook in the air the paladin's first cut (shorter, seed 2) missed the paddle */ for (let i = 0; i < 60 * 8 && !full('L5'); i++) { clear(); if (NF) tick(1); else if (!fight({ r: 40 })) tick(1); } stage('basin: its lock filled', full('L5'));
         if (NF) { const f = FMAN(), hp0 = f ? f.hp : 0;
           /* his guard is by angle (src/elite-kit.js): a light cut off his front CLANKS, a low SWEEP goes under it, a HEAVY goes through at half and fills his poise
              into THE OPENING - so the hand fights him the way his read says: up to him on her deck, a sweep, a wound heavy (attack held, let go), cuts into an opening */
