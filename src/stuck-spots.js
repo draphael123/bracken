@@ -68,7 +68,7 @@ export const STUCK = {
     { id: 'ms-sluice-house', zone: [336, 4, 349, 22], glint: 'stall', done: ['sluice', 347, 10, 'open'], steps: [
       { zone: [336, 12, 349, 22], at: [349, 16], line: 'THE SLUICE HOUSE LADDER: ITS GATE IS UP TOP' },
       { zone: [344, 4, 349, 12], at: [347, 10], line: 'THE SLUICE GATE: BREAK IT AND THE FAR BASIN DRAINS' }] },
-    { id: 'ms-mud-out', zone: [350, 18, 369, 26], ats: [[363, 21], [365, 19]], glint: 'stall', when: ['sluice', 347, 10, 'open'], line: 'THE BOARDS AT THE FAR END CLIMB OUT OF THE MUD' },
+    { id: 'ms-mud-out', zone: [350, 18, 369, 26], ats: [[363, 21], [365, 19]], glint: 'stall', line: 'THE BOARDS AT THE FAR END CLIMB OUT OF THE MUD' },
     { id: 'ms-vine-1', zone: [244, 4, 262, 20], at: [260, 13], glint: 'stall', line: 'A VINE HANGS OVER THE WATER: IT IS THE WAY ACROSS' },
     { id: 'ms-vine-2', zone: [277, 4, 295, 20], at: [293, 13], glint: 'stall', line: 'THE NEXT VINE HANGS OVER THE WATER' },
     { id: 'ms-grove-raft', zone: [372, 10, 392, 22], ats: [[391, 17], [390, 17]], glint: 'stall', done: ['sluice', 390, 17, 'open'], line: 'THE GROVE CRANK AND THE SLUICE: ONE OF THEM IS THE WAY' },

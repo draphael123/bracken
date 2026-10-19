@@ -12078,7 +12078,7 @@ function frogPit(A) {
 /* THE TONGUE GRAB, taken: the tongue has you and reels you in to his mouth - over his deep pond it lets go above the water (src/frog-king.js FROGK.tongue) */
 function frogGrab(e, dir) { const pl = frogPool(L.arena), deep = frogDeep(L.arena);
   P.frogReel = { t: FROGK.tongue.reelMax, dir, to: e.x - dir * (e.w / 2 + 6), deep, pond: pl ? [pl.x0, pl.x1] : null }; P.vx = 0; P.vy = 0; P.onMover = null; P.atk = -1; P.plunge = false;
-  if (FKC) FKC.n.grabs++; number(P.x, P.y - 26, deep ? 'GRABBED: INTO HIS POND' : 'GRABBED', '#ff6b6b'); SFX.tongue(); }
+  if (FKC) FKC.n.grabs++; number(P.x, P.y - 26, deep ? 'GRABBED: INTO HIS POND' : 'THE TONGUE HAS YOU', '#ff6b6b'); SFX.tongue(); }
 /* the reel: the hero is the tongue's (it returns true while it holds him, like the wind's ride) */
 function frogReelStep(dt) { const R = P.frogReel; if (!R) return false;
   for (const k of ['inv', 'grace', 'hurt', 'stFlash', 'sqT']) P[k] = Math.max(0, (P[k] || 0) - dt); P.hpShown += (P.hp - P.hpShown) * Math.min(1, dt * 6);
@@ -12126,10 +12126,10 @@ function updateFrog(e, dt) {
         else if (pick === 'spit') { e.mode = 'spitTell'; e.modeT = p2 ? 0.4 : 0.5; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); SFX.gasp(); }   /* (claude/firsthour) HIS SPIT WAS UNTOLD: the venom left his mouth the frame he chose it. Now his cheeks fill first, on a yellow ! - a shield turns venom */
         else if (pick === 'hopAway') { e.mode = 'hopAway'; e.modeT = 0.15; }
         else if (pick === 'inhale') { e.mode = 'inhaleTell'; e.modeT = 0.5; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!', '#ffd36b'); number(e.x, e.y - e.h - 24, 'BREATHES IN', '#ffd36b'); SFX.gasp(); }
-        else if (pick === 'flop') { e.mode = 'flopTell'; e.modeT = FROGK.flop.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE REARS UP', '#ff6b6b'); SFX.gasp(); }
-        else if (pick === 'swarm') { e.mode = 'swarmTell'; e.modeT = FROGK.swarm.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 18, 'HIS CHEEKS BUZZ', '#c9e3a0'); SFX.buzz(); }
-        else if (pick === 'ripple') { e.mode = 'rippleTell'; e.modeT = FROGK.ripple.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HIS THROAT SWELLS', '#bfe6f5'); SFX.gasp(); }
-        else if (pick === 'pound') { e.mode = 'poundTell'; e.modeT = FROGK.pound.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); number(e.x, e.y - e.h - 24, 'HE RAISES A HAND TO THE WATER', '#ff6b6b'); }
+        else if (pick === 'flop') { e.mode = 'flopTell'; e.modeT = FROGK.flop.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.gasp(); }
+        else if (pick === 'swarm') { e.mode = 'swarmTell'; e.modeT = FROGK.swarm.tell; e.actN = (e.actN || 0) + 1; SFX.buzz(); }
+        else if (pick === 'ripple') { e.mode = 'rippleTell'; e.modeT = FROGK.ripple.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); SFX.gasp(); }
+        else if (pick === 'pound') { e.mode = 'poundTell'; e.modeT = FROGK.pound.tell; e.actN = (e.actN || 0) + 1; number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); }
         else { e.mode = 'croak'; e.modeT = 1.0; e.openHp0 = e.hp; SFX.croak(); number(e.x, e.y - e.h - 12, 'CROAK', '#ffd36b'); }
       }
       break;
@@ -27554,7 +27554,7 @@ WTH = makeWellTownHands({ get L() { return L; }, get players() { return players;
   questGot: () => straysGot.size, questN: () => questOf().n, pourables: () => [DJH && DJH.pourable, CQH && CQH.pourable, GLH && GLH.pourable, DF2H && DF2H.pourable, MYH && MYH.pourable, MYH && MYH.firePourable, LDH && LDH.pourable, UWH && UWH.pourable].filter(Boolean) });   /* (claude/desertfoes: and a fire scorpion's burning patch) */   /* (claude/welltown5: and THE GANG LEADER's floor - a puddle - or yourself, alight) */
 /* THE GANG LEADER'S HANDS and THE CISTERN QUEEN'S (claude/welltown3): main.js owns the world; the modules own their fights */
 FKC = makeFrogCourt({ P: () => P, time: () => time, movers: () => movers, arena: () => (L && L.arena && L.arena.boss === 'frog' ? L.arena : null), pool: () => (L && L.arena && L.arena.boss === 'frog' ? frogPool(L.arena) : null), boss: () => (boss && boss.t === 'frog' && boss.alive ? boss : null),
-  damage: (x, d, o) => damagePlayer(x, d, o), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.35), say: (x, y, t, c) => number(x, y, t, c), buzz: () => {}, spring: () => { SFX.budSpring(); squash(0.7, 1.35, 0.14); } });   /* (claude/marsh2) THE BULLFROG KING's court (src/frog-king.js) */
+  damage: (x, d, o) => damagePlayer(x, d, o), ring: (x, y, r, c) => ringAt(x, y, r, c, 0.35), number: (x, y, t, c) => number(x, y, t, c), buzz: () => {}, spring: () => { SFX.budSpring(); squash(0.7, 1.35, 0.14); } });   /* (claude/marsh2) THE BULLFROG KING's court (src/frog-king.js) */
 GLH = GLM.makeGangLeaderHands({ get L() { return L; }, get players() { return players; }, TS, EHP, sfx: SFX, hero: () => P, enemies: () => enemies, time: () => time,
   number: (x, y, t, c) => number(x, y, t, c), text: (...a) => text(...a), burst: (...a) => burst(...a), sparks: (...a) => sparks(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n),
   damagePlayer: (...a) => damagePlayer(...a), asPlayer: (p, fn) => asPlayer(p, fn), upright: p => upright(p), overlap: (a, b) => overlap(a, b), box: b => box(b), attackBox: () => attackBox(), enrage: e => enrageBeat(e),

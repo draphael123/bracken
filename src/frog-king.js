@@ -66,7 +66,7 @@ export function makeFrogCourt(ctx) {
   S.throwOff = m => { const p = P(), e = ctx.boss(); if (!e || p.dead) return;
     const g = 1000, vy = FK.ripple.vy, T = 2 * -vy / g + 0.12, dx = (e.x - p.x), vx = Math.max(-330, Math.min(330, dx / T));
     p.onMover = null; p.ground = false; p.vy = vy; p.vx = vx; p.plunge = false; p.canCut = true; p.frogFlung = true; m.tipT = 0; m.cd = 0.6;
-    S.fling = { vx, t: FK.ripple.flingT }; S.n.flings++; ctx.ring(m.x + m.w / 2, m.y0 + 3, 22, '#ffd36b'); ctx.say(p.x, p.y - 26, 'THE PAD THROWS YOU', '#ffd36b'); ctx.spring(); };
+    S.fling = { vx, t: FK.ripple.flingT }; S.n.flings++; ctx.ring(m.x + m.w / 2, m.y0 + 3, 22, '#ffd36b'); ctx.number(p.x, p.y - 26, 'THE PAD THROWS YOU', '#ffd36b'); ctx.spring(); };
   S.slap = () => { for (const m of courtPads(ctx.movers(), ctx.arena())) { m.slapT = FK.pound.sink; m.tipT = 0; } };
   S.show = () => ({ swarm: S.swarm ? { x: S.swarm.x, y: S.swarm.y, t: S.swarm.t } : null, ripples: S.ripples.map(r => ({ x: r.x, dir: r.dir })), fling: !!S.fling, reel: !!S.reel, n: S.n });
   S.draw = (g, cx, cy, time) => {
