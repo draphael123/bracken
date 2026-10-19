@@ -120,6 +120,12 @@ export function tile(t, x, y, at, T, L) {
 
 /* ================= BACKGROUND DRESSING (drawn behind the tiles, before the water) ================= */
 const sx = (x, cx) => Math.round(x - cx), sy = (y, cy) => Math.round(y - cy);
+const baked = new Map();
+function blit(g, key, x0, y0, w, h, cx, cy, fn) {   /* paint fn(cg, cx0, cy0) once into a w x h sheet whose corner is world (x0, y0); draw it when it is on screen */
+  if (x0 - cx > 340 || x0 + w - cx < -20 || y0 - cy > 200 || y0 + h - cy < -20) return;
+  let c = baked.get(key); if (!c) { const [cv, cg] = canvas(w, h); fn(cg, x0, y0); c = cv; baked.set(key, c); }
+  g.drawImage(c, Math.round(x0 - cx), Math.round(y0 - cy));
+}
 function post(g, x, y0, y1, w = 4) { R(g, OAK[2], x, y0, w, y1 - y0); R(g, OAK[4], x, y0, 1, y1 - y0); R(g, OAK[0], x + w - 1, y0, 1, y1 - y0); }
 function lash(g, x, y, w = 4) { R(g, CORD, x - 1, y, w + 2, 1); R(g, CORD_D, x - 1, y + 1, w + 2, 1); }
 function brace(g, x0, y0, x1, y1) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); R(g, OAK[3], x, y, 2, 2); P(g, OAK[1], x + 1, y + 1); } }
@@ -140,7 +146,6 @@ function gableRoof(g, xl, xr, yEave, rise) {   /* the shed's thatched gable, pla
 /* the sluice house: a stilt mill on the dam. Back wall, posts, under-deck trestle, roof; the miller's loft beside it. */
 function drawMill(g, cx, cy, time, st) {
   const x0 = 344 * 16, x1 = 350 * 16, deck = 11 * 16;
-  if (x1 - cx < -8 || x0 - cx > 330 || 14 * 16 - cy < 0 || 2 * 16 - cy > 190) return;
   const X = x => sx(x, cx), Y = y => sy(y, cy);
   /* under the deck: stilts down to the dam's cap, cross-braced; one drops into the water west of the dam */
   for (const px of [346 * 16 + 6, 348 * 16 + 2]) post(g, X(px), Y(deck + 4), Y(18 * 16), 4);
@@ -161,14 +166,12 @@ function drawMill(g, cx, cy, time, st) {
   const gx = 347 * 16 + 8; R(g, CORD, X(gx), Y(wy0 + 8), 1, 18); R(g, '#8a8a82', X(gx - 1), Y(wy0 + 26), 3, 2);
   /* the mill's barrels and sacks on the deck, the miller's lantern */
   R(g, BOARD[1], X(346 * 16 + 1), Y(deck - 10), 7, 10); R(g, BOARD[3], X(346 * 16 + 1), Y(deck - 10), 7, 1); R(g, OAK[1], X(346 * 16 + 1), Y(deck - 7), 7, 1); R(g, OAK[1], X(346 * 16 + 1), Y(deck - 3), 7, 1);
-  const lx = wx1 - 18, ly = wy0 + 12, fl = 0.8 + 0.2 * Math.sin(time * 9 + 1); R(g, OAK[0], X(lx), Y(ly - 6), 1, 6); R(g, '#8a8a82', X(lx - 2), Y(ly), 5, 1); R(g, '#e8c060', X(lx - 1), Y(ly + 1), 3, 4); R(g, '#fff1a0', X(lx), Y(ly + 2), 1, 2);
-  g.globalAlpha = 0.18 * fl; R(g, '#ffd36b', X(lx - 7), Y(ly - 4), 15, 14); g.globalAlpha = 1;
+  const lx = wx1 - 18, ly = wy0 + 12; R(g, OAK[0], X(lx), Y(ly - 6), 1, 6); R(g, '#8a8a82', X(lx - 2), Y(ly), 5, 1); R(g, '#e8c060', X(lx - 1), Y(ly + 1), 3, 4); R(g, '#fff1a0', X(lx), Y(ly + 2), 1, 2);
 }
 
 /* the miller's loft: boards over the water under a thatched lean-to, rope to a pulley, sacks, a hanging net */
 function drawLoft(g, cx, cy) {
   const x0 = LOFT[0] * 16, x1 = (LOFT[1] + 1) * 16, deck = LOFT[2] * 16;
-  if (x1 - cx < -8 || x0 - cx > 330 || deck - cy < -80 || deck - cy > 260) return;
   const X = x => sx(x, cx), Y = y => sy(y, cy);
   for (const px of [x0 + 2, x1 - 6]) { post(g, X(px), Y(deck + 4), Y(14 * 16 + 4), 4); lash(g, X(px), Y(deck + 20)); lash(g, X(px), Y(deck + 40)); }
   brace(g, X(x0 + 6), Y(deck + 22), X(x1 - 8), Y(deck + 46)); brace(g, X(x1 - 8), Y(deck + 22), X(x0 + 6), Y(deck + 46));
@@ -182,7 +185,6 @@ function drawLoft(g, cx, cy) {
 /* the drained basin's furniture: the huts' stilts standing in the mud, stranded fish traps, a sunk skiff's ribs */
 function drawBasin(g, cx, cy, time, L) {
   const x0 = BED[0] * 16, x1 = (BED[1] + 1) * 16;
-  if (x1 - cx < 0 || x0 - cx > 330) return;
   const X = x => sx(x, cx), Y = y => sy(y, cy), bed = BED[2] * 16;
   for (const [tx, h] of [[353, 5], [358, 7], [361, 4], [367, 6]]) {   /* the huts' stilts: a trio each, cross-braced, a rotted floor snapped off */
     const bx = tx * 16 + 2, top = bed - h * 16 + (tx & 3) * 3;
@@ -201,54 +203,54 @@ function drawBasin(g, cx, cy, time, L) {
 }
 
 export function drawBack(g, L, cx, cy, time) {
-  drawMill(g, cx, cy, time);
-  drawLoft(g, cx, cy);
-  drawBasin(g, cx, cy, time, L);
-  drawWalkDressing(g, L, cx, cy, time);
+  blit(g, 'mill', 5496, 80, 124, 270, cx, cy, drawMill);
+  blit(g, 'loft', 5424, 60, 100, 190, cx, cy, drawLoft);
+  blit(g, 'basin', 5600, 270, 340, 150, cx, cy, drawBasin);
+  blit(g, 'jetty', 64, 256, 340, 56, cx, cy, drawJetty);
+  blit(g, 'lookout', 900, 136, 250, 44, cx, cy, drawLookout);
+  for (const [a, b] of [[132, 137], [150, 158]]) blit(g, 'hide' + a, a * 16 - 16, 176, (b - a + 1) * 16 + 36, 76, cx, cy, (cg, x0, y0) => drawHide(cg, x0, y0, a, b));
+  for (const [a, row] of [[378, 14], [429, 15]]) blit(g, 'hut' + a, (a + 3) * 16 - 12, row * 16 - 66, 84, 70, cx, cy, (cg, x0, y0) => drawHut(cg, x0, y0, a, row));
+  /* the lamps' flicker is the only live part: the miller's lantern and the jetty's */
+  if (5496 - cx < 340 && 5620 - cx > -20) { g.globalAlpha = 0.18 * (0.8 + 0.2 * Math.sin(time * 9 + 1)); R(g, '#ffd36b', sx(350 * 16 - 4 - 18 - 7, cx), sy(7 * 16 + 6 + 12 - 4, cy), 15, 14); g.globalAlpha = 1; }
+  if (64 - cx < 340 && 400 - cx > -20) { g.globalAlpha = 0.2 * (0.85 + 0.15 * Math.sin(time * 8)); R(g, '#ffd36b', sx(10 * 16 + 11, cx), sy(19 * 16 - 36, cy), 20, 20); g.globalAlpha = 1; }
 }
 
 /* ===== the stilt walks' own dressing: mooring bollards and a coil on the jetty, a rope rail at the lookout, thatched hides, a hut on each hut walk ===== */
-function drawWalkDressing(g, L, cx, cy, time) {
-  const X = x => sx(x, cx), Y = y => sy(y, cy);
-  const vis = (a, b) => (b + 2) * 16 - cx > -40 && a * 16 - cx < 360;
-  if (vis(5, 23)) {   /* the landing jetty: a stout mooring post at each end, a rope coil, a hung lantern on a bracket */
-    const deck = 19 * 16;
-    for (const bx of [6 * 16 + 4, 22 * 16 + 4]) { R(g, OAK[2], X(bx), Y(deck - 11), 6, 11); R(g, OAK[4], X(bx), Y(deck - 11), 1, 11); R(g, OAK[1], X(bx + 5), Y(deck - 11), 1, 11); R(g, OAK[4], X(bx - 1), Y(deck - 12), 8, 2); lash(g, X(bx), Y(deck - 7), 6); }
-    R(g, CORD_D, X(14 * 16 + 4), Y(deck - 3), 8, 3); R(g, CORD, X(14 * 16 + 5), Y(deck - 3), 6, 1); R(g, CORD, X(14 * 16 + 4), Y(deck - 2), 1, 1);
-    R(g, OAK[2], X(10 * 16 + 4), Y(deck - 36), 3, 36); R(g, OAK[2], X(10 * 16 + 4), Y(deck - 36), 18, 3); brace(g, X(10 * 16 + 5), Y(deck - 20), X(10 * 16 + 14), Y(deck - 34)); R(g, CORD, X(10 * 16 + 20), Y(deck - 33), 1, 5);
-    const fl = 0.85 + 0.15 * Math.sin(time * 8); R(g, '#e8c060', X(10 * 16 + 18), Y(deck - 28), 4, 5); R(g, '#fff1a0', X(10 * 16 + 19), Y(deck - 27), 2, 2); g.globalAlpha = 0.2 * fl; R(g, '#ffd36b', X(10 * 16 + 11), Y(deck - 36), 20, 20); g.globalAlpha = 1;
-  }
-  if (vis(57, 70)) {   /* the lookout: a rope rail along the far edge on posts, a pennant of reed */
-    const deck = 11 * 16;
-    for (let x = 57; x <= 70; x += 4) { R(g, OAK[2], X(x * 16 + 6), Y(deck - 12), 3, 12); R(g, OAK[4], X(x * 16 + 6), Y(deck - 12), 1, 12); }
-    for (let x = 57 * 16 + 7; x < 70 * 16 + 8; x++) P(g, CORD, X(x), Y(deck - 11 + Math.round(Math.sin(((x - 57 * 16) % 64) / 64 * Math.PI) * 2)));
-    R(g, OAK[2], X(70 * 16 + 4), Y(deck - 30), 3, 30); R(g, '#5a8a4a', X(70 * 16 + 7), Y(deck - 30), 9, 5); R(g, '#8fd160', X(70 * 16 + 7), Y(deck - 30), 9, 1); R(g, '#5a8a4a', X(70 * 16 + 10), Y(deck - 25), 5, 2);
-  }
-  for (const [a, b] of [[132, 137], [150, 158]]) if (vis(a, b)) {   /* a heron hide: a woven reed screen along the back and a low thatched roof */
-    const deck = 15 * 16, x0 = a * 16 - 2, x1 = (b + 1) * 16 + 2;
-    R(g, OAK[2], X(x0), Y(deck - 54), 3, 54); R(g, OAK[2], X(x1 - 3), Y(deck - 54), 3, 54); lash(g, X(x0), Y(deck - 24), 3); lash(g, X(x1 - 3), Y(deck - 24), 3);
-    for (let x = x0 + 3; x < x1 - 3; x++) { const c = (x & 1) ? '#7a7a3a' : '#9a8a50'; R(g, c, X(x), Y(deck - 40), 1, 40); } R(g, OAK[1], X(x0 + 3), Y(deck - 24), x1 - x0 - 6, 1); R(g, OAK[1], X(x0 + 3), Y(deck - 12), x1 - x0 - 6, 1);
-    R(g, OAK[0], X(x0 + 20), Y(deck - 34), 12, 2); R(g, '#0c0a08', X(x0 + 21), Y(deck - 33), 10, 1);   /* the peep slit */
-    thatch(g, X(x0 - 6), X(x1 + 6), Y(deck - 40), 11, false);
-  }
-  for (const [a, b, row] of [[378, 388, 14], [429, 443, 15]]) if (vis(a, b)) {   /* a hut on each hut walk: board wall, a doorway with a hung curtain, thatch */
-    const deck = row * 16, hx = (a + 3) * 16;
-    R(g, OAK[1], X(hx), Y(deck - 40), 58, 40); for (let x = hx + 1; x < hx + 57; x++) R(g, (x - hx) % 6 === 5 ? OAK[0] : (x - hx) % 6 === 0 ? BOARD[2] : BOARD[1], X(x), Y(deck - 39), 1, 39);
-    R(g, OAK[0], X(hx + 8), Y(deck - 26), 14, 26); R(g, '#33281c', X(hx + 9), Y(deck - 25), 12, 25); R(g, '#7a4a3a', X(hx + 9), Y(deck - 25), 5, 22); R(g, '#a85a4a', X(hx + 9), Y(deck - 25), 1, 22);   /* the doorway and its curtain */
-    R(g, OAK[0], X(hx + 34), Y(deck - 28), 14, 12); R(g, '#e8c060', X(hx + 35), Y(deck - 27), 12, 10); R(g, OAK[1], X(hx + 40), Y(deck - 27), 1, 10); R(g, OAK[1], X(hx + 35), Y(deck - 22), 12, 1);   /* a lit window */
-    post(g, X(hx - 3), Y(deck - 44), Y(deck), 4); post(g, X(hx + 57), Y(deck - 44), Y(deck), 4);
-    gableRoof(g, X(hx - 8), X(hx + 66), Y(deck - 40), 18);
-  }
+function drawJetty(g, cx, cy) {   /* the landing jetty: a stout mooring post at each end, a rope coil, a hung lantern on a bracket */
+  const X = x => sx(x, cx), Y = y => sy(y, cy), deck = 19 * 16;
+  for (const bx of [6 * 16 + 4, 22 * 16 + 4]) { R(g, OAK[2], X(bx), Y(deck - 11), 6, 11); R(g, OAK[4], X(bx), Y(deck - 11), 1, 11); R(g, OAK[1], X(bx + 5), Y(deck - 11), 1, 11); R(g, OAK[4], X(bx - 1), Y(deck - 12), 8, 2); lash(g, X(bx), Y(deck - 7), 6); }
+  R(g, CORD_D, X(14 * 16 + 4), Y(deck - 3), 8, 3); R(g, CORD, X(14 * 16 + 5), Y(deck - 3), 6, 1); R(g, CORD, X(14 * 16 + 4), Y(deck - 2), 1, 1);
+  R(g, OAK[2], X(10 * 16 + 4), Y(deck - 36), 3, 36); R(g, OAK[2], X(10 * 16 + 4), Y(deck - 36), 18, 3); brace(g, X(10 * 16 + 5), Y(deck - 20), X(10 * 16 + 14), Y(deck - 34)); R(g, CORD, X(10 * 16 + 20), Y(deck - 33), 1, 5);
+  R(g, '#e8c060', X(10 * 16 + 18), Y(deck - 28), 4, 5); R(g, '#fff1a0', X(10 * 16 + 19), Y(deck - 27), 2, 2);
+}
+function drawLookout(g, cx, cy) {   /* the lookout: a rope rail along the far edge on posts, a pennant of reed */
+  const X = x => sx(x, cx), Y = y => sy(y, cy), deck = 11 * 16;
+  for (let x = 57; x <= 70; x += 4) { R(g, OAK[2], X(x * 16 + 6), Y(deck - 12), 3, 12); R(g, OAK[4], X(x * 16 + 6), Y(deck - 12), 1, 12); }
+  for (let x = 57 * 16 + 7; x < 70 * 16 + 8; x++) P(g, CORD, X(x), Y(deck - 11 + Math.round(Math.sin(((x - 57 * 16) % 64) / 64 * Math.PI) * 2)));
+  R(g, OAK[2], X(70 * 16 + 4), Y(deck - 30), 3, 30); R(g, '#5a8a4a', X(70 * 16 + 7), Y(deck - 30), 9, 5); R(g, '#8fd160', X(70 * 16 + 7), Y(deck - 30), 9, 1); R(g, '#5a8a4a', X(70 * 16 + 10), Y(deck - 25), 5, 2);
+}
+function drawHide(g, cx, cy, a, b) {   /* a heron hide: a woven reed screen along the back and a low thatched roof */
+  const X = x => sx(x, cx), Y = y => sy(y, cy), deck = 15 * 16, x0 = a * 16 - 2, x1 = (b + 1) * 16 + 2;
+  R(g, OAK[2], X(x0), Y(deck - 54), 3, 54); R(g, OAK[2], X(x1 - 3), Y(deck - 54), 3, 54); lash(g, X(x0), Y(deck - 24), 3); lash(g, X(x1 - 3), Y(deck - 24), 3);
+  for (let x = x0 + 3; x < x1 - 3; x++) { const c = (x & 1) ? '#7a7a3a' : '#9a8a50'; R(g, c, X(x), Y(deck - 40), 1, 40); } R(g, OAK[1], X(x0 + 3), Y(deck - 24), x1 - x0 - 6, 1); R(g, OAK[1], X(x0 + 3), Y(deck - 12), x1 - x0 - 6, 1);
+  R(g, OAK[0], X(x0 + 20), Y(deck - 34), 12, 2); R(g, '#0c0a08', X(x0 + 21), Y(deck - 33), 10, 1);   /* the peep slit */
+  thatch(g, X(x0 - 6), X(x1 + 6), Y(deck - 40), 11, false);
+}
+function drawHut(g, cx, cy, a, row) {   /* a hut on a hut walk: board wall, a doorway with a hung curtain, a lit window, thatch */
+  const X = x => sx(x, cx), Y = y => sy(y, cy), deck = row * 16, hx = (a + 3) * 16;
+  R(g, OAK[1], X(hx), Y(deck - 40), 58, 40); for (let x = hx + 1; x < hx + 57; x++) R(g, (x - hx) % 6 === 5 ? OAK[0] : (x - hx) % 6 === 0 ? BOARD[2] : BOARD[1], X(x), Y(deck - 39), 1, 39);
+  R(g, OAK[0], X(hx + 8), Y(deck - 26), 14, 26); R(g, '#33281c', X(hx + 9), Y(deck - 25), 12, 25); R(g, '#7a4a3a', X(hx + 9), Y(deck - 25), 5, 22); R(g, '#a85a4a', X(hx + 9), Y(deck - 25), 1, 22);   /* the doorway and its curtain */
+  R(g, OAK[0], X(hx + 34), Y(deck - 28), 14, 12); R(g, '#e8c060', X(hx + 35), Y(deck - 27), 12, 10); R(g, OAK[1], X(hx + 40), Y(deck - 27), 1, 10); R(g, OAK[1], X(hx + 35), Y(deck - 22), 12, 1);   /* a lit window */
+  post(g, X(hx - 3), Y(deck - 44), Y(deck), 4); post(g, X(hx + 57), Y(deck - 44), Y(deck), 4);
+  gableRoof(g, X(hx - 8), X(hx + 66), Y(deck - 40), 18);
 }
 
 /* ================= FOREGROUND STATE (after the tiles, before the water): the gate, the culvert, the draining basin ================= */
-export function drawGate(g, pr, x, y, time) {   /* x, y: the gate's foot on the deck; pr.hits 0-3, pr.open: the gate is broken */
-  const hits = pr.open ? 3 : pr.hits || 0, shake = (pr.hitT || 0) > 0 ? ((Math.floor(time * 40) & 1) ? 1 : -1) : 0;
-  const px = x - 12 + shake, py = y;   /* the leaf is 24 wide from px */
+function paintGate(g, px, py, hits, open) {   /* the gate's frame and leaf at (px, py = its foot on the deck, the leaf 24 wide from px): static, baked once per state */
   post(g, px - 7, py - 44, py, 5); post(g, px + 26, py - 44, py, 5); R(g, OAK[2], px - 8, py - 46, 44, 4); R(g, OAK[4], px - 8, py - 46, 44, 1); lash(g, px - 7, py - 32, 5); lash(g, px + 26, py - 32, 5);
   brace(g, px - 3, py - 40, px + 4, py - 46 + 8); brace(g, px + 27, py - 40, px + 20, py - 38);
   R(g, OAK[0], px - 7, py - 3, 5, 3); R(g, OAK[0], px + 26, py - 3, 5, 3);
-  if (!pr.open) {
+  if (!open) {
     const th = 32 - hits * 2;   /* the leaf: heavy planks banded with iron, sagging as it takes blows */
     R(g, OAK[0], px - 2, py - th - 3, 28, th + 3);
     for (let i = 0; i < 5; i++) { const yy = py - th - 2 + ((i * (th + 2) / 5) | 0), hh = Math.ceil((th + 2) / 5) - 1; R(g, i & 1 ? BOARD[1] : BOARD[2], px - 1, yy, 26, hh); R(g, BOARD[4], px - 1, yy, 26, 1); R(g, BOARD[0], px - 1, yy + hh - 1, 26, 1); }
@@ -256,21 +258,25 @@ export function drawGate(g, pr, x, y, time) {   /* x, y: the gate's foot on the 
     R(g, '#8a8a82', px + 10, py - th - 6, 4, th + 4); R(g, '#c8c8c0', px + 10, py - th - 6, 1, th + 4);   /* the lifting rod up to the wheel */
     R(g, '#3a5a68', px - 1, py - 3, 26, 3); R(g, '#5e8a98', px, py - 3, 6, 1); R(g, '#5e8a98', px + 13, py - 2, 8, 1);   /* damp at the foot */
     if (hits >= 1) { R(g, OAK[0], px + 17, py - th + 6, 1, 10); R(g, OAK[0], px + 16, py - th + 15, 1, 6); R(g, OAK[0], px + 18, py - th + 8, 1, 4); }
-    if (hits >= 2) { R(g, OAK[0], px + 4, py - th + 8, 1, 14); R(g, OAK[0], px + 5, py - th + 21, 2, 1); R(g, '#e8d8a8', px + 2, py - th + 12, 2, 1); R(g, OAK[0], px + 21, py - th + 5, 1, 16); for (let i = 0; i < 4; i++) P(g, '#e8d8a8', px + 19 + (i & 1), py - th + 11 + i * 3); for (let i = 0; i < 5; i++) R(g, '#5e8a98', px + 3 + i * 5, py - 8 + (((time * 6 + i) % 4) | 0), 1, 2); }   /* split planks, pale splinters, weeping */
+    if (hits >= 2) { R(g, OAK[0], px + 4, py - th + 8, 1, 14); R(g, OAK[0], px + 5, py - th + 21, 2, 1); R(g, '#e8d8a8', px + 2, py - th + 12, 2, 1); R(g, OAK[0], px + 21, py - th + 5, 1, 16); for (let i = 0; i < 4; i++) P(g, '#e8d8a8', px + 19 + (i & 1), py - th + 11 + i * 3); for (let i = 0; i < 5; i++) R(g, '#5e8a98', px + 3 + i * 5, py - 8 + (i & 1) * 2, 1, 2); }   /* split planks, pale splinters, weeping */
   } else {
     /* broken: two splintered stumps of planking, one plank swinging from its chain, the opening black and running with water */
     R(g, '#0a0806', px + 2, py - 20, 20, 20);
     R(g, BOARD[1], px - 2, py - 12, 7, 12); R(g, BOARD[2], px - 2, py - 12, 7, 1); R(g, BOARD[1], px + 19, py - 9, 7, 9); R(g, BOARD[2], px + 19, py - 9, 7, 1);
     for (const [sx0, sh] of [[-1, 7], [1, 14], [4, 5], [20, 9], [22, 4], [24, 6]]) R(g, '#e8d8a8', px + sx0, py - 12 - sh + (sx0 > 10 ? 3 : 0), 1, sh);   /* splinters */
     R(g, OAK[2], px + 7, py - 30, 11, 4); R(g, OAK[4], px + 7, py - 30, 11, 1); R(g, '#6a6a62', px + 8, py - 36, 1, 7); R(g, '#8a8a82', px + 8, py - 36, 1, 1);   /* a plank swinging by its chain */
-    const t = time * 8;
-    for (let i = 0; i < 9; i++) { const bx = px + 3 + i * 2; R(g, i & 1 ? '#bfe6f5' : '#7fc4e0', bx, py - 6 + (((t + i * 3) % 7) | 0), 1, 3); }
-    R(g, '#e8f4f0', px + 4, py - 2, 16, 1);
   }
   /* the winding wheel on the head beam: a spoked ring */
-  const wx = px + 12, wy = py - 38, an0 = pr.open ? 0.6 : hits * 0.3;
+  const wx = px + 12, wy = py - 38, an0 = open ? 0.6 : hits * 0.3;
   for (let i = 0; i < 8; i++) { const an = an0 + i * Math.PI / 4; for (let r = 1; r <= 6; r += (r === 1 ? 2 : 1)) { const rx = Math.round(wx + Math.cos(an) * r), ry = Math.round(wy + Math.sin(an) * r); P(g, r > 4 ? OAK[4] : OAK[3], rx, ry); } }
   R(g, OAK[1], wx - 1, wy - 1, 3, 3); P(g, '#c8c8c0', wx, wy);
+}
+export function drawGate(g, pr, x, y, time) {   /* x, y: the gate's foot on the deck; pr.hits 0-3, pr.open: the gate is broken */
+  const hits = pr.open ? 3 : Math.min(3, pr.hits || 0), px = x - 12;
+  if (px - 20 > 340 || px + 60 < -20) return;
+  const key = 'gate' + (pr.open ? 'o' : hits); let c = baked.get(key); if (!c) { const [cv, cg] = canvas(60, 60); paintGate(cg, 12, 52, hits, !!pr.open); c = cv; baked.set(key, c); }
+  g.drawImage(c, px - 12, y - 52);
+  if (pr.open) { const py = y; for (let i = 0; i < 9; i++) { const bx = px + 3 + i * 2; R(g, i & 1 ? '#bfe6f5' : '#7fc4e0', bx, py - 6 + ((((time * 8) + i * 3) % 7) | 0), 1, 3); } R(g, '#e8f4f0', px + 4, y - 2, 16, 1); }   /* water running out of the broken gate */
 }
 /* the culvert leaf over the dam's foot while the gate holds; open: the black mouth and a water jet west; and a whirlpool in the basin while it drains */
 export function drawFront(g, L, cx, cy, time, st) {
@@ -314,4 +320,37 @@ export function marshSupports(L, T) {
   const have = new Set(L.routeSupports.map(p => p.x + ',' + p.y));
   for (const s of [{ x: 347, y: 14, bottom: 18, kind: 'stilt' }, { x: 348, y: 14, bottom: 18, kind: 'stilt' }]) if (!have.has(s.x + ',' + s.y)) L.routeSupports.push(s);   /* the reed tuft beside the ladder stands on the dam */
   return L;
+}
+
+/* ================= THE BULLFROG KING's EFFECTS (src/frog-king.js S.draw, main.js waves): art only, same footprints as before ================= */
+/* THE BELLY-FLOP's shockwave: a crest of mud and water running along the ground, leaning the way it runs, spray over it, a wake behind */
+export function flopCrest(g, x, y, dir, time) {
+  const d = dir > 0 ? 1 : -1, wob = (time * 18) & 1;
+  R(g, '#2a2018', x - 8, y - 3, 16, 3); R(g, '#3d3128', x - 7 + d, y - 6, 14, 3); R(g, '#5a4a3c', x - 5 + d * 2, y - 9, 10, 3); R(g, '#3d3128', x - 3 + d * 3, y - 11, 6, 2);   /* the mud heaved up, stepped, leaning ahead */
+  R(g, '#7fc4e0', x - 4 + d * 3, y - 13, 8, 3); R(g, '#bfe6f5', x - 3 + d * 4, y - 14, 5, 2); R(g, '#ffffff', x - 1 + d * 5, y - 15, 3, 1);   /* the water thrown over its top */
+  for (let i = 0; i < 5; i++) { const sxp = x + d * (2 + i * 2) + ((i * 5 + wob * 3) % 5) - 2, syp = y - 15 - ((i * 7 + (time * 30 | 0)) % 7); R(g, i & 1 ? '#ffffff' : '#bfe6f5', sxp, syp, 1, 1); }   /* spray */
+  for (let i = 1; i <= 3; i++) R(g, i & 1 ? '#7fc4e0' : '#bfe6f5', x - d * (8 + i * 5), y - 1 - (i & 1), 5 - i, 1);   /* the wake, thinning */
+}
+/* THE CROAK RIPPLE: a clean ring of water standing up off the surface, foam on its lip, rings trailing */
+export function rippleCrest(g, x, y, dir, a, time) {
+  const d = dir > 0 ? 1 : -1; g.globalAlpha = Math.max(0.15, Math.min(1, a));
+  R(g, '#3a6f8a', x - 3 + d, y - 10, 6, 10); R(g, '#7fc4e0', x - 2 + d, y - 11, 4, 9); R(g, '#bfe6f5', x - 1 + d * 2, y - 12, 3, 6); R(g, '#ffffff', x + d * 2, y - 13, 2, 2);
+  for (let i = 1; i <= 4; i++) { const sp = i * 4; R(g, i & 1 ? '#bfe6f5' : '#7fc4e0', x - d * sp - 1, y - 7 + i, 2, 1); R(g, '#7fc4e0', x - d * sp - 2, y - 1, 4 - (i >> 1), 1); }
+  if (((time * 14) | 0) & 1) { R(g, '#ffffff', x + d * 4, y - 9, 1, 1); R(g, '#ffffff', x - d * 1, y - 13, 1, 1); }
+  g.globalAlpha = 1;
+}
+/* THE FLY SWARM: each fly a dark body with a flickering pair of wings, a thread of afterimage, a few motes round the cloud */
+export function swarm(g, sw, cx, cy, time, orbit) {
+  for (let i = 0; i < 12; i++) { const a = sw.ph + i * 2.39, rr = orbit * (0.5 + ((i * 37) % 10) / 20), fx = Math.round(sw.x + Math.cos(a) * rr - cx), fy = Math.round(sw.y + Math.sin(a * 1.3) * rr * 0.6 - cy), fl = ((time * 40 + i) | 0) & 1;
+    const a2 = a - 0.5; R(g, 'rgba(26,26,20,0.35)', Math.round(sw.x + Math.cos(a2) * rr - cx), Math.round(sw.y + Math.sin(a2 * 1.3) * rr * 0.6 - cy), 1, 1);
+    R(g, '#1a1a14', fx, fy, 2, 1); R(g, '#3a3a2c', fx, fy + 1, 1, 1); R(g, fl ? '#cfe8ff' : '#8fb0c8', fx + (fl ? 0 : 1), fy - 1, 1, 1); R(g, fl ? '#8fb0c8' : '#cfe8ff', fx + (fl ? 1 : 0), fy - 2, 1, 1); }
+  for (let i = 0; i < 4; i++) { const a = -sw.ph * 0.6 + i * 1.57; R(g, 'rgba(143,209,96,0.6)', Math.round(sw.x + Math.cos(a) * orbit * 0.3 - cx), Math.round(sw.y + Math.sin(a) * orbit * 0.2 - cy), 1, 1); }
+}
+/* A TIPPED PAD: its far edge stands up out of the water (a wedge of leaf with the pale underside showing), water running off, the gold rim and the end it throws from */
+export function tippedPad(g, m, cx, cy, time) {
+  const x = Math.round(m.x - cx), y = Math.round(m.y - cy), w = m.w, d = m.tipDir > 0 ? 1 : -1, f = Math.sin(time * 18) > 0, ex = d > 0 ? x + w - 1 : x;
+  for (let k = 0; k < 7; k++) { const hx = ex - d * k * 1; R(g, k < 2 ? '#d8e8a0' : '#9ac86a', hx, y - 2 - (6 - k), 1, 6 - k + 1); }   /* the lifted lip: pale underside, a leaf-green edge */
+  R(g, '#2f6e50', ex - d * 3 + (d > 0 ? 0 : -1), y - 2, 4, 2);
+  g.fillStyle = f ? '#ffd36b' : '#fff1a0'; g.fillRect(x - 1, y - 1, w + 2, 1); g.fillRect(x - 1, y + m.h, w + 2, 1); g.fillRect(d > 0 ? x + w - 3 : x, y - 4, 3, 3);
+  for (let i = 0; i < 3; i++) R(g, '#bfe6f5', ex - d * (2 + i * 3), y + ((time * 14 + i * 3) % 5 | 0), 1, 2);   /* water running off the lifted edge */
 }

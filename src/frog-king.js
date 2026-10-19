@@ -18,6 +18,7 @@
      THE SLAP          poundTell (red !!) - he slaps the water and the court's pads all go under for a moment: off the pads, onto a bank
    His openings stay the old ones too: the leap left late (BELLY-FLOP, DAZED), the breath choked on a shield, his croaking throat, the mud.
    Outside them THE HIDE turns half a blow (B15: 0.5x, never immune). Numbers here; the machine is updateFrog in src/main.js. */
+import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
   hp: 740,
@@ -69,13 +70,10 @@ export function makeFrogCourt(ctx) {
     S.fling = { vx, t: FK.ripple.flingT }; S.n.flings++; ctx.ring(m.x + m.w / 2, m.y0 + 3, 22, '#ffd36b'); ctx.number(p.x, p.y - 26, 'THE PAD THROWS YOU', '#ffd36b'); ctx.spring(); };
   S.slap = () => { for (const m of courtPads(ctx.movers(), ctx.arena())) { m.slapT = FK.pound.sink; m.tipT = 0; } };
   S.show = () => ({ swarm: S.swarm ? { x: S.swarm.x, y: S.swarm.y, t: S.swarm.t } : null, ripples: S.ripples.map(r => ({ x: r.x, dir: r.dir })), fling: !!S.fling, reel: !!S.reel, n: S.n });
-  S.draw = (g, cx, cy, time) => {
-    if (S.swarm) { const sw = S.swarm; for (let i = 0; i < 11; i++) { const a = sw.ph + i * 2.39, rr = FK.swarm.orbit * (0.5 + ((i * 37) % 10) / 20); const x = R(sw.x + Math.cos(a) * rr - cx), y = R(sw.y + Math.sin(a * 1.3) * rr * 0.6 - cy);
-      g.fillStyle = '#1a1a14'; g.fillRect(x, y, 2, 1); g.fillStyle = (i & 1) ? '#cfe8ff' : '#8fd160'; g.fillRect(x + (i & 1 ? -1 : 2), y - 1, 1, 1); } }
-    for (const r of S.ripples) { const x = R(r.x - cx), y = R(r.y - cy), a = Math.max(0, Math.min(1, r.life / 1.2));
-      g.globalAlpha = 0.85 * a; g.fillStyle = '#dff4ff'; g.fillRect(x - 1, y - 9, 2, 8); g.fillStyle = '#7fc4e0'; g.fillRect(x - 3 * r.dir - 1, y - 6, 2, 5); g.fillRect(x - 6 * r.dir - 1, y - 3, 2, 3); g.globalAlpha = 1; }
-    for (const m of courtPads(ctx.movers(), ctx.arena() || { x0: -1e9, x1: 1e9 })) if (m.tipT > 0) { const x = R(m.x - cx), y = R(m.y - cy), f = Math.sin(time * 18) > 0;
-      g.fillStyle = f ? '#ffd36b' : '#fff1a0'; g.fillRect(x - 1, y - 1, m.w + 2, 1); g.fillRect(x - 1, y + m.h, m.w + 2, 1); g.fillRect(x + (m.tipDir > 0 ? m.w - 3 : 0), y - 4, 3, 3); }
+  S.draw = (g, cx, cy, time) => {   /* (claude/marsh2art: the flies, the ripples and the tipped pads are drawn in src/redraw/marsh2_art.js) */
+    if (S.swarm) M2A.swarm(g, S.swarm, cx, cy, time, FK.swarm.orbit);
+    for (const r of S.ripples) M2A.rippleCrest(g, R(r.x - cx), R(r.y - cy), r.dir, r.life / 1.2, time);
+    for (const m of courtPads(ctx.movers(), ctx.arena() || { x0: -1e9, x1: 1e9 })) if (m.tipT > 0) M2A.tippedPad(g, m, cx, cy, time);
   };
   return S;
 }
