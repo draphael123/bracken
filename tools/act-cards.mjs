@@ -27,7 +27,7 @@ ok('beat length is 0.5 s and fits inside the shortest bossWon (2.2 s): nothing w
 const n = (re) => (src.match(re) || []).length;
 ok('startBossBeat is called once, guarded by !bossBeat', n(/startBossBeat\(\)/g) === 2 && /bossWon > 0 && !bossBeat\) startBossBeat\(\)/.test(src));
 ok('bossBeat and actCard are cleared on level load', /bossWon = 0; bossBeat = null; actCard = null;/.test(src));
-ok('the beat plays the stinger itself; queenDies no longer doubles it', /function queenDies\(who\) \{\s*setView/.test(src) && /SFX\.bossDown\(\); if \(plan\.slow\)/.test(src));
+ok('the beat plays the stinger itself; queenDies no longer doubles it', !/SFX\.bossDown\(/.test((src.match(/function queenDies\(who\) \{[^]*?\n\}/)||[''])[0]) && /SFX\.bossDown\(\); if \(plan\.slow\)/.test(src));
 ok('beat and card are never modal (no stop/hitstop/state change in them)', !/function startBossBeat[^}]*(hitstop|state =)/.test(src) && !/function startActCard[^}]*(state =|stop =)/.test(src));
 ok('the card is seen-flagged in the save (PROG.actSeen via markSeen) and skips rush / trial / shop / boss-jump', /AC\.markSeen\(PROG, c\.act\)/.test(src) && /L\.trial \|\| L\.shop \|\| rushOn\(\) \|\| bossJumpOn/.test(src));
 

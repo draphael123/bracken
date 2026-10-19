@@ -15,7 +15,7 @@ const src = rd('src/audio.js');
 const A = await import('../src/audio.js');
 const problems = [];
 // 1
-for (const m of src.matchAll(/\bfile\('([\w]+)'/g)) if (!man[m[1]]) problems.push("file('" + m[1] + "') names a pool that is not in audio/manifest.json");
+for (const m of src.matchAll(/\bfile\('([\w]+)'[,)]/g)) if (!man[m[1]]) problems.push("file('" + m[1] + "') names a pool that is not in audio/manifest.json");
 for (const m of src.matchAll(/\bp: '([\w]+)'/g)) if (!man[m[1]]) problems.push("REC row names pool '" + m[1] + "' that is not in audio/manifest.json");
 for (const [pool, list] of Object.entries(man)) for (const f of list) if (!existsSync(join(ROOT, f))) problems.push(pool + ' -> ' + f + ' is missing on disk');
 // 2
