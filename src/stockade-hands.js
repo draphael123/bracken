@@ -25,7 +25,7 @@ export const STK_SAY = {
 export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70 };
 export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
 export const GATE = { r: 16 * 16, delay: 0.5 };
-export const TOWER = { take: 0.5, climb: 1.1, shotEvery: 1.25, volleyN: 4, pegDx: 5 * 16, fall: 0.7, wreck: 3.2, cap: 40, deck: 5 };
+export const TOWER = { take: 0.5, climb: 1.1, shotEvery: 1.9, volleyEvery: 4, volleyN: 4, sway: 1.8, pegDx: 4 * 16, fall: 0.7, wreck: 3.2, cap: 40, deck: 5 };
 const LURED = new Set(['sprig', 'shield', 'pike', 'brute', 'hound', 'sapper', 'thorn', 'runner']);
 
 export function makeStockadeHands(ctx) {
@@ -132,7 +132,7 @@ export function makeStockadeHands(ctx) {
     const ch = ctx.boss(); if (tower.st === 'fall') { tower.fallK = Math.min(1, tower.fallK + dt / TOWER.fall); return; }
     if (tower.st !== 'manned' || !ch) return;
     for (const pg of tower.pegs) if (!pg.cut && hb && ctx.overlap(hb, { l: pg.x - 8, r: pg.x + 8, t: tower.foot - 16, b: tower.foot }) && ctx.hitOnce(pg)) {
-      pg.cut = true; ctx.sfx.crack && ctx.sfx.crack(); ctx.sparks(pg.x, tower.foot - 8, 1, 5); say(pg.x, tower.foot - 30, 'lash', '#8fd160');
+      pg.cut = true; tower.sway = TOWER.sway; ctx.sfx.crack && ctx.sfx.crack();   /* the tower lurches: he holds on with both hands and does not shoot (the way to the other peg) */ ctx.sparks(pg.x, tower.foot - 8, 1, 5); say(pg.x, tower.foot - 30, 'lash', '#8fd160');
       if (tower.pegs.every(q => q.cut)) { const P = hero(); tower.dir = Math.sign(tower.x - (P ? P.x : tower.x - 1)) || 1; tower.st = 'fall'; tower.fallK = 0; say(tower.x, tower.deck - 40, 'falls', '#ff9a5c'); ctx.sfx.roar && ctx.sfx.roar(); }
     }
   }
@@ -151,7 +151,8 @@ export function makeStockadeHands(ctx) {
       e.x = tower.x; e.y = tower.deck; e.vx = 0; e.vy = 0; e.anim += dt; e.towerT += dt; e.modeT -= dt; const P = hero(); if (P) e.face = Math.sign(P.x - e.x) || e.face;
       if (tower.st === 'fall') { e.mode = 'towerFall'; e.modeT = TOWER.fall; e.fx0 = e.x; return true; }
       if (e.towerT > TOWER.cap) { tower.st = 'down'; e.mode = 'walk'; e.modeT = 0.6; e.y = A.floor; e.stance = 'club'; say(e.x, e.y - e.h - 12, 'comes', '#ffd36b'); return true; }   /* (a safety, never the answer: 40 s up there and he climbs down) */
-      if (m === 'tower' && e.modeT <= 0) { e.shotN++; if (e.shotN % 3 === 0) { e.mode = 'towerAim'; e.volley = true; e.modeT = 0.75; ctx.number(e.x, e.y - e.h - 12, '^^', '#8fd160'); } else { e.mode = 'towerAim'; e.volley = false; e.modeT = 0.6; ctx.number(e.x, e.y - e.h - 12, '^', '#8fd160'); } ctx.sfx.bow && ctx.sfx.bow(); }
+      if (tower.sway > 0) { tower.sway -= dt; if (m !== 'tower') e.mode = 'tower'; e.modeT = Math.max(e.modeT, 0.5); return true; }
+      if (m === 'tower' && e.modeT <= 0) { e.shotN++; if (e.shotN % TOWER.volleyEvery === 0) { e.mode = 'towerAim'; e.volley = true; e.modeT = 0.75; ctx.number(e.x, e.y - e.h - 12, '^^', '#8fd160'); } else { e.mode = 'towerAim'; e.volley = false; e.modeT = 0.6; ctx.number(e.x, e.y - e.h - 12, '^', '#8fd160'); } ctx.sfx.bow && ctx.sfx.bow(); }
       else if (m === 'towerAim' && e.modeT <= 0) { e.mode = 'towerLoose'; e.modeT = 0.25; if (P) { if (e.volley) ctx.volley(e, P.x, TOWER.volleyN); else ctx.arrow(e, P.x, P.y - 8); } }
       else if (m === 'towerLoose' && e.modeT <= 0) { e.mode = 'tower'; e.modeT = TOWER.shotEvery; }
       return true; }

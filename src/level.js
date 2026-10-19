@@ -851,9 +851,9 @@ function stockadeWatchtowers(R3) {
   R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
   /* the gate is barred as laid (T.PORT) and opened by the horn, which every hero can blow: the reach fill has it open (src/reachcore.js reachDoors) */
   R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 13, y1: 19 }]);
-  const chief = R.ents.find(e => e.t === 'chief'), twx = (chief.x - 5) * TS;   /* HIS WAR TOWER: on the dais (final 588-591), its deck five rows over the hall floor, a lashing to a peg five tiles out either side */
+  const chief = R.ents.find(e => e.t === 'chief'), twx = (chief.x - 5) * TS;   /* HIS WAR TOWER: on the dais (final 588-591), its deck five rows over the hall floor, a lashing to a peg four tiles out either side */
   R.stockade = {
-    tower: { x: twx, deck: 15 * TS, base: 18 * TS, foot: 20 * TS, pegs: [twx - 5 * TS, twx + 5 * TS] },
+    tower: { x: twx, deck: 15 * TS, base: 18 * TS, foot: 20 * TS, pegs: [twx - 4 * TS, twx + 4 * TS] },
     gate: { x: X(43), y0: 13, y1: 19 },
     exam: { x0: X(56), x1: X(62), y0: 0, y1: 24, end: X(110), draw: [6.5, 10, 13.5] },
     areas: [['THE OUTER CAMP', 0, 131], ['THE YARD', 131, 226], ['THE WALL WALK AND THE KENNELS', 226, 334], ["THE SAPPERS' TUNNEL", 334, 378], ['THE WATCHTOWERS', 378, X(N)], ['THE GREAT HALL', X(N), 9999]],
