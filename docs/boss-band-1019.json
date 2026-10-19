@@ -295,20 +295,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 7,
+     "warden": 7,
+     "pyro": 7
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 58,
+    "meanSecs": 79,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "death": 15,
+     "win": 21
+    }
    },
+   "lvl": 11,
    "dry": {
     "n": {
      "knight": 0,
@@ -325,7 +329,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "LOW",
    "floorMiss": false
   },
   {
@@ -338,20 +342,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 8,
+     "warden": 6,
+     "pyro": 7
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 58,
+    "meanSecs": 102,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "death": 15,
+     "win": 21
+    }
    },
+   "lvl": 12,
    "dry": {
     "n": {
      "knight": 0,
@@ -368,7 +376,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "LOW",
    "floorMiss": false
   },
   {
@@ -381,20 +389,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 9,
+     "warden": 7,
+     "pyro": 10
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 72,
+    "meanSecs": 49,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "death": 10,
+     "win": 26
+    }
    },
+   "lvl": 14,
    "dry": {
     "n": {
      "knight": 0,
@@ -411,7 +423,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "HIGH",
    "floorMiss": false
   },
   {
@@ -424,20 +436,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 11,
+     "pyro": 10
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 92,
+    "meanSecs": 44,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "win": 33,
+     "death": 3
+    }
    },
+   "lvl": 16,
    "dry": {
     "n": {
      "knight": 0,
@@ -454,7 +470,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "HIGH",
    "floorMiss": false
   },
   {
@@ -467,20 +483,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 8,
+     "warden": 12,
+     "pyro": 11
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 86,
+    "meanSecs": 45,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "win": 31,
+     "death": 5
+    }
    },
+   "lvl": 16,
    "dry": {
     "n": {
      "knight": 0,
@@ -497,7 +517,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "HIGH",
    "floorMiss": false
   },
   {
@@ -510,20 +530,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
-     "pyro": 0
+     "knight": 9,
+     "warden": 11,
+     "pyro": 7
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 75,
+    "meanSecs": 35,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "win": 27,
+     "death": 9
+    }
    },
+   "lvl": 17,
    "dry": {
     "n": {
      "knight": 0,
@@ -540,7 +564,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "HIGH",
    "floorMiss": false
   },
   {
@@ -553,20 +577,24 @@
    ],
    "flasks": {
     "n": {
-     "knight": 0,
-     "warden": 0,
+     "knight": 12,
+     "warden": 12,
      "pyro": 0
     },
     "wins": {
-     "knight": 0,
-     "warden": 0,
+     "knight": 7,
+     "warden": 8,
      "pyro": 0
     },
-    "pct": null,
-    "meanSecs": null,
+    "pct": 63,
+    "meanSecs": 43,
     "errs": 0,
-    "outcomes": {}
+    "outcomes": {
+     "death": 9,
+     "win": 15
+    }
    },
+   "lvl": 18,
    "dry": {
     "n": {
      "knight": 0,
@@ -583,7 +611,7 @@
     "errs": 0,
     "outcomes": {}
    },
-   "verdict": "PENDING",
+   "verdict": "IN",
    "floorMiss": false
   }
  ]
