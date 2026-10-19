@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-18",
+    "batch": 103,
+    "lines": [
+      "Co-op Tavern: 4 players, local + online",
+      "Lit Church: brazier Paladin, undead foes",
+      "Lamplit Street rebuilt: light the dark",
+      "Lamplit Street: throw fire",
+      "The Wickling"
+    ]
+  },
+  {
+    "date": "2026-10-18",
     "batch": 102,
     "lines": [
       "Foes get tougher act by act; fixed in Canal",
