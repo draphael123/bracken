@@ -49,7 +49,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   // ================= 1. THE WOODSMAN'S CABIN (0-104): TEACH - the mark, the gully bridge, the dodge, the skid road and the heavy cut =================
   floor(0, 26, 22);
   sign(5, 21, 'ARROWS/WASD MOVE   Z JUMP   X SWING', { pyro: 'ARROWS/WASD MOVE   Z JUMP   X STAFF   TAP C: AN EMBER   HOLD C: THE JET', paladin: 'ARROWS/WASD MOVE   Z JUMP   X MAUL, SLOW AND HEAVY' });
-  deco('cabin', 10, 21); deco('stump', 15, 21, { v: 0 });   /* the woodsman's chopping block (the art lane: an axe in it) */
+  deco('cabin', 10, 21); deco('stump', 15, 21, { v: 0 });   /* the woodsman's chopping block, the axe in it (the art lane draws the block + axe; the woodsman who hands it over stands beside it, drawn as dressing: src/redraw/lumber_trail_tiles.js dress) */
   sign(18, 21, "THE WOODSMAN'S MARK IS ON THE PINES. FOUR STROKES FELL ONE: IT FALLS THE WAY IT LEANS.");
   coins([12, 20], [13, 19], [14, 20], [20, 20], [22, 20]);
   deck(7, 19, 6); coins([8, 18], [10, 18], [12, 18]); deck(16, 19, 4);   /* the cabin's woodshed roof */
@@ -211,6 +211,9 @@ export function buildLumberTrail({ painter, T, TS }) {
   fell('hive');
 
   const ret = {
+    routeSupports: [277, 281, 285, 325, 330, 334].map(x => ({ x, y: 13, bottom: 17, kind: 'crib', post: true })),   /* the store's and the den's roof props: timber posts under the beam (art: drawn as props, never collision) */
+    lumberKit: true,   /* (claude/lumbertrailart) the trail's own tile kit, supports, props and landmark: src/redraw/lumber_trail_*.js */
+    tints: [[0, 104, [255, 214, 140], 0.10], [105, 205, [140, 196, 214], 0.12], [206, 300, [214, 150, 84], 0.10], [301, 409, [30, 76, 50], 0.14], [410, 509, [60, 96, 140], 0.18], [510, 549, [240, 180, 40], 0.16]],   /* the cabin glade's gold, the ford's cool mist, the camp's smoke-amber, the ridge's deep green, the tarn's cold blue, the hive's amber */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra, lessons, fellRamps: true,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     duskStart: 5800, duskLen: 1000, music: 'brackenwood',
