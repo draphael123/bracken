@@ -64,7 +64,7 @@ try {
       out['pursue_' + id] = { live: F.live('pursue'), pursuits: F.FPS.pursuits - p0, chased: Math.round(chased), home: Math.round(s.x - x0) }; }
     /* ---- LEAD ---- */
     for (const id of ['stockade', 'wood']) { spot = setup(id); clear(); BK.tp(spot[0], spot[1]); BK.sim(5); const [a] = BK.spawnFoe({ t: 'archer', x: spot[0], y: spot[1], face: 1 }); a.hp = 999;
-      BK.tp(spot[0] + 7, spot[1]); BK.sim(2); a.timer = 0; let shot = null, px = 0, pv = 0; a.fpAim = undefined; K.right = true;
+      BK.tp(spot[0] + 4, spot[1]); BK.sim(2); a.timer = 0; let shot = null, px = 0, pv = 0; a.fpAim = undefined; K.right = true;
       for (let k = 0; k < 160 && !shot; k++) { const n0 = BK.seeds().length; px = P.x; pv = P.vx; BK.sim(1); const s = BK.seeds().slice(n0).find(q => q.owner === a); if (s) shot = { x: s.x, vx: s.vx }; }
       K.right = false; out['lead_' + id] = shot ? { lead: a.fpAim === undefined ? 0 : Math.round(a.fpAim - a.fpAimFrom), heroVx: Math.round(pv) } : { none: true }; }
     /* ---- TOLD: a pounce jumped ---- */

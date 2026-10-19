@@ -86,17 +86,17 @@ export const PARRY_PIX = ['#######', '#.###.#', '#######', '.#####.', '.#####.',
 export function released(e, mode, hero, now) {
   const r = SIG[e.t]; if (!r || r.mode !== mode || r.answer === 'parry' || !hero || hero.dead || e.elite || e.maxHp || e.mini) return false;
   if (Math.abs(hero.x - e.x) > TOLD.reach * 1.5 + (e.w || 12) / 2 || Math.abs(hero.y - e.y) > 48) return false;
-  e.toldAt = now; e.toldAns = r.answer; e.toldOk = false; return true;
+  e.taAt = now; e.taAns = r.answer; e.taOk = false; return true;
 }
 /* is the hero in the answer's posture inside its reach right now? (jump: off the floor and over its feet; duck: down) */
 export const inPosture = (e, hero, ducking) => !!hero && !hero.dead && Math.abs(hero.x - e.x) <= TOLD.reach + (e.w || 12) / 2 && Math.abs(hero.y - e.y) <= 40
-  && (e.toldAns === 'jump' ? !hero.ground && hero.y < e.y - 4 : !!ducking);
+  && (e.taAns === 'jump' ? !hero.ground && hero.y < e.y - 4 : !!ducking);
 /* ONCE A FRAME, per watched foe: in posture at some frame of the window, and unhurt at its end -> OVERREACHED: api.lean(e, share), api.say(e, word, col).
    hurtAt: when the hero last lost health */
 export function judge(e, now, hero, ducking, hurtAt, api) {
-  if (e.toldAt === undefined) return false;
-  if (now - e.toldAt < TOLD.judge) { if (inPosture(e, hero, ducking)) e.toldOk = true; return false; }
-  const at = e.toldAt, ans = e.toldAns, ok = e.toldOk; e.toldAt = undefined; e.toldAns = undefined; e.toldOk = false;
+  if (e.taAt === undefined) return false;
+  if (now - e.taAt < TOLD.judge) { if (inPosture(e, hero, ducking)) e.taOk = true; return false; }
+  const at = e.taAt, ans = e.taAns, ok = e.taOk; e.taAt = undefined; e.taAns = undefined; e.taOk = false;
   if (!ok || !e.alive || (hurtAt !== undefined && hurtAt >= at)) return false;
   api.lean(e, TOLD.overreach); api.say(e, ans === 'jump' ? 'OVER IT' : 'UNDER IT', TOLD.col); return true;
 }

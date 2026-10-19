@@ -38,6 +38,7 @@ const campaign = LEVELS.filter(d => !(d.hidden && !d.secret) && !/^(shop|trial_|
   must(seq[0] === 1 && seq[1] < 1 && seq[2] < seq[1] && seq[4] > 0, 'the same verb spammed must go stale and never to nothing: ' + seq);
   const f = {}, mix = ['cut', 'sweep', 'rise', 'cut'].map((v, i) => FB.vary(f, v, i * 0.3));
   must(mix[0].k === 1 && mix.slice(1).every(r => r.varied && r.k === FB.FB.varied && FB.FB.varied > 1), 'a varied verb must pay FB.varied: ' + mix.map(r => r.k));
+  const hv = {}, hs = ['heavy', 'heavy', 'heavy'].map((v, i) => FB.vary(hv, v, i * 0.3).k); must(hs.every(k => k === 1), 'a heavy is never stale (weight breaks a guard): ' + hs);
   const g = {}; FB.vary(g, 'cut', 0); must(FB.vary(g, 'cut', FB.FB.window + 0.1).k === 1, 'a new exchange (past FB.window) starts clean');
   must(FB.vary({}, 'throw', 0).k === 1 && FB.vary({}, null, 0).k === 1, 'a room\'s blow (a throw) and no verb are never counted');
   const h = {}; FB.vary(h, 'cut', 0); const v2 = FB.vary(h, 'sweep', 0.2), v3 = FB.vary(h, 'sweep', 0.4);
@@ -105,6 +106,7 @@ for (const [t, k] of Object.entries(FP.PURSUE)) { must(SPAWNED.has(t), 'PURSUE n
 must(FP.paceOf({ t: 'soldier', speed: 30 }) < 92 && FP.paceOf({ t: 'brute', speed: 999 }) < 92, 'a walker pursues under a hero\'s run (92): he can get away');
 must(FP.paceOf({ t: 'hound', speed: 105 }) > 92, 'a hunter pursues faster than a run');
 must(FP.PURSUIT.leash > 0 && FP.PURSUIT.leash < 600 && FP.PURSUIT.lose > 0, 'the leash is finite');
+{ const s = FP.leadShot({ x: 100, vx: 92 }, 0, 200); must(s.T === 0.75 && s.x > 100 && s.x <= 150, 'the led shot keeps the flat flight (a lob would fall on a DUCKING hero) and its reach: ' + JSON.stringify(s)); }
 must(FP.LEAD.k > 0 && FP.LEAD.k < 1 && FP.aimX({ x: 0, vx: 1000 }, 1, true) === FP.LEAD.max && FP.aimX({ x: 0, vx: 92 }, 0.75, false) === 0, 'the lead is partial, capped, and off where the level is not live');
 { const sq = [{ t: 'sprig', squad: 'a', alive: true, hp: 5 }, { t: 'archer', squad: 'a', alive: true, hp: 3 }], r = FP.assignRoles(sq, e => e.sqRole || (e.t === 'archer' ? 'back' : 'flank'));
   must(r.squads === 1 && r.promoted === 1 && sq[0].sqRole === 'front' && sq[1].sqRole === 'back', 'a squad with no front gets its sturdiest melee as its front'); }

@@ -61,10 +61,11 @@ export function assignRoles(enemies, roleOf) {
     if (l.length >= 2 && !l.some(e => e.sqRole === 'front')) { const m = l.filter(e => e.sqRole === 'flank').sort((a, b) => (b.hp || 0) - (a.hp || 0))[0]; if (m) { m.sqRole = 'front'; n++; } } }
   return { squads: by.size, promoted: n };
 }
-/* THE LEADED SHOT: { x, T } - where to loose (LEAD) and the flight time, longer than the flat 0.75 s when a flat shot at `cap` px/s would not reach it
-   (the arrow goes higher and lands where the hero will be; the lead is taken over that longer flight) */
+/* THE LEADED SHOT: { x, T } - where to loose (LEAD) over the archer's own flat flight T0. The flight is NEVER lengthened: a longer, higher shot would
+   come down steeply onto a DUCKING hero, and a high arrow's answer is the duck (tools/duck.mjs). A lead past the flat shot's reach (cap x T0) is
+   held to it: the arrow falls short of where he is going, as an unled one fell short of where he was. */
 export function leadShot(hero, sx, cap, T0 = 0.75) {
-  let T = T0, x = aimX(hero, T, true);
-  for (let i = 0; i < 3; i++) { const need = Math.abs(x - sx) / cap; if (need <= T) break; T = Math.min(1.6, need); x = aimX(hero, T, true); }
-  return { x, T };
+  if (hero.ducking || hero.knock > 0 || !(Math.abs(hero.vx || 0) >= 20)) return { x: hero.x, T: T0 };   /* a ducking, a thrown or a standing hero is shot where he is: the lead is for one who RUNS (and a duck under a high arrow stays the answer) */
+  const x = aimX(hero, T0, true), r = cap * T0, far = Math.abs(hero.x - sx) >= r;
+  return { x: far ? hero.x : Math.max(sx - r, Math.min(sx + r, x)), T: T0 };
 }

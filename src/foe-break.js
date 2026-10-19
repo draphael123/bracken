@@ -7,7 +7,8 @@
 //
 //   VARIED BLOWS FILL IT, THE SAME BLOW SPAMMED GOES STALE (the boss anti-mash's rule 1, src/anti-mash.js, brought down to the commons -
 //     on the BAR only: a common foe's health still takes every blow whole). Blows on one foe inside FB.window of each other are one
-//     EXCHANGE. In an exchange, a verb different from the last one pays FB.varied of its fill; the same verb again pays FB.stale[n]
+//     EXCHANGE. In an exchange, a verb different from the last one pays FB.varied of its fill; the same LIGHT verb again (cut, sweep, rise, shot, dash -
+//     a heavy, a plunge, a riposte or an ability is never stale: weight is what breaks a guard) pays FB.stale[n]
 //     (x1, 0.6, 0.35, 0.2...). THE LIGHT-BAR FOES (a goblin's 24: taps never moved it, only weight did) take FB.lightVaried from a
 //     VARIED light verb - a cut after a sweep, a rising cut after a cut - so a hero who mixes his blows breaks a goblin without a heavy,
 //     and a masher still never does. THE READ: a stale blow is heard duller and sparks dimmer (the boss rule's e.amStaleAt).
@@ -40,7 +41,8 @@ export function vary(e, verb, now) {
   if (!s || !(now - s.at < FB.window)) { e.fbx = { verb, n: 1, at: now }; return { k: 1, varied: false, stale: false }; }
   s.at = now;
   if (s.verb !== verb) { s.verb = verb; s.n = 1; return { k: FB.varied, varied: true, stale: false }; }
-  s.n++; const k = FB.stale[Math.min(s.n, FB.stale.length) - 1];
+  s.n++; if (!LIGHT_VERBS.has(verb)) return { k: 1, varied: false, stale: false };   /* a HEAVY, a plunge, a riposte, an ability is never stale: weight is what breaks a guard (only a mashed light verb goes stale) */
+  const k = FB.stale[Math.min(s.n, FB.stale.length) - 1];
   return { k, varied: false, stale: k < 1 };
 }
 /* WHAT A VARIED LIGHT VERB ADDS to a light-bar foe's fill (0 for anything else) */
