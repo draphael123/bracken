@@ -795,7 +795,8 @@ function stockadeWatchtowers(R3) {
   const run = (u0, u1, y, v) => { for (let u = u0; u <= u1; u++) set(u, y, v); }, col = (u, y0, y1, v) => { for (let y = y0; y <= y1; y++) set(u, y, v); };
   const ent = (t, u, y, o) => WT.ent(t, X(u), y, o || {}), coins = (...p) => p.forEach(([u, y]) => WT.ent('coin', X(u), y));
   const posts = [];   /* the walkways' lashed poles, down to what is under them (src/route-art.js draws routeSupports) */
-  const post = (u, y, bottom) => posts.push({ x: X(u), y, bottom });
+  const post = (u, y, bottom) => posts.push({ x: X(u), y, bottom, kind: 'stkpost' });   /* (claude/stockade2art) a lashed pole (src/redraw/stockade2_art.js) */
+  const sup = (x, y, bottom, kind, o) => posts.push({ x, y, bottom, kind, ...(o || {}) });   /* FINAL columns: the Stockade's drawn footings (art only - no tile changes) */
 
   // ---- THE CAPTURED HORN: the walk along the inner palisade, and the cook fire under it ----
   block(0, 3, 12, 27);                                             /* the plateau runs on to the palisade */
@@ -846,8 +847,20 @@ function stockadeWatchtowers(R3) {
   /* (claude/stockade2) A ROPE UP BESIDE THE FIRST LIFT (final 377): the pulley lift stays the easy way up, the rope is the way when it is down
      (the walker - and a player who stepped off it - never had a second way; the walker was STUCK there on master too) */
   for (let y = 12; y <= 19; y++) WT.set(377, y, T.NET);
+  /* (claude/stockade2art) THE FIFTEEN OVERHANGS tools/visible-supports.mjs listed, each given a drawn footing in the camp's timber (art only: background poles, no tiles) */
+  sup(515, 2, 11, 'stkmast', { nest: true });                                    /* the crow's nest on tower two's mast (514-516,2) */
+  sup(505, 10, 26, 'stkleg', { gap: 16 }); sup(519, 10, 26, 'stkleg', { gap: 16 }); sup(536, 7, 26, 'stkleg', { gap: 16 });   /* the decks' tails on outrigger legs braced to their towers (504-507,10; 519,10; 536,7) */
+  sup(511, 11, 26, 'stktrestle'); sup(522, 8, 26, 'stktrestle'); sup(529, 8, 26, 'stktrestle');   /* a trestle driven into the pit under the rope bridge's sag (508-513,11) and each hanging walk (520-523,8; 526-531,8) */
+  sup(506, 10, 11, 'stkrope', { x1: 514 }); sup(520, 8, 9, 'stkrope', { x1: 523 }); sup(526, 8, 9, 'stkrope', { x1: 531 });   /* their hand-lines and hangers (drawn off the grid's planks) */
+  sup(428, 8, 12, 'stkpost'); sup(411, 13, 17, 'stkpost');                          /* the lookout ledge over the road in (427-428,8); the net-bridge's last steps (410,12; 411-412,13) */
+  sup(102, 12, 20, 'stkpost'); sup(105, 12, 20, 'stkpost');                          /* the shed roof over the yard (102-105,12) */
+  sup(114, 21, 28, 'stkpost'); sup(120, 21, 28, 'stkpost'); sup(127, 21, 26, 'stkpost');   /* the plank bridge over the ditch (114-127,21) */
+  sup(232, 17, 22, 'stkpost'); sup(238, 17, 22, 'stkpost'); sup(244, 17, 22, 'stkpost');   /* the kennels' wall walk on its poles (232-244,17) */
+  for (const x of [337, 344, 351, 358, 365, 372]) sup(x, 21, 25, 'stkprop');         /* the sappers' tunnel roof, shored (336-373,21) */
   const R = WT.done();
   R.routeSupports = (R.routeSupports || []).concat(posts);
+  R.stkKit = true; R.stkPit = { row: 25, x0: X(55), x1: X(109) };   /* (claude/stockade2art) the lashed-timber tower bodies and the netted stake pit's stakes (src/redraw/stockade2_art.js stkTile) */
+  R.stkTowers = [[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 10, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor }));
   R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
   /* the gate is barred as laid (T.PORT) and opened by the horn, which every hero can blow: the reach fill has it open (src/reachcore.js reachDoors) */
   R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 13, y1: 19 }]);

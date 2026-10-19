@@ -17,6 +17,7 @@
                         his 'planted' read and its quarter cap). The same verb as the log piles: strike the lashing, it drops.
      THE AREAS          L.stockade.areas: a banner names each area as you walk into it (Rootway recipe 1).
    Lines are said through ctx.number with STK_SAY (routed by src/hint-lines.js, tools/hint-shown.mjs). */
+import * as SA from './redraw/stockade2_art.js';   /* (claude/stockade2art) the drawn pieces: piles, horn, gate, supports, the war tower */
 export const STK_SAY = {
   took: 'HIS HORN IS YOURS: E BLOWS IT', blow: 'THE CAMP RUNS TO ITS HORN', gate: 'THE GATE OPENS TO THEIR HORN', crushed: 'CRUSHED UNDER THE LOGS',
   exam: 'THREE HORNS WIND: CROSS', tower: 'TO THE WAR TOWER', taut: 'CUT THE LASHINGS', lash: 'A LASHING GOES', falls: 'THE TOWER FALLS', wreck: 'IN THE WRECK: CUT HIM',
@@ -30,16 +31,16 @@ const LURED = new Set(['sprig', 'shield', 'pike', 'brute', 'hound', 'sapper', 't
 
 export function makeStockadeHands(ctx) {
   const TS = ctx.TS, say = (x, y, k, c) => ctx.number(x, y, STK_SAY[k], c || '#ffd36b');
-  let Lk = null, S = null, held = false, piles = [], pickups = [], rings = [], gateOpen = false, gateT = 0, cd = 0, examOn = false, banner = null, seenArea = -1, tower = null, tookSaid = false;
+  let gateAge = 0, Lk = null, S = null, held = false, piles = [], pickups = [], rings = [], gateOpen = false, gateT = 0, cd = 0, examOn = false, banner = null, seenArea = -1, tower = null, tookSaid = false;
   const on = () => !!(ctx.L && ctx.L.stockade);
   /* per level load (not per death): the horn you took stays yours, the gate you opened stays open */
-  function load() { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; tookSaid = false; seenArea = -1; reset(); }
+  function load() { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; gateAge = 0; tookSaid = false; seenArea = -1; reset(); }
   function reset() {
     if (!on()) return; if (Lk !== ctx.L) { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; tookSaid = false; seenArea = -1; }
     piles = (ctx.L.ents || []).filter(e => e.t === 'logpile').map(e => ({ id: e.id, x: e.x * TS + 8, y: (e.y + 1) * TS, floor: floorUnder(e.x, e.y + 2), st: 'hung', t: 0, by: 0, vy: 0 }));
     pickups = []; rings = []; cd = 0; gateT = 0; examOn = false; banner = null;
     const W = ctx.L.arena, T0 = S && S.tower;
-    tower = T0 ? { x: T0.x, deck: T0.deck, foot: T0.foot, pegs: T0.pegs.map(x => ({ x, cut: false })), st: 'up', t: 0, dir: 1, fallK: 0 } : null;
+    tower = T0 ? { x: T0.x, deck: T0.deck, base: T0.base, foot: T0.foot, pegs: T0.pegs.map(x => ({ x, cut: false, cutT: 0 })), st: 'up', t: 0, dir: 1, fallK: 0 } : null;
     if (W && !T0) tower = null;
   }
   function floorUnder(tx, ty) { for (let y = ty; y < ctx.L.H; y++) if (ctx.solidAt(tx, y)) return y * TS; return ctx.L.H * TS; }
@@ -101,7 +102,8 @@ export function makeStockadeHands(ctx) {
       if (k.vy > 0 && (ctx.solidAt(tx, ty) || ctx.oneWay(tx, ty))) { k.y = ty * TS; k.vy = 0; } else k.y = ny;
       if (P && !P.dead && Math.abs(P.x - k.x) < 12 && Math.abs(P.y - k.y) < 20) { k.got = true; held = true; ctx.sfx.pickup && ctx.sfx.pickup(); if (!tookSaid) { tookSaid = true; say(P.x, P.y - 30, 'took'); } } }
     /* the gate */
-    if (gateT > 0) { gateT -= dt; if (gateT <= 0 && !gateOpen && S.gate) { gateOpen = true; ctx.openCells(S.gate.x, S.gate.y0, S.gate.y1); ctx.sfx.crack && ctx.sfx.crack(); ctx.shake(3); say(S.gate.x * TS + 8, S.gate.y0 * TS, 'gate', '#8fd160');
+    if (gateOpen) gateAge += dt;
+    if (gateT > 0) { gateT -= dt; if (gateT <= 0 && !gateOpen && S.gate) { gateOpen = true; gateAge = 0; ctx.openCells(S.gate.x, S.gate.y0, S.gate.y1); ctx.sfx.crack && ctx.sfx.crack(); ctx.shake(3); say(S.gate.x * TS + 8, S.gate.y0 * TS, 'gate', '#8fd160');
       for (const e of ctx.enemies()) if (e.gateGuard === true) e.gateGuard = 'out'; } }
     /* the piles */
     const hb = ctx.atkBox();
@@ -129,10 +131,11 @@ export function makeStockadeHands(ctx) {
 
   /* ---- THE CHIEFTAIN'S WAR TOWER ---- */
   function towerStep(dt, hb) {
+    for (const pg of tower.pegs) if (pg.cut) pg.cutT += dt;
     const ch = ctx.boss(); if (tower.st === 'fall') { tower.fallK = Math.min(1, tower.fallK + dt / TOWER.fall); return; }
     if (tower.st !== 'manned' || !ch) return;
     for (const pg of tower.pegs) if (!pg.cut && hb && ctx.overlap(hb, { l: pg.x - 8, r: pg.x + 8, t: tower.foot - 16, b: tower.foot }) && ctx.hitOnce(pg)) {
-      pg.cut = true; tower.sway = TOWER.sway; ctx.sfx.crack && ctx.sfx.crack();   /* the tower lurches: he holds on with both hands and does not shoot (the way to the other peg) */ ctx.sparks(pg.x, tower.foot - 8, 1, 5); say(pg.x, tower.foot - 30, 'lash', '#8fd160');
+      pg.cut = true; pg.cutT = 0; tower.sway = TOWER.sway; ctx.sfx.crack && ctx.sfx.crack();   /* the tower lurches: he holds on with both hands and does not shoot (the way to the other peg) */ ctx.sparks(pg.x, tower.foot - 8, 1, 5); say(pg.x, tower.foot - 30, 'lash', '#8fd160');
       if (tower.pegs.every(q => q.cut)) { const P = hero(); tower.dir = Math.sign(tower.x - (P ? P.x : tower.x - 1)) || 1; tower.st = 'fall'; tower.fallK = 0; say(tower.x, tower.deck - 40, 'falls', '#ff9a5c'); ctx.sfx.roar && ctx.sfx.roar(); }
     }
   }
@@ -166,40 +169,28 @@ export function makeStockadeHands(ctx) {
   /* a blow on him on the tower: the B15 floor, told */
   function towerTake(e) { if (!chiefUp(e)) return 1; ctx.turned(e, hero() ? hero().x : e.x, STK_SAY.taut); return TOWER.take; }
 
-  /* ---- drawing (GREYBOX: tools/../work report "ART LANE NOTES") ---- */
+  /* ---- drawing (claude/stockade2art: src/redraw/stockade2_art.js) ---- */
   function drawWorld(g, cx, cy, time) {
     if (!on()) return;
-    for (const p of piles) {   /* the pile: four lashed logs at the walk's edge, the lashing a pale rope to a stake */
-      const x = Math.round(p.x - cx), y = Math.round((p.st === 'fall' || p.st === 'down' ? p.by : p.y) - cy), sh = p.st === 'creak' ? Math.round(Math.sin(time * 60) * 1.5) : 0;
-      if (p.st === 'down') { for (let i = 0; i < 4; i++) { g.fillStyle = '#5c3a1d'; g.fillRect(x - 14 + i * 7, y - 5, 7, 5); g.fillStyle = '#8a5a32'; g.fillRect(x - 13 + i * 7, y - 4, 4, 1); } continue; }
-      for (let i = 0; i < 4; i++) { const lx = x - 9 + sh + (i % 2) * 4, ly = y - 6 - i * 5; g.fillStyle = '#1a1410'; g.fillRect(lx - 1, ly - 1, 16, 7); g.fillStyle = '#6b4424'; g.fillRect(lx, ly, 14, 5); g.fillStyle = '#9a6a3a'; g.fillRect(lx, ly, 14, 1); g.fillStyle = '#c9a070'; g.fillRect(lx + 12, ly + 1, 2, 3); }
-      if (p.st === 'hung') { g.fillStyle = '#e8dcc0'; g.fillRect(x - 1, y - 24, 2, 22); const pulse = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.35 + 0.35 * pulse; g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 14, 6, 2); g.globalAlpha = 1; }
-    }
-    for (const k of pickups) if (!k.got) { const x = Math.round(k.x - cx), y = Math.round(k.y - cy), b = Math.round(Math.sin(time * 4) * 1.5);   /* the horn on the ground, glinting */
-      g.fillStyle = '#1a1410'; g.fillRect(x - 6, y - 7 + b, 12, 5); g.fillStyle = '#e8dcc0'; g.fillRect(x - 5, y - 6 + b, 8, 3); g.fillRect(x + 3, y - 7 + b, 2, 5); g.fillStyle = '#8a6a40'; g.fillRect(x - 5, y - 5 + b, 2, 1);
-      g.globalAlpha = 0.4 + 0.4 * Math.sin(time * 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 13 + b, 2, 2); g.globalAlpha = 1; }
-    if (S && S.gate && !gateOpen) { const x = Math.round(S.gate.x * TS - cx), y0 = Math.round(S.gate.y0 * TS - cy);   /* the bar across the gate, inside */
-      g.fillStyle = '#1a1410'; g.fillRect(x - 3, y0 + 40, 22, 6); g.fillStyle = '#7a4a26'; g.fillRect(x - 2, y0 + 41, 20, 4); }
-    if (tower) drawTower(g, cx, cy, time);
+    for (const p of piles) SA.drawPile(g, p, cx, cy, time);
+    for (const k of pickups) if (!k.got) SA.drawHornPickup(g, k, cx, cy, time);
+    if (S && S.gate) SA.drawGate(g, S.gate, cx, cy, { open: gateOpen, age: gateAge, lifting: gateT > 0 ? 1 - gateT / GATE.delay : 0 }, time);
+    for (const e of ctx.enemies()) if (e.alive && e.dozing) SA.drawZs(g, Math.round(e.x - cx), Math.round(e.y - e.h - cy), time);   /* the dozing blower's Zs */
+    if (tower) SA.drawWarTower(g, tower, cx, cy, time);
   }
-  function drawTower(g, cx, cy, time) {
-    const t = tower, x = Math.round(t.x - cx), deck = Math.round(t.deck - cy), foot = Math.round(t.foot - cy), base = Math.round((t.base || t.foot) - cy);
-    if (t.st === 'down') { g.fillStyle = '#1a1410'; g.fillRect(x - 2 + t.dir * 12, foot - 7, 52 * 1, 7); g.fillStyle = '#5c3a1d'; for (let i = 0; i < 5; i++) g.fillRect(x + t.dir * 12 + i * 10 - (t.dir < 0 ? 40 : 0), foot - 6, 9, 5); return; }
-    g.save(); const piv = base; g.translate(x, piv); if (t.st === 'fall') g.rotate(t.dir * t.fallK * t.fallK * 1.45);
-    const h = piv - deck; g.fillStyle = '#1a1410'; g.fillRect(-12, -h - 4, 24, h + 4);
-    g.fillStyle = '#6b4424'; g.fillRect(-11, -h, 3, h); g.fillRect(8, -h, 3, h); for (let yy = -h + 6; yy < 0; yy += 10) { g.fillRect(-9, yy, 18, 2); }
-    g.fillStyle = '#8a5a32'; g.fillRect(-13, -h - 3, 26, 4); g.fillStyle = '#c9463d'; g.fillRect(-1, -h - 16, 2, 13); g.fillRect(1, -h - 16, 7, 4);   /* the deck and his red pennant */
-    g.restore();
-    if (t.st === 'up' || t.st === 'run' || t.st === 'manned') for (const pg of t.pegs) {   /* the lashings: slack until he hauls them taut, then pale and glinting at the peg */
-      const px = Math.round(pg.x - cx); if (!pg.cut) { const taut = t.st === 'manned'; g.strokeStyle = taut ? '#e8dcc0' : '#8a7a60'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + Math.sign(px - x) * 10, deck); if (taut) g.lineTo(px, foot - 6); else g.quadraticCurveTo((x + px) / 2, foot - 4, px, foot - 6); g.stroke(); }
-      g.fillStyle = '#1a1410'; g.fillRect(px - 3, foot - 9, 6, 9); g.fillStyle = pg.cut ? '#5c3a1d' : '#8a5a32'; g.fillRect(px - 2, foot - 8, 4, 8);
-      if (!pg.cut && t.st === 'manned') { g.globalAlpha = 0.45 + 0.45 * Math.sin(time * 6); g.fillStyle = '#ffd36b'; g.fillRect(px - 4, foot - 12, 8, 2); g.globalAlpha = 1; } }
+  /* the Chieftain's frame on the tower (src/main.js): the climb, the hold-on, the deck's wait / aim / loose, the fall - or -1 (his own frame) */
+  function chiefFrame(e) {
+    if (!tower) return -1; const m = e.mode;
+    if (m === 'towerClimb') return Math.floor((e.anim || 0) * 6) % 2 ? 15 : 16;
+    if (m === 'towerFall') return 19;
+    if (m === 'tower' || m === 'towerAim' || m === 'towerLoose') return tower.sway > 0 ? 17 : m === 'towerAim' ? 18 : m === 'towerLoose' ? 20 : 21;
+    return -1;
   }
   function drawOver(g, cx, cy, time) {
     if (!on()) return;
+    if (tower) SA.drawWarTowerFront(g, tower, cx, cy, time);
     for (const r of rings) { if (r.t < 0) continue; const k = r.t / 0.9; g.globalAlpha = 0.7 * (1 - k); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(r.x - cx), Math.round(r.y - cy), 10 + k * 70, 0, 7); g.stroke(); g.globalAlpha = 1; }
-    const P = hero(); if (held && P && !P.dead) { const x = Math.round(P.x - cx), y = Math.round(P.y - P.h - cy) - 8;   /* the horn at his belt: lit when it will blow */
-      g.fillStyle = cd > 0 ? '#8a7a60' : '#e8dcc0'; g.fillRect(x + 6, y + 10, 5, 2); g.fillRect(x + 10, y + 9, 2, 4); }
+    const P = hero(); if (held && P && !P.dead) SA.drawBeltHorn(g, Math.round(P.x - cx), Math.round(P.y - P.h - cy) - 8, cd <= 0);   /* the horn at his belt: lit when it will blow */
     if (banner) { const a = Math.min(1, banner.t / 0.4, (2.6 - banner.t) / 0.3); g.globalAlpha = Math.max(0, a); ctx.text(banner.name, Math.round(ctx.VW() / 2), 30, '#e8dcc0', 'center', 8); g.globalAlpha = 1; }
   }
   /* for the bots and the checks */
@@ -209,5 +200,5 @@ export function makeStockadeHands(ctx) {
   const state = n => n === 'stkHorn' ? (held ? 'held' : 'none') : n === 'stkGate' ? (gateOpen ? 'open' : 'shut') : n === 'stkTower' ? (tower ? tower.st : 'none') : '';
   /* and as props the guide's done / when read: each pile carries the horn's and the gate's state (the static tool finds the piles in L.ents) */
   const props = () => piles.map(p => ({ t: 'logpile', x: p.x, y: p.y, held, gateOpen, down: p.st !== 'hung' }));
-  return { on, state, props, reset, load, update, hold, interact, blow, drawWorld, drawOver, chiefPhase2, chiefStep, chiefUp, towerTake, read, give: () => { held = true; } };
+  return { on, state, props, reset, load, update, hold, interact, blow, drawWorld, drawOver, chiefPhase2, chiefStep, chiefUp, chiefFrame, towerTake, read, give: () => { held = true; } };
 }
