@@ -27,7 +27,7 @@ function saveVol(v) { try { localStorage.setItem(VOL_KEY, String(v)); } catch {}
 const isKey = (e, list) => list.includes(e.key) || list.includes(e.code);
 const HELD = ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance', 'talk'];
 
-const G = { grab: null, phase: 'start', code, err: '', roster: [], hero: null, hostHero: '', rtt: 0, hostState: '', paused: false, menu: false, sent: 0, frames: 0, vol: loadVol(), art: {}, why: '' };
+const G = { seat: 2, grab: null, phase: 'start', code, err: '', roster: [], hero: null, hostHero: '', rtt: 0, hostState: '', paused: false, menu: false, sent: 0, frames: 0, vol: loadVol(), art: {}, why: '' };
 let link = null, net = null, stream = null;
 
 /* ===== the page ===== */
@@ -136,7 +136,7 @@ async function connect() {
   net = await NET.join(code, {
     onLink: l => {
       link = l; G.phase = 'linking'; render();
-      l.onOpen = () => { G.phase = 'opening'; l.send({ t: 'hi', v: 1 }); render(); };
+      l.onOpen = () => { G.phase = 'opening'; l.send({ t: 'hi', v: 2 }); render(); };   /* (claude/tavern) v2: the join snapshot slot (src/online.js header) - sent empty until portable guest saves (brief-coopprogress step 1) fill it */
       l.onData = onMsg;
       l.onClose = why => { if (G.phase === 'ended') return; end(why === 'p2p' ? 'p2p' : G.why || 'lost'); };
     },
@@ -147,11 +147,11 @@ async function connect() {
 function onMsg(m) {
   if (m.t === 'roster') { G.roster = Array.isArray(m.heroes) ? m.heroes : []; G.hostHero = m.host || ''; G.phase = 'pick'; render(); }
   else if (m.t === 'art') { G.art = m.art && typeof m.art === 'object' ? m.art : {}; if (G.phase === 'pick' || G.phase === 'waitgo') render(); }
-  else if (m.t === 'go') { G.hero = m.hero; G.phase = 'play'; render(); flush(true); }
-  else if (m.t === 'st') { G.grab = m.g === 'GRAB' || m.g === 'THROW' ? m.g : null; G.hostState = m.s; G.paused = !!m.paused; showBanner(); }
+  else if (m.t === 'go') { G.hero = m.hero; G.seat = +m.n || G.seat || 2; G.phase = 'play'; render(); flush(true); }
+  else if (m.t === 'st') { G.grab = m.g === 'GRAB' || m.g === 'THROW' ? m.g : null; G.hostState = m.s; G.paused = !!m.paused; if (+m.n) G.seat = +m.n; showBanner(); stripView(); }
   else if (m.t === 'pong') { G.rtt = Math.round(performance.now() - m.t0); if (link) link.send({ t: 'rtt', ms: G.rtt }); stripView(); }
   else if (m.t === 'full') { G.why = 'full'; }
-  else if (m.t === 'end') { G.why = 'ended'; end('ended'); }
+  else if (m.t === 'end') { const k = m.why === 'party' ? 'left' : 'ended'; G.why = k; end(k); }   /* (claude/tavern) walked out of the tavern door: he left, the host did not end it */
 }
 setInterval(() => { if (link && link.open) link.send({ t: 'ping', t0: performance.now() }); }, 1000);   /* the ping is the heartbeat too: the host drops a guest who goes quiet */
 function pick(h) { if (!link || !link.open || !G.roster.some(r => r.id === h)) return false; link.send({ t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }
@@ -188,7 +188,7 @@ function render() {
   } else if (P === 'play') {   /* the menu */
     const vol = UI.el('input'); vol.type = 'range'; vol.min = 0; vol.max = 100; vol.value = Math.round(G.vol * 100); vol.id = 'olvol'; vol.style.cssText = 'width:200px;letter-spacing:0;font-size:12px';
     vol.addEventListener('input', () => { G.vol = vol.value / 100; saveVol(G.vol); video.volume = G.vol; video.muted = G.vol === 0 ? true : false; });
-    parts.push(UI.el('p', 'PLAYER TWO: ' + (nameOf(G.hero))), UI.el('p.dim', 'PING ' + (G.rtt || '?') + ' MS'), UI.el('h2', 'HOST SOUND'), UI.row(vol),
+    parts.push(UI.el('p', 'PLAYER ' + (G.seat || 2) + ': ' + (nameOf(G.hero))), UI.el('p.dim', 'PING ' + (G.rtt || '?') + ' MS'), UI.el('h2', 'HOST SOUND'), UI.row(vol),
       UI.el('p.dim', keysLine()), UI.row(UI.el('button.sel', 'BACK TO THE GAME', toggleMenu), UI.el('button', 'LEAVE THE GAME', leave)));
   } else if (P === 'ended') {
     const [t, w] = G.err === 'left' ? ['YOU LEFT THE GAME', 'The host\'s game goes on without player two. The same code takes you back in while they keep the room open.'] : NET.explain(G.err, code);
@@ -211,7 +211,7 @@ const nameOf = h => { const r = G.roster.find(x => x.id === h); return r ? r.nam
 function keysLine() { const L = a => CTL.labelFor(binds, 'kb', a, 1); return 'YOUR OWN KEYS: ' + L('left') + '/' + L('right') + ' MOVE, ' + L('jump') + ' JUMP, ' + L('atk') + ' ATTACK, ' + L('dodge') + ' DODGE, ESC MENU'; }
 function stripView() {
   if (G.phase !== 'play') { strip.style.display = 'none'; return; }
-  strip.style.display = ''; const html = 'P2 <b>' + nameOf(G.hero) + '</b> <span class="' + (G.rtt > 150 ? 'bad' : 'ok') + '">PING ' + (G.rtt || '?') + ' MS</span> ESC MENU';
+  strip.style.display = ''; const html = 'P' + (G.seat || 2) + ' <b>' + nameOf(G.hero) + '</b> <span class="' + (G.rtt > 150 ? 'bad' : 'ok') + '">PING ' + (G.rtt || '?') + ' MS</span> ESC MENU';
   if (strip.dataset.h !== html) { strip.dataset.h = html; strip.innerHTML = html; }
 }
 function showBanner() {

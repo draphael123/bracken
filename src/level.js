@@ -28,6 +28,7 @@ import {addIslandPosts} from './island-posts.js';
 import {crabTrench,underwaterKeep} from './deep-split.js';
 import {stormwreckHarbor,burialCaverns} from './additional-areas.js';
 import { singleAmbush } from './ambush.js';
+import * as TAV from './tavern.js';   /* THE TAVERN (claude/tavern): the inn's room, stations and dummies */
 import { vaultSilver } from './relics.js';   /* WHAT A FORMER RELIC CACHE PAYS NOW: one of the level's three silvers (a 'vault' marker holds the spot through the build) */
 import { COMBAT } from './combat.js';
 import { floodReach } from './reachcore.js';
@@ -3977,6 +3978,29 @@ function theShopCrag() {
     // its floor and walls and left the keeper standing in the dark. palette.hall already dresses it.
     palette: { hall: true, sky: 'night', dress: 'none', dirt: '#5a5a66', dirtL: '#6e6e7a', dirtD: '#3a3a44', grass: '#6a6a78', grassL: '#8a8a98', grassD: '#4a4a58' },
     weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+  };
+}
+
+/* THE TAVERN (claude/tavern, co-op phase 2, Daniel 10-12): WAYMEET'S CROSSROADS INN, co-op's home - one warm room (src/tavern.js has its stations,
+   their places and the furniture it draws; this paints the room and its dressing). The fire, the long tables and Waymeet's own drinkers (the beer
+   garden's guests), the bar, a window onto the road; the training yard at the back; the arena pit roped off. No foe, no hazard, no coin. */
+function theTavern() {
+  const R = TAV.ROOM, F = R.FLOOR, s = R.FLOOR - 1; const L = painter(R.W, R.H);
+  const { block, floor, ent } = L;
+  floor(0, R.W - 1, F); block(0, R.wallL, 0, R.H - 1); block(R.wallR, R.W - 1, 0, R.H - 1); block(0, R.W - 1, 0, R.CEIL);
+  ent('sign', 9, s, { text: "THE CROSSROADS INN. FRIENDS JOIN HERE: A PAD PRESSES JUMP, A FAR FRIEND COMES BY THE BOARD'S CODE. UP AT A STATION TO USE IT." });
+  ent('torch', 11, s); ent('torch', 33, s); ent('torch', 43, s); ent('torch', 60, s);
+  ent('deco', 14, s, { kind: 'hearth' }); ent('deco', 11, s - 3, { kind: 'hallWindow' });
+  ent('deco', 19, s, { kind: 'longTable' }); ent('deco', 25, s, { kind: 'longTable' }); ent('deco', 17, s, { kind: 'bench' }); ent('deco', 22, s, { kind: 'bench' }); ent('deco', 28, s, { kind: 'bench' });
+  ent('guest', 18, s, { v: 0, face: 1 }); ent('guest', 21, s, { v: 1, face: -1 }); ent('guest', 24, s, { v: 2, face: 1 }); ent('guest', 27, s, { v: 3, face: -1 });
+  ent('deco', 30, s, { kind: 'counter' }); ent('deco', 31, s, { kind: 'caskRack' }); ent('deco', 29, s, { kind: 'mugShelf' }); ent('deco', 33, s, { kind: 'kegStack' });
+  for (let x = 13; x <= 41; x++) ent('carpet', x, s);
+  for (const x of TAV.DUMMIES) ent('dummy', x, s);
+  return {
+    W: L.W, H: L.H, grid: L.grid, ents: L.ents, START: { ...TAV.START }, pools: [], falls: [], moversExtra: [],
+    duskStart: -1, duskLen: 1, music: 'store', night: true, tavern: true, openYard: true, noCoin: true, reachExact: true, interiors: [[2, R.wallR - 1, R.CEIL + 1, s, 'hall']],
+    palette: { hall: true, sky: 'night', dress: 'none', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', grass: '#6a5a3a', grassL: '#8a7a4a', grassD: '#3a2a1a' },
+    weather: [], ambient: [{ x0: 0, x1: 99999, kind: 'tavern' }],
   };
 }
 
@@ -7970,6 +7994,8 @@ export const LEVELS = [
   /* THE SEALED PYRAMID (claude/sealedpyramid, the OPUS GREYBOX, 2026-10-12; Daniel's concept interview 10-11): the tomb past THE BURIED CITY - a descent through galleries of
      traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
   { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
+  /* THE TAVERN (claude/tavern, co-op phase 2): WAYMEET'S CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
+  { id: 'tavern', name: 'THE CROSSROADS INN', sub: 'friends meet here', build: theTavern, hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

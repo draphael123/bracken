@@ -53,7 +53,7 @@ export function explain(kind, code) {
     library: ['CANNOT LOAD THE NETWORK LIBRARY', 'PeerJS comes from cdnjs.cloudflare.com and it did not load: this device may be offline, or something (a blocker, a school or office filter) is stopping it.'],
     browser: ['THIS BROWSER CANNOT DO IT', 'Online co-op needs WebRTC, which this browser does not offer. Chrome, Edge, Firefox or Safari will.'],
     p2p: ['FOUND THE GAME, BUT NO DIRECT LINK', 'The two networks would not let a peer-to-peer connection through (a strict NAT or firewall - common on mobile data, office and school Wi-Fi). There is no relay server yet. Try both players on home Wi-Fi, or one of you on a different network.'],
-    full: ['THAT GAME IS FULL', 'The host already has a player two. Phase one of online co-op is two players.'],
+    full: ['THAT GAME IS FULL', 'The host party already has four players (local and online). Ask them to free a seat.'],
     ended: ['THE HOST ENDED THE GAME', 'The host closed the room. Ask them for a new code.'],
     lost: ['CONNECTION LOST', 'The link to the host dropped (their game closed, or one of the networks went away).'],
     taken: ['CODE IN USE', 'That room code is taken.'],
