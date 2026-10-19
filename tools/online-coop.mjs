@@ -2,7 +2,9 @@
 // a LOCAL signalling stub (tools/online-stub.mjs - the tests have no internet, so the free PeerJS broker is swapped for it with ?net=local;
 // src/online-peer-local.js has PeerJS's surface) and then REAL WebRTC between them: a data channel and the host's streamed canvas. It proves:
 //   1. the gate: the title has ONLINE CO-OP beside LOCAL CO-OP, and hosting is LOCKED (the local co-op gate) until the save owns a second hero
-//   2. the guest joins BY CODE (the host's board shows the code and the ?join= link), gets the HOST'S roster and picks player two's hero
+//   2. the guest joins BY CODE (the host's board shows the code and the ?join= link), picks one of HIS OWN SAVE SLOTS (claude/coopprogress: or JUST
+//      VISIT, which saves nothing) and a hero of THAT save - his own PYRO, which the host does not own - and the host seats him FROM HIS SNAPSHOT
+//      (his slot, his level 6, his purse), not from the host's save
 //   3. the guest RECEIVES FRAMES: a 640x360 video (the host's 320x180 at 2x) with a sound track, shown pixelated at a whole-number scale,
 //      and it is CRISP - inside each 2x2 game pixel the video barely varies, across game pixels it does (a blurred stream fails this)
 //   4. a guest KEY PRESS MOVES PLAYER TWO on the host - and not player one - through the guest's OWN rebinding (a key bound on the guest's
@@ -10,8 +12,14 @@
 //   5. the guest's TOUCH buttons drive player two (the game's own touch layer, on the guest page)
 //   6. host pause shows HOST PAUSED on the guest; the guest has a latency readout and a volume that works
 //   7. a guest DISCONNECT drops player two cleanly (local co-op's drop-out: one player, coopWant off, the wood goes on) and the room waits
-//   8. the guest's own save (all of its localStorage EXCEPT the one key bracken.onlineVol, his remembered stream volume, which has its own
-//      key and is never part of a save) is byte-for-byte untouched, and the guest page never ran the game
+//   8. the guest's own storage (all of its localStorage EXCEPT the one key bracken.onlineVol, his remembered stream volume, which has its own
+//      key and is never part of a save) is byte-for-byte untouched EXCEPT THE EARNED REWARDS IN THE SLOT HE CHOSE - the stated design change of
+//      co-op progression step 1 (scratch brief-coopprogress.md): in that slot only xp (his hero's), coins and the credit book (coopCredit) differ,
+//      every other slot and key is identical - and the guest page never ran the game
+//  11. CO-OP PROGRESSION (claude/coopprogress): he EARNS on his own save - at a CHECKPOINT (his bank) the host sends what he earned and HIS page
+//      writes it into HIS slot (the host's save takes none of it); a credit replayed is not paid twice; earnings since the last checkpoint are LOST
+//      when the link drops with no goodbye (partial); a REJOIN snapshots the credited save as a new session (no double credit), its checkpoint
+//      pays only its own, a wood WON together is cleared on HIS road (its needs-chain successor opens), and LEAVE sends the final credit
 //  10. GRAB (claude/partnerthrow, 10-12): the guest GRABS the host's hero and is GRABBED (lifted, screams, wriggles free), his touch layer is told GRAB/THROW by the host, the scream is in the stream audio, nothing stalls
 //   9. POLISH (Daniel 10-11): the board opens from the MAP with G (same gate); the guest's volume is remembered under bracken.onlineVol and
 //      comes back on a rejoin; the guest's hero pick shows the host's baked idle frames, pixelated at a whole-number scale (no window.BK)
@@ -20,6 +28,9 @@ import { openPage } from './cdp.mjs';
 import { startStub } from './online-stub.mjs';
 import { PORT_BASE } from './ports.mjs';
 import { cleanCode } from '../src/online-net.js';
+import { migrateProgress } from '../src/progression.js';
+import { xpFloor } from '../src/xp.js';
+import { LEVELS } from '../src/level.js';
 
 const PORT = +(process.env.PORT || PORT_BASE), RELAY = +(process.env.ONLINE_RELAY || PORT + 1), URL0 = 'http://localhost:' + PORT + '/';
 const ARGS = ['--disable-features=WebRtcHideLocalIpsWithMdns', '--allow-loopback-in-peer-connection'];   /* two browsers on one machine: plain host candidates, no mDNS names to resolve */
@@ -43,7 +54,8 @@ try {
 
   // ---- the guest's own save, seeded, and its whole storage read before anything happens ----
   await nav(guest, URL0 + 'manifest.webmanifest', 'true');
-  const SAVE = JSON.stringify({ hero: 'pyro', heroes: { knight: true, pyro: true }, coins: 777, guestSentinel: 1 });
+  /* (claude/coopprogress) a CURRENT save (so a credit migrates nothing): his PYRO at level 6, which the host does not own */
+  const SAVE = JSON.stringify(migrateProgress(JSON.stringify({ hero: 'pyro', heroes: { knight: true, pyro: true }, coins: 777, xp: { pyro: xpFloor(6) }, perHero: 1, xpVersion: 1, guestSentinel: 1 }), []).progress);
   const SETS = JSON.stringify({ binds: { kb: { left: ['y', null] }, pad1: {}, pad2: {} }, music: false });   /* the guest's own rebinding: LEFT is Y on his machine */
   const before = await guest.evalp(`(()=>{localStorage.clear();localStorage.setItem('bracken.progress.0',${JSON.stringify(SAVE)});localStorage.setItem('bracken.slot','0');localStorage.setItem('bracken.settings',${JSON.stringify(SETS)});const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);o[k]=localStorage.getItem(k);}return JSON.stringify(o);})()`);
 
@@ -75,23 +87,31 @@ try {
   ok(boardTxt.includes(code) && boardTxt.includes('?join=' + code), '2: the host board shows the code and the share link');
   ok(cleanCode('https://bracken-nine.vercel.app/?join=' + code.toLowerCase()) === code && cleanCode(code.toLowerCase() + ' ') === code, '2: the SHARE LINK pasted into the code box is read as its code (Daniel 10-15: it read HTTPS)');
   await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY + '&touch=1', '!!window.BKGUEST');
-  await until(guest, 'BKGUEST.state().phase === "pick"', 25000, 'the guest to reach the hero pick');
-  const roster = await Gu('BKGUEST.state().roster.map(r=>r.id)');
-  ok(roster.includes('knight') && roster.includes('warden') && !roster.includes('pyro'), '2: the guest picks from the HOST\'s roster (knight + warden), not his own (pyro): ' + roster);
+  await until(guest, 'BKGUEST.state().phase === "slot"', 25000, 'the guest to reach his own save slots');
+  const slotsTxt = await Gu('document.getElementById("olguest").innerText');
+  ok(/SLOT 1: PYRO LV 6/.test(slotsTxt) && /SLOT 2: EMPTY/.test(slotsTxt) && /JUST VISIT/.test(slotsTxt), '2: the guest first picks one of HIS OWN save slots (slot 1 his PYRO LV 6; an empty one starts a new save; or JUST VISIT): ' + slotsTxt.replace(/\s+/g, ' ').slice(0, 170));
   ok((await H('BKONLINE.debug().sess.phase')) === 'picking', '2: the host sees player two picking');
+  await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.dataset.slot==="0").click()');
+  await until(guest, 'BKGUEST.state().phase === "pick"', 5000, 'the hero pick of his slot');
+  const roster = await Gu('[...document.querySelectorAll("#olguest button.hero")].map(b=>b.textContent)');
+  ok(roster.includes('PYRO') && roster.includes('KNIGHT') && roster.includes('WARDEN'), '2: ...then a hero of THAT save: his own PYRO (the host does not own one) and the free starters: ' + roster);
+  ok((await Gu('BKGUEST.locks().mine.map(c=>c.slot).join()')) === '0', '2: his page holds his slot 1 (one character, one place)');
   // 9c. the host's baked hero art on the pick screen: one pixelated image per hero, a whole number of screen pixels per art pixel, names still text
-  const art = await until(guest, '(()=>{const im=[...document.querySelectorAll("#olguest button.hero img")];return im.length===BKGUEST.state().roster.length&&im.every(i=>i.complete&&i.naturalWidth>0)?im.map(i=>({nw:i.naturalWidth,nh:i.naturalHeight,w:parseFloat(i.style.width),h:parseFloat(i.style.height),r:getComputedStyle(i).imageRendering,dpr:devicePixelRatio})):null})()', 15000, 'the hero art on the guest pick');
+  const art = await until(guest, '(()=>{const im=[...document.querySelectorAll("#olguest button.hero img")];return im.length===document.querySelectorAll("#olguest button.hero").length&&im.every(i=>i.complete&&i.naturalWidth>0)?im.map(i=>({nw:i.naturalWidth,nh:i.naturalHeight,w:parseFloat(i.style.width),h:parseFloat(i.style.height),r:getComputedStyle(i).imageRendering,dpr:devicePixelRatio})):null})()', 15000, 'the hero art on the guest pick');
   ok(art.length === roster.length && art.every(a => a.r === 'pixelated'), '9: the guest pick shows one pixelated image per roster hero: ' + art.length);
   ok(art.every(a => { const s = a.w * a.dpr / a.nw; return Math.abs(s - Math.round(s)) < 0.01 && Math.abs(a.h * a.dpr / a.nh - s) < 0.01 && s >= 1; }), '9: ...each at a whole number of screen pixels per art pixel: ' + JSON.stringify(art.map(a => a.w * a.dpr / a.nw)));
   ok(await Gu('[...document.querySelectorAll("#olguest button.hero")].every(b=>/^[A-Z ]+$/.test(b.textContent))'), '9: ...and the names stay as text');
   ok(await Gu('(()=>{const c=document.querySelector("#olguest .ob");return c.scrollWidth<=c.clientWidth+1})()'), '9: the pick card fits its box');
-  await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.textContent==="WARDEN").click()');
+  const hostBefore = await H('JSON.stringify({pyro:(BK.PROG.xp||{}).pyro||0,coins:BK.PROG.coins||0,heroes:BK.PROG.heroes})');
+  await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.textContent==="PYRO").click()');
   await until(guest, 'BKGUEST.state().phase === "play"', 10000, 'the guest to be in');
   ok((await H('BK.state')) === 'map', '2: the host, on the title, goes on to the map with player two armed');
   await H(`import('/src/level.js').then(({LEVELS})=>{BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.god=true;return true;})`);
   await sleep(1500);
   const pl = await H('BK.players().map(p=>p.hero)');
-  ok(pl.length === 2 && pl[1] === 'warden', '2: in the wood, player two is the guest\'s WARDEN: ' + pl + ' ' + JSON.stringify(await H('BKONLINE.debug().sess')));
+  ok(pl.length === 2 && pl[1] === 'pyro', '2: in the wood, player two is the guest\'s OWN PYRO: ' + pl + ' ' + JSON.stringify(await H('BKONLINE.debug().sess')));
+  const seat2 = await H('BK.coopSave.seats()[1]');
+  ok(seat2.prof && seat2.prof.dest === 'online' && seat2.prof.slot === 0 && seat2.prof.lv === 6 && seat2.prof.base.coins === 777, '2: the host seats him FROM HIS SNAPSHOT - his slot 1, his level 6, his purse 777: ' + JSON.stringify(seat2.prof));
 
   // ---- 3. frames, crisp ----
   await until(guest, 'BKGUEST.state().frames > 30', 15000, 'thirty video frames on the guest');
@@ -205,6 +225,23 @@ try {
   ok(guest.errors.length === 0 && host.errors.length === 0, '10: no page error through the grabs: ' + guest.errors.concat(host.errors).slice(0, 2).join(' | '));
   await Gu('(()=>{clearInterval(__lvl.t);return true})()');
 
+  // ---- 11. CO-OP PROGRESSION (claude/coopprogress): he earns on HIS OWN save ----
+  const slot0 = async () => JSON.parse(await guest.evalp('localStorage.getItem("bracken.progress.0")', 8000));
+  const hostNow = () => H('JSON.stringify({pyro:(BK.PROG.xp||{}).pyro||0,coins:BK.PROG.coins||0,heroes:BK.PROG.heroes})');
+  const g0 = await slot0();
+  ok(await H('BK.coopSave.gain(2, 150, 9)'), '11: player two earns in his own pass (a kill\'s XP, a gold drop)');
+  const e1 = await H('BK.coopSave.seats()[1].prof.earned');
+  ok(e1.xp > 0 && e1.coins === 9, '11: the host\'s ledger has it: ' + JSON.stringify(e1));
+  ok((await Gu('BKGUEST.state().credits')) === 0, '11: nothing is written before a checkpoint');
+  await H('BK.coopSave.bank(2)');   /* A CHECKPOINT: his bank at a shrine */
+  await until(guest, 'BKGUEST.state().credits >= 1', 8000, 'the checkpoint credit to reach the guest');
+  const g1 = await slot0();
+  ok(g1.xp.pyro - g0.xp.pyro === e1.xp && g1.coins - g0.coins === 9, '11: at the CHECKPOINT his own browser writes what he earned into HIS slot: +' + (g1.xp.pyro - g0.xp.pyro) + ' XP (host says ' + e1.xp + '), +' + (g1.coins - g0.coins) + ' silver');
+  ok((await hostNow()) === hostBefore, '11: the HOST\'s save took none of it (no pyro XP, no silver, no hero): ' + (await hostNow()));
+  ok(/SAVED SLOT 1: \+\d+ XP, \+9 SILVER/.test(await Gu('document.getElementById("olstrip").innerText')), '11: the guest\'s strip says what was saved: ' + (await Gu('document.getElementById("olstrip").innerText')));
+  const dup = await Gu('(()=>{const n=BKGUEST.state().dups;BKGUEST.earn(BKGUEST.state().lastC);return BKGUEST.state().dups-n})()');
+  ok(dup === 1 && JSON.stringify(await slot0()) === JSON.stringify(g1), '11: the same credit again is NOT paid twice');
+  ok(await H('BK.coopSave.gain(2, 80, 0)'), '11: he earns more, unbanked');
   // ---- 7. the guest goes: player two drops out cleanly ----
   const errs0 = host.errors.length;
   await nav(guest, URL0 + 'manifest.webmanifest', 'true');
@@ -214,15 +251,50 @@ try {
   ok(d7.ph === 'waiting' && !d7.hero && !d7.remote, '7: the room waits for him again (same code)');
   await sleep(1200); ok((await H('BK.players().length')) === 1, '7: player two stays out at the next level-free frame (coopWant is off)');
   ok(host.errors.length === errs0, '7: no page error on the host when he went: ' + host.errors.slice(errs0).join(' | '));
+  ok(JSON.stringify(await slot0()) === JSON.stringify(g1), '11: the link dropped with no goodbye: he keeps what the last checkpoint paid (PARTIAL), the unbanked since is not written');
 
   // ---- 8. the guest's save ----
   /* DESIGN CHANGE (10-11): the guest's remembered volume lives under its own key, so the identical-storage assertion excludes exactly that one key and nothing else */
+  /* DESIGN CHANGE (claude/coopprogress, scratch brief-coopprogress.md): identical EXCEPT the earned rewards in the slot he chose - xp of his hero, coins, the credit book */
   const after = await guest.evalp(`(()=>{const o={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k==='bracken.onlineVol')continue;o[k]=localStorage.getItem(k);}return JSON.stringify(o);})()`);
-  ok(after === before, "8: the guest's whole localStorage except bracken.onlineVol (his save, slot and settings) is untouched");
+  const B8 = JSON.parse(before), A8 = JSON.parse(after), K0 = 'bracken.progress.0';
+  ok(JSON.stringify(Object.keys(A8).sort()) === JSON.stringify(Object.keys(B8).sort()) && Object.keys(B8).every(k => k === K0 || A8[k] === B8[k]), "8: the guest's whole localStorage except bracken.onlineVol - every other slot, his slot choice, his settings - is untouched: " + Object.keys(A8).filter(k => A8[k] !== B8[k]).join(','));
+  { const b = JSON.parse(B8[K0]), a = JSON.parse(A8[K0]), diff = Object.keys({ ...a, ...b }).filter(k => JSON.stringify(a[k]) !== JSON.stringify(b[k])).sort();
+    const xpDiff = Object.keys({ ...a.xp, ...b.xp }).filter(h => a.xp[h] !== b.xp[h]);
+    ok(diff.join() === 'coins,coopCredit,xp' && xpDiff.join() === 'pyro' && a.guestSentinel === 1, '8: ...and in the slot he chose ONLY the earned rewards differ (his pyro\'s xp, coins, the credit book): ' + diff.join(',') + ' / xp ' + xpDiff.join(',')); }
   // 9b. the remembered volume comes back on a rejoin
   await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY, '!!window.BKGUEST');
-  await until(guest, 'BKGUEST.state().phase === "pick"', 25000, 'the guest to rejoin');
+  await until(guest, 'BKGUEST.state().phase === "slot"', 25000, 'the guest to rejoin');
   ok(Math.abs((await Gu('BKGUEST.state().volSaved')) - 0.3) < 0.001, "9: a rejoin remembers the guest's volume (0.3)");
+  // ---- 11 (cont.). the REJOIN: a new session from the credited save ----
+  const sid1 = g1.coopCredit && Object.keys(g1.coopCredit)[0];
+  await Gu('BKGUEST.chooseSlot(0)'); await until(guest, 'BKGUEST.state().phase === "pick"', 5000, 'the rejoin pick');
+  await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.textContent==="PYRO").click()');
+  await until(guest, 'BKGUEST.state().phase === "play"', 10000, 'the guest to be back in');
+  await until(host, 'BK.players().length === 2 && BK.coopSave.seats()[1].prof', 10000, 'player two back on the host');
+  const r2 = await H('BK.coopSave.seats()[1].prof');
+  ok(r2.base.xp === g1.xp.pyro && r2.base.coins === g1.coins && r2.sid !== sid1, '11: a REJOIN is a new session whose base is the credited save (nothing is paid twice): base ' + r2.base.xp + ' = saved ' + g1.xp.pyro);
+  await H('BK.coopSave.gain(2, 40, 2)'); await H('BK.coopSave.bank(2)');
+  await until(guest, 'BKGUEST.state().credits >= 1', 8000, 'the rejoin\'s checkpoint credit');
+  const e2 = await H('BK.coopSave.seats()[1].prof.earned'), g2 = await slot0();
+  ok(g2.xp.pyro - g1.xp.pyro === e2.xp && g2.coins - g1.coins === 2 && Object.keys(g2.coopCredit).length === 2, '11: ...its checkpoint pays only its own (+' + (g2.xp.pyro - g1.xp.pyro) + ' XP, +' + (g2.coins - g1.coins) + ' silver), beside the first session in the credit book');
+  /* a wood WON together: on HIS road */
+  const succ = LEVELS.find(l => l.needs === 'wood' && !l.hidden);
+  ok(!(g2.wood && g2.wood.cleared) && !(g2[succ.id] && g2[succ.id].cleared), '11: before: his road has not cleared THE WOOD, and ' + succ.id + ' (it needs the wood) is shut');
+  await H('BK.coopSave.win()');
+  await until(guest, '(()=>{const p=JSON.parse(localStorage.getItem("bracken.progress.0"));return p.wood&&p.wood.cleared})()', 8000, 'the clear to reach his save');
+  const g3 = await slot0();
+  ok(g3.wood.cleared && g3.done.pyro.wood === 1 && !(succ.needs && !(g3[succ.needs] && g3[succ.needs].cleared)), '11: the wood WON TOGETHER is cleared on HIS road (done for his pyro) and ' + succ.id + ' opens as for his own clear');
+  ok(g3.xp.pyro > g2.xp.pyro, '11: ...with the wood\'s first-finish share on his pyro: +' + (g3.xp.pyro - g2.xp.pyro) + ' XP');
+  ok((await hostNow()) !== null && JSON.parse(await hostNow()).pyro === JSON.parse(hostBefore).pyro && JSON.stringify(JSON.parse(await hostNow()).heroes) === JSON.stringify(JSON.parse(hostBefore).heroes), '11: the host\'s save still has no pyro XP and no pyro');
+  await H('BK.coopSave.gain(2, 30, 0)');   /* (in the win: no foe, so a direct grant) */
+  const nC = await Gu('BKGUEST.state().credits');
+  await Gu('BKGUEST.leave()');
+  await until(guest, 'BKGUEST.state().credits > ' + nC, 8000, 'the final credit on LEAVE');
+  const g4 = await slot0();
+  ok(g4.xp.pyro > g3.xp.pyro, '11: LEAVE (a goodbye) sends the final credit: +' + (g4.xp.pyro - g3.xp.pyro) + ' XP since the win');
+  await until(host, 'BK.players().length === 1', 10000, 'player two to leave');
+  ok(JSON.stringify(await slot0()) === JSON.stringify(g4), '11: nothing more is written once he has gone');
   ok(guest.errors.length === 0, '8: no page error on the guest: ' + guest.errors.slice(0, 2).join(' | '));
   await H('BKONLINE.end()');
 } catch (e) { fails.push('aborted: ' + String(e && e.message || e).split('\n')[0]); }
@@ -232,4 +304,4 @@ finally {
 }
 for (const n of notes) console.log('  note ' + n);
 if (fails.length) { for (const f of fails) console.log('FAIL ' + f); console.log('online-coop: ' + fails.length + ' failed'); process.exit(1); }
-console.log('online-coop: OK - joined by code, frames crisp at 2x, guest keys + touch drive player two (own bindings, focus-loss release), pause banner, ping, volume, clean drop-out, guest save untouched');
+console.log('online-coop: OK - joined by code, frames crisp at 2x, guest keys + touch drive player two (own bindings, focus-loss release), pause banner, ping, volume, clean drop-out, guest storage untouched except the earned rewards in his chosen slot; he plays his own save and earns into it (checkpoint, no double credit, partial on a drop, rejoin, a clear on his road, final on leave)');

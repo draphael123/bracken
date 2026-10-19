@@ -55,6 +55,7 @@ let C1, C2, C3, led;
 {
   const seat = CS.cleanSnapshot(CS.snapshotOf(played(), 'warden', 1)); led = CS.newLedger(seat, CS.newSid('ABCD'));
   ok(CS.nextCredit(led) === null, 'B: nothing earned, nothing sent');
+  ok(CS.nextCredit(led, null, true) === null && led.seq === 0, 'B: a session that earned nothing sends nothing even at its end (an empty slot stays empty)');
   seat.view.xp.warden += 300; seat.view.coins += 12;   /* (what main.js's swapped PROG takes in his pass: gainXp, a gold drop) */
   const atCp = CS.earnedOf(led, { xp: 100, coins: 2 }); ok(atCp.xp === 200 && atCp.coins === 10, 'B: at a checkpoint the unbanked carry is held back: ' + JSON.stringify(atCp));
   C1 = CS.nextCredit(led, { xp: 100, coins: 2 }); ok(C1 && C1.seq === 1 && C1.xp === 200 && C1.coins === 10 && C1.clears.length === 0, 'B: credit 1 (checkpoint): ' + JSON.stringify(C1));

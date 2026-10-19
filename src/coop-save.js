@@ -110,6 +110,7 @@ export function noteClear(led, id) { if (typeof id === 'string' && !led.clears.i
 export function nextCredit(led, unbanked = null, final = false) {
   const e = earnedOf(led, unbanked), xp = Math.max(led.last.xp, e.xp), coins = Math.max(led.last.coins, e.coins);
   if (!final && xp === led.last.xp && coins === led.last.coins && e.clears.length === led.last.clears) return null;
+  if (final && led.seq === 0 && !xp && !coins && !e.clears.length) return null;   /* a session that earned nothing writes nothing (an empty slot stays empty) */
   led.seq++; led.last = { xp, coins, clears: e.clears.length };
   return { v: 1, sid: led.sid, seq: led.seq, hero: led.hero, xp, coins, clears: e.clears, final: !!final };
 }

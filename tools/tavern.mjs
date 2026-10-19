@@ -4,8 +4,8 @@
 //            held or thrown hero / never into the air); src/tavern.js: every station has its art listed, the room is closed and has no hazard or foe
 //   join     the title's LOCAL CO-OP and ONLINE CO-OP and the map's F all lead into the inn; a free pad's JUMP walks a new player in THROUGH THE DOOR (the real
 //            pollGamepad path, a faked pad); player one's own pad never joins; four is full; the walk-in lets go of RIGHT
-//   stations each station by walking up and pressing INTERACT: the door (P1 to the map with the party armed, P2 leaves), the invite board (the online
-//            room card), the campaign table (the party armed for the next wood, which then starts with all of them), the wardrobe (HERO / WEAPON / COLOUR /
+//   stations each station by walking up and pressing INTERACT: the door (P1 to the map with the party armed, P2 leaves), the PARTY BOARD (claude/coopprogress:
+//            the four seats, each empty one offering JOIN / INVITE / AI PARTNER - coming soon; INVITE opens the online room card), the campaign table (the party armed for the next wood, which then starts with all of them), the wardrobe (HERO / WEAPON / COLOUR /
 //            RING on that player's own card, driven by his own hands), the drills board, the sparring bell (a partner goes DOWN; standing on him lifts him:
 //            the REVIVE drill; left alone he is stood up, no death), TEAM HIT on a dummy, the THROW drill into the hay target, the practice door, the arena
 //            pit (COMING SOON); the first-visit glints go as each is used, and the first approach says what a station does
@@ -13,11 +13,15 @@
 //   leash    in a real wood: a player left on a floor under the picture, and a player at the back edge while the leader pushes on at the front, are TOLD
 //            (CATCH UP, a rope) and then PULLED ALONG beside the leader; a downed one is not
 //   rings    each seat's floor ring is drawn in its colour under his feet (pixels), off when RING is off; the tags P1..P4 are drawn; four HUD plates
+//   party    (claude/coopprogress, co-op progression step 1 LOCAL) THE PARTY BOARD's JOIN: a local player picks one of this browser's OTHER save slots (player
+//            one's is refused, told) and a hero of it, and plays THAT character (its level, its purse); the slot is locked (no second seat, no player one on
+//            it, the save picker refuses it); at a checkpoint what he earned is written to HIS slot and player one's save takes none of it; a pad guest's
+//            USE A SAVE puts him on an EMPTY slot (a fresh save); leaving through the door writes his last credit and lets the slot go
 //   save     an old save with no tavern record, and a save with a broken one, load and play; the record is written back whole; nothing else in the save moves
-// node tools/tavern.mjs [pure,join,stations,camera,leash,rings,save]   (PORT from the environment)
+// node tools/tavern.mjs [pure,join,stations,camera,leash,rings,save,online,fixes,party]   (PORT from the environment)
 import { MAX_PLAYERS, COLOURS, SEAT_DEFAULT, cleanTavern, colourOf, stepColour, coopViewSize, camStep, CAM, leashWhy, leashStep, leaderOf, LEASH, DRILL_IDS, spreadOf } from '../src/party.js';
 import { STATIONS, TAVERN_ART, ROOM, DUMMIES, TARGET, START } from '../src/tavern.js';
-const ALL = ['pure', 'join', 'stations', 'camera', 'leash', 'rings', 'save', 'online', 'fixes'];
+const ALL = ['pure', 'join', 'stations', 'camera', 'leash', 'rings', 'save', 'online', 'fixes', 'party'];
 const WANT = process.argv[2] ? process.argv[2].split(',') : ALL;
 const fails = [], ok = (c, m) => { if (!c) { fails.push(m); console.log('  FAIL ' + m); } else console.log('  ok   ' + m); };
 
@@ -135,8 +139,13 @@ if (PAGE.length) {
       const first = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'wardrobe').x});BK.sim(3);return BK.tavern.hint().msg;})()`);
       ok(/WARDROBE/.test(first || ''), 'the first approach to a station says what it does: ' + first);
       /* the board */
-      const brd = await E(`(async()=>{const p=__P(1);__at(p,${STATIONS[1].x});BK.sim(2);__talk(p);await new Promise(r=>setTimeout(r,150));const b=document.getElementById('olhost');const o={board:!!(b&&b.style.display!=='none'),txt:b?b.innerText.slice(0,40):''};if(b)[...b.querySelectorAll('button')].find(x=>x.textContent==='BACK').click();o.seen=__st('board').seen;return o;})()`);
-      ok(brd.board && brd.seen, 'THE INVITE BOARD opens the online room card (HOST / JOIN), and stops glinting: ' + JSON.stringify(brd));
+      const brd = await E(`(async()=>{const p=__P(1);__at(p,${STATIONS[1].x});BK.sim(2);__talk(p);await new Promise(r=>setTimeout(r,150));const b=document.getElementById('olparty');const o={board:!!(b&&b.style.display!=='none'),txt:b?b.innerText:'',btn:BK.coopSave.board().buttons};
+        const inv=[...b.querySelectorAll('button')].find(x=>x.textContent==='INVITE');if(inv)inv.click();await new Promise(r=>setTimeout(r,150));const h=document.getElementById('olhost');o.online=!!(h&&h.style.display!=='none')&&/HOST A GAME/.test(h.innerText);o.partyGone=!document.getElementById('olparty');
+        if(h)[...h.querySelectorAll('button')].find(x=>x.textContent==='BACK').click();o.seen=__st('board').seen;return o;})()`);
+      const seats = (brd.txt.match(/P[234]\s+EMPTY/g) || []).length, acts = a => brd.btn.filter(x => x.act === a);
+      ok(brd.board && seats === 3 && /P1\s+KNIGHT/.test(brd.txt) && brd.seen, 'THE PARTY BOARD opens: player one seated, three EMPTY seats, and it stops glinting: ' + brd.txt.replace(/\s+/g, ' ').slice(0, 140));
+      ok(acts('join').length === 3 && acts('invite').length === 3 && acts('ai').length === 3 && acts('ai').every(x => x.dis && /SOON/.test(x.t)) && acts('join').every(x => !x.dis), 'each empty seat offers JOIN and INVITE, and AI PARTNER shown but COMING SOON: ' + brd.btn.map(x => x.t + (x.dis ? '(off)' : '')).join(','));
+      ok(brd.online && brd.partyGone, 'INVITE opens the online room card (HOST A GAME / JOIN A FRIEND) in its place');
       /* the wardrobe, driven by P2's own hands */
       const wd = await E(`(()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const p=__P(2),o={};__at(p,${STATIONS.find(s => s.id === 'wardrobe').x});BK.sim(3);o.h0=p.hero;__talk(p);o.card=BK.tavern.debug().cards;
         __key(p,'right');o.h1=p.hero;o.set=!!p.set;__key(p,'down');__key(p,'down');const c0=BK.tavern.party()[1].colour;__key(p,'right');o.c0=c0;o.c1=BK.tavern.party()[1].colour;o.c1p1=BK.tavern.party()[0].colour;
@@ -277,6 +286,37 @@ if (PAGE.length) {
       if (hud >= 0) ok(hud >= 3, 'three seat plates go in the HUD for P2..P4: ' + hud);
     }
 
+    if (PAGE.includes('party')) {
+      console.log('party');
+      await E('__fresh()');
+      const seed = await E(`(async()=>{const {migrateProgress}=await import('/src/progression.js');const {xpFloor}=await import('/src/xp.js');
+        const p=migrateProgress(JSON.stringify({hero:'warden',heroes:{knight:true,warden:true},coins:50,xp:{warden:xpFloor(5)},perHero:1,xpVersion:1,sentinel:'slot3'}),[]).progress;localStorage.setItem('bracken.progress.2',JSON.stringify(p));localStorage.removeItem('bracken.progress.3');
+        const me=BK.coopSave.locks().mine.find(c=>c.kind==='game');return {p1:me?me.slot:-1,raw:localStorage.getItem('bracken.progress.2'),hostWarden:(BK.PROG.xp||{}).warden||0,hostCoins:BK.PROG.coins||0};})()`);
+      ok(seed.p1 >= 0 && seed.p1 !== 2 && seed.p1 !== 3, 'player one holds his own slot (' + (seed.p1 + 1) + ')');
+      const pick = await E(`(async()=>{const p=__P(1);__at(p,${STATIONS[1].x});BK.sim(2);__talk(p);await new Promise(r=>setTimeout(r,100));const b=document.getElementById('olparty'),o={};
+        [...b.querySelectorAll('button')].find(x=>x.dataset.act==='join').click();o.slots=BK.coopSave.board();
+        [...b.querySelectorAll('button')].find(x=>x.dataset.slot==='2').click();o.heroes=BK.coopSave.board();
+        [...b.querySelectorAll('button')].find(x=>x.dataset.hero==='warden').click();o.after=BK.coopSave.board();o.n=BK.players().length;o.seat=BK.coopSave.seats()[1];return o;})()`);
+      const sb = pick.slots.buttons, p1b = sb.find(x => x.slot === String(seed.p1)), s3 = sb.find(x => x.slot === '2');
+      ok(pick.slots.view === 'slot' && p1b && p1b.dis && /PLAYER ONE/.test(p1b.t) && s3 && !s3.dis && /SLOT 3: WARDEN LV 5/.test(s3.t) && sb.some(x => x.slot === '-1' && /GUEST/.test(x.t)), 'JOIN lists this browser\'s slots: player one\'s is refused (told), slot 3 is the WARDEN LV 5, or a GUEST: ' + sb.map(x => x.t + (x.dis ? '(off)' : '')).join(' | '));
+      ok(pick.heroes.view === 'hero' && pick.heroes.buttons.some(x => x.hero === 'warden'), '...then a hero of that save: ' + pick.heroes.buttons.map(x => x.t).join(','));
+      ok(pick.n === 2 && pick.seat.hero === 'warden' && pick.seat.prof && pick.seat.prof.dest === 'local' && pick.seat.prof.slot === 2 && pick.seat.prof.lv === 5 && pick.seat.prof.base.coins === 50, 'P2 JOINS AS THAT CHARACTER: slot 3\'s warden, level 5, his purse 50: ' + JSON.stringify(pick.seat));
+      ok(pick.after.view === 'seats' && /P2 JOINS ON SLOT 3/.test(pick.after.text) && /P2\s+WARDEN LV 5\s+SLOT 3/.test(pick.after.text), 'the board says so, and his row shows his slot: ' + pick.after.text.replace(/\s+/g, ' ').slice(0, 160));
+      const lk = await E(`(()=>{const o={};o.again=BK.coopSave.join(2,'warden');o.p1=BK.coopSave.join(${seed.p1},'knight');o.picker=!!BK.coopSave.holder(2);o.p1held=!!BK.coopSave.holder(${seed.p1});o.n=BK.players().length;return o;})()`);
+      ok(!lk.again.ok && /SLOT 3 IS ALREADY PLAYING HERE/.test(lk.again.why) && !lk.p1.ok && /ALREADY PLAYING HERE/.test(lk.p1.why) && lk.n === 2, 'ONE CHARACTER, ONE PLACE: slot 3 cannot take a second seat, nor player one\'s slot a seat (told): ' + lk.again.why + ' / ' + lk.p1.why);
+      ok(lk.picker && !lk.p1held, '...and the save picker refuses slot 3 while he plays it (player one\'s own slot is his)');
+      const earn = await E(`(()=>{BK.coopSave.gain(2,100,5);const e=BK.coopSave.seats()[1].prof.earned;BK.coopSave.bank(2);const raw=JSON.parse(localStorage.getItem('bracken.progress.2'));const p1=JSON.parse(BK.coopSave.slotRaw(${seed.p1})||'{}');
+        return {e,xp:raw.xp.warden,coins:raw.coins,sentinel:raw.sentinel,book:Object.keys(raw.coopCredit||{}).length,lw:BK.coopSave.seats()[1].prof.lastWrite,hostWarden:(BK.PROG.xp||{}).warden||0,hostCoins:BK.PROG.coins||0,p1Warden:((p1.xp||{}).warden)||0};})()`);
+      const base3 = JSON.parse(seed.raw);
+      ok(earn.e.xp > 0 && earn.xp - base3.xp.warden === earn.e.xp && earn.coins - base3.coins === 5 && earn.sentinel === 'slot3' && earn.book === 1, 'at a CHECKPOINT (his bank) what he earned is written to HIS slot 3: +' + (earn.xp - base3.xp.warden) + ' XP, +' + (earn.coins - base3.coins) + ' silver, the rest of it kept: ' + JSON.stringify(earn.lw));
+      ok(earn.hostWarden === seed.hostWarden && earn.hostCoins === seed.hostCoins && earn.p1Warden === seed.hostWarden, 'player one\'s save took none of it (no warden XP, no silver)');
+      const at = await E(`(()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const o={};o.b=(()=>{const p=__P(1);return 1})();const n=BK.players().length;o.att=BK.coopSave.attach(n,3);o.seat=BK.coopSave.seats()[n-1];BK.coopSave.gain(n,20,0);o.n=n;return o;})()`);
+      ok(at.att.ok && at.seat.prof && at.seat.prof.slot === 3 && at.seat.prof.base.xp === 0, 'a pad GUEST (JUMP walked him in) takes USE A SAVE on an EMPTY slot 4: a fresh character: ' + JSON.stringify(at.seat));
+      const lv = await E(`(()=>{const p=__P(${at.n});__at(p,3,true);BK.sim(2);__talk(p);BK.sim(2);const o={n:BK.players().length};const raw=localStorage.getItem('bracken.progress.3');o.fresh=raw?JSON.parse(raw):null;o.free=!BK.coopSave.holder(3);o.mine=BK.coopSave.locks().mine.map(c=>c.slot).sort().join();return o;})()`);
+      ok(lv.n === 2 && lv.fresh && lv.fresh.xp && lv.fresh.xp[at.seat.hero] > 0 && lv.free, 'he LEAVES through the door: his last credit makes slot 4 a new save with what he earned (' + JSON.stringify(lv.fresh && lv.fresh.xp) + '), and the slot is free again');
+      ok(lv.mine === [seed.p1, 2].sort().join(), 'the page now holds player one\'s slot and P2\'s only: ' + lv.mine);
+    }
+
     if (PAGE.includes('save')) {
       console.log('save');
       const OLD = { hero: 'knight', heroes: { knight: true, warden: true }, coins: 321, wood: { cleared: true, best: 200 }, mapNode: 1, sentinel: 'keep-me' };
@@ -317,7 +357,8 @@ if (WANT.includes('online')) {
     await H('[...document.querySelectorAll("#olhost button")].find(b=>b.textContent==="HOST A GAME").click()');
     const code = await until(host, 'BKONLINE.debug().sess && BKONLINE.debug().sess.phase === "waiting" && BKONLINE.debug().sess.code', 15000, 'the room');
     await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY, '!!window.BKGUEST');
-    await until(guest, 'BKGUEST.state().phase === "pick"', 25000, 'the guest pick');
+    await until(guest, 'BKGUEST.state().phase === "slot"', 25000, 'the guest\'s own save slots');   /* (claude/coopprogress) his own slot first: a new save on this fresh browser */
+    await Gu('BKGUEST.chooseSlot(0)'); await until(guest, 'BKGUEST.state().phase === "pick"', 5000, 'the guest pick');
     const chalk = await H('(async()=>{const b=document.getElementById("olhost");if(b)b.style.display="none";const p=BK.players()[0];p.x=7*16+8;await new Promise(r=>setTimeout(r,400));window.__textRec=[];await new Promise(r=>setTimeout(r,300));const t=(window.__textRec||[]).filter(x=>x.kind==="text").map(x=>x.s);window.__textRec=null;if(b)b.style.display="";return t.find(s=>/^[A-Z]{4}$/.test(s)&&s===BKONLINE.debug().sess.code)||t.join(",").slice(0,80)})()');
     ok(chalk === code, 'the room code is the one chalked on the invite board: ' + chalk);
     await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.textContent==="PYRO"||b.textContent==="RANGER"||b.textContent==="GEOMANCER").click()');

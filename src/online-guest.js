@@ -189,7 +189,7 @@ function chooseSlot(i) {
 function earn(c) {
   if (!(G.slot >= 0)) return;
   const r = CS.applyCredit(localStorage, CS.slotKey(G.slot), c, { campaignIds: G.camp, isLevel: id => G.levels.includes(id) });
-  G.credits++;
+  G.credits++; G.lastC = c;
   if (!r.ok) { G.lastEarn = r.why; G.earnBad = true; }
   else if (r.dup) G.dups++;
   else { const a = r.applied; G.earned.xp += a.xp; G.earned.coins += a.coins; for (const id of a.clears) if (!G.earned.clears.includes(id)) G.earned.clears.push(id); const l = CS.creditLine(G.slot, a); if (l) { G.lastEarn = 'SAVED ' + l; G.earnBad = false; } }
@@ -268,6 +268,6 @@ function showBanner() {
   const s = G.phase === 'play' && !G.menu ? (G.paused ? 'HOST PAUSED' : G.hostState === 'map' ? 'HOST IS ON THE MAP' : G.hostState && G.hostState !== 'play' ? 'HOST IS IN THE MENUS' : '') : '';
   banner.textContent = s; banner.style.display = s ? '' : 'none';
 }
-window.BKGUEST = { slots, chooseSlot, locks: () => ({ mine: LOCKS.mine(), others: LOCKS.others() }), state: () => ({ ...G, banner: banner.style.display === 'none' ? '' : banner.textContent, videoW: video.videoWidth, videoH: video.videoHeight, vol: video.volume, muted: video.muted, audio: !!(stream && stream.getAudioTracks().length), held: heldNow(), volSaved: G.vol, geo: { ...geo }, css: { w: parseFloat(video.style.width), h: parseFloat(video.style.height), r: getComputedStyle(video).imageRendering } }), pick, leave, toggleMenu, touch: TCH, video };
+window.BKGUEST = { slots, chooseSlot, earn, locks: () => ({ mine: LOCKS.mine(), others: LOCKS.others() }), state: () => ({ ...G, banner: banner.style.display === 'none' ? '' : banner.textContent, videoW: video.videoWidth, videoH: video.videoHeight, vol: video.volume, muted: video.muted, audio: !!(stream && stream.getAudioTracks().length), held: heldNow(), volSaved: G.vol, geo: { ...geo }, css: { w: parseFloat(video.style.width), h: parseFloat(video.style.height), r: getComputedStyle(video).imageRendering } }), pick, leave, toggleMenu, touch: TCH, video };
 connect();
 render();
