@@ -40,3 +40,12 @@ export function cardFrames(idle, ax, ay, k = 1.5) { const b = bbox(idle); if (b.
       for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) { if (d[(y * W + x) * 4 + 3]) continue; if (d[(y * W + x - 1) * 4 + 3] || d[(y * W + x + 1) * 4 + 3] || d[((y - 1) * W + x) * 4 + 3] || d[((y + 1) * W + x) * 4 + 3]) { const i = (y * W + x) * 4; od[i] = 255; od[i + 1] = 211; od[i + 2] = 107; od[i + 3] = 150; } } g.putImageData(o, 0, 0); }
     g.drawImage(idle, b.x0, b.y0, w, h, R(3 * k), R(3 * k), R(w * k), R(h * k)); return c; };
   return { R: [mk(false), mk(true)], ax: R((ax - b.x0 + 3) * k), ay: R((ay - b.y0 + 3) * k), w: 12, h: 24 }; }
+/* THE SNUFF (claude/church3art; P2 - the hammer hauled up over a brazier, then driven down into it): his own pair, made from the hero's heavy swing so it survives his kit. The windup
+   leans him OVER the bowl (the top thrown forward) with a cold thread of the fire's last smoke curling off the hauled-up head; the release drives the whole weight forward, the head
+   buried in the bowl, ash and dying embers thrown up and out in front of his feet. */
+export function snuffTell(src) { const c = shear(src, 3, 1.2), g = c.getContext('2d'), b = bbox(src); if (b.x1 < 0) return c;
+  const x = b.x1 - 2, y = b.y0 + 1; for (const [dx, dy, col] of [[0, -1, '#9a9ab0'], [1, -3, '#c8c8d8'], [-1, -5, '#9a9ab0'], [1, -7, '#6a6a7e'], [0, -9, '#9a9ab0']]) if (y + dy >= 0) px(g, x + dx, y + dy, col);   /* smoke off the head */
+  px(g, b.x1 + 2, b.y1 - 6, '#ffd36b'); px(g, b.x1 + 3, b.y1 - 5, '#ff9a3c'); return c; }
+export function snuff(src) { const c = shear(src, 5, 1.1), g = c.getContext('2d'), b = bbox(src); if (b.x1 < 0) return c; const fx = b.x1 + 1, fy = b.y1;
+  for (const [dx, dy, col] of [[1, 0, '#9a9ab0'], [3, -2, '#c8c8d8'], [5, -1, '#6a6a7e'], [2, -4, '#9a9ab0'], [6, -4, '#ff9a3c'], [4, -6, '#ffd36b'], [8, -2, '#c8c8d8'], [0, -3, '#6a6a7e'], [7, -7, '#ff9a3c'], [9, 0, '#6a6a7e']]) if (fx + dx < c.width) px(g, fx + dx, fy + dy, col);   /* ash and embers thrown out */
+  return c; }

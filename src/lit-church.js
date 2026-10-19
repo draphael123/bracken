@@ -31,7 +31,7 @@
 //   160-167  THE CRYPT WELL             SET PIECE: THE DARK RISES - up the well with the altar's flame to the crossing; the rood screen's third sconce
 //   180-236  THE SOUTH TRANSEPT         EXAM     THE ARCHDEACON's lit chapel over THE CHARNEL PIT (a fall is the end): his room heal, the bellows to the high
 //                                                lamp, the grates; his gate holds the sanctuary. THE RELIQUARY behind the altar
-//   241-282  THE SANCTUARY              BOSS     THE PALADIN (src/paladin-boss.js stagePaladin), lit by the lamps you lit
+//   275-316  THE SANCTUARY              BOSS     THE PALADIN (src/paladin-boss.js stagePaladin): three dark BRAZIERS - carry a flame, light one beside him (claude/church3)
 import { stagePaladin, PB_STAGE } from './paladin-boss.js';
 import { addChurchSupports } from './church-supports.js';   /* (claude/church2) nothing in the church floats: every raised board on its drawn support */
 
@@ -163,6 +163,9 @@ export function buildLitChurch({ painter, T, TS }) {
   lamp('dcSconceW', 166, NF - 1, 'crossing', 'arena', { lit: true, deacon: true }); lamp('dcSconceE', 175, NF - 1, 'crossing', 'arena', { lit: true, deacon: true });
   lamp('dcChanW', 163, 33, 'crossing', 'arena', { lit: true, deacon: true, hang: true, top: 30, floorRow: NF - 1 }); lamp('dcChanE', 171, 33, 'crossing', 'arena', { lit: true, deacon: true, hang: true, top: 30, floorRow: NF - 1 });
   ent('deacon', 173, NF - 1, { face: -1 });
+  /* (claude/church3) TWO WAYS: his crossing's own GRATES (the dark lets the dead up - when all four of his lamps are out) and a VOTIVE STAND by the parclose (a flame to light
+     again what he douses; his arc's fire and his lit lamps are fires too) */
+  grate(168, NF, 'crossing', { deacon: true }); grate(177, NF, 'crossing', { deacon: true }); source('dcVotive', 161, NF - 1, 'votive');
   room('crossing', 'THE CROSSING', 152, 30, 178, NF - 1);
   /* THE NORTH TRANSEPT CHAPEL (rows 29-36): LAMP ONE on its altar, a votive stand by the door, the priest pair, their knight, an acolyte; the BELLOWS at the
      organ's foot (col 166): struck, a column of air lifts you up its pipe through the gallery's floor */
@@ -208,7 +211,11 @@ export function buildLitChurch({ painter, T, TS }) {
   block(74, 76, CF - 2, CF - 1); block(102, 104, CF - 2, CF - 1);                 /* chest tombs */
   air(78, 80, CF, CF + 1); spikes(78, 80, CF + 1); drops.push([78, 80, 'hurt']);   /* a bone pit */
   lamp('candleA', 64, CF - 1, 'ossuary', 'sconce'); lamp('candleB', 96, CF - 1, 'ossuary', 'sconce');
-  ent('wight', 70, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('wight', 88, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('bonearcher', 95, 49, { room: 'ossuary', lc: 'dead', face: -1 });
+  ent('wight', 70, CF - 1, { room: 'ossuary', lc: 'dead' }); ent('bonearcher', 95, 49, { room: 'ossuary', lc: 'dead', face: -1 });
+  /* (claude/church3) THE NEW DEAD: an UNDEAD PRIEST among the ossuary's shelves (he raises a wight, mends the dead, pinches out the corpse candles you light - bring the
+     sexton's flame near him and he flees it) and an UNDEAD PALADIN on the floor (his cracked shield: parry the gleam, or strike him with the flame in your hand) */
+  ent('deadpriest', 92, CF - 1, { room: 'ossuary', face: -1 }); ent('deadpaladin', 86, CF - 1, { room: 'ossuary', face: -1 });
+  sign(82, CF - 1, 'THE DEAD PRIEST FEARS A FLAME. PARRY THE DEAD KNIGHT\'S GLEAM.');
   ent('haunt', 84, 43, { room: 'ossuary', lc: 'dead' });
   grate(72, CF, 'ossuary'); grate(91, CF, 'ossuary');
   stub(68, 49);                                                                  /* a CANDLE STUB on the high shelf */
@@ -221,7 +228,8 @@ export function buildLitChurch({ painter, T, TS }) {
   /* THE CRYPT ALTAR (cols 146-178): corpse candles, the dead, the VIGIL CANDLE (a source) and LAMP THREE on the altar; the well at its west end */
   block(150, 152, CF - 2, CF - 1); boards(146, 149, 52);
   lamp('candleC', 154, CF - 1, 'altar', 'sconce');
-  ent('wight', 157, CF - 1, { room: 'altar', lc: 'dead' }); ent('haunt', 150, 44, { room: 'altar', lc: 'dead' });
+  ent('deadpaladin', 157, CF - 1, { room: 'altar', face: -1 }); ent('haunt', 150, 44, { room: 'altar', lc: 'dead' });   /* (claude/church3) the altar's undead paladin (the vigil candle's flame cracks him) */
+
   source('vigil', 172, CF - 1, 'vigil'); lamp('chapel3', 175, CF - 1, 'altar', 'chapel', { cracks: true });
   sign(170, CF - 1, 'LAMP THREE: THE LIGHT THE CHURCH KEEPS OVER ITS DEAD.');
   grate(158, CF, 'altar');
@@ -300,7 +308,7 @@ export function buildLitChurch({ painter, T, TS }) {
 
   const stage = stagePaladin({ set, block, ent, air }, T, TS, AX, SF);
   block(AX + PB_STAGE.W, W - 1, 0, H - 1);
-  stage.carve(); lamps.push(...stage.lamps);
+  stage.carve(); lamps.push(...stage.lamps); sources.push(...stage.sources);   /* (claude/church3) his three BRAZIERS (dark: light one beside him) and the two fires that always burn (the votive stand by the door, the altar fire) */
   room('sanctuary', 'THE SANCTUARY', AX, SF - 20, AX + PB_STAGE.W - 1, SF - 1, { arena: true });
   ent('gate', AX + PB_STAGE.W - 2, SF - 1);
 

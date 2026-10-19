@@ -27,7 +27,8 @@ export { FLAME };
 export const HOLY = { pct: 0.27, cd: 0.6 };
 export const LC = { litMul: 1.3, darkMul: 0.7, knightLit: 1.15, heal: 0.16, litHeal: 1.5, darkHeal: 0.5, healCd: 7, healTell: 1.0, healR: 130, relightT: 1.5, acoRelightT: 0.6,
   priestV: 44, acoV: 92, riseEvery: 4.5, riseTell: 1.0, riseCap: 3, deadDark: 1.8, riseNear: 260, burnDps: 16, bellowsT: 2.8, lift: 230, chordTell: 0.55, chordT: 2.6, gustAir: 300, gustGround: 150,
-  darkV: 24, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0 };
+  darkV: 24, darkTick: 0.6, darkPct: 0.06, holdT: 5, darkSpawn: 4.5, archHealCd: 9, archHealTell: 1.4, archHeal: 0.2, archRelight: 1.0,
+  dcRiseEvery: 8, dcRiseCap: 1 };   /* (claude/church3) THE DEACON's dark crossing: a ghost every dcRiseEvery s from his grates, at most dcRiseCap up */
 /* what a dark room's grates bring up (by room; the rest bring wights and haunts) */
 const RISE = { chantry: ['wight', 'haunt'], graveyard: ['wight'], narthex: ['haunt'], nave: ['wight', 'haunt', 'boo'], transept: ['haunt', 'wight'], gallery: ['boo', 'haunt'], ossuary: ['wight', 'haunt'], altar: ['wight', 'haunt'], south: ['wight', 'haunt', 'boo'], tower: ['boo'] };
 const RELIGHT = new Set(['lamp', 'sconce', 'arena']);   /* what the clergy light again (a chapel lamp, the rood screen's sconces and the seal are not theirs) */
@@ -104,7 +105,7 @@ export function makeLitChurchHands(ctx) {
       number(px(l), py(l) - 44, l.id === 'chapel1' ? 'LAMP ONE BURNS: A SCONCE ON THE ROOD SCREEN' : l.id === 'chapel2' ? 'LAMP TWO BURNS: A SCONCE ON THE ROOD SCREEN' : 'LAMP THREE BURNS: THE CRYPT CRACKS', '#8fd160');
       if (l.cracks) crack(); }
     if (l.kind === 'rood' || l.kind === 'chapel') { if (K.lamps.filter(q => q.kind === 'rood').every(q => q.lit)) openDoor('rood'); }
-    if (l.kind === 'arena' && ctx.bossKindled) ctx.bossKindled(l);
+    if (l.kind === 'arena' && ctx.bossKindled) { l.wasDoused = !!l.doused; ctx.bossKindled(l); } l.doused = false; l.wasDoused = false; l.snuffed = false;   /* (claude/church3) a lamp THE DEACON doused: lit again it is his falter (src/deacon-hands.js onKindled) */
     if (l.room === 'well' && l.hold) { for (const e of ctx.enemies()) if (e.alive && e.lc && e.lc.room === 'well' && e.lc.st === 'asleep' && Math.abs(e.y - py(l)) < 4.5 * TS())   /* (only the landing's own: each sconce is its own trade) */ { e.lc.st = 'free'; ctx.number(e.x, e.y - 30, '!', '#ff6b6b'); }
       if (once('wellWake')) number(px(l), py(l) - 40, 'THE LIGHT WAKES THE CLERGY ON THE STAIR', '#ff9a5c'); }
     rooms(); return true; }
@@ -118,15 +119,26 @@ export function makeLitChurchHands(ctx) {
       if (r && !r.lit && once('firstDark') && !r.arena) number(px(l), py(l) - 44, 'THE ROOM IS DARK: THE PRIESTS WEAKEN, AND THE DEAD COME UP', '#ff9a5c'); }
     rooms(); return true; }
   H.light = id => (K ? lightLamp(lampOf(id), 'boss') : false);   /* THE PALADIN's kindling (src/paladin-boss-hands.js) */
+  /* (claude/church3) THE DEACON DOUSES a floor lamp of his (P2, src/deacon.js): out, marked his - your flame lit in it again is his falter. A boss's snuff: no fall, no word of the room's */
+  H.douse = id => { if (!K) return false; const l = lampOf(id); if (!l || !l.lit || l.hang) return false; l.lit = false; l.by = ''; l.doused = true; K.n.snuffed++; K.n.doused = (K.n.doused || 0) + 1;
+    ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(px(l), py(l) - 22, 6, ['#6a6a7a', '#3a3a4a', '#c8c8d0'], 40, 0.6); rooms(); return true; };
+  /* (claude/church3) THE LIGHTS A HAND CAN PUT OUT near x (THE UNDEAD PRIEST's snuff, src/undead-priest.js): lit standing lamps and sconces - not a chapel lamp, a rood sconce, a seal, a fight's own */
+  H.lightsNear = (x, r) => (K ? K.lamps.filter(l => l.lit && !l.hang && !l.deacon && l.kind !== 'chapel' && l.kind !== 'rood' && l.kind !== 'seal' && l.kind !== 'arena' && Math.abs(px(l) - x) <= r).sort((a, b) => Math.abs(px(a) - x) - Math.abs(px(b) - x)).map(l => ({ id: l.id, x: px(l) })) : []);
+  /* (claude/church3) A BOSS SNUFFS ONE OF HIS OWN (THE PALADIN's brazier in his second phase, src/paladin-boss.js): out, no fall, no word of the room's */
+  H.snuffBy = (id, by) => { if (!K) return false; const l = lampOf(id); if (!l || !l.lit) return false; l.lit = false; l.by = ''; l.snuffed = true; K.n.snuffed++; K.n.bossSnuffs = (K.n.bossSnuffs || 0) + 1;
+    ctx.sfx.hiss ? ctx.sfx.hiss() : ctx.sfx.clank && ctx.sfx.clank(); ctx.burst(px(l), py(l) - 22, 8, ['#6a6a7a', '#3a3a4a', '#c8c8d0'], 50, 0.6); rooms(); return true; };
   H.lampsOf = room => (K ? K.lamps.filter(l => l.room === room).map(l => ({ id: l.id, x: px(l), lit: l.lit })) : []);
-  H.deaconLamps = () => (K ? K.lamps.filter(l => l.deacon).map(l => ({ id: l.id, x: px(l), y: py(l), lit: l.lit, hang: !!l.hang && !l.fall })) : []);   /* (claude/church2) THE DEACON's four: two sconces, two chandeliers on chains */
+  H.deaconLamps = () => (K ? K.lamps.filter(l => l.deacon).map(l => ({ id: l.id, x: px(l), y: py(l), lit: l.lit, hang: !!l.hang && !l.fall, doused: !!l.doused })) : []);
+  /* (claude/church3) EVERY FIRE in a room's span (the bots: where a flame is taken) - the sources, the lit lamps a hand can reach, a fight's own fire (ctx.extraFires) */
+  H.firesIn = (x0, x1) => (K ? fires().filter(f => !(f.lamp && f.lamp.hang && !f.lamp.down)).map(f => ({ x: f.x, y: f.y, patch: false })).concat(ctx.extraFires ? ctx.extraFires() : []).filter(f => f.x >= x0 && f.x <= x1) : []);   /* (claude/church2) THE DEACON's four: two sconces, two chandeliers on chains */
 
   /* LAMP THREE: the crossing's crypt grate cracks open (the way up), and the dark is ARMED - it rises when you set foot in the well */
   function crack() { openDoor('cryptgrate'); openDoor('parclose');   /* (claude/church2) the parclose grille swings open with it: THE DEACON's crossing */
     if (!K.escaped) K.dark.st = 'armed'; ctx.shake(6); ctx.sfx.crack && ctx.sfx.crack(); }
 
   /* ---------- THE FLAME IN YOUR HAND ---------- */
-  const fires = () => K.sources.map(s => ({ x: px(s), y: py(s), src: s })).concat(K.lamps.filter(l => l.lit && l.kind !== 'rood').map(l => ({ x: px(l), y: py(l), lamp: l })));
+  const fires = () => K.sources.map(s => ({ x: px(s), y: py(s), src: s })).concat(K.lamps.filter(l => l.lit && l.kind !== 'rood').map(l => ({ x: px(l), y: py(l), lamp: l })))
+    .concat(ctx.extraFires ? ctx.extraFires().map(f => ({ x: f.x, y: f.y, fight: true })) : []);   /* (claude/church3) a fight's own fire (THE DEACON's arc) is a fire too */
   H.holyLights = () => (K ? fires().map(f => ({ x: f.x, y: f.y })) : []);   /* (claude/crouchfix) every flame that burns - the paladin kneels at them to fill his Light (src/crouch-b.js HOLY) */
   const near = flameNear;
   /* (claude/church2) how long a taper lasts where you stand: a room with a draught (the chantry) burns it fast */
@@ -171,7 +183,7 @@ export function makeLitChurchHands(ctx) {
   H.hold = (e, dt) => {
     if (!K || !e.alive) return false;
     if (!e.lc) { if (e.lcRisen) e.lc = { role: 'dead', room: e.lcRisen, st: 'free', hp: e.hp }; else return false; }
-    const q = e.lc, P = ctx.hero(), lt = lit(q.room), hit = e.hp < q.hp - 0.01; q.hp = e.hp;
+    const q = e.lc, P = ctx.hero(), lt = q.room === 'crossing' && ctx.miniOn && ctx.miniOn() ? !deaconDark() : lit(q.room), hit = e.hp < q.hp - 0.01; q.hp = e.hp;
     if (q.role === 'priest' || q.role === 'clerk') e.lcMul = lt ? LC.litMul : LC.darkMul;   /* (claude/church2) the thurifer and the bell-ringer are clergy: the light is theirs */ else if (q.role === 'knight') e.lcMul = lt ? LC.knightLit : 1; else if (q.role === 'dead') e.lcMul = lt ? 1 : LC.deadDark; else e.lcMul = 1;   /* the dark is the dead's: in it they hit harder */
     if (q.role === 'dead') { /* THE LIGHT BURNS THE DEAD: in a lit room they smoke and sink */
       if (lt && !roomOf(q.room).arena) { q.burn = (q.burn || 0) + LC.burnDps * dt; if (Math.random() < dt * 12) ctx.burst(e.x, e.y - 10, 1, ['#fff6c8', '#ffd36b'], 30, 0.4);
@@ -218,12 +230,15 @@ export function makeLitChurchHands(ctx) {
     return true; }
 
   /* ---------- THE GRATES: a dark room's dead come up (told: the grate glows cold first) ---------- */
+  /* (claude/church3) THE DEACON's CROSSING IS DARK when all four of his lamps are out, in his fight (his grates' rule: the ghosts come up; lit again, the light burns them) */
+  const deaconDark = () => !!(ctx.miniOn && ctx.miniOn()) && K.lamps.some(l => l.deacon) && K.lamps.filter(l => l.deacon).every(l => !l.lit);
+  H.deaconDark = () => (K ? deaconDark() : false);
   function stepGrates(dt) { const P = ctx.hero(); if (!P || P.dead) return; const ts = TS();
-    for (const g of K.grates) { const r = roomOf(g.room); if (!r || r.lit || r.arena) { g.t = 0; g.glow = 0; continue; }
+    for (const g of K.grates) { const r = roomOf(g.room); if (!r || (g.deacon ? !deaconDark() : (r.lit || r.arena))) { g.t = 0; g.glow = 0; continue; }
       const gx = g.x * ts + 8, gy = g.y * ts; if (Math.abs(P.x - gx) > LC.riseNear || Math.abs(P.y - gy) > 140) { g.t = Math.min(g.t, LC.riseEvery - LC.riseTell - 0.01); g.glow = 0; continue; }
-      const up = ctx.enemies().filter(e => e.alive && e.lc && e.lc.role === 'dead' && e.lc.room === g.room && e.lcRisen).length; if (up >= LC.riseCap) { g.glow = 0; continue; }
-      g.t += dt; g.glow = g.t > LC.riseEvery - LC.riseTell ? 1 : 0;
-      if (g.t >= LC.riseEvery) { g.t = 0; g.glow = 0; const list = RISE[g.room] || ['wight', 'haunt'], kind = list[(K.n.risen + g.x) % list.length];
+      const up = ctx.enemies().filter(e => e.alive && e.lc && e.lc.role === 'dead' && e.lc.room === g.room && e.lcRisen).length; if (up >= (g.deacon ? LC.dcRiseCap : LC.riseCap)) { g.glow = 0; continue; }
+      const every = g.deacon ? LC.dcRiseEvery : LC.riseEvery; g.t += dt; g.glow = g.t > every - LC.riseTell ? 1 : 0; g.k = g.glow ? Math.min(1, (g.t - (every - LC.riseTell)) / LC.riseTell) : 0;
+      if (g.t >= every) { g.t = 0; g.glow = 0; const list = g.deacon ? ['haunt'] : RISE[g.room] || ['wight', 'haunt'], kind = list[(K.n.risen + g.x) % list.length];
         const e = ctx.spawn(kind, g.x, g.y - 1); if (e) { e.lcRisen = g.room; e.lc = { role: 'dead', room: g.room, st: 'free', hp: e.hp }; K.n.risen++; ctx.burst(gx, gy - 6, 10, ['#9ab0e0', '#3a4a7a', '#e8f0ff'], 60, 0.6); ctx.sfx.hiss && ctx.sfx.hiss();
           if (once('rise')) number(gx, gy - 40, 'THE DARK LETS THE DEAD UP', '#ff6b6b'); } } } }
 

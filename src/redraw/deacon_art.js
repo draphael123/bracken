@@ -37,6 +37,9 @@ export const POSES = {
   arc:       { lean: 11, cr: 8, head: [5, -3], feet: [-10, 8], pole: { c: [24, 9], a: 0.28, lead: 'flame', h: [-24, -10] }, holy: 1 },
   kindleTell:{ lean: 3, cr: 0, head: [1, 1], feet: [-3, 4], tiptoe: 2, pole: { c: [16, 52], a: -1.15, lead: 'flame', h: [-10, 4] } },
   kindleWalk:{ lean: 1, cr: 0, head: [1, 0], feet: [-4, 5], pole: { c: [9, 38], a: -1.5, lead: 'flame', h: [-8, 6] }, sway: 1 },
+  /* (claude/church3art) THE DOUSE (P2): the snuffer cap raised over a lamp, on his toes, the pole carried up and forward in both hands; then brought down onto it, the whole of him behind the stroke */
+  douseTell: { lean: 3, cr: 0, head: [1, 1], feet: [-3, 4], tiptoe: 3, pole: { c: [14, 50], a: -0.95, lead: 'hook', h: [-8, 6] }, cap: 1 },
+  douse:     { lean: 9, cr: 6, head: [4, -3], feet: [-8, 9], pole: { c: [20, 30], a: 0.85, lead: 'hook', h: [-14, -2] }, cap: 1 },
   grope:     { lean: 7, cr: 5, head: [5, -5], feet: [-6, 6], dead: 1, pole: { c: [17, 12], a: 0.75, lead: 'hook', h: [4, 18] }, free: [16, 26] },
   reel:      { lean: -8, cr: 0, head: [-3, 1], feet: [-7, 1], pole: { c: [-2, 32], a: -0.7, lead: 'hook', h: [-12, 2] }, hand: [-1, 22], hurtFace: 1 },
   hurt:      { lean: -4, cr: 1, head: [-2, 0], feet: [-5, 3], pole: { c: [4, 42], a: 0.35, lead: 'hook', h: [-9, 6] }, hurtFace: 1 },
@@ -53,6 +56,7 @@ export function poseKey(e, time) {
     case 'hookTell': return 'hookTell'; case 'hook': return e.modeT > 0.12 ? 'hook' : 'hookPull';
     case 'jabTell': return 'jabTell'; case 'jab': return 'jab';
     case 'arcTell': return 'arcTell'; case 'arc': return 'arc';
+    case 'douseTell': return 'douseTell'; case 'douse': return 'douse';
     case 'kindleTell': return 'kindleTell'; case 'kindleWalk': return wb ? 'kindleWalk' : 'walkB';
     case 'grope': return 'grope'; case 'reel': return 'reel'; case 'recover': return 'recover';
     case 'sleep': case 'away': return 'sleep'; case 'wake': return e.modeT > 0.7 ? 'sleep' : 'wake';
@@ -160,8 +164,11 @@ function pole(g, p, P) {
   line(g, ax, ay + 1, bx, by + 1, COL.bLo, 1); line(g, ax, ay, bx, by, COL.b, 1); line(g, ax, ay - 1, bx, by - 1, COL.bHi, 1);
   for (const u of [-HALF + 6, -6, 6, HALF - 6]) { const [qx, qy] = E.at(u); rect(g, R(qx) - 1, R(qy) - 1, 3, 3, COL.bHi); px(g, R(qx), R(qy) + 1, COL.bDeep); }   /* the collars */
   const rot = (u, v) => [R(AX + p.c[0] + u * c - v * s), R(AY - p.c[1] + u * s + v * c)];
-  /* the hook end (the snuffer): a J at the tip, a little bell-cone hooked back */
-  { const sg = E.dir === 1 ? -1 : 1, hu = sg * HALF;    /* hook sits at the end that is NOT the flame */
+  /* (claude/church3art) THE SNUFFER CAP of the douse: a brass bell-cone, its mouth open outward over the flame it will put out, a gilt rim, a dark inside */
+  if (P.cap) { const sg = E.dir === 1 ? -1 : 1, hu = sg * HALF;
+    for (let du = 0; du < 8; du++) { const w = 1 + Math.floor(du * 0.6); for (let dv = -w; dv <= w; dv++) { const [qx, qy] = rot(hu + sg * (du - 1), dv); px(g, qx, qy, du === 7 ? COL.bHi : dv < 0 ? COL.bHi : dv > 0 ? COL.bLo : COL.b); } }
+    for (let dv = -4; dv <= 4; dv++) { const [qx, qy] = rot(hu + sg * 7, dv); px(g, qx, qy, COL.gHi); const [rx, ry] = rot(hu + sg * 6, dv); if (Math.abs(dv) < 4) px(g, rx, ry, '#1b1626'); } }
+  else {   /* the hook end (the snuffer): a J at the tip, a little bell-cone hooked back */ const sg = E.dir === 1 ? -1 : 1, hu = sg * HALF;    /* hook sits at the end that is NOT the flame */
     const pts = [[0, 0], [sg * 2, 0], [sg * 3, 1], [sg * 3, 3], [sg * 2, 5], [sg * 0, 6], [sg * -1, 5], [sg * -1, 4]];
     for (const [u, v] of pts) { const [qx, qy] = rot(hu + u, v); rect(g, qx, qy, 2, 2, COL.bHi); } for (const [u, v] of pts.slice(2, 6)) { const [qx, qy] = rot(hu + u, v); px(g, qx + 1, qy + 1, COL.bLo); } }
   /* the lamp-cup (the flame end): a little brass bowl with a rim; a pilot flame is laid over it live */

@@ -202,6 +202,25 @@ ok((STUCK_HANDS.church || []).length >= 8 && STUCK_HANDS.church.every(sp => (sp.
   { const { S, e } = mk(), c = mkC(3); S.kindleCd = 0; e.mode = 'recover'; e.modeT = 0; const h = [{ x: e.x - 100, y: e.y, alive: true }]; DCM.stepDeacon(e, S, 1 / 60, h, c);
     ok(e.mode === 'kindleWalk', 'a lamp of his dark: he goes to kindle it'); let t = 0; while (e.mode !== 'recover' && t < 8) { DCM.stepDeacon(e, S, 1 / 60, h, c); t += 1 / 60; } ok(c.kindled.length === 1, 'and lights it again (told: ' + c.said.filter(s => /KINDLES/.test(s)).join() + ')'); }
   { const moves = ph => new Set(DCM.CYCLES[ph].flat()); ok([...moves(2)].filter(m => !moves(1).has(m)).join() === 'arc', 'one new told move in his second half (B5): THE FLAME ARC'); }
+  /* (claude/church3) TWO WAYS: in his second half he DOUSES his lamps (a quiet told move, cut by a blow); a lamp he doused lit again by a hero's flame is his FALTER */
+  { const { S, e } = mk(), c = mkC(4); c.doused = []; c.douse = id => { const l = c.L.find(q => q.id === id); if (!l || !l.lit) return false; l.lit = false; l.doused = true; c.doused.push(id); return true; };
+    e.hp = e.maxHp * 0.45; e.mode = 'walk'; e.modeT = 0; const h = [{ x: e.x - 60, y: e.y, alive: true }]; let t = 0, saw = false;
+    while (t < 8 && !c.doused.length) { DCM.stepDeacon(e, S, 1 / 60, h, c); if (e.mode === 'douseTell') saw = true; t += 1 / 60; }
+    ok(S.ph === 2 && saw && c.doused.length === 1 && !c.L.find(q => q.id === c.doused[0]).hang, 'P2, THE FLAME END DOWN: he DOUSES a floor lamp of his (told: its own windup) - ' + c.doused.join());
+    ok(c.said.some(s => /LIGHT IT AGAIN|LIGHT THEM AGAIN/.test(s)), 'the douse names its answer (light it again)');
+    const f = mk(); f.e.hp = f.e.maxHp * 0.45; f.S.ph = 2; f.S.douseCd = 0; f.e.mode = 'recover'; f.e.modeT = 0; const c2 = mkC(4); c2.douse = () => true;
+    DCM.stepDeacon(f.e, f.S, 1 / 60, h, c2); ok(f.e.mode === 'douseTell', '(his douse is a told move)'); DCM.blowOn(f.e, f.S, c2, 20, f.e.x + 20, f.e.y, false, false, false); ok(f.e.mode === 'recover' && f.S.n.dousesCut === 1, 'a blow that lands CUTS the dousing');
+    const g = mk(); g.e.mode = 'walk'; ok(DCM.relit(g.e, g.S, c) && DCM.dcOpen(g.e) && g.e.open >= 2.5 && g.S.n.relit === 1, 'a lamp he doused, lit again by a hero\'s flame: HE FALTERS (open ' + g.e.open.toFixed(1) + ' s, the grope\'s open: ring + timer, capped)');
+    ok(DCM.blowOn(g.e, g.S, c, 100, g.e.x - 10, g.e.y, false, false, false).dmg === Math.round(100 * DCM.DC.gropeMul), '(open: x' + DCM.DC.gropeMul + ')');
+    g.S.ward = 2; g.e.mode = 'walk'; g.e.open = 0; ok(!DCM.relit(g.e, g.S, c), 'warded, a relit lamp does not open him again (B3)');
+    const k = mk(); k.S.ph = 2; k.S.kindleCd = 0; k.S.douseCd = 99; k.e.mode = 'recover'; k.e.modeT = 0; const c3 = mkC(2); DCM.stepDeacon(k.e, k.S, 1 / 60, h, c3); ok(k.e.mode !== 'kindleWalk', 'in P2 he kindles no more (the dark is his now)');
+    const lp = mk(), cd = mkC(4); cd.douse = id => { const l = cd.L.find(q => q.id === id); if (!l || !l.lit) return false; l.lit = false; l.doused = true; return true; }; lp.e.hp = lp.e.maxHp * 0.45; lp.S.ph = 2; lp.S.douseCd = 0; lp.e.mode = 'recover'; lp.e.modeT = 0;
+    const l0 = lp.S.light; let tt = 0; while (tt < 3 && !cd.L.some(q => q.doused)) { DCM.stepDeacon(lp.e, lp.S, 1 / 60, h, cd); tt += 1 / 60; } ok(cd.L.some(q => q.doused) && lp.S.light >= l0 - 1, 'his douse costs him no light (it is his choice; your snuffs still starve him)'); }
+  { const gr = L.grates.filter(q => q.deacon), vo = L.sources.find(q => q.id === 'dcVotive'); ok(gr.length === 2 && gr.every(q => q.room === 'crossing' && q.x * TS >= M.x0 && (q.x + 1) * TS <= M.x1) && vo && vo.x * TS >= M.x0, 'his crossing has its own GRATES (the dead rise when all four of his lamps are dark) and a VOTIVE STAND (a flame to light again what he douses)'); }
+  { const pl = (o) => DCM.dcPlan({ P: { x: 2700, y: M.floor, face: 1, ground: true, atk: -1 }, e: { x: 2840, y: M.floor, mode: 'walk', face: -1, modeT: 1 }, S: { G, act: 1, fire: [], ward: 0, ph: 2 }, reach: 30, t: 9, rng: () => 0.9, mem: {}, v2: true, ...o });
+    const lamps = [{ id: 'd0', x: 2760, y: M.floor, lit: false, doused: true, hang: false }], fires = [{ x: 2600, y: M.floor, patch: false }];
+    const a = pl({ lamps, fires, flame: 0 }), b = pl({ lamps, fires, flame: 6 }), b2 = pl({ lamps, fires, flame: 6, P: { x: 2758, y: M.floor, face: 1, ground: true, atk: -1 } });
+    ok(a.gx < 2700 && /flame/.test(a.why) && b.gx > 2700 && /doused/.test(b.why) && b2.talk, 'the bot reads it: no flame - to a fire; a flame - to the lamp he doused, and E lights it (' + [a.why, b.why, b2.why].join(' / ') + ')'); }
   for (const [mode, mv] of Object.entries(DCM.MOVES)) ok(BY_HAND['deacon|' + mode] === mv.mark && (!mv.answer || ANSWER['deacon|' + mode] === mv.answer), 'his ' + mode + ' wears ' + (mv.mark || 'no mark') + ' in src/marks.js');
   ok(OPEN_RULE.deacon && FULL_DAMAGE.deacon, 'he has an opening rule and is on FULL_DAMAGE (a duelist: no chip)'); }
 ok(L.arena.boss === 'paladinboss' && PBM.PAL_POSES.length > 20, 'THE PALADIN keeps the sanctuary (his own check: tools/paladin-boss.mjs)');

@@ -1,105 +1,131 @@
-// src/paladin-boss.js - THE PALADIN, THE LIT CHURCH's boss - THE HERO AS THE BOSS (claude/church2, LIT CHURCH 2, Daniel 10-10 brief + the Paladin 2 kit).
-// Daniel: "should be the sprite of the paladin, a little bigger, similar to the death knight and pyromancer; use his moves; play like a normal player
-// character. This is how you unlock him." He replaces the litchurch greybox fight (its light bar + falter moved to THE DEACON, src/deacon.js).
+// src/paladin-boss.js - THE PALADIN, THE LIT CHURCH's boss - THE HERO AS THE BOSS (claude/church2: Daniel 10-10 "the sprite of the paladin, a little bigger, use his
+// moves, play like a normal player character"; RE-POINTED by claude/church3 to the PALADIN 4 kit and the church's FLAME - Daniel 10-17 "flames in the boss").
 //
-// WHO HE IS (design standard B5 + B11 + B17): the hero Paladin (src/chars.js bakePaladin, drawn x PB.scale by main.js like the Death Knight boss), with ONLY
-//   the hero's kit (src/holy-ground.js HG is his numbers, scaled to a boss): the MAUL chain, CONSECRATE (his holy circle - the foe side of the same
-//   makeHolyGround), the Light SPENDERS (EMPOWER 35, the HAMMER THROW 25, SMITE 20 in his circle, JUDGEMENT the full bar in his circle), the AEGIS (his ward:
-//   it turns the front and the blow it turns fills his Light - the class's own trade), the VIGIL (the crouch rule: he KNEELS BY A HOLY LIGHT to fill his
-//   Light), and one talent signature a phase - LIGHTBRINGER (P1) -> BASTION (P2: HOLY CHARGE) -> EARTHBREAKER (P3: HAMMER LEAP, his circle comes down with
-//   him). He walks at a hero's pace, never teleports, never invents a charge (Holy Charge is his own L9 active).
-// A DUELIST (B11): ALWAYS HITTABLE, GUARDS BY ANGLE - on guard (walking, recovering, his aegis raised) a blow from the FRONT by a hero at his height is
-//   turned (B15: it still bites at PB.aegis.take, with a CLANK and "HIS AEGIS") and it FEEDS his Light; from BEHIND, from ABOVE (a jump), or while he is
-//   COMMITTED (any told move, his vigil, a reel) it lands whole and DRAINS his Light. Low on Light (< PB.aegis.min) the aegis fails and the front lands too.
-// THE CENTRAL MECHANIC (B17: the level's own verb - LIGHT and THE SNUFF): THE SANCTUARY'S THREE LAMPS feed his Light (PB.light.regen a second each that
-//   burns) and they are where he kneels to fill it. SNUFF A LAMP (a blade through it) and his Light dims at once and its regen and its vigil go with it;
-//   with every lamp dark he can only earn Light off you. His spenders are gated by it, so a starved Paladin throws no hammer, smites nothing and never
-//   reaches Judgement. DRIVEN TO NOTHING by your blows (a landed blow or a snuffed lamp takes the last of it) HE FALTERS: PB.falterT s on one knee, OPEN
-//   (B10: the gold ring + timer), x PB.falterMul, at most PB.falterCap of him; B4 he stands still; B3 then a told PB.wardT s WARD as the Light comes back to
-//   PB.light.refill. (Judgement spends the whole bar too - his own choice, not a falter: the next blow that LANDS on an empty bar is the falter.)
-// HIS TOLD MOVES (every one its own windup + release frame off the hero sheet, PAL_POSES; one windup at a time):
-//   MAUL CHAIN   !   two or three maul blows stepping in (a shield turns each; ON THE BEAT he reels)                 answer: block / parry / back off
-//   CONSECRATE   ~   (quiet: a gold glow + the word) he plants his circle at his feet: in it he hits x HG.hitMul and mends, a hero standing in it burns   answer: fight him off his ground
-//   HAMMER THROW !   (25 Light) the hammer of light flies out at a hero's waist and comes back (two passes)       answer: jump it (twice) / a shield
-//   SMITE        !!  (20 Light, in his circle) the overhead, and holy spires run both ways along the floor          answer: jump the spires
-//   EMPOWER      !!  (35 Light, in his circle) the circle flares, grows and burns twice as hot                       answer: get out of it before the flare
-//   JUDGEMENT    !!  (the full bar, in his circle) five crosses round him, then the light comes down on them        answer: stand between the columns, or far off
-//   P2 HOLY CHARGE  ! the maul lowered, he charges the floor (a shield takes it and he rebounds)                   answer: jump / roll / shield
-//   P3 HAMMER LEAP !! a red ring at your feet, he leaps and slams it: quakes both ways, and his circle comes with him   answer: off the ring, jump the quake
-//   (his VIGIL at a lamp and his AEGIS are quiet, told stances: a word, a glow, the pose - B17's "quiet-but-told" reading)
-// PHASES change the arena or the rule (B5): P2 THE BASTION - THE ROSE WINDOW KINDLES HIS LAMPS (every dark lamp lights again) + HOLY CHARGE; P3 THE
-//   EARTHBREAKER - the leap, and his circle moves with him wherever he comes down.
-// PURE: no DOM, no main.js. The world is a context `c` (src/paladin-boss-hands.js binds it); c.hg is a makeHolyGround instance (side 'foe').
+// WHO HE IS (design standard B5 + B11 + B17): the hero Paladin (src/chars.js bakePaladin, drawn x PB.scale by main.js like the Death Knight boss) with ONLY the
+//   hero's PALADIN 4 kit (src/holy-ground.js HG is his numbers, scaled to a boss):
+//     the WAR HAMMER chain (his X), CONVICTION (five pips: earned by his hammer landing, by his ward turning your blows and by PRAYER), the tiers he spends them on
+//     - SMITE (1), TWIN SMITE (2), RADIANCE (3), RADIANCE+ (4, from the Bastion), SUNFALL (5, the finisher) - each spend lighting his HALLOWED AURA (his holy ground,
+//     travelling with him: in it he hits x HG_HIT, a hero standing in it burns), the SPEAR OF LIGHT (his skill), HEAVEN'S ARC (his up-air: the answer to a hero
+//     over his head), PRAYER (the crouch rule: he kneels by a holy light to fill his pips - x3 at a lit brazier), the LIGHT-WARD (his guard: ALL ROUND), the
+//     SANCTUARY STEP (his dodge), VERDICT (his held strike, the Bastion) and DAWNFALL (his plunge, the Earthbreaker). He walks at a hero's pace and never teleports.
+// A DUELIST (B11): ALWAYS HITTABLE. On guard (walking, recovering, the ward raised, a step) THE LIGHT-WARD turns a blow from ANY side - the Paladin 4 ward is all
+//   round, so there is no going round him - at PB.ward.take (B15: never less than 0.4) and the turned blow FEEDS his conviction; while he is COMMITTED (every told
+//   move, its recovery, his prayer, a reel) a blow lands whole.
+// THE CENTRAL MECHANIC (B17, the level's verb - THE FLAME): the sanctuary's three BRAZIERS stand dark. Carry a flame (E at the votive stand by the door, the altar
+//   fire at the east end, or any lit brazier) and LIGHT A BRAZIER BESIDE HIM (src/flame.js FIGHT.beside): the holy fire breaks his LIGHT-WARD - HE FALTERS:
+//   PB.falterT s on one knee, OPEN (B10: the gold ring + timer), x PB.falterMul, at most PB.falterCap of him; B4 he stands still; B3 then a told PB.wardT s WARD.
+//   A brazier lit away from him is a holy light he PRAYS at (x3 pips) - the trade. THE BASTION (P2) turns it: he SNUFFS the lit braziers (a told move, its own
+//   windup + release: the hammer driven down into the fire) - and a dark brazier at his feet is the next one to light, under his hammer.
+// HIS TOLD MOVES (each its own windup + release frame off the hero sheet, PAL_POSES - B16; one windup at a time):
+//   WAR HAMMER   !   two or three blows stepping in (a shield turns each; ON THE BEAT he reels)                         answer: block / parry / back off
+//   SMITE        !   (1 pip) the quick holy strike in front of him                                                     answer: block / back off
+//   TWIN SMITE   !   (2 pips) the smite, and the backhand a beat later                                                 answer: block twice / back off
+//   RADIANCE     !!  (3 pips; RADIANCE+ at 4 from the Bastion: bigger, it mends him a little) a burst of light all round him   answer: get out of it
+//   SUNFALL      !!  (5 pips, the finisher) five crosses round him, then the light comes down on them                  answer: stand between the columns, or far off
+//   SPEAR OF LIGHT ! the spear drawn over his shoulder, then thrown at your waist (it stops at the first hero)          answer: jump it / a shield
+//   HEAVEN'S ARC !  a hero over his head: the hammer whirled overhead, two hits                                       answer: do not hang over him
+//   P2 VERDICT  !!  the hammer held up: a sigil falls where you stand, and again, and again - then light strikes them all   answer: keep moving off the sigils
+//   P3 DAWNFALL !!  a red ring at your feet, he leaps and comes down hammer-first: a pillar of light, quakes both ways      answer: off the ring, jump the quake
+//   (his PRAYER, his WARD stance, his SNUFF and his STEP are told stances: a word, a glow, the pose - B17's "quiet-but-told" reading)
+// PURE: no DOM, no main.js. The world is a context `c` (src/paladin-boss-hands.js binds it); c.hg is a makeHolyGround instance (side 'foe') for his aura.
 // pbPlan is the boss lab's HUMAN bot (src/lab.js). DIAL_EXEMPT in src/boss-pressure.js (self-tuned in this lane).
+import { FIGHT } from './flame.js';
 
 export const PB = {
-  hp: 2500, w: 18, h: 36, scale: 1.5, markH: 62,
-  walk: 64, keep: 40, turn: 0.42, gap: [0.6, 0.5, 0.42],
-  light: { max: 100, start: 70, regen: 1.6, land: 8, feed: 6, drain: 6.5, drainHeavy: 11, lampDim: 12, refill: 50, kneel: 26 },
-  aegis: { take: 0.4, min: 8 },                       /* B15: a turned blow still bites x take; under min Light the aegis fails */
-  falterT: 2.8, falterMul: 1.7, falterCap: 0.12, wardT: 3.0, reelT: 0.8, reboundT: 0.7,
-  circle: { r: 56, life: 9, burnK: 0.32, mend: 0.18, cd: 7 },   /* r: HG.r x 1.27; burnK: x the hero's burn (10/s) -> ~3 a second on a hero in it (6 empowered); mend: x HG.heal (0.02/s) -> 0.36% a second of him */
-  vigil: { below: 45, t: 2.0, cd: 9, walkT: 2.6 },
+  hp: 1850, w: 18, h: 36,
+  heroHp: { knight: 1.35, warden: 0.64, pyro: 0.95 }, heroDmg: { knight: 2.6, warden: 1.4, pyro: 2.0 },   /* heroDmg: his blows on that hero (the shield hero turns his yellow ones; the red ones must cost him) */   /* (claude/church3) THE DUEL PER HERO (the wardgap lane's accepted pattern): the shield hero turns every yellow blow of his, so he stands longer against her - B15's wall unchanged */ scale: 1.5, markH: 62,
+  walk: 64, keep: 40, turn: 0.42, gap: [0.62, 0.52, 0.44],
+  conv: { pips: 5, start: 2, land: 0.5, turned: 0.34, blocked: 0.3, kneel: 1.25, anywhere: 0.4, refill: 2 },   /* blocked: his blow taken on a shield still earns (the hero's rule: a blow that meets you) */   /* pips: his hammer landing +land, a blow his ward turns +turned, prayer a second (kneel at a lit brazier, anywhere slow) */
+  ward: { take: 0.4 },                                      /* B15: a turned blow still bites x take */
+  falterT: 3.4, falterMul: 1.7, falterCap: 0.15, wardT: 2.0, reelT: 0.8,
+  aura: { r: 52, base: 3, perPip: 1.1, burnK: 0.32, mend: 0.18 },   /* his HALLOWED AURA: HG.aura scaled to a boss; lit for base + perPip s a pip spent; burnK x the hero's burn on a hero in it; mend x HG.heal */
   chain: { tell: 0.55, beat: 0.4, t: 0.18, n: [2, 3, 3], reach: 40, step: 120, dmg: 22 },
-  throw: { tell: 0.6, reach: 168, t: 1.4, dmg: 17, hy: 14, hr: 7 },     /* hy: the hammer's height off the floor (a hero's waist: a jump clears it) */
-  smite: { tell: 0.8, dmg: 30, wave: 20, v: 175, life: 1.05 },
-  empower: { tell: 0.75, r: 74, life: 12, flare: 22 },
-  judge: { tell: 1.0, gap: 66, r: 14, t: 0.35, dmg: 40, near: 165 },
-  charge: { tell: 0.6, v: 250, t: 0.8, dmg: 28 },
-  leap: { tell: 0.85, fly: 0.5, r: 26, dmg: 36, wave: 18 },
+  smite: { tell: 0.5, t: 0.22, reach: 46, dmg: 26, cost: 1 },
+  twin: { gap: 0.3, cost: 2 },
+  radiance: { tell: 0.8, t: 0.35, r: 70, dmg: 26, cost: 3 },
+  radPlus: { tell: 0.85, r: 92, dmg: 30, mend: 0.012, cost: 4 },
+  sunfall: { tell: 1.0, gap: 66, r: 14, t: 0.35, dmg: 40, near: 165, cost: 5 },
+  spear: { tell: 0.7, sp: 340, range: 300, dmg: 24, hy: 20, hr: 6, cd: 7, min: 96 },
+  arc: { tell: 0.4, t: 0.32, dmg: 20, cd: 4.5, w: 28 },
+  pray: { below: 2, t: 2.4, cd: 8, walkT: 3, far: 110 },
+  snuff: { tell: 0.75, t: 0.4, cd: 4, walkT: 3, reach: 170 },
+  verdict: { every: 0.42, max: 3, r: 14, t: 0.35, dmg: 30 },
+  dawn: { tell: 0.85, fly: 0.55, r: 30, dmg: 34, wave: 18, v: 175, life: 1.05 },
+  step: { t: 0.26, v: 240, cd: 3.5, pr: 0.4 },
+  brazier: { near: FIGHT.beside },
   p2: 0.65, p3: 0.3,
 };
-/* THE CYCLES, by phase (cycle k uses [k % n]); JUDGEMENT and the VIGIL are not in them - they come when the bar is full / low (nextMove) */
+/* THE CYCLES, by phase (cycle k uses [k % n]); SUNFALL, PRAYER, the SNUFF, HEAVEN'S ARC and the STEP are not in them - they come off his pips, the braziers and you (nextMove) */
 export const CYCLES = {
-  1: [['chain', 'plant', 'throw', 'chain', 'smite'], ['plant', 'chain', 'empower', 'chain', 'throw'], ['chain', 'throw', 'plant', 'smite', 'chain']],
-  2: [['charge', 'chain', 'plant', 'smite', 'throw'], ['plant', 'empower', 'chain', 'charge', 'chain'], ['throw', 'charge', 'plant', 'smite', 'chain']],
-  3: [['leap', 'chain', 'smite', 'charge', 'throw'], ['plant', 'leap', 'empower', 'chain', 'charge'], ['chain', 'leap', 'throw', 'smite', 'plant']],
+  1: [['chain', 'smite', 'spear', 'chain', 'radiance'], ['spear', 'chain', 'twin', 'chain', 'smite'], ['chain', 'twin', 'radiance', 'chain', 'spear']],
+  2: [['verdict', 'chain', 'twin', 'spear', 'chain'], ['chain', 'radiance', 'verdict', 'chain', 'smite'], ['spear', 'verdict', 'chain', 'twin', 'radiance']],
+  3: [['dawn', 'chain', 'twin', 'verdict', 'spear'], ['chain', 'dawn', 'radiance', 'chain', 'verdict'], ['twin', 'dawn', 'spear', 'chain', 'radiance']],
 };
 /* THE MOVES: the mode while it is told, its mark, the answer (src/marks.js BY_HAND keeps the same rows) */
 export const MOVES = {
-  chainTell: { mark: '!', answer: 'block' }, chainBeatTell: { mark: '!', answer: 'block' }, throwTell: { mark: '!', answer: 'jump' },
-  smiteTell: { mark: '!!', answer: 'jump' }, empowerTell: { mark: '!!', answer: 'dodge' }, judgeTell: { mark: '!!', answer: 'dodge' },
-  chargeTell: { mark: '!', answer: 'jump' }, leapTell: { mark: '!!', answer: 'dodge' }, plantTell: { mark: '', answer: '' }, vigilTell: { mark: '', answer: '' },
+  chainTell: { mark: '!', answer: 'block' }, chainBeatTell: { mark: '!', answer: 'block' }, smiteTell: { mark: '!', answer: 'block' }, twinTell: { mark: '!', answer: 'block' },
+  radianceTell: { mark: '!!', answer: 'dodge' }, sunfallTell: { mark: '!!', answer: 'dodge' }, spearTell: { mark: '!', answer: 'jump' }, arcTell: { mark: '!', answer: 'dodge' },
+  verdictTell: { mark: '!!', answer: 'dodge' }, dawnTell: { mark: '!!', answer: 'dodge' }, prayTell: { mark: '', answer: '' }, snuffTell: { mark: '', answer: '' },
 };
-export const MOVE_NAME = { chain: 'HIS MAUL', throw: 'THE HAMMER OF LIGHT', smite: 'SMITE', wave: 'THE HOLY SPIRES', flare: 'THE EMPOWERED GROUND', judge: 'JUDGEMENT', charge: 'HOLY CHARGE', leap: 'HAMMER LEAP', quake: 'THE QUAKE', ground: 'HOLY GROUND' };
+export const MOVE_NAME = { chain: 'HIS WAR HAMMER', smite: 'SMITE', twin: 'TWIN SMITE', radiance: 'RADIANCE', sunfall: 'SUNFALL', spear: 'THE SPEAR OF LIGHT', arc: 'HEAVEN\'S ARC',
+  verdict: 'VERDICT', dawn: 'DAWNFALL', quake: 'THE QUAKE', ground: 'HIS HALLOWED AURA' };
 /* the order the talent trees come in (the hero's own three: src/main.js TBR) */
 export const PHASE_NAME = { 1: 'THE LIGHTBRINGER', 2: 'THE BASTION', 3: 'THE EARTHBREAKER' };
+const STRIKE = new Set(['chain', 'smite', 'twin', 'radiance', 'sunfall', 'spear', 'arc', 'verdict', 'dawn', 'land', 'snuff']);
+const GUARD_MODES = new Set(['walk', 'recover', 'guard', 'step']);
+export const isGuardMode = m => GUARD_MODES.has(m);
 
 /* ---------- HIS SPRITE IS THE HERO'S OWN SHEET (src/chars.js bakePaladin): main.js bakes this list into SPR.paladinboss, a pose per frame, drawn x PB.scale.
-   [pose, frame]; the LAST row is his hurt (HAS_HURT reads the last frame of a set). Every told move has its OWN windup + release here (B16):
-   0 idle | 1-3 walk | 4 maul back (chain windup) | 5 the cut | 6 follow-through | 7,8 the overhead lifted (smite windup) | 9 driven down (smite release) |
-   10,11 hallow: maul up, then set in the turf (consecrate) | 12,13 hurlH: the light gathered low, then flung (the throw) | 14,15 sanctify (empower) |
-   16,17 blast: the hand up, the light called down (judgement) | 18,19 block (the aegis, raised) | 20,21 kneel (the vigil at a lamp) |
-   22,23,24 charge (holy charge: maul upright, the stride, the pull-up) | 25,26,27 leap (back, top, down) | 28 leapLand | 29 slump (he falters) | 30 hurt ---------- */
-export const PAL_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4], ['atk', 0], ['atk', 1], ['atk', 2], ['heavy', 0], ['heavy', 1], ['heavy', 2],
-  ['hallow', 0], ['hallow', 1], ['hurlH', 0], ['hurlH', 1], ['sanctify', 0], ['sanctify', 1], ['blast', 0], ['blast', 1], ['block', 0], ['block', 1],
-  ['kneel', 0], ['kneel', 1], ['charge', 0], ['charge', 1], ['charge', 2], ['leap', 0], ['leap', 1], ['leap', 2], ['leapLand', 0], ['slump', 0], ['hurt', 0]];
+   [pose, frame]; the LAST row is his hurt (HAS_HURT reads the last frame of a set). Every told move has its OWN windup + release here (B16). PAL_IDX names the rows
+   main.js re-makes from the hero's frames (src/redraw/paladin_boss_art.js: his falter, his reel) ---------- */
+export const PAL_POSES = [['idle', 0], ['run', 0], ['run', 2], ['run', 4],
+  ['atk', 0], ['atk', 1], ['atk', 2],                      /* 4-6   the war hammer: drawn back, the cut, the follow-through */
+  ['smiteQ', 0], ['smiteQ', 1], ['smiteB', 0], ['smiteB', 1], /* 7-10  SMITE (windup, release), TWIN SMITE's backhand (windup, release) */
+  ['radiance', 0], ['radiance', 1], ['radiancePlus', 0], ['radiancePlus', 1],   /* 11-14 RADIANCE, RADIANCE+ */
+  ['sunfall', 0], ['sunfall', 1],                          /* 15,16 SUNFALL */
+  ['lanceDraw', 0], ['lanceThrow', 0],                     /* 17,18 THE SPEAR OF LIGHT */
+  ['rise', 0], ['rise', 2],                                /* 19,20 HEAVEN'S ARC (the up-air whirl) */
+  ['vWind', 0], ['vHold', 0], ['vRel', 0],                 /* 21-23 VERDICT: the wind, the hold, the release */
+  ['leap', 0], ['leap', 1], ['plunge', 0], ['leapLand', 0], /* 24-27 DAWNFALL: back, the top, hammer-first down, the landing */
+  ['block', 0], ['block', 1],                              /* 28,29 THE LIGHT-WARD, raised */
+  ['pray', 0], ['pray', 1],                                /* 30,31 PRAYER */
+  ['heavy', 0], ['heavy', 2],                              /* 32,33 THE SNUFF: the hammer hauled up over the brazier, driven down into it */
+  ['sStep', 0],                                            /* 34    SANCTUARY STEP */
+  ['slump', 0], ['hurt', 0]];                              /* 35 slump (he falters) | 36 hurt */
+export const PAL_IDX = { falter: 35, hurt: 36, snuffTell: 32, snuff: 33 };
 export function palFrame(e) {
-  const m = e.mode, k = (a, b) => (e.modeT > a ? b : b + 1);
+  const m = e.mode;
   switch (m) {
     case 'chainTell': case 'chainBeatTell': return 4; case 'chain': return e.modeT > PB.chain.t * 0.5 ? 5 : 6;
-    case 'smiteTell': return e.modeT > PB.smite.tell * 0.5 ? 7 : 8; case 'smite': return 9;
-    case 'plantTell': return 10; case 'plant': return 11;
-    case 'throwTell': return 12; case 'throw': return 13;
-    case 'empowerTell': return 14; case 'empower': return 15;
-    case 'judgeTell': return 16; case 'judge': return 17;
-    case 'aegis': return 18 + Math.floor((e.anim || 0) * 3) % 2;
-    case 'vigilTell': case 'vigil': return 20 + Math.floor((e.anim || 0) * 2) % 2;
-    case 'chargeTell': return 22; case 'charge': return 23; case 'rebound': return 24;
-    case 'leapTell': return 25; case 'leap': return e.lift > 40 ? 26 : 27; case 'land': return 28;
-    case 'falter': return 29; case 'reel': return 30; case 'sleep': case 'wake': return 0;
+    case 'smiteTell': return 7; case 'smite': return 8;
+    case 'twinTell': return 7; case 'twin': return e.twin2 ? 10 : 8; case 'twinGap': return 9;
+    case 'radianceTell': return e.plus ? 13 : 11; case 'radiance': return e.plus ? 14 : 12;
+    case 'sunfallTell': return 15; case 'sunfall': return 16;
+    case 'spearTell': return 17; case 'spear': return 18;
+    case 'arcTell': return 19; case 'arc': return 20;
+    case 'verdictTell': return (e.sigils || 0) < 1 ? 21 : 22; case 'verdict': return 23;
+    case 'dawnTell': return 24; case 'dawn': return e.lift > 40 && e.modeT > PB.dawn.fly * 0.5 ? 25 : 26; case 'land': return 27;
+    case 'guard': return 28 + Math.floor((e.anim || 0) * 3) % 2;
+    case 'prayWalk': break;
+    case 'prayTell': case 'pray': return 30 + Math.floor((e.anim || 0) * 2) % 2;
+    case 'snuffWalk': break;
+    case 'snuffTell': return 32; case 'snuff': return 33;
+    case 'step': return 34;
+    case 'falter': return 35; case 'reel': return 36; case 'sleep': case 'wake': return 0;
   }
-  if (e.hurtT > 0) return 30;
+  if (e.hurtT > 0) return 36;
   return Math.abs(e.vx || 0) > 3 ? 1 + Math.floor((e.anim || 0) * 7) % 3 : 0;
 }
 
 /* ---------- THE SANCTUARY ---------- */
-/* local columns (0..41), the floor's surface row R (the hero stands on R-1). THE CHOIR STALLS (one-way ledges: the angle from above), THE ALTAR at the east
-   end (drawn), THE ROSE WINDOW over it (drawn), THREE LAMPS on the floor (his Light: snuff one and it dims). He starts at `him` */
-export const PB_STAGE = { W: 42, door: 6, lamps: [7, 21, 35], stalls: [{ x0: 2, x1: 9, dy: 3 }, { x0: 32, x1: 39, dy: 3 }], him: 30, roof: 20 };
+/* local columns (0..41), the floor's surface row R (the hero stands on R-1). THE CHOIR STALLS (one-way ledges), THE ALTAR at the east end (drawn), THE ROSE WINDOW
+   over it (drawn), THREE BRAZIERS on the floor (dark: his opening when you light one beside him), and two fires that always burn - THE VOTIVE STAND by the west
+   door and THE ALTAR FIRE (a flame in your hand). He starts at `him` */
+export const PB_STAGE = { W: 42, door: 6, braziers: [12, 21, 30], votive: 1, altar: 40, stalls: [{ x0: 2, x1: 9, dy: 3 }, { x0: 32, x1: 39, dy: 3 }], him: 30, roof: 20 };
 export function stagePaladin(W, T, TS, sx, R) {
   const { set, block, ent, air } = W, ex = sx + PB_STAGE.W;
-  const lamps = PB_STAGE.lamps.map((x, i) => ({ id: 'arena' + i, x: sx + x, y: R - 1, room: 'sanctuary', kind: 'arena', lit: true }));
+  const lamps = PB_STAGE.braziers.map((x, i) => ({ id: 'arena' + i, x: sx + x, y: R - 1, room: 'sanctuary', kind: 'arena', brazier: true, lit: false }));
+  const sources = [{ id: 'pbVotive', x: sx + PB_STAGE.votive, y: R - 1, kind: 'votive' }, { id: 'pbAltar', x: sx + PB_STAGE.altar, y: R - 1, kind: 'brazier' }];
   const carve = () => {
     air(sx, ex - 1, R - PB_STAGE.roof, R - 1);
     block(sx - 1, sx - 1, R - PB_STAGE.roof - 4, R - PB_STAGE.door - 1);   /* the west wall over the door you came in by (shut behind you) */
@@ -107,236 +133,254 @@ export function stagePaladin(W, T, TS, sx, R) {
     block(sx - 1, ex, R - PB_STAGE.roof - 4, R - PB_STAGE.roof - 1);        /* the vault */
     for (const l of PB_STAGE.stalls) for (let x = sx + l.x0; x <= sx + l.x1; x++) set(x, R - l.dy, T.ONEWAY);
     for (const l of lamps) ent('lclamp', l.x, l.y, { id: l.id, arena: true });
+    for (const s of sources) ent('lcsource', s.x, s.y, { id: s.id });
     ent('paladinboss', sx + PB_STAGE.him, R - 1, { face: -1 });
   };
   const arena = { x0: sx * TS, x1: ex * TS, floor: R * TS, trigger: (sx + 2) * TS, wallL: sx - 1, wallR: ex, boss: 'paladinboss', music: 'paladin',
     tint: '#d8c070', tintA: 0.04, start: [sx + 2, R - 1], y0: (R - PB_STAGE.roof) * TS, y1: (R + 1) * TS, pb: { sx, R } };
-  return { arena, carve, lamps };
+  return { arena, carve, lamps, sources };
 }
 /* the sanctuary in world px, from the arena */
 export function geom(A, TS = 16) {
   const q = A.pb, X = c => (q.sx + c) * TS;
   return { TS, x0: X(0), x1: X(PB_STAGE.W), floorY: q.R * TS, roofY: (q.R - PB_STAGE.roof) * TS,
-    lamps: PB_STAGE.lamps.map((x, i) => ({ id: 'arena' + i, x: X(x) + 8 })),
+    lamps: PB_STAGE.braziers.map((x, i) => ({ id: 'arena' + i, x: X(x) + 8 })), fires: [X(PB_STAGE.votive) + 8, X(PB_STAGE.altar) + 8],
     stalls: PB_STAGE.stalls.map(l => ({ x0: X(l.x0), x1: X(l.x1 + 1), y: (q.R - l.dy) * TS })) };
 }
 
 /* ---------- ONE FIGHT ---------- */
 export function newFight(G) {
-  return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, light: PB.light.start, ward: 0, falterTaken: 0, behindT: 0, chainLeft: 0, starved: false,
-    marks: [], waves: [], hammer: null, leap: null, kneelId: null, vigilCd: 3, plantCd: 0, heat: 0, told: {}, lastLight: PB.light.start,
-    n: { cycles: 0, falters: 0, wards: 0, warded: 0, guarded: 0, fed: 0, drained: 0, landed: 0, failed: 0, lampsOut: 0, vigils: 0, vigilsCut: 0, plants: 0, empowers: 0, smites: 0,
-      throws: 0, judges: 0, chains: 0, charges: 0, rebounds: 0, ripostes: 0, leaps: 0, kindled: 0, moves: {} } };
+  return { G, ph: 1, cycle: 0, step: 0, script: null, act: 0, conv: PB.conv.start, ward: 0, falterTaken: 0, behindT: 0, chainLeft: 0,
+    marks: [], sigils: [], waves: [], spear: null, leap: null, kneelId: null, snuffId: null, prayCd: 3, spearCd: 2, arcCd: 0, snuffCd: 2, stepCd: 2, heat: 0, told: {}, lastConv: PB.conv.start,
+    n: { cycles: 0, falters: 0, breaks: 0, litFar: 0, wards: 0, warded: 0, guarded: 0, fed: 0, landed: 0, prayers: 0, praysCut: 0, snuffs: 0, snuffsCut: 0, steps: 0, smites: 0, twins: 0,
+      radiances: 0, pluses: 0, sunfalls: 0, spears: 0, arcs: 0, verdicts: 0, dawns: 0, chains: 0, ripostes: 0, auras: 0, moves: {} } };
 }
 export const pPhase = e => (e.hp <= e.maxHp * PB.p3 ? 3 : e.hp <= e.maxHp * PB.p2 ? 2 : 1);
 export const pbOpen = e => !!e && e.mode === 'falter' && (e.open || 0) > 0;
-const STRIKE = new Set(['chain', 'throw', 'smite', 'empower', 'judge', 'charge', 'leap', 'land']);
-const GUARD_MODES = new Set(['walk', 'recover', 'aegis']);
-/* HIS AEGIS: a blow from in front of him by a hero at his height (not from above, not in the air over him), while he is on guard with the Light to hold it */
-export const guarded = (e, S, hx, hy, airborne) => !!e && !pbOpen(e) && !(e.broken > 0) && GUARD_MODES.has(e.mode) && S.light >= PB.aegis.min
-  && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 14) && Math.abs(hy - e.y) < 30;
-export const litLamps = c => (c.lamps ? c.lamps().filter(l => l.lit).length : 3);
-/* his circle, and whether he (or a body) stands in it */
-const circleOf = (e, c) => (c.hg ? c.hg.of(e) : null);
-export const inHisCircle = (e, c, b) => { const ci = circleOf(e, c); return !!ci && c.hg.inside(ci, b || e); };
+export const pips = S => Math.floor((S.conv || 0) + 1e-6);
+/* THE LIGHT-WARD: on guard it turns a blow from ANY side (the Paladin 4 ward is all round) */
+export const guarded = (e, S) => !!e && !pbOpen(e) && !(e.broken > 0) && GUARD_MODES.has(e.mode);
+export const litBraziers = c => (c.lamps ? c.lamps().filter(l => l.lit).length : 0);
+/* his aura, and whether he (or a body) stands in it */
+const auraOf = (e, c) => (c.hg ? c.hg.of(e) : null);
+export const inHisAura = (e, c, b) => { const ci = auraOf(e, c); return !!ci && c.hg.inside(ci, b || e); };
 
 const nextScript = S => { const set = CYCLES[S.ph]; return set[S.cycle % set.length].slice(); };
 function setMode(e, m, t) { e.mode = m; e.modeT = t; }
 const clampX = (G, x) => Math.max(G.x0 + 18, Math.min(G.x1 - 18, x));
 function tell(e, S, c, mode, t) { setMode(e, mode, t); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark); c.sound(mv && mv.mark === '!!' ? 'tellHard' : mv && mv.mark ? 'tell' : 'glow'); }
-const setLight = (S, v) => { S.light = Math.max(0, Math.min(PB.light.max, v)); };
-/* LIGHT TAKEN BY THE PLAYER (a landed blow, a snuffed lamp): the last of it starves him - the falter comes at his next free beat */
-function takeLight(S, n) { const was = S.light; setLight(S, S.light - n); if (was > 0 && S.light <= 0) S.starved = true; else if (was <= 0) S.starved = true; }
-function falter(e, S, c) { setMode(e, 'falter', PB.falterT + 0.05); e.open = PB.falterT; S.falterTaken = 0; S.starved = false; S.n.falters++; S.chainLeft = 0; S.marks = []; S.leap = null; S.hammer = null;
-  c.fx('open', e.x, e.y); c.sound('falter'); c.shake(3); c.number(e.x, e.y - 80, 'HIS LIGHT IS OUT: HE FALTERS - STRIKE', '#8fd160'); }
+const setConv = (S, v) => { S.conv = Math.max(0, Math.min(PB.conv.pips, v)); };
+/* A SPEND: the pips go, and his HALLOWED AURA lights at his feet (the hero's rule: every spend lights it - base + perPip s a pip) */
+function spend(e, S, c, n) { setConv(S, S.conv - n); S.n.auras++; if (!c.hg) return; const life = PB.aura.base + PB.aura.perPip * n, c0 = c.hg.of(e);
+  if (c0) { c0.life = c0.max = Math.max(c0.life, life); if (c.hg.flare) c.hg.flare(c0); } else { const a = c.hg.plant(e, e.x, S.G.floorY, { r: PB.aura.r, life, side: 'foe' }); a.aura = true; } }
+function falter(e, S, c, why) { setMode(e, 'falter', PB.falterT + 0.05); e.open = PB.falterT; e.lift = 0; S.falterTaken = 0; S.n.falters++; S.chainLeft = 0; S.marks = []; S.sigils = []; S.leap = null; S.spear = null;
+  c.fx('open', e.x, e.y); c.sound('falter'); c.shake(4); c.number(e.x, e.y - 80, why || 'THE HOLY FIRE BREAKS HIS LIGHT-WARD: HE FALTERS - STRIKE', '#8fd160'); }
 function endFalter(e, S, c) { e.open = 0; e.burn = 0;   /* (the light coming back up him puts out a fire on him: the old fight's rule, kept) */
-  S.ward = PB.wardT; S.n.wards++; S.falterTaken = 0; setLight(S, PB.light.refill); c.fx('ward', e.x, e.y); c.sound('tell');
-  c.number(e.x, e.y - 80, 'THE LIGHT RETURNS: HE IS WARDED', '#9ab0c0'); }
+  S.ward = PB.wardT; S.n.wards++; S.falterTaken = 0; setConv(S, Math.max(S.conv, PB.conv.refill)); c.fx('ward', e.x, e.y); c.sound('tell');
+  c.number(e.x, e.y - 80, 'HIS WARD RETURNS: HE IS WARDED', '#9ab0c0'); }
 
 /* ---------- THE RULE ON HIM (the hands call these) ---------- */
-/* A BLOW ON HIM from a hero at (hx, hy) (airborne: in the air). Returns { dmg, read } - read: 'aegis' (turned: it fed him), 'ward', 'open', 'landed', 'failed' (the aegis would have turned it but his Light is too low) */
-export function blowOn(e, S, c, dmg, hx, hy, airborne, heavy) {
+/* A BLOW ON HIM. Returns { dmg, read } - read: 'guard' (his light-ward turned it: it fed him), 'ward', 'open', 'landed' */
+export function blowOn(e, S, c, dmg) {
   if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake') return { dmg: 0, read: 'ward' };
   if (S.ward > 0) { S.n.warded++; return { dmg: 0, read: 'ward' }; }
   if (pbOpen(e)) { const cap = e.maxHp * PB.falterCap - S.falterTaken; const d = Math.max(0, Math.min(Math.round(dmg * PB.falterMul), Math.round(cap))); S.falterTaken += d; return { dmg: d, read: 'open' }; }
-  if (guarded(e, S, hx, hy, airborne)) { S.n.guarded++; S.n.fed++; setLight(S, S.light + PB.light.feed); S.heat += 1;
-    if (!S.told.aegis || S.n.guarded % 4 === 0) { S.told.aegis = 1; c.number(e.x, e.y - 70, 'HIS AEGIS DRINKS IT: GO ROUND', '#ffd36b'); } return { dmg: Math.max(1, Math.round(dmg * PB.aegis.take)), read: 'aegis' }; }
-  /* the front, on guard, but his Light is too low to hold the aegis: it FAILS (told) and the blow lands whole */
-  const failed = GUARD_MODES.has(e.mode) && (e.face || 1) * (hx - e.x) > -6 && !(airborne && hy < e.y - 14) && S.light < PB.aegis.min;
-  if (failed) { S.n.failed++; if (!S.told.fail) { S.told.fail = 1; c.number(e.x, e.y - 70, 'HIS LIGHT IS LOW: THE AEGIS FAILS', '#8fd160'); } }
-  /* it LANDS: the man takes it, and his light goes */
-  S.n.landed++; S.n.drained++; takeLight(S, heavy ? PB.light.drainHeavy : PB.light.drain);
-  if (e.mode === 'vigil' || e.mode === 'vigilTell') { S.n.vigilsCut++; setMode(e, 'recover', 0.5); c.number(e.x, e.y - 70, 'THE VIGIL IS CUT', '#8fd160'); }
-  if (!S.told.drain) { S.told.drain = 1; c.number(e.x, e.y - 70, 'IT LANDS: HIS LIGHT DRAINS', '#8fd160'); }
-  return { dmg, read: failed ? 'failed' : 'landed' };
+  if (guarded(e, S)) { S.n.guarded++; S.n.fed++; setConv(S, S.conv + PB.conv.turned); S.heat += 1;
+    if (!S.told.guard || S.n.guarded % 5 === 0) { S.told.guard = 1; c.number(e.x, e.y - 70, 'HIS LIGHT-WARD TURNS IT: LIGHT A BRAZIER BESIDE HIM', '#ffd36b'); } return { dmg: Math.max(1, Math.round(dmg * PB.ward.take)), read: 'guard' }; }
+  /* it LANDS: he is committed */
+  S.n.landed++;
+  if (e.mode === 'pray' || e.mode === 'prayTell') { S.n.praysCut++; setMode(e, 'recover', 0.5); S.prayCd = PB.pray.cd * 0.6; c.number(e.x, e.y - 70, 'THE PRAYER IS BROKEN', '#8fd160'); }
+  if (e.mode === 'snuffTell') { S.n.snuffsCut++; setMode(e, 'recover', 0.5); S.snuffCd = PB.snuff.cd; c.number(e.x, e.y - 70, 'HIS HAMMER IS STAYED', '#8fd160'); }
+  if (!S.told.land) { S.told.land = 1; c.number(e.x, e.y - 70, 'COMMITTED: IT LANDS', '#8fd160'); }
+  return { dmg, read: 'landed' };
 }
-/* A BURN ON HIM (the pyro's fire, a tick with no blow behind it): not a blow, so it never touches his Light (the old fight's tune: the pyro must not starve him
-   for free off her fire). His ward stops it; open it pays x1 inside the falter's cap; otherwise it burns whole (B15) */
+/* A BURN ON HIM (the pyro's fire, a tick with no blow behind it): it never feeds him. His ward stops it; open it pays x1 inside the falter's cap; otherwise whole (B15) */
 export function burnOn(e, S, dmg) {
   if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || S.ward > 0) return { dmg: 0, read: 'ward' };
   S.n.burns = (S.n.burns || 0) + 1;
   if (pbOpen(e)) { const d = Math.max(0, Math.min(dmg, Math.round(e.maxHp * PB.falterCap - S.falterTaken))); S.falterTaken += d; return { dmg: d, read: 'open' }; }
+  if (guarded(e, S)) return { dmg: Math.max(1, Math.round(dmg * PB.ward.take)), read: 'guard' };   /* (claude/church3) the light-ward turns a fire on him too (all round): x take on guard */
   return { dmg, read: 'burn' };
 }
-/* HIS BLOW TURNED (the hands, off what damagePlayer said): ON THE BEAT (a parry, a perfect guard, a roll through - main.js answered) a maul blow or his charge
-   is the RIPOSTE: he REELS PB.reelT (committed: everything lands); a HOLY CHARGE taken on a plain shield REBOUNDS him (the shield's own window) */
-export function blowTurned(e, S, c, perfect) { if (!e || !e.alive || pbOpen(e) || S.ward > 0) return;
-  if (!perfect && e.mode === 'charge') { S.n.rebounds++; setMode(e, 'rebound', PB.reboundT); e.vx = 0; c.number(e.x, e.y - 70, S.told.rebound ? 'THE CHARGE REBOUNDS' : 'HIS CHARGE ON YOUR SHIELD: HE REBOUNDS', '#8fd160'); S.told.rebound = 1; return; }
-  if (perfect && (e.mode === 'chain' || e.mode === 'charge' || e.mode === 'chainBeatTell')) { S.n.ripostes++; S.chainLeft = 0; takeLight(S, 6); setMode(e, 'reel', PB.reelT); e.vx = 0;
+/* HIS BLOW TURNED: ON THE BEAT (a parry, a perfect guard, a roll through - main.js answered) a hammer blow or a smite is the RIPOSTE: he REELS PB.reelT */
+export function blowTurned(e, S, c, perfect) { if (!e || !e.alive || pbOpen(e) || S.ward > 0) return; if (!perfect) setConv(S, S.conv + PB.conv.blocked);
+  if (perfect && (e.mode === 'chain' || e.mode === 'chainBeatTell' || e.mode === 'smite' || e.mode === 'twin' || e.mode === 'twinGap')) { S.n.ripostes++; S.chainLeft = 0; setConv(S, S.conv - 0.5); setMode(e, 'reel', PB.reelT); e.vx = 0;
     c.number(e.x, e.y - 70, S.told.riposte ? 'HE REELS ON THE BEAT' : 'ON THE BEAT: HE REELS', '#8fd160'); S.told.riposte = 1; } }
-/* A SANCTUARY LAMP SNUFFED (a hero's blade through it): his light dims at once, and his regen with it (and a vigil at it is cut) */
-export function lampOut(e, S, c, id) { if (!e || !e.alive || e.mode === 'sleep') return; S.n.lampsOut++; takeLight(S, PB.light.lampDim);
-  if ((e.mode === 'vigil' || e.mode === 'vigilTell' || e.mode === 'vigilWalk') && (!id || id === S.kneelId)) { S.n.vigilsCut++; setMode(e, 'recover', 0.5); c.number(e.x, e.y - 70, 'HIS LAMP DIES UNDER HIS HANDS', '#8fd160'); return; }
-  c.number(e.x, e.y - 70, S.told.lamp ? 'HIS LIGHT DIMS' : 'THE LAMP DIES: HIS LIGHT DIMS', '#8fd160'); S.told.lamp = 1; }
-/* HIS MAUL LANDED on a hero (the hero's own rule: the maul landing fills the Light) */
-export function maulLanded(S) { setLight(S, S.light + PB.light.land); }
+/* A BRAZIER LIT BY A HERO (src/lit-church-hands.js -> the hands): BESIDE HIM the holy fire breaks his light-ward (THE opening); away from him it is a light he prays at */
+export function brazierLit(e, S, c, x) { if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake') return 'asleep';
+  if (pbOpen(e)) return 'open';
+  if (Math.abs(x - e.x) > PB.brazier.near) { S.n.litFar++; c.number(x, e.y - 60, S.told.far ? 'TOO FAR FROM HIM: HE WILL PRAY AT IT' : 'THE BRAZIER BURNS - TOO FAR FROM HIM: LIGHT ONE BESIDE HIM', '#ff9a5c'); S.told.far = 1; return 'far'; }
+  if (S.ward > 0) { c.number(x, e.y - 60, 'HIS WARD HOLDS: NOT YET', '#9ab0c0'); return 'ward'; }
+  S.n.breaks++; e.lift = 0; falter(e, S, c); return 'break'; }
+/* A BRAZIER PUT OUT under him while he kneels at it (a hero's blade) cuts the prayer */
+export function brazierOut(e, S, c, id) { if (!e || !e.alive || e.mode === 'sleep') return;
+  if ((e.mode === 'pray' || e.mode === 'prayTell' || e.mode === 'prayWalk') && id && id === S.kneelId) { S.n.praysCut++; setMode(e, 'recover', 0.5); c.number(e.x, e.y - 70, 'HIS BRAZIER DIES UNDER HIS HANDS', '#8fd160'); } }
+/* HIS HAMMER LANDED on a hero (the hero's own rule: a blow landing earns conviction) */
+export function hammerLanded(S) { setConv(S, S.conv + PB.conv.land); }
 
-/* ---------- ONE FRAME. h = the heroes [{ x, y, ground, alive, air, pp }], c = the world:
+/* ---------- ONE FRAME. h = the heroes [{ x, y, ground, alive, air, flame, pp }], c = the world:
    c.hit(box, dmg, name, o) -> landed   c.number(x, y, line, col)  c.mark(m)  c.sound(k)  c.fx(kind, x, y)  c.shake(n)  c.music(ph)
-   c.lamps() -> [{ id, x, lit }]   c.kindle(id) (a lamp lit again)   c.hg (makeHolyGround, side 'foe')   c.time() ---------- */
+   c.lamps() -> [{ id, x, lit }] (his braziers)   c.snuff(id) (he puts one out)   c.hg (makeHolyGround, side 'foe')   c.time() ---------- */
 export function stepPaladin(e, S, dt, h, c) {
   const G = S.G, P = h.filter(q => q.alive).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0] || h[0];
   e.modeT -= dt; e.y = G.floorY - (e.lift || 0); e.anim = (e.anim || 0) + dt; S.heat = Math.max(0, S.heat - dt * 1.2);
-  S.vigilCd = Math.max(0, S.vigilCd - dt); S.plantCd = Math.max(0, S.plantCd - dt);
+  for (const k of ['prayCd', 'spearCd', 'arcCd', 'snuffCd', 'stepCd']) S[k] = Math.max(0, S[k] - dt);
   if (e.open > 0) e.open = Math.max(0, e.open - dt);
-  if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; e.pbLight = S.light;   /* (not e.light: main.js's own field - a ghost's lantern) */
+  if (S.ward > 0) S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; e.pbConv = S.conv;   /* (not e.light: main.js's own field - a ghost's lantern) */
+  const ci = auraOf(e, c); if (ci && c.hg.follow) c.hg.follow(ci, e.x, G.floorY);   /* HIS HALLOWED AURA walks with him */
   stepWorld(e, S, dt, h, c);
   if (e.mode === 'sleep') return;
   if (e.mode === 'wake') { if (e.modeT <= 0) { S.script = nextScript(S); S.step = 0; setMode(e, 'walk', 0.6); } return; }
-  /* STARVED: you took the last of his Light - he falters, breaking off what he was telling (a blow already moving finishes first) */
-  if (S.starved && S.light <= 0 && e.mode !== 'falter' && S.ward <= 0 && !STRIKE.has(e.mode)) { falter(e, S, c); return; }
-  if (S.light > 0) S.starved = false;
-  /* HIS LAMPS feed him (not while he falters or is warded) */
-  if (!pbOpen(e) && S.ward <= 0) setLight(S, S.light + PB.light.regen * litLamps(c) * dt);
   /* BROKEN (his poise bar): he reels where he stands (B4) */
   if (e.broken > 0 && !pbOpen(e) && (GUARD_MODES.has(e.mode) || /Tell$/.test(e.mode))) { e.modeT += dt; e.vx = 0; return; }
   /* THE PHASES: a new one waits for the blow in hand and never cuts an opening short */
   const want = pPhase(e);
-  if (want > S.ph && !pbOpen(e) && (e.mode === 'walk' || e.mode === 'recover')) {
-    S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; c.music(want);
-    if (want === 2) { let n = 0; for (const l of (c.lamps ? c.lamps() : [])) if (!l.lit && c.kindle && c.kindle(l.id)) n++; S.n.kindled += n;
-      c.number((G.x0 + G.x1) / 2, G.floorY - 150, n ? 'THE BASTION: THE ROSE WINDOW KINDLES HIS LAMPS' : 'THE BASTION: THE ROSE WINDOW BLAZES', '#ffd36b'); c.sound('tellHard'); c.shake(4); setMode(e, 'recover', 0.8); return; }
-    if (want === 3) { c.number((G.x0 + G.x1) / 2, G.floorY - 150, 'THE EARTHBREAKER: THE GROUND GOES WITH HIM', '#ff6b6b'); c.sound('tellHard'); c.shake(5); setMode(e, 'recover', 0.8); return; } }
+  if (want > S.ph && !pbOpen(e) && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'guard')) {
+    S.ph = want; S.cycle = 0; S.step = 0; S.script = null; e.phase = want; c.music(want); S.snuffCd = 1.2;
+    if (want === 2) { c.number((G.x0 + G.x1) / 2, G.floorY - 150, 'THE BASTION: HE SNUFFS HIS BRAZIERS - RELIGHT THEM BY HIM', '#ffd36b'); c.sound('tellHard'); c.shake(4); setMode(e, 'recover', 0.8); return; }
+    if (want === 3) { c.number((G.x0 + G.x1) / 2, G.floorY - 150, 'THE EARTHBREAKER: THE DAWN FALLS WITH HIM', '#ff6b6b'); c.sound('tellHard'); c.shake(5); setMode(e, 'recover', 0.8); return; } }
+  /* HEAVEN'S ARC: a hero hanging over his head - his up-air whirl (on guard only: one windup at a time) */
+  if (GUARD_MODES.has(e.mode) && e.mode !== 'step' && S.arcCd <= 0 && S.ward <= 0) { const over = h.find(q => q.alive && q.air && Math.abs(q.x - e.x) < PB.arc.w && q.y < e.y - 20 && q.y > e.y - 96);
+    if (over) { S.arcCd = PB.arc.cd; S.n.arcs++; tell(e, S, c, 'arcTell', PB.arc.tell); if (!S.told.arc) { S.told.arc = 1; c.number(e.x, e.y - 80, 'THE ARC OVER HIS HEAD: DO NOT HANG OVER HIM', '#ffd36b'); } return; } }
   switch (e.mode) {
     case 'falter': e.vx = 0; if (e.open <= 0) { endFalter(e, S, c); setMode(e, 'recover', 0.4); } return;   /* B4: on one knee, still */
-    case 'recover': e.vx = 0; if (e.modeT <= 0) nextMove(e, S, P, c); return;
-    case 'aegis': e.vx = 0; if (e.modeT <= 0) nextMove(e, S, P, c); return;
+    case 'recover': e.vx = 0; if (e.modeT <= 0) nextMove(e, S, P, h, c); return;
+    case 'guard': e.vx = 0; if (e.modeT <= 0) nextMove(e, S, P, h, c); return;
+    case 'step': { const x0 = e.x; e.x = clampX(G, e.x + (e.stepDir || 1) * PB.step.v * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt); if (e.modeT <= 0) setMode(e, 'recover', 0.25); return; }
     case 'walk': {
       const d = P.x - e.x;
       if ((e.face || 1) * d < -8) { S.behindT += dt; if (S.behindT > PB.turn) { e.face = Math.sign(d) || e.face; S.behindT = 0; } } else S.behindT = 0;
       const x0 = e.x; if (Math.abs(d) > PB.keep + 6) e.x = clampX(G, e.x + Math.sign(d) * PB.walk * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt);
-      /* PRESSED on his aegis (blows turned in a beat), he plants it: the stance (told: the pose and the word) */
-      if (S.heat >= 2.2 && Math.abs(d) < 70) { S.heat = 0; setMode(e, 'aegis', 0.9); e.vx = 0; if (!S.told.stance) { S.told.stance = 1; c.number(e.x, e.y - 70, 'HE PLANTS HIS AEGIS: GO ROUND', '#ffd36b'); } return; }
-      if (e.modeT <= 0) nextMove(e, S, P, c); return; }
-    case 'vigilWalk': { const l = (c.lamps() || []).find(q => q.id === S.kneelId);
+      /* PRESSED on his ward (blows turned in a beat), he RAISES it: the stance (told: the pose and the word) */
+      if (S.heat >= 2.2 && Math.abs(d) < 70) { S.heat = 0; setMode(e, 'guard', 0.9); e.vx = 0; if (!S.told.stance) { S.told.stance = 1; c.number(e.x, e.y - 70, 'HE RAISES HIS LIGHT-WARD: BRING THE FIRE', '#ffd36b'); } return; }
+      /* THE SANCTUARY STEP (from the Bastion): a hero with a flame closing on him by a dark brazier - he steps off it */
+      if (S.ph >= 2 && S.stepCd <= 0 && maybeStep(e, S, h, c)) return;
+      if (e.modeT <= 0) nextMove(e, S, P, h, c); return; }
+    case 'prayWalk': { const l = (c.lamps() || []).find(q => q.id === S.kneelId);
       if (!l || !l.lit) { setMode(e, 'walk', 0.3); return; }
       const d = l.x - e.x; e.face = Math.sign(d) || e.face; if (Math.abs(d) > 12) { const x0 = e.x; e.x = clampX(G, e.x + Math.sign(d) * PB.walk * 1.15 * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt); if (e.modeT <= 0) setMode(e, 'walk', 0.3); return; }
-      e.vx = 0; S.n.vigils++; tell(e, S, c, 'vigilTell', 0.4); c.number(e.x, e.y - 70, 'HE KNEELS AT HIS LAMP: CUT IT OR SNUFF IT', '#ffd36b'); return; }
-    case 'vigilTell': e.vx = 0; if (e.modeT <= 0) setMode(e, 'vigil', PB.vigil.t); return;
-    case 'vigil': { e.vx = 0; const l = (c.lamps() || []).find(q => q.id === S.kneelId);
-      if (!l || !l.lit) { setMode(e, 'recover', 0.4); return; }
-      setLight(S, S.light + PB.light.kneel * dt);
-      if (e.modeT <= 0 || S.light >= PB.light.max) { S.vigilCd = PB.vigil.cd; setMode(e, 'recover', 0.35); } return; }
+      e.vx = 0; S.n.prayers++; tell(e, S, c, 'prayTell', 0.4); c.number(e.x, e.y - 70, 'HE PRAYS AT THE BRAZIER: BREAK IT OFF', '#ffd36b'); return; }
+    case 'prayTell': e.vx = 0; if (e.modeT <= 0) setMode(e, 'pray', PB.pray.t); return;
+    case 'pray': { e.vx = 0; const l = S.kneelId ? (c.lamps() || []).find(q => q.id === S.kneelId) : null;
+      if (S.kneelId && (!l || !l.lit)) { setMode(e, 'recover', 0.4); return; }
+      setConv(S, S.conv + (l ? PB.conv.kneel : PB.conv.anywhere) * dt);
+      if (e.modeT <= 0 || S.conv >= PB.conv.pips) { S.prayCd = PB.pray.cd; setMode(e, 'recover', 0.35); } return; }
+    case 'snuffWalk': { const l = (c.lamps() || []).find(q => q.id === S.snuffId);
+      if (!l || !l.lit) { setMode(e, 'walk', 0.3); return; }
+      const d = l.x - e.x; e.face = Math.sign(d) || e.face; if (Math.abs(d) > 16) { const x0 = e.x; e.x = clampX(G, e.x + Math.sign(d) * PB.walk * 1.2 * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt); if (e.modeT <= 0) setMode(e, 'walk', 0.3); return; }
+      e.vx = 0; S.n.snuffs++; tell(e, S, c, 'snuffTell', PB.snuff.tell); c.number(e.x, e.y - 70, S.told.snuff ? 'HE SNUFFS THE BRAZIER' : 'HE SNUFFS THE BRAZIER: LIGHT IT AGAIN BESIDE HIM', '#ffd36b'); S.told.snuff = 1; return; }
   }
   stepMove(e, S, dt, P, h, c);
 }
-function nextMove(e, S, P, c) {
+/* the step: a hero carrying a flame within reach of him and a DARK brazier beside him - off it, away from the brazier (a chance, a cooldown) */
+function maybeStep(e, S, h, c) { const near = PB.brazier.near, q = h.find(p => p.alive && p.flame > 0 && Math.abs(p.x - e.x) < near + 30); if (!q) return false;
+  const b = (c.lamps() || []).filter(l => !l.lit && Math.abs(l.x - e.x) <= near).sort((a, z) => Math.abs(a.x - e.x) - Math.abs(z.x - e.x))[0]; if (!b) return false;
+  S.stepCd = PB.step.cd; if ((c.rng ? c.rng() : Math.random()) > PB.step.pr) return false;
+  e.stepDir = Math.sign(e.x - b.x) || -(Math.sign(q.x - e.x) || 1); if (Math.abs(e.x - (S.G.x0 + 30)) < 30 && e.stepDir < 0) e.stepDir = 1; if (Math.abs(e.x - (S.G.x1 - 30)) < 30 && e.stepDir > 0) e.stepDir = -1;
+  S.n.steps++; setMode(e, 'step', PB.step.t); e.vx = 0; if (!S.told.step) { S.told.step = 1; c.number(e.x, e.y - 70, 'HE STEPS OFF THE BRAZIER: CATCH HIM AT ONE', '#ffd36b'); } return true; }
+function nextMove(e, S, P, h, c) {
   const dx = P.x - e.x, ad = Math.abs(dx), G = S.G, lamps = c.lamps ? c.lamps() : [];
-  e.face = Math.sign(dx) || e.face;
-  /* JUDGEMENT: the full bar, standing in his circle */
-  if (S.light >= PB.light.max - 0.01 && inHisCircle(e, c) && S.ward <= 0) { S.n.judges++; tell(e, S, c, 'judgeTell', PB.judge.tell); S.marks = [];
-    for (let k = -2; k <= 2; k++) S.marks.push({ x: clampX(G, e.x + k * PB.judge.gap) });
-    if (ad < PB.judge.near && !S.marks.some(m => Math.abs(m.x - P.x) < PB.judge.gap / 2)) S.marks.push({ x: clampX(G, P.x) });
+  e.face = Math.sign(dx) || e.face; e.plus = false;
+  /* SUNFALL: five pips - the finisher */
+  if (pips(S) >= PB.sunfall.cost && S.ward <= 0) { S.n.sunfalls++; spend(e, S, c, PB.sunfall.cost); tell(e, S, c, 'sunfallTell', PB.sunfall.tell); S.marks = [];
+    for (let k = -2; k <= 2; k++) S.marks.push({ x: clampX(G, e.x + k * PB.sunfall.gap) });
+    if (ad < PB.sunfall.near && !S.marks.some(m => Math.abs(m.x - P.x) < PB.sunfall.gap / 2)) S.marks.push({ x: clampX(G, P.x) });
     for (const mk of S.marks) c.fx('cross', mk.x, G.floorY);
-    c.number(e.x, e.y - 80, 'JUDGEMENT: STAND BETWEEN THE LIGHTS', '#ff6b6b'); return; }
-  /* THE VIGIL: low on Light, a lit lamp in the room - he goes to kneel at it (the hero's crouch rule) */
+    c.number(e.x, e.y - 80, 'SUNFALL: STAND BETWEEN THE LIGHTS', '#ff6b6b'); return; }
+  /* THE BASTION SNUFFS HIS BRAZIERS: a lit one in his reach, he goes and puts it out (told; a blow stays his hammer) */
+  if (S.ph >= 2 && S.snuffCd <= 0 && S.ward <= 0) { const l = lamps.filter(q => q.lit && Math.abs(q.x - e.x) <= PB.snuff.reach).sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0];
+    if (l) { S.snuffId = l.id; S.snuffCd = PB.snuff.cd; setMode(e, 'snuffWalk', PB.snuff.walkT); return; } }
+  /* PRAYER: low on pips - he goes to kneel at a lit brazier (x3), or, with you far off, kneels where he stands */
   const lit = lamps.filter(l => l.lit);
-  if (S.light < PB.vigil.below && lit.length && S.vigilCd <= 0 && S.ward <= 0) { const l = lit.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; S.kneelId = l.id; S.vigilCd = PB.vigil.cd * 0.6; setMode(e, 'vigilWalk', PB.vigil.walkT); return; }
+  if (pips(S) < PB.pray.below && S.prayCd <= 0 && S.ward <= 0) { if (lit.length && S.ph < 2) { const l = lit.slice().sort((a, b) => Math.abs(a.x - e.x) - Math.abs(b.x - e.x))[0]; S.kneelId = l.id; S.prayCd = PB.pray.cd * 0.6; setMode(e, 'prayWalk', PB.pray.walkT); return; }
+    if (ad > PB.pray.far) { S.kneelId = null; S.prayCd = PB.pray.cd * 0.6; S.n.prayers++; tell(e, S, c, 'prayTell', 0.4); c.number(e.x, e.y - 70, 'HE KNEELS IN PRAYER: BREAK IT OFF', '#ffd36b'); return; } }
   if (!S.script || S.step >= S.script.length) { S.cycle++; S.n.cycles++; S.script = nextScript(S); S.step = 0; }
   let m = S.script[S.step++];
-  const ci = circleOf(e, c), inC = !!ci && c.hg.inside(ci, e);
-  if (m === 'plant' && (S.plantCd > 0 || (ci && inC && ci.life > 3))) m = 'chain';
-  if ((m === 'smite' || m === 'empower') && !inC) m = ci ? 'chain' : 'plant';
-  if (m === 'smite' && S.light < 20) m = 'chain';
-  if (m === 'empower' && (S.light < 35 || (ci && ci.emp))) m = 'chain';
-  if (m === 'throw' && (S.light < 25 || ad < 54)) m = 'chain';
-  if (m === 'plant' && S.plantCd > 0) m = 'chain';
-  if (m === 'charge' && (ad < 40 || Math.abs(P.y - e.y) > 40)) m = 'chain';
-  if (m === 'chain' && ad > PB.chain.reach + 50) { setMode(e, 'walk', 0.45); S.step--; return; }   /* out of the maul's reach: he closes first (the chain stays next) */
+  if (m === 'spear' && (S.spearCd > 0 || ad < PB.spear.min)) m = 'chain';
+  if (m === 'twin' && pips(S) < PB.twin.cost) m = pips(S) >= PB.smite.cost ? 'smite' : 'chain';
+  if (m === 'smite' && pips(S) < PB.smite.cost) m = 'chain';
+  if (m === 'radiance' && pips(S) < PB.radiance.cost) m = pips(S) >= PB.smite.cost ? 'smite' : 'chain';
+  if ((m === 'smite' || m === 'twin') && ad > PB.smite.reach + 50) { setMode(e, 'walk', 0.45); S.step--; return; }
+  if (m === 'chain' && ad > PB.chain.reach + 50) { if (S.spearCd <= 0 && ad >= PB.spear.min) m = 'spear'; else { setMode(e, 'walk', 0.45); S.step--; return; } }   /* out of the hammer's reach: he closes first (the chain stays next), or throws */
   switch (m) {
     case 'chain': S.chainLeft = PB.chain.n[S.ph - 1]; S.n.chains++; tell(e, S, c, 'chainTell', PB.chain.tell); return;
-    case 'plant': S.n.plants++; tell(e, S, c, 'plantTell', 0.5); if (!S.told.plant) { S.told.plant = 1; c.number(e.x, e.y - 70, 'HE CONSECRATES THE GROUND: FIGHT HIM OFF IT', '#ffd36b'); } return;
-    case 'throw': S.n.throws++; S.light -= 25; tell(e, S, c, 'throwTell', PB.throw.tell); if (!S.told.throw) { S.told.throw = 1; c.number(e.x, e.y - 70, 'THE HAMMER OF LIGHT: JUMP IT, AND AGAIN', '#ffd36b'); } return;
-    case 'smite': S.n.smites++; S.light -= 20; tell(e, S, c, 'smiteTell', PB.smite.tell); if (!S.told.smite) { S.told.smite = 1; c.number(e.x, e.y - 70, 'SMITE: THE SPIRES RUN THE FLOOR - JUMP', '#ff6b6b'); } return;
-    case 'empower': S.n.empowers++; S.light -= 35; tell(e, S, c, 'empowerTell', PB.empower.tell); if (!S.told.emp) { S.told.emp = 1; c.number(e.x, e.y - 70, 'HE EMPOWERS HIS GROUND: GET OFF IT', '#ff6b6b'); } return;
-    case 'charge': S.n.charges++; tell(e, S, c, 'chargeTell', PB.charge.tell); if (!S.told.charge) { S.told.charge = 1; c.number(e.x, e.y - 70, 'HOLY CHARGE: JUMP IT OR TAKE IT ON A SHIELD', '#ffd36b'); } return;
-    case 'leap': S.n.leaps++; tell(e, S, c, 'leapTell', PB.leap.tell); S.leap = { x: clampX(G, P.x), fx: e.x }; c.fx('ring', S.leap.x, G.floorY); return;
+    case 'smite': S.n.smites++; spend(e, S, c, PB.smite.cost); tell(e, S, c, 'smiteTell', PB.smite.tell); if (!S.told.smite) { S.told.smite = 1; c.number(e.x, e.y - 70, 'SMITE: TAKE IT ON A SHIELD, OR STEP BACK', '#ffd36b'); } return;
+    case 'twin': S.n.twins++; spend(e, S, c, PB.twin.cost); e.twin2 = false; tell(e, S, c, 'twinTell', PB.smite.tell); if (!S.told.twin) { S.told.twin = 1; c.number(e.x, e.y - 70, 'TWIN SMITE: AND AGAIN', '#ffd36b'); } return;
+    case 'radiance': { const plus = S.ph >= 2 && pips(S) >= PB.radPlus.cost; e.plus = plus; S.n.radiances++; if (plus) S.n.pluses++; spend(e, S, c, plus ? PB.radPlus.cost : PB.radiance.cost);
+      tell(e, S, c, 'radianceTell', plus ? PB.radPlus.tell : PB.radiance.tell); if (!S.told.rad) { S.told.rad = 1; c.number(e.x, e.y - 70, 'RADIANCE: GET OUT OF HIS LIGHT', '#ff6b6b'); } return; }
+    case 'spear': S.n.spears++; S.spearCd = PB.spear.cd; tell(e, S, c, 'spearTell', PB.spear.tell); if (!S.told.spear) { S.told.spear = 1; c.number(e.x, e.y - 70, 'THE SPEAR OF LIGHT: JUMP IT', '#ffd36b'); } return;
+    case 'verdict': S.n.verdicts++; S.sigils = []; e.sigils = 0; S.sigT = 0.12; tell(e, S, c, 'verdictTell', PB.verdict.every * PB.verdict.max + 0.3); if (!S.told.verdict) { S.told.verdict = 1; c.number(e.x, e.y - 70, 'VERDICT: THE SIGILS FALL WHERE YOU STAND - KEEP MOVING', '#ff6b6b'); } return;
+    case 'dawn': S.n.dawns++; tell(e, S, c, 'dawnTell', PB.dawn.tell); S.leap = { x: clampX(G, P.x), fx: e.x }; c.fx('ring', S.leap.x, G.floorY); if (!S.told.dawn) { S.told.dawn = 1; c.number(e.x, e.y - 80, 'DAWNFALL: OFF THE RING', '#ff6b6b'); } return;
   }
   setMode(e, 'walk', 0.5);
 }
 /* THE TOLD BLOWS */
 function stepMove(e, S, dt, P, h, c) {
-  const G = S.G, f = e.face || 1, after = (t) => setMode(e, 'recover', t ?? PB.gap[S.ph - 1]), mul = inHisCircle(e, c) ? HG_HIT : 1;
+  const G = S.G, f = e.face || 1, after = (t) => setMode(e, 'recover', t ?? PB.gap[S.ph - 1]), mul = inHisAura(e, c) ? HG_HIT : 1;
   e.vx = 0;
+  const front = (reach, y0 = 34) => [f > 0 ? e.x - 6 : e.x - reach, f > 0 ? e.x + reach : e.x + 6, e.y - y0, e.y];
   switch (e.mode) {
     case 'chainTell': case 'chainBeatTell': if (e.modeT <= 0) { setMode(e, 'chain', PB.chain.t); c.sound('slam'); } return;
     case 'chain': { const x0 = e.x; e.x = clampX(G, e.x + f * PB.chain.step * dt); e.vx = (e.x - x0) / Math.max(1e-6, dt);
-      if (c.hit([f > 0 ? e.x - 6 : e.x - PB.chain.reach, f > 0 ? e.x + PB.chain.reach : e.x + 6, e.y - 34, e.y], Math.round(PB.chain.dmg * mul), MOVE_NAME.chain, { blockable: true, key: 'chain' + S.act })) maulLanded(S);
+      if (c.hit(front(PB.chain.reach), Math.round(PB.chain.dmg * mul), MOVE_NAME.chain, { blockable: true, key: 'chain' + S.act })) hammerLanded(S);
+      if (e.mode !== 'chain') return;
       if (e.modeT <= 0) { S.chainLeft--; if (S.chainLeft > 0) { e.face = Math.sign(P.x - e.x) || f; tell(e, S, c, 'chainBeatTell', PB.chain.beat); } else after(); } return; }
-    case 'plantTell': if (e.modeT <= 0) { if (c.hg) c.hg.plant(e, e.x, G.floorY, { r: PB.circle.r, life: PB.circle.life, side: 'foe' }); S.plantCd = PB.circle.cd; setMode(e, 'plant', 0.3); c.sound('glow'); c.fx('plant', e.x, G.floorY); } return;
-    case 'plant': if (e.modeT <= 0) after(0.3); return;
-    case 'throwTell': if (e.modeT <= 0) { setMode(e, 'throw', 0.35); S.hammer = { x0: e.x + f * 10, x: e.x + f * 10, y: G.floorY - PB.throw.hy, dir: f, t: 0, act: S.act }; c.sound('throw'); } return;
-    case 'throw': if (e.modeT <= 0) after(0.35); return;
-    case 'smiteTell': if (e.modeT <= 0) { setMode(e, 'smite', 0.45); c.sound('slam'); c.shake(4); const hx = e.x + f * 16;
-        if (c.hit([hx - 16, hx + 16, G.floorY - 30, G.floorY + 2], Math.round(PB.smite.dmg * mul), MOVE_NAME.smite, { key: 'smite' + S.act })) maulLanded(S);
-        for (const d of [-1, 1]) S.waves.push({ x: hx + d * 8, dir: d, v: PB.smite.v, life: PB.smite.life, dmg: PB.smite.wave, key: 'sw' + S.act + d, name: MOVE_NAME.wave });
-        c.fx('smite', hx, G.floorY); } return;
-    case 'smite': if (e.modeT <= 0) after(0.4); return;
-    case 'empowerTell': if (e.modeT <= 0) { setMode(e, 'empower', 0.4); c.sound('radiance'); c.shake(3); const ci = circleOf(e, c);
-        if (ci) { c.hg.empower(ci, { r: PB.empower.r, life: PB.empower.life }); c.hit([ci.x - ci.r, ci.x + ci.r, G.floorY - 30, G.floorY + 2], PB.empower.flare, MOVE_NAME.flare, { key: 'flare' + S.act }); }
-        c.fx('flare', e.x, G.floorY); } return;
-    case 'empower': if (e.modeT <= 0) after(0.4); return;
-    case 'judgeTell': if (e.modeT <= 0) { setMode(e, 'judge', PB.judge.t); c.sound('radiance'); c.shake(5); S.light = 0;   /* (the whole bar: his choice - no falter until a blow LANDS on the empty bar) */
-        for (const mk of S.marks) { c.hit([mk.x - PB.judge.r, mk.x + PB.judge.r, G.roofY, G.floorY + 2], PB.judge.dmg, MOVE_NAME.judge, { key: 'judge' + S.act + '_' + Math.round(mk.x) }); c.fx('column', mk.x, G.floorY); } } return;
-    case 'judge': if (e.modeT <= 0) { S.marks = []; after(0.55); } return;   /* (he stands a beat after it: the bar is empty) */
-    case 'chargeTell': if (e.modeT <= 0) { setMode(e, 'charge', PB.charge.t); e.face = Math.sign(P.x - e.x) || f; c.sound('charge'); } return;
-    case 'charge': { const x0 = e.x, nx = e.x + f * PB.charge.v * dt; e.x = clampX(G, nx); e.vx = (e.x - x0) / Math.max(1e-6, dt);
-      if (c.hit([f > 0 ? e.x - 4 : e.x - 22, f > 0 ? e.x + 22 : e.x + 4, e.y - 34, e.y], Math.round(PB.charge.dmg * mul), MOVE_NAME.charge, { blockable: true, key: 'charge' + S.act, knock: f })) maulLanded(S);
-      if (e.mode !== 'charge') return;   /* (a shield rebounded him inside c.hit) */
-      if (e.x !== nx) { setMode(e, 'land', 0.6); c.shake(4); c.sound('slam'); c.number(e.x, e.y - 70, 'INTO THE WALL', '#8fd160'); return; }   /* a wall stops him: committed, a beat to punish */
-      if (e.modeT <= 0) after(0.5); return; }
-    case 'rebound': case 'reel': if (e.modeT <= 0) after(0.3); return;   /* (B4: he stands) */
-    case 'leapTell': if (e.modeT <= 0) { setMode(e, 'leap', PB.leap.fly); S.leap.fx = e.x; c.sound('leap'); } return;
-    case 'leap': { const q = Math.max(0, Math.min(1, 1 - e.modeT / PB.leap.fly)); e.x = S.leap.fx + (S.leap.x - S.leap.fx) * q; e.lift = Math.sin(q * Math.PI) * 70;
-      if (e.modeT <= 0) { e.lift = 0; e.x = S.leap.x; setMode(e, 'land', 0.6); c.shake(6); c.sound('slam'); c.fx('land', S.leap.x, G.floorY);
-        if (c.hit([S.leap.x - PB.leap.r, S.leap.x + PB.leap.r, G.floorY - 40, G.floorY + 4], PB.leap.dmg, MOVE_NAME.leap, { key: 'leap' + S.act })) maulLanded(S);
-        for (const d of [-1, 1]) S.waves.push({ x: S.leap.x + d * (PB.leap.r - 4), dir: d, v: PB.smite.v, life: PB.smite.life, dmg: PB.leap.wave, key: 'lw' + S.act + d, name: MOVE_NAME.quake });
-        const ci = circleOf(e, c); if (ci && c.hg.move) c.hg.move(ci, S.leap.x, G.floorY); else if (c.hg) c.hg.plant(e, S.leap.x, G.floorY, { r: PB.circle.r, life: PB.circle.life, side: 'foe' });   /* HAMMER LEAP: his circle comes down with him */
-        S.leap = null; } return; }
+    case 'smiteTell': if (e.modeT <= 0) { setMode(e, 'smite', PB.smite.t); c.sound('slam'); c.fx('smite', e.x + f * 20, G.floorY); } return;
+    case 'smite': if (c.hit(front(PB.smite.reach), Math.round(PB.smite.dmg * mul), MOVE_NAME.smite, { blockable: true, key: 'sm' + S.act })) hammerLanded(S); if (e.mode === 'smite' && e.modeT <= 0) after(); return;
+    case 'twinTell': if (e.modeT <= 0) { setMode(e, 'twin', PB.smite.t); e.twin2 = false; c.sound('slam'); c.fx('smite', e.x + f * 20, G.floorY); } return;
+    case 'twin': if (c.hit(front(PB.smite.reach), Math.round(PB.smite.dmg * mul), MOVE_NAME.twin, { blockable: true, key: 'tw' + S.act + (e.twin2 ? 'b' : 'a') })) hammerLanded(S);
+      if (e.mode === 'twin' && e.modeT <= 0) { if (!e.twin2) { setMode(e, 'twinGap', PB.twin.gap); } else after(); } return;
+    case 'twinGap': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; setMode(e, 'twin', PB.smite.t); e.twin2 = true; c.sound('slam'); c.fx('smite', e.x + e.face * 20, G.floorY); } return;
+    case 'radianceTell': if (e.modeT <= 0) { const R = e.plus ? PB.radPlus : PB.radiance; setMode(e, 'radiance', PB.radiance.t); c.sound('radiance'); c.shake(4); c.fx('flare', e.x, G.floorY, R.r);
+        if (c.hit([e.x - R.r, e.x + R.r, e.y - 44, e.y + 2], Math.round(R.dmg * mul), MOVE_NAME.radiance, { key: 'rad' + S.act })) hammerLanded(S);
+        if (e.plus && c.mend) c.mend(PB.radPlus.mend); } return;
+    case 'radiance': if (e.modeT <= 0) after(0.5); return;   /* (he stands a beat in the light he let go: committed) */
+    case 'sunfallTell': if (e.modeT <= 0) { setMode(e, 'sunfall', PB.sunfall.t); c.sound('radiance'); c.shake(5);
+        for (const mk of S.marks) { c.hit([mk.x - PB.sunfall.r, mk.x + PB.sunfall.r, G.roofY, G.floorY + 2], PB.sunfall.dmg, MOVE_NAME.sunfall, { key: 'sun' + S.act + '_' + Math.round(mk.x) }); c.fx('column', mk.x, G.floorY); } } return;
+    case 'sunfall': if (e.modeT <= 0) { S.marks = []; after(0.6); } return;
+    case 'spearTell': if (e.modeT <= 0) { e.face = Math.sign(P.x - e.x) || f; setMode(e, 'spear', 0.3); S.spear = { x: e.x + e.face * 12, x0: e.x, y: G.floorY - PB.spear.hy, dir: e.face, act: S.act }; c.sound('throw'); } return;
+    case 'spear': if (e.modeT <= 0) after(0.35); return;
+    case 'arcTell': if (e.modeT <= 0) { setMode(e, 'arc', PB.arc.t); c.sound('slam'); } return;
+    case 'arc': { const b = [e.x - PB.arc.w - 6, e.x + PB.arc.w + 6, e.y - 100, e.y - 18]; if (c.hit(b, Math.round(PB.arc.dmg * mul), MOVE_NAME.arc, { key: 'arc' + S.act + (e.modeT > PB.arc.t / 2 ? 'a' : 'b') })) hammerLanded(S);
+      if (e.mode === 'arc' && e.modeT <= 0) after(0.4); return; }
+    case 'verdictTell': { S.sigT -= dt; if (S.sigT <= 0 && S.sigils.length < PB.verdict.max) { S.sigT = PB.verdict.every; S.sigils.push({ x: clampX(G, P.x) }); e.sigils = S.sigils.length; c.fx('cross', S.sigils[S.sigils.length - 1].x, G.floorY); c.sound('glow'); }
+      if (e.modeT <= 0) { setMode(e, 'verdict', PB.verdict.t); c.sound('radiance'); c.shake(4); for (const sg of S.sigils) { c.hit([sg.x - PB.verdict.r, sg.x + PB.verdict.r, G.roofY, G.floorY + 2], PB.verdict.dmg, MOVE_NAME.verdict, { key: 'vd' + S.act + '_' + Math.round(sg.x) }); c.fx('column', sg.x, G.floorY); } } return; }
+    case 'verdict': if (e.modeT <= 0) { S.sigils = []; e.sigils = 0; after(0.55); } return;
+    case 'dawnTell': if (e.modeT <= 0) { setMode(e, 'dawn', PB.dawn.fly); S.leap.fx = e.x; c.sound('leap'); } return;
+    case 'dawn': { const q = Math.max(0, Math.min(1, 1 - e.modeT / PB.dawn.fly)); e.x = S.leap.fx + (S.leap.x - S.leap.fx) * q; e.lift = Math.sin(q * Math.PI) * 70;
+      if (e.modeT <= 0) { e.lift = 0; e.x = S.leap.x; setMode(e, 'land', 0.65); c.shake(6); c.sound('slam'); c.fx('pillar', S.leap.x, G.floorY);
+        if (c.hit([S.leap.x - PB.dawn.r, S.leap.x + PB.dawn.r, G.roofY, G.floorY + 4], PB.dawn.dmg, MOVE_NAME.dawn, { key: 'dawn' + S.act })) hammerLanded(S);
+        for (const d of [-1, 1]) S.waves.push({ x: S.leap.x + d * (PB.dawn.r - 4), dir: d, v: PB.dawn.v, life: PB.dawn.life, dmg: PB.dawn.wave, key: 'dw' + S.act + d, name: MOVE_NAME.quake });
+        spend(e, S, c, 0); S.leap = null; } return; }   /* (DAWNFALL lights his aura where he lands - the hero's rule) */
     case 'land': if (e.modeT <= 0) after(0.3); return;   /* (he lands committed: a beat to punish) */
+    case 'snuffTell': if (e.modeT <= 0) { const l = (c.lamps() || []).find(q => q.id === S.snuffId); setMode(e, 'snuff', PB.snuff.t); c.sound('slam'); c.shake(3); if (l && l.lit && c.snuff) c.snuff(l.id); } return;
+    case 'snuff': if (e.modeT <= 0) after(0.4); return;
+    case 'rebound': case 'reel': if (e.modeT <= 0) after(0.3); return;   /* (B4: he stands) */
     default: setMode(e, 'walk', 0.5);
   }
 }
-/* HIS THINGS IN THE ROOM: the hammer of light (out and back), the holy spires and the quake running the floor */
+/* HIS THINGS IN THE ROOM: the spear of light, the quake running the floor */
 function stepWorld(e, S, dt, h, c) {
-  const G = S.G, T = PB.throw;
-  const m = S.hammer; if (m) { m.t += dt; const u = Math.min(1, m.t / T.t); m.x = clampX(G, m.x0 + m.dir * T.reach * Math.sin(u * Math.PI)); const out = u < 0.5;
-    c.hit([m.x - T.hr, m.x + T.hr, m.y - T.hr, m.y + T.hr], T.dmg, MOVE_NAME.throw, { blockable: true, key: 'ham' + m.act + (out ? 'o' : 'b'), noKnock: true });
-    if (u >= 1) S.hammer = null; }
+  const G = S.G, T = PB.spear;
+  const m = S.spear; if (m) { m.x += m.dir * T.sp * dt; const out = Math.abs(m.x - m.x0) > T.range || m.x < G.x0 + 4 || m.x > G.x1 - 4;
+    const hitIt = !out && c.hit([m.x - T.hr - 4, m.x + T.hr + 4, m.y - T.hr, m.y + T.hr], T.dmg, MOVE_NAME.spear, { blockable: true, key: 'sp' + m.act, noKnock: true });
+    if (out || hitIt || h.some(q => q.alive && Math.abs(q.x - m.x) < 8 && Math.abs((q.y - 14) - m.y) < 14)) S.spear = null; }   /* (it stops at the first hero, struck or turned) */
   for (const w of S.waves) { w.life -= dt; w.x += w.dir * w.v * dt; if (w.x < G.x0 + 4 || w.x > G.x1 - 4) w.life = 0;
     if (w.life > 0) c.hit([w.x - 6, w.x + 6, G.floorY - 14, G.floorY + 2], w.dmg, w.name, { key: w.key, noKnock: true }); }
   S.waves = S.waves.filter(w => w.life > 0);
 }
-const HG_HIT = 1.3;   /* (src/holy-ground.js HG.hitMul: his blows inside his own circle; a literal here so this module stays importable on its own) */
+const HG_HIT = 1.3;   /* (src/holy-ground.js HG.hitMul: his blows inside his own holy ground; a literal here so this module stays importable on its own) */
 
 /* ---------- THE BOT'S READING (src/lab.js) ----------
-   A HUMAN BOT: it sees a tell PLAN.react s late (the v2 profile's eyes already do that: s.v2) and misreads some; it blocks the maul (or backs off it), jumps the
-   hammer (both ways) and the spires, steps off the judgement's crosses and the leap's ring, leaves his circle when he empowers it and keeps out of it when it
-   can; between his blows it works THE RULE: it never swings into his aegis on purpose - it goes ROUND (behind him: he turns in PB.turn s) or comes DOWN on him
-   from a jump; it cuts his VIGIL and SNUFFS his lamps when he is far (a blade through each); open, it hits him hard; warded, it waits off him.
-   s = { P: { x, y, face, ground, atk }, e, S, circle: { x, r, emp } | null, lamps: [{ id, x, lit }], reach, shield, t, rng, mem, v2, hero, rest } -> { gx, face, atk, jump, dodge, block, why } */
-export const PLAN = { react: 0.25, miss: 0.12, lampR: 120, bait: 0.55 };
-export function pbPlan(s) {
+   A HUMAN BOT: it sees a tell PLAN.react s late (the v2 profile's eyes already do that: s.v2) and misreads some; it blocks the hammer and the smites (or backs off),
+   jumps the spear and the quake, steps off the sunfall's crosses, the verdict's sigils and the dawnfall's ring, leaves his radiance; it never hangs over his head;
+   between his blows it works THE RULE: with no flame it fetches one (the votive stand, the altar fire, a lit brazier), carries it to the DARK BRAZIER nearest him
+   and lights it the moment he stands beside it (E: out.talk) - he falters, and it hits him hard; it breaks his prayer; it does not hammer his light-ward for long
+   (each turned blow feeds him) - it hits him while he is committed. Warded, it waits off him.
+   s = { P: { x, y, face, ground, atk }, e, S, aura: { x, r } | null, lamps: [{ id, x, lit }], fires: [x..], flame, reach, shield, t, rng, mem, v2, hero, rest } -> { gx, face, atk, jump, dodge, block, talk, why } */
+export const PLAN = { react: 0.25, miss: 0.12, bait: 0.5, fetchR: 400 };
+export function pbPlan(s) { const o = pbPlan0(s); if (globalThis.__pbWhy) { const k = o.why; globalThis.__pbWhy[k] = (globalThis.__pbWhy[k] || 0) + 1; } return o; }   /* (globalThis.__pbWhy: a tally of the bot's reasons, for a lane's probe - off unless a page sets it) */
+function pbPlan0(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, talk: false, up: false, down: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
@@ -345,51 +389,59 @@ export function pbPlan(s) {
   const lo = G.x0 + 12, hi = G.x1 - 12, clamp = x => Math.max(lo, Math.min(hi, x));
   const kx = e.x, side = Math.sign(P.x - kx) || 1, dx = Math.abs(kx - P.x), same = Math.abs(P.y - e.y) < 26, hitR = reach + PB.w / 2 - 2;
   const swing = fx => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
-  const ci = s.circle, inC = x => !!ci && Math.abs(x - ci.x) <= ci.r + 4;
+  const au = s.aura, inA = x => !!au && Math.abs(x - au.x) <= au.r + 4;
   const roomDir = ax => { const away = P.x <= ax ? -1 : 1, room = d => (d < 0 ? P.x - lo : hi - P.x); return room(away) >= 50 ? away : -away; };
-  /* 0. THINGS ON THE FLOOR: a spire or the quake coming at it - jump as it arrives; the hammer at waist height - jump it */
-  for (const w of S.waves || []) { const ahead = (P.x - w.x) * w.dir; if (ahead > -4 && ahead < 26 + w.v * 0.05 && P.ground && same) { out.jump = true; out.gx = P.x; out.why = 'jump the spire'; return out; } }
-  if (S.hammer && P.ground) { const m = S.hammer, u = m.t / PB.throw.t, vx = Math.cos(u * Math.PI) * m.dir, dd = (P.x - m.x) * (Math.sign(vx) || m.dir);
-    if (Math.abs(P.x - m.x) < 34 && dd > -6 && seenFor('ham' + m.act + (u < 0.5 ? 'o' : 'b'))) { if (s.shield && roll('hb' + m.act + (u < 0.5 ? 'o' : 'b'), 0.5)) { out.block = true; out.face = Math.sign(m.x - P.x) || 1; out.why = 'block the hammer'; return out; } out.jump = true; out.gx = P.x; out.why = 'jump the hammer'; return out; } }
+  const flame = s.flame || 0, lamps = s.lamps || [], dark = lamps.filter(l => !l.lit);
+  /* 0. THINGS ON THE FLOOR: the quake coming at it - jump as it arrives; the spear at its waist - jump it (or a shield) */
+  for (const w of S.waves || []) { const ahead = (P.x - w.x) * w.dir; if (ahead > -4 && ahead < 26 + w.v * 0.05 && P.ground && same) { out.jump = true; out.gx = P.x; out.why = 'jump the quake'; return out; } }
+  if (S.spear && P.ground) { const m = S.spear, dd = (P.x - m.x) * m.dir;
+    if (dd > -6 && dd < 70 && seenFor('sp' + m.act)) { if (s.shield && roll('spb' + m.act, 0.5)) { out.block = true; out.face = Math.sign(m.x - P.x) || 1; out.why = 'block the spear'; return out; } if (dd < 46) { out.jump = true; out.gx = P.x; out.why = 'jump the spear'; return out; } } }
   /* 1. HIS BLOWS (a quarter-second late, some misread) */
-  if (/Tell$/.test(e.mode) || STRIKE.has(e.mode)) {
+  if (/Tell$/.test(e.mode) || STRIKE.has(e.mode) || e.mode === 'twinGap') {
     const miss = s.v2 ? false : roll('m' + S.act + e.mode, PLAN.miss), seen = seenFor('a' + S.act + e.mode);
     if (seen && !miss) {
-      if ((e.mode === 'judgeTell' || e.mode === 'judge') && (S.marks || []).some(m => Math.abs(P.x - m.x) < PB.judge.r + 10)) { const m = S.marks.find(q => Math.abs(P.x - q.x) < PB.judge.r + 10), d = roomDir(m.x);
-        let gx = clamp(m.x + d * (PB.judge.gap / 2)); out.gx = gx; out.why = 'between the lights'; return out; }
-      if ((e.mode === 'leapTell' || e.mode === 'leap') && S.leap && Math.abs(P.x - S.leap.x) < PB.leap.r + 22) { const d = roomDir(S.leap.x); out.gx = clamp(S.leap.x + d * (PB.leap.r + 34)); if (e.mode === 'leap' && P.ground && !s.noRoll && Math.abs(P.x - S.leap.x) < PB.leap.r + 6) out.dodge = true; out.why = 'off the leap ring'; return out; }
-      if (e.mode === 'empowerTell' && ci && inC(P.x)) { const d = Math.sign(P.x - ci.x) || roomDir(ci.x); out.gx = clamp(ci.x + d * (PB.empower.r + 14)); out.why = 'off his ground before the flare'; return out; }
-      if (e.mode === 'smiteTell' && dx < 60 && same) { out.gx = clamp(kx + side * 70); out.why = 'off the smite'; return out; }
-      if ((e.mode === 'chargeTell' || e.mode === 'charge') && same && (e.face || 1) * (P.x - kx) > -6 && dx < 150) {
-        if (s.shield && roll('cs' + S.act, 0.6)) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'take the charge on the shield'; return out; }
-        if ((e.mode === 'charge' && dx < 70) || (e.mode === 'chargeTell' && e.modeT < 0.12 && dx < 60)) { if (!s.noRoll && dx < 36 && roll('cr' + S.act, 0.4)) { out.dodge = true; out.gx = clamp(kx + (e.face || 1) * 60); out.why = 'roll through the charge'; return out; } out.jump = true; out.gx = P.x; out.why = 'jump the charge'; return out; }
-        out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'ready for the charge'; return out; }
+      if ((e.mode === 'sunfallTell' || e.mode === 'sunfall') && (S.marks || []).some(m => Math.abs(P.x - m.x) < PB.sunfall.r + 10)) { const m = S.marks.find(q => Math.abs(P.x - q.x) < PB.sunfall.r + 10), d = roomDir(m.x);
+        out.gx = clamp(m.x + d * (PB.sunfall.gap / 2)); out.why = 'between the lights'; return out; }
+      if (e.mode === 'verdictTell' || e.mode === 'verdict') { const on = (S.sigils || []).find(q => Math.abs(P.x - q.x) < PB.verdict.r + 12);
+        if (on) { const d = roomDir(on.x); out.gx = clamp(on.x + d * 44); out.why = 'off the sigil'; return out; }
+        if (e.mode === 'verdictTell') { const mv = mem.vdDir || (mem.vdDir = roomDir(kx)); out.gx = clamp(P.x + mv * 40); if (Math.abs(out.gx - P.x) < 6) mem.vdDir = -mv; out.why = 'keep moving: the sigils'; return out; } }
+      if ((e.mode === 'dawnTell' || e.mode === 'dawn') && S.leap && Math.abs(P.x - S.leap.x) < PB.dawn.r + 22) { const d = roomDir(S.leap.x); out.gx = clamp(S.leap.x + d * (PB.dawn.r + 34)); if (e.mode === 'dawn' && P.ground && !s.noRoll && Math.abs(P.x - S.leap.x) < PB.dawn.r + 6) out.dodge = true; out.why = 'off the dawnfall ring'; return out; }
+      if (e.mode === 'radianceTell' && dx < (e.plus ? PB.radPlus.r : PB.radiance.r) + 14) { out.gx = clamp(kx + side * ((e.plus ? PB.radPlus.r : PB.radiance.r) + 22)); if (dx < 40 && e.modeT < 0.25 && !s.noRoll && P.ground) out.dodge = true; out.why = 'out of his radiance'; return out; }
+      if (e.mode === 'arcTell' || e.mode === 'arc') { if (!P.ground && Math.abs(P.x - kx) < PB.arc.w + 8) { out.gx = clamp(kx + side * 60); out.why = 'off his head'; return out; } }
+      if ((e.mode === 'smiteTell' || e.mode === 'twinTell' || e.mode === 'smite' || e.mode === 'twin' || e.mode === 'twinGap') && dx < PB.smite.reach + 30 && same) {
+        if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the smite'; return out; }
+        out.gx = clamp(kx + side * 84); if (dx < 50 && e.modeT < 0.18 && /Tell$/.test(e.mode) && !s.noRoll) out.dodge = true; out.why = 'back off the smite'; return out; }
       if ((e.mode === 'chainTell' || e.mode === 'chainBeatTell' || e.mode === 'chain') && dx < PB.chain.reach + 40 && same) {
-        if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the maul'; return out; }
-        out.gx = clamp(kx + side * 92); if (dx < 50 && e.modeT < 0.18 && /Tell$/.test(e.mode) && !s.noRoll) out.dodge = true; out.why = 'back off the maul'; return out; }
+        if (s.shield) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the hammer'; return out; }
+        out.gx = clamp(kx + side * 92); if (dx < 50 && e.modeT < 0.18 && /Tell$/.test(e.mode) && !s.noRoll) out.dodge = true; out.why = 'back off the hammer'; return out; }
     }
   }
   /* 2. OPEN: hit him (any side); WARDED: off him */
   if (pbOpen(e)) { const st = s.tip ? 30 : 14; out.gx = clamp(kx + side * st); if (dx < hitR + 4 && same) swing(kx); out.why = 'hit him: he falters'; return out; }
   if (S.ward > 0) { out.gx = clamp(kx + side * 80); out.why = 'his ward: wait'; return out; }
-  /* 3. HIS VIGIL: committed - cut it (or it is going to his lamp: snuff the lamp first) */
-  if ((e.mode === 'vigil' || e.mode === 'vigilTell') && !roll('cut' + S.act, 0.15)) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to cut the vigil'; return out; } swing(kx); out.gx = P.x; out.why = 'cut the vigil'; return out; }
-  /* 4. STARVE HIM: snuff a lamp when he is far (a blade through it) - the one he walks to first */
-  const lit = (s.lamps || []).filter(l => l.lit);
-  if (lit.length && (e.mode === 'walk' || e.mode === 'recover' || e.mode === 'vigilWalk' || e.mode === 'aegis' || e.mode === 'plantTell') && (dx > 64 || e.mode === 'vigilWalk')) {
-    const l = (e.mode === 'vigilWalk' && lit.find(q => q.id === S.kneelId)) || lit.slice().sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (Math.abs(l.x - P.x) < PLAN.lampR && (Math.abs(l.x - kx) > 56 || e.mode === 'vigilWalk')) { const st = l.x - (Math.sign(l.x - P.x) || 1) * 14; if (Math.abs(P.x - st) > 6) { out.gx = clamp(st); out.why = 'to his lamp'; return out; }
-      out.face = Math.sign(l.x - P.x) || 1; out.gx = P.x; out.atk = P.atk < 0; out.why = 'snuff his lamp'; return out; } }
-  /* 4b. WINDED (the lab's stamina rest): off him, out of the maul's reach (and off his ground) */
-  if (s.rest) { let gx = clamp(kx + side * (PB.chain.reach + 64)); if (inC(gx)) gx = clamp(ci.x + side * (ci.r + 16)); out.gx = gx; out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
-  /* 5. FIGHT HIM: his back when he turns from you; in his tells (committed); from a jump over his aegis (B11) - never into it */
-  const committed = e.mode === 'reel' || e.mode === 'rebound' || e.mode === 'land' || e.mode === 'plant' || e.mode === 'throw' || e.mode === 'judge' || e.mode === 'smite' || e.mode === 'empower' || e.mode === 'plantTell' || e.mode === 'throwTell';
-  if (committed && same && !(e.mode === 'judge')) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in on him: committed'; return out; } swing(kx); out.gx = P.x; out.why = 'hit him: committed'; return out; }
-  if (dx < hitR && same && (e.face || 1) * (P.x - kx) < -6) { swing(kx); out.gx = P.x; out.why = 'hit his back'; return out; }
-  if ((S.light < PB.aegis.min) && (e.mode === 'walk' || e.mode === 'recover') && dx < hitR + 30) { if (dx > hitR - 4) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in: his aegis fails'; return out; } swing(kx); out.gx = P.x; out.why = 'his aegis fails: hit'; return out; }
-  if ((e.mode === 'walk' || e.mode === 'recover' || e.mode === 'aegis') && dx < hitR + 34) { out.face = Math.sign(kx - P.x) || 1;
-    if (s.shield && same && roll('bait' + S.cycle + '_' + S.step, PLAN.bait)) { out.gx = clamp(kx + side * (hitR + 6)); out.block = Math.abs(P.x - out.gx) < 8; out.why = 'bait his maul'; return out; }
-    if (dx > hitR - 4) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to him'; return out; }
-    out.gx = P.x; if (P.ground) { out.jump = true; out.why = 'up over his aegis'; return out; } if (P.y < e.y - 14) out.atk = P.atk < 0; out.why = 'down on him from the jump'; return out; }
-  let gx = clamp(kx + side * Math.max(46, hitR + 18)); if (inC(gx) && ci) gx = clamp(ci.x + side * (ci.r + 16)); out.gx = gx; out.face = Math.sign(kx - P.x) || 1; out.why = 'keep off his maul'; return out;
+  /* 3. HIS PRAYER and HIS SNUFF: committed - break them */
+  if ((e.mode === 'pray' || e.mode === 'prayTell' || e.mode === 'snuffTell') && !roll('cut' + S.act, 0.15) && !(flame > 0 && e.mode === 'snuffTell')) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to break it'; return out; } swing(kx); out.gx = P.x; out.why = 'break his prayer'; return out; }
+  /* (the fires and the braziers stand on the floor: up on a choir stall, step off its end first) */
+  const stall = (G.stalls || []).find(q => P.x > q.x0 - 6 && P.x < q.x1 + 6 && Math.abs(P.y - q.y) < 10);
+  const offStall = () => { const L0 = stall.x0 - 12, R0 = stall.x1 + 12, gx = Math.abs(P.x - L0) < Math.abs(P.x - R0) ? (L0 > lo + 4 ? L0 : R0) : (R0 < hi - 4 ? R0 : L0); out.gx = clamp(gx); out.why = 'off the stall to the floor'; return out; };
+  if (stall && dark.length && !s.rest) return offStall();
+  /* 4. THE RULE: A BRAZIER LIT BESIDE HIM. Carrying a flame - to the dark brazier nearest him, and E the moment he stands beside it */
+  /* (the brazier it waits at: the dark one nearest IT that is not on his far side - he comes to it, walking at you) */
+  const pick = () => dark.slice().sort((a, z) => (Math.abs(a.x - P.x) + (Math.sign(a.x - kx) === -side && Math.abs(a.x - kx) > 20 ? 400 : 0)) - (Math.abs(z.x - P.x) + (Math.sign(z.x - kx) === -side && Math.abs(z.x - kx) > 20 ? 400 : 0)))[0];
+  if (dark.length && flame > 0.5) { const b = dark.find(q => Math.abs(q.x - kx) <= PB.brazier.near - 8 && Math.abs(q.x - P.x) < 60) || pick(), near = Math.abs(b.x - kx) <= PB.brazier.near - 8;
+    if (Math.abs(b.x - P.x) > 14) { out.gx = clamp(b.x); out.face = Math.sign(b.x - P.x) || P.face; out.why = 'carry the flame to the brazier by him'; return out; }
+    if (near) { out.talk = true; out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'light it beside him'; return out; }
+    out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'wait at the brazier for him'; return out; }
+  /* ...no flame: fetch one (the nearest fire) - not with him on top of it */
+  if (dark.length && flame <= 0.5 && !s.rest) { const fx = (s.fires || []).slice().sort((a, z) => Math.abs(a - P.x) - Math.abs(z - P.x))[0];
+    if (fx != null && Math.abs(fx - P.x) < PLAN.fetchR && !(dx < 50 && same && !/Tell$/.test(e.mode))) { if (Math.abs(fx - P.x) > 10) { out.gx = clamp(fx); out.why = 'to the fire for a flame'; return out; } out.talk = true; out.gx = P.x; out.why = 'take a flame'; return out; } }
+  /* 4b. WINDED (the lab's stamina rest): off him, out of the hammer's reach (and off his aura) */
+  if (s.rest) { let gx = clamp(kx + side * (PB.chain.reach + 64)); if (inA(gx)) gx = clamp(au.x + side * (au.r + 16)); out.gx = gx; out.face = Math.sign(kx - P.x) || 1; out.why = 'winded: off him'; return out; }
+  /* 5. FIGHT HIM: while he is committed (his tells' recoveries, a reel, a landing) - and not long into his light-ward (every turned blow feeds him) */
+  const committed = e.mode === 'reel' || e.mode === 'land' || e.mode === 'radiance' || e.mode === 'sunfall' || e.mode === 'verdict' || e.mode === 'spear' || e.mode === 'spearTell' || e.mode === 'snuff' || e.mode === 'prayWalk' || e.mode === 'snuffWalk';
+  if (committed && same) { if (dx > hitR - 2) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in on him: committed'; return out; } swing(kx); out.gx = P.x; out.why = 'hit him: committed'; return out; }
+  if ((e.mode === 'walk' || e.mode === 'recover' || e.mode === 'guard') && dx < hitR + 34) { out.face = Math.sign(kx - P.x) || 1;
+    if (s.shield && same && roll('bait' + S.cycle + '_' + S.step, PLAN.bait)) { out.gx = clamp(kx + side * (hitR + 6)); out.block = Math.abs(P.x - out.gx) < 8; out.why = 'bait his hammer'; return out; }
+    if (roll('poke' + S.cycle + '_' + S.step + '_' + Math.floor(t * 2), 0.5)) { if (dx > hitR - 4) { out.gx = clamp(kx + side * (hitR - 8)); out.why = 'in to him'; return out; } swing(kx); out.gx = P.x; out.why = 'into his ward'; return out; } }
+  let gx = clamp(kx + side * Math.max(52, hitR + 22)); if (inA(gx) && au) gx = clamp(au.x + side * (au.r + 16)); out.gx = gx; out.face = Math.sign(kx - P.x) || 1; out.why = 'keep off his hammer'; return out;
 }

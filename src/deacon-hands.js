@@ -20,7 +20,8 @@ export function makeDeaconHands(ctx) {
   H.clear = () => { S = null; };
   const geom = Ar => ({ x0: Ar.x0, x1: Ar.x1, floorY: Ar.floor, roofY: Ar.y0 });
   H.spawn = base => { const Ar = A(); S = Ar ? DCM.newFight(geom(Ar)) : null;
-    return { ...base, t: 'deacon', mini: true, xpRole: 'mini', w: DC.w, h: DC.h, hp: ctx.EHP.deacon, maxHp: ctx.EHP.deacon, noGrav: true, markH: DC.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, vx: 0 }; };
+    const hp = Math.round(ctx.EHP.deacon * ((DC.heroHp && ctx.heroT && DC.heroHp[ctx.heroT()]) || 1));
+    return { ...base, t: 'deacon', mini: true, xpRole: 'mini', w: DC.w, h: DC.h, hp, maxHp: hp, noGrav: true, markH: DC.markH, face: -1, mode: 'sleep', modeT: 0, open: 0, phase: 1, vx: 0 }; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.dcKeys = pp.dcKeys || new Map(); if (pp.dcKeys.size > 80) pp.dcKeys.clear(); if (pp.dcKeys.has(key)) return true; pp.dcKeys.set(key, 1); return false; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
@@ -28,7 +29,7 @@ export function makeDeaconHands(ctx) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
       mark: m => ctx.number(e.x, e.y - DC.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
-      lamps: () => (ctx.lamps ? ctx.lamps() : []), kindle: id => (ctx.kindle ? ctx.kindle(id) : false),
+      lamps: () => (ctx.lamps ? ctx.lamps() : []), kindle: id => (ctx.kindle ? ctx.kindle(id) : false), douse: id => (ctx.douse ? ctx.douse(id) : false),
       fx: (k, x, y) => { if (k === 'open') ctx.ring(x, y - 22, 30, '#ffd36b'); else if (k === 'ward') ctx.ring(x, y - 22, 34, '#c8d8e8'); },
       haul: (x, v) => { for (const pp of ctx.players) { if (pp.dead || !ctx.upright(pp)) continue; const d = x - pp.x; if (Math.abs(d) < 2) continue; pp.x += Math.sign(d) * Math.min(Math.abs(d), v); pp.vx = 0; } },
       hit: (bx, d, name, o = {}) => { let any = false; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
@@ -47,6 +48,10 @@ export function makeDeaconHands(ctx) {
   /* THE RULE ON HIM: one of his lamps snuffed, or a chandelier brought down (src/lit-church-hands.js) */
   H.onLamp = l => { const e = live(); if (!S || !e || e.mode === 'away' || !l || !l.deacon) return; const under = !!l.dropped && Math.abs(e.x - (l.x * ctx.TS + 8)) < 20;
     const d = DCM.lampOut(e, S, world(e), { id: l.id, dropped: !!l.dropped, under }); if (d > 0 && ctx.hurtFoe) ctx.hurtFoe(e, d); };
+  /* (claude/church3) TWO WAYS: a lamp he doused, lit again by a hero's flame - he falters (src/lit-church-hands.js lightLamp -> ctx.bossKindled) */
+  H.onKindled = l => { const e = live(); if (!S || !e || !l || !l.deacon || l.by !== 'hero' || !l.wasDoused) return; DCM.relit(e, S, world(e)); };
+  /* HIS ARC'S HOLY FIRE is a fire: E beside a patch takes a flame (src/lit-church-hands.js fires) */
+  H.fires = () => (S && live() ? S.fire.filter(q => q.t > 0.4).map(q => ({ x: q.x, y: S.G.floorY, patch: true })) : []);
   H.take = (e, dmg, blow) => { if (!S) return dmg; const P = ctx.hero();
     if (!blow && ctx.burnTick && ctx.burnTick()) return DCM.burnOn(e, S, dmg).dmg;
     const heavy = ctx.blowHas ? ctx.blowHas(blow, 'heavy') : false, low = ctx.blowHas ? (ctx.blowHas(blow, 'sweep') || ctx.blowHas(blow, 'low')) : false;
@@ -56,7 +61,7 @@ export function makeDeaconHands(ctx) {
     e.angleHit = ctx.time(); return r.dmg; };
   H.barName = e => 'THE DEACON' + (DCM.dcOpen(e) ? '  OPEN' : S && S.ward > 0 ? '  WARDED' : '');
   H.end = () => { if (S) { S.fire = []; S.haul = null; } };
-  H.read = () => S && { mode: (live() || {}).mode, ph: S.ph, light: R(S.light), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hurt: { ...(S.hurt || {}) } };
+  H.read = () => S && { mode: (live() || {}).mode, ph: S.ph, light: R(S.light), douseCd: +S.douseCd.toFixed(2), n: JSON.parse(JSON.stringify(S.n)), ward: S.ward, hurt: { ...(S.hurt || {}) } };
 
   /* ---------- DRAWING (src/redraw/deacon_art.js: the pixel sheet; this decides WHEN, and lays the chain, the arc's fire, the light bar and the read over it) ---------- */
   H.drawBoss = (g, e, cx, cy, time) => { if (!e.alive) return; const f = e.face || 1, x = R(e.x - cx), y = R(e.y - cy), flash = (e.hurtT || 0) > 0;
@@ -66,6 +71,10 @@ export function makeDeaconHands(ctx) {
       if (e.mode === 'hook') ART.drawChain(g, tipAt[0], tipAt[1] + 3, x + f * DC.hook.reach, tipAt[1] + 6, time, true);
       else if (e.mode === 'hookTell') { for (let i = 0; i < 3; i++) ART.drawChain(g, tipAt[0] - f * (2 + i * 3), tipAt[1] + 3 + i * 2, tipAt[0] - f * (2 + i * 3) + f * 2, tipAt[1] + 9 + i * 2, time, false); }
       else ART.drawChain(g, tipAt[0], tipAt[1] + 3, tipAt[0] + f * 10, tipAt[1] + 14, time, false); }
+    if (e.mode === 'douseTell' || e.mode === 'douse') { const tl = (ctx.lamps ? ctx.lamps() : []).find(q => q.id === S.douseId);   /* (claude/church3art) the cap is in his sheet (deacon_art: douseTell / douse); here the lamp it is bound for - a gold ring pulsing over the wick while it is raised, a puff of cold smoke where it came down */
+      if (tl) { const lx = R(tl.x - cx), ly = R(tl.y - 32 - cy);
+        if (e.mode === 'douseTell') { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); const d = 5 + (Math.floor(time * 6) % 2); g.fillStyle = '#ffd36b'; g.fillRect(lx - d, ly - d, d * 2 + 1, 1); g.fillRect(lx - d, ly + d, d * 2 + 1, 1); g.fillRect(lx - d, ly - d, 1, d * 2 + 1); g.fillRect(lx + d, ly - d, 1, d * 2 + 1); g.globalAlpha = 1; }
+        else for (let k = 0; k < 5; k++) { const t = (1 - e.modeT / DC.douse.t) * 0.9 + k * 0.1; g.globalAlpha = Math.max(0, 0.8 - t * 0.7); g.fillStyle = k & 1 ? '#9ab0e0' : '#e0eaff'; g.fillRect(lx - 4 + ((k * 5) % 9), ly - R(t * 14), 2, 2); } g.globalAlpha = 1; } }
     if (e.guardFx > 0) { e.guardFx = Math.max(0, e.guardFx - 1 / 60); g.globalAlpha = Math.min(1, e.guardFx * 6); g.fillStyle = '#ffffff'; g.fillRect(x + f * 10 - 2, y - 46, 4, 4); g.fillRect(x + f * 10 - 5, y - 44, 10, 1); g.fillRect(x + f * 10 - 1, y - 49, 2, 10); g.globalAlpha = 1; }
   };
   /* OVER: the holy fire of the arc, his light bar, the read */
