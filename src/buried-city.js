@@ -518,7 +518,7 @@ export function buildBuriedCity({ painter, T, TS }) {
     wheel: { ...WHEEL }, arenaLevers: stage.levers, vaultDoors, decor, sandSolid, sandRungs, crumbles, quicksand, plats, lamps,
     /* THE CITY HITS HARD (difficulty v2: weight, not numbers of foes): a blow x this on top of the act's tier, by skin (main.js damagePlayer0 reads L.foeHit) */
     knockHazards: [],   /* (claude/knockinto: the city's killing hazards - the stakes, the trap hall's open drop - are tiles and a drop the shared helper reads already; the foes that can be thrown stand by them: the halls' drowned, the trap lip's drowned. The construct is too heavy to throw - KNOCK_SKIP) */
-    foeHit: { sanddrowned: 5.4, sandslinger: 2.3, brassscorpion: 4.8, sandbound: 5.4 },   /* (claude/buriedcity2: the L40 walker arrived 73-97% - drowned 4.6 -> 5.4, slinger 1.8 -> 2.3, scorpion 4.2 -> 4.8) */
+    foeHit: { sanddrowned: 4.0, sandslinger: 1.7, brassscorpion: 3.5, sandbound: 4.0 },   /* (claude/buriedcity2: the L40 walker arrived 73-97% - drowned 4.6 -> 5.4, slinger 1.8 -> 2.3, scorpion 4.2 -> 4.8) */
     foeHp: { sanddrowned: 3.2, sandslinger: 2.2, brassscorpion: 3.0, sandbound: 3.2 },   /* (claude/buriedcity4: THE SAND-BOUND is the drowned's weight; the sand's 0.4 is its armour) */
     alarms: ROOMS.map(r => ({ x0: r.x0, x1: r.x1 })).concat(CHUTES.flatMap(c => Object.values(c.to).map(t => ({ x0: t.x0 - 4, x1: t.x1 + 4 })))),   /* THE RULE'S STATE for tools/rule-state.mjs: the sand rooms and the falls are where the rule is live */
     sun: SUN.map(z => ({ ...z })), shade, shadeArt: shade,   /* THE DESERT'S SUN on the dunes and in the shafts only (the city is under its roof): src/buried-city-hands.js sunAt */
