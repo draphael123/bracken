@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-10-19",
+    "batch": 105,
+    "lines": [
+      "The Lumber Trail: the axe in minute one",
+      "Fell pines into bridges, a lean-to, onto foes",
+      "Bracken Wood rebuilt with a logging-camp look",
+      "Waymeet Paladin retuned: a harder duel"
+    ]
+  },
+  {
+    "date": "2026-10-19",
     "batch": 104,
     "lines": [
       "The Foe Pass: foes break, finisher refunds stamina",
