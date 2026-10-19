@@ -60,6 +60,8 @@ export const STUCK = {
     { id: 'wd-raft', zone: [124, 16, 130, 22], ats: [[130, 21], [131, 21]], glint: 'stall', line: 'THE LOG RAFT IS THE WAY OVER THE DEEP POOL' },
     { id: 'wd-leanto', zone: [262, 12, 276, 17], at: [266, 16], glint: 'stall', done: ['felltree', 266, 16, 'felled'], line: 'THE MARKED PINE UNDER THE CLIFF IS THE WAY UP' },
     { id: 'wd-tarn', zone: [405, 8, 416, 13], at: [415, 12], glint: 'stall', done: ['felltree', 415, 12, 'felled'], line: 'THE MARKED PINE AT THE TARN IS THE WAY ACROSS' },
+    { id: 'wd-tarn-out', zone: [418, 14, 428, 22], at: [417, 15], line: 'THE STONE AT THE NEAR SIDE IS THE WAY OUT OF THE TARN' },   /* in the water: swim back to the stone */
+    { id: 'wd-ford-out', zone: [130, 22, 146, 26], ats: [[129, 21], [147, 21]], line: 'CLIMB OUT ONTO A BANK: THE DEEP POOL DRAINS YOU' },
   ],
   /* (claude/stuckguides) MARSH: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   marsh: [

@@ -122,6 +122,13 @@ function flotilla(BK, P, mem) {
    drop is a blow on the crew under it. Out from under a drop's line first (it comes down on whoever stands there). */
 function lumberTrail(BK, P) {
   if (!P || P.dead || !BK.props) return null;
+  /* THE LOG RAFT (the first ride): a player waits on the landing stone for the raft, steps on, stands still while it drifts, and steps off at the far bank */
+  const raft = BK.movers && BK.movers().find(m => !m.kind && !m.vert && m.range > 0 && m.w >= 3 * TS && m.y0 === 22 * TS && Math.abs(m.x0 - 130 * TS) < 2);
+  if (raft) { const far = raft.x + raft.w >= 147 * TS - 1, near = raft.x <= 130 * TS + 1;   /* (its run: flush with the landing stone at one end and the far bank at the other) */
+    if (P.onMover === raft) return raft.x + raft.w >= 145 * TS ? null : { x: P.x, y: P.y, key: null, r: 99, at: true, hold: true };   /* (on it: stand still - the play bot leaps off any mover with no tile ahead - until the far bank is a hop away, then the bot's own leap takes him onto it) */
+    if ((P.ground || P.onMover) && !P.swim && P.x >= 126 * TS && P.x < 130 * TS && Math.abs(P.y - 22 * TS) < 6) return near ? { x: raft.x + 12, y: raft.y, key: null, face: 1, r: 8, at: true, hold: true } : { x: 128 * TS + 8, y: 22 * TS, key: null, hold: true, r: 8 }; }   /* (at: walked on, never jumped) */
+  /* IN THE TARN (a badger's charge throws you off the trunk): swim back to the stone at the near side and climb out, as the stall nudge says */
+  if (P.x > 417 * TS && P.x < 429 * TS && P.y > 15 * TS && P.y < 24 * TS) return { x: 418 * TS + 4, y: P.y, key: 'jump', face: -1, r: 30 };
   const tree = BK.props().filter(q => q.t === 'felltree' && q.mark && !q.felled && q.fall <= 0 && Math.abs(q.y - P.y) < 3 * TS && q.x > P.x - 3 * TS && q.x < P.x + 16 * TS).sort((a, b) => a.x - b.x)[0];
   if (!tree) return null;
   return { x: tree.x - tree.dir * 12, y: tree.y, key: 'atk', face: tree.dir, r: 16 };

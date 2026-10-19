@@ -58,7 +58,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   deco('rock', 31, 26, { v: 0 }); deco('fern', 34, 26, { v: 1 });
   sign(32, 26, 'A HELD JUMP IS HIGHER THAN A TAPPED ONE. THE STEPS AT THE NEAR WALL LEAD BACK UP.');   /* (only read by whoever fell in: the stair out asks for a held jump) */
   floor(37, 51, 22);
-  ent('sprig', 44, 21, { face: -1 });
+  ent('badger', 41, 21, { face: -1 }); ent('sprig', 45, 21, { face: -1 });   /* the far side of the gully: a badger that charges back along the trunk you just felled (a hit there is a fall into the gully: a climb, not a death) */
   deco('hiveBg', 47, 21, { v: 1 }); ent('wasp', 46, 15); ent('wasp', 48, 14);   /* THE HIVE IS FELT FROM THE START: a paper comb in the pines, two wasps posted high over it */
   sign(49, 21, 'TAP A WAY TWICE TO DODGE: IT CLEARS A GAP.');
   block(52, 54, 25, 27);   /* a dip three wide: jumped or dodged, and a hop back out if not */
@@ -69,14 +69,14 @@ export function buildLumberTrail({ painter, T, TS }) {
   deck(59, 19, 3); coins([59, 18], [61, 18]);   /* a log crib by the road */
   deck(66, 18, 3);
   sign(66, 20, 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', { pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
-  ent('shield', 78, 18, { face: -1 });   /* the skid road's guard: the heavy cut, met on the slope */
+  ent('sprig', 71, 19, { face: -1 }); ent('shield', 78, 18, { face: -1 }); ent('thorn', 88, 17, { face: -1 });   /* the skid road's guard: the heavy cut, met on the slope */
   lessons.push({ kind: 'heavyblow', x0: 65, x1: 86 });
   deck(76, 16, 4); coins([76, 15], [78, 15]);
   deck(84, 15, 4); ent('spit', 85, 14, { face: -1 });   /* the spitter on the log crib over the top of the slope */
   /* THE LOG ROUND (the pushblock's teaching use, backlog #12): a ledge four rows over the slope's top, a round of pine pushed under it is the step */
   ent('pushblock', 90, 17, { stepAt: [93, 17] }); block(94, 94, 14, 14); ent('silver', 94, 13);
   deck(99, 15, 3);
-  ent('shield', 97, 17, { face: -1 }); ent('sprig', 100, 17, { face: -1 });   /* the area's exam: a guard and a sprig on the top with the spitter over them */
+  ent('shield', 99, 17, { face: -1 }); ent('sprig', 101, 17, { face: -1 });   /* the area's exam: a guard and a sprig on the top with the spitter over them */
   coins([83, 16], [88, 16], [92, 16]);
   ent('check', 102, 17);
 
@@ -84,27 +84,29 @@ export function buildLumberTrail({ painter, T, TS }) {
   block(105, 108, 19, 27); block(109, 111, 22, 27);
   block(112, 126, 25, 27); water(112, 126, 24, { shallow: true });   /* the ford: knee-deep over a gravel bed, down in the river's cut */
   block(127, 129, 22, 27);   /* the raft's landing stone: three rows up out of the ford */
-  deck(117, 22, 3); coins([117, 21], [118, 21], [119, 21]);   /* the old ford's footbridge, all but one span gone: its posts in the water */
+  deck(119, 22, 2); coins([119, 21], [120, 21]);   /* the old ford's footbridge, all but one span gone: its posts in the water */
   coins([114, 23], [122, 23], [125, 23]);
+  ent('wasp', 114, 21, { pogo: true }); ent('wasp', 119, 20, { pogo: true }); ent('wasp', 123, 21, { pogo: true });   /* the plunge: bounce across the wasps over the ford and stay out of the slow water */
   sign(110, 21, 'DOWN+X IN THE AIR: PLUNGE. BOUNCE OFF A FOE, OR COME DOWN AMONG THEM ON THE GROUND.', { pyro: 'DOWN+X IN THE AIR: FIREDROP. BOUNCE OFF WHAT YOU HIT, OR LAND AMONG THEM.', paladin: 'DOWN+X IN THE AIR: HAMMERFALL. BOUNCE OFF A FOE, OR SHAKE THE GROUND UNDER THEM.', warden: 'DOWN+X IN THE AIR: PLUNGE. PIN A FOE, VAULT OFF IT, OR CRACK THE GROUND AHEAD.' });
   /* THE DEEP POOL: the first moving platform in the game, a log raft, SIGNED at its landing; the pool is the lethal look (a quiet drain, swum out of) */
   block(130, 146, 27, 27); water(130, 146, 23, { bed: 27 });
-  ent('mover', 130, 22, { len: 3, range: 13 });
+  block(145, 146, 23, 26);   /* a drowned stump under the far bank: whoever misses the raft swims to it and climbs out (a swim costs, it does not hold you) */
+  ent('mover', 130, 22, { len: 5, range: 12 });   /* (its run touches the landing stone at one end and the far bank at the other) */
   sign(128, 21, 'A LOG RAFT DRIFTS OVER THE DEEP POOL: STEP ON AND RIDE IT ACROSS.');
-  ent('wasp', 133, 18, { pogo: true }); ent('wasp', 137, 18, { pogo: true }); ent('wasp', 141, 18, { pogo: true });   /* the plunge: wasps over the raft's run - a pogo across, or a fight on the raft */
-  coins([134, 16], [138, 16], [142, 16]);
-  block(147, 165, 22, 27);
-  ent('sprig', 152, 21, { face: -1 }); ent('sprig', 154, 21, { face: -1 }); ent('lurker', 156, 21, { face: -1 });   /* the down attack: three bunched on the far bank */
+  /* (the raft's run is calm: the first ride is taught where a miss is a swim, A4 - the plunge's wasps hang over the ford instead) */
+  coins([134, 19], [138, 19], [142, 19]);
+  block(147, 165, 22, 27); for (let x = 152; x <= 156; x++) for (let y = 22; y <= 24; y++) set(x, y, T.AIR);   /* the far bank: a sawdust hollow three rows down, the crew in it */
+  ent('sprig', 153, 24, { face: -1 }); ent('sprig', 155, 24, { face: -1 }); ent('lurker', 156, 24, { face: -1 });   /* the down attack: three bunched in the hollow - come down among them off the decks */
   lessons.push({ kind: 'down', x0: 147, x1: 162 });
   coins([160, 20]); deck(149, 19, 4); deck(157, 19, 4); coins([150, 18], [152, 18], [158, 18], [159, 18]);   /* perches over the crew: come down among them */
-  block(166, 175, 19, 27); block(176, 205, 17, 27);
+  block(163, 165, 21, 27); block(166, 175, 19, 27); block(176, 205, 17, 27);   /* the bank steps up off the ford: a stump, then the bank */
   deck(168, 16, 3); coins([168, 15], [169, 15]); deck(178, 14, 4); coins([179, 13]);
   sign(172, 18, 'A BADGER OUT OF ITS SETT. ON ITS ! IT CHARGES: JUMP IT, THEN COME DOWN ON ITS BACK.');
-  ent('badger', 182, 16, { face: -1 });
+  ent('badger', 182, 16, { face: -1 }); ent('crow', 186, 11);
   /* THE VINE POCKET: a vine off a pine bough swings up to a ledge in the canopy, and a silver on it */
   swing(192, 10, 70, 0.4); deck(196, 10, 7); coins([196, 9], [198, 9]); ent('vault', 199, 9);
   deco('hiveBg', 188, 16, { v: 2 });
-  ent('thorn', 190, 16, { face: -1 }); ent('spit', 200, 16, { face: -1 });   /* the area's exam: the badger with a thorn and a spitter behind him */
+  ent('thorn', 190, 16, { face: -1 }); ent('shield', 196, 16, { face: -1 }); ent('spit', 200, 16, { face: -1 });   /* the area's exam: the badger with a thorn and a spitter behind him */
   ent('check', 203, 16);
 
   // ================= 3. THE LUMBER CAMP (206-300): REMIX - the camp gate's parry, the sawpit, the log stacks, THE BRIAR MAUL, the LEAN-TO =================
@@ -115,7 +117,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   lessons.push({ kind: 'parry', x0: 207, x1: 226 });
   coins([212, 15], [214, 14], [220, 15]); deck(211, 14, 3); deck(221, 14, 3);
   /* THE SAWPIT: two rows down, the saw frame over it */
-  deck(230, 16, 4); ent('cage', 233, 18, { kind: 'bird' }); ent('lurker', 235, 18, { face: -1 });
+  ent('cage', 233, 18, { kind: 'bird' }); ent('lurker', 235, 18, { face: -1 });
   coins([229, 17], [232, 16], [236, 17]);
   /* THE LOG STACKS: step up, and a spitter on the top stack */
   block(240, 243, 15, 16); block(244, 246, 13, 16); ent('spit', 245, 12, { face: -1 }); coins([241, 14], [245, 11]);
@@ -138,13 +140,14 @@ export function buildLumberTrail({ painter, T, TS }) {
   for (let x = 325; x <= 334; x++) for (let y = 14; y <= 16; y++) set(x, y, T.AIR);
   coins([325, 16], [326, 16], [327, 16], [328, 16]);
   sign(303, 10, 'WASPS HANG OVER THE RIDGE. UP+X: THE RISING CUT REACHES ONE OVER YOUR HEAD.');
-  deco('hiveBg', 311, 10, { v: 0 }); deco('hiveBg', 326, 10, { v: 1 });
-  ent('wasp', 308, 7); ent('wasp', 314, 6); ent('crow', 319, 5); ent('wasp', 323, 7);
+  deco('hiveBg', 311, 10, { v: 0 }); deco('hiveBg', 326, 10, { v: 1 }); ent('thorn', 312, 10, { face: -1 });
+  ent('wasp', 308, 7); ent('wasp', 314, 6); ent('crow', 319, 5); ent('wasp', 323, 7); ent('badger', 320, 10, { face: -1 });
   deck(316, 8, 3); coins([316, 7], [317, 7], [318, 7]); deck(305, 8, 3); deck(326, 8, 3);
   coins([306, 9], [312, 9], [321, 9]);
   /* THE DROP: the ridge's last pine leans out over the hollow, and the goblin crew stands under its line */
   fell('drop');
   sign(329, 10, 'THIS PINE LEANS OUT OVER THE HOLLOW. FELL IT ON THE GOBLINS BELOW.');
+  ent('shield', 331, 10, { face: -1 });   /* the crew's lookout on the lip, by the pine: the hollow at his back */
   floor(335, 352, 17); deck(336, 14, 3);
   ent('sprig', 338, 16, { face: -1 }); ent('shield', 341, 16, { face: -1 }); ent('sprig', 343, 16, { face: -1 }); ent('badger', 346, 16, { face: -1 });
   coins([348, 15], [350, 15]);
@@ -153,14 +156,14 @@ export function buildLumberTrail({ painter, T, TS }) {
   block(353, 385, 11, 13);
   floor(353, 392, 17);
   sign(349, 13, 'THE FALLEN GIANT: OVER THE TOP FOR COINS, OR THROUGH THE HOLLOW FOR QUIET.');
-  ent('spit', 368, 16, { face: -1 }); ent('lurker', 378, 16, { face: -1 });
+  ent('spit', 366, 16, { face: -1 }); ent('badger', 373, 16, { face: -1 }); ent('lurker', 380, 16, { face: -1 });   /* the hollow: a badger charging down the tunnel at you */
   coins([358, 16], [363, 16], [372, 16], [382, 16]);
-  ent('wasp', 362, 7); ent('wasp', 375, 6); coins([357, 10], [361, 10], [365, 10], [369, 10], [377, 10], [381, 10]);
+  ent('wasp', 362, 7); ent('wasp', 368, 7); ent('wasp', 375, 6); coins([357, 10], [361, 10], [365, 10], [369, 10], [377, 10], [381, 10]);
   /* up a vine from the log's top into the canopy: a high pocket with a silver in it */
   swing(371, 4.5, 64, 1.6); deck(376, 6, 6); ent('silver', 377, 5); coins([376, 5], [378, 5]);
   block(393, 397, 15, 27); block(398, 416, 13, 27);
   deck(401, 10, 3); coins([401, 9], [402, 9]); deck(388, 14, 3); deck(395, 12, 3); deck(409, 10, 3);
-  ent('thorn', 395, 14, { face: -1 }); ent('sprig', 403, 12, { face: -1 });
+  ent('thorn', 395, 14, { face: -1 }); ent('sprig', 403, 12, { face: -1 }); ent('spit', 402, 9, { face: -1 });
   ent('check', 407, 12);
 
   // ================= 5. THE TARN (410-509): EXAM - the tarn bridge under wasps and the badger, the helm pit, the climb to the hive =================
@@ -171,21 +174,22 @@ export function buildLumberTrail({ painter, T, TS }) {
   ent('wasp', 420, 9, { pogo: true }); ent('wasp', 424, 9, { pogo: true }); ent('crow', 427, 8);
   coins([420, 11], [424, 11]); coins([424, 22], [425, 22], [426, 22], [427, 22]);   /* the tarn's bed: a woodsman's lost purse - a deep dive for it costs you */
   block(429, 441, 13, 27);
-  ent('badger', 432, 12, { face: -1 });   /* he charges back along the trunk: a hit throws you the way he runs, over the water you just crossed */
-  coins([435, 11], [438, 11]); deck(434, 10, 3);
+  ent('badger', 432, 12, { face: -1 }); ent('sprig', 438, 12, { face: -1 });   /* he charges back along the trunk: a hit throws you the way he runs, over the water you just crossed */
+  coins([435, 11], [438, 11]);
   /* THE HELM PIT: shields on stumps over a thorn bed - plunge the helm, land behind, cut */
   sign(440, 12, 'SHIELD GOBLINS HIDE BEHIND IRON. PLUNGE THE HELM, LAND BEHIND, CUT.', { pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. ARC AN EMBER OVER, OR FIREDROP THE HELM.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
   block(442, 451, 17, 27); spikes(442, 451, 16);
-  for (const x of [443, 446, 449]) { block(x, x + 1, 14, 16); ent('shield', x, 13, { face: -1 }); }
+  for (const x of [443, 448]) { block(x, x + 3, 13, 16); ent('shield', x + 1, 12, { face: -1 }); }   /* (four wide: room to land behind him) */   /* two stumps level with the banks, a shield goblin on each: no way round him, the thorns either side */
   block(452, 470, 13, 27);
   ent('cage', 455, 12, { kind: 'bird' });
   deck(459, 10, 3); coins([459, 9], [460, 9], [461, 9]); deck(465, 10, 3);
   ent('spit', 466, 12, { face: -1 }); ent('sprig', 468, 12, { face: -1 });
   deco('hiveBg', 462, 12, { v: 2 }); ent('wasp', 463, 7);
   block(471, 478, 11, 27); block(479, 549, 9, 27);
+  block(483, 492, 8, 8);   /* THE HIVE KNOLL: the last rise before the door, the comb in sight over it */
   swing(474, 4.75, 60, 2.4); deck(480, 5, 6); coins([480, 4], [481, 4], [482, 4]);   /* a last vine up into the pines over the hive's door: coins, and a look at the comb */
-  coins([473, 10], [476, 10], [483, 8], [488, 8]); deck(472, 8, 3); deck(487, 6, 4); deck(496, 6, 4); coins([488, 5], [497, 5]);
-  ent('sprig', 492, 8, { face: -1 }); ent('thorn', 498, 8, { face: -1 });
+  coins([473, 10], [476, 10], [483, 8], [488, 8]); deck(472, 8, 3); deck(487, 5, 4); deck(496, 6, 4); coins([488, 4], [497, 5]);
+  ent('shield', 489, 7, { face: -1 }); ent('sprig', 493, 8, { face: -1 }); ent('thorn', 498, 8, { face: -1 });
   /* the quiet walk to the hive's door */
   coins([500, 7], [503, 7]); deck(501, 6, 3);
   ent('check', 506, 8);
