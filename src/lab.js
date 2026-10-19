@@ -1921,6 +1921,10 @@ async function runbossLab(BK, opts) {
       /* THE SPIRE'S GOLEM (claude/bot2 triage): his LOW sweep and his stomp's floor waves are JUMPED - the sweep is 0.45 s live and 66 px wide,
          unblockable, and only hits a hero on the ground, so the roll the red mark used to send the hands into (0.2 s safe) ate it every time.
          It is the read his own callout gives ('LOW'), late in the tell, as a person jumps a sweep he can see coming. */
+      /* (claude/stockade2) THE CHIEFTAIN'S WAR TOWER: up there he shoots and half a blow lands - a player cuts its two lashings (the pegs glint, the sign at
+         the door says so). The hands go to the nearest peg still standing and strike it, then the other; the red marks of his volley are still left as ever */
+      { const sk = boss.t === 'chief' && BK.stockade ? BK.stockade() : null, pg = sk && sk.tower && sk.tower.st === 'manned' ? sk.tower.pegs.filter(q => !q.cut).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
+        if (pg) { const sd = Math.sign(pg.x - P.x) || 1; goal = pg.x - sd * 10; strike = false; if (Math.abs(P.x - pg.x) < 20 && P.ground) { P.face = sd; if (P.atk < 0 && f % 6 === 0) { BK.press('atk'); swings++; } } } }
       let gBell = null; const golemWave = boss.t === 'golem' && BK.waves().some(w => !w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 6);
       if (boss.t === 'golem' && LABP.v2 && (golemWave || (boss.mode === 'sweepTell' && boss.modeT < 0.07 && ad < 74) || (boss.mode === 'sweep' && ad < 74) || (boss.mode === 'stompTell' && boss.modeT < 0.12 && ad < 60))) { goal = null;
         if (P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }

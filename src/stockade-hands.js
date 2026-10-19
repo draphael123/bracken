@@ -204,5 +204,9 @@ export function makeStockadeHands(ctx) {
   /* for the bots and the checks */
   const read = () => ({ held, gateOpen, examOn, piles: piles.map(p => ({ id: p.id, x: p.x, y: p.y, st: p.st })), pickups: pickups.filter(k => !k.got).map(k => ({ x: k.x, y: k.y })), cd,
     tower: tower ? { x: tower.x, deck: tower.deck, foot: tower.foot, st: tower.st, pegs: tower.pegs.map(p => ({ x: p.x, cut: p.cut })) } : null, banner: banner && banner.name });
-  return { on, reset, load, update, hold, interact, blow, drawWorld, drawOver, chiefPhase2, chiefStep, chiefUp, towerTake, read, give: () => { held = true; } };
+  /* for the shared guide (src/stuck-guide.js `is`): the horn, the gate, the war tower */
+  const state = n => n === 'stkHorn' ? (held ? 'held' : 'none') : n === 'stkGate' ? (gateOpen ? 'open' : 'shut') : n === 'stkTower' ? (tower ? tower.st : 'none') : '';
+  /* and as props the guide's done / when read: each pile carries the horn's and the gate's state (the static tool finds the piles in L.ents) */
+  const props = () => piles.map(p => ({ t: 'logpile', x: p.x, y: p.y, held, gateOpen, down: p.st !== 'hung' }));
+  return { on, state, props, reset, load, update, hold, interact, blow, drawWorld, drawOver, chiefPhase2, chiefStep, chiefUp, towerTake, read, give: () => { held = true; } };
 }

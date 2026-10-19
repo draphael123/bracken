@@ -704,7 +704,8 @@ function theStockade() {
   for (let y = 12; y <= 27; y++) { set(315, y, 0); set(316, y, 0); } net(315, 316, 26); for (let y = 20; y <= 25; y++) set(316, y, T.NET); // and rungs up out of this one to the floor
   movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30 });
   floor(317, 365, 20);
-  ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);   /* the EXAM's last beat: a hound on the landing, off the lift */
+  ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);
+  ent('sign', 321, 19, { text: 'AT HIS SECOND WIND HE TAKES HIS WAR TOWER. CUT BOTH LASHINGS.' });   /* (claude/stockade2) the war tower, told at the door */   /* the EXAM's last beat: a hound on the landing, off the lift */
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
   // the rafter climb, both sides, two tiles a jump, for when the hall burns; the gate sits on the top beam
