@@ -454,5 +454,17 @@
   "lifts": 96,
   "walked": 100,
   "bare": true
+ },
+ "lamplit": {
+  "hash": "748c394aeaf3",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 39,
+  "deaths": 8,
+  "kills": 5,
+  "lifts": 110,
+  "walked": 100,
+  "bare": true
  }
 }

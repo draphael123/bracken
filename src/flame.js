@@ -18,6 +18,30 @@ export function tickFlame(players, dt, say) {
 /* the light it throws on a dark pass: hole(x, y, r) for each carried flame */
 export function flameHoles(hole, players, cx, cy) {
   for (const pp of players) if (pp.lcFlame > 0 && !pp.dead) hole(pp.x - cx, pp.y - 30 - cy, FLAME.glow * (0.6 + 0.4 * Math.min(1, pp.lcFlame / 4))); }
+/* ---------- THROWN FIRE (claude/lamplit3, Daniel 10-18: "throw fire to ignite oil like other levels"). ADDITIVE: nothing above changes. ----------
+   The flame in a hand can be THROWN: a told arc (src/carry-throw.js's aim - UP lobs, DOWN tosses short, neither is the plain throw), the same integration
+   flown as told. It lands on what it meets: the caller decides what that means (oil catches, a dead lamp lights, a foe burns, water takes it); left on bare
+   stone it LIES burning FLAME_THROW.lie s (a fire you can take up again). Pure: the caller owns the list and the world.
+     FLAME_THROW                          its numbers (aims px/s, g, r = its half-size against walls, hit = the burn on a foe, lie s, light px)
+     throwFlame(x, y, face, keys)         -> a thrown flame { x, y, vx, vy, t, st: 'fly' } from a hand at (x, y)
+     stepThrownFlame(f, dt, solidAt)      one step; solidAt(px, py, falling) as carry-throw's predictArc. -> 'fly' | 'land' | 'wall' (it then lies: st 'lie')
+     thrownHoles(hole, list, cx, cy)      its light in a dark pass                      drawThrownFlame(g, list, cx, cy, time)   in flight, and lying */
+export const FLAME_THROW = { aims: { low: { vx: 100, vy: -110 }, mid: { vx: 175, vy: -180 }, high: { vx: 125, vy: -290 } }, g: 600, r: 3, ring: 9, dots: 14, hit: 14, lie: 6, light: 50 };
+export function throwFlame(x, y, face, keys) { const a = FLAME_THROW.aims[keys && keys.up ? 'high' : keys && keys.down ? 'low' : 'mid'];
+  return { x, y, vx: (face || 1) * a.vx, vy: a.vy, t: 0, st: 'fly' }; }
+export function stepThrownFlame(f, dt, solidAt) {
+  if (f.st !== 'fly') { f.t += dt; return f.st; }
+  const px0 = f.x, py0 = f.y; f.vy += FLAME_THROW.g * dt; f.x += f.vx * dt; f.y += f.vy * dt; f.t += dt;
+  if (solidAt(f.x + Math.sign(f.vx) * FLAME_THROW.r, py0, false) && !solidAt(px0, py0, false)) { f.x = px0; f.y = py0; f.st = 'lie'; f.t = 0; f.vx = 0; f.vy = 0; f.fall = true; return 'wall'; }
+  if (f.vy < 0 && solidAt(f.x, f.y - FLAME_THROW.r, false)) f.vy = 0;
+  if (f.vy >= 0 && solidAt(f.x, f.y + FLAME_THROW.r, true)) { f.st = 'lie'; f.t = 0; f.vx = 0; f.vy = 0; return 'land'; }
+  return 'fly'; }
+export function thrownHoles(hole, list, cx, cy) { for (const f of list || []) hole(f.x - cx, f.y - 4 - cy, FLAME_THROW.light * (f.st === 'lie' ? Math.max(0.4, 1 - f.t / FLAME_THROW.lie) : 1)); }
+export function drawThrownFlame(g, list, cx, cy, time) {
+  for (const f of list || []) { const x = Math.round(f.x - cx), y = Math.round(f.y - cy), fl = Math.floor(time * 14 + f.x) % 2, k = f.st === 'lie' ? Math.max(0.3, 1 - f.t / FLAME_THROW.lie) : 1;
+    if (f.st === 'lie') { g.fillStyle = '#2a1a10'; g.fillRect(x - 3, y + 1, 6, 1); }
+    g.globalAlpha = 0.35 * k; g.fillStyle = '#ff9a3c'; g.beginPath(); g.arc(x, y - 2, 5 + fl, 0, 7); g.fill(); g.globalAlpha = 1;
+    g.fillStyle = fl ? '#ff6b2c' : '#ff9a3c'; g.fillRect(x - 1, y - 4 - Math.round(2 * k), 3, 3 + Math.round(2 * k)); g.fillStyle = '#fff6c8'; g.fillRect(x, y - 3, 1, 2); } }
 /* the taper in his hand and its burn-down bar, over everything */
 export function drawFlameHand(g, players, cx, cy, time, lifeOf) {   /* lifeOf(pp) -> how long a taper lasts where he stands: given, the church's brass-dish taper that leans in a draught (church2art); omitted, WAYMEET's plain taper */
   const R = Math.round;

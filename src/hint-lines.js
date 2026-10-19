@@ -10,12 +10,15 @@ import { FOREMAN_LINES } from './foreman.js';
 import { BK_LINES } from './unburied-foes.js';
 import { HK_SAY } from './hourglass-king.js';
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
-import { TK_SAY } from './tomb-king.js';   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
+import { TK_SAY } from './tomb-king.js';
+import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
   /* batch101 integ 10-18: THE BELL HOUSINGS (claude/airpockets) - the housing is spent / fills again, routed as hint-shown requires */
   'THE HOUSING IS SPENT', 'THE HOUSING FILLS AGAIN',
   /* batch100 integ 10-18: THE CAPTAIN 2 (claude/hurricane2) - the wave, the lightning, his line and ward, routed as hint-shown requires */
   'KNOCKED FLAT: GRAB A LINE', 'KNOCKED FLAT: CUT HIM', 'STRUCK: CUT HIM', 'HE MAKES FOR A LINE', 'HE CALLS THE SEA', 'YOU HAVE HIS LINE', 'HIS WHISTLE', 'HE IS UP: WARDED', 'HE SHAKES IT OFF: WARDED', 'TURNED: CUT HIM',
+  /* (claude/lamplit3) claude/airpockets' bell-housing lines (THE TOLLMASTER's square), routed as hint-shown requires */
+  'THE HOUSING FILLS AGAIN', 'THE HOUSING IS SPENT',
   /* batch99 integ 10-18: THE LAMPREEVE and THE TOLLMASTER (claude/lamplit2) - toll, oil, wax and air lines, routed as hint-shown requires */
   'YOU STAND IN THE TOLL', 'THE LAMP KEEPS ITS FLAME', 'TOLL TAKEN', 'SEALED', 'THE WATER RISES INTO THE HOODS', 'THE SQUARE IS FILLING: THE LAMPS ARE YOUR AIR', 'THE BOX IS STRUCK', 'OIL', 'THE OIL FLASK', 'THE OIL GOES UP: STUNNED', 'THE FLARE: STUNNED', 'THE AIR COMES BACK UP THE MAIN', 'THE TOLL GATE LIFTS', 'WAX', 'THE WATER TAKES YOUR FIRE', 'FIRE IN HAND',
   /* batch98 integ 10-17: THE OWL REEVE's lamp and wing-beat lines (claude/owl3) - teaching lines, routed as hint-shown requires */
@@ -299,7 +302,7 @@ export const CALL_COUNTS = [/^VERDICT x\d+$/, /^FOCUS \d+%: SWEET-SPOT HITS FILL
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
-export const SAY_LINES = new Set([...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY), ...Object.values(TK_SAY), 'HER DOOR LIFTS: THE WAY UP TO THE KING']);   /* (claude/pyramidboss: THE SCARAB MOTHER's MINI_DONE line, said as a variable by main.js miniEnd) */
+export const SAY_LINES = new Set([...Object.values(LP3_SAY), ...Object.values(WK_SAY), ...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY), ...Object.values(TK_SAY), 'HER DOOR LIFTS: THE WAY UP TO THE KING']);   /* (claude/pyramidboss: THE SCARAB MOTHER's MINI_DONE line, said as a variable by main.js miniEnd) */
 /* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
    (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
 export const MC_TELL_LINES = new Set([...TELL_LINES, ...Object.values(FOREMAN_LINES)]);   /* (claude/deeprails3: and THE FOREMAN's lines, said as variables by src/foreman.js) */

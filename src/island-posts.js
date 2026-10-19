@@ -50,7 +50,7 @@ export function addIslandPosts(L, id, T) {
       let b = y + 1; while (b < H - 1 && b - y <= MAX && g[b * W + x] === T.AIR) b++;
       if (g[b * W + x] === T.AIR || b - y > MAX || b - y < 2) continue;
       if (!boardsOnly && b - y > (HOVER_ID[id] || HOVER)) continue;                       /* a wall or tower stub hovering over the ground gets a stilt; a rock slab high in the air is the level's own (the table) */
-      L.routeSupports.push({ x, y, bottom: b }); have.add(x + ',' + y); }
+      L.routeSupports.push(L.lpKit ? { x, y, bottom: b, kind: 'lpiron' } : { x, y, bottom: b }); have.add(x + ',' + y); }   /* (lamplit3art) the Lamplit Street's ledges stand on stone piers and iron columns, never the timber post */
   }
   return L;
 }
