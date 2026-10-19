@@ -8152,7 +8152,7 @@ export const LEVELS = [
      traps and plates. APPENDED, so no index and no save moves; its place on the road is its needs and its map node. THE SCARAB MOTHER (src/scarab-mother.js) is its boss */
   { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
   /* THE TAVERN (claude/tavern, co-op phase 2): WAYMEET'S CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
-  { id: 'tavern', name: 'THE CROSSROADS INN', sub: 'friends meet here', build: theTavern, hidden: true },
+  { id: 'tavern', name: 'THE TAVERN', sub: 'friends meet here', build: theTavern, hidden: true },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

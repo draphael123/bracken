@@ -63,7 +63,7 @@ if (WANT.includes('pure')) {
   const xs = STATIONS.map(s => s.x); ok(xs.every((x, i) => i === 0 || x - xs[i - 1] >= 3), 'the stations stand apart (3+ tiles), west to east: ' + xs.join(','));
   const { LEVELS, T } = await import('../src/level.js');
   const lv = LEVELS.find(l => l.id === 'tavern'), L = lv && lv.build();
-  ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE CROSSROADS INN is a hidden level, flagged tavern (no death cost: openYard)');
+  ok(!!lv && lv.hidden && L.tavern && L.openYard, 'THE TAVERN is a hidden level, flagged tavern (no death cost: openYard)');
   if (L) {
     const at = (x, y) => L.grid[y * L.W + x];
     ok(xs.every(x => x > ROOM.wallL && x < ROOM.wallR && at(x, ROOM.FLOOR) === T.SOLID && at(x, ROOM.FLOOR - 1) === T.AIR), 'every station stands on the inn floor inside its walls');

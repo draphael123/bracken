@@ -6049,7 +6049,8 @@ const SETTING_TIPS = {
   '@TABS': 'LEFT/RIGHT or TAB: change tab',
 };
 let settingsTab = 'gameplay';   /* which tab Settings is on (kept for the session) */
-const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : PAUSE_ITEMS) : tabRows(settingsTab, menuFrom);
+const TAVERN_MENU_HIDE = ['Map', 'Level card', 'Hero trial', 'Back to shrine', 'Restart level'];   /* (claude/tavernname) the inn's pause menu: the level-only rows are not offered; Return to map walks out of the door */
+const menuItems = () => menuKind === 'pause' || menuKind === 'map' ? (bossSelectFight ? PAUSE_ITEMS.filter(k => k !== 'Quit to title').map(k => k === 'Return to map' ? 'Quit to Boss Select' : k) : (L && L.tavern && menuFrom === 'play' ? PAUSE_ITEMS.filter(k => !TAVERN_MENU_HIDE.includes(k)) : PAUSE_ITEMS)) : tabRows(settingsTab, menuFrom);
 const isHeader = isHeaderTab;
 const MENU_ROWS = 10;
 let menuBarY = null, menuI = 0, menuFrom = 'play', selI = 0, menuMsg = '', menuMsgT = 0, bestI = 0, bestTab = 0, bestPage = 0, bestPages = 1;
@@ -6108,6 +6109,7 @@ function menuConfirm() {
   else if (k === 'Store') openStore('menu', 'heroes');
   else if (k === 'Hero') { state = 'herocard'; SFX.uiSel(); }
   else if ((k === 'Return to map' || k === 'Quit to title') && menuFrom === 'play' && !(menuMsg === 'press again to leave this level' && menuMsgT > 0)) { menuMsg = 'press again to leave this level'; menuMsgT = 2.5; SFX.ui(); }   /* leaving a level you are in asks once */
+  else if (k === 'Return to map' && L && L.tavern) { tavernToMap(); }   /* (claude/tavernname) out of the inn's door, to the map */
   else if (k === 'Return to map' && rushOn()) { rush = null; setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Return to map') { setView('normal'); state = 'map'; gotoLevelNode(levelIndex); music.play(menuTrack()); SFX.menuClose(); }
   else if (k === 'Sound test') { state = 'soundtest'; soundI = 0; soundCat = 0; soundFrom = 'menu'; SFX.uiSel(); }
@@ -6466,6 +6468,7 @@ function padIntoPlayer(gp, st, p) {
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
   for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  if (rose('pause') && L && L.tavern && state === 'play') pausePress = true;   /* (claude/tavernname) A JOINED PLAYER'S START opens the inn's settings menu, as player one's does */
   for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
   st.prev = now;
 }
@@ -6619,7 +6622,7 @@ const freeStarter = () => { const list = coopPickList(), used = players.map(p =>
 const tavDoorX = () => TAV_STATIONS[0].x * TS + 8 - TAV_WALK.from * TS + TS;
 function tavernJoin(src, h) {
   if (!L || !L.tavern || state !== 'play') return null;
-  if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE INN IS FULL: FOUR TO A PARTY.'); return null; }
+  if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE TAVERN IS FULL: FOUR TO A PARTY.'); return null; }
   if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
   const p = seatAdd({ hero: h || freeStarter(), src }); if (!p) return null;
   const fy = (TAV_START.y + 1) * TS;
