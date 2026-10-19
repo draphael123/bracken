@@ -195,7 +195,7 @@ import * as DPP from './deep_props.js';
 import { airBoxes } from './deepair.js';
 import * as SEA from './sea_looks.js';   /* EVERY SEA LEVEL A LOOK OF ITS OWN: the trench, the living water, the reef's sun, the drowned city, the river into the sea */
 import * as TWN from './town_art.js';
-import { makeLamplitFire } from './lamplit-fire.js'; import { makeWicklingHands, WK } from './wickling.js'; import * as LP3T from './redraw/lamplit3_tiles.js'; import * as LP3B from './redraw/lamplit3_barriers.js'; let LPF = null, WKH = null;   /* (claude/lamplit3) THE LAMPLIT STREET 3: the fire verbs (light with E, throw, the oil, the casks, the valves, the tar nets), THE WICKLING, and the city's own footing */
+import { makeLamplitFire } from './lamplit-fire.js'; import { makeWicklingHands, WK, drawWickling, newWickling } from './wickling.js'; import * as LP3T from './redraw/lamplit3_tiles.js'; import * as LP3B from './redraw/lamplit3_barriers.js'; let LPF = null, WKH = null;   /* (claude/lamplit3) THE LAMPLIT STREET 3: the fire verbs (light with E, throw, the oil, the casks, the valves, the tar nets), THE WICKLING, and the city's own footing */
 import * as CTP from './city_props.js'; import * as LA from './lamplit2-art.js';   /* (claude/lamplit2art) THE LAMPLIT STREET 2's art: the flask, the slick, the toll's stream, the scales, the seal and its wax, the writ's water, the fuse, the pockets, the toll gate */
 import { bakeWatch, bakeLampreeve, bakeTollmaster } from './redraw/city.js';
 import { bakeSoldier, bakeJavelineer, bakeHeavyKnight } from './redraw/soldiers.js';
@@ -1674,7 +1674,7 @@ function drawDowned(cx, cy) {
 }
 /* PLAYER TWO'S PLATE, small and out of the way between player one's and the purse: who he is, what is left of him,
    and the clock instead while he is down. */
-function drawCoopHud() { for (let i = 1; i < players.length; i++) drawSeatPlate(players[i], i - 1); }   /* (claude/tavern) a plate a seat, stacked down the right */
+function drawCoopHud() { if (state === 'win' || state === 'victory') return; for (let i = 1; i < players.length; i++) drawSeatPlate(players[i], i - 1); }   /* (integ 103: not under the win card or the end card - its tally has the names) (claude/tavern) a plate a seat, stacked down the right */
 function drawSeatPlate(p, slotI) {
   if (!p) return;
   /* UNDER THE PURSE, not over the clock. The top middle is the level timer and the garrison and ambush counters
@@ -6678,7 +6678,7 @@ function drawPartyMarks(cx, cy, phase = 'back') {
     const c = PARTY.colourOf(tv, p.n), x = Math.round(p.x - cx), y = Math.round(p.y - cy);
     if (tv.ring) TVA.ring(g, x, y, c.c, c.d, front, time, p.n);   /* (claude/tavernart) the floor ring in pixels: two halves, a shimmer, a dark rim for the pale sand (src/tavern-art.js) */
     if (!front) continue;
-    if (!(p.down > 0)) TVA.tag(g, x, y - 34, c.c, c.d, text, PARTY.tagOf(p), p.ai);   /* (claude/tavernart) the name plate: a dark slate edged in his colour (the letters are still the game's own text) */
+    if (!(p.down > 0) && state !== 'win' && state !== 'victory') TVA.tag(g, x, y - 34, c.c, c.d, text, PARTY.tagOf(p), p.ai);   /* (claude/tavernart) the name plate: a dark slate edged in his colour (the letters are still the game's own text) */
     if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down })), gate ? gate.x : null), ld = players[li];
       g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
       if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);
@@ -22269,6 +22269,7 @@ SPR.lanterneater = bakeLanternEaterCard();   /* THE LANTERN-EATER's card (it dra
 SPR.greatdrill = MCA.bakeDrillCard();   /* THE GREAT DRILL's bestiary card (it draws itself live: src/great-drill-hands.js) */
 SPR.orderpaladin = C3A.bakeSet('orderpaladin', OPF.FRAMES + 1, OPF.OPL.w, OPF.OPL.h); SPR.deadpaladin = C3A.bakeSet('deadpaladin', OPF.FRAMES + 1, OPF.OPL.w, OPF.OPL.h); SPR.deadpriest = C3A.bakeSet('deadpriest', UPF.FRAMES + 1, UPF.UPR.w, UPF.UPR.h); HAS_HURT.add('orderpaladin'); HAS_HURT.add('deadpaladin'); HAS_HURT.add('deadpriest');   /* (claude/church3art) drawn: src/redraw/church3_foes_art.js */
 SPR.orderpaladinCard = C3A.bakeCard('orderpaladin'); SPR.deadpaladinCard = C3A.bakeCard('deadpaladin'); SPR.deadpriestCard = C3A.bakeCard('deadpriest');   /* their bestiary portraits (x2, the second frame a breath on: the gleam / the censer) */
+SPR.wicklingCard = (() => { const W = 30, H = 34, ax = 15, ay = 22, R = [0, 0.07, 0.14, 0.21].map(t => { const [c, k] = canvas(W, H); drawWickling(k, { ...newWickling(0, 0, 1), mode: 'drift', modeT: 1 }, ax, ay, t, true); return c; }); return { R, L: R.map(c => flipX(c)), white: { R, L: R.map(c => flipX(c)) }, ax, ay, w: WK.w, h: WK.h }; })();   /* (integ 103) THE WICKLING's bestiary card: it draws itself live in play, so the page borrowed a goblin priest's set that does not exist (a null set crashed textfit's bestiary) */
 SPR.fogknight = bakeFogKnightCard(); SPR.champion = bakeChampionCard(); SPR.fogwraith = FWR.bakeWraith(canvas, flipX);   /* (claude/towpath2) THE FOG WRAITH's card and body (it draws itself live) */   /* THE FOG KNIGHT's card (he draws himself live: src/fog-knight-hands.js) */
 SPR.puppeteer = bakePuppeteer(); SPR.marionette = bakeMarionette(); SPR.harlequin = bakeHarlequin(); SPR.acrobat = bakeAcrobat(); SPR.masterpiece = bakeMasterpiece();   /* THE PUPPETEER and his three (src/redraw/puppeteer_art.js) */   /* THE HARVEST FAIR's pair (src/redraw/fair_art.js) */
 SPR.grindylow = CNF.bakeGrindylow(); SPR.willowisp = CNF.bakeWisp(); SPR.lamplighter = CFA.bakeLamplighter(); { const S = CFA.bakeCanalSkins(); SPR.bargeman = S.bargeman; SPR.riverrat = S.riverrat; SPR.deckforeman = S.foreman; SPR.watchman = S.watchman; }   { const U = UCS.bakeUndercrownSkins(SPR); for (const k of Object.keys(U)) SPR[k] = U[k]; }   { const V = VSK.bakeVarietySkins(SPR); for (const k of Object.keys(V)) SPR[k] = V[k]; }   /* (claude/variety) fire / venom imp, fair strongman: recoloured off the imp / brute sheets */   /* (claude/goblinsweep) recoloured off the miner / rock goblin / propman / sentry / lamplighter / hound sheets, same frames (after the canal's lamplighter is baked) */   /* (claude/canalfix3) THE CANAL TOUGHS: the goblins' AI under human skins (e.cnSkin) */   /* THE FOG CANAL's pair (src/canal-foes.js, greybox) */
