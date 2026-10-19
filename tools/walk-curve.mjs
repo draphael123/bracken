@@ -11,11 +11,16 @@ import { TARGET_BY_ACT, actOfId, summarize } from './level-walk.mjs';
 export const WALK_CURVE_FILE = fileURLToPath(new URL('../docs/walk-curve.json', import.meta.url));
 const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null, r1 = x => x === null || x === undefined ? null : Math.round(x * 10) / 10;
 /* walker rows -> { level: { act, heroes: { hero: { runs, deaths, arrive, arriveN, arriveMin, coverage, ends } }, deaths, arrive } } */
+/* A run that ran out of frames or was locked in made no progress (the walker, not the level, ended it: towpath / glasssea / sealedpyramid warden walked 19-29% of the route): it says nothing about the level's pressure and is LEFT OUT of the means (counted in `dropped`). A wall (8 deaths) or a boss door is a real end. */
+export const UNRELIABLE = r => !r.err && (r.end === 'frames' || r.end === 'locked');
 export function fold(rows, hashOf = () => null) {
-  const out = {};
+  const out = {}, dropped = {};
+  for (const r of rows) if (UNRELIABLE(r)) dropped[r.id + '|' + r.hero] = (dropped[r.id + '|' + r.hero] || 0) + 1;
+  rows = rows.filter(r => !UNRELIABLE(r));
   for (const s of summarize(rows)) { const L = out[s.id] || (out[s.id] = { act: actOfId(s.id), hash: hashOf(s.id), lvl: s.lvl, heroes: {} });
-    L.heroes[s.hero] = { runs: s.runs, deaths: r1(s.deaths), arrive: s.arriveMean === null ? null : Math.round(s.arriveMean), arriveMin: s.arriveMin, coverage: Math.round(s.coverage), ends: s.ends, lostPerSection: s.lostPerSection === null ? null : Math.round(s.lostPerSection), drinks: r1(s.drinks) }; }
-  for (const L of Object.values(out)) { const H = Object.values(L.heroes); L.deaths = r1(mean(H.map(h => h.deaths))); const ar = H.filter(h => h.arrive !== null).map(h => h.arrive); L.arrive = ar.length ? Math.round(mean(ar)) : null; L.coverage = Math.round(mean(H.map(h => h.coverage))); L.runs = H.reduce((s, h) => s + h.runs, 0); }
+    L.heroes[s.hero] = { runs: s.runs, deaths: r1(s.deaths), arrive: s.arriveMean === null ? null : Math.round(s.arriveMean), arriveMin: s.arriveMin, coverage: Math.round(s.coverage), ends: s.ends, lostPerSection: s.lostPerSection === null ? null : Math.round(s.lostPerSection), drinks: r1(s.drinks), dropped: dropped[s.id + '|' + s.hero] || 0 }; }
+  for (const k of Object.keys(dropped)) { const [id, hero] = k.split('|'); const L = out[id] || (out[id] = { act: actOfId(id), hash: hashOf(id), lvl: null, heroes: {} }); if (!L.heroes[hero]) L.heroes[hero] = { runs: 0, deaths: null, arrive: null, arriveMin: null, coverage: 0, ends: 'frames', lostPerSection: null, drinks: null, dropped: dropped[k] }; }
+  for (const L of Object.values(out)) { const H = Object.values(L.heroes), HD = H.filter(h => h.deaths !== null); L.deaths = HD.length ? r1(mean(HD.map(h => h.deaths))) : null; const ar = H.filter(h => h.arrive !== null).map(h => h.arrive); L.arrive = ar.length ? Math.round(mean(ar)) : null; L.coverage = HD.length ? Math.round(mean(HD.map(h => h.coverage))) : 0; L.runs = H.reduce((s, h) => s + h.runs, 0); L.dropped = H.reduce((s, h) => s + (h.dropped || 0), 0); }
   return out;
 }
 /* the verdict of one level against its act's target: 'low' (deaths under the floor / arrives fuller than the target = under-pressed), 'high' (over the ceiling / arrives emptier), 'ok' */
@@ -37,7 +42,7 @@ export function printTable(curve, log = console.log) {
     log(String(a).padEnd(5) + (T.deathsLo + '-' + T.deathsHi + ' / ' + T.arriveHp + '%').padEnd(28) + (fmtAct(B[a]) + ' -> ' + fmtAct(A[a])).padEnd(22) + (A[a] ? A[a].inBand + '/' + A[a].n : '-')); }
   log('level           act  hero deaths (before -> after)  arrive% (before -> after)  vs target');
   for (const [id, L] of Object.entries(curve.after || {})) { const b = (curve.before || {})[id], v = verdict(L);
-    log(id.padEnd(15) + String(L.act).padEnd(5) + 'all  ' + ((b ? b.deaths : '-') + ' -> ' + L.deaths).padEnd(26) + ((b ? b.arrive ?? '-' : '-') + ' -> ' + (L.arrive ?? '-')).padEnd(27) + 'deaths ' + v.deaths + ', arrival ' + v.arrive + (L.coverage < 60 ? '  (walked only ' + L.coverage + '% of the route: read with care)' : '')); }
+    log(id.padEnd(15) + String(L.act).padEnd(5) + 'all  ' + ((b ? b.deaths : '-') + ' -> ' + L.deaths).padEnd(26) + ((b ? b.arrive ?? '-' : '-') + ' -> ' + (L.arrive ?? '-')).padEnd(27) + 'deaths ' + v.deaths + ', arrival ' + v.arrive + (L.coverage < 60 || L.dropped ? '  (' + L.coverage + '% of the route measured between shrines' + (L.dropped ? ', ' + L.dropped + ' no-progress runs left out' : '') + ')' : '')); }
 }
 export function loadCurve() { return existsSync(WALK_CURVE_FILE) ? JSON.parse(readFileSync(WALK_CURVE_FILE, 'utf8')) : null; }
 
