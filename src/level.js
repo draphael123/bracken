@@ -814,12 +814,12 @@ function stockadeWatchtowers(R3) {
 
   // ---- THE BARRED GATE: the gate tower, its pile over the gate's mouth, and the crew behind ----
   ent('sign', 34, 19, { text: 'THE GATE IS BARRED FROM INSIDE. THEY OPEN IT ONLY FOR THEIR OWN HORN.' });
-  col(35, 11, 19, T.NET); block(36, 38, 11, 19); run(35, 41, 10, T.PLANK); ent('towertop', 37, 10);   /* the gate tower: a rope up its face */
-  ent('logpile', 41, 9, { id: 'pile-2' });
-  col(43, 3, 12, T.PALISADE); col(43, 13, 19, T.PORT);            /* THE BARRED GATE (src/stockade-hands.js opens it to a horn) */
+  col(35, 9, 19, T.NET); block(36, 38, 9, 19); run(35, 41, 8, T.PLANK); ent('towertop', 37, 8);   /* the gate tower: a rope up its face, its deck four rows over the walk (out of a jump from it: the way on is the yard floor) */
+  ent('logpile', 41, 7, { id: 'pile-2' });
+  col(43, 1, 12, T.PALISADE); col(43, 13, 19, T.PORT);            /* THE BARRED GATE (src/stockade-hands.js opens it to a horn) */
   ent('brute', 46, 19, { face: -1, stk: { gateGuard: true } }); ent('pike', 48, 19, { face: -1, stk: { gateGuard: true } });
   ent('sprig', 50, 19, { face: -1, stk: { gateGuard: true } }); ent('sprig', 52, 19, { face: -1, stk: { gateGuard: true } });
-  ent('torch', 45, 19); coins([39, 9], [47, 18], [51, 18]);
+  ent('torch', 45, 19); coins([39, 7], [47, 18], [51, 18]);
 
   // ---- THE THREE TOWERS: the exam over the stake pit ----
   block(55, 109, 26, 27); run(55, 109, 25, T.NET);                 /* the pit: a net over the stakes catches you, and each chamber has its rope back up */
@@ -848,7 +848,7 @@ function stockadeWatchtowers(R3) {
   for (let y = 12; y <= 19; y++) WT.set(377, y, T.NET);
   const R = WT.done();
   R.routeSupports = (R.routeSupports || []).concat(posts);
-  R.watchtowers = (R.watchtowers || []).concat([[36, 38, 10, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
+  R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
   /* the gate is barred as laid (T.PORT) and opened by the horn, which every hero can blow: the reach fill has it open (src/reachcore.js reachDoors) */
   R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 13, y1: 19 }]);
   const chief = R.ents.find(e => e.t === 'chief'), twx = (chief.x - 5) * TS;   /* HIS WAR TOWER: on the dais (final 588-591), its deck five rows over the hall floor, a lashing to a peg five tiles out either side */
