@@ -1,0 +1,208 @@
+/* src/stockade-hands.js - THE STOCKADE 2 (claude/stockade2, Daniel 10-14: scratch/brief-stockade2-1014.md). main.js owns the world; this owns
+   the level's new verbs and the Chieftain's war tower:
+     THE CAPTURED HORN  a blower flagged `drops` lets his horn fall when he dies; walk over it and it is yours for the level (a death keeps it).
+                        E (INTERACT) BLOWS IT: a told ring of sound, and every camp goblin under you within LURE.r runs to the sound - to the drop of the
+                        nearest log pile when one is by you - and stands there looking up for LURE.t (it notices you if you come down among them).
+     THE LOG PILES      logs lashed at a walk's edge (ent 'logpile'): one blow on the lashing and they drop, told (a creak, the pile shakes) - every
+                        goblin under them is CRUSHED; a hero under them takes a knock. A pile drops once an attempt.
+     THE BARRED GATE    L.stockade.gate (T.PORT, barred from inside): a horn blown within GATE.r opens it - its crew (`gateGuard`) come out to
+                        the sound. Opened, it stays open for the attempt (main.js's destroyed set).
+     THE EXAM           L.stockade.exam: the first time the hero climbs into its box, the three exam blowers (`exam: 1..3`) all wind their
+                        horns at once, each with its own draw (EXAM draw[]): the bars are drawn by main.js drawHornTell off e.hornDraw.
+     THE DOZER / COOKS  a `dozing` blower does nothing until you are at his back or he is struck; `cook` goblins sit at their fire and the
+                        `gateGuard`s stand behind the gate until a horn, a blow or a hero on their floor wakes them.
+     THE WAR TOWER      the Chieftain's phase two (src/main.js hurtEnemy0 ENRAGED): he runs to his tower on the dais, climbs it, hauls its two
+                        lashings taut and shoots from it (his bow - green). A blow on him up there lands at TOWER.take (B15 floor, told:
+                        CUT THE LASHINGS). Strike BOTH pegs and the tower goes over, away from you - he comes down IN THE WRECK, open (x2,
+                        his 'planted' read and its quarter cap). The same verb as the log piles: strike the lashing, it drops.
+     THE AREAS          L.stockade.areas: a banner names each area as you walk into it (Rootway recipe 1).
+   Lines are said through ctx.number with STK_SAY (routed by src/hint-lines.js, tools/hint-shown.mjs). */
+export const STK_SAY = {
+  took: 'HIS HORN IS YOURS: E BLOWS IT', blow: 'THE CAMP RUNS TO ITS HORN', gate: 'THE GATE OPENS TO THEIR HORN', crushed: 'CRUSHED UNDER THE LOGS',
+  exam: 'THREE HORNS WIND: CROSS', tower: 'TO THE WAR TOWER', taut: 'CUT THE LASHINGS', lash: 'A LASHING GOES', falls: 'THE TOWER FALLS', wreck: 'IN THE WRECK: CUT HIM',
+  woke: 'HE WAKES', noticed: 'THEY SEE YOU', comes: 'HE COMES DOWN',
+};
+export const LURE = { r: 15 * 16, ry: 11 * 16, t: 6, cd: 2.4, near: 40, spread: 9, speed: 70 };
+export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
+export const GATE = { r: 16 * 16, delay: 0.5 };
+export const TOWER = { take: 0.5, climb: 1.1, shotEvery: 1.25, volleyN: 4, pegDx: 5 * 16, fall: 0.7, wreck: 3.2, cap: 40, deck: 5 };
+const LURED = new Set(['sprig', 'shield', 'pike', 'brute', 'hound', 'sapper', 'thorn', 'runner']);
+
+export function makeStockadeHands(ctx) {
+  const TS = ctx.TS, say = (x, y, k, c) => ctx.number(x, y, STK_SAY[k], c || '#ffd36b');
+  let Lk = null, S = null, held = false, piles = [], pickups = [], rings = [], gateOpen = false, gateT = 0, cd = 0, examOn = false, banner = null, seenArea = -1, tower = null, tookSaid = false;
+  const on = () => !!(ctx.L && ctx.L.stockade);
+  /* per level load (not per death): the horn you took stays yours, the gate you opened stays open */
+  function load() { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; tookSaid = false; seenArea = -1; reset(); }
+  function reset() {
+    if (!on()) return; if (Lk !== ctx.L) { Lk = ctx.L; S = ctx.L.stockade; held = false; gateOpen = false; tookSaid = false; seenArea = -1; }
+    piles = (ctx.L.ents || []).filter(e => e.t === 'logpile').map(e => ({ id: e.id, x: e.x * TS + 8, y: (e.y + 1) * TS, floor: floorUnder(e.x, e.y + 2), st: 'hung', t: 0, by: 0, vy: 0 }));
+    pickups = []; rings = []; cd = 0; gateT = 0; examOn = false; banner = null;
+    const W = ctx.L.arena, T0 = S && S.tower;
+    tower = T0 ? { x: T0.x, deck: T0.deck, foot: T0.foot, pegs: T0.pegs.map(x => ({ x, cut: false })), st: 'up', t: 0, dir: 1, fallK: 0 } : null;
+    if (W && !T0) tower = null;
+  }
+  function floorUnder(tx, ty) { for (let y = ty; y < ctx.L.H; y++) if (ctx.solidAt(tx, y)) return y * TS; return ctx.L.H * TS; }
+  const hero = () => ctx.P();
+
+  /* ---- THE HORN ---- */
+  function dropHorn(e) { e.hornDropped = true; if (held) return; pickups.push({ x: e.x, y: e.y - 6, vy: -80 }); }
+  function blow() {
+    const P = hero(); if (!held || cd > 0 || !P || P.dead) return false;
+    cd = LURE.cd; ctx.sfx.hornBlast && ctx.sfx.hornBlast(); ctx.shake(2);
+    rings.push({ x: P.x, y: P.y - 14, t: 0 }, { x: P.x, y: P.y - 14, t: -0.18 }, { x: P.x, y: P.y - 14, t: -0.36 });
+    const pile = piles.filter(p => p.st === 'hung' && Math.abs(p.x - P.x) < 6 * TS && p.y >= P.y - 3 * TS).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    const at = pile ? pile.x : P.x; let n = 0;
+    for (const e of ctx.enemies()) {
+      if (!e.alive || e.dying > 0 || e.maxHp || e.mini || e.elite || e.harmless || !LURED.has(e.t)) continue;
+      if (Math.abs(e.x - P.x) > LURE.r || e.y < P.y - 2 * TS || e.y - P.y > LURE.ry) continue;
+      e.lureT = LURE.t; e.lureX = at + (((n++ % 3) - 1) * LURE.spread); e.cook = false; e.gateGuard = e.gateGuard && !gateOpen ? 'out' : false; e.emote = 'shock'; e.emoteT = 0.6; e.seenP = true;
+    }
+    if (S && S.gate && !gateOpen && Math.abs(S.gate.x * TS + 8 - P.x) < GATE.r) gateT = GATE.delay;
+    say(P.x, P.y - 30, 'blow');
+    return true;
+  }
+  function interact(P) { if (!on() || !held) return false; return blow(); }
+
+  /* ---- held foes: the dozer, the cooks, the gate's crew, the lured ---- */
+  function hold(e, dt) {
+    if (!on() || !e.alive) return false;
+    const P = hero(), dx = P ? P.x - e.x : 999, dy = P ? P.y - e.y : 999;
+    if (e.hp0Stk === undefined) e.hp0Stk = e.hp;
+    const struck = e.hp < e.hp0Stk || e.stagger > 0;
+    if (e.dozing) {
+      if (struck || (Math.abs(dx) < 36 && Math.abs(dy) < 30)) { e.dozing = false; say(e.x, e.y - 20, 'woke', '#ff9a5c'); return false; }
+      e.vx = 0; e.hornT = 0; e.draw = 0; e.timer = Math.max(e.timer || 0, 0.5); return true;
+    }
+    if (e.lureT > 0) {
+      e.lureT -= dt;
+      if (struck || (P && !P.dead && Math.abs(dx) < LURE.near && Math.abs(dy) < 24)) { e.lureT = 0; say(e.x, e.y - 20, 'noticed', '#ff9a5c'); return false; }
+      const gx = e.lureX - e.x, sp = Math.max(LURE.speed, (e.speed || 30) * 1.5);
+      e.vx = Math.abs(gx) > 4 ? Math.sign(gx) * sp : 0; if (e.vx) e.face = Math.sign(e.vx);
+      e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); const r = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0;
+      e.anim = (e.anim || 0) + dt; if (!e.vx && P) e.face = Math.sign(dx) || e.face;
+      return true;
+    }
+    if (e.cook || (e.gateGuard === true && !gateOpen)) {
+      if (struck || (P && !P.dead && Math.abs(dx) < 64 && Math.abs(dy) < 24)) { e.cook = false; if (e.gateGuard === true) e.gateGuard = 'out'; return false; }
+      e.vx = 0; e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); const r = ctx.moveBody(e, 0, e.vy * dt); if (r && r.ground) e.vy = 0; return true;
+    }
+    return false;
+  }
+
+  /* ---- the frame ---- */
+  function update(dt) {
+    if (!on()) return; if (Lk !== ctx.L) load();
+    const P = hero(); cd = Math.max(0, cd - dt);
+    for (const r of rings) r.t += dt; rings = rings.filter(r => r.t < 0.9);
+    /* the horns that fall */
+    for (const e of ctx.enemies()) if (e.drops && !e.alive && !e.hornDropped) dropHorn(e);
+    for (const k of pickups) { if (k.got) continue; k.vy = Math.min(320, k.vy + 900 * dt); const ny = k.y + k.vy * dt, tx = Math.floor(k.x / TS), ty = Math.floor(ny / TS);
+      if (k.vy > 0 && (ctx.solidAt(tx, ty) || ctx.oneWay(tx, ty))) { k.y = ty * TS; k.vy = 0; } else k.y = ny;
+      if (P && !P.dead && Math.abs(P.x - k.x) < 12 && Math.abs(P.y - k.y) < 20) { k.got = true; held = true; ctx.sfx.pickup && ctx.sfx.pickup(); if (!tookSaid) { tookSaid = true; say(P.x, P.y - 30, 'took'); } } }
+    /* the gate */
+    if (gateT > 0) { gateT -= dt; if (gateT <= 0 && !gateOpen && S.gate) { gateOpen = true; ctx.openCells(S.gate.x, S.gate.y0, S.gate.y1); ctx.sfx.crack && ctx.sfx.crack(); ctx.shake(3); say(S.gate.x * TS + 8, S.gate.y0 * TS, 'gate', '#8fd160');
+      for (const e of ctx.enemies()) if (e.gateGuard === true) e.gateGuard = 'out'; } }
+    /* the piles */
+    const hb = ctx.atkBox();
+    for (const p of piles) {
+      if (p.st === 'hung' && hb && ctx.overlap(hb, { l: p.x - 9, r: p.x + 9, t: p.y - 22, b: p.y }) && ctx.hitOnce(p)) { p.st = 'creak'; p.t = PILE.creak; ctx.sfx.crack && ctx.sfx.crack(); }
+      else if (p.st === 'creak') { p.t -= dt; if (p.t <= 0) { p.st = 'fall'; p.by = p.y; p.vy = 60; ctx.sfx.throwWhoosh && ctx.sfx.throwWhoosh(); } }
+      else if (p.st === 'fall') { p.vy += 1300 * dt; p.by += p.vy * dt;
+        if (p.by >= p.floor) { p.by = p.floor; p.st = 'down'; ctx.shake(PILE.shake); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust(p.x, p.floor, 14); let n = 0;
+          for (const e of ctx.enemies()) if (e.alive && !e.maxHp && !e.mini && Math.abs(e.x - p.x) < PILE.half && e.y > p.floor - 40 && e.y <= p.floor + 4) { ctx.hurt(e, 999, p.x); n++; }
+          if (P && !P.dead && Math.abs(P.x - p.x) < PILE.half - 6 && P.y > p.floor - 30 && P.y <= p.floor + 4) ctx.damage(p.x, PILE.dmgHero, { name: 'THE LOGS' });
+          if (n) say(p.x, p.floor - 40, 'crushed', '#8fd160'); } }
+    }
+    /* the exam */
+    if (S && S.exam && !examOn && P && !P.dead) { const tx = P.x / TS, ty = P.y / TS, z = S.exam;
+      if (tx >= z.x0 && tx <= z.x1 + 1 && ty >= z.y0 && ty <= z.y1) { examOn = true; say(P.x, P.y - 30, 'exam', '#ff9a5c'); ctx.sfx.hornDraw && ctx.sfx.hornDraw();
+        for (const e of ctx.enemies()) if (e.alive && e.exam && !e.blown) { e.examOn = true; e.hornDraw = (z.draw || [])[e.exam - 1] || 8; e.hornT = 0.001; } } }
+    /* the area banner */
+    if (S && S.areas && P) { const tx = P.x / TS, i = S.areas.findIndex(([, a, b]) => tx >= a && tx < b);
+      if (i >= 0 && i !== seenArea) { seenArea = i; banner = { name: S.areas[i][0], t: 2.6 }; } }
+    if (banner) { banner.t -= dt; if (banner.t <= 0) banner = null; }
+    /* the exam's three horns: wound here, wherever the hero is (a blower off the screen is not updated by main.js), paused while he is staggered */
+    if (examOn) for (const e of ctx.enemies()) if (e.alive && e.exam && e.examOn && !e.blown) { if (!(e.stagger > 0)) e.hornT = (e.hornT || 0) + dt; if (e.hornT > (e.hornDraw || 8)) ctx.hornSounds(e); }
+    if (tower) towerStep(dt, hb);
+  }
+
+  /* ---- THE CHIEFTAIN'S WAR TOWER ---- */
+  function towerStep(dt, hb) {
+    const ch = ctx.boss(); if (tower.st === 'fall') { tower.fallK = Math.min(1, tower.fallK + dt / TOWER.fall); return; }
+    if (tower.st !== 'manned' || !ch) return;
+    for (const pg of tower.pegs) if (!pg.cut && hb && ctx.overlap(hb, { l: pg.x - 8, r: pg.x + 8, t: tower.foot - 16, b: tower.foot }) && ctx.hitOnce(pg)) {
+      pg.cut = true; ctx.sfx.crack && ctx.sfx.crack(); ctx.sparks(pg.x, tower.foot - 8, 1, 5); say(pg.x, tower.foot - 30, 'lash', '#8fd160');
+      if (tower.pegs.every(q => q.cut)) { const P = hero(); tower.dir = Math.sign(tower.x - (P ? P.x : tower.x - 1)) || 1; tower.st = 'fall'; tower.fallK = 0; say(tower.x, tower.deck - 40, 'falls', '#ff9a5c'); ctx.sfx.roar && ctx.sfx.roar(); }
+    }
+  }
+  /* the boss calls: main.js updateChief asks first, hurtEnemy0 tells it the phase came */
+  function chiefPhase2(e) { if (!tower || tower.st !== 'up') return; e.towerGo = true; }
+  function chiefStep(e, dt, A) {
+    if (!tower) return false;
+    if (e.towerGo && tower.st === 'up') { e.towerGo = false; tower.st = 'run'; e.mode = 'toTower'; e.modeT = 4; e.vx = 0; say(e.x, e.y - e.h - 12, 'tower', '#ff6b6b'); ctx.sfx.chiefBark && ctx.sfx.chiefBark(); }
+    const m = e.mode;
+    if (m === 'toTower') { const d = tower.x - e.x; e.face = Math.sign(d) || e.face; e.vx = Math.abs(d) > 6 ? e.face * 96 : 0; e.vy = Math.min(400, (e.vy || 0) + 1000 * dt);
+      const r = ctx.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0; e.anim += dt; e.modeT -= dt;
+      if (Math.abs(d) <= 4 * TS || e.modeT <= 0) { e.mode = 'towerClimb'; e.modeT = TOWER.climb; e.vx = 0; e.y0Climb = e.y; e.x0Climb = e.x; } return true; }   /* (from the foot of the dais: he swings up onto it and climbs) */
+    if (m === 'towerClimb') { e.modeT -= dt; e.anim += dt; const k = 1 - Math.max(0, e.modeT) / TOWER.climb; e.y = e.y0Climb + (tower.deck - e.y0Climb) * k; e.x = e.x0Climb + (tower.x - e.x0Climb) * Math.min(1, k * 2);
+      if (e.modeT <= 0) { e.y = tower.deck; e.mode = 'tower'; e.modeT = 0.8; e.towerT = 0; e.stance = 'bow'; tower.st = 'manned'; e.shotN = 0; say(e.x, e.y - e.h - 12, 'taut', '#ffd36b'); ctx.sfx.clank && ctx.sfx.clank(); } return true; }
+    if (m === 'tower' || m === 'towerAim' || m === 'towerLoose') {
+      e.x = tower.x; e.y = tower.deck; e.vx = 0; e.vy = 0; e.anim += dt; e.towerT += dt; e.modeT -= dt; const P = hero(); if (P) e.face = Math.sign(P.x - e.x) || e.face;
+      if (tower.st === 'fall') { e.mode = 'towerFall'; e.modeT = TOWER.fall; e.fx0 = e.x; return true; }
+      if (e.towerT > TOWER.cap) { tower.st = 'down'; e.mode = 'walk'; e.modeT = 0.6; e.y = A.floor; e.stance = 'club'; say(e.x, e.y - e.h - 12, 'comes', '#ffd36b'); return true; }   /* (a safety, never the answer: 40 s up there and he climbs down) */
+      if (m === 'tower' && e.modeT <= 0) { e.shotN++; if (e.shotN % 3 === 0) { e.mode = 'towerAim'; e.volley = true; e.modeT = 0.75; ctx.number(e.x, e.y - e.h - 12, '^^', '#8fd160'); } else { e.mode = 'towerAim'; e.volley = false; e.modeT = 0.6; ctx.number(e.x, e.y - e.h - 12, '^', '#8fd160'); } ctx.sfx.bow && ctx.sfx.bow(); }
+      else if (m === 'towerAim' && e.modeT <= 0) { e.mode = 'towerLoose'; e.modeT = 0.25; if (P) { if (e.volley) ctx.volley(e, P.x, TOWER.volleyN); else ctx.arrow(e, P.x, P.y - 8); } }
+      else if (m === 'towerLoose' && e.modeT <= 0) { e.mode = 'tower'; e.modeT = TOWER.shotEvery; }
+      return true; }
+    if (m === 'towerFall') { e.modeT -= dt; const k = 1 - Math.max(0, e.modeT) / TOWER.fall; e.x = e.fx0 + tower.dir * k * 3 * TS; e.y = tower.deck + (A.floor - tower.deck) * k * k;
+      if (e.modeT <= 0) { e.x = Math.max(A.x0 + 14, Math.min(A.x1 - 14, e.x)); e.y = A.floor; e.vy = 0; tower.st = 'down'; ctx.shake(8); ctx.sfx.heavy && ctx.sfx.heavy(); ctx.dust(e.x, A.floor, 18);
+        for (const q of ctx.enemies()) if (q.alive && q !== e && !q.maxHp && Math.abs(q.x - (tower.x + tower.dir * 2 * TS)) < 3 * TS && q.y > A.floor - 30) ctx.hurt(q, 999, tower.x);
+        e.mode = 'planted'; e.modeT = TOWER.wreck; e.openHp0 = e.hp; e.stance = 'club'; e.wreck = true; say(e.x, e.y - e.h - 12, 'wreck', '#8fd160'); } return true; }
+    return false;
+  }
+  const chiefUp = e => !!(tower && e && (e.mode === 'tower' || e.mode === 'towerAim' || e.mode === 'towerLoose' || e.mode === 'towerClimb'));
+  /* a blow on him on the tower: the B15 floor, told */
+  function towerTake(e) { if (!chiefUp(e)) return 1; ctx.turned(e, hero() ? hero().x : e.x, STK_SAY.taut); return TOWER.take; }
+
+  /* ---- drawing (GREYBOX: tools/../work report "ART LANE NOTES") ---- */
+  function drawWorld(g, cx, cy, time) {
+    if (!on()) return;
+    for (const p of piles) {   /* the pile: four lashed logs at the walk's edge, the lashing a pale rope to a stake */
+      const x = Math.round(p.x - cx), y = Math.round((p.st === 'fall' || p.st === 'down' ? p.by : p.y) - cy), sh = p.st === 'creak' ? Math.round(Math.sin(time * 60) * 1.5) : 0;
+      if (p.st === 'down') { for (let i = 0; i < 4; i++) { g.fillStyle = '#5c3a1d'; g.fillRect(x - 14 + i * 7, y - 5, 7, 5); g.fillStyle = '#8a5a32'; g.fillRect(x - 13 + i * 7, y - 4, 4, 1); } continue; }
+      for (let i = 0; i < 4; i++) { const lx = x - 9 + sh + (i % 2) * 4, ly = y - 6 - i * 5; g.fillStyle = '#1a1410'; g.fillRect(lx - 1, ly - 1, 16, 7); g.fillStyle = '#6b4424'; g.fillRect(lx, ly, 14, 5); g.fillStyle = '#9a6a3a'; g.fillRect(lx, ly, 14, 1); g.fillStyle = '#c9a070'; g.fillRect(lx + 12, ly + 1, 2, 3); }
+      if (p.st === 'hung') { g.fillStyle = '#e8dcc0'; g.fillRect(x - 1, y - 24, 2, 22); const pulse = 0.5 + 0.5 * Math.sin(time * 5); g.globalAlpha = 0.35 + 0.35 * pulse; g.fillStyle = '#ffd36b'; g.fillRect(x - 3, y - 14, 6, 2); g.globalAlpha = 1; }
+    }
+    for (const k of pickups) if (!k.got) { const x = Math.round(k.x - cx), y = Math.round(k.y - cy), b = Math.round(Math.sin(time * 4) * 1.5);   /* the horn on the ground, glinting */
+      g.fillStyle = '#1a1410'; g.fillRect(x - 6, y - 7 + b, 12, 5); g.fillStyle = '#e8dcc0'; g.fillRect(x - 5, y - 6 + b, 8, 3); g.fillRect(x + 3, y - 7 + b, 2, 5); g.fillStyle = '#8a6a40'; g.fillRect(x - 5, y - 5 + b, 2, 1);
+      g.globalAlpha = 0.4 + 0.4 * Math.sin(time * 6); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 13 + b, 2, 2); g.globalAlpha = 1; }
+    if (S && S.gate && !gateOpen) { const x = Math.round(S.gate.x * TS - cx), y0 = Math.round(S.gate.y0 * TS - cy);   /* the bar across the gate, inside */
+      g.fillStyle = '#1a1410'; g.fillRect(x - 3, y0 + 40, 22, 6); g.fillStyle = '#7a4a26'; g.fillRect(x - 2, y0 + 41, 20, 4); }
+    if (tower) drawTower(g, cx, cy, time);
+  }
+  function drawTower(g, cx, cy, time) {
+    const t = tower, x = Math.round(t.x - cx), deck = Math.round(t.deck - cy), foot = Math.round(t.foot - cy), base = Math.round((t.base || t.foot) - cy);
+    if (t.st === 'down') { g.fillStyle = '#1a1410'; g.fillRect(x - 2 + t.dir * 12, foot - 7, 52 * 1, 7); g.fillStyle = '#5c3a1d'; for (let i = 0; i < 5; i++) g.fillRect(x + t.dir * 12 + i * 10 - (t.dir < 0 ? 40 : 0), foot - 6, 9, 5); return; }
+    g.save(); const piv = base; g.translate(x, piv); if (t.st === 'fall') g.rotate(t.dir * t.fallK * t.fallK * 1.45);
+    const h = piv - deck; g.fillStyle = '#1a1410'; g.fillRect(-12, -h - 4, 24, h + 4);
+    g.fillStyle = '#6b4424'; g.fillRect(-11, -h, 3, h); g.fillRect(8, -h, 3, h); for (let yy = -h + 6; yy < 0; yy += 10) { g.fillRect(-9, yy, 18, 2); }
+    g.fillStyle = '#8a5a32'; g.fillRect(-13, -h - 3, 26, 4); g.fillStyle = '#c9463d'; g.fillRect(-1, -h - 16, 2, 13); g.fillRect(1, -h - 16, 7, 4);   /* the deck and his red pennant */
+    g.restore();
+    if (t.st === 'up' || t.st === 'run' || t.st === 'manned') for (const pg of t.pegs) {   /* the lashings: slack until he hauls them taut, then pale and glinting at the peg */
+      const px = Math.round(pg.x - cx); if (!pg.cut) { const taut = t.st === 'manned'; g.strokeStyle = taut ? '#e8dcc0' : '#8a7a60'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + Math.sign(px - x) * 10, deck); if (taut) g.lineTo(px, foot - 6); else g.quadraticCurveTo((x + px) / 2, foot - 4, px, foot - 6); g.stroke(); }
+      g.fillStyle = '#1a1410'; g.fillRect(px - 3, foot - 9, 6, 9); g.fillStyle = pg.cut ? '#5c3a1d' : '#8a5a32'; g.fillRect(px - 2, foot - 8, 4, 8);
+      if (!pg.cut && t.st === 'manned') { g.globalAlpha = 0.45 + 0.45 * Math.sin(time * 6); g.fillStyle = '#ffd36b'; g.fillRect(px - 4, foot - 12, 8, 2); g.globalAlpha = 1; } }
+  }
+  function drawOver(g, cx, cy, time) {
+    if (!on()) return;
+    for (const r of rings) { if (r.t < 0) continue; const k = r.t / 0.9; g.globalAlpha = 0.7 * (1 - k); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(Math.round(r.x - cx), Math.round(r.y - cy), 10 + k * 70, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    const P = hero(); if (held && P && !P.dead) { const x = Math.round(P.x - cx), y = Math.round(P.y - P.h - cy) - 8;   /* the horn at his belt: lit when it will blow */
+      g.fillStyle = cd > 0 ? '#8a7a60' : '#e8dcc0'; g.fillRect(x + 6, y + 10, 5, 2); g.fillRect(x + 10, y + 9, 2, 4); }
+    if (banner) { const a = Math.min(1, banner.t / 0.4, (2.6 - banner.t) / 0.3); g.globalAlpha = Math.max(0, a); ctx.text(banner.name, Math.round(ctx.VW() / 2), 30, '#e8dcc0', 'center', 8); g.globalAlpha = 1; }
+  }
+  /* for the bots and the checks */
+  const read = () => ({ held, gateOpen, examOn, piles: piles.map(p => ({ id: p.id, x: p.x, y: p.y, st: p.st })), pickups: pickups.filter(k => !k.got).map(k => ({ x: k.x, y: k.y })), cd,
+    tower: tower ? { x: tower.x, deck: tower.deck, foot: tower.foot, st: tower.st, pegs: tower.pegs.map(p => ({ x: p.x, cut: p.cut })) } : null, banner: banner && banner.name });
+  return { on, reset, load, update, hold, interact, blow, drawWorld, drawOver, chiefPhase2, chiefStep, chiefUp, towerTake, read, give: () => { held = true; } };
+}
