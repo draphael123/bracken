@@ -33,7 +33,7 @@ import { FIGHT } from './flame.js';
 
 export const PB = {
   hp: 1850, w: 18, h: 36,
-  heroHp: { knight: 1.35, warden: 0.64, pyro: 0.95 }, heroDmg: { knight: 2.6, warden: 1.4, pyro: 2.0 },   /* heroDmg: his blows on that hero (the shield hero turns his yellow ones; the red ones must cost him) */   /* (claude/church3) THE DUEL PER HERO (the wardgap lane's accepted pattern): the shield hero turns every yellow blow of his, so he stands longer against her - B15's wall unchanged */ scale: 1.5, markH: 62,
+  heroHp: { knight: 1.35, warden: 0.64, pyro: 0.95, paladin: 1.0 }, heroDmg: { knight: 2.6, warden: 1.4, pyro: 2.0, paladin: 1.25 },   /* heroDmg: his blows on that hero (the shield hero turns his yellow ones; the red ones must cost him) */   /* (claude/church3) THE DUEL PER HERO (the wardgap lane's accepted pattern): the shield hero turns every yellow blow of his, so he stands longer against her - B15's wall unchanged */ scale: 1.5, markH: 62,
   walk: 64, keep: 40, turn: 0.42, gap: [0.62, 0.52, 0.44],
   conv: { pips: 5, start: 2, land: 0.5, turned: 0.34, blocked: 0.3, kneel: 1.25, anywhere: 0.4, refill: 2 },   /* blocked: his blow taken on a shield still earns (the hero's rule: a blow that meets you) */   /* pips: his hammer landing +land, a blow his ward turns +turned, prayer a second (kneel at a lit brazier, anywhere slow) */
   ward: { take: 0.4 },                                      /* B15: a turned blow still bites x take */
