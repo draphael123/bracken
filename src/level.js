@@ -3796,7 +3796,7 @@ function trialYard(hero) {
       ['kneel', 2, 'GRAVE KNEEL: HOLD DOWN. THE PLANTED BLADE TURNS A LOW BLOW, NOT A HIGH ONE. TURN TWO.', [['waterthief', 18]], 'HOLD DOWN'],
       REAPER_C.ward,
       ['dodge', 2, 'THE SHADOW-STEP: TAP A WAY TWICE, OR V. HE GOES AS A SHADE AND LEAVES HIS WAKE. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
-      ['flash', 2, 'THE BEAT: ROLL THROUGH HIS CUT WITH V AS THE SWORD FLASHES WHITE, AND HE REELS. TWICE.', [['swornsword', 18]], 'B AS THE SWORD FLASHES'],
+      ['flash', 2, 'THE RETURN: HOLD C, LET GO AS HIS SWORD FLASHES WHITE: THE BLOW IS THROWN BACK. TWICE.', [['swornsword', 18]], 'HOLD LB, LET GO AS IT FLASHES'],   /* (claude/foepass) HIS YARD TEACHES HIS PARRY, THE WARD-RELEASE (scratch/brief-bloodknight-1017.md 1: it taught the roll) */
       ['tells', 2, 'ONE YELLOW ! CAN BE TURNED OR ROLLED. TWO RED !! CANNOT BE TURNED: GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
       ['pogo', 2, 'THE CULL: JUMP, THEN DOWN+X. A SHADE TEARS OUT AND FIGHTS FOR HIM. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
       DASH, RISE, SWEEP, REAPER_C.meter, SKILL_G],

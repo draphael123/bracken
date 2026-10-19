@@ -143,7 +143,8 @@ function frameStats(BK) {
 //     that cannot open a door cannot open a gate either, and every key-gated level ended at its first gate.
 //     Inside a room it goes for the KEY first and the far door second, which is the route the room was built
 //     to teach.
-export function makeBot(BK) {
+export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass): a foe standing ON the way ahead is fought through, not walked past - the walker's default (tools/level-walk.mjs) */
+  const FT = !!opts.fightThrough;
   let hold = 0, tapT = 0, tap = 0, still = 0, best = -1e9, tries = 0;
   let lastDoor = null, doorCd = 0, swimUp = 0;
   return function tick(goalX) {
@@ -405,7 +406,7 @@ export function makeBot(BK) {
          level: most creatures in this game can simply be walked past, and a bot that stops for all of
          them proves nothing except that it can stop. Something on top of you is a fight; something in
          front of you is only a fight once you have stopped getting anywhere. */
-      if (d > 28 && !(dir && Math.sign(dx) === dir && d < 74 && still > 18)) continue;
+      if (d > 28 && !(dir && Math.sign(dx) === dir && d < (FT ? 96 : 74) && (FT || still > 18))) continue;   /* (claude/foepass) FIGHT THROUGH: what stands on the way ahead is a fight from the moment it is in reach, not once the bot has stopped getting anywhere */
       if (d < fd) { fd = d; foe = e; }
     }
     let fighting = false;
@@ -415,7 +416,7 @@ export function makeBot(BK) {
       const telling = BK.telling ? BK.telling(foe) : false;
       const reach = ((foe.h || 12) > 22 || foe.big) ? 32 : 24;
       if (foe !== tick.foe) { tick.foe = foe; tick.foeT = 0; } else tick.foeT = (tick.foeT || 0) + 1;
-      if (tick.foeT > 240) { tick.skip.set(foe, tick.frame + 600); tick.foe = null; }   /* four seconds is enough */
+      if (tick.foeT > (FT && (foe.squad || foe.sqRole) ? 480 : 240)) { tick.skip.set(foe, tick.frame + 600); tick.foe = null; }   /* four seconds is enough (eight for a squad that holds the route, fighting through) */
       else if (telling && fd < reach + 8 && tick.rollCd <= 0) {
         fighting = true; tick.rollCd = 40;                       /* inside its reach: roll out the back of it */
         keys.left = fdir > 0; keys.right = fdir < 0; BK.press('dodge');

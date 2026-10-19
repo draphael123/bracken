@@ -82,7 +82,7 @@ export const REACT = {
 export const COVER = new Set(['shield', 'tideguard', 'soldier', 'watch', 'merrowbrute', 'heavy', 'swornsword', 'bellguard', 'pike', 'turtle', 'crab', 'brute']);
 export const RANGED = new Set(['archer', 'crossbow', 'javelin', 'spit', 'spitter', 'spitcap', 'thorn', 'shaman', 'stormshaman', 'bonearcher', 'slinger', 'scout', 'rockgoblin', 'netter', 'drunk', 'tippler', 'scalder',
   'apprentice', 'gobmage', 'undeadmage', 'seawitch', 'merrowcaller', 'priest', 'gobpriest', 'marine', 'merrowspear', 'boarder', 'sapper', 'haunt', 'weaver', 'horn', 'lanternshade']);
-export const roleOf = e => COVER.has(e.t) ? 'front' : RANGED.has(e.t) ? 'back' : 'flank';
+export const roleOf = e => e.sqRole || (COVER.has(e.t) ? 'front' : RANGED.has(e.t) ? 'back' : 'flank');   /* (claude/foepass) a squad member's ROLE once its squad was balanced (src/foe-pursuit.js assignRoles) */
 /* the windups a FEINT fits: a blade or a haft drawn back in the hands (a bite, a spit, a grab or a spell does not feint) */
 export const FEINT = new Set(['soldier|slashTell', 'cutlass|slashTell', 'sailor|hookTell', 'tideguard|thrustTell', 'bonecorsair|cutTell', 'farmhand|swingTell', 'miner|swingTell',
   'armour|swingTell', 'assassin|stabTell', 'burngob|swingTell', 'drownedknight|lungeTell', 'drownedcaptain|lungeTell', 'bellguard|hookTell', 'snuffer|swipeTell', 'watch|thrustTell']);

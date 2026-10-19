@@ -18,13 +18,14 @@
 //   shrine    shrineFill: 'one' (today), 'all' (Story: a shrine refills every flask), 'none' (Master: a shrine refills none; a death still restores all)
 //   death     deathCost: 0 = no death cost at all (Story: you keep your silver); 1 = today; >1 = the bank's stake bites harder (Master)
 //   punish    PUNISH GREED (Master): a boss or mini in reach answers a flask drink or a WHIFFED heavy with his told reprisal (src/boss-greed.js punish)
+//   affix     (claude/foepass) x on a live level's AFFIX density (src/foe-pass.js densityOf): Very Easy half as many, Master half as many again
 //   stale     the stale-blow table (src/anti-mash.js STALE.pay) for this mode - null keeps the shared one (Master tightens it)
 // NOT YET IN v1 (built as TODOs for the Master tune lane - see work/claude/lane-done/claude-difficulty.md): COMBO TAILS (one extra told follow-up
 // on some boss attacks - per-boss code) and EARLIER PHASES (each boss reads his own hp thresholds; `phase` is here for the lane that wires them).
 export const MODES = {
-  story:  { label: 'VERY EASY', col: '#8fd160', take: 0.5,  stagger: 1.35, poise: 1,    flinch: true,  parry: 1.4, open: 1.35, gap: 1,    flaskAdd: 1,  shrine: 'all',  death: 0,   punish: false, phase: 0,    stale: null },
-  normal: { label: 'NORMAL',    col: '#ffd36b', take: 1,    stagger: 1,    poise: 1,    flinch: true,  parry: 1,   open: 1,    gap: 1,    flaskAdd: 0,  shrine: 'one',  death: 1,   punish: false, phase: 0,    stale: null },
-  master: { label: 'MASTER',    col: '#ff6b6b', take: 1.35, stagger: 0.8,  poise: 0.75, flinch: false, parry: 0.8, open: 0.8,  gap: 1.15, flaskAdd: -1, shrine: 'none', death: 1.5, punish: true,  phase: 0.1,  stale: [1, 0.8, 0.65, 0.5] },
+  story:  { label: 'VERY EASY', col: '#8fd160', take: 0.5,  stagger: 1.35, poise: 1,    flinch: true,  parry: 1.4, open: 1.35, gap: 1,    flaskAdd: 1,  shrine: 'all',  death: 0,   punish: false, phase: 0,    stale: null, affix: 0.5 },
+  normal: { label: 'NORMAL',    col: '#ffd36b', take: 1,    stagger: 1,    poise: 1,    flinch: true,  parry: 1,   open: 1,    gap: 1,    flaskAdd: 0,  shrine: 'one',  death: 1,   punish: false, phase: 0,    stale: null, affix: 1 },
+  master: { label: 'MASTER',    col: '#ff6b6b', take: 1.35, stagger: 0.8,  poise: 0.75, flinch: false, parry: 0.8, open: 0.8,  gap: 1.15, flaskAdd: -1, shrine: 'none', death: 1.5, punish: true,  phase: 0.1,  stale: [1, 0.8, 0.65, 0.5], affix: 1.5 },
 };
 export const MODE_IDS = ['story', 'normal', 'master'];
 export const FLASK_MIN = 1;
