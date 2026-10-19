@@ -20,7 +20,7 @@
    Outside them THE HIDE turns half a blow (B15: 0.5x, never immune). Numbers here; the machine is updateFrog in src/main.js. */
 
 export const FK = {
-  hp: 760,
+  hp: 740,
   p2At: 0.75,                      /* his pond goes deep (phase 2) */
   drainAt: 0.5,                    /* he pulls the plug (phase 3) - tools/firsthour.mjs asks for half */
   throat: 1.5,                     /* his croaking throat pays x1.5 (flat on his belly x2) */
