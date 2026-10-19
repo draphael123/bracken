@@ -1,0 +1,3277 @@
+{
+ "note": "tools/walk-curve.mjs build: the level walker (tools/level-walk.mjs, campaign level, typical build, human+first) folded by level and hero. Target by act: level-walk.mjs TARGET_BY_ACT.",
+ "base": "e0436ee8 BATCH100 (pre-C1), its own old walker (no fight-through)",
+ "head": "f95390f0 claude/curvec2 (BATCH104 base)",
+ "seeds": "after: 1 per hero (canal/theatre/fair 2), acts I-II 1 (calibration; minecart/storm/crown/undercrown not walked); before: 1",
+ "targets": {
+  "1": {
+   "deathsLo": 0.5,
+   "deathsHi": 1.5,
+   "arriveHp": 65
+  },
+  "2": {
+   "deathsLo": 1,
+   "deathsHi": 2,
+   "arriveHp": 60
+  },
+  "3": {
+   "deathsLo": 1.5,
+   "deathsHi": 2.5,
+   "arriveHp": 55
+  },
+  "4": {
+   "deathsLo": 2,
+   "deathsHi": 3,
+   "arriveHp": 50
+  },
+  "5": {
+   "deathsLo": 2.5,
+   "deathsHi": 3.5,
+   "arriveHp": 45
+  }
+ },
+ "after": {
+  "wood": {
+   "act": 1,
+   "hash": "b1da033ee099",
+   "lvl": 3,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 58,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 73,
+     "arriveMin": 63,
+     "coverage": 58,
+     "ends": "boss",
+     "lostPerSection": 48,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 95,
+     "arriveMin": 89,
+     "coverage": 37,
+     "ends": "boss",
+     "lostPerSection": 6,
+     "drinks": 1,
+     "dropped": 0
+    }
+   },
+   "deaths": 1.7,
+   "arrive": 89,
+   "coverage": 51,
+   "runs": 3,
+   "dropped": 0
+  },
+  "marsh": {
+   "act": 1,
+   "hash": "064de4159658",
+   "lvl": 3,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 3,
+     "arrive": 91,
+     "arriveMin": 72,
+     "coverage": 36,
+     "ends": "stuck",
+     "lostPerSection": 121,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 5,
+     "arrive": 95,
+     "arriveMin": 89,
+     "coverage": 36,
+     "ends": "boss",
+     "lostPerSection": 226,
+     "drinks": 8,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 4,
+     "arrive": 79,
+     "arriveMin": 79,
+     "coverage": 12,
+     "ends": "boss",
+     "lostPerSection": 125,
+     "drinks": 4,
+     "dropped": 0
+    }
+   },
+   "deaths": 4,
+   "arrive": 88,
+   "coverage": 28,
+   "runs": 3,
+   "dropped": 0
+  },
+  "stockade": {
+   "act": 1,
+   "hash": "f7bc642b7ffe",
+   "lvl": 3,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 55,
+     "arriveMin": 17,
+     "coverage": 77,
+     "ends": "boss",
+     "lostPerSection": 63,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 75,
+     "arriveMin": 63,
+     "coverage": 77,
+     "ends": "boss",
+     "lostPerSection": 45,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 71,
+     "arriveMin": 28,
+     "coverage": 77,
+     "ends": "boss",
+     "lostPerSection": 59,
+     "drinks": 2,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.7,
+   "arrive": 67,
+   "coverage": 77,
+   "runs": 3,
+   "dropped": 0
+  },
+  "spore": {
+   "act": 1,
+   "hash": "20d82d427559",
+   "lvl": 3,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 42,
+     "arriveMin": 42,
+     "coverage": 24,
+     "ends": "stuck",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 75,
+     "arriveMin": 75,
+     "coverage": 24,
+     "ends": "stuck",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 12,
+     "ends": "stuck",
+     "lostPerSection": 0,
+     "drinks": 1,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 72,
+   "coverage": 20,
+   "runs": 3,
+   "dropped": 0
+  },
+  "rootway": {
+   "act": 1,
+   "hash": "60a847a7bab1",
+   "lvl": 5,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 75,
+     "arriveMin": 40,
+     "coverage": 70,
+     "ends": "boss",
+     "lostPerSection": 10,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 80,
+     "arriveMin": 60,
+     "coverage": 42,
+     "ends": "boss",
+     "lostPerSection": 8,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 89,
+     "arriveMin": 68,
+     "coverage": 94,
+     "ends": "boss",
+     "lostPerSection": 31,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 81,
+   "coverage": 69,
+   "runs": 3,
+   "dropped": 0
+  },
+  "burning": {
+   "act": 1,
+   "hash": "6c27f5f56b81",
+   "lvl": 3,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 55,
+     "arriveMin": 29,
+     "coverage": 65,
+     "ends": "boss",
+     "lostPerSection": 113,
+     "drinks": 8,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 59,
+     "arriveMin": 44,
+     "coverage": 65,
+     "ends": "boss",
+     "lostPerSection": 89,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 3,
+     "arrive": 59,
+     "arriveMin": 49,
+     "coverage": 76,
+     "ends": "boss",
+     "lostPerSection": 104,
+     "drinks": 9,
+     "dropped": 0
+    }
+   },
+   "deaths": 2.3,
+   "arrive": 58,
+   "coverage": 69,
+   "runs": 3,
+   "dropped": 0
+  },
+  "kings": {
+   "act": 1,
+   "hash": "11a3b329f288",
+   "lvl": 5,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 79,
+     "arriveMin": 79,
+     "coverage": 66,
+     "ends": "boss",
+     "lostPerSection": 12,
+     "drinks": 4,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 90,
+     "arriveMin": 80,
+     "coverage": 96,
+     "ends": "boss",
+     "lostPerSection": 10,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 0.5,
+   "arrive": 85,
+   "coverage": 81,
+   "runs": 2,
+   "dropped": 1
+  },
+  "underleaf": {
+   "act": 1,
+   "hash": "86ddf67c0658",
+   "lvl": 6,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 91,
+     "coverage": 28,
+     "ends": "stuck",
+     "lostPerSection": 13,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 83,
+     "arriveMin": 66,
+     "coverage": 28,
+     "ends": "stuck",
+     "lostPerSection": 24,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 93,
+     "arriveMin": 85,
+     "coverage": 28,
+     "ends": "stuck",
+     "lostPerSection": 13,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 91,
+   "coverage": 28,
+   "runs": 3,
+   "dropped": 0
+  },
+  "scree": {
+   "act": 2,
+   "hash": "0a77aa665d50",
+   "lvl": 7,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 73,
+     "arriveMin": 63,
+     "coverage": 69,
+     "ends": "boss",
+     "lostPerSection": 32,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 61,
+     "arriveMin": 61,
+     "coverage": 28,
+     "ends": "boss",
+     "lostPerSection": 113,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 82,
+     "arriveMin": 72,
+     "coverage": 54,
+     "ends": "boss",
+     "lostPerSection": 38,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 72,
+   "coverage": 50,
+   "runs": 3,
+   "dropped": 0
+  },
+  "hanging": {
+   "act": 2,
+   "hash": "b35069a79993",
+   "lvl": 8,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 10,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 10,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 87,
+     "arriveMin": 87,
+     "coverage": 24,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 96,
+   "coverage": 15,
+   "runs": 3,
+   "dropped": 0
+  },
+  "spire": {
+   "act": 2,
+   "hash": "20e1d5c2d349",
+   "lvl": 9,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 92,
+     "arriveMin": 92,
+     "coverage": 52,
+     "ends": "route",
+     "lostPerSection": 8,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 11,
+     "ends": "stuck",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 91,
+     "arriveMin": 91,
+     "coverage": 52,
+     "ends": "route",
+     "lostPerSection": 9,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 94,
+   "coverage": 38,
+   "runs": 3,
+   "dropped": 0
+  },
+  "moor": {
+   "act": 2,
+   "hash": "c8adb154a8b5",
+   "lvl": 10,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 87,
+     "arriveMin": 74,
+     "coverage": 72,
+     "ends": "boss",
+     "lostPerSection": 98,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 91,
+     "coverage": 72,
+     "ends": "boss",
+     "lostPerSection": 24,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": 98,
+     "arriveMin": 96,
+     "coverage": 34,
+     "ends": "wall",
+     "lostPerSection": 4,
+     "drinks": 16,
+     "dropped": 0
+    }
+   },
+   "deaths": 3.3,
+   "arrive": 94,
+   "coverage": 59,
+   "runs": 3,
+   "dropped": 0
+  },
+  "skyroad": {
+   "act": 2,
+   "hash": "64ef8bf3885c",
+   "lvl": 11,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 16,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 16,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 2,
+     "dropped": 0
+    }
+   },
+   "deaths": 5.3,
+   "arrive": null,
+   "coverage": 1,
+   "runs": 3,
+   "dropped": 0
+  },
+  "oreroad": {
+   "act": 2,
+   "hash": "22d06c9289d8",
+   "lvl": 12,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "route",
+     "lostPerSection": null,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "route",
+     "lostPerSection": null,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 3,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "route",
+     "lostPerSection": null,
+     "drinks": 5,
+     "dropped": 0
+    }
+   },
+   "deaths": 1,
+   "arrive": null,
+   "coverage": 0,
+   "runs": 3,
+   "dropped": 0
+  },
+  "canal": {
+   "act": 4,
+   "hash": "3e4445d07050",
+   "lvl": 27,
+   "heroes": {
+    "knight": {
+     "runs": 2,
+     "deaths": 6,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "boss/wall",
+     "lostPerSection": null,
+     "drinks": 19,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 2,
+     "deaths": 4,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "boss/boss",
+     "lostPerSection": null,
+     "drinks": 17.5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 2,
+     "deaths": 5,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "boss/boss",
+     "lostPerSection": null,
+     "drinks": 18.5,
+     "dropped": 0
+    }
+   },
+   "deaths": 5,
+   "arrive": null,
+   "coverage": 0,
+   "runs": 6,
+   "dropped": 0
+  },
+  "theatre": {
+   "act": 4,
+   "hash": "010422831498",
+   "lvl": 28,
+   "heroes": {
+    "knight": {
+     "runs": 2,
+     "deaths": 0,
+     "arrive": 93,
+     "arriveMin": 80,
+     "coverage": 29,
+     "ends": "boss/boss",
+     "lostPerSection": 0,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 2,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 17,
+     "ends": "boss/boss",
+     "lostPerSection": 0,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 2,
+     "deaths": 1,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 17,
+     "ends": "boss/boss",
+     "lostPerSection": 0,
+     "drinks": 5.5,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 98,
+   "coverage": 21,
+   "runs": 6,
+   "dropped": 0
+  },
+  "fair": {
+   "act": 4,
+   "hash": "e22579750acd",
+   "lvl": 29,
+   "heroes": {
+    "knight": {
+     "runs": 2,
+     "deaths": 8,
+     "arrive": 66,
+     "arriveMin": 65,
+     "coverage": 29,
+     "ends": "wall/wall",
+     "lostPerSection": 44,
+     "drinks": 6,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 2,
+     "deaths": 8,
+     "arrive": 61,
+     "arriveMin": 55,
+     "coverage": 29,
+     "ends": "wall/wall",
+     "lostPerSection": 64,
+     "drinks": 12.5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 2,
+     "deaths": 8,
+     "arrive": 87,
+     "arriveMin": 84,
+     "coverage": 29,
+     "ends": "wall/wall",
+     "lostPerSection": 15,
+     "drinks": 6,
+     "dropped": 0
+    }
+   },
+   "deaths": 8,
+   "arrive": 71,
+   "coverage": 29,
+   "runs": 6,
+   "dropped": 0
+  },
+  "fields": {
+   "act": 4,
+   "hash": "9bbe759e073b",
+   "lvl": 30,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 67,
+     "arriveMin": 49,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 110,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 50,
+     "arriveMin": 37,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 68,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 93,
+     "arriveMin": 88,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 208,
+     "drinks": 8,
+     "dropped": 0
+    }
+   },
+   "deaths": 1,
+   "arrive": 70,
+   "coverage": 26,
+   "runs": 3,
+   "dropped": 0
+  },
+  "burial": {
+   "act": 4,
+   "hash": "c84122b2f9ce",
+   "lvl": 31,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 91,
+     "coverage": 50,
+     "ends": "boss",
+     "lostPerSection": 47,
+     "drinks": 6,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 22,
+     "ends": "boss",
+     "lostPerSection": 140,
+     "drinks": 9,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 90,
+     "arriveMin": 66,
+     "coverage": 71,
+     "ends": "boss",
+     "lostPerSection": 5,
+     "drinks": 1,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 93,
+   "coverage": 48,
+   "runs": 3,
+   "dropped": 0
+  },
+  "witchlight": {
+   "act": 4,
+   "hash": "7fcd84c38afa",
+   "lvl": 32,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 24,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 22,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 46,
+     "arriveMin": 39,
+     "coverage": 33,
+     "ends": "mini",
+     "lostPerSection": 65,
+     "drinks": 2,
+     "dropped": 0
+    }
+   },
+   "deaths": 5.3,
+   "arrive": 46,
+   "coverage": 11,
+   "runs": 3,
+   "dropped": 0
+  },
+  "mage": {
+   "act": 4,
+   "hash": "75dc252c7a95",
+   "lvl": 33,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 4,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 95,
+     "arriveMin": 90,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 73,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 4,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 98,
+   "coverage": 8,
+   "runs": 3,
+   "dropped": 0
+  },
+  "unburied": {
+   "act": 4,
+   "hash": "339823434226",
+   "lvl": 33,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 80,
+     "arriveMin": 70,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 27,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 54,
+     "arriveMin": 45,
+     "coverage": 54,
+     "ends": "boss",
+     "lostPerSection": 46,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 99,
+     "coverage": 66,
+     "ends": "boss",
+     "lostPerSection": 5,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 78,
+   "coverage": 56,
+   "runs": 3,
+   "dropped": 0
+  },
+  "fallingtower": {
+   "act": 4,
+   "hash": "3238f24f505f",
+   "lvl": 34,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 2,
+     "ends": "stuck",
+     "lostPerSection": 0,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "stuck",
+     "lostPerSection": null,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "stuck",
+     "lostPerSection": null,
+     "drinks": 4,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 100,
+   "coverage": 2,
+   "runs": 3,
+   "dropped": 0
+  },
+  "waymeet": {
+   "act": 4,
+   "hash": "43e5775a43a4",
+   "lvl": 25,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 35,
+     "arriveMin": 16,
+     "coverage": 31,
+     "ends": "boss",
+     "lostPerSection": 154,
+     "drinks": 8,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 80,
+     "arriveMin": 59,
+     "coverage": 29,
+     "ends": "boss",
+     "lostPerSection": 111,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 83,
+     "arriveMin": 82,
+     "coverage": 31,
+     "ends": "boss",
+     "lostPerSection": 21,
+     "drinks": 5,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.7,
+   "arrive": 66,
+   "coverage": 30,
+   "runs": 3,
+   "dropped": 0
+  },
+  "church": {
+   "act": 4,
+   "hash": "65a003c5ca55",
+   "lvl": 26,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 58,
+     "arriveMin": 58,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 57,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 39,
+     "arriveMin": 39,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 315,
+     "drinks": 8,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 15,
+     "arriveMin": 15,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 204,
+     "drinks": 5,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 37,
+   "coverage": 26,
+   "runs": 3,
+   "dropped": 0
+  },
+  "caravan": {
+   "act": 5,
+   "hash": "f01565ade95b",
+   "lvl": 35,
+   "heroes": {
+    "warden": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 30,
+     "arriveMin": 0,
+     "coverage": 60,
+     "ends": "boss",
+     "lostPerSection": 52,
+     "drinks": 13,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 44,
+     "arriveMin": 0,
+     "coverage": 96,
+     "ends": "boss",
+     "lostPerSection": 44,
+     "drinks": 7,
+     "dropped": 0
+    },
+    "knight": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 1,
+   "arrive": 37,
+   "coverage": 78,
+   "runs": 2,
+   "dropped": 1
+  },
+  "welltown": {
+   "act": 5,
+   "hash": "9fd89c05c44b",
+   "lvl": 36,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 9,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 4,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 19,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 8,
+     "dropped": 0
+    }
+   },
+   "deaths": 1.3,
+   "arrive": null,
+   "coverage": 2,
+   "runs": 3,
+   "dropped": 0
+  },
+  "underwell": {
+   "act": 5,
+   "hash": "6efa445cddb3",
+   "lvl": 37,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 99,
+     "arriveMin": 99,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 99,
+     "arriveMin": 99,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 96,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 98,
+   "coverage": 17,
+   "runs": 3,
+   "dropped": 0
+  },
+  "redgorge": {
+   "act": 5,
+   "hash": "83c76b84fe01",
+   "lvl": 38,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 1,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": null,
+   "coverage": 1,
+   "runs": 3,
+   "dropped": 0
+  },
+  "glasssea": {
+   "act": 5,
+   "hash": "19662ab324ba",
+   "lvl": 39,
+   "heroes": {
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 64,
+     "arriveMin": 5,
+     "coverage": 55,
+     "ends": "boss",
+     "lostPerSection": 67,
+     "drinks": 6,
+     "dropped": 0
+    },
+    "knight": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 0,
+   "arrive": 64,
+   "coverage": 55,
+   "runs": 1,
+   "dropped": 2
+  },
+  "ksar": {
+   "act": 5,
+   "hash": "248ad37248ed",
+   "lvl": 40,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 87,
+     "arriveMin": 70,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 43,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 85,
+     "arriveMin": 71,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 86,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 1,
+   "arrive": 86,
+   "coverage": 97,
+   "runs": 2,
+   "dropped": 1
+  },
+  "buriedcity": {
+   "act": 5,
+   "hash": "09cb68eae630",
+   "lvl": 41,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 81,
+     "arriveMin": 56,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 75,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 78,
+     "arriveMin": 63,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 78,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 62,
+     "arriveMin": 17,
+     "coverage": 80,
+     "ends": "boss",
+     "lostPerSection": 48,
+     "drinks": 6,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 74,
+   "coverage": 59,
+   "runs": 3,
+   "dropped": 0
+  },
+  "sealedpyramid": {
+   "act": 5,
+   "hash": "60a8498518ab",
+   "lvl": 42,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 77,
+     "arriveMin": 62,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 77,
+     "drinks": 9,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 70,
+     "arriveMin": 43,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 78,
+     "drinks": 12,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 1.5,
+   "arrive": 74,
+   "coverage": 98,
+   "runs": 2,
+   "dropped": 1
+  },
+  "longwater": {
+   "act": 3,
+   "hash": "8ce17bb1e629",
+   "lvl": 17,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 67,
+     "arriveMin": 34,
+     "coverage": 42,
+     "ends": "boss",
+     "lostPerSection": 2,
+     "drinks": 4,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 95,
+     "arriveMin": 90,
+     "coverage": 42,
+     "ends": "boss",
+     "lostPerSection": 8,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 0,
+   "arrive": 81,
+   "coverage": 42,
+   "runs": 2,
+   "dropped": 1
+  },
+  "reef": {
+   "act": 3,
+   "hash": "c614482bd7ef",
+   "lvl": 18,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 98,
+     "arriveMin": 98,
+     "coverage": 18,
+     "ends": "boss",
+     "lostPerSection": 5,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 91,
+     "arriveMin": 87,
+     "coverage": 37,
+     "ends": "boss",
+     "lostPerSection": 9,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 18,
+     "ends": "boss",
+     "lostPerSection": 4,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 96,
+   "coverage": 24,
+   "runs": 3,
+   "dropped": 0
+  },
+  "flotilla": {
+   "act": 3,
+   "hash": "9d1f537faa2b",
+   "lvl": 19,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 97,
+     "arriveMin": 94,
+     "coverage": 33,
+     "ends": "boss",
+     "lostPerSection": 59,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 72,
+     "arriveMin": 40,
+     "coverage": 66,
+     "ends": "boss",
+     "lostPerSection": 118,
+     "drinks": 6,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 87,
+     "coverage": 65,
+     "ends": "boss",
+     "lostPerSection": 12,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 88,
+   "coverage": 55,
+   "runs": 3,
+   "dropped": 0
+  },
+  "hurricane": {
+   "act": 3,
+   "hash": "31e107d77e05",
+   "lvl": 20,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 52,
+     "arriveMin": 11,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 50,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 43,
+     "arriveMin": 39,
+     "coverage": 36,
+     "ends": "boss",
+     "lostPerSection": 49,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 59,
+     "arriveMin": 48,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 28,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 51,
+   "coverage": 77,
+   "runs": 3,
+   "dropped": 0
+  },
+  "lamplit": {
+   "act": 3,
+   "hash": "748c394aeaf3",
+   "lvl": 21,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 11,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 11,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 77,
+     "arriveMin": 77,
+     "coverage": 46,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 77,
+   "coverage": 23,
+   "runs": 3,
+   "dropped": 0
+  },
+  "deep": {
+   "act": 3,
+   "hash": "f26c65d342aa",
+   "lvl": 22,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": null,
+   "coverage": 1,
+   "runs": 3,
+   "dropped": 0
+  },
+  "keep": {
+   "act": 3,
+   "hash": "cb187806d6b0",
+   "lvl": 23,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 96,
+     "coverage": 14,
+     "ends": "boss",
+     "lostPerSection": 6,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 85,
+     "arriveMin": 85,
+     "coverage": 14,
+     "ends": "boss",
+     "lostPerSection": 15,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 93,
+     "arriveMin": 93,
+     "coverage": 14,
+     "ends": "boss",
+     "lostPerSection": 10,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 91,
+   "coverage": 14,
+   "runs": 3,
+   "dropped": 0
+  },
+  "causeway": {
+   "act": 3,
+   "hash": "6cda036ec414",
+   "lvl": 24,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 62,
+     "arriveMin": 43,
+     "coverage": 98,
+     "ends": "route",
+     "lostPerSection": 39,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 61,
+     "arriveMin": 59,
+     "coverage": 33,
+     "ends": "route",
+     "lostPerSection": 23,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 51,
+     "arriveMin": 16,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 53,
+     "drinks": 4,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 58,
+   "coverage": 76,
+   "runs": 3,
+   "dropped": 0
+  },
+  "harbor": {
+   "act": 3,
+   "hash": "ce45ca81cf76",
+   "lvl": 25,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 93,
+     "arriveMin": 88,
+     "coverage": 80,
+     "ends": "boss",
+     "lostPerSection": 7,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 82,
+     "arriveMin": 53,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 13,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 81,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 10,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 90,
+   "coverage": 92,
+   "runs": 3,
+   "dropped": 0
+  },
+  "towpath": {
+   "act": 4,
+   "hash": "a494972ad32b",
+   "lvl": null,
+   "heroes": {
+    "knight": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "pyro": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": null,
+   "arrive": null,
+   "coverage": 0,
+   "runs": 0,
+   "dropped": 3
+  }
+ },
+ "before": {
+  "canal": {
+   "act": 4,
+   "hash": null,
+   "lvl": 27,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 6,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 23,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 7,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 26,
+     "dropped": 0
+    }
+   },
+   "deaths": 7,
+   "arrive": null,
+   "coverage": 0,
+   "runs": 3,
+   "dropped": 0
+  },
+  "theatre": {
+   "act": 4,
+   "hash": null,
+   "lvl": 28,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 51,
+     "arriveMin": 51,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 54,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 3,
+     "arrive": 77,
+     "arriveMin": 54,
+     "coverage": 41,
+     "ends": "boss",
+     "lostPerSection": 53,
+     "drinks": 6,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 97,
+     "arriveMin": 97,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 3,
+     "drinks": 2,
+     "dropped": 0
+    }
+   },
+   "deaths": 1,
+   "arrive": 75,
+   "coverage": 25,
+   "runs": 3,
+   "dropped": 0
+  },
+  "fair": {
+   "act": 4,
+   "hash": null,
+   "lvl": 29,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": 66,
+     "arriveMin": 66,
+     "coverage": 29,
+     "ends": "wall",
+     "lostPerSection": 43,
+     "drinks": 4,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": 64,
+     "arriveMin": 64,
+     "coverage": 29,
+     "ends": "wall",
+     "lostPerSection": 81,
+     "drinks": 11,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 32,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 5,
+     "dropped": 0
+    }
+   },
+   "deaths": 5.3,
+   "arrive": 77,
+   "coverage": 30,
+   "runs": 3,
+   "dropped": 0
+  },
+  "fields": {
+   "act": 4,
+   "hash": null,
+   "lvl": 30,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": 84,
+     "arriveMin": 75,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 208,
+     "drinks": 6,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 4,
+     "arrive": 37,
+     "arriveMin": 37,
+     "coverage": 10,
+     "ends": "boss",
+     "lostPerSection": 135,
+     "drinks": 12,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 3,
+     "arrive": 98,
+     "arriveMin": 96,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 208,
+     "drinks": 6,
+     "dropped": 0
+    }
+   },
+   "deaths": 3,
+   "arrive": 73,
+   "coverage": 21,
+   "runs": 3,
+   "dropped": 0
+  },
+  "burial": {
+   "act": 4,
+   "hash": null,
+   "lvl": 31,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 50,
+     "ends": "boss",
+     "lostPerSection": 15,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 22,
+     "ends": "boss",
+     "lostPerSection": 55,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 84,
+     "arriveMin": 78,
+     "coverage": 59,
+     "ends": "boss",
+     "lostPerSection": 15,
+     "drinks": 1,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 92,
+   "coverage": 44,
+   "runs": 3,
+   "dropped": 0
+  },
+  "witchlight": {
+   "act": 4,
+   "hash": null,
+   "lvl": 32,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 24,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 8,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "wall",
+     "lostPerSection": null,
+     "drinks": 20,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 73,
+     "arriveMin": 48,
+     "coverage": 33,
+     "ends": "mini",
+     "lostPerSection": 147,
+     "drinks": 5,
+     "dropped": 0
+    }
+   },
+   "deaths": 5.7,
+   "arrive": 73,
+   "coverage": 11,
+   "runs": 3,
+   "dropped": 0
+  },
+  "mage": {
+   "act": 4,
+   "hash": null,
+   "lvl": 33,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 4,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 95,
+     "arriveMin": 95,
+     "coverage": 4,
+     "ends": "boss",
+     "lostPerSection": 146,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 4,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 3,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 98,
+   "coverage": 4,
+   "runs": 3,
+   "dropped": 0
+  },
+  "unburied": {
+   "act": 4,
+   "hash": null,
+   "lvl": 33,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 84,
+     "arriveMin": 76,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 25,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 89,
+     "arriveMin": 80,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 117,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 86,
+     "arriveMin": 85,
+     "coverage": 40,
+     "ends": "boss",
+     "lostPerSection": 19,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 86,
+   "coverage": 46,
+   "runs": 3,
+   "dropped": 0
+  },
+  "fallingtower": {
+   "act": 4,
+   "hash": null,
+   "lvl": 34,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 2,
+     "ends": "stuck",
+     "lostPerSection": 0,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "stuck",
+     "lostPerSection": null,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 23,
+     "ends": "stuck",
+     "lostPerSection": 16,
+     "drinks": 2,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 100,
+   "coverage": 9,
+   "runs": 3,
+   "dropped": 0
+  },
+  "waymeet": {
+   "act": 4,
+   "hash": null,
+   "lvl": 25,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 31,
+     "arriveMin": 11,
+     "coverage": 31,
+     "ends": "boss",
+     "lostPerSection": 149,
+     "drinks": 9,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 5,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 15,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 3,
+   "arrive": 66,
+   "coverage": 23,
+   "runs": 2,
+   "dropped": 1
+  },
+  "church": {
+   "act": 4,
+   "hash": null,
+   "lvl": 26,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 63,
+     "arriveMin": 63,
+     "coverage": 26,
+     "ends": "boss",
+     "lostPerSection": 40,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 0.5,
+   "arrive": 63,
+   "coverage": 14,
+   "runs": 2,
+   "dropped": 1
+  },
+  "caravan": {
+   "act": 5,
+   "hash": null,
+   "lvl": 35,
+   "heroes": {
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 32,
+     "arriveMin": 0,
+     "coverage": 96,
+     "ends": "boss",
+     "lostPerSection": 75,
+     "drinks": 11,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 61,
+     "arriveMin": 0,
+     "coverage": 96,
+     "ends": "boss",
+     "lostPerSection": 76,
+     "drinks": 7,
+     "dropped": 0
+    },
+    "knight": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 1,
+   "arrive": 47,
+   "coverage": 96,
+   "runs": 2,
+   "dropped": 1
+  },
+  "welltown": {
+   "act": 5,
+   "hash": null,
+   "lvl": 36,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 13,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 2,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 15,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 2,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 6,
+     "dropped": 0
+    }
+   },
+   "deaths": 1,
+   "arrive": null,
+   "coverage": 2,
+   "runs": 3,
+   "dropped": 0
+  },
+  "underwell": {
+   "act": 5,
+   "hash": null,
+   "lvl": 37,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 58,
+     "arriveMin": 58,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 17,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 86,
+   "coverage": 17,
+   "runs": 3,
+   "dropped": 0
+  },
+  "redgorge": {
+   "act": 5,
+   "hash": null,
+   "lvl": 38,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 6,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": null,
+   "coverage": 1,
+   "runs": 3,
+   "dropped": 0
+  },
+  "glasssea": {
+   "act": 5,
+   "hash": null,
+   "lvl": 39,
+   "heroes": {
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 70,
+     "arriveMin": 53,
+     "coverage": 55,
+     "ends": "boss",
+     "lostPerSection": 45,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "knight": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 0,
+   "arrive": 70,
+   "coverage": 55,
+   "runs": 1,
+   "dropped": 2
+  },
+  "ksar": {
+   "act": 5,
+   "hash": null,
+   "lvl": 40,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 70,
+     "arriveMin": 47,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 35,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 51,
+     "arriveMin": 16,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 88,
+     "drinks": 8,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 97,
+     "arriveMin": 95,
+     "coverage": 97,
+     "ends": "boss",
+     "lostPerSection": 18,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 73,
+   "coverage": 97,
+   "runs": 3,
+   "dropped": 0
+  },
+  "buriedcity": {
+   "act": 5,
+   "hash": null,
+   "lvl": 41,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 79,
+     "arriveMin": 54,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 74,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 87,
+     "arriveMin": 64,
+     "coverage": 49,
+     "ends": "boss",
+     "lostPerSection": 78,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 63,
+     "arriveMin": 40,
+     "coverage": 80,
+     "ends": "boss",
+     "lostPerSection": 55,
+     "drinks": 5,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 76,
+   "coverage": 59,
+   "runs": 3,
+   "dropped": 0
+  },
+  "sealedpyramid": {
+   "act": 5,
+   "hash": null,
+   "lvl": 42,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 64,
+     "arriveMin": 19,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 74,
+     "drinks": 12,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "pyro": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": 1,
+   "arrive": 64,
+   "coverage": 98,
+   "runs": 1,
+   "dropped": 2
+  },
+  "longwater": {
+   "act": 3,
+   "hash": null,
+   "lvl": 17,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 78,
+     "arriveMin": 56,
+     "coverage": 45,
+     "ends": "boss",
+     "lostPerSection": 4,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 79,
+     "arriveMin": 58,
+     "coverage": 42,
+     "ends": "boss",
+     "lostPerSection": 12,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 84,
+     "arriveMin": 72,
+     "coverage": 42,
+     "ends": "boss",
+     "lostPerSection": 13,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 80,
+   "coverage": 43,
+   "runs": 3,
+   "dropped": 0
+  },
+  "reef": {
+   "act": 3,
+   "hash": null,
+   "lvl": 18,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 98,
+     "arriveMin": 98,
+     "coverage": 18,
+     "ends": "boss",
+     "lostPerSection": 5,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 88,
+     "arriveMin": 84,
+     "coverage": 37,
+     "ends": "boss",
+     "lostPerSection": 14,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 18,
+     "ends": "boss",
+     "lostPerSection": 0,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 95,
+   "coverage": 24,
+   "runs": 3,
+   "dropped": 0
+  },
+  "flotilla": {
+   "act": 3,
+   "hash": null,
+   "lvl": 19,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 99,
+     "coverage": 33,
+     "ends": "boss",
+     "lostPerSection": 42,
+     "drinks": 1,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 79,
+     "arriveMin": 57,
+     "coverage": 33,
+     "ends": "boss",
+     "lostPerSection": 62,
+     "drinks": 5,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 91,
+     "coverage": 33,
+     "ends": "boss",
+     "lostPerSection": 76,
+     "drinks": 4,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 92,
+   "coverage": 33,
+   "runs": 3,
+   "dropped": 0
+  },
+  "hurricane": {
+   "act": 3,
+   "hash": null,
+   "lvl": 20,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 51,
+     "arriveMin": 38,
+     "coverage": 59,
+     "ends": "boss",
+     "lostPerSection": 42,
+     "drinks": 4,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 59,
+     "arriveMin": 54,
+     "coverage": 36,
+     "ends": "boss",
+     "lostPerSection": 45,
+     "drinks": 3,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 54,
+     "arriveMin": 40,
+     "coverage": 59,
+     "ends": "boss",
+     "lostPerSection": 38,
+     "drinks": 1,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 55,
+   "coverage": 51,
+   "runs": 3,
+   "dropped": 0
+  },
+  "lamplit": {
+   "act": 3,
+   "hash": null,
+   "lvl": 21,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 100,
+     "arriveMin": 100,
+     "coverage": 85,
+     "ends": "boss",
+     "lostPerSection": 1,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 98,
+     "arriveMin": 95,
+     "coverage": 57,
+     "ends": "boss",
+     "lostPerSection": 1,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 87,
+     "arriveMin": 67,
+     "coverage": 83,
+     "ends": "boss",
+     "lostPerSection": 3,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 95,
+   "coverage": 75,
+   "runs": 3,
+   "dropped": 0
+  },
+  "deep": {
+   "act": 3,
+   "hash": null,
+   "lvl": 22,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 1,
+     "ends": "boss",
+     "lostPerSection": null,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": null,
+   "coverage": 1,
+   "runs": 3,
+   "dropped": 0
+  },
+  "keep": {
+   "act": 3,
+   "hash": null,
+   "lvl": 23,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 96,
+     "arriveMin": 96,
+     "coverage": 14,
+     "ends": "boss",
+     "lostPerSection": 5,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 86,
+     "arriveMin": 86,
+     "coverage": 14,
+     "ends": "boss",
+     "lostPerSection": 14,
+     "drinks": 2,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 94,
+     "arriveMin": 94,
+     "coverage": 14,
+     "ends": "boss",
+     "lostPerSection": 10,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 92,
+   "coverage": 14,
+   "runs": 3,
+   "dropped": 0
+  },
+  "causeway": {
+   "act": 3,
+   "hash": null,
+   "lvl": 24,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 1,
+     "arrive": 58,
+     "arriveMin": 15,
+     "coverage": 98,
+     "ends": "route",
+     "lostPerSection": 119,
+     "drinks": 7,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 89,
+     "arriveMin": 89,
+     "coverage": 21,
+     "ends": "route",
+     "lostPerSection": 30,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 74,
+     "arriveMin": 60,
+     "coverage": 66,
+     "ends": "boss",
+     "lostPerSection": 37,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0.3,
+   "arrive": 74,
+   "coverage": 62,
+   "runs": 3,
+   "dropped": 0
+  },
+  "harbor": {
+   "act": 3,
+   "hash": null,
+   "lvl": 25,
+   "heroes": {
+    "knight": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 98,
+     "arriveMin": 89,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 6,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "warden": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 83,
+     "arriveMin": 61,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 15,
+     "drinks": 0,
+     "dropped": 0
+    },
+    "pyro": {
+     "runs": 1,
+     "deaths": 0,
+     "arrive": 93,
+     "arriveMin": 81,
+     "coverage": 98,
+     "ends": "boss",
+     "lostPerSection": 11,
+     "drinks": 0,
+     "dropped": 0
+    }
+   },
+   "deaths": 0,
+   "arrive": 91,
+   "coverage": 98,
+   "runs": 3,
+   "dropped": 0
+  },
+  "towpath": {
+   "act": 4,
+   "hash": null,
+   "lvl": null,
+   "heroes": {
+    "knight": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "warden": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    },
+    "pyro": {
+     "runs": 0,
+     "deaths": null,
+     "arrive": null,
+     "arriveMin": null,
+     "coverage": 0,
+     "ends": "frames",
+     "lostPerSection": null,
+     "drinks": null,
+     "dropped": 1
+    }
+   },
+   "deaths": null,
+   "arrive": null,
+   "coverage": 0,
+   "runs": 0,
+   "dropped": 3
+  }
+ }
+}

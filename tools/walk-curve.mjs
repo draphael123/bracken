@@ -9,7 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { TARGET_BY_ACT, actOfId, summarize } from './level-walk.mjs';
 
 export const WALK_CURVE_FILE = fileURLToPath(new URL('../docs/walk-curve.json', import.meta.url));
-const mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null, r1 = x => x === null || x === undefined ? null : Math.round(x * 10) / 10;
+const med = a => { const b = [...a].sort((x, y) => x - y); return b.length ? b[Math.floor(b.length / 2)] : null; }, mean = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null, r1 = x => x === null || x === undefined ? null : Math.round(x * 10) / 10;
 /* walker rows -> { level: { act, heroes: { hero: { runs, deaths, arrive, arriveN, arriveMin, coverage, ends } }, deaths, arrive } } */
 /* A run that ran out of frames or was locked in made no progress (the walker, not the level, ended it: towpath / glasssea / sealedpyramid warden walked 19-29% of the route): it says nothing about the level's pressure and is LEFT OUT of the means (counted in `dropped`). A wall (8 deaths) or a boss door is a real end. */
 export const UNRELIABLE = r => !r.err && (r.end === 'frames' || r.end === 'locked');
@@ -31,15 +31,15 @@ export function verdict(L) {
 /* the act means (of the level means): deaths, arrival, how many levels sit inside the death band */
 export function actTable(levels) {
   const out = {}; for (const [id, L] of Object.entries(levels)) (out[L.act] = out[L.act] || []).push([id, L]);
-  return Object.fromEntries(Object.entries(out).map(([a, A]) => [a, { n: A.length, deaths: r1(mean(A.map(([, L]) => L.deaths).filter(x => x !== null))), arrive: (m => m === null ? null : Math.round(m))(mean(A.map(([, L]) => L.arrive).filter(x => x !== null))), inBand: A.filter(([, L]) => verdict(L).deaths === 'ok').length }]));
+  return Object.fromEntries(Object.entries(out).map(([a, A]) => [a, { n: A.length, deaths: r1(mean(A.map(([, L]) => L.deaths).filter(x => x !== null))), deathsMed: r1(med(A.map(([, L]) => L.deaths).filter(x => x !== null))), arrive: (m => m === null ? null : Math.round(m))(mean(A.map(([, L]) => L.arrive).filter(x => x !== null))), inBand: A.filter(([, L]) => verdict(L).deaths === 'ok').length }]));
 }
-const fmtAct = (t, a) => t ? `${t.deaths ?? '-'}d / ${t.arrive ?? '-'}%` : '-';
+const fmtAct = (t, a) => t ? `${t.deaths ?? '-'}d (med ${t.deathsMed ?? '-'}) / ${t.arrive ?? '-'}%` : '-';   /* (the mean is pulled up by a wall level: 8 deaths is the walker's cap, so the median of the level means is printed beside it) */
 export function printTable(curve, log = console.log) {
   const A = actTable(curve.after || {}), B = actTable(curve.before || {});
   log('WALKER CURVE (campaign hero, human+first; deaths a first run / mean shrine arrival hp)  after = ' + (curve.head || '?') + (curve.before ? ', before = ' + (curve.base || '?') : ''));
-  log('act  target (deaths / arrival)   before -> after      levels in the death band');
+  log('act  target (deaths / arrival)   before -> after (mean of level means)   levels in the death band');
   for (const a of Object.keys(TARGET_BY_ACT)) { const T = TARGET_BY_ACT[a]; if (!A[a] && !B[a]) continue;
-    log(String(a).padEnd(5) + (T.deathsLo + '-' + T.deathsHi + ' / ' + T.arriveHp + '%').padEnd(28) + (fmtAct(B[a]) + ' -> ' + fmtAct(A[a])).padEnd(22) + (A[a] ? A[a].inBand + '/' + A[a].n : '-')); }
+    log(String(a).padEnd(5) + (T.deathsLo + '-' + T.deathsHi + ' / ' + T.arriveHp + '%').padEnd(28) + (fmtAct(B[a]) + ' -> ' + fmtAct(A[a])).padEnd(46) + (A[a] ? A[a].inBand + '/' + A[a].n : '-')); }
   log('level           act  hero deaths (before -> after)  arrive% (before -> after)  vs target');
   for (const [id, L] of Object.entries(curve.after || {})) { const b = (curve.before || {})[id], v = verdict(L);
     log(id.padEnd(15) + String(L.act).padEnd(5) + 'all  ' + ((b ? b.deaths : '-') + ' -> ' + L.deaths).padEnd(26) + ((b ? b.arrive ?? '-' : '-') + ' -> ' + (L.arrive ?? '-')).padEnd(27) + 'deaths ' + v.deaths + ', arrival ' + v.arrive + (L.coverage < 60 || L.dropped ? '  (' + L.coverage + '% of the route measured between shrines' + (L.dropped ? ', ' + L.dropped + ' no-progress runs left out' : '') + ')' : '')); }
