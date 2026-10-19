@@ -3,6 +3,10 @@
 // behind the eye, a short red mantle over the back, a pale throat sac, a folded hind leg and a planted forearm.
 //   frames: 0 sit, 1 croak (sac blown up), 2 maw open (tongue / breath in), 3 crouch (squashed, about to leap),
 //           4 rising (stretched, legs trailing), 5 falling (legs reaching down), 6 dazed (flat on the boards, tongue out)
+//           (claude/marsh2, greybox poses for the ART lane to redraw - B16, each new move its own windup and release):
+//           7 the grab's windup (head low, maw open), 8 the tongue out (lunging), 9 the belly-flop's rear-up, 10 flat on his belly,
+//           11 cheeks full of flies, 12 the flies spat, 13 the throat swelling for the ripple, 14 the ripple let go, 15 a hand raised
+//           over the water, 16 the slap, 17 his eye on the flies (the snap's windup)
 //   canvas 64x46, every frame the same size and anchor: ax 30, ay 44 (toes on ay-1), so no frame floats or sinks.
 import { canvas, px, rect, line, circle, ellipse, fillPoly, outline, flipX, whiten } from '../px.js';
 import { OUT } from '../art.js';
@@ -33,7 +37,8 @@ function frame(o) {
 
   // far limbs, behind everything
   if (o.legs === 'sit' || o.legs === 'crouch') { rect(g, X(22), GY - 1, 9, 2, C.DD); toes(g, X(30), GY, 1, C.DD); }
-  if (o.arms !== 'none') { const ax = o.arms === 'fwd' ? X(53) : o.arms === 'down' ? X(51) : o.arms === 'splay' ? X(56) : X(42), ay = o.arms === 'fwd' ? Y(35) : o.arms === 'splay' ? GY : o.arms === 'down' ? GY - lift * 0.3 : GY; limb(g, X(40), Y(33), ax - 2, ay, 2, C.DD); }
+  if (o.arms === 'up') { limb(g, X(40), Y(30), X(50), Y(18), 2, C.DD); }
+  else if (o.arms !== 'none') { const ax = o.arms === 'fwd' ? X(53) : o.arms === 'down' ? X(51) : o.arms === 'splay' ? X(56) : X(42), ay = o.arms === 'fwd' ? Y(35) : o.arms === 'splay' ? GY : o.arms === 'down' ? GY - lift * 0.3 : GY; limb(g, X(40), Y(33), ax - 2, ay, 2, C.DD); }
 
   // hind leg (near side): the thigh is a big folded oval, the foot runs forward under the belly
   const leg = () => {
@@ -74,8 +79,11 @@ function frame(o) {
     line(g, X(34), Y(30.5), X(37), Y(29), C.DD); line(g, X(37), Y(29), X(55), Y(27.5), C.DD); line(g, X(38), Y(30), X(54), Y(28.5), C.Bs);
   }
 
+  // cheeks full of flies (the swarm's windup)
+  if (o.cheeks) { blob(g, X(50), Y(30), 6, 4.5, C.L, C.LL, C.F); for (const [fx, fy] of [[48, 29], [52, 31], [50, 27]]) px(g, X(fx), Y(fy), '#1a1a14'); }
   // throat sac
-  if (o.sac) { blob(g, X(46), Y(37), 10.5, 7.5, C.B, '#fbfbe0', C.Bs); ellipse(g, X(43), Y(33.5), 3, 1.5, '#ffffff'); }
+  if (o.sac === 'big') { blob(g, X(46), Y(36), 14, 10, C.B, '#fbfbe0', C.Bs); ellipse(g, X(42), Y(31), 4, 2, '#ffffff'); line(g, X(36), Y(40), X(56), Y(40), C.Bs); }
+  else if (o.sac) { blob(g, X(46), Y(37), 10.5, 7.5, C.B, '#fbfbe0', C.Bs); ellipse(g, X(43), Y(33.5), 3, 1.5, '#ffffff'); }
   else if (!o.mouth) { ellipse(g, X(46), Y(33.5), 6, 2.2, C.B); line(g, X(41), Y(35), X(51), Y(35), C.Bs); }
 
   // eye: gold iris, a flat frog's pupil, a heavy brow
@@ -98,7 +106,8 @@ function frame(o) {
   }
 
   // near forearm, planted in front of the belly
-  if (o.arms !== 'none') {
+  if (o.arms === 'up') { limb(g, X(44), Y(31), X(55), Y(17), 3, C.F, C.D); toes(g, X(54), Y(16), 1, C.D, C.L); }
+  else if (o.arms !== 'none') {
     const hx = o.arms === 'fwd' ? X(57) : o.arms === 'down' ? X(54) : o.arms === 'splay' ? X(60) : X(47), hy2 = o.arms === 'fwd' ? Y(36) : o.arms === 'splay' ? GY : o.arms === 'down' ? GY - lift * 0.3 : GY;
     limb(g, X(44), Y(33), hx, hy2 - 1, 3, C.F, C.D);
     toes(g, hx - 1, Math.min(GY, hy2), 1, C.D, C.L);
@@ -116,6 +125,17 @@ export function bakeFrog() {
     frame({ legs: 'trail', arms: 'fwd', sx: 0.94, sy: 1.06, lift: 5 }),
     frame({ legs: 'reach', arms: 'down', lift: 3 }),
     frame({ legs: 'splay', arms: 'splay', sx: 1.06, sy: 0.72, eyes: 'shut', mouth: true, tongueOut: true, crookedCrown: true }),
+    frame({ legs: 'crouch', arms: 'plant', mouth: true, tilt: -2, sx: 1.1, sy: 0.86 }),          /* 7 THE TONGUE GRAB's windup: head low, maw open, poised */
+    frame({ legs: 'sit', arms: 'fwd', mouth: true, tilt: 1, sx: 1.14 }),                          /* 8 the tongue out: lunging after it */
+    frame({ legs: 'trail', arms: 'up', sx: 0.9, sy: 1.3, lift: 2 }),                               /* 9 THE BELLY-FLOP's windup: reared up, belly out */
+    frame({ legs: 'splay', arms: 'splay', sx: 1.2, sy: 0.6, eyes: 'shut' }),                       /* 10 flat on his belly */
+    frame({ legs: 'sit', arms: 'plant', sac: true, cheeks: true, tilt: 3 }),                       /* 11 THE FLY SWARM's windup: cheeks full of flies */
+    frame({ legs: 'sit', arms: 'plant', mouth: true, tilt: 5 }),                                   /* 12 the flies spat out */
+    frame({ legs: 'sit', arms: 'plant', sac: 'big', lift: 2, sy: 1.08 }),                          /* 13 THE CROAK RIPPLE's windup: the throat swelling */
+    frame({ legs: 'crouch', arms: 'plant', sac: true, mouth: true, sx: 1.06, sy: 0.9 }),           /* 14 the ripple let go */
+    frame({ legs: 'sit', arms: 'up', tilt: 1 }),                                                   /* 15 THE SLAP's windup: a hand raised over the water */
+    frame({ legs: 'sit', arms: 'splay', sx: 1.04, sy: 0.92 }),                                     /* 16 the slap */
+    frame({ legs: 'crouch', arms: 'plant', tilt: 6, sx: 1.02 }),                                   /* 17 the snap's windup: his eye on the flies */
   ];
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
   return { R: frames, L, white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44, w: 40, h: 30 };

@@ -5,6 +5,7 @@ const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
 const PAL = {
   rock: ['#4b4640', '#7d756b', '#2e2a27', '#5f7d3b'], vine: ['#44331f', '#7a5c36', '#2c2214', '#3e8040'], pile: ['#2f2a24', '#5d5446', '#1c1915', '#8a5f93'],
   cloud: ['#b9c4dc', '#f0f5ff', '#8392b5', '#dfe8f8'], root: ['#4d3622', '#85633b', '#2e1f13', '#6a8f3a'], ice: ['#4fa9c4', '#d5f6ff', '#2a6f8f', '#8fe0ee'], rune: ['#2e2842', '#524a73', '#1a1626', '#b790ff'],
+  stilt: ['#3a3026', '#6a5a44', '#211b15', '#5a8a4a'], reed: ['#5f7a3a', '#9ab85a', '#3d5226', '#c9b27c'],   /* (claude/marsh2) MARSH WOOD: bog-oak stilts, reed bundles */
 };
 export function drawForestSupport(g, p, cx, cy) {
   if (p.kind === 'beam' || p.kind === 'pier') { drawSpireSupport(g, p, cx, cy); return; }   /* THE MONASTERY's scaffold posts and masonry piers (claude/screefix, src/spire-supports.js) */
@@ -13,7 +14,7 @@ export function drawForestSupport(g, p, cx, cy) {
   if (len < 3) return;
   const sd = (p.x * 7 + p.y * 13) & 7, w = k === 'rock' ? 8 : k === 'cloud' ? 8 : k === 'ice' ? 6 : k === 'rune' ? 6 : 5, x = Math.round(p.x * 16 + 8 - w / 2 - cx);
   const tip = p.free ? Math.min(len, 22) : 0, body = len - tip;   /* a free end tapers over its last rows */
-  R(g, c[0], x, h0, w, body); R(g, c[1], x, h0, 1, body); R(g, c[2], x + w - 1, h0, 1, body);
+  if (k !== 'reed') { R(g, c[0], x, h0, w, body); R(g, c[1], x, h0, 1, body); R(g, c[2], x + w - 1, h0, 1, body); }   /* (a reed bundle is its stems, drawn below) */
   /* the taper: a stalactite / a dangling root / a cloud's hem / a crystal point */
   for (let t = 0; t < tip; t += 2) { const f = 1 - t / tip, ww = Math.max(1, Math.round(w * f)), xx = x + ((w - ww) >> 1); R(g, c[0], xx, h0 + body + t, ww, 2); R(g, c[1], xx, h0 + body + t, 1, 2); }
   if (k === 'rock') {   /* strata and a corbel under the slab */
@@ -30,6 +31,11 @@ export function drawForestSupport(g, p, cx, cy) {
     R(g, c[1], x - 1, h0 - 2, w + 2, 2); R(g, c[3], x - 1, h0 - 4, 2, 2); R(g, c[3], x + w - 1, h0 - 4, 2, 2);
     for (let y = h0 + 5; y < h0 + body - 1; y += 8) R(g, c[2], x, y, w, 1);
     if (!p.free) { R(g, c[2], x - 2, bot - 3, w + 4, 3); R(g, c[3], x - 1, bot - 4, 2, 2); }
+  } else if (k === 'stilt') {   /* (claude/marsh2) a bog-oak stilt lashed with reed cord, a green waterline */
+    R(g, c[1], x - 1, h0 - 2, w + 2, 2); for (let y = h0 + 4; y < h0 + body - 2; y += 10) { R(g, c[3], x - 1, y, w + 2, 1); R(g, '#c9b27c', x, y + 1, w, 1); }
+    if (!p.free) { R(g, c[2], x - 2, bot - 2, w + 4, 2); R(g, c[3], x - 1, bot - 5, w + 2, 1); }
+  } else if (k === 'reed') {   /* (claude/marsh2) a bundle of reed stalks under a tuft: three stems, a blade or two */
+    for (const dx of [0, 2, 4]) R(g, dx === 2 ? c[1] : c[0], x + dx - 1, h0 - 2, 1, body + 2); R(g, c[1], x - 2, h0 + 3, 2, 1); R(g, c[1], x + 4, h0 + 7, 2, 1);
   } else if (k === 'cloud') {   /* a cloud-stone pillar: banded drum, capital, a puff at the foot or hem */
     R(g, c[2], x - 2, h0 - 2, w + 4, 3); R(g, c[1], x - 2, h0 - 2, w + 4, 1);
     for (let y = h0 + 5; y < h0 + body; y += 8) { R(g, c[2], x, y, w, 1); R(g, c[1], x, y + 1, w, 1); }
