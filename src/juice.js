@@ -67,3 +67,11 @@ export function safeKnock(vx, landsSafe) {
 
 /* THE ONE PLACE reduce-motion is read: how much camera / flash the setting allows (1 = as designed, 0 = none). */
 export const motionScale = set => (set && set.reduceMotion) ? 0 : 1;
+
+/* WEAPON WEIGHT (claude/foepass; scratch/brief-bloodknight-1017.md 1: "his HITS: greatsword-weight hit-stop, small camera kick, foe knockback, the layered impact
+   sounds"). Not a hero row: a WEAPON CLASS row - any hero who swings that class of weapon lands it this way. stop x on the table's freeze, kick = a small
+   camera kick on every landed blow (px, toward the blow), shove = px the foe is pushed off the blow (the shared shove is 2), heavySound = the layered
+   impact plays its heavy sample + body thud on every blow. */
+export const WEAPON = { greatsword: { stop: 1.3, kick: 1.5, shove: 4, heavySound: true } };
+export const WEAPON_OF = { reaper: 'greatsword' };
+export const weaponOf = hero => WEAPON[WEAPON_OF[hero]] || null;

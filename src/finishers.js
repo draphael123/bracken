@@ -49,7 +49,7 @@ export function finishFoe(e, P, api) {
   else if (f.sig === 'shards') api.burst(cx, cy, 16, ['#e0a040', '#8a6030', '#fff0c0'], 140, 0.5, 320, 2);
   else if (f.sig === 'cleave') { api.burst(cx, cy, 14, ['#ff9a5c', '#fff6e0', '#c0602e'], 130, 0.4, 200, 2); api.sparks(cx, cy, P.face || 1, 6); }
   else if (f.sig === 'point') { api.ringAt(cx, cy, 20, '#8fd160', 0.35); api.sparks(cx, cy, -(P.face || 1), 8); }
-  P.inv = Math.max(P.inv || 0, FIN.inv); if (P.hp > 0 && api.heal) api.heal(FIN.heal);
+  P.inv = Math.max(P.inv || 0, FIN.inv); if (P.hp > 0 && api.refund) api.refund(); else if (P.hp > 0 && api.heal) api.heal(FIN.heal);   /* (claude/foepass) THE FINISHER PAYS: wind + ~3% max hp (src/foe-break.js FB.refund); FIN.heal is the old flat 3, for an api without the refund */
   e.finished = true; FIN.done++; FIN.byHero[h] = (FIN.byHero[h] || 0) + 1;
   api.kill(e);
 }

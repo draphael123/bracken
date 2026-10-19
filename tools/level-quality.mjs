@@ -19,9 +19,10 @@ import { pacing } from './pacing.mjs';
 import { BOSS_SYNTH_BASE, splitTrack } from '../src/boss-music.js';
 import { clearsAt, MASH_HELD } from './mash-rows.mjs';
 import { ruleFights, curveVerdict, CURVE_REPORT_ONLY } from './rule-state.mjs';
+import { routeBlock, BLOCK } from './route-block.mjs';   /* (claude/foepass) do the encounters stand ON the route? */
 /* (claude/combat2) REPORT-ONLY FOR EVERY LEVEL: the combat pass part 2's level-side rows - fights during the rule, and the level-1 curve by act
    (tools/rule-fights.mjs). Printed (WARN) and listed by node tools/rule-fights.mjs; never failing the gate until Daniel lifts them. */
-export const REPORT_ALL = ['ruleFight'];   /* (the curve row is per level: tools/rule-state.mjs CURVE_REPORT_ONLY, the list the level sweep shrinks) */
+export const REPORT_ALL = ['ruleFight', 'blocking'];   /* (claude/foepass) the ROUTE-BLOCKING row (tools/route-block.mjs) is report-only on every level until the act sweeps lift it act by act */   /* (the curve row is per level: tools/rule-state.mjs CURVE_REPORT_ONLY, the list the level sweep shrinks) */
 install();
 const TS = 16;
 
@@ -249,6 +250,7 @@ export function measure(lv) {
   if (L.mini) enc.push({ x: (L.mini.x0 + L.mini.x1) / 2 / TS, k: 'mini' });
   loose.sort((a, b) => a - b); for (let i = 0; i < loose.length;) { let j = i; while (j + 1 < loose.length && loose[j + 1] - loose[j] <= LIM.clump) j++; enc.push({ x: (loose[i] + loose[j]) / 2, k: 'clump' }); i = j + 1; }
   const per = []; for (let x = 0; x + 24 <= end; x += 24) per.push(enc.filter(e => e.x >= x && e.x < x + 24).length);
+  const routeB = routeBlock(L, route, foes);   /* (claude/foepass, tools/route-block.mjs) */
   const ruleFight = ruleFights(L, enc, TS), curveV = curveVerdict(lv.id, levelHash(lv));   /* (claude/combat2, tools/rule-fights.mjs) */
   const bodies = []; for (let x = 0; x + 24 <= end; x += 24) bodies.push(foes.filter(e => e.x >= x && e.x < x + 24).length + waves.filter(w => w.x >= x && w.x < x + 24).length);
   const occupied = []; for (let x = 0; x + 24 <= end; x += 24) occupied.push(bodies[occupied.length] > 0 || per[occupied.length] > 0);
@@ -308,10 +310,11 @@ export function measure(lv) {
     ['pilot', pilotOk, pilotMsg],
     ['mash', !gated || mashV.ok, gated ? mashV.msg : 'not gated (node tools/mash-bot.mjs ' + lv.id + ' to measure)'],
     ['ruleFight', ruleFight.ok, ruleFight.msg],
+    ['blocking', routeB.share >= BLOCK.share, routeB.blocking + ' of ' + routeB.n + ' encounters stand on the route (' + Math.round(routeB.share * 100) + '%, >=' + Math.round(BLOCK.share * 100) + '%)' + (routeB.off.length ? '; off it: ' + routeB.off.slice(0, 6).join(', ') + (routeB.off.length > 6 ? ' ...' : '') : '')],
     ['curve', !!curveV.soft || (!CURVE_REPORT_ONLY[lv.id] && curveV.ok), curveV.msg + (CURVE_REPORT_ONLY[lv.id] ? (curveV.ok && !curveV.soft ? ' - BACK IN ITS BAND: take it out of CURVE_REPORT_ONLY (tools/rule-state.mjs)' : ' [report-only: CURVE_REPORT_ONLY]') : '')],
     ['route', (m.span >= LIM.routeSpan || m.back >= LIM.routeSpan) && m.pockets >= LIM.branches, 'route spans ' + m.span + ' rows, ' + m.back + ' tiles back, ' + m.pockets + ' branches/pockets (>=' + LIM.branches + ')'],
   ];
-  m.ruleFight = ruleFight; m.curve = curveV;
+  m.ruleFight = ruleFight; m.curve = curveV; m.routeBlock = routeB;
   const soft = (REPORT_ONLY[lv.id] || []).concat(MASH_ENFORCE ? [] : ['mash'], REPORT_ALL, CURVE_REPORT_ONLY[lv.id] && !curveV.ok ? ['curve'] : []);   /* (the mash row is per part now: mashGate reads MASH_REPORT_ONLY) */
   m.bar = bar; m.pass = bar.every(b => b[1] || soft.includes(b[0])); m.failed = bar.filter(b => !b[1] && !soft.includes(b[0])).map(b => b[0]); m.reportOnly = bar.filter(b => !b[1] && soft.includes(b[0])).map(b => b[0]);
   return m;
@@ -321,6 +324,17 @@ const args = process.argv.slice(2), ALL = args.includes('--all'), ids = args.fil
 const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, '/').split('/').pop());
 if (isMain) {
   const campaign = LEVELS.filter(d => !(d.hidden && !d.secret));
+  if (args.includes('--blocking')) {   /* (claude/foepass) THE ROUTE-BLOCKING REPORT (tools/route-block.mjs) */
+    const { ACTS } = await import('../src/foe-react.js'), actOfId = id => (ACTS.find(a => a.levels.includes(id)) || { act: '-' }).act;
+    const list = (ids.length ? ids.map(id => LEVELS.find(l => l.id === id)).filter(Boolean) : campaign.filter(d => !/^(shop|trial_|custom)/.test(d.id))).sort((a, b) => String(actOfId(a.id)).localeCompare(String(actOfId(b.id))));
+    let under = 0; console.log('ROUTE-BLOCKING ENCOUNTERS (report-only; rec >= ' + Math.round(BLOCK.share * 100) + '% of a level encounters stand ON the walked route)');
+    for (const lv of list) { let m; try { m = measure(lv); } catch (e) { console.log(lv.id.padEnd(14) + 'could not be measured: ' + e.message); continue; }
+      const r = m.routeBlock; if (r.share < BLOCK.share) under++;
+      console.log(('act ' + actOfId(lv.id)).padEnd(7) + lv.id.padEnd(14) + (r.blocking + '/' + r.n).padStart(7) + (Math.round(r.share * 100) + '%').padStart(6) + (r.share < BLOCK.share ? '  UNDER' : '')
+        + (ids.length ? ' | on the route: ' + (r.on.map(e => e.k + '@' + Math.round(e.x)).join(', ') || 'none') + ' | off it: ' + (r.off.join(', ') || 'none') : '')); }
+    console.log(under + ' of ' + list.length + ' levels have under ' + Math.round(BLOCK.share * 100) + '% of their encounters on the route (the act sweeps place route-holding squads: a report, not a gate).');
+    process.exit(0);
+  }
   if (ALL) {
     const cols = ['flat', 'terrain', 'bands', 'mechanics', 'music', 'secrets', 'checks', 'encounters', 'density', 'route'];
     console.log('LEVEL QUALITY, every campaign level (a report: nothing here fails the suite; the gated list is ' + GATE.join(', ') + ')\n');
