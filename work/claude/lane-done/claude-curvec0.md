@@ -5,7 +5,7 @@ Band = brief-curvefix-1018 2e (acts I bosses 60-70 as stated, minis I 75-85; II 
 
 | row | act | L | flasks k/w/p | flasks % | dry k/w/p (n=6) | dry % | mean s | band | verdict |
 |---|---|---|---|---|---|---|---|---|---|
-| spore | I | 3 | 11/12 11/12 9/12 | 86 | 3 4 2 /6 -> 3/6 3/6 2/6 | 44 | 105 | 60-70 | HIGH +16 |
+| spore | I | 3 | 11/12 11/12 9/12 | 86 | 3/6 3/6 2/6 | 44 | 105 | 60-70 | HIGH +16 |
 | kings | I | 5 | 7 12 10 | 81 | 1/6 4/6 3/6 | 44 | 54 | 60-70 | HIGH +11 |
 | kings:mini (Great Hound) | I | 5 | 9 10 11 | 83 | 2/6 5/6 6/6 | 72 | 28 | 75-85 | IN |
 | moor | II | 10 | 1 12 0 | 36 | 0/6 4/6 0/6 | 22 | 100 | 62-68 | LOW -26, floor miss k+p |
