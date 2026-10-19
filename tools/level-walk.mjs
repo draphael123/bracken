@@ -53,9 +53,15 @@ import { pacing } from './pacing.mjs';
 import { campaignLevel, levelOverride } from './boss-level.mjs';
 import { openRetry, diffJs } from './boss-run.mjs';   /* (claude/difficulty) --difficulty= */
 import { beatenBeforeIn, tonicsAt, charmAt } from '../src/campaign-kit.js';
+import { ACTS, actOf } from '../src/foe-react.js';
 import { CART_PILOT, ROUTE_PLAN } from './cart-pilot.mjs';   /* (claude/deeprails2) THE DEEP RAILS is ridden, not walked: its hands are the cart pilot's */
 const DEPTH = depthsOf(LEVELS), BYID = Object.fromEntries(LEVELS.map(l => [l.id, l]));
-export const TARGET = { deathsLo: 1, deathsHi: 2, arriveHp: 50 };
+export const TARGET = { deathsLo: 1, deathsHi: 2, arriveHp: 50 };   /* (the flat target, kept for acts with no row) */
+/* (claude/curvec2, brief-curvefix-1018 2f) THE TARGET BY ACT - the road gets harder: deaths a first run (campaign hero, human+first) and the MEAN HP at a shrine arrival (percent; 'arrive < arriveHp' is the old direction: a hero who arrives with MORE than this is under-pressed).
+   Act I deaths 0.5-1.5 / arrive 65, II 1-2 / 60, III 1.5-2.5 / 55, IV 2-3 / 50, V 2.5-3.5 / 45. */
+export const TARGET_BY_ACT = { 1: { deathsLo: 0.5, deathsHi: 1.5, arriveHp: 65 }, 2: { deathsLo: 1, deathsHi: 2, arriveHp: 60 }, 3: { deathsLo: 1.5, deathsHi: 2.5, arriveHp: 55 }, 4: { deathsLo: 2, deathsHi: 3, arriveHp: 50 }, 5: { deathsLo: 2.5, deathsHi: 3.5, arriveHp: 45 } };
+export const actOfId = id => (ACTS.find(a => a.levels.includes(id)) || {}).act || (DEPTH[id] !== undefined ? actOf(id, DEPTH[id]).act : 1);
+export const targetOf = id => TARGET_BY_ACT[actOfId(id)] || TARGET;
 /* the woods beaten before id (its ancestors on the gate chain) */
 export const beatenBefore = id => beatenBeforeIn(LEVELS, id);   /* (src/campaign-kit.js: the same kit the playtest jump ?level=<id>&campaign=1 gives) */
 export { tonicsAt, charmAt };
@@ -243,7 +249,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
     /* a tonic drunk on the frame of the blow nets out against it: the drink goes back on both sides (lost and healed) */
     const flaskGame=typeof BK.drinkFlask==='function',drank=Math.max(0,heldTop-heldNow()),dAmt=drank&&!flaskGame?drank*((PR.perkOn(P0,h,'tonic')?60:45)):0;
     if(h1-dAmt<h0)cs.lost+=(h0-Math.max(0,h1-dAmt))/mh0;
-    const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;let nb=null,nd=80;for(const e of BK.enemies()){if(!e||!e.alive)continue;const d=Math.abs(e.x-q.x)+Math.abs(e.y-q.y)*0.5;if(d<nd){nd=d;nb=e;}}const hk=nb?nb.t+(nb.elite?'*':''):'other',hb=hitBy[hk]=hitBy[hk]||[0,0];hb[0]++;hb[1]+=Math.max(0,h0-h1)/mh0;}   /* WHAT HIT HIM (the nearest foe at the blow: an estimate, * an elite) */
+    const st=BK.stats();if(st.kills>kPrev){cs.kills+=st.kills-kPrev;kPrev=st.kills;}if(BK.hitsTaken>hPrev){cs.hits+=BK.hitsTaken-hPrev;hPrev=BK.hitsTaken;let nb=null,nd=80;for(const e of BK.enemies()){if(!e||!e.alive)continue;const d=Math.abs(e.x-q.x)+Math.abs(e.y-q.y)*0.5;if(d<nd){nd=d;nb=e;}}const hk=nb?nb.t+(nb.elite?'*':''):'other',hb=hitBy[hk]=hitBy[hk]||[0,0];hb[0]++;hb[1]+=Math.max(0,h0-h1)/mh0;hb[2]=Math.max(hb[2]||0,Math.max(0,h0-h1)/mh0);}   /* WHAT HIT HIM (the nearest foe at the blow: an estimate, * an elite) */
     if(st.deaths>dPrev){const K=q.killer;deathLog.push({at:[Math.floor(q.x/TS),Math.floor(q.y/TS)],ri,by:K?(typeof K==='string'?K:K.name||K.t||K.who||'?'):'?',el:!!(K&&typeof K==='object'&&K.foe&&K.foe.elite),sec:S.length-1});cs.deaths+=st.deaths-dPrev;deaths+=st.deaths-dPrev;dPrev=st.deaths;}
     const lit1=litN(),held1=heldNow(),hl1=BKT.heroLevel?BKT.heroLevel(h):0;
     if(lit1>lit0&&resumeAt){resumeAt=false;cs.end=mri();S.push({...sec(),resumed:true,start:mri()});}
@@ -271,7 +277,7 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   if(duelPend){const pr=duelPend.row;pr.secs=Math.round((duelPend.f-pr.f0)/6)/10;pr.won=false;pr.hpEnd=pr.hp0;delete pr.f0;duelPend=null;}if(duelRow)duelEnd(!!(duelE&&!duelE.alive));   /* (a duel still open when the walk ends is booked) */
   const r2=x=>Math.round(x*100);
   return {id:c.id,hero:h,seed:c.seed,lvl,depth:c.depth,maxHp:maxHp0,kit,gear,tonics:c.tonics,flasks:typeof BK.flaskMax==='function'?BK.flaskMax():null,charm:c.charm,end,miniHp,deaths,levelups,frames,secs:Math.round(frames/60),
-    kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,hitBy:Object.fromEntries(Object.entries(hitBy).map(([k,v])=>[k,[v[0],Math.round(v[1]*100)]])),trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
+    kills:BK.stats().kills-k00,hits:BK.hitsTaken-hit00,walked:Math.round(100*riBest/R.length),stuck:stucks[0]||null,stucks,resumes,deathLog,hitBy:Object.fromEntries(Object.entries(hitBy).map(([k,v])=>[k,[v[0],Math.round(v[1]*100),Math.round((v[2]||0)*100)]])),trace:c.trace?trace:undefined,arrivals,shrines:BK.shrines().length,
     coverage:Math.round(100*S.reduce((a,s,i)=>a+(!s.stuck&&(s.end!==undefined||(i===S.length-1&&/route|boss|gate/.test(end)))?((s.end??ri)-(s.start||0)):0),0)/R.length),
     sections:S.map(s=>({postMini:!!s.postMini,stuck:!!s.stuck,resumed:!!s.resumed,lost:r2(s.lost),small:r2(s.small),drinks:s.drinks,drinkHp:r2(s.drinkHp),deaths:s.deaths,hits:s.hits,kills:s.kills,secs:Math.round(s.frames/60),lvup:s.lvup})),
     duels,subs:subLog,dets:dets.map(d=>({kind:d.kind,a:d.a,gi:d.gi,tries:d.tries||0,done:!!d.done,dbg:d.dbg,log:d.log,n:d.nodes.length})),eyes:perc?perc.stats():null,casts:SKH?SKH.casts():null};
@@ -299,9 +305,9 @@ export const line = r => r.err ? r.id + ' ' + r.hero + ' s' + r.seed + ': ERR ' 
 export function summarize(rows) {
   const by = {}; for (const r of rows) { if (r.err) continue; (by[r.id + '|' + r.hero] = by[r.id + '|' + r.hero] || []).push(r); }
   return Object.values(by).map(R => { const arr = R.flatMap(r => r.arrivals.filter(a => !a.start && !a.postMini).map(a => a.hp)), d = mean(R.map(r => r.deaths)), a = mean(arr), lost = mean(R.flatMap(r => r.sections.slice(0, r.arrivals.length).map(s => s.lost)));
-    const miss = []; if (d < TARGET.deathsLo) miss.push('deaths ' + d.toFixed(1) + ' < ' + TARGET.deathsLo); if (d > TARGET.deathsHi) miss.push('deaths ' + d.toFixed(1) + ' > ' + TARGET.deathsHi);
-    if (a !== null && a >= TARGET.arriveHp) miss.push('arrive ' + Math.round(a) + '% >= ' + TARGET.arriveHp);
-    return { id: R[0].id, hero: R[0].hero, lvl: R[0].lvl, runs: R.length, deaths: d, arriveMean: a, arriveMin: arr.length ? Math.min(...arr) : null, lostPerSection: lost,
+    const T = targetOf(R[0].id), miss = []; if (d < T.deathsLo) miss.push('deaths ' + d.toFixed(1) + ' < ' + T.deathsLo); if (d > T.deathsHi) miss.push('deaths ' + d.toFixed(1) + ' > ' + T.deathsHi);
+    if (a !== null && a >= T.arriveHp) miss.push('arrive ' + Math.round(a) + '% >= ' + T.arriveHp);
+    return { id: R[0].id, act: actOfId(R[0].id), hero: R[0].hero, lvl: R[0].lvl, runs: R.length, deaths: d, arriveMean: a, arriveMin: arr.length ? Math.min(...arr) : null, lostPerSection: lost,
       drinks: mean(R.map(r => r.sections.reduce((s, x) => s + x.drinks, 0))), kills: mean(R.map(r => r.kills)), secs: mean(R.map(r => r.secs)), walked: mean(R.map(r => r.walked)),
       coverage: mean(R.map(r => r.coverage)), stucks: R.flatMap(r => (r.stucks || []).map(st => st.way.join(','))), hazard: mean(R.map(r => (r.deathLog || []).filter(d => HAZARD.test(d.by)).length)), elite: mean(R.map(r => (r.deathLog || []).filter(d => d.el).length)), ends: R.map(r => r.end).join('/'), miss }; });
 }
@@ -319,7 +325,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   if (opt('tonics', null) !== null) o.tonics = +opt('tonics'); if (opt('charm', null) !== null) o.charm = opt('charm') === 'none' ? null : opt('charm');
   const cfgs = []; for (const id of ids) for (const h of heroes) for (let s = 1; s <= seeds; s++) cfgs.push(walkCfg(id, h, s, o));
   const t0 = Date.now(), rows = await runWalks(cfgs, { jobs, onRow: (r, all) => { console.log(line(r)); if (r.trace) console.log('    trace: ' + r.trace.join(' ')); if (OUT) writeFileSync(OUT, JSON.stringify(all, null, 1)); } });
-  console.log('\nLEVEL WALK  (campaign level, typical build, profile ' + o.profile + ', ' + rows.length + ' runs, ' + Math.round((Date.now() - t0) / 60000) + ' min)  target: ' + TARGET.deathsLo + '-' + TARGET.deathsHi + ' deaths a first run, arrive < ' + TARGET.arriveHp + '%');
+  console.log('\nLEVEL WALK  (campaign level, typical build, profile ' + o.profile + ', ' + rows.length + ' runs, ' + Math.round((Date.now() - t0) / 60000) + ' min)  target by act (deaths / mean shrine arrival): ' + Object.entries(TARGET_BY_ACT).map(([k, t]) => k + ' ' + t.deathsLo + '-' + t.deathsHi + '/' + t.arriveHp + '%').join(', '));
   console.log(table(summarize(rows)));
   if (OUT) writeFileSync(OUT, JSON.stringify(rows, null, 1));
 }
