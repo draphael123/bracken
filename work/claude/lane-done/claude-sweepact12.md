@@ -3,11 +3,12 @@
 Base: claude/batch109 8ce6ebc7 (live 107 + BATCH108 + BATCH109, not yet live). Branch claude/sweepact12, PORT 8797. Brief: scratch/brief-foepass-1016.md + the SWEEP LANE NOTES of work/claude/lane-done/claude-foepass.md.
 
 ## 1. LEVELS MADE LIVE (src/foe-pass.js FOEPASS)
-Act I (pursuit + lead, no affix): spore, rootway, burning, underleaf; kings (pursuit only - see below).
+Act I (pursuit + lead, no affix): spore, rootway, underleaf; kings (pursuit only) and burning (lead only) - see below.
 Act II (pursuit + lead + affixes at the act's 0.15): hanging, spire, skyroad, minecart, storm, undercrown; scree and crown at affix 0.1 (below).
 Already live from the core and untouched: marsh, stockade, moor, oreroad. SKIPPED on purpose (reworked today by other lanes): wood (Lumber Trail / Old Tusker) and the Marsh's rows (live from the core, but Marsh 3 changed it: re-stamp it in a later pass) - NOTE for a later pass.
 Two deliberate dials, both to hold the level-1 pilot in band (act I wants <= 3 deaths, act II <= 6 / 400%):
 - kings: NO archer lead (pilot read 4 deaths in three of four 3-run rows with it, 2-3 without).
+- burning: NO pursuit, archer lead only (the walker: 5.0 / 3.0 / 8.0 deaths with pursuit vs base 2.5 / 2.5 / 3.0; a village on fire); the ember wisp's new dart is slowed to a 4 s cooldown / 0.6 s tell for the same level.
 - scree and crown: affix 0.1 not 0.15 (scree 4-9 deaths / 243-412%, crown 5-10 deaths / 388-541% across repeated pilots: both sit on the act II ceiling and the pilot is +-3 deaths noisy).
 
 ## 2. ROUTE-HOLDING SQUADS (level-quality --blocking, geometry untouched, only foe x/y moved <= 4 columns)
@@ -57,7 +58,24 @@ MOOR: out of band on BASE (QUESTIONS 6 of the foepass report) - NOT chased, row 
 ## 5. WALKER (tools/level-walk.mjs, knight / warden / pyro, 2 seeds, campaign level)
 See the table below (filled as each level finished; a level without a row did not finish in the lane's time - the PC ran two other lanes' suites and a walk took 30-60 min).
 
-WALKERTABLE
+| level | knight deaths / arrive% | warden | pyro | notes |
+|---|---|---|---|---|
+| spore | 0.0d / 64 | 0.0d / 62 | 0.0d / 90 | |
+| rootway | 0.0d / 83 | 0.5d / 84 | 0.0d / 85 | |
+| burning | 4.5d / 31 (2.8d on 4 seeds) | 1.5d / 51 | 2.0d / 46 | FINAL dials (lead only); the first read with pursuit was 5.0 / 3.0 / 8.0 |
+| kings | 1.0d / 100 | 1.5d / 94 | 0.0d / - | |
+| underleaf | 0.0d / 89 | 0.0d / 85 | 0.0d / 89 | |
+| scree | 0.0d / 90 | 0.0d / 84 | 0.0d / 85 | |
+| hanging | 0.0d / 100 | 0.0d / 100 | 0.0d / 83 | |
+| spire | 0.0 / 92 (stuck x3) | 0.0 / 100 (stuck) | 0.0 / 91 | measured 11-52% of the route (walker STUCK spots at 53,164 / 23,117 / 38,79); one seed hit the 30-min eval timeout. Run before the final dials, spire's row is unchanged by them |
+| skyroad | 8.0d / - | 8.0d / - | 0.0d / - | |
+| storm | 0.0d / 93 | 0.5d / 74 | 0.0d / 80 | |
+| crown | 8.0d / 90 | 6.5d / 71 | 3.0d / 94 | |
+| undercrown | 0.0d / 100 | 0.0d / 96 | 0.0d / - | |
+| oreroad | 0.0d / - | 0.0d / - | 1.0d / - | |
+
+BASE COMPARISON (same walker on batch109 8ce6ebc7, 2 seeds): burning base 2.5 / 2.5 / 3.0 deaths (knight / warden / pyro) vs lane first read 5.0 / 3.0 / 8.0 -> pursuit was the cause for warden / pyro (off: 1.5 / 2.0 with the dart slowed; knight 4.5 on 2 seeds, 2.8 on 4 seeds) - burning has NO pursuit now (FOEPASS comment); crown base 6.5 / 8.0 / 7.0 vs lane 8.0 / 6.5 / 3.0 (crown is the act II wall on BASE already - not moved by the lane); skyroad base 8.0 / 8.0 / 0.0 = lane 8.0 / 8.0 / 0.0 (the walker WALLS at the Sky Road on base: unmeasured, measured 0-2% of the route, a walker limit not a foe-pass effect). MINECART did not finish: the cart walk ran 45 min with no result on a PC running two other suites; I stopped it. Its levers are covered by the pilot (4 deaths / 230%) and the mash row; a walker pass is owed.
+Act I-II walker reads are mostly MISS-LOW on deaths (0-0.5 deaths vs 0.5-1.5 / 1-2) and "STUCK" spots on spore, rootway, underleaf, scree, hanging, spire, oreroad, undercrown, storm: the walker cannot get through those spots without a lift (existing; the same spots on base for the ones I compared). Only burning and crown read hot, and both are hot on base.
 
 ## 6. CHECKS
 GREEN: foe-pass, foe-pass-page, told-sweep12 (new), tells, answer-tags, untold-told, duck, attack-tokens, foe-tactics, finishers, combat-part2, hint-shown, riposte, comments, syntax, content-audit, spawns, level-quality (all gated levels + the touched ones), mash-gate, curve-gate, route-block (--blocking) for oreroad / skyroad / minecart.
