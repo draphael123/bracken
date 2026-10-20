@@ -84,10 +84,12 @@ export function camStep(cur, spread, n, dt, VW0 = 320, VH0 = 180) {
    leader in a puff (smoke where he stood and where he lands, PULLED ALONG), with `inv` s of grace. It never pulls a downed, dead, carried or thrown
    hero, never pulls INTO the air (it waits for the leader to be on the ground), and drains at `drain`x when the reason goes away. */
 export const LEASH = { offY: 40, stretch: 0.9, build: 1.6, drain: 2, inv: 1, cool: 2, side: 14 };
-/* who leads: the upright hero furthest along toward the exit (gateX; the furthest right without one); P1 on a tie */
+/* who leads: the upright hero furthest along toward the exit (gateX; the furthest right without one); P1 on a tie. (claude/aicompanions) An AI partner (ai) never
+   leads while a person stands - the leash pulls a bot to a person, never a person to a bot */
 export function leaderOf(bodies, gateX) {
   let best = null, bv = -1e9;
-  bodies.forEach((p, i) => { if (!p || p.dead || p.down > 0) return; const v = gateX == null ? p.x : -Math.abs(gateX - p.x); if (v > bv + 0.5 || best == null) { bv = v; best = i; } });
+  const person = bodies.some(p => p && !p.ai && !p.dead && !(p.down > 0));
+  bodies.forEach((p, i) => { if (!p || p.dead || p.down > 0 || (person && p.ai)) return; const v = gateX == null ? p.x : -Math.abs(gateX - p.x); if (v > bv + 0.5 || best == null) { bv = v; best = i; } });
   return best == null ? 0 : best;
 }
 /* why is this hero on the leash right now (or '' if he is not): pure, so the check can put every case through it */

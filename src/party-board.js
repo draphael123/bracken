@@ -4,7 +4,9 @@
 //               what he earns is written back to that slot (main.js partyJoin / profCredit, src/coop-save.js). Or GUEST - NOTHING SAVED: today's seat.
 //               A slot already playing (player one's, another seat's, one a guest page in another tab plays) is shown and refused, with the reason.
 //   INVITE      a friend ONLINE: the online room card (src/online.js open: HOST A GAME / JOIN A FRIEND); he brings a save of his own.
-//   AI PARTNER  shown, COMING SOON - the AI companions lane fills it (a linked companion builds on the same save API: scratch brief-aicompanions.md).
+//   AI PARTNER  (claude/aicompanions, brief-aicompanions.md 10-14) the computer plays the seat: pick LINKED (a hero from one of this browser's OTHER saves - it
+//               plays that character and earns XP + levels into that save; silver and clears stay with player one) or DEFAULT (any unlocked hero at YOUR level,
+//               nothing saved), then the hero, then its BEHAVIOUR (BALANCED / AGGRESSIVE / DEFENSIVE / SUPPORT). An AI seat's row says all of it and offers DISMISS.
 // A local seat that walked in on a pad's JUMP (a guest) can take a save afterwards: USE A SAVE on his row. Pad Start/JUMP-to-join still works as before.
 // Plain DOM over the canvas, dressed like the online boards (src/online-ui.js): arrows walk the buttons, Z / ENTER take one, ESC / X go back; a pad's
 // d-pad and A / B do the same. main.js gives it the api (main.js partyBoardOpen): seats, slots, join, attach, invite.
@@ -39,7 +41,7 @@ function pads() {
     for (const [k, key] of [['up', 'ArrowUp'], ['down', 'ArrowDown'], ['left', 'ArrowLeft'], ['right', 'ArrowRight']]) if (rose(k)) { UI.arrowsWalk(B.root, { key }); return; }
   }
 }
-function back() { if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : { k: 'seats' }; msg = null; render(); }
+function back() { if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : view.k === 'aibeh' ? { ...view, k: 'aihero' } : view.k === 'aihero' ? { ...view, k: 'aikind' } : { k: 'seats' }; msg = null; render(); }
 const say = (t, ok) => { msg = { t, ok }; };
 
 function render() {
@@ -53,9 +55,12 @@ function render() {
         const r = UI.row(UI.el('span.seat', 'P' + s.n + '  EMPTY'));
         const j = UI.el('button' + (room > 0 ? '.sel' : ''), 'JOIN', () => { view = { k: 'slot', mode: 'join', n: s.n }; msg = null; render(); }); j.dataset.seat = s.n; j.dataset.act = 'join'; if (room <= 0) j.disabled = true;
         const inv = UI.el('button', 'INVITE', () => { close(); api.invite(); }); inv.dataset.seat = s.n; inv.dataset.act = 'invite';
-        const ai = UI.el('button', 'AI PARTNER - SOON'); ai.disabled = true; ai.title = 'COMING SOON: AI COMPANIONS'; ai.dataset.act = 'ai';
+        const ai = UI.el('button', 'AI PARTNER', () => { view = { k: 'aikind', n: s.n }; msg = null; render(); }); ai.dataset.seat = s.n; ai.dataset.act = 'ai'; if (room <= 0 || !api.ai) ai.disabled = true;
         r.append(j, inv, ai); parts.push(r); continue;
       }
+      if (s.kind === 'ally') { const r = UI.row(UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + (s.line || 'AI PARTNER - ' + s.hero)));   /* (claude/aicompanions) 'AI PARTNER - KNIGHT LV 6, BALANCED: EARNS XP INTO SAVE 2' */
+        if (api.dismiss) { const d = UI.el('button', 'DISMISS', () => { const res = api.dismiss(s.n); say(res && res.ok ? 'P' + s.n + ' AI PARTNER LEAVES THE PARTY' : (res && res.why) || 'THAT DID NOT WORK', !!(res && res.ok)); render(); }); d.dataset.seat = s.n; d.dataset.act = 'dismiss'; r.append(d); }
+        parts.push(r); continue; }
       const from = s.kind === 'ally' ? 'COMPUTER' : s.saved ? (s.kind === 'online' ? 'ONLINE, ' : '') + 'SAVE ' + (s.slot + 1) : s.kind === 'online' ? 'ONLINE GUEST - NOTHING SAVED' : 'GUEST - NOTHING SAVED';
       const r = UI.row(UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + s.hero + (s.lv != null ? ' LV ' + s.lv : '') + '  ' + from));
       if (s.kind === 'local' && !s.saved) { const u = UI.el('button', 'USE A SAVE', () => { view = { k: 'slot', mode: 'attach', n: s.n }; msg = null; render(); }); u.dataset.seat = s.n; u.dataset.act = 'attach'; r.append(u); }
@@ -67,6 +72,23 @@ function render() {
     parts.push(UI.el('h1', 'P' + view.n + ': PICK A SAVE'), UI.el('p.dim', 'ONE OF THIS BROWSER\'S SAVES: WHAT P' + view.n + ' EARNS IS WRITTEN TO IT. AN EMPTY ONE STARTS A NEW SAVE.'));
     for (const sl of api.slots()) { const b = UI.el('button' + (sl.ok ? '' : '.no'), sl.line + (sl.ok ? '' : '  (' + sl.why + ')'), () => { if (!sl.ok) return; view = { ...view, k: 'hero', slot: sl.i, heroes: sl.heroes }; msg = null; render(); }); b.dataset.slot = sl.i; if (!sl.ok) b.disabled = true; parts.push(UI.row(b)); }
     if (view.mode === 'join') { const g = UI.el('button', CS.GUEST_LINE, () => { view = { ...view, k: 'hero', slot: -1, heroes: api.visitHeroes() }; msg = null; render(); }); g.dataset.slot = -1; parts.push(UI.row(g)); }
+    if (msg) parts.push(UI.el(msg.ok ? 'p.ok' : 'p.bad', msg.t));
+    parts.push(UI.row(UI.el('button', 'BACK', () => back())));
+  } else if (view.k === 'aikind') {   /* (claude/aicompanions) LINKED (one of this browser's other saves) or DEFAULT */
+    parts.push(UI.el('h1', 'P' + view.n + ': AI PARTNER'), UI.el('p.dim', 'LINKED: THE AI PLAYS A HERO FROM ANOTHER OF YOUR SAVES AND EARNS XP INTO IT. YOUR SAVE KEEPS THE SILVER AND THE CLEARS. DEFAULT: ANY HERO YOU HAVE, AT YOUR LEVEL.'));
+    for (const sl of api.aiSlots()) { const b = UI.el('button' + (sl.ok ? '' : '.no'), 'LINKED: ' + sl.line + (sl.ok ? '' : '  (' + sl.why + ')'), () => { if (!sl.ok) return; view = { ...view, k: 'aihero', slot: sl.i, heroes: sl.heroes }; msg = null; render(); }); b.dataset.slot = sl.i; b.dataset.act = 'ailinked'; if (!sl.ok) b.disabled = true; parts.push(UI.row(b)); }
+    { const d = UI.el('button', api.defaultLine, () => { view = { ...view, k: 'aihero', slot: -1, heroes: api.aiHeroes() }; msg = null; render(); }); d.dataset.slot = -1; d.dataset.act = 'aidefault'; parts.push(UI.row(d)); }
+    if (msg) parts.push(UI.el(msg.ok ? 'p.ok' : 'p.bad', msg.t));
+    parts.push(UI.row(UI.el('button', 'BACK', () => back())));
+  } else if (view.k === 'aihero') {
+    parts.push(UI.el('h1', 'P' + view.n + ': AI PARTNER - A HERO'), UI.el('p.dim', view.slot >= 0 ? 'FROM SAVE ' + (view.slot + 1) + ': ITS LEVEL, KIT AND TALENTS COME WITH THE HERO; THE XP IT EARNS GOES BACK INTO SAVE ' + (view.slot + 1) : 'A DEFAULT PARTNER PLAYS AT YOUR LEVEL: NOTHING IS SAVED'));
+    const r = UI.row();
+    for (const h of view.heroes || []) { const b = UI.el('button', api.heroName(h), () => { view = { ...view, k: 'aibeh', hero: h }; msg = null; render(); }); b.dataset.hero = h; r.append(b); }
+    parts.push(r);
+    parts.push(UI.row(UI.el('button', 'BACK', () => back())));
+  } else if (view.k === 'aibeh') {
+    parts.push(UI.el('h1', 'P' + view.n + ': ' + api.heroName(view.hero) + ' - HOW IT PLAYS'));
+    for (const b of api.aiBeh()) { const el = UI.el('button' + (b.id === 'balanced' ? '.sel' : ''), b.name + ': ' + b.line, () => takeAi(b.id)); el.dataset.beh = b.id; parts.push(UI.row(el)); }
     if (msg) parts.push(UI.el(msg.ok ? 'p.ok' : 'p.bad', msg.t));
     parts.push(UI.row(UI.el('button', 'BACK', () => back())));
   } else if (view.k === 'hero') {
@@ -86,4 +108,10 @@ function take(h) {
   say('P' + r.n + ' ' + (view.mode === 'attach' ? 'PLAYS' : 'JOINS') + where + (view.mode === 'join' ? ': PRESS A BUTTON ON A FREE PAD' : ''), true);
   view = { k: 'seats' }; render();
 }
-export function debug() { return { shown: shown(), view: view.k, mode: view.mode || null, text: B ? B.card.innerText : '', buttons: B ? [...B.card.querySelectorAll('button')].map(b => ({ t: b.textContent, dis: b.disabled, act: b.dataset.act || null, slot: b.dataset.slot ?? null, hero: b.dataset.hero || null })) : [] }; }
+function takeAi(beh) {
+  const r = api.ai(view.slot, view.hero, beh);
+  if (!r || !r.ok) { say((r && r.why) || 'THAT DID NOT WORK', false); render(); return; }
+  say('P' + r.n + ' AI PARTNER JOINS' + (view.slot >= 0 ? ': ITS XP GOES TO SAVE ' + (view.slot + 1) : ': NOTHING SAVED'), true);
+  view = { k: 'seats' }; render();
+}
+export function debug() { return { shown: shown(), view: view.k, mode: view.mode || null, text: B ? B.card.innerText : '', buttons: B ? [...B.card.querySelectorAll('button')].map(b => ({ t: b.textContent, dis: b.disabled, act: b.dataset.act || null, slot: b.dataset.slot ?? null, hero: b.dataset.hero || null, beh: b.dataset.beh || null })) : [] }; }

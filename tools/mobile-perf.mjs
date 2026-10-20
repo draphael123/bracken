@@ -8,6 +8,7 @@
 // It writes the table to docs/mobile-perf.json when MP_WRITE=1. A budget (BUDGET below) fails the check on a regression.
 //   node tools/mobile-perf.mjs            (a few minutes: it boots the game under 4x throttle)
 //   MP_CPU=6 MP_SCENES=title,map node tools/mobile-perf.mjs
+//   MP_AI=warden MP_SCENES=wood node tools/mobile-perf.mjs   (claude/aicompanions: an AI partner seat in every level scene)
 import { openPage } from './cdp.mjs';
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -54,7 +55,7 @@ try {
     const wall = m1.t - m0.t, row = { scene: name, fps: +(r.n / wall).toFixed(1), p95: +r.p95.toFixed(1), worst: +r.worst.toFixed(1), busyMsPerFrame: +(((m1.task - m0.task) * 1000) / Math.max(1, r.n)).toFixed(1),
       scriptMs: +(((m1.script - m0.script) * 1000) / Math.max(1, r.n)).toFixed(1) };
     rows.push(row); console.log(('  ' + name).padEnd(12) + JSON.stringify(row)); return row; };
-  const level = async id => { const [lid, at] = id.split('@'), [cc, rr] = (at || '').split(':').map(Number); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lid)})); BK.state = 'play'; ${at ? 'BK.P.x = ' + (cc * 16 + 8) + '; BK.P.y = ' + (rr * 16) + ';' : ''} })()`); await sleep(1500); };   /* (claude/pyramidart) 'level@col:row' parks the hero in a spot (the boss room) */
+  const level = async id => { const [lid, at] = id.split('@'), [cc, rr] = (at || '').split(':').map(Number); await E(`(async () => { const { LEVELS } = await import('/src/level.js'); ${process.env.MP_AI ? 'BK.aiComp.arm(' + JSON.stringify(process.env.MP_AI) + ', "balanced"); await BK.allyReady();' : ''} BK.load(LEVELS.findIndex(l => l.id === ${JSON.stringify(lid)})); BK.state = 'play'; ${at ? 'BK.P.x = ' + (cc * 16 + 8) + '; BK.P.y = ' + (rr * 16) + ';' : ''} })()`); await sleep(1500); };   /* (claude/pyramidart) 'level@col:row' parks the hero in a spot (the boss room) */
   for (const s of SCENES) {
     if (s === 'title') { await E("BK.state = 'title'"); await measure('title'); }
     else if (s === 'map') { await E("BK.state = 'map'"); await sleep(800); await measure('map'); }
