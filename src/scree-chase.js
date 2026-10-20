@@ -58,7 +58,7 @@ export const FOES = [['harpy', 289, 10], ['harpy', 324, 11], ['harpy', 340, 9], 
 /* ROCKS OFF THE CLIFF, AHEAD (told: the red mark on the fall line pulses as the next one works loose; only while on screen) [x, every s] */
 export const ROCKS = [[298, 2.4], [339, 2.2], [349, 2.6], [372, 2.3], [380, 2.7], [408, 2.5]];
 export const CHASE = {
-  id: 'rockslide', name: 'THE ROCKSLIDE', axis: 'x', dir: 1, look: 'scree', say: 'THE HILL COMES DOWN: RUN!', music: 'boss2',
+  id: 'rockslide', name: 'THE ROCKSLIDE', axis: 'x', dir: 1, look: 'scree', say: 'THE HILL COMES DOWN: RUN!', music: 'chase',
   trigger: TRIGGER * 16, end: BANK * 16 + 2, gap0: 150,
   curve: [[0, 98], [950, 114, 'THE HILL QUICKENS'], [1950, 128, 'THE WHOLE SLOPE IS COMING']],   /* a hero walks the hill at ~92 px/s (faster down a scree run): the front is faster, so it is ON HIM - the rubber band slows it under him (min/slow), so a hero who keeps going is never caught and one who stops for a second is */
   lead: 1.6, accel: 120, rubber: { min: 64, max: 200, slow: 0.5, catch: 1.4 },   /* slowed under him it is 55-66 px/s: the slowest walker (the reaper) still pulls away */
