@@ -133,6 +133,32 @@ function deckTile(x, y, l, r) {
   }));
 }
 
+/* ===== (claude/lumberfix) THE FOREST FLOOR: every plain bit of ground the kit above does not name (the old grass-and-dirt tiles). Needle duff over dark loam, bark chips and the odd root,
+   no grass blades. top: a lit lip of needles and moss patches; edge: a darker flank; ceil: a root fringe underneath; dn: how deep under the surface (darker by bucket). ===== */
+const LOAM = ['#1f150e', '#2d1f14', '#3f2c1b', '#533a24', '#694a2e'];
+const DUFF = ['#4f3a1c', '#6e5026', '#8c6a34', '#a8843f', '#c2a057'];
+export function floorTile(x, y, top, eL, eR, ceil, dn) {
+  const dk = dn < 3 ? 0 : dn < 7 ? 1 : 2;
+  return once('ff' + (x & 7) + '_' + (y & 3) + (top ? 't' : '') + (eL ? 'l' : '') + (eR ? 'r' : '') + (ceil ? 'c' : '') + dk, () => tile((px, py) => {
+    const ax = x * 16 + px, ay = y * 16 + py;
+    if (top) {
+      const patch = rnd(ax >> 3, 17, 5) < 2 && rnd(ax >> 1, 3, 4) !== 0;   /* a moss patch on the lip */
+      const lip = 1 + rnd(ax >> 1, 5, 3);
+      if (py < lip) return patch ? MOSS[py === 0 ? 3 : 2] : rnd(ax, py, 4) === 0 ? DUFF[3] : DUFF[4];
+      if (py < 4) { if (rnd(ax, py + 9, 5) === 0) return (ax + py) % 2 ? DUFF[1] : DUFF[4]; return patch ? MOSS[py === lip ? 1 : 0] : DUFF[py === 1 ? 3 : 2]; }   /* needle streaks */
+      if (py === 4) return rnd(ax, 41, 3) === 0 ? DUFF[1] : LOAM[4];
+    }
+    let sh = 3 - dk + (rnd(ax >> 1, ay >> 1, 5) === 0 ? 1 : 0) - (rnd(ax, ay, 9) === 0 ? 1 : 0);
+    if (top && py < 8) sh += 1;
+    if (eL && px < 2) sh += 1; if (eR && px > 13) sh -= 1;
+    if (rnd(ax >> 2, ay >> 2, 19) === 0 && rnd(ax, ay, 3) !== 0) return rnd(ax >> 1, ay, 2) ? CUT[3] : CUT[4];   /* a bark chip */
+    if (rnd(ax >> 3, ay >> 2, 23) === 0 && (ax + ay) % 5 === 0) return BARK[Math.max(0, 2 - dk)];   /* a thread of root */
+    if (rnd(ax, ay >> 1, 31) === 0) return LOAM[Math.max(0, 1 - dk)];
+    if (ceil && py > 12) return rnd(ax, 7, 3) === 0 && py > 14 ? null : LOAM[0];
+    return LOAM[Math.max(0, Math.min(4, sh))];
+  }));
+}
+
 /* ===== THE ENTRY: lumberTile ===== */
 export function lumberTile(t, x, y, at, T, L) {
   if (t === T.ONEWAY) { if (x >= 510) return null; return deckTile(x, y, at(x - 1, y) === T.ONEWAY, at(x + 1, y) === T.ONEWAY); }

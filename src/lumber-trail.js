@@ -22,7 +22,7 @@
 //    510-549  THE HIVE CLEARING      BOSS   THE HORNET QUEEN
 // Every number is a FINAL column: nothing here is grown in after (tools/lumber-trail.mjs pins the beats).
 import { FELL_STROKES } from './felling.js';
-export const SECTIONS = [["THE WOODSMAN'S CABIN", 0, 104], ['THE FORD', 105, 205], ['THE LUMBER CAMP', 206, 300], ['THE HIVE PINES', 301, 409], ['THE TARN', 410, 509], ['THE HIVE CLEARING', 510, 549]];
+export const SECTIONS = [["THE WOODSMAN'S CABIN", 0, 104], ['THE FORD', 105, 205], ['THE LUMBER CAMP', 206, 300], ['THE PINE RIDGE', 301, 409], ['THE TARN', 410, 509], ['THE HIVE CLEARING', 510, 549]];
 /* THE FELLS: the trail's marked pines, by their role (tools/lumber-trail.mjs reads these) */
 export const FELLS = {
   gully: { x: 25, y: 21, len: 12, dir: 1, row: 22, mark: true, req: true },                     /* the cabin's: a bridge over the gully, flush with its banks */
