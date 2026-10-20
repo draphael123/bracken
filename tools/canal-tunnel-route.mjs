@@ -12,11 +12,12 @@
 // Then the basin exam and the corridor to JENNY'S west door (god on there: the basin is not the subject - the tunnel is). The run PASSES when the hand
 // reaches her arena with NO LIFT (no teleport ever helps it) and was never parted from the barge for long with nowhere to go.
 //   node tools/canal-tunnel-route.mjs [--heroes=knight,pyro,...] [--seeds=3] [--plan=stray|ride|both] [--dbg]
-// Every hero (src/progression.js HERO_IDS), a fresh save (level 1, no skills), god off in the tunnel, the dice seeded per hero and seed.
+// Every hero (src/progression.js HERO_IDS), a save at the canal's campaign level (boss-level.mjs campaignLevel, no skills), god off in the tunnel, the dice seeded per hero and seed.
 import { openPage } from './cdp.mjs';
 const opt = (k, d) => { const a = process.argv.find(s => s.startsWith('--' + k + '=')); return a ? a.split('=')[1] : d; };
 const DBG = process.argv.includes('--dbg');
 const { HERO_IDS } = await import('../src/progression.js');
+const { campaignLevel } = await import('./boss-level.mjs'); const LV = campaignLevel('canal');
 const heroes = opt('heroes', HERO_IDS.join(',')).split(','), seeds = +opt('seeds', 3), planArg = opt('plan', 'both');
 const pg = await openPage({ audio: false, fonts: false });
 let bad = 0; const rows = [];
@@ -29,7 +30,7 @@ try {
       const hash = s => { let h = 2166136261; for (const c of s) { h ^= c.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; };
       Math.random = mulberry(hash('canal5|${hero}|${seed}'));
       const TRACE = ${JSON.stringify(process.env.TRACE ? process.env.TRACE.split(',').map(Number) : null)}; const BPLAN = ${JSON.stringify(bplan)}, PLAN = ${JSON.stringify(plan)}, DIE = ${die}, DIM = ${dim}, STRAY = PLAN === 'stray';
-      BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
+      BK.manualSimulation = true; BKT.setHeroLevel(${JSON.stringify(hero)}, ${LV}); BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: false }); BK.applyUpgrades && BK.applyUpgrades();   /* (batch106 integ) THE HERO A PLAYER BRINGS: the Old Kingdom's blows are now x3.0 (curvec5 STEP 2a), and a level-1 hand died to one gaffer hook (64) - the hand arrives at the canal's campaign level, no skills, no talents, as tools/boss-level.mjs's pilots do */
       BK.load(LEVELS.findIndex(l => l.id === 'canal')); BK.start ? BK.start() : (BK.state = 'play'); BK.god = false;
       const P = () => BK.P, k = BK.keys, C = () => BK.canal(), B = () => C().barge, log = [], dbg = [], D = ${DBG} ? (...a) => dbg.push(a.join(' ')) : () => {};
       const DMG = {}, LAST = []; let basinAssists = 0, cards = 0, SUICIDE = false, heals = 0, guards = 0, frames = 0, off = 0, offMax = 0, offWhere = null, lifts = 0, escapes = 0, grabs = 0;
@@ -55,7 +56,7 @@ try {
       const FOE_OUT = new Map(); let foeOutMax = 0, foeOutWhat = null;
       const TUN = [248 * TS, ((BK.L.canal && BK.L.canal.tunnelEnd) || 345) * TS];   /* the tunnel's own columns (L.canal.tunnels, to its lower gate's slot): a basin wisp drifting by the gate is the basin's */
       const foeAudit = () => { for (const e of BK.enemies()) { if (!e.alive || e.x < TUN[0] || e.x >= TUN[1]) { FOE_OUT.delete(e); continue; } const why = foeOut(e);
-          if (!why) { FOE_OUT.delete(e); continue; } const n = (FOE_OUT.get(e) || 0) + 1; FOE_OUT.set(e, n);
+          if (!why) { FOE_OUT.delete(e); continue; } const n = (FOE_OUT.get(e) || 0) + 1; FOE_OUT.set(e, n); if (n === 1) D('foeout', e.t, why, 'mode', e.mode, 'xy', (e.x / TS).toFixed(2), (e.y / TS).toFixed(2), 'v', Math.round(e.vx || 0), Math.round(e.vy || 0), 'kb', Math.round(e.knock || e.kb || 0), 'stag', (+(e.stagger || 0)).toFixed(2), 'home', e.hx, e.homeX, 'f', frames);
           if (n > foeOutMax) { foeOutMax = n; foeOutWhat = e.t + (e.cnSkin ? '/' + e.cnSkin : '') + ' @' + (e.x / TS).toFixed(1) + ',' + (e.y / TS).toFixed(1) + ': ' + why; } } };
       /* ONE FRAME. The tally that matters here: how long the hand is PARTED from her in the tunnel with no footing her deck can reach - off her, not on
          a ledge / ladder / the gallery she is gliding to, not in the air for a jump: the "the raft didn't follow me" clock */
@@ -99,7 +100,7 @@ try {
       const reach = id => C().reaches.find(q => q.id === id), low = id => Math.abs(reach(id).y - (reach(id).lo * TS + 4)) < 1, full = id => Math.abs(reach(id).y - (reach(id).hi * TS + 4)) < 1;
       /* A REAL RESPAWN AT THE SUMMIT: touch checkpoint two, then a fall at health 1 - the game wakes the hand there, and her at its mooring */
       const wake = () => { for (let i = 0; i < 900 && (BK.state !== 'play' || P().dead); i++) { BK.sim(1); frames++; } for (let i = 0; i < 40; i++) { BK.sim(1); frames++; } };
-      BK.tp(242, 15); tick(60); P().inv = 0; BK.damagePlayer(P().x, 99999, { unblockable: true, name: 'THE ROUTE' }); for (let i = 0; i < 400 && !P().dead; i++) { BK.sim(1); frames++; } wake();
+      BK.tp(242, 15); tick(60); P().inv = 0; BK.damagePlayer(P().x, 99999, { unblockable: true, name: 'THE ROUTE' }); for (let i = 0; i < 400 && !P().dead; i++) { BK.sim(1); frames++; if (!P().dead && i % 20 === 19) { P().inv = 0; BK.damagePlayer(P().x, 99999, { unblockable: true, name: 'THE ROUTE' }); } } wake();   /* (batch106 integ) a campaign-level hero can carry a lethal-blow save (the pyro's, once): hit again until the death is real, or the barge is never put back at its mooring */
       stage('woken at the summit checkpoint (a real respawn): her at its mooring', Math.abs(P().x - (242 * TS + 8)) < 40 && !P().dead);
       let died = 0;
       const tunnel = () => {

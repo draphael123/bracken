@@ -86,8 +86,9 @@ function stepGrindylow0(e, dt, X) {
   e.lastSurf = s.y;
   /* COMING ABOARD: from the lurk, at a held barge (or the loose one at the junction) with a rider */
   if (e.mode === 'lurk' && e.cd <= 0) { const end = boardable(e, X, P);
-    if (end !== null) { const b = X.barge(); e.mode = 'boardTell'; e.modeT = 0.55; e.bx = end; e.x = b.x + (end < b.w / 2 ? -GRIND.gunwale : b.w + GRIND.gunwale); e.y = s.y + 4; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.splash && S.splash(); X.ring(e.x, s.y, 10, '#9ad8c0'); } }
-  if (e.mode === 'boardTell') { const b = X.barge(); if (!b) { e.mode = 'lurk'; return; } e.x = b.x + (e.bx < b.w / 2 ? -GRIND.gunwale : b.w + GRIND.gunwale); e.y = s.y + 4;
+    if (end !== null && X.solidAt(X.barge().x + (end < X.barge().w / 2 ? -GRIND.gunwale : X.barge().w + GRIND.gunwale), s.y + 4)) { e.cd = GRIND.cd; }   /* (batch106 integ) her gunwale against the stop-planks' stone: a hand cannot haul itself up out of the rock (tools/canal-tunnel-route.mjs, 'in the rock') - it waits for her to move */
+    else if (end !== null) { const b = X.barge(); e.mode = 'boardTell'; e.modeT = 0.55; e.bx = end; e.x = b.x + (end < b.w / 2 ? -GRIND.gunwale : b.w + GRIND.gunwale); e.y = s.y + 4; X.mark(e, '!!', '#ff6b6b'); S.tell && S.tell(true); S.splash && S.splash(); X.ring(e.x, s.y, 10, '#9ad8c0'); } }
+  if (e.mode === 'boardTell') { const b = X.barge(); if (!b) { e.mode = 'lurk'; return; } const bxx = b.x + (e.bx < b.w / 2 ? -GRIND.gunwale : b.w + GRIND.gunwale); if (X.solidAt(bxx, s.y + 4)) { e.mode = 'lurk'; e.cd = GRIND.cd; e.x = e.hx; e.y = s.y + 4; e.vx = 0; e.vy = 0; return; }   /* (batch106 integ) she came up against stone mid-tell: it drops back to its place */ e.x = bxx; e.y = s.y + 4;
     if (e.modeT <= 0) { e.aboard = true; e.mode = 'deck'; e.modeT = 0.4; e.cd = 0.5; e.y = b.y; S.splash && S.splash(); X.mark(e, 'ABOARD', '#ff6b6b'); X.hint('board', 'A GRINDYLOW HAULS ITSELF ABOARD. OUT OF THE WATER IT IS WEAK: CUT IT, AND JUMP ITS GRAB.'); }
     e.vx = 0; e.vy = 0; return; }
   const edge = edgeOf(P, X), inReach = edge && Math.abs(edge.x - e.hx) <= G.leash + 8;
