@@ -14,6 +14,8 @@ import { TK_SAY } from './tomb-king.js';
 import { STK_SAY } from './stockade-hands.js';   /* (claude/stockade2) THE STOCKADE 2's horn, piles, gate, exam and war-tower lines, said as variables */
 import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
+  /* (claude/marsh3) MARSH WOOD 3's boom (src/marsh3.js, main.js stepCurrentRaft and the lever's say): the raft held, the way open - routed as hint-shown requires */
+  'THE BOOM HOLDS HER',
   /* claude/lumbertrail: THE LUMBER TRAIL's felling (src/felling.js) - the first stroke and the fall, routed as hint-shown requires */
   'THE PINE CREAKS AND LEANS', 'THE PINE FALLS: A BRIDGE', 'THE PINE FALLS: A WAY UP', 'TIMBER: IT CRUSHES WHAT STOOD UNDER IT',
   /* (claude/marsh2) THE BULLFROG KING REWORKED (src/frog-king.js): his pond, his grab, the flies, the ripple and the pads - teaching lines, routed as hint-shown requires */

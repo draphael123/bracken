@@ -29409,13 +29409,13 @@ function stepCurrentRaft(m, dt) {
   m.moving = want && m.x < cap - 0.01; m.blocked = want && !m.moving && cap < m.x1;
   if (m.moving) { m.x = Math.min(cap, m.x + m.speed * dt); if (Math.random() < dt * 8) parts.push({ x: m.x, y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
   else if (m.blocked && aboard && !(m.boomSaid > 0)) { m.boomSaid = 5; number(m.x + m.w / 2, m.y - 14, 'THE BOOM HOLDS HER', '#bfe6f5'); SFX.thud(); }
-  if (m.x >= m.x1 - 0.01) { m.x = m.x1; m.done = true; m.moving = false; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); return; }
+  if (m.x >= m.x1 - 0.01) { m.x = m.x1; m.done = true; m.moving = false; SFX.thud(); return; }
   if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const nAb = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length;
     if (m.frogT <= 0 && nAb < (m.frogMax || 2)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1, fx = m.x + m.w / 2 + side * (m.w / 2 + 20);
       if (!isSolid(Math.floor(fx / TS), Math.floor((m.y + 20) / TS)) && !isSolid(Math.floor(fx / TS), Math.floor(m.y / TS))) {   /* never out of a reed stand */
         const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58, col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0];
         enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true });
-        burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } } }
+        burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); } } }
 }
 const fairCalm = () => !bossActive && !enemies.some(e => e.alive && Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90);   /* (claude/faircreepy) the watching scarecrows turn their heads only while nothing is within reach of you */
 const dusk = () => L && L.duskStart !== undefined ? Math.max(0, Math.min(1, (camX - L.duskStart) / L.duskLen)) : 0;
