@@ -16,6 +16,20 @@ export const FOEPASS = {
   stockade: { pursue: true, lead: true },
   moor: { pursue: true, lead: true, affix: true },
   oreroad: { pursue: true, lead: true, affix: true },
+  /* THE ACT I-II SWEEP (claude/sweepact12, 10-20): every other act I-II level goes live - the Lumber Trail (wood; reworked 10-20, Old Tusker) and the Marsh (Marsh 3) left to their own later pass */
+  spore: { pursue: true, lead: true },
+  rootway: { pursue: true, lead: true },
+  burning: { pursue: true, lead: true },
+  kings: { pursue: true, lead: true },
+  underleaf: { pursue: true, lead: true },
+  scree: { pursue: true, lead: true, affix: true },
+  hanging: { pursue: true, lead: true, affix: true },
+  spire: { pursue: true, lead: true, affix: true },
+  skyroad: { pursue: true, lead: true, affix: true },
+  minecart: { pursue: true, lead: true, affix: true },
+  storm: { pursue: true, lead: true, affix: true },
+  crown: { pursue: true, lead: true, affix: true },
+  undercrown: { pursue: true, lead: true, affix: true },
 };
 /* THE AFFIX DENSITY BY ACT: the share of a level's eligible common foes that carry one (never more than one each). Act I none: "from act 2". */
 export const AFFIX_ACT = { 1: 0, 2: 0.15, 3: 0.2, 4: 0.25, 5: 0.3 };
