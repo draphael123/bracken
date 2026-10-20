@@ -88,3 +88,48 @@ export function bakeGar() {
   };
   return pack([frame('swim', 0), frame('swim', 1), frame('lunge', 0), frame('beached', 0), frame('beached', 1)], 15, 12, 18, 6);
 }
+
+// ---------- BOAR (claude/oldtusker) ----------
+// bakeBoar()  THE BOAR - the Lumber Trail's charger (replaces the badger: the same AI, its told charge and the plunge-on-its-back lesson; reusable on any wood level
+//   as ent('badger', x, y, { cnSkin: 'boar' })). A dark bristled wedge, high at the shoulder, a pale snout and two short tusks. GREYBOX: the art lane redraws it.
+//   frames: 0, 1 walk, 2 CHARGE TELL (head down, a fore hoof raking, eye red), 3 CHARGE (long and low, legs flung), 4 DAZED (sat back, head down, eye shut)
+//   canvas 36x20   anchor ax 15, ay 18   pack w/h 18x12
+const BO = { hide: '#5c3c28', hideL: '#7c573a', hideD: '#3a2418', bristle: '#22160e', snout: '#b08070', tusk: '#f0e8d0', hoof: '#1a120c', eye: '#ffcf6a', red: '#ff4a2a' };
+export function bakeBoar() {
+  const W = 36, H = 20, G = 17;
+  const frame = (pose, step) => {
+    const [c, g] = canvas(W, H);
+    const tell = pose === 'tell', charge = pose === 'charge', dazed = pose === 'dazed';
+    const bx = 15 + (charge ? 1 : 0), by = dazed ? 12 : tell ? 10 : 10.5, rx = charge ? 12.5 : 11, ry = dazed ? 4.2 : 4.8;
+    const legsF = charge ? [[bx - 10, -2], [bx + 7, 2]] : dazed ? [[bx - 8, 0], [bx + 6, 1]] : step ? [[bx - 7, 1], [bx + 5, -1]] : [[bx - 8, -1], [bx + 6, 1]];
+    for (const [lx, sh] of legsF) rect(g, lx + 1 + sh, by + 2, 2, G - by - 1, BO.hideD);
+    ellipse(g, bx, by, rx, ry, BO.hide); ellipse(g, bx - 1, by - 1.5, rx - 2, ry - 2.4, BO.hideL);
+    for (let x = Math.round(bx - rx + 2); x < bx + rx - 3; x += 2) { const y = Math.round(by - ry - 1 + (tell ? (bx - x) * 0.1 : 0)); px(g, x, y, BO.bristle); px(g, x, y + 1, BO.bristle); }
+    px(g, Math.round(bx - rx), Math.round(by - 2), BO.bristle); px(g, Math.round(bx - rx - 1), Math.round(by - 3), BO.bristle);
+    const legsN = charge ? [[bx - 9, -3], [bx + 8, 3]] : dazed ? [[bx - 7, 0], [bx + 5, 2]] : step ? [[bx - 8, -1], [bx + 6, 1]] : [[bx - 7, 1], [bx + 5, -1]];
+    for (const [lx, sh] of legsN) { const lift = tell && lx > bx ? 2 : 0; rect(g, lx + sh, by + 2, 3, G - by - 1 - lift, BO.hide); rect(g, lx + sh, G - lift, 3, 1, BO.hoof); }
+    const hx = bx + rx - 3 + (charge ? 2 : 0), hy = by - 3 + (tell ? 3 : dazed ? 4 : charge ? 1 : 0);
+    fillPoly(g, [[hx - 2, hy - 1], [hx + 4, hy], [hx + 9, hy + 3], [hx + 9, hy + 6], [hx + 3, hy + 7], [hx - 2, hy + 5]], BO.hide);
+    rect(g, hx + 8, hy + 3, 2, 3, BO.snout); px(g, hx + 9, hy + 4, BO.hideD);
+    px(g, hx + 6, hy + 2, BO.tusk); px(g, hx + 6, hy + 1, BO.tusk); px(g, hx + 7, hy + 1, BO.tusk);   /* the tusk */
+    px(g, hx - 1, hy - 2, BO.hideD); px(g, hx, hy - 2, BO.hideD);   /* the ear */
+    px(g, hx + 3, hy + 2, dazed ? BO.hideD : tell || charge ? BO.red : BO.eye);
+    if (tell) for (let i = 0; i < 3; i++) px(g, hx + 4 + i, G, '#8a6a40');
+    return outline(c, OUT);
+  };
+  return pack([frame('walk', 0), frame('walk', 1), frame('tell', 0), frame('charge', 0), frame('dazed', 0)], 15, 18, 18, 12);
+}
+// bakePineMoth()  THE PINE MOTH (claude/oldtusker) - a big pale timber moth that hangs over water and clearings in the pines: the wasp's hover (a stepping stone with
+//   wings for the plunge; high, the rising cut's mark), never a wasp. GREYBOX. frames 0-2 wing beats, 3 hurt (wings folded). canvas 14x10, anchor 7,8, pack 10x7
+const MO = { wing: '#d8d0b0', wingD: '#a89a74', eye: '#4a3a28', body: '#8a7a5a', bodyD: '#5e5038', spot: '#6a8a4a' };
+export function bakePineMoth() {
+  const frame = k => { const [c, g] = canvas(14, 10);
+    if (k === 3) { rect(g, 5, 4, 4, 4, MO.wingD); rect(g, 6, 3, 2, 5, MO.body); return outline(c, OUT); }
+    const up = [-3, -1, 1][k];
+    fillPoly(g, [[7, 5], [1, 5 + up - 1], [2, 7 + up * 0.3], [7, 7]], MO.wing); fillPoly(g, [[7, 5], [13, 5 + up - 1], [12, 7 + up * 0.3], [7, 7]], MO.wing);
+    px(g, 3, 5 + Math.round(up * 0.5), MO.spot); px(g, 11, 5 + Math.round(up * 0.5), MO.spot);
+    rect(g, 6, 3, 2, 5, MO.body); px(g, 6, 7, MO.bodyD); px(g, 7, 2, MO.eye); px(g, 6, 2, MO.eye);
+    px(g, 5, 1, MO.bodyD); px(g, 8, 1, MO.bodyD);   /* the feathered feelers */
+    return outline(c, OUT); };
+  return pack([frame(0), frame(1), frame(2), frame(3)], 7, 8, 10, 7);
+}
