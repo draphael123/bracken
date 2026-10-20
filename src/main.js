@@ -2737,7 +2737,7 @@ function spawnEnt(e) {
       case 'thief': enemies.push({ ...base, t: 'thief', w: 8, h: 11, hp: EHP.thief, speed: 70, loot: 0, mode: 'stalk' }); break;
       case 'pike': enemies.push({ ...base, t: 'pike', w: 10, h: 12, hp: EHP.pike, speed: 20, mode: 'guard', modeT: 0 }); break;
       case 'bell': props.push({ t: 'bell', x: px, y: py, hp: 3, rung: false, broken: false, gate: e.gate, section: e.section, ringT: 0 }); break;
-      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, on: false }); break;
+      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, say: e.say, on: false }); break;   /* say (claude/marsh3): its own words when it opens its column (the marsh's boom) */
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, gate: e.gate, down: false }); break;
       case 'tidegate': props.push({ t: 'tidegate', x: px, y: py, col: e.x, y0: e.y0, y1: e.y1, mode: e.mode, open: false }); break;   /* THE LONG WATER's TIDE GATES (updateTideGates) */
@@ -17793,7 +17793,7 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
 function updateTowerSlides(dt){ ZL.zipStep({ P, L, keys, upPress, jumpPress, SFX, callout, burst, sparks, number }, dt); }   /* THE ZIP LINE (claude/zipline, src/zipline.js): take hold anywhere along it (UP, or a touch from a jump), ride downhill either way, JUMP lets go, DOWN drops; the Fair's frayed bunting rope snaps in the same code */
 function towerLever(pr){
   if(pr.dropWeight!==undefined){const w=props.find(p=>p.t==='weight'&&Math.floor(p.x/TS)===pr.dropWeight&&p.state==='hang');if(w){w.state='tell';w.tellT=.5;w.fy=w.y+w.len;number(pr.x,pr.y-26,'THE WEIGHT GOES','#ffd36b');}}
-  if(pr.openColumn){const [x,y0,y1]=pr.openColumn;for(let y=y0;y<=y1;y++){const i=y*LW+x;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}resolveTiles();SFX.gateDrop();number(pr.x,pr.y-26,'THE CAMP GATE OPENS','#8fd160');}
+  if(pr.openColumn){const [x,y0,y1]=pr.openColumn;for(let y=y0;y<=y1;y++){const i=y*LW+x;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}resolveTiles();SFX.gateDrop();number(pr.x,pr.y-26,pr.say||'THE CAMP GATE OPENS','#8fd160');}
 }
 
 /* THE TOLD GUST (Gale Moor rework, docs/briefs/gale-moor-rework.md). A gust zone that says `told` is heard and seen coming: a
@@ -29351,6 +29351,7 @@ function updateMovers(dt) {
       else if (m.state === 'wither') { m.k = Math.max(0, m.k - dt / (m.crushed ? 0.3 : (m.growT || 0.6) * 4 / 3)); if (m.k <= 0) { m.state = 'bud'; m.cd = m.crushed ? 2 : 1; m.crushed = false; } }
       m.y = m.y0 - m.k * m.rise; if (m.lean) m.x = m.bx + m.k * m.lean; m.dy = m.y - oldY;
     } else if (m.kind === 'lifeboat') { updateLifeboat(m, dt);
+    } else if (m.kind === 'raft' && m.current) { stepCurrentRaft(m, dt);   /* (claude/marsh3) MARSH WOOD's reed run and boom: the current carries her (below) */
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       // THE POLE COMES BACK FOR THE LIVING: a swimmer has no respawn to bring the raft home. Give a jump
       // a breath before turning; once homeward, finish the trip even if someone climbs aboard on the way.
@@ -29393,6 +29394,28 @@ function updateMovers(dt) {
     }
     m.dx = m.x - oldX;
   }
+}
+/* (claude/marsh3) A RAFT ON THE CURRENT (MARSH WOOD's REED RUN and THE BOOM, src/marsh3.js): she waits at her dock until you board, and then the current
+   carries her - no pole, no crank. A hop off her (over a reed stand) is not getting off: she keeps going a breath (1 s) and then lies where she is; she never
+   goes home on her own (a death puts her back at her dock, as every raft). A LOG BOOM (a T.PORT column at her row) stops her at its face until its lever
+   opens it. Frogs and bank-foes come aboard while she moves (current.frogs), never out of a reed stand. */
+function stepCurrentRaft(m, dt) {
+  const aboard = players.some(p => !p.dead && p.onMover === m); m.offT = aboard ? 0 : (m.offT || 0) + dt;
+  if (m.boomSaid > 0) m.boomSaid -= dt;
+  if (m.done) { m.moving = false; return; }
+  const row = Math.floor(m.y / TS); let cap = m.x1;
+  for (let c = Math.floor((m.x + m.w) / TS); c <= Math.floor((m.x + m.w + Math.max(8, m.speed * dt)) / TS) + 1; c++) if (tileAt(c, row) === T.PORT || tileAt(c, row + 1) === T.PORT) { cap = Math.min(cap, c * TS - m.w); break; }
+  const want = aboard || m.offT < 1.0;
+  m.moving = want && m.x < cap - 0.01; m.blocked = want && !m.moving && cap < m.x1;
+  if (m.moving) { m.x = Math.min(cap, m.x + m.speed * dt); if (Math.random() < dt * 8) parts.push({ x: m.x, y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
+  else if (m.blocked && aboard && !(m.boomSaid > 0)) { m.boomSaid = 5; number(m.x + m.w / 2, m.y - 14, 'THE BOOM HOLDS HER', '#bfe6f5'); SFX.thud(); }
+  if (m.x >= m.x1 - 0.01) { m.x = m.x1; m.done = true; m.moving = false; SFX.thud(); number(m.x + m.w / 2, m.y - 12, 'DOCKED', '#bfe6f5'); return; }
+  if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const nAb = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length;
+    if (m.frogT <= 0 && nAb < (m.frogMax || 2)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1, fx = m.x + m.w / 2 + side * (m.w / 2 + 20);
+      if (!isSolid(Math.floor(fx / TS), Math.floor((m.y + 20) / TS)) && !isSolid(Math.floor(fx / TS), Math.floor(m.y / TS))) {   /* never out of a reed stand */
+        const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58, col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0];
+        enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true });
+        burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); number(fx, m.y + 10, 'FROG', '#8fd160'); } } }
 }
 const fairCalm = () => !bossActive && !enemies.some(e => e.alive && Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90);   /* (claude/faircreepy) the watching scarecrows turn their heads only while nothing is within reach of you */
 const dusk = () => L && L.duskStart !== undefined ? Math.max(0, Math.min(1, (camX - L.duskStart) / L.duskLen)) : 0;
@@ -32391,6 +32414,7 @@ function drawWorld(cx, cy, showPlayer) {
     for (const lt of lights) { if (lt.ref && lt.ref.t === 'grub') { if (!lt.ref.alive) continue; lt.x = lt.ref.x; lt.y = lt.ref.y - 4; } if (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0)) continue; if (lt.r > 0 && lt.x > cx - 120 && lt.x < cx + VW + 120 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit) && !(lt.bracket && lt.bracket.taken)) hole(lt.x - cx, lt.y - cy, lt.r * 1.3); }
     for (const m of movers) if (m.kind === 'cart' && !m.gone && (m.ridden || Math.abs(m.vx) > 30)) hole(m.x + m.w / 2 - cx, m.y - cy, 66); // a cart on the move carries its own lamp
     for (const f of fires) if (f.delay <= 0) hole(f.x - cx, f.y - 8 - cy, 44);
+    for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 60 && m.x0 < cx + VW + 60) hole(m.x0 + m.w / 2 - cx, m.y0 - 8 - cy, 34);   /* (claude/marsh3) THE NIGHT PADS: a marsh light over every pad that holds */
     if (wisp) hole(wisp.x - cx, wisp.y - cy, 56);
     for (const b of embers) hole(b.x - cx, b.y - cy, 36);
     for (const b of pyres) hole(b.x - cx, b.y - cy, 70);
@@ -32409,7 +32433,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (LPF && LPF.on()) LPF.holes(hole, cx, cy);   /* (claude/lamplit3) burning oil, a cask going up, a burning net and thrown fire */
     if (WKH) for (const e of enemies) if (e.t === 'wickling' && e.alive && e.x > cx - 60 && e.x < cx + VW + 60) { const r = WKH.light(e); if (r) hole(e.x - cx, e.y - 12 - cy, r, 0.8); }   /* a wickling is a drifting flame in the dark */   /* THE LIT CHURCH: every lit lamp, every fire, the flame in your hand */   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
-    g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (LPF && LPF.on()) LPF.drawPools(g, cx, cy, time); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);   /* (lamplit3art) the lit lamps' pools on the wet paving */
+    g.drawImage(DARKC, 0, 0); for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 30 && m.x0 < cx + VW + 30) LPD.drawPadLight(g, m, cx, cy, time); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (LPF && LPF.on()) LPF.drawPools(g, cx, cy, time); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);   /* (lamplit3art) the lit lamps' pools on the wet paving */
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
       for (let ty = gy0; ty <= gy0 + Math.ceil(VH / TS); ty++) for (let tx = gx0; tx <= gx0 + Math.ceil(VW / TS); tx++) { if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1 || L.grid[ty * LW + tx] !== T.SOLID) continue; const hsh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if ((hsh % 100) >= 7) continue; if (tileAt(tx - 1, ty) !== T.AIR && tileAt(tx + 1, ty) !== T.AIR && tileAt(tx, ty - 1) !== T.AIR && tileAt(tx, ty + 1) !== T.AIR) continue;
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }

@@ -147,4 +147,15 @@ function lumberTrail(BK, P) {
   if (!tree) return null;
   return { x: tree.x - tree.dir * 12, y: tree.y, key: 'atk', face: tree.dir, r: 16 };
 }
-export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail };
+/* MARSH WOOD 3's BOOM (claude/marsh3, src/marsh3.js): the current raft stops at the log boom. A player steps over it, hops the pads to the lever on its stilt deck,
+   strikes it, hops back and rides her on (the open water past the lever is the raft's alone). On her while she moves: stand. */
+function marshBoom(BK, P) {
+  if (!P || P.dead || !BK.props || !BK.movers) return null;
+  const lv = BK.props().find(q => q.t === 'lever' && q.openColumn); if (!lv) return null;
+  const bx = lv.openColumn[0] * TS, raft = BK.movers().find(m => m.kind === 'raft' && m.current && m.x0 < bx && m.x1 + m.w > bx); if (!raft) return null;
+  if (P.onMover === raft) { if (!lv.on && raft.blocked) return { x: lv.x - 12, y: lv.y, key: 'atk', face: 1, r: 40 }; return raft.moving ? { x: P.x, y: P.y, key: null, r: 99, at: true, hold: true } : null; }
+  if (raft.done || P.x < raft.x - 2 * TS || P.x > lv.x + 3 * TS) return null;
+  if (!lv.on) return { x: lv.x - 12, y: lv.y, key: 'atk', face: 1, r: 40 };
+  return { x: raft.x + raft.w / 2, y: raft.y, key: null, face: -1, r: 40, at: true };
+}
+export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom };
