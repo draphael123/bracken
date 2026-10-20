@@ -19,7 +19,7 @@ export const FOEPASS = {
   /* THE ACT I-II SWEEP (claude/sweepact12, 10-20): every other act I-II level goes live - the Lumber Trail (wood; reworked 10-20, Old Tusker) and the Marsh (Marsh 3) left to their own later pass */
   spore: { pursue: true, lead: true },
   rootway: { pursue: true, lead: true },
-  burning: { pursue: true, lead: true },
+  burning: { lead: true },   /* (NO pursuit: the walker read 5.5 / 2.5 / 5.0 deaths a hero with it, 4.5 / 1.5 / 2.5 without, base 2.5 / 2.5 / 3.0 - a village on fire; act I wants 0.5-1.5) */
   kings: { pursue: true },   /* (no archer lead: the level-1 pilot lost 4 deaths a 3-run row with it, act I wants <= 3) */
   underleaf: { pursue: true, lead: true },
   scree: { pursue: true, lead: true, affix: 0.1 },   /* (0.1 not 0.15: the pilot read 9 deaths / 412% once and 4-7 deaths twice - a wall at the act's ceiling) */

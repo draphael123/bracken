@@ -355,13 +355,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 52,
-  "deaths": 1,
-  "kills": 60,
-  "lifts": 97,
+  "hits": 37,
+  "deaths": 2,
+  "kills": 68,
+  "lifts": 91,
   "walked": 100,
   "bare": true,
-  "lostPct": 173
+  "lostPct": 142
  },
  "witchlight": {
   "hash": "7fcd84c38afa",
