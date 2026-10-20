@@ -144,6 +144,8 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
+import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
+import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
 import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
@@ -1307,6 +1309,7 @@ function resolveTiles() {
     if (L.lumberKit && L.fellSet && L.fellSet.has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/lumbertrailart) a felled pine's ramp/plank cells are its trunk (drawn as the trunk), never stepped log stubs */
     if (L.lumberKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LTT.lumberTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; continue; } }   /* (claude/lumbertrailart) THE LUMBER TRAIL's tile kit: stumps, corduroy, rock, gravel, the camp's yard, log stacks, the hollow log, log decks */
     if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
+    if (L.marsh3 && (t === T.SOLID || t === T.PORT)) { const ts = M3A.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/marsh3art) the reed stands and the log boom */
     if (L.marsh2Kit && (t === T.SOLID || t === T.PLANK)) { const ts = M2A.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/marsh2art) MARSH WOOD 2: the dam's timbers, the mud bed, the stilt walks' boards */
     if (L.stkKit && (t === T.SOLID || t === T.NET || t === T.PORT)) { const ts = STKA.stkTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* (claude/stockade2art) THE STOCKADE 2's lashed-timber tower bodies, the netted stake pit and the barred gate */
     if (L.lpKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LP3T.lpTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* (claude/lamplit3) THE LAMPLIT STREET's own footing: every one-way is a cobbled lip, an iron balcony, an awning, a lamp crossbar or a gantry - never a plank - and a tar net is drawn as one */
@@ -2571,7 +2574,7 @@ function spawnEnt(e) {
         /* THE COMBINE (tower + gate): the hounds this horn wakes when it sounds, as offsets from him */
         pack: e.pack ? e.pack.map(p => ({ dx: p.dx * TS, y: (p.y + 1) * TS, t: p.t })) : null }); if (e.juggler) Object.assign(enemies[enemies.length - 1], { juggler: true, w: 10, h: 22 }); if (e.bandit) Object.assign(enemies[enemies.length - 1], { bandit: true, w: 10, h: 22 }); break;   /* THE KNIFE JUGGLER (the Harvest Fair, claude/fairfix2): the archer's draw and loose, a man's body, knives for arrows */
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
-      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0, wreck: !!e.wreck });   /* wreck (claude/caravan2): THE SUNKEN CARAVAN's half-buried wagon bed on the quicksand - it sinks under you like a pad and drops you into the sand at the bottom */ break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
+      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0, wreck: !!e.wreck, firm: !!e.firm, lamp: !!e.lamp });   /* (claude/marsh3) firm: a pad that HOLDS (dips, never goes under); lamp: a firm pad with a marsh light over it (the night stretch) */   /* wreck (claude/caravan2): THE SUNKEN CARAVAN's half-buried wagon bed on the quicksand - it sinks under you like a pad and drops you into the sand at the bottom */ break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
       case 'sapper': enemies.push({ ...base, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); break;
       case 'brute': enemies.push({ ...base, t: 'brute', w: 12, h: 16, hp: EHP.brute, speed: 20, mode: 'walk', modeT: 0 }); break;
       case 'cutlass': enemies.push({ ...base, t: 'cutlass', w: 10, h: 18, hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.8 }); break;
@@ -2757,7 +2760,7 @@ function spawnEnt(e) {
       case 'thief': enemies.push({ ...base, t: 'thief', w: 8, h: 11, hp: EHP.thief, speed: 70, loot: 0, mode: 'stalk' }); break;
       case 'pike': enemies.push({ ...base, t: 'pike', w: 10, h: 12, hp: EHP.pike, speed: 20, mode: 'guard', modeT: 0 }); break;
       case 'bell': props.push({ t: 'bell', x: px, y: py, hp: 3, rung: false, broken: false, gate: e.gate, section: e.section, ringT: 0 }); break;
-      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, on: false }); break;
+      case 'lever': props.push({ t: 'lever', x: px, y: py, ram: e.ram, dropWeight:e.dropWeight, openColumn:e.openColumn, say: e.say, on: false }); break;   /* say (claude/marsh3): its own words when it opens its column (the marsh's boom) */
       case 'ram': props.push({ t: 'ram', x: px, y: py - 16, th: 0, active: 0, tm: 0, hit: new Set() }); break;
       case 'plate': props.push({ t: 'plate', x: px, y: py, cage: e.cage, gate: e.gate, down: false }); break;
       case 'tidegate': props.push({ t: 'tidegate', x: px, y: py, col: e.x, y0: e.y0, y1: e.y1, mode: e.mode, open: false }); break;   /* THE LONG WATER's TIDE GATES (updateTideGates) */
@@ -10805,7 +10808,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; creditAll(false);   /* (claude/coopprogress) A CHECKPOINT: every seat on his own save is credited (what is still unbanked waits) */ if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
   if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
-  if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
+  if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 100 * TS) music.preload(L.arena.music || 'boss');   /* (claude/marsh3) 100 tiles out, not 40: six seconds of walking was less than a 1.4 MB boss track takes on a slow line (tools/music-priority.mjs) */
   // A mini arena needs a HEIGHT as well as a width: the Hanging Village stacks eight floors at the same x,
   // and without y0/y1 the Weaver's fight started while you were three tiers below her.
   if (L.mini && !miniActive && !miniDone && (L.mini.reverse?P.x < L.mini.trigger && P.x > L.mini.x0+24:P.x > L.mini.trigger && P.x < L.mini.x1 - 24) && (P.ground || (L.mini.swim && P.swim))
@@ -17830,7 +17833,7 @@ function updateWight(e, dt) { // bog-mist with hands: slow, cold, and it holds y
 function updateTowerSlides(dt){ ZL.zipStep({ P, L, keys, upPress, jumpPress, SFX, callout, burst, sparks, number }, dt); }   /* THE ZIP LINE (claude/zipline, src/zipline.js): take hold anywhere along it (UP, or a touch from a jump), ride downhill either way, JUMP lets go, DOWN drops; the Fair's frayed bunting rope snaps in the same code */
 function towerLever(pr){
   if(pr.dropWeight!==undefined){const w=props.find(p=>p.t==='weight'&&Math.floor(p.x/TS)===pr.dropWeight&&p.state==='hang');if(w){w.state='tell';w.tellT=.5;w.fy=w.y+w.len;number(pr.x,pr.y-26,'THE WEIGHT GOES','#ffd36b');}}
-  if(pr.openColumn){const [x,y0,y1]=pr.openColumn;for(let y=y0;y<=y1;y++){const i=y*LW+x;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}resolveTiles();SFX.gateDrop();number(pr.x,pr.y-26,'THE CAMP GATE OPENS','#8fd160');}
+  if(pr.openColumn){const [x,y0,y1]=pr.openColumn;for(let y=y0;y<=y1;y++){const i=y*LW+x;if(L.grid[i]===T.PORT){L.grid[i]=T.AIR;tileSpr[i]=null;}}resolveTiles();SFX.gateDrop();number(pr.x,pr.y-26,pr.say||'THE CAMP GATE OPENS','#8fd160');}
 }
 
 /* THE TOLD GUST (Gale Moor rework, docs/briefs/gale-moor-rework.md). A gust zone that says `told` is heard and seen coming: a
@@ -29443,7 +29446,7 @@ function updateMovers(dt) {
     if (m.pyr && PYH && PYH.mover(m, dt)) continue;   /* THE SEALED PYRAMID: a counterweight goes where its pair's weights send it (src/sealed-pyramid-hands.js) */   /* THE MASKWRIGHT'S THEATRE: a fly line's batten or sandbag */
     const oldX = m.x, oldY = m.y; m.dy = 0;
     if (m.kind === 'pad') { // sinks while stood on, floats back up when left
-      const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt)); if (m.slapT > 0) m.sink = 1;   /* (claude/marsh2) THE SLAP: the King's pads held under */   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
+      const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt)); if (m.firm && !(m.slapT > 0)) m.sink = Math.min(m.sink, 0.18); if (m.slapT > 0) m.sink = 1; m.padOn = on;   /* (claude/marsh3) a firm pad dips three pixels and holds */   /* (claude/marsh2) THE SLAP: the King's pads held under */   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
       if (m.cd > 0) m.cd -= dt; if (m.fired > 0) m.fired -= dt;   /* a bud that has just thrown you is a plain pad for a second: land back on it and it sinks like any other */ m.y = m.y0 + m.sink * 16; m.dy = m.y - oldY;
       if (m.wreck && on && m.sink > 0.72) { P.onMover = null; P.ground = false; number(P.x, P.y - 24, 'THE BED GOES UNDER', '#e8d0a0'); }   /* (claude/caravan2) THE WAGON BED GOES UNDER: off it you are in the quicksand (jump, and keep jumping) */
       if (m.wreck && on && m.sink > 0.15 && Math.random() < dt * 8) parts.push({ x: m.x + Math.random() * m.w, y: m.y0 + 2, vx: 0, vy: -16, life: 0.35, max: 0.35, col: '#e2bb7a', size: 1, grav: 60 });   /* sand, not water, round a sinking bed */
@@ -29479,6 +29482,7 @@ function updateMovers(dt) {
       else if (m.state === 'wither') { m.k = Math.max(0, m.k - dt / (m.crushed ? 0.3 : (m.growT || 0.6) * 4 / 3)); if (m.k <= 0) { m.state = 'bud'; m.cd = m.crushed ? 2 : 1; m.crushed = false; } }
       m.y = m.y0 - m.k * m.rise; if (m.lean) m.x = m.bx + m.k * m.lean; m.dy = m.y - oldY;
     } else if (m.kind === 'lifeboat') { updateLifeboat(m, dt);
+    } else if (m.kind === 'raft' && m.current) { stepCurrentRaft(m, dt);   /* (claude/marsh3) MARSH WOOD's reed run and boom: the current carries her (below) */
     } else if (m.kind === 'raft') { // waits at the dock until you board, then poles downstream
       // THE POLE COMES BACK FOR THE LIVING: a swimmer has no respawn to bring the raft home. Give a jump
       // a breath before turning; once homeward, finish the trip even if someone climbs aboard on the way.
@@ -29521,6 +29525,28 @@ function updateMovers(dt) {
     }
     m.dx = m.x - oldX;
   }
+}
+/* (claude/marsh3) A RAFT ON THE CURRENT (MARSH WOOD's REED RUN and THE BOOM, src/marsh3.js): she waits at her dock until you board, and then the current
+   carries her - no pole, no crank. A hop off her (over a reed stand) is not getting off: she keeps going a breath (1 s) and then lies where she is; she never
+   goes home on her own (a death puts her back at her dock, as every raft). A LOG BOOM (a T.PORT column at her row) stops her at its face until its lever
+   opens it. Frogs and bank-foes come aboard while she moves (current.frogs), never out of a reed stand. */
+function stepCurrentRaft(m, dt) {
+  const aboard = players.some(p => !p.dead && p.onMover === m); m.offT = aboard ? 0 : (m.offT || 0) + dt;
+  if (m.boomSaid > 0) m.boomSaid -= dt;
+  if (m.done) { m.moving = false; return; }
+  const row = Math.floor(m.y / TS); let cap = m.x1;
+  for (let c = Math.floor((m.x + m.w) / TS); c <= Math.floor((m.x + m.w + Math.max(8, m.speed * dt)) / TS) + 1; c++) if (tileAt(c, row) === T.PORT || tileAt(c, row + 1) === T.PORT) { cap = Math.min(cap, c * TS - m.w); break; }
+  const want = aboard || m.offT < 1.0;
+  m.moving = want && m.x < cap - 0.01; m.blocked = want && !m.moving && cap < m.x1;
+  if (m.moving) { m.x = Math.min(cap, m.x + m.speed * dt); if (Math.random() < dt * 8) parts.push({ x: m.x, y: m.y + 6, vx: -30, vy: -10, life: 0.4, max: 0.4, col: '#eefaff', size: 2, grav: 0 }); }
+  else if (m.blocked && aboard && !(m.boomSaid > 0)) { m.boomSaid = 5; number(m.x + m.w / 2, m.y - 14, 'THE BOOM HOLDS HER', '#bfe6f5'); SFX.thud(); }
+  if (m.x >= m.x1 - 0.01) { m.x = m.x1; m.done = true; m.moving = false; SFX.thud(); return; }
+  if (m.moving && m.frogs) { m.frogT = (m.frogT || 2) - dt; const nAb = enemies.filter(e => e.alive && e.t === 'hopper' && e.raft === m).length;
+    if (m.frogT <= 0 && nAb < (m.frogMax || 2)) { m.frogT = (m.frogEvery || 3) + Math.random() * 2; const side = Math.random() < 0.5 ? -1 : 1, fx = m.x + m.w / 2 + side * (m.w / 2 + 20);
+      if (!isSolid(Math.floor(fx / TS), Math.floor((m.y + 20) / TS)) && !isSolid(Math.floor(fx / TS), Math.floor(m.y / TS))) {   /* never out of a reed stand */
+        const target = m.x + m.w / 2 + side * (m.w / 2 - 22) + m.speed * 0.58, col = ['green', 'green', 'yellow', 'blue'][(Math.random() * 4) | 0];
+        enemies.push({ t: 'hopper', color: col, x: fx, y: m.y + 26, vx: (target - fx) / 0.58, vy: -330, w: 8, h: 6, hp: HOP[col].hp, face: -side, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, timer: 1.4, air: true, raft: m, drone: true });
+        burst(fx, m.y + 26, 8, ['#eefaff', '#bfe6f5'], 60, 0.4); SFX.splash(); } } }
 }
 const fairCalm = () => !bossActive && !enemies.some(e => e.alive && Math.abs(e.x - P.x) < 150 && Math.abs(e.y - P.y) < 90);   /* (claude/faircreepy) the watching scarecrows turn their heads only while nothing is within reach of you */
 const dusk = () => L && L.duskStart !== undefined ? Math.max(0, Math.min(1, (camX - L.duskStart) / L.duskLen)) : 0;
@@ -30156,6 +30182,25 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
   const st = stampOf(s, size, col, style), x0 = Math.round(align === 'center' ? x - st.w / 2 : align === 'right' ? x - st.w : x), y0 = Math.round(y);
   if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style, world: !!g.__mapWorld });
   g.drawImage(st.c, x0 - st.pad, y0 - st.pad);
+}
+/* (claude/marsh3) A LILY PAD IS DRAWN ON THE WATER, NOT UNDER IT: the marsh's deep water lays its pale surface band over every mover (drawWater surface pass), and a
+   pad under it read as a green sliver. A pad that is up is drawn AFTER that pass (drawPadsAfloat); one going under (sink > 0.55) is drawn in the movers' pass, so the
+   surface closes over it. */
+function drawPadMover(m, cx, cy) {
+  if (m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2; LPD.drawPad(g, m, cx, cy, time, PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], -5);   /* (claude/marsh3) its water edge and the sinking tell, under the bud's own ring */
+      if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
+      }
+  else if (m.big) LPD.drawPad(g, m, cx, cy, time, LPD.bakePad(32, m.firm ? 'hold' : 'sink', m.sink > 0.55), -1, m.sink < 0.55 ? [PROP.lilyFlowerBig, 4, -7] : null);   /* (claude/marsh3) the readable pad: tint by what it does, rim, water edge, the tell */   /* every big pad is in flower: the bloom says REST before you are on it */
+  else LPD.drawPad(g, m, cx, cy, time, LPD.bakePad(24, m.firm ? 'hold' : 'sink', m.sink > 0.55), 0, Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55 ? [PROP.lilyFlower, 4, -5] : null);
+}
+function drawPadsAfloat(cx, cy) { for (const m of movers) if (m.kind === 'pad' && !m.wreck && m.sink <= 0.55 && m.x + m.w > cx - 16 && m.x < cx + VW + 16) drawPadMover(m, cx, cy); }
+/* A WORLD LABEL ON ITS OWN DARK PLATE, CENTRED BOTH WAYS (claude/marsh3): the plate is sized from the string's INK (stampOf: w x h), padded 6 a side and 3 above and
+   below, and the words are put in its middle - the CALL RAFT box drew 62 x 12 by hand with the words' TOP at its middle row, so they hung out of the bottom and one
+   pixel right. tools/textfit.mjs 'worldplates' measures it (OFFCENTRE). midX is the plate's centre column, top its top row. */
+function worldPlateLabel(s, midX, top, col, size = 6) {
+  const st = stampOf(s, size, col, 'shadow'), w = st.w + 12, h = st.h + 6, x0 = Math.round(midX - w / 2);
+  g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(x0, top, w, h);
+  text(s, x0 + 6 + st.w / 2, top + 3, col, 'center', size);
 }
 /* THE WIDTH A STRING TAKES ON THE LINE (its advances, the trailing gap included) */
 function textW(s, size = 8) { s = String(s); const face = faceOf(size); let w = 0; for (const ch of s) w += advOf(face, ch); return w * face.k; }
@@ -31320,7 +31365,7 @@ function drawWorld(cx, cy, showPlayer) {
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); drawClimbCues(g,L,cx,cy);
+  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
@@ -31378,11 +31423,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
     if (m.kind === 'pad' && m.wreck) { cvWreckBed(m, cx, cy); continue; }   /* (claude/caravan2) THE SUNKEN CARAVAN's half-buried wagon bed */
-    if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
-      if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
-      g.drawImage(PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], x, Math.round(m.y) - 5 - cy); }
-    else if (m.kind === 'pad' && m.big) { g.drawImage(PROP.padBig[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - 1 - cy); if (m.sink < 0.55) g.drawImage(PROP.lilyFlowerBig, Math.round(m.x) + 4 - cx, Math.round(m.y) - 7 - cy); }   /* every big pad is in flower: the bloom says REST before you are on it */
-    else if (m.kind === 'pad') { g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy); if (Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55) g.drawImage(PROP.lilyFlower, Math.round(m.x) + 4 - cx, Math.round(m.y) - 5 - cy); }
+    if (m.kind === 'pad') { if (m.sink > 0.55) drawPadMover(m, cx, cy); continue; }   /* (claude/marsh3) up pads are drawn on the water, after its surface (drawPadsAfloat) */
     else if (m.kind === 'cart') { if (!m.gone) g.drawImage(PROP.mineCart[Math.abs(m.vx) > 20 ? Math.floor(time * 12) % 2 : 0], Math.round(m.x) - 1 - cx, Math.round(m.y) - 4 - cy); }
     else if (m.kind === 'orelift') { g.fillStyle = '#8b8378'; g.fillRect(Math.round(m.x) + 2 - cx, 0, 2, Math.round(m.y) - cy); g.fillRect(Math.round(m.x) + 60 - cx, 0, 2, Math.round(m.y) - cy); g.drawImage(PROP.orePan, Math.round(m.x) - cx, Math.round(m.y) - 3 - cy); }
     else if (m.kind === 'lift' && m.batten) { if (PUPH) PUPH.drawBatten(m, cx, cy); }   /* THE PUPPETEER's batten */
@@ -31407,6 +31448,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.ghost) drawGhostThing(m, cx, cy);
     else if (m.kind === 'wheel' && (m.torn || m.gear)) drawFieldsWheel(m, cx, cy);
     else if (m.kind === 'lifeboat') drawLifeboat(m, cx, cy);
+    else if (m.kind === 'raft' && m.current) M3A.drawCurrentRaft(g, m, cx, cy, time);   /* (claude/marsh3art) the rougher raft on the current */
     else if (m.kind === 'raft' && m.big && PROP.lw) { const rb = PROP.lw.raftBig, x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.drawImage(rb, x, y); if (rb.rig) g.drawImage(rb.rig, x, y + rb.rigDY); }
     else if (m.kind === 'raft' || m.kind === 'punt') { for (let rx = 0; rx < m.w; rx += 48) g.drawImage(PROP.raft, 0, 0, Math.min(48, m.w - rx), 8, Math.round(m.x) + rx - cx, m.y - cy, Math.min(48, m.w - rx), 8); }
     else if (m.kind === 'drift') { g.save(); g.beginPath(); g.rect(m.x0 - cx, 0, m.x1 + m.w - m.x0, VH); g.clip(); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); g.restore(); }
@@ -31475,7 +31517,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'brazier' && pr.city) { g.drawImage(PROP.city.cityBrazier[1], Math.round(pr.x) - 12 - cx, Math.round(pr.y) - 28 - cy); LA.brazierReach(g, Math.round(pr.x - cx), Math.round(pr.y - cy), Math.sign(P.x - pr.x) || 1, !P.dead && Math.abs(pr.x - P.x) < 20 && Math.abs(pr.y - P.y) < 30, time); }   /* (claude/lamplit2art) the Tollmaster's city brazier: its own iron, never the camp's; it leans to your hand */
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
     else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
-      if (pr.raftCall) { g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(Math.round(pr.x - cx) - 31, Math.round(pr.y - cy) - 46, 62, 12); text('CALL RAFT', pr.x - cx, pr.y - 38 - cy, '#ffe6a0', 'center', 6); } }
+      if (pr.raftCall) worldPlateLabel('CALL RAFT', Math.round(pr.x - cx), Math.round(pr.y - cy) - 46, '#ffe6a0', 6); }   /* (claude/marsh3, Daniel 10-20: the words sat low and off to one side of their box) */
     else if (pr.t === 'throne') g.drawImage(PROP.throne, Math.round(pr.x) - 32 - cx, Math.round(pr.y) - 4 - cy);
     else if (pr.t === 'key' && !pr.got) { const yy = Math.round(pr.y + Math.sin(time * 3 + pr.ph) * 2 - cy), xx = Math.round(pr.x - cx);
       g.globalAlpha = 0.3 + 0.15 * Math.sin(time * 4); g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(xx, yy - 4, 15, 0, 7); g.fill(); g.globalAlpha = 1;
@@ -31663,6 +31705,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'boiler') g.drawImage(PROP.boiler[pr.burst > 0 ? 1 : 0], Math.round(pr.x) - 15 - cx, Math.round(pr.y) - 40 - cy);
     else if (pr.t === 'hammer') { const hy = pr.drop > 0 ? 0 : pr.tell > 0 ? -40 - Math.round(Math.sin(time * 30) * 2) : -28; g.fillStyle = '#4a4f5a'; g.fillRect(Math.round(pr.x) - 2 - cx, 0, 4, Math.round(pr.y + hy) - 24 - cy); g.drawImage(PROP.hammer, Math.round(pr.x) - 14 - cx, Math.round(pr.y + hy) - 24 - cy); }
     else if (pr.t === 'nest') g.drawImage(PROP.nest, Math.round(pr.x) - 12 - cx, Math.round(pr.y) - 17 + (pr.puff > 0 ? 1 : 0) - cy);
+    else if (pr.t === 'lever' && M3A.isBoomLever(L, pr)) M3A.drawLever(g, pr, cx, cy, time);   /* (claude/marsh3art) the boom's winch */
     else if (pr.t === 'lever') g.drawImage(PROP.lever[pr.on ? 1 : 0], Math.round(pr.x) - 5 - cx, Math.round(pr.y) - 14 - cy);
     else if (pr.t === 'plate') g.drawImage(PROP.plate[pr.down ? 1 : 0], Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 4 - cy);
     else if (pr.t === 'tidegate') { const lx = Math.round(pr.x - cx); if (lx > -50 && lx < VW + 50) text(pr.mode === 'high' ? 'HIGH WATER' : pr.mode === 'low' ? 'LOW WATER' : 'THE BORE', lx, Math.round(pr.y - cy), pr.open ? '#8fd160' : '#ffd36b', 'center', 6); }
@@ -32448,7 +32491,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawPadsAfloat(cx, cy); if (L.marsh3) M3A.drawWater(g, L, cx, cy, time, T); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
@@ -32509,11 +32552,13 @@ function drawWorld(cx, cy, showPlayer) {
     { let dk = L.dark || 0, sky = false; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) { dk = z.dark; if (z.storm && (skyGlow > 0 || (strike && strike.state === 'tell'))) { dk = z.dark * (skyGlow > 0 ? Math.max(0.12, 1 - skyGlow / 0.7) : 0.7); sky = true; } }   /* (claude/hurricane2) THE LIGHTNING SHOWS YOU THE WAY: down her seams into the powder store, and it lingers a breath */
       const jump = Math.abs(cx - DARK_A.cx) > VW / 2 || Math.abs(cy - DARK_A.cy) > VH / 2 || DARK_A.id !== curId(); DARK_A.cx = cx; DARK_A.cy = cy; DARK_A.id = curId();
       darkNow += (dk - darkNow) * (jump ? 1 : sky ? 0.3 : 0.08); }
-    dg.fillStyle = 'rgba(' + ((L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';
+    dg.fillStyle = 'rgba(' + (L.marsh3 ? M3A.darkCol : (L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';
     const hole = (x, y, r, a = 1) => { const gr = dg.createRadialGradient(x, y, r * 0.15, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
     for (const lt of lights) { if (lt.ref && lt.ref.t === 'grub') { if (!lt.ref.alive) continue; lt.x = lt.ref.x; lt.y = lt.ref.y - 4; } if (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0)) continue; if (lt.r > 0 && lt.x > cx - 120 && lt.x < cx + VW + 120 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit) && !(lt.bracket && lt.bracket.taken)) hole(lt.x - cx, lt.y - cy, lt.r * 1.3); }
     for (const m of movers) if (m.kind === 'cart' && !m.gone && (m.ridden || Math.abs(m.vx) > 30)) hole(m.x + m.w / 2 - cx, m.y - cy, 66); // a cart on the move carries its own lamp
     for (const f of fires) if (f.delay <= 0) hole(f.x - cx, f.y - 8 - cy, 44);
+    for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 60 && m.x0 < cx + VW + 60) hole(m.x0 + m.w / 2 - cx, m.y0 - 8 - cy, 34);   /* (claude/marsh3) THE NIGHT PADS: a marsh light over every pad that holds */
+    if (L.marsh3) { const mh = M3A.moonHole(L, cx, darkNow); if (mh) hole(mh.x, mh.y, mh.r, mh.a); }   /* (claude/marsh3art) the moon stays lit */
     if (wisp) hole(wisp.x - cx, wisp.y - cy, 56);
     for (const b of embers) hole(b.x - cx, b.y - cy, 36);
     for (const b of pyres) hole(b.x - cx, b.y - cy, 70);
@@ -32532,7 +32577,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (LPF && LPF.on()) LPF.holes(hole, cx, cy);   /* (claude/lamplit3) burning oil, a cask going up, a burning net and thrown fire */
     if (WKH) for (const e of enemies) if (e.t === 'wickling' && e.alive && e.x > cx - 60 && e.x < cx + VW + 60) { const r = WKH.light(e); if (r) hole(e.x - cx, e.y - 12 - cy, r, 0.8); }   /* a wickling is a drifting flame in the dark */   /* THE LIT CHURCH: every lit lamp, every fire, the flame in your hand */   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
-    g.drawImage(DARKC, 0, 0); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (LPF && LPF.on()) LPF.drawPools(g, cx, cy, time); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);   /* (lamplit3art) the lit lamps' pools on the wet paving */
+    g.drawImage(DARKC, 0, 0); for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 30 && m.x0 < cx + VW + 30) LPD.drawPadLight(g, m, cx, cy, time); if (L.marsh3) M3A.drawNight(g, L, cx, cy, time, darkNow); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (LPF && LPF.on()) LPF.drawPools(g, cx, cy, time); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);   /* (lamplit3art) the lit lamps' pools on the wet paving */
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
       for (let ty = gy0; ty <= gy0 + Math.ceil(VH / TS); ty++) for (let tx = gx0; tx <= gx0 + Math.ceil(VW / TS); tx++) { if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1 || L.grid[ty * LW + tx] !== T.SOLID) continue; const hsh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if ((hsh % 100) >= 7) continue; if (tileAt(tx - 1, ty) !== T.AIR && tileAt(tx + 1, ty) !== T.AIR && tileAt(tx, ty - 1) !== T.AIR && tileAt(tx, ty + 1) !== T.AIR) continue;
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }

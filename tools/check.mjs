@@ -288,7 +288,7 @@ if (take('slopes-trace')) results.push(run('slopes-trace', process.execPath, ['t
    the talk pages of every level and the boss fights are the long run: node tools/textfit.mjs --strict) */
 /* THE LEVEL TITLE CARD on every level (claude/storyremove): its own page, so the long textfit run's leftovers never slow it (~2 min alone) */
 if (take('textfit-levelcard')) results.push(run('textfit-levelcard', process.execPath, ['tools/textfit.mjs', 'levelcard', '--strict'], { PORT: String(portFor(4)) }));
-if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,pick,opening,press,title,mapcard,death,results,card,practice,bossjump,bossselect,plates,bossfix,soundtest,whatsnew', '--strict'], { PORT: String(portFor(4)) }));
+if (take('textfit')) results.push(run('textfit', process.execPath, ['tools/textfit.mjs', 'hints,bestiary,store,tree,menu,hud,worldplates,pick,opening,press,title,mapcard,death,results,card,practice,bossjump,bossselect,plates,bossfix,soundtest,whatsnew', '--strict'], { PORT: String(portFor(4)) }));
 /* THE FULL WORDS RUN, UNSCOPED AND STRICT: every sign and NPC page of every level for every hero, every boss fight. ~8 min, so it has its
    own step and its own 10 minute budget (a hang is a FAIL by name, not a stalled release). It runs in the full gate only: a subset runs it
    when it is NAMED exactly ('textfit-full'), never because 'textfit' matched (Daniel, 2026-10-03: the strict run found what the scoped one cannot) */
@@ -304,6 +304,8 @@ if ((!WANT.length || WANT.includes('textfit-full')) && take('textfit-full')) {
 if (take('map-footer')) results.push(run('map-footer', process.execPath, ['tools/map-footer.mjs'], { PORT: String(portFor(9)) }));
 if (take('soundtest')) results.push(run('soundtest', process.execPath, ['tools/soundtest.mjs'], { PORT: String(portFor(8)) }));
 if (take('music-start')) results.push(run('music-start', process.execPath, ['tools/music-start.mjs'], { PORT: String(portFor(8)) }));
+/* THE BOSS TRACK ARRIVES (claude/marsh3, Daniel 10-20: the Frog King played the synth arpeggio): cold into the Croaking Court on a 1.6 Mbit/s line, frogking plays within 15 s and the synth never fills the gap */
+if (take('music-priority')) results.push(run('music-priority', process.execPath, ['tools/music-priority.mjs'], { PORT: String(portFor(8)) }));
 /* THE LEGGING TUNNEL WITH REAL KEYS (claude/canal5, Daniel 10-06: "the raft didn't follow me... I couldn't get to the boss"): the boss heroes, a stray run
    (leaves her at every ledge and ladder, falls in, dies mid-tunnel) and a ride run each, from the summit to Jenny's arena. All seven heroes x 3 seeds by hand:
    node tools/canal-tunnel-route.mjs --seeds=3 */

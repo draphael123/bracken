@@ -48,6 +48,7 @@ function warpLfo() { if (warpLfoG || !ac) return warpLfoG; warpLfoG = ac.createG
 function warpAttach(s, name) { if (!ac || name !== 'harvestfair' || !s.detune || !warpLive()) return; try { s.detune.value = warpCents(warpK); const lf = warpLfo(); lf.connect(s.detune); s.__warped = true; s.addEventListener('ended', () => { try { lf.disconnect(s.detune); } catch {} }); } catch {} }
 function stopMusic() { for (const s of musicSrcs) { try { s.stop(); } catch {} } musicSrcs = []; musicSrc = null; if (musicTimer) clearTimeout(musicTimer); musicTimer = null; musicGen++; }
 const clips = {}; // name -> [AudioBuffer]
+export const SFX_LANES = 8;   /* (claude/marsh3) how many sound clips load at once (initAudio) */
 
 export function initAudio() {
   if (ac) { if (ac.state === 'suspended') ac.resume(); return; }
@@ -66,8 +67,15 @@ export function initAudio() {
     conv = ac.createConvolver(); conv.buffer = ir; revGain = ac.createGain(); revGain.gain.value = 0; conv.connect(revGain); revGain.connect(master); }
   startSynth();
   loadTrack(wantTrack);
+  /* THE SOUND CLIPS, EIGHT AT A TIME, LOW PRIORITY, AND HELD WHILE A MUSIC FILE LOADS (claude/marsh3): all 867 used to be fetched at once, and a music file asked for in the first minute queued behind
+     every one of them (the Frog King's track took 52 s at 1.6 Mbit/s and the fight played the synth arpeggio; tools/music-priority.mjs). Eight lanes keep the clips
+     coming and leave the connection to the music; a clip still loading is played by its synth, as before. */
   fetch('./audio/manifest.json').then(r => r.json()).then(man => {
-    for (const name in man) man[name].forEach((url, i) => fetch(url).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(ab => ac.decodeAudioData(ab)).then(b => { (clips[name] = clips[name] || [])[i] = b; }).catch(() => {}));
+    const q = []; for (const name in man) man[name].forEach((url, i) => q.push([name, url, i]));
+    const lane = () => { if (Object.values(trackPending).some(Boolean)) { setTimeout(lane, 150); return; }   /* a music file on its way has the line to itself */
+      const j = q.shift(); if (!j) return; const [name, url, i] = j;
+      fetch(url, { priority: 'low' }).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(ab => ac.decodeAudioData(ab)).then(b => { (clips[name] = clips[name] || [])[i] = b; }).catch(() => {}).finally(lane); };
+    for (let k = 0; k < SFX_LANES; k++) lane();
   }).catch(() => {});
 }
 export const ready = () => !!ac;
@@ -79,6 +87,7 @@ let voicesOn = true; export function setVoices(v) { voicesOn = !!v; }
 const VOCAL = new Set(['gobDie', 'gobHurt', 'laugh', 'effort', 'hurt', 'roar', 'bossHurt', 'croak']);
 export function setMusicVolume(v) { musicVol = Math.max(0, Math.min(1, v)); if (musicGain && currentTrack && musicOn) musicGain.gain.value = trackVol(currentTrack); else applySynthBoss(); }
 export const musicIsFile = () => !!trackBuf[currentTrack];
+export const musicSynthWould = () => !!ac && !currentTrack && !silenced && !(TRACKS[wantTrack] && !trackFailed[wantTrack]);   /* (claude/marsh3) would schedule() play the synth loop now (tools/music-priority.mjs) */
 export function setUiVolume(v) { if (uiGain) uiGain.gain.value = Math.max(0, Math.min(1, v)); }
 export function setReverb(v) { if (!revGain) return; const want = v > 0.08; if (want !== revOn) { revOn = want; try { if (want) sfxGain.connect(conv); else sfxGain.disconnect(conv); } catch {} } revGain.gain.setTargetAtTime(want ? Math.max(0, Math.min(0.5, v)) : 0, ac.currentTime, 0.3); } // the convolver runs only in the halls and galleries that need it
 export function setAmbientVolume(v) { ambVol = Math.max(0, Math.min(1, v)); if (ac && ambKind) ambGain.gain.setTargetAtTime(ambTarget(ambKind), ac.currentTime, 0.3); }
@@ -525,7 +534,7 @@ const PAL = {
 for (const k in PAL) { const base = SFX[k]; SFX[k] = (...a) => heroVoice === 'paladin' ? PAL[k](...a) : base(...a); }
 
 // ---------- music: files, with the synth loop as a fallback for the theme ----------
-const trackWarned = new Set();
+const trackWarned = new Set(), trackFailed = {};
 function loadTrack(name) {
   if (!ac || !TRACKS[name] || trackBuf[name] || trackPending[name]) return;
   trackPending[name] = true;
@@ -533,7 +542,7 @@ function loadTrack(name) {
   (async () => {
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const r = await fetch(TRACKS[name]);
+        const r = await fetch(TRACKS[name], { priority: 'high' });   /* (claude/marsh3) a music file goes ahead of the boot's 867 sound clips (see initAudio) */
         if (!r.ok) throw new Error('HTTP ' + r.status);
         const b = await ac.decodeAudioData(await r.arrayBuffer());
         trackBuf[name] = b; trackEnd[name] = audibleEnd(b);
@@ -544,6 +553,7 @@ function loadTrack(name) {
         if (attempt < 2) await new Promise(r => setTimeout(r, 250 * (1 << attempt)));
       }
     }
+    trackFailed[name] = true;   /* (claude/marsh3) three tries and no file: now the synth may stand in for it */
   })().finally(() => { trackPending[name] = false; });
 }
 // A LOOP ENDS WHERE THE MUSIC DOES, NOT WHERE THE FILE DOES. Copies are played back to back, so a silent tail
@@ -681,6 +691,11 @@ export function theatreAct(n) {   // told: main.js sets it as the show's acts ch
 function schedule() {
   if (!ac) return;
   if (currentTrack || silenced) { nextT = ac.currentTime; return; }
+  /* (claude/marsh3, Daniel 10-20: the Frog King played "a generic theme, not real music") A TRACK THAT HAS A FILE WAITS FOR ITS FILE. The C-major arpeggio below
+     used to fill every gap while a file was still on its way - and a boss track asked for while the boot's sound clips held the line arrived 50 s late on a slow
+     connection, so the whole fight was the arpeggio. Now a file track is silence until it lands (seconds, with the priority above), and the synth only stands in
+     for a track with no file (the synth boss themes, Waymeet, the Greenteeth) or one whose file failed three times. */
+  if (TRACKS[wantTrack] && !trackFailed[wantTrack]) { nextT = ac.currentTime; return; }
   const SB = bossSynthOf(wantTrack), town = wantTrack === 'waymeet', gtT = wantTrack === 'greenteeth', SL = gtT ? STEP_GT : SB ? SB.step : town ? STEP_TOWN : STEP;
   while (nextT < ac.currentTime + 0.25) {
     const bar = Math.floor(step / 8) % 4, i = step % 8;

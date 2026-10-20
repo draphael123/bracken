@@ -300,6 +300,7 @@ export function makeBot(BK, opts = {}) {   /* opts.fightThrough (claude/foepass)
       if (carrying) { keys.left = keys.right = false; still = Math.max(0, still - 1); }   /* ride it */
       else if (edge) leap = true;                                                        /* the deck ends: go */
       if (sinking && !carrying) leap = true;                                             /* and never linger on one that is going down */
+      if (carrying && (at(fx + dir, fy) === T.SOLID || at(fx + dir, fy - 1) === T.SOLID) && Math.abs((fx + (dir > 0 ? 1 : 0)) * TS - P.x) < 12) { leap = true; keys.left = dir < 0; keys.right = dir > 0; }   /* (claude/marsh3) A REED STAND IN THE RAFT'S WAY: hop it, or it shoves you off the back into the water (MARSH WOOD's reed run) */
     }
 
     // is it getting anywhere? (a respawn throws it back to a checkpoint: that is not being stuck)

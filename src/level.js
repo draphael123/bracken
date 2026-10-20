@@ -40,6 +40,7 @@ import { stormholdTown } from './stormhold-town.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
 import { buildCaravan } from './sunken-caravan.js';
 import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's targeted fixes: the sluice house, the stilts */
+import { applyMarsh3 } from './marsh3.js';   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
@@ -342,7 +343,7 @@ function marshWood() {
   const pilot = (t, x, y, o) => M.ents.push(Object.assign({ t, x, y, face: -1 }, o || {}));
   pilot('wasp', 238, 12, { sting: true, pogo: true }); pilot('archer', 247, 13);
   pilot('spit', 275, 15);
-  return applyMarsh2(M, T, TS);   /* (claude/marsh2) THE SLUICE HOUSE (the channel's third, required use) and the stilts (src/marsh2.js) */
+  return applyMarsh3(applyMarsh2(M, T, TS), T, TS, grow);   /* (claude/marsh2) THE SLUICE HOUSE (the channel's third, required use) and the stilts (src/marsh2.js); (claude/marsh3) then THE REED RUN, THE BOOM and THE NIGHT PADS open before the mud flats (src/marsh3.js) */
 ;
 }
 
@@ -7962,7 +7963,7 @@ const REVIEW = {
   // before a wader is halfway), with gold on the way. (Design audit MARSH WOOD #3, 2026-09-28: the pads this review
   // once laid over the WADING SHALLOWS at 115-127 came back out - "the wading lesson then teaches wading", not a
   // second sink lesson stacked on top of the hoppers it was there to teach.)
-  marsh: L => { const R = rv(L); R.ent('check', 163, 17); for (const x of [465, 468, 471, 474]) { R.ent('pad', x, 17); R.coin(x, 15); } },
+  marsh: L => { const R = rv(L), d = L.marsh3 ? L.marsh3.n : 0; R.ent('check', 163, 17); for (const x of [465, 468, 471, 474]) { R.ent('pad', x + d, 17); R.coin(x + d, 15); } },   /* (claude/marsh3: the court slid right by the new sections' width) */
   // and its own light in every part of it, so the long fungus wood stops being one colour from end to end
   spore: L => { rv(L).ent('check', 330, 13); L.ents = L.ents.filter(e => !(e.t === 'spitcap' && L.arena && e.x > L.arena.wallR));   /* a spitcap left past the Mother's east wall when the Deep Gills grew the wood: nothing out there to guard (level review, 2026-09-24) */
     L.tints = [[0, 120, [120, 200, 90], 0.10], [120, 175, [210, 150, 80], 0.14], [175, 245, [150, 90, 200], 0.12], [245, 285, [220, 190, 120], 0.12], [285, 325, [120, 70, 170], 0.16], [325, 420, [80, 170, 180], 0.14], [420, L.W - 30, [200, 60, 150], 0.16], [L.W - 44, L.W + 24, [230, 160, 70], 0.15]];   /* THE SEAM (claude/sporeseam): the last screens warm from the Mother's pink toward Kingswood's amber, and the first goblin marks stand by the way out */

@@ -5,6 +5,7 @@
 // and which of its lines made it on screen, and every plate (fillRect / roundRect / strokeRect) laid down before it.
 // (src/main.js records them while window.__textRec is an array; nothing is recorded in play.)
 //   OVERFLOW   text runs past the smallest plate under its anchor
+//   OFFCENTRE  a world label's words are not in the middle of their own plate, to a pixel (scope worldplates; claude/marsh3)
 //   OFFSCREEN  text runs off the screen
 //   COLLIDE    two different strings drawn over one another
 //   OVERDRAWN  a meter (a thin bar) drawn after a word, through the middle of it: the Pyromancer's heat bar across his name
@@ -36,7 +37,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'party', 'bossjump', 'bossselect', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'party', 'bossjump', 'bossselect', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -308,6 +309,19 @@ async function pageTextFit(input) {
     frame('hud [' + h + '] minimal hurt and winded', () => { BK.state = 'play'; Object.assign(P, { hp: Math.max(1, P.maxHp * 0.4), st: 0, mixN: 5, mixAt: BK.time, mixLast: 'x' }); });
     P.hp = P.maxHp; P.st = P.maxSt; await yieldNow(); }
 
+  /* THE WORLD PLATES (claude/marsh3, Daniel 10-20: "the black text box on the raft - text not centred"): a label drawn on its own dark plate over the world
+     (src/main.js worldPlateLabel - the marsh cranks' CALL RAFT) has its words in the MIDDLE of the plate, both ways, to a pixel: OFFCENTRE otherwise. */
+  if (want('worldplates')) { const k = campaign.find(([l]) => l.id === 'marsh'); if (!k) issues.push({ type: 'ERROR', screen: 'worldplates', s: 'marsh missing', n: 1 }); else { toPlay(k[1], 'knight');
+    const cranks = BK.L.ents.filter(e => e.t === 'crank' && e.raftCall); if (!cranks.length) issues.push({ type: 'ERROR', screen: 'worldplates', s: 'no raft crank in the marsh', n: 1 });
+    for (const c of cranks) { for (const e of BK.enemies()) if (!e.maxHp) e.alive = false; BK.tp(c.x - 2, c.y); BK.sim(90); BK.tp(c.x - 2, c.y);   /* the camera catches up first */
+      const rec = frame('worldplate CALL RAFT @' + c.x, () => { BK.state = 'play'; }, { settle: 2 }), t = rec.find(r => r.kind === 'text' && r.s === 'CALL RAFT');
+      if (!t) { issues.push({ type: 'ERROR', screen: 'worldplate @' + c.x, s: 'CALL RAFT not drawn', n: 1 }); continue; }
+      const p = rec.filter(r => r.kind === 'rect' && r.i < t.i && r.x0 <= t.x0 && r.x0 + r.w >= t.x0 + t.w && r.y0 <= t.y0 && r.y0 + r.h >= t.y0 + t.h).sort((a, b) => a.w * a.h - b.w * b.h)[0];
+      if (!p) { report('OFFCENTRE', 'worldplate CALL RAFT @' + c.x, t, { why: 'no plate holds the words', text: [t.x0, t.y0, t.w, t.h] }); continue; }
+      const dx = (t.x0 - p.x0) - (p.x0 + p.w - (t.x0 + t.w)), dy = (t.y0 - p.y0) - (p.y0 + p.h - (t.y0 + t.h));
+      if (Math.abs(dx) > 1 || Math.abs(dy) > 1) report('OFFCENTRE', 'worldplate CALL RAFT @' + c.x, t, { by: Math.max(Math.abs(dx), Math.abs(dy)), plate: [p.x0, p.y0, p.w, p.h], text: [t.x0, t.y0, t.w, t.h] }); } }
+    await yieldNow(); }
+
   /* THE BOSS PLATES, every boss and mini fight in the campaign: its name, its health and any meter of its own, at the foot of the
      screen - the band under VH - 40 only, so the fights' own world captions (the long run, 'boss') are not asked here. In the suite. */
   if (want('plates')) for (const [l, i] of campaign) { try { toPlay(i, 'knight'); } catch (e) { continue; } const Lb = BK.L;
@@ -401,7 +415,7 @@ async function main() {
     const base = r.shots.length; for (const it of part.issues) if (it.shot !== undefined) it.shot += base;
     part.shots.forEach((sh, k) => { shotUrls.push(part.urls[k]); r.shots.push({ ...sh, k: r.shots.length }); }); }
   const by = {}; for (const it of r.issues) (by[it.type] = by[it.type] || []).push(it);
-  const ORDER = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'LONGHINT', 'SMUDGE', 'ERROR'];
+  const ORDER = ['OFFCENTRE', 'OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'LONGHINT', 'SMUDGE', 'ERROR'];
   for (const ty of ORDER) { const list = by[ty] || []; if (!list.length) continue;
     console.log('\n== ' + ty + ' (' + list.length + ')');
     for (const it of list.slice(0, 60)) console.log('  ' + (it.at || '').padEnd(15) + ' ' + it.screen.slice(0, 60).padEnd(60) + ' ' + JSON.stringify(String(it.s).slice(0, 70)) +
@@ -418,7 +432,7 @@ async function main() {
   console.log(r.shots.length + ' pictures in ' + SHOTS);
   if (pg.errors.length) console.log('page errors:\n  ' + [...new Set(pg.errors)].slice(0, 8).join('\n  '));
   pg.close();
-  const hard = ['OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'SMUDGE'].reduce((n, ty) => n + (by[ty] || []).length, 0);   /* LONGHINT is reported, not failed */
+  const hard = ['OFFCENTRE', 'OVERFLOW', 'OFFSCREEN', 'CLIPPED', 'TRUNCATED', 'COVERS', 'COLLIDE', 'OVERDRAWN', 'SMUDGE'].reduce((n, ty) => n + (by[ty] || []).length, 0);   /* LONGHINT is reported, not failed */
   process.exit(strict && hard ? 1 : 0);
 }
 main().catch(e => { console.error(e.message); process.exit(1); });
