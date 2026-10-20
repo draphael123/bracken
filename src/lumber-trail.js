@@ -216,7 +216,7 @@ export function buildLumberTrail({ painter, T, TS }) {
     tints: [[0, 104, [255, 214, 140], 0.10], [105, 205, [140, 196, 214], 0.12], [206, 300, [214, 150, 84], 0.10], [301, 409, [30, 76, 50], 0.14], [410, 509, [60, 96, 140], 0.18], [510, 549, [240, 180, 40], 0.16]],   /* the cabin glade's gold, the ford's cool mist, the camp's smoke-amber, the ridge's deep green, the tarn's cold blue, the hive's amber */
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 21 }, pools, falls: [], moversExtra, lessons, fellRamps: true,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
-    duskStart: 5800, duskLen: 1000, music: 'brackenwood',
+    duskStart: 5800, duskLen: 1000, music: 'lumbertrail',
     weather: [{ x0: 0, x1: 104 * TS, kind: 'pollen' }, { x0: 105 * TS, x1: 206 * TS, kind: 'mist' }, { x0: 410 * TS, x1: 430 * TS, kind: 'mist' }, { x0: 470 * TS, x1: 99999, kind: 'rain' }],
     ambient: [{ x0: 0, x1: 108 * TS, kind: 'forest' }, { x0: 108 * TS, x1: 166 * TS, kind: 'water' }, { x0: 166 * TS, x1: 410 * TS, kind: 'forest' }, { x0: 410 * TS, x1: 442 * TS, kind: 'water' }, { x0: 442 * TS, x1: 506 * TS, kind: 'forest' }, { x0: 506 * TS, x1: 99999, kind: 'hive' }],
     arena: { x0: 514 * TS, x1: 547 * TS, floor: 9 * TS, trigger: 518 * TS, wallL: 513, wallR: 547, boss: 'queen', tint: '#e0b040', tintA: 0.12, fx: 'bees' },
