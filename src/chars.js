@@ -2787,7 +2787,7 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
 }
-// THE DEATH KNIGHT: a horned helm with nothing in it but two green lights, plate the colour of a cold
+// THE BLOOD KNIGHT (the Death Knight until claude/bloodknight; id 'reaper'): a horned helm with nothing in it but two crimson lights (they were green), plate the colour of a cold
 // forge, a torn red surcoat, and a two-handed sword as long as he is with runes cut down the fuller.
 // The silhouette has to say KNIGHT at sixteen pixels and say it from the horns and the pauldrons, because
 // that is all there is room for - so the horns are the outermost pixels of the sprite and the shoulders
@@ -2810,7 +2810,8 @@ const REAP_PLUME = [
   ['s........s', 'vv.....vvs', '.vvSSSSvv.'],
   ['.s......s.', 'vv......vv', '.vvSSSSvv.'],
 ];
-const REAP_PAL = { s: '#b9c2cf', S: '#68707e', b: '#232a38', B: '#141824', r: '#5e1822', y: '#8fd160',
+const REAP_PAL = { s: '#b9c2cf', S: '#68707e', b: '#2a1e26', B: '#170f15', r: '#6e1424', y: '#ff3a4a',   /* (claude/bloodknight) THE BLOOD KNIGHT: crimson lights in the helm, plate gone to a dried-blood black, the surcoat a deeper red (the crimson art lane finishes it) */
+ 
   k: '#0a0c10', w: '#6a5a42', W: '#3e3428', v: '#39404e' };
 /* THE DEATH KNIGHT 2's OWN BODY (claude/dk2art, scratch/brief-dk2.md, B16: every ability its own windup + release pose). REAPER'S RHYTHM's three cuts each a different
    blade (a rising low diagonal / a reverse sweep along the shins that hooks / a heavy overhead drag that drinks), GRAVE KNEEL (the blade planted point-down, both
@@ -2870,7 +2871,7 @@ function reaperRhythmPoses(F, sh, atkOnly = false) {
    the second beat is the point about to bite (the glow white-hot), the spikes of the grave burst (main.js graveFall) already lifting under it. */
 function reaperGravePoses(F, sh) {
   const top = ATTACK_HEADROOM, [X, Y] = sh, K = o => knightFrame({ top, ...o });
-  const a = (x, y, col) => [x - BX, y - BY, col], GRN = '#4fe08a', DGRN = '#1f7a44', LGRN = '#b8ffd0', BONE = '#d8ccb0', DBONE = '#8a7a5a', RED = '#c0283a', PINK = '#ff6b6b';
+  const a = (x, y, col) => [x - BX, y - BY, col], GRN = '#ff4a5a', DGRN = '#7a1020', LGRN = '#ffb0b8', BONE = '#ffd0d0', DBONE = '#5a0a18', RED = '#c0283a', PINK = '#ff6b6b';   /* (claude/bloodknight) CRIMSON, not necrotic green; blood, not bone (the names stay so the frames below read as they did) */
   const gs = (hx, hy, tx, ty) => ({ arm: [X, Y, hx, hy], greatsword: [hx, hy, tx, ty] });
   const along = (hx, hy, tx, ty, n, c0, c1) => Array.from({ length: n }, (_, i) => { const t = (i + 1) / (n + 1); return a(Math.round(hx + (tx - hx) * t), Math.round(hy + (ty - hy) * t), i % 2 ? c1 : c0); });
   const hold = F.jump ? F.jump[1] || F.jump[0] : F.atk[4];

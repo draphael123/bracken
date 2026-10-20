@@ -141,8 +141,8 @@ export const emberNow = (BK, h, e) => emberPlan(BK, h, e) === 'raise';
                          the PALADIN kneels while his light is under CRB_LOW (and once down, until it is full, while it stays calm)
                          the GEOMANCER takes a LOOK (CRB_LOOK s) when she has not looked for CRB_EVERY s - in the labs a calm moment
                          after a fight or on coming into a room is where a section starts
-                         the DEATH KNIGHT, over a body he has not drawn, draws it
-     'left'/'right'  - the death knight walks to a body within CRB_WALK px (health or blood not full)
+                         (the Blood Knight drew a body here until claude/bloodknight: his harvest is gone)
+     'left'/'right'  - the paladin walks to a holy light within CRB_WALK_HOLY px
      null            - nothing: it is not calm, or there is nothing to do */
 export const CRB_CALM = 130, CRB_TELL = 220, CRB_LOW = 50, CRB_LOOK = 0.5, CRB_EVERY = 8, CRB_WALK = 64, CRB_WALK_HOLY = 160;
 export function crouchCalm(BK) { const P = BK.P;
@@ -151,7 +151,7 @@ export function crouchCalm(BK) { const P = BK.P;
     if (ad < CRB_CALM && dy < 60) return false; if (ad < CRB_TELL && dy < 90 && (BK.telling(e) || /Tell$/.test(e.mode || ''))) return false; }
   return !BK.seeds().some(s => !s.dead && !s.reflected && Math.hypot(s.x - P.x, s.y - (P.y - 8)) < 140); }
 export function crouchBPlan(BK, h) {
-  if (h !== 'paladin' && h !== 'geomancer' && h !== 'reaper') return null; const C = BK.crouchB && BK.crouchB(); if (!C) return null;
+  if (h !== 'paladin' && h !== 'geomancer') return null; const C = BK.crouchB && BK.crouchB(); if (!C) return null;
   const P = BK.P; P.crbF = (P.crbF || 0) + 1;
   if (!crouchCalm(BK)) { P.crbLook = 0; return null; }
   if (h === 'paladin') { if ((P.light || 0) >= (C.praying ? 100 : CRB_LOW)) return null;
@@ -160,9 +160,7 @@ export function crouchBPlan(BK, h) {
     return b ? (b.x > P.x ? 'right' : 'left') : 'down'; }
   if (h === 'geomancer') { if (P.crbLook > 0) { P.crbLook--; return 'down'; }
     if (P.crbF - (P.crbLookAt ?? -1e9) > CRB_EVERY * 60) { P.crbLookAt = P.crbF; P.crbLook = Math.round(CRB_LOOK * 60); return 'down'; } return null; }
-  if ((P.hp >= P.maxHp && (P.harvest || 0) >= 100) || !C.bodies.length) return null;
-  let b = null; for (const q of C.bodies) if (Math.abs(q.x - P.x) < CRB_WALK && q.y - P.y > -20 && q.y - P.y < 6 && (!b || Math.abs(q.x - P.x) < Math.abs(b.x - P.x))) b = q;
-  if (!b) return null; return Math.abs(b.x - P.x) <= 6 || C.drawing ? 'down' : b.x > P.x ? 'right' : 'left'; }
+  return null; }   /* (claude/bloodknight) the Blood Knight draws no bodies: his harvest is gone */
 /* the hands for it: only the keys it names, every other action key let go (false, and nothing pressed, for no plan) */
 export function crouchBKeys(BK, plan) { if (!plan) return false; const k = BK.keys; k.atk = k.block = k.jump = k.up = false; k.down = plan === 'down'; k.left = plan === 'left'; k.right = plan === 'right'; if (plan === 'down') BK.unpress(); return true; }
 /* THE CROUCH TWISTS, PART A, in the hands (claude/croucha, src/crouch-a.js). Each says, for one frame against one foe, "hold down":

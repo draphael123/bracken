@@ -29,7 +29,7 @@ export const DK2 = {
   /* GRAVE KNEEL: what a low blow turned on the planted blade costs him (the guard's own price, src/commit.js blockCost) */
   kneel: { said: 1.2 },
   /* THE DEAD LINGER for him: a body's life (s) and the last `fade` s it dims over */
-  linger: { body: 45, fade: 3 },
+  linger: { body: 24, fade: 3 },   /* (claude/bloodknight) 24 s: the dead linger as normal again (45 s was for the harvest, which is gone) */
 };
 
 /* HE NEVER KILLS HIMSELF: what his own kit costs leaves him at least one, and never takes a last point he has */

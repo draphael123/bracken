@@ -31,7 +31,7 @@ try {
       /* a stumble: down for 0.1 s */
       K.down = true; BK.sim(6); none(); BK.sim(10); r.stumbleTold = BK.crouchHint().stats.told;
       /* the crouch: held 1 s */
-      for (const k of ['crouchTold_knight', 'crouchTold_warden', 'crouchTold_pirate', 'kneelTold', 'senseTold', 'harvestTold', 'workTold', 'pounceTold']) delete BKT.PROG[k];   /* (the contextual lines are tested in their own checks) */
+      for (const k of ['crouchTold_knight', 'crouchTold_warden', 'crouchTold_pirate', 'kneelTold', 'senseTold', 'harvestTold', 'spikeTold', 'workTold', 'pounceTold']) delete BKT.PROG[k];   /* (the contextual lines are tested in their own checks) */
       K.down = true; { let n = 0; while (BK.crouchHint().stats.told < 1 && n < 2000) { BK.sim(10); n += 10; } r.after = n; }   /* (the stockade's own toasts are up first: it waits for them) */
       r.msg = BKT.hintNow.msg; r.t = BKT.hintNow.t; r.told = BK.crouchHint().stats.told; r.flag = BKT.PROG.crouchFirst && BKT.PROG.crouchFirst[h]; none();
       /* again: never twice (a minute later, and after a level load) */

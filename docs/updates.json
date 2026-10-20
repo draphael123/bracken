@@ -1,6 +1,16 @@
 [
   {
     "date": "2026-10-20",
+    "batch": 108,
+    "lines": [
+      "The Death Knight is now THE BLOOD KNIGHT",
+      "Blood Debt: hit back to win your health back",
+      "Hold X: a five-tier heavy, up to Blood Moon",
+      "Down+C: Blood Price. Kneel on the beat: Spike"
+    ]
+  },
+  {
+    "date": "2026-10-20",
     "batch": 107,
     "lines": [
       "Lumber Trail: felled bridges and trees stay",
