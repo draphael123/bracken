@@ -35,3 +35,8 @@ export function underTrunk(e, px, py, TS = 16) {
   if (px < R.foot[0] * TS || px > (R.head[0] + 1) * TS) return false;
   const yl = rampYAt(R, px, TS); return py >= yl - 6 && py <= yl + DROP_DEPTH * TS;
 }
+/* (claude/lumberfix) THE WORLD-X SPAN a felled pine covers (px): stump to crown, a tile of slack each end. The draw's screen cull must test THIS, not the stump's x: a trunk is up to 14 tiles long, so walking on past it left the stump off screen and the whole fallen pine un-drawn until you came back */
+export function fellSpan(e, TS = 16) {
+  const R = fellRamp(e); if (R) return [R.foot[0] * TS - TS, (R.head[0] + 1) * TS + TS];
+  const dir = e.dir || 1, a = e.x * TS, b = (e.x + dir * ((e.len || 12) + 1)) * TS; return [Math.min(a, b) - TS, Math.max(a, b) + 2 * TS];
+}
