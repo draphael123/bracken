@@ -165,7 +165,7 @@ if (PAGE.length) {
       const ar = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'arena').x});BK.sim(3);__talk(p);BK.sim(2);return {st:BK.state,h:BK.tavern.hint().msg,seen:__st('arena').seen};})()`);
       ok(ar.st === 'play' && /COMING SOON/.test(ar.h) && ar.seen, 'THE ARENA PIT is roped off: COMING SOON, nothing opens: ' + JSON.stringify(ar));
       /* (claude/coopclarity) THE SAVES SIGN: READ opens the co-op guide on its HOW CO-OP SAVES WORK page, closing returns to the inn */
-      const sg = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'saves').x});BK.sim(3);__talk(p);BK.sim(2);const o={st:BK.state,page:BK.coopHelp.page,title:BK.coopHelp.pages()[BK.coopHelp.page].title,seen:__st('saves').seen};BK.state='play';return o;})()`);
+      const sg = await E(`(()=>{const p=__P(1);__at(p,${STATIONS.find(s => s.id === 'saves').x});BK.sim(3);__talk(p);BK.sim(2);const o={st:BK.state,page:BK.ui.coopHelp.page,title:BK.ui.coopHelp.pages()[BK.ui.coopHelp.page].title,seen:__st('saves').seen};BK.state='play';return o;})()`);
       ok(sg.st === 'coophelp' && /HOW CO-OP SAVES WORK/.test(sg.title) && sg.seen, 'THE SAVES SIGN opens the co-op guide on the saves page: ' + JSON.stringify(sg));
       /* the bell + revive drill */
       const bl = await E(`(()=>{const a=__P(1),b=__P(2),o={};for(const q of [a,b]){q.hp=q.maxHp;q.down=0;}__at(a,${STATIONS.find(s => s.id === 'bell').x});__at(b,${STATIONS.find(s => s.id === 'bell').x + 3},true);BK.sim(3);const d0=BK.stats().deaths;__talk(a);o.down=b.down;o.d0=d0;

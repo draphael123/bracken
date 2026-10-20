@@ -89,7 +89,7 @@ try {
   await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY + '&touch=1', '!!window.BKGUEST');
   await until(guest, 'BKGUEST.state().phase === "slot"', 25000, 'the guest to reach his own save slots');
   const slotsTxt = await Gu('document.getElementById("olguest").innerText');
-  ok(/SAVE 1 - PYRO LV 6: EARNS XP, SILVER + CLEARS INTO SAVE 1/.test(slotsTxt) && /SAVE 2 - EMPTY/.test(slotsTxt) && /JUST VISIT/.test(slotsTxt), '2: the guest first picks one of HIS OWN save slots (slot 1 his PYRO LV 6; an empty one starts a new save; or JUST VISIT): ' + slotsTxt.replace(/\s+/g, ' ').slice(0, 170));
+  ok(/SAVE 1 - PYRO LV 6: EARNS XP, SILVER [+] CLEARS INTO SAVE 1/.test(slotsTxt) && /SAVE 2 - EMPTY/.test(slotsTxt) && /JUST VISIT/.test(slotsTxt), '2: the guest first picks one of HIS OWN save slots (slot 1 his PYRO LV 6; an empty one starts a new save; or JUST VISIT): ' + slotsTxt.replace(/\s+/g, ' ').slice(0, 170));
   ok((await H('BKONLINE.debug().sess.phase')) === 'picking', '2: the host sees player two picking');
   await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.dataset.slot==="0").click()');
   await until(guest, 'BKGUEST.state().phase === "pick"', 5000, 'the hero pick of his slot');
