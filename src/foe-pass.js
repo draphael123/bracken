@@ -20,15 +20,15 @@ export const FOEPASS = {
   spore: { pursue: true, lead: true },
   rootway: { pursue: true, lead: true },
   burning: { pursue: true, lead: true },
-  kings: { pursue: true, lead: true },
+  kings: { pursue: true },   /* (no archer lead: the level-1 pilot lost 4 deaths a 3-run row with it, act I wants <= 3) */
   underleaf: { pursue: true, lead: true },
-  scree: { pursue: true, lead: true, affix: true },
+  scree: { pursue: true, lead: true, affix: 0.1 },   /* (0.1 not 0.15: the pilot read 9 deaths / 412% once and 4-7 deaths twice - a wall at the act's ceiling) */
   hanging: { pursue: true, lead: true, affix: true },
   spire: { pursue: true, lead: true, affix: true },
   skyroad: { pursue: true, lead: true, affix: true },
   minecart: { pursue: true, lead: true, affix: true },
   storm: { pursue: true, lead: true, affix: true },
-  crown: { pursue: true, lead: true, affix: true },
+  crown: { pursue: true, lead: true, affix: 0.1 },   /* (0.1 not 0.15: 5-10 deaths / 399-541% across three pilots - the act II ceiling is 400%) */
   undercrown: { pursue: true, lead: true, affix: true },
 };
 /* THE AFFIX DENSITY BY ACT: the share of a level's eligible common foes that carry one (never more than one each). Act I none: "from act 2". */
