@@ -188,3 +188,14 @@ export function clearingDress(g, x0, x1, fy, cx, cy, VW, time) {
   put(once('horse', bakeSawhorse), X(0.66), 0); put(stumpS(0), X(0.74), 0); put(blockSprite(), X(0.87), 0); put(railFence(0), X(0.94), 0, true); put(logPileSprite(), X(0.975), 0, true);
 }
 export const _boarKeys = () => memo.size;
+
+/* ---------- THE WOODSMEN'S KITE (the trail's seven kite goblins): a spruce-twig frame, bark-cloth / oilcloth patched with birch-bark, a hemp string, a tail of woodchips and a pine cone ---------- */
+export const WOOD_KITE_COLS = ['#a8885a', '#6a8a4a', '#b8663a', '#7a8a96'];   /* birch-bark cloth, moss green, rust oilcloth, rain-grey sailcloth */
+export function drawWoodKite(g, kx, ky, col, time) {
+  g.fillStyle = col; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky + 8); g.lineTo(kx - 7, ky); g.closePath(); g.fill();
+  g.fillStyle = 'rgba(255,240,200,0.28)'; g.beginPath(); g.moveTo(kx, ky - 8); g.lineTo(kx + 7, ky); g.lineTo(kx, ky); g.closePath(); g.fill();   /* the lit quarter */
+  g.fillStyle = '#e2cb92'; g.fillRect(kx + 2, ky - 3, 3, 2); g.fillRect(kx - 5, ky + 1, 2, 2);   /* birch-bark patches */
+  g.fillStyle = '#3e2614'; g.fillRect(kx, ky - 8, 1, 16); g.fillRect(kx - 7, ky, 14, 1);          /* the spruce-twig cross */
+  g.fillStyle = '#8c6034'; g.fillRect(kx - 8, ky, 1, 1); g.fillRect(kx + 7, ky, 1, 1); g.fillRect(kx, ky - 9, 1, 1); g.fillRect(kx, ky + 8, 1, 1);   /* lashed tips */
+  for (let k = 1; k < 4; k++) { const sx = kx - 1 + Math.round(Math.sin(time * 6 + k) * 2); g.fillStyle = k % 2 ? '#e2cb92' : '#9a7442'; g.fillRect(sx, ky + 8 + k * 4, 3, 2); if (k === 3) { g.fillStyle = '#6a4425'; g.fillRect(sx, ky + 8 + k * 4 + 2, 2, 3); g.fillStyle = '#8c6034'; g.fillRect(sx - 1, ky + 8 + k * 4 + 3, 4, 1); } }   /* a tail of chips ending in a pine cone */
+}
