@@ -5,7 +5,9 @@
 // THE STATIONS, west to east (a player walks up and presses INTERACT - E/T, UP on a pad, the touch USE button):
 //   DOOR          the way in and out. Players WALK IN through it as they join (a pad's JUMP or START anywhere in the room; an online guest when he has
 //                 picked his hero). P1 at the door: OUT TO THE MAP (the party comes too). Anyone else: LEAVE THE PARTY.
-//   INVITE BOARD  the online room: HOST A GAME / JOIN A FRIEND (src/online.js's board); while a room is open its CODE is chalked on the board.
+//   PARTY BOARD   (claude/coopprogress, Daniel 10-19: THE co-op entry) the four seats (src/party-board.js): each empty one offers JOIN (a local player on one of
+//                 this browser's OTHER save slots, or a guest who saves nothing), INVITE (the online room: HOST A GAME / JOIN A FRIEND, src/online.js's board)
+//                 and AI PARTNER (coming soon: the AI companions lane). While a room is open its CODE is chalked on the board.
 //   CAMPAIGN TABLE  the map table: TAKE THE ROAD - the party, as it stands in the room, goes to the map armed for the next wood.
 //   WARDROBE      that player's own card: HERO, WEAPON (a weapon skin), COLOUR (his ring, tag and plate) and RING (the floor ring on/off, for everyone).
 //   TRAINING YARD the back of the room: straw dummies; the PARTNER DRILLS board (THROW into the hay target, REVIVE off the sparring bell, TEAM HIT on
@@ -23,7 +25,7 @@ import * as TA from './tavern-art.js';   /* (claude/tavernart) the stations' art
 export const ROOM = { W: 68, H: 26, FLOOR: 20, CEIL: 12, wallL: 1, wallR: 66 };
 export const STATIONS = [
   { id: 'door', x: 3, name: 'THE DOOR', verb: 'LEAVE', first: 'THE DOOR: FRIENDS WALK IN HERE. P1 TAKES THE PARTY OUT TO THE MAP.' },
-  { id: 'board', x: 7, name: 'THE INVITE BOARD', verb: 'INVITE', first: 'THE INVITE BOARD: HOST AN ONLINE ROOM AND CHALK ITS CODE UP, OR JOIN A FRIEND\'S.' },
+  { id: 'board', x: 7, name: 'THE PARTY BOARD', verb: 'PARTY', first: 'THE PARTY BOARD: FILL A SEAT - JOIN HERE ON A SAVE OF YOUR OWN, OR INVITE A FRIEND ONLINE.' },
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
   { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
@@ -80,7 +82,7 @@ export function makeTavern(api) {
     st.stats.uses[s.id] = (st.stats.uses[s.id] || 0) + 1;
     const wasNew = !seen(s.id); markSeen(s.id);
     if (s.id === 'door') { if (p.n === 1) api.toMap(); else { api.leave(p); st.stats.leaves++; } return; }
-    if (s.id === 'board') { api.openOnline(); return; }
+    if (s.id === 'board') { (api.openParty || api.openOnline)(); return; }
     if (s.id === 'table') { api.takeRoad(); return; }
     if (s.id === 'wardrobe') { st.cardFor.set(p, { row: 0 }); api.sfx('uiSel'); return; }
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }

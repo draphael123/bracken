@@ -233,6 +233,7 @@ import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscr
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
+import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
 import * as PARTY from './party.js'; import { makeTavern, STATIONS as TAV_STATIONS, DUMMIES as TAV_DUMMIES, WALK_IN as TAV_WALK, DOWN_T_TAVERN, START as TAV_START } from './tavern.js';   /* THE TAVERN (claude/tavern, co-op phase 2): up to four players, their colours/rings/tags, the shared camera's zoom, the leash (src/party.js); the inn's stations (src/tavern.js) */
@@ -339,11 +340,28 @@ const coopShownHero = () => coopWant ? coopWant.hero : (players && players[1] ? 
 const coopShownAlly = () => coopWant ? !!coopWant.ally : !!(players && players[1] && players[1].ai);
 /* A BORROWED HERO. Player two plays a hero the save owns but has never levelled, so he is LENT player one's level
    (his own talents still come from the save, where it has any). Nothing is written back: see gainXp and saveProgress. */
-const coopLent = h => coop() && h !== players[0].hero && players.some(p => p !== players[0] && p.hero === h);
+const coopLent = h => coop() && !(passOn && passOn.prof) && h !== players[0].hero && players.some(p => p !== players[0] && !p.prof && p.hero === h);   /* (claude/coopprogress) a seat playing HIS OWN save is never lent: his pass swaps his own XP in (asPlayer, profIn) */
 try { slot = Math.max(0, Math.min(SLOTS - 1, +(localStorage.getItem('bracken.slot') || 0))); } catch {}
 let bossJumpOn = false;   /* THE PLAYTEST BOSS JUMP (docs/PLAYTEST.md): once a page has jumped into a fight it never writes a save - see saveProgress */
 let bossSelectFight = null;   /* a Boss Select fight shares the boss-jump save lock; only its guarded record writer may update the slot */
 const slotKey = i => 'bracken.progress.' + i;
+/* ONE CHARACTER, ONE PLACE (claude/coopprogress, src/coop-save.js makeLocks): this page says which slots it holds - its own (player one, 'game') and its local co-op seats
+   ('seat') - on a BroadcastChannel; a guest page (src/online-guest.js) says the slot it plays. Nothing is written to storage for it. */
+const LOCKS = CS.makeLocks({ channel: typeof BroadcastChannel === 'function' ? (() => { try { return new BroadcastChannel('bracken-slots'); } catch { return null; } })() : null });
+/* a slot another page plays co-op on (or one of this page's seats): player one must not open it, and its saves wait (saveProgress) */
+const slotCoopHolder = i => { const h = LOCKS.holder(i, 'p1'); return h && h.kind !== 'game' ? h : null; };
+/* THE SEAT'S OWN SAVE IN HIS PASS (claude/coopprogress). A seat with a profile (p.prof: src/coop-save.js cleanSnapshot + its ledger) plays out of view - his XP,
+   card, skills, loadout, ranks, talents, charm, items and purse - swapped into PROG for the length of his pass (asPlayer), so every reader of PROG reads HIS, and
+   every write in his pass (a kill's XP, a gold drop, the death cost) lands in view, never in the host's save. profIn/profOut nest: sync PROG into the source
+   under it, switch, and back; profHost holds the save's own values while any overlay is up (saveProgress writes those). */
+const profStack = []; let profHost = null;
+const profSrc = () => { const t = profStack[profStack.length - 1]; return t && t.prof ? t.prof.view : profHost; };
+function profSync() { const d = profSrc(); if (d) for (const k of CS.OVERLAY_KEYS) d[k] = PROG[k]; }
+function profShow() { const d = profSrc(); if (d) for (const k of CS.OVERLAY_KEYS) PROG[k] = d[k]; }
+function profIn(prof) { if (!profStack.length) { profHost = {}; for (const k of CS.OVERLAY_KEYS) profHost[k] = PROG[k]; } else profSync(); profStack.push({ prof }); profShow(); return 1; }
+function profOut() { if (!profStack.length) return; profSync(); profStack.pop(); profShow(); if (!profStack.length) profHost = null; }
+/* the host's own values, whatever overlay is up (a host function called from inside a seat's pass: winLevel) */
+function asHost(fn) { const sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; try { return fn(); } finally { if (sw) profOut(); } }
 function readSlot(i) { try { const raw = localStorage.getItem(slotKey(i)) || (i === 0 ? localStorage.getItem('bracken.progress') : null); return raw ? JSON.parse(raw) : null; } catch { return null; } }
 /* A SAVE IS NEVER LOST IN SILENCE (claude/shipfix; src/save-safety.js). slotHealthOf: a slot's text judged - empty / ok / newer / corrupt - memoised on the text. */
 const CAMP_IDS = LEVELS.filter(l => !l.hidden).map(l => l.id);
@@ -391,7 +409,7 @@ function progDefaults() { DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) t
    loading a different slot mid-coop would otherwise leave the map showing yesterday's partner from a slot that
    never asked for one. Every road into a slot (continue, boss rush, practice, local co-op, a fresh save) runs
    through here, so clearing it here is the one place that keeps the toggle honest across the switch. */
-function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlocked = ''; let loaded;
+function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlocked = ''; let loaded; LOCKS.claim(i, 'game', 'THE GAME', 'p1');   /* (claude/coopprogress) this page holds player one's slot: a guest page or a local seat cannot take it */
   const raw = slotRaw(i);
   try { const res = loadProgress(localStorage, slotKey(i), raw, CAMP_IDS); loaded = res.progress; if (res.backup) SAFE.pruneBackups(localStorage, slotKey(i), res.backup); SAFE.keepLastGood(localStorage, slotKey(i), raw, CAMP_IDS); }
   catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
@@ -401,11 +419,12 @@ function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf
   try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
-function saveProgress() { if (saveBlocked || bossJumpOn) return; dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
-  let r; try { r = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(PROG), slotKeys()); } catch (e) { r = { ok: false, full: false }; }
+function saveProgress() { if (saveBlocked || bossJumpOn) return; if (slotCoopHolder(slot)) { saveWritten({ ok: false, held: true }); return; }   /* (claude/coopprogress) its own co-op session writes it: this page's copy would undo that */ dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
+  if (profStack.length) profSync();   /* (a seat's pass is up: the slot gets the save's own values, never his) */
+  let r; try { r = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(profStack.length ? { ...PROG, ...profHost } : PROG), slotKeys()); } catch (e) { r = { ok: false, full: false }; }
   PROG.hero = was; saveWritten(r); rosterNote(); }
 /* a write that did not land is TOLD (a banner at the foot of every screen, a toast in a level, a buzz the first time) and retried on the next save; one that lands clears it */
-function saveWritten(r) { if (r.ok) { saveFail = ''; return; } const first = !saveFail; saveFail = r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE';
+function saveWritten(r) { if (r.ok) { saveFail = ''; return; } const first = !saveFail; saveFail = r.held ? 'SAVE PAUSED - SLOT IN CO-OP ELSEWHERE' : r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE';
   if (first) { console.warn(saveFail, r.error || ''); try { SFX.buzz(); } catch {} } try { UIH.toastPush(toastQ, saveFail, 6); } catch {} }
 const hadSaves = [0, 1, 2, 3, 4].some(i => slotRaw(i)); loadSlot(slot);
 /* HINTS (src/hints.js, Settings > Gameplay > Hints): a settings file from before it is an EXISTING player and keeps HIGH (every hint, as it was); a brand-new profile (no settings file, no save in any slot) starts on MEDIUM (claude/hintlevel, Daniel 10-16). Chosen once (hintsV1). */
@@ -1497,12 +1516,12 @@ const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodg
 const pressWrite = o => { flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
-  if (p === players[0]) { const wP = P, wPass = passOn; P = p; passOn = p; try { return fn(); } finally { P = wP; passOn = wPass; } }
-  const wP = P, wH = PROG.hero, wK = K, wKeys = keysRead(), wPress = pressRead(), wPass = passOn;
+  if (p === players[0]) { const wP = P, wPass = passOn, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; } }   /* (inside a profiled seat's pass: player one's own values) */
+  const wP = P, wH = PROG.hero, wK = K, wKeys = keysRead(), wPress = pressRead(), wPass = passOn, sw = p.prof ? profIn(p.prof) : profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0;   /* (claude/coopprogress) HIS OWN SAVE for his pass */
   P = p; PROG.hero = p.hero; if (p.set) K = p.set; passOn = p;
   keysWrite(p.keys); pressWrite(p.press);
   try { return fn(); }
-  finally { p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
+  finally { if (sw) profOut(); p.keys = keysRead(); p.press = pressRead(); P = wP; PROG.hero = wH; K = wK; passOn = wPass; keysWrite(wKeys); pressWrite(wPress); }
 }
 function nearestHero(e) { let b = null, bd = 1e9;
   for (const p of players) { if (!upright(p)) continue; const d = Math.abs(p.x - e.x) + Math.abs(p.y - e.y) * 0.5; if (d < bd) { bd = d; b = p; } }
@@ -1524,7 +1543,7 @@ function seatAdd(s) {
   if (s.ally && players.some(q => q.ai)) return null;   /* one computer partner */
   const p = freshBody(), h = s.hero || 'knight';
   Object.assign(p, { hero: h, n: players.length + 1, keys: {}, press: {}, score: freshScore(), total: freshScore(), ai: !!s.ally, down: 0, reviveT: 0, cds: {}, padSt: { prev: {} },
-    src: s.ally ? { kind: 'ally' } : s.src ? { ...s.src } : { kind: 'pad', pad: null }, sword: s.sword || PROG.sword, leash: 0 });
+    src: s.ally ? { kind: 'ally' } : s.src ? { ...s.src } : { kind: 'pad', pad: null }, sword: s.sword || (s.prof && SWORDS.some(w => w.id === s.prof.sword) ? s.prof.sword : PROG.sword), leash: 0, prof: !s.ally && s.prof ? s.prof : null });   /* (claude/coopprogress) prof: he plays his own save (asPlayer) */
   players.push(p);
   partyColours();
   seatBake(p);
@@ -1546,11 +1565,11 @@ function seatDrop(p) {
   if (PTK) PTK.reset();
   players.splice(i, 1); players.forEach((q, k) => { q.n = k + 1; }); partyColours();
   if (players.length === 1) coopEnd();
-  partyToWant(); return true;
+  partyToWant(); profReconcile(); return true;   /* (claude/coopprogress) his last credit, his slot let go */
 }
 /* the party as it stands, for the next wood (coopWant.hero/ally stay seat two's: every older reader of coopWant reads those) */
 function partyToWant() {
-  const seats = players.slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, sword: p.sword, src: p.src && p.src.kind !== 'ally' ? { ...p.src } : undefined }));
+  const seats = players.slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, sword: p.sword, src: p.src && p.src.kind !== 'ally' ? { ...p.src } : undefined, prof: p.prof || undefined }));
   coopWant = seats.length ? { hero: seats[0].hero, ally: seats[0].ally, seats } : null;
 }
 const wantSeats = () => !coopWant ? [] : coopWant.seats && coopWant.seats.length ? coopWant.seats : [{ hero: coopWant.hero, ally: !!coopWant.ally }];
@@ -4427,10 +4446,11 @@ function xpStart() { levelXp = woodXp(); xpRun = 0; xpBoost = 0; lvAtStart = her
 /* THE SOFT CAP's share for this hero in this wood (1 in full; src/xp.js softCapMul) - the start hint and the plate's 1/2 or 1/5 say it */
 const softCut = () => xpWood() && !catchingUp() ? softCapMul(heroLevel(), expectedLv()) : 1;
 function gainXp(n) { n = Math.round(n); if (!(n > 0)) return;
-  if (passOn && players && passOn !== players[0]) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
+  const seatOwn = !!(passOn && players && passOn !== players[0] && passOn.prof && profStack.length);   /* (claude/coopprogress) a seat on HIS OWN save earns into it (his pass's PROG.xp is his: profIn) */
+  if (passOn && players && passOn !== players[0] && !seatOwn) return;   /* THE XP IS PLAYER ONE'S. A borrowed hero is lent a level for the run; levelling him in the save off the back of it would hand the save a hero it never earned */
   const h = hero(), was = heroLevel(h), paid0 = xpWood() ? (heroXp(h) < xpFloor(expectedLv()) ? xpCatchUp(n, heroXp(h), expectedLv()) : xpSoftCap(n, was, expectedLv())) : n;   /* CATCH-UP: below the wood's expected level he is paid x3, up to the curve and no further; THE SOFT CAP over it (src/xp.js: E+3 half, E+6 a fifth) */
   const paid = Math.max(0, Math.min(paid0, xpCap() - heroXp(h)));   /* XP STOPS AT LEVEL FIFTY */ if (!(paid > 0)) return;
-  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; carryOf(P).xp += paid; xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
+  PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + paid; carryOf(P).xp += paid; if (seatOwn) { const now = heroLevel(h); if (now > was) seatLevelUp(now); return; } xpRun += paid; xpBoost += paid - n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
 /* THE FIRST TIME A PLACED FOE FALLS it pays in full and goes on this hero's list for the wood. After a death, a shrine or a second walk it is
    on the list (or the wood is finished) and pays XP_AGAIN. The list is saved with the XP, so leaving a wood and coming back is no way round it. */
 function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) return; e.xpPaid = true;
@@ -4454,6 +4474,8 @@ function levelUp(n, from) { lvUpN = n; PROG.cardNew = 1; if (state !== 'play') r
   SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
+/* A SEAT'S LEVEL-UP (claude/coopprogress): his health and the ring, here; his card waits for his own game (picks are owed by level: src/progression.js picksOwed) */
+function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 34, 'LEVEL ' + n, '#ffd36b'); if (P.prof) P.prof.lvNow = n; }
 const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
@@ -4575,7 +4597,8 @@ function danceAfterBoss() {
   bossWasActive = bossActive;
   if (ended) for (const pp of players) if (upright(pp)) { pp.danceCue = 8; pp.danceCtx = 'boss'; }
 }
-function winLevel() {
+function winLevel() { return asHost(winLevel0); }   /* (claude/coopprogress) a seat who reaches the gate last ends it from his pass: the win is still the save's */
+function winLevel0() {
   for (const p of players) p.total = addScore(p.total || freshScore(), p.score);   /* this wood goes onto the run's running total, for the victory card */
   fogSave();
   PROG.done = PROG.done || {};
@@ -4596,8 +4619,15 @@ function winLevel() {
   { const was = p.medal || 0, now = SET.invincible ? 0 : medalFor(id, medalTime()); medalPurse = Math.max(0, MEDAL_PURSE[now] - MEDAL_PURSE[was]); PROG.coins += medalPurse; PROG[id].medal = Math.max(was, now);
     for (const c of LEVELS) { const o = c.opensOn; if (o && o.level === id && (o.time ? (PROG[id].best <= o.time && !(winPrevBest !== null && winPrevBest <= o.time)) : (o.medal && now >= (MEDAL_RANK[o.medal] || o.medal) && was < (MEDAL_RANK[o.medal] || o.medal))) && !(PROG[c.id] && PROG[c.id].cleared)) { hintMsg = c.name + ' IS OPEN: A NEW ROAD OFF THE MAP'; hintT = 6; } } }
   if (got >= total) PROG[id].allGold = true; if (hitsTaken === 0 && deaths === 0 && !SET.invincible) PROG[id].noHit = true; if (SET.iron && !SET.invincible) PROG[id].iron = true; dcBankAll();
+  seatsWin(id);   /* (claude/coopprogress) every seat on his own save: the clear on his road, the wood's share, his coins */
   saveProgress();
 }
+/* EVERYTHING CLEARED TOGETHER COUNTS (Daniel 10-12): for each seat on his own save, the wood goes on HIS road (credited: src/coop-save.js applyCredit), its first-finish
+   share is paid on HIS hero's record (XP_CLEAR, his catch-up and soft cap), and the coins he bent down for (P.score.coins) go in HIS purse - the save's purse keeps the
+   wood's as it always did. Then the credit goes. */
+function seatsWin(id) { const lv = LEVELS[levelIndex]; if (!lv || (lv.hidden && !lv.secret)) return;
+  for (const p of players) if (p !== players[0] && p.prof) { asPlayer(p, () => { const first = !heroDone()[id]; if (first && xpWood()) gainXp(XP_CLEAR * levelXp); heroDone()[id] = 1; PROG.coins = (PROG.coins || 0) + ((p.score && p.score.coins) || 0); }); p.dcCarry = emptyCarry(); CS.noteClear(p.prof.led, id); }   /* (the win banks it all, as dcBankAll did for what came before) */
+  creditAll(false); }
 
 // A LEVEL CAN ASK FOR A TIME. Everything else on the map opens because you finished the thing before it;
 // (UNDERLEAF used to open because you finished Kingswood in under three minutes; it is a main-road level now (Daniel 10-08), and no level asks for a time any more - the rule stays for the next one that does.)
@@ -6485,7 +6515,7 @@ function tavernPadJoin(gps, claimed) {
   for (const gq of gps) {
     const now = padState(gq, 'pad2'), was = joinPrev.get(gq.index) || {}; joinPrev.set(gq.index, now);
     if (claimed.has(gq.index) || gq.index === p1Pad) continue;
-    if ((now.jump && !was.jump) || (now.pause && !was.pause)) { const p = tavernJoin({ kind: 'pad', pad: gq.index }); if (p) { claimed.add(gq.index); p.padSt = { prev: now }; } }
+    if (!PBOARD.shown() && ((now.jump && !was.jump) || (now.pause && !was.pause))) { const p = tavernJoin({ kind: 'pad', pad: gq.index }); if (p) { claimed.add(gq.index); p.padSt = { prev: now }; } }
   }
 }
 function pollGamepad() {
@@ -6590,16 +6620,17 @@ const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 const onlineSeat = gid => players.find(p => p.src && p.src.kind === 'online' && p.src.gid === gid) || null;
 const partyRoom = () => PARTY.MAX_PLAYERS - (inWoodNow() ? players.length : 1 + wantSeats().length);
 const inWoodNow = () => (state === 'play' || state === 'win' || (state === 'menu' && menuFrom === 'play')) && !!L && !L.trial && !L.shop && !rushOn();
-function onlineArm(h, gid, snap) {
+function onlineArm(h, gid, snap, seat) {
+  const prof = seat ? profMake(seat, { kind: 'online', gid }, CS.newSid(ONL.code() + gid)) : null;   /* (claude/coopprogress) HIS OWN HERO, from his own save: the guest page's snapshot, cleaned by src/online.js */
   if (snap && typeof snap.colour === 'string' && PARTY.COLOURS.some(c => c.id === snap.colour)) onlineColour = { gid, c: snap.colour };   /* THE JOIN SNAPSHOT: his colour, if it is free (read at seating) */
-  if (L && L.tavern && state === 'play') { const p = tavernJoin({ kind: 'online', gid }, h); seatColour(p, gid); return p ? p.n : 0; }
+  if (L && L.tavern && state === 'play') { const p = tavernJoin({ kind: 'online', gid }, h, prof); seatColour(p, gid); return p ? p.n : 0; }
   if (inWoodNow()) {
     if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
-    const p = seatAdd({ hero: h, src: { kind: 'online', gid } });
+    const p = seatAdd({ hero: h, src: { kind: 'online', gid }, prof });
     if (p) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); seatColour(p, gid); partyToWant(); return p.n; }
     return 0;
   }
-  const seats = wantSeats().concat([{ hero: h, ally: false, src: { kind: 'online', gid } }]).slice(0, PARTY.MAX_PLAYERS - 1);
+  const seats = wantSeats().concat([{ hero: h, ally: false, src: { kind: 'online', gid }, prof: prof || undefined }]).slice(0, PARTY.MAX_PLAYERS - 1);
   coopWant = { hero: seats[0].hero, ally: !!seats[0].ally, seats };
   if (state === 'title' || state === 'coop') state = 'map';
   return seats.length + 1;
@@ -6617,7 +6648,9 @@ function onlineDrop(gid) {
 }
 ONL.init({ grab: gid => { const p = gid ? onlineSeat(gid) : players[1]; return PTK && p ? PTK.label(p) : null; },   /* (claude/partnerthrow) the guest's touch GRAB / THROW button, from the host's state */
   buf, state: () => state, paused: () => state === 'menu' && menuKind === 'pause', coopOk: () => coopOk(), initAudio: () => initAudio(), art: h => heroPreviewSet(h).R.idle[0], heroName: () => HERO_SHORT[hero()] || String(hero()).toUpperCase(), nameOf: h => HERO_SHORT[h] || String(h).toUpperCase(), roster: () => coopPickList().map(h => ({ id: h, name: HERO_SHORT[h] || String(h).toUpperCase() })),
-  drop: gid => onlineDrop(gid), arm: (h, gid, snap) => onlineArm(h, gid, snap), free: () => partyRoom(),
+  drop: gid => onlineDrop(gid), arm: (h, gid, snap, seat) => onlineArm(h, gid, snap, seat), free: () => partyRoom(),
+  credit: gid => { const p = onlineSeat(gid), s = p ? p : wantSeats().find(q => q.src && q.src.kind === 'online' && q.src.gid === gid), prof = s && s.prof; if (!prof) return null; if (profStack.length) profSync(); return CS.nextCredit(prof.led, null, true); },   /* (claude/coopprogress) his final credit, sent before the link closes */
+  campIds: () => CAMP_IDS, heroIds: () => HEROES.map(h => h.id), levelIds: () => LEVELS.filter(l => !l.hidden || l.secret).map(l => l.id),
   seatOf: gid => { const p = onlineSeat(gid); if (p) return p.n; const i = wantSeats().findIndex(s => s.src && s.src.kind === 'online' && s.src.gid === gid); return i >= 0 ? i + 2 : 0; } });
 /* ==================== THE TAVERN (claude/tavern, co-op phase 2): the glue between the inn's stations (src/tavern.js) and the game ====================
    THE CROSSROADS INN is a hidden level ('tavern') reached from the title (LOCAL CO-OP, ONLINE CO-OP) and the map (F). In it the party forms: a free pad's
@@ -6626,11 +6659,11 @@ ONL.init({ grab: gid => { const p = gid ? onlineSeat(gid) : players[1]; return P
 const tavernIndex = () => LEVELS.findIndex(l => l.id === 'tavern');
 const freeStarter = () => { const list = coopPickList(), used = players.map(p => p.hero); return list.find(h => !used.includes(h)) || list[0] || 'knight'; };
 const tavDoorX = () => TAV_STATIONS[0].x * TS + 8 - TAV_WALK.from * TS + TS;
-function tavernJoin(src, h) {
+function tavernJoin(src, h, prof) {
   if (!L || !L.tavern || state !== 'play') return null;
   if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE TAVERN IS FULL: FOUR TO A PARTY.'); return null; }
   if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
-  const p = seatAdd({ hero: h || freeStarter(), src }); if (!p) return null;
+  const p = seatAdd({ hero: h || freeStarter(), src, prof }); if (!p) return null;
   const fy = (TAV_START.y + 1) * TS;
   Object.assign(p, { x: tavDoorX(), y: fy, vx: 0, vy: 0, face: 1, ground: true, walkIn: TAV_WALK.t, inv: 1 });
   if (TAVO) TAVO.door(); SFX.uiSel(); SFX.sting();
@@ -6640,6 +6673,91 @@ function tavernJoin(src, h) {
   return p;
 }
 let tavJoins = 0;
+/* ==================== CO-OP PROGRESSION, STEP 1 (claude/coopprogress; scratch brief-coopprogress.md; src/coop-save.js) ====================
+   A SEAT ON HIS OWN SAVE carries p.prof: { hero, slot, sword, heroes, view, base (src/coop-save.js cleanSnapshot), led (the ledger: one session), dest }.
+   dest is where his credit goes: { kind: 'local', slot, role } - this browser's slot, written here (the lock is this page's 'seat' claim) - or { kind: 'online',
+   gid } - the guest's page, over the data link (src/online.js sendCredit; his own browser writes it). CREDITS go at every CHECKPOINT (a shrine lit, his own bank,
+   the wood won), at the end (the seat leaves, the party ends, this page closes) and, for a guest, before his link closes; a drop with no goodbye keeps what
+   the last checkpoint paid (partial). Each credit is cumulative for its session and numbered, so a repeat never pays twice. */
+const profLive = new Set();
+function profMake(seat, dest, sid) { const prof = { ...seat, led: CS.newLedger(seat, sid), dest, lastWrite: null }; profLive.add(prof); return prof; }
+const isLevelId = id => LEVELS.some(l => l.id === id && (!l.hidden || l.secret));
+function profCredit(prof, final, unbanked) {
+  const c = CS.nextCredit(prof.led, unbanked, final); if (!c) return null;
+  if (prof.dest.kind === 'local') {
+    let r; try { r = CS.applyCredit(localStorage, slotKey(prof.dest.slot), c, { campaignIds: CAMP_IDS, isLevel: isLevelId, xpOnly: !!prof.dest.xpOnly });   /* (xpOnly: a LINKED AI COMPANION - XP and levels only, brief-aicompanions.md) */ } catch (e) { r = { ok: false, why: 'SAVE FAILED - COULD NOT WRITE' }; }
+    prof.lastWrite = { ok: r.ok, dup: !!r.dup, why: r.why || '', applied: r.applied || null, seq: c.seq }; healthMemo[prof.dest.slot] = null;
+    const line = r.ok ? (r.dup ? '' : CS.creditLine(prof.dest.slot, r.applied)) : 'P' + ((players.find(p => p.prof === prof) || {}).n || '?') + ': ' + r.why;
+    if (line) try { UIH.toastPush(toastQ, line, 4); } catch {}
+    if (!r.ok) try { SFX.buzz(); } catch {}
+  } else if (prof.dest.kind === 'online') ONL.sendCredit(prof.dest.gid, c);
+  return c;
+}
+/* every seat on his own save, credited now: in a wood, what he still carries unbanked waits (the death cost's carry); off the road, all of it */
+function creditAll(final) {
+  if (profStack.length) profSync();
+  const seen = new Set();
+  for (const p of (players || [])) if (p !== players[0] && p.prof && !seen.has(p.prof)) { seen.add(p.prof); const c = carryOf(p); profCredit(p.prof, !!final, final || !inWoodNow() ? null : { xp: c.xp || 0, coins: c.purse || 0 }); }
+  for (const w of wantSeats()) if (w.prof && !seen.has(w.prof)) { seen.add(w.prof); profCredit(w.prof, !!final, null); }
+  profReconcile();
+}
+/* A SEAT THAT IS GONE (dropped, the party ended, a slot switch): his last credit, and his slot is let go - whatever road took him away */
+function profReconcile() {
+  const live = new Set(); for (const p of (players || [])) if (p.prof) live.add(p.prof); for (const w of wantSeats()) if (w.prof) live.add(w.prof);
+  for (const prof of [...profLive]) if (!live.has(prof) && !profStack.some(e => e.prof === prof)) { profLive.delete(prof); profCredit(prof, true, null); if (prof.dest.kind === 'local') LOCKS.release(prof.dest.slot, prof.dest.role); }
+}
+setInterval(() => { LOCKS.beat(); profReconcile(); }, CS.LOCK_BEAT);
+LOCKS.ask();
+addEventListener('pagehide', () => { try { creditAll(true); } catch {} LOCKS.releaseAll(); });
+/* A LOCAL PLAYER ON ONE OF THIS BROWSER'S OTHER SLOTS (Daniel 10-19): the slot is claimed for his seat (never player one's, never another seat's, never one a
+   guest page plays), read clean (an empty one is a fresh hero), and he plays it. slotI -1 is a GUEST: nothing saved, today's seat. */
+let seatRoleN = 0;
+function partySeatProf(slotI, h) {
+  if (!(slotI >= 0)) return { ok: true, prof: null };
+  const role = 'seat' + (++seatRoleN), c = LOCKS.claim(slotI, 'seat', 'LOCAL CO-OP', role);
+  if (!c.ok) return { ok: false, why: CS.lockLine(slotI, c.holder) };
+  const seat = CS.seatFromSlot(localStorage, slotI, h, CAMP_IDS);
+  if (!seat) { LOCKS.release(slotI, role); return { ok: false, why: 'SLOT ' + (slotI + 1) + ' CANNOT BE READ: OPEN CHOOSE A SAVE TO FIX IT' }; }
+  return { ok: true, prof: profMake(seat, { kind: 'local', slot: slotI, role }) };
+}
+/* THE BOARD'S JOIN: a new local seat (his pad: the next free one) on slot slotI with hero h */
+function partyJoin(slotI, h) {
+  if (!L || !L.tavern || state !== 'play') return { ok: false, why: 'JOIN IN THE TAVERN' };
+  if (players.length >= PARTY.MAX_PLAYERS) return { ok: false, why: 'THE PARTY IS FULL: FOUR TO A PARTY' };
+  const r = partySeatProf(slotI, h); if (!r.ok) return r;
+  const p = tavernJoin({ kind: 'pad', pad: null }, h, r.prof);
+  if (!p) { if (r.prof) { profLive.delete(r.prof); LOCKS.release(slotI, r.prof.dest.role); } return { ok: false, why: 'NO ROOM FOR ANOTHER SEAT' }; }
+  return { ok: true, n: p.n };
+}
+/* a seat already in (a pad's JUMP walked him in as a guest) takes a save: USE A SAVE on the board */
+function partyAttach(p, slotI, h) {
+  if (!p || p === players[0] || p.ai || (p.src && p.src.kind === 'online')) return { ok: false, why: 'THAT SEAT CANNOT TAKE A SAVE' };
+  const hero = h || p.hero, r = partySeatProf(slotI, hero); if (!r.ok) return r;
+  if (p.prof) { profCredit(p.prof, true, null); profLive.delete(p.prof); if (p.prof.dest.kind === 'local') LOCKS.release(p.prof.dest.slot, p.prof.dest.role); }
+  p.prof = r.prof; p.hero = hero; if (r.prof && SWORDS.some(w => w.id === r.prof.sword)) p.sword = r.prof.sword; seatBake(p); asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; }); partyToWant();
+  return { ok: true, n: p.n };
+}
+/* THE PARTY BOARD (the tavern's board station; src/party-board.js draws it): the four seats and, on each empty one, JOIN / INVITE / AI PARTNER */
+const seatKind = p => p === players[0] ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local';
+function partyBoardOpen() {
+  PBOARD.open({
+    seats: () => { const out = []; for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = players[n - 1];
+        if (!p) { out.push({ n, empty: true }); continue; }
+        const own = p === players[0], k = seatKind(p), lv = own ? heroLevel(hero()) : p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : null;
+        out.push({ n, kind: k, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof }); }
+      return out; },
+    slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
+      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SLOT' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      return { i, line: CS.summaryLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase()), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [], hero: sm.hero || null }; }),
+    heroName: h => HERO_SHORT[h] || String(h).toUpperCase(),
+    visitHeroes: () => coopPickList(),
+    room: () => (L && L.tavern && state === 'play' ? PARTY.MAX_PLAYERS - players.length : 0),
+    join: (slotI, h) => { const r = partyJoin(slotI, h); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
+    attach: (n, slotI, h) => { const r = partyAttach(players[n - 1], slotI, h); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
+    invite: () => ONL.open(),
+    sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
+  });
+}
 /* in a hero's own pass: a joiner walking in is walked by the room; a hero at the wardrobe has his keys taken by its card */
 function tavHands(pp) {
   if (!TAVO || !TAVO.on()) return;
@@ -6657,7 +6775,7 @@ function tavernToMap(say) {
   partyToWant(); setView('normal'); mapToSaved(); state = 'map'; music.play(menuTrack()); SFX.uiSel();
   if (say) { const [mx, my] = mapPos(); number(mx, my - 16, say, '#ffd36b'); }
 }
-const tavHeroes = p => (p.n === 1 ? PICK.filter(h => PROG.heroes[h] || godMode()) : coopPickList());
+const tavHeroes = p => (p.n === 1 ? PICK.filter(h => PROG.heroes[h] || godMode()) : p.prof ? [p.hero] : coopPickList());   /* (claude/coopprogress) a seat on his own save keeps the hero he brought (another hero: leave, and JOIN with it) */
 function tavSetHero(p, h) {
   if (p.n === 1) { PROG.hero = h; applySkin(); applyUpgrades(); players[0].hero = h; players[0].set = K; P.hp = P.maxHp; saveProgress(); }
   else { p.hero = h; seatBake(p); asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; }); partyToWant(); }
@@ -6674,7 +6792,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -7400,7 +7518,7 @@ const dcPop = (x, y, txt, col) => { if (SET.colorSafe && col === '#ff9a5c') col 
 const dcMirror = () => { if (!PROG.deathCost || !players || !players[0]) return; const c = players[0].dcCarry; PROG.deathCost.carried = { xp: c && c.xp > 0 ? { [hero()]: c.xp } : {}, purse: c ? c.purse : 0 }; };
 function dcGiveXp(n) { const h = hero(), was = heroLevel(h); PROG.xp = PROG.xp || {}; PROG.xp[h] = heroXp(h) + n; carryOf(P).xp += n; const now = heroLevel(h); if (now > was) levelUp(now, was); }
 function dcStart() { dcSess++; for (const q of players) { q.dcCarry = emptyCarry(); q.dcDone = false; q.dcLost = false; if (q !== players[0]) q.bundle = null; } dcMirror(); }
-function dcBank() { const c = carryOf(P); if (!carryHas(c)) return; P.dcCarry = emptyCarry(); if (P === players[0]) { dcMirror(); saveProgress(); } dcPop(P.x, P.y - 40, 'BANKED', '#8fd160'); SFX.coinUp(8); burst(P.x, P.y - 22, 8, ['#8fd160', '#fff6c8'], 40, 0.4, -30, 1); }
+function dcBank() { const c = carryOf(P); if (!carryHas(c)) return; P.dcCarry = emptyCarry(); if (P.prof) creditAll(false);   /* (claude/coopprogress) his bank is his checkpoint */ if (P === players[0]) { dcMirror(); saveProgress(); } dcPop(P.x, P.y - 40, 'BANKED', '#8fd160'); SFX.coinUp(8); burst(P.x, P.y - 22, 8, ['#8fd160', '#fff6c8'], 40, 0.4, -30, 1); }
 function dcBankAll() { for (const q of players) q.dcCarry = emptyCarry(); dcMirror(); }
 /* THE DEATH ITSELF. p is the hero who fell (P inside his own pass); killer is what killerOf wrote down at the blow. */
 function deathCost(p, killer) {
@@ -10649,7 +10767,7 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
     if (Math.abs(a.x - P.x) < 10 * (perk('magnet') ? 1.7 : 1) && Math.abs(a.y - (P.y - 7)) < 12 * (perk('magnet') ? 1.7 : 1)) { a.got = true; got++; dcGot(1); if (P.score) P.score.coins++;   /* the purse is the SAVE'S and stays shared: this line is only who bent down for it */
       if (isPirate()) piratePurse(true); coinCombo = coinComboT > 0 ? coinCombo + 1 : 0; coinComboT = 1.2; SFX.coinUp(Math.min(coinCombo, 10)); if (a.crate) collectedCrates.add(a.crate); burst(a.x, a.y, 6, ['#ffd36b', '#fff6c8'], 40, 0.35, -40, 1); flyCoins.push({ x: a.x - camX, y: a.y - 5 - camY, t: 0 }); }
   }
-  dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
+  dcTouch(); shrineBreakTick(dt); for (const s of shrines) if (!s.broken && shrineLights(s, P.x, P.y, P.swim)) { if (s.life !== lifeN) { s.life = lifeN; shrineFill(); } if (s.lit) continue; s.lit = true; s.litN = ++litSeq; checkpoint = { x: s.x, y: s.y }; creditAll(false);   /* (claude/coopprogress) A CHECKPOINT: every seat on his own save is credited (what is still unbanked waits) */ if (tal('phoenixTrail')) P.phoenixUsed = false; SFX.sting(); burst(s.x, s.y - 22, 14, ['#ffd36b', '#fff6c8', '#8fd160'], 50, 0.9, -30, 1); number(s.x, s.y - 40, 'SHRINE', '#ffd36b'); BUG.evlog('shrine lit @' + (s.x / TS).toFixed(0) + ',' + (s.y / TS).toFixed(0)); }
   if (gate && (!L.arena || escape || L.sandWalk || L.gateOpen) && Math.abs(gate.x - P.x) < 12 && Math.abs(gate.y - P.y) < 30 && state === 'play' && atGate()) { escape = null; if (bossSelectFight) bossSelectQuit(); else winLevel(); }   /* atGate: in co-op the wood is not finished until BOTH of them are standing in it. L.sandWalk: the Falling Tower does not end on the kill any more - the second door puts you on the sand and the GATE ends it (src/sanctum.js) */
   // boss arena trigger
   if (L.arena && boss && boss.alive && !bossActive && P.x > L.arena.trigger - 40 * TS) music.preload(L.arena.music || 'boss');
@@ -29670,6 +29788,7 @@ function update(dt) {
     if (upPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (confirmPress && (slotHealthOf(slotI).state === 'corrupt' || slotHealthOf(slotI).state === 'newer')) { fixAsk = slotI; fixI = 0; SFX.ui(); }
+    else if (confirmPress && slotCoopHolder(slotI)) { slotMsg = 'slot ' + (slotI + 1) + ' is playing co-op elsewhere'; slotMsgT = 4; SFX.buzz(); }   /* (claude/coopprogress) one character, one place */
     else if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); if (state === 'heropick' && openingDue()) openingStart(); } // a new save chooses its hero
     if (atkPress) { if (slotHealthOf(slotI).state === 'empty') { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
@@ -34252,6 +34371,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
   players: () => players, get coop() { return coop(); }, coopArm(h, ally) { coopWant = h ? { hero: h, ally: !!ally } : null; return coopWant; },
   coopStart: (h, ally, more) => { coopStart(h, ally, more); return players.map(p => p.hero); }, coopEnd: () => { coopWant = null; coopEnd(); return players.length; },
   /* THE TAVERN + THE PARTY (claude/tavern), for tools/tavern.mjs: the stations, a walk-in join, a seat's leaving, the camera's step out and the leash */
+  coopSave: { share: () => ({ levelXp, wood: xpWood(), clear: XP_CLEAR }), creditAll: f => creditAll(!!f), bank: n => { const p = players[n - 1]; if (!p) return false; asPlayer(p, () => dcBank()); return true; }, win: () => winLevel(), slotRaw: i => slotRaw(i), holder: i => slotCoopHolder(i), seats: () => players.map(p => ({ n: p.n, hero: p.hero, kind: p.src && p.src.kind, prof: p.prof ? { slot: p.prof.dest.slot ?? p.prof.slot, dest: p.prof.dest.kind, sid: p.prof.led.sid, seq: p.prof.led.seq, base: p.prof.led.base, earned: CS.earnedOf(p.prof.led), lv: levelOfXp((p.prof.view.xp || {})[p.hero] || 0), lastWrite: p.prof.lastWrite || null } : null })), locks: () => ({ mine: LOCKS.mine(), others: LOCKS.others() }), join: (slotI, h) => partyJoin(slotI, h), attach: (n, slotI) => partyAttach(players[n - 1], slotI), board: () => PBOARD.debug(), profs: () => profLive.size, reconcile: () => profReconcile(), gain: (n, xp, coins) => { const p = players[n - 1]; if (!p || !p.prof) return false; asPlayer(p, () => { if (xp) gainXp(xp); if (coins) PROG.coins = (PROG.coins || 0) + coins; }); return true; } },
   tavern: { debug: () => TAVO.debug(), enter: () => new Promise(res => enterTavern(() => res(true))), join: (src, h) => { const p = tavernJoin(src || { kind: 'pad', pad: null }, h); return p ? p.n : 0; },
     leave: n => seatDrop(players[n - 1]), use: (id, n) => TAVO.use(id, players[(n || 1) - 1]), seatAdd: s => { if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); } const p = seatAdd(s || {}); partyToWant(); return p ? p.n : 0; },
     cam: () => ({ wide: partyCam.wide, view: viewMode, VW, VH, want: desiredView() }), leash: () => players.map(p => ({ n: p.n, m: p.leash || 0, why: p.leashWhy || '', pulls: p.leashes || 0 })), leashFx: () => leashFx.length,

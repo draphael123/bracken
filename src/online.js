@@ -13,10 +13,13 @@
 // DOOR, in a wood he stands up beside player one, on the title or map he joins the party for the next wood. Up to four players in all (local pads +
 // guests): a guest who finds the party full is told so ('full'). THE HOST'S SAVE ONLY: the guest page never runs the game.
 //
-// THE JOIN SNAPSHOT (coordination with scratch brief-coopprogress.md step 1, portable guest saves): the guest's hello is
-// { t: 'hi', v: 2, snap? } where snap, when the guest page sends one, is { hero, level, sword, colour } from HIS OWN save. Phase 2 reads only
-// snap.colour (his wardrobe colour, if free) and otherwise ignores it; step 1 fills in the rest (the host spawns his seat from it) and adds the
-// reward messages. v: 1 guests (no snap) are fine.
+// THE JOIN SNAPSHOT (claude/coopprogress, CO-OP PROGRESSION step 1: scratch brief-coopprogress.md; src/coop-save.js): the guest picks a SLOT OF HIS OWN
+// SAVE on his page and a hero of that save; his pick is { t: 'pick', hero, seat } where seat is src/coop-save.js snapshotOf - that one hero's XP, card,
+// skills, loadout, talents, charm, items and purse. NOTHING IN IT IS TRUSTED: cleanSnapshot validates it as a save is validated, and the host seats him
+// from it (api.arm(hero, gid, snap, seat): main.js profMake) - his level, his kit, his talents - while the host's save never takes his hero. What he
+// EARNS (XP, silver, level clears) comes back to him as { t: 'earn', c } credits (sendCredit; main.js profCredit at every checkpoint, and here, before
+// his link closes, his final one); his own page writes them into his own slot (applyCredit: never twice, a lost one covered by the next). A pick with
+// no seat is a GUEST who saves nothing: he picks from the host's heroes as before. The hello { t: 'hi', v: 2, snap? } still carries his colour.
 //
 // DROP-OUT is per seat: a guest leaves (or his link is quiet for 8 s) -> his seat goes (main.js seatDrop; the last one out ends co-op as the pause
 // menu's CO-OP OFF does). The room stays open, so he can come back on the same code. Pause: the guests see the host's own pause screen (it is the
@@ -27,6 +30,7 @@
 import * as NET from './online-net.js';
 import * as UI from './online-ui.js';
 import { audioTap } from './audio.js';
+import { cleanSnapshot } from './coop-save.js';
 
 let api = null, sess = null, board = null, chip = null, gidN = 0;
 const HELD = ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance', 'talk'];
@@ -78,13 +82,13 @@ export function open() {
   const go = UI.el('button.go', 'JOIN', () => { const c = NET.cleanCode(inp.value); if (c.length >= 4) joinCode(c); else inp.focus(); });
   board.set(
     UI.el('h1', 'ONLINE CO-OP'),
-    UI.el('p', 'Up to four players. The host plays player one in their own save; each guest walks into the host\'s tavern and plays a seat on the host\'s heroes.'),
+    UI.el('p', 'Up to four players. The host plays player one in their own save; each guest walks into the host\'s tavern with a hero from HIS OWN save, and what he earns goes back to it.'),
     UI.el('h2', 'HOST'),
     ok ? UI.el('button.sel', 'HOST A GAME', () => startHost()) : UI.el('p.bad', lw),
     ok ? UI.el('p.dim', 'you get a code and a link to send your friends') : null,
     UI.el('h2', 'JOIN A FRIEND'),
     UI.row(inp, go),
-    UI.el('p.dim', 'or open the link they sent you. Your own save is never touched.'),
+    UI.el('p.dim', 'or open the link they sent you. You pick one of your own save slots there: what you earn is saved to it.'),
     UI.row(UI.el('button', 'BACK', () => closeBoard())));
 }
 function joinCode(c) { location.href = location.pathname + '?join=' + c; }   /* THE GUEST IS ITS OWN PAGE (src/online-guest.js): the game here never runs while joined */
@@ -123,7 +127,7 @@ function guestArrives(my, link) {
   link.onClose = why => { if (my.guests.includes(q)) dropGuest(q.gid, why === 'p2p' ? 'NO DIRECT LINK' : 'LEFT'); };
   const opened = () => {
     q.phase = 'picking'; q.last = performance.now(); roomView();
-    link.send({ t: 'roster', v: 2, heroes: api.roster(), host: api.heroName() });
+    link.send({ t: 'roster', v: 3, heroes: api.roster(), host: api.heroName(), camp: api.campIds ? api.campIds() : [], levels: api.levelIds ? api.levelIds() : [], names: names() });   /* v3 (claude/coopprogress): camp - the campaign's level ids, which his page's save migration needs; names - every hero's name, for his own heroes */
     sendArt(link);
     startMedia(my, q);
   };
@@ -137,11 +141,13 @@ function onMsg(my, q, m) {
   else if (m.t === 'rtt') q.rtt = +m.ms || 0;
   else if (m.t === 'hi') { q.snap = m.snap && typeof m.snap === 'object' ? m.snap : null; }   /* THE JOIN SNAPSHOT (see the header): kept, colour read at the pick */
   else if (m.t === 'pick') {
-    const list = api.roster().map(h => h.id), h = list.includes(m.hero) ? m.hero : null;
-    if (!h) { q.link.send({ t: 'roster', v: 2, heroes: api.roster(), host: api.heroName(), why: 'pick again' }); return; }
+    const seat = m.seat ? cleanSnapshot(m.seat) : null;   /* HIS OWN SAVE (claude/coopprogress): validated here, never trusted */
+    if (m.seat && (!seat || seat.hero !== m.hero)) { q.link.send({ t: 'roster', v: 3, heroes: api.roster(), host: api.heroName(), camp: api.campIds ? api.campIds() : [], levels: api.levelIds ? api.levelIds() : [], names: names(), why: 'YOUR SAVE COULD NOT BE READ HERE: PICK AGAIN' }); return; }
+    const list = seat ? seat.heroes : api.roster().map(h => h.id), h = list.includes(m.hero) ? m.hero : null;
+    if (!h) { q.link.send({ t: 'roster', v: 3, heroes: api.roster(), host: api.heroName(), camp: api.campIds ? api.campIds() : [], levels: api.levelIds ? api.levelIds() : [], names: names(), why: 'pick again' }); return; }
     if ((api.free ? api.free() : 1) <= 0) { q.link.send({ t: 'full' }); setTimeout(() => dropGuest(q.gid, 'FULL'), 300); return; }
     q.hero = h; q.phase = 'playing'; releaseAll(q); q.R.p = null;
-    const n = api.arm(h, q.gid, q.snap); q.link.send({ t: 'go', hero: h, n: n || 0 });
+    q.seat = seat; const n = api.arm(h, q.gid, q.snap, seat); q.link.send({ t: 'go', hero: h, n: n || 0, slot: seat ? seat.slot : -1 });
     closeBoard(); chipView();
   } else if (m.t === 'bye') dropGuest(q.gid, 'LEFT');
 }
@@ -149,13 +155,21 @@ function onMsg(my, q, m) {
    The guest shows them pixelated at a whole-number scale; the names stay text. A frame that cannot be read is left out (that hero shows his name alone). */
 function sendArt(link) {
   const art = {};
-  for (const h of api.roster()) { try { const f = api.art(h.id); if (!f || !f.width) continue; const c = document.createElement('canvas'); c.width = f.width; c.height = f.height; c.getContext('2d').drawImage(f, 0, 0); art[h.id] = { w: f.width, h: f.height, png: c.toDataURL('image/png') }; } catch {} }
+  for (const h of allHeroes()) { try { const f = api.art(h.id); if (!f || !f.width) continue; const c = document.createElement('canvas'); c.width = f.width; c.height = f.height; c.getContext('2d').drawImage(f, 0, 0); art[h.id] = { w: f.width, h: f.height, png: c.toDataURL('image/png') }; } catch {} }
   link.send({ t: 'art', v: 1, art });
 }
-/* A GUEST GOES: his seat drops out (main.js api.drop), and the room waits for him (or another) again */
+/* every hero's id and name (his own save's heroes may not be the host's roster) */
+const allHeroes = () => { const ids = api.heroIds ? api.heroIds() : api.roster().map(h => h.id); return ids.map(id => ({ id, name: api.nameOf(id) })); };
+const names = () => Object.fromEntries(allHeroes().map(h => [h.id, h.name]));
+/* HIS CREDIT (claude/coopprogress): what he has earned on his own save, to his page, which writes it (src/online-guest.js) */
+export function sendCredit(gid, c) { const q = guestOf(gid); if (!c || !q || !q.link || !q.link.open) return false; return q.link.send({ t: 'earn', c }); }
+function finalCredit(q) { if (!q || !q.seat || !q.link || !q.link.open || !api.credit) return; try { const c = api.credit(q.gid); if (c) q.link.send({ t: 'earn', c }); } catch {} }
+/* A GUEST GOES: his seat drops out (main.js api.drop), and the room waits for him (or another) again. Still linked (he said goodbye, walked out of the door,
+   or the host ended it): his final credit goes first; gone without a word, he keeps what the last checkpoint paid */
 export function dropGuest(gid, why) {
   const my = sess; if (!my) return;
   const q = guestOf(gid); if (!q) return;
+  finalCredit(q);
   my.guests = my.guests.filter(x => x !== q);
   const had = !!q.hero;
   { const l = q.link; q.link = null; if (why === 'LEFT THE PARTY' && l && l.open) l.send({ t: 'end', why: 'party' }); try { setTimeout(() => l && l.close('dropped'), why === 'LEFT THE PARTY' ? 200 : 0); } catch {} }
@@ -167,7 +181,7 @@ export function dropGuest(gid, why) {
 }
 export function endSession() {
   const my = sess; if (!my) return; sess = null;
-  for (const q of my.guests) { if (q.link) { q.link.send({ t: 'end' }); const l = q.link; setTimeout(() => l.close('ended'), 200); } if (q.media) try { q.media.close(); } catch {} if (q.hero) api.drop(q.gid, 'ENDED'); releaseAll(q); }
+  for (const q of my.guests) { finalCredit(q); if (q.link) { q.link.send({ t: 'end' }); const l = q.link; setTimeout(() => l.close('ended'), 200); } if (q.media) try { q.media.close(); } catch {} if (q.hero) api.drop(q.gid, 'ENDED'); releaseAll(q); }
   my.guests = [];
   stopStream(my);
   if (my.net) my.net.close();
@@ -272,5 +286,5 @@ function debug() {
   const my = sess, q0 = my ? (my.guests.find(live) || my.guests[0]) : null;
   return { open: !!(board && board.shown()), chip: !!(chip && chip.style.display !== 'none'), remote: remote(), held: q0 ? { ...q0.R.held } : {},
     sess: my ? { code: my.code, phase: phaseOf(my), hero: q0 ? q0.hero : null, rtt: q0 ? q0.rtt : 0, err: my.err, left: my.left, link: !!(q0 && q0.link && q0.link.open), streaming: !!my.stream, audio: !!(my.stream && my.stream.getAudioTracks().length), size: my.cv ? [my.cv.width, my.cv.height] : null,
-      guests: my.guests.map(q => ({ gid: q.gid, hero: q.hero, phase: q.phase, rtt: q.rtt, link: !!(q.link && q.link.open), seat: api.seatOf ? api.seatOf(q.gid) : 0, held: { ...q.R.held } })) } : null };
+      guests: my.guests.map(q => ({ gid: q.gid, hero: q.hero, phase: q.phase, rtt: q.rtt, link: !!(q.link && q.link.open), seat: api.seatOf ? api.seatOf(q.gid) : 0, held: { ...q.R.held }, saveSlot: q.seat ? q.seat.slot : -1 })) } : null };
 }

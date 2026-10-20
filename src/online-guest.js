@@ -1,6 +1,12 @@
 // src/online-guest.js - ONLINE CO-OP, THE GUEST'S PAGE (claude/onlinecoop, phase 1). index.html loads this INSTEAD of the game when the
-// page is opened with ?join=CODE: the guest never runs the game at all - he watches the host's picture and sends his hands back - so
-// his own save is never read or written (this file reads only the settings: his own key rebinding and his touch layout, and writes nothing).
+// page is opened with ?join=CODE: the guest never runs the game at all - he watches the host's picture and sends his hands back. It reads his
+// settings (his own key rebinding and his touch layout) and - CO-OP PROGRESSION step 1 (claude/coopprogress, src/coop-save.js) - HIS OWN SAVE SLOTS:
+//   THE SLOT      he picks one of his slots (an empty one starts a new save; JUST VISIT saves nothing and plays the host's heroes as before), then a
+//                 hero of that save; the pick carries that hero's snapshot (src/coop-save.js snapshotOf) and the host seats him from it - his level,
+//                 his kit, his talents. A slot his own game has open in another tab (or another guest page plays) is refused, told (the locks).
+//   THE CREDITS   the host sends what he earned at every checkpoint, and at the end ({ t: 'earn', c }); THIS page writes it into THAT slot
+//                 (applyCredit: XP, silver, level clears on his road; never twice; a lost one covered by the next; the save-safety rules). Nothing
+//                 else in his storage is written, except his stream volume under its own key.
 //
 //   THE PICTURE   a <video> of the host's 2x frame, image-rendering: pixelated, sized to a WHOLE number of screen pixels per game pixel
 //                 (the same rule as the game's own canvas), so the art stays crisp; letterboxed in the game's dark green.
@@ -14,6 +20,8 @@ import * as CTL from './controls.js';
 import { createTouch } from './touch.js';
 import * as NET from './online-net.js';
 import * as UI from './online-ui.js';
+import * as CS from './coop-save.js';
+import { migrateProgress } from './progression.js';
 
 LS.bootDone();   /* the boot bar index.html put up is the game's: the guest page has nothing to load */
 { const b = document.getElementById('boot'); if (b) b.remove(); }   /* (and its 'still loading' line waits for a window.BK this page never makes) */
@@ -27,7 +35,11 @@ function saveVol(v) { try { localStorage.setItem(VOL_KEY, String(v)); } catch {}
 const isKey = (e, list) => list.includes(e.key) || list.includes(e.code);
 const HELD = ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance', 'talk'];
 
-const G = { seat: 2, grab: null, phase: 'start', code, err: '', roster: [], hero: null, hostHero: '', rtt: 0, hostState: '', paused: false, menu: false, sent: 0, frames: 0, vol: loadVol(), art: {}, why: '' };
+const G = { seat: 2, grab: null, phase: 'start', code, err: '', roster: [], hero: null, hostHero: '', rtt: 0, hostState: '', paused: false, menu: false, sent: 0, frames: 0, vol: loadVol(), art: {}, why: '',
+  slot: null, own: [], camp: [], levels: [], names: {}, slotMsg: '', lastEarn: '', earnBad: false, earned: { xp: 0, coins: 0, clears: [] }, credits: 0, dups: 0 };   /* (claude/coopprogress) slot: his chosen save slot (-1: JUST VISIT, null: not yet) */
+/* ONE CHARACTER, ONE PLACE: the slot this page plays is claimed on the channel his game's tabs listen on (src/coop-save.js makeLocks) - no storage is written for it */
+const LOCKS = CS.makeLocks({ channel: typeof BroadcastChannel === 'function' ? (() => { try { return new BroadcastChannel('bracken-slots'); } catch { return null; } })() : null });
+LOCKS.ask(); setInterval(() => LOCKS.beat(), CS.LOCK_BEAT); addEventListener('pagehide', () => LOCKS.releaseAll());
 let link = null, net = null, stream = null;
 
 /* ===== the page ===== */
@@ -145,20 +157,48 @@ async function connect() {
   });
 }
 function onMsg(m) {
-  if (m.t === 'roster') { G.roster = Array.isArray(m.heroes) ? m.heroes : []; G.hostHero = m.host || ''; G.phase = 'pick'; render(); }
+  if (m.t === 'roster') { G.roster = Array.isArray(m.heroes) ? m.heroes : []; G.hostHero = m.host || ''; G.camp = Array.isArray(m.camp) ? m.camp : G.camp; G.levels = Array.isArray(m.levels) ? m.levels : G.levels; if (m.names && typeof m.names === 'object') G.names = m.names;
+    if (m.why && G.slot !== null) G.slotMsg = String(m.why).toUpperCase();   /* the host could not read the save he sent: back to the slots, told */
+    G.phase = G.slot === null || (m.why && G.slot >= 0) ? 'slot' : 'pick'; if (G.phase === 'slot' && G.slot >= 0) { LOCKS.releaseRole('guest'); G.slot = null; } render(); }
+  else if (m.t === 'earn') earn(m.c);
   else if (m.t === 'art') { G.art = m.art && typeof m.art === 'object' ? m.art : {}; if (G.phase === 'pick' || G.phase === 'waitgo') render(); }
   else if (m.t === 'go') { G.hero = m.hero; G.seat = +m.n || G.seat || 2; G.phase = 'play'; render(); flush(true); }
   else if (m.t === 'st') { G.grab = m.g === 'GRAB' || m.g === 'THROW' ? m.g : null; G.hostState = m.s; G.paused = !!m.paused; if (+m.n) G.seat = +m.n; showBanner(); stripView(); }
   else if (m.t === 'pong') { G.rtt = Math.round(performance.now() - m.t0); if (link) link.send({ t: 'rtt', ms: G.rtt }); stripView(); }
   else if (m.t === 'full') { G.why = 'full'; }
-  else if (m.t === 'end') { const k = m.why === 'party' ? 'left' : 'ended'; G.why = k; end(k); }   /* (claude/tavern) walked out of the tavern door: he left, the host did not end it */
+  else if (m.t === 'end') { const k = m.why === 'party' ? 'left' : 'ended'; G.why = k; if (G.leaving && G.phase === 'ended') { G.leaving = false; if (net) net.close(); return; } end(k); }   /* (claude/tavern) walked out of the tavern door: he left, the host did not end it */
 }
 setInterval(() => { if (link && link.open) link.send({ t: 'ping', t0: performance.now() }); }, 1000);   /* the ping is the heartbeat too: the host drops a guest who goes quiet */
-function pick(h) { if (!link || !link.open || !G.roster.some(r => r.id === h)) return false; link.send({ t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }
-function leave() { if (link && link.open) link.send({ t: 'bye' }); G.why = 'left'; setTimeout(() => { if (net) net.close(); }, 150); end('left'); }
+/* the heroes he may pick: his slot's own (owned + the free starters), or the host's when he only visits */
+const pickList = () => (G.slot >= 0 ? G.own.map(id => ({ id, name: G.names[id] || String(id).toUpperCase() })) : G.roster);
+function pick(h) { if (!link || !link.open || !pickList().some(r => r.id === h)) return false;
+  let seat = null;
+  if (G.slot >= 0) { try { const raw = CS.slotRawOf(localStorage, G.slot); seat = CS.snapshotOf(raw ? migrateProgress(raw, G.camp).progress : migrateProgress(null).progress, h, G.slot); } catch (e) { G.slotMsg = 'SLOT ' + (G.slot + 1) + ' COULD NOT BE READ: ' + String(e && e.message || e).toUpperCase(); G.phase = 'slot'; G.slot = null; LOCKS.releaseRole('guest'); render(); return false; } }
+  link.send(seat ? { t: 'pick', hero: h, seat } : { t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }
+/* HIS SLOT: one of his five (an empty one is a new save), or -1 to JUST VISIT. A slot open elsewhere (his game in another tab, another guest page) is refused */
+function slots() { return Array.from({ length: CS.SLOTS }, (_, i) => { const sm = CS.slotSummary(CS.slotRawOf(localStorage, i), G.camp), h = LOCKS.holder(i, 'guest');
+  const why = h ? CS.lockLine(i, h) : sm.state === 'corrupt' ? 'DAMAGED: FIX IT IN YOUR OWN GAME' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+  return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase()), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }); }
+function chooseSlot(i) {
+  if (i < 0) { G.slot = -1; G.slotMsg = ''; G.phase = 'pick'; render(); return true; }
+  const sl = slots()[i]; if (!sl || !sl.ok) { G.slotMsg = sl ? sl.why : 'NO SUCH SLOT'; render(); return false; }
+  const c = LOCKS.claim(i, 'guest', 'ONLINE CO-OP', 'guest'); if (!c.ok) { G.slotMsg = CS.lockLine(i, c.holder); render(); return false; }
+  G.slot = i; G.own = sl.heroes; G.slotMsg = ''; G.phase = 'pick'; render(); return true;
+}
+/* A CREDIT FROM THE HOST: written into HIS slot here (src/coop-save.js applyCredit), and said on the strip */
+function earn(c) {
+  if (!(G.slot >= 0)) return;
+  const r = CS.applyCredit(localStorage, CS.slotKey(G.slot), c, { campaignIds: G.camp, isLevel: id => G.levels.includes(id) });
+  G.credits++; G.lastC = c;
+  if (!r.ok) { G.lastEarn = r.why; G.earnBad = true; }
+  else if (r.dup) G.dups++;
+  else { const a = r.applied; G.earned.xp += a.xp; G.earned.coins += a.coins; for (const id of a.clears) if (!G.earned.clears.includes(id)) G.earned.clears.push(id); const l = CS.creditLine(G.slot, a); if (l) { G.lastEarn = 'SAVED ' + l; G.earnBad = false; } }
+  stripView(); if (G.phase !== 'play' || G.menu) render();
+}
+function leave() { const linked = !!(link && link.open); if (linked) link.send({ t: 'bye' }); G.why = 'left'; G.leaving = linked && G.slot >= 0; setTimeout(() => { if (net) net.close(); }, G.leaving ? 2000 : 150); end('left'); }   /* (claude/coopprogress) on his own save the link stays up until the host's goodbye (his final credit comes first), two seconds at most */
 function end(kind) {
   if (G.phase === 'ended') return;
-  G.phase = 'ended'; G.err = kind; releaseAll(); if (net) setTimeout(() => net.close(), 200);
+  G.phase = 'ended'; G.err = kind; releaseAll(); if (net) setTimeout(() => net.close(), G.leaving ? 2000 : 200); setTimeout(() => LOCKS.releaseAll(), G.leaving ? 2200 : 400);   /* (his slot is free again once the last credit is in)*/
   video.style.display = 'none'; try { video.srcObject = null; } catch {} stream = null; render();
 }
 function toggleMenu() { if (G.phase !== 'play') return; G.menu = !G.menu; releaseAll(); render(); }
@@ -179,20 +219,27 @@ function render() {
     const inp = UI.el('input'); inp.maxLength = 200;   /* (a pasted link must reach cleanCode whole: at 6 it was cut to HTTPS: first) */  inp.placeholder = 'CODE'; inp.autocomplete = 'off'; inp.spellcheck = false; inp.addEventListener('input', () => { inp.value = NET.cleanCode(inp.value); });
     parts.push(UI.el('p', 'TYPE THE CODE YOUR FRIEND SENT'), UI.row(inp, UI.el('button.go', 'JOIN', () => { const c = NET.cleanCode(inp.value); if (c.length >= 4) location.href = location.pathname + '?join=' + c; })), UI.row(UI.el('button', 'BACK TO MY GAME', backHome)));
   } else if (P === 'finding' || P === 'linking' || P === 'opening' || P === 'start') {
-    parts.push(UI.el('div.code', code), UI.el('p', P === 'finding' ? 'ASKING THE MATCHMAKER FOR THE GAME...' : P === 'linking' ? 'OPENING A DIRECT LINK TO THE HOST...' : 'SAYING HELLO...'), UI.el('p.dim', 'you play player two in the host\'s game; your own save is never touched'), UI.row(UI.el('button', 'CANCEL', backHome)));
+    parts.push(UI.el('div.code', code), UI.el('p', P === 'finding' ? 'ASKING THE MATCHMAKER FOR THE GAME...' : P === 'linking' ? 'OPENING A DIRECT LINK TO THE HOST...' : 'SAYING HELLO...'), UI.el('p.dim', 'you play in the host\'s game with a hero from one of your own saves: what you earn is saved to it'), UI.row(UI.el('button', 'CANCEL', backHome)));
+  } else if (P === 'slot') {
+    parts.push(UI.el('p', 'PICK ONE OF YOUR SAVES'), UI.el('p.dim', 'you play its hero, at its level, with its kit; the XP, silver and woods you earn with your friend are saved to it'));
+    for (const sl of slots()) { const b = UI.el('button' + (sl.ok ? '' : '.no'), sl.line, () => chooseSlot(sl.i)); b.dataset.slot = sl.i; if (!sl.ok) { b.disabled = true; b.title = sl.why; } parts.push(UI.row(b)); if (!sl.ok) parts.push(UI.el('p.dim', sl.why)); }
+    { const v = UI.el('button', 'JUST VISIT - NOTHING SAVED', () => chooseSlot(-1)); v.dataset.slot = -1; parts.push(UI.row(v)); }
+    if (G.slotMsg) parts.push(UI.el('p.bad', G.slotMsg));
+    parts.push(UI.row(UI.el('button', 'LEAVE', leave)));
   } else if (P === 'pick' || P === 'waitgo') {
-    parts.push(UI.el('p', 'PICK YOUR HERO'), UI.el('p.dim', 'from the host\'s heroes' + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '')));
-    const r = UI.row(); for (const h of G.roster) r.appendChild(heroButton(h, h.id === G.roster[0].id));
+    const list = pickList();
+    parts.push(UI.el('p', 'PICK YOUR HERO'), UI.el('p.dim', G.slot >= 0 ? 'from your slot ' + (G.slot + 1) + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '') : 'from the host\'s heroes' + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '') + ': nothing is saved'));
+    const r = UI.row(); for (const h of list) r.appendChild(heroButton(h, list[0] && h.id === list[0].id));
     parts.push(r); if (P === 'waitgo') parts.push(UI.el('p.ok', 'JOINING...'));
-    parts.push(UI.el('p.dim', keysLine()), UI.row(UI.el('button', 'LEAVE', leave)));
+    parts.push(UI.el('p.dim', keysLine()), UI.row(UI.el('button', 'OTHER SAVE', () => { if (G.phase !== 'pick') return; LOCKS.releaseRole('guest'); G.slot = null; G.phase = 'slot'; render(); }), UI.el('button', 'LEAVE', leave)));
   } else if (P === 'play') {   /* the menu */
     const vol = UI.el('input'); vol.type = 'range'; vol.min = 0; vol.max = 100; vol.value = Math.round(G.vol * 100); vol.id = 'olvol'; vol.style.cssText = 'width:200px;letter-spacing:0;font-size:12px';
     vol.addEventListener('input', () => { G.vol = vol.value / 100; saveVol(G.vol); video.volume = G.vol; video.muted = G.vol === 0 ? true : false; });
-    parts.push(UI.el('p', 'PLAYER ' + (G.seat || 2) + ': ' + (nameOf(G.hero))), UI.el('p.dim', 'PING ' + (G.rtt || '?') + ' MS'), UI.el('h2', 'HOST SOUND'), UI.row(vol),
+    parts.push(UI.el('p', 'PLAYER ' + (G.seat || 2) + ': ' + (nameOf(G.hero))), UI.el('p.dim', 'PING ' + (G.rtt || '?') + ' MS'), UI.el(G.earnBad ? 'p.bad' : 'p.ok', savedLine()), UI.el('h2', 'HOST SOUND'), UI.row(vol),
       UI.el('p.dim', keysLine()), UI.row(UI.el('button.sel', 'BACK TO THE GAME', toggleMenu), UI.el('button', 'LEAVE THE GAME', leave)));
   } else if (P === 'ended') {
     const [t, w] = G.err === 'left' ? ['YOU LEFT THE GAME', 'The host\'s game goes on without player two. The same code takes you back in while they keep the room open.'] : NET.explain(G.err, code);
-    parts.push(UI.el('p.bad', t), UI.el('p', w), UI.row(UI.el('button.sel', 'TRY AGAIN', () => location.reload()), UI.el('button', 'BACK TO MY GAME', backHome)));
+    parts.push(UI.el('p.bad', t), UI.el('p', w), G.slot >= 0 ? UI.el(G.earnBad ? 'p.bad' : 'p.ok', savedLine()) : null, UI.row(UI.el('button.sel', 'TRY AGAIN', () => location.reload()), UI.el('button', 'BACK TO MY GAME', backHome)));
   }
   board.set(...parts);
 }
@@ -207,17 +254,20 @@ function heroButton(h, sel) {
   }
   return b;
 }
-const nameOf = h => { const r = G.roster.find(x => x.id === h); return r ? r.name : String(h || '').toUpperCase(); };
+const nameOf = h => { const r = G.roster.find(x => x.id === h); return r ? r.name : G.names[h] || String(h || '').toUpperCase(); };
+/* what this session has put in his slot so far */
+function savedLine() { if (!(G.slot >= 0)) return 'JUST VISITING: NOTHING IS SAVED'; if (G.earnBad) return G.lastEarn; const e = G.earned, b = []; if (e.xp) b.push('+' + e.xp + ' XP'); if (e.coins) b.push('+' + e.coins + ' SILVER'); if (e.clears.length) b.push(e.clears.length + (e.clears.length > 1 ? ' WOODS' : ' WOOD'));
+  return 'SLOT ' + (G.slot + 1) + (b.length ? ' SAVED: ' + b.join(', ') : ': EARNINGS ARE SAVED AT EACH SHRINE'); }
 function keysLine() { const L = a => CTL.labelFor(binds, 'kb', a, 1); return 'YOUR OWN KEYS: ' + L('left') + '/' + L('right') + ' MOVE, ' + L('jump') + ' JUMP, ' + L('atk') + ' ATTACK, ' + L('dodge') + ' DODGE, ESC MENU'; }
 function stripView() {
   if (G.phase !== 'play') { strip.style.display = 'none'; return; }
-  strip.style.display = ''; const html = 'P' + (G.seat || 2) + ' <b>' + nameOf(G.hero) + '</b> <span class="' + (G.rtt > 150 ? 'bad' : 'ok') + '">PING ' + (G.rtt || '?') + ' MS</span> ESC MENU';
+  strip.style.display = ''; const html = 'P' + (G.seat || 2) + ' <b>' + nameOf(G.hero) + '</b> ' + (G.slot >= 0 ? 'SLOT ' + (G.slot + 1) + ' ' : '') + '<span class="' + (G.rtt > 150 ? 'bad' : 'ok') + '">PING ' + (G.rtt || '?') + ' MS</span>' + (G.lastEarn ? ' <span class="' + (G.earnBad ? 'bad' : 'ok') + '">' + G.lastEarn.replace(/[<>&]/g, '') + '</span>' : '') + ' ESC MENU';
   if (strip.dataset.h !== html) { strip.dataset.h = html; strip.innerHTML = html; }
 }
 function showBanner() {
   const s = G.phase === 'play' && !G.menu ? (G.paused ? 'HOST PAUSED' : G.hostState === 'map' ? 'HOST IS ON THE MAP' : G.hostState && G.hostState !== 'play' ? 'HOST IS IN THE MENUS' : '') : '';
   banner.textContent = s; banner.style.display = s ? '' : 'none';
 }
-window.BKGUEST = { state: () => ({ ...G, banner: banner.style.display === 'none' ? '' : banner.textContent, videoW: video.videoWidth, videoH: video.videoHeight, vol: video.volume, muted: video.muted, audio: !!(stream && stream.getAudioTracks().length), held: heldNow(), volSaved: G.vol, geo: { ...geo }, css: { w: parseFloat(video.style.width), h: parseFloat(video.style.height), r: getComputedStyle(video).imageRendering } }), pick, leave, toggleMenu, touch: TCH, video };
+window.BKGUEST = { slots, chooseSlot, earn, locks: () => ({ mine: LOCKS.mine(), others: LOCKS.others() }), state: () => ({ ...G, banner: banner.style.display === 'none' ? '' : banner.textContent, videoW: video.videoWidth, videoH: video.videoHeight, vol: video.volume, muted: video.muted, audio: !!(stream && stream.getAudioTracks().length), held: heldNow(), volSaved: G.vol, geo: { ...geo }, css: { w: parseFloat(video.style.width), h: parseFloat(video.style.height), r: getComputedStyle(video).imageRendering } }), pick, leave, toggleMenu, touch: TCH, video };
 connect();
 render();
