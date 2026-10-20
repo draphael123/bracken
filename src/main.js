@@ -11943,6 +11943,8 @@ function drawLifeboat(m, cx, cy) {
 /* A GOBLIN STORM-CALLER. He marks the planking under you, calls it, and the sky hits the mark. No shield turns
    lightning, so it is a red !!; the mark stays where you WERE, so the answer is to be somewhere else. A blow on
    him while he calls breaks the call. */
+/* THE THIEF'S TAKE (one place for the snatch and the swipe, claude/sweepact12): up to 5 gold, or an empty pocket he runs from */
+function thiefTake(e) { const take = Math.min(5, got); if (take > 0) { got -= take; e.loot = take; number(P.x, P.y - 22, '-' + take + ' GOLD', '#ff6b6b'); SFX.coin(); } else { e.loot = -1; number(e.x, e.y - 18, 'EMPTY POCKETS', '#9aa39a'); } }
 /* THE STAFF JAB (claude/sweepact12, the foe pass: his told attack, both shamans - the caller and the thrower): a hero who comes IN to him is jabbed with the staff, a yellow ! (0.42 s: a shield turns it and the parry staggers him). Up to now a shaman answered being rushed with a red sky or a slow bolt, neither of which a shield or a beat could answer at arm's length */
 function updateStormJab(e, dt) {
   e.jabCd = Math.max(0, (e.jabCd || 0) - dt); const d = P.x - e.x, ad = Math.abs(d), rest = e.caller ? 'watch' : 'idle';
@@ -27188,10 +27190,10 @@ function updateEnemies(dt) {
         else if (e.mode === 'snatch') { e.vx = e.face * 170; if ((e.modeT -= dt) <= 0) { e.mode = 'stalk'; e.vx = 0; } }
         /* THE LOW SWIPE (claude/sweepact12, the foe pass: his told attack): from a step off he goes down on his haunches (a red !!, 0.45 s) and sweeps along the floor at the purse - it only takes a hero on the ground: JUMP it (src/told-attacks.js SIG thief). It was one red grab at arm's length with nothing to do about it but roll */
         else if (e.mode === 'swipeTell') { e.vx = 0; e.face = Math.sign(d) || e.face; if (e.stagger > 0) { e.mode = 'stalk'; e.swipeCd = 1.2; } else if ((e.modeT -= dt) <= 0) { e.mode = 'swipe'; e.modeT = 0.32; e.vx = e.face * 215; SFX.leap(); } }
-        else if (e.mode === 'swipe') { e.vx = e.face * 215; if ((e.modeT -= dt) <= 0) { e.mode = 'stalk'; e.vx = 0; e.swipeCd = 1.8; } else if (!P.dead && ad < 12 && Math.abs(e.y - P.y) < 8 && P.dodge <= 0) { e.mode = 'stalk'; e.swipeCd = 1.8; { const take = Math.min(5, got); if (take > 0) { got -= take; e.loot = take; number(P.x, P.y - 22, '-' + take + ' GOLD', '#ff6b6b'); SFX.coin(); } else { e.loot = -1; number(e.x, e.y - 18, 'EMPTY POCKETS', '#9aa39a'); } } e.vx = (Math.sign(e.x - P.x) || 1) * 95; } }
+        else if (e.mode === 'swipe') { e.vx = e.face * 215; if ((e.modeT -= dt) <= 0) { e.mode = 'stalk'; e.vx = 0; e.swipeCd = 1.8; } else if (!P.dead && ad < 12 && Math.abs(e.y - P.y) < 8 && P.dodge <= 0) { e.mode = 'stalk'; e.swipeCd = 1.8; thiefTake(e); e.vx = (Math.sign(e.x - P.x) || 1) * 95; } }
         else if (e.mode !== 'flee' && !P.dead && ad >= 34 && ad < 76 && Math.abs(e.y - P.y) < 14 && e.stagger <= 0 && !e.tokWait && e.swipeCd <= 0) { e.mode = 'swipeTell'; e.modeT = 0.45; number(e.x, e.y - 14, '!!', '#ff6b6b'); }
         else if (e.mode !== 'flee' && !P.dead && ad < 34 && Math.abs(e.y - P.y) < 14 && e.stagger <= 0 && !e.tokWait) { e.mode = 'snatchTell'; e.modeT = 0.35; number(e.x, e.y - 18, '!!', '#ff6b6b'); }
-        if (e.mode === 'snatch' && !P.dead && ad < 10 && Math.abs(e.y - P.y) < 14 && P.dodge <= 0) { e.mode = 'stalk'; { const take = Math.min(5, got); if (take > 0) { got -= take; e.loot = take; number(P.x, P.y - 22, '-' + take + ' GOLD', '#ff6b6b'); SFX.coin(); } else { e.loot = -1; number(e.x, e.y - 18, 'EMPTY POCKETS', '#9aa39a'); } } e.vx = (Math.sign(e.x - P.x) || 1) * 95; }
+        if (e.mode === 'snatch' && !P.dead && ad < 10 && Math.abs(e.y - P.y) < 14 && P.dodge <= 0) { e.mode = 'stalk'; thiefTake(e); e.vx = (Math.sign(e.x - P.x) || 1) * 95; }
         if (e.loot === -1) { e.loot = 0; e.mode = 'flee'; e.fleeT = 3; }
         if (e.mode === 'flee') { e.fleeT -= dt; e.vx += ((Math.sign(e.x - P.x) || 1) * 95 - e.vx) * Math.min(1, dt * 8); if (e.fleeT <= 0) e.mode = 'stalk'; } }
       const dirM = Math.sign(e.vx) || e.face; const aheadX = e.x + dirM * (e.w / 2 + 2), ftx = Math.floor(aheadX / TS), fty = Math.floor((e.y + 1) / TS);
