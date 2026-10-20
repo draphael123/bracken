@@ -25,8 +25,8 @@ export const OT = {
   p2: 0.5,
   charge: { tell: [0.95, 0.72], speed: 290, dmg: 22, turn: 0.42, minD: 104 },
   daze: { t: [1.45, 1.2], mul: 1.25 },           // he rams a pine or the wall: reels (a short, told opening)
-  sweep: { tell: [0.62, 0.5], t: 0.26, reach: 52, h: 24, dmg: 17, rec: 0.55, range: 70 },
-  root: { tell: [0.85, 0.72], n: 3, flight: 0.95, r: 17, dmg: 13, rec: 0.6, spread: 54 },
+  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 22, dmg: 14, rec: 0.55, range: 70 },
+  root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 11, rec: 0.6, spread: 64 },
   stomp: { tell: 0.78, sp: 150, life: 1.9, dmg: 14, rec: 0.75, w: 7 },
   pin: { t: 3.4, mul: 2, thrash: 0.55, ward: 3, trunk: 0.04, cap: 0.16 },   // cap: a pin is worth this share of him at most - the blow that empties it, he heaves the trunk off (told)   // trunk: the falling pine's own blow on him (a share of his health, a room blow)
   pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 12, lie: 0.9, rearm: 20 },   // lie: a trunk that missed lies a beat, then rolls off the floor; rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
@@ -136,7 +136,7 @@ function pick(e, S, ad, w) {
   const ph = S.ph, i = ph - 1, last = S.last, twice = k => last.length >= 2 && last[0] === k && last[1] === k;
   let k;
   const cover = S.coverP;   /* (stepTusker sets it: a standing pine between him and the hero) */
-  if (cover) k = Math.random() < (ph > 1 ? 0.5 : 0.6) && !twice('root') ? 'root' : ph > 1 && Math.random() < 0.4 ? 'stomp' : 'charge';
+  if (cover) k = Math.random() < (ph > 1 ? 0.35 : 0.45) && !twice('root') ? 'root' : ph > 1 && Math.random() < 0.4 ? 'stomp' : 'charge';
   else if (ad < OT.sweep.range) k = ph > 1 && Math.random() < 0.35 && !twice('stomp') ? 'stomp' : 'sweep';
   else if (ad > OT.charge.minD) { const r = Math.random(); k = r < (ph > 1 ? 0.5 : 0.6) ? 'charge' : r < (ph > 1 ? 0.78 : 1) ? 'root' : 'stomp'; }
   else { if (S.walkT < 1.1) return; k = Math.random() < 0.6 ? 'root' : ph > 1 ? 'stomp' : 'charge'; }
@@ -190,7 +190,16 @@ export function takeBlow(e, S, dmg, plunge) {
 /* ---------- THE BOT (src/lab.js): what a player reads - his tells a reaction late, the clods' marks, the waves, the pines' lines and strokes - and THE RULE: lay three
    strokes in a pine, stand behind it (its wall side, out of its line), and strike the fourth when he is under it (rammed into it, or in a tell close by) ---------- */
 export const PLAN = { react: 0.25, miss: 0.12, missFell: 0.2 };
+/* the plan, then THE GROUND'S HAZARDS over it: never walk back onto a clod's red ring or under a falling pine to get to a spot (the oscillation that fed the clods) */
 export function otPlan(s) {
+  const out = otPlan0(s), S = s.S, P = s.P, G = S.G, hz = otHazards(S);
+  if (out.gx != null && !out.jump && P.ground) { const bad = x => hz.some(([hx, r]) => Math.abs(x - hx) < r);
+    if (bad(out.gx) && !bad(P.x)) { out.gx = P.x; out.atk = out.atk && Math.abs(P.x - s.e.x) < s.reach + OT.w / 2; out.why += " (waits: the spot is under a mark)"; } }
+  if (globalThis.__otWhy) { const k = out.why.replace(/ \(.*/, ''); globalThis.__otWhy[k] = (globalThis.__otWhy[k] || 0) + 1; }   /* (a lab probe: what the plan spent its frames on) */
+  return out;
+}
+export const otHazards = S => [...S.clods.map(c => [c.tx, OT.root.r + 12]), ...S.pines.filter(p => p.st === "fall").map(p => { const [lo, hi] = lineOf(p); return [(lo + hi) / 2, (hi - lo) / 2 + 10]; })];
+function otPlan0(s) {
   const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, why: '' };
   const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
   mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
@@ -199,7 +208,7 @@ export function otPlan(s) {
   const half = OT.w / 2, lo = G.x0 + 10, hi = G.x1 - 10, clamp = x => Math.max(lo, Math.min(hi, x));
   const kx = e.x, side = Math.sign(P.x - kx) || 1, dx = Math.abs(kx - P.x), hitR = reach + half - 4;
   const swing = fx => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
-  const hazards = S.clods.map(c => [c.tx, OT.root.r + 12]);
+  const hazards = otHazards(S);
   const inHaz = x => hazards.some(([hx, r]) => Math.abs(x - hx) < r);
   const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [hx, r] of hazards) if (Math.abs(q - hx) < r) q = clamp(q < hx ? hx - r - 4 : hx + r + 4); return q; };
   /* 0. the jump is carried through */
@@ -220,10 +229,10 @@ export function otPlan(s) {
     if (seen && !miss) {
       if ((e.mode === 'chargeTell' || e.mode === 'turn' || e.mode === 'charge') && !between) {
         const toward = (P.x - kx) * e.face > 0, gap = Math.abs(P.x - kx) - half;
-        if (e.mode === 'charge' && toward && gap < 44 + (s.v2 ? 0 : 6)) { if (s.dodge && !roll(key + 'd', 0.5)) { out.dodge = true; out.gx = P.x - e.face * 30; out.why = 'roll the charge'; return out; }
+        if (e.mode === 'charge' && toward && gap < 52 + (s.v2 ? 0 : 6)) { if (s.dodge && !roll(key + 'd', 0.5)) { out.dodge = true; out.gx = P.x - e.face * 30; out.why = 'roll the charge'; return out; }
           out.jump = P.ground; out.gx = P.x + e.face * 6; mem.jumpT = t; mem.jumpX = out.gx; mem.plunge = false; out.why = 'jump the charge'; return out; }
         out.gx = P.x; out.face = Math.sign(kx - P.x) || 1; out.why = 'his charge: ready to jump it'; return out; }
-      if (e.mode === 'chargeTell' && between) { out.gx = P.x; out.why = 'behind the pine: let him ram it'; return out; }
+      if (e.mode === 'chargeTell' && between) { const sp = between.x - between.dir * 12; if (Math.abs(P.x - sp) < 10 && between.hp > 1) { out.gx = sp; out.face = between.dir; out.atk = P.atk < 0; out.why = 'behind the pine: a stroke in it while he paws'; return out; } out.gx = P.x; out.why = 'behind the pine: let him ram it'; return out; }
       if ((e.mode === 'sweepTell' || e.mode === 'sweep') && dx < half + OT.sweep.reach + 14) {
         if (s.shield && !roll(key + 'b', 0.4)) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the sweep'; return out; }
         if (between && e.mode === 'sweepTell') { out.gx = P.x; out.why = 'behind the pine: his tusks bite the bark'; return out; }
@@ -236,11 +245,12 @@ export function otPlan(s) {
   /* 3. OPEN: strike him (pinned or dazed); WARDED: off him */
   if (otOpen(e)) { const sx = kx + side * (s.tip ? 30 : 8 + half); out.gx = safeX(sx);
     /* a dazed boar under a pine you have laid strokes in: the fourth stroke is better than a cut */
-    if (e.mode === 'rammed' && e.modeT > OT.pine.fall + 0.1) { const pr = S.pines.find(p => p.st === 'stand' && p.hp <= 1 && underLine(p, kx, half - 6) && Math.abs(P.x - (p.x - p.dir * 12)) < 30);
+    if (e.mode === 'rammed' && e.modeT > OT.pine.fall + 0.1) { const pr = S.pines.find(p => p.st === 'stand' && (p.hp <= 1 || (p.hp - 1) * 0.36 + OT.pine.fall < e.modeT) && underLine(p, kx, half - 6) && Math.abs(P.x - (p.x - p.dir * 12)) < 30);
       if (pr && !roll('fell' + S.act + pr.id, PLAN.missFell)) { out.gx = pr.x - pr.dir * 12; out.face = pr.dir; if (Math.abs(P.x - out.gx) < 8) out.atk = P.atk < 0; mem.strike = pr.id; out.why = 'the fourth stroke: he is under it'; return out; } }
     if (dx < hitR + 4) swing(kx); out.why = 'strike him: ' + (OPEN_NAME[e.mode] || 'open').toLowerCase(); return out; }
   if (S.ward > 0 || e.mode === 'thrash') { out.gx = safeX(kx + side * 100); out.why = 'his ward: off him'; return out; }
-  if (s.rest) { out.gx = safeX(kx + side * 130); out.why = 'winded: off him'; return out; }
+  if (s.rest) { const cv = S.pines.filter(p => p.st === 'stand').sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];   /* winded: catch your breath BEHIND a pine (his tusks bite its bark), never in the open */
+    if (cv) { out.gx = safeX(cv.x - cv.dir * 12); out.face = cv.dir; out.why = 'winded: behind a pine'; return out; } out.gx = safeX(kx + side * 130); out.why = 'winded: off him'; return out; }
   /* 4. THE RULE: a primed pine (one stroke left) he stands under - strike it */
   for (const p of S.pines) { if (p.st !== 'stand' || p.hp > 1) continue; const spot = p.x - p.dir * 12;
     const still = e.mode === 'rammed' || (/Tell$/.test(e.mode) && e.modeT > 0.4) || e.mode === 'recover';
