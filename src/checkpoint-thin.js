@@ -19,7 +19,7 @@ export const CHECK_PIN = {
 };
 export const CHECK_DROP = {
   wood: [],   /* (claude/lumbertrail) THE LUMBER TRAIL places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
-  marsh: [[47,21],[163,17],[206,17],[216,17],[313,17]],
+  marsh: [[47,21],[163,17],[206,17],[216,17],[313,17],[369,16]],   /* (claude/marsh2: the drowned village's plank shrine goes - the grove dock's (391, pinned) closes the sluice house 22 columns on) */
   stockade: [[36,19],[135,19],[224,19],[299,19],[331,19],[421,11]],
   spore: [[63,11],[132,19],[283,13],[371,13],[408,13]],
   kings: [[43,19],[153,21],[241,13],[405,20],[566,11]],

@@ -16,6 +16,8 @@ import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.
 export const CALL_LINES = new Set([
   /* claude/lumbertrail: THE LUMBER TRAIL's felling (src/felling.js) - the first stroke and the fall, routed as hint-shown requires */
   'THE PINE CREAKS AND LEANS', 'THE PINE FALLS: A BRIDGE', 'THE PINE FALLS: A WAY UP', 'TIMBER: IT CRUSHES WHAT STOOD UNDER IT',
+  /* (claude/marsh2) THE BULLFROG KING REWORKED (src/frog-king.js): his pond, his grab, the flies, the ripple and the pads - teaching lines, routed as hint-shown requires */
+  'FROM ABOVE: KNOCKED FLAT', 'HIS POND GOES DEEP', 'GRABBED: INTO HIS POND', 'THE TONGUE HAS YOU', 'HE BITES HIMSELF', 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', 'THE PADS GO UNDER', 'THE RIPPLE TIPS THE PADS', 'THE PAD THROWS YOU',
   /* batch101 integ 10-18: THE BELL HOUSINGS (claude/airpockets) - the housing is spent / fills again, routed as hint-shown requires */
   'THE HOUSING IS SPENT', 'THE HOUSING FILLS AGAIN',
   /* batch100 integ 10-18: THE CAPTAIN 2 (claude/hurricane2) - the wave, the lightning, his line and ward, routed as hint-shown requires */

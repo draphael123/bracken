@@ -39,6 +39,7 @@ import { buildUnburiedField } from './unburied-field.js';
 import { stormholdTown } from './stormhold-town.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
 import { buildCaravan } from './sunken-caravan.js';
+import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's targeted fixes: the sluice house, the stilts */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
@@ -313,7 +314,7 @@ function marshWood() {
   F.plat(200, 20, 2); F.block(203, 208, 18, 27); F.ent('check', 206, 17);
   // AND THE MARSH WENT QUIET FOR A HUNDRED AND THIRTY COLUMNS: the whole pad crossing and the archers
   // after it, which is where both of its rules are actually asked for.
-  F.ent('sign', 58, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* HOTFIX 2026-09-26: it stood at 274, after every spitter in the wood (66, 136, 195) - now it comes before the first */   /* on the reed bed: at 286 it stood five rows up over the open lake */
+  F.ent('sign', 85, 15, { text: 'SPITTERS THROW IN ARCS. STAND WHERE THE LAST ONE LANDED.' });   /* HOTFIX 2026-09-26: it stood at 274, after every spitter in the wood (66, 136, 195) - now it comes before the first */   /* on the reed bed: at 286 it stood five rows up over the open lake */
   F.ent('sign', 335, 10, { text: 'THE BOARDS HOLD. THE WATER UNDER THEM BITES, AND A GAR WILL COME UP ONTO THEM.' });
   F.ent('sign', 405, 10, { text: 'ARCHERS ACROSS THE WATER. GO WHEN AN ARROW FLIES: THE NEXT IS A MOMENT AWAY.' });
   // A BUD LANDS YOU ON THE STAGES AND THE BANK'S LIP, and the garrison read all three as fresh floor and stood a spitter and
@@ -341,7 +342,7 @@ function marshWood() {
   const pilot = (t, x, y, o) => M.ents.push(Object.assign({ t, x, y, face: -1 }, o || {}));
   pilot('wasp', 238, 12, { sting: true, pogo: true }); pilot('archer', 247, 13);
   pilot('spit', 275, 15);
-  return M;
+  return applyMarsh2(M, T, TS);   /* (claude/marsh2) THE SLUICE HOUSE (the channel's third, required use) and the stilts (src/marsh2.js) */
 ;
 }
 
@@ -7791,7 +7792,7 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
 export const ROAD_OPEN = { undercrown: true };
 export const LEVELS = [
   { id: 'wood', name: 'THE LUMBER TRAIL', sub: 'down the woodsmen\'s trail through bracken wood, to the hive', rule: RULE_WOOD, build: () => buildLumberTrail({ painter, T, TS }) },   /* (claude/lumbertrail) BRACKEN WOOD becomes THE LUMBER TRAIL: one rule, one sentence - what main.js fellStroke/fellLay do (src/felling.js) */
-  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'THE CHANNEL IS DEEP: PAY THE FERRYMAN, OR DRAIN IT AND WADE.', build: marshWood, needs: 'wood' },
+  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', build: marshWood, needs: 'wood' },
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'rootway' },   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
@@ -8026,7 +8027,7 @@ export const DRESS = {
 };
 // per level: what to add, and how many of each. Read tools/curve.mjs before you touch these numbers.
 const GARRISON = {
-  marsh: [['hopper', 5], ['spit', 4], ['archer', 3], ['thorn', 3], ['turtle', 3], ['heronfoe', 3]],   // 46 was thirteen under the level before it
+  marsh: [['hopper', 5], ['spit', 2], ['archer', 1], ['thorn', 2], ['turtle', 4], ['heronfoe', 4]],   /* (claude/marsh2: ranged under 30% - review-first2 had it at 36%; the turtle and the heron take the places) */   // 46 was thirteen under the level before it
   spore: [['sporeling', 4], ['spitcap', 3], ['weaver', 2], ['thorn', 2], ['spider', 1]],   // eight kinds was the thinnest roster in the wood
   moor: [['goat', 4], ['rockgoblin', 3], ['harpy', 3], ['kite', 3], ['troll', 1], ['sailer', 2]],   /* twenty-three over NINE HUNDRED AND NINETY-SIX columns; sixteen over seven hundred and three, after the cut (docs/briefs/gale-moor-rework.md): the same density */
   scree: [['harpy', 2], ['goat', 1], ['rockgoblin', 2]],

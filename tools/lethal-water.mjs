@@ -10,7 +10,7 @@ import { readFileSync } from 'node:fs';
 import { LEVELS } from '../src/level.js';
 import { isCallout } from '../src/hint-lines.js';
 const OWN_LOOK = p => p.harm || p.fire || p.mud || p.rapids || p.tarn || p.capped || p.streetTide;
-const LISTED = { wood: 2, marsh: 9, canal: 11, towpath: 13 };   /* (claude/lumbertrail: THE LUMBER TRAIL's two - the ford's deep pool under the raft, the tarn) */   /* levels with pools drawn by drawDeadWater, and how many */
+const LISTED = { wood: 2, marsh: 10,   /* (claude/lumbertrail: the ford's deep pool under the raft, the tarn) (claude/marsh2: + the sluice house's far basin, deep until its gate is broken) */ canal: 11, towpath: 13 };   /* levels with pools drawn by drawDeadWater, and how many */
 const found = {};
 for (const l of LEVELS) { let L; try { L = l.build(); } catch (e) { continue; }
   const n = (L.pools || []).filter(p => !p.swim && !p.shallow && !p.dry && !OWN_LOOK(p)).length; if (n) found[l.id] = n; }

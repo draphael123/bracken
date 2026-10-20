@@ -4,7 +4,7 @@
    drawn by src/route-art.js). This is the same kit for the other BUILT places: at each end of every board run of an island made of boards only, a post is
    set down to the first thing under it, if that is within MAX_DROP rows. No tile changes: the route, the walker and the mash rows are untouched.
    What it cannot reach (open sky or a deep void under the board) stays in tools/solid-islands.mjs's table for the level's own lane. */
-import { addForestSupports } from './forest-supports.js';
+import { addForestSupports } from './forest-supports.js'; import { marshSupports } from './redraw/marsh2_art.js';
 import { addSpireSupports } from './spire-supports.js';
 export const MAX_DROP = 16;
 const HOVER = 6;
@@ -35,7 +35,8 @@ export function islandsOf(L, T) {
   return out;
 }
 
-export function addIslandPosts(L, id, T) {
+export function addIslandPosts(L, id, T) { const r = addIslandPostsBase(L, id, T); if (id === 'marsh' && r && r.marsh2Kit) marshSupports(r, T); return r; }   /* (claude/marsh2art) the marsh's posts reach the bed or the world's floor, drawn as bog-oak stilts (src/redraw/marsh2_art.js) */
+function addIslandPostsBase(L, id, T) {
   addForestSupports(L, id, T, islandsOf);   /* the forest and crag levels: their own kit (src/forest-supports.js) */
   if (id === 'spire') addSpireSupports(L, T);   /* THE MONASTERY: scaffold posts under its boards, masonry piers under its floors (claude/screefix, src/spire-supports.js) */
   if (!POST_LEVELS.has(id) || !L || !L.grid) return L;
