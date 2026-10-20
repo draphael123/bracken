@@ -32,7 +32,7 @@ export const OT = {
   pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 10, lie: 0.9, rearm: 24 },   // lie: a trunk that missed lies a beat, then rolls off the floor; rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
 };
 export const OT_SAY = { wake: 'OLD TUSKER', rule: 'HIS HIDE TURNS A CUT. FELL A MARKED PINE ON HIM.', p2: 'HIS BLOOD IS UP', pinned: 'PINNED', dazed: 'HE RAMS THE PINE',
-  dazedWall: 'HE RAMS THE WALL', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE HEAVES THE TRUNK OFF', jarred: 'JARRED: PARRY HIS TUSKS, OR JUMP THEM' };
+  dazedWall: 'HE RAMS THE WALL', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE HEAVES THE TRUNK OFF', jarred: 'JARRED: PARRY HIS TUSKS, OR JUMP THEM', creak: 'THE PINE CREAKS AND LEANS', timber: 'TIMBER' };
 export const OPEN_NAME = { pinned: 'PINNED', rammed: 'DAZED' };
 export const otOpen = e => !!e && (e.mode === 'pinned' || e.mode === 'rammed');
 const TELLS = new Set(['chargeTell', 'turn', 'sweepTell', 'rootTell', 'stompTell']);
@@ -61,7 +61,7 @@ export function chargeStop(S, x, dir) {
 export function strokePine(S, p, w) {
   if (!p || p.st !== 'stand') return false;
   p.hp--; p.lean = (OT.pine.strokes - p.hp) * 0.06; S.n.strokes++; w.sound('stroke');
-  if (!S.told['stroke' + p.id]) { S.told['stroke' + p.id] = 1; w.number(p.x, S.G.floorY - 84, p.hp > 0 ? 'THE PINE CREAKS AND LEANS' : 'TIMBER', '#ffd36b'); }
+  if (!S.told['stroke' + p.id]) { S.told['stroke' + p.id] = 1; w.number(p.x, S.G.floorY - 84, p.hp > 0 ? OT_SAY.creak : OT_SAY.timber, '#ffd36b'); }
   if (p.hp <= 0) { p.st = 'fall'; p.t = OT.pine.fall; w.sound('creak'); }
   return true;
 }

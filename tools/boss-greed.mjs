@@ -16,7 +16,8 @@
    Red on master 3fd06c78: no src/boss-greed.js (and BK.greed undefined). Run: node tools/boss-greed.mjs */
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/level.js';
-import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI, FULL_DAMAGE } from '../src/boss-greed.js';
+import { OPEN_RULE, NO_OPENING, MINI_EVERY_BLOW, GREED, chipped, CHIP_MINI, FULL_DAMAGE, OWN_WARD } from '../src/boss-greed.js';
+import { OT } from '../src/old-tusker.js';   /* (claude/oldtusker) the wood's sample is OLD TUSKER now: OWN_WARD, his own B15 floor (OT.hide) */
 import { openPage } from './cdp.mjs';
 import { pressureOf } from '../src/boss-pressure.js';   /* (batch91) a mini's blow is GREED.miniHit x the act's pressure-dial mini damage (src/boss-pressure.js) */
 import { actOf } from '../src/foe-react.js';
@@ -58,10 +59,12 @@ try {
     const hero = (b, d) => { const h0 = b.hp; BKT.hurtAs('light', b, d, b.x - 12, false); const t = h0 - b.hp; b.hp = h0; return t; };
     const room = (b, d) => { const h0 = b.hp; BKT.hurtEnemy(b, d, b.x - 12, false); const t = h0 - b.hp; b.hp = h0; return t; };
     /* a closed mode for each sampled boss (his own idle) */
-    const shut = { wood: b => { b.mode = 'hover'; b.modeT = 9; for (const d of BK.enemies()) if (d.t === 'wasp' && d.drone) d.alive = false; },
+    /* (claude/oldtusker) THE WOOD's boss is OLD TUSKER (the Hornet Queen is parked): closed = walking, no ward, no move coming; open = PINNED under a felled pine (his purse full) */
+    const otS = () => BK.oldTuskerHands && BK.oldTuskerHands().show();
+    const shut = { wood: b => { b.mode = 'walk'; b.modeT = 9; const S = otS(); if (S) { S.ward = 0; S.restT = 99; } },
       hurricane: b => { b.mode = 'idle'; b.modeT = 9; }, lamplit: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; b.onFoot = true; b.ward = 0; },   /* (claude/lamplit2) on his feet: carried, three blows on one corner fell a bearer and TILT him open - a designed opening, not the shut state */ spire: b => { b.mode = 'idle'; b.modeT = 9; },
       theatre: b => { b.mode = 'idle'; b.modeT = 9; }, underleaf: b => { b.mode = 'walk'; b.alpha = 1; b.modeT = 9; b.listenT = b.sweepT = b.teleT = b.fireT = b.callT = b.feelT = b.knellT = 99; b.stagger = 0; b.ward = 0; b.face = 1; b.jabNow = false; },   /* (claude/underleaf2: facing away from the hero's blow at b.x - 12 - her BACK, which takes it whole; her front's turn is tools/underleaf.mjs's) */ burning: b => { b.mode = 'idle'; b.open = 0; b.modeT = 9; } };
-    const opener = { wood: b => { b.mode = 'winded'; b.modeT = 9; }, hurricane: b => { b.mode = 'beach'; b.modeT = 9; }, lamplit: b => { b.open = 3; b.onFoot = true; }, spire: b => { b.mode = 'downed'; b.modeT = 9; },
+    const opener = { wood: b => { b.mode = 'pinned'; b.modeT = 9; const S = otS(); if (S) { S.ward = 0; S.purse = 1e9; } }, hurricane: b => { b.mode = 'beach'; b.modeT = 9; }, lamplit: b => { b.open = 3; b.onFoot = true; }, spire: b => { b.mode = 'downed'; b.modeT = 9; },
       theatre: b => { b.mode = 'staggered'; b.modeT = 9; b.openT = 9; const S = BK.puppeteerHands().show(); if (S) S.visitLeft = 999; }, burning: b => { b.open = 3; }, underleaf: b => { b.mode = 'turned'; b.modeT = 9; b.face = 1; b.ward = 0; b.purseLeft = undefined; b.purseShut = false; } };   /* (claude/underleaf2: her KEY opening is her back while she lashes at a lure - the blow from b.x - 12 is on it; her rap is the bonus one, on a smaller purse) */   /* (claude/bosswave1: her rap after a silent listen) */
     for (const id of ['wood', 'hurricane', 'lamplit', 'spire', 'theatre', 'underleaf', 'burning']) {
       const b = boot(id); if (!b) { out[id] = { missing: true }; continue; }
@@ -100,17 +103,22 @@ for (const [id, o] of Object.entries(R)) {
   if (id === 'bosunMini') continue;
   if (o.missing) { ok(false, id + ': no boss found'); continue; }
   const own = o.t === 'puppeteer', exempt = !!NO_OPENING[o.t];
+  /* (claude/oldtusker) AN OWN-WARD BOSS ON THE B15 FLOOR (OLD TUSKER: his hide, src/old-tusker.js): off the chip, his own number - OT.hide of a blow outside his openings, never nothing; his burn lands at it too */
+  const floorOwn = OWN_WARD.has(o.t) && o.t === 'oldtusker';
+  if (floorOwn) { ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open'); ok(o.heroShut === Math.round(40 * OT.hide), id + ': B15 - his hide takes OT.hide of a blow outside his openings, never nothing (a blow of 40 took ' + o.heroShut + ')');
+    ok(o.heroRun === 20 * Math.round(20 * OT.hide), id + ': 20 blows of 20 at his hide (took ' + o.heroRun + ')'); ok(o.openOpen === true && o.heroOpen >= 60, id + ': PINNED, BK.greed.open says so and a blow of 40 lands x2 (took ' + o.heroOpen + ')');
+    ok(o.burn4s > 4 * 2 / 0.3 * GREED.chip + 1, id + ': B15 - off the chip, his burn lands at his hide (2 s of burn took ' + o.burn4s + ')'); }
   if (exempt) { ok(o.heroShut >= 20, id + ' (' + o.t + ', no opening): a hero blow of 40 must land whole-ish, not chipped (took ' + o.heroShut + ')'); continue; }
   ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open (BK.greed.open = ' + o.openShut + ')');
   const wall = GUARD[o.t] === 'wall';   /* (claude/keyscore, B13 + B15) a duelist WALL: off the chip, 0.4 into his front (src/boss-read.js ANGLE.front) */
-  if (own) ok(o.heroShut === Math.max(1, Math.round(40 * 0.05)), id + ': his own ward keeps his own number (a blow of 40 took ' + o.heroShut + ', not ' + Math.max(1, Math.round(40 * 0.05)) + ': a chip of a chip?)');
+  if (floorOwn) { /* asked above */ } else if (own) ok(o.heroShut === Math.max(1, Math.round(40 * 0.05)), id + ': his own ward keeps his own number (a blow of 40 took ' + o.heroShut + ', not ' + Math.max(1, Math.round(40 * 0.05)) + ': a chip of a chip?)');
   else if (wall) ok(o.heroShut === Math.round(40 * ANGLE.front), id + ': B15 - a duelist WALL takes ANGLE.front of a front blow outside his opening, never nothing (a blow of 40 took ' + o.heroShut + ')');
   else if (FULL_DAMAGE[o.t]) ok(o.heroShut >= 30, id + ': ' + o.t + ' is a duelist on FULL_DAMAGE - a hero blow of 40 outside his opening lands WHOLE, never chipped (took ' + o.heroShut + ')');   /* (claude/burnvillage2) */
   else ok(o.heroShut <= chipMax(40, o.t), id + ': a hero blow of 40 outside his opening must take at most ' + chipMax(40, o.t) + ' (took ' + o.heroShut + ')');
-  if (FULL_DAMAGE[o.t]) { ok(o.roomShut >= 30, id + ': a blow from the ROOM lands whole (took ' + o.roomShut + ')'); if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 40, id + ': in his opening a hero blow of 40 lands whole or better (took ' + o.heroOpen + ')'); } continue; }   /* (his chip rows are a chip boss's: a duelist has none - the rest of his read is tools/village-water.mjs) */
+  if (floorOwn) { /* (his own numbers, asked above) */ } else if (FULL_DAMAGE[o.t]) { ok(o.roomShut >= 30, id + ': a blow from the ROOM lands whole (took ' + o.roomShut + ')'); if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 40, id + ': in his opening a hero blow of 40 lands whole or better (took ' + o.heroOpen + ')'); } continue; }   /* (his chip rows are a chip boss's: a duelist has none - the rest of his read is tools/village-water.mjs) */
   const cr = GREED.chipBy[o.t] ?? GREED.chip;
   if (wall) ok(o.heroRun === 20 * Math.round(20 * ANGLE.front), id + ': a duelist WALL (B11/B13/B15, claude/keyscore) takes ANGLE.front of every front blow at his height outside his opening - 20 blows of 20 took ' + o.heroRun);
-  if (!own && !wall) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * cr - 1) && o.heroRun <= 20 * 20 * cr + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
+  if (!own && !wall && !floorOwn) ok((o.t === 'pyromancer' || o.heroRun >= 20 * 20 * cr - 1) && o.heroRun <= 20 * 20 * cr + 1, id + ': 20 hero blows of 20 outside his opening must add up to a twentieth (' + 20 * 20 * GREED.chip + '), took ' + o.heroRun);
   if (!own && cr < 0.5) ok(o.roomShut > chipMax(40, o.t), id + ': a blow from the ROOM (no hero blow) must not be chipped (took ' + o.roomShut + ')');
   if (!own && cr < 0.5) ok(o.heroBroken > chipMax(40, o.t) * 3, id + ': broken by his poise bar he is open (a hero blow of 40 took ' + o.heroBroken + ')');
   if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into his opening, BK.greed.open must say so'); ok(o.heroOpen >= 30, id + ': in his opening a hero blow of 40 lands whole (took ' + o.heroOpen + ')'); }
@@ -122,7 +130,7 @@ for (const [id, o] of Object.entries(R)) {
   ok(o.hurtFar === 0, id + ': a hero who stood off is not hurt by it (lost ' + o.hurtFar + ')');
   if (o.greedInOpen !== undefined) ok(!o.greedInOpen, id + ': blows in his opening must never count as greed');
   if (wall) ok(o.burn4s > 4 * 2 / 0.3 * GREED.chip + 1, id + ': B15 - a duelist WALL is off the chip: his burn lands (2 s of burn took ' + o.burn4s + ')');
-  if (!own && !wall) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
+  if (!own && !wall && !floorOwn) ok(o.burn4s <= 4 * 2 / 0.3 * cr + 1, id + ': his burn outside an opening is chipped (2 s of burn took ' + o.burn4s + ')');
 }
 { const m = R.bosunMini; ok(m && m.t === 'bosun', 'the bosun mini was not found');
   if (m && m.t) { ok(m.capHit <= 47 && m.capHit >= 20, '(claude/oneshotcap) the one-blow ceiling: a 25 blow of a mini (1.3 x 1.65 = 54 uncapped) on a 100 hp hero lands at no more than ~45% (the dial cannot boost one blow past it): took ' + m.capHit);

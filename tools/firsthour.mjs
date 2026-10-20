@@ -25,7 +25,7 @@ try {
   {const e=boot('wood');const H=BK.oldTuskerHands(),S=H.show(),A=BK.L.arena,fl=A.floor;out.t=e&&e.t;
    const P=BK.P;const park=()=>{P.x=A.x0+6;P.y=fl;P.vx=P.vy=0;P.hp=P.maxHp;};
    const blow=mode=>{e.mode=mode;e.modeT=5;S.ward=0;S.purse=999;e.hp=e.maxHp;const h0=e.hp;BKT.hurtEnemy(e,10,e.x-20,false);const t=h0-e.hp;return t;};
-   out.hide={walk:blow('walk'),pinned:blow('pinned'),rammed:blow('rammed')};
+   out.otHide={walk:blow('walk'),pinned:blow('pinned'),rammed:blow('rammed')};
    /* the rule: four strokes on the west inner pine with him in its line */
    const p=S.pines.filter(q=>q.dir>0).sort((x,y)=>y.x-x.x)[0];const [lo,hi]=[p.x+8,p.x+p.len*16];
    e.mode='walk';e.modeT=0;S.ward=0;e.x=(lo+hi)/2;e.y=fl;S.restT=99;
@@ -42,7 +42,7 @@ try {
    for(let i=0;i<180;i++){park();BK.sim(1);if(e.mode==='rammed'){saw='rammed';break;}}
    out.ram={mode:saw,under:r?(e.x>r.x+r.dir*r.len*16-30&&e.x<r.x):null};
    /* half health: phase two */
-   e.mode='walk';e.modeT=0;S.restT=0;e.hp=e.maxHp*0.49;for(let i=0;i<10;i++){park();BK.sim(1);}out.half={ph:S.ph,mode:e.mode};}
+   e.mode='walk';e.modeT=0;S.restT=0;e.hp=e.maxHp*0.49;for(let i=0;i<10;i++){park();BK.sim(1);}out.otHalf={ph:S.ph,mode:e.mode};}
   /* ---- THE BULLFROG KING ---- */
   {const f=boot('marsh');const A=BK.L.arena,fl=A.floor;
    const killHop=()=>{for(const e of BK.enemies())if(e.alive&&e.t==='hopper'&&e.drone)e.alive=false;};
@@ -71,11 +71,11 @@ console.log(JSON.stringify(r));
 const bad = [];
 const Q = r;
 if (Q.t !== 'oldtusker') bad.push('the Lumber Trail\'s boss is not OLD TUSKER: ' + Q.t);
-if (!(Q.hide.walk >= 4 && Q.hide.walk < Q.hide.pinned / 3 && Q.hide.pinned >= 19 && Q.hide.rammed > Q.hide.walk)) bad.push('his hide: x0.4 outside his openings (never nothing), x2 pinned, more dazed: ' + JSON.stringify(Q.hide));
+if (!(Q.otHide.walk >= 4 && Q.otHide.walk < Q.otHide.pinned / 3 && Q.otHide.pinned >= 19 && Q.otHide.rammed > Q.otHide.walk)) bad.push('his hide: x0.4 outside his openings (never nothing), x2 pinned, more dazed: ' + JSON.stringify(Q.otHide));
 if (Q.fall !== 'fall' || Q.pinned !== 'pinned') bad.push('four strokes on a marked pine with him under its line did not PIN him: ' + JSON.stringify([Q.fall, Q.pinned]));
 if (!(Q.bounced >= 1)) bad.push('a pine felled on him in his ward must bounce off (B3): ' + Q.bounced);
 if (Q.ram.mode !== 'rammed') bad.push('his charge did not stop at a standing pine and daze him: ' + JSON.stringify(Q.ram));
-if (!(Q.half.ph === 2)) bad.push('his blood is not up at half health (phase two): ' + JSON.stringify(Q.half));
+if (!(Q.otHalf.ph === 2)) bad.push('his blood is not up at half health (phase two): ' + JSON.stringify(Q.otHalf));
 if (!(Q.spit.spits > 0)) bad.push('the Bullfrog King never spat in a minute: ' + JSON.stringify(Q.spit));
 if (Q.spit.untold > 0) bad.push('an untold spit: venom left his mouth with no spitTell in the second before it: ' + JSON.stringify(Q.spit));
 if (Q.leapTaken.mode === 'dazed') bad.push('a leap that lands on the hero dazed him (A11: the rest after his own blow): ' + JSON.stringify(Q.leapTaken));
@@ -83,5 +83,5 @@ if (Q.leapLate.mode !== 'dazed') bad.push('a leap left late (on the spot at take
 if (!(Q.hide.idle < Q.hide.dazed / 2)) bad.push('his hide must turn half a blow out of his openings (idle vs dazed): ' + JSON.stringify(Q.hide));
 if (!(Q.half.drained && Q.half.hpPct >= 45)) bad.push('the court must go out at half his health (it waited for a third): ' + JSON.stringify(Q.half));
 assert.deepEqual(bad, [], 'THE FIRST HOUR\'S BOSSES:\n  ' + bad.join('\n  '));
-console.log('OLD TUSKER: hide ' + Q.hide.walk + ' / pinned ' + Q.hide.pinned + ' / dazed ' + Q.hide.rammed + '; four strokes -> ' + Q.pinned + '; warded pines bounce (' + Q.bounced + '); a charge -> ' + Q.ram.mode + '; at half, phase ' + Q.half.ph + '.');
+console.log('OLD TUSKER: hide ' + Q.otHide.walk + ' / pinned ' + Q.otHide.pinned + ' / dazed ' + Q.otHide.rammed + '; four strokes -> ' + Q.pinned + '; warded pines bounce (' + Q.bounced + '); a charge -> ' + Q.ram.mode + '; at half, phase ' + Q.otHalf.ph + '.');
 console.log('THE BULLFROG KING: ' + Q.spit.spits + ' spits, all told; a leap taken -> ' + Q.leapTaken.mode + ', left late -> ' + Q.leapLate.mode + '; hide ' + Q.hide.idle + ' vs open ' + Q.hide.dazed + '; the court goes out at ' + Q.half.hpPct + '%.');
