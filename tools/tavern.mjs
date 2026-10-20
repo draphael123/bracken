@@ -5,7 +5,7 @@
 //   join     the title's LOCAL CO-OP and ONLINE CO-OP and the map's F all lead into the inn; a free pad's JUMP walks a new player in THROUGH THE DOOR (the real
 //            pollGamepad path, a faked pad); player one's own pad never joins; four is full; the walk-in lets go of RIGHT
 //   stations each station by walking up and pressing INTERACT: the door (P1 to the map with the party armed, P2 leaves), the PARTY BOARD (claude/coopprogress:
-//            the four seats, each empty one offering JOIN / INVITE / AI PARTNER - coming soon; INVITE opens the online room card), the campaign table (the party armed for the next wood, which then starts with all of them), the wardrobe (HERO / WEAPON / COLOUR /
+//            the four seats, each empty one offering JOIN / INVITE / AI PARTNER (live since claude/aicompanions); INVITE opens the online room card), the campaign table (the party armed for the next wood, which then starts with all of them), the wardrobe (HERO / WEAPON / COLOUR /
 //            RING on that player's own card, driven by his own hands), the drills board, the sparring bell (a partner goes DOWN; standing on him lifts him:
 //            the REVIVE drill; left alone he is stood up, no death), TEAM HIT on a dummy, the THROW drill into the hay target, the practice door, the arena
 //            pit (COMING SOON); the first-visit glints go as each is used, and the first approach says what a station does
@@ -144,7 +144,7 @@ if (PAGE.length) {
         if(h)[...h.querySelectorAll('button')].find(x=>x.textContent==='BACK').click();o.seen=__st('board').seen;return o;})()`);
       const seats = (brd.txt.match(/P[234]\s+EMPTY/g) || []).length, acts = a => brd.btn.filter(x => x.act === a);
       ok(brd.board && seats === 3 && /P1\s+KNIGHT/.test(brd.txt) && brd.seen, 'THE PARTY BOARD opens: player one seated, three EMPTY seats, and it stops glinting: ' + brd.txt.replace(/\s+/g, ' ').slice(0, 140));
-      ok(acts('join').length === 3 && acts('invite').length === 3 && acts('ai').length === 3 && acts('ai').every(x => x.dis && /SOON/.test(x.t)) && acts('join').every(x => !x.dis), 'each empty seat offers JOIN and INVITE, and AI PARTNER shown but COMING SOON: ' + brd.btn.map(x => x.t + (x.dis ? '(off)' : '')).join(','));
+      ok(acts('join').length === 3 && acts('invite').length === 3 && acts('ai').length === 3 && acts('ai').every(x => !x.dis && x.t === 'AI PARTNER') && acts('join').every(x => !x.dis), 'each empty seat offers JOIN, INVITE and AI PARTNER (claude/aicompanions: live now - tools/ai-companion.mjs board drives it): ' + brd.btn.map(x => x.t + (x.dis ? '(off)' : '')).join(','));
       ok(brd.online && brd.partyGone, 'INVITE opens the online room card (HOST A GAME / JOIN A FRIEND) in its place');
       /* the wardrobe, driven by P2's own hands */
       const wd = await E(`(()=>{BK.tavern.join({kind:'pad',pad:3});BK.sim(80);const p=__P(2),o={};__at(p,${STATIONS.find(s => s.id === 'wardrobe').x});BK.sim(3);o.h0=p.hero;__talk(p);o.card=BK.tavern.debug().cards;
