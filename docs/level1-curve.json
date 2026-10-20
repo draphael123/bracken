@@ -13,17 +13,17 @@
   "lostPct": 141
  },
  "marsh": {
-  "hash": "6655586839ec",
+  "hash": "0b10bb05fdf4",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 30,
-  "deaths": 3,
-  "kills": 50,
+  "hits": 23,
+  "deaths": 2,
+  "kills": 44,
   "lifts": 97,
   "walked": 100,
   "bare": true,
-  "lostPct": 158
+  "lostPct": 149
  },
  "stockade": {
   "hash": "f7bc642b7ffe",
