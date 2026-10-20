@@ -3,7 +3,8 @@ import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {LEVELS,T} from '../src/level.js';
 const src=readFileSync(new URL('../src/main.js',import.meta.url),'utf8');
-const L=LEVELS.find(l=>l.id==='wood').build(), A=L.arena;
+/* (claude/oldtusker) THE HORNET QUEEN is PARKED (OLD TUSKER is the Lumber Trail's boss now): her code stays for a future Hornet's Nest, so her comb is checked on the old clearing's frame with her name on it */
+const L0=LEVELS.find(l=>l.id==='wood').build(), L={...L0,arena:{...L0.arena,boss:'queen'}}, A=L.arena;
 for(let x=Math.floor(A.x0/16)+2;x<Math.ceil(A.x1/16)-1;x++)assert.notEqual(L.grid[3*L.W+x],T.ONEWAY,'ceiling comb is not footing');
 const rocks=[];const c=vm.createContext({L,rocks,TS:16,SFX:{crack(){}},number(){},spawnEnt(){}});
 vm.runInContext(src.slice(src.indexOf('function combFall('),src.indexOf('function drawWax(')),c);

@@ -247,3 +247,28 @@ export function dress(decor, lights, L, at, T) {
     for (const [x, r] of [[10, 3], [44, 4], [78, 3], [110, 4]]) { R(g, '#6a747a', x, 8 - r, r * 2 + 1, r); R(g, '#8a969c', x + 1, 8 - r, r, 1); R(g, '#3a4248', x, 7, r * 2 + 1, 1); } prop(29 * 16, 27 * 16 - 8, c); }
   /* tarn: nothing in the grid; the bed's lost purse is a coin pile */
 }
+
+/* ===== (claude/oldtuskerart) THE FELLING CLEARING's cut ground (col 510+): the woodsmen's trodden earth - packed pale loam, sawdust drifts and wood chips on the lip, bark flakes, a rut the logs were dragged
+   along, a few tufts coming back at the edges. Same loam ramp as the trail's floor, so the clearing is the trail's own ground, only worked ===== */
+const LOAM2 = ['#2a1c12', '#3e2a1a', '#5a3f26', '#7a5836', '#9a7348'];
+export function clearingTile(x, y, top, eL, eR, ceil, dn) {
+  const dk = dn < 3 ? 0 : dn < 7 ? 1 : 2;
+  return once('cl' + (x & 7) + '_' + (y & 3) + (top ? 't' : '') + (eL ? 'l' : '') + (eR ? 'r' : '') + (ceil ? 'c' : '') + dk, () => tile((px, py) => {
+    const ax = x * 16 + px, ay = y * 16 + py;
+    if (top) {
+      const drift = rnd(ax >> 2, 11, 5) < 2;                       /* a sawdust drift on the lip */
+      const lip = 1 + rnd(ax >> 1, 5, 2);
+      if (py < lip) return drift ? (rnd(ax, py, 3) ? CUT[1] : CUT[0]) : rnd(ax, py, 5) === 0 ? CUT[3] : LOAM2[4];
+      if (py < 4) { if (rnd(ax, py + 9, 6) === 0) return CUT[2 + (ax & 1)]; if (rnd(ax >> 3, 21, 9) === 0 && py === lip) return '#78b45c'; return drift ? CUT[py === lip ? 2 : 3] : LOAM2[py === lip ? 4 : 3]; }   /* packed, pale, chip-flecked */
+      if (py === 4) return rnd(ax, 41, 3) === 0 ? LOAM2[1] : LOAM2[3];
+      if (py === 6 && (ax >> 3) % 7 === 3) return LOAM2[1];     /* a drag rut */
+    }
+    let sh = 3 - dk + (rnd(ax >> 1, ay >> 1, 5) === 0 ? 1 : 0) - (rnd(ax, ay, 9) === 0 ? 1 : 0);
+    if (top && py < 8) sh += 1;
+    if (eL && px < 2) sh += 1; if (eR && px > 13) sh -= 1;
+    if (rnd(ax >> 2, ay >> 2, 17) === 0 && rnd(ax, ay, 3) !== 0) return rnd(ax >> 1, ay, 2) ? CUT[3] : CUT[2];   /* a buried wood chip */
+    if (rnd(ax >> 2, ay >> 3, 21) === 0 && (ax + ay) % 4 === 0) return BARK[Math.max(1, 3 - dk)];             /* a bark flake */
+    if (ceil && py > 12) return rnd(ax, 7, 3) === 0 && py > 14 ? null : LOAM2[0];
+    return LOAM2[Math.max(0, Math.min(4, sh))];
+  }));
+}

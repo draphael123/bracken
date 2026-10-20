@@ -8,11 +8,16 @@
 //   C  GUIDES ON EVERY REQUIRED VERB (A6): each required pine has a stuck-spot glint that is done when it is felled; the first moving platform (the log raft) has a
 //      sign at its landing and a glint.
 //   D  THE LESSONS ARE THE TRAIL's WORK, NOT BAYS: the heavy, down and parry lesson stretches stand on the trail's ground; ONE sign teaches the down attack (the
-//      plunge and the ground slam were two signs 26 columns apart); the rising cut is taught on the wasp stretch (a wasp within reach of its sign); the old
+//      plunge and the ground slam were two signs 26 columns apart); the rising cut is taught on the ridge's HIGH foes (kite goblins / pine moths hung over
+//      head within reach of its sign - claude/oldtusker: they were wasps); the old
 //      lesson-bay clones (a 26-column flat with a stump, a fern and one foe) are gone.
 //   E  FIVE NAMED AREAS + the clearing, a shrine closing each area (A10c: one in the last 12 columns of each), and one before the boss door.
-//   F  THE QUEEN KEEPS HER NUMBERS: her clearing is the old one to the column relative to its gate (her 200 hp in main.js EHP), and her west-wall pine stands at
-//      comb height inside the vines - the pine her comb hangs from.
+//   F  OLD TUSKER (claude/oldtusker, Daniel 10-19 21:42 - he replaced THE HORNET QUEEN, who is parked): THE FELLING CLEARING keeps the old clearing's frame to the
+//      column (gate, walls, floor, trigger), with no floating tree and no yellow bridge (no ledge, plank or felltree inside it); four marked pines stand at its
+//      edges, two a side, each leaning in over the floor (arena.pines) and inside the walls; OLD TUSKER sleeps in the middle, on his own theme; his hands are wired.
+//   H  NO WASPS (Daniel 10-20 07:39): no wasp foe on the trail - the old wasp posts hold on-theme foes (pine moths: the wasp's hover under a moth's skin; kite
+//      goblins; crows; boars), no hornet, no hive; the PLUNGE lesson still has its stepping stones over the ford (three pine moths, pogo); the TARN EXAM still has
+//      foes over its bridge and a charger on its far bank; and every badger is a BOAR (cnSkin 'boar', the badger's told charge and its plunge-on-the-back lesson).
 //   G  THE FELLING CODE: main.js lays a pine through src/felling.js (on the fall and from the save's marks), the ranger's arrow strikes a trunk, every hero's
 //      stroke is drawn (the lean, the tally, the line it will lie along), and the fall's lines are hint-box lines (src/hint-lines.js).
 //   node tools/lumber-trail.mjs
@@ -43,17 +48,17 @@ const g = pine('gully'), lt = pine('leanto'), dr = pine('drop'), tn = pine('tarn
 ok(g && !g.head && tn && !tn.head, 'the gully and the tarn pines lie LEVEL: bridges');
 const lr = lt && fellRamp(lt); ok(lr && lr.head[1] < lt.y + 1 - 3, 'the camp pine lies as a LEAN-TO: a ramp up at least four rows onto the cliff');
 const dRamp = dr && fellRamp(dr); ok(dr && dr.drop && dRamp && dRamp.head[1] > dr.y + 1 + 3, 'the ridge pine is a DROP: a ramp down at least four rows over the hollow');
-ok(pines.filter(p => p.mark).length >= 4 && pines.every(p => p.mark || p.role === 'hive'), 'every trail pine carries the woodsman\'s mark (the arena pine is the Queen\'s)');
-const gate = ents.find(e => e.t === 'gate'); ok(gate && gate.x === GATE_COL, 'the hive gate stands at ' + GATE_COL);
+ok(pines.filter(p => p.mark).length >= 4 && pines.every(p => p.mark), 'every trail pine carries the woodsman\'s mark');
+const gate = ents.find(e => e.t === 'gate'); ok(gate && gate.x === GATE_COL, 'the clearing\'s gate stands at ' + GATE_COL);
 const reachGate = (without) => { const L2 = { ...L, ents: ents.filter(e => e !== without) }; return floodReach(L2, T, { rides: true }).jumpNear(gate.x, gate.y); };
-ok(reachGate(null), 'with every pine down the reach fill gets to the hive gate');
+ok(reachGate(null), 'with every pine down the reach fill gets to the clearing\'s gate');
 for (const p of [g, lt, tn]) ok(p.req && !reachGate(p), 'the ' + p.role + ' pine is a LOCK: left standing, the reach fill does not get past it');
 ok(!dr.req && reachGate(dr), 'the drop is optional: the gate is reached without it');
 const under = ents.filter(e => !['sign', 'coin', 'deco', 'check', 'felltree', 'silver', 'vault', 'cage'].includes(e.t) && underTrunk(dr, e.x * TS + 8, (e.y + 1) * TS));
 ok(under.length >= 2, 'at least two foes stand under the drop\'s line (a fight during the rule): ' + under.map(e => e.t + '@' + e.x).join(' '));
 const st = pine('sett');   /* (the reviewer's gap: no fell from the gully to the camp) the ford's far bank drops a small pine on the crew's hollow by col 160 */
 ok(st && st.drop && st.x <= 160 && !st.req && ents.filter(e => !['sign', 'coin', 'deco', 'check', 'felltree'].includes(e.t) && underTrunk(st, e.x * TS + 8, (e.y + 1) * TS)).length >= 2, 'the verb comes back by col 160: a drop over the ford crew (optional, two foes under it)');
-for (let i = 1, xs = pines.filter(p => p.role !== 'hive').map(p => p.x).sort((a, b) => a - b); i < xs.length; i++) ok(xs[i] - xs[i - 1] <= 130, 'no stretch of more than 130 columns without a marked pine (' + xs[i - 1] + ' -> ' + xs[i] + ')');
+for (let i = 1, xs = pines.map(p => p.x).sort((a, b) => a - b); i < xs.length; i++) ok(xs[i] - xs[i - 1] <= 130, 'no stretch of more than 130 columns without a marked pine (' + xs[i - 1] + ' -> ' + xs[i] + ')');
 for (const p of [g, lt, dr, tn]) ok(fellCells(p, L.grid, W, T).length >= 6, 'the ' + p.role + ' pine lays a trunk of at least six cells');
 
 /* ---- C. guides on every required verb, the first ride signed ---- */
@@ -68,7 +73,8 @@ ok(spots.some(s => (s.ats || []).some(([x]) => Math.abs(x - raft.x) <= 2)), 'the
 for (const k of ['heavyblow', 'down', 'parry']) ok((L.lessons || []).some(z => z.kind === k), 'the ' + k + ' lesson stretch is on the trail');
 ok(signs.filter(s => /DOWN\+X/.test(s.text)).length === 1, 'ONE sign teaches the down attack (the plunge and the ground slam on one sign)');
 const rise = signs.find(s => /UP\+X/.test(s.text) && /RISING CUT/.test(s.text));
-ok(rise && ents.some(e => e.t === 'wasp' && Math.abs(e.x - rise.x) <= 12), 'the rising cut is taught on the wasp stretch (a wasp within 12 columns of its sign)');
+const high = e => (e.t === 'kite' || (e.t === 'wasp' && e.cnSkin === 'pinemoth') || e.t === 'crow') && e.y <= rise.y - 3;
+ok(rise && ents.filter(e => high(e) && Math.abs(e.x - rise.x) <= 22).length >= 2, 'the rising cut is taught on the ridge\'s high foes: two or more kite goblins / pine moths / crows hung three rows or more over the ground within 22 columns of its sign (claude/oldtusker: the wasps went)');
 const par = (L.lessons || []).find(z => z.kind === 'parry');
 ok(signs.some(s => s.x >= par.x0 && s.x <= par.x1 && /RIPOSTE/.test(s.text)) && ents.some(e => e.t === 'swornsword' && e.lesson === 'parry' && e.x >= par.x0 && e.x <= par.x1), 'the parry is the camp gate\'s sworn sword, its sign in the stretch');
 const flatBay = z => { let flat = true; for (let x = z.x0; x <= z.x1; x++) if (L.grid[22 * W + x] !== T.SOLID || L.grid[21 * W + x] !== T.AIR) flat = false; return flat && z.x1 - z.x0 >= 20; };
@@ -82,13 +88,17 @@ for (const [name, , x1] of SECTIONS.slice(0, 5)) ok(checks.some(c => c.x <= x1 &
 ok(checks.some(c => c.x < GATE_COL && c.x >= GATE_COL - 8), 'a shrine stands before the boss door');
 for (const [name, x0] of SECTIONS.slice(1, 5)) ok(signs.some(s => s.x >= x0 - 8 && s.x <= x0 + 14), name + ' opens with a sign at its point of use');
 
-/* ---- F. the Queen keeps her numbers ---- */
+/* ---- F. OLD TUSKER in THE FELLING CLEARING (claude/oldtusker) ---- */
 const A = L.arena;
-ok(A.boss === 'queen' && A.x0 / TS === GATE_COL + 4 && A.x1 / TS === GATE_COL + 37 && A.floor / TS === 9 && A.trigger / TS === GATE_COL + 8 && A.wallL === GATE_COL + 3 && A.wallR === GATE_COL + 37, 'the Queen\'s clearing is the old one to the column, relative to its gate');
-const q = ents.find(e => e.t === 'queen'); ok(q && q.x === GATE_COL + 20 && q.y === 3, 'the Queen sleeps where she did');
-const hp = pine('hive'); ok(hp && hp.x === GATE_COL + 5 && hp.y === 6 && hp.len === 10 && !hp.head, 'her west-wall pine (the one her comb hangs from) stands at comb height inside the vines');
+ok(A.boss === 'oldtusker' && A.music === 'oldtusker' && A.x0 / TS === GATE_COL + 4 && A.x1 / TS === GATE_COL + 37 && A.floor / TS === 9 && A.trigger / TS === GATE_COL + 8 && A.wallL === GATE_COL + 3 && A.wallR === GATE_COL + 37, 'THE FELLING CLEARING keeps the old clearing\'s frame to the column, OLD TUSKER\'s, on his own theme');
+const ot = ents.find(e => e.t === 'oldtusker'); ok(ot && ot.x > GATE_COL + 12 && ot.x < GATE_COL + 30 && ot.y === 8, 'OLD TUSKER roots in the middle of the clearing, on its floor');
+ok(!ents.some(e => e.t === 'queen'), 'THE HORNET QUEEN is parked: not in the clearing');
+{ let solidIn = 0; for (let x = A.x0 / TS; x < A.x1 / TS; x++) for (let y = 0; y < 9; y++) if (L.grid[y * W + x] !== T.AIR) solidIn++;
+  ok(solidIn === 0 && !pines.some(p => p.x * TS >= A.x0 - TS && p.x * TS <= A.x1), 'no floating tree and no yellow bridge: nothing but air over the clearing\'s floor, no felltree in it (' + solidIn + ' cells)'); }
+ok(Array.isArray(A.pines) && A.pines.length >= 3 && A.pines.length <= 4 && A.pines.filter(p => p.dir > 0).length >= 1 && A.pines.filter(p => p.dir < 0).length >= 1, 'three or four marked pines, at both edges (arena.pines)');
+for (const p of A.pines) { const x = p.col * TS + 8, edge = p.dir > 0 ? x - A.x0 : A.x1 - x; ok(edge >= 24 && edge <= 10 * TS && p.dir === (x < (A.x0 + A.x1) / 2 ? 1 : -1), 'the pine at ' + p.col + ' stands at an edge (' + edge + ' px in, room behind it) and leans in over the floor'); }
 const main = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
-ok(/[^a-z]queen: 200[,\s]/.test(main), 'the Queen\'s health is 200 (EHP), as tuned to 67% with flasks');
+ok(/case 'oldtusker': \{ const a = OTH \? OTH\.spawnBoss\(base\)/.test(main) && /OTH\.strike\(hb\)/.test(main) && /oldtusker: OTM\.OT\.hp/.test(main), 'OLD TUSKER\'s hands are wired in main.js (spawn, strokes on his pines, health)');
 
 /* ---- G. the felling code ---- */
 ok(/import \{ fellCells, fellRamp, underTrunk, FELL_STROKES \} from '\.\/felling\.js'/.test(main), 'main.js lays a pine through src/felling.js');
@@ -100,4 +110,14 @@ ok(/rampFoot\(prevY\)/.test(main) && /L\.fellRamps/.test(main) && L.fellRamps ==
 for (const s of ['THE PINE CREAKS AND LEANS', 'THE PINE FALLS: A BRIDGE', 'THE PINE FALLS: A WAY UP', 'TIMBER: IT CRUSHES WHAT STOOD UNDER IT']) ok(isCallout(s), 'the hint box says: ' + s);
 ok(Math.abs(rampYAt(lr, lr.foot[0] * TS) - lr.foot[1] * TS) < 1, 'a ramp starts at its foot');
 
-console.log('lumber-trail: ' + n + ' checks - the verb in minute one, three fells (bridge, lean-to, drop; the bridges and the lean-to locks), guides, the lessons as work, five areas and their shrines, the Queen kept, the felling drawn.');
+/* ---- H. no wasps (claude/oldtusker, Daniel 10-20 07:39) ---- */
+const foes = ents.filter(e => !['sign', 'coin', 'deco', 'check', 'felltree', 'silver', 'vault', 'cage', 'gate', 'mover', 'pushblock', 'swing'].includes(e.t));
+ok(!foes.some(e => e.t === 'wasp' && e.cnSkin !== 'pinemoth') && !foes.some(e => /hornet|queen|drone/.test(e.t + (e.cnSkin || ''))), 'no wasp, hornet or drone on the trail (the old posts hold pine moths, kites, crows and boars)');
+for (const x of [46, 48, 114, 119, 123, 291, 308, 314, 323, 362, 368, 375, 420, 424, 463]) ok(foes.some(e => Math.abs(e.x - x) <= 2 && ['wasp', 'kite', 'crow', 'badger'].includes(e.t)), 'the old wasp post at ' + x + ' holds an on-theme foe');
+const ford = foes.filter(e => e.t === 'wasp' && e.cnSkin === 'pinemoth' && e.x >= 112 && e.x <= 126 && e.pogo);
+ok(ford.length >= 3 && signs.some(s => /DOWN\+X/.test(s.text) && s.x >= 105 && s.x <= 112), 'the PLUNGE lesson keeps its stepping stones over the ford: three pine moths (pogo), its sign at the ford');
+ok(foes.filter(e => e.x >= 416 && e.x <= 430 && e.y <= 10 && ['kite', 'crow'].includes(e.t)).length >= 2 && foes.some(e => e.t === 'badger' && e.cnSkin === 'boar' && e.x > 428 && e.x < 441), 'THE TARN EXAM: foes over its bridge and a boar charging back along it');
+ok(!foes.some(e => e.t === 'badger' && e.cnSkin !== 'boar') && foes.filter(e => e.cnSkin === 'boar').length >= 5, 'every badger is a BOAR now (cnSkin boar), five or more of them');
+ok(/cnSkin === 'boar'/.test(main) && /SPR\.boar = bakeBoar\(\)/.test(main) && /SPR\.pinemoth = bakePineMoth\(\)/.test(main), 'the boar and the pine moth have their own sheets and the boar its heavier body (main.js)');
+
+console.log('lumber-trail: ' + n + ' checks - the verb in minute one, three fells (bridge, lean-to, drop; the bridges and the lean-to locks), guides, the lessons as work, five areas and their shrines, OLD TUSKER\'s clearing, the felling drawn, no wasps.');

@@ -87,9 +87,9 @@ try {
     { const chief=BK.enemies().find(q=>q.t==='chief'&&q.alive);
       const rb=BK.enemies().find(q=>q.t==='archer'&&q.rafters); if (rb) rb.alive=false;
       const r=chief?half(chief):null; res.chiefSilenced=r?{...r,hadBlower:!!rb}:null; }
-    // (c) a DIFFERENT phase-two boss (the Hornet Queen, Bracken Wood): the hook does not touch her
+    // (c) a DIFFERENT phase-two boss (OLD TUSKER, the Lumber Trail - claude/oldtusker: the Hornet Queen is parked): the hook does not touch him
     load('wood');enter();
-    { const queen=BK.enemies().find(q=>q.t==='queen'&&q.alive); res.queenPhase2=queen?half(queen):null; }
+    { const queen=BK.enemies().find(q=>q.t==='oldtusker'&&q.alive); res.queenPhase2=queen?half(queen):null; }
     return res;})()`, 60000);
   page.errors = pg.errors.slice(0, 3);
 } finally { pg.close(); }

@@ -17,7 +17,7 @@ export const MATERIAL_OF = {
   rot: ['zombie', 'husk', 'mummy', 'drowned', 'apprentice'],
   spirit: ['fogwraith', 'wight', 'haunt', 'boo', 'ghostfarmer', 'ghostwife', 'ghostchild', 'shadow', 'emberwisp', 'nighthunter'],
   armour: ['hedgeknight', 'soldier', 'armour', 'tideguard', 'closedhelm', 'heavy', 'swornsword', 'marine', 'jackalguard', 'sentry', 'pike', 'lancer'],
-  fur: ['bat', 'hound', 'dog', 'fox', 'greathound', 'badger', 'hare', 'squirrel', 'goat', 'ram', 'troll'],
+  fur: ['bat', 'hound', 'dog', 'fox', 'greathound', 'badger', 'boar', 'oldtusker', 'hare', 'squirrel', 'goat', 'ram', 'troll'],
   feather: ['crow', 'harpy', 'petrel', 'roc', 'vulture', 'raptor', 'owl', 'kite', 'fledgling'],
   chitin: ['wasp', 'weaver', 'drone', 'crab', 'scorpion', 'scarab', 'grub', 'queen'],
   slime: ['sporeling', 'spitcap', 'lurker', 'jelly', 'slime', 'hopper', 'hopper_yellow', 'hopper_blue', 'puffer', 'urchin'],
