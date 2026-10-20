@@ -143,6 +143,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
+import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
@@ -1307,6 +1308,7 @@ function resolveTiles() {
     if (L.lumberKit && L.fellSet && L.fellSet.has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/lumbertrailart) a felled pine's ramp/plank cells are its trunk (drawn as the trunk), never stepped log stubs */
     if (L.lumberKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LTT.lumberTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; continue; } }   /* (claude/lumbertrailart) THE LUMBER TRAIL's tile kit: stumps, corduroy, rock, gravel, the camp's yard, log stacks, the hollow log, log decks */
     if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
+    if (L.marsh3 && (t === T.SOLID || t === T.PORT)) { const ts = M3A.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/marsh3art) the reed stands and the log boom */
     if (L.marsh2Kit && (t === T.SOLID || t === T.PLANK)) { const ts = M2A.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/marsh2art) MARSH WOOD 2: the dam's timbers, the mud bed, the stilt walks' boards */
     if (L.stkKit && (t === T.SOLID || t === T.NET || t === T.PORT)) { const ts = STKA.stkTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* (claude/stockade2art) THE STOCKADE 2's lashed-timber tower bodies, the netted stake pit and the barred gate */
     if (L.lpKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LP3T.lpTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* (claude/lamplit3) THE LAMPLIT STREET's own footing: every one-way is a cobbled lip, an iron balcony, an awning, a lamp crossbar or a gantry - never a plank - and a tar net is drawn as one */
@@ -31225,7 +31227,7 @@ function drawWorld(cx, cy, showPlayer) {
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); drawClimbCues(g,L,cx,cy);
+  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
@@ -31308,6 +31310,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (m.ghost) drawGhostThing(m, cx, cy);
     else if (m.kind === 'wheel' && (m.torn || m.gear)) drawFieldsWheel(m, cx, cy);
     else if (m.kind === 'lifeboat') drawLifeboat(m, cx, cy);
+    else if (m.kind === 'raft' && m.current) M3A.drawCurrentRaft(g, m, cx, cy, time);   /* (claude/marsh3art) the rougher raft on the current */
     else if (m.kind === 'raft' && m.big && PROP.lw) { const rb = PROP.lw.raftBig, x = Math.round(m.x - cx), y = Math.round(m.y - cy); g.drawImage(rb, x, y); if (rb.rig) g.drawImage(rb.rig, x, y + rb.rigDY); }
     else if (m.kind === 'raft' || m.kind === 'punt') { for (let rx = 0; rx < m.w; rx += 48) g.drawImage(PROP.raft, 0, 0, Math.min(48, m.w - rx), 8, Math.round(m.x) + rx - cx, m.y - cy, Math.min(48, m.w - rx), 8); }
     else if (m.kind === 'drift') { g.save(); g.beginPath(); g.rect(m.x0 - cx, 0, m.x1 + m.w - m.x0, VH); g.clip(); const n = m.w / TS; for (let i = 0; i < n; i++) g.drawImage(i === 0 ? TILE.logL : i === n - 1 ? TILE.logR : TILE.log[i % 3], Math.round(m.x) + i * TS - cx, m.y - cy); g.restore(); }
@@ -31564,6 +31567,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'boiler') g.drawImage(PROP.boiler[pr.burst > 0 ? 1 : 0], Math.round(pr.x) - 15 - cx, Math.round(pr.y) - 40 - cy);
     else if (pr.t === 'hammer') { const hy = pr.drop > 0 ? 0 : pr.tell > 0 ? -40 - Math.round(Math.sin(time * 30) * 2) : -28; g.fillStyle = '#4a4f5a'; g.fillRect(Math.round(pr.x) - 2 - cx, 0, 4, Math.round(pr.y + hy) - 24 - cy); g.drawImage(PROP.hammer, Math.round(pr.x) - 14 - cx, Math.round(pr.y + hy) - 24 - cy); }
     else if (pr.t === 'nest') g.drawImage(PROP.nest, Math.round(pr.x) - 12 - cx, Math.round(pr.y) - 17 + (pr.puff > 0 ? 1 : 0) - cy);
+    else if (pr.t === 'lever' && M3A.isBoomLever(L, pr)) M3A.drawLever(g, pr, cx, cy, time);   /* (claude/marsh3art) the boom's winch */
     else if (pr.t === 'lever') g.drawImage(PROP.lever[pr.on ? 1 : 0], Math.round(pr.x) - 5 - cx, Math.round(pr.y) - 14 - cy);
     else if (pr.t === 'plate') g.drawImage(PROP.plate[pr.down ? 1 : 0], Math.round(pr.x) - 8 - cx, Math.round(pr.y) - 4 - cy);
     else if (pr.t === 'tidegate') { const lx = Math.round(pr.x - cx); if (lx > -50 && lx < VW + 50) text(pr.mode === 'high' ? 'HIGH WATER' : pr.mode === 'low' ? 'LOW WATER' : 'THE BORE', lx, Math.round(pr.y - cy), pr.open ? '#8fd160' : '#ffd36b', 'center', 6); }
@@ -32348,7 +32352,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawPadsAfloat(cx, cy); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawPadsAfloat(cx, cy); if (L.marsh3) M3A.drawWater(g, L, cx, cy, time, T); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
@@ -32409,12 +32413,13 @@ function drawWorld(cx, cy, showPlayer) {
     { let dk = L.dark || 0, sky = false; for (const z of (L.darkZones || [])) if (P.x > z.x0 && P.x < z.x1 && P.y > z.y0 && P.y < z.y1) { dk = z.dark; if (z.storm && (skyGlow > 0 || (strike && strike.state === 'tell'))) { dk = z.dark * (skyGlow > 0 ? Math.max(0.12, 1 - skyGlow / 0.7) : 0.7); sky = true; } }   /* (claude/hurricane2) THE LIGHTNING SHOWS YOU THE WAY: down her seams into the powder store, and it lingers a breath */
       const jump = Math.abs(cx - DARK_A.cx) > VW / 2 || Math.abs(cy - DARK_A.cy) > VH / 2 || DARK_A.id !== curId(); DARK_A.cx = cx; DARK_A.cy = cy; DARK_A.id = curId();
       darkNow += (dk - darkNow) * (jump ? 1 : sky ? 0.3 : 0.08); }
-    dg.fillStyle = 'rgba(' + ((L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';
+    dg.fillStyle = 'rgba(' + (L.marsh3 ? M3A.darkCol : (L.palette && L.palette.darkCol) || '4,4,10') + ',' + darkNow.toFixed(3) + ')'; dg.fillRect(0, 0, VW, VH);   /* palette.darkCol: a level's own dark (THE ORE ROAD's is a warm brown-black, not a cold one) */ dg.globalCompositeOperation = 'destination-out';
     const hole = (x, y, r, a = 1) => { const gr = dg.createRadialGradient(x, y, r * 0.15, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,' + a + ')'); gr.addColorStop(1, 'rgba(0,0,0,0)'); dg.fillStyle = gr; dg.fillRect(x - r, y - r, r * 2, r * 2); };
     for (const lt of lights) { if (lt.ref && lt.ref.t === 'grub') { if (!lt.ref.alive) continue; lt.x = lt.ref.x; lt.y = lt.ref.y - 4; } if (lt.plate && !(lt.plate.hot > 0 || lt.plate.glow > 0)) continue; if (lt.r > 0 && lt.x > cx - 120 && lt.x < cx + VW + 120 && !(lt.ref && lt.ref.dark > 0) && !(lt.lantern && !lt.lantern.lit) && !(lt.bracket && lt.bracket.taken)) hole(lt.x - cx, lt.y - cy, lt.r * 1.3); }
     for (const m of movers) if (m.kind === 'cart' && !m.gone && (m.ridden || Math.abs(m.vx) > 30)) hole(m.x + m.w / 2 - cx, m.y - cy, 66); // a cart on the move carries its own lamp
     for (const f of fires) if (f.delay <= 0) hole(f.x - cx, f.y - 8 - cy, 44);
     for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 60 && m.x0 < cx + VW + 60) hole(m.x0 + m.w / 2 - cx, m.y0 - 8 - cy, 34);   /* (claude/marsh3) THE NIGHT PADS: a marsh light over every pad that holds */
+    if (L.marsh3) { const mh = M3A.moonHole(L, cx, darkNow); if (mh) hole(mh.x, mh.y, mh.r, mh.a); }   /* (claude/marsh3art) the moon stays lit */
     if (wisp) hole(wisp.x - cx, wisp.y - cy, 56);
     for (const b of embers) hole(b.x - cx, b.y - cy, 36);
     for (const b of pyres) hole(b.x - cx, b.y - cy, 70);
@@ -32433,7 +32438,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (LPF && LPF.on()) LPF.holes(hole, cx, cy);   /* (claude/lamplit3) burning oil, a cask going up, a burning net and thrown fire */
     if (WKH) for (const e of enemies) if (e.t === 'wickling' && e.alive && e.x > cx - 60 && e.x < cx + VW + 60) { const r = WKH.light(e); if (r) hole(e.x - cx, e.y - 12 - cy, r, 0.8); }   /* a wickling is a drifting flame in the dark */   /* THE LIT CHURCH: every lit lamp, every fire, the flame in your hand */   /* THE UNDERWELL: every lit torch, burning cell, burning nest, the great lamp and the candle niches is a hole in its dark */
     if (!P.dead) hole(P.x - cx, P.y - 8 - cy, playerLight() * (0.95 + 0.05 * Math.sin(time * 9)));
-    g.drawImage(DARKC, 0, 0); for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 30 && m.x0 < cx + VW + 30) LPD.drawPadLight(g, m, cx, cy, time); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (LPF && LPF.on()) LPF.drawPools(g, cx, cy, time); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);   /* (lamplit3art) the lit lamps' pools on the wet paving */
+    g.drawImage(DARKC, 0, 0); for (const m of movers) if (m.kind === 'pad' && m.lamp && m.x0 > cx - 30 && m.x0 < cx + VW + 30) LPD.drawPadLight(g, m, cx, cy, time); if (L.marsh3) M3A.drawNight(g, L, cx, cy, time, darkNow); drawDarkRims(); if (L.palette && L.palette.lampGlow) drawLampGlow(cx, cy); if (LPF && LPF.on()) LPF.drawPools(g, cx, cy, time); if (L.palette && L.palette.footLip) drawFootLip(cx, cy);   /* (lamplit3art) the lit lamps' pools on the wet paving */
     { const gx0 = Math.floor(cx / TS), gy0 = Math.floor(cy / TS); const ORE = ['#ffd36b', '#e07a4a', '#dfe8f0', '#ffd36b']; // veins of ore glint in the rock
       for (let ty = gy0; ty <= gy0 + Math.ceil(VH / TS); ty++) for (let tx = gx0; tx <= gx0 + Math.ceil(VW / TS); tx++) { if (tx < 1 || ty < 1 || tx >= LW - 1 || ty >= LH - 1 || L.grid[ty * LW + tx] !== T.SOLID) continue; const hsh = ((tx * 73856093) ^ (ty * 19349663)) >>> 0; if ((hsh % 100) >= 7) continue; if (tileAt(tx - 1, ty) !== T.AIR && tileAt(tx + 1, ty) !== T.AIR && tileAt(tx, ty - 1) !== T.AIR && tileAt(tx, ty + 1) !== T.AIR) continue;
         const tw = 0.5 + 0.5 * Math.sin(time * (2 + (hsh % 5) * 0.4) + hsh % 17); g.globalAlpha = 0.25 + 0.6 * tw; g.fillStyle = ORE[hsh % 4]; const ox = tx * TS + 3 + (hsh >> 3) % 10, oy = ty * TS + 3 + (hsh >> 7) % 10; g.fillRect(ox - cx, oy - cy, 2, 1); g.fillRect(ox - cx, oy - cy - 1, 1, 3); }

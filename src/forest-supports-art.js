@@ -36,12 +36,18 @@ export function drawForestSupport(g, p, cx, cy) {
   } else if (k === 'stilt') {   /* (claude/marsh2) a bog-oak stilt lashed with reed cord, a green waterline (claude/marsh2art: a knee brace under the board, a pale cut head) */
     R(g, c[1], x - 1, h0 - 2, w + 2, 2); { const dir = (sd & 1) ? 1 : -1; for (let i = 0; i < 6; i++) R(g, c[1], x + (dir > 0 ? w : -2) + dir * (i >> 1) + (dir > 0 ? 0 : 0), h0 + i, 2, 1); } for (let y = h0 + 4; y < h0 + body - 2; y += 10) { R(g, c[3], x - 1, y, w + 2, 1); R(g, '#c9b27c', x, y + 1, w, 1); }
     if (!p.free) { R(g, c[2], x - 2, bot - 2, w + 4, 2); R(g, c[3], x - 1, bot - 5, w + 2, 1); }
-  } else if (k === 'reed') {   /* (claude/marsh2) a bundle of reed stalks under a tuft: three stems, a blade or two */
-    /* (claude/marsh2art) a thick bundle: five stems side by side, bound with reed cord, flaring at the foot, a blade or two */
-    R(g, c[0], x - 1, h0 - 2, 2, body + 2); R(g, c[1], x + 1, h0 - 2, 2, body + 2); R(g, c[0], x + 3, h0 - 2, 2, body + 2); R(g, c[2], x + 4, h0 - 2, 1, body + 2); R(g, '#b8d070', x + 1, h0 - 2, 1, body + 2);
-    for (let y = h0 + 4; y < h0 + body - 2; y += 12) { R(g, c[3], x - 1, y, 6, 1); R(g, '#8e7a52', x - 1, y + 1, 6, 1); }
-    R(g, c[1], x - 3, h0 + 3, 3, 1); R(g, c[1], x + 5, h0 + 7, 3, 1); R(g, c[0], x - 3, h0 + 4, 1, 1); R(g, c[0], x + 7, h0 + 8, 1, 1);
-    if (!p.free) { R(g, c[2], x - 3, bot - 3, 9, 3); R(g, c[0], x - 2, bot - 4, 7, 1); }
+  } else if (k === 'reed') {   /* (claude/marsh2) a bundle of reed stalks under a tuft */
+    /* (claude/marsh3art) a bundle of reed STEMS, not a bamboo pole: six stalks of different tone and length side by side (olive, straw, green), a nick in one or two now and then,
+       a rope wrap with a knot-tail and a pair of blades peeling off it every ~40 px, the head splaying under the tuft and the foot splaying into the mud */
+    const top = h0 - 2, hh = body + 2, TONE = ['#5f7a3a', '#a2b050', '#7a8a3a', '#c4b878', '#8aa04a', '#4a5f2c'];
+    for (let i = 0; i < 6; i++) { const inset = (i * 5 + sd) % 4; R(g, TONE[i], x - 1 + i, top + inset, 1, hh - inset); }
+    R(g, '#2c3a1a', x + 5, top + 2, 1, hh - 2); R(g, '#d8e090', x, top + 4, 1, 2);
+    for (let y = top + 9 + sd, j = 0; y < bot - 6; y += 17, j++) R(g, '#2c3a1a', x - 1 + ((j * 5 + sd) % 6), y, 1, 2);
+    for (let y = top + 14, i = 0; y < bot - 8; y += 38, i++) { const sd2 = (i + sd) & 1;
+      R(g, '#8e7a52', x - 2, y, 8, 2); R(g, '#c9b27c', x - 2, y, 8, 1); R(g, '#8e7a52', sd2 ? x + 5 : x - 3, y + 2, 1, 3);
+      R(g, TONE[2], sd2 ? x - 5 : x + 6, y - 2, 3, 1); R(g, TONE[4], sd2 ? x - 6 : x + 8, y - 3, 2, 1); R(g, TONE[0], sd2 ? x - 4 : x + 7, y - 1, 2, 1); }
+    R(g, TONE[1], x - 2, top + 1, 1, 4); R(g, TONE[2], x + 6, top + 2, 1, 3);
+    if (!p.free) { R(g, '#2a2218', x - 4, bot - 2, 13, 2); R(g, TONE[2], x - 3, bot - 6, 1, 5); R(g, TONE[0], x + 7, bot - 5, 1, 4); R(g, TONE[3], x - 2, bot - 4, 1, 2); R(g, '#3d5226', x - 2, bot - 3, 9, 1); }
   } else if (k === 'cloud') {   /* a cloud-stone pillar: banded drum, capital, a puff at the foot or hem */
     R(g, c[2], x - 2, h0 - 2, w + 4, 3); R(g, c[1], x - 2, h0 - 2, w + 4, 1);
     for (let y = h0 + 5; y < h0 + body; y += 8) { R(g, c[2], x, y, w, 1); R(g, c[1], x, y + 1, w, 1); }

@@ -10,8 +10,8 @@ import { canvas } from '../px.js';
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return (h ^ (h >>> 16)) >>> 0; };
 const rnd = (a, b, m) => hash(a, b) % m;
-const P = (g, c, x, y) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, 1, 1); };
-const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); };
+export const P = (g, c, x, y) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, 1, 1); };
+export const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x | 0, y | 0, w | 0, h | 0); };
 const tileOf = fn => { const [c, g] = canvas(16, 16); for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) { const col = fn(x, y); if (col) P(g, col, x, y); } return c; };
 
 export const OAK = ['#1c1610', '#2c2218', '#3a3026', '#5a4a36', '#7a6648', '#9a8660'];   /* bog oak, dark -> pale */
@@ -31,6 +31,8 @@ export const WALKS = [   /* [x0, x1, row, kind] - every plank run of the stilt w
   [5, 23, 19, 'jetty'], [57, 70, 11, 'lookout'], [112, 129, 16, 'walk'], [132, 137, 15, 'hide'], [150, 158, 15, 'hide'], [226, 236, 15, 'river'], [261, 271, 15, 'river'],
   [293, 300, 15, 'river'], [378, 388, 14, 'hut'], [429, 443, 15, 'hut'], [DECK[0], DECK[1], DECK[2], 'mill'], [LOFT[0], LOFT[1], LOFT[2], 'mill'],
   [STAIR[0][0], STAIR[0][1], STAIR[0][2], 'stair'], [STAIR[1][0], STAIR[1][1], STAIR[1][2], 'stair'],
+  /* (claude/marsh3art) MARSH WOOD 3's new walks (src/marsh3.js, AT_COL 444): the bank walks (row 15), the bowman's lookout, the boom lever's winch deck */
+  [444, 449, 15, 'jetty'], [514, 518, 12, 'lookout'], [521, 529, 15, 'hide'], [569, 572, 17, 'winch'], [592, 599, 15, 'jetty'], [664, 669, 15, 'hide'],
 ];
 const walkAt = (x, y) => { for (const w of WALKS) if (y === w[2] && x >= w[0] && x <= w[1]) return w; return null; };
 
@@ -39,7 +41,7 @@ function walkTile(x, y, at, T) {
   const w = walkAt(x, y); if (!w) return null;
   const kind = w[3], edgeL = x === w[0], edgeR = x === w[1], air = at(x, y + 1) === T.AIR;
   return once('wk' + kind + (x & 3) + edgeL + edgeR + air, () => tileOf((px, py) => {
-    const u = x * 16 + px, mossy = kind === 'river' || kind === 'hide' || kind === 'hut', worn = kind === 'jetty' || kind === 'lookout';
+    const u = x * 16 + px, mossy = kind === 'river' || kind === 'hide' || kind === 'hut', worn = kind === 'jetty' || kind === 'lookout' || kind === 'winch';
     if (py === 0) { if (edgeL && px < 2 || edgeR && px > 13) return null; return rnd(u, 1, mossy ? 4 : 9) === 0 ? MOSS[2] : (worn ? BOARD[4] : BOARD[3]); }
     if (py >= 1 && py <= 3) {
       if (edgeL && px === 0 || edgeR && px === 15) return OAK[1];
@@ -126,16 +128,16 @@ function blit(g, key, x0, y0, w, h, cx, cy, fn) {   /* paint fn(cg, cx0, cy0) on
   let c = baked.get(key); if (!c) { const [cv, cg] = canvas(w, h); fn(cg, x0, y0); c = cv; baked.set(key, c); }
   g.drawImage(c, Math.round(x0 - cx), Math.round(y0 - cy));
 }
-function post(g, x, y0, y1, w = 4) { R(g, OAK[2], x, y0, w, y1 - y0); R(g, OAK[4], x, y0, 1, y1 - y0); R(g, OAK[0], x + w - 1, y0, 1, y1 - y0); }
-function lash(g, x, y, w = 4) { R(g, CORD, x - 1, y, w + 2, 1); R(g, CORD_D, x - 1, y + 1, w + 2, 1); }
-function brace(g, x0, y0, x1, y1) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); R(g, OAK[3], x, y, 2, 2); P(g, OAK[1], x + 1, y + 1); } }
-function thatch(g, x0, x1, yEave, h, flip) {   /* a lean-to / gable of reed thatch: rows of stalks, a dark eave */
+export function post(g, x, y0, y1, w = 4) { R(g, OAK[2], x, y0, w, y1 - y0); R(g, OAK[4], x, y0, 1, y1 - y0); R(g, OAK[0], x + w - 1, y0, 1, y1 - y0); }
+export function lash(g, x, y, w = 4) { R(g, CORD, x - 1, y, w + 2, 1); R(g, CORD_D, x - 1, y + 1, w + 2, 1); }
+export function brace(g, x0, y0, x1, y1) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const x = Math.round(x0 + (x1 - x0) * i / n), y = Math.round(y0 + (y1 - y0) * i / n); R(g, OAK[3], x, y, 2, 2); P(g, OAK[1], x + 1, y + 1); } }
+export function thatch(g, x0, x1, yEave, h, flip) {   /* a lean-to / gable of reed thatch: rows of stalks, a dark eave */
   for (let r = 0; r < h; r++) { const inset = flip ? 0 : r, ww = (x1 - x0) - (flip ? r : 0) - (flip ? 0 : 0); const xs = flip ? x0 : x0 + 0; const y = yEave - h + r;
     for (let x = xs; x < xs + ww; x++) { const c = (x + r * 3) % 5 === 0 ? '#c9b27c' : (x + r) % 3 === 0 ? '#9a8a50' : '#7a7a3a'; P(g, c, x, y); } }
   R(g, OAK[1], x0, yEave, x1 - x0, 2);
   for (let x = x0; x < x1; x += 3) P(g, '#7a7a3a', x, yEave + 2 + ((x >> 1) & 1));
 }
-function gableRoof(g, xl, xr, yEave, rise) {   /* the shed's thatched gable, plank-ridged */
+export function gableRoof(g, xl, xr, yEave, rise) {   /* the shed's thatched gable, plank-ridged */
   const mid = (xl + xr) / 2, half = (xr - xl) / 2;
   for (let y = 0; y < rise; y++) { const f = y / rise, x0 = Math.round(xl + half * (1 - f)) - 0, x1 = Math.round(xr - half * (1 - f)); for (let x = x0; x < x1; x++) { const c = (x + y * 2) % 5 === 0 ? '#c9b27c' : (x + y) % 3 === 0 ? '#9a8a50' : '#7a7a3a'; P(g, y === rise - 1 ? '#9a8a50' : c, x, yEave - rise + y + 1); } }
   R(g, OAK[1], xl, yEave, xr - xl, 2); R(g, OAK[4], xl, yEave, xr - xl, 1);
