@@ -3,6 +3,7 @@
 // listed here is said whole in less; the rest use their `sub` as written. tools/map-scale.mjs measures every one in the face the card is drawn in and fails when any does not fit.
 export const MAP_BLURB = {
   kings: "the goblins' court in the old wood",
+  wood: 'a logging trail to the hive',
   rootway: "the way up out of the fungus",
   fair: 'abandoned mid-festival, at sundown',
   waymeet: 'where the roads meet',

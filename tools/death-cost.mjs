@@ -82,8 +82,8 @@ const totals=()=>({got:dc.got,coins:BKT.PROG.coins,xp:BKT.PROG.xp.knight,carry:{
 const at=(L,x,y)=>L.grid[y*L.W+x];
 const floorOk=(L,x,y)=>{const t=at(L,Math.floor(x/16),Math.floor(y/16));return t===T.SOLID||t===T.ONEWAY||t===T.CRATE||t===T.PLANK||t>=20;};
 /* a place to stand well away from the shrine (a bundle within a step of the shrine is picked up the moment he wakes) and from every foe */
-const open=(from,skip)=>{const L=BK.L,cp=dc.checkpoint(),row=Math.floor(cp.y/16);for(let pass=0;pass<2;pass++)for(let tx=from;tx<L.W-4;tx++)for(let ty=3;ty<L.H-3;ty++){if(pass===0&&Math.abs(ty-row)>3)continue;
-  if(at(L,tx,ty+1)===1&&at(L,tx,ty)===0&&at(L,tx,ty-1)===0&&at(L,tx,ty-2)===0&&at(L,tx+1,ty+1)===1&&at(L,tx-1,ty+1)===1&&at(L,tx+2,ty+1)===1&&BK.enemies().every(q=>!q.alive||Math.hypot(q.x-(tx*16+8),q.y-(ty+1)*16)>300)&&!(skip&&skip.some(s=>Math.abs(s-tx)<8)))return{tx,ty};}return null;};
+const open=(from,skip)=>{const L=BK.L,cp=dc.checkpoint(),row=Math.floor(cp.y/16);for(const clear of [300,220,150,100,60])for(let pass=0;pass<2;pass++)for(let tx=from;tx<L.W-4&&!(L.arena&&tx*16>=L.arena.x0-160);tx++)for(let ty=3;ty<L.H-3;ty++){if(pass===0&&Math.abs(ty-row)>3)continue;
+  if(at(L,tx,ty+1)===1&&at(L,tx,ty)===0&&at(L,tx,ty-1)===0&&at(L,tx,ty-2)===0&&at(L,tx+1,ty+1)===1&&at(L,tx-1,ty+1)===1&&at(L,tx+2,ty+1)===1&&BK.enemies().every(q=>!q.alive||Math.hypot(q.x-(tx*16+8),q.y-(ty+1)*16)>clear)&&BK.acorns().every(c=>c.got||Math.hypot(c.x-(tx*16+8),c.y-(ty+1)*16)>32)&&L.ents.every(e=>e.t!=='check'||Math.abs(e.x-tx)>6)&&(L.pools||[]).every(p=>tx*16+8<p.x0-48||tx*16+8>p.x1+48)&&!(skip&&skip.some(s=>Math.abs(s-tx)<8)))return{tx,ty};}return null;};
 const goto=(o,n)=>{const q=BK.players()[n||0];q.x=o.tx*16+8+(n?14:0);q.y=(o.ty+1)*16;q.vx=q.vy=0;BK.sim(30);};
 const far=(k,skip)=>open(Math.floor(dc.checkpoint().x/16)+40+(k||0)*30,skip);
 const stand=(k,skip)=>{const o=far(k,skip);if(!o)fails.push('no open standing place');else goto(o);return o;};
@@ -137,8 +137,8 @@ fresh('wood');{const sh=BK.shrines()[0];const o=open(Math.floor(sh.x/16)+2);goto
 /* F. CO-OP: each hero has his own bundle, and neither can pick up the other one */
 BK.coopArm('warden',false);fresh('wood');{const ps=BK.players();if(ps.length!==2)fails.push('F: no second hero ('+ps.length+')');else{
  const o=far(0);goto(o,0);goto(o,1);
- for(let i=0;i<2;i++)coin(0);for(let i=0;i<3;i++)coin(1);
- const c0=dc.carry(0).coins,c1=dc.carry(1).coins;if(c0+c1!==5||c0===0||c1===0)fails.push('F: the coins were not counted per hero: '+c0+'/'+c1);
+ BK.sim(2);const base0=dc.carry(0).coins,base1=dc.carry(1).coins;for(let i=0;i<2;i++)coin(0);for(let i=0;i<3;i++)coin(1);   /* (a coin of the level may lie at the spot: count what these five add) */
+ const c0=dc.carry(0).coins,c1=dc.carry(1).coins;if(c0+c1-base0-base1!==5||c0===0||c1===0)fails.push('F: the coins were not counted per hero: '+c0+'/'+c1);
  BK.coopDown(1);BK.sim(1);BK.players()[0].inv=0;dc.hit(0,null);for(let i=0;i<10;i++)BK.sim(1);
  const b0=B(0),b1=B(1);if(!b0||!b1||b0===b1)fails.push('F: not one bundle each: '+JSON.stringify([b0,b1]));else{if(b0.coins!==c0||b1.coins!==c1)fails.push('F: the bundles do not hold each hero own coins');
   const x1=b1.x,y1=b1.y;respawn();for(let i=0;i<30;i++)BK.sim(1);const q=BK.players();q[0].x=x1;q[0].y=y1;q[1].x=x1+400;q[1].y=y1;BK.sim(2);if(!B(1))fails.push('F: the first hero picked up the second one bundle');
@@ -162,9 +162,9 @@ fresh('wood');{const Ls=BK.L;let sp=null;for(let y=2;y<Ls.H-1&&!sp;y++)for(let x
  if(!sp){out.spikes='the wood has no plain spike floor: skipped';}else{const o=open(sp.x-20);if(o){BK.P.x=o.tx*16+8;BK.P.y=(o.ty+1)*16;BK.sim(30);}for(let i=0;i<2;i++)coin();BK.P.x=sp.x*16+8;BK.P.y=sp.y*16+15;BK.P.ground=true;BK.P.vy=0;hit(null);BK.sim(1);const b=B();
   if(!b||dc.hazard(b.x,b.y)||at(Ls,Math.floor(b.x/16),Math.floor(b.y/16))===T.SPIKE)fails.push('I: the spike bundle is on the spikes: '+JSON.stringify(b));else out.spikes='ok';}}
 /* J. AN AMBUSHER CARRIES IT: the room is put back on a death and its foes are not there until it is tripped again - the bundle WAITS for its creature, and it is on it the moment it comes */
-fresh('wood');{const A=BK.L.ambushes[0],enter=()=>{BK.P.x=(A.wallL+5)*16+8;BK.P.y=(A.row+1)*16;BK.P.vx=BK.P.vy=0;BK.P.inv=99;BK.sim(60);};enter();
+fresh('marsh');{const A=BK.L.ambushes[0],enter=()=>{BK.P.x=(A.wallL+5)*16+8;BK.P.y=(A.row+1)*16;BK.P.vx=BK.P.vy=0;BK.P.inv=99;BK.sim(60);};enter();
  const e=BK.enemies().find(q=>q.alive&&q.ambush&&/^a/.test(q.xpKey)&&!q.harmless);
- if(A.st!=='fight'||!e)fails.push('J: the wood ambush did not start ('+A.st+')');
+ if(A.st!=='fight'||!e)fails.push('J: the marsh ambush did not start ('+A.st+')');
  else{for(let i=0;i<3;i++)coin();const cN=dc.carry(0).coins;hit(e);BK.sim(1);const b=B();if(!b||b.mode!=='foe'||b.foe!==e.xpKey||b.coins!==cN)fails.push('J: the ambusher does not carry it: '+JSON.stringify(b));
   respawn();const w=B();if(!w||w.mode!=='foe'||w.carrier)fails.push('J: the bundle did not wait for its ambusher: '+JSON.stringify(w&&{mode:w.mode,carrier:!!w.carrier}));
   BK.sim(30);if(B()&&B().mode!=='foe')fails.push('J: the bundle let go while its ambusher was still to come');

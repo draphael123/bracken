@@ -25,7 +25,7 @@ try {
     const setup = (id, hero) => { BK.PROG.hero = hero || 'knight'; BK.load(LEVELS.findIndex(l => l.id === id)); BK.start(); BK.god = true;
       const L = BK.L, W = L.W, at = (x, y) => L.grid[y * W + x]; let spot = null;
       for (let x0 = Math.floor(BK.P.x / 16); x0 < W - 40 && !spot; x0++) for (let y = 6; y < L.H - 2 && !spot; y++) {
-        let ok = true; for (let x = x0; x < x0 + 34 && ok; x++) ok = at(x, y + 1) === 1 && [0, 1, 2, 3, 4, 5].every(k => at(x, y - k) === 0);
+        let ok = true; for (let x = x0; x < x0 + 28 && ok; x++) ok = at(x, y + 1) === 1 && [0, 1, 2, 3, 4, 5].every(k => at(x, y - k) === 0);
         if (ok) spot = [x0 + 6, y]; }
       for (const e of BK.enemies()) e.alive = false; BK.tp(spot[0], spot[1]); BK.sim(20); return spot; };
     const clear = () => { for (const e of BK.enemies()) e.alive = false; for (const s of BK.seeds()) s.dead = true; F.FUSES.length = 0; };
