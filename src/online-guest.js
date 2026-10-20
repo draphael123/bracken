@@ -166,7 +166,7 @@ function onMsg(m) {
   else if (m.t === 'st') { G.grab = m.g === 'GRAB' || m.g === 'THROW' ? m.g : null; G.hostState = m.s; G.paused = !!m.paused; if (+m.n) G.seat = +m.n; showBanner(); stripView(); }
   else if (m.t === 'pong') { G.rtt = Math.round(performance.now() - m.t0); if (link) link.send({ t: 'rtt', ms: G.rtt }); stripView(); }
   else if (m.t === 'full') { G.why = 'full'; }
-  else if (m.t === 'end') { const k = m.why === 'party' ? 'left' : 'ended'; G.why = k; end(k); }   /* (claude/tavern) walked out of the tavern door: he left, the host did not end it */
+  else if (m.t === 'end') { const k = m.why === 'party' ? 'left' : 'ended'; G.why = k; if (G.leaving && G.phase === 'ended') { G.leaving = false; if (net) net.close(); return; } end(k); }   /* (claude/tavern) walked out of the tavern door: he left, the host did not end it */
 }
 setInterval(() => { if (link && link.open) link.send({ t: 'ping', t0: performance.now() }); }, 1000);   /* the ping is the heartbeat too: the host drops a guest who goes quiet */
 /* the heroes he may pick: his slot's own (owned + the free starters), or the host's when he only visits */
@@ -195,10 +195,10 @@ function earn(c) {
   else { const a = r.applied; G.earned.xp += a.xp; G.earned.coins += a.coins; for (const id of a.clears) if (!G.earned.clears.includes(id)) G.earned.clears.push(id); const l = CS.creditLine(G.slot, a); if (l) { G.lastEarn = 'SAVED ' + l; G.earnBad = false; } }
   stripView(); if (G.phase !== 'play' || G.menu) render();
 }
-function leave() { if (link && link.open) link.send({ t: 'bye' }); G.why = 'left'; setTimeout(() => { if (net) net.close(); }, 150); end('left'); }
+function leave() { const linked = !!(link && link.open); if (linked) link.send({ t: 'bye' }); G.why = 'left'; G.leaving = linked && G.slot >= 0; setTimeout(() => { if (net) net.close(); }, G.leaving ? 2000 : 150); end('left'); }   /* (claude/coopprogress) on his own save the link stays up until the host's goodbye (his final credit comes first), two seconds at most */
 function end(kind) {
   if (G.phase === 'ended') return;
-  G.phase = 'ended'; G.err = kind; releaseAll(); if (net) setTimeout(() => net.close(), 200); setTimeout(() => LOCKS.releaseAll(), 400);   /* (his slot is free again once the last credit is in)*/
+  G.phase = 'ended'; G.err = kind; releaseAll(); if (net) setTimeout(() => net.close(), G.leaving ? 2000 : 200); setTimeout(() => LOCKS.releaseAll(), G.leaving ? 2200 : 400);   /* (his slot is free again once the last credit is in)*/
   video.style.display = 'none'; try { video.srcObject = null; } catch {} stream = null; render();
 }
 function toggleMenu() { if (G.phase !== 'play') return; G.menu = !G.menu; releaseAll(); render(); }

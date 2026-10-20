@@ -111,7 +111,7 @@ try {
   const pl = await H('BK.players().map(p=>p.hero)');
   ok(pl.length === 2 && pl[1] === 'pyro', '2: in the wood, player two is the guest\'s OWN PYRO: ' + pl + ' ' + JSON.stringify(await H('BKONLINE.debug().sess')));
   const seat2 = await H('BK.coopSave.seats()[1]');
-  ok(seat2.prof && seat2.prof.dest === 'online' && seat2.prof.slot === 0 && seat2.prof.lv === 6 && seat2.prof.base.coins === 777, '2: the host seats him FROM HIS SNAPSHOT - his slot 1, his level 6, his purse 777: ' + JSON.stringify(seat2.prof));
+  ok(seat2.prof && seat2.prof.dest === 'online' && seat2.prof.slot === 0 && seat2.prof.lv === 6 && seat2.prof.base.coins === JSON.parse(SAVE).coins, '2: the host seats him FROM HIS SNAPSHOT - his slot 1, his level 6, his own purse (' + JSON.parse(SAVE).coins + '): ' + JSON.stringify(seat2.prof));
 
   // ---- 3. frames, crisp ----
   await until(guest, 'BKGUEST.state().frames > 30', 15000, 'thirty video frames on the guest');
@@ -281,6 +281,7 @@ try {
   /* a wood WON together: on HIS road */
   const succ = LEVELS.find(l => l.needs === 'wood' && !l.hidden);
   ok(!(g2.wood && g2.wood.cleared) && !(g2[succ.id] && g2[succ.id].cleared), '11: before: his road has not cleared THE WOOD, and ' + succ.id + ' (it needs the wood) is shut');
+  notes.push('the wood share before the win: ' + JSON.stringify(await H('BK.coopSave.share()')));
   await H('BK.coopSave.win()');
   await until(guest, '(()=>{const p=JSON.parse(localStorage.getItem("bracken.progress.0"));return p.wood&&p.wood.cleared})()', 8000, 'the clear to reach his save');
   const g3 = await slot0();
