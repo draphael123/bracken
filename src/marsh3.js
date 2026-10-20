@@ -58,9 +58,9 @@ export function applyMarsh3(M, T, TS, grow) {
   ent('sign', X(153), 17, { text: 'NIGHT ON THE WATER. A MARSH LIGHT STANDS OVER EVERY PAD THAT HOLDS. THE DARK ONES SINK.' });
   water(156, 219);
   for (const [dx, kind, big] of NIGHT_PADS) ent('pad', X(dx), 18, kind === 'L' ? { firm: true, lamp: true, big: !!big } : { big: !!big });
-  reeds(X(184), 16, 2); reeds(X(187), 12, 2);   /* a reed bed halfway: a rest; a spitter lobs at it from a tuft over the water beyond (on the bed itself it shoved every hero back in) */
+  reeds(X(184), 17, 2); reeds(X(187), 12, 2);   /* a reed bed halfway: a rest; a spitter lobs at it from a tuft over the water beyond (on the bed itself it shoved every hero back in) */
   for (const dx of [171, 195, 213]) foe('eel', dx, 20, { leap: true });
-  foe('hopper', 186, 15, { color: 'yellow' }); foe('wasp', 203, 13, { pogo: true });   /* (marsh3fix) a frog holds the reed bed instead of a spitter on its tuft: ranged share under the 30% cap */
+  foe('hopper', 186, 16, { color: 'yellow' }); foe('wasp', 203, 13, { pogo: true });   /* (marsh3fix) a frog holds the reed bed instead of a spitter on its tuft: ranged share under the 30% cap */
   coins([X(164), 16], [X(176), 16], [X(184), 14], [X(197), 16], [X(207), 16]);
   bank(220, 225);
   foe('turtle', 221, 17); ent('check', X(223), 17);

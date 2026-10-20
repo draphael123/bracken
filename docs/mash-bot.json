@@ -176,7 +176,7 @@
   }
  },
  "marsh": {
-  "hash": "0b10bb05fdf4",
+  "hash": "68a605b6f334",
   "boss": {
    "boss": "frog",
    "wins": 0,
@@ -294,15 +294,15 @@
      "raft": 1
     },
     "machines": true,
-    "frames": 66370,
+    "frames": 66380,
     "kills": 6,
     "heroLevel": 1
    },
    "warden": {
     "deaths": 12,
     "minHpPct": 0,
-    "hpLostPct": 1218,
-    "hits": 22,
+    "hpLostPct": 1243,
+    "hits": 24,
     "walked": 100,
     "lifts": 34,
     "held": 24,
@@ -315,28 +315,28 @@
      "raft": 1
     },
     "machines": true,
-    "frames": 43231,
-    "kills": 10,
+    "frames": 43328,
+    "kills": 11,
     "heroLevel": 1
    },
    "pyro": {
     "deaths": 13,
     "minHpPct": 0,
-    "hpLostPct": 1336,
-    "hits": 16,
+    "hpLostPct": 1356,
+    "hits": 18,
     "walked": 100,
     "lifts": 32,
     "held": 30,
     "duels": 10,
-    "boardLifts": 7,
-    "rides": 8,
+    "boardLifts": 6,
+    "rides": 7,
     "pulls": 2,
     "ridden": {
-     "pad": 7,
+     "pad": 6,
      "raft": 1
     },
     "machines": true,
-    "frames": 47985,
+    "frames": 47791,
     "kills": 4,
     "heroLevel": 1
    }

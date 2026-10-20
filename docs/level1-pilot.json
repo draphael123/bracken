@@ -348,14 +348,14 @@
   "bare": true
  },
  "marsh": {
-  "hash": "0b10bb05fdf4",
+  "hash": "68a605b6f334",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
-  "deaths": 1,
-  "kills": 45,
-  "lifts": 92,
+  "hits": 30,
+  "deaths": 3,
+  "kills": 40,
+  "lifts": 94,
   "walked": 100,
   "bare": true
  },
