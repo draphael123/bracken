@@ -29,6 +29,6 @@ export const hasNew = () => !!newestDate() && readSeen() < newestDate();
 export const rows = (wrapFn, maxW) => {
   const out = [];
   updates.forEach((e, i) => { out.push({ kind: 'head', s: shortDate(e.date), gap: i > 0 });
-    for (const ln of e.lines) wrapFn('- ' + ln, maxW).forEach((part, j) => out.push({ kind: 'line', s: j ? '  ' + part : part })); });
+    for (const ln of e.lines) { const parts = wrapFn('- ' + ln, maxW); parts.forEach((part, j) => out.push({ kind: 'line', s: j ? '  ' + part : part, cont: j > 0, more: j < parts.length - 1 })); } });   /* (claude/bloodknight) cont/more: the list never shows half of a wrapped line at its top or bottom edge */
   return out;
 };
