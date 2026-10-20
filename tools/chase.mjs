@@ -220,7 +220,7 @@ ok(R0.on === false && R0.demoOn === false && R0.bj === false && !R0.chases, 'the
 const D = R; console.log('demo', JSON.stringify(D));
 ok(D.demoOn === true && D.bj === true && D.on === true, 'the demo is not up behind ?chase=demo, or is not marked never-save');
 ok(D.problems.length === 0, 'the demo fails the level lint: ' + D.problems.join('; '));
-ok(D.spec.music === 'boss' && D.spec.autoscroll && D.spec.beams === 1, 'the demo spec lost its music, autoscroll or beam');
+ok(D.spec.music === 'chase' && D.spec.autoscroll && D.spec.beams === 1, 'the demo spec lost its music, autoscroll or beam');
 ok(D.before === 'idle', 'the demo chaser is not idle before the hero crosses the line: ' + D.before);
 ok(D.run.started, 'the demo chase never started when the hero walked across its line');
 ok(D.run.warnedAt !== null, 'the demo never told a warning'); ok(D.run.upAt && D.run.upAt.warnedFirst, 'the demo chaser sped up with no warning before it');

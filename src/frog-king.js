@@ -131,7 +131,7 @@ export function frogPlan(s) {
   /* his openings: cut him */
   if (open) { const stand = s.tip ? 20 + s.tip : Math.max(10, reach * 0.6); out.gx = dry(e.x - toHim * stand); out.atk = ad < reach + 18 && P.atk < 0 && e.modeT > 0.15; out.why = 'cut him: ' + m; return out; }
   /* a hopper of his in reach: sweep it */
-  if (F.add && P.atk < 0) { out.face = Math.sign(F.add.x - P.x) || P.face; out.down = !F.add.air && P.ground; out.atk = true; out.gx = null; out.why = 'sweep his hopper'; return out; }
+  if (F.add && P.atk < 0) { out.face = Math.sign(F.add.x - P.x) || P.face; out.down = F.add.sweep !== undefined ? !!F.add.sweep && P.ground : !F.add.air && P.ground; out.atk = F.add.ok !== false; out.gx = null;   /* (batch106 integ) hold the swing for the frame it can land, as the generic hands do (tools/small-adds.mjs) */ out.why = 'sweep his hopper'; return out; }
   if (s.rest) { out.gx = dry(e.x + side * 110); out.why = 'catch my breath'; return out; }
   /* close in and cut, a blow short of his greed */
   const stand = s.tip ? 20 + s.tip : Math.max(14, reach - 4); out.gx = clamp(e.x - toHim * stand);

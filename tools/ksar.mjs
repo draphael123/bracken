@@ -25,6 +25,7 @@ import { OPEN_RULE, FULL_DAMAGE } from '../src/boss-greed.js';
 import { SYNTH_BOSS, SYNTH_VARIANT } from '../src/boss-music.js';
 import { STUCK_HANDS } from '../src/stuck-spots.js';
 import { isCallout } from '../src/hint-lines.js';
+import { ACTS } from '../src/foe-react.js';
 const TS = 16; let n = 0; const ok = (c, m) => { assert.ok(c, m); n++; };
 const lv = LEVELS.find(l => l.id === 'ksar'); ok(lv, 'ksar is in LEVELS'); ok(lv.needs === 'glasssea', 'THE BANDIT KSAR needs THE GLASS SEA (the main road)');
 const L = lv.build(), at = (x, y) => (x < 0 || y < 0 || x >= L.W || y >= L.H ? T.SOLID : L.grid[y * L.W + x]);
@@ -85,7 +86,9 @@ const cpx = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a -
 ok(c4 < bg.x && c5 > ta.x1 && L.gongs.some(g => !g.bridge && !g.arena && g.x > bx1 && g.x < ta.x0), 'the climax (bridge gong ' + bg.x + ', a gong on roof three, the tower door ' + ta.x0 + ') sits between checkpoint ' + c4 + ' and checkpoint ' + c5 + ' (after it)');
 ok(L.ents.filter(e => e.ks === 'reserve' && e.x > bx1 && e.x < ta.x0).length >= 3, 'the hawk tower\'s squad sleeps in its hut on roof three (a ring calls them)');
 /* (MUST 2) THE FORT HITS HARD: weight, not hazards; the post kegs cut to a dozen */
-ok(['ksarblade', 'whipapprentice', 'shieldsentry'].every(k => L.foeHit[k] >= 1.8) && L.foeHit.gonglookout >= 1.5, 'the fort\'s men hit hard (L.foeHit ' + JSON.stringify(L.foeHit) + ')');
+/* (batch106 integ) the blow is ABSOLUTE: foeHit x the act's damage tier. curvec5 STEP 2b raised act V 1.55 -> 3.0 and rebased L.foeHit to hold the pre-curve blows (3.6 x 1.55 -> 1.9 x 3.0), so the old raw floors (1.8 / 1.5) are pinned as absolute blows (x 1.55): same bar, new tier */
+const KSAR_TIER = ACTS.find(a => a.levels.includes('ksar')).dmg;
+ok(['ksarblade', 'whipapprentice', 'shieldsentry'].every(k => L.foeHit[k] * KSAR_TIER >= 1.8 * 1.55) && L.foeHit.gonglookout * KSAR_TIER >= 1.5 * 1.55, "the fort's men hit hard (L.foeHit " + JSON.stringify(L.foeHit) + " x act tier " + KSAR_TIER + ")");
 ok(L.setKegs.filter(k => !k.alley && !k.caged).length <= 14 && L.setKegs.filter(k => !k.chain && !k.caged).length <= 8, 'set kegs: ' + L.setKegs.length + ' - the store chain, the keg alley chain, the caged keg on the trail, and a few by the squads (' + L.setKegs.filter(k => !k.chain && !k.caged).length + ') - not a keg at every post');
 /* THE GONG RULE IN THE HANDS (a fake world: the grid, the men, a hero) */
 const grid = L.grid.slice(), P = { x: 30 * TS, y: 34 * TS, face: 1, dead: false, hp: 100, hurt: 0, ground: true, w: 10, h: 18 };
@@ -283,7 +286,7 @@ ok(readFileSync(new URL('./one-new-foe.mjs', import.meta.url), 'utf8').includes(
   const plates = L.ents.filter(e => e.cnSkin === 'ksarplate').sort((a, b) => a.x - b.x), fals = L.ents.filter(e => e.cnSkin === 'falconer').sort((a, b) => a.x - b.x);
   ok(plates.length >= 3 && fals.length >= 3 && plates.concat(fals).every(e => e.t === 'cutthroat'), 'the new bandits ride the cutthroat machine: ' + plates.length + ' plated, ' + fals.length + ' falconers');
   ok((['ksarblade', 'gonglookout', 'whipapprentice', 'falconer', 'ksarplate'].reduce((a, k) => a + (cnt[k] || 0), 0)) / foes.length <= 0.5, 'the cutthroat machine (with the falconer and the plated man) is still at most half the cast');
-  ok(L.foeHit.ksarplate >= L.foeHit.ksarblade && L.foeHit.falconer >= 1.5, 'the plated man hits hardest in the fort; the falconer\'s knife is light (his hawk is the threat)');
+  ok(L.foeHit.ksarplate >= L.foeHit.ksarblade && L.foeHit.falconer * KSAR_TIER >= 1.5 * 1.55, 'the plated man hits hardest in the fort; the falconer\'s knife is light (his hawk is the threat)');
   for (const p of plates) ok(L.stacks.some(s => s.kind === 'keg' && Math.abs(s.x - p.x) <= 10 && Math.abs(s.y - p.y) <= 6) || L.setKegs.some(k => Math.abs(k.x - p.x) <= 5 && k.y === p.y), 'a keg stack (or a set keg) stands by the plated man at ' + p.x);
   const p0 = plates[0], ear = (g, e) => Math.abs(g.x - e.x) <= g.ear && Math.abs(g.y - e.y) <= g.earY;
   ok(p0.ks === 'reserve' && !L.gongs.some(g => ear(g, p0)) && sign(p0.x - 8, p0.x, /KEG/) && L.stacks.some(s => s.kind === 'keg' && s.x < p0.x && p0.x - s.x <= 12), 'THE PLATED MAN TAUGHT SAFE: the first (' + p0.x + ') sleeps out of every gong\'s earshot, a sign (A KEG) and a keg stack before him');

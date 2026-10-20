@@ -13,11 +13,14 @@
 import { install } from './node-canvas.mjs';
 import { LEVELS, T } from '../src/level.js';
 import { markOf } from '../src/marks.js';
+import { ACTS } from '../src/foe-react.js';
 import { openPage } from './cdp.mjs';
 install();
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); console.log((c ? '  ok   ' : '  FAIL ') + m); };
 const WHF = await import('../src/gargoyle-whelp.js'), { GARG } = await import('../src/gate-gargoyle.js');
 const LIB = 150;   /* THE RUNE LIBRARY (claude/follylib) is cut in at the yard's door: everything after the door slid right by this */
+/* (batch106 integ) the bound was written at the old act IV blow tier (1.4); curvec5 STEP 2b made it 3.0, so the same bar (one gargoyle ball x1.3) is carried to the tier: x tier / 1.4 */
+const MAGE_TIER = ACTS.find(a => a.levels.includes('mage')).dmg;
 const I = LEVELS.findIndex(l => l.id === 'mage'), L = LEVELS[I].build(), G = 40, at = (x, y, LL = L) => LL.grid[y * LL.W + x];
 const door = L.mage && L.mage.outside, yard = L.ents.filter(e => e.x < door);
 // 1. THE WARDED COURTYARD: its size, and the tower after it moved whole
@@ -90,7 +93,7 @@ try {
   ok(sl.length === 3 && sl.every(s => s.struck && s.k >= 1 && s.after === (s.want ?? 1) && (s.down === 0 || s.sunk)), 'ON THE PAGE, every warded slab moves when its rune is struck: the new place is footing, the old one is open: ' + JSON.stringify(sl));
   ok(r.dive && r.dive.mode === 'stuck' && r.dive.seen.includes('crouchTell'), 'a whelp over the bridge, with you on it, dives THROUGH it and sticks on the drain\'s spikes: ' + JSON.stringify(r.dive && r.dive.seen));
   ok(r.dive && r.dive.stomp && !r.dive.stomp.alive && r.dive.stomp.rode && r.dive.stomp.bite === 0, 'stomped there it breaks, and the wind lifts you with no bite: ' + JSON.stringify(r.dive && r.dive.stomp));
-  ok(r.open.tells >= 1 && r.open.maxBalls === 1 && r.open.thrown >= 1 && r.open.took > 0 && r.open.took < Math.round(GARG.dmg.fireball * 1.3), 'past its dive it SPITS: told, one ball at a time, and it takes less than one of his (' + WHF.WH.dmg.fire + ' before the health scaling): ' + JSON.stringify(r.open));
+  ok(r.open.tells >= 1 && r.open.maxBalls === 1 && r.open.thrown >= 1 && r.open.took > 0 && r.open.took < Math.round(GARG.dmg.fireball * 1.3 * MAGE_TIER / 1.4), 'past its dive it SPITS: told, one ball at a time, and it takes less than one of his (' + WHF.WH.dmg.fire + ' before the health scaling): ' + JSON.stringify(r.open));
   ok(r.guard.thrown >= 1 && r.guard.took === 0, 'a shield takes it: ' + JSON.stringify(r.guard));
   ok(r.witch.thrown >= 1 && r.witch.maxBalls === 1, 'the Witchlight Stair\'s whelps spit it too: ' + JSON.stringify(r.witch));
   ok((r.errors || []).length === 0 && pg.errors.length === 0, 'no errors on the page: ' + JSON.stringify((r.errors || []).concat(pg.errors).slice(0, 3)));

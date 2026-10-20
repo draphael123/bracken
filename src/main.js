@@ -4475,7 +4475,7 @@ function levelUp(n, from) { lvUpN = n; PROG.cardNew = 1; if (state !== 'play') r
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
 /* A SEAT'S LEVEL-UP (claude/coopprogress): his health and the ring, here; his card waits for his own game (picks are owed by level: src/progression.js picksOwed) */
-function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 34, 'LEVEL ' + n, '#ffd36b'); if (P.prof) P.prof.lvNow = n; }
+function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b'); if (P.prof) P.prof.lvNow = n; }
 const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
@@ -15228,7 +15228,7 @@ function archPortal(e) { const R = MG.A, A = L.arena, room = s => s > 0 ? A.x1 -
   R.portal = { x, y: archFloorAt(x), t: 0, dur: ARCH.portal };
   number(x, R.portal.y - 40, 'A PORTAL OPENS', MVIO[3]); SFX.zap(); ringAt(x, R.portal.y - 14, 18, MVIO[2], 0.5); }
 /* HIS APPRENTICE steps out: health off the same line every apprentice in the level came through (spawnEntities), never more */
-function archApprentice(x, y) { const hp = Math.round(EHP.apprentice * diffNow().ehp * (1 + 0.5 * tierOf(curId())) * (coop() ? 2 : 1));
+function archApprentice(x, y) { const hp = Math.round(EHP.apprentice * diffNow().ehp * (1 + 0.5 * tierOf(curId())) * (bpActOf(curId(), LEVEL_DEPTH[curId()]).hp || 1) * (coop() ? 2 : 1));
   enemies.push({ x, y, vx: 0, vy: 0, face: Math.sign(P.x - x) || 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, t: 'apprentice', w: 9, h: 27, hp, hp0: hp, apprentice: true, mode: 'walk', modeT: 0, castCd: ARCH.appFirst, archCalled: true, xpRole: '' });
   burst(x, y - 14, 16, [MVIO[2], MVIO[3], '#9be2ff'], 90, 0.5); ringAt(x, y - 14, 22, MVIO[3], 0.4); SFX.zap();
   mageHint('apprentice', 'AT EVERY WARD HE CALLS AN APPRENTICE THROUGH A PORTAL. IT THROWS AT WHOEVER STANDS STILL: KEEP MOVING, OR CUT IT DOWN.'); }
