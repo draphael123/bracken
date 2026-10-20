@@ -305,8 +305,8 @@ function knightFrame({ legs = 'stand', dy = 0, dx = 0, sword = null, arm = null,
     px(g, Math.round(x0 - ax * 6), Math.round(y0 - ay * 6), '#5a4e38');
     line(g, Math.round(x0 + ax * 2), Math.round(y0 + ay * 2), Math.round(x1 - ax * 2), Math.round(y1 - ay * 2), WT('#7a828e', 0.3), 3);  /* the blade, three wide */
     line(g, Math.round(x0 + ax * 2 + qx), Math.round(y0 + ay * 2 + qy), Math.round(x1 - ax * 2 + qx), Math.round(y1 - ay * 2 + qy), WT('#c9d1dc', 1), 1);
-    line(g, Math.round(x0 + ax * 3), Math.round(y0 + ay * 3), Math.round(x1 - ax * 4), Math.round(y1 - ay * 4), WT('#3e444e', 0), 1);  /* the fuller down the middle */
-    for (let t = 4; t < len - 3; t += 5) px(g, Math.round(x0 + ax * t), Math.round(y0 + ay * t), '#8fd160');             /* the runes cut into it */
+    line(g, Math.round(x0 + ax * 3), Math.round(y0 + ay * 3), Math.round(x1 - ax * 4), Math.round(y1 - ay * 4), WT(KP.fuller || '#3e444e', 0), 1);  /* the fuller down the middle (a blood channel for the Blood Knight) */
+    for (let t = 4; t < len - 3; t += 5) px(g, Math.round(x0 + ax * t), Math.round(y0 + ay * t), KP.rune || '#8fd160');             /* the runes cut into it */
     px(g, Math.round(x1), Math.round(y1), WT('#eef4fa', 1)); px(g, Math.round(x1 - ax), Math.round(y1 - ay), WT('#eef4fa', 1));        /* the point */
     line(g, Math.round(x0 + ax * 2 - qx * 4), Math.round(y0 + ay * 2 - qy * 4), Math.round(x0 + ax * 2 + qx * 4), Math.round(y0 + ay * 2 + qy * 4), '#8a939f', 2);  /* the cross */
     px(g, Math.round(x0 + ax * 2 - qx * 4), Math.round(y0 + ay * 2 - qy * 4), '#c9d1dc');
@@ -435,7 +435,7 @@ function smearBeat(cur, prev, cols, o = {}) {
     for (const off of [-2, 2]) for (let r = L * 0.5; r <= L * 0.97; r++) if (Math.round(r) % 3 !== 2) put(hx + ux * r + nx * off, hy + uy * r + ny * off, r > L * 0.78 ? cols[0] : r > L * 0.64 ? cols[1] : cols[2]); }
 }
 /* the strike beats are the second and third frames of a chain and the second of a heavy; each reads the beat before it */
-function smearPass(F, cols) { for (const [key, beats] of [['atk', [1, 2]], ['atkB', [1, 2]], ['atkC', [1, 2]], ['heavy', [1, 2]], ['air', [1, 2]], ['crescent', [1, 2]]]) { const a = F[key]; if (Array.isArray(a)) for (const i of beats) smearBeat(a[i], a[i - 1], cols, { ...(key === 'crescent' ? { max: i === 1 ? 118 : 70 } : i === 2 ? { max: 55 } : {}), ...(cols === SMEAR_COL.crimson ? { floor: 9 } : {}) });   /* (the Death Knight's blood never smears under the ground) */ } }   /* (claude/dk2art: the crescent cleave's wide arc) */
+function smearPass(F, cols) { for (const [key, beats] of [['atk', [1, 2]], ['atkB', [1, 2]], ['atkC', [1, 2]], ['heavy', [1, 2]], ['air', [1, 2]], ['crescent', [1, 2]], ['rend', [1, 2]], ['sunder', [1, 2]], ['bloodMoon', [1, 2]]]) { const a = F[key]; if (Array.isArray(a)) for (const i of beats) smearBeat(a[i], a[i - 1], cols, { ...(key === 'crescent' ? { max: i === 1 ? 118 : 70 } : i === 2 ? { max: 55 } : {}), ...(cols === SMEAR_COL.crimson ? { floor: 9 } : {}) });   /* (the Death Knight's blood never smears under the ground) */ } }   /* (claude/dk2art: the crescent cleave's wide arc) */
 function storeFrames(card, knight, mode, cols) {
   const F = {};
   if (mode !== 'atk' && mode !== 'weaponIcon') F.idle = card.idle();
@@ -2109,7 +2109,7 @@ function pirateKitPoses(F, sh, holster, carry) {
    now have frames of their own on his rig; OFF is the off shoulder, and a() puts a loose pixel at an absolute point. */
 function reaperKitPoses(F, sh) {
   const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7], K = o => knightFrame({ top, ...o });
-  const a = (x, y, col) => [x - BX, y - BY, col], RED = '#c0283a', PINK = '#ff6b6b', GRN = '#8fd160', DGRN = '#4f7a3a', LIT = '#dfffc0', BONE = '#b9c2cf';
+  const a = (x, y, col) => [x - BX, y - BY, col], RED = '#c0283a', PINK = '#ff6b6b', GRN = '#ff4a5a', DGRN = '#7a1020', LIT = '#ffd0d0', BONE = '#c9a8b0';
   const lit = [[4, 3, LIT], [5, 3, LIT]];   /* the two lights in the helm, up bright */
   const low = [X - 3, Y + 3, X + 12, Y + 6];   /* the long blade held low across him, as he breathes (the idle's own guard) */
   /* BLOOD WELL: hunched over the blade stood point-down before him, both hands on it; flung open with the blade out wide and the
@@ -2149,7 +2149,7 @@ function reaperKitPoses(F, sh) {
       bits: [...lit, a(X - 1, Y - 1, BONE), a(X + 3, Y - 1, GRN), a(X + 6, Y - 1, DGRN), a(X + 9, Y - 1, GRN)] })];
   /* THE LATE ACTIVES' OWN POSES (claude/heroposes). OSSUARY MAIL: both arms crossed hard over his chest on the flat of the blade; then the
      head back and the lights up while plates of bone close over the shoulders, ribs and arms; and the last plate seated, the blade low */
-  const PLATE = '#f6f1da';
+  const PLATE = '#b02238';
   const plateA = [a(X - 1, Y - 5, PLATE), a(X, Y - 6, PLATE), a(X + 1, Y - 6, PLATE), a(X - 2, Y - 4, PLATE), a(X - 9, Y - 5, PLATE), a(X - 8, Y - 6, PLATE), a(X - 7, Y - 6, PLATE), a(X - 10, Y - 4, PLATE)];
   const plateB = [a(X - 6, Y - 1, PLATE), a(X - 3, Y - 1, PLATE), a(X - 5, Y + 1, PLATE), a(X - 4, Y + 3, PLATE), a(X - 6, Y + 5, PLATE), a(X - 3, Y + 5, PLATE), a(X - 2, Y + 8, PLATE), a(X - 7, Y + 8, PLATE)];
   F.bone = [K({ dy: 1, legs: 'wide', arm: [X, Y, X - 6, Y - 1], arm2: [OFF[0], OFF[1], X - 2, Y], greatsword: [X - 12, Y - 3, X + 8, Y + 1], plume: 0, bits: [a(X - 14, Y + 6, PLATE), a(X + 11, Y + 5, PLATE), a(X - 10, Y + 12, GRN)] }),
@@ -2163,7 +2163,7 @@ function reaperKitPoses(F, sh) {
     K({ dx: -1, hy: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 2, Y - 2], plume: 2, bits: [...lit, a(X + 4, Y - 4, LIT), a(X + 6, Y - 6, GRN), a(X + 8, Y - 9, DGRN), a(X + 3, Y - 3, GRN)] })];
   /* ==== HERO PASS A ART (claude/heropassaart): the SHADOW-STEP. UNMOOR - his edges coming away into shade at the feet and the lights in the helm flaring, the blade hauled low behind him; STEP - flat, long and gone forward
      with the blade trailing a dozen pixels and the shade he leaves a dark ribbon down his back; REFORM - the shade falling off him as he comes together, the green flick in the helm ==== */
-  const SHADE = '#3a2850', SHADE2 = '#241a34', SHADEG = '#2e4a3a';
+  const SHADE = '#3a2850', SHADE2 = '#241a34', SHADEG = '#4a1020';
   F.shadowStep = [K({ wide: 4, dx: -1, legs: 'wide', arm: [X, Y, X - 3, Y + 3], arm2: [OFF[0], OFF[1], X - 4, Y + 3], greatsword: [X - 4, Y + 4, X - 17, Y + 8], plume: 1, bits: [...lit, a(X - 2, Y + 14, SHADE), a(X, Y + 15, SHADE2), a(X + 3, Y + 14, SHADE), a(X - 5, Y + 12, SHADE2), a(X + 6, Y + 15, SHADE2)] }),
     K({ wide: 10, dx: 4, dy: 2, legs: 'runC', sho: 1, arm: [X, Y, X + 3, Y + 4], arm2: [OFF[0], OFF[1], X + 2, Y + 4], greatsword: [X - 2, Y + 5, X - 22, Y + 9], plume: 2, bits: [...lit, ...[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => a(X - 6 - i, Y + 1 + (i >> 1), i % 3 ? SHADE : SHADE2)), ...[0, 1, 2, 3, 4, 5].map(i => a(X - 5 - i, Y + 9 - (i >> 1), SHADE2)), a(X - 14, Y + 4, SHADEG), a(X - 17, Y + 6, SHADEG), a(X - 12, Y + 12, SHADE)] }),
     K({ wide: 6, dx: 2, dy: 1, legs: 'wide', sho: 1, arm: [X, Y, X + 1, Y + 3], arm2: [OFF[0], OFF[1], X, Y + 3], greatsword: [X - 2, Y + 3, X + 10, Y + 7], plume: 1, bits: [...lit, a(X - 7, Y + 2, SHADE), a(X - 8, Y + 6, SHADE2), a(X - 6, Y + 10, SHADE), a(X - 9, Y + 9, SHADEG), a(X - 4, Y + 15, SHADE2)] })];
@@ -2787,31 +2787,33 @@ export function bakeFreebooter(skin = {}, previewOnly = false) {
   KP = Object.assign({}, KP0); BODY_REF = BODY; PLUME_REF = PLUME;
   return { R, L, white: { R: white, L: whiteL }, ...KNIGHT_ANCHOR, ay: KNIGHT_ANCHOR.ay + ATTACK_HEADROOM };
 }
-// THE DEATH KNIGHT: a horned helm with nothing in it but two green lights, plate the colour of a cold
+// THE BLOOD KNIGHT (the Death Knight until claude/bloodknight; id 'reaper'): a horned helm with nothing in it but two crimson lights (they were green), plate the colour of a cold
 // forge, a torn red surcoat, and a two-handed sword as long as he is with runes cut down the fuller.
 // The silhouette has to say KNIGHT at sixteen pixels and say it from the horns and the pauldrons, because
 // that is all there is room for - so the horns are the outermost pixels of the sprite and the shoulders
 // are the widest.
+/* (claude/bloodknightart) THE CRIMSON PASS: the horn tips are dipped in blood (r), the pauldrons are rimmed in it, the surcoat is wider and falls to a torn red hem over the dark plate */
 const REAP_BODY = [
-  's........s',
+  'r........r',
   'vv......vv',
   '.vvSSSSvv.',
   '..Skyyks..',
   '..SkkkkS..',
   '..vSSSSv..',
-  'SSbbBBbbSS',
-  'SSbBrrBbSS',
-  '.SbbrrbbS.',
-  '.bbbrrbbb.',
-  '..bbbbbb..',
+  'rSbbBBbbSr',
+  'rSbBrrBbSr',
+  '.SbrrrrbS.',
+  '.bbrrrrbb.',
+  '..brrrrb..',
 ];
 const REAP_PLUME = [
-  ['s........s', 'vv......vv', '.vvSSSSvv.'],
-  ['s........s', 'vv.....vvs', '.vvSSSSvv.'],
-  ['.s......s.', 'vv......vv', '.vvSSSSvv.'],
+  ['r........r', 'vv......vv', '.vvSSSSvv.'],
+  ['r........r', 'vv.....vvr', '.vvSSSSvv.'],
+  ['.r......r.', 'vv......vv', '.vvSSSSvv.'],
 ];
-const REAP_PAL = { s: '#b9c2cf', S: '#68707e', b: '#232a38', B: '#141824', r: '#5e1822', y: '#8fd160',
-  k: '#0a0c10', w: '#6a5a42', W: '#3e3428', v: '#39404e' };
+const REAP_PAL = { s: '#c9a8b0', S: '#6a4a56', b: '#2a1e26', B: '#170f15', r: '#a0182e', y: '#ff3a4a', rune: '#ff4a5a', fuller: '#5a0a18',   /* (claude/bloodknight) THE BLOOD KNIGHT: crimson lights in the helm, plate gone to a dried-blood black, the surcoat a deeper red (the crimson art lane finishes it) */
+ 
+  k: '#0a0c10', w: '#6a5a42', W: '#3e3428', v: '#3a2c38' };
 /* THE DEATH KNIGHT 2's OWN BODY (claude/dk2art, scratch/brief-dk2.md, B16: every ability its own windup + release pose). REAPER'S RHYTHM's three cuts each a different
    blade (a rising low diagonal / a reverse sweep along the shins that hooks / a heavy overhead drag that drinks), GRAVE KNEEL (the blade planted point-down, both
    fists on the pommel, a red gleam at the point), THE BLOOD PRICE held (four beats - the blade drinking, longer and redder with every price) and THE CRESCENT CLEAVE
@@ -2863,6 +2865,58 @@ function reaperRhythmPoses(F, sh, atkOnly = false) {
     K({ wide: 14, dx: 3, legs: 'runC', ...gs(X + 6, Y - 4, X + 25, Y - 5), plume: 2, bits: [a(X + 25, Y - 5, '#ffffff'), a(X + 22, Y - 4, HOT), a(X + 18, Y - 4, PINK), a(X + 12, Y - 3, RED)] }),
     K({ wide: 10, dx: 3, dy: 3, legs: 'wide', ...gs(X + 5, Y + 3, X + 20, Y + 9), plume: 0, bits: [a(X + 17, Y + 8, PINK), a(X + 12, Y + 7, RED), a(X + 21, Y + 9, '#b8a890'), a(X + 9, Y + 4, DRED)] })];
 }
+/* ==== THE BLOOD KNIGHT'S FIVE TIERS, BLOOD SPIKE AND BLOOD PRICE (claude/bloodknightart; B16: each its OWN windup + release, scratch/brief-bloodknight-1017.md).
+   Wind keys (looped while the hold builds): rendWind, sunderWind, crescentWind, exsWind, moonWind. Release keys (three beats: anticipation, strike, extended):
+   rend, sunder, (crescent: reaperRhythmPoses), exsanguinate, bloodMoon. Each tier's blade is wetter and its helm lights hotter than the last. ==== */
+function reaperBloodPoses(F, sh) {
+  const top = ATTACK_HEADROOM, [X, Y] = sh, OFF = [BX + 2, BY + 7], K = o => knightFrame({ top, ...o });
+  const a = (x, y, col) => [x - BX, y - BY, col], RED = '#c0283a', DRED = '#7a1020', PINK = '#ff6b6b', HOT = '#ffd0d0', BLK = '#3a0a10', WHT = '#ffffff';
+  const gs = (hx, hy, tx, ty) => ({ arm: [X, Y, hx, hy], greatsword: [hx, hy, tx, ty] });
+  const gs2 = (hx, hy, tx, ty) => ({ arm: [X, Y, hx, hy], arm2: [OFF[0], OFF[1], hx, hy], greatsword: [hx, hy, tx, ty] });
+  const along = (hx, hy, tx, ty, n, c0, c1) => Array.from({ length: n }, (_, i) => { const t = (i + 1) / (n + 1); return a(Math.round(hx + (tx - hx) * t), Math.round(hy + (ty - hy) * t), i % 2 ? c1 : c0); });
+  const lights = c => [[4, 3, c], [5, 3, c]];
+  const GROUND = 9;   /* feet, in shoulder rows */
+  /* T1 REND: the blade held ACROSS his chest, the point behind him at the shoulder (the rear fist forward) - a backhand cleave cocked tight; two beats, the edge wetting */
+  F.rendWind = [K({ dx: -1, legs: 'wide', ...gs2(X + 2, Y, X - 14, Y - 3), plume: 1, bits: [a(X - 13, Y - 3, DRED)] }),
+    K({ dx: -1, dy: 1, legs: 'wide', ...gs2(X + 2, Y + 1, X - 15, Y - 4), plume: 2, bits: [a(X - 14, Y - 4, RED), a(X - 9, Y - 2, DRED), ...lights(PINK)] })];
+  F.rend = [K({ dx: -2, dy: 1, legs: 'wide', ...gs2(X + 2, Y + 1, X - 15, Y - 4), plume: 1, bits: [a(X - 14, Y - 4, RED), a(X - 9, Y - 2, PINK)] }),
+    K({ wide: 12, dx: 2, legs: 'runC', ...gs(X + 5, Y - 1, X + 22, Y - 2), plume: 2, bits: [a(X + 22, Y - 2, WHT), a(X + 18, Y - 1, HOT), a(X + 13, Y - 1, PINK), a(X + 8, Y, RED), a(X + 5, Y + 2, DRED)] }),
+    K({ wide: 8, dx: 3, dy: 1, legs: 'wide', ...gs(X + 6, Y - 3, X + 16, Y - 14), plume: 0, bits: [a(X + 16, Y - 14, HOT), a(X + 14, Y - 11, PINK), a(X + 11, Y - 8, RED), a(X + 18, Y - 8, DRED), a(X + 20, Y - 5, RED)] })];
+  /* T2 SUNDER: the greatsword straight up over his head in both fists, set wide and low under it - trembling; the weight of it */
+  F.sunderWind = [K({ dy: 1, legs: 'wide', sho: 1, ...gs2(X + 1, Y - 6, X + 1, Y - 24), plume: 2, bits: [...along(X + 1, Y - 6, X + 1, Y - 24, 2, DRED, RED)] }),
+    K({ dy: 2, legs: 'wide', sho: 1, hy: 1, ...gs2(X, Y - 5, X - 1, Y - 24), plume: 1, bits: [...lights(PINK), ...along(X, Y - 5, X - 1, Y - 24, 3, RED, PINK), a(X - 1, Y - 25, HOT)] })];
+  F.sunder = [K({ dx: -1, dy: 1, legs: 'wide', sho: 1, ...gs2(X - 1, Y - 7, X - 8, Y - 24), plume: 1, bits: [...lights(PINK), ...along(X - 1, Y - 7, X - 8, Y - 24, 3, RED, PINK)] }),
+    K({ wide: 8, dx: 2, dy: 1, legs: 'wide', sho: 1, ...gs2(X + 4, Y - 1, X + 14, Y + 8), plume: 2, bits: [a(X + 14, Y + 8, WHT), a(X + 13, Y + 6, HOT), a(X + 11, Y + 5, PINK), a(X + 8, Y + 2, RED)] }),
+    K({ wide: 10, dx: 2, dy: 2, legs: 'wide', ...gs2(X + 5, Y + 1, X + 17, Y + 7), plume: 0, bits: [a(X + 16, Y + GROUND, BLK), a(X + 19, Y + GROUND, BLK), a(X + 13, Y + GROUND, DRED), a(X + 21, Y + GROUND - 1, DRED), a(X + 18, Y + GROUND - 3, RED), a(X + 20, Y + GROUND - 4, PINK), a(X + 15, Y + GROUND - 3, PINK), a(X + 22, Y + GROUND - 6, RED), a(X + 12, Y + GROUND - 2, RED)] })];
+  /* T3 CRIMSON CRESCENT: wound round behind him - the blade low and laid right back with the red gathering in an arc on the edge; the strike + follow-through are THE CRESCENT CLEAVE (reaperRhythmPoses) */
+  F.crescentWind = [K({ dx: -2, legs: 'wide', ...gs2(X - 2, Y - 2, X - 18, Y - 9), plume: 1, bits: [a(X - 18, Y - 9, RED), a(X - 14, Y - 11, DRED), a(X - 10, Y - 11, PINK)] }),
+    K({ dx: -3, dy: 1, legs: 'wide', sho: 1, ...gs2(X - 3, Y - 4, X - 19, Y - 12), plume: 2, bits: [...lights(PINK), a(X - 19, Y - 12, HOT), a(X - 15, Y - 14, PINK), a(X - 11, Y - 14, RED), a(X - 8, Y - 12, PINK), a(X - 6, Y - 9, DRED)] })];
+  /* T4 EXSANGUINATE: dropped low, the greatsword drawn back level along the flank and the point to the rear like a spear cocked to throw, the blood already running to the hands */
+  F.exsWind = [K({ dx: -2, dy: 2, legs: 'wide', ...gs2(X - 1, Y + 3, X - 14, Y + 3), plume: 1, bits: [a(X - 14, Y + 3, RED), ...along(X - 1, Y + 3, X - 14, Y + 3, 3, DRED, RED)] }),
+    K({ dx: -3, dy: 3, legs: 'crouch', legsDy: 2, sho: 1, hy: 1, ...gs2(X - 2, Y + 4, X - 15, Y + 4), plume: 2, bits: [...lights(HOT), a(X - 15, Y + 4, WHT), ...along(X - 2, Y + 4, X - 15, Y + 4, 4, RED, PINK), a(X - 6, Y + 6, RED)] })];
+  F.exsanguinate = [K({ dx: -3, dy: 3, legs: 'crouch', legsDy: 2, hy: 1, ...gs2(X - 2, Y + 4, X - 15, Y + 4), plume: 2, bits: [...lights(HOT), ...along(X - 2, Y + 4, X - 15, Y + 4, 4, RED, PINK)] }),
+    K({ wide: 14, dx: 5, dy: 1, legs: 'runC', ...gs2(X + 6, Y + 1, X + 27, Y), plume: 2, bits: [a(X + 27, Y, WHT), a(X + 23, Y, HOT), a(X + 18, Y + 1, PINK), a(X + 12, Y + 1, RED), a(X + 5, Y + 3, DRED)] }),
+    K({ wide: 14, dx: 4, dy: 2, legs: 'wide', ...gs2(X + 6, Y + 2, X + 26, Y + 1), plume: 0, bits: [a(X + 26, Y + 1, WHT), a(X + 27, Y + 4, RED), a(X + 27, Y + 7, DRED), a(X + 25, Y + 9, RED), a(X + 22, Y + 1, HOT), a(X + 17, Y + 2, PINK), a(X + 12, Y + 2, RED), a(X + 8, Y + 3, PINK), a(X + 5, Y + 4, DRED)] })];
+  /* T5 BLOOD MOON: stretched up onto his toes, arms locked straight up and the greatsword over him with a red moon of motes gathering round the point */
+  const moon = (n, c1, c2) => Array.from({ length: n }, (_, i) => { const an = i / n * Math.PI * 2; return a(Math.round(X + 1 + Math.cos(an) * 5), Math.round(Y - 27 + Math.sin(an) * 4), i % 2 ? c1 : c2); });
+  F.moonWind = [K({ dy: -1, legs: 'wide', sho: 1, hy: -1, ...gs2(X + 1, Y - 8, X + 1, Y - 26), plume: 2, bits: [...lights(PINK), ...moon(5, RED, DRED)] }),
+    K({ dy: -2, legs: 'stand', sho: 1, hy: -1, ...gs2(X + 1, Y - 9, X, Y - 27), plume: 1, bits: [...lights(HOT), ...moon(8, PINK, RED), a(X, Y - 28, WHT)] }),
+    K({ dy: -1, legs: 'wide', sho: 1, hy: -1, ...gs2(X + 1, Y - 8, X + 1, Y - 26), plume: 0, bits: [...lights(HOT), ...moon(8, HOT, PINK), a(X + 1, Y - 27, WHT), a(X + 6, Y - 22, RED), a(X - 4, Y - 22, RED)] })];
+  const geyser = (r, col) => { const o = []; for (const sx of [-1, 1]) for (let k = 1; k <= 4; k++) for (let j = 0; j < r - k; j++) o.push(a(X + 8 + sx * k * 5, Y + GROUND - j, j > r - k - 2 ? PINK : (j % 2 ? RED : col))); return o; };
+  F.bloodMoon = [K({ dy: -2, legs: 'wide', sho: 1, hy: -1, ...gs2(X, Y - 9, X - 4, Y - 26), plume: 2, bits: [...lights(HOT), ...moon(8, HOT, PINK).map(([x, y, c]) => [x - 4, y + 1, c]), a(X - 4, Y - 27, WHT)] }),
+    K({ wide: 6, dx: 2, dy: 2, legs: 'wide', ...gs2(X + 4, Y - 1, X + 9, Y + 9), plume: 1, bits: [a(X + 9, Y + 9, WHT), a(X + 9, Y + 6, HOT), a(X + 8, Y + 3, PINK), a(X + 6, Y + 1, RED)] }),
+    K({ wide: 14, dx: 2, dy: 2, legs: 'wide', ...gs2(X + 5, Y + 2, X + 9, Y + 9), plume: 0, bits: [...lights(HOT), ...geyser(11, DRED), a(X + 9, Y + GROUND, WHT), a(X + 8, Y + GROUND - 1, HOT), a(X + 10, Y + GROUND - 1, HOT), a(X + 13, Y + GROUND - 10, RED), a(X + 3, Y + GROUND - 11, PINK)] })];
+  /* BLOOD SPIKE (the low parry, on the beat): kneeling behind the planted blade, the blow turned - crimson spikes come up out of the ground round it, short and then full height */
+  const spikes = (h, cols) => { const o = []; for (const [dx0, hh] of [[-9, 0.6], [-5, 1], [-1, 0.5], [3, 0.8], [8, 1], [12, 0.7], [16, 0.5]]) { const H = Math.max(2, Math.round(h * hh)); for (let j = 0; j < H; j++) { o.push(a(X + dx0, Y + 9 - j, j >= H - 1 ? HOT : cols[j % 2])); if (j < H - 2) o.push(a(X + dx0 + 1, Y + 9 - j, j < H - 3 ? DRED : cols[0])); } } return o; };
+  const kn = (o = {}) => K({ dy: 3, legs: 'kneel', hy: 1, ...gs(X + 4, Y - 3, X + 6, Y + 6), arm2: [OFF[0], OFF[1], X + 4, Y - 3], greatsword: [X + 5, Y - 7, X + 6, Y + 6], plume: 1, ...o });
+  F.bloodSpike = [kn({ dx: -1, bits: [...lights(PINK), ...spikes(5, [DRED, RED])] }),
+    kn({ dx: -1, sho: 1, hy: 2, plume: 2, bits: [...lights(HOT), ...spikes(11, [RED, PINK]), a(X + 6, Y + 8, HOT)] })];
+  /* BLOOD PRICE (DOWN+C): on one knee, the greatsword laid across his knee in the right fist and the LEFT PALM drawn along the flat of the edge - the blood opens, runs down the steel, drips */
+  const lay = (o = {}) => K({ dy: 3, legs: 'kneel', hy: 1, arm: [X, Y, X + 1, Y + 3], greatsword: [X + 1, Y + 3, X + 18, Y + 4], plume: 1, ...o });
+  F.price = [lay({ arm2: [OFF[0], OFF[1], X + 5, Y + 2], bits: [a(X + 6, Y + 3, DRED), ...lights(PINK)] }),
+    lay({ sho: 1, arm2: [OFF[0], OFF[1], X + 11, Y + 2], bits: [...lights(PINK), ...along(X + 5, Y + 4, X + 12, Y + 4, 4, RED, PINK), a(X + 12, Y + 3, HOT), a(X + 10, Y + 8, RED), a(X + 7, Y + 9, DRED)] }),
+    lay({ hy: 2, arm2: [OFF[0], OFF[1], X + 16, Y + 2], bits: [...lights(HOT), ...along(X + 3, Y + 4, X + 18, Y + 4, 7, RED, PINK), a(X + 18, Y + 4, WHT), a(X + 16, Y + 8, RED), a(X + 12, Y + 9, PINK), a(X + 9, Y + 8, RED), a(X + 15, Y + 11, DRED)] })];
+}
 /* THE DEATH KNIGHT'S DEATH MAGIC IN THE AIR (claude/dkfeel, Daniel 10-16; B16: its own windup + release pose, not the shared knight up-cut and not a straight column):
    THE REAPING RISE (up + attack in the air): the greatsword swept back and low behind his heel; HAULED up through the front in a reaping crescent with a grave-green
    flame licking off the steel and soul wisps rising behind it; held straight up over his helm in both fists, the point to the sky, the green flaring; then let go behind him.
@@ -2870,7 +2924,7 @@ function reaperRhythmPoses(F, sh, atkOnly = false) {
    the second beat is the point about to bite (the glow white-hot), the spikes of the grave burst (main.js graveFall) already lifting under it. */
 function reaperGravePoses(F, sh) {
   const top = ATTACK_HEADROOM, [X, Y] = sh, K = o => knightFrame({ top, ...o });
-  const a = (x, y, col) => [x - BX, y - BY, col], GRN = '#4fe08a', DGRN = '#1f7a44', LGRN = '#b8ffd0', BONE = '#d8ccb0', DBONE = '#8a7a5a', RED = '#c0283a', PINK = '#ff6b6b';
+  const a = (x, y, col) => [x - BX, y - BY, col], GRN = '#ff4a5a', DGRN = '#7a1020', LGRN = '#ffb0b8', BONE = '#ffd0d0', DBONE = '#5a0a18', RED = '#c0283a', PINK = '#ff6b6b';   /* (claude/bloodknight) CRIMSON, not necrotic green; blood, not bone (the names stay so the frames below read as they did) */
   const gs = (hx, hy, tx, ty) => ({ arm: [X, Y, hx, hy], greatsword: [hx, hy, tx, ty] });
   const along = (hx, hy, tx, ty, n, c0, c1) => Array.from({ length: n }, (_, i) => { const t = (i + 1) / (n + 1); return a(Math.round(hx + (tx - hx) * t), Math.round(hy + (ty - hy) * t), i % 2 ? c1 : c0); });
   const hold = F.jump ? F.jump[1] || F.jump[0] : F.atk[4];
@@ -2983,7 +3037,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
      flares as it bites. Then he bows over it - the helm goes down, the shoulders come round it, the lights hang low - holds it,
      and straightens, the lights coming up again. Where his fidget leans on the blade with the lights gone OUT, this is the
      blade planted to be honoured: the lights are lit for all of it. */
-  { const lit = hy => [[4, 3 + hy, '#dfffc0'], [5, 3 + hy, '#dfffc0']];
+  { const lit = hy => [[4, 3 + hy, '#ffd0d0'], [5, 3 + hy, '#ffd0d0']];
     const grip = (dy, o = {}) => knightFrame({ dy, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 1], greatsword: [sh[0] + 3, sh[1] - 1, sh[0] + 4, sh[1] + 15 - dy], ...o });
     const turn = knightFrame({ arm: [sh[0], sh[1], sh[0] + 2, sh[1] + 1], greatsword: [sh[0] + 2, sh[1] + 2, sh[0] + 10, sh[1] - 8], plume: 1 });
     const lift = knightFrame({ legs: 'wide', dy: -1, arm: [sh[0], sh[1], sh[0] + 3, sh[1] - 4], greatsword: [sh[0] + 3, sh[1] - 4, sh[0] + 4, sh[1] + 11], plume: 2, bits: lit(0) });
@@ -2996,21 +3050,21 @@ export function bakeReaper(skin = {}, previewOnly = false) {
      shoulder, turned slowly in both fists to read the other edge, the point brought round and set; the helm turns to look each way
      with the lights flaring on the look. dance3 = THE REAPING, a boss down: the greatsword swung up behind him and brought round
      in one wide low cut that nobody is left to meet, then driven point-down with the green in the helm blazing, held, and let burn down. */
-  { const lit = (hy, c = '#dfffc0') => [[4, 3 + hy, c], [5, 3 + hy, c]];
+  { const lit = (hy, c = '#ffd0d0') => [[4, 3 + hy, c], [5, 3 + hy, c]];
     const g = (hx, hy2, tx, ty, o = {}) => knightFrame({ arm: [sh[0], sh[1], sh[0] + hx, sh[1] + hy2], greatsword: [sh[0] + hx, sh[1] + hy2, sh[0] + tx, sh[1] + ty], ...o });
     const shoulder = g(1, -2, -6, -9, { legs: 'wide', dx: -1, plume: 1, bits: lit(0) });
     const read1 = g(2, -2, 8, -6, { plume: 2, bits: lit(0) }), read2 = g(2, -2, 9, 1, { plume: 1, bits: lit(0) }), read3 = g(2, -1, 7, 6, { plume: 2, bits: lit(0) });
     const setP = g(3, -1, 4, 14, { dy: 1, legs: 'wide', plume: 2, bits: lit(0) });
     const look = (hy, c) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: lit(hy, c) });
     F.dance2 = holdFrames([[knightFrame({ greatsword: [sh[0] + 1, sh[1] + 2, sh[0] + 4, sh[1] + 12], arm: [sh[0], sh[1], sh[0] + 1, sh[1] + 2], plume: 1 }), 2], [shoulder, 4], [read1, 2], [read2, 2], [read3, 2], [read2, 2], [read1, 2], [shoulder, 3],
-      [g(2, -1, 8, -2, { legs: 'wide', plume: 2, bits: lit(0) }), 3], [setP, 3], [look(0, '#dfffc0'), 3], [look(1, '#ffffff'), 2], [look(0, '#7fd06a'), 3], [look(-1, '#ffffff'), 2], [look(0, '#dfffc0'), 3], [F.idle[7], 2]]);
+      [g(2, -1, 8, -2, { legs: 'wide', plume: 2, bits: lit(0) }), 3], [setP, 3], [look(0, '#ffd0d0'), 3], [look(1, '#ffffff'), 2], [look(0, '#ff4a5a'), 3], [look(-1, '#ffffff'), 2], [look(0, '#ffd0d0'), 3], [F.idle[7], 2]]);
     const back = g(-1, -3, -8, -9, { legs: 'wide', dx: -2, plume: 1, bits: lit(0) });
     const top = g(2, -4, 4, -9, { legs: 'wide', dy: -1, sho: 1, plume: 2, bits: lit(0, '#ffffff') });
     const cutA = g(4, 0, 11, 4, { legs: 'runC', dx: 1, plume: 2, bits: lit(0) }), cutB = g(5, 3, 11, 12, { legs: 'runC', dx: 2, dy: 1, plume: 2, bits: lit(1) });
     const drive = g(3, 1, 4, 15, { dy: 1, legs: 'wide', plume: 2, bits: [...lit(0, '#ffffff'), [10, 15, '#8a7a5a'], [14, 15, '#8a7a5a'], [9, 14, '#5a4e38'], [15, 14, '#5a4e38'], [8, 15, '#5a4e38'], [16, 15, '#5a4e38']] });
-    const blaze = (c, hy = 0) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: [...lit(hy, c), [3, 3 + hy, '#7fd06a'], [6, 3 + hy, '#7fd06a'], [4, 2 + hy, '#7fd06a'], [5, 2 + hy, '#7fd06a']] });
+    const blaze = (c, hy = 0) => g(3, -1, 4, 14, { dy: 1, hy, plume: 1, bits: [...lit(hy, c), [3, 3 + hy, '#ff4a5a'], [6, 3 + hy, '#ff4a5a'], [4, 2 + hy, '#ff4a5a'], [5, 2 + hy, '#ff4a5a']] });
     F.dance3 = holdFrames([[F.idle[7], 1], [back, 3], [top, 3], [cutA, 2], [cutB, 2], [g(5, 4, 11, 13, { legs: 'wide', dx: 2, dy: 1, plume: 2, bits: lit(1) }), 2], [back, 2], [top, 2], [cutA, 1], [cutB, 2], [drive, 3],
-      [blaze('#ffffff'), 3], [blaze('#dfffc0', 1), 3], [blaze('#7fd06a', 1), 3], [blaze('#dfffc0'), 2], [F.idle[7], 2]]); }
+      [blaze('#ffffff'), 3], [blaze('#ffd0d0', 1), 3], [blaze('#ff4a5a', 1), 3], [blaze('#ffd0d0'), 2], [F.idle[7], 2]]); }
   /* FOLLOW-THROUGH (heroanim lane, 2026-10-10): the two frames a light strike plays inside its existing recovery (main.js recPose branch; the beat table
      is at the top of src/attack-animation.js). A = the weapon spent, carried on low past the target, body one pixel forward, plume still flying;
      B = it coming back to guard, the weight settling. Art only: atkRec is read, never written. */
@@ -3031,6 +3085,7 @@ export function bakeReaper(skin = {}, previewOnly = false) {
   directionalPoses(F, 'greatsword', { scale: 1.22 });
   reaperKitPoses(F, sh);
   reaperGravePoses(F, sh);   /* (claude/dkfeel) the up-air reaping rise and the Cull plunge: death magic */
+  reaperBloodPoses(F, sh);   /* (claude/bloodknightart) the five tiers, blood spike, blood price */
   reaperRhythmPoses(F, sh);   /* (claude/dk2art) the rhythm, the kneel, the price held and the crescent: their own bodies */
   smearPass(F, SMEAR_COL.crimson);   /* the strike beats get their arc (claude/herokeys; the Death Knight's is crimson, claude/dk2art) */
   const R = F, L = {}; for (const k in F) L[k] = mirror(F[k]);

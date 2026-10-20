@@ -1,5 +1,5 @@
 // src/crouch-hint.js - THE FIRST-CROUCH HINT (claude/crouchfix, Daniel 2026-10-11): the first time each hero crouches (per save slot: PROG.crouchFirst[hero])
-// one short line names THEIR twist. The twists are in src/crouch-a.js (knight, warden, freebooter), src/crouch-b.js (paladin, geomancer, death knight),
+// one short line names THEIR twist. The twists are in src/crouch-a.js (knight, warden, freebooter), src/crouch-b.js (paladin, geomancer; the blood knight's low guard + BLOOD SPIKE is main.js dkKneelTakes),
 // src/crouch-c.js (berserker) and src/ember-ward.js (pyromancer); the lines are one table here (FIRST) so tools/textfit.mjs reads them all.
 // It goes through the game's hint box and its toast queue like every other hint, and WAITS for the box to be quiet: the marsh already stacks two toasts
 // in its first seconds, and a third must come after them, not cut in (main.js hands in quiet() - no hint showing, none waiting). A hero who has
@@ -11,12 +11,12 @@ export const FIRST = {
   paladin: 'KNEEL BY A HOLY LIGHT TO FILL YOUR LIGHT.',
   pyro: 'HOLD DOWN TO FLARE.',
   geomancer: 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.',
-  reaper: 'HOLD DOWN OVER A BODY TO DRAW ITS BLOOD.',
+  reaper: 'DOWN: A LOW GUARD. KNEEL AS IT LANDS: BLOOD SPIKE.',   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
   berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',
   ranger: 'HOLD DOWN AND TAP C: A SNARE AT YOUR FEET.',   /* (claude/ranger) */
 };
 /* the flags the twists' own teaching lines leave: a hero who has one has been told */
-const TOLD = { knight: 'crouchTold_knight', warden: 'crouchTold_warden', pirate: 'crouchTold_pirate', paladin: 'kneelTold', geomancer: 'senseTold', reaper: 'harvestTold', berserker: 'pounceTold' };   /* (claude/berserker2: his crouch is THE COIL now; WORKING UP moved to his idle whetstone, workTold) */
+const TOLD = { knight: 'crouchTold_knight', warden: 'crouchTold_warden', pirate: 'crouchTold_pirate', paladin: 'kneelTold', geomancer: 'senseTold', reaper: 'spikeTold', berserker: 'pounceTold' };   /* (claude/berserker2: his crouch is THE COIL now; WORKING UP moved to his idle whetstone, workTold) */
 export const SETTLE = 0.2;   // down and stood this long before it counts as a crouch (a drop-through or a stumble is not)
 export const GIVE_UP = 12;   // a hint waiting longer than this goes into the queue anyway
 

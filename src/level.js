@@ -3651,15 +3651,16 @@ function trialYard(hero) {
       ['tells', 2, 'ONE YELLOW ! : ROLL THROUGH IT. TWO RED !! : ROLL THROUGH OR GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
       DASH, RISE, SWEEP, SKILL],
     reaper: [
-      ['hit', 3, 'REAPER\'S RHYTHM: X. A RISING CUT, A HOOK, A DRAG THAT DRINKS. HIT THREE.', [['dummy', 16], ['dummy', 20]], 'X'],
-      ['third', 2, 'THE DRAG: X THREE TIMES. THE THIRD COMES DOWN HEAVY AND DRINKS BACK. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
-      ['heavyblow', 2, 'BLOOD PRICE: HOLD X: THE BLADE DRINKS (SHOWN, NOT TAKEN). LET GO: THE CRESCENT. LAND TWO.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
-      ['kneel', 2, 'GRAVE KNEEL: HOLD DOWN. THE PLANTED BLADE TURNS A LOW BLOW, NOT A HIGH ONE. TURN TWO.', [['waterthief', 18]], 'HOLD DOWN'],
+      ['hit', 3, 'REAPER\'S RHYTHM: X. A RISING CUT, A HOOK, A HEAVY DRAG. HIT THREE.', [['dummy', 16], ['dummy', 20]], 'X'],
+      ['third', 2, 'THE DRAG: X THREE TIMES. THE THIRD COMES DOWN HEAVY. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
+      ['heavyblow', 2, 'THE FIVE TIERS: HOLD X AND LET GO AS THE BLADE GLOWS. LONGER IS HEAVIER. LAND TWO.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
+      ['price', 1, 'BLOOD PRICE: DOWN+C. HEALTH GOES ON THE BAR AS DEBT (SHOWN, NOT TAKEN). LAND BLOWS TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'DOWN+LB'],   /* (claude/bloodknight) */
+      ['kneel', 2, 'THE LOW GUARD: HOLD DOWN. THE PLANTED BLADE TURNS A LOW BLOW. KNEEL AS IT LANDS: BLOOD SPIKE. TWO.', [['waterthief', 18]], 'HOLD DOWN'],   /* (claude/bloodknight: any low blow turned counts; on the beat it is BLOOD SPIKE) */
       REAPER_C.ward,
       ['dodge', 2, 'THE SHADOW-STEP: TAP A WAY TWICE, OR V. HE GOES AS A SHADE AND LEAVES HIS WAKE. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE RETURN: HOLD C, LET GO AS HIS SWORD FLASHES WHITE: THE BLOW IS THROWN BACK. TWICE.', [['swornsword', 18]], 'HOLD LB, LET GO AS IT FLASHES'],   /* (claude/foepass) HIS YARD TEACHES HIS PARRY, THE WARD-RELEASE (scratch/brief-bloodknight-1017.md 1: it taught the roll) */
       ['tells', 2, 'ONE YELLOW ! CAN BE TURNED OR ROLLED. TWO RED !! CANNOT BE TURNED: GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
-      ['pogo', 2, 'THE CULL: JUMP, THEN DOWN+X. A SHADE TEARS OUT AND FIGHTS FOR HIM. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
+      ['pogo', 2, 'THE BLOOD BURST: JUMP, THEN DOWN+X. BLOOD TEARS OUT OF WHAT HE LANDS ON. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],
       DASH, RISE, SWEEP, REAPER_C.meter, SKILL_G],
     pirate: [
       ['hit', 3, 'THE CUTLASS: X AND KEEP GOING, A RUN OF FIVE. HIT THE STRAW MAN THREE TIMES.', [['dummy', 18]], 'X'],
@@ -7814,7 +7815,7 @@ export const LEVELS = [
   { id: 'trial_pyro', name: "THE PYROMANCER'S TRIAL", sub: 'ember, jet and heat', build: () => trialYard('pyro'), hidden: true },
   { id: 'trial_paladin', name: "THE PALADIN'S TRIAL", sub: 'maul, aegis and light', build: () => trialYard('paladin'), hidden: true },
   { id: 'trial_pirate', name: "THE FREEBOOTER'S TRIAL", sub: 'cutlass, pistol and hook', build: () => trialYard('pirate'), hidden: true },
-  { id: 'trial_reaper', name: "THE DEATH KNIGHT'S TRIAL", sub: 'greatsword, grave and bone', build: () => trialYard('reaper'), hidden: true },
+  { id: 'trial_reaper', name: "THE BLOOD KNIGHT'S TRIAL", sub: 'greatsword and blood', build: () => trialYard('reaper'), hidden: true },
   { id: 'shopCrag', name: 'THE HIGH STORE', sub: 'ask the keeper', build: theShopCrag, hidden: true },
   { id: 'shopSea', name: 'THE CHANDLER', sub: 'ask the keeper', build: theShopSea, hidden: true },
   { id: 'deep', name: 'THE DEEP', sub: 'the trench the tribute went into', rule: 'YOU ARE TOO LIGHT TO BE DOWN HERE.', build: theDeep, needs: 'lamplit' },

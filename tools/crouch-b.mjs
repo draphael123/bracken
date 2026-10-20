@@ -1,5 +1,5 @@
 // tools/crouch-b.mjs — PER-HERO CROUCH TWISTS, PART B (claude/crouchb): the paladin's KNEEL IN PRAYER, the geomancer's EARTH SENSE and
-// the death knight's BLOOD HARVEST (src/crouch-b.js), each the universal duck plus a twist. On flat Stockade floor, with the hero held
+// the blood knight's crouch (src/crouch-b.js), each the universal duck plus a twist (claude/bloodknight: HIS HARVEST IS GONE - Daniel 10-17, crouch option 1). On flat Stockade floor, with the hero held
 // where he stands, this fails when:
 //   - THE PALADIN (claude/crouchfix: AT A HOLY LIGHT ONLY, src/crouch-b.js HOLY - the test lays a brazier at his feet): down held there does not pray
 //     (after KNEEL.settle), his LIGHT does not fill at KNEEL.rate a second, or it fills with no holy light within HOLY.R (a brazier five tiles off, a tipped
@@ -9,18 +9,18 @@
 //   - THE GEOMANCER: down held does not show a buried dead man inside SENSE.R (and one outside it is shown), it wakes or hurts him (a
 //     sense is information only), it does not show a breakable wall inside SENSE.R, something is shown while she stands, what she found
 //     is gone before SENSE.after has run or still there well after it, or the pose is not her sense
-//   - THE DEATH KNIGHT: crouched over the body of what he killed he gets no HARVEST.hp health and HARVEST.blood BLOOD by HARVEST.time
-//     (or gets it early), the body gives twice, a body a stride away is drawn, a draw broken off part way still pays, the pose is not his
-//     harvest, or he is not EXPOSED while he draws (a low swipe finds him; his blood ward is not up)
+//   - THE BLOOD KNIGHT (claude/bloodknight): crouched over the body of what he killed he gets ANY health or blood (the harvest is gone), he is
+//     drawn drawing from it, his crouch is not the duck (DUCK_H) in his kneel pose, his ward comes up, or a low swipe that is no 'low' tell
+//     does not find him (his low guard turns only told low blows - tools/dk2.mjs, tools/blood-kit.mjs)
 //   - THE BOT (src/lab.js crouchBPlan): calm with his light low the paladin does not kneel (or kneels with a foe three tiles off), calm
-//     the geomancer does not look, or the death knight does not walk to a body three tiles off and draw it
+//     the geomancer does not look, or the blood knight walks to a body (he draws none now)
 //   - OTHER HEROES: the knight, the warden and the pyromancer pray, sense or harvest anything, or no longer duck / walk on down + a way
 //   - the page throws
 //   node tools/crouch-b.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 import { DUCK_H } from '../src/duck.js';
-import { KNEEL, SENSE, HARVEST } from '../src/crouch-b.js';
+import { KNEEL, SENSE } from '../src/crouch-b.js';
 import { HG } from '../src/holy-ground.js';   /* (claude/paladin4) PRAYER: anywhere at KNEEL.rate, x HG.pray.holyMul by a holy light */
 
 const bad = [];
@@ -104,7 +104,7 @@ try {
       const kill = dx => { const [f] = BK.spawnFoe({ t: 'sprig', x: spot[0] + dx, y: spot[1], face: -1 }); f.hp = 1; BK.combat2().strike(f, 'light', 99); BK.sim(20); return f; };
       const f1 = kill(0.2); r.killed = !f1.alive; r.bodies = C().bodies.length;
       P.harvest = 0; P.hp = P.maxHp - 30; const hp0 = P.hp;
-      K.down = true; for (let k = 0; k < Math.round(${HARVEST.time} * 60) - 6; k++) { hold(); BK.sim(1); } r.early = { hp: P.hp - hp0, blood: P.harvest, drawing: C().drawing };
+      K.down = true; for (let k = 0; k < 30; k++) { hold(); BK.sim(1); } r.early = { hp: P.hp - hp0, blood: P.harvest, drawing: C().drawing };
       BK.step(1); r.pose = P.lastKey; r.warding = !!P.warding; r.box = box();
       for (let k = 0; k < 14; k++) { hold(); BK.sim(1); } r.got = { hp: P.hp - hp0, blood: Math.round(P.harvest), harvests: C().stats.harvests };
       for (let k = 0; k < 60; k++) { hold(); BK.sim(1); } r.twice = { hp: P.hp - hp0, harvests: C().stats.harvests, bodies: C().bodies.length };
@@ -189,20 +189,15 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
   if (R.geoHigh.lost > 0 || !(R.geoHigh.ducked > 0)) bad.push(`geomancer: the armour's high swing did not go over her sensing (lost ${R.geoHigh.lost})`);
   // ---- THE DEATH KNIGHT ----
   const D = R.dk;
-  if (!D.killed || !(D.bodies > 0)) bad.push(`death knight: the sprig he killed left no body (${D.bodies})`);
-  if (D.early.hp > 0 || D.early.blood > 0) bad.push(`death knight: the body paid before ${HARVEST.time} s: ${JSON.stringify(D.early)}`);
-  if (!D.early.drawing) bad.push('death knight: crouched over the body he was not drawing from it');
-  if (D.pose !== 'harvest') bad.push(`death knight: drawing, he is drawn as '${D.pose}', not his harvest`);
-  if (D.warding) bad.push('death knight: his blood ward was up while he drew');
-  if (D.box !== DUCK_H) bad.push(`death knight: the harvest is not the duck (hurt box ${D.box})`);
-  if (D.got.hp !== HARVEST.hp || D.got.blood !== HARVEST.blood || D.got.harvests !== 1) bad.push(`death knight: the harvest gave ${JSON.stringify(D.got)} (want +${HARVEST.hp} health, ${HARVEST.blood} blood, once)`);
-  if (D.twice.hp !== HARVEST.hp || D.twice.harvests !== 1) bad.push(`death knight: the body gave twice: ${JSON.stringify(D.twice)}`);
-  if (D.far.hp !== 0 || D.far.harvests !== 1) bad.push(`death knight: a body two tiles off was drawn: ${JSON.stringify(D.far)}`);
-  if (D.broken.hp !== 0 || D.broken.harvests !== 0 || !(D.broken.brokenCount > 0)) bad.push(`death knight: a draw broken off (0.4 s, stood, 0.4 s) paid: ${JSON.stringify(D.broken)}`);
-  if (D.resumed.hp !== HARVEST.hp || D.resumed.harvests !== 1) bad.push(`death knight: kept down after, the body never gave: ${JSON.stringify(D.resumed)}`);
+  if (!D.killed || !(D.bodies > 0)) bad.push(`blood knight: the sprig he killed left no body (${D.bodies})`);
+  if (D.early.hp > 0 || D.early.blood > 0 || D.early.drawing) bad.push(`blood knight: crouched over a body it paid him or he drew from it (the harvest is gone): ${JSON.stringify(D.early)}`);
+  if (D.pose !== 'graveKneel') bad.push(`blood knight: crouched, he is drawn as '${D.pose}', not his kneel`);
+  if (D.warding) bad.push('blood knight: his blood ward was up while he crouched');
+  if (D.box !== DUCK_H) bad.push(`blood knight: the crouch is not the duck (hurt box ${D.box})`);
+  if (D.got.hp !== 0 || D.got.harvests !== 0 || D.twice.hp !== 0 || D.resumed.hp !== 0 || D.broken.hp !== 0) bad.push(`blood knight: a body gave him something: ${JSON.stringify({ got: D.got, twice: D.twice, broken: D.broken, resumed: D.resumed })}`);
   const DL = R.dkLow;
-  if (DL.err) bad.push(DL.err); else { if (!(DL.lost > 0)) bad.push('death knight: a low swipe did not find him crouched (he must be exposed)'); if (DL.wardUp) bad.push('death knight: a guard came up while he crouched'); }
-  if (R.dkHigh.lost > 0 || !(R.dkHigh.ducked > 0)) bad.push(`death knight: the armour's high swing did not go over him crouched (lost ${R.dkHigh.lost})`);
+  if (DL.err) bad.push(DL.err); else { if (!(DL.lost > 0)) bad.push('blood knight: a low swipe did not find him crouched (he must be exposed to an untold one)'); if (DL.wardUp) bad.push('death knight: a guard came up while he crouched'); }
+  if (R.dkHigh.lost > 0 || !(R.dkHigh.ducked > 0)) bad.push(`blood knight: the armour's high swing did not go over him crouched (lost ${R.dkHigh.lost})`);
   // ---- THE BOT ----
   const Bt = R.bot;
   if (!(Bt.pal.planned > 60) || !(Bt.pal.light > 50)) bad.push(`bot: calm with his light low, the paladin did not kneel for it: ${JSON.stringify(Bt.pal)}`);
@@ -210,7 +205,7 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
   if (!(Bt.palNone.light > 10) || !(Bt.palNone.planned > 0)) bad.push(`bot: with no holy light near, calm and low, the paladin did not PRAY where he stood (claude/paladin4: prayer works anywhere now - a design change, stated; was: he must not kneel): ${JSON.stringify(Bt.palNone)}`);
   if (Bt.palNear.planned > 0) bad.push(`bot: the paladin knelt with a topiary three tiles off: ${JSON.stringify(Bt.palNear)}`);
   if (!(Bt.geo.senses > 0)) bad.push(`bot: calm, the geomancer did not look: ${JSON.stringify(Bt.geo)}`);
-  if (!(Bt.dk.harvests > 0) || !(Bt.dk.walked > 20)) bad.push(`bot: the death knight did not walk to the body three tiles off and draw it: ${JSON.stringify(Bt.dk)}`);
+  if (Bt.dk.planned > 0 || Math.abs(Bt.dk.walked) > 4) bad.push(`bot: the blood knight walked to a body (he draws none now): ${JSON.stringify(Bt.dk)}`);
   // ---- OTHER HEROES ----
   for (const o of R.others) {
     if (o.light || o.kneelT || o.senseT || o.harvT || o.seen || o.stats.found || o.stats.harvests || o.stats.lightGiven) bad.push(`${o.h}: a crouch twist ran: ${JSON.stringify(o)}`);
@@ -220,4 +215,4 @@ if (!(Math.abs(rate - HOLYRATE) < 2)) bad.push(`paladin: his light filled ${rate
   }
 }
 assert.deepEqual(bad, [], 'the crouch twists (part B):\n  ' + bad.join('\n  '));
-console.log('the crouch twists hold: the paladin PRAYS anywhere (a pip every 2.5 s, three times as fast by a holy light), exposed to a low blow that breaks it; the geomancer\'s sense shows a buried dead man and a breakable wall inside six tiles and nothing outside, wakes nothing and lingers its after-glow; the death knight draws 7 health and 12 blood from a body in 0.6 s, once, and a broken draw pays nothing; each is still the duck, and the knight, the warden and the pyromancer are untouched');
+console.log('the crouch twists hold: the paladin PRAYS anywhere (a pip every 2.5 s, three times as fast by a holy light), exposed to a low blow that breaks it; the geomancer\'s sense shows a buried dead man and a breakable wall inside six tiles and nothing outside, wakes nothing and lingers its after-glow; the blood knight draws nothing from the dead (his harvest is gone); each is still the duck, and the knight, the warden and the pyromancer are untouched');

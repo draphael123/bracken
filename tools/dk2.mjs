@@ -3,7 +3,8 @@
 //   - REAPER'S RHYTHM is not the Paladin's pace (src/commit.js artRate = DK2.rhythm.rate 0.56; claude/dkfeel, was ~35% quicker than the old 0.34), a swing in the page takes as long
 //     as it did, the HOOK (the 2nd cut) does not pull a straw man a step toward him, the DRAG (the 3rd) gives back no health, or a landed
 //     chain does not FEED THE BLOOD WARD (P.wardG) - or feeds it to full
-//   - THE BLOOD PRICE: holding X does not cost DK2.price.pct of his max health every DK2.price.every s, it can take his last point (floored
+//   (claude/bloodknight: THE BLOOD PRICE held on X, its crescent and its drink-back are gone - X held is THE FIVE-TIER HEAVY and the drag drinks
+//   nothing: BLOOD DEBT is his one sustain. tools/blood-kit.mjs checks all of that. What this checked was:) THE BLOOD PRICE: holding X does not cost DK2.price.pct of his max health every DK2.price.every s, it can take his last point (floored
 //     at 1: HE NEVER KILLS HIMSELF), it does not go by itself after the last price is held, the crescent is not HEAVY, or its box is not
 //     bigger than a rhythm cut's
 //   - THE CRESCENT that lands does not DRAIN BACK double what he paid; one that hits nothing gives nothing back
@@ -15,7 +16,7 @@
 //   node tools/dk2.mjs            (PORT from tools/ports.mjs, or PORT=)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
-import { DK2, priceOf } from '../src/dk2.js';
+import { DK2 } from '../src/dk2.js';
 import { artRate } from '../src/commit.js';
 
 const bad = [];
@@ -44,22 +45,10 @@ try {
     /* 1. THE RHYTHM: a swing, timed */
     place(); BK.keys.atk = true; BK.press('atk'); BK.sim(1); BK.keys.atk = false; let n = 0; while (P().atk >= 0 && n < 200) { BK.sim(1); n++; } out.swingS = +(n / 60).toFixed(3);
     /* the chain on a straw man two tiles off: hook, drag, ward fed */
-    place(); const dm = dummy(2); const x0 = dm.x; P().wardG = 0; const s0 = D().stats(); let hp0 = (P().hp = P().maxHp - 30);
+    place(); const dm = dummy(2); const x0 = dm.x; P().wardG = 0; const s0 = D().stats(); let hp0 = (P().hp = P().maxHp - 30); P().bd = 0; P().bdLast = P().hp;   /* (claude/bloodknight: set, not struck - no BLOOD DEBT) */
     for (let i = 0; i < 9; i++) { BK.keys.atk = true; BK.press('atk'); BK.sim(2); BK.keys.atk = false; let k = 0; while ((P().atk >= 0 || P().atkRec > 0) && k < 120) { BK.sim(1); k++; } }
     const s1 = D().stats(); out.chain = { hooks: s1.hooks - s0.hooks, drags: s1.drags - s0.drags, feeds: s1.feeds - s0.feeds, pulled: +(x0 - dm.x).toFixed(1), healed: P().hp - hp0, wardG: +D().wardG().toFixed(1), wardCap: D().wardCap() };
     dm.alive = false;
-    /* 2. THE BLOOD PRICE, held: what it costs, and that it goes by itself */
-    place(); hp0 = P().hp; BK.keys.atk = true; const seen = []; let fired = -1;
-    for (let i = 0; i < 60 * 6 && fired < 0; i++) { BK.sim(1); seen.push(P().hp); if (P().heavy && P().atk >= 0) fired = i; }
-    BK.keys.atk = false; out.price = { paidHp: hp0 - Math.min(...seen), firedAt: +(fired / 60).toFixed(2), cleave: D().stats().cleave, heavy: !!P().heavy };
-    let bigBox = 0; for (let k = 0; k < 90; k++) { const b = D().box(); if (b) bigBox = Math.max(bigBox, b.r - b.l); BK.sim(1); } out.price.crescentW = bigBox;
-    /* floored at one */
-    place(); P().hp = 3; BK.keys.atk = true; let lo = 99; for (let i = 0; i < 60 * 5; i++) { BK.sim(1); lo = Math.min(lo, P().hp); if (P().heavy) break; } BK.keys.atk = false; out.floor = lo; secs(2);
-    /* 3. THE CRESCENT drains back (a straw man in reach) - and nothing back off the empty air */
-    place(); P().hp = P().maxHp - 40; const dm2 = dummy(2); BK.keys.atk = true; for (let i = 0; i < 60 * 3 && !(P().dkPaidN >= 3); i++) BK.sim(1); const hpPaid = P().hp, paid = P().dkPaid; BK.keys.atk = false; secs(2.2);
-    out.drain = { paid, back: P().hp - hpPaid, landed: !!(D().stats().cleave || {}).landed }; dm2.alive = false;
-    place(); BK.keys.atk = true; for (let i = 0; i < 60 * 3 && !(P().dkPaidN >= 3); i++) BK.sim(1); const hpPaid2 = P().hp, paid2 = P().dkPaid; BK.keys.atk = false; secs(2.2);
-    out.air = { paid: paid2, back: P().hp - hpPaid2 };
     /* 4. GRAVE KNEEL */
     place(); BK.keys.down = true; BK.sim(20); out.kneel = { ducking: !!P().ducking };
     const foe = k => ({ t: 'kneeltest', alive: true, x: 0, y: P().y, toldK: k, toldAt: -99, blowMode: 'go', mode: 'go' });
@@ -72,8 +61,8 @@ try {
     D().kill(br);
     BK.sim(2); const body = D().bodies[D().bodies.length - 1], cor = D().corpses.find(c => c.dkHeld === body);
     for (const e of D().enemies) if (e.alive) e.alive = false;
-    out.linger = { body: !!body, held: !!cor }; secs(30); out.linger.after30 = { body: D().bodies.includes(body), corpse: D().corpses.includes(cor) };
-    secs(DK2_BODY - 30 + 2); out.linger.gone = { body: D().bodies.includes(body), corpse: D().corpses.includes(cor) };
+    out.linger = { body: !!body, held: !!cor }; secs(15); out.linger.after30 = { body: D().bodies.includes(body), corpse: D().corpses.includes(cor) };
+    secs(DK2_BODY - 15 + 2); out.linger.gone = { body: D().bodies.includes(body), corpse: D().corpses.includes(cor) };
     /* the knight's dead go as they always did */
     setUp('knight'); place(); const n1 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x + 2, y: spot.y }); const br2 = D().enemies[n1]; br2.x = P().x + 40; br2.y = P().y;
     D().kill(br2); BK.sim(2); const kc = D().corpses[D().corpses.length - 1]; secs(6); out.knightCorpse = { held: !!(kc && kc.dkHeld), after6: D().corpses.includes(kc), bodies: D().bodies.length };
@@ -82,15 +71,8 @@ try {
   if (R.err) bad.push(R.err); else {
     ok(R.swingS < 0.72, 'a rhythm swing takes ' + R.swingS + ' s (the old one 0.88 + its recovery)');
     ok(R.chain.hooks >= 1 && R.chain.pulled > 4, 'the HOOK did not pull the straw man: ' + JSON.stringify(R.chain));
-    ok(R.chain.drags >= 1 && R.chain.healed > 0, 'the DRAG gave back nothing: ' + JSON.stringify(R.chain));
+    ok(R.chain.drags >= 1 && R.chain.healed <= 0, 'the DRAG still drinks (claude/bloodknight: BLOOD DEBT is his one sustain, and he had no debt): ' + JSON.stringify(R.chain));
     ok(R.chain.feeds >= 3 && R.chain.wardG > 0 && R.chain.wardG <= R.chain.wardCap * DK2.rhythm.wardTop + 0.01, 'the chain did not feed the ward (or fed it past ' + DK2.rhythm.wardTop + '): ' + JSON.stringify(R.chain));
-    const each = priceOf(95);
-    ok(R.price.paidHp >= each * (DK2.price.ticks - 1) && R.price.paidHp <= each * DK2.price.ticks + 1, 'the held price is ' + R.price.paidHp + ' hp (want ~' + each * DK2.price.ticks + ')');
-    ok(R.price.firedAt > 0 && R.price.cleave && R.price.cleave.n === DK2.price.ticks && R.price.heavy, 'held to the last price, the crescent did not go by itself: ' + JSON.stringify(R.price));
-    ok(R.price.crescentW >= DK2.price.reach, 'the crescent box is ' + R.price.crescentW + ' px wide');
-    ok(R.floor >= 1, 'the blood price took his last point: hp ' + R.floor);
-    ok(R.drain.landed && R.drain.back >= R.drain.paid * DK2.price.back - 2, 'a landed crescent drained back ' + R.drain.back + ' for ' + R.drain.paid + ' paid');
-    ok(R.air.paid > 0 && R.air.back <= 1, 'a crescent into the air gave back ' + R.air.back);
     ok(R.kneel.ducking, 'down held did not kneel');
     ok(R.kneel.lowFront.r === 'blocked' && R.kneel.lowFront.took === 0, 'GRAVE KNEEL did not turn a low blow from the front: ' + JSON.stringify(R.kneel.lowFront));
     ok(R.kneel.flag.r === 'blocked', 'GRAVE KNEEL did not turn a blow flagged low: ' + JSON.stringify(R.kneel.flag));
@@ -104,4 +86,4 @@ try {
   ok(pg.errors.length === 0, 'page errors: ' + pg.errors.slice(0, 3).join(' | '));
 } finally { pg.close(); }
 if (bad.length) { console.error('FAIL\n- ' + bad.join('\n- ')); process.exit(1); }
-console.log('dk2: the rhythm, the blood price, the crescent\'s drain, the grave kneel and the lingering dead all hold');
+console.log('dk2: the rhythm, the hook, the ward fed, the low guard and the dead (24 s) all hold');

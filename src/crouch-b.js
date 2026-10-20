@@ -14,7 +14,8 @@
 //     mound, a lurker, a pumpkin, an assassin in his shadow, a breakable wall - within SENSE.R px (eight tiles), outlined and
 //     pulsing for as long as she stays down and SENSE.after s after. A pulse sounds when something new is found. No damage and
 //     no waking: only knowing.
-//   THE DEATH KNIGHT - BLOOD HARVEST: down over a body (the ones his kills leave lying, main.js leaveBody: a body lies 24 s), and
+//   (claude/bloodknight, Daniel 10-17 crouch option 1: THE BLOOD KNIGHT's BLOOD HARVEST IS GONE - the dead linger as normal and his crouch is the low
+//   block, with BLOOD SPIKE on the beat, src/main.js dkKneelTakes. What it was:) THE DEATH KNIGHT - BLOOD HARVEST: down over a body (the ones his kills leave lying, main.js leaveBody: a body lies 24 s), and
 //     after HARVEST.time s he draws HARVEST.hp health and HARVEST.blood BLOOD (his harvest bar) out of it. A body gives once.
 //     Red motes run from it into him while he draws, a wet sound, and a gulp at the end.
 // Every other hero is untouched (the ember ward is the pyromancer's, src/ember-ward.js). main.js binds it (makeCrouchB) and calls:
@@ -43,13 +44,7 @@ export const SENSE = {
   after: 1.5,         // what she found stays outlined this long after she stands
   settle: 0.12,       // down this long before the earth answers (a duck under an arrow is not a look)
 };
-export const HARVEST = {
-  time: 0.6,          // down over the body this long
-  hp: 7,              // health drawn out of it
-  blood: 12,          // BLOOD (P.harvest) drawn out of it - a kill gives 7, a marked kill 16
-  reachX: 14,         // the body must be this close under him...
-  reachUp: 20, reachDown: 6,   // ...and lying at his feet (a flyer's body left in the air cannot be reached)
-};
+/* (claude/bloodknight) HARVEST is gone with the harvest (it was: 0.6 s over a body for 7 health and 12 blood) */
 /* WHAT HIDES: a common foe in a mode that keeps it out of sight - under the dirt (the buried dead, the husk), under a mound (the sand
    goblin and the sand-cloak, whose state is e.st), shut or tucked away (the mimic's lid, the pumpkin, the feeler, the lurker, the
    chimney sweep gone up his flue), or in the shadows (the assassin, the gar under the water). Bosses keep their own tells */
@@ -59,7 +54,6 @@ export const hiding = e => !!(e && e.alive && !e.maxHp && !e.mini && HIDERS.has(
 const TEACH = {
   paladin: ['kneelTold', 'PRAYER: HOLD DOWN AND STAY STILL. CONVICTION COMES - THREE TIMES AS FAST BY A SHRINE OR A FLAME.'],
   geomancer: ['senseTold', 'EARTH SENSE: HOLD DOWN, AND WHAT HIDES IN THE GROUND NEAR YOU SHOWS ITSELF.'],
-  reaper: ['harvestTold', 'BLOOD HARVEST: CROUCH OVER A BODY. IT GIVES UP HEALTH AND BLOOD, ONCE.'],
 };
 
 export function makeCrouchB(api) {
@@ -118,39 +112,19 @@ export function makeCrouchB(api) {
   const wallDist = (w, p) => { const TS = api.TS, l = w.x0 * TS, r = (w.x1 + 1) * TS, t = w.y0 * TS, b = (w.y1 + 1) * TS, y = p.y - 6;
     return Math.hypot(p.x < l ? l - p.x : p.x > r ? p.x - r : 0, y < t ? t - y : y > b ? y - b : 0); };
 
-  /* ---- THE DEATH KNIGHT: BLOOD HARVEST ---- */
-  const bodyUnder = p => { let best = null, bd = 1e9; for (const b of api.bodies) { if (b.drained || !(b.life > 0)) continue; const dx = Math.abs(b.x - p.x), dy = b.y - p.y;
-    if (dx <= HARVEST.reachX && dy >= -HARVEST.reachUp && dy <= HARVEST.reachDown && dx < bd) { bd = dx; best = b; } } return best; };
-  function harvest(dt, p) {
-    const b = p.ducking && !p.dead ? bodyUnder(p) : null;
-    if (!b || (p.harvBody && p.harvBody !== b)) { if (p.harvT > 0.08 && p.harvBody && !p.harvBody.drained) stats.harvestBroken++; p.harvT = 0; p.harvBody = null;
-      if (!p.ducking && !p.dead && api.bodies.some(q => !q.drained && q.life > 0 && Math.abs(q.x - p.x) < 60 && Math.abs(q.y - p.y) < 30)) teach('reaper');
-      if (!b) return; }
-    if (!p.harvBody) { p.harvBody = b; p.harvT = 0; api.SFX.bloodDraw(); }
-    p.harvT += dt;
-    if (Math.random() < dt * 40) { const k = Math.random(); addParts({ x: b.x + (Math.random() - 0.5) * 10, y: b.y - 2, vx: (p.x - b.x) * 2 + (Math.random() - 0.5) * 10, vy: -40 - k * 40, life: 0.4, max: 0.4, col: k < 0.5 ? '#c0283a' : '#ff4a5a', size: 1, grav: 60 }); }
-    if (p.harvT >= HARVEST.time) {   /* DRAWN: the body gives up what it had, and is empty */
-      b.drained = true; b.life = Math.min(b.life, 0.6); p.harvT = 0; p.harvBody = null;
-      const hp0 = p.hp; p.hp = Math.min(p.maxHp, p.hp + HARVEST.hp); const got = p.hp - hp0;
-      const was = (p.harvest || 0) >= 100; p.harvest = Math.min(100, (p.harvest || 0) + HARVEST.blood); if (!was && p.harvest >= 100) api.meterReady('#c0283a');
-      stats.harvests++; stats.hpGiven += got; stats.bloodGiven += HARVEST.blood;
-      api.SFX.bloodHarvest(); api.number(p.x, p.y - 24, got > 0 ? '+' + got : 'BLOOD', '#ff6b6b'); api.ringAt(b.x, b.y - 3, 12, '#c0283a', 0.3);
-      api.burst(b.x, b.y - 3, 8, ['#c0283a', '#7a1020', '#ff4a5a'], 50, 0.45, -30, 1);
-    }
-  }
-
   /* EVERY FRAME, right after the duck is known (main.js updatePlayer) */
   function update(dt) {
     const p = P(), h = api.hero();
     for (const [k, t] of seen) if (t <= api.time || (k.alive === false) || k.broken || (k.alive !== undefined && !hiding(k))) seen.delete(k);   /* a creature that has come up is plain to see */
-    if (h === 'paladin') kneel(dt, p); else if (h === 'geomancer') sense(dt, p); else if (h === 'reaper') harvest(dt, p);
+    if (h === 'paladin') kneel(dt, p); else if (h === 'geomancer') sense(dt, p);
   }
   /* HIS POSE while it works: [key, frame] or null (the plain crouch) */
   function pose(R) { const p = P(), h = api.hero(); if (!p.ducking) return null;
     if (h === 'paladin' && R.pray && p.kneelT >= KNEEL.settle) return ['pray', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];   /* (claude/paladin4art) PRAYER's own pose: both hands clasped on the haft, a halo over the bowed helm */
     if (h === 'paladin' && R.kneel && p.kneelT >= KNEEL.settle) return ['kneel', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];
     if (h === 'geomancer' && R.sense && p.senseT >= SENSE.settle) return ['sense', Math.floor(p.senseT * 3) % 2];
-    if (h === 'reaper' && R.harvest && p.harvBody) return ['harvest', p.harvT > HARVEST.time * 0.5 ? 1 : 0];
+    if (h === 'reaper' && R.price && api.time - (p.bkPriceAt ?? -9) < 0.5) { const el = api.time - p.bkPriceAt; return ['price', el < 0.14 ? 0 : el < 0.3 ? 1 : 2]; }   /* (claude/bloodknightart) BLOOD PRICE's own pose: the palm drawn along the blade, the blood running, the blade soaked */
+    if (h === 'reaper' && R.bloodSpike && api.time - (p.bkSpikeAt ?? -9) < 0.3) return ['bloodSpike', api.time - p.bkSpikeAt < 0.12 ? 0 : 1];   /* (claude/bloodknight) BLOOD SPIKE's own pose, once the art lane draws it (until then the kneel's third beat, below) */
     if (h === 'reaper' && R.graveKneel) return ['graveKneel', api.time - (p.dkKneelHit ?? -9) < 0.24 ? 2 : Math.floor(api.time * 1.6) % 2];   /* (claude/dk2art: the third beat - a low blow turned on the blade) */   /* (claude/dk2b) GRAVE KNEEL: the blade planted point-down in front of him (src/dk2.js) */
     return null; }
 
@@ -177,8 +151,6 @@ export function makeCrouchB(api) {
       g.fillStyle = '#ffc860'; for (const [qx, qy] of [[l, top], [r - 2, top], [l, b - 2], [r - 2, b - 2]]) g.fillRect(qx, qy, 2, 2);   /* the four corners picked out */
       g.globalAlpha = a * 0.18; g.fillStyle = '#e8a83a'; g.fillRect(l + 1, top + 1, r - l - 2, b - top - 2);
       g.globalAlpha = 1; }
-    if (h === 'reaper' && p.harvBody) { const b = p.harvBody, k = Math.min(1, p.harvT / HARVEST.time), x = Math.round(b.x - cx), y = Math.round(b.y - cy) - 3;   /* the draw, filling round the body */
-      g.globalAlpha = 0.8; g.strokeStyle = '#c0283a'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, 7, -Math.PI / 2, -Math.PI / 2 + 6.283 * k); g.stroke(); g.globalAlpha = 1; }
   }
   function clear() { seen.clear(); P().holyLight = null; taughtIn = null; calmT = 0; }
   /* FOR THE TOOLS (BK.crouchB) */

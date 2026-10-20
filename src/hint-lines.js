@@ -56,7 +56,7 @@ export const CALL_LINES = new Set([
   /* claude/weight: the bar hit 0 - EXHAUSTED (src/commit.js): no roll and no guard until it is back to 30% */
   'WINDED: NO ROLL, NO GUARD',
   /* claude/croucha + crouchb + weakboss (batch49): the crouch twists' feedback and the three reworked bosses' openings */
-  'GUARD BREAK', 'HOLDS', 'UNDER THE SHIELD', 'IMPALED', 'BLOOD', 'READY', 'STEADY',
+  'GUARD BREAK', 'HOLDS', 'UNDER THE SHIELD', 'IMPALED', 'READY', 'STEADY',
   'HE REACHES FOR YOUR LIGHT', 'FROM THE DARK', 'HOODING IT: STRIKE THE LAMP', 'HE LEAVES ONE BURNING', 'YOUR LIGHT IS OUT: RELIGHT IT AT A LAMP',
   'THE LAMP FLARES', 'BLIND: CUT HIM', 'YOUR LIGHT AGAIN', 'HIS FURROWS WAKE', 'THE SHARE IS IN THE FENCE: CUT HIM', 'THE SHARE IS IN THE TROUGH: CUT HIM',
   'THE FURROWS', 'AND AGAIN', 'MISSED: ITS JAR BREAKS', 'ITS JAR CRACKS: TWO TRICKS AT A TIME', 'IT IS IN THE SMOKE',
