@@ -40,3 +40,19 @@ Mash rows (docs/mash-bot.json): not re-stamped - mash-gate passes on the stamped
 1. Apply 2b now (2.4 / 3.0 / 3.0 + the rebases above)? REC yes, expecting a modest move: the dial is a weak lever on a walker hit 6-10 times a run.
 2. Q8 reading: bare-knight CEILING misses in acts III-V reported (built) vs listed on CURVE_REPORT_ONLY? REC as built.
 3. Fold the hit-frequency lever (encounter density / route-blocking share, acts III-V) into the act sweeps? REC yes; that is where the deaths target lives.
+
+---
+# STEP 2b APPLIED (Daniel approved all three recs 10-19 ~18:45)
+- ACTS.dmg III 2.4 / IV 3.0 / V 3.0 (hp 1.0 / 1.05 / 1.1, purse 3 in IV and V unchanged). Rebases scaled from the ORIGINAL values (no rounding drift): LEVEL_DMG causeway 0.8, church 0.7; towpath foeHit x0.467 (bargeman/riverrat 1.6, watchman 1.3, deckforeman 1.7, hedgechampion 0.8, bargechampion/ratchampion 1.7), ksar / buriedcity / sealedpyramid x0.517 (e.g. ksarblade 1.9, sanddrowned 2.8, jackal 2.3). Absolute blows held. combat-part2 asserts longwater x2.4 / redgorge x3.0. rule-state comment now records "this reading approved by Daniel 10-19".
+- WALK (n=2 x knight/warden/pyro, 160 runs, same exclusions), deaths a first run mean (median) / arrival:
+
+| act | target | before e0436ee8 | C2 after | 2a | **2b** |
+|---|---|---|---|---|---|
+| III | 1.5-2.5 / 55 | 0.1 / 84 | 0.1 / 77 | 0.1 / 76 | **0.1 (0) / 71** |
+| IV | 2-3 / 50 | 2.4 / 80 | 2.0 / 79 | 2.1 / 78 | **1.9 (0.7) / 78** |
+| V | 2.5-3.5 / 45 | 0.5 / 69 | 0.5 / 73 | 0.7 / 68 | **0.8 (0.5) / 68** |
+
+Median biggest common hit (% max hp) III 12 / V 13; damage taken per run (median %) III 119 / V 82; hits a run ~9 / ~6. As predicted, the dial moved arrival only in III (-5 pts) and not the death axis: the walker converts extra damage to flasks. Levels in the death band 0/9, 0/11, 0/7. Movers: caravan 1.5 -> 2.3 deaths, hurricane 54 -> 48%, lamplit 65 -> 56%, longwater 77 -> 69%, reef/harbor/underwell -5..-6 pts. The generic dial is now at its useful ceiling (typical common hit ~13-16% of a bar, cap 25%): the rest is hit frequency, which Daniel routed to the act III-V foe-pass sweeps (nothing built here).
+- COMMON_BLOW_CAP (25%) report on the 2b walk: no new real overs beyond the standing set (causeway sailor 32%, church swornsword 41% / gobmage 35% / haunt 27%, hurricane cutlass 30%, ksar cutthroat 27%, redgorge raptor 27%, fair mummer 42% (was 95%), witchlight hound 31% (n3)); the rest is the 27% hazard plateau. Church / causeway remain the level-level outliers for their own passes.
+- CURVE ROWS re-stamped (docs/level1-curve.json, all of acts III-V except towpath / glasssea, known hangs; the bare L1 knight moves with the dial): e.g. theatre 8 -> 14 deaths, witchlight 10 -> 16, fair 13 -> 18, church 16 -> 20, underwell 9 -> 13, fields 11 -> 13, ksar 13 -> 14, redgorge 3 -> 6, reef 2 -> 5; a few fell (sealedpyramid 15 -> 10, fallingtower 19 -> 13, causeway 8 -> 5 - run noise, 3 runs summed). Nine levels now sit over the bare-knight ceiling; per the approved Q8 reading they WARN (curve-gate exit 0), floors still gate. Mash rows unchanged (mash-gate passes; harder commons only make the mash bot fail more). Boss rows not re-measured (TIER_BOSS frozen; arena adds are common foes - C3/C4).
+- Checks after 2b: curve-shape, mash-gate, foe-pass (node), level-quality, combat-part2, curve-gate all green.
