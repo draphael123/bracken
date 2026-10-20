@@ -143,6 +143,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
+import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
 import { kitPose, kitPoseFrame, airPose, landPose, POSE_DASH } from './hero-poses.js';   /* EVERY ABILITY HAS A BODY: the pose an active plays while it fires */
@@ -2551,7 +2552,7 @@ function spawnEnt(e) {
         /* THE COMBINE (tower + gate): the hounds this horn wakes when it sounds, as offsets from him */
         pack: e.pack ? e.pack.map(p => ({ dx: p.dx * TS, y: (p.y + 1) * TS, t: p.t })) : null }); if (e.juggler) Object.assign(enemies[enemies.length - 1], { juggler: true, w: 10, h: 22 }); if (e.bandit) Object.assign(enemies[enemies.length - 1], { bandit: true, w: 10, h: 22 }); break;   /* THE KNIFE JUGGLER (the Harvest Fair, claude/fairfix2): the archer's draw and loose, a man's body, knives for arrows */
       case 'hopper': { const col = e.color || 'green'; enemies.push({ ...base, t: 'hopper', color: col, w: 8, h: 6, hp: HOP[col].hp, timer: 0.5 + Math.random(), air: false }); break; }
-      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0, wreck: !!e.wreck });   /* wreck (claude/caravan2): THE SUNKEN CARAVAN's half-buried wagon bed on the quicksand - it sinks under you like a pad and drops you into the sand at the bottom */ break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
+      case 'pad': { const pw = e.big ? 32 : 24; movers.push({ kind: 'pad', x0: px - pw / 2, x: px - pw / 2, y0: py - 2, y: py - 2, w: pw, h: 6, sink: 0, dx: 0, dy: 0, big: !!e.big, spring: !!e.spring && !e.big, cd: 0, fired: 0, wreck: !!e.wreck, firm: !!e.firm, lamp: !!e.lamp });   /* (claude/marsh3) firm: a pad that HOLDS (dips, never goes under); lamp: a firm pad with a marsh light over it (the night stretch) */   /* wreck (claude/caravan2): THE SUNKEN CARAVAN's half-buried wagon bed on the quicksand - it sinks under you like a pad and drops you into the sand at the bottom */ break; }   /* a BIG pad (big: true) is two tiles of footing and holds you longer: the rests of a crossing. A BUD pad (spring: true) throws you up a tier when you land on it (see the mover landing in updatePlayer) */
       case 'sapper': enemies.push({ ...base, t: 'sapper', w: 8, h: 12, hp: EHP.sapper, speed: 62, fuse: 0, fleeT: 0 }); break;
       case 'brute': enemies.push({ ...base, t: 'brute', w: 12, h: 16, hp: EHP.brute, speed: 20, mode: 'walk', modeT: 0 }); break;
       case 'cutlass': enemies.push({ ...base, t: 'cutlass', w: 10, h: 18, hp: EHP.cutlass, speed: 42, mode: 'walk', modeT: 0, cd: 0.8 }); break;
@@ -29314,7 +29315,7 @@ function updateMovers(dt) {
     if (m.pyr && PYH && PYH.mover(m, dt)) continue;   /* THE SEALED PYRAMID: a counterweight goes where its pair's weights send it (src/sealed-pyramid-hands.js) */   /* THE MASKWRIGHT'S THEATRE: a fly line's batten or sandbag */
     const oldX = m.x, oldY = m.y; m.dy = 0;
     if (m.kind === 'pad') { // sinks while stood on, floats back up when left
-      const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt)); if (m.slapT > 0) m.sink = 1;   /* (claude/marsh2) THE SLAP: the King's pads held under */   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
+      const on = P.onMover === m; m.sink = Math.max(0, Math.min(1, m.sink + (on ? (m.big ? 0.3 : 0.5) : -1.4) * dt)); if (m.firm && !(m.slapT > 0)) m.sink = Math.min(m.sink, 0.18); if (m.slapT > 0) m.sink = 1; m.padOn = on;   /* (claude/marsh3) a firm pad dips three pixels and holds */   /* (claude/marsh2) THE SLAP: the King's pads held under */   /* the big leaf goes under at six-tenths the pace: three seconds and a bit, against two */
       if (m.cd > 0) m.cd -= dt; if (m.fired > 0) m.fired -= dt;   /* a bud that has just thrown you is a plain pad for a second: land back on it and it sinks like any other */ m.y = m.y0 + m.sink * 16; m.dy = m.y - oldY;
       if (m.wreck && on && m.sink > 0.72) { P.onMover = null; P.ground = false; number(P.x, P.y - 24, 'THE BED GOES UNDER', '#e8d0a0'); }   /* (claude/caravan2) THE WAGON BED GOES UNDER: off it you are in the quicksand (jump, and keep jumping) */
       if (m.wreck && on && m.sink > 0.15 && Math.random() < dt * 8) parts.push({ x: m.x + Math.random() * m.w, y: m.y0 + 2, vx: 0, vy: -16, life: 0.35, max: 0.35, col: '#e2bb7a', size: 1, grav: 60 });   /* sand, not water, round a sinking bed */
@@ -30028,6 +30029,17 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
   if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style, world: !!g.__mapWorld });
   g.drawImage(st.c, x0 - st.pad, y0 - st.pad);
 }
+/* (claude/marsh3) A LILY PAD IS DRAWN ON THE WATER, NOT UNDER IT: the marsh's deep water lays its pale surface band over every mover (drawWater surface pass), and a
+   pad under it read as a green sliver. A pad that is up is drawn AFTER that pass (drawPadsAfloat); one going under (sink > 0.55) is drawn in the movers' pass, so the
+   surface closes over it. */
+function drawPadMover(m, cx, cy) {
+  if (m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2; LPD.drawPad(g, m, cx, cy, time, PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], -5);   /* (claude/marsh3) its water edge and the sinking tell, under the bud's own ring */
+      if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
+      }
+  else if (m.big) LPD.drawPad(g, m, cx, cy, time, LPD.bakePad(32, m.firm ? 'hold' : 'sink', m.sink > 0.55), -1, m.sink < 0.55 ? [PROP.lilyFlowerBig, 4, -7] : null);   /* (claude/marsh3) the readable pad: tint by what it does, rim, water edge, the tell */   /* every big pad is in flower: the bloom says REST before you are on it */
+  else LPD.drawPad(g, m, cx, cy, time, LPD.bakePad(24, m.firm ? 'hold' : 'sink', m.sink > 0.55), 0, Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55 ? [PROP.lilyFlower, 4, -5] : null);
+}
+function drawPadsAfloat(cx, cy) { for (const m of movers) if (m.kind === 'pad' && !m.wreck && m.sink <= 0.55 && m.x + m.w > cx - 16 && m.x < cx + VW + 16) drawPadMover(m, cx, cy); }
 /* A WORLD LABEL ON ITS OWN DARK PLATE, CENTRED BOTH WAYS (claude/marsh3): the plate is sized from the string's INK (stampOf: w x h), padded 6 a side and 3 above and
    below, and the words are put in its middle - the CALL RAFT box drew 62 x 12 by hand with the words' TOP at its middle row, so they hung out of the bottom and one
    pixel right. tools/textfit.mjs 'worldplates' measures it (OFFCENTRE). midX is the plate's centre column, top its top row. */
@@ -31248,11 +31260,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (m.kind === 'pushblock') { const bx = Math.round(m.x) - cx, by = Math.round(m.y) - cy;   /* a block of the level's own ground tile (backlog #12): it is baked fresh per palette (bakeAll), so it always matches the set it stands in, with a mortar line round it so it still reads as a loose object and not the floor */
       g.drawImage(TILE.dirt[0], bx, by); g.strokeStyle = 'rgba(20,16,12,0.55)'; g.lineWidth = 1; g.strokeRect(bx + 0.5, by + 0.5, m.w - 1, m.h - 1); g.strokeStyle = 'rgba(255,255,255,0.12)'; g.strokeRect(bx + 1.5, by + 1.5, m.w - 3, m.h - 3); continue; }
     if (m.kind === 'pad' && m.wreck) { cvWreckBed(m, cx, cy); continue; }   /* (claude/caravan2) THE SUNKEN CARAVAN's half-buried wagon bed */
-    if (m.kind === 'pad' && m.spring) { const x = Math.round(m.x) - cx, t = (time + m.x0 * 0.013) % 2.2;
-      if (t < 0.8 && m.sink < 0.55 && !(m.cd > 0)) { const k = t / 0.8; g.globalAlpha = 0.6 * (1 - k); g.strokeStyle = '#dff7c8'; g.lineWidth = 1; g.beginPath(); g.ellipse(x + 12.5, Math.round(m.y0) - cy + 4.5, 12 + k * 14, 2.5 + k * 3, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the ripple every couple of seconds: the bud is breathing, and you can see it from three pads off */
-      g.drawImage(PROP.padSpring[m.sink > 0.55 ? 2 : m.cd > 0 ? 1 : 0], x, Math.round(m.y) - 5 - cy); }
-    else if (m.kind === 'pad' && m.big) { g.drawImage(PROP.padBig[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - 1 - cy); if (m.sink < 0.55) g.drawImage(PROP.lilyFlowerBig, Math.round(m.x) + 4 - cx, Math.round(m.y) - 7 - cy); }   /* every big pad is in flower: the bloom says REST before you are on it */
-    else if (m.kind === 'pad') { g.drawImage(PROP.pad[m.sink > 0.55 ? 1 : 0], Math.round(m.x) - cx, Math.round(m.y) - cy); if (Math.round(m.x0 / TS) % 3 === 0 && m.sink < 0.55) g.drawImage(PROP.lilyFlower, Math.round(m.x) + 4 - cx, Math.round(m.y) - 5 - cy); }
+    if (m.kind === 'pad') { if (m.sink > 0.55) drawPadMover(m, cx, cy); continue; }   /* (claude/marsh3) up pads are drawn on the water, after its surface (drawPadsAfloat) */
     else if (m.kind === 'cart') { if (!m.gone) g.drawImage(PROP.mineCart[Math.abs(m.vx) > 20 ? Math.floor(time * 12) % 2 : 0], Math.round(m.x) - 1 - cx, Math.round(m.y) - 4 - cy); }
     else if (m.kind === 'orelift') { g.fillStyle = '#8b8378'; g.fillRect(Math.round(m.x) + 2 - cx, 0, 2, Math.round(m.y) - cy); g.fillRect(Math.round(m.x) + 60 - cx, 0, 2, Math.round(m.y) - cy); g.drawImage(PROP.orePan, Math.round(m.x) - cx, Math.round(m.y) - 3 - cy); }
     else if (m.kind === 'lift' && m.batten) { if (PUPH) PUPH.drawBatten(m, cx, cy); }   /* THE PUPPETEER's batten */
@@ -32317,7 +32325,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawPadsAfloat(cx, cy); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }
