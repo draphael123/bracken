@@ -4,7 +4,7 @@
    exam and the King's court slide right by N (src/level.js grow). Every number below is a column you can find on the map (AT_COL + dx).
      A. THE REED RUN (dx 0-81)    a raft on the CURRENT (main.js stepCurrentRaft: board her and the water takes her, no pole, no crank) through a maze of REED STANDS
                                   standing up out of the channel - low ones you step over, tall ones you hop onto and off - with frogs climbing aboard out of the water,
-                                  a heron on a tall stand, a spitter on a reed tuft over the run and a bowman on a stilt lookout at its end. Shrine on the far bank.
+                                  a frog on a tall stand, a spitter on a reed tuft over the run and a bowman on a stilt lookout at its end. Shrine on the far bank.
      B. THE BOOM (dx 82-151)      a second current raft, and a LOG BOOM across her water (a T.PORT column at her row: she stops at its face). Step over the boom onto a
                                   CHAIN OF PADS - the firm ones (cool green) and the sinking ones (yellow) - to the boom's LEVER on a stilt deck; strike it, hop back,
                                   and ride her on over the open water the pads never cross. The exam: a thorn on the narrow far bank as she docks. Shrine after it.
@@ -15,7 +15,7 @@
 export const AT_COL = 444, N = 226;
 export const SECTIONS = { reedrun: [0, 81], boom: [82, 151], night: [152, 225] };
 export const REED_STANDS = [[16, 18], [26, 17], [36, 18], [37, 18], [47, 17], [57, 18], [66, 17]];   /* [dx, top row]: a SOLID column from the bed up to `top` (18 low: a step; 17 tall: a hop) */
-export const BOOM = { dx: 108, rows: [18, 21], lever: [127, 15] };
+export const BOOM = { dx: 108, rows: [18, 21], lever: [127, 16] };
 export const NIGHT_PADS = [[158, 'L', 1], [161, 's'], [164, 's'], [167, 'L'], [170, 's'], [173, 's'], [176, 's'], [180, 'L', 1], [188, 's'], [191, 'L'], [194, 's'], [197, 's'],
   [200, 'L', 1], [204, 's'], [207, 's'], [210, 'L'], [213, 's'], [216, 'L', 1]];   /* [dx, L = firm with a marsh light / s = sinks, big] */
 export const NIGHT_DARK = 0.74;
@@ -33,22 +33,22 @@ export function applyMarsh3(M, T, TS, grow) {
   ent('sign', X(2), 17, { text: 'THE REED RUN. BOARD THE RAFT AND THE CURRENT TAKES HER: HOP THE REED STANDS IN HER WAY.' });
   water(6, 75);
   for (const [dx, top] of REED_STANDS) block(X(dx), X(dx), top, 21);
-  movers.push({ kind: 'raft', current: true, x0: X(6) * TS, x1: X(76) * TS - 96, x: X(6) * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 30, frogs: true, frogMax: 2, frogEvery: 3.4 });
+  movers.push({ kind: 'raft', current: true, x0: X(6) * TS, x1: X(76) * TS - 96, x: X(6) * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 34, frogs: true, frogMax: 2, frogEvery: 3.4 });
   reeds(X(30), 13, 2); reeds(X(52), 13, 2); reeds(X(41), 10, 2);   /* the high road: reed tufts over the run (a spitter on the first; the silver over the middle one) */
-  foe('spit', 30, 12); foe('heronfoe', 47, 16); ent('silver', X(41), 9);
+  foe('spit', 30, 12); foe('hopper', 47, 16, { color: 'yellow' });   /* a frog on the tall stand: it leaps aboard as she comes (a heron standing there shoved every hero off the back) */ ent('silver', X(41), 9);
   plank(70, 74, 12); foe('archer', 72, 11);   /* the bowman's stilt lookout at the run's end: he looses at the raft as she comes in */
   coins([X(16), 15], [X(26), 14], [X(31), 11], [X(36), 15], [X(47), 13], [X(53), 11], [X(57), 15], [X(66), 14]);
   bank(76, 85);
   ent('check', X(79), 17);
   /* ---- B. THE BOOM ---- */
-  ent('sign', X(83), 17, { text: 'A LOG BOOM BARS THE WATER. STEP OVER IT, HOP THE PADS TO ITS LEVER AND STRIKE IT. THEN RIDE ON.' });
+  ent('sign', X(83), 17, { text: 'A LOG BOOM STOPS THE RAFT. HOP THE PADS TO ITS LEVER, STRIKE IT, THEN RIDE ON.' });
   water(86, 145);
-  movers.push({ kind: 'raft', current: true, x0: X(86) * TS, x1: X(146) * TS - 96, x: X(86) * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 28, frogs: true, frogMax: 1, frogEvery: 4 });
+  movers.push({ kind: 'raft', current: true, x0: X(86) * TS, x1: X(146) * TS - 96, x: X(86) * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 32, frogs: true, frogMax: 1, frogEvery: 4 });
   for (let y = BOOM.rows[0]; y <= BOOM.rows[1]; y++) set(X(BOOM.dx), y, T.PORT);   /* the boom: sunk logs from the bed to her row (drawn as the marsh's gate, src/barriers.js 'sunklogs') */
   for (const [dx, kind, big] of [[111, 's'], [114, 'L'], [117, 's'], [120, 'L', 1], [124, 'L']]) ent('pad', X(dx), 18, { firm: kind === 'L', big: !!big });
-  plank(126, 128, 16);   /* the lever's stilt deck: three rows over the water, the raft passes under it */
+  plank(126, 128, 17);   /* the lever's stilt deck: two rows over the water (a hop off a pad); the raft passes through under it - a one-way board does not stop a rider */
   ent('lever', X(BOOM.lever[0]), BOOM.lever[1], { openColumn: [X(BOOM.dx), BOOM.rows[0], BOOM.rows[1]], say: 'THE BOOM SWINGS OPEN' });
-  foe('wasp', 118, 14, { pogo: true }); foe('spit', 128, 15);
+  reeds(X(115), 14, 2); foe('wasp', 119, 13, { pogo: true }); foe('spit', 115, 13);   /* the spitter lobs onto the pad chain from a reed tuft over it (on the lever's deck it knocked every hero back into the water) */
   coins([X(111), 16], [X(117), 16], [X(127), 13], [X(136), 15], [X(140), 15]);
   bank(146, 155);
   foe('thorn', 147, 17);   /* THE EXAM: on the narrow bank she docks at, the water at your back */
@@ -57,9 +57,9 @@ export function applyMarsh3(M, T, TS, grow) {
   ent('sign', X(153), 17, { text: 'NIGHT ON THE WATER. A MARSH LIGHT STANDS OVER EVERY PAD THAT HOLDS. THE DARK ONES SINK.' });
   water(156, 219);
   for (const [dx, kind, big] of NIGHT_PADS) ent('pad', X(dx), 18, kind === 'L' ? { firm: true, lamp: true, big: !!big } : { big: !!big });
-  reeds(X(184), 16, 2);   /* a reed bed halfway: a rest, with a spitter on it */
+  reeds(X(184), 16, 2); reeds(X(187), 12, 2);   /* a reed bed halfway: a rest; a spitter lobs at it from a tuft over the water beyond (on the bed itself it shoved every hero back in) */
   for (const dx of [171, 195, 213]) foe('eel', dx, 20, { leap: true });
-  foe('spit', 185, 15); foe('wasp', 203, 13, { pogo: true });
+  foe('spit', 187, 11); foe('wasp', 203, 13, { pogo: true });
   coins([X(164), 16], [X(176), 16], [X(184), 14], [X(197), 16], [X(207), 16]);
   bank(220, 225);
   foe('turtle', 221, 17); ent('check', X(223), 17);

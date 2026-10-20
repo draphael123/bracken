@@ -75,6 +75,11 @@ export const STUCK = {
     { id: 'ms-vine-1', zone: [244, 4, 262, 20], at: [260, 13], glint: 'stall', line: 'A VINE HANGS OVER THE WATER: IT IS THE WAY ACROSS' },
     { id: 'ms-vine-2', zone: [277, 4, 295, 20], at: [293, 13], glint: 'stall', line: 'THE NEXT VINE HANGS OVER THE WATER' },
     { id: 'ms-grove-raft', zone: [372, 10, 392, 22], ats: [[391, 17], [390, 17]], glint: 'stall', done: ['sluice', 390, 17, 'open'], line: 'THE GROVE CRANK AND THE SLUICE: ONE OF THEM IS THE WAY' },
+    /* (claude/marsh3, src/marsh3.js) THE REED RUN's raft, THE BOOM's lever (and back to the raft), THE NIGHT PADS' lights */
+    { id: 'ms-reedrun', zone: [441, 10, 452, 22], at: [452, 17], glint: 'stall', line: 'STEP ON THE RAFT: THE CURRENT CARRIES HER' },
+    { id: 'ms-boom', zone: [528, 8, 575, 22], at: [571, 16], glint: 'stall', done: ['lever', 571, 16, 'on'], line: 'THE LEVER ON THE DECK PAST THE PADS OPENS THE BOOM: STRIKE IT' },
+    { id: 'ms-boom-back', zone: [553, 8, 575, 22], when: ['lever', 571, 16, 'on'], at: [551, 17], glint: 'stall', line: 'THE BOOM IS OPEN: BACK TO THE RAFT, SHE CARRIES YOU ON' },
+    { id: 'ms-night', zone: [596, 8, 612, 22], at: [602, 17], line: 'THE PADS WITH A MARSH LIGHT HOLD. WAIT ON THOSE' },
   ],
   /* (claude/stuckguides) SPORE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   spore: [
