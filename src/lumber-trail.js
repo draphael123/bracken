@@ -181,7 +181,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   coins([420, 11], [424, 11]); coins([424, 22], [425, 22], [426, 22], [427, 22]);   /* the tarn's bed: a woodsman's lost purse - a deep dive for it costs you */
   block(429, 441, 13, 27);
   ent('badger', 432, 12, { face: -1, cnSkin: 'boar' }); ent('sprig', 438, 12, { face: -1 });   /* the boar charges back along the trunk: a hit throws you the way he runs, over the water you just crossed */
-  coins([435, 11], [438, 11]);
+  coins([435, 11], [438, 11]); deck(434, 10, 3);   /* (claude/oldtusker) a woodsmen's log crib on the far bank: the second height the clearing's old comb perches gave (level-quality bands) */
   /* THE HELM PIT: shields on stumps over a thorn bed - plunge the helm, land behind, cut */
   sign(440, 12, 'SHIELD GOBLINS HIDE BEHIND IRON. PLUNGE THE HELM, LAND BEHIND, CUT.', { pyro: 'SHIELD GOBLINS HIDE BEHIND IRON. ARC AN EMBER OVER, OR FIREDROP THE HELM.', paladin: 'SHIELD GOBLINS HIDE BEHIND IRON. HAMMERFALL THE HELM, LAND BEHIND, STRIKE.' });
   block(442, 451, 17, 27); spikes(442, 451, 16);

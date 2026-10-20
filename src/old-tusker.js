@@ -19,20 +19,20 @@
 //                   shockwaves run out along the ground both ways - jump them). He does not stagger off the first charge of a double, only the second.
 //   NO ADDS (Daniel: no adds unless the brief says so).
 export const OT = {
-  hp: 1500, w: 46, h: 26, markH: 44,
+  hp: 1400, w: 46, h: 26, markH: 44,
   walk: 52, rest: [0.75, 0.5],                   // px/s; the beat between moves (P1, P2)
   hide: 0.4, above: 1, wardMul: 0.4,             // B15: the floor outside openings; a plunge on his back lands whole
   p2: 0.5,
   charge: { tell: [0.95, 0.72], speed: 290, dmg: 18, hitH: 20, turn: 0.42, minD: 104 },
   daze: { t: [1.45, 1.2], mul: 1.25 },           // he rams a pine or the wall: reels (a short, told opening)
-  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 16, dmg: 14, rec: 0.55, range: 70 },
+  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 16, dmg: 14, chip: 0.5, rec: 0.55, range: 70 },
   root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 11, rec: 0.6, spread: 64 },
   stomp: { tell: 0.78, sp: 150, life: 1.9, dmg: 14, rec: 0.75, w: 7 },
   pin: { t: 3.4, mul: 2, thrash: 0.55, ward: 3, trunk: 0.04, cap: 0.14 },   // cap: a pin is worth this share of him at most - the blow that empties it, he heaves the trunk off (told)   // trunk: the falling pine's own blow on him (a share of his health, a room blow)
   pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 10, lie: 0.9, rearm: 24 },   // lie: a trunk that missed lies a beat, then rolls off the floor; rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
 };
 export const OT_SAY = { wake: 'OLD TUSKER', rule: 'HIS HIDE TURNS A CUT. FELL A MARKED PINE ON HIM.', p2: 'HIS BLOOD IS UP', pinned: 'PINNED', dazed: 'HE RAMS THE PINE',
-  dazedWall: 'HE RAMS THE WALL', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE HEAVES THE TRUNK OFF' };
+  dazedWall: 'HE RAMS THE WALL', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE HEAVES THE TRUNK OFF', jarred: 'JARRED: PARRY HIS TUSKS, OR JUMP THEM' };
 export const OPEN_NAME = { pinned: 'PINNED', rammed: 'DAZED' };
 export const otOpen = e => !!e && (e.mode === 'pinned' || e.mode === 'rammed');
 const TELLS = new Set(['chargeTell', 'turn', 'sweepTell', 'rootTell', 'stompTell']);
@@ -111,7 +111,7 @@ export function stepTusker(e, S, dt, heroes, w) {
     case 'sweep': {
       const f = e.face, a = e.x + f * (half - 8); let b = e.x + f * (half + OT.sweep.reach);
       for (const p of standing(S)) if ((p.x - a) * f > 0 && (b - p.x) * f > 0) { b = p.x; if (!e.barked) { e.barked = true; p.shake = 0.35; w.sound('clank'); } }   /* A PINE IS COVER: his tusks bite its bark, not you behind it */
-      w.hit([Math.min(a, b), Math.max(a, b), floor - OT.sweep.h, floor], OT.sweep.dmg, 'sweep', { key: e.hitKey, blockable: true, knock: f * 180 });
+      w.hit([Math.min(a, b), Math.max(a, b), floor - OT.sweep.h, floor], OT.sweep.dmg, 'sweep', { key: e.hitKey, blockable: true, blockChip: OT.sweep.chip, knock: f * 180 });
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = OT.sweep.rec; } return; }
     case 'rootTell': if (Math.random() < dt * 20) w.dust(e.x + e.face * half, floor, 1);
       if (e.modeT <= 0) { e.mode = 'root'; e.modeT = 0.35; w.sound('root'); const px = P ? P.x : e.x, sp = OT.root.spread;
