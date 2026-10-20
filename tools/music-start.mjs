@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
-const target = 'brackenwood', deadlineMs = 10000;
+const target = 'lumbertrail', deadlineMs = 10000;
 let pg, requests = 0, failed = 0, heldRetry = null, interceptError = null;
 try {
   pg = await openPage({ audio: true, fonts: false, onEvent: ev => {
@@ -15,7 +15,7 @@ try {
     const params = method === 'Fetch.failRequest' ? { requestId: ev.params.requestId, errorReason: 'Failed' } : { requestId: ev.params.requestId };
     pg.send(method, params).catch(e => { interceptError = e; });
   } });
-  await pg.send('Fetch.enable', { patterns: [{ urlPattern: '*brackenwood.ogg', requestStage: 'Request' }] });
+  await pg.send('Fetch.enable', { patterns: [{ urlPattern: '*lumbertrail.ogg', requestStage: 'Request' }] });
   await pg.evalp(`(()=>{ window.__musicWarnings=[]; const warn=console.warn.bind(console); console.warn=(...args)=>{ window.__musicWarnings.push(args.map(String).join(' ')); warn(...args); }; })()`);
   const onMap = await pg.evalp(`(async()=>{ const { music } = await import('/src/audio.js'); window.__musicStart = music;
     BK.manualSimulation = true; BK.ui.pressCard = false; BKT.PROG.wood = BKT.PROG.wood || {};
@@ -47,7 +47,7 @@ try {
   assert.equal(interceptError, null, 'CDP interception completed');
   assert.ok(requests >= 2, 'the level track was requested again after the failed fetch (' + requests + ' requests)');
   assert.equal(track, target, 'the level track replaces the map within ' + deadlineMs / 1000 + ' s after first-fetch failure (track=' + track + ', requests=' + requests + ')');
-  const warnings = await pg.evalp('window.__musicWarnings.filter(x => x.includes("Music track brackenwood failed to load"))');
+  const warnings = await pg.evalp('window.__musicWarnings.filter(x => x.includes("Music track lumbertrail failed to load"))');
   assert.equal(warnings.length, 1, 'one warning records the failed load: ' + JSON.stringify(warnings));
   assert.deepEqual(pg.errors, [], 'no page exceptions');
   console.log('ok  music-start  map -> wood plays ' + target + ' within ' + deadlineMs / 1000 + ' s after first fetch fails (' + requests + ' requests)');

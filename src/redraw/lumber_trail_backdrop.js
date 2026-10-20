@@ -16,9 +16,6 @@ function bakeGreatPine() {
   for (let i = 0; i < 11; i++) { const ty = 14 + i * 17, tw = 8 + i * 4.6;
     for (let k = -tw; k <= tw; k++) { const e = Math.abs(k) / tw, bot = Math.round(ty + 15 - e * 11 + (hash(k + 90, i) % 3)), top = Math.round(ty - 8 + Math.abs(k) * 0.38);
       for (let y = top; y <= bot; y++) { const t2 = (y - top) / Math.max(1, bot - top); R(g, t2 < 0.3 ? '#6f9a8c' : t2 < 0.65 ? '#4d7a6a' : '#355d52', CX + k, y, 1, 1); } } }
-  /* her comb, hung in the crown on the lean side: grey paper, gold at its mouth */
-  const cx0 = CX + 12, cy0 = 118; for (let j = 0; j < 30; j++) { const hw = Math.round(Math.sqrt(Math.max(0, 1 - Math.pow((j - 11) / 19, 2))) * 11); for (let i = -hw; i < hw; i++) R(g, ((i + j * 2) % 5 === 0 || j % 4 === 0) ? '#8a7a58' : (i < 0 ? '#d8c488' : '#b09a62'), cx0 + i, cy0 + j, 1, 1); }
-  R(g, '#2a2014', cx0 - 3, cy0 + 16, 7, 5); R(g, '#f0b840', cx0 - 2, cy0 + 30, 2, 3); R(g, '#f0b840', cx0 + 3, cy0 + 29, 2, 2);
   return c;
 }
 function bakeSnag(seed) {
@@ -34,8 +31,6 @@ export function drawLandmark(g, cx, cy, VW, VH, L, time, dY) {
   /* THE GREAT HIVE PINE: far, on the screen's right third (it is where you are going), scaling and darkening as you come */
   const sc = 0.34 + p * 0.82, hh = Math.round(260 * sc), ww = Math.round(120 * sc), gx = Math.round(VW * 0.74 - ww / 2 - (p - 0.5) * 36), gy = Math.round(VH - 96 - hh + dd + 40 * (1 - p));
   g.globalAlpha = 0.42 + p * 0.38; g.drawImage(once('gp', bakeGreatPine), 0, 0, 120, 260, gx, gy, ww, hh); g.globalAlpha = 1;
-  /* the wasps round her comb, a few specks that wheel (only where it is big enough to see them) */
-  if (sc > 0.6) { const bx = gx + ww / 2 + 12 * sc, by = gy + 138 * sc; g.fillStyle = '#3a2c14'; for (let i = 0; i < 6; i++) { const a = time * (1.3 + (i % 3) * 0.4) + i * 1.9; g.fillRect(Math.round(bx + Math.cos(a) * (10 + i * 2) * sc), Math.round(by + Math.sin(a * 1.3) * (9 + i) * sc), 1, 1); } }
   const mx = mid / 16;
   /* THE CABIN's chimney smoke, world-fixed, rising out over the shed roof and drifting off through the pines */
   if (mx < 40) { const X = Math.round(192 - cx), base = 300 - cy; for (let i = 0; i < 9; i++) { const t = (time * 0.22 + i / 9) % 1, rr = 2 + t * 5; g.globalAlpha = (1 - t) * 0.5; g.fillStyle = '#d8d4c8'; g.fillRect(Math.round(X + Math.sin(t * 6 + i) * 3 + t * 14 - rr), Math.round(base - t * 54 - rr * 0.6), Math.round(rr * 2), Math.round(rr * 1.2)); } g.globalAlpha = 1; }

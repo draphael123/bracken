@@ -274,11 +274,74 @@ function bakeTent() {
 }
 export function tentSprite() { return once('tent', bakeTent); }
 
+/* ===== (claude/lumberfix) THE REST OF THE OLD WOOD DRESSING, redrawn: the sprinkled stumps, fallen logs and rail fences, the standing snags, the nest box, the bare trunk ===== */
+const BARKCOL = sh => BARK[Math.max(1, Math.min(5, sh))];
+function bakeStumpS(v) {   /* a sawn stump: bark sides, a ringed face, root nubs */
+  const w = v ? 16 : 13, h = v ? 12 : 9, [c, g] = canvas(w, h), top = 4;
+  for (let y = top; y < h; y++) for (let x = 0; x < w; x++) { const u = x / (w - 1); let sh = u < 0.22 ? 5 : u < 0.5 ? 4 : u < 0.8 ? 3 : 2; if (hash(x, y + v * 7) % 7 === 0) sh--; if (y > h - 3) sh--; if (x < 1 || x > w - 2) sh = Math.max(1, sh - 1); P(g, BARKCOL(sh), x, y); }
+  for (let x = 0; x < w; x++) for (let y = 0; y < top * 2 + 1; y++) { const ex = (x - (w - 1) / 2) / (w / 2), ey = (y - top) / 3.4, d = Math.hypot(ex, ey); if (d > 1) continue; if (d > 0.88) { P(g, CUT[3], x, y); continue; } const ring = Math.floor(d * 5); P(g, d < 0.12 ? CUT[4] : ring % 2 ? CUT[1] : CUT[0], x, y); }
+  return outline(c, OUT);
+}
+export const stumpS = v => once('stS' + v, () => bakeStumpS(v));
+function bakeLogS(v) {   /* a limbed log lying in the duff: bark ridges, a ringed cut end, a tuft of moss */
+  const w = v ? 34 : 26, h = 10, [c, g] = canvas(w, h);
+  for (let x = 0; x < w; x++) for (let y = 1; y < h; y++) { const ridge = (y + hash(x >> 3, v)) % 3; let sh = y < 3 ? 5 : y < 5 ? 4 : y < 8 ? 3 : 2; if (ridge === 0) sh--; if (hash(x >> 1, y + v * 11) % 9 === 0) sh--; P(g, BARKCOL(sh), x, y); }
+  for (let y = 1; y < h; y++) { const d = Math.abs(y - 5) / 4.6; if (d > 1) continue; R(g, d > 0.8 ? CUT[3] : (y % 2 ? CUT[1] : CUT[0]), 0, y, 3, 1); }
+  for (let x = 9; x < w - 6; x += 7 + (hash(x, v) % 5)) R(g, ['#386228', '#538a38'][x & 1], x, 0, 4, 2);
+  R(g, BARK[1], w - 3, 2, 3, 6); R(g, BARK[0], w - 1, 3, 1, 4);
+  return outline(c, OUT);
+}
+export const logS = v => once('lgS' + v, () => bakeLogS(v));
+function bakeRailFence(v) {   /* split-rail: two rough posts and two rails, one rail slipped */
+  const w = v ? 38 : 30, [c, g] = canvas(w, 17);
+  for (const x0 of [2, w - 6]) { R(g, BARK[3], x0, 2, 4, 15); R(g, BARK[5], x0, 2, 1, 15); R(g, BARK[1], x0 + 3, 2, 1, 15); R(g, CUT[1], x0, 1, 4, 2); P(g, CUT[0], x0 + 1, 1); }
+  for (const [ry, lean] of [[5, 0], [11, v ? 1 : 0]]) for (let x = 0; x < w; x++) { const y = ry + (lean && x > w / 2 ? Math.floor((x - w / 2) / 6) : 0); R(g, BARK[4], x, y, 1, 1); R(g, BARK[3], x, y + 1, 1, 2); R(g, BARK[1], x, y + 3, 1, 1); if (hash(x, ry) % 8 === 0) P(g, BARK[1], x, y + 1); }
+  R(g, CUT[2], 0, 5, 2, 3); R(g, CUT[1], w - 2, 11, 2, 3);
+  return outline(c, OUT);
+}
+export const railFence = v => once('rf' + v, () => bakeRailFence(v));
+function bakeNestBox() {   /* a split-shingle nest box nailed to a pole */
+  const [c, g] = canvas(14, 26);
+  R(g, BARK[3], 6, 10, 3, 16); R(g, BARK[5], 6, 10, 1, 16); R(g, BARK[1], 8, 10, 1, 16);
+  R(g, BARK[4], 1, 4, 12, 9); R(g, BARK[5], 1, 4, 12, 1); R(g, BARK[2], 1, 12, 12, 1); for (let x = 1; x < 13; x += 3) R(g, BARK[2], x, 5, 1, 7);
+  R(g, BARK[0], 5, 6, 4, 4); R(g, '#0e0805', 6, 7, 2, 2); R(g, CUT[2], 4, 11, 6, 1);
+  R(g, BARK[2], 0, 3, 14, 1); R(g, BARK[4], 1, 2, 12, 1); R(g, BARK[5], 3, 1, 8, 1); R(g, BARK[6], 5, 0, 4, 1);
+  return outline(c, OUT);
+}
+export const nestBox = () => once('nest', bakeNestBox);
+function bakeSnag(v) {   /* a lightning-split snag: grey-brown bark gone to wood, a broken crown, bough stubs */
+  const w = 24, h = v === 2 ? 56 : 44, [c, g] = canvas(w, h), CX = 11, GR = ['#2a231c', '#4a3f33', '#6c5f4e', '#8f826c', '#b3a68c'];
+  for (let y = 4; y < h; y++) { const t = y / h, hw = 2 + Math.round(t * 3) + (y > h - 5 ? (y - (h - 5)) : 0), sx = CX + Math.round(Math.sin(y / 11 + v) * 1.2); for (let x = -hw; x <= hw; x++) { const u = (x + hw) / (2 * hw), sh = u < 0.25 ? 4 : u < 0.55 ? 3 : u < 0.8 ? 2 : 1; P(g, hash(x + 9, y >> 1) % 6 === 0 ? GR[Math.max(0, sh - 1)] : GR[sh], sx + x, y); } }
+  for (let i = 0; i < 4; i++) R(g, GR[0], CX - 2 + (hash(i, v) % 5), 10 + i * 9, 1, 4 + (hash(i, 2) % 3));   /* checks in the wood */
+  R(g, GR[4], CX - 2, 3, 3, 2); R(g, GR[3], CX - 3, 4, 7, 1); R(g, GR[1], CX + 2, 2, 2, 3); R(g, GR[4], CX, 1, 1, 2);   /* the split crown */
+  for (let k = 0; k < 3; k++) { const by = 14 + k * 11 + v * 2, d = k % 2 ? 1 : -1, l = 4 + ((hash(k, v) % 5)); for (let i = 0; i < l; i++) R(g, GR[i & 1 ? 2 : 3], CX + d * (3 + i), by - (i >> 1), 1, 2); }
+  return outline(c, OUT);
+}
+export const snagS = v => once('snag' + v, () => bakeSnag(v));
+function bakeBareTrunk() {   /* a tall straight pine bole, bark in plates, the woodsman's chalk blaze */
+  const w = 14, h = 72, [c, g] = canvas(w, h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { const u = x / (w - 1); let sh = u < 0.2 ? 5 : u < 0.45 ? 4 : u < 0.75 ? 3 : 2; if ((y + hash(x >> 2, 3) % 5) % 6 === 0) sh--; if (hash(x, y >> 1) % 8 === 0) sh--; P(g, BARKCOL(sh), x, y); }
+  R(g, CUT[1], 4, 26, 6, 9); R(g, CUT[0], 4, 26, 6, 1); R(g, CUT[3], 4, 34, 6, 1);
+  return outline(c, OUT);
+}
+export const bareTrunk = () => once('btrunk', bakeBareTrunk);
+/* what the ground sprinkle (src/main.js: the dice thrown on every grass-topped tile) draws for the old wood kinds; null = the game's own (ferns, tufts, mushrooms, flowers, bushes, stones are not timber) */
+export function sprinkleOf(kind) {
+  if (kind === 'stump') return [stumpS(0), stumpS(1)];
+  if (kind === 'fallenLog') return [logS(0), logS(1)];
+  if (kind === 'fence') return [railFence(0), railFence(1)];
+  return null;
+}
+
 /* ===== THE DECO TABLE: [sprite, bg] by kind, this level's own ===== */
 export function decoOf(e) {
   switch (e.kind) {
     case 'cabin': return [cabinSprite(), true];
-    case 'stump': return e.v === 0 ? [blockSprite(), false] : null;
+    case 'stump': return e.v === 0 ? [blockSprite(), false] : [stumpS(1), false];
+    case 'birdhouse': return [nestBox(), true];
+    case 'deadTree': return [snagS(e.v || 0), true];
+    case 'trunk': return [bareTrunk(), true];
+    case 'hiveBg': case 'beehive': return e.x >= 510 ? null : 'hide';   /* the hornet's combs and skeps are the clearing's alone: not drawn along the trail */
     case 'woodsman': return [woodsmanSprite(0), false, [woodsmanSprite(0), woodsmanSprite(1)]];
     case 'sawFrame': return [sawFrameSprite(), true];
     case 'fence': return [palisadeSprite(e.v === 1), true];
