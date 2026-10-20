@@ -50,18 +50,12 @@ export const SIG = {
   temperer: { mode: 'cutTell', answer: 'parry' },  sweep: { mode: 'popTell', answer: 'parry' },      propman: { mode: 'raise', answer: 'parry' },
   whelp: { mode: 'crouchTell', answer: 'parry' },  grub: { mode: 'spit', answer: 'parry' },          bonearcher: { mode: 'draw', answer: 'duck' },
   bonegob: { mode: 'throw', answer: 'parry' },
+  /* THE SEVEN THAT WERE ON TOLD_TODO (claude/sweepact12, 10-20): each got a NEW answerable told attack with its own windup (src/main.js, each family's update) */
+  thief: { mode: 'swipeTell', answer: 'jump' },   spitcap: { mode: 'spitTell', answer: 'duck' },   sapper: { mode: 'shoveTell', answer: 'parry' },   emberwisp: { mode: 'dartTell', answer: 'parry' },   stormshaman: { mode: 'jabTell', answer: 'parry' },   clinger: { mode: 'lashTell', answer: 'duck' },   shardling: { mode: 'flickTell', answer: 'jump' },
 };
 /* THE FAMILIES OF ACTS I-II WHOSE EVERY BLOW IS A RED !! (dodge) - no blow they have can be parried, jumped or ducked. Each needs a NEW told attack
    with its own windup pose, built by its act's sweep lane. This list may only shrink (tools/foe-pass.mjs). */
-export const TOLD_TODO = {
-  thief: 'act I: its snatch is a red !! grab - build a told low swipe at the purse (JUMP it)',
-  spitcap: 'act I: its swell is a red !! burst - build a told spore spit at head height (DUCK it)',
-  sapper: 'act I/II: its fuse is a red !! bomb - build a told shove with the lit pot (PARRY it)',
-  emberwisp: 'act I: its flare is a red !! burst - build a told ember dart (PARRY it)',
-  stormshaman: 'act I/II: its call is a red !! lightning - build a told staff jab (PARRY it)',
-  clinger: 'act II: its drop is a red !! fall - build a told tail lash along the roof (DUCK it)',
-  shardling: 'act II: its shed is a red !! burst - build a told shard flick along the floor (JUMP it)',
-};
+export const TOLD_TODO = {};   /* EMPTY (claude/sweepact12): thief, spitcap, sapper, emberwisp, stormshaman, clinger and shardling each have a signature now */
 /* NOT FAMILIES THE PLAYER FIGHTS: the Road Wardens' knights (elites with their own kit), the King's Road's ram (a trap prop), the oath-mage */
 export const NOT_FAMILY = new Set(['oathblade', 'oathmaul', 'oathlance', 'oathmage', 'ram', 'ramlord']);
 
