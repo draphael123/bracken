@@ -1,4 +1,6 @@
 // src/dk2.js — THE DEATH KNIGHT 2: THE BLOOD PRICE AND THE DRAIN (claude/dk2b, Daniel 10-12 + 10-13 + 10-14 LATE, scratch/brief-dk2.md).
+// !! (claude/bloodknight 10-20) THE BLOOD KNIGHT: X held is THE FIVE-TIER HEAVY now and his sustain is BLOOD DEBT (src/blood-kit.js) - the held price, its crescent,
+// its drink-back, the drag's drink and the harvest below are GONE from the hero (the boss keeps his own Blood Price, src/unburied-foes.js). rhythm, kneel and linger stay.
 // He SPENDS HIS OWN BLOOD to power his blood moves and DRAINS it back out of what he cuts - hurt yourself, drain to heal, is his loop.
 // HE NEVER KILLS HIMSELF (the Berserker 2 rule): every price his own kit puts on his health is floored at 1 hp; a foe can still kill him.
 //   REAPER'S RHYTHM (X, the chain)  ~35% quicker than the old swing (it was too slow and knight-like). 1 a RISING LOW DIAGONAL cut,
