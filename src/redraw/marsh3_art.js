@@ -189,8 +189,8 @@ const raftSprite = w => once('craft' + w, () => {
   /* two bog-oak logs under the deck, round pale ends sticking out each side */
   for (let x = 0; x < w; x++) { const end = x < 3 || x > w - 4; for (let r = 0; r < 4; r++) P(g, end ? (r === 0 || r === 3 ? '#9a8660' : '#c8b080') : (r === 0 ? OAK[4] : r < 3 ? OAK[3] : OAK[1]), x, Y0 + 5 + r); }
   for (let x = 6; x < w - 6; x += 7) if (rnd(x, 5, 3) === 0) P(g, OAK[2], x, Y0 + 7);
-  /* the pole, lashed flat along her side, forked at the stern, its tip past the bow */
-  R(g, OAK[4], 3, Y0 + 10, w - 8, 1); R(g, OAK[2], 3, Y0 + 11, w - 8, 1); P(g, OAK[4], 0, Y0 + 9); P(g, OAK[2], 1, Y0 + 10); P(g, OAK[4], 2, Y0 + 9); P(g, OAK[2], 0, Y0 + 11); R(g, '#9a8660', w - 6, Y0 + 10, 5, 1);
+  /* the pole, lashed flat along the logs (it shows above the water band), forked at the stern, its tip past the bow */
+  R(g, '#a89468', 3, Y0 + 7, w - 6, 1); R(g, OAK[2], 3, Y0 + 8, w - 6, 1); P(g, '#a89468', 0, Y0 + 6); P(g, '#a89468', 1, Y0 + 7); P(g, OAK[2], 2, Y0 + 8); P(g, OAK[4], 2, Y0 + 6); P(g, '#a89468', w - 1, Y0 + 7); P(g, '#d8cc9c', w - 3, Y0 + 7);
   /* the reed cord: lashings over the deck and round the logs, a binding every few tiles */
   for (const bx of [10, Math.round(w * 0.32), Math.round(w * 0.58), w - 16]) {
     for (let r = 0; r < 12; r++) { P(g, r & 1 ? CORD_D : CORD, bx, Y0 + r); P(g, r & 1 ? CORD : CORD_D, bx + 1, Y0 + r); }
