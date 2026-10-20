@@ -28,8 +28,8 @@ export const entryFor = (from, to) => TABLE.find(e => e.from === from && (to ===
    `live` is false until the art pass merges: with it false only the flag plays it. */
 export const MODES = ['always', 'first', 'never'], MODE_LABEL = { always: 'ALWAYS', first: 'FIRST TIME', never: 'NEVER' };
 export const modeOf = m => (MODES.includes(m) ? m : 'first');   /* the settings row's value; anything else (an old save) is the default, FIRST TIME */
-export function policy({ flag = false, mode = 'first', seen = false, live = false } = {}) {
-  if (!live && !flag) return false;   /* art before live: until the art pass merges only ?trans=1 turns the system on - and then the setting below is honoured */
+export function policy({ off = false, mode = 'first', seen = false } = {}) {
+  if (off) return false;   /* ?trans=0 (or BK.trans.force(false)): the tests' off switch. The art is in (claude/transwmart): ON BY DEFAULT, the setting below governs it */
   if (mode === 'never') return false;
   if (mode === 'first') return !seen;
   return true;

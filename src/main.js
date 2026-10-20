@@ -29799,8 +29799,8 @@ function lookaheadOn() { return !SET.reduceMotion && SET.lookAhead !== false && 
 /* (claude/transwm) THE LEVEL-TO-LEVEL TRANSITION (src/transitions.js is the timeline and the table, src/transitions-art.js the pictures). A boss falls -> the clear is CREDITED (winLevel, first) ->
    the way opens -> the heroes walk out -> the ferry carries them (scene) -> fade -> the next level loads and begins with them stepping off. state stays 'win' while TRN is set (no card:
    the win card is skipped on a transition that plays; the credit, the medal and the XP have already been paid), and the next level starts through loadThen like a map start. Skippable by any press. */
-let trnForce = false, TRN = null, trnArrive = null;
-const trnFlag = () => q.get('trans') === '1' || trnForce;
+let trnForce = null, TRN = null, trnArrive = null;   /* trnForce: null = the default (ON), true = on, false = off (the tools' switch, like ?trans=0) */
+const trnOff = () => q.get('trans') === '0' || trnForce === false;   /* (claude/transwmart) the art is in: transitions are ON BY DEFAULT; ?trans=0 is the off switch (the TRANSITIONS setting governs the rest) */
 function trnEnv() {
   return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion,
     drawHero: (i, x, y, face, key, frame) => { const set = (i > 0 && players[i] && players[i].set) || K; drawSet(set, key, frame, x, y, face, false); },
@@ -29811,7 +29811,7 @@ function trnBegin() {
   const entry = TRM.entryFor(LEVELS[levelIndex].id); if (!entry) return false;
   const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
   const key = entry.from + '>' + entry.to;
-  if (!TRM.policy({ flag: trnFlag(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]), live: false })) return false;
+  if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
   PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
   const target = LW * TS + 16;
   TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
@@ -29843,7 +29843,8 @@ function trnUpdate(dt) {
     if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
     if (e === 'done') { trnFinish(); return; }
   }
-  if (!tr.scene || TRM.phase(tl) === 'fade') { updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); }
+  if (!tr.scene || TRM.phase(tl) === 'fade') { updateParticles(dt); updateCorpses(dt); updateWeather(dt); const cx0 = camX; updateCamera(dt);
+    if ((TRM.phase(tl) === 'open' || TRM.phase(tl) === 'walk') && tr.entry.open) { const gx = Math.max(0, Math.min(LW * TS - VW + 56, (tr.entry.open.col + 1) * TS - VW * 0.72)); camX = cx0 + (gx - cx0) * Math.min(1, dt * 9); } }   /* (claude/transwmart) while the way opens and the heroes walk out the camera holds the gate (the input is locked): they run in from the left and hop the fallen rails */
   else if (TRM.phase(tl) === 'ride' && Math.floor(trnSceneS(tl) * 0.9) !== Math.floor((trnSceneS(tl) - dt) * 0.9) && SFX.pole) SFX.pole();
 }
 function trnFinish() {
@@ -29869,8 +29870,9 @@ function trnDrawScene() {
   if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
 }
 function trnDrawWorldOver(cx, cy) {
-  if (TRN && !TRN.loading) { const tr = TRN, tl = tr.tl; players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; const walking = q2.v > 5, set = (i > 0 && p.set) || K;
-    drawSet(set, walking ? 'run' : 'idle', walking ? Math.floor(time * 13) : Math.floor(time * 4.5), Math.round(q2.x - cx), Math.round(q2.y - cy + q2.hop), q2.face, false); });
+  if (TRN && !TRN.loading && TRN.entry.open && !TRN.scene) TRA.drawWayGate(trnEnv(), TRN.entry.open, cx, cy, TRN.tl.t, TRN.opened, time, !!SET.reduceMotion);   /* (claude/transwmart) the clearing's gate: lashed pine, then it gives way */
+  if (TRN && !TRN.loading) { const tr = TRN, tl = tr.tl; players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; const walking = q2.v > 5, set = (i > 0 && p.set) || K, air = q2.hop < -2 && set.R && set.R.jump;   /* the hop over the settled gate uses the hero's own jump frames */
+    drawSet(set, air ? 'jump' : walking ? 'run' : 'idle', air ? 0 : walking ? Math.floor(time * 13) : Math.floor(time * 4.5), Math.round(q2.x - cx), Math.round(q2.y - cy + q2.hop), q2.face, false); });
     if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
   if (trnArrive && trnArrive.ferry) TRA.drawArrivalFerry(trnEnv(), cx, cy, trnArrive.floorY, time);
 }
@@ -34590,7 +34592,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
-  trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
+  trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
