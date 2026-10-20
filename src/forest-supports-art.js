@@ -40,7 +40,7 @@ export function drawForestSupport(g, p, cx, cy) {
     /* (claude/marsh3art) a bundle of reed STEMS, not a bamboo pole: six stalks of different tone and length side by side (olive, straw, green), a nick in one or two now and then,
        a rope wrap with a knot-tail and a pair of blades peeling off it every ~40 px, the head splaying under the tuft and the foot splaying into the mud */
     const top = h0 - 2, hh = body + 2, TONE = ['#5f7a3a', '#a2b050', '#7a8a3a', '#c4b878', '#8aa04a', '#4a5f2c'];
-    for (let i = 0; i < 6; i++) { const inset = (i * 5 + sd) % 4; R(g, TONE[i], x - 1 + i, top + inset, 1, hh - inset); }
+    for (let i = 0; i < 6; i++) { R(g, TONE[i], x - 1 + i, top, 1, hh); }   /* (every stem reaches the head: the support never thins at its top) */
     R(g, '#2c3a1a', x + 5, top + 2, 1, hh - 2); R(g, '#d8e090', x, top + 4, 1, 2);
     for (let y = top + 9 + sd, j = 0; y < bot - 6; y += 17, j++) R(g, '#2c3a1a', x - 1 + ((j * 5 + sd) % 6), y, 1, 2);
     for (let y = top + 14, i = 0; y < bot - 8; y += 38, i++) { const sd2 = (i + sd) & 1;
