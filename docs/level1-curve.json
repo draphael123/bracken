@@ -17,13 +17,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
-  "deaths": 0,
-  "kills": 45,
-  "lifts": 64,
+  "hits": 21,
+  "deaths": 1,
+  "kills": 40,
+  "lifts": 67,
   "walked": 100,
   "bare": true,
-  "lostPct": 102
+  "lostPct": 131
  },
  "stockade": {
   "hash": "f7bc642b7ffe",
