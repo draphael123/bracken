@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-20",
+    "batch": 109,
+    "lines": [
+      "OLD TUSKER: a great boar boss in a felling clearing",
+      "Fell a marked pine on him. Boars replace badgers",
+      "Pine moths + kite goblins replace the wasps",
+      "MARSH 3: Reed Run, the Boom, the Night Pads",
+      "Readable lily pads, centred raft sign",
+      "The Frog King music now plays on time"
+    ]
+  },
+  {
+    "date": "2026-10-20",
     "batch": 108,
     "lines": [
       "THE BLOOD KNIGHT: Death Knight hero + boss renamed",
