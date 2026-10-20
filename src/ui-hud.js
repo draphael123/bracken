@@ -9,12 +9,12 @@
 export const TOAST = { minShow: 1.6, tail: 0.35, maxWait: 3, stale: 7 };
 export function toastQueue() { return { cur: null, wait: [], seenMsg: '', seenT: 0, clock: 0 }; }
 export function toastClear(q) { q.cur = null; q.wait.length = 0; q.seenMsg = ''; q.seenT = 0; }
-export function toastPush(q, msg, ttl = 2.6) {
+export function toastPush(q, msg, ttl = 2.6, col = null) {   /* col: an optional text colour (a co-op seat's own: claude/coopclarity) */
   if (!msg) return;
   if (q.cur && q.cur.msg === msg) { q.cur.ttl = Math.max(q.cur.ttl, ttl); return; }
   const w = q.wait.find(t => t.msg === msg); if (w) { w.ttl = Math.max(w.ttl, ttl); return; }
-  if (!q.cur) { q.cur = { msg, ttl, age: 0, at: q.clock }; return; }
-  q.wait.push({ msg, ttl, age: 0, at: q.clock }); while (q.wait.length > TOAST.maxWait) q.wait.shift();
+  if (!q.cur) { q.cur = { msg, ttl, age: 0, at: q.clock, col }; return; }
+  q.wait.push({ msg, ttl, age: 0, at: q.clock, col }); while (q.wait.length > TOAST.maxWait) q.wait.shift();
 }
 /* the hint variables, as main.js has them this frame: a NEW message (or the same one set again with more time) is an arrival */
 export function toastFeed(q, hintMsg, hintT) {

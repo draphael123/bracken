@@ -72,6 +72,15 @@ export function board(g, x, fy, code, time, text) {
   R(g, L + 12, T + 24, 5, 1, '#e8f0e8'); R(g, L + 18, T + 24, 2, 1, '#c9d1c9');
 }
 
+/* ---------------------------------------------------------------- THE SAVES SIGN (claude/coopclarity) ---------------------------------------------------------------- */
+export function saves(g, x, fy, time, text) {
+  const L = x - 14, T = fy - 40;
+  R(g, L + 12, T + 18, 4, 22, TP.o2); R(g, L + 12, T + 18, 1, 22, TP.o4); R(g, L + 9, T + 38, 10, 2, TP.o1);   /* the post */
+  R(g, L, T, 28, 20, TP.o3); R(g, L, T, 28, 1, TP.o6); R(g, L, T + 19, 28, 1, TP.o1); R(g, L, T, 1, 20, TP.o5); R(g, L + 27, T, 1, 20, TP.o1);   /* the plank */
+  R(g, L + 2, T + 2, 24, 16, '#2a2418'); R(g, L + 2, T + 2, 24, 1, '#5a4a32');
+  text('SAVES', x, T + 5, '#e8f0e8', 'center', 6); R(g, L + 5, T + 13, 18, 1, '#8fd160'); if (Math.floor(time * 2) & 1) P(g, L + 24, T + 4, '#fff');
+}
+
 /* ---------------------------------------------------------------- THE DRILLS TALLY ---------------------------------------------------------------- */
 export function tally(g, x, fy, counts) {
   const L = x - 14, T = fy - 40, cols = ['#ffd36b', '#8fd160', '#6bb8ff'];
@@ -191,3 +200,4 @@ export function tag(g, x, y, c, d, text, label, ai) {
   R(g, X0 + 6, Y0 + h, 3, 1, OUT); R(g, X0 + 7, Y0 + h + 1, 1, 1, OUT); P(g, X0 + 7, Y0 + h, col);
   text(label, x, y, col, 'center', 6);
 }
+

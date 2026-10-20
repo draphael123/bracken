@@ -39,7 +39,18 @@ export const COOP_HELP_PAGES = ({ downT = 20, reviveT = 1.5 } = {}) => [
     ['', 'health, stamina and meters, skills and level, blows and kills. Every creature and boss has twice the health and hits twice as hard.'],
     ['', 'A score is kept: kills, coins, and above all revives.'],
   ] },
+  { title: 'HOW CO-OP SAVES WORK', lines: [   /* (claude/coopclarity: tavern sign + the pause menu's guide; the page index is SAVES_PAGE) */
+    ['#', 'A FRIEND WITH A SAVE OF THEIR OWN'],
+    ['', 'On the party board they pick one of their save slots and play its hero. What they earn - XP, silver, woods cleared - is written into THAT save at every shrine and when the wood is won.'],
+    ['#', 'A GUEST'],
+    ['', 'A guest plays a lent hero. Nothing is saved.'],
+    ['#', 'A FRIEND ONLINE'],
+    ['', 'They bring a save of their own and it is written in their own browser. Guests never change your save.'],
+    ['#', 'IF SOMEONE LEAVES'],
+    ['', 'They keep everything up to the last shrine. One save plays in one place at a time.'],
+  ] },
 ];
+export const SAVES_PAGE = 4;
 
 /* THE TWO PROMPTS THAT COME UP IN A FIRST DOWN AND A FIRST REVIVE, at most twice each per save (PROG.coopTips). Returns true when one is due
    and counts it; main.js sets its own hint line (hintMsg is read by tools/textfit.mjs from the source, so the words stay in main.js). */
