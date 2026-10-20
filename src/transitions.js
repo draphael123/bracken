@@ -12,8 +12,8 @@
    The CLEAR IS CREDITED BEFORE THE CUTSCENE (main.js calls winLevel first, then begins this), so quitting or skipping loses nothing.
    SKIP: any button or tap, once MIN_SKIP seconds in (a hero still mashing attack as the boss falls does not skip it), jumps to a short fade;
    the state after a skip is the state after a full watch (the next level, the arrival) - skipping only drops the pictures.
-   WHEN IT PLAYS: policy() below. Until the art pass merges it is behind ?trans=1 (art before live); the Settings row TRANSITIONS (ALWAYS / FIRST TIME /
-   NEVER, default FIRST TIME) is honoured inside that. When the art merges, `live` goes true and the flag is no longer needed. */
+   WHEN IT PLAYS: policy() below. ON BY DEFAULT since the art pass (claude/transwmart; ?trans=0 is the off switch); the Settings row TRANSITIONS (ALWAYS / FIRST TIME /
+   NEVER, default FIRST TIME) is honoured inside that. The flag gate is gone. */
 export const MIN_SKIP = 0.8;
 export const FADE_SKIP = 0.3;
 export const TABLE = [
