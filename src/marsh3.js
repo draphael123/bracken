@@ -36,7 +36,7 @@ export function applyMarsh3(M, T, TS, grow) {
   for (const [dx, top] of REED_STANDS) block(X(dx), X(dx), top, 21);
   movers.push({ kind: 'raft', current: true, x0: X(6) * TS, x1: X(76) * TS - 96, x: X(6) * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 34, frogs: true, frogMax: 2, frogEvery: 3.4 });
   reeds(X(30), 13, 2); reeds(X(52), 13, 2); reeds(X(41), 10, 2);   /* the high road: reed tufts over the run (a spitter on the first; the silver over the middle one) */
-  foe('spit', 30, 12); foe('hopper', 47, 16, { color: 'yellow' });   /* a frog on the tall stand: it leaps aboard as she comes (a heron standing there shoved every hero off the back) */ ent('silver', X(41), 9);
+  foe('hopper', 30, 12, { color: 'yellow' }); foe('hopper', 47, 16, { color: 'yellow' });   /* a frog on the tall stand: it leaps aboard as she comes (a heron standing there shoved every hero off the back) */ ent('silver', X(41), 9);
   plank(70, 74, 12); foe('archer', 72, 11);   /* the bowman's stilt lookout at the run's end: he looses at the raft as she comes in */
   coins([X(16), 15], [X(26), 14], [X(31), 11], [X(36), 15], [X(47), 13], [X(53), 11], [X(57), 15], [X(66), 14]);
   bank(76, 85);
@@ -60,7 +60,7 @@ export function applyMarsh3(M, T, TS, grow) {
   for (const [dx, kind, big] of NIGHT_PADS) ent('pad', X(dx), 18, kind === 'L' ? { firm: true, lamp: true, big: !!big } : { big: !!big });
   reeds(X(184), 16, 2); reeds(X(187), 12, 2);   /* a reed bed halfway: a rest; a spitter lobs at it from a tuft over the water beyond (on the bed itself it shoved every hero back in) */
   for (const dx of [171, 195, 213]) foe('eel', dx, 20, { leap: true });
-  foe('spit', 187, 11); foe('wasp', 203, 13, { pogo: true });
+  foe('hopper', 186, 15, { color: 'yellow' }); foe('wasp', 203, 13, { pogo: true });   /* (marsh3fix) a frog holds the reed bed instead of a spitter on its tuft: ranged share under the 30% cap */
   coins([X(164), 16], [X(176), 16], [X(184), 14], [X(197), 16], [X(207), 16]);
   bank(220, 225);
   foe('turtle', 221, 17); ent('check', X(223), 17);
