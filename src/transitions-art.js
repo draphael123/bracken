@@ -18,7 +18,7 @@ function ferryBody(g, x, y, w, bob = 0) {
   for (let i = 8; i < w - 6; i += 12) { g.fillStyle = COL.hullLo; g.fillRect(x + i, y + 3, 1, 5); }   /* the strakes' lap lines */
   g.fillStyle = COL.deck; g.fillRect(x, y, w, 3); g.fillStyle = COL.deckTop; g.fillRect(x, y, w, 1);
   g.fillStyle = COL.hull; g.fillRect(x - 4, y - 3, 6, 5); g.fillRect(x + w - 2, y - 4, 6, 6);   /* the stern and the bow rise */
-  g.fillStyle = COL.rope; g.fillRect(x + 1, y - 1, w - 2, 1);   /* the gunwale rope, bundled reed */
+  g.fillStyle = COL.rope; g.fillRect(x + 1, y - 1, 8, 1); g.fillRect(x + w - 9, y - 1, 8, 1);   /* the gunwale rope at stern and bow, bundled reed (the deck between is clear for the feet) */
   g.fillStyle = COL.reedD; for (let i = 0; i < 4; i++) g.fillRect(x + w - 10 + i * 2, y - 8 - (i & 1) * 2, 1, 8);   /* a reed bundle lashed at the bow */
 }
 
@@ -92,8 +92,6 @@ export function drawFerryScene(env, s) {
 export function drawArrivalFerry(env, cx, cy, floorY, time, mooredAt) {
   const { g, reduce } = env, bob = reduce ? 0 : Math.round(Math.sin(time * 2.2) * 0.6), x = -28 - cx, y = floorY - cy;
   if (x > env.VW + 10 || x < -140) return;
-  ferryBody(g, x, y - 2 + bob, 84, 0);
-  g.fillStyle = COL.post; g.fillRect(Math.round(88 - cx), y - 14, 3, 16); g.fillStyle = COL.rope; g.fillRect(Math.round(88 - cx), y - 14, 3, 2);   /* the mooring post on the bank */
-  g.fillStyle = COL.rope; g.fillRect(Math.round(54 - cx), y - 9 + bob, Math.round(36), 1);
-  env.drawFerryman(Math.round(x + 8), y - 2 + bob, 1, 0);
+  ferryBody(g, x, y + bob, 84, 0);
+    env.drawFerryman(Math.round(x + 8), y + bob, 1, 0);
 }

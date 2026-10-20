@@ -52,8 +52,8 @@ if (process.argv.includes('--browser')) {
   const ev = x => pg.evalp(x, 600000);
   try {
     const setup = `window.__t = {}; window.__setup = async (flag, coop) => { BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'); window.__L = LEVELS; BK.setHero('knight'); BK.reset({ fresh: true });
-        BK.trans.force(flag); const wi = LEVELS.findIndex(l => l.id === 'wood'); BK.load(wi); BK.start(); BK.sim(30); return wi; };
-      window.__kill = () => { const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
+        BK.trans.force(flag); if (coop) BK.coopArm('warden', false); const wi = LEVELS.findIndex(l => l.id === 'wood'); BK.load(wi); BK.start(); BK.sim(30); return wi; };
+      window.__kill = () => { const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); if (BK.players().length > 1) { const q = BK.players()[1]; q.x = BK.P.x + 20; q.y = BK.P.y; q.vx = q.vy = 0; } BK.sim(200);
         for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); } return !!e && !e.alive; };
       window.__lvl = () => BK.trans.levelId();`;
     await ev(`(async()=>{ ${setup}; return 1; })()`);
@@ -89,11 +89,40 @@ if (process.argv.includes('--browser')) {
       BK.state = 'map'; BK.trans.force(false); out.state = BK.state; return out; })()`);
     ok('quitting mid-cutscene = the wood is cleared (and the map is reachable)', d.began && d.cleared && d.state === 'map', JSON.stringify(d));
     /* 5. co-op: every seat rides */
-    const e = await ev(`(async()=>{ const out = {}; const { LEVELS } = await import('/src/level.js'); window.__L = LEVELS; BK.setHero('knight'); BK.reset({ fresh: true }); BK.trans.force(true);
-      if (!BK.coopStart2) { out.skip = 'no BK.coopStart2'; return out; } return out; })()`);
-    if (e.skip) console.log('note: co-op page check not available (' + e.skip + '); the seat loop is pinned in the source rows');
+    const e = await ev(`(async()=>{ const out = {}; await __setup(true, true); out.seats = BK.players().length; __kill(); let rode = 0;
+      for (let i = 0; i < 3000; i++) { BK.sim(1); const tr = BK.trans.tr; if (tr && !tr.loading) { rode = Math.max(rode, tr.pos.length); out.pl = out.pl || BK.players().length; if (i % 9 === 0) BK.draw1(); } if (BK.state === 'play' && __lvl() === 'marsh') { out.frames = i; break; } }
+      out.rode = rode; out.after = BK.players().length; out.x0 = BK.players().map(p => Math.round(p.x)); BK.sim(150); out.x1 = BK.players().map(p => Math.round(p.x)); out.done = BK.trans.arrive && BK.trans.arrive.done; return out; })()`);
+    ok('CO-OP: both seats ride, both start on the ferry and both step off', e.seats === 2 && e.rode === 2 && e.after === 2 && e.x0.every(x => x < 40) && e.x1.every(x => x > 80) && e.done, JSON.stringify(e));
     ok('every seat is walked, drawn on the ferry and handed back (the seat loops are over players)', /players\.forEach\(\(p, i\) => \{ const q2 = tr\.pos\[i\]/.test(src) && /n: players\.length/.test(src) && /players\.forEach\(\(p, i\) => asPlayer\(p, \(\) => \{ for \(const k of Object\.keys\(keys\)\)/.test(src));
+    const tw = await ev(`({ pc: BK.trans.textW('ANY BUTTON: SKIP'), touch: BK.trans.textW('TAP: SKIP'), VW: 320 })`);
+    ok('TEXTFIT: the skip hint (the only text in a transition) fits the bar at 320 wide, both wordings (right-aligned 6 px in)', tw.pc + 6 < tw.VW - 40 && tw.touch + 6 < tw.VW - 40, JSON.stringify(tw));
     ok('no page errors', pg.errors.length === 0, JSON.stringify(pg.errors.slice(0, 3)));
+  } finally { pg.close(); }
+}
+/* ---- the ride on a phone: a 915x412 landscape viewport at DPR 2.625 with the CPU throttled (MP_CPU, default 4x), the game on its own requestAnimationFrame loop ---- */
+if (process.argv.includes('--perf')) {
+  const { openPage } = await import('./cdp.mjs'); const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const CPU = +(process.env.MP_CPU || 4), FPS_MIN = +(process.env.MP_FPS_MIN || 45);
+  const pg = await openPage({ audio: false, fonts: false, speed: 0.6 });
+  try {
+    await pg.send('Emulation.setDeviceMetricsOverride', { width: 915, height: 412, deviceScaleFactor: 2.625, mobile: true, screenOrientation: { type: 'landscapePrimary', angle: 90 } });
+    await pg.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
+    await pg.send('Emulation.setCPUThrottlingRate', { rate: CPU });
+    /* the boss is killed on the sim (a step at a time), then the page's own loop plays the transition */
+    await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.setHero('knight'); BK.reset({ fresh: true }); BK.trans.force(true); BK.load(LEVELS.findIndex(l => l.id === 'wood')); BK.start(); BK.sim(30);
+      const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); BK.sim(200);
+      for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); } return 1; })()`, 600000);
+    const wait = async (pred, ms) => { for (const until = Date.now() + ms; Date.now() < until;) { if (await pg.evalp(pred, 5000).catch(() => false)) return true; await sleep(100); } return false; };
+    const ride = await wait(`!!(BK.trans.tr && !BK.trans.tr.loading && BK.trans.TRM.phase(BK.trans.tr.tl) === 'shore')`, 120000);
+    ok('PERF: the page reached the ferry scene on its own loop', ride);
+    if (ride) {
+      await pg.evalp(`(() => { const a = window.__fr = { n: 0, dts: [], last: performance.now(), on: true }; const f = t => { if (!a.on) return; a.n++; a.dts.push(t - a.last); a.last = t; requestAnimationFrame(f); }; requestAnimationFrame(f); window.__t0 = performance.now(); })()`);
+      await wait(`BK.trans.tr && BK.trans.TRM.phase(BK.trans.tr.tl) === 'fade'`, 40000);
+      const r = await pg.evalp(`(() => { const a = window.__fr; a.on = false; const d = a.dts.slice().sort((x, y) => x - y); return { n: a.n, wall: (performance.now() - window.__t0) / 1000, p95: d[Math.floor(d.length * 0.95)] || 0, worst: d[d.length - 1] || 0 }; })()`);
+      const fps = r.n / r.wall; console.log('ride (shore + ride): ' + JSON.stringify({ fps: +fps.toFixed(1), p95: +r.p95.toFixed(1), worst: +r.worst.toFixed(1), secs: +r.wall.toFixed(1), cpu: CPU + 'x' }));
+      ok('PERF: >= ' + FPS_MIN + ' fps over the ferry scene at ' + CPU + 'x CPU on a phone viewport', fps >= FPS_MIN, fps.toFixed(1) + ' fps');
+    }
+    ok('PERF: no page errors', pg.errors.length === 0, JSON.stringify(pg.errors.slice(0, 3)));
   } finally { pg.close(); }
 }
 const bad = rows.filter(x => !x.pass); console.log(bad.length ? bad.length + ' red of ' + rows.length : 'all ' + rows.length + ' green'); process.exit(bad.length ? 1 : 0);
