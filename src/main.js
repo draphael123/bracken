@@ -1370,7 +1370,7 @@ function resolveTiles() {
       if (L.palette && L.palette.hall && up === T.SOLID && tileAt(x, y + 1) === T.SOLID && y < 15 && rnd() < 0.5) s = TILE.hall[(rnd() * 3) | 0];
       for (const z of (L.stone || [])) if (x >= z[0] && x <= z[1] && y >= z[2] && y <= z[3]) s = TILE.clear || (TILE.clear = canvas(TS, TS)[0]); // the menhir is drawn whole, over the column
       for (const z of (L.scree || [])) if (x >= z.x0 && x <= z.x1 && y === z.y) s = TILE.scree[z.dir];
-      if (L.lumberKit && x < 510 && s) s = LTT.floorTile(x, y, up !== T.SOLID && up !== T.CRATE && !isSlope(up), eL, eR, tileAt(x, y + 1) === T.AIR, rockDeep[y * LW + x]);   /* (claude/lumberfix) the trail's own forest floor (needle duff, loam, bark chips) in place of the old grass-and-dirt tiles; the clearing (col 510+) is the boss lane's */
+      if (L.lumberKit && s) s = (x < 510 ? LTT.floorTile : LTT.clearingTile)(x, y, up !== T.SOLID && up !== T.CRATE && !isSlope(up), eL, eR, tileAt(x, y + 1) === T.AIR, rockDeep[y * LW + x]);   /* (claude/lumberfix) the trail's own forest floor (needle duff, loam, bark chips) in place of the old grass-and-dirt tiles; the clearing (col 510+) is the boss lane's */
     } else if (t === T.AIR && L.palette && L.palette.dress === 'myc' && tileAt(x, y - 1) === T.SOLID && rnd() < 0.22) { decor.push({ k: 'moss', x: x * TS + 3, y: y * TS, c: PROP.moss[(rnd() * 3) | 0], sway: 0 });
     } else if (t === T.ONEWAY) {
       const l = tileAt(x - 1, y) === T.ONEWAY, r = tileAt(x + 1, y) === T.ONEWAY;
