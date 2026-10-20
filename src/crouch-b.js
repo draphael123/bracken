@@ -123,6 +123,7 @@ export function makeCrouchB(api) {
     if (h === 'paladin' && R.pray && p.kneelT >= KNEEL.settle) return ['pray', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];   /* (claude/paladin4art) PRAYER's own pose: both hands clasped on the haft, a halo over the bowed helm */
     if (h === 'paladin' && R.kneel && p.kneelT >= KNEEL.settle) return ['kneel', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];
     if (h === 'geomancer' && R.sense && p.senseT >= SENSE.settle) return ['sense', Math.floor(p.senseT * 3) % 2];
+    if (h === 'reaper' && R.price && api.time - (p.bkPriceAt ?? -9) < 0.5) { const el = api.time - p.bkPriceAt; return ['price', el < 0.14 ? 0 : el < 0.3 ? 1 : 2]; }   /* (claude/bloodknightart) BLOOD PRICE's own pose: the palm drawn along the blade, the blood running, the blade soaked */
     if (h === 'reaper' && R.bloodSpike && api.time - (p.bkSpikeAt ?? -9) < 0.3) return ['bloodSpike', api.time - p.bkSpikeAt < 0.12 ? 0 : 1];   /* (claude/bloodknight) BLOOD SPIKE's own pose, once the art lane draws it (until then the kneel's third beat, below) */
     if (h === 'reaper' && R.graveKneel) return ['graveKneel', api.time - (p.dkKneelHit ?? -9) < 0.24 ? 2 : Math.floor(api.time * 1.6) % 2];   /* (claude/dk2art: the third beat - a low blow turned on the blade) */   /* (claude/dk2b) GRAVE KNEEL: the blade planted point-down in front of him (src/dk2.js) */
     return null; }

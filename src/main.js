@@ -1716,6 +1716,7 @@ function drawSeatPlate(p, slotI) {
     bar(x0 + 27, y0 + 5, 38, 4, k, Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b', k);
     text('DOWN', x0 + 68, y0 + 4, '#ff6b6b', 'left', 6); }
   else { bar(x0 + 27, y0 + 5, 38, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
+    if (p.hero === 'reaper' && (p.bd || 0) > 0.4) drawDebt(x0 + 27, y0 + 5, 38, 4, p);   /* (claude/bloodknightart) a Blood Knight's BLOOD DEBT on the seat plate too */
     text(String(Math.max(0, Math.ceil(p.hp))), x0 + 68, y0 + 4, '#fff6e0', 'left', 6); }
   text(fitText(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), w - 10, 6), x0 + 5, y0 + 12, UI.dim, 'left', 6);
   if (RP.chainOf(p) > 0 && !(p.down > 0)) { const tw = 5 * 6 + 3, tx = x0 + w - tw;   /* (claude/riposteart) P2's MIX-UP pips, on a tab hung under the plate's right end (the same gems as the HUD's) */
@@ -9117,8 +9118,8 @@ function updateRisen(dt) {
 function drawRisen(cx, cy) {
   drawBloodBolts(cx, cy); drawBkWaves(cx, cy);
   for (const h of hands) { if (h.delay > 0) continue; const x = Math.round(h.x - cx), y = Math.round(h.y - cy), k = Math.min(1, h.life * 2);
-    g.globalAlpha = k; g.fillStyle = '#3a4a30'; g.fillRect(x - 4, y - 10, 2, 10); g.fillRect(x + 2, y - 12, 2, 12);
-    g.fillStyle = '#8fd160'; g.fillRect(x - 5, y - 12, 1, 3); g.fillRect(x - 3, y - 13, 1, 4); g.fillRect(x + 1, y - 15, 1, 4); g.fillRect(x + 3, y - 14, 1, 3); g.globalAlpha = 1; }
+    g.globalAlpha = k; g.fillStyle = '#5a0a18'; g.fillRect(x - 4, y - 10, 2, 10); g.fillRect(x + 2, y - 12, 2, 12);
+    g.fillStyle = '#ff4a5a'; g.fillRect(x - 5, y - 12, 1, 3); g.fillRect(x - 3, y - 13, 1, 4); g.fillRect(x + 1, y - 15, 1, 4); g.fillRect(x + 3, y - 14, 1, 3); g.globalAlpha = 1; }
   if (thrownScythe) { const s = thrownScythe, x = Math.round(s.x - cx), y = Math.round(s.y - cy), a = s.t * 14;   /* BLOOD LEECH: a knot of blood turning over itself */
     g.save(); g.translate(x, y); g.rotate(a);
     g.strokeStyle = '#7a1020'; g.lineWidth = 3; g.beginPath(); g.arc(0, 0, 6, 0, 4.4); g.stroke();
@@ -9127,7 +9128,7 @@ function drawRisen(cx, cy) {
     if (Math.random() < 0.6) parts.push({ x: s.x, y: s.y, vx: 0, vy: 10, life: 0.25, max: 0.25, col: '#a01a2a', size: 1, grav: 60 }); }
   for (const b of bodies) {   /* (claude/bloodknight) no red glow: nothing draws a body now (the harvest is gone) */
     const a = Math.min(1, b.life / 3) * 0.5;   /* a body lying there, and a red in it */
-    g.globalAlpha = a; g.fillStyle = '#2a3a24'; g.fillRect(Math.round(b.x - cx) - 6, Math.round(b.y - cy) - 3, 12, 3);
+    g.globalAlpha = a; g.fillStyle = '#3a0a14'; g.fillRect(Math.round(b.x - cx) - 6, Math.round(b.y - cy) - 3, 12, 3);
     g.fillStyle = '#c0283a'; g.fillRect(Math.round(b.x - cx) - 1 + Math.round(Math.sin(time * 2 + b.x) * 2), Math.round(b.y - cy) - 5, 1, 1); g.globalAlpha = 1; }
   for (const r of risen) {
     const x = Math.round(r.x - cx), y = Math.round(r.y - cy), a = Math.min(1, r.life * 1.2) * (r.kind === 'wisp' ? 0.75 : 0.9);
@@ -9136,25 +9137,25 @@ function drawRisen(cx, cy) {
     if (r.kind === 'wisp') {                                          /* A BURNING SKULL, floating: the caster's share */
       const sy = y + bob;
       for (let i = 0; i < 3; i++) { const t2 = (r.anim * 2 + i / 3) % 1;   /* the flame coming off the crown */
-        g.globalAlpha = a * 0.5 * (1 - t2); g.fillStyle = t2 < 0.4 ? '#dfffa0' : '#8fd160';
+        g.globalAlpha = a * 0.5 * (1 - t2); g.fillStyle = t2 < 0.4 ? '#ffd0d0' : '#ff4a5a';
         g.fillRect(x - 2 + i * 2, sy - 7 - Math.round(t2 * 7), 1, 2); }
-      g.globalAlpha = a; g.fillStyle = '#e8e2cc'; g.fillRect(x - 3, sy - 5, 7, 5); g.fillRect(x - 2, sy - 6, 5, 1);
-      g.fillStyle = '#b9b2a0'; g.fillRect(x - 3, sy - 2, 7, 1);
-      g.fillStyle = '#06080a'; g.fillRect(x - 2, sy - 4, 2, 2); g.fillRect(x + 1, sy - 4, 2, 2);
-      g.fillStyle = '#e8e2cc'; g.fillRect(x - 2, sy - 1, 5, 1);
-      g.fillStyle = '#7a7466'; for (let k = 0; k < 4; k++) g.fillRect(x - 2 + k, sy - 1, 1, 1);
-      g.globalAlpha = a * (0.7 + 0.3 * Math.sin(r.anim * 6)); g.fillStyle = '#8fd160';
+      g.globalAlpha = a; g.fillStyle = '#d04058'; g.fillRect(x - 3, sy - 5, 7, 5); g.fillRect(x - 2, sy - 6, 5, 1);
+      g.fillStyle = '#9a1c32'; g.fillRect(x - 3, sy - 2, 7, 1);
+      g.fillStyle = '#1a0204'; g.fillRect(x - 2, sy - 4, 2, 2); g.fillRect(x + 1, sy - 4, 2, 2);
+      g.fillStyle = '#d04058'; g.fillRect(x - 2, sy - 1, 5, 1);
+      g.fillStyle = '#4a0a16'; for (let k = 0; k < 4; k++) g.fillRect(x - 2 + k, sy - 1, 1, 1);
+      g.globalAlpha = a * (0.7 + 0.3 * Math.sin(r.anim * 6)); g.fillStyle = '#ff4a5a';
       g.fillRect(x - 2, sy - 4, 1, 2); g.fillRect(x + 2, sy - 4, 1, 2);
       g.globalAlpha = a * 0.28; g.beginPath(); g.arc(x, sy - 3, 10, 0, 7); g.fill(); }
     else wraith(x, y, r.kind, r.face, r.anim, a, 0, r.flash || 0, r.rise || 0);
     g.globalAlpha = 1;
-    const k = r.life < 2 ? r.life / 2 : 1; if (k < 1 && Math.random() < 0.3) parts.push({ x: r.x, y: r.y - 8, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#8fd160', size: 1, grav: -10 });
+    const k = r.life < 2 ? r.life / 2 : 1; if (k < 1 && Math.random() < 0.3) parts.push({ x: r.x, y: r.y - 8, vx: 0, vy: -20, life: 0.4, max: 0.4, col: '#ff4a5a', size: 1, grav: -10 });
   }
   if (isReaper() && !P.dead) drawPriceBlade(cx, cy);   /* (claude/dk2b) THE BLOOD PRICE: the blade over his shoulder glows redder and grows with what it drank */
   if (isReaper() && !P.dead) drawWard(cx, cy);   /* BLOOD WARD, DRAWN: the ward in front of him, what it holds, and the RETURN */
   for (const c of culls) drawCull(c, cx, cy);
   for (const b of rbolts) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy);
-    g.fillStyle = '#dfffa0'; g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 0.5; g.fillStyle = '#8fd160'; g.fillRect(x - 3, y - 3, 7, 7); g.globalAlpha = 1; }
+    g.fillStyle = '#ffd0d0'; g.fillRect(x - 1, y - 1, 3, 3); g.globalAlpha = 0.5; g.fillStyle = '#ff4a5a'; g.fillRect(x - 3, y - 3, 7, 7); g.globalAlpha = 1; }
 }
 // WHAT HE RAISES. Not a ghost - a SKELETON, and the difference is the whole point: a ghost is a thing you
 // look through and a skeleton is a thing that stands in the way. It is drawn as bone so you can count the
@@ -9163,10 +9164,10 @@ function drawRisen(cx, cy) {
 function wraith(x, y, kind, face, anim, a, deep = 0, flash = 0, rise = 0) {
   const h = 17 + deep * 2;
   const sway = Math.sin(anim * 3 + x * 0.2) * 0.6;
-  const B = flash > 0 ? '#ffffff' : '#e8e2cc', M = flash > 0 ? '#f4f0e2' : '#b9b2a0', D = flash > 0 ? '#c8c4b6' : '#7a7466';
+  const B = flash > 0 ? '#ffffff' : '#d04058', M = flash > 0 ? '#ffd0d8' : '#9a1c32', D = flash > 0 ? '#e0a0aa' : '#4a0a16';
   const sx = Math.round(x + sway), sunk = Math.round(rise * 18);        /* it comes up out of the ground */
   g.save(); g.beginPath(); g.rect(x - 16, y - h - 8, 32, h + 8 - sunk); g.clip();
-  g.globalAlpha = a * 0.25; g.fillStyle = '#0a1208';
+  g.globalAlpha = a * 0.25; g.fillStyle = '#1a0306';
   g.beginPath(); g.ellipse(x, y, 7 + deep, 3, 0, 0, 7); g.fill();       /* the cold it stands in */
   g.globalAlpha = a;
   const st = Math.floor(anim * 6) % 2;                                  /* the legs alternate: bones walk badly */
@@ -9186,26 +9187,27 @@ function wraith(x, y, kind, face, anim, a, deep = 0, flash = 0, rise = 0) {
   const hy = y - h;                                                     /* THE SKULL */
   g.fillStyle = B; g.fillRect(sx - 3, hy, 7, 5); g.fillRect(sx - 2, hy - 1, 5, 1);
   g.fillStyle = M; g.fillRect(sx - 3, hy + 3, 7, 1);
-  g.fillStyle = '#06080a'; g.fillRect(sx - 2, hy + 1, 2, 2); g.fillRect(sx + 1, hy + 1, 2, 2);   /* the sockets */
+  g.fillStyle = '#1a0204'; g.fillRect(sx - 2, hy + 1, 2, 2); g.fillRect(sx + 1, hy + 1, 2, 2);   /* the sockets */
   g.fillStyle = D; g.fillRect(sx, hy + 3, 1, 1);                                                 /* the nasal notch */
   g.fillStyle = B; g.fillRect(sx - 2, hy + 4, 5, 1);                                             /* the jaw */
   g.fillStyle = D; for (let k = 0; k < 4; k++) g.fillRect(sx - 2 + k, hy + 4, 1, 1);
   const lit = 0.6 + 0.4 * Math.sin(anim * 6 + x);                       /* and the two lights in the sockets */
-  g.globalAlpha = a * lit; g.fillStyle = '#8fd160';
+  g.globalAlpha = a * lit; g.fillStyle = '#ff4a5a';
   g.fillRect(sx - 2 + (face > 0 ? 1 : 0), hy + 1, 1, 2); g.fillRect(sx + 1 + (face > 0 ? 1 : 0), hy + 1, 1, 2);
   g.globalAlpha = a * lit * 0.22; g.beginPath(); g.arc(sx, hy + 2, 8, 0, 7); g.fill();
   g.globalAlpha = a;
+  g.fillStyle = '#ff4a5a'; { const dr = Math.floor(anim * 3) % 3; g.fillRect(sx - 4 + dr * 4, y - 6 + (Math.floor(anim * 6) % 2), 1, 2); }   /* (claude/bloodknightart) a BLOOD THRALL: clotted red, dripping, the lights in the sockets pale */
   // AND WHAT IT CARRIED. A skeleton with a rusted sword is a body-block; one with a bow stands at the back.
   if (kind === 'wight') {
     g.fillStyle = M; g.fillRect(sx + face * 4, y - h + 7, face * 3, 2);                            /* the arm out */
-    g.fillStyle = '#5a4a38'; g.fillRect(sx + face * 6, y - h + 8, face * 2, 2);                    /* the grip */
-    g.fillStyle = '#8a7f6e'; g.fillRect(sx + face * 7, y - h + 4, face * 2, 7);                    /* a rusted blade */
-    g.fillStyle = '#b3a892'; g.fillRect(sx + face * 7, y - h + 4, face * 1, 7);
+    g.fillStyle = '#2a1018'; g.fillRect(sx + face * 6, y - h + 8, face * 2, 2);                    /* the grip */
+    g.fillStyle = '#5a1020'; g.fillRect(sx + face * 7, y - h + 4, face * 2, 7);                    /* a rusted blade */
+    g.fillStyle = '#c0283a'; g.fillRect(sx + face * 7, y - h + 4, face * 1, 7);
   } else if (kind === 'shade') {
     g.fillStyle = M; g.fillRect(sx + face * 3, y - h + 7, face * 3, 2);
-    g.strokeStyle = '#5a4a38'; g.lineWidth = 1; g.beginPath();                                      /* a bow, half rotted */
+    g.strokeStyle = '#2a1018'; g.lineWidth = 1; g.beginPath();                                      /* a bow, half rotted */
     g.arc(sx + face * 5, y - h + 8, 5, face > 0 ? -1.1 : 2.0, face > 0 ? 1.1 : 4.2); g.stroke();
-    g.strokeStyle = '#9a927c'; g.beginPath(); g.moveTo(sx + face * 5, y - h + 3); g.lineTo(sx + face * 5, y - h + 13); g.stroke();
+    g.strokeStyle = '#ff9aa6'; g.beginPath(); g.moveTo(sx + face * 5, y - h + 3); g.lineTo(sx + face * 5, y - h + 13); g.stroke();
   }
   g.restore(); g.globalAlpha = 1;
 }
@@ -26146,8 +26148,26 @@ function bloodSurge() { trialEvent('meter');   /* his full bar, in his trial (RE
    crimson shockwave on the ground (a pale lip, a dark core), then BLOOD SPIKES jabbing up from the earth in a ring - crimson blades with a hot tip and a dark edge,
    tall and short in turn - all of it sinking back as the burst fades. Deterministic from the burst's seed. The same picture serves THE CULL's landing (graveFall),
    BLOOD MOON's geysers and BLOOD SPIKE round the planted blade (b.spike: a tight ring, no wave). */
+/* (claude/bloodknightart) BLOOD MOON's GEYSERS: columns of blood standing up out of the floor both ways from the planted blade - tall near the blade and falling off with the
+   distance, each a dark-edged shaft with a bright core, a flared crown of drops at the top and a pool at the foot - and a red moon-ring of the shockwave flat on the ground. */
+function drawMoonGeysers(b, cx, cy) { const k = b.t / b.life, up = Math.min(1, b.t / 0.1), down = k < 0.55 ? 1 : 1 - (k - 0.55) / 0.45, a = Math.max(0, 1 - k), x0 = Math.round(b.x - cx), y0 = Math.round(b.y - cy), R = b.reach;
+  const wave = R * (1 - Math.pow(1 - Math.min(1, b.t / 0.3), 2));
+  g.save(); g.globalAlpha = 0.25 * a; g.fillStyle = '#3a0610'; g.beginPath(); g.ellipse(x0, y0, wave, Math.max(2, wave * 0.16), 0, 0, 7); g.fill();
+  g.globalAlpha = a; g.strokeStyle = '#ff4a5a'; g.lineWidth = 2; g.beginPath(); g.ellipse(x0, y0, wave, Math.max(2, wave * 0.16), 0, 0, 7); g.stroke();
+  g.strokeStyle = '#ffd0d0'; g.lineWidth = 1; g.beginPath(); g.ellipse(x0, y0, Math.max(1, wave - 2), Math.max(1, wave * 0.16 - 1), 0, 0, 7); g.stroke();
+  for (const sd of [-1, 1]) for (let i = 1; i <= 6; i++) { const px = x0 + sd * i * 9, ph = Math.round((38 - i * 5 + ((b.seed >> i) & 3)) * up * down), w = i < 3 ? 3 : 2; if (ph < 2 || wave < i * 9 - 6) continue;
+    g.globalAlpha = a < 0.15 ? a * 6 : 1;
+    g.fillStyle = '#3a0610'; g.fillRect(px - w - 1, y0 - 2, w * 2 + 3, 2);   /* the pool at the foot */
+    g.fillStyle = '#1a0306'; g.fillRect(px - w - 1, y0 - ph, 1, ph); g.fillRect(px + w, y0 - ph, 1, ph);   /* the dark edge of the shaft */
+    g.fillStyle = '#7a1020'; g.fillRect(px - w, y0 - ph, w * 2, ph);
+    g.fillStyle = '#c8283c'; g.fillRect(px - w + 1, y0 - ph, w, ph); g.fillStyle = '#ff6b6b'; g.fillRect(px - 1, y0 - ph + 2, 1, ph - 3);
+    g.fillStyle = '#c8283c'; g.fillRect(px - w - 1, y0 - ph - 1, w * 2 + 2, 2);   /* the crown flaring */
+    g.fillStyle = '#ffd0d0'; g.fillRect(px - 1, y0 - ph - 2, 2, 1);
+    g.fillStyle = '#ff6b6b'; g.fillRect(px - w - 2, y0 - ph - 4 - ((i + (b.seed & 3)) & 1) * 2, 1, 1); g.fillRect(px + w + 1, y0 - ph - 5 + ((i + (b.seed & 1)) & 1), 1, 1); g.fillRect(px + (i & 1 ? 2 : -3), y0 - ph - 6, 1, 1); }
+  g.restore(); }
 function drawGraveBurst(cx, cy) {
-  for (const b of dkGraves) { const k = b.t / b.life, up = Math.min(1, b.t / 0.08), down = k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4, a = Math.max(0, 1 - k), x0 = Math.round(b.x - cx), y0 = Math.round(b.y - cy), R = b.reach;
+  for (const b of dkGraves) { if (b.moon) { drawMoonGeysers(b, cx, cy); continue; }
+    const k = b.t / b.life, up = Math.min(1, b.t / 0.08), down = k < 0.6 ? 1 : 1 - (k - 0.6) / 0.4, a = Math.max(0, 1 - k), x0 = Math.round(b.x - cx), y0 = Math.round(b.y - cy), R = b.reach;
     const wave = R * (1 - Math.pow(1 - Math.min(1, b.t / 0.28), 2));
     if (!b.spike) { g.save(); g.globalAlpha = 0.22 * a; g.fillStyle = '#3a0610'; g.beginPath(); g.ellipse(x0, y0, wave, Math.max(2, wave * 0.18), 0, 0, 7); g.fill();
       g.globalAlpha = 0.9 * a; g.strokeStyle = '#ff4a5a'; g.lineWidth = 2; g.beginPath(); g.ellipse(x0, y0, wave, Math.max(2, wave * 0.18), 0, 0, 7); g.stroke();
@@ -26215,7 +26235,7 @@ function bkHeavyLive() { const st = P.bkTier || 1, T = BKIT.BLOOD.tiers, x = P.x
 function bkMoon() { const M = BKIT.BLOOD.moon, dmg = Math.round(swordDmg() * M.mul * BKIT.spendMul(P.bkSpent || 0, P.maxHp)), hit = new Set();
   SFX.crack(); SFX.stone(); SFX.dkPlant && SFX.dkPlant(); shakeCam(8, P.face * 2); zoomKick(1.08, 0.3); hitstop(0.08); rumble(160, 0.7);
   ringAt(P.x, P.y - 2, M.reach, '#8a0a1a', 0.45); ringAt(P.x, P.y - 2, M.reach * 0.6, '#ff4a5a', 0.35); dust(P.x, P.y, 12);
-  dkGraves.push({ x: P.x, y: P.y, t: 0, life: 0.8, reach: M.reach, seed: Math.floor(Math.random() * 1e6) });
+  dkGraves.push({ x: P.x, y: P.y, t: 0, life: 0.8, reach: M.reach, moon: true, seed: Math.floor(Math.random() * 1e6) });
   for (const d of [-1, 1]) for (let k = 1; k <= 6; k++) { const gx = P.x + d * k * 9;
     for (let j = 0; j < 3; j++) parts.push({ x: gx, y: P.y, vx: d * 10, vy: -150 - (7 - k) * 26 - Math.random() * 50, life: 0.32 + k * 0.03, max: 0.5, col: j === 0 ? '#5a0a14' : j === 1 ? '#c0283a' : '#ffb0b8', size: 2, grav: 700 }); }
   for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || hit.has(e)) continue;
@@ -26230,11 +26250,20 @@ function updateBkWaves(dt) { const W = BKIT.BLOOD.wave;
       if (Math.abs(e.x - w.x) > (e.w || 16) / 2 + 8 || e.y < w.y - 30 || e.y - (e.h || 16) > w.y + 2) continue;
       w.hit.add(e); hurtAs('heavy', e, w.dmg, w.x - w.face * 10, false); markFoe(e); if (e.alive) bkBleed(e, 3); burst(e.x, e.y - (e.h || 16) / 2, 8, ['#c0283a', '#ff6b6b', '#3a0a10'], 70, 0.4); bkReclaim(w.dmg, e); } }
   bkWaves = bkWaves.filter(w => w.t < W.life); }
-function drawBkWaves(cx, cy) { const W = BKIT.BLOOD.wave;
-  for (const w of bkWaves) { const k = w.t / W.life, x = Math.round(w.x - cx), y = Math.round(w.y - cy), h = Math.round(22 * (1 - 0.4 * k)), f = w.face;
-    g.globalAlpha = 0.85 * (1 - k); g.fillStyle = '#7a1020'; g.beginPath(); g.ellipse(x - f * 3, y - h / 2, 5, h / 2, 0, 0, 7); g.fill();
-    g.fillStyle = '#c8283c'; g.beginPath(); g.ellipse(x, y - h / 2, 4, h / 2 - 1, 0, f > 0 ? -1.6 : 1.6, f > 0 ? 1.6 : 4.7); g.fill();
-    g.globalAlpha = 1 - k; g.fillStyle = '#ffd0d0'; g.fillRect(x + f * 3, y - h + 2, 1, h - 4); g.globalAlpha = 1; } }
+/* (claude/bloodknightart) THE CRIMSON CRESCENT, a baked pixel sprite (was an ellipse): a thick crescent bulging ahead, a white-hot rim, a dark outline, three shimmer frames; flipped for facing left */
+let bkWaveSpr = null;
+function bkWaveSprites() { if (bkWaveSpr) return bkWaveSpr; bkWaveSpr = [];
+  for (let fr = 0; fr < 3; fr++) { const W = 8, H = 24, c = document.createElement('canvas'); c.width = W + 6; c.height = H + 2; const q = c.getContext('2d');
+    for (let y = 0; y < H; y++) { const t = (y + 0.5) / H * 2 - 1, r = Math.sqrt(Math.max(0, 1 - t * t)), xo = Math.round(2 + W * r), th = Math.max(1, Math.round(4.5 * r)) + (fr === 1 && y % 5 === 2 ? 1 : 0);
+      q.fillStyle = '#1a0306'; q.fillRect(xo + 1, y + 1, 1, 1); q.fillRect(xo - th, y + 1, 1, 1);
+      for (let x = xo - th + 1; x <= xo; x++) { const d = xo - x; q.fillStyle = d === 0 ? '#ffe0e4' : d === 1 ? '#ff4a5a' : d < th - 1 ? '#c0283a' : '#7a1020'; q.fillRect(x, y + 1, 1, 1); }
+      if ((y + fr * 2) % 6 === 0) { q.fillStyle = '#ffd0d0'; q.fillRect(xo + 2, y + 1, 1, 1); } }
+    bkWaveSpr.push(c); }
+  return bkWaveSpr; }
+function drawBkWaves(cx, cy) { const W = BKIT.BLOOD.wave, spr = bkWaveSprites();
+  for (const w of bkWaves) { const k = w.t / W.life, x = Math.round(w.x - cx), y = Math.round(w.y - cy), f = w.face, c = spr[Math.floor(w.t * 14) % 3], sy = 1 - 0.35 * k, h = Math.round(c.height * sy);
+    g.globalAlpha = 0.5 * (1 - k); g.fillStyle = '#7a1020'; for (let i = 1; i <= 3; i++) g.fillRect(x - f * (6 + i * 4), y - h / 2 - 3 + i * 3, 3, 1);   /* the trail it drags */
+    g.globalAlpha = Math.min(1, 1.4 * (1 - k)); g.save(); g.translate(x, y - h + 1); g.scale(f > 0 ? 1 : -1, 1); g.drawImage(c, -4, 0, c.width, h); g.restore(); g.globalAlpha = 1; } }
 /* A BLOW OF HIS THAT LANDS RECLAIMS BLOOD DEBT (never above where he was before the hit: it fills the red segment and no more) */
 function bkReclaim(dmg, e) { if (!isReaper() || !(P.bd > 0)) return 0; const r = BKIT.debtReclaim(P, BKIT.reclaimOf(dmg)); if (r > 0) { P.bkReclaimed = (P.bkReclaimed || 0) + r; if (e) { dkDrainFx(e); surgeLinks.push({ e, t: 0 }); } if (r >= 1) number(P.x, P.y - 40, '+' + Math.round(r), '#ff6b6b'); } return r; }
 function bkReclaimAll(why) { if (!isReaper() || !(P.bd > 0)) return 0; const r = BKIT.debtReclaimAll(P); if (r > 0) { P.bkReclaimed = (P.bkReclaimed || 0) + r; P.bkAllBack = (P.bkAllBack || 0) + 1; number(P.x, P.y - 46, '+' + Math.round(r), '#ff6b6b'); void why; motes(P.x, P.y - 14, 8, 10, ['#ff6b6b', '#ffd0d0']); SFX.bloodDraw(); } return r; }
@@ -26243,7 +26272,7 @@ function bkPrice() { const B = BKIT.BLOOD.price, free = !!(L && L.trial) || SET.
   if ((P.bkPriceCd || 0) > 0) return false;
   if (!free && P.hp <= 1) { number(P.x, P.y - 30, 'NO BLOOD LEFT TO PAY', '#7a1020'); SFX.buzz(); return false; }
   const paid = BKIT.payPrice(P, free); if (!(paid > 0)) return false;
-  P.bkPriceCd = B.cd; P.bkEdgeT = B.buffT; P.bkPrices = (P.bkPrices || 0) + 1; P.dkKneelHit = time; trialEvent('price');
+  P.bkPriceCd = B.cd; P.bkPriceAt = time; P.bkEdgeT = B.buffT; P.bkPrices = (P.bkPrices || 0) + 1; P.dkKneelHit = time; trialEvent('price');
   number(P.x, P.y - 22, '-' + paid, '#c0283a'); number(P.x, P.y - 34, 'BLOOD PRICE', '#ff4a5a'); SFX.bloodDraw(); SFX.tell(true); hitstop(0.04);
   ringAt(P.x + P.face * 6, P.y - 14, 18, '#ff4a5a', 0.35);
   for (let i = 0; i < 14; i++) parts.push({ x: P.x + P.face * 4 + (Math.random() - 0.5) * 6, y: P.y - 10 - Math.random() * 6, vx: P.face * (20 + Math.random() * 40), vy: -60 - Math.random() * 50, life: 0.5, max: 0.5, col: Math.random() < 0.6 ? '#c0283a' : '#ff6b6b', size: Math.random() < 0.4 ? 2 : 1, grav: 200 });   /* the vein opened over the blade */
@@ -30349,9 +30378,13 @@ function drawFront(cx, cy) {
 }
 /* (claude/bloodknight) BLOOD DEBT, DRAWN on a health bar (x, y, w, h): a dark-red segment from his health to where it was, a hot edge that pulses, thinning as it drains */
 function drawDebt(x, y, w, h, p) { const f0 = Math.max(0, p.hp / p.maxHp), f1 = Math.min(1, (p.hp + (p.bd || 0)) / p.maxHp), x0 = x + Math.round(w * f0), x1 = x + Math.round(w * f1); if (x1 <= x0) return;
-  const pu = (p.bdHold || 0) > 0 ? 1 : 0.6 + 0.4 * Math.sin(time * 14);
-  g.fillStyle = '#5a0a18'; g.fillRect(x0, y, x1 - x0, h); g.globalAlpha = 0.55 + 0.45 * pu; g.fillStyle = '#c0283a'; g.fillRect(x0, y + 1, x1 - x0, h - 2); g.globalAlpha = 1;
-  g.fillStyle = '#ff9aa6'; g.fillRect(x1 - 1, y, 1, h); g.fillStyle = 'rgba(255,255,255,0.35)'; g.fillRect(x0, y, x1 - x0, 1); }
+  /* (claude/bloodknightart) READS AGAINST THE LOW-HEALTH FLASH: health is a flat bright red (and flashes pale when low); the debt is a HATCHED maroon - diagonal bright stripes on near-black - behind a dark seam, so it is a different texture, not a different shade, with a white-hot edge that pulses; the hatch crawls toward the health as it drains */
+  const pu = (p.bdHold || 0) > 0 ? 1 : 0.5 + 0.5 * Math.sin(time * 14), sh = SET.reduceMotion ? 0 : Math.floor(time * 6) & 3;
+  g.fillStyle = '#1a0308'; g.fillRect(x0, y, x1 - x0, h);
+  g.fillStyle = '#c0283a'; for (let i = x0 + 1; i < x1; i++) for (let j = 0; j < h; j++) if (((i - x0) + j + sh) % 4 < 2) g.fillRect(i, y + j, 1, 1);
+  g.fillStyle = '#5a0a18'; for (let i = x0 + 1; i < x1; i++) for (let j = 0; j < h; j++) if (((i - x0) + j + sh) % 4 === 2) g.fillRect(i, y + j, 1, 1);
+  g.fillStyle = '#0a0206'; g.fillRect(x0, y, 1, h); g.fillRect(x0, y, x1 - x0, 1); g.fillRect(x0, y + h - 1, x1 - x0, 1);
+  g.fillStyle = pu > 0.5 ? '#ffffff' : '#ff9aa6'; g.fillRect(x1 - 1, y, 1, h); }
 function bar(x, y, w, h, frac, col, ghost = null, colGhost = '#fff6e0') {
   g.fillStyle = ART.OUT; g.fillRect(x - 1, y - 1, w + 2, h + 2);
   g.fillStyle = '#2a2230'; g.fillRect(x, y, w, h); g.fillStyle = '#1a1420'; g.fillRect(x, y, w, 1);   /* a track sunk into the plate */
