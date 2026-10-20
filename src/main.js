@@ -30028,6 +30028,14 @@ function text(s, x, y, col, align = 'left', size = 8, style = 'shadow') {
   if (window.__textRec) textRec('text', { s, x0, y0, w: st.w, h: st.h, size, tiny: true, align, alpha: g.globalAlpha, style, world: !!g.__mapWorld });
   g.drawImage(st.c, x0 - st.pad, y0 - st.pad);
 }
+/* A WORLD LABEL ON ITS OWN DARK PLATE, CENTRED BOTH WAYS (claude/marsh3): the plate is sized from the string's INK (stampOf: w x h), padded 6 a side and 3 above and
+   below, and the words are put in its middle - the CALL RAFT box drew 62 x 12 by hand with the words' TOP at its middle row, so they hung out of the bottom and one
+   pixel right. tools/textfit.mjs 'worldplates' measures it (OFFCENTRE). midX is the plate's centre column, top its top row. */
+function worldPlateLabel(s, midX, top, col, size = 6) {
+  const st = stampOf(s, size, col, 'shadow'), w = st.w + 12, h = st.h + 6, x0 = Math.round(midX - w / 2);
+  g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(x0, top, w, h);
+  text(s, x0 + 6 + st.w / 2, top + 3, col, 'center', size);
+}
 /* THE WIDTH A STRING TAKES ON THE LINE (its advances, the trailing gap included) */
 function textW(s, size = 8) { s = String(s); const face = faceOf(size); let w = 0; for (const ch of s) w += advOf(face, ch); return w * face.k; }
 /* ITS INK: what is actually lit, left edge to right edge */
@@ -31337,7 +31345,7 @@ function drawWorld(cx, cy, showPlayer) {
     else if (pr.t === 'brazier' && pr.city) { g.drawImage(PROP.city.cityBrazier[1], Math.round(pr.x) - 12 - cx, Math.round(pr.y) - 28 - cy); LA.brazierReach(g, Math.round(pr.x - cx), Math.round(pr.y - cy), Math.sign(P.x - pr.x) || 1, !P.dead && Math.abs(pr.x - P.x) < 20 && Math.abs(pr.y - P.y) < 30, time); }   /* (claude/lamplit2art) the Tollmaster's city brazier: its own iron, never the camp's; it leans to your hand */
     else if (pr.t === 'brazier') g.drawImage(PROP.brazier[pr.lit ? 1 : 0], Math.round(pr.x) - 7 - cx, Math.round(pr.y) - 16 - cy);
     else if (pr.t === 'crank') { g.drawImage(PROP.crank, Math.round(pr.x) - 6 - cx, Math.round(pr.y) - 14 - cy);
-      if (pr.raftCall) { g.fillStyle = 'rgba(10,8,20,0.85)'; g.fillRect(Math.round(pr.x - cx) - 31, Math.round(pr.y - cy) - 46, 62, 12); text('CALL RAFT', pr.x - cx, pr.y - 38 - cy, '#ffe6a0', 'center', 6); } }
+      if (pr.raftCall) worldPlateLabel('CALL RAFT', Math.round(pr.x - cx), Math.round(pr.y - cy) - 46, '#ffe6a0', 6); }   /* (claude/marsh3, Daniel 10-20: the words sat low and off to one side of their box) */
     else if (pr.t === 'throne') g.drawImage(PROP.throne, Math.round(pr.x) - 32 - cx, Math.round(pr.y) - 4 - cy);
     else if (pr.t === 'key' && !pr.got) { const yy = Math.round(pr.y + Math.sin(time * 3 + pr.ph) * 2 - cy), xx = Math.round(pr.x - cx);
       g.globalAlpha = 0.3 + 0.15 * Math.sin(time * 4); g.fillStyle = '#ffd34a'; g.beginPath(); g.arc(xx, yy - 4, 15, 0, 7); g.fill(); g.globalAlpha = 1;
