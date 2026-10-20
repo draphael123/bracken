@@ -35,11 +35,13 @@ export function actTable(levels) {
 }
 const fmtAct = (t, a) => t ? `${t.deaths ?? '-'}d (med ${t.deathsMed ?? '-'}) / ${t.arrive ?? '-'}%` : '-';   /* (the mean is pulled up by a wall level: 8 deaths is the walker's cap, so the median of the level means is printed beside it) */
 export function printTable(curve, log = console.log) {
-  const A = actTable(curve.after || {}), B = actTable(curve.before || {});
+  const A = actTable(curve.after || {}), B = actTable(curve.before || {}), C = actTable(curve.after2a || {}), D = actTable(curve.after2b || {});   /* (after2b = the re-walk on STEP 2b, ACTS.dmg 2.4 / 3.0 / 3.0) */   /* (claude/curvec5) after2a = the re-walk on STEP 2a (ACTS.dmg 1.75 / 2.1 / 2.1) */
   log('WALKER CURVE (campaign hero, human+first; deaths a first run / mean shrine arrival hp)  after = ' + (curve.head || '?') + (curve.before ? ', before = ' + (curve.base || '?') : ''));
   log('act  target (deaths / arrival)   before -> after (mean of level means)   levels in the death band');
   for (const a of Object.keys(TARGET_BY_ACT)) { const T = TARGET_BY_ACT[a]; if (!A[a] && !B[a]) continue;
-    log(String(a).padEnd(5) + (T.deathsLo + '-' + T.deathsHi + ' / ' + T.arriveHp + '%').padEnd(28) + (fmtAct(B[a]) + ' -> ' + fmtAct(A[a])).padEnd(46) + (A[a] ? A[a].inBand + '/' + A[a].n : '-')); }
+    log(String(a).padEnd(5) + (T.deathsLo + '-' + T.deathsHi + ' / ' + T.arriveHp + '%').padEnd(28) + (fmtAct(B[a]) + ' -> ' + fmtAct(A[a]) + (curve.after2a ? ' -> 2a ' + fmtAct(C[a]) : '') + (curve.after2b ? ' -> 2b ' + fmtAct(D[a]) : '')).padEnd(curve.after2b ? 110 : curve.after2a ? 78 : 46) + (A[a] ? A[a].inBand + '/' + A[a].n : '-') + (curve.after2a && C[a] ? ' (2a ' + C[a].inBand + '/' + C[a].n + ')' : '') + (curve.after2b && D[a] ? ' (2b ' + D[a].inBand + '/' + D[a].n + ')' : '')); }
+  if (curve.after2b) { log('level           act  deaths (2a -> 2b)  arrive% (2a -> 2b)  2b vs target'); for (const [id, L] of Object.entries(curve.after2b)) { const o = (curve.after2a || {})[id], v = verdict(L); log(id.padEnd(15) + String(L.act).padEnd(5) + ((o ? o.deaths : '-') + ' -> ' + L.deaths).padEnd(20) + ((o ? o.arrive ?? '-' : '-') + ' -> ' + (L.arrive ?? '-')).padEnd(22) + 'deaths ' + v.deaths + ', arrival ' + v.arrive); } }
+  if (curve.after2a) { log('level           act  deaths (C2 after -> 2a)  arrive% (C2 after -> 2a)  2a vs target'); for (const [id, L] of Object.entries(curve.after2a)) { const o = (curve.after || {})[id], v = verdict(L); log(id.padEnd(15) + String(L.act).padEnd(5) + ((o ? o.deaths : '-') + ' -> ' + L.deaths).padEnd(24) + ((o ? o.arrive ?? '-' : '-') + ' -> ' + (L.arrive ?? '-')).padEnd(26) + 'deaths ' + v.deaths + ', arrival ' + v.arrive); } }
   log('level           act  hero deaths (before -> after)  arrive% (before -> after)  vs target');
   for (const [id, L] of Object.entries(curve.after || {})) { const b = (curve.before || {})[id], v = verdict(L);
     log(id.padEnd(15) + String(L.act).padEnd(5) + 'all  ' + ((b ? b.deaths : '-') + ' -> ' + L.deaths).padEnd(26) + ((b ? b.arrive ?? '-' : '-') + ' -> ' + (L.arrive ?? '-')).padEnd(27) + 'deaths ' + v.deaths + ', arrival ' + v.arrive + (L.coverage < 60 || L.dropped ? '  (' + L.coverage + '% of the route measured between shrines' + (L.dropped ? ', ' + L.dropped + ' no-progress runs left out' : '') + ')' : '')); }
@@ -51,7 +53,9 @@ if (process.argv[1] && /walk-curve\.mjs$/.test(process.argv[1])) {
   if (args[0] === 'build') {
     const { LEVELS } = await import('../src/level.js'), { levelHash } = await import('./level-quality.mjs'), byId = Object.fromEntries(LEVELS.map(l => [l.id, l]));
     const rd = list => list ? list.split(',').flatMap(f => JSON.parse(readFileSync(f, 'utf8'))) : null, hashOf = id => byId[id] ? levelHash(byId[id]) : null;
-    const after = rd(opt('after', '')), before = rd(opt('before', ''));
+    const after = rd(opt('after', '')), before = rd(opt('before', '')), after2a = rd(opt('after2a', '')), after2b = rd(opt('after2b', ''));
+    if (after2b && !after) { const cur = JSON.parse(readFileSync(WALK_CURVE_FILE, 'utf8')); cur.after2b = fold(after2b, hashOf); cur.head2b = opt('head', ''); cur.seeds2b = opt('seeds', ''); writeFileSync(opt('out', WALK_CURVE_FILE), JSON.stringify(cur, null, 1)); printTable(cur); process.exit(0); }   /* (claude/curvec5) --after2b=: the STEP 2b re-walk */
+    if (after2a && !after) { const cur = JSON.parse(readFileSync(WALK_CURVE_FILE, 'utf8')); cur.after2a = fold(after2a, hashOf); cur.head2a = opt('head', ''); cur.seeds2a = opt('seeds', ''); writeFileSync(opt('out', WALK_CURVE_FILE), JSON.stringify(cur, null, 1)); printTable(cur); process.exit(0); }   /* (claude/curvec5) --after2a=a.json[,..] alone: add the STEP 2a re-walk to the committed table, leave the rest as it is */
     const curve = { note: 'tools/walk-curve.mjs build: the level walker (tools/level-walk.mjs, campaign level, typical build, human+first) folded by level and hero. Target by act: level-walk.mjs TARGET_BY_ACT.',
       base: opt('base', ''), head: opt('head', ''), seeds: opt('seeds', ''), targets: TARGET_BY_ACT, after: fold(after, hashOf), before: before ? fold(before) : undefined };
     writeFileSync(opt('out', WALK_CURVE_FILE), JSON.stringify(curve, null, 1)); printTable(curve);

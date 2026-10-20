@@ -34,6 +34,7 @@ for (const l of camp) { const p = gateOf(l); if (!p || !(p in byId)) continue;
   if (TIER[l.id] < TIER[p] && !ALLOW.has(p + '<' + l.id)) say(`TIER falls on the needs chain: ${p} ${TIER[p]} -> ${l.id} ${TIER[l.id]}`); }
 
 const act = ACTS.map(a => a.dmg); for (let i = 1; i < act.length; i++) if (act[i] < act[i - 1]) say(`ACTS.dmg falls: act ${i} ${act[i - 1]} -> act ${i + 1} ${act[i]}`);
+for (let i = 1; i < ACTS.length; i++) if ((ACTS[i].hp || 1) < (ACTS[i - 1].hp || 1)) say(`ACTS.hp falls: act ${i} ${ACTS[i - 1].hp} -> act ${i + 1} ${ACTS[i].hp}`);   /* (claude/curvec5) the common/elite health dial */
 for (const f of ['gap', 'dmg']) for (let a = 2; a <= 5; a++) { if (PRESSURE[a][f] < PRESSURE[a - 1][f]) say(`PRESSURE.${f} falls: act ${a - 1} ${PRESSURE[a - 1][f]} -> act ${a} ${PRESSURE[a][f]}`); if (PRESSURE[a].mini[f] < PRESSURE[a - 1].mini[f]) say(`PRESSURE.mini.${f} falls: act ${a - 1} ${PRESSURE[a - 1].mini[f]} -> act ${a} ${PRESSURE[a].mini[f]}`); }
 for (let a = 2; a <= 5; a++) if (ACT_STAKE[a] < ACT_STAKE[a - 1]) say(`ACT_STAKE falls at act ${a}`);
 /* the stake by act: x1 / x1 / x1.25 / x1.5 / x1.75 on the 25% share and the 300 ceiling; acts I-II byte-identical to the old act-blind stake */
