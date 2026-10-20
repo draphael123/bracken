@@ -75,10 +75,10 @@ try {
   }
   if (!only.length) {
     /* &hero=, level ids, a mini by level id, and a bad id */
-    await nav('/?boss=queen&hero=pyro');
-    let s = await pg.evalp('({hero:BK.PROG.hero,state:BK.state,t:BK.enemies().some(e=>e.t==="queen")})');
-    ok(s.hero === 'pyro' && s.state === 'play' && s.t, '?boss=queen&hero=pyro: ' + JSON.stringify(s));
-    await nav('/?boss=queen&hero=nobody');
+    await nav('/?boss=oldtusker&hero=pyro');
+    let s = await pg.evalp('({hero:BK.PROG.hero,state:BK.state,t:BK.enemies().some(e=>e.t==="oldtusker")})');
+    ok(s.hero === 'pyro' && s.state === 'play' && s.t, '?boss=oldtusker&hero=pyro: ' + JSON.stringify(s));
+    await nav('/?boss=oldtusker&hero=nobody');
     s = await pg.evalp('({hero:BK.PROG.hero,state:BK.state})'); ok(s.hero === 'knight' && s.state === 'play', 'a bad hero id must fall back to the saved hero: ' + JSON.stringify(s));
     await nav('/?boss=kings');
     s = await pg.evalp('({lvl:BK.L.arena&&BK.L.arena.boss,state:BK.state})'); ok(s.lvl === 'king' && s.state === 'play', '?boss=<level id> is that level\'s boss: ' + JSON.stringify(s));

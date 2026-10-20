@@ -34,7 +34,7 @@ try {
   const started = await pg.evalp(`(()=>{BK.manualSimulation=true;BK.bossSelect.hero='knight';return BK.bossSelect.start()})()`, 120000);
   ok(started && await pg.evalp('BK.state') === 'play', 'owned hero did not enter fight');
   const fight = await pg.evalp(`({level:BK.L.arena?.boss,hero:BK.PROG.hero,xp:BK.PROG.xp.knight,skill:BK.PROG.skillOwned?.knight?.shieldThrow,loadout:BK.PROG.loadouts?.knight?.[0],flaskUp:BK.PROG.flaskUp,flasks:BK.P.flasks,x:BK.P.x,trigger:BK.L.arena?.trigger,on:BK.bossJump.on,fighting:BK.bossSelect.fighting})`);
-  ok(fight.level === 'queen' && fight.hero === 'knight' && fight.xp === 840 && fight.skill === true && fight.loadout === 'shieldThrow' && fight.flaskUp === 1 && fight.flasks > 0 && Math.abs(fight.x - fight.trigger) <= 32 && fight.on && fight.fighting,
+  ok(fight.level === 'oldtusker' && fight.hero === 'knight' && fight.xp === 840 && fight.skill === true && fight.loadout === 'shieldThrow' && fight.flaskUp === 1 && fight.flasks > 0 && Math.abs(fight.x - fight.trigger) <= 32 && fight.on && fight.fighting,
     'fight did not use the saved hero, level and flask kit: ' + JSON.stringify(fight));
   const backAtDoor = await pg.evalp(`(()=>{BK.P.dead=0.01;BK.sim(4);return{state:BK.state,x:BK.P.x,hp:BK.P.hp,max:BK.P.maxHp}})()`);
   ok(backAtDoor.state === 'play' && Math.abs(backAtDoor.x - fight.x) < 2 && backAtDoor.hp === backAtDoor.max, 'death did not return to the boss door at full health: ' + JSON.stringify(backAtDoor));

@@ -19,17 +19,17 @@
 //                   shockwaves run out along the ground both ways - jump them). He does not stagger off the first charge of a double, only the second.
 //   NO ADDS (Daniel: no adds unless the brief says so).
 export const OT = {
-  hp: 1000, w: 46, h: 26, markH: 44,
+  hp: 1500, w: 46, h: 26, markH: 44,
   walk: 52, rest: [0.75, 0.5],                   // px/s; the beat between moves (P1, P2)
   hide: 0.4, above: 1, wardMul: 0.4,             // B15: the floor outside openings; a plunge on his back lands whole
   p2: 0.5,
-  charge: { tell: [0.95, 0.72], speed: 290, dmg: 22, turn: 0.42, minD: 104 },
+  charge: { tell: [0.95, 0.72], speed: 290, dmg: 18, hitH: 20, turn: 0.42, minD: 104 },
   daze: { t: [1.45, 1.2], mul: 1.25 },           // he rams a pine or the wall: reels (a short, told opening)
-  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 22, dmg: 14, rec: 0.55, range: 70 },
+  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 16, dmg: 14, rec: 0.55, range: 70 },
   root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 11, rec: 0.6, spread: 64 },
   stomp: { tell: 0.78, sp: 150, life: 1.9, dmg: 14, rec: 0.75, w: 7 },
-  pin: { t: 3.4, mul: 2, thrash: 0.55, ward: 3, trunk: 0.04, cap: 0.16 },   // cap: a pin is worth this share of him at most - the blow that empties it, he heaves the trunk off (told)   // trunk: the falling pine's own blow on him (a share of his health, a room blow)
-  pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 12, lie: 0.9, rearm: 20 },   // lie: a trunk that missed lies a beat, then rolls off the floor; rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
+  pin: { t: 3.4, mul: 2, thrash: 0.55, ward: 3, trunk: 0.04, cap: 0.14 },   // cap: a pin is worth this share of him at most - the blow that empties it, he heaves the trunk off (told)   // trunk: the falling pine's own blow on him (a share of his health, a room blow)
+  pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 10, lie: 0.9, rearm: 24 },   // lie: a trunk that missed lies a beat, then rolls off the floor; rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
 };
 export const OT_SAY = { wake: 'OLD TUSKER', rule: 'HIS HIDE TURNS A CUT. FELL A MARKED PINE ON HIM.', p2: 'HIS BLOOD IS UP', pinned: 'PINNED', dazed: 'HE RAMS THE PINE',
   dazedWall: 'HE RAMS THE WALL', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE HEAVES THE TRUNK OFF' };
@@ -99,7 +99,7 @@ export function stepTusker(e, S, dt, heroes, w) {
     case 'charge': {
       const sp = OT.charge.speed * (ph > 1 ? 1.08 : 1), st = chargeStop(S, e.x, e.face); e.stopX = st.x; e.stopPine = st.pine ? st.pine.id : -1;
       const nx = e.x + e.face * sp * dt; w.dust(e.x - e.face * half, floor, 1);
-      w.hit([e.x - half, e.x + half, floor - OT.h, floor], OT.charge.dmg, 'charge', { key: e.hitKey, knock: e.face * 240 });
+      w.hit([e.x - half + 4, e.x + half - 4, floor - OT.charge.hitH, floor], OT.charge.dmg, 'charge', { key: e.hitKey, knock: e.face * 240 });
       if ((st.x - nx) * e.face <= 0 || e.modeT <= 0) { e.x = st.x;
         if (ph > 1 && !e.charge2 && !st.pine) { e.mode = 'turn'; e.modeT = OT.charge.turn; e.charge2 = true; w.sound('skid'); w.dust(e.x, floor, 8); return; }
         e.charge2 = false; e.mode = 'rammed'; e.modeT = OT.daze.t[i]; e.openT0 = e.modeT; S.n.rammed++; w.shake(7); w.sound('ram'); w.dust(e.x + e.face * half, floor - 10, 10);
