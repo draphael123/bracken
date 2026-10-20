@@ -89,7 +89,7 @@ try {
   await nav(guest, URL0 + '?join=' + code + '&net=local&relay=' + RELAY + '&touch=1', '!!window.BKGUEST');
   await until(guest, 'BKGUEST.state().phase === "slot"', 25000, 'the guest to reach his own save slots');
   const slotsTxt = await Gu('document.getElementById("olguest").innerText');
-  ok(/SLOT 1: PYRO LV 6/.test(slotsTxt) && /SLOT 2: EMPTY/.test(slotsTxt) && /JUST VISIT/.test(slotsTxt), '2: the guest first picks one of HIS OWN save slots (slot 1 his PYRO LV 6; an empty one starts a new save; or JUST VISIT): ' + slotsTxt.replace(/\s+/g, ' ').slice(0, 170));
+  ok(/SAVE 1 - PYRO LV 6: EARNS XP, SILVER [+] CLEARS INTO SAVE 1/.test(slotsTxt) && /SAVE 2 - EMPTY/.test(slotsTxt) && /JUST VISIT/.test(slotsTxt), '2: the guest first picks one of HIS OWN save slots (slot 1 his PYRO LV 6; an empty one starts a new save; or JUST VISIT): ' + slotsTxt.replace(/\s+/g, ' ').slice(0, 170));
   ok((await H('BKONLINE.debug().sess.phase')) === 'picking', '2: the host sees player two picking');
   await Gu('[...document.querySelectorAll("#olguest button")].find(b=>b.dataset.slot==="0").click()');
   await until(guest, 'BKGUEST.state().phase === "pick"', 5000, 'the hero pick of his slot');
@@ -238,7 +238,7 @@ try {
   const g1 = await slot0();
   ok(g1.xp.pyro - g0.xp.pyro === e1.xp && g1.coins - g0.coins === 9, '11: at the CHECKPOINT his own browser writes what he earned into HIS slot: +' + (g1.xp.pyro - g0.xp.pyro) + ' XP (host says ' + e1.xp + '), +' + (g1.coins - g0.coins) + ' silver');
   ok((await hostNow()) === hostBefore, '11: the HOST\'s save took none of it (no pyro XP, no silver, no hero): ' + (await hostNow()));
-  ok(/SAVED SLOT 1: \+\d+ XP, \+9 SILVER/.test(await Gu('document.getElementById("olstrip").innerText')), '11: the guest\'s strip says what was saved: ' + (await Gu('document.getElementById("olstrip").innerText')));
+  ok(/P. \+\d+ XP, \+9 SILVER SAVED TO SAVE 1/.test(await Gu('document.getElementById("olstrip").innerText')), '11: the guest\'s strip says what was saved: ' + (await Gu('document.getElementById("olstrip").innerText')));
   const dup = await Gu('(()=>{const n=BKGUEST.state().dups;BKGUEST.earn(BKGUEST.state().lastC);return BKGUEST.state().dups-n})()');
   ok(dup === 1 && JSON.stringify(await slot0()) === JSON.stringify(g1), '11: the same credit again is NOT paid twice');
   ok(await H('BK.coopSave.gain(2, 80, 0)'), '11: he earns more, unbanked');

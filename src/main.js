@@ -92,7 +92,7 @@ import * as THH from './theatre-hands.js'; import * as THF from './theatre-foes.
 import { chaseSafeAbove, chaseSpec, newChase, chaseReset, chaseStep, chaseDanger, chaseCam, beamHit, BEAM as CHASE_BEAM, drawChaser, drawGlow, rumbleFor, chaseProblems, chaseInZone, TS as CHASE_TS } from './chase.js';   /* THE CHASE ENGINE (claude/chase): opt-in per level with L.chases, see src/chase.js */
 import { DUCK_H, duckBox, duckClears, noteTell, noteRelease, blowHigh, blowLow, seedOver } from './duck.js';   /* THE UNIVERSAL DUCK (claude/duck): down held on the ground, and a HIGH blow goes over */
 import { isDev, setDev } from './dev-flag.js'; import * as HR from './hero-roster.js'; import { silhouetteOf } from './hero-silhouette.js';   /* (claude/heroroster) ?dev=1 gates UNLOCK EVERYTHING; the device-level hero roster; a locked hero's black silhouette */
-import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
+import { TABS as SET_TABS, tabRows, stepTab, isHeaderRow as isHeaderTab } from './settings-ui.js'; import * as CTL from './controls.js'; import { COOP_HELP_PAGES, SAVES_PAGE, coopTipDue, drawCoopHelp } from './coop-help.js';   /* SETTINGS IN TABS, REBINDING and THE CO-OP GUIDE (claude/storeui) */
 import * as WR from './world-react.js'; import * as UIH from './ui-hud.js'; import * as HINTS from './hints.js'; const toastQ = UIH.toastQueue(), uiFade = { coin: '', coinAt: -99, xp: '', xpAt: -99 };   /* UI POLISH A (claude/uihud): the one toast queue, the status icons, the idle fade, the graphics presets (src/ui-hud.js) */
 import { makeEmberWard } from './ember-ward.js';   /* THE EMBER FLARE (claude/emberflare): a press of down is a 0.25 s burst of fire that cancels a blow, scorches its attacker and gives her heat */
 import { DK2, selfFloor as dkFloor, priceOf as dkPriceOf, rhythmStep as dkStep, cleaveMul as dkCleaveMul, dragDrain as dkDragDrain, rhythmBox as dkRhythmBox, crescentBox as dkCrescentBox, RHYTHM_NAMES as DK_RHYTHM } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: the blood price, the drain, the rhythm, the grave kneel */
@@ -1564,6 +1564,7 @@ function seatBake(p) { const wasH = PROG.hero; PROG.hero = p.hero; try { p.set =
    last one out ends co-op exactly as the pause menu's CO-OP OFF does */
 function seatDrop(p) {
   const i = players.indexOf(p); if (i <= 0) return false;
+  if (p.prof && !p.ai) try { UIH.toastPush(toastQ, 'P' + p.n + ' LEFT - KEPT EVERYTHING TO THE LAST SHRINE', 4, PARTY.colourOf(PROG.tavern, p.n).c); } catch {}   /* (claude/coopclarity) */
   if (PTK) PTK.reset();
   players.splice(i, 1); players.forEach((q, k) => { q.n = k + 1; }); partyColours();
   if (players.length === 1) coopEnd();
@@ -1746,6 +1747,19 @@ function coopWinner(key) {
   if (sa === sb) return 'A DEAD HEAT   ' + sa + ' EACH';
   return (sa > sb ? 'P1 ' + (HERO_SHORT[a.hero] || a.hero) : 'P2 ' + (HERO_SHORT[b.hero] || b.hero)) + ' WINS   ' + Math.max(sa, sb) + ' TO ' + Math.min(sa, sb);
 }
+/* (claude/coopclarity) THE WIN CARD SAYS WHERE IT WENT: under the six figures, a row per fact for each seat - SAVED TO (his save, or a guest's nothing), the XP and the
+   silver his save took this wood, and whether the clear went on his road. COOP_WIN_D is how far the card's lower half (winner, medal stamp, continue) steps down. */
+const COOP_WIN_D = 23, COOP_SAVE_Y = 113, COOP_SAVE_DY = 7;
+function coopSaveRows(long) {
+  const id = LEVELS[levelIndex].id, cell = p => {
+    if (p === players[0]) return { to: CS.savedTo(slot, long), xp: '+' + xpRun, silver: '+' + earned, clear: 'CLEARED', saved: true };
+    if (p.ai) return { to: 'ALLY', xp: '-', silver: '-', clear: '-', saved: false };
+    if (!p.prof) return { to: CS.savedTo(-1, long), xp: '-', silver: '-', clear: '-', saved: false };
+    const e = CS.earnedOf(p.prof.led), b = p.prof.woodBase || { xp: 0, coins: 0 };
+    return { to: CS.savedTo(p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot, long), xp: '+' + Math.max(0, e.xp - b.xp), silver: '+' + Math.max(0, e.coins - b.coins), clear: p.prof.led.clears.includes(id) ? 'CLEARED' : '-', saved: true };
+  }, cs = players.map(cell);
+  return [['saved', cs.map(c => c.to), cs.map(c => (c.saved ? '#8fd160' : UI.dim))], ['xp', cs.map(c => c.xp), cs.map(() => '#fff6e0')], ['silver', cs.map(c => c.silver), cs.map(() => '#ffd34a')], ['clear', cs.map(c => c.clear), cs.map(c => (c.clear === '-' ? UI.dim : '#8fd160'))]];
+}
 /* THE TWO-COLUMN TALLY on the level's win card: the same six figures for each of them, side by side, counting
    themselves up the way the single-player card's do, with the winner named under them. */
 function coopTally(px0, pw, at, cnt) {
@@ -1759,11 +1773,13 @@ function coopTally(px0, pw, at, cnt) {
   scoreRows(a.score).forEach(([lab, av], i) => { const bv = scoreRows(b.score)[i][1], t0 = 0.3 + i * 0.12, k = at(t0); if (k <= 0) return;
     const col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0';
     g.globalAlpha = k;
-    text(lab, MID, 71 + i * 8, UI.dim, 'center', 6);
-    text(String(Math.round(cnt(t0, av))), L0, 71 + i * 8, col, 'left', 6);
-    text(String(Math.round(cnt(t0, bv))), R0, 71 + i * 8, col, 'right', 6);
+    text(lab, MID, 71 + i * 7, UI.dim, 'center', 6);
+    text(String(Math.round(cnt(t0, av))), L0, 71 + i * 7, col, 'left', 6);
+    text(String(Math.round(cnt(t0, bv))), R0, 71 + i * 7, col, 'right', 6);
     g.globalAlpha = 1; });
-  { const k = at(1.15); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
+  coopSaveRows(true).forEach(([lab, cells, cols], r) => { const k = at(1.0 + r * 0.1); if (k <= 0) return; const y = COOP_SAVE_Y + r * COOP_SAVE_DY;
+    g.globalAlpha = k; text(lab, MID, y, UI.dim, 'center', 6); text(cells[0], L0, y, cols[0], 'left', 6); text(cells[1], R0, y, cols[1], 'right', 6); g.globalAlpha = 1; });
+  { const k = at(1.5); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119 + COOP_WIN_D, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
 }
 /* (claude/tavernfix) THE FOUR-COLUMN TALLY for three or four players: a label column on the left, one right-aligned column per seat
    in the same rows and heights as the two-column card, each column headed by its seat and short hero name in his own colour. */
@@ -1776,10 +1792,12 @@ function coopTally4(px0, pw, at, cnt) {
     g.fillStyle = 'rgba(255,255,255,0.12)'; g.fillRect(px0 + 6, 68, pw - 12, 1); g.globalAlpha = 1; } }
   scoreRows(players[0].score).forEach(([lab], r) => { const t0 = 0.3 + r * 0.12, k = at(t0); if (k <= 0) return;
     const col = lab === 'deaths' ? '#ff6b6b' : lab === 'gold' ? '#ffd34a' : '#fff6e0';
-    g.globalAlpha = k; text(lab, C.lab, 71 + r * 8, UI.dim, 'left', 6);
-    players.forEach((p, i) => text(String(Math.round(cnt(t0, scoreRows(p.score)[r][1]))), C.right(i), 71 + r * 8, col, 'right', 6));
+    g.globalAlpha = k; text(lab, C.lab, 71 + r * 7, UI.dim, 'left', 6);
+    players.forEach((p, i) => text(String(Math.round(cnt(t0, scoreRows(p.score)[r][1]))), C.right(i), 71 + r * 7, col, 'right', 6));
     g.globalAlpha = 1; });
-  { const k = at(1.15); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
+  coopSaveRows(false).forEach(([lab, cells, cols], r) => { const k = at(1.0 + r * 0.1); if (k <= 0) return; const y = COOP_SAVE_Y + r * COOP_SAVE_DY;
+    g.globalAlpha = k; text(lab, C.lab, y, UI.dim, 'left', 6); players.forEach((p, i) => text(cells[i], C.right(i), y, cols[i], 'right', 6)); g.globalAlpha = 1; });
+  { const k = at(1.5); if (k > 0) { const s = coopWinner('score'); g.globalAlpha = k; text(s, px0 + pw / 2, 119 + COOP_WIN_D, UI.gold, 'center', fitSize(s, pw - 12, [8, 6])); g.globalAlpha = 1; } }
 }
 /* THE TWO OF THEM ON THE CARD. The one who came out ahead DANCES under his own name and the other stands there and
    looks at the floor, each drawn out of that player's own baked set (`p.set`), so the card shows two different heroes
@@ -4413,7 +4431,7 @@ function startGame() {
      Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
   if (coopWant && L && !L.trial && !L.shop && !rushOn()) partyStart(); else if (coop()) coopEnd();   /* (claude/tavern) the whole party: up to four seats (coopWant.seats) */
   if (TAVO) TAVO.reset();
-  dcStart(); for (const p of players) p.score = freshScore();   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
+  dcStart(); for (const p of players) { p.score = freshScore(); if (p.prof) p.prof.woodBase = CS.earnedOf(p.prof.led); }   /* the card's tally is THIS wood's; p.total is the run's, and winLevel adds this to it */
   state = 'play'; levelTime = 0; deaths = 0; P.phoenixUsed = false; kills = 0; got = 0; lives = SET.iron ? 3 : Infinity; pogoCount = 0; parries = 0; blocks = 0; dodges = 0; hitsTaken = 0;
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
@@ -6557,7 +6575,7 @@ const coopHelpPages = () => COOP_HELP_PAGES({ downT: DOWN_T, reviveT: REVIVE_T }
 const uiCtx = () => ({ g, text, wrap, fitText, textW, panel, UI, VW, VH, time });
 const controlsCardRows = () => CTL.cardRows({ hero: hero(), binds: SET.binds, prof: coop() ? 'pad2' : 'pad1', swapZX: SET.swapZX, blockToggle: SET.blockToggle });
 function openRebind(from) { rebindFrom = from; rebindS = CTL.newRebind(0); state = 'rebind'; SFX.uiSel(); }
-function openCoopHelp(back) { coopHelpBack = back; coopHelpPage = 0; state = 'coophelp'; if (!SET.coopHelpSeen) { SET.coopHelpSeen = true; saveSettings(); } SFX.uiSel(); }
+function openCoopHelp(back, page = 0) { coopHelpBack = back; coopHelpPage = Math.max(0, Math.min(coopHelpPages().length - 1, page | 0)); state = 'coophelp'; if (!SET.coopHelpSeen) { SET.coopHelpSeen = true; saveSettings(); } SFX.uiSel(); }
 function closeCoopHelp() { state = coopHelpBack; SFX.menuClose(); }
 function updateCoopHelp() {
   const n = coopHelpPages().length;
@@ -6690,8 +6708,8 @@ function profCredit(prof, final, unbanked) {
   if (prof.dest.kind === 'local') {
     let r; try { r = CS.applyCredit(localStorage, slotKey(prof.dest.slot), c, { campaignIds: CAMP_IDS, isLevel: isLevelId, xpOnly: !!prof.dest.xpOnly });   /* (xpOnly: a LINKED AI COMPANION - XP and levels only, brief-aicompanions.md) */ } catch (e) { r = { ok: false, why: 'SAVE FAILED - COULD NOT WRITE' }; }
     prof.lastWrite = { ok: r.ok, dup: !!r.dup, why: r.why || '', applied: r.applied || null, seq: c.seq }; healthMemo[prof.dest.slot] = null;
-    const line = r.ok ? (r.dup ? '' : CS.creditLine(prof.dest.slot, r.applied)) : 'P' + ((players.find(p => p.prof === prof) || {}).n || '?') + ': ' + r.why;
-    if (line) try { UIH.toastPush(toastQ, line, 4); } catch {}
+    const sn = (players.find(p => p.prof === prof) || {}).n || '?', line = r.ok ? (r.dup ? '' : CS.creditToast(sn, prof.dest.slot, r.applied)) : 'P' + sn + ': ' + r.why;   /* (claude/coopclarity) 'P2 +120 XP, +40 SILVER SAVED TO SAVE 2', in his seat's colour */
+    if (line) try { UIH.toastPush(toastQ, line, 4, r.ok && sn !== '?' ? PARTY.colourOf(PROG.tavern, sn).c : null); } catch {}
     if (!r.ok) try { SFX.buzz(); } catch {}
   } else if (prof.dest.kind === 'online') ONL.sendCredit(prof.dest.gid, c);
   return c;
@@ -6750,8 +6768,8 @@ function partyBoardOpen() {
         out.push({ n, kind: k, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof }); }
       return out; },
     slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
-      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SLOT' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
-      return { i, line: CS.summaryLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase()), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [], hero: sm.hero || null }; }),
+      const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      return { i, line: CS.summaryLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [], hero: sm.hero || null }; }),
     heroName: h => HERO_SHORT[h] || String(h).toUpperCase(),
     visitHeroes: () => coopPickList(),
     room: () => (L && L.tavern && state === 'play' ? PARTY.MAX_PLAYERS - players.length : 0),
@@ -6795,7 +6813,7 @@ TAVO = makeTavern({ TS, L: () => L, PROG: () => PROG, save: () => saveProgress()
   p1Key: () => (touchOn ? 'TAP' : padLast ? 'UP' : String((KEYS.talk && KEYS.talk[0]) || 'e').toUpperCase()), p1Press: () => pressRead(), eatTalk: () => { talkPress = false; },
   toMap: () => tavernToMap('THE PARTY IS WITH YOU'), takeRoad: () => tavernToMap(coop() ? 'THE PARTY TAKES THE ROAD: ' + players.length : 'ALONE ON THE ROAD'),
   leave: p => { burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); if (p.src && p.src.kind === 'online') ONL.dropGuest(p.src.gid, 'LEFT THE PARTY'); else seatDrop(p); TAVO.door(); },
-  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
+  openOnline: () => ONL.open(), openParty: () => partyBoardOpen(), openSaves: () => openCoopHelp('play', SAVES_PAGE),   /* (claude/coopclarity) THE SAVES SIGN: one page of the co-op guide */ practice: () => { partyToWant(); rush = null; setView('normal'); practiceFromInn = true; practiceI = Math.max(0, HEROES.findIndex(h => h.id === hero())); state = 'practice'; SFX.uiSel(); },
   down: p => asPlayer(p, () => goDown({ name: 'THE SPARRING BELL', red: false, rule: '' })), roomCode: () => ONL.code(),
   heroesFor: tavHeroes, setHero: tavSetHero, weapons: tavWeapons, weaponOf: tavWeaponOf, setWeapon: tavSetWeapon,
   heroName: h => HERO_SHORT[h] || String(h).toUpperCase(), weaponName: id => (SWORDS.find(s => s.id === id) || { name: String(id).toUpperCase() }).name });
@@ -34130,8 +34148,8 @@ function render() {
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
       const zone = UIH.toastZone(VW, VH, CV ? { left: Math.max(hudPW + 2, hudEnvR), top: 48 + xpRow + (deathRecap ? 26 : 0), boss: bossActive || miniActive } : { wide: true, top: Math.max(48 + xpRow, hudPH + 4) + (deathRecap ? 26 : 0), boss: bossActive || miniActive })   /* (only the caravan's sun/water rows stand under the plate on the left; elsewhere the band under the plates is the full width, so a long level-up line is still two lines) */, lines = wrap(tc.msg, zone.w - 16, 6), heroY = P.y - cy, box = UIH.toastBox(zone, lines, BODY_LH, l => inkW(l, 6), [heroY - 28, heroY]), bw = box.w, bh = box.h, hby = box.y, hbx = box.x;
       toastQ.box = [hbx, hby, bw, bh]; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
-      g.strokeStyle = 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
-      lines.forEach((ln, i) => text(ln, hbx + bw / 2, hby + 4 + i * BODY_LH, '#ffd36b', 'center', 6)); g.globalAlpha = 1; } }
+      g.strokeStyle = tc.col || 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
+      lines.forEach((ln, i) => text(ln, hbx + bw / 2, hby + 4 + i * BODY_LH, tc.col || '#ffd36b', 'center', 6)); g.globalAlpha = 1; } }
     else { hintT = 0; UIH.toastClear(toastQ); }
     if (state === 'play') drawRealmBanner(xpRow, cy);   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
@@ -34313,7 +34331,8 @@ function render() {
     const cnt = (t0, v) => v * Math.max(0, Math.min(1, (wt - t0) * 2.4));
     const line = (t0, str, y, col, size = 8) => { const k = at(t0); if (k <= 0) return; g.globalAlpha = k; text(str, VW / 2, y + Math.round((1 - k) * 5), col, 'center', size); g.globalAlpha = 1; };
     const pw = Math.min(VW - 16, 264), px0 = Math.round((VW - pw) / 2);
-    panel(px0, coop() ? 24 : 26, pw, coop() ? 132 : 130, UI.border, 'ledger');
+    const WD = coop() ? COOP_WIN_D : 0;   /* (claude/coopclarity) the co-op card is taller: the saved-to rows */
+    panel(px0, coop() ? 24 : 26, pw, coop() ? 132 + WD : 130, UI.border, 'ledger');
     line(0, fitText(L.trial ? 'THE TRIAL IS DONE' : L.arena ? (BOSS_FELL[L.arena.boss] || 'THE ROAD IS CLEAR') : 'THE GATE OPENS', pw - 12, 12), coop() ? 34 : 38, UI.title, 12);
     /* IN CO-OP THE MIDDLE OF THE CARD IS A TWO-COLUMN TALLY (coopTally): the run's figures for each of them, and
        the winner under it. The gold line goes with it, because the purse is the save's and the tally says who
@@ -34338,17 +34357,17 @@ function render() {
         if (k > 0) {
           if (!winStamped) { winStamped = true; SFX.heavy(); shakeCam(m === 3 ? 5 : 3); if (m) zoomKick(1.05, 0.18); }
           const sc = 1 + 1.5 * (1 - k) * (1 - k), tw = bits.join('  ').length * 8;
-          g.save(); g.translate(VW / 2, 132); g.scale(sc, sc); g.globalAlpha = Math.min(1, k * 1.6); g.translate(-VW / 2, -132);
-          if (m) { g.fillStyle = MEDAL_COL[m]; g.beginPath(); g.arc(VW / 2 - tw / 2 - 10, 132, 5, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(VW / 2 - tw / 2 - 11, 131, 2, 2); }
-          text(bits.join('  '), VW / 2, 128, m === 3 ? UI.gold : UI.sel, 'center');
+          g.save(); g.translate(VW / 2, 132 + WD); g.scale(sc, sc); g.globalAlpha = Math.min(1, k * 1.6); g.translate(-VW / 2, -132 - WD);
+          if (m) { g.fillStyle = MEDAL_COL[m]; g.beginPath(); g.arc(VW / 2 - tw / 2 - 10, 132 + WD, 5, 0, 7); g.fill(); g.fillStyle = ART.OUT; g.fillRect(VW / 2 - tw / 2 - 11, 131 + WD, 2, 2); }
+          text(bits.join('  '), VW / 2, 128 + WD, m === 3 ? UI.gold : UI.sel, 'center');
           g.restore(); g.globalAlpha = 1;
-          if (k < 1) { g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = m === 3 ? UI.gold : UI.sel; g.lineWidth = 1; g.beginPath(); g.arc(VW / 2, 132, 10 + 40 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
+          if (k < 1) { g.globalAlpha = (1 - k) * 0.6; g.strokeStyle = m === 3 ? UI.gold : UI.sel; g.lineWidth = 1; g.beginPath(); g.arc(VW / 2, 132 + WD, 10 + 40 * k, 0, 7); g.stroke(); g.globalAlpha = 1; }
         }
       } else winStamped = true; }
     if (wt > 1.75) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });
     { const m2 = medalFor(LEVELS[levelIndex].id, medalTime()), M2 = MEDALS[LEVELS[levelIndex].id] || [300, 450, 660];   /* what the next medal wants, once the stamp is down */
       if (wt > 1.9 && m2 < 3 && !coop()) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
-    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146, '#8fd160', 'center');
+    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146 + WD, '#8fd160', 'center');
   } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */

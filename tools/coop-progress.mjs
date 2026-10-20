@@ -127,7 +127,14 @@ let C1, C2, C3, led;
   /* the remembered sessions are capped */
   const st11 = new Store({ [K(1)]: raw }); for (let i = 0; i < CS.MAX_CREDIT_SESSIONS + 6; i++) CS.applyCredit(st11, K(1), { v: 1, sid: 'S' + i, seq: 1, hero: 'warden', xp: 1, coins: 0, clears: [] }, { ...opts, now: 1000 + i });
   const b11 = JSON.parse(st11.getItem(K(1))).coopCredit; ok(Object.keys(b11).length === CS.MAX_CREDIT_SESSIONS && b11['S' + (CS.MAX_CREDIT_SESSIONS + 5)] && !b11.S0, 'C: the slot remembers the newest ' + CS.MAX_CREDIT_SESSIONS + ' sessions');
-  ok(CS.creditLine(1, { xp: 40, coins: 3, clears: ['a'] }) === 'SLOT 2: +40 XP, +3 SILVER, 1 WOOD CLEARED' && CS.creditLine(0, { xp: 0, coins: 0, clears: [] }) === '', 'C: the toast line says it: ' + CS.creditLine(1, { xp: 40, coins: 3, clears: ['a'] }));
+  ok(CS.creditLine(1, { xp: 40, coins: 3, clears: ['a'] }) === 'SAVE 2: +40 XP, +3 SILVER, 1 WOOD CLEARED' && CS.creditLine(0, { xp: 0, coins: 0, clears: [] }) === '', 'C: the toast line says it: ' + CS.creditLine(1, { xp: 40, coins: 3, clears: ['a'] }));
+  /* (claude/coopclarity) the pickers say what happens, the toast says where it went, the win card's cell says whose save */
+  { const sm = { state: 'ok', hero: 'pyro', level: 6 }, nm = h => h.toUpperCase();
+    ok(CS.summaryLine(1, sm, nm) === 'SAVE 2 - PYRO LV 6: EARNS XP, SILVER + CLEARS INTO SAVE 2', 'C2: a save line says what is earned and where it goes: ' + CS.summaryLine(1, sm, nm));
+    ok(CS.summaryLine(0, { state: 'empty' }, nm) === 'SAVE 1 - EMPTY: A NEW SAVE STARTS HERE' && /IN USE ELSEWHERE$/.test(CS.summaryLine(2, sm, nm, true)) && /DAMAGED/.test(CS.summaryLine(3, { state: 'corrupt' }, nm)), 'C2: empty / held / damaged lines');
+    ok(/NOTHING IS SAVED/.test(CS.GUEST_LINE) && /NOTHING IS SAVED/.test(CS.VISIT_LINE) && CS.HOST_NOTE === 'GUESTS NEVER CHANGE YOUR SAVE' && CS.EXPLAIN_LINES.length === 3, 'C2: guest / visit / host lines');
+    ok(CS.creditToast(2, 1, { xp: 120, coins: 40, clears: [] }) === 'P2 +120 XP, +40 SILVER SAVED TO SAVE 2' && CS.creditToast(2, 1, { xp: 0, coins: 0, clears: [] }) === '', 'C2: the checkpoint toast: ' + CS.creditToast(2, 1, { xp: 120, coins: 40, clears: [] }));
+    ok(CS.savedTo(2) === 'SAVE 3' && CS.savedTo(-1) === 'GUEST' && CS.savedTo(-1, true) === 'GUEST - NOT SAVED', 'C2: the win card SAVED TO cell'); }
 }
 
 // ---------- D. the locks ----------

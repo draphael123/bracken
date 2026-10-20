@@ -88,7 +88,7 @@ export function open() {
     ok ? UI.el('p.dim', 'you get a code and a link to send your friends') : null,
     UI.el('h2', 'JOIN A FRIEND'),
     UI.row(inp, go),
-    UI.el('p.dim', 'or open the link they sent you. You pick one of your own save slots there: what you earn is saved to it.'),
+    UI.el('p.dim', 'or open the link they sent you. You pick one of your own saves there: what you earn is saved to it.'),
     UI.row(UI.el('button', 'BACK', () => closeBoard())));
 }
 function joinCode(c) { location.href = location.pathname + '?join=' + c; }   /* THE GUEST IS ITS OWN PAGE (src/online-guest.js): the game here never runs while joined */
@@ -265,7 +265,7 @@ function roomView() {
   for (const q of my.guests) parts.push(UI.el('p.ok', q.hero ? 'P' + ((api.seatOf && api.seatOf(q.gid)) || '?') + ' IS IN: ' + q.hero.toUpperCase() + (q.rtt ? '  ' + q.rtt + ' MS' : '') : q.phase === 'picking' ? 'A FRIEND IS PICKING A HERO...' : 'SOMEBODY IS CONNECTING...'));
   const free = Math.max(0, roomFor(my));
   const status = !my.guests.length ? (my.left ? 'A FRIEND ' + my.left + '. WAITING FOR FRIENDS...' : 'WAITING FOR FRIENDS...') : free > 0 ? 'ROOM FOR ' + free + ' MORE' : 'THE PARTY IS FULL';
-  parts.push(UI.el('p' + (my.guests.length ? '.ok' : ''), status), UI.el('p.dim', 'keep this tab in front while you play: a hidden tab stops sending the picture'));
+  parts.push(UI.el('p' + (my.guests.length ? '.ok' : ''), status), UI.el('p.dim', 'GUESTS NEVER CHANGE YOUR SAVE: THEY SAVE TO THEIR OWN'), UI.el('p.dim', 'keep this tab in front while you play: a hidden tab stops sending the picture'));
   parts.push(UI.row(my.guests.some(q => q.hero) ? UI.el('button', 'BACK TO THE GAME', () => closeBoard()) : UI.el('button', 'BACK', () => closeBoard()), UI.el('button', 'END ONLINE CO-OP', () => { endSession(); closeBoard(); })));
   board.set(...parts);
 }

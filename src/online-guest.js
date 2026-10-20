@@ -173,12 +173,12 @@ setInterval(() => { if (link && link.open) link.send({ t: 'ping', t0: performanc
 const pickList = () => (G.slot >= 0 ? G.own.map(id => ({ id, name: G.names[id] || String(id).toUpperCase() })) : G.roster);
 function pick(h) { if (!link || !link.open || !pickList().some(r => r.id === h)) return false;
   let seat = null;
-  if (G.slot >= 0) { try { const raw = CS.slotRawOf(localStorage, G.slot); seat = CS.snapshotOf(raw ? migrateProgress(raw, G.camp).progress : migrateProgress(null).progress, h, G.slot); } catch (e) { G.slotMsg = 'SLOT ' + (G.slot + 1) + ' COULD NOT BE READ: ' + String(e && e.message || e).toUpperCase(); G.phase = 'slot'; G.slot = null; LOCKS.releaseRole('guest'); render(); return false; } }
+  if (G.slot >= 0) { try { const raw = CS.slotRawOf(localStorage, G.slot); seat = CS.snapshotOf(raw ? migrateProgress(raw, G.camp).progress : migrateProgress(null).progress, h, G.slot); } catch (e) { G.slotMsg = 'SAVE ' + (G.slot + 1) + ' COULD NOT BE READ: ' + String(e && e.message || e).toUpperCase(); G.phase = 'slot'; G.slot = null; LOCKS.releaseRole('guest'); render(); return false; } }
   link.send(seat ? { t: 'pick', hero: h, seat } : { t: 'pick', hero: h }); G.phase = 'waitgo'; render(); unmute(); return true; }
 /* HIS SLOT: one of his five (an empty one is a new save), or -1 to JUST VISIT. A slot open elsewhere (his game in another tab, another guest page) is refused */
 function slots() { return Array.from({ length: CS.SLOTS }, (_, i) => { const sm = CS.slotSummary(CS.slotRawOf(localStorage, i), G.camp), h = LOCKS.holder(i, 'guest');
   const why = h ? CS.lockLine(i, h) : sm.state === 'corrupt' ? 'DAMAGED: FIX IT IN YOUR OWN GAME' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
-  return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase()), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }); }
+  return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase(), h ? CS.HELD_LINE : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }); }
 function chooseSlot(i) {
   if (i < 0) { G.slot = -1; G.slotMsg = ''; G.phase = 'pick'; render(); return true; }
   const sl = slots()[i]; if (!sl || !sl.ok) { G.slotMsg = sl ? sl.why : 'NO SUCH SLOT'; render(); return false; }
@@ -192,7 +192,7 @@ function earn(c) {
   G.credits++; G.lastC = c;
   if (!r.ok) { G.lastEarn = r.why; G.earnBad = true; }
   else if (r.dup) G.dups++;
-  else { const a = r.applied; G.earned.xp += a.xp; G.earned.coins += a.coins; for (const id of a.clears) if (!G.earned.clears.includes(id)) G.earned.clears.push(id); const l = CS.creditLine(G.slot, a); if (l) { G.lastEarn = 'SAVED ' + l; G.earnBad = false; } }
+  else { const a = r.applied; G.earned.xp += a.xp; G.earned.coins += a.coins; for (const id of a.clears) if (!G.earned.clears.includes(id)) G.earned.clears.push(id); const l = CS.creditToast(G.seat || 2, G.slot, a); if (l) { G.lastEarn = l; G.earnBad = false; } }
   stripView(); if (G.phase !== 'play' || G.menu) render();
 }
 function leave() { const linked = !!(link && link.open); if (linked) link.send({ t: 'bye' }); G.why = 'left'; G.leaving = linked && G.slot >= 0; setTimeout(() => { if (net) net.close(); }, G.leaving ? 2000 : 150); end('left'); }   /* (claude/coopprogress) on his own save the link stays up until the host's goodbye (his final credit comes first), two seconds at most */
@@ -221,14 +221,14 @@ function render() {
   } else if (P === 'finding' || P === 'linking' || P === 'opening' || P === 'start') {
     parts.push(UI.el('div.code', code), UI.el('p', P === 'finding' ? 'ASKING THE MATCHMAKER FOR THE GAME...' : P === 'linking' ? 'OPENING A DIRECT LINK TO THE HOST...' : 'SAYING HELLO...'), UI.el('p.dim', 'you play in the host\'s game with a hero from one of your own saves: what you earn is saved to it'), UI.row(UI.el('button', 'CANCEL', backHome)));
   } else if (P === 'slot') {
-    parts.push(UI.el('p', 'PICK ONE OF YOUR SAVES'), UI.el('p.dim', 'you play its hero, at its level, with its kit; the XP, silver and woods you earn with your friend are saved to it'));
+    parts.push(UI.el('p', 'PICK ONE OF YOUR SAVES'), UI.el('p.ok', CS.EXPLAIN_LINES[0] + ':'), UI.el('p.dim', CS.EXPLAIN_LINES[1] + ' ' + CS.EXPLAIN_LINES[2]));   /* (claude/coopclarity) the explainer card */
     for (const sl of slots()) { const b = UI.el('button' + (sl.ok ? '' : '.no'), sl.line, () => chooseSlot(sl.i)); b.dataset.slot = sl.i; if (!sl.ok) { b.disabled = true; b.title = sl.why; } parts.push(UI.row(b)); if (!sl.ok) parts.push(UI.el('p.dim', sl.why)); }
-    { const v = UI.el('button', 'JUST VISIT - NOTHING SAVED', () => chooseSlot(-1)); v.dataset.slot = -1; parts.push(UI.row(v)); }
+    { const v = UI.el('button', CS.VISIT_LINE, () => chooseSlot(-1)); v.dataset.slot = -1; parts.push(UI.row(v)); }
     if (G.slotMsg) parts.push(UI.el('p.bad', G.slotMsg));
     parts.push(UI.row(UI.el('button', 'LEAVE', leave)));
   } else if (P === 'pick' || P === 'waitgo') {
     const list = pickList();
-    parts.push(UI.el('p', 'PICK YOUR HERO'), UI.el('p.dim', G.slot >= 0 ? 'from your slot ' + (G.slot + 1) + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '') : 'from the host\'s heroes' + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '') + ': nothing is saved'));
+    parts.push(UI.el('p', 'PICK YOUR HERO'), UI.el('p.dim', G.slot >= 0 ? 'from your save ' + (G.slot + 1) + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '') : 'from the host\'s heroes' + (G.hostHero ? ' (the host plays ' + G.hostHero + ')' : '') + ': nothing is saved'));
     const r = UI.row(); for (const h of list) r.appendChild(heroButton(h, list[0] && h.id === list[0].id));
     parts.push(r); if (P === 'waitgo') parts.push(UI.el('p.ok', 'JOINING...'));
     parts.push(UI.el('p.dim', keysLine()), UI.row(UI.el('button', 'OTHER SAVE', () => { if (G.phase !== 'pick') return; LOCKS.releaseRole('guest'); G.slot = null; G.phase = 'slot'; render(); }), UI.el('button', 'LEAVE', leave)));
@@ -239,7 +239,7 @@ function render() {
       UI.el('p.dim', keysLine()), UI.row(UI.el('button.sel', 'BACK TO THE GAME', toggleMenu), UI.el('button', 'LEAVE THE GAME', leave)));
   } else if (P === 'ended') {
     const [t, w] = G.err === 'left' ? ['YOU LEFT THE GAME', 'The host\'s game goes on without player two. The same code takes you back in while they keep the room open.'] : NET.explain(G.err, code);
-    parts.push(UI.el('p.bad', t), UI.el('p', w), G.slot >= 0 ? UI.el(G.earnBad ? 'p.bad' : 'p.ok', savedLine()) : null, UI.row(UI.el('button.sel', 'TRY AGAIN', () => location.reload()), UI.el('button', 'BACK TO MY GAME', backHome)));
+    parts.push(UI.el('p.bad', t), UI.el('p', w), G.slot >= 0 ? UI.el(G.earnBad ? 'p.bad' : 'p.ok', savedLine()) : null, G.slot >= 0 && G.err !== 'left' ? UI.el('p.dim', 'YOU KEEP EVERYTHING UP TO THE LAST SHRINE') : null, UI.row(UI.el('button.sel', 'TRY AGAIN', () => location.reload()), UI.el('button', 'BACK TO MY GAME', backHome)));
   }
   board.set(...parts);
 }
@@ -257,11 +257,11 @@ function heroButton(h, sel) {
 const nameOf = h => { const r = G.roster.find(x => x.id === h); return r ? r.name : G.names[h] || String(h || '').toUpperCase(); };
 /* what this session has put in his slot so far */
 function savedLine() { if (!(G.slot >= 0)) return 'JUST VISITING: NOTHING IS SAVED'; if (G.earnBad) return G.lastEarn; const e = G.earned, b = []; if (e.xp) b.push('+' + e.xp + ' XP'); if (e.coins) b.push('+' + e.coins + ' SILVER'); if (e.clears.length) b.push(e.clears.length + (e.clears.length > 1 ? ' WOODS' : ' WOOD'));
-  return 'SLOT ' + (G.slot + 1) + (b.length ? ' SAVED: ' + b.join(', ') : ': EARNINGS ARE SAVED AT EACH SHRINE'); }
+  return b.length ? 'SAVED TO SAVE ' + (G.slot + 1) + ': ' + b.join(', ') : 'SAVE ' + (G.slot + 1) + ': EARNINGS ARE SAVED AT EACH SHRINE'; }
 function keysLine() { const L = a => CTL.labelFor(binds, 'kb', a, 1); return 'YOUR OWN KEYS: ' + L('left') + '/' + L('right') + ' MOVE, ' + L('jump') + ' JUMP, ' + L('atk') + ' ATTACK, ' + L('dodge') + ' DODGE, ESC MENU'; }
 function stripView() {
   if (G.phase !== 'play') { strip.style.display = 'none'; return; }
-  strip.style.display = ''; const html = 'P' + (G.seat || 2) + ' <b>' + nameOf(G.hero) + '</b> ' + (G.slot >= 0 ? 'SLOT ' + (G.slot + 1) + ' ' : '') + '<span class="' + (G.rtt > 150 ? 'bad' : 'ok') + '">PING ' + (G.rtt || '?') + ' MS</span>' + (G.lastEarn ? ' <span class="' + (G.earnBad ? 'bad' : 'ok') + '">' + G.lastEarn.replace(/[<>&]/g, '') + '</span>' : '') + ' ESC MENU';
+  strip.style.display = ''; const html = 'P' + (G.seat || 2) + ' <b>' + nameOf(G.hero) + '</b> ' + (G.slot >= 0 ? 'SAVE ' + (G.slot + 1) + ' ' : '') + '<span class="' + (G.rtt > 150 ? 'bad' : 'ok') + '">PING ' + (G.rtt || '?') + ' MS</span>' + (G.lastEarn ? ' <span class="' + (G.earnBad ? 'bad' : 'ok') + '">' + G.lastEarn.replace(/[<>&]/g, '') + '</span>' : '') + ' ESC MENU';
   if (strip.dataset.h !== html) { strip.dataset.h = html; strip.innerHTML = html; }
 }
 function showBanner() {

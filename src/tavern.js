@@ -26,6 +26,7 @@ export const ROOM = { W: 68, H: 26, FLOOR: 20, CEIL: 12, wallL: 1, wallR: 66 };
 export const STATIONS = [
   { id: 'door', x: 3, name: 'THE DOOR', verb: 'LEAVE', first: 'THE DOOR: FRIENDS WALK IN HERE. P1 TAKES THE PARTY OUT TO THE MAP.' },
   { id: 'board', x: 7, name: 'THE PARTY BOARD', verb: 'PARTY', first: 'THE PARTY BOARD: FILL A SEAT - JOIN HERE ON A SAVE OF YOUR OWN, OR INVITE A FRIEND ONLINE.' },
+  { id: 'saves', x: 14, name: 'THE SAVES SIGN', verb: 'READ', first: 'THE SAVES SIGN: HOW CO-OP SAVES WORK - YOUR HERO, YOUR SAVE.' },
   { id: 'table', x: 36, name: 'THE CAMPAIGN TABLE', verb: 'THE ROAD', first: 'THE CAMPAIGN TABLE: TAKE THE ROAD TOGETHER - THE WHOLE PARTY GOES TO THE MAP.' },
   { id: 'wardrobe', x: 40, name: 'THE WARDROBE', verb: 'DRESS', first: 'THE WARDROBE: YOUR HERO, YOUR WEAPON, YOUR COLOUR AND THE FLOOR RINGS.' },
   { id: 'drills', x: 45, name: 'PARTNER DRILLS', verb: 'DRILLS', first: 'PARTNER DRILLS: THROW YOUR PARTNER INTO THE HAY, LIFT HIM OFF THE BELL, STRIKE A DUMMY TOGETHER.' },
@@ -46,6 +47,7 @@ export const TAVERN_ART = [
   ['door', 'the inn door in the west wall: oak with iron straps, a lamp over it, swung open while somebody walks in (2 frames: shut / open), the road and a signpost seen through it'],
   ['board', 'THE INVITE BOARD: a cork-and-timber notice board with pinned bills and a chalk slate for the four-letter room code (blank / chalked)'],
   ['table', 'THE CAMPAIGN TABLE: a heavy map table with the world map spread on it, pins and a candle; the party standing round it reads as planning'],
+  ['saves', 'THE SAVES SIGN: a painted board on a post by the party board, a chalked HOW CO-OP SAVES WORK (one page of the co-op guide opens on use)'],
   ['wardrobe', 'THE WARDROBE: a tall painted cupboard, doors open on hanging cloaks and a weapon rack, a standing mirror beside it'],
   ['drills', 'THE DRILLS BOARD: a chalkboard with three drawn drills (THROW, REVIVE, TEAM HIT) and tally marks'],
   ['bell', 'THE SPARRING BELL: a small brass bell on a post with a pull rope (rest / swinging frames)'],
@@ -83,6 +85,7 @@ export function makeTavern(api) {
     const wasNew = !seen(s.id); markSeen(s.id);
     if (s.id === 'door') { if (p.n === 1) api.toMap(); else { api.leave(p); st.stats.leaves++; } return; }
     if (s.id === 'board') { (api.openParty || api.openOnline)(); return; }
+    if (s.id === 'saves') { if (api.openSaves) api.openSaves(); return; }
     if (s.id === 'table') { api.takeRoad(); return; }
     if (s.id === 'wardrobe') { st.cardFor.set(p, { row: 0 }); api.sfx('uiSel'); return; }
     if (s.id === 'drills') { api.hint(DRILL_IDS.map(k => DRILLS[k].name + ': ' + DRILLS[k].line).join('.  '), 7); return; }
@@ -168,6 +171,7 @@ export function makeTavern(api) {
     const open = api.players().some(p => p.walkIn > 0) || st.doorT > 0, code = api.roomCode(), t = tav();
     TA.door(g, at('door'), fy, open, time);
     TA.board(g, at('board'), fy, code, time, api.text);
+    TA.saves(g, at('saves'), fy, time, api.text);
     TA.tally(g, at('drills'), fy, DRILL_IDS.map(k => t.drills[k] | 0));
     TA.bell(g, at('bell'), fy, st.bellT, time);
     TA.gate(g, at('practice'), fy, time);

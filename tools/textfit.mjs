@@ -233,7 +233,7 @@ async function pageTextFit(input) {
   /* (claude/tavernfix) THE FOUR-COLUMN CARDS: the level's win tally and the end of the road for a party of four with the longest names and three-digit figures */
   if (want('party')) { const li = lvm.LEVELS.findIndex(l => l.id === 'wood'); toPlay(li, 'reaper'); BK.coopStart('geomancer', false, [{ hero: 'geomancer' }, { hero: 'berserker' }, { hero: 'reaper' }]);
     const worst = () => { const v = { kills: 999, dmg: 99999, coins: 9999, revives: 999, turns: 999, deaths: 999 }; for (const p of BK.players()) { p.score = { ...v }; p.total = { ...v }; } };
-    for (const n of [4, 3]) { if (n === 3) BK.coopEnd(), BK.coopStart('geomancer', false, [{ hero: 'reaper' }]);
+    for (const n of [4, 3, 2]) { if (n === 3) BK.coopEnd(), BK.coopStart('geomancer', false, [{ hero: 'reaper' }]); if (n === 2) BK.coopEnd(), BK.coopStart('geomancer', false, []);   /* (claude/coopclarity) the two-column card too: its SAVED TO cells are the long words */
       worst(); frame('win card x' + n, () => { BK.state = 'win'; worst(); for (let i = 0; i < 200; i++) BK.draw1(); window.__textRec.length = 0; }, { settle: 0 }); frame('end of the road x' + n, () => { BK.state = 'victory'; worst(); }, { settle: 5 }); }
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};

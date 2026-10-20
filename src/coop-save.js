@@ -55,8 +55,20 @@ export function slotSummary(raw, campaignIds = []) {
   const woods = new Set(); for (const d of Object.values(p.done || {})) if (object(d)) for (const k of Object.keys(d)) woods.add(k);
   return { state: 'ok', hero, level: lv(hero), heroes: heroesOf(p), levels, coins: p.coins || 0, woods: woods.size };
 }
-export const summaryLine = (i, s, name = h => String(h || '').toUpperCase()) =>
-  'SLOT ' + (i + 1) + ': ' + (s.state === 'empty' ? 'EMPTY - A NEW SAVE' : s.state === 'corrupt' ? 'DAMAGED' : s.state === 'newer' ? 'FROM A NEWER BRACKEN' : name(s.hero) + ' LV ' + s.level + ', ' + s.woods + ' WOODS');
+/* WHAT A SEAT PICKER SAYS (claude/coopclarity, Daniel 10-20: "make it clearer in co-op how progression is saved and works"): every line says what happens.
+   A save: what it earns and where it goes; an empty one starts a new save; a held one says so (held = true, or the words); a GUEST plays a lent hero. */
+export const GUEST_LINE = 'GUEST: PLAYS A LENT HERO - NOTHING IS SAVED', VISIT_LINE = 'JUST VISIT: PLAYS A LENT HERO - NOTHING IS SAVED', HELD_LINE = 'IN USE ELSEWHERE';
+export const EXPLAIN_LINES = ['YOUR HERO, YOUR SAVE', 'WHAT YOU EARN HERE IS WRITTEN TO YOUR OWN SAVE', 'AT EVERY SHRINE AND WHEN THE WOOD IS WON'];
+export const HOST_NOTE = 'GUESTS NEVER CHANGE YOUR SAVE';
+export const summaryLine = (i, s, name = h => String(h || '').toUpperCase(), held = false) => {
+  const n = 'SAVE ' + (i + 1), tail = held ? (typeof held === 'string' ? held : HELD_LINE) : null;
+  if (s.state === 'corrupt') return n + ' - DAMAGED';
+  if (s.state === 'newer') return n + ' - FROM A NEWER BRACKEN';
+  if (s.state === 'empty') return n + ' - EMPTY: ' + (tail || 'A NEW SAVE STARTS HERE');
+  return n + ' - ' + name(s.hero) + ' LV ' + s.level + ': ' + (tail || 'EARNS XP, SILVER + CLEARS INTO ' + n);
+};
+/* the SAVED TO cell of a seat (the win card's row): his save, or a guest's nothing */
+export const savedTo = (slot, long = false) => (Number.isInteger(slot) && slot >= 0 ? 'SAVE ' + (slot + 1) : long ? 'GUEST - NOT SAVED' : 'GUEST');
 
 /* ===== THE SNAPSHOT (the partner's side) ===== */
 export function snapshotOf(p, hero, slot) {
@@ -153,7 +165,12 @@ export function applyCredit(storage, key, credit, opts = {}) {
 /* what a credit said, in the toast's words */
 export function creditLine(slot, a) {
   const bits = []; if (a.xp) bits.push('+' + a.xp + ' XP'); if (a.coins) bits.push('+' + a.coins + ' SILVER'); if (a.clears && a.clears.length) bits.push(a.clears.length + (a.clears.length > 1 ? ' WOODS' : ' WOOD') + ' CLEARED');
-  return bits.length ? 'SLOT ' + (slot + 1) + ': ' + bits.join(', ') : '';
+  return bits.length ? 'SAVE ' + (slot + 1) + ': ' + bits.join(', ') : '';
+}
+/* the seat-coloured toast at a checkpoint: 'P2 +120 XP, +40 SILVER SAVED TO SAVE 2' */
+export function creditToast(n, slot, a) {
+  const bits = []; if (a.xp) bits.push('+' + a.xp + ' XP'); if (a.coins) bits.push('+' + a.coins + ' SILVER'); if (a.clears && a.clears.length) bits.push(a.clears.length + (a.clears.length > 1 ? ' WOODS' : ' WOOD') + ' CLEARED');
+  return bits.length ? 'P' + n + ' ' + bits.join(', ') + ' SAVED TO SAVE ' + (slot + 1) : '';
 }
 
 /* ===== THE LOCKS: one character, one place ===== */
@@ -189,7 +206,7 @@ export function makeLocks({ id, channel = null, now = () => Date.now(), ttl = LO
   return { id: me, claim, release, releaseRole, holder, hear, beat, ask: () => post({ t: 'who' }), mine: () => claimsOut(), others: () => [...theirs].filter(([, c]) => fresh(c)).map(([slot, c]) => ({ slot, ...c })), releaseAll: () => { mine.clear(); beat(); } };
 }
 export function lockLine(slot, h) {
-  const n = 'SLOT ' + (slot + 1);
+  const n = 'SAVE ' + (slot + 1);
   if (!h) return '';
   if (h.here) return n + ' IS ALREADY PLAYING HERE' + (h.label ? ' (' + h.label + ')' : '') + ': ONE CHARACTER, ONE PLACE';
   if (h.kind === 'game') return n + ' IS OPEN IN THE GAME IN ANOTHER TAB: PICK ANOTHER, OR OPEN A DIFFERENT SLOT THERE';
