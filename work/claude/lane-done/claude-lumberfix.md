@@ -21,7 +21,7 @@
 ## 4. MUSIC (coordinator add): Enchanted Festival
 - audio/lumbertrail.ogg = "Enchanted Festival" by Matthew Pablo, CC-BY 3.0 (the author's Loop.wav, 102.5 s). ffmpeg: last 2 s crossfaded onto the first 2 s, loop returns to 2.0 s (TRACK_INTRO lumbertrail: 2.0), -0.3 dB + limiter, libvorbis 112 kbps, 1.5 MB, measured -12.9 LUFS (peak -0.9 dBFS); the seam step at the loop point is ~500 (was 9187 in the raw wav).
 - Wired: src/audio.js TRACKS + TRACK_INTRO + MUSIC_NAMES + MUSIC_CREDITS + MUSIC_CREDITS_ROW (Sound Test row); src/credits.js row replaces brackenwood's (same row count, so credit pages keep their count); audio/CREDITS.txt; src/lumber-trail.js music 'brackenwood' -> 'lumbertrail'; tools/boss-music.mjs asserts; tools/music-start.mjs now probes 'lumbertrail'.
-- brackenwood (Round Glasses, Clement Panchout) was used by nothing else: audio/brackenwood.ogg, its TRACKS/TRACK_INTRO/MUSIC_NAMES/MUSIC_CREDITS entries, its credits row and CREDITS.txt lines are removed.
+- brackenwood (Round Glasses, Clement Panchout) was used by nothing else: the brackenwood track file (removed by lumberfix), its TRACKS/TRACK_INTRO/MUSIC_NAMES/MUSIC_CREDITS entries, its credits row and CREDITS.txt lines are removed.
 - Checks (node): audio-assets ok, audio-mix 0 problems, boss-music ok. NOT run (Chrome): textfit credits/soundtest, music-start (integ should: `textfit soundtest,credits --strict`, `music-start`). Not auditioned by ear.
 
 ## CHECKS (PORT 8777, one Chrome at a time)
