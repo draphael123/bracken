@@ -14,11 +14,12 @@
    The water bites everywhere (the level's waterHurts). A shrine per new section (Daniel's brief). Foes are designed here, not garrisoned (the new columns are calm). */
 export const AT_COL = 444, N = 226;
 export const SECTIONS = { reedrun: [0, 81], boom: [82, 151], night: [152, 225] };
-export const REED_STANDS = [[16, 18], [26, 17], [36, 18], [37, 18], [47, 17], [57, 18], [66, 17]];   /* [dx, top row]: a SOLID column from the bed up to `top` (18 low: a step; 17 tall: a hop) */
+export const REED_STANDS = [[16, 18], [26, 17], [36, 18], [37, 18], [47, 18], [57, 18], [66, 17]];   /* [dx, top row]: a SOLID column from the bed up to `top` (18 low: a step; 17 tall: a hop) */
 export const BOOM = { dx: 108, rows: [18, 21], lever: [127, 16] };
 export const NIGHT_PADS = [[158, 'L', 1], [161, 's'], [164, 's'], [167, 'L'], [170, 's'], [173, 's'], [176, 's'], [180, 'L', 1], [188, 's'], [191, 'L'], [194, 's'], [197, 's'],
   [200, 'L', 1], [204, 's'], [207, 's'], [210, 'L'], [213, 's'], [216, 'L', 1]];   /* [dx, L = firm with a marsh light / s = sinks, big] */
 export const NIGHT_DARK = 0.74;
+export const BOOM_PADS = [[110, 'L'], [113, 's'], [116, 'L'], [119, 's'], [122, 'L', 1]];   /* [dx, L firm / s sinks, big] - the chain from the boom to the lever's deck (dx 125-128) */
 export const BANK_WALKS = [[0, 5], [77, 85], [148, 155], [220, 225]];   /* [dx0, dx1] on row 15 */
 export function applyMarsh3(M, T, TS, grow) {
   const o = AT_COL, G = grow(M, M, o, N), X = dx => o + dx;
@@ -45,14 +46,14 @@ export function applyMarsh3(M, T, TS, grow) {
   water(86, 145);
   movers.push({ kind: 'raft', current: true, x0: X(86) * TS, x1: X(146) * TS - 96, x: X(86) * TS, y: 18 * TS + 8, w: 96, h: 8, speed: 32, frogs: true, frogMax: 1, frogEvery: 4 });
   for (let y = BOOM.rows[0]; y <= BOOM.rows[1]; y++) set(X(BOOM.dx), y, T.PORT);   /* the boom: sunk logs from the bed to her row (drawn as the marsh's gate, src/barriers.js 'sunklogs') */
-  for (const [dx, kind, big] of [[111, 's'], [114, 'L'], [117, 's'], [120, 'L', 1], [124, 'L']]) ent('pad', X(dx), 18, { firm: kind === 'L', big: !!big });
-  plank(126, 128, 17);   /* the lever's stilt deck: two rows over the water (a hop off a pad); the raft passes through under it - a one-way board does not stop a rider */
+  for (const [dx, kind, big] of BOOM_PADS) ent('pad', X(dx), 18, { firm: kind === 'L', big: !!big });   /* a firm pad off the boom and one under the deck: the sinking ones between are the quick hops */
+  plank(125, 128, 17);   /* the lever's stilt deck: two rows over the water (a hop off a pad); the raft passes through under it - a one-way board does not stop a rider */
   ent('lever', X(BOOM.lever[0]), BOOM.lever[1], { openColumn: [X(BOOM.dx), BOOM.rows[0], BOOM.rows[1]], say: 'THE BOOM SWINGS OPEN' });
-  reeds(X(115), 14, 2); foe('wasp', 119, 13, { pogo: true }); foe('spit', 115, 13);   /* the spitter lobs onto the pad chain from a reed tuft over it (on the lever's deck it knocked every hero back into the water) */
-  coins([X(111), 16], [X(117), 16], [X(127), 13], [X(136), 15], [X(140), 15]);
+  reeds(X(115), 12, 2); foe('spit', 115, 11);   /* the spitter lobs onto the pad chain from a reed tuft over it (on the lever's deck it knocked every hero back into the water) */
+  coins([X(113), 16], [X(119), 16], [X(127), 13], [X(136), 15], [X(140), 15]);
   bank(146, 155);
-  foe('thorn', 147, 17);   /* THE EXAM: on the narrow bank she docks at, the water at your back */
-  ent('check', X(151), 17);
+  foe('thorn', 150, 17);   /* THE EXAM: on the narrow bank she docks at, the water at your back (four strides in: at the bank's lip he threw every hero back off the raft) */
+  ent('check', X(154), 17);
   /* ---- C. THE NIGHT PADS ---- */
   ent('sign', X(153), 17, { text: 'NIGHT ON THE WATER. A MARSH LIGHT STANDS OVER EVERY PAD THAT HOLDS. THE DARK ONES SINK.' });
   water(156, 219);
