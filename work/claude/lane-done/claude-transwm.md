@@ -38,7 +38,11 @@ A reusable, skippable, dialogue-free transition system, plus its first row.
 - The "way opens" is a dust-and-crumble greybox in the Wood's last column; no new geometry in the Wood (the level ends at col 549), so the shore is a standalone scene joined by a walk-out-of-frame cut.
 - The Marsh's arrival ferry is drawn over the bank's first 3 tiles (no map change); it stays drawn while the start is on screen.
 
-## QUESTIONS FOR DANIEL
+## DANIEL'S ANSWERS (coordinator 14:55) - done
+1. Skipping the win card on a played transition: YES, kept.
+2. TRANSITIONS settings row: built. Settings > Gameplay > Helpers, after Text speed (one menu, so the title and the Tavern/pause menu both reach it). Values ALWAYS / FIRST TIME / NEVER, **default FIRST TIME** (the brief says first time; I used it). Persists with the other settings (SET.transitions, an unknown or missing value reads as FIRST TIME). Art before live is kept: until the art merges ?trans=1 is what turns the system on, and the setting is honoured inside it (NEVER stops it, FIRST TIME skips a seen pair, ALWAYS replays). When the art merges flip `live` in trnBegin and the flag is no longer needed. Checks: transition-woodmarsh 43/43 (browser), settings-tabs, hint-shown, textfit settings --strict (0 on every class) all green.
+
+## QUESTIONS FOR DANIEL (1 and 2 answered above)
 1. Win card: skip it on a played transition (built, rec) or show it AFTER the Marsh arrival / on the ferry? Rec as built: skip, the credit is already in.
 2. Settings row TRANSITIONS: always / first time (rec default) / never - the policy supports it; wire the row when the art merges? Until then only `?trans=1` plays it (art before live).
 3. Old Tusker's way opening: built = the clearing's east gate crumbles. Want the felled pine to settle into a ramp instead (needs the boss's pine state)? Art-pass decision.

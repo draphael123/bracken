@@ -8,6 +8,7 @@
    Exit 1 on any red row. */
 import { readFileSync } from 'node:fs';
 import * as TRM from '../src/transitions.js';
+import { tabOf, tabRows } from '../src/settings-ui.js';
 const rows = []; const ok = (name, pass, why = '') => { rows.push({ name, pass: !!pass, why }); console.log((pass ? 'ok   ' : 'FAIL ') + name + (pass ? '' : '  ' + why)); };
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
 
@@ -28,8 +29,9 @@ ok('the next level begins with a stepping-off walk', E && E.arrive && E.arrive.f
 { const tl = TRM.start(E); while (TRM.phase(tl) !== 'walk') TRM.step(tl, 1 / 60, {}); let t = 0; while (TRM.phase(tl) === 'walk' && t < 10) { TRM.step(tl, 1 / 60, { ready: false }); t += 1 / 60; }
   ok('the walk cannot run past its cap even if a hero never arrives (no softlock)', t <= E.beats[1].max + 0.05, t.toFixed(2)); }
 { const tl = TRM.start(E); while (TRM.phase(tl) !== 'shore') TRM.step(tl, 1 / 60, { ready: true }); TRM.step(tl, 1 / 60, { press: true }); ok('a skip works in the scene too', tl.skipped && TRM.phase(tl) === 'fade'); }
-ok('the policy: the flag plays it always; off by default until the art merges; the setting modes work',
-  TRM.policy({ flag: true }) && !TRM.policy({}) && TRM.policy({ live: true, mode: 'first', seen: false }) && !TRM.policy({ live: true, mode: 'first', seen: true }) && !TRM.policy({ live: true, mode: 'never' }) && TRM.policy({ live: true, mode: 'always', seen: true }));
+ok('the policy: off by default until the art merges; the flag turns it on and the setting is honoured (NEVER stops it, FIRST TIME skips a seen pair, ALWAYS replays)',
+  !TRM.policy({}) && TRM.policy({ flag: true }) && !TRM.policy({ flag: true, mode: 'never' }) && !TRM.policy({ flag: true, mode: 'first', seen: true }) && TRM.policy({ flag: true, mode: 'always', seen: true }) && TRM.policy({ live: true, mode: 'first', seen: false }) && !TRM.policy({ live: true, mode: 'first', seen: true }) && !TRM.policy({ live: true, mode: 'never' }));
+ok('the TRANSITIONS row is in Settings > Gameplay (Helpers), on the title and the pause menu alike, with its description, value and cycle wired in main.js', tabOf('Transitions') === 'gameplay' && tabRows('gameplay', 'play').includes('Transitions') && tabRows('gameplay', 'title').includes('Transitions') && src.includes("k === 'Transitions' ? TRM.MODE_LABEL") && src.includes("k === 'Transitions') { const o = ['always', 'first', 'never']") && src.includes("'Transitions': 'the cutscene"));ok('the setting: three values, ALWAYS / FIRST TIME / NEVER, an unknown value is FIRST TIME', TRM.MODES.join() === 'always,first,never' && TRM.modeOf(undefined) === 'first' && TRM.modeOf('bogus') === 'first' && TRM.MODE_LABEL.first === 'FIRST TIME');
 ok('letterbox bars slide in (0 -> 22) and out', TRM.barIn(0) === 0 && TRM.barIn(1) === TRM.BAR && TRM.barOut(0, 1.7) === TRM.BAR && TRM.barOut(1.7, 1.7) === 0);
 ok('the walk: slower is never under WALK_MIN, a long way is a run capped at WALK_MAX', TRM.walkSpeed(1) === TRM.WALK_MIN && TRM.walkSpeed(5000) === TRM.WALK_MAX);
 /* ---- the ferry scene geometry ---- */
@@ -52,7 +54,7 @@ if (process.argv.includes('--browser')) {
   const ev = x => pg.evalp(x, 600000);
   try {
     const setup = `window.__t = {}; window.__setup = async (flag, coop) => { BK.manualSimulation = true; const { LEVELS } = await import('/src/level.js'); window.__L = LEVELS; BK.setHero('knight'); BK.reset({ fresh: true });
-        BK.trans.force(flag); if (coop) BK.coopArm('warden', false); const wi = LEVELS.findIndex(l => l.id === 'wood'); BK.load(wi); BK.start(); BK.sim(30); return wi; };
+        delete BK.PROG.transSeen; BK.SET.transitions = undefined; BK.trans.force(flag); if (coop) BK.coopArm('warden', false); const wi = LEVELS.findIndex(l => l.id === 'wood'); BK.load(wi); BK.start(); BK.sim(30); return wi; };
       window.__kill = () => { const A = BK.L.arena, e = BK.enemies().find(q => q.t === A.boss && q.alive); BK.god = true; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); if (BK.players().length > 1) { const q = BK.players()[1]; q.x = BK.P.x + 20; q.y = BK.P.y; q.vx = q.vy = 0; } BK.sim(200);
         for (let n = 0; n < 1000 && e && e.alive; n++) { BK.P.inv = 99; BK.P.hp = BK.P.maxHp; e.hp = Math.min(e.hp, 1); e.inv = 0; e.open = 9; e.passThrough = true; BKT.hurtEnemy(e, 1e6, e.x + (n % 2 ? 10 : -10), n % 3 === 0); if (e.alive) BK.sim(6); } return !!e && !e.alive; };
       window.__lvl = () => BK.trans.levelId();`;
@@ -84,6 +86,10 @@ if (process.argv.includes('--browser')) {
     const c = await ev(`(async()=>{ const out = {}; await __setup(false); __kill(); for (let i = 0; i < 800; i++) { BK.sim(1); if (BK.state === 'win') break; } out.state = BK.state; out.tr = !!BK.trans.tr; out.lvl = __lvl();
       BK.keys.confirm = false; return out; })()`);
     ok('with the flag OFF the win card arrives as before (no transition)', c.state === 'win' && !c.tr && c.lvl === 'wood', JSON.stringify(c));
+    /* 3b. the setting: NEVER stops it even with the flag; FIRST TIME skips a pair already seen; ALWAYS replays it */
+    const s3 = await ev(`(async()=>{ const out = {}; for (const m of ['never', 'first', 'always']) { await __setup(true); BK.SET.transitions = m; if (m === 'first') BK.PROG.transSeen = { 'wood>marsh': 1 }; __kill(); let tr = false; for (let i = 0; i < 700; i++) { BK.sim(1); if (BK.trans.tr) { tr = true; break; } if (BK.state === 'win') break; } out[m] = tr; }
+      BK.SET.transitions = undefined; return out; })()`);
+    ok('the TRANSITIONS setting is honoured: NEVER and a seen FIRST TIME play nothing, ALWAYS plays', s3.never === false && s3.first === false && s3.always === true, JSON.stringify(s3));
     /* 4. a mid-cutscene quit: Wood cleared, the map return works */
     const d = await ev(`(async()=>{ const out = {}; await __setup(true); __kill(); for (let i = 0; i < 400; i++) { BK.sim(1); if (BK.trans.tr) break; } out.began = !!BK.trans.tr; out.cleared = !!(BK.PROG.wood && BK.PROG.wood.cleared);
       BK.state = 'map'; BK.trans.force(false); out.state = BK.state; return out; })()`);

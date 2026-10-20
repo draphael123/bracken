@@ -12,8 +12,8 @@
    The CLEAR IS CREDITED BEFORE THE CUTSCENE (main.js calls winLevel first, then begins this), so quitting or skipping loses nothing.
    SKIP: any button or tap, once MIN_SKIP seconds in (a hero still mashing attack as the boss falls does not skip it), jumps to a short fade;
    the state after a skip is the state after a full watch (the next level, the arrival) - skipping only drops the pictures.
-   WHEN IT PLAYS: policy() below. Until the art pass merges it is behind ?trans=1 (art before live); the settings mode (always / first / never) is in
-   the function already so the setting is one line when the art is in. */
+   WHEN IT PLAYS: policy() below. Until the art pass merges it is behind ?trans=1 (art before live); the Settings row TRANSITIONS (ALWAYS / FIRST TIME /
+   NEVER, default FIRST TIME) is honoured inside that. When the art merges, `live` goes true and the flag is no longer needed. */
 export const MIN_SKIP = 0.8;
 export const FADE_SKIP = 0.3;
 export const TABLE = [
@@ -26,9 +26,10 @@ export const entryFor = (from, to) => TABLE.find(e => e.from === from && (to ===
 
 /* IS IT PLAYED? flag: ?trans=1 (or BK.trans.force) - plays always, every replay. mode: 'always' | 'first' | 'never' (the settings choice, default 'first').
    `live` is false until the art pass merges: with it false only the flag plays it. */
+export const MODES = ['always', 'first', 'never'], MODE_LABEL = { always: 'ALWAYS', first: 'FIRST TIME', never: 'NEVER' };
+export const modeOf = m => (MODES.includes(m) ? m : 'first');   /* the settings row's value; anything else (an old save) is the default, FIRST TIME */
 export function policy({ flag = false, mode = 'first', seen = false, live = false } = {}) {
-  if (flag) return true;
-  if (!live) return false;
+  if (!live && !flag) return false;   /* art before live: until the art pass merges only ?trans=1 turns the system on - and then the setting below is honoured */
   if (mode === 'never') return false;
   if (mode === 'first') return !seen;
   return true;
