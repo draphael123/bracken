@@ -25,10 +25,10 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 860,
+  hp: 1100,
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
-  quota: [0.25, 0.25],             /* the share of him one royal pad is worth before he leaps on, per phase */
+  quota: [0.22, 0.22],             /* the share of him one royal pad is worth before he leaps on, per phase */
   stay: [15, 12],                  /* or this long with you on his pad */
   take: 0.08,                      /* one opening is worth at most this share of him, then he shakes it off */
   dazed: 2, winded: 1.5, air: 0.4, throat: 1.5,
@@ -104,7 +104,7 @@ export function frogPlan(s) {
   const roll = (k, p) => { if (!mem.roll.has(k)) mem.roll.set(k, rng() < p); return mem.roll.get(k); };
   const A = F.A, m = e.mode, side = Math.sign(P.x - e.x) || 1, ad = Math.abs(P.x - e.x), toHim = Math.sign(e.x - P.x) || 1;
   const royal = F.royal || [], his = royal[e.tst !== undefined && (m === 'leap' || m === 'crouch') ? e.tst : e.st] || royal[0];
-  const onSt = i => i >= 0 && royal[i] && P.x >= royal[i].x0 + 2 && P.x <= royal[i].x1 - 2 && P.y <= royal[i].top + 3;
+  const onSt = i => i >= 0 && royal[i] && P.x >= royal[i].x0 - 4 && P.x <= royal[i].x1 + 4 && P.y <= royal[i].top + 3;
   const myFoot = () => { if (!P.ground) return null; const fs = footings(F); return fs.find(f => P.x >= f.x0 - 3 && P.x <= f.x1 + 3 && (f.solid ? P.y <= (royal[0] ? royal[0].top + 3 : 1e9) : true)) || null; };
   const open = e.mode === 'dazed' || e.mode === 'flopRest' || e.mode === 'croak';
   out.face = toHim;
@@ -122,7 +122,7 @@ export function frogPlan(s) {
     if (m === 'snapTell' && there && leading && Math.abs(P.x - (e.x + (e.face || 1) * 18)) < 30) { out.gx = e.x + (e.face || 1) * 18; out.why = 'hold the flies on his head'; return out; }
     if ((m === 'tongueTell' || m === 'snapTell') && ad < (m === 'snapTell' ? 260 : (F.tongueMax || 175) + 30)) { if (s.shield) { out.block = true; out.why = 'shield the tongue'; return out; } if (s.ward) { out.ward = true; out.gx = P.x; out.why = 'ward the tongue'; return out; } if (s.deflect && e.modeT < 0.3) { out.block = true; out.face = toHim; out.why = 'deflect the tongue on the beat'; return out; } out.jump = P.ground && e.modeT < 0.2; out.gx = P.x; out.why = 'jump the tongue'; return out; }
     if (m === 'spitTell' && ad < 330) { if (s.shield) { out.block = true; out.why = 'shield the spit'; return out; } if (s.ward) { out.ward = true; out.gx = P.x; out.why = 'ward the spit'; return out; } }
-    if (m === 'flopTell' && there && ad < 60) { out.gx = e.x + side * 70; out.why = 'clear of the flop'; return out; }
+    if (m === 'flopTell' && there && ad < 60) { out.gx = Math.max(his.x0 + 6, Math.min(his.x1 - 6, e.x + side * 70)); out.why = 'clear of the flop'; return out; }   /* (on his pad: the leaf-free footing - the wave is jumped where you stand) */
     if (m === 'crouch' && e.tst !== undefined && onSt(e.tst)) { const r = royal[e.tst]; out.gx = Math.abs(P.x - r.x0) > Math.abs(P.x - r.x1) ? r.x0 + 10 : r.x1 - 10; out.why = 'off the spot he leaps for'; return out; } }
   if (m === 'leap' && e.vy > 0 && Math.abs(e.x - P.x) < 50 && P.ground && onSt(stationAt(A, e.x))) { if (s.shield) { out.block = true; out.why = 'shield the landing'; return out; } out.gx = P.x + side * 60; out.why = 'out from under him'; return out; }
   if ((m === 'tongue' || m === 'snap' || m === 'spit') && s.shield && ad < 330) { out.block = true; out.why = 'hold the shield'; return out; }
@@ -130,7 +130,7 @@ export function frogPlan(s) {
   /* ON HIS PAD: the fight */
   if (there) {
     if (F.swarm && m !== 'flopTell' && m !== 'flop' && !open && !roll('lead' + (e.actN || 0), PLAN.missLead)) { out.gx = e.x + (e.face || 1) * 18; out.why = 'lead the flies onto him'; return out; }
-    if (m === 'flop' && ad < 60) { out.gx = e.x + side * 70; out.why = 'clear of the flop'; return out; }
+    if (m === 'flop' && ad < 60) { out.gx = Math.max(his.x0 + 6, Math.min(his.x1 - 6, e.x + side * 70)); out.why = 'clear of the flop'; return out; }
     if (s.rest && !open) { out.gx = e.x + side * 60; out.why = 'catch my breath'; return out; }
     const stand = s.tip ? 20 + s.tip : Math.max(12, (open ? reach * 0.6 : reach - 4)); let gx = e.x - toHim * stand;
     gx = Math.max(his.x0 + 6, Math.min(his.x1 - 6, gx)); if (Math.abs(gx - e.x) < 10) gx = e.x + side * stand;
