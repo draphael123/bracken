@@ -46,10 +46,24 @@ function wallAhead(c, m, newX, dir) {
   return false;
 }
 // True if moving to newX would overlap another block. Never itself.
-function blockAhead(c, m, newX) {
+function blockAhead(c, m, newX, skip) {
   const bb = { l: newX, r: newX + m.w, t: m.y, b: m.y + m.h };
-  for (const q of c.blocks) if (q !== m && c.overlap(bb, { l: q.x, r: q.x + q.w, t: q.y, b: q.y + q.h })) return true;
+  for (const q of c.blocks) if (q !== m && !(skip && skip.includes(q)) && c.overlap(bb, { l: q.x, r: q.x + q.w, t: q.y, b: q.y + q.h })) return true;
   return false;
+}
+// THE CHAIN (Daniel 10-21: two blocks side by side and neither would move - a soft-lock): the blocks touching the pushed one on its
+// leading side, and those touching them in turn, move WITH it at the same speed (a resting, grounded neighbour in the same row; one
+// that is falling or on another row is not a neighbour). Returned with the pushed block first.
+function chainOf(c, m, dir) {
+  const chain = [m];
+  for (let again = true; again;) { again = false;
+    const tip = chain[chain.length - 1], edge = dir > 0 ? tip.x + tip.w : tip.x;
+    for (const q of c.blocks) {
+      if (chain.includes(q) || !q.ground || Math.abs(q.y - tip.y) > 2) continue;
+      if (Math.abs((dir > 0 ? q.x : q.x + q.w) - edge) <= 0.6) { chain.push(q); again = true; break; }
+    }
+  }
+  return chain;
 }
 
 // c: { players, box, overlap, isSolid, isOneWay, tileAt, blocks, sound, dust }
@@ -84,8 +98,10 @@ export function updatePushBlock(m, dt, c) {
     const dir = fromLeft ? 1 : -1;
     const walkingIn = P.ground && ((fromLeft && P.vx > 8) || (!fromLeft && P.vx < -8));
     const step = PB.speed * dt;
-    if (walkingIn && !wallAhead(c, m, m.x + dir * step, dir) && !blockAhead(c, m, m.x + dir * step)) {
-      m.x += dir * step; bb.l = m.x; bb.r = m.x + m.w;
+    const chain = walkingIn ? chainOf(c, m, dir) : [m];
+    if (walkingIn && chain.every(q => !wallAhead(c, q, q.x + dir * step, dir) && !blockAhead(c, q, q.x + dir * step, chain))) {
+      for (const q of chain) q.x += dir * step;   /* the whole row gives together (a lone block is a chain of one) */
+      bb.l = m.x; bb.r = m.x + m.w;
       P.x = fromLeft ? Math.min(P.x + dir * step, bb.l) : Math.max(P.x + dir * step, bb.r); P.vx = dir * PB.speed;   /* carried with it, but never past its edge: faster than the block (any run, even a wade), the hero walked into it a little more each frame until his side passed its edge, and the else below put him out on the FAR side (claude/unburied4) */
       if (m.scrapeT <= 0) { m.scrapeT = 0.3; c.sound && c.sound('scrape'); c.dust && c.dust(fromLeft ? bb.l : bb.r, m.y + m.h - 2, 2); }
     } else {

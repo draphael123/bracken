@@ -58,7 +58,7 @@ export function bakeTower() {
 /* a trestle bent for the gun-deck, drawn into main.js's drawStructures box (l..r px, t..b px): two stout posts at the ends and one between on a long run, X braces, a cap beam under the
    deck, mud splashed up the feet - and the lashings. Real timber, because it IS timber (siege engines, siege works, trestles) */
 export function drawTrestle(g, l, r, t, b, seed = 0) {
-  const w = r - l, n = Math.max(2, Math.round(w / 56) + 1), rr = rnd(seed + Math.round(l));
+  const w = r - l, n = Math.max(2, Math.round(w / 56) + 1), rr = rnd(seed + w);
   const xs = []; for (let i = 0; i < n; i++) xs.push(Math.round(l + 5 + (w - 14) * i / (n - 1)));
   for (const x of xs) { rect(g, x, t, 6, b - t, K.wood2); rect(g, x, t, 2, b - t, K.wood4); rect(g, x + 5, t, 1, b - t, K.wood0);
     for (let y = t + 10; y < b - 4; y += 24) { rect(g, x - 1, y, 8, 2, K.iron1); px(g, x + 1, y, K.iron3); }
@@ -352,8 +352,9 @@ export function drawFarbankRubble(g, cx, cy, G, VW) {
 /* (claude/unbfloat, Daniel 10-12: "the Unburied Field has a lot of floating geometry") FOOTINGS - R.structures kinds drawn into main.js's drawStructures box (l..r px, t..b px):
    'ubheads'  a CAIRN OF HEADSTONES under a palisade the volleys feed (and the plank keyed into its side): slabs the host stacked in mortarless courses (mismatched, leaning, a carved cross or an arch on the outward ones) from the trench floor
               up to the stakes' foot - the wall stood with its bottom hanging a few rows over the pit */
+/* THE SCRAMBLE (Daniel 10-21): the stones were seeded from the box's SCREEN x (l), which changes with the camera - the cairn re-dealt every frame it moved. Seed from world-stable things only (the column the box starts at, its size). */
 export function drawHeadstoneCairn(g, l, r, t, b, seed = 0) {
-  const rr = rnd(seed * 31 + Math.round(l)), w = r - l, S = ['#2c282c', '#413d44', '#5b5762', '#7d7886', '#9a96a4'];
+  const rr = rnd(seed * 31 + (r - l) + (b - t) * 7), w = r - l, S = ['#2c282c', '#413d44', '#5b5762', '#7d7886', '#9a96a4'];
   const n = Math.max(3, Math.round((b - t) / 11)), h = (b - t) / n;
   for (let i = 0; i < n; i++) {
     const y = Math.round(b - (i + 1) * h), yh = Math.round(h) + 1, inset = i === 0 ? 0 : i === n - 1 ? 2 : 1 + (i % 2);   /* a wider foot, a tapering stack, a squared top under the stakes */
