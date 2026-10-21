@@ -41,14 +41,14 @@ export function checkDrawables(BK, tileAt) {
     if (!d.c || !d.c.width || (!d.stand && !d.hang)) continue;
     const s = shape(d.c); if (s.bot < 0) continue;
     if (d.stand) {
-      const fy = d.y + s.bot + 1, ty = Math.round(fy / TS), gap = ty * TS - fy;
+      const fy = d.y + s.bot + 1, ty = Math.round(fy / TS), gap = ty * TS - fy + (d.sink || 0);   /* (integ110) a sign's declared sink (tuskerfix: post driven into a stump's cut face) is not a sunk sprite */
       const cols = [...new Set(s.foot.map(x => Math.floor((d.x + x) / TS)))];
       const at = Math.round(d.x / TS) + ',' + Math.round((d.y + s.bot) / TS);
       const onFloor = Math.abs(gap) <= 3 && cols.some(tx => (solid(tx, ty) || ledge(tx, ty)) && !solid(tx, ty - 1));
       if (!onFloor) { bad.push({ what: d.what, x: d.x, y: d.y, w: s.w, h: s.h, kind: gap > 3 ? 'floats' : gap < -3 ? 'sunk' : 'nofloor', at, msg: d.what + '@' + at + (gap > 3 ? ' floats ' + gap + 'px' : gap < -3 ? ' sunk ' + -gap + 'px' : ' has no floor') }); continue; }
       if (HOLDS_UP.has(d.what)) continue;
       let n = 0; const narrow = s.w <= 24;
-      for (let k = 0; k < s.px.length; k += 2) { const wx = d.x + s.px[k], wy = d.y + s.px[k + 1]; if (wy >= fy - 3) continue;
+      for (let k = 0; k < s.px.length; k += 2) { const wx = d.x + s.px[k], wy = d.y + s.px[k + 1]; if (wy >= fy - 3 - (d.sink || 0)) continue;
         const tx = Math.floor(wx / TS), ty2 = Math.floor(wy / TS);
         if ((!d.bg && solid(tx, ty2)) || ((!d.bg || narrow) && ledge(tx, ty2) && wy - ty2 * TS < 5)) n++; }
       if (n > 4) bad.push({ what: d.what, x: d.x, y: d.y, w: s.w, h: s.h, kind: 'pierce', at, msg: d.what + '@' + at + ' runs through the ground (' + n + 'px)' });

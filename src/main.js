@@ -2506,7 +2506,7 @@ function* loadLevelG(i) {
   for (const e of L.ents) {
     const px = e.x * TS + 8, py = (e.y + 1) * TS;
     if (e.t === 'coin') { acorns.push({ x: px, y: py - 6, got: false, ph: Math.random() * 6 }); total++; }
-    if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), text: e[hero()] || e.text }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
+    if (e.t === 'sign') signs.push({ x: px, y: py + (e.sink || 0), sink: e.sink || 0, text: e[hero()] || e.text }); // a sign speaks to the hero reading it   /* (claude/tuskerfix) sink: px its post is driven down into a rounded top (a stump's cut face) - tools/signs.mjs */
     if (e.t === 'silver') silvers.push({ x: px, y: py - 6, i: silvers.length, got: false, ph: Math.random() * 6, ...(e.offer ? { y0: py - 6, hung: !marks.has('offer:' + e.x + ',' + e.y), y: marks.has('offer:' + e.x + ',' + e.y) ? py - 6 : py - 6 - e.offer * TS, key: 'offer:' + e.x + ',' + e.y } : {}) });   /* (claude/monastery2) THE MONKS' OFFERING: a silver hung in its basket over a belfry, let down when its bell is struck */
     if (e.t === 'lostbanner') lostBanners.push({ x: px, y: py - 8, id: e.id, got: !!(PROG.lostBanners || {})[e.id], ph: Math.random() * 6 });
     if (e.t === 'check') shrines.push({ x: px, y: py, lit: false });
@@ -34825,7 +34825,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
   checkpointAt: () => checkpoint, breakShrineAt: () => breakAt, get lifeN() { return lifeN; },   /* (survival2) where a death wakes; the shrine the BREAK prompt stands over; the life count (one flask a shrine a life) */
   drawables() { const out = [], sh =(PROP.shrineOf && PROP.shrineOf[shrineKind()]) || PROP.shrine;
     for (const d of deco) out.push({ what: d.kind, c: d.anim ? d.anim[0] : d.c, x: d.x, y: d.y, bg: !!d.bg, stand: !!d.stand, hang: !!d.hang });
-    for (const s of signs) out.push({ what: 'sign', c: L.canal ? CNH.signArt() : L.lpKit ? LPSIGN() : PROP.sign, x: s.x - 9, y: s.y - 18, stand: true });
+    for (const s of signs) out.push({ what: 'sign', c: L.canal ? CNH.signArt() : L.lpKit ? LPSIGN() : PROP.sign, x: s.x - 9, y: s.y - 18, stand: true, sink: s.sink || 0 });
     for (const s of shrines) out.push({ what: 'checkpoint', c: sh[0], x: s.x - 10, y: s.y - 34, stand: true });
     for (const pr of props) { const x = Math.round(pr.x), y = Math.round(pr.y);
       if (pr.t === 'brazier') out.push({ what: 'brazier', c: PROP.brazier[1], x: x - 7, y: y - 16, stand: true });
