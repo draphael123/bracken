@@ -3,7 +3,7 @@
 // its drink-back, the drag's drink and the harvest below are GONE from the hero (the boss keeps his own Blood Price, src/unburied-foes.js). rhythm, kneel and linger stay.
 // He SPENDS HIS OWN BLOOD to power his blood moves and DRAINS it back out of what he cuts - hurt yourself, drain to heal, is his loop.
 // HE NEVER KILLS HIMSELF (the Berserker 2 rule): every price his own kit puts on his health is floored at 1 hp; a foe can still kill him.
-//   REAPER'S RHYTHM (X, the chain)  ~35% quicker than the old swing (it was too slow and knight-like). 1 a RISING LOW DIAGONAL cut,
+//   THE RED RHYTHM (X, the chain)  ~35% quicker than the old swing (it was too slow and knight-like). 1 a RISING LOW DIAGONAL cut,
 //                                   2 a hooking REVERSE SWEEP that pulls what it lands on a step toward him (the chain's echo), 3 a heavy
 //                                   downward DRAG that DRAINS a sliver of hp if it lands. The blade leaves a short BLOOD TRAIL, and every
 //                                   cut of the chain that lands FEEDS THE BLOOD WARD (what the ward holds is the nova it lets go).
@@ -20,7 +20,7 @@
 //                                   can still be harvested or raised; the fallen body's picture stays as long as its blood does.
 // main.js binds it: the numbers below, and the few pure helpers the hero code and tools/dk2.mjs share.
 export const DK2 = {
-  /* REAPER'S RHYTHM: rate is P.atk's speed (the old swing 0.34 -> x1.35); pull px a hooked foe is drawn toward him (never a boss or a mini,
+  /* THE RED RHYTHM: rate is P.atk's speed (the old swing 0.34 -> x1.35); pull px a hooked foe is drawn toward him (never a boss or a mini,
      never through a wall); drain: the drag gives back drain x the blow's damage (drainMin..drainMax hp); ward: what one landed cut of the chain
      puts in the ward (P.wardG) - never past wardTop of a full ward, so feeding it never breaks it */
   rhythm: { rate: 0.56, pull: 12, drain: 0.2, drainMin: 1, drainMax: 5, ward: 7, wardTop: 0.75, trail: 0.24 },

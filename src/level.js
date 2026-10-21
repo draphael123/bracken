@@ -3617,7 +3617,7 @@ function trialYard(hero) {
     ward: ['ward', 3, 'THE BLOOD WARD: HOLD C TO WARD, RELEASE TO NOVA. TAKE THREE OF THE ARCHER\'S ARROWS ON IT.', [['archer', 22]], 'HOLD LB, THEN LET GO'],
     meter: ['meter', 1, 'BLOOD SURGE: HIS BAR FILLS WITH WHAT HE TAKES. FULL, HOLD F. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'HOLD Y WITH A FULL BAR'],
   };
-  /* HIS F IS NOT A TREE SKILL'S SLOT. The Death Knight's F is SUMMON SKELETON once his GRAVELORD root has it and EMPTY until then (and, held
+  /* HIS F IS NOT A TREE SKILL'S SLOT. The Death Knight's F is SUMMON THRALL once his RED HOST root has it and EMPTY until then (and, held
      on a full bar, the surge above), and it is no tree skill a yard can lend, so the shared step's F is not asked of him: his skills from the tree go on G, and G is what he is asked for */
   const SKILL_G = ['skill', 1, 'G: A SKILL FROM THE TALENT TREE (Q). ONE NOT YET LEARNED IS LENT HERE. USE IT.', [['dummy', 14], ['sprig', 20]], 'RT', ['skillG']];
   /* THE NEW CUTS, THE SAME FOR EVERY HERO: what the controls page promises, a gate each. The goblins in these yards are straw

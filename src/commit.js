@@ -12,7 +12,7 @@
    3. THE SEAM (shared with the LEVELING lane): staminaOf(P) is the ONE place max / regen / roll-cost growth is read. main.js binds the
       level hooks (bindStamina) - this module never hard-codes the level numbers, and LEVELING's ENDURANCE feeds P.maxSt. */
 
-import { DK2 } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: REAPER'S RHYTHM and the crescent run on their own clocks */
+import { DK2 } from './dk2.js';   /* (claude/dk2b) THE DEATH KNIGHT 2: THE RED RHYTHM and the crescent run on their own clocks */
 export const WINDOW = 0.06;   /* s: the last four frames of a recovery are the cancel window, for everything */
 
 /* RECOVERY ADDED AFTER THE SWING'S ART ENDS (s), per hero x verb. Light totals press-to-free (WEIGHT-T): freebooter 0.29, knight/warden/pyro 0.40,

@@ -1,6 +1,6 @@
 // tools/dk2.mjs — THE DEATH KNIGHT 2 (claude/dk2b, scratch/brief-dk2.md; src/dk2.js). On flat Stockade floor, the hero held where he
 // stands, this fails when:
-//   - REAPER'S RHYTHM is not the Paladin's pace (src/commit.js artRate = DK2.rhythm.rate 0.56; claude/dkfeel, was ~35% quicker than the old 0.34), a swing in the page takes as long
+//   - THE RED RHYTHM is not the Paladin's pace (src/commit.js artRate = DK2.rhythm.rate 0.56; claude/dkfeel, was ~35% quicker than the old 0.34), a swing in the page takes as long
 //     as it did, the HOOK (the 2nd cut) does not pull a straw man a step toward him, the DRAG (the 3rd) gives back no health, or a landed
 //     chain does not FEED THE BLOOD WARD (P.wardG) - or feeds it to full
 //   (claude/bloodknight: THE BLOOD PRICE held on X, its crescent and its drink-back are gone - X held is THE FIVE-TIER HEAVY and the drag drinks

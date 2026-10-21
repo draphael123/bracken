@@ -68,11 +68,12 @@ export const POSE_BEATS = {
   board: [0.1],                /* BOARDING PARTY: the hook flung high, then swung in on the line with his knees up */
   /* THE DEATH KNIGHT */
   boil: [0.1, 0.25],           /* BLOOD WELL: hunched over the blade, then flung open with the blood coming up round him */
-  call: [0.12, 0.28],          /* GRAVECALL: the blade stood in the ground, the off hand raised, and the green coming up */
+  call: [0.12, 0.28],          /* THE RED CALL: the blade stood in the ground, the off hand raised, and the green coming up */
   coil: [0.1],                 /* BLOOD LEECH: the off hand drawn back, then flung out with the coil leaving it */
-  tide: [0.12],                /* GRAVE TIDE: down on the haunches with the fist in the ground, and the green running off along it */
-  unholy: [0.1],               /* UNHOLY GROUND: the blade low behind him, then swept flat along the floor */
-  grip: [0.12],                /* GRAVE CHAIN: the off hand out clawed, then the fist hauled back to his chest */
+  tide: [0.12],                /* CRIMSON TIDE: down on the haunches with the fist in the ground, and the green running off along it */
+  unholy: [0.1],               /* RED GROUND: the blade low behind him, then swept flat along the floor */
+  bkFlick: [0.07, 0.22],       /* (claude/bkpolish) THE FLICK (tap C): the blade snapped up off the low guard, and left quivering */
+  grip: [0.12],                /* BLOOD CHAIN: the off hand out clawed, then the fist hauled back to his chest */
   /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */
   gStep: [0.08],               /* STONE STEP: the stave jabbed down under her boots, then up off the stone that met it */
   gHeave: [0.08, 0.2],         /* BOULDER: down on the lever, heaved through, arms flung after it */
