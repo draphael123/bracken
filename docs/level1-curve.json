@@ -1,16 +1,16 @@
 {
  "wood": {
-  "hash": "fdfd7201f5ff",
+  "hash": "6639406ae816",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 32,
+  "hits": 29,
   "deaths": 2,
-  "kills": 39,
-  "lifts": 92,
+  "kills": 42,
+  "lifts": 91,
   "walked": 100,
   "bare": true,
-  "lostPct": 172
+  "lostPct": 147
  },
  "marsh": {
   "hash": "756796fdb4b6",

@@ -3,7 +3,7 @@
 // the King's spit left his mouth with no windup at all. (claude/oldtusker) THE HORNET QUEEN is PARKED: the Lumber Trail's boss is OLD TUSKER, and this asks of him,
 // in the page, the same thing - his openings are CAUSED, never a timer:
 //   OLD TUSKER        - his hide turns a cut outside his openings (x0.4, never nothing); four strokes on a marked pine of his clearing with him under its
-//                       line bring it down ON HIM: PINNED, and a blow there bites x2; his charge stops at a standing pine and he reels (DAZED) under it;
+//                       line bring it down ON HIM: PINNED, and a blow there bites x2; (claude/tuskerfix) his charge runs past standing pines, and a FELLED trunk in his path he RAMS (DAZED, it splinters);
 //                       a pine felled on him in his ward bounces off; and at half health his blood is up (phase two: the stomp)
 //   THE BULLFROG KING - every venom spit is told: the frame a spit of his leaves his mouth he has been in 'spitTell' (a yellow !,
 //                       src/marks.js) within the last second; a leap that lands on the hero opens nothing, the same leap left
@@ -37,10 +37,15 @@ try {
    for(let k=0;k<4;k++){park();P.hitSet=new Set();H.strike({l:q.x-6,r:q.x+6,t:fl-30,b:fl-10});}
    for(let i=0;i<60;i++){park();S.restT=99;S.ward=Math.max(S.ward,1);e.mode='walk';e.x=q.x-60;BK.sim(1);}
    out.bounced=S.n.bounced-b0;
-   /* the ram: a charge from the middle toward a standing pine stops at it, dazed */
-   const r=S.pines.find(z=>z.st==='stand'&&z.dir<0);S.ward=0;e.x=(A.x0+A.x1)/2-20;e.face=1;e.mode='chargeTell';e.modeT=0.01;let saw='';
-   for(let i=0;i<180;i++){park();BK.sim(1);if(e.mode==='rammed'){saw='rammed';break;}}
-   out.ram={mode:saw,under:r?(e.x>r.x+r.dir*r.len*16-30&&e.x<r.x):null};
+   /* (claude/tuskerfix, Daniel 10-21) the ram: a FELLED trunk lying on the floor stops his charge - he rams it, DAZED, and it splinters */
+   const q2=S.pines.filter(z=>z.dir<0).sort((x,y)=>x.x-y.x)[0];for(const z of S.pines){z.st='stand';z.hp=4;z.t=0;}q2.st='down';q2.t=20;S.ward=0;S.trunk=null;
+   const lo2=q2.x-q2.len*16;e.x=A.x0+90;e.face=1;e.mode='chargeTell';e.modeT=0.01;let saw='',at=0;
+   for(let i=0;i<180;i++){park();BK.sim(1);if(e.mode==='rammed'){saw='rammed';at=e.x;break;}}
+   out.ram={mode:saw,atEnd:Math.abs(at-(lo2-26))<=2,trunk:q2.st};
+   /* and with every pine standing, the charge runs past them all to the wall (no standing pine stops or dazes him) */
+   for(const z of S.pines){z.st='stand';z.hp=4;z.t=0;}e.x=(A.x0+A.x1)/2;e.face=-1;e.mode='chargeTell';e.modeT=0.01;saw='';at=0;
+   for(let i=0;i<180;i++){P.x=A.x1-20;P.y=fl;P.hp=P.maxHp;BK.sim(1);if(e.mode==='rammed'){saw='rammed';at=e.x;break;}}
+   out.wall={mode:saw,pastPines:at<Math.min(...S.pines.map(z=>z.x)),x:Math.round(at)};
    /* half health: phase two */
    e.mode='walk';e.modeT=0;S.restT=0;e.hp=e.maxHp*0.49;for(let i=0;i<10;i++){park();BK.sim(1);}out.otHalf={ph:S.ph,mode:e.mode};}
   /* ---- THE BULLFROG KING ---- */
@@ -74,7 +79,8 @@ if (Q.t !== 'oldtusker') bad.push('the Lumber Trail\'s boss is not OLD TUSKER: '
 if (!(Q.otHide.walk >= 4 && Q.otHide.walk < Q.otHide.pinned / 3 && Q.otHide.pinned >= 19 && Q.otHide.rammed > Q.otHide.walk)) bad.push('his hide: x0.4 outside his openings (never nothing), x2 pinned, more dazed: ' + JSON.stringify(Q.otHide));
 if (Q.fall !== 'fall' || Q.pinned !== 'pinned') bad.push('four strokes on a marked pine with him under its line did not PIN him: ' + JSON.stringify([Q.fall, Q.pinned]));
 if (!(Q.bounced >= 1)) bad.push('a pine felled on him in his ward must bounce off (B3): ' + Q.bounced);
-if (Q.ram.mode !== 'rammed') bad.push('his charge did not stop at a standing pine and daze him: ' + JSON.stringify(Q.ram));
+if (!(Q.ram.mode === 'rammed' && Q.ram.atEnd && Q.ram.trunk === 'spent')) bad.push('his charge did not RAM the felled trunk (dazed at its end, the trunk splintered): ' + JSON.stringify(Q.ram));
+if (!(Q.wall.mode === 'rammed' && Q.wall.pastPines)) bad.push('his charge must run past the standing pines to the wall: ' + JSON.stringify(Q.wall));
 if (!(Q.otHalf.ph === 2)) bad.push('his blood is not up at half health (phase two): ' + JSON.stringify(Q.otHalf));
 if (!(Q.spit.spits > 0)) bad.push('the Bullfrog King never spat in a minute: ' + JSON.stringify(Q.spit));
 if (Q.spit.untold > 0) bad.push('an untold spit: venom left his mouth with no spitTell in the second before it: ' + JSON.stringify(Q.spit));
@@ -83,5 +89,5 @@ if (Q.leapLate.mode !== 'dazed') bad.push('a leap left late (on the spot at take
 if (!(Q.hide.idle < Q.hide.dazed / 2)) bad.push('his hide must turn half a blow out of his openings (idle vs dazed): ' + JSON.stringify(Q.hide));
 if (!(Q.half.drained && Q.half.hpPct >= 45)) bad.push('the court must go out at half his health (it waited for a third): ' + JSON.stringify(Q.half));
 assert.deepEqual(bad, [], 'THE FIRST HOUR\'S BOSSES:\n  ' + bad.join('\n  '));
-console.log('OLD TUSKER: hide ' + Q.otHide.walk + ' / pinned ' + Q.otHide.pinned + ' / dazed ' + Q.otHide.rammed + '; four strokes -> ' + Q.pinned + '; warded pines bounce (' + Q.bounced + '); a charge -> ' + Q.ram.mode + '; at half, phase ' + Q.otHalf.ph + '.');
+console.log('OLD TUSKER: hide ' + Q.otHide.walk + ' / pinned ' + Q.otHide.pinned + ' / dazed ' + Q.otHide.rammed + '; four strokes -> ' + Q.pinned + '; warded pines bounce (' + Q.bounced + '); a charge into a felled trunk -> ' + Q.ram.mode + ' (trunk ' + Q.ram.trunk + '), past the standing pines -> ' + Q.wall.mode + ' at the wall' + '; at half, phase ' + Q.otHalf.ph + '.');
 console.log('THE BULLFROG KING: ' + Q.spit.spits + ' spits, all told; a leap taken -> ' + Q.leapTaken.mode + ', left late -> ' + Q.leapLate.mode + '; hide ' + Q.hide.idle + ' vs open ' + Q.hide.dazed + '; the court goes out at ' + Q.half.hpPct + '%.');

@@ -95,6 +95,11 @@ export function makeOldTuskerHands(ctx) {
     /* THE RANGER's arrow bites a marked pine (every hero can fell one) */
     const w = world(e);
     for (const pp of ctx.players) for (const a of (pp.rgArrows || [])) { if (a.state !== 'fly') continue; const p = S.pines.find(q => q.st === 'stand' && Math.abs(a.x - q.x) < 8 && a.y > S.G.floorY - 60 && a.y < S.G.floorY); if (p) { a.state = 'drop'; a.vx *= -0.1; a.vy = -40; OTM.strokePine(S, p, w); } }
+    /* (claude/tuskerfix, Daniel's rec-built 10-21) THE GEOMANCER's FAULT LINE strikes a marked pine it runs under: one stroke a crack (the ranger's arrow precedent) - she works the rule from outside his reach */
+    for (const fl of (ctx.geoFaults ? ctx.geoFaults() : [])) { if (!fl.heavy || fl.life <= 0) continue; const lo = fl.dir > 0 ? fl.x0 : fl.x0 - fl.len, hi = fl.dir > 0 ? fl.x0 + fl.len : fl.x0;
+      if (Math.abs(fl.gy - S.G.floorY) > 8 || fl.otDone) continue;   /* one crack, one stroke: the FIRST marked pine it runs under takes it */
+      const p = S.pines.filter(q => q.st === 'stand' && q.x >= lo - 4 && q.x <= hi + 4).sort((a, b) => Math.abs(a.x - fl.x0) - Math.abs(b.x - fl.x0))[0];
+      if (p) { fl.otDone = true; OTM.strokePine(S, p, w); } }
     OTM.stepTusker(e, S, dt, heroes(), w);
     e.phase = S.ph; e.open = OTM.otOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
@@ -105,7 +110,7 @@ export function makeOldTuskerHands(ctx) {
   /* A BLOW ON HIM (B15; src/old-tusker.js takeBlow) - the turned share clanks and says why */
   H.take = (e, dmg, fromX, pl) => { if (!S) return dmg; const [d, word] = OTM.takeBlow(e, S, dmg, pl);
     if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 16, e.y - 16, sd, 4);
-      if (!S.told.hide && word === 'THICK HIDE') { S.told.hide = 1; ctx.hint && ctx.hint('HIS HIDE TURNS A CUT. COME DOWN ON HIS BACK - OR LURE HIS CHARGE INTO A MARKED PINE AND FELL IT ON HIM.'); } }
+      if (!S.told.hide && word === 'THICK HIDE') { S.told.hide = 1; ctx.hint && ctx.hint('HIS HIDE TURNS A CUT. FELL A MARKED PINE: ON HIM, HE IS PINNED. IN HIS PATH, HE RAMS IT. OR COME DOWN ON HIS BACK.'); } }
     return d; };
   H.barName = e => 'OLD TUSKER' + (OTM.otOpen(e) ? '  ' + (OTM.OPEN_NAME[e.mode] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : '');
   H.end = e => { if (S) { S.clods = []; S.waves = []; S.trunk = null; } BOSS_PHASE.oldtusker = 1; };
@@ -130,7 +135,10 @@ export function makeOldTuskerHands(ctx) {
     for (const c of S.clods) { const q = OTM.clodAt(c, G.floorY); ell(g, X(q.x), Y(q.y), 4, 3, '#4a3020'); rect(g, X(q.x) - 1, Y(q.y) - 2, 2, 1, '#2e5a34');
       g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.tx), Y(G.floorY) - 1, OT.root.r, 3, 0, 0, 7); g.stroke(); }
     for (const q of S.waves) for (let k = 0; k < 3; k++) rect(g, X(q.x) - q.dir * k * 6 - 3, Y(G.floorY) - 5 - (k % 2) * 3, 6, 5, k ? '#6a4a2a' : '#8e6a40');
-    if (e.mode === 'chargeTell' || e.mode === 'turn') { const st = OTM.chargeStop(S, e.x, e.face || 1); g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; for (let q = Math.min(e.x, st.x); q < Math.max(e.x, st.x); q += 10) g.fillRect(X(q), Y(G.floorY) - 1, 6, 1); g.globalAlpha = 1; }
+    if (e.mode === 'chargeTell' || e.mode === 'turn') { const st = OTM.chargeStop(S, e.x, e.face || 1); g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; for (let q = Math.min(e.x, st.x); q < Math.max(e.x, st.x); q += 10) g.fillRect(X(q), Y(G.floorY) - 1, 6, 1); g.globalAlpha = 1;
+      if (st.pine) { const ex = X(OTM.trunkEnd(st.pine, e.face || 1)), ey = Y(G.floorY), on = Math.floor(time * 10) % 2; g.fillStyle = on ? '#ff6b6b' : '#ffd36b'; g.fillRect(ex - 1, ey - 18, 2, 16); g.fillRect(ex - (e.face || 1) * 4 - 2, ey - 14, 4, 2); g.fillRect(ex - (e.face || 1) * 4 - 2, ey - 8, 4, 2); } }   /* (claude/tuskerfix) his run line ends on the TRUNK he will ram: a blinking impact mark at its end */
+    /* (claude/tuskerfix) THE WALL READ: a felled trunk lying in the fight wears gold end-caps (his charge rams it, his walk stops at it) */
+    for (const p of OTM.trunks(S)) { const [lo, hi] = OTM.lineOf(p), fy = Y(G.floorY); g.globalAlpha = 0.85; g.fillStyle = '#ffd36b'; for (const q of [lo, hi]) { g.fillRect(X(q) - 1, fy - 15, 2, 13); } g.globalAlpha = 1; }
     /* THE READ (B10) */
     const x = X(e.x), y = Y(e.y - OT.h / 2);
     if (OTM.otOpen(e)) { const kk = Math.max(0, e.modeT / (e.openT0 || 1));

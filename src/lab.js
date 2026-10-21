@@ -13,7 +13,7 @@ import { PLAN as RT_QUEEN } from './cistern-queen.js'; import { DJ_PLAN as RT_DJ
 import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FOG } from './fog-knight.js'; import { PLAN as RT_GANG } from './gang-leader.js'; import { PLAN as RT_CRAB } from './gorge-crab.js';
 import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
 import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
-import { otPlan, otOpen, PLAN as RT_OT } from './old-tusker.js';   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
+import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
 const PLAN_CLOCKS = [RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
@@ -1614,14 +1614,28 @@ async function runbossLab(BK, opts) {
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
         const OH=BK.oldTuskerHands(),S=OH&&OH.show();
         if(f===0||!P.labOtMem)P.labOtMem={};
-        const pl=S?otPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:SHIELDED(h)||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labOtMem}):{gx:null,face:P.face};
+        const pl=S?otPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:(SHIELDED(h)&&(h!=='geomancer'||P.st>=30))||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labOtMem}):{gx:null,face:P.face};
         if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
         if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.down&&!P.ground)k.down=true;
-        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        /* (claude/tuskerfix) THE GEOMANCER's hands: in his opening (pinned / dazed) she winds her FAULT LINE from where she stands and lets go when the crack will run past his near edge - her stave's light cut is her weakest blow */
+        /* (claude/tuskerfix) THE GEOMANCER FELLS FROM RANGE: her fault line strikes a marked pine it runs under (old-tusker-hands). Strokes in a pine while he is far off;
+           the fourth when he stands under its line and is busy (reeling, a long tell, his recovery) - wound to the pine's distance and let go */
+        let geoPine=null;if(GEO_FELL&&h==='geomancer'&&S&&P.ground&&!pl.jump&&!pl.dodge&&!pl.block&&!otOpen(boss)&&!(S.ward>0)&&Math.abs(boss.y-P.y)<26){const kx=boss.x,FLK=GEO_K.fault;
+          for(const p of S.pines){if(p.st!=='stand'||(p.hp<=1&&OT_UNDER(p,P.x,8)))continue;const d=Math.abs(p.x-P.x);if(d<18||d>FLK.len0+FLK.lenK-6)continue;
+            const busy=(boss.mode==='rammed'&&boss.modeT>0.9)||(/Tell$/.test(boss.mode)&&boss.modeT>0.55)||(boss.mode==='recover'&&boss.modeT>0.45);
+            if(S.pines.some(q=>q!==p&&q.st==='stand'&&Math.sign(q.x-P.x)===Math.sign(p.x-P.x)&&Math.abs(q.x-P.x)<d))continue;if(p.hp<=1?(OT_UNDER(p,kx,OT_W/2-6)&&busy):(P.st>=P.maxSt*0.8&&Math.abs(kx-P.x)>140&&(Math.sign(p.x-P.x)!==Math.sign(kx-P.x)||Math.abs(p.x-P.x)<Math.abs(kx-P.x)))){geoPine=p;break;}}}
+        if(geoPine){const d=Math.abs(geoPine.x-P.x),FLK=GEO_K.fault,reachP=FLK.len0+FLK.lenK*Math.min(1,(P.charge||0)/GEO_K.wind)>=d+2;k.left=k.right=false;P.face=Math.sign(geoPine.x-P.x)||P.face;
+          if(P.charge>0&&reachP){/* let go: the crack runs under the pine */}else if(P.charge>0||P.atkHeld>0||(P.atk<0&&P.st>=(BK.heavyCost?BK.heavyCost():26)+2))k.atk=true;}
+        /* (a crack strokes the first marked pine it runs under: never crack through a primed pine whose fall line she stands in) */
+        const geoSafe=tx=>!(S&&S.pines.some(q=>q.st==='stand'&&q.hp<=1&&Math.sign(q.x-P.x)===Math.sign(tx-P.x)&&Math.abs(q.x-P.x)<=Math.abs(tx-P.x)&&OT_UNDER(q,P.x,8)));
+        const geoAd=Math.abs(boss.x-P.x),geoOpen=!geoPine&&geoSafe(boss.x)&&h==='geomancer'&&P.ground&&Math.abs(boss.y-P.y)<26&&!pl.jump&&!pl.dodge&&!pl.block&&(otOpen(boss)||((boss.mode==='walk'||boss.mode==='recover'||boss.mode==='rootTell')&&geoAd>100&&geoAd<160&&!(S&&S.ward>0)));   /* (and out of his tusks' reach, a crack along the floor at him: her kit is the long one) */
+        if(geoOpen){const ad=Math.abs(boss.x-P.x),reachC=GEO_K.fault.len0+GEO_K.fault.lenK*Math.min(1,(P.charge||0)/GEO_K.wind)>=ad-OT_W/2+4;P.face=Math.sign(boss.x-P.x)||P.face;
+          if(P.charge>0&&reachC){/* let go */}else if(P.charge>0||P.atkHeld>0||(P.atk<0&&P.st>=(BK.heavyCost?BK.heavyCost():26)+2&&ad<GEO_K.fault.len0+GEO_K.fault.lenK+OT_W/2)){k.atk=true;k.left=k.right=false;}else if(pl.atk&&P.atk<0){BK.press('atk');swings++;}}
+        else if(!geoPine&&pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(otOpen(boss)&&!wasOpen)opened++;wasOpen=otOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:otOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }

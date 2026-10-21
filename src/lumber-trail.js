@@ -21,7 +21,7 @@
 //                                           area's exam, his gate), the LEAN-TO up the cliff (required)                                                             shrine 298
 //    301-409  THE PINE RIDGE         REMIX  the ridge's kite goblins (the rising cut), THE DROP onto the goblin crew in the hollow, the HOLLOW LOG              shrine 407
 //    410-509  THE TARN               EXAM   the tarn BRIDGE under kite goblins and a charging boar, the helm pit (plunge the shields), the climb to the clearing     shrine 506
-//    510-549  THE FELLING CLEARING   BOSS   OLD TUSKER: four marked pines at its edges - lure his charge into one, fell it on him (src/old-tusker.js)
+//    510-549  THE FELLING CLEARING   BOSS   OLD TUSKER: four marked pines at its edges - fell one ON him (pinned) or IN HIS PATH (he rams the trunk) (src/old-tusker.js)
 // Every number is a FINAL column: nothing here is grown in after (tools/lumber-trail.mjs pins the beats).
 import { FELL_STROKES } from './felling.js';
 export const SECTIONS = [["THE WOODSMAN'S CABIN", 0, 104], ['THE FORD', 105, 205], ['THE LUMBER CAMP', 206, 300], ['THE PINE RIDGE', 301, 409], ['THE TARN', 410, 509], ['THE FELLING CLEARING', 510, 549]];
@@ -72,13 +72,13 @@ export function buildLumberTrail({ painter, T, TS }) {
   floor(55, 64, 22); block(65, 69, 21, 27); block(70, 74, 20, 27); block(75, 80, 19, 27); block(81, 104, 18, 27);
   deck(59, 19, 3); coins([59, 18], [61, 18]);   /* a log crib by the road */
   deck(66, 18, 3);
-  sign(66, 20, 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', { pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
+  sign(66, 20, 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', { sink: 6, pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
   ent('sprig', 71, 19, { face: -1 }); ent('shield', 78, 18, { face: -1 }); ent('thorn', 88, 17, { face: -1 });   /* the skid road's guard: the heavy cut, met on the slope */
   lessons.push({ kind: 'heavyblow', x0: 65, x1: 86 });
   deck(76, 16, 4); coins([76, 15], [78, 15]);
   deck(84, 15, 4); ent('spit', 85, 14, { face: -1 });   /* the spitter on the log crib over the top of the slope */
   /* THE LOG ROUND (the pushblock's teaching use, backlog #12): a ledge four rows over the slope's top, a round of pine pushed under it is the step */
-  ent('pushblock', 90, 17, { stepAt: [93, 17] }); block(94, 94, 14, 14); ent('silver', 94, 13);
+  ent('pushblock', 90, 17, { stepAt: [93, 17] }); deck(94, 14, 1); ent('silver', 94, 13);   /* (claude/tuskerfix, Daniel 10-21 'not all the geometry is grounded') the ledge is a plank on its timber crib, not a lone block of earth on a post */
   deck(99, 15, 3);
   ent('shield', 99, 17, { face: -1 }); ent('sprig', 101, 17, { face: -1 });   /* the area's exam: a guard and a sprig on the top with the spitter over them */
   coins([83, 16], [88, 16], [92, 16]);
@@ -161,7 +161,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   block(350, 351, 14, 16);
   block(353, 385, 11, 13);
   floor(353, 392, 17);
-  sign(350, 13, 'THE FALLEN GIANT: OVER THE TOP FOR COINS, OR THROUGH THE HOLLOW FOR QUIET.');
+  sign(350, 13, 'THE FALLEN GIANT: OVER THE TOP FOR COINS, OR THROUGH THE HOLLOW FOR QUIET.', { sink: 6 });   /* (claude/tuskerfix, Daniel 10-21) its post driven into the stump's cut face, not hung over the rim */
   ent('spit', 366, 16, { face: -1 }); ent('badger', 373, 16, { face: -1, cnSkin: 'boar' }); ent('lurker', 380, 16, { face: -1 });   /* the hollow: a boar charging down the tunnel at you */
   coins([358, 16], [363, 16], [372, 16], [382, 16]);
   ent('wasp', 362, 7, { cnSkin: 'pinemoth' }); ent('kite', 368, 7); ent('wasp', 375, 6, { cnSkin: 'pinemoth' });   /* over the top: two pine moths and a kite goblin (claude/oldtusker: they were wasps) */ coins([357, 10], [361, 10], [365, 10], [369, 10], [377, 10], [381, 10]);
@@ -203,7 +203,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   // ================= 6. THE FELLING CLEARING (510-549): OLD TUSKER (claude/oldtusker; src/old-tusker.js) =================
   /* The woodsmen's felling clearing: open ground, no floating tree and no yellow bridge (Daniel 10-19). Four marked pines stand at its edges, two a side, each
      leaning in over the floor (arena.pines - the boss's hands stand, stroke and fell them: a fight's worth, never saved). OLD TUSKER roots in the middle. */
-  sign(510, 8, 'OLD TUSKER\'S HIDE TURNS A CUT. LURE HIS CHARGE INTO A MARKED PINE, AND FELL IT ON HIM.');
+  sign(510, 8, 'FELL A MARKED PINE. ON OLD TUSKER, IT PINS HIM. IN HIS PATH, HE RAMS THE TRUNK AND REELS.');   /* (claude/tuskerfix) the rule: ON HIM = PINNED, IN HIS PATH = HE RAMS IT */
   ent('gate', GATE_COL, 8);
   block(549, 549, 0, 8);
   deco('stump', 527, 8, { v: 1 }); deco('stump', 533, 8, { v: 2 });   /* the clearing's old stumps (dressing) */

@@ -23,6 +23,10 @@ const ROAD = [81, 104, 18];                                           /* the cor
 const STACKS = [[240, 243, 15], [244, 246, 13]];                      /* the log stacks: x0, x1, top row (to row 16) */
 const HELM = [[443, 446, 13], [448, 451, 13]];                        /* the helm pit's stumps (to row 16) */
 const solid = (at, T, x, y) => at(x, y) === T.SOLID;
+/* (claude/tuskerfix, Daniel 10-21 'a floating sign') THE ROUNDED TOPS of this kit: a cell whose drawn top is NOT its tile top - a sawn stump's cut face is an ellipse
+   sunk ~5 px into its tile, every one-way deck is a half-round log. A sign (a post on a flat foot) set on one hangs over the curve: tools/signs.mjs asks this. */
+export function roundTopAt(x, y, t, T) { if (t === T.ONEWAY) return 'a half-round log deck';
+  for (const [a, b, r] of [...STEPS, ...HELM, [350, 351, 14], [145, 146, 23]]) if (x >= a && x <= b && y === r) return 'a sawn stump cut face'; return null; }
 
 /* ===== a sawn stump (x0..x1 tiles wide) ===== */
 function stumpTop(x, y, x0, x1, row, drowned) {
