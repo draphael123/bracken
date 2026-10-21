@@ -21,7 +21,7 @@
 //                                           area's exam, his gate), the LEAN-TO up the cliff (required)                                                             shrine 298
 //    301-409  THE PINE RIDGE         REMIX  the ridge's kite goblins (the rising cut), THE DROP onto the goblin crew in the hollow, the HOLLOW LOG              shrine 407
 //    410-509  THE TARN               EXAM   the tarn BRIDGE under kite goblins and a charging boar, the helm pit (plunge the shields), the climb to the clearing     shrine 506
-//    510-549  THE FELLING CLEARING   BOSS   OLD TUSKER: four marked pines at its edges - lure his charge into one, fell it on him (src/old-tusker.js)
+//    510-549  THE FELLING CLEARING   BOSS   OLD TUSKER: four marked pines at its edges - fell one ON him (pinned) or IN HIS PATH (he rams the trunk) (src/old-tusker.js)
 // Every number is a FINAL column: nothing here is grown in after (tools/lumber-trail.mjs pins the beats).
 import { FELL_STROKES } from './felling.js';
 export const SECTIONS = [["THE WOODSMAN'S CABIN", 0, 104], ['THE FORD', 105, 205], ['THE LUMBER CAMP', 206, 300], ['THE PINE RIDGE', 301, 409], ['THE TARN', 410, 509], ['THE FELLING CLEARING', 510, 549]];
@@ -203,7 +203,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   // ================= 6. THE FELLING CLEARING (510-549): OLD TUSKER (claude/oldtusker; src/old-tusker.js) =================
   /* The woodsmen's felling clearing: open ground, no floating tree and no yellow bridge (Daniel 10-19). Four marked pines stand at its edges, two a side, each
      leaning in over the floor (arena.pines - the boss's hands stand, stroke and fell them: a fight's worth, never saved). OLD TUSKER roots in the middle. */
-  sign(510, 8, 'OLD TUSKER\'S HIDE TURNS A CUT. LURE HIS CHARGE INTO A MARKED PINE, AND FELL IT ON HIM.');
+  sign(510, 8, 'FELL A MARKED PINE. ON OLD TUSKER, IT PINS HIM. IN HIS PATH, HE RAMS THE TRUNK AND REELS.');   /* (claude/tuskerfix) the rule: ON HIM = PINNED, IN HIS PATH = HE RAMS IT */
   ent('gate', GATE_COL, 8);
   block(549, 549, 0, 8);
   deco('stump', 527, 8, { v: 1 }); deco('stump', 533, 8, { v: 2 });   /* the clearing's old stumps (dressing) */
