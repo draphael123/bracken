@@ -468,14 +468,14 @@
   "bare": true
  },
  "fenroad": {
-  "hash": "1b8ca31f433c",
+  "hash": "bafebbf598eb",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 12,
+  "hits": 13,
   "deaths": 0,
-  "kills": 31,
-  "lifts": 75,
+  "kills": 35,
+  "lifts": 70,
   "walked": 100,
   "bare": true
  }
