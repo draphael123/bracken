@@ -289,7 +289,7 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 17, YARD, { text: 'HOLD DOWN ON A LOADED SKIP AND IT TIPS. EMPTY IT RIDES HIGH, LOADED IT RIDES LOW.' });
   ent('sign', 49, YARD, { text: 'HOLD THE SHIELD ON A BUCKET AND THE LINE STOPS. STOPPED IS WHERE YOU CAN FIGHT.' });
   ent('check', 5, YARD); ent('check', 41, YARD); ent('check', 64, YARD);   /* 41, not 34: column 34 is the crusher's east lip, and a checkpoint over the pit respawns you onto its teeth (audit FLOAT). not 37 either any more: the cart line's ramp at 36 needs that column clear */
-  meet('THE PICK LINE', 14, 40, [['miner', 16, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
+  meet('THE PICK LINE', 14, 40, [['miner', 14, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
   meet('THE LOADING HOUSE', 52, 67, [['miner', 58, YARD], ['rockgoblin', 66, YARD], ['sapper', 56, YARD]]);
   ent('tippler', 60, YARD - 8, { face: -1 });                                   /* THE FIRST TIPPLER, over a floor and not yet over a drop: the level shows you the stream where you can walk out of it */
   coins([24, YARD - 1], [28, YARD - 2], [32, YARD - 1], [9, YARD - 2], [11, YARD - 2], [58, YARD - 4], [62, YARD - 8]);
@@ -330,7 +330,7 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 138, TOWER[0], { text: 'THE SORTING TOWER. THE CHUTE LEAVES FROM THE TOP DECK, AND IT LEAVES FAST.' });
   ent('check', 182, TOWER[1]); ent('check', 200, TOWER[2]);
   meet('THE SORTING YARD', 136, 150, [['miner', 140, TOWER[0]], ['rockgoblin', 146, TOWER[0]], ['goat', 144, TOWER[0]]]);
-  meet('THE UPPER DECKS', 184, 202, [['heavy', 190, TOWER[0]], ['miner', 198, TOWER[1]], ['sheargob', 194, TOWER[2]]]);
+  meet('THE UPPER DECKS', 184, 202, [['heavy', 188, TOWER[0]], ['miner', 198, TOWER[1]], ['sheargob', 194, TOWER[2]]]);
   ent('tippler', 176, TOWER[2], { face: -1 }); ent('tippler', 186, TOWER[1], { face: -1 });   /* one tips onto the middle deck, one onto the sorting floor under it */
   /* SILVER ONE: a bucket that jammed on a spur cable off the tower's east face, over the drop. A jump out and a jump back */
   ent('mover', 206, TOWER[1] - 2, { len: 2, range: 0, speed: 0 }); ent('silver', 206, TOWER[1] - 3);

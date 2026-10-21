@@ -178,15 +178,15 @@ export function buildMinecart({ painter, T, TS }) {
   { const t = rise(41, B, 2); ground(45, 60, t);                           /* (row 28) */
     tell(36, 61, 'LONG GAP: PUMP, THEN JUMP');
     sign(50, t - 1, 'A LONG GAP WANTS SPEED: HOLD RIGHT TO PUMP, THEN JUMP AT THE LIP.');
-    foe('bat', 57, t - 5, { squad: 'yardBat' });
+    foe('bat', 58, t - 2, { squad: 'yardBat' });
     boostGap(61, t);                                                        /* THE PUMP GAP (REQUIRED): 8 wide - a cruising jump falls in */
     ore(71, t - 3);                                                          /* (on the far lip: a pumped jump lands on it) */
     ground(69, 88, t);
     tell(58, 80, 'MINER ON THE LINE: RAM');                                 /* RAM, TAUGHT (deeprails2): you land off the pump gap at full pump - and he is on the line */
     sign(74, t - 1, 'AT FULL PUMP THE CART RAMS WHAT IS ON THE LINE. SLOWER, IT IS A BUMP.');
-    foe('miner', 80, t - 1, { squad: 'yardMiner2' });
+    foe('miner', 81, t - 1, { squad: 'yardMiner2' });
     fall(89, t, 2); }
-  ground(93, 113, B); foe('bat', 110, B - 5, { squad: 'yardBat3' }); rail(93, 100, B - 3);
+  ground(93, 113, B); foe('bat', 111, B - 2, { squad: 'yardBat3' }); rail(93, 100, B - 3);
   tell(80, 104, 'CRUSHER: BRAKE FOR ITS BEAT');
   sign(95, B - 1, 'A CRUSHER: HOLD LEFT TO BRAKE. GO UNDER WHEN IT LIFTS.');
   crusher('first', 104, B, 2.6, 1.0, 0);                                   /* THE FIRST CRUSHER (REQUIRED): brake for it */
@@ -223,12 +223,12 @@ export function buildMinecart({ painter, T, TS }) {
     tell(176, 199, 'FORK: ORE UP, CRUSHERS DOWN');
     sign(196, t - 1, 'FORK: HIGH LINE IS QUICK, WITH ORE AND ARROWS. STRIKE THE POINTS FOR LOW: CRUSHERS, A GATE.');
     lever('forkA', 199, t, 202, 213, t, 'set', { label: 'HIGH: QUICK, ORE, ARROWS / LOW: CRUSHERS, A GATE' });
-    ore(220, t - 3); foe('bat', 233, t - 4, { squad: 'forkABat' }); foe('bat', 206, t - 4, { squad: 'forkABat3' });   /* (deeprails3: a bat over the fork's first gap - the screen was empty) */ ore(234, t - 3); foe('bat', 219, t - 4, { squad: 'forkABat2' });
+    ore(220, t - 3); foe('bat', 231, t + 2, { squad: 'forkABat' }); foe('bat', 207, t - 2, { squad: 'forkABat3' });   /* (deeprails3: a bat over the fork's first gap - the screen was empty) */ ore(234, t - 3); foe('bat', 219, t + 2, { squad: 'forkABat2' });
     foe('archer', 243, t - 1, { squad: 'forkAArcher' }); foe('archer', 228, t - 1, { squad: 'forkAArcher2' });   /* (two on the dark high line: their lamps are all you see of them - pump and ram, or strike) */
     crusher('forkA', 214, B, 2.4, 0.9, 0.6); crusher('forkA2', 228, B, 2.2, 0.8, 1.5);
     gate('forkA', 238, B, 3.2, 1.5, 0); }
   ground(263, 279, B); ground(308, 313, B); rail(253, 262, B - 3);
-  foe('sapper', 270, B - 1, { squad: 'hidSapper' });
+  foe('sapper', 268, B - 1, { squad: 'hidSapper' });
   /* THE HIDDEN LEVER: up in the roof over the line (a jump and a blow). It opens the points in the line itself - down into THE OLD SPUR (silver one), a
      working seven rows under the line that climbs back up to it on a steep ramp (the line over the spur is one-way rail: no head is cracked on it) */
   block(272, 284, B - 7, B - 6); decor.push({ kind: 'roof', x0: 272, x1: 284, row: B - 7 });
@@ -277,7 +277,7 @@ export function buildMinecart({ painter, T, TS }) {
   ground(490, 555, B);
   rail(492, 504, B - 3); breakaway('cavern', 505, 537, B - 3); rail(538, 555, B - 3);   /* the upper line: under more rock, nearer the ore - and its middle BREAKS under the falling roof (the remix: the chase pushes, the break pulls) */
   rock('c1', 488, 498, B); rock('c3', 502, 512, B); rock('c4', 508, 518, B - 3, { delay: 0.9 });
-  ore(516, B - 5); rider('archer', 494, B - 3, 50, { squad: 'cvPacer' }); foe('bat', 523, B - 4, { squad: 'cvBat' }); foe('brute', 534, B - 1, { squad: 'cvBrute' });
+  ore(516, B - 5); rider('archer', 494, B - 3, 50, { squad: 'cvPacer' }); foe('bat', 522, B - 2, { squad: 'cvBat' }); foe('brute', 534, B - 1, { squad: 'cvBrute' });
   gap(522, 525); for (let x = 522; x <= 525; x++) set(x, B - 3, T.RAIL);   /* a short gap in the low line (the upper one bridges it) */
   /* THE FORK AT SPEED: the low line is falling in ahead; be up on the high line with its points SET (a crash here, with the roof behind you, is the end) */
   tell(500, 541, 'LOW LINE FALLING: GO HIGH'); tell(520, 556, 'SET THE POINTS, THEN PUMP');
@@ -291,7 +291,7 @@ export function buildMinecart({ painter, T, TS }) {
   rock('c6', 566, 572, B);
   { const t = fall(573, B, 7); B = t; }                                     /* and on down to row 37 at 587 */
   ground(587, 614, B); rail(588, 603, B - 3);
-  rock('c7', 588, 596, B - 3); foe('miner', 598, B - 1, { squad: 'cvMiner' }); rider('gobmage', 580, B - 3, 70, { squad: 'cvCaster', at: 592 });
+  rock('c7', 588, 596, B - 3); foe('miner', 597, B - 1, { squad: 'cvMiner' }); rider('gobmage', 580, B - 3, 70, { squad: 'cvCaster', at: 592 });
   /* THE RAMP OVER THE LAVA (deeprails2: a launch ramp, DKC): the cavern floor opens on the glow; the ramp at 614 throws the cart - cruising it falls short into
      the glow (a fall: health and back), pumped it clears with ~2 tiles to spare (rampFlight) */
   tell(592, 614, 'A RAMP: PUMP, THEN FLY');
@@ -305,7 +305,7 @@ export function buildMinecart({ painter, T, TS }) {
   station(637);                                                             /* STATION FOUR (on foot, past the wreck) */
   sign(639, B - 1, 'THE WRECK. ON FOOT THROUGH THE YARD: A CART WAITS AT ITS END. JUMP INTO IT.');
   block(645, 662, B - 2, B - 1);             /* THE LOADING DECK: two up (a fight on footing - a big platform) */
-  foe('sapper', 652, B - 3, { squad: 'wkSapper' }); foe('brute', 660, B - 3, { squad: 'wkBrute' }); foe('sapper', 669, B - 1, { squad: 'wkSapper2' });   /* (the brute holds the deck's far edge: the fight is up on the platform) */
+  foe('sapper', 651, B - 3, { squad: 'wkSapper' }); foe('brute', 661, B - 3, { squad: 'wkBrute' }); foe('sapper', 669, B - 1, { squad: 'wkSapper2' });   /* (the brute holds the deck's far edge: the fight is up on the platform) */
   block(655, 660, B - 7, B - 7); foe('archer', 658, B - 8, { squad: 'wkArcher' });   /* an archer on the yard's gantry over the deck */
   ent('coin', 648, B - 3); ent('coin', 650, B - 3); ore(661, B - 5);
   tell(648, 674, 'A CART: JUMP INTO IT');                                 /* (deeprails5 #4, TAUGHT ONCE HERE - a sign, this tell, the glint: src/stuck-spots.js mc-board-wreck) */
@@ -315,7 +315,7 @@ export function buildMinecart({ painter, T, TS }) {
   // ================= 6. THE CRUSHER WORKS (676-757), row 37: REMIX - speed, and a rider pacing you =================
   tell(676, 698, 'TWO CRUSHERS, OFF THE BEAT');
   sign(677, B - 1, 'THE CRUSHER WORKS. EVERY CRUSHER HAS ITS BEAT.');
-  foe('miner', 688, B - 1, { squad: 'wkMiner' });                        /* (deeprails3) a miner on the line off the boarding: ram him at full pump (the ram remixed before the crushers) */
+  foe('miner', 687, B - 1, { squad: 'wkMiner' });                        /* (deeprails3) a miner on the line off the boarding: ram him at full pump (the ram remixed before the crushers) */
   crusher('w1', 698, B, 2.2, 0.8, 0); crusher('w2', 706, B, 2.2, 0.8, 1.1);   /* a pair, off the beat: one brake, one go */
   ground(677, 715, B); rail(700, 712, B - 3);
   tell(695, 722, 'A GATE: WATCH ITS GAUGE');
@@ -349,7 +349,7 @@ export function buildMinecart({ painter, T, TS }) {
   const TOP = B - 10;                                                       /* (row 27) */
   ground(768, 786, TOP);
   station(772, TOP - 1);                                                    /* STATION FIVE (at the top of the lift) */
-  foe('archer', 779, TOP - 1, { squad: 'liftArcher' }); foe('bat', 775, TOP - 5, { squad: 'liftBat' });
+  foe('archer', 779, TOP - 1, { squad: 'liftArcher' }); foe('bat', 773, TOP - 2, { squad: 'liftBat' });
   ent('mccart', FOOT[1].board, TOP - 1, {});
 
   // ================= 7b. THE TWIN LINES (786-856): SWITCH SIDES and THE RAIL RAIDERS (deeprails4, Daniel 10-12 live) =================
@@ -383,7 +383,7 @@ export function buildMinecart({ painter, T, TS }) {
   decor.push({ kind: 'flood', x0: 856, x1: 969, row: 36 });                /* THE FLOOD: black water under the trestles (drawn: a fall is a fall, the exam's real death) */
   exams.push([857, 966]);
   tell(830, 859, 'HIGH CRUSHER, LOW GATE');
-  sign(855, t8 - 1, 'THE FLOODED RUN. EVERY GAP HERE IS DEEP.'); foe('bat', 866, t8 - 6, { squad: 'exBat0' });
+  sign(855, t8 - 1, 'THE FLOODED RUN. EVERY GAP HERE IS DEEP.'); foe('bat', 867, t8 + 1, { squad: 'exBat0' });
   rail(857, 867, t8); rail(871, 882, t8); rail(857, 882, B);   /* (deeprails4) THE EXAM's SIDES: the high line's gap (868-870, over the low beam) then its crusher; the low line's beam then its gate */
   lever('exam', 859, t8, 861, 867, t8, 'open', { label: 'HIGH: A CRUSHER / LOW: A GATE - THEN THE DEEP GAP' });
   rider('archer', 860, B, 40, { squad: 'exPair', pace: 160 }); rider('gobmage', 861, B, 110, { squad: 'exPair' });   /* the pair on the low line, ahead (the archer at his own pace: pump past him, or he is under you at the deep gap's lip) */
@@ -411,7 +411,7 @@ export function buildMinecart({ painter, T, TS }) {
   beam(929, 930, B);
   lever('examSw', 935, B, 937, 942, B, 'open', { sw: true, label: 'THE BRIDGE IS OUT: STRIKE THE SWITCH' });
   ground(943, 944, B);
-  boostGap(945, B); foe('bat', 949, B - 4, { squad: 'exGapBat' });   /* (deeprails4) a bat in the last deep gap's jump (the exam's last screen was empty) */
+  boostGap(945, B); foe('bat', 952, B - 2, { squad: 'exGapBat' });   /* (deeprails4) a bat in the last deep gap's jump (the exam's last screen was empty) */
   ground(953, 969, B); rail(955, 965, B - 3);
   foe('miner', 960, B - 1, { squad: 'exMiner' }); block(960, 964, B - 6, B - 6); foe('tippler', 962, B - 7, { squad: 'exTip' });
 
@@ -468,7 +468,7 @@ export function buildMinecart({ painter, T, TS }) {
   // ================= 9. THE SMELTER (1070-1129), row 30: 8 ore open its points (silver three); THE BORE =================
   ground(1070, 1084, B); ground(1108, 1129, B);
   tell(1060, 1082, 'THE SMELTER WANTS 8 ORE');
-  sign(1078, B - 1, 'THE SMELTER: CARRY 8 ORE AND ITS POINTS WILL OPEN.'); rail(1070, 1081, B - 3); foe('bat', 1088, B - 5, { squad: 'smBat' });
+  sign(1078, B - 1, 'THE SMELTER: CARRY 8 ORE AND ITS POINTS WILL OPEN.'); rail(1070, 1081, B - 3); foe('bat', 1086, B - 2, { squad: 'smBat' });
   lever('smelter', 1082, B, 1085, 1089, B, 'set', { ore: 8, label: 'THE SMELTER: 8 ORE OPEN THESE POINTS' });
   rail(1090, 1107, B, { noPosts: true });
   block(1085, 1100, B + 7, H - 1); track.push([1085, 1100, B + 7]); interiors.push([1085, 1107, B + 1, B + 6, 'smelter']);

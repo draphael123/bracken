@@ -109,7 +109,7 @@ export function buildSkyRoad({ painter, T, TS }) {
   pinnacle(210, 13);                                                            /* R1 */
   rock(216, 219, 18); stone(218, 17, 's3'); sign(216, 17, 'A SUN-STONE. STRIKE IT TO WAKE THE AIR OVER THE SPIRE.');   /* ROOST TWO, its stone (the lock) and its sign (FIX PASS) */
   pinnacle(226, 10, 'stone:s3');                                                /* R2: dead until roost two's stone is turned */
-  plank(228, 232, 10); foe('rockgoblin', 231, 9, 'kitePlatform', { face: -1, cnSkin: 'gobslinger' }); cloth(228, 9);   /* a hanging kite platform: a slinger, and a cloth */
+  plank(228, 232, 10); foe('rockgoblin', 229, 9, 'kitePlatform', { face: -1, cnSkin: 'gobslinger' }); cloth(228, 9);   /* a hanging kite platform: a slinger, and a cloth */
   decor.push({ kind: 'kiteplat', x: 229, y: 10 });
   rock(220, 222, 30); ent('silver', 221, 29); decor.push({ kind: 'nest', x: 221, y: 29 });   /* the low roost under roost two: a nest, SILVER TWO (a dead end; R2 takes you back up) */
   airOnly.push({ x0: 220, x1: 222, row: 29, vent: 226 }, { x0: 223, x1: 224, row: 43, vent: 226 });   /* (claude/skyroad2) the low roost and the shelf's end under it: R2's air is their only way out */
@@ -120,9 +120,9 @@ export function buildSkyRoad({ painter, T, TS }) {
   cloudBank(205, 262, 6, 12, 22, 0);                                            /* the bank rolls east over the chain, one thermal after another */
   foe('harpy', 212, 6, 'roostHarpyA'); foe('harpy', 254, 7, 'roostHarpyB');
   foe('kiterider', 226, 8, 'riders', { home: 226 }); foe('kiterider', 258, 8, 'riders', { home: 258 });
-  foe('crow', 262, 14, 'crowsA', { ph: 0 }); foe('crow', 267, 15, 'crowsB', { ph: 1.3 }); foe('crow', 272, 13, 'crowsC', { ph: 2.1 });   /* A STRING OF CRAG CROWS (the moor's): they come west over R3 and R4, and a crow's shadow on a thermal kills it for a beat */
+  foe('crow', 265, 16, 'crowsA', { ph: 0 }); foe('crow', 267, 16, 'crowsB', { ph: 1.3 }); foe('crow', 272, 16, 'crowsC', { ph: 2.1 });   /* A STRING OF CRAG CROWS (the moor's): they come west over R3 and R4, and a crow's shadow on a thermal kills it for a beat */
   rock(265, 298, 18); plank(268, 280, 14); rock(285, 288, 16); rock(291, 292, 16);                  /* THE FAR CLIFF, the riders' racks over it, a fallen block */
-  foe('rockgoblin', 268, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' });
+  foe('rockgoblin', 267, 17, 'cliffSling', { face: -1, cnSkin: 'gobslinger' });
   /* THE CRAG TROLL (claude/elitegates, Daniel 10-07): the Sky Road's GATEKEEPER ELITE, in the shield's place (difficulty v2: one weighty foe). He holds the far cliff - the first footing the roost chain's thermals feed - and the portcullis at 290 comes down over the cliff's east end (the bridgehead and the sun-disc) until he is dead. Behind you the last roost's air is under the cloud bank and the cloud sea is under the west edge; his slam and rockfall are told. The checkpoint is past his gate. */
   { const kn = knightRow('skyroad'); foe(kn[0], kn[1], kn[2], 'cliffTroll', { ...kn[3], elite: true }); }   /* (claude/wardens12) THE SUN BLADE of the Scree Chapter REPLACES the cliff troll (was foe('troll', 277, 17, 'cliffTroll', { face: -1, elite: true, gate: 290 })) */
   ent('check', 294, 17);                                                        /* CHECKPOINT THREE: past the troll's gate, at the bridgehead (it was at 278, in his yard) */
