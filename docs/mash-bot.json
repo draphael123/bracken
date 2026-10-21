@@ -7,16 +7,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:9/42",
-     "timeout:9/42"
+     "timeout:9/61",
+     "timeout:9/61"
     ],
     "warden": [
-     "timeout:0/75",
-     "timeout:0/75"
+     "timeout:0/82",
+     "timeout:0/82"
     ],
     "pyro": [
-     "timeout:10/58",
-     "timeout:10/56"
+     "timeout:10/72",
+     "timeout:10/71"
     ]
    },
    "rows": [
@@ -27,9 +27,9 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 9,
-     "bossLeftPct": 42,
+     "bossLeftPct": 61,
      "landed": 97,
-     "swings": 5727,
+     "swings": 5719,
      "reprisalPct": 0,
      "chip": []
     },
@@ -40,9 +40,9 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 9,
-     "bossLeftPct": 42,
+     "bossLeftPct": 61,
      "landed": 97,
-     "swings": 5727,
+     "swings": 5719,
      "reprisalPct": 0,
      "chip": []
     },
@@ -53,7 +53,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 0,
-     "bossLeftPct": 75,
+     "bossLeftPct": 82,
      "landed": 99,
      "swings": 5717,
      "reprisalPct": 0,
@@ -66,7 +66,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 0,
-     "bossLeftPct": 75,
+     "bossLeftPct": 82,
      "landed": 99,
      "swings": 5717,
      "reprisalPct": 0,
@@ -79,7 +79,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 10,
-     "bossLeftPct": 58,
+     "bossLeftPct": 72,
      "landed": 98,
      "swings": 5719,
      "reprisalPct": 100,
@@ -92,8 +92,8 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 10,
-     "bossLeftPct": 56,
-     "landed": 98,
+     "bossLeftPct": 71,
+     "landed": 97,
      "swings": 5719,
      "reprisalPct": 0,
      "chip": []
