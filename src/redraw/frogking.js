@@ -6,7 +6,7 @@
 //           (claude/marsh2, greybox poses for the ART lane to redraw - B16, each new move its own windup and release):
 //           7 the grab's windup (head low, maw open), 8 the tongue out (lunging), 9 the belly-flop's rear-up, 10 flat on his belly,
 //           11 cheeks full of flies, 12 the flies spat, 13 the throat swelling for the ripple, 14 the ripple let go, 15 a hand raised
-//           over the water, 16 the slap, 17 his eye on the flies (the snap's windup)
+//           over the water, 16 the slap, 17 his eye on the flies (the snap's windup), 18 the spit's windup, 19 the spit let go (claude/frogking2)
 //   canvas 64x58 (claude/marsh2art: 12 rows of headroom for the rear-up and the raised hand), every frame the same size and anchor: ax 30, ay 56 (toes on ay-1), so no frame floats or sinks.
 //   marsh2art: poses 7-17 are redrawn with their own bodies - rot (the rear-up), a raised/slammed arm with a webbed hand, flies, sound arcs, mud and spray (see fx).
 import { canvas, px, rect, line, circle, ellipse, fillPoly, outline, flipX, whiten } from '../px.js';
@@ -149,6 +149,10 @@ export function bakeFrog() {
     frame({ legs: 'sit', arms: 'up', tilt: 1, sx: 0.96, sy: 1.04, rot: 4, eyes: 'narrow', fx: (g, X, Y) => { limb(g, X(40), Y(32), X(51), Y(19), 4, C.F, C.D); limb(g, X(51), Y(19), X(54), Y(9), 4, C.F, C.D); hand(g, X(54), Y(7), true); } }),   /* 15 THE SLAP's windup: a great webbed hand lifted high over the water, leaning back to throw it */
     frame({ legs: 'sit', arms: 'down', sx: 1.1, sy: 0.9, tilt: -1, eyes: 'wide', fx: (g, X, Y) => { limb(g, X(42), Y(30), X(49), Y(37), 4, C.F, C.D); limb(g, X(49), Y(37), X(55), GY - 5, 4, C.F, C.D); hand(g, X(55), GY - 5, false); drops(g, [[X(49), GY - 9], [X(59), GY - 7], [X(57), GY - 12], [X(61), GY - 11], [X(51), GY - 14]]); arc(g, X(55), GY - 1, 7, Math.PI, Math.PI * 2, '#dff4ff'); } }),   /* 16 the slap: the hand brought down flat on the water, spray flung */
     frame({ legs: 'crouch', arms: 'plant', tilt: 7, sx: 1.02, eyes: 'wide', fx: (g, X, Y) => { fillPoly(g, [[X(53), Y(29.5)], [X(58), Y(28)], [X(59), Y(29.5)], [X(53), Y(31)]], C.tg); px(g, X(59), Y(28.5), C.tgL); FLY(g, X(55), Y(8), 0); FLY(g, X(49), Y(5), 1); } }),   /* 17 the snap's windup: head cocked up at the flies, pupil dilated, the tongue-tip flicking */
+    /* (claude/frogking2, greybox for the art lane - B16) 18 THE SPIT's windup: cheeks blown green with venom, head drawn back, a drip at the lip */
+    frame({ legs: 'sit', arms: 'plant', cheeks: true, tilt: -4, sx: 1.06, sy: 0.96, eyes: 'narrow', fx: (g, X, Y) => { blob(g, X(42), Y(31), 6, 4, '#7fb84a', '#b8e070', '#4a7a2a'); drops(g, [[X(52), Y(36)], [X(53), Y(39)]], '#8fd160'); } }),
+    /* 19 THE SPIT let go: head thrown up and forward, maw wide, three globs leaving it */
+    frame({ legs: 'trail', arms: 'fwd', mouth: true, tilt: 6, lift: 2, eyes: 'wide', fx: (g, X, Y) => { for (const [gx, gy] of [[56, 20], [60, 15], [62, 24]]) blob(g, X(gx), Y(gy), 2, 2, '#8fd160', '#d6f5a0', '#4a7a2a'); } }),
   ];
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
   return { R: frames, L, white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44 + PADT, w: 40, h: 30 };
