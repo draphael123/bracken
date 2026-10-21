@@ -1768,6 +1768,7 @@ const CAST = {
   forgemaster: { kit: 'ogre', rate: 0.85, mat: 'plate' }, reefmaw: { kit: 'ogre', rate: 0.7 },
   hound: { kit: 'bark', rate: 1.2 }, greathound: { kit: 'bark', rate: 0.8 }, oldtusker: { kit: 'ogre', rate: 0.6, lp: 1400, boss: true },   /* (claude/oldtusker) the great boar grunts low */
   harpy: { kit: 'scream', rate: 1.1 }, roc: { kit: 'scream', rate: 0.8 }, petrel: { kit: 'gull', rate: 1 }, queen: { kit: 'scream', rate: 1.05 },
+  boar: { kit: 'ogre', rate: 1.15, lp: 1800 }, pinemoth: { kit: 'bug', rate: 1.7 },   /* batch109 integ: the wood's new foes had no hurt or death voice - a small hog grunts (the ogre kit, pitched up from Old Tusker's 0.6), a pine moth is a bug */
   wasp: { kit: 'bug', rate: 1.3 }, spider: { kit: 'bug', rate: 0.8 }, weaver: { kit: 'bug', rate: 1 }, clinger: { kit: 'bug', rate: 0.9 }, bat: { kit: 'bug', rate: 1.6 },
   sporeling: { kit: 'slime', rate: 1.2 }, lurker: { kit: 'slime', rate: 0.8 }, spitcap: { kit: 'slime', rate: 0.9 }, drone: { kit: 'slime', rate: 1.1 }, gill: { kit: 'slime', rate: 1.3 },
   spit: { kit: 'slime', rate: 1.4 }, grub: { kit: 'slime', rate: 0.9 },
