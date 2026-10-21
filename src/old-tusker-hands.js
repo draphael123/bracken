@@ -95,6 +95,11 @@ export function makeOldTuskerHands(ctx) {
     /* THE RANGER's arrow bites a marked pine (every hero can fell one) */
     const w = world(e);
     for (const pp of ctx.players) for (const a of (pp.rgArrows || [])) { if (a.state !== 'fly') continue; const p = S.pines.find(q => q.st === 'stand' && Math.abs(a.x - q.x) < 8 && a.y > S.G.floorY - 60 && a.y < S.G.floorY); if (p) { a.state = 'drop'; a.vx *= -0.1; a.vy = -40; OTM.strokePine(S, p, w); } }
+    /* (claude/tuskerfix, Daniel's rec-built 10-21) THE GEOMANCER's FAULT LINE strikes a marked pine it runs under: one stroke a crack (the ranger's arrow precedent) - she works the rule from outside his reach */
+    for (const fl of (ctx.geoFaults ? ctx.geoFaults() : [])) { if (!fl.heavy || fl.life <= 0) continue; const lo = fl.dir > 0 ? fl.x0 : fl.x0 - fl.len, hi = fl.dir > 0 ? fl.x0 + fl.len : fl.x0;
+      if (Math.abs(fl.gy - S.G.floorY) > 8 || fl.otDone) continue;   /* one crack, one stroke: the FIRST marked pine it runs under takes it */
+      const p = S.pines.filter(q => q.st === 'stand' && q.x >= lo - 4 && q.x <= hi + 4).sort((a, b) => Math.abs(a.x - fl.x0) - Math.abs(b.x - fl.x0))[0];
+      if (p) { fl.otDone = true; OTM.strokePine(S, p, w); } }
     OTM.stepTusker(e, S, dt, heroes(), w);
     e.phase = S.ph; e.open = OTM.otOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
