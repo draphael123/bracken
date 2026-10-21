@@ -22,6 +22,12 @@ try {
     { const e = sw(); if (e) { BK.P.x = e.x - 20; BK.keys.down = true; BK.sim(4); BK.press && BK.press('atk'); BK.sim(8); BK.keys.down = false; BK.sim(6); snap('stilt-topple'); BK.sim(30); snap('stilt-down'); } }
     /* the horn lookout at 79 winding his horn */
     BK.load(LEVELS.findIndex(l => l.id === 'fenroad')); BK.start && BK.start(); BK.state = 'play'; BK.god = true; at(70); for (let k = 0; k < 90; k++) { BK.step(1); } snap('stilt-horn');
+    /* THE BOG TROLL: walk into the crossing, wake him, and hold each pose a frame (the art lane's reference: src/bog-troll-hands.js POSE) */
+    BK.load(LEVELS.findIndex(l => l.id === 'fenroad')); BK.start && BK.start(); BK.state = 'play'; BK.god = true; BK.sim(400);
+    at(414); for (let k = 0; k < 600 && !BK.bossActive; k++) { BK.keys.right = true; BK.step(1); } BK.keys.right = false; BK.sim(150);
+    const b = BK.boss; if (b && b.t === 'bogtroll') { BK.P.x = b.x - 70; BK.P.y = 18 * 16;
+      for (const m of ['up', 'dragTell', 'drag', 'hurlTell', 'hurl', 'stuck', 'heave', 'ripTell', 'rip', 'sink']) { b.mode = m; b.modeT = 5; b.y = 18 * 16 + 26 + (m === 'sink' ? 20 : 0); if (m === 'stuck') { b.openT0 = 5; } snap('troll-' + m); }
+      b.mode = 'burstTell'; b.modeT = 0.3; b.locked = true; b.lockX = BK.P.x; snap('troll-bulge'); }
     return { res: shots }; })()`, 600000);
   for (const [n, d] of r.res) writeFileSync(join(out, 'fenroad-' + n + '.png'), Buffer.from(d.split(',')[1], 'base64'));
   console.log(r.res.length + ' shots', 'errors', JSON.stringify(pg.errors.slice(0, 4)));
