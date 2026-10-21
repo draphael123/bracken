@@ -144,7 +144,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
-import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
+import * as FRA from './redraw/fen_road_art.js'; import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
@@ -1306,7 +1306,8 @@ function resolveTiles() {
   decor.length = 0;
   for (let y = 0; y < LH; y++) for (let x = 0; x < LW; x++) {
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
-    if (L.fenroad && L.sagCells && (L.sagSetI || (L.sagSetI = new Set(L.sagCells.map(([sx, sy]) => sy * LW + sx)))).has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/fenroad) a bowed section's / crew gap's boards are drawn by src/fen-road-hands.js */
+    if (L.fenroad && L.sagCells && t !== T.SOLID && (L.sagSetI || (L.sagSetI = new Set(L.sagCells.map(([sx, sy]) => sy * LW + sx)))).has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/fenroad) a bowed section's / crew gap's boards are drawn by src/fen-road-hands.js */
+    if (L.fenroad && (t === T.SOLID || t === T.PLANK || t === T.ONEWAY)) { const ts = FRA.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/fenroadart) THE FEN ROAD's kit: sound boards, stilt decks, driven piles, lashed log cribs, the peat cutting (src/redraw/fen_road_art.js) */
     if (L.lumberKit && L.fellSet && L.fellSet.has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/lumbertrailart) a felled pine's ramp/plank cells are its trunk (drawn as the trunk), never stepped log stubs */
     if (L.lumberKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LTT.lumberTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; continue; } }   /* (claude/lumbertrailart) THE LUMBER TRAIL's tile kit: stumps, corduroy, rock, gravel, the camp's yard, log stacks, the hollow log, log decks */
     if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
@@ -31389,7 +31390,7 @@ function drawWorld(cx, cy, showPlayer) {
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); drawClimbCues(g,L,cx,cy);
+  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); if (L.fenroad) FRA.drawBack(g, L, cx, cy, time, T); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
@@ -32518,7 +32519,7 @@ function drawWorld(cx, cy, showPlayer) {
     g.globalAlpha = 1;
     const tip = trail[trail.length - 1]; g.fillStyle = '#ffffff'; g.fillRect(Math.round(tip.x - cx) - 1, Math.round(tip.y - cy) - 1, 2, 2);
   }
-  drawReflections(cx, cy); drawWater(cx, cy, true); drawPadsAfloat(cx, cy); if (L.marsh3) M3A.drawWater(g, L, cx, cy, time, T); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
+  drawReflections(cx, cy); drawWater(cx, cy, true); drawPadsAfloat(cx, cy); if (L.marsh3) M3A.drawWater(g, L, cx, cy, time, T); if (L.fenroad) FRA.drawWater(g, L, cx, cy, time, T); if (CANAL) CNH.drawCanalWater(CANAL, g, CNX, cx, cy, VW, VH, time);   /* THE FOG CANAL's sheen and lantern reflections */ drawSwimmers(); drawFalls(cx, cy); drawBore(cx, cy); drawHeraldWave(cx, cy); drawSpouts(cx, cy); drawFins(cx, cy); drawBalls(cx, cy); drawWash(cx, cy); drawStrike(cx, cy); drawSea(cx, cy); drawBreath(cx, cy); drawFlaskDrink(cx, cy); drawAirHint(cx, cy);
   for (const b of birds) drawSet(BIRD, null, Math.floor(b.t * 12) % 2, b.x - cx, b.y - cy, Math.sign(b.vx) || 1, false);
   drawCritters(cx, cy);
   if (thrown) { const s = thrown; g.save(); g.translate(Math.round(s.x - cx), Math.round(s.y - cy)); g.rotate(s.t * 22 * s.dir); g.drawImage(SHIELD_ICON, -5, -6); g.restore(); if (Math.random() < 0.5) parts.push({ x: s.x, y: s.y, vx: 0, vy: 0, life: 0.15, max: 0.15, col: '#c9d1dc', size: 1, grav: 0 }); }

@@ -13,6 +13,7 @@
 //     sound far off from the Palisade Road on.
 // GREYBOX ART (readable; the art lane draws it - see the lane report's ART NOTES). main.js calls: reset, on, update, strike, drawSky, drawWorld, read,
 // and the troll's hands call sectionAt, collapse, rip, fixSafe.
+import * as FRA from './redraw/fen_road_art.js';   /* (claude/fenroadart) the boardwalk kit's drawing */
 export const SAG = { bow: 0.5, hold: 1.1, holdArena: 3.6, under: 3.2, regrow: 14, rise: 0.6, droop: 4 };
 export const CREW = { every: 0.85, near: 260 };
 export const UNDERTOW = { near: 150, bubble: 1.4, arm: 1.0 };
@@ -35,7 +36,7 @@ export function makeFenRoadHands(ctx) {
     }
     for (const g of gaps) { const lay = lv.ents.find(q => q.layer === g.id); if (lay) g.layerAt = { x: lay.x * TS + 8, y: (lay.y + 1) * TS }; }
     const cells = new Set(); for (const [x, y] of lv.sagCells || []) cells.add(y * lv.W + x);
-    S = { sags, lashes, gaps, tows, cells, ripped: new Set(), told: {}, hornT: 6, n: { sunk: 0, cut: 0, laid: 0, collapsed: 0, ripped: 0, barricade: 0, undertow: 0 } };
+    S = { clock: 0, laidAt: {}, sags, lashes, gaps, tows, cells, ripped: new Set(), told: {}, hornT: 6, n: { sunk: 0, cut: 0, laid: 0, collapsed: 0, ripped: 0, barricade: 0, undertow: 0 } };
   };
   const cellsOf = s => { const out = []; for (let x = s.x0; x < s.x0 + s.w; x++) out.push([x, s.row]); return out; };
   const setCells = (s, t) => { for (const [x, y] of cellsOf(s)) ctx.cellSet(x, y, t); };
@@ -57,7 +58,7 @@ export function makeFenRoadHands(ctx) {
   }
   const snd = k => { const f = ctx.sfx; try { if (k === 'creak') (f.creak || f.crack || f.thud)(); else if (k === 'sink') { (f.splash || f.thud)(); (f.crack || f.thud)(); } else if (k === 'cut') { (f.crack || f.thud)(); (f.clank || f.thud)(); } else if (k === 'lay') (f.stone || f.thud)(); else if (k === 'rise') (f.puff || f.thud)(); else if (k === 'gurgle') (f.splash || f.puff || f.thud)(); else if (k === 'grab') { (f.splash || f.thud)(); (f.boreRoar || f.roar || f.thud)(); } else if (k === 'horn') (f.farHorn || f.hornDraw || (() => {}))(); } catch {} };
   H.update = dt => {
-    if (!H.on()) return; const lv = L(), TS = ctx.TS, T = ctx.T, players = ctx.players();
+    if (!H.on()) return; const lv = L(), TS = ctx.TS, T = ctx.T, players = ctx.players(); S.clock += dt;
     /* THE BOWED SECTIONS */
     for (const s of S.sags.values()) {
       if (s.st === 'up' || s.st === 'bow') {
@@ -88,7 +89,7 @@ export function makeFenRoadHands(ctx) {
       g.t -= dt; if (g.t > 0) continue; g.t = CREW.every;
       const cols = []; for (let i = 0; i < g.w; i++) { const x = g.dir < 0 ? g.x0 + g.w - 1 - i : g.x0 + i; if (!g.piles.includes(x)) cols.push(x); }
       const x = cols[g.laid]; if (x === undefined) { g.done = true; continue; }
-      if (ctx.tileAt(x, 18) === T.AIR) ctx.cellSet(x, 18, T.PLANK); g.laid++; S.n.laid++; snd('lay'); ctx.dust(x * TS + 8, 18 * TS, 3);
+      if (ctx.tileAt(x, 18) === T.AIR) ctx.cellSet(x, 18, T.PLANK); g.laid++; S.n.laid++; S.laidAt[x] = S.clock; snd('lay'); ctx.dust(x * TS + 8, 18 * TS, 3);
       if (!S.told.crew) { S.told.crew = 1; say(x * TS + 8, 15 * TS, 'crew'); }
       if (g.laid >= cols.length) g.done = true;
     }
@@ -134,53 +135,36 @@ export function makeFenRoadHands(ctx) {
   /* THE SKYLINE: the Stockade's palisade grows the further east you are (behind everything; a parallax band at the horizon) */
   H.drawSky = (g, cx, cy, VW, VH, time) => {
     if (!H.on()) return; const lv = L(), TS = ctx.TS, k = Math.max(0, Math.min(1, cx / ((lv.W - 40) * TS)));
-    const base = R(VH * 0.62 - k * 18), w = R(90 + k * 260), x0 = R(VW * (0.9 - 0.35 * k) - w / 2), sh = R(5 + k * 22);
-    g.globalAlpha = 0.35 + 0.35 * k; g.fillStyle = '#2a2a2a';
-    for (let x = 0; x < w; x += 4) { const hh = sh + ((x * 7) % 5); g.fillRect(x0 + x, base - hh, 3, hh); g.fillRect(x0 + x + 1, base - hh - 1, 1, 1); }
-    rect(g, x0, base - 2, w, 3, '#2a2a2a');
-    for (const f of [0.18, 0.78]) { const tx = x0 + R(w * f), th = sh + 10 + R(k * 10); rect(g, tx - 4, base - th, 9, th, '#262626'); rect(g, tx - 6, base - th - 3, 13, 3, '#262626');
-      rect(g, tx, base - th - 9, 1, 6, '#3a3a3a'); rect(g, tx + 1, base - th - 9, 4, 3, (Math.floor(time * 2 + f * 10) % 2) ? '#8f2f28' : '#a8443a'); }
-    g.globalAlpha = 1;
+    FRA.drawSky(g, cx, cy, VW, VH, time, k);   /* THE SKYLINE: the Stockade's palisade grows the further east you are (behind everything; a parallax band at the horizon) */
   };
   H.drawWorld = (g, cx, cy, time) => {
-    if (!H.on()) return; const lv = L(), TS = ctx.TS, X = v => R(v - cx), Y = v => R(v - cy);
-    /* THE LASHINGS: a post, a coil, and the rope to the section's near board; a glint while a body stands on its section (cut NOW) */
-    for (const l of S.lashes) { const x = X(l.x * TS + 8); if (x < -40 || x > ctx.VW() + 40) continue; const yb = Y(l.row * TS), s = S.sags.get(l.sag);
-      rect(g, x - 2, yb - 16, 4, 16, '#4a3420'); rect(g, x - 1, yb - 16, 1, 16, '#6a4c30');
-      if (!l.cut && s) { rect(g, x - 3, yb - 11, 6, 2, '#c9b27c'); rect(g, x - 3, yb - 8, 6, 2, '#a8925c');
-        const ex = X(s.x0 * TS + 1), ey = Y(s.row * TS + 2); g.strokeStyle = '#c9b27c'; g.lineWidth = 1; g.beginPath(); g.moveTo(x + 2, yb - 9); g.lineTo(ex, ey); g.stroke();
-        const loaded = ctx.enemies().some(e => e.alive && !e.boss && standsOnFoe(e, s)) || s.load.length && !s.loadGone;
-        if (loaded && Math.floor(time * 6) % 2) { rect(g, x - 1, yb - 20, 3, 3, '#ffd36b'); rect(g, x, yb - 22, 1, 7, '#fff6e0'); } }
-      else { rect(g, x + 2, yb - 10, 2, 1, '#c9b27c'); rect(g, x + 3, yb - 9, 1, 2, '#a8925c'); } }
-    /* THE BOWED SECTIONS: rotten boards that bend under weight, shiver at the end, go under, and float back */
-    for (const s of S.sags.values()) { const x0 = X(s.x0 * TS); if (x0 > ctx.VW() + 20 || x0 + s.w * TS < -20) continue; const y = Y(s.row * TS);
+    if (!H.on()) return; const lv = L(), TS = ctx.TS, X = v => R(v - cx), Y = v => R(v - cy), VWp = ctx.VW();
+    /* THE STOCKADE'S GATE (the arrival): its palisade wall, horn tower and braziers behind the exit gate at the crossing's east end */
+    FRA.drawGate(g, X(ARENA_GATE_X * TS), Y(18 * TS), time);
+    /* THE LASHINGS: a stake, hemp coils, a red rag and the rope to the section's near board; a glint while a body stands on its section (cut NOW) */
+    for (const l of S.lashes) { const x = X(l.x * TS + 8); if (x < -40 || x > VWp + 40) continue; const yb = Y(l.row * TS), s = S.sags.get(l.sag);
+      const loaded = !!s && !l.cut && (ctx.enemies().some(e => e.alive && !e.boss && standsOnFoe(e, s)) || (s.load.length && !s.loadGone));
+      FRA.drawLashing(g, x, yb, s ? X(s.x0 * TS + 1) : x, s ? Y(s.row * TS + 2) : yb, l.cut || !s, loaded, time); }
+    /* THE BOWED SECTIONS: rotten boards that bend, shiver at the end, go under, and float back */
+    for (const s of S.sags.values()) { const x0 = X(s.x0 * TS); if (x0 > VWp + 20 || x0 + s.w * TS < -20) continue; const y = Y(s.row * TS);
       const up = s.st === 'up' || s.st === 'bow', b = s.st === 'bow' ? Math.min(1, s.t / SAG.bow) : 0, shiver = s.st === 'bow' && s.t > s.hold * 0.7 ? (Math.floor(time * 30) % 2) : 0;
       for (let i = 0; i < s.w; i++) { const wreck = s.st === 'gone' && s.hole && (s.x0 + i < s.hole[0] || s.x0 + i > s.hole[1]), u = (i + 0.5) / s.w * 2 - 1, off = up ? b * SAG.droop * (1 - u * u) + shiver : wreck ? 3 + (i ? 1 : 0) : 0, yy = up || wreck ? y + off + (up ? (1 - s.vis) * 8 : 0) : Y(19 * TS + 3);
-        g.globalAlpha = up || wreck ? 1 : 0.4; rect(g, x0 + i * TS, yy, TS - 1, 5, s.arena ? '#5a4030' : '#6a5038'); rect(g, x0 + i * TS, yy + 5, TS - 1, 2, '#3a2818');
-        rect(g, x0 + i * TS + 3 + (i % 3), yy + 1, 4, 1, '#3e2c1c'); if (s.arena) rect(g, x0 + i * TS + 9, yy + 2, 3, 2, '#2e3a22'); }
-      g.globalAlpha = 1;
-      if (up) { rect(g, x0 - 1, y - 1, 2, 8, '#c9b27c'); rect(g, x0 + s.w * TS - 1, y - 1, 2, 8, '#c9b27c'); }   /* the lashing round each end */
+        FRA.drawBoard(g, x0 + i * TS, yy, i, s.w, s.arena, up || wreck ? 1 : 0.4, wreck); }
       /* ITS LOAD (the crew's barricade): road-planks stacked on end, roped; and its foot in the section's own row */
-      for (const [lx, ly] of [...s.load, ...s.load.filter(([, q]) => q === s.row - 1).map(([q]) => [q, s.row])]) { if (!ctx.solidAt(lx, ly)) continue; const bx = X(lx * TS), by = Y(ly * TS);
-        rect(g, bx, by, TS, TS, '#7a5a38'); for (let k = 0; k < 4; k++) rect(g, bx + k * 4, by, 1, TS, '#4a3420'); rect(g, bx, by + 6, TS, 2, '#c9b27c'); }
+      for (const [lx, ly] of [...s.load, ...s.load.filter(([, q]) => q === s.row - 1).map(([q]) => [q, s.row])]) { if (!ctx.solidAt(lx, ly)) continue;
+        FRA.drawBarricadeCell(g, X(lx * TS), Y(ly * TS), !ctx.solidAt(lx, ly - 1), ly === s.row - 3 && lx === s.load[0][0], ly === s.row); }
     }
-    /* THE CREW GAPS: the boards the crew has laid (fresh-cut) */
-    for (const gp of S.gaps) for (let i = 0; i < gp.w; i++) { const x = gp.x0 + i; if (ctx.tileAt(x, 18) !== ctx.T.PLANK) continue; const sx = X(x * TS); if (sx < -20 || sx > ctx.VW() + 20) continue;
-      rect(g, sx, Y(18 * TS), TS - 1, 5, '#b08a5a'); rect(g, sx, Y(18 * TS) + 5, TS - 1, 2, '#6a4c30'); rect(g, sx + 2, Y(18 * TS) + 2, 1, 1, '#3a2818'); rect(g, sx + 12, Y(18 * TS) + 2, 1, 1, '#3a2818'); }
+    /* THE CREW GAPS: the boards the crew has laid (fresh-cut, dropped in from a hand's height) */
+    for (const gp of S.gaps) for (let i = 0; i < gp.w; i++) { const x = gp.x0 + i; if (ctx.tileAt(x, 18) !== ctx.T.PLANK) continue; const sx = X(x * TS); if (sx < -20 || sx > VWp + 20) continue;
+      FRA.drawLaid(g, sx, Y(18 * TS), S.clock - (S.laidAt[x] === undefined ? -9 : S.laidAt[x])); }
     /* SOMETHING UNDER THE ROAD: the bubbles, then the arm */
-    for (const u of S.tows) { const x = X(u.x), y = Y(19 * TS); if (x < -60 || x > ctx.VW() + 60) continue;
+    for (const u of S.tows) { const x = X(u.x), y = Y(19 * TS); if (x < -60 || x > VWp + 60) continue;
       if (u.st === 'bubble') for (let i = 0; i < 4; i++) { const q = (time * 3 + i * 0.37) % 1; g.globalAlpha = 1 - q; rect(g, x - 10 + i * 6, y - q * 8, 2, 2, '#cfe0d0'); g.globalAlpha = 1; }
       if (u.st === 'arm') { const k = Math.sin(Math.min(1, 1 - u.t / UNDERTOW.arm) * Math.PI); drawArm(g, x, y, k, time); } }
-    /* THE STOCKADE'S GATE at the crossing's east wall: stakes, a shut gate, a horn tower */
-    { const gx = X(ARENA_GATE_X * TS); if (gx > -80 && gx < ctx.VW() + 80) { const yb = Y(18 * TS);
-      for (let i = -3; i < 4; i++) { const hh = 70 + ((i * 13) & 7); rect(g, gx + i * 7, yb - hh, 6, hh, '#5a4630'); rect(g, gx + i * 7 + 1, yb - hh - 3, 4, 3, '#4a3826'); rect(g, gx + i * 7, yb - hh + 12, 6, 2, '#c9b27c'); }
-      rect(g, gx - 22, yb - 96, 12, 26, '#4a3826'); rect(g, gx - 24, yb - 99, 16, 3, '#3a2818'); rect(g, gx - 18, yb - 108, 1, 9, '#2a1c10'); rect(g, gx - 17, yb - 108, 6, 4, '#8f2f28'); } }
   };
   const standsOnFoe = (e, s) => { const TS = ctx.TS; return Math.floor((e.y + 1) / TS) === s.row && e.x + 3 > s.x0 * TS && e.x - 3 < (s.x0 + s.w) * TS; };
-  /* the troll's arm out of the fen (greybox): a grey-green forearm, a hand of four fingers, weed */
-  function drawArm(g, x, y, k, time) { const h = R(10 + k * 30);
-    rect(g, x - 5, y - h, 10, h, '#5a6a4a'); rect(g, x - 5, y - h, 2, h, '#7a8a62'); rect(g, x - 8, y - h - 6, 16, 7, '#5a6a4a');
-    for (let i = 0; i < 4; i++) rect(g, x - 8 + i * 4, y - h - 10 + (i === 0 ? 3 : 0), 3, 5, '#4a5a3a'); rect(g, x - 4, y - h + 4, 2, 9, '#2e4a22'); rect(g, x + 2, y - h + 8, 2, 6, '#2e4a22'); void time; }
+  /* the troll's arm out of the fen */
+  function drawArm(g, x, y, k, time) { FRA.drawArm(g, x, y, k, time); }
   H.drawArm = drawArm;
   return H;
 }
