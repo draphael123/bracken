@@ -78,7 +78,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   deck(76, 16, 4); coins([76, 15], [78, 15]);
   deck(84, 15, 4); ent('spit', 85, 14, { face: -1 });   /* the spitter on the log crib over the top of the slope */
   /* THE LOG ROUND (the pushblock's teaching use, backlog #12): a ledge four rows over the slope's top, a round of pine pushed under it is the step */
-  ent('pushblock', 90, 17, { stepAt: [93, 17] }); block(94, 94, 14, 14); ent('silver', 94, 13);
+  ent('pushblock', 90, 17, { stepAt: [93, 17] }); deck(94, 14, 1); ent('silver', 94, 13);   /* (claude/tuskerfix, Daniel 10-21 'not all the geometry is grounded') the ledge is a plank on its timber crib, not a lone block of earth on a post */
   deck(99, 15, 3);
   ent('shield', 99, 17, { face: -1 }); ent('sprig', 101, 17, { face: -1 });   /* the area's exam: a guard and a sprig on the top with the spitter over them */
   coins([83, 16], [88, 16], [92, 16]);

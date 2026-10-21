@@ -22,7 +22,7 @@
 //                   shockwaves run out along the ground both ways - jump them). He does not stagger off the first charge of a double, only the second.
 //   NO ADDS (Daniel: no adds unless the brief says so).
 export const OT = {
-  hp: 900, w: 46, h: 26, markH: 44,
+  hp: 750, w: 46, h: 26, markH: 44,
   walk: 52, rest: [0.75, 0.5],                   // px/s; the beat between moves (P1, P2)
   hide: 0.4, above: 1, wardMul: 0.4,             // B15: the floor outside openings; a plunge on his back lands whole
   p2: 0.5,
