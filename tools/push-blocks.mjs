@@ -84,7 +84,34 @@ function run(m, c, dt, n) { for (let i = 0; i < n; i++) updatePushBlock(m, dt, c
   assert.ok(mA.x + mA.w <= mB.x, 'two pushed blocks were driven into each other: A right edge ' + (mA.x + mA.w) + ', B left edge ' + mB.x);
 }
 
-console.log('ok  push-blocks (sim)   fall, step (one-way), push at PB.speed, blocked by a wall, blocked by another block: all hold');
+// ---- THE CHAIN (Daniel 10-21 soft-lock): two blocks touching, the hero pushes the near one - BOTH move, in lockstep and touching ----
+{ const floorRow = 5; const w = grid(Array.from({ length: 24 }, (_, x) => [x, floorRow]));
+  const mA = newPushBlock(40, floorRow * TS), mB = newPushBlock(40 + TS, floorRow * TS);   // side by side, flush
+  const blocks = [mA, mB]; const cA = ctx(w, blocks), cB = ctx(w, blocks);
+  run(mA, cA, 1 / 60, 6); run(mB, cB, 1 / 60, 6);
+  const a0 = mA.x, b0 = mB.x, P = walker(mA.x - 2, floorRow * TS, 60);
+  for (let i = 0; i < 60; i++) { cA.players = [P]; updatePushBlock(mA, 1 / 60, cA); updatePushBlock(mB, 1 / 60, cB); }
+  assert.ok(mA.x - a0 > 10 && mB.x - b0 > 10, 'a pushed block did not shove the block touching it: A moved ' + (mA.x - a0) + ', B moved ' + (mB.x - b0));
+  assert.ok(Math.abs((mA.x - a0) - (mB.x - b0)) < 0.01 && Math.abs(mB.x - mA.x - TS) < 0.01, 'the chain did not move in lockstep, touching');
+  // from the other side too: the hero on the right pushes B left, A goes with it
+  const P2 = walker(mB.x + mB.w + 2, floorRow * TS, -60); const bx = mB.x, ax = mA.x;
+  for (let i = 0; i < 60; i++) { cA.players = cB.players = [P2]; updatePushBlock(mA, 1 / 60, cA); updatePushBlock(mB, 1 / 60, cB); }
+  assert.ok(bx - mB.x > 10 && ax - mA.x > 10, 'the chain does not push leftward');
+}
+// ---- THE CHAIN AGAINST A WALL: three flush blocks and a wall - nothing moves into it, nothing overlaps, no one is carried through ----
+{ const floorRow = 5, wallCol = 9; const cells = Array.from({ length: 24 }, (_, x) => [x, floorRow]);
+  for (let y = floorRow - 4; y <= floorRow; y++) cells.push([wallCol, y]);
+  const w = grid(cells);
+  const ms = [40, 56, 72].map(px => newPushBlock(px, floorRow * TS)); const cs = ms.map(() => ctx(w, ms));
+  ms.forEach((m, i) => run(m, cs[i], 1 / 60, 6));
+  const P = walker(ms[0].x - 2, floorRow * TS, 60);
+  for (let i = 0; i < 900; i++) { cs.forEach(c => { c.players = [P]; }); ms.forEach((m, k) => updatePushBlock(m, 1 / 60, cs[k])); }
+  assert.ok(ms[2].x + ms[2].w <= wallCol * TS, 'a chain was driven into a wall');
+  assert.ok(ms[0].x + ms[0].w <= ms[1].x + 0.01 && ms[1].x + ms[1].w <= ms[2].x + 0.01, 'chained blocks overlap each other');
+  assert.ok(P.x + P.w / 2 <= ms[0].x + 0.01, 'the hero was carried into the chain');
+}
+
+console.log('ok  push-blocks (sim)   fall, step (one-way), push at PB.speed, blocked by a wall, blocked by another block, a touching pair pushed as a chain: all hold');
 
 // ================= THE WIRING IN src/main.js AND THE DEMO IN src/level.js (read, not re-simulated) =================
 const MAIN = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');
