@@ -11,6 +11,7 @@
 import * as BTM from './bog-troll.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
+import * as FRA from './redraw/fen_road_art.js';
 import * as BTA from './redraw/bog_troll_art.js';   /* (claude/fenroadart) his drawn sprites: one baked + outlined sprite per pose */
 const { BT } = BTM;
 const R = Math.round;
@@ -136,14 +137,14 @@ export function makeBogTrollHands(ctx) {
     /* WHERE HE SWIMS: bubbles over him; THE BULGE: the boards over him lift (amber while it follows you, red when it sets) */
     if (e.mode === 'under' || e.mode === 'sleep' && ctx.bossActive) for (let i = 0; i < 3; i++) { const q = (time * 2.5 + i * 0.33) % 1; g.globalAlpha = 1 - q; rect(g, X(e.x) - 6 + i * 6, Y(G.waterY) - q * 6, 2, 2, '#cfe0d0'); g.globalAlpha = 1; }
     if (e.mode === 'burstTell') { const k = 1 - Math.max(0, e.modeT) / (BT.burst.track + BT.burst.lock), col = e.locked ? blink : '#ffb347', bx = X(e.lockX), by = Y(G.floorY);
-      for (let i = -2; i <= 2; i++) { const lift = R((3 - Math.abs(i)) * (1 + k * 2) + (e.locked ? Math.sin(time * 40) : 0)); rect(g, bx + i * 8 - 4, by - lift, 8, 3, '#8a6a48'); }
+      FRA.drawBulge(g, bx, by, k, e.locked, time);
       g.globalAlpha = 0.85; g.strokeStyle = col; g.lineWidth = 2; g.beginPath(); g.ellipse(bx, by - 2, BT.burst.r + 2, 5, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       for (let i = 0; i < 4; i++) { const q = (time * 3 + i * 0.25) % 1; g.globalAlpha = 1 - q; rect(g, bx - 9 + i * 6, Y(G.waterY) - q * 8, 2, 2, '#cfe0d0'); g.globalAlpha = 1; } }
     /* THE DRAG's reach along the boards while he winds it */
     if (e.mode === 'dragTell') { const f = e.face || 1, a = e.x + f * 14, b = e.x + f * (14 + BT.drag.reach); g.globalAlpha = 0.45 + 0.3 * Math.sin(time * 14); g.fillStyle = '#ff6b6b'; for (let q = Math.min(a, b); q < Math.max(a, b); q += 9) g.fillRect(X(q), Y(G.floorY) - 2, 5, 2); g.globalAlpha = 1; }
     /* THE RIP's boards flash red first */
     if (e.mode === 'ripTell') for (const [a, b] of G.rip) { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 16); g.fillStyle = '#ff4a2a'; g.fillRect(X(a), Y(G.floorY), R(b - a), 4); g.globalAlpha = 1; }
-    for (const c of S.clods) { const q = BTM.clodAt(c, G.floorY); ell(g, X(q.x), Y(q.y), 4, 3, C.peat); rect(g, X(q.x) - 1, Y(q.y) - 2, 2, 1, C.weed);
+    for (const c of S.clods) { const q = BTM.clodAt(c, G.floorY); FRA.drawClod(g, X(q.x), Y(q.y), time);
       g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.tx), Y(G.floorY) - 1, BT.hurl.r, 3, 0, 0, 7); g.stroke(); }
     /* THE READ (B10) */
     const x = X(e.x), y = Y(G.floorY - 10);

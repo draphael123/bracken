@@ -126,9 +126,9 @@ function peatTile(x, y, at, T, mode = 'cut') {
     if (mud) { const w = rnd(u, v, 7); if (top && py < 2) return py === 0 ? '#4a4a34' : '#33301f'; return w === 0 ? '#4a4630' : w < 3 ? '#26231a' : '#1d1b14'; }
     if (top) { if (py === 0) return rnd(u, 3, 6) === 0 ? '#5b6a3a' : PEAT[3]; if (py === 1) return rnd(u, 4, 4) === 0 ? PEAT[4] : PEAT[2]; if (py === 2 && rnd(u, 5, 7) === 0) return '#9fb3a6'; /* a puddle glint */ }
     if (mode !== 'cut') {   /* the fen's ground: dark peat, mottled, faint strata, roots - no cut blocks */
-      const n = rnd(u, v, 11), strata = (v % 7 === 3 && rnd(u >> 2, v, 3) !== 0);
+      const n = rnd(u + (v >> 1) * 3, v >> 1, 24), strata = (v % 7 === 3 && rnd(u >> 3, v, 3) !== 0);
       if (wallL && px < 2 || wallR && px > 13) return y > WATER ? MOSS[n & 1 ? 0 : 1] : PEAT[1];
-      if (strata) return PEAT[1]; if (n === 0) return '#5a4a2a'; if (n === 1) return '#3a5a2a'; if (n < 4) return PEAT[1]; if (n < 7) return PEAT[2]; if (n === 7) return PEAT[4]; return PEAT[3]; }
+      if (strata) return PEAT[1]; if (n === 0) return '#3a5a2a'; if (n < 3) return PEAT[1]; if (n < 7) return PEAT[3]; if (n === 7) return PEAT[4]; return PEAT[2]; }
     const brick = ((v >> 2) & 1) ? 0 : 3, bx = (u + brick) % 7, by = v % 4;
     if (by === 3) return PEAT[0];                                                              /* the cut between turves */
     if (bx === 6) return PEAT[1];
@@ -395,3 +395,19 @@ export function drawSunk(g, x, w, y, time) {
   g.globalAlpha = 1;
 }
 export function drawDrips(g, x, w, y, time) { for (let i = 0; i < Math.floor(w / 16); i++) { const ph = (time * 2.2 + i * 0.5) % 1; g.globalAlpha = 1 - ph * 0.5; P(g, '#cfe0d0', x + 4 + i * 16 + (i & 1) * 5, y + ph * 8); } g.globalAlpha = 1; }
+
+/* THE BULGE under the boards (the troll's burst, told): five boards humped up over him, a dark gap and water showing under them, splinters jumping once it has set; k 0..1 how long it has been rising */
+export function drawBulge(g, bx, by, k, locked, time) {
+  const spr = rottenBoard(true, 1, 3);
+  for (let i = -2; i <= 2; i++) { const lift = Math.round((3 - Math.abs(i)) * (1 + k * 2) + (locked ? Math.sin(time * 40) : 0)), x = bx + i * 8 - 4;
+    if (lift > 2) { Rr(g, '#10160e', x, by + 6 - lift + 4, 8, lift); P(g, '#9fb3a6', x + 2, by + 6); }       /* the gap under a lifted board: dark, a gleam of fen */
+    g.drawImage(spr, (i + 2) % 2 ? 0 : 8, 0, 8, 9, x, by - lift - 1, 8, 9);
+    if (lift > 3) P(g, OAK[0], x + 3, by - lift + 1);                                                                         /* a split opening */ }
+  if (locked) for (let i = 0; i < 5; i++) { const q = (time * 5 + i * 0.21) % 1; g.globalAlpha = 1 - q; P(g, BOARD[4], bx - 14 + i * 7, by - 6 - q * 12); P(g, '#e0c490', bx - 12 + i * 7, by - 5 - q * 10); g.globalAlpha = 1; }
+}
+/* THE PEAT CLOD in flight: a black wet lump, weed trailing, drips falling */
+export function drawClod(g, x, y, time) {
+  Rr(g, PEAT[1], x - 4, y - 3, 8, 6); Rr(g, PEAT[2], x - 3, y - 4, 6, 6); Rr(g, PEAT[4], x - 3, y - 4, 3, 2); Rr(g, PEAT[0], x + 1, y, 3, 3);
+  P(g, MOSS[2], x - 4, y - 1); Rr(g, MOSS[1], x + 3, y - 2, 1, 4 + ((time * 8) | 0) % 2); Rr(g, MOSS[2], x - 1, y - 5, 2, 1);
+  if (Math.floor(time * 12) % 2) { P(g, '#cfe0d0', x - 2, y + 4); P(g, '#cfe0d0', x + 2, y + 6); }
+}
