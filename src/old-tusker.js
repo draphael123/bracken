@@ -22,17 +22,17 @@
 //                   shockwaves run out along the ground both ways - jump them). He does not stagger off the first charge of a double, only the second.
 //   NO ADDS (Daniel: no adds unless the brief says so).
 export const OT = {
-  hp: 1400, w: 46, h: 26, markH: 44,
+  hp: 900, w: 46, h: 26, markH: 44,
   walk: 52, rest: [0.75, 0.5],                   // px/s; the beat between moves (P1, P2)
   hide: 0.4, above: 1, wardMul: 0.4,             // B15: the floor outside openings; a plunge on his back lands whole
   p2: 0.5,
-  charge: { tell: [0.95, 0.72], speed: 290, dmg: 18, hitH: 20, turn: 0.42, minD: 104 },
+  charge: { tell: [0.95, 0.72], speed: 290, dmg: 10, hitH: 20, turn: 0.42, minD: 104 },
   daze: { t: [1.45, 1.2], mul: 1.25 },           // he rams a felled trunk or the wall: reels (a short, told opening)
-  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 16, dmg: 14, chip: 0.5, rec: 0.55, range: 70 },
-  root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 11, rec: 0.6, spread: 64 },
+  sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 16, dmg: 12, chip: 0.5, rec: 0.55, range: 70 },
+  root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 10, rec: 0.6, spread: 64 },
   stomp: { tell: 0.78, sp: 150, life: 1.9, dmg: 14, rec: 0.75, w: 7 },
   pin: { t: 3.4, mul: 2, thrash: 0.55, ward: 3, trunk: 0.04, cap: 0.14 },   // cap: a pin is worth this share of him at most - the blow that empties it, he heaves the trunk off (told)   // trunk: the falling pine's own blow on him (a share of his health, a room blow)
-  pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 10, lie: 20, rearm: 24 },   // lie: a trunk that missed him lies across the floor this long (a wall to him; a charge that rams it splinters it sooner); rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
+  pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 10, lie: 20, rearm: 14 },   // lie: a trunk that missed him lies across the floor this long (a wall to him; a charge that rams it splinters it sooner); rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
 };
 export const OT_SAY = { wake: 'OLD TUSKER', rule: 'FELL A PINE: ON HIM, PINNED. IN HIS PATH, HE RAMS IT.', p2: 'HIS BLOOD IS UP', pinned: 'PINNED', dazed: 'HE RAMS THE TRUNK',
   dazedWall: 'HE RAMS THE WALL', bounce: 'IT BOUNCES OFF HIM: WARDED', ward: 'HE HEAVES THE TRUNK OFF', jarred: 'JARRED: PARRY HIS TUSKS, OR JUMP THEM', creak: 'THE PINE CREAKS AND LEANS', timber: 'TIMBER' };
@@ -118,7 +118,8 @@ export function stepTusker(e, S, dt, heroes, w) {
     case 'rammed': if (e.modeT <= 0) { e.mode = 'walk'; S.restT = OT.rest[i] * 0.6; } return;
     case 'sweepTell': if (e.modeT <= 0) { e.mode = 'sweep'; e.modeT = OT.sweep.t; e.hitKey = 'sw' + S.act; e.barked = false; w.sound('sweep'); } return;
     case 'sweep': {
-      const f = e.face, a = e.x + f * (half - 8), b = e.x + f * (half + OT.sweep.reach);   /* (claude/tuskerfix) a standing pine is no cover any more: jump his tusks or parry them */
+      const f = e.face, a = e.x + f * (half - 8); let b = e.x + f * (half + OT.sweep.reach);   /* (claude/tuskerfix) a STANDING pine is no cover any more (jump his tusks or parry them) - */
+      for (const p of trunks(S)) { const n = trunkEnd(p, f); if ((n - a) * f > -4 && (b - n) * f > 0) { b = n; if (!e.barked) { e.barked = true; w.sound('clank'); } } }   /* - but a FELLED trunk is: his tusks bite its bark, not you beyond it */
       w.hit([Math.min(a, b), Math.max(a, b), floor - OT.sweep.h, floor], OT.sweep.dmg, 'sweep', { key: e.hitKey, blockable: true, blockChip: OT.sweep.chip, knock: f * 180 });
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = OT.sweep.rec; } return; }
     case 'rootTell': if (Math.random() < dt * 20) w.dust(e.x + e.face * half, floor, 1);
@@ -144,8 +145,7 @@ function pick(e, S, ad, w) {
   const ph = S.ph, i = ph - 1, last = S.last, twice = k => last.length >= 2 && last[0] === k && last[1] === k;
   let k;
   const cover = S.coverP;   /* (stepTusker sets it: a felled trunk between him and the hero - he cannot walk over it: he roots clods over it, or charges it down) */
-  if (cover && ad < OT.sweep.range) k = 'sweep';   /* (his tusks reach over a trunk) */
-  else if (cover) k = Math.random() < (ph > 1 ? 0.35 : 0.45) && !twice('root') ? 'root' : ph > 1 && Math.random() < 0.4 ? 'stomp' : 'charge';
+  if (cover) k = Math.random() < (ph > 1 ? 0.35 : 0.45) && !twice('root') ? 'root' : ph > 1 && Math.random() < 0.4 ? 'stomp' : 'charge';
   else if (ad < OT.sweep.range) k = ph > 1 && Math.random() < 0.35 && !twice('stomp') ? 'stomp' : 'sweep';
   else if (ad > OT.charge.minD) { const r = Math.random(); k = r < (ph > 1 ? 0.5 : 0.6) ? 'charge' : r < (ph > 1 ? 0.78 : 1) ? 'root' : 'stomp'; }
   else { if (S.walkT < 1.1) return; k = Math.random() < 0.6 ? 'root' : ph > 1 ? 'stomp' : 'charge'; }
@@ -234,7 +234,7 @@ function otPlan0(s) {
     if (busy && underLine(p, kx, half - 8) && Math.abs(P.x - spot) < 10 && P.ground && !roll('fell' + S.act + p.id, PLAN.missFell)) { out.gx = spot; out.face = p.dir; out.atk = P.atk < 0; out.why = 'the fourth stroke: he is under it'; return out; } }
   /* 2. HIS TELLS (a reaction late, some misread) */
   if (otTelling(e) || e.mode === 'charge' || e.mode === 'sweep' || e.mode === 'stomp') {
-    const key = 'a' + S.act + e.mode, miss = s.v2 ? false : roll(key + 'm', PLAN.miss), seen = seenFor(key);
+    const key = 'a' + S.act + e.mode, miss = s.v2 ? false : roll(key + 'm', PLAN.miss), seen = seenFor('a' + S.act + (e.mode === 'charge' || e.mode === 'turn' ? 'chargeTell' : e.mode));   /* (claude/tuskerfix) the run itself was read off its paw: the reaction clock starts at the tell, not when he is already on you */
     if (seen && !miss) {
       if ((e.mode === 'chargeTell' || e.mode === 'turn' || e.mode === 'charge') && !between) {
         const toward = (P.x - kx) * e.face > 0, gap = Math.abs(P.x - kx) - half;
@@ -251,7 +251,7 @@ function otPlan0(s) {
     }
   }
   /* 3. OPEN: strike him (pinned or dazed); WARDED: off him */
-  if (otOpen(e)) { const sx = kx + side * (s.tip ? 30 : 8 + half); out.gx = safeX(sx);
+  if (otOpen(e) && !(e.mode === 'rammed' && dx - half > e.modeT * 110 + 10)) { const sx = kx + side * (s.tip ? 30 : 8 + half); out.gx = safeX(sx);
     /* a dazed boar under a pine you have laid strokes in: the fourth stroke is better than a cut */
     if (e.mode === 'rammed' && e.modeT > OT.pine.fall + 0.1) { const pr = S.pines.find(p => p.st === 'stand' && (p.hp <= 1 || (p.hp - 1) * 0.36 + OT.pine.fall < e.modeT) && underLine(p, kx, half - 6) && Math.abs(P.x - (p.x - p.dir * 12)) < 64);
       if (pr && !roll('fell' + S.act + pr.id, PLAN.missFell)) { out.gx = pr.x - pr.dir * 12; out.face = pr.dir; if (Math.abs(P.x - out.gx) < 8) out.atk = P.atk < 0; mem.strike = pr.id; out.why = 'the fourth stroke: he is under it'; return out; } }
@@ -263,23 +263,35 @@ function otPlan0(s) {
   for (const p of S.pines) { if (p.st !== 'stand' || p.hp > 1) continue; const spot = p.x - p.dir * 12;
     const still = e.mode === 'rammed' || (/Tell$/.test(e.mode) && e.modeT > 0.4) || e.mode === 'recover';
     if (underLine(p, kx, half - 6) && still && Math.abs(P.x - spot) < 10 && !roll('fell' + S.act + p.id, PLAN.missFell)) { out.gx = spot; out.face = p.dir; out.atk = P.atk < 0; out.why = 'fell it on him'; return out; } }
+  /* 5w. (claude/tuskerfix) THE CLEARING'S COMBO: the OUTER pine of my side felled as a WALL (its trunk ends under the INNER pine's line: he rams it and reels right there),
+     then three strokes in the INNER pine - and the fourth when he reels under it (3. above) */
+  { if (mem.grp === undefined || !S.pines.some(p => p.dir === mem.grp && (p.st === 'stand' || p.st === 'down'))) { const np = S.pines.filter(p => p.st === 'stand').sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; mem.grp = np ? np.dir : undefined; }   /* one side of the clearing, kept */
+    const outerOf = ps => ps.slice().sort((a, b) => (a.x - b.x) * a.dir)[0];
+    const all = S.pines.filter(p => p.dir === mem.grp), outer = all.length ? outerOf(all) : null, inner = all.find(p => p !== outer);
+    const wallDown = outer && outer.st === 'down';
+    if (outer && outer.st === 'stand' && Math.sign(outer.x - outer.dir * 12 - kx) === side) { const spot = outer.x - outer.dir * 12;
+      if (Math.abs(P.x - spot) > 6) { out.gx = spot; out.why = 'to the outer pine: fell it as a wall'; return out; } out.face = outer.dir; out.atk = P.atk < 0; out.why = 'fell the outer pine: a wall'; return out; }
+    if (wallDown && inner && inner.st === 'stand' && inner.hp > 1 && dx > 70) { const spot = inner.x - inner.dir * 12;
+      if (Math.abs(P.x - spot) > 6) { out.gx = spot; out.why = 'to the inner pine'; return out; } out.face = inner.dir; out.atk = P.atk < 0; out.why = 'lay a stroke in the inner pine'; return out; } }
   /* 5a. (claude/tuskerfix) A FELLED TRUNK LIES: stand just past its near end (his side), facing him - his charge rams it and he reels in reach */
   const tr = trunks(S).filter(p => { const d = Math.sign((lineOf(p)[0] + lineOf(p)[1]) / 2 - kx) || 1; return (trunkEnd(p, d) - kx) * d > half - 6; }).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-  if (tr && !roll('tr' + Math.floor(t / 4), 0.25)) { const d = Math.sign((lineOf(tr)[0] + lineOf(tr)[1]) / 2 - kx) || 1, spot = safeX(trunkEnd(tr, d) + d * 12);
+  if (tr) { const d = Math.sign((lineOf(tr)[0] + lineOf(tr)[1]) / 2 - kx) || 1, spot = safeX(trunkEnd(tr, d) + d * 12);
     out.face = -d; if (Math.abs(P.x - spot) > 6) { out.gx = spot; out.why = 'behind the trunk'; return out; }
     if (dx < hitR && (e.mode === 'recover' || e.mode === 'walk')) { swing(kx); out.why = 'a cut over the trunk'; return out; }
     out.why = 'behind the trunk: wait for his charge'; return out; }
   /* 5. THE RULE: go to a pine and lay strokes in it (to one left), then wait behind it */
   const cand = S.pines.filter(p => p.st === 'stand');
   if (cand.length) {
-    const target = mem.pine !== undefined && cand.find(p => p.id === mem.pine) || cand.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; mem.pine = target.id;
+    const mine = p => Math.sign(p.x - p.dir * 12 - kx) === side, near = cand.filter(mine);   /* (claude/tuskerfix) a pine on MY side of him: never walk into him to reach one across the clearing */
+    const pool = near.length ? near : cand, kept = mem.pine !== undefined && pool.find(p => p.id === mem.pine);
+    const target = kept || pool.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; mem.pine = target.id;
     const spot = target.x - target.dir * 12;
     if (Math.abs(P.x - spot) > 6) { out.gx = spot; out.why = 'to the marked pine'; if (dx < hitR && e.mode === 'recover') swing(kx); return out; }
     out.face = target.dir; if (target.hp > 1) { out.atk = P.atk < 0; out.why = 'lay a stroke in the pine'; return out; }
     /* primed: wait behind it, facing him; a cut if he stands in reach and is slow */
     if (dx < hitR && e.mode === 'recover' && !underLine(target, kx, half - 6)) { swing(kx); out.why = 'a cut while he recovers'; return out; }
     mem.primeT = mem.primeT === undefined || mem.primeId !== target.id ? t : mem.primeT; mem.primeId = target.id;
-    if (t - mem.primeT > 3 && !trunks(S).length && !underLine(target, kx, half + 20) && dx > 90 && !roll('wall' + target.id + Math.floor(mem.primeT), 0.3)) { out.atk = P.atk < 0; mem.primeT = undefined; out.why = 'fell it as a wall in his path'; return out; }
+    if (t - mem.primeT > 1.5 && !trunks(S).length && !underLine(target, kx, half + 20) && dx > 70 && !roll('wall' + target.id + Math.floor(mem.primeT), 0.3)) { out.atk = P.atk < 0; mem.primeT = undefined; out.why = 'fell it as a wall in his path'; return out; }
     out.why = 'behind the primed pine: wait for him under it'; return out;
   }
   /* 6. NO PINES LEFT: come down on his back after he commits, cut him when he reels */
