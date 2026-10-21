@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-21",
+    "batch": 111,
+    "lines": [
+      "THE FEN ROAD: Bog Troll, goblin stilt-walkers",
+      "Blood Knight: The Red Host and Red Rhythm",
+      "A darker Blood Knight boss and new poses",
+      "Windcaller: every hero can send his bolt home",
+      "Windcaller: fairer thorns on the summit",
+      "Old Tusker stays dazed longer"
+    ]
+  },
+  {
+    "date": "2026-10-21",
     "batch": 110,
     "lines": [
       "A ferry cutscene carries you wood to marsh",
