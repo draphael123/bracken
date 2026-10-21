@@ -4141,7 +4141,7 @@ function galeMoor() {
 
   /* ==== THE SUMMIT (655-702), THE WINDCALLER 3 (claude/windcaller3, scratch/brief-windcaller3.md, Daniel 10-08): THE WIND IS THE FIGHT.
      A thorn strip across the summit floor (A10: a fall costs 27% and hands you back to the last safe footing) between three safe floors - the
-     west lip you walk in on (HOME, where his gale throws you), the FALL STONE in the middle (a running jump over the thorns from the lip), nothing east. Over it two WIDE high ledges he stands
+     west lip you walk in on (HOME, where his gale throws you), the FALL STONE in the middle (a running jump over the thorns from the lip) on under the east ledge, nothing east of that. Over it two WIDE high ledges he stands
      on, six rows up: no hero jumps that (51 px). Two UPDRAFTS, one on the lip and one on the fall stone, blow only while the summit's TOLD GUST
      blows (the flags lift and it whistles, the moor's own tell) - ride one up and the gust carries you off its top and DOWNWIND onto a ledge:
      the lip's updraft goes east to the west ledge; the fall stone's goes west to the west ledge or east to the east ledge, whichever way it blows.
@@ -4149,18 +4149,21 @@ function galeMoor() {
      You walk in off the landing, from the west (RULES I: an arena is entered from the left). ==== */
   o = 655; section('summit', 'THE SUMMIT', o, o + 47, null);
   block(o, o + 47, 13, 29);
-  spikes(o + 10, o + 11, 12); spikes(o + 28, o + 44, 12);   /* the thorns: a strip a jump clears between the lip (o+1..9) and the fall stone (o+12..27) - so neither floor is ever a dead end - and the field east of it to the wall */
+  spikes(o + 10, o + 11, 12); spikes(o + 35, o + 44, 12);   /* the thorns: a strip a jump clears between the lip (o+1..9) and the fall stone (o+12..34) - so neither floor is ever a dead end - and the field east of it to the wall */
+  /* (claude/moorpass) FAIR FOOTING UNDER HIS LEDGES: the fall stone runs on under the whole east ledge (o+12..34; the field began at o+28, under it). A hero his blast
+     throws off a ledge, or one the gust sets down short, lands on stone - the thorns are the strip you jump and the field past the ledge's end, both in plain sight */
   plat(o + 8, 7, 8); plat(o + 26, 7, 8);                   /* THE WEST LEDGE and THE EAST LEDGE: six rows over the floor, each with one end (the west both ends) over safe ground (a drop off that end is a way down) */
   const gale = { gale: true, wind: true, w: 12, h: 104, lift: 270 };   /* (gale: it blows with the summit's gust and only then - main.js callerGustNow) */
   ent('vent', o + 3, 12, gale); ent('vent', o + 21, 12, Object.assign({}, gale));
   gust(o + 1, o + 45, 0, 13, { period: 5, on: 2.2, dir: 1, shove: 240, air: true, arena: true, galeArena: true });   /* in the AIR only: on a ledge it never walks you off (his howl does that) */
   ent('flagpost', o + 7, 12); ent('flagpost', o + 24, 12); ent('flagpost', o + 14, 6); ent('flagpost', o + 32, 6);
   ent('windcaller', o + 11, 6);
-  ent('sign', o + 5, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. BLOCK HIS BOLT BACK UP CLOSE TO DROP HIM.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. STRIKE HIS BOLT BACK UP CLOSE TO DROP HIM.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. AEGIS HIS BOLT BACK UP CLOSE TO DROP HIM.' });
+  ent('sign', o + 5, 12, { text: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. BLOCK HIS BOLT BACK UP CLOSE TO DROP HIM.', pyro: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR BURN HIS BOLT: FIRE SENDS IT HOME.', paladin: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR AEGIS HIS BOLT: IT GOES HOME.',
+    ranger: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR SNATCH HIS BOLT: IT FLIES HOME.', reaper: 'THE UPDRAFTS BLOW ONLY IN THE GUST: RIDE ONE UP. OR LET THE WARD GO AS HIS BOLT LANDS.' });   /* (claude/moorpass) the heroes who send his bolt home from anywhere (main.js sendBoltHome) read their own way */
   ent('gate', o + 26, 12);   /* (batch82 integ: was o + 45, behind seventeen tiles of thorns the level ends before anyone could cross - boss dead is the win - so tools/relics.mjs's fill (and the way arrow) pointed at an exit nobody can walk to; it stands on the fall stone's far end now, on the floor the fight is fought on) */
   const roosts = [[o + 11, 6], [o + 29, 6]];   /* where he stands: the middle of each ledge (the east one falls in phase three) */
   const arena = { x0: (o + 1) * TS, x1: (o + 45) * TS, floor: 13 * TS, trigger: (o + 6) * TS, wallL: o, wallR: o + 46, boss: 'windcaller', music: 'windcaller', tint: '#bfe6f5', tintA: 0.06, fx: 'dust',
-    home: (o + 1) * TS + 8, safe: [[o + 1, o + 9], [o + 12, o + 27]], ledges: [[o + 8, o + 15, 7], [o + 26, o + 33, 7]], crumble: 1 };   /* (home: where his gale sets you down; safe: the floors you can stand on, in tiles; crumble: the ledge that falls in phase three) */
+    home: (o + 1) * TS + 8, safe: [[o + 1, o + 9], [o + 12, o + 34]], ledges: [[o + 8, o + 15, 7], [o + 26, o + 33, 7]], crumble: 1 };   /* (home: where his gale sets you down; safe: the floors you can stand on, in tiles; crumble: the ledge that falls in phase three) */
 
   for (const e of L.ents) if (e.t === 'vent' && e.wind && !e.crevice && !e.gale) { e.h = Math.round((e.h || 112) * 1.5); e.lift = 270; }   /* the moor's wind lifts you well clear of whatever it is meant to lift you onto (a crevice keeps its own throw; the summit's gale updrafts are measured to their ledges) */
   return {
