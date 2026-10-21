@@ -51,13 +51,13 @@ export function buildFenRoad({ painter, T, TS }) {
   deco('stump', 9, 17, { v: 1 }); coins([7, 16], [11, 16]);
   /* the first bowed boards, over cheap water with the bank either side: a fall here is a splash and a step back */
   water(15, 27); planks(15, 27); sag('a', 19, 4);
-  coins([19, 16], [20, 15], [21, 15], [22, 16]); reeds(25, 16, 2);
+  coins([19, 16], [20, 15], [21, 15], [22, 16]); reeds(25, 16, 2); ent('thorn', 26, 17, { face: -1 });   /* a spike goblin where the first boards land you */
   floor(28, 36, ROAD); ent('sprig', 33, 17, { face: -1 });
   /* THE PEAT CUTTING: the goblins dig the fen for the road's fill. A trench four rows down, a pit two deeper in its middle (a silver in the cutter's
      hut at its west wall - a pocket off the route), out by the steps at its east end */
   floor(37, 38, 20); floor(39, 52, 22); floor(51, 52, 20);
   for (let x = 41; x <= 48; x++) for (let y = 22; y <= 24; y++) set(x, y, T.AIR); set(47, 24, T.SOLID); set(48, 23, T.SOLID); set(48, 24, T.SOLID);   /* the pit, three rows deeper and six wide (no jump clears it), a cut step at its east wall to climb out by */
-  ent('sprig', 41, 21, { face: -1 }); ent('sprig', 49, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench; a spitter on its east lip lobbing in */
+  ent('sprig', 41, 21, { face: -1 }); ent('shield', 50, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench; a spitter on its east lip lobbing in */
   coins([44, 24], [45, 24], [46, 24]); deco('rock', 40, 21, { v: 1 });
   plat(39, 19, 3); ent('silver', 40, 18);   /* the cutter's shelf: up out of the trench's west end, a silver (off the route) */
   /* THE FIRST LASHING: the crew stands on the far side of a bowed section. Strike the lashing on its post as they cross: it goes under with them */
@@ -73,8 +73,8 @@ export function buildFenRoad({ painter, T, TS }) {
   coins([75, 16], [77, 16]);
   /* out over the water again: two bowed sections in a row under a bowman on the lookout walk (a fight while the rule runs, A5) */
   water(85, 98); planks(85, 98); sag('c', 88, 3); sag('d', 93, 3);
-  plat(86, 14, 4); ent('archer', 87, 13, { face: -1 }); plat(92, 13, 3); coins([92, 12], [93, 12]);
-  coins([89, 16], [94, 16]);
+  plat(86, 15, 4); ent('archer', 87, 14, { face: -1 }); plat(92, 13, 3); coins([92, 12], [93, 12]);
+  coins([89, 16], [94, 16]); ent('sprig', 96, 17, { face: -1 }); ent('sprig', 97, 17, { face: -1 });   /* a crew pair on the boards between the bowed sections, under the bow */
   floor(99, 110, ROAD);
   ent('check', 101, 17);
 
@@ -87,25 +87,25 @@ export function buildFenRoad({ painter, T, TS }) {
   /* a second lashing, under a bowman on a stilt deck over it */
   water(125, 150); planks(125, 150); sag('e', 136, 4); lash(133, 'e');
   ent('sprig', 143, 17, { face: -1 }); ent('sprig', 146, 17, { face: -1 });
-  plat(127, 14, 5); coins([128, 13], [130, 13]); plat(139, 13, 4); ent('archer', 140, 12, { face: -1 });
+  plat(127, 14, 5); coins([128, 13], [130, 13]); plat(139, 15, 4); ent('archer', 140, 14, { face: -1 });
   plat(146, 14, 3); coins([146, 13], [147, 13]);
   /* THE PLANK YARD: the crews' stacks on a peat island - climb them for a silver; a stilt-walker keeps the yard (no horn: a gaff fight on the flat) */
   floor(151, 172, ROAD);
   plat(153, 15, 4); plat(157, 12, 4); plat(161, 9, 3); ent('silver', 162, 8); coins([154, 14], [158, 11]);
   deco('timber', 155, 17, { v: 1 }); deco('gobPennant', 159, 17, { v: 0 });
   ent('stiltwalker', 167, 17, { face: -1 });
-  ent('wasp', 164, 12);
+  ent('wasp', 164, 12); ent('thorn', 171, 17, { face: -1 });   /* the yard's far edge, before the crew gap */
   /* CREW GAP TWO, its layer and a spitter on the far bank */
   water(173, 178); crewGap('g2', 173, 6, [174, 177]);
   floor(179, 186, ROAD); ent('sprig', 180, 17, { face: -1, layer: 'g2' }); ent('spit', 185, 17, { face: -1 }); coins([175, 15], [176, 15]);
   /* THE BARRICADE (the required use, A4): the crew have stacked their road-planks five high on a bowed section - no jump goes over it - and driven stakes
      into the bed under it (nobody swims round it). Strike the lashing and the section goes under, and the barricade with it. The crew behind it is the area's exam */
   const BARRICADE = []; for (const x of [192, 193]) for (let y = 13; y <= ROAD; y++) BARRICADE.push([x, y]);
-  water(187, 200); planks(187, 200); sag('f', 191, 4, { load: BARRICADE.filter(([, y]) => y < ROAD) }); lash(189, 'f');
+  water(187, 194); planks(187, 194); sag('f', 191, 4, { load: BARRICADE.filter(([, y]) => y < ROAD) }); lash(189, 'f'); block(195, 200, ROAD, BED - 1);   /* the crew's landing behind it: solid timber (the exam's elite stands on it, the bowed section and the fen at his back) */
   for (const [x, y] of BARRICADE) { set(x, y, T.PORT); if (y < ROAD) { machine.push([x, y]); sagCells.push([x, y]); } }   /* stacked road-planks (a barred cell: no blade breaks it - the hands draw it; the reach fill opens it as a door the level's rule opens, L.reachDoors); its foot, in the section's own row, goes under with the section and floats back as a board */
   for (const x of [192, 193]) for (let y = WATER; y < BED; y++) set(x, y, T.PALISADE);
   sign(187, 17, 'THEIR BARRICADE STANDS ON A BOWED SECTION. STRIKE ITS LASHING AND IT GOES UNDER.');
-  ent('shield', 197, 17, { face: -1 }); ent('sprig', 199, 17, { face: -1 }); plat(196, 14, 4); ent('archer', 198, 13, { face: -1 });
+  ent('shield', 197, 17, { face: -1 }); ent('sprig', 199, 17, { face: -1 }); plat(196, 15, 4); ent('archer', 198, 14, { face: -1 });
   floor(201, 214, ROAD); coins([202, 16], [204, 16]);
   ent('check', 206, 17);
 
@@ -113,15 +113,15 @@ export function buildFenRoad({ painter, T, TS }) {
   sign(211, 17, 'THE ROAD IS DOWN. STILT DECKS, PADS AND BOWED BOARDS: KEEP MOVING.');
   water(215, 300);
   /* every hop here is one any hero makes from a run: level gaps of three tiles at most, a rise of two rows at most */
-  sag('h1', 216, 2); plat(219, 17, 3); sag('h1b', 223, 2, { row: 17 }); sag('h2', 226, 2, { row: 17 });
-  plat(229, 16, 3); plat(232, 14, 3); plat(235, 12, 3); plat(238, 10, 3);
+  sag('h1', 216, 2, { hold: 1.4 }); plat(219, 17, 3); sag('h1b', 223, 2, { row: 17, hold: 1.4 }); sag('h2', 226, 2, { row: 17, hold: 1.4 });
+  block(229, 231, 16, BED - 1); block(232, 234, 14, BED - 1); block(235, 237, 12, BED - 1); block(238, 240, 10, BED - 1);   /* THE LOOKOUT CRIBS: four timber cribs stepping up out of the fen to the lookout walk (the art lane draws them as lashed log cribs) */
   /* the lookout walk: the high deck, and the horn lookout on its post. His horn calls a bowman and a spitter onto the decks round him */
-  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, pack: [{ dx: 104, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
+  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
   coins([244, 7], [246, 7], [250, 7]);
-  plat(253, 10, 3);
-  plat(257, 13, 3); sag('h3', 262, 2, { row: 16 }); plat(266, 16, 3); sag('h5', 271, 2, { row: 17 }); plat(274, 17, 2);
+  plat(252, 10, 3);
+  plat(255, 12, 3); plat(258, 14, 2); sag('h3', 261, 2, { row: 16, hold: 1.4 }); plat(266, 16, 3); sag('h5', 271, 2, { row: 17, hold: 1.4 }); plat(274, 17, 2);
   ent('wasp', 272, 14);
-  plat(277, 16, 3); ent('spit', 278, 15, { face: -1 }); sag('h4', 282, 3, { row: 16 }); plat(287, 15, 3); plat(291, 16, 3);
+  plat(277, 16, 3); ent('spit', 278, 15, { face: -1 }); sag('h4', 282, 3, { row: 16, hold: 1.4 }); plat(287, 15, 3); plat(291, 16, 3); ent('sprig', 292, 15, { face: -1 });   /* a crewman on the last deck: a fight on a board over the water */
   plat(296, 17, 3);
   coins([224, 15], [230, 15], [233, 13], [236, 11], [239, 9], [267, 15], [283, 15], [288, 14]);
   floor(301, 316, ROAD);
@@ -136,7 +136,7 @@ export function buildFenRoad({ painter, T, TS }) {
   ent('undertow', 337, ROAD, {}); ent('sprig', 338, 17, { face: -1, victim: true });
   plat(340, 14, 6); coins([341, 13], [343, 13], [345, 13]);
   ent('stiltwalker', 346, 17, { face: -1 });
-  crewGap('g3', 352, 6, [353, 356]); ent('sprig', 359, 17, { face: -1, layer: 'g3' }); plat(360, 13, 4); ent('archer', 361, 12, { face: -1 });
+  crewGap('g3', 352, 6, [353, 356]); ent('sprig', 359, 17, { face: -1, layer: 'g3' }); plat(360, 15, 4); ent('archer', 361, 14, { face: -1 });
   sag('j', 366, 4); lash(364, 'j');
   ent('stiltwalker', 374, 17, { face: -1, horn: true, pack: [{ dx: 56, y: ROAD * TS, t: 'shield' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });
   plat(368, 14, 5); coins([369, 13], [371, 13]);

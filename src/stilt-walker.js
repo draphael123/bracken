@@ -10,8 +10,8 @@
 //   HIS HORN (horn: true): seeing you he lowers the gaff and winds the horn - the Stockade's horn bar over him (main.js drawHornTell) - and if it
 //     sounds, his crew (pack) comes (main.js hornSounds). Strike him (a stagger breaks his breath) or topple him before it fills.
 export const STILT = {
-  hp: 28, w: 10, h: 30, hLow: 14, walk: 30, walkLow: 42, sight: 200, keep: 30, back: 22,
-  jabAt: 50, jabTell: 0.55, jab: 0.18, jabReach: 46, jabDmg: 12, jabTop: 16, jabBot: 9, recover: 0.6, cd: 1.3,
+  hp: 32, w: 10, h: 30, hLow: 14, walk: 30, walkLow: 42, sight: 200, keep: 30, back: 22,
+  jabAt: 50, jabTell: 0.55, jab: 0.18, jabReach: 46, jabDmg: 14, jabTop: 16, jabBot: 9, recover: 0.6, cd: 1.3,
   stabAt: 20, stabTell: 0.42, stab: 0.12, stabDmg: 8, stabCd: 1.1,
   horn: 2.0, hornSee: 172,
   topple: 0.45, down: 2.6, getup: 0.5,
