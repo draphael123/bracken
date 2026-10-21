@@ -174,7 +174,6 @@ export function makeFenRoadHands(ctx) {
     /* THE STOCKADE'S GATE at the crossing's east wall: stakes, a shut gate, a horn tower */
     { const gx = X(ARENA_GATE_X * TS); if (gx > -80 && gx < ctx.VW() + 80) { const yb = Y(18 * TS);
       for (let i = -3; i < 4; i++) { const hh = 70 + ((i * 13) & 7); rect(g, gx + i * 7, yb - hh, 6, hh, '#5a4630'); rect(g, gx + i * 7 + 1, yb - hh - 3, 4, 3, '#4a3826'); rect(g, gx + i * 7, yb - hh + 12, 6, 2, '#c9b27c'); }
-      rect(g, gx - 14, yb - 44, 28, 44, '#3e2c1c'); rect(g, gx - 12, yb - 42, 24, 2, '#6a4c30'); rect(g, gx - 1, yb - 44, 2, 44, '#2a1c10');
       rect(g, gx - 22, yb - 96, 12, 26, '#4a3826'); rect(g, gx - 24, yb - 99, 16, 3, '#3a2818'); rect(g, gx - 18, yb - 108, 1, 9, '#2a1c10'); rect(g, gx - 17, yb - 108, 6, 4, '#8f2f28'); } }
   };
   const standsOnFoe = (e, s) => { const TS = ctx.TS; return Math.floor((e.y + 1) / TS) === s.row && e.x + 3 > s.x0 * TS && e.x - 3 < (s.x0 + s.w) * TS; };
@@ -185,4 +184,4 @@ export function makeFenRoadHands(ctx) {
   H.drawArm = drawArm;
   return H;
 }
-const ARENA_GATE_X = 451;
+const ARENA_GATE_X = 451;   /* (the palisade round the Stockade's gate; the gate itself is the level's exit gate, src/exit-gates.js 'marsh') */

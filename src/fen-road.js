@@ -25,7 +25,7 @@ export const FEN_RULE = 'BOWED BOARDS SINK UNDER YOU. STRIKE A LASHING AND THEY 
 export const ROAD = 18, WATER = 19, BED = 23;   /* the boardwalk's row, the water's surface row, the bed's first row */
 /* THE ARENA: the troll's crossing at the Stockade's gate. Three ROTTEN sections (arena sags: a longer hold, so you can stand on one and lure him) and
    the two stretches he RIPS in his phase two (src/bog-troll.js): islands 407-418, 422-433, 437-450, every rotten section on one of them */
-export const ARENA = { x0: 407, x1: 450, gate: 405, wallR: 451, trigger: 411, boss: 428, rot: [[413, 4], [427, 4], [441, 4]], rip: [[419, 421], [434, 436]] };
+export const ARENA = { x0: 407, x1: 450, gate: 405, exit: 448, wallR: 451, trigger: 411, boss: 428, rot: [[413, 4], [427, 4], [441, 4]], rip: [[419, 421], [434, 436]] };
 
 export function buildFenRoad({ painter, T, TS }) {
   const W = 452, H = 28, L = painter(W, H);
@@ -147,14 +147,15 @@ export function buildFenRoad({ painter, T, TS }) {
   sign(402, 17, 'THE BOG TROLL FEELS YOUR WEIGHT ON THE BOARDS. LURE HIS BURST UNDER A ROTTEN SECTION.');
 
   // ================= 5. THE TROLL'S CROSSING (405-451): THE BOG TROLL (src/bog-troll.js) =================
-  ent('gate', ARENA.gate, 17);
+  ent('gate', ARENA.exit, 17);   /* THE STOCKADE'S GATE at the crossing's east end: it opens when the troll falls (gateAfterBoss) - you arrive at it */
   water(407, 450); planks(407, 450);
   ARENA.rot.forEach(([x0, w], i) => sag('rot' + i, x0, w, { arena: true }));
+  coins([407, 22], [408, 22], [409, 22], [410, 22]);   /* the troll's hoard on the bed under the crossing's first boards (the pocket pays) */
   block(ARENA.wallR, ARENA.wallR, 0, H - 1);
   ent('bogtroll', ARENA.boss, 17, { face: -1 });
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, gateAfterBoss: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
     waterHurts: true, noStack: true, sagCells, machineCells: [...sagCells, ...machine].map(([x, y]) => y * W + x),
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     music: 'sleepers', duskStart: undefined,
