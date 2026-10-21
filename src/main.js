@@ -238,6 +238,7 @@ import * as TC from './title-card.js';   /* THE PRESS ANY KEY CARD (claude/uiscr
 import * as FA from './flask-art.js';   /* (claude/flasks2art) the drink frames, the flask bottles and icons */
 import { LS } from './loading-screen.js';   /* THE LOADING SCREEN (claude/loadbar): a true progress bar and the hero's dance over every slow load */
 import { isCallout, calloutText } from './hint-lines.js';   /* THE HINT LINES THAT WERE NEVER SHOWN (claude/hintsweep) */
+import * as AIC from './ai-companion.js';   /* AI COMPANIONS (claude/aicompanions, brief-aicompanions.md 10-14): linked / default, the four behaviours, the catch-up, the lighter scaling - the pure half; allyTick below is the hands */
 import * as CS from './coop-save.js'; import * as PBOARD from './party-board.js';   /* CO-OP PROGRESSION step 1 (claude/coopprogress): a partner plays HIS OWN hero out of HIS OWN save slot and what he earns goes back to it (src/coop-save.js); THE PARTY BOARD, the tavern's seats: JOIN / INVITE / AI PARTNER (src/party-board.js) */
 import * as ONL from './online.js';   /* ONLINE CO-OP (claude/onlinecoop): the host's half - the guest's keys drive player two through the local co-op slot (hooks: ONL.init, the title row, pollGamepad) */
 import { fellCells, fellRamp, underTrunk, FELL_STROKES } from './felling.js'; import { fellSpan } from './felling.js'; import * as LTA from './redraw/lumber_trail_art.js'; import * as LTT from './redraw/lumber_trail_tiles.js'; import * as LTB from './redraw/lumber_trail_backdrop.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's drawn pieces, tile kit and landmark */   /* (claude/lumbertrail) THE FELLING: where a felled pine lies - a bridge, a lean-to, a drop (src/felling.js) */
@@ -337,6 +338,9 @@ let eraseAsk = -1, eraseYes = false;   /* ERASE SLOT n? YES / NO: the slot being
    lines are up HERE because the hero's level and the save both have to ask about it, and both are written above it. */
 let players = null, coopWant = null, passOn = null;   /* passOn: whose pass is running, or null between them */
 const coop = () => !!players && players.length > 1;
+/* THE CO-OP SCALE (claude/aicompanions): x2 for everything that fights and every blow on a hero with a HUMAN partner, as it always was; a party of one human and
+   AI partners is LIGHTER - 1 + AIC.AI_WEIGHT a seat, never past x2 (brief-aicompanions: 'enemy scaling counts an AI as a lighter partner') */
+const coopMul = () => (coop() ? AIC.coopMulOf(players) : 1);
 /* WHAT THE TOGGLE SHOWS. `coop()` is the level's own live truth; `coopWant` is the intent for the NEXT one - on the
    map, or in the pause menu before it has applied, the level has not caught up yet and coopWant is the honest answer.
    Turning it off clears both at once (see the pause menu and the map handlers), so the two are never out of step. */
@@ -1547,15 +1551,15 @@ function coopStart(h2, ally, more) {
    in PROG.tavern). coopWant.seats holds the same list for the NEXT wood, so a party formed in the tavern takes the road as it stands. */
 function seatAdd(s) {
   if (players.length >= PARTY.MAX_PLAYERS) return null;
-  if (s.ally && players.some(q => q.ai)) return null;   /* one computer partner */
+  /* (claude/aicompanions) AI PARTNERS up to the co-op cap: the old 'one computer partner' rule went (brief-aicompanions 10-14: a full AI party is possible) */
   const p = freshBody(), h = s.hero || 'knight';
   Object.assign(p, { hero: h, n: players.length + 1, keys: {}, press: {}, score: freshScore(), total: freshScore(), ai: !!s.ally, down: 0, reviveT: 0, cds: {}, padSt: { prev: {} },
-    src: s.ally ? { kind: 'ally' } : s.src ? { ...s.src } : { kind: 'pad', pad: null }, sword: s.sword || (s.prof && SWORDS.some(w => w.id === s.prof.sword) ? s.prof.sword : PROG.sword), leash: 0, prof: !s.ally && s.prof ? s.prof : null });   /* (claude/coopprogress) prof: he plays his own save (asPlayer) */
+    src: s.ally ? { kind: 'ally' } : s.src ? { ...s.src } : { kind: 'pad', pad: null }, sword: s.sword || (s.prof && SWORDS.some(w => w.id === s.prof.sword) ? s.prof.sword : PROG.sword), leash: 0, prof: s.prof && (!s.ally || (s.prof.dest && s.prof.dest.xpOnly)) ? s.prof : null, aiCfg: s.ally ? AIC.cleanCfg(s.aiCfg) : null, aiWalk: null, aiS: null });   /* (claude/aicompanions) a LINKED AI companion keeps its profile (its own save, xpOnly) */   /* (claude/coopprogress) prof: he plays his own save (asPlayer) */
   players.push(p);
   partyColours();
   seatBake(p);
-  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; });
-  if (s.ally) { allyWalk = null; allyLoad(); }   /* a fresh walker for a fresh wood, and the bot's two modules on their way */
+  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; if (s.ally) P.flasks = SV.flaskMax(PROG); });   /* (claude/aicompanions) an AI partner carries its own flasks (its save's max) */
+  if (s.ally) allyLoad();   /* the bot's modules on their way (each AI makes its own walker on its first frame) */
   return p;
 }
 /* NO TWO SEATS SHARE A COLOUR: walking the seats in order, a seat whose colour an earlier one wears steps to the next free one (the wardrobe's own step) */
@@ -1577,7 +1581,7 @@ function seatDrop(p) {
 }
 /* the party as it stands, for the next wood (coopWant.hero/ally stay seat two's: every older reader of coopWant reads those) */
 function partyToWant() {
-  const seats = players.slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, sword: p.sword, src: p.src && p.src.kind !== 'ally' ? { ...p.src } : undefined, prof: p.prof || undefined }));
+  const seats = players.slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, aiCfg: p.ai ? p.aiCfg : undefined, sword: p.sword, src: p.src && p.src.kind !== 'ally' ? { ...p.src } : undefined, prof: p.prof || undefined }));
   coopWant = seats.length ? { hero: seats[0].hero, ally: seats[0].ally, seats } : null;
 }
 const wantSeats = () => !coopWant ? [] : coopWant.seats && coopWant.seats.length ? coopWant.seats : [{ hero: coopWant.hero, ally: !!coopWant.ally }];
@@ -1589,7 +1593,7 @@ function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); }); }
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); if (P.ai) { P.flasks = Math.max(P.flasks | 0, SV.flaskMax(PROG)); P.aiS = null; } }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too */
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
@@ -1604,7 +1608,7 @@ function goDown(killer) {
   burst(P.x, P.y - 8, 14, ['#c9463d', '#8f2f28', '#c9d1dc'], 90, 0.7);
 }
 function downedPlayer(dt) {
-  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } coopFall = true; }   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
+  P.down -= dt; if (P.down <= 0) { if (L && L.tavern) { tavernStandUp(P); return; } if (P.ai && players.some(q => !q.ai && upright(q))) { allyStandUp(P); return; } coopFall = true; }   /* (claude/aicompanions) an AI's clock running out never sends the party to the shrine while a person stands: it gets up beside him */   /* (claude/tavern) NOTHING IN THE INN ENDS: the clock out stands you up */
   P.inv = Math.max(0, P.inv - dt); P.hurt = Math.max(0, P.hurt - dt);
   P.hpShown += (0 - P.hpShown) * Math.min(1, dt * 6);
   const want = (keys.left ? -1 : 0) + (keys.right ? 1 : 0);          /* THE CRAWL: a third of a walk, along the floor and nowhere else */
@@ -1638,6 +1642,12 @@ function coopWatch() {
   asPlayer(players[0], () => respawn());
 }
 /* (claude/tavern) ON YOUR FEET: a tavern down that runs out (or the whole room down) - up at full health with a breath of grace, nobody charged */
+/* (claude/aicompanions) AN AI LEFT LYING: up at a third, beside the one it follows, a death on its tally - never the whole party back to the shrine for a bot */
+function allyStandUp(p) { const one = AIC.leadOf(players, p), side = one.face > 0 ? -1 : 1;
+  burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30);
+  Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: Math.max(1, Math.round(p.maxHp / 3)), inv: 2, killer: null, x: one.x + side * PARTY.LEASH.side, y: one.y, vx: 0, vy: 0, onMover: null, atk: -1, plunge: false, dodge: 0, aiS: null }); p.hpShown = p.hp;
+  if (moveBodyClear(p)) p.x = one.x; if (p.score) p.score.deaths++; p.aiUps = (p.aiUps || 0) + 1;
+  burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30); callout(PARTY.tagOf(p) + ' GETS BACK UP'); }
 function tavernStandUp(p) { Object.assign(p, { down: 0, reviveT: 0, dead: 0, hp: p.maxHp, hpShown: p.maxHp, st: p.maxSt, inv: 1, killer: null }); callout('ON YOUR FEET'); SFX.mend(); }
 /* THE EXIT NEEDS BOTH OF THEM: one hero standing in the gate with the other forty tiles back is not a wood finished */
 const atGate = () => !coop() || players.every(p => upright(p) && gate && Math.abs(gate.x - p.x) < 22 && Math.abs(gate.y - p.y) < 36);
@@ -1672,11 +1682,11 @@ let leashFx = [];
 function coopLeash(dt) {
   leashFx = leashFx.filter(f => (f.t -= dt) > 0);
   if (!coop() || state !== 'play') { for (const p of players) p.leash = 0; return; }
-  const li = PARTY.leaderOf(players.map(p => ({ x: p.x, dead: p.dead, down: p.down })), gate ? gate.x : null), lead = players[li];
+  const li = PARTY.leaderOf(players.map(p => ({ x: p.x, dead: p.dead, down: p.down, ai: !!p.ai })), gate ? gate.x : null), lead = players[li];   /* (claude/aicompanions) an AI never leads a person */
   const cam = { x: camX, y: camY, w: VW, h: VH }, ld = { x: lead.x, y: lead.y, pushing: time - (lead.edgeT ?? -9) < 0.25 };
   for (const p of players) {
     if (p === lead) { p.leash = 0; p.leashWhy = ''; continue; }
-    const why = PARTY.leashWhy({ x: p.x, y: p.y, dead: p.dead, down: p.down, held: !!p.ptH, flying: !!p.ptF }, ld, cam, COOP_EDGE);
+    const body = { x: p.x, y: p.y, dead: p.dead, down: p.down, held: !!p.ptH, flying: !!p.ptF }, why = PARTY.leashWhy(body, ld, cam, COOP_EDGE) || (p.ai && !lead.ai ? AIC.catchWhy(body, lead, p.aiS) : '');   /* (claude/aicompanions) an AI is also pulled when far, stuck, waiting after a fall, or alone on a raft */
     const r = PARTY.leashStep(p.leash || 0, why, dt, lead.ground && !lead.swim && !lead.ptH && !lead.ptF);
     p.leash = r.m; p.leashWhy = why;
     if (r.pull) leashPull(p, lead);
@@ -1688,7 +1698,7 @@ function leashPull(p, lead) {
   asPlayer(p, () => { Object.assign(P, { x: lead.x + side * PARTY.LEASH.side, y: lead.y, vx: 0, vy: 0, inv: Math.max(P.inv || 0, PARTY.LEASH.inv), onMover: null, atk: -1, plunge: false, dodge: 0 }); if (BRD && BRD.clear) BRD.clear(P); });
   if (moveBodyClear(p)) { p.x = lead.x; }
   burst(p.x, p.y - 8, 12, ['#e8e0d0', '#c9c0b0', '#8a8f80'], 50, 0.5, -30);
-  callout(PARTY.tagOf(p) + ' PULLED ALONG'); SFX.puff ? SFX.puff() : SFX.ui();
+  callout(PARTY.tagOf(p) + (p.ai ? ' CATCHES UP' : ' PULLED ALONG')); SFX.puff ? SFX.puff() : SFX.ui(); if (p.ai) p.aiS = null;
   p.leash = 0; p.leashes = (p.leashes || 0) + 1; leashFx.push({ t: 0.5, x0: from.x, y0: from.y, x1: p.x, y1: p.y });
 }
 /* the spot beside the leader is inside a wall (a narrow ledge): stand him on the leader instead */
@@ -1758,7 +1768,8 @@ const COOP_WIN_D = 23, COOP_SAVE_Y = 113, COOP_SAVE_DY = 7;
 function coopSaveRows(long) {
   const id = LEVELS[levelIndex].id, cell = p => {
     if (p === players[0]) return { to: CS.savedTo(slot, long), xp: '+' + xpRun, silver: '+' + earned, clear: 'CLEARED', saved: true };
-    if (p.ai) return { to: 'ALLY', xp: '-', silver: '-', clear: '-', saved: false };
+    if (p.ai && !p.prof) return { to: AIC.savedCell(-1), xp: '-', silver: '-', clear: '-', saved: false };
+    if (p.ai) { const e = CS.earnedOf(p.prof.led), b = p.prof.woodBase || { xp: 0 }; return { to: AIC.savedCell(p.prof.dest.slot), xp: '+' + Math.max(0, e.xp - b.xp), silver: '-', clear: '-', saved: true }; }   /* (claude/aicompanions) a LINKED companion: its save took XP only */
     if (!p.prof) return { to: CS.savedTo(-1, long), xp: '-', silver: '-', clear: '-', saved: false };
     const e = CS.earnedOf(p.prof.led), b = p.prof.woodBase || { xp: 0, coins: 0 };
     return { to: CS.savedTo(p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot, long), xp: '+' + Math.max(0, e.xp - b.xp), silver: '+' + Math.max(0, e.coins - b.coins), clear: p.prof.led.clears.includes(id) ? 'CLEARED' : '-', saved: true };
@@ -1894,11 +1905,11 @@ function drawVictory4(px0, pw) {
    harness driving the game through a synchronous run of BK.sim() never unwinds the stack for it to resolve ON. That
    is not a hypothetical: the ally read as completely inert in its first test, and it was this. BK.allyReady() awaits
    it, so the labs and the tools can have the ally on its feet before the first frame they measure. */
-let LABMOD = null, PTMOD = null, allyWalk = null, allyLoading = null;
+let LABMOD = null, PTMOD = null, WDMOD = null, allyLoading = null;
 function allyLoad() {
-  if (LABMOD && PTMOD) return Promise.resolve(true);
-  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js')])
-    .then(([a, b]) => { LABMOD = a; PTMOD = b; return true; }).catch(() => { allyLoading = null; return false; });
+  if (LABMOD && PTMOD && WDMOD) return Promise.resolve(true);
+  if (!allyLoading) allyLoading = Promise.all([import('./lab.js'), import('./playtest.js'), import('./walk-duel.js')])
+    .then(([a, b, c]) => { LABMOD = a; PTMOD = b; WDMOD = c; return true; }).catch(() => { allyLoading = null; return false; });
   return allyLoading;
 }
 const apress = k => { if (k === 'grab') grabPress = true; if (k === 'atk') atkPress = true; else if (k === 'jump') jumpPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true; if(k==='skill2')skill2Press=true;if(k==='skill3')skill3Press=true;if(k==='skill4')skill4Press=true; };
@@ -1908,66 +1919,85 @@ function allySafeGoal(gx) {
   if (tileAt(tx, ty) === T.SPIKE || tileAt(tx, ty + 1) === T.SPIKE) return P.x;
   if (LABMOD && P.hero !== 'pyro' && LABMOD.fireAt(window.BK, gx, P.y)) return P.x;   /* nor in a fire on the ground (hers does not burn her) */
   if ((L.pools || []).some(q => q.harm && gx > q.x0 - 8 && gx < q.x1 + 8 && P.y > q.y - 12)) return P.x;
+  if (P.ai && P.onMover == null && movers.some(m => RAFTY(m) && !m.gone && gx > m.x - 6 && gx < m.x + (m.w || 16) + 6 && Math.abs(m.y - P.y) < 28 && !players.some(q => !q.ai && q.onMover === m))) return P.x;   /* (claude/aicompanions) nor onto a raft nobody is on: she would sail off with only the AI aboard */
   return gx;
 }
+/* (claude/aicompanions) A LINKED COMPANION EARNS XP ONLY (brief 10-14): silver stays with YOUR save. Its pass plays out of its own save's view (asPlayer), so a coin
+   it bends down for lands in that view's purse - here, between frames (no overlay up), it moves into player one's purse and the view's goes back to what it was. */
+function allyPurse(p) {
+  const pr = p.prof; if (!pr || !pr.dest || !pr.dest.xpOnly || profStack.length) return;
+  const v = pr.view; if (pr.purse0 === undefined) pr.purse0 = v.coins | 0;
+  const d = (v.coins | 0) - pr.purse0; if (!d) return;
+  if (d > 0) PROG.coins = (PROG.coins || 0) + d;
+  v.coins = pr.purse0;
+}
+/* A RAFT, A LIFEBOAT OR A FERRY: a mover that sails off with whoever stands on it - an AI never rides one without a person aboard (it would strand him) */
+const RAFTY = m => !!m && (m.kind === 'raft' || m.kind === 'lifeboat' || !!m.ferry);
+/* (claude/aicompanions) THE AI PARTNER'S HANDS - one frame, inside its own pass (every key it presses is its own). In order:
+     ONE    a downed partner is the whole list (AIC.reviveTarget: a human first; SUPPORT lifts player one before anyone): straight at him and stand on him
+     TWO    it fell into a hazard and he is still ahead: it WAITS for the catch-up puff (coopLeash, AIC.catchWhy 'wait') - never a second jump at the same gap
+     THREE  the flask, under its behaviour's share of health, never inside a foe's wind-up
+     FOUR   the foe: the nearest one inside its behaviour's ENGAGE reach and within STRAY of the one it follows (SUPPORT: only foes near him) - and his
+            fight and a boss standing open count for more. It is fought with THE LAB'S DUEL HANDS (src/lab.js labDuelFrame under the human gates, the elite
+            read of src/walk-duel.js on top): every hero's own kit, the duck under a high blow, the low guard, the shield up or the roll out of a red tell,
+            the warden's deflect on the beat - the same answers the elite lab measures (~80% vs elites). Never further than STRAY from him; a hurt
+            DEFENSIVE / SUPPORT partner only defends.
+     FIVE   otherwise it walks with him (the playtest walker: jumps, rides, swims, climbs), BACK px behind his shoulder, never in his way.
+   WHAT IT WILL NOT DO: take the last hit on a boss that is OPEN while he can reach it (that beat is his); stand on spikes, in fire or a harm pool; ride a raft
+   alone. Its stuck clock (AIC.stuckStep) and the fall flag feed the party's leash, which pulls it beside him in a told puff. */
 function allyTick() {
-  const p = P, one = players[0];
-  if (!LABMOD || !PTMOD) { allyLoad(); return; }
-  if (!allyWalk) allyWalk = PTMOD.makeBot(window.BK);
+  const p = P, cfg = p.aiCfg || AIC.cleanCfg(null), B = AIC.behOf(cfg);
+  if (!LABMOD || !PTMOD || !WDMOD) { allyLoad(); return; }
+  if (!p.aiWalk) { p.aiWalk = PTMOD.makeBot(window.BK); p.aiWalk.drink = false; }   /* its OWN walker (a walker remembers the ledge it is trying), and it drinks by its behaviour, below */
+  if (!p.aiRead) p.aiRead = WDMOD.makeEliteRead({});
   for (const k in keys) keys[k] = false;
-  if (p.down > 0 || p.dead) return;
+  const S = p.aiS || (p.aiS = { best: 1e9, stuckT: 0, wait: false, raft: false });
+  S.wait = false; S.raft = false;
+  if (p.down > 0 || p.dead) { S.stuckT = 0; return; }
   p.aiT = (p.aiT || 0) + 1;
-  const h = p.hero, reach = LABMOD.LAB_REACH[h] || 22;
-  /* ONE. HE COMES FIRST. A downed partner is the whole list; nothing else on it matters until he is up. */
-  if (one.down > 0) {
-    /* AND IT WALKS THERE ITSELF. The playtest walker is a fine traveller but it has a fight of its own in it, and a
-       bot that stops to trade blows with a goblin four tiles from the man bleeding out is no kind of ally - measured:
-       it never once closed the last seventy pixels. Straight at him, near enough to be standing ON him (the revive
-       wants 12 px, so this stops at 7), and a hop when a lip has it. */
-    const d = one.x - p.x;
+  const h = p.hero, one = AIC.leadOf(players, p), fdt = 1 / 60;
+  if (RAFTY(p.onMover) && !players.some(q => q !== p && !q.ai && q.onMover === p.onMover)) S.raft = true;
+  /* ONE. A DOWNED PARTNER. Straight at him, near enough to be standing ON him (the revive wants 12 px, so this stops at 7), and a hop when a lip has it -
+     the walker has a fight of its own in it, and measured it never closed the last seventy pixels (the old ally's finding) */
+  const down = AIC.reviveTarget(players, p, cfg);
+  if (down) { const d = down.x - p.x;
     if (Math.abs(d) > 7) { keys[d > 0 ? 'right' : 'left'] = true; if (p.ground && Math.abs(p.vx) < 6 && p.aiT % 18 === 0) apress('jump'); }
-    keys.block = false; return;
-  }
-  /* TWO. WHAT IS ON US - and WHAT HE IS FIGHTING, which counts for more than what is merely near us. */
+    Object.assign(S, AIC.stuckStep(S, 0, fdt, true)); return; }
+  const dLead = Math.abs(one.x - p.x) + Math.abs(one.y - p.y) * 0.5;
+  /* TWO. IT FELL: IT WAITS */
+  if (one !== p && time - (p.hazT ?? -99) < AIC.CATCH.wait && dLead > AIC.CATCH.near) { S.wait = true; keys.block = LABMOD.SHIELDED(h); return; }
+  /* THREE. THE FLASK */
+  if ((p.flasks | 0) > 0 && !(p.drinkT > 0) && p.hp < p.maxHp * B.flask && p.ground && !p.climb && !(p.hurt > 0) && !(p.dodge > 0) && p.atk < 0 && !p.carry
+    && !enemies.some(e => e.alive && windingUp(e) && Math.abs(e.x - p.x) < 80 && Math.abs(e.y - p.y) < 40)) tryDrink();
+  /* FOUR. THE FOE */
   let foe = null, best = 1e9;
   for (const e of enemies) {
     if (!e.alive || e.harmless || e.dying > 0 || e.t === 'folk' || e.t === 'fisher' || e.t === 'dummy') continue;
     if (Math.abs(e.y - p.y) > 40) continue;
-    const d = Math.abs(e.x - p.x); if (d > 150) continue;
-    /* HIS FIGHT counts for more than whatever is merely nearest us - and A BOSS STANDING OPEN outranks them both,
-       or the ally spends the one beat that matters swatting a goblin while the opening it owes him closes. */
+    const d = Math.abs(e.x - p.x); if (d > B.engage) continue;
+    if (one !== p && Math.abs(e.x - one.x) > B.stray + (e.maxHp ? 40 : 0)) continue;   /* a fight that would take it away from him is not its fight */
+    if (B.near && one !== p && Math.abs(e.x - one.x) > B.near && !(windingUp(e) && d < 70)) continue;   /* SUPPORT: the ones on him (and one swinging at it) */
     const s = d - (Math.abs(e.x - one.x) < 60 ? 70 : 0) - (e.maxHp && e.open > 0 ? 200 : 0);
     if (s < best) { best = s; foe = e; }
   }
-  const fdist = foe ? Math.abs(foe.x - p.x) : 1e9;
-  /* THREE. THE TELL, answered by this hero's own rule out of the lab's one list. */
-  if (foe && windingUp(foe) && !LABMOD.HELD(foe) && fdist < 90) {
-    p.face = Math.sign(foe.x - p.x) || p.face;
-    /* THE WARDEN TAPS C. Her deflect answers any blow the marks do not call red, so the ally sweeps at those and gives ground from the rest */
-    if (h === 'warden') { if (!LABMOD.HARD_TELLS.has(foe.t + '|' + foe.mode)) keys.block = LABMOD.ON_THE_BEAT(foe) && p.aiT % 8 < 2;
-      else if (p.aiT % 12 === 0) { keys[foe.x > p.x ? 'left' : 'right'] = true; apress('dodge'); }
-      return; }
-    if (LABMOD.SHIELDED(h) && !LABMOD.HARD_TELLS.has(foe.t + '|' + foe.mode)) { keys.block = true; return; }
-    if (p.aiT % 12 === 0) { keys[foe.x > p.x ? 'left' : 'right'] = true; apress('dodge'); }   /* no shield turns it: go from it */
+  /* THE LAST HIT ON AN OPENING IS HIS */
+  const holdOff = !!foe && one !== p && !!foe.maxHp && foe.open > 0 && Math.abs(one.x - foe.x) < 120 && foe.hp <= swordDmg() * 2;
+  Object.assign(S, AIC.stuckStep(S, dLead, fdt, !!foe && !S.raft && dLead <= B.stray + 20));   /* a fight pauses the stuck clock only near him: a foe behind a wall it cannot reach is no reason to stay stuck */
+  if (foe && !holdOff && !S.raft) {
+    p.aiF = (p.aiF || 0) + 1;
+    LABMOD.labDuelFrame(window.BK, h, foe, p.aiF, 'human', p.aiRead);
+    if (one !== p) { const away = one.x > p.x ? 'left' : 'right'; if (Math.abs(p.x - one.x) > B.stray && keys[away]) keys[away] = false; }   /* never further from him than its behaviour strays */
+    if (B.guard && p.hp < p.maxHp * B.guard) { keys.atk = false; atkPress = false; p.abuf = 0; if (LABMOD.SHIELDED(h) && windingUp(foe)) keys.block = true; }   /* hurt and careful: it only defends */
+    if ((keys.left || keys.right) && allySafeGoal(p.x + (keys.right ? 12 : -12)) === p.x) keys.left = keys.right = false;   /* never onto spikes, into fire or a harm pool for a fight */
     return;
   }
-  /* FOUR. THE LAST HIT ON AN OPENING IS HIS. A boss standing open with little left and player one in reach of it
-     is the beat the whole fight was built around, and a bot stealing it is the meanest thing an ally can do. */
-  const holdOff = !!foe && !!foe.maxHp && foe.open > 0 && Math.abs(one.x - foe.x) < 120 && foe.hp <= swordDmg() * 2;
-  /* FIVE. OTHERWISE: keep near him, a step behind his shoulder, so it is never in front of his swing. */
-  let goal = one.x + (one.face > 0 ? -22 : 22);
-  /* THE RIGHT TOOL, out of the lab's one hand (keyVerb/strike in lab.js): a heavy on plate and on a shield it cannot trip, a sweep on the
-     small ones and under a guard, a rising cut on wings, a dash into an archer - and where that verb wants it stood is where it goes */
-  const verb = foe && !holdOff ? LABMOD.keyVerb(window.BK, h, foe) : 'light';
-  if (foe && Math.abs(p.x - one.x) < 130) goal = foe.x - (Math.sign(foe.x - p.x) || 1) * Math.max(0, LABMOD.wantOf(h, foe, verb) - 2);
+  /* FIVE. WITH HIM: a step behind his shoulder, so it is never in front of his swing (off a lone raft: straight to him) */
+  let goal = one.x + (one.face > 0 ? -B.back : B.back);
   if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
-  allyWalk(allySafeGoal(goal));
-  if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; return; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
-  if (foe && fdist < reach + (foe.w || 12) / 2 + 50 && Math.abs(foe.y - p.y) < 40) {
-    if (!(p.dash > 0) && !(p.rush > 0)) p.face = Math.sign(foe.x - p.x) || p.face;
-    if (p.charge > 0) keys.left = keys.right = false;   /* planted while it winds */
-    LABMOD.strike(window.BK, h, foe, p.aiT);
-  } else if (p.atkHeld > 0) keys.atk = false;
+  if (S.raft) goal = one.x;
+  if (one === p) goal = p.x;   /* nobody standing to follow: hold */
+  p.aiWalk(allySafeGoal(goal));
+  if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
 /* ==================== end of the co-op block ==================== */
 let state = 'title', time = 0, levelTime = 0, deaths = 0, got = 0, total = 0, kills = 0, pogoCount = 0, parries = 0, blocks = 0, dodges = 0, hitsTaken = 0;
@@ -3034,7 +3064,7 @@ function spawnEnt(e) {
   if (e.flyman || e.prompter || e.patron) for (let i = n0; i < enemies.length; i++) Object.assign(enemies[i], e.flyman ? { flyman: true, w: 10, h: 22, speed: 20 } : e.prompter ? { prompter: true, w: 10, h: 22 } : { patron: true });   /* THE THEATRE'S RESKINS (claude/theatre3): THE FLYMAN (the archer's AI: flymanStep), THE PROMPTER (the goblin priest's), a masked patron who throws at anyone (the drunk's) */   /* THE AUDIENCE (the Maskwright's Theatre): a drunk in a box who sees only what is in the light */
   if (e.elite && enemies.length > n0) eliteMake(enemies[n0], e);   /* before the tier scales it, like a mini's health */
   for (let i = n0; i < enemies.length; i++) if (AMPHIB.has(enemies[i].t)) enemies[i].shore = shoreOf(enemies[i].x, enemies[i].y);   /* an amphibious thing is given the water it was put down by (see shoreLeash) */
-  const tr = tierOf(curId()), trB = bossTierOf(curId()), ahp = bpActOf(curId(), LEVEL_DEPTH[curId()]).hp || 1; /* (claude/curvec5) ACTS.hp: commons + elites only, never a boss or mini */ for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * trB : e2.t === "wickerman" ? 1 : (1 + 0.5 * tr) * ahp) * (coop() ? 2 : 1)); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; e2.hpTierK = isBoss ? 1 : e2.t === "wickerman" ? 1 : (1 + 0.5 * tr) * ahp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
+  const tr = tierOf(curId()), trB = bossTierOf(curId()), ahp = bpActOf(curId(), LEVEL_DEPTH[curId()]).hp || 1; /* (claude/curvec5) ACTS.hp: commons + elites only, never a boss or mini */ for (let i = n0; i < enemies.length; i++) { const e2 = enemies[i]; const isBoss = (L.arena && L.arena.boss === e2.t) || (L.mini && L.mini.boss === e2.t && (e2.mini || !L.ents.some(q => q.t === e2.t && q.mini)));   /* only THE mini, not every one of its kind in the level */ e2.xpRole = !isBoss ? '' : (L.arena && L.arena.boss === e2.t) ? 'boss' : 'mini'; e2.hp = Math.round(e2.hp * (isBoss ? diffNow().bhp : diffNow().ehp) * (isBoss ? 1 + 0.25 * trB : e2.t === "wickerman" ? 1 : (1 + 0.5 * tr) * ahp) * coopMul()); if (e2.maxHp) e2.maxHp = e2.hp; e2.hp0 = e2.hp; e2.hpTierK = isBoss ? 1 : e2.t === "wickerman" ? 1 : (1 + 0.5 * tr) * ahp; }   /* CO-OP DOUBLES EVERYTHING THAT FIGHTS. Two heroes, twice the health - and it is done HERE, on the one line every creature, mini and boss in the game already comes through, never per creature. (The other half is in damagePlayer0.) */
   if (e.cnSkin) for (let i = n0; i < enemies.length; i++) enemies[i].cnSkin = e.cnSkin;   /* (claude/goblinsweep) a placed foe's reskin: the Undercrown's navvy / bone-chucker / timberman / mine warden (drawn, dies and is named by it: reskinSet, beastName) */
   if (e.work && L.oreRoad) for (let i = n0; i < enemies.length; i++) oreWorkBind(enemies[i], e.work);   /* MINE LIFE: a goblin at work (docs/briefs/ore-road-mine-life.md) */
   if (e.cnSkin) for (let i = n0; i < enemies.length; i++) { enemies[i].cnSkin = e.cnSkin; if (e.cnSkin === 'shieldguard' || e.cnSkin === 'shieldsentry' || isDyn(e)) enemies[i].h = 18; if (e.cnSkin === 'banditmystic' || e.cnSkin === 'lampbearer' || e.cnSkin === 'priest' || e.cnSkin === 'archdeacon') enemies[i].h = 22; }   if ((e.wKey || e.cnSkin) && L.foeHp && L.foeHp[e.wKey || e.cnSkin]) for (let i = n0; i < enemies.length; i++) { enemies[i].hp = Math.round(enemies[i].hp * L.foeHp[e.wKey || e.cnSkin]); if (e.wKey) enemies[i].hp0 = enemies[i].hp; }   if (e.wKey) for (let i = n0; i < enemies.length; i++) enemies[i].wKey = e.wKey;   /* (claude/towpath fix) wKey: a placed ELITE's own weight row over its skin's (the towpath's champions) */   /* (claude/ksar fix pass) A LEVEL'S OWN WEIGHT: its men stand a blow or two longer (L.foeHp by skin - THE BANDIT KSAR) */   /* (claude/desertfoes) A RESKIN by a top-level ent flag: the fire and venom scorpions, the gorge's shield guard and dynamite bandit (men: a man's height) */
@@ -6692,11 +6722,11 @@ ONL.init({ grab: gid => { const p = gid ? onlineSeat(gid) : players[1]; return P
 const tavernIndex = () => LEVELS.findIndex(l => l.id === 'tavern');
 const freeStarter = () => { const list = coopPickList(), used = players.map(p => p.hero); return list.find(h => !used.includes(h)) || list[0] || 'knight'; };
 const tavDoorX = () => TAV_STATIONS[0].x * TS + 8 - TAV_WALK.from * TS + TS;
-function tavernJoin(src, h, prof) {
+function tavernJoin(src, h, prof, more) {
   if (!L || !L.tavern || state !== 'play') return null;
   if (players.length >= PARTY.MAX_PLAYERS) { hintSay('tip', 3, 'THE TAVERN IS FULL: FOUR TO A PARTY.'); return null; }
   if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
-  const p = seatAdd({ hero: h || freeStarter(), src, prof }); if (!p) return null;
+  const p = seatAdd({ hero: h || freeStarter(), src, prof, ...(more || {}) }); if (!p) return null;   /* (more: an AI partner's ally flag + behaviour) */
   const fy = (TAV_START.y + 1) * TS;
   Object.assign(p, { x: tavDoorX(), y: fy, vx: 0, vy: 0, face: 1, ground: true, walkIn: TAV_WALK.t, inv: 1 });
   if (TAVO) TAVO.door(); SFX.uiSel(); SFX.sting();
@@ -6770,6 +6800,27 @@ function partyAttach(p, slotI, h) {
   p.prof = r.prof; p.hero = hero; if (r.prof && SWORDS.some(w => w.id === r.prof.sword)) p.sword = r.prof.sword; seatBake(p); asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; }); partyToWant();
   return { ok: true, n: p.n };
 }
+/* (claude/aicompanions) THE BOARD'S AI PARTNER (brief-aicompanions 10-14): a LINKED companion plays a hero from one of this browser's OTHER saves - its level, talents,
+   skills and gear - and earns XP + levels into that save (xpOnly: its silver and clears stay with player one); the save is locked while it plays ('companion': one
+   character, one place - the save picker and every other seat refuse it, told). slotI -1 is a DEFAULT companion: any hero you have unlocked, at YOUR level, nothing
+   saved. beh: balanced / aggressive / defensive / support (src/ai-companion.js BEH). It walks in through the door like any joiner. */
+let compRoleN = 0;
+function partyAi(slotI, h, beh) {
+  if (!L || !L.tavern || state !== 'play') return { ok: false, why: 'SEAT AN AI PARTNER IN THE TAVERN' };
+  if (players.length >= PARTY.MAX_PLAYERS) return { ok: false, why: 'THE PARTY IS FULL: FOUR TO A PARTY' };
+  let prof = null;
+  if (slotI >= 0) {
+    if (slotI === slot) return { ok: false, why: 'SAVE ' + (slotI + 1) + ' IS YOUR OWN: PICK ANOTHER SAVE' };
+    const role = 'comp' + (++compRoleN), c = LOCKS.claim(slotI, 'companion', 'AI COMPANION', role);
+    if (!c.ok) return { ok: false, why: CS.lockLine(slotI, c.holder) };
+    const seat = CS.seatFromSlot(localStorage, slotI, h, CAMP_IDS);
+    if (!seat) { LOCKS.release(slotI, role); return { ok: false, why: 'SAVE ' + (slotI + 1) + ' CANNOT BE READ: OPEN CHOOSE A SAVE TO FIX IT' }; }
+    prof = profMake(seat, { kind: 'local', slot: slotI, role, xpOnly: true }); prof.purse0 = seat.view.coins | 0;   /* its purse as its save holds it: anything it picks up past this is player one's (allyPurse) */
+  }
+  const p = tavernJoin({ kind: 'ally' }, h, prof, { ally: true, aiCfg: { beh, linked: !!prof } });
+  if (!p) { if (prof) { profLive.delete(prof); LOCKS.release(slotI, prof.dest.role); } return { ok: false, why: 'NO ROOM FOR ANOTHER SEAT' }; }
+  return { ok: true, n: p.n };
+}
 /* THE PARTY BOARD (the tavern's board station; src/party-board.js draws it): the four seats and, on each empty one, JOIN / INVITE / AI PARTNER */
 const seatKind = p => p === players[0] ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local';
 function partyBoardOpen() {
@@ -6777,7 +6828,7 @@ function partyBoardOpen() {
     seats: () => { const out = []; for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = players[n - 1];
         if (!p) { out.push({ n, empty: true }); continue; }
         const own = p === players[0], k = seatKind(p), lv = own ? heroLevel(hero()) : p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : null;
-        out.push({ n, kind: k, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof }); }
+        out.push({ n, kind: k, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
       return out; },
     slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
       const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
@@ -6788,6 +6839,13 @@ function partyBoardOpen() {
     join: (slotI, h) => { const r = partyJoin(slotI, h); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
     attach: (n, slotI, h) => { const r = partyAttach(players[n - 1], slotI, h); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
     invite: () => ONL.open(),
+    /* (claude/aicompanions) the AI PARTNER picker: this browser's saves as LINKED companions (player one's own and held ones refused, told), the heroes for a DEFAULT one, the behaviours */
+    aiSlots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?'), own = i === slot;
+      const why = own ? 'YOUR OWN SAVE' : h ? (h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
+      return { i, line: AIC.linkedLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), own ? 'YOUR OWN SAVE' : h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }),
+    aiHeroes: () => coopPickList(), aiBeh: () => AIC.BEH_ORDER.map(b => ({ id: b, name: AIC.BEH_NAME[b], line: AIC.BEH_LINE[b] })), defaultLine: AIC.DEFAULT_LINE,
+    ai: (slotI, h, beh) => { const r = partyAi(slotI, h, beh); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
+    dismiss: n => { const p = players[n - 1]; if (!p || !p.ai) return { ok: false, why: 'NO AI PARTNER IN THAT SEAT' }; burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); seatDrop(p); SFX.ui(); return { ok: true }; },
     sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
   });
 }
@@ -6842,7 +6900,7 @@ function drawPartyMarks(cx, cy, phase = 'back') {
     if (tv.ring) TVA.ring(g, x, y, c.c, c.d, front, time, p.n);   /* (claude/tavernart) the floor ring in pixels: two halves, a shimmer, a dark rim for the pale sand (src/tavern-art.js) */
     if (!front) continue;
     if (!(p.down > 0) && state !== 'win' && state !== 'victory') TVA.tag(g, x, y - 34, c.c, c.d, text, PARTY.tagOf(p), p.ai);   /* (claude/tavernart) the name plate: a dark slate edged in his colour (the letters are still the game's own text) */
-    if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down })), gate ? gate.x : null), ld = players[li];
+    if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down, ai: !!q.ai })), gate ? gate.x : null), ld = players[li];
       g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
       if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);
       bar(Math.max(18, Math.min(VW - 30, x - 10)), Math.max(16, Math.min(VH - 22, y - 37)), 20, 2, p.leash, c.c); } }
@@ -7348,7 +7406,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1)));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopMul() * (perk('iron') ? 0.9 : 1)));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
   dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (PROG.items.mail2 ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
@@ -11024,7 +11082,7 @@ const hallSealed = e => hallHolds(L.arena, bossActive, e, boss);
    costs a spike's bite and not a life spent bouncing in a box of points (src/sexton.js bellPitThrow) */
 /* SPIKES AND WATER HAND YOU BACK (src/survival.js): to the last safe footing - never footing beside spikes (spikesBy), never a mover - and say what it cost, twice a save */
 const spikesBy = (x, y) => { const c0 = Math.floor((x - 14) / TS), c1 = Math.floor((x + 14) / TS), r0 = Math.floor((y - 24) / TS), r1 = Math.floor(y / TS) + 1; for (let r = r0; r <= r1; r++) for (let c = c0; c <= c1; c++) if (tileAt(c, r) === T.SPIKE) return true; return false; };
-function hazardSay() { if ((PROG.hazTold || 0) < 2) { PROG.hazTold = (PROG.hazTold || 0) + 1; hintSay('mechanic', 4.5, 'SPIKES AND DEEP WATER COST A QUARTER OF YOUR HEALTH, AND PUT YOU BACK ON SAFE GROUND.'); } }
+function hazardSay() { P.hazT = time;   /* (claude/aicompanions) when this hero last fell into a hazard: an AI waits for the catch-up instead of jumping again */ if ((PROG.hazTold || 0) < 2) { PROG.hazTold = (PROG.hazTold || 0) + 1; hintSay('mechanic', 4.5, 'SPIKES AND DEEP WATER COST A QUARTER OF YOUR HEALTH, AND PUT YOU BACK ON SAFE GROUND.'); } }
 /* (claude/ksar2) THE SUN'S DRAIN (src/sun-hands.js): health straight off the bar - no blow, so no flinch, no knock, no hurt pose, no mercy window and no swing
    cancelled. It kills (THE SUN) when it takes the last of it. The drain is a share of max health (src/sunstroke.js drainRate), as a hazard's is: past the difficulty and armour chain */
 function sunDrain(n) { if (P.dead || !(n > 0)) return; P.hp = Math.max(0, P.hp - n); if (P.hp <= 0) die({ name: 'THE SUN', red: false, rule: '' }); }
@@ -11032,7 +11090,7 @@ function sunDrain(n) { if (P.dead || !(n > 0)) return; P.hp = Math.max(0, P.hp -
    (~3 hp/s at Normal), but smooth - whole hp off the bar every third of a second - and with NONE of a blow's reactions. The tick is a soft gasp and a small '-n' a second. A flask's drink is not a blow, so
    the drain moves its spill-guard (P.drinkHp) with it. */
 const BREATH_DRAIN_HP = 3.1;
-const breathRate = () => BREATH_DRAIN_HP * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId())) * (coop() ? 2 : 1) * (perk('iron') ? 0.9 : 1);   /* hp a second, past the same chain every hazard's damage goes through */
+const breathRate = () => BREATH_DRAIN_HP * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId())) * coopMul() * (perk('iron') ? 0.9 : 1);   /* hp a second, past the same chain every hazard's damage goes through */
 function breathTake(n, src) {
   if (P.dead || !(n > 0)) return;
   P.hp = Math.max(0, P.hp - n); if (P.drinkT > 0) P.drinkHp = P.hp;
@@ -15274,7 +15332,7 @@ function archPortal(e) { const R = MG.A, A = L.arena, room = s => s > 0 ? A.x1 -
   R.portal = { x, y: archFloorAt(x), t: 0, dur: ARCH.portal };
   number(x, R.portal.y - 40, 'A PORTAL OPENS', MVIO[3]); SFX.zap(); ringAt(x, R.portal.y - 14, 18, MVIO[2], 0.5); }
 /* HIS APPRENTICE steps out: health off the same line every apprentice in the level came through (spawnEntities), never more */
-function archApprentice(x, y) { const hp = Math.round(EHP.apprentice * diffNow().ehp * (1 + 0.5 * tierOf(curId())) * (bpActOf(curId(), LEVEL_DEPTH[curId()]).hp || 1) * (coop() ? 2 : 1));
+function archApprentice(x, y) { const hp = Math.round(EHP.apprentice * diffNow().ehp * (1 + 0.5 * tierOf(curId())) * (bpActOf(curId(), LEVEL_DEPTH[curId()]).hp || 1) * coopMul());
   enemies.push({ x, y, vx: 0, vy: 0, face: Math.sign(P.x - x) || 1, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0, t: 'apprentice', w: 9, h: 27, hp, hp0: hp, apprentice: true, mode: 'walk', modeT: 0, castCd: ARCH.appFirst, archCalled: true, xpRole: '' });
   burst(x, y - 14, 16, [MVIO[2], MVIO[3], '#9be2ff'], 90, 0.5); ringAt(x, y - 14, 22, MVIO[3], 0.4); SFX.zap();
   mageHint('apprentice', 'AT EVERY WARD HE CALLS AN APPRENTICE THROUGH A PORTAL. IT THROWS AT WHOEVER STANDS STILL: KEEP MOVING, OR CUT IT DOWN.'); }
@@ -26061,7 +26119,7 @@ function wardFoe(fromX) { const f = nearFoe(fromX); if (f) return f;
 function wardStop(dmg, fromX) {
   const cap = wardCap();
   if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
-  const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * (coop() ? 2 : 1)));   /* a trial never hurts */
+  const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopMul()));   /* a trial never hurts */
   if (blood >= P.hp) return 'bled';
   if (!SET.invincible) P.hp -= blood; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood, '#c0283a');
   P.wardG = Math.min(cap, (P.wardG || 0) + (8 + dmg * 0.9) * (1 + 0.12 * prk('dward')));
@@ -27709,7 +27767,7 @@ BZK = makeBerserker({ get P() { return P; }, get enemies() { return enemies; }, 
   /* (claude/berserker2) TAKE IT: the shared tap beat, a block's stamina, the guard break, and what a blow is scaled by on its way to him (the chip is a tenth of it) */
   tap: () => RP_K.tap * DFM.df('parry'), blockCost: d => CM.blockCost(d, 0), canPay: c => P.st >= c, pay: c => { P.st -= c; P.stDelay = ST.delay; },
   guardBreak: () => { P.st = 0; P.stFlash = 0.5; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b'); },
-  takeScale: () => diffNow().take * (1 + 0.28 * hitTierOf(curId())) * (coop() ? 2 : 1),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => !!(L && L.trial),
+  takeScale: () => diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopMul(),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => !!(L && L.trial),
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 /* THE CROUCH TWISTS, PART C (src/crouch-c.js): the berserker WORKING UP - crouched and still, his rage fills and the growl draws them in */
 CRC = makeCrouchC({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; }, get PROG() { return PROG; },
@@ -28791,7 +28849,7 @@ function lightWardTakes(fromX, dmg, pierce, who) { const W = HG.ward, beat = tal
   trialEvent('aegis');
   if (beat) { const f = RP.parried(rpFoe(fromX, who)); if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 160;   /* (claude/riposte) THE LIGHT-WARD raised on the beat is every paladin's parry (MOVING FORTRESS: a longer beat) */
     noteVerb('parry'); P.parryT = 0.22; parries++; blocks++; trialEvent('parry'); convGain(HG.conv.parry / HG.conv.pip, true); holyFlash(f); SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6c8', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6c8'); parryBurst(); return 'blocked'; }   /* A PERFECT GUARD: +2 CONVICTION and a HOLY FLASH */
-  const lands = dmg * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * (coop() ? 2 : 1);
+  const lands = dmg * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopMul();
   if (P.st < CM.blockCost(dmg, tal('steady')) || lands >= W.big * P.maxHp) {   /* BROKEN: the knight's rules */
     P.st = 0; P.stFlash = 0.5; P.aegis = false; P.aegisT = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); ringAt(P.x, P.y - 10, 18, '#9a8a60', 0.3);
     P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'WARD BROKEN', '#ffd36b'); if (HFX) HFX.shatter(P.x, P.y - 12); P.wardBroken = (P.wardBroken || 0) + 1; return 'half'; }
@@ -30113,7 +30171,7 @@ function update(dt) {
   if (pausePress) { openMenu('play'); return; }
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
   /* THE ALLY PUTS ITS HANDS ON THE KEYS FIRST, inside its own pass, so what follows reads them like anybody else's */
-  for (const pp of players) if (pp.ai) asPlayer(pp, () => allyTick());
+  for (const pp of players) if (pp.ai) { allyPurse(pp); asPlayer(pp, () => allyTick()); }   /* (claude/aicompanions) a linked companion's pickups go to YOUR purse (allyPurse) */
   if (trnArrive && !trnArrive.done) trnArriveTick(dt);   /* (claude/transwm) stepping off the ferry: their hands are taken for ~1.7 s */
   /* THE NEXT CUT KEEPS ITS DIRECTION: releasing UP or DOWN during recovery must not turn the queued cut into a plain swing.
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
@@ -34663,7 +34721,11 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
     party: () => players.map(p => ({ n: p.n, hero: p.hero, src: p.src || null, ai: !!p.ai, sword: p.sword || null, colour: PARTY.colourOf(PROG.tavern, p.n).id, x: p.x, y: p.y, walkIn: p.walkIn || 0, down: p.down || 0 })),
     want: () => coopWant, seats: () => wantSeats(), joins: () => tavJoins, hint: () => ({ t: hintT, msg: hintMsg }), record: v => { if (v !== undefined) PROG.tavern = v === null ? undefined : v; return PROG.tavern; }, prog: () => PROG, save: () => { saveProgress(); return true; }, drawMarks: () => drawPartyMarks, toMap: () => tavernToMap(), padJoin: (gps, claimed) => tavernPadJoin(gps, claimed || new Set()), p1Pad: v => { if (v !== undefined) p1Pad = v; return p1Pad; } },
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
-  allyReady: () => allyLoad(),   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
+  allyReady: () => allyLoad(),
+  /* (claude/aicompanions) AI COMPANIONS, for tools/ai-companion.mjs: seat one from the board's own api, the party's scale, each AI seat's state, a party armed for the next wood */
+  aiComp: { AIC, join: (slotI, h, beh) => partyAi(slotI, h, beh), mul: () => coopMul(), board: () => PBOARD.debug(), openBoard: () => partyBoardOpen(),
+    seats: () => players.filter(p => p.ai).map(p => ({ n: p.n, hero: p.hero, beh: (p.aiCfg || {}).beh, linked: !!p.prof, slot: p.prof ? p.prof.dest.slot : -1, x: p.x, y: p.y, hp: p.hp, maxHp: p.maxHp, down: p.down || 0, dead: p.dead || 0, flasks: p.flasks | 0, pulls: p.leashes || 0, ups: p.aiUps || 0, why: p.leashWhy || '', leash: p.leash || 0, stuckT: p.aiS ? p.aiS.stuckT : 0, onMover: p.onMover ? (p.onMover.kind || 'mover') : null, kills: p.score ? p.score.kills : 0, dmg: p.score ? p.score.dmg : 0, revives: p.score ? p.score.revives : 0, deaths: p.score ? p.score.deaths : 0, lv: p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : heroLevel(p.hero), xp: p.prof ? (p.prof.view.xp || {})[p.hero] || 0 : null, coins: p.prof ? p.prof.view.coins | 0 : null })),
+    arm: (h, beh, n) => { const seats = []; for (let i = 0; i < (n || 1); i++) seats.push({ hero: Array.isArray(h) ? h[i] : h, ally: true, aiCfg: { beh: Array.isArray(beh) ? beh[i] : beh } }); coopWant = { hero: seats[0].hero, ally: true, seats }; return coopWant; } },   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
      stands or hangs. src/floatlab.js reads the pixels of these to find what is in the air. */
   shrines: () => shrines,   /* which checkpoints are lit: a harness that swims a level reads it */

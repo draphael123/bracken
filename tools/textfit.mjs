@@ -236,6 +236,9 @@ async function pageTextFit(input) {
     const worst = () => { const v = { kills: 999, dmg: 99999, coins: 9999, revives: 999, turns: 999, deaths: 999 }; for (const p of BK.players()) { p.score = { ...v }; p.total = { ...v }; } };
     for (const n of [4, 3, 2]) { if (n === 3) BK.coopEnd(), BK.coopStart('geomancer', false, [{ hero: 'reaper' }]); if (n === 2) BK.coopEnd(), BK.coopStart('geomancer', false, []);   /* (claude/coopclarity) the two-column card too: its SAVED TO cells are the long words */
       worst(); frame('win card x' + n, () => { BK.state = 'win'; worst(); for (let i = 0; i < 200; i++) BK.draw1(); window.__textRec.length = 0; }, { settle: 0 }); frame('end of the road x' + n, () => { BK.state = 'victory'; worst(); }, { settle: 5 }); }
+    /* (claude/aicompanions) AI PARTNERS in the party: the win card's AI cells and the seat plates in play, two and four seats */
+    for (const n of [2, 4]) { BK.coopEnd(); BK.coopStart('geomancer', true, n === 2 ? [{ hero: 'geomancer', ally: true, aiCfg: { beh: 'support' } }] : [{ hero: 'geomancer', ally: true, aiCfg: { beh: 'support' } }, { hero: 'berserker', ally: true }, { hero: 'reaper' }]);
+      worst(); frame('win card ai x' + n, () => { BK.state = 'win'; worst(); for (let i = 0; i < 200; i++) BK.draw1(); window.__textRec.length = 0; }, { settle: 0 }); frame('seat plates ai x' + n, () => { BK.state = 'play'; const ps = BK.players(); ps.forEach((p, i) => { if (i) { p.x = ps[0].x + i * 30; p.y = ps[0].y; p.vx = p.vy = 0; p.leash = 0; } }); }, { settle: 5 }); }   /* (the seats stood apart, as a party walks: stacked on one spot their name tags would overlap for any party) */
     BK.coopEnd(); BK.state = 'title'; await yieldNow(); }
   if (want('practice')) { const PR = window.BK.PROG; PR.heroes = PR.heroes || {};
     for (let i = 0; i < 8; i++) frame('practice #' + i, () => { BK.state = 'practice'; BK.ui.practiceI = i; }, { settle: 20 });
