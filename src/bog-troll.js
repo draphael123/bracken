@@ -19,7 +19,7 @@
 //                   plank islands over the biting water from then on; his hurl is two clods; he comes up in the open water too.
 //   NO ADDS (no summons in the brief).
 export const BT = {
-  hp: 760, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
+  hp: 720, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
   rest: [0.7, 0.55], hide: 0.4, wardMul: 0.4, p2: 0.5,
   sink: 0.45, swim: [0.9, 0.75], swimV: 180,
   burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 24, kick: -300, rise: 0.5 },
