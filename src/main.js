@@ -193,7 +193,9 @@ import * as SM from './redraw/storm.js';
 import { makeHurricane2Art } from './hurricane2-art.js';   /* (claude/hurricane2art) THE HURRICANE DECK 2's rigging, hull, houses, hatch covers and Captain's world art */   /* THE HURRICANE DECK: one ship in a storm - the open sea, the swells, the rain, the rags, the spray and the lightning */
 import * as CRT from './crown_tiles.js';
 import { bossZooms, miniZooms } from './boss-view.js';
-import * as AC from './act-cards.js';   /* (claude/actcards) ACT CARDS + THE BOSS-KILL BEAT */
+import * as AC from './act-cards.js';
+import * as TRM from './transitions.js';   /* (claude/transwm) THE LEVEL TRANSITIONS: the timeline and the table */
+import * as TRA from './transitions-art.js';   /* (claude/actcards) ACT CARDS + THE BOSS-KILL BEAT */
 import { hallHolds } from './tower-hall.js';   /* THE FALLING TOWER's hall at the top of the tower: nothing from the crown wanders into it (round 3) */   /* WHICH FIGHTS ARE FOUGHT ZOOMED OUT: one list for the wake and for desiredView() */
 import * as DPP from './deep_props.js';
 import { airBoxes } from './deepair.js';
@@ -2449,6 +2451,7 @@ const loadThen = (i, cont) => LS.drive(loadLevelG(i), cont, { heroes: [K, player
 function* loadLevelG(i) {
   BUG.evlog('load ' + ((LEVELS[i] || {}).id || i));
   if (typeof P !== 'undefined' && P) { P.flatT = 0; P.slideOn = false; }   /* a slide and its bounce do not follow you through a door */
+  if (TRN && !TRN.loading) TRN = null;   /* (claude/transwm) a level loaded some other way (the map, a restart, a tool) ends a transition that never finished */
   hintT = 0; HINTS.newLevel((LEVELS[i] || {}).id || i);   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
   setView('normal'); levelIndex = i; L = LEVELS[i].build(); mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
@@ -4431,6 +4434,7 @@ function updateRush(dt) {
 }
 let levelFoes = 0;
 function startGame() {
+  trnArrive = null;   /* (claude/transwm) a fresh start: no ferry left from the last arrival (trnArriveBegin sets it again after this) */
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.
      Nothing is ever armed in single player, so players stays one long and this line is the only thing that happened. */
@@ -6093,7 +6097,7 @@ let menuKind = 'pause';
 const SETTING_TIPS = {
   'Unlock everything': 'all open and free; save untouched', 'Unlock all levels': 'every level open on the map; heroes, gear and medals as earned', 'God mode': 'never hurt or tired. no medals',
   'Skills': 'abilities and loadout (Q)', 'Level card': 'what each level gave you', 'Store': 'buy and equip anything (V on the map)', 'Difficulty': 'how hard foes hit and last', 'Game speed': 'slow the whole game down, or speed it up (50-200%)', 'Jump assist': 'a longer coyote step off ledges',
-  'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills', 'Hints': 'help boxes and nudges: NONE / LOW / MEDIUM / HIGH',
+  'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills', 'Transitions': 'the cutscene between levels: ALWAYS / FIRST TIME / NEVER (any button skips)', 'Hints': 'help boxes and nudges: NONE / LOW / MEDIUM / HIGH',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been (TAB)', 'Way-on arrow': 'an arrow on the way: STUCK = after 10s',
   'Co-op': 'a friend on a pad, or the game', 'Co-op guide': 'how a second player joins', 'Report a bug': 'a code to paste to the developer',
@@ -6143,7 +6147,7 @@ function menuAdjust(dir) {
   else if (k === 'Text colour') { const i = Math.max(0, INKS.findIndex(f => f.id === SET.ink)); SET.ink = INKS[(i + dir + INKS.length) % INKS.length].id; applyLook(); }
   else if (k === 'UI colour') { const i = Math.max(0, UI_THEMES.findIndex(f => f.id === SET.uiTheme)); SET.uiTheme = UI_THEMES[(i + dir + UI_THEMES.length) % UI_THEMES.length].id; applyLook(); }
   else if (k === 'HUD') SET.hud = SET.hud === 'full' ? 'minimal' : 'full'; else if (k === 'Screen filter') SET.filter = FILTERS[(FILTERS.indexOf(SET.filter) + dir + FILTERS.length) % FILTERS.length]; else if (k === 'Foe health') SET.foeBars = !SET.foeBars; else if (k === 'Boss health') SET.bossHp = BOSSHP_MODES[(Math.max(0, BOSSHP_MODES.indexOf(SET.bossHp)) + dir + BOSSHP_MODES.length) % BOSSHP_MODES.length]; else if (k === 'Look down') SET.lookDown = !SET.lookDown; else if (k === 'Look ahead') { SET.lookAhead = SET.lookAhead === false; menuMsg = SET.lookAhead ? 'the camera leads where you run' : 'the camera stays on you'; menuMsgT = 3; } else if (k === 'Boss intro') SET.bossIntro = !SET.bossIntro; else if (k === 'Rumble') SET.rumble = !SET.rumble; else if (k === 'Tenths') SET.tenths = !SET.tenths;
-  else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Hints') { SET.hints = HINTS.nextLevel(SET.hints, dir); applyHints(); menuMsg = SET.hints === 'none' ? 'no hint boxes, nudges or glints' : SET.hints === 'low' ? 'only a new mechanic, once; the glint after 45 s' : SET.hints === 'medium' ? 'each hint once; the nudge after 20 s' : 'every hint, as always; the nudge after 10 s'; menuMsgT = 3; } else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
+  else if (k === 'Flashes') SET.flashes = !SET.flashes; else if (k === 'Vignette') SET.vignette = !SET.vignette; else if (k === 'Weather') SET.weather = !SET.weather; else if (k === 'Impact FX') SET.impact = !SET.impact; else if (k === 'Tips') SET.tips = !SET.tips; else if (k === 'Block') SET.blockToggle = !SET.blockToggle; else if (k === 'Transitions') { const o = ['always', 'first', 'never'], i = o.indexOf(TRM.modeOf(SET.transitions)); SET.transitions = o[(i + (dir < 0 ? 2 : 1)) % 3]; menuMsg = SET.transitions === 'never' ? 'no cutscenes between levels' : SET.transitions === 'always' ? 'the cutscene plays every time (any button skips)' : 'the cutscene plays the first time only'; menuMsgT = 3; } else if (k === 'Hints') { SET.hints = HINTS.nextLevel(SET.hints, dir); applyHints(); menuMsg = SET.hints === 'none' ? 'no hint boxes, nudges or glints' : SET.hints === 'low' ? 'only a new mechanic, once; the glint after 45 s' : SET.hints === 'medium' ? 'each hint once; the nudge after 20 s' : 'every hint, as always; the nudge after 10 s'; menuMsgT = 3; } else if (k === 'Text speed') SET.textFast = !SET.textFast; else if (k === 'Reduce motion') { SET.reduceMotion = !SET.reduceMotion; if (SET.reduceMotion) { SET.shake = false; SET.hitstop = false; SET.flashes = false; } menuMsg = SET.reduceMotion ? 'no shake, no stop, no flashes, no zoom' : 'motion back on'; menuMsgT = 3; }
   else if (k === 'Full screen') { try { if (window.bkFullscreen) window.bkFullscreen(); } catch (e) {} menuMsg = document.fullscreenElement ? 'windowed' : 'full screen'; menuMsgT = 2; }
   else if (k === 'Music') SET.music = !SET.music; else if (k === 'Camera') { SET.zoom = SET.zoom === 'wide' ? 'close' : 'wide'; } else if (k === 'Unlock everything') { SET.godmode = !SET.godmode; menuMsg = SET.godmode ? 'everything unlocked and free while this is on' : 'back to what you have earned'; menuMsgT = 2; if (!SET.godmode) { for (const tb of STORE_TABS) if (tb.key && tb.owned && PROG[tb.key] && !(PROG[tb.owned] || {})[PROG[tb.key]] && PROG[tb.key] !== 'none') PROG[tb.key] = tb.key === 'hero' ? 'knight' : (tb.items[0] || {}).id; applySkin(); applyUpgrades(); } }
   else if (k === 'Unlock all levels') { SET.allLevels = !SET.allLevels; menuMsg = SET.allLevels ? 'every level is open - for getting past a stuck spot' : 'levels open as you earn them again'; menuMsgT = 2; }   /* (Daniel 10-16) UNLOCK ALL LEVELS: a player-facing helper (not dev-only) so a bug never walls off the rest of the game; opens levels only - heroes, store and medals untouched, clears still saved */
@@ -27564,7 +27568,7 @@ function updateEnemies(dt) {
     /* THE SANCTUM DOES NOT END ON THE KILL. Every other boss in the game wins the level where it falls; here the hole
        the Archmage leaves opens into a door, and the level ends at the GATE on the sand beyond it. Rush mode keeps the
        old ending - it is a boss queue and there is no sand in it. */
-    if (bossWon <= 0) { if (rushOn()) rushBossDown(); else if (L.sanctum && !L.sandWalk) openSanctumDoor(L.sanctum, L.arena, boss.x, boss.y - 14); else if (L.gateAfterBoss) { L.gateOpen = true; if (gate) number(gate.x, gate.y - 40, 'THE ROAD GOES ON', '#8fd160'); } else winLevel(); } }   /* L.gateAfterBoss: THE SUNKEN CARAVAN ends at its gate across the hollow, walked to once the worm is dead */
+    if (bossWon <= 0) { if (rushOn()) rushBossDown(); else if (L.sanctum && !L.sandWalk) openSanctumDoor(L.sanctum, L.arena, boss.x, boss.y - 14); else if (L.gateAfterBoss) { L.gateOpen = true; if (gate) number(gate.x, gate.y - 40, 'THE ROAD GOES ON', '#8fd160'); } else { winLevel(); trnBegin(); } } }   /* (claude/transwm: the clear is credited first; a transition that plays then replaces the win card) */ /* L.gateAfterBoss: THE SUNKEN CARAVAN ends at its gate across the hollow, walked to once the worm is dead */
 }
 function reaperRites(e) {
   if (!isReaper() || !tal('dueRites') || !e || e.harmless) return;
@@ -29792,6 +29796,93 @@ function updateParticles(dt) {
    with Reduce motion. Off, the lead resets to 0 so it builds up again from nothing. */
 let camLead = 0, camFallT = 0;
 function lookaheadOn() { return !SET.reduceMotion && SET.lookAhead !== false && !coop() && !bossActive && !miniActive && !camLock && !chases.some(c => c.st.phase === 'run') && !(L && L.spiral) && !(MCH && MCH.on()) && !P.windRide && !P.galeRide && !P.fly && !P.dead; }
+/* (claude/transwm) THE LEVEL-TO-LEVEL TRANSITION (src/transitions.js is the timeline and the table, src/transitions-art.js the pictures). A boss falls -> the clear is CREDITED (winLevel, first) ->
+   the way opens -> the heroes walk out -> the ferry carries them (scene) -> fade -> the next level loads and begins with them stepping off. state stays 'win' while TRN is set (no card:
+   the win card is skipped on a transition that plays; the credit, the medal and the XP have already been paid), and the next level starts through loadThen like a map start. Skippable by any press. */
+let trnForce = null, TRN = null, trnArrive = null;   /* trnForce: null = the default (ON), true = on, false = off (the tools' switch, like ?trans=0) */
+const trnOff = () => q.get('trans') === '0' || trnForce === false;   /* (claude/transwmart) the art is in: transitions are ON BY DEFAULT; ?trans=0 is the off switch (the TRANSITIONS setting governs the rest) */
+function trnEnv() {
+  return { g, VW, VH, time, n: players.length, reduce: !!SET.reduceMotion,
+    drawHero: (i, x, y, face, key, frame) => { const set = (i > 0 && players[i] && players[i].set) || K; drawSet(set, key, frame, x, y, face, false); },
+    drawFerryman: (x, y, face, frame) => { if (SPR.ferryman) drawSet(SPR.ferryman, null, frame, x, y, face, false); } };
+}
+function trnBegin() {
+  if (TRN || !L || !LEVELS[levelIndex] || rushOn() || bossSelectFight || edTesting || L.trial || L.shop) return false;
+  const entry = TRM.entryFor(LEVELS[levelIndex].id); if (!entry) return false;
+  const to = LEVELS.findIndex(l => l.id === entry.to); if (to < 0) return false;
+  const key = entry.from + '>' + entry.to;
+  if (!TRM.policy({ off: trnOff(), mode: TRM.modeOf(SET.transitions), seen: !!(PROG.transSeen && PROG.transSeen[key]) })) return false;
+  PROG.transSeen = PROG.transSeen || {}; PROG.transSeen[key] = 1; saveProgress();
+  const target = LW * TS + 16;
+  TRN = { entry, to, tl: TRM.start(entry, { reduce: SET.reduceMotion }), opened: false, loading: false, target, scene: false,
+    pos: players.map(p => ({ x: p.x, y: p.y, hop: 0, v: 0, face: 1, arrived: false, speed: TRM.walkSpeed(Math.max(0, target - p.x)) })) };
+  BUG.evlog('transition ' + key); slowT = 0; stop = 0;
+  return true;
+}
+function trnOpenWay() {
+  const o = TRN.entry.open; if (!o) return;
+  for (let r = o.rows[0]; r <= o.rows[1]; r++) { const i = r * LW + o.col; if (L.grid[i] === T.SOLID) { L.grid[i] = T.AIR; tileSpr[i] = null; } burst(o.col * TS + 8, r * TS + 8, 5, ['#8a7a5a', '#c9b98a', '#5e4a30', '#3b5a2a'], 70, 0.7, 120, 2); }
+  SFX.crumble(); if (SFX.gateLift) SFX.gateLift(); shakeCam(6); rumble(120, 0.8);
+}
+/* the scene clock: seconds since the shore beat began (0 before it) */
+function trnSceneS(tl) { const sh = tl.beats.findIndex(b => b.id === 'shore'), ri = tl.beats.findIndex(b => b.id === 'ride'); if (tl.i < sh) return 0;
+  if (tl.i === sh) return tl.pt; if (tl.i === ri) return tl.beats[sh].dur + tl.pt; return tl.beats[sh].dur + tl.beats[ri].dur; }
+function trnUpdate(dt) {
+  const tr = TRN; if (tr.loading) return;
+  const tl = tr.tl, ph = TRM.phase(tl);
+  if (ph === 'open' && !tr.opened && tl.pt >= 0.25) { tr.opened = true; trnOpenWay(); }
+  let ready = true;
+  if (ph === 'walk') {
+    players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2 || q2.arrived) return; const w = TRM.walkStep(q2.x, tr.target, dt, q2.speed); q2.x = w.x; q2.v = w.v; q2.arrived = w.arrived; q2.hop = TRM.hopY(q2.x, tr.entry.open ? tr.entry.open.col : -9, TS); if (!w.arrived) ready = false; });
+    if (players[0] && tr.pos[0]) { P.x = tr.pos[0].x; P.vx = tr.pos[0].v * 0.6; P.face = 1; }
+  }
+  const entered = TRM.step(tl, dt, { press: anyPress, ready });
+  if (tl.skipped && !tr.skipNoted) { tr.skipNoted = true; BUG.evlog('transition skipped'); }
+  for (const e of entered) {
+    if (e === 'shore') { tr.scene = true; ambient.set('water'); if (SFX.step) SFX.step(); }
+    if (e === 'ride') { if (SFX.pole) SFX.pole(); if (SFX.creak) SFX.creak(); SFX.splash(); }
+    if (e === 'done') { trnFinish(); return; }
+  }
+  if (!tr.scene || TRM.phase(tl) === 'fade') { updateParticles(dt); updateCorpses(dt); updateWeather(dt); const cx0 = camX; updateCamera(dt);
+    if ((TRM.phase(tl) === 'open' || TRM.phase(tl) === 'walk') && tr.entry.open) { const gx = Math.max(0, Math.min(LW * TS - VW + 56, (tr.entry.open.col + 1) * TS - VW * 0.72)); camX = cx0 + (gx - cx0) * Math.min(1, dt * 9); } }   /* (claude/transwmart) while the way opens and the heroes walk out the camera holds the gate (the input is locked): they run in from the left and hop the fallen rails */
+  else if (TRM.phase(tl) === 'ride' && Math.floor(trnSceneS(tl) * 0.9) !== Math.floor((trnSceneS(tl) - dt) * 0.9) && SFX.pole) SFX.pole();
+}
+function trnFinish() {
+  const tr = TRN, entry = tr.entry; tr.loading = true;
+  loadThen(tr.to, () => { TRN = null; startGame(); trnArriveBegin(entry); });
+}
+/* THE ARRIVAL: the next level begins with the heroes standing on the ferry at its start; they step off (their hands are taken), the bars slide out, control returns */
+function trnArriveBegin(entry) {
+  if (!entry.arrive) return;
+  trnArrive = { entry, t: 0, dur: entry.arrive.walk, ferry: !!entry.arrive.ferry, done: false, floorY: (L.START.y + 1) * TS };
+  players.forEach((p, i) => { p.x = 12 + i * 12; p.y = trnArrive.floorY; p.vx = 0; p.vy = 0; p.face = 1; p.inv = 0; });
+  camX = 0; camY = P.y - 100; transT = 1; transKind = 'fade'; ambient.set('water');
+}
+function trnArriveTick(dt) {
+  const A = trnArrive; if (!A || A.done) return;
+  A.t += dt;
+  if (A.t >= A.dur || (anyPress && A.t > 0.35)) { A.done = true; return; }
+  players.forEach((p, i) => asPlayer(p, () => { for (const k of Object.keys(keys)) keys[k] = false; keys.right = P.x < 92 + i * 12; jumpPress = atkPress = dodgePress = upPress = downPress = leftPress = rightPress = throwPress = skill2Press = skill3Press = skill4Press = talkPress = flaskPress = grabPress = false; P.jbuf = 0; P.abuf = 0; P.dbuf = 0; }));
+}
+function trnDrawScene() {
+  const tr = TRN, tl = tr.tl, env = trnEnv(), s = trnSceneS(tl);
+  TRA.drawFerryScene(env, s);
+  if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); }
+}
+function trnDrawWorldOver(cx, cy) {
+  if (TRN && !TRN.loading && TRN.entry.open && !TRN.scene) TRA.drawWayGate(trnEnv(), TRN.entry.open, cx, cy, TRN.tl.t, TRN.opened, time, !!SET.reduceMotion);   /* (claude/transwmart) the clearing's gate: lashed pine, then it gives way */
+  if (TRN && !TRN.loading) { const tr = TRN, tl = tr.tl; players.forEach((p, i) => { const q2 = tr.pos[i]; if (!q2) return; const walking = q2.v > 5, set = (i > 0 && p.set) || K, air = q2.hop < -2 && set.R && set.R.jump;   /* the hop over the settled gate uses the hero's own jump frames */
+    drawSet(set, air ? 'jump' : walking ? 'run' : 'idle', air ? 0 : walking ? Math.floor(time * 13) : Math.floor(time * 4.5), Math.round(q2.x - cx), Math.round(q2.y - cy + q2.hop), q2.face, false); });
+    if (TRM.phase(tl) === 'fade') { const k = Math.min(1, tl.pt / tl.beats[tl.i].dur); g.fillStyle = 'rgba(5,4,10,' + (k * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
+  if (trnArrive && trnArrive.ferry) TRA.drawArrivalFerry(trnEnv(), cx, cy, trnArrive.floorY, time);
+}
+function trnDrawOverlay() {
+  if (TRN && !TRN.loading) { const tl = TRN.tl; TRA.drawBars(g, VW, VH, TRM.barIn(tl.t));
+    TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); });
+    if (TRM.canSkip(tl)) { g.globalAlpha = Math.min(0.75, (tl.t - TRM.MIN_SKIP) * 1.5); text(touchOn ? 'TAP: SKIP' : 'ANY BUTTON: SKIP', VW - 6, VH - 15, '#d9d2b8', 'right', 6); g.globalAlpha = 1; } }
+  else if (TRN) { g.fillStyle = '#05040a'; g.fillRect(0, 0, VW, VH); }
+  else if (trnArrive && !trnArrive.done && trnArrive.ferry) TRA.drawBars(g, VW, VH, TRM.barOut(trnArrive.t, trnArrive.dur));
+}
 /* (claude/actcards) THE BOSS-KILL BEAT. Every boss death sets bossWon; the first frame it is up this runs once (bossBeat stays set, cleared only by a level load). Stinger always; slow-mo + camera push unless reduce-motion or ?nobeat=1. */
 function startBossBeat() {
   const plan = AC.beatPlan({ reduceMotion: SET.reduceMotion, fast: q.get('nobeat') === '1' });
@@ -30012,6 +30103,7 @@ function update(dt) {
     if (pausePress) { if (menuKind === 'settings' && menuFrom === 'play') { menuKind = 'pause'; menuI = PAUSE_ITEMS.indexOf('Settings'); SFX.menuClose(); } else { state = menuFrom; SFX.menuClose(); } }
     return;
   }
+  if (state === 'win' && TRN) { trnUpdate(dt); return; }   /* (claude/transwm) */
   if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
@@ -30022,6 +30114,7 @@ function update(dt) {
   if (mapPress && !(L && L.shop)) { openMenu('play'); mapOpen('play'); return; }   /* TAB: straight to the map, and TAB or ESC back to the wood */
   /* THE ALLY PUTS ITS HANDS ON THE KEYS FIRST, inside its own pass, so what follows reads them like anybody else's */
   for (const pp of players) if (pp.ai) asPlayer(pp, () => allyTick());
+  if (trnArrive && !trnArrive.done) trnArriveTick(dt);   /* (claude/transwm) stepping off the ferry: their hands are taken for ~1.7 s */
   /* THE NEXT CUT KEEPS ITS DIRECTION: releasing UP or DOWN during recovery must not turn the queued cut into a plain swing.
      EACH HERO BUFFERS HIS OWN PRESSES AND HOLDS HIS OWN SWING. In single player asPlayer calls straight through, so
      this is the two lines it always was, in the order it always ran them. */
@@ -33507,7 +33600,7 @@ function drawMenu() {
     const yy = top0 + (i - base - off) * 12, sel = i === menuI; const dim = (k === 'Back to shrine' || k === 'Restart level') && menuFrom !== 'play'; const col = sel ? (dim ? '#c9c2b4' : UI.title) : (dim ? '#5a5f5a' : UI.dim);
     if (isHeader(k)) { const hw = k.length * 4 + 10; g.fillStyle = 'rgba(255,211,107,0.25)'; g.fillRect(x + 12, yy + 3, w / 2 - hw - 12, 1); g.fillRect(x + w / 2 + hw, yy + 3, w / 2 - hw - 12, 1); g.fillStyle = '#ffd36b'; for (const dx of [x + w / 2 - hw - 2, x + w / 2 + hw + 1]) { g.fillRect(Math.round(dx), yy + 2, 1, 3); g.fillRect(Math.round(dx) - 1, yy + 3, 3, 1); } text(k, x + w / 2, yy, '#ffd36b', 'center'); return; }
     const onoff = v => v ? 'ON' : 'OFF';
-    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? (SET.wayOn ? 'ALWAYS' : SET.wayStall !== false ? 'STUCK' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Gear tiers' ? onoff(SET.gear !== false) : k === 'Graphics' ? UIH.gfxOf(SET).toUpperCase() : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? (SET.hud === 'full' ? 'PLATE' : 'MINIMAL') : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Boss health' ? (BOSSHP_LABEL[SET.bossHp] || 'BAR') : k === 'Look down' ? onoff(SET.lookDown) : k === 'Look ahead' ? onoff(SET.lookAhead !== false) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Hints' ? HINTS.LABEL[SET.hints] || 'HIGH' : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Unlock everything' ? onoff(SET.godmode) : k === 'Unlock all levels' ? onoff(SET.allLevels) : k === 'God mode' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? Math.round((SET.speed || 1) * 100) + '%' : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
+    const tv = TCH.rowValue(k), v = tv != null ? tv : k === 'Slot 3 key' ? SET.skill3Key.toUpperCase() : k === 'Slot 4 key' ? SET.skill4Key.toUpperCase() : k === 'Sound test' || k === 'Settings' || k === 'Back' || k === 'Return to map' || k === 'Controls' ? '' : k === 'Full screen' ? (typeof document !== 'undefined' && document.fullscreenElement ? 'ON' : 'OFF') : k === 'Way-on arrow' ? (SET.wayOn ? 'ALWAYS' : SET.wayStall !== false ? 'STUCK' : 'OFF') : k === 'Ground light' ? onoff(SET.groundLight !== false) : k === 'The air' ? onoff(SET.air !== false) : k === 'Font' ? fontNow().name : k === 'Text colour' ? (INKS.find(i => i.id === SET.ink) || INKS[0]).name : k === 'UI colour' ? themeNow().name : k === 'Brightness' ? Math.round(SET.bright * 100) + '%' : k === 'Gear tiers' ? onoff(SET.gear !== false) : k === 'Graphics' ? UIH.gfxOf(SET).toUpperCase() : k === 'Parallax' ? SET.parallax.toUpperCase() : k === 'Arena tint' ? SET.tint.toUpperCase() : k === 'Particles' ? SET.parts.toUpperCase() : k === 'Foe outline' ? onoff(SET.rim) : k === 'Film grain' ? onoff(SET.grain) : k === 'HUD' ? (SET.hud === 'full' ? 'PLATE' : 'MINIMAL') : k === 'Screen filter' ? SET.filter.toUpperCase() : k === 'Foe health' ? onoff(SET.foeBars) : k === 'Boss health' ? (BOSSHP_LABEL[SET.bossHp] || 'BAR') : k === 'Look down' ? onoff(SET.lookDown) : k === 'Look ahead' ? onoff(SET.lookAhead !== false) : k === 'Boss intro' ? onoff(SET.bossIntro) : k === 'Rumble' ? onoff(SET.rumble) : k === 'Tenths' ? onoff(SET.tenths) : k === 'Flashes' ? onoff(SET.flashes) : k === 'Vignette' ? onoff(SET.vignette) : k === 'Weather' ? onoff(SET.weather) : k === 'Impact FX' ? onoff(SET.impact) : k === 'Tips' ? onoff(SET.tips) : k === 'Block' ? (SET.blockToggle ? 'TOGGLE' : 'HOLD') : k === 'Hints' ? HINTS.LABEL[SET.hints] || 'HIGH' : k === 'Text speed' ? (SET.textFast ? 'FAST' : 'NORMAL') : k === 'Transitions' ? TRM.MODE_LABEL[TRM.modeOf(SET.transitions)] : k === 'Reduce motion' ? onoff(SET.reduceMotion) : k === 'Music' ? onoff(SET.music) : k === 'Iron Knight' ? onoff(SET.iron) : k === 'Unlock everything' ? onoff(SET.godmode) : k === 'Unlock all levels' ? onoff(SET.allLevels) : k === 'God mode' ? onoff(SET.invincible) : k === 'Camera' ? (SET.zoom === 'wide' ? 'WIDE' : 'CLOSE') : k === 'Effects vol' ? Math.round(SET.sfx * 100) + '%' : k === 'Music volume' ? Math.round(SET.musicVol * 100) + '%' : k === 'Screen shake' ? (SET.shakeMode === 'off' ? 'OFF' : SET.shakeMode === 'full' ? 'FULL' : 'ON HIT') : k === 'Shake strength' ? (SET.shakeAmt < 1 ? 'LOW' : 'FULL') : k === 'Sound FX' ? (SET.sfxFiles ? 'FILES' : 'SYNTH') : k === 'Character voices' ? onoff(SET.voices !== false) : k === 'Hit stop' ? onoff(SET.hitstop) : k === 'Hit numbers' ? onoff(SET.numbers) : k === 'Timer' ? onoff(SET.timer) : k === 'Ambient life' ? onoff(SET.ambient) : k === 'Difficulty' ? (menuFrom === 'play' && L && !L.shop ? DIFF[diffOf(curId())].label : DIFF[SET.difficulty].label) : k === 'Swap Z / X' ? (SET.swapZX ? 'X jump' : 'Z jump') : k === 'Scanlines' ? onoff(SET.scanlines) : k === 'Pixel scale' ? String(SET.scale).toUpperCase() : k === 'Game speed' ? Math.round((SET.speed || 1) * 100) + '%' : k === 'Jump assist' ? onoff(SET.assist) : k === 'Ambience vol' ? Math.round(SET.ambVol * 100) + '%' : k === 'UI volume' ? Math.round(SET.uiVol * 100) + '%' : k === 'Big text' ? onoff(SET.bigText) : k === 'FPS counter' ? onoff(SET.fps) : k === 'Hitboxes' ? String(SET.boxes).toUpperCase() : k === 'Colour tells' ? onoff(SET.colorSafe) : k === 'Hero' ? '' : k === 'Co-op' ? onoff(coopShown()) : '';
     const vs = v ? (sel ? '< ' + v + ' >' : String(v)) : '';
     const vw = vs ? textW(vs, 8) + 8 : 0;
     if (!isHeader(k) && k !== '@TABS') TCH.hit(x + 5, yy - 2, w - 10, 11, gx => { menuI = i; menuBarY = null; if (!vs) confirmPress = true; else if (gx >= x + w - 10 - vw && gx < x + w - 10 - vw / 2) leftPress = true; else rightPress = true; });   /* a tap on a row: a plain row goes in, a row with a value turns it (the left half of the value turns it back) */
@@ -34007,13 +34100,15 @@ function render() {
   else if (state === 'title' || state === 'slots' || state === 'bossjump') drawTitle(cx, cy);
   else if (state === 'map') { drawMap(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else if (state === 'editor') drawEditor();
+  else if (state === 'win' && TRN && TRN.scene && !TRN.loading && (TRM.phase(TRN.tl) === 'shore' || TRM.phase(TRN.tl) === 'ride' || (TRM.phase(TRN.tl) === 'fade' && !TRN.tl.skipped))) trnDrawScene();   /* (claude/transwm) scene 'ferry' */
   else if (state === 'store') { drawStore(); for (const p of parts) { g.globalAlpha = Math.min(1, p.life / p.max * 2); g.fillStyle = p.col; g.fillRect(Math.round(p.x - camX), Math.round(p.y - camY), p.size, p.size); } g.globalAlpha = 1; }
   else {
     const z = (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt = seaTilt();
     if (tilt) { g.save(); g.fillStyle = '#1a2230'; g.fillRect(0, 0, VW, VH); g.translate(VW / 2, VH * 0.55); g.rotate(tilt); const ts = 1 + Math.abs(tilt) * 1.4; g.scale(ts, ts); g.translate(-VW / 2, -VH * 0.55); }   /* SHE ROLLS: the horizon goes over with her */
     if (z > 1) { g.save(); g.translate(VW / 2, VH * 0.55); g.scale(z, z); g.translate(-VW / 2, -VH * 0.55); }
-    drawWorld(cx, cy, !heroHidden);   /* (the readability pass draws the frame once without him, to know which pixels are him) */
-    if (!heroHidden) drawPartyMarks(cx, cy, 'front');   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
+    drawWorld(cx, cy, !heroHidden && !TRN);   /* (the readability pass draws the frame once without him, to know which pixels are him) */
+    if (TRN || trnArrive) trnDrawWorldOver(cx, cy);   /* (claude/transwm) the heroes' walk-out, the arrival ferry */
+    if (!heroHidden && !TRN) drawPartyMarks(cx, cy, 'front');   /* (claude/tavern) the rings' near halves and the tags: over the near layer and the night's wash, so they always read */
     if (z > 1) g.restore();
     if (tilt) g.restore();
     drawSeaHud();
@@ -34039,7 +34134,7 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
-  if (state === 'play' || (state === 'talk' && !talkOverHud) || state === 'win' || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
+  if (state === 'play' || (state === 'talk' && !talkOverHud) || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
@@ -34373,7 +34468,7 @@ function render() {
   }
   // THE WORLD GOES DOWN BEHIND THEM. Both of these were panels laid straight over a bright, busy level, so
   // the trees and the goblins read through the text and the end of a run looked like a debug overlay.
-  if (state === 'win' || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = state === 'win' ? 'rgba(8,6,14,0.88)' : 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }   /* (the level-complete card sits on a darker scrim: the HUD's fragments no longer poke out around it) */
+  if ((state === 'win' && !TRN) || state === 'gameover') { g.globalAlpha = 1; g.fillStyle = state === 'win' ? 'rgba(8,6,14,0.88)' : 'rgba(8,6,14,0.66)'; g.fillRect(0, 0, VW, VH); }   /* (the level-complete card sits on a darker scrim: the HUD's fragments no longer poke out around it) */
   if (state === 'gameover') {
     board(40, 40, VW - 80, 100, '#ff6b6b', undefined, false, 'iron');
     text('THE KNIGHT FALLS', VW / 2, 52, '#ff6b6b', 'center', 12);
@@ -34383,7 +34478,7 @@ function render() {
     text('the gold stays', VW / 2, 106, UI.dim, 'center');
     if (Math.floor(time * 2) % 2 === 0) text('Z  back to the map', VW / 2, 124, '#8fd160', 'center');
   }
-  if (state === 'win') {
+  if (state === 'win' && !TRN) {
     // THE MOMENT A LEVEL ENDS. It was a table of numbers that appeared all at once, which is a receipt, not a
     // finish. The tally comes in a line at a time and the figures count themselves up; the medal is STAMPED
     // on at the end of it, with the weight that implies. Z still skips straight out at any point.
@@ -34445,6 +34540,7 @@ function render() {
   } else soundNoteT = 0;
   if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
+  trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SLOT. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
@@ -34496,6 +34592,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
   xpSim: () => xpSim(), gainXp: n => gainXp(n), cardOpen: (back, review) => openCard(back || 'map', review), cardTake: i => cardTake(i), cardClose: () => closeCard(), cardRespec: () => cardRespec(), cardNow: () => cardNow(), cardOwed: h => cardOwed(h || hero()), get cardUi() { return cardUi; }, grow: (h, lv) => grow(h || hero(), lv === undefined ? heroLevel(h) : lv), heroXp: h => heroXp(h), xpStart: () => xpStart(), xpWin: () => winLevel(), mage: v2 => mageAdvice(v2), archCfg: () => ARCH, mg: () => MG, straw: () => strawAdvice(), fld: () => FLD, krak: v2 => krakenAdvice(!!v2), krakCargo: v => (KRK_CARGO = v !== false), krakInk: () => krakenInkSpans(boss),   /* tools/kraken-rework.mjs: the stretches the ink holds this frame */ krakRing: i => { const pr = props.filter(q => q.t === 'knell').sort((a, b) => a.x - b.x)[i]; if (pr) causeBell(pr); return pr ? pr.x : null; },   /* tools/kraken-rework.mjs: strike knell bell i (0 the tower's, 1 the shrine's) as a blade would */   /* the lab's two routes: with the cargo worked, and with it walked past */ get tide() { return CT; }, get krs() { return KRS; }, noteVerb: v => noteVerb(v), varietyMul: () => varietyMul(),   /* the variety meter, for the labs */
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
+  trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
   step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
