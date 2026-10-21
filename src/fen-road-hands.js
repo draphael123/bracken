@@ -126,6 +126,8 @@ export function makeFenRoadHands(ctx) {
     for (let d = 1; d < 30; d++) for (const s of [-1, 1]) { const x = tx + s * d; if (!S.ripped.has(x) && !S.cells.has(18 * L().W + x) && (ctx.tileAt(x, 18) === ctx.T.PLANK || ctx.solidAt(x, 18))) { pp.safe = { x: x * TS + 8, y: 18 * TS, L: L() }; return; } } };
   H.read = () => S && { sags: [...S.sags.values()].map(s => ({ id: s.id, st: s.st, t: +s.t.toFixed(2), arena: s.arena, loadGone: s.loadGone })), lashes: S.lashes.map(l => ({ x: l.x, sag: l.sag, cut: l.cut })), gaps: S.gaps.map(g => ({ id: g.id, laid: g.laid, done: g.done, layer: !!g.layer })), tows: S.tows.map(u => u.st), ripped: [...S.ripped], n: { ...S.n } };
   H.sag = id => S && S.sags.get(id);
+  /* THE GUIDE's props (src/stuck-spots.js reads `on`): a lashing is done once its section has dropped what it carried (or, with no load, once it is cut) */
+  H.props = () => { if (!S) return []; const TS = ctx.TS; return S.lashes.map(l => { const s = S.sags.get(l.sag); return { t: 'lashing', x: l.x * TS + 8, y: l.row * TS, on: !!(s && (s.load.length ? s.loadGone : l.cut)) }; }); };
 
   /* ---------- DRAWING (greybox: the art lane draws it) ---------- */
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
