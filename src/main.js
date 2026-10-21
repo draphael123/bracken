@@ -10511,6 +10511,9 @@ else if (P.stepHeld > 0 && !P.swim) { P.stepHeld = Math.max(0, P.stepHeld - dt);
   if (swimP && !P.swim && !swimP.swim) { burst(P.x, swimP.y, 22, ['#e6efe6', '#9fb3a6', '#2a3a38', '#04080b'], 100, 0.7, 520, 2); SFX.splash(); }   /* (lethal water: grey-green spray and a splash - and then it only drains) */
   if (swimP && !P.swim) { if (P.vy > 90) { burst(P.x, swimP.y, 12, ['#e8f4f0', '#7cc8c8'], 80, 0.5, 400, 1); SFX.splash(); } P.plunge = false; P.vy *= 0.35; }
   P.swim = !!swimP; const breathMax = breathCapacity(L);
+  /* (claude/frogking2) RAFT RECALL after a swim: a fall in the marsh's biting water is a swim now (the drain, claude/deadwater), not a hand-back - climb out on
+     the dock side and the raft you fell off is at her dock that frame (recallRafts) */
+  if (P.swim) P.raftSwam = true; else if (P.raftSwam && !P.dead && P.ground && !P.swim && GS > 0) { if (!P.onMover) recallRafts(P.x); if (!P.onMover || P.onMover.kind === 'raft') P.raftSwam = false; }
   if (P.swim && swimP.flow) { // THE CURRENT: it carries you, and it carries you whether you are swimming or not
     const f = swimP.flow * (P.block || P.aegis ? 0.45 : 1);   // a shield braced across it holds you better
     // whole pixels only, with the fraction kept: a sub-pixel push is rounded away by the collision step and
@@ -29107,11 +29110,12 @@ function freeFolk(pr) { const tx = Math.floor(pr.x / TS), room = (L.interiors ||
   props.push({ t: 'npc', kind: 'hillfolk', x: pr.x, y: pr.y, walkTo: door ? door.x * TS + 8 : pr.x + 40, anim: 0, i: 9 });
   props.push(camper(straysGot.size - 1)); SFX.sting(); }
 /* (claude/frogking2) RAFT RECALL (Daniel 10-21: "the raft call-back must be INSTANT when you die mid-section"). A death already rebuilt every raft at its
-   dock (spawnEntities); a fall in a HURTING water (the marsh) did not: it handed you back to the bank and left her out on the water - a called raft
-   crawled home ('COMING BACK' at six-tenths her pace, half a minute on the grove's), and a raft on the CURRENT never came home at all (a soft-lock
-   until you died). Now whenever a hero is put back on the dock side of a raft - a hazard hand-back or a respawn - every raft nobody living is riding
-   is AT HER DOCK THAT FRAME: her toll stays paid, the frogs that climbed aboard go back into the water. tools/raft-recall.mjs pins it per raft level. */
-function recallRafts(sx) {
+   dock (spawnEntities); a FALL did not: you swim the marsh's biting water out to the bank (claude/deadwater) and she was left out on the water - a
+   called raft crawled home ('COMING BACK' at six-tenths her pace, half a minute on the grove's), and a raft on the CURRENT never came home at all (a
+   soft-lock until you died). Now whenever a hero stands up on the dock side of a raft - out of the water after a swim, a hazard hand-back, a respawn -
+   every raft nobody living is riding is AT HER DOCK THAT FRAME: her toll stays paid, the frogs that climbed aboard go back into the water.
+   tools/raft-recall.mjs pins it for every raft in every level. */
+function recallRafts(sx) { if (!L) return 0;
   let n = 0;
   for (const m of movers) { if (m.kind !== 'raft' || !(sx < m.x0 + 40) || players.some(p => !p.dead && p.onMover === m)) continue;
     if (m.x > m.x0 + 0.5 || m.done || m.returning || m.moving) { n++; burst(m.x0 + m.w / 2, m.y + 4, 10, ['#eefaff', '#bfe6f5'], 60, 0.4);
