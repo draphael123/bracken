@@ -22,12 +22,12 @@
 //                   shockwaves run out along the ground both ways - jump them). He does not stagger off the first charge of a double, only the second.
 //   NO ADDS (Daniel: no adds unless the brief says so).
 export const OT = {
-  hp: 775, w: 46, h: 26, markH: 44,
+  hp: 1175, w: 46, h: 26, markH: 44,
   walk: 52, rest: [0.75, 0.5],                   // px/s; the beat between moves (P1, P2)
   hide: 0.4, above: 1, wardMul: 0.4,             // B15: the floor outside openings; a plunge on his back lands whole
   p2: 0.5,
   charge: { tell: [0.95, 0.72], speed: 290, dmg: 10, hitH: 20, turn: 0.42, minD: 104 },
-  daze: { t: [1.45, 1.2], mul: 1.25 },           // he rams a felled trunk or the wall: reels (a short, told opening)
+  daze: { t: [2.9, 2.4], mul: 1.25 },            // he rams a felled trunk or the wall: reels (10-21 playtest: DOUBLED from 1.45 / 1.2 - still shorter than the pin)
   sweep: { tell: [0.72, 0.58], t: 0.26, reach: 46, h: 16, dmg: 12, chip: 0.5, rec: 0.55, range: 70 },
   root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 10, rec: 0.6, spread: 64 },
   stomp: { tell: 0.78, sp: 150, life: 1.9, dmg: 14, rec: 0.75, w: 7 },
