@@ -51,7 +51,7 @@ export function buildFenRoad({ painter, T, TS }) {
   deco('stump', 9, 17, { v: 1 }); coins([7, 16], [11, 16]);
   /* the first bowed boards, over cheap water with the bank either side: a fall here is a splash and a step back */
   water(15, 27); planks(15, 27); sag('a', 19, 4);
-  coins([19, 16], [20, 15], [21, 15], [22, 16]); reeds(25, 16, 2); ent('thorn', 31, 17, { face: -1 });   /* a spike goblin on the bank where the first boards land you */
+  coins([19, 16], [20, 15], [21, 15], [22, 16]); reeds(25, 16, 2); ent('thorn', 31, 17, { face: -1 }); ent('shield', 25, 17, { face: -1 });   /* a spike goblin on the bank where the first boards land you */
   floor(28, 36, ROAD); ent('sprig', 33, 17, { face: -1 });
   /* THE PEAT CUTTING: the goblins dig the fen for the road's fill. A trench four rows down, a pit two deeper in its middle (a silver in the cutter's
      hut at its west wall - a pocket off the route), out by the steps at its east end */
@@ -64,7 +64,7 @@ export function buildFenRoad({ painter, T, TS }) {
   water(53, 70); planks(53, 70); sag('b', 61, 4); lash(58, 'b');
   sign(55, 17, 'THE CREW COMES OVER THE BOWED BOARDS. STRIKE THE LASHING ON ITS POST AS THEY CROSS.');
   ent('sprig', 66, 17, { face: -1 }); ent('sprig', 69, 17, { face: -1 });
-  plat(56, 14, 4); coins([57, 13], [58, 13]); reeds(67, 15, 2);
+  plat(56, 14, 4); coins([57, 13], [58, 13]); ent('archer', 59, 13, { face: -1 }); reeds(67, 15, 2);
   /* THE FIRST STILT-WALKER: a lookout on a dry bank, a horn at his belt. Taught warm: his horn calls two sprigs out of the hut behind him */
   floor(71, 84, ROAD);
   sign(72, 17, 'A LOOKOUT ON STILTS. HIS HORN CALLS HIS CREW. GO LOW: A SWEEP OR A SLIDE CUTS A STILT.');
@@ -86,7 +86,7 @@ export function buildFenRoad({ painter, T, TS }) {
   deco('timber', 120, 17, { v: 0 }); coins([113, 16], [114, 15], [116, 16]);
   /* a second lashing, under a bowman on a stilt deck over it */
   water(125, 150); planks(125, 150); sag('e', 136, 4); lash(133, 'e');
-  ent('sprig', 143, 17, { face: -1 }); ent('sprig', 146, 17, { face: -1 });
+  ent('shield', 141, 17, { face: -1 }); ent('sprig', 143, 17, { face: -1 }); ent('sprig', 146, 17, { face: -1 });
   plat(127, 14, 5); coins([128, 13], [130, 13]); plat(139, 15, 4); ent('archer', 140, 14, { face: -1 });
   plat(146, 14, 3); coins([146, 13], [147, 13]);
   /* THE PLANK YARD: the crews' stacks on a peat island - climb them for a silver; a stilt-walker keeps the yard (no horn: a gaff fight on the flat) */
@@ -119,13 +119,13 @@ export function buildFenRoad({ painter, T, TS }) {
   plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
   coins([244, 7], [246, 7], [250, 7]);
   plat(252, 10, 3);
-  plat(255, 12, 3); plat(258, 14, 2); sag('h3', 261, 2, { row: 16, hold: 1.4 }); plat(266, 16, 3); sag('h5', 271, 2, { row: 17, hold: 1.4 }); plat(274, 17, 2);
-  ent('wasp', 272, 14);
+  plat(255, 12, 3); plat(258, 14, 2); sag('h3', 261, 2, { row: 16, hold: 1.4 }); plat(266, 16, 3); ent('spit', 267, 15, { face: -1 }); sag('h5', 271, 2, { row: 17, hold: 1.4 }); plat(274, 17, 2);
+  ent('wasp', 272, 14); ent('wasp', 262, 12);
   plat(277, 16, 3); ent('spit', 278, 15, { face: -1 }); sag('h4', 282, 3, { row: 16, hold: 1.4 }); plat(287, 15, 3); plat(291, 16, 3); ent('sprig', 292, 15, { face: -1 });   /* a crewman on the last deck: a fight on a board over the water */
-  plat(295, 17, 4);
+  plat(295, 17, 4); ent('thorn', 297, 16, { face: -1 });
   coins([224, 15], [230, 15], [233, 13], [236, 11], [239, 9], [267, 15], [283, 15], [288, 14]);
   floor(301, 316, ROAD);
-  ent('sprig', 304, 17, { face: -1 }); ent('shield', 309, 17, { face: -1 });   /* the landing's guard: the area's exam ends on the bank */
+  ent('sprig', 304, 17, { face: -1 }); ent('shield', 309, 17, { face: -1 }); ent('stiltwalker', 314, 17, { face: -1 });   /* the landing's guard: the area's exam ends on the bank */
   ent('check', 307, 17);
 
   // ================= 4. THE PALISADE ROAD (311-404): EXAM =================
@@ -140,7 +140,7 @@ export function buildFenRoad({ painter, T, TS }) {
   sag('j', 366, 4); lash(364, 'j');
   ent('stiltwalker', 374, 17, { face: -1, horn: true, pack: [{ dx: 56, y: ROAD * TS, t: 'shield' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });
   plat(368, 14, 5); coins([369, 13], [371, 13]);
-  sag('k', 380, 3); plat(385, 14, 5); ent('spit', 387, 13, { face: -1 }); plat(389, 15, 2); plat(392, 13, 2); ent('silver', 393, 12);   /* past the spitter's deck, up two crates to a crew's cache (off the route) */
+  sag('k', 380, 3); ent('shield', 384, 17, { face: -1 }); plat(385, 14, 5); ent('spit', 387, 13, { face: -1 }); plat(389, 15, 2); plat(392, 13, 2); ent('silver', 393, 12);   /* past the spitter's deck, up two crates to a crew's cache (off the route) */
   coins([323, 16], [367, 16], [381, 16], [391, 16]);
   floor(399, 406, ROAD);
   ent('check', 400, 17);

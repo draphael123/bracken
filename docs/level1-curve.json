@@ -611,16 +611,16 @@
   "lostPct": 421
  },
  "fenroad": {
-  "hash": "bafebbf598eb",
+  "hash": "493af55ec213",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
-  "deaths": 1,
-  "kills": 26,
-  "lifts": 77,
+  "hits": 18,
+  "deaths": 0,
+  "kills": 40,
+  "lifts": 75,
   "walked": 100,
   "bare": true,
-  "lostPct": 105
+  "lostPct": 114
  }
 }
