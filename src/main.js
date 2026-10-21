@@ -4698,7 +4698,7 @@ const WOOD_NODES = [
   { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, plate: 'left', name: 'THE LUMBER TRAIL' }   /* (claude/lumbertrail: BRACKEN WOOD became THE LUMBER TRAIL) */,
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 68, plate: 'left', name: 'THE STORE' },
   { id: 'marsh', kind: 'level', level: 1, x: 251, y: 129, plate: 'right', name: 'MARSH WOOD' },
-  { id: 'fenroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fenroad'), x: 263, y: 86, plate: 'right', name: 'THE FEN ROAD' },   /* THE FEN ROAD (claude/fenroad, Daniel 10-20): between MARSH WOOD and THE STOCKADE, on the road's old bend */
+  { id: 'fenroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fenroad'), x: 268, y: 94, plate: 'right', name: 'THE FEN ROAD' },   /* THE FEN ROAD (claude/fenroad, Daniel 10-20): between MARSH WOOD and THE STOCKADE, on the road's old bend */
   { id: 'stockade', kind: 'level', level: 2, x: 288, y: 47, plate: 'right', name: 'THE STOCKADE' },
   { id: 'burning', kind: 'level', level: LEVELS.findIndex(l => l.id === 'burning'), x: 304, y: 38, plate: 'above', spur: true, name: 'THE BURNING VILLAGE' },   /* A SPUR off the road between the Stockade and Sporewood: the Pyromancer's class level, and optional, so the road does not go through it */
   { id: 'spore', kind: 'level', level: 3, x: 199, y: 38, plate: 'above', name: 'SPOREWOOD' },
@@ -4707,7 +4707,7 @@ const WOOD_NODES = [
   { id: 'underleaf', kind: 'level', level: LEVELS.findIndex(l => l.id === 'underleaf'), x: 60, y: 56, plate: 'below', name: 'UNDERLEAF' },   /* UNDERLEAF (claude/underleafroad, Daniel 10-08): a MAIN-ROAD level now, between KINGSWOOD and THE SCREE PATH - it was a secret spur at (67,70); the road bends through it */
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
-const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [263,86], [288,47], [254,27], [199,38], [221,68], [141,24], [98,33], [60,56], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
+const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [268,94], [288,47], [254,27], [199,38], [221,68], [141,24], [98,33], [60,56], [40,64]];   /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
 /* OPTION B — THE SINGLE DIAGONAL S (docs/crag-options.png, letter B). Every node moved. One continuous climb from
    bottom-left to top-right, X sweeping through a smooth ogee (half-sine) curve as Y falls strictly - no hairpins,
    no loop, one line the eye can follow start to finish. Correct by construction: strictly-falling Y means no two

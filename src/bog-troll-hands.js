@@ -108,6 +108,7 @@ export function makeBogTrollHands(ctx) {
     if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, S.G.floorY - 90, BTM.BT_SAY.wake, '#ffd36b'); SOUND.roar(ctx.sfx); ctx.shake(6); ctx.burst(e.x, S.G.waterY, 26, ['#9fb3a6', '#e6efe6', '#3e2c1c'], 130, 0.8); }
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 120, BTM.BT_SAY.rule, '#ffd36b'); }
     BTM.stepTroll(e, S, dt, heroes(), world(e));
+    e.w = e.mode === 'stuck' || e.mode === 'stuckIn' ? BT.stuck.w : BT.w;   /* stuck, he is sprawled across the wreck: struck from the boards that hold at its ends */
     e.phase = S.ph; e.open = BTM.btOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
   /* A BLOW ON HIM (B15; src/bog-troll.js takeBlow) - the turned share clanks and says why */
@@ -120,8 +121,8 @@ export function makeBogTrollHands(ctx) {
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, ripped: S.ripped, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   /* THE BOT'S VIEW (src/lab.js): the rotten sections standing, and the water where there are no boards (ripped or collapsed) */
   H.plan = () => { const FR = ctx.fen(), TS = ctx.TS; if (!S || !FR) return null;
-    const secs = FR.sections().map(s => ({ x0: s.x0 * TS, x1: (s.x0 + s.w) * TS, ok: s.st === 'up' || s.st === 'bow' }));
-    const holes = [...S.G.rip.filter(() => S.ripped), ...FR.sections().filter(s => s.st === 'under' || s.st === 'gone').map(s => [s.x0 * TS, (s.x0 + s.w) * TS])];
+    const secs = FR.sections().map(s => ({ x0: s.x0 * TS, x1: (s.x0 + s.w) * TS, ok: s.st === 'up' || s.st === 'bow', bow: s.st === 'bow' ? s.t : 0, hold: s.hold }));
+    const holes = [...S.G.rip.filter(() => S.ripped), ...FR.sections().filter(s => s.st === 'under' || s.st === 'gone').map(s => (s.hole ? [s.hole[0] * TS, (s.hole[1] + 1) * TS] : [s.x0 * TS, (s.x0 + s.w) * TS]))];
     return { secs, holes }; };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const m = e.mode; if (m === 'sleep' || m === 'under' || m === 'burstTell') return;

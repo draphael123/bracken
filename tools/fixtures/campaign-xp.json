@@ -13,6 +13,12 @@
    "bossXp": 173,
    "clear": 246
   },
+  "fenroad": {
+   "run": 509,
+   "foeXp": 233,
+   "bossXp": 183,
+   "clear": 140
+  },
   "stockade": {
    "run": 752,
    "foeXp": 398,

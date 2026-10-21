@@ -13,7 +13,7 @@
 //     sound far off from the Palisade Road on.
 // GREYBOX ART (readable; the art lane draws it - see the lane report's ART NOTES). main.js calls: reset, on, update, strike, drawSky, drawWorld, read,
 // and the troll's hands call sectionAt, collapse, rip, fixSafe.
-export const SAG = { bow: 0.5, hold: 1.1, holdArena: 2.6, under: 3.2, regrow: 14, rise: 0.6, droop: 4 };
+export const SAG = { bow: 0.5, hold: 1.1, holdArena: 3.6, under: 3.2, regrow: 14, rise: 0.6, droop: 4 };
 export const CREW = { every: 0.85, near: 260 };
 export const UNDERTOW = { near: 150, bubble: 1.4, arm: 1.0 };
 export const FR_SAY = { creak: 'THE BOARDS BOW: KEEP MOVING', under: 'IT GOES UNDER', cut: 'THE LASHING PARTS', barricade: 'THE BARRICADE GOES UNDER', crew: 'THE CREW LAYS THE ROAD', undertow: 'SOMETHING LIVES UNDER THE ROAD' };
@@ -47,7 +47,9 @@ export function makeFenRoadHands(ctx) {
   /* A SECTION GOES UNDER: its boards are air, and what stood on it falls (a load stacked on it goes for good) */
   function sink(s, why) {
     if (s.st === 'under' || s.st === 'gone') return; const TS = ctx.TS, lv = L();
-    setCells(s, ctx.T.AIR); s.st = why === 'troll' ? 'gone' : 'under'; s.t = why === 'troll' ? SAG.regrow : SAG.under; S.n.sunk++;
+    /* the TROLL bursts up through the middle of a rotten section: the boards round him give way, the ones at its ends hang on (the wreck you strike him from) */
+    if (why === 'troll' && s.w >= 4) { s.hole = [s.x0 + 1, s.x0 + s.w - 2]; for (let x = s.hole[0]; x <= s.hole[1]; x++) ctx.cellSet(x, s.row, ctx.T.AIR); } else { s.hole = [s.x0, s.x0 + s.w - 1]; setCells(s, ctx.T.AIR); }
+    s.st = why === 'troll' ? 'gone' : 'under'; s.t = why === 'troll' ? SAG.regrow : SAG.under; S.n.sunk++;
     if (s.load.length && !s.loadGone) { s.loadGone = true; for (const [x, y] of s.load) ctx.cellSet(x, y, ctx.T.AIR); S.n.barricade++; ctx.burst((s.x0 + s.w / 2) * TS, (s.row - 2) * TS, 24, ['#8a6a40', '#b08a5a', '#3e2c1c'], 110, 0.7); say((s.x0 + s.w / 2) * TS, (s.row - 5) * TS, 'barricade'); }
     for (const pp of ctx.players()) if (standsOn(pp, s) || (pp.x + 3 > s.x0 * TS && pp.x - 3 < (s.x0 + s.w) * TS && Math.abs(pp.y - s.row * TS) < 3)) { pp.ground = false; pp.vy = Math.max(pp.vy || 0, 40); }
     splash(s); snd('sink'); if (why !== 'troll' && !S.told.under) { S.told.under = 1; say((s.x0 + s.w / 2) * TS, (s.row - 3) * TS, 'under'); }
@@ -151,8 +153,8 @@ export function makeFenRoadHands(ctx) {
     /* THE BOWED SECTIONS: rotten boards that bend under weight, shiver at the end, go under, and float back */
     for (const s of S.sags.values()) { const x0 = X(s.x0 * TS); if (x0 > ctx.VW() + 20 || x0 + s.w * TS < -20) continue; const y = Y(s.row * TS);
       const up = s.st === 'up' || s.st === 'bow', b = s.st === 'bow' ? Math.min(1, s.t / SAG.bow) : 0, shiver = s.st === 'bow' && s.t > s.hold * 0.7 ? (Math.floor(time * 30) % 2) : 0;
-      for (let i = 0; i < s.w; i++) { const u = (i + 0.5) / s.w * 2 - 1, off = up ? b * SAG.droop * (1 - u * u) + shiver : 0, yy = up ? y + off + (1 - s.vis) * 8 : Y(19 * TS + 3);
-        g.globalAlpha = up ? 1 : 0.4; rect(g, x0 + i * TS, yy, TS - 1, 5, s.arena ? '#5a4030' : '#6a5038'); rect(g, x0 + i * TS, yy + 5, TS - 1, 2, '#3a2818');
+      for (let i = 0; i < s.w; i++) { const wreck = s.st === 'gone' && s.hole && (s.x0 + i < s.hole[0] || s.x0 + i > s.hole[1]), u = (i + 0.5) / s.w * 2 - 1, off = up ? b * SAG.droop * (1 - u * u) + shiver : wreck ? 3 + (i ? 1 : 0) : 0, yy = up || wreck ? y + off + (up ? (1 - s.vis) * 8 : 0) : Y(19 * TS + 3);
+        g.globalAlpha = up || wreck ? 1 : 0.4; rect(g, x0 + i * TS, yy, TS - 1, 5, s.arena ? '#5a4030' : '#6a5038'); rect(g, x0 + i * TS, yy + 5, TS - 1, 2, '#3a2818');
         rect(g, x0 + i * TS + 3 + (i % 3), yy + 1, 4, 1, '#3e2c1c'); if (s.arena) rect(g, x0 + i * TS + 9, yy + 2, 3, 2, '#2e3a22'); }
       g.globalAlpha = 1;
       if (up) { rect(g, x0 - 1, y - 1, 2, 8, '#c9b27c'); rect(g, x0 + s.w * TS - 1, y - 1, 2, 8, '#c9b27c'); }   /* the lashing round each end */

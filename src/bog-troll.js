@@ -19,11 +19,11 @@
 //                   plank islands over the biting water from then on; his hurl is two clods; he comes up in the open water too.
 //   NO ADDS (no summons in the brief).
 export const BT = {
-  hp: 1500, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
+  hp: 1150, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
   rest: [0.9, 0.7], hide: 0.4, wardMul: 0.4, p2: 0.5,
   sink: 0.45, swim: [1.1, 0.9], swimV: 170,
-  burst: { track: 0.6, lock: 0.5, t: 0.3, r: 18, h: 40, dmg: 16, kick: -300, rise: 0.5 },
-  stuck: { t: [3.6, 3.1], mul: 2, cap: 0.15, heave: 0.6, ward: 3 },
+  burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 16, kick: -300, rise: 0.5 },
+  stuck: { t: [3.6, 3.1], mul: 2, cap: 0.17, heave: 0.6, ward: 3, w: 52 },
   drag: { tell: [0.85, 0.7], t: 0.32, reach: 118, h: 12, dmg: 12, pull: 210, rec: 0.6, range: 150 },
   hurl: { tell: [0.8, 0.65], flight: 1.0, r: 16, dmg: 11, spread: 56, rec: 0.55 },
   rip: { tell: 1.4, t: 0.6, roar: 0.8 },
@@ -164,6 +164,11 @@ function btPlan0(s) {
   const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [cx, r] of rings) if (Math.abs(q - cx) < r) q = clamp(q < cx ? cx - r - 4 : cx + r + 4); return q; };
   const secs = (s.secs || []).filter(q => q.ok);
   const onSec = secs.find(q => P.x > q.x0 + 2 && P.x < q.x1 - 2);
+  const offRot = x => { const q = secs.find(z => x > z.x0 - 6 && x < z.x1 + 6); if (!q) return x; const l = q.x0 - 10, r = q.x1 + 10; return Math.abs(x - l) < Math.abs(x - r) && !wet(l) ? l : !wet(r) ? r : l; };   /* rotten boards are for the lure only: stood on otherwise they go under you */
+  /* -1. IN THE FEN: swim for the nearest boards and jump out (the water drains you) */
+  if (P.y > G.floorY + 6) { let best = null; for (let dx = 0; dx < 200 && best === null; dx += 8) for (const sg of [-1, 1]) { const x = P.x + sg * dx; if (best === null && x > lo && x < hi && !wet(x)) best = x; } out.gx = best ?? P.x; out.jump = true; out.swim = true; out.why = 'out of the fen'; return out; }
+  /* 0b. a rotten section about to go under me (and he is not setting his bulge on it): off it */
+  if (onSec && P.ground && onSec.bow > onSec.hold - 0.7 && !(e.mode === 'burstTell' && !e.locked)) { out.gx = offRot(P.x); out.why = 'off the bowing boards'; return out; }
   /* 0. a jump is carried through */
   if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.5) { out.gx = mem.jumpX; out.why = 'in the air'; return out; }
   /* 1. OFF A RING */
@@ -187,7 +192,7 @@ function btPlan0(s) {
     const key = 'a' + S.act + e.mode, miss = s.v2 ? false : roll(key + 'm', PLAN.miss);
     if (seenFor(key) && !miss) {
       if ((e.mode === 'dragTell' || e.mode === 'drag') && (P.x - kx) * (e.face || 1) > 0 && dx < BT.drag.reach + 30) {
-        if (e.mode === 'drag' || e.modeT < 0.16) { if (s.dodge && P.ground && !roll(key + 'd', 0.5)) { out.dodge = true; out.gx = P.x + (e.face || 1) * 30; out.why = 'roll the drag'; return out; }
+        if (e.mode === 'drag' || e.modeT < 0.2) { if (s.dodge && P.ground && !roll(key + 'd', 0.8)) { out.dodge = true; out.gx = P.x + (e.face || 1) * 30; out.why = 'roll the drag'; return out; }
           if (P.ground) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the drag'; return out; } }
         out.gx = P.x; out.why = 'his drag: ready to jump it'; return out; }
       if (e.mode === 'hurlTell') { out.gx = safeX(P.x + (P.x < G.mid ? 34 : -34)); out.why = 'the hurl: keep moving'; return out; }
@@ -204,7 +209,7 @@ function btPlan0(s) {
   if (s.rest) { out.gx = safeX(kx + side * 120); out.why = 'winded: off him'; return out; }
   /* 7. HE IS UP: a cut when he rests (his hide turns most of it), off him otherwise */
   if (e.mode === 'up' || e.mode === 'recover' || e.mode === 'roar') {
-    if (dx < hitR + 30 && roll('cut' + S.act, 0.7)) { out.gx = safeX(kx + side * Math.max(half + 6, reach - 6)); if (dx < hitR) swing(); out.why = 'a cut while he is up'; return out; }
-    out.gx = safeX(kx + side * Math.max(hitR + 16, 70)); out.face = Math.sign(kx - P.x) || 1; out.why = 'stand off him'; return out; }
-  out.gx = safeX(kx + side * Math.max(hitR + 16, 70)); out.face = Math.sign(kx - P.x) || 1; out.why = 'stand off him'; return out;
+    if (dx < hitR + 30 && roll('cut' + S.act, 0.7)) { out.gx = offRot(safeX(kx + side * Math.max(half + 6, reach - 6))); if (dx < hitR) swing(); out.why = 'a cut while he is up'; return out; }
+    out.gx = offRot(safeX(kx + side * Math.max(hitR + 16, 70))); out.face = Math.sign(kx - P.x) || 1; out.why = 'stand off him'; return out; }
+  out.gx = offRot(safeX(kx + side * Math.max(hitR + 16, 70))); out.face = Math.sign(kx - P.x) || 1; out.why = 'stand off him'; return out;
 }
