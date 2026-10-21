@@ -25,13 +25,13 @@ ok(checks.length === SECTIONS.length - 1, 'a shrine per area (' + checks.length 
 SECTIONS.slice(0, -1).forEach(([nm, x0, x1], i) => ok(checks[i] >= x0 && checks[i] <= x1 + 2 && x1 - checks[i] < 12, 'the shrine closes ' + nm + ' (' + checks[i] + ')'));
 ok(checks.at(-1) < ARENA.gate && ARENA.gate - checks.at(-1) < 10, 'the last shrine stands before the crossing');
 // ---- B
-const sags = L.ents.filter(e => e.t === 'sag'), lashes = L.ents.filter(e => e.t === 'lashing');
+const sags = L.ents.filter(e => e.t === 'sag' || e.t === 'rotten'), lashes = L.ents.filter(e => e.t === 'lashing');
 for (const id of ['b', 'e', 'f', 'i', 'j']) { const s = sags.find(q => q.id === id);   /* the crews' sections and the barricade's: each lashed at its near end (the first bowed boards, a, teach the bow alone) */
   ok(s && lashes.some(l => l.sag === s.id && l.x < s.x && s.x - l.x <= 4), 'the bowed section ' + id + ' has its lashing at its near end'); }
 ok(sags.filter(s => !s.arena).length >= 10 && lashes.length >= 4, 'the verb is everywhere: ' + sags.length + ' bowed sections, ' + lashes.length + ' lashings');
-const bar = sags.find(s => s.load && s.load.length); ok(bar && bar.load.every(([x, y]) => at(x, y) === T.SOLID) && bar.load.filter(([x]) => x === bar.load[0][0]).length >= 4, 'THE BARRICADE: four crates high on its bowed section (no jump clears 64 px)');
-{ const R = floodReach(L, T); const arenaIn = [...R.seen].some(k => +k.split(',')[0] > ARENA.trigger);
-  const g2 = L.grid.slice(); for (const [x, y] of bar.load) g2[y * W + x] = T.AIR; const R2 = floodReach({ ...L, grid: g2 }, T); const arenaIn2 = [...R2.seen].some(k => +k.split(',')[0] > ARENA.trigger);
+const bar = sags.find(s => s.load && s.load.length); ok(bar && bar.load.every(([x, y]) => at(x, y) === T.PORT) && bar.load.filter(([x]) => x === bar.load[0][0]).length >= 4, 'THE BARRICADE: four crates high on its bowed section (no jump clears 64 px)');
+{ const g1 = L.grid.slice(); for (const [x, y] of [...bar.load, ...bar.load.filter(([, y]) => y === ROAD - 1).map(([x]) => [x, ROAD])]) g1[y * W + x] = T.SOLID; const R = floodReach({ ...L, grid: g1 }, T, { noAssist: true }); const arenaIn = [...R.seen].some(k => +k.split(',')[0] > ARENA.trigger);
+  const g2 = L.grid.slice(); for (const [x, y] of bar.load) g2[y * W + x] = T.AIR; for (const [x] of bar.load) g2[ROAD * W + x] = T.PLANK; const R2 = floodReach({ ...L, grid: g2 }, T, { noAssist: true }); const arenaIn2 = [...R2.seen].some(k => +k.split(',')[0] > ARENA.trigger);
   ok(!arenaIn && arenaIn2, 'the barricade is THE REQUIRED USE: shut, the crossing is not reached (' + arenaIn + '); dropped, it is (' + arenaIn2 + ')'); }
 // the hands, on a fake world
 const mkWorld = () => { const grid = L.grid.slice(), Lw = { ...L, grid }, players = [], enemies = [], log = [];

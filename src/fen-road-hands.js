@@ -28,7 +28,7 @@ export function makeFenRoadHands(ctx) {
     const lv = L(); S = null; if (!lv || !lv.fenroad) return; const TS = ctx.TS;
     const sags = new Map(), lashes = [], gaps = [], tows = [];
     for (const e of lv.ents) {
-      if (e.t === 'sag') sags.set(e.id, { id: e.id, x0: e.x, w: e.w, row: e.y, hold: e.arena ? SAG.holdArena : (e.hold || SAG.hold), arena: !!e.arena, load: e.load || [], loadGone: false, st: 'up', t: 0, vis: 1, told: false });
+      if (e.t === 'sag' || e.t === 'rotten') sags.set(e.id, { id: e.id, x0: e.x, w: e.w, row: e.y, hold: e.arena ? SAG.holdArena : (e.hold || SAG.hold), arena: !!e.arena, load: e.load || [], loadGone: false, st: 'up', t: 0, vis: 1, told: false });
       else if (e.t === 'lashing') lashes.push({ x: e.x, row: e.y + 1, sag: e.sag, cut: false });
       else if (e.t === 'crewgap') gaps.push({ id: e.id, x0: e.x, w: e.w, dir: e.dir || -1, piles: e.piles || [], laid: 0, t: CREW.every, done: false, layerAt: null, layer: null });
       else if (e.t === 'undertow') tows.push({ x: e.x * TS + 8, st: 'wait', t: 0 });

@@ -38,7 +38,7 @@ export function buildFenRoad({ painter, T, TS }) {
      sound board you stood on - src/fen-road-hands.js keeps that footing on the boards, not back on the last bank) */
   const water = (x0, x1) => { pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: WATER * TS, shallow: false, depth: 0, bottom: BED * TS, fen: true }); block(x0, x1, BED, H - 1); };
   /* A BOWED SECTION: w boards of rotten plank at row r (a machine: the hands draw it, bow it, sink it and float it back) */
-  const sag = (id, x0, w, o = {}) => { for (let x = x0; x < x0 + w; x++) { set(x, o.row || ROAD, T.PLANK); sagCells.push([x, o.row || ROAD]); } ent('sag', x0, o.row || ROAD, { id, w, ...o }); };
+  const sag = (id, x0, w, o = {}) => { for (let x = x0; x < x0 + w; x++) { set(x, o.row || ROAD, T.PLANK); sagCells.push([x, o.row || ROAD]); } ent(o.arena ? 'rotten' : 'sag', x0, o.row || ROAD, { id, w, ...o }); };   /* (the crossing's ROTTEN sections are their own kind: the troll's lure, a longer hold) */
   /* ITS LASHING: a post at the section's near end (strike it: the section goes) */
   const lash = (x, id, row = ROAD) => ent('lashing', x, row - 1, { sag: id });
   /* A CREW GAP: w columns of open water in the road with piles standing in it (every hero hops them); the crew's layer stands on the far bank and lays
@@ -56,7 +56,7 @@ export function buildFenRoad({ painter, T, TS }) {
   /* THE PEAT CUTTING: the goblins dig the fen for the road's fill. A trench four rows down, a pit two deeper in its middle (a silver in the cutter's
      hut at its west wall - a pocket off the route), out by the steps at its east end */
   floor(37, 38, 20); floor(39, 52, 22); floor(51, 52, 20);
-  for (let x = 41; x <= 48; x++) for (let y = 22; y <= 24; y++) set(x, y, T.AIR); set(48, 24, T.SOLID);   /* the pit, three rows deeper and six wide (no jump clears it), a cut step at its east wall to climb out by */
+  for (let x = 41; x <= 48; x++) for (let y = 22; y <= 24; y++) set(x, y, T.AIR); set(47, 24, T.SOLID); set(48, 23, T.SOLID); set(48, 24, T.SOLID);   /* the pit, three rows deeper and six wide (no jump clears it), a cut step at its east wall to climb out by */
   ent('sprig', 41, 21, { face: -1 }); ent('sprig', 49, 21, { face: -1 }); ent('spit', 53, 17, { face: -1 });   /* the cutters in the trench; a spitter on its east lip lobbing in */
   coins([44, 24], [45, 24], [46, 24]); deco('rock', 40, 21, { v: 1 });
   plat(39, 19, 3); ent('silver', 40, 18);   /* the cutter's shelf: up out of the trench's west end, a silver (off the route) */
@@ -102,7 +102,7 @@ export function buildFenRoad({ painter, T, TS }) {
      into the bed under it (nobody swims round it). Strike the lashing and the section goes under, and the barricade with it. The crew behind it is the area's exam */
   const BARRICADE = []; for (const x of [192, 193]) for (let y = 13; y <= ROAD; y++) BARRICADE.push([x, y]);
   water(187, 200); planks(187, 200); sag('f', 191, 4, { load: BARRICADE.filter(([, y]) => y < ROAD) }); lash(189, 'f');
-  for (const [x, y] of BARRICADE) { set(x, y, T.SOLID); if (y < ROAD) { machine.push([x, y]); sagCells.push([x, y]); } }   /* stacked road-planks (solid: no blade breaks them - the hands draw them); its foot, in the section's own row, goes under with the section and floats back as a board */
+  for (const [x, y] of BARRICADE) { set(x, y, T.PORT); if (y < ROAD) { machine.push([x, y]); sagCells.push([x, y]); } }   /* stacked road-planks (a barred cell: no blade breaks it - the hands draw it; the reach fill opens it as a door the level's rule opens, L.reachDoors); its foot, in the section's own row, goes under with the section and floats back as a board */
   for (const x of [192, 193]) for (let y = WATER; y < BED; y++) set(x, y, T.PALISADE);
   sign(187, 17, 'THEIR BARRICADE STANDS ON A BOWED SECTION. STRIKE ITS LASHING AND IT GOES UNDER.');
   ent('shield', 197, 17, { face: -1 }); ent('sprig', 199, 17, { face: -1 }); plat(196, 14, 4); ent('archer', 198, 13, { face: -1 });
@@ -113,19 +113,17 @@ export function buildFenRoad({ painter, T, TS }) {
   sign(211, 17, 'THE ROAD IS DOWN. STILT DECKS, PADS AND BOWED BOARDS: KEEP MOVING.');
   water(215, 300);
   /* every hop here is one any hero makes from a run: level gaps of three tiles at most, a rise of two rows at most */
-  sag('h1', 216, 2); plat(220, 17, 3); sag('h1b', 224, 2, { row: 17 }); sag('h2', 228, 2);
-  ent('pad', 226, 18, { big: true }); coins([226, 17], [227, 17]);   /* a lily pad down on the water between the steps: a coin, and a dip if you stand on it */
-  plat(232, 16, 3); plat(236, 14, 3); plat(240, 12, 3);
+  sag('h1', 216, 2); plat(219, 17, 3); sag('h1b', 223, 2, { row: 17 }); sag('h2', 226, 2, { row: 17 });
+  plat(229, 16, 3); plat(232, 14, 3); plat(235, 12, 3); plat(238, 10, 3);
   /* the lookout walk: the high deck, and the horn lookout on its post. His horn calls a bowman and a spitter onto the decks round him */
-  plat(244, 11, 7); ent('stiltwalker', 248, 10, { face: -1, horn: true, pack: [{ dx: 104, y: 12 * TS, t: 'archer' }, { dx: -120, y: 12 * TS, t: 'spit' }] });
-  coins([245, 10], [246, 10], [250, 10]);
-  plat(254, 12, 3); ent('silver', 259, 6); plat(258, 7, 2);   /* a silver up on the crow's nest (off the route) */
-  plat(257, 14, 3); sag('h3', 262, 2, { row: 16 }); plat(266, 16, 3); sag('h5', 271, 2, { row: 17 }); plat(274, 17, 2);
-  ent('pad', 252, 18, { big: true }); coins([252, 17], [253, 17]);   /* under the lookout walk: a pad on the water, a low road for a coin */
+  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, pack: [{ dx: 104, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
+  coins([244, 7], [246, 7], [250, 7]);
+  plat(253, 10, 3);
+  plat(257, 13, 3); sag('h3', 262, 2, { row: 16 }); plat(266, 16, 3); sag('h5', 271, 2, { row: 17 }); plat(274, 17, 2);
   ent('wasp', 272, 14);
   plat(277, 16, 3); ent('spit', 278, 15, { face: -1 }); sag('h4', 282, 3, { row: 16 }); plat(287, 15, 3); plat(291, 16, 3);
-  plat(296, 17, 3); ent('pad', 286, 18, {}); coins([286, 17]); ent('eel', 294, 20, { leap: true });
-  coins([226, 16], [233, 15], [237, 13], [241, 11], [267, 15], [283, 15], [288, 14]);
+  plat(296, 17, 3);
+  coins([224, 15], [230, 15], [233, 13], [236, 11], [239, 9], [267, 15], [283, 15], [288, 14]);
   floor(301, 316, ROAD);
   ent('sprig', 304, 17, { face: -1 }); ent('shield', 309, 17, { face: -1 });   /* the landing's guard: the area's exam ends on the bank */
   ent('check', 307, 17);
@@ -142,7 +140,7 @@ export function buildFenRoad({ painter, T, TS }) {
   sag('j', 366, 4); lash(364, 'j');
   ent('stiltwalker', 374, 17, { face: -1, horn: true, pack: [{ dx: 56, y: ROAD * TS, t: 'shield' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });
   plat(368, 14, 5); coins([369, 13], [371, 13]);
-  sag('k', 380, 3); plat(385, 14, 5); ent('spit', 387, 13, { face: -1 });
+  sag('k', 380, 3); plat(385, 14, 5); ent('spit', 387, 13, { face: -1 }); plat(389, 15, 2); plat(392, 13, 2); ent('silver', 393, 12);   /* past the spitter's deck, up two crates to a crew's cache (off the route) */
   coins([323, 16], [367, 16], [381, 16], [391, 16]);
   floor(399, 406, ROAD);
   ent('check', 400, 17);
@@ -156,7 +154,7 @@ export function buildFenRoad({ painter, T, TS }) {
   ent('bogtroll', ARENA.boss, 17, { face: -1 });
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
     waterHurts: true, noStack: true, sagCells, machineCells: [...sagCells, ...machine].map(([x, y]) => y * W + x),
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     music: 'sleepers', duskStart: undefined,
