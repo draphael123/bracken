@@ -289,7 +289,7 @@ export function buildOreRoad({ painter, T }) {
   ent('sign', 17, YARD, { text: 'HOLD DOWN ON A LOADED SKIP AND IT TIPS. EMPTY IT RIDES HIGH, LOADED IT RIDES LOW.' });
   ent('sign', 49, YARD, { text: 'HOLD THE SHIELD ON A BUCKET AND THE LINE STOPS. STOPPED IS WHERE YOU CAN FIGHT.' });
   ent('check', 5, YARD); ent('check', 41, YARD); ent('check', 64, YARD);   /* 41, not 34: column 34 is the crusher's east lip, and a checkpoint over the pit respawns you onto its teeth (audit FLOAT). not 37 either any more: the cart line's ramp at 36 needs that column clear */
-  meet('THE PICK LINE', 14, 40, [['miner', 14, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
+  meet('THE PICK LINE', 14, 40, [['miner', 15, YARD], ['rockgoblin', 10, YARD - 2], ['sprig', 40, YARD]]);
   meet('THE LOADING HOUSE', 52, 67, [['miner', 58, YARD], ['rockgoblin', 66, YARD], ['sapper', 56, YARD]]);
   ent('tippler', 60, YARD - 8, { face: -1 });                                   /* THE FIRST TIPPLER, over a floor and not yet over a drop: the level shows you the stream where you can walk out of it */
   coins([24, YARD - 1], [28, YARD - 2], [32, YARD - 1], [9, YARD - 2], [11, YARD - 2], [58, YARD - 4], [62, YARD - 8]);
@@ -725,12 +725,12 @@ Object.assign(OR, { WORK_SEE: 150, WORK_SEE_Y: 60, WORK_HEAR: 56, WORK_CALL: 110
    end to its tip end (tile columns of the cart's centre), tipped, pulled back and filled. SACK: carried from a heap to a drop.
    SORT: at a table, into the bins either side. WINCH: cranked, and a lift cage runs up its hoist (in column SHAFT) from the floor to row TOP */
 export const WORKS = [
-  ['miner', 16, 36, { k: 'pick' }], ['miner', 58, 36, { k: 'pick' }], ['miner', 140, 36, { k: 'pick' }], ['miner', 198, 28, { k: 'pick' }],
+  ['miner', 15, 36, { k: 'pick' }], ['miner', 58, 36, { k: 'pick' }], ['miner', 140, 36, { k: 'pick' }], ['miner', 198, 28, { k: 'pick' }],
   ['miner', 233, 27, { k: 'pick' }], ['miner', 337, 30, { k: 'pick' }],   /* (the pylon's miner is a lookout, and the winch house's has no seam on his floor: they stand guard) */
   ['rockgoblin', 66, 36, { k: 'cart', load: 48.5, tip: 38.5 }],        /* THE ORE YARD: the feed rail, tipped into the crusher */
   ['sapper', 56, 36, { k: 'sack', from: 63, to: 57 }],                   /* THE LOADING HOUSE: sacks down off the stack to the loft ladder */
   ['rockgoblin', 146, 36, { k: 'sort', at: 149 }],                       /* THE SORTING YARD: the table under the sorting floor */
-  ['heavy', 190, 36, { k: 'winch', at: 188, shaft: 186, top: 28 }],       /* THE SORTING TOWER: the lift cage up to the middle deck */
+  ['heavy', 188, 36, { k: 'winch', at: 188, shaft: 186, top: 28 }],       /* THE SORTING TOWER: the lift cage up to the middle deck */
   ['sapper', 236, 27, { k: 'sack', from: 230, to: 237 }],                /* THE TIPPLE HOUSE */
   ['sapper', 300, 30, { k: 'sack', from: 298, to: 307 }],                /* THE COLLAPSED SPAN: salvage off the fallen deck */
   ['heavy', 343, 29, { k: 'winch', at: 342, shaft: 340, top: 22 }],       /* THE BRAKEMAN'S HUT: the hoist up the pillar */
