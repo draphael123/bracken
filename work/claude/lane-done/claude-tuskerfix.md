@@ -93,3 +93,30 @@ src/old-tusker.js (pure fight), src/old-tusker-hands.js (draw/read), src/lumber-
   up and sweeps her: ~100 of her 136 hp from the sweep, ~30-45 from clods; only 1 charge a fight, no pin. Recs for Daniel / a geomancer lane: (a) the
   rune-ward's stamina cost vs a 12-dmg sweep, or (b) let her fault line FELL a marked pine (a stroke at range, like the ranger's arrow) so she can work the rule
   from outside his reach - REC (b): it is her kit's natural answer and keeps the boss numbers. Not built (boss rule change for one hero).
+
+## FOLLOW-UP 2: THE FAULT LINE FELLS (coordinator: build the rec) - geomancer still under, boss numbers KEPT
+- **Built (src/old-tusker-hands.js + a `geoFaults` getter in main.js)**: a geomancer's FAULT LINE (the heavy crack) that runs under a standing marked pine on the
+  clearing floor is ONE STROKE on the FIRST pine it reaches (one crack, one stroke; the ranger's arrow precedent). Players can now work the rule from range.
+- **Bot**: a felling-by-crack plan is in src/lab.js but switched OFF (`GEO_FELL = false`): with it on she measured **0/6 and 0/6** (strokes 21-28 a fight, but
+  the windups ate the stamina she cracks HIM with, and primed pines fell on her). Off: **geomancer 1/6** (n=6; the earlier 2/6 was before the crack also
+  stroked pines - within noise). **Knight spot check n=4: 3/4** (nothing else moved; k/w/p 63% stands).
+- **Not retuned for her**: she is < 40%, but lifting her to 40% means ~-20% boss health, which would push k/w/p (63%) to ~80%+. REC: keep boss numbers; her
+  wall is STAMINA (one bar for strokes, windups and the rune-ward; winded 40-50% of the fight she eats the sweep). Fix belongs to a geomancer lane (rune-ward
+  cost, or regen while winding) - see Q6.
+
+## FOLLOW-UP 3: THE FLOATING SIGN (Daniel: a sign just ABOVE a trunk platform)
+- Found TWO: **sign 350,13 (THE FALLEN GIANT)** and **sign 66,20 (the shield lesson, skid road)** - both stand on a SAWN STUMP whose cut face is drawn as an
+  ellipse sunk ~5 px into its tile, so the post hung over the rim (the tile test said 'on solid'). Fixed: a sign may carry `sink` (px its post is driven
+  down); both are `sink: 6` - planted in the cut face (shots work/tmp-tuskerfix/shots/signs3 + signs5, local).
+- **The check now catches it**: src/redraw/lumber_trail_tiles.js exports `roundTopAt` (stump faces + the half-round log decks); tools/signs.mjs fails any sign
+  on a registered rounded top without `sink >= 4` ("SIGNS OVER A ROUNDED TOP"). Red before (wood @66, @350), green after. Only the Lumber Trail's kit
+  registers rounded tops today, so NO other level is flagged; other kits register theirs in ROUND_TOPS when they draw curved tops. (For the record, a plain
+  'sign on a one-way/plank' rule would flag ~40 signs in marsh/stockade/spire/moor/storm/crown/longwater/reef/flotilla/lamplit/underleaf/deep - flat
+  boards, not floaters; not used.)
+- Re-stamped again (levelHash moved): mash level (k/w/p die 4/4/3), mash boss 0/6, pilot (29 hits, 3 deaths in 3 runs, 133%), curve (2 deaths, 147%);
+  level-quality wood CLEARS.
+
+## QUESTIONS (added)
+6. **Geomancer vs Old Tusker** (rec-built: her fault line fells a pine from range). She is 1/6 with the bot - REC: keep his numbers; a geomancer lane on her
+   stamina (rune-ward cost / regen while winding). Alt: -20% boss health (k/w/p go ~80%).
+7. **Signs on rounded tops**: REC keep `sink` + the registry (BUILT). Alt: move such signs to flat ground.

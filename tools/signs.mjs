@@ -5,7 +5,12 @@
 // panel does and fails any that runs to a third line.
 //   node tools/signs.mjs            the failures, longest first
 //   node tools/signs.mjs --all      every sign and its line count
-import { LEVELS } from '../src/level.js';
+import { LEVELS, T } from '../src/level.js';
+import { roundTopAt as lumberRoundTop } from '../src/redraw/lumber_trail_tiles.js';
+/* (claude/tuskerfix, Daniel 10-21: a sign hung just over the Lumber Trail's fallen-giant stump) A SIGN STANDS ON A FLAT TOP. A kit whose art draws a cell's top below the tile
+   top (a stump's cut face, a half-round log deck) registers it here; a sign whose foot cell is one of them floats in the picture though the tile test says it stands.
+   Register a kit's rounded tops here when it has them (only the Lumber Trail's are drawn so today). */
+const ROUND_TOPS = { wood: lumberRoundTop };
 
 const PER_LINE = 46, MAX_LINES = 2, HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
 const linesOf = s => { let n = 1, cur = 0;
@@ -25,6 +30,11 @@ for (const lv of LEVELS) {
     }
   }
 }
+const floating = [];
+for (const lv of LEVELS) { const rt = ROUND_TOPS[lv.id]; if (!rt || !lv.build) continue; let L; try { L = lv.build(); } catch (e) { continue; }
+  for (const e of L.ents || []) { if (e.t !== 'sign') continue; const x = Math.round(e.x); let y = Math.round(e.y) + 1; while (y < L.H && L.grid[y * L.W + x] === T.AIR) y++;
+    const why = y < L.H && !((e.sink || 0) >= 4) ? rt(x, y, L.grid[y * L.W + x], T) : null;   /* (a sign whose post is sunk into the top (sink >= 4 px) stands in it) */ if (why) floating.push(lv.id + ' @' + x + ',' + Math.round(e.y) + ': on ' + why + ' - it hangs over the curve (move it to flat ground or a flat top)'); } }
+if (floating.length) { console.log('SIGNS OVER A ROUNDED TOP:' + floating.map(f => '\n  ' + f).join('')); process.exitCode = 1; } else console.log('every sign on a registered kit (' + Object.keys(ROUND_TOPS).join(', ') + ') stands on a flat top.');
 if (process.argv.includes('--all')) for (const r of all) console.log(r.lv.padEnd(11), String(r.x).padStart(4), r.n, r.text);
 if (bad.length) {
   for (const r of bad.sort((a, b) => b.len - a.len).slice(0, 40)) console.log((r.lv + ' @' + r.x + (r.who !== 'text' ? ' [' + r.who + ']' : '')).padEnd(22), r.n + ' lines', r.text.slice(0, 90) + (r.text.length > 90 ? '...' : ''));

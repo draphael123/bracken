@@ -72,7 +72,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   floor(55, 64, 22); block(65, 69, 21, 27); block(70, 74, 20, 27); block(75, 80, 19, 27); block(81, 104, 18, 27);
   deck(59, 19, 3); coins([59, 18], [61, 18]);   /* a log crib by the road */
   deck(66, 18, 3);
-  sign(66, 20, 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', { pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
+  sign(66, 20, 'A RAISED SHIELD TURNS A CUT. HOLD X AND LET GO: THE SHIELD CHARGE GOES THROUGH IT.', { sink: 6, pyro: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE BELLOWS GO THROUGH IT.', paladin: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE OVERHEAD GOES THROUGH IT.', pirate: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PISTOL GOES THROUGH ANY GUARD.', reaper: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE PLANTED BLADE GOES THROUGH ANY GUARD.', warden: 'A RAISED SHIELD TURNS A CUT. HOLD X: THE SHAFT GOES ROUND IT, BOTH SIDES AT ONCE.' });
   ent('sprig', 71, 19, { face: -1 }); ent('shield', 78, 18, { face: -1 }); ent('thorn', 88, 17, { face: -1 });   /* the skid road's guard: the heavy cut, met on the slope */
   lessons.push({ kind: 'heavyblow', x0: 65, x1: 86 });
   deck(76, 16, 4); coins([76, 15], [78, 15]);
@@ -161,7 +161,7 @@ export function buildLumberTrail({ painter, T, TS }) {
   block(350, 351, 14, 16);
   block(353, 385, 11, 13);
   floor(353, 392, 17);
-  sign(350, 13, 'THE FALLEN GIANT: OVER THE TOP FOR COINS, OR THROUGH THE HOLLOW FOR QUIET.');
+  sign(350, 13, 'THE FALLEN GIANT: OVER THE TOP FOR COINS, OR THROUGH THE HOLLOW FOR QUIET.', { sink: 6 });   /* (claude/tuskerfix, Daniel 10-21) its post driven into the stump's cut face, not hung over the rim */
   ent('spit', 366, 16, { face: -1 }); ent('badger', 373, 16, { face: -1, cnSkin: 'boar' }); ent('lurker', 380, 16, { face: -1 });   /* the hollow: a boar charging down the tunnel at you */
   coins([358, 16], [363, 16], [372, 16], [382, 16]);
   ent('wasp', 362, 7, { cnSkin: 'pinemoth' }); ent('kite', 368, 7); ent('wasp', 375, 6, { cnSkin: 'pinemoth' });   /* over the top: two pine moths and a kite goblin (claude/oldtusker: they were wasps) */ coins([357, 10], [361, 10], [365, 10], [369, 10], [377, 10], [381, 10]);

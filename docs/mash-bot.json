@@ -1,22 +1,22 @@
 {
  "wood": {
-  "hash": "4509d53654d0",
+  "hash": "6639406ae816",
   "boss": {
    "boss": "oldtusker",
    "wins": 0,
    "fights": 6,
    "byHero": {
     "knight": [
-     "timeout:9/40",
-     "timeout:9/40"
+     "timeout:9/42",
+     "timeout:9/42"
     ],
     "warden": [
      "timeout:0/75",
      "timeout:0/75"
     ],
     "pyro": [
-     "timeout:10/56",
-     "timeout:10/55"
+     "timeout:10/58",
+     "timeout:10/56"
     ]
    },
    "rows": [
@@ -27,9 +27,9 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 9,
-     "bossLeftPct": 40,
+     "bossLeftPct": 42,
      "landed": 97,
-     "swings": 5707,
+     "swings": 5727,
      "reprisalPct": 0,
      "chip": []
     },
@@ -40,9 +40,9 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 9,
-     "bossLeftPct": 40,
+     "bossLeftPct": 42,
      "landed": 97,
-     "swings": 5710,
+     "swings": 5727,
      "reprisalPct": 0,
      "chip": []
     },
@@ -79,7 +79,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 10,
-     "bossLeftPct": 56,
+     "bossLeftPct": 58,
      "landed": 98,
      "swings": 5719,
      "reprisalPct": 100,
@@ -92,7 +92,7 @@
      "out": "timeout",
      "secs": 150,
      "hpLostPct": 10,
-     "bossLeftPct": 55,
+     "bossLeftPct": 56,
      "landed": 98,
      "swings": 5719,
      "reprisalPct": 0,
@@ -101,7 +101,7 @@
    ]
   },
   "carried": {
-   "from": "fdfd7201f5ff",
+   "from": "4509d53654d0",
    "parts": [
     "boss"
    ]
