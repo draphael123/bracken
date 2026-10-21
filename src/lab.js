@@ -302,6 +302,20 @@ function burnFlare(BK, h, boss) { if (h !== 'pyro' || !boss || boss.t !== 'windc
 function pyroPost(W, P, boss) { const segs = W.safe || []; if (!segs.length) return P.x; const dist = ([a, b]) => Math.max(0, a * 16 - boss.x, boss.x - (b + 1) * 16), seg = segs.slice().sort((p, q) => dist(p) - dist(q))[0]; let best = P.x, bd = 1e9;
   for (let x = seg[0] * 16 + 40; x <= (seg[1] + 1) * 16 - 40; x += 4) { if ((W.vents || []).some(v => Math.abs(x - v.x) < (v.w || 12) + 44)) continue; const c = Math.min(Math.abs(x - (boss.x - 110)), Math.abs(x - (boss.x + 110))); if (c < bd) { bd = c; best = x; } }
   return best; }
+/* (claude/moorpass) WHO SENDS HIS BOLT HOME FROM THE FLOOR (main.js sendBoltHome): the pyromancer's fire, the ranger's snatch, the paladin's aegis, the Blood Knight's ward let go -
+   the hands keep them on the floor he falls to (pyroPost) and answer his bolt there; the climb stays the knight's, the warden's, the freebooter's, the geomancer's, the berserker's */
+const HOME_FLOOR = h => h === 'pyro' || h === 'ranger' || h === 'paladin' || h === 'reaper';
+/* (claude/moorpass) THE AEGIS and THE WARD LET GO, on his bolt: seen a reaction late, C comes up as it comes in (the aegis takes 0.16 s to stand); the paladin holds it
+   through the bolt, the Blood Knight lets it go just before it lands (the release beat, WARD_BEAT 0.22 s). One bolt in misread is missed. 1 = hold C, -1 = let it go */
+function homeGuard(BK, h, boss) { if ((h !== 'paladin' && h !== 'reaper') || !boss || boss.t !== 'windcaller' || !BK.bossActive) return 0; const P = BK.P;
+  if (!P.ground || P.galeRide || P.dead || P.swim) return 0; const rt = (LABP.rtMode || 386) / 1000; let best = null, bt = 9;
+  for (const s of BK.seeds()) { if (!s.bolt || s.dead || s.reflected || !s.owner || s.owner.t !== 'windcaller' || 3.4 - s.life < rt) continue;
+    const dx = P.x - s.x, dy = (P.y - 10) - s.y, v2 = s.vx * s.vx + s.vy * s.vy || 1, tc = (dx * s.vx + dy * s.vy) / v2; if (tc <= 0 || tc > 0.7) continue;
+    if (Math.hypot(s.x + s.vx * tc - P.x, s.y + s.vy * tc - (P.y - 10)) > 20) continue;   /* (it will reach him) */
+    if (s.labMiss === undefined) s.labMiss = Math.random() < (LABP.misread || 0); if (s.labMiss) continue;
+    if (tc < bt) { bt = tc; best = s; } }
+  if (!best) return 0; P.face = Math.sign(best.x - P.x) || P.face;
+  return h === 'paladin' || bt > 0.09 ? 1 : -1; }
 function callerRollBad(BK) { const b = BK.boss, P = BK.P, K = BK.keys || {}; if (!b || b.t !== 'windcaller' || !b.alive || !BK.bossActive) return false; return callerNoRoll(BK, K.left ? -1 : K.right ? 1 : (P.face || 1)); }
 function callerKeep(BK, e, x) { const W = BK.callerWind && BK.callerWind(), P = BK.P; if (!W || !P.ground) return x;
   for (const [x0, x1, row] of W.ledges) { const on = q => q.x >= x0 * 16 - 2 && q.x <= (x1 + 1) * 16 + 2 && Math.abs(q.y - row * 16) < 6; if (on(P) && on(e)) return Math.max(x0 * 16 + 6, Math.min((x1 + 1) * 16 - 6, x)); }
@@ -2430,7 +2444,7 @@ async function runbossLab(BK, opts) {
          its safe end to him (the descent below). His gale home is ridden, nothing pressed. */
       else if (boss.t === 'windcaller' && BK.callerWind) { const W = BK.callerWind(), up = boss.y < P.y - 40;
         if (P.ground) P.labHop = 0;
-        const bolt = SHIELDED(h) || P.galeRide || P.labHop ? null : BK.seeds().find(q => q.bolt && !q.dead && !q.reflected && Math.abs(q.x - P.x) < (LAB_REACH[h] || 22) + 22 && Math.abs(q.y - (P.y - 10)) < 22 && (q.x - P.x) * (q.vx || 0) < 0);   /* (a hero with no guard STRIKES his bolt back as it arrives, as the sign says) */
+        const bolt = SHIELDED(h) || h === 'ranger' || P.galeRide || P.labHop ? null : BK.seeds().find(q => q.bolt && !q.dead && !q.reflected && Math.abs(q.x - P.x) < (LAB_REACH[h] || 22) + 22 && Math.abs(q.y - (P.y - 10)) < 22 && (q.x - P.x) * (q.vx || 0) < 0);   /* (a hero with no guard STRIKES his bolt back as it arrives, as the sign says) */
         if (bolt && P.atk < 0) { P.face = Math.sign(bolt.x - P.x) || P.face; BK.press('atk'); swings++; }
         if (P.galeRide) { goal = null; strike = false; P.labRide = null; }
         else if (P.labHop && !P.ground) { goal = null; strike = false; k[P.labHop > 0 ? 'right' : 'left'] = true; }   /* over the thorn strip: keep going */
@@ -2446,7 +2460,7 @@ async function runbossLab(BK, opts) {
           if (W.on || W.tell >= 0.15) { goal = null; if (SHIELDED(h)) { k.block = true; P.face = Math.sign(boss.x - P.x) || P.face; } else k.down = true; } else goal = dir > 0 ? (mine[1] + 1) * 16 + 12 : mine[0] * 16 - 12; }
         /* (claude/moorpyro) THE PYROMANCER DOES NOT CLIMB TO HIM: her answer is her flare (burnFlare) - she keeps to her floor, out of the updrafts (a gust would lift her off it),
            a little way out from under him so his bolt comes in long enough to be read, and goes to him when he falls */
-        else if (h === 'pyro' && up && W && boss.mode !== 'fallen' && P.ground && Math.abs(P.y - W.floor) < 6 && W.safe) { P.labRide = null; strike = false; goal = ['blink', 'appear', 'galeTell', 'gale'].includes(boss.mode) ? null : pyroPost(W, P, boss); if (goal !== null && Math.abs(goal - P.x) < 6) goal = null;
+        else if (HOME_FLOOR(h) && up && W && boss.mode !== 'fallen' && P.ground && Math.abs(P.y - W.floor) < 6 && W.safe) { P.labRide = null; strike = false; goal = ['blink', 'appear', 'galeTell', 'gale'].includes(boss.mode) ? null : pyroPost(W, P, boss); if (goal !== null && Math.abs(goal - P.x) < 6) goal = null;
           if (goal !== null && (W.on || W.tell >= 0) && (W.vents || []).some(v => Math.abs(P.x - v.x) > (v.w || 12) + 4 && (v.x - P.x) * (goal - v.x) > 0)) goal = null;   /* (an updraft between her and her spot: crossed in the still, never in the gust) */
           const seg = W.safe.find(([a, b]) => P.x >= a * 16 - 4 && P.x <= (b + 1) * 16 + 4), dw = W.on ? W.dir : W.next; if (seg && (goal === null || (goal >= seg[0] * 16 && goal <= (seg[1] + 1) * 16)) && (W.on || W.tell >= 0.4) && (dw > 0 ? (seg[1] + 1) * 16 - P.x : P.x - seg[0] * 16) < 64) { goal = null; k.down = true; } }   /* (the summit's gust shoves her along the floor: braced, near a thorn edge downwind) */
         else if (!up || !W) { P.labRide = null; goal = boss.x; strike = P.ground || open; }   /* (no swing in the air over his summit: an air cut hangs you, and the gust takes you off the ledge) */
@@ -2715,7 +2729,8 @@ async function runbossLab(BK, opts) {
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
         if (P.ground) { BK.press('jump'); P.labJump = 18; if (!(LABP.v2 && h === 'warden') || Math.abs((boss.y - (boss.h || 16) / 2) - (P.y - 9)) < 30) BK.press('dodge'); } }   /* (claude/wardenkit, v2: the warden's step here only when he is at her height - it is her BACK-step, it carries ~45 px now, and a warden waiting under the Owl at her lamp read as 'stuck' 48 times a fight and was stepped off it each time; the jump unsticks her) */
       { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
-      if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck || burnFlare(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
+      if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck || burnFlare(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }
+      { const hg = homeGuard(BK, h, boss); if (hg) { k.left = k.right = k.atk = k.jump = k.down = k.up = false; k.block = hg > 0; P.labJump = 0; } }   /* (claude/moorpass) the aegis / the ward let go, on his bolt */   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       /* (claude/owl3) THE DROP'S LIP: on the boards within a few steps of a break in them, nothing the hands asked for this frame carries him over it - no step,
          hop, roll or held jump toward it - unless the drop is what he means to cross (his goal is past it). A player minds the edge; the other hands do not know it is there */
       if (boss.t === 'owl' && P.ground) for (const [a, b] of (A.drops || [])) { const l = a * 16, r = (b + 1) * 16, cross = goal !== null && ((P.x < l && goal > r) || (P.x > r && goal < l)); if (cross) continue;

@@ -51,6 +51,8 @@ export const CALL_LINES = new Set([
   'THE WIND TURNS: READ THE FLAGS', 'THE STORM: THE EAST LEDGE GIVES', 'HE GATHERS THE WIND: STEP BACK', 'HE STEPS AWAY', 'HE BLOWS YOU HOME', 'THE GALE TAKES YOU HOME', 'THE LEDGE FALLS', 'HIS OWN BOLT: HE FALLS - CUT HIM',
   /* claude/moorpyro: fire sends his bolt home (the pyromancer's answer to him) */
   'HIS BOLT BURNS HOME: HE FALLS - CUT HIM', 'YOUR FIRE SENDS HIS BOLT HOME',
+  /* claude/moorpass: the ranger's snatch, the paladin's aegis, the Blood Knight's ward let go send his bolt home too */
+  'HIS BOLT GOES HOME: HE FALLS - CUT HIM', 'SNATCH HIS BOLT: IT FLIES HOME', 'YOUR AEGIS SENDS HIS BOLT HOME', 'LET THE WARD GO AS HIS BOLT LANDS',
   /* claude/survival2: the manual flask and the exam spikes (src/main.js drinkFlask, shrine break, SV.examAt) - routed so the player can see them */
   'NO FLASKS', 'FULL', 'SPILLED', 'SHRINE BROKEN  +1 FLASK', 'THE SPIKES KILL HERE',
   /* claude/flasks2: STEADY HAND kept the flask through a blow (src/main.js spillFlask) */

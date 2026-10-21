@@ -233,6 +233,7 @@ export function makeRanger(api) {
   function snatchSeeds() { const p = P(); if (!onBeat(p) || !api.seeds) return;
     for (const s of api.seeds) { if (s.dead || s.reflected || s.chain || s.noBlock || s.unblockable || s.owner === p) continue;
       const dx = (s.x - p.x) * p.face; if (dx < -4 || dx > RG.snatch.r || Math.abs(s.y - (p.y - 10)) > RG.snatch.dy) continue;
+      if (api.boltHome && api.boltHome(s)) { stats.snatched++; p.parryT = 0.22; api.kitPose(p, 'rgSnatch', 0.22); api.SFX.rgPick && api.SFX.rgPick(); api.hitstop(0.05); api.ringAt(p.x + p.face * 9, p.y - 12, 14, '#e8dcb0', 0.25); api.noteParry(); api.trialEvent('snatch'); return; }   /* (claude/moorpass) THE WINDCALLER's bolt: caught and loosed straight back home (main.js sendBoltHome) */
       s.dead = true; stats.snatched++; p.parryT = 0.22; api.kitPose(p, 'rgSnatch', 0.22); p.rgSnatchFx = { x: s.x, y: s.y, hx: p.x + p.face * 14, t: 0.34, max: 0.34, fling: !(p.rgQ < maxQ()) };   /* (claude/heropassaart) the catch star */
       api.SFX.rgPick && api.SFX.rgPick(); api.hitstop(0.05); api.ringAt(p.x + p.face * 9, p.y - 12, 14, '#e8dcb0', 0.25); api.sparks(s.x, s.y, -p.face, 5);
       if (giveArrow(p, 1, 'snatch')) api.number(p.x, p.y - 28, 'SNATCHED', '#e8dcb0');
