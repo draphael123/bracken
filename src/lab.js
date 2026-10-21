@@ -2277,7 +2277,7 @@ async function runbossLab(BK, opts) {
         else if (boss.mode === 'scurry' || boss.mode === 'dive' || boss.mode === 'leap' || boss.mode === 'hide') { goal = null; strike = false; }
         else { goal = boss.x - Math.sign(d || 1) * 64; strike = false; }
         if (P.labJump > 0) { P.labJump--; k.jump = true; } }
-      else if (open) { goal = boss.x; strike = true; }
+      else if (open && !(boss.t === 'windcaller' && boss.y < P.y - 40)) { goal = boss.x; strike = true; }   /* (claude/curvec4a: a windcaller up on a ledge is not walked at, whatever the open flag says - the ride below takes the hands to him) */
       /* THE PLATE THAT TURNS EVERY BLADE (the Queen's Lance): chipping at it does nothing at all, so the hands MAKE the
          opening the way a player does - stand a dash's length off and come at his guard at a run. His own gate says a
          dash attack knocks him OFF BALANCE, and the cut after it lands. (A bot that only pressed attack measured a boss
@@ -2406,7 +2406,11 @@ async function runbossLab(BK, opts) {
           if (rising && low && inCol && P.vx * R.dir > 40) k[R.dir > 0 ? 'left' : 'right'] = true;
           else if (rising && low && inCol) {}
           else if (cxl === null || rising || (cxl - P.x) * R.dir > 10) k[R.dir > 0 ? 'right' : 'left'] = true; else if ((P.x - cxl) * R.dir > 10) k[R.dir > 0 ? 'left' : 'right'] = true; }
-        else if (open || !up || !W) { P.labRide = null; goal = boss.x; strike = P.ground || open; }   /* (no swing in the air over his summit: an air cut hangs you, and the gust takes you off the ledge) */
+        /* (claude/curvec4a) HE IS ON THE OTHER LEDGE, level with the hands: walking at him walks off the end of this one into the gap and the gust carries the fall over the thorns under his ledge (the knight and the pyro, 2-4 thorn hits a fight). Step off the safe end toward him IN THE STILL (braced if the gust is blowing or told) and ride the other updraft from the floor, as for any boss above */
+        else if (W && P.ground && W.ledges.some(([x0, x1, row]) => Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4) && !W.ledges.some(([x0, x1, row]) => Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4 && boss.x >= x0 * 16 - 8 && boss.x <= (x1 + 1) * 16 + 8 && Math.abs(boss.y - row * 16) < 8) && W.ledges.some(([x0, x1, row]) => boss.x >= x0 * 16 - 8 && boss.x <= (x1 + 1) * 16 + 8 && Math.abs(boss.y - row * 16) < 8)) { P.labRide = null; strike = false; 
+          const mine = W.ledges.find(([x0, x1, row]) => Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4), dir = Math.sign(boss.x - P.x) || 1;
+          if (W.on || W.tell >= 0.15) { goal = null; if (SHIELDED(h)) { k.block = true; P.face = Math.sign(boss.x - P.x) || P.face; } else k.down = true; } else goal = dir > 0 ? (mine[1] + 1) * 16 + 12 : mine[0] * 16 - 12; }
+        else if (!up || !W) { P.labRide = null; goal = boss.x; strike = P.ground || open; }   /* (no swing in the air over his summit: an air cut hangs you, and the gust takes you off the ledge) */
         else { P.labRide = null;
           const floorOf = x => (W.safe || []).find(([a, b]) => x >= a * 16 - 4 && x <= (b + 1) * 16 + 4) || null;
           const myFloor = P.ground && Math.abs(P.y - W.floor) < 6 ? floorOf(P.x) : null;
