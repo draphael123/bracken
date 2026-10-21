@@ -1919,7 +1919,7 @@ async function runbossLab(BK, opts) {
       k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false; k.atk = false;
       if (h === 'paladin' && f < holdC) k.block = true;
       if (h === 'reaper' && f < dkHold) k.block = true;
-      if (h === 'reaper') { k.throw = false;   /* F: SUMMON SKELETON (when his tree has it) near the boss with none of his up; with a full bar and the boss close, HOLD F for the surge */
+      if (h === 'reaper') { k.throw = false;   /* F: SUMMON THRALL (when his tree has it) near the boss with none of his up; with a full bar and the boss close, HOLD F for the surge */
         if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); }
         else if (f % 20 === 0 && ad < 110 && BK.skillNow() === 'summonSkeleton' && !(P.cds && P.cds.summonSkeleton > 0) && !BK.risen().some(r => r.life > 0)) BK.press('throw'); }
       let goal = null, strike = false, princeT = null, lampT = null; P.labSwimY = undefined;
@@ -2104,8 +2104,8 @@ async function runbossLab(BK, opts) {
          HIS CUTS (gold): guarded (a shield; the warden's deflect), or stepped back out of. THE CLEAVE: stand in its reach while he lifts it
          (that is what makes him commit), and once he has COMMITTED dodge out of it, away: the blade goes into the floor and the hands cut the
          stuck man. His recoveries (after a cut, a cleave, the bolts) are cut too: every blow lands whole now. THE PLANTED BLADE: the middle
-         of the widest gap. GRAVE CHAIN: jump the chain as it arrives. BLOOD WELL: out of its ring. BLOOD LEECH: on the shield, or dodged as it
-         arrives. GRAVE TIDE: round behind him. THE WARD: from behind his back is cut; on its face the hands FILL it and break it (he reels
+         of the widest gap. BLOOD CHAIN: jump the chain as it arrives. BLOOD WELL: out of its ring. BLOOD LEECH: on the shield, or dodged as it
+         arrives. CRIMSON TIDE: round behind him. THE WARD: from behind his back is cut; on its face the hands FILL it and break it (he reels
          open), and back off before a nova they did not break. NOVA, SURGE: out of the ring. His dead are cut when they come close. */
       else if (boss.t === 'bloodknight') { const S = BK.unbU ? BK.unbU.UNB.bk : null, side = Math.sign(P.x - boss.x) || 1, m = boss.mode;
         if (P.labDkM !== m) { if (LABP.v2) P.labDkPrev = P.labDkM; P.labDkM = m; P.labDkF = f; } const seen = LABP.v2 || f - P.labDkF >= 15, shield = SHIELDED(h);   /* (claude/botreads, v2: the eyes are already a reaction late - no second 0.25 s on top) */
