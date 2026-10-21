@@ -9,9 +9,10 @@
 //   BLOOD PRICE (DOWN+C)     on his knee he opens a vein: price.pct of his max health (never his last point) goes ON THE BAR AS DEBT, and for
 //                            price.buffT s his blade is BLOOD-EDGED (x price.mul). Pay, then hit to win it back - or spend it on a T4/T5 heavy.
 //   THE FIVE-TIER HEAVY      HOLD X; let go any time past T1 and that tier comes down. The blade glows deeper each tier, with a tick.
-//    (hold X)                 T1 REND ~0.3 s a fast cleave | T2 SUNDER ~0.6 s overhead, cracks a guard / poise | T3 CRIMSON CRESCENT ~1.0 s a short
-//                            travelling blood wave | T4 EXSANGUINATE ~1.4 s a lunging impale - NEEDS debt (tiers.need[4]) and SPENDS it all |
-//                            T5 BLOOD MOON ~1.9 s a ground slam + geyser that bleeds all it hits - needs a BIG debt (tiers.need[5]). T1-3 are free.
+//    (hold X)                 T1 REND ~0.35 s a fast cleave | T2 SUNDER ~0.8 s overhead, cracks a guard / poise | T3 CRIMSON CRESCENT ~1.3 s a short
+//                            travelling blood wave | T4 EXSANGUINATE ~1.9 s a lunging impale | T5 BLOOD MOON ~2.6 s a ground slam + geyser that bleeds all
+//                            it hits. (claude/bkfeel 10-21: the tiers were 0.3-1.9 s and T4/T5 NEEDED debt - Daniel saw "one or two"; now all five are reached by
+//                            the hold alone and the debt EMPOWERS T4/T5 - spent into the blow, half of it drunk back when it lands.) T1-3 reclaim instead.
 //                            Every heavy BLEEDS what it lands on. While the blade is held the debt does not drain (the blade holds the blood).
 //   BLOOD SPIKE (crouch)     the crouch is still the low block (the greatsword planted point-down). A LOW blow blocked ON THE BEAT (the kneel
 //                            begun within spike.beat s of it landing) erupts crimson spikes round the blade: damage + stagger the attacker, a wind
@@ -26,13 +27,24 @@ export const BLOOD = {
   /* THE TIERS: at = held s (from the press, as the knight's CUT_AT) for T1..T5; auto = held this long, the best tier he may have comes down by itself;
      mul = the blow's multiplier per tier; need = debt (fraction of max hp) a tier needs; spendMul: a T4/T5 adds spent/maxHp x this to its multiplier;
      bleed = seconds of bleed per tier (bleedN 1, 2 from T4) */
-  tiers: { at: [0.3, 0.6, 1.0, 1.4, 1.9], auto: 2.5, mul: [0, 1.5, 1.8, 2.0, 2.4, 2.6], need: [0, 0, 0, 0, 0.06, 0.14], spendMul: 4, bleed: [0, 2, 2.5, 2.5, 3, 4],
+  /* (claude/bkfeel, Daniel 10-21 "a much longer charge ... think about how the Knight works ... five tiers"): the five spread over a 2.6 s hold (the knight's three run 0.3/0.7/1.1);
+     ALL FIVE are reached by holding alone (need is 0 everywhere now). BLOOD DEBT EMPOWERS T4/T5 instead of gating them: what he owes is spent into the blow (spendMul)
+     and part of it comes back into him when that blow lands (empower.heal) - the debt is power AND a heal, never a lock. mul rises so each wait pays. */
+  tiers: { at: [0.35, 0.8, 1.3, 1.9, 2.6], auto: 3.3, mul: [0, 1.5, 1.9, 2.3, 2.8, 3.4], need: [0, 0, 0, 0, 0, 0], spendMul: 3, bleed: [0, 2, 2.5, 2.5, 3, 4],
     names: ['', 'REND', 'SUNDER', 'CRIMSON CRESCENT', 'EXSANGUINATE', 'BLOOD MOON'],
     cols: [null, '#ff9aa6', '#ff6b6b', '#ff4a5a', '#d0182c', '#8a0a1a'] },
   /* T3's travelling wave: px/s, life s, multiplier of the sword's blow; T4's lunge px/s while the art runs to lungeTo; T5's geyser reach px */
   wave: { sp: 270, life: 0.4, mul: 1.1 },
   lunge: { v: 210, from: 0.1, to: 0.22 },   /* the drive runs with the live box (from..to of the art clock) and stops the moment the point goes in */
   moon: { reach: 58, mul: 0.9 },
+  /* (claude/bkfeel) DEBT EMPOWERS T4/T5: min = the debt (of max hp) that makes the blow BLOOD-FED (said, and the deeper glow); heal = of the spent debt that comes back into him when the
+     empowered blow LANDS (never above where he was before the hits, as every reclaim) */
+  empower: { min: 0.03, heal: 0.5 },
+  /* (claude/bkfeel) THE WARD-RELEASE PARRY'S WEIGHT (Daniel 10-21 "make his PARRY feel more impactful - the Warden's feels good"): stop = the freeze (s; the Warden's deflect 0.07, the
+     knight's perfect guard 0.09), slow = the crimson held breath after it (s of the world at slowT's 0.3 speed), flash = the crimson wash (s), push = px the foe stumbles back (it stays in the
+     greatsword's reach: the old 240 px/s shove was zeroed by the shared parry reel the next frame), stagger = s it reels, window = s his riposte waits (the shared 0.6 is short for a greatsword;
+     the riposte is a HEAVY third cut, as the knight's), st = wind back, tap = a C flicked too short to stand the ward up also opens the beat (the same 0.22 s window) */
+  parry: { stop: 0.2, slow: 0.16, flash: 0.24, push: 18, stagger: 1.0, window: 0.9, st: 14, tap: true },
   /* BLOOD SPIKE: beat s; the spikes hit mul x the sword's blow, stagger s, knock px/s (not a big one), st wind refund (held to commit.js refundCap) */
   spike: { beat: 0.22, mul: 1.2, stagger: 0.8, knock: 200, st: 12 },
 };
@@ -43,7 +55,7 @@ export function tierFor(held, debt, maxHp, quick = 1) {
   for (let i = 0; i < 5; i++) { if (held < T.at[i] * quick) break; const need = T.need[i + 1] * maxHp; if (need > 0 && (debt || 0) + 1e-6 < need) break; st = i + 1; }
   return st;
 }
-/* the tier the hold has reached on time alone (to say "NEEDS BLOOD DEBT" when the debt holds it back) */
+/* the tier the hold has reached on time alone (claude/bkfeel: the same as tierFor now - no tier needs debt; kept for the tools) */
 export const tierByTime = (held, quick = 1) => { let st = 0; for (let i = 0; i < 5; i++) if (held >= BLOOD.tiers.at[i] * quick) st = i + 1; return st; };
 
 /* THE DEBT on a hero-like object p (p.hp, p.maxHp; p.bd the debt, p.bdRate, p.bdHold, p.bdLast the health last frame).

@@ -2048,7 +2048,7 @@ export const LEGACY_NODES = [
     "col": 0,
     "name": "THE FIVE-TIER HEAVY",
     "max": 2,
-    "desc": "you already have it: HOLD the swing and let go as the blade glows - REND, SUNDER, the CRIMSON CRESCENT, and on a BLOOD DEBT, EXSANGUINATE and BLOOD MOON, which spend the debt as power. every tier bleeds what it lands on. quicker to wind and harder a point",
+    "desc": "you already have it: HOLD the swing and let go as the blade glows - five tiers on a long hold: REND, SUNDER, the CRIMSON CRESCENT, EXSANGUINATE and BLOOD MOON. BLOOD DEBT spent into the last two hits harder and drinks some back. every tier bleeds. quicker to wind and harder a point",
     "parent": null,
     "active": false,
     "cap": false,

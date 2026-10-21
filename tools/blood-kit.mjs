@@ -2,14 +2,18 @@
 // Pure (Node), on src/blood-kit.js, this fails when:
 //   - BLOOD DEBT: a blow does not leave debt.share of it as debt; the debt does not drain to nothing in ~debt.drainT s, or drains while the blade is
 //     wound (freeze); a heal does not fill the segment first; it passes debt.cap of max health or the health he lost; a reclaim heals above pre-hit
-//   - THE TIERS: a hold does not reach T1..T5 at tiers.at; T4 or T5 is reached without its debt (tiers.need); a T4/T5 does not spend it all
+//   - THE TIERS: a hold does not reach T1..T5 at tiers.at - by the HOLD ALONE (claude/bkfeel 10-21: no tier needs debt; Daniel "a much longer charge ... five tiers"); the
+//     tiers are not spread over a long hold (T5 >= 2.4 s) or a later tier is not heavier; a T4/T5 does not spend the debt it is fed
 //   - BLOOD PRICE takes his last point, or does not put what it took on the bar as debt
 // In the page (Stockade floor, the hero 'reaper' held where he stands), this fails when:
 //   - a real blow on him leaves no red segment, or it does not drain away; one of his cuts that lands on a straw man wins none of it back, or
 //     wins back more than he lost; with no debt his cut heals him at all (no other passive heal: the drag drinks nothing)
 //   - holding X and letting go at each tier's time does not bring down that tier (REND / SUNDER / CRIMSON CRESCENT / EXSANGUINATE / BLOOD MOON);
-//     T4 comes down with no debt; T4 / T5 on a debt does not spend it; the CRESCENT sends no wave; a heavy that lands does not BLEED; held past
-//     tiers.auto it does not come down by itself
+//     T4 does not come down with no debt (it must: the hold alone reaches it); T4 / T5 on a debt does not spend it, or a fed T4 that lands drinks none of it back;
+//     the CRESCENT sends no wave; a heavy that lands does not BLEED; held past tiers.auto it does not come down by itself
+//   - (claude/bkfeel) THE PARRY: a ward let go as a blow lands is not THROWN BACK with the freeze + the crimson held breath + the wash; the foe is shoved out of his reach or
+//     does not reel BLOOD.parry.stagger; his riposte window is not BLOOD.parry.window or not heavy; the debt comes back without the bar's pulse; a C TAPPED too short to stand
+//     the ward up (the flick) does not throw the blow back
 //   - DOWN+C (BLOOD PRICE) does not cost price.pct of his health as debt, or does not edge the blade (a cut lands harder)
 //   - kneeling AS a low blow lands is not a BLOOD SPIKE (the blow turned, the attacker struck, ALL the debt reclaimed); a kneel held long is the
 //     plain low guard (turned, no spike)
@@ -28,8 +32,9 @@ const near = (a, b, e = 0.6) => Math.abs(a - b) <= e;
 /* ---------------- PURE ---------------- */
 { const T = BLOOD.tiers, M = 95, D = BLOOD.debt;
   for (let i = 0; i < 5; i++) ok(tierFor(T.at[i] + 0.01, M, M) === i + 1 && tierFor(T.at[i] - 0.01, M, M) === i, 'tier at ' + T.at[i] + ' s is not T' + (i + 1));
-  ok(tierFor(1.5, 0, M) === 3 && tierByTime(1.5) === 4, 'T4 is reached with no debt (or the time alone does not say 4)');
-  ok(tierFor(1.5, T.need[4] * M, M) === 4 && tierFor(2.0, T.need[4] * M, M) === 4 && tierFor(2.0, T.need[5] * M, M) === 5, 'T4/T5 do not follow their debt');
+  ok(tierFor(T.at[3] + 0.01, 0, M) === 4 && tierFor(T.at[4] + 0.01, 0, M) === 5, 'T4/T5 are not reached by the hold alone (claude/bkfeel: debt empowers, never gates)');
+  ok(T.at[4] >= 2.4 && T.auto > T.at[4] && T.at.every((a, i) => !i || a - T.at[i - 1] >= 0.4), 'the five tiers are not spread over a long hold: ' + T.at);
+  ok(T.mul.slice(1).every((m, i, a) => !i || m > a[i - 1]), 'a later tier is not heavier: ' + T.mul);
   const p = { hp: M, maxHp: M }; debtStep(p, 0.016); p.hp -= 20; debtStep(p, 0.016);
   ok(near(p.bd, 20 * D.share), 'a 20 blow left ' + p.bd + ' debt (want ' + 20 * D.share + ')');
   const q = { ...p }; for (let i = 0; i < 60; i++) debtStep(q, 1 / 60, { freeze: true }); ok(near(q.bd, p.bd), 'the debt drained while the blade was wound');
@@ -91,8 +96,9 @@ try {
     out.tiers = {};
     for (let i = 0; i < 3; i++) out.tiers['t' + (i + 1)] = hold(T.at[i] * quick + 0.06);
     out.tiers.t4dry = hold(T.at[3] * quick + 0.06);
-    out.tiers.t4 = hold(T.at[3] * quick + 0.06, () => { P().bd = T.need[4] * P().maxHp + 2; P().bdLast = P().hp; });
-    out.tiers.t5 = hold(T.at[4] * quick + 0.06, () => { P().bd = Math.min(P().maxHp * B().BLOOD.debt.cap, T.need[5] * P().maxHp + 3); P().bdLast = P().hp; });
+    out.tiers.t5dry = hold(T.at[4] * quick + 0.06);
+    let hpFed = 0; out.tiers.t4 = hold(T.at[3] * quick + 0.06, () => { P().bd = B().BLOOD.empower.min * P().maxHp + 6; P().bdLast = P().hp; hpFed = P().hp; }); out.tiers.t4.healed = +(P().hp - hpFed).toFixed(2);
+    out.tiers.t5 = hold(T.at[4] * quick + 0.06, () => { P().bd = Math.min(P().maxHp * B().BLOOD.debt.cap, 0.14 * P().maxHp + 3); P().bdLast = P().hp; });
     out.tiers.auto = hold(T.auto + 0.8);
     /* 4. BLOOD PRICE: DOWN+C */
     place(80); const hpP = P().hp; BK.keys.down = true; BK.sim(15); BK.keys.block = true; BK.sim(2); BK.keys.block = false; BK.keys.down = false; BK.sim(2);
@@ -104,6 +110,13 @@ try {
     out.spike = { r: rS, spikes: D().stats().spikes - s0, foeHurt: fh - f1.hp, healed: P().hp - hpS, bd: +B().bd.toFixed(2) }; keysOff(); f1.alive = false; BK.sim(10);
     place(60); const f2 = foe(), fh2 = f2.hp, s1 = D().stats().spikes; BK.keys.down = true; BK.sim(40); const rL = blow(10, { who: f2, low: true }); BK.sim(2);
     out.longKneel = { r: rL, spikes: D().stats().spikes - s1, foeHurt: fh2 - f2.hp }; keysOff(); f2.alive = false; BK.sim(10);
+    /* 7. (claude/bkfeel) THE PARRY: the ward stood up and let go as the blow lands; then THE FLICK (C tapped too short for the ward) */
+    const parryOnce = (frames) => { place(70); P().bd = 15; P().bdLast = P().hp; P().novaCd = 0; P().wardRetDone = true; const f = foe(); delete f.maxHp; f.mode = 'idle'; const n0 = B().thrown, fl0 = B().flicks;
+      BK.keys.block = true; BK.sim(frames); BK.keys.block = false; BK.sim(1); const hpB = P().hp, r = blow(10, { who: f }), b0 = B(), dx0 = Math.abs(f.x - P().x);
+      const o = { r, thrown: b0.thrown - n0, flicks: b0.flicks - fl0, stop: +b0.stop.toFixed(3), slow: +b0.slow.toFixed(3), parryAt: b0.parryAt !== null, rip: +b0.rip.toFixed(2), ripHeavy: b0.ripHeavy, bd: +b0.bd.toFixed(2), healed: P().hp - hpB, rec: !!(b0.recFx && b0.recFx.all), stagger: +(f.stagger || 0).toFixed(2) };
+      BK.sim(20); o.dx = Math.round(Math.abs(f.x - P().x)); o.dx0 = Math.round(dx0); o.reeling = (f.stagger || 0) > 0 || (f.rpHold || 0) > 0; keysOff(); f.alive = false; BK.sim(30); return o; };
+    out.parry = parryOnce(12);
+    out.flick = parryOnce(2);
     /* 6. NO HARVEST: crouched over a body */
     place(P().maxHp - 30); const n0 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x, y: spot.y }); const br = D().enemies[n0]; br.x = P().x + 2; br.y = P().y; D().kill(br); BK.sim(3);
     const hpH = P().hp; P().bdLast = P().hp; P().bd = 0; BK.keys.down = true; BK.sim(90); BK.keys.down = false; out.harvest = { bodies: D().bodies.length, healed: P().hp - hpH };
@@ -117,17 +130,23 @@ try {
     ok(R.noDebtHeal <= 0, 'with no debt his cuts healed him ' + R.noDebtHeal + ' (no other passive heal)');
     for (let i = 1; i <= 3; i++) { const t = R.tiers['t' + i]; ok(t.tier === i && t.bleed, 'a T' + i + ' hold brought down T' + t.tier + (t.bleed ? '' : ' and did not bleed the straw man') + ': ' + JSON.stringify(t)); }
     ok(R.tiers.t3.wave, 'the CRIMSON CRESCENT sent no wave');
-    ok(R.tiers.t4dry.tier === 3, 'T4 came down with no debt: ' + JSON.stringify(R.tiers.t4dry));
-    ok(R.tiers.t4.tier === 4 && R.tiers.t4.spent > 0 && R.tiers.t4.bdAtFire === 0, 'EXSANGUINATE on a debt did not come down or spend it: ' + JSON.stringify(R.tiers.t4));
+    ok(R.tiers.t4dry.tier === 4 && R.tiers.t4dry.spent === 0 && R.tiers.t5dry.tier === 5 && R.tiers.t5dry.spent === 0, 'T4/T5 did not come down by the hold alone with no debt: ' + JSON.stringify([R.tiers.t4dry, R.tiers.t5dry]));
+    ok(R.tiers.t4.tier === 4 && R.tiers.t4.spent > 0 && R.tiers.t4.bdAtFire === 0 && R.tiers.t4.healed > 0, 'EXSANGUINATE on a debt did not come down, spend it, or drink some back as it landed: ' + JSON.stringify(R.tiers.t4));
     ok(R.tiers.t5.tier === 5 && R.tiers.t5.spent > 0, 'BLOOD MOON on a big debt did not come down or spend it: ' + JSON.stringify(R.tiers.t5));
     ok(R.tiers.auto.auto && R.tiers.auto.tier >= 1, 'held past ' + BLOOD.tiers.auto + ' s the heavy did not come down by itself: ' + JSON.stringify(R.tiers.auto));
     const want = Math.round(95 * BLOOD.price.pct);
     ok(R.price.paid >= want - 1 && R.price.paid <= want + 3 && near(R.price.bd, R.price.paid, 1.5) && R.price.edge > 0 && R.price.prices === 1 && !R.price.warding, 'DOWN+C is not the BLOOD PRICE (cost ~' + want + ' as debt, blade edged, no ward): ' + JSON.stringify(R.price));
     ok(R.spike.r === 'blocked' && R.spike.spikes === 1 && R.spike.foeHurt > 0 && R.spike.healed > 0 && R.spike.bd < 0.01, 'a kneel AS the low blow landed was not a BLOOD SPIKE: ' + JSON.stringify(R.spike));
     ok(R.longKneel.r === 'blocked' && R.longKneel.spikes === 0, 'a kneel held long was not the plain low guard: ' + JSON.stringify(R.longKneel));
+    const PP = BLOOD.parry, PR = R.parry, FL = R.flick;
+    ok(PR.r === 'blocked' && PR.thrown === 1 && PR.parryAt && PR.stop >= PP.stop - 0.02 && PR.slow > 0, 'the ward let go as the blow landed was not THROWN BACK with the freeze and the held breath: ' + JSON.stringify(PR));
+    ok(PR.rip >= PP.window - 0.05 && PR.ripHeavy, 'his riposte window after a THROWN BACK is not ' + PP.window + ' s and heavy: ' + JSON.stringify(PR));
+    ok(PR.stagger >= PP.stagger - 0.05 && PR.dx <= 48 && PR.reeling, 'the parried foe was shoved out of his reach or does not reel: ' + JSON.stringify(PR));
+    ok(PR.bd < 0.01 && PR.healed > 0 && PR.rec, 'the parry did not reclaim ALL the debt with the bar pulse: ' + JSON.stringify(PR));
+    ok(FL.r === 'blocked' && FL.thrown === 1 && FL.flicks === 1, 'a C tapped too short for the ward (THE FLICK) did not throw the blow back: ' + JSON.stringify(FL));
     ok(R.harvest.healed <= 0, 'crouched over a body he drew ' + R.harvest.healed + ' (the harvest is gone): ' + JSON.stringify(R.harvest));
   }
   ok(pg.errors.length === 0, 'page errors: ' + pg.errors.slice(0, 3).join(' | '));
 } finally { pg.close(); }
 if (bad.length) { console.error('BLOOD-KIT FAIL\n- ' + bad.join('\n- ')); process.exit(1); }
-console.log('blood-kit: BLOOD DEBT, the five tiers, BLOOD PRICE, BLOOD SPIKE, no harvest, THE BLOOD KNIGHT by name - all hold');
+console.log('blood-kit: BLOOD DEBT, the five tiers (by the hold alone, debt-fed), THE PARRY (+ the flick), BLOOD PRICE, BLOOD SPIKE, no harvest, THE BLOOD KNIGHT by name - all hold');

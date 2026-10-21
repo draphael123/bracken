@@ -47,7 +47,7 @@ export const STANDARD = 'human';   /* the profile the boss standard (50-60% acro
 export function profileOf(p) {
   if (!p) return PROFILES.legacy;
   if (typeof p === 'string') { const [name, ...mods] = p.split('+'); const base = PROFILES[name]; if (!base) throw Error('no bot profile ' + name);
-    return mods.reduce((o, m) => m === 'first' ? { ...o, first: true, name: o.name + '+first' } : m === 'dry' ? { ...o, drinkAt: 0, name: o.name + '+dry' } : o, base); }   /* +dry (claude/survival): the same hands, no flask drunk - the boss rows as they were measured before the flask */
+    return mods.reduce((o, m) => m === 'first' ? { ...o, first: true, name: o.name + '+first' } : m === 'dry' ? { ...o, drinkAt: 0, name: o.name + '+dry' } : m === 'tiers' ? { ...o, bkTiers: true, name: o.name + '+tiers' } : o, base); }   /* +tiers (claude/bkfeel): THE BLOOD KNIGHT's hands wind his held tiers in an opening (src/lab.js rotHold) - opt-in, so no standing row moves */   /* +dry (claude/survival): the same hands, no flask drunk - the boss rows as they were measured before the flask */
   return { ...(PROFILES[p.base || 'human']), ...p };
 }
 /* THE BUILD a player carries at a level (claude/bot2 #3). 'bare' = the even card and no skills (the lab's floor, as BKT.setHeroLevel

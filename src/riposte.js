@@ -74,7 +74,7 @@ export const PARRY_ART = {
   pyro:      { hand: [8, -12],  tip: [3, -26],  style: 'ember', glint: '#ffd36b', flash: '#ffb23e', sound: 'pyro' },
   geomancer: { hand: [8, -10],  tip: [8, -22],  style: 'stone', glint: '#ffe0a0', flash: '#e8c890', sound: 'geomancer' },
   pirate:    { hand: [7, -10],  tip: [13, -18], style: 'steel', glint: '#ffe58a', flash: '#ffd34a', sound: 'pirate' },
-  reaper:    { hand: [9, -12],  tip: [9, -26],  style: 'blood', glint: '#dfffc0', flash: '#ffd0d0', sound: 'reaper' },
+  reaper:    { hand: [9, -12],  tip: [9, -26],  style: 'blood', glint: '#ff9aa6', flash: '#ff6b6b', sound: 'reaper' },   /* (claude/bkfeel) crimson, not the old necrotic green glint */
 };
 export const glintArt = heroId => PARRY_ART[heroId] || PARRY_ART.knight;
 /* A LANDED BLOW'S VERB (noteVerb's names), from the blow's TAG: the riposte first (a cut out of a parry is its own verb), then the hand's */
