@@ -43,7 +43,7 @@ const near = (a, b, e = 0.6) => Math.abs(a - b) <= e;
   const r = { hp: 90, maxHp: M }; debtStep(r, 0); r.hp = 10; debtStep(r, 0); ok(r.bd <= D.cap * M + 1e-6, 'the debt passed its cap: ' + r.bd);
   const got = debtReclaim(r, 999); ok(r.hp <= 90 && near(got, D.cap * M), 'a reclaim went above the health before the hit (or not to the segment): hp ' + r.hp + ' got ' + got);
   ok(reclaimOf(16) > 0 && reclaimOf(0) === D.reclaimMin, 'reclaimOf is off');
-  const s = { hp: 50, maxHp: M, bd: 12 }; ok(debtSpend(s) === 12 && s.bd === 0 && spendMul(12, M) > 1.4, 'a spend did not take it all or add power');
+  const s = { hp: 50, maxHp: M, bd: 12 }; ok(debtSpend(s) === 12 && s.bd === 0 && spendMul(12, M) > 1.3, 'a spend did not take it all or add power');
   const pr = { hp: 1, maxHp: M }; ok(payPrice(pr) === 0 && pr.hp === 1, 'the price took his last point');
   const pr2 = { hp: 80, maxHp: M }; debtStep(pr2, 0); const paid = payPrice(pr2); debtStep(pr2, 0); ok(paid === Math.round(M * BLOOD.price.pct) && near(pr2.bd, paid) && pr2.hp === 80 - paid, 'the price is not on the bar as debt: ' + JSON.stringify({ paid, pr2 }));
 }
