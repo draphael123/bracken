@@ -3655,8 +3655,8 @@ function trialYard(hero) {
       ['hit', 3, 'REAPER\'S RHYTHM: X. A RISING CUT, A HOOK, A HEAVY DRAG. HIT THREE.', [['dummy', 16], ['dummy', 20]], 'X'],
       ['third', 2, 'THE DRAG: X THREE TIMES. THE THIRD COMES DOWN HEAVY. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['heavyblow', 2, 'THE FIVE TIERS: HOLD X AND LET GO AS THE BLADE GLOWS. LONGER IS HEAVIER. LAND TWO.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
-      ['price', 1, 'BLOOD PRICE: DOWN+C. HEALTH GOES ON THE BAR AS DEBT (SHOWN, NOT TAKEN). LAND BLOWS TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'DOWN+LB'],   /* (claude/bloodknight) */
-      ['kneel', 2, 'THE LOW GUARD: HOLD DOWN. THE PLANTED BLADE TURNS A LOW BLOW. KNEEL AS IT LANDS: BLOOD SPIKE. TWO.', [['waterthief', 18]], 'HOLD DOWN'],   /* (claude/bloodknight: any low blow turned counts; on the beat it is BLOOD SPIKE) */
+      ['price', 1, 'BLOOD PRICE: DOWN+C. HEALTH GOES ON THE BAR AS DEBT. LAND BLOWS TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'DOWN+LB'],   /* (claude/bloodknight) */
+      ['kneel', 2, 'THE LOW GUARD: HOLD DOWN TO TURN A LOW BLOW. KNEEL AS IT LANDS: BLOOD SPIKE.', [['waterthief', 18]], 'HOLD DOWN'],   /* (claude/bloodknight: any low blow turned counts; on the beat it is BLOOD SPIKE) */
       REAPER_C.ward,
       ['dodge', 2, 'THE SHADOW-STEP: TAP A WAY TWICE, OR V. HE GOES AS A SHADE AND LEAVES HIS WAKE. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE RETURN: HOLD C, LET GO AS HIS SWORD FLASHES WHITE: THE BLOW IS THROWN BACK. TWICE.', [['swornsword', 18]], 'HOLD LB, LET GO AS IT FLASHES'],   /* (claude/foepass) HIS YARD TEACHES HIS PARRY, THE WARD-RELEASE (scratch/brief-bloodknight-1017.md 1: it taught the roll) */
