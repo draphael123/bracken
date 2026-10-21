@@ -286,9 +286,27 @@ function callerNoRoll(BK, dir) { const W = BK.callerWind && BK.callerWind(), P =
   for (const [x0, x1, row] of W.ledges) if (P.ground && Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 2 && P.x <= (x1 + 1) * 16 + 2) return to < x0 * 16 + 6 || to > (x1 + 1) * 16 - 6;
   return !(W.safe || []).some(([a, b]) => to >= a * 16 + 8 && to <= (b + 1) * 16 - 8); }
 /* (claude/windcaller3) ANY roll the hands would make in his fight - a red mark rolled late, a hard tell - that ends off his ledge or in the thorns is not made */
+/* (claude/moorpyro) FIRE SENDS HIS BOLT HOME: the pyromancer's FLARE (down held still ~0.3 s, src/ember-ward.js) catches his bolt and it flies back at him
+   burning. The hands hold down as a player does: his bolt seen a reaction late, the hold begun so the window opens over it, one bolt in misread is missed */
+function burnFlare(BK, h, boss) { if (h !== 'pyro' || !boss || boss.t !== 'windcaller' || !BK.bossActive) return false; const P = BK.P;
+  if (P.labFlareHold > 0) { P.labFlareHold--; return true; }
+  if (!emberReady(BK, h) || P.galeRide) return false; const rt = (LABP.rtMode || 386) / 1000;
+  for (const s of BK.seeds()) { if (!s.bolt || s.dead || s.reflected || !s.owner || s.owner.t !== 'windcaller' || s.labFlare || 3.4 - s.life < rt) continue;
+    const dx = P.x - s.x, dy = (P.y - 8) - s.y, v2 = s.vx * s.vx + s.vy * s.vy || 1, tc = (dx * s.vx + dy * s.vy) / v2; if (tc <= 0) continue;
+    if (Math.hypot(s.x + s.vx * tc - P.x, s.y + s.vy * tc - (P.y - 8)) > 18) continue;   /* (it will pass through her: the flare's 20 px) */
+    if (tc > 0.42 || tc < 0.28) continue;   /* (the hold opens the window 0.3 s on, for 0.25 s) */
+    s.labFlare = true; if (Math.random() < (LABP.misread || 0)) continue; P.labFlareHold = 33; return true; }
+  return false; }
+/* (claude/moorpyro) where the pyromancer stands while he is up: on the floor he FALLS to (the safe floor nearest under him - a burnt bolt's fall is cut there),
+   40 px in from its ends, 44 px clear of an updraft (a gust would lift her), nearest ~110 px out from under him */
+function pyroPost(W, P, boss) { const segs = W.safe || []; if (!segs.length) return P.x; const dist = ([a, b]) => Math.max(0, a * 16 - boss.x, boss.x - (b + 1) * 16), seg = segs.slice().sort((p, q) => dist(p) - dist(q))[0]; let best = P.x, bd = 1e9;
+  for (let x = seg[0] * 16 + 40; x <= (seg[1] + 1) * 16 - 40; x += 4) { if ((W.vents || []).some(v => Math.abs(x - v.x) < (v.w || 12) + 44)) continue; const c = Math.min(Math.abs(x - (boss.x - 110)), Math.abs(x - (boss.x + 110))); if (c < bd) { bd = c; best = x; } }
+  return best; }
 function callerRollBad(BK) { const b = BK.boss, P = BK.P, K = BK.keys || {}; if (!b || b.t !== 'windcaller' || !b.alive || !BK.bossActive) return false; return callerNoRoll(BK, K.left ? -1 : K.right ? 1 : (P.face || 1)); }
 function callerKeep(BK, e, x) { const W = BK.callerWind && BK.callerWind(), P = BK.P; if (!W || !P.ground) return x;
   for (const [x0, x1, row] of W.ledges) { const on = q => q.x >= x0 * 16 - 2 && q.x <= (x1 + 1) * 16 + 2 && Math.abs(q.y - row * 16) < 6; if (on(P) && on(e)) return Math.max(x0 * 16 + 6, Math.min((x1 + 1) * 16 - 6, x)); }
+  /* (claude/moorpyro) ON HIS FLOOR the spot beside him is kept off the thorns at the ends of the floor both stand on (stood off at the pyro's reach from him down at a floor's end, it was in the strip) */
+  if (Math.abs(P.y - W.floor) < 6) { const seg = (W.safe || []).find(([a, b]) => P.x >= a * 16 - 4 && P.x <= (b + 1) * 16 + 4); if (seg && e.x >= seg[0] * 16 - 8 && e.x <= (seg[1] + 1) * 16 + 8) return Math.max(seg[0] * 16 + 10, Math.min((seg[1] + 1) * 16 - 10, x)); }
   return x; }
 function lowerFooting(BK, e, T, avoidTarget = true) {
   const P = BK.P, L = BK.L, ty = Math.floor(P.y / 16), ey = Math.floor(e.y / 16), px = Math.floor(P.x / 16);
@@ -2426,6 +2444,11 @@ async function runbossLab(BK, opts) {
         else if (W && P.ground && W.ledges.some(([x0, x1, row]) => Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4) && !W.ledges.some(([x0, x1, row]) => Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4 && boss.x >= x0 * 16 - 8 && boss.x <= (x1 + 1) * 16 + 8 && Math.abs(boss.y - row * 16) < 8) && W.ledges.some(([x0, x1, row]) => boss.x >= x0 * 16 - 8 && boss.x <= (x1 + 1) * 16 + 8 && Math.abs(boss.y - row * 16) < 8)) { P.labRide = null; strike = false; 
           const mine = W.ledges.find(([x0, x1, row]) => Math.abs(P.y - row * 16) < 6 && P.x >= x0 * 16 - 4 && P.x <= (x1 + 1) * 16 + 4), dir = Math.sign(boss.x - P.x) || 1;
           if (W.on || W.tell >= 0.15) { goal = null; if (SHIELDED(h)) { k.block = true; P.face = Math.sign(boss.x - P.x) || P.face; } else k.down = true; } else goal = dir > 0 ? (mine[1] + 1) * 16 + 12 : mine[0] * 16 - 12; }
+        /* (claude/moorpyro) THE PYROMANCER DOES NOT CLIMB TO HIM: her answer is her flare (burnFlare) - she keeps to her floor, out of the updrafts (a gust would lift her off it),
+           a little way out from under him so his bolt comes in long enough to be read, and goes to him when he falls */
+        else if (h === 'pyro' && up && W && boss.mode !== 'fallen' && P.ground && Math.abs(P.y - W.floor) < 6 && W.safe) { P.labRide = null; strike = false; goal = ['blink', 'appear', 'galeTell', 'gale'].includes(boss.mode) ? null : pyroPost(W, P, boss); if (goal !== null && Math.abs(goal - P.x) < 6) goal = null;
+          if (goal !== null && (W.on || W.tell >= 0) && (W.vents || []).some(v => Math.abs(P.x - v.x) > (v.w || 12) + 4 && (v.x - P.x) * (goal - v.x) > 0)) goal = null;   /* (an updraft between her and her spot: crossed in the still, never in the gust) */
+          const seg = W.safe.find(([a, b]) => P.x >= a * 16 - 4 && P.x <= (b + 1) * 16 + 4), dw = W.on ? W.dir : W.next; if (seg && (goal === null || (goal >= seg[0] * 16 && goal <= (seg[1] + 1) * 16)) && (W.on || W.tell >= 0.4) && (dw > 0 ? (seg[1] + 1) * 16 - P.x : P.x - seg[0] * 16) < 64) { goal = null; k.down = true; } }   /* (the summit's gust shoves her along the floor: braced, near a thorn edge downwind) */
         else if (!up || !W) { P.labRide = null; goal = boss.x; strike = P.ground || open; }   /* (no swing in the air over his summit: an air cut hangs you, and the gust takes you off the ledge) */
         else { P.labRide = null;
           const floorOf = x => (W.safe || []).find(([a, b]) => x >= a * 16 - 4 && x <= (b + 1) * 16 + 4) || null;
@@ -2485,7 +2508,7 @@ async function runbossLab(BK, opts) {
          DOWN held on the ground (every hero has it; block is the same brace) - and he falls */
       if (boss.t === 'windcaller' && (boss.mode === 'howlTell' || boss.mode === 'howl') && P.ground) { strike = false; goal = null; k.left = k.right = false; k.down = true; }
       /* (claude/windcaller3) HIS BLAST (red, HE GATHERS THE WIND): no guard and no brace holds it - read late as a player reads it (the profile's reaction), the hands step back out of it */
-      if (boss.t === 'windcaller' && boss.mode === 'blastTell' && Math.abs(P.x - boss.x) < 96 && Math.abs(P.y - boss.y) < 34 && 0.75 - boss.modeT >= (LABP.rtMode || 410) / 1000) { strike = false; goal = null; const away = Math.sign(P.x - boss.x) || boss.blastDir || 1; k.left = away < 0; k.right = away > 0; k.block = false; k.down = false; }
+      if (boss.t === 'windcaller' && boss.mode === 'blastTell' && Math.abs(P.x - boss.x) < 96 && Math.abs(P.y - boss.y) < 34 && (boss.blastLen || 0.75) - boss.modeT >= (LABP.rtMode || 410) / 1000) { strike = false; goal = null; const away = Math.sign(P.x - boss.x) || boss.blastDir || 1; k.left = away < 0; k.right = away > 0; k.block = false; k.down = false; }
       /* THE RAM'S CHARGE (claude/bosswave1: a charge that finds you stops on you and dazes nothing): rolled through as it arrives, so it runs on into the wall */
       /* (claude/scree2) A SHIELD BRACES HIS CHARGE (the slope's sign: BLOCK TO BRACE): shoved, not hurt - and no wall for him either */
       else if (boss.t === 'ram' && SHIELDED(h) && (boss.mode === 'charge' || toldRun(['lower', 'rear'])) && Math.abs(boss.x - P.x) < 90 && (boss.x - P.x) * (boss.vx || 0) < 0) { strike = false; goal = null; k.left = k.right = false; P.face = Math.sign(boss.x - P.x) || P.face; k.block = true; }
@@ -2692,7 +2715,7 @@ async function runbossLab(BK, opts) {
         else k[f % 40 < 20 ? 'left' : 'right'] = true;
         if (P.ground) { BK.press('jump'); P.labJump = 18; if (!(LABP.v2 && h === 'warden') || Math.abs((boss.y - (boss.h || 16) / 2) - (P.y - 9)) < 30) BK.press('dodge'); } }   /* (claude/wardenkit, v2: the warden's step here only when he is at her height - it is her BACK-step, it carries ~45 px now, and a warden waiting under the Owl at her lamp read as 'stuck' 48 times a fight and was stepped off it each time; the jump unsticks her) */
       { const cb = crouchBPlan(BK, h); if (cb) { crouchBKeys(BK, cb); P.labJump = 0; } }   /* THE CROUCH TWISTS, when the room is calm (crouchBPlan) */
-      if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
+      if (duckNow(BK, h, boss) || emberNow(BK, h, boss) || owlDuck || burnFlare(BK, h, boss)) { k.down = true; k.left = k.right = k.block = k.atk = k.jump = false; P.labJump = 0; BK.unpress(); }   /* (and the pyromancer's EMBER WARD, raised late to flare: emberNow) */   /* THE DUCK, last: whatever else the hands meant, a high blow at them goes over (duckNow) */
       /* (claude/owl3) THE DROP'S LIP: on the boards within a few steps of a break in them, nothing the hands asked for this frame carries him over it - no step,
          hop, roll or held jump toward it - unless the drop is what he means to cross (his goal is past it). A player minds the edge; the other hands do not know it is there */
       if (boss.t === 'owl' && P.ground) for (const [a, b] of (A.drops || [])) { const l = a * 16, r = (b + 1) * 16, cross = goal !== null && ((P.x < l && goal > r) || (P.x > r && goal < l)); if (cross) continue;

@@ -116,6 +116,7 @@ export function makeEmberWard(api) {
     for (const s of api.seeds) {
       if (s.dead || s.reflected || s.chain || s.noBlock || s.unblockable) continue;
       if (Math.hypot(s.x - p.x, s.y - (p.y - 8)) > EMBER.R + 2) continue;
+      if (api.burnHome && api.burnHome(s)) { caught(p, null, 'seed'); return; }   /* (claude/moorpyro) THE WINDCALLER's bolt is not melted: the flare sets it alight and it flies home (main.js burnBoltHome) */
       s.dead = true; api.SFX.emberMelt(); api.burst(s.x, s.y, 5, ['#ff9a5c', '#ffd36b', '#fff6c8'], 40, 0.3, -40, 1); api.smoke(s.x, s.y, 2, 3);
       caught(p, null, 'seed'); return;
     }
