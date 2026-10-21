@@ -40,7 +40,8 @@ import { stormholdTown } from './stormhold-town.js';
 import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: what each floor scatters on its ground (the sprites are in the same file) */
 import { buildCaravan } from './sunken-caravan.js';
 import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's targeted fixes: the sluice house, the stilts */
-import { applyMarsh3 } from './marsh3.js';   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
+import { applyMarsh3 } from './marsh3.js';
+import { buildFenRoad, FEN_RULE } from './fen-road.js';   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
@@ -7795,7 +7796,7 @@ export const ROAD_OPEN = { undercrown: true };
 export const LEVELS = [
   { id: 'wood', name: 'THE LUMBER TRAIL', sub: 'down the woodsmen\'s trail through bracken wood, to the hive', rule: RULE_WOOD, build: () => buildLumberTrail({ painter, T, TS }) },   /* (claude/lumbertrail) BRACKEN WOOD becomes THE LUMBER TRAIL: one rule, one sentence - what main.js fellStroke/fellLay do (src/felling.js) */
   { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', build: marshWood, needs: 'wood' },
-  { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'marsh' },
+  { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'fenroad' },   /* (claude/fenroad, Daniel 10-20: THE FEN ROAD stands between MARSH WOOD and here) */
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: 'THE CAPS GROW INTO STEPS. CLIMB TO THE MOTHERS KNOT.', build: sporewood, needs: 'stockade' },
   { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: kingswood, needs: 'rootway' },   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
   { id: 'scree', arc: 'the crags', name: 'THE SCREE PATH', sub: 'the foothills at dusk', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', build: screePath, needs: 'underleaf' },   /* (claude/underleafroad, Daniel 10-08: UNDERLEAF sits between Kingswood and here) */
@@ -7913,6 +7914,8 @@ export const LEVELS = [
   { id: 'sealedpyramid', arc: 'the desert', name: 'THE SEALED PYRAMID', sub: 'a tomb no robber left', rule: PYRAMID_RULE, build: () => buildSealedPyramid({ painter, T, TS }), needs: 'buriedcity' },
   /* THE TAVERN (claude/tavern, co-op phase 2): WAYMEET'S CROSSROADS INN - co-op's home, open from the start (title LOCAL CO-OP / ONLINE CO-OP, the map's F). APPENDED, so no index and no save moves */
   { id: 'tavern', name: 'THE TAVERN', sub: 'friends meet here', build: theTavern, hidden: true },
+  /* THE FEN ROAD (claude/fenroad, the greybox; scratch/brief-fenroad-1020.md, Daniel 10-20): APPENDED (saves count levels by index); on the road between MARSH WOOD and THE STOCKADE by its needs (the Stockade needs it) */
+  { id: 'fenroad', name: 'THE FEN ROAD', sub: "the goblins' boardwalk to their stockade", rule: FEN_RULE, build: () => buildFenRoad({ painter, T, TS }), needs: 'marsh' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

@@ -1121,6 +1121,18 @@ Object.assign(SFX, {
   boarDig() { for (let i = 0; i < 3; i++) noise(0.09, 0.2, 700 + i * 200, 0.6, i * 0.14); tone('sawtooth', 110, 90, 0.3, 0.08); },
   boarFling() { noise(0.16, 0.26, 600, 0.6); tone('sine', 220, 520, 0.14, 0.1, 0.02); },
   boarSquealRoar() { tone('sawtooth', 520, 260, 0.45, 0.2); tone('square', 260, 130, 0.5, 0.1, 0.05); noise(0.5, 0.18, 1200, 0.5); },   /* an old boar's squeal-roar */
+  /* (claude/fenroad) THE BOG TROLL: the recorded roar and the ogre kit pitched down under the synth, bubbles off the bed, the boards bursting, the arm through the fen, the scoop and the lob; and THE FEN ROAD's far war horns */
+  trollRoar() { if (!file('roar', 0.42, 0.42)) noise(1.2, 0.16, 170, 0.3); file('vo_ogre_alert', 0.3, 0.62); tone('sine', 48, 36, 1.1, 0.14); },
+  trollGroan() { if (!file('vo_ogre_hurt', 0.34, 0.6)) tone('sawtooth', 90, 60, 0.6, 0.1); noise(0.4, 0.08, 300, 0.5); },
+  trollBubble() { for (let i = 0; i < 6; i++) tone('sine', 160 + i * 60, 320 + i * 60, 0.06, 0.06, i * 0.12); noise(0.5, 0.06, 500, 0.5); },
+  trollBulge() { if (!file('r_creak', 0.38, 0.6)) tone('sine', 140, 90, 0.4, 0.08); tone('square', 70, 55, 0.4, 0.05); },
+  trollBurst() { if (!file('r_splash', 0.5, 0.7)) noise(0.4, 0.4, 600, 0.5); noise(0.3, 0.3, 1600, 0.6, 0.02); tone('sine', 62, 34, 0.5, 0.3); },
+  trollDragTell() { file('vo_ogre_alert', 0.26, 0.75); noise(0.5, 0.1, 400, 0.6); },
+  trollDrag() { noise(0.35, 0.3, 500, 0.4); tone('sawtooth', 110, 60, 0.3, 0.08); },
+  trollScoop() { noise(0.3, 0.2, 300, 0.6); tone('sine', 120, 70, 0.25, 0.1); },
+  trollHurl() { noise(0.2, 0.22, 900, 0.5); tone('sawtooth', 160, 90, 0.18, 0.08); },
+  trollRip() { noise(0.7, 0.34, 1400, 0.5); if (!file('r_creak', 0.45, 0.5)) tone('square', 200, 80, 0.5, 0.08); tone('sine', 50, 30, 0.6, 0.26, 0.1); },
+  farHorn() { if (!file('r_horn', 0.09, 0.62)) { tone('sawtooth', 98, 104, 1.4, 0.025); tone('square', 49, 52, 1.4, 0.012); } },
   boarStomp() { tone('sine', 60, 30, 0.45, 0.34); noise(0.4, 0.3, 200, 0.6); noise(0.25, 0.18, 1000, 0.5, 0.06); },
   badgerSkid() { noise(0.28, 0.2, 1100, 0.4); tone('square', 300, 180, 0.08, 0.05, 0.05); },
   garRise() { for (let i = 0; i < 4; i++) tone('sine', 500 + i * 180, 900 + i * 180, 0.05, 0.05, i * 0.09); noise(0.2, 0.08, 2200, 0.5); },   /* bubbles coming up */
