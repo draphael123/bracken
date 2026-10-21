@@ -43,7 +43,7 @@ export const PILE = { creak: 0.35, half: 26, dmgHero: 14, shake: 4 };
 export const GATE = { r: 16 * 16, delay: 0.5 };
 /* (claude/chief3) HIS WAR HORN and HIS POWDER (see the header). draw: the ground wind (s), draw2 at his second wind; hits: blows that silence it;
    first/every/every2: s to the first wind and between winds; open: the SILENCED window (s); crew: what it calls; deckAt/deckDraw: the tower's one wind */
-export const HORN = { draw: 2.6, draw2: 2.2, hits: 3, first: 8, every: 17, every2: 14, open: 2.6, crew: ['sprig', 'sprig'], crewMax: 2, deckAt: 3, deckDraw: 3.2 };
+export const HORN = { draw: 3.0, draw2: 2.5, hits: 2, first: 8, every: 17, every2: 14, open: 2.6, crew: ['sprig', 'sprig'], crewMax: 2, deckAt: 3, deckDraw: 3.2 };
 /* tell: his heave (s); fuse: from the throw (s); kickMin: a struck keg's fuse at least this; kickV: its roll (px/s); r: the blast; open: BLASTED (s);
    minD: he heaves only past this range; cd: s between his kegs; towerR: a blast this near his tower's legs takes both lashings; deckEvery: every Nth deck shot */
 export const KEG = { tell: 0.8, deckTell: 0.7, flight: 0.85, fuse: 2.7, kickMin: 0.9, kickV: 200, r: 44, open: 2.4, minD: 80, cd: 9, first: 4, towerR: 56, deckEvery: 3 };
@@ -216,7 +216,7 @@ export function makeStockadeHands(ctx) {
     st.snd++; if (e.hornAnswered) { e.hornAnswered = false; return; }
     crew = crew.filter(q => q.alive); const n = Math.max(0, HORN.crewMax - crew.length); if (!n || !A) { say(e.x, e.y - e.h - 12, 'hornOut', '#ff6b6b'); return; }
     say(e.x, e.y - e.h - 24, 'sounded', '#ff9a5c');
-    for (let i = 0; i < n; i++) { const left = i % 2 === 0, x = left ? A.x0 + 18 : A.x1 - 18; const q = ctx.spawnFoe(HORN.crew[i] || 'sprig', x, A.floor, left ? 1 : -1); if (q) { q.chiefCrew = true; crew.push(q); } }
+    for (let i = 0; i < n; i++) { const left = i % 2 === 0, x = left ? A.x0 + 48 : A.x1 - 48;   /* (in at the doors, past the fire strips his second wind lights) */ const q = ctx.spawnFoe(HORN.crew[i] || 'sprig', x, A.floor, left ? 1 : -1); if (q) { q.chiefCrew = true; crew.push(q); } }
   }
   function chiefCap(e, dmg) {
     const m = e.maxHp || 1; let d = Math.min(dmg, Math.max(1, Math.round(m * CAP.blow)));
