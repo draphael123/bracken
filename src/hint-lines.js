@@ -19,7 +19,9 @@ export const CALL_LINES = new Set([
   /* claude/lumbertrail: THE LUMBER TRAIL's felling (src/felling.js) - the first stroke and the fall, routed as hint-shown requires */
   'THE PINE CREAKS AND LEANS', 'THE PINE FALLS: A BRIDGE', 'THE PINE FALLS: A WAY UP', 'TIMBER: IT CRUSHES WHAT STOOD UNDER IT',
   /* (claude/marsh2) THE BULLFROG KING REWORKED (src/frog-king.js): his pond, his grab, the flies, the ripple and the pads - teaching lines, routed as hint-shown requires */
-  'FROM ABOVE: KNOCKED FLAT', 'HIS POND GOES DEEP', 'GRABBED: INTO HIS POND', 'THE TONGUE HAS YOU', 'HE BITES HIMSELF', 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM', 'THE PADS GO UNDER', 'THE RIPPLE TIPS THE PADS', 'THE PAD THROWS YOU',
+  'THE TONGUE HAS YOU', 'HE BITES HIMSELF', 'THE FLIES ARE ON YOU: LEAD THEM ONTO HIM',
+  /* (claude/frogking2) THE PAD CHASE (src/frog-king.js): his leap, the reshuffle, the grab into the water, the wave under a leaf, his pond stirring, the turned and open reads; and THE RAFT IS BACK (main.js recallRafts) */
+  'GRABBED: INTO THE WATER', 'HE GATHERS TO LEAP', 'THE PADS RESHUFFLE', 'HIS POND STIRS', 'THE WAVE SINKS YOUR PAD', 'IN THE AIR', 'WINDED', 'THE RAFT IS BACK',
   /* batch101 integ 10-18: THE BELL HOUSINGS (claude/airpockets) - the housing is spent / fills again, routed as hint-shown requires */
   'THE HOUSING IS SPENT', 'THE HOUSING FILLS AGAIN',
   /* batch100 integ 10-18: THE CAPTAIN 2 (claude/hurricane2) - the wave, the lightning, his line and ward, routed as hint-shown requires */
