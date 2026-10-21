@@ -9731,7 +9731,7 @@
     ],
     "warden": [
      "dead:100/89",
-     "dead:100/92"
+     "dead:100/91"
     ],
     "pyro": [
      "dead:100/80",
@@ -9785,7 +9785,7 @@
      "out": "dead",
      "secs": 34.1,
      "hpLostPct": 100,
-     "bossLeftPct": 92,
+     "bossLeftPct": 91,
      "landed": 16,
      "swings": 1169,
      "reprisalPct": 33,
