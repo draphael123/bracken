@@ -1,0 +1,634 @@
+{
+ "date": "2026-10-20",
+ "lane": "claude/curvec4a (C4a)",
+ "base": "8ce6ebc7 (batch109) + this branch",
+ "profile": "human (flasks=kit) / human+dry",
+ "rows": [
+  {
+   "boss": "crown",
+   "note": "FINALE Goblin Queen",
+   "act": "II",
+   "band": [
+    60,
+    65
+   ],
+   "lvl": 16,
+   "dial": "EHP.gqueen 830 -> 1450 + BOSS_HIT.gqueen 1 -> 2.15",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 12,
+      "warden": 11,
+      "pyro": 10
+     },
+     "pct": 92,
+     "meanSecs": 44,
+     "errs": 0,
+     "outcomes": {
+      "win": 33,
+      "death": 3
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 5,
+      "warden": 3,
+      "pyro": 3
+     },
+     "pct": 61,
+     "meanSecs": 37,
+     "errs": 0,
+     "outcomes": {
+      "death": 7,
+      "win": 11
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 7,
+     "warden": 10,
+     "pyro": 7
+    },
+    "pct": 67,
+    "meanSecs": 53,
+    "errs": 0,
+    "outcomes": {
+     "win": 24,
+     "death": 12
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 6,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 2,
+     "pyro": 3
+    },
+    "pct": 28,
+    "meanSecs": 45,
+    "errs": 0,
+    "outcomes": {
+     "death": 13,
+     "win": 5
+    }
+   }
+  },
+  {
+   "boss": "spore",
+   "note": "",
+   "act": "I",
+   "band": [
+    60,
+    70
+   ],
+   "lvl": 3,
+   "dial": "BOSS_HIT.mother 1 -> 1.5",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 11,
+      "warden": 12,
+      "pyro": 8
+     },
+     "pct": 86,
+     "meanSecs": 105,
+     "errs": 0,
+     "outcomes": {
+      "win": 31,
+      "death": 5
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 3,
+      "warden": 3,
+      "pyro": 2
+     },
+     "pct": 44,
+     "meanSecs": 91,
+     "errs": 0,
+     "outcomes": {
+      "win": 8,
+      "death": 10
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 9,
+     "warden": 8,
+     "pyro": 5
+    },
+    "pct": 61,
+    "meanSecs": 98,
+    "errs": 0,
+    "outcomes": {
+     "win": 22,
+     "death": 14
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 6,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 1,
+     "warden": 1,
+     "pyro": 2
+    },
+    "pct": 22,
+    "meanSecs": 79,
+    "errs": 0,
+    "outcomes": {
+     "death": 14,
+     "win": 4
+    }
+   }
+  },
+  {
+   "boss": "kings",
+   "note": "",
+   "act": "I",
+   "band": [
+    60,
+    70
+   ],
+   "lvl": 5,
+   "dial": "EHP.king 1000 -> 1170",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 7,
+      "warden": 12,
+      "pyro": 10
+     },
+     "pct": 81,
+     "meanSecs": 54,
+     "errs": 0,
+     "outcomes": {
+      "death": 7,
+      "win": 29
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 1,
+      "warden": 4,
+      "pyro": 3
+     },
+     "pct": 44,
+     "meanSecs": 53,
+     "errs": 0,
+     "outcomes": {
+      "death": 10,
+      "win": 8
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 5,
+     "warden": 11,
+     "pyro": 6
+    },
+    "pct": 61,
+    "meanSecs": 58,
+    "errs": 0,
+    "outcomes": {
+     "death": 14,
+     "win": 22
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 6,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 1,
+     "warden": 4,
+     "pyro": 2
+    },
+    "pct": 39,
+    "meanSecs": 49,
+    "errs": 0,
+    "outcomes": {
+     "death": 11,
+     "win": 7
+    }
+   }
+  },
+  {
+   "boss": "storm",
+   "note": "",
+   "act": "II",
+   "band": [
+    62,
+    68
+   ],
+   "lvl": 14,
+   "dial": "EHP.lance 2400 -> 2800",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 9,
+      "warden": 7,
+      "pyro": 10
+     },
+     "pct": 72,
+     "meanSecs": 49,
+     "errs": 0,
+     "outcomes": {
+      "win": 26,
+      "death": 10
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 2,
+      "warden": 2,
+      "pyro": 5
+     },
+     "pct": 50,
+     "meanSecs": 39,
+     "errs": 0,
+     "outcomes": {
+      "death": 9,
+      "win": 9
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 10,
+     "warden": 6,
+     "pyro": 8
+    },
+    "pct": 67,
+    "meanSecs": 78,
+    "errs": 0,
+    "outcomes": {
+     "win": 23,
+     "death": 8,
+     "trade": 1,
+     "timeout": 4
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 6,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 1,
+     "warden": 1,
+     "pyro": 3
+    },
+    "pct": 28,
+    "meanSecs": 65,
+    "errs": 0,
+    "outcomes": {
+     "death": 11,
+     "win": 5,
+     "timeout": 2
+    }
+   }
+  },
+  {
+   "boss": "crown:mini",
+   "note": "Forgemaster",
+   "act": "II",
+   "band": [
+    74,
+    82
+   ],
+   "lvl": 16,
+   "dial": "BOSS_HIT.forgemaster 1 -> 1.55",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 8,
+      "warden": 12,
+      "pyro": 11
+     },
+     "pct": 86,
+     "meanSecs": 45,
+     "errs": 0,
+     "outcomes": {
+      "win": 31,
+      "death": 5
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 2,
+      "warden": 6,
+      "pyro": 4
+     },
+     "pct": 67,
+     "meanSecs": 30,
+     "errs": 0,
+     "outcomes": {
+      "win": 12,
+      "death": 6
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 11,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 5,
+     "warden": 12,
+     "pyro": 11
+    },
+    "pct": 80,
+    "meanSecs": 34,
+    "errs": 0,
+    "outcomes": {
+     "win": 28,
+     "death": 7
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 6,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 1,
+     "warden": 6,
+     "pyro": 2
+    },
+    "pct": 50,
+    "meanSecs": 21,
+    "errs": 0,
+    "outcomes": {
+     "death": 9,
+     "win": 9
+    }
+   }
+  },
+  {
+   "boss": "hanging:mini",
+   "note": "Spider",
+   "act": "II",
+   "band": [
+    74,
+    82
+   ],
+   "lvl": 8,
+   "dial": "BOSS_HIT.spider 0.75 -> 0.85",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 12,
+      "warden": 8,
+      "pyro": 11
+     },
+     "pct": 86,
+     "meanSecs": 33,
+     "errs": 0,
+     "outcomes": {
+      "win": 31,
+      "death": 5
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 4,
+      "warden": 2,
+      "pyro": 5
+     },
+     "pct": 61,
+     "meanSecs": 29,
+     "errs": 0,
+     "outcomes": {
+      "win": 11,
+      "death": 7
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 12,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 10,
+     "warden": 7,
+     "pyro": 11
+    },
+    "pct": 78,
+    "meanSecs": 31,
+    "errs": 0,
+    "outcomes": {
+     "win": 28,
+     "death": 8
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 6,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 1,
+     "warden": 1,
+     "pyro": 5
+    },
+    "pct": 39,
+    "meanSecs": 28,
+    "errs": 0,
+    "outcomes": {
+     "death": 11,
+     "win": 7
+    }
+   }
+  },
+  {
+   "boss": "moor",
+   "note": "",
+   "act": "II",
+   "band": [
+    62,
+    68
+   ],
+   "lvl": 10,
+   "dial": "none (lab bot fix only: src/lab.js windcaller ledge-crossing)",
+   "before": {
+    "flasks": {
+     "n": {
+      "knight": 12,
+      "warden": 12,
+      "pyro": 12
+     },
+     "wins": {
+      "knight": 1,
+      "warden": 12,
+      "pyro": 0
+     },
+     "pct": 36,
+     "meanSecs": 100,
+     "errs": 0,
+     "outcomes": {
+      "death": 23,
+      "win": 13
+     }
+    },
+    "dry": {
+     "n": {
+      "knight": 6,
+      "warden": 6,
+      "pyro": 6
+     },
+     "wins": {
+      "knight": 0,
+      "warden": 4,
+      "pyro": 0
+     },
+     "pct": 22,
+     "meanSecs": 81,
+     "errs": 0,
+     "outcomes": {
+      "death": 14,
+      "win": 4
+     }
+    }
+   },
+   "flasks": {
+    "n": {
+     "knight": 11,
+     "warden": 12,
+     "pyro": 12
+    },
+    "wins": {
+     "knight": 3,
+     "warden": 12,
+     "pyro": 0
+    },
+    "pct": 43,
+    "meanSecs": 103,
+    "errs": 0,
+    "outcomes": {
+     "death": 20,
+     "win": 15
+    }
+   },
+   "dry": {
+    "n": {
+     "knight": 6,
+     "warden": 5,
+     "pyro": 6
+    },
+    "wins": {
+     "knight": 0,
+     "warden": 3,
+     "pyro": 0
+    },
+    "pct": 18,
+    "meanSecs": 74,
+    "errs": 0,
+    "outcomes": {
+     "death": 14,
+     "win": 3
+    }
+   }
+  }
+ ]
+}
