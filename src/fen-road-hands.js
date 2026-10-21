@@ -158,6 +158,9 @@ export function makeFenRoadHands(ctx) {
         rect(g, x0 + i * TS + 3 + (i % 3), yy + 1, 4, 1, '#3e2c1c'); if (s.arena) rect(g, x0 + i * TS + 9, yy + 2, 3, 2, '#2e3a22'); }
       g.globalAlpha = 1;
       if (up) { rect(g, x0 - 1, y - 1, 2, 8, '#c9b27c'); rect(g, x0 + s.w * TS - 1, y - 1, 2, 8, '#c9b27c'); }   /* the lashing round each end */
+      /* ITS LOAD (the crew's barricade): road-planks stacked on end, roped; and its foot in the section's own row */
+      for (const [lx, ly] of [...s.load, ...s.load.filter(([, q]) => q === s.row - 1).map(([q]) => [q, s.row])]) { if (!ctx.solidAt(lx, ly)) continue; const bx = X(lx * TS), by = Y(ly * TS);
+        rect(g, bx, by, TS, TS, '#7a5a38'); for (let k = 0; k < 4; k++) rect(g, bx + k * 4, by, 1, TS, '#4a3420'); rect(g, bx, by + 6, TS, 2, '#c9b27c'); }
     }
     /* THE CREW GAPS: the boards the crew has laid (fresh-cut) */
     for (const gp of S.gaps) for (let i = 0; i < gp.w; i++) { const x = gp.x0 + i; if (ctx.tileAt(x, 18) !== ctx.T.PLANK) continue; const sx = X(x * TS); if (sx < -20 || sx > ctx.VW() + 20) continue;

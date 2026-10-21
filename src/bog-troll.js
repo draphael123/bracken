@@ -19,13 +19,13 @@
 //                   plank islands over the biting water from then on; his hurl is two clods; he comes up in the open water too.
 //   NO ADDS (no summons in the brief).
 export const BT = {
-  hp: 1150, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
-  rest: [0.9, 0.7], hide: 0.4, wardMul: 0.4, p2: 0.5,
-  sink: 0.45, swim: [1.1, 0.9], swimV: 170,
-  burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 16, kick: -300, rise: 0.5 },
-  stuck: { t: [3.6, 3.1], mul: 2, cap: 0.17, heave: 0.6, ward: 3, w: 52 },
+  hp: 900, w: 40, h: 56, markH: 60, up: 26, under: 84,   // up: his feet under the boards when he stands waist-deep (px below the road); under: where he swims
+  rest: [0.7, 0.55], hide: 0.4, wardMul: 0.4, p2: 0.5,
+  sink: 0.45, swim: [0.9, 0.75], swimV: 180,
+  burst: { track: 0.6, lock: 0.65, t: 0.3, r: 18, h: 40, dmg: 18, kick: -300, rise: 0.5 },
+  stuck: { t: [4.2, 3.6], mul: 2, cap: 0.17, heave: 0.6, ward: 3, w: 52 },
   drag: { tell: [0.85, 0.7], t: 0.32, reach: 118, h: 12, dmg: 12, pull: 210, rec: 0.6, range: 150 },
-  hurl: { tell: [0.8, 0.65], flight: 1.0, r: 16, dmg: 11, spread: 56, rec: 0.55 },
+  hurl: { tell: [0.8, 0.65], flight: 1.0, r: 16, dmg: 12, spread: 56, rec: 0.55 },
   rip: { tell: 1.4, t: 0.6, roar: 0.8 },
 };
 export const BT_SAY = { wake: 'THE BOG TROLL', rule: 'HE FEELS YOUR WEIGHT. LURE HIS BURST UNDER A ROTTEN SECTION.', stuck: 'STUCK IN THE BOARDS', free: 'HE TEARS FREE', ward: 'HE SHAKES OFF THE WRECK',
@@ -111,7 +111,7 @@ export function stepTroll(e, S, dt, heroes, w) {
 function pick(e, S, ad, w) {
   const ph = S.ph, i = ph - 1, last = S.last, twice = k => last.length >= 2 && last[0] === k && last[1] === k;
   let k;
-  if (S.moves >= (ph > 1 ? 2 : 1) + (Math.random() < 0.35 ? 1 : 0)) k = 'sink';
+  if (S.moves >= (ph > 1 ? 1 + (Math.random() < 0.4 ? 1 : 0) : 1)) k = 'sink';
   else if (ad < BT.drag.range) k = Math.random() < 0.6 ? 'drag' : 'hurl';
   else k = Math.random() < 0.75 ? 'hurl' : 'sink';
   if (k !== 'sink' && twice(k)) k = k === 'drag' ? 'hurl' : ad < BT.drag.range ? 'drag' : 'sink';
@@ -192,14 +192,14 @@ function btPlan0(s) {
     const key = 'a' + S.act + e.mode, miss = s.v2 ? false : roll(key + 'm', PLAN.miss);
     if (seenFor(key) && !miss) {
       if ((e.mode === 'dragTell' || e.mode === 'drag') && (P.x - kx) * (e.face || 1) > 0 && dx < BT.drag.reach + 30) {
-        if (e.mode === 'drag' || e.modeT < 0.2) { if (s.dodge && P.ground && !roll(key + 'd', 0.8)) { out.dodge = true; out.gx = P.x + (e.face || 1) * 30; out.why = 'roll the drag'; return out; }
+        if (e.mode === 'drag' || e.modeT < 0.24) { if (s.dodge && P.ground && !roll(key + 'd', 0.85)) { out.dodge = true; out.gx = P.x + (e.face || 1) * 30; out.why = 'roll the drag'; return out; }
           if (P.ground) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the drag'; return out; } }
         out.gx = P.x; out.why = 'his drag: ready to jump it'; return out; }
       if (e.mode === 'hurlTell') { out.gx = safeX(P.x + (P.x < G.mid ? 34 : -34)); out.why = 'the hurl: keep moving'; return out; }
     } }
   /* 5. OPEN: strike him (stuck) - from the sound boards at the wreck's edge */
-  if (btOpen(e)) { let sx = kx + side * (half + Math.max(6, reach - 10)); if (wet(sx)) sx = kx - side * (half + Math.max(6, reach - 10)); out.gx = clamp(sx);
-    if (dx < hitR + 4) swing(); out.why = 'strike him: stuck'; return out; }
+  if (btOpen(e)) { const sd = s.tip ? BT.stuck.w / 2 + s.tip : half + Math.max(6, reach - 10); let sx = kx + side * sd; if (wet(sx)) sx = kx - side * sd; out.gx = clamp(sx);   /* (the warden at her point's distance: inside the shaft she only glances) */
+    if (dx < (s.tip ? sd + 8 : hitR + 4)) swing(); out.why = 'strike him: stuck'; return out; }
   if (S.ward > 0 || e.mode === 'heave') { out.gx = safeX(kx + side * 90); out.why = 'his ward: off him'; return out; }
   /* 6. HE IS DOWN THERE: go and stand on a rotten section (the lure) */
   if (e.mode === 'sink' || e.mode === 'under') {
@@ -209,7 +209,7 @@ function btPlan0(s) {
   if (s.rest) { out.gx = safeX(kx + side * 120); out.why = 'winded: off him'; return out; }
   /* 7. HE IS UP: a cut when he rests (his hide turns most of it), off him otherwise */
   if (e.mode === 'up' || e.mode === 'recover' || e.mode === 'roar') {
-    if (dx < hitR + 30 && roll('cut' + S.act, 0.7)) { out.gx = offRot(safeX(kx + side * Math.max(half + 6, reach - 6))); if (dx < hitR) swing(); out.why = 'a cut while he is up'; return out; }
+    if (dx < hitR + 30 && roll('cut' + S.act, 0.55)) { const sd = s.tip ? half + s.tip : Math.max(half + 6, reach - 6); out.gx = offRot(safeX(kx + side * sd)); if (dx < (s.tip ? sd + 8 : hitR)) swing(); out.why = 'a cut while he is up'; return out; }
     out.gx = offRot(safeX(kx + side * Math.max(hitR + 16, 70))); out.face = Math.sign(kx - P.x) || 1; out.why = 'stand off him'; return out; }
   out.gx = offRot(safeX(kx + side * Math.max(hitR + 16, 70))); out.face = Math.sign(kx - P.x) || 1; out.why = 'stand off him'; return out;
 }
