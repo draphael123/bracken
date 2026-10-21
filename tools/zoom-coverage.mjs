@@ -43,7 +43,8 @@ const placed = (keyRe) => { const out = new Set();
 const bosses = placed(/\barena\s*[:=]\s*\{/), minis = placed(/\bmini\s*[:=]\s*\{/);
 ok(bosses.size >= 25, 'only found ' + bosses.size + ' placed boss arenas across src/*.js: the reader broke');
 ok(minis.size >= 10, 'only found ' + minis.size + ' placed mini arenas across src/*.js: the reader broke');
-for (const t of ['harbormaster', 'pyromancer', 'bellcrab', 'closedhelm', 'drownedking', 'prince', 'grandmother', 'troll', 'strawking', 'archmage', 'gargoyle', 'queen', 'mother', 'ram', 'abbot', 'winchmaster', 'duneworm'])
+/* batch109: the Hornet Queen is parked (Old Tusker holds the Lumber Trail arena), so the placed-boss list names 'oldtusker' where it named 'queen' */
+for (const t of ['harbormaster', 'pyromancer', 'bellcrab', 'closedhelm', 'drownedking', 'prince', 'grandmother', 'troll', 'strawking', 'archmage', 'gargoyle', 'oldtusker', 'mother', 'ram', 'abbot', 'winchmaster', 'duneworm'])
   ok(bosses.has(t), t + "'s arena was not found (level file renamed or restructured?)");
 ok(minis.has('golem'), "the Monastery Golem's mini arena was not found");
 

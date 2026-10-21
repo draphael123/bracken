@@ -38,7 +38,8 @@ export function applyMarsh3(M, T, TS, grow) {
   reeds(X(30), 13, 2); reeds(X(52), 13, 2); reeds(X(41), 10, 2);   /* the high road: reed tufts over the run (a spitter on the first; the silver over the middle one) */
   foe('hopper', 30, 12, { color: 'yellow' }); foe('hopper', 47, 16, { color: 'yellow' });   /* a frog on the tall stand: it leaps aboard as she comes (a heron standing there shoved every hero off the back) */ ent('silver', X(41), 9);
   plank(70, 74, 12); foe('archer', 72, 11);   /* the bowman's stilt lookout at the run's end: he looses at the raft as she comes in */
-  coins([X(16), 15], [X(26), 14], [X(31), 11], [X(36), 15], [X(47), 13], [X(53), 11], [X(57), 15], [X(66), 14]);
+  coins([X(16), 15], [X(26), 14], [X(31), 11], [X(36), 15], [X(47), 13], [X(53), 11], [X(57), 15], [X(66), 14]);   /* batch109 integ: the water-bed pit under the second reed stand (cols 502-509) is a dead end the check counts; two coins were not enough, four more pay it */
+  coins([506, 18], [507, 18], [508, 18], [509, 18]);
   bank(76, 85);
   ent('check', X(79), 17);
   /* ---- B. THE BOOM ---- */
