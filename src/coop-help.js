@@ -41,7 +41,7 @@ export const COOP_HELP_PAGES = ({ downT = 20, reviveT = 1.5 } = {}) => [
   ] },
   { title: 'HOW CO-OP SAVES WORK', lines: [   /* (claude/coopclarity: tavern sign + the pause menu's guide; the page index is SAVES_PAGE) */
     ['#', 'A FRIEND WITH A SAVE OF THEIR OWN'],
-    ['', 'On the party board they pick one of their save slots and play its hero. What they earn - XP, silver, woods cleared - is written into THAT save at every shrine and when the wood is won.'],
+    ['', 'On the party board they pick one of their saves and play its hero. What they earn - XP, silver, woods cleared - is written into THAT save at every shrine and when the wood is won.'],
     ['#', 'A GUEST'],
     ['', 'A guest plays a lent hero. Nothing is saved.'],
     ['#', 'A FRIEND ONLINE'],

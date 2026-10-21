@@ -63,7 +63,7 @@ BK.state='slots'; BK.ui.slotI=0; const t0=texts(); out.picker=t0;
 if(!t0.includes('CORRUPT'))F('the picker does not say CORRUPT: '+t0.join(' / ')); if(!t0.includes('NEWER SAVE'))F('the picker does not say NEWER SAVE'); if(!t0.includes('EMPTY'))F('the empty slots no longer say EMPTY');
 /* Z on the corrupt slot opens FIX IT, not the game */
 BK.ui.slotI=1; press('confirm'); if(BKT.fixAsk!==1)F('Z on a corrupt slot did not open FIX IT: '+BKT.fixAsk); if(BK.state!=='slots')F('and the game must not have loaded: '+BK.state);
-const t1=texts(); out.fix=t1; if(!t1.some(s=>/RESTORE THE LAST GOOD COPY/.test(s)))F('FIX IT has no RESTORE for a slot with a good copy: '+t1.join(' / ')); if(!t1.includes('EXPORT THE FILE')||!t1.includes('ERASE THE SLOT'))F('FIX IT lacks EXPORT / ERASE');
+const t1=texts(); out.fix=t1; if(!t1.some(s=>/RESTORE THE LAST GOOD COPY/.test(s)))F('FIX IT has no RESTORE for a slot with a good copy: '+t1.join(' / ')); if(!t1.includes('EXPORT THE FILE')||!t1.includes('ERASE THE SAVE'))F('FIX IT lacks EXPORT / ERASE');
 press('confirm');   /* the first row: RESTORE */
 if(H(1)!=='ok')F('RESTORE did not bring the slot back: '+H(1)); if(ls.getItem(K(1))!==goodText)F('the restored text is not the good one'); if(ls.getItem(K(1)+'.corrupt')!==bad)F('the damaged text was not kept'); if(BKT.fixAsk!==-1)F('FIX IT stayed open');
 /* a corrupt slot with no backup offers no RESTORE; BACK leaves it */

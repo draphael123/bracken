@@ -181,7 +181,7 @@ function slots() { return Array.from({ length: CS.SLOTS }, (_, i) => { const sm 
   return { i, line: CS.summaryLine(i, sm, x => G.names[x] || String(x).toUpperCase(), h ? CS.HELD_LINE : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }); }
 function chooseSlot(i) {
   if (i < 0) { G.slot = -1; G.slotMsg = ''; G.phase = 'pick'; render(); return true; }
-  const sl = slots()[i]; if (!sl || !sl.ok) { G.slotMsg = sl ? sl.why : 'NO SUCH SLOT'; render(); return false; }
+  const sl = slots()[i]; if (!sl || !sl.ok) { G.slotMsg = sl ? sl.why : 'NO SUCH SAVE'; render(); return false; }
   const c = LOCKS.claim(i, 'guest', 'ONLINE CO-OP', 'guest'); if (!c.ok) { G.slotMsg = CS.lockLine(i, c.holder); render(); return false; }
   G.slot = i; G.own = sl.heroes; G.slotMsg = ''; G.phase = 'pick'; render(); return true;
 }

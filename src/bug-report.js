@@ -79,7 +79,7 @@ export function formatReport(r) {
   o.push('BRACKEN BUG REPORT  (code v' + r.c + ', ' + (r.t ? new Date(r.t * 1000).toISOString().replace('T', ' ').slice(0, 19) + 'Z' : 'no time') + ')');
   o.push('build      batch ' + (v.b || '?') + (v.d ? '  ' + v.d : '') + (v.s ? '  sha ' + v.s : '  (no sha stamped)'));
   o.push('where      ' + (r.lv ? r.lv + (r.ln ? ' (' + r.ln + ')' : '') + '  col ' + r.x + ' row ' + r.y : '(not in a level)') + '   screen: ' + r.st + (r.co ? '   CO-OP' : ''));
-  o.push('hero       ' + r.h + '   hp ' + (r.hp || []).join('/') + '   flasks ' + r.fl + '   save slot ' + (r.sl + 1) + (r.dfl ? '   level difficulty ' + r.dfl : ''));
+  o.push('hero       ' + r.h + '   hp ' + (r.hp || []).join('/') + '   flasks ' + r.fl + '   save ' + (r.sl + 1) + (r.dfl ? '   level difficulty ' + r.dfl : ''));
   if (r.dev) o.push('device     ' + r.dev.w + 'x' + r.dev.h + ' @' + r.dev.r + 'x' + (r.dev.t ? ' touch' : '') + '  ' + r.dev.ua);
   if (r.set) o.push('settings   ' + Object.keys(r.set).map(k => (SETS[k] || k) + '=' + r.set[k]).join(', '));
   o.push('player says: ' + (r.n ? '"' + r.n + '"' : '(nothing)'));
