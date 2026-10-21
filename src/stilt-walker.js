@@ -9,6 +9,7 @@
 //     back, BROKEN (main.js floorFoe), so the next blow is the foe-pass FINISHER (src/finishers.js). Up again he is a goblin with a knife (stiltless).
 //   HIS HORN (horn: true): seeing you he lowers the gaff and winds the horn - the Stockade's horn bar over him (main.js drawHornTell) - and if it
 //     sounds, his crew (pack) comes (main.js hornSounds). Strike him (a stagger breaks his breath) or topple him before it fills.
+import { bakeStiltSheet } from './redraw/stilt_walker_art.js';
 export const STILT = {
   hp: 32, w: 10, h: 30, hLow: 14, walk: 30, walkLow: 42, sight: 200, keep: 30, back: 22,
   jabAt: 50, jabTell: 0.55, jab: 0.18, jabReach: 46, jabDmg: 14, jabTop: 16, jabBot: 9, recover: 0.6, cd: 1.3,
@@ -60,7 +61,8 @@ export function cutStilt(s) { if (!s || !s.stilts) return false; s.stilts = fals
 /* ---------- GREYBOX SHEET (the art lane draws him; this is the contract: one frame per pose) ----------
    0 idle  1-2 walk (stilts stride)  3 JAB WINDUP (gaff up and back over his head)  4 JAB (driven down and forward)  5 HORN (gaff grounded, horn at his mouth)
    6 TOPPLE (tipping, a stilt snapped)  7 DOWN (on his back, stilts broken)  8-9 stiltless walk  10 STAB WINDUP  11 STAB  12 hurt */
-export function bakeStiltWalker(canvas, flipX, whiten) {
+export function bakeStiltWalker(canvas, flipX, whiten) { return bakeStiltSheet(canvas, flipX, whiten, STILT); }   /* (claude/fenroadart) the drawn sheet: src/redraw/stilt_walker_art.js */
+export function bakeStiltWalkerGreybox(canvas, flipX, whiten) {
   const CW = 40, CH = 44, ax = 20, ay = 43;
   const C = { skin: '#7aa04a', skinD: '#55783a', eye: '#ffd36b', cloth: '#6a4a8a', clothD: '#4a3266', stilt: '#8a6a40', stiltD: '#5a4428', strap: '#c9b27c', gaff: '#9a8a70', hook: '#c9d1dc', horn: '#e8dcc0', out: '#1b1626' };
   const frames = [];

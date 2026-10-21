@@ -11,6 +11,7 @@
 import * as BTM from './bog-troll.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
+import * as BTA from './redraw/bog_troll_art.js';   /* (claude/fenroadart) his drawn sprites: one baked + outlined sprite per pose */
 const { BT } = BTM;
 const R = Math.round;
 const SOUND = { roar: s => (s.trollRoar || s.boreRoar || s.roar)(), gurgle: s => (s.trollBubble || s.splash)(), bubble: s => (s.trollBubble || s.splash)(), bulge: s => (s.trollBulge || s.creak || s.thud)(),
@@ -128,7 +129,7 @@ export function makeBogTrollHands(ctx) {
     const m = e.mode; if (m === 'sleep' || m === 'under' || m === 'burstTell') return;
     const f = e.face || 1, x = e.x - cx, y = S.G.floorY - cy, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, p = POSE[m] || POSE.up;
     const sinkK = Math.max(0, e.y - (S.G.floorY + BT.up));
-    g.save(); g.translate(R(x), R(y)); g.scale(f, 1); drawTroll(g, p, flash, time, S.ph, sinkK); g.restore(); };
+    const spr = BTA.trollSprite(m, p, time, S.ph, flash, sinkK); g.save(); g.translate(R(x), R(y)); g.scale(f, 1); g.drawImage(spr, -BTA.TROLL_ANCHOR.ax, -BTA.TROLL_ANCHOR.ay); g.restore(); };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss; const G = S.G, X = v => R(v - cx), Y = v => R(v - cy);
     if (!ctx.bossActive || !e || e.t !== 'bogtroll') return;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
@@ -156,7 +157,8 @@ export function makeBogTrollHands(ctx) {
   return H;
 }
 /* HIS BESTIARY CARD: two of his poses (up, the drag's windup) - main.js SPR.bogtrollCard (the bestiary reads SPR[t + 'Card'].R) */
-export function bakeBogTrollCard() {
+export function bakeBogTrollCard() { return BTA.bakeTrollCard(POSE, BT, whiten, flipX); }
+export function bakeBogTrollCardGreybox() {
   const fr = [POSE.up, POSE.dragTell].map((p, i) => { const [c, g] = canvas(64, 48); g.imageSmoothingEnabled = false; g.save(); g.translate(30, 30); g.scale(0.7, 0.7); drawTroll(g, p, false, i * 0.3, 1); g.restore(); return c; });
   const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 30, ay: 40, w: BT.w, h: BT.h };
 }
