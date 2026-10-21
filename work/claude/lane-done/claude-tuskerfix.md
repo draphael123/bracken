@@ -81,3 +81,15 @@ src/old-tusker.js (pure fight), src/old-tusker-hands.js (draw/read), src/lumber-
 4. **The red X box** floating over foes (crow dive / elite marker) - is that the 'floating sign'? REC: tell me where you saw it; I left it (HUD, not geometry).
 5. **HP 1400 -> 775**: the old 1400 was carried by 'he rams a STANDING pine and reels under it, fell it -> pin' every cycle; without that loop his openings
    are rarer, so his health came down to keep 60-70%. REC accept (BUILT).
+
+## FOLLOW-UP: THE GEOMANCER (coordinator 10-21; boss numbers untouched)
+- **Lab hands (src/lab.js, Old Tusker branch only)**: (1) in his openings (pinned/dazed) she winds her FAULT LINE and lets go when the crack will run past his
+  near edge, instead of light stave cuts; out of his tusks' reach (100-160 px, he walks/recovers/roots, no ward) she cracks at him too - her kit is the long one;
+  (2) she only answers the tusk sweep with her RUNE-WARD when she has the stamina for it (st >= 30) - otherwise she steps out / jumps it (before, she held a ward
+  that never rose and her regen stayed paused).
+- **Result: geomancer 2/6 (was 0/5)** - she ROUTES. Wins are quick (39-44 s, the fault line does it without a pin). k/w/p hands unchanged (63% stands).
+- **What she lacks (a design wall for her, not retuned for one hero):** in the losing seeds she is STAMINA-STARVED from early on - winded ~40-50% of the fight
+  (felling strokes + windups + guards all drain one bar). Winded she can neither raise the rune-ward (it needs stamina) nor out-walk his approach, so he walks
+  up and sweeps her: ~100 of her 136 hp from the sweep, ~30-45 from clods; only 1 charge a fight, no pin. Recs for Daniel / a geomancer lane: (a) the
+  rune-ward's stamina cost vs a 12-dmg sweep, or (b) let her fault line FELL a marked pine (a stroke at range, like the ranger's arrow) so she can work the rule
+  from outside his reach - REC (b): it is her kit's natural answer and keeps the boss numbers. Not built (boss rule change for one hero).
