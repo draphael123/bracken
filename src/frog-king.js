@@ -25,7 +25,7 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 1100,
+  hp: 1250,
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
   quota: [0.22, 0.22],             /* the share of him one royal pad is worth before he leaps on, per phase */
@@ -141,6 +141,7 @@ export function frogPlan(s) {
   if (!P.ground) { if (mem.land) out.gx = (mem.land.x0 + mem.land.x1) / 2; else out.gx = goal; out.why = 'in the air'; return out; }
   /* he is gathering to leap or in the air: wait where you stand (the lanes reshuffle as he lands) */
   if ((m === 'crouch' || m === 'leap') && !onSt(e.tst)) { const fs0 = footings(F), c0 = fs0.find(f => P.x >= f.x0 - 3 && P.x <= f.x1 + 3); if (c0 && (!c0.pad || c0.firm)) { out.gx = Math.max(c0.x0 + 8, Math.min(c0.x1 - 8, P.x)); out.why = 'wait for him to land'; return out; } }
+  mem.land = null;   /* (grounded: a hop that was not ours - a push-hop - never steers by an old landing) */
   const fs = footings(F), cur = fs.find(f => P.x >= f.x0 - 3 && P.x <= f.x1 + 3) || null;
   if (!cur) { out.gx = goal; out.why = 'cross'; return out; }
   const far = dir > 0 ? cur.x1 : cur.x0, ahead = fs.filter(f => f !== cur && (dir > 0 ? f.x0 > cur.x1 - 2 : f.x1 < cur.x0 + 2)).sort((a, b) => dir > 0 ? a.x0 - b.x0 : b.x1 - a.x1);
