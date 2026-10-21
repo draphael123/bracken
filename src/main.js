@@ -7090,6 +7090,7 @@ function laneStamp(lane) { let st = LANES.get(lane); if (st) return st;
 let tellsDrawn = [];   /* what the last frame's marks were, lanes and all: for tools/duck.mjs (BK.duck().tells) */
 function drawTells() {
   if (state !== 'play' && state !== 'talk') { tellQ.length = 0; return; }
+  if (introCardUp()) { tellQ.length = 0; return; }   /* (integ110) the letterbox name card owns the top of the screen: an edge-pinned mark from a foe that tells during the intro collided with the name (textfit boss/bossfix, hanging mini) */
   const drawn = [];
   const plateTop = (bossActive && boss && boss.alive) || (miniActive && !bossActive) ? VH - 30 - hpLift() : VH;   /* (batch70 textfit) a mark never lands on the boss plate at the foot of the screen: the !! badge from a foe low in the frame was drawn across the end of the name */
   const lane = (t, x, y) => { if (!t.lane || !LANE_PIX[t.lane]) return; const st = laneStamp(t.lane); g.drawImage(st.c, x + (t.txt === '!!' ? 10 : 4), y - 1); };
