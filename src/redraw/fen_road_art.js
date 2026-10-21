@@ -117,12 +117,18 @@ function cribTile(x, y, at, T, R) {   /* R = [x0, x1, top] */
   }));
 }
 /* the PEAT CUTTING: cut peat turves in strata (brick-like blocks), roots, a wet gloss, a spade-marked top */
-function peatTile(x, y, at, T) {
-  const top = at(x, y - 1) !== T.SOLID && at(x, y - 1) !== T.PLANK;
+function peatTile(x, y, at, T, mode = 'cut') {
+  const top = at(x, y - 1) !== T.SOLID && at(x, y - 1) !== T.PLANK, sedge = mode === 'bank' && top, mud = mode === 'bed';
   const wallL = at(x - 1, y) === T.AIR && !top, wallR = at(x + 1, y) === T.AIR && !top;
-  return once('pt' + (top ? 1 : 0) + (wallL ? 1 : 0) + (wallR ? 1 : 0) + ((x * 3 + y) & 3), () => tileOf((px, py) => {
+  return once('pt' + mode + (top ? 1 : 0) + (wallL ? 1 : 0) + (wallR ? 1 : 0) + ((x * 3 + y) & 3), () => tileOf((px, py) => {
     const u = x * 16 + px, v = y * 16 + py;
+    if (sedge) { if (py === 0) return rnd(u, 3, 3) === 0 ? PEAT[3] : MOSS[2 + (rnd(u, 8, 3) === 0 ? 1 : 0)]; if (py === 1) return rnd(u, 4, 3) === 0 ? MOSS[1] : (rnd(u, 7, 4) === 0 ? PEAT[3] : MOSS[2]); if (py === 2) return rnd(u, 5, 3) === 0 ? PEAT[2] : MOSS[1]; if (py === 3) return rnd(u, 6, 3) === 0 ? PEAT[1] : PEAT[2]; }
+    if (mud) { const w = rnd(u, v, 7); if (top && py < 2) return py === 0 ? '#4a4a34' : '#33301f'; return w === 0 ? '#4a4630' : w < 3 ? '#26231a' : '#1d1b14'; }
     if (top) { if (py === 0) return rnd(u, 3, 6) === 0 ? '#5b6a3a' : PEAT[3]; if (py === 1) return rnd(u, 4, 4) === 0 ? PEAT[4] : PEAT[2]; if (py === 2 && rnd(u, 5, 7) === 0) return '#9fb3a6'; /* a puddle glint */ }
+    if (mode !== 'cut') {   /* the fen's ground: dark peat, mottled, faint strata, roots - no cut blocks */
+      const n = rnd(u, v, 11), strata = (v % 7 === 3 && rnd(u >> 2, v, 3) !== 0);
+      if (wallL && px < 2 || wallR && px > 13) return y > WATER ? MOSS[n & 1 ? 0 : 1] : PEAT[1];
+      if (strata) return PEAT[1]; if (n === 0) return '#5a4a2a'; if (n === 1) return '#3a5a2a'; if (n < 4) return PEAT[1]; if (n < 7) return PEAT[2]; if (n === 7) return PEAT[4]; return PEAT[3]; }
     const brick = ((v >> 2) & 1) ? 0 : 3, bx = (u + brick) % 7, by = v % 4;
     if (by === 3) return PEAT[0];                                                              /* the cut between turves */
     if (bx === 6) return PEAT[1];
@@ -141,8 +147,10 @@ export function tile(t, x, y, at, T, L) {
   for (const R of CRIBS) if (x >= R[0] && x <= R[1] && y >= R[2] && y < BED) return cribTile(x, y, at, T, R);
   if (x >= LANDING[0] && x <= LANDING[1] && y >= LANDING[2] && y < BED) return cribTile(x, y, at, T, LANDING);
   if (x === 195 && y === 17) return cribTile(x, y, at, T, [195, 195, 17]);
-  if (inRange(TRENCH, x, y) && x <= TRENCH[1] && y >= TRENCH[2] && y <= 24) return peatTile(x, y, at, T);
-  return null;
+  if (inRange(TRENCH, x, y) && x <= TRENCH[1] && y >= TRENCH[2] && y <= 24) return peatTile(x, y, at, T, 'cut');
+  if (y > WATER && at(x, y - 1) === T.AIR && y >= BED) return peatTile(x, y, at, T, 'bed');   /* the bed under the fen: silt */
+  if (y >= BED) return peatTile(x, y, at, T, 'bed');
+  return peatTile(x, y, at, T, 'bank');   /* every other bit of ground is the fen's own: peat under a mat of sedge */
 }
 
 /* ================= SUPPORTS: BENTS OF DRIVEN PILES UNDER EVERY RUN OVER THE FEN ================= */
@@ -379,3 +387,11 @@ export function drawGate(g, gx, yb, time) {
     const fl = Math.floor(time * 9 + bx) % 3; g.globalAlpha = 0.22; g.fillStyle = '#ffb347'; g.beginPath(); g.arc(bx, fy - 24, 18, 0, 7); g.fill(); g.globalAlpha = 1;
     Rr(g, '#c2441c', bx - 3, fy - 22, 7, 6); Rr(g, '#ff8a2a', bx - 2, fy - 24 - fl, 5, 8); Rr(g, '#ffd36b', bx - 1, fy - 22 - fl, 3, 5); P(g, '#fff6e0', bx, fy - 20); }
 }
+
+/* A SECTION THAT HAS GONE UNDER: a foam streak where it sank, bubbles breaking at the surface; and a BOWED one: drips off its boards */
+export function drawSunk(g, x, w, y, time) {
+  g.globalAlpha = 0.75; for (let i = 0; i < w - 4; i += 6) Rr(g, '#e6efe6', x + 2 + i, y - 1 - ((i >> 1) & 1), 4, 1);
+  for (let i = 0; i < Math.floor(w / 12); i++) { const q = (time * 1.6 + i * 0.37) % 1; g.globalAlpha = 0.8 * (1 - q); P(g, '#e6efe6', x + 6 + i * 12, y - 1 - q * 7); P(g, '#cfe0d0', x + 7 + i * 12, y - 2 - q * 7); }
+  g.globalAlpha = 1;
+}
+export function drawDrips(g, x, w, y, time) { for (let i = 0; i < Math.floor(w / 16); i++) { const ph = (time * 2.2 + i * 0.5) % 1; g.globalAlpha = 1 - ph * 0.5; P(g, '#cfe0d0', x + 4 + i * 16 + (i & 1) * 5, y + ph * 8); } g.globalAlpha = 1; }

@@ -150,6 +150,7 @@ export function makeFenRoadHands(ctx) {
       const up = s.st === 'up' || s.st === 'bow', b = s.st === 'bow' ? Math.min(1, s.t / SAG.bow) : 0, shiver = s.st === 'bow' && s.t > s.hold * 0.7 ? (Math.floor(time * 30) % 2) : 0;
       for (let i = 0; i < s.w; i++) { const wreck = s.st === 'gone' && s.hole && (s.x0 + i < s.hole[0] || s.x0 + i > s.hole[1]), u = (i + 0.5) / s.w * 2 - 1, off = up ? b * SAG.droop * (1 - u * u) + shiver : wreck ? 3 + (i ? 1 : 0) : 0, yy = up || wreck ? y + off + (up ? (1 - s.vis) * 8 : 0) : Y(19 * TS + 3);
         FRA.drawBoard(g, x0 + i * TS, yy, i, s.w, s.arena, up || wreck ? 1 : 0.4, wreck); }
+      if (s.st === 'under' || s.st === 'gone') FRA.drawSunk(g, x0, s.w * TS, Y(19 * TS), time); else if (s.st === 'bow' && s.t > 0.2) FRA.drawDrips(g, x0, s.w * TS, y + 8, time);
       /* ITS LOAD (the crew's barricade): road-planks stacked on end, roped; and its foot in the section's own row */
       for (const [lx, ly] of [...s.load, ...s.load.filter(([, q]) => q === s.row - 1).map(([q]) => [q, s.row])]) { if (!ctx.solidAt(lx, ly)) continue;
         FRA.drawBarricadeCell(g, X(lx * TS), Y(ly * TS), !ctx.solidAt(lx, ly - 1), ly === s.row - 3 && lx === s.load[0][0], ly === s.row); }
