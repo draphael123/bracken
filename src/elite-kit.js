@@ -57,6 +57,7 @@ export const affixFits = (id, affix, ambush) => !!AFFIX[affix] && !(ambush && af
 export const AFFIX_AT = {
   'church|gobmage': 'WARDING', 'church|husk#amb': 'THORNED',   /* (claude/litchurch) THE ARCHDEACON's ward over his clergy (kill him first); the sealed vault's grave captain grows bone spines at a mash */
   'wood|shield#amb': 'SHIELDED',   /* (claude/order: the gated warding shield captain at 147 is THE BRIAR MAUL now - src/order-chapters.js ORDER_AT; a knight's affix rides on his ent) */
+  'fenroad|shield': 'SWIFT',   /* (claude/fenroad) THE BARRICADE's crew captain: quick on his feet, his tells shorter (a shield's guard is already his front) */
   'marsh|thorn#amb': 'VENOMOUS',   /* (claude/order: the far bank's thorned spike goblin is THE BOG BLADE now) */
   'stockade|archer#amb': 'SWIFT',   /* (claude/wardens12: the camp brute is THE HORN LANCE now - his SUMMONER rides his ent) */
   'spore|shield#amb': 'THORNED',   /* (claude/wardens12: the cap-top shield is THE SPORE MAGE now - VENOMOUS rides his ent) */

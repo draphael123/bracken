@@ -427,6 +427,11 @@ export const STUCK = {
     { id: 'sk-deadair-220', zone: [220, 28, 222, 29], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
     { id: 'sk-deadair-223', zone: [223, 42, 224, 43], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
   ],
+  /* THE FEN ROAD (claude/fenroad): the barricade (its lashing is the only way on), and the peat pit's steps out */
+  fenroad: [
+    { id: 'fr-pit', zone: [41, 22, 46, 24], at: [48, 22], glint: 'stall', line: "THE CUTTERS' STEPS ARE AT THE PIT'S EAST WALL" },
+    { id: 'fr-barricade', zone: [184, 15, 191, 17], at: [189, 17], done: ['lashing', 189, 17, 'on'], line: 'THE BARRICADE STANDS ON BOWED BOARDS: STRIKE ITS LASHING' },
+  ],
   /* THE ROOTWAY (claude/rootway): every bud the route needs, every cleat the route needs until its rope is cut, the lookout's rope (an arrow cuts it) */
   rootway: [
     { id: 'rw-bud-wall', zone: [20, 36, 30, 41], at: [29, 41], line: 'A BUD BY THE ROOT WALL: JUMP ONTO IT AND STAND STILL' },

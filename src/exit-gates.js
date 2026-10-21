@@ -24,7 +24,7 @@ const OUT = '#1b1626';
    forest, marsh, fungus, crag, mine, storm, coast, canal, inland, desert. */
 export const KIND_OF = {
   wood: 'forest',
-  marsh: 'marsh', stockade: 'marsh', burning: 'marsh',
+  marsh: 'marsh', fenroad: 'marsh', stockade: 'marsh', burning: 'marsh',
   spore: 'fungus', rootway: 'fungus', kings: 'fungus', underleaf: 'fungus',
   scree: 'crag', hanging: 'crag', spire: 'crag', moor: 'crag', skyroad: 'crag',
   oreroad: 'mine', minecart: 'mine',

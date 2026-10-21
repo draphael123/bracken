@@ -5,7 +5,7 @@
    set down to the first thing under it, if that is within MAX_DROP rows. No tile changes: the route, the walker and the mash rows are untouched.
    What it cannot reach (open sky or a deep void under the board) stays in tools/solid-islands.mjs's table for the level's own lane. */
 import { addForestSupports } from './forest-supports.js'; import { marshSupports } from './redraw/marsh2_art.js';
-import { addSpireSupports } from './spire-supports.js';
+import { addSpireSupports } from './spire-supports.js'; import { addSupports as addFenSupports } from './redraw/fen_road_art.js';
 export const MAX_DROP = 16;
 const HOVER = 6;
 const HOVER_ID = { fair: 30 };   /* (claude/theatrelines) the fair's stage and slide are timber: a stilt may run the whole way down to the ground */   /* rows of air under a laid wall / stone stub that a stilt may cover */
@@ -13,7 +13,7 @@ const DROP = { fields: 24, lamplit: 20, fair: 30 };   /* the Hexed Fields: its p
 
 /* levels that get the posts: the BUILT places (THE STOCKADE joined them, claude/stockade2: a goblin camp is lashed poles). The organic ones (the Wood, the Marsh, the Spore Forest, Kingswood, the crags and passes,
    the Hanging Gardens, the Rootway, the Glass Sea, the Witchlight) draw logs, caps, reeds and slabs that grow where they are: tools/solid-islands.mjs ALLOW. */
-export const POST_LEVELS = new Set(['stockade', 'storm', 'underleaf', 'lamplit', 'deep', 'causeway', 'fields', 'burning', 'canal', 'welltown', 'redgorge', 'underwell', 'minecart', 'fair', 'caravan', 'unburied', 'mage', 'fallingtower', 'keep', 'harbor', 'undercrown', 'towpath']);   /* (claude/towpath2: THE TOWPATH 2's gantries, racks, beams and lofts stand on posts) */
+export const POST_LEVELS = new Set(['fenroad', 'stockade', 'storm', 'underleaf', 'lamplit', 'deep', 'causeway', 'fields', 'burning', 'canal', 'welltown', 'redgorge', 'underwell', 'minecart', 'fair', 'caravan', 'unburied', 'mage', 'fallingtower', 'keep', 'harbor', 'undercrown', 'towpath']);   /* (claude/towpath2: THE TOWPATH 2's gantries, racks, beams and lofts stand on posts) */
 
 export function islandsOf(L, T) {
   const W = L.W, H = L.H, g = L.grid, seen = new Uint8Array(W * H), out = [];
@@ -35,7 +35,7 @@ export function islandsOf(L, T) {
   return out;
 }
 
-export function addIslandPosts(L, id, T) { const r = addIslandPostsBase(L, id, T); if (id === 'marsh' && r && r.marsh2Kit) marshSupports(r, T); return r; }   /* (claude/marsh2art) the marsh's posts reach the bed or the world's floor, drawn as bog-oak stilts (src/redraw/marsh2_art.js) */
+export function addIslandPosts(L, id, T) { const r = addIslandPostsBase(L, id, T); if (id === 'marsh' && r && r.marsh2Kit) marshSupports(r, T); if (id === 'fenroad' && r) addFenSupports(r, T); return r; }   /* (claude/fenroadart) THE FEN ROAD's bents under every run the posts above left bare (bowed sections, the landing) */   /* (claude/marsh2art) the marsh's posts reach the bed or the world's floor, drawn as bog-oak stilts (src/redraw/marsh2_art.js) */
 function addIslandPostsBase(L, id, T) {
   addForestSupports(L, id, T, islandsOf);   /* the forest and crag levels: their own kit (src/forest-supports.js) */
   if (id === 'spire') addSpireSupports(L, T);   /* THE MONASTERY: scaffold posts under its boards, masonry piers under its floors (claude/screefix, src/spire-supports.js) */

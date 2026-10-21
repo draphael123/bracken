@@ -34,6 +34,15 @@ export const GROUND_KITS = {
       "rock"
     ]
   },
+  "fenroad": {
+    "density": 0.45,
+    "kinds": [
+      "cattail",
+      "moss",
+      "tuft",
+      "rock"
+    ]
+  },
   "stockade": {
     "density": 0.34,
     "kinds": [
@@ -303,6 +312,22 @@ export const ALLOWED_DECORATIONS = {
     "snow",
     "stem",
     "stump"
+  ],
+  "fenroad": [
+    "barrels",
+    "bothy",
+    "cattail",
+    "deadTree",
+    "fishTrap",
+    "gobPennant",
+    "lootHeap",
+    "moss",
+    "rock",
+    "stakeFence",
+    "stump",
+    "timber",
+    "tuft",
+    "warnPost"
   ],
   "stockade": [
     "banner",

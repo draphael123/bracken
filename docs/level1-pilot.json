@@ -466,5 +466,17 @@
   "lifts": 110,
   "walked": 100,
   "bare": true
+ },
+ "fenroad": {
+  "hash": "493af55ec213",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 21,
+  "deaths": 0,
+  "kills": 36,
+  "lifts": 78,
+  "walked": 100,
+  "bare": true
  }
 }
