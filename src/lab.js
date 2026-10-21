@@ -609,7 +609,7 @@ function humanGuard(BK, h, boss) {
    cut, KNIGHT_CUT), when he is hurt or rolls, or when the boss winds up outside an opening. Not the pirate (his heavy is his pistol) or the reaper
    (his swing is a commitment the dkPunish rule reads). v2 profiles; prof.rotate false turns it off (the old rows). */
 function rotateWanted(BK) {
-  if (!LABP.v2 || LABP.rotate === false || !HUMAN_H || HUMAN_H === 'pirate' || HUMAN_H === 'reaper') return false;
+  if (!LABP.v2 || LABP.rotate === false || !HUMAN_H || HUMAN_H === 'pirate' || (HUMAN_H === 'reaper' && !LABP.bkTiers)) return false;   /* (claude/bkfeel) +tiers: the Blood Knight rotates too, into a held tier */
   const P = BK.P, b = ROWBOSS || BK.boss; if (!P || !b || !b.alive || !(P.ground || P.swim) || P.atkHeld > 0 || P.charge > 0 || P.heavy || P.labRotHold > 0) return false;
   if (OPEN(b, BK) !== true) return false;
   const s = b.stale, fin = b.broken > 0 && b.bkBroke && !b.bkFinished;   /* (and BROKEN with the finisher waiting: a player winds the heavy for it) */
@@ -621,6 +621,8 @@ function rotHold(BK) {
   if (ROT) { const why = P.heavy ? 'heavy' : P.hurt > 0 ? 'hurt' : P.dodge > 0 ? 'dodge' : P.labRotHold > 110 ? 'long' : BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true ? 'tell' : null; if (why) ROT[why] = (ROT[why] || 0) + 1; }
   if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
   if (HUMAN_H === 'knight' && P.atkHeld >= KNIGHT_CUT) { k.atk = false; P.labRotHold = 0; return; }   /* the guard-break cut, let go */
+  if (HUMAN_H === 'reaper' && BK.dk2) { const Bd = BK.dk2().blood(), T = Bd.BLOOD.tiers, want = b.broken > 0 ? 2 : 1;   /* (claude/bkfeel) +tiers: SUNDER (it bites his poise); on a BROKEN boss the CRIMSON CRESCENT (T4/T5 are past the hold's 110-frame cap) */
+    if (P.atkHeld >= T.at[want] * Bd.quick + 0.03) { k.atk = false; P.labRotHold = 0; return; } }
   P.labRotHold++; k.atk = true; k.block = false; P.face = Math.sign(b.x - P.x) || P.face; if (ROT) ROT.holds += P.labRotHold === 2 ? 1 : 0;
 }
 let ROT = null;   /* the rotation's count, per row (out.rot) */

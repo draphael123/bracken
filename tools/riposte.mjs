@@ -49,10 +49,11 @@ try {
     for (const h of HEROES) { const r = out.heroes[h]; console.log('heroes ' + h.padEnd(10) + JSON.stringify(r));
       assert(r.parry, h + ': its own answer parries a yellow blow (one of hold/tap/down/release, some lead)');
       assert.equal(r.parry.res, 'blocked', h + ': the parried blow is turned');
-      assert(r.parry.win > 0 && r.parry.win <= 0.6, h + ': the riposte window opens (~0.6 s): ' + r.parry.win);
+      /* (claude/bkfeel, Daniel 10-21 'make his PARRY feel more impactful'): THE BLOOD KNIGHT's window is src/blood-kit.js BLOOD.parry.window (0.9 s - a greatsword is slow to come round) */
+      assert(r.parry.win > 0 && r.parry.win <= (h === 'reaper' ? 0.95 : 0.6), h + ': the riposte window opens (~0.6 s; the Blood Knight 0.9): ' + r.parry.win);
       assert(r.parry.hold > 0, h + ': the common foe stands reeling (rpHold ' + r.parry.hold + ')');
       /* (claude/berserker2, Daniel 10-11) THE BERSERKER'S RIPOSTE IS THE CROSS-CHOP - his run's finisher (x1.5) on top, as the knight's is his heavy third cut; and his plain first cut is a quick flurry chop (x0.85) - so his bound is the knight's */
-      assert(r.ratio >= 1.8 && r.ratio <= (h === 'knight' || h === 'berserker' ? 3.8 : 2.7), h + ': the riposte cut lands ~2x the plain first cut, paid once (the knight and the berserker: their finisher x1.5 on top) (' + r.rip + ' vs ' + r.plain + ')');
+      assert(r.ratio >= 1.8 && r.ratio <= (h === 'knight' || h === 'berserker' || h === 'reaper' ? 3.8 : 2.7)   /* (claude/bkfeel: the Blood Knight's riposte out of a THROWN BACK is a heavy third cut, as the knight's) */, h + ': the riposte cut lands ~2x the plain first cut, paid once (the knight and the berserker: their finisher x1.5 on top) (' + r.rip + ' vs ' + r.plain + ')');
       assert(r.red && r.red.res === 'hit' && r.red.parries === 0 && r.red.lost > 0, h + ': a RED blow met on the beat is not parried - it lands, and says TOO STRONG (' + JSON.stringify(r.red) + ')'); }
   }
   if (WANT.includes('elite')) {
