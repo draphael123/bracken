@@ -139,8 +139,8 @@ export function applyCredit(storage, key, credit, opts = {}) {
   const c = cleanCredit(credit); if (!c) return { ok: false, why: 'A CREDIT THE GAME COULD NOT READ (IGNORED)' };
   const ids = opts.campaignIds || [], legacy = key === slotKey(0) ? get(storage, LEGACY_KEY) : null, raw = get(storage, key) || legacy;
   const health = slotHealth(raw, ids);
-  if (health.state === 'corrupt') return { ok: false, why: 'THIS SLOT IS DAMAGED: NOTHING WAS WRITTEN (FIX IT FROM CHOOSE A SAVE)' };
-  if (health.state === 'newer') return { ok: false, why: 'THIS SLOT IS FROM A NEWER BRACKEN: NOTHING WAS WRITTEN' };
+  if (health.state === 'corrupt') return { ok: false, why: 'THIS SAVE IS DAMAGED: NOTHING WAS WRITTEN (FIX IT FROM CHOOSE A SAVE)' };
+  if (health.state === 'newer') return { ok: false, why: 'THIS SAVE IS FROM A NEWER BRACKEN: NOTHING WAS WRITTEN' };
   let p, fresh = false;
   try { if (raw === null) { p = migrateProgress(null).progress; fresh = true; } else p = loadProgress(storage, key, raw, ids).progress; }
   catch (e) { return { ok: false, why: 'THE SAVE COULD NOT BE OPENED: ' + String((e && e.message) || e).toUpperCase() }; }
@@ -209,7 +209,7 @@ export function lockLine(slot, h) {
   const n = 'SAVE ' + (slot + 1);
   if (!h) return '';
   if (h.here) return n + ' IS ALREADY PLAYING HERE' + (h.label ? ' (' + h.label + ')' : '') + ': ONE CHARACTER, ONE PLACE';
-  if (h.kind === 'game') return n + ' IS OPEN IN THE GAME IN ANOTHER TAB: PICK ANOTHER, OR OPEN A DIFFERENT SLOT THERE';
+  if (h.kind === 'game') return n + ' IS OPEN IN THE GAME IN ANOTHER TAB: PICK ANOTHER, OR OPEN A DIFFERENT SAVE THERE';
   if (h.kind === 'guest') return n + ' IS PLAYING ONLINE CO-OP IN ANOTHER TAB';
   return n + ' IS PLAYING CO-OP IN ANOTHER TAB' + (h.label ? ' (' + h.label + ')' : '');
 }

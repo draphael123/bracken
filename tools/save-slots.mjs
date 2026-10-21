@@ -58,7 +58,7 @@ BK.ui.slotI=1;press('down');if(BK.ui.slotI!==2)F('DOWN from slot 2 is '+BK.ui.sl
 press('up');press('up');if(BK.ui.slotI!==0)F('UP twice from slot 3 is '+BK.ui.slotI+', wanted slot 1');press('up');if(BK.ui.slotI!==4)F('UP from slot 1 did not wrap to 5');
 window.__textRec=[];BK.step(1);const rec=window.__textRec;window.__textRec=null;
 const T=rec.filter(q=>q.kind==='text').map(q=>q.s);out.texts=T;
-for(let i=1;i<=5;i++)if(!T.includes('SLOT '+i))F('no card for SLOT '+i);
+for(let i=1;i<=5;i++)if(!T.includes('SAVE '+i))F('no card for SAVE '+i);
 for(const w of ['KNIGHT','PYROMANCER','PALADIN','WARDEN'])if(!T.includes(w))F('no hero name '+w+' on a card');
 for(const lv of [3,4,5,7])if(!T.includes('LEVEL '+lv))F('no LEVEL '+lv+' on a card');
 if(T.filter(s=>s==='EMPTY').length!==1)F('the empty slot is not drawn once');
@@ -69,12 +69,12 @@ ls.setItem('bracken.slot','2');BK.loadSlot(2);BK.ui.pressCard=false;BK.state='ti
 if(BK.state!=='slots')F('the title did not open the picker: '+BK.state);if(BK.ui.slotI!==2)F('the picker opened on slot '+(BK.ui.slotI+1)+', not the last-played slot 3');}}
 window.__textRec=[];BK.step(1);const rec2=window.__textRec;window.__textRec=null;
 const tags=rec2.filter(q=>q.kind==='text'&&q.s==='LAST PLAYED');if(tags.length!==1)F('LAST PLAYED is drawn '+tags.length+' times, wanted once');
-else{const mine=rec2.find(q=>q.kind==='text'&&q.s==='SLOT 3');if(!mine||Math.abs(tags[0].y0-mine.y0)>4)F('the LAST PLAYED tag is not on the SLOT 3 row');}
+else{const mine=rec2.find(q=>q.kind==='text'&&q.s==='SAVE 3');if(!mine||Math.abs(tags[0].y0-mine.y0)>4)F('the LAST PLAYED tag is not on the SAVE 3 row');}
 BK.loadSlot(0);BK.state='slots';BK.ui.slotI=0;window.__textRec=[];BK.step(1);const rec3=window.__textRec;window.__textRec=null;
-{const tg=rec3.find(q=>q.kind==='text'&&q.s==='LAST PLAYED'),s1=rec3.find(q=>q.kind==='text'&&q.s==='SLOT 1');if(!tg||!s1||Math.abs(tg.y0-s1.y0)>4)F('after playing slot 1 the tag did not move to it');}
+{const tg=rec3.find(q=>q.kind==='text'&&q.s==='LAST PLAYED'),s1=rec3.find(q=>q.kind==='text'&&q.s==='SAVE 1');if(!tg||!s1||Math.abs(tg.y0-s1.y0)>4)F('after playing slot 1 the tag did not move to it');}
 /* Z opens the picked one; X asks ERASE SLOT n? (opens on NO, X or ESC is NO); YES + Z erases only it */
 BK.ui.slotI=4;press('confirm');if(BK.slot!==4||BKT.PROG.hero!=='warden')F('Z on slot 5 opened slot '+(BK.slot+1)+' as '+BKT.PROG.hero);
-BK.state='slots';BK.ui.slotI=4;const keep=[0,1,2].map(i=>ls.getItem(K(i)));press('atk');if(BK.ui.eraseAsk!==4)F('X did not ask ERASE SLOT 5?');if(!BK.readSlot(4))F('X erased slot 5 with no answer');
+BK.state='slots';BK.ui.slotI=4;const keep=[0,1,2].map(i=>ls.getItem(K(i)));press('atk');if(BK.ui.eraseAsk!==4)F('X did not ask ERASE SAVE 5?');if(!BK.readSlot(4))F('X erased slot 5 with no answer');
 press('confirm');if(!BK.readSlot(4)||BK.ui.eraseAsk!==-1)F('the question did not open on NO (Z erased slot 5 or left the question up)');
 press('atk');press('atk');if(!BK.readSlot(4)||BK.ui.eraseAsk!==-1)F('X on the question is not NO');
 press('atk');press('right');press('confirm');

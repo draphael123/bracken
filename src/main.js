@@ -416,7 +416,7 @@ function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlo
   const raw = slotRaw(i);
   try { const res = loadProgress(localStorage, slotKey(i), raw, CAMP_IDS); loaded = res.progress; if (res.backup) SAFE.pruneBackups(localStorage, slotKey(i), res.backup); SAFE.keepLastGood(localStorage, slotKey(i), raw, CAMP_IDS); }
   catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
-    saveBlocked = h.state === 'corrupt' ? 'Slot ' + (i + 1) + ' is damaged (copy kept): open CHOOSE A SAVE' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
+    saveBlocked = h.state === 'corrupt' ? 'Save ' + (i + 1) + ' is damaged (copy kept): open CHOOSE A SAVE' : error.message; loaded = migrateProgress(null).progress; console.warn('Save protected:', error.message); }
   for (const k in PROG) delete PROG[k]; Object.assign(PROG, loaded); progDefaults(); try { localStorage.setItem('bracken.slot', String(i)); } catch {} rosterNote(); }
 function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf(i).state !== 'empty') SAFE.keepCorruptCopy(localStorage, slotKey(i), slotRaw(i)); localStorage.removeItem(slotKey(i) + SAFE.LASTGOOD); SAFE.pruneBackups(localStorage, slotKey(i)); } catch {}
   try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
@@ -427,7 +427,7 @@ function saveProgress() { if (saveBlocked || bossJumpOn) return; if (slotCoopHol
   let r; try { r = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(profStack.length ? { ...PROG, ...profHost } : PROG), slotKeys()); } catch (e) { r = { ok: false, full: false }; }
   PROG.hero = was; saveWritten(r); rosterNote(); }
 /* a write that did not land is TOLD (a banner at the foot of every screen, a toast in a level, a buzz the first time) and retried on the next save; one that lands clears it */
-function saveWritten(r) { if (r.ok) { saveFail = ''; return; } const first = !saveFail; saveFail = r.held ? 'SAVE PAUSED - SLOT IN CO-OP ELSEWHERE' : r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE';
+function saveWritten(r) { if (r.ok) { saveFail = ''; return; } const first = !saveFail; saveFail = r.held ? 'SAVE PAUSED - IN CO-OP ELSEWHERE' : r.full ? 'SAVE FAILED - STORAGE FULL' : 'SAVE FAILED - COULD NOT WRITE';
   if (first) { console.warn(saveFail, r.error || ''); try { SFX.buzz(); } catch {} } try { UIH.toastPush(toastQ, saveFail, 6); } catch {} }
 const hadSaves = [0, 1, 2, 3, 4].some(i => slotRaw(i)); loadSlot(slot);
 /* HINTS (src/hints.js, Settings > Gameplay > Hints): a settings file from before it is an EXISTING player and keeps HIGH (every hint, as it was); a brand-new profile (no settings file, no save in any slot) starts on MEDIUM (claude/hintlevel, Daniel 10-16). Chosen once (hintsV1). */
@@ -5980,7 +5980,7 @@ const slotRect = i => ({ x: 2, y: 14 + i * 30, w: 316, h: 28 });
 function fixOptions(i) {
   const hs = slotHealthOf(i), cands = hs.state === 'corrupt' ? SAFE.backupCandidates(localStorage, slotKey(i), CAMP_IDS) : [], o = [];
   if (cands.length) o.push({ id: 'restore', label: 'RESTORE THE ' + cands[0].kind.toUpperCase(), cand: cands[0] });
-  o.push({ id: 'export', label: 'EXPORT THE FILE' }, { id: 'erase', label: 'ERASE THE SLOT' }, { id: 'back', label: 'BACK' });
+  o.push({ id: 'export', label: 'EXPORT THE FILE' }, { id: 'erase', label: 'ERASE THE SAVE' }, { id: 'back', label: 'BACK' });
   return o;
 }
 function fixDo(i, o) {
@@ -5988,7 +5988,7 @@ function fixDo(i, o) {
   if (o.id === 'erase') { fixAsk = -1; eraseAsk = i; eraseYes = false; SFX.ui(); return; }
   if (o.id === 'export') { const raw = slotRaw(i); if (!raw) { slotMsg = 'nothing to export'; slotMsgT = 3; SFX.buzz(); return; }
     try { const url = URL.createObjectURL(new Blob([raw], { type: 'text/plain' })), a = document.createElement('a'); a.href = url; a.download = 'bracken-slot-' + (i + 1) + '-damaged.txt'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000); slotMsg = 'file exported'; } catch { slotMsg = 'could not export'; } slotMsgT = 3; SFX.ui(); return; }
-  if (o.id === 'restore') { try { SAFE.restoreSlot(localStorage, slotKey(i), o.cand, i === 0 ? localStorage.getItem('bracken.progress') : null); healthMemo[i] = null; if (i === slot) loadSlot(i); slotMsg = 'slot ' + (i + 1) + ' restored (the damaged copy is kept)'; SFX.uiSel(); } catch (e) { slotMsg = 'restore failed: ' + e.message; SFX.buzz(); } slotMsgT = 4; fixAsk = -1; }
+  if (o.id === 'restore') { try { SAFE.restoreSlot(localStorage, slotKey(i), o.cand, i === 0 ? localStorage.getItem('bracken.progress') : null); healthMemo[i] = null; if (i === slot) loadSlot(i); slotMsg = 'save ' + (i + 1) + ' restored (the damaged copy is kept)'; SFX.uiSel(); } catch (e) { slotMsg = 'restore failed: ' + e.message; SFX.buzz(); } slotMsgT = 4; fixAsk = -1; }
 }
 function drawSlots() {
   g.fillStyle = 'rgba(10,6,20,0.55)'; g.fillRect(0, 0, VW, VH);
@@ -6000,7 +6000,7 @@ function drawSlots() {
     if (sel) { g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 1, y - 1, w + 2, h + 2); g.globalAlpha = 1; }
     board(x, y, w, h, sel ? '#ffd36b' : '#8a7a5c', undefined, false, 'parchment');   /* a parchment slip a slot; the picked one is gilt */
     if (eraseAsk >= 0 || fixAsk >= 0) continue;   /* (the erase question is up over the list: the rows are boxes only, so no words lie under it) */
-    text('SLOT ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
+    text('SAVE ' + (i + 1), x + 44, y + 4, sel ? '#fff6e0' : UI.dim);
     { const hs = slotHealthOf(i);   /* A DAMAGED SLOT IS NOT AN EMPTY ONE: it says so, and Z opens what can be done about it */
       if (hs.state === 'corrupt' || hs.state === 'newer') { text(hs.state === 'corrupt' ? 'CORRUPT' : 'NEWER SAVE', x + 100, y + 4, '#ff9a5c'); text(hs.state === 'corrupt' ? 'Z FIX IT   X ERASE   A COPY IS KEPT' : 'MADE BY A NEWER BRACKEN   NOT TOUCHED', x + 44, y + 17, sel ? '#ffd36b' : '#7a6a5a', 'left', 6); if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6); continue; } }
     if (!p) { text('EMPTY', x + 100, y + 4, '#6a6a7a'); text('NEW GAME', x + 44, y + 17, sel ? '#8fd160' : '#4a5a4a', 'left', 6); continue; }
@@ -6015,12 +6015,12 @@ function drawSlots() {
     let tx = x + 44; for (const [s2, col] of stat(medalPts)) { text(s2, tx, y + 17, col, 'left', 6); tx += inkW(s2, 6) + 10; }
     if (done) text('COMPLETE', x + w - 6, y + 17, '#8fd160', 'right', 6);
   }
-  text(slotMsgT > 0 && slotMsg ? slotMsg : touchOn ? 'TAP a slot   ERASE to erase' : 'Z play  X erase  ESC back', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
+  text(slotMsgT > 0 && slotMsg ? slotMsg : touchOn ? 'TAP a save   ERASE to erase' : 'Z play  X erase  ESC back', VW / 2, VH - 12, slotMsgT > 0 ? '#ffd36b' : UI.dim, 'center');
   if (fixAsk >= 0) {   /* A DAMAGED SLOT: what can be done about it */
     g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
     const hs = slotHealthOf(fixAsk), opts = fixOptions(fixAsk), bw = 236, bh = 40 + opts.length * 16, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
     board(bx, by, bw, bh, '#ff9a5c', undefined, false, 'iron');
-    text('SLOT ' + (fixAsk + 1) + (hs.state === 'corrupt' ? ' IS CORRUPT' : ' IS A NEWER SAVE'), VW / 2, by + 7, '#ff9a5c', 'center');
+    text('SAVE ' + (fixAsk + 1) + (hs.state === 'corrupt' ? ' IS CORRUPT' : ' IS A NEWER SAVE'), VW / 2, by + 7, '#ff9a5c', 'center');
     text(fitName(hs.state === 'corrupt' ? 'A COPY IS KEPT. NOTHING IS ERASED YET' : 'MADE BY A NEWER BRACKEN. UPDATE IT', bw - 14, 6), VW / 2, by + 21, UI.dim, 'center', 6);
     opts.forEach((o, j) => { const w2 = 200, x2 = Math.round(VW / 2 - w2 / 2), y2 = by + 33 + j * 16, on = fixI === j;
       TCH.hit(x2, y2, w2, 14, () => { fixI = j; confirmPress = true; });
@@ -6031,7 +6031,7 @@ function drawSlots() {
     g.fillStyle = 'rgba(6,4,12,0.78)'; g.fillRect(0, 0, VW, VH);
     const bw = 200, bh = 70, bx = Math.round(VW / 2 - bw / 2), by = Math.round(VH / 2 - bh / 2);
     board(bx, by, bw, bh, '#ff9a5c', undefined, false, 'iron');
-    text('ERASE SLOT ' + (eraseAsk + 1) + '?', VW / 2, by + 8, '#ff9a5c', 'center');
+    text('ERASE SAVE ' + (eraseAsk + 1) + '?', VW / 2, by + 8, '#ff9a5c', 'center');
     text('NO UNDO', VW / 2, by + 22, UI.dim, 'center', 6);
     [['YES', true], ['NO', false]].forEach(([lab, yes], j) => { const w2 = 70, x2 = VW / 2 - w2 - 6 + j * (w2 + 12), y2 = by + 36, on = eraseYes === yes;
       TCH.hit(x2, y2, w2, 20, () => { eraseYes = yes; confirmPress = true; });
@@ -6185,7 +6185,7 @@ function menuConfirm() {
   else if (k === 'Report a bug') openBugReport();
   else if (k === 'Reset controls') { if (menuMsg === 'press again to reset every key and button' && menuMsgT > 0) { CTL.resetAll(SET.binds); applyBinds(); saveSettings(); menuMsg = 'every key and button is back to its default'; menuMsgT = 3; SFX.ui(); } else { menuMsg = 'press again to reset every key and button'; menuMsgT = 3; SFX.ui(); } }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
-  else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'slot ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
+  else if (k === 'Erase this save') { if (menuMsg === 'press again to confirm' && menuMsgT > 0) { eraseSlot(slot); saveProgress(); menuMsg = 'save ' + (slot + 1) + ' cleared'; SFX.crack(); } else { menuMsg = 'press again to confirm'; SFX.ui(); } menuMsgT = 2.5; }
   else if (k === 'Hero trial') { state = 'play'; startTrial(hero()); }
   else if (k === 'Back to shrine') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else { state = 'play'; returnToShrine(); SFX.uiSel(); } }
   else if (k === 'Restart level') { if (menuFrom !== 'play') { menuMsg = 'not in a level'; menuMsgT = 2; SFX.buzz(); } else if (menuMsg === 'press again to restart' && menuMsgT > 0) { loadThen(levelIndex, () => { startGame(); SFX.uiSel(); }); } else { menuMsg = 'press again to restart'; menuMsgT = 2.5; SFX.ui(); } }
@@ -6746,7 +6746,7 @@ function partySeatProf(slotI, h) {
   const role = 'seat' + (++seatRoleN), c = LOCKS.claim(slotI, 'seat', 'LOCAL CO-OP', role);
   if (!c.ok) return { ok: false, why: CS.lockLine(slotI, c.holder) };
   const seat = CS.seatFromSlot(localStorage, slotI, h, CAMP_IDS);
-  if (!seat) { LOCKS.release(slotI, role); return { ok: false, why: 'SLOT ' + (slotI + 1) + ' CANNOT BE READ: OPEN CHOOSE A SAVE TO FIX IT' }; }
+  if (!seat) { LOCKS.release(slotI, role); return { ok: false, why: 'SAVE ' + (slotI + 1) + ' CANNOT BE READ: OPEN CHOOSE A SAVE TO FIX IT' }; }
   return { ok: true, prof: profMake(seat, { kind: 'local', slot: slotI, role }) };
 }
 /* THE BOARD'S JOIN: a new local seat (his pad: the next free one) on slot slotI with hero h */
@@ -29906,7 +29906,7 @@ function update(dt) {
       if (downPress) { titleI = (titleI + 1) % items.length; SFX.ui(); }
       if (menuTake()) {
         const k = items[titleI]; SFX.uiSel(); music.play(menuTrack());
-        if (['CONTINUE', 'BOSS RUSH', 'PRACTICE', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'slot ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
+        if (['CONTINUE', 'BOSS RUSH', 'PRACTICE', 'LOCAL CO-OP', 'ONLINE CO-OP'].includes(k) && ['corrupt', 'newer'].includes(slotHealthOf(slot).state)) { state = 'slots'; slotI = slot; slotMsg = 'save ' + (slot + 1) + ' is damaged - Z to fix it'; slotMsgT = 5; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'CONTINUE') { loadSlot(slot); applySkin(); applyUpgrades(); mapToSaved(); state = 'map'; }
         else if (k === 'NEW GAME' || k === 'CHOOSE A SAVE') { state = 'slots'; slotI = slot; slotMsg = ''; eraseAsk = -1; fixAsk = -1; }
         else if (k === 'BOSS RUSH') { loadSlot(slot); applySkin(); applyUpgrades(); rushStart(); }
@@ -29936,7 +29936,7 @@ function update(dt) {
       return; }
     if (eraseAsk >= 0) {   /* the question is up: arrows move between YES and NO, Z answers, X or ESC is NO */
       if (leftPress || rightPress || upPress || downPress) { eraseYes = !eraseYes; SFX.ui(); }
-      if (confirmPress) { if (eraseYes) { eraseSlot(eraseAsk); slotMsg = 'slot ' + (eraseAsk + 1) + ' erased'; slotMsgT = 2; SFX.crack(); } else SFX.ui(); eraseAsk = -1; }
+      if (confirmPress) { if (eraseYes) { eraseSlot(eraseAsk); slotMsg = 'save ' + (eraseAsk + 1) + ' erased'; slotMsgT = 2; SFX.crack(); } else SFX.ui(); eraseAsk = -1; }
       else if (atkPress || pausePress) { eraseAsk = -1; SFX.ui(); }
       return; }
     if (leftPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
@@ -29944,7 +29944,7 @@ function update(dt) {
     if (upPress) { slotI = (slotI + SLOTS - 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (rightPress) { slotI = (slotI + 1) % SLOTS; SFX.ui(); slotMsg = ''; }
     if (confirmPress && (slotHealthOf(slotI).state === 'corrupt' || slotHealthOf(slotI).state === 'newer')) { fixAsk = slotI; fixI = 0; SFX.ui(); }
-    else if (confirmPress && slotCoopHolder(slotI)) { slotMsg = 'slot ' + (slotI + 1) + ' is playing co-op elsewhere'; slotMsgT = 4; SFX.buzz(); }   /* (claude/coopprogress) one character, one place */
+    else if (confirmPress && slotCoopHolder(slotI)) { slotMsg = 'save ' + (slotI + 1) + ' is playing co-op elsewhere'; slotMsgT = 4; SFX.buzz(); }   /* (claude/coopprogress) one character, one place */
     else if (confirmPress) { loadSlot(slotI); applySkin(); applyUpgrades(); mapToSaved(); state = !PROG.heroPicked && !heroLevel() && !LEVELS.some(l => PROG[l.id]) ? 'heropick' : 'map'; heroPick = { i: 0, stage: 'pick' }; SFX.uiSel(); if (state === 'heropick' && openingDue()) openingStart(); } // a new save chooses its hero
     if (atkPress) { if (slotHealthOf(slotI).state === 'empty') { slotMsg = 'already empty'; slotMsgT = 2; SFX.buzz(); } else { eraseAsk = slotI; eraseYes = false; slotMsg = ''; SFX.ui(); } }
     if (pausePress) { state = 'title'; SFX.ui(); }
@@ -34328,7 +34328,7 @@ function render() {
       // what waits in the save you would continue
       const sv = readSlot(slot); const done = sv ? LEVELS.filter(lv => !lv.hidden && sv[lv.id] && sv[lv.id].cleared).length : 0;
       g.fillStyle = 'rgba(255,255,255,0.10)'; g.fillRect(bx + 8, my + mh - 13, mw - 16, 1);
-      text(sv ? 'SLOT ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SLOT ' + (slot + 1) + '  A NEW KNIGHT',
+      text(sv ? 'SAVE ' + (slot + 1) + '  ' + done + '/' + LEVELS.filter(l => !l.hidden).length + ' WOODS' : 'SAVE ' + (slot + 1) + '  A NEW KNIGHT',
         bx + mw / 2, my + mh - 10, UI.dim, 'center', 6); }
   }
 
@@ -34447,7 +34447,7 @@ function render() {
   if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
-  else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SLOT. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
+  else if(saveFail){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text(saveFail,VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveFail.includes('FULL')?'FREE SPACE: ERASE AN OLD SAVE. IT RETRIES EVERY SAVE':'THE BROWSER REFUSED THE WRITE. IT RETRIES EVERY SAVE',VW-12,6),VW/2,VH-14,UI.text,'center',6);}
   if (window.BK && window.BK.sheet) {
     g.fillStyle = '#3a4a6a'; g.fillRect(0, 0, VW, VH);
     let x = 4; const row = (set, keys, y) => { for (const k of keys) { let c = k == null ? set.R : set.R[k]; const arr = Array.isArray(c) ? c : [c]; for (const f of arr) { g.drawImage(f, x, y, f.width * 2, f.height * 2); x += f.width * 2 + 4; } } };
