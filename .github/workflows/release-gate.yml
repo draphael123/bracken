@@ -1,0 +1,97 @@
+name: release-gate
+on:
+  push:
+    branches: ['claude/batch*', 'codex/ci-gate']
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: Branch or commit to run the full gate against
+        required: true
+        default: master
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      matrix: ${{ steps.plan.outputs.matrix }}
+      commit: ${{ steps.plan.outputs.commit }}
+      count: ${{ steps.plan.outputs.count }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch || github.ref }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Balance the actual check inventory by measured duration
+        id: plan
+        run: node tools/ci-gate.mjs plan --shards 16 --out gate-plan.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: gate-plan
+          path: gate-plan.json
+
+  shard:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Full-suite shard (serial, fresh browsers)
+        env:
+          SHARD: ${{ matrix.id }}/${{ needs.plan.outputs.count }}
+          SHARD_ID: ${{ matrix.id }}
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          timeout --signal=TERM --kill-after=30s 40m node tools/check.mjs --jobs=1 --max-browsers=1 --shard "$SHARD" --json "gate-data/shard-$SHARD_ID.json" 2>&1 | tee "gate-data/shard-$SHARD_ID.log"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-shard-${{ matrix.id }}
+          path: gate-data/
+          if-no-files-found: error
+
+  summary:
+    if: ${{ always() && needs.plan.result == 'success' }}
+    needs: [plan, shard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.plan.outputs.commit }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/download-artifact@v4
+        with:
+          name: gate-plan
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: gate-shard-*
+          path: gate-data
+      - name: One summary, failure details and public error annotations
+        if: always()
+        run: node tools/ci-gate.mjs merge --plan gate-plan.json --dir gate-data
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: gate-summary.txt
+          path: |
+            gate-summary.txt
+            gate-results.json
+          if-no-files-found: error
