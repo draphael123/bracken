@@ -1,8 +1,5 @@
 name: standingreds-proof
 on:
-  push:
-    branches: ['codex/standingreds2']
-    paths-ignore: ['.github/workflows/standingreds-proof.yml', 'tools/refresh-standing-stamps.mjs', 'tools/trace-weight-probe.mjs']
   workflow_dispatch:
     inputs:
       mode:

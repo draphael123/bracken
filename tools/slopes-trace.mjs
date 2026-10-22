@@ -74,6 +74,9 @@ const trace = async pg => pg.evalp(`(async () => {
     Math.random = () => { seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0; return seed / 4294967296; };
     try {
       BK.manualSimulation = true;
+      /* Reset the global clock and hero as well as the dice. A rebuilt earlier level otherwise
+         changes later foes' clocks; the historical build can even fail its own Kings recording. */
+      BK.setHero('knight'); BK.reset({ fresh: true }); BK.SET.speed = 0.6;
       BK.load(i); BK.state = 'play'; BK.god = true;
       const L = BK.L, W = L.W, H = L.H, at = (x, y) => L.grid[y * W + x];
       /* standing places spread across the level: the first floor under the top of each column band */
@@ -144,7 +147,7 @@ const compare = (want, got) => {
   return bad;
 };
 
-const pg = await openPage({ port: portFor(7), fonts: false });
+const pg = await openPage({ port: portFor(7), fonts: false, seed: 1919 });
 try {
   const got = await trace(pg);
   assert.deepEqual(pg.errors, [], 'the page threw while tracing');
