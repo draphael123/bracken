@@ -1,7 +1,7 @@
 # codex/ci-gate
 
-Status: Partial - the live full Actions gate and focused checks are verified; setup corrections are
-being rechecked and full local serial equivalence is pending.
+Status: Partial - the full Actions gate and public annotation read-back are verified; full local serial
+equivalence is not established. The exact remaining differences are recorded below.
 Base: BATCH112, `5e44cddda959fb6e0e8a6b7a4d85f116f0e94e4a` (refreshed from origin on 2026-10-22).
 
 ## What changed
