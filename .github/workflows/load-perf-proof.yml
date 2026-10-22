@@ -4,11 +4,35 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx]
+        options: [profile, sfx, compare]
         default: profile
 permissions:
   contents: read
 jobs:
+  compare:
+    if: inputs.mode == 'compare'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [lamplit, minecart, keep, spire, church]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Same-runner original phone setup, pixels and three FPS samples per build
+        env:
+          LEVEL: ${{ matrix.level }}
+        run: node tools/load-perf-compare.mjs "$LEVEL"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: renderer-${{ matrix.level }}
+          path: gate-data/
   sfx:
     if: inputs.mode == 'sfx'
     runs-on: ubuntu-latest
