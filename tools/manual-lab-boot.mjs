@@ -7,3 +7,6 @@ export function pauseGameAtBoot(){
   if(value)value.manualSimulation=true;
  }});
 }
+
+// Stable pixel-readback backend for the comparison lab only; timing probes retain the real default backend.
+export function useCpuPixelCanvas(){const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,options){return get.call(this,type,type==='2d'?{...options,willReadFrequently:true}:options);};}

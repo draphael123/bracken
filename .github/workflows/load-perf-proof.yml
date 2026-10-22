@@ -6,6 +6,9 @@ on:
         type: choice
         options: [profile, sfx, compare, mobile, calls, present, campaign, variant]
         default: profile
+      pixel_cpu:
+        type: boolean
+        default: false
       variant_level:
         type: choice
         options: [mage, witchlight]
@@ -14,6 +17,8 @@ on:
         type: choice
         options: [copy, pattern, cpu-frame, sync-display]
         default: copy
+env:
+  PIXEL_CPU_CANVAS: ${{ inputs.pixel_cpu && '1' || '0' }}
 permissions:
   contents: read
 jobs:
