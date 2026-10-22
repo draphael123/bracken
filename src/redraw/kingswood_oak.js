@@ -39,14 +39,14 @@ function bakeOak(burn) {
       R(g, lit ? (n < 30 ? '#4a2a1e' : '#7a4a34') : (x > w * 0.55 ? '#1a0c0a' : c0), ax, y, 1, 1); if (x % 4 === 0 && (hash(x, y >> 3) % 3) !== 0) R(g, '#150a08', ax, y, 1, 1); } }
   /* the limbs forking up under the crown */
   const limbs = [[CX - 14, 150, 40, 108, 9], [CX + 14, 150, 280, 110, 9], [CX - 8, 130, 96, 80, 7], [CX + 8, 130, 224, 78, 7], [CX, 124, CX, 60, 7], [CX - 20, 140, 14, 150, 5], [CX + 20, 140, 306, 152, 5]];
-  for (const [x0, y0, x1, y1, w] of limbs) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t - Math.sin(t * Math.PI) * 6, ww = Math.max(2, w * (1 - t * 0.7)); const dead = burn > 0 && x > CX + 6;
+  for (const [x0, y0, x1, y1, w] of limbs) { const n = Math.max(Math.abs(x1 - x0), Math.abs(y1 - y0)); for (let i = 0; i <= n; i++) { const t = i / n, x = x0 + (x1 - x0) * t, y = y0 + (y1 - y0) * t - Math.sin(t * Math.PI) * 6, ww = Math.max(2, w * (1 - t * 0.7)); const dead = burn > 0 && x > CX + 6 + 90 * Math.pow(1 - burn, 1.2);
     R(g, dead ? '#0e0806' : '#2a1410', x - ww / 2 - 1, y, ww + 2, 3); R(g, dead ? '#1e100c' : '#4a2a1e', x - ww / 2, y, ww, 2); if (!dead) R(g, '#7a4a34', x - ww / 2, y, 1, 2); } }
   /* the crown: clumps in ranks, back first (dark) to front (lit), the right half burnt when it is */
   const L = [];
   for (let i = 0; i < 52; i++) { const a = r() * Math.PI, d = r(), x = CX + Math.cos(a) * (60 + d * 96), y = 78 - Math.sin(a) * (34 + d * 38) + 40 * d * d, rx = 22 + (r() * 22 | 0), ry = 14 + (r() * 14 | 0); L.push([x, y, rx, ry, i * 17 + 3]); }
   for (let i = 0; i < 16; i++) L.push([CX - 100 + i * 14, 124 + (r() * 18 | 0), 18 + (r() * 10 | 0), 12 + (r() * 6 | 0), i * 29 + 700]);   /* the skirt of the crown, low */
   L.sort((a, b) => a[1] - b[1]);
-  for (const [x, y, rx, ry, sd] of L) clump(g, Math.round(x), Math.round(y), rx, ry, sd, burn > 0 && x > CX + 8 + (hash(sd, 2) % 20) * (1 - burn) );
+  for (const [x, y, rx, ry, sd] of L) clump(g, Math.round(x), Math.round(y), rx, ry, sd, burn > 0 && x > CX + 100 * Math.pow(1 - burn, 1.2) + (hash(sd, 2) % 20) );
   /* gaps: the sky showing through, dark pockets deep inside */
   g.globalCompositeOperation = 'destination-out'; for (let i = 0; i < 30; i++) { const x = 40 + (r() * 240 | 0), y = 50 + (r() * 70 | 0); if (hash(i, 8) % 3) R(g, '#000', x, y, 2 + (r() * 3 | 0), 1 + (r() * 2 | 0)); } g.globalCompositeOperation = 'source-over';
   for (let i = 0; i < 40; i++) R(g, '#2a0e0a', 50 + (r() * 220 | 0), 70 + (r() * 60 | 0), 3 + (r() * 4 | 0), 2);
@@ -60,11 +60,27 @@ function bakeOak(burn) {
   return c;
 }
 
+export const oakSprite = burn => once('oak' + Math.round(burn * 4) / 4, () => bakeOak(Math.round(burn * 4) / 4));
+/* THE GLADE's OAK is THIS tree (claude/gorm2art): the same bake, drawn at the world's own scale where it stands, so the landmark you walked toward is the tree he fights under. Its foot is at footY (world), its trunk
+   at trunkX; embers and flames ride the charred half as L.oakBurn rises (capped). The skyline copy fades out as the camera enters the glade (drawOak below). */
+const FLAME_AT = [[190, 70], [210, 96], [176, 112], [232, 118], [254, 90], [150, 126], [268, 128], [222, 70], [196, 128], [242, 64], [162, 96], [280, 104], [140, 108], [250, 130]];
+export function drawGladeOak(g, trunkX, footY, cx, cy, VW, burn, time, FX) {
+  const sc = 1, bk = Math.round(burn * 4) / 4, gx = Math.round(trunkX - CX - cx), gy = Math.round(footY - (OH - 6) - cy);
+  if (gx > VW + 40 || gx + OW < -40) return;
+  g.drawImage(oakSprite(burn), gx, gy);
+  /* the burning half: flames on the char (more as it rises), the door's light, ash falling */
+  if (burn > 0 && FX) { const n = Math.min(FLAME_AT.length, Math.round(5 + burn * 9));
+    for (let i = 0; i < n; i++) { const [fx, fy] = FLAME_AT[i]; if (fx < CX + 100 * Math.pow(1 - bk, 1.2) - 10) continue; FX.flame(g, gx + fx, gy + fy, i % 3 === 0 ? 'L' : i % 3 === 1 ? 'M' : 'S', time, i * 7); }
+    FX.glow(g, gx + CX + 80, gy + 90, 90, 0.16 + 0.05 * Math.sin(time * 5)); }
+  const dx = gx + CX - 2, dy = gy + OH - 52; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.16 + 0.04 * Math.sin(time * 3); if (FX) FX.glow(g, dx, dy + 30, 40, 0.5); g.restore();
+}
 export function drawOak(g, cx, cy, VW, VH, L, time, dY) {
   const W = L.W * 16, mid = cx + VW / 2, p = Math.max(0, Math.min(1, mid / W)), dd = (dY || 0) * 0.3, burn = Math.max(0, Math.min(1, +L.oakBurn || 0)), bk = Math.round(burn * 4) / 4;
   const sc = 0.44 + p * 0.8, ww = Math.round(OW * sc), hh = Math.round(OH * sc);
   const gx = Math.round(VW * 0.72 - ww / 2 - (p - 0.5) * 60), gy = Math.round(VH - 66 - hh + dd + 30 * (1 - p));
-  g.globalAlpha = 0.52 + p * 0.4; g.drawImage(once('oak' + bk, () => bakeOak(bk)), 0, 0, OW, OH, gx, gy, ww, hh);
+  /* the skyline copy hands over to the glade's own oak (same bake) as the camera comes into the clearing */
+  const gl = L.glade, hand = gl ? Math.max(0, Math.min(1, (mid - (gl.x0 - 320)) / 300)) : 0; if (hand >= 1) return;
+  g.globalAlpha = (0.52 + p * 0.4) * (1 - hand * hand); g.drawImage(once('oak' + bk, () => bakeOak(bk)), 0, 0, OW, OH, gx, gy, ww, hh);
   /* the cages hung in its boughs and the court's pennants: they sway */
   for (let i = 0; i < OAK_HANG.length; i++) { const [bx, by] = OAK_HANG[i], sw = Math.sin(time * 1.3 + i) * 1.6 * sc, x = gx + bx * sc, y = gy + by * sc, l = (10 + (i % 3) * 5) * sc;
     R(g, '#2a1a10', x, y, Math.max(1, sc), l);

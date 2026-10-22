@@ -7,6 +7,7 @@
 // Or BAIT IT UNDER A CAGE: anything hung over it that drops on it pens it (PENNED: a cage kills it outright - src/main.js dropcage, src/kingswood-hands.js land).
 // Called by the horn (`called` set) it runs `passes` charges and then BOLTS out of the room; placed in a level it roots and charges for good.
 // PURE but for ctx: main.js's updateRoyalBoar calls step(e, dt, ctx) and draw(g, e, cx, cy, time).
+import * as RBA from './redraw/royal_boar_art.js';
 export const RB_SAY = { turned: 'TURNED', bolts: 'IT BOLTS' };
 export const RB = { w: 22, h: 15, hp: 66, root: 14, see: 150, seeY: 22, tell: 0.9, v: 205, vHall: 230, maxRun: 6, skid: 0.4, dazed: 1.4, cd: 1.2, dmg: 16, knockVx: 230, knockVy: -170, take: 1.5, passes: 2 };
 export function newRoyalBoar(x, y, o = {}) {
@@ -74,28 +75,15 @@ function laneOf(e, c) { const TS = c.TS, fy = Math.floor((e.y + 1) / TS); let tx
 /* a blade on it: dazed it takes RB.take; it never turns a blow (it is a beast, not a duelist) */
 export const boarTake = e => (boarOpen(e) ? RB.take : 1);
 
-/* GREYBOX DRAWING (the art lane repaints: src/redraw/ - see the lane report's art hooks). Poses: root (walk), tell (PAW: head down, rump up),
-   charge (a gallop, ears back), skid, dazed (splayed, head down, stars). */
+/* DRAWING (claude/gorm2art): the baked set of src/redraw/royal_boar_art.js - a three-step trot, the PAW (head down, rump up, a forehoof scraping, a gold rim: the told windup), the gallop, the skid, the dazed
+   frame (legs splayed, crossed eyes, stars) and the hurt frame; the hall's hit flashes it white. */
 export function drawRoyalBoar(g, e, cx, cy, time) {
-  const R = Math.round, x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1, F = (dx, dy, w, h, col) => { g.fillStyle = col; g.fillRect(f > 0 ? x + dx : x - dx - w, y + dy, w, h); };
-  const white = e.flash > 0, md = e.mode, gal = md === 'charge' || md === 'bolt' ? Math.floor(e.anim * 14) % 2 : md === 'root' && Math.abs(e.vx) > 3 ? Math.floor(e.anim * 6) % 2 : 0;
-  const head = md === 'tell' ? 3 : md === 'dazed' ? 4 : md === 'charge' ? 1 : 0, rump = md === 'tell' ? -3 : 0, splay = md === 'dazed' ? 2 : 0;
-  const C = white ? { b: '#fff', d: '#fff', l: '#fff', t: '#fff', g: '#fff', m: '#fff' } : { b: '#5c3c28', d: '#3a2416', l: '#8a6040', t: '#f0e8d0', g: '#e0b040', m: '#a83a2a' };
-  if (md === 'tell' && Math.floor(time * 12) % 2 === 0) { g.globalAlpha = 0.5; g.fillStyle = '#ffd36b'; g.fillRect(x - 14, y - 18, 28, 1); g.globalAlpha = 1; }
-  /* legs */
-  const lg = [[-8, gal], [-4, 1 - gal], [5, gal], [9, 1 - gal]];
-  for (const [dx, p] of lg) F(dx - (dx < 0 ? splay : -splay), -4 + (md === 'dazed' ? 1 : 0), 2, 4 - p, C.d);
-  /* body: a heavy barrel, the crest down its back, the rump raised in the paw */
-  F(-11, -12 + rump * 0.5, 20, 8, C.b); F(-9, -13 + rump, 10, 2, C.d); F(-11, -10 + rump, 2, 4, C.d);
-  for (let i = 0; i < 6; i++) F(-8 + i * 3, -15 + (i < 3 ? rump : 0), 1, 2 + (i % 2), C.d);   /* the crest */
-  F(-9, -6, 16, 2, C.l);
-  /* the royal collar */
-  F(6, -12 + head * 0.5, 2, 7, C.m); F(6, -9 + head * 0.5, 2, 1, C.g);
-  /* head: lowered in the paw and the charge */
-  F(8, -12 + head, 6, 6, C.b); F(13, -9 + head, 3, 3, C.l); F(9, -13 + head, 2, 2, C.d);   /* the snout, the ear */
-  F(14, -10 + head, 1, 3, C.t); F(14, -11 + head, 2, 1, C.g);   /* a gilded tusk */
-  F(11, -10 + head, 1, 1, md === 'dazed' ? '#ffd36b' : '#1a0e08');
-  if (md === 'dazed') for (let i = 0; i < 3; i++) { const a = time * 5 + i * 2.1; g.fillStyle = '#ffd36b'; g.fillRect(x + R(Math.cos(a) * 8), y - 20 + R(Math.sin(a) * 2), 2, 2); }
+  const R = Math.round, x = R(e.x - cx), y = R(e.y - cy), set = RBA.set(), dir = (e.face || 1) < 0 ? 'L' : 'R', fr = RBA.frameFor(e, time), md = e.mode, white = e.flash > 0;
+  const c = (white ? set.white : set)[dir][fr], ax = (e.face || 1) < 0 ? c.width - set.ax : set.ax, ox = x - ax, oy = y - 33 + (md === 'charge' || md === 'bolt' ? -(Math.floor(e.anim * 24) & 1) : 0);
+  if (md === 'tell') { const rim = RBA.rim(fr, dir); g.save(); g.globalAlpha = 0.45 + 0.3 * Math.sin(time * 22); for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.drawImage(rim, ox + dx, oy + dy); g.restore();
+    if (Math.floor(time * 12) % 2 === 0) { g.globalAlpha = 0.5; g.fillStyle = '#ffd36b'; g.fillRect(x - 14, y - 26, 28, 1); g.globalAlpha = 1; } }
+  g.drawImage(c, ox, oy);
+  if (md === 'dazed') for (let i = 0; i < 3; i++) { const a = time * 5 + i * 2.1, sx = x + R(Math.cos(a) * 9), sy = y - 30 + R(Math.sin(a) * 2); g.fillStyle = '#ffd36b'; g.fillRect(sx, sy - 1, 1, 3); g.fillRect(sx - 1, sy, 3, 1); }
 }
 /* THE LANE (drawn under it while it paws and runs) */
 export function drawBoarLane(g, e, cx, cy, time) {

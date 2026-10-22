@@ -17,6 +17,10 @@ import { GORM, GORM_SAY, fireStep } from './gorm.js';
 import { newRoyalBoar } from './royal-boar.js';
 import * as CT from './carry-throw.js';
 import * as KP from './redraw/kingswood_props.js';
+import * as FX from './redraw/gorm_fx.js';
+import * as GG from './redraw/gorm_glade.js';
+import * as GH from './redraw/gorm_hall.js';
+import * as KO from './redraw/kingswood_oak.js';
 CT.addKind('courtrock', { aims: { low: GORM.rock.low, mid: GORM.rock.mid, high: { vx: GORM.rock.vx, vy: GORM.rock.vy } }, g: GORM.rock.g, r: 3, ring: 9, dots: 16 });
 
 export function makeGormHands(ctx) {
@@ -311,65 +315,53 @@ export function makeGormHands(ctx) {
     hangs: S.hangs.map(h => ({ kind: h.d.kind, x: h.d.x, lx: h.lx, pegs: h.d.pegs.slice(), state: h.state, roll: h.d.roll || 0 })), cones: S.cones.map(c => ({ x: c.x, t: c.t, state: c.state })),
     logs: S.logs.map(l => ({ x: l.x, dir: l.dir })), waves: S.waves.map(w => ({ x: w.x, dir: w.dir })), swarms: S.swarms.map(s => ({ x: s.x, t: s.t })), n: { ...S.n } } : null;
 
-  /* ---------------- DRAWING (GREYBOX: the art lane repaints - see the lane report's art hooks) ---------------- */
+  /* ---------------- DRAWING (claude/gorm2art: painted; src/redraw/gorm_fx.js flames / smoke, gorm_glade.js the glade and the wood, kingswood_oak.js the great oak, gorm_hall.js the hall's decks and heaps) ---------------- */
   const R = Math.round, f = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-  function flame(g, x, y, h, time, seed) { const k = Math.sin(time * 11 + seed) * 0.5 + 0.5, hh = h * (0.75 + 0.25 * k);
-    f(g, '#a8301a', x - 3, y - hh, 6, hh); f(g, '#e0601a', x - 2, y - hh * 0.85, 4, hh * 0.85); f(g, '#ffb04a', x - 1, y - hh * 0.55, 2, hh * 0.55); f(g, '#fff0a8', x, y - hh * 0.3, 1, hh * 0.3); }
-  /* THE GREAT OAK OF THE GLADE (behind the tiles): the trunk, the King's door, the boughs over the glade the hangings hang from, the crown - its right half burning */
+  const flame = (g, x, y, h, time, seed) => FX.flame(g, x, y, h >= 14 ? 'L' : h >= 9 ? 'M' : 'S', time, seed);
+  /* THE GREAT OAK OF THE GLADE (behind the tiles): its long boughs (every hanging hangs from one), THE SAME TREE as the skyline's oak (kingswood_oak.js: the trunk, the King's door, the crown - burning by L.oakBurn),
+     the hunting lodge and the stump throne; ash and smoke drift off the burning half (capped) */
   H.drawBack = (g, cx, cy, VW, VH, time) => {
     if (!S || !H.on()) return; const gd = G().glade, gl = L().glade; if (!gd || !gl) return;
-    const tx = R(gd.trunkX - cx), fy = R(gl.floor - cy), burn = Math.max(0, Math.min(1, +L().oakBurn || 0));
-    if (tx < -260 || tx > VW + 260) return;
-    /* the crown (a dark mass of leaves over the glade, char on the right) */
-    for (let i = 0; i < 26; i++) { const a = (i * 2.399) % 6.283, d = 40 + ((i * 37) % 120), x = tx + Math.cos(a) * d * 1.3, y = fy - 210 + Math.sin(a) * d * 0.35 - (i % 3) * 8, rx = 34 + (i * 13) % 24, ry = 16 + (i * 7) % 10;
-      const burnt = burn > 0.3 && x > tx + 10 - burn * 30; g.fillStyle = burnt ? (i % 2 ? '#2a1410' : '#3a1e14') : (i % 3 === 0 ? '#7a2a1a' : i % 3 === 1 ? '#a83a2a' : '#5a1e14');
-      g.beginPath(); g.ellipse(R(x), R(y), rx, ry, 0, 0, 6.283); g.fill();
-      if (burnt && i % 2 === 0) flame(g, R(x), R(y) - ry + 4, 10 + (i % 4) * 3, time, i); }
-    /* the boughs out over the glade */
-    for (const [dx, y, len, dir] of gd.boughs) { const y0 = R(y - cy); for (let k = 0; k < len; k++) { const x = tx + dir * (14 + k), t = k / len, w = Math.max(3, 9 - t * 6), yy = y0 + Math.sin(t * 3) * 4 - t * 6;
-      f(g, '#1a0e08', x, yy - w / 2 - 1, 1, w + 2); f(g, (dir > 0 && burn > 0.3) ? '#2a1612' : '#4a2a1e', x, yy - w / 2, 1, w); if (k % 5 === 0) f(g, '#7a4a34', x, yy - w / 2, 1, 1); }
-      if (dir > 0 && burn > 0.3) for (let k = 10; k < len; k += 14) flame(g, tx + dir * (14 + k), y0 - 6, 8, time, k); }
-    /* the trunk: ridged bark, the King's door in its foot (warm light), roots */
-    for (let y = fy - 230; y < fy; y++) { const t = (y - (fy - 230)) / 230, w = R(26 + t * t * 18);
-      for (let x = -w; x <= w; x++) { const n = (Math.abs(x * 7 + (y >> 3) * 13) % 11); g.fillStyle = x > w * 0.55 ? '#1a0c0a' : x < -w * 0.4 ? (n < 4 ? '#4a2a1e' : '#6a3e2c') : (n < 3 ? '#2a1410' : '#3e2218'); g.fillRect(tx + x, y, 1, 1); } }
-    if (burn > 0.2) for (let i = 0; i < 6; i++) flame(g, tx + 14 + (i * 5) % 18, fy - 60 - i * 26, 12 + (i % 3) * 4, time, i * 3);
-    { const dx = tx - 2, dy = fy - 46; for (let y = 0; y < 46; y++) { const w = y < 12 ? R(12 * Math.sqrt(1 - Math.pow((12 - y) / 12, 2))) : 12; f(g, '#0a0504', dx - w - 2, dy + y, w * 2 + 4, 1); f(g, '#1a0e08', dx - w, dy + y, w * 2, 1); }
-      g.save(); g.globalAlpha = 0.5 + 0.15 * Math.sin(time * 3); f(g, '#ffb060', dx - 8, dy + 20, 16, 26); g.restore(); f(g, '#e0b040', dx - 1, dy - 6, 3, 6); }
-    for (const s of [-1, 1]) for (let k = 0; k < 3; k++) { const len = 30 + k * 12; for (let i = 0; i < len; i++) { const x = tx + s * (24 + i), y = fy - 2 - (1 - i / len) * (16 - k * 4); f(g, '#2a1410', x, y - 3, 1, 4); } }
-    /* the hunting lodge (left) and the stump throne */
-    { const lx = R(gd.lodgeX - cx); if (lx > -80 && lx < VW + 80) { f(g, '#2a1a10', lx - 34, fy - 52, 68, 52); f(g, '#4a2e1c', lx - 32, fy - 50, 64, 50); for (let y = fy - 48; y < fy; y += 6) f(g, '#3a2214', lx - 32, y, 64, 1);
-      f(g, '#5a1e14', lx - 40, fy - 66, 80, 14); f(g, '#7a2a1a', lx - 38, fy - 64, 76, 4); f(g, '#1a0e08', lx - 8, fy - 30, 16, 30); f(g, '#e0b040', lx - 2, fy - 40, 4, 4);
-      for (const ax of [-24, 18]) { f(g, '#c9b27c', lx + ax, fy - 46, 8, 2); f(g, '#c9b27c', lx + ax + 1, fy - 50, 1, 4); f(g, '#c9b27c', lx + ax + 6, fy - 50, 1, 4); } } }
-    { const sx = R(gd.stumpX - cx); f(g, '#2a1410', sx - 16, fy - 14, 32, 14); f(g, '#5a3a24', sx - 15, fy - 14, 30, 3); f(g, '#7a5236', sx - 13, fy - 14, 26, 1); f(g, '#a83a2a', sx - 12, fy - 11, 24, 5); f(g, '#e0b040', sx - 12, fy - 11, 24, 1); }
+    const burn = Math.max(0, Math.min(1, +L().oakBurn || 0)), tx = gd.trunkX - cx;
+    if (tx < -420 || tx > VW + 420) return;
+    const bx = R(tx - GG.BOUGH_W / 2), by = R(-cy); g.drawImage(GG.boughs(burn), bx, by);
+    KO.drawGladeOak(g, gd.trunkX, gl.floor + 8, cx, cy, VW, burn, time, FX);
+    const fy = R(gl.floor - cy), lx = R(gd.lodgeX - cx);
+    if (lx > -80 && lx < VW + 80) { g.drawImage(GG.lodge(), lx - 56, fy - 91); FX.glow(g, lx, fy - 24, 34, 0.18 + 0.05 * Math.sin(time * 6)); }
+    const sx = R(gd.stumpX - cx); if (sx > -60 && sx < VW + 60) g.drawImage(GG.stump(), sx - 34, fy - 38);
+    if (burn > 0) for (let i = 0; i < 5; i++) { const t = (time * 0.12 + i / 5) % 1; FX.smoke(g, tx + 30 + i * 20 + t * 40, fy - 140 - t * 120, t, 1.2); }
   };
   H.drawWorld = (g, cx, cy, time) => {
     if (!S || !H.on()) return; const VW = ctx.VW(), VH = ctx.VH(), P = ctx.P(), lv = L(), gd = G();
-    /* THE HALL: the ropes, the pegs (locked: a lashing and a padlock; free: the gold glint), the heaps, the told arrows, the rocks */
+    /* THE HALL: each rope's DECK dressed (a hunters' blind with a windlass), the ropes, the pegs (locked: a padlock and lashing; free: the gold glint), the heaps, the told arrows, the rocks */
     const fight = hallOn();
+    for (const r of S.ropes) { const dx0 = R(r.deck[0] - cx), dx1 = R(r.deck[1] - cx); if (dx1 > -30 && dx0 < VW + 30) g.drawImage(GH.deck(r.deck[1] - r.deck[0], r.x - r.deck[0]), dx0 - 8, R(r.deck[2] - cy) - GH.DECK_H); }
     for (const r of S.ropes) for (const pgx of r.pegs) { const px = R(r.x - cx), py = R(r.deck[2] + 16 - cy), gx = R(pgx - cx), gy = R(r.pegY - cy); if (Math.max(px, gx) < -60 || Math.min(px, gx) > VW + 60) continue;
       const c = r.cage, up = !c.dropped && !c.spent, locked = ropeLocked(r);
       const first = pgx === r.pegs[0]; if (first) KP.drawPulley(g, px, py - 4, time);
       KP.drawPeg(g, gx, gy, up, up && fight && !locked, time);
       if (up) { KP.ropeLine(g, px, py + 5, gx, gy - 13, 3);
-        if (locked) { f(g, '#4a4a54', gx - 4, gy - 30, 8, 6); f(g, '#9a9aa6', gx - 4, gy - 30, 8, 1); f(g, '#1e1e26', gx - 1, gy - 28, 2, 3); f(g, '#9a9aa6', gx - 3, gy - 34, 1, 4); f(g, '#9a9aa6', gx + 2, gy - 34, 1, 4); f(g, '#9a9aa6', gx - 3, gy - 34, 6, 1);
+        if (locked) { g.drawImage(GH.padlock(), gx - 6, gy - 36);
           if (fight && first && S.act === r.i) { g.save(); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 6); g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(R(r.deck[0] - cx) - 2, R(r.deck[2] - cy) - 22, R(r.deck[1] - r.deck[0]) + 4, 24); g.restore(); } }
         else if (fight && first) { g.fillStyle = 'rgba(255,233,160,0.5)'; for (let y = R(c.y0 - cy) + 2; y < gy; y += 5) g.fillRect(R(c.x - cx), y, 1, 2); } } }
     for (const hx of gd.hall.heaps) { const x = R(hx - cx), y = R(gd.hall.floor - cy); if (x < -30 || x > VW + 30) continue;
-      for (const [dx, dy, w] of [[-9, -4, 7], [-2, -5, 8], [5, -4, 6], [-5, -9, 6], [1, -10, 6], [-1, -13, 5]]) { f(g, '#2a2430', x + dx, y + dy, w, 5); f(g, '#7a6a50', x + dx + 1, y + dy + 1, w - 2, 3); f(g, '#b09a5a', x + dx + 1, y + dy + 1, w - 2, 1); }
+      g.drawImage(GH.heap(), x - 20, y - 21);
       if (fight && S.near === hx && !heldRock(P) && ctx.text) ctx.text('E: A ROCK', x, y - 26, '#ffd36b', 'center');
-      else if (fight && !heldRock(P)) { const k = 0.5 + 0.5 * Math.sin(time * 5 + hx); g.save(); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(x + 0.5, y - 6, 13 + k * 2, 6, 0, 0, 6.283); g.stroke(); g.restore(); } }
-    /* THE BURNING WOOD: the burning ground, the branches (marked), the lit patches, and the wall of fire behind you */
+      else if (fight && !heldRock(P)) { const k = 0.5 + 0.5 * Math.sin(time * 5 + hx); g.save(); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(x + 0.5, y - 6, 15 + k * 2, 6, 0, 0, 6.283); g.stroke(); g.restore(); } }
+    /* THE BURNING WOOD: the burning ground, the branches (marked), the lit patches */
     for (const z of zones()) { const x0 = R(z.x0 - cx), x1 = R(z.x1 - cx), y = R(z.y - cy); if (x1 < -20 || x0 > VW + 20) continue;
-      if (z.tell) { g.save(); g.globalAlpha = 0.35 + 0.35 * Math.sin(time * 18); f(g, '#ff9a5c', x0, y - 2, x1 - x0, 2); g.restore(); continue; }
-      f(g, '#5a1a0e', x0, y - 1, x1 - x0, 1); for (let x = x0 + 3; x < x1 - 2; x += 6) flame(g, x, y, 7 + ((x * 7) % 5), time, x); }
+      if (z.tell) { g.save(); g.globalAlpha = 0.35 + 0.35 * Math.sin(time * 18); f(g, '#ff9a5c', x0, y - 2, x1 - x0, 2); FX.flame(g, (x0 + x1) / 2, y, 'S', time, z.x0); g.restore(); continue; }
+      FX.bed(g, Math.max(x0, -96), Math.min(x1, VW + 96), y, time); }
     for (const b of S.branches) { if (b.state === 'gone') continue; const x = R(b.x - cx), y = R(b.y - cy); if (x < -40 || x > VW + 40) continue;
-      if (b.state === 'hang' || b.state === 'tell') { const k = b.state === 'tell' ? 0.5 + 0.5 * Math.sin(time * 24) : 0.5 + 0.5 * Math.sin(time * 4);
-        g.save(); g.globalAlpha = (b.state === 'tell' ? 0.6 : 0.3) + 0.3 * k; g.strokeStyle = b.state === 'tell' ? '#ff4a3c' : '#ff9a5c'; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 13, 4, 0, 0, 6.283); g.stroke(); g.restore();
-        const by = y - 74 + (b.state === 'tell' ? R(Math.sin(time * 40)) : 0); f(g, '#2a1410', x - 14, by, 28, 5); f(g, '#5a3a24', x - 13, by + 1, 26, 2); flame(g, x - 8, by, 8, time, b.x); flame(g, x + 6, by, 6, time, b.x + 3);
-        if (b.state === 'tell') { if (ctx.text) ctx.text('!', x, by - 16, '#ff6b5c', 'center'); } }
-      else if (b.state === 'fall') { const by = y - 74 * (b.t / 0.22) - 5; f(g, '#2a1410', x - 14, by, 28, 5); flame(g, x, by, 10, time, b.x); }
-      else if (b.state === 'down') { f(g, '#2a1410', x - 14, y - 5, 28, 5); f(g, '#5a3a24', x - 13, y - 4, 26, 2); flame(g, x - 6, y - 4, 8 * Math.min(1, b.t), time, b.x); flame(g, x + 7, y - 4, 6 * Math.min(1, b.t), time, b.x + 1); } }
-    /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the cones' marks, the logs, the quake, the swarm */
+      if (b.state === 'hang' || b.state === 'tell') { const tl = b.state === 'tell', k = tl ? 0.5 + 0.5 * Math.sin(time * 24) : 0.5 + 0.5 * Math.sin(time * 4);
+        GG.mark(g, x, y, k, tl);
+        const by = y - 74 + (tl ? R(Math.sin(time * 40)) : 0), spr = GG.branch(34);
+        f(g, '#150a08', x - 1, by - 22, 2, 22); f(g, '#5a2412', x - 1, by - 22, 1, 22);   /* the charred stub it hangs from */
+        g.drawImage(spr, x - 21, by - 8); flame(g, x - 12, by - 2, 8, time, b.x); flame(g, x + 11, by - 1, 6, time, b.x + 3);
+        if (tl) { if (ctx.text) ctx.text('!', x, by - 28, '#ff6b5c', 'center'); for (let q = 0; q < 3; q++) { const t = (time * 2 + q / 3) % 1; f(g, '#ff9a3c', x - 8 + q * 8, by + t * 60, 1, 2); } } }
+      else if (b.state === 'fall') { const by = y - 74 * (b.t / 0.22) - 5; g.drawImage(GG.branch(34), x - 21, by - 8); flame(g, x, by - 2, 10, time, b.x); f(g, 'rgba(255,170,80,0.5)', x - 1, by - 36, 2, 30); }
+      else if (b.state === 'down') { g.drawImage(GG.branch(34), x - 21, y - 14); flame(g, x - 8, y - 6, 8 * Math.min(1, b.t) + 2, time, b.x); flame(g, x + 9, y - 6, 6 * Math.min(1, b.t) + 2, time, b.x + 1); } }
+    /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the marks, the logs, the hive */
     const gl = lv.glade; if (gl) { const gOn = gladeOn();
       for (const h of S.hangs) for (const [pk, pgx] of h.d.pegs.entries()) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(pgx - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;
         const up = h.state === 'hang'; if (pk === 0) KP.drawPulley(g, px, py, time); KP.drawPeg(g, gx, gy, up, up && gOn, time);
@@ -379,10 +371,9 @@ export function makeGormHands(ctx) {
           g.fillStyle = 'rgba(255,233,160,0.45)'; for (let y = ly + 2; y < R(gl.floor - cy); y += 5) g.fillRect(lx, y, 1, 2);
           if (d.kind === 'log') { g.fillStyle = 'rgba(255,154,92,0.5)'; const to = d.roll > 0 ? gl.x1 : gl.x0; for (let x = Math.min(lx, R(to - cx)); x < Math.max(lx, R(to - cx)); x += 6) g.fillRect(x, R(gl.floor - cy) - 3, 3, 1); } }
         if (d.kind === 'cage') KP.drawCage(g, lx, ly, h.state === 'down', time, up ? 1.2 : 0);
-        else if (d.kind === 'log') { if (h.state !== 'down') KP.drawLog(g, lx, ly, 46, time, h.state === 'roll', h.turn); else if (h.resetT > GORM.hangReset.log - 1.2) KP.drawSplitLog(g, lx, ly, 46, GORM.hangReset.log - h.resetT); }
-        else if (d.kind === 'hive') { if (h.state === 'down') { f(g, '#5a3a1a', lx - 9, ly - 6, 18, 6); f(g, '#c9a040', lx - 7, ly - 6, 6, 3); }
-          else { f(g, '#5a3a1a', lx - 9, ly - 22, 18, 22); f(g, '#c9a040', lx - 8, ly - 21, 16, 20); for (let k = 0; k < 5; k++) f(g, '#8a6a20', lx - 8, ly - 19 + k * 4, 16, 1); f(g, '#1a0e08', lx - 2, ly - 8, 4, 4);
-            for (let k = 0; k < 4; k++) { const a = time * 6 + k * 1.6; f(g, '#e0b040', lx + R(Math.cos(a) * 14), ly - 12 + R(Math.sin(a * 1.3) * 8), 2, 1); } } } }
+        else if (d.kind === 'log') { if (h.state !== 'down') { KP.drawLog(g, lx, ly, 46, time, h.state === 'roll', h.turn); flame(g, lx - 14, ly - 12, 8, time, 3); flame(g, lx + 10, ly - 12, 8, time, 9); } else if (h.resetT > GORM.hangReset.log - 1.2) KP.drawSplitLog(g, lx, ly, 46, GORM.hangReset.log - h.resetT); }
+        else if (d.kind === 'hive') { if (h.state === 'down') { g.drawImage(GG.hive(true), lx - 13, ly - 28); }
+          else { g.drawImage(GG.hive(false), lx - 13, ly - 28 + 6); GG.bees(g, lx, ly - 12, 4, 12, time); } } }
     }
   };
   /* THE TOLD LAYER (after the foes, over the dark pass: main.js calls it where the winch rocks draw): the rafter archers' drawn arcs and their arrows, the rock in the air and its
@@ -392,26 +383,33 @@ export function makeGormHands(ctx) {
     for (const q of bows()) if (q.aim) { g.save(); g.fillStyle = '#ff4a3c'; const pts = q.aim.pts, n = pts.length, k = 1 - q.aim.t / GORM.archers.tell;
       for (let i = 1; i < n; i++) { if (i / n > 0.25 + k) break; g.globalAlpha = 0.6 + 0.4 * (i / n); g.fillRect(R(pts[i][0] - cx) - 1, R(pts[i][1] - cy) - 1, 3, 3); }
       g.globalAlpha = 0.6; g.strokeStyle = '#ff6b5c'; g.beginPath(); g.ellipse(R(q.aim.tx - cx) + 0.5, R(q.aim.ty + 6 - cy), 8, 3, 0, 0, 6.283); g.stroke(); g.restore(); }
-    for (const a of S.arrows) { const x = R(a.x - cx), y = R(a.y - cy), an = Math.atan2(a.vy, a.vx); g.save(); g.translate(x, y); g.rotate(an); f(g, '#5a3a24', -6, 0, 10, 1); f(g, '#c9d1dc', 4, -1, 2, 3); f(g, '#e0e0e0', -7, -1, 2, 3); g.restore(); }
-    for (const q of S.rocks) { const x = R(q.x - cx), y = R(q.y - cy); f(g, '#2a2430', x - 4, y - 4, 8, 7); f(g, '#7a6a50', x - 3, y - 3, 6, 5); f(g, '#b09a5a', x - 3, y - 3, 6, 1); }
+    for (const a of S.arrows) { const x = R(a.x - cx), y = R(a.y - cy), an = Math.atan2(a.vy, a.vx); g.save(); g.translate(x, y); g.rotate(an); g.drawImage(GH.arrow(), -9, -2); g.restore(); }
+    for (const q of S.rocks) { const x = R(q.x - cx), y = R(q.y - cy); g.drawImage(GH.rock(), x - 4, y - 4); }
     if (S.arc) CT.drawArc(g, S.arc, cx, cy, time, S.arc.land && S.arc.land.hit ? '#ffd36b' : '#eef2fa');
-    if (persist && (S.run.on || S.run.armed) && !S.run.done) { const fx = R(S.run.fireX - cx); if (fx > -40) {
-      g.save(); const gr = g.createLinearGradient(fx - 120, 0, fx + 30, 0); gr.addColorStop(0, 'rgba(160,30,10,0.85)'); gr.addColorStop(0.8, 'rgba(230,90,30,0.6)'); gr.addColorStop(1, 'rgba(255,160,60,0)'); g.fillStyle = gr; g.fillRect(Math.max(0, fx - 600), 0, Math.min(VW, fx + 30) - Math.max(0, fx - 600), VH); g.restore();
-      for (let y = 0; y < VH; y += 12) flame(g, fx + R(Math.sin(time * 3 + y) * 4), y + 12, 18 + (y % 3) * 4, time, y);
-      if (S.run.on && S.run.t < 4 && ctx.text) ctx.text('THE WOOD BURNS: RUN EAST', VW / 2, 34, Math.floor(time * 4) % 2 ? '#ff9a5c' : '#fff6e0', 'center'); } }
+    if (persist && (S.run.on || S.run.armed) && !S.run.done) { const fx = R(S.run.fireX - cx); if (fx > -80) {
+      /* the wall of fire: everything behind it is burning (a red wash), the wall itself a baked column of flame in three frames, a bed of flame along the floor, smoke over it, sparks off it */
+      const fl = R(G().hall.floor - cy), frames = GG.fireWall(VH), wk = Math.floor(time * 9) % 3;
+      g.save(); g.fillStyle = 'rgba(120,20,8,0.62)'; g.fillRect(0, 0, Math.max(0, fx - 56), VH); g.restore();
+      g.drawImage(frames[wk], 0, 0, 72, frames[wk].height - 40, fx - 66, 0, 72, VH);
+      g.drawImage(frames[(wk + 1) % 3], 0, 0, 72, frames[0].height - 40, fx - 126, 0, 72, VH);
+      FX.bed(g, Math.max(-96, fx - 600), fx - 40, fl, time);
+      FX.glow(g, fx, VH * 0.55, 120, 0.22); for (let i = 0; i < 4; i++) { const t = (time * 0.3 + i / 4) % 1; FX.smoke(g, fx - 40 + i * 14, 40 - t * 30, t, 1.2); }
+      if (S.run.on && S.run.t < 4 && ctx.text) ctx.text('THE WOOD BURNS: RUN EAST', VW / 2, 34, Math.floor(time * 4) % 2 ? '#ff9a5c' : '#fff6e0', 'center');
+      FX.embers(g, cx, cy, VW, VH, time, FX.EMBER_CAP, 40); } }
+    else if (persist && !S.run.done && VW) FX.embers(g, cx, cy, VW, VH, time, 12, 28);
     if (L().glade) {
-      for (const c of S.cones) { const x = R(c.x - cx), y = R(c.y - cy); if (c.state === 'tell') { const k = 0.5 + 0.5 * Math.sin(time * 20); g.save(); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff4a3c'; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 11, 4, 0, 0, 6.283); g.stroke(); g.restore();
-          if (c.t < 0.5) { const yy = y - 20 - 160 * (c.t / 0.5); f(g, '#5a3a1a', x - 3, yy - 6, 6, 7); flame(g, x, yy - 5, 6, time, c.x); } }
-        else { const yy = y - 20 * (c.t / 0.25); f(g, '#5a3a1a', x - 3, yy - 6, 6, 7); flame(g, x, yy - 5, 7, time, c.x); } }
-      for (const l of S.logs) { const x = R(l.x - cx), y = R(l.y - cy); KP.drawLog(g, x, y, 28, time, true, l.turn); for (let k = 0; k < 4; k++) flame(g, x - 12 + k * 8, y - 12, 7, time, k + l.x); }
-      for (const w of S.waves) { const x = R(w.x - cx), y = R(w.y - cy); f(g, '#5a3a24', x - 5, y - 8, 10, 8); f(g, '#c9b27c', x - 4, y - 10, 8, 3); flame(g, x - w.dir * 3, y - 6, 6, time, w.x); }
+      for (const c of S.cones) { const x = R(c.x - cx), y = R(c.y - cy); if (c.state === 'tell') { const k = 0.5 + 0.5 * Math.sin(time * 20); GG.mark(g, x, y, k, true);
+          if (c.t < 0.5) { const yy = y - 20 - 160 * (c.t / 0.5); g.drawImage(GG.cone(), x - 4, yy - 8); flame(g, x, yy - 6, 6, time, c.x); } }
+        else { const yy = y - 20 * (c.t / 0.25); g.drawImage(GG.cone(), x - 4, yy - 8); flame(g, x, yy - 6, 8, time, c.x); } }
+      for (const l of S.logs) { const x = R(l.x - cx), y = R(l.y - cy); KP.drawLog(g, x, y, 28, time, true, l.turn); for (let k = 0; k < 3; k++) flame(g, x - 10 + k * 10, y - 12, 8, time, k + l.x); if ((Math.floor(time * 20) & 3) === 0) FX.smoke(g, x - l.dir * 16, y - 8, 0.2, 0.9); }
+      for (const w of S.waves) { const x = R(w.x - cx), y = R(w.y - cy); g.drawImage(GG.crest(), x - 11, y - 15); flame(g, x - w.dir * 3, y - 11, 6, time, w.x); FX.smoke(g, x - w.dir * 12, y - 5, 0.35, 0.9); }
       for (const s of S.swarms) { const x = R(s.x - cx), y = R(s.y - cy); g.save(); g.globalAlpha = Math.min(0.25, s.t * 0.1); g.fillStyle = '#e0b040'; g.beginPath(); g.ellipse(x, y - 24, GORM.hiveR, 26, 0, 0, 6.283); g.fill(); g.restore();
-        for (let k = 0; k < 18; k++) { const a = time * (3 + k % 4) + k * 0.9; f(g, k % 3 ? '#e0b040' : '#1a0e08', x + R(Math.cos(a) * (GORM.hiveR - 6) * ((k % 5) / 5 + 0.3)), y - 24 + R(Math.sin(a * 1.4) * 20), 2, 1); } }
+        GG.bees(g, x, y - 24, 16, GORM.hiveR - 6, time); }
     }
   };
   /* a torch goblin's torch, a rafter archer's deck mark (main.js calls it per foe after its sprite) */
   H.drawFoe = (g, e, cx, cy, time) => {
-    if (e.torch && e.alive) { const x = R(e.x - cx) + (e.face || 1) * 5, y = R(e.y - cy) - 12 + (e.lightT > 0 ? 6 : 0); f(g, '#5a3a24', x - 1, y, 2, 7); flame(g, x, y + 1, e.lightT > 0 ? 10 : 7, time, e.x); }
+    if (e.torch && e.alive) { const x = R(e.x - cx) + (e.face || 1) * 5, y = R(e.y - cy) - 14 + (e.lightT > 0 ? 6 : 0); FX.torch(g, x, y, e.face || 1, time, e.lightT > 0); }
   };
   return H;
 }
