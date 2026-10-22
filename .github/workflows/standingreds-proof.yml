@@ -4,11 +4,27 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace]
         default: prove
 permissions:
   contents: read
 jobs:
+  lab-trace:
+    if: inputs.mode == 'lab-trace'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/lab-collect-selftest.mjs
+      - run: node tools/lab-navigation-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab-game-trace
+          path: gate-data/
   harness:
     if: inputs.mode == 'harness'
     runs-on: ubuntu-latest
