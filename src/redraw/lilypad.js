@@ -67,21 +67,21 @@ export function drawPad(g, m, cx, cy, time, spr, dy = 0, flower = null) {
       g.beginPath(); g.ellipse(Math.round(m.x0) - cx + w / 2 + 0.5, wy + 0.5, w / 2 + 2 + k * 12, h / 2 + 1 + k * 3, 0, 0, Math.PI * 2); g.stroke(); }
     g.globalAlpha = 1;
   }
-  if (m.slapT > 0 || m.shufTo) reshuffleRead(g, m, cx, cy, time, w, wy);   /* (claude/frogking2art) a leaf the King's landing has taken under, and where it will rise */
-  else if (m.sinkK > 1 && !m.firm && m.sink < 0.5) boil(g, m, cx, time, w, wy);
+  if (m.sinkK > 1 && !m.firm && m.sink < 0.5) boil(g, m, cx, time, w, wy);   /* (claude/frogking2art) HIS POND STIRS: bubbles at the rim of a leaf that now sinks fast */
   g.drawImage(spr, x0 + wob, Math.round(m.y) - cy + dy);
   if (flower) g.drawImage(flower[0], x0 + wob + flower[1], Math.round(m.y) - cy + flower[2]);
 }
 /* (claude/frogking2art) THE RESHUFFLE'S READ. A leaf the King's landing (or his flop's wave) holds under: a WHIRL where it went down - broken arcs circling the spot, bubbles
    rising - and, if it is to come up somewhere else (m.shufTo), a BOIL there: rings opening on the surface, in the colour of what it will be (cool green: it will HOLD; amber: it will
    SINK), so the new route can be read before the leaves are back. A stirred leaf that is still up has its rim boil: bubbles breaking at the edge. */
-function reshuffleRead(g, m, cx, cy, time, w, wy) {
+export function reshuffleRead(g, m, cx, cy, time, w, wy) {
   const sx = Math.round(m.x0) - cx + w / 2, sw = (x, y, a, c) => { g.globalAlpha = a; g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
-  for (let r = 0; r < 3; r++) { const rx = w / 2 + 1 - r * 4, ry = 2.2 - r * 0.6, dir = r & 1 ? 1 : -1, N = 9 - r * 2;
-    for (let i = 0; i < N; i++) { const a = time * (5 + r * 2) * dir + i * Math.PI * 2 / N; if (i % 3 === 2) continue; sw(sx + Math.cos(a) * rx, wy + 1 + Math.sin(a) * ry, 0.85, r & 1 ? '#bfe6f5' : '#eefaff'); } }
-  for (let i = 0; i < 4; i++) { const k = (time * 1.3 + i * 0.25) % 1; sw(sx + Math.sin(i * 2.3 + time) * (w / 3), wy - 1 - k * 7, 0.9 * (1 - k), '#e4f8ec'); }
+  for (let r = 0; r < 3; r++) { const rx = w / 2 + 3 - r * 5, ry = 3.4 - r * 0.9, a0 = time * (6 + r * 2) * (r & 1 ? 1 : -1);
+    g.globalAlpha = 0.95; g.strokeStyle = r & 1 ? '#bfe6f5' : '#ffffff'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx + 0.5, wy + 2.5, rx, ry, 0, a0, a0 + Math.PI * 1.35); g.stroke(); }   /* the whirl: arcs chasing each other round the hole the leaf left */
+  g.globalAlpha = 0.5; g.fillStyle = '#04100f'; g.beginPath(); g.ellipse(sx + 0.5, wy + 2.5, w / 4, 1.6, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+  for (let i = 0; i < 5; i++) { const k = (time * 1.3 + i * 0.2) % 1; g.globalAlpha = 0.95 * (1 - k); g.fillStyle = i & 1 ? '#e4f8ec' : '#ffffff'; g.fillRect(Math.round(sx + Math.sin(i * 2.3 + time) * (w / 3)), Math.round(wy - k * 9), 2, 2); }
   if (m.shufTo) { const dx = Math.round(m.shufTo.x) - cx + w / 2, col = m.shufTo.firm ? '#9af0b8' : '#e8c466';
-    for (let i = 0; i < 2; i++) { const k = (time * 1.4 + i * 0.5) % 1; g.globalAlpha = 0.75 * (1 - k); g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.ellipse(dx + 0.5, wy + 0.5, 3 + k * (w / 2 + 3), 1 + k * 3, 0, 0, Math.PI * 2); g.stroke(); }
+    for (let i = 0; i < 2; i++) { const k = (time * 1.4 + i * 0.5) % 1; g.globalAlpha = 0.75 * (1 - k); g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.ellipse(dx + 0.5, wy + 2.5, 3 + k * (w / 2 + 5), 1.5 + k * 4, 0, 0, Math.PI * 2); g.stroke(); }
     for (let i = 0; i < 3; i++) { const k = (time * 1.8 + i * 0.33) % 1; sw(dx + (i - 1) * 5, wy - k * 5, 0.9 * (1 - k), col); } }
   g.globalAlpha = 1;
 }

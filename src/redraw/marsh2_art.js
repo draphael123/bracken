@@ -343,7 +343,9 @@ export function rippleCrest(g, x, y, dir, a, time) {
 }
 /* THE FLY SWARM: each fly a dark body with a flickering pair of wings, a thread of afterimage, a few motes round the cloud */
 export function swarm(g, sw, cx, cy, time, orbit) {
-  for (let i = 0; i < 12; i++) { const a = sw.ph + i * 2.39, rr = orbit * (0.5 + ((i * 37) % 10) / 20), fx = Math.round(sw.x + Math.cos(a) * rr - cx), fy = Math.round(sw.y + Math.sin(a * 1.3) * rr * 0.6 - cy), fl = ((time * 40 + i) | 0) & 1;
+  g.globalAlpha = 0.14; g.fillStyle = '#1a1a14'; g.beginPath(); g.ellipse(Math.round(sw.x - cx) + 0.5, Math.round(sw.y - cy) + 0.5, orbit * 1.3, orbit * 0.85, 0, 0, Math.PI * 2); g.fill();   /* (claude/frogking2art) a haze of them */
+  g.globalAlpha = 0.35 + 0.2 * Math.sin(time * 14); g.strokeStyle = '#cfe8ff'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(sw.x - cx) + 0.5, Math.round(sw.y - cy) + 0.5, orbit * 1.5 + Math.sin(time * 9) * 1.5, orbit, 0, 0.4, 2.6); g.stroke(); g.globalAlpha = 1;   /* the buzz, a flicker of arc */
+  for (let i = 0; i < 16; i++) { const a = sw.ph + i * 2.39, rr = orbit * (0.5 + ((i * 37) % 10) / 20), fx = Math.round(sw.x + Math.cos(a) * rr - cx), fy = Math.round(sw.y + Math.sin(a * 1.3) * rr * 0.6 - cy), fl = ((time * 40 + i) | 0) & 1;
     const a2 = a - 0.5; R(g, 'rgba(26,26,20,0.35)', Math.round(sw.x + Math.cos(a2) * rr - cx), Math.round(sw.y + Math.sin(a2 * 1.3) * rr * 0.6 - cy), 1, 1);
     R(g, '#1a1a14', fx, fy, 2, 1); R(g, '#3a3a2c', fx, fy + 1, 1, 1); R(g, fl ? '#cfe8ff' : '#8fb0c8', fx + (fl ? 0 : 1), fy - 1, 1, 1); R(g, fl ? '#8fb0c8' : '#cfe8ff', fx + (fl ? 1 : 0), fy - 2, 1, 1); }
   for (let i = 0; i < 4; i++) { const a = -sw.ph * 0.6 + i * 1.57; R(g, 'rgba(143,209,96,0.6)', Math.round(sw.x + Math.cos(a) * orbit * 0.3 - cx), Math.round(sw.y + Math.sin(a) * orbit * 0.2 - cy), 1, 1); }

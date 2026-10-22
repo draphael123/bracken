@@ -12,6 +12,7 @@
 // Palette = the marsh's own (bog oak, reed cord, moss) from marsh2_art. Everything static is baked once and blitted.
 import { canvas, fillPoly } from '../px.js';
 import { OAK, CORD, CORD_D, MOSS, P, R } from './marsh2_art.js';
+import { reshuffleRead } from './lilypad.js';
 
 const hash = (a, b) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return (h ^ (h >>> 16)) >>> 0; };
 const rnd = (a, b, m) => hash(a, b) % m;
@@ -178,7 +179,7 @@ function drawLantern(g, pole, x, y, time, seed) {
 }
 
 /* ================= THE WATER (after the surface, before the pads afloat) ================= */
-export function drawWater(g, L, cx, cy, time, boss) {
+export function drawWater(g, L, cx, cy, time, boss, movers) {
   const C = courtWindow(L, cx, g); if (!C) return;
   const wy = SURF - cy, p2 = !!(boss && boss.t === 'frog' && boss.phase >= 2);
   /* the royal pads stand in the water: the water is laid under them (copied from the lane beside, the pools stop at the pad), the stems rise through it, the water laps their feet */
@@ -199,15 +200,20 @@ export function drawWater(g, L, cx, cy, time, boss) {
   C.lanes.forEach(([a, b], li) => { const x0 = a * 16, span = (b - a + 1) * 16; if (x0 + span < cx - 10 || x0 > cx + VWD + 10) return;
     for (let n = 0; n < 7; n++) { const x = x0 + ((n * span / 7 + time * (5 + li)) % span), j = rnd(n, li, 4); g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 1.7 + n); R(g, '#bfe6f5', Math.round(x - cx), wy + 4 + j * 4, 3 + (j & 1) * 2, 1); } g.globalAlpha = 1; });
   if (p2) churn(g, C, cx, wy, time);
+  if (movers) for (const m of movers) if (m.kind === 'pad' && (m.slapT > 0 || m.shufTo) && m.x > cx - 40 && m.x < cx + VWD + 40) reshuffleRead(g, m, cx, cy, time, m.w, Math.round(m.y0) - cy + Math.round((m.big ? 9 : 7) / 2) + 1);   /* a leaf held under (the King's landing, the flop's wave) whirls; where it will come up the water boils in the colour of what it will be */
+  if (boss) drawSplash(g, L, boss, cx, cy, time, null);
 }
 /* HIS POND STIRS: the water boils - rings run out of the deep across the whole court, bubbles rise, the surface goes dark and green */
 function churn(g, C, cx, wy, time) {
   const x0 = C.lanes[0][0] * 16, x1 = (C.royal[2][0]) * 16;
   g.globalAlpha = 0.22; g.fillStyle = '#0c3a2a'; g.fillRect(Math.max(0, x0 - cx), wy, Math.min(VWD + 20, x1 - cx) - Math.max(0, x0 - cx), 9); g.globalAlpha = 1;
-  for (let i = 0; i < 16; i++) {
-    const ph = (time * 0.55 + i * 0.37) % 1, seed = Math.floor(time * 0.55 + i * 0.37) * 31 + i, x = x0 + 20 + rnd(seed, 1, Math.max(1, x1 - x0 - 40)), sx = Math.round(x - cx);
-    if (sx < -40 || sx > VWD + 40) continue;
-    g.globalAlpha = 0.7 * (1 - ph); g.strokeStyle = i & 1 ? '#bfe6f5' : '#7fc4e0'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx + 0.5, wy + 3.5, 3 + ph * 22, 1 + ph * 3.5, 0, 0, Math.PI * 2); g.stroke();
+  for (let i = 0; i < 18; i++) {
+    const ph = (time * 0.5 + i * 0.37) % 1, seed = Math.floor(time * 0.5 + i * 0.37) * 31 + i, x = x0 + 20 + rnd(seed, 1, Math.max(1, x1 - x0 - 40)), sx = Math.round(x - cx), y = wy + 3 + (i % 3) * 7;
+    if (sx < -50 || sx > VWD + 40) continue;
+    g.globalAlpha = 0.95 * (1 - ph); g.strokeStyle = i & 1 ? '#eefaff' : '#9ad8ee'; g.lineWidth = 1;
+    g.beginPath(); g.ellipse(sx + 0.5, y + 0.5, 4 + ph * 26, 1.5 + ph * 4, 0, 0, Math.PI * 2); g.stroke();
+    if (ph < 0.6) { g.beginPath(); g.ellipse(sx + 0.5, y + 0.5, 2 + ph * 14, 1 + ph * 2, 0, 0, Math.PI * 2); g.stroke(); }
+    g.globalAlpha = 0.6 * (1 - ph); R(g, '#eefaff', sx - 4, wy + 1 + (i % 2), 8 + (i % 3) * 3, 1);   /* a patch of foam where it boils */
   }
   for (let i = 0; i < 12; i++) { const ph = (time * 0.9 + i * 0.29) % 1, x = x0 + 30 + ((i * 97 + Math.floor(time * 0.9 + i * 0.29) * 53) % Math.max(1, x1 - x0 - 60)), sx = Math.round(x - cx); if (sx < -4 || sx > VWD + 10) continue;
     g.globalAlpha = 0.8 * (1 - ph * ph); R(g, '#e4f8ec', sx, wy + 10 - Math.round(ph * 12), 1, 1); R(g, '#bfe6f5', sx + 1, wy + 11 - Math.round(ph * 12), 1, 1); }
@@ -230,6 +236,7 @@ export function drawFlies(g, L, cx, cy, time) {
 export const laneAt = (L, x) => { const C = L.frogCourt; if (!C) return false; for (const [a, b] of C.lanes) if (x >= a * 16 - 4 && x <= (b + 1) * 16 + 4) return true; return false; };
 /* a standing crest of water: a wall of dark water with a pale foamy lip, rings trailing behind, spray thrown over the top. Same footprint as flopCrest (16 wide, to 15 tall). */
 export function waterCrest(g, x, y, dir, time) {
+  y += 16;   /* the wave runs at the standing line; over a lane the water is a tile lower */
   const d = dir > 0 ? 1 : -1, wob = (time * 18) & 1;
   R(g, '#1c5a6a', x - 8, y - 3, 16, 3); R(g, '#2f7f94', x - 7 + d, y - 6, 14, 3); R(g, '#4aa0b8', x - 5 + d * 2, y - 9, 10, 3); R(g, '#7fc4e0', x - 3 + d * 3, y - 11, 6, 2);
   R(g, '#bfe6f5', x - 4 + d * 3, y - 13, 8, 2); R(g, '#eefaff', x - 3 + d * 4, y - 14, 5, 1); R(g, '#ffffff', x - 1 + d * 5, y - 15, 3, 1);   /* the lip curling over, foam white */
@@ -242,20 +249,60 @@ export function waterCrest(g, x, y, dir, time) {
 export function drawBossFx(g, L, e, cx, cy, time, FKT) {
   const C = L.frogCourt; if (!C || !e) return;
   const wy = SURF - cy;
+  if (e.mode === 'spit') spitSpray(g, e, cx, cy);
+  if (e.phase >= 2 && e.alive !== false && e.mode !== 'sleep') stirSteam(g, e, cx, cy, time);
   if (e.mode === 'leap' && e.vx !== undefined) {   /* the spray he trails through the air, and the ring where he left */
     const T = (FKT && FKT.air) || 1.2, age = Math.max(0, (T + 1) - e.modeT), sx0 = e.x - e.vx * age;
-    for (let i = 0; i < 14; i++) { const k = i / 14, bx = e.x - e.vx * 0.05 * (i + 1), by = e.y - 12 + 7 * Math.sin(time * 30 + i * 2) * 0, fall = (i * 3 + (time * 40 | 0)) % 7;
-      g.globalAlpha = 0.8 * (1 - k); R(g, i & 1 ? '#eefaff' : '#bfe6f5', Math.round(bx - cx) + ((i * 5) % 7) - 3, Math.round(by - cy) + fall - 3 - Math.round(k * 4), 1 + (i < 5 ? 1 : 0), 1); }
+    for (let i = 0; i < 22; i++) { const k = i / 22, bx = e.x - e.vx * 0.032 * (i + 1) + Math.sin(i * 7.1 + time * 30) * 2, by = e.y - 12 - e.vy * 0.032 * (i + 1) + ((i * 5 + (time * 36 | 0)) % 7) - 3;   /* a streak of water flung off him along the arc, spread and thinning */
+      g.globalAlpha = 0.9 * (1 - k); R(g, i % 3 === 0 ? '#ffffff' : i & 1 ? '#eefaff' : '#bfe6f5', Math.round(bx - cx), Math.round(by - cy), k < 0.4 ? 2 : 1, k < 0.4 ? 2 : 1); if (i % 4 === 0) R(g, '#7fc4e0', Math.round(bx - cx) + (e.vx > 0 ? -3 : 3), Math.round(by - cy) + 2, 1, 2); }
     g.globalAlpha = 1;
-    if (age < 0.7) ring(g, sx0 - cx, wy, age / 0.7, 36, '#bfe6f5', 0.75);
   }
+}
+/* THE SPIT: a venom glob, a 5 x 4 blob that tumbles, a lit top, a dark rind, a trail of drips behind it along where it has been */
+export function drawSpit(g, s, cx, cy, time) {
+  const x = Math.round(s.x - cx), y = Math.round(s.y - cy), vx = s.vx || 0, vy = s.vy || 0, sp = Math.hypot(vx, vy) || 1;
+  for (let i = 4; i >= 1; i--) { g.globalAlpha = 0.75 - i * 0.14; R(g, i & 1 ? '#8fd160' : '#6fae44', Math.round(x - vx / sp * i * 3.2 + Math.sin(time * 20 + i) * 0.5), Math.round(y - vy / sp * i * 3.2), 3 - (i >> 1), 3 - (i >> 1)); }
+  g.globalAlpha = 1;
+  R(g, '#2a4a1a', x - 3, y - 1, 7, 3); R(g, '#2a4a1a', x - 2, y - 2, 5, 5);
+  R(g, '#6fae44', x - 2, y - 1, 5, 3); R(g, '#8fd160', x - 1, y - 2, 3, 4); R(g, '#d6f5a0', x - 2, y - 1, 2, 1); P(g, '#ffffff', x - 2, y - 1);
+  if (((time * 14) | 0) & 1) { P(g, '#4a7a2a', x + 1, y + 1); P(g, '#8fd160', x + 1, y + 3); } else { P(g, '#4a7a2a', x - 1, y + 1); P(g, '#8fd160', x, y + 3); }
+}
+/* the muzzle of a spat glob: a fan of droplets thrown from his mouth (e.mode 'spit', 0.25 s after each lob) */
+function spitSpray(g, e, cx, cy) {
+  const age = 0.45 - (e.shotT || 0); if (!(age >= 0 && age < 0.25) || !(e.shots >= 0)) return;
+  const f = e.face >= 0 ? 1 : -1, x0 = e.x + f * 22, y0 = e.y - 15;
+  for (let i = 0; i < 10; i++) { const a = 0.15 + i * 0.09, sp = 90 + (i * 37) % 70, t = age, dx = f * Math.cos(a) * sp * t, dy = -Math.sin(a) * sp * t + 320 * t * t * 0.5;
+    g.globalAlpha = 1 - age / 0.25; R(g, i & 1 ? '#8fd160' : '#d6f5a0', Math.round(x0 + dx - cx), Math.round(y0 + dy - cy), i < 4 ? 2 : 1, i < 4 ? 2 : 1); }
+  g.globalAlpha = 1;
+}
+
+/* HIS POND STIRS: he is restless - steam breathing off his nostrils */
+function stirSteam(g, e, cx, cy, time) {
+  const f = e.face >= 0 ? 1 : -1;
+  for (let i = 0; i < 4; i++) { const k = (time * 1.6 + i * 0.25) % 1; g.globalAlpha = 0.7 * (1 - k); R(g, i & 1 ? '#f4e0d8' : '#ffb8a0', Math.round(e.x + f * 24 + f * k * 9 - cx), Math.round(e.y - 21 - k * 12 - cy), 2 - (k > 0.6 ? 1 : 0), 2 - (k > 0.6 ? 1 : 0)); }
+  g.globalAlpha = 1;
+}
+
+/* the splash of the leap and of his landing: rings run out over the water from the pad he leaves and from the pad he comes down on, a crown of drops thrown up. (After the water's surface pass.) */
+export function drawSplash(g, L, e, cx, cy, time, FKT) {
+  const C = L.frogCourt; if (!C || !e || e.t !== 'frog') return;
+  const wy = SURF - cy;
+  if (e.mode === 'leap' && e.vx !== undefined) { const T = (FKT && FKT.air) || 1.2, age = Math.max(0, (T + 1) - e.modeT), sx0 = e.x - e.vx * age; if (age < 0.8) { ring(g, sx0 - cx, wy, age / 0.8, 40, '#eefaff', 0.85); ring(g, sx0 - cx, wy, Math.max(0, age / 0.8 - 0.2), 26, '#7fc4e0', 0.7); } }
   if (e.landAt !== undefined) {
-    const a = time - e.landAt; if (a >= 0 && a < 1.1) {
-      const k = a / 1.1, pad = C.royal.find(([p, q]) => e.x >= p * 16 && e.x <= (q + 1) * 16 + 4);
+    const a = time - e.landAt; if (a >= 0 && a < 1.2) {
+      const k = a / 1.2, pad = C.royal.find(([p, q]) => e.x >= p * 16 && e.x <= (q + 1) * 16 + 4);
       if (pad) { const px0 = pad[0] * 16 - cx, px1 = (pad[1] + 1) * 16 - cx;
-        ring(g, px0, wy, k, 70, '#eefaff', 0.9); ring(g, px1, wy, k, 70, '#eefaff', 0.9); ring(g, px0, wy, Math.max(0, k - 0.18), 48, '#7fc4e0', 0.7); ring(g, px1, wy, Math.max(0, k - 0.18), 48, '#7fc4e0', 0.7);
-        for (let i = 0; i < 12; i++) { const side = i & 1 ? 1 : -1, dx = (4 + (i >> 1) * 5) * side, up = Math.sin(Math.min(1, k * 1.5) * Math.PI) * (16 + (i % 4) * 6) * (1 - k * 0.3);
-          if (k < 0.8) { g.globalAlpha = 1 - k; R(g, i % 3 ? '#eefaff' : '#bfe6f5', Math.round((side > 0 ? px1 : px0) + dx), Math.round(wy - up), 1 + (i % 4 === 0 ? 1 : 0), 1 + (i % 4 === 0 ? 1 : 0)); } } g.globalAlpha = 1; }
+        for (const ex of [px0, px1]) {
+          ring(g, ex, wy, k, 84, '#eefaff', 1); ring(g, ex, wy, Math.max(0, k - 0.15), 56, '#7fc4e0', 0.8); ring(g, ex, wy, Math.max(0, k - 0.3), 34, '#bfe6f5', 0.6);
+          if (k < 0.4) { g.globalAlpha = 0.9; g.strokeStyle = '#eefaff'; g.beginPath(); g.ellipse(ex + 0.5, wy + 3.5, 6 + k * 90, 2 + k * 8, 0, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; }   /* the wall of the first ring, a second line thick */
+        }
+        /* the crown: a column of water thrown up at each foot of the pad, then drops thrown out on their arcs */
+        for (const [ex, side] of [[px0, -1], [px1, 1]]) {
+          if (a < 0.3) { const hh = Math.round(Math.sin(a / 0.3 * Math.PI) * 24); for (let r = 0; r < hh; r += 2) { const w2 = Math.max(1, 5 - (r >> 2)); R(g, r > hh - 5 ? '#ffffff' : '#bfe6f5', Math.round(ex + side * 3 - (w2 >> 1)), wy - r - 1, w2, 2); } }
+          for (let i = 0; i < 16; i++) { const vx = 14 + (i * 23) % 56, vy = 100 + (i * 41) % 90, t = a - (i % 4) * 0.02, x = ex + side * (3 + vx * t), y = wy - (vy * t - 210 * t * t);
+            if (t < 0 || y > wy + 2) continue; g.globalAlpha = Math.min(1, 1.4 - a); R(g, i % 3 === 0 ? '#ffffff' : i & 1 ? '#eefaff' : '#bfe6f5', Math.round(x), Math.round(y), i < 7 ? 2 : 1, i < 7 ? 2 : 1); }
+        }
+        g.globalAlpha = 1; }
     }
   }
 }
