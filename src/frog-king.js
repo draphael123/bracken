@@ -29,10 +29,10 @@ export const FK = {
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
   quota: [0.22, 0.22],             /* the share of him one royal pad is worth before he leaps on, per phase */
-  stay: [15, 12],                  /* or this long with you on his pad */
+  stay: [20, 16],                  /* or this long with you on his pad */
   take: 0.08,                      /* one opening is worth at most this share of him, then he shakes it off */
   dazed: 2, winded: 1.5, air: 0.4, throat: 1.5,
-  tongue: { tell: [0.6, 0.5], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 16 },
+  tongue: { tell: [0.6, 0.5], live: 0.55, max: [175, 210], reel: 330, reelMax: 0.6, dmg: 12 },
   spit: { tell: [0.55, 0.45], shots: [1, 2], flight: 0.8, spread: 18 },
   flop: { tell: 0.8, air: 0.5, rest: 1.6, sp: 170, life: 2.4, dmg: 18, dunk: 0.6 },
   swarm: { tell: 0.6, spit: 0.35, life: 3.2, lag: 0.5, orbit: 13, snapTell: 0.85, snapLive: 0.45, reach: 240, bite: 34, open: 2.4 },
