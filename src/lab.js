@@ -85,9 +85,9 @@ export function rgFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)
 export const rgBossTier = (BK, b) => b && b.broken > 2.2 ? 3 : 2;   /* the fan only in a long window; otherwise the quicker pierce (10-22: 3 on every opening took the marsh 12 -> 3 of 12) */
 function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 /* (claude/chargetiers) THE BERSERKER'S HANDS USE HIS RAGE WIND-UP (src/berserker.js BZ.tiers; main.js BK.bz().tier / tierAt). ON A LEVEL FOE (bzFoeTier): two or more foes within
-   the cleave's reach on BOTH sides of him -> THE WHEEL; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
+   the cleave's reach on BOTH sides of him -> THE WHIRL; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
    hardest on a bar) when he is RAGING (the wind is quicker), else the OVERHEAD CHOP; anything else the OVERHEAD CHOP (as his hands always let it go, at the full wind).
-   ON A BOSS (bzBossTier, in his openings): NOT broken and RAGING -> the GROUND-SPLITTER (the poise-breaker's blow); not broken -> THE WHEEL; BROKEN -> the quick OVERHEAD CHOP */
+   ON A BOSS (bzBossTier, in his openings): NOT broken and RAGING -> the GROUND-SPLITTER (the poise-breaker's blow); not broken -> THE WHIRL; BROKEN -> the quick OVERHEAD CHOP */
 const bzRead = BK => { try { return BK.bz ? BK.bz() : null; } catch { return null; } };
 const bzHot = P => (P.rage || 0) >= 50 || (P.frenzyT || 0) > 0;
 export function bzFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return bzBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, near = BK.enemies().filter(q => q.alive && !q.harmless && Math.abs(q.x - P.x) < 34 && Math.abs(q.y - P.y) < 20);

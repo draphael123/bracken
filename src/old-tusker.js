@@ -32,6 +32,7 @@ export const OT = {
   root: { tell: [0.85, 0.72], n: 3, flight: 1.05, r: 16, dmg: 10, rec: 0.6, spread: 64 },
   stomp: { tell: 0.78, sp: 150, life: 1.9, dmg: 14, rec: 0.75, w: 7 },
   pin: { t: 3.4, mul: 2, thrash: 0.55, ward: 3, trunk: 0.04, cap: 0.14 },   // cap: a pin is worth this share of him at most - the blow that empties it, he heaves the trunk off (told)   // trunk: the falling pine's own blow on him (a share of his health, a room blow)
+  bz: { hurt: 2.2 },   // (claude/tuskerbz) the BERSERKER takes his gores and tusks at this multiple: he never defends by stopping, so the tusks find him (11-12/12 at x1)
   pine: { strokes: 4, fall: 0.7, len: 7, heroDmg: 10, lie: 20, rearm: 14 },   // lie: a trunk that missed him lies across the floor this long (a wall to him; a charge that rams it splinters it sooner); rearm: s until the treeline gives up another marked pine where a spent one stood (0 = never)
 };
 export const OT_SAY = { wake: 'OLD TUSKER', rule: 'FELL A PINE: ON HIM, PINNED. IN HIS PATH, HE RAMS IT.', p2: 'HIS BLOOD IS UP', pinned: 'PINNED', dazed: 'HE RAMS THE TRUNK',

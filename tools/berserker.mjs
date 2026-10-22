@@ -150,7 +150,7 @@ try {
     ok(T.seen.join() === '1,2,3' && T.at[1] - T.at[0] >= 0.4 && T.at[2] - T.at[1] >= 0.4, 'tiers: the hold climbs T1, T2, T3 at least 0.4 s apart: ' + JSON.stringify(T));
     ok(T.keys.includes('bzWind2') && T.keys.includes('bzWind3'), 'tiers: T2 and T3 held show their own wind-up poses: ' + JSON.stringify(T.keys));
     ok(T.t1 === 1 && T.t2 === 2 && T.t3 === 3 && T.t3b === 3, 'tiers: let go on T1/T2/T3, that tier comes down: ' + [T.t1, T.t2, T.t3, T.t3b]);
-    ok(T.t2key && T.behind > 0, 'tiers: THE WHEEL cuts the foe BEHIND him, in its own frames: ' + JSON.stringify({ key: T.t2key, behind: T.behind }));
+    ok(T.t2key && T.behind > 0, 'tiers: THE WHIRL cuts the foe BEHIND him, in its own frames: ' + JSON.stringify({ key: T.t2key, behind: T.behind }));
     ok(T.t3key && T.split.floored && T.split.hit > 0, 'tiers: the GROUND-SPLITTER splits the floor: a foe out past the axes is hit and knocked down: ' + JSON.stringify(T.split) + ' ' + T.t3key);
     ok(T.p3 > T.p1, 'tiers: the GROUND-SPLITTER leans harder on a mini\'s bar than the overhead chop: ' + [T.p1, T.p3]);
     ok(T.atHot[2] < T.at[2] - 0.15, 'tiers: RAGE winds them quicker: ' + JSON.stringify([T.at, T.atHot]));

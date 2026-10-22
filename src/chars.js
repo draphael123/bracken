@@ -5735,7 +5735,7 @@ function bzKitPoses(F, sh) {
   F.bzRoar = [KF({ dy: 1, legs: 'wide', ...lead(1, 4, -4, 9, -1), ...off(-4, 4, -9, 9, -1), plume: 0 }),
     KF({ dy: -1, legs: 'wide', sho: 1, hy: -1, ...lead(3, -8, 5, -17), ...off(-3, -8, -5, -17), plume: 2, bits: [o(2, -4, R), o(4, -5, R), o(5, -3, R)] })];
   /* ==== THE RAGE WIND-UP (claude/chargetiers, greybox - the art lane redraws): held past the double chop's wind, his body changes with the blow.
-     bzWind2 (T2 THE WHEEL held): coiled low and twisted away, both axes swept back level behind him for the turn - two shaking beats.
+     bzWind2 (T2 THE WHIRL held): coiled low and twisted away, both axes swept back level behind him for the turn - two shaking beats.
      bzWind3 (T3 GROUND-SPLITTER held): up on his toes, both axes high over his head together, a red glow at the heads - two shaking beats.
      bzTier2 (the cleave): the axes out level, turning - ahead, through behind (his back to them), round again, the follow - four frames.
      bzTier3 (the splitter): both axes over the top, down, and BURIED in the floor ahead with him crouched over the hafts - three frames. ==== */
