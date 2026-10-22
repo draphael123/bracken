@@ -94,7 +94,10 @@ export async function openPage(opts = {}) {
   await send('Runtime.enable'); await send('Page.enable');
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
-  if(opts.fonts===false){await send('Network.enable');await send('Network.setBlockedURLs',{urls:['https://fonts.googleapis.com/*','https://fonts.gstatic.com/*']});}
+  const blocked = [];
+  if (opts.fonts === false) blocked.push('https://fonts.googleapis.com/*', 'https://fonts.gstatic.com/*');
+  if (opts.audioFiles === false) blocked.push(URL0 + 'audio/*');   /* layout-only tools still initialize audio to hide its banner, but decode no clips */
+  if (blocked.length) { await send('Network.enable'); await send('Network.setBlockedURLs', { urls: blocked }); }
   /* opts.seed: THE PAGE'S Math.random IS A SEEDED STREAM, from the first script of every document (so it survives pg.reload()). The sim is
      fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
@@ -107,6 +110,20 @@ export async function openPage(opts = {}) {
   let ready = false;
   for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; }); if (!ready) await sleep(250); }
   if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
+  /* A lab can load a hundred complete sprite sets in one synchronous evaluation. V8 does not promptly collect their native
+     backing allocations. Collect after boot and each lab BK.load, without advancing simulation or changing the game's loader.
+     The load-leak audit explicitly opts out: its no-forced-GC control must remain a real no-forced-GC control. */
+  const prepareLab = async () => {
+    if (opts.noWait || process.env.BRACKEN_LAB_GC === '0') return;
+    if (opts.gcLoads !== false) await evalp(`(()=>{
+      if (typeof gc !== 'function' || !window.BK || BK.load.__labGc) return false;
+      const load = BK.load;
+      BK.load = function(...args) { try { return load.apply(this, args); } finally { gc(); } };
+      BK.load.__labGc = true; return true;
+    })()`);
+    await send('HeapProfiler.collectGarbage');
+  };
+  await prepareLab();
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port', 10000);
@@ -122,6 +139,7 @@ export async function openPage(opts = {}) {
       if (!ready) await sleep(100);
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
+    await prepareLab();
   };
   return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); if (server) server.kill(); return loan ? loan.close() : run.close(); } };
   } catch (e) { closeConnection(); if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }

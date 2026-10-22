@@ -99,6 +99,12 @@ export function launchBrowser(exe, args, kind = 'look') {
      (0 = no cap); a tool that passes its own --js-flags keeps it. Native memory (canvas backing, GPU, ArrayBuffers) is outside V8's heap and not capped. */
   const heapMb = process.env.BRACKEN_HEAP_MB === undefined ? 2048 : +process.env.BRACKEN_HEAP_MB;
   if (heapMb > 0 && !args.some(a => /^--js-flags/.test(a))) args = [...args, '--js-flags=--max-old-space-size=' + heapMb];
+  /* Test pages can explicitly collect abandoned bake objects between loads. This flag affects only throwaway lab browsers. */
+  if (process.env.BRACKEN_LAB_GC !== '0') {
+    const i = args.findIndex(a => /^--js-flags=/.test(a));
+    if (i < 0) args = [...args, '--js-flags=--expose-gc'];
+    else if (!args[i].includes('--expose-gc')) args = args.map((a, n) => n === i ? a + ' --expose-gc' : a);
+  }
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }
   let exited = false, closingRequested = false, failure = null, sampling = false;

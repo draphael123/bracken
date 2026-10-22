@@ -38,6 +38,13 @@ timers. Previously a dead browser could leave an evaluation waiting up to 30 min
 checker could not reach its final summary. This fixes the recovery stall; a game memory leak still
 needs measured attribution and a cause-based fix in its harness.
 
+The parent also stops its recorded check child if it swallows a disconnect and keeps polling.
+Ordinary lab pages collect abandoned bake objects after boot and each BK.load, including after a
+reload. The allocation-growth audit explicitly opts out of per-load collection, preserving its
+no-forced-GC control and every growth assertion. BRACKEN_LAB_GC=0 disables the lab collection hook.
+This is a tool-only change; the game's production loader is unchanged. Layout tools may request
+audioFiles:false to initialize the sound banner state without decoding recorded audio files.
+
 Validation tools:
 
 ```powershell

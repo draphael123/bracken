@@ -17,9 +17,13 @@ try {
   assert.ok(up, 'the self-test server started');
   browser = launchBrowser(browserExecutable(), ['--headless=new', '--remote-debugging-port=auto', '--no-first-run', 'about:blank'], 'look');
   process.env.BRACKEN_BROWSER_PORT = String(await browser.devtoolsPort());
-  const first = await openPage({ port, audio: false, fonts: false });
-  try { await first.evalp("localStorage.setItem('bracken-context-selftest', 'must not cross')"); } finally { await first.close(); }
+  const first = await openPage({ port, audio: false, fonts: false, gcLoads: false });
+  try { await first.evalp("localStorage.setItem('bracken-context-selftest', 'must not cross')");
+    assert.equal(await first.evalp('!!BK.load.__labGc'), false, 'the leak audit can keep its no-forced-GC control');
+  } finally { await first.close(); }
   const second = await openPage({ port, audio: false, fonts: false });
-  try { assert.equal(await second.evalp("localStorage.getItem('bracken-context-selftest')"), null); } finally { await second.close(); }
+  try { assert.equal(await second.evalp("localStorage.getItem('bracken-context-selftest')"), null);
+    assert.equal(await second.evalp('!!BK.load.__labGc'), true, 'ordinary labs collect abandoned bake allocations between loads');
+  } finally { await second.close(); }
   console.log('ok  check-context-selftest  consecutive borrowed pages have separate storage');
 } finally { delete process.env.BRACKEN_BROWSER_PORT; if (browser) await browser.close(); server.kill(); }

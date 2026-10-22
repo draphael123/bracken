@@ -6,7 +6,7 @@ import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
-import { launchBrowser } from './browser-profile.mjs';
+import { killTreeSync, launchBrowser } from './browser-profile.mjs';
 import { browserExecutable } from './cdp.mjs';
 
 /* Alone after the pool: measured frame rate changes when another lab has the GPU; the online test opens TWO browsers;
@@ -67,17 +67,28 @@ export function execute(job, root, port) {
     const t0 = Date.now(), attempt = randomUUID(), stdout = [], stderr = [], child = spawn(job.cmd, job.args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env, ...job.env, BRACKEN_CHECK: job.name, BRACKEN_ATTEMPT: attempt, PORT: String(port) } });
     if (job.onStart) job.onStart(child.pid);
-    let timedOut = false, error = null, done = false, outBytes = 0, errBytes = 0;
+    let timedOut = false, error = null, done = false, outBytes = 0, errBytes = 0, forcedInterruption = null;
+    /* Some checks catch a failed evaluation and keep polling readiness. A dead browser cannot satisfy that poll.
+       End ONLY this recorded child and keep its attempt without a verdict, even if its own catch hides the disconnect. */
+    const disconnectGuard = setInterval(() => {
+      if (done || forcedInterruption) return;
+      let reason = job.browserRun?.failure;
+      if (!reason && process.env.BRACKEN_PROCESS_LOG) try {
+        const rows = readFileSync(process.env.BRACKEN_PROCESS_LOG, 'utf8').trim().split('\n').filter(Boolean).map(JSON.parse);
+        reason = rows.find(e => e.attempt === attempt && e.type === 'interrupted')?.reason;
+      } catch {}
+      if (reason) { forcedInterruption = reason; killTreeSync(child.pid); }
+    }, 1000); disconnectGuard.unref();
     /* spawnSync's 1 MiB limit was part of the old verdict: a runaway tool failed instead of filling RAM. */
     child.stdout.on('data', b => { outBytes += b.length; if (outBytes > 1048576) { error = new Error('stdout maxBuffer length exceeded'); child.kill(); } else stdout.push(b); });
     child.stderr.on('data', b => { errBytes += b.length; if (errBytes > 1048576) { error = new Error('stderr maxBuffer length exceeded'); child.kill(); } else stderr.push(b); });
     const timer = job.timeout ? setTimeout(() => { timedOut = true; child.kill(); }, job.timeout) : null;
     child.on('error', e => { error = e; });
-    child.on('close', code => { if (done) return; done = true; if (timer) clearTimeout(timer);
+    child.on('close', code => { if (done) return; done = true; clearInterval(disconnectGuard); if (timer) clearTimeout(timer);
       const lines = (Buffer.concat(stdout).toString('utf8') + Buffer.concat(stderr).toString('utf8') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
       let events = [];
       try { events = readFileSync(process.env.BRACKEN_PROCESS_LOG, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)).filter(e => e.attempt === attempt); } catch {}
-      const interrupted = events.find(e => e.type === 'interrupted');
+      const interrupted = events.find(e => e.type === 'interrupted') || (forcedInterruption ? { reason: forcedInterruption } : null);
       const memory = { totalMb: Math.max(0, ...events.map(e => e.peak?.totalMb || 0)), rendererMb: Math.max(0, ...events.map(e => e.peak?.rendererMb || 0)) };
       resolveResult({ name: job.name, ok: code === 0 && !timedOut && !error && !interrupted, ms: Date.now() - t0, memory,
         ...(interrupted || (code === null && !timedOut && !error) ? { interrupted: true } : {}),
@@ -133,7 +144,8 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
         if (prior && (prior.run.exited || prior.run.failure || prior.used >= recycleEvery)) { await prior.run.close(); shared.delete(browserSlot); }
         if (!shared.has(browserSlot)) shared.set(browserSlot, { ...await startBrowser(), used: 0 });
         env = { ...env, BRACKEN_BROWSER_PORT: String(shared.get(browserSlot).port) }; }
-      const result = await execute({ ...job, env, onStart: pid => onStart(job.name, pid) }, ROOT, portFor(slot));
+      const result = await execute({ ...job, env, browserRun: browserSlot !== null ? shared.get(browserSlot).run : null,
+        onStart: pid => onStart(job.name, pid) }, ROOT, portFor(slot));
       if (browserSlot !== null) {
         const b = shared.get(browserSlot); b.used++;
         result.memory = { before: b.before || null, after: await b.run.sampleMemory(), peak: b.run.peak, browserPid: b.run.child.pid };
