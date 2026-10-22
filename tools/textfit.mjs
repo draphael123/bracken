@@ -390,7 +390,7 @@ async function main() {
      scope's loads (talk: 37 per hero, boss/plates: ~48) grew past 3 GB (a boss level costs ~250 MB: 90 drawn frames each; a talk load ~60 MB). The long scopes now run in batches of
      levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB, and the
      page is closed and reopened between batches. Same levels, same checks, same order in the report; each batch's issues and shots are merged below like any other part. */
-  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 4 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
+  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 1 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
   let allIds = await pg.evalp("import('/src/level.js').then(m => m.LEVELS.filter(l => (!l.hidden || l.secret) && l.id !== 'custom').map(l => l.id))", 60000);
   if (input.levels) allIds = allIds.filter(id => input.levels.includes(id));
   for (let k = units.length - 1; k >= 0; k--) { const u = units[k]; if (!BATCHED.includes(u.sc) || allIds.length <= batchOf(u.sc)) continue;

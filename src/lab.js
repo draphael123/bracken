@@ -2392,7 +2392,13 @@ async function runbossLab(BK, opts) {
             if (Math.abs(P.x - at) < 10 && P.atk < 0) { goal = null; P.face = -side; k.block = false; BK.press('atk'); swings++; } else goal = at; }
           else if (arrow) { goal = null; P.face = Math.sign(arrow.x - P.x) || P.face; if (SHIELDED(h)) k.block = true; else if (DEFLECTS(h)) k.block = DEFLECT_TAP(f); else if (P.ground) { BK.press('jump'); P.labJump = 10; } }
           else if (add && Math.abs(add.x - P.x) < 6 && P.atk < 0) { goal = add.x + (Math.sign(P.x - add.x) || -P.face) * 16; }   /* (claude/abbot2) one standing ON you is stepped off first: a cut at nothing but its own feet met air (the pirate, 3 of his 4 misses at the far end of the floor) */
-          else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) { if (keyVerb(BK, h, add) === 'sweep') k.down = true; BK.press('atk'); swings++; } }   /* HIS CONGREGATION IS SMALL (family 'small'): the low sweep, same as the Mother's sporelings (see the ledger's own comment) - this is the spire/abbot pilot's own add-branch, and the plain cut it threw before missed the knight 6 of 16 (tools/small-adds.mjs) */
+          else if (add) { P.face = Math.sign(add.x - P.x) || P.face; goal = Math.abs(add.x - P.x) > LAB_REACH[h] ? add.x - P.face * (LAB_REACH[h] - 4) : null; if (Math.abs(add.x - P.x) <= LAB_REACH[h] + 6 && P.atk < 0) {
+            /* The Abbot's special hands bypassed the generic small-foe height check. A low poke cannot hit a
+               sprig mid-hop or on the ledge below. Wait for its body to meet the actual sweep/cut band. */
+            const top = add.y - (add.h || 8) - P.y, foot = add.y - P.y;
+            const low = P.ground && foot >= -8 && top <= 2, high = foot >= -12 && top <= -1;
+            if (low || high) { k.down = low && keyVerb(BK, h, add) === 'sweep'; BK.press('atk'); swings++; }
+          } }   /* HIS CONGREGATION IS SMALL: the actual low-sweep / cut bands, with the original miss ledger unchanged */
           else goal = bl.x + (boss.x > bl.x ? -20 : 20);                          /* wait on the far side, so his chain hauls him under it */
           if (P.labJump > 0) { P.labJump--; k.jump = true; }
         } else { goal = boss.x; strike = true; } }

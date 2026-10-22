@@ -63,7 +63,11 @@ if (want.length) {
     out = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');const res={};
       const PORT=${T.PORT}, AIR=${T.AIR};
       const cell=(c,y)=>BK.L.grid[y*BK.L.W+c];
-      const load=(id)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=false;BK.sim(5);};
+      /* An unattended ore cart kills the works sentry in 0.5 s. This controlled alarm test parks unrelated carts;
+         it still drives the real sentry, bell, gate, garrison, timeout and death reset, with every assertion unchanged. */
+      const load=(id)=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.setHero('knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));
+        for(const m of BK.movers())if(m.kind==='cart'){m.auto=false;m.rolling=false;m.vx=0;}
+        BK.state='play';BK.god=false;BK.sim(5);};
       const hold=()=>{if(BK.state==='card')BK.cardClose();BK.P.hp=BK.P.maxHp;BK.P.inv=0.5;};
       const show=(s)=>{BK.P.x=s.x+(s.face||1)*24;BK.P.y=s.y;BK.P.vx=0;BK.P.vy=0;};   /* inside his 34 px: he sees you whichever way he faces */
       const ringBy=(sec,s,frames)=>{show(s);let ran=false;for(let i=0;i<frames;i++){hold();BK.sim(1);if(s.mode==='run')ran=true;if(sec.on)return {ran,f:i};}return {ran,f:null};};

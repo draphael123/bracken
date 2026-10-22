@@ -34468,7 +34468,7 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
-  if (state === 'play' || (state === 'talk' && !talkOverHud) || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
+  if (state === 'play' || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* talk pauses play: its reading panel owns the foreground, without HUD prompts over the level's words */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
@@ -34630,7 +34630,7 @@ function render() {
       text(lab, VW - 10, 34, done ? '#ffd36b' : '#c9b27c', 'right', 6, HS);
       if (ic) g.drawImage(ic, VW - 12 - lw - 10, 31); } }
     if (P.hp > 0 && P.hp <= 30 && state === 'play') { const k = 0.5 + 0.5 * Math.sin(time * (P.hp <= 15 ? 11 : 7)); const vg = g.createRadialGradient(VW / 2, VH / 2, 70, VW / 2, VH / 2, 200); vg.addColorStop(0, 'rgba(180,20,20,0)'); vg.addColorStop(1, 'rgba(180,20,20,' + (0.18 + 0.22 * k) + ')'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (state === 'play' && SET.timer && !(L && L.shop)) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
+    if (state === 'play' && SET.timer && !(L && L.shop) && !introCardUp()) { const ts = fmt(levelTime), tw = inkW(ts, 8) + 12, tx = Math.round(topMid(tw));
       g.globalAlpha = UIH.idleAlpha(levelTime, 6, 2, 0.5); if (!hudMin) { g.fillStyle = 'rgba(10,8,20,0.34)'; g.beginPath(); g.roundRect(tx - tw / 2, 2, tw, 13, 3); g.fill(); } hudRects.push([tx - tw / 2, 2, tw, 13]);
       text(ts, tx, 5, '#e8dcc0', 'center', 8, 'outline'); g.globalAlpha = 1; }   /* (thin Silkscreen over the world: a 1px dark outline, not a plate) */
     if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }

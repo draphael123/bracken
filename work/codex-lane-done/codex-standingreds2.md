@@ -18,7 +18,7 @@ Dependencies: Task 1 and Task 2 checker/CI commits are included as prerequisites
   deliberate game commit, not a tolerance relaxation.
 - Gargoyle fixture sampled only AFTER its 20-frame strike. It missed the entire crash while seeing the subsequent
   stun. It now observes during the strike too. The original crash, caught, duration and miss assertions remain.
-- Levelcard was omitted from textfit's load batching. Added four-level batches, preserving every campaign level,
+- Levelcard was omitted from textfit's load batching. Added one-level batches, preserving every campaign level,
   all screen assertions and report order. Layout pages now block recorded audio files before initialization: they
   still dismiss the sound banner, but do not decode 867 unrelated clips. The normal audio tests remain unchanged.
 - Spire used width-specified masonry piers but the shared kind `pier` selected the Church renderer first. All 32
@@ -65,7 +65,27 @@ free and the guard stopped only their own browsers. They are not counted as eith
 
 - Poise migration: recommend keeping the exact formula assertions tied to `97206a12`; built that migration
   and actual tagged blows, with no game stat changes.
-- Local memory: recommend cloud proofs while other lanes can consume nearly all RAM. Built recorded-PID guards
-  and a separate branch proof workflow. Full local serial equivalence is still explicitly outstanding.
+- Local memory: recommend recorded-PID safeguards and cloud proofs. No other Bracken runs were verified;
+  the October 22 process inventory found no active Bracken test browser. Full local serial equivalence remains outstanding.
+
+## Second cause-fix checkpoint
+
+- Dialogue now owns the foreground while open: the HUD is hidden in talk state. This resolves overlapping
+  Stockade combat prompts and the Falling Tower/Fair HUD digit that overlapped sign detection. The strict
+  checker is unchanged. Local receipt `talk-fixed-proof/receipt.json`: three passes, 318 screens / 1058 strings
+  each, all six heroes, no COVERS or COLLIDE findings.
+- The level intro hides the clock during its name card; its counting is unchanged. Four-level layout batches
+  still crossed the 1536 MB renderer limit on the second cloud repetition, so levelcard now closes the page
+  after each level. All 48 campaign screens and assertions remain; the interrupted attempt is not a pass.
+- Abbot's special lab add handler bypassed the generic small-foe height test. It now waits for the actual
+  cut/sweep hit band before spending a swing. The original miss ledger and one-third threshold are unchanged.
+  First local run passed (127186 ms); three consecutive passes remain to be verified.
+- Bells fixture: a route cart hit the alarm sentry for 30 damage at about 0.516 seconds (22 HP), before it
+  could ring. The controlled alarm fixture parks unrelated carts before simulation. All sentry, bell, gate,
+  garrison, timeout and reset assertions remain, and production carts/placements/behaviour are unchanged.
+  First local run passed; three consecutive passes remain to be verified.
+- Cloud run https://github.com/draphael123/bracken/actions/runs/39785422615 proved three consecutive passes
+  for Berserker, Dune Worm, rule-openings, Reed Island, and strict visible supports. Curve-gate exited zero
+  three times but printed stale rows, so it does not satisfy the requested curve work yet.
 
 These recommendations do not require a reply before safe independent work continues.
