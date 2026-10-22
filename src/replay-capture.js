@@ -20,7 +20,7 @@ export function createReplayCapture(BK, io) {
  let data=null,replaying=false,index=0,rng=null,drawing=false,running=false,paused=false,lastError=null;
  const controller={options:{hud:true,debug:false,namecards:true},
   get active(){return !!data;},get frame(){return index;},get error(){return lastError;},
-  async record({level=BK.L.id,hero=BK.P.hero,seed=1919,...options}={}){
+  async record({level=BK.trans.levelId(),hero=BK.P.hero||BK.PROG.hero||'knight',seed=1919,...options}={}){
    return begin({kind:'bracken-input-replay',version:REPLAY_VERSION,rate:60,level,hero,seed:seed>>>0,
     progress:copy(BK.PROG),settings:copy(BK.SET),view:[BK.view.VW,BK.view.VH],frames:[]},false,options);
   },
