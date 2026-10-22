@@ -26,6 +26,7 @@ const pg = await openPage({ audio: false, fonts: false, seed: 20261007 });
 const FIGHT = String.raw`async (row, secs) => {
   BK.manualSimulation = true; const M = await import('/src/marks.js');
   const go = row.kind === 'mini' ? row.level + ':mini' : row.t; if (!BK.bossJump.go(go)) return { err: 'go failed' };
+  if(window.__brackenLabCollect)await window.__brackenLabCollect(); // Boss jump retires art internally rather than through the exposed BK.load helper.
   const live = () => row.kind === 'mini' ? BK.miniActive : BK.bossActive;
   const find = () => BK.enemies().find(q => q.t === row.t && q.alive && (row.kind === 'boss' || q.mini || q.t === 'greathound'));
   let f = 0; for (; f < 900 && !live(); f++) { BK.P.inv = 99; BK.sim(1); }
@@ -75,6 +76,7 @@ try {
   for (const row of table) {
     if (ONLY.length && !ONLY.includes(row.t)) continue;
     let r; try { r = await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(row) + ',' + SECS + ')', 900000); } catch (err) { r = { err: String(err.message || err).slice(0, 160) }; }
+    await pg.send('Memory.simulatePressureNotification',{level:'critical'}); // Return unused native caches between the original ordered fights.
     if (r.err) { report.push(row.t.padEnd(14) + ' SKIPPED: ' + r.err); continue; }
     const keys = Object.keys(r.rows);
     for (const k of keys) { const x = r.rows[k]; const bad = [];

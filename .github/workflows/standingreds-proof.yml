@@ -4,11 +4,26 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory]
         default: prove
 permissions:
   contents: read
 jobs:
+  mark-memory:
+    if: inputs.mode == 'mark-memory'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/lab-memory-check.mjs mark-integrity
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mark-memory-proof
+          path: gate-data/
   hidden-memory:
     if: inputs.mode == 'hidden-memory'
     runs-on: ubuntu-latest
