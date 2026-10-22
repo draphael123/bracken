@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare, mobile, calls, present, campaign]
+        options: [profile, sfx, compare, mobile, calls, present, campaign, variant]
         default: profile
       present:
         type: choice
@@ -13,6 +13,29 @@ on:
 permissions:
   contents: read
 jobs:
+  variant:
+    if: inputs.mode == 'variant'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [sky-direct, gradient-direct, room-uncull]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/renderer-campaign-proof.mjs 1 --only=witchlight --variant="$VARIANT"
+        env:
+          VARIANT: ${{ matrix.variant }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: renderer-variant-${{ matrix.variant }}
+          path: gate-data/
   campaign:
     if: inputs.mode == 'campaign'
     runs-on: ubuntu-latest
