@@ -144,7 +144,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
-import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
+import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js'; import * as FPA from './redraw/fen_planks_art.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; import * as FCA from './redraw/frog_court_art.js'; /* (claude/frogking2art) THE CROAKING COURT's art: royal pads, reeds, lanterns, the stir, the leap's splash, the tongue */ /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt, stationAt as frogStationAt, nextStation as frogNextStation } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
@@ -31152,6 +31152,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     if (!surfaceOnly) {
       if (p.fire) { drawFirePool(p, x0, x1, y, h, cx, cy, false); continue; }
       if (p.capped || p.streetTide || p.clear) continue; // rock over it, a tide standing on real ground, or any water you can see the bottom of: it goes OVER what is in it, or it would be a blue rectangle
+      if (p.mud && p.peat && L.fenroad) { FPA.drawPeat(g, p, x0, x1, y, h, cx, cy, time, false); continue; }   /* (claude/fenroad2art) THE PEAT HOLE: its own black bog, not the field's mud */
       if (p.mud) { UBT.drawMud(g, p, x0, x1, y, h, cx, time, false); continue; }   /* the field's trenches hold mud, not blue water */
       if (p.shallow) {
         const d = p.depth || 22;
@@ -31171,6 +31172,7 @@ function drawWater(cx, cy, surfaceOnly = false) {
     }
     if (p.swim && !p.shallow) { g.globalAlpha = p.wash ?? (p.capped ? 0.42 : p.runTide ? 0.46 : p.streetTide ? 0.46 : p.clear ? 0.5 : 0.5); g.fillStyle = p.harm ? (p.foulColD || '#3a4a1e') : sea ? '#2e7a88' : '#3b7fae'; g.fillRect(x0, y + 3, x1 - x0, h - 3); g.globalAlpha = 1;
       if ((p.capped || p.streetTide || p.runTide || p.clear) && p.grad !== false) { const gr2 = g.createLinearGradient(0, y, 0, y + h);   /* a pool that is a whole LEVEL tall carries its own depth gloom instead */ gr2.addColorStop(0, 'rgba(10,26,32,0.45)'); gr2.addColorStop(0.3, 'rgba(10,26,32,0)'); gr2.addColorStop(1, 'rgba(6,16,22,0.5)'); g.fillStyle = gr2; g.fillRect(x0, y, x1 - x0, h); } } // over whoever is swimming in it: they are IN the water
+    if (p.mud && p.peat && L.fenroad) { FPA.drawPeat(g, p, x0, x1, y, h, cx, cy, time, true); continue; }
     if (p.mud) { UBT.drawMud(g, p, x0, x1, y, h, cx, time, true); continue; }
     if (p.shallow) { // the water itself, over the legs of whoever is wading; lighter near the surface
       const gr = g.createLinearGradient(0, y, 0, y + h); gr.addColorStop(0, 'rgba(90,175,215,0.5)'); gr.addColorStop(1, 'rgba(40,110,150,0.55)');

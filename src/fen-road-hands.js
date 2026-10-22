@@ -19,7 +19,7 @@
 //     a hero, or just gone under.
 // GREYBOX ART (readable; the art lane draws it - see the lane report's ART NOTES). main.js calls: reset, on, update, strike, drawSky, drawWorld, read,
 // and the troll's hands call sectionAt, collapse, rip, fixSafe.
-import * as FRA from './redraw/fen_road_art.js';   /* (claude/fenroadart) the boardwalk kit's drawing */
+import * as FRA from './redraw/fen_road_art.js'; import * as FPA from './redraw/fen_planks_art.js';   /* (claude/fenroadart) the boardwalk kit's drawing */
 export const SAG = { bow: 0.5, hold: 1.1, holdArena: 3.6, holdLaid: 2.2, under: 3.2, regrow: 14, rise: 0.6, droop: 4, stomp: 0.45, astir: 0.8, edge: 20 };
 export const CREW = { every: 0.85, near: 260 };
 export const UNDERTOW = { near: 150, bubble: 1.4, arm: 1.0 };
@@ -189,17 +189,14 @@ export function makeFenRoadHands(ctx) {
       FRA.drawLashing(g, x, yb, s ? X(s.x0 * TS + 1) : x, s ? Y(s.row * TS + 2) : yb, l.cut || !s, loaded, time); }
     /* THE BOWED SECTIONS: rotten boards that bend, shiver at the end, go under, and float back */
     /* (claude/fenroad2) THE BROKEN STRETCHES: snapped board-ends at either lip, the old road's boards sunk under the bog (GREYBOX: the art lane draws the peat hole) */
-    for (const b of S.broken) { if (b.laid) continue; const x0 = X(b.x0 * TS), x1 = X((b.x0 + b.w) * TS); if (x1 < -20 || x0 > VWp + 20) continue; const y = Y(b.row * TS);
-      g.fillStyle = '#3e2c1c'; g.fillRect(x0 - 2, y, 4, 5); g.fillRect(x1 - 2, y, 4, 5); g.fillStyle = '#8a6a40'; g.fillRect(x0, y + 1, 5, 2); g.fillRect(x1 - 5, y + 1, 5, 2);
-      g.fillStyle = '#2a1e12'; for (let i = 1; i < b.w - 1; i += 2) g.fillRect(x0 + i * TS + 3, Y(19 * TS + 6) + (i % 3), 10, 2);
-      g.globalAlpha = 0.35 + 0.15 * Math.sin(time * 2 + b.x0); g.fillStyle = '#1a140c'; g.fillRect(x0 + 2, Y(19 * TS), x1 - x0 - 4, 3); g.globalAlpha = 1; }
+    for (const b of S.broken) { if (b.laid) continue; const x0 = X(b.x0 * TS), x1 = X((b.x0 + b.w) * TS); if (x1 < -40 || x0 > VWp + 40) continue; FPA.drawBroken(g, x0, x1, Y(b.row * TS), b.w, time, b.x0); }   /* (claude/fenroad2art) snapped board ends, the crew's stake, sunk boards; the bog itself is the peat painter (FPA.drawPeat) */
     for (const s of S.sags.values()) { const x0 = X(s.x0 * TS); if (x0 > VWp + 20 || x0 + s.w * TS < -20) continue; const y = Y(s.row * TS);
       if (s.jolt > 0) s.jolt -= 1 / 60;
       const up = s.st === 'up' || s.st === 'bow', b = s.st === 'bow' ? Math.min(1, s.t / SAG.bow) : 0, shiver = s.st === 'bow' && s.t > s.hold * 0.7 ? (Math.floor(time * 30) % 2) : 0;
       for (let i = 0; i < s.w; i++) { const wreck = s.st === 'gone' && s.hole && (s.x0 + i < s.hole[0] || s.x0 + i > s.hole[1]), u = (i + 0.5) / s.w * 2 - 1, off = up ? b * SAG.droop * (1 - u * u) + shiver : wreck ? 3 + (i ? 1 : 0) : 0, yy = up || wreck ? y + off + (up ? (1 - s.vis) * 8 : 0) : Y(19 * TS + 3);
         if (s.piles && s.piles.includes(s.x0 + i)) continue;
-        FRA.drawBoard(g, x0 + i * TS, yy + (s.jolt > 0 && up ? 1 : 0), i, s.w, s.arena, up || wreck ? 1 : 0.4, wreck);
-        if (s.laid && (up || wreck)) { g.fillStyle = '#e8c27a'; g.globalAlpha = 0.35; g.fillRect(x0 + i * TS, R(yy), TS, 1); g.globalAlpha = 1; } }   /* (claude/fenroad2) a LAID plank: fresh-cut, a pale top edge (the art lane draws it) */
+        if (s.laid && !wreck) FPA.drawLaidBoard(g, x0 + i * TS, yy + (s.jolt > 0 && up ? 1 : 0), i, s.w, up ? 1 : 0.4); else FRA.drawBoard(g, x0 + i * TS, yy + (s.jolt > 0 && up ? 1 : 0), i, s.w, s.arena, up || wreck ? 1 : 0.4, wreck);
+      }   /* (claude/fenroad2) a LAID plank: fresh-cut, a pale top edge (the art lane draws it) */
       if (s.st === 'under' || s.st === 'gone') FRA.drawSunk(g, x0, s.w * TS, Y(19 * TS), time); else if (s.st === 'bow' && s.t > 0.2) FRA.drawDrips(g, x0, s.w * TS, y + 8, time);
       /* ITS LOAD (the crew's barricade): road-planks stacked on end, roped; and its foot in the section's own row */
       for (const [lx, ly] of [...s.load, ...s.load.filter(([, q]) => q === s.row - 1).map(([q]) => [q, s.row])]) { if (!ctx.solidAt(lx, ly)) continue;

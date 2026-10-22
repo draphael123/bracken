@@ -9,7 +9,7 @@
 //   E with a plank and no broken edge in front of you SETS IT DOWN. A blow on you, or the water, makes you drop it.
 // PURE but for ctx (main.js builds it): L(), P(), keys(), enemies(), fen() (the road's hands: slotAhead, lay), solidPx(x, y, falling), number, text, burst, dust,
 //   sfx, hint(msg), told() / tell(), hurtFoe(e, d, x), topple(e) -> bool
-import * as CT from './carry-throw.js';
+import * as CT from './carry-throw.js'; import * as FPA from './redraw/fen_planks_art.js';   /* (claude/fenroad2art) the bundle, the plank, the ghost */
 export const PLANK = { reachX: 16, reachY: 18, dmg: 6, stagger: 0.9, col: '#e8c27a', len: 7, keep: 4, layT: 0.35, throwT: 0.25 };
 export const PLANK_SAY = { take: 'A PLANK: E LAYS IT, ATTACK THROWS IT', laid: 'THE PLANK IS DOWN', dropped: 'A BLOW: YOU DROP THE PLANK', lost: 'THE FEN TAKES THE PLANK', down: 'YOU SET THE PLANK DOWN', stagger: 'THE PLANK STAGGERS IT' };
 export const PLANK_HINT = 'E TAKES A PLANK. CARRIED, YOU ARE SLOW AND CANNOT SWING. E AT A BROKEN EDGE LAYS IT ACROSS; ATTACK THROWS IT - A STILT-WALKER LOSES HIS STILTS.';
@@ -98,21 +98,17 @@ export function makeFenPlanks(ctx) {
     g.fillStyle = '#6a4a2a'; for (let k = -w + 6; k < w; k += 11) g.fillRect(k, -1, 3, 1); g.restore(); };
   W.draw = (g, cx, cy, time) => {
     if (!W.on()) return; const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-    /* THE BUNDLES: the crew's planks stacked and roped on two trestles, a pale glint sweeping them (a thing to take) */
-    for (const b of bundles) { const x = R(b.x - cx), y = R(b.y - cy); if (x < -60 || x > 2000) continue;
-      rc(x - 13, y - 4, 2, 4, '#3e2c1c'); rc(x + 11, y - 4, 2, 4, '#3e2c1c');
-      for (let k = 0; k < 4; k++) { rc(x - 15, y - 7 - k * 3, 30, 3, '#3e2c1c'); rc(x - 14, y - 7 - k * 3, 28, 2, k % 2 ? '#a07a48' : '#b88a50'); rc(x - 14, y - 7 - k * 3, 28, 1, '#d0a868'); }
-      rc(x - 8, y - 17, 2, 13, '#dcc88c'); rc(x + 6, y - 17, 2, 13, '#dcc88c');
-      const ph = (time * 0.6 + b.x * 0.01) % 1; if (ph < 0.25) { g.globalAlpha = 0.8; rc(x - 14 + R(ph / 0.25 * 28), y - 17, 2, 13, '#fff6d8'); g.globalAlpha = 1; } }
+    /* THE BUNDLES (claude/fenroad2art): the stack on its sawhorses, roped, a glint sweeping it */
+    for (const b of bundles) { const x = R(b.x - cx), y = R(b.y - cy); if (x < -60 || x > 2000) continue; FPA.drawBundle(g, x, y, time, b.x); }
     for (const q of items) { const x = q.x - cx, y = q.y - cy;
-      if (q.state === 'held') plankAt(g, x, y, 1.6, 0);
-      else if (q.state === 'fly') plankAt(g, x, y, 1.6, q.spin || 0);
-      else if (q.state === 'rest') { plankAt(g, x, y - 2, 1.6, 0); if (!held(ctx.P())) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 5 + q.x); rc(x - 14, y - 6, 28, 1, '#fff6d8'); g.globalAlpha = 1; } } }
+      if (q.state === 'held') continue;   /* a carried plank is drawn with the hero's arms (drawHeld, src/redraw/hero_plank_poses.js) */
+      else if (q.state === 'fly') FPA.drawPlank(g, x, y, q.spin || 0, 1);
+      else if (q.state === 'rest') { FPA.drawPlank(g, x, y - 3, 0, 1); if (!held(ctx.P())) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 5 + q.x); rc(x - 15, y - 8, 30, 1, '#fff6d8'); g.globalAlpha = 1; } } }
     const P = ctx.P();
     if (near && ctx.text) ctx.text('E: A PLANK', R(near.x - cx), R(near.y - cy) - 30, PLANK.col, 'center');
     /* WHERE IT WILL GO DOWN: a ghost plank across the broken stretch in front of you, and the word */
     if (ahead && P) { const x0 = ahead.x0 * TS - cx, x1 = (ahead.x1 + 1) * TS - cx, y = ahead.row * TS - cy + 2; g.globalAlpha = 0.45 + 0.25 * Math.sin(time * 6);
-      rc(x0, y, x1 - x0, 4, '#e8c27a'); rc(x0, y, x1 - x0, 1, '#fff6d8'); g.globalAlpha = 1; if (ctx.text) ctx.text('E: LAY IT', R((x0 + x1) / 2), R(y - 22), PLANK.col, 'center'); }
+      g.globalAlpha = 1; FPA.drawGhost(g, x0, x1, y - 1, time); if (ctx.text) ctx.text('E: LAY IT', R((x0 + x1) / 2), R(y - 22), PLANK.col, 'center'); }
     if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && arc.land.hit ? '#8fd160' : '#c8ccd4');
   };
   return W;

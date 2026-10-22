@@ -336,11 +336,11 @@ export function drawWater(g, L, cx, cy, time, T) {
   for (const p of L.pools || []) { if (!p.fen || p.x1 < cx || p.x0 > cx + VW) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, bot = (p.bottom !== undefined ? p.bottom : p.y + 64) - cy;
     g.save(); g.beginPath(); g.rect(x0, y - 8, x1 - x0, bot - y + 8); g.clip();
-    FNB.drawReflections(g, cx, cy, VW, g.canvas.height, time, (L.H * 16 - g.canvas.height) - cy, x0, x1, y);   /* (claude/fenroad2art) the cypress doubled in the murk */
+    if (!p.peat) FNB.drawReflections(g, cx, cy, VW, g.canvas.height, time, (L.H * 16 - g.canvas.height) - cy, x0, x1, y);   /* (claude/fenroad2art) the cypress doubled in the murk */
     /* the sheen: a faint toxic green in the top of the water */
-    g.globalAlpha = 0.09; g.fillStyle = '#8a9a2a'; g.fillRect(x0, y, x1 - x0, Math.min(34, bot - y)); g.globalAlpha = 1;
+    if (!p.peat) { g.globalAlpha = 0.09; g.fillStyle = '#8a9a2a'; g.fillRect(x0, y, x1 - x0, Math.min(34, bot - y)); g.globalAlpha = 1; }
     /* the scum skin drifting on the surface */
-    const s = scumStrip(), sc = ((time * 2.2 - cx * 0.25) % 96 + 96) % 96; g.globalAlpha = 0.75; for (let X = x0 - 96 + sc; X < x1; X += 96) g.drawImage(s, Math.round(X), y - 1); g.globalAlpha = 1;
+    if (!p.peat) { const s = scumStrip(), sc = ((time * 2.2 - cx * 0.25) % 96 + 96) % 96; g.globalAlpha = 0.75; for (let X = x0 - 96 + sc; X < x1; X += 96) g.drawImage(s, Math.round(X), y - 1); g.globalAlpha = 1; }
     /* bubbles rising from the bed, popping at the surface */
     const n0 = Math.floor((cx + x0) / 28), n1 = Math.floor((cx + x1) / 28);
     for (let n = n0; n <= n1; n++) { if (rnd(n, 61, 3) !== 0) continue; const ph = ((time * 0.35 + rnd(n, 63, 100) / 100) % 1), bx = n * 28 + rnd(n, 65, 24) - cx, by = bot - 4 - ph * (bot - y - 4);
