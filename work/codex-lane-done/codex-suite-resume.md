@@ -79,11 +79,12 @@ INCOMPLETE: recovery proof needs at least 1536 MB free; currently 945 MB. No bro
 - Native canvas/bake allocations remain a large within-check cost. GC reduces abandoned lab objects but does not
   make every heavy check fit. Task 3 verified full levelcards with one level per browser and recorded audio blocked;
   that containment retains all 48 screens. No claim that the full renderer leak or every heavy test is fixed.
-- Final local diagnostic fix: profile-cleanup intentionally starts missing/crashing browsers. Its nested fault-injection
+- Final local diagnostic fix: profile-cleanup intentionally starts missing/crashing browsers. Only its two deliberately missing/exiting-executable
   children now have distinct attempt IDs, so the parent's disconnect guard does not abort the test of that failure.
-  All cleanup assertions remain. The unused six-minute Promise.race timeout is cleared when each case finishes,
+  All cleanup assertions remain, and every fixture must reach READY. Real browser cases retain the
+  parent attempt so an unexpected browser/resource failure still interrupts it. The unused six-minute Promise.race timeout is cleared when each case finishes,
   so a completed case no longer holds Node open for six minutes. Both intentional startup-failure cases PASS
-  through execute(), exitCode=0, signal=null, 7010 ms, profiles left=0, serverGone=true; receipt
+  through execute(), exitCode=0, signal=null, 7849 ms, profiles left=0, serverGone=true; receipt
   cleanup-expected-fault-proof.json. Full cleanup's other six browser cases have not been re-run after this fix.
 - Child receipts now retain exact exitCode/signal, and live output labels interrupted attempts INCOMPLETE.
   Hard-kill/resume, actual nonzero exit and nested-fault isolation selftests pass. Old verdicts are not rewritten.
