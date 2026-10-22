@@ -4,11 +4,34 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, protocol-gc]
         default: prove
 permissions:
   contents: read
 jobs:
+  protocol-gc:
+    if: inputs.mode == 'protocol-gc'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [boss-openings, levelling-runtime]
+    env:
+      BRACKEN_PROTOCOL_GC: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/lab-memory-check.mjs "$CHECK"
+        env:
+          CHECK: ${{ matrix.check }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: protocol-gc-${{ matrix.check }}
+          path: gate-data/
   heap512:
     if: inputs.mode == 'heap512'
     runs-on: ubuntu-latest
