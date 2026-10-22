@@ -19,6 +19,7 @@ import { openPage } from './cdp.mjs';
 assert.ok(THROW_KIND.bucket, 'the bucket is a row in THROW_KIND');
 for (const [name, k] of Object.entries(THROW_KIND)) {
   assert.ok(k.vx > 0 && k.g > 0, name + ' arcs: a forward speed and a real gravity');
+  if (k.respawn === 0) continue;   /* (integ114) the crew PLANK (fenroad2) has no rack to refill and its blow is the planks' own (src/fen-planks.js): respawn 0 = not a rack kind */
   assert.ok(k.respawn > 0 && k.respawn <= 8, name + ' waits a real, short while before its rack is filled again: ' + k.respawn);
   assert.ok(k.hitFire > k.hitSmall && k.hitSmall > 0, name + ' does more to a fire foe than a plain one, and a plain one is still hurt: ' + JSON.stringify(k));
 }
