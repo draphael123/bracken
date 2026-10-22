@@ -4,6 +4,7 @@
 // A browser slot is held for the WHOLE check, not merely for launch, so a large page lab cannot crowd another off RAM.
 import { spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
+import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { launchBrowser } from './browser-profile.mjs';
 import { browserExecutable } from './cdp.mjs';
@@ -61,10 +62,11 @@ async function startServer(root, port) {
   child.kill(); throw new Error('worker server did not come up on port ' + port + ' (or that port belongs to another checkout)');
 }
 
-function execute(job, root, port) {
+export function execute(job, root, port) {
   return new Promise(resolveResult => {
-    const t0 = Date.now(), stdout = [], stderr = [], child = spawn(job.cmd, job.args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
-      env: { ...process.env, ...job.env, PORT: String(port) } });
+    const t0 = Date.now(), attempt = randomUUID(), stdout = [], stderr = [], child = spawn(job.cmd, job.args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
+      env: { ...process.env, ...job.env, BRACKEN_CHECK: job.name, BRACKEN_ATTEMPT: attempt, PORT: String(port) } });
+    if (job.onStart) job.onStart(child.pid);
     let timedOut = false, error = null, done = false, outBytes = 0, errBytes = 0;
     /* spawnSync's 1 MiB limit was part of the old verdict: a runaway tool failed instead of filling RAM. */
     child.stdout.on('data', b => { outBytes += b.length; if (outBytes > 1048576) { error = new Error('stdout maxBuffer length exceeded'); child.kill(); } else stdout.push(b); });
@@ -73,8 +75,13 @@ function execute(job, root, port) {
     child.on('error', e => { error = e; });
     child.on('close', code => { if (done) return; done = true; if (timer) clearTimeout(timer);
       const lines = (Buffer.concat(stdout).toString('utf8') + Buffer.concat(stderr).toString('utf8') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
-      resolveResult({ name: job.name, ok: code === 0 && !timedOut && !error, ms: Date.now() - t0,
-        last: timedOut ? 'TIMED OUT after ' + Math.round(job.timeout / 60000) + ' min' : lines.at(-1) || '', out: lines }); });
+      let events = [];
+      try { events = readFileSync(process.env.BRACKEN_PROCESS_LOG, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)).filter(e => e.attempt === attempt); } catch {}
+      const interrupted = events.find(e => e.type === 'interrupted');
+      const memory = { totalMb: Math.max(0, ...events.map(e => e.peak?.totalMb || 0)), rendererMb: Math.max(0, ...events.map(e => e.peak?.rendererMb || 0)) };
+      resolveResult({ name: job.name, ok: code === 0 && !timedOut && !error && !interrupted, ms: Date.now() - t0, memory,
+        ...(interrupted || (code === null && !timedOut && !error) ? { interrupted: true } : {}),
+        last: interrupted ? interrupted.reason : timedOut ? 'TIMED OUT after ' + Math.round(job.timeout / 60000) + ' min' : lines.at(-1) || '', out: lines }); });
   });
 }
 
@@ -101,7 +108,7 @@ async function clearContexts(port) {
   } finally { ws.close(); }
 }
 
-export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone = () => {} }) {
+export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone = () => {}, onStart = () => {}, recycleEvery = 12, shouldStop = () => false }) {
   const answer = new Map(rows.filter(r => 'ok' in r).map(r => [r.name, r]));
   const time = JSON.parse(readFileSync(join(ROOT, 'tools/check-timings.json'), 'utf8'));
   /* A few tools use their own CDP driver and must keep their own browser/profile. Run them after the shared browsers
@@ -121,16 +128,25 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
   const launch = async (job, slot, browserSlot = null) => { const page = browser.get(job.name);
     try { if (page && !['profile-cleanup', 'profile-leaks'].includes(job.name)) await serve(slot);
       let env = job.env;
-      if (browserSlot !== null) { if (!shared.has(browserSlot)) shared.set(browserSlot, await startBrowser());
+      if (browserSlot !== null) {
+        const prior = shared.get(browserSlot);
+        if (prior && (prior.run.exited || prior.run.failure || prior.used >= recycleEvery)) { await prior.run.close(); shared.delete(browserSlot); }
+        if (!shared.has(browserSlot)) shared.set(browserSlot, { ...await startBrowser(), used: 0 });
         env = { ...env, BRACKEN_BROWSER_PORT: String(shared.get(browserSlot).port) }; }
-      const result = await execute({ ...job, env }, ROOT, portFor(slot));
-      if (browserSlot !== null) await clearContexts(shared.get(browserSlot).port);
+      const result = await execute({ ...job, env, onStart: pid => onStart(job.name, pid) }, ROOT, portFor(slot));
+      if (browserSlot !== null) {
+        const b = shared.get(browserSlot); b.used++;
+        result.memory = { before: b.before || null, after: await b.run.sampleMemory(), peak: b.run.peak, browserPid: b.run.child.pid };
+        if (b.run.failure || b.run.exited) { result.ok = false; result.interrupted = true; result.last = b.run.failure || 'shared browser died';
+          await b.run.close(); shared.delete(browserSlot); }
+        else { await clearContexts(b.port); b.before = await b.run.sampleMemory(); }
+      }
       return result; }
-    catch (e) { return { name: job.name, ok: false, ms: 0, last: e.message, out: [e.stack || String(e)] }; }
+    catch (e) { return { name: job.name, ok: false, interrupted: true, ms: 0, last: e.message, out: [e.stack || String(e)] }; }
     finally { if (browserSlot !== null) browserSlots.delete(browserSlot); } };
   try {
-    while (regular.length || busy.size) {
-      for (let i = 0; i < free.length && regular.length;) {
+    while ((!shouldStop() && regular.length) || busy.size) {
+      for (let i = 0; i < free.length && regular.length && !shouldStop();) {
         const slot = free[i], k = regular.findIndex(r => !browser.get(r.name) || (slot < maxBrowsers && !browserSlots.has(slot)));
         if (k < 0) { i++; continue; }
         const job = regular.splice(k, 1)[0]; free.splice(i, 1);
@@ -144,6 +160,7 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
     }
     for (const b of shared.values()) await b.run.close(); shared.clear();
     for (const job of tail) {
+      if (shouldStop()) break;
       /* Text fit draws thousands of frames in several contexts. It reported a Weaver plate overlap once while using
          borrowed incognito Chrome; six --jobs=1 reruns with its own fresh browser passed. Keep both scopes on their original
          browser lifecycle, while the rest of the pool still reuses Chrome where that answer stays stable. */
@@ -152,5 +169,5 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
       const tr = await launch(job, 0); answer.set(job.name, tr); onDone(tr);
     }
   } finally { for (const b of shared.values()) await b.run.close(); await stopServers(); }
-  return rows.map(r => answer.get(r.name));
+  return rows.filter(r => answer.has(r.name)).map(r => answer.get(r.name));
 }

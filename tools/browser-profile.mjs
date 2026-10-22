@@ -9,10 +9,11 @@
 // Removal only ever touches a directory that resolves to itself, sits DIRECTLY in the temp folder, is named
 // bracken-<kind>-XXXXXX, and is not a link or junction.
 import { spawn, spawnSync } from 'child_process';
-import { lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'fs';
-import { tmpdir } from 'os';
+import { appendFileSync, lstatSync, mkdtempSync, readFileSync, realpathSync, rmSync } from 'fs';
+import { freemem, tmpdir } from 'os';
 import { basename, dirname, join } from 'path';
 import { runTag } from './ports.mjs';   /* this suite run's own tag, so a leak check can tell its browsers from another session's */
+import { browserMemory } from './process-memory.mjs';
 
 export const KINDS = ['look', 'headless', 'prof', 'video', 'prod'];
 /* bracken-<kind>-<run>-<rand> since 2026-09-23; the run tag is OPTIONAL in the pattern so that profiles left behind by
@@ -81,6 +82,13 @@ function hook() {
    writes the one it got to <profile>/DevToolsActivePort. */
 export function launchBrowser(exe, args, kind = 'look') {
   if (!KINDS.includes(kind)) throw new Error('unknown profile kind ' + kind);
+  const minFree = +(process.env.BRACKEN_MIN_FREE_MB ?? 512), freeMb = Math.floor(freemem() / 1048576);
+  if (minFree > 0 && freeMb < minFree) {
+    const reason = 'BRACKEN_BROWSER_RESOURCE: only ' + freeMb + ' MB free before launch (floor ' + minFree + ' MB)';
+    if (process.env.BRACKEN_PROCESS_LOG) appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({ type: 'interrupted',
+      check: process.env.BRACKEN_CHECK, attempt: process.env.BRACKEN_ATTEMPT, time: Date.now(), reason }) + '\n');
+    throw new Error(reason);
+  }
   hook();
   const tag = runTag();
   const prof = mkdtempSync(join(TEMP, 'bracken-' + kind + '-' + (tag ? tag + '-' : '')));
@@ -93,21 +101,56 @@ export function launchBrowser(exe, args, kind = 'look') {
   if (heapMb > 0 && !args.some(a => /^--js-flags/.test(a))) args = [...args, '--js-flags=--max-old-space-size=' + heapMb];
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }
-  let exited = false; const gone = new Promise(r => { child.once('exit', () => { exited = true; r(); }); child.once('error', () => { exited = true; r(); }); });
+  let exited = false, closingRequested = false, failure = null, sampling = false;
+  const peak = { totalMb: 0, rendererMb: 0 }, limit = +(process.env.BRACKEN_RENDERER_MB ?? 1536);
+  const event = (type, extra = {}) => { if (!process.env.BRACKEN_PROCESS_LOG) return;
+    try { appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({ type, pid: child.pid, profile: prof,
+      check: process.env.BRACKEN_CHECK, attempt: process.env.BRACKEN_ATTEMPT, time: Date.now(), ...extra }) + '\n'); } catch {}
+  };
+  event('launch');
+  const sampleMemory = async () => {
+    if (sampling || exited) return { ...peak }; sampling = true;
+    try {
+      const freeMb = Math.floor(freemem() / 1048576);
+      if (minFree > 0 && freeMb < minFree && !closingRequested && !failure) {
+        failure = 'only ' + freeMb + ' MB free (floor ' + minFree + ' MB)';
+        event('interrupted', { reason: failure, peak }); killTreeSync(child.pid); return null;
+      }
+      const current = await browserMemory(child.pid, prof);
+      peak.totalMb = Math.max(peak.totalMb, current.totalMb); peak.rendererMb = Math.max(peak.rendererMb, current.rendererMb);
+      if (limit > 0 && current.rendererMb > limit && !closingRequested && !failure && !exited) {
+        failure = 'renderer working set ' + current.rendererMb + ' MB exceeded ' + limit + ' MB';
+        event('interrupted', { reason: failure, peak }); killTreeSync(child.pid);
+      }
+      return current;
+    } catch (e) { event('memory-unavailable', { reason: e.message }); return null; }
+    finally { sampling = false; }
+  };
+  const memoryTimer = setInterval(sampleMemory, 3000); memoryTimer.unref();
+  const gone = new Promise(r => { child.once('exit', (code, signal) => {
+    exited = true; clearInterval(memoryTimer);
+    if (!closingRequested && !failure) { failure = 'browser exited unexpectedly (code=' + code + ', signal=' + signal + ')'; event('interrupted', { reason: failure, peak }); }
+    r();
+  }); child.once('error', e => { exited = true; clearInterval(memoryTimer); failure = e.message; event('interrupted', { reason: failure, peak }); r(); }); });
   /* close() may be left un-awaited by a tool that then calls process.exit(): the run stays registered until the profile is
      really gone, so the exit hook's closeSync() finishes whatever the async close had not */
   let closing = null, finished = false;
-  const finish = () => { finished = true; live.delete(run); };
+  const finish = () => { finished = true; clearInterval(memoryTimer); event('closed', { peak, reason: failure }); live.delete(run); };
   const run = {
     child, prof,
+    sampleMemory,
+    get peak() { return { ...peak }; },
+    get failure() { return failure; },
     async devtoolsPort(tries = 120) { for (let i = 0; i < tries && !exited; i++) { try { const p = +readFileSync(join(prof, 'DevToolsActivePort'), 'utf8').split(/\r?\n/)[0]; if (p > 0) return p; } catch { /* not written yet */ } await sleep(250); } throw new Error('the browser never told us its debugging port'); },
     get exited() { return exited; },
     close() {
       if (finished) return Promise.resolve(); if (closing) return closing;
+      closingRequested = true; clearInterval(memoryTimer);
       return closing = (async () => { if (!exited) { killTreeSync(child.pid); await Promise.race([gone, sleep(5000)]); } if (!finished) { await removeProfile(prof); finish(); } })();
     },
     closeSync() {
       if (finished) return;
+      closingRequested = true; clearInterval(memoryTimer);
       if (!exited) killTreeSync(child.pid);
       removeProfileSync(prof); finish();
     },
