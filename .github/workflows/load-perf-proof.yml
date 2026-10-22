@@ -15,7 +15,7 @@ on:
         default: mage
       present:
         type: choice
-        options: [copy, pattern, cpu-frame, sync-display, bitmap]
+        options: [copy, pattern, cpu-frame, sync-display, bitmap, opaque-frame]
         default: copy
 env:
   PIXEL_CPU_CANVAS: ${{ inputs.pixel_cpu && '1' || '0' }}

@@ -24,8 +24,9 @@ export function installBitmapLab(){
    r.pending=true;stats.pending++;const generation=r.generation,w=source.width,h=source.height;
    createImageBitmap(source).then(bitmap=>{
     if(r.disabled||generation!==r.generation||w!==source.width||h!==source.height){bitmap.close();stats.stale++;return;}
-    while(active.size>=maxEntries||stats.bytes+r.bytes>budget){const oldest=active.keys().next().value;if(!oldest)break;drop(oldest);oldest.disabled=true;}
-    r.bytes=w*h*4;r.bitmap=bitmap;active.set(r,true);stats.bytes+=r.bytes;stats.created++;
+    const bytes=w*h*4;
+    while(active.size>=maxEntries||stats.bytes+bytes>budget){const oldest=active.keys().next().value;if(!oldest)break;drop(oldest);oldest.disabled=true;}
+    r.bytes=bytes;r.bitmap=bitmap;active.set(r,true);stats.bytes+=r.bytes;stats.created++;
    },()=>{r.disabled=true;stats.failed++;}).finally(()=>{r.pending=false;stats.pending--;});
   }
   return draw.call(this,source,...args);
