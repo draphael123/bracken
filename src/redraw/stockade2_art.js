@@ -97,6 +97,7 @@ function gateCell(i, n) {
 export function stkTile(t, x, y, at, T, L) {
   if (t === T.SOLID) { for (const b of L.stkTowers || []) if (x >= b.x0 && x <= b.x1 && y > b.top && y <= b.floor) return towerCell(x - b.x0, b.x1 - b.x0 + 1, y - b.top - 1, b.floor - b.top); }
   else if (t === T.NET) { const p = L.stkPit; if (p && y === p.row && x >= p.x0 && x <= p.x1) return pitCell(x); }
+  else if (t === T.PALISADE) return lookTile(L, x, y);   /* (claude/chief3art) the kennel lookout's lashed stilts */
   else if (t === T.PORT) { const gt = L.stockade && L.stockade.gate; if (gt && x === gt.x && y >= gt.y0 && y <= gt.y1) return gateCell(y - gt.y0, gt.y1 - gt.y0 + 1); }
   return null;
 }
@@ -347,4 +348,164 @@ export function drawWarTowerFront(g, t, cx, cy, time) {
   if (t.st === 'down') return;
   const x = R(t.x - cx), base = R((t.base || t.foot) - cy), deck = R(t.deck - cy), h = base - deck, ang = towerAngle(t, time);
   g.save(); g.imageSmoothingEnabled = false; g.translate(x, base); if (ang) g.rotate(ang); g.drawImage(towerSprite(h, 'front'), -24, -(h + 30)); g.restore();
+}
+
+/* ================================================================ (claude/chief3art) THE POWDER KEG, THE BLAST, HIS HORN BAR, THE LOOKOUT STILTS, THE POWDER STORE */
+const hs = n => { const s = Math.sin(n * 12.9898) * 43758.5453; return s - Math.floor(s); };
+const clamp01 = v => Math.max(0, Math.min(1, v));
+const disc = (g, x, y, r, c) => { g.fillStyle = c; for (let dy = -r; dy <= r; dy++) { const w = Math.floor(Math.sqrt(r * r - dy * dy + 0.5)); g.fillRect(R(x) - w, R(y) + dy, w * 2 + 1, 1); } };
+
+/* THE POWDER KEG: a squat stave keg with two iron hoops, a pale tag with the camp's red burst, a bung - and a fuse cord that burns down (drawKeg / the camp barrels, Stockade only) */
+function kegSprite() {
+  return once('pkeg', () => { const [c, g] = canvas(12, 14);
+    const W = [8, 10, 12, 12, 12, 12, 12, 12, 12, 12, 12, 12, 10, 8];
+    for (let r = 0; r < 14; r++) { const w = W[r], x0 = (12 - w) >> 1; rect(g, x0, r, w, 1, ST.o);
+      if (r > 0 && r < 13) { rect(g, x0 + 1, r, w - 2, 1, r === 1 ? ST.w3 : ST.w2); px(g, x0 + 1, r, ST.w4); if (w > 10) px(g, x0 + 2, r, ST.w3); px(g, x0 + w - 2, r, ST.w1); if (w > 10 && r > 1) px(g, x0 + w - 3, r, ST.w1); } }
+    for (const x of [3, 6, 9]) for (let r = 4; r < 10; r += 2) px(g, x, r + (x === 6 ? 1 : 0), ST.w1);       /* the staves */
+    for (const r of [2, 10]) { rect(g, 0, r, 12, 1, ST.ironHi); rect(g, 0, r + 1, 12, 1, ST.iron); px(g, 0, r, ST.o); px(g, 11, r, ST.o); px(g, 0, r + 1, ST.o); px(g, 11, r + 1, ST.o); px(g, 10, r + 1, ST.ironLo); px(g, 6, r + 1, ST.ironLo); }   /* the hoops */
+    rect(g, 3, 5, 6, 4, ST.bone); rect(g, 3, 8, 6, 1, ST.boneLo); px(g, 3, 5, ST.boneLo);                                                               /* the tag */
+    for (const [x, y] of [[5, 5], [6, 5], [4, 6], [5, 6], [6, 6], [7, 6], [5, 7], [6, 7]]) px(g, x, y, ST.red); px(g, 5, 7, ST.redLo);                    /* the red burst */
+    rect(g, 5, 1, 2, 1, ST.o);                                                                                                                         /* the bung */
+    return c; });
+}
+/* (x, y) = the keg's centre-bottom (the barrel prop's anchor); rot = how far it has rolled; fuseK 0..1 draws the cord burning down from its bung (undefined = unlit: no cord) */
+export function drawPowderKeg(g, x, y, rot, fuseK, time) {
+  x = R(x); y = R(y);
+  g.save(); g.translate(x, y - 7); if (rot) g.rotate(rot); g.drawImage(kegSprite(), -6, -7); g.restore();
+  if (fuseK === undefined || fuseK === null) return;
+  const a = rot || 0, bx = R(x + Math.sin(a) * 7), by = R(y - 7 - Math.cos(a) * 7), L = 2 + R(7 * clamp01(fuseK));
+  for (let i = 0; i < L; i++) { const wob = i > 6 ? 2 : i > 3 ? 1 : 0; px(g, bx + wob + 1, by - i, ST.o); px(g, bx + wob, by - i, (i & 1) ? ST.r1 : ST.r0); }
+  const tx = bx + (L > 6 ? 2 : L > 3 ? 1 : 0), ty = by - L, ph = Math.floor(time * 26 + x) % 3;
+  g.fillStyle = ph === 0 ? '#fff6e0' : ph === 1 ? '#ffd36b' : '#ff8c3c'; g.fillRect(tx - 1, ty - 1, 3, 3); g.fillStyle = '#fff6e0'; g.fillRect(tx, ty, 1, 1);
+  g.fillStyle = '#ffd36b'; g.fillRect(tx + (ph - 1) * 2, ty - 3 - ph, 1, 1); g.fillRect(tx - (ph - 1) * 2 - 1, ty - 2 - ((ph + 1) % 3), 1, 1);                    /* the sparks */
+}
+/* THE TOLD FUSE: a twisted cord that burns down from the right (white, then gold, then red, flickering at the end), a spark at the burning tip */
+export function drawFuseBar(g, x, y, k, time) {
+  k = clamp01(k); const w = 14, n = Math.max(1, R(w * k)), c = k > 0.5 ? ST.r2 : k > 0.25 ? ST.gold : '#ff6b6b', a = k > 0.25 ? 1 : 0.55 + 0.45 * Math.sin(time * 30), x0 = R(x - w / 2);
+  rect(g, x0 - 1, y - 1, w + 2, 4, '#1b1626'); g.globalAlpha = a; rect(g, x0, y, n, 2, c);
+  for (let i = 1; i < n; i += 2) px(g, x0 + i, y + 1, k > 0.5 ? ST.r0 : k > 0.25 ? ST.brassLo : ST.redLo);
+  g.globalAlpha = 1; const ph = Math.floor(time * 24) % 3; rect(g, x0 + n, y - 1, 2, 4, ph === 0 ? '#fff6e0' : ph === 1 ? '#ffd36b' : '#ff8c3c'); if (n < w - 2) px(g, x0 + n + 2, y + 1, '#3a3430');
+}
+/* HIS WAR HORN'S DRAW BAR: a timber plate with iron caps, an ivory horn badge at its head, a gold-then-red fill that pulses, a notch each quarter, and a bone peg per blow
+   still wanted (green once it has landed). k 0..1 = how far the horn is drawn; hits/need = blows landed / wanted (need 0 = none shown) */
+export function drawHornBar(g, x, y, k, hits, need, time) {
+  k = clamp01(k); const w = 26, x0 = R(x - w / 2), pulse = 0.65 + 0.35 * Math.sin(time * (8 + k * 14));
+  rect(g, x0 - 5, y - 2, w + 10, 9, ST.o); rect(g, x0 - 4, y - 1, w + 8, 7, ST.w1); rect(g, x0 - 4, y - 1, w + 8, 1, ST.w3); rect(g, x0 - 4, y + 5, w + 8, 1, ST.w0);
+  rect(g, x0 - 4, y - 1, 2, 7, ST.iron); rect(g, x0 - 4, y - 1, 2, 1, ST.ironHi); rect(g, x0 + w + 2, y - 1, 2, 7, ST.iron); rect(g, x0 + w + 2, y - 1, 2, 1, ST.ironHi);
+  rect(g, x0, y, w, 5, '#1b1626'); const n = Math.max(1, R(w * k)); g.globalAlpha = pulse; rect(g, x0, y + 1, n, 3, k > 0.7 ? '#ff6b6b' : ST.gold); rect(g, x0, y + 1, n, 1, k > 0.7 ? '#ffb0a0' : '#fff0b0'); g.globalAlpha = 1;
+  for (const q of [0.25, 0.5, 0.75]) rect(g, x0 + R(w * q), y, 1, 5, ST.o);
+  g.drawImage(hornSprite(true), x0 - 12, y - 4);                                                                                                     /* the horn badge */
+  if (need > 0) for (let i = 0; i < need; i++) { const px0 = R(x - (need * 8 - 3) / 2) + i * 8, hit = i < hits; rect(g, px0 - 1, y + 7, 7, 6, ST.o); rect(g, px0, y + 8, 5, 4, hit ? '#8fd160' : '#3a3430'); rect(g, px0, y + 8, 5, 1, hit ? '#c8f0a0' : ST.boneLo); px(g, px0 + 2, y + 10, hit ? '#3f6e2c' : ST.boneDp); }
+}
+/* the Chieftain's loose effects: the horn's note arcs (blowing), a cough of smoke and swimming stars (silenced / blasted). x, y = his feet; f = facing; k = how far the horn is drawn */
+export function drawChiefFx(g, kind, x, y, f, k, time) {
+  if (kind === 'blow') { const bx = x + f * 10, by = y - 45;
+    for (let i = 0; i < 3; i++) { const q = ((time * 1.7 + i / 3) % 1), r = 5 + q * 22; g.globalAlpha = (1 - q) * (0.35 + 0.6 * k); g.strokeStyle = k > 0.7 ? '#ff6b6b' : '#ffd36b'; g.lineWidth = 2; g.beginPath();
+      if (f > 0) g.arc(bx, by, r, -1.1, 0.5); else g.arc(bx, by, r, Math.PI - 0.5, Math.PI + 1.1); g.stroke(); }
+    g.globalAlpha = 1; return; }
+  if (kind === 'silenced') { for (let i = 0; i < 3; i++) { const q = ((time * 1.4 + i / 3) % 1); g.globalAlpha = (1 - q) * 0.8; disc(g, x + f * (12 + q * 8) + i * 2, y - 26 - q * 16, 1 + Math.round(q * 2), '#8a8478'); } g.globalAlpha = 1;
+    drawStars(g, x - f * 1, y - 47, time); return; }
+  if (kind === 'blasted') { for (let i = 0; i < 4; i++) { const q = ((time * 0.9 + i / 4) % 1); g.globalAlpha = (1 - q) * 0.85; disc(g, x + Math.sin(i * 3 + time * 2) * 5 - f * 3, y - 24 - q * 26, 2 + Math.round(q * 3), i & 1 ? '#3a3430' : '#5a544c'); } g.globalAlpha = 1; drawStars(g, x - f * 3, y - 40, time); }
+}
+function drawStars(g, x, y, time) { for (let i = 0; i < 3; i++) { const a = time * 4 + i * 2.09, sx = R(x + Math.cos(a) * 9), sy = R(y + Math.sin(a) * 3); g.fillStyle = '#ffd36b'; g.fillRect(sx, sy - 1, 1, 3); g.fillRect(sx - 1, sy, 3, 1); } }
+
+/* ---------------------------------------------------------------- THE BLAST: a flash, a fireball with a hot core, a ring, smoke, flung stakes and hoops, a scorch on the floor.
+   kinds: keg (any blast in the camp), store (the powder store's chain: bigger, slower, sacks bursting), legs (a keg at the war tower's feet: splinters), door (the crew's entrance) */
+export const BLAST_LIFE = { keg: 0.95, store: 1.5, legs: 1.1, door: 0.7 };
+export const newBlast = (x, y, r, kind = 'keg') => ({ x, y, r, kind, t: 0, seed: (x * 7.31 + y * 3.17) % 97 });
+function shard(g, x, y, i, big, c) { g.fillStyle = c; if (big) { g.fillRect(x, y, 3 + (i & 1), 2); g.fillStyle = ST.w5; g.fillRect(x, y, 1, 1); } else g.fillRect(x, y, 2, 1 + (i & 1)); }
+export function drawBlast(g, b, cx, cy) {
+  const life = BLAST_LIFE[b.kind] || 0.95, t = b.t, k = clamp01(t / life), X = R(b.x - cx), Y = R(b.y - cy), big = b.kind === 'store', r0 = b.r * (big ? 1.45 : 1);
+  if (X < -120 || X > 440) return;
+  if (b.kind === 'door') {   /* the doors flung open: a slit of firelight, a kick of dust */
+    g.globalAlpha = (1 - k) * 0.8; g.fillStyle = '#ffd36b'; g.fillRect(X - 2, Y - 40, 4, 40); g.fillStyle = '#ff8c3c'; g.fillRect(X - 5, Y - 36, 10, 36); g.globalAlpha = 1;
+    for (let i = 0; i < 5; i++) { const s = (i - 2) * 7 * (0.5 + k); g.globalAlpha = (1 - k) * 0.7; disc(g, X + s, Y - 3 - k * 5 - (i & 1) * 2, 2 + Math.round(k * 3), '#8a7a5a'); } g.globalAlpha = 1; return; }
+  /* the scorch on the floor under it */
+  if (b.kind !== 'legs') { g.globalAlpha = 0.5 * (t > 0.08 ? 1 - k * k : 0); g.fillStyle = '#14100c'; const rx = Math.round(r0 * 0.62); g.fillRect(X - rx, Y + 5, rx * 2, 2); g.fillRect(X - rx + 4, Y + 3, rx * 2 - 8, 2); g.globalAlpha = 1; }
+  if (b.kind !== 'legs') {
+    if (t < 0.12) { g.globalAlpha = 1 - t / 0.12; disc(g, X, Y - 2, Math.round(r0 * 0.4), '#fff6e0'); g.globalAlpha = 1; }                        /* the flash */
+    const fk = clamp01(t / 0.3), ease = 1 - (1 - fk) * (1 - fk), rf = r0 * (0.2 + 0.42 * ease), fa = t < 0.32 ? 1 : clamp01(1 - (t - 0.32) / (big ? 0.7 : 0.4)), rise = t * (big ? 30 : 22);
+    if (fa > 0) { g.globalAlpha = fa;   /* a ragged fireball: seven lobes in four layers, drifting up */
+      for (const [col, sc] of [['#8f2f28', 1], ['#c9463d', 0.84], ['#ff8c3c', 0.64], ['#ffd36b', 0.42]]) for (let i = 0; i < 7; i++) { const an = hs(b.seed + i) * 6.283, d = rf * (0.3 + 0.55 * hs(b.seed + i + 3)), lr = rf * (0.5 + 0.35 * hs(b.seed + i + 7)) * sc;
+        disc(g, X + Math.cos(an) * d, Y - 5 - rise * (0.4 + hs(b.seed + i + 11)) + Math.sin(an) * d * 0.7, Math.max(1, Math.round(lr)), col); }
+      if (t < 0.2) { g.globalAlpha = fa * (1 - t / 0.2); disc(g, X, Y - 5, Math.max(2, Math.round(rf * 0.4)), '#fff6e0'); } g.globalAlpha = 1; }
+    if (t < 0.45) { const q = t / 0.45; g.globalAlpha = 0.7 * (1 - q); g.strokeStyle = '#f4ecd8'; g.lineWidth = 2; g.beginPath(); g.arc(X, Y - 3, r0 * (0.35 + 0.8 * q), 0, 7); g.stroke(); g.globalAlpha = 1; }   /* the shock ring */
+    if (big && t > 0.18 && t < 0.7) { const q = (t - 0.18) / 0.52; g.globalAlpha = 0.5 * (1 - q); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.arc(X, Y - 3, r0 * (0.4 + 1.2 * q), 0, 7); g.stroke(); g.globalAlpha = 1; }
+    for (let i = 0; i < (big ? 9 : 6); i++) { const q = clamp01((t - 0.12) / (life - 0.12)); if (q <= 0) break; g.globalAlpha = (1 - q) * 0.75; disc(g, X + (hs(b.seed + i) - 0.5) * r0 * 1.5, Y - 8 - q * (22 + hs(b.seed + i + 9) * 22), 3 + Math.round(q * 5 + hs(b.seed + i + 4) * 3), i & 1 ? '#3a3430' : '#4a443c'); } g.globalAlpha = 1;   /* the smoke */
+  }
+  const legs = b.kind === 'legs', nS = legs ? 14 : big ? 14 : 9;
+  for (let i = 0; i < nS; i++) { const a = -0.3 - hs(b.seed + i * 2.1) * 2.5, sp = 50 + hs(b.seed + i * 3.7) * (legs ? 90 : 130), tt = Math.max(0, t - 0.02);   /* flung stakes, hoops and chips */
+    const sx = X + Math.cos(a) * sp * tt + (legs ? (i % 2 ? 13 : -13) : 0), sy = Y - (legs ? 14 : 4) + Math.sin(a) * sp * tt + 0.5 * 360 * tt * tt;
+    if (t > life * 0.92 || sy > Y + 8) continue; g.globalAlpha = k > 0.75 ? (1 - k) * 4 : 1; shard(g, R(sx), R(sy), i, legs || i % 3 === 0, i % 4 === 3 ? ST.iron : ST.w3); g.globalAlpha = 1; }
+  if (big) for (let i = 0; i < 7; i++) { const q = clamp01((t - 0.08) / 0.6); g.globalAlpha = (1 - q) * 0.9; g.fillStyle = i & 1 ? '#d8c9a0' : '#a89a78'; g.fillRect(R(X + (hs(b.seed + i * 5) - 0.5) * r0 * 2.2 * q), R(Y - 10 - q * 36 + hs(b.seed + i) * 14 * q * q * 2), 3, 2); g.globalAlpha = 1; }   /* the sacks, bursting */
+  if (legs && t < 0.4) { const q = t / 0.4; g.globalAlpha = 0.8 * (1 - q); for (const s of [-13, 13]) { g.fillStyle = '#ffd36b'; g.fillRect(X + s - 3, Y - 18, 6, 12); g.fillStyle = '#fff6e0'; g.fillRect(X + s - 1, Y - 16, 2, 8); } g.globalAlpha = 1; }
+}
+
+/* ---------------------------------------------------------------- THE LOOKOUT ON STAKES (kennels): its stilts, and its fall */
+const LK_W = 48, LK_H = 80;
+/* three heavy lashed posts under the deck, three lashed wales, an X of braces between the posts, a skull on the middle one, a bed of stones at the foot */
+function lookSprite() {
+  return once('look', () => { const [c, g] = canvas(LK_W, LK_H);
+    const posts = [1, 19, 37];
+    for (const x of posts) logV(g, x, 0, 10, LK_H - 7, x);
+    for (const [a, b] of [[10, 20], [28, 38]]) { brace(g, a, 26, b, 54, 3); brace(g, b, 26, a, 54, 3); }                                               /* the X braces between the posts */
+    for (const y of [4, 28, 52]) { logH(g, 0, y, LK_W, 5, y); for (const x of posts) lash(g, x + 3, y, 5); }                                       /* the wales, lashed at every post */
+    rect(g, 22, 36, 5, 5, ST.o); rect(g, 23, 37, 3, 3, ST.bone); px(g, 23, 38, ST.o); px(g, 25, 38, ST.o); rect(g, 24, 40, 1, 1, ST.boneDp);              /* a skull lashed on the middle post */
+    rect(g, 0, LK_H - 8, LK_W, 8, ST.dirt); rect(g, 0, LK_H - 8, LK_W, 2, ST.o);                                                                     /* the footing: earth, packed with stones */
+    for (const x of [0, 8, 19, 30, 40]) { rect(g, x, LK_H - 6, 8, 4, ST.stone); rect(g, x, LK_H - 6, 8, 1, ST.stoneHi); rect(g, x, LK_H - 3, 8, 1, ST.o); }
+    for (const x of posts) { rect(g, x - 1, LK_H - 9, 12, 3, ST.o); rect(g, x, LK_H - 9, 10, 2, ST.w3); }
+    return c; });
+}
+function lookCell(u, v) { return once('lc' + u + v, () => { const [c, g] = canvas(16, 16); g.drawImage(lookSprite(), u * 16, v * 16, 16, 16, 0, 0, 16, 16); return c; }); }
+function lookPost() { return once('lookpost', () => { const [c, g] = canvas(12, LK_H); logV(g, 1, 0, 10, LK_H - 7, 3); lash(g, 3, 4, 5); lash(g, 3, 28, 5); lash(g, 3, 52, 5); return c; }); }
+function lookDeck() { return once('lookdeck', () => { const [c, g] = canvas(80, 8); rect(g, 0, 0, 80, 8, ST.o); rect(g, 1, 1, 78, 5, ST.w3); rect(g, 1, 1, 78, 1, ST.w5); rect(g, 1, 5, 78, 1, ST.w1); for (let x = 8; x < 78; x += 9) rect(g, x, 1, 1, 5, ST.w1); rect(g, 0, 6, 80, 2, ST.w0); return c; }); }
+function lookWreck() {
+  return once('lookwreck', () => { const [c, g] = canvas(76, 20);
+    logH(g, 2, 12, 34, 5, 2); logH(g, 26, 14, 40, 5, 6); brace(g, 8, 11, 34, 4, 3); brace(g, 40, 12, 70, 17, 3); logH(g, 18, 8, 26, 4, 3);
+    rect(g, 40, 5, 26, 5, ST.o); rect(g, 41, 6, 24, 3, ST.w3); rect(g, 41, 6, 24, 1, ST.w5); rect(g, 52, 3, 4, 3, ST.o);                           /* a plank of the deck */
+    for (const x of [6, 24, 50, 68]) { rect(g, x, 15, 4, 5, ST.w1); px(g, x, 15, ST.w4); px(g, x + 1, 14, ST.w4); }                                    /* splintered stumps */
+    rect(g, 12, 15, 10, 2, ST.r1); rect(g, 56, 16, 8, 2, ST.r0);                                                                                      /* cut ropes */
+    for (let x = 3; x < 72; x += 8) px(g, x, 19, ST.w2);
+    return c; });
+}
+/* the fall (t = seconds since the stilts went): the posts topple outward from their feet, the deck breaks in two and drops, the splinters fly, then the heap stays */
+export function drawLookFall(g, lo, cx, cy, t) {
+  const base = (lo.sy1 + 1) * TS - cy, deckY = (lo.sy0 - 1) * TS - cy, X = R(lo.sx0 * TS - cx), BASE = R(base);
+  if (X < -140 || X > 460) return;
+  if (t > 0.55) { g.globalAlpha = clamp01((t - 0.55) / 0.5); g.drawImage(lookWreck(), X - 14, BASE - 18); g.globalAlpha = 1; }
+  const post = lookPost();
+  [[1, -1], [19, 1], [37, 0]].forEach(([p0, dir], i) => {
+    if (t > 1.7) return; const q = clamp01(t / (0.85 + i * 0.1)), ang = dir * q * q * 1.45; g.save(); g.translate(X + p0 + 6, BASE - 8); g.globalAlpha = t > 1.2 ? clamp01(1 - (t - 1.2) / 0.5) : 1;
+    if (dir) { g.rotate(ang); g.drawImage(post, -6, -(LK_H - 7)); } else { const hh = Math.round((LK_H - 7) * (1 - q * q * 0.8)); g.drawImage(post, 0, 0, 12, LK_H - 7, -6, -hh, 12, hh); }   /* the middle post folds under the deck */
+    g.restore(); g.globalAlpha = 1; });
+  const dk = lookDeck(), fall = 0.5 * 420 * t * t, floorDrop = (BASE - 6) - (deckY + 8);
+  for (const [half, dir] of [[0, -1], [1, 1]]) { if (t > 1.3) break; const dy = Math.min(floorDrop, fall) + (half ? 4 : 0), rot = dir * clamp01(t / 0.7) * 0.5; g.save(); g.globalAlpha = t > 0.9 ? clamp01(1 - (t - 0.9) / 0.4) : 1;
+    g.translate(X - 16 + half * 40 + 20, deckY + dy + 4); g.rotate(rot); g.drawImage(dk, half * 40, 0, 40, 8, -20, -4, 40, 8); g.restore(); g.globalAlpha = 1; }
+  if (t < 1.2) for (let i = 0; i < 12; i++) { const a = -0.4 - hs(i * 3.1) * 2.3, sp = 40 + hs(i * 1.7) * 90, sx = X + 24 + Math.cos(a) * sp * t, sy = deckY + 10 + Math.sin(a) * sp * t + 0.5 * 360 * t * t; if (sy > BASE) continue; shard(g, R(sx), R(sy), i, i % 3 === 0, ST.w3); }
+}
+export const lookTile = (L, x, y) => { for (const lo of (L.stockade && L.stockade.lookouts) || []) if (x >= lo.sx0 && x <= lo.sx1 && y >= lo.sy0 && y <= lo.sy1) return lookCell(x - lo.sx0, y - lo.sy0); return null; };
+
+/* ---------------------------------------------------------------- THE POWDER STORE (plateau 556-564): a lashed rack under a hide tarp, kegs on its shelf, sacks stacked at its feet */
+const ST_W = 96, ST_H = 58;
+function sack(g, x, y) { rect(g, x, y, 10, 9, ST.o); rect(g, x + 1, y + 1, 8, 7, '#b8a888'); rect(g, x + 1, y + 1, 8, 1, '#d8c9a0'); rect(g, x + 1, y + 7, 8, 1, '#8a7a5a'); rect(g, x + 3, y, 4, 2, '#8a7a5a'); px(g, x + 4, y + 4, ST.red); px(g, x + 5, y + 4, ST.red); px(g, x + 4, y + 5, ST.red); }
+function storeSprite() {
+  return once('store', () => { const [c, g] = canvas(ST_W, ST_H);
+    logV(g, 2, 2, 7, ST_H - 4, 3); logV(g, ST_W - 9, 2, 7, ST_H - 4, 6); logV(g, 44, 38, 6, ST_H - 40, 9);                                           /* two posts and a middle prop */
+    logH(g, 0, 2, ST_W, 5, 4); lash(g, 2, 2, 7); lash(g, ST_W - 9, 2, 7);                                                                              /* the ridge beam */
+    for (const x of [2, ST_W - 9]) { rect(g, x - 1, ST_H - 5, 9, 5, ST.stone); rect(g, x - 1, ST_H - 5, 9, 1, ST.stoneHi); }
+    /* the tarp: a patched hide, laced to the beam, scalloped at the hem, a skull charm */
+    for (let x = 9; x < ST_W - 9; x++) { const hem = 15 + ((x * 7) % 5 < 2 ? 3 : 0) + Math.round(Math.sin(x / 5) * 1.5); rect(g, x, 7, 1, hem - 7, (x >> 3) & 1 ? '#6b5440' : '#7a6248'); px(g, x, hem, ST.o); px(g, x, 7, '#4a3a2c'); }
+    for (const x of [26, 52, 70]) rect(g, x, 9, 1, 6, '#4a3a2c'); for (let x = 10; x < ST_W - 10; x += 6) { px(g, x, 8, ST.r1); px(g, x + 1, 9, ST.r0); }
+    rect(g, 45, 15, 5, 5, ST.o); rect(g, 46, 16, 3, 3, ST.bone); px(g, 46, 17, ST.o); px(g, 48, 17, ST.o);
+    rect(g, 8, 38, 80, 5, ST.o); rect(g, 8, 39, 80, 3, ST.w3); rect(g, 8, 39, 80, 1, ST.w5); rect(g, 8, 41, 80, 1, ST.w1); lash(g, 2, 39, 7); lash(g, ST_W - 9, 39, 7);   /* the shelf */
+    brace(g, 9, 50, 22, 43, 2); brace(g, 87, 50, 74, 43, 2);
+    const kg = kegSprite(); for (const x of [14, 28, 58, 72]) g.drawImage(kg, x, 24);                                                                   /* the spare kegs on the shelf */
+    for (const [x, y] of [[10, 48], [20, 48], [15, 40]]) sack(g, x, y); for (const [x, y] of [[76, 48], [84, 47]]) sack(g, x, y);                      /* sacks at the feet */
+    return c; });
+}
+function storeScorch() { return once('storeScorch', () => { const [c, g] = canvas(ST_W, ST_H); g.drawImage(storeSprite(), 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(14,8,6,0.7)'; g.fillRect(0, 0, ST_W, ST_H); return c; }); }
+/* (x, floor) = the store's centre on the ground; scorch 0..1 = how blackened it is (the blasts leave it) */
+export function drawStoreBack(g, x, floor, scorch, cx, cy) {
+  const X = R(x - cx - ST_W / 2), Y = R(floor - cy - ST_H); if (X < -ST_W - 40 || X > 440) return;
+  g.drawImage(storeSprite(), X, Y); if (scorch > 0) { g.globalAlpha = scorch * 0.85; g.drawImage(storeScorch(), X, Y); g.globalAlpha = 1; }
 }

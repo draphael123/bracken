@@ -404,6 +404,7 @@ function theStockade() {
   ent('check', 95, 19);
 
   // ---- 4. The palisade gate: crank it open, or roll a barrel into it ----
+  ent('sign', 94, 19, { text: 'POWDER: STRIKE A BARREL AND IT ROLLS, LIT. STAKES SHATTER.' });   /* (claude/chief3) THE BARREL, TAUGHT: the camp's second verb, said where it is first met (the Chieftain heaves his own) */
   ent('barrel', 96, 19); ent('crank', 98, 19, { wall: 101 });
   pal(101, 15, 19);
   ent('sprig', 109, 19, { face: -1 });   /* (and a sapper: the gate is the idea here, not a bomb) */
@@ -428,7 +429,10 @@ function theStockade() {
   floor(186, 249, 20);
   for (let x = 187; x <= 200; x++) set(x, 20, T.RAIL); ent('cart', 188, 19); ent('pike', 195, 19, { face: -1 }); ent('pike', 198, 19, { face: -1 }); ent('sign', 186, 19, { text: 'A LOOT CART ON THE RAIL. CUT IT AND IT ROLLS. THE PIKES HOLD THE LINE. NOT AGAINST A CART.' });
   ent('torch', 188, 19); ent('hound', 193, 19, { face: -1 }); ent('cage', 199, 19, { kind: 'bird' });
-  block(203, 205, 15, 19); plat(202, 14, 5); ent('towertop', 204, 14); ent('archer', 204, 13, { face: -1, horn: true, pack: [{ dx: 32, y: 19 }, { dx: 40, y: 19 }] }); plat(199, 17, 2); plat(207, 17, 2); coins([203, 13], [207, 16]); // THE COMBINE: silence him and the crank ahead is quiet; let him sound it and his pack pours out behind the gate
+  for (let x = 203; x <= 205; x++) for (let y = 15; y <= 19; y++) set(x, y, T.PALISADE); plat(202, 14, 5); ent('towertop', 204, 14); ent('archer', 204, 13, { face: -1, horn: true, pack: [{ dx: 32, y: 19 }, { dx: 40, y: 19 }], stk: { lookout: true } }); plat(199, 17, 2); plat(207, 17, 2); coins([203, 13], [207, 16]); // THE COMBINE: silence him and the crank ahead is quiet; let him sound it and his pack pours out behind the gate
+  /* (claude/chief3) THE LOOKOUT ON STAKES (the barrel's REMIX): the horn tower stands on lashed stakes now, and a barrel lies at its foot - strike it, stand
+     back, and the blast takes the stilts: the whole lookout comes down with its blower (src/stockade-hands.js stepLooks; L.stockade.lookouts) */
+  ent('barrel', 200, 19); ent('sign', 196, 19, { text: 'THE LOOKOUT STANDS ON STAKES. STAKES SHATTER.' });
   ent('torch', 214, 19); ent('brute', 217, 19, { face: -1 }); ent('check', 215, 19);
   ent('treehouse', 221, 6);
   ent('barrel', 223, 19); ent('barrel', 226, 19); ent('crank', 229, 19, { wall: 232 }); ent('brazier', 228, 19);
@@ -465,7 +469,7 @@ function theStockade() {
   movers.push({ kind: 'lift', x: 315 * TS, y: 12 * TS, y0: 12 * TS, y1: 20 * TS, w: 32, h: 8, speed: 30, ridden: true });
   floor(317, 365, 20);
   ent('hound', 318, 19, { face: -1 }); ent('check', 323, 19);
-  ent('sign', 321, 19, { text: 'AT HIS SECOND WIND HE TAKES HIS WAR TOWER. CUT BOTH LASHINGS.' });   /* (claude/stockade2) the war tower, told at the door */   /* the EXAM's last beat: a hound on the landing, off the lift */
+  ent('sign', 321, 19, { text: 'SILENCE HIS HORN. STRIKE HIS POWDER BACK. CUT HIS TOWER DOWN.' });   /* (claude/chief3) his two verbs and his tower, told at the door */   /* (claude/stockade2) the war tower, told at the door */   /* the EXAM's last beat: a hound on the landing, off the lift */
 
   // ---- 9. The great hall: the Chieftain, archers on the balcony, a brazier by the wall ----
   // the rafter climb, both sides, two tiles a jump, for when the hall burns; the gate sits on the top beam
@@ -603,6 +607,10 @@ function stockadeWatchtowers(R3) {
   /* the walk down off tower three to the hall's outer wall and the lift */
   run(94, 109, 12, T.PLANK); for (const u of [97, 103]) post(u, 12, 25);
   block(110, 123, 12, 27); coins([100, 11], [106, 11], [114, 11]);
+  /* (claude/chief3) THE POWDER STORE (the barrel's EXAM, the last beat before the hall): the hall's own powder stacked at its outer wall, and the
+     two who guard it sat by it. One barrel struck from the walk's end rolls in among them, and the store goes up with it. Or fight them. */
+  ent('barrel', 113, 11); ent('barrel', 118, 11); ent('barrel', 119, 11);
+  ent('sprig', 117, 11, { face: -1, stk: { cook: true } }); ent('shield', 121, 11, { face: -1, stk: { cook: true } });
 
   /* (claude/stockade2) A ROPE UP BESIDE THE FIRST LIFT (final 377): the pulley lift stays the easy way up, the rope is the way when it is down
      (the walker - and a player who stepped off it - never had a second way; the walker was STUCK there on master too) */
@@ -624,11 +632,14 @@ function stockadeWatchtowers(R3) {
   R.watchtowers = (R.watchtowers || []).concat([[36, 38, 8, 19], [58, 60, 10, 25], [72, 74, 4, 25], [89, 91, 7, 25]].map(([a, b, top, floor]) => ({ x0: X(a), x1: X(b), top, floor })));
   /* the gate is barred as laid (T.PORT) and opened by the horn, which every hero can blow: the reach fill has it open (src/reachcore.js reachDoors) */
   R.reachDoors = (R.reachDoors || []).concat([{ x0: X(43), x1: X(43), y0: 13, y1: 19 }]);
+  /* (claude/chief3) THE LOOKOUT ON STAKES: its box (stilts, deck and the ledges up it) and its stilts, off its blower's own final column */
+  const lookouts = R.ents.filter(e => e.t === 'archer' && e.stk && e.stk.lookout).map(e => ({ x0: e.x - 5, x1: e.x + 4, y0: 14, y1: 19, sx0: e.x - 1, sx1: e.x + 1, sy0: 15, sy1: 19 }));
   const chief = R.ents.find(e => e.t === 'chief'), twx = (chief.x - 5) * TS;   /* HIS WAR TOWER: on the dais (final 588-591), its deck five rows over the hall floor, a lashing to a peg four tiles out either side */
   R.stockade = {
     tower: { x: twx, deck: 15 * TS, base: 18 * TS, foot: 20 * TS, pegs: [twx - 4 * TS, twx + 4 * TS] },
     gate: { x: X(43), y0: 13, y1: 19 },
     exam: { x0: X(56), x1: X(62), y0: 0, y1: 24, end: X(110), draw: [6.5, 10, 13.5] },
+    lookouts,
     areas: [['THE OUTER CAMP', 0, 131], ['THE YARD', 131, 226], ['THE WALL WALK AND THE KENNELS', 226, 334], ["THE SAPPERS' TUNNEL", 334, 378], ['THE WATCHTOWERS', 378, X(N)], ['THE GREAT HALL', X(N), 9999]],
   };
   /* THE HIGH SILVER moves to the crow's nest: the level's third silver (the high bridge's net, ents order idx 2) goes up the mast, so every save keeps its bits */

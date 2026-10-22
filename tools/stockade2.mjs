@@ -68,7 +68,7 @@ if (L.stockade) { const pg = await openPage({ audio: false, fonts: false });
     o.pack=E().filter(e=>e.alive).length-n0;o.squad=E().filter(e=>e.alive&&e.t==='hound'&&e.x<ex.x0*16).length-sq0;
     load();const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(200);const ch=E().find(q=>q.t==='chief'&&q.alive);
     ch.inv=0;const h0=ch.hp;BKT.hurtAs('light',ch,20,ch.x+(ch.face>0?-10:10),false);o.floorTake=(h0-ch.hp)/20;
-    ch.inv=0;BKT.hurtEnemy(ch,ch.hp-Math.round(ch.maxHp*0.49),ch.x-10,false);k=0;while(S().tower.st!=='manned'&&k++<600)BK.sim(1);o.manned=S().tower.st==='manned';o.upMode=ch.mode;o.upY=Math.round(ch.y/16);
+    ch.hp=Math.round(ch.maxHp*0.51);ch.inv=0;BKT.hurtEnemy(ch,20,ch.x-10,false);k=0;while(S().tower.st!=='manned'&&k++<600)BK.sim(1);o.manned=S().tower.st==='manned';o.upMode=ch.mode;o.upY=Math.round(ch.y/16);
     ch.inv=0;const h1=ch.hp;BKT.hurtAs('light',ch,20,ch.x-10,false);o.upTake=(h1-ch.hp)/20;
     for(const p of S().tower.pegs){P().x=p.x-10;P().y=A.floor;P().face=1;BK.sim(5);BK.press('atk');BK.sim(12);}o.cut=S().tower.pegs.filter(p=>p.cut).length;
     k=0;while(ch.mode!=='planted'&&k++<200)BK.sim(1);o.wreck=ch.mode==='planted'&&S().tower.st==='down';ch.inv=0;const h2=ch.hp;BKT.hurtAs('light',ch,20,ch.x-10,false);o.wreckTake=(h2-ch.hp)/20;

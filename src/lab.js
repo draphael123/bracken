@@ -2026,6 +2026,16 @@ async function runbossLab(BK, opts) {
          the door says so). The hands go to the nearest peg still standing and strike it, then the other; the red marks of his volley are still left as ever */
       { const sk = boss.t === 'chief' && BK.stockade ? BK.stockade() : null, pg = sk && sk.tower && sk.tower.st === 'manned' ? sk.tower.pegs.filter(q => !q.cut).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
         if (pg) { const sd = Math.sign(pg.x - P.x) || 1; goal = pg.x - sd * 10; strike = false; if (Math.abs(P.x - pg.x) < 20 && P.ground) { P.face = sd; if (P.atk < 0 && f % 6 === 0) { BK.press('atk'); swings++; } } } }
+      /* (claude/chief3) HIS POWDER and HIS WAR HORN, as a player reads them: a lit keg by the hands is struck back at him (at his tower's legs when he is
+         up it) when its fuse has time left - its bar is drawn - else they step well off it; while he winds his horn they walk in and cut him (two blows
+         silence it: the pips under the bar) */
+      { const sk = boss.t === 'chief' && BK.stockade ? BK.stockade() : null, kg = sk && sk.kegs ? sk.kegs.filter(q => q.st !== 'fly').sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
+        if (kg && Math.abs(kg.x - P.x) < 64 && Math.abs(kg.y - P.y) < 30) { const tgt = sk.tower && sk.tower.st === 'manned' ? sk.tower.x : boss.x, sd = Math.sign(tgt - kg.x) || 1;
+          const manned = sk.tower && sk.tower.st === 'manned';   /* (up his tower a keg by the legs is the quick way down: sent in on a shorter fuse) */
+          if (kg.fuse > (manned ? 0.6 : 1.0) && !kg.kicked && Math.abs(tgt - kg.x) < 180) { goal = kg.x - sd * 10; strike = false; if (Math.abs(P.x - goal) < 9 && P.ground) { P.face = sd; if (P.atk < 0 && f % 6 === 0) { BK.press('atk'); swings++; } } }
+          else { const A = BK.L.arena, lo = A.x0 + 56, hi = A.x1 - 56, cl = x => Math.max(lo, Math.min(hi, x)), a = cl(kg.x - 96), b = cl(kg.x + 96);   /* (off the keg - never into the fire strips by the walls) */
+            goal = Math.abs(a - kg.x) >= Math.abs(b - kg.x) ? (Math.abs(a - kg.x) === Math.abs(b - kg.x) ? (P.x < kg.x ? a : b) : a) : b; strike = false; } }
+        else if (sk && boss.mode === 'horn') { const sd = Math.sign(boss.x - P.x) || 1; goal = boss.x - sd * 16; strike = false; if (Math.abs(P.x - boss.x) < 30 && P.ground) { P.face = sd; if (P.atk < 0 && f % 6 === 0) { BK.press('atk'); swings++; } } } }
       let gBell = null; const golemWave = boss.t === 'golem' && BK.waves().some(w => !w.royal && w.life > 0 && Math.abs(w.x - P.x) < 30 && (P.x - w.x) * w.dir > 0 && P.y > w.y - 6);
       if (boss.t === 'golem' && LABP.v2 && (golemWave || (boss.mode === 'sweepTell' && boss.modeT < 0.07 && ad < 74) || (boss.mode === 'sweep' && ad < 74) || (boss.mode === 'stompTell' && boss.modeT < 0.12 && ad < 60))) { goal = null;
         if (P.ground && !(P.labJump > 0)) { BK.press('jump'); P.labJump = 16; } if (P.labJump > 0) { P.labJump--; k.jump = true; } }

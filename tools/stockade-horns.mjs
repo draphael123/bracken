@@ -77,7 +77,7 @@ try {
     const load=(id)=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(idx(id));BK.start();BK.god=true;BK.sim(10);BK.reset();};
     const enter=()=>{const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(200);};
     const sappers=()=>BK.enemies().filter(q=>q.alive&&q.t==='sapper').length;
-    const half=(e)=>{e.inv=0;const before=sappers();BKT.hurtEnemy(e,e.hp-Math.round(e.maxHp*0.4),e.x-10,false);BK.sim(10);return {before,after:sappers(),phase:e.phase};};
+    const half=(e)=>{e.inv=0;const before=sappers();if(e.t==='chief'){e.hp=Math.round(e.maxHp*0.51);BKT.hurtEnemy(e,20,e.x-10,false);}else BKT.hurtEnemy(e,e.hp-Math.round(e.maxHp*0.4),e.x-10,false);BK.sim(10);return {before,after:sappers(),phase:e.phase};};
     const res={};
     // (a) the rafters blower left alone: the Chieftain's phase two calls the wave
     load('stockade');enter();
