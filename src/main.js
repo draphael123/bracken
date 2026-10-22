@@ -33625,7 +33625,7 @@ function drawWhatsNew() {
   let yy = top;
   for (let i = wnScroll; i < rs.length && yy + RH <= y + h - 22; i++) { const r = rs[i]; if (r.cont && i === wnScroll) continue; if (r.more && yy + RH * 2 > y + h - 22) break;   /* (claude/bloodknight) never half a wrapped line at an edge (textfit CLIPPED once the list grew) */ if (r.kind === 'head') { if (r.gap && i > wnScroll && yy + RH * 2 <= y + h - 22) yy += 2; text(r.s, x + 12, yy, '#8fd160', 'left', 6); } else text(r.s, x + 12, yy, UI.text, 'left', 6); yy += RH; }
   if (wnScroll > 0) text('^', x + w - 10, top, UI.dim, 'right', 6);
-  if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 30, UI.dim, 'right', 6);
+  if (wnScroll < wnLimit) text('v', x + w - 10, y + h - 21, UI.dim, 'right', 6);   /* (integ111) was y+h-30, inside the last text row: it collided with the Paladin line once the list grew; now in the gap above the footer */
   text(wnScroll < wnLimit ? 'UP/DOWN scroll  Z more  ESC back' : 'UP/DOWN scroll  Z or ESC back', VW / 2, y + h - 14, UI.dim, 'center', 6);
 }
 function drawCredits() {
