@@ -1931,6 +1931,16 @@ Object.assign(SFX, {
   rgLoose(v = 0) { noise(0.08 + v * 0.03, 0.12 + v * 0.05, 2400 - v * 400, 1.3); tone('triangle', vary(220 + v * 30), 140, 0.06 + v * 0.03, 0.06 + v * 0.03); if (v >= 2) tone('sine', 110, 70, 0.14, 0.08); },
   rgThunk() { file('imp_wood', 0.22, 1.4); tone('square', vary(300), 180, 0.04, 0.04); },
   rgTick() { tone('square', 1500, 1500, 0.025, 0.03); },
+  /* (claude/chargetiers) THE THREE-TIER DRAW, HEARD: the string creaking tighter (a wood creak that rises and roughens) under a note that climbs a bright fifth a tier (D A D'), a little bell on T3; a FOCUSED tier adds a green shimmer */
+  rgTier(n = 1, focused = false) { n = Math.max(1, Math.min(3, n | 0)); const f = [0, 587, 880, 1175][n];
+    noise(0.1 + 0.04 * n, 0.06 + 0.03 * n, 900 + 500 * n, 1.6); tone('sawtooth', 70 + 30 * n, 90 + 40 * n, 0.12 + 0.03 * n, 0.03 + 0.01 * n);
+    bell(f, 0.2 + 0.08 * n, 0.04 + 0.012 * n); tone('triangle', f / 2, f / 2 * 1.5, 0.1, 0.04);
+    if (n === 3) { bell(f * 1.5, 0.5, 0.035, 0.05); tone('sine', 98, 60, 0.3, 0.07, 0.02); } if (focused && n >= 2) bell(f * 2, 0.35, 0.02, 0.07); },
+  /* (claude/chargetiers) the tiers' own release under the loose: T2 a hard whip-crack of the string and a hiss down the line; T3 the heavy bodkin - a deep thrum and a wooden knock off the limbs */
+  rgTierLoose(n = 2) { if (n >= 3) { tone('sine', 82, 46, 0.4, 0.18); noise(0.18, 0.14, 700, 0.9); file('imp_wood', 0.22, 0.9); tone('square', 220, 110, 0.08, 0.05); }
+    else { noise(0.12, 0.16, 4200, 2.2); tone('triangle', 880, 1600, 0.06, 0.05); tone('square', 1700, 900, 0.05, 0.03, 0.02); } },
+  /* (claude/chargetiers) THE PIN GOES IN: a heavy thunk of iron into flesh and wood, a low knock that holds (on a boss: the knock is shorter - he is only checked) */
+  rgPin(big = false) { file('imp_wood', 0.34, 1.0); tone('square', vary(240), 120, 0.07, 0.06); tone('sine', 110, 55, big ? 0.16 : 0.3, 0.14); noise(0.1, 0.12, 1100, 1.2); if (!big) bell(392, 0.4, 0.03, 0.04); },
   rgPick() { tone('triangle', 880, 1175, 0.06, 0.04); noise(0.03, 0.06, 3200, 1.5); },
   rgBash() { noise(0.08, 0.14, 1400, 0.8); tone('triangle', vary(260), 160, 0.08, 0.06); },
   rgSnare() { tone('square', vary(500), 420, 0.04, 0.04); noise(0.06, 0.08, 1800, 1.1); },

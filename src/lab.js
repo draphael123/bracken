@@ -73,6 +73,17 @@ const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
    enough that the punch lands before the blow (its modeT over KBASH_LEAD) - he punches the blow out of it instead of raising the shield. THE RANGER's ARROW SNATCH:
    a yellow projectile coming at her, a beat out - she taps the bash so it is ON THE BEAT as it arrives. Both edge-pressed (C is read on the frame it goes down) */
 const RG_KNEEL = 0.17, RG_DRAW_ST = 12;   /* s knelt before the bot draws (src/ranger.js RG.kneel.settle 0.15, and a frame) */
+/* (claude/chargetiers) THE RANGER'S HANDS USE HER THREE TIERS (src/ranger.js RG.tiers; main.js BK.rg().tier / tierAt): a player lets the draw go on the tier the moment asks for -
+   ON A LEVEL FOE (rgFoeTier): an ELITE or what wants a heavy (plate/shell/beast) and is not held already takes the PINNING SHOT (T3: held where it stands); two or more in the
+   line ahead within the pierce's reach, the PIERCING SHOT (T2); anything else the LONG SHOT (T1) - the hands used to hold every draw ~3.7 s until it went by itself.
+   ON A BOSS (rgBossTier, his openings - the rotation and the mixed heavy): the PINNING SHOT bites his break bar, so it is wound while he is NOT broken; BROKEN, the quicker PIERCING
+   SHOT spends the window on damage. let go = the hold has reached the wanted tier (plus a frame) */
+const rgRead = BK => { try { return BK.rg ? BK.rg() : null; } catch { return null; } };
+export function rgFoeTier(BK, e) { const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null;
+  if (e.alive && !(e.pinned > 0) && (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast')) return 3;
+  const line = BK.enemies().filter(q => q.alive && !q.harmless && (q.x - P.x) * P.face > 0 && Math.abs(q.x - P.x) < 240 && Math.abs(q.y - P.y) < 20).length; return line >= 2 ? 2 : 1; }
+export const rgBossTier = (BK, b) => b && b.broken > 0 ? 2 : 3;
+function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 export const KBASH_REACH = 26, KBASH_LEAD = 0.18, SNATCH_LEAD = 0.1;
 export function knightBashNow(BK, h, e, ad) { const P = BK.P; if (h !== 'knight' || !e || !e.alive || e === BK.boss || e.mini || e.xpRole === 'mini' || !P.ground || P.swim) return false;
   if ((P.kBashCd || 0) > 0 || (P.kBashT || 0) > 0 || (P.st || 0) < 20 || P.atk >= 0) return false;
@@ -255,6 +266,7 @@ export function strike(BK, h, e, f) {
       else if ((P.rgDuckT || 0) < RG_KNEEL) { if (Math.abs(P.vx) < 30) k.down = true; return { verb, want, swing }; }   /* (stopped first: DOWN at a run is the slide) */
       else if (free && P.st >= RG_DRAW_ST) { k.down = true; BK.press('atk'); k.atk = true; return { verb, want, swing: 1 }; } }   /* the nock from the knee: X pressed, then held */
     if (h === 'knight' && winding && P.atkHeld >= knightCutAt(e)) { /* let go: THE HEAVY CUT comes down */ }
+    else if (h === 'ranger' && winding && rgLetGo(BK, rgFoeTier(BK, e))) { /* (claude/chargetiers) let go: the tier this foe asks for (rgFoeTier) - X is not held this frame */ }
     else if (h === 'geomancer' && P.charge > 0 && GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4) { /* let go: the crack will run past his near edge */ }
     else if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
     else if (free && ad < reach && level && P.st < 20 && P.st >= 8 && h !== 'pirate') { BK.press('atk'); swing = 1; }   /* no wind for a heavy: a plain cut rather than standing idle */
@@ -653,6 +665,7 @@ function rotHold(BK) {
   if (ROT) { const why = P.heavy ? 'heavy' : P.hurt > 0 ? 'hurt' : P.dodge > 0 ? 'dodge' : P.labRotHold > 110 ? 'long' : BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true ? 'tell' : null; if (why) ROT[why] = (ROT[why] || 0) + 1; }
   if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
   if (HUMAN_H === 'knight' && P.atkHeld >= KNIGHT_CUT) { k.atk = false; P.labRotHold = 0; return; }   /* the guard-break cut, let go */
+  if (HUMAN_H === 'ranger' && rgLetGo(BK, rgBossTier(BK, b))) { k.atk = false; P.labRotHold = 0; return; }   /* (claude/chargetiers) her draw, let go on the tier he asks for */
   if (HUMAN_H === 'reaper' && BK.dk2) { const Bd = BK.dk2().blood(), T = Bd.BLOOD.tiers, want = b.broken > 0 ? 2 : 1;   /* (claude/bkfeel) +tiers: SUNDER (it bites his poise); on a BROKEN boss the CRIMSON CRESCENT (T4/T5 are past the hold's 110-frame cap) */
     if (P.atkHeld >= T.at[want] * Bd.quick + 0.03) { k.atk = false; P.labRotHold = 0; return; } }
   P.labRotHold++; k.atk = true; k.block = false; P.face = Math.sign(b.x - P.x) || P.face; if (ROT) ROT.holds += P.labRotHold === 2 ? 1 : 0;
@@ -2643,7 +2656,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='windcaller'&&BK.callerWind&&P.ground&&!k.left&&!k.right&&!(P.labJump>0)){const W=BK.callerWind();if(W&&W.on&&W.ledges.some(([x0,x1,row])=>Math.abs(P.y-row*16)<4&&P.x>=x0*16-4&&P.x<=(x1+1)*16+4)){if(SHIELDED(h))k.block=true;else k.down=true;}}   /* (claude/windcaller3) STOOD STILL ON HIS LEDGE IN A GUST, BRACED: whatever else the hands chose, the gust does not walk them off it */
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       // THE HERALD'S STONES LEAVE PISTOL ROOM: a loaded shot reaches across them; the short C release answers his yellow thrust.
-      const cutGo=h==='knight'&&P.atkHeld>=KNIGHT_CUT;   /* the heavy cut is let go at the guard-break */
+      const cutGo=(h==='knight'&&P.atkHeld>=KNIGHT_CUT)||(h==='ranger'&&rgLetGo(BK,rgBossTier(BK,boss)));   /* (claude/chargetiers: the ranger lets her draw go on the tier the boss asks for) */   /* the heavy cut is let go at the guard-break */
       const mixedHeavy=(opts.attackStyle==='mixed'||(LABP.v2&&LABP.mixHeavy&&h!=='pirate'&&h!=='reaper')||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
       /* THE SWING GOES AT HIM, NOT BEHIND. Standing closer than its spot, the bot walks back to it - and the game turns a hero to the key he
