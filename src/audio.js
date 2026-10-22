@@ -1876,6 +1876,10 @@ Object.assign(SFX, {
   geoBounce() { tone('square', vary(260), 130, 0.08, 0.1); noise(0.08, 0.18, 1500, 0.9); tone('sine', 120, 60, 0.18, 0.2); },
   geoQuake() { noise(0.9, 0.34, 170, 0.4); tone('sine', 55, 30, 0.9, 0.34); noise(0.5, 0.14, 700, 0.6, 0.2); },
   geoShard() { noise(0.12, 0.14, 2200, 1.1); tone('square', vary(900), 300, 0.05, 0.05); },
+  /* (claude/chargetiers) HER THREE-TIER STAVE, HEARD: a stone note that goes DOWN a tier as the earth wakes (a struck slab: A, E, low A), a grind of grit under it, a deep heave on T3 */
+  geoTier(n = 1) { n = Math.max(1, Math.min(3, n | 0)); const f = [0, 440, 330, 220][n];
+    tone('triangle', f, f * 0.97, 0.18 + 0.05 * n, 0.06 + 0.015 * n); bell(f * 2, 0.25 + 0.06 * n, 0.03 + 0.01 * n); noise(0.12 + 0.05 * n, 0.06 + 0.03 * n, 500 - 80 * n, 0.7);
+    if (n === 3) { tone('sine', 62, 40, 0.4, 0.2, 0.03); noise(0.3, 0.12, 200, 0.5, 0.05); } },
   wheel() { noise(0.3, 0.18, 700, 0.5); tone('triangle', vary(180), vary(420), 0.28, 0.07); SFX.shaftTurn(); },
   javThrow() { noise(0.18, 0.2, 2600, 1.2); tone('triangle', vary(900), vary(400), 0.16, 0.06); },
   javStick() { tone('square', vary(220), 120, 0.07, 0.07); noise(0.06, 0.14, 900, 0.8); tone('sine', 140, 70, 0.14, 0.12); },
@@ -1915,6 +1919,14 @@ Object.assign(SFX, {
      that starts a frenzy (his own voice, then a low swell), the frenzy running out, the throw (a spinning whoosh) and the catch, the growl of
      WORKING UP (a low throat, a rasp of steel on steel), the shrug, the harden, and a kill in a frenzy giving him back a little. */
   bzChop() { noise(0.1, 0.16, 1700, 0.8); tone('triangle', vary(520), vary(240), 0.08, 0.05); },
+  /* (claude/chargetiers) THE RAGE WIND-UP, HEARD: a growl in the chest that rises a tier (a low saw climbing E-G-B) over a hard knock of the hafts gripped tighter, a war-drum on T3 */
+  bzTier(n = 1) { n = Math.max(1, Math.min(3, n | 0)); const f = [0, 82, 98, 123][n];
+    tone('sawtooth', f, f * 1.12, 0.22 + 0.06 * n, 0.07 + 0.02 * n); pad('sawtooth', f / 2, f / 2 * 1.1, 0.3, 0.03 + 0.01 * n, 0, 500 + 200 * n); tone('square', 300 + 80 * n, 180, 0.05, 0.05); noise(0.08, 0.1, 900, 1);
+    if (n === 3) { tone('sine', 60, 38, 0.35, 0.22, 0.02); noise(0.25, 0.14, 240, 0.6, 0.04); } },
+  /* (claude/chargetiers) the tiers' own blows: T2 the wheel of steel (two whooshes and a ring), T3 a roar as both axes come down */
+  bzTierGo(n = 2) { if (n >= 3) { heroVo('heavy', 0.7) || heroVo('attack', 0.7); tone('sawtooth', 110, 70, 0.4, 0.1); } else { noise(0.14, 0.18, 1400, 1.1); noise(0.14, 0.16, 1100, 1.1, 0.12); bell(660, 0.3, 0.03, 0.06); } },
+  /* (claude/chargetiers) THE GROUND-SPLITTER: the axes into the floor and the floor going - a stone crack, a deep boom, grit */
+  bzSplit() { SFX.stone && SFX.stone(); file('imp_wood', 0.3, 0.7); tone('sine', 70, 28, 0.55, 0.36); noise(0.4, 0.3, 420, 0.5); tone('sawtooth', 140, 60, 0.3, 0.08, 0.03); },
   bzHeavy() { noise(0.22, 0.22, 1100, 0.6); tone('sawtooth', vary(330), vary(110), 0.2, 0.08); tone('sine', 90, 45, 0.25, 0.18, 0.06); },
   bzBrace() { if (gate('heroShout', 0.8)) heroVo('effort', 0.35); tone('sine', 110, 70, 0.12, 0.18); noise(0.06, 0.12, 400, 0.7); },
   bzBraced() { tone('sine', 140, 55, 0.22, 0.34); noise(0.1, 0.22, 600, 0.6); tone('square', vary(200), 90, 0.08, 0.06); heroVo('heavy', 0.4); },

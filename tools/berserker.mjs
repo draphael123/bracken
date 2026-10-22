@@ -45,8 +45,19 @@ try {
     out.flurry={combos,heavy,reach,spinL,spinR};
     /* the double chop on a mini's bar (70) */
     const poiseOf=h=>{__bz();
-      const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;BK.sim(2);P().st=P().maxSt;K.atk=true;for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0,heavy=false;for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;heavy=heavy||P().heavy;most=Math.max(most,b.poise||0,b.broken>0?100:0);}return {most,heavy,hit:b.hp0-b.hp};};
+      const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;BK.sim(2);P().st=P().maxSt;K.atk=true;for(let i=0;i<28;i++){BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0,heavy=false;   /* (claude/chargetiers: the double chop is T1 now and no longer goes by itself at the full wind - let go where it used to go, 0.5 s) */for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;heavy=heavy||P().heavy;most=Math.max(most,b.poise||0,b.broken>0?100:0);}return {most,heavy,hit:b.hp0-b.hp};};
     out.cross={bz:poiseOf('berserker')};
+    /* (claude/chargetiers) THE RAGE WIND-UP: the climb and its poses, each blow, rage quickens it, the auto-loose */
+    { const T={}, hold=n=>{P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++)BK.step(1);}, rel=()=>{K.atk=false;BK.step(2);};
+      __bz(); const seen=[],keys=[]; K.atk=true; BK.press('atk'); for(let i=0;i<110;i++){BK.step(1);const t=Z().tier;if(t&&!seen.includes(t))seen.push(t);if(t>=2&&!keys.includes(P().lastKey))keys.push(P().lastKey);} T.at=Z().tierAt; T.seen=seen; T.keys=keys; rel(); T.t3=Z().heavyTier; BK.sim(60);
+      __bz(); hold(40); rel(); T.t1=Z().heavyTier; BK.sim(60);
+      __bz(); const bk=__foe(-15,'sprig',5000); bk.biteCd=99; BK.sim(1); const hb=bk.hp; hold(70); rel(); T.t2=Z().heavyTier; const k2=[]; for(let i=0;i<20;i++){BK.step(1);k2.push(P().lastKey);} T.t2key=k2.includes('bzTier2'); T.behind=hb-bk.hp; bk.alive=false; BK.sim(60);
+      __bz(); const fw=__foe(44,'sprig',5000); fw.biteCd=99; BK.sim(1); hold(100); rel(); T.t3b=Z().heavyTier; const k3=[]; for(let i=0;i<24;i++){BK.step(1);k3.push(P().lastKey);fw.x=Math.max(fw.x,P().x+40);} T.t3key=k3.includes('bzTier3'); T.split={floored:(fw.floored||0)>BK.time,hit:fw.hp0-fw.hp}; fw.alive=false; BK.sim(60);
+      const pz=n=>{__bz();const b=__foe(20,'brute');b.maxHp=b.hp;b.mini=true;b.poise=0;b.biteCd=99;BK.sim(2);P().st=P().maxSt;K.atk=true;BK.press('atk');for(let i=0;i<n;i++){BK.sim(1);b.x=P().x+20;}K.atk=false;let most=0;for(let i=0;i<40;i++){BK.sim(1);b.x=P().x+20;most=Math.max(most,b.poise||0,b.broken>0?999:0);}b.alive=false;BK.sim(30);return most;};
+      T.p1=pz(40); T.p3=pz(100);
+      __bz(); P().rage=60; K.atk=true; BK.press('atk'); BK.step(2); T.atHot=Z().tierAt; K.atk=false; BK.sim(60);
+      __bz(); K.atk=true; BK.press('atk'); let fired=-1,ft=0; for(let i=0;i<200;i++){BK.sim(1);if(P().heavy&&fired<0){fired=i;ft=P().bzTier;}} K.atk=false; T.auto={fired,tier:ft}; BK.sim(60);
+      out.tiers=T; }
     /* roll */
     __bz();e=__foe(30);BK.sim(2);const x0=e.x;BK.press('dodge');for(let i=0;i<24;i++)BK.sim(1);out.roll={shoved:Math.round(e.x-x0),stag:e.stagger>0||e.shoved>0,passed:P().x>e.x-4,shoves:Z().stats.rollShoves};
     /* TAKE IT */
@@ -110,7 +121,7 @@ try {
     const IDS=['bzRoar','bzSpin','bzHarden','bzCleave','bzRampage','bzShrug','bzStand','bzUnchained','bzStorm'];out.skills={};
     for(const id of IDS){__bz([id],24);__foe(24);BK.sim(2);P().st=P().maxSt;const st=P().st;BK.press('throw');BK.sim(3);out.skills[id]={cd:+((P().cds||{})[id]||0).toFixed(1),spent:Math.round(st-P().st)};}
     /* art */
-    const set=BKT.heroSet('bracken','steel',false,'berserker');const need=['idle','run','jump','fall','land','takeoff','apex','skid','climb','atk','atkB','atkC','air','plunge','hurt','crouch','slide','block','dashAtk','cast','fidget','dance','slump','swim','tread','roll','grind','rise','sweep','airUp','windup','heavy','blast','bzThrow','bzRoar','bzSpin','bzHarden','bzCleave','bzRamp','bzShrug','bzStand','bzUnch','bzStorm',
+    const set=BKT.heroSet('bracken','steel',false,'berserker');const need=['idle','run','jump','fall','land','takeoff','apex','skid','climb','atk','atkB','atkC','air','plunge','hurt','crouch','slide','block','dashAtk','cast','fidget','dance','bzWind2','bzWind3','bzTier2','bzTier3','slump','swim','tread','roll','grind','rise','sweep','airUp','windup','heavy','blast','bzThrow','bzRoar','bzSpin','bzHarden','bzCleave','bzRamp','bzShrug','bzStand','bzUnch','bzStorm',
       'bzFlurryL','bzFlurryR','bzCross','bzAirSpin','bzPlunge','bzTake','bzCoil','bzPounce','bzPLand','bzWhet'];
     const gold=BKT.heroSet('bracken','ember',false,'berserker');const diff=(a,b)=>{const A=a.getContext('2d').getImageData(0,0,a.width,a.height).data,B=b.getContext('2d').getImageData(0,0,b.width,b.height).data;let n=0;for(let i=0;i<A.length;i+=4){if(A[i]!==B[i]||A[i+1]!==B[i+1]||A[i+2]!==B[i+2])n++;}return n;};
     out.art={missing:need.filter(k=>!set.R[k]),bare:!!set.bare,bareMissing:need.filter(k=>!(set.bare&&set.bare.R[k])),skinDiff:diff(set.R.idle[0],gold.R.idle[0])};
@@ -135,6 +146,15 @@ try {
   ok(Math.max(...F.reach.slice(0, 4)) <= 20 && Math.max(...F.reach.slice(0, 4)) >= 16, 'flurry: the chops should reach 16-20 px (short: the knight\'s sword is longer): ' + F.reach);
   ok(F.spinL >= 12 && F.spinR >= 12, 'air: both axes should spin round him (a box both sides): ' + JSON.stringify(F));
   ok(r.cross.bz.heavy && r.cross.bz.most >= 60, 'double chop: not a heavy, or one does not fill most of a mini\'s poise bar: ' + JSON.stringify(r.cross));
+  { const T = r.tiers;   /* (claude/chargetiers) THE RAGE WIND-UP */
+    ok(T.seen.join() === '1,2,3' && T.at[1] - T.at[0] >= 0.4 && T.at[2] - T.at[1] >= 0.4, 'tiers: the hold climbs T1, T2, T3 at least 0.4 s apart: ' + JSON.stringify(T));
+    ok(T.keys.includes('bzWind2') && T.keys.includes('bzWind3'), 'tiers: T2 and T3 held show their own wind-up poses: ' + JSON.stringify(T.keys));
+    ok(T.t1 === 1 && T.t2 === 2 && T.t3 === 3 && T.t3b === 3, 'tiers: let go on T1/T2/T3, that tier comes down: ' + [T.t1, T.t2, T.t3, T.t3b]);
+    ok(T.t2key && T.behind > 0, 'tiers: the SPINNING CLEAVE cuts the foe BEHIND him, in its own frames: ' + JSON.stringify({ key: T.t2key, behind: T.behind }));
+    ok(T.t3key && T.split.floored && T.split.hit > 0, 'tiers: the GROUND-SPLITTER splits the floor: a foe out past the axes is hit and knocked down: ' + JSON.stringify(T.split) + ' ' + T.t3key);
+    ok(T.p3 > T.p1, 'tiers: the GROUND-SPLITTER leans harder on a mini\'s bar than the overhead chop: ' + [T.p1, T.p3]);
+    ok(T.atHot[2] < T.at[2] - 0.15, 'tiers: RAGE winds them quicker: ' + JSON.stringify([T.at, T.atHot]));
+    ok(T.auto.fired > 0 && T.auto.tier === 3, 'tiers: held at T3 it comes down by itself: ' + JSON.stringify(T.auto)); }
   ok(r.roll.stag && r.roll.shoves > 0, 'roll: the shoulder roll did not knock the small foe aside: ' + JSON.stringify(r.roll));
   const T = r.take;
   ok(T.beat === 'blocked' && T.beatLost === 0 && T.parries === 1 && T.ripT > 0 && T.ripCross, 'take it: raised as the blow landed it should parry (nothing lost, the riposte window, the next cut the cross-chop): ' + JSON.stringify(T));

@@ -42,10 +42,23 @@ export const BZ = {
   axe: { st: 18, vx: 300, vy: -10, g: 600, flat: 0.5, dmg: 1.3, haft: 1.33, lost: 5, pick: 14, recall: 420 },
   perk: { rage: 1, brace: 1 },                        /* LEVELING2's hero perks (STOKED, STOUT BRACE): main.js applyUpgrades sets these from the card; 1 = none */
   poise: { heavy: 30, bossMul: 1.4, rage: 1.25, one: 0.5 },
+  /* (claude/chargetiers, Daniel 10-21 "each tier a DIFFERENT move") THE RAGE WIND-UP: HOLD X and the double chop climbs three tiers. at = s of WIND (past HEAVY_START, x his wind's
+     quickness) each arrives at - T1 is the old full wind; RAGE (half a bar or more) winds them x rageQ, a FRENZY x frenzyQ; hold = s held at T3 before it goes by itself;
+     st = wind each costs ON TOP of the heavy's own; mul = x the heavy's blow; poise = x the heavy's lean on the bar.
+       T1 OVERHEAD CHOP   both axes down from over his head (the double chop he always had)
+       T2 SPINNING CLEAVE one full turn with both axes out, carried a step and a half in: it cuts BEHIND him as well as ahead (cleave)
+       T3 GROUND-SPLITTER both axes buried in the floor: the ground splits both ways (a shockwave that knocks the small ones DOWN) - the heaviest lean on a bar he has (claude/chargetiers) */
+  tiers: { at: [0.36, 0.86, 1.41], hold: 0.8, rageQ: 0.8, frenzyQ: 0.65, st: [0, 0, 6, 12], mul: [0, 1, 1.25, 1.5], poise: [0, 1, 1.2, 1.8],
+    names: ['', 'OVERHEAD CHOP', 'SPINNING CLEAVE', 'GROUND-SPLITTER'], cols: [null, '#ffd0a0', '#ff8a4c', '#ff3a2a'], label: [null, '#ffe6c8', '#ffb07a', '#ff7a5a'] },
+  cleave: { vx: 190, reach: 26, back: 22, shove: 220 },
+  slam: { sp: 240, life: 0.38, dmg: 0.6, reach: 24 },
   /* WEIGHT (claude/weight): his row of its commit table (src/commit.js reads COMMIT.berserker) - kept here as the record */
   commit: { light: 0.14, third: 0.2, up: 0.14, heavy: 0.27, roll: 22, rollInv: 0.26, rollT: 0.28, brace: 0.28 },   /* (claude/heropassa: the record now matches what is live - src/commit.js ROLL_COST 22 and STAM.rollInv 0.26 win; this row was never read) */
 };
 /* WHO MAY BE ROLLED THROUGH AND KNOCKED ASIDE (and knocked along by the pounce): a small common foe, never a boss, a mini, an elite, a big one or one that cannot be moved */
+/* (claude/chargetiers) THE TIER HIS WIND HAS REACHED: held = s X has been down (main.js P.atkHeld), q = the wind's quickness (heavyWind / BZ.tiers.at[0] x rage / frenzy), start = HEAVY_START */
+export const bzTierAt = (i, q = 1, start = 0.14) => start + BZ.tiers.at[i - 1] * q;
+export const bzTierFor = (held, q = 1, start = 0.14) => { let t = 0; for (let i = 1; i <= 3; i++) if (held >= bzTierAt(i, q, start) - 1e-6) t = i; return t; };
 export const smallFoe = (e, knockSkip) => !!(e && e.alive && !e.harmless && !e.maxHp && !e.mini && !e.elite && !e.big && !e.xpRole && !(knockSkip && knockSkip(e)));
 /* WHO HE MAY THROW IN A FRENZY (for claude/throw): a medium foe too - not a boss, a mini, an elite captain */
 export const canThrowMedium = (P, e) => !!(P && P.frenzyT > 0 && e && e.alive && !e.maxHp && !e.mini && !e.elite && !e.xpRole);
@@ -55,7 +68,7 @@ export const selfFloor = (hp, cost) => Math.max(Math.min(hp, 1), hp - Math.max(0
 export function makeBerserker(api) {
   const stats = { takes: 0, taken: 0, absorbed: 0, chip: 0, parries: 0, takeRed: 0, takeBroken: 0, frenzies: 0, throws: 0, pickups: 0, recalls: 0, axeHits: 0, rollShoves: 0, kills: 0,
     healed: 0, rageDealt: 0, rageTaken: 0, cries: 0, rends: 0, cracks: 0, floored: 0,
-    braces: 0, braced: 0, braceMiss: 0, braceRed: 0 };   /* (the brace's names, kept as the take's: braces = raised, braced = took one) */
+    braces: 0, braced: 0, braceMiss: 0, braceRed: 0, tier1: 0, tier2: 0, tier3: 0 };   /* (claude/chargetiers: the rage wind-up's tiers let go) */   /* (the brace's names, kept as the take's: braces = raised, braced = took one) */
   const P = () => api.P, T = () => api.tal();
   const clampRage = p => { p.rage = Math.max(0, Math.min(100, p.rage || 0)); };
   const raging = p => (p.rage || 0) >= BZ.rage.high || p.frenzyT > 0;
@@ -286,7 +299,7 @@ export function makeBerserker(api) {
   const read = () => { const p = P(); return { rage: +(p.rage || 0).toFixed(1), frenzyT: +(p.frenzyT || 0).toFixed(2), braceT: p.braceT || 0, braceRec: p.braceRec || 0, takeUp: takeUp(p), onBeat: onBeat(p), axe: p.bzAxe ? { state: p.bzAxe.state, x: Math.round(p.bzAxe.x), y: Math.round(p.bzAxe.y) } : null,
     oneHanded: !!p.bzAxe, chain: p.bzChainN || 0, rendN: p.bzRendN || 0, workT: p.workT || 0, coilT: p.coilT || 0, whetT: p.whetT || 0, pounceT: p.pounceT || 0, pounceRec: p.pounceRec || 0, hasteT: p.hasteT || 0,
     swingMul: +swingMul().toFixed(3), takeMul: +takeMul().toFixed(3), armoured: armoured(), stats: { ...stats } }; };
-  return { BZ, swingMul, oneHanded, dealt, rend, chopLanded, chopStart, took, takeMul, lethal, armoured, takeTakes, braceTakes: takeTakes, takeUp: () => takeUp(P()), onBeat: () => onBeat(P()),
+  return { BZ, tierStat: n => { stats['tier' + n] = (stats['tier' + n] || 0) + 1; }, swingMul, oneHanded, dealt, rend, chopLanded, chopStart, took, takeMul, lethal, armoured, takeTakes, braceTakes: takeTakes, takeUp: () => takeUp(P()), onBeat: () => onBeat(P()),
     throwAxe: () => throwAxe(P()), recall: () => recall(P()), frenzy: () => frenzy(P(), true),
     update, kit, kitStep, draw, clear, read, raging: () => raging(P()), resetStats: () => { for (const k in stats) stats[k] = 0; }, canThrowMedium: e => canThrowMedium(P(), e) };
 }

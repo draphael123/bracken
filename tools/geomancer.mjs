@@ -47,7 +47,7 @@ import { openPage } from './cdp.mjs';
 /* HER SET'S FRAME COUNTS, key by key, as they were before the staff (master 52cfebb, less THE MEND's gMend): the staff redraws every
    frame and must not add or drop one */
 /* dance 8 -> 12 (2026-09-29, claude/dances: Daniel asked for a dance per hero; hers is the stones orbiting her staff) */
-const STAFF_FRAMES = {"idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "airUp":5, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "dance2":33, "dance3":23, "follow":2, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2, "gShrug":2, "drink":5, "parry":2, "ripo":3, "earthWind":2, "earthHit":2}   /* (claude/riposteart: the parry catch and the riposte strike, one pose each for every hero - the two keys are new by design; claude/plunges: EARTHFALL replaced the STONEFALL ring - its windup and release poses, new by design) */;
+const STAFF_FRAMES = {"gWind3":2, "gShard":2, "gPillar":2, /* (claude/chargetiers: the three-tier stave) */ "idle":8, "run":6, "jump":2, "fall":2, "land":3, "takeoff":1, "apex":1, "skid":1, "climb":2, "atk":5, "plunge":1, "hurt":2, "crouch":1, "slide":2, "airUp":5, "sense":2, "block":2, "dashAtk":3, "atkB":5, "atkC":5, "air":5, "cast":2, "fidget":15, "dance":12, "dance2":33, "dance3":23, "follow":2, "slump":2, "swim":4, "tread":4, "roll":4, "burrow":3, "rise":5, "sweep":5, "heavy":3, "windup":3, "blast":2, "gStep":2, "gHeave":3, "gSpikes":2, "gArch":2, "gWall":3, "gTomb":2, "gFault":2, "gGolem":2, "gAval":2, "gShrug":2, "drink":5, "parry":2, "ripo":3, "earthWind":2, "earthHit":2}   /* (claude/riposteart: the parry catch and the riposte strike, one pose each for every hero - the two keys are new by design; claude/plunges: EARTHFALL replaced the STONEFALL ring - its windup and release poses, new by design) */;
 const pg = await openPage({ audio: false, fonts: false });
 try {
   await pg.evalp(`(async()=>{const {xpFloor}=await import('/src/xp.js');
@@ -100,8 +100,19 @@ try {
       /* (a swornsword: a sprig is rooted and nothing throws it) a foe at the full length: the rock spike at the end of a full charge launches it - and a crack from 0.6 of the wind, that runs past him and
          stops short of its end, hits him but throws nothing */
       __geo([]);const reachFull=FL?FL.len0+FL.lenK:160,sa=foe(reachFull-10,'swornsword');BK.sim(2);const spike=hold([sa],1);
-      __geo([]);const sb=foe(80,'swornsword');BK.sim(2);const halfway=hold([sb],0.6);   /* (0.6 of the wind runs the crack to about 105 px: past him, well short of its end) */
+      __geo([]);const sb=foe(50,'swornsword');BK.sim(2);const halfway=hold([sb],0.28);   /* (claude/chargetiers: under T1 the crack is short - 0.28 of the wind runs it ~60 px, past him and well short of its end; it was 0.6 of the wind at 80 px, which is the STONE SHARD's band now) */
       return {contact,full:full0.hurt[0],open,pit,wall,line,spike,halfway,reachFull}})()`);
+  /* (claude/chargetiers) HER THREE-TIER STAVE: the climb (BK.geoTier) and the held pose, T1 the STONE SHARD (a missile, half the wind), T2 the full fault line, T3 the RISING PILLAR
+     (launches what it rises under, STANDS as one of her stones, gives wind back), the auto-loose */
+  out.tiers = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,G=()=>BK.geo(),R=()=>BK.geoTier(),T={};
+      const foe=(dx,t='sprig')=>{BK.spawnEnt({t,x:(P().x+dx)/16,y:21});const e=BK.enemies().at(-1);e.hp=e.hp0=5000;e.cd=99;e.biteCd=99;return e;};
+      __geo([]);const seen=[],keys=[];K.atk=true;for(let i=0;i<95;i++){BK.step(1);const t=R().tier;if(t&&!seen.includes(t))seen.push(t);if(t>=3&&!keys.includes(P().lastKey))keys.push(P().lastKey);}T.at=R().tierAt;T.seen=seen;T.keys=keys;K.atk=false;BK.step(2);T.t3=R().heavyTier;BK.sim(90);
+      __geo([]);const fa=foe(110,'swornsword');BK.sim(2);let st0=P().maxSt;P().st=st0;K.atk=true;for(let i=0;i<24;i++){BK.sim(1);fa.x=P().x+110;}T.t1tier=R().tier;K.atk=false;BK.sim(1);T.shardCost=Math.round(st0-P().st);for(let i=0;i<40;i++){BK.sim(1);fa.x=P().x+110;}T.shard={hurt:fa.hp0-fa.hp,hits:R().stats.shardHits,t1:R().stats.tiers[1]};fa.alive=false;BK.sim(90);
+      __geo([]);P().st=P().maxSt;st0=P().st;K.atk=true;BK.sim(45);K.atk=false;BK.sim(1);T.faultCost=Math.round(st0-P().st);BK.sim(90);
+      __geo([]);const fp=foe(60,'swornsword');BK.sim(2);const y0=fp.y;P().st=P().maxSt;K.atk=true;for(let i=0;i<80;i++){BK.sim(1);fp.x=P().x+60;fp.vx=0;}K.atk=false;BK.sim(1);const stA=P().st;let lift=0,steps=0;for(let i=0;i<40;i++){BK.sim(1);lift=Math.max(lift,y0-fp.y);}
+      T.pillar={lift:Math.round(lift),hurt:fp.hp0-fp.hp,pieces:G().pieces().filter(p=>p.kind==='pillar').length,stats:R().stats,refunded:Math.round(P().st-stA)};fp.alive=false;BK.sim(90);
+      __geo([]);K.atk=true;let fired=-1,ft=0;for(let i=0;i<200;i++){BK.sim(1);if(P().heavy&&fired<0){fired=i;ft=P().geoTier;}}K.atk=false;T.auto={fired,tier:ft};BK.sim(60);
+      return T;})()`);
   /* THE RUNE-WARD: every blow is 20 from 20 px in front unless it says otherwise; wind is topped up unless the case is about wind */
   out.ward = await pg.evalp(`(()=>{const P=()=>BK.P,K=BK.keys,W=(BK.geoK&&BK.geoK.ward)||{raise:0.1,perfect:0.09,hitSt:16};
       const hit=(o={})=>{P().inv=0;P().hurt=0;const st=P().st,hp=P().hp;const r=BKT.damagePlayer(o.x!==undefined?o.x:P().x+P().face*20,20,{unblockable:!!o.red});BK.sim(1);return {r,st:Math.round(st-P().st),hp:hp-P().hp};};
@@ -183,6 +194,13 @@ try {
   assert(H.line.hurt.every(d => d > 0), 'FAULT LINE: every foe along the line is hit, not just the first (' + JSON.stringify(H.line) + ')');
   assert(H.spike.hurt[0] > 0 && H.spike.lift >= 20, 'FAULT LINE: a full charge ends in a rock spike that launches what it hits (' + JSON.stringify(H.spike) + ')');
   assert(H.halfway.hurt[0] > 0 && H.halfway.lift < 6, 'FAULT LINE: the spike is the FULL charge\'s: a crack that only just reaches him throws nothing (' + JSON.stringify(H.halfway) + ')');
+  { const T = out.tiers, TJ = JSON.stringify(T);   /* (claude/chargetiers) */
+    assert(T.seen.join() === '1,2,3' && T.at[1] - T.at[0] >= 0.3 && T.at[2] - T.at[1] >= 0.4, 'TIERS: the hold climbs STONE SHARD, FAULT LINE, RISING PILLAR (' + TJ + ')');
+    assert(T.keys.includes('gWind3'), 'TIERS: the RISING PILLAR held shows its own pose (' + TJ + ')');
+    assert(T.t1tier === 1 && T.shard.hurt > 0 && T.shard.hits === 1 && T.shard.t1 === 1, 'TIERS: let go at T1 a STONE SHARD flies and hits a foe out past the short crack (' + TJ + ')');
+    assert(T.shardCost > 0 && T.shardCost < T.faultCost * 0.7, 'TIERS: the STONE SHARD costs about half the wind of the fault line (' + TJ + ')');
+    assert(T.t3 === 3 && T.pillar.lift >= 20 && T.pillar.hurt > 0 && T.pillar.pieces === 1 && T.pillar.stats.pillars >= 1 && T.pillar.refunded > 0, 'TIERS: the RISING PILLAR launches what it rises under, stands as a step, and gives wind back (' + TJ + ')');
+    assert(T.auto.fired > 0 && T.auto.tier === 3, 'TIERS: held at T3 it goes by itself, a pillar (' + TJ + ')'); }
   const S = out.ward, SW = JSON.stringify(S);
   assert(S.rising.r !== 'blocked' && S.rising.hp > 0, 'THE RUNE-WARD takes a tenth of a second to rise: a blow the frame after C finds her (' + SW + ')');
   assert(S.y1.r === 'blocked' && S.y1.hp === 0 && S.y1.st >= 14, 'a YELLOW blow on it is blocked, for more wind than the Knight\'s 11 (' + SW + ')');

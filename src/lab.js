@@ -84,6 +84,30 @@ export function rgFoeTier(BK, e) { const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e)
   const line = BK.enemies().filter(q => q.alive && !q.harmless && (q.x - P.x) * P.face > 0 && Math.abs(q.x - P.x) < 240 && Math.abs(q.y - P.y) < 20).length; return line >= 2 ? 2 : 1; }
 export const rgBossTier = (BK, b) => b && b.broken > 0 ? 2 : 3;
 function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
+/* (claude/chargetiers) THE BERSERKER'S HANDS USE HIS RAGE WIND-UP (src/berserker.js BZ.tiers; main.js BK.bz().tier / tierAt). ON A LEVEL FOE (bzFoeTier): two or more foes within
+   the cleave's reach on BOTH sides of him -> the SPINNING CLEAVE; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
+   hardest on a bar) when he is RAGING (the wind is quicker), else the OVERHEAD CHOP; anything else the OVERHEAD CHOP (as his hands always let it go, at the full wind).
+   ON A BOSS (bzBossTier, in his openings): NOT broken and RAGING -> the GROUND-SPLITTER (the poise-breaker's blow); not broken -> the SPINNING CLEAVE; BROKEN -> the quick OVERHEAD CHOP */
+const bzRead = BK => { try { return BK.bz ? BK.bz() : null; } catch { return null; } };
+const bzHot = P => (P.rage || 0) >= 50 || (P.frenzyT || 0) > 0;
+export function bzFoeTier(BK, e) { const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, near = BK.enemies().filter(q => q.alive && !q.harmless && Math.abs(q.x - P.x) < 34 && Math.abs(q.y - P.y) < 20);
+  if (near.some(q => q.x < P.x - 2) && near.some(q => q.x > P.x + 2)) return 2;
+  if ((e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast' || near.length >= 3) && bzHot(P)) return 3;
+  return 1; }
+export const bzBossTier = (BK, b) => b && b.broken > 0 ? 1 : bzHot(BK.P) ? 3 : 2;
+/* (claude/chargetiers) THE GEOMANCER'S HANDS USE HER THREE-TIER STAVE (src/geomancer.js GEO.tiers; main.js BK.geoTier()). ON A LEVEL FOE (geoFoeTier): a flyer (the crack misses it) -> the
+   STONE SHARD; an ELITE or a plate/shell/beast -> the RISING PILLAR; a foe the short crack reaches before T1 (66 px) -> the short crack as her hands always let it go; out past the
+   fault line's 160 px -> the shard; anything else the FAULT LINE (the full crack). ON A BOSS (geoBossTier): NOT broken -> the RISING PILLAR (it heaves him and gives her wind back);
+   BROKEN -> the quicker FAULT LINE */
+export function geoFoeTier(BK, e, ad) { const fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, edge = ad - (e.w || 12) / 2;
+  if (fam === 'wing' || e.fly || e.noGrav) return 1; if (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast') return 3;
+  if (edge + 4 <= GEO_K.fault.len0 + GEO_K.fault.lenK * 0.3) return 0; return edge > GEO_K.fault.len0 + GEO_K.fault.lenK ? 1 : 2; }
+export const geoBossTier = (BK, b) => b && b.broken > 0 ? 2 : 3;
+function geoLetGo(BK, want, e, ad) { const r = BK.geoTier ? BK.geoTier() : null, P = BK.P; if (!(P.charge > 0)) return false;
+  if (!r || !r.tierAt) return GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4;   /* (no tiers: the old let-go) */
+  if (want === 0) return GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4 || r.tier >= 1;
+  return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
+function bzLetGo(BK, want) { const r = bzRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 export const KBASH_REACH = 26, KBASH_LEAD = 0.18, SNATCH_LEAD = 0.1;
 export function knightBashNow(BK, h, e, ad) { const P = BK.P; if (h !== 'knight' || !e || !e.alive || e === BK.boss || e.mini || e.xpRole === 'mini' || !P.ground || P.swim) return false;
   if ((P.kBashCd || 0) > 0 || (P.kBashT || 0) > 0 || (P.st || 0) < 20 || P.atk >= 0) return false;
@@ -266,8 +290,9 @@ export function strike(BK, h, e, f) {
       else if ((P.rgDuckT || 0) < RG_KNEEL) { if (Math.abs(P.vx) < 30) k.down = true; return { verb, want, swing }; }   /* (stopped first: DOWN at a run is the slide) */
       else if (free && P.st >= RG_DRAW_ST) { k.down = true; BK.press('atk'); k.atk = true; return { verb, want, swing: 1 }; } }   /* the nock from the knee: X pressed, then held */
     if (h === 'knight' && winding && P.atkHeld >= knightCutAt(e)) { /* let go: THE HEAVY CUT comes down */ }
+    else if (h === 'berserker' && winding && bzLetGo(BK, bzFoeTier(BK, e))) { /* (claude/chargetiers) let go: the tier the fight around him asks for (bzFoeTier) */ }
     else if (h === 'ranger' && winding && rgLetGo(BK, rgFoeTier(BK, e))) { /* (claude/chargetiers) let go: the tier this foe asks for (rgFoeTier) - X is not held this frame */ }
-    else if (h === 'geomancer' && P.charge > 0 && GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4) { /* let go: the crack will run past his near edge */ }
+    else if (h === 'geomancer' && P.charge > 0 && geoLetGo(BK, geoFoeTier(BK, e, ad), e, ad)) {   /* (claude/chargetiers: on the tier the foe asks for - geoFoeTier) */ /* let go: the crack will run past his near edge */ }
     else if (winding || (free && !P.heavy && ad < want + 4 && (h !== 'pirate' || ad > reach + 12) && level && (P.ground || P.swim) && P.st >= (BK.heavyCost ? BK.heavyCost() : 26) + 2)) { k.atk = true; if (!winding) swing = 1; }
     else if (free && ad < reach && level && P.st < 20 && P.st >= 8 && h !== 'pirate') { BK.press('atk'); swing = 1; }   /* no wind for a heavy: a plain cut rather than standing idle */
   } else if (verb === 'sweep' || verb === 'rise') {
@@ -665,7 +690,9 @@ function rotHold(BK) {
   if (ROT) { const why = P.heavy ? 'heavy' : P.hurt > 0 ? 'hurt' : P.dodge > 0 ? 'dodge' : P.labRotHold > 110 ? 'long' : BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true ? 'tell' : null; if (why) ROT[why] = (ROT[why] || 0) + 1; }
   if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
   if (HUMAN_H === 'knight' && P.atkHeld >= KNIGHT_CUT) { k.atk = false; P.labRotHold = 0; return; }   /* the guard-break cut, let go */
-  if (HUMAN_H === 'ranger' && rgLetGo(BK, rgBossTier(BK, b))) { k.atk = false; P.labRotHold = 0; return; }   /* (claude/chargetiers) her draw, let go on the tier he asks for */
+  if (HUMAN_H === 'ranger' && rgLetGo(BK, rgBossTier(BK, b))) { k.atk = false; P.labRotHold = 0; return; }
+  if (HUMAN_H === 'berserker' && bzLetGo(BK, bzBossTier(BK, b))) { k.atk = false; P.labRotHold = 0; return; }
+  if (HUMAN_H === 'geomancer' && geoLetGo(BK, geoBossTier(BK, b), b, Math.abs(b.x - P.x))) { k.atk = false; P.labRotHold = 0; return; }   /* (claude/chargetiers) his wind-up, let go on the tier he asks for */   /* (claude/chargetiers) her draw, let go on the tier he asks for */
   if (HUMAN_H === 'reaper' && BK.dk2) { const Bd = BK.dk2().blood(), T = Bd.BLOOD.tiers, want = b.broken > 0 ? 2 : 1;   /* (claude/bkfeel) +tiers: SUNDER (it bites his poise); on a BROKEN boss the CRIMSON CRESCENT (T4/T5 are past the hold's 110-frame cap) */
     if (P.atkHeld >= T.at[want] * Bd.quick + 0.03) { k.atk = false; P.labRotHold = 0; return; } }
   P.labRotHold++; k.atk = true; k.block = false; P.face = Math.sign(b.x - P.x) || P.face; if (ROT) ROT.holds += P.labRotHold === 2 ? 1 : 0;
@@ -2656,7 +2683,7 @@ async function runbossLab(BK, opts) {
       if(boss.t==='windcaller'&&BK.callerWind&&P.ground&&!k.left&&!k.right&&!(P.labJump>0)){const W=BK.callerWind();if(W&&W.on&&W.ledges.some(([x0,x1,row])=>Math.abs(P.y-row*16)<4&&P.x>=x0*16-4&&P.x<=(x1+1)*16+4)){if(SHIELDED(h))k.block=true;else k.down=true;}}   /* (claude/windcaller3) STOOD STILL ON HIS LEDGE IN A GUST, BRACED: whatever else the hands chose, the gust does not walk them off it */
       if(P.labJump>0&&!walker){P.labJump--;k.jump=true;}
       // THE HERALD'S STONES LEAVE PISTOL ROOM: a loaded shot reaches across them; the short C release answers his yellow thrust.
-      const cutGo=(h==='knight'&&P.atkHeld>=KNIGHT_CUT)||(h==='ranger'&&rgLetGo(BK,rgBossTier(BK,boss)));   /* (claude/chargetiers: the ranger lets her draw go on the tier the boss asks for) */   /* the heavy cut is let go at the guard-break */
+      const cutGo=(h==='knight'&&P.atkHeld>=KNIGHT_CUT)||(h==='ranger'&&rgLetGo(BK,rgBossTier(BK,boss)))||(h==='berserker'&&bzLetGo(BK,bzBossTier(BK,boss)))||(h==='geomancer'&&geoLetGo(BK,geoBossTier(BK,boss),boss,ad));   /* (claude/chargetiers: the ranger lets her draw go on the tier the boss asks for) */   /* the heavy cut is let go at the guard-break */
       const mixedHeavy=(opts.attackStyle==='mixed'||(LABP.v2&&LABP.mixHeavy&&h!=='pirate'&&h!=='reaper')||h==='pirate'&&boss.t==='herald'&&P.loaded) && !cutGo && !P.heavy && !k.block && (P.charge>0||P.atkHeld>0||(open&&P.ground&&f>=(P.labHeavyAt||0)&&(h==='pirate'&&boss.t==='herald'?ad>40&&ad<140:ad<reach+8)&&P.st>=(BK.heavyCost?BK.heavyCost():26)+8));
       if(mixedHeavy){k.atk=true;if(!(P.charge>0||P.atkHeld>0))P.labHeavyAt=f+Math.round(4*60/(BK.SET.speed||1));}
       /* THE SWING GOES AT HIM, NOT BEHIND. Standing closer than its spot, the bot walks back to it - and the game turns a hero to the key he

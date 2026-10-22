@@ -31,6 +31,17 @@ export const GEO = {
      and a crowd along it takes half. */
   wind: 0.5,
   fault: { len0: 22, lenK: 138, speed: 520, mul0: 0.5, mulK: 0.2, fullAt: 0.98, spikeMul: 1.2, spikeVy: -360, spikeVyTall: -440, linger: 0.35 },
+  /* (claude/chargetiers, Daniel 10-21 "each tier a DIFFERENT move ... the pillar ... should ease her stamina wall") THE THREE-TIER STAVE. at = s of WIND (past HEAVY_START, x her
+     wind's quickness) each tier arrives at - T2 is the old full wind; let go BEFORE T1 and it is the short crack it always was (it hits what touches her).
+       T1 STONE SHARD   a shard of stone flung flat ahead at chest height (shard: px/s, its own blow) - it reaches what the crack cannot: a flyer, a shooter on a ledge; HALF the
+                        wind of a heavy (st[1])
+       T2 FAULT LINE    hers already: the full crack and the spike at its tip
+       T3 RISING PILLAR the full crack, and where it first finds a foe (or at its tip) a PILLAR of her stone rises (pillar.h cells): it strikes and LAUNCHES what is on it, heaves
+                        what stands beside it, and STANDS as a STEP (one of her stones, the cap and the crumble as any). TIME TRADED FOR POWER: it costs no more wind than
+                        the fault line, and the stone gives wind back as it rises (pillar.refund) - the hold is the price, not the bar.
+     hold = s held at T3 before it goes by itself; names/cols = the meter and the words */
+  tiers: { at: [0.16, 0.5, 1.06], hold: 0.8, st: [1, 0.5, 1, 1], names: ['', 'STONE SHARD', 'FAULT LINE', 'RISING PILLAR'], cols: [null, '#c8c4b0', '#e8a83a', '#ff8a3a'], label: [null, '#e8e4d0', '#ffd27a', '#ffb070'],
+    shard: { vx: 330, vy: -20, g: 120, life: 0.55, dmg: 0.95 }, pillar: { h: 3, mul: 1.6, refund: 14 } },
   /* THE RUNE-WARD (her C from round 3, Daniel, 2026-09-24 - it replaces the two-hit ROCK SHIELD and THE MEND). The Knight's guard,
      SIDEGRADED: the same rules (hold to block, YELLOW blocked, RED breaks through, a blocked blow costs wind, out of wind is a
      GUARD BREAK at half the blow), but a projected slab of rune-cut stone, taller than she is and lipped over her head. Against his:
@@ -47,12 +58,16 @@ export const GEO = {
   quakeR: 200, quakeWideMul: 1.5,
   roll: { sp: 230, r: 5, life: 1.0, dmg: 1.0 }, boulder: { sp: 190, r: 8, life: 3.2, dmg: 1.0, bounces: 2 },   /* (1.6 and a fresh hit on every bounce measured 120 at level 3 on the probe, four times Harrier's; each foe is hit ONCE now) */
 };
+/* (claude/chargetiers) THE TIER HER WIND HAS REACHED: held = s X has been down (main.js P.atkHeld), q = her wind's quickness (heavyWind / GEO.wind), start = HEAVY_START. 0 = the short crack */
+export const geoTierAt = (i, q = 1, start = 0.14) => start + GEO.tiers.at[i - 1] * q;
+export const geoTierFor = (held, q = 1, start = 0.14) => { let t = 0; for (let i = 1; i <= 3; i++) if (held >= geoTierAt(i, q, start) - 1e-6) t = i; return t; };
 const STONE = { base: '#7c7a6e', hi: '#a8a696', lo: '#5e5c54', dark: '#44423a', moss: '#6f9a4a', moss2: '#557a38', rune: '#e8a83a', crack: '#26241e' };
 const EARTH = { base: '#6e4c30', hi: '#8c6844', lo: '#4c3420' };   /* the packed soil her ward is bound in (the earth shield) */
 
 export function makeGeomancer(api) {
   let pieces = [], rollers = [], shards = [], falls = [], spikes = [], faults = [], golem = null, spurFx = null, shieldDrawn = false, spunAt = -9;   /* (spunAt: when the draw last set a stone round her geode - tools/geomancer.mjs `staff`) */   /* (shieldDrawn: whether the last draw put her shield on screen - tools/geomancer.mjs `drawn`) */
   const TS = api.TS;
+  const stats = { tiers: [0, 0, 0, 0], pillars: 0, steps: 0, shardHits: 0 };   /* (claude/chargetiers) the three-tier stave: tiers let go (1 shard, 2 fault, 3 pillar), pillars risen, of them steps that stood, shards that landed */
   const T = () => api.T;
   const grid = () => api.L.grid;
   const heroBox = () => api.box(api.P);
@@ -133,21 +148,34 @@ export function makeGeomancer(api) {
       len = d; }
     return { x0: P.x, dir: f, gy: fy * TS, len, want, full: w >= FL.fullAt, stop };
   }
-  function faultHeavy(wound) {
-    const P = api.P, w = Math.max(0, Math.min(1, wound)), a = faultPath(w);
+  /* (claude/chargetiers) tier: 0 the short crack (a wound under T1), 1 THE STONE SHARD (no crack: a shard flung), 2 THE FAULT LINE (the full crack + spike), 3 THE RISING PILLAR (the full crack + a pillar) */
+  function faultHeavy(wound, tier = 0) {
+    const P = api.P; if (tier === 1) return stoneShard(); if (tier >= 2) wound = 1;
+    const w = Math.max(0, Math.min(1, wound)), a = faultPath(w);
     api.SFX.geoThud && api.SFX.geoThud(); api.dust(P.x + P.face * 8, P.y, 5);
     if (!a) { api.number(P.x + P.face * 20, P.y - 20, 'NO GROUND THERE', '#9aa39a'); return null; }
-    const fl = { heavy: true, x0: a.x0, dir: a.dir, gy: a.gy, len: Math.min(a.len, FL.len0), max: a.len, spike: a.full, spiked: false, hit: new Set(), struck: 0, dmg: dmg(FL.mul0 + FL.mulK * w), life: a.len / FL.speed + FL.linger };
+    const fl = { heavy: true, x0: a.x0, dir: a.dir, gy: a.gy, len: Math.min(a.len, FL.len0), max: a.len, spike: a.full && tier !== 3, pillar: tier === 3, spiked: false, hit: new Set(), struck: 0, dmg: dmg(FL.mul0 + FL.mulK * w), life: a.len / FL.speed + FL.linger };
+    if (tier >= 2) { stats.tiers[tier]++; api.number(P.x, P.y - 32, GEO.tiers.names[tier], GEO.tiers.label[tier]); }
     faults.push(fl); api.shakeCam(a.full ? 4 : 2); api.SFX.geoShard && api.SFX.geoShard();
     faultHits(fl);   /* THE CONTACT: what is touching her is hit in the release frame, not a beat later */
     return fl;
   }
   /* EVERYTHING ALONG IT, ONCE: a foe standing on the floor the crack runs through, anywhere between her and its tip */
+  /* (claude/chargetiers) T1, THE STONE SHARD: a shard of her stone flung flat ahead at chest height - a missile ('shot'), where the crack cannot go (a flyer, a ledge) */
+  function stoneShard() { const P = api.P, S = GEO.tiers.shard; stats.tiers[1]++;
+    shards.push({ x: P.x + P.face * 10, y: P.y - 13, vx: P.face * S.vx, vy: S.vy, g: S.g, life: S.life, hit: new Set(), big: true, dmg: dmg(S.dmg) });
+    api.SFX.geoShard && api.SFX.geoShard(); api.sparks(P.x + P.face * 12, P.y - 13, P.face, 4); api.kitPose && api.kitPose(P, 'gShard', 0.2); return null; }
+  /* (claude/chargetiers) T3, THE RISING PILLAR: under the first foe the crack found (in front of a boss or a mini - he is never lifted), or at the crack's tip: a pillar of her stone
+     (erupt: strikes, LAUNCHES what is on it, heaves what is beside it) that STANDS as a step; the stone gives her wind back as it rises */
+  function faultPillar(fl) { fl.spiked = true; const P = api.P, PL = GEO.tiers.pillar, e = fl.first && fl.first.alive ? fl.first : null, fy = Math.floor(fl.gy / TS);
+    const x = e ? (api.lcBig(e) ? e.x - fl.dir * ((e.w || 12) / 2 + 6) : e.x) : fl.x0 + fl.dir * fl.max;
+    const r = erupt(Math.floor(x / TS), fy, PL.h + (tal('tall') ? 1 : 0), 'pillar', { noHero: true, mul: PL.mul });
+    stats.pillars++; if (r.piece) stats.steps++; if (api.refund) api.refund(PL.refund); api.shakeCam(4); api.ringAt(x, fl.gy - 20, 18, GEO.tiers.cols[3], 0.35); api.dust(x, fl.gy, 10); }
   function faultHits(fl) {
     const lo = fl.dir > 0 ? fl.x0 - 2 : fl.x0 - fl.len, hi = fl.dir > 0 ? fl.x0 + fl.len : fl.x0 + 2;
     for (const e of foes()) { if (e.harmless || e.turncoat || fl.hit.has(e)) continue; const b = api.box(e);
       if (b.r < lo || b.l > hi || e.y < fl.gy - 10 || b.t > fl.gy) continue;   /* on the floor it runs through (a flyer over it is missed) */
-      fl.hit.add(e); fl.struck++; api.hurtAs('heavy', e, fl.dmg, fl.x0, false); api.sparks(e.x, e.y - (e.h || 16) / 2, fl.dir, 5);
+      fl.hit.add(e); fl.struck++; if (!fl.first) fl.first = e; api.hurtAs('heavy', e, fl.dmg, fl.x0, false); api.sparks(e.x, e.y - (e.h || 16) / 2, fl.dir, 5);
       if (e.alive) e.stagger = Math.max(e.stagger || 0, api.lcBig(e) ? 0.15 : 0.35);
       if (fl.struck === 2) api.trialEvent && api.trialEvent('fault'); }   /* (her yard's station: two caught in one line) */
   }
@@ -362,9 +390,9 @@ export function makeGeomancer(api) {
         else { r.life = 0; api.shakeCam(3); } }
       if (r.life <= 0) api.burst(r.x, r.y - r.r, 10, [STONE.base, STONE.hi, STONE.lo], 70, 0.5); }
     rollers = rollers.filter(r => r.life > 0);
-    for (const s of shards) { s.life -= dt; s.vy += 300 * dt; s.x += s.vx * dt; s.y += s.vy * dt; if (api.isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) s.life = 0;
+    for (const s of shards) { s.life -= dt; s.vy += (s.g ?? 300) * dt; s.x += s.vx * dt; s.y += s.vy * dt; if (api.isSolid(Math.floor(s.x / TS), Math.floor(s.y / TS))) s.life = 0;
       for (const e of foes()) { if (s.life <= 0 || e.harmless || e.turncoat || s.hit.has(e)) continue; if (!api.overlap({ l: s.x - 2, r: s.x + 2, t: s.y - 2, b: s.y + 2 }, api.box(e))) continue;
-        s.hit.add(e); api.hurtAs('shot', e, dmg(0.6), s.x - Math.sign(s.vx) * 10, false); s.life = 0; api.sparks(s.x, s.y, Math.sign(s.vx), 3); } }
+        s.hit.add(e); api.hurtAs('shot', e, s.dmg || dmg(0.6), s.x - Math.sign(s.vx) * 10, false); s.life = 0; api.sparks(s.x, s.y, Math.sign(s.vx), 3); if (s.big && e.alive) { e.stagger = Math.max(e.stagger || 0, api.lcBig(e) ? 0.1 : 0.3); stats.shardHits++; } } }   /* (claude/chargetiers: the STONE SHARD's own blow and check) */
     shards = shards.filter(s => s.life > 0);
     for (const f of falls) { if (f.st === 'wait') { f.delay -= dt; if (f.foe && f.foe.alive) f.x += (f.foe.x - f.x) * Math.min(1, dt * 10); if (f.delay <= 0) f.st = 'fall'; continue; }
       if (f.st === 'fall') { f.y += 560 * dt; if (f.y >= f.gy) { f.y = f.gy; f.st = 'done'; f.life = 0.4; api.dust(f.x, f.gy, 6); api.shakeCam(2); api.SFX.geoThud();
@@ -380,7 +408,7 @@ export function makeGeomancer(api) {
     /* FAULT LINE, her heavy: the crack runs on at its speed, everything it reaches is hit, and a full one spikes at the end */
     for (const fl of faults) { if (!fl.heavy) continue; fl.life -= dt; const was = fl.len; fl.len = Math.min(fl.max, fl.len + FL.speed * dt);
       if (fl.len > was && Math.random() < 0.7) api.dust(fl.x0 + fl.dir * fl.len, fl.gy, 2);
-      faultHits(fl); if (fl.spike && !fl.spiked && fl.len >= fl.max) faultSpike(fl); }
+      faultHits(fl); if (fl.spike && !fl.spiked && fl.len >= fl.max) faultSpike(fl); if (fl.pillar && !fl.spiked && (fl.first || fl.len >= fl.max)) faultPillar(fl); }
     for (const fl of faults) { if (fl.heavy) continue; fl.life -= dt; const was = fl.len; fl.len = Math.min(fl.max, fl.len + 380 * dt);
       const tipX = fl.x0 + fl.dir * fl.len, ttx = Math.floor(tipX / TS), fy = Math.floor(fl.gy / TS); if (api.isSolid(ttx, fy - 1) || !(api.isSolid(ttx, fy) || api.isOneWay(api.tileAt(ttx, fy)))) fl.max = Math.min(fl.max, fl.len);
       if (fl.len > was && Math.random() < 0.6) api.dust(tipX, fl.gy, 2);
@@ -433,7 +461,11 @@ export function makeGeomancer(api) {
       if (p.bulwarked) { g.globalAlpha = 0.5; g.fillStyle = STONE.rune; g.fillRect(Math.round(p.x0 - cx), Math.round(p.y0 - cy) - 2, p.x1 - p.x0, 1); g.globalAlpha = 1; } }
     /* FAULT LINE, TOLD (C1): while she winds, the line the crack will take is drawn on the floor - a run of amber dashes out to where it
        will stop, longer the longer she holds; at a wall or a gap it ends in a bar, and at a full wind in the spike's point */
-    if (P.charge > 0 && api.isGeo()) { const a = faultPath(Math.min(1, P.charge / api.heavyWind()));
+    const tierNow = P.charge > 0 && api.isGeo() && api.tierNow ? api.tierNow() : 0;   /* (claude/chargetiers) the tier her hold has reached: T1 tells the SHARD's line, T2 the full crack and its spike, T3 the crack and the PILLAR's outline */
+    if (tierNow === 1) { const x0 = Math.round(P.x + P.face * 10 - cx), y = Math.round(P.y - 13 - cy); g.globalAlpha = 0.5 + 0.3 * Math.sin(api.time * 18); g.fillStyle = GEO.tiers.cols[1];
+      for (let i = 0; i < 14; i++) if (i % 2 === 0) g.fillRect(Math.min(x0 + P.face * i * 4, x0 + P.face * (i * 4 + 2)), y, 2, 1); g.fillRect(x0 + P.face * 58, y - 1, 1, 3); g.globalAlpha = 1; }
+    else if (P.charge > 0 && api.isGeo()) { const a = faultPath(tierNow >= 2 ? 1 : Math.min(1, P.charge / api.heavyWind()));
+      if (a && tierNow === 3) { const x = Math.round(a.x0 + a.dir * a.len - cx), y = Math.round(a.gy - cy), H = (GEO.tiers.pillar.h + (tal('tall') ? 1 : 0)) * TS; g.globalAlpha = 0.35 + 0.25 * Math.sin(api.time * 14); g.strokeStyle = GEO.tiers.cols[3]; g.lineWidth = 1; g.strokeRect(x - TS / 2 + 0.5, y - H + 0.5, TS - 1, H - 1); g.globalAlpha = 1; }
       if (a) { const y = Math.round(a.gy - cy), x0 = Math.round(a.x0 - cx), n = Math.floor(a.len / 4); g.globalAlpha = 0.5 + 0.3 * Math.sin(api.time * 18); g.fillStyle = STONE.rune;
         for (let i = 0; i < n; i++) if (i % 2 === 0) g.fillRect(Math.min(x0 + a.dir * i * 4, x0 + a.dir * (i * 4 + 3)), y - 1, 3, 1);
         const tx = x0 + a.dir * a.len; if (a.full) { g.fillRect(tx - 1, y - 4, 3, 1); g.fillRect(tx, y - 6, 1, 5); } else if (a.stop) g.fillRect(tx, y - 4, 1, 4);
@@ -452,7 +484,10 @@ export function makeGeomancer(api) {
       g.fillStyle = STONE.crack; for (let i = 0; i < n; i++) { const x = x0 + fl.dir * i * 6; g.fillRect(Math.min(x, x + fl.dir * 6), y - 1 + (i % 2), 6, 1);
         const lift = Math.max(0, Math.round(5 * Math.sin((i * 6 / Math.max(1, fl.len)) * Math.PI) * Math.min(1, fl.life * 2))); if (lift) { g.fillStyle = STONE.base; g.fillRect(x - 2, y - lift, 4, lift); g.fillStyle = STONE.crack; } } }
     for (const r of rollers) drawBoulder(g, r.x - cx, r.y - r.r - cy, r.r, r.spin);
-    for (const s of shards) { g.fillStyle = STONE.hi; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 1, 3, 2); g.fillStyle = STONE.lo; g.fillRect(Math.round(s.x - cx), Math.round(s.y - cy) + 1, 2, 1); }
+    for (const s of shards) { if (s.big) { const x = Math.round(s.x - cx), y = Math.round(s.y - cy), d = Math.sign(s.vx) || 1;   /* (claude/chargetiers) THE STONE SHARD: a wedge of her stone with an amber rune-glint and a grit trail */
+        g.fillStyle = STONE.dark; g.fillRect(x - 3, y - 1, 6, 4); g.fillStyle = STONE.hi; g.fillRect(x - 2, y - 1, 5, 2); g.fillStyle = STONE.base; g.fillRect(x - 2, y + 1, 4, 1); g.fillStyle = STONE.rune; g.fillRect(x + d, y, 1, 1);
+        g.globalAlpha = 0.5; g.fillStyle = STONE.lo; g.fillRect(x - d * 7, y, 3, 1); g.fillRect(x - d * 11, y + 1, 2, 1); g.globalAlpha = 1; continue; }
+      g.fillStyle = STONE.hi; g.fillRect(Math.round(s.x - cx) - 1, Math.round(s.y - cy) - 1, 3, 2); g.fillStyle = STONE.lo; g.fillRect(Math.round(s.x - cx), Math.round(s.y - cy) + 1, 2, 1); }
     for (const f of falls) { const x = Math.round(f.x - cx), gy = Math.round(f.gy - cy);
       if (f.st !== 'done') { const near = f.st === 'wait' ? 0.35 * (1 - f.delay / Math.max(0.01, f.max)) : 0.35 + 0.65 * Math.min(1, 1 - (f.gy - f.y) / 170); const w = Math.round(4 + f.r * 1.4 * near);
         g.globalAlpha = 0.25 + 0.4 * near; g.fillStyle = '#000000'; g.beginPath(); g.ellipse(x, gy - 1, w, 2, 0, 0, 7); g.fill(); g.globalAlpha = 1; }   /* THE SHADOW grows as it comes */
@@ -518,6 +553,6 @@ export function makeGeomancer(api) {
     g.fillStyle = STONE.hi; g.fillRect(x - Math.round(r / 2), y - r + 1, Math.max(2, r - 1), 1);
     const a = spin || 0; g.fillStyle = STONE.lo; g.fillRect(Math.round(x + Math.cos(a) * r * 0.5), Math.round(y + Math.sin(a) * r * 0.5), 2, 2); g.fillStyle = STONE.moss; g.fillRect(Math.round(x + Math.cos(a + 2.5) * r * 0.6), Math.round(y + Math.sin(a + 2.5) * r * 0.6), 2, 1); }
 
-  return { earthfall, baseGrid, update, draw, clear, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
+  return { tierStats: () => ({ ...stats, tiers: stats.tiers.slice() }), resetTierStats: () => { stats.tiers = [0, 0, 0, 0]; stats.pillars = stats.steps = stats.shardHits = 0; }, earthfall, baseGrid, update, draw, clear, faultHeavy, faultPath, guard, wardTakes, wardUp, wardPerfect, empowered, raiseWall, wallTakes, rollStone, quake, gainTremor, tombHit, kit,
     shieldDrawn: () => shieldDrawn, spunAt: () => spunAt, pieces: () => pieces, rollers: () => rollers, falls: () => falls, spikes: () => spikes, faults: () => faults, golem: () => golem, freeCell, erupt, place, crumble };
 }
