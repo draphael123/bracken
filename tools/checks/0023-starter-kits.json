@@ -1,0 +1,8 @@
+{
+  "name": "starter-kits",
+  "order": 23,
+  "subset": "match",
+  "args": [
+    "tools/starter-kits.mjs"
+  ]
+}

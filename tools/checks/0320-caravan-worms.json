@@ -1,0 +1,8 @@
+{
+  "name": "caravan-worms",
+  "order": 320,
+  "subset": "match",
+  "args": [
+    "tools/caravan-worms.mjs"
+  ]
+}

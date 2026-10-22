@@ -1,0 +1,8 @@
+{
+  "name": "harbor-expansion",
+  "order": 89,
+  "subset": "match",
+  "args": [
+    "tools/harbor-expansion.mjs"
+  ]
+}

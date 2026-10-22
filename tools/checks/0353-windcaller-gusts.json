@@ -1,0 +1,8 @@
+{
+  "name": "windcaller-gusts",
+  "order": 353,
+  "subset": "match",
+  "args": [
+    "tools/windcaller-gusts.mjs"
+  ]
+}

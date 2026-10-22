@@ -1,0 +1,8 @@
+{
+  "name": "attack-tokens",
+  "order": 202,
+  "subset": "match",
+  "args": [
+    "tools/attack-tokens.mjs"
+  ]
+}

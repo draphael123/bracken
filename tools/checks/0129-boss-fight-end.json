@@ -1,0 +1,8 @@
+{
+  "name": "boss-fight-end",
+  "order": 129,
+  "subset": "match",
+  "args": [
+    "tools/boss-fight-end.mjs"
+  ]
+}

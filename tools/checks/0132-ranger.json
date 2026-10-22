@@ -1,0 +1,8 @@
+{
+  "name": "ranger",
+  "order": 132,
+  "subset": "match",
+  "args": [
+    "tools/ranger.mjs"
+  ]
+}

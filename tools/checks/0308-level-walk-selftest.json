@@ -1,0 +1,8 @@
+{
+  "name": "level-walk-selftest",
+  "order": 308,
+  "subset": "match",
+  "args": [
+    "tools/level-walk-selftest.mjs"
+  ]
+}

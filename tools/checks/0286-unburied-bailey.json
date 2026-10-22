@@ -1,0 +1,8 @@
+{
+  "name": "unburied-bailey",
+  "order": 286,
+  "subset": "match",
+  "args": [
+    "tools/unburied-bailey.mjs"
+  ]
+}

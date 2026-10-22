@@ -1,0 +1,8 @@
+{
+  "name": "chief3",
+  "order": 406,
+  "subset": "match",
+  "args": [
+    "tools/chief3.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "stockade-horns",
+  "order": 199,
+  "subset": "match",
+  "args": [
+    "tools/stockade-horns.mjs"
+  ]
+}

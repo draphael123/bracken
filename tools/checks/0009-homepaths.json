@@ -1,0 +1,8 @@
+{
+  "name": "homepaths",
+  "order": 9,
+  "subset": "match",
+  "args": [
+    "tools/homepaths.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "survival",
+  "order": 357,
+  "subset": "match",
+  "args": [
+    "tools/survival.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "commitment",
+  "order": 279,
+  "subset": "match",
+  "args": [
+    "tools/commitment.mjs"
+  ]
+}

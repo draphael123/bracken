@@ -1,0 +1,8 @@
+{
+  "name": "death-cost",
+  "order": 224,
+  "subset": "match",
+  "args": [
+    "tools/death-cost.mjs"
+  ]
+}

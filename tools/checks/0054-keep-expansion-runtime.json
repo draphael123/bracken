@@ -1,0 +1,8 @@
+{
+  "name": "keep-expansion-runtime",
+  "order": 54,
+  "subset": "match",
+  "args": [
+    "tools/keep-expansion-runtime.mjs"
+  ]
+}

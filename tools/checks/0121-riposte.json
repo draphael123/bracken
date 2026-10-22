@@ -1,0 +1,8 @@
+{
+  "name": "riposte",
+  "order": 121,
+  "subset": "match",
+  "args": [
+    "tools/riposte.mjs"
+  ]
+}

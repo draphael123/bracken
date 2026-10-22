@@ -1,0 +1,8 @@
+{
+  "name": "normal-health",
+  "order": 103,
+  "subset": "match",
+  "args": [
+    "tools/normal-health.mjs"
+  ]
+}

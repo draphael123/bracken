@@ -1,0 +1,8 @@
+{
+  "name": "unburied-fights",
+  "order": 118,
+  "subset": "match",
+  "args": [
+    "tools/unburied-fights.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "buried-attacks",
+  "order": 99,
+  "subset": "match",
+  "args": [
+    "tools/buried-attacks.mjs"
+  ]
+}

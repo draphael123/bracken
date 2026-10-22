@@ -1,0 +1,8 @@
+{
+  "name": "level-quality",
+  "order": 246,
+  "subset": "match",
+  "args": [
+    "tools/level-quality.mjs"
+  ]
+}

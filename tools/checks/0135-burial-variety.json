@@ -1,0 +1,8 @@
+{
+  "name": "burial-variety",
+  "order": 135,
+  "subset": "match",
+  "args": [
+    "tools/burial-variety.mjs"
+  ]
+}

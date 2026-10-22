@@ -1,0 +1,8 @@
+{
+  "name": "settings-tabs",
+  "order": 237,
+  "subset": "match",
+  "args": [
+    "tools/settings-tabs.mjs"
+  ]
+}

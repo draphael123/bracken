@@ -1,0 +1,8 @@
+{
+  "name": "uiscreens",
+  "order": 296,
+  "subset": "match",
+  "args": [
+    "tools/uiscreens.mjs"
+  ]
+}

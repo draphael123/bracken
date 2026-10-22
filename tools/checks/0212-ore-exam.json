@@ -1,0 +1,8 @@
+{
+  "name": "ore-exam",
+  "order": 212,
+  "subset": "match",
+  "args": [
+    "tools/ore-exam.mjs"
+  ]
+}

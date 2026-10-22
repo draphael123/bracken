@@ -1,0 +1,8 @@
+{
+  "name": "queen-comb",
+  "order": 39,
+  "subset": "match",
+  "args": [
+    "tools/queen-comb.mjs"
+  ]
+}

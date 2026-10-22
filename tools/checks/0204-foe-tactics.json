@@ -1,0 +1,8 @@
+{
+  "name": "foe-tactics",
+  "order": 204,
+  "subset": "match",
+  "args": [
+    "tools/foe-tactics.mjs"
+  ]
+}

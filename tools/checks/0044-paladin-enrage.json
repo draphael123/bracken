@@ -1,0 +1,8 @@
+{
+  "name": "paladin-enrage",
+  "order": 44,
+  "subset": "match",
+  "args": [
+    "tools/paladin-enrage.mjs"
+  ]
+}

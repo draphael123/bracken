@@ -1,0 +1,8 @@
+{
+  "name": "boss-greed",
+  "order": 254,
+  "subset": "match",
+  "args": [
+    "tools/boss-greed.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "ore-ride",
+  "order": 5,
+  "subset": "match",
+  "args": [
+    "tools/ore-ride.mjs"
+  ]
+}

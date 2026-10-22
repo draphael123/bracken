@@ -1,0 +1,8 @@
+{
+  "name": "curve-shape",
+  "order": 388,
+  "subset": "match",
+  "args": [
+    "tools/curve-shape.mjs"
+  ]
+}

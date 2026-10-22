@@ -1,0 +1,8 @@
+{
+  "name": "fonts",
+  "order": 345,
+  "subset": "match",
+  "args": [
+    "tools/fonts.mjs"
+  ]
+}

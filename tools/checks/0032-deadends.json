@@ -1,0 +1,8 @@
+{
+  "name": "deadends",
+  "order": 32,
+  "subset": "match",
+  "args": [
+    "tools/deadends.mjs"
+  ]
+}

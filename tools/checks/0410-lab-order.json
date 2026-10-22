@@ -1,0 +1,8 @@
+{
+  "name": "lab-order",
+  "order": 410,
+  "subset": "match",
+  "args": [
+    "tools/lab-order.mjs"
+  ]
+}

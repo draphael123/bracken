@@ -1,0 +1,8 @@
+{
+  "name": "wicker-queen",
+  "order": 233,
+  "subset": "match",
+  "args": [
+    "tools/wicker-queen.mjs"
+  ]
+}

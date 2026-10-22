@@ -1,0 +1,8 @@
+{
+  "name": "boss-jump",
+  "order": 219,
+  "subset": "match",
+  "args": [
+    "tools/boss-jump.mjs"
+  ]
+}

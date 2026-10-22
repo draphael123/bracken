@@ -1,0 +1,8 @@
+{
+  "name": "class-spurs",
+  "order": 170,
+  "subset": "match",
+  "args": [
+    "tools/class-spurs.mjs"
+  ]
+}

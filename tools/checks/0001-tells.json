@@ -1,0 +1,8 @@
+{
+  "name": "tells",
+  "order": 1,
+  "subset": "match",
+  "args": [
+    "tools/tells.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "map-scale",
+  "order": 347,
+  "subset": "match",
+  "args": [
+    "tools/map-scale.mjs"
+  ]
+}

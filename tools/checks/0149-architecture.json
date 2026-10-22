@@ -1,0 +1,8 @@
+{
+  "name": "architecture",
+  "order": 149,
+  "subset": "match",
+  "args": [
+    "tools/architecture.mjs"
+  ]
+}

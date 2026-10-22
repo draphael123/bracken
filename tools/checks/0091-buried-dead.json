@@ -1,0 +1,8 @@
+{
+  "name": "buried-dead",
+  "order": 91,
+  "subset": "match",
+  "args": [
+    "tools/buried-dead.mjs"
+  ]
+}

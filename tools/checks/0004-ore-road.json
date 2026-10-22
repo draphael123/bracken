@@ -1,0 +1,8 @@
+{
+  "name": "ore-road",
+  "order": 4,
+  "subset": "match",
+  "args": [
+    "tools/ore-road.mjs"
+  ]
+}

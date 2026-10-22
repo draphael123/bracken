@@ -1,0 +1,8 @@
+{
+  "name": "lance-support",
+  "order": 157,
+  "subset": "match",
+  "args": [
+    "tools/lance-support.mjs"
+  ]
+}

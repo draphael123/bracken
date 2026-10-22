@@ -1,0 +1,8 @@
+{
+  "name": "ore-work",
+  "order": 151,
+  "subset": "match",
+  "args": [
+    "tools/ore-work.mjs"
+  ]
+}

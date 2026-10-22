@@ -1,0 +1,8 @@
+{
+  "name": "keep-passages",
+  "order": 53,
+  "subset": "match",
+  "args": [
+    "tools/keep-passages.mjs"
+  ]
+}

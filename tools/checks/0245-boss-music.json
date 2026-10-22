@@ -1,0 +1,8 @@
+{
+  "name": "boss-music",
+  "order": 245,
+  "subset": "match",
+  "args": [
+    "tools/boss-music.mjs"
+  ]
+}

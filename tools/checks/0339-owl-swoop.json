@@ -1,0 +1,8 @@
+{
+  "name": "owl-swoop",
+  "order": 339,
+  "subset": "match",
+  "args": [
+    "tools/owl-swoop.mjs"
+  ]
+}

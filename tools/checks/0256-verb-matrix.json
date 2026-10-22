@@ -1,0 +1,8 @@
+{
+  "name": "verb-matrix",
+  "order": 256,
+  "subset": "match",
+  "args": [
+    "tools/verb-matrix.mjs"
+  ]
+}

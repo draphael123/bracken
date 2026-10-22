@@ -1,0 +1,8 @@
+{
+  "name": "damage-pct",
+  "order": 365,
+  "subset": "match",
+  "args": [
+    "tools/damage-pct.mjs"
+  ]
+}

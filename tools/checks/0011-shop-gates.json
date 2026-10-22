@@ -1,0 +1,8 @@
+{
+  "name": "shop-gates",
+  "order": 11,
+  "subset": "match",
+  "args": [
+    "tools/shop-gates.mjs"
+  ]
+}

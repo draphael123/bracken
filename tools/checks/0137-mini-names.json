@@ -1,0 +1,8 @@
+{
+  "name": "mini-names",
+  "order": 137,
+  "subset": "match",
+  "args": [
+    "tools/mini-names.mjs"
+  ]
+}

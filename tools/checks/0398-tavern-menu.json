@@ -1,0 +1,8 @@
+{
+  "name": "tavern-menu",
+  "order": 398,
+  "subset": "match",
+  "args": [
+    "tools/tavern-menu.mjs"
+  ]
+}

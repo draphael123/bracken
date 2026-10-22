@@ -1,0 +1,8 @@
+{
+  "name": "reach-heroes",
+  "order": 350,
+  "subset": "match",
+  "args": [
+    "tools/reach-heroes.mjs"
+  ]
+}

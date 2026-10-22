@@ -1,0 +1,8 @@
+{
+  "name": "canal-aloft",
+  "order": 300,
+  "subset": "match",
+  "args": [
+    "tools/canal-aloft.mjs"
+  ]
+}

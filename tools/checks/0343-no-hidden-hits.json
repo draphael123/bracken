@@ -1,0 +1,8 @@
+{
+  "name": "no-hidden-hits",
+  "order": 343,
+  "subset": "match",
+  "args": [
+    "tools/no-hidden-hits.mjs"
+  ]
+}

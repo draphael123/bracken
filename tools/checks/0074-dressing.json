@@ -1,0 +1,8 @@
+{
+  "name": "dressing",
+  "order": 74,
+  "subset": "match",
+  "args": [
+    "tools/dressing.mjs"
+  ]
+}

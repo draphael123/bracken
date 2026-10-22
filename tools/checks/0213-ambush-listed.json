@@ -1,0 +1,8 @@
+{
+  "name": "ambush-listed",
+  "order": 213,
+  "subset": "match",
+  "args": [
+    "tools/ambush-listed.mjs"
+  ]
+}

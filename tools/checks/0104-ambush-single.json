@@ -1,0 +1,8 @@
+{
+  "name": "ambush-single",
+  "order": 104,
+  "subset": "match",
+  "args": [
+    "tools/ambush-single.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "bridge-props",
+  "order": 76,
+  "subset": "match",
+  "args": [
+    "tools/bridge-props.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "pyre-pilot",
+  "order": 111,
+  "subset": "match",
+  "args": [
+    "tools/pyre-pilot.mjs"
+  ]
+}

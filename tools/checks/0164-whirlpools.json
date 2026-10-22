@@ -1,0 +1,8 @@
+{
+  "name": "whirlpools",
+  "order": 164,
+  "subset": "match",
+  "args": [
+    "tools/whirlpools.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "progression",
+  "order": 17,
+  "subset": "match",
+  "args": [
+    "tools/progression.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "leveling",
+  "order": 128,
+  "subset": "match",
+  "args": [
+    "tools/leveling.mjs"
+  ]
+}

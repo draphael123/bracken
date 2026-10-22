@@ -1,0 +1,8 @@
+{
+  "name": "map-forks",
+  "order": 46,
+  "subset": "match",
+  "args": [
+    "tools/map-forks.mjs"
+  ]
+}

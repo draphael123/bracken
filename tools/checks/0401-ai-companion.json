@@ -1,0 +1,8 @@
+{
+  "name": "ai-companion",
+  "order": 401,
+  "subset": "match",
+  "args": [
+    "tools/ai-companion.mjs"
+  ]
+}

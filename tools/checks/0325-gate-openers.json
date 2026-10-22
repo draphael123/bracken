@@ -1,0 +1,8 @@
+{
+  "name": "gate-openers",
+  "order": 325,
+  "subset": "match",
+  "args": [
+    "tools/gate-openers.mjs"
+  ]
+}

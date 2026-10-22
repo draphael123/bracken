@@ -1,0 +1,8 @@
+{
+  "name": "belfry",
+  "order": 82,
+  "subset": "match",
+  "args": [
+    "tools/belfry.mjs"
+  ]
+}

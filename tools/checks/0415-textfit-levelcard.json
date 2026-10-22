@@ -1,0 +1,11 @@
+{
+  "name": "textfit-levelcard",
+  "order": 415,
+  "subset": "match",
+  "args": [
+    "tools/textfit.mjs",
+    "levelcard",
+    "--strict"
+  ],
+  "port": 4
+}

@@ -1,0 +1,8 @@
+{
+  "name": "voices-check",
+  "order": 391,
+  "subset": "match",
+  "args": [
+    "tools/voices-check.mjs"
+  ]
+}

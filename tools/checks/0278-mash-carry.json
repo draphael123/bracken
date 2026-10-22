@@ -1,0 +1,8 @@
+{
+  "name": "mash-carry",
+  "order": 278,
+  "subset": "match",
+  "args": [
+    "tools/mash-carry.mjs"
+  ]
+}

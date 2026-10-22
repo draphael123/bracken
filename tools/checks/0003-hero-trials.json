@@ -1,0 +1,8 @@
+{
+  "name": "hero-trials",
+  "order": 3,
+  "subset": "match",
+  "args": [
+    "tools/hero-trials.mjs"
+  ]
+}

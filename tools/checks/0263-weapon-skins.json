@@ -1,0 +1,8 @@
+{
+  "name": "weapon-skins",
+  "order": 263,
+  "subset": "match",
+  "args": [
+    "tools/weapon-skins.mjs"
+  ]
+}

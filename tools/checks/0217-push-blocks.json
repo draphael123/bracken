@@ -1,0 +1,8 @@
+{
+  "name": "push-blocks",
+  "order": 217,
+  "subset": "match",
+  "args": [
+    "tools/push-blocks.mjs"
+  ]
+}

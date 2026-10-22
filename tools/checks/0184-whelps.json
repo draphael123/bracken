@@ -1,0 +1,8 @@
+{
+  "name": "whelps",
+  "order": 184,
+  "subset": "match",
+  "args": [
+    "tools/whelps.mjs"
+  ]
+}

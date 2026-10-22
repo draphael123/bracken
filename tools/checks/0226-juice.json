@@ -1,0 +1,8 @@
+{
+  "name": "juice",
+  "order": 226,
+  "subset": "match",
+  "args": [
+    "tools/juice.mjs"
+  ]
+}

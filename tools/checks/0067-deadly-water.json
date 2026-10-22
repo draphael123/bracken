@@ -1,0 +1,8 @@
+{
+  "name": "deadly-water",
+  "order": 67,
+  "subset": "match",
+  "args": [
+    "tools/deadly-water.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "deep-descent",
+  "order": 167,
+  "subset": "match",
+  "args": [
+    "tools/deep-descent.mjs"
+  ]
+}

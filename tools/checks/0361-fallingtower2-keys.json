@@ -1,0 +1,8 @@
+{
+  "name": "fallingtower2-keys",
+  "order": 361,
+  "subset": "match",
+  "args": [
+    "tools/fallingtower2-keys.mjs"
+  ]
+}

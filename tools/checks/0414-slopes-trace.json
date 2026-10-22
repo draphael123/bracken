@@ -1,0 +1,9 @@
+{
+  "name": "slopes-trace",
+  "order": 414,
+  "subset": "match",
+  "args": [
+    "tools/slopes-trace.mjs"
+  ],
+  "port": 7
+}

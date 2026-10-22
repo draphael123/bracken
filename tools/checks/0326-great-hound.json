@@ -1,0 +1,8 @@
+{
+  "name": "great-hound",
+  "order": 326,
+  "subset": "match",
+  "args": [
+    "tools/great-hound.mjs"
+  ]
+}

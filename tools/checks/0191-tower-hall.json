@@ -1,0 +1,8 @@
+{
+  "name": "tower-hall",
+  "order": 191,
+  "subset": "match",
+  "args": [
+    "tools/tower-hall.mjs"
+  ]
+}

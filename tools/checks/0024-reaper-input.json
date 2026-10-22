@@ -1,0 +1,8 @@
+{
+  "name": "reaper-input",
+  "order": 24,
+  "subset": "match",
+  "args": [
+    "tools/reaper-input.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "stockade2",
+  "order": 395,
+  "subset": "match",
+  "args": [
+    "tools/stockade2.mjs"
+  ]
+}

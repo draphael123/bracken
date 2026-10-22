@@ -1,0 +1,8 @@
+{
+  "name": "waterfall-joins",
+  "order": 43,
+  "subset": "match",
+  "args": [
+    "tools/waterfall-joins.mjs"
+  ]
+}

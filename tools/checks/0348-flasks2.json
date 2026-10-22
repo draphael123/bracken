@@ -1,0 +1,8 @@
+{
+  "name": "flasks2",
+  "order": 348,
+  "subset": "match",
+  "args": [
+    "tools/flasks2.mjs"
+  ]
+}

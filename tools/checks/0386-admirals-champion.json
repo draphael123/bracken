@@ -1,0 +1,8 @@
+{
+  "name": "admirals-champion",
+  "order": 386,
+  "subset": "match",
+  "args": [
+    "tools/admirals-champion.mjs"
+  ]
+}

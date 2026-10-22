@@ -1,0 +1,8 @@
+{
+  "name": "lumber-trail",
+  "order": 211,
+  "subset": "match",
+  "args": [
+    "tools/lumber-trail.mjs"
+  ]
+}

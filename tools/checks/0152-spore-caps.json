@@ -1,0 +1,8 @@
+{
+  "name": "spore-caps",
+  "order": 152,
+  "subset": "match",
+  "args": [
+    "tools/spore-caps.mjs"
+  ]
+}

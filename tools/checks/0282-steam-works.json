@@ -1,0 +1,8 @@
+{
+  "name": "steam-works",
+  "order": 282,
+  "subset": "match",
+  "args": [
+    "tools/steam-works.mjs"
+  ]
+}

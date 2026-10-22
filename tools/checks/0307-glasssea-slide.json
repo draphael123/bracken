@@ -1,0 +1,8 @@
+{
+  "name": "glasssea-slide",
+  "order": 307,
+  "subset": "match",
+  "args": [
+    "tools/glasssea-slide.mjs"
+  ]
+}

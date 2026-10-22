@@ -1,0 +1,8 @@
+{
+  "name": "skins",
+  "order": 63,
+  "subset": "match",
+  "args": [
+    "tools/skins.mjs"
+  ]
+}

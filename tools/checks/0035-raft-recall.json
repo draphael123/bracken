@@ -1,0 +1,8 @@
+{
+  "name": "raft-recall",
+  "order": 35,
+  "subset": "match",
+  "args": [
+    "tools/raft-recall.mjs"
+  ]
+}

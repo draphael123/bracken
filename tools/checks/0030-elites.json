@@ -1,0 +1,8 @@
+{
+  "name": "elites",
+  "order": 30,
+  "subset": "match",
+  "args": [
+    "tools/elites.mjs"
+  ]
+}

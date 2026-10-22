@@ -1,0 +1,8 @@
+{
+  "name": "map-spacing",
+  "order": 261,
+  "subset": "match",
+  "args": [
+    "tools/map-spacing.mjs"
+  ]
+}

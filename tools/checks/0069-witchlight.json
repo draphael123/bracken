@@ -1,0 +1,8 @@
+{
+  "name": "witchlight",
+  "order": 69,
+  "subset": "match",
+  "args": [
+    "tools/witchlight.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "occluders",
+  "order": 143,
+  "subset": "match",
+  "args": [
+    "tools/occluders.mjs"
+  ]
+}

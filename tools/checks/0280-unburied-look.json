@@ -1,0 +1,8 @@
+{
+  "name": "unburied-look",
+  "order": 280,
+  "subset": "match",
+  "args": [
+    "tools/unburied-look.mjs"
+  ]
+}

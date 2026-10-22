@@ -1,0 +1,8 @@
+{
+  "name": "death-screen",
+  "order": 297,
+  "subset": "match",
+  "args": [
+    "tools/death-screen.mjs"
+  ]
+}

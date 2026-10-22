@@ -1,0 +1,8 @@
+{
+  "name": "boss-openings",
+  "order": 96,
+  "subset": "match",
+  "args": [
+    "tools/boss-openings.mjs"
+  ]
+}

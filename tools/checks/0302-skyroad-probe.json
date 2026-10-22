@@ -1,0 +1,8 @@
+{
+  "name": "skyroad-probe",
+  "order": 302,
+  "subset": "match",
+  "args": [
+    "tools/skyroad-probe.mjs"
+  ]
+}

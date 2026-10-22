@@ -1,0 +1,8 @@
+{
+  "name": "zoom-coverage",
+  "order": 190,
+  "subset": "match",
+  "args": [
+    "tools/zoom-coverage.mjs"
+  ]
+}

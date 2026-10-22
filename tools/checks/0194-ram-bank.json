@@ -1,0 +1,8 @@
+{
+  "name": "ram-bank",
+  "order": 194,
+  "subset": "match",
+  "args": [
+    "tools/ram-bank.mjs"
+  ]
+}

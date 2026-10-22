@@ -1,0 +1,8 @@
+{
+  "name": "curve-gate",
+  "order": 284,
+  "subset": "match",
+  "args": [
+    "tools/curve-gate.mjs"
+  ]
+}

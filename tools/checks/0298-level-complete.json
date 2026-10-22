@@ -1,0 +1,8 @@
+{
+  "name": "level-complete",
+  "order": 298,
+  "subset": "match",
+  "args": [
+    "tools/level-complete.mjs"
+  ]
+}

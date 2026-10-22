@@ -1,0 +1,8 @@
+{
+  "name": "reefmaw-art",
+  "order": 161,
+  "subset": "match",
+  "args": [
+    "tools/reefmaw-art.mjs"
+  ]
+}

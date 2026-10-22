@@ -1,0 +1,8 @@
+{
+  "name": "footing-art",
+  "order": 158,
+  "subset": "match",
+  "args": [
+    "tools/footing-art.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "skill-menu",
+  "order": 19,
+  "subset": "match",
+  "args": [
+    "tools/skill-menu.mjs"
+  ]
+}

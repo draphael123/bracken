@@ -1,0 +1,8 @@
+{
+  "name": "shake-mode",
+  "order": 2,
+  "subset": "match",
+  "args": [
+    "tools/shake-mode.mjs"
+  ]
+}

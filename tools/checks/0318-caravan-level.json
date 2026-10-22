@@ -1,0 +1,8 @@
+{
+  "name": "caravan-level",
+  "order": 318,
+  "subset": "match",
+  "args": [
+    "tools/caravan-level.mjs"
+  ]
+}

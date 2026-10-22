@@ -1,0 +1,8 @@
+{
+  "name": "herald-pirate",
+  "order": 112,
+  "subset": "match",
+  "args": [
+    "tools/herald-pirate.mjs"
+  ]
+}

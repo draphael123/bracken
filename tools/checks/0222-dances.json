@@ -1,0 +1,8 @@
+{
+  "name": "dances",
+  "order": 222,
+  "subset": "match",
+  "args": [
+    "tools/dances.mjs"
+  ]
+}

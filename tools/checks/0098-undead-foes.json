@@ -1,0 +1,8 @@
+{
+  "name": "undead-foes",
+  "order": 98,
+  "subset": "match",
+  "args": [
+    "tools/undead-foes.mjs"
+  ]
+}

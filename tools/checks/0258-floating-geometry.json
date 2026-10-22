@@ -1,0 +1,8 @@
+{
+  "name": "floating-geometry",
+  "order": 258,
+  "subset": "match",
+  "args": [
+    "tools/floating-geometry.mjs"
+  ]
+}

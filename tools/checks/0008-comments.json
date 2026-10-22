@@ -1,0 +1,8 @@
+{
+  "name": "comments",
+  "order": 8,
+  "subset": "match",
+  "args": [
+    "tools/comments.mjs"
+  ]
+}

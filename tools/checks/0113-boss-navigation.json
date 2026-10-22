@@ -1,0 +1,8 @@
+{
+  "name": "boss-navigation",
+  "order": 113,
+  "subset": "match",
+  "args": [
+    "tools/boss-navigation.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "firedrop-plunge",
+  "order": 331,
+  "subset": "match",
+  "args": [
+    "tools/firedrop-plunge.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "buriedcity-exit",
+  "order": 160,
+  "subset": "match",
+  "args": [
+    "tools/buriedcity-exit.mjs"
+  ]
+}

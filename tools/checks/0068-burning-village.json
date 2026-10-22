@@ -1,0 +1,8 @@
+{
+  "name": "burning-village",
+  "order": 68,
+  "subset": "match",
+  "args": [
+    "tools/burning-village.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "caravan-slides",
+  "order": 319,
+  "subset": "match",
+  "args": [
+    "tools/caravan-slides.mjs"
+  ]
+}

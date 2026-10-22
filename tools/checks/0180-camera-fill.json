@@ -1,0 +1,8 @@
+{
+  "name": "camera-fill",
+  "order": 180,
+  "subset": "match",
+  "args": [
+    "tools/camera-fill.mjs"
+  ]
+}

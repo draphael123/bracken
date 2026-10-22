@@ -1,0 +1,8 @@
+{
+  "name": "floaters",
+  "order": 12,
+  "subset": "match",
+  "args": [
+    "tools/floaters.mjs"
+  ]
+}

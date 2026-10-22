@@ -1,0 +1,9 @@
+{
+  "name": "soundtest",
+  "order": 419,
+  "subset": "match",
+  "args": [
+    "tools/soundtest.mjs"
+  ],
+  "port": 8
+}

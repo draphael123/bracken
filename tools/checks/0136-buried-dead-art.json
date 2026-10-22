@@ -1,0 +1,8 @@
+{
+  "name": "buried-dead-art",
+  "order": 136,
+  "subset": "match",
+  "args": [
+    "tools/buried-dead-art.mjs"
+  ]
+}

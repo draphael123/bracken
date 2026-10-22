@@ -1,0 +1,8 @@
+{
+  "name": "mobile-perf",
+  "order": 273,
+  "subset": "match",
+  "args": [
+    "tools/mobile-perf.mjs"
+  ]
+}

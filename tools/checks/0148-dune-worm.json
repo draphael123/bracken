@@ -1,0 +1,8 @@
+{
+  "name": "dune-worm",
+  "order": 148,
+  "subset": "match",
+  "args": [
+    "tools/dune-worm.mjs"
+  ]
+}

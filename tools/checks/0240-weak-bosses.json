@@ -1,0 +1,8 @@
+{
+  "name": "weak-bosses",
+  "order": 240,
+  "subset": "match",
+  "args": [
+    "tools/weak-bosses.mjs"
+  ]
+}

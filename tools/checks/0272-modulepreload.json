@@ -1,0 +1,8 @@
+{
+  "name": "modulepreload",
+  "order": 272,
+  "subset": "match",
+  "args": [
+    "tools/modulepreload.mjs"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "name": "visible-supports-strict",
+  "order": 409,
+  "subset": "match",
+  "args": [
+    "tools/visible-supports.mjs",
+    "scree",
+    "spire",
+    "--strict"
+  ],
+  "port": 1
+}

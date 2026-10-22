@@ -1,0 +1,8 @@
+{
+  "name": "pogo-chain",
+  "order": 206,
+  "subset": "match",
+  "args": [
+    "tools/pogo-chain.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "throwables",
+  "order": 215,
+  "subset": "match",
+  "args": [
+    "tools/throwables.mjs"
+  ]
+}

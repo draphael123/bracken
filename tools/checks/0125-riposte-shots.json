@@ -1,0 +1,8 @@
+{
+  "name": "riposte-shots",
+  "order": 125,
+  "subset": "match",
+  "args": [
+    "tools/riposte-shots.mjs"
+  ]
+}

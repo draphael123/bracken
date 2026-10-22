@@ -1,0 +1,8 @@
+{
+  "name": "archmage-interrupt",
+  "order": 359,
+  "subset": "match",
+  "args": [
+    "tools/archmage-interrupt.mjs"
+  ]
+}

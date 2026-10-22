@@ -1,0 +1,8 @@
+{
+  "name": "kings2-beats",
+  "order": 209,
+  "subset": "match",
+  "args": [
+    "tools/kings2-beats.mjs"
+  ]
+}

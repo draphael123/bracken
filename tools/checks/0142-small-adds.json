@@ -1,0 +1,8 @@
+{
+  "name": "small-adds",
+  "order": 142,
+  "subset": "match",
+  "args": [
+    "tools/small-adds.mjs"
+  ]
+}

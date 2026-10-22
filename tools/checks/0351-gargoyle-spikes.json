@@ -1,0 +1,8 @@
+{
+  "name": "gargoyle-spikes",
+  "order": 351,
+  "subset": "match",
+  "args": [
+    "tools/gargoyle-spikes.mjs"
+  ]
+}

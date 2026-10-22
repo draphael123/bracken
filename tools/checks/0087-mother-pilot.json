@@ -1,0 +1,8 @@
+{
+  "name": "mother-pilot",
+  "order": 87,
+  "subset": "match",
+  "args": [
+    "tools/mother-pilot.mjs"
+  ]
+}

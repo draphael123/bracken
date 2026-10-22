@@ -1,0 +1,8 @@
+{
+  "name": "false-abbot",
+  "order": 60,
+  "subset": "match",
+  "args": [
+    "tools/false-abbot.mjs"
+  ]
+}

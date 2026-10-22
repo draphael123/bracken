@@ -1,0 +1,8 @@
+{
+  "name": "store-ui",
+  "order": 242,
+  "subset": "match",
+  "args": [
+    "tools/store-ui.mjs"
+  ]
+}

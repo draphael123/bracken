@@ -1,0 +1,8 @@
+{
+  "name": "lit-church",
+  "order": 333,
+  "subset": "match",
+  "args": [
+    "tools/lit-church.mjs"
+  ]
+}

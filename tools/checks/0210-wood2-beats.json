@@ -1,0 +1,8 @@
+{
+  "name": "wood2-beats",
+  "order": 210,
+  "subset": "match",
+  "args": [
+    "tools/wood2-beats.mjs"
+  ]
+}

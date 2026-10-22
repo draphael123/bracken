@@ -1,0 +1,8 @@
+{
+  "name": "combat-part2",
+  "order": 283,
+  "subset": "match",
+  "args": [
+    "tools/combat-part2.mjs"
+  ]
+}

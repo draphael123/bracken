@@ -1,0 +1,8 @@
+{
+  "name": "minecart",
+  "order": 321,
+  "subset": "match",
+  "args": [
+    "tools/minecart.mjs"
+  ]
+}

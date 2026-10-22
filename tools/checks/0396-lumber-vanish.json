@@ -1,0 +1,8 @@
+{
+  "name": "lumber-vanish",
+  "order": 396,
+  "subset": "match",
+  "args": [
+    "tools/lumber-vanish.mjs"
+  ]
+}

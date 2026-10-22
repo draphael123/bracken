@@ -1,0 +1,8 @@
+{
+  "name": "crown-exam",
+  "order": 218,
+  "subset": "match",
+  "args": [
+    "tools/crown-exam.mjs"
+  ]
+}

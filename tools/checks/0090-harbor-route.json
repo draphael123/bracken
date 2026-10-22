@@ -1,0 +1,8 @@
+{
+  "name": "harbor-route",
+  "order": 90,
+  "subset": "match",
+  "args": [
+    "tools/harbor-route.mjs"
+  ]
+}

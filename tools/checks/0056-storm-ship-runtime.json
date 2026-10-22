@@ -1,0 +1,8 @@
+{
+  "name": "storm-ship-runtime",
+  "order": 56,
+  "subset": "match",
+  "args": [
+    "tools/storm-ship-runtime.mjs"
+  ]
+}

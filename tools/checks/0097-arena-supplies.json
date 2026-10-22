@@ -1,0 +1,8 @@
+{
+  "name": "arena-supplies",
+  "order": 97,
+  "subset": "match",
+  "args": [
+    "tools/arena-supplies.mjs"
+  ]
+}

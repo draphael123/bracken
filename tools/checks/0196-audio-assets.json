@@ -1,0 +1,8 @@
+{
+  "name": "audio-assets",
+  "order": 196,
+  "subset": "match",
+  "args": [
+    "tools/audio-assets.mjs"
+  ]
+}

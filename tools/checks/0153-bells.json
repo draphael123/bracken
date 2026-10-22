@@ -1,0 +1,8 @@
+{
+  "name": "bells",
+  "order": 153,
+  "subset": "match",
+  "args": [
+    "tools/bells.mjs"
+  ]
+}

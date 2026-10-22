@@ -1,0 +1,8 @@
+{
+  "name": "spore-exam",
+  "order": 198,
+  "subset": "match",
+  "args": [
+    "tools/spore-exam.mjs"
+  ]
+}

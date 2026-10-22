@@ -1,0 +1,11 @@
+{
+  "name": "canal-tunnel-route",
+  "order": 422,
+  "subset": "match",
+  "args": [
+    "tools/canal-tunnel-route.mjs",
+    "--heroes=knight,warden,pyro",
+    "--seeds=2"
+  ],
+  "port": 6
+}

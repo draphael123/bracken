@@ -1,0 +1,8 @@
+{
+  "name": "ending",
+  "order": 373,
+  "subset": "match",
+  "args": [
+    "tools/ending.mjs"
+  ]
+}

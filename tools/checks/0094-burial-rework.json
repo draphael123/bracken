@@ -1,0 +1,8 @@
+{
+  "name": "burial-rework",
+  "order": 94,
+  "subset": "match",
+  "args": [
+    "tools/burial-rework.mjs"
+  ]
+}

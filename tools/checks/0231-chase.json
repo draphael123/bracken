@@ -1,0 +1,8 @@
+{
+  "name": "chase",
+  "order": 231,
+  "subset": "match",
+  "args": [
+    "tools/chase.mjs"
+  ]
+}

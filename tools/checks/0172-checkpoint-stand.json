@@ -1,0 +1,8 @@
+{
+  "name": "checkpoint-stand",
+  "order": 172,
+  "subset": "match",
+  "args": [
+    "tools/checkpoint-stand.mjs"
+  ]
+}

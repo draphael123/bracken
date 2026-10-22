@@ -1,0 +1,8 @@
+{
+  "name": "render-layers",
+  "order": 36,
+  "subset": "match",
+  "args": [
+    "tools/render-layers.mjs"
+  ]
+}

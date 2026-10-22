@@ -1,0 +1,9 @@
+{
+  "name": "music-start",
+  "order": 420,
+  "subset": "match",
+  "args": [
+    "tools/music-start.mjs"
+  ],
+  "port": 8
+}

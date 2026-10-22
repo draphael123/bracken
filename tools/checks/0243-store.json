@@ -1,0 +1,8 @@
+{
+  "name": "store",
+  "order": 243,
+  "subset": "match",
+  "args": [
+    "tools/store.mjs"
+  ]
+}

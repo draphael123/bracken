@@ -1,0 +1,8 @@
+{
+  "name": "archmage-folly",
+  "order": 220,
+  "subset": "match",
+  "args": [
+    "tools/archmage-folly.mjs"
+  ]
+}

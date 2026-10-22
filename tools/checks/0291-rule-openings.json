@@ -1,0 +1,8 @@
+{
+  "name": "rule-openings",
+  "order": 291,
+  "subset": "match",
+  "args": [
+    "tools/rule-openings.mjs"
+  ]
+}

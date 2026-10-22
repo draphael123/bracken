@@ -1,0 +1,8 @@
+{
+  "name": "moor-gusts",
+  "order": 154,
+  "subset": "match",
+  "args": [
+    "tools/moor-gusts.mjs"
+  ]
+}

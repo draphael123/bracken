@@ -1,0 +1,8 @@
+{
+  "name": "sexton",
+  "order": 156,
+  "subset": "match",
+  "args": [
+    "tools/sexton.mjs"
+  ]
+}

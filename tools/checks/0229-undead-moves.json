@@ -1,0 +1,8 @@
+{
+  "name": "undead-moves",
+  "order": 229,
+  "subset": "match",
+  "args": [
+    "tools/undead-moves.mjs"
+  ]
+}

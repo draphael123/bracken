@@ -1,0 +1,9 @@
+{
+  "name": "feel-speed",
+  "order": 412,
+  "subset": "match",
+  "args": [
+    "tools/feel-speed.mjs"
+  ],
+  "port": 4
+}

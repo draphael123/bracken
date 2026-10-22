@@ -1,0 +1,8 @@
+{
+  "name": "ability-poses",
+  "order": 119,
+  "subset": "match",
+  "args": [
+    "tools/ability-poses.mjs"
+  ]
+}

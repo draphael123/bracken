@@ -1,0 +1,8 @@
+{
+  "name": "burial2",
+  "order": 182,
+  "subset": "match",
+  "args": [
+    "tools/burial2.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "content-audit",
+  "order": 15,
+  "subset": "match",
+  "args": [
+    "tools/content-audit.mjs"
+  ]
+}

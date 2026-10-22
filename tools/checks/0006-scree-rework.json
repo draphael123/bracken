@@ -1,0 +1,8 @@
+{
+  "name": "scree-rework",
+  "order": 6,
+  "subset": "match",
+  "args": [
+    "tools/scree-rework.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "marsh2-beats",
+  "order": 397,
+  "subset": "match",
+  "args": [
+    "tools/marsh2-beats.mjs"
+  ]
+}

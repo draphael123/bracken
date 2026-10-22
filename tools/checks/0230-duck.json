@@ -1,0 +1,8 @@
+{
+  "name": "duck",
+  "order": 230,
+  "subset": "match",
+  "args": [
+    "tools/duck.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "king-refill",
+  "order": 109,
+  "subset": "match",
+  "args": [
+    "tools/king-refill.mjs"
+  ]
+}

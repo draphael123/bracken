@@ -1,0 +1,8 @@
+{
+  "name": "attack-buffer",
+  "order": 102,
+  "subset": "match",
+  "args": [
+    "tools/attack-buffer.mjs"
+  ]
+}

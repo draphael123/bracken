@@ -1,0 +1,8 @@
+{
+  "name": "skill-balance-probe",
+  "order": 22,
+  "subset": "match",
+  "args": [
+    "tools/skill-balance-probe.mjs"
+  ]
+}

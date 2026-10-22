@@ -1,0 +1,8 @@
+{
+  "name": "keep-rework",
+  "order": 165,
+  "subset": "match",
+  "args": [
+    "tools/keep-rework.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "load-leak",
+  "order": 251,
+  "subset": "match",
+  "args": [
+    "tools/load-leak.mjs"
+  ]
+}

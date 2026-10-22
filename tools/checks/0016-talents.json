@@ -1,0 +1,8 @@
+{
+  "name": "talents",
+  "order": 16,
+  "subset": "match",
+  "args": [
+    "tools/talents.mjs"
+  ]
+}

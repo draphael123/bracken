@@ -1,0 +1,8 @@
+{
+  "name": "temperer",
+  "order": 116,
+  "subset": "match",
+  "args": [
+    "tools/temperer.mjs"
+  ]
+}

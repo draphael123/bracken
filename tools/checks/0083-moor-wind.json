@@ -1,0 +1,8 @@
+{
+  "name": "moor-wind",
+  "order": 83,
+  "subset": "match",
+  "args": [
+    "tools/moor-wind.mjs"
+  ]
+}

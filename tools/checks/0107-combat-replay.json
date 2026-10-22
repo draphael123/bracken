@@ -1,0 +1,8 @@
+{
+  "name": "combat-replay",
+  "order": 107,
+  "subset": "match",
+  "args": [
+    "tools/combat-replay.mjs"
+  ]
+}

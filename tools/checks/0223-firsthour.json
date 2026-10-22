@@ -1,0 +1,8 @@
+{
+  "name": "firsthour",
+  "order": 223,
+  "subset": "match",
+  "args": [
+    "tools/firsthour.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "hero-roster",
+  "order": 377,
+  "subset": "match",
+  "args": [
+    "tools/hero-roster.mjs"
+  ]
+}

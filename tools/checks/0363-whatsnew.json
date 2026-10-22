@@ -1,0 +1,8 @@
+{
+  "name": "whatsnew",
+  "order": 363,
+  "subset": "match",
+  "args": [
+    "tools/whatsnew.mjs"
+  ]
+}

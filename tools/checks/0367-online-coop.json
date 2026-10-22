@@ -1,0 +1,8 @@
+{
+  "name": "online-coop",
+  "order": 367,
+  "subset": "match",
+  "args": [
+    "tools/online-coop.mjs"
+  ]
+}

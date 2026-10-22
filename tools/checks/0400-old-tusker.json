@@ -1,0 +1,8 @@
+{
+  "name": "old-tusker",
+  "order": 400,
+  "subset": "match",
+  "args": [
+    "tools/old-tusker.mjs"
+  ]
+}

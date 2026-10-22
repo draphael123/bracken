@@ -1,0 +1,8 @@
+{
+  "name": "room-patterns",
+  "order": 37,
+  "subset": "match",
+  "args": [
+    "tools/room-patterns.mjs"
+  ]
+}

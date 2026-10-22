@@ -1,0 +1,11 @@
+{
+  "name": "textfit-full",
+  "order": 417,
+  "subset": "exact",
+  "args": [
+    "tools/textfit.mjs",
+    "--strict"
+  ],
+  "port": 5,
+  "timeout": 600000
+}

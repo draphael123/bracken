@@ -1,0 +1,8 @@
+{
+  "name": "collectables",
+  "order": 28,
+  "subset": "match",
+  "args": [
+    "tools/collectables.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "crouch-hint",
+  "order": 122,
+  "subset": "match",
+  "args": [
+    "tools/crouch-hint.mjs"
+  ]
+}

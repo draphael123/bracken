@@ -1,0 +1,8 @@
+{
+  "name": "tower-ascent",
+  "order": 61,
+  "subset": "match",
+  "args": [
+    "tools/tower-ascent.mjs"
+  ]
+}

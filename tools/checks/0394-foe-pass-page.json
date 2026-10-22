@@ -1,0 +1,8 @@
+{
+  "name": "foe-pass-page",
+  "order": 394,
+  "subset": "match",
+  "args": [
+    "tools/foe-pass-page.mjs"
+  ]
+}

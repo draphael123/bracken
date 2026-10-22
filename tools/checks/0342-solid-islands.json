@@ -1,0 +1,8 @@
+{
+  "name": "solid-islands",
+  "order": 342,
+  "subset": "match",
+  "args": [
+    "tools/solid-islands.mjs"
+  ]
+}

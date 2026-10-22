@@ -1,0 +1,8 @@
+{
+  "name": "queen-court",
+  "order": 235,
+  "subset": "match",
+  "args": [
+    "tools/queen-court.mjs"
+  ]
+}

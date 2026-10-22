@@ -1,0 +1,8 @@
+{
+  "name": "swim-shrines",
+  "order": 144,
+  "subset": "match",
+  "args": [
+    "tools/swim-shrines.mjs"
+  ]
+}

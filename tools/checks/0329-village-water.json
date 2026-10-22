@@ -1,0 +1,8 @@
+{
+  "name": "village-water",
+  "order": 329,
+  "subset": "match",
+  "args": [
+    "tools/village-water.mjs"
+  ]
+}

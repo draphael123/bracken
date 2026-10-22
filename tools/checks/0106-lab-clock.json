@@ -1,0 +1,8 @@
+{
+  "name": "lab-clock",
+  "order": 106,
+  "subset": "match",
+  "args": [
+    "tools/lab-clock.mjs"
+  ]
+}

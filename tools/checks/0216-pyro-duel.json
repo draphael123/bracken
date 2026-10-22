@@ -1,0 +1,8 @@
+{
+  "name": "pyro-duel",
+  "order": 216,
+  "subset": "match",
+  "args": [
+    "tools/pyro-duel.mjs"
+  ]
+}

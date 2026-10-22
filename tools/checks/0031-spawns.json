@@ -1,0 +1,8 @@
+{
+  "name": "spawns",
+  "order": 31,
+  "subset": "match",
+  "args": [
+    "tools/spawns.mjs"
+  ]
+}

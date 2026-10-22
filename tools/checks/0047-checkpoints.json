@@ -1,0 +1,8 @@
+{
+  "name": "checkpoints",
+  "order": 47,
+  "subset": "match",
+  "args": [
+    "tools/checkpoints.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "raptor-matriarch",
+  "order": 269,
+  "subset": "match",
+  "args": [
+    "tools/raptor-matriarch.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "foe-tempo",
+  "order": 255,
+  "subset": "match",
+  "args": [
+    "tools/foe-tempo.mjs"
+  ]
+}

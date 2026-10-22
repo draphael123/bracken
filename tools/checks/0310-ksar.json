@@ -1,0 +1,8 @@
+{
+  "name": "ksar",
+  "order": 310,
+  "subset": "match",
+  "args": [
+    "tools/ksar.mjs"
+  ]
+}

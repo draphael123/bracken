@@ -1,0 +1,8 @@
+{
+  "name": "rootway",
+  "order": 314,
+  "subset": "match",
+  "args": [
+    "tools/rootway.mjs"
+  ]
+}

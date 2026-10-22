@@ -1,0 +1,8 @@
+{
+  "name": "ember-flare",
+  "order": 234,
+  "subset": "match",
+  "args": [
+    "tools/ember-flare.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "village-stakes",
+  "order": 7,
+  "subset": "match",
+  "args": [
+    "tools/village-stakes.mjs"
+  ]
+}

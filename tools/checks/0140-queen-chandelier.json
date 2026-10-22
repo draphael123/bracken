@@ -1,0 +1,8 @@
+{
+  "name": "queen-chandelier",
+  "order": 140,
+  "subset": "match",
+  "args": [
+    "tools/queen-chandelier.mjs"
+  ]
+}

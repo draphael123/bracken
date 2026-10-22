@@ -1,0 +1,8 @@
+{
+  "name": "scree-chase",
+  "order": 336,
+  "subset": "match",
+  "args": [
+    "tools/scree-chase.mjs"
+  ]
+}

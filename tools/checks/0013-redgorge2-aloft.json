@@ -1,0 +1,8 @@
+{
+  "name": "redgorge2-aloft",
+  "order": 13,
+  "subset": "match",
+  "args": [
+    "tools/redgorge2-aloft.mjs"
+  ]
+}

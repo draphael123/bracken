@@ -1,0 +1,8 @@
+{
+  "name": "playrec",
+  "order": 299,
+  "subset": "match",
+  "args": [
+    "tools/playrec.mjs"
+  ]
+}

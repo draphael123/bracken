@@ -1,0 +1,8 @@
+{
+  "name": "level-jump",
+  "order": 248,
+  "subset": "match",
+  "args": [
+    "tools/level-jump.mjs"
+  ]
+}

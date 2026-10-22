@@ -1,0 +1,8 @@
+{
+  "name": "loading-screen",
+  "order": 244,
+  "subset": "match",
+  "args": [
+    "tools/loading-screen.mjs"
+  ]
+}

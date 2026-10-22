@@ -1,0 +1,8 @@
+{
+  "name": "bog-troll",
+  "order": 404,
+  "subset": "match",
+  "args": [
+    "tools/bog-troll.mjs"
+  ]
+}

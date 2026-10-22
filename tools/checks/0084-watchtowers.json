@@ -1,0 +1,8 @@
+{
+  "name": "watchtowers",
+  "order": 84,
+  "subset": "match",
+  "args": [
+    "tools/watchtowers.mjs"
+  ]
+}

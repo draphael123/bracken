@@ -1,0 +1,8 @@
+{
+  "name": "sprinkle-cap",
+  "order": 225,
+  "subset": "match",
+  "args": [
+    "tools/sprinkle-cap.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "fallingtower2",
+  "order": 360,
+  "subset": "match",
+  "args": [
+    "tools/fallingtower2.mjs"
+  ]
+}

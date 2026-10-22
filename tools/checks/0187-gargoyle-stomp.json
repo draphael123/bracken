@@ -1,0 +1,8 @@
+{
+  "name": "gargoyle-stomp",
+  "order": 187,
+  "subset": "match",
+  "args": [
+    "tools/gargoyle-stomp.mjs"
+  ]
+}

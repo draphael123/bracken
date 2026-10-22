@@ -1,0 +1,11 @@
+{
+  "name": "textfit",
+  "order": 416,
+  "subset": "match",
+  "args": [
+    "tools/textfit.mjs",
+    "hints,bestiary,store,tree,menu,hud,worldplates,pick,opening,press,title,mapcard,death,results,card,practice,bossjump,bossselect,plates,bossfix,soundtest,whatsnew",
+    "--strict"
+  ],
+  "port": 4
+}

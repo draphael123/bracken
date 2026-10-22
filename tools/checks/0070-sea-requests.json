@@ -1,0 +1,8 @@
+{
+  "name": "sea-requests",
+  "order": 70,
+  "subset": "match",
+  "args": [
+    "tools/sea-requests.mjs"
+  ]
+}

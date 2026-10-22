@@ -1,0 +1,8 @@
+{
+  "name": "save-safety",
+  "order": 371,
+  "subset": "match",
+  "args": [
+    "tools/save-safety.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "burial-geometry",
+  "order": 93,
+  "subset": "match",
+  "args": [
+    "tools/burial-geometry.mjs"
+  ]
+}

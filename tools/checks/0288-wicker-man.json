@@ -1,0 +1,8 @@
+{
+  "name": "wicker-man",
+  "order": 288,
+  "subset": "match",
+  "args": [
+    "tools/wicker-man.mjs"
+  ]
+}

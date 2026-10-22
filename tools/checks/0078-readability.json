@@ -1,0 +1,8 @@
+{
+  "name": "readability",
+  "order": 78,
+  "subset": "match",
+  "args": [
+    "tools/readability.mjs"
+  ]
+}

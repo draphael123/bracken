@@ -1,0 +1,8 @@
+{
+  "name": "rootway-probe",
+  "order": 315,
+  "subset": "match",
+  "args": [
+    "tools/rootway-probe.mjs"
+  ]
+}

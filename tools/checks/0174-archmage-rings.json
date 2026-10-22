@@ -1,0 +1,8 @@
+{
+  "name": "archmage-rings",
+  "order": 174,
+  "subset": "match",
+  "args": [
+    "tools/archmage-rings.mjs"
+  ]
+}

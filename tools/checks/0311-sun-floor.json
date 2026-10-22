@@ -1,0 +1,8 @@
+{
+  "name": "sun-floor",
+  "order": 311,
+  "subset": "match",
+  "args": [
+    "tools/sun-floor.mjs"
+  ]
+}

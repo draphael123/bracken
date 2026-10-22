@@ -1,0 +1,8 @@
+{
+  "name": "flip-actions",
+  "order": 352,
+  "subset": "match",
+  "args": [
+    "tools/flip-actions.mjs"
+  ]
+}

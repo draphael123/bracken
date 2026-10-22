@@ -1,0 +1,8 @@
+{
+  "name": "gargoyle-playtest",
+  "order": 200,
+  "subset": "match",
+  "args": [
+    "tools/gargoyle-playtest.mjs"
+  ]
+}

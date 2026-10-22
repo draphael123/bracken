@@ -1,0 +1,8 @@
+{
+  "name": "lit-church-aloft",
+  "order": 332,
+  "subset": "match",
+  "args": [
+    "tools/lit-church-aloft.mjs"
+  ]
+}

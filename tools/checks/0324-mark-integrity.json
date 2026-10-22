@@ -1,0 +1,8 @@
+{
+  "name": "mark-integrity",
+  "order": 324,
+  "subset": "match",
+  "args": [
+    "tools/mark-integrity.mjs"
+  ]
+}

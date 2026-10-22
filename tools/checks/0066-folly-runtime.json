@@ -1,0 +1,8 @@
+{
+  "name": "folly-runtime",
+  "order": 66,
+  "subset": "match",
+  "args": [
+    "tools/folly-runtime.mjs"
+  ]
+}

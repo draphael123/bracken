@@ -1,0 +1,8 @@
+{
+  "name": "boss-select",
+  "order": 387,
+  "subset": "match",
+  "args": [
+    "tools/boss-select.mjs"
+  ]
+}

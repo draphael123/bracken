@@ -1,0 +1,8 @@
+{
+  "name": "lamplit2",
+  "order": 384,
+  "subset": "match",
+  "args": [
+    "tools/lamplit2.mjs"
+  ]
+}

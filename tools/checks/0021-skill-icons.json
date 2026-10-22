@@ -1,0 +1,8 @@
+{
+  "name": "skill-icons",
+  "order": 21,
+  "subset": "match",
+  "args": [
+    "tools/skill-icons.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "lantern-eater",
+  "order": 312,
+  "subset": "match",
+  "args": [
+    "tools/lantern-eater.mjs"
+  ]
+}

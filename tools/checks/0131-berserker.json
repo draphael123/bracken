@@ -1,0 +1,8 @@
+{
+  "name": "berserker",
+  "order": 131,
+  "subset": "match",
+  "args": [
+    "tools/berserker.mjs"
+  ]
+}

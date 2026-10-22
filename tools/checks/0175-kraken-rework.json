@@ -1,0 +1,8 @@
+{
+  "name": "kraken-rework",
+  "order": 175,
+  "subset": "match",
+  "args": [
+    "tools/kraken-rework.mjs"
+  ]
+}

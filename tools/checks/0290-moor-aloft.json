@@ -1,0 +1,8 @@
+{
+  "name": "moor-aloft",
+  "order": 290,
+  "subset": "match",
+  "args": [
+    "tools/moor-aloft.mjs"
+  ]
+}

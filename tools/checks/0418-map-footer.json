@@ -1,0 +1,9 @@
+{
+  "name": "map-footer",
+  "order": 418,
+  "subset": "match",
+  "args": [
+    "tools/map-footer.mjs"
+  ],
+  "port": 9
+}

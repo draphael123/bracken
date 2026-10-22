@@ -1,0 +1,8 @@
+{
+  "name": "monk-machines",
+  "order": 341,
+  "subset": "match",
+  "args": [
+    "tools/monk-machines.mjs"
+  ]
+}

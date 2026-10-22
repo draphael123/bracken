@@ -1,0 +1,8 @@
+{
+  "name": "fair-folk",
+  "order": 287,
+  "subset": "match",
+  "args": [
+    "tools/fair-folk.mjs"
+  ]
+}

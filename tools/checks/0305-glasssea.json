@@ -1,0 +1,8 @@
+{
+  "name": "glasssea",
+  "order": 305,
+  "subset": "match",
+  "args": [
+    "tools/glasssea.mjs"
+  ]
+}

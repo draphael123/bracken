@@ -1,0 +1,8 @@
+{
+  "name": "ambient-landmarks",
+  "order": 277,
+  "subset": "match",
+  "args": [
+    "tools/ambient-landmarks.mjs"
+  ]
+}

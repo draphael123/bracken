@@ -1,0 +1,8 @@
+{
+  "name": "fire-room",
+  "order": 358,
+  "subset": "match",
+  "args": [
+    "tools/fire-room.mjs"
+  ]
+}

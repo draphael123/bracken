@@ -1,0 +1,8 @@
+{
+  "name": "cdp-recovery",
+  "order": 114,
+  "subset": "match",
+  "args": [
+    "tools/cdp-recovery.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "monastery3-beats",
+  "order": 208,
+  "subset": "match",
+  "args": [
+    "tools/monastery3-beats.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "uphill",
+  "order": 176,
+  "subset": "match",
+  "args": [
+    "tools/uphill.mjs"
+  ]
+}

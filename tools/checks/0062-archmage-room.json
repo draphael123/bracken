@@ -1,0 +1,8 @@
+{
+  "name": "archmage-room",
+  "order": 62,
+  "subset": "match",
+  "args": [
+    "tools/archmage-room.mjs"
+  ]
+}

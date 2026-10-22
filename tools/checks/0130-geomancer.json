@@ -1,0 +1,8 @@
+{
+  "name": "geomancer",
+  "order": 130,
+  "subset": "match",
+  "args": [
+    "tools/geomancer.mjs"
+  ]
+}

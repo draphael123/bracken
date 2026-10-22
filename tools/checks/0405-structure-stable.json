@@ -1,0 +1,8 @@
+{
+  "name": "structure-stable",
+  "order": 405,
+  "subset": "match",
+  "args": [
+    "tools/structure-stable.mjs"
+  ]
+}

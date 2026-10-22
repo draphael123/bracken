@@ -1,0 +1,8 @@
+{
+  "name": "audio-mix",
+  "order": 390,
+  "subset": "match",
+  "args": [
+    "tools/audio-mix.mjs"
+  ]
+}

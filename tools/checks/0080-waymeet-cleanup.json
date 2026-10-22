@@ -1,0 +1,8 @@
+{
+  "name": "waymeet-cleanup",
+  "order": 80,
+  "subset": "match",
+  "args": [
+    "tools/waymeet-cleanup.mjs"
+  ]
+}

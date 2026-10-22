@@ -1,0 +1,8 @@
+{
+  "name": "mini-walls",
+  "order": 171,
+  "subset": "match",
+  "args": [
+    "tools/mini-walls.mjs"
+  ]
+}

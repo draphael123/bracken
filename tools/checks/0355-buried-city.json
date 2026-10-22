@@ -1,0 +1,8 @@
+{
+  "name": "buried-city",
+  "order": 355,
+  "subset": "match",
+  "args": [
+    "tools/buried-city.mjs"
+  ]
+}

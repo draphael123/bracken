@@ -1,0 +1,8 @@
+{
+  "name": "damage-caps",
+  "order": 366,
+  "subset": "match",
+  "args": [
+    "tools/damage-caps.mjs"
+  ]
+}

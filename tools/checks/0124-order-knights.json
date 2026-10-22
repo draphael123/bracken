@@ -1,0 +1,8 @@
+{
+  "name": "order-knights",
+  "order": 124,
+  "subset": "match",
+  "args": [
+    "tools/order-knights.mjs"
+  ]
+}

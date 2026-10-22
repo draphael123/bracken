@@ -1,0 +1,8 @@
+{
+  "name": "mash-gate",
+  "order": 257,
+  "subset": "match",
+  "args": [
+    "tools/mash-gate.mjs"
+  ]
+}

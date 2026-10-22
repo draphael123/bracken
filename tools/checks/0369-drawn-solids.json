@@ -1,0 +1,8 @@
+{
+  "name": "drawn-solids",
+  "order": 369,
+  "subset": "match",
+  "args": [
+    "tools/drawn-solids.mjs"
+  ]
+}

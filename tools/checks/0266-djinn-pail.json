@@ -1,0 +1,8 @@
+{
+  "name": "djinn-pail",
+  "order": 266,
+  "subset": "match",
+  "args": [
+    "tools/djinn-pail.mjs"
+  ]
+}

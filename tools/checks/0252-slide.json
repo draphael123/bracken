@@ -1,0 +1,8 @@
+{
+  "name": "slide",
+  "order": 252,
+  "subset": "match",
+  "args": [
+    "tools/slide.mjs"
+  ]
+}

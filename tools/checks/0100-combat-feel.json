@@ -1,0 +1,8 @@
+{
+  "name": "combat-feel",
+  "order": 100,
+  "subset": "match",
+  "args": [
+    "tools/combat-feel.mjs"
+  ]
+}

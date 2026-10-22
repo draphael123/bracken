@@ -1,0 +1,8 @@
+{
+  "name": "map-grammar",
+  "order": 45,
+  "subset": "match",
+  "args": [
+    "tools/map-grammar.mjs"
+  ]
+}

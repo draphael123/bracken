@@ -1,0 +1,8 @@
+{
+  "name": "killzones",
+  "order": 27,
+  "subset": "match",
+  "args": [
+    "tools/killzones.mjs"
+  ]
+}

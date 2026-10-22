@@ -1,0 +1,8 @@
+{
+  "name": "gargoyle-smash",
+  "order": 178,
+  "subset": "match",
+  "args": [
+    "tools/gargoyle-smash.mjs"
+  ]
+}

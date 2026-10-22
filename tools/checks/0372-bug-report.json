@@ -1,0 +1,8 @@
+{
+  "name": "bug-report",
+  "order": 372,
+  "subset": "match",
+  "args": [
+    "tools/bug-report.mjs"
+  ]
+}

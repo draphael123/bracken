@@ -1,0 +1,8 @@
+{
+  "name": "walk-controls",
+  "order": 362,
+  "subset": "match",
+  "args": [
+    "tools/walk-controls.mjs"
+  ]
+}

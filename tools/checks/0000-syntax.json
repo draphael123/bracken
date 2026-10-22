@@ -1,0 +1,11 @@
+{
+  "name": "syntax",
+  "order": 0,
+  "subset": "always",
+  "args": [
+    "tools/check-syntax.mjs"
+  ],
+  "subsetArgs": [
+    "--changed"
+  ]
+}

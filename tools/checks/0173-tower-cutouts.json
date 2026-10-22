@@ -1,0 +1,8 @@
+{
+  "name": "tower-cutouts",
+  "order": 173,
+  "subset": "match",
+  "args": [
+    "tools/tower-cutouts.mjs"
+  ]
+}

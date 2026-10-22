@@ -1,0 +1,8 @@
+{
+  "name": "additional-areas-runtime",
+  "order": 49,
+  "subset": "match",
+  "args": [
+    "tools/additional-areas-runtime.mjs"
+  ]
+}

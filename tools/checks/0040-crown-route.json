@@ -1,0 +1,8 @@
+{
+  "name": "crown-route",
+  "order": 40,
+  "subset": "match",
+  "args": [
+    "tools/crown-route.mjs"
+  ]
+}

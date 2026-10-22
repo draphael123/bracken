@@ -1,0 +1,8 @@
+{
+  "name": "town-live",
+  "order": 79,
+  "subset": "match",
+  "args": [
+    "tools/town-live.mjs"
+  ]
+}

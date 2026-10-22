@@ -1,0 +1,8 @@
+{
+  "name": "moor-rocks",
+  "order": 289,
+  "subset": "match",
+  "args": [
+    "tools/moor-rocks.mjs"
+  ]
+}

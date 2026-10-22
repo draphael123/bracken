@@ -1,0 +1,8 @@
+{
+  "name": "progression-runtime",
+  "order": 18,
+  "subset": "match",
+  "args": [
+    "tools/progression-runtime.mjs"
+  ]
+}

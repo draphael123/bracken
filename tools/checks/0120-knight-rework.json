@@ -1,0 +1,8 @@
+{
+  "name": "knight-rework",
+  "order": 120,
+  "subset": "match",
+  "args": [
+    "tools/knight-rework.mjs"
+  ]
+}

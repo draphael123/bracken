@@ -1,0 +1,8 @@
+{
+  "name": "drowned-knights",
+  "order": 163,
+  "subset": "match",
+  "args": [
+    "tools/drowned-knights.mjs"
+  ]
+}

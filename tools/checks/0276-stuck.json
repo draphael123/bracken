@@ -1,0 +1,8 @@
+{
+  "name": "stuck",
+  "order": 276,
+  "subset": "match",
+  "args": [
+    "tools/stuck.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "dangling-paths",
+  "order": 10,
+  "subset": "match",
+  "args": [
+    "tools/dangling-paths.mjs"
+  ]
+}

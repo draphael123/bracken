@@ -1,0 +1,8 @@
+{
+  "name": "harvest-fair",
+  "order": 232,
+  "subset": "match",
+  "args": [
+    "tools/harvest-fair.mjs"
+  ]
+}

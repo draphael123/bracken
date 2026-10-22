@@ -1,0 +1,8 @@
+{
+  "name": "visible-supports",
+  "order": 408,
+  "subset": "match",
+  "args": [
+    "tools/visible-supports.mjs"
+  ]
+}

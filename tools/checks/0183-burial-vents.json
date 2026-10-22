@@ -1,0 +1,8 @@
+{
+  "name": "burial-vents",
+  "order": 183,
+  "subset": "match",
+  "args": [
+    "tools/burial-vents.mjs"
+  ]
+}

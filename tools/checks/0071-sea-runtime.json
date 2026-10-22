@@ -1,0 +1,8 @@
+{
+  "name": "sea-runtime",
+  "order": 71,
+  "subset": "match",
+  "args": [
+    "tools/sea-runtime.mjs"
+  ]
+}

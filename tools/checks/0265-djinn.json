@@ -1,0 +1,8 @@
+{
+  "name": "djinn",
+  "order": 265,
+  "subset": "match",
+  "args": [
+    "tools/djinn.mjs"
+  ]
+}

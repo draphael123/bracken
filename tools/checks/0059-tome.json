@@ -1,0 +1,8 @@
+{
+  "name": "tome",
+  "order": 59,
+  "subset": "match",
+  "args": [
+    "tools/tome.mjs"
+  ]
+}

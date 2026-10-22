@@ -1,0 +1,8 @@
+{
+  "name": "footsteps-check",
+  "order": 392,
+  "subset": "match",
+  "args": [
+    "tools/footsteps-check.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "blow-tags",
+  "order": 330,
+  "subset": "match",
+  "args": [
+    "tools/blow-tags.mjs"
+  ]
+}

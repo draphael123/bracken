@@ -1,0 +1,8 @@
+{
+  "name": "hanging-hoist",
+  "order": 146,
+  "subset": "match",
+  "args": [
+    "tools/hanging-hoist.mjs"
+  ]
+}

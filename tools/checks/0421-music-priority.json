@@ -1,0 +1,9 @@
+{
+  "name": "music-priority",
+  "order": 421,
+  "subset": "match",
+  "args": [
+    "tools/music-priority.mjs"
+  ],
+  "port": 8
+}

@@ -1,0 +1,8 @@
+{
+  "name": "hanging-exam",
+  "order": 207,
+  "subset": "match",
+  "args": [
+    "tools/hanging-exam.mjs"
+  ]
+}

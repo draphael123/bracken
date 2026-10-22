@@ -1,0 +1,8 @@
+{
+  "name": "slopes",
+  "order": 138,
+  "subset": "match",
+  "args": [
+    "tools/slopes.mjs"
+  ]
+}

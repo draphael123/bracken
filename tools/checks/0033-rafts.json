@@ -1,0 +1,8 @@
+{
+  "name": "rafts",
+  "order": 33,
+  "subset": "match",
+  "args": [
+    "tools/rafts.mjs"
+  ]
+}

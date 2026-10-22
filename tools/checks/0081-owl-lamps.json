@@ -1,0 +1,8 @@
+{
+  "name": "owl-lamps",
+  "order": 81,
+  "subset": "match",
+  "args": [
+    "tools/owl-lamps.mjs"
+  ]
+}

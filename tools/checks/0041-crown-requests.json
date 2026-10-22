@@ -1,0 +1,8 @@
+{
+  "name": "crown-requests",
+  "order": 41,
+  "subset": "match",
+  "args": [
+    "tools/crown-requests.mjs"
+  ]
+}

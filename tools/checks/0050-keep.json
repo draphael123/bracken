@@ -1,0 +1,8 @@
+{
+  "name": "keep",
+  "order": 50,
+  "subset": "match",
+  "args": [
+    "tools/keep.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "haunted-coast-runtime",
+  "order": 58,
+  "subset": "match",
+  "args": [
+    "tools/haunted-coast-runtime.mjs"
+  ]
+}

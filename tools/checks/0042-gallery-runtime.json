@@ -1,0 +1,8 @@
+{
+  "name": "gallery-runtime",
+  "order": 42,
+  "subset": "match",
+  "args": [
+    "tools/gallery-runtime.mjs"
+  ]
+}

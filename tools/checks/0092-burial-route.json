@@ -1,0 +1,8 @@
+{
+  "name": "burial-route",
+  "order": 92,
+  "subset": "match",
+  "args": [
+    "tools/burial-route.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "hero-pass",
+  "order": 378,
+  "subset": "match",
+  "args": [
+    "tools/hero-pass.mjs"
+  ]
+}

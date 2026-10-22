@@ -1,0 +1,8 @@
+{
+  "name": "bandits",
+  "order": 169,
+  "subset": "match",
+  "args": [
+    "tools/bandits.mjs"
+  ]
+}

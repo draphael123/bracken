@@ -1,0 +1,8 @@
+{
+  "name": "spore-loop",
+  "order": 85,
+  "subset": "match",
+  "args": [
+    "tools/spore-loop.mjs"
+  ]
+}

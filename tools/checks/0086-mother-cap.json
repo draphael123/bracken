@@ -1,0 +1,8 @@
+{
+  "name": "mother-cap",
+  "order": 86,
+  "subset": "match",
+  "args": [
+    "tools/mother-cap.mjs"
+  ]
+}

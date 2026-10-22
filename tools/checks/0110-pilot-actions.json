@@ -1,0 +1,8 @@
+{
+  "name": "pilot-actions",
+  "order": 110,
+  "subset": "match",
+  "args": [
+    "tools/pilot-actions.mjs"
+  ]
+}

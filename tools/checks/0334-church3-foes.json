@@ -1,0 +1,8 @@
+{
+  "name": "church3-foes",
+  "order": 334,
+  "subset": "match",
+  "args": [
+    "tools/church3-foes.mjs"
+  ]
+}

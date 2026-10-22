@@ -1,0 +1,8 @@
+{
+  "name": "ram-lord",
+  "order": 337,
+  "subset": "match",
+  "args": [
+    "tools/ram-lord.mjs"
+  ]
+}

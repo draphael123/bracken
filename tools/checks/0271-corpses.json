@@ -1,0 +1,8 @@
+{
+  "name": "corpses",
+  "order": 271,
+  "subset": "match",
+  "args": [
+    "tools/corpses.mjs"
+  ]
+}

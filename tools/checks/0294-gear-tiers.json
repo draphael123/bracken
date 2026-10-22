@@ -1,0 +1,8 @@
+{
+  "name": "gear-tiers",
+  "order": 294,
+  "subset": "match",
+  "args": [
+    "tools/gear-tiers.mjs"
+  ]
+}

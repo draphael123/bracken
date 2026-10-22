@@ -1,0 +1,8 @@
+{
+  "name": "one-new-foe",
+  "order": 65,
+  "subset": "match",
+  "args": [
+    "tools/one-new-foe.mjs"
+  ]
+}

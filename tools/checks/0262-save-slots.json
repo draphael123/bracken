@@ -1,0 +1,8 @@
+{
+  "name": "save-slots",
+  "order": 262,
+  "subset": "match",
+  "args": [
+    "tools/save-slots.mjs"
+  ]
+}

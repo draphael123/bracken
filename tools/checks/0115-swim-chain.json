@@ -1,0 +1,8 @@
+{
+  "name": "swim-chain",
+  "order": 115,
+  "subset": "match",
+  "args": [
+    "tools/swim-chain.mjs"
+  ]
+}

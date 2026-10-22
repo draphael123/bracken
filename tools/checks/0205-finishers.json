@@ -1,0 +1,8 @@
+{
+  "name": "finishers",
+  "order": 205,
+  "subset": "match",
+  "args": [
+    "tools/finishers.mjs"
+  ]
+}

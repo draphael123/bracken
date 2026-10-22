@@ -1,0 +1,8 @@
+{
+  "name": "attack-animation",
+  "order": 101,
+  "subset": "match",
+  "args": [
+    "tools/attack-animation.mjs"
+  ]
+}

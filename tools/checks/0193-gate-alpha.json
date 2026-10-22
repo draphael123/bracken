@@ -1,0 +1,8 @@
+{
+  "name": "gate-alpha",
+  "order": 193,
+  "subset": "match",
+  "args": [
+    "tools/gate-alpha.mjs"
+  ]
+}

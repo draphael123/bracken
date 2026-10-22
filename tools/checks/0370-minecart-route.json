@@ -1,0 +1,8 @@
+{
+  "name": "minecart-route",
+  "order": 370,
+  "subset": "match",
+  "args": [
+    "tools/minecart-route.mjs"
+  ]
+}

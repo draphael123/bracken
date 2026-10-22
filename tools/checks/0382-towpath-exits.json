@@ -1,0 +1,8 @@
+{
+  "name": "towpath-exits",
+  "order": 382,
+  "subset": "match",
+  "args": [
+    "tools/towpath-exits.mjs"
+  ]
+}

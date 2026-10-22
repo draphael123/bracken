@@ -1,0 +1,8 @@
+{
+  "name": "undead-realms",
+  "order": 228,
+  "subset": "match",
+  "args": [
+    "tools/undead-realms.mjs"
+  ]
+}

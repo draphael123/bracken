@@ -1,0 +1,8 @@
+{
+  "name": "hint-shown",
+  "order": 239,
+  "subset": "match",
+  "args": [
+    "tools/hint-shown.mjs"
+  ]
+}

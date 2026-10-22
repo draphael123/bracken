@@ -1,0 +1,8 @@
+{
+  "name": "temple-guardian",
+  "order": 340,
+  "subset": "match",
+  "args": [
+    "tools/temple-guardian.mjs"
+  ]
+}

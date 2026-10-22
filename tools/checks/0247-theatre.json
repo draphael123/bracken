@@ -1,0 +1,8 @@
+{
+  "name": "theatre",
+  "order": 247,
+  "subset": "match",
+  "args": [
+    "tools/theatre.mjs"
+  ]
+}

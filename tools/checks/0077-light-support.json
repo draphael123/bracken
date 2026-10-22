@@ -1,0 +1,8 @@
+{
+  "name": "light-support",
+  "order": 77,
+  "subset": "match",
+  "args": [
+    "tools/light-support.mjs"
+  ]
+}

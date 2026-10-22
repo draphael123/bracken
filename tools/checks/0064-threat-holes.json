@@ -1,0 +1,8 @@
+{
+  "name": "threat-holes",
+  "order": 64,
+  "subset": "match",
+  "args": [
+    "tools/threat-holes.mjs"
+  ]
+}

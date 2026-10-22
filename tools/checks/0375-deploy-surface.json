@@ -1,0 +1,8 @@
+{
+  "name": "deploy-surface",
+  "order": 375,
+  "subset": "match",
+  "args": [
+    "tools/deploy-surface.mjs"
+  ]
+}

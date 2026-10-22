@@ -1,0 +1,8 @@
+{
+  "name": "audit",
+  "order": 14,
+  "subset": "match",
+  "args": [
+    "tools/audit.mjs"
+  ]
+}

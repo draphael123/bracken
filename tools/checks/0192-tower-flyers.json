@@ -1,0 +1,8 @@
+{
+  "name": "tower-flyers",
+  "order": 192,
+  "subset": "match",
+  "args": [
+    "tools/tower-flyers.mjs"
+  ]
+}

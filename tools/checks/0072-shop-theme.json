@@ -1,0 +1,8 @@
+{
+  "name": "shop-theme",
+  "order": 72,
+  "subset": "match",
+  "args": [
+    "tools/shop-theme.mjs"
+  ]
+}

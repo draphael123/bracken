@@ -1,0 +1,8 @@
+{
+  "name": "frame-cost",
+  "order": 250,
+  "subset": "match",
+  "args": [
+    "tools/frame-cost.mjs"
+  ]
+}

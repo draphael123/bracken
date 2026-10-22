@@ -1,0 +1,8 @@
+{
+  "name": "lethal-water",
+  "order": 380,
+  "subset": "match",
+  "args": [
+    "tools/lethal-water.mjs"
+  ]
+}

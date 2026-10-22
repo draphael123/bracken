@@ -1,0 +1,8 @@
+{
+  "name": "combat-results-test",
+  "order": 108,
+  "subset": "match",
+  "args": [
+    "tools/combat-results-test.mjs"
+  ]
+}

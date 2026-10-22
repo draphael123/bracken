@@ -1,0 +1,8 @@
+{
+  "name": "deathknight-unlock",
+  "order": 179,
+  "subset": "match",
+  "args": [
+    "tools/deathknight-unlock.mjs"
+  ]
+}

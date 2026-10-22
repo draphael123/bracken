@@ -1,0 +1,8 @@
+{
+  "name": "skyroad",
+  "order": 301,
+  "subset": "match",
+  "args": [
+    "tools/skyroad.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "ki-follow",
+  "order": 364,
+  "subset": "match",
+  "args": [
+    "tools/ki-follow.mjs"
+  ]
+}

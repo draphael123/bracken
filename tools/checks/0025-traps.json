@@ -1,0 +1,8 @@
+{
+  "name": "traps",
+  "order": 25,
+  "subset": "match",
+  "args": [
+    "tools/traps.mjs"
+  ]
+}

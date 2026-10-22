@@ -1,0 +1,8 @@
+{
+  "name": "drawn-solids-sweep",
+  "order": 407,
+  "subset": "match",
+  "args": [
+    "tools/drawn-solids-sweep.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "told-sweep12",
+  "order": 402,
+  "subset": "match",
+  "args": [
+    "tools/told-sweep12.mjs"
+  ]
+}

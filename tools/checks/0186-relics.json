@@ -1,0 +1,8 @@
+{
+  "name": "relics",
+  "order": 186,
+  "subset": "match",
+  "args": [
+    "tools/relics.mjs"
+  ]
+}

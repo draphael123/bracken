@@ -1,0 +1,8 @@
+{
+  "name": "skill-passives",
+  "order": 20,
+  "subset": "match",
+  "args": [
+    "tools/skill-passives.mjs"
+  ]
+}

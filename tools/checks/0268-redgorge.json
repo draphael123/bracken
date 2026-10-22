@@ -1,0 +1,8 @@
+{
+  "name": "redgorge",
+  "order": 268,
+  "subset": "match",
+  "args": [
+    "tools/redgorge.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "npc-removal",
+  "order": 185,
+  "subset": "match",
+  "args": [
+    "tools/npc-removal.mjs"
+  ]
+}

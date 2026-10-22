@@ -1,0 +1,8 @@
+{
+  "name": "salvage-captain",
+  "order": 88,
+  "subset": "match",
+  "args": [
+    "tools/salvage-captain.mjs"
+  ]
+}

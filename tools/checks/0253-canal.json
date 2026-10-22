@@ -1,0 +1,8 @@
+{
+  "name": "canal",
+  "order": 253,
+  "subset": "match",
+  "args": [
+    "tools/canal.mjs"
+  ]
+}

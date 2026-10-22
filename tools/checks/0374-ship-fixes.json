@@ -1,0 +1,8 @@
+{
+  "name": "ship-fixes",
+  "order": 374,
+  "subset": "match",
+  "args": [
+    "tools/ship-fixes.mjs"
+  ]
+}

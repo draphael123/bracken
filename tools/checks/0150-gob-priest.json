@@ -1,0 +1,8 @@
+{
+  "name": "gob-priest",
+  "order": 150,
+  "subset": "match",
+  "args": [
+    "tools/gob-priest.mjs"
+  ]
+}

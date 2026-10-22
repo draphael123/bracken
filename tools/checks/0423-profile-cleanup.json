@@ -1,0 +1,8 @@
+{
+  "name": "profile-cleanup",
+  "order": 1000000,
+  "subset": "full",
+  "args": [
+    "tools/profile-cleanup.mjs"
+  ]
+}

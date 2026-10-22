@@ -1,0 +1,8 @@
+{
+  "name": "cistern-queen",
+  "order": 267,
+  "subset": "match",
+  "args": [
+    "tools/cistern-queen.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "skyroad-aloft",
+  "order": 303,
+  "subset": "match",
+  "args": [
+    "tools/skyroad-aloft.mjs"
+  ]
+}

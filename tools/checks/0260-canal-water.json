@@ -1,0 +1,8 @@
+{
+  "name": "canal-water",
+  "order": 260,
+  "subset": "match",
+  "args": [
+    "tools/canal-water.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "desert-ledge-art",
+  "order": 177,
+  "subset": "match",
+  "args": [
+    "tools/desert-ledge-art.mjs"
+  ]
+}

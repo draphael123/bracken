@@ -1,0 +1,8 @@
+{
+  "name": "coop-progress",
+  "order": 399,
+  "subset": "match",
+  "args": [
+    "tools/coop-progress.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "deep-rework",
+  "order": 166,
+  "subset": "match",
+  "args": [
+    "tools/deep-rework.mjs"
+  ]
+}

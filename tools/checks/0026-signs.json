@@ -1,0 +1,8 @@
+{
+  "name": "signs",
+  "order": 26,
+  "subset": "match",
+  "args": [
+    "tools/signs.mjs"
+  ]
+}

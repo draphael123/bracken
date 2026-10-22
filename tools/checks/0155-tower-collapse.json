@@ -1,0 +1,8 @@
+{
+  "name": "tower-collapse",
+  "order": 155,
+  "subset": "match",
+  "args": [
+    "tools/tower-collapse.mjs"
+  ]
+}

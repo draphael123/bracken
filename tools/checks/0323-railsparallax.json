@@ -1,0 +1,8 @@
+{
+  "name": "railsparallax",
+  "order": 323,
+  "subset": "match",
+  "args": [
+    "tools/railsparallax.mjs"
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "name": "burial3",
+  "order": 188,
+  "subset": "match",
+  "args": [
+    "tools/burial3.mjs"
+  ]
+}

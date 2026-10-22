@@ -1,0 +1,8 @@
+{
+  "name": "desert-foes2",
+  "order": 275,
+  "subset": "match",
+  "args": [
+    "tools/desert-foes2.mjs"
+  ]
+}

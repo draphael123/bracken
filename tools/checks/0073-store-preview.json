@@ -1,0 +1,8 @@
+{
+  "name": "store-preview",
+  "order": 73,
+  "subset": "match",
+  "args": [
+    "tools/store-preview.mjs"
+  ]
+}

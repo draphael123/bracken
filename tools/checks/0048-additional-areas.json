@@ -1,0 +1,8 @@
+{
+  "name": "additional-areas",
+  "order": 48,
+  "subset": "match",
+  "args": [
+    "tools/additional-areas.mjs"
+  ]
+}
