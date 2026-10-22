@@ -1,3 +1,4 @@
+import { installNativeCollectionBridge } from './lab-bridge.mjs';
 import { installLabCollection } from './lab-collect.mjs';
 // tools/cdp.mjs — THE PAGE, HEADLESS, FOR A TOOL. The same approach as tools/headless.mjs (the installed Chrome or Edge,
 // driven over the DevTools protocol with Node's own WebSocket), as a helper the readability tools share.
@@ -66,9 +67,9 @@ export async function openPage(opts = {}) {
   if (!wsUrl) throw new Error('could not reach the browser');
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { const timer = setTimeout(() => { ws.close(); rej(new Error('browser WebSocket did not open')); }, 15000);
     ws.onopen = () => { clearTimeout(timer); res(); }; ws.onerror = e => { clearTimeout(timer); rej(e); }; });
-  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [];
+  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [], nativeLab = {requests:0,completed:0,failed:0,postEvaluations:0};
   const drain = reason => { for (const p of pending.values()) { clearTimeout(p.timer); p.reject(new Error(reason)); } pending.clear(); };
-  closeConnection = () => { closing = true; drain('page closed'); try { ws.close(); } catch {} };
+  closeConnection = () => { if((nativeLab.requests||nativeLab.postEvaluations)&&process.env.BRACKEN_PROCESS_LOG)try{appendFileSync(process.env.BRACKEN_PROCESS_LOG,JSON.stringify({type:'native-lab-collection',check:process.env.BRACKEN_CHECK,time:Date.now(),...nativeLab})+'\n');}catch{} closing = true; drain('page closed'); try { ws.close(); } catch {} };
   ws.onclose = () => { disconnected = true;
     const reason = 'BRACKEN_BROWSER_DISCONNECTED: page connection closed';
     if (!closing && process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG,
@@ -80,6 +81,12 @@ export async function openPage(opts = {}) {
     const p = pending.get(m.id); clearTimeout(p.timer); pending.delete(m.id);
     if (m.error) p.reject(new Error(m.error.message || JSON.stringify(m.error))); else p.resolve(m);
   }
+    if (m.method === 'Runtime.bindingCalled' && m.params.name === '__brackenLabGC') {
+      const request=+m.params.payload;nativeLab.requests++;
+      void(async()=>{let error=null;try{await send('HeapProfiler.collectGarbage',{},15000);nativeLab.completed++;}catch(e){nativeLab.failed++;error=e.message;}
+        await send('Runtime.evaluate',{contextId:m.params.executionContextId,expression:'window.__brackenLabReply('+JSON.stringify(request)+','+JSON.stringify(error)+')'});
+      })().catch(()=>{});
+    }
     if (m.method && opts.onEvent) opts.onEvent(m);   /* (a tool that wants the protocol's events, e.g. Tracing.dataCollected: tools/mobile-profile.mjs) */
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
   // Navigation can destroy a context before its evaluation answers. Bound the protocol wait as well.
@@ -89,10 +96,17 @@ export async function openPage(opts = {}) {
     pending.set(i, { resolve: res, reject: rej, timer });
     try { ws.send(JSON.stringify({ id: i, method, params })); } catch (e) { clearTimeout(timer); pending.delete(i); rej(e); }
   });
-  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
+  const evalp = async (expr, timeout = 1800000) => { const started=Date.now(); const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; };
+    const value = r.result && r.result.result ? r.result.result.value : undefined;
+    // Between completed manual evaluations, let Blink reclaim retired native canvas objects too.
+    // Real-time measurements, mid-boot probes and explicit no-forced-GC controls remain on their original path.
+    if(!opts.noWait&&opts.gcLoads!==false&&opts.gcEvaluations!==false&&process.env.BRACKEN_LAB_GC!=='0'&&Date.now()-started>=100){
+      const m=await send('Runtime.evaluate',{expression:'Boolean(window.BK?.manualSimulation)',returnByValue:true});
+      if(m.result?.result?.value){await send('HeapProfiler.collectGarbage');nativeLab.postEvaluations++;}
+    }
+    return value; };
   await send('Runtime.enable'); await send('Page.enable');
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
@@ -100,6 +114,11 @@ export async function openPage(opts = {}) {
   if (opts.fonts === false) blocked.push('https://fonts.googleapis.com/*', 'https://fonts.gstatic.com/*');
   if (opts.audioFiles === false) blocked.push(URL0 + 'audio/*');   /* layout-only tools still initialize audio to hide its banner, but decode no clips */
   if (blocked.length) { await send('Network.enable'); await send('Network.setBlockedURLs', { urls: blocked }); }
+  if (opts.cpuCanvas ?? (process.env.BRACKEN_CPU_CANVAS === '1')) await send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{
+    const get=HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext=function(type,opts){return get.call(this,type,type==='2d'?{...opts,willReadFrequently:true}:opts);};
+    window.__tfCpuCanvas=true;
+  })()` });   /* opt-in lab backend: apply textfit's existing CPU-canvas setup BEFORE the initial sprite bake too */
   /* opts.seed: THE PAGE'S Math.random IS A SEEDED STREAM, from the first script of every document (so it survives pg.reload()). The sim is
      fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
@@ -108,6 +127,21 @@ export async function openPage(opts = {}) {
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
      (a number), opts.hints (none / low / medium / high; default HIGH: the tools were calibrated on every hint, claude/hintlevel; a NEW player gets MEDIUM from the game itself), opts.speed === false leaves the game's own default and migration alone (tools/settings-tabs.mjs tests those). A tool that sets BK.SET.speed still wins. */
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
+  // Raw Page.navigate calls create a new lab too. Install before BK is published, without a timer or simulation step.
+  if (!opts.noWait && opts.gcLoads !== false && process.env.BRACKEN_LAB_GC !== '0') {
+    await send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{
+      if(typeof gc!=='function')return;
+      Object.defineProperty(window,'BK',{configurable:true,enumerable:true,get(){return undefined;},set(value){
+        Object.defineProperty(window,'BK',{configurable:true,enumerable:true,writable:true,value});
+        if(value)(${installLabCollection.toString()})(value,gc,${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load','setHero','reset','sim','step','draw1','look'])});
+      }});
+    })()` });
+  }
+  // A manual case can yield to this promise so the protocol reaches Blink's native canvas heap too.
+  if(!opts.noWait&&opts.gcLoads!==false&&process.env.BRACKEN_LAB_GC!=='0'){
+    await send('Runtime.addBinding',{name:'__brackenLabGC'});
+    await send('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativeCollectionBridge.toString()+')()'});
+  }
   await send('Page.navigate', { url: URL0 });
   let ready = false;
   for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; }); if (!ready) await sleep(250); }
@@ -119,7 +153,7 @@ export async function openPage(opts = {}) {
     if (opts.noWait || process.env.BRACKEN_LAB_GC === '0') return;
     if (opts.gcLoads !== false) await evalp(`(()=>{
       if (typeof gc !== 'function' || !window.BK) return false;
-      return (${installLabCollection.toString()})(BK, gc, ${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load', 'setHero', 'reset'])});
+      return (${installLabCollection.toString()})(BK, gc, ${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load', 'setHero', 'reset', 'sim', 'step', 'draw1', 'look'])});
     })()`);
     await send('HeapProfiler.collectGarbage');
   };
@@ -141,6 +175,6 @@ export async function openPage(opts = {}) {
     if (!ready) throw new Error('the fresh lab page did not initialize');
     await prepareLab();
   };
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
+  return { evalp, send, errors, nativeLab, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
   } catch (e) { closeConnection(); stopServer(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }

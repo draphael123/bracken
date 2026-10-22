@@ -1,7 +1,7 @@
 # codex/suite-resume
 
 Status: Partial. Checkpoint/resume, real-browser fault injection, measured lab memory recovery and
-shared-browser recycling pass. Full serial equivalence and the full allocation-growth audit remain pending.
+shared-browser recycling pass. Full serial equivalence and the full branch-wide equivalence remains pending; the allocation-growth audit now passes.
 Base: latest origin/master checked 2026-10-22, BATCH112 `5e44cddd`.
 Dependency: includes Task 1's runner/receipt refactor as a prerequisite cherry-pick. Merge ci-gate first;
 the task-specific changes are the commits after that prerequisite. No master merge or deployment.
@@ -15,7 +15,7 @@ the task-specific changes are the commits after that prerequisite. No master mer
 - A browser disconnect rejects pending protocol requests immediately; their old timers waited up to
   30 minutes. Intentional close is separated from unexpected disconnect.
 - Browser launch/close/crash PIDs and per-check renderer/total working sets are logged. Shared browsers
-  recycle every 12 checks. A 1536 MB renderer ceiling and 512 MB free-memory floor interrupt only an
+  recycle every 12 checks. The current separate emergency ceiling and 512 MB free-memory floor interrupt only an
   owned browser attempt. They never turn an uncompleted check into PASS or a game FAIL verdict.
 - Added documented fault-injection tools. No game source or assertion/tolerance/skip changed.
 
@@ -118,3 +118,39 @@ Real unchanged levelling-runtime PASS: 221698 ms, peak renderer 1285 MB / owned 
 batching retains the memory margin with fewer explicit collections. Receipts are in ../lab-collect-proof outside git.
 The full 425-check serial/sharded verification is being started from the following clean source checkpoint; the earlier
 incomplete source-bound checkpoint is preserved and is not relabeled or migrated.
+
+## Current continuation verification (2026-10-22)
+
+The renderer recycle threshold is 1536 MB, applied after the current successful pooled check. It is
+separate from the 2816 MB emergency ceiling for one check. The earlier implementation incorrectly
+used the recycle threshold as a hard kill and prevented a legitimate all-campaign canvas audit.
+The corrected default remains below 3 GB; admission requires 4352 MB free, including 1024 MB browser
+overhead and the unchanged 512 MB reserve. A sustained shortfall saves an incomplete checkpoint.
+No game assertions, tolerances, deadlines, simulation budgets, balance or quality settings changed.
+
+Measured causes are retained native canvas allocations during synchronous lab evaluations, wrappers
+lost on raw navigation, and repeated hero-art builds. The harness reinstalls opt-out-aware collection
+before navigation, yields at existing forced-GC audit boundaries and uses fresh browsers for the
+original ordered boss cases and per-hero levelling cases. All unforced growth controls remain unforced.
+
+Verified immutable-source Actions receipts:
+- 39860029941, source 63cd8719: all 27 boss cases / 102 assertion lines pass in 254736 ms
+  inside the original 300000 ms deadline, renderer peak 1321 MB; levelling passes 4029 passive reads
+  and 234 level-up cases in 639091 ms, peak 1400 MB, inside its original 1800000 ms deadline.
+- 39860788572: native bridge preserves 256 exact updates/random draws and 64 state/pixel samples,
+  raw navigation/reload and the explicit gcLoads:false opt-out; no extra simulation steps.
+- 39864754648, source ae573a03: all 64 levels / 47769 returned sheets freed, zero held; both original
+  growth limits pass. Injecting one held sheet produces the real assertion failure (exit 1), not an
+  interruption. Peaks 2526/2554 MB calibrated the separate emergency margin.
+- 39865884558, source 55b757c6: a 1 MB injected soft threshold keeps both successful verdicts
+  and changes the browser PID before the second check. Memory/admission/kill-resume/fault tests pass.
+
+The prior source 2a3175b1 Linux full gate retains 382 real verdicts (364 PASS, 18 FAIL) and 43
+interruptions; missing-verdict summary rows are not game failures or completion. It is not current
+equivalence proof. Earlier serial snapshots are preserved with their exact identities. Final full
+serial and matching-source sharded runs are required; no incomplete run is described as green.
+
+## QUESTIONS FOR DANIEL - current
+
+None for these reversible harness corrections. Remaining combat reds stay visible; no balance change
+is authorized or proposed as a way to make the gate pass.

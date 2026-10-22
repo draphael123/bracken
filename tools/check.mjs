@@ -216,16 +216,18 @@ const RESUME = option('resume', ''), prior = RESUME ? JSON.parse(readFileSync(RE
 const JOBS = +option('jobs', process.env.BRACKEN_JOBS || 1);
 const MAX_BROWSERS = +option('max-browsers', process.env.BRACKEN_MAX_BROWSERS || 1), shardArg = option('shard', prior?.shard?.join('/') || '');
 const RECYCLE_EVERY = +option('recycle-every', process.env.BRACKEN_RECYCLE_EVERY || 12);
-const RENDERER_MB = +option('renderer-mb', process.env.BRACKEN_RENDERER_MB ?? 1536);
-if (!Number.isInteger(RECYCLE_EVERY) || RECYCLE_EVERY < 1 || !Number.isFinite(RENDERER_MB) || RENDERER_MB < 0)
-  throw new Error('--recycle-every must be a positive integer; --renderer-mb must be nonnegative (0 disables the guard)');
+const RENDERER_MB = +option('renderer-mb', process.env.BRACKEN_RENDERER_MB ?? 2816);
+const RECYCLE_MB = +option('recycle-mb', process.env.BRACKEN_RECYCLE_MB ?? 1536);
+if (!Number.isInteger(RECYCLE_EVERY) || RECYCLE_EVERY < 1 || !Number.isFinite(RENDERER_MB) || RENDERER_MB < 0 || !Number.isFinite(RECYCLE_MB) || RECYCLE_MB < 0)
+  throw new Error('--recycle-every must be a positive integer; --renderer-mb and --recycle-mb must be nonnegative (0 disables that limit)');
 process.env.BRACKEN_RENDERER_MB = String(RENDERER_MB);
+process.env.BRACKEN_RECYCLE_MB = String(RECYCLE_MB);
 if (!Number.isInteger(JOBS) || JOBS < 1 || JOBS > 10 || !Number.isInteger(MAX_BROWSERS) || MAX_BROWSERS < 1 || MAX_BROWSERS > JOBS)
   throw new Error('--jobs must be 1..10 and --max-browsers must be 1..jobs (one port per worker in this checkout)');
 const shardMatch = shardArg && String(shardArg).match(/^(\d+)\/(\d+)$/), SHARD = shardMatch ? [+shardMatch[1], +shardMatch[2]] : null;
 if (shardArg && (!SHARD || SHARD[0] < 1 || SHARD[1] < 2 || SHARD[0] > SHARD[1])) throw new Error('--shard must be i/n, with 1 <= i <= n');
 const LIST = argv.includes('--list'), JSON_OUT = option('json', '');
-let WANT = argv.filter((a, i) => !a.startsWith('--') && !['--jobs', '--max-browsers', '--shard', '--json', '--progress', '--resume', '--recycle-every', '--renderer-mb'].includes(argv[i - 1]))
+let WANT = argv.filter((a, i) => !a.startsWith('--') && !['--jobs', '--max-browsers', '--shard', '--json', '--progress', '--resume', '--recycle-every', '--renderer-mb', '--recycle-mb'].includes(argv[i - 1]))
   .flatMap(a => a.split(',')).map(x => x.trim()).filter(Boolean);
 if (!WANT.length && prior) WANT = prior.selection;
 const SUBSET = WANT.length > 0 || !!SHARD, wanted = name => !WANT.length || WANT.some(w => name.includes(w));
@@ -316,8 +318,8 @@ const progress = openProgress(path, { identity: sourceIdentity(ROOT), expected, 
 process.env.BRACKEN_PROCESS_LOG = progress.path + '.processes.jsonl';
 console.log('[progress] ' + progress.path + (RESUME ? ' (retaining ' + progress.completed.size + ' verdicts)' : ''));
 const active = new Map(); let stopping = false;
-const onStart = (name, pid) => { active.set(name, pid); progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); };
-const done = r => { active.delete(r.name); live(r.name, r.ok, r.ms, r.interrupted); progress.done(r); };
+const onStart = (name, pid) => { delete progress.state.waiting; active.set(name, pid); progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); };
+const done = r => { delete progress.state.waiting; if(r.resourceStop) stopping = true; active.delete(r.name); live(r.name, r.ok, r.ms, r.interrupted); progress.done(r); };
 const stop = () => { stopping = true; for (const pid of active.values()) killTreeSync(pid); };
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) try { process.on(sig, stop); } catch {}
 const onExit = () => { try { progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); } finally { progress.close(); } };
@@ -331,7 +333,7 @@ try {
   if (JOBS > 1) await runPool(pending, { ROOT, jobs: JOBS, maxBrowsers: MAX_BROWSERS, portFor,
     recycleEvery: RECYCLE_EVERY, onStart, onDone: done, shouldStop: () => stopping });
   else for (const r of pending) { if (stopping) break;
-    done(await execute({ ...r, onStart: pid => onStart(r.name, pid) }, ROOT, +(r.env?.PORT || portFor(0))));
+    done(await execute({ ...r, onWait:info=>{progress.state.waiting={name:r.name,...info};progress.snapshot();}, onStart: pid => onStart(r.name, pid) }, ROOT, +(r.env?.PORT || portFor(0))));
   }
 } catch (e) { progress.state.fatal = e.stack || String(e); console.error('SUITE INTERRUPTED: ' + progress.state.fatal); }
 finally {

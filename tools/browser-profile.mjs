@@ -1,3 +1,4 @@
+import { memoryAction, DEFAULT_RECYCLE_MB, DEFAULT_RENDERER_MB } from './memory-policy.mjs';
 // tools/browser-profile.mjs — THE THROWAWAY BROWSER PROFILE, and taking it away again (2026-09-21).
 // Every tool that drives a headless Chrome gives it a fresh --user-data-dir under the OS temp folder, and until now only
 // levelvideo.mjs ever deleted one: 3,130 of them had piled up in Windows Temp. This owns the whole life of one:
@@ -108,7 +109,8 @@ export function launchBrowser(exe, args, kind = 'look') {
   try { child = spawn(exe, [...args, '--user-data-dir=' + prof], { stdio: 'ignore', detached: process.platform !== 'win32' }); }
   catch (e) { removeProfileSync(prof); throw e; }
   let exited = false, closingRequested = false, failure = null, sampling = false;
-  const peak = { totalMb: 0, rendererMb: 0 }, limit = +(process.env.BRACKEN_RENDERER_MB ?? 1536);
+  const peak = { totalMb: 0, rendererMb: 0 }, limit = +(process.env.BRACKEN_RENDERER_MB ?? DEFAULT_RENDERER_MB), recycleMb = +(process.env.BRACKEN_RECYCLE_MB ?? DEFAULT_RECYCLE_MB);
+  let recycleRequested = false;
   const event = (type, extra = {}) => { if (!process.env.BRACKEN_PROCESS_LOG) return;
     try { appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({ type, pid: child.pid, profile: prof,
       check: process.env.BRACKEN_CHECK, attempt: process.env.BRACKEN_ATTEMPT, time: Date.now(), ...extra }) + '\n'); } catch {}
@@ -124,7 +126,9 @@ export function launchBrowser(exe, args, kind = 'look') {
       }
       const current = await browserMemory(child.pid, prof);
       peak.totalMb = Math.max(peak.totalMb, current.totalMb); peak.rendererMb = Math.max(peak.rendererMb, current.rendererMb);
-      if (limit > 0 && current.rendererMb > limit && !closingRequested && !failure && !exited) {
+      const action=memoryAction(current.rendererMb,{hardMb:limit,recycleMb});
+      if(action==='recycle'&&!recycleRequested){recycleRequested=true;event('recycle-requested',{thresholdMb:recycleMb,peak});}
+      if (action === 'interrupt' && !closingRequested && !failure && !exited) {
         failure = 'renderer working set ' + current.rendererMb + ' MB exceeded ' + limit + ' MB';
         event('interrupted', { reason: failure, peak }); killTreeSync(child.pid);
       }
@@ -147,6 +151,7 @@ export function launchBrowser(exe, args, kind = 'look') {
     sampleMemory,
     get peak() { return { ...peak }; },
     get failure() { return failure; },
+    get recycleRequested() { return recycleRequested; },
     async devtoolsPort(tries = 120) { for (let i = 0; i < tries && !exited; i++) { try { const p = +readFileSync(join(prof, 'DevToolsActivePort'), 'utf8').split(/\r?\n/)[0]; if (p > 0) return p; } catch { /* not written yet */ } await sleep(250); } throw new Error('the browser never told us its debugging port'); },
     get exited() { return exited; },
     close() {
