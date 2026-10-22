@@ -47,7 +47,12 @@ jobs:
       - run: node tools/voices-check.mjs
       - run: node tools/footsteps-check.mjs
       - run: node tools/sfx-demand.mjs
+      - run: node tools/sfx-entry.mjs
       - run: node tools/music-priority.mjs
+      - run: node tools/loading-screen.mjs
+      - run: node tools/frame-cost.mjs
+      - run: node tools/modulepreload.mjs
+      - run: node tools/mobile-perf.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
