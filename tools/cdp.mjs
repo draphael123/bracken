@@ -173,6 +173,6 @@ export async function openPage(opts = {}) {
     if (!ready) throw new Error('the fresh lab page did not initialize');
     await prepareLab();
   };
-  return { evalp, send, errors, nativeLab, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
-  } catch (e) { closeConnection(); stopServer(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
+  return { evalp, send, errors, nativeLab, PORT, browserPort: dbg, dbg, reload, async close() { closeConnection(); await Promise.all([stopServer(),loan ? loan.close() : run.close()]); } };
+  } catch (e) { closeConnection(); await stopServer(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }

@@ -4,13 +4,13 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
   server-lease:
-    if: inputs.mode == 'server-lease'
+    if: inputs.mode == 'server-lease' || inputs.mode == 'server-only'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -21,6 +21,7 @@ jobs:
       - run: node tools/server-lease-selftest.mjs
       - run: node tools/server-lease-proof.mjs
       - run: node tools/textfit-memory-proof.mjs
+        if: inputs.mode == 'server-lease'
       - uses: actions/upload-artifact@v4
         if: always()
         with:
