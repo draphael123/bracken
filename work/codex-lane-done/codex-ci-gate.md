@@ -40,7 +40,12 @@ shard 16: 27 checks, estimated 14.4 min
   duplicate/stale/unexpected receipts and indented diagnostic formatting.
 - Compared the list with the original BATCH112 source: exactly the same 425 names in the same order.
 - tells/comments/homepaths subset including changed-file syntax: passed outside the network/process sandbox.
-- Full source/tool syntax sweep and live Actions proof: pending in this checkpoint.
+- Full source/tool syntax sweep: passed, 1455 files parsed at the first implementation checkpoint.
+- Live Actions proof: run 39779799289 at c86682b5. The first completed shard retained all 22 verdicts,
+  including the pre-existing stale oreroad mash row and a Linux-specific profile-cleanup red.
+  Diagnosed the latter: a hard-killed tool's browser is reparented to init (PID 1), which the old
+  ownership test mistook for a living owner. Added explicit Unix init-adoption handling; the existing
+  profile-cleanup assertions remain unchanged. Ownership regression cases pass; live Linux recheck pending.
 - Full serial baseline: pending; available physical RAM fell from 2.3 GB to 1.9 GB while other lanes were active.
   No long local browser gate started at this checkpoint. No other lane's processes were ended.
 

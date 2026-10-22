@@ -2,6 +2,12 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import { annotations, assignShards, formatSummary, mergeReports } from './gate-results.mjs';
+import { parentLives } from './process-owner.mjs';
+const procs = new Map([[1, { pid: 1 }], [7, { pid: 7, born: 100 }], [8, { pid: 8, born: 300 }]]);
+assert.equal(parentLives({ ppid: 1 }, procs, 'linux'), false, 'init adoption is an orphan, not a living owner');
+assert.equal(parentLives({ ppid: 7, born: 200 }, procs, 'linux'), true);
+assert.equal(parentLives({ ppid: 8, born: 200 }, procs, 'win32'), false, 'reused parent PID is not the original owner');
+assert.equal(parentLives({ ppid: 9 }, procs, 'linux'), false);
 const names = ['a', 'b', 'new-check', 'syntax'], timings = { a: 100, b: 90, syntax: 10, retired: 999999 };
 const assigned = assignShards(names, timings, 2);
 assert.equal(assigned.size, 4); assert.equal(assigned.has('retired'), false);
