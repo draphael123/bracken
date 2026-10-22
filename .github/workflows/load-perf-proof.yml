@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare, mobile, calls, present, campaign, variant]
+        options: [profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       pixel_cpu:
         type: boolean
@@ -22,6 +22,29 @@ env:
 permissions:
   contents: read
 jobs:
+  pixel-debug:
+    if: inputs.mode == 'pixel-debug'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        backend: ['0','1']
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/renderer-campaign-proof.mjs 1 --only=mage --variant=baseline-control --frames=16 --scene=entry --debug-frame=9
+        env:
+          PIXEL_CPU_CANVAS: ${{ matrix.backend }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pixel-debug-${{ matrix.backend }}
+          path: gate-data/
   variant:
     if: inputs.mode == 'variant'
     runs-on: ubuntu-latest
