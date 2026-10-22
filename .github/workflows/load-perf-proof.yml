@@ -8,7 +8,7 @@ on:
         default: profile
       present:
         type: choice
-        options: [copy, pattern, cpu-frame]
+        options: [copy, pattern, cpu-frame, sync-display]
         default: copy
 permissions:
   contents: read
