@@ -1,6 +1,7 @@
 # codex/ci-gate
 
-Status: Partial - implementation and focused checks pass; live Actions and full serial equivalence pending.
+Status: Partial - the live full Actions gate and focused checks are verified; setup corrections are
+being rechecked and full local serial equivalence is pending.
 Base: BATCH112, `5e44cddda959fb6e0e8a6b7a4d85f116f0e94e4a` (refreshed from origin on 2026-10-22).
 
 ## What changed
@@ -40,7 +41,20 @@ shard 16: 27 checks, estimated 14.4 min
   duplicate/stale/unexpected receipts and indented diagnostic formatting.
 - Compared the list with the original BATCH112 source: exactly the same 425 names in the same order.
 - tells/comments/homepaths subset including changed-file syntax: passed outside the network/process sandbox.
-- Full source/tool syntax sweep and live Actions proof: pending in this checkpoint.
+- Full source/tool syntax sweep: passed, 1455 files parsed at the first implementation checkpoint.
+- Live Actions proof: run 39779799289 at c86682b5. The first completed shard retained all 22 verdicts,
+  including the pre-existing stale oreroad mash row and a Linux-specific profile-cleanup red.
+  Diagnosed the latter: a hard-killed tool's browser is reparented to init (PID 1), which the old
+  ownership test mistook for a living owner. Added explicit Unix init-adoption handling; the existing
+  profile-cleanup assertions remain unchanged. Ownership regression cases pass. Live Linux recheck PASS
+  in run 39781848789, shard 1: 8 exit/crash cases, hard-killed profile orphaned=1/killed=1/left=0/browsers=0.
+- First full Actions run 39779799289: all 425 verdicts retained, 18 reds, one gate-summary.txt artifact
+  downloaded and parsed. Repository visibility verified public. Public annotation read-back found GitHub's
+  per-step error cap truncated the original per-check emission. Fixed by putting every FAIL name in one
+  annotation and packing detail blocks into at most 8 further annotations. Regression tests cover 30 reds.
+- The same run exposed shallow history missing the slopes check's pre-swap commit 9e0e28a. Shards now
+  fetch full history. Runner Node is pinned to local v24.11.1 rather than allowing different patch versions
+  across shards. Live recheck of these two setup corrections and compact annotations is pending.
 - Full serial baseline: pending; available physical RAM fell from 2.3 GB to 1.9 GB while other lanes were active.
   No long local browser gate started at this checkpoint. No other lane's processes were ended.
 

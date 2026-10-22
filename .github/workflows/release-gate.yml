@@ -27,7 +27,7 @@ jobs:
           ref: ${{ inputs.branch || github.ref }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24.11.1'
       - name: Balance the actual check inventory by measured duration
         id: plan
         run: node tools/ci-gate.mjs plan --shards 16 --out gate-plan.json
@@ -47,9 +47,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.plan.outputs.commit }}
+          fetch-depth: 0 # slopes compares against the historical pre-swap mover
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24.11.1'
       - name: Full-suite shard (serial, fresh browsers)
         env:
           SHARD: ${{ matrix.id }}/${{ needs.plan.outputs.count }}
@@ -76,7 +77,7 @@ jobs:
           ref: ${{ needs.plan.outputs.commit }}
       - uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: '24.11.1'
       - uses: actions/download-artifact@v4
         with:
           name: gate-plan

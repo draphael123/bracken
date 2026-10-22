@@ -12,7 +12,10 @@ const reports = plan.shards.map((s, i) => ({ schema: 1, commit: 'sha', shard: [i
 assert.deepEqual(mergeReports(plan, reports), names.map(row));
 assert.match(formatSummary(names.map(row)), /\n1 check\(s\) failed\.$/);
 assert.match(formatSummary(names.map(row)), /\n  FAIL child\n  detail/);
-assert.match(annotations([row('b')])[1], /100%25%0AFAIL child/);
+assert.match(annotations([row('b')])[0], /100%25%0AFAIL child/);
+const many = Array.from({ length: 30 }, (_, i) => ({ ...row('red-' + i), ok: false })), notes = annotations(many);
+assert.ok(notes.length <= 9);
+for (const r of many) assert.ok(notes[0].includes('FAIL ' + r.name + ' '), 'every red must be visible before the annotation cap');
 assert.throws(() => mergeReports(plan, [reports[0], reports[0]]), /duplicate shard/);
 assert.throws(() => mergeReports(plan, [{ ...reports[0], commit: 'stale' }]), /identity/);
 assert.throws(() => mergeReports(plan, [{ ...reports[0], expected: [] }]), /inventory/);

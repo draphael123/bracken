@@ -52,8 +52,14 @@ export function annotations(results) {
   const escape = s => s.replace(/%/g, '%25').replace(/\r/g, '%0D').replace(/\n/g, '%0A');
   const failed = results.filter(r => !r.ok);
   if (!failed.length) return [];
-  return ['::error title=release gate::' + failed.length + ' check(s) failed.', ...failed.flatMap(r => [
-    '::error title=failing check::' + escape('FAIL ' + r.name + ' ' + r.last),
-    '::error title=check detail::' + escape('---- ' + r.name + ' ----\n' + r.out.slice(-30).join('\n')),
-  ])];
+  /* GitHub caps errors per STEP. One annotation always carries EVERY failing name; details are packed into
+     at most eight additional annotations instead of losing failures after the first few checks. */
+  const overview = failed.length + ' check(s) failed.\n' + failed.map(r => 'FAIL ' + r.name + ' ' + r.last.slice(0, 110)).join('\n');
+  const details = failed.map(r => '---- ' + r.name + ' ----\n' + r.out.slice(-30).map(s => '  ' + s).join('\n')).join('\n\n');
+  const chunks = []; let part = '', bytes = 0;
+  for (const c of details) { const n = Buffer.byteLength(c); if (bytes + n > 48000) { chunks.push(part); part = ''; bytes = 0; } part += c; bytes += n; }
+  if (part) chunks.push(part);
+  if (chunks.length > 8) { chunks.length = 8; chunks[7] += '\nFurther details are retained in gate-summary.txt and the job summary.'; }
+  return ['::error title=release gate::' + escape(overview), ...chunks.map((s, i) =>
+    '::error title=check detail ' + (i + 1) + '/' + chunks.length + '::' + escape(s))];
 }
