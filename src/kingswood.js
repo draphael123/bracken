@@ -56,7 +56,7 @@ export function buildKingswood({ painter, T, TS }) {
 
   // ================= 1. THE ROYAL ROAD (0-122): TEACH the drop, where a miss is cheap; the court's checkpoints hold the road =================
   ground(1, 36, 40);
-  sign(6, 39, "THE ROYAL ROAD, INTO THE KING'S HUNTING WOOD. HIS COURT HOLDS IT.");
+  sign(6, 39, "THE ROYAL ROAD, INTO THE KING'S HUNTING WOOD. HIS COURT HOLDS IT.");   /* (claude/gorm2) two tiles right (Daniel 10-22) */
   deco(7, 39, 'gobPennant', 0); deco(16, 39, 'banner', 0); deco(33, 39, 'banner', 1);
   plank(6, 9, 37); plank(10, 18, 34); coins([12, 33], [15, 33]);                 /* THE ROYAL BOX: the court's viewing stand over the road (a second height) */
   sign(10, 39, 'COURT THIEVES SNATCH GOLD AND RUN. CATCH ONE AND IT PAYS YOU BACK MORE.');

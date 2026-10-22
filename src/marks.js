@@ -633,7 +633,7 @@ export const HEIGHT = {
   'armour|swingTell': 'high',
   'assassin|markTell': 'low', 'assassin|stabTell': 'low',
   'bellman|swingTell': 'low', 'grandmother|lureTell': 'low', 'grandmother|knellTell': 'low', 'grandmother|jabTell': 'low',   /* (claude/underleaf2) the handbell at your chest, her lash and jab low, the knell along the boards: no duck takes any of them */
-  'royalboar|tell': 'low', 'badger|chargeTell': 'low',
+  'royalboar|tell': 'low', 'king|clubHiTell': 'high', 'king|sweepTell': 'high', 'king|clubLoTell': 'low', 'badger|chargeTell': 'low',
   'bale|rollTell': 'low',
   'bannerbearer|poleTell': 'low',
   'bellguard|hookTell': 'low', 'bellguard|knellTell': 'low',
