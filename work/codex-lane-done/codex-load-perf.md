@@ -1,7 +1,8 @@
 # codex/load-perf
 
-Status: Partial. Demand loading, actual decoded-entry barrier, cache-only pixels and the unchanged default mobile gate
-are verified. The five stress arenas remain below 40 fps, and measured gains are mixed. No cold-start wall-time reduction is claimed.
+Status: Partial. Demand loading, actual decoded-entry barrier and full-campaign exact pixels are verified.
+The five stress arenas remain below 40 fps; timing changes are mixed, and the latest unchanged mobile gate fails.
+No cold-start wall-time reduction or universal frame-budget pass is claimed.
 Base: newest origin/master BATCH112 `5e44cddd`. No merge/deploy, game balance change, asset replacement or budget change.
 
 ## Audio
@@ -38,43 +39,72 @@ it retained desktop backing stores. The corrected profiler reloads under mobile 
 at most 1.3 megapixels. Rank by busy milliseconds selected Undercrown, Lamplit, Hanging, Hurricane and Minecart arenas.
 CPU samples put native drawImage under render() first, with drawWorld next; tiny script helpers were not the main cost.
 
-Changes retained: cache immutable view-sized sky expansion and constant vignette gradients with weak owners and
-bounded entries. Animated layers, geometry, art, output resolution and budgets remain unchanged. An opaque-frame
-experiment was withdrawn after long-frame failures; src/px.js and framebuffer creation are restored to master.
+Changes retained: the bounded static vignette-gradient cache (eight entries per drawing context) and
+off-screen room culling. The sky expansion cache was withdrawn. Original recordings, art, output dimensions,
+DPR, quality settings, combat values, assertions and time limits remain unchanged. src/px.js equals master.
+The current src tree is a0ce277c4d2d5d30d0f88df1f7e187d8d95b109b; it is identical from b8b0ec1d through
+all continuation diagnostic commits, including the source of the following proofs.
 
-Final comparison https://github.com/draphael123/bracken/actions/runs/39841711853, source `1c45348e`, five jobs PASS.
-Same runner per before/after pair, three five-second unprofiled samples per build, original mobile settings. Exact
-pixel sampling runs in separate cold pages so neither readback fallback nor previous real-time combat contaminates
-its counterpart. All five live arenas: **120/120 exact RGBA frame hashes match**. Last receipt: 2026-10-22T19:43:55.797Z.
+The full 48-level campaign proof passes at dc5a4e50:
+https://github.com/draphael123/bracken/actions/runs/39866894275. All eight shards complete, two scenes per
+level, 60 explicit frames per scene: **5760 exact gameplay/RNG/frame-RGBA/display-RGBA comparisons**.
+The lab starts before the first automatic game tick and aligns scenery that reads performance.now to the
+simulation clock during explicit pixel renders only. Identical-master controls first reproduced Mageyard
+wall-clock drift; after correcting that lab clock they pass on both default GPU and CPU-readback backends
+(run39866426477). Real-time FPS samples keep native time and the default rendering backend. No pixel
+tolerance was added and the full-campaign proof uses the default GPU backend.
 
-| Arena | Median FPS before | After | Observed change |
-|---|---:|---:|---:|
-| Undercrown | 8.60 | 9.17 | +6.6% |
-| Lamplit | 9.40 | 9.59 | +2.0% |
-| Hanging | 12.98 | 12.99 | +0.1% |
-| Hurricane | 19.36 | 18.98 | -2.0% |
-| Minecart | 17.92 | 18.58 | +3.7% |
+The final ordinary-renderer five-arena comparison also passes all exact-pixel/state checks:
+https://github.com/draphael123/bracken/actions/runs/39866897539, source dc5a4e50. Same VM per before/after
+pair, three five-second unprofiled samples per build, original phone setup at four-times CPU throttle.
+Pixels use separate cold pages and 120 frames per arena, including the displayed canvas.
 
-The current cache-only result is mixed: Hurricane is 2% lower, Hanging is effectively unchanged, and the other three
-are higher. Three windows are not confidence bounds; these small deltas can include timing noise. There is no honest
-claim that all five improved. The major native scaled drawImage cost remains, and these five stress arenas remain
-below 40 fps. Further cause-based renderer work is outstanding. Earlier 2-13% results included the withdrawn opaque
-experiment and are not claimed for the retained source. Earlier pixel-before-FPS measurements are diagnostic only.
+| Arena | Master median FPS | Retained renderer |
+|---|---:|---:|
+| Undercrown | 11.97 | 11.99 |
+| Lamplit | 7.99 | 7.36 |
+| Hanging | 20.79 | 20.94 |
+| Hurricane | 17.76 | 18.40 |
+| Minecart | 12.33 | 12.20 |
 
-The unchanged default mobile gate **PASSes** after rollback in run
-https://github.com/draphael123/bracken/actions/runs/39841707059 at the same `1c45348e`, receipt 2026-10-22T19:40:16.788Z.
-Title/map/Wood/Welltown/Redgorge: 60.2 / 52.7 / 60.0 / 60.2 / 59.2 fps. Worst frame 499.9 ms; median stick input 0.7 ms.
-All original 40 fps / 600 ms / 50 ms / canvas/boot limits stayed enabled. In that same diagnostic the original master
-failed with a 616.6 ms Wood frame, whereas it passed in the prior comparison. Earlier updated builds failed with
-866.7 ms map and 966.6 ms Wood frames (the latter 33.5 fps). Those failures are retained, not deleted or averaged away.
-The varying original result limits causal attribution: withdrawing opacity was conservative, not proof that it alone
-caused the stalls. One current pass does not establish that every sporadic pause is fixed.
+These small mixed observations are not confidence bounds or proof that every arena improved. The major
+native scaled presentation copy remains, and all five stress arenas are below 40 FPS. The latest unchanged
+standard mobile comparison (39857977706, b8b0ec1d, identical current game tree) fails on both master and
+updated builds; updated Wood/Welltown/Redgorge measure 35.7/37.2/31.5 FPS. Earlier passes at e1b9eae7
+(run39854763841) and 1c45348e (39841707059, worst frame499.9ms) remain historical occurrence receipts.
+Earlier 866.7/966.6ms failures and the baseline616.6ms stall are also retained. No limit was raised or
+failing occurrence removed to present an overall pass.
+
+## Additional profiled-cost experiments
+
+All experiments below remain in diagnostic tools; none is installed by production source. Copy presentation
+failed letterbox pixels and was slower. Pattern presentation, CPU-frame backing and synchronous display
+matched their sampled pixels but gave mixed or worse timings, so they were not adopted.
+
+A bounded immutable-sprite bitmap experiment (4MB/128 entries, two asynchronous requests, mutation/resize
+invalidation and explicit close) passes real translucency, mutation and resize controls, then all five
+120-frame exact-pixel comparisons: run39867656544 at b69ba085. Before is the same retained game tree, so
+this measures only the proposed bitmap layer. An accounting fix for resized sources is included afterward.
+
+| Arena | Plain retained FPS | Bitmap experiment |
+|---|---:|---:|
+| Undercrown | 20.97 | 21.59 |
+| Lamplit | 18.59 | 17.78 |
+| Hanging | 12.59 | 11.59 |
+| Hurricane | 24.17 | 23.80 |
+| Minecart | 10.55 | 10.78 |
+
+The cache is exercised (roughly110k-329k hits per timing run), but those hits do not give consistent FPS
+gains. It is not integrated. The actual opaque-frame control (39869209098, 483e0329) changes only a separate
+disposable checkout and asserts the real frame context alpha=false before accepting measurements; all
+five exact-pixel/state comparisons pass. Undercrown11.59->11.79, Lamplit9.99->9.79, Hanging17.36->21.19,
+Hurricane13.78->14.19, Minecart11.75->12.13. This also remains diagnostic because the result is mixed.
+The first alpha attempt (39868362028) selected the wrong canvas: actual frame alpha remained true, so all
+of its timing numbers are rejected as an ineffective control. Its receipts are retained.
 
 ## QUESTIONS FOR DANIEL
 
-- Audio quality: recommend keeping the original Ogg recordings. Built demand loading and duplicate decode elimination;
-  measured saved requests/bytes, not an unmeasured startup-time guarantee. Catalog coverage does not prove every combat path.
-- Frame budget: recommend treating this as a measured incremental renderer improvement. Built bounded caching with five-scene exact pixel proof; the opaque-frame
-  experiment was removed. Heavy arenas still need further profiling; no lower budget was substituted.
-- Merge: recommend coordinator review alongside Task 2/3 harness changes, followed by the full release gate.
-  No master merge or deployment was performed.
+No decision is required to retain the verified demand loading and conservative renderer changes. Recommend
+keeping original audio quality and all current release thresholds. Heavy-arena frame-budget work remains
+Partial; a larger rendering change needs its own measured improvement and full pixel proof. No quality
+reduction, damage retune, master merge or deployment is proposed or performed.
