@@ -17,7 +17,7 @@ for(const[name,cwd]of[['before',beforeRoot],['after',root]]){
    const canon=o=>o instanceof Set?[...o].sort():Array.isArray(o)?o.map(canon):o&&typeof o==='object'?Object.fromEntries(Object.keys(o).sort().map(k=>[k,canon(o[k])])):o;
    const digest=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(b=>b.toString(16).padStart(2,'0')).join('');
    const tells=canon(Object.fromEntries(['THROWN','QUIET','BY_HAND','MARK','ANSWER','HEIGHT','HARMLESS','UNTOLD'].map(k=>[k,M[k]])));
-   const levels=await digest(new TextEncoder().encode(JSON.stringify(LEVELS.map(l=>[l.id,l.W,l.H,l.grid,l.ents,l.moversExtra,l.ambushes]))));
+   const levels=await digest(new TextEncoder().encode(JSON.stringify(LEVELS.map(d=>{const l=d.build();return[d.id,l.W,l.H,l.grid,l.ents,l.moversExtra,l.ambushes];}))));
    const rows=[];
    for(const id of ['wood','spire','canal']){
     let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};
