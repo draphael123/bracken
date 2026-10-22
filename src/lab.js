@@ -85,9 +85,9 @@ export function rgFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)
 export const rgBossTier = (BK, b) => b && b.broken > 2.2 ? 3 : 2;   /* the fan only in a long window; otherwise the quicker pierce (10-22: 3 on every opening took the marsh 12 -> 3 of 12) */
 function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 /* (claude/chargetiers) THE BERSERKER'S HANDS USE HIS RAGE WIND-UP (src/berserker.js BZ.tiers; main.js BK.bz().tier / tierAt). ON A LEVEL FOE (bzFoeTier): two or more foes within
-   the cleave's reach on BOTH sides of him -> the SPINNING CLEAVE; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
+   the cleave's reach on BOTH sides of him -> THE WHEEL; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
    hardest on a bar) when he is RAGING (the wind is quicker), else the OVERHEAD CHOP; anything else the OVERHEAD CHOP (as his hands always let it go, at the full wind).
-   ON A BOSS (bzBossTier, in his openings): NOT broken and RAGING -> the GROUND-SPLITTER (the poise-breaker's blow); not broken -> the SPINNING CLEAVE; BROKEN -> the quick OVERHEAD CHOP */
+   ON A BOSS (bzBossTier, in his openings): NOT broken and RAGING -> the GROUND-SPLITTER (the poise-breaker's blow); not broken -> THE WHEEL; BROKEN -> the quick OVERHEAD CHOP */
 const bzRead = BK => { try { return BK.bz ? BK.bz() : null; } catch { return null; } };
 const bzHot = P => (P.rage || 0) >= 50 || (P.frenzyT || 0) > 0;
 export function bzFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return bzBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, near = BK.enemies().filter(q => q.alive && !q.harmless && Math.abs(q.x - P.x) < 34 && Math.abs(q.y - P.y) < 20);
@@ -110,7 +110,11 @@ function geoLetGo(BK, want, e, ad) { const r = BK.geoTier ? BK.geoTier() : null,
   if (!r || !r.tierAt) return GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4;   /* (no tiers: the old let-go) */
   if (want === 0) return GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4 || r.tier >= 1;
   return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
-function bzLetGo(BK, want) { const r = bzRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
+/* (claude/chargetiers2, Daniel 10-22) A HUMAN LETS GO ROUGHLY: the hands did it to the frame (a tier's exact arrival), which no player does - each wind rolls its own slop: 35% of the time one tier LOWER than the fight asks, and a lateness of 0-0.3 s (which can tip it over into the next tier). BZ_CASUAL=0 (BK.bzCasual = false) gives the exact hands back */
+function bzLetGo(BK, want) { const r = bzRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; const h = P.atkHeld || 0;
+  if (BK.bzCasual === false) return h >= r.tierAt[want - 1] + 1 / 60;
+  if (h < 0.2 || !P.bzSlop) { const x = Math.sin((P.x + 1) * 12.9898 + (BK.time || 0) * 78.233) * 43758.5453, u = x - Math.floor(x), v = (u * 7.31) % 1; P.bzSlop = { low: u < 0.35, late: v * 0.3 }; }
+  const w = Math.max(1, want - (P.bzSlop && P.bzSlop.low ? 1 : 0)); return h >= r.tierAt[w - 1] + 1 / 60 + (P.bzSlop ? P.bzSlop.late : 0); }
 export const KBASH_REACH = 26, KBASH_LEAD = 0.18, SNATCH_LEAD = 0.1;
 export function knightBashNow(BK, h, e, ad) { const P = BK.P; if (h !== 'knight' || !e || !e.alive || e === BK.boss || e.mini || e.xpRole === 'mini' || !P.ground || P.swim) return false;
   if ((P.kBashCd || 0) > 0 || (P.kBashT || 0) > 0 || (P.st || 0) < 20 || P.atk >= 0) return false;
