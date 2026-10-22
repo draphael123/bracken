@@ -1,6 +1,6 @@
 # codex/replay-capture
 
-Status: Partial. Input capture and offline PNG export are implemented; real-page proof is pending.
+Status: Success. Input replay, exact pixel proof, mode-off equivalence, save isolation and 3x PNG export verified.
 Base: origin/master BATCH112 5e44cddd.
 
 In a fresh game page, open the developer console and run:
@@ -23,7 +23,13 @@ The input file retains all held logical keys and one-shot flags before each 60 H
 fingerprint after each step/draw. Simulation, draw and audio have independent seeded random streams
 only while capture is active. The normal game keeps its original Math.random calls and save behavior.
 Fresh-page proof covers actual keyboard inputs, frame hashes, exact pixels, altered-input detection,
-persisted-save isolation and 3x CLI output. Mode-off before/after proof remains required.
+persisted-save isolation and 3x CLI output. Mode-off before/after proof passed in run 39822264600 on d62d90a4 at 2026-10-22T17:25:48.855Z.
+All built level data and tells, Wood/Spire/Canal gameplay/enemy traces and exact pixels match master.
+Combined before/after SHA-256: c4c899f061182905a4f10fbfab70059aa0d5d3d52296ddfeba1f798ab94e1627. The real-keyboard recorder/replayer
+passed 180 frames in each of those three levels, with four exact PNG comparisons per level and
+altered-input rejection. The CLI wrote 180 3x frames at 60 fps, completed 2026-10-22T17:28:13.840Z.
+Source/PID logs, replay fixtures, receipts and PNGs are in the run artifact and work/replay-final-proof
+outside git. This bounded proof does not claim that the separate full release gate is green.
 
 ## QUESTIONS FOR DANIEL
 
