@@ -6,6 +6,10 @@ on:
         type: choice
         options: [profile, sfx, compare, mobile, calls, present, campaign, variant]
         default: profile
+      variant_level:
+        type: choice
+        options: [mage, witchlight]
+        default: mage
       present:
         type: choice
         options: [copy, pattern, cpu-frame, sync-display]
@@ -20,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [sky-direct, gradient-direct, room-uncull]
+        variant: [gradient-direct, room-uncull]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -28,9 +32,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.11.1'
-      - run: node tools/renderer-campaign-proof.mjs 1 --only=witchlight --variant="$VARIANT"
+      - run: node tools/renderer-campaign-proof.mjs 1 --only="$LEVEL" --variant="$VARIANT"
         env:
           VARIANT: ${{ matrix.variant }}
+          LEVEL: ${{ inputs.variant_level }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
