@@ -4,11 +4,30 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy]
         default: prove
 permissions:
   contents: read
 jobs:
+  memory-policy:
+    if: inputs.mode == 'memory-policy'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/memory-policy-selftest.mjs
+      - run: node tools/browser-admission-selftest.mjs
+      - run: node tools/suite-progress-selftest.mjs
+      - run: node tools/profile-cleanup.mjs
+      - run: node tools/load-audit-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: memory-policy-proof
+          path: gate-data/
   load-audit:
     if: inputs.mode == 'load-audit'
     runs-on: ubuntu-latest

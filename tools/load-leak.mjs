@@ -68,6 +68,7 @@ try {
     const problem = await pg.evalp(`(() => { try { BK.load(${i}); BK.state = 'play'; BK.sim(5); BK.step(2); return null; } catch (e) { return ${JSON.stringify(ids[i])} + ': ' + String(e && e.message || e).slice(0,80); } })()`, Math.max(1,auditDeadline-Date.now()));
     if (problem) bad.push(problem);
     await pg.send('HeapProfiler.collectGarbage', {}, Math.max(1,Math.min(15000,auditDeadline-Date.now())));
+    await pg.send('Memory.simulatePressureNotification', {level:'critical'}, Math.max(1,Math.min(15000,auditDeadline-Date.now())));
   }
   const a = await pg.evalp(`(async () => {
     /* the collections run from a timer at the bottom of the stack, several apart: a collector that scans the stack conservatively can keep a stray object or two alive for one

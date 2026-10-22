@@ -148,7 +148,7 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
       let env = job.env;
       if (browserSlot !== null) {
         const prior = shared.get(browserSlot);
-        if (prior && (prior.run.exited || prior.run.failure || prior.used >= recycleEvery)) { await prior.run.close(); shared.delete(browserSlot); }
+        if (prior && (prior.run.exited || prior.run.failure || prior.run.recycleRequested || prior.used >= recycleEvery)) { await prior.run.close(); shared.delete(browserSlot); }
         if (!shared.has(browserSlot)) shared.set(browserSlot, { ...await startBrowser(), used: 0 });
         env = { ...env, BRACKEN_BROWSER_PORT: String(shared.get(browserSlot).port) }; }
       const result = await execute({ ...job, env, browserRun: browserSlot !== null ? shared.get(browserSlot).run : null,
