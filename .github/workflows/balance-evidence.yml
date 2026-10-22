@@ -1,0 +1,37 @@
+name: balance-evidence
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  measure:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        pair:
+          - {level: moor, hero: pyro}
+          - {level: stockade, hero: pirate}
+          - {level: wood, hero: berserker}
+          - {level: wood, hero: geomancer}
+          - {level: moor, hero: geomancer}
+          - {level: spire, hero: geomancer}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Canonical human profile with campaign flasks
+        env:
+          LEVEL: ${{ matrix.pair.level }}
+          HERO: ${{ matrix.pair.hero }}
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          timeout --signal=TERM --kill-after=30s 40m node tools/balance-evidence.mjs "$LEVEL" "$HERO" 2>&1 | tee gate-data/run.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: balance-${{ matrix.pair.level }}-${{ matrix.pair.hero }}
+          path: gate-data/
