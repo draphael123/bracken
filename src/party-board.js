@@ -41,7 +41,7 @@ function pads() {
     for (const [k, key] of [['up', 'ArrowUp'], ['down', 'ArrowDown'], ['left', 'ArrowLeft'], ['right', 'ArrowRight']]) if (rose(k)) { UI.arrowsWalk(B.root, { key }); return; }
   }
 }
-function back() { if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : view.k === 'aibeh' ? { ...view, k: 'aihero' } : view.k === 'aihero' ? { ...view, k: 'aikind' } : { k: 'seats' }; msg = null; render(); }
+function back() { if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : view.k === 'aibeh' && view.change ? { k: 'seats' } : view.k === 'aibeh' ? { ...view, k: 'aihero' } : view.k === 'aihero' ? { ...view, k: 'aikind' } : { k: 'seats' }; msg = null; render(); }
 const say = (t, ok) => { msg = { t, ok }; };
 
 function render() {
@@ -53,13 +53,14 @@ function render() {
     for (const s of api.seats()) {
       if (s.empty) {
         const r = UI.row(UI.el('span.seat', 'P' + s.n + '  EMPTY'));
-        const j = UI.el('button' + (room > 0 ? '.sel' : ''), 'JOIN', () => { view = { k: 'slot', mode: 'join', n: s.n }; msg = null; render(); }); j.dataset.seat = s.n; j.dataset.act = 'join'; if (room <= 0) j.disabled = true;
+        const j = UI.el('button' + (room > 0 && (!api.canJoin || api.canJoin()) ? '.sel' : ''), 'JOIN', () => { view = { k: 'slot', mode: 'join', n: s.n }; msg = null; render(); }); j.dataset.seat = s.n; j.dataset.act = 'join'; if (room <= 0 || (api.canJoin && !api.canJoin())) j.disabled = true;   /* a person joins at the inn's door; the pause menu's board seats AI partners */
         const inv = UI.el('button', 'INVITE', () => { close(); api.invite(); }); inv.dataset.seat = s.n; inv.dataset.act = 'invite';
         const ai = UI.el('button', 'AI PARTNER', () => { view = { k: 'aikind', n: s.n }; msg = null; render(); }); ai.dataset.seat = s.n; ai.dataset.act = 'ai'; if (room <= 0 || !api.ai) ai.disabled = true;
         r.append(j, inv, ai); parts.push(r); continue;
       }
       if (s.kind === 'ally') { const r = UI.row(UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + (s.line || 'AI PARTNER - ' + s.hero)));   /* (claude/aicompanions) 'AI PARTNER - KNIGHT LV 6, BALANCED: EARNS XP INTO SAVE 2' */
         if (api.dismiss) { const d = UI.el('button', 'DISMISS', () => { const res = api.dismiss(s.n); say(res && res.ok ? 'P' + s.n + ' AI PARTNER LEAVES THE PARTY' : (res && res.why) || 'THAT DID NOT WORK', !!(res && res.ok)); render(); }); d.dataset.seat = s.n; d.dataset.act = 'dismiss'; r.append(d); }
+        if (api.setBeh) { const c = UI.el('button', 'HOW IT PLAYS', () => { view = { k: 'aibeh', n: s.n, hero: s.heroId, change: true }; msg = null; render(); }); c.dataset.seat = s.n; c.dataset.act = 'retune'; r.append(c); }   /* (claude/partypersist) retune a seated AI from the pause menu */
         parts.push(r); continue; }
       const from = s.kind === 'ally' ? 'COMPUTER' : s.saved ? (s.kind === 'online' ? 'ONLINE, ' : '') + 'SAVE ' + (s.slot + 1) : s.kind === 'online' ? 'ONLINE GUEST - NOTHING SAVED' : 'GUEST - NOTHING SAVED';
       const r = UI.row(UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + s.hero + (s.lv != null ? ' LV ' + s.lv : '') + '  ' + from));
@@ -109,6 +110,7 @@ function take(h) {
   view = { k: 'seats' }; render();
 }
 function takeAi(beh) {
+  if (view.change) { const r = api.setBeh(view.n, beh); say(r && r.ok ? 'P' + view.n + ' NOW PLAYS ' + String(beh).toUpperCase() : (r && r.why) || 'THAT DID NOT WORK', !!(r && r.ok)); view = { k: 'seats' }; render(); return; }
   const r = api.ai(view.slot, view.hero, beh);
   if (!r || !r.ok) { say((r && r.why) || 'THAT DID NOT WORK', false); render(); return; }
   say('P' + r.n + ' AI PARTNER JOINS' + (view.slot >= 0 ? ': ITS XP GOES TO SAVE ' + (view.slot + 1) : ': NOTHING SAVED'), true);
