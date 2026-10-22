@@ -38,6 +38,9 @@ assert.equal(LEVELS.find(l => l.id === 'church').build().mini.music, 'churchcryp
 assert.ok(['litchurch', 'churchcrypt', 'paladin'].every(n => A.MUSIC_NAMES.includes(n)) && /Yubatake/.test(A.MUSIC_CREDITS.litchurch || '') && /Machine/.test(A.MUSIC_CREDITS.churchcrypt || '') && /tcarisland/.test(A.MUSIC_CREDITS.paladin || ''), 'the three church tracks have no credited Sound Test rows (claude/musicchurch)');
 assert.equal(LEVELS.find(l => l.id === 'marsh').build().music, 'marsh', "MARSH WOOD is not on 'marsh' (claude/musicmarsh: Tausdei's Forest River Spirits)");
 assert.equal(arena('marsh').music, 'frogking', "THE FROG KING's arena is not on 'frogking' (claude/musicmarsh: Elyvilon's Cloudmurk)");
+assert.equal(LEVELS.find(l => l.id === 'fenroad').build().music, 'fenroad', "THE FEN ROAD is not on 'fenroad' (claude/fenmusic: Bobjt's Division By Zero, the creeping-orcs version)");
+assert.equal(arena('fenroad').music, 'boss3', "THE BOG TROLL's arena is not on 'boss3' (claude/fenmusic: the Troll keeps Battle Music)");
+assert.ok(A.MUSIC_NAMES.includes('fenroad') && /Bobjt/.test(A.MUSIC_CREDITS.fenroad || '') && /Bobjt/.test(A.MUSIC_CREDITS_ROW.fenroad || ''), "'fenroad' is not in the Sound Test with the Bobjt credit (claude/fenmusic)");
 assert.equal(arena('stockade').music, 'chieftain', "THE STOCKADE CHIEFTAIN's arena is not on 'chieftain' (claude/musicmarsh: Bobjt's Raiders March)");
 assert.ok(['marsh', 'chieftain', 'bellcrab', 'chase'].every(n => A.MUSIC_NAMES.includes(n)) && /Tausdei/.test(A.MUSIC_CREDITS.marsh || '') && /Elyvilon/.test(A.MUSIC_CREDITS.frogking || '') && /Bobjt/.test(A.MUSIC_CREDITS.chieftain || '') && /Moreno/.test(A.MUSIC_CREDITS.bellcrab || '') && /Wolfgang/.test(A.MUSIC_CREDITS.chase || ''), 'the claude/musicmarsh tracks are not all in the Sound Test with a credit');
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");
