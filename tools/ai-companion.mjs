@@ -190,9 +190,9 @@ if (PAGE.length) {
       const r = await E(`(async()=>{const o={};const S=()=>${snap};const wait=async(pred,n=900)=>{for(let i=0;i<n&&!pred();i++){BK.step(1);if(i%40===0)await new Promise(r=>setTimeout(r,5));}return pred();};
         await __fresh();BK.aiComp.arm(['knight'],['balanced'],1);BK.tavern.want().seats.push({hero:'pyro',ally:false});
         const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(5);await BK.allyReady();BK.sim(5);o.start=S();
-        BK.god=true;BK.coopSave.win();BK.sim(4);o.won=S();o.next1=BK.tavern.next();o.nextName=o.next1>=0?LEVELS[o.next1].id:null;
+        BK.god=true;BK.coopSave.win();BK.sim(4);delete BK.tavern.prog().cardNew;/* (integ112) the earlier sections leave the hero XP: a win then owes a level-up card and NEXT rightly falls back to the map; this step is about NEXT, not the card */o.won=S();o.next1=BK.tavern.next();o.nextName=o.next1>=0?LEVELS[o.next1].id:null;
         BK.press('confirm');o.arrived=await wait(()=>BK.state==='play'&&BK.tavern.levelIndex()===o.next1);BK.sim(5);await BK.allyReady();BK.sim(5);o.level2=S();
-        BK.god=true;BK.coopSave.win();BK.sim(4);BK.press('confirm');BK.sim(3);if(BK.state==='card')BK.cardClose();BK.sim(2);o.map=S();o.roster=BK.tavern.roster().map(r=>r.tag+' '+r.hero+' '+r.lv);
+        BK.god=true;BK.coopSave.win();BK.sim(4);BK.press('pause');/* (integ112) ESC = the map, whether or not a level-up card is owed */BK.sim(3);if(BK.state==='card')BK.cardClose();BK.sim(2);o.map=S();o.roster=BK.tavern.roster().map(r=>r.tag+' '+r.hero+' '+r.lv);
         BK.bossSelect.open('map');BK.sim(3);o.bsOpen=S();
         for(let i=0;i<4&&!BK.bossSelect.rows().some(r=>r.beaten);i++)BK.sim(30);const rows=BK.bossSelect.rows();const bi=rows.findIndex(r=>r.beaten);o.beaten=bi;
         if(bi>=0){BK.bossSelect.cursor=bi;BK.bossSelect.hero='knight';o.fightOk=BK.bossSelect.start();BK.sim(5);await BK.allyReady();BK.sim(5);o.boss=S();o.xpGuard=true;BK.bossSelect.quit();BK.sim(3);o.afterQuit=S();}
