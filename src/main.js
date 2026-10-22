@@ -1,5 +1,5 @@
 import { setLevelSfx, levelSfxReady, prepareLevelSfx } from './audio.js';
-import { skyStrip, staticGradient } from './render-cache.js';
+import { paintSky, staticGradient } from './render-cache.js';
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotSanctus, abbotSpoil } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
@@ -31678,12 +31678,12 @@ function drawWorld(cx, cy, showPlayer) {
   swimQ.length = 0; darkQ.length = 0;   /* (a frame with no water pass or no dark pass must not carry last frame's swimmers into this one) */
   if (L.colosseum) { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, '#0e0c12'); gr.addColorStop(0.6, '#191620'); gr.addColorStop(1, '#241f28'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
     g.globalAlpha = 0.10; g.fillStyle = '#ffd36b'; for (let i = 0; i < 40; i++) { const x = ((i * 137) % VW), y = ((i * 61) % VH); g.fillRect(x, y, 1, 1); } g.globalAlpha = 1; }
-  else g.drawImage(skyStrip(BG.sky, VW, VH), 0, 0);
+  else paintSky(g, BG.sky, VW, VH);
   if (BG.wall && !L.colosseum) drawBackWall(cx, cy);   /* an indoor redress: the back wall is the sky */
   if (L.fields) drawFieldsSky(cx, cy);   /* THE HEXED FIELDS: the dusk going, the stars, the moon and its cloud */
   const dk = L.colosseum ? 0 : dusk();
   if (dk > 0 && BG.ownLight) { if (BG.ownLight === 'scree') { g.globalAlpha = dk; g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; } }
-  else if (dk > 0) { g.globalAlpha = dk; g.drawImage(skyStrip(BG.skyDusk, VW, VH), 0, 0); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
+  else if (dk > 0) { g.globalAlpha = dk; paintSky(g, BG.skyDusk, VW, VH); g.drawImage(BG.sun, Math.round(VW * 0.7 - cx * 0.03), Math.round(70 - dk * 30 + bgDY(cy) * 0.1)); g.globalAlpha = 1; }
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
