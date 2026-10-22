@@ -62,7 +62,19 @@ jobs:
         run: |
           set -o pipefail
           mkdir -p gate-data
+          gate_deadline=$(( $(date +%s) + 2400 ))
+          set +e
           timeout --signal=TERM --kill-after=30s 40m node tools/check.mjs --jobs=1 --max-browsers=1 --shard "$SHARD" --json "gate-data/shard-$SHARD_ID.json" 2>&1 | tee "gate-data/shard-$SHARD_ID.log"
+          gate_status=${PIPESTATUS[0]}
+          if [[ "$gate_status" == 2 ]]; then
+            gate_remaining=$(( gate_deadline - $(date +%s) ))
+            if (( gate_remaining > 0 )); then
+              echo '[resume] Once, only unanswered checks; saved FAIL verdicts remain FAIL.' | tee -a "gate-data/shard-$SHARD_ID.log"
+              timeout --signal=TERM --kill-after=30s "${gate_remaining}s" node tools/check.mjs --jobs=1 --max-browsers=1 --shard "$SHARD" --resume "gate-data/shard-$SHARD_ID.json" 2>&1 | tee -a "gate-data/shard-$SHARD_ID.log"
+              gate_status=${PIPESTATUS[0]}
+            fi
+          fi
+          exit "$gate_status"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

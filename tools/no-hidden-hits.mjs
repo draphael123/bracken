@@ -27,6 +27,7 @@ try {
     const { LEVELS, T } = await import('/src/level.js'); const TS = 16; const ONLY = ${JSON.stringify(ONLY)}, FOES = ${FOES}, TUNNEL = ${!has('no-tunnel')}, TUNNEL_ONLY = ${has('tunnel-only')};
     const MIN_D = 60, MIN_PX = 3, MELEE = 72, SHOTS = ${has('shots')}, shots = [];
     BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true });
+    const collectRetired = () => window.__brackenLabCollect ? window.__brackenLabCollect() : new Promise(r => setTimeout(r, 0));
     const grab = () => { const c = BK.view.buf; return c.getContext('2d').getImageData(0, 0, c.width, c.height).data; };
     const moved = (a, b) => { let n = 0, mx = 0; for (let i = 0; i < a.length; i += 4) { const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); if (d > mx) mx = d; if (d >= MIN_D) n++; } return { n, mx }; };
     /* is this foe on the picture: drawn twice, once without it */
@@ -47,6 +48,7 @@ try {
     /* ---- THE LEVEL SAMPLE ---- */
     if (!TUNNEL_ONLY) for (let li = 0; li < LEVELS.length; li++) { const lv = LEVELS[li].id; if (ONLY && !ONLY.includes(lv)) continue;
       try { BK.load(li); BK.start ? BK.start() : (BK.state = 'play'); } catch (err) { out.levels.push({ level: lv, error: String(err) }); continue; }
+      await collectRetired(); // Same page and random stream; the previous level's native art is now retired.
       BK.god = true; BK.sim(200); const all = BK.enemies().filter(e => e.alive && !e.harmless && !e.maxHp && !e.mini && !e.waiting && e.t); const kinds = new Set(), pick = [];
       for (const e of all) if (!kinds.has(e.t)) { kinds.add(e.t); pick.push(e); } for (const e of all) if (pick.length < FOES && !pick.includes(e)) pick.push(e);
       const row = { level: lv, foes: all.length, sampled: 0, blows: 0, hidden: [], notes: [] }; const seen = {};
@@ -58,15 +60,17 @@ try {
       out.levels.push(row); }
     /* ---- THE LEGGING TUNNEL: the hero legs the barge, lit then dimmed ---- */
     if (TUNNEL && (!ONLY || ONLY.includes('canal'))) for (const dim of [false, true]) { const li = LEVELS.findIndex(l => l.id === 'canal'); BK.load(li); BK.start ? BK.start() : (BK.state = 'play'); BK.god = true;
+      await collectRetired();
       const C = () => BK.canal(), B = () => C().barge; B().x = 250 * TS; BK.tp(252, 14); BK.sim(30); /* the DIMMED run lights her through the mouth and the stop-planks, then strikes the lantern out for the nest */
       let dirR = true; const seen = {}; const row = { dim, hidden: [], notes: [], blows: 0, frames: 0, reached: 0 }; let guard = 0;
       for (let leg = 0; leg < 14 && B().x < 340 * TS; leg++) { if (leg === 3) for (const q of C().stops) { q.k = 1; q.up = true; } if (dim && leg === 4) C().lamp = false;   /* the first stretches she is held at the stop-planks (the bargee and the watchman above her); then the windlass is struck for her and she legs on through the nest to the deep lock */   /* six stretches: legged on, then held a while at whatever stops her (the planks, a bridge of beams) so the brood has time to work */
         const r = judge('canal tunnel ' + (dim ? '(lantern DIMMED)' : '(lantern LIT)'), 60 * 24, f => { clear(); P().hp = P().maxHp; if (f < 60 * 14 && B().x < 340 * TS) k.right = true; if (f % 300 === 299 && BK.enemies().some(e => e.alive && e.t === 'grindylow' && e.mode === 'grab')) BK.press('jump');
           if (f % 20 === 19 && !(P().onMover && P().onMover.canal) && (P().x > B().x + B().w + 2 || P().x < B().x - 2 || P().y > B().y + 4)) { P().x = B().x + 40; P().y = B().y - 1; P().vx = P().vy = 0; } }, seen, () => B(), 5);   /* (a hero walked off her bow is handed back on) */
-        row.hidden.push(...r.hidden); row.notes.push(...r.notes); row.blows += r.blows; row.frames += 60 * 24; if (B().x > 340 * TS) break; if (r.blows === 0 && ++guard > 20) break; }
+        row.hidden.push(...r.hidden); row.notes.push(...r.notes); row.blows += r.blows; row.frames += 60 * 24; if (B().x > 340 * TS) break; if (r.blows === 0 && ++guard > 20) break; await collectRetired(); }
       row.reached = Math.round(B().x / TS); row.why = B().holdWhy + ' lamp ' + C().lamp + ' stops ' + C().stops.map(q => q.k.toFixed(1) + (q.up ? 'u' : 'd')).join(',') + ' hero ' + Math.round(P().x / TS) + ',' + Math.round(P().y / TS) + ' onbarge ' + !!(P().onMover && P().onMover.canal); out.tunnel.push(row); }
     return out;
   })()`, 3000000);
+  if (process.env.NO_HIDDEN_RESULT) writeFileSync(process.env.NO_HIDDEN_RESULT, JSON.stringify({seed:1008,foes:FOES,...res},null,2)+'\n');
   const show = (h, pre) => { if (h.png) { const f = join(ROOT, 'work/claude/tunnelfix/' + (++shotN) + '-' + h.t.split('/').join('_') + '-' + h.mode + '.png'); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, Buffer.from(h.png.split(',')[1], 'base64')); pre += '[' + f.slice(ROOT.length) + '] '; } console.log(pre + h.level + ' - ' + h.t + ' (' + h.mode + ') at ' + h.at.join(',') + ': ' + h.why); };
   for (const row of res.levels) {
     if (row.error) { console.log('skip ' + row.level + ': ' + row.error); continue; }

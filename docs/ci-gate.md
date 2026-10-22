@@ -50,3 +50,16 @@ node tools/ci-gate.mjs compare --serial ../serial-gate.log --results gate-receip
 The comparison requires a full final summary, rejects duplicate or missing check names, and compares
 every verdict. It reports differences rather than treating a subset, partial run or a list of known
 reds as equivalence. Runtime and platform-specific findings still require investigation.
+
+The current gate permits one resume only after exit2 (unanswered checks), inside the same40-minute
+combined shard budget. Existing PASS and FAIL verdicts are kept; a failed assertion is never retried.
+If a local run is resumed, compare its final atomic checkpoint summary rather than concatenating
+multiple partial result tables. For a checkpoint named ../serial-checkpoint.json:
+
+```powershell
+npm run check -- --resume ../serial-checkpoint.json
+node tools/ci-gate.mjs compare --serial ../serial-checkpoint.json.summary.txt --results gate-receipt/gate-results.json
+```
+
+Both sources must still be the same immutable commit. An incomplete final summary is rejected,
+and interruption history remains in each checkpoint.
