@@ -7,7 +7,7 @@ mkdirSync('gate-data', { recursive: true });
 const runs = [];
 for (const args of [
   ['tools/mash-bot.mjs', 'oreroad', '--level', 'oreroad', '--write'],
-  ['tools/level1-pilot.mjs', 'oreroad', 'moor', '--curve'],
+  ['tools/level1-pilot.mjs', 'oreroad', 'moor', '--curve', '--events', '--lifts'],
 ]) {
   const started = new Date().toISOString();
   const p = spawn(process.execPath, args, { stdio: 'inherit', env: { ...process.env,
