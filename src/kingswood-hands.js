@@ -16,7 +16,7 @@
 //   them, or a blow or a drop on one, turns the whole court on him. The pegs over the road are the ambush.
 // Every capital line it says goes through ctx.number with a line listed here (KW_SAY) and in src/hint-lines.js.
 export const ROPE = { g: 900, vmax: 520, crush: 30, cageDmg: 16, caged: 1.0, logW: 3, logH: 14, logV: 150, logDmg: 26, logHero: 14, logMax: 40, dropTell: 0 };
-export const MARCH = { v: 30, see: 72, seeY: 14, wake: 150, exitT: 0.6 };
+export const MARCH = { v: 60, see: 72, seeY: 14, wake: 150, exitT: 0.6 };
 export const KW_SAY = {
   cut: 'THE ROPE PARTS: IT DROPS', step: 'THE CAGE LANDS: A STEP', bridge: 'THE LOG LANDS: A BRIDGE', crushed: 'CRUSHED UNDER IT',
   rolls: 'THE LOG ROLLS DOWN THE ROAD', split: 'THE LOG SPLITS', caged: 'THE CAGE HAS YOU', logHit: 'THE LOG RUNS YOU DOWN',
@@ -141,7 +141,7 @@ export function makeKingswoodHands(ctx) {
   H.props = () => { if (!S) return []; const out = [];
     for (const h of S.hs.values()) { const d = h.d; if (d.boss) continue; out.push({ t: 'hoist', id: h.id, x: d.cleat[0] * TS + 8, y: (d.cleat[1] + 1) * TS, on: h.state !== 'hang' }); }
     return out; };
-  H.read = () => S ? { hoists: [...S.hs.values()].map(h => ({ id: h.id, state: h.state, ly: h.ly, lx: h.lx })), proc: S.proc ? { state: S.proc.state, done: S.proc.done, passed: S.proc.passed } : null, n: { ...S.n } } : null;
+  H.read = () => S ? { hoists: [...S.hs.values()].map(h => ({ id: h.id, state: h.state, ly: h.ly, lx: h.lx })), proc: S.proc ? { state: S.proc.state, done: S.proc.done, passed: S.proc.passed } : null, banner: S.banner ? S.banner.name : null, sec: S.sec, n: { ...S.n } } : null;
   H.hoist = id => S && S.hs.get(id);
 
   /* ---------- DRAWING (greybox: the art pass gives the ropes, pegs, cages and logs their own sprites) ---------- */

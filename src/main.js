@@ -27207,7 +27207,8 @@ function updateEnemies(dt) {
     if (e.pFace === undefined) e.pFace = e.face; else if (e.face !== e.pFace) { if (Math.abs(e.vx) > 18 || e.lastSpeed > 18) e.turnT = 0.18; e.pFace = e.face; }
     e.lastSpeed = Math.abs(e.vx || 0);
     if(updateBalcony(e,dt))continue;
-    if (e.arenaHeld && arenaHeld(e)) continue;   /* (claude/colossus3) THE ARENA IS SHUT: a level foe outside a live fight's walls waits there */
+    if (e.arenaHeld && arenaHeld(e)) continue;
+    if (e.march && KWH && KWH.marcher(e, dt)) continue;   /* (claude/kingswood2) THE COURT'S PROCESSION: a marcher keeps step until the court sees you (src/kingswood-hands.js) - before every foe AI and the far-foe rule: the court marches from off the screen */   /* (claude/colossus3) THE ARENA IS SHUT: a level foe outside a live fight's walls waits there */
     if (e.gustBlown > 0 && MRH && MRH.blow(e, dt)) continue;   /* GALE MOOR: struck as a scaffold gust blows, the wind has it (src/moor-rocks-hands.js; its own AI waits) */
     if (e.t === 'heart') { e.burn=0; e.bleed=0; } // the living membrane takes deliberate cuts only
     if(e.fleeT>0){e.fleeT-=dt;e.vx=e.face*100;e.vy=Math.min(300,(e.vy||0)+900*dt);moveBody(e,e.vx*dt,e.vy*dt,false);if(e.fleeT<=0)e.alive=false;continue;}
@@ -27300,7 +27301,6 @@ function updateEnemies(dt) {
     if (HNH && HNH.owns(e)) { if (bossActive && e === boss) { beastSeen('huntmaster'); HNH.update(e, dt); } continue; }   /* THE GOBLIN HUNTMASTER (src/huntmaster.js) */
     if (COH && COH.owns(e)) { if (bossActive && e === boss) { beastSeen('colossus'); COH.update(e, dt); } continue; }   /* THE GLASS COLOSSUS (src/glass-colossus.js) */
     if (GDH && GDH.owns(e)) { if (bossActive && e === boss) { beastSeen('greatdrill'); GDH.update(e, dt); } continue; }   /* THE GREAT DRILL (src/great-drill.js) */
-    if (KWH && KWH.marcher(e, dt)) continue;   /* (claude/kingswood2) THE COURT'S PROCESSION: a marcher keeps step until the court sees you (src/kingswood-hands.js) */
     if (MCH && MCH.rider(e, dt)) continue;   /* (claude/minecart) a goblin riding a cart: src/minecart-hands.js moves him and looses his shots */
     if (DJH && DJH.owns(e)) { if (bossActive && e === boss) { beastSeen('djinn'); DJH.update(e, dt); } continue; }   /* THE DJINN OF THE GREAT WELL (src/djinn.js): sand, fire, flood */   /* THE CISTERN QUEEN (src/cistern-queen.js): her three phases in the dry cistern */
     if (GCH && GCH.owns(e)) { if (bossActive && e === boss) { beastSeen('gorgecrab'); GCH.update(e, dt); } continue; }
