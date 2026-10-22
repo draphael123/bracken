@@ -27,9 +27,9 @@ export const GORM = {
   litterTo: 0.55,        /* at this share of P1's bar the litter breaks and he stands */
   heldT: 3.2, openT: 4,
   grabEvery: 9, grabTell: 0.9, grabReach: 64, hurlVx: 420, hurlVy: -300,
-  chargeEvery: 8, chargeTell: 0.8, chargeV: 240, chargeT: 1.5,
+  chargeEvery: 9.5, chargeTell: 0.8, chargeV: 240, chargeT: 1.5,
   sweepEvery: 2.6, sweepTell: 0.8, sweepReach: 66, sweepCool: 1.1,
-  hornEvery: 15, hornTell: 1.1, hornFirst: 9,
+  hornEvery: 17, hornTell: 1.1, hornFirst: 9,
   walkV: 44, walkV2: 54,
   archers: { hp: 1, every: 5.2, tell: 1.0, v: 150, g: 260, dmg: 8, fileIn: 2.4, firstFile: 1.4 },
   cageReset: 5,          /* a cage that MISSED him goes back up after this (its rope stays free: its archers are down) */

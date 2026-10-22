@@ -28,8 +28,8 @@ ok(lv.needs === 'rootway' && LEVELS.find(l => l.id === 'underleaf').needs === 'k
 ok(lv.rule === 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', 'the rule line (true to the code: the court holds the road with checkpoints and a procession; ropes and plates drop what hangs)');
 ok(/GATE = \[[^\]]*'kings'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(L.kwood === true && L.W === KINGSWOOD.W, 'the level is src/kingswood.js (L.kwood)');
-ok(SECTIONS.map(s => s[0]).join('|') === "THE ROYAL ROAD|THE HUNTING STANDS|THE CAGE GROVE|THE COURT'S PROCESSION|THE KING'S HALL" && L.sections.length === 5, 'five named areas in the brief\'s order: ' + SECTIONS.map(s => s[0]).join(', '));
-ok(SECTIONS.every((s, i) => i === 0 || s[1] === SECTIONS[i - 1][2]) && SECTIONS[4][2] === L.W, 'the areas tile the level, end to end');
+ok(SECTIONS.map(s => s[0]).join('|') === "THE ROYAL ROAD|THE HUNTING STANDS|THE CAGE GROVE|THE COURT'S PROCESSION|THE KING'S HALL|THE BURNING WOOD|THE KING'S GLADE" && L.sections.length === 7, 'the five named areas in the brief\'s order, then his escape and his glade (claude/gorm2): ' + SECTIONS.map(s => s[0]).join(', '));
+ok(SECTIONS.every((s, i) => i === 0 || s[1] === SECTIONS[i - 1][2]) && SECTIONS[SECTIONS.length - 1][2] === L.W, 'the areas tile the level, end to end');
 ok(/KWH\.drawSky/.test(src('src/main.js')) && /export function drawOak/.test(src('src/redraw/kingswood_oak.js')), 'THE GREAT OAK is drawn on the skyline (KWH.drawSky -> src/redraw/kingswood_oak.js)');
 for (const s of SECTIONS.slice(0, 4)) ok(L.ents.some(e => e.t === 'sign' && e.x >= s[1] - 4 && e.x < s[1] + 12 && e.text.startsWith(s[0].replace(/'/g, "'"))), 'a sign names ' + s[0] + ' at its entrance');
 
@@ -64,7 +64,7 @@ for (const h of L.hoists.filter(q => q.load === 'log')) { const fl = (() => { le
   ok(n < h.rollMax ? L.grid[(fl - 1) * L.W + x + h.roll * 2] !== T.AIR : true, h.id + ': its road (row ' + (fl - 1) + ') runs ' + n + ' tiles ' + (h.roll > 0 ? 'east' : 'west') + (n < h.rollMax ? ' to a wall it splits on' : ' (rollMax)'));
   ok(foes.length >= (h.id === 'procLog' ? 0 : 2), h.id + ': foes stand on its road: ' + foes.map(e => e.t + '@' + e.x).join(' ')); }
 const checks = L.ents.filter(e => e.t === 'check').map(e => e.x).sort((a, b) => a - b);
-ok(checks.length === 4 && SECTIONS.slice(0, 4).every(([n, x0, x1], i) => checks[i] >= x1 - 12 && checks[i] < x1 + 2), 'A10c: one shrine closes each area\'s exam, at its end: ' + checks.join(' '));
+ok(checks.length === 5 && [0, 1, 2, 3, 5].map(i => SECTIONS[i]).every(([n, x0, x1], i) => checks[i] >= x1 - 12 && checks[i] < x1 + 2), 'A10c: one shrine closes each area\'s exam, at its end: ' + checks.join(' '));
 const elites = L.ents.filter(e => e.elite);
 ok(elites.length === 2 && elites.every(e => L.hoists.some(h => Math.abs(h.x - e.x) <= 1 && h.load === 'cage') || L.ents.some(q => q.t === 'dropcage' && Math.abs(q.x - e.x) <= 1)), 'each exam elite stands under something hung over him: ' + elites.map(e => e.t + '@' + e.x).join(' '));
 ok(L.ents.some(e => e.t === 'greathound' && e.mini) && L.mini && L.mini.boss === 'greathound', 'THE HOUND MASTER keeps his kennel (the stands\' exam, a mini)');

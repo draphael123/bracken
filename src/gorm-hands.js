@@ -38,10 +38,10 @@ export function makeGormHands(ctx) {
     S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [], rocks: [], took: 0, rockCd: 0, near: null, arc: null,
       run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
       hangs: (g.glade.hangs || []).map(d => ({ d, state: 'hang', y: d.y0, vy: 0, lx: d.x, resetT: 0, hitK: false, heroHit: false, turn: 0 })),
-      cones: [], logs: [], waves: [], swarms: [], n: { arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0 } };
+      cones: [], logs: [], waves: [], swarms: [], n: { arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
     /* the hall's ropes: one to each boss cage, by column */
     const cages = ctx.props().filter(p => p.t === 'dropcage' && p.boss).sort((a, b) => a.x - b.x);
-    g.hall.ropes.forEach((r, i) => { const cage = cages.find(c => Math.abs(c.x - r.x) < 10); if (cage) S.ropes.push({ i, cage, x: r.x, pegX: r.pegX, pegY: g.hall.floor, deck: r.deck, archers: r.archers, free: false }); });
+    g.hall.ropes.forEach((r, i) => { const cage = cages.find(c => Math.abs(c.x - r.x) < 10); if (cage) S.ropes.push({ i, cage, x: r.x, pegs: r.pegs, pegY: g.hall.floor, deck: r.deck, archers: r.archers, free: false }); });
     lv.oakBurn = persist ? (persist.stage === 'glade' || persist.runDone ? 0.55 : 0.4) : 0;
     /* a death after his P1 bar emptied: P1 stays beaten (B18's rule for the King's court) - he waits in his glade, the hall is open, the wood burns again */
     if (persist) { const e = king(); if (e) toGlade(e);
@@ -50,7 +50,7 @@ export function makeGormHands(ctx) {
   };
   /* the King, set down on his stump throne in the glade, asleep until you come (bossStart wakes him there) */
   function toGlade(e) { const gl = L().glade, g = G(); e.stage = 'glade'; e.phase = 4; e.mode = 'sleep'; e.modeT = 0; e.x = g.glade.stumpX; e.y = gl.floor; e.vx = 0; e.vy = 0; e.h = 60; e.w = 68; e.open = 0; e.ward = 0; e.hidden = false;
-    e.maxHp = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1); e.hp = e.maxHp; e.huntN = 0; e.clubT = 1.5; e.logT = 6; e.quakeT = 9; e.shakeT = 11; e.face = -1; }
+    e.maxHp = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1); e.hp = e.maxHp; e.huntN = 0; e.clubT = 1.5; e.logT = 6; e.quakeT = 9; e.shakeT = 11; e.face = -1; if (ctx.bossActive()) { e.mode = 'wake'; e.modeT = 1.6; } }
 
   /* ---------------- THE HALL ---------------- */
   const hallOn = () => { const e = ctx.boss(); return !!(e && e.t === 'king' && e.alive && e.stage === 'court' && ctx.bossActive()); };
@@ -60,7 +60,7 @@ export function makeGormHands(ctx) {
     const g = G(), order = g.hall.order || [0, 1, 2, 3, 4];
     let live = S.ropes.filter(r => !r.cage.spent);
     if (!live.length) {   /* AND WHEN THE LAST ONE IS SPENT, THE COURT WINCHES THEM BACK UP: every cage goes up again (only a cage brings his head down - no rack, no fight) */
-      for (const r of S.ropes) { const c = r.cage; c.dropped = false; c.spent = false; c.landed = 0; c.y = c.y0; c.hit.clear(); r.free = false; }
+      for (const r of S.ropes) { const c = r.cage; c.dropped = false; c.spent = false; c.landed = 0; c.y = c.y0; c.hit.clear(); r.free = false; r.counted = false; }
       const e = king(); if (e) ctx.number(e.x, e.y - e.h - 28, GORM_SAY.backUp, '#ffd36b'); ctx.sfx.stone && ctx.sfx.stone(); live = S.ropes.slice(); }
     for (let k = 0; k < order.length; k++) { const i = order[(S.ord + k) % order.length], r = S.ropes.find(q => q.i === i); if (r && !r.cage.spent) { S.ord = (S.ord + k + 1) % order.length; return r; } }
     return live[0];
@@ -68,7 +68,7 @@ export function makeGormHands(ctx) {
   function fileIn(r) {
     S.act = r.i; r.free = false;
     for (const [k, ax] of r.archers.entries()) { const y = r.deck[2];
-      ctx.spawn({ t: 'archer', x: ax, y: y - 30, vx: 0, vy: 0, w: 8, h: 10, hp: ctx.ehp('archer'), speed: 0, face: -1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0, timer: 99, draw: 0, loose: 0,
+      ctx.spawn({ t: 'archer', x: ax, y, vx: 0, vy: 0, w: 8, h: 10, hp: ctx.ehp('archer'), speed: 0, face: -1, alive: true, dying: 0, anim: Math.random(), flash: 0, stagger: 0, timer: 99, draw: 0, loose: 0,
         gormBow: true, rope: r.i, shotT: GORM.archers.firstFile + k * GORM.archers.every / 2, deckY: y, noGr: false });
       ctx.burst(ax, y - 6, 8, ['#c9b27c', '#8a5a32'], 60, 0.4); }
     const e = king(); say(r.x, r.deck[2] - 34, 'file', '#ff9a5c'); ctx.sfx.hornDraw && ctx.sfx.hornDraw();
@@ -79,14 +79,15 @@ export function makeGormHands(ctx) {
     if (!on) { if (S.act >= 0 && !(e && e.stage === 'court' && e.alive)) { for (const q of bows()) q.alive = false; S.act = -1; } S.waitT = null; return; }
     if (e.mode === 'wake') return;
     const cur = S.act >= 0 ? S.ropes.find(r => r.i === S.act) : null;
+    if (cur && cur.cage.spent && !cur.counted) { cur.counted = true; S.n.caught++; }
     if (!cur || cur.cage.spent) { if (S.waitT === null || S.waitT === undefined) S.waitT = cur ? GORM.archers.fileIn : GORM.archers.firstFile;
       S.waitT -= dt; if (S.waitT <= 0) { S.waitT = null; fileIn(nextRope()); } return; }
-    if (!cur.free && !bows().some(q => q.rope === cur.i)) { cur.free = true; say(cur.pegX, cur.pegY - 40, 'free', '#8fd160'); ctx.sfx.medal && ctx.sfx.medal(); }
+    if (!cur.free && !bows().some(q => q.rope === cur.i)) { cur.free = true; say(cur.x, cur.pegY - 40, 'free', '#8fd160'); ctx.sfx.medal && ctx.sfx.medal(); }
   }
   /* A RAFTER ARCHER's frame: no walking - he stands his deck, draws (the told arc), looses. main.js calls it instead of the archer's AI */
   H.archerStep = (e, dt) => {
     const P = ctx.P(), A = GORM.archers; e.anim += dt; e.loose = Math.max(0, (e.loose || 0) - dt);
-    e.vy = Math.min(300, (e.vy || 0) + 900 * dt); const r = ctx.moveBody(e, 0, e.vy * dt); if (r && r.ground) e.vy = 0;
+    e.y = e.deckY; e.vy = 0; e.vx = 0;   /* he stands his deck (the rope is his to hold) */
     if (!hallOn() || !P || P.dead) { e.draw = 0; e.aim = null; return; }
     e.face = Math.sign(P.x - e.x) || e.face;
     if (e.aim) { e.draw = Math.max(0.001, e.aim.t); e.aim.t -= dt;
@@ -143,12 +144,12 @@ export function makeGormHands(ctx) {
   /* ---------------- A BLOW: the hall's pegs, the glade's pegs ---------------- */
   H.strike = hb => {
     if (!S || !hb) return;
-    for (const r of S.ropes) { if (!ctx.overlap(hb, pegBox(r.pegX, r.pegY))) continue; const c = r.cage; if (c.dropped || c.spent) continue;
+    for (const r of S.ropes) { const px = r.pegs.find(x => ctx.overlap(hb, pegBox(x, r.pegY))); if (px === undefined) continue; const c = r.cage; if (c.dropped || c.spent) continue;
       if (!hallOn()) continue;
-      if (ropeLocked(r)) { if ((S.clankT || 0) <= 0) { S.clankT = 0.5; ctx.sfx.clank && ctx.sfx.clank(); say(r.pegX, r.pegY - 34, S.act === r.i ? 'locked' : 'lashed', '#c9d1dc'); } continue; }
-      c.dropped = true; c.landed = 0; c.hit.clear(); c.resetT = GORM.cageReset; S.n.cut++; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(r.pegX, r.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); say(c.x, c.y0 - 50, 'cagefall', '#ff9a5c'); }
-    for (const h of S.hangs) { const d = h.d; if (h.state !== 'hang') continue; if (!ctx.overlap(hb, pegBox(d.pegX, d.pegY))) continue;
-      h.state = 'fall'; h.vy = 0; h.hitK = false; h.heroHit = false; S.n.hangDrops++; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.creak && ctx.sfx.creak(); ctx.burst(d.pegX, d.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); }
+      if (ropeLocked(r)) { if ((S.clankT || 0) <= 0) { S.clankT = 0.5; ctx.sfx.clank && ctx.sfx.clank(); say(px, r.pegY - 34, S.act === r.i ? 'locked' : 'lashed', '#c9d1dc'); } continue; }
+      c.dropped = true; c.landed = 0; c.hit.clear(); c.resetT = GORM.cageReset; S.n.cut++; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(px, r.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); say(c.x, c.y0 - 50, 'cagefall', '#ff9a5c'); }
+    for (const h of S.hangs) { const d = h.d; if (h.state !== 'hang') continue; const px = d.pegs.find(x => ctx.overlap(hb, pegBox(x, d.pegY))); if (px === undefined) continue;
+      h.state = 'fall'; h.vy = 0; h.hitK = false; h.heroHit = false; S.n.hangDrops++; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.creak && ctx.sfx.creak(); ctx.burst(px, d.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); }
   };
 
   /* ---------------- THE FLEE ---------------- */
@@ -157,8 +158,8 @@ export function makeGormHands(ctx) {
     if (!S || !e || e.t !== 'king' || e.stage !== 'court') return false;
     const P = ctx.P(), A = L().arena, g = G();
     e.maxHp2 = Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1);
-    e.stage = 'flee'; e.hp = e.maxHp2; e.maxHp = e.maxHp2; e.mode = 'fleeTell'; e.modeT = 1.7; e.open = 0; e.ward = 0; e.vx = 0; e.stagger = 0; e.thrown = null; e.alive = true; e.dying = 0;
-    persist = { stage: 'flee', runDone: false };
+    e.stage = 'flee'; e.fleeT = 0; e.hp = e.maxHp2; e.maxHp = e.maxHp2; e.mode = 'fleeTell'; e.modeT = 1.7; e.open = 0; e.ward = 0; e.vx = 0; e.stagger = 0; e.thrown = null; e.alive = true; e.dying = 0;
+    persist = { stage: 'flee', runDone: false }; S.n.p1At = Math.round(ctx.time() * 10) / 10;
     for (const q of bows()) { q.alive = false; ctx.burst(q.x, q.y - 6, 6, ['#c9b27c', '#8a5a32'], 40, 0.4); }
     for (const q of ctx.enemies()) if (q.alive && q.t === 'royalboar' && q.called) { q.mode = 'bolt'; q.modeT = 2; }
     S.arrows = []; S.act = -1;
@@ -175,8 +176,8 @@ export function makeGormHands(ctx) {
     if (!S || e.t !== 'king') return false;
     if (e.stage === 'flee') { const A0 = G().hall; e.modeT -= dt; e.anim = (e.anim || 0) + dt;
       if (e.mode === 'fleeTell') { e.y = A0.floor - 9; if (e.modeT <= 0) { e.mode = 'fleeCarried'; e.face = 1; ctx.sfx.rattle && ctx.sfx.rattle(1); } return true; }
-      e.x += 150 * dt; e.y = A0.floor - 9; e.face = 1; if (Math.random() < dt * 20) ctx.dust(e.x - 30, A0.floor, 1);
-      const P = ctx.P(); if (e.x > A0.x1 + 26 * TS || (P && e.x > P.x + 30 * TS)) { toGlade(e); L().arena = L().glade; }
+      e.x += 150 * dt; e.y = A0.floor - 9; e.face = 1; if (Math.random() < dt * 20) ctx.dust(e.x - 30, A0.floor, 1); e.fleeT = (e.fleeT || 0) + dt;
+      const P = ctx.P(); if (e.x > A0.x1 + 26 * TS || (P && e.x > P.x + 30 * TS) || e.fleeT > 3.2 || ctx.bossActive()) { toGlade(e); L().arena = L().glade; }
       return true; }
     return false;
   };
@@ -289,20 +290,25 @@ export function makeGormHands(ctx) {
   /* ---------------- EVERY FRAME ---------------- */
   H.update = dt => {
     if (!S) return; S.clankT = Math.max(0, (S.clankT || 0) - dt);
+    if (hallOn() && S.n.fightAt === undefined) S.n.fightAt = Math.round(ctx.time() * 10) / 10;
     hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt);
     const e = king(), lv = L();
+    if (e && e.stage === 'glade' && ctx.bossActive() && S.n.p2At === undefined) S.n.p2At = Math.round(ctx.time() * 10) / 10;
     if (e && e.stage === 'glade' && ctx.bossActive()) lv.oakBurn = Math.min(1, 0.55 + 0.45 * (1 - e.hp / Math.max(1, e.maxHp)));
   };
   /* a blade on him: the multiplier his state pays, or null for the global chip (0.4) */
   H.skipTo = stage => {   /* TOOLS: 'glade' - his P1 is beaten and the wood has burned: he waits in his glade (the lab and the probe fight P2 alone) */
     if (!S) return false; const e = king(); if (!e) return false;
     persist = { stage: 'glade', runDone: true }; S.run.done = true; S.run.on = false; toGlade(e); L().arena = L().glade; L().oakBurn = 0.55; ctx.drainStop('gormfire'); return true; };
-  H.read = () => S ? { act: S.act, ropes: S.ropes.map(r => ({ i: r.i, x: r.x, pegX: r.pegX, free: !ropeLocked(r) && !r.cage.dropped && !r.cage.spent, dropped: r.cage.dropped, spent: !!r.cage.spent, landed: r.cage.landed })),
-    bows: bows().map(q => ({ x: q.x, y: q.y, rope: q.rope, aim: q.aim ? { t: q.aim.t, tx: q.aim.tx, ty: q.aim.ty } : null })), arrows: S.arrows.map(a => ({ x: a.x, y: a.y, vx: a.vx, vy: a.vy })),
-    heaps: G().hall.heaps.slice(), held: !!heldRock(ctx.P()), heapNear: S.near, aim: H.aimAt(),
+  H.forceFlee = () => {   /* TOOLS: as if his P1 bar had just emptied and the hero had died after (the walker walks the burning wood from his hall's door) */
+    if (!S) return false; const e = king(); if (!e) return false; e.maxHp2 = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1);
+    persist = { stage: 'flee', runDone: false }; toGlade(e); L().arena = L().glade; S.run.armed = true; S.run.on = false; S.run.done = false; L().oakBurn = 0.4; return true; };
+  H.read = () => S ? { act: S.act, ropes: S.ropes.map(r => ({ i: r.i, x: r.x, pegs: r.pegs.slice(), free: !ropeLocked(r) && !r.cage.dropped && !r.cage.spent, dropped: r.cage.dropped, spent: !!r.cage.spent, landed: r.cage.landed })),
+    bows: bows().map(q => ({ x: q.x, y: q.y, rope: q.rope, aim: q.aim ? { t: q.aim.t, tx: q.aim.tx, ty: q.aim.ty } : null })), arrows: S.arrows.map(a => ({ x: a.x, y: a.y, vx: a.vx, vy: a.vy })), rocks: S.rocks.map(q => ({ x: Math.round(q.x), y: Math.round(q.y), vx: Math.round(q.vx), vy: Math.round(q.vy), state: q.state })),
+    heaps: G().hall.heaps.slice(), arc: S.arc ? { n: S.arc.pts.length, land: S.arc.land ? { x: Math.round(S.arc.land.x), y: Math.round(S.arc.land.y), hit: !!S.arc.land.hit } : null } : null, held: !!heldRock(ctx.P()), heapNear: S.near, aim: H.aimAt(),
     run: { on: S.run.on, done: S.run.done, fireX: S.run.fireX, armed: S.run.armed }, persist: persist ? { ...persist } : null, zones: zones().map(z => ({ x0: z.x0, x1: z.x1, y: z.y, on: z.on })),
     branches: S.branches.map(b => ({ x: b.x, y: b.y, state: b.state })),
-    hangs: S.hangs.map(h => ({ kind: h.d.kind, x: h.d.x, lx: h.lx, pegX: h.d.pegX, state: h.state, roll: h.d.roll || 0 })), cones: S.cones.map(c => ({ x: c.x, t: c.t, state: c.state })),
+    hangs: S.hangs.map(h => ({ kind: h.d.kind, x: h.d.x, lx: h.lx, pegs: h.d.pegs.slice(), state: h.state, roll: h.d.roll || 0 })), cones: S.cones.map(c => ({ x: c.x, t: c.t, state: c.state })),
     logs: S.logs.map(l => ({ x: l.x, dir: l.dir })), waves: S.waves.map(w => ({ x: w.x, dir: w.dir })), swarms: S.swarms.map(s => ({ x: s.x, t: s.t })), n: { ...S.n } } : null;
 
   /* ---------------- DRAWING (GREYBOX: the art lane repaints - see the lane report's art hooks) ---------------- */
@@ -340,24 +346,18 @@ export function makeGormHands(ctx) {
     if (!S || !H.on()) return; const VW = ctx.VW(), VH = ctx.VH(), P = ctx.P(), lv = L(), gd = G();
     /* THE HALL: the ropes, the pegs (locked: a lashing and a padlock; free: the gold glint), the heaps, the told arrows, the rocks */
     const fight = hallOn();
-    for (const r of S.ropes) { const px = R(r.x - cx), py = R(r.deck[2] + 16 - cy), gx = R(r.pegX - cx), gy = R(r.pegY - cy); if (Math.max(px, gx) < -60 || Math.min(px, gx) > VW + 60) continue;
+    for (const r of S.ropes) for (const pgx of r.pegs) { const px = R(r.x - cx), py = R(r.deck[2] + 16 - cy), gx = R(pgx - cx), gy = R(r.pegY - cy); if (Math.max(px, gx) < -60 || Math.min(px, gx) > VW + 60) continue;
       const c = r.cage, up = !c.dropped && !c.spent, locked = ropeLocked(r);
-      KP.drawPulley(g, px, py - 4, time);
+      const first = pgx === r.pegs[0]; if (first) KP.drawPulley(g, px, py - 4, time);
       KP.drawPeg(g, gx, gy, up, up && fight && !locked, time);
       if (up) { KP.ropeLine(g, px, py + 5, gx, gy - 13, 3);
         if (locked) { f(g, '#4a4a54', gx - 4, gy - 30, 8, 6); f(g, '#9a9aa6', gx - 4, gy - 30, 8, 1); f(g, '#1e1e26', gx - 1, gy - 28, 2, 3); f(g, '#9a9aa6', gx - 3, gy - 34, 1, 4); f(g, '#9a9aa6', gx + 2, gy - 34, 1, 4); f(g, '#9a9aa6', gx - 3, gy - 34, 6, 1);
-          if (fight && S.act === r.i) { g.save(); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 6); g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(R(r.deck[0] - cx) - 2, R(r.deck[2] - cy) - 22, R(r.deck[1] - r.deck[0]) + 4, 24); g.restore(); } }
-        else if (fight) { g.fillStyle = 'rgba(255,233,160,0.5)'; for (let y = R(c.y0 - cy) + 2; y < gy; y += 5) g.fillRect(R(c.x - cx), y, 1, 2); } } }
+          if (fight && first && S.act === r.i) { g.save(); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 6); g.strokeStyle = '#ff9a5c'; g.lineWidth = 1; g.strokeRect(R(r.deck[0] - cx) - 2, R(r.deck[2] - cy) - 22, R(r.deck[1] - r.deck[0]) + 4, 24); g.restore(); } }
+        else if (fight && first) { g.fillStyle = 'rgba(255,233,160,0.5)'; for (let y = R(c.y0 - cy) + 2; y < gy; y += 5) g.fillRect(R(c.x - cx), y, 1, 2); } } }
     for (const hx of gd.hall.heaps) { const x = R(hx - cx), y = R(gd.hall.floor - cy); if (x < -30 || x > VW + 30) continue;
       for (const [dx, dy, w] of [[-9, -4, 7], [-2, -5, 8], [5, -4, 6], [-5, -9, 6], [1, -10, 6], [-1, -13, 5]]) { f(g, '#2a2430', x + dx, y + dy, w, 5); f(g, '#7a6a50', x + dx + 1, y + dy + 1, w - 2, 3); f(g, '#b09a5a', x + dx + 1, y + dy + 1, w - 2, 1); }
       if (fight && S.near === hx && !heldRock(P) && ctx.text) ctx.text('E: A ROCK', x, y - 26, '#ffd36b', 'center');
       else if (fight && !heldRock(P)) { const k = 0.5 + 0.5 * Math.sin(time * 5 + hx); g.save(); g.globalAlpha = 0.35 + 0.35 * k; g.strokeStyle = '#ffd36b'; g.beginPath(); g.ellipse(x + 0.5, y - 6, 13 + k * 2, 6, 0, 0, 6.283); g.stroke(); g.restore(); } }
-    for (const q of bows()) if (q.aim) { g.save(); g.fillStyle = '#ff6b5c'; const pts = q.aim.pts, n = pts.length, k = 1 - q.aim.t / GORM.archers.tell;
-      for (let i = 1; i < n; i++) { if (i / n > 0.25 + k) break; g.globalAlpha = 0.35 + 0.5 * (i / n); g.fillRect(R(pts[i][0] - cx) - 1, R(pts[i][1] - cy) - 1, 2, 2); }
-      g.globalAlpha = 0.6; g.strokeStyle = '#ff6b5c'; g.beginPath(); g.ellipse(R(q.aim.tx - cx) + 0.5, R(q.aim.ty + 6 - cy), 8, 3, 0, 0, 6.283); g.stroke(); g.restore(); }
-    for (const a of S.arrows) { const x = R(a.x - cx), y = R(a.y - cy), an = Math.atan2(a.vy, a.vx); g.save(); g.translate(x, y); g.rotate(an); f(g, '#5a3a24', -6, 0, 10, 1); f(g, '#c9d1dc', 4, -1, 2, 3); f(g, '#e0e0e0', -7, -1, 2, 3); g.restore(); }
-    for (const q of S.rocks) { const x = R(q.x - cx), y = R(q.y - cy); f(g, '#2a2430', x - 4, y - 4, 8, 7); f(g, '#7a6a50', x - 3, y - 3, 6, 5); f(g, '#b09a5a', x - 3, y - 3, 6, 1); }
-    if (S.arc) CT.drawArc(g, S.arc, cx, cy, time, S.arc.land && S.arc.land.hit ? '#ffd36b' : '#c8ccd4');
     /* THE BURNING WOOD: the burning ground, the branches (marked), the lit patches, and the wall of fire behind you */
     for (const z of zones()) { const x0 = R(z.x0 - cx), x1 = R(z.x1 - cx), y = R(z.y - cy); if (x1 < -20 || x0 > VW + 20) continue;
       if (z.tell) { g.save(); g.globalAlpha = 0.35 + 0.35 * Math.sin(time * 18); f(g, '#ff9a5c', x0, y - 2, x1 - x0, 2); g.restore(); continue; }
@@ -369,15 +369,13 @@ export function makeGormHands(ctx) {
         if (b.state === 'tell') { if (ctx.text) ctx.text('!', x, by - 16, '#ff6b5c', 'center'); } }
       else if (b.state === 'fall') { const by = y - 74 * (b.t / 0.22) - 5; f(g, '#2a1410', x - 14, by, 28, 5); flame(g, x, by, 10, time, b.x); }
       else if (b.state === 'down') { f(g, '#2a1410', x - 14, y - 5, 28, 5); f(g, '#5a3a24', x - 13, y - 4, 26, 2); flame(g, x - 6, y - 4, 8 * Math.min(1, b.t), time, b.x); flame(g, x + 7, y - 4, 6 * Math.min(1, b.t), time, b.x + 1); } }
-    if (persist && (S.run.on || S.run.armed) && !S.run.done) { const fx = R(S.run.fireX - cx); if (fx > -40) {
-      g.save(); const gr = g.createLinearGradient(fx - 120, 0, fx + 30, 0); gr.addColorStop(0, 'rgba(160,30,10,0.85)'); gr.addColorStop(0.8, 'rgba(230,90,30,0.6)'); gr.addColorStop(1, 'rgba(255,160,60,0)'); g.fillStyle = gr; g.fillRect(Math.max(0, fx - 600), 0, Math.min(VW, fx + 30) - Math.max(0, fx - 600), VH); g.restore();
-      for (let y = 0; y < VH; y += 12) flame(g, fx + R(Math.sin(time * 3 + y) * 4), y + 12, 18 + (y % 3) * 4, time, y);
-      if (S.run.on && S.run.t < 4 && ctx.text) ctx.text('THE WOOD BURNS: RUN EAST', VW / 2, 34, Math.floor(time * 4) % 2 ? '#ff9a5c' : '#fff6e0', 'center'); } }
     /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the cones' marks, the logs, the quake, the swarm */
     const gl = lv.glade; if (gl) { const gOn = gladeOn();
-      for (const h of S.hangs) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(d.pegX - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;
-        const up = h.state === 'hang'; KP.drawPulley(g, px, py, time); KP.drawPeg(g, gx, gy, up, up && gOn, time);
-        if (up) { KP.ropeLine(g, px, py + 3, gx, gy - 13, 4); KP.ropeLine(g, px, py + 11, lx, ly - (d.kind === 'cage' ? 36 : d.kind === 'hive' ? 22 : 16), 1);
+      for (const h of S.hangs) for (const [pk, pgx] of h.d.pegs.entries()) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(pgx - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;
+        const up = h.state === 'hang'; if (pk === 0) KP.drawPulley(g, px, py, time); KP.drawPeg(g, gx, gy, up, up && gOn, time);
+        if (up) KP.ropeLine(g, px, py + 3, gx, gy - 13, 4);
+        if (pk !== 0) continue;
+        if (up) { KP.ropeLine(g, px, py + 11, lx, ly - (d.kind === 'cage' ? 36 : d.kind === 'hive' ? 22 : 16), 1);
           g.fillStyle = 'rgba(255,233,160,0.45)'; for (let y = ly + 2; y < R(gl.floor - cy); y += 5) g.fillRect(lx, y, 1, 2);
           if (d.kind === 'log') { g.fillStyle = 'rgba(255,154,92,0.5)'; const to = d.roll > 0 ? gl.x1 : gl.x0; for (let x = Math.min(lx, R(to - cx)); x < Math.max(lx, R(to - cx)); x += 6) g.fillRect(x, R(gl.floor - cy) - 3, 3, 1); } }
         if (d.kind === 'cage') KP.drawCage(g, lx, ly, h.state === 'down', time, up ? 1.2 : 0);
@@ -385,13 +383,31 @@ export function makeGormHands(ctx) {
         else if (d.kind === 'hive') { if (h.state === 'down') { f(g, '#5a3a1a', lx - 9, ly - 6, 18, 6); f(g, '#c9a040', lx - 7, ly - 6, 6, 3); }
           else { f(g, '#5a3a1a', lx - 9, ly - 22, 18, 22); f(g, '#c9a040', lx - 8, ly - 21, 16, 20); for (let k = 0; k < 5; k++) f(g, '#8a6a20', lx - 8, ly - 19 + k * 4, 16, 1); f(g, '#1a0e08', lx - 2, ly - 8, 4, 4);
             for (let k = 0; k < 4; k++) { const a = time * 6 + k * 1.6; f(g, '#e0b040', lx + R(Math.cos(a) * 14), ly - 12 + R(Math.sin(a * 1.3) * 8), 2, 1); } } } }
+    }
+  };
+  /* THE TOLD LAYER (after the foes, over the dark pass: main.js calls it where the winch rocks draw): the rafter archers' drawn arcs and their arrows, the rock in the air and its
+     told arc, the wall of fire, the cones' marks, the rolling logs, the quake's crest, the swarm */
+  H.drawFront = (g, cx, cy, time) => {
+    if (!S || !H.on()) return; const VW = ctx.VW(), VH = ctx.VH(), P = ctx.P();
+    for (const q of bows()) if (q.aim) { g.save(); g.fillStyle = '#ff4a3c'; const pts = q.aim.pts, n = pts.length, k = 1 - q.aim.t / GORM.archers.tell;
+      for (let i = 1; i < n; i++) { if (i / n > 0.25 + k) break; g.globalAlpha = 0.6 + 0.4 * (i / n); g.fillRect(R(pts[i][0] - cx) - 1, R(pts[i][1] - cy) - 1, 3, 3); }
+      g.globalAlpha = 0.6; g.strokeStyle = '#ff6b5c'; g.beginPath(); g.ellipse(R(q.aim.tx - cx) + 0.5, R(q.aim.ty + 6 - cy), 8, 3, 0, 0, 6.283); g.stroke(); g.restore(); }
+    for (const a of S.arrows) { const x = R(a.x - cx), y = R(a.y - cy), an = Math.atan2(a.vy, a.vx); g.save(); g.translate(x, y); g.rotate(an); f(g, '#5a3a24', -6, 0, 10, 1); f(g, '#c9d1dc', 4, -1, 2, 3); f(g, '#e0e0e0', -7, -1, 2, 3); g.restore(); }
+    for (const q of S.rocks) { const x = R(q.x - cx), y = R(q.y - cy); f(g, '#2a2430', x - 4, y - 4, 8, 7); f(g, '#7a6a50', x - 3, y - 3, 6, 5); f(g, '#b09a5a', x - 3, y - 3, 6, 1); }
+    if (S.arc) CT.drawArc(g, S.arc, cx, cy, time, S.arc.land && S.arc.land.hit ? '#ffd36b' : '#eef2fa');
+    if (persist && (S.run.on || S.run.armed) && !S.run.done) { const fx = R(S.run.fireX - cx); if (fx > -40) {
+      g.save(); const gr = g.createLinearGradient(fx - 120, 0, fx + 30, 0); gr.addColorStop(0, 'rgba(160,30,10,0.85)'); gr.addColorStop(0.8, 'rgba(230,90,30,0.6)'); gr.addColorStop(1, 'rgba(255,160,60,0)'); g.fillStyle = gr; g.fillRect(Math.max(0, fx - 600), 0, Math.min(VW, fx + 30) - Math.max(0, fx - 600), VH); g.restore();
+      for (let y = 0; y < VH; y += 12) flame(g, fx + R(Math.sin(time * 3 + y) * 4), y + 12, 18 + (y % 3) * 4, time, y);
+      if (S.run.on && S.run.t < 4 && ctx.text) ctx.text('THE WOOD BURNS: RUN EAST', VW / 2, 34, Math.floor(time * 4) % 2 ? '#ff9a5c' : '#fff6e0', 'center'); } }
+    if (L().glade) {
       for (const c of S.cones) { const x = R(c.x - cx), y = R(c.y - cy); if (c.state === 'tell') { const k = 0.5 + 0.5 * Math.sin(time * 20); g.save(); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff4a3c'; g.beginPath(); g.ellipse(x + 0.5, y - 1.5, 11, 4, 0, 0, 6.283); g.stroke(); g.restore();
           if (c.t < 0.5) { const yy = y - 20 - 160 * (c.t / 0.5); f(g, '#5a3a1a', x - 3, yy - 6, 6, 7); flame(g, x, yy - 5, 6, time, c.x); } }
         else { const yy = y - 20 * (c.t / 0.25); f(g, '#5a3a1a', x - 3, yy - 6, 6, 7); flame(g, x, yy - 5, 7, time, c.x); } }
       for (const l of S.logs) { const x = R(l.x - cx), y = R(l.y - cy); KP.drawLog(g, x, y, 28, time, true, l.turn); for (let k = 0; k < 4; k++) flame(g, x - 12 + k * 8, y - 12, 7, time, k + l.x); }
       for (const w of S.waves) { const x = R(w.x - cx), y = R(w.y - cy); f(g, '#5a3a24', x - 5, y - 8, 10, 8); f(g, '#c9b27c', x - 4, y - 10, 8, 3); flame(g, x - w.dir * 3, y - 6, 6, time, w.x); }
       for (const s of S.swarms) { const x = R(s.x - cx), y = R(s.y - cy); g.save(); g.globalAlpha = Math.min(0.25, s.t * 0.1); g.fillStyle = '#e0b040'; g.beginPath(); g.ellipse(x, y - 24, GORM.hiveR, 26, 0, 0, 6.283); g.fill(); g.restore();
-        for (let k = 0; k < 18; k++) { const a = time * (3 + k % 4) + k * 0.9; f(g, k % 3 ? '#e0b040' : '#1a0e08', x + R(Math.cos(a) * (GORM.hiveR - 6) * ((k % 5) / 5 + 0.3)), y - 24 + R(Math.sin(a * 1.4) * 20), 2, 1); } } }
+        for (let k = 0; k < 18; k++) { const a = time * (3 + k % 4) + k * 0.9; f(g, k % 3 ? '#e0b040' : '#1a0e08', x + R(Math.cos(a) * (GORM.hiveR - 6) * ((k % 5) / 5 + 0.3)), y - 24 + R(Math.sin(a * 1.4) * 20), 2, 1); } }
+    }
   };
   /* a torch goblin's torch, a rafter archer's deck mark (main.js calls it per foe after its sprite) */
   H.drawFoe = (g, e, cx, cy, time) => {

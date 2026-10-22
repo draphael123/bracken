@@ -32,16 +32,17 @@ export function updateGorm(e, dt, c) {
     if (e.hp <= e.maxHp * GORM.litterTo) { e.phase = 2; e.y = floor; e.mode = 'rise'; e.modeT = 1.3; e.h = 60; c.number(e.x, e.y - 36, GORM_SAY.litter, '#ff6b6b'); c.sfx.heavy && c.sfx.heavy(); c.sfx.crack && c.sfx.crack(); c.shake(8); c.zoom(1.12, 0.4); c.burst(e.x, e.y, 16, ['#8b6a2a', '#c9b27c', '#c9463d'], 80, 0.7); return; }
     if (e.mode === 'chargeTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'charge'; e.modeT = GORM.chargeT; e.cdir = Math.sign(d) || e.dir || -1; e.chargeHit = false; c.sfx.bellow && c.sfx.bellow(); c.sfx.rattle && c.sfx.rattle(1); } return; }
     if (e.mode === 'charge') { e.x += e.cdir * GORM.chargeV * dt; e.face = e.cdir; if (Math.random() < dt * 30) c.part({ x: e.x - e.cdir * 30, y: e.y + 8, vx: -e.cdir * 60, vy: -30, life: 0.3, max: 0.3, col: '#c9b27c', size: 2, grav: 200 });
-      if (!e.chargeHit && !P.dead && ad < 36 && P.y > e.y - 30 && P.y <= e.y + 12) { e.chargeHit = true; c.damage(e.x, c.dmg.litter, { unblockable: true, up: true, name: 'THE LITTER' }); P.vx = e.cdir * 300; P.vy = -180; P.ground = false; c.number(P.x, P.y - 24, GORM_SAY.runDown, '#ff6b6b'); c.shake(5); }
+      if (!e.chargeHit && !P.dead && ad < 32 && P.y > e.y - 24 && P.y <= e.y + 12) { e.chargeHit = true; c.damage(e.x, c.dmg.litter, { unblockable: true, up: true, name: 'THE LITTER' }); P.vx = e.cdir * 300; P.vy = -180; P.ground = false; c.number(P.x, P.y - 24, GORM_SAY.runDown, '#ff6b6b'); c.shake(5); }
       if (e.x <= A.x0 + 50 || e.x >= A.x1 - 50 || e.modeT <= 0) { e.x = Math.max(A.x0 + 50, Math.min(A.x1 - 50, e.x)); e.mode = 'carried'; e.modeT = 0.9; e.dir = -e.cdir; c.shake(6); c.sfx.heavy && c.sfx.heavy(); c.sfx.crack && c.sfx.crack(); c.dust(e.x + e.cdir * 30, floor, 10); } return; }
     if (e.mode === 'grabTell') { e.face = Math.sign(d) || e.face; if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = 0.35; e.grabT = GORM.grabEvery; grab(); } return; }
     if (e.mode === 'grab') { if (e.modeT <= 0) { e.mode = 'carried'; e.modeT = 0.6; } return; }
     if (e.mode === 'carried' && e.modeT <= 0 && !P.dead) {
       if (e.hornT <= 0 && !boarUp) { horn(); return; }
-      if (e.chargeT <= 0 && ad > 40 && Math.abs(P.y - floor) < 40) { e.mode = 'chargeTell'; e.modeT = GORM.chargeTell; e.chargeT = GORM.chargeEvery; c.number(e.x, e.y - 40, '!!', '#ff6b6b'); c.sfx.kingLaugh && c.sfx.kingLaugh(); return; }
+      if (e.chargeT <= 0 && ad > 60 && Math.abs(P.y - floor) < 40) { e.mode = 'chargeTell'; e.modeT = GORM.chargeTell; e.chargeT = GORM.chargeEvery; c.number(e.x, e.y - 40, '!!', '#ff6b6b'); c.sfx.kingLaugh && c.sfx.kingLaugh(); return; }
       if (e.grabT <= 0 && ad > 8 && ad < GORM.grabReach && P.y > e.y - 30 && P.y <= e.y + 4) { e.mode = 'grabTell'; e.modeT = GORM.grabTell; c.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); c.sfx.charge && c.sfx.charge(); return; } }
     if (e.mode !== 'carried') e.mode = 'carried';
-    e.face = Math.sign(d) || e.face; e.dir = e.dir || -1; e.x += e.dir * GORM.walkV * 0.82 * dt; if (e.x < A.x0 + 60) e.dir = 1; if (e.x > A.x1 - 60) e.dir = -1;
+    /* the bearers carry him at you (a lumbering pace), and stand when he is near enough to reach for you */
+    e.face = Math.sign(d) || e.face; e.dir = Math.sign(d) || e.dir || -1; if (ad > 44) e.x += e.dir * GORM.walkV * 0.8 * dt; e.x = Math.max(A.x0 + 50, Math.min(A.x1 - 50, e.x));
     return;
   }
   /* ON HIS FEET */

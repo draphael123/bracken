@@ -62,7 +62,7 @@ export function pacing(lv, o = {}) {   /* o.hero (claude/reachcore, opt-in): the
       for (let k = 2; k <= 10; k++) for (let dy = -3; dy <= 4; dy++) { const x = ux + gu.dir * k, y = uy + dy; if (x < 0 || y < 0 || x >= W || y >= H) continue; const v = y * W + x; if (foot[v] && !stamp.has(v)) { stamp.add(v); a.push(v, k); } } }
     adjCache.set(u, a); return a; };
   const bridges = new Map();   /* u -> [[v, w]]: a way on the model cannot see (a gust, a creature chain, a ride it does not know) */
-  const gate = ents.find(e => e.t === 'gate'), A = L.arena;
+  const gate = ents.find(e => e.t === 'gate'), A = L.lastArena || L.arena;   /* (claude/gorm2) L.lastArena: a fight in two rooms ends in the second (KING GORM: his hall, the burning wood, his glade) - the route runs to where it ends */
   let s0 = settle(L.START.x, L.START.y);
   /* THE END IS THE FIGHT. Several levels stand their gate at the arena door, so a route to the gate stops short of the boss */
   const goalXY = A && A.carpet && L.carpetAt ? [Math.floor(L.carpetAt.x / TS), Math.round(L.carpetAt.y / TS)]   /* A CARPET FIGHT starts where you board the carpet: the Falling Tower's is at the top of its spiral stair (2026-09-29), and the sky over the parapet is not the way to it */

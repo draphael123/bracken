@@ -1,4 +1,4 @@
-import {breathCapacity} from './deepair.js';
+import {breathCapacity} from './deepair.js'; import { gormHands, gormSkipRun } from './lab-gorm.js';   /* (claude/gorm2) KING GORM 2 played: his hall's rocks and ropes, his glade's hangings, the escape skipped to his glade */
 import { AMBUSH_TARGET } from './ambush.js';
 import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate, ROLL_COST } from './commit.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
@@ -698,7 +698,7 @@ async function runbossLab(BK, opts) {
        paladin for a second on whatever he is dropped on, and at the Roc's door that is the glass over the shaft */
     BK.reset();
     /* A LEVEL'S MINI, fought the same way: opts.mini puts the bot in L.mini's room against L.mini's boss, not the arena's */
-    const L = BK.L, A = opts.mini ? L.mini : L.arena; out.progress++;
+    const L = BK.L; let A = opts.mini ? L.mini : L.arena; out.progress++;   /* (claude/gorm2: let - KING GORM's fight moves from his hall to his glade) */
     if (!A) { rows.push({ lvl: lvId, h, skipped: opts.mini ? 'no mini' : 'no arena' }); continue; }
     /* A MINI IS THE ONE MARKED mini: the Weaver's level has small spiders, the Boatswain's ship has bosuns, the Overman's tomb has propmen - the first of the kind found was one of those */
     const boss = BK.enemies().find(e => e.t === A.boss && e.alive && (!opts.mini || e.mini));
@@ -764,7 +764,8 @@ async function runbossLab(BK, opts) {
     /* (claude/botreads, v2) A TOLD RUN: a charge / rush / bash / ride whose TELL was read (seen within the last 1.5 s) is known to be coming, so the hands answer it
        on its BODY - drawn, moving at you - from the frame it moves, not only once the running pose itself has been seen a reaction late */
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
-    for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;   /* (claude/owl2) */
+    for (; f < maxF && boss.alive && (!normalHealth || !P.dead); f++) { let owlDuck = false;
+      if (boss.t === 'king' && gormSkipRun(BK)) { A = BK.L.arena; BK.sim(20); }   /* (claude/gorm2) HIS P1 BAR EMPTIED: the burning wood is walked by the level's walker, not here - the hero goes on to his glade as the flee left him */   /* (claude/owl2) */
       if (LABP.v2 && boss.mode) v2Told[boss.mode] = f;
       if (LABP.v2 && LABP.drinkAt > 0 && BK.drinkFlask && botShouldDrinkBig(P, LABP)) BK.drinkFlask();   /* (claude/survival) the human drinks under drinkAt of the bar, a flask held */
       { const bm = boss.mode || '';   /* (claude/herobots) what the Death Knight has SEEN of the boss's rhythm: when a tell was last up, and when the blow it told ended (his punish window) */
@@ -2421,11 +2422,7 @@ async function runbossLab(BK, opts) {
       /* LURE THE CROWN UNDER A CAGE. While closed, stand beyond the cage without applying sword spacing to that
          destination. The open branch above closes to sword reach after a catch. The cage activation below is an
          environmental lab assist, not evidence that the pilot climbed to and operated its pressure plate. */
-      else if (boss.t === 'king') { const cages = BK.props().filter(c => c.t === 'dropcage' && c.boss && !c.dropped);
-        const c = cages.sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; goal = c ? c.x + (boss.x > c.x ? -60 : 60) : boss.x; strike = false;
-        // his cages drop from pressure plates up on the scaffold, where the bot cannot climb: when he walks under one, it drops it, as a player on that plate would
-        /* opts.noCage takes the cage hand away, which is how the above was found: without it, zero swings and 100% of him */
-        const under = opts.noCage ? null : cages.find(q => Math.abs(q.x - boss.x) < 18); if (under) { under.dropped = true; under.landed = 0; if (under.hit) under.hit.clear(); under.resetT = 5; } }
+      else if (boss.t === 'king') { const gh = gormHands({ BK, boss, P, k, A, h, f }); if (gh) { goal = gh.goal; strike = gh.strike; } else { goal = boss.x; strike = true; } }   /* (claude/gorm2) src/lab-gorm.js: nothing dropped for the bot any more - it brings the archers down with rocks and cuts the pegs itself */
       /* THE GOBLIN QUEEN, played as her court teaches it (docs/briefs/goblin-queen-court.md, 2026-09-29). She holds court beside the standing
          pillar nearest you, on its far side: so WAIT BY A PILLAR, crack it twice while she is away from it, and when she lands beside it and points,
          the third blow - it totters, and comes down on her. In her second round the pillars are down: a blow to her back while she points cracks her

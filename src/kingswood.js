@@ -222,9 +222,9 @@ export function buildKingswood({ painter, T, TS }) {
   for (const c of [9, 22, 35, 44]) plank(ax(c), ax(c) + 2, 11);
   for (const c of [14, 26, 40]) plank(ax(c), ax(c) + 2, 8);
   for (const c of [9, 18, 27, 36, 45]) plank(ax(c), ax(c) + 5, 5);
-  /* (claude/gorm2) five cages under the decks, each on a ROYAL ROPE to a PEG on the floor four tiles west of it. Two RAFTER ARCHERS file onto the deck of the live one
+  /* (claude/gorm2) five cages under the decks, each on a ROYAL ROPE tied off to TWO PEGS on the floor, three tiles either side of it. Two RAFTER ARCHERS file onto the deck of the live one
      and hold its rope (src/gorm-hands.js): bring them down (the scaffold, or a ROCK from a heap) and its peg drops the cage - on his head, HELD (x2). Three heaps of the
-     court's cobbles (E takes one, UP lobs it to a deck). The plates are gone (Daniel 10-22: the cages move from plates to ropes) */
+     court's cobbles at the hall's two ends (E takes one, UP lobs it to a deck). The plates are gone (Daniel 10-22: the cages move from plates to ropes) */
   const HALL_CAGES = [12, 21, 30, 39, 48];
   for (const c of HALL_CAGES) ent('dropcage', ax(c), 7, { boss: true });
   coins([ax(10), 10], [ax(23), 10], [ax(36), 10], [ax(15), 7], [ax(27), 7], [ax(41), 7], [ax(11), 4], [ax(20), 4], [ax(29), 4], [ax(38), 4], [ax(47), 4]);
@@ -273,20 +273,20 @@ export function buildKingswood({ painter, T, TS }) {
   const glade = { x0: G0 * TS, x1: G1 * TS, floor: 14 * TS, trigger: (G0 + 6) * TS, wallL: G0 - 1, wallR: G1 + 1, boss: 'king', music: 'gorm', tint: '#d9583c', tintA: 0.14, fx: 'embers', glade: true };
   /* (claude/gorm2) KING GORM 2's data (src/gorm-hands.js): his hall's ropes, decks, archers' marks and heaps; the burning wood's fire line, burning floors and branches; the glade's oak and hangings */
   const gorm = {
-    hall: { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, order: [1, 3, 0, 4, 2], heaps: [ax(3), ax(25), ax(52)].map(c => c * TS + 8),
-      ropes: HALL_CAGES.map(c => ({ x: ax(c) * TS + 8, pegX: (ax(c) - 4) * TS + 8, deck: [ax(c - 3) * TS, (ax(c + 2) + 1) * TS, 5 * TS], archers: [ax(c - 2) * TS + 8, ax(c + 1) * TS + 8] })) },
+    hall: { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, order: [1, 3, 0, 4, 2], heaps: [ax(3), ax(53)].map(c => c * TS + 8),
+      ropes: HALL_CAGES.map(c => ({ x: ax(c) * TS + 8, pegs: [(ax(c) - 3) * TS + 8, (ax(c) + 3) * TS + 8], deck: [ax(c - 3) * TS, (ax(c + 2) + 1) * TS, 5 * TS], archers: [ax(c - 2) * TS + 8, ax(c + 1) * TS + 8] })) },
     run: { x0: 490 * TS, fireMax: 588 * TS, cpX: 593 * TS, burn: [[512, 541, 14], [569, 584, 16]], branches: [[500, 14], [528, 10], [545, 14], [553, 14], [579, 9], [591, 10]].map(([x, y]) => ({ x: x * TS + 8, y: y * TS })) },
     glade: { trunkX: 624 * TS + 8, stumpX: 631 * TS, lodgeX: 606 * TS, boughs: [[0, 4 * TS, 300, -1], [0, 5 * TS, 330, 1], [0, 2 * TS, 200, -1], [0, 3 * TS, 220, 1]],
-      hangs: [{ id: 'gladeLog', kind: 'log', x: 605 * TS, top: 3 * TS, y0: 8 * TS, pegX: 609 * TS + 8, pegY: 14 * TS, roll: 1 },
-        { id: 'gladeCageA', kind: 'cage', x: 614 * TS, top: 4 * TS, y0: 8 * TS, pegX: 618 * TS + 8, pegY: 14 * TS },
-        { id: 'gladeHive', kind: 'hive', x: 627 * TS, top: 4 * TS, y0: 7 * TS, pegX: 623 * TS + 8, pegY: 14 * TS },
-        { id: 'gladeCageB', kind: 'cage', x: 639 * TS, top: 5 * TS, y0: 8 * TS, pegX: 635 * TS + 8, pegY: 14 * TS }] },
+      hangs: [{ id: 'gladeLog', kind: 'log', x: 605 * TS, top: 3 * TS, y0: 8 * TS, pegs: [609 * TS + 8], pegY: 14 * TS, roll: 1 },
+        { id: 'gladeCageA', kind: 'cage', x: 614 * TS, top: 4 * TS, y0: 8 * TS, pegs: [611 * TS, 617 * TS], pegY: 14 * TS },
+        { id: 'gladeHive', kind: 'hive', x: 627 * TS, top: 4 * TS, y0: 7 * TS, pegs: [624 * TS, 630 * TS], pegY: 14 * TS },
+        { id: 'gladeCageB', kind: 'cage', x: 639 * TS, top: 5 * TS, y0: 8 * TS, pegs: [636 * TS, 642 * TS], pegY: 14 * TS }] },
   };
   const arena = { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'king', music: 'gorm', tint: '#c9463d', tintA: 0.12, fx: 'embers' };
   const mini = { x0: 176 * TS, x1: 198 * TS, floor: 26 * TS, trigger: 181 * TS, wallL: 175, gate: 199, boss: 'greathound' };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [], moversExtra: movers,
-    arena, mini, kwood: true, hoists, glade, gorm,
+    arena, mini, kwood: true, hoists, glade, gorm, lastArena: glade,
     reachDoors: [{ x0: 410, x1: 410, y0: 4, y1: 13 }],   /* THE COURT GATE: its plate is on the road's step before it (the fill counts it open) */
     procession: { id: 'court', trigger: 318, exit: 316, dir: -1 },
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
