@@ -1,3 +1,4 @@
+import { admitBrowser } from './browser-admission.mjs';
 // tools/check-pool.mjs - THE SAME CHECKS, WITH A SMALL NUMBER OF HANDS.
 // The parent keeps every answer until that check finishes: two tools may work together, but their words never mix.
 // Each hand has one port and one long-lived server. Page tools still ask cdp.mjs whether that server serves this checkout.
@@ -62,7 +63,12 @@ async function startServer(root, port) {
   child.kill(); throw new Error('worker server did not come up on port ' + port + ' (or that port belongs to another checkout)');
 }
 
-export function execute(job, root, port) {
+export async function execute(job, root, port) {
+  // Synthetic supervisor self-tests use inline Node programs and allocate no browser.
+  if (job.args.some(a=>/^tools[\\/].+\.mjs$/.test(a)) && !job.browserRun && !['profile-cleanup','profile-leaks','profile-sweep'].includes(job.name) && usesBrowser(job.name,root)) {
+    try { await admitBrowser({onWait:r=>{console.log('[resource] '+job.name+' waiting: '+r.available+' MB free, needs '+r.required+' MB');job.onWait?.(r);}}); }
+    catch(e){if(!e.resourceStop)throw e;return{name:job.name,ok:false,interrupted:true,resourceStop:true,exitCode:null,signal:null,ms:0,memory:{totalMb:0,rendererMb:0},last:e.message,out:[e.message]};}
+  }
   return new Promise(resolveResult => {
     const t0 = Date.now(), attempt = randomUUID(), stdout = [], stderr = [], child = spawn(job.cmd, job.args, { cwd: root, stdio: ['ignore', 'pipe', 'pipe'],
       env: { ...process.env, ...job.env, BRACKEN_CHECK: job.name, BRACKEN_ATTEMPT: attempt, PORT: String(port) } });
@@ -99,6 +105,7 @@ export function execute(job, root, port) {
 /* One browser per occupied browser slot; cdp.mjs makes a fresh browser context for every openPage call. A worker can
    borrow the same Chrome again on its next check without borrowing the last check's storage. */
 async function startBrowser() {
+  await admitBrowser();
   const exe = browserExecutable(); if (!exe) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER)');
   const run = launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run',
     '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), 'about:blank'], 'look');
@@ -154,7 +161,7 @@ export async function runPool(rows, { ROOT, jobs, maxBrowsers, portFor, onDone =
         else { await clearContexts(b.port); b.before = await b.run.sampleMemory(); }
       }
       return result; }
-    catch (e) { return { name: job.name, ok: false, interrupted: true, ms: 0, last: e.message, out: [e.stack || String(e)] }; }
+    catch (e) { return { name: job.name, ok: false, interrupted: true, ...(e.resourceStop ? {resourceStop:true} : {}), ms: 0, last: e.message, out: [e.stack || String(e)] }; }
     finally { if (browserSlot !== null) browserSlots.delete(browserSlot); } };
   try {
     while ((!shouldStop() && regular.length) || busy.size) {

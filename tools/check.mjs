@@ -316,8 +316,8 @@ const progress = openProgress(path, { identity: sourceIdentity(ROOT), expected, 
 process.env.BRACKEN_PROCESS_LOG = progress.path + '.processes.jsonl';
 console.log('[progress] ' + progress.path + (RESUME ? ' (retaining ' + progress.completed.size + ' verdicts)' : ''));
 const active = new Map(); let stopping = false;
-const onStart = (name, pid) => { active.set(name, pid); progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); };
-const done = r => { active.delete(r.name); live(r.name, r.ok, r.ms, r.interrupted); progress.done(r); };
+const onStart = (name, pid) => { delete progress.state.waiting; active.set(name, pid); progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); };
+const done = r => { delete progress.state.waiting; if(r.resourceStop) stopping = true; active.delete(r.name); live(r.name, r.ok, r.ms, r.interrupted); progress.done(r); };
 const stop = () => { stopping = true; for (const pid of active.values()) killTreeSync(pid); };
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) try { process.on(sig, stop); } catch {}
 const onExit = () => { try { progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); } finally { progress.close(); } };
@@ -331,7 +331,7 @@ try {
   if (JOBS > 1) await runPool(pending, { ROOT, jobs: JOBS, maxBrowsers: MAX_BROWSERS, portFor,
     recycleEvery: RECYCLE_EVERY, onStart, onDone: done, shouldStop: () => stopping });
   else for (const r of pending) { if (stopping) break;
-    done(await execute({ ...r, onStart: pid => onStart(r.name, pid) }, ROOT, +(r.env?.PORT || portFor(0))));
+    done(await execute({ ...r, onWait:info=>{progress.state.waiting={name:r.name,...info};progress.snapshot();}, onStart: pid => onStart(r.name, pid) }, ROOT, +(r.env?.PORT || portFor(0))));
   }
 } catch (e) { progress.state.fatal = e.stack || String(e); console.error('SUITE INTERRUPTED: ' + progress.state.fatal); }
 finally {
