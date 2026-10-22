@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        variant: [gradient-direct, room-uncull]
+        variant: [baseline-control, renderer-direct]
     steps:
       - uses: actions/checkout@v4
         with:
