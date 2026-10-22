@@ -1,6 +1,17 @@
 [
   {
     "date": "2026-10-22",
+    "batch": 114,
+    "lines": [
+      "The Fen Road rebuilt: lay planks to finish the road",
+      "Stilt-walkers stomp, bog leeches bite",
+      "A new swamp look for the Fen Road",
+      "Ranger bow charges in three tiers",
+      "Co-op shows every player hero and level"
+    ]
+  },
+  {
+    "date": "2026-10-22",
     "batch": 113,
     "lines": [
       "Stockade looks better, no more stray glow blobs",
