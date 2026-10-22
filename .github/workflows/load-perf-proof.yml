@@ -1,0 +1,36 @@
+name: load-perf-proof
+on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/load-perf-proof.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1,2,3,4,5,6,7,8]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Profile campaign entries and live arenas at four-times CPU throttle
+        env:
+          SHARD: ${{ matrix.shard }}
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          timeout --signal=TERM --kill-after=30s 25m node tools/load-perf-probe.mjs --shard="$SHARD/8" 2>&1 | tee gate-data/probe.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: load-perf-${{ matrix.shard }}
+          path: gate-data/
+          if-no-files-found: error
