@@ -158,7 +158,7 @@ export function buildFenRoad({ painter, T, TS }) {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, gateAfterBoss: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
     waterHurts: true, noStack: true, sagCells, machineCells: [...sagCells, ...machine].map(([x, y]) => y * W + x),
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
-    music: 'sleepers', duskStart: undefined,
+    music: 'fenroad', duskStart: undefined,
     palette: { dress: 'marsh', haze: 'rgba(160,170,150,0.30)', grass: '#5a7a4a', grassL: '#86a86a', grassD: '#3a5232', dirt: '#3e3226', dirtL: '#57473a', dirtD: '#2a2018', sky: [[120, 128, 132], [176, 180, 164]], canopy: ['#2a3a2e', '#34483a', '#405844', '#4e6a50'] },
     weather: [{ x0: 0, x1: 99999, kind: 'mist' }],
     fog: [{ x0: 215 * TS, x1: 300 * TS, alpha: 0.22 }],
