@@ -2,7 +2,7 @@
 
 Base master 5e44cddd (BATCH112). Brief: scratch/brief-chargetiers-1021.md (Daniel 10-21, approved). PORT 8789, one headless Chrome at a time.
 Commits: **342dca1c** (Ranger) + **8fa9681d** (ranger report, boss-run tier column) - the Ranger ships on its own from these two.
-**0ffa803f** + the final commit (Berserker + Geomancer, bot-hand fixes) follow on the same branch.
+**0ffa803f** + **0206c013** + **8b697caa** (Berserker + Geomancer, bot-hand fixes, this report) follow on the same branch.
 
 ## THE SHARED PIECE: ONE TIER METER (bkfeel's, made general)
 The Blood Knight's five-segment meter is now `drawTierMeter` in main.js (drawBkMeter calls it with his numbers - his look is unchanged, blood-kit green). Every tiered hero gets: n segments over the head, each filling over its own stretch of the hold, lit in the tier's colour with a white top edge, a white pop on the newest, the tier's NAME over it, and an optional blinking underline (BK: BLOOD-FED; ranger: FOCUSED; berserker: RAGE winds them quicker; geomancer: EMPOWERED). Each tier also arrives with its own note (SFX.rgTier / bzTier / geoTier), a ring at the weapon, a body ring from T2, a breath of the hero's colour (P.rpTintT), and a small shake on T3. Held at T3 for a little longer, the blow goes by itself.
