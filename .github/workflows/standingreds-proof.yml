@@ -4,11 +4,29 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor]
         default: prove
 permissions:
   contents: read
 jobs:
+  moor:
+    if: inputs.mode == 'moor'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/gust-hands-selftest.mjs
+      - run: node tools/gust-hands-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: moor-gust-proof
+          path: gate-data/moor/
   trace-calibrate:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'trace-calibrate'
     runs-on: ubuntu-latest

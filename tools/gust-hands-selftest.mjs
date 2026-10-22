@@ -1,0 +1,5 @@
+import{makeGustHands}from'./gust-hands.mjs';import assert from'node:assert/strict';
+let cleared=0;const bk={state:'play',time:0,P:{x:120,y:80,ground:true,hp:80},L:{gusts:[{x0:100,x1:200,y0:0,y1:100,period:5,on:1.8,phase:0,told:true,shove:220}]},keys:{right:true,jump:true},unpress(){cleared++;}};
+const body=JSON.stringify(bk.P),level=JSON.stringify(bk.L),h=makeGustHands(bk);assert(h.step(180));assert(bk.keys.down);assert.equal(bk.keys.jump,false);assert.equal(bk.keys.right,false);assert.equal(cleared,1);assert.equal(JSON.stringify(bk.P),body);assert.equal(JSON.stringify(bk.L),level);
+bk.time=2.2;assert.equal(h.step(180),false);bk.time=4.5;assert(h.step(180));bk.P.ground=false;assert.equal(h.step(180),false);bk.P.ground=true;bk.L.gusts[0].arena=true;assert.equal(h.step(180),false);bk.L.gusts[0].arena=false;bk.state='card';assert.equal(h.step(180),false);assert.equal(h.waited,2);
+console.log('PASS gust hands: ordinary crouch only during told/on ground gusts; no body/level writes, no airborne or arena override');
