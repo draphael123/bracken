@@ -55,7 +55,19 @@ shard 16: 27 checks, estimated 14.4 min
 - The same run exposed shallow history missing the slopes check's pre-swap commit 9e0e28a. Shards now
   fetch full history. Runner Node is pinned to local v24.11.1 rather than allowing different patch versions
   across shards. Live full-history/Node/annotation recheck completed in run 39784695367 at 44521b7ab67c04a1adda497350c39f37c4235665: all 425 verdicts, 17 game reds. The old mover and Linux cleanup pass. The merged artifact was downloaded and parsed. Public unauthenticated read-back of check-run 119856924058 annotations verified an overview naming all 17 failures plus detail; receipt retained outside git in work/ci-proof-39784695367/public-annotation-receipt.json.
-- Full local serial comparison remains Partial. The saved suite has passed its former 348-check crash point, survived the app restart, and retained finished verdicts. Browser/resource interruptions and some platform-specific verdict differences remain under investigation. I initially inferred other Bracken lanes were active from low free RAM; process inspection did not support that inference. No other active Bracken test browsers were found. No user app or unrelated process was stopped.
+- Full local serial comparison remains Partial. The source-bound Task 2 checkpoint at `5fbe8e4a` retains
+  391 completed verdicts (376 PASS / 15 FAIL), 33 interrupted attempts and a final active profile-leaks child
+  whose parent later disappeared. Last update 2026-10-22T17:46:56.650Z; parent/child were verified absent at
+  19:12 UTC. The unchanged original receipt is incomplete; no verdict is inferred for that final child.
+- Comparison receipt: 381 of 391 finished local verdicts match the complete Linux run; 10 differ and 34
+  have no local verdict. Local PASS/cloud FAIL: cdp-recovery, small-adds, archmage-folly, tower-chase.
+  Local FAIL/cloud PASS: fire-room, archmage-interrupt, fallingtower2, fallingtower2-keys, walk-controls,
+  whatsnew. Five of the latter have empty output coinciding with restart; their cause is Unknown because
+  the old receipt did not retain child exitCode/signal. Task 2 now retains those fields for future attempts.
+  Some checker prerequisite code differs between the sources; this is not exact-source equivalence proof.
+- I initially inferred other Bracken lanes were active from low free RAM. Process inspection did not
+  support that inference: no other active Bracken test browsers were found. No user app or unrelated
+  process was stopped. Retain the gate-comparison.json handoff as evidence of the unresolved comparison.
 
 No Linux exceptions have been introduced. The live run must establish platform compatibility; configuration alone
 does not prove it. Full equivalence and Task 1 completion must not be claimed until the comparator passes.
