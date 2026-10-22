@@ -30,7 +30,7 @@ export const STILT = {
 };
 export const SW_SAY = { topple: 'A STILT CUT: HE TOPPLES', knocked: 'THE PLANK TAKES HIS STILTS', stomp: 'HIS STILT COMES DOWN: STEP OUT' };
 /* THE POSE IDS (the art lane's contract, claude/fenroad2): one frame each - the sheet's index */
-export const SW_POSE = { idle: 0, liftA: 1, liftB: 2, jabTell: 3, jab: 4, horn: 5, topple: 6, down: 7, lowA: 8, lowB: 9, stabTell: 10, stab: 11, hurt: 12, stompTell: 13, stomp: 14 };
+export const SW_POSE = { idle: 0, liftA: 1, liftB: 2, jabTell: 3, jab: 4, horn: 5, topple: 6, down: 7, lowA: 8, lowB: 9, stabTell: 10, stab: 11, hurt: 12, stompTell: 13, stomp: 14, riseA: 15, riseB: 16, reachA: 17, reachB: 18, plant: 19 };   /* (claude/fenroad2art) 15-19: the walk cycle's in-betweens - the foot off the boards, reaching, and the LANDING (dust) */
 /* the blow that cuts a stilt: a LOW blow (main.js's blow tags) - the low sweep and the running slide ('sweep'), or a HEAVY struck from the ground */
 export const cutsStilt = (blow, heroGround) => { const has = v => blow === v || (Array.isArray(blow) && blow.includes(v)); return has('sweep') || (has('heavy') && !!heroGround); };
 export const newStilt = (x, y, o = {}) => ({ kind: 'stiltwalker', x, y, face: o.face || -1, mode: 'walk', t: 0, cd: 0.8 + (Math.floor(x) % 4) * 0.2, frame: 0, stilts: true, horn: !!o.horn, hornT: 0, blown: false, seen: false,
@@ -53,7 +53,7 @@ export function stiltStep(s, w, dt) {
       if (ad < 260 && Math.abs(dy) < 80) s.seen = true;
       /* ON HIS FEET (planted): the horn, the stomp on a hero under him, the jab - all from both stilts down */
       if (s.ph === 'plant') {
-        s.frame = SW_POSE.idle; s.footX = null;
+        s.frame = s.fresh && s.phT > STILT.plant - 0.16 ? SW_POSE.plant : SW_POSE.idle; if (s.phT <= STILT.plant - 0.16) s.fresh = false; s.footX = null;
         if (sees) s.face = Math.sign(dx) || s.face;
         /* THE HORN: he must SEE you (on the screen with him, the Stockade's rule), then he winds it */
         if (s.horn && !s.blown && ad < STILT.hornSee && Math.abs(dy) < 120) { s.mode = 'hornTell'; s.hornT = 0; s.frame = SW_POSE.horn; ev('tell', { what: 'horn' }); break; }
@@ -65,11 +65,11 @@ export function stiltStep(s, w, dt) {
         s.ph = 'lift'; s.phT = STILT.lift; s.want = want; s.leg = 1 - s.leg; s.liftX = s.x; s.footX = s.x + want * STILT.stride; if (!sees) s.face = want;
         break; }
       /* THE LIFT: he moves over the raised stilt; down it comes with a STOMP */
-      s.frame = s.leg ? SW_POSE.liftB : SW_POSE.liftA;
+      { const p = 1 - Math.max(0, s.phT) / STILT.lift; s.frame = s.leg ? (p < 0.28 ? SW_POSE.riseB : p < 0.7 ? SW_POSE.liftB : SW_POSE.reachB) : (p < 0.28 ? SW_POSE.riseA : p < 0.7 ? SW_POSE.liftA : SW_POSE.reachA); }   /* (claude/fenroad2art) rise, high step, reach */
       s.x += s.want * (STILT.stride / STILT.lift) * dt; s.phT -= dt;
       if (s.phT <= 0) { s.ph = 'plant'; s.phT = STILT.plant;
         if (Math.abs(s.x - s.liftX) < 2) s.pdir = -s.pdir;   /* stopped at an edge: his beat turns back */
-        ev('step', { x: s.x + s.want * 4, y: s.y }); s.footX = null; }
+        ev('step', { x: s.x + s.want * 4, y: s.y }); s.footX = null; s.fresh = true; }
       break; }
     case 'hornTell': s.frame = SW_POSE.horn; s.hornT += dt; if (ad > STILT.hornSee * 1.5) { s.hornT = Math.max(0, s.hornT - dt * 2); if (s.hornT <= 0) s.mode = 'walk'; }
       if (s.hornT >= STILT.horn) { s.blown = true; s.mode = 'recover'; s.t = 0.6; ev('horn'); } break;

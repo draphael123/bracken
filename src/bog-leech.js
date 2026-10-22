@@ -82,7 +82,9 @@ export function leechTake(e) {
 export const leechShown = e => e.mode !== 'lurk';
 export const leechFrame = e => e.hurtT > 0 && e.mode !== 'latched' ? LEECH_POSE.hurt : e.mode === 'rear' ? LEECH_POSE.rear : e.mode === 'lunge' || e.mode === 'home' ? LEECH_POSE.lunge : e.mode === 'latched' ? LEECH_POSE.latched : e.mode === 'flop' ? LEECH_POSE.flop : LEECH_POSE.lurk;
 /* ---------- GREYBOX SHEET (the art lane draws it: LEECH_POSE is the contract) - a fat dark-olive leech, ringed segments, a pale belly, a round sucker mouth ringed with teeth ---------- */
-export function bakeLeech(canvas, flipX, whiten) {
+import { bakeLeechSheet } from './redraw/bog_leech_art.js';   /* (claude/fenroad2art) the drawn sheet */
+export function bakeLeech(canvas, flipX, whiten) { return bakeLeechSheet(canvas, flipX, whiten, LEECH); }
+export function bakeLeechGreybox(canvas, flipX, whiten) {
   const CW = 24, CH = 16, ax = 12, ay = 15, frames = [];
   const C = { body: '#3e4a2a', bodyL: '#5a6a3a', bodyD: '#262e1a', belly: '#8a8a5a', ring: '#c06060', mouth: '#2a0e0e', eye: '#e8e0a0', out: '#141a0c' };
   const r = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); };
