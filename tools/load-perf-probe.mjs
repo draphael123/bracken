@@ -22,13 +22,19 @@ async function measure(pg,id,scene){
  const nodes=new Map(profile.nodes.map(n=>[n.id,n])),self=new Map();let total=0;
  profile.samples.forEach((sid,i)=>{const c=nodes.get(sid).callFrame,key=(c.functionName||'(anonymous)')+' '+c.url.split('/').pop()+':'+(c.lineNumber+1),t=profile.timeDeltas[i]||0;self.set(key,(self.get(key)||0)+t);total+=t;});
  row.top=[...self].sort((a,b)=>b[1]-a[1]).slice(0,16).map(([fn,us])=>({fn,percent:+(100*us/total).toFixed(2)}));
- console.log(id+' '+scene+' '+row.fps+' fps, '+row.busyMs+' ms/frame');return row;
+ console.log(JSON.stringify(row));return row;
 }
 for(const id of ids){
  console.log('START '+id+' controller pid='+process.pid);const pg=await openPage({audio:false,fonts:false,seed:1919});
  try{
   await pg.send('Emulation.setDeviceMetricsOverride',{width:915,height:412,deviceScaleFactor:2.625,mobile:true,screenOrientation:{type:'landscapePrimary',angle:90}});
   await pg.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await pg.send('Emulation.setCPUThrottlingRate',{rate:4});
+  // Match mobile-perf's cold mobile navigation. Booting desktop then changing metrics leaves
+  // desktop backing stores/settings and is not a valid phone baseline.
+  await pg.reload();
+  const display=await pg.evalp("({coarse:matchMedia('(pointer: coarse)').matches,megapixels:document.getElementById('c').width*document.getElementById('c').height/1e6,view:[BK.view.VW,BK.view.VH]})");
+  assert(display.coarse&&display.megapixels<=1.3,'the mobile renderer must be active: '+JSON.stringify(display));
+  console.log('display '+JSON.stringify(display));
   const arena=await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id===${JSON.stringify(id)}));BK.start();BK.state='play';BK.god=true;BK.P.inv=999;return BK.L.arena?JSON.parse(JSON.stringify(BK.L.arena)):null;})()`);
   await sleep(2000);report.rows.push(await measure(pg,id,'entry'));save();
   if(arena){await pg.evalp(`(()=>{const a=BK.L.arena;const x=a.start?a.start[0]*16+8:(a.x0+a.x1)/2;const y=a.start?(a.start[1]+1)*16:a.floor;BK.P.x=x;BK.P.y=y;BK.P.inv=999;BK.sim(120);BK.state='play';})()`);await sleep(2000);report.rows.push(await measure(pg,id,'arena'));save();}
