@@ -102,3 +102,19 @@ INCOMPLETE: recovery proof needs at least 1536 MB free; currently 945 MB. No bro
   failures. Three real cold-page cycles passed with a constant exit-listener count of one.
 
 These recommendations do not require a reply before safe independent work continues.
+
+## Continued proof: abandoned hero-art allocations
+
+The load-only wrapper missed setHero() and reset({fresh:true}), both of which bake a complete hero set.
+The unchanged levelling-runtime fixture repeatedly calls both while checking passive levels and text. Its load-only
+control hit 1829 MB and was correctly interrupted at the unchanged 1536 MB limit after 9924 ms.
+A lab-only wrapper now collects after each load and every four hero-art rebuild helpers; plain reset is not counted.
+No game source, RNG, inputs, assertions or timer/health/stamina values changed. gcLoads:false still opts out of ALL
+helper collection, retaining load-leak's unforced control. Serialized helper tests preserve this/args/return/throw
+identity and prove idempotence and load-only control behavior.
+
+Real unchanged levelling-runtime PASS: 221698 ms, peak renderer 1285 MB / owned browser tree 1859 MB,
+4029 passive reads and 234 level-up text cases. An every-call diagnostic also passed at 1069 MB / 227842 ms;
+batching retains the memory margin with fewer explicit collections. Receipts are in ../lab-collect-proof outside git.
+The full 425-check serial/sharded verification is being started from the following clean source checkpoint; the earlier
+incomplete source-bound checkpoint is preserved and is not relabeled or migrated.

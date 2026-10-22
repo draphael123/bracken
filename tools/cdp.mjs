@@ -1,3 +1,4 @@
+import { installLabCollection } from './lab-collect.mjs';
 // tools/cdp.mjs — THE PAGE, HEADLESS, FOR A TOOL. The same approach as tools/headless.mjs (the installed Chrome or Edge,
 // driven over the DevTools protocol with Node's own WebSocket), as a helper the readability tools share.
 //   const pg = await openPage();  await pg.evalp('BK.state');  pg.close();
@@ -117,10 +118,8 @@ export async function openPage(opts = {}) {
   const prepareLab = async () => {
     if (opts.noWait || process.env.BRACKEN_LAB_GC === '0') return;
     if (opts.gcLoads !== false) await evalp(`(()=>{
-      if (typeof gc !== 'function' || !window.BK || BK.load.__labGc) return false;
-      const load = BK.load;
-      BK.load = function(...args) { try { return load.apply(this, args); } finally { gc(); } };
-      BK.load.__labGc = true; return true;
+      if (typeof gc !== 'function' || !window.BK) return false;
+      return (${installLabCollection.toString()})(BK, gc, ${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load', 'setHero', 'reset'])});
     })()`);
     await send('HeapProfiler.collectGarbage');
   };
