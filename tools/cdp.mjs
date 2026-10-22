@@ -99,6 +99,11 @@ export async function openPage(opts = {}) {
   if (opts.fonts === false) blocked.push('https://fonts.googleapis.com/*', 'https://fonts.gstatic.com/*');
   if (opts.audioFiles === false) blocked.push(URL0 + 'audio/*');   /* layout-only tools still initialize audio to hide its banner, but decode no clips */
   if (blocked.length) { await send('Network.enable'); await send('Network.setBlockedURLs', { urls: blocked }); }
+  if (opts.cpuCanvas ?? (process.env.BRACKEN_CPU_CANVAS === '1')) await send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{
+    const get=HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext=function(type,opts){return get.call(this,type,type==='2d'?{...opts,willReadFrequently:true}:opts);};
+    window.__tfCpuCanvas=true;
+  })()` });   /* opt-in lab backend: apply textfit's existing CPU-canvas setup BEFORE the initial sprite bake too */
   /* opts.seed: THE PAGE'S Math.random IS A SEEDED STREAM, from the first script of every document (so it survives pg.reload()). The sim is
      fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */

@@ -4,11 +4,37 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context]
+        options: [prove, refresh, trace-probe, trace-context, canvas-memory]
         default: prove
 permissions:
   contents: read
 jobs:
+  canvas-memory:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'canvas-memory'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/lab-canvas-proof.mjs
+      - name: Original heavy checks with the same memory cap and assertions
+        env:
+          BRACKEN_CPU_CANVAS: '1'
+        run: node tools/check.mjs boss-openings,levelling-runtime,boss-fight-end,dances,slide,corpses --progress=gate-data/heavy.json
+      - name: Full-campaign levelcards, four loads per early-CPU page, three repetitions
+        env:
+          BRACKEN_CPU_CANVAS: '1'
+          TEXTFIT_BATCH: '4'
+        run: node tools/standingreds-proof.mjs textfit-levelcard gate-data/levelcards
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canvas-memory-proof
+          path: gate-data/
   standalone:
     if: github.event_name != 'workflow_dispatch' || inputs.mode == 'prove'
     runs-on: ubuntu-latest
