@@ -73,7 +73,7 @@ ok(Object.keys(ARCS).every(k => ARCS[k].exam), 'each verb has an exam in ARCS');
 
 // ---- THE PROCESSION ----
 const pr = L.procession, march = L.ents.filter(e => e.kw && e.kw.march === pr.id);
-ok(march.length === 6 && march.every(e => e.y === 13), 'six marchers on the carpet road: ' + march.map(e => e.t + '@' + e.x).join(' '));
+ok(march.length === 7 && march.every(e => e.y === 13), 'seven marchers on the carpet road: ' + march.map(e => e.t + '@' + e.x).join(' '));
 ok(Math.min(...march.map(e => e.x)) - pr.trigger >= 44, 'the court starts out of view of the trigger (44+ columns: a screen is 40)');
 { let open = true; for (let x = pr.exit; x <= Math.max(...march.map(e => e.x)); x++) for (const y of [12, 13]) if (L.grid[y * L.W + x] === T.SOLID || L.grid[y * L.W + x] === T.PORT) open = false;
   ok(open && L.grid[14 * L.W + pr.exit] === T.SOLID, 'the road is open from the court to its side gate (they walk it, nothing solid in their way)'); }
@@ -108,11 +108,11 @@ ok(['procCage', 'procLog'].every(id => H(id).cleat[1] === 9) && L.ents.some(e =>
   P.x = 330 * TS; P.y = 10 * TS; run(1, () => { for (const e of court) KH.marcher(e, 1 / 60); });
   ok(KH.read().proc.state === 'march', 'past the trigger the court marches');
   run(60, () => { for (const e of court) KH.marcher(e, 1 / 60); });
-  ok(court.every(e => !e.alive) && KH.read().proc.passed === 6 && KH.read().proc.done, 'a hero on the boughs is passed under: all six leave by the side gate (' + KH.read().proc.passed + ' passed)');
+  ok(court.every(e => !e.alive) && KH.read().proc.passed === 7 && KH.read().proc.done, 'a hero on the boughs is passed under: all seven leave by the side gate (' + KH.read().proc.passed + ' passed)');
   /* and a hero on the road turns the court */
   enemies.length = 0; const court2 = march.map(e => foe(e.t, e.x, e.y, { march: 'court', face: -1 })); const S2 = makeKingswoodHands(ctx); S2.reset();
   P.x = 340 * TS; P.y = 14 * TS; let turned = 0; for (let i = 0; i < 60 * 40 && !turned; i++) { S2.update(1 / 60); for (const e of court2) S2.marcher(e, 1 / 60); turned = court2.filter(e => e.alive && !e.march).length; }
-  ok(turned === 6, 'a hero on the road in front of the court turns all of it (' + turned + ' of 6)');
+  ok(turned === 7, 'a hero on the road in front of the court turns all of it (' + turned + ' of 7)');
 }
 console.log(bad ? '\nkingswood2: ' + bad + ' FAILED' : '\nok  kingswood2');
 process.exit(bad ? 1 : 0);

@@ -98,7 +98,7 @@ export function buildKingswood({ painter, T, TS }) {
   sign(93, 30, 'THE GATE CAPTAIN HOLDS THE ROAD. HIS CAGE HANGS OVER HIM; THE LEVER SWINGS THE RAM.');
   ground(105, 107, 34);                                                            /* the dip at his back (three deep: a knock-back costs the climb) */
   ground(108, 130, 31);
-  air(108, 114, 32, 33);                                                           /* THE GATEHOUSE CELLAR: a low burrow in off the dip (a pocket: the court's takings) */
+  air(99, 104, 32, 33);                                                            /* THE GATEHOUSE CELLAR: a low burrow back in under the gatehouse off the dip (a pocket: the court's takings; west, away from the way on) */
   coins([96, 29], [106, 32], [112, 29]);
   ent('torch', 114, 30); deco(110, 30, 'gobPennant', 0); plank(110, 116, 28); coins([112, 27], [115, 27]);
   ent('check', 118, 30);                                                           /* SHRINE ONE: the Royal Road's exam is behind you */
@@ -115,20 +115,20 @@ export function buildKingswood({ painter, T, TS }) {
   /* stand B: a jump up from A; its archer covers A */
   plank(143, 150, 28);
   plank(144, 147, 36); plank(146, 149, 33); plank(143, 146, 31);
-  foe('archer', 148, 27, 'standB', { face: -1 });
+  foe('archer', 148, 27, 'standB', { face: -1 }); foe('shield', 146, 27, 'standB', { face: -1 });   /* the deck's guard stands between you and the span's peg */
   /* THE GAP: eight wide, no jump crosses it. A log span hangs on a royal rope over it, its peg on B's deck: cut it and it lands across, a bridge (REQUIRED) */
   rope('standSpan', { x: 155, top: 19, hang: 24, cleat: [149, 27], load: 'span', span: [151, 158, 28] });
   sign(144, 27, 'NO JUMP CROSSES THIS GAP. A LOG HANGS OVER IT: CUT ITS PEG.');
   foe('hound', 141, 38, 'meadow', { face: 1 }); foe('hound', 155, 38, 'meadow', { face: -1 });
   /* stand C: past the span, an archer on its deck; a cage hangs under the deck over the meadow pack (cut it from the deck: optional, the ambush taught) */
   plank(159, 166, 28);                                                             /* (no ledge stair up C or D from the meadow: a fall past the gap walks back to B and climbs again - the span stays a lock) */
-  foe('archer', 165, 27, 'standC', { face: -1 });
+  foe('archer', 165, 27, 'standC', { face: -1 }); foe('thief', 161, 27, 'standC', { face: -1 });   /* (where the span sets you down) */
   rope('meadowCage', { x: 141, top: 21, hang: 25, cleat: [138, 29], load: 'cage' });   /* (over the gap between A and B: cut from A's deck, it falls on the pack in the meadow) */
   coins([152, 26], [155, 25], [158, 26]);
   air(124, 130, 36, 38); ent('silver', 125, 38); deco(128, 38, 'trophyRack', 0);   /* SILVER ONE: THE HUNTERS' HIDE, dug in under the road off the meadow (off the road: a fall, then the climb) */
   /* stand D: up again, and a rope swing over the last gap (the ledge road under it is the slow way) */
   plank(168, 174, 25);                                                             /* D's deck: a jump up from C */
-  foe('archer', 173, 24, 'standD', { face: -1 });
+  foe('archer', 173, 24, 'standD', { face: -1 }); foe('sprig', 170, 24, 'standD', { face: -1 });
   coins([170, 24], [176, 21], [180, 21]);
   /* THE KENNEL (THE HOUND MASTER, the area's exam - a mini, B18): the yard on the hill past the stands; walls close, the gate opens when he falls */
   ground(175, 214, 26);
@@ -166,7 +166,7 @@ export function buildKingswood({ painter, T, TS }) {
   coins([254, 17], [258, 13]);
   /* THE CANOPY ROAD: a log trap down the road through a hound and a shield, then THE CAGE-WARDEN (the area's exam, an elite) under a plate's cage, the fall at his back */
   plank(262, 267, 8); plank(276, 283, 8); coins([264, 7], [279, 7]);              /* the canopy's high boughs */
-  rope('canopyLog', { x: 270, top: 4, hang: 7, cleat: [265, 10], load: 'log', roll: 1, rollMax: 16 });
+  rope('canopyLog', { x: 270, top: 4, hang: 7, cleat: [267, 10], load: 'log', roll: 1, rollMax: 16 });   /* (its peg stands past the stair's head: a hero still on the third cage is not drawn to it) */
   foe('hound', 272, 10, 'canopy', { face: -1 }); foe('shield', 277, 10, 'canopy', { face: -1 });
   block(285, 286, 9, 10);                                                          /* the knot the log splits on (two rows: a step) */
   plank(287, 292, 7); ent('plate', 289, 6, { cage: 295 }); ent('dropcage', 295, 4);
@@ -197,7 +197,8 @@ export function buildKingswood({ painter, T, TS }) {
   coins([324, 9], [330, 9], [341, 9], [347, 9], [359, 9], [365, 9]);
   ent('silver', 335, 7);                                                           /* SILVER TWO: in the crotch of the boughs, over the march */
   /* THE COURT (marchers: src/kingswood-hands.js; e.kw is copied onto the foe): out of the view from the trigger, front to back */
-  for (const [t, x] of [['pike', 384], ['shield', 387], ['sprig', 390], ['brute', 393], ['shield', 396], ['sprig', 399]]) foe(t, x, 13, 'procession', { face: -1, kw: { march: 'court' } });
+  foe('archer', 391, 10, 'courtStand', { face: -1, perch: true });               /* the court's bow on its stand by the gate: it looses on the road and the boughs alike */
+  for (const [t, x] of [['pike', 384], ['shield', 387], ['sprig', 390], ['brute', 393], ['shield', 396], ['sprig', 399], ['pike', 402]]) foe(t, x, 13, 'procession', { face: -1, kw: { march: 'court' } });
   plank(386, 396, 11); plank(412, 418, 11); coins([389, 10], [393, 10]);        /* the court's stands along the road's end */
   /* THE COURT GATE: shut across the road; its plate is on the step the road climbs before it (you cannot cross without standing on it) */
   block(403, 406, 12, 13); ent('plate', 405, 11, { gate: 410 });

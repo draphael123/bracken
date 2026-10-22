@@ -57,8 +57,8 @@ try {
   ok(r.stair.slice(0, 3).every(s => s === 'down') && r.stair.slice(3).every(c => c === 1), 'the cage stair: three cages, three steps ' + JSON.stringify(r.stair));
   ok(r.names.join('|') === "THE ROYAL ROAD|THE HUNTING STANDS|THE CAGE GROVE|THE COURT'S PROCESSION|THE KING'S HALL", 'the area banner names each area as you come into it ' + JSON.stringify(r.names));
   ok(r.respawn.back && r.respawn.cells[0] === 1 && r.respawn.cells[1] === 2 && r.respawn.cells[2] === 1 && r.respawn.states[3] === 'down', 'a death keeps the steps and the bridge (cells laid again) ' + JSON.stringify(r.respawn));
-  ok(r.hide.done && r.hide.passed >= 5, 'THE PROCESSION marches past a hero on the boughs and leaves by the side gate ' + JSON.stringify(r.hide));
-  ok(r.road.turned >= 3, 'and turns on a hero who stands on the road ' + JSON.stringify(r.road));
+  ok(r.hide.done && r.hide.passed >= 6, 'THE PROCESSION marches past a hero on the boughs and leaves by the side gate ' + JSON.stringify(r.hide));
+  ok(r.road.turned >= 5, 'and turns on a hero who stands on the road ' + JSON.stringify(r.road));
   ok(r.king.active && r.king.mode && r.king.mode !== 'sleep', 'KING GORM wakes in his hall ' + JSON.stringify(r.king));
   console.log('errors', JSON.stringify(pg.errors.slice(0, 3)));
   if (pg.errors.length) bad++;
