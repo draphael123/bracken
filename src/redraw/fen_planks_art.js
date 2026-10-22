@@ -143,3 +143,5 @@ export function drawPeat(g, p, x0, x1, y, h, cx, cy, time, over) {
       else { const k = (ph - 0.86) / 0.14; g.globalAlpha = 1 - k; Rr(g, '#a8a66a', X - 1, y - 2 - R(k * 3), 3, 2); P(g, '#c9c68a', X - 2 - R(k * 2), y - 3 - R(k * 2)); P(g, '#c9c68a', X + 2 + R(k * 2), y - 3 - R(k * 2)); g.globalAlpha = 1; } } }
   g.restore();
 }
+/* bake every sprite now (the level's load) */
+export function warm() { plankSprite(); bundleSprite(); ghostBoard(); laidBoard(''); laidBoard('L'); laidBoard('R'); for (let v = 0; v < 4; v++) { snapEnd(v); sunkBoard(v); } stake(); peatTex(); for (let v = 0; v < 3; v++) clod(v); }

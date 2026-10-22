@@ -323,6 +323,7 @@ function layout(L, T) {
   out.push({ k: 'stack', x: 34 * 16 }, { k: 'rack', x: 54 * 16 }, { k: 'stack', x: 56 * 16 + 20 }); L._frDress = out.sort((a, b) => a.x - b.x); return L._frDress;
 }
 /* BEHIND THE TILES */
+export const warmAll = () => { FNB.warm(); FSA.warm(); };
 export function drawBack(g, L, cx, cy, time, T, px = -1e9) {
   FNB.drawHeron(g, cx, cy, time, px); FSA.drawSites(g, L, cx, cy, time, T);   /* (claude/fenroad2art) the crews' work sites: lamp posts, sawhorses, pile drivers, half-built pilings, braziers, banners */
   const d = layout(L, T), VW = g.canvas.width, wl = WATER * 16 - cy;

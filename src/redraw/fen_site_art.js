@@ -117,3 +117,5 @@ export function drawSites(g, L, cx, cy, time, T) {
     if (o.k === 'banner') { const s = banner(), sw = Math.round(Math.sin(time * 1.6 + o.x) * 1); g.drawImage(s, X - ox + sw * 0, yb - oh); Rr(g, '#4a0e0e', X - 4 + 8 + sw, yb - oh + 19, 1, 1); continue; }
     if (!SPR[o.k]) throw new Error("site kind " + o.k); const s = SPR[o.k](); g.drawImage(s, X - ox, yb - s.height); }
 }
+/* bake every sprite now (the level's load) */
+export function warm() { lampPost(false); lampPost(true); sawhorse(); barrel(); lean(); driver(); stackB(); brazier(); net(); skullStake(); banner(); stakes(); for (let v = 0; v < 4; v++) pilings(v); lantern(); }

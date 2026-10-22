@@ -198,3 +198,11 @@ export function drawHeron(g, cx, cy, time, px) {
     g.fillStyle = '#3a2c20'; g.fillRect(X - 3, y - 6, 6, 8); g.fillStyle = '#5a4630'; g.fillRect(X - 3, y - 6, 6, 1); g.fillStyle = '#6f8f4a'; g.fillRect(X + 2, y - 7, 1, 3);   /* the stub with a little weed */
     g.drawImage(once('hr' + f, () => bakeHeron(f)), X - 8, y - 6 - 34); }
 }
+/* bake every sprite now (the level's load), so no frame pays for a first bake on a phone */
+export function warm() {
+  for (let ti = 0; ti < TINT.length; ti++) { for (let v = 0; v < 5; v++) { once('mc' + v + 't' + ti, () => bakeMidCypress(v + 1, ti)); once('mm' + v + 't' + ti, () => bakeMoss(v + 1, ti)); once('fc' + v + 't' + ti, () => bakeFarCypress(v + 1, ti)); }
+    for (let v = 0; v < 3; v++) once('nt' + v + 't' + ti, () => bakeNearTrunk(v + 1, ti)); once('hut' + ti, () => bakeFarHut(ti)); }
+  for (let v = 0; v < 3; v++) once('cu' + v, () => bakeCurtain(v + 1));
+  for (let f = 0; f < 2; f++) { once('hr' + f, () => bakeHeron(f)); once('fh' + f, () => bakeFlyHeron(f)); once('df' + f, () => bakeFly(f)); }
+  once('mA', () => bakeMist('214,224,214', 0.62)); once('mB', () => bakeMist('206,220,208', 0.5)); once('drift', bakeDrift);
+}
