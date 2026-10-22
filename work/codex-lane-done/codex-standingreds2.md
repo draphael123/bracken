@@ -69,3 +69,17 @@ proof that either the level or pilot should be changed. No seed shopping or easi
   current work makes none. A faithful pilot correction would first need evidence against the taught mechanic.
 - Merge: recommend holding this branch until Moor and the full serial run are resolved. Built the minimal cause fixes and
   eleven strict three-pass proofs; this report is the reviewable handoff, not a green release claim.
+
+## Continued Moor resolution (no game balance change)
+
+Run https://github.com/draphael123/bracken/actions/runs/39850933226, source b2a1e081, completed
+2026-10-22T20:44:17.889Z. Original seeded pilot reproduced 8 deaths / 438% HP, 120 forced lifts, 100% route.
+The pilot now follows the existing sign: crouch while the told ground gust blows/whistles, hop in still air.
+It uses ordinary inputs, keeps all enemies, no god mode, no abilities and the same bare knight/three runs/30000-step
+cap. Waiting uses the pre-existing 900-frame controlled-hands allowance, not a larger global step budget.
+All three repetitions are identical: **6 deaths / 318% HP**, 119 forced lifts, 100% route, within the unchanged band.
+Thus neither route coverage shrank nor forced teleports increased. An isolated existing-stone control moves an
+unbraced knight 67.25 px while ordinary crouch holds within 0.94 px; no game wind/geometry/health value was changed.
+All other curve rows are unchanged. Moor's measured row is imported; curve-gate passes three times in that run.
+No design decision or balance permission is needed for this correction. The remaining task requirement is its full
+serial branch run. The measured Task 2 hero-art collection and cleanup receipt fixes are included for that proof.

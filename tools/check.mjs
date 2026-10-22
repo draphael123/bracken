@@ -248,8 +248,8 @@ const PEAKS = new Map();
 const peakBetween = (t0, t1) => { let tot = 0, max = 0, any = false;
   try { for (const line of readFileSync(RSS_FILE, 'utf8').split(String.fromCharCode(10))) { const [t, a, b] = line.split(' ').map(Number); if (t >= t0 - 3500 && t <= t1 + 500) { any = true; tot = Math.max(tot, a || 0); max = Math.max(max, b || 0); } } } catch {}
   return any ? { tot, max } : null; };
-const live = (name, ok, ms) => { const t1 = Date.now(), pk = peakBetween(t1 - ms, t1); PEAKS.set(name, pk);
-  console.log('[live] ' + (ok ? 'ok  ' : 'FAIL') + ' ' + name + ' ' + (ms / 1000).toFixed(1) + 's' + (pk ? ' peak-rss total=' + pk.tot + 'MB biggest-process=' + pk.max + 'MB' : ' peak-rss n/a')); };
+const live = (name, ok, ms, interrupted = false) => { const t1 = Date.now(), pk = peakBetween(t1 - ms, t1); PEAKS.set(name, pk);
+  console.log('[live] ' + (interrupted ? 'INCOMPLETE' : ok ? 'ok  ' : 'FAIL') + ' ' + name + ' ' + (ms / 1000).toFixed(1) + 's' + (pk ? ' peak-rss total=' + pk.tot + 'MB biggest-process=' + pk.max + 'MB' : ' peak-rss n/a')); };
 const run = (name, cmd, args, env) => ({ name, cmd, args, env });
 let results = [];
 /* THE TEMP FOLDER, before and after: abandoned BRACKEN browser profiles (idle 30 min, no live process on them) go first, and at
@@ -317,7 +317,7 @@ process.env.BRACKEN_PROCESS_LOG = progress.path + '.processes.jsonl';
 console.log('[progress] ' + progress.path + (RESUME ? ' (retaining ' + progress.completed.size + ' verdicts)' : ''));
 const active = new Map(); let stopping = false;
 const onStart = (name, pid) => { active.set(name, pid); progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); };
-const done = r => { active.delete(r.name); live(r.name, r.ok, r.ms); progress.done(r); };
+const done = r => { active.delete(r.name); live(r.name, r.ok, r.ms, r.interrupted); progress.done(r); };
 const stop = () => { stopping = true; for (const pid of active.values()) killTreeSync(pid); };
 for (const sig of ['SIGINT', 'SIGTERM', 'SIGHUP', 'SIGBREAK']) try { process.on(sig, stop); } catch {}
 const onExit = () => { try { progress.snapshot([...active].map(([name, pid]) => ({ name, pid }))); } finally { progress.close(); } };

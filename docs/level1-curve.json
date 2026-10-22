@@ -108,13 +108,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 61,
-  "deaths": 8,
-  "kills": 18,
-  "lifts": 120,
+  "hits": 44,
+  "deaths": 6,
+  "kills": 12,
+  "lifts": 119,
   "walked": 100,
   "bare": true,
-  "lostPct": 438
+  "lostPct": 318
  },
  "storm": {
   "hash": "601546e739c6",

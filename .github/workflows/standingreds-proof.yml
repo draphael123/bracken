@@ -4,11 +4,33 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial]
         default: prove
 permissions:
   contents: read
 jobs:
+  serial:
+    if: inputs.mode == 'serial'
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Complete original serial gate with durable per-check results
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          git rev-parse HEAD > gate-data/source.txt
+          timeout --signal=TERM --kill-after=30s 330m node tools/check.mjs --progress=gate-data/serial.json 2>&1 | tee gate-data/serial.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: full-serial-standingreds
+          path: gate-data/
   moor:
     if: inputs.mode == 'moor'
     runs-on: ubuntu-latest

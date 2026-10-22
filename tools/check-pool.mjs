@@ -84,13 +84,13 @@ export function execute(job, root, port) {
     child.stderr.on('data', b => { errBytes += b.length; if (errBytes > 1048576) { error = new Error('stderr maxBuffer length exceeded'); child.kill(); } else stderr.push(b); });
     const timer = job.timeout ? setTimeout(() => { timedOut = true; child.kill(); }, job.timeout) : null;
     child.on('error', e => { error = e; });
-    child.on('close', code => { if (done) return; done = true; clearInterval(disconnectGuard); if (timer) clearTimeout(timer);
+    child.on('close', (code, signal) => { if (done) return; done = true; clearInterval(disconnectGuard); if (timer) clearTimeout(timer);
       const lines = (Buffer.concat(stdout).toString('utf8') + Buffer.concat(stderr).toString('utf8') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
       let events = [];
       try { events = readFileSync(process.env.BRACKEN_PROCESS_LOG, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)).filter(e => e.attempt === attempt); } catch {}
       const interrupted = events.find(e => e.type === 'interrupted') || (forcedInterruption ? { reason: forcedInterruption } : null);
       const memory = { totalMb: Math.max(0, ...events.map(e => e.peak?.totalMb || 0)), rendererMb: Math.max(0, ...events.map(e => e.peak?.rendererMb || 0)) };
-      resolveResult({ name: job.name, ok: code === 0 && !timedOut && !error && !interrupted, ms: Date.now() - t0, memory,
+      resolveResult({ name: job.name, exitCode: code, signal, ok: code === 0 && !timedOut && !error && !interrupted, ms: Date.now() - t0, memory,
         ...(interrupted || (code === null && !timedOut && !error) ? { interrupted: true } : {}),
         last: interrupted ? interrupted.reason : timedOut ? 'TIMED OUT after ' + Math.round(job.timeout / 60000) + ' min' : lines.at(-1) || '', out: lines }); });
   });

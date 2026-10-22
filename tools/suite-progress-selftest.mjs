@@ -41,6 +41,10 @@ if (process.argv[2] === '--writer') {
         "require('fs').appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({type:'interrupted',attempt:process.env.BRACKEN_ATTEMPT,reason:'injected disconnect'})+'\\n');setInterval(()=>{},1000)"] }, fileURLToPath(new URL('..', import.meta.url)), 0);
       assert.equal(hanging.interrupted, true); assert.equal(hanging.ok, false);
       assert.ok(hanging.ms < 10000, 'a child that swallows the disconnect must be ended promptly');
+      const failed = await execute({name:'real-failure',cmd:process.execPath,args:['-e','process.exit(3)']}, fileURLToPath(new URL('..', import.meta.url)), 0);
+      assert.equal(failed.ok,false);assert.equal(failed.exitCode,3);assert.equal(failed.signal,null);assert.equal(failed.interrupted,undefined);
+      const injected = await execute({name:'nested-fault',cmd:process.execPath,args:['-e',"require('fs').appendFileSync(process.env.BRACKEN_PROCESS_LOG,JSON.stringify({type:'interrupted',attempt:'separate-test-attempt',reason:'expected fault'})+'\\n')"]}, fileURLToPath(new URL('..', import.meta.url)), 0);
+      assert.equal(injected.ok,true);assert.equal(injected.interrupted,undefined);
     } finally { if (previousLog === undefined) delete process.env.BRACKEN_PROCESS_LOG; else process.env.BRACKEN_PROCESS_LOG = previousLog; }
     console.log('ok suite-progress: hard-killed writer retains saved PASS/FAIL, resumes only missing verdict, rejects changed source/inventory and concurrent writers');
   } finally { rmSync(dir, { recursive: true, force: true }); }
