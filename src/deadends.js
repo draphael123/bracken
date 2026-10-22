@@ -136,6 +136,9 @@ export function findDeadEnds(L, T, opts = {}) {
     if (Math.min(vert, horiz) > 8) { skipped.push({ ...where, why: 'open water ' + vert + 'x' + horiz + ' top ' + top.length + ' cells ' + P.cells.length }); continue; }
     /* NOT UNDER WATER THAT KILLS (level review, 2026-09-24): the Flotilla's harbour floor is under the harmful sea, and three 'pockets' down there were each paid a stash of plunder - bait on the bed of water that eats a swimmer. Only water that is certain death - the open sea's harbour, a deadly pit - is asked: a poison pool you swim through and out of (the Burial Caverns' ossuary) can still pay its bottom */
     if ((L.pools || []).some(q => q.harm && (q.sea || q.deadly) && !q.dry && px * TS + 8 > q.x0 && px * TS + 8 < q.x1 && (py + 1) * TS > q.y && (q.bottom === undefined || py * TS < q.bottom))) { skipped.push({ ...where, why: 'under harmful water' }); continue; }
+    /* (claude/fenroad2) NOT UNDER A BOG THAT HANDS YOU BACK: THE FEN ROAD's peat holes (a mud pool in a level whose water hurts) suck a hero down and put him back on the last sound board
+       at the first splash (main.js: a pool you can neither swim nor wade, L.waterHurts) - nobody ever stands on the bed under one */
+    if (L.waterHurts && (L.pools || []).some(q => q.mud && q.peat && !q.shallow && px * TS + 8 > q.x0 && px * TS + 8 < q.x1 && (py + 1) * TS > q.y)) { skipped.push({ ...where, why: 'under a peat hole' }); continue; }
     /* A POCKET YOU CAN WALK: a perch a ride drops you on is two tiles, however far the bridge to it says it is */
     if (Math.max(x1 - x0, y1 - y0) < DEADEND_MIN - 1) { skipped.push({ ...where, why: 'too small ' + (x1 - x0 + 1) + 'x' + (y1 - y0 + 1) }); continue; }
     /* A DOOR, A GATE, A KEEPER OR A LEVER AT THE END IS WHY YOU WENT: one halfway along does not pay the tail past it */

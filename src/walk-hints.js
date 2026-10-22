@@ -158,4 +158,13 @@ function marshBoom(BK, P) {
   if (!lv.on) return { x: lv.x - 12, y: lv.y, key: 'atk', face: 1, r: 40 };
   return { x: raft.x + raft.w / 2, y: raft.y, key: null, face: -1, r: 40, at: true };
 }
-export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom };
+/* THE FEN ROAD 2 (claude/fenroad2, src/fen-planks.js + src/fen-road-hands.js): LAY THE ROAD. The next required peat hole ahead: with no plank on his shoulder he walks to the
+   crew's bundle before it and presses E; with one, to the hole's near edge, faces it and presses E (it lays). A BOG LEECH on him: he rolls (a player reads the drain and the hint) */
+function fenRoad(BK, P) {
+  if (!P || typeof BK.fenPlanks !== 'function') return null; const F = BK.fenPlanks(), R = BK.fenRoad ? BK.fenRoad() : null; if (!F || !R || !R.broken) return null;
+  if (P.leech) return { x: P.x, y: P.y, key: 'dodge', face: P.face || 1, r: 99 };
+  const px = P.x / TS, h = R.broken.filter(b => b.req && !b.laid && b.x0 + b.w > px && b.x0 < px + 30).sort((a, b) => a.x0 - b.x0)[0]; if (!h) return null;
+  if (!F.held) { const b = F.bundles.filter(q => q.x < h.x0 * TS && q.x > (h.x0 - 30) * TS).sort((a, c) => c.x - a.x)[0]; return b ? { x: b.x, y: b.y, key: 'talk', face: 1, r: 30 } : null; }
+  return { x: h.x0 * TS - 6, y: h.row * TS, key: 'talk', face: 1, r: 30 };
+}
+export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };

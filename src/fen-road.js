@@ -19,9 +19,23 @@
 //    311-404  THE PALISADE ROAD     EXAM   the Stockade's horns; SOMETHING UNDER THE ROAD takes a crewman (the troll, foreshadowed - B8); a lashing, a
 //                                          crew gap, two stilt-walkers (one with a horn and a real crew)                                            shrine 400
 //    405-451  THE TROLL'S CROSSING  BOSS   THE BOG TROLL, under the boardwalk at the Stockade's gate (src/bog-troll.js)
+// (claude/fenroad2, Daniel 10-22: "it needs ANOTHER VERB or something else going on; STILT-WALKERS must look like they walk on stilts - stomp around; maybe another
+//   fitting SWAMP FOE" - scratch/brief-fenroad2-1022.md LANE B, the recs approved live; THE BOG TROLL untouched):
+//   LAY THE ROAD - the level's SECOND VERB (src/fen-planks.js + src/fen-road-hands.js slots): the work crews leave PLANK BUNDLES; E takes a plank (carried: slow,
+//     no swing), E at a broken edge LAYS it across (it sags like the rest), ATTACK throws it (a foe staggers, a stilt-walker loses his stilts). The road is BROKEN over
+//     PEAT HOLES (mud: the bog sucks you down and hands you back - no swimming across): every one needs a plank.
+//     TEACH  THE WORK CREWS' first hole (111), a bundle on the bank, nothing hunting you                                              (required)
+//     TEST   the plank yard: a stilt-walker between the bundle and the second hole (throw it at him, or carry past him) - hole 173 (required)
+//     REMIX  a crew gap can be laid (the crew's piles or your plank), a bowed section gone under can be laid back
+//     EXAM   THE PALISADE ROAD's broken road (A14): two holes over the leeches' water under a bowman and a horn stilt-walker; shrine 400 after   (required x2)
+//   THE STILT-WALKERS STOMP: a mover on a beat, each planted stilt bows the boards under it (a bowing section goes under); a told stomp on a hero under him.
+//   THE BOG LEECH (src/bog-leech.js): lurks in the water by the boards; a section bowing or going under near it wakes it - it lunges, latches, drains: ROLL.
 // Every number is a FINAL column (nothing is grown in after): tools/fen-road.mjs pins the beats.
 export const SECTIONS = [['THE PEAT CUTTINGS', 0, 104], ['THE WORK CREWS', 105, 210], ['THE STILT POSTS', 211, 310], ['THE PALISADE ROAD', 311, 404], ["THE TROLL'S CROSSING", 405, 451]];
-export const FEN_RULE = 'BOWED BOARDS SINK UNDER YOU. STRIKE A LASHING AND THEY GO AT ONCE.';
+export const FEN_RULE = 'BOWED BOARDS SINK UNDER YOU. LAY A CREW PLANK WHERE THE ROAD IS BROKEN.';
+/* (claude/fenroad2) THE BROKEN ROAD: [id, first column, width, required] - each over a peat hole; and the crews' plank bundles [column, standing row] */
+export const HOLES = [['p1', 111, 7, true], ['p2', 173, 7, true], ['p3', 380, 7, true], ['p4', 392, 7, true]];
+export const BUNDLES = [[107, 17], [153, 17], [371, 17], [391, 17]];
 export const ROAD = 18, WATER = 19, BED = 23;   /* the boardwalk's row, the water's surface row, the bed's first row */
 /* THE ARENA: the troll's crossing at the Stockade's gate. Three ROTTEN sections (arena sags: a longer hold, so you can stand on one and lure him) and
    the two stretches he RIPS in his phase two (src/bog-troll.js): islands 407-418, 422-433, 437-450, every rotten section on one of them */
@@ -43,6 +57,11 @@ export function buildFenRoad({ painter, T, TS }) {
   const lash = (x, id, row = ROAD) => ent('lashing', x, row - 1, { sag: id });
   /* A CREW GAP: w columns of open water in the road with piles standing in it (every hero hops them); the crew's layer stands on the far bank and lays
      the road plank by plank, from his side toward you, while you are near (src/fen-road-hands.js) */
+  /* (claude/fenroad2) A BROKEN STRETCH over a PEAT HOLE: w columns with no road and a bog under them that sucks you down (mud: no swimming across - a fall in
+     is the hurt and the last sound board). Its slot takes a carried plank (src/fen-road-hands.js lay); the reach model has it laid (L.reachSpans, the full fill) */
+  const reachSpans = [];
+  const hole = (id, x0, w, req = true) => { for (let x = x0; x < x0 + w; x++) set(x, ROAD, T.AIR); pools.push({ x0: x0 * TS, x1: (x0 + w) * TS, y: WATER * TS, shallow: false, depth: 0, bottom: BED * TS, mud: true, fen: true, peat: true }); block(x0, x0 + w - 1, BED, H - 1); ent('broken', x0, ROAD, { id, w, req }); reachSpans.push([x0, x0 + w - 1, ROAD]); };
+  const leech = (x) => ent('leech', x, WATER);
   const crewGap = (id, x0, w, piles, dir = -1) => { for (let x = x0; x < x0 + w; x++) { set(x, ROAD, T.AIR); sagCells.push([x, ROAD]); } for (const p of piles) { block(p, p, ROAD, BED - 1); } ent('crewgap', x0, ROAD, { id, w, dir, piles }); };
 
   // ================= 1. THE PEAT CUTTINGS (0-104): TEACH =================
@@ -69,21 +88,22 @@ export function buildFenRoad({ painter, T, TS }) {
   floor(71, 84, ROAD);
   sign(72, 17, 'A LOOKOUT ON STILTS. HIS HORN CALLS HIS CREW. GO LOW: A SWEEP OR A SLIDE CUTS A STILT.');
   deco('bothy', 82, 17, { v: 0 });
-  ent('stiltwalker', 79, 17, { face: -1, horn: true, pack: [{ dx: 48, y: ROAD * TS, t: 'sprig' }, { dx: 56, y: ROAD * TS, t: 'sprig' }] });
+  ent('stiltwalker', 79, 17, { face: -1, horn: true, beat: 3, pack: [{ dx: 48, y: ROAD * TS, t: 'sprig' }, { dx: 56, y: ROAD * TS, t: 'sprig' }] });
   coins([75, 16], [77, 16]);
   /* out over the water again: two bowed sections in a row under a bowman on the lookout walk (a fight while the rule runs, A5) */
   water(85, 98); planks(85, 98); sag('c', 88, 3); sag('d', 93, 3);
+  sign(85, 17, 'LEECHES LIE BY THE BOARDS. A BOWING SECTION WAKES THEM. ROLL TO SHAKE ONE OFF.'); leech(91);   /* (claude/fenroad2) THE BOG LEECH, taught where the boards bow */
   plat(86, 15, 4); ent('archer', 87, 14, { face: -1 }); plat(92, 13, 3); coins([92, 12], [93, 12]);
   coins([89, 16], [94, 16]); ent('sprig', 96, 17, { face: -1 }); ent('sprig', 97, 17, { face: -1 });   /* a crew pair on the boards between the bowed sections, under the bow */
   floor(99, 110, ROAD);
   ent('check', 101, 17);
 
   // ================= 2. THE WORK CREWS (105-210): TEST =================
-  sign(106, 17, 'THE CREW LAYS THE ROAD AHEAD OF YOU. HOP THE PILES, OR WAIT FOR THE PLANKS.');
-  /* CREW GAP ONE: the road stops at open water; the layer stands on the far side with his mallet */
-  water(111, 116); crewGap('g1', 111, 6, [112, 115]);
-  floor(117, 124, ROAD); ent('sprig', 118, 17, { face: -1, layer: 'g1' }); ent('shield', 122, 17, { face: -1 });
-  deco('timber', 120, 17, { v: 0 }); coins([113, 16], [114, 15], [116, 16]);
+  sign(105, 17, 'THE ROAD IS BROKEN. E TAKES A PLANK FROM THE CREW\'S BUNDLE; E AT THE EDGE LAYS IT.');
+  /* (claude/fenroad2) THE FIRST PEAT HOLE (the plank TAUGHT): the road stops over a bog that sucks you down; the crew's bundle on the bank, nothing hunting you */
+  hole('p1', 111, 7);
+  floor(118, 124, ROAD); ent('sprig', 119, 17, { face: -1 }); ent('shield', 122, 17, { face: -1 });
+  deco('timber', 121, 17, { v: 0 }); coins([113, 16], [114, 15], [116, 16]);
   /* a second lashing, under a bowman on a stilt deck over it */
   water(125, 150); planks(125, 150); sag('e', 136, 4); lash(133, 'e');
   ent('shield', 141, 17, { face: -1 }); ent('sprig', 143, 17, { face: -1 }); ent('sprig', 146, 17, { face: -1 });
@@ -92,12 +112,14 @@ export function buildFenRoad({ painter, T, TS }) {
   /* THE PLANK YARD: the crews' stacks on a peat island - climb them for a silver; a stilt-walker keeps the yard (no horn: a gaff fight on the flat) */
   floor(151, 172, ROAD);
   plat(153, 15, 4); plat(157, 12, 4); plat(161, 9, 3); ent('silver', 162, 8); coins([154, 14], [158, 11]);
-  deco('timber', 155, 17, { v: 1 }); deco('gobPennant', 159, 17, { v: 0 });
-  ent('stiltwalker', 167, 17, { face: -1 });
+  deco('gobPennant', 159, 17, { v: 0 });
+  /* (claude/fenroad2) THE PLANK TESTED: the yard's bundle, the stilt-walker stomping between it and the second hole - throw it at him (he loses his stilts), or carry it past him */
+  sign(151, 17, 'ATTACK THROWS A CARRIED PLANK. IT STAGGERS A FOE AND TAKES A STILT-WALKER OFF HIS STILTS.');
+  ent('stiltwalker', 167, 17, { face: -1, beat: 4 });
   ent('wasp', 164, 12); ent('thorn', 171, 17, { face: -1 });   /* the yard's far edge, before the crew gap */
-  /* CREW GAP TWO, its layer and a spitter on the far bank */
-  water(173, 178); crewGap('g2', 173, 6, [174, 177]);
-  floor(179, 186, ROAD); ent('sprig', 180, 17, { face: -1, layer: 'g2' }); ent('spit', 185, 17, { face: -1 }); coins([175, 15], [176, 15]);
+  /* (claude/fenroad2) THE SECOND PEAT HOLE, a spitter on the far bank lobbing at you while you lay it, and a leech in the bog under it (your plank's bow wakes it) */
+  hole('p2', 173, 7); leech(176);
+  floor(180, 186, ROAD); ent('spit', 185, 17, { face: -1 }); coins([175, 15], [176, 15]);
   /* THE BARRICADE (the required use, A4): the crew have stacked their road-planks five high on a bowed section - no jump goes over it - and driven stakes
      into the bed under it (nobody swims round it). Strike the lashing and the section goes under, and the barricade with it. The crew behind it is the area's exam */
   const BARRICADE = []; for (const x of [192, 193]) for (let y = 13; y <= ROAD; y++) BARRICADE.push([x, y]);
@@ -116,32 +138,37 @@ export function buildFenRoad({ painter, T, TS }) {
   sag('h1', 216, 2, { hold: 1.4 }); plat(219, 17, 3); sag('h1b', 223, 2, { row: 17, hold: 1.4 }); sag('h2', 226, 2, { row: 17, hold: 1.4 });
   block(228, 231, 16, BED - 1); block(232, 234, 14, BED - 1); block(235, 237, 12, BED - 1); block(238, 240, 10, BED - 1);   /* THE LOOKOUT CRIBS: four timber cribs stepping up out of the fen to the lookout walk (the art lane draws them as lashed log cribs) */
   /* the lookout walk: the high deck, and the horn lookout on its post. His horn calls a bowman and a spitter onto the decks round him */
-  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
+  plat(241, 8, 10); ent('stiltwalker', 248, 7, { face: -1, horn: true, beat: 2, pack: [{ dx: 88, y: 10 * TS, t: 'archer' }, { dx: -168, y: 10 * TS, t: 'spit' }] });
   coins([244, 7], [246, 7], [250, 7]);
   plat(252, 10, 3);
   plat(255, 12, 3); plat(258, 14, 2); sag('h3', 261, 2, { row: 16, hold: 1.4 }); plat(266, 16, 3); ent('spit', 267, 15, { face: -1 }); sag('h5', 271, 2, { row: 17, hold: 1.4 }); plat(274, 17, 2);
-  ent('wasp', 272, 14); ent('wasp', 262, 12);
+  ent('wasp', 272, 14); ent('wasp', 262, 12); leech(263); leech(284);   /* (claude/fenroad2) leeches under the bowed steps */
   plat(277, 16, 3); ent('spit', 278, 15, { face: -1 }); sag('h4', 282, 3, { row: 16, hold: 1.4 }); plat(287, 15, 3); plat(291, 16, 3); ent('sprig', 292, 15, { face: -1 });   /* a crewman on the last deck: a fight on a board over the water */
   plat(295, 17, 4); ent('thorn', 297, 16, { face: -1 });
   coins([224, 15], [230, 15], [233, 13], [236, 11], [239, 9], [267, 15], [283, 15], [288, 14]);
   floor(301, 316, ROAD);
-  ent('sprig', 304, 17, { face: -1 }); ent('shield', 309, 17, { face: -1 }); ent('stiltwalker', 314, 17, { face: -1 });   /* the landing's guard: the area's exam ends on the bank */
+  ent('sprig', 304, 17, { face: -1 }); ent('shield', 309, 17, { face: -1 }); ent('stiltwalker', 314, 17, { face: -1, beat: 2 });   /* the landing's guard: the area's exam ends on the bank */
   ent('check', 307, 17);
 
   // ================= 4. THE PALISADE ROAD (311-404): EXAM =================
   sign(312, 17, 'THE STOCKADE\'S HORNS. SOMETHING ELSE IS UNDER THE ROAD.');
-  water(317, 398); planks(317, 351); planks(358, 398);
-  sag('i', 322, 4); lash(320, 'i'); ent('sprig', 329, 17, { face: -1 }); ent('shield', 331, 17, { face: -1 });
+  water(317, 379); planks(317, 351); planks(358, 398);   /* (claude/fenroad2) the fen water stops at the broken road: peat holes and the leeches' water between them are their own pools */
+  sag('i', 322, 4); lash(320, 'i'); ent('sprig', 329, 17, { face: -1 }); ent('shield', 331, 17, { face: -1 }); leech(324);
   /* SOMETHING UNDER THE ROAD (B8): bubbles under the boards, then an arm out of the water takes a crewman under */
   ent('undertow', 337, ROAD, {}); ent('sprig', 338, 17, { face: -1, victim: true });
   plat(340, 14, 6); coins([341, 13], [343, 13], [345, 13]);
-  ent('stiltwalker', 346, 17, { face: -1 });
+  ent('stiltwalker', 346, 17, { face: -1, beat: 3 });
   crewGap('g3', 352, 6, [353, 356]); ent('sprig', 359, 17, { face: -1, layer: 'g3' }); plat(360, 15, 4); ent('archer', 361, 14, { face: -1 });
+  /* (claude/fenroad2) THE BROKEN ROAD - the plank's EXAM (A14): the crew's bundle under the bowman, a lashed section, the horn stilt-walker stomping on the boards before
+     the third peat hole, a leech in it; then a bowed section over the leeches' water, the last bundle, and the fourth hole before the shrine */
+  sign(358, 17, 'THE BROKEN ROAD. TWO PEAT HOLES TO THE STOCKADE\'S HORNS: CARRY YOUR ROAD WITH YOU.');
   sag('j', 366, 4); lash(364, 'j');
-  ent('stiltwalker', 374, 17, { face: -1, horn: true, pack: [{ dx: 56, y: ROAD * TS, t: 'shield' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });
-  plat(368, 14, 5); coins([369, 13], [371, 13]);
-  sag('k', 380, 3); ent('shield', 384, 17, { face: -1 }); plat(385, 14, 5); ent('spit', 387, 13, { face: -1 }); plat(389, 15, 2); plat(392, 13, 2); ent('silver', 393, 12);   /* past the spitter's deck, up two crates to a crew's cache (off the route) */
-  coins([323, 16], [367, 16], [381, 16], [391, 16]);
+  ent('stiltwalker', 374, 17, { face: -1, horn: true, beat: 2, pack: [{ dx: 56, y: ROAD * TS, t: 'shield' }, { dx: 72, y: ROAD * TS, t: 'sprig' }] });
+  plat(368, 14, 5); coins([369, 13], [371, 13]); plat(373, 11, 3); ent('silver', 374, 10);   /* up off the deck over the road, a crew's cache (off the route) */
+  hole('p3', 380, 7); leech(383);
+  water(387, 391); sag('k', 388, 3, { hold: 1.4 }); leech(389);   /* a bowed section between the holes, the leeches' water under it; the last bundle on the board after it */
+  hole('p4', 392, 7);
+  coins([323, 16], [367, 16], [383, 15], [395, 15]);
   floor(399, 406, ROAD);
   ent('check', 400, 17);
   sign(402, 17, 'THE BOG TROLL FEELS YOUR WEIGHT ON THE BOARDS. LURE HIS BURST UNDER A ROTTEN SECTION.');
@@ -156,6 +183,7 @@ export function buildFenRoad({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 17 }, pools, falls: [], moversExtra: movers, fenroad: true, gateAfterBoss: true, reachDoors: [{ x0: 192, x1: 193, y0: 13, y1: ROAD }],   /* THE BARRICADE: every hero can strike its lashing (src/reachcore.js: the full fill has it down, the plain fill keeps it) */
+    reachSpans, bundles: BUNDLES.map(b => b.slice()),   /* (claude/fenroad2) THE BROKEN ROAD: every hero carries a plank and lays it (the full fill has each hole laid, the plain fill not); the crews' bundles */
     waterHurts: true, noStack: true, sagCells, machineCells: [...sagCells, ...machine].map(([x, y]) => y * W + x),
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     music: 'fenroad', duskStart: undefined,

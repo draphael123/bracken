@@ -8,6 +8,7 @@
 //   THE HORIZON         the Stockade's palisade grown on the skyline (stakes, rails, two horn towers, smoke), and the gate arrival at the crossing's east end
 // Palette: a cold, wet green-brown (peat, bog oak, hemp, weed), the goblins' red cloth.
 import { canvas, outline } from '../px.js';
+import * as FNB from './fen_backdrop.js'; import * as FSA from './fen_site_art.js';   /* (claude/fenroad2art) the fen's reflections and its heron */
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return (h ^ (h >>> 16)) >>> 0; };
@@ -267,6 +268,9 @@ function skyline(b) {
       Rr(g, mix(colD, '#000000', 0.3), tx - tw + 1, base - tt - 6, tw * 2 - 1, 4);
       for (let r = 0; r < 4; r++) Rr(g, r & 1 ? colD : col, tx - tw - 1 + r, base - tt - 7 - r, tw * 2 + 3 - r * 2, 1);
       Rr(g, rail, tx, base - tt - 14, 1, 7); }
+    /* (claude/fenroad2art) the camp growing behind the wall: hide-and-thatch tent roofs and a long lodge peeking over the stakes, a second row of taller sharpened stakes, once it is near enough to see */
+    if (k > 0.3) { for (const f of [0.27, 0.36, 0.46, 0.56, 0.66, 0.74]) { const rx = Math.round(w * f), rh = 6 + Math.round(k * 8) + ((rx * 7) % 4), rw = 5 + Math.round(k * 5); for (let r = 0; r < rh; r++) Rr(g, r < 2 ? colL : colD, rx - Math.round(rw * (1 - r / rh)), base - sh - rh + r + 1, Math.round(rw * (1 - r / rh)) * 2, 1); Rr(g, rail, rx, base - sh - rh - 2, 1, 3); } }
+    if (k > 0.55) { for (let x = 2; x < w - 2; x += 8) { const hh = sh + 5 + ((x * 5) % 4); Rr(g, colD, x, base - hh, 2, hh - sh + 1); P(g, colD, x, base - hh - 1); } }
     /* smoke from the camp behind: two soft grey plumes */
     if (k > 0.25) for (const f of [0.38, 0.62]) { for (let q = 0; q < 6; q++) { g.globalAlpha = 0.26 - q * 0.03; Rr(g, '#aab4a6', Math.round(w * f) + (q & 1) * 2 - 1, base - sh - 2 - q * 3 - Math.round(k * 4), 3 + q, 3); } g.globalAlpha = 1; }
     return c; });
@@ -275,6 +279,10 @@ export function drawSky(g, cx, cy, VW, VH, time, k) {
   const b = Math.max(0, Math.min(SKYB, Math.round(k * SKYB))), s = skyline(b), kk = b / SKYB;
   const base = Math.round(VH * 0.62 - kk * 18), x0 = Math.round(VW * (0.9 - 0.35 * kk) - s.width / 2);
   g.globalAlpha = 0.5 + 0.4 * kk; g.drawImage(s, x0, base - s.height + 1);
+  /* (claude/fenroad2art) its fires: a warm flicker at the gate, a torch at the head of each tower, a haze of light over the camp (it is evening in the fen) */
+  if (kk > 0.28) { const a = Math.min(1, (kk - 0.28) * 2.4), gx = x0 + Math.round(s.width * 0.5), gy = base - Math.round(5 + kk * 22) - 2, fl = 0.7 + 0.3 * Math.sin(time * 9) * Math.sin(time * 3.1);
+    g.globalAlpha = 0.16 * a * fl; Rr(g, '#ffb44a', gx - 18, gy - 12, 36, 24); g.globalAlpha = 0.28 * a * fl; Rr(g, '#ffb44a', gx - 8, gy - 6, 16, 12); g.globalAlpha = a; Rr(g, '#ffd36b', gx - 5, gy - 2, 1, 2); Rr(g, '#ffd36b', gx + 4, gy - 2, 1, 2); Rr(g, '#ff9a3c', gx - 5, gy - 1, 1, 1); Rr(g, '#ff9a3c', gx + 4, gy - 1, 1, 1);
+    for (const f of [0.17, 0.82]) { const tx = x0 + Math.round(s.width * f), th = Math.round(5 + kk * 22) + 10 + Math.round(kk * 10); g.globalAlpha = 0.5 * a * fl; Rr(g, '#ffb44a', tx - 3, base - th - 4, 8, 6); g.globalAlpha = a; Rr(g, '#ffd36b', tx + 1, base - th - 2, 2, 2); } g.globalAlpha = 1; }
   /* the pennants on the towers, stirring */
   for (const f of [0.17, 0.82]) { const tx = x0 + Math.round(s.width * f), th = Math.round(5 + kk * 22) + 10 + Math.round(kk * 10), py = base - th - 14, w = Math.floor(time * 3 + f * 9) % 2;
     Rr(g, '#8f2f28', tx + 1, py, 4 + w, 2); Rr(g, '#c24a3c', tx + 1, py, 3, 1); P(g, '#8f2f28', tx + 5 + w, py + 2); }
@@ -315,7 +323,9 @@ function layout(L, T) {
   out.push({ k: 'stack', x: 34 * 16 }, { k: 'rack', x: 54 * 16 }, { k: 'stack', x: 56 * 16 + 20 }); L._frDress = out.sort((a, b) => a.x - b.x); return L._frDress;
 }
 /* BEHIND THE TILES */
-export function drawBack(g, L, cx, cy, time, T) {
+export const warmAll = () => { FNB.warm(); FSA.warm(); };
+export function drawBack(g, L, cx, cy, time, T, px = -1e9) {
+  FNB.drawHeron(g, cx, cy, time, px); FSA.drawSites(g, L, cx, cy, time, T);   /* (claude/fenroad2art) the crews' work sites: lamp posts, sawhorses, pile drivers, half-built pilings, braziers, banners */
   const d = layout(L, T), VW = g.canvas.width, wl = WATER * 16 - cy;
   for (const o of d) { const X = o.x - cx; if (X < -40 || X > VW + 40) continue;
     if (o.k === 'reedW') { const s = reedSprite(o.v); g.globalAlpha = 0.85; g.drawImage(s, Math.round(X - 12), wl - 30 + (o.v & 3) - 4); g.globalAlpha = 1; }   /* standing in the fen, a head of it clear of the water */
@@ -334,10 +344,11 @@ export function drawWater(g, L, cx, cy, time, T) {
   for (const p of L.pools || []) { if (!p.fen || p.x1 < cx || p.x0 > cx + VW) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, bot = (p.bottom !== undefined ? p.bottom : p.y + 64) - cy;
     g.save(); g.beginPath(); g.rect(x0, y - 8, x1 - x0, bot - y + 8); g.clip();
+    if (!p.peat) FNB.drawReflections(g, cx, cy, VW, g.canvas.height, time, (L.H * 16 - g.canvas.height) - cy, x0, x1, y);   /* (claude/fenroad2art) the cypress doubled in the murk */
     /* the sheen: a faint toxic green in the top of the water */
-    g.globalAlpha = 0.09; g.fillStyle = '#8a9a2a'; g.fillRect(x0, y, x1 - x0, Math.min(34, bot - y)); g.globalAlpha = 1;
+    if (!p.peat) { g.globalAlpha = 0.09; g.fillStyle = '#8a9a2a'; g.fillRect(x0, y, x1 - x0, Math.min(34, bot - y)); g.globalAlpha = 1; }
     /* the scum skin drifting on the surface */
-    const s = scumStrip(), sc = ((time * 2.2 - cx * 0.25) % 96 + 96) % 96; g.globalAlpha = 0.75; for (let X = x0 - 96 + sc; X < x1; X += 96) g.drawImage(s, Math.round(X), y - 1); g.globalAlpha = 1;
+    if (!p.peat) { const s = scumStrip(), sc = ((time * 2.2 - cx * 0.25) % 96 + 96) % 96; g.globalAlpha = 0.75; for (let X = x0 - 96 + sc; X < x1; X += 96) g.drawImage(s, Math.round(X), y - 1); g.globalAlpha = 1; }
     /* bubbles rising from the bed, popping at the surface */
     const n0 = Math.floor((cx + x0) / 28), n1 = Math.floor((cx + x1) / 28);
     for (let n = n0; n <= n1; n++) { if (rnd(n, 61, 3) !== 0) continue; const ph = ((time * 0.35 + rnd(n, 63, 100) / 100) % 1), bx = n * 28 + rnd(n, 65, 24) - cx, by = bot - 4 - ph * (bot - y - 4);
