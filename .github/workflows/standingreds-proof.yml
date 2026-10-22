@@ -3,10 +3,16 @@ on:
   push:
     branches: ['codex/standingreds2']
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [prove, refresh]
+        default: prove
 permissions:
   contents: read
 jobs:
   standalone:
+    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'refresh'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -35,4 +41,30 @@ jobs:
             gate-data/
             audits/readability/textfit.json
             audits/readability/textfit/
+          if-no-files-found: error
+  refresh:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Measure only rows made stale by documented deliberate changes
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          git rev-parse HEAD > gate-data/source.txt
+          timeout --signal=TERM --kill-after=30s 40m node tools/refresh-standing-stamps.mjs 2>&1 | tee gate-data/refresh.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: measured-standing-stamps
+          path: |
+            gate-data/
+            docs/mash-bot.json
+            docs/level1-curve.json
           if-no-files-found: error
