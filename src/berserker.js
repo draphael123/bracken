@@ -48,10 +48,10 @@ export const BZ = {
        T1 OVERHEAD CHOP   both axes down from over his head (the double chop he always had)
        T2 SPINNING CLEAVE one full turn with both axes out, carried a step and a half in: it cuts BEHIND him as well as ahead (cleave)
        T3 GROUND-SPLITTER both axes buried in the floor: the ground splits both ways (a shockwave that knocks the small ones DOWN) - the heaviest lean on a bar he has (claude/chargetiers) */
-  tiers: { at: [0.36, 0.86, 1.41], hold: 0.8, rageQ: 0.8, frenzyQ: 0.65, st: [0, 0, 6, 12], mul: [0, 1, 1.25, 1.5], poise: [0, 1, 1.2, 1.8],
+  tiers: { at: [0.36, 0.86, 1.41], hold: 0.8, rageQ: 0.8, frenzyQ: 0.65, st: [0, 0, 6, 12], mul: [0, 1, 1.2, 1.35], poise: [0, 1, 1.15, 1.5],   /* (tuned 10-22: 1.25/1.5 and 1.2/1.8 took the wood from 4/12 to 12/12 for him) */
     names: ['', 'OVERHEAD CHOP', 'SPINNING CLEAVE', 'GROUND-SPLITTER'], cols: [null, '#ffd0a0', '#ff8a4c', '#ff3a2a'], label: [null, '#ffe6c8', '#ffb07a', '#ff7a5a'] },
   cleave: { vx: 190, reach: 26, back: 22, shove: 220 },
-  slam: { sp: 240, life: 0.38, dmg: 0.6, reach: 24 },
+  slam: { sp: 240, life: 0.38, dmg: 0.45, reach: 24 },
   /* WEIGHT (claude/weight): his row of its commit table (src/commit.js reads COMMIT.berserker) - kept here as the record */
   commit: { light: 0.14, third: 0.2, up: 0.14, heavy: 0.27, roll: 22, rollInv: 0.26, rollT: 0.28, brace: 0.28 },   /* (claude/heropassa: the record now matches what is live - src/commit.js ROLL_COST 22 and STAM.rollInv 0.26 win; this row was never read) */
 };

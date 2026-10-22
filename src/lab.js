@@ -79,7 +79,7 @@ const RG_KNEEL = 0.17, RG_DRAW_ST = 12;   /* s knelt before the bot draws (src/r
    ON A BOSS (rgBossTier, his openings - the rotation and the mixed heavy): the PINNING SHOT bites his break bar, so it is wound while he is NOT broken; BROKEN, the quicker PIERCING
    SHOT spends the window on damage. let go = the hold has reached the wanted tier (plus a frame) */
 const rgRead = BK => { try { return BK.rg ? BK.rg() : null; } catch { return null; } };
-export function rgFoeTier(BK, e) { const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null;
+export function rgFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return rgBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null;
   if (e.alive && !(e.pinned > 0) && (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast')) return 3;
   const line = BK.enemies().filter(q => q.alive && !q.harmless && (q.x - P.x) * P.face > 0 && Math.abs(q.x - P.x) < 240 && Math.abs(q.y - P.y) < 20).length; return line >= 2 ? 2 : 1; }
 export const rgBossTier = (BK, b) => b && b.broken > 0 ? 2 : 3;
@@ -90,19 +90,22 @@ function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt
    ON A BOSS (bzBossTier, in his openings): NOT broken and RAGING -> the GROUND-SPLITTER (the poise-breaker's blow); not broken -> the SPINNING CLEAVE; BROKEN -> the quick OVERHEAD CHOP */
 const bzRead = BK => { try { return BK.bz ? BK.bz() : null; } catch { return null; } };
 const bzHot = P => (P.rage || 0) >= 50 || (P.frenzyT || 0) > 0;
-export function bzFoeTier(BK, e) { const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, near = BK.enemies().filter(q => q.alive && !q.harmless && Math.abs(q.x - P.x) < 34 && Math.abs(q.y - P.y) < 20);
+export function bzFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return bzBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, near = BK.enemies().filter(q => q.alive && !q.harmless && Math.abs(q.x - P.x) < 34 && Math.abs(q.y - P.y) < 20);
   if (near.some(q => q.x < P.x - 2) && near.some(q => q.x > P.x + 2)) return 2;
   if ((e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast' || near.length >= 3) && bzHot(P)) return 3;
   return 1; }
 export const bzBossTier = (BK, b) => b && b.broken > 0 ? 1 : bzHot(BK.P) ? 3 : 2;
 /* (claude/chargetiers) THE GEOMANCER'S HANDS USE HER THREE-TIER STAVE (src/geomancer.js GEO.tiers; main.js BK.geoTier()). ON A LEVEL FOE (geoFoeTier): a flyer (the crack misses it) -> the
    STONE SHARD; an ELITE or a plate/shell/beast -> the RISING PILLAR; a foe the short crack reaches before T1 (66 px) -> the short crack as her hands always let it go; out past the
-   fault line's 160 px -> the shard; anything else the FAULT LINE (the full crack). ON A BOSS (geoBossTier): NOT broken -> the RISING PILLAR (it heaves him and gives her wind back);
-   BROKEN -> the quicker FAULT LINE */
-export function geoFoeTier(BK, e, ad) { const fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, edge = ad - (e.w || 12) / 2;
+   fault line's 160 px -> the shard; anything else the FAULT LINE (the full crack). ON A BOSS (geoBossTier): the FAULT LINE (her quickest full blow) - and when her wind is under half
+   and he is not broken, the RISING PILLAR (the hold is the price, and the stone gives the wind back: her stamina wall). Measured: pillars on every heavy cost her the wood (28-52 a fight) */
+export function geoFoeTier(BK, e, ad) { if (e && (e.maxHp || e.mini || e === BK.boss)) return geoBossTier(BK, e);   /* (a boss or a mini struck through these hands: the boss's tier) */ const fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null, edge = ad - (e.w || 12) / 2;
   if (fam === 'wing' || e.fly || e.noGrav) return 1; if (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast') return 3;
   if (edge + 4 <= GEO_K.fault.len0 + GEO_K.fault.lenK * 0.3) return 0; return edge > GEO_K.fault.len0 + GEO_K.fault.lenK ? 1 : 2; }
-export const geoBossTier = (BK, b) => b && b.broken > 0 ? 2 : 3;
+/* (claude/chargetiers) THE OLD TUSKER's own geomancer hands want a CRACK: let go when it reaches and she is still under T1 (the short crack), or once the FAULT LINE (T2) is up - never in
+   the STONE SHARD's band, and never held on into the pillar (the full wind used to let itself go there) */
+const geoCrackGo = (BK, reach) => { const t = BK.geoTier ? BK.geoTier().tier : 0; return t >= 2 || (reach && t === 0); };
+export const geoBossTier = (BK, b) => b && b.broken > 0 ? 2 : (BK.P.st || 0) < (BK.P.maxSt || 100) * 0.5 ? 3 : 2;
 function geoLetGo(BK, want, e, ad) { const r = BK.geoTier ? BK.geoTier() : null, P = BK.P; if (!(P.charge > 0)) return false;
   if (!r || !r.tierAt) return GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4;   /* (no tiers: the old let-go) */
   if (want === 0) return GEO_K.fault.len0 + GEO_K.fault.lenK * Math.min(1, P.charge / GEO_K.wind) >= ad - (e.w || 12) / 2 + 4 || r.tier >= 1;
@@ -1719,13 +1722,14 @@ async function runbossLab(BK, opts) {
             const busy=(boss.mode==='rammed'&&boss.modeT>0.9)||(/Tell$/.test(boss.mode)&&boss.modeT>0.55)||(boss.mode==='recover'&&boss.modeT>0.45);
             if(S.pines.some(q=>q!==p&&q.st==='stand'&&Math.sign(q.x-P.x)===Math.sign(p.x-P.x)&&Math.abs(q.x-P.x)<d))continue;if(p.hp<=1?(OT_UNDER(p,kx,OT_W/2-6)&&busy):(P.st>=P.maxSt*0.8&&Math.abs(kx-P.x)>140&&(Math.sign(p.x-P.x)!==Math.sign(kx-P.x)||Math.abs(p.x-P.x)<Math.abs(kx-P.x)))){geoPine=p;break;}}}
         if(geoPine){const d=Math.abs(geoPine.x-P.x),FLK=GEO_K.fault,reachP=FLK.len0+FLK.lenK*Math.min(1,(P.charge||0)/GEO_K.wind)>=d+2;k.left=k.right=false;P.face=Math.sign(geoPine.x-P.x)||P.face;
-          if(P.charge>0&&reachP){/* let go: the crack runs under the pine */}else if(P.charge>0||P.atkHeld>0||(P.atk<0&&P.st>=(BK.heavyCost?BK.heavyCost():26)+2))k.atk=true;}
+          if(P.charge>0&&geoCrackGo(BK,reachP)){/* let go: the crack runs under the pine */}else if(P.charge>0||P.atkHeld>0||(P.atk<0&&P.st>=(BK.heavyCost?BK.heavyCost():26)+2))k.atk=true;}
         /* (a crack strokes the first marked pine it runs under: never crack through a primed pine whose fall line she stands in) */
         const geoSafe=tx=>!(S&&S.pines.some(q=>q.st==='stand'&&q.hp<=1&&Math.sign(q.x-P.x)===Math.sign(tx-P.x)&&Math.abs(q.x-P.x)<=Math.abs(tx-P.x)&&OT_UNDER(q,P.x,8)));
         const geoAd=Math.abs(boss.x-P.x),geoOpen=!geoPine&&geoSafe(boss.x)&&h==='geomancer'&&P.ground&&Math.abs(boss.y-P.y)<26&&!pl.jump&&!pl.dodge&&!pl.block&&(otOpen(boss)||((boss.mode==='walk'||boss.mode==='recover'||boss.mode==='rootTell')&&geoAd>100&&geoAd<160&&!(S&&S.ward>0)));   /* (and out of his tusks' reach, a crack along the floor at him: her kit is the long one) */
         if(geoOpen){const ad=Math.abs(boss.x-P.x),reachC=GEO_K.fault.len0+GEO_K.fault.lenK*Math.min(1,(P.charge||0)/GEO_K.wind)>=ad-OT_W/2+4;P.face=Math.sign(boss.x-P.x)||P.face;
-          if(P.charge>0&&reachC){/* let go */}else if(P.charge>0||P.atkHeld>0||(P.atk<0&&P.st>=(BK.heavyCost?BK.heavyCost():26)+2&&ad<GEO_K.fault.len0+GEO_K.fault.lenK+OT_W/2)){k.atk=true;k.left=k.right=false;}else if(pl.atk&&P.atk<0){BK.press('atk');swings++;}}
+          if(P.charge>0&&geoCrackGo(BK,reachC)){/* let go (claude/chargetiers: a CRACK - never in the shard's band; at the full wind it goes, as it used to by itself) */}else if(P.charge>0||P.atkHeld>0||(P.atk<0&&P.st>=(BK.heavyCost?BK.heavyCost():26)+2&&ad<GEO_K.fault.len0+GEO_K.fault.lenK+OT_W/2)){k.atk=true;k.left=k.right=false;}else if(pl.atk&&P.atk<0){BK.press('atk');swings++;}}
         else if(!geoPine&&pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(h==='geomancer'&&!geoOpen&&!geoPine&&k.atk&&P.charge>0&&geoCrackGo(BK,false))k.atk=false;   /* (claude/chargetiers) a wind this branch no longer wants (k.atk is kept between its frames) goes at the FAULT LINE - where the full wind used to let itself go, not on into the pillar */
         if(otOpen(boss)&&!wasOpen)opened++;wasOpen=otOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:otOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
