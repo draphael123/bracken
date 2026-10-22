@@ -75,7 +75,7 @@ async function pageTextFit(input) {
   const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
   const campaign = lvm.LEVELS.map((l, i) => [l, i]).filter(([l]) => (!l.hidden || l.secret) && l.id !== 'custom' && (!input.levels || input.levels.includes(l.id)));   /* (claude/buriedcity4: TEXTFIT_LEVELS=a,b - a lane's SCOPED run over its own levels' signs and pages; unset, every level as before) */
   const want = s => !input.only.length || input.only.includes(s);
-  const yieldNow = () => new Promise(r => setTimeout(r, 0));
+  const yieldNow = () => window.__brackenLabCollect ? window.__brackenLabCollect() : new Promise(r => setTimeout(r, 0));
   /* THE PLATES: every filled or stroked rectangle drawn while recording */
   const orig = {};
   for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = (m === 'fillRect' && typeof this.fillStyle !== 'string') ? null : window.__textRec;   /* (batch97 integ: a GRADIENT or pattern fill is a soft glow - a lamp's bloom, a sun - not a plate a word can overflow; fillRect of a flat colour still records) */ if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
@@ -199,7 +199,7 @@ async function pageTextFit(input) {
   /* THE LEVEL-UP CARD (LEVELING, 2026-10-03): the three stat cards with counts and the stats they give, a milestone's three perks, a full card's perk
      line (the longest), the respec prompt and message, and the co-op lock card. The save is put back after. */
   /* THE LEVEL TITLE CARD (claude/storyremove): the name and its one-line rule that fade in as a wood starts - on every level, a second in, in full: it is the one text a level opens with, so it must fit and must not need a story line under it */
-  if (want('levelcard')) { for (const [l, i] of campaign) { if (l.shop) continue; frame('levelcard ' + l.id, () => { BK.setHero('knight'); BK.load(i); BK.god = true; BK.start(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 40; i++) BK.step(1); window.__textRec = rec; }, { settle: 1, fromPlate: [24, 60] }); } BK.reset(); await yieldNow(); }
+  if (want('levelcard')) { for (const [l, i] of campaign) { if (l.shop) continue; frame('levelcard ' + l.id, () => { BK.setHero('knight'); BK.load(i); BK.god = true; BK.start(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 40; i++) BK.step(1); window.__textRec = rec; }, { settle: 1, fromPlate: [24, 60] }); await yieldNow(); } BK.reset(); await yieldNow(); }
   if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });
     const CARDS = [[4, { v: 1, e: 1, m: 1, ms: {} }], [25, { v: 9, e: 8, m: 7, ms: {} }], [45, { v: 25, e: 19, m: 0, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane' } }], [50, { v: 25, e: 15, m: 10, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane', 45: 'heart', 50: 'leech' } }]];
     for (const h of [...HEROES, 'geomancer', 'berserker', 'ranger']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }
@@ -390,7 +390,7 @@ async function main() {
      scope's loads (talk: 37 per hero, boss/plates: ~48) grew past 3 GB (a boss level costs ~250 MB: 90 drawn frames each; a talk load ~60 MB). The long scopes now run in batches of
      levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB, and the
      page is closed and reopened between batches. Same levels, same checks, same order in the report; each batch's issues and shots are merged below like any other part. */
-  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 1 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
+  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 6 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
   let allIds = await pg.evalp("import('/src/level.js').then(m => m.LEVELS.filter(l => (!l.hidden || l.secret) && l.id !== 'custom').map(l => l.id))", 60000);
   if (input.levels) allIds = allIds.filter(id => input.levels.includes(id));
   for (let k = units.length - 1; k >= 0; k--) { const u = units[k]; if (!BATCHED.includes(u.sc) || allIds.length <= batchOf(u.sc)) continue;
