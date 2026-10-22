@@ -2,17 +2,18 @@ name: standingreds-proof
 on:
   push:
     branches: ['codex/standingreds2']
+    paths-ignore: ['.github/workflows/standingreds-proof.yml', 'tools/refresh-standing-stamps.mjs', 'tools/trace-weight-probe.mjs']
   workflow_dispatch:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh]
+        options: [prove, refresh, trace-probe]
         default: prove
 permissions:
   contents: read
 jobs:
   standalone:
-    if: github.event_name != 'workflow_dispatch' || inputs.mode != 'refresh'
+    if: github.event_name != 'workflow_dispatch' || inputs.mode == 'prove'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -42,6 +43,23 @@ jobs:
             audits/readability/textfit.json
             audits/readability/textfit/
           if-no-files-found: error
+  trace-probe:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'trace-probe'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/trace-weight-probe.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trace-weight-probe
+          path: gate-data/
   refresh:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh'
     runs-on: ubuntu-latest
