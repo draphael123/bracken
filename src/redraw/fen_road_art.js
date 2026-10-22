@@ -8,6 +8,7 @@
 //   THE HORIZON         the Stockade's palisade grown on the skyline (stakes, rails, two horn towers, smoke), and the gate arrival at the crossing's east end
 // Palette: a cold, wet green-brown (peat, bog oak, hemp, weed), the goblins' red cloth.
 import { canvas, outline } from '../px.js';
+import * as FNB from './fen_backdrop.js';   /* (claude/fenroad2art) the fen's reflections and its heron */
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return (h ^ (h >>> 16)) >>> 0; };
@@ -315,7 +316,8 @@ function layout(L, T) {
   out.push({ k: 'stack', x: 34 * 16 }, { k: 'rack', x: 54 * 16 }, { k: 'stack', x: 56 * 16 + 20 }); L._frDress = out.sort((a, b) => a.x - b.x); return L._frDress;
 }
 /* BEHIND THE TILES */
-export function drawBack(g, L, cx, cy, time, T) {
+export function drawBack(g, L, cx, cy, time, T, px = -1e9) {
+  FNB.drawHeron(g, cx, cy, time, px);
   const d = layout(L, T), VW = g.canvas.width, wl = WATER * 16 - cy;
   for (const o of d) { const X = o.x - cx; if (X < -40 || X > VW + 40) continue;
     if (o.k === 'reedW') { const s = reedSprite(o.v); g.globalAlpha = 0.85; g.drawImage(s, Math.round(X - 12), wl - 30 + (o.v & 3) - 4); g.globalAlpha = 1; }   /* standing in the fen, a head of it clear of the water */
@@ -334,6 +336,7 @@ export function drawWater(g, L, cx, cy, time, T) {
   for (const p of L.pools || []) { if (!p.fen || p.x1 < cx || p.x0 > cx + VW) continue;
     const x0 = Math.max(p.x0, cx) - cx, x1 = Math.min(p.x1, cx + VW) - cx, y = p.y - cy, bot = (p.bottom !== undefined ? p.bottom : p.y + 64) - cy;
     g.save(); g.beginPath(); g.rect(x0, y - 8, x1 - x0, bot - y + 8); g.clip();
+    FNB.drawReflections(g, cx, cy, VW, g.canvas.height, time, (L.H * 16 - g.canvas.height) - cy, x0, x1, y);   /* (claude/fenroad2art) the cypress doubled in the murk */
     /* the sheen: a faint toxic green in the top of the water */
     g.globalAlpha = 0.09; g.fillStyle = '#8a9a2a'; g.fillRect(x0, y, x1 - x0, Math.min(34, bot - y)); g.globalAlpha = 1;
     /* the scum skin drifting on the surface */

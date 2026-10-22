@@ -144,7 +144,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
-import * as FRA from './redraw/fen_road_art.js'; import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
+import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; import * as FCA from './redraw/frog_court_art.js'; /* (claude/frogking2art) THE CROAKING COURT's art: royal pads, reeds, lanterns, the stir, the leap's splash, the tongue */ /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt, stationAt as frogStationAt, nextStation as frogNextStation } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
@@ -31732,6 +31732,7 @@ function drawWorld(cx, cy, showPlayer) {
   else if (BG.storm) SM.drawStormBack(g, BG.storm, { cx, dY: bgDY(cy), time, VW, VH, tilt: stormHorizon(), flash: boltFlash(), boltX: boltBack.x, boltI: boltBack.i, calm: seaCalm() });   /* THE HURRICANE: only her and the sea */
   else if (L.redgorge) RGB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* THE RED GORGE's own sky slit, far mesas and shaded back wall (src/redraw/redgorge_backdrop.js) */
   else if (L.rootway) RWB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), dusk());   /* THE ROOTWAY's own sky that warms with the climb, far and mid trunks, the goblins' lanterns, the great root and the gallows on the skyline, the canopy's light (claude/rootway art pass, src/redraw/rootway_backdrop.js) */
+  else if (L.fenroad) FNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full', () => { if (FRH && FRH.on()) FRH.drawSky(g, cx, cy, VW, VH, time); });   /* (claude/fenroad2art) THE FEN ROAD's own far cypress, huts, the Stockade between the far line and the mid row, the mid cypress with moss and knees, the mist (src/redraw/fen_backdrop.js) */
   else if (L.lumberKit) LTB.drawFarMid(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/lumberbackdrop) THE LUMBER TRAIL's own far + mid layers: the straight-pine ridge, the cut-back camp, the grey tarn (src/redraw/lumber_trail_far.js), not the shared forest */
   else if (L.skyroad) SKB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SKY ROAD's own far mesas, kite fleet, landmark spires and the Eyrie on the horizon (claude/skyroadart, src/redraw/skyroad_backdrop.js) */
   else if (L.buriedcity) {}   /* (claude/buriedcity2) THE BURIED CITY drew its own backdrop above: no far dunes under the sand roof */
@@ -31748,7 +31749,6 @@ function drawWorld(cx, cy, showPlayer) {
   if (GDH && GDH.on()) GDH.drawBack(g, cx, cy, time);   /* THE GREAT DRILL: its bore running past (it was an if/else ahead of the backdrop chain: with the boss asleep it skipped every backdrop in the level - claude/minecartart) */
   SEA.seaFar(g, cx, cy, VW, VH, time);   /* a sea level's far water: under the haze and the depth, so they sink into it */
   if (L.leviathan) { drawLeviathan(cx, cy); if (KRS.sky > 0.01) { g.fillStyle = 'rgba(6,10,14,' + (KRS.sky * 0.5).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }   /* THE DROWNED CAUSEWAY: the thing on the horizon, and the storm it brings */
-  if (FRH && FRH.on() && SET.parallax !== 'off') FRH.drawSky(g, cx, cy, VW, VH, time);   /* THE FEN ROAD: the Stockade's palisade growing on the skyline */
   if (L.lumberKit && SET.parallax !== 'off') LTB.drawLandmark(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* (claude/lumbertrailart) the great hive pine on the skyline, growing with the climb */
   g.fillStyle = L.violet ? 'rgba(110,30,130,0.34)' : (L.palette && L.palette.haze) || 'rgba(205,232,210,0.16)'; g.fillRect(0, 0, VW, VH);
   if (L.eye) { const ek = seaCalm(); if (ek > 0) drawEyeSky(ek); }   /* THE HURRICANE'S EYE: stars over the haze, high in the sky where no hull reaches */
@@ -31764,8 +31764,9 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
-  if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
+  else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/fenroad2art) the fen's near trunks, moss curtains, low drift and dragonflies */
   else if (L.lumberKit) { if (SET.parallax !== 'off') LTB.drawNearTrunks(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/lumberbackdrop) the trail's own near trunks + boughs, not the shared leafy trees */
   else if (!L.castle && !L.colosseum && !FAIR && !L.canal && !L.towpath && !L.rootway && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
   SEA.seaBack(g, cx, cy, VW, VH, time, state === 'play' && !P.dead ? P : null);   /* and its living water, behind the tiles and everything that matters */
@@ -31811,7 +31812,7 @@ function drawWorld(cx, cy, showPlayer) {
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); if (L.fenroad) FRA.drawBack(g, L, cx, cy, time, T); if (L.frogCourt) FCA.drawBack(g, L, cx, cy, time); drawClimbCues(g,L,cx,cy);
+  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); if (L.fenroad) FRA.drawBack(g, L, cx, cy, time, T, P.x); if (L.frogCourt) FCA.drawBack(g, L, cx, cy, time); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
