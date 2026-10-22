@@ -25,7 +25,7 @@
 import * as M2A from './redraw/marsh2_art.js';
 
 export const FK = {
-  hp: 1250,
+  hp: 1500,
   p2At: 0.5,                       /* HIS POND STIRS */
   drainAt: -1,                     /* (claude/firsthour's plug drain is retired: the court is open water from the start) */
   quota: [0.22, 0.22],             /* the share of him one royal pad is worth before he leaps on, per phase */
