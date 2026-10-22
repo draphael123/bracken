@@ -1,6 +1,6 @@
 # codex/registry-split
 
-Status: Partial. Registry migration and exact source/data comparisons pass; real-page hash/pixel proof is pending.
+Status: Success. Registry migration, exact source/data comparisons, and isolated real-page gameplay/pixel equivalence passed.
 Base: newest origin/master verified at BATCH112 `5e44cddd` on October 22, 2026.
 Task 1 descriptor/inventory prerequisites are included; no master merge or deployment performed.
 
@@ -11,7 +11,7 @@ Task 1 descriptor/inventory prerequisites are included; no master merge or deplo
 - Runtime timestamps, node paths and run tags are resolved by the runner, never captured in manifests.
 - Existing relative order is preserved; new checks sort before final profile cleanup.
 - Added manifest validation and an automatic-discovery proof using a temporary feature declaration.
-- MERGING.md documents the new check workflow and explicitly identifies the registries not migrated yet.
+- MERGING.md documents feature-owned check, tell, main-table/import and generated preload workflows.
 
 ## Verification
 
@@ -39,12 +39,18 @@ timeout, game source, game data or generated tell table changed in this step.
   passed: syntax, tells, comments, homepaths, content-audit, threat-holes, one-new-foe, answer-tags,
   modulepreload. Inventory remains exactly 425 names in the original order.
 
-## Remaining proof
+## Verified real-page equivalence
 
-The isolated real-page proof compares the pre-refactor game against this branch with the same
-transport, seed and input script. It retains source SHAs, complete gameplay traces, tell/level-data
-hashes and exact pixel hashes for Wood, Spire and Canal. Its result is pending; the expression hash
-above is not being presented as a browser/gameplay proof. Full integration gate remains outstanding.
+GitHub Actions run 39800952740 passed on source 46115d19dacf84527808be5d909251e8428b10f0
+at 2026-10-22T15:03:32.492Z (11:03:32 AM EDT). The isolated pre-refactor build 5e44cddd
+and this branch used the same lab transport, seed and 180-frame input script in Wood, Spire and
+Canal. All built level geometry/entities/movers/ambush data, tell values, full recorded gameplay
+and enemy state, and exact RGBA pixels were identical. Combined before/after SHA-256:
+c4c899f061182905a4f10fbfab70059aa0d5d3d52296ddfeba1f798ab94e1627.
+The receipt, before/after snapshots, PNGs and owned-process logs are retained in the run's
+registry-equivalence artifact and locally outside git in work/registry-equivalence-built-cloud.
+This is a bounded gameplay/visual comparison, not a claim that the separate full release gate
+is green. The unchanged 425-check inventory and targeted source/generator checks also pass.
 
 ## QUESTIONS FOR DANIEL
 
