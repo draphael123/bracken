@@ -1,0 +1,38 @@
+name: standingreds-proof
+on:
+  push:
+    branches: ['codex/standingreds2']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  standalone:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [berserker, dune-worm, bells, rule-openings, slopes-trace, visible-supports-strict, reed-island, small-adds, textfit-talk, textfit-levelcard, mash-gate, curve-gate]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Three consecutive standalone passes, stop at the first red
+        env:
+          CHECK: ${{ matrix.check }}
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          timeout --signal=TERM --kill-after=30s 40m node tools/standingreds-proof.mjs "$CHECK" gate-data 2>&1 | tee gate-data/combined.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: standingreds-${{ matrix.check }}
+          path: |
+            gate-data/
+            audits/readability/textfit.json
+            audits/readability/textfit/
+          if-no-files-found: error

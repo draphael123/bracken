@@ -12,7 +12,9 @@ export function drawRouteSupports(g,L,cx,cy){
  if(p.kind==='lpiron'){lpSupportDraw(g,p,L,cx,cy);continue;}
  if(p.kind==='fenpile'){drawFenPile(g,p,cx,cy);continue;}
  if(STK_KINDS.has(p.kind)){drawStockadeSupport(g,p,cx,cy,L);continue;}
- if(p.kind){if(CHURCH_SUPPORT.has(p.kind))drawChurchSupport(g,p,cx,cy);else drawForestSupport(g,p,cx,cy);continue;}
+ /* A width-specified pier is the Monastery's baked masonry kit. Both kits use 'pier'; the church dispatch used to
+    swallow the Monastery's entries and start their shaft below its deck. Preserve each feature's own renderer. */
+ if(p.kind){if(p.kind==='pier'&&Number.isFinite(p.w))drawForestSupport(g,p,cx,cy);else if(CHURCH_SUPPORT.has(p.kind))drawChurchSupport(g,p,cx,cy);else drawForestSupport(g,p,cx,cy);continue;}
  g.fillStyle='#46382c';g.fillRect(x,y,4,bottom-y);g.fillStyle='#806746';g.fillRect(x,y,1,bottom-y);g.fillStyle='#b2a186';g.fillRect(x-1,y+5,6,2);
  }
 }

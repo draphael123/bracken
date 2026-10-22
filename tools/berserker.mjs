@@ -25,6 +25,8 @@
 //             weapon skin on the axe heads only
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
+import { BZ } from '../src/berserker.js';
+import * as AM from '../src/anti-mash.js';
 const pg = await openPage({ audio: false, fonts: false });
 const fails = [], ok = (c, m) => { if (!c) fails.push(m); };
 try {
@@ -134,7 +136,10 @@ try {
   ok(F.combos[6] === 1, 'flurry: a chop after a whiff did not start the run over: ' + F.combos);
   ok(Math.max(...F.reach.slice(0, 4)) <= 20 && Math.max(...F.reach.slice(0, 4)) >= 16, 'flurry: the chops should reach 16-20 px (short: the knight\'s sword is longer): ' + F.reach);
   ok(F.spinL >= 12 && F.spinR >= 12, 'air: both axes should spin round him (a box both sides): ' + JSON.stringify(F));
-  ok(r.cross.bz.heavy && r.cross.bz.most >= 60, 'double chop: not a heavy, or one does not fill most of a mini\'s poise bar: ' + JSON.stringify(r.cross));
+  /* 97206a12 deliberately replaced the old poise formula with the universal break bar. A guarded heavy now fills
+     26 * 0.6 plus the berserker's 30 * 1.4 = 57.6 of this mini's 70, rather than the old >=60 floor. */
+  const crossPoise = AM.BREAK.fill.heavy * AM.BREAK.outside + BZ.poise.heavy * BZ.poise.bossMul;
+  ok(r.cross.bz.heavy && r.cross.bz.most === crossPoise, 'double chop: a guarded heavy must fill the universal break bar plus his own poise bonus (' + crossPoise + '): ' + JSON.stringify(r.cross));
   ok(r.roll.stag && r.roll.shoves > 0, 'roll: the shoulder roll did not knock the small foe aside: ' + JSON.stringify(r.roll));
   const T = r.take;
   ok(T.beat === 'blocked' && T.beatLost === 0 && T.parries === 1 && T.ripT > 0 && T.ripCross, 'take it: raised as the blow landed it should parry (nothing lost, the riposte window, the next cut the cross-chop): ' + JSON.stringify(T));
