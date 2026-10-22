@@ -18,15 +18,15 @@ let shotN = 0;
 const opt = (k, d) => { const a = process.argv.find(s => s.startsWith('--' + k + '=')); return a ? a.split('=')[1] : d; };
 const has = k => process.argv.includes('--' + k);
 const FOES = +opt('foes', 8), ONLY = opt('levels', '') ? opt('levels', '').split(',') : null, REPORT = has('report');
-const pg = await openPage({ audio: false, fonts: false, seed: 1008, nativePressure: true });
+const pg = await openPage({ audio: false, fonts: false, seed: 1008 });
 let bad = 0;
 /* FOUND BY THIS CHECK, NOT THE CANAL'S, reported and left to the level's owner (never silently passed: each prints KNOWN every run). Remove a line when it is fixed. */
 const KNOWN = new Set(['undercrown|shardling|shed', 'hurricane|petrel|dive', 'marsh|hopper|sit', 'minecart|miner|swing']);   /* (batch91 integ: a minecart miner's swing at 81,28 draws 0 px of 52 max (MIN_D 60) when the seeded stream reaches that level after this batch's merges; run alone, with the default sample or all 27 foes, the level is clean on this branch AND on master - the sample moved, the level did not: the level owner's) */   /* (batch81 integ: the sample is drawn from the seeded stream, so the merge moved it onto two more of the same kind: a diving storm petrel on the Hurricane Deck and a sitting marsh hopper beside the hero draw nothing the oracle can see on some frames. Neither level changed in this batch; both are the level owners' - see the report) */
 try {
-  const res = await pg.evalp(`(async()=>{
+  const script = `(async()=>{
     const { LEVELS, T } = await import('/src/level.js'); const TS = 16; const ONLY = ${JSON.stringify(ONLY)}, FOES = ${FOES}, TUNNEL = ${!has('no-tunnel')}, TUNNEL_ONLY = ${has('tunnel-only')};
     const MIN_D = 60, MIN_PX = 3, MELEE = 72, SHOTS = ${has('shots')}, shots = [];
-    BK.manualSimulation = true; BK.setHero('knight'); BK.reset({ fresh: true });
+    const UNIT = __BRACKEN_HIDDEN_UNIT__; 
     const collectRetired = () => window.__brackenLabCollect ? window.__brackenLabCollect() : new Promise(r => setTimeout(r, 0));
     const grab = () => { const c = BK.view.buf; return c.getContext('2d').getImageData(0, 0, c.width, c.height).data; };
     const moved = (a, b) => { let n = 0, mx = 0; for (let i = 0; i < a.length; i += 4) { const d = Math.abs(a[i] - b[i]) + Math.abs(a[i + 1] - b[i + 1]) + Math.abs(a[i + 2] - b[i + 2]); if (d > mx) mx = d; if (d >= MIN_D) n++; } return { n, mx }; };
@@ -46,7 +46,7 @@ try {
           if (isHid) note(d <= MELEE ? hidden : notes, lv, e, { why: d <= MELEE ? 'a blow with nothing drawn (' + v.n + ' px moved, max ' + v.mx + '), ' + Math.round(d) + ' px from the hero' : 'a ranged blow from an undrawn shooter (' + v.n + ' px, ' + Math.round(d) + ' px away)', px: v.n, png: SHOTS && shots.length < 6 ? (BK.draw1(), shots.push(1), BK.view.buf.toDataURL('image/png')) : undefined }); } }
       return { hidden, notes, blows: n }; };
     /* ---- THE LEVEL SAMPLE ---- */
-    if (!TUNNEL_ONLY) for (let li = 0; li < LEVELS.length; li++) { const lv = LEVELS[li].id; if (ONLY && !ONLY.includes(lv)) continue;
+    if (!TUNNEL_ONLY && UNIT.kind === 'level') for (let li = 0; li < LEVELS.length; li++) { if(li !== UNIT.index)continue; const lv = LEVELS[li].id; if (ONLY && !ONLY.includes(lv)) continue;
       try { BK.load(li); BK.start ? BK.start() : (BK.state = 'play'); } catch (err) { out.levels.push({ level: lv, error: String(err) }); continue; }
       await collectRetired(); // Same page and random stream; the previous level's native art is now retired.
       BK.god = true; BK.sim(200); const all = BK.enemies().filter(e => e.alive && !e.harmless && !e.maxHp && !e.mini && !e.waiting && e.t); const kinds = new Set(), pick = [];
@@ -59,7 +59,7 @@ try {
         row.blows += r.blows; row.hidden.push(...r.hidden); row.notes.push(...r.notes); clear(); }
       out.levels.push(row); }
     /* ---- THE LEGGING TUNNEL: the hero legs the barge, lit then dimmed ---- */
-    if (TUNNEL && (!ONLY || ONLY.includes('canal'))) for (const dim of [false, true]) { const li = LEVELS.findIndex(l => l.id === 'canal'); BK.load(li); BK.start ? BK.start() : (BK.state = 'play'); BK.god = true;
+    if (TUNNEL && UNIT.kind === 'tunnel' && (!ONLY || ONLY.includes('canal'))) for (const dim of [false, true]) { if(dim !== UNIT.dim)continue; const li = LEVELS.findIndex(l => l.id === 'canal'); BK.load(li); BK.start ? BK.start() : (BK.state = 'play'); BK.god = true;
       await collectRetired();
       const C = () => BK.canal(), B = () => C().barge; B().x = 250 * TS; BK.tp(252, 14); BK.sim(30); /* the DIMMED run lights her through the mouth and the stop-planks, then strikes the lantern out for the nest */
       let dirR = true; const seen = {}; const row = { dim, hidden: [], notes: [], blows: 0, frames: 0, reached: 0 }; let guard = 0;
@@ -69,7 +69,19 @@ try {
         row.hidden.push(...r.hidden); row.notes.push(...r.notes); row.blows += r.blows; row.frames += 60 * 24; if (B().x > 340 * TS) break; if (r.blows === 0 && ++guard > 20) break; await collectRetired(); }
       row.reached = Math.round(B().x / TS); row.why = B().holdWhy + ' lamp ' + C().lamp + ' stops ' + C().stops.map(q => q.k.toFixed(1) + (q.up ? 'u' : 'd')).join(',') + ' hero ' + Math.round(P().x / TS) + ',' + Math.round(P().y / TS) + ' onbarge ' + !!(P().onMover && P().onMover.canal); out.tunnel.push(row); }
     return out;
-  })()`, 3000000);
+  })()`;
+  // Each original case returns to the protocol before collection. One page preserves the complete random stream,
+  // progression and clock; no fresh browser, extra update or resampling is introduced between levels.
+  const deadline=Date.now()+3000000;
+  const levels=await pg.evalp(`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});return LEVELS.map((l,index)=>({id:l.id,index}));})()`,Math.max(1,deadline-Date.now()));
+  const units=[];if(!has('tunnel-only'))for(const l of levels)if(!ONLY||ONLY.includes(l.id))units.push({kind:'level',index:l.index,id:l.id});
+  if(!has('no-tunnel')&&(!ONLY||ONLY.includes('canal')))for(const dim of [false,true])units.push({kind:'tunnel',dim});
+  const res={levels:[],tunnel:[]};
+  for(const u of units){const part=await pg.evalp(script.replace('__BRACKEN_HIDDEN_UNIT__',JSON.stringify(u)),Math.max(1,deadline-Date.now()));res.levels.push(...part.levels);res.tunnel.push(...part.tunnel);
+    await pg.send('HeapProfiler.collectGarbage',{},Math.max(1,Math.min(15000,deadline-Date.now())));
+    await pg.send('Memory.simulatePressureNotification',{level:'critical'},Math.max(1,Math.min(15000,deadline-Date.now())));
+    console.log('hidden-hit case '+(u.id||('tunnel '+(u.dim?'dimmed':'lit')))+' complete');}
+
   if (process.env.NO_HIDDEN_RESULT) writeFileSync(process.env.NO_HIDDEN_RESULT, JSON.stringify({seed:1008,foes:FOES,...res},null,2)+'\n');
   const show = (h, pre) => { if (h.png) { const f = join(ROOT, 'work/claude/tunnelfix/' + (++shotN) + '-' + h.t.split('/').join('_') + '-' + h.mode + '.png'); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, Buffer.from(h.png.split(',')[1], 'base64')); pre += '[' + f.slice(ROOT.length) + '] '; } console.log(pre + h.level + ' - ' + h.t + ' (' + h.mode + ') at ' + h.at.join(',') + ': ' + h.why); };
   for (const row of res.levels) {
