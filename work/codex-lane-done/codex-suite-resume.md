@@ -1,7 +1,7 @@
 # codex/suite-resume
 
-Status: Partial. Checkpoint/resume unit and CLI checks pass. Browser fault injection, leak attribution
-and full-suite equivalence are pending adequate local memory.
+Status: Partial. Checkpoint/resume unit, CLI and real-browser fault injection pass. Leak attribution,
+shared-browser recycling proof and full-suite equivalence remain pending.
 Base: latest origin/master checked 2026-10-22, BATCH112 `5e44cddd`.
 Dependency: includes Task 1's runner/receipt refactor as a prerequisite cherry-pick. Merge ci-gate first;
 the task-specific changes are the commits after that prerequisite. No master merge or deployment.
@@ -41,8 +41,15 @@ INCOMPLETE: recovery proof needs at least 1536 MB free; currently 945 MB. No bro
 - Real CLI run then --resume without repeating a check: passed, all 3 stored rows retained byte-for-byte.
 - Gate partition/coverage/failure-format tests: passed, exact inventory still 425.
 - Changed module syntax and whitespace checks: passed.
-- Real-browser kill/recycle/memory-cap proof: pending. Available memory reached 392 MB during unrelated
-  lanes, then 945 MB. This task has not started a browser while below its proof's admission floor.
+- Real-browser kill/resume proof: PASS at e1baecb8, 2026-10-22 12:49:20 UTC (08:49:20 EDT).
+  Recorded browser PID 16840 was killed at 12:48:52 UTC. Uninterrupted suite PID 88892 exited 0,
+  interrupted suite PID 6604 exited 2 with 3 saved verdicts and no fonts verdict, resumed suite PID
+  85896 exited 0. All 4 combined verdicts matched; the 3 completed rows were retained exactly.
+  Receipt retained outside git: suite-recovery-proof-e1baecb8/proof.json beside the worktrees.
+  Peak fonts renderer was about 1049 MB, browser-tree total about 1608 MB.
+- Forced resource admission denial: PASS. No browser launched, fonts was saved as interrupted with
+  no game verdict, and the suite exited incomplete. Actual shared count-based recycle/cap crossing proof
+  remains pending. No browser proof started while below its 1536 MB admission floor.
 - Full uninterrupted/resumed gate equivalence and top-growing-check measurements: pending. Do not
   infer that the renderer leak itself is fixed from the protocol-disconnect fix or configured guards.
 
