@@ -49,3 +49,4 @@ export function rock() {
 export function arrow() {
   return once('arrow', () => { const [c, g] = canvas(16, 5); rect(g, 2, 2, 11, 1, '#8a5a32'); rect(g, 2, 2, 11, 1, '#c9a060'); rect(g, 12, 1, 3, 3, '#9a9aa6'); rect(g, 13, 2, 3, 1, '#e8eef8'); rect(g, 0, 0, 2, 2, '#e8e0d0'); rect(g, 0, 3, 2, 2, '#e8e0d0'); rect(g, 2, 1, 2, 1, '#c9463d'); rect(g, 2, 3, 2, 1, '#c9463d'); return c; });
 }
+export function warm() { padlock(); heap(); rock(); arrow(); }

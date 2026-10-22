@@ -90,3 +90,4 @@ export function embers(g, cx, cy, VW, VH, time, n, wind = 20) {
   }
   g.globalAlpha = 1;
 }
+export function warm() { for (const s of ['S', 'M', 'L']) sheet(s); torchSprite(); smoke({ save() {}, restore() {}, drawImage() {}, set globalAlpha(v) {} }, 0, 0, 0.1, 1); smoke({ save() {}, restore() {}, drawImage() {}, set globalAlpha(v) {} }, 0, 0, 0.5, 1); smoke({ save() {}, restore() {}, drawImage() {}, set globalAlpha(v) {} }, 0, 0, 0.9, 1); once('bed', () => [0, 1, 2, 3].map(bakeBed)); }

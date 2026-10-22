@@ -231,3 +231,5 @@ export function drawAreas(g, cx, cy, VW, VH, time, dY, full, L) {
     if (A.lights.length) { g.save(); g.globalCompositeOperation = 'lighter'; for (const [lx, ly, r, a] of A.lights) { const x = lx - cx, y = ly - cy; if (x < -r || x > VW + r || y < -r || y > VH + r) continue; g.globalAlpha = a * (0.85 + 0.15 * Math.sin(time * 5 + lx)); g.drawImage(glowSpr, R(x - r), R(y - r), r * 2, r * 2); } g.restore(); }
   }
 }
+/* (claude/gorm2art) bake an area's chunks now (the level's load): the hall, the burning wood and the glade, so the fight never hitches on a first look */
+export function warmAreas(L, ids) { for (const A of AREAS) { if (!ids.includes(A.id)) continue; const n = Math.ceil((A.x1 - A.x0) * TS / CH); for (let ci = 0; ci < n; ci++) chunk(A, ci, L); } }

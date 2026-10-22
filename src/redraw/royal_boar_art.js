@@ -13,9 +13,9 @@ const W = 52, H = 34;
 
 /* one leg: from the hip (x, 24) to a foot at (x + dx, 32 - lift), 3 thick, a split hoof */
 function leg(g, x, dx, lift, far) {
-  const col = far ? C.dd : C.d, fy = 31 - lift, fx = x + dx;
+  const col = far ? '#2e1a0e' : '#52331f', fy = 31 - lift, fx = x + dx;
   for (let i = 0; i <= 7; i++) { const t = i / 7; rect(g, Math.round(x + (fx - x) * t) - 1, Math.round(24 + (fy - 24) * t), 3, 2, col); }
-  rect(g, fx - 2, fy, 5, 2, C.e); if (!far) { rect(g, fx - 1, fy - 2, 1, 2, C.l); }
+  rect(g, fx - 2, fy, 5, 2, C.e); if (!far) { rect(g, fx - 1, fy - 6, 1, 5, '#7a5236'); rect(g, fx - 2, fy - 1, 5, 1, '#8a8070'); }
 }
 function boar(g, o) {
   const rump = o.rump || 0, hd = o.hd || 0, L = o.legs || [0, 0, 0, 0, 0, 0, 0, 0];   /* [farHind x/lift, hind, farFront, front] as (dx, lift) pairs */
@@ -24,7 +24,7 @@ function boar(g, o) {
   leg(g, 13, L[0], L[1], true); leg(g, 31, L[4], L[5], true);
   rect(g, 6, by - 4 + (o.tail || 0), 3, 2, C.d); rect(g, 4, by - 6 + (o.tail || 0), 3, 3, C.d); rect(g, 3, by - 7 + (o.tail || 0), 2, 2, C.m);
   /* the body: a heavy barrel with the weight forward, belly dark, back lit */
-  ellipse(g, 20, by + 1 + (rump > 0 ? 1 : 0), 15, 8, C.d); ellipse(g, 20, by, 15, 8, C.b); ellipse(g, 30, by - 1 + hd * 0.2, 9, 8.5, C.b); ellipse(g, 19, by + 4, 13, 3.5, C.d, C.dd);
+  ellipse(g, 20, by + 1 + (rump > 0 ? 1 : 0), 15, 8, C.d); ellipse(g, 20, by, 15, 8, C.b); ellipse(g, 30, by - 1 + hd * 0.2, 9, 8.5, C.b); ellipse(g, 19, by + 4, 13, 3.5, C.d);
   ellipse(g, 18, by - 4, 11, 3, C.l); ellipse(g, 28, by - 6, 6, 2.2, C.ll); rect(g, 12, by - 7, 14, 1, C.ll);
   for (let i = 0; i < 5; i++) rect(g, 9 + i * 3 + (i > 2 ? 1 : 0), by + 1 + (i % 2) * 2, 1, 2, C.d);   /* the flank's ribs */
   /* the crest: a ridge of stiff bristles down the back, tipped red */

@@ -17,10 +17,12 @@ import { GORM, GORM_SAY, fireStep } from './gorm.js';
 import { newRoyalBoar } from './royal-boar.js';
 import * as CT from './carry-throw.js';
 import * as KP from './redraw/kingswood_props.js';
+import * as GPZ from './redraw/gorm_poses.js';
 import * as FX from './redraw/gorm_fx.js';
 import * as GG from './redraw/gorm_glade.js';
 import * as GH from './redraw/gorm_hall.js';
 import * as KO from './redraw/kingswood_oak.js';
+import * as KWA from './redraw/kingswood_areas.js';
 CT.addKind('courtrock', { aims: { low: GORM.rock.low, mid: GORM.rock.mid, high: { vx: GORM.rock.vx, vy: GORM.rock.vy } }, g: GORM.rock.g, r: 3, ring: 9, dots: 16 });
 
 export function makeGormHands(ctx) {
@@ -35,9 +37,15 @@ export function makeGormHands(ctx) {
   const pegBox = (x, y) => ({ l: x - 7, r: x + 7, t: y - 26, b: y + 2 });
 
   /* ---------------- LOAD / RESET ---------------- */
+  let warmed = false;
   H.load = () => { persist = null; S = null; };
+  /* (claude/gorm2art) every sprite of his fight bakes HERE, in the level's load, not on the first frame he is drawn (a 0.5 s hitch as the horn blows) */
+  function warm() {
+    try { GPZ.warm(); GG.warm(ctx.VH()); const hl = G().hall; if (hl) for (const r of hl.ropes) GH.deck(r.deck[1] - r.deck[0], r.x - r.deck[0]); GH.warm(); for (const b of [0, 0.5, 0.75, 1]) KO.oakSprite(b); FX.warm(); KWA.warmAreas(L(), ['hall', 'burn', 'glade']); } catch (e) { /* art only: never stops a load */ }
+  }
   H.reset = () => {
     const lv = L(); if (!lv || !lv.gorm) { S = null; return; }
+    if (!warmed) { warmed = true; warm(); }
     const g = lv.gorm, keepSaid = S ? S.said : new Set();
     S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [], rocks: [], took: 0, rockCd: 0, near: null, arc: null,
       run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),

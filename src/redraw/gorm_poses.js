@@ -98,3 +98,5 @@ function overProp(g, e, prop, x, y, face, time, fr0) {
     case 'stung': for (let k = 0; k < 10; k++) { const a = time * (4 + k % 3) + k; f(g, k % 3 ? '#e0b040' : '#1a0e08', x + R(Math.cos(a) * 30), top + 10 + R(Math.sin(a * 1.3) * 22), 2, 1); } break;
   }
 }
+/* bake everything now (the level's load) */
+export function warm() { void UP.set; void SEAT.set; void BEARER.R; }

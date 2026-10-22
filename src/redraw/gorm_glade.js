@@ -132,3 +132,4 @@ export function fireWall(VH) {
 export function heatWash() {
   return once('heat', () => { const [c, g] = canvas(160, 4), gr = g.createLinearGradient(0, 0, 160, 0); gr.addColorStop(0, 'rgba(120,16,6,0.9)'); gr.addColorStop(0.5, 'rgba(190,50,16,0.5)'); gr.addColorStop(1, 'rgba(255,120,40,0)'); g.fillStyle = gr; g.fillRect(0, 0, 160, 4); return c; });
 }
+export function warm(VH) { for (const b of [0, 0.5, 0.75, 1]) boughs(b); lodge(); stump(); hive(true); hive(false); cone(); branch(34); crest(); fireWall(VH || 360); heatWash(); }
