@@ -208,9 +208,9 @@ function curve(g, a, c, b, r0, r1, ramp, rings = 0) {
 // Each part is drawn on its own layer and outlined before it is laid down, so the near arm, the head and the
 // pelt read against the body the way a hand-drawn sprite's inner lines do.
 function chiefFrame(W, H, o) {
-  const { ax, F, legs = 'stand', dy = 0, lean = 0, mouth = 'grim', near, far, club = null, sword = null, shield = null, bow = null, nearOpen = false, farClub = null } = o;
+  const { ax, F, legs = 'stand', dy = 0, lean = 0, mouth = 'grim', near, far, club = null, sword = null, shield = null, bow = null, nearOpen = false, farClub = null, horn = null, far2 = null, soot = false, hup = 0 } = o;   /* (claude/chief3art) horn: the great war horn {pts:[mouth, bend, bell], r1, strap}; far2: the far arm drawn IN FRONT, [elbow, hand], to hold it */
   const X = ax, Y = F + dy; // body origin: between the feet, on the floor (the body drops, the feet stay put)
-  const hx = Math.round(X + 7 + lean), hy = Math.round(Y - 33); // head centre
+  const hx = Math.round(X + 7 + lean), hy = Math.round(Y - 33 - hup); // head centre (hup: thrown back / raised)
   const shN = [X + 6 + lean * 0.7, Y - 25], shF = [X - 5 + lean * 0.7, Y - 26];
   const [out, go] = canvas(W, H);
   let g = null;
@@ -261,8 +261,8 @@ function chiefFrame(W, H, o) {
   }, OUT);
   // ---------- 2. legs, kilt, torso (one mass: the final outline takes care of its edge)
   layer(() => {
-    const LEG = { stand: [[X - 4, X - 6, X - 6], [X + 4, X + 6, X + 6]], stride: [[X - 4, X - 7, X - 9], [X + 4, X + 7, X + 8]], pass: [[X - 3, X - 3, X - 3], [X + 3, X + 4, X + 3]], crouch: [[X - 4, X - 11, X - 9], [X + 4, X + 11, X + 9]] }[legs];
-    const kneeY = legs === 'crouch' ? F - 8 : F - 6;
+    const LEG = { stand: [[X - 4, X - 6, X - 6], [X + 4, X + 6, X + 6]], stride: [[X - 4, X - 7, X - 9], [X + 4, X + 7, X + 8]], pass: [[X - 3, X - 3, X - 3], [X + 3, X + 4, X + 3]], crouch: [[X - 4, X - 11, X - 9], [X + 4, X + 11, X + 9]], sit: [[X - 4, X + 7, X + 15], [X + 4, X + 12, X + 20]] }[legs];
+    const kneeY = legs === 'crouch' ? F - 8 : legs === 'sit' ? F - 10 : F - 6;
     LEG.forEach(([hipX, kneeX, footX], i) => {
       const pal = i === 0 ? CK.SF : CK.S, hip = [hipX, Y - 10], knee = [kneeX, kneeY], ank = [footX, F - 3];
       seg(g, hip, knee, 7.5, pal); seg(g, knee, ank, 6.5, pal);
@@ -293,6 +293,14 @@ function chiefFrame(W, H, o) {
     for (let x = X - 10.5, k = 0; x <= X + 8; x += 2, k++) { const yy = Y - 25 + (k % 3 === 1 ? 1 : 0) + (k % 3 === 2 ? -0.5 : 0); fillPoly(g, [[x - 1.2, yy - 2], [x + 1.2, yy - 2], [x + 0.4, yy + 1.8]], CK.F[k & 1 ? 1 : 0]); }
     for (let x = X - 8, k = 0; x <= X + 6; x += 3, k++) px(g, x + L0, Y - 29 - (k & 1), CK.F[3]);
   }, '#2a2018');
+  /* (claude/chief3art) THE GREAT WAR HORN: a curved bone horn as long as his arm, brass-banded, a flared brass bell and a leather strap - bigger than the blowers' ivory one, so it reads as the chief's */
+  const drawGreatHorn = h => { const [a, c, b] = h.pts, r1 = h.r1 || 4.6, at = t => quad(a, c, b, t), rad = t => 1.5 + (r1 - 1.5) * t;
+    if (h.strap) { const m = at(0.42); line(g, m[0], m[1], h.strap[0], h.strap[1], CK.L[0], 2); line(g, m[0], m[1] - 1, h.strap[0], h.strap[1] - 1, CK.L[2]); }
+    curve(g, a, c, b, 1.5, r1 - 0.6, CK.H, 0.16);
+    for (const t of [0.14, 0.5, 0.86]) { const p = at(t), q = at(t + 0.03), dx = q[0] - p[0], dy = q[1] - p[1], n = Math.hypot(dx, dy) || 1, r = rad(t) - 0.2; const nx = -dy / n * r, ny = dx / n * r; line(g, p[0] - nx, p[1] - ny, p[0] + nx, p[1] + ny, CK.gold2, 2); line(g, p[0] - nx, p[1] - ny - 1, p[0] + nx, p[1] + ny - 1, CK.gold); }
+    const e = at(1), p0 = at(0.93), dx = e[0] - p0[0], dy = e[1] - p0[1], n = Math.hypot(dx, dy) || 1;
+    circle(g, e[0], e[1], r1 + 0.8, CK.gold2); circle(g, e[0] - 0.4, e[1] - 0.4, r1 + 0.1, CK.gold); circle(g, e[0] + dx / n * 1.4, e[1] + dy / n * 1.4, r1 - 1.6, '#1a0a0a');   /* the bell: a brass rim round a dark throat */
+    circle(g, a[0], a[1], 1.4, CK.gold2); px(g, a[0], a[1], CK.gold); };
   const nearLayer = () => layer(() => {
     if (club) drawClub(club.at, club.ang, club.len);
     if (bow) { const [gx, gy] = bow.at, top = [gx - 4, gy - 12], bot = [gx - 4, gy + 12], dr = bow.draw;
@@ -301,6 +309,8 @@ function chiefFrame(W, H, o) {
       circle(g, top[0], top[1], 1, CK.H[1]); circle(g, bot[0], bot[1], 1, CK.H[1]);
       line(g, dr[0], dr[1], gx + 8, gy, CK.Wd[2]); fillPoly(g, [[gx + 7, gy - 2], [gx + 11, gy + 0.5], [gx + 7, gy + 2.5]], CK.I[3]);
       rect(g, dr[0] - 2, dr[1] - 1, 3, 1, CK.R[2]); rect(g, dr[0] - 2, dr[1] + 1, 3, 1, CK.R[2]); }
+    if (horn) drawGreatHorn(horn);
+    if (far2) arm(shF, far2[0], far2[1], CK.SF, false, true);
     if (near) arm(shN, near[0], near[1], CK.S, nearOpen, !shield);
     if (shield) { const [sx, sy] = shield;
       circle(g, sx, sy, 8, CK.I[0]); circle(g, sx - 0.4, sy - 0.4, 7.4, CK.I[1]);
@@ -323,6 +333,7 @@ function chiefFrame(W, H, o) {
     fillPoly(g, [[hx + 4.5, hy - 1.5], [hx + 10, hy + 2.5], [hx + 5.5, hy + 3]], CK.S[1]); line(g, hx + 6, hy + 2.5, hx + 9, hy + 2.5, CK.S[0]); px(g, hx + 6, hy - 0.5, CK.S[2]); // nose
     if (mouth === 'roar') { fillPoly(g, [[hx + 0.5, hy + 3], [hx + 8, hy + 2.5], [hx + 7, hy + 7], [hx + 1.5, hy + 6.5]], CK.mouth); rect(g, hx + 3, hy + 5, 3, 1, CK.tongue);
       rect(g, hx + 1, hy + 3, 1, 2, CK.tusk); rect(g, hx + 6, hy + 3, 1, 1, CK.tusk); rect(g, hx + 2, hy + 5.5, 1, 1, CK.tusk); rect(g, hx + 6, hy + 5.5, 1, 1, CK.tusk); }
+    else if (mouth === 'puff') { oval(g, hx + 2.5, hy + 4.6, 5.6, 4, 0.1, [CK.S[1], CK.S[2], CK.S[2]]); line(g, hx - 2, hy + 7, hx + 4, hy + 8, CK.S[0]); rect(g, hx + 7, hy + 2, 1, 2, CK.tusk); rect(g, hx + 1, hy + 2, 1, 2, CK.tusk); px(g, hx - 2, hy + 3, CK.S[0]); px(g, hx - 2, hy + 4, CK.S[0]); }   /* the cheeks blown out round the mouthpiece */
     else { line(g, hx + 1, hy + 4.5, hx + 7, hy + 4, CK.mouth); rect(g, hx + 6, hy + 2, 1, 2.5, CK.tusk); rect(g, hx + 2, hy + 2.5, 1, 2, CK.tusk); px(g, hx + 6, hy + 1.5, CK.H[2]); }
     // the helm sits down to the brow
     oval(g, hx - 0.5, hy - 2, 7.6, 5.6, 0, CK.I, null, false, hy - 2);
@@ -333,6 +344,7 @@ function chiefFrame(W, H, o) {
   }, OUT);
   // ---------- 5. the near arm and what it holds, and the wolf-head pauldron over its root
   if (!o.armsBack) nearLayer();
+  if (soot) { go.globalCompositeOperation = 'source-atop'; go.fillStyle = 'rgba(18,10,8,0.42)'; go.fillRect(0, 0, W, H); go.fillStyle = 'rgba(70,64,60,0.55)'; for (let i = 0; i < 26; i++) go.fillRect((i * 17 + 5) % W, ((i * 29) % H), 2, 1); go.globalCompositeOperation = 'source-over'; }   /* BLASTED: scorched, soot-streaked */
   return outline(out, OUT);
 }
 
@@ -369,6 +381,14 @@ export function bakeChief() {
     f({ legs: 'stride', lean: -3, mouth: 'roar', near: [[X + 14, Y - 36], [X + 18, Y - 44]], far: [[X - 7, Y - 36], [X - 10, Y - 44]] }),             // 19 fall
     f({ legs: 'stride', dy: 1, lean: 1, near: [[X + 12, Y - 23], [X + 19, Y - 23]], far: [[X - 3, Y - 22], [X - 8, Y - 24]], bow: { at: [X + 19, Y - 23], draw: [X + 16, Y - 23] } }),   // 20 deck loose
     f({ legs: 'stride', dy: 1, near: [[X + 12, Y - 23], [X + 17, Y - 23]], far: [[X + 2, Y - 20], [X + 8, Y - 22]], bow: { at: [X + 17, Y - 23], draw: [X + 14, Y - 23] } }),         // 21 deck wait
+    /* (claude/chief3art) HIS OWN POSES for the two verbs he took from the camp (B16). THE WAR HORN: 22 the WIND (the horn drawn up the chest, a breath), 23 BLOWING (head back, cheeks blown out round the mouthpiece, the bell high), 24 SILENCED (choked, bent over, a hand at his throat, the horn swinging from its strap).
+       THE POWDER KEG: 25 the HEAVE wind-up (both hands high, leaning back), 26 the RELEASE (thrown forward, arms out); 27 BLASTED (sat down hard, scorched, the arms flung) */
+    f({ legs: 'stride', lean: -1, mouth: 'roar', horn: { pts: [[X + 8, Y - 17], [X + 16, Y - 25], [X + 23, Y - 38]], r1: 4.2, strap: [X + 1, Y - 29] }, near: [[X + 9, Y - 17], [X + 12, Y - 22]], far2: [[X + 3, Y - 18], [X + 13, Y - 25]] }),   // 22 horn wind
+    f({ legs: 'stride', lean: -3, hup: 2, mouth: 'puff', horn: { pts: [[X + 11, Y - 30], [X + 20, Y - 31], [X + 29, Y - 44]], r1: 5, strap: [X - 1, Y - 30] }, near: [[X + 10, Y - 20], [X + 15, Y - 28]], far2: [[X + 4, Y - 20], [X + 16, Y - 31]] }),   // 23 horn blow
+    f({ legs: 'stride', dy: 2, lean: 5, mouth: 'roar', horn: { pts: [[X + 9, Y - 17], [X + 13, Y - 10], [X + 20, Y - 2]], r1: 4.2, strap: [X + 2, Y - 30] }, near: [[X + 12, Y - 21], [X + 11, Y - 29]], far: [[X - 8, Y - 20], [X - 9, Y - 13]] }),   // 24 silenced
+    f({ legs: 'stride', lean: -2, mouth: 'roar', near: [[X + 15, Y - 33], [X + 14, Y - 42]], far: [[X + 2, Y - 33], [X + 4, Y - 42]] }),                            // 25 keg heave wind-up
+    f({ legs: 'stride', dy: 2, lean: 4, mouth: 'roar', near: [[X + 15, Y - 28], [X + 24, Y - 27]], far: [[X + 8, Y - 24], [X + 18, Y - 23]] }),                    // 26 keg release
+    f({ legs: 'sit', dy: 7, lean: -4, hup: -1, mouth: 'roar', soot: true, near: [[X + 11, Y - 15], [X + 18, Y - 9]], far: [[X - 8, Y - 16], [X - 13, Y - 9]] }),           // 27 blasted
   ];
   return pack(frames, ax, H - 1, 22, 34);
 }
