@@ -65,7 +65,7 @@ export async function openPage(opts = {}) {
   if (!wsUrl) throw new Error('could not reach the browser');
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { const timer = setTimeout(() => { ws.close(); rej(new Error('browser WebSocket did not open')); }, 15000);
     ws.onopen = () => { clearTimeout(timer); res(); }; ws.onerror = e => { clearTimeout(timer); rej(e); }; });
-  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [], nativeLab = {requests:0,completed:0,failed:0,postEvaluations:0,flushed:0};
+  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [], nativeLab = {requests:0,completed:0,failed:0,postEvaluations:0};
   const drain = reason => { for (const p of pending.values()) { clearTimeout(p.timer); p.reject(new Error(reason)); } pending.clear(); };
   closeConnection = () => { if((nativeLab.requests||nativeLab.postEvaluations)&&process.env.BRACKEN_PROCESS_LOG)try{appendFileSync(process.env.BRACKEN_PROCESS_LOG,JSON.stringify({type:'native-lab-collection',check:process.env.BRACKEN_CHECK,time:Date.now(),...nativeLab})+'\n');}catch{} closing = true; drain('page closed'); try { ws.close(); } catch {} };
   ws.onclose = () => { disconnected = true;
@@ -81,7 +81,7 @@ export async function openPage(opts = {}) {
   }
     if (m.method === 'Runtime.bindingCalled' && m.params.name === '__brackenLabGC') {
       const request=+m.params.payload;nativeLab.requests++;
-      void(async()=>{let error=null;try{if(opts.flushLabDraws){await send('Runtime.evaluate',{expression:'new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)))',awaitPromise:true,returnByValue:true},15000);nativeLab.flushed++;}await send('HeapProfiler.collectGarbage',{},15000);if(opts.nativePressure)await send('Memory.simulatePressureNotification',{level:'critical'},15000);nativeLab.completed++;}catch(e){nativeLab.failed++;error=e.message;}
+      void(async()=>{let error=null;try{await send('HeapProfiler.collectGarbage',{},15000);nativeLab.completed++;}catch(e){nativeLab.failed++;error=e.message;}
         await send('Runtime.evaluate',{contextId:m.params.executionContextId,expression:'window.__brackenLabReply('+JSON.stringify(request)+','+JSON.stringify(error)+')'});
       })().catch(()=>{});
     }

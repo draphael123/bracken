@@ -22,7 +22,7 @@ import { openPage } from './cdp.mjs';
 const KNOWN = {};
 
 const ONLY = (process.env.MI_ONLY || '').split(',').filter(Boolean), SECS = +(process.env.MI_SECS || 40);
-const pg = await openPage({ audio: false, fonts: false, seed: 20261007, flushLabDraws: true });
+const pg = await openPage({ audio: false, fonts: false, seed: 20261007 });
 const FIGHT = String.raw`async (row, secs) => {
   BK.manualSimulation = true; const M = await import('/src/marks.js');
   const go = row.kind === 'mini' ? row.level + ':mini' : row.t; if (!BK.bossJump.go(go)) return { err: 'go failed' };

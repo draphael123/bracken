@@ -249,7 +249,19 @@ jobs:
           set -o pipefail
           mkdir -p gate-data
           git rev-parse HEAD > gate-data/source.txt
+          gate_deadline=$(( $(date +%s) + 19800 ))
+          set +e
           timeout --signal=TERM --kill-after=30s 330m node tools/check.mjs --progress=gate-data/serial.json 2>&1 | tee gate-data/serial.log
+          gate_status=${PIPESTATUS[0]}
+          if [[ "$gate_status" == 2 ]]; then
+            gate_remaining=$(( gate_deadline - $(date +%s) ))
+            if (( gate_remaining > 0 )); then
+              echo '[resume] Once, only unanswered checks; saved FAIL verdicts remain FAIL.' | tee -a gate-data/serial.log
+              timeout --signal=TERM --kill-after=30s "${gate_remaining}s" node tools/check.mjs --resume=gate-data/serial.json 2>&1 | tee -a gate-data/serial.log
+              gate_status=${PIPESTATUS[0]}
+            fi
+          fi
+          exit "$gate_status"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

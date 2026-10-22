@@ -147,3 +147,35 @@ serial and matching-source sharded runs are required; no incomplete run is descr
 
 None for these reversible harness corrections. Remaining combat reds stay visible; no balance change
 is authorized or proposed as a way to make the gate pass.
+
+## Stabilized continuation candidate
+
+Moor and the eleven earlier target proofs remain valid: no game source changed during this continuation.
+The complete copy-of-master CI at 7936d68f (39867091429) returned 422 actual verdicts: 407 PASS, 15 FAIL,
+with unanswered mark-integrity, no-hidden-hits and textfit-full memory interruptions. No missing-verdict
+row is treated as a game failure or a completed check.
+
+The better verified native cleanup is retained. Mark-integrity completes every original fight without
+skips (39870079601, 217915ms, renderer2804MB). Hidden-hit collection completes all64 levels and both
+336-second tunnel runs (39869515850, 384729ms, renderer2730MB); its original visibility assertion exposes
+a Canal bargeman haft at59.1,37 (zero qualifying pixels, maxRGBdelta57). That actual FAIL remains.
+No visibility threshold, known-exception list, fight length, sample, balance value or time budget changed.
+
+The shared-server lifetime race is fixed: a closing page releases only its lease; replacements wait
+for a final owned server to exit. External servers are never killed. Real browser proof39871196174
+verifies five pages, two peer-close/reload cases, simultaneous final closes and a successful new boot.
+
+Layout pages collect at existing safe boundaries and between all original levelcard measurements,
+with six levels per page. All48 title-card cases and strict analysis remain. The complete layout tool
+still exceeds its original ten-minute gate deadline in39870370061; that is an actual timeout FAIL,
+not a pass. Fresh-document/browser-cache reuse did not resolve the deadline (39872506004), so it is
+not retained. Paint waits preserve256 updates/RNG draws and64 exact state/pixel samples (39872938100),
+but do not give reliable memory headroom in the long audits, so that experiment is not retained either.
+
+Final full-suite execution permits one source-bound resume only for unanswered checks. Saved assertion
+FAILs are retained and never rerun to seek green. Both attempts share the original330-minute serial
+budget (40minutes for each release-gate shard); the outer job deadline is unchanged. Interruptions
+remain in the checkpoint and logs. A still-incomplete second attempt remains explicitly incomplete.
+
+No balance or quality decision is required for these harness changes. Genuine remaining gameplay,
+visibility and frame-budget failures are reported for coordinator review; no budget reduction is proposed.
