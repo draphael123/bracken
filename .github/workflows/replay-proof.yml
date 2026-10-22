@@ -24,3 +24,4 @@ jobs:
         with:
           name: replay-proof
           path: gate-data/
+# Each proof uses disposable browser contexts and records only its own processes.
