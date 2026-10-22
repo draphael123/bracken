@@ -18,8 +18,8 @@
 //      spots), THE LOG ROLL (jump it), THE BELLY QUAKE (jump the shockwave). What hangs in the oak is the opening: two CAGES (held, x2), the LOG TRAP
 //      (it rolls into him: knocked down, x1.75), the BEEHIVE (stung, x1.5). After every opening a told WARD (B3): the hangings glance off him 3 s.
 export const GORM = {
-  hp1: 900,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
-  hp2: 760,
+  hp1: 1000,              /* P1's bar (the old fight's 590 was one bar for the whole of him); P2's bar is hp2 / hp1 of whatever the game scaled hp1 to */
+  hp2: 1000,
   chip: 0.4,             /* B15: outside an opening a blade lands at 0.4 (boss-greed GREED.chipBy.king) */
   take: { held: 2, open: 1.25, downed: 1.75, stung: 1.5 },
   ward: 3,               /* B3: after an opening, seconds the hangings glance off him (told WARDED, a pale shell) */
@@ -27,7 +27,7 @@ export const GORM = {
   litterTo: 0.55,        /* at this share of P1's bar the litter breaks and he stands */
   heldT: 3.2, openT: 4,
   grabEvery: 9, grabTell: 0.9, grabReach: 64, hurlVx: 420, hurlVy: -300,
-  chargeEvery: 9.5, chargeTell: 0.8, chargeV: 240, chargeT: 1.5,
+  chargeEvery: 9, chargeTell: 0.8, chargeV: 240, chargeT: 1.5,
   sweepEvery: 2.6, sweepTell: 0.8, sweepReach: 66, sweepCool: 1.1,
   hornEvery: 17, hornTell: 1.1, hornFirst: 9,
   walkV: 44, walkV2: 54,
@@ -37,10 +37,10 @@ export const GORM = {
   /* THE ESCAPE: the fire behind you (px a world-second; the hero runs ~89) */
   run: { grace: 2.4, v: 50, vMax: 150, lead: 340, drain: 0.2, groundDrain: 0.12, branchTell: 0.9, branchDmg: 14, torchTell: 0.8, torchBurn: 6, torchReach: 110 },
   /* P2: THE KING'S GLADE */
-  clubTell: 0.85, clubReach: 74, clubEvery: 2.4,
-  shakeTell: 0.8, coneTell: 1.1, cones: 5, coneDmg: 11,
-  logTell: 0.9, logV: 190, logDmg: 15,
-  quakeTell: 0.9, quakeAir: 0.45, quakeV: 175, quakeDmg: 14,
+  clubTell: 0.85, clubReach: 74, clubEvery: 2.0,
+  shakeTell: 0.8, coneTell: 1.1, cones: 5, coneDmg: 14,
+  logTell: 0.9, logV: 190, logDmg: 18,
+  quakeTell: 0.9, quakeAir: 0.45, quakeV: 175, quakeDmg: 18,
   huntAt: [0.70, 0.38],
   hangReset: { cage: 11, log: 13, hive: 14 },
   downedT: 3.5, stungT: 4, hiveR: 44,

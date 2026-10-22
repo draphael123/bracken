@@ -98,7 +98,7 @@ function glade(e, dt, c, A, floor, P, d, ad, G) {
           else if (!hi && P.y > e.y - 12 && P.y < e.y + 4) c.damage(e.x, c.dmg.club, { unblockable: true, up: true, name: 'THE BURNING BRANCH' }); } }
       break;
     case 'clubHi': case 'clubLo': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.75; } break;
-    case 'logTell': if (e.modeT <= 0) { e.mode = 'log'; e.modeT = 0.4; e.logT = 9; G.rollLog(e.x + e.face * 34, e.face); c.sfx.heavy && c.sfx.heavy(); c.sfx.rumble && c.sfx.rumble(); } break;
+    case 'logTell': if (e.modeT <= 0) { e.mode = 'log'; e.modeT = 0.4; e.logT = 6.5; G.rollLog(e.x + e.face * 34, e.face); c.sfx.heavy && c.sfx.heavy(); c.sfx.rumble && c.sfx.rumble(); } break;
     case 'log': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.7; } break;
     case 'quakeTell': if (e.modeT <= 0) { e.mode = 'quakeAir'; e.modeT = T.quakeAir; c.sfx.effort && c.sfx.effort(); } break;
     case 'quakeAir': e.lift = Math.sin(Math.PI * Math.max(0, 1 - e.modeT / T.quakeAir)) * 34;
