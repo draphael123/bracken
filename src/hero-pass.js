@@ -110,7 +110,9 @@ export function makeHeroPass(api) {
       api.burst(p.x, p.y - 10, 6, ['#fff6c8', '#ffd36b', '#ff9a5c'], 80, 0.22, -40, 1); api.ringAt(p.x, p.y - 10, 10, '#ffd36b', 0.18); return; }
     if (h === 'pirate') { powderFlash(p, face0); return; }
     if (h === 'reaper') { const S = HP.reaper.step; p.dodge = p.dodgeMax = S.t; p.dodgeInv = Math.min(S.inv, api.CM.STAM.rollInv); if (p.inv > S.inv && p.inv <= api.CM.STAM.rollInv + 1e-6) p.inv = S.inv;   /* (his roll's P.inv becomes the step's own grace: its tail is hittable, the wake takes the rest) */ p.vx = dir * S.speed; p.dash = p.dodge; p.dashDur = p.dash;
-      stats.shadows++; api.kitPose(p, 'shadowStep', S.t); addFx({ k: 'shade', x0: p.x, x1: p.x, y: p.y, dir, life: 0.55, live: true }); return; }
+      stats.shadows++; api.kitPose(p, 'shadowStep', S.t); addFx({ k: 'shade', x0: p.x, x1: p.x, y: p.y, dir, life: 0.55, live: true });
+      for (let i = 0; i < 6; i++) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 6 - Math.random() * 18, vx: -dir * (30 + Math.random() * 70), vy: -70 - Math.random() * 60, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#c0283a' : '#ff6b6b', size: Math.random() < 0.4 ? 2 : 1, grav: 240 });   /* (claude/bloodstep) a few droplets flicked off his armour */
+      return; }
     if (h === 'berserker') { stats.barges++; api.kitPose(p, 'bzBarge', p.dodge); api.number(p.x, p.y - 26, 'BARGE', '#ff9a5c'); return; }
   }
   /* THE POWDER FLASH: the puff is thrown where he stood, at what was in front of him */
@@ -153,7 +155,7 @@ export function makeHeroPass(api) {
     p.kStepG = Math.max(0, (p.kStepG || 0) - dt); p.wHopT = Math.max(0, (p.wHopT || 0) - dt); p.shrugT = Math.max(0, (p.shrugT || 0) - dt); p.kBashCd = Math.max(0, (p.kBashCd || 0) - dt);
     if (p.blinkT > 0) { p.blinkT -= dt; if (Math.random() < dt * 60) api.parts.push({ x: p.x + (Math.random() - 0.5) * 8, y: p.y - 4 - Math.random() * 14, vx: -p.vx * 0.15, vy: -20 - Math.random() * 20, life: 0.22, max: 0.22, col: Math.random() < 0.5 ? '#ff9a5c' : '#fff6c8', size: 1, grav: -30 });
       if (p.blinkT <= 0) { api.burst(p.x, p.y - 10, 8, ['#fff6c8', '#ffd36b', '#ff9a5c'], 70, 0.3, -30, 1); api.ringAt(p.x, p.y - 10, 10, '#ff9a5c', 0.18); } }
-    if (h === 'reaper' && p.dodge > 0 && Math.random() < dt * 40) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 2 - Math.random() * 18, vx: -p.vx * 0.1, vy: -6, life: 0.35, max: 0.35, col: Math.random() < 0.6 ? '#141a16' : '#2a1838', size: 2, grav: 0 });
+    if (h === 'reaper' && p.dodge > 0 && Math.random() < dt * 40) api.parts.push({ x: p.x + (Math.random() - 0.5) * 10, y: p.y - 2 - Math.random() * 18, vx: -p.vx * 0.1, vy: -6, life: 0.35, max: 0.35, col: Math.random() < 0.6 ? '#8a1424' : '#c0283a', size: 2, grav: 0 });   /* (claude/bloodstep) crimson mist, not shadow */
     if (h === 'knight') bashStep(p, dt);
     if (h === 'warden') footStep(p, dt, keys);
     if (p.valiant && !(p.atk >= 0)) p.valiant = false;   /* (the valiant cut is over when its swing is) */
@@ -236,9 +238,10 @@ export function makeHeroPass(api) {
         rc(g, x, y + h + k * 4 * ((i % 3) + 1) / 2, 2, 1, col, fade * (0.5 + 0.5 * near)); if (i % 3 === 0) rc(g, x, y + h - 2 - k * 6, 1, 1, '#ff6a3c', fade * 0.8); }
       if (k < 0.35) rc(g, xa, y - 1, xb - xa, 1, '#fff6c8', fade * 0.55); }
     else if (f.k === 'shade') { const xa = Math.min(f.x0, f.x1) - cx, xb = Math.max(f.x0, f.x1) - cx, y = f.y - cy;   /* THE SHADE HE LEAVES: three dark figures down the step, each fainter, two green lights in the nearest, and a ribbon along the floor */
-      rc(g, xa, y - 1, xb - xa, 1, '#2a1838', fade * 0.55);
-      for (let j = 0; j < 3; j++) { const u = (j + 0.5) / 3, x = xa + (xb - xa) * (f.dir > 0 ? 1 - u : u), a = fade * (0.34 - j * 0.09);
-        rc(g, x - 3, y - 17, 7, 16, '#1c1426', a); rc(g, x - 4, y - 13, 9, 7, '#241a34', a * 0.8); rc(g, x - 2, y - 20, 5, 4, '#1c1426', a); if (j === 0) { rc(g, x - 1, y - 18, 1, 1, '#dfffc0', fade); rc(g, x + 1, y - 18, 1, 1, '#dfffc0', fade); } } }
+      rc(g, xa, y - 1, xb - xa, 1, '#c0283a', fade * 0.6);   /* (claude/bloodstep) THE RED AFTER-IMAGE: three crimson figures down the step, each fainter, a pale glint in the nearest, a ribbon of blood along the floor, a mist over it */
+      for (let j = 0; j < 3; j++) { const u = (j + 0.5) / 3, x = xa + (xb - xa) * (f.dir > 0 ? 1 - u : u), a = fade * (0.42 - j * 0.11);
+        rc(g, x - 3, y - 17, 7, 16, '#a01a2c', a); rc(g, x - 4, y - 13, 9, 7, '#c0283a', a * 0.8); rc(g, x - 2, y - 20, 5, 4, '#a01a2c', a); if (j === 0) { rc(g, x - 1, y - 18, 1, 1, '#ffd0d0', fade); rc(g, x + 1, y - 18, 1, 1, '#ffd0d0', fade); } }
+      for (let q = 0; q < 6; q++) { const x = xa + (xb - xa) * ((q * 37 % 11) / 11), yy = y - 4 - ((q * 5) % 14) - f.t * 12; rc(g, x - 2, yy, 4, 3, q & 1 ? '#ff6b6b' : '#8a1424', fade * 0.3); } }
     else if (f.k === 'powder') { const x = f.x - cx, y = f.y - cy, d = f.dir;   /* THE FLASH (the first 0.1 s: eight rays, white to orange) then the smoke: black powder smoke standing up and rolling forward, thinning to nothing */
       if (f.t < 0.1) { const r = 4 + f.t * 120; for (let q = 0; q < 8; q++) { const an = q / 8 * Math.PI * 2; rc(g, x + Math.cos(an) * r + d * 8, y + Math.sin(an) * r * 0.8, 2, 2, q & 1 ? '#ff9a5c' : '#ffd36b', 1 - f.t * 6); } rc(g, x + d * 8 - 3, y - 2, 6, 5, '#ffffff', 1 - f.t * 7); }
       for (let q = 0; q < 7; q++) { const sz = 5 + q % 3 * 2 + k * 7, px = x + d * (6 + q * 4 + k * 16), py = y - 2 - k * (10 + q * 2) + ((q * 5) % 7) - 3; rc(g, px - sz / 2, py - sz / 2, sz, sz, q % 3 === 0 ? '#5a5448' : '#2a2620', fade * 0.55); } }
