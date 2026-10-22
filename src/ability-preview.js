@@ -19,7 +19,7 @@ export const SHAPE = {
   // freebooter
   grapeshot: 'cone', broadside: 'thrust', rum: 'aura', blackSpot: 'mark', boarding: 'hook', keelhaul: 'hook',
   // reaper
-  harvestMoon: 'zone', graveTide: 'hands', summonSkeleton: 'summon', unholyGround: 'zone', gravecall: 'summon', scytheThrown: 'bolt', deathGrip: 'hook',
+  harvestMoon: 'zone', graveTide: 'spikes', summonSkeleton: 'summon', unholyGround: 'zone', gravecall: 'bolt', bidden: 'hook', scytheThrown: 'bolt', deathGrip: 'hook',   /* (claude/bkkit2) BLOODWORMS 'summon' (they crawl to the post), BLOOD BOLT, DRAIN */
   // warden
   skewer: 'thrust', setSpears: 'spikes', harrier: 'leap', wheel: 'spin', javelin: 'bolt', poleSpring: 'leap', fullStretch: 'aura', spearDance: 'flurry', rainOfSpears: 'rain',
   // geomancer
@@ -40,7 +40,7 @@ const HIT = { thrust: [.12, .5, 5], dash: [.35, .7, 6], boomerang: [.3, .5, 3], 
   roll: [.4, .7, 7], arch: [2, 2, 0], entomb: [.2, .9, 0], rise: [.15, .6, 0], cast: [.2, .5, 3] };
 
 const HERO_INK = { knight: ['#dfe8ff', '#8a96a8'], pyro: ['#ffd36b', '#ff7a3c'], paladin: ['#fff6c8', '#e0b040'], pirate: ['#dfe8ff', '#c9a040'],
-  reaper: ['#ff8080', '#8fd160'], warden: ['#c9f0ff', '#6aa8c8'], geomancer: ['#d8c090', '#8a6a3a'], berserker: ['#ffb08a', '#c8402a'], ranger: ['#dfffb0', '#7a9a4a'] };
+  reaper: ['#ff8080', '#c0283a'], warden: ['#c9f0ff', '#6aa8c8'], geomancer: ['#d8c090', '#8a6a3a'], berserker: ['#ffb08a', '#c8402a'], ranger: ['#dfffb0', '#7a9a4a'] };
 
 const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const ease = p => 1 - (1 - p) * (1 - p);

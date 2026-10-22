@@ -68,10 +68,12 @@ export const POSE_BEATS = {
   board: [0.1],                /* BOARDING PARTY: the hook flung high, then swung in on the line with his knees up */
   /* THE DEATH KNIGHT */
   boil: [0.1, 0.25],           /* BLOOD WELL: hunched over the blade, then flung open with the blood coming up round him */
-  call: [0.12, 0.28],          /* THE RED CALL: the blade stood in the ground, the off hand raised, and the green coming up */
+  call: [0.12, 0.28],          /* BLOODWORMS (claude/bkkit2; it was THE RED CALL's): the blade stood in the ground, the off hand raised, and the worms of blood coming up */
+  bkBolt: [0.1],               /* (claude/bkkit2) BLOOD BOLT: the off palm drawn along the edge, then flung out with the bolt leaving it */
+  bkDrain: [0.1, 0.24],        /* (claude/bkkit2) DRAIN: the off hand thrown out clawed, then leaning back on his heels with the fist closed and the blood coming in */
   coil: [0.1],                 /* BLOOD LEECH: the off hand drawn back, then flung out with the coil leaving it */
-  tide: [0.12],                /* CRIMSON TIDE: down on the haunches with the fist in the ground, and the green running off along it */
-  unholy: [0.1],               /* RED GROUND: the blade low behind him, then swept flat along the floor */
+  tide: [0.12],                /* CRIMSON TIDE: down on the haunches with the fist in the ground, and the blood running off along it */
+  unholy: [0.1],               /* RED GROUND: the blade low behind him, then swept flat along the floor and the blood poured off it (claude/bkkit2: a pool now) */
   bkFlick: [0.07, 0.22],       /* (claude/bkpolish) THE FLICK (tap C): the blade snapped up off the low guard, and left quivering */
   grip: [0.12],                /* BLOOD CHAIN: the off hand out clawed, then the fist hauled back to his chest */
   /* THE GEOMANCER (every spell of hers begins with the butt of the stave struck into the ground) */

@@ -18,11 +18,15 @@
 //   - kneeling AS a low blow lands is not a BLOOD SPIKE (the blow turned, the attacker struck, ALL the debt reclaimed); a kneel held long is the
 //     plain low guard (turned, no spike)
 //   - crouched over a body gives him anything (the harvest is gone)
+//   - (claude/bkkit2) BLOOD SPIKE: a plain (not low) blow landing AS the kneel begins is not spiked with the wash; a blow on a long kneel is; an attacker far off is struck
+//   - (claude/bkkit2) THE RED HOST: BLOODWORMS / BLOOD BOLT / RED GROUND are not paid in blood (debt) or win none of it back when they land; the worms do not bite or a
+//     thrall rises; the bolt does not bleed; DRAIN does not hold, pull blood into the debt and let go, or is spent with nothing in reach; RED GROUND does not hold his
+//     debt or bite, bleed and slow a foe standing in it
 //   - the hero, the boss, the trial and the shop still say DEATH KNIGHT; the page throws
 //   node tools/blood-kit.mjs            (PORT from tools/ports.mjs, or PORT=)
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { BLOOD, tierFor, tierByTime, debtStep, debtReclaim, debtSpend, payPrice, reclaimOf, spendMul } from '../src/blood-kit.js';
+import { BLOOD, tierFor, tierByTime, debtStep, debtReclaim, debtSpend, payPrice, payBlood, drainGive, reclaimOf, spendMul } from '../src/blood-kit.js';
 import { openPage, ROOT } from './cdp.mjs';
 
 const bad = [];
@@ -45,6 +49,11 @@ const near = (a, b, e = 0.6) => Math.abs(a - b) <= e;
   ok(reclaimOf(16) > 0 && reclaimOf(0) === D.reclaimMin, 'reclaimOf is off');
   const s = { hp: 50, maxHp: M, bd: 12 }; ok(debtSpend(s) === 12 && s.bd === 0 && spendMul(12, M) > 1.3, 'a spend did not take it all or add power');
   const pr = { hp: 1, maxHp: M }; ok(payPrice(pr) === 0 && pr.hp === 1, 'the price took his last point');
+  /* (claude/bkkit2) THE RED HOST's price is BLOOD PRICE's rule at its own pct; DRAIN fills the debt first and heals only `over` of the rest */
+  const hb = { hp: 1, maxHp: M }; ok(payBlood(hb, 0.06) === 0 && hb.hp === 1, 'a Red Host spell took his last point');
+  const hc = { hp: 80, maxHp: M }; debtStep(hc, 0); const hp6 = payBlood(hc, BLOOD.host.worms.price); ok(hp6 === Math.round(M * BLOOD.host.worms.price) && near(hc.bd, hp6) && hc.hp === 80 - hp6, 'a Red Host spell is not paid on the bar as debt: ' + JSON.stringify(hc));
+  const dg = { hp: 50, maxHp: M, bd: 4 }; const g1 = drainGive(dg, 10); ok(near(dg.bd, 0) && near(g1, 4 + 6 * BLOOD.host.drain.over) && near(dg.hp, 50 + g1), 'DRAIN did not fill the debt first and heal ' + BLOOD.host.drain.over + ' of the rest: ' + JSON.stringify({ g1, dg }));
+  ok(Object.values(BLOOD.host).every(s => s.cd > 0) && BLOOD.spike.any === true, 'BLOOD.host has a spell with no wait, or BLOOD SPIKE is not on any blow');
   const pr2 = { hp: 80, maxHp: M }; debtStep(pr2, 0); const paid = payPrice(pr2); debtStep(pr2, 0); ok(paid === Math.round(M * BLOOD.price.pct) && near(pr2.bd, paid) && pr2.hp === 80 - paid, 'the price is not on the bar as debt: ' + JSON.stringify({ paid, pr2 }));
 }
 
@@ -117,10 +126,28 @@ try {
       BK.sim(20); o.dx = Math.round(Math.abs(f.x - P().x)); o.dx0 = Math.round(dx0); o.reeling = (f.stagger || 0) > 0 || (f.rpHold || 0) > 0; keysOff(); f.alive = false; BK.sim(30); return o; };
     out.parry = parryOnce(12);
     out.flick = parryOnce(2);
+    /* 5b. (claude/bkkit2) BLOOD SPIKE ON ANY BLOW: a plain (not low) blow inside the beat is spiked; outside it, it is not; an attacker far off is not struck but the blow is turned */
+    place(60); P().bd = 20; P().bdLast = P().hp; const f3 = foe(), fh3 = f3.hp, s3 = D().stats().spikes, w3 = B().spikeWash; BK.keys.down = true; BK.sim(4); const rA = blow(10, { who: f3 }); BK.sim(2);
+    out.spikeAny = { r: rA, spikes: D().stats().spikes - s3, foeHurt: fh3 - f3.hp, bd: +B().bd.toFixed(2), wash: B().spikeWash !== w3, pose: P().lastKey || null }; keysOff(); f3.alive = false; BK.sim(10);
+    place(60); const f4 = foe(), s4 = D().stats().spikes; BK.keys.down = true; BK.sim(40); const rB = blow(10, { who: f4 }); BK.sim(2); out.lateAny = { r: rB, spikes: D().stats().spikes - s4 }; keysOff(); f4.alive = false; BK.sim(10);
+    place(60); const f5 = foe(); f5.x = P().x + 220; const fh5 = f5.hp, s5 = D().stats().spikes; BK.keys.down = true; BK.sim(4); const rC = blow(10, { who: f5 }); BK.sim(2); out.farSpike = { r: rC, spikes: D().stats().spikes - s5, foeHurt: fh5 - f5.hp }; keysOff(); f5.alive = false; BK.sim(10);
     /* 6. NO HARVEST: crouched over a body */
     place(P().maxHp - 30); const n0 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x, y: spot.y }); const br = D().enemies[n0]; br.x = P().x + 2; br.y = P().y; D().kill(br); BK.sim(3);
     const hpH = P().hp; P().bdLast = P().hp; P().bd = 0; BK.keys.down = true; BK.sim(90); BK.keys.down = false; out.harvest = { bodies: D().bodies.length, healed: P().hp - hpH };
-    return out; })()`, 180000);
+    /* 8. (claude/bkkit2) THE RED HOST: each spell cast on F, paid in blood, landed, won back */
+    const H = () => D().host();
+    const cast = (id, dx, pre) => { BKT.setHeroLevel('reaper', 20); place(P().maxHp - 30); BKT.PROG.skillOwned.reaper = { [id]: true }; BKT.PROG.loadouts.reaper = [id]; P().cds = {}; P().harvest = 0; for (const e of D().enemies) e.alive = false;
+      const d = dx === null ? null : dummy(dx); if (pre) pre(d); const h0 = H(), hp0 = P().hp; BK.press('throw'); BK.sim(1); const o = { paid: H().paid - h0.paid, hpDrop: hp0 - P().hp, bd: +B().bd.toFixed(2), cd: H().cds[id] || 0 }; return { o, d, h0 }; };
+    { const { o, d, h0 } = cast('summonSkeleton', 4); o.worms = H().worms; BK.sim(240); const h = H(); Object.assign(o, { bites: h.bites - h0.bites, back: +(h.back - h0.back).toFixed(2), after: h.worms, risen: h.risen, bleed: (d.bleed || 0) > 0 || d.hp < 9999 }); out.worms = o; d.alive = false; }
+    { const { o, d, h0 } = cast('gravecall', 5); BK.sim(40); const h = H(); Object.assign(o, { hits: h.boltHits - h0.boltHits, back: +(h.back - h0.back).toFixed(2), bdAfter: +B().bd.toFixed(2), bleed: (d.bleed || 0) > 0 }); out.bolt = o; d.alive = false; }
+    { const { o, d, h0 } = cast('bidden', 3, () => { P().bd = 12; P().bdLast = P().hp; }); o.on = H().drainOn; BK.sim(90); const h = H(); Object.assign(o, { drained: +(h.drained - h0.drained).toFixed(2), bdAfter: +B().bd.toFixed(2), on: o.on, offAfter: !h.drainOn, hurt: d.hp < 9999 }); out.drain = o; d.alive = false; }
+    { const { o } = cast('bidden', null); BK.sim(5); o.drains = H().drains; out.drainNone = o; }
+    { const { o, h0 } = cast('unholyGround', null, () => { const n0 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x, y: spot.y }); const e = D().enemies[n0]; e.x = P().x + 20; e.y = P().y; e.hp = e.maxHp = 400; e.mode = 'idle'; out._pf = e; });
+      const e = out._pf; delete out._pf; BK.sim(50); const h = H(); Object.assign(o, { pools: h.pools, hold: h.poolHold, foeHurt: 400 - e.hp, bleed: (e.bleed || 0) > 0, wade: (e.bkPoolT || 0) > 0, back: +(h.back - h0.back).toFixed(2) }); out.pool = o; e.alive = false; }
+    /* 9. (claude/bkkit2) HIS YARD's tree step is THE RED HOST: with nothing learned, BLOODWORMS is lent on F, its price is shown (not taken), and three bites open the gate */
+    { for (const k in BK.keys) BK.keys[k] = false; BK.setHero('reaper'); BK.reset({ fresh: true }); BKT.PROG.skillOwned.reaper = {}; BKT.PROG.loadouts.reaper = []; BK.applyUpgrades(); BK.load(LEVELS.findIndex(l => l.id === 'trial_reaper')); BK.state = 'play'; BK.god = false; BK.sim(30);
+      const si = BK.L.trial.findIndex(q => q.kind === 'host'), st = BK.L.trial[si]; if (st) { BK.tp(st.x0 + 3, 19); P().vx = 0; P().face = 1; BK.sim(20); P().harvest = 0; const hp0 = P().hp; BK.press('throw'); for (let f = 0; f < 600 && !st.done; f++) BK.sim(1); out.trial = { si, done: !!st.done, got: st.got || 0, n: st.n, hpTaken: hp0 - P().hp, lent: BKT.skillAt(0) }; } else out.trial = { si }; }
+    return out; })()`, 240000);
   console.log(JSON.stringify(R, null, 1));
   if (R.err) bad.push(R.err); else {
     const Db = BLOOD.debt;
@@ -144,6 +171,18 @@ try {
     ok(PR.stagger >= PP.stagger - 0.05 && PR.dx <= 48 && PR.reeling, 'the parried foe was shoved out of his reach or does not reel: ' + JSON.stringify(PR));
     ok(PR.bd < 0.01 && PR.healed > 0 && PR.rec, 'the parry did not reclaim ALL the debt with the bar pulse: ' + JSON.stringify(PR));
     ok(FL.r === 'blocked' && FL.thrown === 1 && FL.flicks === 1, 'a C tapped too short for the ward (THE FLICK) did not throw the blow back: ' + JSON.stringify(FL));
+    /* (claude/bkkit2) */
+    ok(R.spikeAny.r === 'blocked' && R.spikeAny.spikes === 1 && R.spikeAny.foeHurt > 0 && R.spikeAny.bd < 0.01 && R.spikeAny.wash, 'a plain blow landing AS the kneel began was not a BLOOD SPIKE (with the wash): ' + JSON.stringify(R.spikeAny));
+    ok(R.lateAny.spikes === 0, 'a blow on a long kneel was spiked (the spike is only on the beat): ' + JSON.stringify(R.lateAny));
+    ok(R.farSpike.r === 'blocked' && R.farSpike.spikes === 1 && R.farSpike.foeHurt === 0, 'a blow from a foe far off, on the beat, was not turned - or the spikes struck it across the room: ' + JSON.stringify(R.farSpike));
+    const pct = k => Math.round(95 * BLOOD.host[k].price);
+    ok(R.worms.paid > 0 && R.worms.worms >= BLOOD.host.worms.n && R.worms.cd > 0 && R.worms.bites >= 2 && R.worms.back > 0 && R.worms.after === 0 && R.worms.risen === 0, 'BLOODWORMS was not paid in blood, did not bite, or won nothing back (or raised a thrall): ' + JSON.stringify(R.worms));
+    ok(R.bolt.paid > 0 && R.bolt.hits === 1 && R.bolt.back > 0 && R.bolt.bleed && R.bolt.cd > 0, 'BLOOD BOLT was not paid in blood, did not land, bleed, or win its price back: ' + JSON.stringify(R.bolt));
+    ok(R.drain.on && R.drain.drained > 0 && R.drain.bdAfter < 12 && R.drain.offAfter && R.drain.cd > 0, 'DRAIN did not hold, pull blood into the debt, or let go: ' + JSON.stringify(R.drain));
+    ok(R.drainNone.cd === 0 && R.drainNone.drains === 0, 'DRAIN with nothing in reach was spent: ' + JSON.stringify(R.drainNone));
+    ok(R.pool.paid > 0 && R.pool.pools === 1 && R.pool.hold && R.pool.foeHurt > 0 && R.pool.bleed && R.pool.wade && R.pool.back > 0, 'RED GROUND was not paid in blood, or did not hold his debt, bite, bleed and slow a foe in it and win a drop back: ' + JSON.stringify(R.pool));
+    void pct;
+    ok(R.trial && R.trial.done && R.trial.lent === 'summonSkeleton' && R.trial.hpTaken <= 0, 'the yard RED HOST step was not lent BLOODWORMS on F, took health, or was not done by three bites: ' + JSON.stringify(R.trial));
     ok(R.harvest.healed <= 0, 'crouched over a body he drew ' + R.harvest.healed + ' (the harvest is gone): ' + JSON.stringify(R.harvest));
   }
   ok(pg.errors.length === 0, 'page errors: ' + pg.errors.slice(0, 3).join(' | '));

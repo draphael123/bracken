@@ -2124,7 +2124,7 @@ function reaperKitPoses(F, sh) {
     K({ wide: 6, dy: -1, sho: 1, legs: 'wide', arm: [X, Y, X + 5, Y - 3], greatsword: [X + 5, Y - 3, X + 17, Y - 9], arm2: [OFF[0], OFF[1], OFF[0] - 5, OFF[1] - 4], plume: 2,
       bits: [...lit, a(X - 13, Y - 8, RED), a(X - 10, Y - 12, PINK), a(X - 15, Y - 1, PINK), a(X - 12, Y + 6, RED), a(X + 9, Y + 4, PINK), a(X + 12, Y + 1, RED), a(X - 4, Y - 14, RED), a(X + 3, Y - 13, PINK), a(X - 9, Y + 7, PINK), a(X + 6, Y + 7, RED)] }),
     K({ dy: 1, legs: 'stand', arm: [X, Y, X - 1, Y + 3], greatsword: low, plume: 1, bits: [a(X - 8, Y + 6, RED), a(X + 7, Y + 6, RED)] })];
-  /* THE RED CALL: the blade driven into the ground beside him; the off hand raised with the green in it, the lights in the helm up;
+  /* BLOODWORMS (claude/bkkit2; it was THE RED CALL): the blade driven into the ground beside him; the off hand raised with the blood in it, the lights in the helm up;
      and the green coming up out of the ground on both sides of him */
   const stood = { arm: [X, Y, X + 3, Y - 1], greatsword: [X + 3, Y - 2, X + 4, Y + 13] };
   const flame = [a(OFF[0] - 3, OFF[1] - 11, GRN), a(OFF[0] - 4, OFF[1] - 10, GRN), a(OFF[0] - 2, OFF[1] - 10, GRN), a(OFF[0] - 3, OFF[1] - 12, LIT)];
@@ -2153,6 +2153,19 @@ function reaperKitPoses(F, sh) {
       bits: [a(X + 9, Y - 3, BONE), a(X + 10, Y - 2, BONE), a(X + 9, Y - 1, BONE), a(X + 11, Y - 2, GRN), a(X + 12, Y - 3, LIT)] }),
     K({ dx: -1, sho: 1, legs: 'wide', arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X - 1, Y - 1], plume: 1,
       bits: [...lit, a(X - 1, Y - 1, BONE), a(X + 3, Y - 1, GRN), a(X + 6, Y - 1, DGRN), a(X + 9, Y - 1, GRN)] })];
+  /* (claude/bkkit2) THE RED HOST'S OWN BODIES. BLOOD BOLT: the blade held low across him and the off palm drawn along its edge, the blood welling in the hand;
+     then the palm flung out flat at chest height, leaning into it, the bolt leaving the fingers with a wet streak behind it */
+  F.bkBolt = [K({ dy: 1, legs: 'wide', arm: [X, Y, X + 1, Y + 3], greatsword: [X + 1, Y + 3, X + 15, Y + 1], arm2: [OFF[0], OFF[1], X + 5, Y + 2], plume: 1,
+      bits: [a(X + 6, Y + 2, RED), a(X + 7, Y + 2, PINK), a(X + 6, Y + 4, DGRN), a(X + 9, Y + 2, RED)] }),
+    K({ wide: 6, dx: 2, legs: 'runC', sho: 1, arm: [X, Y, X - 1, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 9, Y - 5], plume: 2,
+      bits: [...lit, a(X + 11, Y - 6, PINK), a(X + 12, Y - 5, LIT), a(X + 13, Y - 6, RED), a(X + 10, Y - 4, DGRN), a(X + 15, Y - 6, RED), a(X + 18, Y - 5, PINK)] })];
+  /* DRAIN: the off hand thrown out high and clawed at the foe, the fingers wet; then back on his heels with the fist closed at his chest, the blood coming
+     in to it in a line of beads; and held there, the helm lights up as it fills him */
+  const bead = (n, c0) => Array.from({ length: n }, (_, i) => a(X + 8 + i * 3, Y - 3 + (i & 1), i % 2 ? c0 : RED));
+  F.bkDrain = [K({ wide: 4, dx: 1, dy: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 9, Y - 7], plume: 2,
+      bits: [a(X + 10, Y - 8, RED), a(X + 11, Y - 7, PINK), a(X + 10, Y - 6, RED), a(X + 9, Y - 9, DGRN)] }),
+    K({ dx: -2, sho: 1, legs: 'wide', arm: [X, Y, X - 2, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 5, Y - 3], plume: 1, bits: [a(X + 6, Y - 3, PINK), ...bead(4, PINK)] }),
+    K({ dx: -2, sho: 1, hy: -1, legs: 'wide', arm: [X, Y, X - 2, Y + 3], greatsword: low, arm2: [OFF[0], OFF[1], X + 5, Y - 3], plume: 2, bits: [...lit, a(X + 6, Y - 3, LIT), a(X + 5, Y - 4, RED), ...bead(5, LIT)] })];
   /* THE LATE ACTIVES' OWN POSES (claude/heroposes). OSSUARY MAIL: both arms crossed hard over his chest on the flat of the blade; then the
      head back and the lights up while plates of bone close over the shoulders, ribs and arms; and the last plate seated, the blade low */
   const PLATE = '#b02238';
@@ -2924,7 +2937,9 @@ function reaperBloodPoses(F, sh) {
   const spikes = (h, cols) => { const o = []; for (const [dx0, hh] of [[-9, 0.6], [-5, 1], [-1, 0.5], [3, 0.8], [8, 1], [12, 0.7], [16, 0.5]]) { const H = Math.max(2, Math.round(h * hh)); for (let j = 0; j < H; j++) { o.push(a(X + dx0, Y + 9 - j, j >= H - 1 ? HOT : cols[j % 2])); if (j < H - 2) o.push(a(X + dx0 + 1, Y + 9 - j, j < H - 3 ? DRED : cols[0])); } } return o; };
   const kn = (o = {}) => K({ dy: 3, legs: 'kneel', hy: 1, ...gs(X + 4, Y - 3, X + 6, Y + 6), arm2: [OFF[0], OFF[1], X + 4, Y - 3], greatsword: [X + 5, Y - 7, X + 6, Y + 6], plume: 1, ...o });
   F.bloodSpike = [kn({ dx: -1, bits: [...lights(PINK), ...spikes(5, [DRED, RED])] }),
-    kn({ dx: -1, sho: 1, hy: 2, plume: 2, bits: [...lights(HOT), ...spikes(11, [RED, PINK]), a(X + 6, Y + 8, HOT)] })];
+    kn({ dx: -1, sho: 1, hy: 2, plume: 2, bits: [...lights(HOT), ...spikes(11, [RED, PINK]), a(X + 6, Y + 8, HOT)] }),
+    /* (claude/bkkit2) the third beat: risen half off the knee, the blade wrenched up out of the ground in both fists with the blood shaken off its point, the spikes sinking back dark */
+    K({ dy: 1, legs: 'wide', sho: 1, hy: -1, ...gs(X + 5, Y - 4, X + 9, Y - 18), plume: 2, bits: [...lights(PINK), ...spikes(4, [DRED, DRED]), a(X + 9, Y - 19, HOT), a(X + 11, Y - 16, RED), a(X + 7, Y - 21, PINK), a(X + 12, Y - 12, DRED)] })];
   /* BLOOD PRICE (DOWN+C): on one knee, the greatsword laid across his knee in the right fist and the LEFT PALM drawn along the flat of the edge - the blood opens, runs down the steel, drips */
   const lay = (o = {}) => K({ dy: 3, legs: 'kneel', hy: 1, arm: [X, Y, X + 1, Y + 3], greatsword: [X + 1, Y + 3, X + 18, Y + 4], plume: 1, ...o });
   F.price = [lay({ arm2: [OFF[0], OFF[1], X + 5, Y + 2], bits: [a(X + 6, Y + 3, DRED), ...lights(PINK)] }),

@@ -124,7 +124,7 @@ export function makeCrouchB(api) {
     if (h === 'paladin' && R.kneel && p.kneelT >= KNEEL.settle) return ['kneel', (p.light || 0) >= 100 ? 1 : Math.floor(api.time * 2.2) % 2];
     if (h === 'geomancer' && R.sense && p.senseT >= SENSE.settle) return ['sense', Math.floor(p.senseT * 3) % 2];
     if (h === 'reaper' && R.price && api.time - (p.bkPriceAt ?? -9) < 0.5) { const el = api.time - p.bkPriceAt; return ['price', el < 0.14 ? 0 : el < 0.3 ? 1 : 2]; }   /* (claude/bloodknightart) BLOOD PRICE's own pose: the palm drawn along the blade, the blood running, the blade soaked */
-    if (h === 'reaper' && R.bloodSpike && api.time - (p.bkSpikeAt ?? -9) < 0.3) return ['bloodSpike', api.time - p.bkSpikeAt < 0.12 ? 0 : 1];   /* (claude/bloodknight) BLOOD SPIKE's own pose, once the art lane draws it (until then the kneel's third beat, below) */
+    if (h === 'reaper' && R.bloodSpike && api.time - (p.bkSpikeAt ?? -9) < 0.42) { const el = api.time - p.bkSpikeAt; return ['bloodSpike', Math.min(R.bloodSpike.length - 1, el < 0.1 ? 0 : el < 0.26 ? 1 : 2)]; }   /* (claude/bloodknight) BLOOD SPIKE's own pose; (claude/bkkit2) three beats held 0.42 s (BLOOD.spike.pose): the spikes short, full, and the blade wrenched up out of them as they crumble */
     if (h === 'reaper' && R.graveKneel) return ['graveKneel', api.time - (p.dkKneelHit ?? -9) < 0.24 ? 2 : Math.floor(api.time * 1.6) % 2];   /* (claude/dk2art: the third beat - a low blow turned on the blade) */   /* (claude/dk2b) GRAVE KNEEL: the blade planted point-down in front of him (src/dk2.js) */
     return null; }
 

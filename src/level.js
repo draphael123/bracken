@@ -3628,9 +3628,9 @@ function trialYard(hero) {
     ward: ['ward', 3, 'THE BLOOD WARD: HOLD C TO WARD, RELEASE TO NOVA. TAKE THREE OF THE ARCHER\'S ARROWS ON IT.', [['archer', 22]], 'HOLD LB, THEN LET GO'],
     meter: ['meter', 1, 'BLOOD SURGE: HIS BAR FILLS WITH WHAT HE TAKES. FULL, HOLD F. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'HOLD Y WITH A FULL BAR'],
   };
-  /* HIS F IS NOT A TREE SKILL'S SLOT. The Death Knight's F is SUMMON THRALL once his RED HOST root has it and EMPTY until then (and, held
-     on a full bar, the surge above), and it is no tree skill a yard can lend, so the shared step's F is not asked of him: his skills from the tree go on G, and G is what he is asked for */
-  const SKILL_G = ['skill', 1, 'G: A SKILL FROM THE TALENT TREE (Q). ONE NOT YET LEARNED IS LENT HERE. USE IT.', [['dummy', 14], ['sprig', 20]], 'RT', ['skillG']];
+  /* (claude/bkkit2) HIS TREE STEP IS THE RED HOST: his blood magic (BLOODWORMS is lent on F when he has none of it), paid in blood - shown, not taken, in a yard - and what
+     lands wins it back. Any of the four counts (one kind 'host'): a worm's bite, a bolt that lands, a drain's pull, the pool's bite. (Held on a full bar, F is still the surge.) */
+  const SKILL_G = ['host', 3, 'THE RED HOST, HIS BLOOD MAGIC (F OR G): PAID IN BLOOD, ON THE BAR AS DEBT. LAND IT THREE TIMES TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'Y OR RT'];
   /* THE NEW CUTS, THE SAME FOR EVERY HERO: what the controls page promises, a gate each. The goblins in these yards are straw
      inside (see e.trainer in main.js): they can be thrown, tripped and cut all day, they never go down, and they keep to their yard. */
   const DASH = ['dashatk', 2, 'DODGE AT HIM (TAP A WAY TWICE, OR V) AND X AT ONCE: THE ATTACK CARRIES YOU THROUGH. TWICE.', [['dummy', 15], ['dummy', 21]], 'B, THEN X AT ONCE'];
@@ -3668,7 +3668,7 @@ function trialYard(hero) {
       ['third', 2, 'THE DRAG: X THREE TIMES. THE THIRD COMES DOWN HEAVY. LAND TWO.', [['dummy', 16], ['dummy', 20]], 'X, X, X'],
       ['heavyblow', 2, 'THE FIVE TIERS: HOLD X AND LET GO AS THE BLADE GLOWS. LONGER IS HEAVIER. LAND TWO.', [['dummy', 13], ['dummy', 21]], 'HOLD X'],
       ['price', 1, 'BLOOD PRICE: DOWN+C. HEALTH GOES ON THE BAR AS DEBT. LAND BLOWS TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'DOWN+LB'],   /* (claude/bloodknight) */
-      ['kneel', 2, 'THE LOW GUARD: HOLD DOWN TO TURN A LOW BLOW. KNEEL AS IT LANDS: BLOOD SPIKE.', [['waterthief', 18]], 'HOLD DOWN'],   /* (claude/bloodknight: any low blow turned counts; on the beat it is BLOOD SPIKE) */
+      ['kneel', 2, 'THE LOW GUARD: HOLD DOWN TO TURN A LOW BLOW. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.', [['waterthief', 18]], 'HOLD DOWN'],   /* (claude/bloodknight: any low blow turned counts; on the beat it is BLOOD SPIKE) */
       REAPER_C.ward,
       ['dodge', 2, 'THE SHADOW-STEP: TAP A WAY TWICE, OR V. HE GOES AS A SHADE AND LEAVES HIS WAKE. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE RETURN: HOLD C, LET GO AS HIS SWORD FLASHES WHITE: THE BLOW IS THROWN BACK. TWICE.', [['swornsword', 18]], 'HOLD LB, LET GO AS IT FLASHES'],   /* (claude/foepass) HIS YARD TEACHES HIS PARRY, THE WARD-RELEASE (scratch/brief-bloodknight-1017.md 1: it taught the roll) */

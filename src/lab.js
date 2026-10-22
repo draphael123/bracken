@@ -1981,9 +1981,8 @@ async function runbossLab(BK, opts) {
       k.left = false; k.right = false; k.block = false; k.up = false; k.down = false; k.jump = false; k.atk = false;
       if (h === 'paladin' && f < holdC) k.block = true;
       if (h === 'reaper' && f < dkHold) k.block = true;
-      if (h === 'reaper') { k.throw = false;   /* F: SUMMON THRALL (when his tree has it) near the boss with none of his up; with a full bar and the boss close, HOLD F for the surge */
-        if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); }
-        else if (f % 20 === 0 && ad < 110 && BK.skillNow() === 'summonSkeleton' && !(P.cds && P.cds.summonSkeleton > 0) && !BK.risen().some(r => r.life > 0)) BK.press('throw'); }
+      if (h === 'reaper') { k.throw = false;   /* with a full bar and the boss close, HOLD F for the surge (claude/bkkit2: SUMMON THRALL is gone - his RED HOST spells are cast by the skill hands, src/lab-perceive.js, like every hero's) */
+        if (P.harvest >= 100 && ad < 110 && !(boss.mode && /Tell$/.test(boss.mode))) { k.throw = true; if (!(P.fHeld > 0)) BK.press('throw'); } }
       let goal = null, strike = false, princeT = null, lampT = null; P.labSwimY = undefined;
       /* HER DRONES, while two of them are up: the nearest one, and the queen's own openings come first */
       const swarm = boss.t === 'queen' ? BK.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone) : [];

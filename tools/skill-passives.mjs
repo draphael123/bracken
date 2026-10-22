@@ -20,5 +20,5 @@ for(const [h,id]of[['knight','flurry'],['pyro','heatShield'],['paladin','sanctua
  rows.push({hero:h,id,baseline:values[0],equipped:values[1]});}
 prep('reaper',['deathGrip']);const st=BK.P.st;BK.press('throw');BK.sim(1);if(BK.P.st!==st||BK.P.cds?.deathGrip)throw Error('empty grip spent resource');
 return {catalog,rows,emptyGripFree:true};})()`);
-assert.equal(r.catalog.length,188);   /* (claude/paladin2: +2, CONSECRATE and BLESSED HAMMER became his base kit, their nodes passives) 134, THE GEOMANCER's ten (2026-09-24), THE BERSERKER's twenty-one (2026-10-04) */for(const r0 of r.rows)assert.notEqual(r0.baseline,r0.equipped,r0.id);assert.deepEqual(pg.errors,[]);console.log(JSON.stringify(r));
+assert.equal(r.catalog.length,187);   /* (claude/bkkit2: BIDDEN became DRAIN, an active) */   /* (claude/paladin2: +2, CONSECRATE and BLESSED HAMMER became his base kit, their nodes passives) 134, THE GEOMANCER's ten (2026-09-24), THE BERSERKER's twenty-one (2026-10-04) */for(const r0 of r.rows)assert.notEqual(r0.baseline,r0.equipped,r0.id);assert.deepEqual(pg.errors,[]);console.log(JSON.stringify(r));
 }finally{pg.close();}
