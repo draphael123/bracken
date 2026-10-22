@@ -75,7 +75,7 @@ async function pageTextFit(input) {
   const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
   const campaign = lvm.LEVELS.map((l, i) => [l, i]).filter(([l]) => (!l.hidden || l.secret) && l.id !== 'custom' && (!input.levels || input.levels.includes(l.id)));   /* (claude/buriedcity4: TEXTFIT_LEVELS=a,b - a lane's SCOPED run over its own levels' signs and pages; unset, every level as before) */
   const want = s => !input.only.length || input.only.includes(s);
-  const yieldNow = () => new Promise(r => setTimeout(r, 0));
+  const yieldNow = () => window.__brackenLabCollect ? window.__brackenLabCollect() : new Promise(r => setTimeout(r, 0));
   /* THE PLATES: every filled or stroked rectangle drawn while recording */
   const orig = {};
   for (const m of ['fillRect', 'roundRect', 'strokeRect']) { orig[m] = G[m]; G[m] = function (x, y, w, h, ...rest) { const r = (m === 'fillRect' && typeof this.fillStyle !== 'string') ? null : window.__textRec;   /* (batch97 integ: a GRADIENT or pattern fill is a soft glow - a lamp's bloom, a sun - not a plate a word can overflow; fillRect of a flat colour still records) */ if (r && Math.abs(w) >= 6 && Math.abs(h) >= 6) r.push({ kind: 'rect', m, x0: Math.min(x, x + w), y0: Math.min(y, y + h), w: Math.abs(w), h: Math.abs(h) });
@@ -199,7 +199,7 @@ async function pageTextFit(input) {
   /* THE LEVEL-UP CARD (LEVELING, 2026-10-03): the three stat cards with counts and the stats they give, a milestone's three perks, a full card's perk
      line (the longest), the respec prompt and message, and the co-op lock card. The save is put back after. */
   /* THE LEVEL TITLE CARD (claude/storyremove): the name and its one-line rule that fade in as a wood starts - on every level, a second in, in full: it is the one text a level opens with, so it must fit and must not need a story line under it */
-  if (want('levelcard')) { for (const [l, i] of campaign) { if (l.shop) continue; frame('levelcard ' + l.id, () => { BK.setHero('knight'); BK.load(i); BK.god = true; BK.start(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 40; i++) BK.step(1); window.__textRec = rec; }, { settle: 1, fromPlate: [24, 60] }); } BK.reset(); await yieldNow(); }
+  if (want('levelcard')) { for (const [l, i] of campaign) { if (l.shop) continue; frame('levelcard ' + l.id, () => { BK.setHero('knight'); BK.load(i); BK.god = true; BK.start(); const rec = window.__textRec; window.__textRec = null; for (let i = 0; i < 40; i++) BK.step(1); window.__textRec = rec; }, { settle: 1, fromPlate: [24, 60] }); await yieldNow(); } BK.reset(); await yieldNow(); }
   if (want('card')) { const xp = await import('/src/xp.js'), pr = BKT.PROG, keep = JSON.stringify({ xp: pr.xp, card: pr.card, cardFree: pr.cardFree, heroes: pr.heroes, coopLegacy: pr.coopLegacy, silverSpent: pr.silverSpent });
     const CARDS = [[4, { v: 1, e: 1, m: 1, ms: {} }], [25, { v: 9, e: 8, m: 7, ms: {} }], [45, { v: 25, e: 19, m: 0, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane' } }], [50, { v: 25, e: 15, m: 10, ms: { 25: 'iron', 30: 'lungs', 35: 'light', 40: 'arcane', 45: 'heart', 50: 'leech' } }]];
     for (const h of [...HEROES, 'geomancer', 'berserker', 'ranger']) { BK.setHero(h); for (const [lv, c] of CARDS) frame('card [' + h + '] L' + lv, () => { pr.xp[h] = xp.xpFloor(lv); pr.card = Object.assign({}, pr.card, { [h]: JSON.parse(JSON.stringify(c)) }); BK.cardOpen('menu', true); }, { settle: 2 }); }
@@ -371,7 +371,7 @@ async function pageTextFit(input) {
 }
 
 async function main() {
-  const pg = await openPage();
+  const pg = await openPage({ audioFiles: false });   /* layout needs audio's banner dismissed, not 867 decoded clips */
   const input = { only, hints: hints(), levels: process.env.TEXTFIT_LEVELS ? process.env.TEXTFIT_LEVELS.split(',') : null };
   console.log(input.hints.length + ' hint messages read out of src/main.js');
   const t0 = Date.now();
@@ -383,14 +383,14 @@ async function main() {
      time (default 5). The short ones stay together, in order, on one page (the hero pick before the menu, whose pause map stays up). */
   for (const o of only) if (!SCOPES.includes(o)) console.log('(unknown scope "' + o + '" ignored; scopes: ' + SCOPES.join(' ') + ')');
   const want = s => !only.length || only.includes(s);
-  const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'], LONG = ['talk', 'plates', 'bossfix', 'boss'];
+  const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'], LONG = ['talk', 'plates', 'bossfix', 'boss', 'levelcard'];
   const units = [];   /* in report order */
   for (const sc of SCOPES) if (want(sc)) { if (sc === 'talk') for (const h of HEROES) units.push({ sc, heroes: [h], label: 'talk[' + h + ']' }); else units.push({ sc, label: sc }); }
   /* RECYCLE THE PAGE EVERY BATCH OF LOADS (10-16 leakfix): BK.load leaks ~40-65 MB of NATIVE memory per call (not the JS heap), so one page doing a whole
      scope's loads (talk: 37 per hero, boss/plates: ~48) grew past 3 GB (a boss level costs ~250 MB: 90 drawn frames each; a talk load ~60 MB). The long scopes now run in batches of
      levels - boss 4, plates 6, talk 12, or TEXTFIT_BATCH for all - which keeps a page near 2 GB, and the
      page is closed and reopened between batches. Same levels, same checks, same order in the report; each batch's issues and shots are merged below like any other part. */
-  const BATCH_OF = { boss: 4, plates: 6, talk: 12 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
+  const BATCH_OF = { boss: 4, plates: 6, talk: 12, levelcard: 6 }, BATCHED = Object.keys(BATCH_OF), batchOf = sc => Math.max(1, +process.env.TEXTFIT_BATCH || BATCH_OF[sc]);
   let allIds = await pg.evalp("import('/src/level.js').then(m => m.LEVELS.filter(l => (!l.hidden || l.secret) && l.id !== 'custom').map(l => l.id))", 60000);
   if (input.levels) allIds = allIds.filter(id => input.levels.includes(id));
   for (let k = units.length - 1; k >= 0; k--) { const u = units[k]; if (!BATCHED.includes(u.sc) || allIds.length <= batchOf(u.sc)) continue;
@@ -398,14 +398,14 @@ async function main() {
     for (let b = 0; b < n; b++) parts.push({ ...u, levels: allIds.slice(b * BATCH, (b + 1) * BATCH), recycle: true, label: u.label + ' ' + (b + 1) + '/' + n });
     units.splice(k, 1, ...parts); }
   const jobs = [];    /* a job is a run of units on one page */
-  for (const sc of ['boss', 'plates']) { const us = units.filter(u => u.sc === sc); if (us.length) jobs.push(us); }
+  for (const sc of ['boss', 'plates', 'levelcard']) { const us = units.filter(u => u.sc === sc); if (us.length) jobs.push(us); }
   for (const h of HEROES) { const us = units.filter(u => u.sc === 'talk' && u.heroes[0] === h); if (us.length) jobs.push(us); }
   units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
   const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
   /* TWO pages, not five (10-16 leakfix): every page is its own headless Chrome and a talk page grows to 1.5-3 GB of baked level canvases, so five
      at once peaked near 9 GB on a 16 GB PC (the 14:53 hang). Scopes are independent pages with their own timers; fewer at a time only makes the whole run longer. */
   const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 2));
-  const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openPage() });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
+  const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openPage({ audioFiles: false }) });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
   const closeAll = async () => { for (const slot of pages) { try { await slot.p.close(); } catch {} } };
   const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
   const worker = async slot => { for (let job; (job = queue.shift());) for (const [ui, u] of job.entries()) { const ts = Date.now(); let part, p = slot.p;
@@ -414,7 +414,7 @@ async function main() {
       await closeAll(); process.exit(1); }
     part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); shotBudget = Math.max(0, shotBudget - part.shots.length);
     results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's');
-    if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage(); } } };
+    if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage({ audioFiles: false }); } } };
   await Promise.all(pages.map(worker));
   const r = { issues: [], stats: { frames: 0, texts: 0, screens: {} }, shots: [] }, shotUrls = [], seen = new Set();
   for (const u of units) { const part = results.get(u);

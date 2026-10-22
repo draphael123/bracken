@@ -154,3 +154,36 @@ serial and matching-source sharded runs are required; no incomplete run is descr
 
 None for these reversible harness corrections. Remaining combat reds stay visible; no balance change
 is authorized or proposed as a way to make the gate pass.
+
+## Stabilized full-suite continuation
+
+The copy-of-master run39867091429 at7936d68f has422 actual verdicts:407 PASS,15 FAIL,
+plus unanswered mark-integrity, no-hidden-hits and textfit-full memory interruptions. All16 shard
+artifacts and the combined summary are retained. Synthetic missing-verdict rows are never counted
+as game failures or completed tests.
+
+The retained cleanup includes all original mark fights (39870079601:217915ms, renderer2804MB,
+no skipped fight), and all64 hidden-hit levels plus both336-second tunnel runs (39869515850:
+384729ms, renderer2730MB). The latter now exposes a real Canal bargeman visibility FAIL; its
+thresholds, samples, seed, timing and known-exception list remain unchanged. Layout collection and
+six-level title-card batches retain all48 title-card cases. The full strict layout check still
+exceeds its original ten-minute gate budget; that actual timeout is retained as FAIL.
+
+Shared server ownership is fixed: one page closing cannot disconnect its peer; a final close waits
+for its owned server to exit before replacement. Real browser proof39871196174 verifies five pages,
+two peer-close reloads, simultaneous closes and a fresh replacement. External servers are not killed.
+
+Paint-wait and fresh-document/browser-cache experiments did not give reliable memory/time gains
+and are not retained. Their positive state/pixel controls and failed long runs remain available.
+The measured positive boss, levelling, load-audit, held-sheet mutation, raw-navigation and soft-recycle
+proofs above remain separate immutable-source receipts.
+
+CI permits one source-bound resume only after exit2 (unanswered checks). Saved assertion FAILs are
+never rerun or discarded. Both attempts share the original40-minute shard budget; the45-minute
+outer job remains unchanged. The standing-red serial proof similarly keeps its330-minute total
+budget. Original check assertions, tolerances, scope deadlines, fight/step budgets and all425
+registered names remain unchanged. The1536MB after-check recycle policy and separate2816MB
+emergency guard remain in force. No game source is changed on this branch.
+
+No new decision from Daniel is required for these reversible harness fixes. Remaining real game,
+visibility and frame-budget failures need coordinator review; no balance or quality reduction is proposed.
