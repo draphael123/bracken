@@ -117,3 +117,15 @@ Trace context shows the first discrepancies occur immediately after global hitst
 Kings, Grave Warden's toll tell in Burial, and a nearby mini tell in Canal). The Node old-mover equivalence
 and fuzz check passed. The weapon-weight diagnostic did not resolve the discrepancies. Historical real-page
 comparison is still being investigated; no unexplained trace has been re-stamped.
+
+## Controlled slopes-trace calibration verified
+
+Run 39820439479 at 2982b4bd passed three strict consecutive runs and a restored final run.
+At 2026-10-22T17:13:02.190Z, the one-character ledge-assist mutation (6 to 5) failed as required.
+All six levels retain their full original scripts, exact comparisons and all constructed lip depths.
+The historical 2cf3294b game was run with the same controlled transport, audio disabled, fresh clock/hero
+and independent actor/simulation dice. Keep and Welltown match that historical game frame for frame.
+Only four intentionally changed content rows use current traces: Lumber Trail rebuild c16af026 /
+3c30b273 / 7729bcd2; Kings pursuit bc14ff36 / b497d195; Burial pressure 9fd45022; Canal pressure
+9fd45022 and Fog Knight retune 53c5225f. The mover itself passed the unchanged Node equivalence/fuzz.
+No comparison tolerance or lip coverage was relaxed. Calibration receipts/logs are in the run artifact.
