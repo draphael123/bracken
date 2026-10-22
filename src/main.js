@@ -2438,9 +2438,9 @@ function trialEvent(kind) { if (!L || !L.trial) return; const st = L.trial.find(
   if (st.got >= st.n) { st.done = true; PROG.taught = PROG.taught || {}; PROG.taught[st.kind] = 1;   /* the yard TAUGHT this (lessonHint reads it: the wood does not say again what the yard already said) */ openGate(st.gate, 0, LH - 1); SFX.sting(); ringAt(P.x, P.y - 10, 20, '#8fd160', 0.4); hintT = 3; hintMsg = 'YOU HAVE ' + trialName(st.kind) + '. THE GATE AHEAD IS UP.'; } }
 function updateTrial() { if (!L || !L.trial) return; for (const st of L.trial) if (!st.done && st.fill && !st.filled && P.x / TS >= st.x0 && P.x / TS < st.gate) { st.filled = true; fillMeter(st.fill); motes(P.x, P.y - 12, 12, 10); } }
 /* WHAT A TRIAL CALLS A STEP WHEN IT IS DONE, and the hero's own meter, filled for the step that spends it */
-const TRIAL_NAME = { kneel: 'THE LOW GUARD', price: 'BLOOD PRICE', spike: 'BLOOD SPIKE', quiver: 'THE QUIVER', down: 'THE DOWNWARD SHOT', axe: 'THE AXE THROW', hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hallow: 'HOLY GROUND', sanctify: 'EMPOWER', hammer: 'THE HAMMER', smite: 'THE SMITE', twinsmite: 'TWIN SMITE', radiancePlus: 'RADIANCE+', pray: 'PRAYER', hammerfall: 'DAWNFALL', judgement: 'JUDGEMENT', ward: 'THE WARD', tip: 'THE POINT', runthrough: 'THE RUN-THROUGH', pin: 'THE PIN', fault: 'FAULT LINE', stonefall: 'EARTHFALL', board: 'BOARDING', spin: 'THE AXE SPIN' };
+const TRIAL_NAME = { host: 'THE RED HOST', kneel: 'THE LOW GUARD', price: 'BLOOD PRICE', spike: 'BLOOD SPIKE', quiver: 'THE QUIVER', down: 'THE DOWNWARD SHOT', axe: 'THE AXE THROW', hit: 'THE SWING', third: 'THE THIRD CUT', block: 'THE SHIELD', parry: 'THE PARRY', flash: 'THE BEAT', tells: 'THE MARKS', pogo: 'THE PLUNGE', heavyblow: 'THE HEAVY BLOW', dodge: 'THE DODGE', dashatk: 'THE DASH ATTACK', rise: 'THE RISING CUT', sweep: 'THE LOW SWEEP', skill: 'THE SKILLS', ember: 'THE EMBER', heat: 'THE HEAT', firedrop: 'THE FIREDROP', hook: 'THE HOOK', aegis: 'THE AEGIS', mend: 'MEND', hallow: 'HOLY GROUND', sanctify: 'EMPOWER', hammer: 'THE HAMMER', smite: 'THE SMITE', twinsmite: 'TWIN SMITE', radiancePlus: 'RADIANCE+', pray: 'PRAYER', hammerfall: 'DAWNFALL', judgement: 'JUDGEMENT', ward: 'THE WARD', tip: 'THE POINT', runthrough: 'THE RUN-THROUGH', pin: 'THE PIN', fault: 'FAULT LINE', stonefall: 'EARTHFALL', board: 'BOARDING', spin: 'THE AXE SPIN' };
 /* WHAT THE PANEL SAYS AS IT COUNTS ONE. Words never float over a fight (see number()), so a yard's confirmation is written on its step panel */
-const TRIAL_SAY = { kneel: 'UNDER THE BLADE', quiver: 'TAKEN BACK', down: 'FROM ABOVE', axe: 'THE AXE BITES', hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hallow: 'CONSECRATED', sanctify: 'SANCTIFIED', hammer: 'STRUCK', smite: 'SMITTEN', twinsmite: 'TWICE SMITTEN', radiancePlus: 'RADIANT', pray: 'A PIP ON YOUR KNEES', hammerfall: 'DAWN FALLS', judgement: 'JUDGEMENT', ward: 'WARDED', tip: 'THE POINT RINGS', runthrough: 'SKEWERED', pin: 'PINNED', fault: 'BOTH IN ONE LINE', stonefall: 'A STONE RISES', board: 'RIDING', spin: 'SHREDDED' };
+const TRIAL_SAY = { host: 'BLOOD WON BACK', kneel: 'UNDER THE BLADE', quiver: 'TAKEN BACK', down: 'FROM ABOVE', axe: 'THE AXE BITES', hit: 'HIT', third: 'THIRD CUT', block: 'BLOCKED', parry: 'PARRIED', flash: 'ON THE BEAT: HE IS OPEN', tellY: 'YELLOW ! TAKEN', tellR: 'RED !! CLEARED', pogo: 'BOUNCED', heavyblow: 'HEAVY BLOW', dodge: 'ROLLED', dashatk: 'DASH ATTACK', rise: 'LAUNCHED', sweep: 'TRIPPED', skillF: 'F: USED', skillG: 'G: USED', ember: 'ALIGHT', heat: 'HEAT FULL', firedrop: 'FIREDROP', hook: 'HOOKED', aegis: 'TURNED', mend: 'MENDED', hallow: 'CONSECRATED', sanctify: 'SANCTIFIED', hammer: 'STRUCK', smite: 'SMITTEN', twinsmite: 'TWICE SMITTEN', radiancePlus: 'RADIANT', pray: 'A PIP ON YOUR KNEES', hammerfall: 'DAWN FALLS', judgement: 'JUDGEMENT', ward: 'WARDED', tip: 'THE POINT RINGS', runthrough: 'SKEWERED', pin: 'PINNED', fault: 'BOTH IN ONE LINE', stonefall: 'A STONE RISES', board: 'RIDING', spin: 'SHREDDED' };
 Object.assign(TRIAL_NAME, { kbash: 'THE SHIELD BASH', valiant: 'VALIANT STRIKE', counter: 'THE COUNTER-THRUST', plant: 'THE WALL PLANT', snatch: 'ARROW SNATCH', kdraw: 'KNEELING DRAW' });   /* (claude/heropassa) HERO PASS A's yard steps */
 Object.assign(TRIAL_SAY, { kbash: 'INTERRUPTED', valiant: 'THROUGH THE GUARD', counter: 'BACK TO THE POINT', plant: 'PLANTED', snatch: 'CAUGHT', kdraw: 'FROM THE KNEE' });
 function trialSay(msg, col, st) { st = st || ((L && L.trial) || []).find(q => P.x / TS >= q.x0 - 1 && P.x / TS < q.gate + 1); if (!st) return; st.said = msg; st.saidCol = col || '#8fd160'; st.saidT = time + 1.5; }
@@ -9185,7 +9185,7 @@ function updateBkHost(dt) {
       if (!e || !e.alive || e.gone > 0 || e.harmless) { w.st = 'crawl'; w.tgt = null; w.vy = -140; }
       else { w.x = e.x + w.dx; w.y = e.y - (e.h || 14) * 0.55; w.biteT -= dt;
         if (w.biteT <= 0) { w.biteT = W.biteT; w.bites--; const hp0 = e.hp; hurtEnemy(e, w.dmg, w.x, false); const took = Math.max(1, Math.min(w.dmg, Math.round(hp0 - e.hp) || w.dmg));
-          if (e.alive) { e.bleed = Math.max(e.bleed || 0, W.bleed); e.bleedN = Math.max(e.bleedN || 0, 1); } hostGive(w.o, took, e); w.o && (w.o.bkWormBites = (w.o.bkWormBites || 0) + 1); trialEvent('bkBite');
+          if (e.alive) { e.bleed = Math.max(e.bleed || 0, W.bleed); e.bleedN = Math.max(e.bleedN || 0, 1); } hostGive(w.o, took, e); w.o && (w.o.bkWormBites = (w.o.bkWormBites || 0) + 1); trialEvent('host');
           burst(w.x, w.y, 4, ['#ff4a5a', '#7a1020'], 50, 0.3); if (w.bites <= 0) { w.life = 0; w.done = true; } } }
       continue; }
     w.life -= dt;
@@ -9205,7 +9205,7 @@ function updateBkHost(dt) {
     for (const e of hostFoes()) { if (Math.abs(e.x - b.x) < (e.w || 12) / 2 + 4 && b.y > e.y - (e.h || 14) - 4 && b.y < e.y + 4) {
       if (e.guardT > 0) e.guardT = 0; hurtAs('shot', e, b.dmg, b.x - Math.sign(b.vx) * 10, false); markFoe(e);
       if (e.alive) { e.bleed = Math.max(e.bleed || 0, HOST().bolt.bleed); e.bleedN = Math.max(e.bleedN || 0, 1); if (b.sunder) e.sunder = 2.5; }   /* LAID OPEN reads the bolts too */
-      hostGive(b.o, b.paid, e); if (b.o) b.o.bkBoltHits = (b.o.bkBoltHits || 0) + 1; trialEvent('bkBolt');
+      hostGive(b.o, b.paid, e); if (b.o) b.o.bkBoltHits = (b.o.bkBoltHits || 0) + 1; trialEvent('host');
       burst(b.x, b.y, 8, ['#c0283a', '#ff6b6b', '#ffd0d0'], 80, 0.4); SFX.squelch(); b.life = 0; break; } }
     if (b.life > 0 && isSolid(Math.floor(b.x / TS), Math.floor(b.y / TS))) { burst(b.x, b.y, 5, ['#a01a2a', '#3a0a10'], 50, 0.3); b.life = 0; } }
   bkBolts = bkBolts.filter(b => b.life > 0);
@@ -9216,7 +9216,7 @@ function updateBkHost(dt) {
     o.face = Math.sign(e.x - o.x) || o.face;
     if (d.tick <= 0) { d.tick = D.tick; const hp0 = e.hp, dmg = Math.max(1, Math.round(swordDmg() * D.mul * amul('bidden'))); hurtAs('shot', e, dmg, o.x, false); const took = Math.max(1, Math.min(dmg, Math.round(hp0 - e.hp) || dmg));
       if (e.alive) { e.bleed = Math.max(e.bleed || 0, 1); e.bleedN = Math.max(e.bleedN || 0, 1); }
-      const hp1 = o.hp, got = BKIT.drainGive(o, took); d.took += took; o.bkDrained = (o.bkDrained || 0) + got; if (got > 0 && o === P) bkRecPulse(hp1); if (got >= 1) number(o.x, o.y - 40, '+' + Math.round(got), '#ff6b6b'); trialEvent('bkDrain');
+      const hp1 = o.hp, got = BKIT.drainGive(o, took); d.took += took; o.bkDrained = (o.bkDrained || 0) + got; if (got > 0 && o === P) bkRecPulse(hp1); if (got >= 1) number(o.x, o.y - 40, '+' + Math.round(got), '#ff6b6b'); trialEvent('host');
       if (SFX.bloodDraw && Math.random() < 0.5) SFX.bloodDraw(); }
     if (Math.random() < dt * 40) { const ex = e.x, ey = e.y - (e.h || 14) * 0.6; parts.push({ x: ex, y: ey, vx: (o.x - ex) * 2.2, vy: (o.y - 14 - ey) * 2.2, life: 0.42, max: 0.42, col: Math.random() < 0.5 ? '#ff4a5a' : '#c0283a', size: 1, grav: 0 }); } }
   for (const d of bkDrains) if (d.done) { d.o.bkDrainOn = false; if (d.o.kPoseK === 'bkDrain') d.o.kPoseT = Math.min(d.o.kPoseT || 0, 0.06); }
@@ -9491,7 +9491,7 @@ function updateUnholy(dt) { const Q = HOST().pool;
     if (u.tick <= 0) { u.tick = Q.tick; let n = 0;
       for (const e of enemies) { if (!e.alive || e.harmless || e.gone > 0 || !inPool(u, e.x, e.y)) continue;
         const hp0 = e.hp; hurtEnemy(e, u.dmg, u.x, false); markFoe(e); if (e.alive) { e.bleed = Math.max(e.bleed || 0, Q.bleed); e.bleedN = Math.max(e.bleedN || 0, 1); } if (hp0 > e.hp) n++; }
-      if (n) { hostGive(o, n, null); trialEvent('bkPool'); }
+      if (n) { hostGive(o, n, null); trialEvent('host'); }
     }
     if (Math.random() < dt * 24) { const gx = u.x + (Math.random() - 0.5) * u.r * 2;
       parts.push({ x: gx, y: u.y - 1, vx: 0, vy: -10 - Math.random() * 14, life: 0.6, max: 0.6, col: Math.random() < 0.6 ? '#c0283a' : '#ff6b6b', size: 1, grav: 120 }); }

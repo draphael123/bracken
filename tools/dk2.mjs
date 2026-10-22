@@ -52,7 +52,7 @@ try {
     /* 4. GRAVE KNEEL */
     place(); BK.keys.down = true; BK.sim(20); out.kneel = { ducking: !!P().ducking };
     const foe = k => ({ t: 'kneeltest', alive: true, x: 0, y: P().y, toldK: k, toldAt: -99, blowMode: 'go', mode: 'go' });
-    const blow = (k, side, o = {}) => { P().hp = P().maxHp; P().inv = 0; P().hurt = 0; P().st = P().maxSt; BK.sim(12); P().inv = 0; const f = foe(k); const r = D().hit(P().x + side * 20, 10, { who: f, ...o }); BK.keys.down = true; BK.sim(30); return { r: String(r), took: P().maxHp - P().hp }; };
+    const blow = (k, side, o = {}) => { P().hp = P().maxHp; P().inv = 0; P().hurt = 0; P().st = P().maxSt; BK.sim(20); P().inv = 0;   /* (claude/bkkit2: 20 frames, past BLOOD SPIKE's 0.22 s beat - clearing the hurt re-kneels him, and ANY blow on the beat is a spike now; these are the plain guard's rows) */ const f = foe(k); const r = D().hit(P().x + side * 20, 10, { who: f, ...o }); BK.keys.down = true; BK.sim(30); return { r: String(r), took: P().maxHp - P().hp }; };
     out.kneel.lowFront = blow('waterthief|slashTell', 1); out.kneel.lowBehind = blow('waterthief|slashTell', -1); out.kneel.mid = blow(null, 1);
     out.kneel.flag = blow(null, 1, { low: true }); out.kneel.high = blow('owl|swoopTell', 1);
     BK.keys.down = false; out.kneel.standing = blow('waterthief|slashTell', 1);

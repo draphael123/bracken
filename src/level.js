@@ -3618,8 +3618,8 @@ function trialYard(hero) {
     meter: ['meter', 1, 'BLOOD SURGE: HIS BAR FILLS WITH WHAT HE TAKES. FULL, HOLD F. IT IS FILLED FOR YOU HERE.', [['dummy', 14], ['sprig', 20]], 'HOLD Y WITH A FULL BAR'],
   };
   /* (claude/bkkit2) HIS TREE STEP IS THE RED HOST: his blood magic (BLOODWORMS is lent on F when he has none of it), paid in blood - shown, not taken, in a yard - and what
-     lands wins it back. Any of the four counts: a worm's bite, a bolt that lands, a drain's pull, the pool's bite. (Held on a full bar, F is still the surge.) */
-  const SKILL_G = ['host', 3, 'THE RED HOST, HIS BLOOD MAGIC (F OR G): PAID IN BLOOD, ON THE BAR AS DEBT. LAND IT THREE TIMES TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'Y OR RT', ['bkBite', 'bkBolt', 'bkDrain', 'bkPool']];
+     lands wins it back. Any of the four counts (one kind 'host'): a worm's bite, a bolt that lands, a drain's pull, the pool's bite. (Held on a full bar, F is still the surge.) */
+  const SKILL_G = ['host', 3, 'THE RED HOST, HIS BLOOD MAGIC (F OR G): PAID IN BLOOD, ON THE BAR AS DEBT. LAND IT THREE TIMES TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'Y OR RT'];
   /* THE NEW CUTS, THE SAME FOR EVERY HERO: what the controls page promises, a gate each. The goblins in these yards are straw
      inside (see e.trainer in main.js): they can be thrown, tripped and cut all day, they never go down, and they keep to their yard. */
   const DASH = ['dashatk', 2, 'DODGE AT HIM (TAP A WAY TWICE, OR V) AND X AT ONCE: THE ATTACK CARRIES YOU THROUGH. TWICE.', [['dummy', 15], ['dummy', 21]], 'B, THEN X AT ONCE'];
