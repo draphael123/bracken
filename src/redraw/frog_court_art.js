@@ -13,6 +13,7 @@
 import { canvas, fillPoly } from '../px.js';
 import { OAK, CORD, CORD_D, MOSS, P, R } from './marsh2_art.js';
 import { reshuffleRead } from './lilypad.js';
+import { THRONE_DX } from '../frog-court.js';
 
 const hash = (a, b) => { let h = (Math.imul(a | 0, 374761393) + Math.imul(b | 0, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return (h ^ (h >>> 16)) >>> 0; };
 const rnd = (a, b, m) => hash(a, b) % m;
@@ -22,7 +23,7 @@ const TOP = 18 * 16;    /* a royal pad's standing line */
 const LEAF = { rim: '#d6f59a', rimHi: '#fff6b0', top: '#3e9a5c', topL: '#6fc682', topD: '#2c7a40', body: '#1f5530', bodyD: '#143a22', under: '#0e2a1a', pale: '#a9bd62', gold: '#e0b040', goldHi: '#ffe27a', goldD: '#9a7020' };
 const STEM = { out: '#10281a', lit: '#5a9a52', mid: '#347a40', dim: '#245c34', dark: '#173f27', moss: '#8fd160', pore: '#143a22' };
 /* the stems under each pad: [x in the pad's pixels, width] by pad width in tiles (7, 7, 12); they sway a pixel or so with the depth */
-const STEMS = { 7: [[19, 7], [49, 14], [87, 7]], 12: [[20, 12], [90, 14], [160, 12]] };
+const STEMS = { 7: [[19, 7], [49, 14], [87, 7]], 12: [[20, 12], [90, 14], [160, 12]], 14: [[38, 10], [104, 16], [176, 10]], 20: [[48, 12], [152, 16], [260, 12]] };   /* (claude/frogpads: the royal pads are 14, 14, 20 wide now, the art scales with the hitbox) */
 const NOTCH = [0.3, 0.66, -1];   /* where the lip's notch is, by pad (none on the throne bank: the lotus is there) */
 const sway = (wy, k) => Math.round(Math.sin(wy * 0.11 + k * 1.7) * 1.3);
 const blank = () => once('blank', () => canvas(16, 16)[0]);
@@ -182,7 +183,7 @@ function backSheet(C) {
 export function drawBack(g, L, cx, cy, time) {
   const C = courtWindow(L, cx, g); if (!C) return;
   const B = backSheet(C), sx0 = Math.max(0, Math.floor(cx - B.x0)), sx1 = Math.min(B.c.width, Math.ceil(cx + VWD - B.x0)); if (sx1 <= sx0) return;
-  { const lt = lotus(true), tx = (C.wl + 71) * 16 + 8 - lt.width / 2; if (tx + lt.width > cx && tx < cx + VWD) g.drawImage(lt, Math.round(tx - cx), TOP - cy - lt.height + 10); }   /* THE THRONE: a lotus fan opens behind it (src/frog-court.js THRONE_DX 71), drawn apart: it is the one tall thing */
+  { const lt = lotus(true), tx = (C.wl + THRONE_DX) * 16 + 8 - lt.width / 2; if (tx + lt.width > cx && tx < cx + VWD) g.drawImage(lt, Math.round(tx - cx), TOP - cy - lt.height + 10); }   /* THE THRONE: a lotus fan opens behind it (src/frog-court.js THRONE_DX 71), drawn apart: it is the one tall thing */
   g.drawImage(B.c, sx0, 0, sx1 - sx0, BACK_H, Math.round(B.x0 + sx0 - cx), Math.round(B.ty - cy), sx1 - sx0, BACK_H);
 }
 
