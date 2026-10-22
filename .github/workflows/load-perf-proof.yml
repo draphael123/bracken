@@ -4,11 +4,28 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare]
+        options: [profile, sfx, compare, mobile]
         default: profile
 permissions:
   contents: read
 jobs:
+  mobile:
+    if: inputs.mode == 'mobile'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/load-perf-mobile-compare.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mobile-comparison
+          path: gate-data/
   compare:
     if: inputs.mode == 'compare'
     runs-on: ubuntu-latest
