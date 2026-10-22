@@ -73,7 +73,12 @@ INCOMPLETE: recovery proof needs at least 1536 MB free; currently 945 MB. No bro
 
 - Memory guard: recommend retaining 1536 MB renderer / 512 MB free RAM defaults until measured heavy
   checks show a justified alternative. Built configurable guards and per-check process receipts.
-- Proof timing: recommend running the bounded browser proof once other lanes free at least 1.5 GB,
-  then the full serial comparison. Built the proof command and truthful incomplete-state reporting.
+- Proof timing: recommend running the full serial comparison with recorded memory guards. Built
+  the bounded proof and truthful incomplete-state reporting. No other Bracken runs were verified:
+  the October 22 process inspection found no active Bracken test browser. The prompt's statement
+  about other lanes was context, not evidence of what is currently running on this PC.
+
+- Cold-page lifecycle: removed retained server exit hooks and applied the same cleanup to startup
+  failures. Three real cold-page cycles passed with a constant exit-listener count of one.
 
 These recommendations do not require a reply before safe independent work continues.

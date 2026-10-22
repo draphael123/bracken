@@ -49,6 +49,7 @@ Validation tools:
 
 ```powershell
 node tools/suite-progress-selftest.mjs
+node tools/cdp-lifecycle-selftest.mjs
 node tools/suite-recovery-proof.mjs ../recovery-proof
 ```
 
@@ -57,3 +58,8 @@ of stale source/inventory/concurrent writers. The second requires 1.5 GB free be
 runs a representative real-browser subset three ways: uninterrupted, Chrome killed by recorded
 PID, then resumed. It compares every combined verdict and verifies saved checks were not rerun.
 It is explicitly a subset proof, not a full-release equivalence claim.
+
+Closing a cold lab page also removes its server exit listener and drops the server reference.
+Previously each reopen retained another closure until the checker exited. The lifecycle check
+opens and closes three cold pages and verifies the exit-listener count stays constant. Startup
+failures use the same cleanup path, including a browser launch or debugging-port failure.
