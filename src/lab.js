@@ -74,15 +74,15 @@ const HEROES = ['knight', 'warden', 'pyro', 'paladin', 'pirate', 'reaper'];
    a yellow projectile coming at her, a beat out - she taps the bash so it is ON THE BEAT as it arrives. Both edge-pressed (C is read on the frame it goes down) */
 const RG_KNEEL = 0.17, RG_DRAW_ST = 12;   /* s knelt before the bot draws (src/ranger.js RG.kneel.settle 0.15, and a frame) */
 /* (claude/chargetiers) THE RANGER'S HANDS USE HER THREE TIERS (src/ranger.js RG.tiers; main.js BK.rg().tier / tierAt): a player lets the draw go on the tier the moment asks for -
-   ON A LEVEL FOE (rgFoeTier): an ELITE or what wants a heavy (plate/shell/beast) and is not held already takes the PINNING SHOT (T3: held where it stands); two or more in the
+   ON A LEVEL FOE (rgFoeTier): an ELITE or what wants a heavy (plate/shell/beast) takes the TRIPLE SHOT (T3: three strong arrows); two or more in the
    line ahead within the pierce's reach, the PIERCING SHOT (T2); anything else the LONG SHOT (T1) - the hands used to hold every draw ~3.7 s until it went by itself.
-   ON A BOSS (rgBossTier, his openings - the rotation and the mixed heavy): the PINNING SHOT bites his break bar, so it is wound while he is NOT broken; BROKEN, the quicker PIERCING
+   ON A BOSS (rgBossTier, his openings - the rotation and the mixed heavy): the TRIPLE SHOT is the most one draw does, so it is wound while he is NOT broken and for a long window (broken over 2.2 s); a short one, the quicker PIERCING
    SHOT spends the window on damage. let go = the hold has reached the wanted tier (plus a frame) */
 const rgRead = BK => { try { return BK.rg ? BK.rg() : null; } catch { return null; } };
 export function rgFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return rgBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null;
-  if (e.alive && !(e.pinned > 0) && (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast')) return 3;
+  if (e.alive && (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast')) return 3;
   const line = BK.enemies().filter(q => q.alive && !q.harmless && (q.x - P.x) * P.face > 0 && Math.abs(q.x - P.x) < 240 && Math.abs(q.y - P.y) < 20).length; return line >= 2 ? 2 : 1; }
-export const rgBossTier = (BK, b) => b && b.broken > 0 ? 2 : 3;
+export const rgBossTier = (BK, b) => b && b.broken > 0 && b.broken < 2.2 ? 2 : 3;
 function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 /* (claude/chargetiers) THE BERSERKER'S HANDS USE HIS RAGE WIND-UP (src/berserker.js BZ.tiers; main.js BK.bz().tier / tierAt). ON A LEVEL FOE (bzFoeTier): two or more foes within
    the cleave's reach on BOTH sides of him -> the SPINNING CLEAVE; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans

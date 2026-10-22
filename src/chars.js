@@ -5270,23 +5270,23 @@ function rgKitPoses(F, h) {
     KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-3, { stave: [X + 7, Y + 8, X + 7, Y - 12] }), plume: 0, bits: [o(14, -3, C), o(15, -3, W2), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] })];
   /* ==== THE THREE-TIER DRAW (claude/chargetiers, greybox - the art lane redraws): held past the full draw (the windup's last beat = T1 THE LONG SHOT) her body changes with the shot.
      T2 THE PIERCING SHOT - rgDraw2: drawn PAST the ear, elbow high, the bow upright and dead level, the head glinting green; two beats, a held tremble.
-     T3 THE PINNING SHOT - rgDraw3: down in a wide braced stance, the bow canted forward, the heavy bodkin drawn right back past her ear, its dark iron head and an amber glint; two beats.
+     T3 THE TRIPLE SHOT - rgDraw3: down in a wide braced stance, the bow canted forward, THREE arrows nocked in a tight fan drawn right back past her ear, amber heads; two beats.
      Kneeling: rgKneelDraw2 / rgKneelDraw3, the same on one knee. LOOSES: rgLoose2 the piercing shot's flat snap (the draw hand flung straight back, a green line out of the bow);
-     rgLoose3 the pinning shot's heavy follow-through (rocked back a step on the recoil, the bow arm kicked up, amber sparks off the string) ==== */
+     rgLoose3 the triple shot's heavy follow-through (rocked back a step on the recoil, the bow arm kicked up, three amber streaks off the string) ==== */
   { const G2 = '#9fdc6a', G2L = '#dfffb0', AM = '#ffb84a', AML = '#ffd68a', IR = '#3a3e46';
     const lvl = { stave: [X + 6, Y + 9, X + 6, Y - 13] }, cant = { stave: [X + 8, Y + 8, X + 4, Y - 13] };
     F.rgDraw2 = [KF({ legs: 'wide', sho: 1, hy: -1, ...aimed(-5, lvl), plume: 2, bits: [o(8, -3, G2), o(9, -3, G2L), o(7, -4, G2)] }),
       KF({ legs: 'wide', sho: 1, hy: -1, ...aimed(-5, lvl), plume: 1, bits: [o(8, -3, G2L), o(9, -3, W2), o(9, -4, G2)] })];
-    F.rgDraw3 = [KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-6, cant), plume: 2, bits: [o(9, -2, IR), o(10, -2, IR), o(8, -3, AM), o(11, -3, AML)] }),
-      KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-7, cant), plume: 1, bits: [o(9, -2, IR), o(10, -2, IR), o(8, -1, AM), o(11, -1, AML), o(12, -2, W2)] })];
+    F.rgDraw3 = [KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-6, cant), plume: 2, bits: [o(8, -5, AM), o(9, -5, AML), o(8, -3, AM), o(9, -3, AML), o(8, -1, AM), o(9, -1, AML)] }),
+      KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-7, cant), plume: 1, bits: [o(8, -5, AM), o(9, -5, AML), o(8, -3, AM), o(10, -3, W2), o(8, -1, AM), o(9, -1, AML)] })];
     const kst = { stave: [X + 7, Y + 8, X + 7, Y - 12] };
     F.rgKneelDraw2 = [KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-5, kst), plume: 0, bits: [o(8, -3, G2), o(9, -3, G2L), o(9, 12, D), o(5, 13, D)] }),
       KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-5, kst), plume: 1, bits: [o(8, -3, G2L), o(9, -3, W2), o(9, 12, D), o(5, 13, D)] })];
-    F.rgKneelDraw3 = [KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 0, bits: [o(9, -3, IR), o(10, -3, IR), o(8, -4, AM), o(11, -4, AML), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] }),
-      KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 1, bits: [o(9, -3, IR), o(10, -3, IR), o(8, -2, AM), o(12, -3, W2), o(9, 12, D), o(5, 13, D)] })];
+    F.rgKneelDraw3 = [KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 0, bits: [o(8, -6, AM), o(9, -6, AML), o(8, -4, AM), o(9, -4, AML), o(8, -2, AM), o(9, -2, AML), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] }),
+      KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 1, bits: [o(8, -6, AM), o(9, -6, AML), o(8, -4, AM), o(10, -4, W2), o(8, -2, AM), o(9, -2, AML), o(9, 12, D), o(5, 13, D)] })];
     F.rgLoose2 = [KF({ wide: 12, legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 7, Y - 3], plume: 2, bits: [...ln(9, -3, 17, -3, (i, n) => i === n ? W2 : i % 2 ? G2 : G2L)] }),
       KF({ legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 5, Y - 1], plume: 1, bits: [o(15, -3, G2), o(17, -3, G2L)] })];
-    F.rgLoose3 = [KF({ wide: 12, dx: -1, dy: 1, legs: 'wide', ...aimed(null, { stave: [X + 7, Y + 7, X + 6, Y - 15], arm: [X, Y, X + 6, Y - 4] }), arm2: [OFF[0], OFF[1], X - 7, Y + 1], plume: 2, bits: [o(13, -3, AM), o(15, -2, AML), o(14, -5, AM), o(16, -4, W2), o(12, 0, AM)] }),
+    F.rgLoose3 = [KF({ wide: 12, dx: -1, dy: 1, legs: 'wide', ...aimed(null, { stave: [X + 7, Y + 7, X + 6, Y - 15], arm: [X, Y, X + 6, Y - 4] }), arm2: [OFF[0], OFF[1], X - 7, Y + 1], plume: 2, bits: [o(13, -5, AM), o(15, -6, AML), o(13, -3, AM), o(16, -3, W2), o(13, -1, AM), o(15, 0, AML)] }),
       KF({ dx: -1, legs: 'wide', ...aimed(null, cant), arm2: [OFF[0], OFF[1], X - 4, Y + 2], plume: 1, bits: [o(15, -4, AM), o(17, -3, AML)] })]; }
   riposteKit(F, 'ranger', KF, { X, Y, OFF, aimed, knife });
 }
