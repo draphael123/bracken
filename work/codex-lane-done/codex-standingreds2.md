@@ -87,7 +87,7 @@ serial branch run. The measured Task 2 hero-art collection and cleanup receipt f
 
 The new local full gate remains on frozen Task 2 source 2a3175b1. Its same-source Linux audit (run39852095702)
 retains 382 actual verdicts (364 PASS / 18 FAIL) and 43 unanswered memory interruptions; it is not equivalence proof.
-The earlier standingreds serial snapshot cfa373f2 is still running in run39852300871. Neither is relabelled as this newer source.
+The earlier standingreds serial snapshot cfa373f2 in run39852300871 was cancelled when superseded. Neither is relabelled as this newer source.
 
 Raw Page.navigate discarded the old helper wrapper. Pre-document installation now keeps load/hero/fresh-reset collection
 across navigation; the unforced leak control remains unwrapped. The actual raft-recall fixture passes at c6bc30ff:
@@ -111,3 +111,39 @@ mid-boot probes and gcLoads:false controls keep their original path. No simulati
 The runner now waits for estimated renderer headroom before launch and saves an incomplete checkpoint if RAM stays low.
 Admission bounds, the hard-killed-writer recovery, full 425-name inventory and gate-result failure-injection checks pass.
 The original full-suite checkpoint is not modified to accept these source changes.
+
+## Current continuation verification (2026-10-22)
+
+The renderer recycle threshold is 1536 MB, applied after the current successful pooled check. It is
+separate from the 2816 MB emergency ceiling for one check. The earlier implementation incorrectly
+used the recycle threshold as a hard kill and prevented a legitimate all-campaign canvas audit.
+The corrected default remains below 3 GB; admission requires 4352 MB free, including 1024 MB browser
+overhead and the unchanged 512 MB reserve. A sustained shortfall saves an incomplete checkpoint.
+No game assertions, tolerances, deadlines, simulation budgets, balance or quality settings changed.
+
+Measured causes are retained native canvas allocations during synchronous lab evaluations, wrappers
+lost on raw navigation, and repeated hero-art builds. The harness reinstalls opt-out-aware collection
+before navigation, yields at existing forced-GC audit boundaries and uses fresh browsers for the
+original ordered boss cases and per-hero levelling cases. All unforced growth controls remain unforced.
+
+Verified immutable-source Actions receipts:
+- 39860029941, source 63cd8719: all 27 boss cases / 102 assertion lines pass in 254736 ms
+  inside the original 300000 ms deadline, renderer peak 1321 MB; levelling passes 4029 passive reads
+  and 234 level-up cases in 639091 ms, peak 1400 MB, inside its original 1800000 ms deadline.
+- 39860788572: native bridge preserves 256 exact updates/random draws and 64 state/pixel samples,
+  raw navigation/reload and the explicit gcLoads:false opt-out; no extra simulation steps.
+- 39864754648, source ae573a03: all 64 levels / 47769 returned sheets freed, zero held; both original
+  growth limits pass. Injecting one held sheet produces the real assertion failure (exit 1), not an
+  interruption. Peaks 2526/2554 MB calibrated the separate emergency margin.
+- 39865884558, source 55b757c6: a 1 MB injected soft threshold keeps both successful verdicts
+  and changes the browser PID before the second check. Memory/admission/kill-resume/fault tests pass.
+
+The prior source 2a3175b1 Linux full gate retains 382 real verdicts (364 PASS, 18 FAIL) and 43
+interruptions; missing-verdict summary rows are not game failures or completion. It is not current
+equivalence proof. Earlier serial snapshots are preserved with their exact identities. Final full
+serial and matching-source sharded runs are required; no incomplete run is described as green.
+
+## QUESTIONS FOR DANIEL - current
+
+None for these reversible harness corrections. Remaining combat reds stay visible; no balance change
+is authorized or proposed as a way to make the gate pass.
