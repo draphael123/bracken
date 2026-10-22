@@ -1,4 +1,4 @@
-// tools/levelling-runtime.mjs — THE LEVELLING SYSTEM, IN THE PAGE (the save side is tools/levelling.mjs).
+// tools/levelling-runtime.mjs â€” THE LEVELLING SYSTEM, IN THE PAGE (the save side is tools/levelling.mjs).
 //   PASSIVES: every passive of every hero reads ON through the game's own tal() at its level with nothing owned and nothing in a
 //   slot, and OFF a level below; the hero menu's PASSIVES tab is the ladder (lit ON, dim LV n), and Z and F on it neither buy nor slot.
 //   THE HEAL: a level-up in a wood fills health and stamina; one that lands while a boss is still standing (an XP payment in the
@@ -10,9 +10,9 @@
 //   passive that arrived (and how many more), never mentions a slot, and wraps to two lines of the hint at most, as drawn.
 // LEVELLING_SCREEN=<prefix> writes the ladder and a level-up as PNGs.
 import assert from 'node:assert/strict'; import { openPage } from './cdp.mjs'; import { writeFileSync } from 'node:fs';
-const pg = await openPage({ audio: false, fonts: false }); let r;
+let pg = await openPage({ audio: false, fonts: false }); let r;
 try {
-  r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const KD=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)).keep;/* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
+  const script = `(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const KD=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)).keep;/* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
 // Yield only between complete manual cases: frame() performs neither updates nor rendering in manual mode.
 const fresh=async(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();if(window.__brackenLabCollect)await __brackenLabCollect();else await new Promise(r=>setTimeout(r,0));};
 /* 1. tal(): on from its level, unowned and unslotted; off a level below */
@@ -63,9 +63,19 @@ const say=async(h,from,to)=>{await fresh(h,from);{const q=BK.uiHud.q;q.cur=null;
 for(const h of PR.HERO_IDS){for(let lv=1;lv<=24;lv++)await say(h,lv-1,lv);await say(h,2,5);await say(h,0,12);}
 out.said=said;out.longest=longest;
 await fresh('pyro',3);BK.P.inv=99;BK.gainXp(xpFloor(4)-xpFloor(3));for(let f=0;f<40;f++)BK.step(1);shots.push({name:'level-up-passives',png:BK.view.buf.toDataURL()});out.pyro4=BK.hint.msg;
-return{fails,shots,out};})()`);
+return{fails,shots,out};})()`;
+  // Exercise all heroes and all original assertions, with a fresh browser per hero's bake-heavy loop.
+  const heroes=await pg.evalp("(async()=>{const p=await import('/src/progression.js');return p.HERO_IDS;})()");
+  assert(heroes.length>=9);assert.equal(script.split('for(const h of PR.HERO_IDS)').length,3);
+  const rows=[],deadline=Date.now()+1800000;
+  for(const [i,h]of heroes.entries()){if(i)pg=await openPage({audio:false,fonts:false});try{
+    const row=await pg.evalp(script.replaceAll('for(const h of PR.HERO_IDS)','for(const h of '+JSON.stringify([h])+')'),Math.max(1,deadline-Date.now()));
+    assert.deepEqual(pg.errors,[]);rows.push(row);console.log('levelling hero '+h+' complete: '+row.out.talReads+' passive reads, '+row.out.said+' level-up cases');
+  }finally{await pg.close();pg=null;}}
+  r={...rows[0],fails:rows.flatMap((x,i)=>x.fails.map(f=>heroes[i]+': '+f)),out:{...rows[0].out,talReads:rows.reduce((n,x)=>n+x.out.talReads,0),said:rows.reduce((n,x)=>n+x.out.said,0)}};
+
   if (process.env.LEVELLING_SCREEN) for (const s of r.shots) writeFileSync(process.env.LEVELLING_SCREEN + '-' + s.name + '.png', Buffer.from(s.png.split(',')[1], 'base64'));
-  assert.deepEqual(pg.errors, []);
-} finally { pg.close(); }
+  // Every hero batch asserts its page errors above.
+} finally { await pg?.close(); }
 if (r.fails.length) { console.log('LEVELLING-RUNTIME: ' + r.fails.length + ' red\n  ' + r.fails.slice(0, 30).join('\n  ')); process.exit(1); }
 console.log('Levelling runtime: ' + r.out.talReads + ' passive reads through tal() on from their level with nothing owned or slotted; the PASSIVES tab is a ' + r.out.ladder.length + '-step ladder that neither sells nor slots; a level-up heals in a wood (' + r.out.plainHint + '), not while the owl stands (' + r.out.midFightHp + '), and on the frame she falls; catch-up pays x3 below the curve (' + r.out.catchHint + ') and x1 on or above it; ' + r.out.said + ' level-up lines fit two lines and name what arrived (longest: ' + r.out.longest + ').');

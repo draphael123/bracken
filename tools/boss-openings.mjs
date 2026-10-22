@@ -1,4 +1,4 @@
-/* tools/boss-openings.mjs — THE WINDOW THE PLAYER MAKES.
+/* tools/boss-openings.mjs â€” THE WINDOW THE PLAYER MAKES.
      (claude/pyramidboss) THE COFFIN KING  a switch's counterweight, a chamber trap from a plate, a plate he stands on: each tips him open; left alone, nothing
    All four of the levels added in the Codex pass shipped a boss that chose its attacks with turn++%n and handed out a
    timed rest after every one of them, so nothing the player did ever opened anything: docs/audit-new-levels-0920.md.
@@ -52,9 +52,9 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
-const pg = await openPage({ audio: false, fonts: false });
+let pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{
+  const script = `(async()=>{
   const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
   // Manual simulation suppresses both automatic updates and renders; yielding releases retired native canvases between cases.
   const breathe=()=>window.__brackenLabCollect?__brackenLabCollect():new Promise(r=>setTimeout(r,0));
@@ -170,7 +170,7 @@ try {
    const left=remount(false),cut=remount(true);
    out.rider={alone,struck,left,cut};}
   /* THE WINDCALLER: his howl twice - left to blow (it walks you to the wall and he blinks away) and braced through, the guard key
-     held on the ground (his wind fails him and he falls, open): the moor's own lesson, docs/briefs/gale-moor-rework.md §4 */
+     held on the ground (his wind fails him and he falls, open): the moor's own lesson, docs/briefs/gale-moor-rework.md Â§4 */
   {const b=await boot('moor');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&!e.maxHp)e.alive=false;
    const howl=brace=>{b.mode='howlTell';b.modeT=0.01;b.hits=0;b.howlT=99;b.stoneT=99;b.wallT=99;b.specialT=99;b.braceT=0;BK.P.x=(A.x0+A.x1)/2+60;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;
      let fell=false,moved=0;const x0=BK.P.x;for(let i=0;i<60*3;i++){BK.keys.block=brace;BK.sim(1);moved=Math.max(moved,Math.abs(BK.P.x-x0));if(b.mode==='fallen'){fell=true;break;}if(b.mode==='blink'||b.mode==='appear')break;}
@@ -243,8 +243,7 @@ try {
    b.hp=Math.round(b.maxHp*0.3);
    take('bailed',()=>S.ph===3&&S.pose==='column'&&b.mode!=='rise'&&((S.bucket.st==='down'&&!(S.bucket.t>0))||(S.bucket.st==='up'&&Math.abs(b.x-G.mid)<=24&&!(S.ward>0))),()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
    out.djinn={alone:+alone.toFixed(1),open:op,n:{mud:S.n.mud,doused:S.n.doused,bailed:S.n.bailed}};}
-  if(LEVELS.some(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}))
-  {const b=await boot(LEVELS.find(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}).id);const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
+  {const b=await boot('underwell');if(BK.L.arena.boss!=='cisternqueen')throw Error('Underwell must contain the Cistern Queen');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips,dryWet=(S.wet||0)>0;
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
@@ -332,7 +331,18 @@ try {
    const pw=G.plates[0];b.mode='recover';b.modeT=3;b.x=(pw.reach[0][0]+pw.reach[0][1])/2;b.open=0;S().ward=0;P.x=pw.x0-28;P.y=G.floorY;P.vx=P.vy=0;BK.sim(4);K.right=true;for(let i=0;i<40&&P.x<pw.x0+14;i++)BK.sim(1);none();const blk=watch(60*6);
    settle();const PH=BK.sealedPyramidHands();for(let i=0;i<60*12&&!(PH.trapReady('tkDartsW')&&PH.trapReady('tkDartsE')&&/walk|recover/.test(b.mode)&&S().ward<=0);i++){P.hp=P.maxHp;BK.sim(1);}const pm=G.plates[1];P.x=pm.x0-40;P.y=G.floorY;b.x=(pm.x0+pm.x1)/2;b.mode='slamTell';b.modeT=0.7;b.open=0;S().ward=0;const plate=watch(60*6);
    out.tombking={alone:+alone.toFixed(1),weight:wt,glance,ph:S().ph,traps:TH.trapsOn(),block:blk,plate,n:S().n.byKind,onPlate:S().n.onPlate};}
-  return out;})()`, 300000);
+  return out;})()`;
+  // All independent cases remain in order. Four per fresh browser bound retained native page caches.
+  const first=script.indexOf('\n  {'),last=script.lastIndexOf('return out;'),prefix=script.slice(0,first),body=script.slice(first,last);
+  const cases=body.split(/\n(?=  \{)/).filter(c=>c.trim());assert(cases.length>=27,'all original boss cases must remain');
+  assert.equal(cases.join('\n').trim(),body.trim(),'the batching must consume the entire original case body');
+  const r={},deadline=Date.now()+300000;
+  for(let i=0;i<cases.length;i+=4){if(i)pg=await openPage({audio:false,fonts:false});try{
+    const row=await pg.evalp(prefix+cases.slice(i,i+4).join('\n')+'\nreturn out;})()',Math.max(1,deadline-Date.now()));
+    assert.deepEqual(pg.errors,[]);for(const key of Object.keys(row))assert(!(key in r),'duplicate boss result '+key);Object.assign(r,row);
+    console.log('boss cases '+(i+1)+'-'+Math.min(i+4,cases.length)+'/'+cases.length+' complete');
+  }finally{await pg.close();pg=null;}}
+
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
   assert.equal(r.buried.mode, 'stuck', 'slamming onto his own broken ground must bury his arm');
@@ -444,6 +454,6 @@ try {
   assert.ok(r.tombking.ph === 2 && r.tombking.traps && r.tombking.block.kind === 'block' && r.tombking.block.open >= 3, 'THE COFFIN KING: phase two, in the west block\'s reach with its plate trodden, he was not knocked open: ' + JSON.stringify(r.tombking));
   assert.ok(r.tombking.plate.kind === 'darts' && r.tombking.plate.open >= 3 && r.tombking.onPlate >= 1, 'THE COFFIN KING: standing on the middle plate to strike, its darts did not fire on him: ' + JSON.stringify(r.tombking));
   assert.ok(r.scarabmother.glance.glanced >= 1 && !r.scarabmother.glance.open, 'THE SCARAB MOTHER: a trap in her ward opened her (B3: it must glance off): ' + JSON.stringify(r.scarabmother));
-  assert.deepEqual(pg.errors, []);
+  // Every batch asserts its page errors above.
   console.log(JSON.stringify(r));
-} finally { pg.close(); }
+} finally { await pg?.close(); }
