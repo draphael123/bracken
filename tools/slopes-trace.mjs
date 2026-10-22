@@ -151,7 +151,7 @@ const compare = (want, got) => {
   return bad;
 };
 
-const pg = await openPage({ port: portFor(7), fonts: false, seed: 1919 });
+const pg = await openPage({ port: portFor(7), audio: false, fonts: false, seed: 1919 });
 try {
   const got = await trace(pg);
   assert.deepEqual(pg.errors, [], 'the page threw while tracing');
