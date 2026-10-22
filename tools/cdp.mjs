@@ -119,7 +119,7 @@ export async function openPage(opts = {}) {
       if(typeof gc!=='function')return;
       Object.defineProperty(window,'BK',{configurable:true,enumerable:true,get(){return undefined;},set(value){
         Object.defineProperty(window,'BK',{configurable:true,enumerable:true,writable:true,value});
-        if(value)(${installLabCollection.toString()})(value,gc,${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load','setHero','reset'])});
+        if(value)(${installLabCollection.toString()})(value,gc,${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load','setHero','reset','sim','step','draw1','look'])});
       }});
     })()` });
   }
@@ -134,7 +134,7 @@ export async function openPage(opts = {}) {
     if (opts.noWait || process.env.BRACKEN_LAB_GC === '0') return;
     if (opts.gcLoads !== false) await evalp(`(()=>{
       if (typeof gc !== 'function' || !window.BK) return false;
-      return (${installLabCollection.toString()})(BK, gc, ${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load', 'setHero', 'reset'])});
+      return (${installLabCollection.toString()})(BK, gc, ${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load', 'setHero', 'reset', 'sim', 'step', 'draw1', 'look'])});
     })()`);
     await send('HeapProfiler.collectGarbage');
   };
