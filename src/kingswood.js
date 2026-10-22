@@ -250,7 +250,7 @@ export function buildKingswood({ painter, T, TS }) {
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(200,120,80,0.16)', grass: '#8a7a2a', grassL: '#c9a83a', grassD: '#5a4a1a', dirt: '#4a3020', dirtL: '#5e3f2a', dirtD: '#2c1a10', canopy: ['#7a2a1a', '#a83a2a', '#c9463d', '#e07060'], hall: true },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     /* the open wood keeps its birds; the King's hall has its hearth (the next lane gives the court its own bed: horn and drum) */
-    ambient: [{ x0: 0, x1: 416 * TS, kind: 'forest' }, { x0: 416 * TS, x1: 99999, kind: 'fire' }],
+    ambient: [{ x0: 0, x1: 122 * TS, kind: 'court' }, { x0: 122 * TS, x1: 306 * TS, kind: 'forest' }, { x0: 306 * TS, x1: 416 * TS, kind: 'court' }, { x0: 416 * TS, x1: 99999, kind: 'fire' }],
     /* THE SEAM from the Rootway (its violet-to-amber), then the wood WARMS toward the oak: amber on the road, red-gold in the grove, ember over his hall */
     tints: [[-24, 14, [150, 90, 200], 0.10], [-24, 122, [230, 150, 70], 0.12], [122, 206, [220, 140, 80], 0.12], [206, 306, [220, 110, 70], 0.13], [306, 416, [210, 90, 60], 0.14], [416, W + 24, [200, 70, 50], 0.15]],
     reachExact: false,
