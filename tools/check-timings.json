@@ -203,6 +203,7 @@
   "mini-names": 50373,
   "mini-walls": 48104,
   "mobile-perf": 76103,
+  "tile-chunks": 150000,
   "modulepreload": 760,
   "monastery3-beats": 379,
   "monk-machines": 2912,
