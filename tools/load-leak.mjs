@@ -69,6 +69,7 @@ try {
     if (problem) bad.push(problem);
     await pg.send('HeapProfiler.collectGarbage', {}, Math.max(1,Math.min(15000,auditDeadline-Date.now())));
     await pg.send('Memory.simulatePressureNotification', {level:'critical'}, Math.max(1,Math.min(15000,auditDeadline-Date.now())));
+    if(process.env.LOADLEAK_DEBUG)console.log('audit level',i,ids[i],privMB(pids),'MB; js used',await pg.evalp('(performance.memory.usedJSHeapSize/1048576).toFixed(0)'));
   }
   const a = await pg.evalp(`(async () => {
     /* the collections run from a timer at the bottom of the stack, several apart: a collector that scans the stack conservatively can keep a stray object or two alive for one
