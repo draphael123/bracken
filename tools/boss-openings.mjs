@@ -57,7 +57,7 @@ try {
   const r = await pg.evalp(`(async()=>{
   const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
   // Manual simulation suppresses both automatic updates and renders; yielding releases retired native canvases between cases.
-  const breathe=async()=>{if(typeof gc==='function')gc();await new Promise(r=>setTimeout(r,0));};
+  const breathe=()=>window.__brackenLabCollect?__brackenLabCollect():new Promise(r=>setTimeout(r,0));
   const boot=async(id,hero)=>{await breathe();BK.setHero(hero||'knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=true;
     const A=BK.L.arena;if(A.carpet){BK.board();BK.sim(150);await breathe();return BK.boss;}BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(150);await breathe();return BK.boss;};
 

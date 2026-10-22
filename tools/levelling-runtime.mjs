@@ -14,7 +14,7 @@ const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
   r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const KD=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)).keep;/* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
 // Yield only between complete manual cases: frame() performs neither updates nor rendering in manual mode.
-const fresh=async(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();if(typeof gc==='function')gc();await new Promise(r=>setTimeout(r,0));};
+const fresh=async(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();if(window.__brackenLabCollect)await __brackenLabCollect();else await new Promise(r=>setTimeout(r,0));};
 /* 1. tal(): on from its level, unowned and unslotted; off a level below */
 let n1=0;for(const h of PR.HERO_IDS){const ladder=PR.skillsFor(h).filter(n=>!n.active);
  for(const lv of [...new Set(ladder.map(n=>n.level))]){await fresh(h,lv);for(const n of ladder){const want=n.level<=lv?1:0;if(BKT.tal(n.id)!==want)fails.push(h+'/'+n.id+' at level '+lv+' reads '+BKT.tal(n.id)+', not '+want);n1++;}
