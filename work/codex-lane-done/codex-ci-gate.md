@@ -80,3 +80,43 @@ does not prove it. Full equivalence and Task 1 completion must not be claimed un
   no merge, deployment, permissions change or game design change is authorized or performed here.
 
 These are recommendations, not blockers requiring a reply before routine validation continues.
+
+## Current continuation verification (2026-10-22)
+
+The renderer recycle threshold is 1536 MB, applied after the current successful pooled check. It is
+separate from the 2816 MB emergency ceiling for one check. The earlier implementation incorrectly
+used the recycle threshold as a hard kill and prevented a legitimate all-campaign canvas audit.
+The corrected default remains below 3 GB; admission requires 4352 MB free, including 1024 MB browser
+overhead and the unchanged 512 MB reserve. A sustained shortfall saves an incomplete checkpoint.
+No game assertions, tolerances, deadlines, simulation budgets, balance or quality settings changed.
+
+Measured causes are retained native canvas allocations during synchronous lab evaluations, wrappers
+lost on raw navigation, and repeated hero-art builds. The harness reinstalls opt-out-aware collection
+before navigation, yields at existing forced-GC audit boundaries and uses fresh browsers for the
+original ordered boss cases and per-hero levelling cases. All unforced growth controls remain unforced.
+
+Verified immutable-source Actions receipts:
+- 39860029941, source 63cd8719: all 27 boss cases / 102 assertion lines pass in 254736 ms
+  inside the original 300000 ms deadline, renderer peak 1321 MB; levelling passes 4029 passive reads
+  and 234 level-up cases in 639091 ms, peak 1400 MB, inside its original 1800000 ms deadline.
+- 39860788572: native bridge preserves 256 exact updates/random draws and 64 state/pixel samples,
+  raw navigation/reload and the explicit gcLoads:false opt-out; no extra simulation steps.
+- 39864754648, source ae573a03: all 64 levels / 47769 returned sheets freed, zero held; both original
+  growth limits pass. Injecting one held sheet produces the real assertion failure (exit 1), not an
+  interruption. Peaks 2526/2554 MB calibrated the separate emergency margin.
+- 39865884558, source 55b757c6: a 1 MB injected soft threshold keeps both successful verdicts
+  and changes the browser PID before the second check. Memory/admission/kill-resume/fault tests pass.
+
+The prior source 2a3175b1 Linux full gate retains 382 real verdicts (364 PASS, 18 FAIL) and 43
+interruptions; missing-verdict summary rows are not game failures or completion. It is not current
+equivalence proof. Earlier serial snapshots are preserved with their exact identities. Final full
+serial and matching-source sharded runs are required; no incomplete run is described as green.
+
+## QUESTIONS FOR DANIEL - current
+
+None for these reversible harness corrections. Remaining combat reds stay visible; no balance change
+is authorized or proposed as a way to make the gate pass.
+
+Planner and summary fetch only tools/package.json to avoid exhausting their existing five-minute
+checkout budget. All sixteen test shards retain the entire repository and full history. The planner
+was executed from that exact sparse tree and still enumerates all 425 checks. Master check.yml is unchanged.

@@ -1,4 +1,4 @@
-/* tools/boss-openings.mjs — THE WINDOW THE PLAYER MAKES.
+/* tools/boss-openings.mjs â€” THE WINDOW THE PLAYER MAKES.
      (claude/pyramidboss) THE COFFIN KING  a switch's counterweight, a chamber trap from a plate, a plate he stands on: each tips him open; left alone, nothing
    All four of the levels added in the Codex pass shipped a boss that chose its attacks with turn++%n and handed out a
    timed rest after every one of them, so nothing the player did ever opened anything: docs/audit-new-levels-0920.md.
@@ -52,15 +52,17 @@
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
 
-const pg = await openPage({ audio: false, fonts: false });
+let pg = await openPage({ audio: false, fonts: false });
 try {
-  const r = await pg.evalp(`(async()=>{
+  const script = `(async()=>{
   const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.SET.speed=1;const out={};
-  const boot=(id,hero)=>{BK.setHero(hero||'knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=true;
-    const A=BK.L.arena;if(A.carpet){BK.board();BK.sim(150);return BK.boss;}BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(150);return BK.boss;};
+  // Manual simulation suppresses both automatic updates and renders; yielding releases retired native canvases between cases.
+  const breathe=()=>window.__brackenLabCollect?__brackenLabCollect():new Promise(r=>setTimeout(r,0));
+  const boot=async(id,hero)=>{await breathe();BK.setHero(hero||'knight');BK.reset({fresh:true});BK.load(LEVELS.findIndex(l=>l.id===id));BK.state='play';BK.god=true;
+    const A=BK.L.arena;if(A.carpet){BK.board();BK.sim(150);await breathe();return BK.boss;}BK.tp(Math.round(A.trigger/16)+(A.reverse?-1:1),Math.round(A.floor/16)-1);BK.sim(150);await breathe();return BK.boss;};
 
   /* THE BURIED DEAD: the slam onto his own broken ground */
-  {const b=boot('burial');const A=BK.L.arena;
+  {const b=await boot('burial');const A=BK.L.arena;
    // left alone, the same slam is just a slam
    b.brokeT=0;BK.P.x=b.x-260;for(let i=0;i<8&&b.mode!=='rest';i++){b.mode='slamTell';b.modeT=0;BK.sim(1);}const alone=b.mode;
    // and with the hole under him it takes his arm
@@ -68,14 +70,14 @@ try {
    for(let i=0;i<8&&b.mode!=='stuck';i++){b.mode='slamTell';b.modeT=0;BK.sim(1);}
    out.buried={alone,broke:Math.round(broke-b.x),mode:b.mode,open:+b.open.toFixed(1)};}
   /* THE BURIED DEAD: a vent under him, cold and then lit (his rest, after a blow nobody answered, is the control: it opens nothing) */
-  {const b=boot('burial');const A=BK.L.arena,v=BK.L.gasVents.filter(v=>v.x*16>A.x0&&v.x*16<A.x1).sort((p,q)=>Math.abs(p.x*16-(A.x0+A.x1)/2)-Math.abs(q.x*16-(A.x0+A.x1)/2))[0];
+  {const b=await boot('burial');const A=BK.L.arena,v=BK.L.gasVents.filter(v=>v.x*16>A.x0&&v.x*16<A.x1).sort((p,q)=>Math.abs(p.x*16-(A.x0+A.x1)/2)-Math.abs(q.x*16-(A.x0+A.x1)/2))[0];
    BK.P.x=b.x-200;b.x=v.x*16+8;b.mode='cleaveTell';b.modeT=0;b.open=0;BK.sim(3);const rest={mode:b.mode,open:+(b.open||0).toFixed(1)};
    b.mode='walk';b.modeT=3;b.open=0;v.litT=0;let coldOpen=0;for(let i=0;i<60;i++){b.x=v.x*16+8;BK.sim(1);coldOpen=Math.max(coldOpen,b.open||0);}
    b.mode='walk';b.modeT=3;b.open=0;v.litT=20;v.burnt=false;let mode=null,open=0;for(let i=0;i<30;i++){BK.sim(1);if(b.mode==='scorched')mode='scorched';open=Math.max(open,b.open||0);}
    out.buriedGas={rest,coldOpen:+coldOpen.toFixed(1),mode,open:+open.toFixed(1)};}
 
   /* THE BREAKWATER WARDEN: the anchor turned on the shield */
-  {const b=boot('harbor');
+  {const b=await boot('harbor');
    b.open=0;for(let i=0;i<8&&b.open===0;i++){b.mode='anchorTell';b.modeT=0;BK.P.x=b.x+40*b.face;BK.P.face=-b.face;BK.keys.block=false;BK.sim(1);}const unguarded=+b.open.toFixed(1);
    /* god mode never reports a block, and the block IS the mechanic: the unguarded pass above runs untouchable, this one does not */
    BK.god=false;BK.P.hp=BK.P.maxHp;BK.P.dead=0;
@@ -84,7 +86,7 @@ try {
 
 
   /* THE UNDEAD ARCHMAGE: the death mark, left to land and then flown out of */
-  {const b=boot('fallingtower');const hold=()=>{BK.P.vx=BK.P.vy=0;};
+  {const b=await boot('fallingtower');const hold=()=>{BK.P.vx=BK.P.vy=0;};
    const lay=()=>{b.mode='markTell';b.spell='mark';b.modeT=0;b.deathMark=null;b.shots=[];b.clouds=[];b.blinkT=99;BK.sim(2);return !!b.deathMark;};
    // left to land: he is NOT open
    BK.god=false;BK.P.hp=BK.P.maxHp;const laid1=lay();const m1=b.deathMark&&{x:b.deathMark.x,y:b.deathMark.y};for(let i=0;i<200&&b.deathMark;i++){if(m1){BK.P.x=m1.x;BK.P.y=m1.y+8;}hold();BK.sim(1);}
@@ -93,7 +95,7 @@ try {
    b.mode='hover';b.modeT=1;BK.sim(5);const laid2=lay();const m2=b.deathMark&&{x:b.deathMark.x,y:b.deathMark.y};for(let i=0;i<200&&b.deathMark;i++){if(m2){BK.P.x=m2.x+b.deathMark.r+40;BK.P.y=m2.y+8;}hold();BK.sim(1);}
    out.mage={laid:laid1&&laid2,landed,mode:b.mode,open:+(b.open||0).toFixed(1)};}
   /* THE PYROMANDER: the same hot boss, left alone (he vents) and struck (he overheats) */
-  {const b=boot('burning');BK.P.x=b.x-110;
+  {const b=await boot('burning');BK.P.x=b.x-110;
    b.heat=75;b.calmT=5;b.mode='stalk';b.cd=0;b.open=0;let openA=0;for(let i=0;i<240;i++){BK.sim(1);openA=Math.max(openA,b.open||0);}
    const alone={open:+openA.toFixed(1),heat:Math.round(b.heat)};
    b.heat=75;b.calmT=0;b.mode='stalk';b.cd=0;b.open=0;let openS=0;for(let i=0;i<600&&!(b.open>0);i++){if(i%30===0)BKT.hurtEnemy(b,1,b.x-20,false);BK.sim(1);}openS=b.open||0;
@@ -144,7 +146,7 @@ try {
   /* THE DEATH KNIGHT: THE CLEAVE three times - taken (the hero stays under it), with nobody under it, and committed on the hero and
      DODGED with the game's own dodge key. Only the last sticks the blade in the floor. Then a blow on the stuck man through the game's
      own hurtEnemy (so unbHurt's wiring is asked too): open, he takes more */
-  {const b=boot('unburied');const A=BK.L.arena;const kill=()=>{for(const e of BK.enemies())if(e!==b&&e.t==='corpse')e.alive=false;};kill();
+  {const b=await boot('unburied');const A=BK.L.arena;const kill=()=>{for(const e of BK.enemies())if(e!==b&&e.t==='corpse')e.alive=false;};kill();
    const c={P:BK.P,A:{x0:A.x0,x1:A.x1,floor:A.floor},say:()=>{},sound:()=>{}};
    const cleave=how=>{kill();b.mode='stalk';b.open=0;b.cd=99;b.x=(A.x0+A.x1)/2;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;BK.P.x=b.x+(how==='far'?-200:-40);BK.sim(20);b.cd=99;
      BK.unbU.bkForce(b,'cleave',c);let open=0,dodged=false,hurt=null;
@@ -168,8 +170,8 @@ try {
    const left=remount(false),cut=remount(true);
    out.rider={alone,struck,left,cut};}
   /* THE WINDCALLER: his howl twice - left to blow (it walks you to the wall and he blinks away) and braced through, the guard key
-     held on the ground (his wind fails him and he falls, open): the moor's own lesson, docs/briefs/gale-moor-rework.md §4 */
-  {const b=boot('moor');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&!e.maxHp)e.alive=false;
+     held on the ground (his wind fails him and he falls, open): the moor's own lesson, docs/briefs/gale-moor-rework.md Â§4 */
+  {const b=await boot('moor');const A=BK.L.arena;for(const e of BK.enemies())if(e!==b&&!e.maxHp)e.alive=false;
    const howl=brace=>{b.mode='howlTell';b.modeT=0.01;b.hits=0;b.howlT=99;b.stoneT=99;b.wallT=99;b.specialT=99;b.braceT=0;BK.P.x=(A.x0+A.x1)/2+60;BK.P.y=A.floor;BK.P.vy=0;BK.P.vx=0;
      let fell=false,moved=0;const x0=BK.P.x;for(let i=0;i<60*3;i++){BK.keys.block=brace;BK.sim(1);moved=Math.max(moved,Math.abs(BK.P.x-x0));if(b.mode==='fallen'){fell=true;break;}if(b.mode==='blink'||b.mode==='appear')break;}
      BK.keys.block=false;let open=0;if(fell){BK.P.x=A.x0+20;for(let i=0;i<60*6&&BK.bossOpen(b);i++){BK.sim(1);open+=1/60;}}   /* (claude/bosswave1) how long the fall is open, left alone */
@@ -177,7 +179,7 @@ try {
    const left=howl(false),held=howl(true);b.mode='cast';b.modeT=9;b.hits=0;const castOpen=BK.bossOpen(b);out.windcaller={left,held,castOpen};}
 
   /* THE DUNE WORM: one breach, three ways. The hero stands where it will lock and leaves LATE (after the commit), as a player baits it */
-  {const b=boot('caravan');const A=BK.L.arena;
+  {const b=await boot('caravan');const A=BK.L.arena;
    for(let i=0;i<200&&(b.mode==='wake'||!b.st);i++)BK.sim(1);
    const lx=A.x0+20*16,open=A.x1-90;
    /* one breach: ledge = a ledge standing at lx..lx+48 (the hero at its edge) or none; ward = his ward still on */
@@ -194,20 +196,20 @@ try {
      if(count){const c=planks.find(q=>q.x0===27);c.st='count';c.t=2.5;}s.mode='rushTell';s.modeT=0;let pit=0;for(let i=0;i<50;i++){BK.P.x=39*16+8;BK.sim(1);pit=Math.max(pit,s.mode==='pit'?s.open:0);}return{mode:s.mode,open:+pit.toFixed(1)};};
    out.sexton={whole:rush(false),counting:rush(true)};}
   /* THE DIVING BELL: each attack forced and left to finish, then a rack's stone let go over his crown */
-  {const b=boot('deep');const alone={};
+  {const b=await boot('deep');const alone={};
    for(const m of ['clawTell','ballastTell','pressureTell','scuttleTell']){b.mode=m;b.modeT=0;b.open=0;b.bellMark={x:BK.P.x,y:BK.P.y-10};let op=0;for(let i=0;i<150;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);op=Math.max(op,b.open);}alone[m]=+op.toFixed(1);}
    b.mode='pressure';b.modeT=2;b.vx=0;b.open=0;const st=BK.props().find(p=>p.t==='ballast'&&p.rack);st.held=false;st.x=b.x;st.y=b.y-b.h-30;st.vy=40;let op=0;for(let i=0;i<60;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);op=Math.max(op,b.open);}
    const crowned={open:+op.toFixed(1),spent:!!st.gone};for(let i=0;i<200;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}crowned.back=!st.gone&&Math.abs(st.x-st.hx)<2;
    out.bell={alone,crowned};}
   /* THE WICKER QUEEN (claude/fair3): lured across the green and turned on as she stands on the embers, the wicker catches and burns open; the same look
      short of them, or her crossing them with nobody looking, opens nothing (the look is the only verb, the embers the only place; claude/fairfix4: her bonfire ring held off too, as her other blows are) */
-  {const b=boot('fair');const G=BK.L.green,A=BK.L.arena,mid=G.bonfire*16+8,fl=A.floor;for(const e of BK.enemies())if(e!==b)e.alive=false;
+  {const b=await boot('fair');const G=BK.L.green,A=BK.L.arena,mid=G.bonfire*16+8,fl=A.floor;for(const e of BK.enemies())if(e!==b)e.alive=false;
    const run=turnAt=>{b.mode='still';b.x=mid+110;b.bank=0;b.open=0;b.lashCd=99;b.crownCd=99;b.floorCd=99;b.throwCd=99;b.tossCd=99;b.sweepCd=99;b.leapCd=99;b.thrustCd=99;b.ringCd=99;b.rest=0;let turned=false,op=0;for(let i=0;i<60*6;i++){if(!turned&&turnAt(b))turned=true;BK.P.x=mid-160;BK.P.y=fl;BK.P.vx=0;BK.P.face=turned?1:-1;BK.sim(1);op=Math.max(op,b.open||0);if(b.mode==='burn'||b.mode==='sickleTell')break;}return{mode:b.mode,open:+op.toFixed(1)};};
    out.wicker={short:run(q=>q.x<mid+70),unseen:run(()=>false),embers:run(q=>q.x<mid+20)};}
   /* THE PUPPETEER (claude/puppeteer; PUPPETEER2): left alone a minute his puppets wind up and strike and nothing opens him; both cut down by the hero's swings (in
      their windups - gold - or glowing green), the lever comes free and his bar goes slack - that alone opens nothing; up on the fly gallery he STAGGERS, open
      (no fall: he reels where he stands, on the gallery) */
-  {const b=boot('theatre');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
+  {const b=await boot('theatre');const S=BK.puppeteerHands().show(),A=BK.L.arena,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+60;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let cutF=0,op=0,mode=null;S.overCd=1e9;if(S.scene===2)S.scene=0;   /* (his two attacks kept quiet; the NIGHT's dark is a scene rule - tools/puppeteer.mjs - not this row's) */
    for(let i=0;i<60*120&&!(op>0)&&b.mode!=='slack';i++){P.hp=P.maxHp;const p=S.puppets.find(q=>q.alive&&q.mode!=='heap'&&(/Tell$/.test(q.mode)||q.mode==='recover'||q.mode==='stagger'));
@@ -219,7 +221,7 @@ try {
   /* THE LANTERN-EATER (claude/lanterneater, Daniel 10-07: it replaces Jenny Greenteeth on the same raft): a minute of it left alone, the hero standing on the
      raft taking every blow, opens nothing; its dangling lure struck HIGH with real keys (the rising cut, UP + strike) inside the gulp's tell is snagged - open; in phase two,
      stepping out of its snap once the mark has fixed sticks its teeth in the raft - open */
-  {const b=boot('canal');const S=BK.lanternEaterHands().show(),P=BK.P;let alone=0;
+  {const b=await boot('canal');const S=BK.lanternEaterHands().show(),P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let op=0,why=null;for(let i=0;i<60*30&&!(op>0);i++){P.hp=P.maxHp;BK.keys.up=false;if(b.mode==='gulpTell'&&b.part==='lure'&&S.lure){P.x=S.lure.x-10;P.face=1;P.vx=0;if(P.ground&&P.atk<0){BK.keys.up=true;BK.press('atk');}}BK.sim(1);if(b.mode==='open'){op=Math.max(op,b.open||0);why=b.openKind;}}
    let op2=0,why2=null;b.hp=Math.round(b.maxHp*0.6);for(let i=0;i<60*40&&!(op2>0);i++){P.hp=P.maxHp;const sn=S.snap;if(b.mode==='snapTell'&&sn&&sn.fixed&&Math.abs(P.x-sn.x)<40){P.x=sn.x+(sn.x-S.raft.x>S.raft.w/2?-50:50);P.vx=0;}BK.sim(1);if(b.mode==='open'&&b.phase===2){op2=Math.max(op2,b.open||0);why2=b.openKind;}}
@@ -230,7 +232,7 @@ try {
   /* THE DJINN OF THE GREAT WELL (claude/welltown5; THE WELL TOWN's boss now - the Cistern Queen is benched, her block stays below for her new level and is
      skipped while no level places her): a minute of him alone opens nothing; a pour on him turns him to MUD; in phase two a pour DOUSES him; in the flood the
      great bucket BAILS him out - each open 3 s or more */
-  {const b=boot('welltown');const DH=BK.djinnHands(),S=DH.show(),G=S.G,P=BK.P;let alone=0;
+  {const b=await boot('welltown');const DH=BK.djinnHands(),S=DH.show(),G=S.G,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
      let peak=o;for(let i=0;i<60*4&&b.mode===how;i++){P.hp=P.maxHp;BK.sim(1);}op[how]=+peak.toFixed(1);};
@@ -241,8 +243,7 @@ try {
    b.hp=Math.round(b.maxHp*0.3);
    take('bailed',()=>S.ph===3&&S.pose==='column'&&b.mode!=='rise'&&((S.bucket.st==='down'&&!(S.bucket.t>0))||(S.bucket.st==='up'&&Math.abs(b.x-G.mid)<=24&&!(S.ward>0))),()=>{P.x=G.crank-12;P.y=G.ledgeY;P.vy=0;P.ground=true;P.face=1;if(P.atk<0)BK.press('atk');});
    out.djinn={alone:+alone.toFixed(1),open:op,n:{mud:S.n.mud,doused:S.n.doused,bailed:S.n.bailed}};}
-  if(LEVELS.some(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}))
-  {const b=boot(LEVELS.find(l=>{try{return l.build().arena&&l.build().arena.boss==='cisternqueen';}catch{return false;}}).id);const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
+  {const b=await boot('underwell');if(BK.L.arena.boss!=='cisternqueen')throw Error('Underwell must contain the Cistern Queen');const QH=BK.cisternQueenHands(),S=QH.show(),G=S.G,P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=G.x0+30;P.vx=0;BK.sim(1);alone=Math.max(alone,b.open||0);}
    let dry=0;for(let i=0;i<60*20&&b.mode!=='walk';i++){P.hp=P.maxHp;BK.sim(1);}P.skin.sips=3;P.x=b.x-60;P.face=1;BK.press('talk');for(let i=0;i<30;i++){P.hp=P.maxHp;BK.sim(1);dry=Math.max(dry,b.open||0);}const drySips=P.skin.sips,dryWet=(S.wet||0)>0;
    const op={};const take=(how,setup,act)=>{let o=0;for(let i=0;i<60*60&&!(o>0);i++){P.hp=P.maxHp;if(setup())act();BK.sim(1);if(b.mode===how)o=Math.max(o,b.open||0);}
@@ -265,20 +266,20 @@ try {
    out.gangleader={alone:+alone.toFixed(1),open:+o.toFixed(1),reflects:F.n.reflects,took:Math.round(took),cap:Math.round(cap)};}
   /* THE ROC on her EYRIE (claude/skyroad): a minute of her with the hero on the stone by the rim (off the nest) opens nothing - her dives skid; a plunge
      on her back in the air knocks her down, open (src/roc-eyrie.js) */
-  {const b=boot('skyroad');const A=BK.L.arena,P=BK.P,O=e=>e.mode==='stuck'||e.mode==='downed';let alone=0;
+  {const b=await boot('skyroad');const A=BK.L.arena,P=BK.P,O=e=>e.mode==='stuck'||e.mode==='downed';let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+64;P.vx=0;BK.sim(1);if(O(b))alone+=1/60;}
    for(let i=0;i<60*20&&!(b.mode==='fly'&&!(b.ward>0));i++){P.hp=P.maxHp;BK.sim(1);}b.modeT=9;P.x=b.x;P.y=b.y-36;P.vy=0;P.ground=false;BK.keys.down=true;BK.press('atk');BK.sim(2);BK.keys.down=false;
    let op=0;for(let i=0;i<60*10;i++){P.hp=P.maxHp;BK.sim(1);if(O(b))op+=1/60;else if(op>0)break;}out.roc={alone:+alone.toFixed(1),open:+op.toFixed(1)};}
   /* THE GOBLIN HUNTMASTER (claude/rootway, THE ROOTWAY's stand): a minute of him with the hero holding a guard - his arrows taken on it, never struck - opens
      nothing; his own gold arrow struck back flies home, breaks his quiver strap and opens him, 3 s or more (src/huntmaster.js) */
-  {const b=boot('rootway');const A=BK.L.arena,P=BK.P,H=BK.huntmaster(),O=e=>(e.mode==='open'||e.mode==='caught')&&e.open>0;let alone=0;
+  {const b=await boot('rootway');const A=BK.L.arena,P=BK.P,H=BK.huntmaster(),O=e=>(e.mode==='open'||e.mode==='caught')&&e.open>0;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=A.x0+120;P.vx=0;BK.keys.block=true;BK.sim(1);if(O(b))alone+=1/60;}BK.keys.block=false;BK.sim(2);
    let op=0,tries=0;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;const F=H.fight(),a=F&&F.arrows.find(q=>q.kind==='gold'&&!q.back&&Math.abs(q.x-P.x)<70&&Math.abs(q.y-(P.y-10))<24);if(a&&P.atk<0&&Math.abs(a.x-P.x)<46){P.face=Math.sign(a.x-P.x)||1;BK.press('atk');tries++;}BK.sim(1);if(O(b))op+=1/60;}
    for(let i=0;i<60*10&&O(b);i++){P.hp=P.maxHp;BK.sim(1);op+=1/60;}out.huntmaster={alone:+alone.toFixed(1),open:+op.toFixed(1),tries,weak:H.fight()&&H.fight().weak[1]};}
   /* THE RAPTOR MATRIARCH (claude/redgorge2; THE GREAT RED CRAB is benched, unplaced - his promises are kept by tools/redgorge.mjs, pure): a minute of her with
      no lever pulled opens nothing big; a lever pulled with her up on the rock is wasted; pulled with her in the channel by a NARROW pillar, the pillar
      throws her - STAGGERED, open 3 s or more (THE RED GORGE holds her) */
-  {const b=boot('redgorge');const A=BK.L.arena,P=BK.P,MH=BK.matriarchHands(),S=()=>MH.show(),G=S().G,BIG=['staggered','stunned','tangled','pstagger'],lever=G.levers[0].x;let alone=0;
+  {const b=await boot('redgorge');const A=BK.L.arena,P=BK.P,MH=BK.matriarchHands(),S=()=>MH.show(),G=S().G,BIG=['staggered','stunned','tangled','pstagger'],lever=G.levers[0].x;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;P.x=lever+20;P.vx=0;BK.sim(1);if(BIG.includes(b.mode))alone=Math.max(alone,b.open||0);b.hp=b.maxHp;}
    const quiet=()=>{for(let i=0;i<60*8&&(S().ward>0||BIG.includes(b.mode)||S().burst>0||S().pending.length||b.mode==='fly'||b.mode==='wobble');i++){P.hp=P.maxHp;BK.sim(1);}};
    const pull=()=>{S().sluice.W=1;P.x=lever;P.y=G.topY;P.vx=0;BK.press('talk');};
@@ -287,7 +288,7 @@ try {
    out.matriarch={alone:+alone.toFixed(1),wasted:+wasted.toFixed(1),wastedN:MH.read().n.wasted,mode,open:+op.toFixed(1)};}
   /* THE GREAT DRILL 3 (claude/deeprails3, THE DEEP RAILS): a minute of it left alone - its chute's points lever let go by, every ore cart let pass at cruise - opens nothing;
      its POINTS LEVER thrown (E beside it as it comes down the tunnel) dumps its own ore into its gears: JAMMED, open 3 s or more */
-  {const b=boot('minecart');const DH=BK.drillHands(),S=()=>DH.show(),P=BK.P;let alone=0;
+  {const b=await boot('minecart');const DH=BK.drillHands(),S=()=>DH.show(),P=BK.P;let alone=0;
    for(let i=0;i<60*60;i++){P.hp=P.maxHp;BK.sim(1);if(b.mode==='jammed')alone=Math.max(alone,b.open||0);b.hp=b.maxHp;}
    let op=0;for(let i=0;i<60*40&&!(op>0);i++){P.hp=P.maxHp;b.hp=b.maxHp;const lv=S().lever;if(lv&&!lv.thrown&&Math.abs(lv.x-P.x)<20)BK.press('talk');BK.sim(1);if(b.mode==='jammed'&&b.open>0)op+=1/60;}
    for(let i=0;i<60*10&&b.mode==='jammed'&&b.open>0;i++){P.hp=P.maxHp;BK.sim(1);op+=1/60;}
@@ -330,7 +331,18 @@ try {
    const pw=G.plates[0];b.mode='recover';b.modeT=3;b.x=(pw.reach[0][0]+pw.reach[0][1])/2;b.open=0;S().ward=0;P.x=pw.x0-28;P.y=G.floorY;P.vx=P.vy=0;BK.sim(4);K.right=true;for(let i=0;i<40&&P.x<pw.x0+14;i++)BK.sim(1);none();const blk=watch(60*6);
    settle();const PH=BK.sealedPyramidHands();for(let i=0;i<60*12&&!(PH.trapReady('tkDartsW')&&PH.trapReady('tkDartsE')&&/walk|recover/.test(b.mode)&&S().ward<=0);i++){P.hp=P.maxHp;BK.sim(1);}const pm=G.plates[1];P.x=pm.x0-40;P.y=G.floorY;b.x=(pm.x0+pm.x1)/2;b.mode='slamTell';b.modeT=0.7;b.open=0;S().ward=0;const plate=watch(60*6);
    out.tombking={alone:+alone.toFixed(1),weight:wt,glance,ph:S().ph,traps:TH.trapsOn(),block:blk,plate,n:S().n.byKind,onPlate:S().n.onPlate};}
-  return out;})()`, 300000);
+  return out;})()`;
+  // All independent cases remain in order. Two per fresh browser bound retained native page caches.
+  const first=script.indexOf('\n  {'),last=script.lastIndexOf('return out;'),prefix=script.slice(0,first),body=script.slice(first,last);
+  const cases=body.split(/\n(?=  \{)/).filter(c=>c.trim());assert(cases.length>=27,'all original boss cases must remain');
+  assert.equal(cases.join('\n').trim(),body.trim(),'the batching must consume the entire original case body');
+  const r={},deadline=Date.now()+300000,BATCH=2;
+  for(let i=0;i<cases.length;i+=BATCH){if(i)pg=await openPage({audio:false,fonts:false});try{
+    const row=await pg.evalp(prefix+cases.slice(i,i+BATCH).join('\n')+'\nreturn out;})()',Math.max(1,deadline-Date.now()));
+    assert.deepEqual(pg.errors,[]);for(const key of Object.keys(row))assert(!(key in r),'duplicate boss result '+key);Object.assign(r,row);
+    console.log('boss cases '+(i+1)+'-'+Math.min(i+BATCH,cases.length)+'/'+cases.length+' complete');
+  }finally{await pg.close();pg=null;}}
+
 
   assert.notEqual(r.buried.alone, 'stuck', 'the slam alone must not open him');
   assert.equal(r.buried.mode, 'stuck', 'slamming onto his own broken ground must bury his arm');
@@ -442,6 +454,6 @@ try {
   assert.ok(r.tombking.ph === 2 && r.tombking.traps && r.tombking.block.kind === 'block' && r.tombking.block.open >= 3, 'THE COFFIN KING: phase two, in the west block\'s reach with its plate trodden, he was not knocked open: ' + JSON.stringify(r.tombking));
   assert.ok(r.tombking.plate.kind === 'darts' && r.tombking.plate.open >= 3 && r.tombking.onPlate >= 1, 'THE COFFIN KING: standing on the middle plate to strike, its darts did not fire on him: ' + JSON.stringify(r.tombking));
   assert.ok(r.scarabmother.glance.glanced >= 1 && !r.scarabmother.glance.open, 'THE SCARAB MOTHER: a trap in her ward opened her (B3: it must glance off): ' + JSON.stringify(r.scarabmother));
-  assert.deepEqual(pg.errors, []);
+  // Every batch asserts its page errors above.
   console.log(JSON.stringify(r));
-} finally { pg.close(); }
+} finally { await pg?.close(); }

@@ -65,6 +65,9 @@ const CASES = {
   'dies-early': `import{launchBrowser}from'./tools/browser-profile.mjs';const r=launchBrowser(process.execPath,['-e','process.exit(3)'],'look');await new Promise(r=>setTimeout(r,800));await r.close();console.log('READY');`,
   killed: page + `await new Promise(r=>setTimeout(r,60000));`,
 };
+// Only deliberate missing/exiting executables get separate attempts. Real browser cases retain the
+// parent attempt, so an unexpected browser/resource failure still interrupts the parent. All fixtures
+// must reach READY before their controlled exit can count as cleanup evidence.
 const rows = [];
 /* THE HARD KILL IS A RACE: most times the browser outlives its node and leaves its profile to be swept, but sometimes it goes down
    with it and takes its own profile along, and then the case has nothing to prove. That one is run again, once, before it fails */
@@ -72,11 +75,12 @@ const ONLY = process.argv[2] ? process.argv[2].split(',') : null;   /* node tool
 const order = Object.keys(CASES).filter(n => !ONLY || ONLY.includes(n)); let killTries = 0;
 for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES[name];
   TAG = newRunTag(); const before = ours(), t0 = Date.now();
-  const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, BRACKEN_RUN: TAG } });
+  const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, BRACKEN_RUN: TAG, ...(['no-browser', 'dies-early'].includes(name) ? { BRACKEN_ATTEMPT: 'cleanup-' + TAG } : {}) } });
   let out = ''; child.stdout.on('data', d => { out += d; }); child.stderr.on('data', () => {});
   const done = new Promise(r => child.once('exit', c => r(c)));
   if (name === 'killed') {
     for (let i = 0; i < 600 && !out.includes('READY'); i++) await new Promise(r => setTimeout(r, 100));
+    assert.ok(out.includes('READY'), 'killed never reached the controlled fixture');
     const mine = descendants(procs(), child.pid);                                     // this case's node, its server and its browser
     /* the node process only: its browser is left behind, as it would be. GUARDED — taskkill is Windows-only, and
        this was the one of three call sites that forgot (profile-sweep.mjs:28 and browser-profile.mjs:53 both check
@@ -100,13 +104,16 @@ for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES
     continue;
   }
   /* a HANG is no exit in six minutes: a page that opens in 50 s on a machine at 100% CPU (six lanes, 2026-10-06) is slow, not hung, and 120 s called it hung */
-  const exit = await Promise.race([done, new Promise(r => setTimeout(() => r('timeout'), 360000))]);
+  let deadline;
+  const exit = await Promise.race([done, new Promise(r => { deadline = setTimeout(() => r('timeout'), 360000); })]);
+  clearTimeout(deadline); // a completed case must not keep Node alive for the unused six-minute timeout
   if (exit === 'timeout') child.kill();
   await new Promise(r => setTimeout(r, 300));
   const fresh = [...ours()].filter(n => !before.has(n)), foreign = foreignInUse(fresh);   /* this case's own processes are gone by now */
   const made = fresh.filter(n => !foreign.has(n));
   const gone = await serverGone();
   rows.push({ name, exit, ready: out.includes('READY'), left: made.length, othersInUse: foreign.size, serverGone: gone });
+  assert.ok(out.includes('READY'), name + ' never reached its controlled fixture; a startup failure is not cleanup proof');
   assert.ok(gone, name + ' left its dev server running');
   assert.notEqual(exit, 'timeout', name + ' hung');
   assert.equal(made.length, 0, name + ' left a profile behind: ' + made.join(', '));

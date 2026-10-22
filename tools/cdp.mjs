@@ -1,3 +1,5 @@
+import { installNativeCollectionBridge } from './lab-bridge.mjs';
+import { installLabCollection } from './lab-collect.mjs';
 // tools/cdp.mjs — THE PAGE, HEADLESS, FOR A TOOL. The same approach as tools/headless.mjs (the installed Chrome or Edge,
 // driven over the DevTools protocol with Node's own WebSocket), as a helper the readability tools share.
 //   const pg = await openPage();  await pg.evalp('BK.state');  pg.close();
@@ -5,7 +7,7 @@
 // REFUSES a server that is serving another
 // checkout: the served src/lookpass.js must be byte-for-byte this checkout's.
 import { spawn } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { launchBrowser } from './browser-profile.mjs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -45,42 +47,78 @@ export async function openPage(opts = {}) {
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
   let server = null;
-  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', () => { try { server.kill(); } catch {} }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
-  if (!(await up())) throw new Error('dev server did not come up on ' + URL0);
+  const stopServer = () => { process.removeListener('exit', stopServer); if (server) { try { server.kill(); } catch {} server = null; } };
+  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', stopServer); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
+  if (!(await up())) { stopServer(); throw new Error('dev server did not come up on ' + URL0); }
+  let loan = null, run = null, closeConnection = () => {};
+  try {
   const mine = readFileSync(join(ROOT, 'src/lookpass.js'), 'utf8');
   const served = await (await fetch(URL0 + 'src/lookpass.js', {signal:AbortSignal.timeout(5000)})).text().catch(() => '');
-  if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
+  if (served !== mine) { stopServer(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
   const borrowedPort = opts.browserPort || process.env.BRACKEN_BROWSER_PORT;
   const exe = browserExecutable(); if (!exe && !borrowedPort) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER to its executable)');
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
   const borrowed = !!borrowedPort;
-  const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
+  run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
   const dbg = borrowed ? +borrowedPort : await run.devtoolsPort();
-  let loan = null;
-  try {
   loan = borrowed ? await borrowedTarget(dbg) : null;
   let wsUrl = loan && loan.wsUrl;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list', {signal:AbortSignal.timeout(2000)})).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) throw new Error('could not reach the browser');
-  const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-  let id = 0; const pending = new Map(), errors = [];
-  ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+  const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { const timer = setTimeout(() => { ws.close(); rej(new Error('browser WebSocket did not open')); }, 15000);
+    ws.onopen = () => { clearTimeout(timer); res(); }; ws.onerror = e => { clearTimeout(timer); rej(e); }; });
+  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [], nativeLab = {requests:0,completed:0,failed:0,postEvaluations:0};
+  const drain = reason => { for (const p of pending.values()) { clearTimeout(p.timer); p.reject(new Error(reason)); } pending.clear(); };
+  closeConnection = () => { if((nativeLab.requests||nativeLab.postEvaluations)&&process.env.BRACKEN_PROCESS_LOG)try{appendFileSync(process.env.BRACKEN_PROCESS_LOG,JSON.stringify({type:'native-lab-collection',check:process.env.BRACKEN_CHECK,time:Date.now(),...nativeLab})+'\n');}catch{} closing = true; drain('page closed'); try { ws.close(); } catch {} };
+  ws.onclose = () => { disconnected = true;
+    const reason = 'BRACKEN_BROWSER_DISCONNECTED: page connection closed';
+    if (!closing && process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG,
+      JSON.stringify({ type: 'interrupted', check: process.env.BRACKEN_CHECK, attempt: process.env.BRACKEN_ATTEMPT,
+        time: Date.now(), reason }) + '\n'); } catch {}
+    drain(reason);
+  };
+  ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) {
+    const p = pending.get(m.id); clearTimeout(p.timer); pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error.message || JSON.stringify(m.error))); else p.resolve(m);
+  }
+    if (m.method === 'Runtime.bindingCalled' && m.params.name === '__brackenLabGC') {
+      const request=+m.params.payload;nativeLab.requests++;
+      void(async()=>{let error=null;try{await send('HeapProfiler.collectGarbage',{},15000);nativeLab.completed++;}catch(e){nativeLab.failed++;error=e.message;}
+        await send('Runtime.evaluate',{contextId:m.params.executionContextId,expression:'window.__brackenLabReply('+JSON.stringify(request)+','+JSON.stringify(error)+')'});
+      })().catch(()=>{});
+    }
     if (m.method && opts.onEvent) opts.onEvent(m);   /* (a tool that wants the protocol's events, e.g. Tracing.dataCollected: tools/mobile-profile.mjs) */
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
   // Navigation can destroy a context before its evaluation answers. Bound the protocol wait as well.
   const send = (method, params = {}, wait = 15000) => new Promise((res, rej) => {
+    if (disconnected || closing || ws.readyState !== WebSocket.OPEN) return rej(new Error('BRACKEN_BROWSER_DISCONNECTED: connection is closed'));
     const i = ++id, timer = setTimeout(() => { pending.delete(i); rej(new Error(method + ' did not answer within ' + wait + 'ms')); }, wait);
-    pending.set(i, reply => { clearTimeout(timer); if(reply.error) rej(new Error(reply.error.message || JSON.stringify(reply.error))); else res(reply); });
-    ws.send(JSON.stringify({ id: i, method, params }));
+    pending.set(i, { resolve: res, reject: rej, timer });
+    try { ws.send(JSON.stringify({ id: i, method, params })); } catch (e) { clearTimeout(timer); pending.delete(i); rej(e); }
   });
-  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
+  const evalp = async (expr, timeout = 1800000) => { const started=Date.now(); const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; };
+    const value = r.result && r.result.result ? r.result.result.value : undefined;
+    // Between completed manual evaluations, let Blink reclaim retired native canvas objects too.
+    // Real-time measurements, mid-boot probes and explicit no-forced-GC controls remain on their original path.
+    if(!opts.noWait&&opts.gcLoads!==false&&opts.gcEvaluations!==false&&process.env.BRACKEN_LAB_GC!=='0'&&Date.now()-started>=100){
+      const m=await send('Runtime.evaluate',{expression:'Boolean(window.BK?.manualSimulation)',returnByValue:true});
+      if(m.result?.result?.value){await send('HeapProfiler.collectGarbage');nativeLab.postEvaluations++;}
+    }
+    return value; };
   await send('Runtime.enable'); await send('Page.enable');
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
-  if(opts.fonts===false){await send('Network.enable');await send('Network.setBlockedURLs',{urls:['https://fonts.googleapis.com/*','https://fonts.gstatic.com/*']});}
+  const blocked = [];
+  if (opts.fonts === false) blocked.push('https://fonts.googleapis.com/*', 'https://fonts.gstatic.com/*');
+  if (opts.audioFiles === false) blocked.push(URL0 + 'audio/*');   /* layout-only tools still initialize audio to hide its banner, but decode no clips */
+  if (blocked.length) { await send('Network.enable'); await send('Network.setBlockedURLs', { urls: blocked }); }
+  if (opts.cpuCanvas ?? (process.env.BRACKEN_CPU_CANVAS === '1')) await send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{
+    const get=HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext=function(type,opts){return get.call(this,type,type==='2d'?{...opts,willReadFrequently:true}:opts);};
+    window.__tfCpuCanvas=true;
+  })()` });   /* opt-in lab backend: apply textfit's existing CPU-canvas setup BEFORE the initial sprite bake too */
   /* opts.seed: THE PAGE'S Math.random IS A SEEDED STREAM, from the first script of every document (so it survives pg.reload()). The sim is
      fixed-step and deterministic except for the ~850 Math.random calls in src/main.js (drops, crystal regrowth delays, foe rolls, particles),
      so a physics/ride/pose check that waits "N frames" for one of them passed or failed by the dice. Seeded, the same frames run every time. */
@@ -89,10 +127,37 @@ export async function openPage(opts = {}) {
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
      (a number), opts.hints (none / low / medium / high; default HIGH: the tools were calibrated on every hint, claude/hintlevel; a NEW player gets MEDIUM from the game itself), opts.speed === false leaves the game's own default and migration alone (tools/settings-tabs.mjs tests those). A tool that sets BK.SET.speed still wins. */
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
+  // Raw Page.navigate calls create a new lab too. Install before BK is published, without a timer or simulation step.
+  if (!opts.noWait && opts.gcLoads !== false && process.env.BRACKEN_LAB_GC !== '0') {
+    await send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{
+      if(typeof gc!=='function')return;
+      Object.defineProperty(window,'BK',{configurable:true,enumerable:true,get(){return undefined;},set(value){
+        Object.defineProperty(window,'BK',{configurable:true,enumerable:true,writable:true,value});
+        if(value)(${installLabCollection.toString()})(value,gc,${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load','setHero','reset','sim','step','draw1','look'])});
+      }});
+    })()` });
+  }
+  // A manual case can yield to this promise so the protocol reaches Blink's native canvas heap too.
+  if(!opts.noWait&&opts.gcLoads!==false&&process.env.BRACKEN_LAB_GC!=='0'){
+    await send('Runtime.addBinding',{name:'__brackenLabGC'});
+    await send('Page.addScriptToEvaluateOnNewDocument',{source:'('+installNativeCollectionBridge.toString()+')()'});
+  }
   await send('Page.navigate', { url: URL0 });
   let ready = false;
-  for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
+  for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; }); if (!ready) await sleep(250); }
   if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
+  /* A lab can load a hundred complete sprite sets in one synchronous evaluation. V8 does not promptly collect their native
+     backing allocations. Collect after boot and each lab BK.load, without advancing simulation or changing the game's loader.
+     The load-leak audit explicitly opts out: its no-forced-GC control must remain a real no-forced-GC control. */
+  const prepareLab = async () => {
+    if (opts.noWait || process.env.BRACKEN_LAB_GC === '0') return;
+    if (opts.gcLoads !== false) await evalp(`(()=>{
+      if (typeof gc !== 'function' || !window.BK) return false;
+      return (${installLabCollection.toString()})(BK, gc, ${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load', 'setHero', 'reset', 'sim', 'step', 'draw1', 'look'])});
+    })()`);
+    await send('HeapProfiler.collectGarbage');
+  };
+  await prepareLab();
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port', 10000);
@@ -104,11 +169,12 @@ export async function openPage(opts = {}) {
     let ready = false;
     /* waits on the CONDITION with a wall-clock deadline: 120 x 100 ms was ~12 s of polls when the page answered at once, and a loaded machine's boot (six lanes, 2026-10) took longer than that */
     for (const until = Date.now() + (+process.env.LAB_BOOT_MS || 90000); Date.now() < until && !ready;) {   /* LAB_BOOT_MS: a longer deadline on a machine at 100% (claude/ksar2: ten lanes, most reloads timed out) */
-      ready = await evalp('performance.timeOrigin !== ' + JSON.stringify(previousOrigin) + ' && location.href === ' + JSON.stringify(url) + ' && !window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false);
+      ready = await evalp('performance.timeOrigin !== ' + JSON.stringify(previousOrigin) + ' && location.href === ' + JSON.stringify(url) + ' && !window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; });
       if (!ready) await sleep(100);
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
+    await prepareLab();
   };
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
-  } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
+  return { evalp, send, errors, nativeLab, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
+  } catch (e) { closeConnection(); stopServer(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
