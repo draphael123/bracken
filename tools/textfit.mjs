@@ -414,7 +414,11 @@ async function main() {
       await closeAll(); process.exit(1); }
     part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); shotBudget = Math.max(0, shotBudget - part.shots.length);
     results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's');
-    if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage({ audioFiles: false }); } } };
+    if (u.recycle && (ui < job.length - 1 || queue.length)) {
+      // A fresh document resets storage, globals and recording hooks while reusing the browser's module/font caches.
+      await p.reload();
+      for (const type of ['keyDown','keyUp']) await p.send('Input.dispatchKeyEvent',{type,key:'F8',code:'F8',windowsVirtualKeyCode:119});
+    } } };
   await Promise.all(pages.map(worker));
   const r = { issues: [], stats: { frames: 0, texts: 0, screens: {} }, shots: [] }, shotUrls = [], seen = new Set();
   for (const u of units) { const part = results.get(u);
