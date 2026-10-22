@@ -23,7 +23,7 @@ export function updateGorm(e, dt, c) {
   if (e.mode === 'held') { e.vx = 0; if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; e.stagger = 0; e.open = GORM.openT; c.number(e.x, e.y - e.h - 16, GORM_SAY.open, '#8fd160'); c.sfx.sting && c.sfx.sting(); } return; }
   e.hornT -= dt; e.grabT -= dt; e.chargeT -= dt; e.sweepT -= dt;
   const boarUp = c.enemies().some(q => q.alive && q.t === 'royalboar' && q.called);
-  const grab = () => { const reach = GORM.grabReach; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 30 && P.y <= e.y + 4) { const res = c.damage(e.x, c.dmg.grab, { unblockable: true, name: 'THE KING\'S HAND' }); if (res === 'hit') { P.vx = e.face * GORM.hurlVx; P.vy = GORM.hurlVy; P.hurt = 0.7; P.ground = false; P.block = false; c.sfx.throwWhoosh && c.sfx.throwWhoosh(); c.sfx.bellow && c.sfx.bellow(); c.shake(6); c.zoom(1.12, 0.3); c.number(P.x, P.y - 30, GORM_SAY.hurled, '#ff6b6b'); } } };
+  const grab = () => { const reach = GORM.grabReach; if (!P.dead && Math.sign(P.x - e.x) === e.face && ad > 8 && ad < reach && P.y > e.y - 30 && P.y <= floor + 4) { const res = c.damage(e.x, c.dmg.grab, { unblockable: true, name: 'THE KING\'S HAND' }); if (res === 'hit') { P.vx = e.face * GORM.hurlVx; P.vy = GORM.hurlVy; P.hurt = 0.7; P.ground = false; P.block = false; c.sfx.throwWhoosh && c.sfx.throwWhoosh(); c.sfx.bellow && c.sfx.bellow(); c.shake(6); c.zoom(1.12, 0.3); c.number(P.x, P.y - 30, GORM_SAY.hurled, '#ff6b6b'); } } };
   const horn = () => { e.mode = 'hornTell'; e.modeT = GORM.hornTell; e.face = Math.sign(d) || e.face; c.number(e.x, e.y - e.h - 18, GORM_SAY.horn, '#ffd36b'); c.sfx.hornDraw && c.sfx.hornDraw(); };
   if (e.mode === 'hornTell') { if (e.modeT <= 0) { e.mode = 'horn'; e.modeT = 0.7; e.hornT = GORM.hornEvery; c.sfx.hornBlast && c.sfx.hornBlast(); c.ring(e.x, e.y - e.h, 60, '#ffd36b', 0.5); G.callBoar(A, true); c.number(e.x, e.y - e.h - 30, GORM_SAY.boar, '#ff9a5c'); } if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
   if (e.mode === 'horn') { if (e.modeT <= 0) { e.mode = e.phase >= 2 ? 'walk' : 'carried'; e.modeT = 0.6; } if (e.phase >= 2) settle(e, dt, c, 0); else e.y = floor - 9; return; }
@@ -39,7 +39,7 @@ export function updateGorm(e, dt, c) {
     if (e.mode === 'carried' && e.modeT <= 0 && !P.dead) {
       if (e.hornT <= 0 && !boarUp) { horn(); return; }
       if (e.chargeT <= 0 && ad > 60 && Math.abs(P.y - floor) < 40) { e.mode = 'chargeTell'; e.modeT = GORM.chargeTell; e.chargeT = GORM.chargeEvery; c.number(e.x, e.y - 40, '!!', '#ff6b6b'); c.sfx.kingLaugh && c.sfx.kingLaugh(); return; }
-      if (e.grabT <= 0 && ad > 8 && ad < GORM.grabReach && P.y > e.y - 30 && P.y <= e.y + 4) { e.mode = 'grabTell'; e.modeT = GORM.grabTell; c.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); c.sfx.charge && c.sfx.charge(); return; } }
+      if (e.grabT <= 0 && ad > 8 && ad < GORM.grabReach && P.y > e.y - 30 && P.y <= floor + 4) { e.mode = 'grabTell'; e.modeT = GORM.grabTell; c.number(e.x, e.y - e.h - 12, '!!', '#ff6b6b'); c.sfx.charge && c.sfx.charge(); return; } }
     if (e.mode !== 'carried') e.mode = 'carried';
     /* the bearers carry him at you (a lumbering pace), and stand when he is near enough to reach for you */
     e.face = Math.sign(d) || e.face; e.dir = Math.sign(d) || e.dir || -1; if (ad > 44) e.x += e.dir * GORM.walkV * 0.8 * dt; e.x = Math.max(A.x0 + 50, Math.min(A.x1 - 50, e.x));
@@ -63,7 +63,7 @@ export function updateGorm(e, dt, c) {
 }
 /* gravity and the walk (his feet on the floor; the arena's walls hold him) */
 function settle(e, dt, c, want) { const A = c.arena(); e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); if (e.stagger > 0 && e.mode !== 'sweep') want = 0;
-  e.vx += (want - (e.vx || 0)) * Math.min(1, dt * 6); const r = c.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0; e.x = Math.max(A.x0 + 30, Math.min(A.x1 - 30, e.x)); }
+  e.vx = (e.vx || 0) + (want - (e.vx || 0)) * Math.min(1, dt * 6); const r = c.moveBody(e, e.vx * dt, e.vy * dt); if (r && r.ground) e.vy = 0; e.x = Math.max(A.x0 + 30, Math.min(A.x1 - 30, e.x)); }
 
 /* ===== P2: THE KING'S GLADE ===== */
 function glade(e, dt, c, A, floor, P, d, ad, G) {

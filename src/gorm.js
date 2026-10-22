@@ -35,7 +35,7 @@ export const GORM = {
   cageReset: 5,          /* a cage that MISSED him goes back up after this (its rope stays free: its archers are down) */
   rock: { every: 0.6, vx: 70, vy: -470, mid: { vx: 150, vy: -300 }, low: { vx: 120, vy: -150 }, g: 640 },
   /* THE ESCAPE: the fire behind you (px a world-second; the hero runs ~89) */
-  run: { grace: 2.4, v: 58, vMax: 150, lead: 300, drain: 0.32, groundDrain: 0.16, branchTell: 0.9, branchDmg: 14, torchTell: 0.8, torchBurn: 6, torchReach: 110 },
+  run: { grace: 2.4, v: 50, vMax: 150, lead: 340, drain: 0.2, groundDrain: 0.12, branchTell: 0.9, branchDmg: 14, torchTell: 0.8, torchBurn: 6, torchReach: 110 },
   /* P2: THE KING'S GLADE */
   clubTell: 0.85, clubReach: 74, clubEvery: 2.4,
   shakeTell: 0.8, coneTell: 1.1, cones: 5, coneDmg: 11,
