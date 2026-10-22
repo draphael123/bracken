@@ -1,5 +1,8 @@
 name: balance-evidence
 on:
+  push:
+    branches: [codex/balance-report]
+    paths: ['tools/balance-*.mjs', '.github/workflows/balance-evidence.yml']
   workflow_dispatch:
 permissions:
   contents: read
