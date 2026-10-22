@@ -46,8 +46,43 @@ export const BLOOD = {
      the riposte is a HEAVY third cut, as the knight's), st = wind back, tap = a C flicked too short to stand the ward up also opens the beat (the same 0.22 s window) */
   parry: { stop: 0.2, slow: 0.16, flash: 0.24, push: 18, stagger: 1.0, window: 0.9, st: 14, tap: true },
   /* BLOOD SPIKE: beat s; the spikes hit mul x the sword's blow, stagger s, knock px/s (not a big one), st wind refund (held to commit.js refundCap) */
-  spike: { beat: 0.22, mul: 1.2, stagger: 0.8, knock: 200, st: 12 },
+  spike: { beat: 0.22, mul: 1.2, stagger: 0.8, knock: 200, st: 12,
+    /* (claude/bkkit2, Daniel 10-21 "make the crouch's BLOOD SPIKE matter"): ANY blow from a foe that lands inside the beat is spiked - high, middling or low, from either side (a red
+       one still is not: it goes through the kneel at half, as before); outside the beat only a LOW blow is turned (the plain low guard). It has the parry's weight: stop s of freeze,
+       slow s of the crimson held breath, flash s of the crimson wash, its own SFX.bkSpike; reach px: the spikes strike the one who threw it only if it stands this near (an arrow's
+       archer is not stabbed across the room - the blow is still turned and the debt still comes back); pose s the BLOOD SPIKE pose is held (3 beats) */
+    any: true, stop: 0.16, slow: 0.12, flash: 0.2, reach: 56, pose: 0.42 },
+  /* (claude/bkkit2, Daniel 10-21 "some of the abilities like summon skeleton need to be blood themed. He's not a death knight anymore. Abilities like BLOODWORM or DRAIN or
+     BLOOD BOLT would be more fitting") THE RED HOST - HIS BLOOD MAGIC. No summoning is left in the hero's kit (the boss's blood thralls in the Unburied Field stay HIS).
+     ONE RULE: the Red Host's spells are PAID IN BLOOD - price x his max health goes ON THE BAR AS DEBT (never his last point; shown, not taken, in a trial), the way BLOOD PRICE
+     is, and what they land WINS IT BACK. Save ids are kept (old skill -> new spell):
+       summonSkeleton (SUMMON THRALL)  -> BLOODWORMS   worms burst out of the ground, seek a foe, latch on and bite; every bite bleeds it and wins his debt back
+       gravecall      (THE RED CALL)   -> BLOOD BOLT   a crimson bolt straight ahead; it bleeds what it hits and its price comes back when it lands
+       unholyGround   (RED GROUND)     -> RED GROUND   a pool of his blood on the floor: foes in it are slowed (not a boss), bled and marked; he holds his debt standing in it,
+                                                        and every bite of it wins a little back
+       bidden         (BIDDEN, passive) -> DRAIN       a held tether to the nearest foe ahead: blood is pulled out of it into him - into his debt first, the rest a part of it as health
+     n: worms sent; brood: with THE BROOD (press); life s a worm waits for a foe; sp px/s it crawls; bites: a worm's bites (+ THICK BLOOD a point); biteT s between; mul x the sword's
+     blow a bite (min 2); spent s off the wait (SPENT BLOOD) when a worm is done; burst: BURST VESSEL's reach px and x the sword; cd/quick: the wait, and with QUICKENED BLOOD.
+     bolt: sp px/s, life s, mul x the sword. pool: r px, life s, tick s, dmg a tick, slow (the foe's clock in it), bleed s. drain: range px to take hold (it lets go at x1.4), t s held,
+     tick s, mul x the sword a tick (min 1), over: the part of a tick past his debt that heals him, st wind */
+  host: {
+    worms: { price: 0.06, n: 2, brood: 3, life: 5, sp: 150, bites: 3, biteT: 0.45, mul: 0.3, bleed: 1.5, spent: 3, burst: { r: 34, mul: 0.5 }, cd: 12, quick: 8 },
+    bolt: { price: 0.04, sp: 340, life: 0.65, mul: 0.9, bleed: 2, cd: 2.2 },
+    pool: { price: 0.05, r: 52, life: 6, tick: 0.4, dmg: 3, slow: 0.5, bleed: 1.2, cd: 11 },
+    drain: { range: 100, t: 1.2, tick: 0.2, mul: 0.22, over: 0.4, st: 18, cd: 9 },
+  },
 };
+/* (claude/bkkit2) a Red Host spell's price: pct of max health, on the bar as debt (BLOOD PRICE's rule; free = shown, not taken). Returns what was paid. */
+export function payBlood(p, pct, free = false) {
+  const c = Math.max(1, Math.round(p.maxHp * pct));
+  if (free) { debtAdd(p, c); p.bdLast = p.hp; return c; }
+  const hp0 = p.hp; p.hp = hp0 <= 1 ? hp0 : Math.max(1, hp0 - c); const paid = hp0 - p.hp;
+  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold; p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
+  return paid;
+}
+/* (claude/bkkit2) DRAIN's tick of `n` blood: into the debt first (all of it), the rest heals `over` of itself. Returns the health given. */
+export function drainGive(p, n) { if (!(n > 0) || !(p.hp > 0)) return 0; const r = debtReclaim(p, n), rest = Math.max(0, n - r), h = Math.min(Math.max(0, p.maxHp - p.hp), rest * BLOOD.host.drain.over);
+  if (h > 0) { p.hp += h; p.bdLast = p.hp; } return r + h; }
 
 /* which tier a hold of `held` s reaches, with `debt` hp of debt on a max health of `maxHp` (a tier that needs more debt than he has is not reached) */
 export function tierFor(held, debt, maxHp, quick = 1) {
@@ -85,13 +120,7 @@ export const debtReclaimAll = p => debtReclaim(p, p.bd || 0);
 export function debtSpend(p) { const s = p.bd || 0; p.bd = 0; p.bdHold = 0; return s; }
 export function debtClear(p) { p.bd = 0; p.bdHold = 0; p.bdRate = 0; p.bdLast = p.hp; }
 /* BLOOD PRICE on p: what it costs (never his last point), put on the bar as debt. Returns what was paid. */
-export function payPrice(p, free = false) {
-  const c = Math.max(1, Math.round(p.maxHp * BLOOD.price.pct));
-  if (free) { debtAdd(p, c); p.bdLast = p.hp; return c; }
-  const hp0 = p.hp; p.hp = hp0 <= 1 ? hp0 : Math.max(1, hp0 - c); const paid = hp0 - p.hp;
-  p.bdLast = p.hp; if (paid > 0) { p.bd = (p.bd || 0) + paid; debtClamp(p); p.bdHold = BLOOD.debt.hold; p.bdRate = p.bd / Math.max(0.1, BLOOD.debt.drainT - BLOOD.debt.hold); }
-  return paid;
-}
+export const payPrice = (p, free = false) => payBlood(p, BLOOD.price.pct, free);
 /* a T4/T5's multiplier for what was spent */
 export const spendMul = (spent, maxHp) => 1 + BLOOD.tiers.spendMul * Math.max(0, spent) / Math.max(1, maxHp);
 

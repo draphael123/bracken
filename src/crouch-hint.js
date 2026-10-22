@@ -11,7 +11,7 @@ export const FIRST = {
   paladin: 'KNEEL BY A HOLY LIGHT TO FILL YOUR LIGHT.',
   pyro: 'HOLD DOWN TO FLARE.',
   geomancer: 'HOLD DOWN: WHAT HIDES IN THE GROUND SHOWS.',
-  reaper: 'DOWN: A LOW GUARD. KNEEL AS IT LANDS: BLOOD SPIKE.',   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
+  reaper: 'DOWN: A LOW GUARD. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.',   /* (claude/bkkit2: any blow on the beat) */   /* (claude/bloodknight: the harvest is gone; DOWN+C is BLOOD PRICE) */
   berserker: 'DOWN TO COIL, A WAY, LET GO: POUNCE. FULL: DOWN+C.',
   ranger: 'HOLD DOWN AND TAP C: A SNARE AT YOUR FEET.',   /* (claude/ranger) */
 };
