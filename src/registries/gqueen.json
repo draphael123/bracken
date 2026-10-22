@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "gqueen",
+        "value": "830",
+        "order": 149
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "gqueen",
+        "value": "'gqueen'",
+        "order": 31
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gqueen",
+        "value": "['#5a2a7a', '#6faa4a', '#e0b040']",
+        "order": 154
+      }
+    ]
+  }
+}

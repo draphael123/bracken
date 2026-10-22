@@ -1,0 +1,13 @@
+{
+  "thrown": [
+    "updateLampreeve|flaskTell"
+  ],
+  "notes": [
+    "// (claude/lamplit2) THE LAMPREEVE'S OIL FLASK: lobbed, it breaks where its shadow held and leaves a slick - unblockable, step off it",
+    "// THE LAMPREEVE TAKES YOUR LIGHT (his phase two, claude/weakboss): the light in your hand goes out, and nobody is struck"
+  ],
+  "quiet": [
+    "updateLampreeve|snuffTell",
+    "updateLampreeve|takeTell"
+  ]
+}

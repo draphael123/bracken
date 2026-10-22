@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "chief",
+        "value": "20",
+        "order": 335
+      }
+    ],
+    "EHP": [
+      {
+        "key": "chief",
+        "value": "390",
+        "order": 186
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "chief",
+        "value": "'chief'",
+        "order": 20
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "chief",
+        "value": "'CHIEFTAIN'",
+        "order": 147
+      }
+    ],
+    "COLS": [
+      {
+        "key": "chief",
+        "value": "['#8f2f28', '#c9d1dc', '#6faa4a', '#e0b040']",
+        "order": 202
+      }
+    ]
+  }
+}

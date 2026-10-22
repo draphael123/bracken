@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "siren|lungeTell": "block",
+    "siren|pinchTell": "block",
+    "siren|snapTell": "block",
+    "siren|strikeTell": "block",
+    "siren|thrustTell": "block",
+    "siren|shockTell": "dodge"
+  },
+  "heights": {
+    "siren|lungeTell": "low",
+    "siren|pinchTell": "low",
+    "siren|snapTell": "low",
+    "siren|strikeTell": "low",
+    "siren|thrustTell": "low",
+    "siren|shockTell": "low"
+  }
+}

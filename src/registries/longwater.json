@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "longwater",
+        "value": "1.5",
+        "order": 45
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "longwater",
+        "value": "1.45",
+        "order": 45
+      }
+    ]
+  }
+}

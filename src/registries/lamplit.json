@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "lamplit",
+        "value": "2.05",
+        "order": 32
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "lamplit",
+        "value": "2.05",
+        "order": 32
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "urchin",
+        "value": "12",
+        "order": 223
+      }
+    ],
+    "EHP": [
+      {
+        "key": "urchin",
+        "value": "18",
+        "order": 122
+      }
+    ],
+    "COLS": [
+      {
+        "key": "urchin",
+        "value": "['#2a2630', '#4a4458', '#8a84a0']",
+        "order": 125
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "cutthroat",
+        "value": "DF.CUTTHROAT.hp",
+        "order": 38
+      }
+    ],
+    "COLS": [
+      {
+        "key": "cutthroat",
+        "value": "['#35305a','#b8382c','#c9d1dc']",
+        "order": 40
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "cutthroat",
+        "value": "DF.cutthroatStep",
+        "order": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "answers": {
+    "tideguard|lungeTell": "block",
+    "tideguard|pinchTell": "block",
+    "tideguard|snapTell": "block",
+    "tideguard|strikeTell": "block",
+    "tideguard|thrustTell": "block",
+    "tideguard|shockTell": "dodge",
+    "tideguard|ekSpearTell": "block",
+    "tideguard|ekTideTell": "jump",
+    "tideguard|ekUnderTell": "jump"
+  },
+  "notes": [
+    "/* (claude/elitemoves) THE UNDERTOW: the tide running home to his feet from both ends */"
+  ],
+  "heights": {
+    "tideguard|lungeTell": "low",
+    "tideguard|pinchTell": "low",
+    "tideguard|snapTell": "low",
+    "tideguard|strikeTell": "low",
+    "tideguard|thrustTell": "low",
+    "tideguard|shockTell": "low",
+    "tideguard|ekSpearTell": "low",
+    "tideguard|ekTideTell": "low",
+    "tideguard|ekUnderTell": "low"
+  }
+}

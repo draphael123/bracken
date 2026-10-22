@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "petrel|biteTell": "block",
+    "petrel|castTell": "block",
+    "petrel|dive": "block",
+    "petrel|diveTell": "block",
+    "petrel|hookTell": "block",
+    "petrel|swellTell": "block"
+  },
+  "heights": {
+    "petrel|biteTell": "low",
+    "petrel|castTell": "low",
+    "petrel|dive": "low",
+    "petrel|diveTell": "low",
+    "petrel|hookTell": "low",
+    "petrel|swellTell": "low"
+  }
+}

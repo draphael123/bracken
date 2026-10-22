@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "pyro",
+        "value": "{ id: 'pyro', name: 'THE PYROMANCER', price: 10, silver: true, coinPrice: 800, coinNeeds: 'burning', desc: 'staff and ember, no shield. tap C for an ember, hold C for a jet of flame. the hotter she runs the harder it all lands. fill the bar and press C again: THE PYRE, one great fireball that spends it all. 88 health, quicker on foot, a lighter blow, one jump like anyone else. the plunge is THE FIRE STOMP: her boots do nothing, only the firedrop ahead of her and the landing ring burn. X early in a dodge: THE FLAMING SLIDE, through small foes, and a guard is thrown wide. hold down a moment as a blow winds up: THE EMBER FLARE cancels it, scorches the foe and feeds her heat. flare too soon and she is left open. hold down after it: a weak guard, half of a yellow blow' }",
+        "order": 1
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "pyro",
+        "value": "'HEAT IS HER FIRE: THE HOTTER SHE RUNS, THE HARDER IT BURNS. A FULL BAR IS THE PYRE.'",
+        "order": 1
+      }
+    ]
+  }
+}

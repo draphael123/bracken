@@ -1,0 +1,43 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "forgemaster",
+        "value": "480",
+        "order": 160
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "forgemaster",
+        "value": "520",
+        "order": 7,
+        "notes": [
+          "/* (claude/keyscore, B13: his wave no longer hides him - round or over; 860 measured 12/18 dry) */",
+          "/* THE CAPTAIN (hurricane): 620 (83-100%: 39-54 s) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "forgemaster",
+        "value": "'forgemaster'",
+        "order": 26
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "forgemaster",
+        "value": "'FORGEMASTER'",
+        "order": 145
+      }
+    ],
+    "COLS": [
+      {
+        "key": "forgemaster",
+        "value": "['#8a919c', '#6a4a3a', '#ffd36b']",
+        "order": 172
+      }
+    ]
+  }
+}

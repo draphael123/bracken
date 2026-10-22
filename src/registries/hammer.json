@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "hammer",
+        "value": "30",
+        "order": 300
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "trophyhunter|lungeTell": "!",
+    "trophyhunter|jabTell": "!",
+    "trophyhunter|dropTell": ""
+  },
+  "notes": [
+    "/* THE ROOTWAY (claude/rootway, by hand: the trophy-hunter is a CV machine in src/rootway-hands.js hunterStep, the Huntmaster is src/huntmaster.js): the hunter's lunge and jab a shield turns, his drop off the hoist strikes nobody (the rope creaks); the Huntmaster's aimed shot and volley are gold (a shield turns them, a blade sends them home), the split shot carries red ones nothing turns, the hoist-drop shot drops a cage nothing turns, his knife a shield turns, his leap strikes nobody */"
+  ],
+  "answers": {
+    "trophyhunter|lungeTell": "block",
+    "trophyhunter|jabTell": "block"
+  },
+  "heights": {
+    "trophyhunter|lungeTell": "low",
+    "trophyhunter|jabTell": "low"
+  }
+}

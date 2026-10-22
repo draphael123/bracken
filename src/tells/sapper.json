@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "sapper|shoveTell": "!",
+    "sapper|lightTell": "!!"
+  },
+  "notes": [
+    "/* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */",
+    "// the sapper holds the lit bomb up: a blast, and no shield turns a blast"
+  ],
+  "answers": {
+    "sapper|lightTell": "dodge",
+    "sapper|shoveTell": "block"
+  },
+  "heights": {
+    "sapper|lightTell": "low",
+    "sapper|shoveTell": "low"
+  }
+}

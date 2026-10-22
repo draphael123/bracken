@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "caravan",
+        "value": "2.85",
+        "order": 12
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "caravan",
+        "value": "2.4",
+        "order": 12
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "barrowrider",
+        "value": "UNBF.UNB.hp.barrowrider",
+        "order": 43
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "barrowrider",
+        "value": "'BARROW RIDER'",
+        "order": 66
+      }
+    ],
+    "COLS": [
+      {
+        "key": "barrowrider",
+        "value": "['#8e2a26','#c8d6ff','#9ff0c0']",
+        "order": 46
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "barrowrider",
+        "value": "1.05",
+        "order": 15
+      }
+    ]
+  }
+}

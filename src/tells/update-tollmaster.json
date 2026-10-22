@@ -1,0 +1,11 @@
+{
+  "quiet": [
+    "updateTollmaster|floodTell",
+    "updateTollmaster|collectTell",
+    "updateTollmaster|writTell"
+  ],
+  "notes": [
+    "// (claude/lamplit2) THE TOLLMASTER COLLECTS THE TOLL: a lamp's flame streams to his box, and nobody is struck (stand in it and it burns: that is the answer, not his blow)",
+    "// THE WRIT OF DROWNING: the water rises into the hoods on one half of his square, and nobody is struck"
+  ]
+}

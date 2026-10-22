@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "hound|pounceTell": "!!"
+  },
+  "notes": [
+    "// the hound drops on its haunches: the leap goes low, for the legs, under any shield - jump it"
+  ],
+  "answers": {
+    "hound|pounceTell": "jump"
+  },
+  "heights": {
+    "hound|pounceTell": "low"
+  }
+}

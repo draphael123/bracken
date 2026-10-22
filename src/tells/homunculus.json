@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "homunculus|scuttleTell": "jump",
+    "homunculus|poundTell": "jump",
+    "homunculus|flaskTell": "dodge",
+    "homunculus|pounceTell": "block",
+    "homunculus|swipeTell": "block"
+  },
+  "heights": {
+    "homunculus|scuttleTell": "low",
+    "homunculus|poundTell": "low",
+    "homunculus|flaskTell": "low",
+    "homunculus|pounceTell": "low",
+    "homunculus|swipeTell": "low"
+  }
+}

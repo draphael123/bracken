@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "suncatcher",
+        "value": "430",
+        "order": 146
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "suncatcher",
+        "value": "'RIMEWRIGHT'",
+        "order": 141
+      }
+    ],
+    "COLS": [
+      {
+        "key": "suncatcher",
+        "value": "['#bfe6f5', '#7fe8ff', '#4a6a90']",
+        "order": 151
+      }
+    ]
+  }
+}

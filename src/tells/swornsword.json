@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "swornsword|aim": "block",
+    "swornsword|cutTell": "block",
+    "swornsword|leapTell": "dodge",
+    "swornsword|shout": "block",
+    "swornsword|stabTell": "block",
+    "swornsword|swingTell": "block"
+  },
+  "heights": {
+    "swornsword|aim": "high",
+    "swornsword|cutTell": "low",
+    "swornsword|leapTell": "low",
+    "swornsword|shout": "low",
+    "swornsword|stabTell": "low",
+    "swornsword|swingTell": "low"
+  }
+}

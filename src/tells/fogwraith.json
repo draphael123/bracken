@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "fogwraith|smotherTell": "!"
+  },
+  "notes": [
+    "/* (claude/towpath2) THE FOG KNIGHT 2: the towrope (jump or roll it), the lock surge (get up high), the fog spears (off the line), the dissolve plunge (off the shadow) - no shield turns any of them; THE FOG WRAITH's smother: a guard raised toward it shields the flame */   /* THE TOWPATH (claude/towpath, by hand: src/fog-knight.js MOVES) - ! a shield turns his sword (and the cut out of the shroud); !! the fog lunge (roll in its last beat); a stance, the double's summoning and the shroud strike nobody */"
+  ],
+  "answers": {
+    "fogwraith|smotherTell": "block"
+  },
+  "heights": {
+    "fogwraith|smotherTell": "high"
+  }
+}

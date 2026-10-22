@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "gobpriest",
+        "value": "0",
+        "order": 398
+      }
+    ],
+    "EHP": [
+      {
+        "key": "gobpriest",
+        "value": "14",
+        "order": 205
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gobpriest",
+        "value": "['#8e3a32', '#e8a83a', '#c9a44a']",
+        "order": 149
+      }
+    ]
+  }
+}

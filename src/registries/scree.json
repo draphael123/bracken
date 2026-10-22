@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "scree",
+        "value": "0.75",
+        "order": 39
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "scree",
+        "value": "0.75",
+        "order": 39
+      }
+    ]
+  }
+}

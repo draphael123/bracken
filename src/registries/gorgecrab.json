@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "gorgecrab",
+        "value": "GCB.CRAB.hp",
+        "order": 30
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "gorgecrab",
+        "value": "'gorgecrab'",
+        "order": 41
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "gorgecrab",
+        "value": "'THE GREAT RED CRAB'",
+        "order": 58
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gorgecrab",
+        "value": "['#b8382c', '#e0603c', '#e8c8a0']",
+        "order": 35
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "moor",
+        "value": "1.1",
+        "order": 42
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "moor",
+        "value": "1.1",
+        "order": 42
+      }
+    ]
+  }
+}

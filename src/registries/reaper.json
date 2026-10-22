@@ -1,0 +1,55 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "reaper",
+        "value": "{ id: 'reaper', name: 'THE BLOOD KNIGHT', price: 10, silver: true, coinPrice: 800, coinNeeds: 'unburied', coinBoss: true, feat: 'boss:unburied', featName: 'beat the Blood Knight in the Unburied Field', desc: \"a two-handed sword, and 95 health. HE FIGHTS ON BORROWED BLOOD. A blow that lands on him leaves half of it as BLOOD DEBT, a red part of his health bar that drains away in three seconds - and every blow of his that lands wins some of it back. X is THE RED RHYTHM: a rising cut, a hook that pulls a foe a step in, and a heavy drag - and every cut that lands feeds his ward. HOLD X for THE FIVE-TIER HEAVY, and let go when the blade glows deep enough: REND, SUNDER (it cracks a guard), the CRIMSON CRESCENT (a wave of blood runs on), EXSANGUINATE (a lunge) and BLOOD MOON (a slam and a geyser) - a long hold reaches all five, and BLOOD DEBT spent into the last two makes them hit harder and drinks some of it back. every heavy bleeds what it lands on. DOWN+C is the BLOOD PRICE: he opens a vein - the health goes on the bar as debt - and his blade cuts harder for six seconds. CROUCH is his low guard, the blade planted before him; kneel AS any blow lands and BLOOD SPIKES tear out of the ground at the one who threw it, and all his debt comes back. HOLD C for the BLOOD WARD: a blow on its face is stopped, but a third of it is paid in his own blood, and that blood fills the ward. LET GO for a BLOOD NOVA that hurts, marks and heals the blood back - and let go in time, because a FULL ward struck again BREAKS and he reels. Let go (or just tap C) AS a blow lands and he THROWS IT BACK: the foe reels open for a heavy riposte, and all his debt comes back with it. Every death fills his blood bar, and HOLDING F on a full bar is BLOOD SURGE, which takes life from everything near him and freezes all of it that is not a boss. Buy skills with coins and equip them in Skills & Loadout: THE RED HOST tree is his blood magic - BLOODWORMS, BLOOD BOLT, DRAIN and RED GROUND - paid in his own blood, on the bar as debt, and won back when it lands. F is his first equipped skill; G is the skill he has equipped beside it; HOLD F on a full blood bar for Blood Surge. the plunge drives the blade down into a BLOOD BURST. X early in a dodge: THE GREATSWORD RUSH, through small foes, and a guard is thrown wide.\" }",
+        "order": 2
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "reaper",
+        "value": "'A HIT ON HIM IS BLOOD DEBT: LAND BLOWS TO WIN IT BACK. HOLD X: FIVE TIERS. DOWN+C: BLOOD PRICE.'",
+        "order": 4
+      }
+    ],
+    "DK_KEYS": [
+      {
+        "key": "ward",
+        "value": "'HOLD C: THE BLOOD WARD. A BLOW ON ITS FACE COSTS A THIRD IN BLOOD, AND THE BLOOD FILLS IT'",
+        "order": 0
+      },
+      {
+        "key": "nova",
+        "value": "'LET GO OF C: A BLOOD NOVA THAT HEALS THE BLOOD BACK. A FULL WARD STRUCK AGAIN BREAKS'",
+        "order": 1
+      },
+      {
+        "key": "ret",
+        "value": "'LET GO AS A BLOW LANDS AND IT IS RETURNED, FOR NO BLOOD'",
+        "order": 2
+      },
+      {
+        "key": "summon",
+        "value": "'F: THE FIRST SKILL HE HAS EQUIPPED'",
+        "order": 3
+      },
+      {
+        "key": "surge",
+        "value": "'HOLD F WITH A FULL BAR: BLOOD SURGE'",
+        "order": 4
+      },
+      {
+        "key": "skill",
+        "value": "'G: THE SKILL HE HAS CHOSEN FROM HIS TREES'",
+        "order": 5
+      },
+      {
+        "key": "hud",
+        "value": "{ ward: 'HOLD C  WARD', nova: 'LET GO: NOVA', full: 'FULL: LET GO', surge: 'HOLD F  SURGE' }",
+        "order": 6
+      }
+    ]
+  }
+}

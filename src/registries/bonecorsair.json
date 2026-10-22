@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bonecorsair",
+        "value": "16",
+        "order": 40
+      }
+    ],
+    "EHP": [
+      {
+        "key": "bonecorsair",
+        "value": "48",
+        "order": 65
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bonecorsair",
+        "value": "'BONE CORSAIR'",
+        "order": 94
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bonecorsair",
+        "value": "['#d2d1b1','#794352']",
+        "order": 66
+      }
+    ]
+  }
+}

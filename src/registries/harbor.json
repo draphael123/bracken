@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "harbor",
+        "value": "2.3",
+        "order": 19
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "harbor",
+        "value": "2.3",
+        "order": 19
+      }
+    ]
+  }
+}

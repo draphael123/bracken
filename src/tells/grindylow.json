@@ -1,0 +1,20 @@
+{
+  "byHand": {
+    "grindylow|rippleTell": "!!",
+    "grindylow|deckTell": "!!",
+    "grindylow|boardTell": "!!"
+  },
+  "notes": [
+    "/* THE FOG CANAL (canal-foes.js, by hand: module-file foes the audit cannot follow): no shield turns a hand round your ankle - jump the ring; the wisp's flare a shield turns */"
+  ],
+  "answers": {
+    "grindylow|rippleTell": "jump",
+    "grindylow|deckTell": "jump",
+    "grindylow|boardTell": "jump"
+  },
+  "heights": {
+    "grindylow|deckTell": "low",
+    "grindylow|boardTell": "low",
+    "grindylow|rippleTell": "low"
+  }
+}

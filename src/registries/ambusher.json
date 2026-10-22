@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "ambusher",
+        "value": "DF.AMBUSHER.hp",
+        "order": 40
+      }
+    ],
+    "COLS": [
+      {
+        "key": "ambusher",
+        "value": "['#d9b877','#2e2216','#ffd36b']",
+        "order": 42
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "ambusher",
+        "value": "DF.ambusherStep",
+        "order": 7
+      }
+    ]
+  }
+}

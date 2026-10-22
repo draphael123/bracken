@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "manta",
+        "value": "34",
+        "order": 213
+      }
+    ],
+    "COLS": [
+      {
+        "key": "manta",
+        "value": "['#3a4a5c', '#22303e', '#6c8598']",
+        "order": 201
+      }
+    ]
+  }
+}

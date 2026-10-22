@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "buriedcity",
+        "value": "3.15",
+        "order": 11
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "buriedcity",
+        "value": "2.65",
+        "order": 11
+      }
+    ]
+  }
+}

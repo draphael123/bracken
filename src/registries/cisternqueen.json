@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "cisternqueen",
+        "value": "CQG.CQ.hp",
+        "order": 27
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "cisternqueen",
+        "value": "'cisternqueen'",
+        "order": 40
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "cisternqueen",
+        "value": "'THE CISTERN QUEEN'",
+        "order": 55
+      }
+    ],
+    "COLS": [
+      {
+        "key": "cisternqueen",
+        "value": "['#46302a', '#ffb84a', '#b08658']",
+        "order": 31
+      }
+    ]
+  }
+}

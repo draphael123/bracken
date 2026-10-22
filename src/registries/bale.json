@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bale",
+        "value": "14",
+        "order": 256
+      }
+    ],
+    "EHP": [
+      {
+        "key": "bale",
+        "value": "12",
+        "order": 143
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bale",
+        "value": "['#d9b44a', '#8a6a32', '#9a5aa8']",
+        "order": 146
+      }
+    ]
+  }
+}

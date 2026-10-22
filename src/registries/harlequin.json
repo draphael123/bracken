@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "harlequin",
+        "value": "999",
+        "order": 224
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "harlequin",
+        "value": "'THE HARLEQUIN'",
+        "order": 75
+      }
+    ],
+    "COLS": [
+      {
+        "key": "harlequin",
+        "value": "['#7a3e8a', '#e8c23a', '#4a8a3a']",
+        "order": 226
+      }
+    ]
+  }
+}

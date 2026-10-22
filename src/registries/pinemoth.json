@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "BEAST_SHORT": [
+      {
+        "key": "pinemoth",
+        "value": "'PINE MOTH'",
+        "order": 4
+      }
+    ],
+    "COLS": [
+      {
+        "key": "pinemoth",
+        "value": "['#d8d0b0', '#8a7a5a', '#f0ead8']",
+        "order": 4
+      }
+    ]
+  }
+}

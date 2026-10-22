@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "burning",
+        "value": "0.38",
+        "order": 16
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "burning",
+        "value": "0.38",
+        "order": 16
+      }
+    ]
+  }
+}

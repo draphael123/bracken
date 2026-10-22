@@ -1,0 +1,24 @@
+{
+  "byHand": {
+    "greathound|lungeTell": "!",
+    "greathound|pounceTell": "!!",
+    "greathound|howlTell": "",
+    "greathound|snapTell": "!",
+    "greathound|boughTell": "!!"
+  },
+  "notes": [
+    "/* (claude/hound) THE BOUGHS: red rings on the floor, no shield turns a bough */   /* THE GREAT HOUND (claude/sweep1, B10: its four windups wore no mark - a tell() helper the audit cannot follow): the lunge and the snap a shield turns, the pounce comes down where you stood, the howl strikes nobody */"
+  ],
+  "answers": {
+    "greathound|lungeTell": "block",
+    "greathound|pounceTell": "dodge",
+    "greathound|snapTell": "block",
+    "greathound|boughTell": "dodge"
+  },
+  "heights": {
+    "greathound|lungeTell": "low",
+    "greathound|pounceTell": "low",
+    "greathound|snapTell": "low",
+    "greathound|boughTell": "low"
+  }
+}

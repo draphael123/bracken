@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "soldier|grabTell": "dodge",
+    "soldier|raise": "dodge",
+    "soldier|slashTell": "block",
+    "soldier|windUp": "block"
+  },
+  "heights": {
+    "soldier|grabTell": "low",
+    "soldier|raise": "low",
+    "soldier|slashTell": "low",
+    "soldier|windUp": "low"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "crossbow|aim": "block",
+    "crossbow|cutTell": "block",
+    "crossbow|leapTell": "dodge",
+    "crossbow|shout": "block",
+    "crossbow|stabTell": "block",
+    "crossbow|swingTell": "block"
+  },
+  "heights": {
+    "crossbow|aim": "high",
+    "crossbow|cutTell": "low",
+    "crossbow|leapTell": "low",
+    "crossbow|shout": "low",
+    "crossbow|stabTell": "low",
+    "crossbow|swingTell": "low"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "husk",
+        "value": "16",
+        "order": 33
+      }
+    ],
+    "EHP": [
+      {
+        "key": "husk",
+        "value": "74",
+        "order": 60
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "husk",
+        "value": "'GRAVE HUSK'",
+        "order": 89
+      }
+    ],
+    "COLS": [
+      {
+        "key": "husk",
+        "value": "['#8fb257','#5c8a24']",
+        "order": 61
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "willowisp|flareTell": "!"
+  },
+  "notes": [
+    "/* THE FOG CANAL (canal-foes.js, by hand: module-file foes the audit cannot follow): no shield turns a hand round your ankle - jump the ring; the wisp's flare a shield turns */"
+  ],
+  "answers": {
+    "willowisp|flareTell": "block"
+  },
+  "heights": {
+    "willowisp|flareTell": "high"
+  }
+}

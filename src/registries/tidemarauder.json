@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "tidemarauder",
+        "value": "18",
+        "order": 42
+      }
+    ],
+    "EHP": [
+      {
+        "key": "tidemarauder",
+        "value": "110",
+        "order": 66
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "tidemarauder",
+        "value": "'TIDE MARAUDER'",
+        "order": 95
+      }
+    ],
+    "COLS": [
+      {
+        "key": "tidemarauder",
+        "value": "['#39706c','#d2d1b1']",
+        "order": 67
+      }
+    ]
+  }
+}

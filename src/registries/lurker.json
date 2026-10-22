@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lurker",
+        "value": "22",
+        "order": 341
+      }
+    ],
+    "EHP": [
+      {
+        "key": "lurker",
+        "value": "20",
+        "order": 188
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lurker",
+        "value": "['#7a5aa8', '#f0e6c8', '#c9463d']",
+        "order": 187
+      }
+    ]
+  }
+}

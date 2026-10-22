@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "tideguard",
+        "value": "16",
+        "order": 238
+      }
+    ],
+    "EHP": [
+      {
+        "key": "tideguard",
+        "value": "44",
+        "order": 132
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "tideguard",
+        "value": "'TIDEGUARD'",
+        "order": 133
+      }
+    ],
+    "COLS": [
+      {
+        "key": "tideguard",
+        "value": "['#e07a6a', '#4a9a8a', '#a8cfc6']",
+        "order": 135
+      }
+    ]
+  }
+}

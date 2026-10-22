@@ -1,0 +1,13 @@
+{
+  "answers": {
+    "lampreeve|lungeTell": "dodge",
+    "lampreeve|flaskTell": "dodge"
+  },
+  "notes": [
+    "/* (claude/lamplit2) off the flask's held shadow */"
+  ],
+  "heights": {
+    "lampreeve|lungeTell": "low",
+    "lampreeve|flaskTell": "low"
+  }
+}

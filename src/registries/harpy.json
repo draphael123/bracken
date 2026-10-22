@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "harpy",
+        "value": "18",
+        "order": 393
+      }
+    ],
+    "EHP": [
+      {
+        "key": "harpy",
+        "value": "18",
+        "order": 202
+      }
+    ],
+    "COLS": [
+      {
+        "key": "harpy",
+        "value": "['#8a8478', '#c9a83a', '#5a5448']",
+        "order": 177
+      }
+    ]
+  }
+}

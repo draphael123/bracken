@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "stagehand|swingTell": "!!",
+    "stagehand|dropTell": "!!"
+  },
+  "notes": [
+    "// THE STAGEHAND (the Maskwright's Theatre, src/theatre-foes.js, by hand: a module-file foe): the sandbag swung down in front of him and the one dropped from the flies onto you - no shield turns a sandbag"
+  ],
+  "answers": {
+    "stagehand|swingTell": "dodge",
+    "stagehand|dropTell": "dodge"
+  },
+  "heights": {
+    "stagehand|swingTell": "low",
+    "stagehand|dropTell": "high"
+  }
+}

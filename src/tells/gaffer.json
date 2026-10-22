@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "gaffer|haftTell": "block",
+    "gaffer|hookTell": "duck",
+    "gaffer|ekHookTell": "block",
+    "gaffer|ekSpinTell": "jump"
+  },
+  "heights": {
+    "gaffer|haftTell": "low",
+    "gaffer|hookTell": "high",
+    "gaffer|ekHookTell": "low",
+    "gaffer|ekSpinTell": "low"
+  }
+}

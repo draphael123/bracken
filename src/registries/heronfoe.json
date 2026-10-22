@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "heronfoe",
+        "value": "10",
+        "order": 235
+      }
+    ],
+    "EHP": [
+      {
+        "key": "heronfoe",
+        "value": "8",
+        "order": 128
+      }
+    ],
+    "COLS": [
+      {
+        "key": "heronfoe",
+        "value": "['#8a96a0', '#c8d0d4', '#e0b040']",
+        "order": 131
+      }
+    ]
+  }
+}

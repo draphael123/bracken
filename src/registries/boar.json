@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "boar",
+        "value": "16",
+        "order": 379
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "boar",
+        "value": "'BOAR'",
+        "order": 3
+      }
+    ],
+    "COLS": [
+      {
+        "key": "boar",
+        "value": "['#5c3c28', '#a89a88', '#f0e8d0']",
+        "order": 3
+      }
+    ]
+  }
+}

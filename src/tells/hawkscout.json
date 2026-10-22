@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "hawkscout|diveTell": "!!"
+  },
+  "notes": [
+    "/* THE BANDIT KSAR (claude/ksar, by hand: src/hawk-mistress.js MOVES; the hawk scout is a CV machine in src/ksar-foes.js - its stoop on the spot it marked) */"
+  ],
+  "answers": {
+    "hawkscout|diveTell": "dodge"
+  },
+  "heights": {
+    "hawkscout|diveTell": "low"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "dummy",
+        "value": "0",
+        "order": 249
+      }
+    ],
+    "EHP": [
+      {
+        "key": "dummy",
+        "value": "9999",
+        "order": 137
+      }
+    ],
+    "COLS": [
+      {
+        "key": "dummy",
+        "value": "['#c9b27c', '#8a5a32', '#e8dcc0']",
+        "order": 140
+      }
+    ]
+  }
+}

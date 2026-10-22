@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "deathknight",
+        "value": "UNBF.UNB.hp.deathknight",
+        "order": 44
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "deathknight",
+        "value": "'THE REAPER'",
+        "order": 67
+      }
+    ],
+    "COLS": [
+      {
+        "key": "deathknight",
+        "value": "['#3e4a44','#9ff0c0','#b8c4bc']",
+        "order": 47
+      }
+    ]
+  }
+}

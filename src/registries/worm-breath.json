@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wormBreath",
+        "value": "DWM.WORM.dmg.breath",
+        "order": 1
+      }
+    ]
+  }
+}

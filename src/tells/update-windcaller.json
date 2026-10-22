@@ -1,0 +1,8 @@
+{
+  "thrown": [
+    "updateWindcaller|stoneTell"
+  ],
+  "quiet": [
+    "updateWindcaller|howlTell"
+  ]
+}

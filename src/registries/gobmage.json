@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "gobmage",
+        "value": "0",
+        "order": 401
+      }
+    ],
+    "EHP": [
+      {
+        "key": "gobmage",
+        "value": "22",
+        "order": 209
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gobmage",
+        "value": "['#34467a', '#f6f0dc', '#c9a44a']",
+        "order": 150
+      }
+    ]
+  }
+}

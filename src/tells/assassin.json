@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "assassin|markTell": "dodge",
+    "assassin|stabTell": "block"
+  },
+  "heights": {
+    "assassin|markTell": "low",
+    "assassin|stabTell": "low"
+  }
+}

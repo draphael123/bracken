@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "holdfast",
+        "value": "34",
+        "order": 100
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "holdfast",
+        "value": "'THE HOLDFAST'",
+        "order": 117
+      }
+    ],
+    "COLS": [
+      {
+        "key": "holdfast",
+        "value": "['#4a8a7a', '#c9463d', '#6a8a80']",
+        "order": 104
+      }
+    ]
+  }
+}

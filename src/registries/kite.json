@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "kite",
+        "value": "12",
+        "order": 383
+      }
+    ],
+    "EHP": [
+      {
+        "key": "kite",
+        "value": "15",
+        "order": 162
+      }
+    ],
+    "COLS": [
+      {
+        "key": "kite",
+        "value": "['#c9463d', '#ffd36b', '#6faa4a']",
+        "order": 168
+      }
+    ]
+  }
+}

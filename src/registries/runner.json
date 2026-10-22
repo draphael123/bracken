@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "runner",
+        "value": "18",
+        "order": 92
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "runner",
+        "value": "'THE RUNNER'",
+        "order": 111
+      }
+    ],
+    "COLS": [
+      {
+        "key": "runner",
+        "value": "['#6a4a2a', '#e8dcc0', '#e0b040']",
+        "order": 96
+      }
+    ]
+  }
+}

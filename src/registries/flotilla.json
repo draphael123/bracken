@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "flotilla",
+        "value": "1.75",
+        "order": 47
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "flotilla",
+        "value": "1.75",
+        "order": 47
+      }
+    ]
+  }
+}

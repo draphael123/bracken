@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "hawkscout",
+        "value": "KSF.HAWK.hp",
+        "order": 16
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "hawkscout",
+        "value": "'HAWK SCOUT'",
+        "order": 40
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hawkscout",
+        "value": "['#6a4428', '#e0caa0', '#ffd36b']",
+        "order": 24
+      }
+    ]
+  }
+}

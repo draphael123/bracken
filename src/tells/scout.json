@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "scout|lungeTell": "block",
+    "scout|pinchTell": "block",
+    "scout|snapTell": "block",
+    "scout|strikeTell": "block",
+    "scout|thrustTell": "block",
+    "scout|shockTell": "dodge"
+  },
+  "heights": {
+    "scout|lungeTell": "low",
+    "scout|pinchTell": "low",
+    "scout|snapTell": "low",
+    "scout|strikeTell": "low",
+    "scout|thrustTell": "low",
+    "scout|shockTell": "low"
+  }
+}

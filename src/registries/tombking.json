@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "tombking",
+        "value": "TKG.TK.hp",
+        "order": 7
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "tombking",
+        "value": "'tombking'",
+        "order": 2
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "tombking",
+        "value": "'THE COFFIN KING'",
+        "order": 11
+      }
+    ],
+    "COLS": [
+      {
+        "key": "tombking",
+        "value": "['#9c8660', '#d8aa40', '#2e4a8a']",
+        "order": 9
+      }
+    ]
+  }
+}

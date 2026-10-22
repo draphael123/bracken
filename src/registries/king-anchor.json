@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "kingAnchor",
+        "value": "20",
+        "order": 133
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "kingAnchor",
+        "value": "16",
+        "order": 0
+      }
+    ]
+  }
+}

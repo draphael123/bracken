@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanceSweep",
+        "value": "18",
+        "order": 282
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "lanceSweep",
+        "value": "14",
+        "order": 5
+      }
+    ]
+  }
+}

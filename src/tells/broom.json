@@ -1,0 +1,13 @@
+{
+  "byHand": {
+    "broom|sweepTell": "!"
+  },
+  "answers": {
+    "broom|dashTell": "block",
+    "broom|sweepTell": "block"
+  },
+  "heights": {
+    "broom|dashTell": "low",
+    "broom|sweepTell": "low"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "scarabmother",
+        "value": "SMG.SM.hp",
+        "order": 6
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "scarabmother",
+        "value": "'scarabmother'",
+        "order": 3
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "scarabmother",
+        "value": "'THE SCARAB MOTHER'",
+        "order": 12
+      }
+    ],
+    "COLS": [
+      {
+        "key": "scarabmother",
+        "value": "['#1e3a2c', '#3e7a52', '#d8aa40']",
+        "order": 11
+      }
+    ]
+  }
+}

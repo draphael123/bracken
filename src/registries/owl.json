@@ -1,0 +1,43 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "owl",
+        "value": "1450",
+        "order": 172
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "owl",
+        "value": "'owl'",
+        "order": 25
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "owl",
+        "value": "'OWL REEVE'",
+        "order": 144
+      }
+    ],
+    "COLS": [
+      {
+        "key": "owl",
+        "value": "['#7a5a3a', '#e8dcc0', '#ffd36b']",
+        "order": 175
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "owl",
+        "value": "1.2",
+        "order": 18,
+        "notes": [
+          "/* (claude/owl2: 0.85 - her told pairs are read well, so each one that lands is worth fearing; tuned with the flask) */",
+          "/* (claude/owl3: 1.45 -> 1.2 - her lamps are a moment now and she has two more moves to land, the wing beat's drop and the pellets; tuned with the flask) */"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "kiterider|swoopTell": "!",
+    "kiterider|kickTell": "!"
+  },
+  "notes": [
+    "/* THE SKY ROAD (claude/skyroad, by hand: the kite-rider is a CV machine in src/sky-road-hands.js riderStep, the Roc on her eyrie is src/roc-eyrie.js): the swoop and the kick a shield turns; her dive nothing turns */"
+  ],
+  "answers": {
+    "kiterider|swoopTell": "block",
+    "kiterider|kickTell": "block"
+  },
+  "heights": {
+    "kiterider|swoopTell": "low",
+    "kiterider|kickTell": "low"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "bellguard|hookTell": "block",
+    "bellguard|knellTell": "dodge"
+  },
+  "heights": {
+    "bellguard|hookTell": "low",
+    "bellguard|knellTell": "low"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "sandgob",
+        "value": "DF.SANDGOB.hp",
+        "order": 37
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sandgob",
+        "value": "['#6f8a3a','#d9b877','#9a7a4a']",
+        "order": 39
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "sandgob",
+        "value": "DF.sandGobStep",
+        "order": 3
+      }
+    ]
+  }
+}

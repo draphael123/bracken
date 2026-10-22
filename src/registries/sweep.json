@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "sweep",
+        "value": "10",
+        "order": 251
+      }
+    ],
+    "EHP": [
+      {
+        "key": "sweep",
+        "value": "14",
+        "order": 138
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sweep",
+        "value": "['#2a2630', '#5a7a3a', '#b8a888']",
+        "order": 141
+      }
+    ]
+  }
+}

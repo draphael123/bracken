@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "shardling",
+        "value": "14",
+        "order": 261
+      }
+    ],
+    "EHP": [
+      {
+        "key": "shardling",
+        "value": "18",
+        "order": 144
+      }
+    ],
+    "COLS": [
+      {
+        "key": "shardling",
+        "value": "['#bfe6f5', '#eefaff', '#7aa8c8']",
+        "order": 147
+      }
+    ]
+  }
+}

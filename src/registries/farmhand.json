@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "farmhand",
+        "value": "14",
+        "order": 80
+      }
+    ],
+    "EHP": [
+      {
+        "key": "farmhand",
+        "value": "34",
+        "order": 80
+      }
+    ],
+    "COLS": [
+      {
+        "key": "farmhand",
+        "value": "['#c8dcf5', '#9ab8e0', '#4a5a80']",
+        "order": 82
+      }
+    ]
+  }
+}

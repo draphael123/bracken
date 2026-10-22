@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "masthead",
+        "value": "540",
+        "order": 89
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "masthead",
+        "value": "'masthead'",
+        "order": 36
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "masthead",
+        "value": "'THE MASTHEAD'",
+        "order": 139
+      }
+    ],
+    "COLS": [
+      {
+        "key": "masthead",
+        "value": "['#6faa4a', '#efe6d2', '#c9463d']",
+        "order": 91
+      }
+    ]
+  }
+}

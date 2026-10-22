@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanceWhirl",
+        "value": "12",
+        "order": 248
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "lanceWhirl",
+        "value": "10",
+        "order": 10
+      }
+    ]
+  }
+}

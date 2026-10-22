@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "stormshaman",
+        "value": "10",
+        "order": 252
+      }
+    ],
+    "EHP": [
+      {
+        "key": "stormshaman",
+        "value": "20",
+        "order": 139
+      }
+    ],
+    "COLS": [
+      {
+        "key": "stormshaman",
+        "value": "['#6faa4a', '#c9a0ff', '#e8dcc0']",
+        "order": 142
+      }
+    ]
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "byHand": {
+    "archer|draw": "!",
+    "archer|bagTell": "!!"
+  },
+  "notes": [
+    "// an arrow: a seed the shield turns",
+    "// THE FLYMAN (the Maskwright's Theatre, claude/theatre3: the archer reskinned, main.js flymanStep, by hand): the sandbag over his head - no shield turns a sandbag (his tool is the archer's own draw, a yellow !)"
+  ],
+  "answers": {
+    "archer|draw": "block",
+    "archer|elVolleyTell": "dodge",
+    "archer|bagTell": "dodge"
+  },
+  "heights": {
+    "archer|draw": "high",
+    "archer|elVolleyTell": "low",
+    "archer|bagTell": "low"
+  }
+}

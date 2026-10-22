@@ -1,0 +1,38 @@
+{
+  "byHand": {
+    "fogknight|stanceTell": "",
+    "fogknight|cutTell": "!",
+    "fogknight|lungeTell": "!!",
+    "fogknight|doubleTell": "",
+    "fogknight|shroudTell": "",
+    "fogknight|stepTell": "!",
+    "fogknight|lashTell": "!!",
+    "fogknight|surgeTell": "!!",
+    "fogknight|spearTell": "!!",
+    "fogknight|sinkTell": "!!",
+    "fogknight|plungeTell": "!!"
+  },
+  "notes": [
+    "/* (claude/towpath2) THE FOG KNIGHT 2: the towrope (jump or roll it), the lock surge (get up high), the fog spears (off the line), the dissolve plunge (off the shadow) - no shield turns any of them; THE FOG WRAITH's smother: a guard raised toward it shields the flame */   /* THE TOWPATH (claude/towpath, by hand: src/fog-knight.js MOVES) - ! a shield turns his sword (and the cut out of the shroud); !! the fog lunge (roll in its last beat); a stance, the double's summoning and the shroud strike nobody */"
+  ],
+  "answers": {
+    "fogknight|cutTell": "block",
+    "fogknight|lungeTell": "dodge",
+    "fogknight|stepTell": "block",
+    "fogknight|lashTell": "jump",
+    "fogknight|surgeTell": "jump",
+    "fogknight|spearTell": "dodge",
+    "fogknight|sinkTell": "dodge",
+    "fogknight|plungeTell": "dodge"
+  },
+  "heights": {
+    "fogknight|cutTell": "low",
+    "fogknight|lungeTell": "low",
+    "fogknight|stepTell": "low",
+    "fogknight|lashTell": "low",
+    "fogknight|surgeTell": "low",
+    "fogknight|spearTell": "low",
+    "fogknight|sinkTell": "low",
+    "fogknight|plungeTell": "low"
+  }
+}

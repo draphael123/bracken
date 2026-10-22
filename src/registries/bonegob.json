@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bonegob",
+        "value": "14",
+        "order": 28
+      }
+    ],
+    "EHP": [
+      {
+        "key": "bonegob",
+        "value": "30",
+        "order": 55
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bonegob",
+        "value": "'BONE GOBLIN'",
+        "order": 85
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bonegob",
+        "value": "['#d9d6c0','#8c8869']",
+        "order": 57
+      }
+    ]
+  }
+}

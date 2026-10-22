@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "scorpion",
+        "value": "DF.SCORPION.hp",
+        "order": 34
+      }
+    ],
+    "COLS": [
+      {
+        "key": "scorpion",
+        "value": "['#b8823a','#6e4a22','#e8c24a']",
+        "order": 38
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "scorpion",
+        "value": "DF.scorpionStep",
+        "order": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "greathound",
+        "value": "15",
+        "order": 304
+      }
+    ],
+    "EHP": [
+      {
+        "key": "greathound",
+        "value": "GHD.GH.hp",
+        "order": 170
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "greathound",
+        "value": "'greathound'",
+        "order": 22
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "greathound",
+        "value": "'GREAT HOUND'",
+        "order": 142
+      }
+    ],
+    "COLS": [
+      {
+        "key": "greathound",
+        "value": "['#5a4a3a', '#3a2e22', '#ff4a3a']",
+        "order": 173
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "greathound",
+        "value": "1.5",
+        "order": 10
+      }
+    ]
+  }
+}

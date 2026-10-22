@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wormWave",
+        "value": "DWM.WORM.dmg.wave",
+        "order": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "djinn",
+        "value": "DJG.DJ.hp",
+        "order": 28
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "djinn",
+        "value": "'djinn'",
+        "order": 42
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "djinn",
+        "value": "'THE DJINN'",
+        "order": 56
+      }
+    ],
+    "COLS": [
+      {
+        "key": "djinn",
+        "value": "['#c99a5a', '#e0b040', '#3a7ab8']",
+        "order": 32
+      }
+    ]
+  }
+}

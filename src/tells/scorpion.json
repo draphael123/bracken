@@ -1,0 +1,23 @@
+{
+  "byHand": {
+    "scorpion|clawTell": "!",
+    "scorpion|tailTell": "!!"
+  },
+  "notes": [
+    "/* THE SUNKEN CARAVAN (desert-foes.js, by hand): the claw and the knife a shield turns; the sting over its back and the vulture's dive nothing does */"
+  ],
+  "answers": {
+    "scorpion|clawTell": "block",
+    "scorpion|tailTell": "dodge",
+    "scorpion|ekDigTell": "dodge",
+    "scorpion|ekUnderTell": "dodge",
+    "scorpion|ekTailTell": "jump"
+  },
+  "heights": {
+    "scorpion|clawTell": "low",
+    "scorpion|tailTell": "low",
+    "scorpion|ekDigTell": "low",
+    "scorpion|ekUnderTell": "low",
+    "scorpion|ekTailTell": "low"
+  }
+}

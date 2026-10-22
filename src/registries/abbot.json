@@ -1,0 +1,49 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "abbot",
+        "value": "ABBOT.dmg.censer",
+        "order": 10
+      }
+    ],
+    "EHP": [
+      {
+        "key": "abbot",
+        "value": "ABBOT.hp",
+        "order": 47
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "abbot",
+        "value": "'THE FALSE ABBOT'",
+        "order": 70
+      }
+    ],
+    "COLS": [
+      {
+        "key": "abbot",
+        "value": "['#8e3a32','#f2ecd8','#e8a83a']",
+        "order": 50
+      }
+    ],
+    "BOSS_HIT": [
+      {
+        "key": "abbot",
+        "value": "1.8",
+        "order": 4
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "abbot",
+        "value": "1.35",
+        "order": 19,
+        "notes": [
+          "/* (claude/abbot2: 1.5 - his own kit is the threat now, not his congregation; fights run longer at 2700) */"
+        ]
+      }
+    ]
+  }
+}

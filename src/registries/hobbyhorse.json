@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "hobbyhorse",
+        "value": "MU.HORSE.hp",
+        "order": 218
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hobbyhorse",
+        "value": "['#a83c3c', '#7a5230', '#e8c23a']",
+        "order": 221
+      }
+    ]
+  }
+}

@@ -1,0 +1,54 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "berserker",
+        "value": "96",
+        "order": 108
+      }
+    ],
+    "COLS": [
+      {
+        "key": "berserker",
+        "value": "['#8fd160', '#4a7a32', '#c9463d']",
+        "order": 112
+      }
+    ],
+    "HEROES": [
+      {
+        "key": "berserker",
+        "value": "{ id: 'berserker', name: 'THE BERSERKER', price: 10, silver: true, desc: 'two hand axes, no shield, and 105 health. HE NEVER DEFENDS BY STOPPING. X is a quick FLURRY - left axe, right axe - and the fifth blow of a run is THE CROSS-CHOP, both axes in at once; the run goes on only while the chops land. HOLD X: THE DOUBLE CHOP, both axes down from over his head, a heavy that breaks a big one\\'s poise like nothing else. In the air both axes spin. HOLD C to TAKE IT on the crossed axes: a yellow blow costs him a tenth and the rest becomes RAGE; raised as it lands it is a parry, and his next cut is the cross-chop. A red blow is too strong. UP and C hurls the hatchet: one axe until he picks it up. Blows fill RAGE and it drains out of a fight: full, hold DOWN and tap C for THE FRENZY (a plain C is still TAKE IT) - quicker axes, no flinching, every blow heals a little and four on one foe CRACK its armour like a heavy, but blows on him land a quarter harder. Hold DOWN to coil, then a way and let go: THE POUNCE. Stood still between fights he whets his axes. His own kit never kills him' }",
+        "order": 7
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "berserker",
+        "value": "'BLOWS TAKEN ON THE AXES ARE RAGE (HOLD C). FULL: DOWN+C FOR FRENZY. FIVE CHOPS: CROSS-CHOP.'",
+        "order": 6
+      }
+    ],
+    "BZ_TEACH": [
+      {
+        "key": "brace",
+        "value": "['bzBraceTold', 'HOLD C: TAKE IT ON THE AXES. A TENTH HURTS, THE REST IS RAGE. ON THE BEAT, A PARRY.']",
+        "order": 0
+      },
+      {
+        "key": "full",
+        "value": "['bzFullTold', 'RAGE FULL: DOWN + C FOR THE FRENZY. EVERY BLOW HEALS, AND FOUR ON ONE FOE CRACK IT.']",
+        "order": 1
+      },
+      {
+        "key": "throw",
+        "value": "['bzThrowTold', 'ONE AXE: SLOWER CHOPS, UNTIL YOU WALK OVER IT AND PICK IT UP.']",
+        "order": 2
+      },
+      {
+        "key": "drain",
+        "value": "['bzDrainTold', 'OUT OF A FIGHT YOUR RAGE DRAINS AWAY. STAY IN IT, OR STAND STILL AND WHET IT UP.']",
+        "order": 3
+      }
+    ]
+  }
+}

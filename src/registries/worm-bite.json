@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wormBite",
+        "value": "DWM.WORM.dmg.bite",
+        "order": 3
+      }
+    ]
+  }
+}

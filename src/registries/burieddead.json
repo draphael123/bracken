@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "burieddead",
+        "value": "24",
+        "order": 31
+      }
+    ],
+    "EHP": [
+      {
+        "key": "burieddead",
+        "value": "1000",
+        "order": 58
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "burieddead",
+        "value": "'THE BURIED DEAD'",
+        "order": 87
+      }
+    ],
+    "COLS": [
+      {
+        "key": "burieddead",
+        "value": "['#849769','#684244','#cab1a0']",
+        "order": 59
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "burieddead",
+        "value": "0.7",
+        "order": 3
+      }
+    ]
+  }
+}

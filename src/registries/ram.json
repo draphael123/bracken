@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "ram",
+        "value": "20",
+        "order": 358
+      }
+    ],
+    "EHP": [
+      {
+        "key": "ram",
+        "value": "RLD.RAM.hp",
+        "order": 204
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "ram",
+        "value": "'ram'",
+        "order": 24
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "ram",
+        "value": "'RAM LORD'",
+        "order": 149
+      }
+    ],
+    "COLS": [
+      {
+        "key": "ram",
+        "value": "['#d8d0c0', '#c9a83a', '#c9463d']",
+        "order": 179
+      }
+    ]
+  }
+}

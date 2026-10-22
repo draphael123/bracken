@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "pumpkin",
+        "value": "16",
+        "order": 81
+      }
+    ],
+    "EHP": [
+      {
+        "key": "pumpkin",
+        "value": "26",
+        "order": 81
+      }
+    ],
+    "COLS": [
+      {
+        "key": "pumpkin",
+        "value": "['#e07a2a', '#ffd36b', '#3a5a2a']",
+        "order": 83
+      }
+    ]
+  }
+}

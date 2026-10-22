@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "marine|shootTell": "block",
+    "marine|slashTell": "block",
+    "marine|swingTell": "block",
+    "marine|throwTell": "block"
+  },
+  "heights": {
+    "marine|shootTell": "high",
+    "marine|slashTell": "low",
+    "marine|swingTell": "low",
+    "marine|throwTell": "high"
+  }
+}

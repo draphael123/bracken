@@ -1,0 +1,35 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "hourglassking",
+        "value": "HKG.HK.hp",
+        "order": 24
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "hourglassking",
+        "value": "'hourglassking'",
+        "order": 6
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "hourglassking",
+        "value": "'THE HOURGLASS KING'",
+        "order": 21,
+        "notes": [
+          "/* (claude/orderart: the list column is 96 px) */"
+        ]
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hourglassking",
+        "value": "['#9a7a3a', '#e2bb7a', '#ffd36b']",
+        "order": 15
+      }
+    ]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "byHand": {
+    "husk|grabTell": "!",
+    "husk|riseTell": ""
+  },
+  "notes": [
+    "// THE GRAVE HUSK and THE DEAD APPRENTICE are the Burial Caverns' zombie raised elsewhere (buried-dead.js): the same told grab, the"
+  ],
+  "answers": {
+    "husk|grabTell": "block",
+    "husk|ekClawTell": "block",
+    "husk|ekGraspTell": "dodge"
+  },
+  "heights": {
+    "husk|grabTell": "low",
+    "husk|ekClawTell": "low",
+    "husk|ekGraspTell": "low"
+  }
+}

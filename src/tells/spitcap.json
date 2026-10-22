@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "spitcap|spitTell": "!",
+    "spitcap|swellTell": "!!"
+  },
+  "notes": [
+    "/* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */",
+    "// the spitcap swells: a shield stops the spore and the cloud comes up where it stopped all the same"
+  ],
+  "answers": {
+    "spitcap|swellTell": "dodge",
+    "spitcap|spitTell": "block"
+  },
+  "heights": {
+    "spitcap|swellTell": "low",
+    "spitcap|spitTell": "high"
+  }
+}

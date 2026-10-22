@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "lancer",
+        "value": "110",
+        "order": 95
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "lancer",
+        "value": "'SERJEANT'",
+        "order": 114
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lancer",
+        "value": "['#3a5a8a', '#8a6a4a', '#c9d1dc']",
+        "order": 101
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "answers": {
+    "archmage|boltTell": "block",
+    "archmage|booksTell": "block",
+    "archmage|crushTell": "dodge",
+    "archmage|glyphTell": "dodge",
+    "archmage|pairTell": "dodge",
+    "archmage|rendTell": "jump"
+  },
+  "notes": [
+    "// THE ARCHMAGE (a boss: his rows are his fight's, claude/archmage2): the bolt and the flying books a shield turns; out from under the stack, off the glyph and clear of the red circle of a pair (a jump straight up clears a pair too); the rend is jumped"
+  ],
+  "heights": {
+    "archmage|boltTell": "low",
+    "archmage|booksTell": "low",
+    "archmage|crushTell": "low",
+    "archmage|glyphTell": "low",
+    "archmage|pairTell": "low",
+    "archmage|rendTell": "low"
+  }
+}

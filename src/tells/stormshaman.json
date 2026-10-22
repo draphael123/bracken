@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "stormshaman|callTell": "dodge",
+    "stormshaman|jabTell": "block"
+  },
+  "heights": {
+    "stormshaman|callTell": "low",
+    "stormshaman|jabTell": "low"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "acrobat",
+        "value": "999",
+        "order": 225
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "acrobat",
+        "value": "'THE ACROBAT'",
+        "order": 76
+      }
+    ],
+    "COLS": [
+      {
+        "key": "acrobat",
+        "value": "['#2a8a8a', '#f0e8d8', '#c89a60']",
+        "order": 227
+      }
+    ]
+  }
+}

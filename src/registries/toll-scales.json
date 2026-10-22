@@ -1,0 +1,14 @@
+{
+  "entries": {
+    "DMG_TUNED": [
+      {
+        "key": "tollScales",
+        "value": "20",
+        "order": 15,
+        "notes": [
+          "/* THE REEVE (lamplit mini, his own blows): 16, 24, 18, 14; (claude/lamplit2, Daniel 10-08 \"too powerful\": 31/42/25 a quarter lighter, his DOUSE cut, the OIL FLASK in its place) */"
+        ]
+      }
+    ]
+  }
+}

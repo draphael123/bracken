@@ -1,0 +1,16 @@
+{
+  "thrown": [
+    "updateFrog|flopTell",
+    "updateFrog|rippleTell",
+    "updateFrog|poundTell"
+  ],
+  "notes": [
+    "/* (claude/marsh2) THE BULLFROG KING's BELLY-FLOP: the shockwave runs the court on its own (waves, w.flop) - unblockable, jump it */",
+    "/* (claude/marsh2) THE CROAK RIPPLE: the ring runs out along the bank on its own (src/frog-king.js) - unblockable, jump it (over the pond it tips the pads) */",
+    "/* (claude/marsh2) THE SLAP: the court's pads go under - the water takes you, not his hand: get off them */",
+    "/* (claude/marsh2) THE FLY SWARM: the flies he spits strike nobody - they draw his tongue (its own told snapTell) */"
+  ],
+  "quiet": [
+    "updateFrog|swarmTell"
+  ]
+}

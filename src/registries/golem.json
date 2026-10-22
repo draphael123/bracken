@@ -1,0 +1,46 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "golem",
+        "value": "20",
+        "order": 373
+      }
+    ],
+    "EHP": [
+      {
+        "key": "golem",
+        "value": "1500",
+        "order": 161
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "golem",
+        "value": "'golem'",
+        "order": 27
+      }
+    ],
+    "COLS": [
+      {
+        "key": "golem",
+        "value": "['#9a9082', '#c8bca8', '#6e7a44']",
+        "order": 167
+      }
+    ],
+    "BOSS_HIT": [
+      {
+        "key": "golem",
+        "value": "2.2",
+        "order": 0
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "golem",
+        "value": "1",
+        "order": 16
+      }
+    ]
+  }
+}

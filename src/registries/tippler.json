@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "tippler",
+        "value": "26",
+        "order": 156
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "tippler",
+        "value": "'THE TIPPLER'",
+        "order": 121
+      }
+    ],
+    "COLS": [
+      {
+        "key": "tippler",
+        "value": "['#6faa4a', '#5a4a3a', '#8a919c']",
+        "order": 161
+      }
+    ]
+  }
+}

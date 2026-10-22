@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "closedhelm|grabTell": "dodge",
+    "closedhelm|brandTell": "jump",
+    "closedhelm|leapTell": "dodge"
+  },
+  "notes": [
+    "/* (claude/crusader) CRUSADER'S GRAB: a hand no shield stops - roll through it; HOLY BRAND: the fire runs along the floor - over it */",
+    "/* (claude/sweep2 gap-closer) THE PALADIN'S LEAP: his whole weight on the red ring, unblockable - be off it when he lands (and he lands open) */"
+  ],
+  "heights": {
+    "closedhelm|grabTell": "low",
+    "closedhelm|brandTell": "low",
+    "closedhelm|leapTell": "low"
+  }
+}

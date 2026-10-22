@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "stringjack",
+        "value": "FAF.MARIONETTE.hp",
+        "order": 227
+      }
+    ],
+    "COLS": [
+      {
+        "key": "stringjack",
+        "value": "['#c89a60', '#b83038', '#3a5a9a']",
+        "order": 229
+      }
+    ]
+  }
+}

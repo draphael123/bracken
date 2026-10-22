@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "pike",
+        "value": "20",
+        "order": 349
+      }
+    ],
+    "EHP": [
+      {
+        "key": "pike",
+        "value": "20",
+        "order": 197
+      }
+    ],
+    "COLS": [
+      {
+        "key": "pike",
+        "value": "['#6faa4a', '#5a4a3a', '#c9d1dc']",
+        "order": 181
+      }
+    ]
+  }
+}

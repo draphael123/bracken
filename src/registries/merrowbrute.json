@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "merrowbrute",
+        "value": "50",
+        "order": 208
+      }
+    ],
+    "COLS": [
+      {
+        "key": "merrowbrute",
+        "value": "['#3d8a72', '#1f5a48', '#e8d4d0']",
+        "order": 215
+      }
+    ]
+  }
+}

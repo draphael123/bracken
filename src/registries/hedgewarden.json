@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "hedgewarden",
+        "value": "18",
+        "order": 16
+      }
+    ],
+    "EHP": [
+      {
+        "key": "hedgewarden",
+        "value": "HEDGE.hp",
+        "order": 50
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "hedgewarden",
+        "value": "'HEDGE WARDEN'",
+        "order": 78
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hedgewarden",
+        "value": "['#5ea050','#6e4a2c','#b07cf0']",
+        "order": 51
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "hedgewarden",
+        "value": "0.9",
+        "order": 22
+      }
+    ]
+  }
+}

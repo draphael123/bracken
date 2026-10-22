@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "sailor|biteTell": "block",
+    "sailor|castTell": "block",
+    "sailor|dive": "block",
+    "sailor|hookTell": "block",
+    "sailor|swellTell": "block"
+  },
+  "heights": {
+    "sailor|biteTell": "low",
+    "sailor|castTell": "low",
+    "sailor|dive": "low",
+    "sailor|hookTell": "low",
+    "sailor|swellTell": "low"
+  }
+}

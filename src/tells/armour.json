@@ -1,0 +1,12 @@
+{
+  "answers": {
+    "armour|swingTell": "block",
+    "armour|ekFistTell": "block",
+    "armour|ekWhirlTell": "dodge"
+  },
+  "heights": {
+    "armour|swingTell": "high",
+    "armour|ekFistTell": "high",
+    "armour|ekWhirlTell": "low"
+  }
+}

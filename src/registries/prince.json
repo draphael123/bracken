@@ -1,0 +1,42 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "prince",
+        "value": "960",
+        "order": 104
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "prince",
+        "value": "2550",
+        "order": 1,
+        "notes": [
+          "/* THE TOLLMASTER (claude/airpockets 10-18: 2850 -> 3450, the housings took the bot from 63% to 75% with flasks):  520 (100%: the knight killed him in 7-18 s); 980 on the x0.05 chip. (claude/lamplit2) 3000: off the chip at 0.4 (B15) the knight cut 980 in 20 s; 3200 7/12 (4 seeds), 3000 13/36, 3000 with the ledger 17 10/18, 2700 15/18 */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "prince",
+        "value": "'prince'",
+        "order": 17
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "prince",
+        "value": "'BURIED PRINCE'",
+        "order": 124
+      }
+    ],
+    "COLS": [
+      {
+        "key": "prince",
+        "value": "['#798a6c', '#5a3350', '#d4b24e']",
+        "order": 108
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "deep",
+        "value": "2.2",
+        "order": 29
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "deep",
+        "value": "2.2",
+        "order": 29
+      }
+    ]
+  }
+}

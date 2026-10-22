@@ -1,0 +1,15 @@
+{
+  "byHand": {
+    "barker|caneTell": "!",
+    "barker|callTell": ""
+  },
+  "notes": [
+    "// THE HARVEST FAIR's new pair (claude/fairfix, src/fair-foes.js): the marionette cuts only while it is LOOKED AT, so the hero faces it and the shield turns the cut; the barker's cane is a plain swing the shield turns; his CALL throws no blow (it turns you round: told by the trumpet, the rings and the horn, no mark)"
+  ],
+  "answers": {
+    "barker|caneTell": "block"
+  },
+  "heights": {
+    "barker|caneTell": "low"
+  }
+}

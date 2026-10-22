@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "clinger",
+        "value": "14",
+        "order": 103
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "clinger",
+        "value": "'THE CLINGER'",
+        "order": 120
+      }
+    ],
+    "COLS": [
+      {
+        "key": "clinger",
+        "value": "['#cfc8b8', '#9a9280', '#c9463d']",
+        "order": 107
+      }
+    ]
+  }
+}

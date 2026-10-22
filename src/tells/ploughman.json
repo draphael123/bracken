@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "ploughman|chargeTell": "jump",
+    "ploughman|furrowTell": "jump",
+    "ploughman|headTell": "dodge",
+    "ploughman|goadTell": "block"
+  },
+  "heights": {
+    "ploughman|chargeTell": "low",
+    "ploughman|furrowTell": "low",
+    "ploughman|headTell": "low",
+    "ploughman|goadTell": "low"
+  }
+}

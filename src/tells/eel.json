@@ -1,0 +1,20 @@
+{
+  "answers": {
+    "eel|leapTell": "block",
+    "eel|lungeTell": "block",
+    "eel|pinchTell": "block",
+    "eel|snapTell": "block",
+    "eel|strikeTell": "block",
+    "eel|thrustTell": "block",
+    "eel|shockTell": "dodge"
+  },
+  "heights": {
+    "eel|leapTell": "low",
+    "eel|lungeTell": "low",
+    "eel|pinchTell": "low",
+    "eel|snapTell": "low",
+    "eel|strikeTell": "low",
+    "eel|thrustTell": "low",
+    "eel|shockTell": "low"
+  }
+}

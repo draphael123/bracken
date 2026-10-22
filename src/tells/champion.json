@@ -1,0 +1,33 @@
+{
+  "byHand": {
+    "champion|comboTell": "!",
+    "champion|slamTell": "!!",
+    "champion|thrustTell": "!!",
+    "champion|leapTell": "!!",
+    "champion|tearTell": "",
+    "champion|sweepTell": "!!",
+    "champion|hookTell": "!!",
+    "champion|tiltTell": "!!"
+  },
+  "notes": [
+    "/* THE ADMIRAL'S CHAMPION (admirals-champion.js, by hand; claude/flotilla2): the combo a shield turns; the slam, the thrust, the leap's landing, the anchor's sweep, hook and slam nothing does; tearing the anchor off the rail strikes nobody */"
+  ],
+  "answers": {
+    "champion|comboTell": "block",
+    "champion|slamTell": "dodge",
+    "champion|thrustTell": "dodge",
+    "champion|leapTell": "dodge",
+    "champion|sweepTell": "jump",
+    "champion|hookTell": "jump",
+    "champion|tiltTell": "dodge"
+  },
+  "heights": {
+    "champion|comboTell": "low",
+    "champion|slamTell": "low",
+    "champion|thrustTell": "low",
+    "champion|leapTell": "low",
+    "champion|sweepTell": "low",
+    "champion|hookTell": "low",
+    "champion|tiltTell": "low"
+  }
+}

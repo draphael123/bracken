@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "bosun",
+        "value": "54",
+        "order": 117
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bosun",
+        "value": "['#7a4a3a', '#4a2c22', '#ffd36b']",
+        "order": 120
+      }
+    ]
+  }
+}

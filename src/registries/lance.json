@@ -1,0 +1,49 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "lance",
+        "value": "380",
+        "order": 152
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "lance",
+        "value": "2400",
+        "order": 11,
+        "notes": [
+          "/* THE DROWNED KING (keep): 560 (33-42%, warden 0) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "lance",
+        "value": "'lance'",
+        "order": 29
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lance",
+        "value": "['#9aa3b0', '#c9463d', '#e0b040']",
+        "order": 157
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "lance",
+        "value": "1.4",
+        "order": 13
+      }
+    ],
+    "DUEL_HERO": [
+      {
+        "key": "lance",
+        "value": "{ knight: 1, warden: 2.4, pyro: 2.6 }",
+        "order": 1
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "wickerman",
+        "value": "WMN.WM.hp",
+        "order": 231
+      }
+    ],
+    "COLS": [
+      {
+        "key": "wickerman",
+        "value": "['#b08a4e', '#e8c860', '#ff8a30']",
+        "order": 233
+      }
+    ]
+  }
+}

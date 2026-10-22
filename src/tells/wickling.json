@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "wickling|stealTell": "!!",
+    "wickling|burstTell": "!!"
+  },
+  "notes": [
+    "/* THE WICKLING (claude/lamplit3, by hand: src/wickling.js on its own hands): its dart takes your flame and no shield keeps it - step off its line, or put the flame down by throwing it; struck, it swells and bursts: get clear */"
+  ],
+  "answers": {
+    "wickling|stealTell": "dodge",
+    "wickling|burstTell": "dodge"
+  },
+  "heights": {
+    "wickling|stealTell": "low",
+    "wickling|burstTell": "low"
+  }
+}

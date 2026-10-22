@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "scalder|ladleTell": "block",
+    "scalder|pourTell": "dodge"
+  },
+  "heights": {
+    "scalder|ladleTell": "low",
+    "scalder|pourTell": "low"
+  }
+}

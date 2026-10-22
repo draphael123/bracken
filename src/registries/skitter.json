@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "skitter",
+        "value": "GSF.SKITTER.hp",
+        "order": 15
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "skitter",
+        "value": "'THE SKITTER'",
+        "order": 51
+      }
+    ],
+    "COLS": [
+      {
+        "key": "skitter",
+        "value": "['#5a4a8a', '#b8a8f0', '#ff6b6b']",
+        "order": 27
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "skitter",
+        "value": "GSF.skitterStep",
+        "order": 0
+      }
+    ]
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "drunk|bottleTell": "dodge",
+    "drunk|lobTell": "block"
+  },
+  "heights": {
+    "drunk|bottleTell": "low",
+    "drunk|lobTell": "low"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "sexton",
+        "value": "SEXTON.hp",
+        "order": 32
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "sexton",
+        "value": "'THE SEXTON'",
+        "order": 62
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sexton",
+        "value": "['#4e4460','#b07a2a','#d8d0bc']",
+        "order": 36
+      }
+    ]
+  }
+}

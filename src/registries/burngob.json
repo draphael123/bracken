@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "burngob",
+        "value": "14",
+        "order": 21
+      }
+    ],
+    "EHP": [
+      {
+        "key": "burngob",
+        "value": "26",
+        "order": 52
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "burngob",
+        "value": "'BURNING GOB'",
+        "order": 82
+      }
+    ],
+    "COLS": [
+      {
+        "key": "burngob",
+        "value": "['#ff9a5c','#6a2a1a','#ffd36b']",
+        "order": 54
+      }
+    ]
+  }
+}

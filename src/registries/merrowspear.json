@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "merrowspear",
+        "value": "24",
+        "order": 206
+      }
+    ],
+    "COLS": [
+      {
+        "key": "merrowspear",
+        "value": "['#3a9a80', '#173a30', '#e8e2c8']",
+        "order": 213
+      }
+    ]
+  }
+}

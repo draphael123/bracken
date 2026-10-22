@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "shaman",
+        "value": "15",
+        "order": 343
+      }
+    ],
+    "EHP": [
+      {
+        "key": "shaman",
+        "value": "20",
+        "order": 190
+      }
+    ],
+    "COLS": [
+      {
+        "key": "shaman",
+        "value": "['#4aa0b0', '#f0e6c8', '#2a6a7a']",
+        "order": 191
+      }
+    ]
+  }
+}

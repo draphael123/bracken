@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "rook",
+        "value": "8",
+        "order": 79
+      }
+    ],
+    "EHP": [
+      {
+        "key": "rook",
+        "value": "6",
+        "order": 79
+      }
+    ],
+    "COLS": [
+      {
+        "key": "rook",
+        "value": "['#2a2a3a', '#5a6a8a', '#e8dcc0']",
+        "order": 81
+      }
+    ]
+  }
+}

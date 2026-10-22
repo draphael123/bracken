@@ -1,0 +1,42 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "reefmaw",
+        "value": "500",
+        "order": 125
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "reefmaw",
+        "value": "700",
+        "order": 8,
+        "notes": [
+          "/* THE FORGEMASTER (crown mini): 480 (83-92%) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "reefmaw",
+        "value": "'reefmaw'",
+        "order": 33
+      }
+    ],
+    "COLS": [
+      {
+        "key": "reefmaw",
+        "value": "['#2e4a3a', '#1c2c24', '#8fb08a']",
+        "order": 128
+      }
+    ],
+    "BOSS_HIT_UNDERWATER": [
+      {
+        "key": "reefmaw",
+        "value": "0.85",
+        "order": 0
+      }
+    ]
+  }
+}

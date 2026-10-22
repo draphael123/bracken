@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "stockade",
+        "value": "0.3",
+        "order": 36
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "stockade",
+        "value": "0.3",
+        "order": 36
+      }
+    ]
+  }
+}

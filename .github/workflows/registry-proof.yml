@@ -1,0 +1,27 @@
+name: registry-proof
+on:
+  push:
+    branches: ['codex/registry-split']
+    paths: ['.github/workflows/registry-proof.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  equivalence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: npm run build
+      - run: node tools/registry-equivalence.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: registry-equivalence
+          path: gate-data/registry-equivalence/
+          if-no-files-found: error

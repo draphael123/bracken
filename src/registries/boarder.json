@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "boarder",
+        "value": "46",
+        "order": 115
+      }
+    ],
+    "COLS": [
+      {
+        "key": "boarder",
+        "value": "['#8a6a3a', '#5a4424', '#c9b27c']",
+        "order": 118
+      }
+    ]
+  }
+}

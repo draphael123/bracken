@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "bogtroll",
+        "value": "BTM.BT.hp",
+        "order": 0
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "bogtroll",
+        "value": "'bogtroll'",
+        "order": 0
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bogtroll",
+        "value": "'BOG TROLL'",
+        "order": 0
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bogtroll",
+        "value": "['#5a6a4a', '#3e2c1c', '#9fb3a6']",
+        "order": 0
+      }
+    ]
+  }
+}

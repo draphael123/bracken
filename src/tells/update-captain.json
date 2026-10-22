@@ -1,0 +1,10 @@
+{
+  "thrown": [
+    "updateCaptain|shootTell",
+    "updateCaptain|kegTell"
+  ],
+  "notes": [
+    "// capShoot: a shot seed, unblockable",
+    "// the keg: a bomb, and a blast turns on no shield"
+  ]
+}

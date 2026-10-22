@@ -1,0 +1,42 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "kraken",
+        "value": "480",
+        "order": 87
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "kraken",
+        "value": "670",
+        "order": 13,
+        "notes": [
+          "/* THE DIVING BELL: 750 (0/12; a third of him is the soft crab out of the bell, and the bot died there with 20-30% left) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "kraken",
+        "value": "'kraken'",
+        "order": 13
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "kraken",
+        "value": "'THE KRAKEN'",
+        "order": 108
+      }
+    ],
+    "COLS": [
+      {
+        "key": "kraken",
+        "value": "['#7c3a4a', '#e6c2a6', '#161018']",
+        "order": 89
+      }
+    ]
+  }
+}

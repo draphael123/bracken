@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "sporeling",
+        "value": "15",
+        "order": 340
+      }
+    ],
+    "EHP": [
+      {
+        "key": "sporeling",
+        "value": "10",
+        "order": 187
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sporeling",
+        "value": "['#9a5aa8', '#f0e6c8', '#6a3a7a']",
+        "order": 186
+      }
+    ]
+  }
+}

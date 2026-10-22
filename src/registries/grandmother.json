@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "grandmother",
+        "value": "505",
+        "order": 106
+      }
+    ],
+    "COLS": [
+      {
+        "key": "grandmother",
+        "value": "['#6a5a7a', '#7aa85a', '#f6f6ee']",
+        "order": 110
+      }
+    ],
+    "BOSS_HIT": [
+      {
+        "key": "grandmother",
+        "value": "0.55",
+        "order": 1
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "grandmother",
+        "value": "0.42",
+        "order": 5
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "glasssea",
+        "value": "3.05",
+        "order": 8
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "glasssea",
+        "value": "2.55",
+        "order": 8
+      }
+    ]
+  }
+}

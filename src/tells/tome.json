@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "tome|tell": "!"
+  },
+  "notes": [
+    "/* THE TOME (tome.js, by hand: a module-file foe the audit cannot follow): the dart is a blow, and the shield does not just turn it - it SHUTS the book */"
+  ],
+  "answers": {
+    "tome|tell": "block"
+  },
+  "heights": {
+    "tome|tell": "low"
+  }
+}

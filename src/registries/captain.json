@@ -1,0 +1,35 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "captain",
+        "value": "620",
+        "order": 113
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "captain",
+        "value": "1700",
+        "order": 6,
+        "notes": [
+          "/* THE BREAKWATER WARDEN: 1400 (83%) */"
+        ]
+      }
+    ],
+    "COLS": [
+      {
+        "key": "captain",
+        "value": "['#d14a3a', '#e6b94a', '#191622']",
+        "order": 116
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "captain",
+        "value": "0.4",
+        "order": 1
+      }
+    ]
+  }
+}

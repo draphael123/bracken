@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "shield",
+        "value": "25",
+        "order": 313
+      }
+    ],
+    "EHP": [
+      {
+        "key": "shield",
+        "value": "20",
+        "order": 175
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "shield",
+        "value": "'SHIELDGOB'",
+        "order": 127
+      }
+    ],
+    "COLS": [
+      {
+        "key": "shield",
+        "value": "['#5d4a8a', '#8a5a32', '#c9d1dc']",
+        "order": 208
+      }
+    ]
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "snuffer",
+        "value": "8",
+        "order": 284
+      }
+    ],
+    "EHP": [
+      {
+        "key": "snuffer",
+        "value": "16",
+        "order": 153
+      }
+    ],
+    "COLS": [
+      {
+        "key": "snuffer",
+        "value": "['#3a3448', '#8a5a32', '#ffd36b']",
+        "order": 158
+      }
+    ]
+  }
+}

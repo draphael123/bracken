@@ -1,0 +1,21 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanceCharge",
+        "value": "30",
+        "order": 279
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "lanceCharge",
+        "value": "18",
+        "order": 2,
+        "notes": [
+          "/* THE DROWNED KING: 20, 26 */"
+        ]
+      }
+    ]
+  }
+}

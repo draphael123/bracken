@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "reeveHook",
+        "value": "18",
+        "order": 199
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "reeveHook",
+        "value": "19",
+        "order": 13
+      }
+    ]
+  }
+}

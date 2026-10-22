@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "orderpaladin|bashTell": "!",
+    "orderpaladin|gleamTell": "!"
+  },
+  "notes": [
+    "/* (claude/church3, by hand: module-file foes) the paladin foe's bash and gleamed mace a shield turns (the gleam: PARRY it); the undead priest's bolt a shield turns, his rites throw no blow */"
+  ],
+  "answers": {
+    "orderpaladin|bashTell": "block",
+    "orderpaladin|gleamTell": "block"
+  },
+  "heights": {
+    "orderpaladin|bashTell": "low",
+    "orderpaladin|gleamTell": "low"
+  }
+}

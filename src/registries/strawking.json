@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "strawking",
+        "value": "590",
+        "order": 86
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "strawking",
+        "value": "'strawking'",
+        "order": 12
+      }
+    ],
+    "COLS": [
+      {
+        "key": "strawking",
+        "value": "['#c8b264', '#9a2a2a', '#ffd36b']",
+        "order": 88
+      }
+    ]
+  }
+}

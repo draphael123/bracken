@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "rockgoblin",
+        "value": "12",
+        "order": 377
+      }
+    ],
+    "EHP": [
+      {
+        "key": "rockgoblin",
+        "value": "20",
+        "order": 169
+      }
+    ],
+    "COLS": [
+      {
+        "key": "rockgoblin",
+        "value": "['#6faa4a', '#8a919c', '#ffd36b']",
+        "order": 166
+      }
+    ]
+  }
+}

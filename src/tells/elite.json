@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "*|ekRiposteTell": "block",
+    "*|ekThornsTell": "dodge"
+  },
+  "heights": {
+    "*|ekRiposteTell": "low",
+    "*|ekThornsTell": "low"
+  }
+}

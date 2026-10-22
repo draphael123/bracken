@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "sheargob|cutTell": "dodge",
+    "sheargob|snipTell": "block"
+  },
+  "heights": {
+    "sheargob|cutTell": "low",
+    "sheargob|snipTell": "low"
+  }
+}

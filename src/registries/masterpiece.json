@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "masterpiece",
+        "value": "999",
+        "order": 226
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "masterpiece",
+        "value": "'THE MASTERPIECE'",
+        "order": 77
+      }
+    ],
+    "COLS": [
+      {
+        "key": "masterpiece",
+        "value": "['#8a1a2a', '#b8844c', '#e8c23a']",
+        "order": 228
+      }
+    ]
+  }
+}

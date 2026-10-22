@@ -1,0 +1,23 @@
+{
+  "byHand": {
+    "mummy|lashTell": "!",
+    "mummy|grabTell": "!!",
+    "mummy|cutTell": "!",
+    "mummy|leapTell": "!!"
+  },
+  "notes": [
+    "/* (claude/pyramidlevel: THE TOMB GUARD, the mummy's machine in bone - src/mummy.js SKEL) */   /* THE SEALED PYRAMID (claude/sealedpyramid, by hand: src/scarab-mother.js MOVES; the mummy is a CV machine in src/mummy.js) */"
+  ],
+  "answers": {
+    "mummy|lashTell": "block",
+    "mummy|grabTell": "dodge",
+    "mummy|cutTell": "block",
+    "mummy|leapTell": "dodge"
+  },
+  "heights": {
+    "mummy|lashTell": "low",
+    "mummy|grabTell": "low",
+    "mummy|cutTell": "low",
+    "mummy|leapTell": "low"
+  }
+}

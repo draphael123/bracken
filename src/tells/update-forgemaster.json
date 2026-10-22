@@ -1,0 +1,16 @@
+{
+  "thrown": [
+    "updateForgemaster|hurlTell",
+    "updateForgemaster|dragTell",
+    "updateForgemaster|anvilTell",
+    "updateForgemaster|breathTell"
+  ],
+  "notes": [
+    "// hammer rocks: no shield turns the roof",
+    "// fires: the flame on the floor is unblockable",
+    "/* (claude/owl3) THE OWL REEVE's WING BEAT: a shove toward the drop, no blow */"
+  ],
+  "quiet": [
+    "updateForgemaster|leapTell"
+  ]
+}

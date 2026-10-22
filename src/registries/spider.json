@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "spider",
+        "value": "15",
+        "order": 307
+      }
+    ],
+    "EHP": [
+      {
+        "key": "spider",
+        "value": "15",
+        "order": 171
+      }
+    ],
+    "COLS": [
+      {
+        "key": "spider",
+        "value": "['#3a3448', '#5a5468']",
+        "order": 174
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "spider",
+        "value": "0.75",
+        "order": 12
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "huntmaster",
+        "value": "HMK.hp",
+        "order": 11
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "huntmaster",
+        "value": "'huntmaster'",
+        "order": 4
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "huntmaster",
+        "value": "'THE HUNTMASTER'",
+        "order": 28
+      }
+    ],
+    "COLS": [
+      {
+        "key": "huntmaster",
+        "value": "['#4a6a2a', '#e8dcc0', '#ffd36b']",
+        "order": 19
+      }
+    ]
+  }
+}

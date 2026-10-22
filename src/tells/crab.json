@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "crab|lungeTell": "block",
+    "crab|pinchTell": "block",
+    "crab|snapTell": "block",
+    "crab|strikeTell": "block",
+    "crab|thrustTell": "block",
+    "crab|shockTell": "dodge"
+  },
+  "heights": {
+    "crab|lungeTell": "low",
+    "crab|pinchTell": "low",
+    "crab|snapTell": "low",
+    "crab|strikeTell": "low",
+    "crab|thrustTell": "low",
+    "crab|shockTell": "low"
+  }
+}

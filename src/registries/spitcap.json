@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "spitcap",
+        "value": "24",
+        "order": 191
+      }
+    ],
+    "COLS": [
+      {
+        "key": "spitcap",
+        "value": "['#9a5aa8', '#e8e0f0', '#c9a0ff']",
+        "order": 188
+      }
+    ]
+  }
+}

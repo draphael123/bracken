@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "rootway",
+        "value": "0.52",
+        "order": 3
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "rootway",
+        "value": "0.52",
+        "order": 3
+      }
+    ]
+  }
+}

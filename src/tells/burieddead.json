@@ -1,0 +1,29 @@
+{
+  "byHand": {
+    "burieddead|clawTell": "!!",
+    "burieddead|slamTell": "!!",
+    "burieddead|cleaveTell": "!",
+    "burieddead|callTell": "",
+    "burieddead|sinkTell": "",
+    "burieddead|eruptTell": "!!",
+    "burieddead|skullTell": "!",
+    "burieddead|handsTell": "!!",
+    "burieddead|breathTell": "!",
+    "burieddead|novaTell": "!!",
+    "burieddead|throwTell": "!",
+    "burieddead|bodyTell": "!!"
+  },
+  "notes": [
+    "/* THE BURIED DEAD's three untold windups (claude/bossmarks): the poison nova is a ring on the floor (high ground is safe, nothing turns it); the thrown body is a blockable blow that lands where you stood; the body slam lands red on the marked ellipse and nothing turns it */"
+  ],
+  "answers": {
+    "burieddead|novaTell": "dodge",
+    "burieddead|throwTell": "block",
+    "burieddead|bodyTell": "dodge"
+  },
+  "heights": {
+    "burieddead|novaTell": "low",
+    "burieddead|throwTell": "low",
+    "burieddead|bodyTell": "low"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "emberwisp|flareTell": "dodge",
+    "emberwisp|dartTell": "block"
+  },
+  "heights": {
+    "emberwisp|flareTell": "low",
+    "emberwisp|dartTell": "high"
+  }
+}

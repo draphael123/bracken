@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "marshlight",
+        "value": "8",
+        "order": 83
+      }
+    ],
+    "EHP": [
+      {
+        "key": "marshlight",
+        "value": "8",
+        "order": 82
+      }
+    ],
+    "COLS": [
+      {
+        "key": "marshlight",
+        "value": "['#7dff8a', '#d8ffd0', '#3fbf5f']",
+        "order": 84
+      }
+    ]
+  }
+}

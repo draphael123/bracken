@@ -1,0 +1,23 @@
+{
+  "answers": {
+    "troll|hurlTell": "block",
+    "troll|ripTell": "jump",
+    "troll|slamTell": "dodge",
+    "troll|swatTell": "block",
+    "troll|throwTell": "block",
+    "troll|ekRockTell": "dodge",
+    "troll|ekAfterTell": "jump"
+  },
+  "notes": [
+    "/* (claude/elitemoves) THE AFTERSHOCK: a ridge of rock run along the floor both ways */"
+  ],
+  "heights": {
+    "troll|hurlTell": "low",
+    "troll|ripTell": "low",
+    "troll|slamTell": "low",
+    "troll|swatTell": "low",
+    "troll|throwTell": "low",
+    "troll|ekRockTell": "low",
+    "troll|ekAfterTell": "low"
+  }
+}

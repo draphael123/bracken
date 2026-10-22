@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "hare",
+        "value": "10",
+        "order": 381
+      }
+    ],
+    "EHP": [
+      {
+        "key": "hare",
+        "value": "8",
+        "order": 165
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hare",
+        "value": "['#8a6a4a', '#e8dcc0']",
+        "order": 169
+      }
+    ]
+  }
+}

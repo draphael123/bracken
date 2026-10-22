@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "mummer",
+        "value": "MU.MUMMER.hp",
+        "order": 217
+      }
+    ],
+    "COLS": [
+      {
+        "key": "mummer",
+        "value": "['#b89868', '#d9b877', '#b8382c']",
+        "order": 219
+      }
+    ]
+  }
+}

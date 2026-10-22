@@ -1,0 +1,12 @@
+{
+  "byHand": {
+    "hedgewarden|cutTell": "!",
+    "hedgewarden|rushTell": "!",
+    "hedgewarden|thornTell": "!!",
+    "hedgewarden|lashTell": "!",
+    "hedgewarden|rootsTell": "!!"
+  },
+  "notes": [
+    "/* THE HEDGE WARDEN (hedge-warden.js, by hand): the cut, the rush and the thorn lash a shield turns; the thorns and the roots nothing does (claude/hedgewarden2: the lash and the roots) */"
+  ]
+}

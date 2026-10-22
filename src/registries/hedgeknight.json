@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "hedgeknight",
+        "value": "92",
+        "order": 91
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "hedgeknight",
+        "value": "'HEDGE KNIGHT'",
+        "order": 110
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hedgeknight",
+        "value": "['#9a3a3a', '#c9d1dc', '#e0b040']",
+        "order": 93
+      }
+    ]
+  }
+}

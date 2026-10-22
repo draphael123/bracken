@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "windcaller",
+        "value": "20",
+        "order": 384
+      }
+    ],
+    "EHP": [
+      {
+        "key": "windcaller",
+        "value": "1400",
+        "order": 167
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "windcaller",
+        "value": "'windcaller'",
+        "order": 28
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "windcaller",
+        "value": "'WINDCALLER'",
+        "order": 140
+      }
+    ],
+    "COLS": [
+      {
+        "key": "windcaller",
+        "value": "['#6faa4a', '#c9a0ff', '#e8dcc0']",
+        "order": 171
+      }
+    ]
+  }
+}

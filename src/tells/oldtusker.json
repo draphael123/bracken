@@ -1,0 +1,26 @@
+{
+  "byHand": {
+    "oldtusker|chargeTell": "!!",
+    "oldtusker|turn": "!!",
+    "oldtusker|sweepTell": "!",
+    "oldtusker|rootTell": "!!",
+    "oldtusker|stompTell": "!!"
+  },
+  "notes": [
+    "/* (claude/oldtusker) OLD TUSKER (src/old-tusker.js, by hand: a module-file boss) - the charge and its turn: jump or roll it, or be behind a pine; the tusk sweep a shield turns (or a jump); the clods and the stomp's waves nothing does */"
+  ],
+  "answers": {
+    "oldtusker|chargeTell": "jump",
+    "oldtusker|turn": "jump",
+    "oldtusker|sweepTell": "block",
+    "oldtusker|rootTell": "dodge",
+    "oldtusker|stompTell": "jump"
+  },
+  "heights": {
+    "oldtusker|chargeTell": "low",
+    "oldtusker|turn": "low",
+    "oldtusker|sweepTell": "low",
+    "oldtusker|rootTell": "low",
+    "oldtusker|stompTell": "low"
+  }
+}

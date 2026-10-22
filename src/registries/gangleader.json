@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "gangleader",
+        "value": "GLM.GL.hp",
+        "order": 26
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "gangleader",
+        "value": "'THE GANG LEADER'",
+        "order": 54
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gangleader",
+        "value": "['#2e3a6a', '#a8302a', '#c9d1dc']",
+        "order": 30
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "gangleader",
+        "value": "0.75",
+        "order": 7
+      }
+    ]
+  }
+}

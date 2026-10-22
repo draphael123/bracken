@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "gobpriest|bellTell": "block",
+    "gobpriest|censerTell": "block"
+  },
+  "heights": {
+    "gobpriest|bellTell": "low",
+    "gobpriest|censerTell": "low"
+  }
+}

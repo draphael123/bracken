@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "javelin",
+        "value": "16",
+        "order": 135
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "javelin",
+        "value": "'JAVELINEER'",
+        "order": 130
+      }
+    ],
+    "COLS": [
+      {
+        "key": "javelin",
+        "value": "['#8a5a32', '#5d4a8a', '#6faa4a']",
+        "order": 138
+      }
+    ]
+  }
+}

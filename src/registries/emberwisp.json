@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "emberwisp",
+        "value": "10",
+        "order": 22
+      }
+    ],
+    "EHP": [
+      {
+        "key": "emberwisp",
+        "value": "8",
+        "order": 53
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "emberwisp",
+        "value": "'EMBER WISP'",
+        "order": 83
+      }
+    ],
+    "COLS": [
+      {
+        "key": "emberwisp",
+        "value": "['#ffd36b','#ff6b2c']",
+        "order": 55
+      }
+    ]
+  }
+}

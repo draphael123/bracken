@@ -1,0 +1,20 @@
+{
+  "byHand": {
+    "duneworm|rippleTell": "!!",
+    "duneworm|breathTell": "!",
+    "duneworm|lungeTell": "!!",
+    "duneworm|swallowTell": "!!",
+    "duneworm|sweepTell": "!!"
+  },
+  "notes": [
+    "/* THE DUNE WORM (dune-worm.js, by hand: a module-file boss the audit cannot follow). The breach comes up from under you and the swallow opens under you - no shield faces down; the lunge is his whole weight; his sand breath is grit blasted from the front, and a shield takes grit */"
+  ],
+  "answers": {
+    "duneworm|sweepTell": "jump",
+    "duneworm|breathTell": "block"
+  },
+  "heights": {
+    "duneworm|sweepTell": "low",
+    "duneworm|breathTell": "low"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "queen",
+        "value": "24",
+        "order": 320
+      }
+    ],
+    "EHP": [
+      {
+        "key": "queen",
+        "value": "200",
+        "order": 179
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "queen",
+        "value": "'queen'",
+        "order": 18
+      }
+    ],
+    "COLS": [
+      {
+        "key": "queen",
+        "value": "['#e0b040', '#1b1626', '#fff1a0', '#c9463d']",
+        "order": 212
+      }
+    ],
+    "BOSS_HIT": [
+      {
+        "key": "queen",
+        "value": "1.5",
+        "order": 3
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "queen",
+        "value": "1.1",
+        "order": 4
+      }
+    ]
+  }
+}

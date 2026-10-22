@@ -1,0 +1,15 @@
+{
+  "answers": {
+    "tollmaster|scalesLowTell": "jump",
+    "tollmaster|scalesHighTell": "duck",
+    "tollmaster|sealTell": "dodge"
+  },
+  "notes": [
+    "/* (claude/lamplit2) THE TOLLMASTER: over the low swing of the scales, under the high one; off the seal's held shadow */"
+  ],
+  "heights": {
+    "tollmaster|scalesLowTell": "low",
+    "tollmaster|scalesHighTell": "high",
+    "tollmaster|sealTell": "low"
+  }
+}

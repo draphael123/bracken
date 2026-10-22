@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanceBash",
+        "value": "10",
+        "order": 257
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "lanceBash",
+        "value": "8",
+        "order": 7
+      }
+    ]
+  }
+}

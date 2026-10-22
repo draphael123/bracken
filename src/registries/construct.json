@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "construct",
+        "value": "CON.CONSTRUCT.hp",
+        "order": 23
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "construct",
+        "value": "'CONSTRUCT'",
+        "order": 22
+      }
+    ],
+    "COLS": [
+      {
+        "key": "construct",
+        "value": "['#8a6a3a', '#c8a060', '#3a2a18']",
+        "order": 16
+      }
+    ]
+  }
+}

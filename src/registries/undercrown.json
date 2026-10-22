@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "undercrown",
+        "value": "1.5",
+        "order": 30
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "undercrown",
+        "value": "1.5",
+        "order": 30
+      }
+    ]
+  }
+}

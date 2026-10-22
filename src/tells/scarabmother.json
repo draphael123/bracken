@@ -1,0 +1,33 @@
+{
+  "byHand": {
+    "scarabmother|leapTell": "!!",
+    "scarabmother|eruptTell": "!!",
+    "scarabmother|chargeTell": "!!",
+    "scarabmother|snapTell": "!",
+    "scarabmother|spitTell": "!",
+    "scarabmother|burrowTell": "!!",
+    "scarabmother|quakeTell": "!!"
+  },
+  "notes": [
+    "/* (claude/pyramidboss) THE COFFIN KING (src/tomb-king.js MOVES, by hand: a module-file boss) - ! a shield turns the slam, the lash, the chain, the lid, a jar, the breath and the pit's bite; !! the leap, the roll and the curse nothing turns; his call throws no blow. THE SCARAB MOTHER's two answers to crowding (the leap-slam, the burrow-up) are !! */",
+    "/* (claude/pyramidlevel: THE TOMB GUARD, the mummy's machine in bone - src/mummy.js SKEL) */   /* THE SEALED PYRAMID (claude/sealedpyramid, by hand: src/scarab-mother.js MOVES; the mummy is a CV machine in src/mummy.js) */"
+  ],
+  "answers": {
+    "scarabmother|leapTell": "dodge",
+    "scarabmother|eruptTell": "dodge",
+    "scarabmother|chargeTell": "jump",
+    "scarabmother|snapTell": "block",
+    "scarabmother|spitTell": "block",
+    "scarabmother|burrowTell": "dodge",
+    "scarabmother|quakeTell": "dodge"
+  },
+  "heights": {
+    "scarabmother|leapTell": "low",
+    "scarabmother|eruptTell": "low",
+    "scarabmother|chargeTell": "low",
+    "scarabmother|snapTell": "low",
+    "scarabmother|spitTell": "low",
+    "scarabmother|burrowTell": "low",
+    "scarabmother|quakeTell": "low"
+  }
+}

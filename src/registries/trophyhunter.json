@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "trophyhunter",
+        "value": "RW_HUNTER.hp",
+        "order": 10
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "trophyhunter",
+        "value": "'TROPHY-HUNTER'",
+        "order": 27
+      }
+    ],
+    "COLS": [
+      {
+        "key": "trophyhunter",
+        "value": "['#5a7a32', '#8a6a48', '#e8dcc0']",
+        "order": 18
+      }
+    ]
+  }
+}

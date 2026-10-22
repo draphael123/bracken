@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "raptor",
+        "value": "24",
+        "order": 29
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "raptor",
+        "value": "'CLIFF RAPTOR'",
+        "order": 57
+      }
+    ],
+    "COLS": [
+      {
+        "key": "raptor",
+        "value": "['#c8643a', '#7a2e1c', '#f0dcb8']",
+        "order": 33
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "raptor",
+        "value": "(s, w, dt) => RGH.raptorStep(s, w, dt)",
+        "order": 9
+      }
+    ]
+  }
+}

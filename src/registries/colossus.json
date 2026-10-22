@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "colossus",
+        "value": "COG.COL.hp",
+        "order": 25
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "colossus",
+        "value": "'colossus'",
+        "order": 10
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "colossus",
+        "value": "'THE GLASS COLOSSUS'",
+        "order": 50
+      }
+    ],
+    "COLS": [
+      {
+        "key": "colossus",
+        "value": "['#8ac8c8', '#3a6a6a', '#ffd36b']",
+        "order": 26
+      }
+    ]
+  }
+}

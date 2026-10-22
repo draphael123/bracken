@@ -1,0 +1,11 @@
+{
+  "answers": {
+    "gqueen|hallLeapTell": "jump"
+  },
+  "notes": [
+    "// THE GOBLIN QUEEN'S QUAKE (a boss: her row is her fight's, claude/gqueen2): she lands and it runs the floor - jump it"
+  ],
+  "heights": {
+    "gqueen|hallLeapTell": "low"
+  }
+}

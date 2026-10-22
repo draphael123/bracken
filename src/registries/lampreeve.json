@@ -1,0 +1,51 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "lampreeve",
+        "value": "200",
+        "order": 111
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "lampreeve",
+        "value": "2000",
+        "order": 3,
+        "notes": [
+          "/* (claude/waymeetpal: 3600 -> 3900; claude/wardgap: 2800 -> 3600, the front guard now holds through a poise break / burn / skills) */",
+          "/* (claude/keyscore, B13: his ward faces you - round him or over him lands at ANGLE.wall) */",
+          "/* THE PALADIN (waymeet): 610 (100%: 16-47 s); 2000 was the stopgap (72%); with THE LEAP, 2150 = 6/12 2/12 12/12 = 56% (n=36), 2300 put the warden at 0/6 */"
+        ]
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "lampreeve",
+        "value": "'THE REEVE'",
+        "order": 136
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lampreeve",
+        "value": "['#2a3a34', '#8a6a44', '#14201e']",
+        "order": 114
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "lampreeve",
+        "value": "1.15",
+        "order": 14
+      }
+    ],
+    "LP_HERO": [
+      {
+        "key": "lampreeve",
+        "value": "{ knight: 0.77, ranger: 0.7, paladin: 0.95 }",
+        "order": 1
+      }
+    ]
+  }
+}

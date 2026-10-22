@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "towpath",
+        "value": "2.4",
+        "order": 10
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "towpath",
+        "value": "1.9",
+        "order": 10
+      }
+    ]
+  }
+}

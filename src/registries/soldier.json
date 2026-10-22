@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "soldier",
+        "value": "14",
+        "order": 245
+      }
+    ],
+    "EHP": [
+      {
+        "key": "soldier",
+        "value": "34",
+        "order": 134
+      }
+    ],
+    "COLS": [
+      {
+        "key": "soldier",
+        "value": "['#5d4a8a', '#c9d1dc', '#6faa4a']",
+        "order": 137
+      }
+    ]
+  }
+}

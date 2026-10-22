@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "puffer",
+        "value": "12",
+        "order": 210
+      }
+    ],
+    "COLS": [
+      {
+        "key": "puffer",
+        "value": "['#d9b968', '#a3813a', '#efe3b8']",
+        "order": 198
+      }
+    ]
+  }
+}

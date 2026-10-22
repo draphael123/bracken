@@ -1,0 +1,12 @@
+{
+  "answers": {
+    "temperer|cutTell": "block",
+    "temperer|quenchTell": "dodge",
+    "temperer|shoveTell": "block"
+  },
+  "heights": {
+    "temperer|cutTell": "low",
+    "temperer|quenchTell": "low",
+    "temperer|shoveTell": "low"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "skyship",
+        "value": "2.3",
+        "order": 27
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "skyship",
+        "value": "2.3",
+        "order": 27
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "archmage",
+        "value": "640",
+        "order": 77
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "archmage",
+        "value": "'archmage'",
+        "order": 11
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "archmage",
+        "value": "'THE ARCHMAGE'",
+        "order": 99
+      }
+    ],
+    "COLS": [
+      {
+        "key": "archmage",
+        "value": "['#7a4ab8', '#e0c8ff', '#e0b050']",
+        "order": 79
+      }
+    ]
+  }
+}

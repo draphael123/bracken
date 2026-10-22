@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "homunculus",
+        "value": "2400",
+        "order": 76
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "homunculus",
+        "value": "'HOMUNCULUS'",
+        "order": 98
+      }
+    ],
+    "COLS": [
+      {
+        "key": "homunculus",
+        "value": "['#e0c0c8', '#c8e8f0', '#b08a9a']",
+        "order": 78
+      }
+    ]
+  }
+}

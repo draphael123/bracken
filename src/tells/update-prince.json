@@ -1,0 +1,12 @@
+{
+  "thrown": [
+    "updatePrince|heaveTell"
+  ],
+  "notes": [
+    "/* (claude/undercrown2art) THE PRINCE HEAVES THE SLAB OFF ITS HINGE (slabSmash): the roof he breaks is the blow - rock thrown by nobody, no shield turns it; the hero up the slab is dropped, not struck */",
+    "// the Buried Prince calls his court: the courtiers rake for themselves, on their own yellow marks"
+  ],
+  "quiet": [
+    "updatePrince|callTell"
+  ]
+}

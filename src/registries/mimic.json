@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "mimic",
+        "value": "16",
+        "order": 60
+      }
+    ],
+    "EHP": [
+      {
+        "key": "mimic",
+        "value": "40",
+        "order": 73
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "mimic",
+        "value": "'MIMIC'",
+        "order": 104
+      }
+    ],
+    "COLS": [
+      {
+        "key": "mimic",
+        "value": "['#9a6a34', '#e0b050', '#f0f0e0']",
+        "order": 75
+      }
+    ]
+  }
+}

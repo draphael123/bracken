@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "armour",
+        "value": "18",
+        "order": 57
+      }
+    ],
+    "EHP": [
+      {
+        "key": "armour",
+        "value": "60",
+        "order": 70
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "armour",
+        "value": "'ARMOUR'",
+        "order": 100
+      }
+    ],
+    "COLS": [
+      {
+        "key": "armour",
+        "value": "['#a0a8b8', '#6a707e', '#b07cf0']",
+        "order": 71
+      }
+    ]
+  }
+}

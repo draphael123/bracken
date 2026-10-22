@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "bellman",
+        "value": "HUSH_BELL.hp",
+        "order": 9
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bellman",
+        "value": "['#3a4258', '#e0b040', '#e8dcc0']",
+        "order": 12
+      }
+    ]
+  }
+}

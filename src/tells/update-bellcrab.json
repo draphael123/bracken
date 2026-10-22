@@ -1,0 +1,8 @@
+{
+  "quiet": [
+    "updateBellcrab|broodTell"
+  ],
+  "notes": [
+    "// the rim lifting throws no blow: the brood it pours bites for itself (the prise's own reachTell)"
+  ]
+}

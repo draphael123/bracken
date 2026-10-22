@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "pike|tell": "!"
+  },
+  "notes": [
+    "// the thrust: blocked, it staggers the pike"
+  ],
+  "answers": {
+    "pike|elSweepTell": "block",
+    "pike|tell": "block",
+    "pike|ekLongTell": "block"
+  },
+  "heights": {
+    "pike|elSweepTell": "low",
+    "pike|tell": "low",
+    "pike|ekLongTell": "low"
+  }
+}

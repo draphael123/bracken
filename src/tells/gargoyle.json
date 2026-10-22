@@ -1,0 +1,11 @@
+{
+  "byHand": {
+    "gargoyle|diveTell": "!!",
+    "gargoyle|fireballTell": "!",
+    "gargoyle|breathTell": "!",
+    "gargoyle|flareTell": "!!"
+  },
+  "notes": [
+    "/* THE GATE GARGOYLE (gate-gargoyle.js, by hand): the dive and the flare wear the red cross; the fireball (the wing gust's place, 2026-09-28) and the fire breath a shield turns */   /* THE WITCHLIGHT STAIR's aqueduct broom (sweepBroom, by hand): a sweep at the ankles a shield braces against */"
+  ]
+}

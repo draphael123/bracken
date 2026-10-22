@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "zombie",
+        "value": "12",
+        "order": 32
+      }
+    ],
+    "EHP": [
+      {
+        "key": "zombie",
+        "value": "38",
+        "order": 59
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "zombie",
+        "value": "'ZOMBIE'",
+        "order": 88
+      }
+    ],
+    "COLS": [
+      {
+        "key": "zombie",
+        "value": "['#98a374','#575846']",
+        "order": 60
+      }
+    ]
+  }
+}

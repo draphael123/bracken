@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wormSweep",
+        "value": "DWM.WORM.dmg.sweep",
+        "order": 4
+      }
+    ]
+  }
+}

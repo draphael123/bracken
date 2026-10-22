@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "tome",
+        "value": "TOME.dmg",
+        "order": 15
+      }
+    ],
+    "EHP": [
+      {
+        "key": "tome",
+        "value": "TOME.hp",
+        "order": 48
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "tome",
+        "value": "'THE TOME'",
+        "order": 103
+      }
+    ],
+    "COLS": [
+      {
+        "key": "tome",
+        "value": "['#6e2a3a', '#efe4c8', '#e8c24a']",
+        "order": 74
+      }
+    ]
+  }
+}

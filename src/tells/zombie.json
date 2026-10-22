@@ -1,0 +1,12 @@
+{
+  "byHand": {
+    "zombie|riseTell": "",
+    "zombie|grabTell": "!"
+  },
+  "answers": {
+    "zombie|grabTell": "block"
+  },
+  "heights": {
+    "zombie|grabTell": "low"
+  }
+}

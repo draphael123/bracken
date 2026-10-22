@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "sprig",
+        "value": "15",
+        "order": 312
+      }
+    ],
+    "EHP": [
+      {
+        "key": "sprig",
+        "value": "10",
+        "order": 174
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sprig",
+        "value": "['#6faa4a', '#c9463d', '#3f6e2c']",
+        "order": 207
+      }
+    ]
+  }
+}

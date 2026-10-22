@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "mummy",
+        "value": "MUM.MUMMY.hp",
+        "order": 5
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "mummy",
+        "value": "'MUMMY'",
+        "order": 13
+      }
+    ],
+    "COLS": [
+      {
+        "key": "mummy",
+        "value": "['#d8ccaa', '#9c8e6c', '#ff8a3a']",
+        "order": 10
+      }
+    ]
+  }
+}

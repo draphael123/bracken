@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bellPressure",
+        "value": "24",
+        "order": 48
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "bellPressure",
+        "value": "20",
+        "order": 20
+      }
+    ]
+  }
+}

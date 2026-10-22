@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "drownedking",
+        "value": "560",
+        "order": 101
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "drownedking",
+        "value": "500",
+        "order": 10
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "drownedking",
+        "value": "'drownedking'",
+        "order": 16
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "drownedking",
+        "value": "'THE DROWNED KING'",
+        "order": 118
+      }
+    ],
+    "COLS": [
+      {
+        "key": "drownedking",
+        "value": "['#4a7a6e', '#c9a83a', '#7ff0e0']",
+        "order": 105
+      }
+    ]
+  }
+}

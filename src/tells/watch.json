@@ -1,0 +1,19 @@
+{
+  "answers": {
+    "watch|sweepTell": "block",
+    "watch|thrustTell": "block",
+    "watch|ekChopTell": "dodge",
+    "watch|ekThrustTell": "block",
+    "watch|ekHookTell": "jump"
+  },
+  "notes": [
+    "/* (claude/elitemoves) THE HOOK: the halberd's hook out low behind your heels */"
+  ],
+  "heights": {
+    "watch|sweepTell": "low",
+    "watch|thrustTell": "high",
+    "watch|ekChopTell": "low",
+    "watch|ekThrustTell": "low",
+    "watch|ekHookTell": "low"
+  }
+}

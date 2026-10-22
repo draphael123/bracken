@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "sandworm|lungeTell": "!!"
+  },
+  "notes": [
+    "/* THE SANDWORM (claude/desertfoes, by hand: src/desert-foes2.js on the desert engine): the sand domes on its spot and it comes up there - nothing turns it, be off the spot */"
+  ],
+  "answers": {
+    "sandworm|lungeTell": "dodge"
+  },
+  "heights": {
+    "sandworm|lungeTell": "low"
+  }
+}

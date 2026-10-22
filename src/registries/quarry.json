@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "quarry",
+        "value": "2.1",
+        "order": 26
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "quarry",
+        "value": "2.1",
+        "order": 26
+      }
+    ]
+  }
+}

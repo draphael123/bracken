@@ -1,0 +1,17 @@
+{
+  "answers": {
+    "queen|aim": "block",
+    "queen|slamHang": "block",
+    "queen|sweepStart": "block",
+    "queen|volleyUp": "block"
+  },
+  "notes": [
+    "// THE HORNET QUEEN (a boss, claude/firsthour): the shield turns each; her dive taken on it staggers her, and one lured onto wood and left sticks her sting in it"
+  ],
+  "heights": {
+    "queen|aim": "low",
+    "queen|slamHang": "low",
+    "queen|sweepStart": "low",
+    "queen|volleyUp": "low"
+  }
+}

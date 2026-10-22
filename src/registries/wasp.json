@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wasp",
+        "value": "15",
+        "order": 315
+      }
+    ],
+    "EHP": [
+      {
+        "key": "wasp",
+        "value": "10",
+        "order": 177
+      }
+    ],
+    "COLS": [
+      {
+        "key": "wasp",
+        "value": "['#e0b040', '#1b1626', '#dfe8ff']",
+        "order": 211
+      }
+    ]
+  }
+}

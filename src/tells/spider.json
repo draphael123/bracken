@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "spider|drop": "block",
+    "spider|dropTell": "block",
+    "spider|reelTell": "block",
+    "spider|spitTell": "block"
+  },
+  "heights": {
+    "spider|drop": "low",
+    "spider|dropTell": "low",
+    "spider|reelTell": "low",
+    "spider|spitTell": "low"
+  }
+}

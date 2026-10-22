@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "brute",
+        "value": "20",
+        "order": 331
+      }
+    ],
+    "EHP": [
+      {
+        "key": "brute",
+        "value": "40",
+        "order": 184
+      }
+    ],
+    "COLS": [
+      {
+        "key": "brute",
+        "value": "['#6faa4a', '#5d4a8a', '#6b4a2a']",
+        "order": 196
+      }
+    ]
+  }
+}

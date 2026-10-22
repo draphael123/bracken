@@ -1,0 +1,42 @@
+{
+  "byHand": {
+    "tombking|slamTell": "!",
+    "tombking|lashTell": "!",
+    "tombking|leapTell": "!!",
+    "tombking|reelTell": "!",
+    "tombking|callTell": "",
+    "tombking|throwTell": "!",
+    "tombking|volleyTell": "!",
+    "tombking|rollTell": "!!",
+    "tombking|breathTell": "!",
+    "tombking|pitTell": "!",
+    "tombking|curseTell": "!!"
+  },
+  "notes": [
+    "/* (claude/pyramidboss) THE COFFIN KING (src/tomb-king.js MOVES, by hand: a module-file boss) - ! a shield turns the slam, the lash, the chain, the lid, a jar, the breath and the pit's bite; !! the leap, the roll and the curse nothing turns; his call throws no blow. THE SCARAB MOTHER's two answers to crowding (the leap-slam, the burrow-up) are !! */"
+  ],
+  "answers": {
+    "tombking|slamTell": "block",
+    "tombking|lashTell": "block",
+    "tombking|leapTell": "dodge",
+    "tombking|reelTell": "block",
+    "tombking|throwTell": "block",
+    "tombking|volleyTell": "block",
+    "tombking|rollTell": "jump",
+    "tombking|breathTell": "block",
+    "tombking|pitTell": "block",
+    "tombking|curseTell": "dodge"
+  },
+  "heights": {
+    "tombking|slamTell": "low",
+    "tombking|lashTell": "low",
+    "tombking|leapTell": "low",
+    "tombking|reelTell": "low",
+    "tombking|throwTell": "low",
+    "tombking|volleyTell": "low",
+    "tombking|rollTell": "low",
+    "tombking|breathTell": "low",
+    "tombking|pitTell": "low",
+    "tombking|curseTell": "low"
+  }
+}

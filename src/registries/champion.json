@@ -1,0 +1,47 @@
+{
+  "entries": {
+    "EHP_TUNED": [
+      {
+        "key": "champion",
+        "value": "ACG.CH.hp",
+        "order": 4,
+        "notes": [
+          "/* THE REEVE (lamplit mini): 200 (100%: 16-21 s, a mini wants 40-75); 560 on the 0.25 coat. (claude/lamplit2) his coat at 0.45 (B15) and the relight stun x1.7: 560 died in 15-24 s, 1300 in 20-50 s at 12/12, 1800 12/12 (no threat close in: his flask now lands at your feet too) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "champion",
+        "value": "'champion'",
+        "order": 34
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "champion",
+        "value": "'THE CHAMPION'",
+        "order": 38
+      },
+      {
+        "key": "champion",
+        "value": "'THE CHAMPION'",
+        "order": 138,
+        "legacyDuplicate": true
+      }
+    ],
+    "COLS": [
+      {
+        "key": "champion",
+        "value": "['#4c5864', '#2e5a52', '#e8eee8']",
+        "order": 22
+      },
+      {
+        "key": "champion",
+        "value": "['#4c5864', '#2e5a52', '#e8eee8']",
+        "order": 122,
+        "legacyDuplicate": true
+      }
+    ]
+  }
+}

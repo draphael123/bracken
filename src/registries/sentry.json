@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "sentry",
+        "value": "10",
+        "order": 268
+      }
+    ],
+    "EHP": [
+      {
+        "key": "sentry",
+        "value": "14",
+        "order": 148
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sentry",
+        "value": "['#6faa4a', '#5a2a7a', '#e0b040']",
+        "order": 153
+      }
+    ]
+  }
+}

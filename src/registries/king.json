@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "king",
+        "value": "1000",
+        "order": 201
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "king",
+        "value": "'king'",
+        "order": 23
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "king",
+        "value": "'KING GORM'",
+        "order": 146
+      }
+    ],
+    "COLS": [
+      {
+        "key": "king",
+        "value": "['#c9463d', '#ffd36b', '#6faa4a']",
+        "order": 185
+      }
+    ],
+    "BOSS_HIT": [
+      {
+        "key": "king",
+        "value": "1.5",
+        "order": 2
+      }
+    ]
+  }
+}

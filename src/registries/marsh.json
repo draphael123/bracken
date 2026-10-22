@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "marsh",
+        "value": "0.15",
+        "order": 35
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "marsh",
+        "value": "0.15",
+        "order": 35
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "winchmaster",
+        "value": "WINCH.hp",
+        "order": 46
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "winchmaster",
+        "value": "'THE WINCHMASTER'",
+        "order": 69
+      }
+    ],
+    "COLS": [
+      {
+        "key": "winchmaster",
+        "value": "['#5a3a22','#6faa4a','#9a9aa4']",
+        "order": 49
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "winchmaster",
+        "value": "0.85",
+        "order": 20
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "helmCut",
+        "value": "21",
+        "order": 153,
+        "notes": [
+          "/* (claude/owl3) THE BONE PELLET LOB's burst */",
+          "/* (claude/owl2) THE BOUGH SHAKE's falling cones and shingles; THE LAMP DROP's oil splash, and a second in its burning strip */"
+        ]
+      }
+    ]
+  }
+}

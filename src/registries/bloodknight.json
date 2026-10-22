@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "bloodknight",
+        "value": "UNBF.UNB.hp.bloodknight",
+        "order": 45
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bloodknight",
+        "value": "'BLOOD KNIGHT'",
+        "order": 68
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bloodknight",
+        "value": "['#2a2830','#c0283a','#8fd160']",
+        "order": 48
+      }
+    ]
+  }
+}

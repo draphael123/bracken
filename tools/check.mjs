@@ -200,6 +200,7 @@ import { fileURLToPath } from 'url';
 import { portFor, newRunTag } from './ports.mjs';
 import { runPool } from './check-pool.mjs';
 import {readChecks,registerChecks} from './check-registry.mjs';
+import {generateRegistries} from './registries.mjs';
 import { assignShards, formatSummary } from './gate-results.mjs';
 const ROOT = fileURLToPath(new URL('..', import.meta.url));   /* not .pathname: a space in the folder name arrives as %20 */
 /* A SUBSET, FOR THE BUILD LOOP. `npm run check` with no arguments is the GATE and is unchanged - all of it, and the
@@ -218,6 +219,7 @@ if (!Number.isInteger(JOBS) || JOBS < 1 || JOBS > 10 || !Number.isInteger(MAX_BR
 const shardMatch = shardArg && String(shardArg).match(/^(\d+)\/(\d+)$/), SHARD = shardMatch ? [+shardMatch[1], +shardMatch[2]] : null;
 if (shardArg && (!SHARD || SHARD[0] < 1 || SHARD[1] < 2 || SHARD[0] > SHARD[1])) throw new Error('--shard must be i/n, with 1 <= i <= n');
 const LIST = argv.includes('--list'), JSON_OUT = option('json', '');
+if (!LIST) generateRegistries();
 const WANT = argv.filter((a, i) => !a.startsWith('--') && !['--jobs', '--max-browsers', '--shard', '--json'].includes(argv[i - 1]))
   .flatMap(a => a.split(',')).map(x => x.trim()).filter(Boolean);
 const SUBSET = WANT.length > 0 || !!SHARD, wanted = name => !WANT.length || WANT.some(w => name.includes(w));

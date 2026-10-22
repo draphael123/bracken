@@ -1,0 +1,16 @@
+{
+  "byHand": {
+    "deathknight|cleaveTell": "!",
+    "deathknight|gripTell": "!!",
+    "deathknight|boilTell": "!!",
+    "deathknight|passTell": "!!",
+    "deathknight|wardTell": "",
+    "deathknight|novaTell": "!!",
+    "deathknight|raiseTell": "",
+    "deathknight|callTell": "",
+    "deathknight|surgeTell": "!!"
+  },
+  "notes": [
+    "/* THE FIRST DEATH KNIGHT, with the hero's kit (2026-09-24): the cleave guarded; the grip, the boil, the passing, the nova and the surge answered with the feet; the ward, the summon and the gravecall strike nobody */"
+  ]
+}

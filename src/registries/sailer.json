@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "sailer",
+        "value": "14",
+        "order": 285
+      }
+    ],
+    "EHP": [
+      {
+        "key": "sailer",
+        "value": "18",
+        "order": 154
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sailer",
+        "value": "['#6faa4a', '#c9b27c', '#c9463d']",
+        "order": 159
+      }
+    ]
+  }
+}

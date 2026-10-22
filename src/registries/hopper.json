@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "hopper",
+        "value": "15",
+        "order": 327
+      }
+    ],
+    "EHP": [
+      {
+        "key": "hopper",
+        "value": "10",
+        "order": 182
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hopper",
+        "value": "['#5a9a3a', '#d8e0a0', '#3a6a2a']",
+        "order": 204
+      }
+    ]
+  }
+}

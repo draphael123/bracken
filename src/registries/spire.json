@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "spire",
+        "value": "1",
+        "order": 41
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "spire",
+        "value": "1",
+        "order": 41
+      }
+    ]
+  }
+}

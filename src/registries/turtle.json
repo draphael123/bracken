@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "turtle",
+        "value": "12",
+        "order": 233
+      }
+    ],
+    "EHP": [
+      {
+        "key": "turtle",
+        "value": "26",
+        "order": 126
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "turtle",
+        "value": "'SNAPTURTLE'",
+        "order": 126
+      }
+    ],
+    "COLS": [
+      {
+        "key": "turtle",
+        "value": "['#5a6a3a', '#3e4a28', '#7a8a4a']",
+        "order": 129
+      }
+    ]
+  }
+}

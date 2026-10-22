@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "waymeet",
+        "value": "2.35",
+        "order": 28
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "waymeet",
+        "value": "1.9",
+        "order": 28
+      }
+    ]
+  }
+}

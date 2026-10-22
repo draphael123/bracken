@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "thorn",
+        "value": "30",
+        "order": 316
+      }
+    ],
+    "EHP": [
+      {
+        "key": "thorn",
+        "value": "30",
+        "order": 178
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "thorn",
+        "value": "'THORNCASTER'",
+        "order": 129
+      }
+    ],
+    "COLS": [
+      {
+        "key": "thorn",
+        "value": "['#6faa4a', '#c9d1dc', '#c9463d']",
+        "order": 210
+      }
+    ]
+  }
+}

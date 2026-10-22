@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "frog",
+        "value": "20",
+        "order": 325
+      }
+    ],
+    "EHP": [
+      {
+        "key": "frog",
+        "value": "FROGK.hp",
+        "order": 181
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "frog",
+        "value": "'frog'",
+        "order": 19
+      }
+    ],
+    "COLS": [
+      {
+        "key": "frog",
+        "value": "['#5a9a3a', '#d8e0a0', '#c9463d']",
+        "order": 206
+      }
+    ]
+  }
+}

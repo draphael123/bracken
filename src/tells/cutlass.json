@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "cutlass|shootTell": "block",
+    "cutlass|slashTell": "block",
+    "cutlass|swingTell": "block",
+    "cutlass|throwTell": "block",
+    "cutlass|ekLungeTell": "block",
+    "cutlass|ekPistolTell": "duck"
+  },
+  "heights": {
+    "cutlass|shootTell": "high",
+    "cutlass|slashTell": "low",
+    "cutlass|swingTell": "low",
+    "cutlass|throwTell": "high",
+    "cutlass|ekLungeTell": "low",
+    "cutlass|ekPistolTell": "high"
+  }
+}

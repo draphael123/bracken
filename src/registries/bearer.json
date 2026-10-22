@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "bearer",
+        "value": "20",
+        "order": 200
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bearer",
+        "value": "['#6faa4a', '#c9463d']",
+        "order": 184
+      }
+    ]
+  }
+}

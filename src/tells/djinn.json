@@ -1,0 +1,48 @@
+{
+  "byHand": {
+    "djinn|lashTell": "!",
+    "djinn|upsurgeTell": "!!",
+    "djinn|blastTell": "!",
+    "djinn|devilTell": "!!",
+    "djinn|flashTell": "!",
+    "djinn|breathTell": "!!",
+    "djinn|pillarTell": "!!",
+    "djinn|spoutTell": "!!",
+    "djinn|waveTell": "!!",
+    "djinn|slamTell": "!!",
+    "djinn|spearsTell": "!!",
+    "djinn|firedevilTell": "!!",
+    "djinn|whirlTell": "!!"
+  },
+  "notes": [
+    "/* THE GANG LEADER (claude/welltown3, by hand: src/gang-leader.js GL_MODES): his cuts, his riposte and his bottle a shield turns (and a blow sends the bottle home); his whirl nothing does */"
+  ],
+  "answers": {
+    "djinn|lashTell": "block",
+    "djinn|blastTell": "block",
+    "djinn|devilTell": "jump",
+    "djinn|flashTell": "block",
+    "djinn|breathTell": "duck",
+    "djinn|pillarTell": "dodge",
+    "djinn|spoutTell": "dodge",
+    "djinn|waveTell": "jump",
+    "djinn|slamTell": "dodge",
+    "djinn|spearsTell": "dodge",
+    "djinn|firedevilTell": "jump",
+    "djinn|whirlTell": "dodge"
+  },
+  "heights": {
+    "djinn|lashTell": "low",
+    "djinn|blastTell": "low",
+    "djinn|devilTell": "low",
+    "djinn|flashTell": "low",
+    "djinn|breathTell": "high",
+    "djinn|pillarTell": "low",
+    "djinn|spoutTell": "low",
+    "djinn|waveTell": "low",
+    "djinn|slamTell": "low",
+    "djinn|spearsTell": "low",
+    "djinn|firedevilTell": "low",
+    "djinn|whirlTell": "low"
+  }
+}

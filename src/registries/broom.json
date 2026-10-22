@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "broom",
+        "value": "8",
+        "order": 59
+      }
+    ],
+    "EHP": [
+      {
+        "key": "broom",
+        "value": "14",
+        "order": 72
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "broom",
+        "value": "'BROOM'",
+        "order": 102
+      }
+    ],
+    "COLS": [
+      {
+        "key": "broom",
+        "value": "['#9a6a34', '#7a8494', '#8ac0ff']",
+        "order": 73
+      }
+    ]
+  }
+}

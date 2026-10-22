@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "roc",
+        "value": "1100",
+        "order": 147
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "roc",
+        "value": "'roc'",
+        "order": 30
+      }
+    ],
+    "COLS": [
+      {
+        "key": "roc",
+        "value": "['#8a8478', '#bfe6f5', '#c9a83a']",
+        "order": 152
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "runner|aim": "block",
+    "runner|cutTell": "block",
+    "runner|leapTell": "dodge",
+    "runner|shout": "block",
+    "runner|stabTell": "block",
+    "runner|swingTell": "block"
+  },
+  "heights": {
+    "runner|aim": "high",
+    "runner|cutTell": "low",
+    "runner|leapTell": "low",
+    "runner|shout": "low",
+    "runner|stabTell": "low",
+    "runner|swingTell": "low"
+  }
+}

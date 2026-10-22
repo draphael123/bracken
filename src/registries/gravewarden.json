@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "gravewarden",
+        "value": "20",
+        "order": 17
+      }
+    ],
+    "EHP": [
+      {
+        "key": "gravewarden",
+        "value": "800",
+        "order": 51
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "gravewarden",
+        "value": "'GRAVEYARD KEEPER'",
+        "order": 81
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gravewarden",
+        "value": "['#e0d6bc','#3a3040','#ffd36b']",
+        "order": 53
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "gravewarden",
+        "value": "0.85",
+        "order": 21
+      }
+    ]
+  }
+}

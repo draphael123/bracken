@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "angler",
+        "value": "30",
+        "order": 123
+      }
+    ],
+    "COLS": [
+      {
+        "key": "angler",
+        "value": "['#2e3a3e', '#1c2428', '#7ff0e0']",
+        "order": 126
+      }
+    ]
+  }
+}

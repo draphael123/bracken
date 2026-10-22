@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "sapper",
+        "value": "15",
+        "order": 329
+      }
+    ],
+    "EHP": [
+      {
+        "key": "sapper",
+        "value": "10",
+        "order": 183
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sapper",
+        "value": "['#6faa4a', '#1b1626', '#c9463d']",
+        "order": 195
+      }
+    ]
+  }
+}

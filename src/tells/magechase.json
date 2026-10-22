@@ -1,0 +1,20 @@
+{
+  "byHand": {
+    "magechase|fireTell": "!",
+    "magechase|iceTell": "!",
+    "magechase|markTell": "!!"
+  },
+  "notes": [
+    "/* THE SPIRAL STAIR's chase (spiral-chase.js, by hand): his fight's firebolt and ice a shield turns; his death mark nothing does - step out of the ring */"
+  ],
+  "answers": {
+    "magechase|fireTell": "block",
+    "magechase|iceTell": "block",
+    "magechase|markTell": "dodge"
+  },
+  "heights": {
+    "magechase|fireTell": "low",
+    "magechase|iceTell": "low",
+    "magechase|markTell": "low"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "paladin",
+        "value": "{ id: 'paladin', name: 'THE PALADIN', price: 10, silver: true, coinPrice: 800, coinNeeds: 'church', coinBoss: true, feat: 'boss:church', featName: 'beat the Paladin in the Lit Church', desc: 'maul and holy light. slower and heavier, 120 health. blows landing and blows turned build CONVICTION, five pips (a perfect guard: two). tap C spends it: SMITE 1, TWIN SMITE 2, RADIANCE 3, RADIANCE+ 4, SUNFALL 5; UP+C throws the HAMMER (three). every spend lights his HALLOWED AURA, holy ground that walks with him: in it he hits harder and mends, and foes burn. hold X: VERDICT, a sigil on each foe ahead, then the light strikes them - more Conviction, a faster and harder verdict. hold C: the LIGHT-WARD, all round him - press ahead to walk behind it and shove - and over a partner in his aura. kneel to PRAY for Conviction. his dodge is the SANCTUARY STEP; the plunge is DAWNFALL. X early in a dodge: THE SHIELDLESS CHARGE, through small foes, and a guard is thrown wide. the dead take double' }",
+        "order": 4
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "paladin",
+        "value": "'BLOWS AND GUARDS BUILD CONVICTION. TAP C SPENDS IT: SMITE, RADIANCE, SUNFALL. EVERY SPEND LIGHTS HIS AURA.'",
+        "order": 2
+      }
+    ]
+  }
+}

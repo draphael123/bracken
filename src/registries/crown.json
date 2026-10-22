@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "crown",
+        "value": "15",
+        "order": 328
+      }
+    ],
+    "TIER": [
+      {
+        "key": "crown",
+        "value": "1.3",
+        "order": 44
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "crown",
+        "value": "1.3",
+        "order": 44
+      }
+    ]
+  }
+}

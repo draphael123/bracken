@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanceJav",
+        "value": "11",
+        "order": 259
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "lanceJav",
+        "value": "9",
+        "order": 9
+      }
+    ]
+  }
+}

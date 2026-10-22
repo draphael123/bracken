@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "church",
+        "value": "2.45",
+        "order": 2
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "church",
+        "value": "2.0",
+        "order": 2
+      }
+    ]
+  }
+}

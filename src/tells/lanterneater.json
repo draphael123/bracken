@@ -1,0 +1,23 @@
+{
+  "byHand": {
+    "lanterneater|gulpTell": "!!",
+    "lanterneater|snapTell": "!!",
+    "lanterneater|huntTell": "!!",
+    "lanterneater|swellTell": "!!"
+  },
+  "notes": [
+    "/* THE LANTERN-EATER (lantern-eater.js, by hand: a module-file boss the audit cannot follow; claude/lanterneater): the gulp under its lure, the snap onto the deck, the hunt under your lantern, the swell along the deck - none of which a shield turns */"
+  ],
+  "answers": {
+    "lanterneater|gulpTell": "dodge",
+    "lanterneater|snapTell": "dodge",
+    "lanterneater|huntTell": "dodge",
+    "lanterneater|swellTell": "jump"
+  },
+  "heights": {
+    "lanterneater|gulpTell": "low",
+    "lanterneater|snapTell": "low",
+    "lanterneater|huntTell": "low",
+    "lanterneater|swellTell": "low"
+  }
+}

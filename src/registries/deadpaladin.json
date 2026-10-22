@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "deadpaladin",
+        "value": "OPF.OPL.hp.deadpaladin",
+        "order": 3
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "deadpaladin",
+        "value": "'UNDEAD PALADIN'",
+        "order": 6
+      }
+    ],
+    "COLS": [
+      {
+        "key": "deadpaladin",
+        "value": "['#8a9088', '#3a3448', '#9ab0e0']",
+        "order": 6
+      }
+    ]
+  }
+}

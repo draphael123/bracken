@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "crossbow",
+        "value": "26",
+        "order": 93
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "crossbow",
+        "value": "'CROSSBOWMAN'",
+        "order": 112
+      }
+    ],
+    "COLS": [
+      {
+        "key": "crossbow",
+        "value": "['#3a5a8a', '#8a6a4a', '#c9d1dc']",
+        "order": 99
+      }
+    ]
+  }
+}

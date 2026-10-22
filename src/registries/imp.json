@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "imp",
+        "value": "12",
+        "order": 61
+      }
+    ],
+    "EHP": [
+      {
+        "key": "imp",
+        "value": "20",
+        "order": 74
+      }
+    ],
+    "COLS": [
+      {
+        "key": "imp",
+        "value": "['#c04a7a', '#f090b0', '#ffa040']",
+        "order": 76
+      }
+    ]
+  }
+}

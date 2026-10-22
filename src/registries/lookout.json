@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "lookout",
+        "value": "16",
+        "order": 118
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lookout",
+        "value": "['#9aa39a', '#6a7268', '#e8dcc0']",
+        "order": 121
+      }
+    ]
+  }
+}

@@ -1,0 +1,44 @@
+{
+  "byHand": {
+    "colossus|lanceTell": "!!",
+    "colossus|stompTell": "!!",
+    "colossus|shardTell": "!",
+    "colossus|shakeTell": "!!",
+    "colossus|waveTell": "!!",
+    "colossus|crackTell": "!!",
+    "colossus|sweepTell": "!!",
+    "colossus|quakeTell": "!!",
+    "colossus|gazeTell": "!!",
+    "colossus|lungeTell": "!",
+    "colossus|walkTell": "!!"
+  },
+  "notes": [
+    "/* (claude/colossusrework) THE GAZE (break line of sight), THE SHARD LUNGE (yellow: block it), THE WALK's trample */   /* (claude/glasssea2) THE SHARD SWEEP along the floor (jump it, or be up on a hold) and THE GLASS QUAKE's heaving plates (step off them): no shield turns either */   /* THE GLASS SEA (claude/glasssea, by hand): the skitter's nip a shield turns; THE GLASS COLOSSUS's lance (jump it, or a mirror), stomp ring and shard rain (a shield, or jump / step off), its shake (grip) and shard wave (jump); (claude/colossus3) THE CRACK LINE, which replaced the swarm call: glass spikes along the floor - jump them or step off the line */"
+  ],
+  "answers": {
+    "colossus|lanceTell": "jump",
+    "colossus|stompTell": "jump",
+    "colossus|shardTell": "block",
+    "colossus|shakeTell": "block",
+    "colossus|waveTell": "jump",
+    "colossus|sweepTell": "jump",
+    "colossus|quakeTell": "dodge",
+    "colossus|crackTell": "jump",
+    "colossus|gazeTell": "dodge",
+    "colossus|lungeTell": "block",
+    "colossus|walkTell": "dodge"
+  },
+  "heights": {
+    "colossus|lanceTell": "low",
+    "colossus|stompTell": "low",
+    "colossus|shardTell": "high",
+    "colossus|shakeTell": "low",
+    "colossus|waveTell": "low",
+    "colossus|sweepTell": "low",
+    "colossus|quakeTell": "low",
+    "colossus|crackTell": "low",
+    "colossus|gazeTell": "low",
+    "colossus|lungeTell": "low",
+    "colossus|walkTell": "low"
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "closedhelm",
+        "value": "610",
+        "order": 94
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "closedhelm",
+        "value": "3900",
+        "order": 2,
+        "notes": [
+          "/* THE BURIED PRINCE: 960 (100%: 17-35 s fights); (claude/undercrown2) 2000 -> 2500: the slab pins pay x2, and the fights ran 35-65 s; 3150 -> 2550 (claude/undercrown2art): on the road before the Queen (campaign L15, 2 flasks) the 3150 fight read 53% with flasks (knight 3/12), 2850 read 56% (knight 2/12) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "closedhelm",
+        "value": "'closedhelm'",
+        "order": 14
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "closedhelm",
+        "value": "'THE CRUSADER'",
+        "order": 113
+      }
+    ],
+    "COLS": [
+      {
+        "key": "closedhelm",
+        "value": "['#eef2f6', '#f2cc58', '#3d5eb0']",
+        "order": 100
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "closedhelm",
+        "value": "1.55",
+        "order": 9,
+        "notes": [
+          "/* (claude/crusader: 1.4; the bot reads his new tells well - 83% n=18 with flasks) */"
+        ]
+      }
+    ],
+    "DUEL_HERO": [
+      {
+        "key": "closedhelm",
+        "value": "{ knight: 0.5, warden: 2.8, pyro: 2.2  }",
+        "order": 0,
+        "notes": [
+          "/* (claude/waymeetpal, act-IV band 57-63: hp 3600 -> 3900, knight 0.62 -> 0.5, warden 2.2 -> 2.8, pyro 1.7 -> 2.2; 78% -> 60% n=24, human+flasks) */"
+        ]
+      }
+    ]
+  }
+}

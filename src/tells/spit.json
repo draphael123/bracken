@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "spit|spitTell": "!"
+  },
+  "notes": [
+    "// the spitter fills its cheeks: a seed, and a shield turns a seed"
+  ],
+  "answers": {
+    "spit|spitTell": "block"
+  },
+  "heights": {
+    "spit|spitTell": "low"
+  }
+}

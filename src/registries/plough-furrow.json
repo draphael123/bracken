@@ -1,0 +1,14 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "ploughFurrow",
+        "value": "38",
+        "order": 89,
+        "notes": [
+          "/* (claude/sweep3: 22 / 16 / 16 / 20 - the standard bot won 11/12 at L26) */"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "turret",
+        "value": "12",
+        "order": 62
+      }
+    ],
+    "EHP": [
+      {
+        "key": "turret",
+        "value": "26",
+        "order": 75
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "turret",
+        "value": "'TURRET'",
+        "order": 105
+      }
+    ],
+    "COLS": [
+      {
+        "key": "turret",
+        "value": "['#e0b050', '#a8782a', '#b07cf0']",
+        "order": 77
+      }
+    ]
+  }
+}

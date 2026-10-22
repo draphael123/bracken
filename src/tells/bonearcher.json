@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "bonearcher|draw": "!"
+  },
+  "notes": [
+    "// the bone archer IS an archer (t: 'archer', bone: true): his draw is the archer's, and this row is for the tables that read the level's name for him"
+  ],
+  "answers": {
+    "bonearcher|draw": "block"
+  },
+  "heights": {
+    "bonearcher|draw": "high"
+  }
+}

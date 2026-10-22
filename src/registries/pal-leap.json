@@ -1,0 +1,14 @@
+{
+  "entries": {
+    "DMG_TUNED": [
+      {
+        "key": "palLeap",
+        "value": "26",
+        "order": 21,
+        "notes": [
+          "/* THE DIVING BELL: 24, 26, 24 */"
+        ]
+      }
+    ]
+  }
+}

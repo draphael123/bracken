@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "scarecrow",
+        "value": "14",
+        "order": 78
+      }
+    ],
+    "EHP": [
+      {
+        "key": "scarecrow",
+        "value": "40",
+        "order": 78
+      }
+    ],
+    "COLS": [
+      {
+        "key": "scarecrow",
+        "value": "['#c8b264', '#8a4a2a', '#5e5444']",
+        "order": 80
+      }
+    ]
+  }
+}

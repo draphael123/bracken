@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "gill",
+        "value": "20",
+        "order": 193
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gill",
+        "value": "['#9a5aa8', '#e0b0f0', '#ffd0ff']",
+        "order": 192
+      }
+    ]
+  }
+}

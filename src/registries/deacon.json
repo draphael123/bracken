@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "deacon",
+        "value": "DCG.DC.hp",
+        "order": 21
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "deacon",
+        "value": "'THE DEACON'",
+        "order": 8
+      }
+    ],
+    "COLS": [
+      {
+        "key": "deacon",
+        "value": "['#1d1824', '#e8e0d0', '#c8a040']",
+        "order": 8
+      }
+    ]
+  }
+}

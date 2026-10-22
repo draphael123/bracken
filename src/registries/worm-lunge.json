@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wormLunge",
+        "value": "DWM.WORM.dmg.lunge",
+        "order": 2
+      }
+    ]
+  }
+}

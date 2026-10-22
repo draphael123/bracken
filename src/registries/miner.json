@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "miner",
+        "value": "22",
+        "order": 288
+      }
+    ],
+    "EHP": [
+      {
+        "key": "miner",
+        "value": "30",
+        "order": 155
+      }
+    ],
+    "COLS": [
+      {
+        "key": "miner",
+        "value": "['#6faa4a', '#c9b27c', '#8a919c']",
+        "order": 160
+      }
+    ]
+  }
+}

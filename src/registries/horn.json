@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "horn",
+        "value": "12",
+        "order": 255
+      }
+    ],
+    "EHP": [
+      {
+        "key": "horn",
+        "value": "22",
+        "order": 142
+      }
+    ],
+    "COLS": [
+      {
+        "key": "horn",
+        "value": "['#6faa4a', '#e0b040', '#c9463d']",
+        "order": 145
+      }
+    ]
+  }
+}

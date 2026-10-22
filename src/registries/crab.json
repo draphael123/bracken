@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "crab",
+        "value": "10",
+        "order": 236
+      }
+    ],
+    "EHP": [
+      {
+        "key": "crab",
+        "value": "22",
+        "order": 129
+      }
+    ],
+    "COLS": [
+      {
+        "key": "crab",
+        "value": "['#b8483a', '#e07060', '#e8c8a8']",
+        "order": 132
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bellguard",
+        "value": "16",
+        "order": 45
+      }
+    ],
+    "EHP": [
+      {
+        "key": "bellguard",
+        "value": "70",
+        "order": 68
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bellguard",
+        "value": "'BELLGUARD'",
+        "order": 97
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bellguard",
+        "value": "['#b88b4a','#426661','#96e8e3']",
+        "order": 69
+      }
+    ]
+  }
+}

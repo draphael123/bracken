@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "cutlass",
+        "value": "14",
+        "order": 214
+      }
+    ],
+    "EHP": [
+      {
+        "key": "cutlass",
+        "value": "30",
+        "order": 114
+      }
+    ],
+    "COLS": [
+      {
+        "key": "cutlass",
+        "value": "['#c9463d', '#8a4a2a', '#e8dcc0']",
+        "order": 117
+      }
+    ]
+  }
+}

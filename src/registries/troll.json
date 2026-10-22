@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "troll",
+        "value": "25",
+        "order": 311
+      }
+    ],
+    "EHP": [
+      {
+        "key": "troll",
+        "value": "60",
+        "order": 173
+      }
+    ],
+    "COLS": [
+      {
+        "key": "troll",
+        "value": "['#6a7a5a', '#3f6e2c', '#46543a']",
+        "order": 176
+      }
+    ]
+  }
+}

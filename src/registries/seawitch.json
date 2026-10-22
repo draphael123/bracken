@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "seawitch",
+        "value": "20",
+        "order": 140
+      }
+    ],
+    "COLS": [
+      {
+        "key": "seawitch",
+        "value": "['#8a2f3a', '#c9a0ff', '#4a9a8a']",
+        "order": 143
+      }
+    ]
+  }
+}

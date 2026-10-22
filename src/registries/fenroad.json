@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "fenroad",
+        "value": "0.22",
+        "order": 0
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "fenroad",
+        "value": "0.22",
+        "order": 0
+      }
+    ]
+  }
+}

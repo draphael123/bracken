@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "oldtusker",
+        "value": "OTM.OT.hp",
+        "order": 8
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "oldtusker",
+        "value": "'oldtusker'",
+        "order": 1
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "oldtusker",
+        "value": "'OLD TUSKER'",
+        "order": 2
+      }
+    ],
+    "COLS": [
+      {
+        "key": "oldtusker",
+        "value": "['#5c3c28', '#a89a88', '#f0e8d0']",
+        "order": 2
+      }
+    ]
+  }
+}

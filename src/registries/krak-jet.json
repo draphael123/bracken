@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "krakJet",
+        "value": "18",
+        "order": 109
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "krakJet",
+        "value": "29",
+        "order": 29
+      }
+    ]
+  }
+}

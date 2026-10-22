@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "drownedcaptain|comboTell": "block",
+    "drownedcaptain|lungeTell": "block"
+  },
+  "heights": {
+    "drownedcaptain|comboTell": "low",
+    "drownedcaptain|lungeTell": "low"
+  }
+}

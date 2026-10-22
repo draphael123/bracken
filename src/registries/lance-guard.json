@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanceGuard",
+        "value": "20",
+        "order": 283
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "lanceGuard",
+        "value": "16",
+        "order": 8
+      }
+    ]
+  }
+}

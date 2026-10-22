@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "cutter",
+        "value": "14",
+        "order": 278
+      }
+    ],
+    "EHP": [
+      {
+        "key": "cutter",
+        "value": "20",
+        "order": 151
+      }
+    ],
+    "COLS": [
+      {
+        "key": "cutter",
+        "value": "['#6faa4a', '#8a919c', '#5d4a8a']",
+        "order": 156
+      }
+    ]
+  }
+}

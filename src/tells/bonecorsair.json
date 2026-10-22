@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "bonecorsair|cleaveTell": "dodge",
+    "bonecorsair|cutTell": "block"
+  },
+  "heights": {
+    "bonecorsair|cleaveTell": "low",
+    "bonecorsair|cutTell": "low"
+  }
+}

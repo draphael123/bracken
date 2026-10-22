@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "hurricane",
+        "value": "1.9",
+        "order": 33
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "hurricane",
+        "value": "1.9",
+        "order": 33
+      }
+    ]
+  }
+}

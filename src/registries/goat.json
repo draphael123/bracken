@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "goat",
+        "value": "20",
+        "order": 394
+      }
+    ],
+    "EHP": [
+      {
+        "key": "goat",
+        "value": "20",
+        "order": 203
+      }
+    ],
+    "COLS": [
+      {
+        "key": "goat",
+        "value": "['#e8e0d0', '#6faa4a', '#7a5a8a']",
+        "order": 178
+      }
+    ]
+  }
+}

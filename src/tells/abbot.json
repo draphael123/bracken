@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "abbot|censerTell": "!",
+    "abbot|castTell": "!",
+    "abbot|swingTell": "!!",
+    "abbot|gleamTell": "!",
+    "abbot|coalsTell": "!!",
+    "abbot|knellTell": "!!",
+    "abbot|riteTell": ""
+  },
+  "notes": [
+    "/* (claude/abbot2: THE BELL ROPE's slam nothing turns; FALSE LIGHT a shield does) */   /* THE FALSE ABBOT (false-abbot.js, by hand: a module-file boss the audit cannot follow): the censer and the chain a shield turns; the procession, the coals and the knell nothing does; the rite throws no blow at all */"
+  ]
+}

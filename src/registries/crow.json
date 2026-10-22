@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "crow",
+        "value": "8",
+        "order": 253
+      }
+    ],
+    "EHP": [
+      {
+        "key": "crow",
+        "value": "6",
+        "order": 141
+      }
+    ],
+    "COLS": [
+      {
+        "key": "crow",
+        "value": "['#2a2433', '#4a4458', '#ff4a3a']",
+        "order": 144
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "lanternshade",
+        "value": "14",
+        "order": 39
+      }
+    ],
+    "EHP": [
+      {
+        "key": "lanternshade",
+        "value": "32",
+        "order": 64
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "lanternshade",
+        "value": "'LANTERN SHADE'",
+        "order": 93
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lanternshade",
+        "value": "['#8fc2c7','#a6f0e8']",
+        "order": 65
+      }
+    ]
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "byHand": {
+    "winchmaster|reverseTell": "",
+    "winchmaster|sendTell": "!!",
+    "winchmaster|hookTell": "!!",
+    "winchmaster|leverTell": "!",
+    "winchmaster|leapTell": "!!",
+    "winchmaster|descendTell": "!!",
+    "winchmaster|whirlTell": "!!",
+    "winchmaster|wrenchTell": "!",
+    "winchmaster|rideTell": "!!",
+    "winchmaster|tossTell": "!!",
+    "winchmaster|spillTell": "!!",
+    "winchmaster|sweepTell": "!!"
+  },
+  "notes": [
+    "/* (claude/winch5) ORE TOSS, SPILL and THE CHAIN SWEEP: a chunk, a skip's ore and a chain - no shield turns any of them */   /* THE WINCHMASTER (winchmaster.js, by hand): the send and the hook no shield turns, the brake bar it does, and the reverse throws no blow so it is QUIET */"
+  ],
+  "answers": {
+    "winchmaster|sendTell": "jump",
+    "winchmaster|hookTell": "jump",
+    "winchmaster|leverTell": "block",
+    "winchmaster|leapTell": "dodge",
+    "winchmaster|descendTell": "dodge",
+    "winchmaster|whirlTell": "dodge",
+    "winchmaster|wrenchTell": "block",
+    "winchmaster|rideTell": "jump",
+    "winchmaster|tossTell": "dodge",
+    "winchmaster|spillTell": "dodge",
+    "winchmaster|sweepTell": "jump"
+  },
+  "heights": {
+    "winchmaster|descendTell": "low",
+    "winchmaster|hookTell": "low",
+    "winchmaster|leapTell": "low",
+    "winchmaster|leverTell": "low",
+    "winchmaster|rideTell": "low",
+    "winchmaster|sendTell": "low",
+    "winchmaster|whirlTell": "low",
+    "winchmaster|wrenchTell": "low",
+    "winchmaster|tossTell": "low",
+    "winchmaster|spillTell": "low",
+    "winchmaster|sweepTell": "low"
+  }
+}

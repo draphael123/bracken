@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "wickerman|throwTell": "!!",
+    "wickerman|swingTell": "!"
+  },
+  "notes": [
+    "/* THE WICKER MAN (claude/fairfix6, by hand: src/wicker-man.js on its own hands): its fire is bowled along the ground and no shield turns it - jump it, or strike it back; its arms come down and the shield takes them */"
+  ],
+  "answers": {
+    "wickerman|throwTell": "jump",
+    "wickerman|swingTell": "block"
+  },
+  "heights": {
+    "wickerman|throwTell": "low",
+    "wickerman|swingTell": "low"
+  }
+}

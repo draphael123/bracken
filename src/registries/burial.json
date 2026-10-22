@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "burial",
+        "value": "2.65",
+        "order": 20
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "burial",
+        "value": "2.25",
+        "order": 20
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "byHand": {
+    "apprentice|grabTell": "!",
+    "apprentice|riseTell": "",
+    "apprentice|castTell": "!"
+  },
+  "notes": [
+    "// same rise that strikes nobody, and the apprentice's ember (a seed a shield turns). They wore no mark: their rows were missing"
+  ],
+  "answers": {
+    "apprentice|castTell": "block",
+    "apprentice|grabTell": "block",
+    "apprentice|ekBoltTell": "block",
+    "apprentice|ekRuneTell": "dodge"
+  },
+  "heights": {
+    "apprentice|castTell": "low",
+    "apprentice|grabTell": "low",
+    "apprentice|ekBoltTell": "high",
+    "apprentice|ekRuneTell": "low"
+  }
+}

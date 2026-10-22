@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "sailer|sail": "!"
+  },
+  "notes": [
+    "// (updateSailer, not inline, but an if-chain) the big sailer under canvas: blocked, she spills"
+  ],
+  "answers": {
+    "sailer|sail": "block"
+  },
+  "heights": {
+    "sailer|sail": "low"
+  }
+}

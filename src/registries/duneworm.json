@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "duneworm",
+        "value": "DWM.WORM.hp",
+        "order": 33
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "duneworm",
+        "value": "'THE DUNE WORM'",
+        "order": 63
+      }
+    ],
+    "COLS": [
+      {
+        "key": "duneworm",
+        "value": "['#a8805a','#e2bb7a','#5a1e24']",
+        "order": 37
+      }
+    ]
+  }
+}

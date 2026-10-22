@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "bannerbearer",
+        "value": "UNBF.UNB.hp.bannerbearer",
+        "order": 41
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bannerbearer",
+        "value": "'BANNER-BEARER'",
+        "order": 64
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bannerbearer",
+        "value": "['#8e2a26','#6e747e','#e8c35a']",
+        "order": 44
+      }
+    ]
+  }
+}

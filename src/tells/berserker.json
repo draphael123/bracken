@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "berserker|flailTell": "block",
+    "berserker|windTell": "dodge"
+  },
+  "heights": {
+    "berserker|flailTell": "low",
+    "berserker|windTell": "low"
+  }
+}

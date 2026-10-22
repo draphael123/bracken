@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "winchLever",
+        "value": "WINCH.dmg.lever",
+        "order": 8
+      }
+    ]
+  }
+}

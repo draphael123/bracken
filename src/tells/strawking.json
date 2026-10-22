@@ -1,0 +1,21 @@
+{
+  "answers": {
+    "strawking|forkTell": "block",
+    "strawking|slamTell": "block",
+    "strawking|sweepTell": "jump",
+    "strawking|baleTell": "jump",
+    "strawking|lanternTell": "dodge",
+    "strawking|leapTell": "dodge"
+  },
+  "notes": [
+    "/* THE SCARECROW KING (claude/bossmarks): fork and slam a shield turns; the sweep and the rolled bale go along the floor; the thrown lantern and his leap are spots to leave */"
+  ],
+  "heights": {
+    "strawking|forkTell": "low",
+    "strawking|slamTell": "low",
+    "strawking|sweepTell": "low",
+    "strawking|baleTell": "low",
+    "strawking|lanternTell": "low",
+    "strawking|leapTell": "low"
+  }
+}

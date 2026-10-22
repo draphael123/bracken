@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "pumpkin|biteTell": "block",
+    "pumpkin|puffTell": "dodge"
+  },
+  "heights": {
+    "pumpkin|biteTell": "low",
+    "pumpkin|puffTell": "low"
+  }
+}

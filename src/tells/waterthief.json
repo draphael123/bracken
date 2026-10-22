@@ -1,0 +1,15 @@
+{
+  "byHand": {
+    "waterthief|feintTell": "",
+    "waterthief|slashTell": "!"
+  },
+  "notes": [
+    "/* THE WATER-THIEF (claude/welltown, by hand: the cutthroat's machine in desert-foes.js, run by src/well-town-hands.js thiefStep): the feint throws nothing, the cut a shield turns */"
+  ],
+  "answers": {
+    "waterthief|slashTell": "block"
+  },
+  "heights": {
+    "waterthief|slashTell": "low"
+  }
+}

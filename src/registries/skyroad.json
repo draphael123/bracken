@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "skyroad",
+        "value": "1.12",
+        "order": 5
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "skyroad",
+        "value": "1.12",
+        "order": 5
+      }
+    ]
+  }
+}

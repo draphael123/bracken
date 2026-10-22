@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "eel",
+        "value": "10",
+        "order": 234
+      }
+    ],
+    "EHP": [
+      {
+        "key": "eel",
+        "value": "14",
+        "order": 127
+      }
+    ],
+    "COLS": [
+      {
+        "key": "eel",
+        "value": "['#2a3a3a', '#3e5452', '#a8b8a0']",
+        "order": 130
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "courtier",
+        "value": "12",
+        "order": 182
+      }
+    ],
+    "EHP": [
+      {
+        "key": "courtier",
+        "value": "22",
+        "order": 105
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "courtier",
+        "value": "'COURTIER'",
+        "order": 125
+      }
+    ],
+    "COLS": [
+      {
+        "key": "courtier",
+        "value": "['#d8cfb4', '#4e2c48', '#c9a84a']",
+        "order": 109
+      }
+    ]
+  }
+}

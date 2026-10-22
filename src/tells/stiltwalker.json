@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "stiltwalker|jabTell": "!",
+    "stiltwalker|stabTell": "!"
+  },
+  "notes": [
+    "/* (claude/fenroad) THE STILT-WALKER (src/stilt-walker.js, a CV machine): the gaff jab (parry it, or duck under it) and the stiltless stab; THE BOG TROLL (src/bog-troll.js, a module-file boss): the burst, the drag, the hurl and the rip are red - step off, jump or roll, get clear */"
+  ],
+  "answers": {
+    "stiltwalker|jabTell": "block",
+    "stiltwalker|stabTell": "block"
+  },
+  "heights": {
+    "stiltwalker|jabTell": "high",
+    "stiltwalker|stabTell": "low"
+  }
+}

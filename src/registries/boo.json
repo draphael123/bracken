@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "boo",
+        "value": "12",
+        "order": 85
+      }
+    ],
+    "EHP": [
+      {
+        "key": "boo",
+        "value": "22",
+        "order": 84
+      }
+    ],
+    "COLS": [
+      {
+        "key": "boo",
+        "value": "['#cfc8f4', '#8478c0', '#463a72']",
+        "order": 86
+      }
+    ]
+  }
+}

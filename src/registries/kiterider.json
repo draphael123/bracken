@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "kiterider",
+        "value": "16",
+        "order": 13
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "kiterider",
+        "value": "'KITE-RIDER'",
+        "order": 48
+      }
+    ],
+    "COLS": [
+      {
+        "key": "kiterider",
+        "value": "['#5a8a3a', '#c9463d', '#efe6d2']",
+        "order": 25
+      }
+    ]
+  }
+}

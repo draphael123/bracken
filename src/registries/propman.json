@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "propman",
+        "value": "16",
+        "order": 175
+      }
+    ],
+    "EHP": [
+      {
+        "key": "propman",
+        "value": "26",
+        "order": 102
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "propman",
+        "value": "'THE PROPMAN'",
+        "order": 119
+      }
+    ],
+    "COLS": [
+      {
+        "key": "propman",
+        "value": "['#6faa4a', '#8a5a32', '#c9b27c']",
+        "order": 106
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "matriarch",
+        "value": "RMG.MAT.hp",
+        "order": 31
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "matriarch",
+        "value": "'matriarch'",
+        "order": 43
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "matriarch",
+        "value": "'THE RAPTOR MATRIARCH'",
+        "order": 59
+      }
+    ],
+    "COLS": [
+      {
+        "key": "matriarch",
+        "value": "['#b8502c', '#6a2414', '#f0dcb8']",
+        "order": 34
+      }
+    ]
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "undeadmage",
+        "value": "20",
+        "order": 30
+      }
+    ],
+    "EHP": [
+      {
+        "key": "undeadmage",
+        "value": "2800",
+        "order": 57
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "undeadmage",
+        "value": "'UNDEAD ARCHMAGE'",
+        "order": 86
+      }
+    ],
+    "COLS": [
+      {
+        "key": "undeadmage",
+        "value": "['#7597ad','#d7e5df','#657384']",
+        "order": 58
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "undeadmage",
+        "value": "1.8",
+        "order": 0
+      }
+    ]
+  }
+}

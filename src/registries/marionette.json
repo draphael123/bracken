@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "marionette",
+        "value": "999",
+        "order": 223
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "marionette",
+        "value": "'THE BRUTE'",
+        "order": 74
+      }
+    ],
+    "COLS": [
+      {
+        "key": "marionette",
+        "value": "['#b8382c', '#c89a60', '#c9d1dc']",
+        "order": 225
+      }
+    ]
+  }
+}

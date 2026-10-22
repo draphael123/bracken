@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "sailor",
+        "value": "40",
+        "order": 120
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sailor",
+        "value": "['#6a7a68', '#48584a', '#8a9a84']",
+        "order": 123
+      }
+    ]
+  }
+}

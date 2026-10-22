@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "archer",
+        "value": "15",
+        "order": 323
+      }
+    ],
+    "EHP": [
+      {
+        "key": "archer",
+        "value": "10",
+        "order": 180
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "archer",
+        "value": "'GOBLIN BOW'",
+        "order": 128
+      }
+    ],
+    "COLS": [
+      {
+        "key": "archer",
+        "value": "['#3f5a33', '#6b4a2a', '#6faa4a']",
+        "order": 205
+      }
+    ]
+  }
+}

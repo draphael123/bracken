@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "stagehand",
+        "value": "THF.STAGEHAND.hp",
+        "order": 221
+      }
+    ],
+    "COLS": [
+      {
+        "key": "stagehand",
+        "value": "['#6a4a30', '#b8a888', '#a88a5a']",
+        "order": 220
+      }
+    ]
+  }
+}

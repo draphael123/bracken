@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "familiar",
+        "value": "18",
+        "order": 38
+      }
+    ],
+    "EHP": [
+      {
+        "key": "familiar",
+        "value": "160",
+        "order": 63
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "familiar",
+        "value": "'THE FAMILIAR'",
+        "order": 92
+      }
+    ],
+    "COLS": [
+      {
+        "key": "familiar",
+        "value": "['#726a8a','#a09ab8','#c6b9e0']",
+        "order": 64
+      }
+    ]
+  }
+}

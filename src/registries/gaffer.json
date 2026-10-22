@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "gaffer",
+        "value": "44",
+        "order": 158
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "gaffer",
+        "value": "'THE GAFFER'",
+        "order": 123
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gaffer",
+        "value": "['#6faa4a', '#8a7a68', '#8a5a32']",
+        "order": 163
+      }
+    ]
+  }
+}

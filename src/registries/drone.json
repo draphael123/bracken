@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "drone",
+        "value": "15",
+        "order": 342
+      }
+    ],
+    "EHP": [
+      {
+        "key": "drone",
+        "value": "10",
+        "order": 189
+      }
+    ],
+    "COLS": [
+      {
+        "key": "drone",
+        "value": "['#e8e0f0', '#c8bcb0']",
+        "order": 190
+      }
+    ]
+  }
+}

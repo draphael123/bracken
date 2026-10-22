@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "heavy|grabTell": "dodge",
+    "heavy|raise": "dodge",
+    "heavy|slashTell": "block",
+    "heavy|windUp": "block",
+    "heavy|ekCleaveTell": "block",
+    "heavy|ekLeapTell": "dodge"
+  },
+  "heights": {
+    "heavy|grabTell": "low",
+    "heavy|raise": "low",
+    "heavy|slashTell": "low",
+    "heavy|windUp": "low",
+    "heavy|ekCleaveTell": "low",
+    "heavy|ekLeapTell": "low"
+  }
+}

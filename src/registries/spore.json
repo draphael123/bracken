@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "spore",
+        "value": "0.45",
+        "order": 37
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "spore",
+        "value": "0.45",
+        "order": 37
+      }
+    ]
+  }
+}

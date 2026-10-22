@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "grub",
+        "value": "12",
+        "order": 376
+      }
+    ],
+    "EHP": [
+      {
+        "key": "grub",
+        "value": "26",
+        "order": 168
+      }
+    ],
+    "COLS": [
+      {
+        "key": "grub",
+        "value": "['#b8d878', '#e8ff9a', '#7a9a48']",
+        "order": 165
+      }
+    ]
+  }
+}

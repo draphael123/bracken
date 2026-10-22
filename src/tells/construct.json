@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "construct|pokeTell": "!",
+    "construct|sweepTell": "!!"
+  },
+  "notes": [
+    "/* THE BURIED CITY (claude/buriedcity, by hand: src/hourglass-king.js MOVES; the construct is a CV machine in src/construct.js - the poke a shield turns, the sweep along the floor) */"
+  ],
+  "answers": {
+    "construct|pokeTell": "block",
+    "construct|sweepTell": "jump"
+  },
+  "heights": {
+    "construct|pokeTell": "low",
+    "construct|sweepTell": "low"
+  }
+}

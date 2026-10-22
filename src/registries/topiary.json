@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "topiary",
+        "value": "14",
+        "order": 56
+      }
+    ],
+    "EHP": [
+      {
+        "key": "topiary",
+        "value": "34",
+        "order": 69
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "topiary",
+        "value": "'TOPIARY'",
+        "order": 101
+      }
+    ],
+    "COLS": [
+      {
+        "key": "topiary",
+        "value": "['#4a8a44', '#8ac060', '#b07cf0']",
+        "order": 70
+      }
+    ]
+  }
+}

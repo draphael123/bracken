@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "hobbyhorse|rear": "!!"
+  },
+  "notes": [
+    "// THE HARVEST FAIR (src/mummer.js): both blows come from BEHIND a hero with his back turned, so no shield turns either (unblockable): the answer to the mask's glow is to LOOK (it cancels), to the horse's rear to jump the charge"
+  ],
+  "answers": {
+    "hobbyhorse|rear": "jump"
+  },
+  "heights": {
+    "hobbyhorse|rear": "low"
+  }
+}

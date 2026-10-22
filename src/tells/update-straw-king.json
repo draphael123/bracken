@@ -1,0 +1,16 @@
+{
+  "thrown": [
+    "updateStrawKing|baleTell",
+    "updateStrawKing|lanternTell"
+  ],
+  "notes": [
+    "// THE SCARECROW KING'S BALE rolls along the floor on its own, unblockable",
+    "// his lantern, thrown: fire on landing, unblockable",
+    "// the Scarecrow King calls the rooks: each marks its own dive",
+    "// he lights the field: the fire is on the floor, and it throws no blow"
+  ],
+  "quiet": [
+    "updateStrawKing|callTell",
+    "updateStrawKing|lightTell"
+  ]
+}

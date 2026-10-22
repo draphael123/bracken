@@ -1,0 +1,40 @@
+{
+  "byHand": {
+    "matriarch|pounceTell": "!!",
+    "matriarch|rakeTell": "!",
+    "matriarch|sweepTell": "!!",
+    "matriarch|screeTell": "!!",
+    "matriarch|screechTell": "!",
+    "matriarch|diveTell": "!!",
+    "matriarch|volleyTell": "!!",
+    "matriarch|surgeTell": "!!",
+    "matriarch|followTell": "!!",
+    "matriarch|broodTell": "!",
+    "matriarch|riderTell": "!!"
+  },
+  "notes": [
+    "/* THE RAPTOR MATRIARCH (claude/redgorge2, by hand: src/raptor-matriarch.js MOVES) - ! the shield turns the rake (and the screech throws nothing a shield must turn); !! the pounce, the sweep, the scree, the dive, the quills, the surge */   /* THE GREAT RED CRAB (claude/redgorge, by hand: src/gorge-crab.js on the desert engine) - ! the shield turns the pinch; X move: the crush, the boulder, the scuttle */"
+  ],
+  "answers": {
+    "matriarch|pounceTell": "dodge",
+    "matriarch|rakeTell": "block",
+    "matriarch|sweepTell": "jump",
+    "matriarch|screeTell": "jump",
+    "matriarch|diveTell": "dodge",
+    "matriarch|volleyTell": "dodge",
+    "matriarch|surgeTell": "jump",
+    "matriarch|followTell": "dodge",
+    "matriarch|riderTell": "dodge"
+  },
+  "heights": {
+    "matriarch|pounceTell": "low",
+    "matriarch|rakeTell": "low",
+    "matriarch|sweepTell": "low",
+    "matriarch|screeTell": "low",
+    "matriarch|diveTell": "low",
+    "matriarch|surgeTell": "low",
+    "matriarch|volleyTell": "low",
+    "matriarch|followTell": "low",
+    "matriarch|riderTell": "low"
+  }
+}

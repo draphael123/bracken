@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "knight",
+        "value": "{ id: 'knight', name: 'THE KNIGHT', price: 10, silver: true, desc: 'sword, shield and the plunge. 100 health. HOLD X, the sword up over the shield, and let go: THE HEAVY CUT - held longer it breaks a guard, longer still it knocks them down, but no shield while it is up. blocks and heavy cuts fill RESOLVE: full, tap C on the ground for THE LAST CHARGE - a screen-long rush behind the shield, through every foe in the way, ending in a slam. X early in a dodge: THE SHOULDER CHARGE, through small foes, and a guard is thrown wide. his plunge is a POGO: off a foe he bounces, on the ground it rings out both ways' }",
+        "order": 0
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "knight",
+        "value": "'THE SHIELD TURNS YELLOW BLOWS; A PERFECT TURN OPENS HIM. THREE CUTS, THE THIRD HARDEST.'",
+        "order": 0
+      }
+    ]
+  }
+}

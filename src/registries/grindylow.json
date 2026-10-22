@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "grindylow",
+        "value": "CNF.GRIND.hp",
+        "order": 229
+      }
+    ],
+    "COLS": [
+      {
+        "key": "grindylow",
+        "value": "['#3e6a4a', '#5e9a6a', '#e8f8c8']",
+        "order": 231
+      }
+    ]
+  }
+}

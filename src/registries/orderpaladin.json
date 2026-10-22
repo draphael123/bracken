@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "orderpaladin",
+        "value": "OPF.OPL.hp.orderpaladin",
+        "order": 2
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "orderpaladin",
+        "value": "'ORDER PALADIN'",
+        "order": 5
+      }
+    ],
+    "COLS": [
+      {
+        "key": "orderpaladin",
+        "value": "['#c9d1dc', '#3a5a8a', '#ffd36b']",
+        "order": 5
+      }
+    ]
+  }
+}

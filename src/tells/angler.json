@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "angler|biteTell": "block",
+    "angler|castTell": "block",
+    "angler|dive": "block",
+    "angler|hookTell": "block",
+    "angler|swellTell": "block"
+  },
+  "heights": {
+    "angler|biteTell": "low",
+    "angler|castTell": "low",
+    "angler|dive": "low",
+    "angler|hookTell": "low",
+    "angler|swellTell": "low"
+  }
+}

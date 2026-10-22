@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "puffer|biteTell": "block",
+    "puffer|castTell": "block",
+    "puffer|dive": "block",
+    "puffer|hookTell": "block",
+    "puffer|swellTell": "block"
+  },
+  "heights": {
+    "puffer|biteTell": "low",
+    "puffer|castTell": "low",
+    "puffer|dive": "low",
+    "puffer|hookTell": "low",
+    "puffer|swellTell": "low"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "heights": {
+    "lance|sweepTell": "low",
+    "lance|thrustTell": "high"
+  },
+  "notes": [
+    "// THE QUEEN'S LANCE (a boss): his LOW sweep is jumped; his thrust goes over a ducked hero and he is left reaching, as when it is rolled"
+  ]
+}

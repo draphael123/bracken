@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bellClaw",
+        "value": "26",
+        "order": 46
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "bellClaw",
+        "value": "22",
+        "order": 19
+      }
+    ]
+  }
+}

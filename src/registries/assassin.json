@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "assassin",
+        "value": "30",
+        "order": 107
+      }
+    ],
+    "COLS": [
+      {
+        "key": "assassin",
+        "value": "['#26222e', '#3a3448', '#d8e070']",
+        "order": 111
+      }
+    ]
+  }
+}

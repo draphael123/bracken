@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "paladinboss",
+        "value": "PBG.PB.hp",
+        "order": 20
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "paladinboss",
+        "value": "'paladinboss'",
+        "order": 15
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "paladinboss",
+        "value": "'THE PALADIN'",
+        "order": 29
+      }
+    ],
+    "COLS": [
+      {
+        "key": "paladinboss",
+        "value": "['#d8dce4', '#d8b040', '#fff6c8']",
+        "order": 14
+      }
+    ]
+  }
+}

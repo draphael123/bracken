@@ -1,0 +1,12 @@
+{
+  "answers": {
+    "scarecrow|swipeTell": "block",
+    "scarecrow|ekCrowsTell": "block",
+    "scarecrow|ekReapTell": "jump"
+  },
+  "heights": {
+    "scarecrow|swipeTell": "low",
+    "scarecrow|ekCrowsTell": "high",
+    "scarecrow|ekReapTell": "low"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "lurker|springTell": "!"
+  },
+  "notes": [
+    "// the lurker's cap lifts: a lunge the shield turns"
+  ],
+  "answers": {
+    "lurker|springTell": "block"
+  },
+  "heights": {
+    "lurker|springTell": "low"
+  }
+}

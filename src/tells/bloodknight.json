@@ -1,0 +1,20 @@
+{
+  "byHand": {
+    "bloodknight|swingTell": "!",
+    "bloodknight|cleaveTell": "!",
+    "bloodknight|priceTell": "!!",
+    "bloodknight|bladeTell": "!!",
+    "bloodknight|gripTell": "!!",
+    "bloodknight|boilTell": "!!",
+    "bloodknight|coilTell": "!",
+    "bloodknight|tideTell": "!!",
+    "bloodknight|wardTell": "",
+    "bloodknight|novaTell": "!!",
+    "bloodknight|raiseTell": "",
+    "bloodknight|callTell": "",
+    "bloodknight|surgeTell": "!!"
+  },
+  "notes": [
+    "/* THE DEATH KNIGHT (claude/dk3, rebuilt from the hero's kit): his cuts, the Cleave and the Coil a shield turns; the bolts, the chain, the boil, the tide, the nova and the surge nothing does; the ward and the raising strike nobody */"
+  ]
+}

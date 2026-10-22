@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "minecart",
+        "value": "1.2",
+        "order": 4
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "minecart",
+        "value": "1.2",
+        "order": 4
+      }
+    ]
+  }
+}

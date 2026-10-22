@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "redgorge",
+        "value": "3",
+        "order": 7
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "redgorge",
+        "value": "2.5",
+        "order": 7
+      }
+    ]
+  }
+}

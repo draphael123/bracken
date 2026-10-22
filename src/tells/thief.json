@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "thief|swipeTell": "!!",
+    "thief|snatchTell": "!!"
+  },
+  "notes": [
+    "/* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */",
+    "// the thief crouches for the grab: a shield keeps nothing out of a pocket"
+  ],
+  "answers": {
+    "thief|snatchTell": "dodge",
+    "thief|swipeTell": "jump"
+  },
+  "heights": {
+    "thief|snatchTell": "low",
+    "thief|swipeTell": "low"
+  }
+}

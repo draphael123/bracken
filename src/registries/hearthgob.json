@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "hearthgob",
+        "value": "16",
+        "order": 277
+      }
+    ],
+    "EHP": [
+      {
+        "key": "hearthgob",
+        "value": "24",
+        "order": 150
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "hearthgob",
+        "value": "'HEARTH GOB'",
+        "order": 131
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hearthgob",
+        "value": "['#6faa4a', '#c9463d', '#8a5a32']",
+        "order": 155
+      }
+    ]
+  }
+}

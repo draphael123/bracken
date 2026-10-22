@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "whelp",
+        "value": "WHF.WH.hp",
+        "order": 216
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "whelp",
+        "value": "'WHELP'",
+        "order": 80
+      }
+    ],
+    "COLS": [
+      {
+        "key": "whelp",
+        "value": "['#6a6280', '#8e86a4', '#9affd8']",
+        "order": 218
+      }
+    ]
+  }
+}

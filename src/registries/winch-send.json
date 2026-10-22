@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "winchSend",
+        "value": "WINCH.dmg.send",
+        "order": 7
+      }
+    ]
+  }
+}

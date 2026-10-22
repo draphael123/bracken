@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "thorn|wind": "!"
+  },
+  "notes": [
+    "// the charge: contact damage the shield turns"
+  ],
+  "answers": {
+    "thorn|wind": "block",
+    "thorn|ekRollTell": "jump",
+    "thorn|ekSpineTell": "block"
+  },
+  "heights": {
+    "thorn|wind": "low",
+    "thorn|ekRollTell": "low",
+    "thorn|ekSpineTell": "high"
+  }
+}

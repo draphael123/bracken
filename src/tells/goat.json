@@ -1,0 +1,12 @@
+{
+  "answers": {
+    "goat|charge": "block",
+    "goat|ekButtTell": "block",
+    "goat|ekStampTell": "jump"
+  },
+  "heights": {
+    "goat|charge": "low",
+    "goat|ekButtTell": "low",
+    "goat|ekStampTell": "low"
+  }
+}

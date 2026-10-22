@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "pyromancer",
+        "value": "1225",
+        "order": 54
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "pyromancer",
+        "value": "'THE PYROMANCER'",
+        "order": 84
+      }
+    ],
+    "COLS": [
+      {
+        "key": "pyromancer",
+        "value": "['#3a3040','#c9463d','#ff9a5c']",
+        "order": 56
+      }
+    ],
+    "BOSS_HIT": [
+      {
+        "key": "pyromancer",
+        "value": "0.75",
+        "order": 5
+      }
+    ]
+  }
+}

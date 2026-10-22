@@ -1,0 +1,53 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bellcrab",
+        "value": "20",
+        "order": 44
+      }
+    ],
+    "EHP": [
+      {
+        "key": "bellcrab",
+        "value": "750",
+        "order": 67
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "bellcrab",
+        "value": "740",
+        "order": 12,
+        "notes": [
+          "/* (claude/wardgap: 800 -> 2400, the plate now holds through a poise break / burn / skills; 800 won 36/36 in 18-34 s) */",
+          "/* (claude/keyscore, B13: his plate faces you - round him or over him lands at ANGLE.wall; 305 measured 14/18 dry) */",
+          "/* THE QUEEN'S LANCE (storm): 380 (25%) */",
+          "/* THE TIDE HERALD: 340 (67%) */",
+          "/* THE REEFMAW: 500 (75-83%: 22-54 s) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "bellcrab",
+        "value": "'bellcrab'",
+        "order": 5
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "bellcrab",
+        "value": "'THE DIVING BELL'",
+        "order": 96
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bellcrab",
+        "value": "['#b7833e','#ef9177','#8fd160']",
+        "order": 68
+      }
+    ]
+  }
+}

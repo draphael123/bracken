@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "fallingtower",
+        "value": "2.8",
+        "order": 17
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "fallingtower",
+        "value": "2.35",
+        "order": 17
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "lookout|shootTell": "block",
+    "lookout|slashTell": "block",
+    "lookout|swingTell": "block",
+    "lookout|throwTell": "block"
+  },
+  "heights": {
+    "lookout|shootTell": "high",
+    "lookout|slashTell": "low",
+    "lookout|swingTell": "low",
+    "lookout|throwTell": "high"
+  }
+}

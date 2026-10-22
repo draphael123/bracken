@@ -1,0 +1,14 @@
+{
+  "answers": {
+    "javelin|grabTell": "dodge",
+    "javelin|raise": "dodge",
+    "javelin|slashTell": "block",
+    "javelin|windUp": "block"
+  },
+  "heights": {
+    "javelin|grabTell": "low",
+    "javelin|raise": "low",
+    "javelin|slashTell": "low",
+    "javelin|windUp": "low"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "spit",
+        "value": "15",
+        "order": 314
+      }
+    ],
+    "EHP": [
+      {
+        "key": "spit",
+        "value": "10",
+        "order": 176
+      }
+    ],
+    "COLS": [
+      {
+        "key": "spit",
+        "value": "['#c9463d', '#f0e6c8', '#ff9a5c']",
+        "order": 209
+      }
+    ]
+  }
+}

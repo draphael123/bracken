@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "fogwraith",
+        "value": "FWR.WRAITH.hp",
+        "order": 19
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "fogwraith",
+        "value": "'FOG WRAITH'",
+        "order": 39
+      }
+    ],
+    "COLS": [
+      {
+        "key": "fogwraith",
+        "value": "['#b8c4cc', '#e8f0f4', '#bfe8ff']",
+        "order": 23
+      }
+    ]
+  }
+}

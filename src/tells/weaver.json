@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "weaver|spitTell": "!"
+  },
+  "notes": [
+    "// the weaver rears: web, and a shield turns web"
+  ],
+  "answers": {
+    "weaver|spitTell": "block"
+  },
+  "heights": {
+    "weaver|spitTell": "low"
+  }
+}

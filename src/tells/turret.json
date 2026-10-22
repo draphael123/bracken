@@ -1,0 +1,8 @@
+{
+  "answers": {
+    "turret|chargeTell": "block"
+  },
+  "heights": {
+    "turret|chargeTell": "low"
+  }
+}

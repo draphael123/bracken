@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "lamprey",
+        "value": "24",
+        "order": 212
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lamprey",
+        "value": "['#5c6858', '#38402f', '#7a2c3a']",
+        "order": 200
+      }
+    ]
+  }
+}

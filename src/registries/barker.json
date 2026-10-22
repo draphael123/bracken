@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "barker",
+        "value": "FAF.BARKER.hp",
+        "order": 228
+      }
+    ],
+    "COLS": [
+      {
+        "key": "barker",
+        "value": "['#3a2a48', '#d8c070', '#e0b848']",
+        "order": 230
+      }
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "byHand": {
+    "mummer|lungeTell": "!!",
+    "mummer|mimeTell": "!",
+    "mummer|glow": "!!"
+  },
+  "notes": [
+    "/* (claude/theatre4) THE THEATRE's VILLAIN MASK: a told red lunge out of the light at the nearest hero - unblockable (src/theatre-masks.js, by hand: main.js theatreMask) */",
+    "/* (claude/fairfix6) THE FAIR's MUMMER MIMES its watcher: his swing answered after a told beat - a yellow blow, the shield turns it */",
+    "// THE HARVEST FAIR (src/mummer.js): both blows come from BEHIND a hero with his back turned, so no shield turns either (unblockable): the answer to the mask's glow is to LOOK (it cancels), to the horse's rear to jump the charge"
+  ],
+  "answers": {
+    "mummer|lungeTell": "dodge",
+    "mummer|mimeTell": "block",
+    "mummer|glow": "dodge"
+  },
+  "heights": {
+    "mummer|glow": "low",
+    "mummer|mimeTell": "low",
+    "mummer|lungeTell": "low"
+  }
+}

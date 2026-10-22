@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "hawkmistress",
+        "value": "HMG.HM.hp",
+        "order": 17
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "hawkmistress",
+        "value": "'hawkmistress'",
+        "order": 7
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "hawkmistress",
+        "value": "'THE HAWK-MISTRESS'",
+        "order": 36
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hawkmistress",
+        "value": "['#7a3a2a', '#c9a060', '#e8d0a0']",
+        "order": 20
+      }
+    ]
+  }
+}

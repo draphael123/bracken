@@ -1,0 +1,21 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "reeveSweep",
+        "value": "16",
+        "order": 195
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "reeveSweep",
+        "value": "23",
+        "order": 11,
+        "notes": [
+          "/* THE QUEEN'S LANCE (storm): 30, 22, 16, 18, 18, 10, 20, 11, 12 (25%: an L11 hero dead in 30-60 s) */"
+        ]
+      }
+    ]
+  }
+}

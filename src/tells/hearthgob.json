@@ -1,0 +1,17 @@
+{
+  "answers": {
+    "hearthgob|raise": "block",
+    "hearthgob|ekCleaverTell": "block",
+    "hearthgob|ekPotTell": "dodge",
+    "hearthgob|ekPot2Tell": "dodge"
+  },
+  "notes": [
+    "/* (claude/elitemoves) THE SECOND POT: thrown where you are going */"
+  ],
+  "heights": {
+    "hearthgob|raise": "low",
+    "hearthgob|ekCleaverTell": "low",
+    "hearthgob|ekPotTell": "low",
+    "hearthgob|ekPot2Tell": "low"
+  }
+}

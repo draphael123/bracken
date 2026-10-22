@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "gar",
+        "value": "12",
+        "order": 380
+      }
+    ],
+    "EHP": [
+      {
+        "key": "gar",
+        "value": "16",
+        "order": 164
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gar",
+        "value": "['#5e6e34', '#d4d2a0', '#bfe6f5']",
+        "order": 95
+      }
+    ]
+  }
+}

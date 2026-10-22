@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "wasp|stingTell": "!"
+  },
+  "notes": [
+    "// the river wasp's dart: a shield turns it"
+  ],
+  "answers": {
+    "wasp|stingTell": "block"
+  },
+  "heights": {
+    "wasp|stingTell": "low"
+  }
+}

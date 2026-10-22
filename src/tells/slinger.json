@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "slinger|slingTell": "!",
+    "slinger|kickTell": "!"
+  },
+  "notes": [
+    "/* THE CARAVAN'S BANDITS (desert-foes.js, by hand, 2026-09-25): the cutthroat's FEINT throws nothing, so it wears no mark (rule H) - the real cut behind it wears the yellow one; a shield turns a slingstone, a kick and the ambusher's knife */"
+  ],
+  "answers": {
+    "slinger|kickTell": "block",
+    "slinger|slingTell": "block"
+  },
+  "heights": {
+    "slinger|kickTell": "low",
+    "slinger|slingTell": "low"
+  }
+}

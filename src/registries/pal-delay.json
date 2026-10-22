@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG_TUNED": [
+      {
+        "key": "palDelay",
+        "value": "24",
+        "order": 22
+      }
+    ]
+  }
+}

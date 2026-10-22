@@ -1,0 +1,25 @@
+{
+  "byHand": {
+    "deacon|sweepTell": "!",
+    "deacon|hookTell": "!",
+    "deacon|jabTell": "!",
+    "deacon|arcTell": "!!",
+    "deacon|kindleTell": "",
+    "deacon|douseTell": ""
+  },
+  "notes": [
+    "/* THE DEACON (deacon.js, by hand; claude/church2): the pole's sweep, hook and jab a shield turns; the flame arc's fire nothing does; his kindling throws no blow */"
+  ],
+  "answers": {
+    "deacon|sweepTell": "jump",
+    "deacon|hookTell": "block",
+    "deacon|jabTell": "block",
+    "deacon|arcTell": "jump"
+  },
+  "heights": {
+    "deacon|sweepTell": "low",
+    "deacon|hookTell": "low",
+    "deacon|jabTell": "low",
+    "deacon|arcTell": "low"
+  }
+}

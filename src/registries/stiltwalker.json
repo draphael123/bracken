@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "stiltwalker",
+        "value": "SWM.STILT.hp",
+        "order": 1
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "stiltwalker",
+        "value": "'STILT-WALKER'",
+        "order": 1
+      }
+    ],
+    "COLS": [
+      {
+        "key": "stiltwalker",
+        "value": "['#7aa04a', '#6a4a8a', '#8a6a40']",
+        "order": 1
+      }
+    ]
+  }
+}

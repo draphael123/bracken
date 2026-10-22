@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "unburied",
+        "value": "2.75",
+        "order": 13
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "unburied",
+        "value": "2.1",
+        "order": 13
+      }
+    ]
+  }
+}

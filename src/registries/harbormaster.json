@@ -1,0 +1,51 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "harbormaster",
+        "value": "20",
+        "order": 37
+      }
+    ],
+    "EHP": [
+      {
+        "key": "harbormaster",
+        "value": "1400",
+        "order": 62
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "harbormaster",
+        "value": "2350",
+        "order": 5,
+        "notes": [
+          "/* THE ADMIRAL'S CHAMPION (claude/flotilla2): src/admirals-champion.js */",
+          "/* (the benched QUARTERMASTER's row was: quarter 1150 - claude/keyscore, B13: always hittable now - round her or over her on guard, any side in her slash and pistol; 920 measured 9/18 dry) */",
+          "/* THE QUARTERMASTER: 560 (92-100%: 27-57 s) */"
+        ]
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "harbormaster",
+        "value": "'HARBOR WARDEN'",
+        "order": 91
+      }
+    ],
+    "COLS": [
+      {
+        "key": "harbormaster",
+        "value": "['#427d79','#c1a05c','#81e6c0']",
+        "order": 63
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "harbormaster",
+        "value": "0.85",
+        "order": 17
+      }
+    ]
+  }
+}

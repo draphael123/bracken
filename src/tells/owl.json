@@ -1,0 +1,19 @@
+{
+  "answers": {
+    "owl|swoopTell": "duck",
+    "owl|skimTell": "jump",
+    "owl|shakeTell": "dodge",
+    "owl|lampTell": "dodge",
+    "owl|pelletTell": "dodge"
+  },
+  "notes": [
+    "/* (claude/owl3) off the pellet's marks */   /* (claude/owl2) THE OWL REEVE's pair: under the head-high swoop, over the ankle-high skim; out from under the bough's shadows and the lamp's strip */"
+  ],
+  "heights": {
+    "owl|swoopTell": "high",
+    "owl|skimTell": "low",
+    "owl|shakeTell": "low",
+    "owl|lampTell": "low",
+    "owl|pelletTell": "low"
+  }
+}

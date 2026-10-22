@@ -1,0 +1,18 @@
+{
+  "byHand": {
+    "hopper|hopTell": "!"
+  },
+  "notes": [
+    "// the hopper squats and swells its throat: the leap is a body blow the shield turns"
+  ],
+  "answers": {
+    "hopper|hopTell": "block",
+    "hopper|ekBellyTell": "dodge",
+    "hopper|ekTongueTell": "block"
+  },
+  "heights": {
+    "hopper|hopTell": "low",
+    "hopper|ekBellyTell": "low",
+    "hopper|ekTongueTell": "low"
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "byHand": {
+    "wickerqueen|tossTell": "!!",
+    "wickerqueen|sweepLowTell": "!!",
+    "wickerqueen|sweepHighTell": "!!",
+    "wickerqueen|leapTell": "!!",
+    "wickerqueen|stabTell": "!!",
+    "wickerqueen|lashLowTell": "!!",
+    "wickerqueen|lashHighTell": "!!",
+    "wickerqueen|floorTell": "!!",
+    "wickerqueen|thrustHighTell": "!!",
+    "wickerqueen|thrustLowTell": "!!",
+    "wickerqueen|crownTell": "",
+    "wickerqueen|ringTell": "!!"
+  },
+  "notes": [
+    "/* THE WICKER QUEEN (wicker-queen.js, by hand: a module-file boss the audit cannot follow; claude/fair3, the carousel claude/fairboss, her spear claude/fairfix2-spear): no shield turns any of them - her spear stabbed from behind a turned back, her spear thrust high or low along the ride, the ribbons over the whole green, fire under your feet; the crowning calls mummers who strike on their own marks */"
+  ],
+  "answers": {
+    "wickerqueen|tossTell": "jump",
+    "wickerqueen|sweepLowTell": "jump",
+    "wickerqueen|sweepHighTell": "duck",
+    "wickerqueen|leapTell": "dodge",
+    "wickerqueen|stabTell": "dodge",
+    "wickerqueen|lashLowTell": "jump",
+    "wickerqueen|lashHighTell": "duck",
+    "wickerqueen|floorTell": "jump",
+    "wickerqueen|thrustHighTell": "duck",
+    "wickerqueen|thrustLowTell": "jump",
+    "wickerqueen|ringTell": "dodge"
+  },
+  "heights": {
+    "wickerqueen|tossTell": "low",
+    "wickerqueen|sweepLowTell": "low",
+    "wickerqueen|sweepHighTell": "high",
+    "wickerqueen|leapTell": "low",
+    "wickerqueen|lashHighTell": "high",
+    "wickerqueen|lashLowTell": "low",
+    "wickerqueen|stabTell": "low",
+    "wickerqueen|floorTell": "low",
+    "wickerqueen|thrustHighTell": "high",
+    "wickerqueen|thrustLowTell": "low",
+    "wickerqueen|ringTell": "low"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "badger",
+        "value": "12",
+        "order": 378
+      }
+    ],
+    "EHP": [
+      {
+        "key": "badger",
+        "value": "30",
+        "order": 163
+      }
+    ],
+    "COLS": [
+      {
+        "key": "badger",
+        "value": "['#8a8690', '#eeeae0', '#24202a']",
+        "order": 94
+      }
+    ]
+  }
+}

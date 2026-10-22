@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "wight",
+        "value": "15",
+        "order": 382
+      }
+    ],
+    "EHP": [
+      {
+        "key": "wight",
+        "value": "12",
+        "order": 166
+      }
+    ],
+    "COLS": [
+      {
+        "key": "wight",
+        "value": "['#c8d8c8', '#8aa08a']",
+        "order": 170
+      }
+    ]
+  }
+}

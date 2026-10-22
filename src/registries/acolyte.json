@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "acolyte",
+        "value": "22",
+        "order": 22
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "acolyte",
+        "value": "'ACOLYTE'",
+        "order": 32
+      }
+    ],
+    "COLS": [
+      {
+        "key": "acolyte",
+        "value": "['#8a2a2a', '#e8e0d0', '#ffd36b']",
+        "order": 13
+      }
+    ]
+  }
+}

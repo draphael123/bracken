@@ -1,0 +1,40 @@
+{
+  "byHand": {
+    "hawkmistress|lashTell": "!!",
+    "hawkmistress|feintTell": "",
+    "hawkmistress|cutTell": "!",
+    "hawkmistress|spotTell": "!",
+    "hawkmistress|markLashTell": "!!",
+    "hawkmistress|callTell": "!",
+    "hawkmistress|snareTell": "!!",
+    "hawkmistress|fanTell": "!",
+    "hawkmistress|kegTell": "!!",
+    "hawkmistress|rakeTell": "!",
+    "hawkmistress|hawkGrabTell": "!"
+  },
+  "notes": [
+    "/* THE BANDIT KSAR (claude/ksar, by hand: src/hawk-mistress.js MOVES; the hawk scout is a CV machine in src/ksar-foes.js - its stoop on the spot it marked) */"
+  ],
+  "answers": {
+    "hawkmistress|lashTell": "jump",
+    "hawkmistress|cutTell": "block",
+    "hawkmistress|markLashTell": "dodge",
+    "hawkmistress|snareTell": "jump",
+    "hawkmistress|fanTell": "block",
+    "hawkmistress|kegTell": "jump",
+    "hawkmistress|rakeTell": "block",
+    "hawkmistress|hawkGrabTell": "block"
+  },
+  "heights": {
+    "hawkmistress|lashTell": "low",
+    "hawkmistress|cutTell": "low",
+    "hawkmistress|spotTell": "low",
+    "hawkmistress|markLashTell": "low",
+    "hawkmistress|callTell": "low",
+    "hawkmistress|snareTell": "low",
+    "hawkmistress|fanTell": "low",
+    "hawkmistress|kegTell": "low",
+    "hawkmistress|rakeTell": "low",
+    "hawkmistress|hawkGrabTell": "low"
+  }
+}

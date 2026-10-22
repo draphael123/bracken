@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "merrowcaller",
+        "value": "22",
+        "order": 207
+      }
+    ],
+    "COLS": [
+      {
+        "key": "merrowcaller",
+        "value": "['#2a8a72', '#1d4a44', '#7ff0e0']",
+        "order": 214
+      }
+    ]
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "answers": {
+    "shardling|shedTell": "dodge",
+    "shardling|flickTell": "jump"
+  },
+  "notes": [
+    "// all round it: step off"
+  ],
+  "heights": {
+    "shardling|shedTell": "low",
+    "shardling|flickTell": "low"
+  }
+}

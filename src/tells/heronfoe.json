@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "heronfoe|lungeTell": "block",
+    "heronfoe|pinchTell": "block",
+    "heronfoe|snapTell": "block",
+    "heronfoe|strikeTell": "block",
+    "heronfoe|thrustTell": "block",
+    "heronfoe|shockTell": "dodge"
+  },
+  "heights": {
+    "heronfoe|lungeTell": "low",
+    "heronfoe|pinchTell": "low",
+    "heronfoe|snapTell": "low",
+    "heronfoe|strikeTell": "low",
+    "heronfoe|thrustTell": "low",
+    "heronfoe|shockTell": "low"
+  }
+}

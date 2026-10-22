@@ -1,0 +1,42 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "herald",
+        "value": "340",
+        "order": 133
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "herald",
+        "value": "370",
+        "order": 9,
+        "notes": [
+          "/* (claude/underwater: 830 -> 700 with the committed bite and his blows x0.85) */"
+        ]
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "herald",
+        "value": "'herald'",
+        "order": 32
+      }
+    ],
+    "COLS": [
+      {
+        "key": "herald",
+        "value": "['#e07a6a', '#4a9a8a', '#6a8a3a']",
+        "order": 136
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "herald",
+        "value": "1.4",
+        "order": 8
+      }
+    ]
+  }
+}

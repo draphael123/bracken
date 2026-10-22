@@ -1,0 +1,27 @@
+{
+  "byHand": {
+    "undeadmage|fireTell": "!",
+    "undeadmage|iceTell": "!",
+    "undeadmage|stormTell": "!!",
+    "undeadmage|poisonTell": "!",
+    "undeadmage|handTell": "!",
+    "undeadmage|markTell": "!!",
+    "undeadmage|bendTell": "!",
+    "undeadmage|stepTell": "",
+    "undeadmage|decoyTell": "",
+    "undeadmage|trapTell": "!",
+    "undeadmage|orbitTell": "!!",
+    "undeadmage|scriptTell": "!!",
+    "undeadmage|boneTell": "!!",
+    "undeadmage|pullTell": "!!",
+    "undeadmage|realmTell": "",
+    "undeadmage|wallTell": "!!",
+    "undeadmage|sporeTell": "!!"
+  },
+  "notes": [
+    "/* (round 3: the decoy throws nothing of its own, as the step; the trap's bolts are fire a shield turns) (round 2) HIS RINGS: the bent bolts are fire, a shield turns them; the step throws no blow of its own - the spell he comes out casting wears its own mark */",
+    "/* (claude/archmage3, by hand) HIS ORRERY: no shield turns a world - keep between its orbits; THE GRAVE SCRIPT: nothing turns the lines - fly to the dark one */",
+    "/* (claude/archmage2b, by hand) THE BONE STORM: no shield turns a skull - fly out through a gap; THE GRAVE PULL: the void it drags you to hurts, and nothing turns it */",
+    "/* HIS SPELL REALMS (mage-realms.js, by hand, claude/undead3): the tear throws no blow - the realm it opens tells its own; the fire wall is a sheet of flame and the spores a cloud, and no shield turns either */"
+  ]
+}

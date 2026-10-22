@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "mage",
+        "value": "2.75",
+        "order": 21
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "mage",
+        "value": "2.35",
+        "order": 21
+      }
+    ]
+  }
+}

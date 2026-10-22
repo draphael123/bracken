@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "jelly|biteTell": "block",
+    "jelly|castTell": "block",
+    "jelly|dive": "block",
+    "jelly|hookTell": "block",
+    "jelly|swellTell": "block"
+  },
+  "heights": {
+    "jelly|biteTell": "low",
+    "jelly|castTell": "low",
+    "jelly|dive": "low",
+    "jelly|hookTell": "low",
+    "jelly|swellTell": "low"
+  }
+}

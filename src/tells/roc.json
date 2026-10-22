@@ -1,0 +1,21 @@
+{
+  "byHand": {
+    "roc|diveTell": "!!",
+    "roc|deadAirTell": "!!",
+    "roc|chainTell": "!!"
+  },
+  "notes": [
+    "/* THE SKY ROAD (claude/skyroad, by hand: the kite-rider is a CV machine in src/sky-road-hands.js riderStep, the Roc on her eyrie is src/roc-eyrie.js): the swoop and the kick a shield turns; her dive nothing turns */",
+    "/* (claude/roc2) THE ROC's two new blows, by hand (src/roc-eyrie.js): the dead air's electrified cloud and the chain lightning - nothing turns either */   /* THE SKY ROAD (claude/skyroad, by hand: the kite-rider is a CV machine in src/sky-road-hands.js riderStep, the Roc on her eyrie is src/roc-eyrie.js): the swoop and the kick a shield turns; her dive nothing turns */"
+  ],
+  "answers": {
+    "roc|diveTell": "dodge",
+    "roc|deadAirTell": "dodge",
+    "roc|chainTell": "jump"
+  },
+  "heights": {
+    "roc|diveTell": "low",
+    "roc|deadAirTell": "low",
+    "roc|chainTell": "low"
+  }
+}

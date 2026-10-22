@@ -1,0 +1,22 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bellLeap",
+        "value": "24",
+        "order": 51
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "bellLeap",
+        "value": "18",
+        "order": 18,
+        "notes": [
+          "/* (THE LEDGER 22 -> 17 beside them: off the x0.05 chip his fight runs 60-120 s, and the book alone took half a knight) */",
+          "/* THE TOLLMASTER's new told blows (claude/lamplit2): THE SCALES' counterweight, the SEAL OF DEBT, and the toll's stream to a hero who stands in it */"
+        ]
+      }
+    ]
+  }
+}

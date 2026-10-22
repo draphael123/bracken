@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "heavy",
+        "value": "120",
+        "order": 136
+      }
+    ],
+    "COLS": [
+      {
+        "key": "heavy",
+        "value": "['#7c8797', '#c9d1dc', '#5d4a8a']",
+        "order": 139
+      }
+    ]
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "thrown": [
+    "updateGrandmother|knellTell",
+    "updateGrandmother|throwTell"
+  ],
+  "notes": [
+    "/* (claude/underleaf2) THE GRANDMOTHER's KNELL: the handbell throws a ring along the boards both ways (src/hush-hands.js granKnell) - no shield turns it, jump it */",
+    "// her sticks fly noBlock"
+  ],
+  "quiet": [
+    "updateGrandmother|listenTell",
+    "updateGrandmother|vanishTell"
+  ]
+}

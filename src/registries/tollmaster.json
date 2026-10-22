@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "tollmaster",
+        "value": "520",
+        "order": 112
+      }
+    ],
+    "EHP_TUNED": [
+      {
+        "key": "tollmaster",
+        "value": "3450",
+        "order": 0
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "tollmaster",
+        "value": "'TOLLMASTER'",
+        "order": 137
+      }
+    ],
+    "COLS": [
+      {
+        "key": "tollmaster",
+        "value": "['#5b3566', '#e6b94a', '#cfc6a8']",
+        "order": 115
+      }
+    ],
+    "LP_HERO": [
+      {
+        "key": "tollmaster",
+        "value": "{ knight: 0.92, ranger: 0.85, paladin: 1.3 }",
+        "order": 0
+      }
+    ]
+  }
+}

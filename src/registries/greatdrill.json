@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "greatdrill",
+        "value": "GDG.DRILL.hp",
+        "order": 12
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "greatdrill",
+        "value": "'greatdrill'",
+        "order": 9
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "greatdrill",
+        "value": "'THE GREAT DRILL'",
+        "order": 47
+      }
+    ],
+    "COLS": [
+      {
+        "key": "greatdrill",
+        "value": "['#5a6270', '#a8322a', '#ffd36b']",
+        "order": 17
+      }
+    ]
+  }
+}

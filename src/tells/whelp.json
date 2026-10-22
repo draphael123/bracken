@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "whelp|crouchTell": "block",
+    "whelp|fireTell": "block"
+  },
+  "heights": {
+    "whelp|crouchTell": "low",
+    "whelp|fireTell": "low"
+  }
+}

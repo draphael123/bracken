@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "prise",
+        "value": "30",
+        "order": 99
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "prise",
+        "value": "'THE PRISE'",
+        "order": 116
+      }
+    ],
+    "COLS": [
+      {
+        "key": "prise",
+        "value": "['#b8a898', '#e0d4c4', '#c9463d']",
+        "order": 103
+      }
+    ]
+  }
+}

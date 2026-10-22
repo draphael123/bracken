@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "sandworm",
+        "value": "DF2.SANDWORM.hp",
+        "order": 35
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sandworm",
+        "value": "['#c89a6a', '#d8b070', '#3a1418']",
+        "order": 28
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "sandworm",
+        "value": "DF2.sandwormStep",
+        "order": 2
+      }
+    ]
+  }
+}

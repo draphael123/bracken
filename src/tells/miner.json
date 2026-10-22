@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "miner|swingTell": "block",
+    "miner|throwTell": "block"
+  },
+  "heights": {
+    "miner|swingTell": "low",
+    "miner|throwTell": "low"
+  }
+}

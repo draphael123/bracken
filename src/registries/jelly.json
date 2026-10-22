@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "jelly",
+        "value": "8",
+        "order": 410
+      }
+    ],
+    "EHP": [
+      {
+        "key": "jelly",
+        "value": "10",
+        "order": 211
+      }
+    ],
+    "COLS": [
+      {
+        "key": "jelly",
+        "value": "['#c890d8', '#8f5aa8', '#f0d8ff']",
+        "order": 199
+      }
+    ]
+  }
+}

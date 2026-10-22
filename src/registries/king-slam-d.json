@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "kingSlamD",
+        "value": "26",
+        "order": 172
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "kingSlamD",
+        "value": "22",
+        "order": 1
+      }
+    ]
+  }
+}

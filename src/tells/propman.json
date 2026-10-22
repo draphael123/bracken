@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "propman|raise": "block",
+    "propman|throwTell": "block"
+  },
+  "heights": {
+    "propman|raise": "low",
+    "propman|throwTell": "low"
+  }
+}

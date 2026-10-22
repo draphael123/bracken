@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "heart",
+        "value": "8",
+        "order": 194
+      }
+    ],
+    "COLS": [
+      {
+        "key": "heart",
+        "value": "['#ff7a9a', '#ffd0ff', '#c9463d']",
+        "order": 193
+      }
+    ]
+  }
+}

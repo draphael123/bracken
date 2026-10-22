@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "vulture",
+        "value": "DF.VULTURE.hp",
+        "order": 36
+      }
+    ],
+    "COLS": [
+      {
+        "key": "vulture",
+        "value": "['#3a2e2a','#c86a5a','#e3d2a8']",
+        "order": 43
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "vulture",
+        "value": "DF.vultureStep",
+        "order": 4
+      }
+    ]
+  }
+}

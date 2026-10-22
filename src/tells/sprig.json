@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "sprig|biteTell": "!"
+  },
+  "notes": [
+    "// the bite: a plain damagePlayer"
+  ],
+  "answers": {
+    "sprig|biteTell": "block"
+  },
+  "heights": {
+    "sprig|biteTell": "low"
+  }
+}

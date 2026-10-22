@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "netter|biteTell": "block",
+    "netter|castTell": "block",
+    "netter|dive": "block",
+    "netter|hookTell": "block",
+    "netter|swellTell": "block"
+  },
+  "heights": {
+    "netter|biteTell": "low",
+    "netter|castTell": "low",
+    "netter|dive": "low",
+    "netter|hookTell": "low",
+    "netter|swellTell": "low"
+  }
+}

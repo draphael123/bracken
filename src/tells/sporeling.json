@@ -1,0 +1,14 @@
+{
+  "byHand": {
+    "sporeling|biteTell": "!"
+  },
+  "notes": [
+    "// the sporeling sits back: the bite, as the sprig's"
+  ],
+  "answers": {
+    "sporeling|biteTell": "block"
+  },
+  "heights": {
+    "sporeling|biteTell": "low"
+  }
+}

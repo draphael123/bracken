@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "wickerqueen",
+        "value": "WQN.WQ.hp",
+        "order": 219
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "wickerqueen",
+        "value": "'wickerqueen'",
+        "order": 37
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "wickerqueen",
+        "value": "'THE WICKER QUEEN'",
+        "order": 71
+      }
+    ],
+    "COLS": [
+      {
+        "key": "wickerqueen",
+        "value": "['#b08a4e', '#e8c23a', '#b8382c']",
+        "order": 222
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "wickerqueen",
+        "value": "0.9",
+        "order": 6
+      }
+    ]
+  }
+}

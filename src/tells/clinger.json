@@ -1,0 +1,13 @@
+{
+  "answers": {
+    "clinger|dropTell": "dodge",
+    "clinger|lashTell": "block"
+  },
+  "notes": [
+    "// from above: out from under"
+  ],
+  "heights": {
+    "clinger|dropTell": "low",
+    "clinger|lashTell": "high"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "archGlyph",
+        "value": "8",
+        "order": 74,
+        "notes": [
+          "/* (claude/sweep3: 18 / 24 / 24 / 12 - the standard bot won 1/12 at L29, band 50-60%) */"
+        ]
+      }
+    ]
+  }
+}

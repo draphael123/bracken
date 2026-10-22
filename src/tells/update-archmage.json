@@ -1,0 +1,14 @@
+{
+  "thrown": [
+    "updateArchmage|slamTell"
+  ],
+  "notes": [
+    "// THE FAMILIAR'S SLAM: the same wave, the size of the room",
+    "// THE ARCHMAGE blinks away, raises his runes, and the familiar lowers its head: none of them a blow"
+  ],
+  "quiet": [
+    "updateArchmage|blinkTell",
+    "updateArchmage|wardTell",
+    "updateArchmage|openTell"
+  ]
+}

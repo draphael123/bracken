@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "mother",
+        "value": "8",
+        "order": 195
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "mother",
+        "value": "'mother'",
+        "order": 21
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "mother",
+        "value": "'MOTHER CAP'",
+        "order": 148
+      }
+    ],
+    "COLS": [
+      {
+        "key": "mother",
+        "value": "['#8a8a54', '#b8c060', '#4a3a2a']",
+        "order": 194
+      }
+    ]
+  }
+}

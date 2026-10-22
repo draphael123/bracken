@@ -1,0 +1,24 @@
+{
+  "byHand": {
+    "brute|raise": "!!",
+    "brute|wind": "!"
+  },
+  "notes": [
+    "// the overhead: damagePlayer(DMG.bruteOver, { unblockable: true })",
+    "// the sweep: a plain damagePlayer, and it can be blocked"
+  ],
+  "answers": {
+    "brute|elCut1Tell": "block",
+    "brute|elCut2Tell": "block",
+    "brute|elOverTell": "dodge",
+    "brute|raise": "dodge",
+    "brute|wind": "block"
+  },
+  "heights": {
+    "brute|elCut1Tell": "low",
+    "brute|elCut2Tell": "low",
+    "brute|elOverTell": "low",
+    "brute|raise": "low",
+    "brute|wind": "low"
+  }
+}

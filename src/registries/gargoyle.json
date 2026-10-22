@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "gargoyle",
+        "value": "410",
+        "order": 49
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "gargoyle",
+        "value": "'GATE GARGOYLE'",
+        "order": 79
+      }
+    ],
+    "COLS": [
+      {
+        "key": "gargoyle",
+        "value": "['#6a6280','#8e86a4','#c8a0ff']",
+        "order": 52
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "gargoyle",
+        "value": "0.75",
+        "order": 2
+      }
+    ]
+  }
+}

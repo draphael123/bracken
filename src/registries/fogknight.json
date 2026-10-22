@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "fogknight",
+        "value": "FKG.FK.hp",
+        "order": 18
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "fogknight",
+        "value": "'fogknight'",
+        "order": 8
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "fogknight",
+        "value": "'THE FOG KNIGHT'",
+        "order": 37
+      }
+    ],
+    "COLS": [
+      {
+        "key": "fogknight",
+        "value": "['#2a2422', '#5a3424', '#cfe8ff']",
+        "order": 21
+      }
+    ]
+  }
+}

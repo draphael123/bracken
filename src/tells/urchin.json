@@ -1,0 +1,16 @@
+{
+  "answers": {
+    "urchin|biteTell": "block",
+    "urchin|castTell": "block",
+    "urchin|dive": "block",
+    "urchin|hookTell": "block",
+    "urchin|swellTell": "block"
+  },
+  "heights": {
+    "urchin|biteTell": "low",
+    "urchin|castTell": "low",
+    "urchin|dive": "low",
+    "urchin|hookTell": "low",
+    "urchin|swellTell": "low"
+  }
+}

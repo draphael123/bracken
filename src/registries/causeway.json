@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "causeway",
+        "value": "2.25",
+        "order": 23
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "causeway",
+        "value": "2.25",
+        "order": 23
+      }
+    ]
+  }
+}

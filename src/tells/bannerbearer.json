@@ -1,0 +1,15 @@
+{
+  "byHand": {
+    "bannerbearer|plantTell": "",
+    "bannerbearer|poleTell": "!"
+  },
+  "notes": [
+    "/* THE UNBURIED FIELD (unburied-foes.js, by hand): a dead man's cut and the standard's pole a shield turns; rising and planting strike nobody */"
+  ],
+  "answers": {
+    "bannerbearer|poleTell": "block"
+  },
+  "heights": {
+    "bannerbearer|poleTell": "low"
+  }
+}

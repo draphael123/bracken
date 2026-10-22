@@ -1,0 +1,12 @@
+{
+  "byHand": {
+    "gravewarden|cleaveTell": "!",
+    "gravewarden|tossTell": "!",
+    "gravewarden|swingTell": "!!",
+    "gravewarden|digTell": "!!",
+    "gravewarden|tollTell": ""
+  },
+  "notes": [
+    "/* THE GRAVE WARDEN (grave-warden.js, by hand like the Archmage): spade and dirt a shield turns; the lantern and the hand nothing does; the toll strikes nobody */"
+  ]
+}

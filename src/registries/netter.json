@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "netter",
+        "value": "26",
+        "order": 121
+      }
+    ],
+    "COLS": [
+      {
+        "key": "netter",
+        "value": "['#5a6a60', '#3e4a44', '#7a8a80']",
+        "order": 124
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "byHand": {
+    "shield|shoveTell": "!"
+  },
+  "notes": [
+    "// the shove: a plain damagePlayer, blocked it only pushes"
+  ],
+  "answers": {
+    "shield|elChargeTell": "block",
+    "shield|shoveTell": "block"
+  },
+  "heights": {
+    "shield|elChargeTell": "low",
+    "shield|shoveTell": "low"
+  }
+}

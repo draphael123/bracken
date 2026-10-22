@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "waterthief",
+        "value": "26",
+        "order": 14
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "waterthief",
+        "value": "'WATER-THIEF'",
+        "order": 53
+      }
+    ],
+    "COLS": [
+      {
+        "key": "waterthief",
+        "value": "['#4a7ab0', '#7aa8d8', '#c9a070']",
+        "order": 29
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "waterthief",
+        "value": "(s, w, dt) => WTH.thiefStep(s, w, dt)",
+        "order": 8
+      }
+    ]
+  }
+}

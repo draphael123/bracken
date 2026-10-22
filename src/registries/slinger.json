@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "slinger",
+        "value": "DF.SLINGER.hp",
+        "order": 39
+      }
+    ],
+    "COLS": [
+      {
+        "key": "slinger",
+        "value": "['#cfae74','#b8463a','#8a8278']",
+        "order": 41
+      }
+    ],
+    "CV_STEP": [
+      {
+        "key": "slinger",
+        "value": "DF.slingerStep",
+        "order": 6
+      }
+    ]
+  }
+}

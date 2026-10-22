@@ -1,0 +1,10 @@
+{
+  "byHand": {
+    "harbormaster|anchorTell": "!",
+    "harbormaster|harpoonTell": "!",
+    "harbormaster|lowTell": "!!",
+    "harbormaster|highTell": "!!",
+    "harbormaster|pressureTell": "!!",
+    "harbormaster|twinTell": "!!"
+  }
+}

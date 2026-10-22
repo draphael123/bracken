@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "reef",
+        "value": "1.6",
+        "order": 46
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "reef",
+        "value": "1.6",
+        "order": 46
+      }
+    ]
+  }
+}

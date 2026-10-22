@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "sheargob",
+        "value": "30",
+        "order": 157
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "sheargob",
+        "value": "'THE SHEARGOB'",
+        "order": 122
+      }
+    ],
+    "COLS": [
+      {
+        "key": "sheargob",
+        "value": "['#6faa4a', '#c9d1dc', '#c9b27c']",
+        "order": 162
+      }
+    ]
+  }
+}

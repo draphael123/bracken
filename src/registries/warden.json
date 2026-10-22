@@ -1,0 +1,63 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "warden",
+        "value": "{ id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last third of the shaft hits 30% harder and rings when it lands (half again into a boss in his opening), the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat, from in front or from overhead, and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it (and the tap still sweeps). X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' }",
+        "order": 6
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "warden",
+        "value": "'THE POINT PAYS, NOT THE HAFT: KEEP THEM OUT THERE. TAP C AND THE SHAFT TURNS A BLOW.'",
+        "order": 5,
+        "notes": [
+          "/* (claude/bloodknight) */"
+        ]
+      }
+    ],
+    "WARDEN_KEYS": [
+      {
+        "key": "deflect",
+        "value": "'TAP C: THE DEFLECT. THE SHAFT TURNS A YELLOW BLOW AND SWATS WHAT FLIES AT HER'",
+        "order": 0
+      },
+      {
+        "key": "impale",
+        "value": "'NO BUTTON: A YELLOW CHARGE THAT RUNS ONTO HER OUT-FRONT POINT DIES ON IT'",
+        "order": 1
+      },
+      {
+        "key": "red",
+        "value": "'A RED BLOW IS NEVER TURNED, BY HER OR BY ANYONE: GET OUT OF ITS WAY'",
+        "order": 2
+      },
+      {
+        "key": "vigil",
+        "value": "'TIP HITS AND STOPPED CHARGES FILL VIGIL. FULL, TAP C ON THE GROUND: THE PHALANX'",
+        "order": 3
+      },
+      {
+        "key": "phalanx",
+        "value": "'A ROW OF SPEARS OUT OF THE GROUND, ACROSS THE ROOM, PINNING WHAT IT CATCHES'",
+        "order": 4
+      },
+      {
+        "key": "runThrough",
+        "value": "'HOLD X AND LET GO: THE RUN-THROUGH, A LUNGE THAT SKEWERS A WHOLE LINE OF THEM'",
+        "order": 5
+      },
+      {
+        "key": "pin",
+        "value": "'DOWN+X IN THE AIR PINS WHAT YOU LAND ON: X TO STAB IT, Z TO PULL FREE'",
+        "order": 6
+      },
+      {
+        "key": "vault",
+        "value": "'JUMP OUT OF A STEP FORWARD AND SHE PLANTS THE SPEAR AND VAULTS'",
+        "order": 7
+      }
+    ]
+  }
+}

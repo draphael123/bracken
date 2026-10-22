@@ -1,0 +1,31 @@
+{
+  "byHand": {
+    "bosun|salvagePinTell": "!",
+    "bosun|salvageHookTell": "!",
+    "bosun|salvageCargoTell": "!!",
+    "bosun|salvageBroadsideTell": "!!",
+    "bosun|salvageCrossfireTell": "!!"
+  },
+  "answers": {
+    "bosun|salvageBroadsideTell": "jump",
+    "bosun|salvageCargoTell": "dodge",
+    "bosun|salvageCrossfireTell": "dodge",
+    "bosun|salvageHookTell": "block",
+    "bosun|salvagePinTell": "block",
+    "bosun|shootTell": "block",
+    "bosun|slashTell": "block",
+    "bosun|swingTell": "block",
+    "bosun|throwTell": "block"
+  },
+  "heights": {
+    "bosun|salvageBroadsideTell": "low",
+    "bosun|salvageCargoTell": "low",
+    "bosun|salvageCrossfireTell": "low",
+    "bosun|salvageHookTell": "low",
+    "bosun|salvagePinTell": "low",
+    "bosun|shootTell": "high",
+    "bosun|slashTell": "low",
+    "bosun|swingTell": "low",
+    "bosun|throwTell": "high"
+  }
+}

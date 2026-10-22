@@ -1,0 +1,32 @@
+{
+  "byHand": {
+    "gangleader|cutTell": "!",
+    "gangleader|cut2Tell": "!",
+    "gangleader|crossTell": "!",
+    "gangleader|whirlTell": "!!",
+    "gangleader|throwTell": "!",
+    "gangleader|riposteTell": "!!",
+    "gangleader|dashTell": "!!"
+  },
+  "notes": [
+    "/* THE GANG LEADER (claude/welltown3, by hand: src/gang-leader.js GL_MODES): his cuts, his riposte and his bottle a shield turns (and a blow sends the bottle home); his whirl nothing does */"
+  ],
+  "answers": {
+    "gangleader|cutTell": "block",
+    "gangleader|cut2Tell": "block",
+    "gangleader|crossTell": "block",
+    "gangleader|whirlTell": "dodge",
+    "gangleader|throwTell": "block",
+    "gangleader|riposteTell": "dodge",
+    "gangleader|dashTell": "dodge"
+  },
+  "heights": {
+    "gangleader|cutTell": "low",
+    "gangleader|cut2Tell": "low",
+    "gangleader|crossTell": "low",
+    "gangleader|whirlTell": "low",
+    "gangleader|throwTell": "low",
+    "gangleader|riposteTell": "low",
+    "gangleader|dashTell": "low"
+  }
+}

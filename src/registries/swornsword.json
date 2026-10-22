@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "swornsword",
+        "value": "44",
+        "order": 90
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "swornsword",
+        "value": "'SWORN SWORD'",
+        "order": 109
+      }
+    ],
+    "COLS": [
+      {
+        "key": "swornsword",
+        "value": "['#3a5a8a', '#c9d1dc', '#9a3a3a']",
+        "order": 92
+      }
+    ]
+  }
+}

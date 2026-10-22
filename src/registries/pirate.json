@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "pirate",
+        "value": "{ id: 'pirate', name: 'THE FREEBOOTER', price: 10, silver: true, desc: \"cutlass and pistol, no shield. 90 health, quick, and the lightest blow in the wood - but a run of FIVE. HOLD X and he levels the pistol: it goes through any guard and nothing blocks it, and then it is EMPTY. A kill seats the next ball, so does a parry, and failing both it loads itself in eight seconds: his powder is whatever the fight is worth. tap C: THE PARRY, a quick guard that turns a blow met on the beat. HOLD C: THE HOOK, a line onto rigging, a rail or a net - or onto a foe, to haul him in and shake a coin loose. RUM is a skill bought with coins: it mends him and then makes him reckless. the plunge is THE BOOT, a boarding stomp. X early in a dodge: THE BOARDING LUNGE, through small foes, and a guard is thrown wide.\" }",
+        "order": 3
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "pirate",
+        "value": "'THE PISTOL GOES THROUGH ANY GUARD, THEN IT IS EMPTY: THE WOOD\\'S GOLD IS HIS POWDER.'",
+        "order": 3
+      }
+    ]
+  }
+}

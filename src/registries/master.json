@@ -1,0 +1,39 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "master",
+        "value": "20",
+        "order": 350
+      }
+    ],
+    "EHP": [
+      {
+        "key": "master",
+        "value": "300",
+        "order": 199
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "master",
+        "value": "'master'",
+        "order": 35
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "master",
+        "value": "'HOUND MASTER'",
+        "order": 143
+      }
+    ],
+    "COLS": [
+      {
+        "key": "master",
+        "value": "['#8a7a68', '#5a4a3a', '#c9463d']",
+        "order": 183
+      }
+    ]
+  }
+}

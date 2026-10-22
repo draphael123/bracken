@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "hound",
+        "value": "18",
+        "order": 334
+      }
+    ],
+    "EHP": [
+      {
+        "key": "hound",
+        "value": "15",
+        "order": 185
+      }
+    ],
+    "COLS": [
+      {
+        "key": "hound",
+        "value": "['#5a4a3a', '#3a2e22', '#c9463d']",
+        "order": 197
+      }
+    ]
+  }
+}

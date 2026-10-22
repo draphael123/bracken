@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "willowisp",
+        "value": "CNF.WISP.hp",
+        "order": 230
+      }
+    ],
+    "COLS": [
+      {
+        "key": "willowisp",
+        "value": "['#6ae8b0', '#dcffe8', '#2a8a6a']",
+        "order": 232
+      }
+    ]
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "thrown": [
+    "updateHerald|raise"
+  ],
+  "notes": [
+    "// THE TIDE HERALD'S WAVE: heraldWave crosses the square on its own, unblockable"
+  ],
+  "quiet": [
+    "updateHerald|callTell"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "answers": {
+    "boo|swoopTell": "dodge"
+  },
+  "notes": [
+    "// through a shield: turn and face it, or be elsewhere"
+  ],
+  "heights": {
+    "boo|swoopTell": "low"
+  }
+}

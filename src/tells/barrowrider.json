@@ -1,0 +1,13 @@
+{
+  "byHand": {
+    "barrowrider|rideTell": "!!",
+    "barrowrider|trampleTell": "!",
+    "barrowrider|fireTell": "!",
+    "barrowrider|lanceTell": "!!",
+    "barrowrider|thrustTell": "!",
+    "barrowrider|remountTell": ""
+  },
+  "notes": [
+    "/* THE BARROW RIDER (2026-09-24, in the Standard-Bearer's place): the ride-through and the lance line no shield turns; the trample, the grave-fire and the thrust it does; the bones crawling back strike nobody */"
+  ]
+}

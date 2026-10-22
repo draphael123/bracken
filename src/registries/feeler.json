@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "feeler",
+        "value": "30",
+        "order": 88
+      }
+    ],
+    "COLS": [
+      {
+        "key": "feeler",
+        "value": "['#7c3a4a', '#e6c2a6', '#3e1d2e']",
+        "order": 90
+      }
+    ]
+  }
+}

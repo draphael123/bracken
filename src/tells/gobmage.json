@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "gobmage|boltTell": "block",
+    "gobmage|runeTell": "dodge"
+  },
+  "heights": {
+    "gobmage|boltTell": "high",
+    "gobmage|runeTell": "low"
+  }
+}

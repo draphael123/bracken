@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "ploughman",
+        "value": "520",
+        "order": 85
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "ploughman",
+        "value": "'THE PLOUGHMAN'",
+        "order": 107
+      }
+    ],
+    "COLS": [
+      {
+        "key": "ploughman",
+        "value": "['#c8b89a', '#6a5238', '#ffd36b']",
+        "order": 87
+      }
+    ],
+    "BOSS_HIT_TUNED": [
+      {
+        "key": "ploughman",
+        "value": "1.3",
+        "order": 11
+      }
+    ]
+  }
+}

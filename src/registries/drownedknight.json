@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "drownedknight",
+        "value": "DKN.DK.knight.hp",
+        "order": 214
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "drownedknight",
+        "value": "'DROWNED KNIGHT'",
+        "order": 134
+      }
+    ],
+    "COLS": [
+      {
+        "key": "drownedknight",
+        "value": "['#56656c', '#3f8f7d', '#8ff0dc']",
+        "order": 216
+      }
+    ]
+  }
+}

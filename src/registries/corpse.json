@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "corpse",
+        "value": "UNBF.UNB.hp.corpse",
+        "order": 42
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "corpse",
+        "value": "'THE FALLEN'",
+        "order": 65
+      }
+    ],
+    "COLS": [
+      {
+        "key": "corpse",
+        "value": "['#7a8088','#7a2a28','#d8d2b8']",
+        "order": 45
+      }
+    ]
+  }
+}

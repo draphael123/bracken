@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "scout",
+        "value": "18",
+        "order": 130
+      }
+    ],
+    "COLS": [
+      {
+        "key": "scout",
+        "value": "['#a8cfc6', '#4a6a2a', '#7ff0e0']",
+        "order": 133
+      }
+    ]
+  }
+}

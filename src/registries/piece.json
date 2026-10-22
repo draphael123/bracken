@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "piece",
+        "value": "6",
+        "order": 58
+      }
+    ],
+    "EHP": [
+      {
+        "key": "piece",
+        "value": "6",
+        "order": 71
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "piece",
+        "value": "'PIECE'",
+        "order": 106
+      }
+    ],
+    "COLS": [
+      {
+        "key": "piece",
+        "value": "['#a0a8b8', '#6a707e', '#3a3e4a']",
+        "order": 72
+      }
+    ]
+  }
+}

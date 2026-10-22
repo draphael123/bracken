@@ -1,0 +1,11 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "venomTick",
+        "value": "5",
+        "order": 205
+      }
+    ]
+  }
+}

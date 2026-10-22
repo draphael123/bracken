@@ -1,0 +1,27 @@
+{
+  "answers": {
+    "hedgeknight|aim": "block",
+    "hedgeknight|cutTell": "block",
+    "hedgeknight|leapTell": "dodge",
+    "hedgeknight|shout": "block",
+    "hedgeknight|stabTell": "block",
+    "hedgeknight|swingTell": "block",
+    "hedgeknight|ekBriarTell": "duck",
+    "hedgeknight|ekJoustTell": "block",
+    "hedgeknight|ekBackTell": "jump"
+  },
+  "notes": [
+    "/* (claude/elitemoves) THE LOW BRIAR: the flat cut turned back at the ankles */"
+  ],
+  "heights": {
+    "hedgeknight|aim": "high",
+    "hedgeknight|cutTell": "low",
+    "hedgeknight|leapTell": "low",
+    "hedgeknight|shout": "low",
+    "hedgeknight|stabTell": "low",
+    "hedgeknight|swingTell": "low",
+    "hedgeknight|ekBriarTell": "high",
+    "hedgeknight|ekJoustTell": "low",
+    "hedgeknight|ekBackTell": "low"
+  }
+}

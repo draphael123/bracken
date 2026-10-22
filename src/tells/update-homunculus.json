@@ -1,0 +1,10 @@
+{
+  "thrown": [
+    "updateHomunculus|poundTell",
+    "updateHomunculus|flaskTell"
+  ],
+  "notes": [
+    "// THE HOMUNCULUS'S POUND: a wave along the floor each way, unblockable",
+    "// THE HOMUNCULUS'S FLASK: the glass breaks where the ring was and leaves acid, unblockable"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "krakSlam",
+        "value": "26",
+        "order": 98
+      }
+    ],
+    "DMG_TUNED": [
+      {
+        "key": "krakSlam",
+        "value": "33",
+        "order": 26,
+        "notes": [
+          "/* (claude/crusader) the delayed overhead, the follow-up after a missed parry, the grab's throw, the brand's fire */"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "lanterneater",
+        "value": "LEM.LE.hp",
+        "order": 220
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "lanterneater",
+        "value": "'lanterneater'",
+        "order": 38
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "lanterneater",
+        "value": "'THE LANTERN-EATER'",
+        "order": 72
+      }
+    ],
+    "COLS": [
+      {
+        "key": "lanterneater",
+        "value": "['#1e2a30', '#e8b860', '#c86a78']",
+        "order": 223
+      }
+    ]
+  }
+}

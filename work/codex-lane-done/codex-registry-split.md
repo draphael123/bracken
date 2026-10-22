@@ -1,6 +1,6 @@
 # codex/registry-split
 
-Status: Partial. First green step: check registrations collected from feature-owned JSON files.
+Status: Partial. Registry migration and exact source/data comparisons pass; real-page hash/pixel proof is pending.
 Base: newest origin/master verified at BATCH112 `5e44cddd` on October 22, 2026.
 Task 1 descriptor/inventory prerequisites are included; no master merge or deployment performed.
 
@@ -20,14 +20,35 @@ identical order. Manifest tests cover duplicate rejection, dynamic new-feature d
 full-only cleanup, exact-only textfit-full, runtime values, and port slots. No existing check assertion,
 timeout, game source, game data or generated tell table changed in this step.
 
-## Remaining
+## Main, tells and preload migration
 
-Main-game registries, tell declarations and automatic preload generation, before/after tell and game-hash
-proofs, and the complete integration gate remain outstanding. This first step is not Task 4 completion.
+- 21 main content registries (1317 entries) now come from feature-owned source expressions under
+  src/registries: damage/health and existing tuned overrides, boss list, bestiary names, colours,
+  common-foe step dispatch, level tiers, hero roster/loop text/teaching and boss damage modifiers.
+  The compiler preserves every original expression and order. The expression/order SHA-256 before
+  and after is f560d8581e5a610ea1069d2ea2411e6b1c541335f1f3a6d89bc7b85dd49d3e0d.
+- Tell declarations moved to 241 feature JSON files. Exact normalized before/after dump comparison
+  passed: all 1044 marks, 709 answered blows, all heights, thrown/quiet/harmless membership unchanged.
+  Order-chapter expansion is retained. Existing provenance comments moved into feature notes.
+- Main's generated blocks stay in the same runtime positions, so existing game code and source audits
+  keep the same initialization and override semantics. No game stat, behavior, layout or art was edited.
+- Build/check/server startup automatically rebuild main/tell/preload artifacts. The preload graph now
+  includes the two generated tell modules: 561 listed, zero reachable modules missing.
+- Generator tests reject duplicate/stale/invalid declarations, discover a new feature without a shared
+  list edit, and regenerate a main block containing merge conflict markers. Existing source checks
+  passed: syntax, tells, comments, homepaths, content-audit, threat-holes, one-new-foe, answer-tags,
+  modulepreload. Inventory remains exactly 425 names in the original order.
+
+## Remaining proof
+
+The isolated real-page proof compares the pre-refactor game against this branch with the same
+transport, seed and input script. It retains source SHAs, complete gameplay traces, tell/level-data
+hashes and exact pixel hashes for Wood, Spire and Canal. Its result is pending; the expression hash
+above is not being presented as a browser/gameplay proof. Full integration gate remains outstanding.
 
 ## QUESTIONS FOR DANIEL
 
 - New check declarations: recommend one feature-owned JSON file and the documented default order.
   Built that collector and preserved the existing exceptional selection semantics.
-- Remaining shared registries: recommend migrating them separately with exact dump/hash comparisons.
-  No approval is needed for the authorized reversible refactor; this report retains its incomplete scope.
+- Merge conflicts: recommend regenerating marked blocks from feature declarations instead of hand
+  merging table rows. Built automatic startup/build generation and a tested conflict-rebuild path.

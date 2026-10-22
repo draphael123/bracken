@@ -1,0 +1,15 @@
+{
+  "byHand": {
+    "bellman|swingTell": "!",
+    "bellman|ringTell": ""
+  },
+  "notes": [
+    "/* (her lash at a lure is entered from src/hush-hands.js granLure: a yellow ! - a shield turns the lash, and it goes at the sound) */   /* (claude/underleaf2) THE BELLMAN (src/hush-hands.js, by hand: a module-file foe): his handbell swung at you a shield turns; raising it to RING throws no blow (rule H) - it wakes the street, and says so in words (HE HEARS YOU) */"
+  ],
+  "answers": {
+    "bellman|swingTell": "block"
+  },
+  "heights": {
+    "bellman|swingTell": "low"
+  }
+}

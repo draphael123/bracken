@@ -1,0 +1,17 @@
+{
+  "byHand": {
+    "harlequin|jabTell": "!",
+    "harlequin|kickTell": "!!"
+  },
+  "notes": [
+    "/* THE PUPPETEER (puppeteer.js, by hand: a module-file boss the audit cannot follow; claude/puppeteer, PUPPETEER3): his whip is string, and no shield turns string; the masterpiece's swat a shield turns, THE BRUTE's heavy chop, his slam (a shock along the boards) and grab and the masterpiece's stomp and reach nothing does; THE HARLEQUIN's quick jab a shield turns, his low kick nothing does */"
+  ],
+  "answers": {
+    "harlequin|jabTell": "block",
+    "harlequin|kickTell": "jump"
+  },
+  "heights": {
+    "harlequin|jabTell": "low",
+    "harlequin|kickTell": "low"
+  }
+}

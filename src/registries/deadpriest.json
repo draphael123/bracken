@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "deadpriest",
+        "value": "UPF.UPR.hp",
+        "order": 4
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "deadpriest",
+        "value": "'UNDEAD PRIEST'",
+        "order": 7
+      }
+    ],
+    "COLS": [
+      {
+        "key": "deadpriest",
+        "value": "['#4a3a52', '#c8ccb0', '#9ab0e0']",
+        "order": 7
+      }
+    ]
+  }
+}

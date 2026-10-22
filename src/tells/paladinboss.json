@@ -1,0 +1,43 @@
+{
+  "byHand": {
+    "paladinboss|chainTell": "!",
+    "paladinboss|chainBeatTell": "!",
+    "paladinboss|smiteTell": "!",
+    "paladinboss|twinTell": "!",
+    "paladinboss|spearTell": "!",
+    "paladinboss|arcTell": "!",
+    "paladinboss|radianceTell": "!!",
+    "paladinboss|sunfallTell": "!!",
+    "paladinboss|verdictTell": "!!",
+    "paladinboss|dawnTell": "!!",
+    "paladinboss|prayTell": "",
+    "paladinboss|snuffTell": ""
+  },
+  "notes": [
+    "/* THE PALADIN, the hero as the boss (paladin-boss.js, by hand: a module-file boss; claude/church2, re-pointed to the PALADIN 4 kit by claude/church3): the war hammer, the smites and the spear a shield turns, heaven's arc is a short told answer to a hero over his head; radiance, sunfall, verdict and dawnfall nothing turns; his prayer and his snuff throw no blow */"
+  ],
+  "answers": {
+    "paladinboss|chainTell": "block",
+    "paladinboss|chainBeatTell": "block",
+    "paladinboss|smiteTell": "block",
+    "paladinboss|twinTell": "block",
+    "paladinboss|spearTell": "jump",
+    "paladinboss|arcTell": "dodge",
+    "paladinboss|radianceTell": "dodge",
+    "paladinboss|sunfallTell": "dodge",
+    "paladinboss|verdictTell": "dodge",
+    "paladinboss|dawnTell": "dodge"
+  },
+  "heights": {
+    "paladinboss|chainTell": "low",
+    "paladinboss|chainBeatTell": "low",
+    "paladinboss|smiteTell": "low",
+    "paladinboss|twinTell": "low",
+    "paladinboss|spearTell": "low",
+    "paladinboss|arcTell": "low",
+    "paladinboss|radianceTell": "low",
+    "paladinboss|sunfallTell": "low",
+    "paladinboss|verdictTell": "low",
+    "paladinboss|dawnTell": "low"
+  }
+}

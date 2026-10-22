@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "tidemarauder|harpoonTell": "block",
+    "tidemarauder|rakeTell": "jump"
+  },
+  "heights": {
+    "tidemarauder|harpoonTell": "high",
+    "tidemarauder|rakeTell": "low"
+  }
+}

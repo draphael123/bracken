@@ -1,0 +1,11 @@
+{
+  "byHand": {
+    "sexton|swingTell": "!",
+    "sexton|rushTell": "!",
+    "sexton|tollTell": "!!",
+    "sexton|dropTell": "!!"
+  },
+  "notes": [
+    "/* THE SEXTON (sexton.js, by hand): the swing and the charge a shield turns; the toll along the deck and the bell off the frame nothing does */"
+  ]
+}

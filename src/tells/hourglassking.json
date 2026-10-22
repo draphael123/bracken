@@ -1,0 +1,41 @@
+{
+  "byHand": {
+    "hourglassking|shardTell": "!",
+    "hourglassking|potTell": "!!",
+    "hourglassking|pendTell": "!",
+    "hourglassking|gearTell": "!!",
+    "hourglassking|streamTell": "!!",
+    "hourglassking|slipTell": "!!",
+    "hourglassking|hourTell": "!!",
+    "hourglassking|surgeTell": "!!",
+    "hourglassking|graspTell": "!!",
+    "hourglassking|rainTell": "!!"
+  },
+  "notes": [
+    "/* THE BURIED CITY (claude/buriedcity, by hand: src/hourglass-king.js MOVES; the construct is a CV machine in src/construct.js - the poke a shield turns, the sweep along the floor) */"
+  ],
+  "answers": {
+    "hourglassking|shardTell": "block",
+    "hourglassking|potTell": "dodge",
+    "hourglassking|pendTell": "block",
+    "hourglassking|gearTell": "jump",
+    "hourglassking|streamTell": "dodge",
+    "hourglassking|slipTell": "dodge",
+    "hourglassking|hourTell": "jump",
+    "hourglassking|surgeTell": "jump",
+    "hourglassking|graspTell": "dodge",
+    "hourglassking|rainTell": "dodge"
+  },
+  "heights": {
+    "hourglassking|shardTell": "high",
+    "hourglassking|potTell": "low",
+    "hourglassking|pendTell": "low",
+    "hourglassking|gearTell": "low",
+    "hourglassking|streamTell": "low",
+    "hourglassking|slipTell": "low",
+    "hourglassking|hourTell": "low",
+    "hourglassking|surgeTell": "low",
+    "hourglassking|graspTell": "low",
+    "hourglassking|rainTell": "high"
+  }
+}

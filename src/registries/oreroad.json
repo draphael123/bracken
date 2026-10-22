@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "oreroad",
+        "value": "1.15",
+        "order": 14
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "oreroad",
+        "value": "1.15",
+        "order": 14
+      }
+    ]
+  }
+}

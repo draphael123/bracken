@@ -1,6 +1,8 @@
 import http from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
+import { generateRegistries } from './tools/registries.mjs';
+generateRegistries();
 
 const PORT = process.env.PORT || 5860;
 /* STARTED BY A TOOL (tools/cdp.mjs), it goes when that tool goes - even one killed outright, whose own hooks never ran */

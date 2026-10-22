@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "drunk",
+        "value": "22",
+        "order": 96
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "drunk",
+        "value": "'THE DRUNK'",
+        "order": 115
+      }
+    ],
+    "COLS": [
+      {
+        "key": "drunk",
+        "value": "['#5e7a3a', '#c9a040', '#d0503e']",
+        "order": 102
+      }
+    ]
+  }
+}

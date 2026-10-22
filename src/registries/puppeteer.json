@@ -1,0 +1,32 @@
+{
+  "entries": {
+    "EHP": [
+      {
+        "key": "puppeteer",
+        "value": "PM.PUP.hp",
+        "order": 222
+      }
+    ],
+    "BOSS_T": [
+      {
+        "key": "puppeteer",
+        "value": "'puppeteer'",
+        "order": 39
+      }
+    ],
+    "BEAST_SHORT": [
+      {
+        "key": "puppeteer",
+        "value": "'THE PUPPETEER'",
+        "order": 73
+      }
+    ],
+    "COLS": [
+      {
+        "key": "puppeteer",
+        "value": "['#5a2a4a', '#f4ecd8', '#e8c23a']",
+        "order": 224
+      }
+    ]
+  }
+}

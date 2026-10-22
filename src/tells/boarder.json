@@ -1,0 +1,18 @@
+{
+  "answers": {
+    "boarder|shootTell": "block",
+    "boarder|slashTell": "block",
+    "boarder|swingTell": "block",
+    "boarder|throwTell": "block",
+    "boarder|ekBoardTell": "dodge",
+    "boarder|ekGrapTell": "block"
+  },
+  "heights": {
+    "boarder|shootTell": "high",
+    "boarder|slashTell": "low",
+    "boarder|swingTell": "low",
+    "boarder|throwTell": "high",
+    "boarder|ekBoardTell": "low",
+    "boarder|ekGrapTell": "high"
+  }
+}

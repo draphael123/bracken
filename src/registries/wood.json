@@ -1,0 +1,18 @@
+{
+  "entries": {
+    "TIER": [
+      {
+        "key": "wood",
+        "value": "0",
+        "order": 34
+      }
+    ],
+    "TIER_BOSS": [
+      {
+        "key": "wood",
+        "value": "0",
+        "order": 34
+      }
+    ]
+  }
+}

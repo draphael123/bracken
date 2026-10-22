@@ -1,0 +1,25 @@
+{
+  "entries": {
+    "DMG": [
+      {
+        "key": "bat",
+        "value": "10",
+        "order": 295
+      }
+    ],
+    "EHP": [
+      {
+        "key": "bat",
+        "value": "8",
+        "order": 159
+      }
+    ],
+    "COLS": [
+      {
+        "key": "bat",
+        "value": "['#3a3448', '#5a5468']",
+        "order": 164
+      }
+    ]
+  }
+}

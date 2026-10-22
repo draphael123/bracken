@@ -1,0 +1,35 @@
+{
+  "entries": {
+    "HEROES": [
+      {
+        "key": "ranger",
+        "value": "{ id: 'ranger', name: 'THE RANGER', price: 10, silver: true, desc: 'a longbow, a quiver of five arrows and a hunting knife, and 90 health. SHE COVERS SOME OF THE ROOM, NOT ALL OF IT. TAP X: a quick shot, short and weak. HOLD X and she DRAWS - rooted while she does - and lets go a strong long shot; her arrows ARC and DROP. A loosed arrow STICKS where it lands and GLINTS: walk over it to take it back (one comes back by itself every six seconds). Point-blank, or with none left, X is THE KNIFE. UP+X: a rising shot. DOWN+X in the air: a shot straight down, and a hop up off it. Arrows that land from the SWEET SPOT - not too close, not too far - fill HUNTER\\'S FOCUS: full, UP+C MARKS her quarry (seen through walls; every blow on it lands harder), or a full draw looses a PIERCING SHOT through a whole line. C: THE BOW-BASH, a shove - on the beat of a yellow blow it is her parry: the foe is thrown back out to range and her next arrow is a riposte. DOWN+C: a SNARE at her feet. Her dodge is a BACKFLIP, and she can shoot in it.' }",
+        "order": 8
+      }
+    ],
+    "HERO_LOOP": [
+      {
+        "key": "ranger",
+        "value": "'ARROWS ARC AND STICK: WALK OVER THEM. SWEET-SPOT HITS FILL FOCUS. TAP C ON THE BEAT: BASH.'",
+        "order": 7
+      }
+    ],
+    "RG_TEACH": [
+      {
+        "key": "shot",
+        "value": "['rgShotTold', 'TAP X: A QUICK SHOT. HOLD X: DRAW, AND LET GO. YOUR ARROWS DROP: MIND THE RANGE.']",
+        "order": 0
+      },
+      {
+        "key": "empty",
+        "value": "['rgEmptyTold', 'QUIVER EMPTY: CROUCH TO RESTOCK. OR WALK OVER YOUR ARROWS. UNTIL THEN, THE KNIFE.']",
+        "order": 1
+      },
+      {
+        "key": "focus",
+        "value": "['rgFocusTold', 'FOCUS FULL: UP+C MARKS YOUR QUARRY, OR A FULL DRAW LOOSES A PIERCING SHOT.']",
+        "order": 2
+      }
+    ]
+  }
+}

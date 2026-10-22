@@ -1,0 +1,11 @@
+{
+  "answers": {
+    "bale|rollTell": "jump"
+  },
+  "notes": [
+    "// a bale that size bowls a shield over: over it"
+  ],
+  "heights": {
+    "bale|rollTell": "low"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "answers": {
+    "tippler|barTell": "block",
+    "tippler|heaveTell": "dodge"
+  },
+  "heights": {
+    "tippler|barTell": "low",
+    "tippler|heaveTell": "low"
+  }
+}

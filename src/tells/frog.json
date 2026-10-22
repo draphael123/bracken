@@ -1,0 +1,19 @@
+{
+  "answers": {
+    "frog|crouch": "block",
+    "frog|spitTell": "block",
+    "frog|tongueTell": "block",
+    "frog|snapTell": "block",
+    "frog|flopTell": "jump"
+  },
+  "notes": [
+    "/* (claude/frogking2: the breath, the ripple and the slap went with the old court) */   /* (claude/marsh2) the tongue that goes for the flies is a shield's too (lead the flies onto him and it is his own); the belly-flop's wave and the ripple's ring are jumped; the slap is left - off the pads */   // THE BULLFROG KING (a boss, claude/firsthour): every blow of his is a shield's, and a shield on the tongue, the breath or the landing opens him; his spit is told now"
+  ],
+  "heights": {
+    "frog|crouch": "low",
+    "frog|spitTell": "low",
+    "frog|tongueTell": "low",
+    "frog|snapTell": "low",
+    "frog|flopTell": "low"
+  }
+}
