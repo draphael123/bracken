@@ -117,7 +117,7 @@ const farBase = (VH, dY) => Math.round(VH * 0.5 + dY * 0.05), midBase = (VH, dY)
 /* the mid row in view: [{ sx, ti, v, hh }] at parallax f (a deterministic world-anchored list) */
 function midRow(cx, VW, VH, dY, f = 0.3) {
   const out = [], mid = cx + VW / 2, s = 46, i0 = Math.floor((mid * f - VW / 2 - 50) / s), i1 = Math.ceil((mid * f + VW / 2 + 50) / s), mb = midBase(VH, dY);
-  for (let i = i0; i <= i1; i++) { const hs = hash(i, 71), U = i * s + (hs % 22), t = (U / f) / 16, z = zoneOf(t), dens = ZONES[z][3]; if ((hs >> 5) % 100 >= dens) continue;
+  for (let i = i0; i <= i1; i++) { const hs = hash(i, 71), U = i * s + (hs % 22), t = (U / f) / 16, z = zoneOf(t), dens = ZONES[z][3]; if ((hs >>> 5) % 100 >= dens) continue;
     out.push({ sx: Math.round(VW / 2 + U - mid * f), ti: ZONES[z][2], v: hs % 5, hh: mb, hs }); }
   return out;
 }
@@ -130,10 +130,10 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full, palisade) {
     g.fillStyle = mix('#a2aea4', '#8a9a94', zi / 4); g.globalAlpha = 0.55; g.fillRect(0, fb - 6, VW, VH - fb + 40); g.globalAlpha = 1;   /* the far fen floor: a haze */
     const f = 0.12, s = 30, i0 = Math.floor((mid * f - VW / 2 - 30) / s), i1 = Math.ceil((mid * f + VW / 2 + 30) / s);
     for (let i = i0; i <= i1; i++) { const hs = hash(i, 13), U = i * s + (hs % 14), t = (U / f) / 16, z = zoneOf(t), sx = Math.round(VW / 2 + U - mid * f);
-      if ((hs >> 4) % 100 > 60 + ZONES[z][3] * 0.3) continue;
+      if ((hs >>> 4) % 100 > 60 + ZONES[z][3] * 0.3) continue;
       const sp = once('fc' + (hs % 5) + 't' + ZONES[z][2], () => bakeFarCypress(hs % 5 + 1, ZONES[z][2])); g.drawImage(sp, sx - 28, fb - sp.height + 4 + (hs % 4)); }
     /* the far stilt huts: world-anchored every ~50 tiles in the crews' and the stilts' reaches, a lantern at each door */
-    for (let n = Math.floor((tM - 60) / 28); n <= Math.ceil((tM + 60) / 28); n++) { const hs = hash(n, 97), t = n * 28 + (hs % 16), z = zoneOf(t); if (!ZONES[z][5] || (hs >> 6) % 3 === 0) continue;
+    for (let n = Math.floor((tM - 60) / 28); n <= Math.ceil((tM + 60) / 28); n++) { const hs = hash(n, 97), t = n * 28 + (hs % 16), z = zoneOf(t); if (!ZONES[z][5] || (hs >>> 6) % 3 === 0) continue;
       const sx = Math.round(VW / 2 + (t * 16 - mid) * 0.12), ti = ZONES[z][2]; if (sx < -40 || sx > VW + 40) continue;
       g.globalAlpha = 0.9; g.drawImage(once('hut' + ti, () => bakeFarHut(ti)), sx - 20, fb - 34); g.globalAlpha = 1;
       const fl = 0.7 + 0.3 * Math.sin(time * 5.3 + n * 2.1) * Math.sin(time * 2.2 + n); g.globalAlpha = 0.22 * fl; g.fillStyle = '#ffcf6a'; g.fillRect(sx - 3, fb - 22, 8, 8); g.globalAlpha = 0.9; g.fillStyle = '#ffd77a'; g.fillRect(sx, fb - 19, 2, 2); g.globalAlpha = 1; }
@@ -159,10 +159,10 @@ export function drawReflections(g, cx, cy, VW, VH, time, dY, x0, x1, y) {
   const mb = midBase(VH, dY);
   for (const o of midRow(cx, VW, VH, dY, 0.3)) { const sp = once('mc' + o.v + 't' + o.ti, () => bakeMidCypress(o.v + 1, o.ti)); if (o.sx + 42 < x0 || o.sx - 42 > x1) continue;
     const sh = Math.round(Math.sin(time * 1.3 + o.sx * 0.2) * 1), top = Math.max(mb, y - 1);
-    g.save(); g.globalAlpha = 0.2; g.translate(o.sx - 42 + sh, mb + 3); g.scale(1, -0.55); g.drawImage(sp, 0, -sp.height, sp.width, sp.height); g.restore(); void top; }
+    g.save(); g.globalAlpha = 0.13; g.translate(o.sx - 42 + sh, mb + 3); g.scale(1, -0.55); g.drawImage(sp, 0, -sp.height, sp.width, sp.height); g.restore(); void top; }
   /* the far huts' lanterns, doubled in the water as a warm broken streak */
   const fb = farBase(VH, dY), mid = cx + VW / 2, tM = mid / 16;
-  for (let n = Math.floor((tM - 60) / 28); n <= Math.ceil((tM + 60) / 28); n++) { const hs = hash(n, 97), t = n * 28 + (hs % 16), z = zoneOf(t); if (!ZONES[z][5] || (hs >> 6) % 3 === 0) continue;
+  for (let n = Math.floor((tM - 60) / 28); n <= Math.ceil((tM + 60) / 28); n++) { const hs = hash(n, 97), t = n * 28 + (hs % 16), z = zoneOf(t); if (!ZONES[z][5] || (hs >>> 6) % 3 === 0) continue;
     const sx = Math.round(VW / 2 + (t * 16 - mid) * 0.12); if (sx < x0 || sx > x1) continue; const fl = 0.7 + 0.3 * Math.sin(time * 4.1 + n);
     for (let k = 0; k < 4; k++) { g.globalAlpha = 0.28 * fl * (1 - k / 4); g.fillStyle = '#ffd77a'; g.fillRect(sx - 1 + Math.round(Math.sin(time * 2 + k * 2 + n) * 2), Math.max(y + 3 + k * 3, fb + 20 + k * 3), 2 + (k & 1), 1); } }
   g.globalAlpha = 1;
@@ -172,18 +172,18 @@ export function drawReflections(g, cx, cy, VW, VH, time, dY, x0, x1, y) {
 export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
   const mid = cx + VW / 2, f = 0.55, s = 120, i0 = Math.floor((mid * f - VW / 2 - 30) / s), i1 = Math.ceil((mid * f + VW / 2 + 30) / s), yoff = Math.round(VH - 256 + Math.min(76, dY * 0.17)), tM = mid / 16;
   for (let i = i0; i <= i1; i++) { const hs = hash(i, 41), U = i * s + (hs % 60), t = (U / f) / 16, z = zoneOf(t), sx = Math.round(VW / 2 + U - mid * f), keep = ZONES[z][3] * 0.55;
-    if ((hs >> 4) % 100 >= keep) continue; const ti = ZONES[z][2];
+    if ((hs >>> 4) % 100 >= keep) continue; const ti = ZONES[z][2];
     g.globalAlpha = 0.6; g.drawImage(once('nt' + (hs % 3) + 't' + ti, () => bakeNearTrunk(hs % 3 + 1, ti)), sx - 24, yoff); g.globalAlpha = 1; }
   /* the hanging moss across the top of the frame, swaying (sparse, never over the road) */
   { const s2 = 96, j0 = Math.floor((mid * 0.5 - VW / 2 - 40) / s2), j1 = Math.ceil((mid * 0.5 + VW / 2 + 40) / s2), top = Math.min(0, Math.round(dY * 0.1 - 6)) - 14;
-    for (let j = j0; j <= j1; j++) { const hs = hash(j, 59), U = j * s2 + (hs % 50), t = (U / 0.5) / 16, z = zoneOf(t); if ((hs >> 5) % 100 >= ZONES[z][3] * 0.7) continue; const sx = Math.round(VW / 2 + U - mid * 0.5), sw = Math.round(Math.sin(time * 0.5 + hs * 0.02) * 1.5);
+    for (let j = j0; j <= j1; j++) { const hs = hash(j, 59), U = j * s2 + (hs % 50), t = (U / 0.5) / 16, z = zoneOf(t); if ((hs >>> 5) % 100 >= ZONES[z][3] * 0.7) continue; const sx = Math.round(VW / 2 + U - mid * 0.5), sw = Math.round(Math.sin(time * 0.5 + hs * 0.02) * 1.5);
       g.globalAlpha = 0.85; g.drawImage(once('cu' + (hs % 3), () => bakeCurtain(hs % 3 + 1)), sx - 32 + sw, top); g.globalAlpha = 1; } }
   /* the low drift: a long wisp rolling over the water in front, two speeds */
   { const dr = once('drift', bakeDrift), zk = ZONES[zoneOf(tM)][4], wy = Math.round(WATER_PX - cy);
     for (const [sp, dy, a] of [[5, -2, 0.55], [9, 6, 0.4]]) { const so = ((-(cx * 0.45) - time * sp) % 200 + 200) % 200; g.globalAlpha = a * zk; for (let X = -200 + so; X < VW; X += 200) g.drawImage(dr, Math.round(X), wy + dy - 12); }
     g.globalAlpha = 1; }
   /* DRAGONFLIES: two to four over the reeds of the cuttings and the crews' reach, looping low over the water */
-  { for (let n = Math.floor(tM / 24) - 1; n <= Math.floor(tM / 24) + 2; n++) { const hs = hash(n, 151), t0 = n * 24 + (hs % 12), z = zoneOf(t0); if (z > 1 || (hs >> 3) % 3 === 0) continue;
+  { for (let n = Math.floor(tM / 24) - 1; n <= Math.floor(tM / 24) + 2; n++) { const hs = hash(n, 151), t0 = n * 24 + (hs % 12), z = zoneOf(t0); if (z > 1 || (hs >>> 3) % 3 === 0) continue;
       const a = time * (0.5 + (hs % 5) * 0.08) + hs, X = Math.round(VW / 2 + (t0 * 16 - cx - VW / 2) + Math.sin(a) * 34 + Math.sin(a * 2.3) * 8), Y = Math.round(WATER_PX - cy - 20 - (hs % 12) + Math.sin(a * 1.7) * 9);
       if (X < -10 || X > VW + 10) continue; g.drawImage(once('df' + (Math.floor(time * 24 + hs) & 1), () => bakeFly(Math.floor(time * 24 + hs) & 1)), X, Y); } }
 }
