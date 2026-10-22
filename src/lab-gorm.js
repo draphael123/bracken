@@ -67,8 +67,11 @@ export function gormHands(c) {
 }
 /* THE ESCAPE, for the lab: his P1 bar has emptied - the run is a level's run (tools/gorm2.mjs walks it with the walker); the lab goes straight to his
    glade's door with the hero as the flee left him (fully healed, his flasks as he had them) */
+export const RUN_ARRIVE = 0.55;   /* (the walker, 10-22: knight 50%, warden 47%, pyro 68% at the wood's shrine, 0 deaths, 0 drinks) */
 export function gormSkipRun(BK) {
   const G = BK.gorm && BK.gorm(); if (!G) return false; const e = BK.enemies().find(q => q.t === 'king' && q.alive); if (!e || e.stage === 'court') return false;
   if (G.persist && G.persist.runDone && BK.L.arena === BK.L.glade && e.stage === 'glade') return false;
-  G.skipTo('glade'); const A = BK.L.glade; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); return true;
+  /* the wood is not free: the walker (tools/level-walk.mjs kings --from=470 --setup) arrives at its shrine with RUN_ARRIVE of his health on the mean, having
+     drunk nothing - so the lab's hero touches that shrine (the game's own refill: one flask) and goes into the glade with that share of his health */
+  G.skipTo('glade'); const sh = G.persist ? null : null; BK.tp(595, 9); BK.sim(40); BK.P.hp = Math.min(BK.P.hp, Math.round(BK.P.maxHp * RUN_ARRIVE)); const A = BK.L.glade; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); return true;
 }

@@ -367,6 +367,7 @@ export const ANSWER = {
   'armour|swingTell': 'block',
   'assassin|markTell': 'dodge', 'assassin|stabTell': 'block',
   'grandmother|knellTell': 'jump', 'grandmother|lureTell': 'block', 'grandmother|jabTell': 'block', 'bellman|swingTell': 'block',   /* (claude/underleaf2) her knell runs the boards: jump it; her lash at a lure a shield turns; the Bellman's handbell */
+  'royalboar|tell': 'block',   /* (claude/gorm2) THE ROYAL BOAR: a shield turns it (dazed) - or jump it, it runs on under you */
   'badger|chargeTell': 'block',
   'bannerbearer|poleTell': 'block',
   'bellguard|hookTell': 'block', 'bellguard|knellTell': 'dodge',
@@ -632,7 +633,7 @@ export const HEIGHT = {
   'armour|swingTell': 'high',
   'assassin|markTell': 'low', 'assassin|stabTell': 'low',
   'bellman|swingTell': 'low', 'grandmother|lureTell': 'low', 'grandmother|knellTell': 'low', 'grandmother|jabTell': 'low',   /* (claude/underleaf2) the handbell at your chest, her lash and jab low, the knell along the boards: no duck takes any of them */
-  'badger|chargeTell': 'low',
+  'royalboar|tell': 'low', 'badger|chargeTell': 'low',
   'bale|rollTell': 'low',
   'bannerbearer|poleTell': 'low',
   'bellguard|hookTell': 'low', 'bellguard|knellTell': 'low',

@@ -20,7 +20,7 @@ export const THREAT = { burngob: 2.5, emberwisp: 2, pyromancer: 5, captive: 0, o
   eel: 2, urchin: 1, angler: 2.5, siren: 3, crab: 1.5, scout: 2, tideguard: 3, petrel: 1.5, gull: 1,
   watch: 3, wight: 3, lance: 6, rockgoblin: 2.5, golem: 5, windcaller: 6, roc: 6, owl: 6, king: 6,
   assassin: 3.5, berserker: 5, grandmother: 6,
-  heronfoe: 2, badger: 2.5, gar: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2, logpile: 0,
+  heronfoe: 2, badger: 2.5, royalboar: 3.5, gar: 2, ramlord: 6, dog: 1.5, skybolt: 2.5, rockfall: 2, catapult: 2.5, towertop: 2, logpile: 0,
   dropcage: 2, firepit: 1.5, firevent: 2, hotplate: 1.5, hammer: 3,
   frog: 5, chief: 5, queen: 4, oldtusker: 5, bogtroll: 5, stiltwalker: 2.2, sag: 0, rotten: 0, lashing: 0, crewgap: 0, undertow: 0, boar: 2, pinemoth: 1, mother: 5, greathound: 4, forgemaster: 5, gqueen: 6, herald: 6,
   reefmaw: 6, champion: 6, captain: 6, masthead: 6, lampreeve: 5, tollmaster: 6, wickling: 2, oilcask: 0, oilvalve: 0, tarnet: 0,   /* (claude/lamplit3) THE WICKLING: a touch that steals your fire and a burst you set off; the oil casks, the valves and the tar nets are the street's machines */
