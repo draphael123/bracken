@@ -4,11 +4,34 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness]
         default: prove
 permissions:
   contents: read
 jobs:
+  harness:
+    if: inputs.mode == 'harness'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [raft-recall, boss-openings, levelling-runtime]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/lab-collect-selftest.mjs
+      - run: node tools/lab-navigation-proof.mjs
+      - run: node tools/lab-memory-check.mjs "$CHECK"
+        env:
+          CHECK: ${{ matrix.check }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: harness-${{ matrix.check }}
+          path: gate-data/
   serial:
     if: inputs.mode == 'serial'
     runs-on: ubuntu-latest

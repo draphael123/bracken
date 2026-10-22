@@ -1,6 +1,6 @@
 // Install collection only in disposable lab helpers that rebuild native-backed art.
 // This function is serialized into the page; keep it independent of module bindings.
-export function installLabCollection(BK, collect, names = ['load', 'setHero', 'reset'], every = 4) {
+export function installLabCollection(BK, collect, names = ['load', 'setHero', 'reset'], every = 1) {
   let count = 0, pending = 0;
   for (const name of names) {
     const original = BK[name];

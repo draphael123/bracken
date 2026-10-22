@@ -113,6 +113,16 @@ export async function openPage(opts = {}) {
      tools were calibrated at (0.6, the default until batch 92 made it 100%), already migrated (speedV3), unless the page has settings of its own. opts.speed overrides it
      (a number), opts.hints (none / low / medium / high; default HIGH: the tools were calibrated on every hint, claude/hintlevel; a NEW player gets MEDIUM from the game itself), opts.speed === false leaves the game's own default and migration alone (tools/settings-tabs.mjs tests those). A tool that sets BK.SET.speed still wins. */
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
+  // Raw Page.navigate calls create a new lab too. Install before BK is published, without a timer or simulation step.
+  if (!opts.noWait && opts.gcLoads !== false && process.env.BRACKEN_LAB_GC !== '0') {
+    await send('Page.addScriptToEvaluateOnNewDocument', { source: `(()=>{
+      if(typeof gc!=='function')return;
+      Object.defineProperty(window,'BK',{configurable:true,enumerable:true,get(){return undefined;},set(value){
+        Object.defineProperty(window,'BK',{configurable:true,enumerable:true,writable:true,value});
+        if(value)(${installLabCollection.toString()})(value,gc,${JSON.stringify(opts.gcHelpers === false ? ['load'] : ['load','setHero','reset'])});
+      }});
+    })()` });
+  }
   await send('Page.navigate', { url: URL0 });
   let ready = false;
   for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; }); if (!ready) await sleep(250); }
