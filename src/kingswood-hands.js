@@ -15,6 +15,7 @@
 //   fight while they march: a hero ABOVE the road is not seen and they pass under him and out through the side gate; a hero on the road in front of
 //   them, or a blow or a drop on one, turns the whole court on him. The pegs over the road are the ambush.
 // Every capital line it says goes through ctx.number with a line listed here (KW_SAY) and in src/hint-lines.js.
+import * as KP from './redraw/kingswood_props.js'; import { deckCell } from './redraw/kingswood_tiles.js';   /* (claude/kingswood2art) the ropes', loads', procession's and side gate's pictures */
 export const ROPE = { g: 900, vmax: 520, crush: 30, cageDmg: 16, caged: 1.0, logW: 3, logH: 14, logV: 150, logDmg: 26, logHero: 14, logMax: 40, dropTell: 0 };
 export const MARCH = { v: 60, see: 72, seeY: 14, wake: 150, exitT: 0.6 };
 export const KW_SAY = {
@@ -23,6 +24,7 @@ export const KW_SAY = {
   march: 'THE COURT MARCHES: HIDE ABOVE, OR DROP SOMETHING ON IT', seen: 'THE COURT SEES YOU', passed: 'THE COURT HAS PASSED YOU BY', broken: 'THE PROCESSION IS BROKEN',
 };
 
+const hash = k => { let h = 5381; for (let i = 0; i < k.length; i++) h = (Math.imul(h, 33) + k.charCodeAt(i)) >>> 0; return h; };
 export function makeKingswoodHands(ctx) {
   const TS = ctx.TS, H = {};
   const L = () => ctx.L;
@@ -52,6 +54,7 @@ export function makeKingswoodHands(ctx) {
     for (const e of ctx.enemies()) { if (!e.alive || !e.march) continue;
       if (!pr || pr.done) { e.alive = false; e.march = null; continue; }
       e.marchHp = e.hp; e.face = pr.dir; e.vx = 0; }
+    { const ms = ctx.enemies().filter(e => e.alive && e.march).sort((a, b) => a.x - b.x); const ROLES = { 0: 'bearer', 3: 'bearer', 5: 'drum', 6: 'bearer' }; ms.forEach((e, i) => { e.kwRole = ROLES[i] || null; e.kwSeed = i; }); }   /* THE COURT's bearers and drummer (src/redraw/kingswood_props.js) */
   };
   H.load = () => { S = null; H.reset(); };
 
@@ -79,7 +82,7 @@ export function makeKingswoodHands(ctx) {
     /* a log: it rolls on if it has a road to roll */
     if (d.roll) { h.state = 'roll'; h.rolled = 0; ctx.sfx.rumble && ctx.sfx.rumble(); if (once('rolls')) say(x, h.ly - 30, 'rolls'); } else h.state = 'down';
   }
-  function split(h) { h.state = 'gone'; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.thud && ctx.sfx.thud(); ctx.shake(3); ctx.burst(h.lx, h.ly - 6, 14, ['#8a5a32', '#c9a060', '#5c3a1d'], 90, 0.7); S.n.logs++; if (once('split')) say(h.lx, h.ly - 24, 'split', '#c9b27c'); }
+  function split(h) { h.state = 'gone'; h.goneT = 0; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.thud && ctx.sfx.thud(); ctx.shake(3); ctx.burst(h.lx, h.ly - 6, 14, ['#8a5a32', '#c9a060', '#5c3a1d'], 90, 0.7); S.n.logs++; if (once('split')) say(h.lx, h.ly - 24, 'split', '#c9b27c'); }
 
   /* ---------- EVERY FRAME ---------- */
   H.update = dt => {
@@ -89,10 +92,11 @@ export function makeKingswoodHands(ctx) {
         const target = d.load === 'span' ? (d.span[2] + 1) * TS : d.land ? (d.land[1] + 2) * TS : null;
         if (target !== null) { if (h.ly >= target) { h.ly = target; land(h); } }
         else { const ty = Math.floor(h.ly / TS), half = d.load === 'log' ? TS : 8; if (standAt(Math.floor((h.lx - half) / TS), ty) || standAt(Math.floor((h.lx + half) / TS), ty) || standAt(Math.floor(h.lx / TS), ty) || ty >= lv.H - 1) { h.ly = ty * TS; h.vy = 0; land(h); } } }
+      else if (h.state === 'gone') { h.goneT = (h.goneT || 0) + dt; }
       else if (h.state === 'roll') { const dir = d.roll, v = ROPE.logV, half = loadW(d) / 2, row = Math.floor((h.ly - 2) / TS);
         const nx = h.lx + dir * v * dt, front = Math.floor((nx + dir * half) / TS);
         if (ctx.solidAt(front, row) || h.rolled >= (d.rollMax || ROPE.logMax) * TS) { split(h); continue; }
-        h.rolled += Math.abs(nx - h.lx); h.lx = nx;
+        h.rolled += Math.abs(nx - h.lx); h.lx = nx; h.turn = (h.turn || 0) + dt * 14;
         const fy = Math.floor(h.ly / TS); if (!standAt(Math.floor(h.lx / TS), fy)) { h.vy = Math.min(ROPE.vmax, h.vy + ROPE.g * dt); h.ly += h.vy * dt; const ty = Math.floor(h.ly / TS); if (standAt(Math.floor(h.lx / TS), ty)) { h.ly = ty * TS; h.vy = 0; } if (h.ly > lv.H * TS) { split(h); continue; } }
         const bx = crushBox(h, d);
         for (const e of ctx.enemies()) if (e.alive && !e.maxHp && !h.hit.has(e) && ctx.overlap(bx, ctx.box(e))) { h.hit.add(e); ctx.hurt(e, d.crush || ROPE.logDmg, h.lx - dir * 20); e.stagger = Math.max(e.stagger || 0, 0.8); S.n.crushed++; }
@@ -101,6 +105,7 @@ export function makeKingswoodHands(ctx) {
     /* THE NAMED AREAS: the banner when you come into one */
     if (P && lv.sections) { const k = lv.sections.findIndex(s => P.x >= s.x0 * TS && P.x < s.x1 * TS); if (k >= 0 && k !== S.sec) { if (S.sec >= 0 || k === 0) S.banner = { name: lv.sections[k].name, t: 3.4 }; S.sec = k; } }
     if (S.banner) { S.banner.t -= dt; if (S.banner.t <= 0) S.banner = null; }
+    if (S.proc) { const want = S.proc.state === 'march' ? 1 : 0; S.gate = (S.gate || 0) + Math.max(-dt * 1.5, Math.min(dt * 1.5, want - (S.gate || 0))); }
     procStep(dt, P);
   };
 
@@ -144,50 +149,40 @@ export function makeKingswoodHands(ctx) {
   H.read = () => S ? { hoists: [...S.hs.values()].map(h => ({ id: h.id, state: h.state, ly: h.ly, lx: h.lx })), proc: S.proc ? { state: S.proc.state, done: S.proc.done, passed: S.proc.passed } : null, banner: S.banner ? S.banner.name : null, sec: S.sec, n: { ...S.n } } : null;
   H.hoist = id => S && S.hs.get(id);
 
-  /* ---------- DRAWING (greybox: the art pass gives the ropes, pegs, cages and logs their own sprites) ---------- */
+  /* ---------- DRAWING (claude/kingswood2art: src/redraw/kingswood_props.js) ---------- */
   const R = Math.round;
   const dots = (g, x, y0, y1, col) => { g.fillStyle = col; for (let y = y0; y < y1; y += 5) g.fillRect(x, y, 1, 2); };
   const hdots = (g, x0, x1, y, col) => { g.fillStyle = col; const a = Math.min(x0, x1), b = Math.max(x0, x1); for (let x = a; x < b; x += 6) g.fillRect(x, y, 3, 1); };
-  const rope = (g, x0, y0, x1, y1) => { g.strokeStyle = '#c9a060'; g.lineWidth = 1; g.beginPath(); g.moveTo(x0 + 0.5, y0 + 0.5); g.lineTo(x1 + 0.5, y1 + 0.5); g.stroke(); };
-  function drawPeg(g, x, y, up, glint, time) {   /* the court's tie-off: a short post with a red-and-gold pennant; the rope round it while it holds */
-    g.fillStyle = '#5c3a1d'; g.fillRect(x - 2, y - 22, 4, 22); g.fillStyle = '#8a5a32'; g.fillRect(x - 2, y - 22, 1, 22);
-    g.fillStyle = '#e0b040'; g.fillRect(x - 3, y - 24, 6, 2);
-    const fl = Math.sin(time * 4 + x) > 0 ? 1 : 0; g.fillStyle = '#a83a2a'; g.fillRect(x + 2, y - 21, 6 + fl, 4); g.fillStyle = '#e0b040'; g.fillRect(x + 2, y - 21, 6 + fl, 1);
-    if (up) { g.fillStyle = '#c9a060'; g.fillRect(x - 3, y - 14, 6, 2); g.fillRect(x - 3, y - 11, 6, 1); }
-    else { g.fillStyle = '#c9a060'; g.fillRect(x + 2, y - 12, 4, 1); g.fillRect(x + 4, y - 10, 2, 3); }
-    if (glint && Math.floor(time * 3) % 2) { g.fillStyle = '#fff6c8'; g.fillRect(x - 1, y - 27, 2, 2); g.fillRect(x - 4, y - 18, 1, 1); g.fillRect(x + 3, y - 16, 1, 1); } }
-  function drawCage(g, x, b, down) { const w = 2 * TS, h = 2 * TS, x0 = x - TS, y0 = b - h;
-    g.fillStyle = 'rgba(40,24,14,0.35)'; g.fillRect(x0 + 2, y0 + 2, w - 4, h - 4);
-    g.fillStyle = down ? '#6d6458' : '#8b8378'; g.fillRect(x0, y0, w, 3); g.fillRect(x0, b - 3, w, 3); for (let k = 0; k <= 4; k++) g.fillRect(x0 + k * 7 + (k === 4 ? -1 : 0), y0, 2, h);
-    g.fillStyle = '#e0b040'; g.fillRect(x - 2, y0 - 3, 4, 3); }
-  function drawLog(g, cx, b, w, time, rolling) { const x0 = cx - w / 2, y0 = b - ROPE.logH;
-    g.fillStyle = '#6a4424'; g.fillRect(x0, y0 + 1, w, ROPE.logH - 2); g.fillStyle = '#8a5a32'; g.fillRect(x0, y0 + 1, w, 3); g.fillStyle = '#4a2c14'; g.fillRect(x0, b - 3, w, 2);
-    const sp = rolling ? (time * 10) % 8 : 0; g.fillStyle = '#5c3a1d'; for (let k = 4 + sp; k < w - 4; k += 8) g.fillRect(Math.round(x0 + k), y0 + 3, 1, ROPE.logH - 6);
-    g.fillStyle = '#c9a060'; g.fillRect(x0 - 1, y0 + 2, 3, ROPE.logH - 4); g.fillRect(x0 + w - 2, y0 + 2, 3, ROPE.logH - 4); g.fillStyle = '#8a5a32'; g.fillRect(x0, y0 + 5, 1, 3); g.fillRect(x0 + w - 1, y0 + 5, 1, 3); }
+  const spanTile = (l, r) => deckCell(1, l, r, l ? 1 : r ? 2 : 0);
+  /* the banner bearer's standard, the drummer's drum: over the foe's own body (main.js calls this per marcher, after its sprite) */
+  H.marchOver = (g, e, cx, cy, time) => { if (!S || !e.alive || !e.kwRole || !e.march) return; const x = R(e.x - cx), y = R(e.y - cy);
+    if (e.kwRole === 'bearer') KP.drawStandard(g, x, y, e.face || -1, time, e.kwSeed || 0);
+    else if (e.kwRole === 'drum') { const pr = S.proc, u = pr && pr.state === 'march' ? 1 - Math.max(0, pr.drumT) / 0.62 : 0.6; KP.drawDrum(g, x, y, e.face || -1, u, time); } };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L();
+    /* THE COURT'S SIDE GATE (the court leaves by it; it swings open as the court marches) */
+    if (S.proc) { const gx = R(316 * TS + 8 - cx), foot = R(14 * TS - cy); if (gx > -80 && gx < VW + 80) KP.drawSideGate(g, gx, foot, S.gate || 0, time); }
     for (const h of S.hs.values()) { const d = h.d, px = R(d.x * TS + (d.load === 'log' ? 8 : 0) - cx), py = R(d.top * TS - cy), lxs = R(h.lx - cx), ly = R(h.ly - cy);
       const ccx = R(d.cleat[0] * TS + 8 - cx), ccy = R((d.cleat[1] + 1) * TS - cy);
       if (Math.max(px, ccx, lxs) < -80 || Math.min(px, ccx, lxs) > VW + 80) continue;
       const up = h.state === 'hang';
-      g.fillStyle = '#3a2412'; g.fillRect(px - 4, py - 3, 8, 6); g.fillStyle = '#8a5a32'; g.fillRect(px - 3, py - 2, 6, 4); g.fillStyle = '#e0b040'; g.fillRect(px - 1, py - 1, 2, 2);   /* the pulley on its bough */
-      drawPeg(g, ccx, ccy, up, up && !d.boss && !d.locked, time);
-      if (up) { rope(g, px, py + 2, ccx, ccy - 13);
-        const lt = d.load === 'cage' ? 2 * TS + 3 : d.load === 'span' ? TS : ROPE.logH; rope(g, px, py + 3, lxs, ly - lt);
-        if (d.load === 'log' || d.load === 'span') { const w = loadW(d); rope(g, lxs, ly - lt, R(lxs - w / 2 + 3), ly - lt + 2); rope(g, lxs, ly - lt, R(lxs + w / 2 - 3), ly - lt + 2); } }
+      /* EVERY PULLEY HANGS FROM A BOUGH */
+      KP.drawBough(g, px, py, ((hash(d.id) & 1) ? 1 : -1), hash(d.id) % 997, time); KP.drawPulley(g, px, py, time);
+      if (h.state === 'gone') { if (d.load === 'log') KP.drawSplitLog(g, lxs, ly, loadW(d), h.goneT || 0); KP.drawPeg(g, ccx, ccy, false, false, time); continue; }
+      KP.drawPeg(g, ccx, ccy, up, up && !d.boss && !d.locked, time);
+      if (up) { KP.ropeLine(g, px, py + 3, ccx, ccy - 13, 3);
+        const lt = d.load === 'cage' ? 36 : d.load === 'span' ? TS : ROPE.logH + 2; KP.ropeLine(g, px, py + 11, lxs, ly - lt, 1);
+        if (d.load === 'log' || d.load === 'span') { const w = loadW(d); KP.ropeLine(g, lxs, ly - lt, R(lxs - w / 2 + 6), ly - lt + 6, 1); KP.ropeLine(g, lxs, ly - lt, R(lxs + w / 2 - 6), ly - lt + 6, 1); } }
       /* A3 + the target first: where it lands (a dotted plumb line) and, for a log trap, the road it will roll (a dotted line along the floor) */
       if (up) { const to = d.load === 'span' ? d.span[2] * TS : d.land ? d.land[1] * TS : (() => { let ty = Math.floor(h.ly / TS); while (ty < lv.H - 1 && !standAt(Math.floor(h.lx / TS), ty)) ty++; return ty * TS; })();
         dots(g, lxs, ly + 2, R(to - cy), 'rgba(255,233,160,0.5)');
         if (d.load === 'log' && d.roll) { let tx = Math.floor(h.lx / TS), ty = Math.floor(to / TS), n = 0; const lim = d.rollMax || ROPE.logMax; while (n < lim && !ctx.solidAt(tx + d.roll * 2, ty - 1)) { tx += d.roll; n++; }
           hdots(g, lxs, R((tx + 0.5) * TS - cx), R(to - cy) - 3, 'rgba(255,154,92,0.55)'); } }
-      if (d.load === 'span') { if (h.state === 'down') { g.fillStyle = '#6a4424'; g.fillRect(R(d.span[0] * TS - cx), R(d.span[2] * TS - cy), loadW(d), 6); g.fillStyle = '#8a5a32'; g.fillRect(R(d.span[0] * TS - cx), R(d.span[2] * TS - cy), loadW(d), 2); }
-        else { const w = loadW(d); g.fillStyle = '#6a4424'; g.fillRect(R(lxs - w / 2), ly - TS + 4, w, 6); g.fillStyle = '#8a5a32'; g.fillRect(R(lxs - w / 2), ly - TS + 4, w, 2); } }
-      else if (d.load === 'cage') { if (h.state === 'down' && d.land) drawCage(g, R(d.land[0] * TS + TS - cx), R((d.land[1] + 2) * TS - cy), true); else drawCage(g, lxs, ly, h.state === 'down'); }
-      else if (d.load === 'log' && h.state !== 'gone') drawLog(g, lxs, ly, loadW(d), time, h.state === 'roll');
+      if (d.load === 'span') { if (h.state === 'down') KP.drawSpanDown(g, R(d.span[0] * TS - cx), R(d.span[2] * TS - cy), d.span[1] - d.span[0] + 1, spanTile);
+        else KP.drawSpanHang(g, lxs, ly, loadW(d), spanTile); }
+      else if (d.load === 'cage') { if (h.state === 'down' && d.land) KP.drawCage(g, R(d.land[0] * TS + TS - cx), R((d.land[1] + 2) * TS - cy), true, time); else KP.drawCage(g, lxs, ly, h.state === 'down', time, h.state === 'hang' ? 1.2 : 0); }
+      else if (d.load === 'log') KP.drawLog(g, lxs, ly, loadW(d), time, h.state === 'roll', h.turn || 0);
     }
-    /* the procession's banners: a pole and a pennant over every other marcher while the court marches */
-    if (S.proc && (S.proc.state === 'march' || S.proc.state === 'wait')) { let k = 0; for (const e of marchers()) { if (k++ % 2) continue; const x = R(e.x - cx), y = R(e.y - cy); if (x < -20 || x > VW + 20) continue;
-      g.fillStyle = '#5c3a1d'; g.fillRect(x - 1, y - 34, 2, 22); g.fillStyle = '#a83a2a'; g.fillRect(x + 1, y - 34, 9, 6); g.fillStyle = '#e0b040'; g.fillRect(x + 1, y - 34, 9, 1); g.fillRect(x + 4, y - 32, 3, 2); } }
     /* the area banner: the name of the place you have come into */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(30,14,8,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
       g.fillStyle = '#e0b040'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); ctx.text(S.banner.name, VW / 2, 31, '#ffe9b0', 'center'); g.globalAlpha = 1; }
