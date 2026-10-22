@@ -2337,7 +2337,7 @@ export const LEGACY_NODES = [
     "col": 1,
     "name": "BLOOD BOLT",
     "max": 1,
-    "desc": "paid in blood: a bolt of it flies straight ahead to the first foe or wall. it bleeds what it hits, and what it cost comes back when it lands. two seconds between",
+    "desc": "paid in blood: a bolt of it flies straight ahead to the first foe or wall. it bleeds what it hits, and what it cost comes back when it lands. three seconds between",
     "parent": "unholyGround",
     "active": true,
     "cap": false,

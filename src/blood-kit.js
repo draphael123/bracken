@@ -66,8 +66,8 @@ export const BLOOD = {
      bolt: sp px/s, life s, mul x the sword. pool: r px, life s, tick s, dmg a tick, slow (the foe's clock in it), bleed s. drain: range px to take hold (it lets go at x1.4), t s held,
      tick s, mul x the sword a tick (min 1), over: the part of a tick past his debt that heals him, st wind */
   host: {
-    worms: { price: 0.06, n: 2, brood: 3, life: 5, sp: 150, bites: 3, biteT: 0.45, mul: 0.3, bleed: 1.5, spent: 3, burst: { r: 34, mul: 0.5 }, cd: 12, quick: 8 },
-    bolt: { price: 0.04, sp: 340, life: 0.65, mul: 0.9, bleed: 2, cd: 2.2 },
+    worms: { price: 0.06, n: 2, brood: 3, life: 5, sp: 150, bites: 3, biteT: 0.45, mul: 0.25, bleed: 1.2, spent: 3, burst: { r: 34, mul: 0.5 }, cd: 12, quick: 8 },
+    bolt: { price: 0.04, sp: 340, life: 0.65, mul: 0.75, bleed: 2, cd: 3 },   /* (first pass 0.9 x, 2.2 s: the built reaper went 6/6 at the Stockade and the Goblin Queen with ~20 bolts a fight - knight 4/6, 5/6) */
     pool: { price: 0.05, r: 52, life: 6, tick: 0.4, dmg: 3, slow: 0.5, bleed: 1.2, cd: 11 },
     drain: { range: 100, t: 1.2, tick: 0.2, mul: 0.22, over: 0.4, st: 18, cd: 9 },
   },
