@@ -76,12 +76,16 @@ const mixHex = (h, k) => { const q = [1, 3, 5].map(i => parseInt(h.slice(i, i + 
 function stemSheet(pi, n) {
   return once('sheet' + pi + ',' + n, () => {
     const N = n * 16, [c, g] = canvas(N, 48), sts = STEMS[n] || STEMS[7];
+    const WROWS = ['#b7bbb8', '#9fb0a6', '#7d8d7e', '#6a7e72', '#566e62', '#2a4a44', '#0a1618', '#1f342d'];   /* the lane's own surface band, then its dark gradient down to the bed */
+    for (let y = 0; y < 48; y++) { const k = Math.max(0, (y - 8) / 40); g.fillStyle = y < 8 ? WROWS[y] : mixHex('#2a4038', 0).replace(/.*/, '#' + [0x2a + (0x08 - 0x2a) * k, 0x40 + (0x10 - 0x40) * k, 0x38 + (0x17 - 0x38) * k].map(v => Math.round(v).toString(16).padStart(2, '0')).join('')); g.fillRect(0, y, N, 1); }
     for (let y = 0; y < 48; y++) { const wy = 19 * 16 + y, dk = Math.min(0.62, y / 48 * 0.7);
       sts.forEach((st, k) => { const [s0, s1] = stemRange(pi, n, k, wy), fl = y < 5 ? 2 - (y >> 1) : 0;
         for (let u = s0 - fl; u < s1 + fl; u++) { const r = (u - s0) / Math.max(1, s1 - s0 - 1); P(g, mixHex(stemPx(Math.max(0, Math.min(1, r)), wy, u, pi, u === s0 - fl || u === s1 + fl - 1), dk), u, y); } }); }
     sts.forEach(([sx, sw], k) => { for (const d of [-1, 1]) for (let rt = 0; rt < 2; rt++) {   /* roots splaying out along the bed */
       let x = d < 0 ? sx + 1 : sx + sw - 2, y = 36 + rt * 3; const len = 9 + rt * 5 + rnd(pi, k * 5 + rt, 5);
       for (let i = 0; i < len; i++) { x += d * (i < 3 ? 0.5 : 1); y += i < 3 ? 1 : (i % 4 === 0 ? 1 : 0); if (y > 47 || x < 0 || x >= N) break; P(g, mixHex(i & 1 ? '#245c34' : '#173f27', 0.5), Math.round(x), Math.round(y)); P(g, mixHex('#173f27', 0.55), Math.round(x), Math.min(47, Math.round(y) + 1)); } } });
+    g.fillStyle = '#eefaff'; for (const [sx, sw] of sts) { g.fillRect(sx - 4, 0, 3, 1); g.fillRect(sx + sw + 1, 0, 3, 1); g.fillRect(sx - 6, 1, 3, 1); g.fillRect(sx + sw + 3, 1, 3, 1); }
+    g.fillStyle = '#bfe6f5'; g.fillRect(0, 0, 4, 1); g.fillRect(2, 1, 3, 1); g.fillRect(N - 4, 0, 4, 1); g.fillRect(N - 5, 1, 3, 1);   /* the water lapping at the stems and the pad's feet, baked */
     return c;
   });
 }
@@ -152,30 +156,34 @@ function reedSpots(C) {
   return once('spots' + C.wl, () => {
     const out = [];
     C.royal.forEach(([a, b], i) => { const x0 = a * 16, x1 = (b + 1) * 16;
-      out.push([x0 + 6, 52, i * 7 + 1], [x0 - 14, 34, i * 7 + 2], [x1 - 6, 56, i * 7 + 3], [x1 + 14, 30, i * 7 + 4], [(x0 + x1) / 2 - 16 + (i * 29) % 40, 66, i * 7 + 5]); });
+      out.push([x0 + 6, 52, i * 7 + 1], [x0 - 14, 34, i * 7 + 2], [x1 - 6, 56, i * 7 + 3], [x1 + 14, 30, i * 7 + 4], [(x0 + x1) / 2 - 16 + (i * 29) % 40, 50, i * 7 + 5]); });
     C.lanes.forEach(([a, b], li) => { for (let k = 0; k < 3; k++) out.push([a * 16 + 68 + k * 48, 22 + rnd(li, k, 10), li * 5 + k + 40]); });
     return out.sort((p, q) => p[0] - q[0]);
   });
 }
 
 /* ================= THE BACK (behind the tiles) ================= */
-export function drawBack(g, L, cx, cy, time) {
-  const C = courtWindow(L, cx, g); if (!C) return;
-  const wy = SURF - cy;
-  for (const [x, h, seed] of reedSpots(C)) { const sx = Math.round(x - 19 - cx); if (sx < -34 || sx > VWD + 26) continue; const c = reedClump(seed, h); const sway = Math.round(Math.sin(time * 1.3 + seed) * 0.6); g.drawImage(c, sx + sway, wy - c.height + 3); }
-  C.royal.forEach(([a, b], i) => {
-    const x0 = a * 16, x1 = (b + 1) * 16, top = TOP - cy;
-    if (x1 < cx - 40 || x0 > cx + VWD + 40) return;
-    if (i < 2) { const lx = i === 0 ? x0 + 12 : x1 - 28, lt = lotus(false); g.drawImage(lt, Math.round(lx - cx), top - lt.height + 4); }
-    const pole = lanternPole(46), lxp = i === 0 ? x0 + 4 : i === 1 ? x1 - 22 : x0 + 6;
-    drawLantern(g, pole, lxp - cx, top - 44, time, lxp);
-    if (i === 2) { drawLantern(g, pole, x1 - 26 - cx, top - 44, time, x1); const lt = lotus(true), tx = (C.wl + 71) * 16 + 8; g.drawImage(lt, Math.round(tx - lt.width / 2 - cx), top - lt.height + 10); }   /* THE THRONE: a lotus fan opens behind it (src/frog-court.js THRONE_DX 71) */
+/* the whole dressing (reeds, lotus, lantern poles and their glow) is baked ONCE into one strip for the court and blitted - a phone pays one drawImage, not sixty */
+const BACK_H = 76;
+function backSheet(C) {
+  return once('back' + C.wl, () => {
+    const x0 = C.lanes[0][0] * 16 - 40, x1 = (C.royal[2][1] + 3) * 16, [c, g] = canvas(x1 - x0, BACK_H), wy = SURF - (SURF - BACK_H + 6);   /* world y of the strip's top: SURF - BACK_H + 6 */
+    const ty = SURF - 70;
+    for (const [x, h, seed] of reedSpots(C)) { const sp = reedClump(seed, h); g.drawImage(sp, Math.round(x - 19 - x0), SURF - ty - sp.height + 3); }
+    C.royal.forEach(([a, b], i) => {
+      const px0 = a * 16, px1 = (b + 1) * 16, top = TOP - ty;
+      if (i < 2) { const lx = i === 0 ? px0 + 12 : px1 - 28, lt = lotus(false); g.drawImage(lt, Math.round(lx - x0), top - lt.height + 4); }
+      const pole = lanternPole(46), lxp = i === 0 ? px0 + 4 : i === 1 ? px1 - 22 : px0 + 6, lanterns = i === 2 ? [lxp, px1 - 26] : [lxp];
+      for (const lp of lanterns) { g.globalAlpha = 0.5; g.drawImage(GLOW(), Math.round(lp - x0) + 9 - 14, top - 44 + 16 - 18); g.globalAlpha = 1; g.drawImage(pole, Math.round(lp - x0), top - 44); }
+    });
+    return { c, x0, ty };
   });
 }
-function drawLantern(g, pole, x, y, time, seed) {
-  const sway = Math.round(Math.sin(time * 1.6 + seed * 0.05) * 0.6), fl = 0.8 + 0.2 * Math.sin(time * 7 + seed);
-  g.drawImage(pole, Math.round(x), Math.round(y));
-  g.globalAlpha = 0.55 * fl; g.drawImage(GLOW(), Math.round(x) + 9 + sway - 18 + 4, Math.round(y) + 16 - 18); g.globalAlpha = 1;
+export function drawBack(g, L, cx, cy, time) {
+  const C = courtWindow(L, cx, g); if (!C) return;
+  const B = backSheet(C), sx0 = Math.max(0, Math.floor(cx - B.x0)), sx1 = Math.min(B.c.width, Math.ceil(cx + VWD - B.x0)); if (sx1 <= sx0) return;
+  { const lt = lotus(true), tx = (C.wl + 71) * 16 + 8 - lt.width / 2; if (tx + lt.width > cx && tx < cx + VWD) g.drawImage(lt, Math.round(tx - cx), TOP - cy - lt.height + 10); }   /* THE THRONE: a lotus fan opens behind it (src/frog-court.js THRONE_DX 71), drawn apart: it is the one tall thing */
+  g.drawImage(B.c, sx0, 0, sx1 - sx0, BACK_H, Math.round(B.x0 + sx0 - cx), Math.round(B.ty - cy), sx1 - sx0, BACK_H);
 }
 
 /* ================= THE WATER (after the surface, before the pads afloat) ================= */
@@ -185,20 +193,8 @@ export function drawWater(g, L, cx, cy, time, boss, movers) {
   /* the royal pads stand in the water: the water is laid under them (copied from the lane beside, the pools stop at the pad), the stems rise through it, the water laps their feet */
   C.royal.forEach(([a, b], i) => {
     const n = b - a + 1, x0 = a * 16 - cx, x1 = (b + 1) * 16 - cx; if (x1 < -30 || x0 > VWD + 30) return;
-    const W = g.canvas.width, H = g.canvas.height, SRC = [x0 - 20, x1 + 4].find(s => s >= 0 && s + 16 <= W);
-    if (wy + 48 > 0 && wy < H) {
-      for (let dx = 0; dx < n * 16; dx += 16) { const dxp = Math.round(x0 + dx); if (dxp + 16 < 0 || dxp > W) continue;
-        if (SRC !== undefined) g.drawImage(g.canvas, SRC, Math.round(wy), 16, 48, dxp, Math.round(wy), 16, 48);
-        else { const gr = g.createLinearGradient(0, wy, 0, wy + 48); gr.addColorStop(0, '#5a7a68'); gr.addColorStop(0.16, '#2a4038'); gr.addColorStop(1, '#081017'); g.fillStyle = gr; g.fillRect(dxp, Math.round(wy), 16, 48); } }
-      g.drawImage(stemSheet(i, n), Math.round(x0), Math.round(wy));
-    }
-    for (const [sx, d] of [[x0, -1], [x1, 1]]) for (let k = 0; k < 3; k++) { const f = 0.5 + 0.5 * Math.sin(time * 2.6 + k * 1.9 + i * 2 + sx * 0.05); g.globalAlpha = 0.45 + 0.35 * f; R(g, k & 1 ? '#bfe6f5' : '#eefaff', sx + d * (2 + k * 3 + Math.round(f)) - (d < 0 ? 3 : 0), wy + k - 1, 4 - (k >> 1), 1); }
-    g.globalAlpha = 1;
-    for (const [sx0, sw] of STEMS[n] || STEMS[7]) { const sx = x0 + sx0; const f = 0.5 + 0.5 * Math.sin(time * 3 + sx0); g.globalAlpha = 0.5 + 0.3 * f; R(g, '#eefaff', sx - 3, wy - 1, 3, 1); R(g, '#eefaff', sx + sw, wy - 1, 3, 1); R(g, '#bfe6f5', sx - 5 - Math.round(f), wy, 3, 1); R(g, '#bfe6f5', sx + sw + 2 + Math.round(f), wy, 3, 1); g.globalAlpha = 1; }
+    g.drawImage(stemSheet(i, n), Math.round(x0), Math.round(wy));   /* the water under the pad and its stems, one baked sheet */
   });
-  /* the lanes' sheen: slow glints drifting over the dark water */
-  C.lanes.forEach(([a, b], li) => { const x0 = a * 16, span = (b - a + 1) * 16; if (x0 + span < cx - 10 || x0 > cx + VWD + 10) return;
-    for (let n = 0; n < 7; n++) { const x = x0 + ((n * span / 7 + time * (5 + li)) % span), j = rnd(n, li, 4); g.globalAlpha = 0.25 + 0.2 * Math.sin(time * 1.7 + n); R(g, '#bfe6f5', Math.round(x - cx), wy + 4 + j * 4, 3 + (j & 1) * 2, 1); } g.globalAlpha = 1; });
   if (p2) churn(g, C, cx, wy, time);
   if (movers) for (const m of movers) if (m.kind === 'pad' && (m.slapT > 0 || m.shufTo) && m.x > cx - 40 && m.x < cx + VWD + 40) reshuffleRead(g, m, cx, cy, time, m.w, Math.round(m.y0) - cy + Math.round((m.big ? 9 : 7) / 2) + 1);   /* a leaf held under (the King's landing, the flop's wave) whirls; where it will come up the water boils in the colour of what it will be */
   if (boss) drawSplash(g, L, boss, cx, cy, time, null);
@@ -224,7 +220,7 @@ export function drawFlies(g, L, cx, cy, time) {
   const C = courtWindow(L, cx, g); if (!C) return;
   const x0 = C.lanes[0][0] * 16, x1 = (C.royal[2][1] + 1) * 16, wy = SURF - cy;
   for (let i = 0; i < 18; i++) {
-    const bx = x0 + (i * 211) % (x1 - x0), x = bx + Math.sin(time * 0.6 + i * 1.3) * 22 - cx, y = wy - 22 - ((i * 37) % 56) + Math.sin(time * 0.9 + i * 2.1) * 7;
+    const bx = x0 + (i * 431) % (x1 - x0), x = bx + Math.sin(time * 0.6 + i * 1.3) * 22 - cx, y = wy - 22 - ((i * 37) % 56) + Math.sin(time * 0.9 + i * 2.1) * 7;
     if (x < -10 || x > VWD + 10 || y < 4) continue;
     const bl = Math.max(0, Math.sin(time * 1.5 + i * 2.7)); if (bl < 0.15) continue;
     g.globalAlpha = 0.28 * bl; R(g, '#b8ffd8', Math.round(x) - 2, Math.round(y) - 1, 5, 3); g.globalAlpha = 0.9 * bl; R(g, '#f4fff0', Math.round(x), Math.round(y), 1, 1); P(g, '#d8ff98', Math.round(x) + 1, Math.round(y));
