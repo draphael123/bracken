@@ -13,14 +13,15 @@ import assert from 'node:assert/strict'; import { openPage } from './cdp.mjs'; i
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
   r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const KD=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)).keep;/* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
-const fresh=(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();};
+// Yield only between complete manual cases: frame() performs neither updates nor rendering in manual mode.
+const fresh=async(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();if(typeof gc==='function')gc();await new Promise(r=>setTimeout(r,0));};
 /* 1. tal(): on from its level, unowned and unslotted; off a level below */
 let n1=0;for(const h of PR.HERO_IDS){const ladder=PR.skillsFor(h).filter(n=>!n.active);
- for(const lv of [...new Set(ladder.map(n=>n.level))]){fresh(h,lv);for(const n of ladder){const want=n.level<=lv?1:0;if(BKT.tal(n.id)!==want)fails.push(h+'/'+n.id+' at level '+lv+' reads '+BKT.tal(n.id)+', not '+want);n1++;}
-  fresh(h,lv-1);for(const n of ladder.filter(n=>n.level===lv))if(BKT.tal(n.id)!==0)fails.push(h+'/'+n.id+' is on at level '+(lv-1));}}
+ for(const lv of [...new Set(ladder.map(n=>n.level))]){await fresh(h,lv);for(const n of ladder){const want=n.level<=lv?1:0;if(BKT.tal(n.id)!==want)fails.push(h+'/'+n.id+' at level '+lv+' reads '+BKT.tal(n.id)+', not '+want);n1++;}
+  await fresh(h,lv-1);for(const n of ladder.filter(n=>n.level===lv))if(BKT.tal(n.id)!==0)fails.push(h+'/'+n.id+' is on at level '+(lv-1));}}
 out.talReads=n1;
 /* 2. the hero menu: the PASSIVES tab is the ladder, and it neither sells nor slots */
-fresh('knight',6);BKT.PROG.coins=5000;BK.load(0);BK.state='map';dispatchEvent(new KeyboardEvent('keydown',{key:'q'}));BK.sim(1);dispatchEvent(new KeyboardEvent('keyup',{key:'q'}));
+await fresh('knight',6);BKT.PROG.coins=5000;BK.load(0);BK.state='map';dispatchEvent(new KeyboardEvent('keydown',{key:'q'}));BK.sim(1);dispatchEvent(new KeyboardEvent('keyup',{key:'q'}));
 if(BK.state!=='store'||BK.ui.storeTab!==BK.ui.skillsTab)fails.push('Q did not open the store on SKILLS from the map');
 BK.ui.treeTab=1;const ns=BKT.treeNodes();if(!ns.length||ns.some(n=>n.active))fails.push('the PASSIVES tab lists an ability');
 for(let i=1;i<ns.length;i++)if(ns[i].level<ns[i-1].level)fails.push('the ladder is not in level order at '+ns[i].id);
@@ -34,12 +35,12 @@ shots.push({name:'passive-ladder-p1',png:BK.view.buf.toDataURL()});BK.ui.treeI=6
 out.ladder=ns.map(n=>n.level+':'+n.name);
 /* 3. THE HEAL. A plain level-up in the first wood */
 const W=i=>LEVELS.findIndex(l=>l.id===i),toNext=h=>xpFloor(BKT.heroLevel(h)+1)-BKT.PROG.xp[h];
-fresh('knight',3);BK.load(W('wood'));BK.state='play';BK.god=false;BK.sim(300);BK.state='play';BK.sim(1);if(BK.state!=='play')fails.push('the wood did not stay in play: '+BK.state);BK.P.hp=10;BK.P.st=5;BK.gainXp(toNext('knight'));BK.sim(1);
+await fresh('knight',3);BK.load(W('wood'));BK.state='play';BK.god=false;BK.sim(300);BK.state='play';BK.sim(1);if(BK.state!=='play')fails.push('the wood did not stay in play: '+BK.state);BK.P.hp=10;BK.P.st=5;BK.gainXp(toNext('knight'));BK.sim(1);
 if(BKT.heroLevel('knight')!==4)fails.push('no level-up');if(BK.P.hp!==BK.P.maxHp||BK.P.st!==BK.P.maxSt)fails.push('level-up did not heal: '+BK.P.hp+'/'+BK.P.maxHp+' hp, '+BK.P.st+'/'+BK.P.maxSt+' stamina');
 if(!/FULLY HEALED/.test(BK.hint.msg))fails.push('the hint does not say so: '+BK.hint.msg);out.plainHint=BK.hint.msg;
 if(BK.state!=='card')fails.push('THE LEVEL CARD did not open with the heal: '+BK.state);else BK.cardClose();/* (LEVELING: the card comes with the heal) */for(let f=0;f<170;f++)BK.step(1);if(BK.state!=='play')fails.push('left play after the level-up: '+BK.state);BK.step(0);shots.push({name:'level-up',png:BK.view.buf.toDataURL()});
 /* ...and one inside a boss fight waits for the boss */
-fresh('knight',9);BK.load(W('hanging'));BK.state='play';BK.god=false;BK.sim(200);{const A=BK.L.arena;BK.tp(A.trigger/16+2,A.floor/16-1);}BK.sim(500);
+await fresh('knight',9);BK.load(W('hanging'));BK.state='play';BK.god=false;BK.sim(200);{const A=BK.L.arena;BK.tp(A.trigger/16+2,A.floor/16-1);}BK.sim(500);
 const owl=BK.boss;if(!BK.bossActive||!owl||!owl.alive)fails.push('the owl fight did not start');
 BK.P.hp=12;BK.P.inv=99;BK.gainXp(toNext('knight'));const lvMid=BKT.heroLevel('knight');let most=0;for(let f=0;f<90;f++){BK.P.inv=99;BK.sim(1);most=Math.max(most,BK.P.hp);}
 if(lvMid!==10)fails.push('no level-up mid-fight');if(most>=BK.P.maxHp)fails.push('a level-up healed him while the owl stood ('+most+'/'+BK.P.maxHp+')');out.midFightHp=most+'/'+BK.P.maxHp;
@@ -47,21 +48,21 @@ BK.P.hp=12;BKT.PROG.xp.knight=xpFloor(11)-5;for(let k=0;k<20&&owl.alive;k++){BKT
 out.owlKill={alive:owl.alive,bossActive:BK.bossActive,level:BKT.heroLevel('knight'),hp:BK.P.hp+'/'+BK.P.maxHp};BK.sim(1);
 if(owl.alive||BK.bossActive)fails.push('the owl fight did not end');if(BKT.heroLevel('knight')<11)fails.push('the owl purse did not level him');if(BK.P.hp!==BK.P.maxHp)fails.push('the fight ended and he was not healed: '+BK.P.hp+'/'+BK.P.maxHp);
 /* 4. CATCH-UP */
-const pay=(id,lv,n,xp)=>{fresh('pyro',lv);if(xp!==undefined)BKT.PROG.xp.pyro=xp;BK.load(W(id));BK.state='play';BK.god=true;BK.xpStart();BK.sim(5);const h0=BK.hint.msg,x0=BKT.PROG.xp.pyro;BK.gainXp(n);return{paid:BKT.PROG.xp.pyro-x0,hint:h0};};
-const low=pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the keep was paid '+low.paid+' for 40, not 120');if(!/CATCHING UP/.test(low.hint))fails.push('the keep did not say CATCHING UP: '+low.hint);out.catchHint=low.hint;
+const pay=async(id,lv,n,xp)=>{await fresh('pyro',lv);if(xp!==undefined)BKT.PROG.xp.pyro=xp;BK.load(W(id));BK.state='play';BK.god=true;BK.xpStart();BK.sim(5);const h0=BK.hint.msg,x0=BKT.PROG.xp.pyro;BK.gainXp(n);return{paid:BKT.PROG.xp.pyro-x0,hint:h0};};
+const low=await pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the keep was paid '+low.paid+' for 40, not 120');if(!/CATCHING UP/.test(low.hint))fails.push('the keep did not say CATCHING UP: '+low.hint);out.catchHint=low.hint;
 window.__textRec=[];BK.step(0);const plate=window.__textRec.filter(t=>t.kind==='text'&&/^LV \\d+ x3$/.test(t.s));window.__textRec=null;if(!plate.length)fails.push('the plate does not say x3');
-const edge=pay('keep',KD-1,40,xpFloor(KD)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
-for(const [id,lv,why,want] of [['keep',KD,'on the curve',40],['keep',KD+3,'above it, inside the soft cap',40],['keep',KD+4,'E+3: the soft cap halves it',20],['keep',KD+7,'E+6: a fifth',8],['wood',1,'in the first wood',40],['shop',1,'in the store',40]]){const q=pay(id,lv,40);if(q.paid!==want)fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
+const edge=await pay('keep',KD-1,40,xpFloor(KD)-10);if(edge.paid!==50)fails.push('ten short of the curve he was paid '+edge.paid+', not 50');
+for(const [id,lv,why,want] of [['keep',KD,'on the curve',40],['keep',KD+3,'above it, inside the soft cap',40],['keep',KD+4,'E+3: the soft cap halves it',20],['keep',KD+7,'E+6: a fifth',8],['wood',1,'in the first wood',40],['shop',1,'in the store',40]]){const q=await pay(id,lv,40);if(q.paid!==want)fails.push(why+': paid '+q.paid+' for 40');if(/CATCHING UP/.test(q.hint))fails.push(why+': says CATCHING UP');}
 /* 5. WHAT A LEVEL-UP SAYS (in the store room: it pays XP whole, with no soft cap or catch-up to bend the jump) */
-fresh('knight',3);BK.load(W('shop'));BK.state='play';BK.god=true;for(let f=0;f<170;f++)BK.step(1);let said=0,longest='';
-const say=(h,from,to)=>{fresh(h,from);{const q=BK.uiHud.q;q.cur=null;q.wait.length=0;}/* the HUD's toast queue holds a new line behind the one showing: each level-up here starts on an empty queue */BK.P.inv=99;BK.gainXp(xpFloor(to)-xpFloor(from));BK.sim(1);if(BK.state==='card')BK.cardClose();const m=BK.hint.msg,got=PR.skillsFor(h).filter(n=>!n.active&&n.level>from&&n.level<=to);
+await fresh('knight',3);BK.load(W('shop'));BK.state='play';BK.god=true;for(let f=0;f<170;f++)BK.step(1);let said=0,longest='';
+const say=async(h,from,to)=>{await fresh(h,from);{const q=BK.uiHud.q;q.cur=null;q.wait.length=0;}/* the HUD's toast queue holds a new line behind the one showing: each level-up here starts on an empty queue */BK.P.inv=99;BK.gainXp(xpFloor(to)-xpFloor(from));BK.sim(1);if(BK.state==='card')BK.cardClose();const m=BK.hint.msg,got=PR.skillsFor(h).filter(n=>!n.active&&n.level>from&&n.level<=to);
  if(!m.startsWith('LEVEL '+to))fails.push(h+' '+from+'->'+to+' says '+m);if(!/FULLY HEALED/.test(m))fails.push(h+' '+to+': no FULLY HEALED');if(/SLOT/i.test(m))fails.push(h+' '+to+' promises a slot: '+m);
  if(got.length&&!got.some(n=>m.includes(n.name)))fails.push(h+' '+to+' names none of '+got.map(n=>n.name).join(', ')+': '+m);if(got.length>1&&!m.includes('+'+(got.length-1)+' MORE'))fails.push(h+' '+to+' hides how many: '+m);if(!got.length&&/PASSIVE/.test(m))fails.push(h+' '+to+' claims a passive: '+m);
  window.__textRec=[];BK.step(0);const w=window.__textRec.find(r=>r.kind==='wrap'&&r.s===m);window.__textRec=null;if(!w)fails.push(h+' '+to+': the hint was not drawn');else if(w.lines.length>2)fails.push(h+' '+to+': '+w.lines.length+' lines: '+m);
  if(m.length>longest.length)longest=m;said++;};
-for(const h of PR.HERO_IDS){for(let lv=1;lv<=24;lv++)say(h,lv-1,lv);say(h,2,5);say(h,0,12);}
+for(const h of PR.HERO_IDS){for(let lv=1;lv<=24;lv++)await say(h,lv-1,lv);await say(h,2,5);await say(h,0,12);}
 out.said=said;out.longest=longest;
-fresh('pyro',3);BK.P.inv=99;BK.gainXp(xpFloor(4)-xpFloor(3));for(let f=0;f<40;f++)BK.step(1);shots.push({name:'level-up-passives',png:BK.view.buf.toDataURL()});out.pyro4=BK.hint.msg;
+await fresh('pyro',3);BK.P.inv=99;BK.gainXp(xpFloor(4)-xpFloor(3));for(let f=0;f<40;f++)BK.step(1);shots.push({name:'level-up-passives',png:BK.view.buf.toDataURL()});out.pyro4=BK.hint.msg;
 return{fails,shots,out};})()`);
   if (process.env.LEVELLING_SCREEN) for (const s of r.shots) writeFileSync(process.env.LEVELLING_SCREEN + '-' + s.name + '.png', Buffer.from(s.png.split(',')[1], 'base64'));
   assert.deepEqual(pg.errors, []);

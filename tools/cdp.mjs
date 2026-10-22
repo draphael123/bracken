@@ -66,9 +66,9 @@ export async function openPage(opts = {}) {
   if (!wsUrl) throw new Error('could not reach the browser');
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { const timer = setTimeout(() => { ws.close(); rej(new Error('browser WebSocket did not open')); }, 15000);
     ws.onopen = () => { clearTimeout(timer); res(); }; ws.onerror = e => { clearTimeout(timer); rej(e); }; });
-  let id = 0, closing = false, disconnected = false, protocolTimer = null, evaluationStart = 0; const labGc = { started: 0, completed: 0, errors: 0 }; const pending = new Map(), errors = [];
+  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [];
   const drain = reason => { for (const p of pending.values()) { clearTimeout(p.timer); p.reject(new Error(reason)); } pending.clear(); };
-  closeConnection = () => { if (protocolTimer) { clearInterval(protocolTimer); if (process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({type:'lab-gc',check:process.env.BRACKEN_CHECK,time:Date.now(),...labGc})+'\n'); } catch {} } closing = true; drain('page closed'); try { ws.close(); } catch {} };
+  closeConnection = () => { closing = true; drain('page closed'); try { ws.close(); } catch {} };
   ws.onclose = () => { disconnected = true;
     const reason = 'BRACKEN_BROWSER_DISCONNECTED: page connection closed';
     if (!closing && process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG,
@@ -89,10 +89,10 @@ export async function openPage(opts = {}) {
     pending.set(i, { resolve: res, reject: rej, timer });
     try { ws.send(JSON.stringify({ id: i, method, params })); } catch (e) { clearTimeout(timer); pending.delete(i); rej(e); }
   });
-  const evalp = async (expr, timeout = 1800000) => { evaluationStart = Date.now(); try { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
+  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; } finally { evaluationStart = 0; } };
+    return r.result && r.result.result ? r.result.result.value : undefined; };
   await send('Runtime.enable'); await send('Page.enable');
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
@@ -139,19 +139,6 @@ export async function openPage(opts = {}) {
     await send('HeapProfiler.collectGarbage');
   };
   await prepareLab();
-  // Diagnostic: the protocol's collection also reaches Blink's native-backed canvas heap.
-  // Only long outstanding evaluations are candidates; timed Node-side frame samples stay untouched.
-  if (process.env.BRACKEN_PROTOCOL_GC === '1' && !opts.noWait && opts.gcLoads !== false && process.env.BRACKEN_LAB_GC !== '0') {
-    let busy = false;
-    protocolTimer = setInterval(async () => {
-      if (busy || closing || disconnected || !evaluationStart || Date.now()-evaluationStart<750) return;
-      busy = true; labGc.started++;
-      try { await send('HeapProfiler.collectGarbage', {}, 15000); labGc.completed++; }
-      catch { labGc.errors++; }
-      finally { busy = false; }
-    }, 1000); protocolTimer.unref();
-  }
-
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
   const port = await evalp('location.port', 10000);
@@ -169,6 +156,6 @@ export async function openPage(opts = {}) {
     if (!ready) throw new Error('the fresh lab page did not initialize');
     await prepareLab();
   };
-  return { evalp, send, errors, labGc, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
   } catch (e) { closeConnection(); stopServer(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
