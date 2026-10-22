@@ -7,7 +7,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe]
+        options: [prove, refresh, trace-probe, trace-context]
         default: prove
 permissions:
   contents: read
@@ -59,6 +59,23 @@ jobs:
         if: always()
         with:
           name: trace-weight-probe
+          path: gate-data/
+  trace-context:
+    if: github.event_name == 'workflow_dispatch' && inputs.mode == 'trace-context'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/trace-context-probe.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: trace-context
           path: gate-data/
   refresh:
     if: github.event_name == 'workflow_dispatch' && inputs.mode == 'refresh'
