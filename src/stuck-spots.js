@@ -431,6 +431,10 @@ export const STUCK = {
   fenroad: [
     { id: 'fr-pit', zone: [41, 22, 46, 24], at: [48, 22], glint: 'stall', line: "THE CUTTERS' STEPS ARE AT THE PIT'S EAST WALL" },
     { id: 'fr-barricade', zone: [184, 15, 191, 17], at: [189, 17], done: ['lashing', 189, 17, 'on'], line: 'THE BARRICADE STANDS ON BOWED BOARDS: STRIKE ITS LASHING' },
+    /* (claude/fenroad2) THE BROKEN ROAD: every peat hole - with no plank on your shoulder the crew's bundle glints, with one the hole's near edge */
+    ...[[111, 107, 102], [173, 153, 151], [380, 371, 366], [392, 391, 388]].flatMap(([h, b, z0]) => [
+      { id: 'fr-hole-' + h + '-take', zone: [z0, 14, h - 1, 17], at: [b, 17], when: ['broken', h, 17, '!held'], done: ['broken', h, 17, 'on'], line: "THE ROAD IS BROKEN: TAKE A PLANK FROM THE CREW'S BUNDLE (E)" },
+      { id: 'fr-hole-' + h + '-lay', zone: [z0, 14, h - 1, 17], at: [h - 1, 17], when: ['broken', h, 17, 'held'], done: ['broken', h, 17, 'on'], line: 'AT THE BROKEN EDGE, FACE IT: E LAYS THE PLANK ACROSS' }]),
   ],
   /* THE ROOTWAY (claude/rootway): every bud the route needs, every cleat the route needs until its rope is cut, the lookout's rope (an arrow cuts it) */
   rootway: [

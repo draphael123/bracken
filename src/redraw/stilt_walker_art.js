@@ -1,6 +1,8 @@
 // stilt_walker_art.js - THE GOBLIN STILT-WALKER, drawn (claude/fenroadart, the SONNET art pass over the greybox claude/fenroad). ART ONLY: the frame list is the contract (src/stilt-walker.js):
 //   0 idle  1-2 stilt stride  3 JAB WINDUP (gaff up and back over his head)  4 JAB (driven down and forward)  5 HORN (gaff grounded, horn at his mouth)
 //   6 TOPPLE (a stilt snapped, tipping)  7 DOWN (on his back, stilts broken)  8-9 stiltless walk  10 STAB WINDUP  11 STAB  12 hurt
+//   (claude/fenroad2, GREYBOX POSES for the art lane) 1-2 are now HIGH STEPS (1 the near stilt lifted high and forward, 2 the far one), 13 STOMP WINDUP (the near stilt
+//   reared high over the hero under him, leaning back), 14 STOMP (driven down, dust at its tip) - src/stilt-walker.js SW_POSE
 // Every frame: baked once, alpha-snapped, outlined. A lookout goblin in a reed hat and a ragged purple tunic, a horn at his belt, on two lashed poles with footplates, a long iron boat-hook gaff.
 import { outline } from '../px.js';
 
@@ -31,11 +33,15 @@ const gobLegs = (g, bx, fy, k) => { const a = k ? 1 : 0; rc(g, bx - 3 - a, fy - 
 /* the horn at his belt (a curved cream horn on a cord) */
 const beltHorn = (g, bx, fy) => { px(g, bx - 4, fy - 8, SW.horn); px(g, bx - 5, fy - 7, SW.horn); px(g, bx - 5, fy - 6, SW.hornD); px(g, bx - 4, fy - 5, SW.hornD); px(g, bx - 3, fy - 8, SW.ro); };
 /* the stilts: two tall poles lashed to a footplate under each foot; stride swings the tips; broken = the near one snapped short with a splintered end */
-function stilts(g, bx, fy, floor, stride, broken) {
-  const sw = stride === 1 ? 3 : stride === 2 ? -2 : 0;
+function stilts(g, bx, fy, floor, stride, broken, lift = 0) {   /* lift: 1 the near pole up (a high step), 2 the far pole up, 3 the near pole reared high (the stomp's windup), 4 driven down */
+  const sw = lift ? 0 : stride === 1 ? 3 : stride === 2 ? -2 : 0;
   const pole = (x0, x1, y1, c, cl) => { ln(g, x0, fy + 2, x1, y1, c, 2); ln(g, x0, fy + 2, x1, y1, cl, 1); px(g, x1, y1, c); px(g, x1 + 1, y1, c); };
-  pole(bx - 5, bx - 5 - Math.round(sw * 0.6), floor, SW.stD, SW.st);                                            /* the far pole (darker) */
-  if (!broken) pole(bx + 3, bx + 3 + sw, floor, SW.st, SW.stL);
+  if (lift === 2) { ln(g, bx - 5, fy - 2, bx - 1, floor - 8, SW.stD, 2); ln(g, bx - 5, fy - 2, bx - 1, floor - 8, SW.st, 1); }   /* (fenroad2) the far pole lifted high, its tip forward */
+  else pole(bx - 5, bx - 5 - Math.round(sw * 0.6), floor, SW.stD, SW.st);                                            /* the far pole (darker) */
+  if (lift === 1) { ln(g, bx + 3, fy - 3, bx + 9, floor - 8, SW.st, 2); ln(g, bx + 3, fy - 3, bx + 9, floor - 8, SW.stL, 1); }   /* (fenroad2) THE HIGH STEP: the near pole up and forward */
+  else if (lift === 3) { ln(g, bx + 3, fy - 6, bx + 14, floor - 20, SW.st, 2); ln(g, bx + 3, fy - 6, bx + 14, floor - 20, SW.stL, 1); px(g, bx + 15, floor - 21, '#ff6b6b'); }   /* (fenroad2) REARED high over the hero */
+  else if (lift === 4) { pole(bx + 3, bx + 9, floor, SW.st, SW.stL); for (const [a, b] of [[6, -1], [12, -2], [8, -3], [11, 0]]) px(g, bx + a, floor + b, '#c9b27c'); }   /* (fenroad2) DRIVEN DOWN: dust at the tip */
+  else if (!broken) pole(bx + 3, bx + 3 + sw, floor, SW.st, SW.stL);
   else { ln(g, bx + 3, fy + 2, bx + 6, fy + 9, SW.st, 2); px(g, bx + 7, fy + 10, SW.stL); px(g, bx + 6, fy + 11, SW.stD); px(g, bx + 8, fy + 9, SW.stD); }   /* snapped */
   for (const fx of [bx - 7, bx + 1]) { rc(g, fx, fy, 6, 2, SW.stD); rc(g, fx, fy, 6, 1, SW.st); rc(g, fx + 2, fy + 2, 2, 1, SW.ro); }   /* the footplates + the rope wraps */
   rc(g, bx - 4, fy - 3, 2, 1, SW.ro); rc(g, bx + 1, fy - 3, 2, 1, SW.ro);                                                                                             /* shin lashings */
@@ -51,10 +57,10 @@ const armTo = (g, sx, sy, hx, hy) => { ln(g, sx, sy, hx, hy, SW.sk, 2); px(g, sx
 export function bakeStiltSheet(canvasFn, flipX, whiten, STILT) {
   const CW = 44, CH = 48, ax = 22, ay = 46, frames = [];   /* the poles' tips at ay - 1; the goblin's feet 17 above them */
   const mk = fn => { const [c, g] = canvasFn(CW, CH); g.imageSmoothingEnabled = false; fn(g); const img = g.getImageData(0, 0, CW, CH), d = img.data; for (let i = 3; i < d.length; i += 4) d[i] = d[i] > 110 ? 255 : 0; g.putImageData(img, 0, 0); frames.push(outline(c, '#161a0e')); };
-  const tall = (stride, mid, o = {}) => g => { const bx = ax, fy = ay - 17, floor = ay - 1; stilts(g, bx, fy, floor, stride, !!o.broken); gobLegs(g, bx, fy, !!stride); gobBody(g, bx, fy, o); beltHorn(g, bx, fy); mid(g, bx, fy); };
+  const tall = (stride, mid, o = {}) => g => { const bx = ax, fy = ay - 17 - (o.rise || 0), floor = ay - 1; stilts(g, bx, fy, floor, stride, !!o.broken, o.lift || 0); gobLegs(g, bx, fy, !!stride); gobBody(g, bx, fy, o); beltHorn(g, bx, fy); mid(g, bx, fy); };
   const rest = (g, bx, fy) => { armTo(g, bx + 2, fy - 10, bx + 5, fy - 8); gaff(g, bx + 5, fy - 9, bx + 15, fy + 13); };
   mk(tall(0, rest));                                                                          // 0 idle
-  mk(tall(1, rest)); mk(tall(2, rest));                                                       // 1-2 stride
+  mk(tall(1, rest, { lift: 1, rise: 1 })); mk(tall(2, rest, { lift: 2, rise: 1 }));             // 1-2 HIGH STEP (claude/fenroad2: a stilt up, the body riding on the other)
   mk(tall(0, (g, bx, fy) => { armTo(g, bx + 2, fy - 10, bx + 4, fy - 15); gaff(g, bx + 4, fy - 15, bx - 9, fy - 26); px(g, bx + 4, fy - 16, SW.skL); }, { mouth: true }));    // 3 JAB WINDUP: the gaff drawn up and back over his head
   mk(tall(1, (g, bx, fy) => { armTo(g, bx + 2, fy - 10, bx + 7, fy - 6); gaff(g, bx + 6, fy - 9, bx + 24, fy + 7); ln(g, bx + 9, fy - 12, bx + 14, fy - 6, '#e8f0ec'); }, { lean: 2, mouth: true }));   // 4 JAB: driven down and forward, a flash along it
   mk(tall(0, (g, bx, fy) => { gaff(g, bx - 4, fy - 6, bx - 6, fy + 15); armTo(g, bx - 3, fy - 10, bx - 4, fy - 6);   // 5 HORN: the gaff grounded behind him, the horn to his mouth, the blast
@@ -76,6 +82,9 @@ export function bakeStiltSheet(canvasFn, flipX, whiten, STILT) {
   mk(low(0, (g, bx, fy) => { armTo(g, bx + 2, fy - 10, bx - 2, fy - 15); ln(g, bx - 2, fy - 15, bx - 6, fy - 19, SW.gaffD, 1); px(g, bx - 7, fy - 20, SW.hook); px(g, bx - 6, fy - 20, SW.hook); }, { mouth: true }));     // 10 STAB WINDUP
   mk(low(1, (g, bx, fy) => { armTo(g, bx + 3, fy - 9, bx + 10, fy - 7); ln(g, bx + 10, fy - 7, bx + 17, fy - 7, SW.hookD, 1); px(g, bx + 18, fy - 7, SW.hook); px(g, bx + 19, fy - 7, SW.hook); px(g, bx + 20, fy - 7, '#e8f0ec'); }, { lean: 1, mouth: true }));    // 11 STAB
   mk(g => { const bx = ax - 1, fy = ay - 17; stilts(g, bx, fy, ay - 1, 0, false); gobLegs(g, bx, fy, false); gobBody(g, bx, fy, { lean: -2, eyes: 'x', mouth: true }); beltHorn(g, bx, fy); armTo(g, bx + 2, fy - 10, bx + 6, fy - 14); gaff(g, bx + 6, fy - 14, bx + 14, fy + 8); });   // 12 hurt
+  /* (claude/fenroad2) 13 STOMP WINDUP: the near stilt reared high over the hero under him, leaning back on the far one, mouth open; 14 STOMP: driven down */
+  mk(tall(0, (g, bx, fy) => { armTo(g, bx + 2, fy - 10, bx - 2, fy - 13); gaff(g, bx - 2, fy - 13, bx - 10, fy + 8); }, { lift: 3, lean: -2, mouth: true }));
+  mk(tall(0, (g, bx, fy) => { armTo(g, bx + 2, fy - 10, bx + 6, fy - 8); gaff(g, bx + 6, fy - 9, bx + 14, fy + 12); }, { lift: 4, lean: 2, mouth: true }));
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
   return { R: frames, L, white: { R: white, L: white.map(flipX) }, ax, ay, w: STILT.w, h: STILT.h };
 }
