@@ -4,11 +4,32 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap]
         default: prove
 permissions:
   contents: read
 jobs:
+  unforced-heap:
+    if: inputs.mode == 'unforced-heap'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        heap: [256,512,2048]
+    env:
+      BRACKEN_HEAP_MB: ${{ matrix.heap }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/lab-memory-check.mjs load-leak
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unforced-heap-${{ matrix.heap }}
+          path: gate-data/
   yield-memory:
     if: inputs.mode == 'yield-memory'
     runs-on: ubuntu-latest
