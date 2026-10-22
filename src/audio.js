@@ -1,3 +1,4 @@
+import { makeSfxLoader } from './sfx-loader.js';
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
@@ -67,17 +68,40 @@ export function initAudio() {
     conv = ac.createConvolver(); conv.buffer = ir; revGain = ac.createGain(); revGain.gain.value = 0; conv.connect(revGain); revGain.connect(master); }
   startSynth();
   loadTrack(wantTrack);
-  /* THE SOUND CLIPS, EIGHT AT A TIME, LOW PRIORITY, AND HELD WHILE A MUSIC FILE LOADS (claude/marsh3): all 867 used to be fetched at once, and a music file asked for in the first minute queued behind
-     every one of them (the Frog King's track took 52 s at 1.6 Mbit/s and the fight played the synth arpeggio; tools/music-priority.mjs). Eight lanes keep the clips
-     coming and leave the connection to the music; a clip still loading is played by its synth, as before. */
-  fetch('./audio/manifest.json').then(r => r.json()).then(man => {
-    const q = []; for (const name in man) man[name].forEach((url, i) => q.push([name, url, i]));
-    const lane = () => { if (Object.values(trackPending).some(Boolean)) { setTimeout(lane, 150); return; }   /* a music file on its way has the line to itself */
-      const j = q.shift(); if (!j) return; const [name, url, i] = j;
-      fetch(url, { priority: 'low' }).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(ab => ac.decodeAudioData(ab)).then(b => { (clips[name] = clips[name] || [])[i] = b; }).catch(() => {}).finally(lane); };
-    for (let k = 0; k < SFX_LANES; k++) lane();
-  }).catch(() => {});
+  /* Only the small menu core starts here. A selected level requests its common effects, active heroes
+     and character closure before play; decoded URL aliases share one buffer. Music keeps priority. */
+  startSfxDemand();
 }
+const CORE_SFX = ['ui','r_uiSel','r_open','r_close','r_tick','r_equip','r_check','r_sting','r_levelStart','r_chime'];
+let sfxManifest=null,sfxLoader=null,sfxLevel=null,sfxHeroes=['knight'],sfxReadyKey='',sfxWait=null;
+const sfxLate=[];
+function manifestSfx(){return sfxManifest ||= fetch('./audio/manifest.json').then(r=>{if(!r.ok)throw Error('Sound manifest unavailable');return r.json();});}
+function startSfxDemand(){
+ if(!sfxLoader)sfxLoader=makeSfxLoader({manifest:manifestSfx(),lanes:SFX_LANES,hold:()=>Object.values(trackPending).some(Boolean),
+  load:async url=>{const r=await fetch(url,{priority:'low'});if(!r.ok)throw Error('Sound unavailable: '+url);return ac.decodeAudioData(await r.arrayBuffer());},onBuffer:(n,i,b)=>{(clips[n] ||= [])[i]=b;}});
+ sfxLoader.request(CORE_SFX,{first:true,priority:true}).catch(e=>console.warn(e.message));
+
+}
+export const sfxCatalog=()=>({cast:CAST,heroes:HERO_KIT});
+export function setLevelSfx(level,heroes=['knight']){const changed=sfxKey(sfxLevel||{},sfxHeroes)!==sfxKey(level,heroes);sfxLevel=level;sfxHeroes=heroes; if(changed)sfxReadyKey='';if(ac)prepareLevelSfx(level,heroes).catch(e=>console.warn(e.message));}
+const sfxKey=(l,heroes)=>JSON.stringify([l.id,heroes]);
+export function levelSfxReady(level=sfxLevel,heroes=sfxHeroes){return !ac||!sfxFiles||sfxReadyKey===sfxKey(level,heroes);}
+export async function levelSfxPools(level,heroes=['knight']){
+ const man=await manifestSfx(),kits=new Set(heroes.map(h=>(HERO_KIT[h]||HERO_KIT.knight).kit));
+ const types=new Set();const walk=o=>{if(typeof o==='string'&&CAST[o])types.add(o);if(!o||typeof o!=='object')return;if(Array.isArray(o)){o.forEach(walk);return;}for(const[k,v]of Object.entries(o)){if(['t','boss','cnSkin','skin'].includes(k)&&typeof v==='string')types.add(v);else if(k!=='grid'&&k!=='palette')walk(v);}};walk(level);
+ // Boss/prop summons and fallback throats are a conservative shared closure, independent of placement.
+ for(const t of ['sprig','spit','shield','archer','hound','skeleton','wight','corpse','bonearcher','bonegob','bonechucker','fireimp','venomimp','wasp','bat','spider'])types.add(t);
+ for(const t of types){const c=CAST[t];if(c?.kit)kits.add(c.kit);}
+ const literal=["vo_hum_alert","vo_ogre_alert","vo_ogre_hurt","vo_gobbig_die","vo_gobbig_hurt","vo_snore","vo_dp_die","vo_ex_die","vo_scream","vo_bark"];
+ return Object.keys(man).filter(n=>!n.startsWith('vo_')||literal.includes(n)||[...kits].some(k=>n==='vo_'+k||n.startsWith('vo_'+k+'_')));
+}
+export function prepareLevelSfx(level=sfxLevel,heroes=sfxHeroes){
+ if(!ac||!sfxFiles)return Promise.resolve();const key=sfxKey(level,heroes);if(sfxWait?.key===key)return sfxWait.promise.then(names=>{sfxReadyKey=key;return names;});
+ const promise=(async()=>{const names=await levelSfxPools(level,heroes);await sfxLoader.request(names,{priority:true});if(sfxWait?.key===key)sfxReadyKey=key;return names;})();sfxWait={key,promise};promise.catch(()=>{if(sfxWait?.key===key)sfxWait=null;});return promise;
+}
+export const prepareCoreSfx=()=>sfxLoader?sfxLoader.request(CORE_SFX,{first:true,priority:true}):Promise.resolve();
+export const sfxDemandStatus=()=>({readyKey:sfxReadyKey,stats:sfxLoader?{...sfxLoader.stats}:null,loaded:Object.keys(clips).filter(n=>clips[n].some(Boolean)),late:sfxLate.slice()});
+
 export const ready = () => !!ac;
 export const audioTap = () => (ac && master ? { ac, master } : null);   /* ONLINE CO-OP (src/online.js): the whole mix, tapped into a MediaStreamDestination for the guest */
 export function setVolume(v) { vol = Math.max(0, Math.min(1, v)); if (sfxGain) sfxGain.gain.value = vol; }
@@ -145,7 +169,7 @@ export function duckBeat(depth = DUCK.depth) {
 function file(name, v = 0.6, rate = 1, dest = null) {
   if (!ac || !sfxFiles) return false;
   if (!voicesOn && VOCAL.has(name)) return false;
-  const arr = clips[name]; if (!arr) return false;
+  const arr = clips[name]; if (!arr) { if(sfxReadyKey)sfxLate.push(name); return false; }
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const cat = catOf(name); if (!admit(cat, v)) return true;   /* a capped-out sound counts as played: the caller must not fall back to its synth on top */
   const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
@@ -161,7 +185,7 @@ function takeOf(name, n) { let i = (Math.random() * n) | 0; if (n > 1 && i === l
 // that body has a helmet on. Returns false while the clip is still loading, so every caller keeps its synth.
 function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
   if (!ac || !sfxFiles || !voicesOn || !name) return false;
-  const opts = (clips[name] || []).filter(Boolean); if (!opts.length) return false;
+  const opts = (clips[name] || []).filter(Boolean); if (!opts.length) { if(sfxReadyKey)sfxLate.push(name); return false; }
   if (!admit('voice', v)) return true;
   const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.95 + Math.random() * 0.1);
   const g = ac.createGain(); g.gain.value = v * SFX_TRIM.voice;

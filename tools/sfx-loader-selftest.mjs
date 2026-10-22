@@ -1,0 +1,4 @@
+import{makeSfxLoader}from'../src/sfx-loader.js';import assert from'node:assert/strict';
+const manifest={a:['shared','a2'],alias:['shared'],cold:['cold'],bad:['bad']};let active=0,max=0;const seen=[],buffers=[];
+const l=makeSfxLoader({manifest:Promise.resolve(manifest),lanes:2,load:async u=>{active++;max=Math.max(max,active);seen.push(u);await new Promise(r=>setTimeout(r,5));active--;if(u==='bad')throw Error('missing file');return u;},onBuffer:(...a)=>buffers.push(a)});
+await Promise.all([l.request(['a']),l.request(['alias'])]);assert.equal(seen.filter(u=>u==='shared').length,1);assert(!seen.includes('cold'));assert(max<=2);assert.equal(buffers.length,3);await assert.rejects(l.request(['bad']),/missing file/);await assert.rejects(l.request(['unknown']),/Unknown SFX/);assert.equal(l.stats.ready,2);console.log('SFX loader: demand-only, shared URL once, bounded lanes, aliases assigned, failures reject readiness.');

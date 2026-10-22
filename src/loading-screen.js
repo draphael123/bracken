@@ -304,5 +304,13 @@ function drive(gen, cont, opts = {}) {
   }
 }
 
-export const LS = { step, drive, heroReady, bootStart, bootDone, get busy() { return S.busy && (S.shown || bootOn); }, get state() { return S; }, JOBS };
+// A real asset barrier: the bar stays below complete until decode succeeds. A failure leaves the
+// player at the prior screen with a clear message and releases input so the action can be retried.
+async function waitAssets(promise,cont){
+ begin('level',true);hold(HELD);show();S.label='LOADING SOUND';S.true=0;S.disp=0;paint();
+ try{await promise;for(const id of Object.keys(JOBS.level))note(id);finish();if(cont)cont();}
+ catch(e){S.label='SOUND COULD NOT LOAD - TAP TO GO BACK';paint();cv.onclick=()=>{cv.onclick=null;hide();release();S.busy=false;S.job=null;};throw e;}
+}
+
+export const LS = { step, drive, waitAssets, heroReady, bootStart, bootDone, get busy() { return S.busy && (S.shown || bootOn); }, get state() { return S; }, JOBS };
 if (hasDom) { window.BKLoad = LS; bootStart(); }

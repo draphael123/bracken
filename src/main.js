@@ -1,3 +1,4 @@
+import { setLevelSfx, levelSfxReady, prepareLevelSfx } from './audio.js';
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotSanctus, abbotSpoil } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
@@ -2493,7 +2494,7 @@ function* loadLevelG(i) {
   if (TRN && !TRN.loading) TRN = null;   /* (claude/transwm) a level loaded some other way (the map, a restart, a tool) ends a transition that never finished */
   hintT = 0; HINTS.newLevel((LEVELS[i] || {}).id || i);   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); setLevelSfx({ ...L, id: LEVELS[i].id }, [hero()]); mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);
   SLAB_PHYS = !!(L.slabs && L.slabs.length); SLAB_MASK = new Set(); SLAB_RT = new Map(); for (const s of (L.slabs || [])) SLAB_RT.set(s.id, { ...s, state: 'up', posts: [], heaps: [], cells: [], anim: 0 });   /* (claude/undercrown2) the slabs as built; their posts join them as they are placed */   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
@@ -4486,7 +4487,15 @@ function partyNextLevel() {
   return k >= 0 && k !== levelIndex && LEVELS[k] && !nodeLocked(NODES.find(n => n.kind === 'level' && n.level === k) || {}) && !levelLocked(LEVELS[k]) ? k : -1;
 }
 function partyGoNext(k) { gotoLevelNode(k); saveProgress(); selI = k; SFX.uiSel(); selectStart(); }
+let soundStartPending = null;
 function startGame() {
+  if (!window.BK?.manualSimulation && audioReady()) {
+    const soundLevel = { ...L, id: LEVELS[levelIndex].id }, soundHeroes = [...new Set([hero(), ...(players || []).map(p => p.hero), ...wantSeats().map(p => p.hero)].filter(Boolean))];
+    if (!levelSfxReady(soundLevel, soundHeroes)) {
+      if (!soundStartPending) soundStartPending = LS.waitAssets(prepareLevelSfx(soundLevel, soundHeroes), () => { soundStartPending = null; startGame(); }).catch(e => { soundStartPending = null; console.error(e); });
+      return;
+    }
+  }
   trnArrive = null;   /* (claude/transwm) a fresh start: no ferry left from the last arrival (trnArriveBegin sets it again after this) */
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
      shop and the rush are one hero's business, so they run alone and the pair are put back together on the next wood.

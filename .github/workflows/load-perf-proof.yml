@@ -1,13 +1,36 @@
 name: load-perf-proof
 on:
-  push:
-    branches: ['codex/load-perf']
-    paths: ['.github/workflows/load-perf-proof.yml']
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [profile, sfx]
+        default: profile
 permissions:
   contents: read
 jobs:
+  sfx:
+    if: inputs.mode == 'sfx'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/sfx-loader-selftest.mjs
+      - run: node tools/audio-assets.mjs
+      - run: node tools/voices-check.mjs
+      - run: node tools/footsteps-check.mjs
+      - run: node tools/sfx-demand.mjs
+      - run: node tools/music-priority.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sfx-demand-proof
+          path: gate-data/
   profile:
+    if: inputs.mode == 'profile' || github.event_name == 'push'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
