@@ -51,7 +51,7 @@ export const behind = (e, fromX) => Math.sign(fromX - e.x) === -(e.face || 1);  
 export const TURN_WORD = {
   golem: TURN.STONE,
   mother: TURN.ARMOURED,
-  king: 'THE CROWN',                                        // only a cage brings his head down
+  king: e => (e.ward > 0 ? TURN.WARDED : e.stage === 'glade' ? 'DROP IT ON HIM' : 'CAGE HIM'),   // (claude/gorm2) his crown turns most of a blade (0.4): a cage (P1) or what hangs in the oak (P2) is the opening; his ward after one
   ram: (e, fromX) => e.ward > 0 || behind(e, fromX) ? TURN.WARDED : TURN.ROUND,   /* (claude/scree2: his ward after an opening) */
   chief: (e, fromX) => behind(e, fromX) ? TURN.WARDED : TURN.ROUND,
   frog: 'IN THE AIR',   /* (claude/frogking2) no hide on his pad: only his leap turns a blow (0.4x, B15) */

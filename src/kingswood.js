@@ -23,8 +23,8 @@
 //                                            you, or AMBUSH it from them (a cage, a rolling log, a plate-cage, a ram); then THE COURT GATE (its plate is on the road's step);
 //                                            shrine 414, his door
 //   416-490  THE KING'S HALL         THE BOSS  King Gorm's hall (phase 1 as today): litter, scaffold, five plates and their cages, galleries; the Great Oak over its roof
-export const KINGSWOOD = { W: 490, H: 44, arena: [420, 474] };
-export const SECTIONS = [['THE ROYAL ROAD', 0, 122], ['THE HUNTING STANDS', 122, 206], ['THE CAGE GROVE', 206, 306], ["THE COURT'S PROCESSION", 306, 416], ["THE KING'S HALL", 416, 490]];
+export const KINGSWOOD = { W: 650, H: 44, arena: [420, 474], glade: [602, 646] };
+export const SECTIONS = [['THE ROYAL ROAD', 0, 122], ['THE HUNTING STANDS', 122, 206], ['THE CAGE GROVE', 206, 306], ["THE COURT'S PROCESSION", 306, 416], ["THE KING'S HALL", 416, 490], ['THE BURNING WOOD', 490, 600], ["THE KING'S GLADE", 600, 650]];
 /* the rule's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/kingswood2.mjs and the brief */
 export const ARCS = {
   rope: { teach: [18, 32], develop: [44, 58], twist: [138, 158], exam: [240, 262] },          /* the sleeping brute; the checkpoint's step; the log span over the stands' gap; the cage stair */
@@ -56,7 +56,7 @@ export function buildKingswood({ painter, T, TS }) {
 
   // ================= 1. THE ROYAL ROAD (0-122): TEACH the drop, where a miss is cheap; the court's checkpoints hold the road =================
   ground(1, 36, 40);
-  sign(4, 39, "THE ROYAL ROAD, INTO THE KING'S HUNTING WOOD. HIS COURT HOLDS IT.");
+  sign(6, 39, "THE ROYAL ROAD, INTO THE KING'S HUNTING WOOD. HIS COURT HOLDS IT.");
   deco(7, 39, 'gobPennant', 0); deco(16, 39, 'banner', 0); deco(33, 39, 'banner', 1);
   plank(6, 9, 37); plank(10, 18, 34); coins([12, 33], [15, 33]);                 /* THE ROYAL BOX: the court's viewing stand over the road (a second height) */
   sign(10, 39, 'COURT THIEVES SNATCH GOLD AND RUN. CATCH ONE AND IT PAYS YOU BACK MORE.');
@@ -120,6 +120,7 @@ export function buildKingswood({ painter, T, TS }) {
   rope('standSpan', { x: 155, top: 19, hang: 24, cleat: [149, 27], load: 'span', span: [151, 158, 28] });
   sign(144, 27, 'NO JUMP CROSSES THIS GAP. A LOG HANGS OVER IT: CUT ITS PEG.');
   foe('hound', 141, 38, 'meadow', { face: 1 }); foe('hound', 155, 38, 'meadow', { face: -1 });
+  foe('royalboar', 166, 38, 'meadow', { face: -1 });                              /* THE ROYAL BOAR (claude/gorm2, the level's new foe): it roots in the King's meadow and charges its length - jump it, or cut the meadow cage on it */
   /* stand C: past the span, an archer on its deck; a cage hangs under the deck over the meadow pack (cut it from the deck: optional, the ambush taught) */
   plank(159, 166, 28);                                                             /* (no ledge stair up C or D from the meadow: a fall past the gap walks back to B and climbs again - the span stays a lock) */
   foe('archer', 165, 27, 'standC', { face: -1 }); foe('thief', 161, 27, 'standC', { face: -1 });   /* (where the span sets you down) */
@@ -206,7 +207,7 @@ export function buildKingswood({ painter, T, TS }) {
   deco(408, 13, 'banner', 0); deco(412, 13, 'banner', 1); ent('torch', 409, 13); ent('torch', 413, 13);
   sign(401, 13, 'THE COURT GATE. THE PLATE ON THE STEP LIFTS IT.');
   ent('check', 414, 13);                                                           /* SHRINE FOUR: his door */
-  sign(416, 13, "KING GORM'S CROWN TURNS BLADES. DROP A CAGE ON HIM FROM THE PLATES, THEN CUT.");
+  sign(416, 13, "KING GORM: HIS ARCHERS HOLD THE CAGE ROPES. BRING THEM DOWN, THEN CUT A PEG WHEN HE IS UNDER IT.");
 
   // ================= 5. THE KING'S HALL (420-474): KING GORM UNDERLEAF, phase 1 as it stands (his old throne room, moved here whole; the next lane reworks it) =================
   const [A0, A1] = KINGSWOOD.arena, ax = c => A0 + c;                              /* (the old hall's columns, from its west wall) */
@@ -221,25 +222,77 @@ export function buildKingswood({ painter, T, TS }) {
   for (const c of [9, 22, 35, 44]) plank(ax(c), ax(c) + 2, 11);
   for (const c of [14, 26, 40]) plank(ax(c), ax(c) + 2, 8);
   for (const c of [9, 18, 27, 36, 45]) plank(ax(c), ax(c) + 5, 5);
-  /* five cages under the decks; the plate on each deck drops its cage. On the King's head it holds him: that is the only time he bleeds */
-  for (const c of [12, 21, 30, 39, 48]) { ent('dropcage', ax(c), 7, { boss: true }); ent('plate', ax(c), 4, { cage: ax(c) }); }
+  /* (claude/gorm2) five cages under the decks, each on a ROYAL ROPE to a PEG on the floor four tiles west of it. Two RAFTER ARCHERS file onto the deck of the live one
+     and hold its rope (src/gorm-hands.js): bring them down (the scaffold, or a ROCK from a heap) and its peg drops the cage - on his head, HELD (x2). Three heaps of the
+     court's cobbles (E takes one, UP lobs it to a deck). The plates are gone (Daniel 10-22: the cages move from plates to ropes) */
+  const HALL_CAGES = [12, 21, 30, 39, 48];
+  for (const c of HALL_CAGES) ent('dropcage', ax(c), 7, { boss: true });
   coins([ax(10), 10], [ax(23), 10], [ax(36), 10], [ax(15), 7], [ax(27), 7], [ax(41), 7], [ax(11), 4], [ax(20), 4], [ax(29), 4], [ax(38), 4], [ax(47), 4]);
   ent('king', ax(28), 13);
-  /* the road on past his hall, to Underleaf */
+  /* his hall's east door: the King's takings on the shelf, then the wood */
   deco(480, 13, 'lootHeap', 1); deco(486, 13, 'idol', 0);
   ent('silver', 484, 10); plank(482, 486, 11);                                      /* SILVER THREE: the King's takings on the shelf past his hall */
 
+  // ================= 6. THE BURNING WOOD (490-600): THE ESCAPE (claude/gorm2) - a forward RUN, the fire behind you =================
+  /* His P1 bar empties: the court TORCHES the wood and his bearers carry him off east; you are FULLY HEALED, and the fire comes after you from his hall
+     (src/gorm-hands.js: it hurries when you are far ahead, it never stops until the glade). Not a climb (the Goblin Queen's castle is the climb): a run
+     east through the King's wood, the floor under the canopy burning (up into the boughs), BURNING BRANCHES on marked spots (a creak, a red ring),
+     TORCH GOBLINS lighting the road in front of you ('!', the patch flickers first). Its exam: THE BURNING RAVINE - three boughs over burning ground,
+     a torch goblin on the middle one, a branch over it; a fall is a climb out of the fire (a bough ladder), the wall of fire coming. A shrine at its end. */
+  ground(490, 511, 14);
+  foe('sprig', 507, 13, 'run', { face: -1, kw: { torch: true } });                /* the first torch goblin: he lights the road in front of you (teach) */
+  /* the canopy over the burning floor (the court fired the undergrowth): up into the boughs */
+  ground(512, 541, 14);
+  plank(510, 515, 12); plank(518, 523, 10); plank(526, 531, 10); plank(534, 539, 11);
+  coins([520, 9], [528, 9], [536, 10]);
+  /* the road again: a torch goblin pair, a fallen trunk to hop */
+  ground(542, 559, 14);
+  foe('sprig', 549, 13, 'run2', { face: -1, kw: { torch: true } }); foe('sprig', 555, 13, 'run2', { face: -1, kw: { torch: true } });
+  block(557, 558, 13, 13);
+  /* THE BURNING RAVINE (the exam): a rise, then three boughs over the burning ravine floor; a torch goblin on the middle bough */
+  ground(560, 568, 12);
+  ground(569, 584, 16);
+  plank(571, 575, 10); plank(578, 582, 9); plank(582, 584, 14); plank(582, 584, 12);   /* (a bough ladder up the ravine's east wall: a fall is a climb out of the fire) */
+  foe('sprig', 580, 8, 'ravine', { face: -1, kw: { torch: true } });
+  ground(585, 600, 10);
+  foe('sprig', 589, 9, 'ravine', { face: -1 });
+  coins([573, 9], [580, 8], [587, 9]);
+  sign(492, 13, 'THE WOOD BURNS BEHIND YOU. RUN EAST, UP INTO THE BOUGHS OVER THE BURNING GROUND.');
+  ent('check', 595, 9);                                                            /* SHRINE: the wood is behind you - his glade below */
+
+  // ================= 7. THE KING'S GLADE (600-650): KING GORM's LAST STAND (P2) under THE GREAT OAK, half on fire =================
+  /* A clearing round the great oak (src/gorm-hands.js drawBack: the trunk, the King's door, the boughs out over the glade, the crown burning on its right),
+     his hunting lodge and the stump he uses for a throne. In the oak's boughs hang a LOG TRAP, two CAGES and a BEEHIVE, each on a rope to a PEG on the
+     floor: drop them on him - THE LEVEL'S RULE IS HIS LAST OPENING. Down into the glade off the shrine's ledge. */
+  ground(600, 648, 14);
+  for (let x = 603; x <= 645; x += 3) ent('carpet', x, 13);
+  ent('torch', 603, 13); ent('torch', 645, 13);
+  block(W - 1, W - 1, 0, H - 1);                                                   /* the world's east edge */
+
+  const [G0, G1] = KINGSWOOD.glade;
+  const glade = { x0: G0 * TS, x1: G1 * TS, floor: 14 * TS, trigger: (G0 + 6) * TS, wallL: G0 - 1, wallR: G1 + 1, boss: 'king', music: 'gorm', tint: '#d9583c', tintA: 0.14, fx: 'embers', glade: true };
+  /* (claude/gorm2) KING GORM 2's data (src/gorm-hands.js): his hall's ropes, decks, archers' marks and heaps; the burning wood's fire line, burning floors and branches; the glade's oak and hangings */
+  const gorm = {
+    hall: { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, order: [1, 3, 0, 4, 2], heaps: [ax(3), ax(25), ax(52)].map(c => c * TS + 8),
+      ropes: HALL_CAGES.map(c => ({ x: ax(c) * TS + 8, pegX: (ax(c) - 4) * TS + 8, deck: [ax(c - 3) * TS, (ax(c + 2) + 1) * TS, 5 * TS], archers: [ax(c - 2) * TS + 8, ax(c + 1) * TS + 8] })) },
+    run: { x0: 490 * TS, fireMax: 588 * TS, cpX: 593 * TS, burn: [[512, 541, 14], [569, 584, 16]], branches: [[500, 14], [528, 10], [545, 14], [553, 14], [579, 9], [591, 10]].map(([x, y]) => ({ x: x * TS + 8, y: y * TS })) },
+    glade: { trunkX: 624 * TS + 8, stumpX: 631 * TS, lodgeX: 606 * TS, boughs: [[0, 4 * TS, 300, -1], [0, 5 * TS, 330, 1], [0, 2 * TS, 200, -1], [0, 3 * TS, 220, 1]],
+      hangs: [{ id: 'gladeLog', kind: 'log', x: 605 * TS, top: 3 * TS, y0: 8 * TS, pegX: 609 * TS + 8, pegY: 14 * TS, roll: 1 },
+        { id: 'gladeCageA', kind: 'cage', x: 614 * TS, top: 4 * TS, y0: 8 * TS, pegX: 618 * TS + 8, pegY: 14 * TS },
+        { id: 'gladeHive', kind: 'hive', x: 627 * TS, top: 4 * TS, y0: 7 * TS, pegX: 623 * TS + 8, pegY: 14 * TS },
+        { id: 'gladeCageB', kind: 'cage', x: 639 * TS, top: 5 * TS, y0: 8 * TS, pegX: 635 * TS + 8, pegY: 14 * TS }] },
+  };
   const arena = { x0: A0 * TS, x1: A1 * TS, floor: 14 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'king', music: 'gorm', tint: '#c9463d', tintA: 0.12, fx: 'embers' };
   const mini = { x0: 176 * TS, x1: 198 * TS, floor: 26 * TS, trigger: 181 * TS, wallL: 175, gate: 199, boss: 'greathound' };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [], moversExtra: movers,
-    arena, mini, kwood: true, hoists,
+    arena, mini, kwood: true, hoists, glade, gorm,
     reachDoors: [{ x0: 410, x1: 410, y0: 4, y1: 13 }],   /* THE COURT GATE: its plate is on the road's step before it (the fill counts it open) */
     procession: { id: 'court', trigger: 318, exit: 316, dir: -1 },
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 200,                  /* five shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: 416, hi: 489, spots: 0, why: "THE KING'S HALL: columns 416-489 are his arena and the road out - no squad stands in a boss arena" }],
+    squadBands: [{ lo: 416, hi: 489, spots: 0, why: "THE KING'S HALL: columns 416-489 are his arena and the road out - no squad stands in a boss arena" }, { lo: 600, hi: 649, spots: 0, why: "THE KING'S GLADE: his last stand - no squad stands in a boss arena" }],
     unlocks: [
       { kind: 'hoists', opens: 'its load: a cage crushes what is under it (and some land as steps), a log span lands as a bridge, a log trap rolls down the road', hud: 'THE ROPE PARTS: IT DROPS' },
       { kind: 'plate', opens: 'its cage falls on what stands under it; the court gate lifts', hud: 'THE CAGE FALLS' },
