@@ -45,19 +45,20 @@ export async function openPage(opts = {}) {
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
   let server = null;
-  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', () => { try { server.kill(); } catch {} }); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
-  if (!(await up())) throw new Error('dev server did not come up on ' + URL0);
+  const stopServer = () => { process.removeListener('exit', stopServer); if (server) { try { server.kill(); } catch {} server = null; } };
+  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', stopServer); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
+  if (!(await up())) { stopServer(); throw new Error('dev server did not come up on ' + URL0); }
+  let loan = null, run = null, closeConnection = () => {};
+  try {
   const mine = readFileSync(join(ROOT, 'src/lookpass.js'), 'utf8');
   const served = await (await fetch(URL0 + 'src/lookpass.js', {signal:AbortSignal.timeout(5000)})).text().catch(() => '');
-  if (served !== mine) { if (server) server.kill(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
+  if (served !== mine) { stopServer(); throw new Error('the server on ' + URL0 + ' is serving another checkout (src/lookpass.js differs): set PORT to a free port'); }
   const borrowedPort = opts.browserPort || process.env.BRACKEN_BROWSER_PORT;
   const exe = browserExecutable(); if (!exe && !borrowedPort) throw new Error('no Chrome or Edge found (set BRACKEN_BROWSER to its executable)');
   /* THE PROFILE IS THROWN AWAY: browser-profile.mjs makes it, kills the browser tree and removes it on close, on a failed start and on exit */
   const borrowed = !!borrowedPort;
-  const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
+  run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
   const dbg = borrowed ? +borrowedPort : await run.devtoolsPort();
-  let loan = null, closeConnection = () => {};
-  try {
   loan = borrowed ? await borrowedTarget(dbg) : null;
   let wsUrl = loan && loan.wsUrl;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list', {signal:AbortSignal.timeout(2000)})).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
@@ -141,6 +142,6 @@ export async function openPage(opts = {}) {
     if (!ready) throw new Error('the fresh lab page did not initialize');
     await prepareLab();
   };
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); if (server) server.kill(); return loan ? loan.close() : run.close(); } };
-  } catch (e) { closeConnection(); if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); stopServer(); return loan ? loan.close() : run.close(); } };
+  } catch (e) { closeConnection(); stopServer(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
