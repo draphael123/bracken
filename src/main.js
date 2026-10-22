@@ -5164,7 +5164,7 @@ function partyRoster() {
 const partyRowText = r => r.tag + ' ' + (HERO_SHORT[r.hero] || String(r.hero).toUpperCase()) + ' LV ' + r.lv;
 function drawMapParty() {
   const rows = partyRoster(); if (!rows.length) return;
-  const w = 78, h = 4 + rows.length * 9, x = 3, y = 3;
+  const w = 126, h = 4 + rows.length * 9, x = VW - w - 3, y = 17;   /* top-right, under the purse strip */
   g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(x, y, w, h);
   rows.forEach((r, i) => { const yy = y + 3 + i * 9; g.fillStyle = ART.OUT; g.fillRect(x + 2, yy, 6, 6); g.fillStyle = r.c; g.fillRect(x + 3, yy + 1, 4, 4); text(fitText(partyRowText(r), w - 14, 6), x + 11, yy, UI.text, 'left', 6); });
 }
