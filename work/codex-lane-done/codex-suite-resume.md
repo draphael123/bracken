@@ -64,10 +64,29 @@ INCOMPLETE: recovery proof needs at least 1536 MB free; currently 945 MB. No bro
   explicitly opts out; a borrowed-context test verifies the opt-out and separate save storage.
 - Real Chrome kill/resume repeated with collection enabled: PASS, four identical combined verdicts,
   receipt suite-recovery-proof-gc/proof.json at 2026-10-22 13:03:05 UTC. Killed browser PID 75424.
-- Full uninterrupted/resumed gate equivalence and a complete ranked memory table: pending. Levelcard
-  still crossed 1600 MB after collection: source inspection also found that its layout-only page
-  initializes and decodes all recorded audio, and that levelcard was omitted from existing load batching.
-  Those layout-harness fixes are being verified on Task 3; do not claim the whole renderer leak is fixed.
+- Full local serial attempt at `5fbe8e4a1228ef7cc1b34781cd9207bc7d9c43d0`: 391 completed verdicts
+  (376 PASS, 15 FAIL), 33 stored interrupted attempts, and profile-leaks active when the parent disappeared.
+  Last checkpoint: 2026-10-22T17:46:56.650Z. The original checkpoint and summary are preserved unchanged.
+  The parent and final child were verified absent at 19:12 UTC. No final verdict is inferred for that child.
+  Five empty-output failures coincide with the app restart; old receipts lack exitCode/signal, so cause is Unknown.
+- Compared with the full 425-check Linux run 39784695367: 381 of the 391 finished verdicts match, 10 differ,
+  and 34 have no local verdict. Thus full serial equivalence is NOT established. Sources differ only by the
+  documented checker prerequisites, but this remains a comparison with limits, not proof of equivalence.
+- Ranked per-attempt memory receipt is exported with the handoff. Highest interrupted renderer samples include
+  levelling-runtime 2104 MB, pixels 2078 MB, visible-supports 1939 MB, flasks2 1770 MB, textfit 1757 MB.
+  Samples occur every three seconds: a short peak may exceed the ceiling before the guard can observe it.
+  These are owned browser-tree samples, not the older machine-wide biggest-process counter.
+- Native canvas/bake allocations remain a large within-check cost. GC reduces abandoned lab objects but does not
+  make every heavy check fit. Task 3 verified full levelcards with one level per browser and recorded audio blocked;
+  that containment retains all 48 screens. No claim that the full renderer leak or every heavy test is fixed.
+- Final local diagnostic fix: profile-cleanup intentionally starts missing/crashing browsers. Its nested fault-injection
+  children now have distinct attempt IDs, so the parent's disconnect guard does not abort the test of that failure.
+  All cleanup assertions remain. The unused six-minute Promise.race timeout is cleared when each case finishes,
+  so a completed case no longer holds Node open for six minutes. Both intentional startup-failure cases PASS
+  through execute(), exitCode=0, signal=null, 7010 ms, profiles left=0, serverGone=true; receipt
+  cleanup-expected-fault-proof.json. Full cleanup's other six browser cases have not been re-run after this fix.
+- Child receipts now retain exact exitCode/signal, and live output labels interrupted attempts INCOMPLETE.
+  Hard-kill/resume, actual nonzero exit and nested-fault isolation selftests pass. Old verdicts are not rewritten.
 
 ## QUESTIONS FOR DANIEL
 

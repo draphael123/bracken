@@ -65,6 +65,8 @@ const CASES = {
   'dies-early': `import{launchBrowser}from'./tools/browser-profile.mjs';const r=launchBrowser(process.execPath,['-e','process.exit(3)'],'look');await new Promise(r=>setTimeout(r,800));await r.close();console.log('READY');`,
   killed: page + `await new Promise(r=>setTimeout(r,60000));`,
 };
+// Fault-injection children have separate attempts: their expected crashes are evidence for this check,
+// not an unexpected interruption of its parent. All cleanup assertions below still decide its verdict.
 const rows = [];
 /* THE HARD KILL IS A RACE: most times the browser outlives its node and leaves its profile to be swept, but sometimes it goes down
    with it and takes its own profile along, and then the case has nothing to prove. That one is run again, once, before it fails */
@@ -72,7 +74,7 @@ const ONLY = process.argv[2] ? process.argv[2].split(',') : null;   /* node tool
 const order = Object.keys(CASES).filter(n => !ONLY || ONLY.includes(n)); let killTries = 0;
 for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES[name];
   TAG = newRunTag(); const before = ours(), t0 = Date.now();
-  const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, BRACKEN_RUN: TAG } });
+  const child = spawn(process.execPath, ['--input-type=module', '-e', code], { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'], env: { ...process.env, BRACKEN_RUN: TAG, BRACKEN_ATTEMPT: 'cleanup-' + TAG } });
   let out = ''; child.stdout.on('data', d => { out += d; }); child.stderr.on('data', () => {});
   const done = new Promise(r => child.once('exit', c => r(c)));
   if (name === 'killed') {
@@ -100,7 +102,9 @@ for (let oi = 0; oi < order.length; oi++) { const name = order[oi], code = CASES
     continue;
   }
   /* a HANG is no exit in six minutes: a page that opens in 50 s on a machine at 100% CPU (six lanes, 2026-10-06) is slow, not hung, and 120 s called it hung */
-  const exit = await Promise.race([done, new Promise(r => setTimeout(() => r('timeout'), 360000))]);
+  let deadline;
+  const exit = await Promise.race([done, new Promise(r => { deadline = setTimeout(() => r('timeout'), 360000); })]);
+  clearTimeout(deadline); // a completed case must not keep Node alive for the unused six-minute timeout
   if (exit === 'timeout') child.kill();
   await new Promise(r => setTimeout(r, 300));
   const fresh = [...ours()].filter(n => !before.has(n)), foreign = foreignInUse(fresh);   /* this case's own processes are gone by now */
