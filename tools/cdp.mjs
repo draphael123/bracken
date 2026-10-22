@@ -67,9 +67,9 @@ export async function openPage(opts = {}) {
   if (!wsUrl) throw new Error('could not reach the browser');
   const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { const timer = setTimeout(() => { ws.close(); rej(new Error('browser WebSocket did not open')); }, 15000);
     ws.onopen = () => { clearTimeout(timer); res(); }; ws.onerror = e => { clearTimeout(timer); rej(e); }; });
-  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [], nativeLab = {requests:0,completed:0,failed:0};
+  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [], nativeLab = {requests:0,completed:0,failed:0,postEvaluations:0};
   const drain = reason => { for (const p of pending.values()) { clearTimeout(p.timer); p.reject(new Error(reason)); } pending.clear(); };
-  closeConnection = () => { if(nativeLab.requests&&process.env.BRACKEN_PROCESS_LOG)try{appendFileSync(process.env.BRACKEN_PROCESS_LOG,JSON.stringify({type:'native-lab-collection',check:process.env.BRACKEN_CHECK,time:Date.now(),...nativeLab})+'\n');}catch{} closing = true; drain('page closed'); try { ws.close(); } catch {} };
+  closeConnection = () => { if((nativeLab.requests||nativeLab.postEvaluations)&&process.env.BRACKEN_PROCESS_LOG)try{appendFileSync(process.env.BRACKEN_PROCESS_LOG,JSON.stringify({type:'native-lab-collection',check:process.env.BRACKEN_CHECK,time:Date.now(),...nativeLab})+'\n');}catch{} closing = true; drain('page closed'); try { ws.close(); } catch {} };
   ws.onclose = () => { disconnected = true;
     const reason = 'BRACKEN_BROWSER_DISCONNECTED: page connection closed';
     if (!closing && process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG,
@@ -96,10 +96,17 @@ export async function openPage(opts = {}) {
     pending.set(i, { resolve: res, reject: rej, timer });
     try { ws.send(JSON.stringify({ id: i, method, params })); } catch (e) { clearTimeout(timer); pending.delete(i); rej(e); }
   });
-  const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
+  const evalp = async (expr, timeout = 1800000) => { const started=Date.now(); const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
     if (r.result && r.result.exceptionDetails) throw new Error(r.result.exceptionDetails.exception ? r.result.exceptionDetails.exception.description : r.result.exceptionDetails.text);
-    return r.result && r.result.result ? r.result.result.value : undefined; };
+    const value = r.result && r.result.result ? r.result.result.value : undefined;
+    // Between completed manual evaluations, let Blink reclaim retired native canvas objects too.
+    // Real-time measurements, mid-boot probes and explicit no-forced-GC controls remain on their original path.
+    if(!opts.noWait&&opts.gcLoads!==false&&opts.gcEvaluations!==false&&process.env.BRACKEN_LAB_GC!=='0'&&Date.now()-started>=100){
+      const m=await send('Runtime.evaluate',{expression:'Boolean(window.BK?.manualSimulation)',returnByValue:true});
+      if(m.result?.result?.value){await send('HeapProfiler.collectGarbage');nativeLab.postEvaluations++;}
+    }
+    return value; };
   await send('Runtime.enable'); await send('Page.enable');
   // Physics-only audits do not need remote font stylesheets to delay every fresh document.
   // Pixel and text-layout tools keep the normal fonts unless they explicitly opt out.
