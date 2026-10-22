@@ -18,7 +18,7 @@ let shotN = 0;
 const opt = (k, d) => { const a = process.argv.find(s => s.startsWith('--' + k + '=')); return a ? a.split('=')[1] : d; };
 const has = k => process.argv.includes('--' + k);
 const FOES = +opt('foes', 8), ONLY = opt('levels', '') ? opt('levels', '').split(',') : null, REPORT = has('report');
-const pg = await openPage({ audio: false, fonts: false, seed: 1008 });
+const pg = await openPage({ audio: false, fonts: false, seed: 1008, nativePressure: true });
 let bad = 0;
 /* FOUND BY THIS CHECK, NOT THE CANAL'S, reported and left to the level's owner (never silently passed: each prints KNOWN every run). Remove a line when it is fixed. */
 const KNOWN = new Set(['undercrown|shardling|shed', 'hurricane|petrel|dive', 'marsh|hopper|sit', 'minecart|miner|swing']);   /* (batch91 integ: a minecart miner's swing at 81,28 draws 0 px of 52 max (MIN_D 60) when the seeded stream reaches that level after this batch's merges; run alone, with the default sample or all 27 foes, the level is clean on this branch AND on master - the sample moved, the level did not: the level owner's) */   /* (batch81 integ: the sample is drawn from the seeded stream, so the merge moved it onto two more of the same kind: a diving storm petrel on the Hurricane Deck and a sitting marsh hopper beside the hero draw nothing the oracle can see on some frames. Neither level changed in this batch; both are the level owners' - see the report) */

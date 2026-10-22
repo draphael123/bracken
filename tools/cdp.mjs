@@ -81,7 +81,7 @@ export async function openPage(opts = {}) {
   }
     if (m.method === 'Runtime.bindingCalled' && m.params.name === '__brackenLabGC') {
       const request=+m.params.payload;nativeLab.requests++;
-      void(async()=>{let error=null;try{await send('HeapProfiler.collectGarbage',{},15000);nativeLab.completed++;}catch(e){nativeLab.failed++;error=e.message;}
+      void(async()=>{let error=null;try{await send('HeapProfiler.collectGarbage',{},15000);if(opts.nativePressure)await send('Memory.simulatePressureNotification',{level:'critical'},15000);nativeLab.completed++;}catch(e){nativeLab.failed++;error=e.message;}
         await send('Runtime.evaluate',{contextId:m.params.executionContextId,expression:'window.__brackenLabReply('+JSON.stringify(request)+','+JSON.stringify(error)+')'});
       })().catch(()=>{});
     }
