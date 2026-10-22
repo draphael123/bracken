@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        level: [lamplit, minecart, keep, spire, church]
+        level: [undercrown, lamplit, hanging, hurricane, minecart]
     steps:
       - uses: actions/checkout@v4
         with:

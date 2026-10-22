@@ -11,10 +11,10 @@ const CPU_BAKE = typeof location === 'undefined' || !/[?&]gpucv=1/.test(location
 let OWN = null;
 export function bakeScope() { OWN = []; }
 export function bakeScopeEnd() { const o = OWN || []; OWN = null; return o; }
-export function canvas(w, h, gpu = false) {
+export function canvas(w, h, gpu = false, opaque = false) {
   const c = document.createElement('canvas');
   c.width = Math.max(1, w | 0); c.height = Math.max(1, h | 0);
-  const g = c.getContext('2d', CPU_BAKE && !gpu ? { willReadFrequently: true } : undefined);
+  const g = c.getContext('2d', opaque ? { alpha: false } : CPU_BAKE && !gpu ? { willReadFrequently: true } : undefined);
   g.imageSmoothingEnabled = false;
   if (OWN) OWN.push(c);
   return [c, g];
