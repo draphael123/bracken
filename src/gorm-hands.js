@@ -364,7 +364,7 @@ export function makeGormHands(ctx) {
       if (b.state === 'hang' || b.state === 'tell') { const tl = b.state === 'tell', k = tl ? 0.5 + 0.5 * Math.sin(time * 24) : 0.5 + 0.5 * Math.sin(time * 4);
         GG.mark(g, x, y, k, tl);
         const by = y - 74 + (tl ? R(Math.sin(time * 40)) : 0), spr = GG.branch(34);
-        f(g, '#150a08', x - 1, by - 22, 2, 22); f(g, '#5a2412', x - 1, by - 22, 1, 22);   /* the charred stub it hangs from */
+        if (by > 0) { f(g, '#150a08', x - 1, 0, 2, by); f(g, '#5a2412', x - 1, 0, 1, by); }   /* the charred vine it hangs from: up to the canopy, not a short stub in mid-air (claude/kingsfix) */
         g.drawImage(spr, x - 21, by - 8); flame(g, x - 12, by - 2, 8, time, b.x); flame(g, x + 11, by - 1, 6, time, b.x + 3);
         if (tl) { if (ctx.text) ctx.text('!', x, by - 28, '#ff6b5c', 'center'); for (let q = 0; q < 3; q++) { const t = (time * 2 + q / 3) % 1; f(g, '#ff9a3c', x - 8 + q * 8, by + t * 60, 1, 2); } } }
       else if (b.state === 'fall') { const by = y - 74 * (b.t / 0.22) - 5; g.drawImage(GG.branch(34), x - 21, by - 8); flame(g, x, by - 2, 10, time, b.x); f(g, 'rgba(255,170,80,0.5)', x - 1, by - 36, 2, 30); }

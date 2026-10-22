@@ -184,7 +184,7 @@ export function makeKingswoodHands(ctx) {
       else if (d.load === 'log') KP.drawLog(g, lxs, ly, loadW(d), time, h.state === 'roll', h.turn || 0);
     }
     /* the area banner: the name of the place you have come into */
-    if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(30,14,8,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
+    if (S.banner && ctx.text && !(ctx.talking && ctx.talking())) {   /* (claude/kingsfix) not under a sign or a talk page: the banner is the same words, and the box stretched from it to the page */ const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(30,14,8,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
       g.fillStyle = '#e0b040'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); ctx.text(S.banner.name, VW / 2, 31, '#ffe9b0', 'center'); g.globalAlpha = 1; }
   };
   /* THE GREAT OAK on the skyline (src/redraw/kingswood_oak.js) */

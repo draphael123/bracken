@@ -12,6 +12,7 @@
 //   HIS AI: every P1 and P2 move is entered through its own told windup (B16) and lands its own release; the hunts come at their thresholds.
 //   B15: outside an opening a blade lands at GORM.chip (0.4), never nothing; the openings pay 1.25-2.
 //   THE ROYAL BOAR: in the Hunting Stands' meadow (the level's one new foe), told (its lane), jumped (it runs on under you), penned by a cage.
+import './gorm2-dom.mjs';   /* (claude/kingsfix) a canvas for gorm_frames.js, which bakes at import */
 import { LEVELS, T } from '../src/level.js';
 import { GORM, GORM_SAY, gormOpen, gormTake, fireStep } from '../src/gorm.js';
 import { makeGormHands } from '../src/gorm-hands.js';
