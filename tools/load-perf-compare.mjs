@@ -1,14 +1,15 @@
 // Same-runner before/after comparison: original 4x CPU phone setup, three FPS samples, exact pixels.
 import{spawnSync}from'node:child_process';import{mkdirSync,copyFileSync,writeFileSync}from'node:fs';import{resolve,join}from'node:path';import{pathToFileURL}from'node:url';import assert from'node:assert/strict';
-const id=process.argv[2];assert(id);const root=process.cwd(),out=resolve('gate-data/'+id),before=resolve('../perf-before');mkdirSync(out,{recursive:true});
+const id=process.argv[2],present=process.argv.find(a=>a.startsWith('--present='))?.slice(10)||'drawImage';assert(['drawImage','copy','pattern'].includes(present));assert(id);const root=process.cwd(),out=resolve('gate-data/'+id),before=resolve('../perf-before');mkdirSync(out,{recursive:true});
 const added=spawnSync('git',['worktree','add','--detach',before,'5e44cddd'],{encoding:'utf8'});assert.equal(added.status,0,added.stderr);
 for(const f of ['cdp.mjs','browser-profile.mjs','process-memory.mjs','ports.mjs'])copyFileSync(join(root,'tools',f),join(before,'tools',f));
 const rows={},sleep=ms=>new Promise(r=>setTimeout(r,ms));
 for(const[name,cwd]of[['before',before],['after',root]]){
  process.env.BRACKEN_PROCESS_LOG=join(out,name+'.processes.jsonl');process.env.BRACKEN_CHECK=id+'-'+name;
+ const install=async page=>{if(name!=='after'||present==='drawImage')return;await page.evalp(`(()=>{const C=CanvasRenderingContext2D.prototype,original=C.drawImage,disp=document.getElementById('c');C.drawImage=function(...a){if(this.canvas!==disp||a[0]!==BK.view.buf)return original.apply(this,a);const old=this.globalCompositeOperation;if(${JSON.stringify(present)}==='copy'){this.globalCompositeOperation='copy';try{return original.apply(this,a);}finally{this.globalCompositeOperation=old;}}const [source,x,y,w,h]=a,p=this.createPattern(source,'no-repeat'),style=this.fillStyle;p.setTransform(new DOMMatrix([w/source.width,0,0,h/source.height,x,y]));this.fillStyle=p;try{this.fillRect(x,y,w,h);}finally{this.fillStyle=style;}};})()`);};
  const{openPage}=await import(pathToFileURL(join(cwd,'tools/cdp.mjs')));let pg=await openPage({audio:false,fonts:false,seed:1919});
  try{
-  await pg.send('Emulation.setDeviceMetricsOverride',{width:915,height:412,deviceScaleFactor:2.625,mobile:true,screenOrientation:{type:'landscapePrimary',angle:90}});await pg.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await pg.send('Emulation.setCPUThrottlingRate',{rate:4});await pg.reload();
+  await pg.send('Emulation.setDeviceMetricsOverride',{width:915,height:412,deviceScaleFactor:2.625,mobile:true,screenOrientation:{type:'landscapePrimary',angle:90}});await pg.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await pg.send('Emulation.setCPUThrottlingRate',{rate:4});await pg.reload();await install(pg);
   const setup=`(async()=>{const{LEVELS}=await import('/src/level.js');BK.manualSimulation=true;BK.setHero('knight');BK.reset({fresh:true});let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};BK.load(LEVELS.findIndex(l=>l.id===${JSON.stringify(id)}));BK.start();BK.state='play';BK.god=true;BK.P.inv=999;const a=BK.L.arena;if(a){BK.P.x=a.start?a.start[0]*16+8:(a.x0+a.x1)/2;BK.P.y=a.start?(a.start[1]+1)*16:a.floor;}BK.sim(120);BK.step(0);})()`;
   await pg.evalp(setup);await pg.send('HeapProfiler.collectGarbage');await pg.evalp('BK.manualSimulation=false');await sleep(3000);const samples=[];await pg.send('Performance.enable');
   for(let i=0;i<3;i++){
@@ -18,13 +19,14 @@ for(const[name,cwd]of[['before',before],['after',root]]){
   const arena=await pg.evalp('!!BK.bossActive');await pg.close();
   // Pixel sampling gets a separate cold page: no real-time fight or readback history may leak into its clock/state.
   pg=await openPage({audio:false,fonts:false,seed:1919});
-  await pg.send('Emulation.setDeviceMetricsOverride',{width:915,height:412,deviceScaleFactor:2.625,mobile:true,screenOrientation:{type:'landscapePrimary',angle:90}});await pg.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await pg.send('Emulation.setCPUThrottlingRate',{rate:4});await pg.reload();
-  await pg.evalp(setup);const pixels=[];for(let f=0;f<120;f++){const p=await pg.evalp(`(async()=>{BK.step(1);const c=BK.view.buf,d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return [...new Uint8Array(await crypto.subtle.digest('SHA-256',d))].map(n=>n.toString(16).padStart(2,'0')).join('');})()`);pixels.push(p);}
+  await pg.send('Emulation.setDeviceMetricsOverride',{width:915,height:412,deviceScaleFactor:2.625,mobile:true,screenOrientation:{type:'landscapePrimary',angle:90}});await pg.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:5});await pg.send('Emulation.setCPUThrottlingRate',{rate:4});await pg.reload();await install(pg);
+  await pg.evalp(setup);const pixels=[];for(let f=0;f<120;f++){const p=await pg.evalp(`(async()=>{BK.step(1);const hash=async c=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return [...new Uint8Array(await crypto.subtle.digest('SHA-256',d))].map(n=>n.toString(16).padStart(2,'0')).join('');};return{frame:await hash(BK.view.buf),display:await hash(document.getElementById('c'))};})()`);pixels.push(p);if(f%12===11)await pg.send('HeapProfiler.collectGarbage');}
   const png=await pg.evalp('BK.view.buf.toDataURL("image/png")');writeFileSync(join(out,name+'.png'),Buffer.from(png.split(',')[1],'base64'));
 
+  const displayPng=await pg.evalp("document.getElementById('c').toDataURL('image/png')");writeFileSync(join(out,name+'-display.png'),Buffer.from(displayPng.split(',')[1],'base64'));
   rows[name]={pixels,samples,arena};assert.deepEqual(pg.errors,[]);
  }finally{await pg.close();}
 }
-const median=a=>a.slice().sort((a,b)=>a-b)[1];const receipt={id,time:new Date().toISOString(),commit:spawnSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).stdout.trim(),cpu:4,
- before:median(rows.before.samples.map(r=>r.fps)),after:median(rows.after.samples.map(r=>r.fps)),samples:{before:rows.before.samples,after:rows.after.samples},samePixels:JSON.stringify(rows.before.pixels)===JSON.stringify(rows.after.pixels),arena:{before:rows.before.arena,after:rows.after.arena}};
+const median=a=>a.slice().sort((a,b)=>a-b)[1];const receipt={id,time:new Date().toISOString(),commit:spawnSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).stdout.trim(),cpu:4,presentation:present,
+ before:median(rows.before.samples.map(r=>r.fps)),after:median(rows.after.samples.map(r=>r.fps)),samples:{before:rows.before.samples,after:rows.after.samples},samePixels:JSON.stringify(rows.before.pixels)===JSON.stringify(rows.after.pixels),sameFramePixels:rows.before.pixels.every((p,i)=>p.frame===rows.after.pixels[i].frame),sameDisplayPixels:rows.before.pixels.every((p,i)=>p.display===rows.after.pixels[i].display),arena:{before:rows.before.arena,after:rows.after.arena}};
 writeFileSync(join(out,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt,null,2));assert(receipt.samePixels,'renderer change must preserve every sampled pixel');

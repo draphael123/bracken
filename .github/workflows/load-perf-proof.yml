@@ -4,8 +4,12 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare, mobile, calls]
+        options: [profile, sfx, compare, mobile, calls, present]
         default: profile
+      present:
+        type: choice
+        options: [copy, pattern]
+        default: copy
 permissions:
   contents: read
 jobs:
@@ -48,7 +52,7 @@ jobs:
           name: mobile-comparison
           path: gate-data/
   compare:
-    if: inputs.mode == 'compare'
+    if: inputs.mode == 'compare' || inputs.mode == 'present'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -65,7 +69,8 @@ jobs:
       - name: Same-runner original phone setup, pixels and three FPS samples per build
         env:
           LEVEL: ${{ matrix.level }}
-        run: node tools/load-perf-compare.mjs "$LEVEL"
+          PRESENT: ${{ inputs.mode == 'present' && inputs.present || 'drawImage' }}
+        run: node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
