@@ -82,7 +82,7 @@ const rgRead = BK => { try { return BK.rg ? BK.rg() : null; } catch { return nul
 export function rgFoeTier(BK, e) { if (e && (e.maxHp || e.mini || e === BK.boss)) return rgBossTier(BK, e); const P = BK.P, fam = BK.keyOf ? (BK.keyOf(e) || {}).family : null;
   if (e.alive && (e.elite || fam === 'plate' || fam === 'shell' || fam === 'beast')) return 3;
   const line = BK.enemies().filter(q => q.alive && !q.harmless && (q.x - P.x) * P.face > 0 && Math.abs(q.x - P.x) < 240 && Math.abs(q.y - P.y) < 20).length; return line >= 2 ? 2 : 1; }
-export const rgBossTier = (BK, b) => b && b.broken > 0 && b.broken < 2.2 ? 2 : 3;
+export const rgBossTier = (BK, b) => b && b.broken > 2.2 ? 3 : 2;   /* the fan only in a long window; otherwise the quicker pierce (10-22: 3 on every opening took the marsh 12 -> 3 of 12) */
 function rgLetGo(BK, want) { const r = rgRead(BK), P = BK.P; if (!r || !r.tierAt || !(P.charge > 0)) return false; return (P.atkHeld || 0) >= r.tierAt[want - 1] + 1 / 60; }
 /* (claude/chargetiers) THE BERSERKER'S HANDS USE HIS RAGE WIND-UP (src/berserker.js BZ.tiers; main.js BK.bz().tier / tierAt). ON A LEVEL FOE (bzFoeTier): two or more foes within
    the cleave's reach on BOTH sides of him -> the SPINNING CLEAVE; an ELITE, or a plate/shell/beast, or three or more near -> the GROUND-SPLITTER (it floors the small ones and leans
