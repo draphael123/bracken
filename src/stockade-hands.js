@@ -322,7 +322,7 @@ export function makeStockadeHands(ctx) {
       const hx = x + f * 5, hy = top + 8; g.fillStyle = '#e8dcc0'; g.fillRect(hx, hy, f * 7 || 7, 2); g.fillRect(hx + f * 7 - (f < 0 ? 3 : 0), hy - 2, 4, 6); g.fillStyle = '#8a6a40'; g.fillRect(hx + f * 2, hy + 2, 2, 1);
       const k = 1 - Math.max(0, e.modeT) / (e.hornDraw || HORN.draw), w = 22, y = Math.max(28, top - 14), pulse = 0.6 + 0.4 * Math.sin(time * (8 + k * 14));
       g.fillStyle = '#1b1626'; g.fillRect(x - w / 2 - 1, y - 1, w + 2, 5); g.globalAlpha = pulse; g.fillStyle = k > 0.7 ? '#ff6b6b' : '#ffd36b'; g.fillRect(x - w / 2, y, Math.max(1, Math.round(w * k)), 3); g.globalAlpha = 1;
-      if (e.mode === 'horn') for (let i = 0; i < HORN.hits; i++) { g.fillStyle = i < (e.hornHits || 0) ? '#8fd160' : '#5f5a52'; g.fillRect(x - 7 + i * 6, y + 5, 3, 3); }
+      if (e.mode === 'horn') for (let i = 0; i < HORN.hits; i++) { g.fillStyle = i < (e.hornHits || 0) ? '#8fd160' : '#5f5a52'; g.fillRect(x - Math.round((HORN.hits * 6 - 3) / 2) + i * 6, y + 5, 3, 3); }
     }
     if (e.mode === 'kegTell' || e.mode === 'towerKeg') { const img = ctx.barrelImg && ctx.barrelImg(), ky = top - 6; if (img) g.drawImage(img, x - 6, ky - 7); fuseBar(g, x, ky - 12, 1, time); }
   }

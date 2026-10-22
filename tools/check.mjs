@@ -162,7 +162,7 @@
 //             crushed, the barred gate opens to the horn, climbing the first tower winds all three exam horns - their packs, never the camp squad -
 //             the crow's nest silver off the route), the named areas, and the Chieftain's war tower (climbed at his second wind, 0.4 up there,
 //             both lashings cut: down in the wreck, x2) on the B15 floor (work/claude/lane-done/claude-stockade2.md)
-//   chief3     THE CHIEFTAIN'S HORN AND POWDER (claude/chief3): his war horn silenced by three blows = open, sounded = his crew, answered by yours = none;
+//   chief3     THE CHIEFTAIN'S HORN AND POWDER (claude/chief3): his war horn silenced by two blows = open, sounded = his crew, answered by yours = none;
 //             his kegs heaved, struck back, a blast that knocks him down open or takes his tower's lashings; the barrel taught, the kennel lookout on
 //             stakes brought down by a blast, the powder store before the hall (work/claude/lane-done/claude-chief3.md)
 //   throwables CARRY & THROW (src/throwables.js, 2026-09-28): the table itself is sane (arcs, respawns, hits a fire foe

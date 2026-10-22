@@ -4,9 +4,9 @@
 //   barrels      the barrel is taught (a sign by the first one), remixed (the kennel lookout stands on PALISADE stakes with a barrel at its foot, and
 //                L.stockade.lookouts names its box and stilts), and examined (the powder store: three barrels and its two sat guards on the plateau
 //                before the hall's lift); the hall door's sign names the horn and the powder
-//   constants    HORN (three blows silence it, a told draw) and KEG (a told fuse longer than the throw, a struck keg keeps a fuse)
+//   constants    HORN (two blows silence it, a told draw) and KEG (a told fuse longer than the throw, a struck keg keeps a fuse)
 // PAGE (one headless page, PORT from tools/ports.mjs or PORT=):
-//   the horn     on the ground he winds his war horn; three blows on him silence it and he is OPEN (planted, x2); left to sound it brings his
+//   the horn     on the ground he winds his war horn; two blows on him silence it and he is OPEN (planted, x2); left to sound it brings his
 //                crew (two, at the doors); your own horn blown while he winds his and nobody comes
 //   the powder   in his club at range he heaves a keg (told kegTell); it lands lit; struck, it rolls away from you; a blast that catches him on
 //                the ground knocks him down OPEN (planted); his crew go when he does
@@ -42,7 +42,7 @@ try { p = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js'
   const fight=()=>{load();const A=BK.L.arena;BK.tp(Math.round(A.trigger/16)+1,Math.round(A.floor/16)-1);BK.sim(200);const ch=E().find(q=>q.t==='chief'&&q.alive);ch.inv=0;return ch;};
   const horn=ch=>{ch.hornCd=0;ch.mode='walk';ch.modeT=0;k=0;while(ch.mode!=='horn'&&k++<120)BK.sim(1);return ch.mode==='horn';};
   const crewN=()=>E().filter(e=>e.alive&&e.chiefCrew).length;
-  let ch=fight();o.horn=horn(ch);o.drawn=ch.hornDraw>=2;for(let i=0;i<3;i++){ch.inv=0;BKT.hurtAs('light',ch,10,ch.x-(ch.face||1)*10,false);BK.sim(2);}o.silenced=ch.mode==='planted';
+  let ch=fight();o.horn=horn(ch);o.drawn=ch.hornDraw>=2;o.hits=0;for(let i=0;i<4&&ch.mode==='horn';i++){o.hits++;ch.inv=0;BKT.hurtAs('light',ch,10,ch.x-(ch.face||1)*10,false);BK.sim(2);}o.silenced=ch.mode==='planted';
   ch.inv=0;let h=ch.hp;BKT.hurtAs('light',ch,20,ch.x-10,false);o.silTake=(h-ch.hp)/20;
   ch=fight();P().x=ch.x-140;horn(ch);const c0=crewN();k=0;while(ch.mode==='horn'&&k++<400)BK.sim(1);BK.sim(5);o.crew=crewN()-c0;ch.hp=1;ch.inv=0;ch.mode='walk';BKT.hurtEnemy(ch,20,ch.x-10,false);BK.sim(30);BKT.stk().update(1/60);o.crewGone=crewN();o.chiefAlive=ch.alive;o.chiefHp=ch.hp;
   ch=fight();P().x=ch.x-140;BKT.stk().give();horn(ch);BK.sim(10);BKT.stk().blow();k=0;while(ch.mode==='horn'&&k++<400)BK.sim(1);BK.sim(5);o.answered=crewN();
@@ -59,7 +59,7 @@ try { p = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js'
   o.lookoutDown=S().looks[0].down&&BK.L.grid[14*BK.L.W+lo.sx0+1]===0;o.blowerDown=!!bl&&!bl.alive;
   return o;})()`, 240000); p.errors = pg.errors.slice(0, 3); } finally { pg.close(); }
 ok(p.horn && p.drawn, 'horn: he did not wind his war horn from a walk when it came due (' + p.horn + ', draw ' + p.drawn + ')');
-ok(p.silenced && p.silTake >= 1.5, 'horn: three blows did not silence it and open him (' + p.silenced + ', a blow then at ' + p.silTake + 'x)');
+ok(p.silenced && p.hits === HORN.hits && p.silTake >= 1.5, 'horn: HORN.hits blows did not silence it and open him (' + p.silenced + ' after ' + p.hits + ', a blow then at ' + p.silTake + 'x)');
 ok(p.crew === HORN.crewMax, 'horn: left to sound it brought ' + p.crew + ' crew (want ' + HORN.crewMax + ')');
 ok(p.answered === 0, 'horn: your horn blown while he winds his - ' + p.answered + ' crew still came (want none)');
 ok(p.kegTell && p.thrown === 1 && p.landed, 'powder: in his club at range he did not heave a keg that lands lit (' + JSON.stringify({ tell: p.kegTell, thrown: p.thrown, landed: p.landed }) + ')');

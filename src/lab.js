@@ -1979,7 +1979,7 @@ async function runbossLab(BK, opts) {
       { const sk = boss.t === 'chief' && BK.stockade ? BK.stockade() : null, pg = sk && sk.tower && sk.tower.st === 'manned' ? sk.tower.pegs.filter(q => !q.cut).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
         if (pg) { const sd = Math.sign(pg.x - P.x) || 1; goal = pg.x - sd * 10; strike = false; if (Math.abs(P.x - pg.x) < 20 && P.ground) { P.face = sd; if (P.atk < 0 && f % 6 === 0) { BK.press('atk'); swings++; } } } }
       /* (claude/chief3) HIS POWDER and HIS WAR HORN, as a player reads them: a lit keg by the hands is struck back at him (at his tower's legs when he is
-         up it) when its fuse has time left - its bar is drawn - else they step well off it; while he winds his horn they walk in and cut him (three blows
+         up it) when its fuse has time left - its bar is drawn - else they step well off it; while he winds his horn they walk in and cut him (two blows
          silence it: the pips under the bar) */
       { const sk = boss.t === 'chief' && BK.stockade ? BK.stockade() : null, kg = sk && sk.kegs ? sk.kegs.filter(q => q.st !== 'fly').sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0] : null;
         if (kg && Math.abs(kg.x - P.x) < 64 && Math.abs(kg.y - P.y) < 30) { const tgt = sk.tower && sk.tower.st === 'manned' ? sk.tower.x : boss.x, sd = Math.sign(tgt - kg.x) || 1;
