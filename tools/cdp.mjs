@@ -5,7 +5,7 @@
 // REFUSES a server that is serving another
 // checkout: the served src/lookpass.js must be byte-for-byte this checkout's.
 import { spawn } from 'child_process';
-import { existsSync, readFileSync } from 'fs';
+import { appendFileSync, existsSync, readFileSync } from 'fs';
 import { launchBrowser } from './browser-profile.mjs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
@@ -56,22 +56,36 @@ export async function openPage(opts = {}) {
   const borrowed = !!borrowedPort;
   const run = borrowed ? null : launchBrowser(exe, ['--headless=new', '--remote-debugging-port=auto', '--mute-audio', '--no-first-run', '--window-size=1280,720', '--autoplay-policy=no-user-gesture-required', ...(process.env.CI ? ['--no-sandbox'] : []), ...(opts.args || []), 'about:blank'], 'look');
   const dbg = borrowed ? +borrowedPort : await run.devtoolsPort();
-  let loan = null;
+  let loan = null, closeConnection = () => {};
   try {
   loan = borrowed ? await borrowedTarget(dbg) : null;
   let wsUrl = loan && loan.wsUrl;
   for (let i = 0; i < 60 && !wsUrl; i++) { try { const t = await (await fetch('http://127.0.0.1:' + dbg + '/json/list', {signal:AbortSignal.timeout(2000)})).json(); const pg = t.find(x => x.type === 'page'); if (pg) wsUrl = pg.webSocketDebuggerUrl; } catch {} if (!wsUrl) await sleep(250); }
   if (!wsUrl) throw new Error('could not reach the browser');
-  const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { ws.onopen = res; ws.onerror = rej; });
-  let id = 0; const pending = new Map(), errors = [];
-  ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); }
+  const ws = new WebSocket(wsUrl); await new Promise((res, rej) => { const timer = setTimeout(() => { ws.close(); rej(new Error('browser WebSocket did not open')); }, 15000);
+    ws.onopen = () => { clearTimeout(timer); res(); }; ws.onerror = e => { clearTimeout(timer); rej(e); }; });
+  let id = 0, closing = false, disconnected = false; const pending = new Map(), errors = [];
+  const drain = reason => { for (const p of pending.values()) { clearTimeout(p.timer); p.reject(new Error(reason)); } pending.clear(); };
+  closeConnection = () => { closing = true; drain('page closed'); try { ws.close(); } catch {} };
+  ws.onclose = () => { disconnected = true;
+    const reason = 'BRACKEN_BROWSER_DISCONNECTED: page connection closed';
+    if (!closing && process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG,
+      JSON.stringify({ type: 'interrupted', check: process.env.BRACKEN_CHECK, attempt: process.env.BRACKEN_ATTEMPT,
+        time: Date.now(), reason }) + '\n'); } catch {}
+    drain(reason);
+  };
+  ws.onmessage = ev => { const m = JSON.parse(ev.data); if (m.id && pending.has(m.id)) {
+    const p = pending.get(m.id); clearTimeout(p.timer); pending.delete(m.id);
+    if (m.error) p.reject(new Error(m.error.message || JSON.stringify(m.error))); else p.resolve(m);
+  }
     if (m.method && opts.onEvent) opts.onEvent(m);   /* (a tool that wants the protocol's events, e.g. Tracing.dataCollected: tools/mobile-profile.mjs) */
     if (m.method === 'Runtime.exceptionThrown') errors.push(m.params.exceptionDetails.exception ? m.params.exceptionDetails.exception.description : m.params.exceptionDetails.text); };
   // Navigation can destroy a context before its evaluation answers. Bound the protocol wait as well.
   const send = (method, params = {}, wait = 15000) => new Promise((res, rej) => {
+    if (disconnected || closing || ws.readyState !== WebSocket.OPEN) return rej(new Error('BRACKEN_BROWSER_DISCONNECTED: connection is closed'));
     const i = ++id, timer = setTimeout(() => { pending.delete(i); rej(new Error(method + ' did not answer within ' + wait + 'ms')); }, wait);
-    pending.set(i, reply => { clearTimeout(timer); if(reply.error) rej(new Error(reply.error.message || JSON.stringify(reply.error))); else res(reply); });
-    ws.send(JSON.stringify({ id: i, method, params }));
+    pending.set(i, { resolve: res, reject: rej, timer });
+    try { ws.send(JSON.stringify({ id: i, method, params })); } catch (e) { clearTimeout(timer); pending.delete(i); rej(e); }
   });
   const evalp = async (expr, timeout = 1800000) => { const r = await send('Runtime.evaluate', { expression: expr, awaitPromise: true, returnByValue: true, timeout }, timeout + 1000);
     if (r.error) throw new Error(r.error.message || JSON.stringify(r.error));
@@ -91,7 +105,7 @@ export async function openPage(opts = {}) {
   if (opts.speed !== false) await send('Page.addScriptToEvaluateOnNewDocument', { source: '(()=>{try{if(!localStorage.getItem("bracken.settings"))localStorage.setItem("bracken.settings",JSON.stringify({speed:' + (typeof opts.speed === 'number' ? opts.speed : process.env.BRACKEN_SPEED ? +process.env.BRACKEN_SPEED : 0.6) + ',speedV2:1,speedV3:1,hints:' + JSON.stringify(opts.hints || 'high') + ',hintsV1:1}));}catch(e){}})()' });
   await send('Page.navigate', { url: URL0 });
   let ready = false;
-  for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false); if (!ready) await sleep(250); }
+  for (let i = 0; i < 480 && !ready && !opts.noWait; i++) { ready = await evalp('typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; }); if (!ready) await sleep(250); }
   if (!ready && !opts.noWait) throw new Error('the page never put up window.BK');   /* opts.noWait: the caller wants the page MID-BOOT (tools/loading-screen.mjs) */
   /* A KEY PRESS, so the page makes its AudioContext and stops drawing PRESS A KEY FOR SOUND over every frame */
   if (opts.audio !== false) for (const type of ['keyDown', 'keyUp']) await send('Input.dispatchKeyEvent', { type, key: 'F8', code: 'F8', windowsVirtualKeyCode: 119 });
@@ -104,11 +118,11 @@ export async function openPage(opts = {}) {
     let ready = false;
     /* waits on the CONDITION with a wall-clock deadline: 120 x 100 ms was ~12 s of polls when the page answered at once, and a loaded machine's boot (six lanes, 2026-10) took longer than that */
     for (const until = Date.now() + (+process.env.LAB_BOOT_MS || 90000); Date.now() < until && !ready;) {   /* LAB_BOOT_MS: a longer deadline on a machine at 100% (claude/ksar2: ten lanes, most reloads timed out) */
-      ready = await evalp('performance.timeOrigin !== ' + JSON.stringify(previousOrigin) + ' && location.href === ' + JSON.stringify(url) + ' && !window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(() => false);
+      ready = await evalp('performance.timeOrigin !== ' + JSON.stringify(previousOrigin) + ' && location.href === ' + JSON.stringify(url) + ' && !window.__labReloading && typeof window.BK === "object" && !!window.BK.lookPass', 2000).catch(e => { if (disconnected) throw e; return false; });
       if (!ready) await sleep(100);
     }
     if (!ready) throw new Error('the fresh lab page did not initialize');
   };
-  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { try { ws.close(); } catch {} if (server) server.kill(); return loan ? loan.close() : run.close(); } };
-  } catch (e) { if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
+  return { evalp, send, errors, PORT, browserPort: dbg, dbg, reload, close() { closeConnection(); if (server) server.kill(); return loan ? loan.close() : run.close(); } };
+  } catch (e) { closeConnection(); if (server) server.kill(); if (loan) await loan.close(); if (run) await run.close(); throw e; }
 }
