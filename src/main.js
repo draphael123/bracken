@@ -9973,8 +9973,8 @@ function updatePlayer(dt) {
     // LONG PASSING: he goes through them, so they wear his mark when he comes out the other side
     if (tal('longPassing')) for (const e of enemies) if (e.alive && !e.harmless && Math.abs(e.x - P.x) < e.w / 2 + 10 && P.y > e.y - e.h - 6 && P.y < e.y + 8) markFoe(e);
     if (ghosts.filter(q => q.pass).length < 6) ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.26, frame: Math.floor(P.anim * 4) % 2, pass: true });
-    if (Math.random() < 0.8) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 22, vx: -P.face * 24, vy: -8 - Math.random() * 20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#1a0c24' : '#3a2046', size: 3, grav: -20 });   /* smoke off him */
-    if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * (2 + Math.random() * 8), y: P.y - 4 - Math.random() * 16, vx: -P.face * 20, vy: -18 - Math.random() * 22, life: 0.35, max: 0.35, col: Math.random() < 0.35 ? '#8fd160' : '#10160f', size: 2, grav: -8 }); }
+    if (Math.random() < 0.8) parts.push({ x: P.x + (Math.random() - 0.5) * 12, y: P.y - 4 - Math.random() * 22, vx: -P.face * 24, vy: -8 - Math.random() * 20, life: 0.6, max: 0.6, col: Math.random() < 0.5 ? '#8a1424' : '#c0283a', size: 3, grav: -20 });   /* (claude/bloodstep) crimson mist off him */
+    if (Math.random() < dt * 40) parts.push({ x: P.x - P.face * (2 + Math.random() * 8), y: P.y - 4 - Math.random() * 16, vx: -P.face * 20, vy: -18 - Math.random() * 22, life: 0.35, max: 0.35, col: Math.random() < 0.35 ? '#ff6b6b' : '#6a1020', size: 2, grav: -8 }); }
   if (P.cinderT > 0) { P.cinderT -= dt; flame(P.x - P.face * 4, P.y - 7, 2, 4, 30, 3); ghosts.push({ x: P.x, y: P.y, face: P.face, life: 0.12, frame: 1 }); } // the cinder step leaves fire where you were
   if (P.riseT > 0) { P.riseT -= dt; if (Math.random() < dt * 30) riseSparks(1); const hb = { l: P.x - 11 + Math.min(0, P.face * 8), r: P.x + 11 + Math.max(0, P.face * 8), t: P.y - 40, b: P.y - 2 }; for (const e of enemies) { if (!e.alive || e.harmless || P.hitSet.has(e)) continue; if (overlap(hb, { l: e.x - e.w / 2, r: e.x + e.w / 2, t: e.y - e.h, b: e.y })) { P.hitSet.add(e); const big = !!e.maxHp; hurtAs('rise', e, Math.round((swordDmg() + 4)*amul('risingCut')), P.x, false);
       const carry = e.alive && !P.riseCarry && riseCarries(e);
@@ -10484,8 +10484,8 @@ function updatePlayer(dt) {
         wakes.push({ x: P.x, y: P.y, face: P.face, t: 0, life: 1.6, hit: new Set() });
         SFX.hiss ? SFX.hiss() : SFX.puff(); motes(P.x, P.y - 10, 8, 9);
         P.passT = 0.34 * (tal('longPassing') ? 1.5 : 1);
-        ringAt(P.x, P.y - 10, 16, '#8fd160', 0.25);
-        for (let i = 0; i < 12; i++) parts.push({ x: P.x, y: P.y - 4 - Math.random() * 16, vx: -P.face * (30 + Math.random() * 80), vy: -10 - Math.random() * 30, life: 0.4, max: 0.4, col: Math.random() < 0.4 ? '#8fd160' : '#141a16', size: 2, grav: 10 }); }
+        ringAt(P.x, P.y - 10, 16, '#c0283a', 0.25);   /* (claude/bloodstep) the decoy he leaves is blood, not shade */
+        for (let i = 0; i < 12; i++) parts.push({ x: P.x, y: P.y - 4 - Math.random() * 16, vx: -P.face * (30 + Math.random() * 80), vy: -10 - Math.random() * 30, life: 0.4, max: 0.4, col: Math.random() < 0.4 ? '#ff6b6b' : '#8a1424', size: 2, grav: 10 }); }
       if (HPK) HPK.start(dir, airDodge, back, burrow, face0);   /* (claude/heropassa) EACH HERO'S OWN DODGE on the ground (src/hero-pass.js start: shield-step, low hop, ember blink, powder flash, shadow-step, stone shrug in the air, barge) - the paladin's is his branch below */
       trialEvent('dodge'); SFX.pDodge();
       if (isPyro()) { // THE CINDER ROLL: she goes through it alight, and it costs her heat
@@ -26274,9 +26274,9 @@ function updateWakes(dt) {
       if (Math.abs(e.x - w.x) > 70 || Math.abs(e.y - w.y) > 40) continue;
       e.face = Math.sign(w.x - e.x) || e.face;                       /* it is what they are looking at */
       e.wakeT = 0.2; }
-    if (Math.random() < dt * 24) parts.push({ x: w.x + (Math.random() - 0.5) * 12, y: w.y - Math.random() * 22, vx: 0, vy: -18, life: 0.6, max: 0.6, col: '#8fd160', size: 1, grav: -10 });
+    if (Math.random() < dt * 24) parts.push({ x: w.x + (Math.random() - 0.5) * 12, y: w.y - Math.random() * 22, vx: 0, vy: -18, life: 0.6, max: 0.6, col: '#c0283a', size: 1, grav: -10 });
     if (w.t >= w.life && !w.gone) { w.gone = 1;
-      burst(w.x, w.y - 10, 16, ['#8fd160', '#dfffa0', '#141a16'], 90, 0.7); ringAt(w.x, w.y - 10, 28, '#8fd160', 0.4); SFX.crack();
+      burst(w.x, w.y - 10, 16, ['#c0283a', '#ff6b6b', '#6a1020'], 90, 0.7); ringAt(w.x, w.y - 10, 28, '#c0283a', 0.4); SFX.crack();
       for (const e of enemies) { if (!e.alive || e.harmless) continue;
         if (Math.hypot(e.x - w.x, (e.y - (e.h || 12) / 2) - (w.y - 10)) > 34) continue;
         markFoe(e); hurtEnemy(e, 8 + 2 * tal('graveGoods'), w.x, false); } }
@@ -26287,12 +26287,12 @@ function drawWakes(cx, cy) {
   for (const w of wakes) { if (w.gone) continue;
     const a = Math.min(1, (w.life - w.t) * 1.6) * 0.5;
     const x = Math.round(w.x - cx), y = Math.round(w.y - cy);
-    /* THE SHADOW HE LEAVES: his own shape in smoke where he stood, two embers for eyes, and it comes apart upwards */
-    drawTinted(K, 'idle', 0, x, y, w.face || 1, 1.22, 1.22, 0, '#140a1c', Math.min(0.85, a * 1.7));
+    /* THE BLOOD HE LEAVES (claude/bloodstep): his own shape in red mist where he stood, two pale lights for eyes, and it comes apart upwards */
+    drawTinted(K, 'idle', 0, x, y, w.face || 1, 1.22, 1.22, 0, '#e0485a', Math.min(0.5, a * 1.0));
     g.globalAlpha = a * (0.6 + 0.4 * Math.sin(time * 9)); g.fillStyle = '#c0283a';
     g.fillRect(x - 3, y - 27, 2, 1); g.fillRect(x + 1, y - 27, 2, 1);
     g.globalAlpha = 1;
-    if (Math.random() < 0.25) parts.push({ x: w.x + (Math.random() - 0.5) * 12, y: w.y - Math.random() * 26, vx: 0, vy: -16 - Math.random() * 12, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#1a0c24' : '#3a2046', size: 2, grav: -12 }); }
+    if (Math.random() < 0.25) parts.push({ x: w.x + (Math.random() - 0.5) * 12, y: w.y - Math.random() * 26, vx: 0, vy: -16 - Math.random() * 12, life: 0.5, max: 0.5, col: Math.random() < 0.5 ? '#8a1424' : '#c0283a', size: 2, grav: -12 }); }
 }
 /* THE PLANTED BLADE (claude/dk2b: no longer his heavy - the BLOOD PRICE CLEAVE is; these bolts are THE RED VOLLEY, a deep-paid crescent). Once: he drove the greatsword into the
    ground in front of him, and the ground answers it - a fan of blood bolts torn up out of the wound, through
@@ -32763,7 +32763,7 @@ function drawWorld(cx, cy, showPlayer) {
     // knight-shaped blob at low alpha reads as a missing texture, not as a man going thin. His own colours,
     // fading, with the green of the harvest on them.
     for (const gh of ghosts) { if (gh.gold) { drawTinted(K, K.R.rush ? 'rush' : 'run', gh.frame, gh.x - cx, gh.y - cy, gh.face, 1, 1, 0, '#ffd36b', Math.min(0.55, gh.life * 3.4)); continue; }   /* THE LAST CHARGE's afterimage: the rush frame, in gold */
-      if (gh.pass && isReaper()) { drawTinted(K, 'run', gh.frame, gh.x - cx + Math.round(Math.sin(time * 40 + gh.x)), gh.y - cy, gh.face, 1.22, 1.22, 0, '#1a0c24', Math.min(0.7, gh.life * 2.6)); continue; }
+      if (gh.pass && isReaper()) { drawTinted(K, 'run', gh.frame, gh.x - cx + Math.round(Math.sin(time * 40 + gh.x)), gh.y - cy, gh.face, 1.22, 1.22, 0, '#d03a4e', Math.min(0.45, gh.life * 1.8)); continue; }   /* (claude/bloodstep) the red after-image */
       /* THE BACK-STEP, NOT A ROLL. Everyone else's dodge leaves a white tumbling silhouette; hers must read as ground
          GIVEN with the point still up, so it is her own colours going green, and the shaft's line drawn out in front
          of each after-image - the thing she keeps between herself and them while she leaves. */
@@ -32771,7 +32771,7 @@ function drawWorld(cx, cy, showPlayer) {
         g.globalAlpha = Math.min(0.5, gh.life * 2); g.fillStyle = '#dff0d8';
         g.fillRect(Math.round(gh.x - cx) + (gh.face > 0 ? 2 : -18), Math.round(gh.y - cy) - 11, 16, 1); g.globalAlpha = 1; continue; }
       drawSet(K, gh.pass ? 'run' : 'roll', gh.frame, gh.x - cx, gh.y - cy, gh.face, !gh.pass, 1, 1, gh.life * (gh.pass ? 0.9 : 2));
-      if (gh.pass) { g.globalAlpha = Math.min(0.35, gh.life * 1.1); g.fillStyle = '#8fd160';
+      if (gh.pass) { g.globalAlpha = Math.min(0.35, gh.life * 1.1); g.fillStyle = '#e0485a';
         g.fillRect(Math.round(gh.x - cx) - 4, Math.round(gh.y - cy) - 20, 8, 1); g.globalAlpha = 1; } }
     const vis = (P.inv <= 0 || (P.poseInv > 0 && !(P.hurt > 0)) || Math.floor(P.inv * 20) % 2 === 0) && !(HPK && HPK.drawMod(P).hide);   /* (claude/heropassa) THE EMBER BLINK: not drawn mid-flash */   /* a posed dodge's grace does not blink (P.poseInv, updatePlayer) */
     if (vis) {
