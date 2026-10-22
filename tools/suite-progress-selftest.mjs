@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { join } from 'node:path';
 import { openProgress } from './suite-progress.mjs';
 import { killTreeSync } from './browser-profile.mjs';
+import { execute } from './check-pool.mjs';
 const identity = { commit: 'fixture', dirtyHash: 'unchanged' }, expected = ['pass', 'fail', 'interrupted'];
 const options = { identity, expected, shard: null, selection: [], run: 'test01', startedAt: 123 };
 const result = (name, ok) => ({ name, ok, ms: 12, last: ok ? 'passed' : 'real assertion failed', out: ['detail'] });
@@ -34,6 +35,13 @@ if (process.argv[2] === '--writer') {
     assert.throws(() => openProgress(path, { ...options, expected: ['pass'], resume: true }), /expected changed/);
     const p2 = openProgress(path, { ...options, resume: true });
     assert.throws(() => openProgress(path, { ...options, resume: true }), /in use by PID/); p2.close();
+    const previousLog = process.env.BRACKEN_PROCESS_LOG; process.env.BRACKEN_PROCESS_LOG = join(dir, 'events.jsonl');
+    try {
+      const hanging = await execute({ name: 'swallowed-disconnect', cmd: process.execPath, args: ['-e',
+        "require('fs').appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({type:'interrupted',attempt:process.env.BRACKEN_ATTEMPT,reason:'injected disconnect'})+'\\n');setInterval(()=>{},1000)"] }, fileURLToPath(new URL('..', import.meta.url)), 0);
+      assert.equal(hanging.interrupted, true); assert.equal(hanging.ok, false);
+      assert.ok(hanging.ms < 10000, 'a child that swallows the disconnect must be ended promptly');
+    } finally { if (previousLog === undefined) delete process.env.BRACKEN_PROCESS_LOG; else process.env.BRACKEN_PROCESS_LOG = previousLog; }
     console.log('ok suite-progress: hard-killed writer retains saved PASS/FAIL, resumes only missing verdict, rejects changed source/inventory and concurrent writers');
   } finally { rmSync(dir, { recursive: true, force: true }); }
 }
