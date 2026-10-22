@@ -93,5 +93,5 @@ None open.
 4. **BLOOD SPIKE on ANY blow, from either side.** REC + BUILT: any foe blow on the beat, both sides, high ones too (a high blow on the beat is spiked, not ducked); red blows still go through. ALT: front only.
 5. **The tree's name.** Kept THE RED HOST (the worms are his host). ALT: THE RED ART / BLOOD MAGIC.
 6. **KEEN PRICE (was COLD COMFORT).** REC + BUILT: x1.25 while the BLOOD PRICE edge is up. Name is mine - one-line change.
-8. **Strength.** REC: ship as tuned (built reaper 6/6 at the Stockade and the Queen, knight 5/6 there); if he feels too strong, the first lever is BLOODWORMS 12 s -> 15 s.
 7. **Bot.** REC + BUILT: the Red Host is in his TYPICAL_SKILLS (built rows only); the standard 'practiced' rows still cast nothing.
+8. **Strength.** REC: ship as tuned (built reaper 6/6 at the Stockade and the Queen, knight 5/6 there); if he feels too strong, the first lever is BLOODWORMS 12 s -> 15 s.
