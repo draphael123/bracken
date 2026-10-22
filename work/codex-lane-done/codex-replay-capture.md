@@ -37,3 +37,7 @@ outside git. This bounded proof does not claim that the separate full release ga
   per-frame receipts; video encoding can use the editor's 60 fps image-sequence import.
 - Recommend starting each take in a fresh page at the level's beginning. Built seeded inputs and
   copied in-memory build/settings; arbitrary mid-fight state import is not claimed.
+
+The dedicated capture-proof.yml workflow is registered and independently passed (39829908764).
+The temporary standingreds-proof.yml fallback was removed to avoid an add/add conflict with Task 3.
+The dedicated workflow now runs the same mode-off equivalence step as well. Gameplay/tool source is unchanged.

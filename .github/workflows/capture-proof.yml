@@ -16,6 +16,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.11.1'
+      - run: node tools/replay-modeoff.mjs
       - run: node tools/replay-proof.mjs
       - run: node tools/capture.mjs gate-data/wood.replay.json --level=wood --out=gate-data/frames --scale=3 --nohud --nonamecards
       - uses: actions/upload-artifact@v4
