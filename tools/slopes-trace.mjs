@@ -77,7 +77,11 @@ const trace = async pg => pg.evalp(`(async () => {
       /* Reset the global clock and hero as well as the dice. A rebuilt earlier level otherwise
          changes later foes' clocks; the historical build can even fail its own Kings recording. */
       BK.setHero('knight'); BK.reset({ fresh: true }); BK.SET.speed = 0.6;
-      BK.load(i); BK.state = 'play'; BK.god = true;
+      BK.load(i);
+      /* Art also rolls Math.random during a bake (BATCH112's 5e44cddd documents that coupling).
+         Initialize real actors, then their simulation dice, on the house seed independently of art. */
+      seed = 1919; BK.respawnEnemies(); seed = 1919;
+      BK.state = 'play'; BK.god = true;
       const L = BK.L, W = L.W, H = L.H, at = (x, y) => L.grid[y * W + x];
       /* standing places spread across the level: the first floor under the top of each column band */
       const starts = [];
