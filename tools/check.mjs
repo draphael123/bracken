@@ -216,7 +216,7 @@ const RESUME = option('resume', ''), prior = RESUME ? JSON.parse(readFileSync(RE
 const JOBS = +option('jobs', process.env.BRACKEN_JOBS || 1);
 const MAX_BROWSERS = +option('max-browsers', process.env.BRACKEN_MAX_BROWSERS || 1), shardArg = option('shard', prior?.shard?.join('/') || '');
 const RECYCLE_EVERY = +option('recycle-every', process.env.BRACKEN_RECYCLE_EVERY || 12);
-const RENDERER_MB = +option('renderer-mb', process.env.BRACKEN_RENDERER_MB ?? 2048);
+const RENDERER_MB = +option('renderer-mb', process.env.BRACKEN_RENDERER_MB ?? 2816);
 const RECYCLE_MB = +option('recycle-mb', process.env.BRACKEN_RECYCLE_MB ?? 1536);
 if (!Number.isInteger(RECYCLE_EVERY) || RECYCLE_EVERY < 1 || !Number.isFinite(RENDERER_MB) || RENDERER_MB < 0 || !Number.isFinite(RECYCLE_MB) || RECYCLE_MB < 0)
   throw new Error('--recycle-every must be a positive integer; --renderer-mb and --recycle-mb must be nonnegative (0 disables that limit)');

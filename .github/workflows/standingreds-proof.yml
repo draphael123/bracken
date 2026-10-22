@@ -4,11 +4,28 @@ on:
     inputs:
       mode:
         type: choice
-        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy]
+        options: [prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle]
         default: prove
 permissions:
   contents: read
 jobs:
+  pool-recycle:
+    if: inputs.mode == 'pool-recycle'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/memory-policy-selftest.mjs
+      - run: node tools/browser-admission-selftest.mjs
+      - run: node tools/pool-recycle-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pool-recycle-proof
+          path: gate-data/
   memory-policy:
     if: inputs.mode == 'memory-policy'
     runs-on: ubuntu-latest
