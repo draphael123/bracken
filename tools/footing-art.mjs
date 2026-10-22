@@ -31,9 +31,10 @@ try {
       try{BK.load(i);}catch(err){res.push({id:lv.id,err:String(err.message||err)});continue;}
       const L=BK.L,W=L.W,H=L.H,G=L.grid,S=BK.tileSpr();
       if(L.caravan||L.fields||L.mage||L.sanctum){res.push({id:lv.id,skip:L.caravan?'caravan':L.fields?'fields':L.mage?'mage':'sanctum'});continue;}
+      const sag=new Set((L.sagCells||[]).map(([sx,sy])=>sy*W+sx));   /* THE FEN ROAD's rotten boards (claude/fenroad) are drawn bending by FRH.drawWorld, not tiled */
       const inStone=(x,y)=>(L.stone||[]).some(z=>x>=z[0]&&x<=z[1]&&y>=z[2]&&y<=z[3]);
       const floor=t=>SOLID.has(t)||LEDGE.has(t),open=t=>!SOLID.has(t);
-      const bare=new Set();for(let y=1;y<H;y++)for(let x=0;x<W;x++){const k=y*W+x,t=G[k];if(!floor(t)||!open(G[k-W])||S[k]||inStone(x,y))continue;bare.add(k);}
+      const bare=new Set();for(let y=1;y<H;y++)for(let x=0;x<W;x++){const k=y*W+x,t=G[k];if(!floor(t)||!open(G[k-W])||S[k]||inStone(x,y)||sag.has(k))continue;bare.add(k);}
       /* the creatures on them: the level's own, its ambush waves and its alarm garrisons, as placed (feet on row y, floor on y+1) */
       const on=[];const look=(t,x,y,from)=>{if(FLY.has(t))return;const k=(y+1)*W+x;if(bare.has(k))on.push(t+'@'+x+','+y+(from||''));};
       for(const e of L.ents)if(e.t!=='coin'&&e.t!=='deco')look(e.t,e.x,e.y);

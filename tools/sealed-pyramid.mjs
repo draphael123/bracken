@@ -24,7 +24,7 @@ const lv = LEVELS.find(l => l.id === 'sealedpyramid'), L = lv.build(), W = L.W, 
 const stand = t => t === T.SOLID || t === T.ONEWAY;
 
 console.log('== A. the road');
-ok(LEVELS.filter(l => l.id !== 'tavern')[LEVELS.length - 2].id === 'sealedpyramid', 'appended last in LEVELS (no index and no save moves; only the hidden Tavern, claude/tavern, was appended after it)');
+ok(LEVELS.filter(l => l.id !== 'tavern' && l.id !== 'fenroad')[LEVELS.length - 3].id === 'sealedpyramid', 'appended last in LEVELS (no index and no save moves; only the hidden Tavern, claude/tavern, was appended after it)');
 ok(lv.needs === 'buriedcity', 'it needs THE BURIED CITY');
 ok(lv.rule === SPY.RULE && /PLATE/.test(SPY.RULE) && /REACH/.test(SPY.RULE), 'its rule line is the one the level and the hands play: ' + SPY.RULE);
 

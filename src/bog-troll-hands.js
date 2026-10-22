@@ -114,7 +114,7 @@ export function makeBogTrollHands(ctx) {
     e.phase = S.ph; e.open = BTM.btOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
   /* A BLOW ON HIM (B15; src/bog-troll.js takeBlow) - the turned share clanks and says why */
-  H.take = (e, dmg) => { if (!S) return dmg; const [d, word] = BTM.takeBlow(e, S, dmg);
+  H.take = (e, dmg, tag) => { if (!S) return dmg; const [d, word] = BTM.takeBlow(e, S, dmg);
     if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 16, S.G.floorY - 16, sd, 4);
       if (!S.told.hide && word === BTM.BT_SAY.hide) { S.told.hide = 1; ctx.hint && ctx.hint('HIS PEAT HIDE TURNS A BLOW. STAND ON A ROTTEN SECTION AND STEP OFF AS HIS BULGE SETS: HE STICKS IN IT.'); } }
     return d; };

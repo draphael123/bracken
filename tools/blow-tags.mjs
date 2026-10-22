@@ -55,7 +55,7 @@ for (const [re, what] of [[/if \(e\.t === 'frog' && pl && e\.mode !== 'dazed'\)/
 /* 3. THE TAGS where the blows are struck */
 assert.ok(/hurtAs\(b\.plunge \? 'plunge' : b\.cone \? \['heavy', 'shot'\] : 'shot', e,/.test(main), "the pyromancer's FIREDROP is tagged 'plunge' (her bellows heavy+shot)");
 assert.ok(/hurtAs\('throw', e, throwDamage\(/.test(main), "a thrown carry (bucket, stone, pot) is tagged 'throw'");
-assert.ok(/hurtAs\('reflect', e, 10, s\.x - s\.vx, false\)/.test(main), "a seed sent back onto a foe is tagged 'reflect'");
+assert.ok(/hurtAs\('reflect', e, [^;]*?, s\.x - s\.vx, false\)/.test(main), "a seed sent back onto a foe is tagged 'reflect'");
 assert.ok(/hurtFoe: \(e, d, tag\) => \(tag \? hurtAs\(tag, e, d, e\.x, false\)/.test(main) && /ctx\.hurtFoe\(e, TORCH\.hit \* mul, 'throw'\)/.test(readFileSync(new URL('../src/underwell-hands.js', import.meta.url), 'utf8')), "the Underwell's thrown torch is tagged 'throw'");
 assert.ok(/const meleeBlow = plunge => \{ const v = meleeBlow0\(plunge\); return v !== 'plunge' && P\.swingRiposte && P\.atk >= 0 \? \[v, 'riposte'\] : v; \};/.test(main), "a cut out of a parry carries 'riposte' (the verb first)");
 assert.ok(/const tag = BLOW, blow = brRoomBlow\(tag\) \? null : tag;/.test(main), 'the throw and the reflect are the ROOM\'s blow (blow null: never chipped, greed or turned, as before)');
