@@ -108,13 +108,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 56,
-  "deaths": 7,
-  "kills": 20,
-  "lifts": 121,
+  "hits": 61,
+  "deaths": 8,
+  "kills": 18,
+  "lifts": 120,
   "walked": 100,
   "bare": true,
-  "lostPct": 400
+  "lostPct": 438
  },
  "storm": {
   "hash": "601546e739c6",
@@ -381,13 +381,13 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 19,
-  "deaths": 4,
-  "kills": 26,
-  "lifts": 43,
+  "hits": 20,
+  "deaths": 5,
+  "kills": 25,
+  "lifts": 45,
   "walked": 100,
   "bare": true,
-  "lostPct": 204
+  "lostPct": 217
  },
  "unburied": {
   "hash": "339823434226",

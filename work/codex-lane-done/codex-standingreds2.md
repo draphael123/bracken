@@ -1,131 +1,71 @@
 # codex/standingreds2
 
-Status: Partial - cause fixes are in progress. Not ready to merge; required 3x proofs and full serial gate remain incomplete.
-Base: BATCH112 `5e44cddd`, refreshed from origin/master on 2026-10-22.
-Dependencies: Task 1 and Task 2 checker/CI commits are included as prerequisites; merge those branches first.
+Status: Partial. Eleven target checks have strict three-pass evidence; Moor remains red. Not ready to merge.
+Base: BATCH112 `5e44cddd`. Task 1/2 harness prerequisites are included; coordinator merges those first.
+No master merge or deployment. No game balance number, level layout, tolerance, skip or exception-list change.
 
-## Current cause fixes
+## Cause fixes
 
-- New-opening stale penalty: amFrame runs before the enemy's state machine, so a state transition can open a boss
-  later in that frame. A blow before the next enemy update could inherit the previous opening's stale multiplier.
-  The shared damage path now observes the opening before applying staleMul. Damage values, stale pay and boss
-  behaviour numbers are unchanged. The existing Dune Worm first-blow assertion is the regression proof.
-- Berserker and poise fixture: commit `97206a12f35597b23c5a120ba07f725216d56996` deliberately replaced the old
-  poise formula with the universal verb-based break bar. Berserker's guarded heavy is now exactly
-  26*0.6 + 30*1.4 = 57.6, rather than the obsolete >=60 threshold. The fixture asserts that exact value. The
-  rule-openings fixture now sends actual light/heavy blow tags, resets its mix-up chain between independent cases,
-  and asserts exact guarded-heavy 15.6 / open-cut 3 / guarded-cut 0. This is an expectation migration tied to that
-  deliberate game commit, not a tolerance relaxation.
-- Gargoyle fixture sampled only AFTER its 20-frame strike. It missed the entire crash while seeing the subsequent
-  stun. It now observes during the strike too. The original crash, caught, duration and miss assertions remain.
-- Levelcard was omitted from textfit's load batching. Added one-level batches, preserving every campaign level,
-  all screen assertions and report order. Layout pages now block recorded audio files before initialization: they
-  still dismiss the sound banner, but do not decode 867 unrelated clips. The normal audio tests remain unchanged.
-- Spire used width-specified masonry piers but the shared kind `pier` selected the Church renderer first. All 32
-  failed spans reported that their drawn post never reached the deck. Dispatch now uses the existing Monastery
-  renderer for width-specified piers; Church piers are unchanged. No tile, entity or support data changed.
+- Boss openings could begin after amFrame and carry the previous opening's stale multiplier into the first blow.
+  The shared damage path observes the new opening before applying staleMul. Dune Worm's unchanged first-blow assertion passes.
+- `97206a12f35597b23c5a120ba07f725216d56996` deliberately changed poise to the universal verb-based bar.
+  Berserker now asserts the exact guarded-heavy formula 26*0.6+30*1.4=57.6; rule-openings sends real verb tags
+  and independently resets mix-up state (guarded-heavy 15.6, open-cut 3, guarded-cut 0). No widened tolerance.
+  The rend fixture isolates first light cuts from the separately tested natural fifth-cut finisher.
+- Gargoyle's fixture now observes during its 20-frame strike, when the crash actually occurs, preserving every assertion.
+- Bells: an unrelated cart killed the 22-HP alarm sentry for 30 damage before it could ring. Only the isolated alarm
+  fixture parks those carts; production carts and all alarm/garrison/gate/reset checks remain.
+- Small-adds: Abbot's special handler ignored the actual sweep/cut height band. It now checks that band before swinging.
+  All 36 rows, seeds, fight lengths and miss thresholds remain. The tool closes its browser every three heroes.
+- Talk layout: HUD is hidden while dialogue owns the foreground. Strict talk collision detection is unchanged.
+  Stockade/Falling Tower/Fair: three local passes, each 318 screens and 1058 strings across all six heroes.
+- Levelcards hide the clock while the card is displayed. The layout checker now uses one level per page and blocks
+  unrelated recorded audio before initialization. All 48 campaign screens and original assertions remain.
+  Three full runs take about 9.4 minutes each; this is containment of native memory growth, not a claim the whole leak is fixed.
+- Width-specified Monastery piers were routed to the Church renderer by their shared kind. Correct dispatch removes
+  Spire's 32 drawn-support findings without changing entity/tile/support data; Church piers are unchanged.
 
-## Before / after evidence
+## Three consecutive standalone proofs
 
-Clean BATCH112 checks with the checker safety prerequisites:
+Run https://github.com/draphael123/bracken/actions/runs/39791214554 verifies Berserker, Dune Worm, bells,
+rule-openings, strict visible supports, Reed Island, small-adds, talk, levelcard and mash-gate, three times each.
+The run's old trace and curve failures remain visible. Its levelcard repetitions all completed.
 
-```text
-dune-worm: first ledge-opening blow dealt 26, expected >=28 (x1.5 of 20)
-rule-openings: gargIn crash=false / stunned=3.5 / caught=1; poise tap=0 heavy=0 inOpen=0
-slopes-trace: wood frame count differs; kings/burial/canal frame differences; keep/welltown identical
-visible-supports-strict: scree 0/56 findings; spire 32/129 findings
-reed-island: PASS standalone (six rows opened)
-curve-gate: moor and oreroad stale; mash-gate: oreroad stale
-```
+Slopes calibration run https://github.com/draphael123/bracken/actions/runs/39820439479 at `2982b4bd`
+verifies three strict passes, an intentionally failing one-character ledge-assist mutation (6 to 5), and a restored pass.
+Receipt time: 2026-10-22T17:13:02.190Z. Controlled audio-off seed 1919, fresh clock/hero, separate actor/simulation dice.
+All six original walk scripts, all lip depths and exact comparisons remain. The old mover also passes 400,000-case Node fuzz.
+Keep/Welltown match historical `2cf3294b` exactly. Only intentionally changed rows were calibrated:
+Wood rebuild `c16af026`/`3c30b273`/`7729bcd2`; Kings pursuit `bc14ff36`/`b497d195`;
+Burial pressure `9fd45022`; Canal pressure `9fd45022` plus Fog Knight retune `53c5225f`.
+Those proposed rows were imported at `f02d78e4`; no unexplained trace was re-stamped.
 
-After first rule-openings fix:
+## Ore Road and Moor: current measured rows
 
-```text
-gargIn: crash=true, stunned=3.5, caught=1
-poise: tap=0, heavy=15.6, inOpen=3
-rule-openings: ok
-```
+The pilot previously depended on an unseeded stream. House seed 1919 is now reset by level/hero/run key before
+EACH load, rather than depending on preceding levels or cosmetic boot calls. Original three runs, steps and bands remain.
+Seeded measurement run https://github.com/draphael123/bracken/actions/runs/39793679713 completed successfully.
+Only Ore Road/Moor curve rows were imported; all other parsed rows were verified unchanged.
+Deliberate content changes: Ore Road squads `bc14ff36` and WORKS coordinates `1547a2c8`; Moor room/ledge/fall-clear `bd35f8a3`.
 
-Local artifacts are retained beside the worktrees in standingreds2-before and standingreds2-after-1.
-The latter's Berserker/Dune Worm attempts are Unknown: unrelated memory pressure fell to 503 MB and 2 MB
-free and the guard stopped only their own browsers. They are not counted as either passes or game failures.
+Ore Road hash `2cab5480c620`: 5 deaths / 217% average HP lost, within its unchanged band; mash row is current and passes.
+Moor hash `c02b3f362c10`: **8 deaths / 438% average HP lost**, above act II's unchanged 6-death ceiling and 70-400% HP band.
+The earlier unseeded result was 7 deaths / 400%; it is superseded by the controlled measurement, not silently counted as a pass.
+Recorded deaths cluster at posts/spikes around columns 261-319, with enemy deaths at 346 and 476. Signs tell players to
+brace/crouch on stones and hop in the still; the generic pilot has no explicit gust/brace policy. That observation is not
+proof that either the level or pilot should be changed. No seed shopping or easier band was used.
 
-## Validation and outstanding work
+## Outstanding
 
-- Changed source/tool syntax, whitespace and exact 425-check inventory: passed.
-- Rule-openings first standalone pass and Reed Island initial pass are verified; 3x proofs are pending.
-- Cloud standalone proof runs each named check three times and stops at its first red, keeping logs, exact PIDs,
-  source SHA and an occurrence-specific receipt. Talk proof is explicitly scoped to stockade/fallingtower/fair
-  for all six talk heroes. Levelcard proof covers the full campaign.
-- Pending: direct Dune Worm regression pass, remaining bells/small-adds cause fixes, text layout fixes,
-  deliberate-change evidence/re-recording for stale mash/curve/trace rows, all 3x proofs, full serial gate.
-- No assertion deletion, tolerance widening, new skip, master merge or deployment.
+- Moor needs a cause-based decision and another unchanged strict proof before this task can be green.
+- A full serial gate on THIS task branch remains outstanding. The separate Task 2 local checkpoint is not that evidence.
+- Local gate resource pressure persists; neither the successful standalone cloud checks nor the trace calibration substitutes
+  for the requested full serial completion. Task 3 is not DONE.
 
 ## QUESTIONS FOR DANIEL
 
-- Poise migration: recommend keeping the exact formula assertions tied to `97206a12`; built that migration
-  and actual tagged blows, with no game stat changes.
-- Local memory: recommend recorded-PID safeguards and cloud proofs. No other Bracken runs were verified;
-  the October 22 process inventory found no active Bracken test browser. Full local serial equivalence remains outstanding.
-
-## Second cause-fix checkpoint
-
-- Dialogue now owns the foreground while open: the HUD is hidden in talk state. This resolves overlapping
-  Stockade combat prompts and the Falling Tower/Fair HUD digit that overlapped sign detection. The strict
-  checker is unchanged. Local receipt `talk-fixed-proof/receipt.json`: three passes, 318 screens / 1058 strings
-  each, all six heroes, no COVERS or COLLIDE findings.
-- The level intro hides the clock during its name card; its counting is unchanged. Four-level layout batches
-  still crossed the 1536 MB renderer limit on the second cloud repetition, so levelcard now closes the page
-  after each level. All 48 campaign screens and assertions remain; the interrupted attempt is not a pass.
-- Abbot's special lab add handler bypassed the generic small-foe height test. It now waits for the actual
-  cut/sweep hit band before spending a swing. The original miss ledger and one-third threshold are unchanged.
-  First local run passed (127186 ms); three consecutive passes remain to be verified.
-- Bells fixture: a route cart hit the alarm sentry for 30 damage at about 0.516 seconds (22 HP), before it
-  could ring. The controlled alarm fixture parks unrelated carts before simulation. All sentry, bell, gate,
-  garrison, timeout and reset assertions remain, and production carts/placements/behaviour are unchanged.
-  First local run passed; three consecutive passes remain to be verified.
-- Cloud run https://github.com/draphael123/bracken/actions/runs/39785422615 proved three consecutive passes
-  for Berserker, Dune Worm, rule-openings, Reed Island, and strict visible supports. Curve-gate exited zero
-  three times but printed stale rows, so it does not satisfy the requested curve work yet.
-
-These recommendations do not require a reply before safe independent work continues.
-
-## Refreshed measurement result (not hidden by a stale stamp)
-
-Isolated run https://github.com/draphael123/bracken/actions/runs/39789224241 at d63a8c71 completed both
-default measurement commands. Only Ore Road's mash/curve rows and Moor's curve row were imported;
-all other rows were checked byte-equivalent as parsed objects. Deliberate data changes: Ore Road squads
-`bc14ff36` / WORKS coordinates `1547a2c8`; Moor room/ledge/fall-clear `bd35f8a3`.
-
-Ore Road now passes mash-gate with current hash `2cab5480c620`, and its curve row is current.
-Moor hash `c02b3f362c10` exposed a real gate red: 7 deaths in 3 runs against the unchanged act-II maximum
-of 6 (400% HP lost against the unchanged 70-400% band). The old stale row hid this result. No band,
-exception list, hero stat, boss number or level layout has been changed to make it green. Its pilot recorded
-3 wet lifts and 12 big-damage events shortly after lifts; distinguish pilot routing from intended difficulty
-before proposing any game tuning. Recommendation: retain the honest current row and diagnose those lifts.
-
-Bells and the three target dialogue levels each passed three consecutive cloud repetitions in run
-39789028564. Small-adds passed two complete repetitions, then its third renderer crossed 1536 MB;
-that interrupted attempt is not a game verdict. It now closes the browser every three heroes, retaining
-all 36 rows, their key-derived seeds, original fight lengths and every existing assertion.
-
-Berserker's second repetition exposed the rend fixture mixing its nine taps with the separately tested
-natural fifth-cut finisher. Its rend case now starts each tap at the first light cut. The flurry/cross-chop
-case and all rend assertions remain intact; three consecutive passes are still required.
-
-Trace context shows the first discrepancies occur immediately after global hitstop (hound contact in
-Kings, Grave Warden's toll tell in Burial, and a nearby mini tell in Canal). The Node old-mover equivalence
-and fuzz check passed. The weapon-weight diagnostic did not resolve the discrepancies. Historical real-page
-comparison is still being investigated; no unexplained trace has been re-stamped.
-
-## Controlled slopes-trace calibration verified
-
-Run 39820439479 at 2982b4bd passed three strict consecutive runs and a restored final run.
-At 2026-10-22T17:13:02.190Z, the one-character ledge-assist mutation (6 to 5) failed as required.
-All six levels retain their full original scripts, exact comparisons and all constructed lip depths.
-The historical 2cf3294b game was run with the same controlled transport, audio disabled, fresh clock/hero
-and independent actor/simulation dice. Keep and Welltown match that historical game frame for frame.
-Only four intentionally changed content rows use current traces: Lumber Trail rebuild c16af026 /
-3c30b273 / 7729bcd2; Kings pursuit bc14ff36 / b497d195; Burial pressure 9fd45022; Canal pressure
-9fd45022 and Fog Knight retune 53c5225f. The mover itself passed the unchanged Node equivalence/fuzz.
-No comparison tolerance or lip coverage was relaxed. Calibration receipts/logs are in the run artifact.
+- Moor: recommend coordinator review of the eight recorded deaths and the taught wind/brace answer before changing balance.
+  Built deterministic measurement and retained the real red. Approve any intended layout/balance adjustment separately;
+  current work makes none. A faithful pilot correction would first need evidence against the taught mechanic.
+- Merge: recommend holding this branch until Moor and the full serial run are resolved. Built the minimal cause fixes and
+  eleven strict three-pass proofs; this report is the reviewable handoff, not a green release claim.
