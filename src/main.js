@@ -1367,7 +1367,10 @@ function resolveTiles() {
           if(c && (c.width<=16 || (tileAt(x+1,y)===T.SOLID && tileAt(x+1,y-1)===T.AIR))) {
             const k=({tinyCap:'tiny',campfire:'fire',skullPost:'skull',fallenLog:'log',heather:'tuft',gorse:'bush',thistle:'fern'})[kind]||kind;
             decor.push({k,kind,x:x*TS,y:y*TS-c.height,c,bg:c.height>16,sway:0,ph:rnd()*6,fire:kind==='campfire'});
-            if(kind==='campfire'||kind==='stoneLantern')lights.push({x:x*TS+8,y:y*TS-8,r:30});
+            /* THE FLARES (claude/stockade3, Daniel 10-22 photo): a scattered dressing campfire is a 14 px flame, but its light was a 30 px additive glow - three of them in a
+               row, on top of a torch's halo, read as big soft orange blobs on the ground with no fire in them. A dressing fire keeps a flame-sized glow (r 22) only when it is
+               the ONLY light for 8 tiles (no other dressing fire's glow, no placed torch / brazier / lamp ent); next to another light it is a tight r 13 ember-glow. */
+            if(kind==='campfire'||kind==='stoneLantern'){ const fx=x*TS+8, near=lights.some(l=>l.dress&&Math.abs(l.x-fx)<128) || (L.ents||[]).some(e=>(e.t==='torch'||e.t==='brazier'||e.t==='lantern'||e.t==='towertop'||e.t==='glow')&&Math.abs(e.x*TS+8-fx)<112); lights.push({x:fx,y:y*TS-8,r:near?13:22,dress:true}); }
           }
         }
         /* A BED OF SPIKES IS NOT A GARDEN. A spike tile is not solid, so the ground under every railing and thorn bed read as open
