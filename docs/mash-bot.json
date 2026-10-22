@@ -355,16 +355,16 @@
    "fights": 6,
    "byHero": {
     "knight": [
-     "dead:100/90",
-     "dead:100/90"
+     "dead:100/91",
+     "dead:100/80"
     ],
     "warden": [
-     "dead:100/92",
-     "dead:100/92"
+     "timeout:99/55",
+     "dead:100/99"
     ],
     "pyro": [
-     "dead:100/98",
-     "dead:100/94"
+     "dead:100/96",
+     "dead:100/91"
     ]
    },
    "rows": [
@@ -373,11 +373,11 @@
      "seed": 1,
      "tag": "expected",
      "out": "dead",
-     "secs": 49.5,
+     "secs": 55.5,
      "hpLostPct": 100,
-     "bossLeftPct": 90,
-     "landed": 8,
-     "swings": 1820,
+     "bossLeftPct": 91,
+     "landed": 10,
+     "swings": 1988,
      "reprisalPct": 0,
      "chip": []
     },
@@ -386,11 +386,11 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 61.9,
+     "secs": 69.4,
      "hpLostPct": 100,
-     "bossLeftPct": 90,
-     "landed": 8,
-     "swings": 2297,
+     "bossLeftPct": 80,
+     "landed": 15,
+     "swings": 2560,
      "reprisalPct": 0,
      "chip": []
     },
@@ -398,12 +398,12 @@
      "hero": "warden",
      "seed": 1,
      "tag": "expected",
-     "out": "dead",
-     "secs": 51.5,
-     "hpLostPct": 100,
-     "bossLeftPct": 92,
-     "landed": 11,
-     "swings": 1894,
+     "out": "timeout",
+     "secs": 150,
+     "hpLostPct": 99,
+     "bossLeftPct": 55,
+     "landed": 77,
+     "swings": 5660,
      "reprisalPct": 0,
      "chip": []
     },
@@ -412,37 +412,37 @@
      "seed": 2,
      "tag": "expected",
      "out": "dead",
-     "secs": 48.2,
+     "secs": 50.1,
      "hpLostPct": 100,
-     "bossLeftPct": 92,
-     "landed": 7,
-     "swings": 1742,
+     "bossLeftPct": 99,
+     "landed": 5,
+     "swings": 1847,
      "reprisalPct": 0,
      "chip": []
     },
     {
      "hero": "pyro",
      "seed": 1,
-     "tag": "expected",
-     "out": "dead",
-     "secs": 53.5,
-     "hpLostPct": 100,
-     "bossLeftPct": 98,
-     "landed": 3,
-     "swings": 1991,
-     "reprisalPct": 0,
-     "chip": []
-    },
-    {
-     "hero": "pyro",
-     "seed": 2,
      "tag": "expected",
      "out": "dead",
      "secs": 53.8,
      "hpLostPct": 100,
-     "bossLeftPct": 94,
+     "bossLeftPct": 96,
      "landed": 7,
-     "swings": 2023,
+     "swings": 2021,
+     "reprisalPct": 0,
+     "chip": []
+    },
+    {
+     "hero": "pyro",
+     "seed": 2,
+     "tag": "expected",
+     "out": "dead",
+     "secs": 64.9,
+     "hpLostPct": 100,
+     "bossLeftPct": 91,
+     "landed": 10,
+     "swings": 2434,
      "reprisalPct": 0,
      "chip": []
     }
