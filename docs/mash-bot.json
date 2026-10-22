@@ -686,7 +686,7 @@
   }
  },
  "kings": {
-  "hash": "11a3b329f288",
+  "hash": "f10b583a2b65",
   "boss": {
    "boss": "king",
    "wins": 0,
@@ -886,7 +886,7 @@
    ]
   },
   "carried": {
-   "from": "28f85bc660e1",
+   "from": "11a3b329f288",
    "parts": [
     "boss",
     "mini"
@@ -894,64 +894,58 @@
   },
   "level": {
    "knight": {
-    "deaths": 3,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 300,
-    "hits": 23,
+    "hpLostPct": 279,
+    "hits": 16,
     "walked": 100,
-    "lifts": 49,
-    "held": 27,
-    "duels": 0,
-    "boardLifts": 5,
-    "rides": 1,
-    "pulls": 0,
-    "ridden": {
-     "swing": 1
-    },
+    "lifts": 39,
+    "held": 9,
+    "duels": 3,
+    "boardLifts": 0,
+    "rides": 0,
+    "pulls": 1,
+    "ridden": {},
     "machines": true,
-    "frames": 15708,
-    "kills": 9,
-    "heroLevel": 5
+    "frames": 20062,
+    "kills": 8,
+    "heroLevel": 6
    },
    "warden": {
-    "deaths": 3,
+    "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 325,
-    "hits": 24,
+    "hpLostPct": 217,
+    "hits": 13,
     "walked": 100,
-    "lifts": 47,
-    "held": 20,
-    "duels": 0,
-    "boardLifts": 4,
-    "rides": 2,
+    "lifts": 39,
+    "held": 12,
+    "duels": 3,
+    "boardLifts": 0,
+    "rides": 0,
     "pulls": 2,
-    "ridden": {
-     "swing": 2
-    },
+    "ridden": {},
     "machines": true,
-    "frames": 16710,
-    "kills": 10,
-    "heroLevel": 5
+    "frames": 20287,
+    "kills": 8,
+    "heroLevel": 6
    },
    "pyro": {
     "deaths": 2,
     "minHpPct": 0,
-    "hpLostPct": 225,
-    "hits": 14,
+    "hpLostPct": 268,
+    "hits": 13,
     "walked": 100,
-    "lifts": 39,
-    "held": 6,
-    "duels": 0,
-    "boardLifts": 8,
-    "rides": 4,
+    "lifts": 35,
+    "held": 9,
+    "duels": 2,
+    "boardLifts": 0,
+    "rides": 0,
     "pulls": 2,
-    "ridden": {
-     "swing": 4
-    },
+    "ridden": {},
     "machines": true,
-    "frames": 16116,
-    "kills": 17,
-    "heroLevel": 5
+    "frames": 18453,
+    "kills": 11,
+    "heroLevel": 6
    }
   }
  },
