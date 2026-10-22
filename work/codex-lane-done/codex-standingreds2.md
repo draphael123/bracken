@@ -1,6 +1,6 @@
 # codex/standingreds2
 
-Status: Partial. Eleven target checks have strict three-pass evidence; Moor remains red. Not ready to merge.
+Status: Partial. Eleven earlier targets and Moor now have strict three-pass evidence. Full serial verification remains incomplete; not ready to merge.
 Base: BATCH112 `5e44cddd`. Task 1/2 harness prerequisites are included; coordinator merges those first.
 No master merge or deployment. No game balance number, level layout, tolerance, skip or exception-list change.
 
@@ -40,7 +40,7 @@ Wood rebuild `c16af026`/`3c30b273`/`7729bcd2`; Kings pursuit `bc14ff36`/`b497d19
 Burial pressure `9fd45022`; Canal pressure `9fd45022` plus Fog Knight retune `53c5225f`.
 Those proposed rows were imported at `f02d78e4`; no unexplained trace was re-stamped.
 
-## Ore Road and Moor: current measured rows
+## Ore Road and Moor: initial controlled measurements (Moor superseded below)
 
 The pilot previously depended on an unseeded stream. House seed 1919 is now reset by level/hero/run key before
 EACH load, rather than depending on preceding levels or cosmetic boot calls. Original three runs, steps and bands remain.
@@ -57,17 +57,15 @@ proof that either the level or pilot should be changed. No seed shopping or easi
 
 ## Outstanding
 
-- Moor needs a cause-based decision and another unchanged strict proof before this task can be green.
+- Moor is resolved by the verified ordinary-input pilot correction below; no balance decision is required.
 - A full serial gate on THIS task branch remains outstanding. The separate Task 2 local checkpoint is not that evidence.
 - Local gate resource pressure persists; neither the successful standalone cloud checks nor the trace calibration substitutes
   for the requested full serial completion. Task 3 is not DONE.
 
 ## QUESTIONS FOR DANIEL
 
-- Moor: recommend coordinator review of the eight recorded deaths and the taught wind/brace answer before changing balance.
-  Built deterministic measurement and retained the real red. Approve any intended layout/balance adjustment separately;
-  current work makes none. A faithful pilot correction would first need evidence against the taught mechanic.
-- Merge: recommend holding this branch until Moor and the full serial run are resolved. Built the minimal cause fixes and
+- No Moor decision is needed. Its real taught brace answer passes all three repetitions with unchanged bands.
+- Merge: recommend holding this branch until the full serial run is resolved. Built the minimal cause fixes and
   eleven strict three-pass proofs; this report is the reviewable handoff, not a green release claim.
 
 ## Continued Moor resolution (no game balance change)
@@ -83,3 +81,33 @@ unbraced knight 67.25 px while ordinary crouch holds within 0.94 px; no game win
 All other curve rows are unchanged. Moor's measured row is imported; curve-gate passes three times in that run.
 No design decision or balance permission is needed for this correction. The remaining task requirement is its full
 serial branch run. The measured Task 2 hero-art collection and cleanup receipt fixes are included for that proof.
+
+
+## Continued native-memory containment
+
+The new local full gate remains on frozen Task 2 source 2a3175b1. Its same-source Linux audit (run39852095702)
+retains 382 actual verdicts (364 PASS / 18 FAIL) and 43 unanswered memory interruptions; it is not equivalence proof.
+The earlier standingreds serial snapshot cfa373f2 is still running in run39852300871. Neither is relabelled as this newer source.
+
+Raw Page.navigate discarded the old helper wrapper. Pre-document installation now keeps load/hero/fresh-reset collection
+across navigation; the unforced leak control remains unwrapped. The actual raft-recall fixture passes at c6bc30ff:
+5 rafts in 2 levels, peak renderer 1180 MB, run39854435726. Native bridge trace run39858523401 proves 256 identical
+manual updates/random draws and 64 exact gameplay/pixel samples with collection; raw navigation and opt-out assertions pass.
+A later trace attempt failed to launch its browser, not its state/pixel assertions; that failed occurrence is retained.
+
+Collection alone did not contain the longest single-page labs: the protocol completed 33 native collections and the
+boss lab still hit 1738 MB. Tighter JS heap and periodic collection experiments also failed and were not substituted
+for passing gates. The protocol timer experiment was removed.
+
+The boss lab now executes every original ordered case in bounded fresh browsers. At 7f52f020, run39859520715 passes all
+27 cases and all 102 original Node assertion lines in 113656 ms, inside the original 300000 ms overall deadline;
+peak renderer 1502 MB under the unchanged 1536 MB ceiling. The Cistern Queen is required at its canonical Underwell ID,
+so finding it no longer builds the campaign twice and its case can no longer silently disappear. Two-case batches are
+being verified for a larger memory margin. The levelling lab similarly covers all heroes/levels in fresh per-hero pages,
+retaining all heal, passive, catch-up and text assertions and its original overall deadline; its full proof is pending.
+
+Between completed manual evaluations, the harness can collect the native canvas heap. Real-time measurements,
+mid-boot probes and gcLoads:false controls keep their original path. No simulation step, input or random draw is added.
+The runner now waits for estimated renderer headroom before launch and saves an incomplete checkpoint if RAM stays low.
+Admission bounds, the hard-killed-writer recovery, full 425-name inventory and gate-result failure-injection checks pass.
+The original full-suite checkpoint is not modified to accept these source changes.
