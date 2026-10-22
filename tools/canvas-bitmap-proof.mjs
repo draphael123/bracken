@@ -1,0 +1,8 @@
+import{installBitmapLab}from'./canvas-bitmap-lab.mjs';
+import{openPage}from'./cdp.mjs';import assert from'node:assert/strict';import{mkdirSync,writeFileSync}from'node:fs';
+const pg=await openPage({audio:false,fonts:false});
+try{
+ await pg.evalp('BK.manualSimulation=true;('+installBitmapLab.toString()+')()');
+ const r=await pg.evalp(`(async()=>{const source=document.createElement('canvas'),target=document.createElement('canvas');source.width=target.width=2;source.height=target.height=2;const s=source.getContext('2d'),t=target.getContext('2d');s.fillStyle='rgba(80,140,240,.4)';s.fillRect(0,0,2,2);const read=()=>{t.clearRect(0,0,2,2);t.drawImage(source,0,0);return Array.from(t.getImageData(0,0,2,2).data);};const direct=read();read();await __bitmapLab.settled();const cached=read();s.fillStyle='#f04020';s.fillRect(0,0,2,2);const mutated=read();await __bitmapLab.settled();source.width=2;const resized=read();await __bitmapLab.settled();read();await __bitmapLab.settled();const stats={...__bitmapLab.stats};__bitmapLab.close();return{direct,cached,mutated,resized,stats,remaining:__bitmapLab.stats.bytes};})()`);
+ assert.deepEqual(r.cached,r.direct,'cached translucent pixels must be exact');assert.equal(r.mutated[0],240);assert.equal(r.mutated[1],64);assert.equal(r.mutated[2],32);assert.equal(r.resized[3],0);assert(r.stats.hits>=1);assert(r.stats.invalidated>=2);assert.equal(r.remaining,0);assert.deepEqual(pg.errors,[]);mkdirSync('gate-data',{recursive:true});writeFileSync('gate-data/bitmap-safety.json',JSON.stringify({time:new Date().toISOString(),...r},null,2)+'\n');console.log('PASS bitmap lab: exact translucent pixels; writes and same-size resize invalidate; retained bitmap bytes return to zero');
+}finally{await pg.close();}

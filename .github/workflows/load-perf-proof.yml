@@ -15,7 +15,7 @@ on:
         default: mage
       present:
         type: choice
-        options: [copy, pattern, cpu-frame, sync-display]
+        options: [copy, pattern, cpu-frame, sync-display, bitmap]
         default: copy
 env:
   PIXEL_CPU_CANVAS: ${{ inputs.pixel_cpu && '1' || '0' }}
@@ -146,6 +146,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.11.1'
+      - run: node tools/canvas-bitmap-proof.mjs
+        if: inputs.present == 'bitmap' && inputs.mode == 'present'
       - name: Same-runner original phone setup, pixels and three FPS samples per build
         env:
           LEVEL: ${{ matrix.level }}
