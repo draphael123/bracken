@@ -6101,7 +6101,7 @@
   }
  },
  "oreroad": {
-  "hash": "afb378ba9b4e",
+  "hash": "2cab5480c620",
   "boss": {
    "boss": "winchmaster",
    "wins": 0,
@@ -6202,71 +6202,71 @@
    ]
   },
   "carried": {
-   "from": "22d06c9289d8",
+   "from": "afb378ba9b4e",
    "parts": [
     "boss"
    ]
   },
   "level": {
    "knight": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 214,
-    "hits": 12,
-    "walked": 100,
-    "lifts": 21,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 7,
-    "rides": 7,
-    "pulls": 0,
-    "ridden": {
-     "bucket": 7
-    },
-    "machines": true,
-    "frames": 12206,
-    "kills": 11,
-    "heroLevel": 12
-   },
-   "warden": {
-    "deaths": 2,
-    "minHpPct": 0,
-    "hpLostPct": 299,
-    "hits": 16,
-    "walked": 100,
-    "lifts": 21,
-    "held": 0,
-    "duels": 0,
-    "boardLifts": 9,
-    "rides": 9,
-    "pulls": 0,
-    "ridden": {
-     "bucket": 9
-    },
-    "machines": true,
-    "frames": 15050,
-    "kills": 12,
-    "heroLevel": 12
-   },
-   "pyro": {
     "deaths": 1,
     "minHpPct": 0,
-    "hpLostPct": 199,
-    "hits": 10,
+    "hpLostPct": 167,
+    "hits": 8,
+    "walked": 100,
+    "lifts": 20,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 5,
+    "rides": 3,
+    "pulls": 0,
+    "ridden": {
+     "bucket": 3
+    },
+    "machines": true,
+    "frames": 7814,
+    "kills": 15,
+    "heroLevel": 13
+   },
+   "warden": {
+    "deaths": 1,
+    "minHpPct": 0,
+    "hpLostPct": 177,
+    "hits": 8,
     "walked": 100,
     "lifts": 22,
     "held": 0,
     "duels": 0,
-    "boardLifts": 7,
-    "rides": 5,
+    "boardLifts": 5,
+    "rides": 4,
     "pulls": 0,
     "ridden": {
-     "bucket": 5
+     "bucket": 4
     },
     "machines": true,
-    "frames": 10706,
-    "kills": 7,
-    "heroLevel": 12
+    "frames": 9751,
+    "kills": 16,
+    "heroLevel": 13
+   },
+   "pyro": {
+    "deaths": 2,
+    "minHpPct": 0,
+    "hpLostPct": 197,
+    "hits": 8,
+    "walked": 100,
+    "lifts": 24,
+    "held": 0,
+    "duels": 0,
+    "boardLifts": 4,
+    "rides": 2,
+    "pulls": 0,
+    "ridden": {
+     "bucket": 2
+    },
+    "machines": true,
+    "frames": 8280,
+    "kills": 10,
+    "heroLevel": 13
    }
   }
  },

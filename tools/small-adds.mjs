@@ -21,16 +21,18 @@ const HEROES = ['knight', 'pyro', 'paladin', 'pirate', 'reaper', 'warden', 'geom
 /* the Mother at mother-pilot's 180 s (her fight is ~110 s; cut at 120 a slow hero's last sporelings would go uncounted) */
 const BOSSES = [['spore', 180], ['spire', 120], ['underleaf', 120], ['marsh', 120]];
 const MIN_SWINGS = 4, MAX_MISS = 1 / 3;
-const pg = await openPage({ audio: false, fonts: false }); const rows = [];
-try {
-  for (const [lvl, secs] of BOSSES) {
-    await pg.reload();
-    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:${JSON.stringify(HEROES)},maxSecs:${secs}});
+const rows = [];
+/* Each row has its own key-derived dice stream (lab.js seedOf); batching does not reseed it. Close
+   the browser after three heroes so the native canvases from nine successive loads cannot accumulate. */
+for (const [lvl, secs] of BOSSES) for (let first = 0; first < HEROES.length; first += 3) {
+  const pg = await openPage({ audio: false, fonts: false });
+  try {
+    const r = await pg.evalp(`(async()=>{BK.manualSimulation=true;const r=await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:${JSON.stringify(HEROES.slice(first, first + 3))},maxSecs:${secs}});
       return r.rows.map(x=>({lvl:x.lvl,boss:x.boss,h:x.h,skipped:x.skipped,secs:x.secs,killed:x.killed,smallSwings:x.smallSwings,smallMissed:x.smallMissed}));})()`, 1800000);
     rows.push(...r);
-  }
-  assert.deepEqual(pg.errors, []);
-} finally { pg.close(); }
+    assert.deepEqual(pg.errors, []);
+  } finally { await pg.close(); }
+}
 if (process.env.SMALL_ADDS_OUT) writeFileSync(process.env.SMALL_ADDS_OUT, JSON.stringify(rows, null, 1));
 const bad = [];
 for (const x of rows) {

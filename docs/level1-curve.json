@@ -104,17 +104,17 @@
   "lostPct": 113
  },
  "moor": {
-  "hash": "d291f455268f",
+  "hash": "c02b3f362c10",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 52,
-  "deaths": 4,
-  "kills": 23,
-  "lifts": 115,
+  "hits": 56,
+  "deaths": 7,
+  "kills": 20,
+  "lifts": 121,
   "walked": 100,
   "bare": true,
-  "lostPct": 347
+  "lostPct": 400
  },
  "storm": {
   "hash": "601546e739c6",
@@ -377,17 +377,17 @@
   "lostPct": 632
  },
  "oreroad": {
-  "hash": "afb378ba9b4e",
+  "hash": "2cab5480c620",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 22,
+  "hits": 19,
   "deaths": 4,
   "kills": 26,
-  "lifts": 47,
+  "lifts": 43,
   "walked": 100,
   "bare": true,
-  "lostPct": 227
+  "lostPct": 204
  },
  "unburied": {
   "hash": "339823434226",

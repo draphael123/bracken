@@ -89,3 +89,31 @@ free and the guard stopped only their own browsers. They are not counted as eith
   three times but printed stale rows, so it does not satisfy the requested curve work yet.
 
 These recommendations do not require a reply before safe independent work continues.
+
+## Refreshed measurement result (not hidden by a stale stamp)
+
+Isolated run https://github.com/draphael123/bracken/actions/runs/39789224241 at d63a8c71 completed both
+default measurement commands. Only Ore Road's mash/curve rows and Moor's curve row were imported;
+all other rows were checked byte-equivalent as parsed objects. Deliberate data changes: Ore Road squads
+`bc14ff36` / WORKS coordinates `1547a2c8`; Moor room/ledge/fall-clear `bd35f8a3`.
+
+Ore Road now passes mash-gate with current hash `2cab5480c620`, and its curve row is current.
+Moor hash `c02b3f362c10` exposed a real gate red: 7 deaths in 3 runs against the unchanged act-II maximum
+of 6 (400% HP lost against the unchanged 70-400% band). The old stale row hid this result. No band,
+exception list, hero stat, boss number or level layout has been changed to make it green. Its pilot recorded
+3 wet lifts and 12 big-damage events shortly after lifts; distinguish pilot routing from intended difficulty
+before proposing any game tuning. Recommendation: retain the honest current row and diagnose those lifts.
+
+Bells and the three target dialogue levels each passed three consecutive cloud repetitions in run
+39789028564. Small-adds passed two complete repetitions, then its third renderer crossed 1536 MB;
+that interrupted attempt is not a game verdict. It now closes the browser every three heroes, retaining
+all 36 rows, their key-derived seeds, original fight lengths and every existing assertion.
+
+Berserker's second repetition exposed the rend fixture mixing its nine taps with the separately tested
+natural fifth-cut finisher. Its rend case now starts each tap at the first light cut. The flurry/cross-chop
+case and all rend assertions remain intact; three consecutive passes are still required.
+
+Trace context shows the first discrepancies occur immediately after global hitstop (hound contact in
+Kings, Grave Warden's toll tell in Burial, and a nearby mini tell in Canal). The Node old-mover equivalence
+and fuzz check passed. The weapon-weight diagnostic did not resolve the discrepancies. Historical real-page
+comparison is still being investigated; no unexplained trace has been re-stamped.

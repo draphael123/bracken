@@ -1,5 +1,5 @@
 // Read-only diagnostic: instrument the unchanged trace in current and historical isolated checkouts.
-import { readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, rmSync, copyFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, join } from 'node:path';
 import assert from 'node:assert/strict';
@@ -7,6 +7,9 @@ const root = process.cwd(), out = resolve('gate-data'); mkdirSync(out, { recursi
 const old = resolve('../trace-context-old');
 const added = spawnSync('git', ['worktree', 'add', '--detach', old, '2cf3294b'], { encoding: 'utf8' });
 assert.equal(added.status, 0, added.stderr);
+// Use the same modern lab transport on BOTH versions; leave every historical game byte untouched.
+for (const file of ['cdp.mjs','browser-profile.mjs','ports.mjs','process-memory.mjs'])
+  copyFileSync(join(root,'tools',file),join(old,'tools',file));
 let source = readFileSync('tools/slopes-trace.mjs', 'utf8');
 source = source.replace('const rows = [];', 'const rows = [], context = [];');
 const row = 'rows.push([P.x, P.y, P.vx, P.vy, P.ground ? 1 : 0]);';

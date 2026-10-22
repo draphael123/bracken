@@ -77,7 +77,9 @@ try {
     /* REND: no frenzy, no rend; in a frenzy every fourth blow on one foe CRACKS it and is a HEAVY (the beast family's key) */
     { __bz();e=__foe(16,'brute');BK.sim(2);const keyT=new Set(),c0=Z().stats.cracks,r0=Z().stats.rends;
       /* (a broken brute is finished by the next cut - the finisher - so his bar is held empty here: this is about the rend, not the poise) */
-      const chop=n=>{for(let i=0;i<n;i++){P().st=P().maxSt;BK.press('atk');for(let f=0;f<18;f++){BK.sim(1);e.x=P().x+16;e.stagger=0;e.poise=0;e.poiseCd=99;if(e.keyHit!==undefined)keyT.add(e.keyHit);}}};
+      /* Isolate rend's light cuts from the separately tested fifth-cut finisher. A continued flurry can turn
+         input taps into natural heavies, so nine damage records do not guarantee eight rend-eligible cuts. */
+      const chop=n=>{for(let i=0;i<n;i++){P().st=P().maxSt;P().combo=0;P().bzChainHit=false;BK.press('atk');for(let f=0;f<18;f++){BK.sim(1);e.x=P().x+16;e.stagger=0;e.poise=0;e.poiseCd=99;if(e.keyHit!==undefined)keyT.add(e.keyHit);}}};
       BK.log=[];chop(6);BK.sim(40);const cold={cracks:Z().stats.cracks-c0,heavy:BK.log.filter(x=>x.k==='dmgE'&&x.e===e&&x.heavy).length,hits:BK.log.filter(x=>x.k==='dmgE'&&x.e===e).length};
       P().rage=100;K.down=true;K.block=true;BK.sim(2);K.block=false;K.down=false;BK.sim(60);const fz=P().frenzyT;keyT.clear();BK.log=[];chop(9);
       const L=BK.log.filter(x=>x.k==='dmgE'&&x.e===e);BK.log=null;out.rend={cold,fz,hits:L.length,heavy:L.filter(x=>x.heavy).length,cracks:Z().stats.cracks-c0,rends:Z().stats.rends-r0,keyed:keyT.size}; }
