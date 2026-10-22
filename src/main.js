@@ -1563,7 +1563,7 @@ function seatAdd(s) {
   const p = freshBody(), h = s.hero || 'knight';
   Object.assign(p, { hero: h, n: players.length + 1, keys: {}, press: {}, score: freshScore(), total: freshScore(), ai: !!s.ally, down: 0, reviveT: 0, cds: {}, padSt: { prev: {} },
     src: s.ally ? { kind: 'ally' } : s.src ? { ...s.src } : { kind: 'pad', pad: null }, sword: s.sword || (s.prof && SWORDS.some(w => w.id === s.prof.sword) ? s.prof.sword : PROG.sword), leash: 0, prof: s.prof && (!s.ally || (s.prof.dest && s.prof.dest.xpOnly)) ? s.prof : null, aiCfg: s.ally ? AIC.cleanCfg(s.aiCfg) : null, aiWalk: null, aiS: null });   /* (claude/aicompanions) a LINKED AI companion keeps its profile (its own save, xpOnly) */   /* (claude/coopprogress) prof: he plays his own save (asPlayer) */
-  players.push(p);
+  players.push(p); seatStamp(p);
   partyColours();
   seatBake(p);
   asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; if (s.ally) P.flasks = SV.flaskMax(PROG); });   /* (claude/aicompanions) an AI partner carries its own flasks (its save's max) */
@@ -1601,7 +1601,7 @@ function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); if (P.ai) { P.flasks = Math.max(P.flasks | 0, SV.flaskMax(PROG)); P.aiS = null; } }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too */
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); if (P.ai) { P.flasks = Math.max(P.flasks | 0, SV.flaskMax(PROG)); P.aiS = null; } seatStamp(P); }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too */
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
@@ -1724,25 +1724,56 @@ function drawDowned(cx, cy) {
   if (P.reviveT > 0) { g.strokeStyle = '#8fd160'; g.beginPath(); g.arc(x, y - 16, 8, -Math.PI / 2, -Math.PI / 2 + (P.reviveT / REVIVE_T) * Math.PI * 2); g.stroke(); }
   text(PARTY.tagOf(P), x, y - 34, PARTY.colourOf(PROG.tavern, P.n).c, 'center', 6);
 }
+/* (claude/coopplates, Daniel 10-21: "show the level and class of the other players more clearly") A SEAT'S LEVEL, LIVE: a seat on his own save reads his own XP (it lands in his view as he earns);
+   a guest or a lent hero plays at player one's level (heroLevel: coopLent). Read outside any pass, so no asPlayer swap per frame. */
+const seatLv = p => { try { const x = p && p.prof ? (p.prof.view.xp || {})[p.hero] || 0 : ((profHost || PROG).xp || {})[players[0].hero] || 0; return levelOfXp(x); } catch { return 1; } };
+const seatHeroName = p => HERO_SHORT[p.hero] || String(p.hero).toUpperCase();
+/* THE HERO ICON: a crop of the hero's own idle frame at its native pixels (a bust for the plate, just the head for the over-head tag) - block-voting a thin-lined sprite down ate it. Cropped about his feet anchor (ax, ay). */
+function drawHeroIcon(h, x, y, cw, ch, off, a, ctx) {
+  try { const set = heroPreviewSet(h), src = pickFrame(set, 'idle', 0, 1), c = ctx || g, w0 = c.globalAlpha; if (a !== undefined) c.globalAlpha = w0 * a;
+    c.drawImage(src, Math.round(set.ax - cw / 2), Math.round(set.ay - off - ch), cw, ch, Math.round(x), Math.round(y), cw, ch); c.globalAlpha = w0; } catch {}
+}
+const ICON_URL = new Map();
+function heroIconUrl(h) { try { let u = ICON_URL.get(h); if (u === undefined) { const c = document.createElement('canvas'); c.width = 18; c.height = 20; drawHeroIcon(h, 0, 0, 18, 20, 3, 1, c.getContext('2d')); u = c.toDataURL(); ICON_URL.set(h, u); } return u; } catch { return ''; } }
+const seatTagWord = p => p.ai ? 'AI' : 'P' + p.n;
+function seatSaveWord(p) { return p.prof ? (p.prof.dest.kind === 'local' ? 'SAVE ' + (p.prof.dest.slot + 1) : 'ONLINE, SAVE ' + ((p.prof.slot | 0) + 1)) : p.ai ? 'AI' : 'GUEST'; }
+const seatStamp = (p, t = 5) => { if (p) p.tagUntil = time + t; };   /* the over-head level tag shows for a few seconds after a join, a respawn and a level-up */
+function seatJoinToast(p) { try { if (!p) return; seatStamp(p); const c = PARTY.colourOf(PROG.tavern, p.n).c; UIH.toastPush(toastQ, 'P' + p.n + ' JOINED: ' + seatHeroName(p) + ' LV ' + seatLv(p) + ' (' + seatSaveWord(p) + ')', 4, p.ai ? '#c9a0ff' : c); } catch {} }
+function seatLevelToast(p, n) { try { if (!p || !coop()) return; seatStamp(p); UIH.toastPush(toastQ, seatTagWord(p) + ' ' + seatHeroName(p) + ' REACHES LEVEL ' + n, 3, p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, p.n).c); } catch {} }
+/* THE OVER-HEAD LEVEL TAG: hero icon + 'LV 12' on a slate above his name tag; it fades a few seconds after a join, a respawn or a level-up, and shows again whenever he is strayed far from the rest. */
+function seatTagAlpha(p) {
+  const others = players.filter(q => q !== p && !q.dead), far = others.length > 0 && !others.some(q => Math.abs(q.x - p.x) < 150 && Math.abs(q.y - p.y) < 110);
+  if (far) return 1; const left = (p.tagUntil || 0) - time; return left <= 0 ? 0 : Math.min(1, left / 0.8);
+}
+function drawSeatLvTag(x, y, p, c, a) {
+  const lab = 'LV ' + seatLv(p), w = textW(lab, 6) + 14, x0 = Math.round(x - w / 2), y0 = y - 2, col = p.ai ? '#c9a0ff' : c.c;
+  const w0 = g.globalAlpha; g.globalAlpha = w0 * a;
+  g.fillStyle = ART.OUT; g.fillRect(x0, y0, w, 12); g.fillStyle = '#241c30'; g.fillRect(x0 + 1, y0 + 1, w - 2, 10); g.fillStyle = col; g.fillRect(x0 + 1, y0 + 1, w - 2, 1);
+  drawHeroIcon(p.hero, x0 + 2, y0 + 1, 10, 10, 11); text(lab, x0 + 14, y0 + 3, col, 'left', 6); g.globalAlpha = w0;
+}
 /* PLAYER TWO'S PLATE, small and out of the way between player one's and the purse: who he is, what is left of him,
-   and the clock instead while he is down. */
+   and the clock instead while he is down. (claude/coopplates) Now the hero's icon, his seat tag (P2 / AI / GUEST), and 'PYRO LV 12' in the plate's second line. */
 function drawCoopHud() { if (state === 'win' || state === 'victory') return; for (let i = 1; i < players.length; i++) drawSeatPlate(players[i], i - 1); }   /* (integ 103: not under the win card or the end card - its tally has the names) (claude/tavern) a plate a seat, stacked down the right */
 function drawSeatPlate(p, slotI) {
   if (!p) return;
   /* UNDER THE PURSE, not over the clock. The top middle is the level timer and the garrison and ambush counters
      under it, the bottom middle is the boss bar, and the left is player one's - so player two's plate sits on the
      right, below the purse and the quest line. It goes in hudRects like the others, so the tells keep off it. */
-  const x0 = VW - 91, y0 = 45 + slotI * 31, w = 84, h = 20, pc = PARTY.colourOf(PROG.tavern, p.n).c;
+  const w = 114, h = 26, x0 = VW - w - 3, y0 = 45 + slotI * 35, pc = p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, p.n).c, bx = x0 + 25, bw = w - 29;
   board(x0, y0, w, h, UI.border, 'rgba(10,8,20,0.5)', true);
   if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([x0, y0, w + 2, h + 2]);
-  text(p.ai ? 'ALLY' : 'P' + p.n, x0 + 5, y0 + 4, p.ai ? '#c9a0ff' : pc, 'left', 6);
+  g.fillStyle = pc; g.fillRect(x0 + 2, y0 + 2, 20, h - 4); g.fillStyle = '#1a1424'; g.fillRect(x0 + 3, y0 + 3, 18, h - 6);
+  drawHeroIcon(p.hero, x0 + 3, y0 + 3, 18, 20, 3);
+  text(seatTagWord(p), bx, y0 + 3, pc, 'left', 6);
+  if (!p.ai && !p.prof) text('GUEST', bx + textW(seatTagWord(p), 6) + 4, y0 + 3, UI.dim, 'left', 6);
   if (p.down > 0) { const k = p.down / (L && L.tavern ? DOWN_T_TAVERN : DOWN_T);
-    bar(x0 + 27, y0 + 5, 38, 4, k, Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b', k);
-    text('DOWN', x0 + 68, y0 + 4, '#ff6b6b', 'left', 6); }
-  else { bar(x0 + 27, y0 + 5, 38, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
-    if (p.hero === 'reaper' && (p.bd || 0) > 0.4) drawDebt(x0 + 27, y0 + 5, 38, 4, p);   /* (claude/bloodknightart) a Blood Knight's BLOOD DEBT on the seat plate too */
-    text(String(Math.max(0, Math.ceil(p.hp))), x0 + 68, y0 + 4, '#fff6e0', 'left', 6); }
-  text(fitText(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), w - 10, 6), x0 + 5, y0 + 12, UI.dim, 'left', 6);
+    bar(bx, y0 + 19, bw, 4, k, Math.floor(time * 6) % 2 ? '#ffd0d0' : '#ff6b6b', k);
+    text('DOWN', x0 + w - 4, y0 + 3, '#ff6b6b', 'right', 6); }   /* (down: the clock bar, and DOWN where the level was) */
+  else { bar(bx, y0 + 19, bw, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
+    if (p.hero === 'reaper' && (p.bd || 0) > 0.4) drawDebt(bx, y0 + 19, bw, 4, p);   /* (claude/bloodknightart) a Blood Knight's BLOOD DEBT on the seat plate too */
+    text(String(Math.max(0, Math.ceil(p.hp))), x0 + w - 4, y0 + 11, '#fff6e0', 'right', 6);
+    text('LV ' + seatLv(p), x0 + w - 4, y0 + 3, '#ffd36b', 'right', 6); }
+  text(fitText(seatHeroName(p), bw - 16, 6), bx, y0 + 11, UI.text, 'left', 6);
   if (RP.chainOf(p) > 0 && !(p.down > 0)) { const tw = 5 * 6 + 3, tx = x0 + w - tw;   /* (claude/riposteart) P2's MIX-UP pips, on a tab hung under the plate's right end (the same gems as the HUD's) */
     board(tx, y0 + h - 1, tw + 2, 9, UI.border, 'rgba(10,8,20,0.5)', true); if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([tx, y0 + h - 1, tw + 4, 11]);
     RP.drawPips(g, p, tx + 3, y0 + h + 2, !!SET.reduceMotion); }
@@ -4554,11 +4585,11 @@ function xpKill(e) { if (!e || e.xpPaid || !e.xpKey || e.harmless || !xpWood()) 
 function teachTechnique(n, from) { const got = techniquesArriving(hero(), from, n); if (!got.length) return; PROG.tech = PROG.tech || {}; for (const k of got) PROG.tech[hero() + ':' + k.id] = n; if (typeof techniquePractice === 'function') techniquePractice(got[0]); }
 function levelUp(n, from) { lvUpN = n; PROG.cardNew = 1; if (state !== 'play') return; if (from === undefined) from = n - 1; teachTechnique(n, from);
   lvUpT = 2.6; const mh = P.maxHp; applyUpgrades(); regear(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh));
-  SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b');
+  SFX.rankUp(); TCH.buzz('levelup'); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); ringAt(P.x, P.y - 12, 14, '#fff6c8', 0.35); motes(P.x, P.y - 10, 14, 10); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b'); seatLevelToast(P, n);
   lvHealOwed = { n, from: lvHealOwed ? lvHealOwed.from : from }; levelHealTick();
   saveProgress(); }
 /* A SEAT'S LEVEL-UP (claude/coopprogress): his health and the ring, here; his card waits for his own game (picks are owed by level: src/progression.js picksOwed) */
-function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b'); if (P.prof) P.prof.lvNow = n; }
+function seatLevelUp(n) { const mh = P.maxHp; applyUpgrades(); P.hp = Math.min(P.maxHp, P.hp + Math.max(0, P.maxHp - mh)); SFX.rankUp(); ringAt(P.x, P.y - 12, 26, '#ffd36b', 0.5); number(P.x, P.y - 34, 'LEVEL UP', '#ffd36b'); if (P.prof) P.prof.lvNow = n; seatLevelToast(P, n); }
 const fightLive = () => !!(bossActive || miniActive || ambushLive() || eliteList.some(e => e.elite && OKD.isKnightT(e.t) && !e.paid && (!e.alive || (P && Math.abs(P.x - e.x) < 192 && Math.abs(P.y - e.y) < 80))));   /* a Warden's level-up waits until his gate and purse settle; nearby Wardens still fighting hold the card too */
 /* WHAT A LEVEL-UP SAYS: the growth, the heal and the passives, trimmed until it is two lines of the hint (textfit's rule) */
 function levelUpLine(h, n, from) { const before = grow(h, from), after = grow(h, n), got = passivesArriving(h, from, n);
@@ -5165,7 +5196,7 @@ function drawMapPortrait(id, set, frame, x, y, face, tall, cleared) {
 }
 /* (claude/partypersist) THE PARTY AS IT STANDS, for the map and the pause menu: one row a seat - colour, tag, hero, level. Walks coopWant between woods (the party that takes the next road) and the live bodies in one. */
 function partyRoster() {
-  const rows = [], lvOf = (h, prof) => prof ? levelOfXp((prof.view.xp || {})[h] || 0) : heroLevel(hero());
+  const rows = [], lvOf = (h, prof) => prof ? levelOfXp((prof.view.xp || {})[h] || 0) : seatLv(players[0]);
   const seats = coopWant ? wantSeats() : (players || []).slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, prof: p.prof }));
   if (!seats.length) return rows;
   rows.push({ n: 1, tag: 'P1', hero: hero(), lv: heroLevel(hero()), ai: false, c: PARTY.colourOf(PROG.tavern, 1).c });
@@ -6734,7 +6765,7 @@ function onlineArm(h, gid, snap, seat) {
   if (inWoodNow()) {
     if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
     const p = seatAdd({ hero: h, src: { kind: 'online', gid }, prof });
-    if (p) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); seatColour(p, gid); partyToWant(); return p.n; }
+    if (p) { const side = players[0].face < 0 ? 1 : -1; Object.assign(p, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground }); seatColour(p, gid); seatJoinToast(p); partyToWant(); return p.n; }
     return 0;
   }
   const seats = wantSeats().concat([{ hero: h, ally: false, src: { kind: 'online', gid }, prof: prof || undefined }]).slice(0, PARTY.MAX_PLAYERS - 1);
@@ -6774,7 +6805,7 @@ function tavernJoin(src, h, prof, more) {
   const fy = (TAV_START.y + 1) * TS;
   Object.assign(p, { x: tavDoorX(), y: fy, vx: 0, vy: 0, face: 1, ground: true, walkIn: TAV_WALK.t, inv: 1 });
   if (TAVO) TAVO.door(); SFX.uiSel(); SFX.sting();
-  callout(PARTY.tagOf(p) + ' JOINS THE PARTY');
+  callout(PARTY.tagOf(p) + ' JOINS THE PARTY'); seatJoinToast(p);
   partyToWant(); tavJoins++;
   if (players.length === 2 && coopTipDue(PROG, 'tavern')) { hintSay('mechanic', 5, 'ONE CAMERA FOR THE PARTY: IT STEPS OUT TO FIT YOU, AND A PLAYER LEFT FAR BEHIND IS PULLED ALONG.'); saveProgress(); }
   return p;
@@ -6877,7 +6908,7 @@ function partyAiSeat(h, beh, prof) {
     const p = seatAdd({ hero: h, ally: true, prof, aiCfg: cfg });
     if (!p) { if (prof) { profLive.delete(prof); LOCKS.release(prof.dest.slot, prof.dest.role); } return { ok: false, why: 'NO ROOM FOR ANOTHER SEAT' }; }
     const side = players[0].face < 0 ? 1 : -1; Object.assign(p, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground, inv: 1 });
-    burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9a0ff'], 40, 0.4); callout(PARTY.tagOf(p) + ' JOINS THE PARTY'); partyToWant(); return { ok: true, n: p.n };
+    burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9a0ff'], 40, 0.4); callout(PARTY.tagOf(p) + ' JOINS THE PARTY'); seatJoinToast(p); partyToWant(); return { ok: true, n: p.n };
   }
   const seats = wantSeats().concat([{ hero: h, ally: true, aiCfg: cfg, prof: prof || undefined }]).slice(0, PARTY.MAX_PLAYERS - 1);
   coopWant = { hero: seats[0].hero, ally: !!seats[0].ally, seats }; partySave();
@@ -6921,8 +6952,8 @@ function partyBoardOpen() {
   PBOARD.open({
     seats: () => { const out = [], bodies = partyBodies(); for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = bodies[n - 1];
         if (!p) { out.push({ n, empty: true }); continue; }
-        const own = p === players[0], k = own ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local', lv = own ? heroLevel(hero()) : p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : null;
-        out.push({ n, kind: k, heroId: p.hero, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
+        const own = p === players[0], k = own ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local', lv = own ? heroLevel(hero()) : p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : seatLv(p);
+        out.push({ n, kind: k, icon: heroIconUrl(p.hero), c: p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, n).c, heroId: p.hero, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
       return out; },
     slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
       const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
@@ -6996,6 +7027,7 @@ function drawPartyMarks(cx, cy, phase = 'back') {
     if (tv.ring) TVA.ring(g, x, y, c.c, c.d, front, time, p.n);   /* (claude/tavernart) the floor ring in pixels: two halves, a shimmer, a dark rim for the pale sand (src/tavern-art.js) */
     if (!front) continue;
     if (!(p.down > 0) && state !== 'win' && state !== 'victory') TVA.tag(g, x, y - 34, c.c, c.d, text, PARTY.tagOf(p), p.ai);   /* (claude/tavernart) the name plate: a dark slate edged in his colour (the letters are still the game's own text) */
+    if (!(p.down > 0) && state !== 'win' && state !== 'victory') { const ta = seatTagAlpha(p); if (ta > 0) drawSeatLvTag(x, y - 47, p, c, ta); }   /* (claude/coopplates) hero icon + 'LV 12' over the name tag: a few seconds after a join, a respawn, a level-up, and whenever he is far from the party */
     if (p.leash > 0) { const li = PARTY.leaderOf(players.map(q => ({ x: q.x, dead: q.dead, down: q.down, ai: !!q.ai })), gate ? gate.x : null), ld = players[li];
       g.globalAlpha = 0.4 + 0.5 * p.leash; g.strokeStyle = c.c; g.setLineDash && g.setLineDash([2, 2]); g.beginPath(); g.moveTo(x, y - 10); g.lineTo(Math.round(ld.x - cx), Math.round(ld.y - cy) - 10); g.stroke(); g.setLineDash && g.setLineDash([]); g.globalAlpha = 1;
       if (Math.floor(time * 6) % 2 || p.leash > 0.6) text('CATCH UP', Math.max(30, Math.min(VW - 30, x)), Math.max(8, Math.min(VH - 30, y - 44)), c.c, 'center', 6);

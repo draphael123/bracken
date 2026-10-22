@@ -44,6 +44,8 @@ function pads() {
 function back() { if (view.k === 'seats') { close(); api && api.sfx && api.sfx('menuClose'); return; } view = view.k === 'hero' ? { ...view, k: 'slot' } : view.k === 'aibeh' && view.change ? { k: 'seats' } : view.k === 'aibeh' ? { ...view, k: 'aihero' } : view.k === 'aihero' ? { ...view, k: 'aikind' } : { k: 'seats' }; msg = null; render(); }
 const say = (t, ok) => { msg = { t, ok }; };
 
+/* (claude/coopplates) the seat's hero icon, framed in his seat colour (main.js heroIconUrl) */
+const seatIcon = s => { const i = document.createElement('img'); i.className = 'seaticon'; i.alt = ''; i.dataset.seatIcon = s.n; if (s.icon) i.src = s.icon; i.style.cssText = 'width:27px;height:36px;object-fit:contain;image-rendering:pixelated;vertical-align:middle;margin-right:8px;background:#1a1424;border:2px solid ' + (s.c || '#888') + ';border-radius:3px;'; return i; };
 function render() {
   if (!B || !api) return;
   const parts = [];
@@ -58,12 +60,12 @@ function render() {
         const ai = UI.el('button', 'AI PARTNER', () => { view = { k: 'aikind', n: s.n }; msg = null; render(); }); ai.dataset.seat = s.n; ai.dataset.act = 'ai'; if (room <= 0 || !api.ai) ai.disabled = true;
         r.append(j, inv, ai); parts.push(r); continue;
       }
-      if (s.kind === 'ally') { const r = UI.row(UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + (s.line || 'AI PARTNER - ' + s.hero)));   /* (claude/aicompanions) 'AI PARTNER - KNIGHT LV 6, BALANCED: EARNS XP INTO SAVE 2' */
+      if (s.kind === 'ally') { const r = UI.row(seatIcon(s), UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + (s.line || 'AI PARTNER - ' + s.hero)));   /* (claude/aicompanions) 'AI PARTNER - KNIGHT LV 6, BALANCED: EARNS XP INTO SAVE 2' */
         if (api.dismiss) { const d = UI.el('button', 'DISMISS', () => { const res = api.dismiss(s.n); say(res && res.ok ? 'P' + s.n + ' AI PARTNER LEAVES THE PARTY' : (res && res.why) || 'THAT DID NOT WORK', !!(res && res.ok)); render(); }); d.dataset.seat = s.n; d.dataset.act = 'dismiss'; r.append(d); }
         if (api.setBeh) { const c = UI.el('button', 'HOW IT PLAYS', () => { view = { k: 'aibeh', n: s.n, hero: s.heroId, change: true }; msg = null; render(); }); c.dataset.seat = s.n; c.dataset.act = 'retune'; r.append(c); }   /* (claude/partypersist) retune a seated AI from the pause menu */
         parts.push(r); continue; }
       const from = s.kind === 'ally' ? 'COMPUTER' : s.saved ? (s.kind === 'online' ? 'ONLINE, ' : '') + 'SAVE ' + (s.slot + 1) : s.kind === 'online' ? 'ONLINE GUEST - NOTHING SAVED' : 'GUEST - NOTHING SAVED';
-      const r = UI.row(UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + s.hero + (s.lv != null ? ' LV ' + s.lv : '') + '  ' + from));
+      const r = UI.row(seatIcon(s), UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + s.hero + (s.lv != null ? ' LV ' + s.lv : '') + '  ' + from));
       if (s.kind === 'local' && !s.saved) { const u = UI.el('button', 'USE A SAVE', () => { view = { k: 'slot', mode: 'attach', n: s.n }; msg = null; render(); }); u.dataset.seat = s.n; u.dataset.act = 'attach'; r.append(u); }
       parts.push(r);
     }
