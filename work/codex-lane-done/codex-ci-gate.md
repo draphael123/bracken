@@ -54,7 +54,7 @@ shard 16: 27 checks, estimated 14.4 min
   annotation and packing detail blocks into at most 8 further annotations. Regression tests cover 30 reds.
 - The same run exposed shallow history missing the slopes check's pre-swap commit 9e0e28a. Shards now
   fetch full history. Runner Node is pinned to local v24.11.1 rather than allowing different patch versions
-  across shards. Live full-history/Node/annotation recheck completed in run 39784695367 at 44521b7ab67c04a1adda497350c39f37c4235665: all 425 verdicts, 17 game reds. The old mover and Linux cleanup pass. The merged artifact was downloaded and parsed. Public unauthenticated read-back of check-run 119856924058 annotations verified an overview naming all 17 failures plus detail; receipt retained outside git in work/ci-proof-39784695367/public-annotation-receipt.json.
+  across shards. Live full-history/Node/annotation recheck completed in run 39784695367 at 44521b7ab67c04a1adda497350c39f37c4235665: all 425 verdicts, 17 failing checks. The old mover and Linux cleanup pass. The merged artifact was downloaded and parsed. Public unauthenticated read-back of check-run 119856924058 annotations verified an overview naming all 17 failures plus detail; receipt retained outside git in work/ci-proof-39784695367/public-annotation-receipt.json.
 - Full local serial comparison remains Partial. The source-bound Task 2 checkpoint at `5fbe8e4a` retains
   391 completed verdicts (376 PASS / 15 FAIL), 33 interrupted attempts and a final active profile-leaks child
   whose parent later disappeared. Last update 2026-10-22T17:46:56.650Z; parent/child were verified absent at
