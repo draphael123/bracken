@@ -70,7 +70,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     /* THE ROOTWAY (src/rootway.js, claude/rootway): a HOIST is one blow on its cleat (or one arrow struck back through its rope) and what it drops STAYS - a span
        across its gap, a cage as a 2x2 step where it lands - so both count as done; THE TROPHY LOFT opens on the four tags the level lays down (tools/rootway.mjs proves
        each required hoist is a lock). A boss cage is winched back up: not footing. The plain fill: legs only */
-    if (L.rootway) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;
+    if (L.rootway || L.kwood) { for (const m of (L.vaultDoors || [])) for (let y = m.y0; y <= m.y1; y++) for (let x = m.x0; x <= m.x1; x++) g[y * W + x] = T.AIR;   /* (claude/kingswood2) KINGSWOOD 2's royal ropes are the same shape: a step or a bridge a rope drops stays (src/kingswood-hands.js) */
       for (const h of (L.hoists || [])) { if (h.boss) continue; if (h.span) for (let x = h.span[0]; x <= h.span[1]; x++) { const i = h.span[2] * W + x; if (g[i] === T.AIR) g[i] = T.ONEWAY; }
         if (h.land) for (let y = h.land[1]; y <= h.land[1] + 1; y++) for (let x = h.land[0]; x <= h.land[0] + 1; x++) g[y * W + x] = T.SOLID; } }
     /* THE TOWPATH (src/towpath.js, claude/towpath fix): the mill race drained stands its WHEEL still - its paddles a stair - and a SWING BRIDGE struck across is a deck: each one blow of a paddle or a capstan on the bank before it, so done (the locks themselves are rides: L.rigBands) */
