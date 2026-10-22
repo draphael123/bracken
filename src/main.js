@@ -418,7 +418,7 @@ function progDefaults() { DFM.setSaveMode(PROG.mode);   /* (claude/difficulty) t
    loading a different slot mid-coop would otherwise leave the map showing yesterday's partner from a slot that
    never asked for one. Every road into a slot (continue, boss rush, practice, local co-op, a fresh save) runs
    through here, so clearing it here is the one place that keeps the toggle honest across the switch. */
-function loadSlot(i) { coopWant = null; if (coop()) coopEnd(); slot = i; saveBlocked = ''; let loaded; LOCKS.claim(i, 'game', 'THE GAME', 'p1');   /* (claude/coopprogress) this page holds player one's slot: a guest page or a local seat cannot take it */
+function loadSlot(i) { if (i !== slot) coopWant = null; if (coop()) coopEnd(); slot = i;   /* (claude/partypersist) THE PARTY SURVIVES A RELOAD OF THE SAME SAVE (boss select, CONTINUE, a restore): only another save drops it */ saveBlocked = ''; let loaded; LOCKS.claim(i, 'game', 'THE GAME', 'p1');   /* (claude/coopprogress) this page holds player one's slot: a guest page or a local seat cannot take it */
   const raw = slotRaw(i);
   try { const res = loadProgress(localStorage, slotKey(i), raw, CAMP_IDS); loaded = res.progress; if (res.backup) SAFE.pruneBackups(localStorage, slotKey(i), res.backup); SAFE.keepLastGood(localStorage, slotKey(i), raw, CAMP_IDS); }
   catch (error) { const h = slotHealthOf(i); if (h.state === 'corrupt') SAFE.keepCorruptCopy(localStorage, slotKey(i), raw);
@@ -1585,7 +1585,7 @@ function seatDrop(p) {
 /* the party as it stands, for the next wood (coopWant.hero/ally stay seat two's: every older reader of coopWant reads those) */
 function partyToWant() {
   const seats = players.slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, aiCfg: p.ai ? p.aiCfg : undefined, sword: p.sword, src: p.src && p.src.kind !== 'ally' ? { ...p.src } : undefined, prof: p.prof || undefined }));
-  coopWant = seats.length ? { hero: seats[0].hero, ally: seats[0].ally, seats } : null;
+  coopWant = seats.length ? { hero: seats[0].hero, ally: seats[0].ally, seats } : null; partySave();
 }
 const wantSeats = () => !coopWant ? [] : coopWant.seats && coopWant.seats.length ? coopWant.seats : [{ hero: coopWant.hero, ally: !!coopWant.ally }];
 function partyStart() { const seats = wantSeats(); if (!seats.length) { if (coop()) coopEnd(); return; } coopStart(seats[0].hero, seats[0].ally, seats); }
@@ -4466,6 +4466,16 @@ function updateRush(dt) {
   }
 }
 let levelFoes = 0;
+/* (claude/partypersist) THE NEXT WOOD ON THE ROAD, for a party: the win card's one button. -1 when there is none (solo, a trial / shop / rush / boss-select fight, the end of the road, the next wood locked, a level-up card still owed - that one opens on the map). */
+function partyNextLevel() {
+  if (!coop() || !coopWant || bossSelectFight || rushOn() || !L || L.trial || L.shop || L.tavern || campaignDone() || edTesting) return -1;
+  if (PROG.cardNew && cardOwed(hero())) return -1;
+  let k = leadOn(levelIndex);   /* a wood that names where it leads (the ferry's wood), else the next wood along the road: the map's own order, skipping spurs, secrets and what is not open yet */
+  if (k === levelIndex) { const i = NODES.findIndex(n => n.kind === 'level' && n.level === levelIndex); k = -1;
+    for (let j = i < 0 ? NODES.length : i + 1; j < NODES.length; j++) { const nd = NODES[j]; if (nd.kind !== 'level' || nd.spur || nd.ghost || nodeSecret(nd) || (LEVELS[nd.level] && LEVELS[nd.level].hidden)) continue; k = nd.level; break; } }
+  return k >= 0 && k !== levelIndex && LEVELS[k] && !nodeLocked(NODES.find(n => n.kind === 'level' && n.level === k) || {}) && !levelLocked(LEVELS[k]) ? k : -1;
+}
+function partyGoNext(k) { gotoLevelNode(k); saveProgress(); selI = k; SFX.uiSel(); selectStart(); }
 function startGame() {
   trnArrive = null;   /* (claude/transwm) a fresh start: no ferry left from the last arrival (trnArriveBegin sets it again after this) */
   /* A CO-OP RUN IS ARMED ON THE PICK SCREEN AND BEGINS HERE, on whatever wood is started from the map. A trial, a
@@ -5142,6 +5152,22 @@ function drawMapPortrait(id, set, frame, x, y, face, tall, cleared) {
     e = { c: MPX.blockVote(src, k, { grey: cleared, outline: ART.OUT }), ax: Math.round(ax / k) + 1, ay: Math.round(set.ay / k) + 1, k }; per.set(key, e); }
   const bx = Math.round(x - e.ax), by = Math.round(y - e.ay); g.drawImage(e.c, bx, by); MAP_PORT_BOX[id] = { x: bx, y: by, w: e.c.width, h: e.c.height, k: e.k };
 }
+/* (claude/partypersist) THE PARTY AS IT STANDS, for the map and the pause menu: one row a seat - colour, tag, hero, level. Walks coopWant between woods (the party that takes the next road) and the live bodies in one. */
+function partyRoster() {
+  const rows = [], lvOf = (h, prof) => prof ? levelOfXp((prof.view.xp || {})[h] || 0) : heroLevel(hero());
+  const seats = coopWant ? wantSeats() : (players || []).slice(1).map(p => ({ hero: p.hero, ally: !!p.ai, prof: p.prof }));
+  if (!seats.length) return rows;
+  rows.push({ n: 1, tag: 'P1', hero: hero(), lv: heroLevel(hero()), ai: false, c: PARTY.colourOf(PROG.tavern, 1).c });
+  seats.forEach((sd, i) => rows.push({ n: i + 2, tag: sd.ally ? 'AI' : 'P' + (i + 2), hero: sd.hero, lv: lvOf(sd.hero, sd.prof), ai: !!sd.ally, c: sd.ally ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, i + 2).c }));
+  return rows;
+}
+const partyRowText = r => r.tag + ' ' + (HERO_SHORT[r.hero] || String(r.hero).toUpperCase()) + ' LV ' + r.lv;
+function drawMapParty() {
+  const rows = partyRoster(); if (!rows.length) return;
+  const w = 78, h = 4 + rows.length * 9, x = 3, y = 3;
+  g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(x, y, w, h);
+  rows.forEach((r, i) => { const yy = y + 3 + i * 9; g.fillStyle = ART.OUT; g.fillRect(x + 2, yy, 6, 6); g.fillStyle = r.c; g.fillRect(x + 3, yy + 1, 4, 4); text(fitText(partyRowText(r), w - 14, 6), x + 11, yy, UI.text, 'left', 6); });
+}
 function drawMap() {
   g.__mapWorld = true;   /* (tools/textfit.mjs: the map's plates and labels are drawn in the map's own camera, and the card over them is the screen's) */
   g.__world = true;   /* the map has its own camera: a label off the edge of the buffer is off the edge of the MAP, not a bug */
@@ -5348,6 +5374,7 @@ function drawMap() {
     const on = coopShown();
     g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
     for (const f of mapFooter(mapPanel.open, on)) text(f.t, f.x, VH - 8, f.right ? (on ? '#8fd160' : UI.dim) : UI.dim, f.right ? 'right' : 'left', 6); }
+  drawMapParty();   /* (claude/partypersist) the party that takes the next road */
   if (mapPanel.open) drawMapPanel();   /* over everything else, on the side away from the token so it never covers it or the node you are standing on */
   g.__world = false;
 }
@@ -6133,7 +6160,7 @@ const SETTING_TIPS = {
   'Iron Knight': 'one life, one run, for the medal', 'Block': 'hold the key or toggle it', 'Text speed': 'how fast talk fills', 'Transitions': 'the cutscene between levels: ALWAYS / FIRST TIME / NEVER (any button skips)', 'Hints': 'help boxes and nudges: NONE / LOW / MEDIUM / HIGH',
   'Swap Z / X': 'which key jumps', 'Rumble': 'gamepad rumble',
   'Map': 'where you have been (TAB)', 'Way-on arrow': 'an arrow on the way: STUCK = after 10s',
-  'Co-op': 'a friend on a pad, or the game', 'Co-op guide': 'how a second player joins', 'Report a bug': 'a code to paste to the developer',
+  'Co-op': 'a friend on a pad, or the game', 'Party': 'add, retune or dismiss an AI partner', 'Co-op guide': 'how a second player joins', 'Report a bug': 'a code to paste to the developer',
   'Music': 'the soundtrack on or off', 'Music volume': 'the soundtrack', 'Effects vol': 'swings, hits and voices', 'Ambience vol': 'wind, water, the wood',
   'UI volume': 'menu clicks', 'Sound FX': 'recorded clips or the synth', 'Character voices': 'grunts and cries',
   'Camera': 'close, or wide for more of the room', 'Look down': 'hold down to look below you', 'Look ahead': 'the camera leads where you run', 'HUD': 'minimal bars, or the plate',
@@ -6219,6 +6246,7 @@ function menuConfirm() {
   else if (k === 'Controls') { controlsFrom = 'menu'; state = 'controls'; SFX.uiSel(); }
   else if (k === 'Rebind keys') openRebind('menu');
   else if (k === 'Co-op guide') openCoopHelp('menu');
+  else if (k === 'Party') { partyBoardOpen(); SFX.uiSel(); }   /* (claude/partypersist) the party board from the pause menu: add, retune or dismiss an AI partner without a trip to the inn */
   else if (k === 'Report a bug') openBugReport();
   else if (k === 'Reset controls') { if (menuMsg === 'press again to reset every key and button' && menuMsgT > 0) { CTL.resetAll(SET.binds); applyBinds(); saveSettings(); menuMsg = 'every key and button is back to its default'; menuMsgT = 3; SFX.ui(); } else { menuMsg = 'press again to reset every key and button'; menuMsgT = 3; SFX.ui(); } }
   else if (k === 'Quit to title') { setView('normal'); state = 'title'; music.play(menuTrack()); SFX.uiSel(); }
@@ -6748,7 +6776,7 @@ let tavJoins = 0;
 const profLive = new Set();
 function profMake(seat, dest, sid) { const prof = { ...seat, led: CS.newLedger(seat, sid), dest, lastWrite: null }; profLive.add(prof); return prof; }
 const isLevelId = id => LEVELS.some(l => l.id === id && (!l.hidden || l.secret));
-function profCredit(prof, final, unbanked) {
+function profCredit(prof, final, unbanked) { if (bossJumpOn) return null;   /* (claude/partypersist) the boss select brings the party but is a sandbox: nothing it earns reaches any save */
   const c = CS.nextCredit(prof.led, unbanked, final); if (!c) return null;
   if (prof.dest.kind === 'local') {
     let r; try { r = CS.applyCredit(localStorage, slotKey(prof.dest.slot), c, { campaignIds: CAMP_IDS, isLevel: isLevelId, xpOnly: !!prof.dest.xpOnly });   /* (xpOnly: a LINKED AI COMPANION - XP and levels only, brief-aicompanions.md) */ } catch (e) { r = { ok: false, why: 'SAVE FAILED - COULD NOT WRITE' }; }
@@ -6808,37 +6836,89 @@ function partyAttach(p, slotI, h) {
    character, one place - the save picker and every other seat refuse it, told). slotI -1 is a DEFAULT companion: any hero you have unlocked, at YOUR level, nothing
    saved. beh: balanced / aggressive / defensive / support (src/ai-companion.js BEH). It walks in through the door like any joiner. */
 let compRoleN = 0;
+function aiProfFor(slotI, h) {
+  if (!(slotI >= 0)) return { ok: true, prof: null };
+  if (slotI === slot) return { ok: false, why: 'SAVE ' + (slotI + 1) + ' IS YOUR OWN: PICK ANOTHER SAVE' };
+  const role = 'comp' + (++compRoleN), c = LOCKS.claim(slotI, 'companion', 'AI COMPANION', role);
+  if (!c.ok) return { ok: false, why: CS.lockLine(slotI, c.holder) };
+  const seat = CS.seatFromSlot(localStorage, slotI, h, CAMP_IDS);
+  if (!seat) { LOCKS.release(slotI, role); return { ok: false, why: 'SAVE ' + (slotI + 1) + ' CANNOT BE READ: OPEN CHOOSE A SAVE TO FIX IT' }; }
+  const prof = profMake(seat, { kind: 'local', slot: slotI, role, xpOnly: true }); prof.purse0 = seat.view.coins | 0;   /* its purse as its save holds it: anything it picks up past this is player one's (allyPurse) */
+  return { ok: true, prof };
+}
 function partyAi(slotI, h, beh) {
-  if (!L || !L.tavern || state !== 'play') return { ok: false, why: 'SEAT AN AI PARTNER IN THE TAVERN' };
-  if (players.length >= PARTY.MAX_PLAYERS) return { ok: false, why: 'THE PARTY IS FULL: FOUR TO A PARTY' };
-  let prof = null;
-  if (slotI >= 0) {
-    if (slotI === slot) return { ok: false, why: 'SAVE ' + (slotI + 1) + ' IS YOUR OWN: PICK ANOTHER SAVE' };
-    const role = 'comp' + (++compRoleN), c = LOCKS.claim(slotI, 'companion', 'AI COMPANION', role);
-    if (!c.ok) return { ok: false, why: CS.lockLine(slotI, c.holder) };
-    const seat = CS.seatFromSlot(localStorage, slotI, h, CAMP_IDS);
-    if (!seat) { LOCKS.release(slotI, role); return { ok: false, why: 'SAVE ' + (slotI + 1) + ' CANNOT BE READ: OPEN CHOOSE A SAVE TO FIX IT' }; }
-    prof = profMake(seat, { kind: 'local', slot: slotI, role, xpOnly: true }); prof.purse0 = seat.view.coins | 0;   /* its purse as its save holds it: anything it picks up past this is player one's (allyPurse) */
-  }
+  const inn = !!(L && L.tavern && state === 'play');   /* (claude/partypersist) the inn walks it in at the door; in a wood it steps in beside player one; anywhere else it joins the party for the next wood */
+  if (!inn && !['menu', 'map', 'title', 'play'].includes(state)) return { ok: false, why: 'SEAT AN AI PARTNER IN THE TAVERN OR FROM THE PAUSE MENU' };
+  if (partyRoom() <= 0) return { ok: false, why: 'THE PARTY IS FULL: FOUR TO A PARTY' };
+  const pr = aiProfFor(slotI, h); if (!pr.ok) return pr; const prof = pr.prof;
+  if (!inn) return partyAiSeat(h, beh, prof);
   const p = tavernJoin({ kind: 'ally' }, h, prof, { ally: true, aiCfg: { beh, linked: !!prof } });
   if (!p) { if (prof) { profLive.delete(prof); LOCKS.release(slotI, prof.dest.role); } return { ok: false, why: 'NO ROOM FOR ANOTHER SEAT' }; }
   return { ok: true, n: p.n };
 }
+/* (claude/partypersist) an AI partner seated OUTSIDE the inn: in a wood it appears beside player one in a puff; between woods (the map, a shop, a trial) it is wanted for the next one */
+function partyAiSeat(h, beh, prof) {
+  const cfg = { beh, linked: !!prof };
+  if (inWoodNow()) {
+    if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); }
+    const p = seatAdd({ hero: h, ally: true, prof, aiCfg: cfg });
+    if (!p) { if (prof) { profLive.delete(prof); LOCKS.release(prof.dest.slot, prof.dest.role); } return { ok: false, why: 'NO ROOM FOR ANOTHER SEAT' }; }
+    const side = players[0].face < 0 ? 1 : -1; Object.assign(p, { x: players[0].x + side * 14, y: players[0].y, vx: 0, vy: players[0].vy, face: players[0].face, ground: players[0].ground, inv: 1 });
+    burst(p.x, p.y - 8, 10, ['#e8e0d0', '#c9a0ff'], 40, 0.4); callout(PARTY.tagOf(p) + ' JOINS THE PARTY'); partyToWant(); return { ok: true, n: p.n };
+  }
+  const seats = wantSeats().concat([{ hero: h, ally: true, aiCfg: cfg, prof: prof || undefined }]).slice(0, PARTY.MAX_PLAYERS - 1);
+  coopWant = { hero: seats[0].hero, ally: !!seats[0].ally, seats }; partySave();
+  return { ok: true, n: seats.length + 1 };
+}
+/* (claude/partypersist) THE PARTY SURVIVES A PAGE RELOAD within the browser session (sessionStorage; the tab closing ends it, as the brief asks): who is wanted for the next wood, written
+   at every change and as the page goes. Restored at boot for the same save: AI partners (a linked one re-claims its save), guests and own-save local seats; an ONLINE guest is not - his link died with the page. */
+const PARTY_KEY = 'bracken.party.v1';
+let partyBooted = false;   /* nothing is written until the boot has read what the last page left */
+function partySave() {
+  if (!partyBooted) return;
+  try {
+    if (!coopWant) { sessionStorage.removeItem(PARTY_KEY); return; }
+    const seats = wantSeats().filter(sd => !(sd.src && sd.src.kind === 'online')).map(sd => ({ hero: sd.hero, ally: !!sd.ally, beh: sd.ally ? (sd.aiCfg || {}).beh : undefined, slot: sd.prof && sd.prof.dest && sd.prof.dest.kind === 'local' ? sd.prof.dest.slot : -1, sword: sd.sword, pad: sd.src && sd.src.kind === 'pad' ? sd.src.pad : undefined }));
+    if (seats.length) sessionStorage.setItem(PARTY_KEY, JSON.stringify({ slot, seats })); else sessionStorage.removeItem(PARTY_KEY);
+  } catch {}
+}
+function partyRestore() { try { partyRestore0(); } finally { partyBooted = true; } }
+function partyRestore0() {
+  if (q.has('labReload') || q.get('level') || q.get('boss') || q.get('noparty') || coopWant) return;
+  try {
+    const raw = sessionStorage.getItem(PARTY_KEY); if (!raw) return;
+    const d = JSON.parse(raw); if (!d || d.slot !== slot || !Array.isArray(d.seats)) return;
+    const seats = [], lost = [];
+    for (const sd of d.seats.slice(0, PARTY.MAX_PLAYERS - 1)) {
+      if (!sd || !HEROES.some(x => x.id === sd.hero)) continue;
+      if (sd.ally) { const pr = aiProfFor(sd.slot, sd.hero); if (!pr.ok) { lost.push(pr.why); continue; } seats.push({ hero: sd.hero, ally: true, aiCfg: { beh: sd.beh, linked: !!pr.prof }, prof: pr.prof || undefined }); }
+      else { const pr = partySeatProf(sd.slot, sd.hero); if (!pr.ok) { lost.push(pr.why); continue; } seats.push({ hero: sd.hero, ally: false, src: { kind: 'pad', pad: sd.pad ?? null }, sword: sd.sword, prof: pr.prof || undefined }); }
+    }
+    if (seats.length) coopWant = { hero: seats[0].hero, ally: !!seats[0].ally, seats };
+    if (lost.length) try { UIH.toastPush(toastQ, 'PARTY: ' + lost[0], 4, null); } catch {}
+  } catch {}
+}
+addEventListener('pagehide', () => partySave()); setInterval(() => partySave(), 3000);
+/* the seats the board shows: the live bodies in a wood, else P1 and the party wanted for the next one */
+const partyBodies = () => inWoodNow() || !coopWant ? players : [players[0]].concat(wantSeats().map(sd => ({ hero: sd.hero, ai: !!sd.ally, aiCfg: sd.aiCfg, prof: sd.prof, src: sd.src || { kind: sd.ally ? 'ally' : 'pad' }, want: sd })));
+function partyDismissWant(sd) { const seats = wantSeats().filter(q => q !== sd); coopWant = seats.length ? { hero: seats[0].hero, ally: !!seats[0].ally, seats } : null; partySave(); profReconcile(); }
 /* THE PARTY BOARD (the tavern's board station; src/party-board.js draws it): the four seats and, on each empty one, JOIN / INVITE / AI PARTNER */
 const seatKind = p => p === players[0] ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local';
 function partyBoardOpen() {
   PBOARD.open({
-    seats: () => { const out = []; for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = players[n - 1];
+    seats: () => { const out = [], bodies = partyBodies(); for (let n = 1; n <= PARTY.MAX_PLAYERS; n++) { const p = bodies[n - 1];
         if (!p) { out.push({ n, empty: true }); continue; }
-        const own = p === players[0], k = seatKind(p), lv = own ? heroLevel(hero()) : p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : null;
-        out.push({ n, kind: k, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
+        const own = p === players[0], k = own ? 'p1' : p.ai ? 'ally' : p.src && p.src.kind === 'online' ? 'online' : 'local', lv = own ? heroLevel(hero()) : p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : null;
+        out.push({ n, kind: k, heroId: p.hero, hero: HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, slot: own ? slot : p.prof ? (p.prof.dest.kind === 'local' ? p.prof.dest.slot : p.prof.slot) : -1, saved: own || !!p.prof, beh: p.ai ? (p.aiCfg || {}).beh || 'balanced' : null, line: p.ai ? AIC.seatLine(HERO_SHORT[p.hero] || String(p.hero).toUpperCase(), lv, p.prof ? p.prof.dest.slot : -1, (p.aiCfg || {}).beh) : null }); }
       return out; },
     slots: () => Array.from({ length: SLOTS }, (_, i) => { const raw = slotRaw(i), sm = CS.slotSummary(raw, CAMP_IDS), h = LOCKS.holder(i, '?');
       const why = h ? (h.here && i === slot ? 'PLAYER ONE\'S SAVE' : h.here ? 'ALREADY IN THE PARTY' : 'OPEN IN ANOTHER TAB') : sm.state === 'corrupt' ? 'DAMAGED' : sm.state === 'newer' ? 'FROM A NEWER BRACKEN' : '';
       return { i, line: CS.summaryLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [], hero: sm.hero || null }; }),
     heroName: h => HERO_SHORT[h] || String(h).toUpperCase(),
     visitHeroes: () => coopPickList(),
-    room: () => (L && L.tavern && state === 'play' ? PARTY.MAX_PLAYERS - players.length : 0),
+    room: () => Math.max(0, partyRoom()),   /* (claude/partypersist) free seats, wherever the board is opened (the pause menu too) */
+    canJoin: () => !!(L && L.tavern && state === 'play'),   /* a person joins at the inn's door; an AI partner can be seated from anywhere */
+    setBeh: (n, beh) => { const b = partyBodies()[n - 1]; if (!b || !b.ai) return { ok: false, why: 'NO AI PARTNER IN THAT SEAT' }; const c = AIC.cleanCfg({ ...(b.aiCfg || {}), beh }); if (b.want) b.want.aiCfg = c; else b.aiCfg = c; partyToWant(); partySave(); SFX.uiSel(); return { ok: true }; },
     join: (slotI, h) => { const r = partyJoin(slotI, h); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
     attach: (n, slotI, h) => { const r = partyAttach(players[n - 1], slotI, h); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
     invite: () => ONL.open(),
@@ -6848,7 +6928,7 @@ function partyBoardOpen() {
       return { i, line: AIC.linkedLine(i, sm, x => HERO_SHORT[x] || String(x).toUpperCase(), own ? 'YOUR OWN SAVE' : h ? (h.here ? 'IN USE HERE' : CS.HELD_LINE) : false), ok: !why, why, heroes: sm.state === 'empty' ? CS.heroesOf({}) : sm.heroes || [] }; }),
     aiHeroes: () => coopPickList(), aiBeh: () => AIC.BEH_ORDER.map(b => ({ id: b, name: AIC.BEH_NAME[b], line: AIC.BEH_LINE[b] })), defaultLine: AIC.DEFAULT_LINE,
     ai: (slotI, h, beh) => { const r = partyAi(slotI, h, beh); if (r.ok) SFX.uiSel(); else SFX.buzz(); return r; },
-    dismiss: n => { const p = players[n - 1]; if (!p || !p.ai) return { ok: false, why: 'NO AI PARTNER IN THAT SEAT' }; burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); seatDrop(p); SFX.ui(); return { ok: true }; },
+    dismiss: n => { const p = partyBodies()[n - 1]; if (!p || !p.ai) return { ok: false, why: 'NO AI PARTNER IN THAT SEAT' }; if (p.want) { partyDismissWant(p.want); SFX.ui(); return { ok: true }; } burst(p.x, p.y - 8, 10, ['#e8e0d0', '#8a8f80'], 40, 0.4); callout(PARTY.tagOf(p) + ' LEAVES THE PARTY'); seatDrop(p); SFX.ui(); return { ok: true }; },
     sfx: k => { try { (SFX[k] || SFX.ui)(); } catch {} },
   });
 }
@@ -10973,7 +11053,7 @@ const bossSelectList = () => bossSelectRows(bossTable(), PROG);
 const bossSelectHeroes = () => HEROES.filter(h => PROG.heroes?.[h.id]);
 function bossSelectOpen(from = 'title') {
   if (from === 'title') { loadSlot(slot); applySkin(); applyUpgrades(); }
-  if (coop()) coopEnd(); coopWant = null;   /* single player until the two-door co-op flow is designed */
+  if (coop()) coopEnd();   /* (claude/partypersist) the party (coopWant) stays: the boss fight brings it, and the way back finds it again */
   bossSelectFrom = from; bossSelectI = 0; bossSelectWait = 0; bossSelectHero = PROG.heroes?.[hero()] ? hero() : (bossSelectHeroes()[0]?.id || 'knight');
   state = 'bossselect'; music.play(menuTrack()); SFX.uiSel();
 }
@@ -30247,7 +30327,8 @@ function update(dt) {
     return;
   }
   if (state === 'win' && TRN) { trnUpdate(dt); return; }   /* (claude/transwm) */
-  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); if (confirmPress) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
+  if (state === 'win') { if (bossSelectFight && (confirmPress || pausePress)) { bossSelectQuit(); return; } for (const pp of players) if (pp.dance > 0) pp.dance += dt;   /* a hero dancing when the wood is won keeps dancing behind the plate */ if (Math.random() < dt * 14 && leaves.length < 90) leaves.push({ x: camX + Math.random() * (VW + 60) - 30, y: camY - 6, t: Math.random() * 6, life: 9, col: ['#ffd36b', '#fff6c8', '#8fd160', '#ffe6a0', '#d0648a'][(Math.random() * 5) | 0] }); const nextK = partyNextLevel(); if (nextK >= 0 && confirmPress) { partyGoNext(nextK); return; }   /* (claude/partypersist) CO-OP: Z carries the whole party straight on down the road (ESC is the map) */
+    if (confirmPress || (nextK >= 0 && pausePress)) { if (campaignDone()) { state = 'victory'; saveProgress(); SFX.win(); music.play('ending'); BUG.evlog('end of the road'); } else { state = 'map'; gotoLevelNode(leadOn(levelIndex)); saveProgress(); music.play(menuTrack()); } } updateParticles(dt); updateCorpses(dt); updateWeather(dt); updateCamera(dt); return; }
   /* THE VICTORY CARD holds until it is dismissed: the end of a campaign is the one screen nobody should have to race */
   if (state === 'victory') { if (confirmPress || pausePress) { state = 'map'; gotoLevelNode(levelIndex); saveProgress(); music.play(menuTrack()); } updateParticles(dt); return; }
   if (state === 'talk') { if (!talk) { state = 'play'; return; } if (pausePress || dodgePress) closeTalk(); else if (talkPress || confirmPress || atkPress) { talk.i++; if (talk.i >= talk.lines.length) closeTalk(); else { SFX.text(); if (talk.who && talk.who.t === 'npc') talk.who.lineI = talk.i; } } return; }
@@ -34675,7 +34756,9 @@ function render() {
     if (wt > 1.75) TCH.hit(0, 0, VW, VH, () => { confirmPress = true; });
     { const m2 = medalFor(LEVELS[levelIndex].id, medalTime()), M2 = MEDALS[LEVELS[levelIndex].id] || [300, 450, 660];   /* what the next medal wants, once the stamp is down */
       if (wt > 1.9 && m2 < 3 && !coop()) text('NEXT: ' + MEDAL_NAME[m2 + 1] + ' AT ' + fmt(M2[2 - m2]).replace(/\.\d$/, ''), VW / 2, 139, MEDAL_COL[m2 + 1], 'center', 6); }
-    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146 + WD, '#8fd160', 'center');
+    if (wt > 1.75 && Math.floor(time * 2) % 2 === 0) { const nk = partyNextLevel();
+      if (nk >= 0) { const nm = LEVELS[nk].name.toUpperCase(), a = (touchOn ? 'TAP  NEXT: ' : 'Z  NEXT: ') + nm, b = a + (touchOn ? '' : '   ESC  MAP'), sz = textW(b, 8) <= VW - 16 ? 8 : 6; text(fitText(b, VW - 12, sz), VW / 2, 146 + WD + (sz === 6 ? 1 : 0), '#8fd160', 'center', sz); }   /* (claude/partypersist) the party's card: one button to the next wood */
+      else text(touchOn ? 'TAP  continue' : 'Z  continue', VW / 2, 146 + WD, '#8fd160', 'center'); }
   } else { winT = 0; winStamped = false; }
   if (P.dead && state === 'play') { g.fillStyle = 'rgba(10,6,14,' + Math.min(0.7, (1.2 - P.dead) * 1.2) + ')'; g.fillRect(0, 0, VW, VH);
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
@@ -34813,7 +34896,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
     leave: n => seatDrop(players[n - 1]), use: (id, n) => TAVO.use(id, players[(n || 1) - 1]), seatAdd: s => { if (!coop()) { players[0].hero = hero(); players[0].set = K; players[0].n = 1; players[0].score = players[0].score || freshScore(); players[0].total = players[0].total || freshScore(); } const p = seatAdd(s || {}); partyToWant(); return p ? p.n : 0; },
     cam: () => ({ wide: partyCam.wide, view: viewMode, VW, VH, want: desiredView() }), leash: () => players.map(p => ({ n: p.n, m: p.leash || 0, why: p.leashWhy || '', pulls: p.leashes || 0 })), leashFx: () => leashFx.length,
     party: () => players.map(p => ({ n: p.n, hero: p.hero, src: p.src || null, ai: !!p.ai, sword: p.sword || null, colour: PARTY.colourOf(PROG.tavern, p.n).id, x: p.x, y: p.y, walkIn: p.walkIn || 0, down: p.down || 0 })),
-    want: () => coopWant, seats: () => wantSeats(), joins: () => tavJoins, hint: () => ({ t: hintT, msg: hintMsg }), record: v => { if (v !== undefined) PROG.tavern = v === null ? undefined : v; return PROG.tavern; }, prog: () => PROG, save: () => { saveProgress(); return true; }, drawMarks: () => drawPartyMarks, toMap: () => tavernToMap(), padJoin: (gps, claimed) => tavernPadJoin(gps, claimed || new Set()), p1Pad: v => { if (v !== undefined) p1Pad = v; return p1Pad; } },
+    want: () => coopWant, seats: () => wantSeats(), next: () => partyNextLevel(), saveParty: () => partySave(), roster: () => partyRoster(), levelIndex: () => levelIndex,   /* (claude/partypersist) */ joins: () => tavJoins, hint: () => ({ t: hintT, msg: hintMsg }), record: v => { if (v !== undefined) PROG.tavern = v === null ? undefined : v; return PROG.tavern; }, prog: () => PROG, save: () => { saveProgress(); return true; }, drawMarks: () => drawPartyMarks, toMap: () => tavernToMap(), padJoin: (gps, claimed) => tavernPadJoin(gps, claimed || new Set()), p1Pad: v => { if (v !== undefined) p1Pad = v; return p1Pad; } },
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
   allyReady: () => allyLoad(),
   /* (claude/aicompanions) AI COMPANIONS, for tools/ai-companion.mjs: seat one from the board's own api, the party's scale, each AI seat's state, a party armed for the next wood */
@@ -34920,6 +35003,7 @@ window.BK.hush = () => (HUH ? HUH.read() : null); window.BK.hushHands = () => HU
 window.BK.levelJump = (id, h, campaign) => levelJump(id, h, campaign); Object.defineProperty(window.BK, 'campaignTag', { get: () => campaignTag });
 window.BK.villageWater = { levelTime: v => { if (v !== undefined) levelTime = v; return levelTime; }, arc: () => P.carry && P.carry.t === 'vbucket' ? waterArc(P.carry) : null, ward: e => pyroWard(e) };   /* (claude/burnvillage2) tools/village-water.mjs: the level's clock the town's blaze runs on, a carried water's told arc */
 window.BK.mapFooter = () => [false, true].flatMap(open => [false, true].map(on => mapFooter(open, on).map(f => ({ ...f, w: textW(f.t, 6) })))); window.BK.banners = () => ({ owned: Object.keys(LOST_BANNERS).filter(id => (PROG.lostBanners || {})[id]), live: lostBanners.map(b => ({ id: b.id, x: b.x, y: b.y, got: b.got })), all: bannersOwned() >= Object.keys(LOST_BANNERS).length, pickup: id => { const b = lostBanners.find(q => q.id === id); if (b && !b.got) takeLostBanner(b); return !!b; } }); window.BK.mapGhost = () => ({ shown: ghostPathT, done: !!PROG.fieldPathDrawn }); window.BK.mapTip = () => ({ id: mapTip.id, t: mapTip.t, lines: mapTip.id ? spurTip(LEVELS[NODES.find(n => n.id === mapTip.id).level]) : null }); window.BK.mapLook = id => { const i = NODES.findIndex(n => n.id === id); if (i < 0) return false; map.node = i; map.seg = NODE_AT[i]; map.t = 0; map.walking = 0; state = 'map'; mapCamY = Math.max(0, Math.min(MAPH - VH, PATH[NODE_AT[i]][1] - VH * 0.55)); return true; };   /* tools/map-shots.mjs: stand on a node and draw the world map */ window.BK.mapPortraits = () => MAP_PORT_BOX; window.BK.mapBlurbs = () => LEVELS.filter(lv => !lv.hidden || lv.secret).map(lv => ({ id: lv.id, text: MAP_BLURB[lv.id] || lv.sub || '', w: textW(MAP_BLURB[lv.id] || lv.sub || '', 6), max: panelSize({ kind: 'level' }).w - 16 }));   /* tools/map-scale.mjs: the width of every blurb in the card's own face, and what the line holds */ window.BK.mapNodes = () => ({ node: map.node, walking: map.walking, goal: mapGoal, hitOrder: NODES.map((n, i) => (nodeSecret(n) ? -1 : i)).filter(i => i >= 0), ids: NODES.map(n => n.id), spur: NODES.map(n => !!n.spur), locked: NODES.map(n => !!nodeLocked(n)), secret: NODES.map(n => !!nodeSecret(n)), ghost: NODES.map(n => !!n.ghost) });   /* tools/touch.mjs: which node each tap box on the map belongs to */
+partyRestore();   /* (claude/partypersist) a reload keeps the party */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();

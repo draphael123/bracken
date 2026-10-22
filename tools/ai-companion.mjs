@@ -23,7 +23,7 @@ import * as AIC from '../src/ai-companion.js';
 import { LEASH } from '../src/party.js';
 import { leaderOf } from '../src/party.js';
 
-const ALL = ['pure', 'board', 'save', 'follow', 'raft', 'fight'];
+const ALL = ['pure', 'board', 'save', 'follow', 'raft', 'fight', 'chain', 'linked', 'pausebd', 'reload'];
 const argv = process.argv.slice(2), ratesArg = argv.find(a => /^--rates/.test(a));
 const WANT = argv.find(a => !a.startsWith('--')) ? argv.find(a => !a.startsWith('--')).split(',') : ALL.concat(ratesArg ? ['rates'] : []);
 const NRATE = ratesArg && /=\d+/.test(ratesArg) ? +ratesArg.split('=')[1] : 6;
@@ -181,6 +181,84 @@ if (PAGE.length) {
       ok(r.inside >= 0.85, '...it started outside his clearing: it comes in and stays in (' + Math.round(r.inside * 100) + '% of frames inside)');
       ok(!(r.end.down > 0) || r.end.down < 19, '...it is never left lying (downs ' + r.downs + ', back up ' + r.end.ups + ')');
       ok(r.p1Up >= 0 && r.rev >= 1, 'player one goes down: the AI lifts him (' + r.p1Up + ' s)');
+    }
+
+    if (PAGE.includes('chain')) {
+      /* (claude/partypersist) THE PARTY SURVIVES THE ROAD: clear -> NEXT (one button, no map) -> map -> boss select -> boss -> map -> next wood; an AI partner and a guest seat in every step */
+      console.log('chain');
+      const snap = `(()=>({n:BK.players().length,ai:BK.players().filter(p=>p.ai).length,heroes:BK.players().map(p=>p.hero).join(','),want:((BK.tavern.want()||{}).seats||[]).length,st:BK.state,lv:BK.tavern.levelIndex()}))()`;
+      const r = await E(`(async()=>{const o={};const S=()=>${snap};const wait=async(pred,n=900)=>{for(let i=0;i<n&&!pred();i++){BK.step(1);if(i%40===0)await new Promise(r=>setTimeout(r,5));}return pred();};
+        await __fresh();BK.aiComp.arm(['knight'],['balanced'],1);BK.tavern.want().seats.push({hero:'pyro',ally:false});
+        const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(5);await BK.allyReady();BK.sim(5);o.start=S();
+        BK.god=true;BK.coopSave.win();BK.sim(4);o.won=S();o.next1=BK.tavern.next();o.nextName=o.next1>=0?LEVELS[o.next1].id:null;
+        BK.press('confirm');o.arrived=await wait(()=>BK.state==='play'&&BK.tavern.levelIndex()===o.next1);BK.sim(5);await BK.allyReady();BK.sim(5);o.level2=S();
+        BK.god=true;BK.coopSave.win();BK.sim(4);BK.press('confirm');BK.sim(3);if(BK.state==='card')BK.cardClose();BK.sim(2);o.map=S();o.roster=BK.tavern.roster().map(r=>r.tag+' '+r.hero+' '+r.lv);
+        BK.bossSelect.open('map');BK.sim(3);o.bsOpen=S();
+        for(let i=0;i<4&&!BK.bossSelect.rows().some(r=>r.beaten);i++)BK.sim(30);const rows=BK.bossSelect.rows();const bi=rows.findIndex(r=>r.beaten);o.beaten=bi;
+        if(bi>=0){BK.bossSelect.cursor=bi;BK.bossSelect.hero='knight';o.fightOk=BK.bossSelect.start();BK.sim(5);await BK.allyReady();BK.sim(5);o.boss=S();o.xpGuard=true;BK.bossSelect.quit();BK.sim(3);o.afterQuit=S();}
+        if(BK.state==='card')BK.cardClose();BK.state='map';BK.sim(2);const m=BK.mapNodes();BK.mapLook(m.ids[2]);BK.step(2);BK.press('confirm');for(let i=0;i<400&&BK.state!=='play';i++){if(BK.state==='card')BK.cardClose();BK.step(1);if(i===3&&BK.state==='map')BK.press('confirm');}BK.sim(5);await BK.allyReady();BK.sim(5);o.fromMap=S();
+        return o;})()`);
+      console.log('    ' + JSON.stringify(r));
+      const full = x => x && x.n === 3 && x.ai === 1 && /pyro/.test(x.heroes);
+      ok(full(r.start), 'the party starts the wood whole: P1, an AI KNIGHT and a PYRO guest');
+      ok(r.next1 >= 0 && r.won.st === 'win', 'the win card offers NEXT for a party: ' + r.nextName);
+      ok(r.arrived && full(r.level2) && r.level2.lv === r.next1, 'Z on the win card goes straight to the next wood (no map) with all three seats');
+      ok(r.map.st === 'map' && r.map.want === 2 && r.roster.length === 3 && /AI/.test(r.roster[1] || ''), 'on the map (after a card where the road stops) the party is still wanted (2 seats) and the map draws its three chips: ' + JSON.stringify(r.roster));
+      ok(r.bsOpen.st === 'bossselect' && r.bsOpen.want === 2, 'BOSS SELECT keeps the party (it used to wipe it)');
+      ok(r.beaten >= 0 && r.fightOk && full(r.boss), 'a boss fought from BOSS SELECT brings the whole party');
+      ok(r.afterQuit.want === 2 && r.afterQuit.st === 'bossselect', '...and leaving the fight finds the party again');
+      ok(full(r.fromMap), 'entering a wood from the map after all that still brings all three seats');
+    }
+
+    if (PAGE.includes('linked')) {
+      /* a LINKED AI keeps its save lock and its XP credit across the whole road: wood -> NEXT -> map -> BOSS SELECT (sandbox: nothing credited) -> map */
+      console.log('linked');
+      const r = await E(`(async()=>{const o={};await __fresh();const {migrateProgress}=await import('/src/progression.js');const {xpFloor}=await import('/src/xp.js');const {LEVELS}=await import('/src/level.js');
+        const p=migrateProgress(JSON.stringify({hero:'pyro',heroes:{knight:true,pyro:true},coins:50,xp:{pyro:xpFloor(6)},perHero:1,xpVersion:1}),[]).progress;localStorage.setItem('bracken.progress.2',JSON.stringify(p));const xp0=p.xp.pyro;o.xp0=xp0;
+        BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(5);o.join=BK.aiComp.join(2,'pyro','balanced');await BK.allyReady();BK.sim(5);
+        const S=()=>({n:BK.players().length,linked:BK.aiComp.seats().filter(s=>s.linked).length,holder:(BK.coopSave.holder(2)||{}).kind||null,st:BK.state});o.a=S();
+        BK.god=true;BK.coopSave.gain(2,40,0);BK.coopSave.win();BK.sim(4);BK.press('confirm');for(let i=0;i<600&&BK.state!=='play';i++){if(BK.state==='card')BK.cardClose();BK.step(1);}BK.sim(5);await BK.allyReady();BK.sim(5);o.b=S();
+        o.xp1=JSON.parse(localStorage.getItem('bracken.progress.2')).xp.pyro;
+        BK.state='map';BK.sim(2);BK.bossSelect.open('map');BK.sim(3);o.c={holder:(BK.coopSave.holder(2)||{}).kind||null,want:((BK.tavern.want()||{}).seats||[]).length};
+        const bi=BK.bossSelect.rows().findIndex(r=>r.beaten);if(bi>=0){BK.bossSelect.cursor=bi;BK.bossSelect.hero='knight';BK.bossSelect.start();BK.sim(5);await BK.allyReady();BK.sim(5);BK.coopSave.gain(2,500,0);BK.coopSave.creditAll(false);o.d=S();BK.bossSelect.quit();}
+        o.xp2=JSON.parse(localStorage.getItem('bracken.progress.2')).xp.pyro;o.e={holder:(BK.coopSave.holder(2)||{}).kind||null};return o;})()`);
+      console.log('    ' + JSON.stringify(r));
+      ok(r.join && r.join.ok && r.a.linked === 1 && r.a.holder === 'companion', 'a LINKED AI PYRO (save 3) is seated mid-wood and holds save 3');
+      ok(r.b.n === 2 && r.b.linked === 1 && r.b.holder === 'companion', '...after NEXT it is in the next wood, still linked, still holding its save');
+      ok(r.xp1 > r.xp0, '...and its XP was credited to save 3 on the way (' + r.xp0 + ' -> ' + r.xp1 + ')');
+      ok(r.c.holder === 'companion' && r.c.want === 1, '...BOSS SELECT keeps its lock and the party');
+      ok(!r.d || (r.d.n === 2 && r.d.linked === 1), '...and it fights the boss with the party');
+      ok(r.xp2 === r.xp1, '...but a boss-select fight (a sandbox) credits nothing to its save (' + r.xp1 + ' -> ' + r.xp2 + ')');
+      ok(r.e.holder === 'companion', '...and the lock survives leaving the fight');
+    }
+
+    if (PAGE.includes('pausebd')) {
+      console.log('pausebd');
+      const r = await E(`(async()=>{const o={};await __fresh();const {LEVELS}=await import('/src/level.js');BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(5);
+        o.solo=BK.players().length;
+        BK.aiComp.openBoard();await new Promise(r=>setTimeout(r,60));const b0=BK.aiComp.board();o.join=b0.buttons.filter(b=>b.act==='join').map(b=>b.dis);o.ai=b0.buttons.filter(b=>b.act==='ai').map(b=>b.dis);
+        __click(b=>b.dataset.act==='ai');__click(b=>b.dataset.act==='aidefault');__click(b=>b.dataset.hero==='warden');__click(b=>b.dataset.beh==='support');await BK.allyReady();BK.sim(3);
+        o.afterAdd={n:BK.players().length,ai:BK.aiComp.seats().map(s=>s.hero+':'+s.beh),want:((BK.tavern.want()||{}).seats||[]).length,gap:Math.abs(BK.players()[1].x-BK.players()[0].x)};
+        __click(b=>b.dataset.act==='retune');__click(b=>b.dataset.beh==='aggressive');o.retuned=BK.aiComp.seats().map(s=>s.beh);
+        __click(b=>b.dataset.act==='dismiss');BK.sim(3);o.afterDismiss={n:BK.players().length,want:BK.tavern.want()};
+        return o;})()`);
+      console.log('    ' + JSON.stringify(r));
+      ok(r.solo === 1 && r.join.every(d => d === true) && r.ai.length === 3 && r.ai.every(d => d === false), 'the pause board in a wood: JOIN is the inn\'s (greyed), AI PARTNER is live on every empty seat');
+      ok(r.afterAdd.n === 2 && r.afterAdd.ai[0] === 'warden:support' && r.afterAdd.want === 1 && r.afterAdd.gap < 40, 'an AI WARDEN (SUPPORT) steps in beside player one mid-wood and is wanted for the next one');
+      ok(r.retuned[0] === 'aggressive', 'HOW IT PLAYS retunes it live (SUPPORT -> AGGRESSIVE)');
+      ok(r.afterDismiss.n === 1 && !r.afterDismiss.want, 'DISMISS sends it off: solo again, nothing wanted');
+    }
+
+    if (PAGE.includes('reload')) {
+      console.log('reload');
+      await E(`(async()=>{await __fresh();BK.aiComp.arm(['warden'],['defensive'],1);BK.tavern.saveParty();return sessionStorage.getItem('bracken.party.v1');})()`);
+      const sv = await E(`sessionStorage.getItem('bracken.party.v1')`);
+      ok(/defensive/.test(sv || ''), 'the party is written to the session as it changes: ' + sv);
+      await pg.send('Page.navigate', { url: 'http://localhost:' + pg.PORT + '/?partyreload=1' });
+      for (let i = 0; i < 200; i++) { await new Promise(r => setTimeout(r, 150)); if (await E('!!(window.BK&&BK.tavern&&BK.tavern.want)').catch(() => false)) break; }
+      const w = await E(`JSON.stringify(BK.tavern.want())`);
+      ok(/defensive/.test(w || ''), 'after a page reload the party is back (one AI, DEFENSIVE): ' + w);
+      await E(`(()=>{sessionStorage.removeItem('bracken.party.v1');return 1;})()`);
     }
 
     if (PAGE.includes('rates')) {
