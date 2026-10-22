@@ -18,7 +18,7 @@ let shotN = 0;
 const opt = (k, d) => { const a = process.argv.find(s => s.startsWith('--' + k + '=')); return a ? a.split('=')[1] : d; };
 const has = k => process.argv.includes('--' + k);
 const FOES = +opt('foes', 8), ONLY = opt('levels', '') ? opt('levels', '').split(',') : null, REPORT = has('report');
-const pg = await openPage({ audio: false, fonts: false, seed: 1008 });
+const pg = await openPage({ audio: false, fonts: false, seed: 1008, flushLabDraws: true });
 let bad = 0;
 /* FOUND BY THIS CHECK, NOT THE CANAL'S, reported and left to the level's owner (never silently passed: each prints KNOWN every run). Remove a line when it is fixed. */
 const KNOWN = new Set(['undercrown|shardling|shed', 'hurricane|petrel|dive', 'marsh|hopper|sit', 'minecart|miner|swing']);   /* (batch91 integ: a minecart miner's swing at 81,28 draws 0 px of 52 max (MIN_D 60) when the seeded stream reaches that level after this batch's merges; run alone, with the default sample or all 27 foes, the level is clean on this branch AND on master - the sample moved, the level did not: the level owner's) */   /* (batch81 integ: the sample is drawn from the seeded stream, so the merge moved it onto two more of the same kind: a diving storm petrel on the Hurricane Deck and a sitting marsh hopper beside the hero draw nothing the oracle can see on some frames. Neither level changed in this batch; both are the level owners' - see the report) */
@@ -37,13 +37,13 @@ try {
     const solidAt = (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 0 || ty < 0 || tx >= BK.L.W || ty >= BK.L.H) return true; const t = BK.L.grid[ty * BK.L.W + tx]; return t !== T.AIR && t !== T.ONEWAY && t !== T.NET && t !== undefined; };
     const note = (list, lv, e, extra) => list.push(Object.assign({ level: lv, t: e.t + (e.cnSkin ? '/' + e.cnSkin : ''), mode: e.mode, at: [Math.round(e.x / TS * 10) / 10, Math.round(e.y / TS * 10) / 10] }, extra));
     /* the blows of a stretch of frames, each judged: returns the list of hidden ones */
-    const judge = (lv, frames, drive, seen, hull, EVERY) => { const hidden = [], notes = []; let n = 0;
+    const judge = async (lv, frames, drive, seen, hull, EVERY) => { const hidden = [], notes = []; let n = 0;
       for (let f = 0; f < frames; f++) { drive(f); BK.log = []; BK.sim(1); const log = BK.log; BK.log = null; if (EVERY && f % EVERY === 0) BK.draw1();   /* (the page draws every frame: what lights a foe at his work is decided in the draw) */
         for (const q of log) { if (q.k !== 'dmgP' || !q.by || !q.by.t || !(q.dmg > 0)) continue; const e = q.by; if (!e.x && e.x !== 0) continue; n++;
           const key = e.t + '|' + e.mode; if ((seen[key] = (seen[key] || 0) + 1) > 3) continue;   /* three of a kind is a verdict */
           const d = Math.hypot(e.x - P().x, e.y - P().y), v = shown(e), isHid = v.n < MIN_PX;
           if (hull) { const b = hull(); if (b && !e.aboard && e.x > b.x + 1 && e.x < b.x + b.w - 1 && e.y > b.y + 2 && e.y < b.y + 20 && e.t !== 'willowisp') note(hidden, lv, e, { why: 'INSIDE THE BARGE HULL (barge x ' + Math.round(b.x) + '-' + Math.round(b.x + b.w) + ', deck y ' + Math.round(b.y) + ')', px: v.n }); }
-          if (isHid) note(d <= MELEE ? hidden : notes, lv, e, { why: d <= MELEE ? 'a blow with nothing drawn (' + v.n + ' px moved, max ' + v.mx + '), ' + Math.round(d) + ' px from the hero' : 'a ranged blow from an undrawn shooter (' + v.n + ' px, ' + Math.round(d) + ' px away)', px: v.n, png: SHOTS && shots.length < 6 ? (BK.draw1(), shots.push(1), BK.view.buf.toDataURL('image/png')) : undefined }); } }
+          if (isHid) note(d <= MELEE ? hidden : notes, lv, e, { why: d <= MELEE ? 'a blow with nothing drawn (' + v.n + ' px moved, max ' + v.mx + '), ' + Math.round(d) + ' px from the hero' : 'a ranged blow from an undrawn shooter (' + v.n + ' px, ' + Math.round(d) + ' px away)', px: v.n, png: SHOTS && shots.length < 6 ? (BK.draw1(), shots.push(1), BK.view.buf.toDataURL('image/png')) : undefined }); }if(f%240===239)await collectRetired(); }
       return { hidden, notes, blows: n }; };
     /* ---- THE LEVEL SAMPLE ---- */
     if (!TUNNEL_ONLY && UNIT.kind === 'level') for (let li = 0; li < LEVELS.length; li++) { if(li !== UNIT.index)continue; const lv = LEVELS[li].id; if (ONLY && !ONLY.includes(lv)) continue;
@@ -55,7 +55,7 @@ try {
       for (const e of pick.slice(0, FOES)) { if (BK.state === 'card') BK.cardClose && BK.cardClose();
         let placed = false; for (const dx of [-24, 24, -36, 36, -16, 16]) { const x = e.x + dx; if (!solidAt(x, e.y - 8) && !solidAt(x, e.y - 20)) { BK.look(Math.floor(x / TS), Math.floor((e.y - 1) / TS)); placed = true; break; }   /* (look: the hero AND the camera on the tile - a camera still easing from the last foe would show the wrong place) */ } if (!placed) continue;
         P().vx = P().vy = 0; P().hp = P().maxHp; P().dead = false; row.sampled++;
-        const r = judge(lv, 240, () => { clear(); const dir = e.x > P().x ? 'right' : 'left'; if (Math.abs(e.x - P().x) > 20) k[dir] = true; P().hp = P().maxHp; }, seen, null, lv === 'canal' ? 5 : 0);
+        const r = await judge(lv, 240, () => { clear(); const dir = e.x > P().x ? 'right' : 'left'; if (Math.abs(e.x - P().x) > 20) k[dir] = true; P().hp = P().maxHp; }, seen, null, lv === 'canal' ? 5 : 0);
         row.blows += r.blows; row.hidden.push(...r.hidden); row.notes.push(...r.notes); clear(); }
       out.levels.push(row); }
     /* ---- THE LEGGING TUNNEL: the hero legs the barge, lit then dimmed ---- */
@@ -64,7 +64,7 @@ try {
       const C = () => BK.canal(), B = () => C().barge; B().x = 250 * TS; BK.tp(252, 14); BK.sim(30); /* the DIMMED run lights her through the mouth and the stop-planks, then strikes the lantern out for the nest */
       let dirR = true; const seen = {}; const row = { dim, hidden: [], notes: [], blows: 0, frames: 0, reached: 0 }; let guard = 0;
       for (let leg = 0; leg < 14 && B().x < 340 * TS; leg++) { if (leg === 3) for (const q of C().stops) { q.k = 1; q.up = true; } if (dim && leg === 4) C().lamp = false;   /* the first stretches she is held at the stop-planks (the bargee and the watchman above her); then the windlass is struck for her and she legs on through the nest to the deep lock */   /* six stretches: legged on, then held a while at whatever stops her (the planks, a bridge of beams) so the brood has time to work */
-        const r = judge('canal tunnel ' + (dim ? '(lantern DIMMED)' : '(lantern LIT)'), 60 * 24, f => { clear(); P().hp = P().maxHp; if (f < 60 * 14 && B().x < 340 * TS) k.right = true; if (f % 300 === 299 && BK.enemies().some(e => e.alive && e.t === 'grindylow' && e.mode === 'grab')) BK.press('jump');
+        const r = await judge('canal tunnel ' + (dim ? '(lantern DIMMED)' : '(lantern LIT)'), 60 * 24, f => { clear(); P().hp = P().maxHp; if (f < 60 * 14 && B().x < 340 * TS) k.right = true; if (f % 300 === 299 && BK.enemies().some(e => e.alive && e.t === 'grindylow' && e.mode === 'grab')) BK.press('jump');
           if (f % 20 === 19 && !(P().onMover && P().onMover.canal) && (P().x > B().x + B().w + 2 || P().x < B().x - 2 || P().y > B().y + 4)) { P().x = B().x + 40; P().y = B().y - 1; P().vx = P().vy = 0; } }, seen, () => B(), 5);   /* (a hero walked off her bow is handed back on) */
         row.hidden.push(...r.hidden); row.notes.push(...r.notes); row.blows += r.blows; row.frames += 60 * 24; if (B().x > 340 * TS) break; if (r.blows === 0 && ++guard > 20) break; await collectRetired(); }
       row.reached = Math.round(B().x / TS); row.why = B().holdWhy + ' lamp ' + C().lamp + ' stops ' + C().stops.map(q => q.k.toFixed(1) + (q.up ? 'u' : 'd')).join(',') + ' hero ' + Math.round(P().x / TS) + ',' + Math.round(P().y / TS) + ' onbarge ' + !!(P().onMover && P().onMover.canal); out.tunnel.push(row); }
