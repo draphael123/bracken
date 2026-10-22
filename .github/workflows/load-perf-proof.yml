@@ -37,6 +37,7 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.11.1'
+      - run: node tools/lab-render-clock-selftest.mjs
       - run: node tools/renderer-campaign-proof.mjs 1 --only=mage --variant=baseline-control --frames=16 --scene=entry --debug-frame=9
         env:
           PIXEL_CPU_CANVAS: ${{ matrix.backend }}

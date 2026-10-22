@@ -10,3 +10,10 @@ export function pauseGameAtBoot(){
 
 // Stable pixel-readback backend for the comparison lab only; timing probes retain the real default backend.
 export function useCpuPixelCanvas(){const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,options){return get.call(this,type,type==='2d'?{...options,willReadFrequently:true}:options);};}
+
+// Some scenery reads performance.now rather than the simulation clock. Align that visual clock only inside explicit lab renders.
+export function installLabRenderClock(BK){
+ const original=BK.step;if(original.__labRenderClock)return;
+ const wrapped=function(...args){const descriptor=Object.getOwnPropertyDescriptor(performance,'now');Object.defineProperty(performance,'now',{configurable:true,writable:true,value:()=>BK.time*1000});try{return original.apply(this,args);}finally{if(descriptor)Object.defineProperty(performance,'now',descriptor);else delete performance.now;}};
+ Object.defineProperty(wrapped,'__labRenderClock',{value:true});BK.step=wrapped;
+}
