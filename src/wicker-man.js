@@ -20,7 +20,7 @@
 import { WQ } from './wicker-queen.js';
 
 export const WM = {
-  w: 14, h: 40, hp: 160,   /* (claude/fairfix6, Daniel 10-05: 'every hero needs 2-3 strike-back fires'. Measured, tools/wicker-man.mjs: one 3 s fire cut point-blank at the fair's depth (L23) takes 50 (warden) to 211 (pirate) - a 4x spread health alone cannot fit into 2-3. So health 160 (144 at the fair: three of the warden's fires) AND fireCap below (no fire takes more than 55% of it: two of the pirate's) */
+  w: 14, h: 40, hp: 210,   /* (integ111: was 160 - THE FEN ROAD moved the fair to campaign L30, where the knight takes 139 of its 144 in ONE fire; 210 = 189 at the fair puts every hero back at 2-3 fires) */   /* (claude/fairfix6, Daniel 10-05: 'every hero needs 2-3 strike-back fires'. Measured, tools/wicker-man.mjs: one 3 s fire cut point-blank at the fair's depth (L23) takes 50 (warden) to 211 (pirate) - a 4x spread health alone cannot fit into 2-3. So health 160 (144 at the fair: three of the warden's fires) AND fireCap below (no fire takes more than 55% of it: two of the pirate's) */
   creep: 26,                           /* px/s while no hero looks at it: slower than a mummer (40); the Queen's 68 */
   sight: 300, sightY: 110,             /* how far it sees a hero to fight (its look is the fair's: the host says whether a hero is looking at IT) */
   throwFirst: 1.2, throwEvery: 4.0, throwTell: 1.0, throwT: 0.35, throwMin: 60, throwMax: 280, throwDy: 56,
