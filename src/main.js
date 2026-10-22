@@ -31768,7 +31768,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (L.sealedpyramid && String(st).startsWith('py') && PYH && PYH.on()) { const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS; if (sx <= VW && sx + w >= 0) PYH.drawRoom(g, st, sx, sy, w, h, x0, y0, time); continue; }   /* (claude/sealedpyramid) THE SEALED PYRAMID's rooms: the tomb's own coursed back wall (src/sealed-pyramid-hands.js), never the shared plank room */
     if (st === 'church' || (L.buriedcity && String(st).startsWith('bc'))) continue;   /* (claude/bc2art: THE BURIED CITY's rooms are its own backdrop - src/redraw/buried_city_backdrop.js - not the shared plank room) */   /* THE LIT CHURCH paints its own far walls (src/redraw/church_set.js drawBackdrop); the shared brick room would cover them */
     const sx = x0 * TS - cx, sy = y0 * TS - cy, w = (x1 - x0 + 1) * TS, h = (y1 - y0 + 1) * TS;
-    if (sx > VW || sx + w < 0) continue;
+    if (sx > VW || sx + w < 0 || sy > VH || sy + h < 0) continue;
     if (L.tavern) { TVB.drawRoom(g, Math.round(sx), Math.round(sy), cx, VW, time); continue; }   /* THE CROSSROADS INN paints its own room (claude/tavernart, src/redraw/tavern_backdrop.js): wall, beams, fire, window, tables and drinkers, bar, yard */
     drawRoom(st, sx, sy, w, h, x0, y0);
   }
