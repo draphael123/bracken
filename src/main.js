@@ -1,3 +1,5 @@
+import { createReplayCapture } from './replay-capture.js';
+let captureSession = null;   /* opt-in only; saves remain isolated until reload */
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotSanctus, abbotSpoil } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
@@ -428,7 +430,7 @@ function eraseSlot(i) { try { if (slotHealthOf(i).state !== 'ok' && slotHealthOf
   try { localStorage.removeItem(slotKey(i)); if (i === 0) localStorage.removeItem('bracken.progress'); } catch {} if (i === slot) { saveBlocked=''; for (const k in PROG) delete PROG[k]; Object.assign(PROG,migrateProgress(null).progress); progDefaults(); } }
 /* THE SAVE BELONGS TO PLAYER ONE. A co-op pass sets PROG.hero to whoever is being updated, and a level won or a
    coin banked inside player two's pass would otherwise write HIS name into the slot as the hero carrying it. */
-function saveProgress() { if (saveBlocked || bossJumpOn) return; if (slotCoopHolder(slot)) { saveWritten({ ok: false, held: true }); return; }   /* (claude/coopprogress) its own co-op session writes it: this page's copy would undo that */ dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
+function saveProgress() { if (captureSession || saveBlocked || bossJumpOn) return; if (slotCoopHolder(slot)) { saveWritten({ ok: false, held: true }); return; }   /* (claude/coopprogress) its own co-op session writes it: this page's copy would undo that */ dcMirror(); const was = PROG.hero; if (passOn && players) PROG.hero = players[0].hero;
   if (profStack.length) profSync();   /* (a seat's pass is up: the slot gets the save's own values, never his) */
   let r; try { r = SAFE.safeSet(localStorage, slotKey(slot), JSON.stringify(profStack.length ? { ...PROG, ...profHost } : PROG), slotKeys()); } catch (e) { r = { ok: false, full: false }; }
   PROG.hero = was; saveWritten(r); rosterNote(); }
@@ -34423,7 +34425,8 @@ function drawEdPalette() {
   text('CLICK one  ESC close', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
 
-function render() {
+function render() { if (captureSession) return captureSession.draw(renderFrame); return renderFrame(); }
+function renderFrame() {
   TCH.beginFrame(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
   setView(desiredView());
   const sh = SET.shake ? shake : 0;
@@ -34466,10 +34469,11 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
+  const captureG = g; if (captureSession?.options.hud === false) g = NULLG;
   if (state === 'play' || (state === 'talk' && !talkOverHud) || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map')) {   /* (the map is the whole screen: no plates under it) */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
-    if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
+    if (introCardUp() && captureSession?.options.namecards !== false) { const cardG = g; if (captureSession?.options.hud === false) g = captureG; const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } g = cardG; }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
     const hudMin = SET.hud === 'minimal', HS = hudMin ? 'outline' : 'shadow', HY = SET.iron ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
     const hudMeter = hudMeterLabel(), hudPW = 66, xpRow = xpWood() ? 8 : 0, hudPH = HY + 7 + xpRow;   /* ONE slim plate: 66 wide (~20% of the 320 view) however long a meter's prompt is - the prompt goes beside it, on a strip (meterPrompt) */
     const hudIdle = hudMin && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !hudMeter && !P.swim && !(P.torch > 0) && heroMeterFrac() < 0.01 && !Object.values(P.cds || {}).some(v => v > 0);   /* nothing to say: the bars wait out of sight until something changes */
@@ -34681,10 +34685,10 @@ function render() {
       g.fillStyle = 'rgba(12,10,20,0.85)'; g.fillRect(VW / 2 - w2 / 2, 14, w2, 11);
       g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, 14.5, w2 - 1, 10);
       text(rushMsg, VW / 2, 17, '#ffd36b', 'center', 6); }
-    if (actCard && state === 'play') { const a = AC.cardAlpha(actCard.t, actCard.hold), y0 = Math.round(VH * 0.22); if (a > 0) {   /* (claude/actcards) the act card: above the level's name card, over the iris, never eats input */
+    if (actCard && state === 'play' && captureSession?.options.namecards !== false) { const a = AC.cardAlpha(actCard.t, actCard.hold), y0 = Math.round(VH * 0.22); if (a > 0) {   /* (claude/actcards) the act card: above the level's name card, over the iris, never eats input */
       g.globalAlpha = a; g.fillStyle = 'rgba(10,8,20,0.62)'; g.fillRect(0, y0 - 10, VW, 30); g.fillStyle = '#ffd36b'; g.fillRect(0, y0 - 10, VW, 1); g.fillRect(0, y0 + 19, VW, 1);
       text(actCard.label, VW / 2, y0 - 5, '#c9a26a', 'center', 6); text(actCard.name, VW / 2 + 1, y0 + 5, '#3a2214', 'center', 10); text(actCard.name, VW / 2, y0 + 4, '#ffd36b', 'center', 10); g.globalAlpha = 1; } }
-    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
+    if (bannerT > 0 && state === 'play' && captureSession?.options.namecards !== false) { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
       { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
       g.globalAlpha = 1; }
     }
@@ -34725,6 +34729,7 @@ function render() {
     if (bossActive && boss && boss.alive && boss.t === 'pyromancer' && state !== 'menu' && state !== 'win' && state !== 'gameover') drawPyroHeat(boss);   /* HIS HEAT, over his bar */
     if (state !== 'menu' && state !== 'win' && state !== 'gameover') { const pe = bossActive && boss && boss.alive ? boss : miniActive && !bossActive ? miniOne() : null; if (pe && pe.alive) RP.drawPoiseBar(g, pe, VW / 2 - 60, hpBy() + hpBh() + 2, 120); }   /* (claude/riposte) THE POISE BAR, under his health: thin, gold, white while broken (every BAR/%/NUMBERS mode: the numbers are his health's, above the bar) */
   }
+  g = captureG;
   if (state === 'title' && pressCard) { TCH.hit(0, 0, VW, VH, () => { anyPress = true; initAudio(); dismissPress(); }); TC.drawPressText(g, text, UI, time, VW, VH, 1, touchOn); }   /* THE CARD: only its own words while it is up (the sign and the menu wait off screen, and are not drawn) */
   if (state === 'title' && !pressCard) {
     /* THE TITLE IS ONE SCENE (claude/titlescene, 2026-10-09). The sign hangs across the top of the picture, whole (it ran off the
@@ -34866,7 +34871,7 @@ function render() {
     /* WHAT JUST HAPPENED: the blow and its rule, in the mark's colour, once the screen has gone dark enough to read it on (killerOf) */
     if (P.killer && P.dead < 1.1) { deathRecap = { k: P.killer, t: 0 }; DCARD.drawDeathCard(g, text, fitText, UI, { board: (x, y, w, h) => board(x, y, w, h, '#ff6b6b', undefined, false, 'iron'), k: P.killer, cost: dcLine(), a: Math.min(1, (1.1 - P.dead) * 6), VW, VH, colorSafe: SET.colorSafe }); } }   /* THE DEATH CARD (src/death-card.js): who, the blow, the tell you missed, what it cost */
   else if (deathRecap && state === 'play') { deathRecap.t += 1 / 60; DCARD.drawRecap(g, text, fitText, UI, { k: deathRecap.k, t: deathRecap.t, VW, colorSafe: SET.colorSafe, y: hudRects[0] ? hudRects[0][1] + hudRects[0][3] + 2 : 17, x0: CV ? Math.max((hudRects[0] ? hudRects[0][2] : 0) + 2, hudEnvR) + 4 : 0 });   /* (under the plates, right of the caravan's sun rows) */ if (deathRecap.t > DCARD.RECAP_S) deathRecap = null; }   /* and a line under the timer for a few seconds after the respawn */
-  if (!audioReady() && state === 'play') {
+  if (!captureSession && !audioReady() && state === 'play') {
     const SOUND_Y = 16, t0 = (soundNoteT += 1 / 60), full = t0 < 10,   /* TOP CENTRE, under the timer: never the bottom row, where the boss name and bar are */ k = full ? Math.min(1, t0 * 3) : Math.max(0, 1 - (t0 - 10) * 2);
     if (full || k > 0) { const lab = touchOn ? 'TAP A BUTTON FOR SOUND' : 'PRESS A KEY FOR SOUND', w = lab.length * 6 + 24;   /* on a phone there is no key: a tap on the pad is what starts the audio */
       g.globalAlpha = 0.9 * (full ? Math.min(1, t0 * 3) : k);
@@ -34875,8 +34880,8 @@ function render() {
       spk(VW / 2 - w / 2 + 8, SOUND_Y + 4, '#c9b27c'); text(lab, VW / 2 + 7, SOUND_Y + 4, '#e8dfc6', 'center', 6); g.globalAlpha = 1; }
     else { g.globalAlpha = 0.5 + 0.2 * Math.sin(time * 2); spk(VW - 14, VH - 14, '#9aa39a'); g.globalAlpha = 1; }
   } else soundNoteT = 0;
-  if (REC.on || REC.msgT > 0) REC.draw(g, text, VW);
-  if (SET.fps) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
+  if (captureSession?.options.debug !== false && (REC.on || REC.msgT > 0)) REC.draw(g, text, VW);
+  if (SET.fps && captureSession?.options.debug !== false) { g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(2, VH - 12, 118, 10); text(perf.fps + ' FPS  UPDATE ' + perf.u.toFixed(1) + 'MS  DRAW ' + perf.r.toFixed(1) + 'MS', 4, VH - 10, perf.fps < 50 ? '#ff6b6b' : '#8fd160', 'left', 6); }
   trnDrawOverlay();   /* (claude/transwm) the letterbox, the skip hint */
   drawTransition();
   if(saveBlocked){g.fillStyle='rgba(35,10,14,0.98)';g.fillRect(0,VH-28,VW,28);text('SAVE PROTECTED - CHANGES WILL NOT SAVE',VW/2,VH-25,'#ff9a5c','center',6);text(fitName(saveBlocked,VW-12,6),VW/2,VH-14,UI.text,'center',6);}
@@ -34912,10 +34917,10 @@ function tick(now) {
   TCH.tick(dt);
   acc += dt;
   let n = 0; const tu = performance.now();
-  while (acc >= STEP && n < 8) { update(STEP); acc -= STEP; n++; clearPresses(); }
+  while (acc >= STEP && n < 8) { captureSession ? captureSession.run(() => update(STEP)) : update(STEP); acc -= STEP; n++; clearPresses(); }
   /* A PICTURE IS DRAWN ONLY WHEN SOMETHING STEPPED (claude/mobile2): the world moves in fixed 1/60 s steps, so a frame that ran none is the picture already on the glass.
      On a 90 or 120 Hz phone (and a 144 Hz monitor) the game drew every refresh - up to twice the work for a picture that had not changed. ?everyframe puts the old way back. */
-  const tr = performance.now(); if (n > 0 || EVERY_FRAME || !drawnOnce || state !== lastDrawnState) { render(); drawnOnce = true; lastDrawnState = state; } const te = performance.now();
+  const tr = performance.now(); if (!captureSession && (n > 0 || EVERY_FRAME || !drawnOnce || state !== lastDrawnState)) { render(); drawnOnce = true; lastDrawnState = state; } const te = performance.now();
   perf.u += (tr - tu - perf.u) * 0.1; perf.r += (te - tr - perf.r) * 0.1; perf.frames++; if (te - perf.t0 > 500) { perf.fps = Math.round(perf.frames * 1000 / (te - perf.t0)); perf.frames = 0; perf.t0 = te; }
 }
 /* THE NEXT FRAME IS ASKED FOR EVEN IF THIS ONE THREW (claude/perf51): one exception used to end the requestAnimationFrame chain for good, and
@@ -34930,7 +34935,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
   hide: HIDE, P, god: false, keys, SET, PROG, SPR, carpet: () => P.carpet, towerFloors: () => L.towerFloors, board: () => { if (L.carpetAt) { P.x = L.carpetAt.x; P.y = L.carpetAt.y; } },   /* THE FALLING TOWER, for tools/tower-ascent.mjs */
   get view() { return { x: camX, y: camY, buf, VW, VH, z: (zoomT > 0 ? zoomAmt : 1) * (1 + bossZoom), tilt: seaTilt() }; },   /* z and tilt: a frame drawn scaled or rolled does not line up with the tiles */ /* the camera and the unscaled frame, for crops in tests */
   trans: { get tr() { return TRN; }, get arrive() { return trnArrive; }, force: v => { trnForce = v === null || v === undefined ? null : !!v; }, begin: () => trnBegin(), textW: str => textW(str, 6), levelId: () => LEVELS[levelIndex].id, press: () => { anyPress = true; }, TRM, TRA },   /* (claude/transwm) tools/transition-woodmarsh.mjs */
-  step(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } render(); },
+  step(n = 1) { for (let i = 0; i < n; i++) { captureSession ? captureSession.run(() => update(STEP)) : update(STEP); clearPresses(); } if (!captureSession) render(); },
   draw1() { render(); },   /* (claude/tunnelfix) one frame drawn, nothing updated: tools/no-hidden-hits.mjs draws it twice (a foe in, a foe out) and compares */
   tileSpr: () => tileSpr, resolve: () => resolveTiles(), respawn: () => respawn(), tileArt: () => ({ TILE, LEDGE_SETS }),   /* for tools/*.mjs: what picture a tile actually drew, by identity, not by eye */
   /* THE BOT HAS TO BE ABLE TO SEE A WIND-UP. It is the same predicate the yellow ! and the red !! are
@@ -34940,7 +34945,7 @@ window.BK = { eatJump: () => { jumpPress = false; P.jbuf = 0; },   /* (claude/st
     pads: movers.filter(m => m.kind === 'pad' && m.x > L.arena.x0 && m.x < L.arena.x1).map((m, i) => ({ id: i, x: m.x + m.w / 2, w: m.w, y: m.y0, sink: m.sink, firm: !!m.firm, slap: m.slapT > 0, shuf: !!m.shufTo, on: P.onMover === m })), reel: !!P.frogReel, tongueMax: tongue ? tongue.max : FROGK.tongue.max[(boss.phase || 1) >= 2 ? 1 : 0] } : null),   /* (claude/marsh2) THE BULLFROG KING's court for the lab's hands and tools/marsh2-beats.mjs */ hawkMistressHands: () => HMH, fogKnightHands: () => FKH, championHands: () => CHH, flotilla2: () => FL2H, champion: () => (CHH ? CHH.read() : null), fogKnight: () => (FKH ? FKH.read() : null), towpathHands: () => TPH, paladinHands: () => PBH, deaconHands: () => DCH, paladin: () => (PBH ? PBH.read() : null), hourglassKingHands: () => HGK, buriedCityHands: () => BCH, scarabMotherHands: () => SMH, scarabMother: () => (SMH ? SMH.read() : null), tombKingHands: () => TKH, oldTuskerHands: () => OTH, bogTrollHands: () => BTH, fenRoadHands: () => FRH, fenRoad: () => (FRH ? FRH.read() : null), oldTusker: () => (OTH ? OTH.read() : null), tombKing: () => (TKH ? TKH.read() : null), sealedPyramidHands: () => PYH, sealedPyramidRead: () => (PYH ? PYH.read() : null), lesserDjinn: () => LDH, wickerMan: () => WMH, skyroad: () => SKY, minecart: () => MCH, drillHands: () => GDH, rocEyrie: () => ROCE, rootway: () => RWH, huntmaster: () => HNH, snares: () => SNR, pods: () => HPD, cisternQueen: () => CQH ? CQH.read() : null, cisternQueenHands: () => CQH, colossusHands: () => COH, djinn: () => DJH ? DJH.read() : null, djinnHands: () => DJH, gorgeCrab: () => GCH ? GCH.read() : null, gorgeCrabHands: () => GCH, matriarch: () => MTH ? MTH.read() : null, matriarchHands: () => MTH, puppeteer: () => PUPH ? PUPH.read() : null, puppeteerHands: () => PUPH, crouchBReset: () => CRB && CRB.resetStats(), crouchHint: () => CRH ? CRH.read() : null, crouchHintReset: () => CRH && CRH.reset(),   /* (claude/crouchfix) */   /* THE CROUCH TWISTS (tools/crouch-b.mjs) */
   telling: e => !!e && windingUp(e), markOf: e => markOf(e), markShown: e => !!e && windingUp(e) ? markOf(e) : '',
   dmgCommon: () => Object.fromEntries(Object.keys(DMG_COMMON).map(k => [k, [DMG_COMMON[k], DMG[k]]])), duck: () => ({ H: DUCK_H, ducking: !!P.ducking, box: duckBox(P), ducked: P.ducked || 0, tells: tellsDrawn, braced: braced(), clears: y => duckClears(P, y), high: e => blowHigh(e, time), lane: e => laneOf(tellKey(e)), height: e => heightOf(tellKey(e)) }),   /* THE UNIVERSAL DUCK, for tools/duck.mjs and the bot (src/duck.js) */ marksMissed: () => marksMissed(),   /* the mark the screen holds over a windup, and every windup the table had no row for */
-  sim(n = 1) { for (let i = 0; i < n; i++) { update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
+  sim(n = 1) { for (let i = 0; i < n; i++) { captureSession ? captureSession.run(() => update(STEP)) : update(STEP); clearPresses(); } },   /* the same, without the draw: the playtest bot renders when it wants to look */
   tp(tx, ty) { P.x = tx * TS + 8; P.y = (ty + 1) * TS; P.vx = P.vy = 0; },
   pyroDuel: { D: PYRO_DUEL, pose: e => pyroPose(e), stalls: e => pyroStalls(e) },   /* THE PYROMANCER's mirror duel, for tools/pyro-duel.mjs */
   /* THE BOT HAS TO BE ABLE TO LOOK AT A PLACE IT IS NOT STANDING. A backdrop fault lives at a height: a band cut off
@@ -35110,4 +35115,11 @@ partyRestore();   /* (claude/partypersist) a reload keeps the party */
 if (q.get('level')) { if (!levelJump(q.get('level'), q.get('hero'), q.get('campaign') === '1')) console.warn('?level=' + q.get('level') + ' is not a level id. Known: ' + LEVELS.map(l => l.id).join(' ')); }   /* THE PLAYTEST LEVEL JUMP (docs/PLAYTEST.md), never saved */
 if (q.get('boss')) { if (!bossJump(q.get('boss'), q.get('hero'), q.get('campaign') === '1')) console.warn('?boss=' + q.get('boss') + ' is not a boss or mini id. Known: ' + bossTable().map(r => r.kind === 'mini' ? r.level + ':mini' : r.t).join(' ')); }   /* THE PLAYTEST BOSS JUMP: ?boss=<id>&hero=<id> (docs/PLAYTEST.md) */
 LS.bootDone();
-rafQueued = true; requestAnimationFrame(frame);
+rafQueued = true; window.BK.replay = createReplayCapture(window.BK, {
+ activate: c => { captureSession = c; },
+ input: () => ({ keys: { ...keys }, flags: { grabPress, throwPress, skill2Press, skill3Press, skill4Press, talkPress, flaskPress, stancePress, jumpUpKey, jumpPress, atkPress, dodgePress, pausePress, anyPress, upPress, downPress, leftPress, rightPress, confirmPress, talentsPress, mapPress, padLast } }),
+ apply: a => { for (const k of Object.keys(keys)) delete keys[k]; Object.assign(keys, a.keys); const f=a.flags; grabPress=!!f.grabPress; throwPress=!!f.throwPress; skill2Press=!!f.skill2Press; skill3Press=!!f.skill3Press; skill4Press=!!f.skill4Press; talkPress=!!f.talkPress; flaskPress=!!f.flaskPress; stancePress=!!f.stancePress; jumpUpKey=!!f.jumpUpKey; jumpPress=!!f.jumpPress; atkPress=!!f.atkPress; dodgePress=!!f.dodgePress; pausePress=!!f.pausePress; anyPress=!!f.anyPress; upPress=!!f.upPress; downPress=!!f.downPress; leftPress=!!f.leftPress; rightPress=!!f.rightPress; confirmPress=!!f.confirmPress; talentsPress=!!f.talentsPress; mapPress=!!f.mapPress; padLast=!!f.padLast; },
+ render: () => render(),
+ snapshot: () => ({ time, state, stop, level: curId(), P, enemies, movers, props, seeds, waves, fires, wardJav, spearRain, got, kills, camX, camY }),
+});
+requestAnimationFrame(frame);

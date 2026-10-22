@@ -1,3 +1,4 @@
+import { audioRandom } from './replay-random.js';
 // boss-music.js - THE TWO SYNTH BOSS THEMES (claude/bossmusic, Daniel 2026-09-30): the Archmages share one, the Goblin
 // royals share another, and neither is the generic boss recording. Like underleaf / mineworks / deep they have no file:
 // audio.js's step scheduler asks SYNTH_BOSS[name] for the step length and the loop length, and calls play() once per
@@ -576,7 +577,7 @@ function towpath(i, delay, variant, env) {
   if (s === 0 && bar % 2 === 0) { held(env, 'sawtooth', nf('D2'), TPM_STEP * TPM_LEN * 2 * 0.96, 0.035 * g, delay, { lp: 360, att: TPM_STEP * 3, hold: 0.7, det: 7 }); held(env, 'sawtooth', nf('A2'), TPM_STEP * TPM_LEN * 2 * 0.96, 0.02 * g, delay, { lp: 420, att: TPM_STEP * 4, hold: 0.6, det: 9 }); }
   if (s === 0 || s === 3) pluck(env, 'triangle', nf(TPM_BASS[bar % 4][s === 0 ? 0 : 1]), TPM_STEP * 2.6, 0.17 * g, delay, { lp: 520 });
   const c = TPM_TUNE[bar % 4][s]; if (c !== '-' && !(fog && s % 2 === 1)) { let fr = nf(c); if (fog && c[0] === 'B') fr *= Math.pow(2, -1 / 12); held(env, 'square', fr, TPM_STEP * 1.8, 0.03 * g, delay, { lp: fog ? 1100 : 1700, att: 0.05, hold: 0.6, from: 0.985 }); }
-  if (s === 4 && Math.random() < 0.5) pluck(env, 'sine', 1400 + Math.random() * 500, 0.12, 0.02 * g, delay, { to: 900 });   /* a drip off a lock gate */
+  if (s === 4 && audioRandom() < 0.5) pluck(env, 'sine', 1400 + audioRandom() * 500, 0.12, 0.02 * g, delay, { to: 900 });   /* a drip off a lock gate */
 }
 // ---------------------------------------------------------------- THE FOG KNIGHT (claude/towpath, his composed theme: three phases)
 // E Aeolian, 4/4 at 84, 16 bars = 46 s. THE DUEL ON THE TOWPATH: a low drum on one and three, a choir-like pad (detuned saws, slow swell), a TOLLING BELL every

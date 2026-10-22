@@ -1,3 +1,4 @@
+import { audioRandom } from './replay-random.js';
 // audio.js — CC0 sample playback with synth fallbacks, and three music tracks (theme / boss / select).
 let ac = null, master = null, musicGain = null, sfxGain = null, noiseBuf = null, musicLP = null, uiGain = null, revGain = null, conv = null, revOn = false, trackG = null, muffled = false, lowHp = false, ambVol = 1;
 let vol = 0.5, sfxFiles = true, musicOn = true;
@@ -61,9 +62,9 @@ export function initAudio() {
   uiGain = ac.createGain(); uiGain.gain.value = 0.8; uiGain.connect(master); // menu clicks have their own volume
   ambGain = ac.createGain(); ambGain.gain.value = 0; ambDuck = ac.createGain(); ambGain.connect(ambDuck); ambDuck.connect(sfxGain);
   noiseBuf = ac.createBuffer(1, ac.sampleRate, ac.sampleRate);
-  const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+  const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = audioRandom() * 2 - 1;
   { // a short stone reverb for the galleries and halls: a decaying noise impulse
-    const len = Math.floor(ac.sampleRate * 0.8), ir = ac.createBuffer(1, len, ac.sampleRate); { const c = ir.getChannelData(0); for (let i = 0; i < len; i++) c[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4); }
+    const len = Math.floor(ac.sampleRate * 0.8), ir = ac.createBuffer(1, len, ac.sampleRate); { const c = ir.getChannelData(0); for (let i = 0; i < len; i++) c[i] = (audioRandom() * 2 - 1) * Math.pow(1 - i / len, 2.4); }
     conv = ac.createConvolver(); conv.buffer = ir; revGain = ac.createGain(); revGain.gain.value = 0; conv.connect(revGain); revGain.connect(master); }
   startSynth();
   loadTrack(wantTrack);
@@ -148,7 +149,7 @@ function file(name, v = 0.6, rate = 1, dest = null) {
   const arr = clips[name]; if (!arr) return false;
   const opts = arr.filter(Boolean); if (!opts.length) return false;
   const cat = catOf(name); if (!admit(cat, v)) return true;   /* a capped-out sound counts as played: the caller must not fall back to its synth on top */
-  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.94 + Math.random() * 0.12);
+  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.94 + audioRandom() * 0.12);
   const g = ac.createGain(); g.gain.value = v * SFX_TRIM[cat]; s.connect(g); g.connect(dest || out()); s.start(); track(s, g, cat, v);
   return true;
 }
@@ -156,14 +157,14 @@ function file(name, v = 0.6, rate = 1, dest = null) {
 // THE SAME TAKE TWICE IN A ROW IS WHAT MAKES A CROWD SOUND LIKE ONE MAN. Every pool remembers the take it
 // played last and never plays it again next.
 const lastTake = {};
-function takeOf(name, n) { let i = (Math.random() * n) | 0; if (n > 1 && i === lastTake[name]) i = (i + 1 + ((Math.random() * (n - 1)) | 0)) % n; lastTake[name] = i; return i; }
+function takeOf(name, n) { let i = (audioRandom() * n) | 0; if (n > 1 && i === lastTake[name]) i = (i + 1 + ((audioRandom() * (n - 1)) | 0)) % n; lastTake[name] = i; return i; }
 // A VOICE: a recorded take from a kit, at a pitch for the body it is coming out of, and through a lowpass when
 // that body has a helmet on. Returns false while the clip is still loading, so every caller keeps its synth.
 function voice(name, v = 0.5, rate = 1, lp = 0, delay = 0) {
   if (!ac || !sfxFiles || !voicesOn || !name) return false;
   const opts = (clips[name] || []).filter(Boolean); if (!opts.length) return false;
   if (!admit('voice', v)) return true;
-  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.95 + Math.random() * 0.1);
+  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = rate * (0.95 + audioRandom() * 0.1);
   const g = ac.createGain(); g.gain.value = v * SFX_TRIM.voice;
   if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; f.Q.value = 0.8; s.connect(f); f.connect(g); } else s.connect(g);
   g.connect(out()); s.start(ac.currentTime + delay); track(s, g, 'voice', v); return true;
@@ -184,7 +185,7 @@ function tone(type, f0, f1, dur, v = 0.3, delay = 0, dest = null) {
   if (!ac) return;
   const t = ac.currentTime + delay;
   const fx = !dest || dest === sfxGain; if (!dest) dest = out();
-  if (fx) { const k = 0.97 + Math.random() * 0.06; f0 *= k; f1 *= k; } // no two the same: a fixed pitch is what makes synth sound like a machine
+  if (fx) { const k = 0.97 + audioRandom() * 0.06; f0 *= k; f1 *= k; } // no two the same: a fixed pitch is what makes synth sound like a machine
   const o = ac.createOscillator(), g = ac.createGain();
   o.type = type; o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(Math.max(1, f1), t + dur);
   g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
@@ -194,7 +195,7 @@ function noise(dur, v = 0.3, freq = 1000, q = 0.8, delay = 0, dest = null) {
   if (!ac) return;
   const t = ac.currentTime + delay;
   const s = ac.createBufferSource(); s.buffer = noiseBuf;
-  const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq * (0.92 + Math.random() * 0.16); f.Q.value = q;
+  const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = freq * (0.92 + audioRandom() * 0.16); f.Q.value = q;
   const g = ac.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.001, t + dur);
   s.connect(f); f.connect(g); g.connect(dest || out()); s.start(t); s.stop(t + dur + 0.02);
 }
@@ -218,22 +219,22 @@ function bell(f, dur = 0.8, v = 0.1, delay = 0) { tone('sine', f, f * 0.998, dur
 let landTier = 0;   /* the tier of the landing being played (main.js passes it to SFX.pLand) */
 let heroVoice = 'knight', stepN = 0, jetSrc = null, jetGain = null;
 export function setHeroVoice(h) { heroVoice = h === 'pyro' || h === 'paladin' || h === 'pirate' || h === 'reaper' || h === 'warden' || h === 'geomancer' || h === 'berserker' || h === 'ranger' ? h : 'knight'; }   /* (claude/shipfix) THE BERSERKER was missing here and spoke with the knight's throat: HERO_KIT has had his kit all along */
-const vary = f => f * (0.94 + Math.random() * 0.12);
+const vary = f => f * (0.94 + audioRandom() * 0.12);
 const chain = (v = 0.03, n = 3) => { for (let i = 0; i < n; i++) tone('square', vary(3000 + i * 260), 2400, 0.03, v, i * 0.022); noise(0.05, v * 2.2, 4200, 1.6); };
 /* WEAPON FAMILY PER HERO for the plain swing: air = swish volume, blade = sword-swing volume, r = rate (lower = heavier/longer weapon), low = a low RPG swing under it, fire = embers. (Weapon classes are the lane's reading of each kit; see the lane report.) */
 const SWING = { knight: { air: 0.2, blade: 0.2, r: 1 }, paladin: { air: 0.22, blade: 0.14, r: 0.78, low: 0.2 }, pirate: { air: 0.18, blade: 0.18, r: 1.14 }, reaper: { air: 0.26, blade: 0.12, r: 0.7, low: 0.16 }, pyro: { air: 0.22, blade: 0, r: 0.85, fire: 1 }, warden: { air: 0.3, blade: 0, r: 1.2 }, geomancer: { air: 0.24, blade: 0, r: 0.6, low: 0.3 }, berserker: { air: 0.2, blade: 0.18, r: 0.72, low: 0.22 }, ranger: { air: 0.2, blade: 0.14, r: 1.26 } };
-const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + Math.random() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + Math.random() * 0.03)); };
+const crackle = (n = 4, d0 = 0) => { for (let i = 0; i < n; i++) tone('square', vary(1600 + audioRandom() * 1400), 700, 0.018, 0.035, d0 + i * (0.02 + audioRandom() * 0.03)); };
 export const SFX = {
   resetSteps() { stepN = 0; },   /* (claude/harness) the footstep count back to nought for a fresh body: every other step draws a Math.random (vary), so a lab fight inherited the last one's parity */
-  pJump() { if (heroVoice === 'pyro') { if (Math.random() < 0.35) heroVo('jump', 0.28); noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
-    else { if ((heroVoice === 'knight' || heroVoice === 'berserker') && Math.random() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
+  pJump() { if (heroVoice === 'pyro') { if (audioRandom() < 0.35) heroVo('jump', 0.28); noise(0.12, 0.13, 800, 0.5); tone('sine', vary(330), vary(560), 0.12, 0.07); crackle(2, 0.02); }
+    else { if ((heroVoice === 'knight' || heroVoice === 'berserker') && audioRandom() < 0.18) heroVo('jump', 0.24); tone('square', vary(250), vary(540), 0.1, 0.07); chain(0.028, 3); } },
   pLand(surf) { if (heroVoice === 'pyro') { if (surf === 'water') { SFX.land('water'); return; } noise(0.09, 0.14, 520, 0.5); tone('sine', 150, 60, 0.08, 0.1); if (surf === 'wood' || surf === 'stone') file('land', 0.14, 1.25); return; }
     SFX.land(surf); tone('square', vary(1500), 1050, 0.04, 0.05); noise(0.04, 0.07, 3600, 1.4); },
   pStep(surf) { stepN++; if (heroVoice === 'reaper') { if (surf === 'water') { noise(0.06, 0.07, 800, 0.5); return; } noise(0.05, 0.05, 300, 0.5); tone('sine', 88, 48, 0.09, 0.12); if (stepN % 2) { tone('square', vary(900), 600, 0.04, 0.03); } return; }   /* the biggest man in the game walks like it */
     if (heroVoice === 'pirate') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.035, 0.06, 420, 0.6); if (stepN % 2) tone('sine', 120, 80, 0.04, 0.03); return; }
     if (heroVoice === 'pyro') { if (surf === 'water') { noise(0.06, 0.08, 900, 0.5); return; } noise(0.04, 0.05, vary(650), 0.5); if (stepN % 2) file('step', 0.07, 1.3); return; }
     SFX.step(surf); if (stepN % 2 === 0) tone('square', vary(2900), 2400, 0.025, 0.022); },
-  pSlash() { if (gate('heroShout', 1.1) && Math.random() < 0.3) heroVo('attack', 0.3); if (heroVoice === 'reaper') { noise(0.26, 0.13, 900, 0.35, 0.02); tone('sine', vary(180), 70, 0.22, 0.09); tone('triangle', vary(1400), 700, 0.12, 0.03, 0.03); return; }
+  pSlash() { if (gate('heroShout', 1.1) && audioRandom() < 0.3) heroVo('attack', 0.3); if (heroVoice === 'reaper') { noise(0.26, 0.13, 900, 0.35, 0.02); tone('sine', vary(180), 70, 0.22, 0.09); tone('triangle', vary(1400), 700, 0.12, 0.03, 0.03); return; }
     if (heroVoice === 'pirate') { noise(0.09, 0.2, 3400, 0.75, 0.01); tone('triangle', vary(2600), 1500, 0.09, 0.045); tone('sine', vary(700), 420, 0.07, 0.03, 0.02); return; }
     if (heroVoice === 'pyro') { file('swing', 0.26, 0.72); noise(0.2, 0.16, 1300, 0.5, 0.02); tone('sine', vary(300), 100, 0.16, 0.08); crackle(4, 0.03); return; }
     file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); tone('triangle', vary(2300), 1900, 0.1, 0.025, 0.03); },
@@ -337,12 +338,12 @@ export const SFX = {
     if (on && !jetSrc) { jetSrc = ac.createBufferSource(); jetSrc.buffer = noiseBuf; jetSrc.loop = true; const f = ac.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 900; f.Q.value = 0.6;
       jetGain = ac.createGain(); jetGain.gain.value = 0.0001; jetSrc.connect(f); f.connect(jetGain); jetGain.connect(sfxGain); jetSrc.start(); jetGain.gain.setTargetAtTime(0.14, ac.currentTime, 0.05); }
     else if (!on && jetSrc) { const s0 = jetSrc, g0 = jetGain; g0.gain.setTargetAtTime(0.0001, ac.currentTime, 0.06); setTimeout(() => { try { s0.stop(); } catch {} }, 400); jetSrc = null; jetGain = null; }
-    else if (on && jetGain && Math.random() < 0.3) crackle(1); },
+    else if (on && jetGain && audioRandom() < 0.3) crackle(1); },
   jump() { tone('square', 280, 620, 0.12, 0.12); },
   land(surf) { const T = landTier; if (T >= 1 && surf !== 'water') { /* LANDINGS BY FALL (tier 0 hop / 1 drop / 2 big drop): a drop adds the body of the landing, deeper and louder the further he fell */ file('ld_jump', T === 2 ? 0.46 : 0.3, T === 2 ? 0.72 : 0.9); file('bd_heavy', T === 2 ? 0.34 : 0.2, T === 2 ? 0.7 : 0.9); }
     if (surf === 'water') { noise(0.2, 0.3, 800, 0.5); tone('sine', 260, 120, 0.15, 0.1); return; } if (surf === 'wood') { tone('sine', 150, 70, 0.1, 0.2); file('land', 0.25, 1.1); return; } if (surf === 'stone' || surf === 'iron') { noise(0.05, 0.16, surf === 'iron' ? 2200 : 1500, 0.8); file('land', 0.3, 0.95); return; } if (surf === 'snow') { noise(0.1, 0.16, 700, 0.4); return; } file('land', 0.35) || noise(0.06, 0.12, 300, 0.5); },
   step(surf) { if (surf === 'water') { noise(0.08, 0.12, 900, 0.5); return; } if (surf === 'wood') { tone('sine', 170, 90, 0.05, 0.08); file('step', 0.14, 1.15); return; } if (surf === 'stone') { noise(0.03, 0.09, 2600, 1.2); file('step', 0.14, 0.9); return; } if (surf === 'iron') { tone('square', 1200, 900, 0.03, 0.04); noise(0.03, 0.06, 3200, 1.4); return; } if (surf === 'snow') { noise(0.06, 0.08, 800, 0.5); return; } file('step', 0.18); },
-  slash() { (Math.random() < 0.5 && file('swish', 0.42)) || file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); },   /* two pools of air: three swings was one swing on a loop */
+  slash() { (audioRandom() < 0.5 && file('swish', 0.42)) || file('swing', 0.5) || (noise(0.12, 0.22, 1800, 0.6), tone('triangle', 900, 300, 0.09, 0.08)); },   /* two pools of air: three swings was one swing on a loop */
   // WHAT THE BLADE MET. Every hit already THREW the right thing (sparks off plate, chips off wood, dust off stone) and
   // every hit SOUNDED the same. The pools are Kenney's CC0 impacts and a bone-break pack; the synth under them is
   // only there while the files load, or when the player has chosen synth sound.
@@ -516,7 +517,7 @@ export const SFX = {
   whirlStill() { tone('sine', 90, 140, 0.6, 0.1); noise(0.5, 0.14, 900, 0.4, 0.1); },   /* and the drain shut: the pull letting go */
   coinUp(k) { const r = 1 + Math.min(k, 12) * 0.06; tone('triangle', 1046 * r, 1046 * r, 0.07, 0.11); tone('triangle', 1568 * r, 1568 * r, 0.13, 0.085, 0.045); tone('sine', 3136 * r, 3136 * r, 0.05, 0.03); noise(0.03, 0.03, 4200, 2.5); },
   heart() { tone('sine', 70, 40, 0.14, 0.35); tone('sine', 60, 35, 0.16, 0.28, 0.16); },
-  cricket() { const f = 3800 + Math.random() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
+  cricket() { const f = 3800 + audioRandom() * 600; for (let i = 0; i < 4; i++) tone('sine', f, f, 0.03, 0.035, i * 0.05); },
   fish() { noise(0.12, 0.2, 900, 0.6); tone('sine', 500, 200, 0.1, 0.08); },
 };
 
@@ -527,7 +528,7 @@ const PAL = {
   pJump() { tone('square', vary(200), vary(410), 0.11, 0.07); plate(0.04); noise(0.08, 0.06, 500, 0.6); },
   pLand(surf) { SFX.land(surf); tone('sine', 120, 48, 0.14, 0.2); plate(0.05); },
   pStep(surf) { stepN++; SFX.step(surf); tone('sine', vary(130), 70, 0.05, 0.07); if (stepN % 2) plate(0.02); },
-  pSlash() { if (gate('heroShout', 1.1) && Math.random() < 0.3) heroVo('attack', 0.3); file('swing', 0.5, 0.7) || noise(0.16, 0.24, 900, 0.5); noise(0.18, 0.12, 380, 0.5, 0.02); tone('sine', vary(170), 60, 0.2, 0.09, 0.06); },
+  pSlash() { if (gate('heroShout', 1.1) && audioRandom() < 0.3) heroVo('attack', 0.3); file('swing', 0.5, 0.7) || noise(0.16, 0.24, 900, 0.5); noise(0.18, 0.12, 380, 0.5, 0.02); tone('sine', vary(170), 60, 0.2, 0.09, 0.06); },
   pHurt() { heroVo('hurt', 0.55) || file('hurt', 0.6, 0.82) || (tone('sawtooth', 200, 55, 0.34, 0.25), noise(0.15, 0.2, 400)); plate(0.07); },
   pDie() { if (!heroVo('die', 0.7)) SFX.die(); for (let i = 0; i < 4; i++) { plate(0.05); tone('sine', 110 - i * 12, 50, 0.12, 0.12, 0.15 + i * 0.1); } bell(523, 1.6, 0.07, 0.55); },
   pDodge() { noise(0.12, 0.22, 320, 0.6); tone('sine', 95, 40, 0.16, 0.22); plate(0.05); },
@@ -769,23 +770,23 @@ function farVoice(type, f0, f1, dur, v, delay, lp) {
   o.connect(f); f.connect(g); g.connect(ambGain); o.start(t); o.stop(t + dur + 0.05);
 }
 const RHYME = [[392, 330, 392, 330, 392, 392, 330, 0], [440, 440, 392, 392, 330, 330, 294, 262], [392, 330, 392, 330, 294, 262, 294, 0]];   /* sol-mi and the steps down: three lines of a skipping rhyme, no words */
-function creepLaugh(k) { const n = 4 + ((Math.random() * 3) | 0), base = (300 + Math.random() * 130) * (1 - 0.22 * k), sp = 0.12 + 0.08 * k;
+function creepLaugh(k) { const n = 4 + ((audioRandom() * 3) | 0), base = (300 + audioRandom() * 130) * (1 - 0.22 * k), sp = 0.12 + 0.08 * k;
   for (let i = 0; i < n; i++) { const f = base * (1 - 0.03 * i); farVoice('triangle', f, f * 0.8, 0.1 + 0.03 * k, 0.5, i * sp, 900 - 350 * k); farVoice('sine', f * 2.01, f * 1.6, 0.08, 0.14, i * sp, 1400); } }
-function creepRhyme(k) { const line = RHYME[(Math.random() * RHYME.length) | 0], len = 0.3 + 0.1 * k;
-  line.forEach((f, i) => { if (!f) return; const ff = f * Math.pow(2, -(i * 0.012 + Math.random() * 0.6 * k) / 4); farVoice('sine', ff, ff * 0.992, len * 0.92, 0.42, i * len, 1500); farVoice('triangle', ff * 2.005, ff * 1.99, len * 0.5, 0.1, i * len, 1900); }); }
-function creepCrows(k) { const n = 2 + ((Math.random() * 3) | 0); for (let i = 0; i < n; i++) { const d = i * (0.32 + Math.random() * 0.12), f = 640 + Math.random() * 160; farVoice('sawtooth', f, f * 0.56, 0.2, 0.34, d, 2000); noise(0.16, 0.16, 1500, 2.2, d, ambGain); } }
-function creepBeats(k, rhymeP, crowP) { if (Math.random() < (k > 0.12 ? rhymeP * (0.15 + k) : 0)) creepRhyme(k); if (Math.random() < crowP * (0.4 + k)) creepCrows(k); }
+function creepRhyme(k) { const line = RHYME[(audioRandom() * RHYME.length) | 0], len = 0.3 + 0.1 * k;
+  line.forEach((f, i) => { if (!f) return; const ff = f * Math.pow(2, -(i * 0.012 + audioRandom() * 0.6 * k) / 4); farVoice('sine', ff, ff * 0.992, len * 0.92, 0.42, i * len, 1500); farVoice('triangle', ff * 2.005, ff * 1.99, len * 0.5, 0.1, i * len, 1900); }); }
+function creepCrows(k) { const n = 2 + ((audioRandom() * 3) | 0); for (let i = 0; i < n; i++) { const d = i * (0.32 + audioRandom() * 0.12), f = 640 + audioRandom() * 160; farVoice('sawtooth', f, f * 0.56, 0.2, 0.34, d, 2000); noise(0.16, 0.16, 1500, 2.2, d, ambGain); } }
+function creepBeats(k, rhymeP, crowP) { if (audioRandom() < (k > 0.12 ? rhymeP * (0.15 + k) : 0)) creepRhyme(k); if (audioRandom() < crowP * (0.4 + k)) creepCrows(k); }
 const SYNTH_BEDS = {
   /* (claude/minecartart) THE DEEP RAILS' own air, all synth (no file): the rock's low breath, a draught down the shafts, water dripping off the timbers, a prop creaking under load, a far hammer on iron (two or three strokes), a chain
      rattling on a winch, and now and then the far thud of a crusher coming down. Never on a beat, never loud enough to cover a tell. */
   mineworks() {
     const rum = loopNoise(70, 0.8, 0.9, 'lowpass'); lfoOn(rum.g.gain, 0.07, 0.3);
     const air = loopNoise(300, 1.1, 0.22); lfoOn(air.g.gain, 0.11, 0.16); lfoOn(air.f.frequency, 0.05, 80);
-    ambTick = () => { if (Math.random() < 0.2) tone('sine', 1700 + Math.random() * 700, 800, 0.07, 0.03);                                                    /* a drip off the timbers */
-      if (Math.random() < 0.05) tone('sawtooth', 90 + Math.random() * 50, 70, 0.6, 0.01);                                                                    /* a prop creaks */
-      if (Math.random() < 0.05) { const n = 2 + ((Math.random() * 2) | 0), f0 = 2100 + Math.random() * 500; for (let i = 0; i < n; i++) tone('square', f0, f0 * 0.8, 0.025, 0.012, i * 0.42); }   /* a far hammer on iron */
-      if (Math.random() < 0.025) for (let i = 0; i < 6; i++) noise(0.03, 0.04, 3200 + Math.random() * 900, 1.2, i * 0.05);                                    /* a chain runs on a winch */
-      if (Math.random() < 0.02) { tone('sine', 62, 38, 0.3, 0.06); noise(0.2, 0.05, 300, 0.8, 0.02); } };                                                    /* far off, a crusher comes down */
+    ambTick = () => { if (audioRandom() < 0.2) tone('sine', 1700 + audioRandom() * 700, 800, 0.07, 0.03);                                                    /* a drip off the timbers */
+      if (audioRandom() < 0.05) tone('sawtooth', 90 + audioRandom() * 50, 70, 0.6, 0.01);                                                                    /* a prop creaks */
+      if (audioRandom() < 0.05) { const n = 2 + ((audioRandom() * 2) | 0), f0 = 2100 + audioRandom() * 500; for (let i = 0; i < n; i++) tone('square', f0, f0 * 0.8, 0.025, 0.012, i * 0.42); }   /* a far hammer on iron */
+      if (audioRandom() < 0.025) for (let i = 0; i < 6; i++) noise(0.03, 0.04, 3200 + audioRandom() * 900, 1.2, i * 0.05);                                    /* a chain runs on a winch */
+      if (audioRandom() < 0.02) { tone('sine', 62, 38, 0.3, 0.06); noise(0.2, 0.05, 300, 0.8, 0.02); } };                                                    /* far off, a crusher comes down */
     ambTickMs = 300;
   },
   /* (claude/scree2) THE SCREE PATH's own air - the foothills at dusk, all synth: the wind over the crags in GUSTS (it swells and drops away), SHEEP BELLS from the
@@ -795,10 +796,10 @@ const SYNTH_BEDS = {
     const wind = loopNoise(380, 0.8, 0.85); lfoOn(wind.g.gain, 0.09, 0.42); lfoOn(wind.f.frequency, 0.05, 150);
     const high = loopNoise(1900, 1.6, 0.08); lfoOn(high.g.gain, 0.13, 0.07); lfoOn(high.f.frequency, 0.07, 600);
     ambTick = () => {
-      if (Math.random() < 0.05) for (let i = 0, n = 1 + ((Math.random() * 3) | 0); i < n; i++) { const f = 640 + Math.random() * 180; tone('square', f, f * 0.99, 0.09, 0.006, i * (0.18 + Math.random() * 0.2)); tone('sine', f * 1.5, f * 1.49, 0.22, 0.008, i * 0.2); }   /* a sheep bell, below */
-      if (Math.random() < 0.08) for (let i = 0, n = 3 + ((Math.random() * 5) | 0); i < n; i++) noise(0.015 + Math.random() * 0.02, 0.018 + Math.random() * 0.02, 2600 + Math.random() * 2400, 1.3, i * (0.04 + Math.random() * 0.06));   /* scree trickling */
-      if (Math.random() < 0.012) { noise(1.4 + Math.random(), 0.05, 180 + Math.random() * 80, 0.5); tone('sine', 55, 38, 1.2, 0.02); }   /* a rockfall, far off up the range */
-      if (Math.random() < 0.012) { tone('sawtooth', 2500, 1700, 0.5, 0.012); tone('sine', 2600, 1800, 0.55, 0.014, 0.02); }   /* a hawk, high */
+      if (audioRandom() < 0.05) for (let i = 0, n = 1 + ((audioRandom() * 3) | 0); i < n; i++) { const f = 640 + audioRandom() * 180; tone('square', f, f * 0.99, 0.09, 0.006, i * (0.18 + audioRandom() * 0.2)); tone('sine', f * 1.5, f * 1.49, 0.22, 0.008, i * 0.2); }   /* a sheep bell, below */
+      if (audioRandom() < 0.08) for (let i = 0, n = 3 + ((audioRandom() * 5) | 0); i < n; i++) noise(0.015 + audioRandom() * 0.02, 0.018 + audioRandom() * 0.02, 2600 + audioRandom() * 2400, 1.3, i * (0.04 + audioRandom() * 0.06));   /* scree trickling */
+      if (audioRandom() < 0.012) { noise(1.4 + audioRandom(), 0.05, 180 + audioRandom() * 80, 0.5); tone('sine', 55, 38, 1.2, 0.02); }   /* a rockfall, far off up the range */
+      if (audioRandom() < 0.012) { tone('sawtooth', 2500, 1700, 0.5, 0.012); tone('sine', 2600, 1800, 0.55, 0.014, 0.02); }   /* a hawk, high */
     };
     ambTickMs = 350;
   },
@@ -810,11 +811,11 @@ const SYNTH_BEDS = {
     let chug = 0;
     ambTick = () => { chug++; const kk = creepNow(); if (chug % 4 === 0) { crowd.g.gain.setTargetAtTime(0.55 * (1 - 0.8 * kk), ac.currentTime, 1.2); air.g.gain.setTargetAtTime(0.35 + 0.4 * kk, ac.currentTime, 1.2); }   /* the crowd thins out, the wind comes up: the fair empties as you go (claude/faircreepy) */
       if (chug % 2 === 0) tone('sine', 52, 44, 0.12, 0.05);                                                            /* the generator: a low chug every half second */
-      if (Math.random() < 0.035 * (1 - 0.5 * kk)) creepLaugh(kk);                                                                                /* a laugh, far off: slower and lower the deeper you go */
+      if (audioRandom() < 0.035 * (1 - 0.5 * kk)) creepLaugh(kk);                                                                                /* a laugh, far off: slower and lower the deeper you go */
       creepBeats(kk, 0.012, 0.012);                                                                                                             /* a children's rhyme over the stalls, crows in the corn */
-      if (Math.random() < 0.06) noise(0.18 + Math.random() * 0.14, 0.06, 900, 0.5);                                                             /* canvas flapping */
-      if (Math.random() < 0.04 + 0.03 * kk) { tone('sawtooth', 120 + Math.random() * 40, 90, 0.5, 0.012); tone('square', 1900, 1700, 0.03, 0.01, 0.3); }      /* a ride creaks; its chain clinks */
-      if (Math.random() < 0.025) { const f = 900 + Math.random() * 500; tone('sine', f, f, 0.9, 0.012); tone('sine', f * 2.4, f * 2.4, 0.5, 0.004); } };   /* a bell on the wind */
+      if (audioRandom() < 0.06) noise(0.18 + audioRandom() * 0.14, 0.06, 900, 0.5);                                                             /* canvas flapping */
+      if (audioRandom() < 0.04 + 0.03 * kk) { tone('sawtooth', 120 + audioRandom() * 40, 90, 0.5, 0.012); tone('square', 1900, 1700, 0.03, 0.01, 0.3); }      /* a ride creaks; its chain clinks */
+      if (audioRandom() < 0.025) { const f = 900 + audioRandom() * 500; tone('sine', f, f, 0.9, 0.012); tone('sine', f * 2.4, f * 2.4, 0.5, 0.004); } };   /* a bell on the wind */
     ambTickMs = 250;
   },
   /* (claude/litchurch, art pass: claude/churchart) THE LIT CHURCH's own air, all synth, under the level track: an ORGAN DRONE (a held low D and its fifth, breathing slowly - the pipes' wind),
@@ -827,41 +828,41 @@ const SYNTH_BEDS = {
     let n = 0;
     ambTick = () => { n++;
       if (n % 14 === 1) { for (const [f, v] of [[73.4, 0.016], [110, 0.01], [146.8, 0.006]]) tone('sine', f, f * 0.998, 6.4, v); tone('triangle', 73.4, 73.4, 6, 0.006); }   /* the held chord: D, A, D */
-      if (Math.random() < 0.06) { const d = 1300 + Math.random() * 700; tone('sine', d, d * 0.55, 0.16, 0.026); tone('sine', d * 2.01, d * 1.1, 0.07, 0.008, 0.01); tone('sine', d * 0.5, d * 0.3, 0.5, 0.006, 0.05); }   /* a drip in the crypt, with its tail */
-      if (Math.random() < 0.02) tone('sawtooth', 95 + Math.random() * 30, 75, 0.4, 0.008);                                                              /* a pew creaks */
-      if (Math.random() < 0.05) noise(0.012 + Math.random() * 0.015, 0.02, 3200 + Math.random() * 1600, 2);                                             /* a candle spits */
-      if (Math.random() < 0.007) { tone('sine', 220, 219, 3.2, 0.014); tone('sine', 528, 527, 2.2, 0.006); tone('sine', 660, 658, 1.4, 0.003); } };         /* the tower's bell, far up */
+      if (audioRandom() < 0.06) { const d = 1300 + audioRandom() * 700; tone('sine', d, d * 0.55, 0.16, 0.026); tone('sine', d * 2.01, d * 1.1, 0.07, 0.008, 0.01); tone('sine', d * 0.5, d * 0.3, 0.5, 0.006, 0.05); }   /* a drip in the crypt, with its tail */
+      if (audioRandom() < 0.02) tone('sawtooth', 95 + audioRandom() * 30, 75, 0.4, 0.008);                                                              /* a pew creaks */
+      if (audioRandom() < 0.05) noise(0.012 + audioRandom() * 0.015, 0.02, 3200 + audioRandom() * 1600, 2);                                             /* a candle spits */
+      if (audioRandom() < 0.007) { tone('sine', 220, 219, 3.2, 0.014); tone('sine', 528, 527, 2.2, 0.006); tone('sine', 660, 658, 1.4, 0.003); } };         /* the tower's bell, far up */
     ambTickMs = 400;
   },
   fairlot() {
     const air = loopNoise(220, 1.5, 0.5); lfoOn(air.g.gain, 0.08, 0.3); lfoOn(air.f.frequency, 0.05, 70);
     let chug = 0;
-    ambTick = () => { chug++; if (chug % 5 === 0 && Math.random() < 0.6) tone('sine', 46, 38, 0.16, 0.035);                                     /* the generator, dying: a chug that misses */
-      if (Math.random() < 0.03) tone('sawtooth', 100 + Math.random() * 30, 80, 0.6, 0.01);                                                      /* one creak */
-      if (Math.random() < 0.012) { const f = 700 + Math.random() * 300; tone('sine', f, f * 0.97, 1.2, 0.006); }                              /* a far bell, out of tune */
-      creepBeats(1, 0.02, 0.02); if (Math.random() < 0.012) creepLaugh(1); };                                                                   /* (claude/faircreepy) the back lot is the deepest: a rhyme, a crow, a slow laugh */
+    ambTick = () => { chug++; if (chug % 5 === 0 && audioRandom() < 0.6) tone('sine', 46, 38, 0.16, 0.035);                                     /* the generator, dying: a chug that misses */
+      if (audioRandom() < 0.03) tone('sawtooth', 100 + audioRandom() * 30, 80, 0.6, 0.01);                                                      /* one creak */
+      if (audioRandom() < 0.012) { const f = 700 + audioRandom() * 300; tone('sine', f, f * 0.97, 1.2, 0.006); }                              /* a far bell, out of tune */
+      creepBeats(1, 0.02, 0.02); if (audioRandom() < 0.012) creepLaugh(1); };                                                                   /* (claude/faircreepy) the back lot is the deepest: a rhyme, a crow, a slow laugh */
     ambTickMs = 300;
   },
   fire() {
     const roar = loopNoise(260, 0.7, 0.9, 'lowpass'); lfoOn(roar.g.gain, 0.23, 0.35);
     const hiss = loopNoise(3200, 0.6, 0.22); lfoOn(hiss.g.gain, 0.5, 0.1);
-    ambTick = () => { if (Math.random() < 0.7) noise(0.015 + Math.random() * 0.03, 0.05 + Math.random() * 0.07, 2200 + Math.random() * 3200, 1.3);
-      if (Math.random() < 0.08) { noise(0.06, 0.16, 1400, 0.9); tone('triangle', 180 + Math.random() * 120, 70, 0.07, 0.04); } };
+    ambTick = () => { if (audioRandom() < 0.7) noise(0.015 + audioRandom() * 0.03, 0.05 + audioRandom() * 0.07, 2200 + audioRandom() * 3200, 1.3);
+      if (audioRandom() < 0.08) { noise(0.06, 0.16, 1400, 0.9); tone('triangle', 180 + audioRandom() * 120, 70, 0.07, 0.04); } };
     ambTickMs = 160;
   },
   crowd() {
     const a = loopNoise(480, 1.1, 0.8); lfoOn(a.g.gain, 0.19, 0.25); lfoOn(a.f.frequency, 0.11, 120);
     const b = loopNoise(1150, 2.2, 0.28); lfoOn(b.g.gain, 0.31, 0.12);
-    ambTick = () => { if (Math.random() < 0.3) { const f = 120 + Math.random() * 110; tone('sawtooth', f, f * (0.9 + Math.random() * 0.25), 0.18 + Math.random() * 0.2, 0.012); }
-      if (Math.random() < 0.025) for (let i = 0; i < 4; i++) tone('triangle', 260 + Math.random() * 90, 220, 0.09, 0.02, i * 0.12); };
+    ambTick = () => { if (audioRandom() < 0.3) { const f = 120 + audioRandom() * 110; tone('sawtooth', f, f * (0.9 + audioRandom() * 0.25), 0.18 + audioRandom() * 0.2, 0.012); }
+      if (audioRandom() < 0.025) for (let i = 0; i < 4; i++) tone('triangle', 260 + audioRandom() * 90, 220, 0.09, 0.02, i * 0.12); };
     ambTickMs = 400;
   },
   barn() {
     const w = loopNoise(240, 1.6, 0.8); lfoOn(w.g.gain, 0.13, 0.4); lfoOn(w.f.frequency, 0.06, 90);
     const boards = loopNoise(1500, 3, 0.07); lfoOn(boards.g.gain, 0.09, 0.05);
-    ambTick = () => { if (Math.random() < 0.06) tone('sawtooth', 80 + Math.random() * 40, 55 + Math.random() * 20, 0.45, 0.018);
-      if (Math.random() < 0.12) noise(0.12 + Math.random() * 0.1, 0.05, 2600, 0.7);
-      if (Math.random() < 0.025 && SFX.owlHoot) SFX.owlHoot(); };
+    ambTick = () => { if (audioRandom() < 0.06) tone('sawtooth', 80 + audioRandom() * 40, 55 + audioRandom() * 20, 0.45, 0.018);
+      if (audioRandom() < 0.12) noise(0.12 + audioRandom() * 0.1, 0.05, 2600, 0.7);
+      if (audioRandom() < 0.025 && SFX.owlHoot) SFX.owlHoot(); };
     ambTickMs = 700;
   },
   /* THE RED GORGE (claude/redgorge2 art pass): the air of a canyon with a river in it. WIND down the gorge (a low swell and a thin whistle), THE RIVER'S ROAR far below (a broad low-passed rush that never stops, a little louder
@@ -871,9 +872,9 @@ const SYNTH_BEDS = {
     const river = loopNoise(260, 0.5, 0.2, 'lowpass'); lfoOn(river.g.gain, 0.21, 0.05); lfoOn(river.f.frequency, 0.05, 60);
     const spill = loopNoise(2600, 0.9, 0.035); lfoOn(spill.g.gain, 0.17, 0.012);
     ambTick = () => {
-      if (Math.random() < 0.07) { const f = 1900 + Math.random() * 700; tone('sine', f, f * 0.62, 0.5, 0.034); tone('triangle', f * 1.5, f * 0.9, 0.34, 0.012, 0.05); }   /* a raptor on the wall, far off */
-      if (Math.random() < 0.05) { tone('sine', 700 + Math.random() * 300, 560, 0.7, 0.012); noise(0.6, 0.012, 900, 1.4, 0.05); }   /* a gust in a crack */
-      if (Math.random() < 0.025) ambClip('amb_creak', 0.1, 1100);   /* a rope or a beam, loaded */
+      if (audioRandom() < 0.07) { const f = 1900 + audioRandom() * 700; tone('sine', f, f * 0.62, 0.5, 0.034); tone('triangle', f * 1.5, f * 0.9, 0.34, 0.012, 0.05); }   /* a raptor on the wall, far off */
+      if (audioRandom() < 0.05) { tone('sine', 700 + audioRandom() * 300, 560, 0.7, 0.012); noise(0.6, 0.012, 900, 1.4, 0.05); }   /* a gust in a crack */
+      if (audioRandom() < 0.025) ambClip('amb_creak', 0.1, 1100);   /* a rope or a beam, loaded */
     };
     ambTickMs = 500;
   },
@@ -883,11 +884,11 @@ const SYNTH_BEDS = {
     const air = loopNoise(120, 0.9, 0.7, 'lowpass'); lfoOn(air.g.gain, 0.07, 0.3); lfoOn(air.f.frequency, 0.045, 40);
     const hiss = loopNoise(1500, 1.6, 0.03); lfoOn(hiss.g.gain, 0.11, 0.02);
     ambTick = () => {
-      if (Math.random() < 0.26) { const f = 1500 + Math.random() * 900; tone('sine', f, f * 0.55, 0.08, 0.04); tone('sine', f * 0.98, f * 0.5, 0.09, 0.02, 0.24); tone('sine', f * 0.96, f * 0.48, 0.1, 0.011, 0.5); }   /* a drip, and the cistern giving it back */
-      if (Math.random() < 0.09) { const n = 5 + ((Math.random() * 6) | 0); let t = 0; for (let i = 0; i < n; i++) { t += 0.02 + Math.random() * 0.05; noise(0.012, 0.022 + Math.random() * 0.02, 2600 + Math.random() * 2200, 2, t); } }   /* a skitter: a brood moving in the dark, far off */
-      if (Math.random() < 0.035) { tone('sine', 70 + Math.random() * 30, 48, 0.4, 0.03); noise(0.3, 0.014, 380, 1.2, 0.05); }   /* oil gurgling in a pipe */
-      if (Math.random() < 0.02) { tone('square', 1900, 1800, 0.02, 0.012); tone('square', 1700, 1650, 0.02, 0.01, 0.07); }   /* a chitin click */
-      if (Math.random() < 0.025) ambClip('amb_creak', 0.12, 900);   /* a chain, loaded */
+      if (audioRandom() < 0.26) { const f = 1500 + audioRandom() * 900; tone('sine', f, f * 0.55, 0.08, 0.04); tone('sine', f * 0.98, f * 0.5, 0.09, 0.02, 0.24); tone('sine', f * 0.96, f * 0.48, 0.1, 0.011, 0.5); }   /* a drip, and the cistern giving it back */
+      if (audioRandom() < 0.09) { const n = 5 + ((audioRandom() * 6) | 0); let t = 0; for (let i = 0; i < n; i++) { t += 0.02 + audioRandom() * 0.05; noise(0.012, 0.022 + audioRandom() * 0.02, 2600 + audioRandom() * 2200, 2, t); } }   /* a skitter: a brood moving in the dark, far off */
+      if (audioRandom() < 0.035) { tone('sine', 70 + audioRandom() * 30, 48, 0.4, 0.03); noise(0.3, 0.014, 380, 1.2, 0.05); }   /* oil gurgling in a pipe */
+      if (audioRandom() < 0.02) { tone('square', 1900, 1800, 0.02, 0.012); tone('square', 1700, 1650, 0.02, 0.01, 0.07); }   /* a chitin click */
+      if (audioRandom() < 0.025) ambClip('amb_creak', 0.12, 900);   /* a chain, loaded */
     };
     ambTickMs = 400;
   },
@@ -899,11 +900,11 @@ const SYNTH_BEDS = {
     const whistle = loopNoise(1250, 6, 0.05); lfoOn(whistle.g.gain, 0.1, 0.045); lfoOn(whistle.f.frequency, 0.06, 420);
     const thin = loopNoise(2700, 4, 0.025); lfoOn(thin.g.gain, 0.13, 0.02); lfoOn(thin.f.frequency, 0.037, 700);
     ambTick = () => {
-      if (Math.random() < 0.13) for (let i = 0, n = 2 + ((Math.random() * 3) | 0); i < n; i++) noise(0.035, 0.07, 800 + Math.random() * 700, 1, i * 0.06);   /* kite-cloth cracking in a gust */
-      if (Math.random() < 0.06) { const f0 = 340 + Math.random() * 120; tone('sine', f0, f0 * 1.01, 0.9, 0.012); tone('sine', f0 * 2.01, f0 * 2, 0.9, 0.006); }   /* a taut line, humming */
-      if (Math.random() < 0.2) noise(0.015, 0.02 + Math.random() * 0.02, 3200 + Math.random() * 1800, 2);   /* grit on stone */
-      if (Math.random() < 0.035) { const f0 = 1500 + Math.random() * 500; tone('sine', f0, f0 * 1.5, 0.35, 0.02); tone('sine', f0 * 1.5, f0 * 0.8, 0.5, 0.018, 0.3); }   /* a raptor, far off */
-      if (Math.random() < 0.025) ambClip('amb_creak', 0.1, 1100);   /* a rope, loaded */
+      if (audioRandom() < 0.13) for (let i = 0, n = 2 + ((audioRandom() * 3) | 0); i < n; i++) noise(0.035, 0.07, 800 + audioRandom() * 700, 1, i * 0.06);   /* kite-cloth cracking in a gust */
+      if (audioRandom() < 0.06) { const f0 = 340 + audioRandom() * 120; tone('sine', f0, f0 * 1.01, 0.9, 0.012); tone('sine', f0 * 2.01, f0 * 2, 0.9, 0.006); }   /* a taut line, humming */
+      if (audioRandom() < 0.2) noise(0.015, 0.02 + audioRandom() * 0.02, 3200 + audioRandom() * 1800, 2);   /* grit on stone */
+      if (audioRandom() < 0.035) { const f0 = 1500 + audioRandom() * 500; tone('sine', f0, f0 * 1.5, 0.35, 0.02); tone('sine', f0 * 1.5, f0 * 0.8, 0.5, 0.018, 0.3); }   /* a raptor, far off */
+      if (audioRandom() < 0.025) ambClip('amb_creak', 0.1, 1100);   /* a rope, loaded */
     };
     ambTickMs = 450;
   },
@@ -915,12 +916,12 @@ const SYNTH_BEDS = {
     const leaves = loopNoise(2100, 0.7, 0.05); lfoOn(leaves.g.gain, 0.11, 0.035); lfoOn(leaves.f.frequency, 0.06, 500);
     const breath = loopNoise(240, 0.9, 0.55, 'lowpass'); lfoOn(breath.g.gain, 0.06, 0.28); lfoOn(breath.f.frequency, 0.04, 70);
     ambTick = () => {
-      if (Math.random() < 0.045) { const f = 52 + Math.random() * 26; tone('sawtooth', f, f * 0.86, 1.6, 0.02); tone('sine', f * 2.01, f * 1.7, 1.2, 0.012, 0.1); noise(0.9, 0.012, 260, 1.3, 0.1); }   /* the big wood groaning */
-      if (Math.random() < 0.03) ambClip('amb_creak', 0.1, 1000);   /* a rope or a hoist, loaded */
-      if (Math.random() < 0.07) { const f = 2300 + Math.random() * 500; tone('sine', f, f * 0.99, 0.35, 0.014); tone('triangle', f * 1.5, f * 1.49, 0.25, 0.008, 0.02); if (Math.random() < 0.5) tone('sine', f * 1.12, f * 1.1, 0.3, 0.01, 0.16); }   /* a lantern tinking on its hook */
-      if (Math.random() < 0.14) for (let i = 0, n = 1 + ((Math.random() * 3) | 0); i < n; i++) noise(0.008, 0.02 + Math.random() * 0.02, 3000 + Math.random() * 1800, 2.4, i * (0.04 + Math.random() * 0.1));   /* spore pods popping */
-      if (Math.random() < 0.05) { const f = 1700 + Math.random() * 600; tone('sine', f, f * 0.5, 0.07, 0.025); }   /* a drop of sap */
-      if (Math.random() < 0.012) { tone('sine', 78, 54, 0.3, 0.03); noise(0.14, 0.016, 420, 1.2); tone('sine', 82, 56, 0.3, 0.025, 0.34); noise(0.12, 0.014, 420, 1.2, 0.34); }   /* a goblin hide-drum, very far */
+      if (audioRandom() < 0.045) { const f = 52 + audioRandom() * 26; tone('sawtooth', f, f * 0.86, 1.6, 0.02); tone('sine', f * 2.01, f * 1.7, 1.2, 0.012, 0.1); noise(0.9, 0.012, 260, 1.3, 0.1); }   /* the big wood groaning */
+      if (audioRandom() < 0.03) ambClip('amb_creak', 0.1, 1000);   /* a rope or a hoist, loaded */
+      if (audioRandom() < 0.07) { const f = 2300 + audioRandom() * 500; tone('sine', f, f * 0.99, 0.35, 0.014); tone('triangle', f * 1.5, f * 1.49, 0.25, 0.008, 0.02); if (audioRandom() < 0.5) tone('sine', f * 1.12, f * 1.1, 0.3, 0.01, 0.16); }   /* a lantern tinking on its hook */
+      if (audioRandom() < 0.14) for (let i = 0, n = 1 + ((audioRandom() * 3) | 0); i < n; i++) noise(0.008, 0.02 + audioRandom() * 0.02, 3000 + audioRandom() * 1800, 2.4, i * (0.04 + audioRandom() * 0.1));   /* spore pods popping */
+      if (audioRandom() < 0.05) { const f = 1700 + audioRandom() * 600; tone('sine', f, f * 0.5, 0.07, 0.025); }   /* a drop of sap */
+      if (audioRandom() < 0.012) { tone('sine', 78, 54, 0.3, 0.03); noise(0.14, 0.016, 420, 1.2); tone('sine', 82, 56, 0.3, 0.025, 0.34); noise(0.12, 0.014, 420, 1.2, 0.34); }   /* a goblin hide-drum, very far */
     };
     ambTickMs = 420;
   },
@@ -935,10 +936,10 @@ const SYNTH_BEDS = {
   towpath() {
     const lap = loopNoise(380, 0.7, 0.07, 'lowpass'); lfoOn(lap.g.gain, 0.23, 0.05); const weir = loopNoise(900, 0.6, 0.03); lfoOn(weir.g.gain, 0.07, 0.015);
     ambTick = () => {
-      if (Math.random() < 0.04) { const f = 420 + Math.random() * 60; tone('sine', f, f * 0.92, 0.35, 0.02); tone('sine', f * 0.92, f * 0.86, 0.5, 0.016, 0.42); }   /* a far owl */
-      if (Math.random() < 0.08) tone('sine', 1500 + Math.random() * 600, 900, 0.1, 0.015);   /* a drip off a gate */
-      if (Math.random() < 0.025) for (let k = 0; k < 4; k++) noise(0.03, 0.02, 2200, 4, k * 0.09);   /* a paddle's ratchet down the flight */
-      if (Math.random() < 0.03) ambClip('amb_creak', 0.07, 900);   /* a gate's timber, loaded */
+      if (audioRandom() < 0.04) { const f = 420 + audioRandom() * 60; tone('sine', f, f * 0.92, 0.35, 0.02); tone('sine', f * 0.92, f * 0.86, 0.5, 0.016, 0.42); }   /* a far owl */
+      if (audioRandom() < 0.08) tone('sine', 1500 + audioRandom() * 600, 900, 0.1, 0.015);   /* a drip off a gate */
+      if (audioRandom() < 0.025) for (let k = 0; k < 4; k++) noise(0.03, 0.02, 2200, 4, k * 0.09);   /* a paddle's ratchet down the flight */
+      if (audioRandom() < 0.03) ambClip('amb_creak', 0.07, 900);   /* a gate's timber, loaded */
     };
     ambTickMs = 520;
   },
@@ -948,9 +949,9 @@ const SYNTH_BEDS = {
     const room = loopNoise(160, 0.8, 0.12, 'lowpass'); lfoOn(room.g.gain, 0.05, 0.04);
     const sand = loopNoise(5200, 0.7, 0.03); lfoOn(sand.g.gain, 0.13, 0.025);
     ambTick = () => {
-      if (Math.random() < 0.025) for (const [f, v] of [[880, 0.02], [1320, 0.008]]) tone('sine', f, f * 0.995, 2.2, v);   /* a far chime */
-      if (Math.random() < 0.12) { const f = 1500 + Math.random() * 500; tone('square', f, f, 0.02, 0.006); tone('square', f * 0.66, f * 0.66, 0.02, 0.005, 0.25); }   /* gears in the walls */
-      if (Math.random() < 0.05) noise(0.6, 0.012, 6000, 0.8);   /* a trickle of sand */
+      if (audioRandom() < 0.025) for (const [f, v] of [[880, 0.02], [1320, 0.008]]) tone('sine', f, f * 0.995, 2.2, v);   /* a far chime */
+      if (audioRandom() < 0.12) { const f = 1500 + audioRandom() * 500; tone('square', f, f, 0.02, 0.006); tone('square', f * 0.66, f * 0.66, 0.02, 0.005, 0.25); }   /* gears in the walls */
+      if (audioRandom() < 0.05) noise(0.6, 0.012, 6000, 0.8);   /* a trickle of sand */
     };
     ambTickMs = 480;
   },
@@ -960,9 +961,9 @@ const SYNTH_BEDS = {
     const room = loopNoise(140, 0.8, 0.12, 'lowpass'); lfoOn(room.g.gain, 0.04, 0.04);
     const storm = loopNoise(360, 0.7, 0.03); lfoOn(storm.g.gain, 0.07, 0.025);
     ambTick = () => {
-      if (Math.random() < 0.05) noise(0.7, 0.012, 5600, 0.8);   /* sand sifting from the courses */
-      if (Math.random() < 0.02) { tone('sawtooth', 70, 58, 1.2, 0.02); noise(1.0, 0.015, 240, 0.6); }   /* far stone grinding on stone */
-      if (Math.random() < 0.06) for (let k = 0; k < 5; k++) noise(0.008, 0.012, 4200 + Math.random() * 800, 6, k * 0.04);   /* scarabs in the walls */
+      if (audioRandom() < 0.05) noise(0.7, 0.012, 5600, 0.8);   /* sand sifting from the courses */
+      if (audioRandom() < 0.02) { tone('sawtooth', 70, 58, 1.2, 0.02); noise(1.0, 0.015, 240, 0.6); }   /* far stone grinding on stone */
+      if (audioRandom() < 0.06) for (let k = 0; k < 5; k++) noise(0.008, 0.012, 4200 + audioRandom() * 800, 6, k * 0.04);   /* scarabs in the walls */
     };
     ambTickMs = 520;
   },
@@ -971,31 +972,31 @@ const SYNTH_BEDS = {
     const souq = loopNoise(520, 0.9, 0.05, 'lowpass'); lfoOn(souq.g.gain, 0.19, 0.03);
     const fire = loopNoise(2800, 2.2, 0.018); lfoOn(fire.g.gain, 0.8, 0.012);   /* (art pass) the torches' and braziers' low crackle under it all */
     ambTick = () => {
-      if (Math.random() < 0.05) { tone('triangle', 1650 + Math.random() * 300, 1500, 0.09, 0.025); tone('triangle', 3300, 3100, 0.05, 0.01, 0.01); }   /* a smith's hammer on an anvil somewhere in the fort */
-      if (Math.random() < 0.012) { tone('sawtooth', 135, 88, 0.9, 0.02); tone('sawtooth', 142, 92, 0.8, 0.01, 0.05); }   /* a camel's groan from the yard */
-      if (Math.random() < 0.08) noise(0.015 + Math.random() * 0.02, 0.03, 3600 + Math.random() * 1800, 2);   /* a spit of fire */
-      if (Math.random() < 0.03) { tone('sine', 520, 490, 0.35, 0.012); tone('sine', 780, 740, 0.3, 0.006, 0.02); }   /* a chain's link turning on the winch */
-      if (Math.random() < 0.02) for (const [f, v] of [[96, 0.03], [139, 0.014], [229, 0.008]]) tone('sine', f, f * 0.985, 3.0, v);   /* a far gong */
-      if (Math.random() < 0.05) { const f = 2100 + Math.random() * 600; tone('sine', f, f * 0.7, 0.6, 0.03); tone('sine', f * 1.02, f * 0.72, 0.5, 0.012, 0.18); }   /* a hawk over the towers */
-      if (Math.random() < 0.06) noise(0.12, 0.02, 1500 + Math.random() * 600, 3);   /* a flag snapping */
-      if (Math.random() < 0.02) ambClip('amb_creak', 0.08, 1000);   /* a winch rope, loaded */
+      if (audioRandom() < 0.05) { tone('triangle', 1650 + audioRandom() * 300, 1500, 0.09, 0.025); tone('triangle', 3300, 3100, 0.05, 0.01, 0.01); }   /* a smith's hammer on an anvil somewhere in the fort */
+      if (audioRandom() < 0.012) { tone('sawtooth', 135, 88, 0.9, 0.02); tone('sawtooth', 142, 92, 0.8, 0.01, 0.05); }   /* a camel's groan from the yard */
+      if (audioRandom() < 0.08) noise(0.015 + audioRandom() * 0.02, 0.03, 3600 + audioRandom() * 1800, 2);   /* a spit of fire */
+      if (audioRandom() < 0.03) { tone('sine', 520, 490, 0.35, 0.012); tone('sine', 780, 740, 0.3, 0.006, 0.02); }   /* a chain's link turning on the winch */
+      if (audioRandom() < 0.02) for (const [f, v] of [[96, 0.03], [139, 0.014], [229, 0.008]]) tone('sine', f, f * 0.985, 3.0, v);   /* a far gong */
+      if (audioRandom() < 0.05) { const f = 2100 + audioRandom() * 600; tone('sine', f, f * 0.7, 0.6, 0.03); tone('sine', f * 1.02, f * 0.72, 0.5, 0.012, 0.18); }   /* a hawk over the towers */
+      if (audioRandom() < 0.06) noise(0.12, 0.02, 1500 + audioRandom() * 600, 3);   /* a flag snapping */
+      if (audioRandom() < 0.02) ambClip('amb_creak', 0.08, 1000);   /* a winch rope, loaded */
     };
     ambTickMs = 480;
   },
   glassday() {
     const w = loopNoise(380, 0.8, 0.85); lfoOn(w.g.gain, 0.1, 0.4); lfoOn(w.f.frequency, 0.05, 120);
     const wh = loopNoise(2600, 6, 0.05); lfoOn(wh.g.gain, 0.13, 0.04); lfoOn(wh.f.frequency, 0.07, 400);
-    ambTick = () => { if (Math.random() < 0.05) { const f = 1800 + Math.random() * 1400; tone('sine', f, f, 0.7, 0.01); tone('sine', f * 1.5, f * 1.5, 0.45, 0.004, 0.02); }   /* a shard turned by the wind, chiming */
-      if (Math.random() < 0.08) noise(0.25 + Math.random() * 0.2, 0.04, 700 + Math.random() * 400, 0.6); };   /* sand hissing over glass */
+    ambTick = () => { if (audioRandom() < 0.05) { const f = 1800 + audioRandom() * 1400; tone('sine', f, f, 0.7, 0.01); tone('sine', f * 1.5, f * 1.5, 0.45, 0.004, 0.02); }   /* a shard turned by the wind, chiming */
+      if (audioRandom() < 0.08) noise(0.25 + audioRandom() * 0.2, 0.04, 700 + audioRandom() * 400, 0.6); };   /* sand hissing over glass */
     ambTickMs = 400;
   },
   glassnight() {
     const hush = loopNoise(180, 0.8, 0.6, 'lowpass'); lfoOn(hush.g.gain, 0.06, 0.28); lfoOn(hush.f.frequency, 0.035, 50);
     const frost = loopNoise(5200, 1.2, 0.025); lfoOn(frost.g.gain, 0.09, 0.015);
     ambTick = () => {
-      if (Math.random() < 0.18) for (let i = 0, n = 1 + ((Math.random() * 3) | 0); i < n; i++) noise(0.006, 0.02 + Math.random() * 0.015, 4200 + Math.random() * 2400, 3, i * (0.05 + Math.random() * 0.12));   /* glass ticking as it cools */
-      if (Math.random() < 0.035) { const f = [1319, 1568, 1760, 2093][(Math.random() * 4) | 0]; tone('sine', f, f, 1.6, 0.008); tone('sine', f * 2.01, f * 2.01, 0.9, 0.003, 0.01); }   /* a far glass chime */
-      if (Math.random() < 0.02) tone('sine', 98 + Math.random() * 20, 82, 2.2, 0.018);   /* the wind moaning low through the ridges */
+      if (audioRandom() < 0.18) for (let i = 0, n = 1 + ((audioRandom() * 3) | 0); i < n; i++) noise(0.006, 0.02 + audioRandom() * 0.015, 4200 + audioRandom() * 2400, 3, i * (0.05 + audioRandom() * 0.12));   /* glass ticking as it cools */
+      if (audioRandom() < 0.035) { const f = [1319, 1568, 1760, 2093][(audioRandom() * 4) | 0]; tone('sine', f, f, 1.6, 0.008); tone('sine', f * 2.01, f * 2.01, 0.9, 0.003, 0.01); }   /* a far glass chime */
+      if (audioRandom() < 0.02) tone('sine', 98 + audioRandom() * 20, 82, 2.2, 0.018);   /* the wind moaning low through the ridges */
     };
     ambTickMs = 450;
   },
@@ -1007,39 +1008,39 @@ const SYNTH_BEDS = {
     const grass = loopNoise(2300, 1.4, 0.06); lfoOn(grass.g.gain, 0.17, 0.04); lfoOn(grass.f.frequency, 0.09, 500);
     const far = loopNoise(560, 1.6, 0.12, 'lowpass'); lfoOn(far.g.gain, 0.07, 0.06); lfoOn(far.f.frequency, 0.04, 90);
     ambTick = () => {
-      if (Math.random() < 0.34) { noise(0.02 + Math.random() * 0.03, 0.03 + Math.random() * 0.04, 1500 + Math.random() * 1500, 1.4); if (Math.random() < 0.4) noise(0.02, 0.025, 2600 + Math.random() * 1200, 1.6, 0.07); }   /* steel on steel, far off */
-      if (Math.random() < 0.05) { const f = 130 + Math.random() * 90; tone('sawtooth', f, f * (0.8 + Math.random() * 0.2), 0.25 + Math.random() * 0.3, 0.012); }   /* a shout, muffled by the distance */
-      if (Math.random() < 0.06) for (let i = 0, n = 2 + ((Math.random() * 2) | 0); i < n; i++) noise(0.035, 0.05, 700 + Math.random() * 500, 1, i * 0.07);   /* a banner snapping */
-      if (Math.random() < 0.025) { tone('sawtooth', 820, 430, 0.2, 0.03); if (Math.random() < 0.6) tone('sawtooth', 780, 400, 0.18, 0.026, 0.3); noise(0.12, 0.02, 2200, 0.5, 0.05); }   /* a crow, and a second */
-      if (Math.random() < 0.03) ambClip('amb_creak', 0.16, 1400);   /* rope and timber, working */
+      if (audioRandom() < 0.34) { noise(0.02 + audioRandom() * 0.03, 0.03 + audioRandom() * 0.04, 1500 + audioRandom() * 1500, 1.4); if (audioRandom() < 0.4) noise(0.02, 0.025, 2600 + audioRandom() * 1200, 1.6, 0.07); }   /* steel on steel, far off */
+      if (audioRandom() < 0.05) { const f = 130 + audioRandom() * 90; tone('sawtooth', f, f * (0.8 + audioRandom() * 0.2), 0.25 + audioRandom() * 0.3, 0.012); }   /* a shout, muffled by the distance */
+      if (audioRandom() < 0.06) for (let i = 0, n = 2 + ((audioRandom() * 2) | 0); i < n; i++) noise(0.035, 0.05, 700 + audioRandom() * 500, 1, i * 0.07);   /* a banner snapping */
+      if (audioRandom() < 0.025) { tone('sawtooth', 820, 430, 0.2, 0.03); if (audioRandom() < 0.6) tone('sawtooth', 780, 400, 0.18, 0.026, 0.3); noise(0.12, 0.02, 2200, 0.5, 0.05); }   /* a crow, and a second */
+      if (audioRandom() < 0.03) ambClip('amb_creak', 0.16, 1400);   /* rope and timber, working */
     };
     ambTickMs = 500;
   },
 };
 function ambClip(name, v, lp) { const opts = (clips[name] || []).filter(Boolean); if (!opts.length || !ac) return;
-  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.85 + Math.random() * 0.25; const gn = ac.createGain(); gn.gain.value = v * ambVol; let tail = s;
+  const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.85 + audioRandom() * 0.25; const gn = ac.createGain(); gn.gain.value = v * ambVol; let tail = s;
   if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; s.connect(f); tail = f; } tail.connect(gn);
-  if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; gn.connect(p); p.connect(sfxGain); } else gn.connect(sfxGain); s.start(); }
+  if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = audioRandom() * 1.6 - 0.8; gn.connect(p); p.connect(sfxGain); } else gn.connect(sfxGain); s.start(); }
 /* THE CHAPEL'S BELL (a zone's own: L.ambient { kind: 'hall', bell: true }): a slow, low, distant bell, scattered - never on a fixed beat, so it is never read as a tell */
 let ambBellTimer = null;
 function bellScatter(on) {
   if (!on) { if (ambBellTimer) { clearInterval(ambBellTimer); ambBellTimer = null; } return; }
   if (ambBellTimer) return;
-  ambBellTimer = setInterval(() => { if (!ac || ambKind !== 'hall' || Math.random() > 1 / 26) return; const f = [164, 185, 196, 220][(Math.random() * 4) | 0]; bell(f, 3.4, 0.045); if (Math.random() < 0.4) bell(f * 0.89, 3.2, 0.035, 2.6 + Math.random()); }, 1000);
+  ambBellTimer = setInterval(() => { if (!ac || ambKind !== 'hall' || audioRandom() > 1 / 26) return; const f = [164, 185, 196, 220][(audioRandom() * 4) | 0]; bell(f, 3.4, 0.045); if (audioRandom() < 0.4) bell(f * 0.89, 3.2, 0.035, 2.6 + audioRandom()); }, 1000);
 }
 let ambShotTimer = null;
 function ambShots(kind) {
   if (ambShotTimer) clearInterval(ambShotTimer); ambShotTimer = null; const list = AMB_SHOTS[kind]; if (!list) return;
   ambShotTimer = setInterval(() => { if (ambKind !== kind || !ac) return;
-    for (const [name, v, lp, every] of list) { if (Math.random() > 1 / every) continue;
+    for (const [name, v, lp, every] of list) { if (audioRandom() > 1 / every) continue;
       if (name === 'drip') { SFX.drip(); continue; }
       if (name.startsWith('sfx:')) { const f = SFX[name.slice(4)]; if (f) f(); continue; }
       const opts = (clips[name] || []).filter(Boolean); if (!opts.length) continue;
-      const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.9 + Math.random() * 0.2;
+      const s = ac.createBufferSource(); s.buffer = opts[takeOf(name, opts.length)]; s.playbackRate.value = 0.9 + audioRandom() * 0.2;
       const gn = ac.createGain(); gn.gain.value = v * ambVol; let tail = s;
       if (lp) { const f = ac.createBiquadFilter(); f.type = 'lowpass'; f.frequency.value = lp; s.connect(f); tail = f; }
       tail.connect(gn);
-      if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = Math.random() * 1.6 - 0.8; gn.connect(p); p.connect(sfxGain); } else gn.connect(sfxGain);
+      if (ac.createStereoPanner) { const p = ac.createStereoPanner(); p.pan.value = audioRandom() * 1.6 - 0.8; gn.connect(p); p.connect(sfxGain); } else gn.connect(sfxGain);
       s.start(); } }, 1000);
 }
 export const ambient = {
@@ -1239,7 +1240,7 @@ Object.assign(SFX, {
   // ---- the telegraph: every enemy that winds up says so, a glint for the small ones, a low bell for the big ----
   tell(big) { if (!gate(big ? 'tellB' : 'tell', 0.12)) return; if (big) { tone('triangle', 523, 1046, 0.12, 0.08); bell(1568, 0.3, 0.04, 0.02); } else { tone('triangle', 1318, 1760, 0.07, 0.05); tone('sine', 2637, 2637, 0.1, 0.025, 0.02); } },
   // ---- THE HARVEST FAIR (src/mummer.js): the mummer's cap bells (its audio tell: they jingle ONLY while it moves), the look that stills it, its strike, the hobby-horse's charge and the carousel's calliope ----
-  mummerBell() { if (!gate('mbell', 0.16)) return; const f = [2093, 2349, 2637, 2794][Math.floor(Math.random() * 4)];   /* the cap's three bells, shaken: the creep cue (jingles ONLY while it moves) */
+  mummerBell() { if (!gate('mbell', 0.16)) return; const f = [2093, 2349, 2637, 2794][Math.floor(audioRandom() * 4)];   /* the cap's three bells, shaken: the creep cue (jingles ONLY while it moves) */
     bell(f, 0.16, 0.034); bell(f * 1.19, 0.12, 0.022, 0.025); bell(f * 1.5, 0.1, 0.018, 0.055); noise(0.03, 0.02, 6200, 2.2, 0.01); },
   horseRear() { if (!gate('hrear', 0.5)) return; for (let i = 0; i < 4; i++) bell(1568 * (1 + (i % 2) * 0.12), 0.22, 0.04, i * 0.05); noise(0.16, 0.06, 900, 0.7, 0.02); tone('sawtooth', 200, 320, 0.2, 0.05); },   /* the bridle bells shaken as the head is flung up */
   hayRustle() { noise(0.22, 0.12, 2600, 0.7); noise(0.16, 0.08, 4200, 1.2, 0.04); noise(0.3, 0.06, 1400, 0.6, 0.09); },   /* a haystack takes you and throws you back */
@@ -1267,7 +1268,7 @@ Object.assign(SFX, {
   /* ---- JENNY GREENTEETH (src/benched/jenny-greenteeth.js, claude/lockkeeper): bubbles boiling up in a ring (her grab coming), an arm bursting out of the water,
      a wet grip, the lash along the water, a drip, her hiss, the snap of her teeth, weed torn, a culvert boiling, the surge, the paddle's iron ratchet,
      the lock gurgling empty, her body slapping into the mud, the drag, the bell in the fog, and her waking: a gurgling laugh under the water ---- */
-  gtBubble() { if (!gate('gtb', 0.2)) return; for (let i = 0; i < 6; i++) tone('sine', 300 + i * 90 + Math.random() * 60, 700 + i * 120, 0.06, 0.03, i * 0.07); noise(0.3, 0.04, 600, 1.2); },
+  gtBubble() { if (!gate('gtb', 0.2)) return; for (let i = 0; i < 6; i++) tone('sine', 300 + i * 90 + audioRandom() * 60, 700 + i * 120, 0.06, 0.03, i * 0.07); noise(0.3, 0.04, 600, 1.2); },
   gtBurst() { noise(0.25, 0.22, 900, 0.6); noise(0.12, 0.12, 2600, 1.1, 0.03); tone('sine', 160, 60, 0.2, 0.12); },   /* an arm out of the water */
   gtGrip() { noise(0.15, 0.12, 500, 0.8); tone('sawtooth', 90, 60, 0.3, 0.06, 0.05); },   /* wet fingers closing */
   gtLash() { noise(0.2, 0.16, 1400, 0.9); tone('triangle', 500, 160, 0.18, 0.05); },
@@ -1275,7 +1276,7 @@ Object.assign(SFX, {
   gtHiss() { if (!gate('gth', 0.3)) return; noise(0.45, 0.1, 4200, 1.8); tone('sawtooth', 220, 180, 0.3, 0.02); },
   gtBite() { tone('square', 900, 400, 0.05, 0.08); tone('square', 700, 300, 0.05, 0.07, 0.06); noise(0.08, 0.1, 3000, 1.2); },   /* two rows of teeth meeting */
   gtWeed() { if (!gate('gtw', 0.2)) return; noise(0.22, 0.1, 1200, 1.4); noise(0.12, 0.06, 2600, 1.6, 0.08); },   /* wet weed tearing */
-  gtBoil() { if (!gate('gto', 0.4)) return; noise(0.9, 0.12, 400, 0.6); for (let i = 0; i < 8; i++) tone('sine', 200 + Math.random() * 300, 500, 0.05, 0.03, i * 0.1); },
+  gtBoil() { if (!gate('gto', 0.4)) return; noise(0.9, 0.12, 400, 0.6); for (let i = 0; i < 8; i++) tone('sine', 200 + audioRandom() * 300, 500, 0.05, 0.03, i * 0.1); },
   gtSurge() { noise(1.1, 0.26, 700, 0.5); noise(0.7, 0.14, 2000, 0.8, 0.1); tone('sine', 70, 45, 0.9, 0.14); },
   gtPaddle() { for (let i = 0; i < 4; i++) tone('square', 330 - i * 20, 300 - i * 20, 0.04, 0.05, i * 0.07); noise(0.05, 0.08, 3500, 1.2, 0.3); },   /* the ratchet and the pawl */
   gtDrain() { noise(1.4, 0.12, 300, 0.7); for (let i = 0; i < 6; i++) tone('sine', 160 - i * 12, 90, 0.18, 0.05, 0.2 + i * 0.2); },   /* the lock gurgling out */
@@ -1287,7 +1288,7 @@ Object.assign(SFX, {
      (a wet twang), its growl under the raft, the swell (a rush along the deck), the lamps snuffed one by one, a copy of the light bitten far off, the lantern
      struck (a tin clink), and its sinking (a long low draw of water) ---- */
   leLure() { if (!gate('lel', 0.5)) return; tone('sine', 880, 870, 0.9, 0.035); tone('sine', 1320, 1310, 0.7, 0.02, 0.1); tone('triangle', 440, 445, 1.0, 0.02, 0.05); },
-  leBoil() { if (!gate('leb', 0.3)) return; noise(0.8, 0.12, 380, 0.6); for (let i = 0; i < 9; i++) tone('sine', 180 + Math.random() * 260, 420, 0.05, 0.035, i * 0.08); },
+  leBoil() { if (!gate('leb', 0.3)) return; noise(0.8, 0.12, 380, 0.6); for (let i = 0; i < 9; i++) tone('sine', 180 + audioRandom() * 260, 420, 0.05, 0.035, i * 0.08); },
   leGulp() { noise(0.5, 0.3, 500, 0.5); tone('sine', 90, 40, 0.7, 0.2); tone('sawtooth', 70, 45, 0.5, 0.06, 0.05); noise(0.6, 0.12, 1800, 0.7, 0.15); },
   leTeeth() { if (!gate('let', 0.25)) return; for (let i = 0; i < 4; i++) tone('square', 1200 - i * 90, 700 - i * 60, 0.03, 0.05, i * 0.09); },
   leSnap() { tone('square', 900, 300, 0.06, 0.1); noise(0.12, 0.22, 2400, 0.9); noise(0.25, 0.16, 600, 0.6, 0.04); tone('sine', 120, 60, 0.25, 0.12); },
@@ -1323,7 +1324,7 @@ Object.assign(SFX, {
   // it hit you, or you fell: the goblins laugh
   foeJeer(t) { if (!gate('jeer', 0.6)) return; const r = GOB_V[t] || 1; file('laugh', 0.28, r * 1.1) || [0, 1, 2].forEach(i => tone('square', 420 * r, 340 * r, 0.07, 0.07, i * 0.11)); },
   // goblin gibberish, muttered to itself while it waits
-  foeMutter(t) { const r = GOB_V[t]; if (!r || !gate('mutter', 1.6)) return; const n = 3 + ((Math.random() * 3) | 0); for (let i = 0; i < n; i++) tone('square', vary(240 * r), vary(200 * r), 0.05, 0.025, i * 0.075); },
+  foeMutter(t) { const r = GOB_V[t]; if (!r || !gate('mutter', 1.6)) return; const n = 3 + ((audioRandom() * 3) | 0); for (let i = 0; i < n; i++) tone('square', vary(240 * r), vary(200 * r), 0.05, 0.025, i * 0.075); },
   foeGasp(t) { if (!gate('gasp', 0.5)) return; const r = GOB_V[t] || 1.2; file('gobHurt', 0.24, r * 1.4) || tone('sawtooth', 600 * r, 300 * r, 0.12, 0.06); },
   foeStep(heavy) { if (!gate(heavy ? 'fstepH' : 'fstep', heavy ? 0.12 : 0.09)) return; if (heavy) { tone('sine', 90, 45, 0.1, 0.12); noise(0.05, 0.08, 300, 0.7); } else noise(0.03, 0.045, vary(900), 0.8); },
   /* THE BUTT-SLIDE (src/slide.js): a long scrape of cloth and boot over sand and scree, and the thump of heels meeting something */
@@ -1339,19 +1340,19 @@ Object.assign(SFX, {
   equip() { tone('square', 660, 660, 0.05, 0.08, 0, uiGain); tone('square', 990, 990, 0.08, 0.08, 0.05, uiGain); tone('triangle', 1320, 1320, 0.14, 0.06, 0.1, uiGain); },
   rankUp() { [523, 659, 784, 1047].forEach((f, i) => tone('square', f, f, 0.12, 0.09, i * 0.07, uiGain)); tone('triangle', 1047, 2093, 0.4, 0.08, 0.3, uiGain); noise(0.2, 0.06, 4000, 0.8, 0.3, uiGain); },
   bossDown() { noise(0.8, 0.5, 200, 0.5); tone('sawtooth', 220, 55, 0.9, 0.3); tone('sawtooth', 165, 41, 0.9, 0.2, 0.05); [392, 466, 587].forEach((f, i) => tone('triangle', f, f, 0.5, 0.14, 0.5 + i * 0.16)); tone('triangle', 784, 784, 0.9, 0.16, 1.0); },
-  slashPyro() { noise(0.18, 0.2, 600, 0.5); tone('sine', 320, 110, 0.16, 0.1); file('swing', 0.22, 0.8); if (Math.random() < 0.5) tone('triangle', 1800, 900, 0.08, 0.04, 0.04); },
+  slashPyro() { noise(0.18, 0.2, 600, 0.5); tone('sine', 320, 110, 0.16, 0.1); file('swing', 0.22, 0.8); if (audioRandom() < 0.5) tone('triangle', 1800, 900, 0.08, 0.04, 0.04); },
   hurtPyro() { file('hurt', 0.55, 1.28) || (tone('sawtooth', 340, 90, 0.28, 0.22), noise(0.12, 0.18, 600)); },
   throwWhoosh() { noise(0.28, 0.22, 900, 0.5); for (let i = 0; i < 6; i++) tone('triangle', 700 - i * 60, 500 - i * 60, 0.05, 0.06, i * 0.045); },
   shieldCatch() { tone('square', 900, 400, 0.06, 0.12); noise(0.05, 0.18, 2400, 1.2); tone('sine', 220, 180, 0.12, 0.1, 0.03); },
   medal() { for (let i = 0; i < 3; i++) tone('square', [523, 659, 784][i], [523, 659, 784][i], 0.12, 0.08, i * 0.1); tone('square', 1047, 1047, 0.3, 0.08, 0.3); },
   gillOpen() { tone('sine', 300, 900, 0.35, 0.12); tone('sine', 450, 1200, 0.35, 0.08, 0.05); noise(0.3, 0.1, 3000, 0.8); },
   spark() { noise(0.04, 0.2, 4200, 1.4); tone('square', 2400, 1600, 0.05, 0.08, 0.02); tone('sine', 520, 380, 0.22, 0.1, 0.06); },
-  drip() { tone('sine', 1900 + Math.random() * 600, 900, 0.09, 0.05); tone('sine', 2600, 1400, 0.05, 0.03, 0.06); },
+  drip() { tone('sine', 1900 + audioRandom() * 600, 900, 0.09, 0.05); tone('sine', 2600, 1400, 0.05, 0.03, 0.06); },
   cork() { tone('sine', 700, 1500, 0.05, 0.1); noise(0.03, 0.12, 2600, 1.2); },   /* (claude/flasks2) the hero's flask uncorked */
   glug() { tone('sine', 240, 130, 0.11, 0.14); tone('sine', 170, 100, 0.09, 0.1, 0.05); noise(0.07, 0.05, 500, 0.8, 0.01); },   /* a gulp */
   flaskClink() { tone('sine', 2400, 2350, 0.12, 0.08); tone('sine', 3100, 3000, 0.1, 0.06, 0.07); noise(0.05, 0.08, 3600, 1.2, 0.02); },   /* THE HOMUNCULUS takes a flask off the shelf: two bottles knock */
   flaskBreak() { noise(0.18, 0.35, 4200, 0.8); [3136, 2637, 2093].forEach((f, i) => tone('triangle', f, f * 0.8, 0.12, 0.07, i * 0.03)); noise(0.5, 0.12, 1800, 1.4, 0.12); tone('sine', 300, 120, 0.3, 0.06, 0.1); },   /* and it breaks: glass, then the acid fizzing */
-  rattle(v = 1) { noise(0.05, 0.16 * v, 1400, 0.9); tone('square', 180 + Math.random() * 60, 120, 0.05, 0.05 * v, 0.01); },
+  rattle(v = 1) { noise(0.05, 0.16 * v, 1400, 0.9); tone('square', 180 + audioRandom() * 60, 120, 0.05, 0.05 * v, 0.01); },
   /* THE TOME (the Falling Tower's floating book). Three sounds and they are all paper: the covers flung open on the
      yellow ! (a fan of pages, going up), the dart (one hard flap and the pages streaming), and the SHUT - the sound
      the shield is paid in, a board clapping onto a board with the dust coming out of it. */
@@ -1838,7 +1839,7 @@ Object.assign(CAST, {
 }
 const vbody = (mat, die) => { if (mat === 'plate') file('clang', die ? 0.26 : 0.14, die ? 0.6 : 0.78); else if (mat === 'mail') chain(die ? 0.04 : 0.025, die ? 5 : 3); else if (mat === 'cloth') noise(0.08, die ? 0.08 : 0.05, 900, 0.5); };
 SFX.dieOf = t => { const c = CAST[t], d = DIE[t]; if (!c) return d || null;
-  return () => { const roll = Math.random(), pool = c.human && c.kit !== 'hd' && roll < 0.25 && clips.vo_dp_die ? 'vo_dp_die' : c.human && c.kit !== 'hd' && roll < 0.45 && clips.vo_ex_die ? 'vo_ex_die' : VOK(c.kit, 'die');
+  return () => { const roll = audioRandom(), pool = c.human && c.kit !== 'hd' && roll < 0.25 && clips.vo_dp_die ? 'vo_dp_die' : c.human && c.kit !== 'hd' && roll < 0.45 && clips.vo_ex_die ? 'vo_ex_die' : VOK(c.kit, 'die');
     const ok = voice(pool, c.human ? 0.6 : 0.48, (pool === 'vo_dp_die' || pool === 'vo_ex_die') ? c.rate * 0.97 : c.rate * (c.human ? 1 : 0.92), c.lp || 0);
     if ((!c.human || c.boss || !ok) && d) d(); vbody(c.mat, true); }; };
 SFX.hurtOf = t => { const c = CAST[t], h = HURT[t]; if (!c) return h || null;
@@ -1851,7 +1852,7 @@ SFX.foeRelease = (t, mat, big) => { if (!gate('rel', 0.07)) return;
   const heavy = big || HEAVY_V.has(t), dur = heavy ? 0.24 : 0.13, f = heavy ? 560 : 1400;
   noise(dur, heavy ? 0.15 : 0.1, f, 0.7); tone('triangle', vary(f * 0.5), f * 0.2, dur, heavy ? 0.05 : 0.03);
   if (mat === 'steel') tone('sine', vary(2500), 1900, 0.14, 0.018, 0.04);
-  const c = CAST[t]; if (c && c.human && gate('shout', 0.9) && Math.random() < 0.4) voice(VOK(c.kit, 'attack'), 0.3, c.rate, c.lp || 0); };
+  const c = CAST[t]; if (c && c.human && gate('shout', 0.9) && audioRandom() < 0.4) voice(VOK(c.kit, 'attack'), 0.3, c.rate, c.lp || 0); };
 export const castTable = () => CAST;
 export const heroKitTable = () => HERO_KIT;
 export const kitNames = () => [...new Set(Object.keys(clips).filter(k => k.startsWith('vo_')).map(k => k.slice(3).split('_')[0]))].sort();
