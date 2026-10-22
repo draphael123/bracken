@@ -11,8 +11,6 @@ export function pauseGameAtBoot(){
 // Stable pixel-readback backend for the comparison lab only; timing probes retain the real default backend.
 export function useCpuPixelCanvas(){const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,options){return get.call(this,type,type==='2d'?{...options,willReadFrequently:true}:options);};}
 
-// Diagnostic alpha-blending control: select only the game's initial GPU frame, never sprite bakes or the display.
-export function useOpaqueFrameCanvas(){let frame;const get=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type,options){if(!frame&&type==='2d'&&!this.id&&this.width===320&&this.height===180&&options===undefined)frame=this;return get.call(this,type,this===frame&&type==='2d'?{...options,alpha:false}:options);};}
 
 // Some scenery reads performance.now rather than the simulation clock. Align that visual clock only inside explicit lab renders.
 export function installLabRenderClock(BK){
