@@ -54,9 +54,8 @@ shard 16: 27 checks, estimated 14.4 min
   annotation and packing detail blocks into at most 8 further annotations. Regression tests cover 30 reds.
 - The same run exposed shallow history missing the slopes check's pre-swap commit 9e0e28a. Shards now
   fetch full history. Runner Node is pinned to local v24.11.1 rather than allowing different patch versions
-  across shards. Live recheck of these two setup corrections and compact annotations is pending.
-- Full serial baseline: pending; available physical RAM fell from 2.3 GB to 1.9 GB while other lanes were active.
-  No long local browser gate started at this checkpoint. No other lane's processes were ended.
+  across shards. Live full-history/Node/annotation recheck completed in run 39784695367 at 44521b7ab67c04a1adda497350c39f37c4235665: all 425 verdicts, 17 game reds. The old mover and Linux cleanup pass. The merged artifact was downloaded and parsed. Public unauthenticated read-back of check-run 119856924058 annotations verified an overview naming all 17 failures plus detail; receipt retained outside git in work/ci-proof-39784695367/public-annotation-receipt.json.
+- Full local serial comparison remains Partial. The saved suite has passed its former 348-check crash point, survived the app restart, and retained finished verdicts. Browser/resource interruptions and some platform-specific verdict differences remain under investigation. I initially inferred other Bracken lanes were active from low free RAM; process inspection did not support that inference. No other active Bracken test browsers were found. No user app or unrelated process was stopped.
 
 No Linux exceptions have been introduced. The live run must establish platform compatibility; configuration alone
 does not prove it. Full equivalence and Task 1 completion must not be claimed until the comparator passes.
