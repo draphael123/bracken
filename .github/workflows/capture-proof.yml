@@ -1,8 +1,7 @@
-name: replay-proof
+name: capture-proof
 on:
   push:
     branches: [codex/replay-capture]
-    paths: ['src/**', 'tools/replay-*.mjs', 'tools/capture.mjs', '.github/workflows/replay-proof.yml']
   workflow_dispatch:
 permissions:
   contents: read
