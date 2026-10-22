@@ -6,9 +6,9 @@
 //                       line bring it down ON HIM: PINNED, and a blow there bites x2; (claude/tuskerfix) his charge runs past standing pines, and a FELLED trunk in his path he RAMS (DAZED, it splinters);
 //                       a pine felled on him in his ward bounces off; and at half health his blood is up (phase two: the stomp)
 //   THE BULLFROG KING - every venom spit is told: the frame a spit of his leaves his mouth he has been in 'spitTell' (a yellow !,
-//                       src/marks.js) within the last second; a leap that lands on the hero opens nothing, the same leap left
-//                       late (the hero on the spot at take-off, gone at landing) flops him DAZED; his hide turns half a blow out
-//                       of his openings; and at half health the court goes out (the drain, his pit) - it waited for a third.
+//                       src/marks.js) within the last second. (claude/frogking2) THE PAD CHASE: his leap carries him to the NEXT royal pad;
+//                       landing on the hero opens nothing, landing on a raised shield TURNS him (DAZED); on his pad he has NO hide (a blow
+//                       lands whole), in the air a blow takes 0.4x (B15), dazed x2; and at half health his pond stirs (the pads sink faster).
 //   node tools/firsthour.mjs            (PORT from tools/ports.mjs)
 import assert from 'node:assert/strict';
 import { openPage } from './cdp.mjs';
@@ -53,22 +53,23 @@ try {
    const killHop=()=>{for(const e of BK.enemies())if(e.alive&&e.t==='hopper'&&e.drone)e.alive=false;};
    /* every spit told: 60 s of him left to choose, the hero standing off; each new venom seed of his must follow a spitTell */
    f.phase=1;f.hp=f.maxHp;f.mode='idle';f.modeT=0.5;let lastTell=-99,spits=0,untold=0,tells=0,was=false;const known=new Set(BK.seeds());
-   for(let i=0;i<60*60;i++){const now=i/60;BK.P.x=f.x-120;BK.P.y=fl;BK.P.hp=BK.P.maxHp;f.hp=f.maxHp;killHop();BK.sim(1);
+   for(let i=0;i<60*60;i++){const now=i/60;BK.P.x=f.x-40;BK.P.y=fl;BK.P.hp=BK.P.maxHp;f.hp=f.maxHp;killHop();BK.sim(1);
      if(f.mode==='spitTell'){lastTell=now;if(!was)tells++;}was=f.mode==='spitTell';
      for(const s of BK.seeds())if(!known.has(s)){known.add(s);if(s.venom&&Math.abs(s.x-f.x)<40){spits++;if(now-lastTell>1)untold++;}}}
    out.spit={spits,untold,tells};
-   /* the leap, three ways: taken (the hero stays), left late (on the spot at take-off, gone after) */
-   const leap=late=>{killHop();f.mode='idle';f.modeT=9;f.vault=false;f.vaultT=9;f.x=(A.x0+A.x1)/2-60;f.y=fl;BK.sim(2);const x0=f.x+70;BK.P.x=x0;BK.P.y=fl;BK.P.vx=0;BK.sim(2);
-     f.mode='crouch';f.modeT=0.01;f.vault=false;let left=false;const seen=new Set();
-     for(let i=0;i<150;i++){if(late&&!left&&f.mode==='leap'&&f.vy>0){left=true;BK.P.x=x0+80;}if(!left)BK.P.x=x0;BK.sim(1);seen.add(f.mode);if(f.mode!=='crouch'&&f.mode!=='leap')break;}
-     return {mode:f.mode,modes:[...seen]};};
-   out.leapTaken=leap(false);out.leapLate=leap(true);
-   /* his hide: the same blow, out of an opening and in one */
-   const hit=mode=>{f.mode=mode;f.modeT=5;f.hp=f.maxHp;f.phase=1;const h0=f.hp;BKT.hurtEnemy(f,10,f.x-20,false);const t=h0-f.hp;f.mode='idle';f.modeT=5;return t;};
-   out.hide={idle:hit('idle'),dazed:hit('dazed')};
-   /* half health: the court goes out */
-   killHop();f.mode='idle';f.modeT=1;f.phase=1;f.hp=f.maxHp*0.52;f.drained=false;BKT.hurtEnemy(f,Math.ceil(f.maxHp*0.06),f.x-20,false);
-   for(let i=0;i<30;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}out.half={hpPct:Math.round(100*f.hp/f.maxHp),phase:f.phase,drained:!!f.drained};}
+   /* the leap (claude/frogking2): from his first royal pad to the second - onto the hero (nothing opens), onto a raised shield (TURNED: DAZED) */
+   const leap=shield=>{killHop();BK.god=false;f.st=0;f.tst=undefined;f.stHp0=f.hp;f.stT=0;f.x=A.royal[0].cx;f.y=fl;f.vx=0;f.vy=0;f.mode='idle';f.modeT=9;BK.sim(2);
+     const to=A.royal[1];BK.P.x=to.cx;BK.P.y=fl;BK.P.vx=0;BK.P.face=-1;BK.keys.block=!!shield;BK.sim(2);
+     f.tst=1;f.mode='crouch';f.modeT=0.01;const seen=new Set();
+     for(let i=0;i<240;i++){BK.P.x=to.cx;BK.P.face=-1;BK.P.hp=BK.P.maxHp;BK.sim(1);seen.add(f.mode);if(f.mode!=='crouch'&&f.mode!=='leap')break;}
+     BK.keys.block=false;BK.god=true;return {mode:f.mode,st:f.st,modes:[...seen]};};
+   out.leapTaken=leap(false);out.leapShield=leap(true);
+   /* no hide on his pad: the same blow on his pad, in the air, and dazed */
+   const hit=mode=>{f.mode=mode;f.modeT=5;f.hp=f.maxHp;f.phase=1;f.openHp0=f.hp;const h0=f.hp;BKT.hurtEnemy(f,10,f.x-20,false);const t=h0-f.hp;f.mode='idle';f.modeT=5;return t;};
+   out.hide={idle:hit('idle'),air:hit('leap'),dazed:hit('dazed')};
+   /* half health: his pond stirs */
+   killHop();f.st=0;f.x=A.royal[0].cx;f.mode='idle';f.modeT=1;f.phase=1;f.hp=f.maxHp*0.52;f.stHp0=f.hp;BKT.hurtEnemy(f,Math.ceil(f.maxHp*0.06),f.x-20,false);
+   for(let i=0;i<30;i++){BK.P.hp=BK.P.maxHp;BK.sim(1);}const C=BK.frogCourt&&BK.frogCourt();out.half={hpPct:Math.round(100*f.hp/f.maxHp),phase:f.phase,mode:f.mode,sinkK:C?C.sinkK:0};}
   return out;})()`, 600000);
   assert.deepEqual(pg.errors, [], 'page errors');
 } finally { pg.close(); }
@@ -84,10 +85,10 @@ if (!(Q.wall.mode === 'rammed' && Q.wall.pastPines)) bad.push('his charge must r
 if (!(Q.otHalf.ph === 2)) bad.push('his blood is not up at half health (phase two): ' + JSON.stringify(Q.otHalf));
 if (!(Q.spit.spits > 0)) bad.push('the Bullfrog King never spat in a minute: ' + JSON.stringify(Q.spit));
 if (Q.spit.untold > 0) bad.push('an untold spit: venom left his mouth with no spitTell in the second before it: ' + JSON.stringify(Q.spit));
-if (Q.leapTaken.mode === 'dazed') bad.push('a leap that lands on the hero dazed him (A11: the rest after his own blow): ' + JSON.stringify(Q.leapTaken));
-if (Q.leapLate.mode !== 'dazed') bad.push('a leap left late (on the spot at take-off, gone at landing) did not flop him: ' + JSON.stringify(Q.leapLate));
-if (!(Q.hide.idle < Q.hide.dazed / 2)) bad.push('his hide must turn half a blow out of his openings (idle vs dazed): ' + JSON.stringify(Q.hide));
-if (!(Q.half.drained && Q.half.hpPct >= 45)) bad.push('the court must go out at half his health (it waited for a third): ' + JSON.stringify(Q.half));
+if (Q.leapTaken.mode === 'dazed' || Q.leapTaken.st !== 1) bad.push('his leap must carry him to the next royal pad, and landing on the hero opens nothing (A11): ' + JSON.stringify(Q.leapTaken));
+if (Q.leapShield.mode !== 'dazed') bad.push('a landing on a raised shield did not TURN him (DAZED): ' + JSON.stringify(Q.leapShield));
+if (!(Q.hide.idle >= 9 && Q.hide.air >= 4 && Q.hide.air < Q.hide.idle && Q.hide.dazed >= Q.hide.idle * 1.5)) bad.push('no hide on his pad (a blow whole), 0.4x+ in the air (B15), x2 dazed: ' + JSON.stringify(Q.hide));
+if (!(Q.half.phase === 2 && Q.half.hpPct >= 45 && Q.half.sinkK > 1)) bad.push('his pond must stir at half his health (phase two, the pads sink faster): ' + JSON.stringify(Q.half));
 assert.deepEqual(bad, [], 'THE FIRST HOUR\'S BOSSES:\n  ' + bad.join('\n  '));
 console.log('OLD TUSKER: hide ' + Q.otHide.walk + ' / pinned ' + Q.otHide.pinned + ' / dazed ' + Q.otHide.rammed + '; four strokes -> ' + Q.pinned + '; warded pines bounce (' + Q.bounced + '); a charge into a felled trunk -> ' + Q.ram.mode + ' (trunk ' + Q.ram.trunk + '), past the standing pines -> ' + Q.wall.mode + ' at the wall' + '; at half, phase ' + Q.otHalf.ph + '.');
-console.log('THE BULLFROG KING: ' + Q.spit.spits + ' spits, all told; a leap taken -> ' + Q.leapTaken.mode + ', left late -> ' + Q.leapLate.mode + '; hide ' + Q.hide.idle + ' vs open ' + Q.hide.dazed + '; the court goes out at ' + Q.half.hpPct + '%.');
+console.log('THE BULLFROG KING: ' + Q.spit.spits + ' spits, all told; a leap onto the hero -> ' + Q.leapTaken.mode + ' (royal pad ' + Q.leapTaken.st + '), onto a shield -> ' + Q.leapShield.mode + '; a blow on his pad ' + Q.hide.idle + ' / in the air ' + Q.hide.air + ' / dazed ' + Q.hide.dazed + '; his pond stirs at ' + Q.half.hpPct + '% (sink x' + Q.half.sinkK + ').');

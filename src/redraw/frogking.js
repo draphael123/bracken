@@ -6,7 +6,7 @@
 //           (claude/marsh2, greybox poses for the ART lane to redraw - B16, each new move its own windup and release):
 //           7 the grab's windup (head low, maw open), 8 the tongue out (lunging), 9 the belly-flop's rear-up, 10 flat on his belly,
 //           11 cheeks full of flies, 12 the flies spat, 13 the throat swelling for the ripple, 14 the ripple let go, 15 a hand raised
-//           over the water, 16 the slap, 17 his eye on the flies (the snap's windup)
+//           over the water, 16 the slap, 17 his eye on the flies (the snap's windup), 18 the spit's windup, 19 the spit let go (claude/frogking2; redrawn claude/frogking2art: the green sac and cheeks, the globs on their streaks)
 //   canvas 64x58 (claude/marsh2art: 12 rows of headroom for the rear-up and the raised hand), every frame the same size and anchor: ax 30, ay 56 (toes on ay-1), so no frame floats or sinks.
 //   marsh2art: poses 7-17 are redrawn with their own bodies - rot (the rear-up), a raised/slammed arm with a webbed hand, flies, sound arcs, mud and spray (see fx).
 import { canvas, px, rect, line, circle, ellipse, fillPoly, outline, flipX, whiten } from '../px.js';
@@ -149,6 +149,22 @@ export function bakeFrog() {
     frame({ legs: 'sit', arms: 'up', tilt: 1, sx: 0.96, sy: 1.04, rot: 4, eyes: 'narrow', fx: (g, X, Y) => { limb(g, X(40), Y(32), X(51), Y(19), 4, C.F, C.D); limb(g, X(51), Y(19), X(54), Y(9), 4, C.F, C.D); hand(g, X(54), Y(7), true); } }),   /* 15 THE SLAP's windup: a great webbed hand lifted high over the water, leaning back to throw it */
     frame({ legs: 'sit', arms: 'down', sx: 1.1, sy: 0.9, tilt: -1, eyes: 'wide', fx: (g, X, Y) => { limb(g, X(42), Y(30), X(49), Y(37), 4, C.F, C.D); limb(g, X(49), Y(37), X(55), GY - 5, 4, C.F, C.D); hand(g, X(55), GY - 5, false); drops(g, [[X(49), GY - 9], [X(59), GY - 7], [X(57), GY - 12], [X(61), GY - 11], [X(51), GY - 14]]); arc(g, X(55), GY - 1, 7, Math.PI, Math.PI * 2, '#dff4ff'); } }),   /* 16 the slap: the hand brought down flat on the water, spray flung */
     frame({ legs: 'crouch', arms: 'plant', tilt: 7, sx: 1.02, eyes: 'wide', fx: (g, X, Y) => { fillPoly(g, [[X(53), Y(29.5)], [X(58), Y(28)], [X(59), Y(29.5)], [X(53), Y(31)]], C.tg); px(g, X(59), Y(28.5), C.tgL); FLY(g, X(55), Y(8), 0); FLY(g, X(49), Y(5), 1); } }),   /* 17 the snap's windup: head cocked up at the flies, pupil dilated, the tongue-tip flicking */
+    /* (claude/frogking2art) 18 THE SPIT's windup (B16): he gulps and swells - the throat sac blown up and gone venom-green (bubbles inside it), both cheeks puffed, the head drawn back and up, the eyes narrowed on you, a rope of drool off the lip, green fumes curling off his snout */
+    frame({ legs: 'sit', arms: 'plant', sac: 'big', lift: 1, sy: 1.06, tilt: 5, eyes: 'narrow', fx: (g, X, Y) => {
+      blob(g, X(46), Y(37.5), 13, 9.5, '#6fae44', '#b8e070', '#356a22'); ellipse(g, X(42), Y(33), 4, 2, '#d8f5a0'); line(g, X(36), Y(41.5), X(56), Y(40.5), '#356a22');
+      for (const [bx, by, r] of [[44, 38, 1.4], [49, 36, 1.1], [41, 40.5, 1.1], [47, 41, 1.3], [52, 39, 0.9]]) { circle(g, X(bx), Y(by), r, '#9fd060'); px(g, X(bx) - 0.5, Y(by) - 0.5, '#eaffc0'); }
+      blob(g, X(50), Y(29.5), 6.5, 5, '#7fb84a', '#c0e878', '#4a8a2a'); px(g, X(48), Y(27.5), '#eaffc0'); px(g, X(49), Y(27.5), '#eaffc0');
+      for (const [dx, len] of [[52, 5], [55, 9]]) { line(g, X(dx), Y(30.5), X(dx) + 0.5, Y(30.5) + len, '#8fd160'); px(g, X(dx) + 0.5, Y(30.5) + len + 1, '#d8ff98'); px(g, X(dx) + 0.5, Y(30.5) + len + 2, '#8fd160'); }
+      for (const [fx, fy] of [[58, 21], [61, 16], [57, 12], [62, 24]]) { px(g, X(fx), Y(fy), '#b8e070'); px(g, X(fx) + 1, Y(fy) - 1, '#8fd160'); px(g, X(fx) - 1, Y(fy) - 2, '#d8ff98'); } } }),
+    /* 19 THE SPIT let go: the whole body snaps forward, the head thrown out and down, maw wide and shining with venom, the throat slack, three globs leaving in a fan on streaks of spray, the drool flung back along his jaw */
+    frame({ legs: 'trail', arms: 'fwd', mouth: true, tilt: -3, rot: 5, pivot: [30, GY - 1], sx: 1.08, sy: 0.96, lift: 2, eyes: 'wide', fx: (g, X, Y) => {
+      /* (the rotation has run: these are the sprite's own pixels, the maw is down at about 50, 40) */
+      ellipse(g, 50, 40.5, 4.5, 2.2, '#6fae44'); ellipse(g, 49, 40, 2.6, 1, '#b8e070');   /* venom shining in the maw */
+      for (const [gx, gy, r] of [[59.5, 36.5, 2.2], [62, 41.5, 1.8], [61.5, 31.5, 1.5]]) {
+        const sx = 54, sy = 40; for (let i = 1; i < 6; i++) { const t = i / 6; px(g, Math.round(sx + (gx - sx) * t), Math.round(sy + (gy - sy) * t), i & 1 ? '#8fd160' : '#d8ff98'); }   /* its streak of spray */
+        blob(g, gx, gy, r, r, '#8fd160', '#d6f5a0', '#4a7a2a'); px(g, gx - 0.5, gy - 1, '#ffffff'); }
+      for (const [dx, dy] of [[42, 46], [45, 48], [39, 48]]) { px(g, dx, dy, '#8fd160'); px(g, dx, dy - 1, '#d8ff98'); }   /* drool flung back along the jaw */
+      for (const [fx, fy] of [[52, 43], [56, 45]]) px(g, fx, fy, '#b8e070'); } }),
   ];
   const L = frames.map(flipX), white = frames.map(c => whiten(c));
   return { R: frames, L, white: { R: white, L: white.map(flipX) }, ax: 30, ay: 44 + PADT, w: 40, h: 30 };

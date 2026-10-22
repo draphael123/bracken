@@ -13,6 +13,7 @@ import { canvas, ellipse, line, px, outline } from '../px.js';
 const OUT = '#1b1626';
 export const PAD_TINT = {
   sink: { col: '#7c9a46', colD: '#526c2c', colL: '#c2d872', rim: '#f0f6b4', under: ['#5a7234', '#3a4c22', '#7c9a46'] },
+  stir: { col: '#b0883a', colD: '#6e4a22', colL: '#e8c466', rim: '#fff0a8', under: ['#7a5a2a', '#4a3418', '#b0883a'] },   /* (claude/frogking2art) HIS POND STIRS: a leaf that now sinks 1.6x faster is amber, going over - plan the route off the greens */
   hold: { col: '#3e9a5c', colD: '#246a3e', colL: '#7fdc92', rim: '#cbffd8', under: ['#2e7448', '#1c4c30', '#3e9a5c'] },
 };
 const memo = new Map();
@@ -21,7 +22,7 @@ const memo = new Map();
    glossy (dew glints, a clean vein). The rim stays: first lit pixel down each column on the left two-thirds and first across each row from the left. */
 export function bakePad(w, kind, under) {
   const key = w + kind + (under ? 'u' : ''); if (memo.has(key)) return memo.get(key);
-  const T = PAD_TINT[kind] || PAD_TINT.sink, big = w > 24, h = big ? 9 : 7, sinkK = kind === 'sink';
+  const T = PAD_TINT[kind] || PAD_TINT.sink, big = w > 24, h = big ? 9 : 7, sinkK = kind === 'sink' || kind === 'stir';
   const col = under ? T.under[0] : T.col, colD = under ? T.under[1] : T.colD, colL = under ? T.under[2] : T.colL;
   const [c, g] = canvas(w, h), cx = w / 2, cy = h / 2, rx = w / 2 - 0.4, ry = h / 2 - 0.2;
   const inside = (x, y) => { const u = (x + 0.5 - cx) / rx, v = (y + 0.5 - cy) / ry; return u * u + v * v <= 1; };
@@ -37,7 +38,8 @@ export function bakePad(w, kind, under) {
     const ang = Math.atan2(v * ry, (u + 0.25) * rx), spokes = big ? 7 : 5, sp = Math.abs(((ang + Math.PI) / (Math.PI * 2) * spokes * 2) % 2 - 1);
     if (!under && sp < 0.07 && d > 0.08 && d < 0.78) cc = lit > 0 ? col : colD;
     if (!under && sinkK) {                                                               /* going over: gold-brown blotches near the edge, a darker spotted curl */
-      if (d > 0.4 && hs(x, y, 11) === 0) cc = '#a8923c'; else if (d > 0.55 && hs(x + 3, y, 14) === 0) cc = '#6a5a2a';
+      if (kind === 'stir') { if (d > 0.35 && hs(x, y, 7) === 0) cc = '#d8702a'; else if (d > 0.5 && hs(x + 3, y, 9) === 0) cc = '#5a3418'; }   /* stirred: rust-orange blotches, a scorched curl */
+      else if (d > 0.4 && hs(x, y, 11) === 0) cc = '#a8923c'; else if (d > 0.55 && hs(x + 3, y, 14) === 0) cc = '#6a5a2a';
     } else if (!under && !sinkK) {                                                       /* holding: glossy, dew glints on the lit side */
       if (lit > 0.3 && hs(x, y, 13) === 0) cc = '#e8fff4';
     }
@@ -65,8 +67,28 @@ export function drawPad(g, m, cx, cy, time, spr, dy = 0, flower = null) {
       g.beginPath(); g.ellipse(Math.round(m.x0) - cx + w / 2 + 0.5, wy + 0.5, w / 2 + 2 + k * 12, h / 2 + 1 + k * 3, 0, 0, Math.PI * 2); g.stroke(); }
     g.globalAlpha = 1;
   }
+  if (m.sinkK > 1 && !m.firm && m.sink < 0.5) boil(g, m, cx, time, w, wy);   /* (claude/frogking2art) HIS POND STIRS: bubbles at the rim of a leaf that now sinks fast */
   g.drawImage(spr, x0 + wob, Math.round(m.y) - cy + dy);
   if (flower) g.drawImage(flower[0], x0 + wob + flower[1], Math.round(m.y) - cy + flower[2]);
+}
+/* (claude/frogking2art) THE RESHUFFLE'S READ. A leaf the King's landing (or his flop's wave) holds under: a WHIRL where it went down - broken arcs circling the spot, bubbles
+   rising - and, if it is to come up somewhere else (m.shufTo), a BOIL there: rings opening on the surface, in the colour of what it will be (cool green: it will HOLD; amber: it will
+   SINK), so the new route can be read before the leaves are back. A stirred leaf that is still up has its rim boil: bubbles breaking at the edge. */
+export function reshuffleRead(g, m, cx, cy, time, w, wy) {
+  const sx = Math.round(m.x0) - cx + w / 2, sw = (x, y, a, c) => { g.globalAlpha = a; g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), 1, 1); };
+  for (let r = 0; r < 3; r++) { const rx = w / 2 + 3 - r * 5, ry = 3.4 - r * 0.9, a0 = time * (6 + r * 2) * (r & 1 ? 1 : -1);
+    g.globalAlpha = 0.95; g.strokeStyle = r & 1 ? '#bfe6f5' : '#ffffff'; g.lineWidth = 1; g.beginPath(); g.ellipse(sx + 0.5, wy + 2.5, rx, ry, 0, a0, a0 + Math.PI * 1.35); g.stroke(); }   /* the whirl: arcs chasing each other round the hole the leaf left */
+  g.globalAlpha = 0.5; g.fillStyle = '#04100f'; g.beginPath(); g.ellipse(sx + 0.5, wy + 2.5, w / 4, 1.6, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+  for (let i = 0; i < 5; i++) { const k = (time * 1.3 + i * 0.2) % 1; g.globalAlpha = 0.95 * (1 - k); g.fillStyle = i & 1 ? '#e4f8ec' : '#ffffff'; g.fillRect(Math.round(sx + Math.sin(i * 2.3 + time) * (w / 3)), Math.round(wy - k * 9), 2, 2); }
+  if (m.shufTo) { const dx = Math.round(m.shufTo.x) - cx + w / 2, col = m.shufTo.firm ? '#9af0b8' : '#e8c466';
+    for (let i = 0; i < 2; i++) { const k = (time * 1.4 + i * 0.5) % 1; g.globalAlpha = 0.75 * (1 - k); g.strokeStyle = col; g.lineWidth = 1; g.beginPath(); g.ellipse(dx + 0.5, wy + 2.5, 3 + k * (w / 2 + 5), 1.5 + k * 4, 0, 0, Math.PI * 2); g.stroke(); }
+    for (let i = 0; i < 3; i++) { const k = (time * 1.8 + i * 0.33) % 1; sw(dx + (i - 1) * 5, wy - k * 5, 0.9 * (1 - k), col); } }
+  g.globalAlpha = 1;
+}
+function boil(g, m, cx, time, w, wy) {
+  const sx = Math.round(m.x0) - cx;
+  for (let i = 0; i < 3; i++) { const k = (time * 1.1 + i * 0.33 + m.x0 * 0.01) % 1, bx = sx + 2 + ((i * 11 + Math.round(m.x0)) % (w - 4)); g.globalAlpha = 0.85 * (1 - k); g.fillStyle = i & 1 ? '#e4f8ec' : '#e8c466'; g.fillRect(bx, Math.round(wy - 1 - k * 4), 1, 1); }
+  g.globalAlpha = 1;
 }
 /* THE MARSH LIGHT over a lamp pad (drawn AFTER the night's dark, so it shows through it). (claude/marsh3art) A small cold flame - a teardrop with a white heart, a
    green-blue skirt and a tail that streams the way it sways - riding on a soft halo (a baked glow, not arcs), two motes circling it, and its wavering line on the water. */
