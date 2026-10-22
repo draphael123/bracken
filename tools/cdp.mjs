@@ -1,3 +1,4 @@
+import{acquireServer}from'./server-lease.mjs';
 import { installNativeCollectionBridge } from './lab-bridge.mjs';
 import { installLabCollection } from './lab-collect.mjs';
 // tools/cdp.mjs — THE PAGE, HEADLESS, FOR A TOOL. The same approach as tools/headless.mjs (the installed Chrome or Edge,
@@ -46,10 +47,7 @@ async function borrowedTarget(port) {
 export async function openPage(opts = {}) {
   const PORT = +(process.env.PORT || opts.port || PORT_BASE), URL0 = 'http://localhost:' + PORT + '/';
   const up = async () => { try { const r = await fetch(URL0, {signal:AbortSignal.timeout(2000)}); return r.ok; } catch { return false; } };
-  let server = null;
-  const stopServer = () => { process.removeListener('exit', stopServer); if (server) { try { server.kill(); } catch {} server = null; } };
-  if (!(await up())) { server = spawn(process.execPath, ['serve.mjs'], { cwd: ROOT, stdio: 'ignore', env: { ...process.env, PORT: String(PORT), BRACKEN_PARENT: String(process.pid) } }); process.once('exit', stopServer); for (let i = 0; i < 40 && !(await up()); i++) await sleep(250); }
-  if (!(await up())) { stopServer(); throw new Error('dev server did not come up on ' + URL0); }
+  const stopServer = await acquireServer(URL0, {up,start:()=>spawn(process.execPath,['serve.mjs'],{cwd:ROOT,stdio:'ignore',env:{...process.env,PORT:String(PORT),BRACKEN_PARENT:String(process.pid)}})});
   let loan = null, run = null, closeConnection = () => {};
   try {
   const mine = readFileSync(join(ROOT, 'src/lookpass.js'), 'utf8');
