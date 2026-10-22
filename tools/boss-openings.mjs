@@ -332,15 +332,15 @@ try {
    settle();const PH=BK.sealedPyramidHands();for(let i=0;i<60*12&&!(PH.trapReady('tkDartsW')&&PH.trapReady('tkDartsE')&&/walk|recover/.test(b.mode)&&S().ward<=0);i++){P.hp=P.maxHp;BK.sim(1);}const pm=G.plates[1];P.x=pm.x0-40;P.y=G.floorY;b.x=(pm.x0+pm.x1)/2;b.mode='slamTell';b.modeT=0.7;b.open=0;S().ward=0;const plate=watch(60*6);
    out.tombking={alone:+alone.toFixed(1),weight:wt,glance,ph:S().ph,traps:TH.trapsOn(),block:blk,plate,n:S().n.byKind,onPlate:S().n.onPlate};}
   return out;})()`;
-  // All independent cases remain in order. Four per fresh browser bound retained native page caches.
+  // All independent cases remain in order. Two per fresh browser bound retained native page caches.
   const first=script.indexOf('\n  {'),last=script.lastIndexOf('return out;'),prefix=script.slice(0,first),body=script.slice(first,last);
   const cases=body.split(/\n(?=  \{)/).filter(c=>c.trim());assert(cases.length>=27,'all original boss cases must remain');
   assert.equal(cases.join('\n').trim(),body.trim(),'the batching must consume the entire original case body');
-  const r={},deadline=Date.now()+300000;
-  for(let i=0;i<cases.length;i+=4){if(i)pg=await openPage({audio:false,fonts:false});try{
-    const row=await pg.evalp(prefix+cases.slice(i,i+4).join('\n')+'\nreturn out;})()',Math.max(1,deadline-Date.now()));
+  const r={},deadline=Date.now()+300000,BATCH=2;
+  for(let i=0;i<cases.length;i+=BATCH){if(i)pg=await openPage({audio:false,fonts:false});try{
+    const row=await pg.evalp(prefix+cases.slice(i,i+BATCH).join('\n')+'\nreturn out;})()',Math.max(1,deadline-Date.now()));
     assert.deepEqual(pg.errors,[]);for(const key of Object.keys(row))assert(!(key in r),'duplicate boss result '+key);Object.assign(r,row);
-    console.log('boss cases '+(i+1)+'-'+Math.min(i+4,cases.length)+'/'+cases.length+' complete');
+    console.log('boss cases '+(i+1)+'-'+Math.min(i+BATCH,cases.length)+'/'+cases.length+' complete');
   }finally{await pg.close();pg=null;}}
 
 
