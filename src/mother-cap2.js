@@ -204,7 +204,9 @@ export function makeMotherCap(ctx) {
     /* (claude/sporewood2art) HER BODY IS A BAKED PICTURE PER POSE (src/redraw/sporewood2_mother.js: a windup frame for every move, a release frame, the open crown, the ward, the rise): chosen by her mode and how far into it she is */
     const f = A().floor, R = Math.round, x = R(e.x - cx), fy = R(f - cy), ps = H.pose(e), oK = e.openK || 0, oE = oK * oK * (3 - 2 * oK), md = e.mode;
     let kind = ps.kind, tell = ps.tell, k = ps.k; if (md === 'sleep') { kind = 'wake'; k = 0; tell = false; } else if (md === 'idle' || md === 'walk') kind = 'idle';
-    const fr = MART.frameFor(e, kind, tell, k, e.phase || 1, e.ward || 0, time), flip = (kind === 'lash' ? (e.lashDir || 1) : kind === 'wither' ? (e.witherCap && e.witherCap.x + 16 < e.x ? -1 : 1) : 1) < 0;
+    if (e.alive === false) { if (e._dAt == null) e._dAt = time; kind = 'dead'; tell = false; k = Math.max(0, time - e._dAt); } else e._dAt = null;   /* (claude/motherface) death: the eyes fade, the face sags */
+    { const hp = ctx.P(), dx = hp ? hp.x - e.x : 0; if (e._look == null) e._look = 0; if (dx < -34) e._look = -1; else if (dx > 34) e._look = 1; else if (Math.abs(dx) < 14) e._look = 0; }   /* her eyes follow you (hysteresis, so they do not flicker) */
+    const fr = MART.frameFor(e, kind, tell, k, e.phase || 1, e.ward || 0, time, e._look || 0), flip = (kind === 'lash' ? (e.lashDir || 1) : kind === 'wither' ? (e.witherCap && e.witherCap.x + 16 < e.x ? -1 : 1) : 1) < 0;
     if (flip) { g.save(); g.translate(x, 0); g.scale(-1, 1); g.drawImage(fr, -MART.AX, fy - MART.AY); g.restore(); } else g.drawImage(fr, x - MART.AX, fy - MART.AY);
     /* THE KNOT on her crown: the target. Gold-haloed and glinting while it can be plunged; open it burns (a pulsing ring as it tears) */
     { const kx = R(e.x - cx), ky = R(f - MC.knotY - cy) + (ps.kind === 'crush' || ps.kind === 'lash' ? 4 : 0), ready = H.knotReady(e);

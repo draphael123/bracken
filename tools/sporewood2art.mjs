@@ -24,7 +24,7 @@ try {
     out.brood={have:!!S.puffbrood, frames:S.puffbrood&&S.puffbrood.R.length, base:S.sporeling.R.length};
     out.icon={w:S.mother.R[0].width,h:S.mother.R[0].height};
     /* her frames */
-    const M=await import('/src/redraw/sporewood2_mother.js'); const sig=cv=>{const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let h=2166136261;for(let i=0;i<d.length;i+=7){h=Math.imul(h^d[i],16777619)>>>0;}return h;};
+    const M=await import('/src/redraw/sporewood2_mother.js'); const sig=cv=>{const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let h=2166136261;for(let i=0;i<d.length;i+=1){h=Math.imul(h^d[i],16777619)>>>0;}return h;};
     const F1=M.frames(1),F2=M.frames(2);out.poses=Object.keys(F1);out.sig={};for(const n of out.poses){out.sig[n]=F1[n].map(sig);}
     out.p2diff=out.poses.every(n=>F2[n].every((c,i)=>sig(c)!==out.sig[n][i]));
     /* the places: draw each area's frame */
@@ -37,7 +37,7 @@ try {
   ok(o.brood.have && o.brood.frames === o.brood.base, 'her brood (puffbrood) has its own ' + o.brood.base + ' frames');
   ok(o.icon.w >= 40 && o.icon.h >= 40, 'the Mother Cap\'s bestiary portrait is repainted (' + o.icon.w + 'x' + o.icon.h + ')');
   { const src = (await import('node:fs')).readFileSync(new URL('./corpses.mjs', import.meta.url), 'utf8'); ok(/'ksar', 'spore'\]/.test(src), 'tools/corpses.mjs kills the wood\'s reskins and reads their bodies back (CORPSES_ONLY=spore node tools/corpses.mjs)'); }
-  const need = ['idle', 'lashTell', 'lash', 'crushTell', 'crush', 'bloomTell', 'bloom', 'broodTell', 'brood', 'witherTell', 'wither', 'open', 'ward', 'phaseRise', 'wake'];
+  const need = ['idle', 'lashTell', 'lash', 'crushTell', 'crush', 'bloomTell', 'bloom', 'broodTell', 'brood', 'witherTell', 'wither', 'open', 'ward', 'phaseRise', 'wake', 'dead'];
   ok(need.every(n => o.poses.includes(n)), 'every windup and release has its own frame set: ' + need.join(' '));
   const idle = o.sig.idle[0], all = new Map(); let dup = [];
   for (const n of need) for (const [i, s] of o.sig[n].entries()) { if (n !== 'idle' && s === idle) dup.push(n + i); if (all.has(s)) dup.push(n + i + '=' + all.get(s)); all.set(s, n + i); }
