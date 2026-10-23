@@ -93,12 +93,12 @@ export function linkedLine(i, s, name = h => String(h || '').toUpperCase(), held
   if (s.state === 'corrupt') return n + ' - DAMAGED';
   if (s.state === 'newer') return n + ' - FROM A NEWER BRACKEN';
   if (s.state === 'empty') return n + ' - EMPTY: ' + (tail || 'A NEW HERO, ' + LINKED_TAIL(i + 1));
-  return n + ' - ' + name(s.hero) + ' LV ' + s.level + ': ' + (tail || LINKED_TAIL(i + 1));
+  return n + ' - ' + name(s.hero) + ' LV ' + Math.max(1, s.level) + ': ' + (tail || LINKED_TAIL(i + 1));
 }
 /* the seat's row on the board: 'AI PARTNER - KNIGHT LV 6, BALANCED: EARNS XP INTO SAVE 2' / 'AI PARTNER - PYRO, SUPPORT: YOUR LEVEL - NOTHING SAVED' */
 export function seatLine(heroName, lv, slot, beh) {
   const b = BEH_NAME[beh] || BEH_NAME.balanced;
-  return AI_TAG + ' - ' + heroName + (lv != null ? ' LV ' + lv : '') + ', ' + b + ': ' + (Number.isInteger(slot) && slot >= 0 ? LINKED_TAIL(slot + 1) : 'YOUR LEVEL - NOTHING SAVED');
+  return AI_TAG + ' - ' + heroName + (lv != null ? ' LV ' + Math.max(1, lv) : '') + ', ' + b + ': ' + (Number.isInteger(slot) && slot >= 0 ? LINKED_TAIL(slot + 1) : 'YOUR LEVEL - NOTHING SAVED');
 }
 /* the win card's SAVED TO cell for an AI seat: its save (linked), else AI (nothing saved) */
 export const savedCell = slot => (Number.isInteger(slot) && slot >= 0 ? 'SAVE ' + (slot + 1) : 'AI');

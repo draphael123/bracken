@@ -65,7 +65,7 @@ export const summaryLine = (i, s, name = h => String(h || '').toUpperCase(), hel
   if (s.state === 'corrupt') return n + ' - DAMAGED';
   if (s.state === 'newer') return n + ' - FROM A NEWER BRACKEN';
   if (s.state === 'empty') return n + ' - EMPTY: ' + (tail || 'A NEW SAVE STARTS HERE');
-  return n + ' - ' + name(s.hero) + ' LV ' + s.level + ': ' + (tail || 'EARNS XP, SILVER + CLEARS INTO ' + n);
+  return n + ' - ' + name(s.hero) + ' LV ' + Math.max(1, s.level) + ': ' + (tail || 'EARNS XP, SILVER + CLEARS INTO ' + n);
 };
 /* the SAVED TO cell of a seat (the win card's row): his save, or a guest's nothing */
 export const savedTo = (slot, long = false) => (Number.isInteger(slot) && slot >= 0 ? 'SAVE ' + (slot + 1) : long ? 'GUEST - NOT SAVED' : 'GUEST');

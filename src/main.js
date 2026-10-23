@@ -5212,7 +5212,7 @@ function partyRoster() {
   seats.forEach((sd, i) => rows.push({ n: i + 2, tag: sd.ally ? 'AI' : 'P' + (i + 2), hero: sd.hero, lv: lvOf(sd.hero, sd.prof), ai: !!sd.ally, c: sd.ally ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, i + 2).c }));
   return rows;
 }
-const partyRowText = r => r.tag + ' ' + (HERO_SHORT[r.hero] || String(r.hero).toUpperCase()) + ' LV ' + r.lv;
+const partyRowText = r => r.tag + ' ' + (HERO_SHORT[r.hero] || String(r.hero).toUpperCase()) + ' LV ' + Math.max(1, r.lv);
 function drawMapParty() {
   const rows = partyRoster(); if (!rows.length) return;
   const w = 126, h = 4 + rows.length * 9, x = VW - w - 3, y = 17;   /* top-right, under the purse strip */
