@@ -119,7 +119,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* THE TERRACE'S FALL (claude/sporewood2tune, the walker band): the top tier ends in a REAL GAP, six wide, no floor - a fall is the end (back to the last shrine). A pillar of two BOUNCE CAPS stands in it: a hop from the lip onto them, and they throw you over to the far lip
      (hold jump for height). Told: the sign on the lip, a warning post each side, the pit's mouth the same as the bounce pit taught (which had a floor); a spitcap holds the far lip */
   air(91, 96, 28, 42); ground(93, 94, 28); spring(93, 28); spring(94, 28); deco(90, 27, 'warnPost', 0); deco(97, 27, 'warnPost', 1);
-  sign(86, 27, 'THE TERRACE ENDS IN A DROP. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');
+  sign(86, 27, 'THE TERRACE ENDS IN A DROP. THE BOUNCE CAPS THROW YOU OVER. MISS AND YOU FALL.');
   foe('spitcap', 98, 27, 'terraceFar', { face: -1 });
   coins([80, 30], [83, 30], [87, 26], [89, 26], [93, 22], [95, 22]); glow(99, 27); deco(102, 27, 'sporePod');
   ent('check', 100, 27);                                                            /* SHRINE ONE: the glade's exam is behind you */
