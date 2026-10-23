@@ -22,7 +22,10 @@ export function bakeKnot() {
   for (let x = -112; x <= 112; x += 2) { const e = Math.abs(x) / 112, len = 7 + Math.round((1 - e) * 5) + (hash(x, 3) % 3); R(g, mix('#e8ddc0', cap[1], e * 0.5), CX + x, 80 + Math.round(e * e * 3), 1, len); if (x % 4 === 0) R(g, mix('#9c8c66', cap[0], 0.4), CX + x + 1, 82 + Math.round(e * e * 3), 1, len - 3); }
   /* the trunk: roots twisting down from the cap to the knot and on to the foot */
   for (let y = 90; y < H; y++) { const t = (y - 90) / (H - 90), w = 15 + Math.abs(Math.sin(t * 3.2)) * 6 + (y > H - 26 ? (y - (H - 26)) * 2.6 : 0);
-    for (let x = -w; x <= w; x++) { const s = Math.sin((x + y * 0.7) * 0.35 + Math.sin(y * 0.05) * 2), e = x / w; R(g, e < -0.45 ? (s > 0.2 ? '#7a5648' : '#5e4236') : s > 0.3 ? '#5e4236' : s > -0.4 ? '#46322a' : '#2e211c', CX + x, y, 1, 1); } }
+    for (let x = -w; x <= w; x++) { const s = Math.sin((x + y * 0.7) * 0.35 + Math.sin(y * 0.05) * 2), e = x / w; R(g, e < -0.45 ? (s > 0.2 ? '#b09480' : '#86685c') : s > 0.3 ? '#7a5a50' : s > -0.4 ? '#5e4642' : '#3c2a2e', CX + x, y, 1, 1); } }
+  /* the veil: a ragged cream ring where the trunk meets the gills, and moss on the shaded side */
+  for (let x = -24; x <= 24; x++) { const dr = 3 + (hash(x, 9) % 4); R(g, '#e8ddc0', CX + x, 92, 1, 2); R(g, '#c8b898', CX + x, 94, 1, dr - 2); R(g, '#a89870', CX + x, 92 + dr, 1, 1); }
+  for (let i = 0; i < 24; i++) R(g, i % 3 ? '#6a8a4a' : '#9ac060', CX + 6 + (hash(i, 5) % 14), 104 + (hash(i, 8) % 90), 2, 1);
   /* the roots reaching out from the foot */
   for (const [dx, len] of [[-1, 78], [1, 82], [-1, 50], [1, 46], [-1, 28], [1, 30]]) for (let i = 0; i < len; i++) { const x = CX + dx * (14 + i), y = H - 4 - Math.round(Math.sin(i / len * Math.PI) * (6 + len / 10)) + Math.round(i * 0.06); R(g, i < 4 ? '#5e4236' : '#46322a', x, y, 2, 3); R(g, '#7a5648', x, y, 1, 1); }
   /* THE KNOT: a swelling of roots two thirds down the trunk (its glow is drawn over it) */

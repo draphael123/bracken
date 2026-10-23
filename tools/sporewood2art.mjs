@@ -1,7 +1,7 @@
 /* tools/sporewood2art.mjs - THE ART PASS OF SPOREWOOD 2 + THE MOTHER CAP 2 (claude/sporewood2art), in the page. Art only: it must leave the level's data alone and draw everything the greybox left flat.
      THE LEVEL IS UNTOUCHED  its levelHash equals the greybox's stamp (c0b80ba1d0de, claude/sporewood2): the reskin is a table (L.reskin) the page applies at spawn, never an ent flag.
      THE RESKIN              every shield / brute / archer in the level is a MYCONID GUARD / CAP BRUTE / SPORE ARCHER on the page (cnSkin), each skin has its own sheet (same frame count as the goblin's)
-                             and a bestiary card, and a killed one lies in its own skin (the corpse's set); no goblin sheet is drawn in the wood.
+                             and a bestiary card; a killed one lies in its own skin (tools/corpses.mjs lists the wood: CORPSES_ONLY=spore); no goblin sheet is drawn in the wood.
      HER FRAMES (B16)        every windup and release has a picture of its own: lash, crush, bloom, brood, wither x tell + release, the open crown, the ward, the rise, the wake - all different
                              from the idle and from each other, and the second phase (the net) wears its own set.
      THE PLACES              the six areas have their own tile kit colours, backdrop colours and floor dressing (the palette per area differs), the knot is drawn behind the mid row, and a frame of each area
@@ -23,8 +23,6 @@ try {
     out.sheets={}; for(const [t,sk] of Object.entries(want)){ out.sheets[sk]={have:!!S[sk], frames:S[sk]&&S[sk].R.length, base:S[t].R.length, white:!!(S[sk]&&S[sk].white), left:S[sk]&&S[sk].L.length}; }
     out.brood={have:!!S.puffbrood, frames:S.puffbrood&&S.puffbrood.R.length, base:S.sporeling.R.length};
     out.icon={w:S.mother.R[0].width,h:S.mother.R[0].height};
-    /* a killed one lies in its own skin */
-    const g=en.find(e=>e.cnSkin==='myconidguard'&&e.alive); if(g){ g.hp=1; BK.hurtEnemy?BK.hurtEnemy(g,999,g.x+10,false):0; BK.sim(4); const c=BK.corpses().find(c=>Math.abs(c.x-g.x)<6); out.corpse=c?(c.set===S.myconidguard?'own':'other'):'none'; }
     /* her frames */
     const M=await import('/src/redraw/sporewood2_mother.js'); const sig=cv=>{const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let h=2166136261;for(let i=0;i<d.length;i+=7){h=Math.imul(h^d[i],16777619)>>>0;}return h;};
     const F1=M.frames(1),F2=M.frames(2);out.poses=Object.keys(F1);out.sig={};for(const n of out.poses){out.sig[n]=F1[n].map(sig);}
@@ -38,7 +36,7 @@ try {
   for (const [sk, v] of Object.entries(o.sheets)) ok(v.have && v.frames === v.base && v.left === v.base && v.white, sk + ' has its own sheet with the goblin\'s ' + v.base + ' frames, mirrored and white-flash');
   ok(o.brood.have && o.brood.frames === o.brood.base, 'her brood (puffbrood) has its own ' + o.brood.base + ' frames');
   ok(o.icon.w >= 40 && o.icon.h >= 40, 'the Mother Cap\'s bestiary portrait is repainted (' + o.icon.w + 'x' + o.icon.h + ')');
-  ok(o.corpse === 'own' || o.corpse === undefined, 'a killed myconid guard lies in its own skin (' + o.corpse + ')');
+  { const src = (await import('node:fs')).readFileSync(new URL('./corpses.mjs', import.meta.url), 'utf8'); ok(/'ksar', 'spore'\]/.test(src), 'tools/corpses.mjs kills the wood\'s reskins and reads their bodies back (CORPSES_ONLY=spore node tools/corpses.mjs)'); }
   const need = ['idle', 'lashTell', 'lash', 'crushTell', 'crush', 'bloomTell', 'bloom', 'broodTell', 'brood', 'witherTell', 'wither', 'open', 'ward', 'phaseRise', 'wake'];
   ok(need.every(n => o.poses.includes(n)), 'every windup and release has its own frame set: ' + need.join(' '));
   const idle = o.sig.idle[0], all = new Map(); let dup = [];
