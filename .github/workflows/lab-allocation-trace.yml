@@ -1,0 +1,43 @@
+name: lab-allocation-trace
+on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/lab-allocation-trace.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  trace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Keep the diagnostic collector outside the frozen source checkout
+        run: cp tools/native-memory-trace.mjs /tmp/bracken-native-memory-trace.mjs
+      - name: Use the exact failing audit source
+        run: |
+          git checkout --detach 3ea61398a0164d0acd1b3e0a8e481b604dfa62eb
+          cp /tmp/bracken-native-memory-trace.mjs tools/native-memory-trace.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const p='tools/mark-integrity.mjs';let s=fs.readFileSync(p,'utf8');
+          const needle="    await pg.send('Memory.simulatePressureNotification',{level:'critical'});";
+          if(s.split(needle).length!==2)throw Error('ordered fight boundary changed');
+          s="import {nativeMemoryTrace} from './native-memory-trace.mjs';\n"+s;
+          s=s.replace('const fails = [], report = [];','const trace = await nativeMemoryTrace(pg);\nconst fails = [], report = [];');
+          s=s.replace(needle,'    await trace.sample(row.t);\n'+needle);
+          s=s.replace('} finally { pg.close(); }','} finally { await trace.close(); pg.close(); }');
+          fs.writeFileSync(p,s);
+          JS
+      - name: Trace complete original fights under the original memory ceiling
+        run: node tools/lab-memory-check.mjs mark-integrity
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-allocation-trace
+          path: gate-data/
