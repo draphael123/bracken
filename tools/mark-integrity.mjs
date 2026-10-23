@@ -66,6 +66,8 @@ const FIGHT = String.raw`async (row, secs) => {
     if (!key) prevMode = e.mode;
     for (let i = open.length - 1; i >= 0; i--) if (open[i].left <= 0) { const o = open.splice(i, 1)[0]; const r = rows[o.key] = rows[o.key] || { mark: o.mark, n: 0, landed: 0, posed: 0, poseN: 0, minPose: 1e9, maxPose: 0 };
       r.n++; if (o.land) r.landed++; if (o.pose != null) { r.poseN++; if (o.pose >= 20) r.posed++; r.minPose = Math.min(r.minPose, o.pose); r.maxPose = Math.max(r.maxPose, o.pose); } }
+    // Yield only after a complete frame and its samples; keep the same page, clock, dice and ordered fights.
+    if (fr % 240 === 239 && window.__brackenLabCollect) await window.__brackenLabCollect();
   }
   return { rows };
 }`;
@@ -77,7 +79,7 @@ try {
     if (ONLY.length && !ONLY.includes(row.t)) continue;
     let r; try { r = await pg.evalp('(' + FIGHT + ')(' + JSON.stringify(row) + ',' + SECS + ')', 900000); } catch (err) { r = { err: String(err.message || err).slice(0, 160) }; }
     await pg.send('Memory.simulatePressureNotification',{level:'critical'}); // Return unused native caches between the original ordered fights.
-    if (r.err) { report.push(row.t.padEnd(14) + ' SKIPPED: ' + r.err); continue; }
+    if (r.err) { fails.push(row.t + ': incomplete fight: ' + r.err); report.push(row.t.padEnd(14) + ' INCOMPLETE: ' + r.err); continue; }
     const keys = Object.keys(r.rows);
     for (const k of keys) { const x = r.rows[k]; const bad = [];
       if (x.landed === 0) bad.push('PHANTOM MARK: ' + x.mark + ' shown ' + x.n + 'x and nothing ever landed');

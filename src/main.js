@@ -3234,6 +3234,7 @@ function updateAmbush(dt) {
 }
 /* THE CAPTAIN'S NAME LOCKS THE ROOM: one pip for every body still up, then the survivors lose their nerve. */
 function drawAmbushHud() {
+  if (P.dead || deathRecap) return;   /* The death card and its recap own this band, as in drawSeaHud. */
   if (ambushMsgT > 0 && ambushMsg) { const k = Math.min(1, ambushMsgT / 0.35), y = Math.round(VH * 0.26), h = ambushSub ? 30 : 22;
     g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.72)'; g.fillRect(0, y - 6, VW, h);
     g.fillStyle = ambushCol; g.fillRect(0, y - 6, VW, 1); g.fillRect(0, y - 7 + h, VW, 1);

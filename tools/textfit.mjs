@@ -371,7 +371,7 @@ async function pageTextFit(input) {
 }
 
 async function main() {
-  const pg = await openPage({ audioFiles: false });   /* layout needs audio's banner dismissed, not 867 decoded clips */
+  const pg = await openPage({ audioFiles: false, gcHelpers: false });   /* layout needs audio's banner dismissed, not 867 decoded clips */
   const input = { only, hints: hints(), levels: process.env.TEXTFIT_LEVELS ? process.env.TEXTFIT_LEVELS.split(',') : null };
   console.log(input.hints.length + ' hint messages read out of src/main.js');
   const t0 = Date.now();
@@ -405,7 +405,8 @@ async function main() {
   /* TWO pages, not five (10-16 leakfix): every page is its own headless Chrome and a talk page grows to 1.5-3 GB of baked level canvases, so five
      at once peaked near 9 GB on a 16 GB PC (the 14:53 hang). Scopes are independent pages with their own timers; fewer at a time only makes the whole run longer. */
   const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 2));
-  const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openPage({ audioFiles: false }) });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
+  // Loads and explicit scope yields already collect; drawing a measured frame must not force another full heap collection.
+  const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openPage({ audioFiles: false, gcHelpers: false }) });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
   const closeAll = async () => { for (const slot of pages) { try { await slot.p.close(); } catch {} } };
   const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
   const worker = async slot => { for (let job; (job = queue.shift());) for (const [ui, u] of job.entries()) { const ts = Date.now(); let part, p = slot.p;
@@ -414,7 +415,7 @@ async function main() {
       await closeAll(); process.exit(1); }
     part.urls = []; for (const sh of part.shots) part.urls.push(await p.evalp('window.__textfitShots[' + sh.k + '].png')); shotBudget = Math.max(0, shotBudget - part.shots.length);
     results.set(u, part); console.log('  scope ' + u.label.padEnd(14) + String(part.stats.frames).padStart(6) + ' screens  ' + ((Date.now() - ts) / 1000).toFixed(1) + 's');
-    if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage({ audioFiles: false }); } } };
+    if (u.recycle && (ui < job.length - 1 || queue.length)) { try { await p.close(); } catch {} slot.p = await openPage({ audioFiles: false, gcHelpers: false }); } } };
   await Promise.all(pages.map(worker));
   const r = { issues: [], stats: { frames: 0, texts: 0, screens: {} }, shots: [] }, shotUrls = [], seen = new Set();
   for (const u of units) { const part = results.get(u);
