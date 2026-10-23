@@ -14,7 +14,7 @@ const boss = m => `BK.tp(424,14);BK.sim(200);const b=BK.enemies().find(e=>e.t===
 const SHOTS = [
   ['v0', 10, 40, ''], ['v1', 60, 36, ''], ['v2', 140, 38, ''], ['v3', 175, 36, ''], ['v4', 230, 26, ''], ['v5', 275, 18, ''], ['v6', 320, 19, ''], ['v7', 380, 11, ''], ['v8', 425, 14, ''],
   ['glade', 26, 40, ''], ['bounce-pit', 56, 36, ''], ['terrace', 80, 32, ''],
-  ['hollows', 120, 38, ''], ['dark-bud-lit', 133, 38, "const g=BK.props().find(p=>p.t==='glowbud'&&Math.abs(p.x/16-133.5)<1);if(g)g.lit=12;"],
+  ['fall-terrace', 89, 28, ''], ['fall-bounce-stalk', 233, 22, ''], ['fall-her-approach', 389, 5, ''], ['hollows', 120, 38, ''], ['dark-bud-lit', 133, 38, "const g=BK.props().find(p=>p.t==='glowbud'&&Math.abs(p.x/16-133.5)<1);if(g)g.lit=12;"],
   ['dark-shaft', 176, 36, "for(const p of BK.props())if(p.t==='glowbud'&&p.x/16>160&&p.x/16<190)p.lit=12;"],
   ['bog', 214, 26, ''], ['spring-spore', 202, 28, "BK.sporewood().addSpring(202*16+8,28*16+8,8);"], ['cap-ladder', 266, 18, ''],
   ['larder', 310, 19, ''], ['spore-mage', 340, 11, ''],
