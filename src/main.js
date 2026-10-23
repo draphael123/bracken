@@ -7946,6 +7946,7 @@ function spawnCorpse(e, dir) {
     case 'wasp': Object.assign(c, { vx: dir * 30, vy: 10, spin: 11, life: 1.2, max: 1.2, wobble: true, grav: 500 }); SFX.chitter(); break;
     case 'thorn': Object.assign(c, { vx: dir * 80, vy: -170, spin: dir * 12, life: 1.0, max: 1.0 }); SFX.gobDie(); SFX.clatter(); break;
     case 'spit':
+      if (rsk) { Object.assign(c, { vx: dir * 50, vy: -140, spin: dir * 8, life: 1.0, max: 1.0 }); SFX.squelch(); break; }   /* (claude/hornetsnest) a reskinned spitter (THE VENOM SPITTER) tumbles in its own skin, not as the toadstool's cap and stem */
       corpses.push({ t: 'cap', x: e.x, y: e.y - 6, vx: dir * 40, vy: -210, rot: 0, spin: dir * 9, face: e.face, life: 1.0, max: 1.0, frame: 0, grav: 900 });
       Object.assign(c, { t: 'stem', vx: 0, vy: 0, spin: 0, life: 0.6, max: 0.6, grav: 0, crumple: true }); SFX.squelch(); break;
     case 'queen': Object.assign(c, { vx: -dir * 20, vy: -40, spin: dir * 1.5, life: 1.6, max: 1.6, grav: 500, royal: true }); break;

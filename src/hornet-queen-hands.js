@@ -132,7 +132,7 @@ export function makeHornetQueenHands(ctx) {
     if (S.stage === 2) { for (const p of S.pines) { if (p.st !== 'stand') continue; const box = { l: p.x - 7, r: p.x + 7, t: S.G.p.floor - 60, b: S.G.p.floor };
         if (hb.l < box.r && hb.r > box.l && hb.t < box.b && hb.b > box.t && ctx.hitOnce(p)) HQM.strokePine(S, p, w); }
       const c = S.comb; if (c && c.st === 'hang' && hb.l < c.x1 && hb.r > c.x0 && hb.t < c.y + c.rows * 16 + 12 && hb.b > c.y) HQM.cutComb(S, w); }   /* (its drips hang a hand under it: a blow there cuts it too) */
-    if (S.stage === 1) for (const c of S.cells) { if (c.st !== 'idle' && c.st !== 'pulse') continue; if (hb.l < c.x + 8 && hb.r > c.x - 8 && hb.t < c.y && hb.b > c.y - 14) { c.st = 'broken'; c.t = HQ.brood.every * 2; S.n.smashed++; ctx.burst(c.x, c.y - 6, 12, ['#e0b040', '#fff1a0', '#c06040'], 70, 0.6); ctx.number(c.x, c.y - 22, 'SMASHED', '#8fd160'); SOUND.cut(ctx.sfx); } } };
+    if (S.stage === 1) for (const c of S.cells) { if (c.st !== 'idle' && c.st !== 'pulse') continue; if (hb.l < c.x + 8 && hb.r > c.x - 8 && hb.t < c.y && hb.b > c.y - 14) { c.st = 'broken'; c.t = HQ.brood.every * 2; S.n.smashed++; ctx.burst(c.x, c.y - 6, 12, ['#e0b040', '#fff1a0', '#c06040'], 70, 0.6); SOUND.cut(ctx.sfx); } } };
   /* A THROWN SMOKE POT that meets her (src/hornets-nest-hands.js onQueen): it breaks on her - and the cloud it leaves is under her */
   H.potHits = (x, y) => { const e = live(); if (!e || !ctx.bossActive || !S || S.stage === 'escape') return false; return Math.abs(x - e.x) < HQ.w / 2 + 4 && y > e.y - HQ.h - 4 && y < e.y + 6; };
   /* A BLOW ON HER (B15; src/hornet-queen.js takeBlow) - the turned share clanks and says why */
