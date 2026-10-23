@@ -1,5 +1,6 @@
 import { setLevelSfx, levelSfxReady, prepareLevelSfx } from './audio.js';
 import { staticGradient } from './render-cache.js';
+import { drawVisibleRoomMasonry } from './visible-room-masonry.js';
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotSanctus, abbotSpoil } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
@@ -33312,11 +33313,7 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   }
   // ---------- A DROWNED ROOM ----------
   if (st === 'drowned') {
-    g.fillStyle = '#16262a'; g.fillRect(sx, sy, w, h);
-    for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet
-      for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }
-      g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);
-    }
+    drawVisibleRoomMasonry(g, sx, sy, w, h);
     g.fillStyle = '#24402c'; for (let i = 0; i < w * h / 260; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 1, 2 + (i % 3)); }
     // weed hanging off the courses, and a fish going through the room now and then
     for (let xx = sx - ((tx0 * TS) % 28); xx < sx + w; xx += 28) { const hh = 5 + ((Math.abs(Math.round(xx)) * 7) % 9), sw2 = Math.sin(time * 0.9 + xx * 0.07) * 1.5;

@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [room-cull, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -138,7 +138,7 @@ jobs:
           name: mobile-comparison
           path: gate-data/
   compare:
-    if: inputs.mode == 'compare' || inputs.mode == 'present'
+    if: inputs.mode == 'compare' || inputs.mode == 'present' || inputs.mode == 'room-cull'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -154,6 +154,8 @@ jobs:
           node-version: '24.11.1'
       - run: node tools/canvas-bitmap-proof.mjs
         if: inputs.present == 'bitmap' && inputs.mode == 'present'
+      - run: node tools/visible-room-masonry-proof.mjs
+        if: inputs.mode == 'room-cull'
       - name: Same-runner original phone setup, pixels and three FPS samples per build
         env:
           LEVEL: ${{ matrix.level }}
