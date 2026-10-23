@@ -24,6 +24,7 @@ const NOT_BOSS = {
   'gormTake': "KING GORM's own gate (src/gorm.js): his 0.4x clank / warded states read his OPENINGS (cages held, ward timer), not a blow verb - every blow is chipped alike outside them (claude/gorm2)",
   'RBM.boarTake': 'THE ROYAL BOAR (src/royal-boar.js), a hall foe: only its dazed state (x1.5) changes the blow, not a blow verb (claude/gorm2)',
   'EK.take': 'an ELITE (src/elite-kit.js): it already reads the hero blow (blow), and an elite is not a boss',
+  'HSW.swarmTake': 'THE SWARM (src/hornet-swarm.js), a common nest foe: a quiet (smoked) one scatters x2, an idle one rises at the blow - its own state gates it, not a blow verb, and a swarm is not a boss (claude/hornetsnest)',
   'BLM.leechTake': 'THE BOG LEECH (src/bog-leech.js), a common fen foe: its own mode (lurk, latched, rear, home) gates the blow, and a leech is not a boss (claude/fenroad2)',
   'CNF.grindylowTake': 'THE GRINDYLOW, a common canal foe', 'CNF.wispTake': 'THE WILL-O-WISP, a common canal foe', 'FWR.wraithTake': 'THE FOG WRAITH, a common towpath foe (light, not the blow, makes it solid: claude/towpath2)',
   'WMH.take': 'THE WICKER MAN, a fair prop-foe (not on OPEN_RULE)', 'LDH.take': 'THE LESSER DJINN, a common welltown foe',
