@@ -113,8 +113,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   ground(80, 92, FL - 12);                                   /* the root shoulder under the nest's lip */
   /* THE MOUTH: up from the shoulder into the shell at 82-89 on comb rungs, wall to wall, two rows apart */
   air(82, 89, 26, 51);
-  for (let i = 0, y = 52; y >= 34; i++, y -= 2) { if (i % 2) shelf(86, 89, y); else shelf(82, 85, y); }   /* (four wide each, side by side: a hop up and across) */
-  waxed(82, 85, 48); waxed(86, 89, 42);
+  for (let i = 0, y = 52; y >= 34; i++, y -= 2) { if (i % 2) shelf(85, 89, y); else shelf(82, 86, y); }   /* (five wide, overlapping by two: a straight hop up or across - the swarm, not the footing, is the test here) */
   smoke(91, FL - 13);                                        /* a smoke stand at the mouth (on the shoulder) */
   cells.push({ x: 81, y: FL - 13 });                         /* a brood cell crusting the mouth: the brood met first, where nothing else is on you */
   swarm(86, 42, { squad: 'throat' }); hornet(91, 30, { squad: 'throat' });   /* (the hornet keeps the throat's head, over the chamber's floor, not the rungs) */                                             /* THE GATE'S THROAT: a swarm in the middle of the rungs - climb with the pot in hand */

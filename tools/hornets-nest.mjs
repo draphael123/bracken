@@ -105,6 +105,8 @@ function HQ_P1() { return HQM.HQ.p1End; }
   ok(HQM.cutComb(S, Wd) && c.st === 'fall', 'THE LAST COMB: cut, it falls');
   for (let i = 0; i < 90 && e.mode !== 'pinned'; i++) { e.x = (c.x0 + c.x1) / 2; e.y = S.G.p.floor - 30; HQM.stepQueen(e, S, 1 / 60, [{ x: S.G.p.x0 + 8, y: S.G.p.floor, ground: true, alive: true }], Wd); }
   ok(e.mode === 'pinned' && S.n.pinComb === 1 && !HQM.cutComb(S, Wd), 'it comes down on her: PINNED (and there is only the one)'); }
+/* a swarm cut down while it is on a hero takes its sting with it (the drain was once left running for the rest of the level) */
+{ const src = (await import('node:fs')).readFileSync(new URL('../src/main.js', import.meta.url), 'utf8'); ok(src.includes("e.alive = false; if (e.t === 'swarm' && e.onHero) { SWX.drainOff(e, e.onHero)"), 'a dead swarm stops its drain'); }
 /* B16: a pose for every mode she wears; every attack told */
 { const modes = new Set(); const src = (await import('node:fs')).readFileSync(new URL('../src/hornet-queen.js', import.meta.url), 'utf8');
   for (const m of src.matchAll(/case '([a-zA-Z0-9]+)'/g)) modes.add(m[1]); for (const m of src.matchAll(/e\.mode = '([a-zA-Z0-9]+)'/g)) modes.add(m[1]);

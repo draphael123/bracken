@@ -2,7 +2,7 @@
 //   COMB      L.combs: a HANGING COMB is cut loose by ANY BLOW on it (a hero's blow box: strike(hb); a ranger's arrow too). It DROPS down its plumb line (drawn, gold,
 //             with a ghost of where it lands) and lands on the first footing under it - the ground, a ledge, or a comb that landed before it (two combs STACK into a
 //             stair) - as ONE-WAY footing (cellSet). A falling comb knocks a hanging comb under it loose too. What stands where it lands is struck: a foe takes
-//             COMB.crush; a hero is shoved up onto it and takes COMB.heroCrush. A respawn hangs them all again (B4).
+//             COMB.crush; a hero is shoved up onto it (COMB.heroCrush 0: the comb he cut is his step, never his death - the walker died under its own cuts at 8). A respawn hangs them all again (B4).
 //   WAX       L.wax: [x0, x1, row] - the footing row whose top is FRESH COMB: a hero standing on it is held (P.syrupT: main.js's shared slow, the run's cap 40).
 //   SMOKE     L.smokers: the honey-hunters' SMOKE STANDS (they never run out). E takes a SMOKE POT: carried (P.carry, THROW_KIND.smokepot: slower, no swing - you can
 //             still jump); its smoke QUIETS every swarm and hornet within SMOKE.aura of you. E sets it down (it smoulders where it stands SMOKE.rest s, quieting
@@ -16,7 +16,7 @@
 import * as CT from './carry-throw.js';
 import { drawSwarm } from './hornet-swarm.js';
 export const SMOKE = { reachX: 15, reachY: 18, aura: 58, rest: 7, cloudR: 46, cloudT: 6, dmg: 3, stagger: 0.7, keep: 3, col: '#c8d0d8' };
-export const COMB = { g: 900, maxV: 520, crush: 24, heroCrush: 8, sticky: 0.12 };
+export const COMB = { g: 900, maxV: 520, crush: 24, heroCrush: 0, sticky: 0.12 };
 export const BROOD = { near: 120, pulse: 3.2, n: 2 };
 export const NEST_SAY = { take: 'A SMOKE POT: CARRY IT, OR ATTACK TO THROW IT', down: 'YOU SET THE POT DOWN: IT SMOULDERS', dropped: 'A BLOW: YOU DROP THE POT', broke: 'THE POT BREAKS: SMOKE',
   cut: 'CUT LOOSE', crushed: 'THE COMB COMES DOWN ON IT', stacked: 'IT LANDS ON THE COMB BELOW', pulse: '!!', smash: 'SMASHED', hatch: 'IT HATCHES', sticky: 'FRESH COMB: IT HOLDS YOUR FEET' };
