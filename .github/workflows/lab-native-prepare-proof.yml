@@ -1,0 +1,52 @@
+name: lab-native-prepare-proof
+on:
+  workflow_dispatch:
+    inputs:
+      source:
+        type: string
+        default: 'af6d16cf6ecac7713d5b9a33b534c2cb5aeb6fb1'
+permissions:
+  contents: read
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [mark-integrity, no-hidden-hits]
+    env:
+      PREPARE_SOURCE: ${{ inputs.source }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: cp tools/lab-native-prepare-proof.mjs /tmp/bracken-lab-native-prepare-proof.mjs
+      - name: Drop nonessential Blink caches at existing completed manual collection boundaries
+        run: |
+          git checkout --detach "$PREPARE_SOURCE"
+          cp /tmp/bracken-lab-native-prepare-proof.mjs tools/lab-native-prepare-proof.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';import {createHash} from 'node:crypto';
+          const p='tools/cdp.mjs',s=fs.readFileSync(p,'utf8');
+          const needle="await send('HeapProfiler.collectGarbage',{},15000);nativeLab.completed++";
+          if(s.split(needle).length!==2)throw Error('manual native collection boundary changed');
+          const replacement="await send('Memory.prepareForLeakDetection',{},15000);"+needle;
+          fs.writeFileSync(p,s.replace(needle,replacement));fs.mkdirSync('gate-data',{recursive:true});
+          fs.writeFileSync('gate-data/native-prepare-source.json',JSON.stringify({source:process.env.PREPARE_SOURCE,file:p,original:createHash('sha256').update(s).digest('hex'),replacement,rendererCeilingMb:2816,api:'https://chromedevtools.github.io/devtools-protocol/tot/Memory/#method-prepareForLeakDetection'},null,2));
+          JS
+      - name: Exact game and random samples plus frame/display pixels across native preparation
+        run: node tools/lab-native-prepare-proof.mjs
+      - name: Complete all original audit inputs under the original renderer ceiling
+        env:
+          CHECK: ${{ matrix.check }}
+          NO_HIDDEN_RESULT: gate-data/no-hidden-hits.measurement.json
+        run: node tools/lab-memory-check.mjs "$CHECK"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-prepare-${{ matrix.check }}
+          path: gate-data/
