@@ -480,14 +480,14 @@
   "bare": true
  },
  "kings": {
-  "hash": "6d72748bf23f",
+  "hash": "92a7ae31165a",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 20,
-  "deaths": 3,
-  "kills": 37,
-  "lifts": 81,
+  "hits": 18,
+  "deaths": 2,
+  "kills": 33,
+  "lifts": 79,
   "walked": 100,
   "bare": true
  }
