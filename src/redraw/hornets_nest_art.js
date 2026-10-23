@@ -20,6 +20,7 @@ const DRONE = c => { if (dark(c)) return c; const l = lum(c), [r, g, b] = c; if 
   if (r > g + 30) return [40, 26, 16];   /* the cloth: black bands */ return c; };
 const GUARD = c => { if (dark(c)) return c; const [r, g, b] = c, l = lum(c); if (g > r + 15 && g > b) return l > 0.45 ? [196, 120, 36] : [96, 56, 20];   /* skin -> hornet amber */
   if (b > r + 10 && b > g) return [60, 36, 22];   /* tabard -> the dark thorax */ if (l > 0.7) return [240, 200, 110];   /* the shield -> a wax plate */ if (r > g + 30) return [42, 28, 18]; return c; };
+const SPITTER = c => { if (dark(c)) return c; const [r, g, b] = c, l = lum(c); if (r > g + 30) return l > 0.4 ? [210, 140, 40] : [120, 70, 24];   /* the toadstool's red cap -> an amber worker's back */ if (g > r + 15) return [140, 200, 90];   /* green venom */ return l > 0.6 ? [236, 200, 120] : [90, 56, 26]; };
 export function bakeNestSkins(SPR) {
-  return { hornet: recolor(SPR.wasp, HORNET), combdrone: recolor(SPR.sprig, DRONE), nestguard: recolor(SPR.shield, GUARD) };
+  return { hornet: recolor(SPR.wasp, HORNET), combdrone: recolor(SPR.sprig, DRONE), nestguard: recolor(SPR.shield, GUARD), venomspitter: recolor(SPR.spit, SPITTER) };
 }

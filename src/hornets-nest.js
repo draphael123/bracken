@@ -63,7 +63,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   const shelf = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const sign = (x, y, text, o = {}) => ent('sign', x, y, { text, ...o });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
-  const combs = [], wax = [], smokers = [], cells = [], crumbles = [];
+  const combs = [], wax = [], smokers = [], cells = [], crumbles = [], hallSmokers = [], hallWax = [];
   /* A HANGING COMB: cells x0..x1, rows row..row+rows-1 while it hangs (AIR in the grid: it is drawn and struck, not stood on). `land` (its top row once down)
      is computed at the end, once the ground is laid, unless the comb lands on another comb (a chain: given) */
   const hang = (id, x0, x1, row, rows = 2, o = {}) => combs.push({ id, x0, x1, row, rows, ...o });
@@ -72,13 +72,15 @@ export function buildHornetsNest({ painter, T, TS }) {
   const swarm = (x, y, o = {}) => ent('swarm', x, y, o);
   const hornet = (x, y, o = {}) => ent('wasp', x, y, { sting: true, cnSkin: 'hornet', ...o });
   const drone = (x, y, o = {}) => ent('sprig', x, y, { cnSkin: 'combdrone', face: -1, ...o });
+  const spitter = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'venomspitter', face: -1, ...o });   /* THE VENOM SPITTER: the toadstool spitter's machine under a worker clinging to the comb (it fills its cheeks, a yellow !, and spits) */
 
   // ================= 1. THE PINE'S FOOT (0-79): TEACH - the smoke stand, the lone swarm, THE FIRST COMB, the sticky bridge =================
   ground(0, 41, FL);
   smoke(6, FL - 1);
   sign(3, FL - 1, "THE HONEY-HUNTERS' SMOKE POTS STILL SMOULDER. E TAKES ONE: CARRIED, THE SWARM NEAR YOU GOES QUIET.");
   ground(16, 24, FL - 2);                                   /* a root step under the first swarm */
-  swarm(20, FL - 6);
+  swarm(20, FL - 6, { squad: 'foot' }); hornet(27, FL - 6, { squad: 'foot' });
+  shelf(8, 13, FL - 3); shelf(27, 31, FL - 3);              /* low roots over the forest floor (a second height) */
   sign(12, FL - 1, 'A SWARM. WALK THROUGH WITH THE POT AND IT SLEEPS. ATTACK THROWS THE POT: WHERE IT BREAKS, THE SMOKE STAYS.');
   coins([18, FL - 4], [21, FL - 4], [23, FL - 4]);
   /* THE FIRST COMB: the buttress root stands four rows over the forest floor - no jump makes it. A comb hangs off the pine's low bough beside it: cut it,
@@ -92,17 +94,17 @@ export function buildHornetsNest({ painter, T, TS }) {
   ground(62, 62, FL - 8);                                    /* a knuckle in the hollow: 60 -> 58 -> the bridge at 56 */
   shelf(62, 67, FL - 10); waxed(62, 67, FL - 10);            /* the comb across it */
   ground(68, 79, FL - 10);
-  hornet(65, FL - 14);
+  hornet(65, FL - 14, { squad: 'hollow' }); spitter(69, FL - 11, { squad: 'hollow' });
   sign(58, FL - 11, 'FRESH COMB IS STICKY: IT HOLDS YOUR FEET. A HORNET STINGS ON ITS ! - STEP OFF ITS LINE.');
   coins([64, FL - 12], [66, FL - 12]);
   /* a comb over a comb drone: the first DROP (cut it: it lands on him) */
   hang('drop1', 71, 73, FL - 15, 2, { onFoe: true });
-  drone(72, FL - 11);
+  drone(72, FL - 11, { squad: 'hollow' });
   ground(76, 79, FL - 12);                                   /* a root shoulder up under the nest's lip (row 54) */
   coins([77, FL - 13]);
-  ent('check', 78, FL - 13);
   /* the pine's low bough over the knuckles: a silver in the bark (a dead end that pays) */
-  shelf(55, 59, FL - 13); coins([55, FL - 14], [56, FL - 14]); ent('silver', 58, FL - 14);   /* up off the knuckle at 56 (a held jump, three rows) */
+  shelf(55, 59, FL - 12); coins([55, FL - 13], [56, FL - 13], [58, FL - 13]);   /* up off the knuckle at 56 */
+  shelf(60, 63, FL - 14); shelf(64, 68, FL - 16); coins([61, FL - 15]); ent('silver', 66, FL - 17);   /* the pine's low boughs, up over the hollow: a honey-hunter's cache (a dead end that pays) */
 
   // ================= 2. THE PAPER GATE (80-168): TEST - the gate's throat, THE COMB BRIDGE, the waxed floor; EXAM: THE NEST-GUARD =================
   /* THE NEST: its paper shell hangs from the pine's boughs at the top of the world - one mass from row 0 down to row 51 over 80-332 - with its cells carved
@@ -114,29 +116,33 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (let i = 0, y = 52; y >= 34; i++, y -= 2) { if (i % 2) shelf(87, 89, y); else shelf(82, 84, y); }
   waxed(82, 84, 48); waxed(87, 89, 42);
   smoke(91, FL - 13);                                        /* a smoke stand at the mouth (on the shoulder) */
-  swarm(86, 42);                                             /* THE GATE'S THROAT: a swarm in the middle of the rungs - climb with the pot in hand */
+  cells.push({ x: 81, y: FL - 13 });                         /* a brood cell crusting the mouth: the brood met first, where nothing else is on you */
+  swarm(86, 42, { squad: 'throat' }); hornet(84, 37, { squad: 'throat' });                                             /* THE GATE'S THROAT: a swarm in the middle of the rungs - climb with the pot in hand */
   sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: CARRIED, YOU CANNOT SWING, BUT YOU CAN STILL JUMP.");
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
-  hornet(100, 29); drone(108, 33);
+  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); spitter(98, 30, { squad: 'cells' });
+  shelf(95, 104, 31); shelf(129, 136, 31);                  /* comb shelves along the chamber's wall (a second height) */
   coins([94, 32], [98, 31], [102, 32]);
   /* THE COMB BRIDGE (REQUIRED): an eight-wide gap down into the waste pit; the comb over it is wider than the gap - cut it and it lands across */
+  cells.push({ x: 112, y: 33 });                             /* a cell on the lower cells' floor, by the gap */
   air(118, 125, 34, 39);                                     /* the waste pit, bed at row 40, a stair up its east wall: 40 -> 38 -> 36 -> 34 */
   block(124, 125, 38, 39); block(125, 125, 36, 37);
   hang('bridge', 117, 126, 29, 1, { bridge: true });
   sign(113, 33, 'THE COMB OVER THE GAP IS WIDER THAN THE GAP. CUT IT: IT LANDS ACROSS.');
-  coins([120, 39], [122, 39]);
+  coins([120, 39], [122, 39]); ent('silver', 119, 39);   /* the waste pit's bed: whoever falls in finds the nest's loot (a dead end that pays) */
   /* THE WAXED FLOOR: the chamber's far half is fresh comb under darting hornets (slow feet, quick stings) */
   air(141, 168, 24, 31);                                     /* (a step up from 34 to 32 at 141) */
   waxed(142, 156, 32);
-  hornet(146, 27); hornet(153, 26);
+  hornet(146, 27, { squad: 'wax' }); hornet(153, 26, { squad: 'wax' }); spitter(150, 28, { squad: 'wax' });
+  shelf(144, 150, 29);
   coins([145, 30], [150, 30], [155, 30]);
   smoke(139, 33);
   /* THE EXAM: THE NEST-GUARD (an elite: the shieldbearer's machine under a soldier hornet's wax plate - he guards his front) on the floor under the comb
      ledge (plunge him from it), a swarm at his back */
   shelf(157, 162, 29); waxed(157, 162, 29); block(155, 156, 31, 31);   /* the comb ledge three rows over the floor, a knuckle of wax up to it */
-  ent('shield', 161, 31, { face: -1, cnSkin: 'nestguard' });
-  swarm(165, 28);
+  ent('shield', 161, 31, { face: -1, cnSkin: 'nestguard', elite: true });
+  swarm(164, 28, { squad: 'guard' });
   sign(143, 31, 'THE NEST-GUARD HOLDS THE CHAMBER. HIS WAX PLATE TURNS A CUT FROM THE FRONT: GO ROUND, OR COME DOWN ON HIM FROM THE LEDGE.');
   ent('check', 167, 31);
 
@@ -149,10 +155,10 @@ export function buildHornetsNest({ painter, T, TS }) {
   coins([173, 29], [170, 27], [176, 25]);
   /* stage 2: the sticky span east under a hornet, to the swarm's ledge - throw a pot up onto it (the smoke stand is on the floor under the span) */
   shelf(176, 194, 22); waxed(176, 194, 22);
-  hornet(185, 18);
+  hornet(185, 18, { squad: 'span' });
   block(195, 196, 20, 31);                                   /* a wax pillar: the span's east end; the swarm's ledge runs east off its top */
   shelf(197, 208, 20);
-  swarm(201, 17);                                            /* THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
+  swarm(201, 17, { squad: 'span' }); spitter(206, 19, { squad: 'span' });   /* THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
   smoke(186, 31);
   sign(183, 31, 'THE SWARM SITS ON THE LEDGE OVER THE SPAN. CARRY A POT UP AND THROW IT: UP+ATTACK LOBS IT HIGH.');
   coins([190, 21], [199, 19], [203, 19]);
@@ -161,7 +167,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   block(209, 214, 14, 31);
   hang('chainA', 205, 207, 14, 2, { chain: 'A', land: 18 });
   hang('chainB', 206, 208, 12, 2, { chain: 'A', land: 16, on: 'chainA' });
-  hornet(211, 10);
+  hornet(211, 10, { squad: 'chain' });
   sign(198, 19, 'TWO COMBS OVER THE LEDGE. CUT BOTH: THEY STACK INTO A STAIR UP THE WALL.');
   coins([206, 17], [210, 13], [213, 13]);
   /* stage 4 + THE EXAM: a sticky shelf east off the wall top, and the LAST CHAIN up the high wall under a swarm and two hornets (REQUIRED) */
@@ -169,7 +175,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   block(223, 247, 8, 31);                                    /* the high wall: its top (row 8) runs east to the brood cells */
   hang('lastA', 219, 221, 8, 2, { chain: 'B', land: 12 });
   hang('lastB', 220, 222, 6, 2, { chain: 'B', land: 10, on: 'lastA' });
-  swarm(217, 10); hornet(221, 4); hornet(214, 6);
+  swarm(217, 10, { squad: 'exam' }); hornet(221, 4, { squad: 'exam' }); hornet(214, 6, { squad: 'exam' }); spitter(228, 7, { squad: 'exam' });
   smoke(212, 13);
   coins([218, 13], [221, 9], [226, 7]);
   air(223, 247, 4, 7);
@@ -180,15 +186,16 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (const [x, y] of [[258, 9], [267, 9], [277, 9], [286, 9]]) cells.push({ x, y });   /* brood cells on the nursery floor (a wax pocket each) */
   sign(251, 9, 'BROOD CELLS PULSE BEFORE THEY HATCH. SMASH A PULSING CELL, OR ITS DRONES COME OUT.');
   coins([262, 8], [272, 8], [282, 8]);
-  hornet(272, 5);
+  hornet(272, 5, { squad: 'brood' }); spitter(280, 9, { squad: 'brood' });
+  shelf(262, 266, 8); shelf(257, 260, 5); ent('silver', 258, 4); shelf(272, 277, 8); shelf(284, 288, 8);   /* the nursery's upper comb (a second height; a silver in the brood's own wax) */
   air(295, 295, 3, 9);                                       /* her door: the nursery floor runs out over the hall; you drop in */
   sign(290, 9, 'HER STING STICKS IN COMB. STAND ON A PERCH AS SHE DIVES, THEN LEAVE. SMOKE UNDER HER AND SHE FALLS.');
 
   // ================= 5. THE BROOD HALL (295-332): BOSS P1 - src/hornet-queen.js =================
   air(HALL.x0, HALL.x1, HALL.top, HALL.floor - 1);
-  for (const [x0, x1, row] of PERCHES) { shelf(x0, x1, row); waxed(x0, x1, row); }
+  for (const [x0, x1, row] of PERCHES) { shelf(x0, x1, row); hallWax.push([x0, x1, row]); }   /* her perches are fresh comb too (sticky: L.wax), but hers - not the level's ents */
   air(HALL.wallR, HALL.wallR, HALL.floor - 3, HALL.floor - 1);   /* the hall's east wall: her arena wall shuts it; she tears out through it, and you after her */
-  smoke(297, HALL.floor - 1); smoke(330, HALL.floor - 1);
+  hallSmokers.push([297, HALL.floor - 1], [330, HALL.floor - 1]);   /* her hall's own stands (the hands run them like the level's) */
   ent('hornetqueen', 313, HALL.floor - 7, { face: -1 });
 
   // ================= 6. THE FALLING NEST (333-353): ESCAPE - down beside the trunk on comb ledges that give way =================
@@ -214,10 +221,15 @@ export function buildHornetsNest({ painter, T, TS }) {
   const foot = v => v === T.SOLID || v === T.ONEWAY || v === T.PLANK || v === T.SPIKE;
   for (const c of combs) { if (c.land !== undefined) continue; let y = c.row + c.rows; for (; y < H; y++) { let hit = false; for (let x = c.x0; x <= c.x1; x++) if (foot(L.grid[y * W + x])) hit = true; if (hit) break; } c.land = y - c.rows; }
   const reachSpans = combs.map(c => [c.x0, c.x1, c.land]);
+  /* THE MACHINES AS ENTS (the hands read the arrays; the tools - level-quality's gadgets, the stuck guide - read these): a comb at its middle, a stand, a wax shelf, a brood cell */
+  for (const c of combs) ent('comb', (c.x0 + c.x1) >> 1, c.row, { id: c.id, land: c.land });
+  for (const [x, row] of smokers) ent('smoker', x, row);
+  for (const [x0, x1, row] of wax) ent('wax', (x0 + x1) >> 1, row - 1, { x0, x1 });   /* (hallSmokers / hallWax are the boss room's: not listed here) */
+  for (const c of cells) ent('broodcell', c.x, c.y);
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools: [], falls: [], moversExtra: [],
-    hornetsNest: true, combs, wax, smokers, broodCells: cells, crumbles, reachSpans,
+    hornetsNest: true, combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 403, [150, 180, 90], 0.10]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine */
     music: 'musForest',   /* PLACEHOLDER (a stock forest track) until Daniel picks the nest's own - candidates in the lane report (the music research lane) */
