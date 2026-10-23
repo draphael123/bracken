@@ -13,9 +13,9 @@
 // X = { heroes(), calm(x, y) -> bool, floorAt(x, y) -> px (the footing under a point), solidAt(x, y), hit(e, box, dmg, o) (o: { blockable, onBlock, name }),
 //   glob(x, y) (a glob splashed here: lay the sticky patch), mark(e, txt, col), sfx, hint(id, msg) }
 export const HONEY = {
-  hp: 46, w: 22, h: 18, speed: 34, wake: 150, leash: 190, beat: 46, hover: 64, ramH: 14,
-  dripTell: 0.7, dripCd: 2.4, globG: 700, globDmg: 8, globR: 7, patch: 6,
-  ramTell: 0.8, ramSpeed: 210, ramT: 0.55, ramDmg: 24, ramRange: 110, ramMin: 26, ramDy: 26, ramCd: 1.4, recover: 0.9, reel: 1.3,
+  hp: 46, w: 22, h: 18, speed: 40, wake: 150, leash: 190, beat: 46, hover: 64, ramH: 14,
+  dripTell: 0.7, dripCd: 2.0, globG: 700, globDmg: 12, globR: 7, patch: 6,
+  ramTell: 0.8, ramSpeed: 210, ramT: 0.55, ramDmg: 30, ramRange: 110, ramMin: 26, ramDy: 14, ramCd: 1.0, recover: 0.9, reel: 1.3,
   armour: 0.5, drowsy: 3.0, drowsyK: 2, sink: 150, rise: 40,
 };
 export const HONEY_SAY = { drip: '!', ram: '!', armour: 'ARMOURED', drowsy: 'DROWSY: IT SINKS', reel: 'IT REELS', rouse: 'IT ROUSES' };
@@ -48,12 +48,12 @@ export function stepHoneyHornet(e, dt, X) {
       break; }
     case 'drop': e.vx *= 0.9; e.vy = -12; e.y += e.vy * dt; if (e.modeT <= 0) e.mode = 'hunt'; break;
     case 'ramTell': {   /* THE RAM'S TELL: it holds its height beside you, leaning back, its wings a wide buzz */
-      e.vx *= 0.85; e.vy *= 0.85; e.x += e.vx * dt - e.face * 6 * dt; e.y += e.vy * dt;
+      e.vx *= 0.85; e.vy = 0; e.x += e.vx * dt - e.face * 6 * dt; if (e.ramY !== undefined) e.y += (e.ramY - e.y) * Math.min(1, dt * 6);   /* it settles to your height as it leans back */
       if (e.modeT <= 0) { e.mode = 'ram'; e.modeT = Hc.ramT; e.vx = e.face * Hc.ramSpeed; e.vy = 0; S.charge ? S.charge() : S.whoosh && S.whoosh(); e.ramKey = (e.ramKey || 0) + 1; }
       break; }
     case 'ram': {   /* THE RAM: straight along its line; it strikes what it meets (a shield turns it, and it reels) */
       e.x += e.vx * dt; if (X.solidAt(e.x + e.face * Hc.w / 2, e.y - Hc.h / 2)) { e.x -= e.vx * dt; e.modeT = 0; }
-      X.hit(e, { l: e.x - Hc.w / 2 - 2, r: e.x + Hc.w / 2 + 2, t: e.y - Hc.h, b: e.y }, Hc.ramDmg, { blockable: true, key: 'hr' + e.ramKey, name: 'A FAT HONEY HORNET',
+      X.hit(e, { l: e.x - Hc.w / 2 - 2, r: e.x + Hc.w / 2 + 2, t: e.y - Hc.h - 2, b: e.y + 6 }, Hc.ramDmg, { blockable: true, key: 'hr' + e.ramKey, name: 'A FAT HONEY HORNET',
         onBlock: () => { e.mode = 'reel'; e.modeT = Hc.reel; e.vx = -e.face * 60; X.mark(e, HONEY_SAY.reel, '#8fd160'); } });
       if (e.mode !== 'ram') break;
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = Hc.recover; e.vx *= 0.2; e.cd = Hc.ramCd; e.next = 'drip'; }
@@ -61,10 +61,11 @@ export function stepHoneyHornet(e, dt, X) {
     case 'reel': case 'recover': e.vx *= 0.9; e.vy = Math.sin(e.phase * 9) * 8; e.x += e.vx * dt; if (e.modeT <= 0) { e.mode = 'hunt'; e.cd = Math.max(e.cd, 0.6); e.next = 'drip'; } break;
     case 'hunt': {   /* AFTER A HERO NEAR: over him to drip, or down beside him to ram, by turns */
       if (!near) { e.mode = 'home'; break; } const T = near; e.tgt = T;
+      if (e.next === 'drip' && !clearDrop(e, T, X)) e.next = 'ram';   /* (a ledge between it and you: the glob would only splash on the ledge - it comes down to ram instead) */
       if (e.next === 'drip') { const ty = Math.min(e.hy + 30, T.y - Hc.hover); steer(e, T.x, ty, Hc.speed, dt); e.face = Math.sign(T.x - e.x) || e.face;
         if (e.cd <= 0 && Math.abs(T.x - e.x) < 18 && Math.abs(e.y - ty) < 14) { e.mode = 'dripTell'; e.modeT = Hc.dripTell; X.mark(e, HONEY_SAY.drip, '#ffd36b'); S.buzz && S.buzz(); } }
       else { const side = Math.sign(e.x - T.x) || -e.face, tx = T.x + side * Hc.ramRange * 0.6, ty = T.y - Hc.ramH; steer(e, tx, ty, Hc.speed * 1.2, dt); e.face = Math.sign(T.x - e.x) || e.face;
-        const adx = Math.abs(T.x - e.x); if (e.cd <= 0 && adx > Hc.ramMin && adx < Hc.ramRange && Math.abs(T.y - Hc.ramH - e.y) < Hc.ramDy) { e.mode = 'ramTell'; e.modeT = Hc.ramTell; e.vx = 0; e.vy = 0; X.mark(e, HONEY_SAY.ram, '#ffd36b'); S.buzz && S.buzz(); } }
+        const adx = Math.abs(T.x - e.x); if (e.cd <= 0 && adx > Hc.ramMin && adx < Hc.ramRange && Math.abs(T.y - Hc.ramH - e.y) < Hc.ramDy) { e.mode = 'ramTell'; e.modeT = Hc.ramTell; e.vx = 0; e.vy = 0; e.ramY = T.y - Hc.ramH; X.mark(e, HONEY_SAY.ram, '#ffd36b'); S.buzz && S.buzz(); } }
       if (Math.hypot(e.x - e.hx, e.y - e.hy) > Hc.leash) e.mode = 'home';
       break; }
     case 'home': steer(e, e.hx, e.hy, Hc.speed, dt); if (Math.hypot(e.x - e.hx, e.y - e.hy) < 6) { e.mode = 'patrol'; } if (near && Math.hypot(near.x - e.hx, near.y - e.hy) < Hc.leash) e.mode = 'hunt'; break;
@@ -74,6 +75,8 @@ export function stepHoneyHornet(e, dt, X) {
     }
   }
 }
+/* is the glob's fall from over the hero to his head clear of footing? */
+const clearDrop = (e, T, X) => { for (let y = Math.min(e.y, T.y - HONEY.hover) + 4; y < T.y - 28; y += 8) if (X.solidAt(T.x, y)) return false; return true; };
 /* THE GLOBS: they fall; they sting a hero they meet and splash at his feet, or splash where they land - a sticky patch either way */
 function stepGlobs(e, dt, X) {
   for (const g of e.globs) { g.vy = Math.min(420, g.vy + HONEY.globG * dt); g.y += g.vy * dt;

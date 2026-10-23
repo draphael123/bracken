@@ -48,8 +48,8 @@ const POSES = [
   { wing: 'blur', lift: 6 }, { wing: 'blur', lift: 7 },                                    // 0-1 fly
   { wing: 'blur', lift: 6, sac: 1, abd: -0.1 },                                            // 2 drip tell: the sac swollen, a bead hanging
   { wing: 'blur', lift: 8, sac: 0.2, drop: 1, abd: 0.25 },                                 // 3 drop: let go
-  { wing: 'wide', lift: 6, tilt: -0.35, dx: -3, abd: 0.35 },                               // 4 ram tell: leaning back, the wings a wide buzz
-  { wing: 'back', lift: 6, tilt: 0.12, dx: 3, abd: 0.05, head: 1 },                        // 5 ram: stretched along its line
+  { wing: 'wide', lift: 8, tilt: -0.62, dx: -4, abd: 0.7, head: -1 },                               // 4 ram tell: leaning back, the wings a wide buzz
+  { wing: 'back', lift: 5, tilt: 0.28, dx: 4, abd: -0.1, head: 2 },                        // 5 ram: stretched along its line
   { wing: 'reel', lift: 5, tilt: 0.45, abd: 0.5 },                                         // 6 reel / recover: knocked crooked
   { wing: 'fold', lift: -4, tilt: 0.05, abd: 0.05, lying: true },                          // 7 drowsy: down on the ground, the wings folded flat
   { wing: 'blur', lift: 6, tilt: -0.25, abd: 0.4 },                                        // 8 hurt

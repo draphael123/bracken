@@ -14,6 +14,7 @@ import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 import * as HQA from './redraw/hornet_queen_art.js';   /* (claude/hornetsnestart) her baked frames, her live extras, her darts */
 import * as HNP from './redraw/hornets_nest_props.js';
+import { HALL_P2 } from './hornets-nest.js';   /* (claude/hornetsnest2) the hall's P2 combs, to bake at the level's load */
 const { HQ } = HQM;
 const SOUND = { aim: s => (s.buzz || s.tell)(), held: s => (s.tell || s.buzz)(), dive: s => (s.charge || s.whoosh || s.tell)(), stuck: s => { (s.thud || s.heavy)(); (s.crack || s.thud)(); },
   winded: s => (s.thud || s.heavy)(), dazed: s => (s.puff || s.thud)(), thrash: s => (s.queenShriek || s.roar)(), sweepTell: s => (s.buzz || s.tell)(), sweep: s => (s.charge || s.whoosh)(),
@@ -59,7 +60,8 @@ export function drawQueenBody(g, p, time, flash, ph) {
 }
 
 /* (claude/hornetsnestart) bake every frame of every pose at the level's load: the first draw of a pose in the fight was a hitch */
-export function warmQueen() { for (const p of Object.values(POSE)) for (let k = 0; k < HQA.beats(p); k++) HQA.queenFrame(p, k, false); }
+export function warmQueen() { for (const p of Object.values(POSE)) for (let k = 0; k < HQA.beats(p); k++) HQA.queenFrame(p, k, false);
+  /* (claude/hornetsnest2) the hall's torn combs and THE LAST COMB, hanging and landed: baked now, not at the tear */ const [, wg] = canvas(4, 4); for (const c of [...HALL_P2.torn, HALL_P2.last]) for (const set of [false, true]) HNP.slab(wg, 0, 0, (c.x1 - c.x0 + 1) * 16, c.rows * 16, set, 0); }
 export function makeHornetQueenHands(ctx) {
   let S = null; const H = {}; let perchSaved = [];
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'hornetqueen' ? ctx.L.arena : null);

@@ -161,7 +161,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   hornet(185, 18, { squad: 'span' });
   block(195, 196, 20, 31);                                   /* a wax pillar: the span's east end; the swarm's ledge runs east off its top */
   shelf(197, 208, 20);
-  swarm(201, 17, { squad: 'span' }); drone(206, 19, { squad: 'span' });   /* THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
+  swarm(201, 17, { squad: 'span' }); fat(205, 15, { squad: 'span' });   /* a fat honey hornet over the swarm's ledge: its globs on the sticky span, its ram as you climb; THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
   smoke(186, 31);
   sign(183, 31, 'A SWARM SITS ON THE LEDGE OVER THE SPAN. CARRY A POT UP: UP+ATTACK LOBS IT HIGH.');
   coins([190, 21], [199, 19], [203, 19]);
@@ -189,7 +189,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (const [x, y] of [[258, 9], [267, 9], [277, 9], [286, 9]]) cells.push({ x, y });   /* brood cells on the nursery floor (a wax pocket each) */
   sign(251, 9, 'BROOD CELLS PULSE BEFORE THEY HATCH. SMASH A PULSING CELL, OR ITS DRONES COME OUT.');
   coins([262, 8], [272, 8], [282, 8]);
-  hornet(272, 5, { squad: 'brood' }); drone(280, 9, { squad: 'brood' });
+  hornet(272, 5, { squad: 'brood' }); fat(282, 6, { squad: 'brood' });   /* the last fat honey hornet keeps her nursery: smoke is behind you now - its head, or its ram on your shield */
   shelf(262, 266, 8); shelf(257, 260, 5); ent('silver', 258, 4); shelf(272, 277, 8); shelf(284, 288, 8);   /* the nursery's upper comb (a second height; a silver in the brood's own wax) */
   air(295, 295, 3, 9);                                       /* her door: the nursery floor runs out over the hall; you drop in */
   sign(290, 9, 'HER STING STICKS IN COMB. STAND ON A PERCH AS SHE DIVES. SMOKE HER AND SHE FALLS.');
@@ -240,7 +240,7 @@ export function buildHornetsNest({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools, falls: [], moversExtra: [], gateAfterBoss: true,   /* (claude/hornetsnest2) her death opens the way on: the descent and the marsh's edge to the gate */
-    foeHit: { hornet: 0.6 },   /* a nest hornet's sting is the river wasp's machine at three-fifths its blow (they are many here) */
+    foeHit: { hornet: 0.7 },   /* a nest hornet's sting is the river wasp's machine at seven-tenths its blow (they are many here; claude/hornetsnest2: 0.6 -> 0.7 with the venom spitters gone) */
     squadBands: [{ lo: 400, hi: 419, spots: 0, why: "THE MARSH EDGE: the last columns (past the second water) are the marsh's bank and the gate - the way out after her death" }],
     hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
