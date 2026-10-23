@@ -71,7 +71,7 @@ export const QUIET = new Set(['updateFrog|swarmTell',   /* (claude/marsh2) THE F
 // cannot follow them to the blow; each row here was read off the code, and the audit still checks it against the mark
 // the creature calls where it calls one. 'type|mode' -> '!' | '!!' | '' ('draw' is the archer's bow, e.draw > 0.3).
 export const BY_HAND = {
-  'thief|swipeTell':'!!','spitcap|spitTell':'!','sapper|shoveTell':'!','drone|burstTell':'!!',   /* (claude/sporewood2) THE DRONE swells, then bursts where it hangs: no shield turns a burst */   /* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */
+  'thief|swipeTell':'!!','spitcap|spitTell':'!','sapper|shoveTell':'!','drone|burstTell':'!!','drone|puffTell':'!',   /* (claude/sporewood2) THE DRONE swells, then bursts where it hangs: no shield turns a burst */   /* (claude/sweepact12: the new told attacks of the inline families - updateEnemies, not an update* function) */
   'bellman|swingTell':'!','bellman|ringTell':'','grandmother|lureTell':'!',   /* (her lash at a lure is entered from src/hush-hands.js granLure: a yellow ! - a shield turns the lash, and it goes at the sound) */   /* (claude/underleaf2) THE BELLMAN (src/hush-hands.js, by hand: a module-file foe): his handbell swung at you a shield turns; raising it to RING throws no blow (rule H) - it wakes the street, and says so in words (HE HEARS YOU) */
   'deacon|sweepTell':'!','deacon|hookTell':'!','deacon|jabTell':'!','deacon|arcTell':'!!','deacon|kindleTell':'','deacon|douseTell':'',   /* THE DEACON (deacon.js, by hand; claude/church2): the pole's sweep, hook and jab a shield turns; the flame arc's fire nothing does; his kindling throws no blow */
   'paladinboss|chainTell':'!','paladinboss|chainBeatTell':'!','paladinboss|smiteTell':'!','paladinboss|twinTell':'!','paladinboss|spearTell':'!','paladinboss|arcTell':'!','paladinboss|radianceTell':'!!','paladinboss|sunfallTell':'!!','paladinboss|verdictTell':'!!','paladinboss|dawnTell':'!!','paladinboss|prayTell':'','paladinboss|snuffTell':'',   /* THE PALADIN, the hero as the boss (paladin-boss.js, by hand: a module-file boss; claude/church2, re-pointed to the PALADIN 4 kit by claude/church3): the war hammer, the smites and the spear a shield turns, heaven's arc is a short told answer to a hero over his head; radiance, sunfall, verdict and dawnfall nothing turns; his prayer and his snuff throw no blow */
@@ -207,7 +207,7 @@ export const MARK = {
   'deathknight|novaTell': '!!', 'deathknight|passTell': '!!', 'deathknight|raiseTell': '', 'deathknight|surgeTell': '!!', 'deathknight|wardTell': '', 'djinn|blastTell': '!',
   'djinn|breathTell': '!!', 'djinn|devilTell': '!!', 'djinn|firedevilTell': '!!', 'djinn|flashTell': '!', 'djinn|lashTell': '!', 'djinn|pillarTell': '!!',
   'djinn|slamTell': '!!', 'djinn|spearsTell': '!!', 'djinn|spoutTell': '!!', 'djinn|upsurgeTell': '!!', 'djinn|waveTell': '!!', 'djinn|whirlTell': '!!',
-  'drone|burstTell': '!!', 'drownedcaptain|comboTell': '!', 'drownedcaptain|lungeTell': '!', 'drownedking|anchorTell': '!', 'drownedking|debtTell': '!', 'drownedking|diveTell': '!!',
+  'drone|burstTell': '!!', 'drone|puffTell': '!', 'drownedcaptain|comboTell': '!', 'drownedcaptain|lungeTell': '!', 'drownedking|anchorTell': '!', 'drownedking|debtTell': '!', 'drownedking|diveTell': '!!',
   'drownedking|gulpTell': '!!', 'drownedking|haulTell': '!', 'drownedking|ramTell': '!!', 'drownedking|slamTell': '!!', 'drownedking|whirlTell': '!!', 'drownedknight|comboTell': '!',
   'drownedknight|lungeTell': '!', 'drunk|bottleTell': '!!', 'drunk|lobTell': '!', 'duneworm|breathTell': '!', 'duneworm|lungeTell': '!!', 'duneworm|rippleTell': '!!',
   'duneworm|swallowTell': '!!', 'duneworm|sweepTell': '!!', 'eel|leapTell': '!', 'eel|lungeTell': '!', 'eel|pinchTell': '!', 'eel|shockTell': '!!',
@@ -597,7 +597,7 @@ export const ANSWER = {
   /* (claude/sweepact12) */
   'thief|swipeTell': 'jump',
   'spitcap|spitTell': 'block',
-  'sapper|shoveTell': 'block',
+  'sapper|shoveTell': 'block', 'drone|puffTell': 'block',
   'emberwisp|dartTell': 'block',
   'stormshaman|jabTell': 'block',
   'clinger|lashTell': 'block',
@@ -842,7 +842,7 @@ export const HEIGHT = {
   /* (claude/sweepact12) */
   'thief|swipeTell': 'low',
   'spitcap|spitTell': 'high',
-  'sapper|shoveTell': 'low',
+  'sapper|shoveTell': 'low', 'drone|puffTell': 'low',
   'emberwisp|dartTell': 'high',
   'stormshaman|jabTell': 'low',
   'clinger|lashTell': 'high',
