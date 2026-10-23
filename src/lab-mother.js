@@ -12,12 +12,12 @@ export function motherHands(c) {
   const go = x => { if (Math.abs(x - P.x) > 3) { k[x > P.x ? 'right' : 'left'] = true; } };
   const jump = (n = 18) => { if ((P.ground || P.onMover) && !(P.labJump > 0)) { BK.press('jump'); P.labJump = n; } };
   const hold = () => { if (P.labJump > 0) { P.labJump--; k.jump = true; } };
-  const tired = P.labRest || (P.st || 0) < 14;
+  const tired = P.labRest || (P.st || 0) < 14, lashOn = m === 'lashTell' || R.lashes.length > 0, fresh = (P.st || 0) >= Math.min(48, (P.maxSt || 100) * 0.45);   /* (no swing into a told lash: a swing's recovery eats the jump; and a climb wants wind left for the window) */
   let swing = false;
-  const done = () => { hold(); return { swing }; };
+  const done = () => { hold(); if (lashOn && onFloor) swing = false; return { swing }; };
   /* ---- THREATS FIRST ---- */
   /* the root lash: jumped as its front comes (or never met: up on a cap) */
-  for (const l of R.lashes) if (onFloor && (P.x - l.x) * l.d > -4 && Math.abs(P.x - l.x) < 40) { jump(14); return done(); }
+  for (const l of R.lashes) if (onFloor && (P.x - l.x) * l.d > -4 && Math.abs(P.x - l.x) < 58) { jump(16); return done(); }
   if (m === 'lashTell' && onFloor && e.modeT < 0.12 && Math.abs(P.x - e.x) < 60) { jump(14); return done(); }
   /* the crush's ring: off it, away from the wall */
   const cx = R.crushX !== null && R.crushX !== undefined ? R.crushX : (R.crushes.find(q => !q.done) || {}).x;
@@ -45,7 +45,7 @@ export function motherHands(c) {
     if (R.ready && P.vy > 20 && Math.abs(P.x - kx) < 12 && P.y < ky + 6 && P.y > ky - 70) { k.down = true; if (P.atk < 0) BK.press('atk'); }
     go(aim); return done(); }
   P.labAim = undefined;
-  if (R.ready && !tired) {
+  if (R.ready && !tired && fresh) {
     if (high && onCap(high) && up(high)) { /* the high cap: run off its inner edge at her knot */ const edge = side < 0 ? high.x + high.w - 3 : high.x + 3; go(kx); if ((P.x - edge) * -side > -6) { P.labAim = kx; jump(26); } return done(); }
     if (low && onCap(low)) { if (up(low) && up(high)) { P.labAim = high.x + high.w / 2; jump(24); go(P.labAim); } return done(); }   /* (riding the low step up: wait; up, hop to the high one) */
     if (low && high && up(low) && up(high)) { /* the stair is up: onto the low step */ const c = low.x + low.w / 2; go(c); if (Math.abs(P.x - c) < 20) { P.labAim = c; jump(18); } return done(); }

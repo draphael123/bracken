@@ -72,7 +72,7 @@ export function buildSporewood({ painter, T, TS }) {
   const mend = (x, y) => ent('mendpuff', x, y);                                       /* A MEND PUFF (src/sporewood-hands.js) */
   const puff = (x, y) => ent('springpuff', x, y);                                     /* A PUFFBALL that bursts into a SPRING SPORE (src/sporewood-hands.js) */
   const drip = (x, every, y = 0) => ent('rockfall', x, y, { spore: true, every, tell: 0.9 });  /* a told spore drop onto a bud: its rhythm (y: under a canopy, the row it lets go from) */
-  const caps = [];
+  const caps = [], pools = [];
   /* A BUD (the growcap mover): `row` is the ground row it sits on; it spans columns x..x+1. o.lean (px sideways as it grows), o.dark (grows only in a lantern's
      light), o.seed (grows when STRUCK, stands as a step; o.rise its height), o.growT, o.hold */
   const bud = (x, row, o = {}) => { const rise = o.rise ?? 56, y0 = (row + DY) * TS - 8; caps.push({ kind: 'growcap', x: x * TS, y: y0, y0, y1: y0 - rise, w: 32, h: 8, rise, state: 'bud', k: 0, ...(o.lean ? { bx: x * TS } : {}), ...o }); };
@@ -101,7 +101,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* the wall top: THE SPITCAP, taught. It swells before it spits: strike it then (a sign at the point of use) */
   foe('spitcap', 43, 35, 'wallTop', { face: -1 });
   sign(39, 35, 'A SPITCAP SWELLS BEFORE IT SPITS. STRIKE IT THEN; STEP OUT OF ITS CLOUD.');
-  coins([46, 34], [51, 34]); deco(54, 35, 'sporePod');
+  coins([46, 34], [51, 34]); deco(54, 35, 'sporePod'); drip(45, 3.1);
   /* THE BOUNCE PIT: eight wide (no jump crosses), a floor four rows down with bounce caps on it - one throws you out over the far lip (hold jump: higher).
      REQUIRED. A miss is a bounce back out, either side */
   air(59, 66, 0, 39); ground(59, 66, 40); for (let x = 59; x <= 66; x++) spring(x, 40);   /* (its whole floor is cap: wherever you land, it throws you) */
@@ -115,7 +115,7 @@ export function buildSporewood({ painter, T, TS }) {
   foe('shield', 82, 31, 'terrace', { face: -1 });
   bud(85, 32); ground(87, 104, 28);
   plank(88, 102, 25);                                                               /* a root shelf over the top tier */
-  foe('spitcap', 89, 27, 'terrace', { face: -1 }); foe('brute', 91, 27, 'terrace', { face: -1 });   /* (the terrace's heavy, where the bud sets you down) */
+  foe('spitcap', 89, 27, 'terrace', { face: -1 }); foe('brute', 91, 27, 'terrace', { face: -1 }); drip(91, 2.9);   /* (the terrace's heavy, where the bud sets you down) */
   coins([80, 30], [83, 30], [88, 26], [91, 26]); glow(95, 27); deco(100, 27, 'sporePod');
   ent('check', 97, 27);                                                             /* SHRINE ONE: the glade's exam is behind you */
 
@@ -136,7 +136,7 @@ export function buildSporewood({ painter, T, TS }) {
   sign(130, 37, 'THIS BUD IS DARK. LIGHT THE LANTERN CAP BESIDE IT, THEN STOP ON THE BUD.');
   /* the wall top: a lurker in the caps, the hollows' SHAMAN (he raises the dead: the kill-first target), a mend puff for after */
   foe('lurker', 146, 33, 'wallTop2'); foe('shaman', 155, 33, 'wallTop2', { face: -1 }); foe('brute', 151, 33, 'wallTop2', { face: -1 }); foe('shield', 140, 33, 'wallTop2', { face: -1 });
-  lantern(142, 33); mend(158, 33); plank(140, 153, 31);
+  lantern(142, 33); mend(158, 33); plank(140, 153, 31); drip(148, 3.2, 14);
   coins([143, 32], [149, 32], [156, 32]);
   /* THE DARK SHAFT (the hollows' EXAM): down off the wall into a room under the canopy, and up its far side on three dark buds, each lit by the lantern beside it;
      a lurker on the first tier, a WEAVER on the second, a spore drop on the middle bud. A miss is a fall a tier (cheap) */
@@ -156,6 +156,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* Cap stalks stand up out of the bog; the way on is along their tops. The bog floor is no death: a stalk's east face has a stair of root shelves, so a fall
      is the climb back to the stalk you fell from. Rollers trundle the bog floor (plunge one: it pops); puffballs on the stalks burst into SPRING SPORES. */
   ground(198, 300, 40);                                                             /* THE BOG FLOOR */
+  for (const [a, b] of [[210, 217], [233, 235]]) pools.push({ x0: a * TS, x1: (b + 1) * TS, y: (37 + DY) * TS + 6, bottom: (41 + DY) * TS, swim: true, clear: true, harm: true, bog: true, foulCol: '#4a3a5e', foulColL: '#9a7ab8', foulColD: '#241a30', wash: 0.55 });   /* (the bog's water: a fall in stings while you climb out) */
   ground(199, 205, 28);                                                             /* the lip out of the hollows (to stalk one's foot: no one-column shaft beside it) */
   sign(200, 27, 'THE PUFFBALL BOG. STRIKE A PUFFBALL: IT BURSTS INTO A SPRING SPORE YOU CAN BOUNCE OFF.');
   puff(202, 27); air(200, 204, 37, 39);                                            /* (a hollow under the lip, in off the bog floor) */
@@ -172,7 +173,7 @@ export function buildSporewood({ painter, T, TS }) {
   ground(236, 238, 26); spring(236, 26); spring(237, 26); spring(238, 26); ground(239, 239, 29);   /* (a stub in the one-column gap: a miss lands on it, a jump from it is back on the bounce cap) */
   sign(231, 21, 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK.'); sign(248, 21, 'THE CAP LADDER: NO FLOOR UNDER IT. THE BOG KEEPS WHAT FALLS IN.');
   ground(240, 251, 22);
-  foe('drone', 247, 17, 'highStalk'); foe('brute', 243, 21, 'highStalk', { face: -1 });   /* (where the bounce throws you: a heavy, the gap at your back) */
+  foe('drone', 247, 17, 'highStalk'); foe('brute', 243, 21, 'highStalk', { face: -1 }); drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
   mend(245, 21); puff(247, 21);
   /* THE HIGH SILVER: a cap hung high over the bog (on a stalk of its own), reached off the spring spore of the puffball under it - or a plunged bounce */
   plank(246, 249, 16); ent('silver', 248, 15); coins([246, 15], [249, 15]);
@@ -203,7 +204,7 @@ export function buildSporewood({ painter, T, TS }) {
   foe('weaver', 308, 16, 'larderDoor', { face: -1 }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
   deco(306, 18, 'bones', 0); deco(309, 18, 'skullPile', 0);
   /* THE LARDER STAIR: two four-row tiers up the root wall, a bud at each foot (no web on a tier: a web's top is footing, and a curtain there was a stair round the bud) */
-  bud(314, 19); ground(316, 358, 15); foe('spider', 320, 7, 'larderStair', { drop: 110 });   /* (the larder's keeper: it drops off the root roof on whoever climbs the stair) */
+  bud(314, 19); ground(316, 358, 15); drip(322, 3.0, 6); foe('spider', 320, 7, 'larderStair', { drop: 110 });   /* (the larder's keeper: it drops off the root roof on whoever climbs the stair) */
   foe('shield', 324, 14, 'larderStair', { face: -1 });
   plank(318, 331, 11);                                                              /* (a root ledge over the first tier, level with the second: walked onto from it) */
   bud(332, 15); ground(334, 358, 11); foe('brute', 337, 10, 'larderEnd', { face: -1 });
@@ -229,7 +230,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(381, 386, 6, 8); spring(380, 9); ent('silver', 385, 8); coins([382, 8], [384, 8]); glow(383, 8);   /* the knot's cellar: the third silver; a bounce cap under the door to spring back out */
   /* her approach: gill pods, skulls, her roots across the way; the last fight before her door - a BRUTE (the weighty one) and a sporeling */
   for (const [x, k, v] of [[371, 'sporePod', 1], [389, 'skullPile', 0], [393, 'rootDecor', 2], [398, 'sporePod', 0], [402, 'skullPile', 1]]) deco(x, 4, k, v);
-  foe('brute', 393, 4, 'knotDoor', { face: -1 }); foe('sporeling', 389, 4, 'knotDoor', { face: -1 }); foe('shield', 385, 4, 'knotDoor', { face: -1 }); foe('brute', 400, 4, 'knotDoor', { face: -1 }); foe('shield', 396, 4, 'knotDoor', { face: -1 });
+  foe('brute', 393, 4, 'knotDoor', { face: -1 }); foe('sporeling', 389, 4, 'knotDoor', { face: -1 }); foe('shield', 385, 4, 'knotDoor', { face: -1 }); foe('brute', 400, 4, 'knotDoor', { face: -1 }); drip(392, 2.9); foe('shield', 396, 4, 'knotDoor', { face: -1 });
   plank(370, 402, 2); plank(405, 408, 6); coins([386, 1], [390, 1]);                 /* a root over her approach */
   coins([374, 3], [390, 3], [400, 3]);
   sign(403, 4, 'HER CAP TURNS BLADES. GROW HER SEED CAPS, CLIMB, AND PLUNGE ONTO HER KNOT.');
@@ -252,7 +253,7 @@ export function buildSporewood({ painter, T, TS }) {
 
   const arena = { x0: A0 * TS, x1: A1 * TS, floor: (F + DY) * TS, trigger: (A0 + 3) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'mother', music: 'sporemother', tint: '#9a5aa8', tintA: 0.1 };
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 + DY }, pools: [], falls: [], moversExtra: caps,
+    W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 + DY }, pools, falls: [], moversExtra: caps,
     arena, sporewood2: true,
     knot: { x: MX * TS + 8, y: (F + DY) * TS - 118 },   /* THE MOTHER'S KNOT: the landmark's anchor (src/redraw/sporewood_knot.js) and her knot's place */
     reachDoors: [{ x0: 379, x1: 380, y0: 5 + DY, y1: 8 + DY }],   /* the root knot's door (optional: the fill counts it open; the knot is plunged, src/sporewood-hands.js) */

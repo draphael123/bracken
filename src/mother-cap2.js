@@ -18,15 +18,15 @@
 // broodDied(e, heavy), draw(g, e, cx, cy, time) (her and her tells), drawWorld(g, cx, cy, time) (the floor's tells), read() (tools and the lab).
 import { KEY_ROWS } from './boss-read.js';
 export const MC = {
-  hp: 1150,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
+  hp: 1100,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
   take: 0.4, openMul: 2, openT: 3.2, wardT: 3.0,
   idle: [1.15, 0.85],                        /* the breath between her moves, P1 / P2 */
   knotW: 16, knotUp: 132, knotDn: 104,       /* her knot: half its width; from how high over her floor to how low a plunge counts */
   knotY: 118,                                /* the knot's centre over her floor (L.knot) */
-  lash: { tell: 0.75, v: 290, dmg: 18, h: 20, rel: 0.5 },
-  crush: { tell: 1.0, fall: 0.32, dmg: 22, w: 20, from: 190 },
-  bloom: { tell: 0.95, live: 3.4, r: 26, dmg: 6, tick: 0.5, st: 14 },
-  brood: { tell: 0.8, n: [2, 3], max: 3, every: [15, 11], hp: 9 },
+  lash: { tell: 0.75, v: 330, dmg: 14, h: 20, rel: 0.5 },
+  crush: { tell: 1.0, fall: 0.32, dmg: 20, w: 20, from: 190 },
+  bloom: { tell: 0.95, live: 3.4, r: 26, dmg: 5, tick: 0.5, st: 14 },
+  brood: { tell: 0.8, n: [2, 2], max: 2, every: [18, 13], hp: 9 },
   wither: { tell: 0.9, cd: 2.4 },
   net: { tell: 1.3, live: 3.0, off: [4.2, 3.4], drain: 0.06 },
   seedHold: [9, 6],
