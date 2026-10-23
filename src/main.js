@@ -33161,31 +33161,6 @@ function drawArena(cx, cy) {
     g.globalAlpha = 0.22 + 0.14 * Math.sin(t2 * 5); g.fillStyle = '#ffe8b4'; g.fillRect(Math.round(dx), Math.round(dy), 1, 1); }
   g.globalAlpha = 1;
 }
-// One immutable 48-by-16 masonry repeat; patterns are owned by their drawing context.
-let drownedWallTile = null;
-const drownedWallPatterns = new WeakMap();
-function paintDrownedMasonry(sx, sy, w, h) {
-  if (g.globalAlpha !== 1 || g.globalCompositeOperation !== 'source-over') return false;
-  const matrix = g.getTransform();
-  if (matrix.a !== 1 || matrix.b !== 0 || matrix.c !== 0 || matrix.d !== 1 || !Number.isInteger(matrix.e) || !Number.isInteger(matrix.f)) return false;
-  let pattern = drownedWallPatterns.get(g);
-  if (!pattern) {
-    if (!drownedWallTile) {
-      const [c, wall] = canvas(48, 16);
-      wall.fillStyle = '#16262a'; wall.fillRect(0, 0, 48, 16);
-      for (let y = 0; y < 16; y += 8) {
-        for (let x = y ? -12 : 0; x < 48; x += 24) { wall.fillStyle = '#1e343a'; wall.fillRect(x, y, 22, 7); wall.fillStyle = '#152a2e'; wall.fillRect(x, y + 6, 22, 1); }
-        wall.fillStyle = '#0e1c1e'; wall.fillRect(0, y + 7, 48, 1);
-      }
-      drownedWallTile = c;
-    }
-    pattern = g.createPattern(drownedWallTile, 'repeat'); drownedWallPatterns.set(g, pattern);
-  }
-  g.fillStyle = pattern; g.fillRect(sx, sy, w, h);
-  // The original room starts each odd course twelve pixels in; preserve its bare left edge.
-  g.fillStyle = '#16262a'; for (let y = sy + 8; y < sy + h; y += 16) g.fillRect(sx, y, Math.min(12, w), 7);
-  return true;
-}
 let HALLWALL = null;
 function drawRoom(st, sx, sy, w, h, tx0, ty0) {
   // Paint in room-local coordinates: camera movement cannot reseed masonry or tapestry colours.
@@ -33336,12 +33311,11 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
     return;
   }
   // ---------- A DROWNED ROOM ----------
-  if (st === 'drowned') { if (!paintDrownedMasonry(sx, sy, w, h)) {
+  if (st === 'drowned') {
     g.fillStyle = '#16262a'; g.fillRect(sx, sy, w, h);
     for (let yy = sy; yy < sy + h; yy += 8) {                                             // coursed ashlar, wet
       for (let xx = sx + (((yy / 8) & 1) ? 12 : 0); xx < sx + w; xx += 24) { g.fillStyle = '#1e343a'; g.fillRect(xx, yy, 22, 7); g.fillStyle = '#152a2e'; g.fillRect(xx, yy + 6, 22, 1); }
       g.fillStyle = '#0e1c1e'; g.fillRect(sx, yy + 7, w, 1);
-    }
     }
     g.fillStyle = '#24402c'; for (let i = 0; i < w * h / 260; i++) { const rx = sx + ((i * 97) % w), ry = sy + ((i * 53) % h); g.fillRect(rx, ry, 1, 2 + (i % 3)); }
     // weed hanging off the courses, and a fish going through the room now and then
