@@ -113,11 +113,11 @@ export function buildHornetsNest({ painter, T, TS }) {
   ground(80, 92, FL - 12);                                   /* the root shoulder under the nest's lip */
   /* THE MOUTH: up from the shoulder into the shell at 82-89 on comb rungs, wall to wall, two rows apart */
   air(82, 89, 26, 51);
-  for (let i = 0, y = 52; y >= 34; i++, y -= 2) { if (i % 2) shelf(87, 89, y); else shelf(82, 84, y); }
-  waxed(82, 84, 48); waxed(87, 89, 42);
+  for (let i = 0, y = 52; y >= 34; i++, y -= 2) { if (i % 2) shelf(86, 89, y); else shelf(82, 85, y); }   /* (four wide each, side by side: a hop up and across) */
+  waxed(82, 85, 48); waxed(86, 89, 42);
   smoke(91, FL - 13);                                        /* a smoke stand at the mouth (on the shoulder) */
   cells.push({ x: 81, y: FL - 13 });                         /* a brood cell crusting the mouth: the brood met first, where nothing else is on you */
-  swarm(86, 42, { squad: 'throat' }); hornet(84, 37, { squad: 'throat' });                                             /* THE GATE'S THROAT: a swarm in the middle of the rungs - climb with the pot in hand */
+  swarm(86, 42, { squad: 'throat' }); hornet(91, 30, { squad: 'throat' });   /* (the hornet keeps the throat's head, over the chamber's floor, not the rungs) */                                             /* THE GATE'S THROAT: a swarm in the middle of the rungs - climb with the pot in hand */
   sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: CARRIED, YOU CANNOT SWING, BUT YOU CAN STILL JUMP.");
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
@@ -150,11 +150,10 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* the core: a tall shaft 169-247, floor 32, up to row 4; the route snakes up it to the brood cells' sill at row 8 */
   air(169, 247, 4, 31);
   /* stage 1: west shelves up off the floor */
-  shelf(171, 175, 30); shelf(169, 172, 28); shelf(174, 178, 26); shelf(170, 173, 24);
-  waxed(174, 178, 26);
-  coins([173, 29], [170, 27], [176, 25]);
+  shelf(170, 173, 30); shelf(174, 177, 28); shelf(178, 181, 26); shelf(182, 185, 24);   /* a stair of comb shelves rising east under the span */
+  coins([171, 29], [175, 27], [179, 25]);
   /* stage 2: the sticky span east under a hornet, to the swarm's ledge - throw a pot up onto it (the smoke stand is on the floor under the span) */
-  shelf(176, 194, 22); waxed(176, 194, 22);
+  shelf(186, 194, 22); waxed(186, 194, 22);   /* the span starts past the stair's head: a hop up onto it, never up through it */
   hornet(185, 18, { squad: 'span' });
   block(195, 196, 20, 31);                                   /* a wax pillar: the span's east end; the swarm's ledge runs east off its top */
   shelf(197, 208, 20);
@@ -229,6 +228,7 @@ export function buildHornetsNest({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools: [], falls: [], moversExtra: [],
+    foeHit: { hornet: 0.6 },   /* a nest hornet's sting is the river wasp's machine at three-fifths its blow (they are many here) */
     hornetsNest: true, combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 403, [150, 180, 90], 0.10]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine */

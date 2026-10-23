@@ -8,11 +8,11 @@
 //     drifts home, quiet, for SWARM.calmHold s after the smoke has left it. Struck while it is quiet it scatters easily (x SWARM.calmK).
 //   A BLADE THINS IT: it has health like anything else (never an immune body); a thinner cloud is drawn thinner.
 // X = { heroes(), calm(x, y) -> bool, drainOn(e, pp), drainOff(e, pp), mark(e, txt, col), sfx, hint(id, msg) }
-export const SWARM = { hp: 16, w: 22, h: 18, wake: 60, leash: 112, speed: 30, drain: 0.045, rise: 0.6, calmK: 2, calmHold: 2.5, sink: 10, r: 13, home: 40 };
-export const SWARM_SAY = { rise: '!!', calm: 'THE SWARM GOES QUIET', stung: 'THE SWARM IS ON YOU: WALK OUT, OR SMOKE IT', scatter: 'SCATTERED' };
+export const SWARM = { hp: 16, w: 22, h: 18, wake: 60, leash: 90, speed: 30, drain: 0.028, rise: 0.6, calmK: 2, calmHold: 2.5, sink: 10, r: 13, home: 40, burst: 3.5, settle: 2.5 };   /* burst: s of stinging before it SETTLES (settle s, quiet, told) - a swarm comes in bursts */
+export const SWARM_SAY = { rise: '!!', calm: 'THE SWARM GOES QUIET', stung: 'THE SWARM IS ON YOU: WALK OUT, OR SMOKE IT', scatter: 'SCATTERED', settle: 'THE SWARM SETTLES' };
 export const SWARM_HINT = 'A SWARM STINGS WHILE YOU STAND IN IT. WALK OUT OF IT - IT IS SLOW - OR CARRY A SMOKE POT THROUGH IT: IT GOES QUIET.';
 /* THE POSE IDS (the art lane's contract): 0 IDLE (a loose cloud) 1 RISE (bunched, red - the tell) 2 ANGRY (streaming at you) 3 CALM (grey, sunk, slow) 4 hurt */
-export const SWARM_POSE = { idle: 0, rise: 1, angry: 2, calm: 3, hurt: 4 };
+export const SWARM_POSE = { idle: 0, rise: 1, angry: 2, calm: 3, hurt: 4, settle: 3 };
 /* e.x, e.y are the engine's (its box's bottom middle: what a blow and a mark measure from); the CLOUD's centre is cy(e) = e.y - SWARM.h / 2, and hx / hy its home centre */
 export const cy = e => e.y - SWARM.h / 2;
 export const newSwarm = e => Object.assign(e, { hx: e.x, hy: e.y - 8, y: e.y + 1, mode: 'idle', modeT: 0, noGrav: true, vx: 0, vy: 0, calmT: 0, tgt: null, onHero: null, phase: (Math.floor(e.x) % 7) * 0.9 });
@@ -42,6 +42,10 @@ export function stepSwarm(e, dt, X) {
       toC(e, e.x + dx / d * Math.min(S.speed, d * 4) * dt, c + dy / d * Math.min(S.speed, d * 4) * dt); e.face = Math.sign(dx) || e.face;
       const on = heroes.find(H => inCloud(e, H)) || null;
       if (on !== e.onHero) { drop(); if (on) { e.onHero = on; X.drainOn(e, on); X.hint('stung', SWARM_HINT); } }
+      if (on) { e.burstT = (e.burstT || 0) + dt; if (e.burstT >= S.burst) { drop(); e.burstT = 0; e.mode = 'settle'; e.modeT = S.settle; X.mark(e, SWARM_SAY.settle, '#c8d0d8'); } }
+      break; }
+    case 'settle': {   /* SPENT: it settles a while (grey, low, harmless), then keeps its post again */
+      drop(); toC(e, e.x + (e.hx - e.x) * Math.min(1, dt * 0.6), c + (e.hy + S.sink - c) * Math.min(1, dt * 1.2)); if (e.modeT <= 0) { e.mode = 'home'; }
       break; }
     case 'home': { drop(); toC(e, e.x + (e.hx - e.x) * Math.min(1, dt * 1.5), c + (e.hy - c) * Math.min(1, dt * 1.5)); if (Math.hypot(e.hx - e.x, e.hy - cy(e)) < 3) { e.mode = 'idle'; e.modeT = 1; } break; }
     default: {   /* IDLE: a loose cloud over its post; it rises at a hero who comes near */
@@ -54,7 +58,7 @@ export function stepSwarm(e, dt, X) {
 }
 /* A BLOW ON A SWARM: the damage multiplier. A quiet one scatters easily; an idle one is roused (told) */
 export function swarmTake(e) {
-  if (e.mode === 'calm') return SWARM.calmK;
+  if (e.mode === 'calm' || e.mode === 'settle') return SWARM.calmK;
   if (e.mode === 'idle' || e.mode === 'home') { e.mode = 'rise'; e.modeT = SWARM.rise; }
   return 1;
 }
@@ -64,7 +68,7 @@ export const swarmCount = e => Math.max(4, Math.round(18 * Math.max(0, e.hp) / (
 /* ---------- GREYBOX: the cloud is drawn live (drawSwarm, a dot a hornet); the sheet (5 poses) is for the bestiary card and the art lane's contract ---------- */
 const COL = { body: '#d08a1a', bodyD: '#5a3a10', wing: '#e8eef4', red: '#ff5a3a', grey: '#9aa0a8', out: '#1b1626' };
 export function drawSwarm(g, e, cx, cy, time) {
-  const n = swarmCount(e), x = e.x - cx, y = e.y - SWARM.h / 2 - cy, m = e.mode, R = SWARM.r * (m === 'rise' ? 0.65 : m === 'calm' ? 1.15 : 1);
+  const n = swarmCount(e), x = e.x - cx, y = e.y - SWARM.h / 2 - cy, m = e.mode === 'settle' ? 'calm' : e.mode, R = SWARM.r * (m === 'rise' ? 0.65 : m === 'calm' ? 1.15 : 1);
   const col = m === 'calm' ? COL.grey : m === 'rise' || m === 'angry' ? (Math.floor(time * 10) % 2 ? COL.red : COL.body) : COL.body;
   for (let i = 0; i < n; i++) { const a = i * 2.39996 + time * (m === 'calm' ? 0.6 : m === 'angry' ? 4.5 : 2.2) * (i % 2 ? 1 : -1), rr = R * Math.sqrt((i + 0.5) / n);
     const px = Math.round(x + Math.cos(a) * rr), py = Math.round(y + Math.sin(a * 1.3) * rr * 0.7 + (m === 'calm' ? 2 : 0));
