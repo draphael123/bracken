@@ -21,7 +21,7 @@ export const NEST_X0 = 80, NEST_X1 = 332, HALL = { x0: 295, x1: 332, y0: 3, y1: 
 /* the sky by place: [top, mid, low] over the pines. foot = a green-gold morning; fall = the nest tearing loose (warmer); pine = the late gold under the great pine */
 const SKY = { foot: ['#6f9a62', '#b5cf8a', '#e8e2a0'], fall: ['#7f9a58', '#d2c47c', '#f0d890'], pine: ['#7a8f46', '#d8b860', '#f2c878'] };
 const skyAt = tx => { if (tx < 200) return SKY.foot; if (tx < 340) return SKY.foot; if (tx < 354) return SKY.fall; return SKY.pine; };
-const WALL = [['#1b1610', '#271f16', '#33291c', '#413525'], ['#1e140c', '#2c2014', '#3a2a18', '#4a3820'], ['#240d0a', '#361812', '#46241a', '#58301f']];
+const WALL = [['#251712', '#34221a', '#46301f', '#573d28'], ['#281509', '#38200f', '#4a2e16', '#5c3c1e'], ['#2c0e0a', '#421810', '#582416', '#6e301c']];
 
 /* ------------------------------------------------------------------ baked pieces ------------------------------------------------------------------ */
 /* a conifer: stacked drooping boughs (tiers) on a trunk; lit left, dark right */

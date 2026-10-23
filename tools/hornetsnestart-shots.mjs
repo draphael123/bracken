@@ -22,6 +22,10 @@ try {
       BK.P.x = 15 * 16; BK.P.y = 65 * 16; BK.sim(50); snap('swarm-calm', 3); BK.press('atk'); BK.sim(25); snap('pot-thrown', 3); BK.sim(40); snap('cloud', 3);
       load(); at(106, 33); BK.sim(30); snap('brood-pulse', 3); BK.sim(110); snap('brood-hatched', 3);
     }
+    if (!ONLY || ONLY.some(n => /^foe-/.test(n))) {
+      load(); at(66, 55); BK.enemies().forEach(e => { if (e.alive && !e.elite && Math.abs(e.x - BK.P.x) > 150) e.alive = false; }); BK.sim(30); snap('foe-hollow', 4);
+      load(); at(150, 28); BK.enemies().forEach(e => { if (e.alive && !e.elite && Math.abs(e.x - BK.P.x) > 150) e.alive = false; }); BK.P.x = 153 * 16; BK.sim(20); snap('foe-guard', 4);
+    }
     if (!ONLY || ONLY.some(n => /^q-/.test(n))) {
       load(); BK.tp(301, 21); BK.sim(60); const E = () => BK.boss; BK.P.hp = BK.P.maxHp || 100;
       const place = (m, dx = 70, dy = -50) => { const e = E(); if (!e) return; e.mode = m; e.modeT = 9; e.x = BK.P.x + dx; e.y = BK.P.y + dy; e.vx = 0; e.vy = 0; };
