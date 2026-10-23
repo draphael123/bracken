@@ -30,10 +30,11 @@ export function motherHands(c) {
   const brood = BK.enemies().filter(q => q.alive && q.brood && Math.abs(q.y - P.y) < 24).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (brood && Math.abs(brood.x - P.x) < 50 && m !== 'open') { if (Math.abs(brood.x - P.x) > reach - 2) go(brood.x - (Math.sign(brood.x - P.x) || 1) * (reach - 4)); else if (P.atk < 0 && !tired) { P.face = Math.sign(brood.x - P.x) || 1; swing = true; } return done(); }
   /* ---- HER KNOT OPEN: cut her body ---- */
-  if (m === 'open') { const side = P.x < e.x ? -1 : 1, spot = e.x + side * (14 + reach * 0.55);
+  if (m === 'open') { const side = P.x < e.x ? -1 : 1;
     if (c.h === 'pyro' && P.full && !P.cWas && P.atk < 0 && Math.abs(e.x - P.x) < 140 && !P.plunge) { P.face = -side; k.block = true; }   /* (the pyromancer's banked heat, THE PYRE, thrown into her window - as the lab's generic hands throw it, src/lab.js) */
-    if (!P.ground && !P.onMover) { go(spot); if (Math.abs(P.x - e.x) < 14 + reach && P.y > A.floor - 100 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }   /* (cut her on the way down too) */
-    go(spot); if (Math.abs(P.x - spot) < 12 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }
+    if (!P.ground && !P.onMover) { go(e.x + side * (14 + reach * 0.55)); if (Math.abs(P.x - e.x) < 14 + reach && P.y > A.floor - 100 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }   /* (cut her on the way down too) */
+    if (c.strike) { P.face = -side; const st = c.strike(BK, c.h, e, f), spot = e.x + side * Math.max(16, Math.min(st.want || 0, 60)); if (Math.abs(P.x - spot) > 6 && !(P.charge > 0)) go(spot); return { swing: false, struck: st.swing }; }   /* (each hero's own damage verb, the lab's strike: the knight's heavy, the pyromancer's bellows - at its own distance) */
+    const spot = e.x + side * (14 + reach * 0.55); go(spot); if (Math.abs(P.x - spot) < 12 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }
   /* ---- THE NET (P2): off the floor while it is told or stings ---- */
   const netBad = R.net && (R.net.ph === 'live' || (R.net.ph === 'tell' && R.net.t < 0.7));
   /* ---- THE CLIMB: her seed caps on my side, struck; up them; a plunge on her knot ---- */

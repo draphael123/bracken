@@ -252,6 +252,8 @@ export const wantOf = (h, e, verb) => { const reach = LAB_REACH[h] + (e.w || 12)
 /* THE HANDS FOR IT: one frame of whichever verb keyVerb chose. It presses and holds the action keys only (attack, up, down, jump, and the
    double tap of a dash) and never lets one go (whoever calls it clears them first), and leaves the walking to whoever called it (wantOf).
    Every one of them waits on the wind it costs: a bot that swung on an empty bar would stand there winded in front of the thing. */
+/* (claude/sporewood2) the strike, under a name no fight loop shadows (runbossLab has a local 'strike'): src/lab-mother.js plays her window with it */
+function labStrike(BK, h, e, f) { return strike(BK, h, e, f); }
 export function strike(BK, h, e, f) {
   const P = BK.P, k = BK.keys, d = e.x - P.x, ad = Math.abs(d), dir = Math.sign(d) || P.face, dy = e.y - P.y;
   const reach = LAB_REACH[h] + (e.w || 12) / 2, cost = BK.stepCost ? BK.stepCost() : 12, verb = keyVerb(BK, h, e);
@@ -883,8 +885,8 @@ async function runbossLab(BK, opts) {
       /* THE MOTHER CAP 2 (claude/sporewood2): src/lab-mother.js plays her - her seed caps struck and climbed, a plunge on her knot, her told moves answered; nothing is grown or opened for the bot */
       if(boss.t==='mother'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const mh=motherHands({BK,boss,P,k,A,h,f,reach:LAB_REACH[h]});if(mh.swing&&P.atk<0){BK.press('atk');swings++;}
-        if(opts.samples&&f%20===0){const R=BK.motherCap();out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.onMover?(P.onMover.seed?'S'+Math.round((P.onMover.x-boss.x)/16):'m'):P.ground?'g':'air',Math.round(P.st),boss.hp,R?R.seeds.map(q=>q.state[0]+(q.cd>0?'*':'')).join(''):'',R&&R.ready?'R':'-',mh.swing?'X':'']);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
+        const mh=motherHands({BK,boss,P,k,A,h,f,reach:LAB_REACH[h],strike:labStrike});if(mh.swing&&P.atk<0){BK.press('atk');swings++;}if(mh.struck)swings++;
+        if(opts.samples&&f%20===0){const R=BK.motherCap();out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.onMover?(P.onMover.seed?'S'+Math.round((P.onMover.x-boss.x)/16):'m'):P.ground?'g':'air',Math.round(P.st),boss.hp,R?R.seeds.map(q=>q.state[0]+(q.cd>0?'*':'')).join(''):'',R&&R.ready?'R':'-',mh.swing?'X':'',+(P.stDelay||0).toFixed(2),k.jump?'J':'',P.jet?'JET':'',P.labRest?'REST':'',Math.round(P.heat||0),(BK.clouds?BK.clouds():[]).filter(c=>Math.hypot(P.x-c.x,P.y-8-c.y)<c.r).map(c=>(c.mild?'m':'')+Math.round(c.r)+'/'+(c.life||0).toFixed(1)).join(';'),P.winded?'W':'',P.exhaustT>0?'EX':'']);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       /* THE UNDEAD ARCHMAGE, FROM THE CARPET (batch 4). The bot flies: out of the storm column sideways, straight out of a death
          mark's ring, around the poison clouds, across the line of anything thrown at it (or onto the shield, for the three who
