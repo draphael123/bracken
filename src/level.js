@@ -41,7 +41,7 @@ import { HV_KIT_KINDS } from './hanging-village.js';   /* THE HANGING VILLAGE: w
 import { buildCaravan } from './sunken-caravan.js';
 import { applyMarsh2 } from './marsh2.js';   /* (claude/marsh2) MARSH WOOD's targeted fixes: the sluice house, the stilts */
 import { applyMarsh3 } from './marsh3.js'; import { applyFrogCourt } from './frog-court.js';
-import { buildFenRoad, FEN_RULE } from './fen-road.js';   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
+import { buildFenRoad, FEN_RULE } from './fen-road.js'; import { buildHornetsNest, NEST_RULE } from './hornets-nest.js';   /* (claude/hornetsnest) THE HORNET'S NEST: a spur off THE LUMBER TRAIL - up the paper nest in the great pine, THE HORNET QUEEN 2 at its top and at the pine's foot */   /* (claude/fenroad) THE FEN ROAD: the goblins' half-built boardwalk between MARSH WOOD and THE STOCKADE, and THE BOG TROLL under it */   /* (claude/marsh3) MARSH WOOD 3: the reed run, the boom, the night pads (+226 columns before the mud flats) */
 import { lanceLookouts } from './lance-support.js';   /* THE QUEEN'S LANCE: the two end lookouts his bowmen come to (docs/briefs/lance-support.md) */   /* THE SUNKEN CARAVAN: the desert's first level (src/draft/sunken-caravan.js is its geometry) */
 /* THE LUMBER TRAIL's rule (claude/lumbertrail): src/order-chapters.js TWISTS.timber quotes it */
 export const RULE_WOOD = 'FOUR STROKES FELL A MARKED PINE, AND IT FALLS THE WAY IT LEANS: ACROSS A GAP, UP A CLIFF, OR ON WHOEVER STANDS UNDER IT.';
@@ -7930,6 +7930,9 @@ export const LEVELS = [
   { id: 'tavern', name: 'THE TAVERN', sub: 'friends meet here', build: theTavern, hidden: true },
   /* THE FEN ROAD (claude/fenroad, the greybox; scratch/brief-fenroad-1020.md, Daniel 10-20): APPENDED (saves count levels by index); on the road between MARSH WOOD and THE STOCKADE by its needs (the Stockade needs it) */
   { id: 'fenroad', name: 'THE FEN ROAD', sub: "the goblins' boardwalk to their stockade", rule: FEN_RULE, build: () => buildFenRoad({ painter, T, TS }), needs: 'marsh' },
+  /* THE HORNET'S NEST (claude/hornetsnest, the OPUS GREYBOX; scratch/brief-hornetsnest-1022.md, Daniel 10-22): APPENDED (saves count levels by index). A SPUR off THE LUMBER TRAIL
+     (spurOf + opensOn: it opens when the trail is cleared, and the map steps onto it from the trail's node); it does not lengthen the main road. Her home: THE HORNET QUEEN 2 */
+  { id: 'hornetsnest', name: "THE HORNET'S NEST", sub: 'up the great pine, into the paper nest', rule: NEST_RULE, build: () => buildHornetsNest({ painter, T, TS }), needs: 'wood', spurOf: 'wood', opensOn: { level: 'wood' } },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a
