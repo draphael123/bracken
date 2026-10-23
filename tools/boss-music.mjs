@@ -41,6 +41,11 @@ assert.equal(arena('marsh').music, 'frogking', "THE FROG KING's arena is not on 
 assert.equal(LEVELS.find(l => l.id === 'fenroad').build().music, 'fenroad', "THE FEN ROAD is not on 'fenroad' (claude/fenmusic: Bobjt's Division By Zero, the creeping-orcs version)");
 assert.equal(arena('fenroad').music, 'boss3', "THE BOG TROLL's arena is not on 'boss3' (claude/fenmusic: the Troll keeps Battle Music)");
 assert.ok(A.MUSIC_NAMES.includes('fenroad') && /Bobjt/.test(A.MUSIC_CREDITS.fenroad || '') && /Bobjt/.test(A.MUSIC_CREDITS_ROW.fenroad || ''), "'fenroad' is not in the Sound Test with the Bobjt credit (claude/fenmusic)");
+assert.equal(LEVELS.find(l => l.id === 'hornetsnest').build().music, 'hornetnest', "THE HORNET'S NEST is not on 'hornetnest' (claude/hornetmusic: congusbongus's Cathedral in the forest)");
+assert.equal(arena('hornetsnest').music, 'hornetqueen', "THE HORNET QUEEN 2's arena is not on 'hornetqueen' (claude/hornetmusic: beardalaxy's Basilisk Boss Battle Loop)");
+assert.equal(LEVELS.find(l => l.id === 'hornetsnest').build().arena2.music, 'hornetqueen', "THE HORNET QUEEN 2's pine arena is not on 'hornetqueen'");
+assert.ok(['hornetnest', 'hornetqueen'].every(k => A.MUSIC_NAMES.includes(k) && A.MUSIC_CREDITS[k] && A.MUSIC_CREDITS_ROW[k]), "'hornetnest'/'hornetqueen' are not in the Sound Test with credits (claude/hornetmusic)");
+assert.ok(/congusbongus/.test(A.MUSIC_CREDITS.hornetnest) && /beardalaxy/.test(A.MUSIC_CREDITS.hornetqueen), "hornet music credits missing the authors");
 assert.equal(arena('stockade').music, 'chieftain', "THE STOCKADE CHIEFTAIN's arena is not on 'chieftain' (claude/musicmarsh: Bobjt's Raiders March)");
 assert.ok(['marsh', 'chieftain', 'bellcrab', 'chase'].every(n => A.MUSIC_NAMES.includes(n)) && /Tausdei/.test(A.MUSIC_CREDITS.marsh || '') && /Elyvilon/.test(A.MUSIC_CREDITS.frogking || '') && /Bobjt/.test(A.MUSIC_CREDITS.chieftain || '') && /Moreno/.test(A.MUSIC_CREDITS.bellcrab || '') && /Wolfgang/.test(A.MUSIC_CREDITS.chase || ''), 'the claude/musicmarsh tracks are not all in the Sound Test with a credit');
 assert.equal(arena('keep').music, 'drownedking', "the Drowned King's arena is not on his flooded-hall dirge");

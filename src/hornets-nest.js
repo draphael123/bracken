@@ -231,11 +231,11 @@ export function buildHornetsNest({ painter, T, TS }) {
     hornetsNest: true, combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 403, [150, 180, 90], 0.10]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine */
-    music: 'musForest',   /* PLACEHOLDER (a stock forest track) until Daniel picks the nest's own - candidates in the lane report (the music research lane) */
+    music: 'hornetnest',   /* claude/hornetmusic: "Cathedral in the forest (ambient loop)" by congusbongus, CC0 */
     ambient: [{ x0: 0, x1: 80 * TS, kind: 'forest' }, { x0: 80 * TS, x1: 333 * TS, kind: 'cave' }, { x0: 333 * TS, x1: 99999, kind: 'forest' }],
-    arena: { x0: HALL.x0 * TS, x1: (HALL.x1 + 1) * TS, floor: HALL.floor * TS, trigger: HALL.trigger * TS, wallL: HALL.wallL, wallR: HALL.wallR, boss: 'hornetqueen', music: 'queen', tint: '#e0a040', tintA: 0.12, fx: 'dust', stage: 1,
+    arena: { x0: HALL.x0 * TS, x1: (HALL.x1 + 1) * TS, floor: HALL.floor * TS, trigger: HALL.trigger * TS, wallL: HALL.wallL, wallR: HALL.wallR, boss: 'hornetqueen', music: 'hornetqueen', tint: '#e0a040', tintA: 0.12, fx: 'dust', stage: 1,
       top: HALL.top * TS, perches: PERCHES.map(([x0, x1, row, id, fall]) => ({ x0, x1, row, id, fall: !!fall })), cells: HALL_CELLS.map(([x, y]) => ({ x, y })) },
-    arena2: { x0: PINE.x0 * TS, x1: (PINE.x1 + 1) * TS, floor: PINE.floor * TS, trigger: PINE.trigger * TS, wallL: PINE.wallL, wallR: PINE.wallR, boss: 'hornetqueen', music: 'queen', tint: '#8aa040', tintA: 0.1, fx: 'dust', stage: 2,
+    arena2: { x0: PINE.x0 * TS, x1: (PINE.x1 + 1) * TS, floor: PINE.floor * TS, trigger: PINE.trigger * TS, wallL: PINE.wallL, wallR: PINE.wallR, boss: 'hornetqueen', music: 'hornetqueen', tint: '#8aa040', tintA: 0.1, fx: 'dust', stage: 2,
       pines: PINE_PINES, lastComb: LAST_COMB, bough: BOUGH, trunk: PINE.trunk },
     escape: { x0: 333, x1: 353, top: HALL.floor, bottom: FL, ledges: LEDGES, check: [351, FL - 1], out: HALL.wallR },
   };

@@ -27,7 +27,7 @@ const TRACKS = { welltown: './audio/welltown.ogg', theatre: './audio/theatre.ogg
   sealedpyramid: './audio/sealedpyramid.ogg',   /* THE SEALED PYRAMID (claude/spart, Daniel's pick 10-12): "Forgoten tomb ambience" by kindland, CC0 (licence re-read on the page; audio/CREDITS.txt) - the level track (THE SCARAB MOTHER keeps her composed theme) */
   ksar: './audio/ksar.ogg',   /* THE BANDIT KSAR (claude/ksar art pass, Daniel's pick): "Desert Loop" by iamoneabe, CC0 (audio/CREDITS.txt) - the level track; THE HAWK-MISTRESS keeps her composed theme */
   litchurch: './audio/litchurch.ogg', churchcrypt: './audio/churchcrypt.ogg', paladin: './audio/paladin.ogg',   /* THE LIT CHURCH (claude/musicchurch, Daniel's picks 10-17): 'litchurch' = "Wendale Abbey" by Yubatake, CC-BY 4.0 - the lit nave (the last 5 s are crossfaded onto the first 5 s; the loop returns to 5.0 s, TRACK_INTRO); 'churchcrypt' = "Crypt" by Machine, CC-BY 3.0 - the undercity and the crypt, and THE DEACON's fight (3 s crossfade, loop returns to 3.0 s); 'paladin' = "Final Confrontation" by tcarisland, CC-BY 4.0 - THE PALADIN's fight (4 s crossfade, loop returns to 4.0 s). Replaces Umplix's "Cathedral" and Centurion_of_war's "Church combat" (audio/CREDITS.txt) */
-  marsh: './audio/marsh.ogg', chieftain: './audio/chieftain.ogg', bellcrab: './audio/bellcrab.ogg', chase: './audio/chase.ogg', fenroad: './audio/fenroad.ogg',   /* (claude/fenmusic, Daniel's pick 10-22) 'fenroad' = "Division By Zero" (the "creeping orcs" version) by Bobjt, CC0 - THE FEN ROAD's level track (was 'sleepers'). (claude/musicmarsh, Daniel's picks 10-19) 'marsh' = "Forest River Spirits" by Tausdei, CC-BY 3.0 - MARSH WOOD; 'chieftain' = "Raiders March (loop)" by Bobjt, CC0 - THE STOCKADE CHIEFTAIN; 'bellcrab' = "Underwater Boss' Temple Song" by Senor Moreno, CC-BY 4.0 - THE BELLCRAB in the Deep; 'chase' = "Chase!" by Wolfgang_, CC0 - the chase sequences (THE ROCKSLIDE; only chase sequences point at it); 'frogking' above is now "What Broods Under Deepening Cloudmurk" by Elyvilon, CC-BY 4.0 (a 96 s bar-aligned cut), replacing Spring Spring's Gyokaijuu. Loop points: TRACK_INTRO below */
+  marsh: './audio/marsh.ogg', chieftain: './audio/chieftain.ogg', bellcrab: './audio/bellcrab.ogg', chase: './audio/chase.ogg', fenroad: './audio/fenroad.ogg', hornetnest: './audio/hornetnest.ogg', hornetqueen: './audio/hornetqueen.ogg',   /* (claude/hornetmusic, Daniel's picks 10-23) 'hornetnest' = "Cathedral in the forest (ambient loop)" by congusbongus, CC0 - THE HORNET'S NEST's level track (3 s crossfade, loop returns to 3.0 s); 'hornetqueen' = "Basilisk Boss Battle Loop" by beardalaxy, CC0 - THE HORNET QUEEN 2's fight (the author's own loop, 30 ms), with a synthesized buzz bed under it (addBuzzBed) */   /* (claude/fenmusic, Daniel's pick 10-22) 'fenroad' = "Division By Zero" (the "creeping orcs" version) by Bobjt, CC0 - THE FEN ROAD's level track (was 'sleepers'). (claude/musicmarsh, Daniel's picks 10-19) 'marsh' = "Forest River Spirits" by Tausdei, CC-BY 3.0 - MARSH WOOD; 'chieftain' = "Raiders March (loop)" by Bobjt, CC0 - THE STOCKADE CHIEFTAIN; 'bellcrab' = "Underwater Boss' Temple Song" by Senor Moreno, CC-BY 4.0 - THE BELLCRAB in the Deep; 'chase' = "Chase!" by Wolfgang_, CC0 - the chase sequences (THE ROCKSLIDE; only chase sequences point at it); 'frogking' above is now "What Broods Under Deepening Cloudmurk" by Elyvilon, CC-BY 4.0 (a 96 s bar-aligned cut), replacing Spring Spring's Gyokaijuu. Loop points: TRACK_INTRO below */
   glasssea: './audio/glasssea.ogg',   /* THE GLASS SEA (claude/glasssea art pass, Daniel's pick): "Eastern Arctic Dubstep" by VishwaJai (credited Vishwa Jay), CC0 (audio/CREDITS.txt) - the level track; THE GLASS COLOSSUS keeps his own theme composed in code (src/boss-music.js) */
   undeadmage: './audio/undeadmage.ogg',   /* THE UNDEAD ARCHMAGE (claude/archmage2b, Daniel's pick): "Colossal Boss Battle Theme" (Blackmoor Colossus, the loop with the choir) by Matthew Pablo, CC-BY 3.0 (audio/CREDITS.txt) - his stair chase and his fight */   /* THE RED GORGE: "Old Road" by Kevin MacLeod (incompetech.com), CC BY 4.0 - Daniel's pick, 10-02 (audio/CREDITS.txt) */
   matriarch: './audio/matriarch.ogg',   /* THE RAPTOR MATRIARCH (claude/redgorge2 art pass, Daniel's pick): "Volatile Reaction" by Kevin MacLeod, CC-BY 4.0 (audio/CREDITS.txt) */
@@ -494,6 +494,8 @@ export const SFX = {
   roar() { file('roar', 0.6) || tone('sawtooth', 90, 220, 0.6, 0.3); },
   bossHurt() { file('bossHurt', 0.55) || tone('sawtooth', 300, 120, 0.25, 0.25); },
   deny() { tone('triangle', 196, 150, 0.14, 0.09, 0, uiGain); tone('triangle', 147, 110, 0.18, 0.08, 0.07, uiGain); },   /* a SOFT no: a locked hero's card (claude/heroroster) */
+  buzzSwell() { buzzSwell(BED.buzz, 1.6); },   /* THE HORNET QUEEN's buzz bed swells (no sound of its own; only under 'hornetqueen') */
+  buzzCloak() { buzzSwell(BED.cloak, 10); },
   buzz() { tone('sawtooth', 110, 130, 0.5, 0.12); tone('sawtooth', 220, 200, 0.5, 0.06); },
   ui() { file('ui', 0.35, 1, uiGain) || tone('square', 700, 700, 0.04, 0.1, 0, uiGain); },
   uiSel() { tone('square', 900, 1300, 0.08, 0.12, 0, uiGain); },
@@ -593,8 +595,29 @@ const TRACK_LAYER = { deep: { file: 'deepdread', gain: 0.5 } };
 // AN INTRO, THEN THE LOOP (claude/welltown-fix): a file that is an intro and then a seamless loop names where the loop begins (s). The first
 // pass plays the whole file; every pass after it starts there. welltown.ogg = Dizzy Crow's Negev-Desert-Intro (7.000 s) + Negev-Desert-Loop.
 export const TRACK_INTRO = { admiral: 21.3, kraken: 20.8, litchurch: 5.0, churchcrypt: 3.0, paladin: 4.0, gqueen: 14.0, gqjudge: 4.0, gqescape: 2.0, lumbertrail: 2.0, oldtusker: 1.5, kingswood: 14.7447, highcrown: 8.0, welltown: 7.0, winchmaster: 9.6, huntmaster: 9.5, puppeteer: 34.135 };   /* (claude/puppeteer2: 'Dissonant Waltz' plays its opening once, then loops 34.135 s to its end at 234.239 s - a 200.1 s loop on the waltz's return) */
-Object.assign(TRACK_INTRO, { marsh: 4.0, frogking: 3.0, chieftain: 0.03, bellcrab: 3.5, chase: 0.03, fenroad: 0.03 });   /* (claude/musicmarsh: the last X s are crossfaded onto the first X s and the loop returns to X - marsh 4 s, frogking 3 s (a 96 s / 32-bar cut, 99 s file), chieftain and chase 30 ms (the authors' own loops), bellcrab 3.5 s) */
+Object.assign(TRACK_INTRO, { marsh: 4.0, frogking: 3.0, chieftain: 0.03, bellcrab: 3.5, chase: 0.03, fenroad: 0.03, hornetnest: 3.0, hornetqueen: 0.03 });   /* (claude/musicmarsh: the last X s are crossfaded onto the first X s and the loop returns to X - marsh 4 s, frogking 3 s (a 96 s / 32-bar cut, 99 s file), chieftain and chase 30 ms (the authors' own loops), bellcrab 3.5 s) */
 let layerFor = null;
+// THE HORNET QUEEN'S BUZZ BED (claude/hornetmusic): synthesized (no sample), under 'hornetqueen' only. Detuned saws through a band-pass, chopped by a wing-beat LFO, plus a thin hiss: a hum that
+// is always there at BED.base, and swells (buzzSwell) on her wing-buzz, her brood and her swarm cloak. It rides the track's own gain node, so it ducks, muffles and stops with the track.
+const BED = { base: 0.03, buzz: 0.1, cloak: 0.16 };
+let buzzBed = null;
+function addBuzzBed(name) {
+  if (name !== 'hornetqueen' || !ac || currentTrack !== name || !trackG || (buzzBed && buzzBed.tg === trackG)) return;
+  const tg = trackG, g = ac.createGain(), am = ac.createGain(), bp = ac.createBiquadFilter(), srcs = [];
+  g.gain.value = BED.base; am.gain.value = 0.6; bp.type = 'bandpass'; bp.frequency.value = 280; bp.Q.value = 0.8;
+  for (const f of [186, 192.5, 371]) { const o = ac.createOscillator(); o.type = 'sawtooth'; o.frequency.value = f; const og = ac.createGain(); og.gain.value = f > 300 ? 0.25 : 0.5; o.connect(og); og.connect(am); srcs.push(o); }
+  const lfo = ac.createOscillator(), ld = ac.createGain(); lfo.frequency.value = 29; ld.gain.value = 0.4; lfo.connect(ld); ld.connect(am.gain); srcs.push(lfo);   /* the wing-beat chop */
+  const drift = ac.createOscillator(), dd = ac.createGain(); drift.frequency.value = 0.27; dd.gain.value = 70; drift.connect(dd); dd.connect(bp.frequency); srcs.push(drift);   /* the swarm wanders */
+  const hs = ac.createBufferSource(), hf = ac.createBiquadFilter(), hg = ac.createGain(); hs.buffer = noiseBuf; hs.loop = true; hf.type = 'bandpass'; hf.frequency.value = 2200; hf.Q.value = 1.2; hg.gain.value = 0.12; hs.connect(hf); hf.connect(hg); hg.connect(g); srcs.push(hs);
+  am.connect(bp); bp.connect(g); g.connect(tg);
+  for (const s of srcs) { s.start(); musicSrcs.push(s); }
+  buzzBed = { tg, g };
+}
+/* the swell: up fast to base + amt, hold, then back to base slowly (hornet-queen-hands.js SOUND: buzz, brood, cloakTell, cloak) */
+function buzzSwell(amt, hold) {
+  if (!ac || !buzzBed || buzzBed.tg !== trackG || currentTrack !== 'hornetqueen') return;
+  const p = buzzBed.g.gain, t = ac.currentTime; p.cancelScheduledValues(t); p.setTargetAtTime(BED.base + amt, t, 0.12); p.setTargetAtTime(BED.base, t + hold, 0.9);
+}
 function addLayer(name) {
   const L = TRACK_LAYER[name]; if (!L || !ac || currentTrack !== name || !trackG || trackG === layerFor || !trackBuf[L.file]) return;
   layerFor = trackG;
@@ -620,7 +643,7 @@ function playFile(name) {
     const startAt = at; at += len - LOOP_XF;   // the next copy comes in under the last LOOP_XF of this one
     musicTimer = setTimeout(() => chain(false), Math.max(50, (startAt + len * 0.7 - ac.currentTime) * 1000)); // arm the next pass well before this one ends
   };
-  chain(true); addLayer(name);
+  chain(true); addLayer(name); addBuzzBed(name);
   musicGain.gain.value = musicOn ? trackVol(name) : 0;
 }
 function fadeUnloadedTrack() {
@@ -2082,7 +2105,7 @@ for (const k of ['hitHeavy', 'hitFinish', 'heavy', 'blockHeavy', 'guardBreak']) 
 SFX.swingThird = () => SFX.swingUp(2); SFX.pLandDrop = () => SFX.pLand('stone', 1); SFX.pLandBig = () => SFX.pLand('stone', 2);
 export const SFX_NAMES = () => Object.keys(SFX).filter(k => typeof SFX[k] === 'function');
 export const MUSIC_NAMES = ['witchlight', 'fallingtower', 'underkeep', 'stormharbor', 'burial', 'store', 'theme', 'theme2', 'stockade', 'cave', 'underwell', 'skyroad', 'rootway', 'huntmaster', 'greatdrill', 'rocphoenix', 'mineworks', 'oreroad', 'unburied', 'deathknight', 'blacklord', 'deep', 'waymeet', 'marketday', 'harvestfair', 'wickerqueen', 'theme3', 'mountain', 'town', 'sunspire', 'adventure', 'underleaf', 'stormhold', 'highcrown', 'longwater', 'reef', 'flotilla', 'hurricane', 'boss', 'boss2', 'drowned', 'king', 'roc', 'queen', 'select', 'ending', 'musForest', 'musCastle', 'musMountain', 'musUnder', 'musBeach', 'musSailor', 'musDungeon', 'sleepers', 'trench', 'barrows', 'quarry', 'skysail', 'frogking', 'sporemother', 'ramlord', 'owlreeve', 'herald', 'reefmaw', 'closedhelm', 'quartermaster', 'admiral', 'houndmaster', 'masthead', 'hilltroll', 'rimewright', 'captain', 'tollmaster', 'grandmother', 'burning', 'pyroboss', 'minicharge', 'monastery', 'northumberland', 'windcaller', 'hangingvillage', 'sporewood', 'duneworm', 'lance', 'caravan', 'monasterygolem', 'archmage', 'goblinroyal', 'drownedking', 'winchmaster', 'gargoyle', 'theatre', 'puppeteer', 'canal', 'welltown', 'banditking', 'cisternqueen', 'djinn', 'redgorge', 'glasssea', 'gorgecrab', 'matriarch', 'undeadmage', 'lanterneater', 'kingswood', 'towpath', 'gorm', 'lumbertrail', 'folly', 'gqueen', 'gqjudge', 'gqescape', 'kraken', 'kraken2', 'litchurch', 'churchcrypt', 'paladin'];
-MUSIC_NAMES.push('marsh', 'chieftain', 'bellcrab', 'chase', 'fenroad');
+MUSIC_NAMES.push('marsh', 'chieftain', 'bellcrab', 'chase', 'fenroad', 'hornetnest', 'hornetqueen');
 MUSIC_NAMES.push('oldtusker');   /* (claude/oldtusker) OLD TUSKER's fight, Battle Theme B */   /* (claude/musicmarsh: the new Sound Test rows; 'frogking' was already listed) */
 export const AMBIENT_NAMES = ['forest', 'water', 'hive', 'rain', 'wind', 'town', 'shore', 'ship', 'cave', 'mineworks', 'deep', 'drip', 'tavern', 'hold', 'hall', 'fire', 'crowd', 'barn', 'fair', 'fairlot', 'battlefield', 'cistern', 'highair', 'canyon', 'glassday', 'glassnight', 'ksar', 'towpath', 'rootway', 'litchurch', 'foothills', 'buriedcity', 'sealedpyramid'];
 /* WHAT THE UNBURIED FIELD'S BED IS MADE OF (tools/unburied-look.mjs 8): synth beds and the one creak clip already on disk - nothing downloaded, and never a horn (the horn is the volley's tell) */
@@ -2096,7 +2119,7 @@ export const AMBIENT_SOURCES = { foothills: ['synth:wind-gusts', 'synth:sheep-be
 /* THE SOUND TEST'S ONE ROW, where a credit is worded by its licensor and too long for it: the row shows this; MUSIC_CREDITS keeps the exact wording
    (shown whole on the credits page, src/credits.js, and in audio/CREDITS.txt) (claude/redgorge-fix) */
 export const MUSIC_CREDITS_ROW = { litchurch: '"Wendale Abbey" — Yubatake, CC-BY', churchcrypt: '"Crypt" — Machine, CC-BY', paladin: '"Final Confrontation" — tcarisland, CC-BY', kraken: '"The Kraken" — L. Paz (leohpaz), CC-BY', kraken2: '"Ready Cannons and Fire" — L. Paz, CC-BY', gqueen: '"Courtroom" + "Sinister Boss Appears!", CC0', gqjudge: '"Judgement" — Spring Spring', gqescape: '"Frantic Game Play" — E. Matyas, CC-BY', gorm: '"Determined Pursuit" — Emma_MA', store: '"The Bard\'s Tale" — RandomMind', select: '"A Small Fire Will Do" — Trex0n', brackenwood: '"Round Glasses" — C. Panchout, CC-BY', folly: '"Lonely Witch" — HorrorPen, CC-BY', highcrown: '"Throne Room" — Far Different Nature, CC-BY', mountain: '"Mountain Theme" — beardalaxy', rootway: '"Forest Whisper" — C. Kauffman', huntmaster: '"Call to War" — Umplix', greatdrill: '"Machines" — Tsorthan Grove, CC-BY', glasssea: '"Arctic Dubstep" — Vishwa Jay', underwell: '"The Eternal Sands" — HitCtrl, CC-BY', towpath: '"Kokopelli\'s Graveyard" — C. Kauffman', matriarch: 'Volatile Reaction MacLeod CC-BY', skyroad: '"Bring Me The Sky" Buckley CC-BY', rocphoenix: '"Phoenix" — S. Buckley, CC-BY', winchmaster: '"Boss Battle #8 Metal" — nene', redgorge: '"Old Road" — K. MacLeod, CC-BY', puppeteer: '"Dissonant Waltz" — Yubatake', unburied: 'Aureolus_Omicron, CC-BY 4.0', blacklord: 'R. Maggot, CC-BY 4.0', undeadmage: 'Matthew Pablo, CC-BY 3.0' };
-Object.assign(MUSIC_CREDITS_ROW, { fenroad: '"Division By Zero" — Bobjt, CC0', marsh: '"Forest River Spirits" — Tausdei, CC-BY', frogking: '"Deepening Cloudmurk" — Elyvilon, CC-BY', bellcrab: '"Boss\' Temple" — Senor Moreno, CC-BY' });   /* (claude/musicmarsh) */
+Object.assign(MUSIC_CREDITS_ROW, { hornetnest: '"Cathedral in the forest" — congusbongus, CC0', hornetqueen: '"Basilisk Boss Battle Loop" — beardalaxy, CC0', fenroad: '"Division By Zero" — Bobjt, CC0', marsh: '"Forest River Spirits" — Tausdei, CC-BY', frogking: '"Deepening Cloudmurk" — Elyvilon, CC-BY', bellcrab: '"Boss\' Temple" — Senor Moreno, CC-BY' });   /* (claude/musicmarsh) */
 MUSIC_CREDITS_ROW.oldtusker = '"Battle Theme B for RPG" — cynicmusic, CC0';   /* (claude/oldtusker) OLD TUSKER's fight */
 MUSIC_CREDITS_ROW.lumbertrail = '"Enchanted Festival" — Matthew Pablo, CC-BY';   /* (claude/lumberfix) THE LUMBER TRAIL's level track, CC-BY 3.0, credited in full on the credits page and in audio/CREDITS.txt */
 export const MUSIC_CREDITS = {
@@ -2175,6 +2198,8 @@ export const MUSIC_CREDITS = {
   marsh: '"Forest River Spirits" by Tausdei (OpenGameArt.org), CC-BY 3.0',   /* (claude/musicmarsh, Daniel's pick 10-19: CC-BY 3.0, credit required; MARSH WOOD) */
   chieftain: '"Raiders March" — Bobjt, CC0',   /* (claude/musicmarsh: CC0, credited all the same; THE STOCKADE CHIEFTAIN) */
   bellcrab: '"Underwater Boss\' Temple Song" by Senor Moreno (OpenGameArt.org), CC-BY 4.0',   /* (claude/musicmarsh, Daniel's pick 10-19: CC-BY 4.0, credit required; THE BELLCRAB in the Deep) */
+  hornetnest: '"Cathedral in the forest (ambient loop)" — congusbongus, CC0',   /* (claude/hornetmusic: CC0, credited all the same) */
+  hornetqueen: '"Basilisk Boss Battle Loop" — beardalaxy, CC0',
   fenroad: '"Division By Zero" — Bobjt, CC0',   /* (claude/fenmusic: CC0, credited all the same; THE FEN ROAD's level track, the "creeping orcs" version) */
   chase: '"Chase!" — Wolfgang_, CC0',   /* (claude/musicmarsh: CC0, credited all the same; the chase sequences) */
 };
