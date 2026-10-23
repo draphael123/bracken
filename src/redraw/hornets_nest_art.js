@@ -3,8 +3,8 @@
 //   hornet        the river wasp's machine (sting: true - a told ! dart from its post): a big nest hornet, banded abdomen and sting, red eye          - 4 frames (3 wing beats, hurt)         16 x 11
 //   combdrone     the sprig's machine (a walker with a told bite): a stout comb-worker walking on its legs, abdomen banded - walk x4, look, tell (rears, jaws wide), bite (lunges), hurt  16 x 12
 //   nestguard     the shieldbearer's machine (guards his front, a slow turn, a told shove): a soldier hornet standing upright behind a WAX PLATE of hex comb - 8 frames  16 x 16
-//   venomspitter  the toadstool spitter's machine (fills its cheeks, a yellow !, spits): a worker clinging to the comb, its cheeks swelling with green venom - idle, idle, fill/spit     16 x 14
-// bakeNestSkins(SPR) -> { hornet, combdrone, nestguard, venomspitter } (each { R, L, white, ax, ay, w, h } like every foe sheet; the SPR argument is read for the anchors only)
+//   (the venom spitter is gone: claude/hornetsnest2, Daniel 10-23 - it read as a mage; the nest's heavy is THE FAT HONEY HORNET, src/redraw/honey_hornet_art.js)
+// bakeNestSkins(SPR) -> { hornet, combdrone, nestguard } (each { R, L, white, ax, ay, w, h } like every foe sheet; the SPR argument is read for the anchors only)
 import { canvas, flipX, whiten, outline } from '../px.js';
 
 const INK = '#1a0c06', CH = ['#3a1c0c', '#6a3a18', '#9c5c28', '#cc8444'], AM = ['#a05a0a', '#d88a1c', '#f6b436', '#ffe070'], BLK = '#1a0c06', WING = ['#9ab0c6', '#dce8f4', '#ffffff'];
@@ -64,25 +64,11 @@ function guardFrame(kind, k) { return g => {
   if (!turn) px(g, CREAM[3], pxx + 1, pyy + 1.5); px(g, '#6a4a1c', pxx + pw / 2, pyy + ph / 2 - 1);   /* the boss of the plate */
   /* the arm: a jointed limb to the plate */
   line(g, CH[1], 8.5 + lean, 7.8, pxx + 0.5, pyy + ph / 2 + 0.5); }; }
-/* ---------------- THE VENOM SPITTER (16 x 14): a worker clinging to the comb, cheeks swelling with venom ---------------- */
-function spitFrame(fill, blink) { return g => {
-  /* a round, banded abdomen at the foot; the thorax and head up on it; wings folded behind */
-  abdomen(g, 8, 9.4, 5.2, 3.8, [1, 3]); line(g, '#f4ecd8', 8, 13.2, 8.5, 13.9);
-  line(g, WING[0], 5, 6, 3, 9.5); line(g, WING[1], 6, 5.5, 3.6, 8.4); px(g, WING[2], 4, 8);
-  blob(g, 8, 5.6, 3.2, 3.0, (dx, dy) => sh(CH, dx, dy));
-  /* cheeks: the venom-sacs either side of the jaws, swelling */
-  const sw = fill ? 1.6 : 0.4; blob(g, 8, 7.4, 2.6 + sw, 1.8 + sw * 0.5, (dx, dy) => fill ? sh(VEN, dx, dy) : sh(CH, dx, dy));
-  eye(g, 6.2, 4.4, !blink); eye(g, 9.4, 4.4, !blink); if (blink) { px(g, INK, 6.2, 4.4); px(g, INK, 9.4, 4.4); }
-  px(g, '#f0e4c8', 7, 9); px(g, '#f0e4c8', 9, 9); if (fill) { px(g, VEN[3], 8, 9.6); px(g, VEN[2], 8, 10.4); }
-  line(g, INK, 5.5, 2.4, 3.5, 0.2); line(g, INK, 10.5, 2.4, 12.5, 0.2); px(g, AM[3], 3.4, 0); px(g, AM[3], 12.6, 0);
-  px(g, CH[0], 4, 11.5); px(g, CH[0], 12, 11.5); px(g, CH[0], 3.5, 12.5); px(g, CH[0], 12.5, 12.5); }; }
-
 export function bakeNestSkins(SPR) {
   const keep = n => ({ w: SPR[n].w, h: SPR[n].h });
   return {
     hornet: sheet([hornetFrame(0), hornetFrame(1), hornetFrame(2), hornetFrame(0, true)], 16, 11, SPR.wasp.ax, SPR.wasp.ay, keep('wasp')),
     combdrone: sheet([droneFrame('walk', 0), droneFrame('walk', 1), droneFrame('walk', 2), droneFrame('walk', 3), droneFrame('look'), droneFrame('tell'), droneFrame('bite'), droneFrame('hurt')], 16, 12, SPR.sprig.ax, SPR.sprig.ay, keep('sprig')),
     nestguard: sheet([guardFrame('walk', 0), guardFrame('walk', 1), guardFrame('walk', 2), guardFrame('walk', 3), guardFrame('turn'), guardFrame('tell'), guardFrame('shove'), guardFrame('low')], 16, 16, SPR.shield.ax, SPR.shield.ay, keep('shield')),
-    venomspitter: sheet([spitFrame(false, false), spitFrame(false, true), spitFrame(true, false)], 16, 14, SPR.spit.ax, SPR.spit.ay, keep('spit')),
   };
 }
