@@ -15,10 +15,13 @@ const KEYS = ['crouch', 'lowGuard', 'set', 'reload', 'crouchShot', 'trip', 'lowP
 const pg = await openPage({ audio: false, fonts: false });
 let rows = [];
 try {
-  rows = await pg.evalp(`(()=>{const out=[];
+  rows = await pg.evalp(`(async()=>{BK.manualSimulation=true;const out=[];
+    const collectRetired=()=>window.__brackenLabCollect?window.__brackenLabCollect():new Promise(r=>setTimeout(r,0));
     for(const h of ${JSON.stringify(HEROES)}) for(const s of BKT.skinIds()){
-      const K=BKT.heroSet(s,BKT.PROG.sword,false,h),I=Array.isArray(K.R.idle)?K.R.idle[0]:K.R.idle;
+      { const K=BKT.heroSet(s,BKT.PROG.sword,false,h),I=Array.isArray(K.R.idle)?K.R.idle[0]:K.R.idle;
       for(const k of ${JSON.stringify(KEYS)}){const f=K.R[k];if(!f)continue;(Array.isArray(f)?f:[f]).forEach((c,i)=>out.push({h,s,k,i,feet:c.feet,stand:I.feet,low:(()=>{const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;for(let y=c.height-1;y>=0;y--)for(let x=0;x<c.width;x++)if(d[(y*c.width+x)*4+3]>40)return y;return -1})()}));}}
+      // Only the numeric measurements survive this skin; collect its retired native canvas art before baking the next.
+      await collectRetired();}
     return out})()`);
 } finally { pg.close(); }
 const bad = rows.filter(r => r.feet !== r.stand), poke = rows.filter(r => r.low - r.feet > BELOW);

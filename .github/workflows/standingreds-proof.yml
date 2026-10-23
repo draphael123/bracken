@@ -4,11 +4,36 @@ on:
     inputs:
       mode:
         type: choice
-        options: [remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  cause-fixes:
+    if: inputs.mode == 'cause-fixes'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [berserker, crouch-feet]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/crouch-feet-collection-proof.mjs
+        if: matrix.check == 'crouch-feet'
+      - run: node tools/standingreds-proof.mjs "$CHECK" gate-data/cause-fixes
+        env:
+          CHECK: ${{ matrix.check }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cause-fixes-${{ matrix.check }}
+          path: gate-data/
   remaining:
     if: inputs.mode == 'remaining'
     runs-on: ubuntu-latest

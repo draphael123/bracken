@@ -7,6 +7,7 @@ const root = fileURLToPath(new URL('..', import.meta.url)), name = process.argv[
 const checks = {
   'ai-companion': ['tools/ai-companion.mjs'],
   'normal-health': ['tools/normal-health.mjs'], 'tower-chase': ['tools/tower-chase.mjs'], 'harvest-fair': ['tools/harvest-fair.mjs'],
+  'crouch-feet': ['tools/crouch-feet.mjs'],
   berserker: ['tools/berserker.mjs'], 'dune-worm': ['tools/dune-worm.mjs'], bells: ['tools/bells.mjs'],
   'rule-openings': ['tools/rule-openings.mjs'], 'slopes-trace': ['tools/slopes-trace.mjs'],
   'visible-supports-strict': ['tools/visible-supports.mjs', 'scree', 'spire', '--strict'],
