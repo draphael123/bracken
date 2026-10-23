@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,27 @@ env:
 permissions:
   contents: read
 jobs:
+  hero-reuse:
+    if: inputs.mode == 'hero-reuse'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        hero: [knight, warden, pyro, paladin, pirate, reaper, geomancer, berserker, ranger]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/hero-bake-reuse-proof.mjs "$HERO"
+        env:
+          HERO: ${{ matrix.hero }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: hero-reuse-${{ matrix.hero }}
+          path: gate-data/
   pixel-debug:
     if: inputs.mode == 'pixel-debug'
     runs-on: ubuntu-latest
