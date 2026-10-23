@@ -2,7 +2,7 @@
 // and an escape between them. The parked Hornet Queen (src/main.js updateQueen: her dive aimed at your feet, her sting that sticks only in wood, STUCK = open,
 // winded x2 when a dive or a sweep is taken on the shield) is her base; her moves are rebuilt here as one module with her new home's rule in them.
 // This file is the fight, PURE (her moves, her rooms, what a blow does to her, and the bot's plan); src/hornet-queen-hands.js binds it to the world (main.js) and
-// draws her. tools/hornet-queen.mjs is its check.
+// draws her. tools/hornets-nest.mjs is its check.
 // HEADER (design-standard B11 / B14 / B15): A BEAST BOSS WITH RULE OPENINGS. She is ALWAYS HITTABLE, never invulnerable:
 //   HER SHELL turns a cut outside her openings: a blow lands at HQ.shell (0.5; told: a clank and HARD SHELL). COME DOWN ON HER FROM ABOVE (a plunge off a perch or
 //     the bough: FROM ABOVE, B14's key) and it lands whole. In P2 her SWARM CLOAK turns more (HQ.cloak, 0.4 - the B15 floor) until smoke or a falling pine strips it.

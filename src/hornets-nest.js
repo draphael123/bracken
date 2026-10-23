@@ -77,11 +77,11 @@ export function buildHornetsNest({ painter, T, TS }) {
   // ================= 1. THE PINE'S FOOT (0-79): TEACH - the smoke stand, the lone swarm, THE FIRST COMB, the sticky bridge =================
   ground(0, 41, FL);
   smoke(6, FL - 1);
-  sign(3, FL - 1, "THE HONEY-HUNTERS' SMOKE POTS STILL SMOULDER. E TAKES ONE: CARRIED, THE SWARM NEAR YOU GOES QUIET.");
+  sign(3, FL - 1, "THE HONEY-HUNTERS' SMOKE POTS STILL SMOULDER. E TAKES ONE: THE SWARM NEAR YOU GOES QUIET.");
   ground(16, 24, FL - 2);                                   /* a root step under the first swarm */
   swarm(20, FL - 6, { squad: 'foot' }); hornet(27, FL - 6, { squad: 'foot' }); ent('badger', 30, FL - 1, { face: -1, cnSkin: 'boar', squad: 'foot' });   /* a boar rooting at the pine's foot (the trail's own: its charge is jumped) */
   shelf(8, 13, FL - 3); shelf(27, 31, FL - 3);              /* low roots over the forest floor (a second height) */
-  sign(12, FL - 1, 'A SWARM. WALK THROUGH WITH THE POT AND IT SLEEPS. ATTACK THROWS THE POT: WHERE IT BREAKS, THE SMOKE STAYS.');
+  sign(12, FL - 1, 'A SWARM. CARRY A POT AND IT SLEEPS. ATTACK THROWS THE POT; THE SMOKE STAYS.');
   coins([18, FL - 4], [21, FL - 4], [23, FL - 4]);
   /* THE FIRST COMB: the buttress root stands four rows over the forest floor - no jump makes it. A comb hangs off the pine's low bough beside it: cut it,
      it drops at the root's foot as a step (REQUIRED) */
@@ -117,7 +117,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   smoke(91, FL - 13);                                        /* a smoke stand at the mouth (on the shoulder) */
   cells.push({ x: 81, y: FL - 13 });                         /* a brood cell crusting the mouth: the brood met first, where nothing else is on you */
   swarm(86, 42, { squad: 'throat' }); hornet(91, 30, { squad: 'throat' });   /* (the hornet keeps the throat's head, over the chamber's floor, not the rungs) */                                             /* THE GATE'S THROAT: a swarm in the middle of the rungs - climb with the pot in hand */
-  sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: CARRIED, YOU CANNOT SWING, BUT YOU CAN STILL JUMP.");
+  sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: YOU CANNOT SWING, BUT YOU CAN JUMP.");
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
   hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); spitter(98, 30, { squad: 'cells' });
@@ -142,7 +142,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   shelf(157, 162, 29); waxed(157, 162, 29); block(155, 156, 31, 31);   /* the comb ledge three rows over the floor, a knuckle of wax up to it */
   ent('shield', 158, 31, { face: -1, cnSkin: 'nestguard', elite: true, gate: 165 });   /* he holds the chamber's way on: a gate across it until he falls (the shrine past it) */
   swarm(163, 28, { squad: 'guard' });
-  sign(143, 31, 'THE NEST-GUARD HOLDS THE CHAMBER. HIS WAX PLATE TURNS A CUT FROM THE FRONT: GO ROUND, OR COME DOWN ON HIM FROM THE LEDGE.');
+  sign(143, 31, 'THE NEST-GUARD: WAX PLATE TURNS THE FRONT: GO ROUND, OR DROP ON HIM.');
   ent('check', 168, 31);
 
   // ================= 3. THE COMB STAIR (169-247): REMIX (A14) - the nest's core climbed on comb shelves =================
@@ -158,7 +158,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   shelf(197, 208, 20);
   swarm(201, 17, { squad: 'span' }); spitter(206, 19, { squad: 'span' });   /* THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
   smoke(186, 31);
-  sign(183, 31, 'THE SWARM SITS ON THE LEDGE OVER THE SPAN. CARRY A POT UP AND THROW IT: UP+ATTACK LOBS IT HIGH.');
+  sign(183, 31, 'A SWARM SITS ON THE LEDGE OVER THE SPAN. CARRY A POT UP: UP+ATTACK LOBS IT HIGH.');
   coins([190, 21], [199, 19], [203, 19]);
   /* stage 3: THE CHAIN (REQUIRED) - the wall east of the ledge stands six rows over it. Two combs hang over the ledge's end, one over the other: cut them and
      they stack on the ledge into a stair (the low one is cut from the ledge, the high one from the low one, or the high one first: they stack either way) */
@@ -187,7 +187,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   hornet(272, 5, { squad: 'brood' }); spitter(280, 9, { squad: 'brood' });
   shelf(262, 266, 8); shelf(257, 260, 5); ent('silver', 258, 4); shelf(272, 277, 8); shelf(284, 288, 8);   /* the nursery's upper comb (a second height; a silver in the brood's own wax) */
   air(295, 295, 3, 9);                                       /* her door: the nursery floor runs out over the hall; you drop in */
-  sign(290, 9, 'HER STING STICKS IN COMB. STAND ON A PERCH AS SHE DIVES, THEN LEAVE. SMOKE UNDER HER AND SHE FALLS.');
+  sign(290, 9, 'HER STING STICKS IN COMB. STAND ON A PERCH AS SHE DIVES. SMOKE HER AND SHE FALLS.');
 
   // ================= 5. THE BROOD HALL (295-332): BOSS P1 - src/hornet-queen.js =================
   air(HALL.x0, HALL.x1, HALL.top, HALL.floor - 1);
@@ -213,7 +213,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   shelf(BOUGH.x0, BOUGH.x1, BOUGH.row);                      /* its low bough, four rows over the floor (up off a root knuckle): the floor runs on under it */
   air(PINE.wallR, PINE.wallR, FL - 6, FL - 1);
   ent('gate', 400, FL - 1);
-  sign(355, FL - 1, 'THE MARKED PINES FALL THE WAY THEY LEAN. FELL ONE INTO HER FLIGHT, OR DROP THE LAST COMB ON HER.');
+  sign(355, FL - 1, 'MARKED PINES FALL THE WAY THEY LEAN. FELL ONE INTO HER FLIGHT, OR DROP THE LAST COMB.');
 
   /* WHERE EACH COMB LANDS: its plumb line down to the first footing under any of its columns (a chained comb names its own: it lands on the one under it) */
   const foot = v => v === T.SOLID || v === T.ONEWAY || v === T.PLANK || v === T.SPIKE;
