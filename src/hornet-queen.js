@@ -26,22 +26,22 @@
 //        passes under it: GROUNDED + PINNED.
 //   ADDS: only her brood (Daniel 10-22: "few, told, capped") - none in P2.
 export const HQ = {
-  hp: 480, w: 30, h: 22, markH: 40, p1End: 0.55,
+  hp: 430, w: 30, h: 22, markH: 40, p1End: 0.55,
   shell: 0.5, cloak: 0.4, above: 1, wardMul: 0.4,
   hover: 70, speed: 120,
-  dive: { aim: [0.9, 0.72], held: 0.55, heldEvery: 3, speed: [250, 285], v0: 60, acc: 950, aimH: 96, dmg: 22, half: 9, skim: 0.4, chip: 0.35 },   /* chip: a plain block of the stoop STAGGERS her but jars a share of it through (a parry takes it clean) */   /* the stoop STARTS SLOW and gathers (v0 -> speed at acc): from her aim height a stoop takes ~0.3 s - leave as it gathers */
+  dive: { aim: [0.9, 0.72], held: 0.55, heldEvery: 3, speed: [250, 285], v0: 60, acc: 950, aimH: 96, dmg: 46, half: 9, skim: 0.4, chip: 0.5 },   /* chip: a plain block of the stoop STAGGERS her but jars a share of it through (a parry takes it clean) */   /* the stoop STARTS SLOW and gathers (v0 -> speed at acc): from her aim height a stoop takes ~0.3 s - leave as it gathers */
   stuck: { t: [3.0, 2.6], mul: 1.5 },
   winded: { t: 1.7, mul: 2 },
   dazed: { t: 2.5, mul: 1.5, r: 30, h: 56, cd: 7 },   /* the smoke under her: within r across, h below her; after a daze she will not feel smoke again for cd s (no chain-lock) */
   ward: 2.6, thrash: 0.5,
-  sweep: { tell: 0.65, speed: 165, y: 13, dmg: 19, half: 12, chip: 0.5 },   /* a plain block JARS (half comes through) and she sweeps on; a PARRY staggers her; or jump her */
-  buzz: { tell: 1.1, every: 3, n: 3, dmg: 16, r: 14, fall: 0.8, spread: 58, cool: 9 },
+  sweep: { tell: 0.65, speed: 165, y: 13, dmg: 36, half: 12, chip: 0.65 },   /* a plain block JARS (half comes through) and she sweeps on; a PARRY staggers her; or jump her */
+  buzz: { tell: 1.1, every: 3, n: 3, dmg: 38, r: 14, fall: 0.8, spread: 58, cool: 9 },
   brood: { every: 14, pulse: 3.2, n: 2, cap: 2 },
   tear: { tell: 1.4, fly: 1.1 },
-  escape: { every: 1.6, tell: 1.0, dmg: 13, r: 14 },
+  escape: { every: 1.6, tell: 1.0, dmg: 26, r: 14 },
   circle: { lap: 8, low: 30, high: 112, edge: 30, laps: [0.5, 0.9] },   /* a lap of her loop (s): across the middle low, back high; laps: how many before her next move (she picks it at the top of the loop) */   /* a lap of her loop (s): across the middle low, back high */
-  volley: { tell: 0.75, n: 5, spread: 1.0, speed: 215, dmg: 16 },
-  cloakT: { tell: 0.9, t: 10, touch: 11 },
+  volley: { tell: 0.75, n: 5, spread: 1.0, speed: 215, dmg: 30 },
+  cloakT: { tell: 0.9, t: 10, touch: 24 },
   pin: { t: 3.8, mul: 2, cap: 0.22, capComb: 0.3, comb: 4.4 },   /* a pin is worth at most cap of her (the blow that empties it, she heaves free: told) */
   pine: { strokes: 4, fall: 0.6, len: 6, lie: 18, rearm: 14, heroDmg: 6, reach: 100, sweep: 0.3 },   /* sweep: the last part of its fall (s) in which a trunk coming down across her flight catches her */   /* reach: the trunk's length - anything under its line lower than that is under it as it lands */
   lastComb: { g: 900, heroDmg: 8 },
