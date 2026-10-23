@@ -74,6 +74,6 @@ export const STORE_HELP = {
    Returns the sentence the store shows for the lock, or null when the item is open. `feat` is main.js's featDone. */
 export function lockOf(k, prog, featDone) {
   if (k.needs && !(prog[k.needs] && prog[k.needs].cleared)) return 'clear ' + k.needsName + ' first';
-  if (k.feat && !featDone(k.feat)) return k.featName + ' to earn it';
+  if (k.feat && !featDone(k.feat)) return (typeof k.featName === 'function' ? k.featName(prog) : k.featName) + ' to earn it';   /* (claude/secrets: a hero a SECRET carries names no place until the secret is found) */
   return null;
 }

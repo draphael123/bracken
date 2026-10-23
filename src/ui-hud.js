@@ -97,5 +97,5 @@ export function gfxStep(S, dir) { const cur = gfxOf(S), i = cur === 'custom' ? (
 /* THE PAUSE MENU: what a player pauses for first (resume, the map, the skills, the settings, back to the map), then the level's own rows,
    then the sound, then co-op (kept, and the check settings-tabs opens the guide from here; it just no longer sits in the first screen), then quit.
    Every row keeps its name: the action is main.js's, keyed by it. */
-export const PAUSE_ROWS = ['Resume', 'Map', 'Skills', 'Settings', 'Return to map', 'Level card', 'Store', 'Hero', 'Hero trial', 'Back to shrine', 'Restart level',
+export const PAUSE_ROWS = ['Resume', 'Map', 'Skills', 'Settings', 'Return to map', 'Level card', 'Store', 'Hero', 'Secrets', 'Hero trial', 'Back to shrine', 'Restart level',
   'Music volume', 'Effects vol', 'Party', 'Co-op', 'Co-op guide', 'Report a bug', 'Quit to title'];
