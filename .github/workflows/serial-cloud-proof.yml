@@ -1,0 +1,46 @@
+name: serial-cloud-proof
+on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/serial-cloud-proof.yml', 'tools/serial-cloud-proof.mjs']
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  serial:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Verify public source and complete inventory
+        run: node tools/serial-cloud-proof.mjs --prepare
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fresh-serial-start
+          path: gate-data/start-receipt.json
+          retention-days: 14
+      - name: Fresh full serial gate on the fixed public source
+        run: node tools/serial-cloud-proof.mjs
+      - uses: actions/download-artifact@v4
+        if: always()
+        with:
+          github-token: ${{ github.token }}
+          run-id: 39875180754
+          pattern: gate-shard-*
+          path: gate-data/reference
+      - name: Compare actual same-source verdicts and preserve Unknowns
+        if: always()
+        run: node tools/serial-cloud-proof.mjs --compare
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fresh-serial-5f4fe2e4
+          path: gate-data/
+          retention-days: 14
+          if-no-files-found: error
