@@ -19,7 +19,7 @@ for (const k of ['fire', 'crowd', 'barn']) {
   if (!audioSrc.includes('  ' + k + '() {')) fails.push(`src/audio.js SYNTH_BEDS has no ${k}() bed`);
 }
 const SKIP = id => /^(trial_|custom)/.test(id);
-const FOREST_OK = new Set(['wood', 'kings']);   /* a wood is a wood: no other level plays the birds */
+const FOREST_OK = new Set(['wood', 'kings', 'hornetsnest']);   /* (integ116: THE HORNET'S NEST is a spur up the Lumber Trail's great pine - its outer thirds are the wood) a wood is a wood: no other level plays the birds */
 const SET = ['dovecote', 'lychgate', 'stocks'];
 /* reasoned exemptions, Daniel to overrule: the Monastery's churchyard (its graves, yew and lychgate) and its garden dovecote, and the Hanging Village's one
    dovecote, are authored set pieces of those levels; the Unburied Field's battlefield churchyard gate is its own landmark (src/main.js placeLandmarks 'battlefield') */

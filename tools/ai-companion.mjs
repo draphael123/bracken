@@ -196,7 +196,7 @@ if (PAGE.length) {
         BK.bossSelect.open('map');BK.sim(3);o.bsOpen=S();
         for(let i=0;i<4&&!BK.bossSelect.rows().some(r=>r.beaten);i++)BK.sim(30);const rows=BK.bossSelect.rows();const bi=rows.findIndex(r=>r.beaten);o.beaten=bi;
         if(bi>=0){BK.bossSelect.cursor=bi;BK.bossSelect.hero='knight';o.fightOk=BK.bossSelect.start();BK.sim(5);await BK.allyReady();BK.sim(5);o.boss=S();o.xpGuard=true;BK.bossSelect.quit();BK.sim(3);o.afterQuit=S();}
-        if(BK.state==='card')BK.cardClose();BK.state='map';BK.sim(2);const m=BK.mapNodes();BK.mapLook(m.ids[2]);BK.step(2);BK.press('confirm');for(let i=0;i<400&&BK.state!=='play';i++){if(BK.state==='card')BK.cardClose();BK.step(1);if(i===3&&BK.state==='map')BK.press('confirm');}BK.sim(5);await BK.allyReady();BK.sim(5);o.fromMap=S();
+        if(BK.state==='card')BK.cardClose();BK.state='map';BK.sim(2);const m=BK.mapNodes();BK.mapLook(m.ids.includes('marsh') ? 'marsh' : m.ids[2]);BK.step(2);BK.press('confirm');for(let i=0;i<400&&BK.state!=='play';i++){if(BK.state==='card')BK.cardClose();BK.step(1);if(i===3&&BK.state==='map')BK.press('confirm');}BK.sim(5);await BK.allyReady();BK.sim(5);o.fromMap=S();
         return o;})()`);
       console.log('    ' + JSON.stringify(r));
       const full = x => x && x.n === 3 && x.ai === 1 && /pyro/.test(x.heroes);
