@@ -69,8 +69,8 @@ export function buildHornetsNest({ painter, T, TS }) {
   const hang = (id, x0, x1, row, rows = 2, o = {}) => combs.push({ id, x0, x1, row, rows, ...o });
   const waxed = (x0, x1, row) => wax.push([x0, x1, row]);   /* the footing row whose top is fresh comb (sticky) */
   const smoke = (x, row) => smokers.push([x, row]);          /* a smoke stand in the cell (x, row); its pot sits on row+1's top */
-  const swarm = (x, y, o = {}) => ent('swarm', x, y, o);
-  const hornet = (x, y, o = {}) => ent('wasp', x, y, { sting: true, cnSkin: 'hornet', ...o });
+  const swarm = (x, y, o = {}) => ent('swarm', x, y, { flyman: true, ...o });   /* (integ116: a flyer hangs above its squad's floor on purpose - tools/sprinkle-cap.mjs's flyman exemption) */
+  const hornet = (x, y, o = {}) => ent('wasp', x, y, { sting: true, cnSkin: 'hornet', flyman: true, ...o });
   const drone = (x, y, o = {}) => ent('sprig', x, y, { cnSkin: 'combdrone', face: -1, ...o });
   const spitter = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'venomspitter', face: -1, ...o });   /* THE VENOM SPITTER: the toadstool spitter's machine under a worker clinging to the comb (it fills its cheeks, a yellow !, and spits) */
 
@@ -120,7 +120,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: YOU CANNOT SWING, BUT YOU CAN JUMP.");
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
-  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); spitter(98, 30, { squad: 'cells' });
+  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); spitter(98, 30, { squad: 'cells', perch: true });
   shelf(95, 104, 31); shelf(129, 136, 31);                  /* comb shelves along the chamber's wall (a second height) */
   coins([94, 32], [98, 31], [102, 32]);
   /* THE COMB BRIDGE (REQUIRED): an eight-wide gap down into the waste pit; the comb over it is wider than the gap - cut it and it lands across */
@@ -228,6 +228,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools: [], falls: [], moversExtra: [],
     foeHit: { hornet: 0.6 },   /* a nest hornet's sting is the river wasp's machine at three-fifths its blow (they are many here) */
+    squadBands: [{ lo: 400, hi: 403, spots: 0, why: "THE GREAT PINE: the last four columns are the pine's foot and the way out - no squad stands in a boss arena" }],
     hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 403, [150, 180, 90], 0.10]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine */
