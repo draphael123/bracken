@@ -1,5 +1,8 @@
 name: lab-backend-proof
 on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/lab-backend-proof.yml']
   workflow_dispatch:
 permissions:
   contents: read
