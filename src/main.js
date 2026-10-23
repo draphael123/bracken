@@ -1,4 +1,5 @@
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
+import { reuseCurrentHeroBake } from './hero-bake-reuse.js';
 import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotSanctus, abbotSpoil } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
@@ -822,7 +823,7 @@ const PAL_SETS = { black: { s: '#6a6a76', S: '#3a3a44', b: '#2a2a34', B: '#15151
 /* THE WARDEN'S SKINS: her wool takes the colour the knight's surcoat does, so a skin dresses her too */
 const WARD_SETS = { black: { b: '#2a2e34', B: '#15181c' }, purple: { b: '#4a2f6a', B: '#2a1840', r: '#c9a0ff' }, blue: { b: '#2a4e7a', B: '#16304c' }, marsh: { b: '#4a6a2e', B: '#2c401a' }, rose: { b: '#8a4a5e', B: '#542a38', r: '#e8c0c8' }, crimson: { b: '#7a2830', B: '#4a151c', r: '#e0b040' }, verdant: { b: '#2e7a42', B: '#184a26' }, frost: { s: '#e8f2ff', S: '#8aaac8', b: '#5a7a96', B: '#36506a', r: '#bfe6f5' }, shadow: { b: '#332a46', B: '#1c1628', r: '#9a7ac0' }, gilded: { b: '#6a5420', B: '#3e3010', r: '#ffd36b', y: '#ffd36b' }, iron: { s: '#9aa3b0', S: '#5a6270', b: '#454c54', B: '#282d33' }, spore: { b: '#5a5a30', B: '#34341a', r: '#b8c060' }, silverknight: { s: '#f4f8ff', S: '#aab6c8', b: '#8a96a6', B: '#56606e', r: '#e8ecff' }, dawn: { b: '#8a5a68', B: '#523440', r: '#ffd8c0' }, emberplate: { b: '#6a3418', B: '#3e1c0a', r: '#ff9a5c' }, tide: { b: '#1e6a68', B: '#0f3e3c', r: '#bfe6f5' }, laurel: { b: '#3a6a2a', B: '#244a1a', r: '#ffd34a' }, bracken: {} };
 function applySkin() { setHeroVoice(hero()); if (PROG.perHero) PROG.charm = (PROG.charmOf || {})[hero()] || null;   /* the charm follows the hero, not the save (and never before the save has been migrated, or an old one loses it) */
-   K = heroSet(PROG.skin, PROG.sword); }
+   K = reuseCurrentHeroBake(K, [hero(), PROG.skin, PROG.sword, gearNow(hero())], () => heroSet(PROG.skin, PROG.sword)); }
 /* THE HERO AS HE WILL LOOK in a skin and with a weapon. The game and the store's previews bake him the same way, so the WEAPONS tab shows the hero you play, not always the knight */
 /* THE GEAR A HERO WEARS: his level's tier (src/gear-tiers.js), none when the player has hidden gear tiers (Settings > Display > Gear tiers). The game's own bakes (the hero you play, a co-op partner, the title camp) wear it; a
    store preview (previewOnly) never does, so a weapon or a skin is always judged on a bare hero. The tier is kept on the baked set (gearT) so regear() knows when to bake again. */
