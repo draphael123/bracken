@@ -1,0 +1,54 @@
+name: lab-native-cache-proof
+on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/lab-native-cache-proof.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-cache:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [mark-integrity, no-hidden-hits]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 3ea61398a0164d0acd1b3e0a8e481b604dfa62eb
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Bound the native resource cache in this disposable audit browser
+        run: |
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          import {createHash} from 'node:crypto';
+          import {execFileSync} from 'node:child_process';
+          const file='tools/cdp.mjs', original=fs.readFileSync(file,'utf8');
+          const needle='...(opts.args || [])';
+          if(original.split(needle).length!==2)throw Error('browser launch location changed');
+          const modified=original.replace(needle,"'--skia-resource-cache-limit-mb=32', "+needle);
+          fs.writeFileSync(file,modified);fs.mkdirSync('gate-data',{recursive:true});
+          const sha=s=>createHash('sha256').update(s).digest('hex');
+          fs.writeFileSync('gate-data/native-cache-source.json',JSON.stringify({
+            source:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),
+            gameTree:execFileSync('git',['rev-parse','HEAD:src'],{encoding:'utf8'}).trim(),
+            cacheMb:32,rendererCeilingMb:2816,helper:{file,original:sha(original),modified:sha(modified)},
+            reference:'https://chromium.googlesource.com/chromium/src/+/HEAD/content/common/skia_utils.cc'
+          },null,2)+'\n');
+          JS
+      - name: Original complete audit and original memory ceiling
+        env:
+          CHECK: ${{ matrix.check }}
+          NO_HIDDEN_RESULT: gate-data/no-hidden-hits.measurement.json
+        run: node tools/lab-memory-check.mjs "$CHECK"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-cache-${{ matrix.check }}
+          path: gate-data/
+          if-no-files-found: error
