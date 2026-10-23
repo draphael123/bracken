@@ -33166,6 +33166,8 @@ let drownedWallTile = null;
 const drownedWallPatterns = new WeakMap();
 function paintDrownedMasonry(sx, sy, w, h) {
   if (g.globalAlpha !== 1 || g.globalCompositeOperation !== 'source-over') return false;
+  const matrix = g.getTransform();
+  if (matrix.a !== 1 || matrix.b !== 0 || matrix.c !== 0 || matrix.d !== 1 || !Number.isInteger(matrix.e) || !Number.isInteger(matrix.f)) return false;
   let pattern = drownedWallPatterns.get(g);
   if (!pattern) {
     if (!drownedWallTile) {
