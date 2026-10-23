@@ -176,11 +176,11 @@ export function buildSporewood({ painter, T, TS }) {
   coins([224, 20], [229, 20]); plank(224, 229, 19);
   /* THE BOUNCE STALK: down to a stalk capped with a bounce cap, and up off it to the high stalk, four rows over it (no jump climbs four) */
   ground(236, 238, 26); spring(236, 26); spring(237, 26); spring(238, 26);
-  /* THE BOUNCE STALK'S FALL (claude/sporewood2tune, the walker band): it was a stalk with a bog floor under it and a stub to catch a miss. Now the caps hang over a REAL GAP (seven wide, no floor, no stub): a miss is a fall - the end, back to the last shrine. Told: the sign on stalk three's
+  /* THE BOUNCE STALK'S FALL (claude/sporewood2tune, the walker band): it was a stalk with a bog floor under it and a stub to catch a miss. Now a REAL GAP (three wide before the caps, two after, no floor, no stub) runs either side of the cap pillar: a miss is a fall - the end, back to the last shrine. Told: the sign on stalk three's
      lip and a warning post each side; the bounce was taught twice before it (the glade's pit, the terrace's pillar), and a lurker holds the high stalk where the throw lands you */
-  air(233, 239, 27, 42); deco(232, 21, 'warnPost', 0); deco(240, 21, 'warnPost', 1);
+  air(233, 235, 27, 42); air(239, 240, 27, 42); deco(232, 21, 'warnPost', 0); deco(241, 21, 'warnPost', 1);
   sign(229, 21, 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK. NO FLOOR UNDER IT: MISS AND YOU FALL.'); sign(248, 21, 'THE CAP LADDER: NO FLOOR UNDER IT. THE BOG KEEPS WHAT FALLS IN.');
-  ground(240, 251, 22);
+  ground(241, 251, 22);
   foe('drone', 247, 17, 'highStalk'); foe('brute', 243, 21, 'highStalk', { face: -1 }); foe('lurker', 248, 21, 'highStalk'); lantern(244, 21);   /* (its lantern: strike it and the lurker is dazzled out of its cap) */ drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
   mend(245, 21); puff(247, 21);
   /* THE HIGH SILVER: a cap hung high over the bog (on a stalk of its own), reached off the spring spore of the puffball under it - or a plunged bounce */
