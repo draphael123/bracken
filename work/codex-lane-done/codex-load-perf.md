@@ -102,6 +102,11 @@ Hurricane13.78->14.19, Minecart11.75->12.13. This also remains diagnostic becaus
 The first alpha attempt (39868362028) selected the wrong canvas: actual frame alpha remained true, so all
 of its timing numbers are rejected as an ineffective control. Its receipts are retained.
 
+Reference checkouts now copy the transitive shared-harness imports, keeping both sides on identical
+harness code when Task2 adds cleanup helpers. The copier is tested against the actual four-module
+performance graph and eight-module stabilized graph, including successful imports. Reference game
+files stay at their selected base. This follow-up changes tools only; the verified src tree is unchanged.
+
 ## QUESTIONS FOR DANIEL
 
 No decision is required to retain the verified demand loading and conservative renderer changes. Recommend
