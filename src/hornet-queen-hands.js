@@ -16,8 +16,8 @@ import * as HNP from './redraw/hornets_nest_props.js';
 const { HQ } = HQM;
 const SOUND = { aim: s => (s.buzz || s.tell)(), held: s => (s.tell || s.buzz)(), dive: s => (s.charge || s.whoosh || s.tell)(), stuck: s => { (s.thud || s.heavy)(); (s.crack || s.thud)(); },
   winded: s => (s.thud || s.heavy)(), dazed: s => (s.puff || s.thud)(), thrash: s => (s.queenShriek || s.roar)(), sweepTell: s => (s.buzz || s.tell)(), sweep: s => (s.charge || s.whoosh)(),
-  buzz: s => (s.buzz || s.tell)(), buzzDrop: s => { (s.crack || s.thud)(); (s.heavy || s.thud)(); }, chunk: s => (s.thud || s.stone)(), brood: s => (s.buzz || s.tell)(), hatch: s => (s.chitter || s.buzz)(),
-  tear: s => (s.queenShriek || s.roar)(), volleyTell: s => (s.buzz || s.tell)(), volley: s => (s.spit || s.throwWhoosh)(), cloakTell: s => (s.buzz || s.tell)(), cloak: s => (s.chitter || s.buzz)(),
+  buzz: s => { (s.buzzSwell || (() => {}))(); (s.buzz || s.tell)(); }, buzzDrop: s => { (s.crack || s.thud)(); (s.heavy || s.thud)(); }, chunk: s => (s.thud || s.stone)(), brood: s => { (s.buzzSwell || (() => {}))(); (s.buzz || s.tell)(); }, hatch: s => (s.chitter || s.buzz)(),
+  tear: s => (s.queenShriek || s.roar)(), volleyTell: s => (s.buzz || s.tell)(), volley: s => (s.spit || s.throwWhoosh)(), cloakTell: s => { (s.buzzSwell || (() => {}))(); (s.buzz || s.tell)(); }, cloak: s => { (s.buzzCloak || (() => {}))(); (s.chitter || s.buzz)(); },
   scatter: s => (s.puff || s.buzz)(), pinned: s => { (s.heavy || s.thud)(); (s.crack || s.thud)(); }, stroke: s => { (s.crack || s.thud)(); (s.creak || s.thud)(); }, creak: s => (s.creak || s.crack)(),
   timber: s => { (s.heavy || s.thud)(); (s.thud || s.heavy)(); }, cut: s => (s.crack || s.thud)(), clank: s => (s.clank || s.thud)() };
 const R = Math.round;
