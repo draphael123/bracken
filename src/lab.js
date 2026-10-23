@@ -1,4 +1,4 @@
-import {breathCapacity} from './deepair.js';
+import {breathCapacity} from './deepair.js'; import { motherHands } from './lab-mother.js';   /* (claude/sporewood2) THE MOTHER CAP 2 played */
 import { AMBUSH_TARGET } from './ambush.js';
 import { mulberry } from './px.js'; import { committed, COMMIT, artLim, artRate, ROLL_COST } from './commit.js';   /* bossLab seeds Math.random for the row it is about to fight - see the note over the loop in runbossLab */
 // src/lab.js — THE FIGHT LAB and THE BOSS LAB.
@@ -880,62 +880,11 @@ async function runbossLab(BK, opts) {
         if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open: boss.open > 0 });   /* THE CAMERA HOOK: with opts.draw the frame was rendered, and a recorder can take it */
         if (f % 600 === 599) await yieldNow();
         continue; }
+      /* THE MOTHER CAP 2 (claude/sporewood2): src/lab-mother.js plays her - her seed caps struck and climbed, a plunge on her knot, her told moves answered; nothing is grown or opened for the bot */
       if(boss.t==='mother'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const node=BK.props().find(p=>p.motherNode),heart=boss.heart;
-        let gx=node?node.x-12:boss.x;
-        if(P.ground)P.labSpring=false;if(P.vy<-350)P.labSpring=true;
-        if(boss.mode==='open')gx=P.labSpring?boss.x-(LAB_REACH[h]*.65):boss.x-3*TS;
-        // THE ROOT MOVES UNDER THE SHELVES. Step through a one-way shelf before swinging at a ground knot.
-        const descend=boss.mode!=='open'&&node&&P.ground&&P.y<node.y-20&&Math.abs(P.x-node.x)<32;
-        const column=(boss.zones||[]).find(z=>P.x>z.l-10&&P.x<z.r+10&&z.top<A.floor-100);
-        /* EVERY TELL HAS AN ANSWER, and the pilot now gives each one (the provenance run, outputs/56-mother-provenance-*.json, traced every blow it
-           took to the vine, the stab mark, the floor surge or a door spider): the marked ground is kept off, the fan and the surge are
-           jumped at the moment they arrive, and nothing is swung that would still be swinging when the jump is due. */
-        const fl=A.floor,m=boss.mode,danger=[];
-        for(const z of boss.zones||[])if(z.top<fl-100)danger.push([z.l-8,z.r+8]);
-        if(m==='rootStabTell')danger.push([boss.rootMark-32,boss.rootMark+32]);
-        if(m==='seedRainTell'||m==='seedRain'||boss.layer==='seedRain')for(const sx of [-96,-48,0,48,96])danger.push([boss.x+sx-12,boss.x+sx+12]);
-        /* THE HARDER MOTHER (batch 4a): the mycelium at the walls, and phase three's rain wherever it is falling */
-        if((boss.creep||0)>1){danger.push([A.x0-20,A.x0+boss.creep+8]);danger.push([A.x1-boss.creep-8,A.x1+20]);}
-        for(const s of BK.seeds())if(s.mrain&&!s.dead)danger.push([s.x-14,s.x+14]);
-        const bad=x=>danger.some(([l,r])=>x>l&&x<r);
-        let safe=false;const crosses=danger.some(([l,r])=>Math.min(P.x,gx)<r&&Math.max(P.x,gx)>l);
-        if(m!=='open'&&crosses&&!bad(P.x)){   /* standing clear already: go no further than the edge of this clear ground */
-          const lo=Math.max(A.x0+14,...danger.filter(([,r])=>r<=P.x).map(([,r])=>r+8)),hi=Math.min(A.x1-14,...danger.filter(([l])=>l>=P.x).map(([l])=>l-8));
-          gx=hi-lo<16?(lo+hi)/2:Math.max(lo,Math.min(hi,gx));safe=true;}
-        else if(m!=='open'&&crosses){   /* the free ground between the marks, and the middle of the nearest piece of it: a 24px gap is not overshot */
-          const cuts=[...danger].sort((a,b)=>a[0]-b[0]),free=[];let lo=A.x0+14;
-          for(const [l,r] of cuts){if(l>lo)free.push([lo,l]);lo=Math.max(lo,r);}if(lo<A.x1-14)free.push([lo,A.x1-14]);
-          const pick=free.map(([l,r])=>{const x=r-l<40?(l+r)/2:Math.max(l+12,Math.min(r-12,P.x));return x;}).sort((a,b)=>Math.abs(a-P.x)-Math.abs(b-P.x))[0];
-          if(pick!==undefined){gx=pick;safe=true;}}
-        /* HER SPORELINGS (batch 4a) are cut down when they come close, the way a player clears an add before going back to the knot.
-           THE STAND-OFF (batch34): reach*.6 stood the pilot too close to a sporeling still walking in - the low sweep carries every
-           hero forward on its own (lowSweep's vx), and closing that on top of a sporeling already closing the last few px sent the
-           swing clean past it before the blow landed (measured after claude/npcs: the removed decorative NPCs and quest strays
-           shifted the pinned dice enough that the Mother's own attack timing left a sporeling walking in right as the pyromancer
-           swung, and her wide reach (30, LAB_REACH) meant the old *.6 stand-off - 18 px - left less room than the lunge covers).
-           reach-2 stands it right at the edge of its own reach - as close as the strike still lands from - instead of the *.6 (or
-           the other branches' reach-4) that left slack for the lunge and a closing foe to eat between them: measured (batch34),
-           reach-4 still left the Mother's warden row at the limit (2 of 6, 33%); reach-2 clears every row with room to spare. */
-        const add=BK.enemies().filter(q=>q.alive&&q.fromMother&&Math.abs(q.y-P.y)<30).sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0],addNear=add&&boss.mode!=='open'&&Math.abs(add.x-P.x)<110;
-        if(addNear&&!bad(add.x)){gx=add.x-(Math.sign(add.x-P.x)||1)*(LAB_REACH[h]-(h==='geomancer'?6:2));safe=false;}   /* (geomancer stands 4 px closer, sprinkle cut 2026-09-29: her stave's stone lands 21-26 out, and with the halved garrison shifting the pinned dice she swung past 3 of 5 sporelings; 29% worst row now) */
-        const shelf=P.ground&&P.y<fl-20;
-        const clap=m==='capClapTell'&&Math.abs(P.x-boss.x)<125,sweep=m==='sporeSweepTell'&&P.y<fl-30&&P.y>fl-80;
-        const vine=(BK.vines?BK.vines():[]).find(v=>v.t>=v.tell-.05&&(P.x-v.x)*v.dir>-6&&(P.x-v.x)*v.dir<34);
-        const surge=m==='floorSurgeTell'&&boss.modeT<.09||m==='floorSurge'&&boss.modeT>.25;
-        const hopSoon=m==='floorSurgeTell'&&boss.modeT<.75||m==='rootFanTell';
-        if(Math.abs(gx-P.x)>(safe?3+Math.abs(P.vx)*.12:5))k[gx>P.x?'right':'left']=true;
-        if((descend||(shelf&&(clap||sweep)))&&!surge){k.down=true;BK.press('jump');}
-        if(!shelf&&(surge||vine)&&!clap){BK.press('jump');if(!(P.labJump>0))P.labJump=22;}
-        if(boss.mode==='open'&&P.ground&&Math.abs(P.x-(boss.x-3*TS))<20){BK.press('jump');P.labJump=16;}
-        if(P.labJump>0){P.labJump--;k.jump=true;}
-        const tired=P.labRest||P.st<14;
-        const lead=h==='reaper'?(.12/.46):h==='paladin'?.08:.06,landingCutY=P.y+P.vy*lead+600*lead*lead;
-        if(boss.mode==='open'&&heart&&Math.abs(P.x-heart.x)<LAB_REACH[h]+12&&(h==='reaper'||P.vy>0)&&(h==='pyro'||h==='warden'||h==='reaper'?Math.abs(landingCutY-(heart.y+3))<16:Math.abs(P.y-8-(heart.y-7))<46)&&P.atk<0){P.face=Math.sign(heart.x-P.x)||1;BK.press('atk');swings++;}
-        else if(addNear&&!hopSoon&&!bad(P.x)&&Math.abs(add.x-P.x)<LAB_REACH[h]+add.w/2+2&&P.atk<0){P.face=Math.sign(add.x-P.x)||1;k.left=k.right=false;   /* (claude/harness) and the stand-off walk let go this frame: a sporeling inside the stand-off had the walk key pointing AWAY from it, which turned her round, and the warden swung 12 of 17 at the air behind her (it was hidden by a leak between lab fights: tools/lab-order.mjs) */ if(P.ground&&keyVerb(BK,h,add)==='sweep'&&P.st>=(BK.stepCost?BK.stepCost():12)+4)k.down=true;BK.press('atk');swings++;}   /* HER SPORELINGS ARE SMALL, and a small thing is cut LOW (the family table's key verb, which strike() gives every common foe): the plain cut was the only blow this pilot knew, and the Death Knight's lands a third of a second late and 31 px out - past a sporeling that has scuttled on. Measured (2026-09-24): he swung at them 14 times a fight and 8 of those met air (the other heroes: 0-5 of 4-15), and he followed them about the room, off the knot, for most of the extra 40 s his fight took */
-        else if(!tired&&!hopSoon&&!bad(P.x)&&!descend&&!column&&boss.mode!=='open'&&!(boss.nodeRest>0)&&node&&Math.abs(P.x-node.x)<20&&Math.abs(P.y-node.y)<20&&P.atk<0){P.face=Math.sign(node.x-P.x)||1;BK.press('atk');swings++;}
-        if(opts.samples&&f%120===0){out.samples=out.samples||[];out.samples.push([h,f/60,boss.mode,boss.nodeRest,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.atk,heart?.hp]);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
+        const mh=motherHands({BK,boss,P,k,A,h,f,reach:LAB_REACH[h]});if(mh.swing&&P.atk<0){BK.press('atk');swings++;}
+        if(opts.samples&&f%20===0){const R=BK.motherCap();out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.onMover?(P.onMover.seed?'S'+Math.round((P.onMover.x-boss.x)/16):'m'):P.ground?'g':'air',Math.round(P.st),boss.hp,R?R.seeds.map(q=>q.state[0]+(q.cd>0?'*':'')).join(''):'',R&&R.ready?'R':'-',mh.swing?'X':'']);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       /* THE UNDEAD ARCHMAGE, FROM THE CARPET (batch 4). The bot flies: out of the storm column sideways, straight out of a death
          mark's ring, around the poison clouds, across the line of anything thrown at it (or onto the shield, for the three who

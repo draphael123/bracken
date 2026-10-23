@@ -35,7 +35,7 @@ const lk=E().find(e=>e.t==='lurker'&&Math.abs(e.x/16-125.5)<2);if(lk){lk.alive=t
   /* THE ROOT KNOT: a blade clanks; a plunge opens it */
   clear(368,400);const kn=SW.read().knots[0];const door=()=>BK.L.grid[(kn.y+2)*BK.L.W+379];
   tp(375,5);swing(1);BK.sim(10);out.knotBlade={open:SW.read().knots[0].open};
-  tp(kn.x+0.5,kn.y-3);P.vy=0;BK.sim(2);K.down=true;BK.press('atk');for(let i=0;i<60;i++)BK.sim(1);K.down=false;BK.sim(10);out.knotPlunge={open:SW.read().knots[0].open,door:door()};
+  tp(kn.x+0.5,kn.y);BK.sim(10);BK.press('jump');K.jump=true;for(let i=0;i<14;i++)BK.sim(1);K.jump=false;K.down=true;BK.press('atk');for(let i=0;i<60;i++)BK.sim(1);K.down=false;BK.sim(10);out.knotPlunge={open:SW.read().knots[0].open,door:door()};
   /* THE AREA BANNERS */
   const names=[];for(const [x,y] of [[50,36],[150,34],[240,22],[320,15],[380,6]]){tp(x,y);BK.sim(8);names.push(SW.read().banner);}out.names=names;
   /* THE MOTHER CAP wakes */

@@ -6,7 +6,8 @@
 //   THE BUDS are main.js's growcap movers. Two kinds of this level's own, which main.js's growcap step asks this module about (growsUnder):
 //     dark   (m.dark) grows under a hero only while it is LIT: a lantern cap (glowbud) burning within SP.litX / SP.litY of it. A struck lantern also wakes it at
 //            once (main.js wakeMycelium). Unlit, standing on it says so.
-//     seed   (m.seed) never grows under a hero: a BLOW on it grows it (strike), and it stands SP.seedHold (or its own hold) as a STEP, then withers. THE MOTHER's
+//     seed   (m.seed) never grows under a hero: a BLOW on it grows it (strike) - and its PAIR with it (m.pair: a stair of two steps) - and it stands SP.seedHold
+//            (or its own hold) as a STEP, then withers. THE MOTHER's
 //            hollow is ringed with them (m.mother: src/mother-cap2.js withers them in her second phase).
 //   THE SPORES HELP YOU:
 //     LANTERN CAP  (main.js's glowbud: a blow lights it 14 s and wakes the buds near it) - here it also DAZZLES a lurker in its light: out of his cap, no lunge.
@@ -115,7 +116,8 @@ export function makeSporewoodHands(ctx) {
     /* SEED CAPS: a blow grows one (her hollow's too - src/mother-cap2.js may refuse one she is withering: m.noSeed) */
     for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.seed || m.state !== 'bud' || m.cd > 0 || m.noSeed) continue;
       if (!overlap(hb, { l: m.x - 2, r: m.x + m.w + 2, t: m.y - 18, b: m.y + 10 })) continue;
-      m.state = 'grow'; m.k = 0; m.hold = m.hold || SP.seedHold; m.struck = (m.struck || 0) + 1; S.n.seeds++; ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(m.x + m.w / 2, m.y, 10, ['#8fd160', '#dfffa0', '#e0b0f0'], 60, 0.5);
+      for (const q of m.pair ? ctx.movers().filter(q => q.kind === 'growcap' && q.seed && q.pair === m.pair && q.state === 'bud' && !(q.cd > 0) && !q.noSeed) : [m]) { q.state = 'grow'; q.k = 0; q.hold = q.hold || SP.seedHold; }   /* A PAIR GROWS AS ONE: a stair of two steps toward the way on (her knot) */
+      m.struck = (m.struck || 0) + 1; S.n.seeds++; ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(m.x + m.w / 2, m.y, 10, ['#8fd160', '#dfffa0', '#e0b0f0'], 60, 0.5);
       if (once(m.mother ? 'seedM' : 'seed')) say(m.x + m.w / 2, m.y - 22, 'seed', '#dfffa0'); }
     /* a ROOT KNOT turns a blade: it opens FROM ABOVE */
     for (const k of S.knots) if (!k.open && !(P && P.plunge) && overlap(hb, { l: k.px - SP.knotW, r: k.px + SP.knotW, t: k.py - SP.knotH, b: k.py })) {
@@ -137,6 +139,8 @@ export function makeSporewoodHands(ctx) {
       if (cx < px - 3 * TS || cx > px + 14 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;
       const lt = ctx.props().filter(pr => pr.t === 'glowbud' && Math.abs(pr.x - cx) < SP.litX && Math.abs(pr.y - m.y0) < SP.litY).sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
       if (lt) { const side = px <= lt.x ? -1 : 1; return { x: lt.x + side * 14, y: lt.y, key: 'atk', face: -side, r: 16 }; } }
+    /* a WEB across the way, at his height, within three tiles ahead: stand off it and cut it (one cut clears the curtain) */
+    if (ctx.tileAt) for (const dir of [1, -1]) { const tx0 = Math.floor(px / TS), ty = Math.floor((py - 4) / TS); for (let d = 1; d <= 3; d++) { const tx = tx0 + dir * d; if (ctx.tileAt(tx, ty) === ctx.T.WEB || ctx.tileAt(tx, ty - 1) === ctx.T.WEB) { if (dir < 0 && !(route && route.some(([rx]) => rx < tx0 - 1))) break; return { x: tx * TS + 8 - dir * 18, y: py, key: "atk", face: dir, r: 4 }; } } }
     /* a seed cap ahead on his floor, not grown: strike it from beside */
     for (const m of ctx.movers().filter(q => q.kind === 'growcap' && q.seed && !q.mother && q.state === 'bud' && !(q.cd > 0)).sort((a, b) => a.x - b.x)) { const cx = m.x + m.w / 2;
       if (cx < px - 4 * TS || cx > px + 12 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;

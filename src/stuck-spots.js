@@ -86,7 +86,7 @@ export const STUCK = {
      bounce well, the larder stair and the seed caps at her door (built rows: src/sporewood.js lays them one row higher, DY) */
   spore: [
     { id: 'sw-bud-28', zone: [18, 36, 29, 41], at: [28, 40], glint: 'stall', line: 'STOP ON THE BUD: THE CAP GROWS INTO A STEP' },
-    { id: 'sw-pit-64', zone: [52, 33, 66, 42], ats: [[61, 42], [64, 42]], glint: 'stall', line: 'DROP INTO THE PIT: HOLD JUMP ON A BOUNCE CAP' },
+    { id: 'sw-pit-64', zone: [52, 33, 66, 41], ats: [[61, 41], [64, 41]], glint: 'stall', line: 'DROP INTO THE PIT: HOLD JUMP ON A BOUNCE CAP' },
     { id: 'sw-bud-77', zone: [67, 33, 78, 37], at: [77, 36], glint: 'stall', line: 'LET THE SPORES BURST, THEN STOP ON THE BUD' },
     { id: 'sw-bud-85', zone: [79, 29, 86, 33], at: [85, 32], glint: 'stall', line: 'THE NEXT BUD TAKES YOU TO THE TOP TIER' },
     { id: 'sw-dark-136', zone: [128, 34, 137, 39], steps: [
@@ -106,7 +106,7 @@ export const STUCK = {
     { id: 'sw-bounce-237', zone: [222, 19, 238, 27], ats: [[236, 27], [237, 27], [238, 27]], glint: 'stall', line: 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK' },
     { id: 'sw-lean-250', zone: [241, 19, 251, 23], at: [250, 22], glint: 'stall', line: 'THE LEANING CAP CARRIES YOU OVER THE GAP' },
     { id: 'sw-bud-263', zone: [260, 19, 264, 23], at: [263, 22], glint: 'stall', line: 'STOP ON THE BUD: IT LIFTS YOU TO THE LADDER' },
-    { id: 'sw-well-282', zone: [265, 15, 282, 26], ats: [[279, 26], [282, 26]], glint: 'stall', line: 'THE BOUNCE WELL: HOLD JUMP ON THE FAR CAP' },
+    { id: 'sw-well-282', zone: [265, 15, 282, 24], ats: [[279, 24], [282, 24]], glint: 'stall', line: 'THE BOUNCE WELL: THE FAR CAP THROWS YOU OUT' },
     { id: 'sw-bud-314', zone: [301, 16, 315, 20], at: [314, 19], glint: 'stall', line: 'STOP ON THE BUD BY THE ROOT WALL' },
     { id: 'sw-bud-332', zone: [316, 12, 333, 16], at: [332, 15], glint: 'stall', line: 'THE NEXT BUD TAKES YOU UP TO THE LARDER END' },
     { id: 'sw-seeds', zone: [356, 8, 367, 12], ats: [[363, 11], [366, 11]], glint: 'stall', line: 'STRIKE THE SEED CAPS: EACH GROWS A STEP' },

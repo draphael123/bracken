@@ -167,4 +167,6 @@ function fenRoad(BK, P) {
   if (!F.held) { const b = F.bundles.filter(q => q.x < h.x0 * TS && q.x > (h.x0 - 30) * TS).sort((a, c) => c.x - a.x)[0]; return b ? { x: b.x, y: b.y, key: 'talk', face: 1, r: 30 } : null; }
   return { x: h.x0 * TS - 6, y: h.row * TS, key: 'talk', face: 1, r: 30 };
 }
-export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };
+/* SPOREWOOD 2 (claude/sporewood2): the level's own hands say it (src/sporewood-hands.js walkHint) - a dark bud's lantern cap, an unstruck seed cap, a web across the way */
+const sporewood = (BK, P, mem) => { const S = BK.sporewood ? BK.sporewood() : null; return S && S.on() && S.walkHint ? S.walkHint(P, mem && mem.route) : null; };
+export const WALK_HINTS = { stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad, spore: sporewood };
