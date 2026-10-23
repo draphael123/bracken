@@ -648,7 +648,7 @@ const HEROES = [
   { id: 'geomancer', name: 'THE GEOMANCER', price: 10, silver: true, desc: 'a tall staff with an amber geode in stone claws, and 95 health. slower on foot, and every blow of hers is heavy. SHE BUILDS SOMETHING IN ITS WAY: hold C and she plants the stave and a RUNE-WARD of stone rises in front of her and over her head. It turns YELLOW blows and shots for wind, but she cannot walk while it stands; a RED blow breaks through. Raised as a blow lands it throws a shot back and EMPOWERS her for three seconds: harder blows, and TREMOR twice as fast. HOLD X and let go - the longer the hold, the bigger the stone: let go quickly, a short crack at her feet; then THE STONE SHARD, flung flat ahead for half the wind; then THE FAULT LINE, a crack that races along the floor and hits everything on it, ending in a spike that launches; held longest, THE RISING PILLAR - the crack, and a pillar of her stone where it first finds a foe: it launches what it lifts, STANDS as a step, and gives her wind back as it rises. UP+X is a stone SPUR for what is over her. Her third blow is a full spin that SHATTERS any stone of hers it hits into shards. Her plunge is STONEFALL: it knocks down what stands beside her. X early in a dodge kicks a ROLLING STONE. Blows the ward stops and foes her stone launches fill TREMOR: full, tap C on the ground for THE QUAKE. Only three stones stand at once, and each crumbles in four seconds' },
   { id: 'warden', name: 'THE WARDEN', price: 10, silver: true, desc: 'a spear, and 100 health. SHE KEEPS EVERYTHING AT THE END OF IT: the last third of the shaft hits 30% harder and rings when it lands (half again into a boss in his opening), the middle is a glancing blow, and up close the haft only shoves them back out to the point. UP+X is a thrust straight up, so nothing flies over her. HOLD X and let go: THE RUN-THROUGH, a wound-up lunge that skewers a whole line of them and drives the first one back into the rest. Her plunge PINS what she lands on - stab it where it lies, or pull free and hop away. C IS THE DEFLECT: a sweep of the shaft that turns a YELLOW blow met on the beat, from in front or from overhead, and swats what flies at her out of the air - a red blow, never. And a YELLOW charge that runs onto her out-front point is spitted on it, with no button at all. Tip hits and stopped charges fill VIGIL: full, tap C on the ground and THE PHALANX comes up out of it (and the tap still sweeps). X early in a dodge: THE LUNGE, long and low along the shaft, and a guard is thrown wide. Her plunge into the ground cracks the floor ahead of her' },
   { id: 'berserker', name: 'THE BERSERKER', price: 10, silver: true, desc: 'two hand axes, no shield, and 105 health. HE NEVER DEFENDS BY STOPPING. X is a quick FLURRY - left axe, right axe - and the fifth blow of a run is THE CROSS-CHOP, both axes in at once; the run goes on only while the chops land. HOLD X: THE RAGE WIND-UP, and the longer he holds the harder it comes down - THE OVERHEAD CHOP, both axes down from over his head; held on, THE WHIRL, one full turn that cuts behind him too; held longest, THE GROUND-SPLITTER, the floor split both ways and the small ones knocked down. Each breaks a big one\'s poise harder than the last, and rage winds them quicker. In the air both axes spin. HOLD C to TAKE IT on the crossed axes: a yellow blow costs him a tenth and the rest becomes RAGE; raised as it lands it is a parry, and his next cut is the cross-chop. A red blow is too strong. UP and C hurls the hatchet: one axe until he picks it up. Blows fill RAGE and it drains out of a fight: full, hold DOWN and tap C for THE FRENZY (a plain C is still TAKE IT) - quicker axes, no flinching, every blow heals a little and four on one foe CRACK its armour like a heavy, but blows on him land a quarter harder. Hold DOWN to coil, then a way and let go: THE POUNCE. Stood still between fights he whets his axes. His own kit never kills him' },
-  { id: 'ranger', name: 'THE RANGER', price: 10, silver: true, desc: 'a longbow, a quiver of five arrows and a hunting knife, and 90 health. SHE COVERS SOME OF THE ROOM, NOT ALL OF IT. TAP X: a quick shot, short and weak. HOLD X and she DRAWS - rooted while she does - and the longer she holds, the shot changes: THE LONG SHOT, strong and arcing; held on, THE PIERCING SHOT, flat through a whole line; held longest, THE TRIPLE SHOT, three strong arrows in a tight flat fan. Her arrows ARC and DROP. A loosed arrow STICKS where it lands and GLINTS: walk over it to take it back (one comes back by itself every six seconds). Point-blank, or with none left, X is THE KNIFE. UP+X: a rising shot. DOWN+X in the air: a shot straight down, and a hop up off it. Arrows that land from the SWEET SPOT - not too close, not too far - fill HUNTER\'S FOCUS: full, UP+C MARKS her quarry (seen through walls; every blow on it lands harder), or a piercing or triple shot spends it and lands harder. C: THE BOW-BASH, a shove - on the beat of a yellow blow it is her parry: the foe is thrown back out to range and her next arrow is a riposte. DOWN+C: a SNARE at her feet. Her dodge is a BACKFLIP, and she can shoot in it.' },   /* (claude/ranger, Daniel 10-12: the fourth free starter) */
+  { id: 'ranger', name: 'THE RANGER', price: 10, silver: true, desc: 'a longbow, a quiver of five arrows and a hunting knife, and 90 health. SHE COVERS SOME OF THE ROOM, NOT ALL OF IT. TAP X: a quick shot, short and weak. HOLD X and she DRAWS - rooted while she does - and the longer she holds, the shot changes: THE LONG SHOT, strong and arcing; held on, THE PIERCING SHOT, flat through a whole line; held longest, THE TRIPLE SHOT, three strong arrows in a tight flat fan. Her arrows ARC and DROP. A loosed arrow STICKS where it lands and GLINTS: walk over it to take it back (one comes back by itself every six seconds). Point-blank, or with none left, X is THE KNIFE. 2 (BACK on a pad, the bow button on a phone) swaps BOW / KNIFE: in KNIFE stance X is only ever the knife and no arrow is spent. UP+X: a rising shot. DOWN+X in the air: a shot straight down, and a hop up off it. Arrows that land from the SWEET SPOT - not too close, not too far - fill HUNTER\'S FOCUS: full, UP+C MARKS her quarry (seen through walls; every blow on it lands harder), or a piercing or triple shot spends it and lands harder. C: THE BOW-BASH, a shove - on the beat of a yellow blow it is her parry: the foe is thrown back out to range and her next arrow is a riposte. DOWN+C: a SNARE at her feet. Her dodge is a BACKFLIP, and she can shoot in it.' },   /* (claude/ranger, Daniel 10-12: the fourth free starter) */
 ];
 /* THE LOOP, IN ONE SENTENCE A HERO: what the pick screen and the hero card say under the name - how this hero is PLAYED,
    not what he carries. Every clause is checked against the code, so none of it is a talent's promise: the knight's perfect
@@ -698,9 +698,11 @@ const BZ_TEACH = { brace: ['bzBraceTold', 'HOLD C: TAKE IT ON THE AXES. A TENTH 
 /* ==== THE RANGER'S KEYS, IN WORDS (her teaching lines, claude/ranger): the draw, the quiver, the focus ==== */
 const RG_TEACH = { shot: ['rgShotTold', 'TAP X: QUICK SHOT. HOLD X: DRAW. HOLD LONGER: PIERCE, THEN THREE ARROWS.'],
   empty: ['rgEmptyTold', 'QUIVER EMPTY: CROUCH TO RESTOCK. OR WALK OVER YOUR ARROWS. UNTIL THEN, THE KNIFE.'],
-  focus: ['rgFocusTold', 'FOCUS FULL: UP+C MARKS YOUR QUARRY, OR A PIERCING OR TRIPLE SHOT SPENDS IT.'] };
+  focus: ['rgFocusTold', 'FOCUS FULL: UP+C MARKS YOUR QUARRY, OR A PIERCING OR TRIPLE SHOT SPENDS IT.'],
+  stance: ['rgStanceTold', () => stanceKeyName() + ': SWAP BOW / KNIFE. THE KNIFE NEVER SPENDS AN ARROW. YOUR ARROWS ARE UNDER THE XP BAR.'] };   /* (claude/rangerhud, Daniel 10-23) */
 let rgTaughtIn = '';
-function rgTeach(k) { const t = RG_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || rgTaughtIn === levelIndex + ':' + k) return; rgTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintSay('mechanic', 5, t[1]); }
+function rgTeach(k) { if (k === 'shot' && !(PROG.rgStanceTold >= 2) && !rgStanceCue) rgStanceCue = time + 9; const t = RG_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || rgTaughtIn === levelIndex + ':' + k) return; rgTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintSay('mechanic', 5, typeof t[1] === 'function' ? t[1]() : t[1]); }
+let rgStanceCue = 0;   /* (claude/rangerhud) the stance line follows her first arrow by a few seconds, once a save (twice at most), so it never lands on top of the draw line */
 let bzTaughtIn = '';
 function bzTeach(k) { const t = BZ_TEACH[k]; if (!t || state !== 'play' || !L || L.trial || (PROG[t[0]] || 0) >= 2 || bzTaughtIn === levelIndex + ':' + k || state !== 'play') return; bzTaughtIn = levelIndex + ':' + k; PROG[t[0]] = (PROG[t[0]] || 0) + 1; hintSay('mechanic', 5, t[1]); }
 const TBR = { knight: ['BLADEMASTER', 'SENTINEL', 'VANGUARD'], pyro: ['EMBERCALLER', 'FLAMEKEEPER', 'ASHWALKER'], paladin: ['LIGHTBRINGER', 'BASTION', 'EARTHBREAKER'], pirate: ['GUNNER', 'PLUNDERER', 'DUELIST'], reaper: ['BLOOD', 'THE RED HOST', 'WARD'], warden: ['SPEARHEAD', 'THE DEFLECT', 'SKIRMISHER'], geomancer: ['EARTH', 'WARD', 'TREMOR'], berserker: ['FURY', 'STEEL', 'HIDE'], ranger: ['THE BOW', 'THE HUNT', 'THE WILD'] };
@@ -1538,8 +1540,8 @@ const upright = p => !p.dead && !(p.down > 0);
 /* the held keys and the one-shot presses, read and written as a set: these are the hands, and a pass swaps them */
 const keysRead = () => { const o = {}; for (const k in keys) o[k] = keys[k]; return o; };
 const keysWrite = o => { for (const k in keys) delete keys[k]; Object.assign(keys, o); };
-const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, up: upPress, down: downPress, left: leftPress, right: rightPress });
-const pressWrite = o => { flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
+const pressRead = () => ({ grab: grabPress, jump: jumpPress, atk: atkPress, dodge: dodgePress, throw: throwPress, skill2: skill2Press, skill3: skill3Press, skill4: skill4Press, talk: talkPress, flask: flaskPress, stance: stancePress, up: upPress, down: downPress, left: leftPress, right: rightPress });
+const pressWrite = o => { stancePress = !!o.stance; flaskPress = !!o.flask; grabPress = !!o.grab; jumpPress = !!o.jump; atkPress = !!o.atk; dodgePress = !!o.dodge; throwPress = !!o.throw; skill2Press = !!o.skill2; skill3Press = !!o.skill3; skill4Press = !!o.skill4; talkPress = !!o.talk; upPress = !!o.up; downPress = !!o.down; leftPress = !!o.left; rightPress = !!o.right; };
 function asPlayer(p, fn) {
   if (!coop()) return fn();                                        /* the single-player call, unchanged */
   if (p === players[0]) { const wP = P, wPass = passOn, sw = profStack.length && profStack[profStack.length - 1].prof ? profIn(null) : 0; P = p; passOn = p; try { return fn(); } finally { if (sw) profOut(); P = wP; passOn = wPass; } }   /* (inside a profiled seat's pass: player one's own values) */
@@ -1761,15 +1763,47 @@ function drawSeatLvTag(x, y, p, c, a) {
 /* PLAYER TWO'S PLATE, small and out of the way between player one's and the purse: who he is, what is left of him,
    and the clock instead while he is down. (claude/coopplates) Now the hero's icon, his seat tag (P2 / AI / GUEST), and 'PYRO LV 12' in the plate's second line. */
 function drawCoopHud() { if (state === 'win' || state === 'victory') return; for (let i = 1; i < players.length; i++) drawSeatPlate(players[i], i - 1); }   /* (integ 103: not under the win card or the end card - its tally has the names) (claude/tavern) a plate a seat, stacked down the right */
+/* (claude/rangerhud, Daniel 10-23 "how many arrows they have - a little hard to track") THE RANGER's QUIVER ROW: [bow / knife icon] [WORD] [one arrow a quiver place: filled = in the quiver, hollow = out in the world, a glint on the ones she can walk over and take back] [+N lying].
+   BOW: the bow and the word BOW. KNIFE stance: the knife, the word KNIFE, the row dimmed. ONE LEFT: the last arrow pulses amber. NONE: the word is KNIFE in red, the bow greyed (X is the knife).
+   The trickle that gives an arrow back fills the next hollow arrow from the foot. x, y = top-left of an 8 px row; w = the room. */
+const RG_ROW_W = 92;   /* the tab's width: icon 9 + KNIFE 30 + six arrows + +N, in the 320 view */
+function drawRgRow(x, y, w, hd, o = {}) {
+  const { stance, q, mq, lying, refill } = hd, kn = stance === 'knife', emp = q <= 0, low = q === 1, still = !!SET.reduceMotion, beat = Math.floor(time * 4) % 2 === 0, w0 = g.globalAlpha;
+  const word = kn || emp ? 'KNIFE' : 'BOW', wcol = kn ? '#c9d4e0' : emp ? (still || beat ? '#ff6b6b' : '#a05a5a') : low ? (still || beat ? '#ffb84a' : '#fff0c0') : '#e8dcb0';
+  const X0 = Math.round(x), Y0 = Math.round(y), R = (px, py, ww, hh, c) => { g.fillStyle = c; g.fillRect(X0 + px, Y0 + py, ww, hh); };
+  if (kn || emp) {   /* the knife: a steel blade up and to the right, a brass guard, a leather grip */
+    if (emp && !kn) g.globalAlpha = w0 * 0.75;
+    for (let i = 0; i < 5; i++) { R(4 + i, 4 - i, 1, 1, '#e8eef6'); R(4 + i, 5 - i, 1, 1, '#9aa6b4'); } R(8, 0, 1, 1, '#ffffff'); R(2, 4, 1, 1, '#e0b040'); R(3, 5, 1, 1, '#e0b040'); R(4, 6, 1, 1, '#e0b040'); R(2, 6, 1, 1, '#8a6a42'); R(1, 7, 1, 1, '#8a6a42');
+  } else {   /* the bow, its string, and an arrow laid across it */
+    R(3, 0, 3, 1, '#b08850'); R(6, 1, 1, 1, '#b08850'); R(7, 2, 1, 4, '#b08850'); R(6, 6, 1, 1, '#b08850'); R(3, 7, 3, 1, '#b08850'); R(3, 1, 1, 6, '#e8e0c8'); R(1, 3, 7, 1, '#e8e0c8'); R(7, 2, 1, 3, '#ffffff'); R(1, 2, 1, 1, '#c8402a'); R(1, 4, 1, 1, '#c8402a');
+  }
+  g.globalAlpha = w0;
+  const wx = 11, ww = inkW(word, 6); text(word, X0 + wx, Y0 + 1, wcol, 'left', 6, 'shadow');
+  const ax0 = wx + ww + 3, tail = lying > 0 ? inkW('+' + Math.min(9, lying), 6) + 2 : 0, room = w - ax0 - tail, pitch = Math.max(3, Math.min(kn ? 4 : 6, Math.floor((room + 1) / Math.max(1, mq))));
+  if (kn) g.globalAlpha = w0 * 0.4;
+  for (let i = 0; i < mq; i++) {
+    const ax = X0 + ax0 + i * pitch, have = i < q, glint = !have && i - q < lying, amber = have && low && !kn;   /* the hollow arrows she can take back glint, nearest the quiver first */
+    const sh = have ? (amber ? '#ffb84a' : '#e8e0c8') : '#7a6e60', hc = have ? (amber ? (beat || still ? '#ffd68a' : '#ffffff') : '#e8eef6') : '#988c7c', fl = have ? (amber ? '#ff9a3a' : '#c8402a') : '#66584c';
+    g.fillStyle = hc; g.fillRect(ax + 1, Y0, 1, 1); g.fillRect(ax, Y0 + 1, 3, 1);
+    g.fillStyle = sh; g.fillRect(ax + 1, Y0 + 2, 1, 5);
+    g.fillStyle = fl; g.fillRect(ax, Y0 + 6, 1, 2); g.fillRect(ax + 2, Y0 + 6, 1, 2);
+    if (!have) { g.fillStyle = 'rgba(10,8,20,0.8)'; g.fillRect(ax + 1, Y0 + 3, 1, 1); g.fillRect(ax + 1, Y0 + 5, 1, 1); g.fillRect(ax + 1, Y0 + 1, 1, 1); }   /* a hollow arrow: a dotted shaft and the head an outline */
+    if (!have && i === q && refill > 0) { const hh = Math.max(1, Math.round(refill * 8)); g.fillStyle = '#9fdc6a'; g.fillRect(ax + 1, Y0 + 8 - hh, 1, hh); g.fillRect(ax, Y0 + 8 - Math.min(hh, 2), 3, Math.min(hh, 2)); }   /* the trickle: the next arrow filling from the foot */
+    if (glint && (still || Math.floor(time * 5 + i) % 2 === 0)) { g.fillStyle = '#ffe9a8'; g.fillRect(ax + 1, Y0 - 1, 1, 1); g.fillRect(ax, Y0 + 2, 1, 1); g.fillRect(ax + 2, Y0 + 2, 1, 1); }
+  }
+  g.globalAlpha = w0;
+  if (lying > 0) text('+' + Math.min(9, lying), X0 + w - tail + 2, Y0 + 1, '#ffe9a8', 'left', 6, 'shadow');   /* arrows lying in the world she can still take back */
+}
 function drawSeatPlate(p, slotI) {
   if (!p) return;
   /* UNDER THE PURSE, not over the clock. The top middle is the level timer and the garrison and ambush counters
      under it, the bottom middle is the boss bar, and the left is player one's - so player two's plate sits on the
      right, below the purse and the quest line. It goes in hudRects like the others, so the tells keep off it. */
-  const w = 114, h = 26, x0 = VW - w - 3, y0 = 45 + slotI * 35, pc = p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, p.n).c, bx = x0 + 25, bw = w - 29;
+  const rgSeat = q => q && q.hero === 'ranger', yTop = (() => { let y = 45; for (let j = 1; j <= slotI; j++) y += rgSeat(players[j]) ? 44 : 35; return y; })();   /* (claude/rangerhud) a ranger's seat plate is 9 px taller: her quiver row */
+  const w = 114, h = rgSeat(p) ? 35 : 26, x0 = VW - w - 3, y0 = yTop, pc = p.ai ? '#c9a0ff' : PARTY.colourOf(PROG.tavern, p.n).c, bx = x0 + 25, bw = w - 29;
   board(x0, y0, w, h, UI.border, 'rgba(10,8,20,0.5)', true);
   if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([x0, y0, w + 2, h + 2]);
-  g.fillStyle = pc; g.fillRect(x0 + 2, y0 + 2, 20, h - 4); g.fillStyle = '#1a1424'; g.fillRect(x0 + 3, y0 + 3, 18, h - 6);
+  g.fillStyle = pc; g.fillRect(x0 + 2, y0 + 2, 20, 22); g.fillStyle = '#1a1424'; g.fillRect(x0 + 3, y0 + 3, 18, 20);   /* (the icon's frame is 22 tall whatever the plate: a ranger's plate is taller for her quiver row) */
   drawHeroIcon(p.hero, x0 + 3, y0 + 3, 18, 20, 3);
   text(seatTagWord(p), bx, y0 + 3, pc, 'left', 6);
   if (!p.ai && !p.prof) text('GUEST', bx + textW(seatTagWord(p), 6) + 4, y0 + 3, UI.dim, 'left', 6);
@@ -1781,6 +1815,7 @@ function drawSeatPlate(p, slotI) {
     text(String(Math.max(0, Math.ceil(p.hp))), x0 + w - 4, y0 + 11, '#fff6e0', 'right', 6);
     text('LV ' + seatLv(p), x0 + w - 4, y0 + 3, '#ffd36b', 'right', 6); }
   text(fitText(seatHeroName(p), bw - 16, 6), bx, y0 + 11, UI.text, 'left', 6);
+  if (rgSeat(p) && RGK) { const hd = RGK.hudOf(p); if (hd) drawRgRow(x0 + 4, y0 + 25, w - 8, hd); }   /* (claude/rangerhud) THIS seat's own arrows */
   if (RP.chainOf(p) > 0 && !(p.down > 0)) { const tw = 5 * 6 + 3, tx = x0 + w - tw;   /* (claude/riposteart) P2's MIX-UP pips, on a tab hung under the plate's right end (the same gems as the HUD's) */
     board(tx, y0 + h - 1, tw + 2, 9, UI.border, 'rgba(10,8,20,0.5)', true); if (typeof hudRects !== 'undefined' && hudRects) hudRects.push([tx, y0 + h - 1, tw + 4, 11]);
     RP.drawPips(g, p, tx + 3, y0 + h + 2, !!SET.reduceMotion); }
@@ -6652,9 +6687,10 @@ function padIntoPlayer(gp, st, p) {
   const now = padState(gp, 'pad2'), rose = k => now[k] && !st.prev[k];
   if (Object.values(now).some(Boolean)) initAudio();
   const pr = p.press;
-  for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
+  for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'left', 'right', 'up', 'down']) if (rose(k)) pr[k] = true;
   if (rose('pause') && L && L.tavern && state === 'play') pausePress = true;   /* (claude/tavernname) A JOINED PLAYER'S START opens the inn's settings menu, as player one's does */
-  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { if (now[k]) p.keys[k] = true; else if (st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
+  const rgBack = p.hero === 'ranger' && now.stance;   /* (claude/rangerhud) a ranger's BACK is her BOW / KNIFE: it does not dance */
+  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance']) { const dn = k === 'dance' && rgBack ? false : now[k]; if (dn) p.keys[k] = true; else if (k === 'dance' ? (st.prev[k] || rgBack) : st.prev[k]) p.keys[k] = false; }   /* (dance: the BACK button, the EMOTE key - each player's own) */
   st.prev = now;
 }
 /* (claude/tavern) THE WALK-IN, local: in the inn a pad nobody plays on (not a seat's, not the one player one last used) pressing JUMP or START is a new player -
@@ -6689,7 +6725,8 @@ function pollGamepad() {
   if (Object.values(now).some(Boolean)) { initAudio(); if (Object.keys(now).some(rose)) { anyPress = true; padLast = true; p1Pad = gp.index; } }   /* (claude/tavern) p1Pad: the pad player one plays on, never a joiner's */
   if (rose('jump')) { jumpPress = true; confirmPress = true; } if (rose('atk')) atkPress = true; if (rose('dodge')) dodgePress = true; if (rose('throw')) throwPress = true; if (rose('skill2')) skill2Press = true; if(rose('skill3'))skill3Press=true;if(rose('skill4'))skill4Press=true;if(rose('flask'))flaskPress=true; if (rose('stance')) stancePress = true; if (rose('talk')) talkPress = true; if (rose('grab')) grabPress = true; if (rose('pause')) pausePress = true; if (rose('map')) mapPress = true; if (rose('talents')) talentsPress = true; if (padRaw.a && state !== 'play') confirmPress = true;   /* (A always chooses in a menu, whatever jump was rebound to) */
   if (rose('left')) leftPress = true; if (rose('right')) rightPress = true; if (rose('up')) upPress = true; if (rose('down')) downPress = true;
-  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { if (now[k]) keys[k] = true; else if (pad.prev[k]) keys[k] = false; }
+  const rgBack = isRg() && now.stance;   /* (claude/rangerhud) a ranger's BACK is her BOW / KNIFE: it does not dance */
+  for (const k of ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'dance', 'talk']) { const dn = k === 'dance' && rgBack ? false : now[k]; if (dn) keys[k] = true; else if (k === 'dance' ? (pad.prev[k] || rgBack) : pad.prev[k]) keys[k] = false; }
   pad.prev = now;
 }
 /* ====== THE GLUE FOR src/controls.js: the tables, the rebind screen and the raw pad tick ====== */
@@ -6745,7 +6782,7 @@ function padRawTick(gps) {
 // a TOUCH settings tab, assists and haptics. This is only the glue: what a press MEANS lives here, what a thumb DOES lives there.
 const touchPressName = k => { initAudio(); anyPress = true; padLast = false;
   if (k === 'jump') { jumpPress = true; jumpUpKey = false; } else if (k === 'confirm') confirmPress = true; else if (k === 'atk') atkPress = true; else if (k === 'dodge') dodgePress = true; else if (k === 'throw') throwPress = true;
-  else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true;
+  else if (k === 'grab') grabPress = true; else if (k === 'skill2') skill2Press = true; else if (k === 'skill3') skill3Press = true; else if (k === 'skill4') skill4Press = true; else if (k === 'talk') talkPress = true; else if (k === 'pause') pausePress = true; else if (k === 'map') mapPress = true; else if (k === 'flask') flaskPress = true; else if (k === 'stance') stancePress = true;
   else if (k === 'left') leftPress = true; else if (k === 'right') rightPress = true; else if (k === 'up') upPress = true; else if (k === 'down') downPress = true; };
 /* WHAT INTERACT WOULD DO NOW (src/touch-interact.js reads the same reach tests the keyboard path does) */
 const touchCtxObj = () => ({ P, state, props, talkers, L, enemies, flask: () => (P.flasks | 0) > 0 && P.hp < P.maxHp && !(P.drinkT > 0) && (P.ground || P.carpet || P.swim) ? { label: 'FLASK ' + P.flasks, key: 'flask', dim: P.hp > P.maxHp * 0.6 } : null, warping: !!warp, talking: !!talk, shopRoom: !!(L && L.shop), hasKey: n => hasKey(n),
@@ -6759,7 +6796,7 @@ const touchAutoFace = kind => { if (state !== 'play' || !P || P.dead || P.hurt >
 const touchSkillInfo = i => { const sk = skillAt(i); if (!sk) return null; const cd = skillCd(sk), max = sk === 'summonSkeleton' ? cdOf(sk) : CD_MAX[sk] || 3, busy = (sk === 'shieldThrow' && thrown) || cd > 0;
   return { id: sk, icon: skillIcon(sk), k: busy ? (cd > 0 ? Math.min(1, cd / max) : 1) : 0, secs: cd }; };
 const TCH = createTouch({ disp, dg, q, SET, save: () => saveSettings(), geom: () => ({ DPR, DEV: DPR_DEV, S, offX, offY }), state: () => state, keys, initAudio: () => initAudio(),
-  press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
+  stance: () => (isRg() && RGK && P && !P.dead ? { s: RGK.stance(), q: RGK.arrows(), mq: RGK.maxQ() } : null), press: touchPressName, skillOn: i => !!skillAt(i), skillInfo: touchSkillInfo, phoneMode: v => { PHONE_MODE = v; }, verb: touchVerbNow, ctx: touchCtxNow, autoFace: touchAutoFace,
   speed: () => (P ? Math.abs(P.vx || 0) : 0), padUsed: () => padLast, touched: () => { padLast = false; } });
 const touchOn = TCH.on, touchZones = () => TCH.allButtons();
 /* ONLINE CO-OP (src/online.js): what the host's half may read and do. arm() is the co-op pick's own confirm (coopWant; in a wood he stands up beside player one, as the
@@ -7623,8 +7660,9 @@ function tryDrink() {
   flaskHud.levelDrinks++; BUG.evlog('flask drunk (' + P.flasks + ' left)'); if (DFM.df('punish')) punishGreed('drink'); return true;   /* (claude/difficulty) MASTER: a drink in his reach is answered */
 }
 function drinkTick(dt) {
+  if (isRg() && state === 'play' && rgStanceCue > 0 && time >= rgStanceCue) { rgStanceCue = 0; rgTeach('stance'); }   /* (claude/rangerhud) her BOW / KNIFE line, a few seconds after the first arrow */
   if (flaskPress) { flaskPress = false; tryDrink(); }
-  if (stancePress) { stancePress = false; if (isRg() && RGK) RGK.toggleStance(); }   /* (Daniel 10-15) THE RANGER: BOW / KNIFE */
+  if (stancePress) { stancePress = false; if (isRg() && RGK) { RGK.toggleStance(); PROG.rgStanceTold = Math.max(PROG.rgStanceTold || 0, 2); } }   /* (Daniel 10-15) THE RANGER: BOW / KNIFE */
   spillsTick(dt); if (flaskHud.glowT > 0) flaskHud.glowT = Math.max(0, flaskHud.glowT - dt);
   if (!(P.drinkT > 0)) return;
   if (P.dead || P.down > 0 || state !== 'play') { P.drinkT = 0; return; }
@@ -7692,6 +7730,7 @@ function toastNow(msg, t) { hintSay('tip', t, msg); }
 /* THE ONE DOOR EVERY HINT BOX GOES THROUGH (src/hints.js, Settings: Hints): hintSay(tier, seconds, text) puts the line in the hint box if the player's Hints level lets that tier through (HIGH: always, as before). Notices (level-up, XP, gate open) are not hints and set hintMsg/hintT themselves. */
 function hintGate(tier, id) { if (HINTS.hintLevel() !== 'high') PROG.hintSeen = HINTS.setSeenStore(PROG.hintSeen); return HINTS.hintAllowed(tier, id); }   /* (the "told once" map lives in the save, only while Hints is below HIGH) */
 function hintSay(tier, t, msg) { if (HINTS.takeStall()) tier = 'stall'; if (!hintGate(tier, msg)) return false; hintMsg = msg; hintT = t; return true; }
+const stanceKeyName = () => TCH.on ? 'THE BOW BUTTON' : padLast ? CTL.labelFor(SET.binds, 'pad1', 'stance', 1) : String(KEYS.stance[0] || '2').toUpperCase();   /* (claude/rangerhud) the key her swap answers to, whichever hand is in use */
 const flaskKeyName = () => padLast ? 'LT' : TCH.on ? 'FLASK' : String(KEYS.flask[0] || 'U').toUpperCase();
 /* HURT, WITH A FLASK HELD, AND NEVER DRUNK ONE: say how, twice a save */
 function drinkHint() { if ((PROG.drinkTold || 0) >= 2 || P.dead || !((P.flasks | 0) > 0) || P.hp > P.maxHp * 0.5 || hintT > 0.5 || state !== 'play' || (L && L.trial)) return; PROG.drinkTold = (PROG.drinkTold || 0) + 1; hintSay('mechanic', 4.5, SV.LINES.drink.replace('KEY', flaskKeyName())); }
@@ -34599,7 +34638,7 @@ function render() {
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
     if (introCardUp()) { const k = Math.min(1, (1.6 - (miniIntroT > 0 ? miniIntroT : boss.modeT)) / 0.35), bh = Math.round(VH * 0.13 * k); g.fillStyle = '#0a0810'; g.fillRect(0, 0, VW, bh); g.fillRect(0, VH - bh, VW, bh); const nm = miniIntroT > 0 ? miniName() : bossTitle(boss); if (k >= 1) { const z = fitSize(nm, Math.min(VW, 320) - 16, [TYPE.title, 8]); text(nm, VW / 2, Math.round((bh - (z >= 12 ? 16 : 8)) / 2), '#ffd36b', 'center', z, 'outline'); } }   /* THE NAME CARD lives in the TOP band (the top fifth), never across the middle: it used to cover the boss's head */   /* on a band of its own, and a name too wide for the card drops a size */
     const hudMin = SET.hud === 'minimal', HS = hudMin ? 'outline' : 'shadow', HY = SET.iron ? 43 : 31;   /* HY: the row of the hero's own meter. Rows go 8 down from y 4: HP, stamina, FLASK ROW (y 20-28, FLASKS 2 gives the flasks their own row here), the hero's meter, XP */
-    const hudMeter = state === 'talk' ? null : hudMeterLabel(), hudPW = 66, xpRow = xpWood() ? 8 : 0, hudPH = HY + 7 + xpRow;   /* ONE slim plate: 66 wide (~20% of the 320 view) however long a meter's prompt is - the prompt goes beside it, on a strip (meterPrompt) */   /* (claude/kingsfix) a sign or a talk page is open: the HUD hides the C prompt (TAP C / HOLD C) - the talk panel's title sat on it wherever the sign stood */
+    const hudMeter = state === 'talk' ? null : hudMeterLabel(), hudPW = 66, xpRow = xpWood() ? 8 : 0, rgRow = isRg() ? 11 : 0, hudPH = HY + 7 + xpRow + rgRow;   /* (claude/rangerhud) rgRow: the ranger's QUIVER ROW under the XP bar */   /* ONE slim plate: 66 wide (~20% of the 320 view) however long a meter's prompt is - the prompt goes beside it, on a strip (meterPrompt) */   /* (claude/kingsfix) a sign or a talk page is open: the HUD hides the C prompt (TAP C / HOLD C) - the talk panel's title sat on it wherever the sign stood */
     const hudIdle = hudMin && state === 'play' && P.hp === P.maxHp && P.st >= P.maxSt - 1 && !venomIcon(P, CQG.CQ.venom) && !bossActive && bannerT <= 0 && !hudMeter && !P.swim && !(P.torch > 0) && heroMeterFrac() < 0.01 && !Object.values(P.cds || {}).some(v => v > 0);   /* nothing to say: the bars wait out of sight until something changes */
     const gShown = g, hudG = () => { g = hudIdle ? NULLG : gShown; }, hudShow = () => { g = gShown; };   /* (what the idle MINIMAL HUD draws, it draws into NULLG: one code path, nothing on the screen) */
     const hudStrip = (x, y, w, h) => { g.fillStyle = 'rgba(10,8,20,0.55)'; g.beginPath(); g.roundRect(x, y, w, h, 2); g.fill(); hudRects.push([x, y, w, h]); };   /* a status strip: what is not a bar sits on one, never floating */
@@ -34607,7 +34646,7 @@ function render() {
     const flaskN = L && !L.shop && !L.trial ? Math.max(SV.flaskMax(PROG), P.flasks | 0) : 0;
     { const cn = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total) + '|' + silvers.filter(s => s.got).length, xn = heroXp() + ':' + heroLevel(); if (cn !== uiFade.coin) { uiFade.coin = cn; uiFade.coinAt = time; } if (xn !== uiFade.xp) { uiFade.xp = xn; uiFade.xpAt = time; } }   /* IDLE COUNTERS FADE: the coins, the clock and the XP line settle back a few seconds after they last changed */
     const coinA = state === 'play' ? UIH.idleAlpha(time - uiFade.coinAt) : 1, xpA = state === 'play' && !(lvUpT > 0) ? UIH.idleAlpha(time - uiFade.xpAt, 5, 1.5, 0.45) : 1;
-    if (!hudMin) board(1, 1, hudPW, hudPH, UI.border, 'rgba(10,8,20,0.5)', true);   /* (the PLATE HUD only: the MINIMAL one has bars with a 1px outline and nothing behind them) */
+    if (!hudMin) { board(1, 1, hudPW, hudPH - rgRow, UI.border, 'rgba(10,8,20,0.5)', true); if (rgRow) board(1, hudPH - rgRow, RG_ROW_W, rgRow + 1, UI.border, 'rgba(10,8,20,0.5)', true); }   /* (claude/rangerhud: the quiver row is a tab under the plate, wider than it: six arrows, a word and a +N) */   /* (the PLATE HUD only: the MINIMAL one has bars with a 1px outline and nothing behind them) */
     { const lab = (L && L.shop ? String(PROG.coins || 0) : got + '/' + total), pw = coinPlateW(lab);
       g.globalAlpha = coinA; if (!hudMin) board(VW - 7 - pw, 1, pw + 2, 30, UI.border, 'rgba(10,8,20,0.5)', true); g.globalAlpha = 1; hudRects = [hudIdle ? [0, 0, 0, 0] : [0, 0, hudPW + 2, hudPH + 2], [VW - 8 - pw, 0, pw + 4, 32]]; }
     hudG();
@@ -34692,9 +34731,8 @@ function render() {
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isRg()) { const hy = HY, fill = Math.min(1, (P.rgFocus || 0) / 100), full = fill >= 1, q = RGK ? RGK.arrows() : 0, mq = RGK ? RGK.maxQ() : RG_K.quiver.n;   /* (claude/ranger) HUNTER'S FOCUS, and THE QUIVER: an arrow a stroke */
       bar(16, hy, 44, 4, fill, full ? (Math.floor(time * 10) % 2 ? '#dfffb0' : '#9fdc6a') : '#5a8a3a', fill);
-      const kn = RGK && RGK.stance() === 'knife'; if (kn) g.globalAlpha = 0.35;   /* KNIFE STANCE: the quiver dims and a knife stands over it */
-      for (let i = 0; i < mq; i++) { g.fillStyle = i < q ? '#e8e0c8' : '#4a4038'; g.fillRect(3 + i * 2, hy - 3, 1, 7); g.fillStyle = i < q ? '#c8402a' : '#3a3028'; g.fillRect(3 + i * 2, hy + 3, 1, 1); }
-      g.globalAlpha = 1; if (kn) { g.fillStyle = '#2a2418'; g.fillRect(5, hy - 5, 3, 10); g.fillStyle = '#e8eef6'; g.fillRect(6, hy - 4, 1, 5); g.fillStyle = '#ffffff'; g.fillRect(6, hy - 4, 1, 1); g.fillStyle = '#8a6a42'; g.fillRect(5, hy + 1, 3, 1); g.fillRect(6, hy + 2, 1, 2); }
+      { const rc = full ? (Math.floor(time * 10) % 2 ? '#dfffb0' : '#9fdc6a') : '#7fae5a'; g.fillStyle = rc; g.fillRect(8, hy - 2, 1, 2); g.fillRect(8, hy + 4, 1, 2); g.fillRect(5, hy + 1, 2, 1); g.fillRect(10, hy + 1, 2, 1);   /* (claude/rangerhud) a little reticle for HUNTER'S FOCUS: the quiver has a row of its own, under the XP bar */
+        g.fillStyle = 'rgba(10,8,20,0.6)'; g.fillRect(7, hy, 3, 3); g.fillStyle = rc; g.fillRect(8, hy + 1, 1, 1); }
       if (hudMeter) meterPrompt(hudMeter, hy); }
     if (isGeo()) { const hy = HY, full = (P.tremor || 0) >= 100, fill = (P.tremor || 0) / 100;   /* TREMOR */
       bar(15, hy, 45, 4, fill, full ? (Math.floor(time * 10) % 2 ? '#fff0c0' : '#e8a83a') : '#8a6a2a', fill);
@@ -34727,6 +34765,7 @@ function render() {
       const cu = !up && catchingUp(), sc = !up && !cu ? softCut() : 1, lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : sc < 1 ? (sc < 0.5 ? ' 1/5' : ' 1/2') : ''), bx = 4 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
       g.globalAlpha = xpA; text(lab, 4, yy - 3, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6, HS);
       if (60 - bx >= 8) bar(bx, yy, 60 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); g.globalAlpha = 1; }
+    if (rgRow && RGK) { const ry = HY + 9 + xpRow, gw = g; if (hudIdle) { g = gShown; g.globalAlpha = 0.6; } if (hudMin) hudStrip(2, ry - 2, RG_ROW_W - 3, 11); hudRects.push([0, ry - 3, RG_ROW_W + 2, 13]); drawRgRow(5, ry, RG_ROW_W - 8, RGK.hud()); g.globalAlpha = 1; g = gw; }   /* (the quiver row stays on even when the MINIMAL HUD's bars are waiting out of sight: the count is what she asked for) */   /* (claude/rangerhud, Daniel 10-23) THE QUIVER ROW: directly BELOW the XP bar */
     hudShow(); g.globalAlpha = 1;
     if (PROG.charm && PROG.charms && PROG.charms[PROG.charm] && PROP.charm[PROG.charm]) { g.globalAlpha = 0.85; g.drawImage(PROP.charm[PROG.charm], 146, 6); g.globalAlpha = 1; }
     // THE SKILL SLOTS: the icon, the key it is on, and the wait drawn down over it, so a skill on cooldown is obvious
@@ -34762,12 +34801,12 @@ function render() {
     if (state === 'play' && L && L.trial && L.trial.length) drawTrialStep();   /* (under the hint: a count or a gate going up says so over it) */ if (hintT > 0 && state === 'play' && hintWaits()) { /* THE CARD, THE BANNER AND THE TELLS FIRST: a hint waits for them to go (hintWaits) */ }
     else if (state === 'play') { if (hintT > 0) hintT -= 1 / 60; if (toastQ.L !== L) { UIH.toastClear(toastQ); toastQ.L = L; } UIH.toastFeed(toastQ, hintMsg, hintT); const tc = UIH.toastTick(toastQ, 1 / 60), k = UIH.toastAlpha(tc); if (tc) {   /* ONE QUEUE, ONE SAFE ZONE (src/ui-hud.js): a toast waits its turn and never sits on the plates, the status row or the boss bar */
       /* TWO LINES, AND NEVER OVER HIM: the band under the plates, or the foot of the screen (over the boss bar) when he is up in that band */
-      const zone = UIH.toastZone(VW, VH, CV ? { left: Math.max(hudPW + 2, hudEnvR), top: 48 + xpRow + (deathRecap ? 26 : 0), boss: bossActive || miniActive } : { wide: true, top: Math.max(48 + xpRow, hudPH + 4) + (deathRecap ? 26 : 0), boss: bossActive || miniActive })   /* (only the caravan's sun/water rows stand under the plate on the left; elsewhere the band under the plates is the full width, so a long level-up line is still two lines) */, lines = wrap(tc.msg, zone.w - 16, 6), heroY = P.y - cy, box = UIH.toastBox(zone, lines, BODY_LH, l => inkW(l, 6), [heroY - 28, heroY]), bw = box.w, bh = box.h, hby = box.y, hbx = box.x;
+      const zone = UIH.toastZone(VW, VH, CV ? { left: Math.max(hudPW + 2, hudEnvR), top: 48 + xpRow + rgRow + (deathRecap ? 26 : 0), boss: bossActive || miniActive } : { wide: true, top: Math.max(48 + xpRow, hudPH + 4) + (deathRecap ? 26 : 0), boss: bossActive || miniActive })   /* (only the caravan's sun/water rows stand under the plate on the left; elsewhere the band under the plates is the full width, so a long level-up line is still two lines) */, lines = wrap(tc.msg, zone.w - 16, 6), heroY = P.y - cy, box = UIH.toastBox(zone, lines, BODY_LH, l => inkW(l, 6), [heroY - 28, heroY]), bw = box.w, bh = box.h, hby = box.y, hbx = box.x;
       toastQ.box = [hbx, hby, bw, bh]; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.9)'; g.beginPath(); g.roundRect(hbx, hby, bw, bh, 4); g.fill();
       g.strokeStyle = tc.col || 'rgba(255,211,107,0.7)'; g.lineWidth = 1; g.beginPath(); g.roundRect(hbx + 0.5, hby + 0.5, bw - 1, bh - 1, 4); g.stroke();
       lines.forEach((ln, i) => text(ln, hbx + bw / 2, hby + 4 + i * BODY_LH, tc.col || '#ffd36b', 'center', 6)); g.globalAlpha = 1; } }
     else { hintT = 0; UIH.toastClear(toastQ); }
-    if (state === 'play') drawRealmBanner(xpRow, cy);   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
+    if (state === 'play') drawRealmBanner(xpRow + rgRow, cy);   /* THE UNDEAD ARCHMAGE'S REALMS: the opening in plain words (claude/archfix) */
     if (state === 'play' && L.alarmT > 0) { const k = Math.min(1, L.alarmT / 14), lab = 'THE WATCH IS UP', w = lab.length * 6 + 10;
       g.fillStyle = 'rgba(60,16,16,0.85)'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 0.2 + 0.2 * Math.sin(time * 8); g.fillStyle = '#c9463d'; g.fillRect(VW / 2 - w / 2, 46, w, 11); g.globalAlpha = 1;
       g.strokeStyle = '#ff6b6b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w / 2 + 0.5, 46.5, w - 1, 10); text(lab, VW / 2, 49, '#ffd0d0', 'center', 6);

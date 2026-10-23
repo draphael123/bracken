@@ -34,7 +34,7 @@ import { cleanSnapshot } from './coop-save.js';
 
 let api = null, sess = null, board = null, chip = null, gidN = 0;
 const HELD = ['jump', 'atk', 'dodge', 'block', 'throw', 'left', 'right', 'down', 'up', 'dance', 'talk'];
-const PRESS = ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'left', 'right', 'up', 'down'];
+const PRESS = ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'left', 'right', 'up', 'down'];
 const QUIET_RELEASE = 3000, QUIET_DROP = 8000;   // ms of nothing from a guest before his keys let go / before he is dropped
 export const MAX_GUESTS = 3;
 

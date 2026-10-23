@@ -104,7 +104,8 @@ export function makeRanger(api) {
 
   /* ---- HER STANCE (Daniel 10-15): BOW (X shoots; an empty quiver is the knife) or KNIFE (X is always the knife). Kept through deaths and levels ---- */
   function toggleStance(p) { ensure(p); p.rgStance = p.rgStance === 'knife' ? 'bow' : 'knife'; p.rgNock = null;
-    api.number(p.x, p.y - 26, p.rgStance === 'knife' ? 'KNIFE' : 'BOW', p.rgStance === 'knife' ? '#c9d4e0' : '#e8dcb0'); api.SFX.rgPick && api.SFX.rgPick(); return p.rgStance; }
+    api.number(p.x, p.y - 26, p.rgStance === 'knife' ? 'KNIFE' : 'BOW', p.rgStance === 'knife' ? '#c9d4e0' : '#e8dcb0'); api.SFX.rgPick && api.SFX.rgPick();
+    api.kitPose(p, p.rgStance === 'knife' ? 'rgSling' : 'rgBowUp', 0.26); p.rgStanceAt = api.time; return p.rgStance; }   /* (claude/rangerhud) the swap has a body: the bow slung to her back and the knife drawn, or the bow swung round */
   const bowReady = () => { const p = P(); ensure(p); return p.rgQ > 0 && p.rgStance !== 'knife'; };   /* (main.js: a held X is her draw only then - else the knife's heavy) */
 
   /* ---- AN ARROW ----
@@ -303,6 +304,7 @@ export function makeRanger(api) {
     for (const k of ['rgBashT', 'rgCd', 'rgSnareCd', 'rgWildT', 'parryT', 'blastT']) p[k] = Math.max(0, (p[k] || 0) - dt);
     if (p.rgSnatchFx) { p.rgSnatchFx.t -= dt; if (p.rgSnatchFx.t <= 0) p.rgSnatchFx = null; }
     if (p.rgQ > maxQ()) p.rgQ = maxQ();
+    p.rgMaxQ = maxQ(); p.rgRefMax = refillT();
     if (p.rgQ < maxQ()) { p.rgRefT = (p.rgRefT || 0) + dt; if (p.rgRefT >= refillT()) { p.rgRefT = 0; giveArrow(p, 1, 'refill'); stats.refilled++; api.SFX.rgPick && api.SFX.rgPick(); } } else p.rgRefT = 0;
     if (p.rgFlip) { p.rgFlip.t += dt; if (!(p.dodge > 0) && (p.ground || p.swim || p.rgFlip.t > 0.8)) p.rgFlip = null; }
     if (p.rgMarkE && !markOn(p.rgMarkE)) p.rgMarkE = null;
@@ -416,7 +418,11 @@ export function makeRanger(api) {
   const read = () => { const p = P(); ensure(p); return { stance: p.rgStance || 'bow', q: p.rgQ, max: maxQ(), focus: +(p.rgFocus || 0).toFixed(1), nock: !!p.rgNock, bashUp: bashUp(p), onBeat: onBeat(p), flip: !!p.rgFlip, cd: +(p.rgCd || 0).toFixed(3),
     arrows: p.rgArrows.map(a => ({ kind: a.kind, state: a.state, x: Math.round(a.x), y: Math.round(a.y), tag: a.tag, rip: a.rip, vy: Math.round(a.vy), free: !!a.free })), snares: (p.rgSnares || []).map(s => ({ x: Math.round(s.x), sprung: s.sprung > 0 })),
     refT: +(p.rgRefT || 0).toFixed(2), wildT: p.rgWildT || 0, stats: { ...stats } }; };
-  return { RG, arrows, maxQ, toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier) => release(P(), w, tier || 0), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
+  /* (claude/rangerhud) WHAT THE QUIVER ROW DRAWS: her stance, the arrows in the quiver / her most, the ones lying in the world she could take back, and how far the trickle is to the next */
+  const hudOf = (p, mq, rt) => { ensure(p); let lying = 0; for (const a of p.rgArrows) if ((a.state === 'lie' || a.state === 'stuck') && !a.free && !a.wild) lying++;
+    return { stance: p.rgStance || 'bow', q: p.rgQ, mq, lying, refill: p.rgQ < mq ? Math.min(1, (p.rgRefT || 0) / rt) : 0 }; };   /* (a seat's plate reads the maxima her own update stored: p.rgMaxQ / p.rgRefMax) */
+  const hud = () => hudOf(P(), maxQ(), refillT());
+  return { RG, arrows, maxQ, hud, hudOf: p => hudOf(p, p.rgMaxQ || RG.quiver.n, p.rgRefMax || RG.quiver.refill), toggleStance: () => toggleStance(P()), bowReady, stance: () => P().rgStance || 'bow', press, nockStep, release: (w, tier) => release(P(), w, tier || 0), focusFull: () => focusFull(P()), quickShot: () => quickShot(P(), !P().ground), riseShot: () => riseShot(P()), downShot: () => downShot(P()),
     bashTakes, snatchSeeds, kneeling: () => !!P().rgKneel, onBeat: () => onBeat(P()), bashUp: () => bashUp(P()), bash: () => bash(P()), setSnare: () => setSnare(P()), spendMark: () => spendMark(P()), markFoe: e => markFoe(P(), e), markMul, markOn, killed,
     flip: dir => flip(P(), dir), focusGain: n => focusGain(P(), n), giveArrow: n => giveArrow(P(), n), takeArrow: () => takeArrow(P()), pointBlank: () => pointBlank(P()),
     update, restock, kit, kitStep, draw: render, drawMarks, clear, read, resetStats: () => { for (const k in stats) stats[k] = 0; } };

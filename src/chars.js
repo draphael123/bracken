@@ -5207,6 +5207,9 @@ function rgKitPoses(F, h) {
   /* THE SNARE (DOWN+C): down on one knee, the peg turned in her fingers with the cord looped about it - then driven into the turf and the open loop laid at her feet */
   F.rgSnare = [KF({ dy: 3, legs: 'kneel', arm: [X, Y, X + 5, Y + 6], ...atBack, plume: 1, bits: [o(6, 7, '#6a5236'), o(7, 8, D), o(8, 7, D), o(6, 9, D)] }),
     KF({ dy: 3, legs: 'kneel', arm: [X, Y, X + 6, Y + 8], ...atBack, plume: 0, bits: [o(6, 10, '#6a5236'), o(6, 9, '#6a5236'), o(4, 11, D), o(5, 12, D), o(7, 12, D), o(8, 12, D), o(9, 11, D), o(8, 10, D)] })];
+  /* HER STANCE SWAP (claude/rangerhud, Daniel 10-23): to the KNIFE - the free hand reaches back and slings the bow, then the knife comes out ahead; to the BOW - the knife away, the bow swung round into the off hand */
+  F.rgSling = [KF({ legs: 'wide', dx: -1, stave: BB, arm: [X, Y, X - 2, Y - 4], arm2: [OFF[0], OFF[1], X - 3, Y - 6], plume: 1 }), knife(5, 0, 10, -2, { wide: 4, legs: 'wide', plume: 2 })];
+  F.rgBowUp = [KF({ legs: 'wide', dx: -1, ...atBack, arm: [X, Y, X + 2, Y + 4], plume: 1 }), KF({ wide: 4, legs: 'wide', ...carry(), arm: [X, Y, X + 4, Y - 1], arm2: [OFF[0], OFF[1], X + 2, Y - 4], plume: 2 })];
   /* THE MARK (UP+C, her focus spent): a hand raised to shade her eyes, the bow held at her side - then the arm thrown out at the quarry, two fingers pointing and a red tick leaping from them */
   F.rgMark = [KF({ legs: 'wide', ...carry(), arm: [X, Y, X + 4, Y - 3], arm2: [OFF[0], OFF[1], X + 2, Y - 7], plume: 1, bits: [o(3, -8, GR)] }),
     KF({ wide: 8, legs: 'wide', sho: 1, stave: BB, arm: [X, Y, X + 4, Y - 1], arm2: [OFF[0], OFF[1], X + 9, Y - 4], plume: 2, bits: [o(11, -5, '#ff7a5a'), o(12, -6, '#ff7a5a'), o(14, -7, '#ffd0c0'), o(12, -3, '#ff7a5a')] })];

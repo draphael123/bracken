@@ -63,9 +63,10 @@ const SKILL_OF = { throw: 0, skill2: 1, skill3: 2, skill4: 3 };
 const SPOT_FULL = {
   atk: [0, 0, 0.78], jump: [-0.55, -1.75, 0.7], dodge: [-1.95, -0.35, 0.52], block: [-2.35, -1.55, 0.52],
   interact: [-0.4, -3.2, 0.6], throw: [-1.75, -3.0, 0.4], skill2: [-2.85, -2.5, 0.4], skill3: [-3.75, -1.6, 0.4], skill4: [-4.2, -0.4, 0.4], ctx: [-3.2, -3.35, 0.42],
+  stance: [-4.95, -1.05, 0.4],   /* (claude/rangerhud) THE RANGER's BOW / KNIFE: only when env.stance() says so */
 };
 /* SIMPLE: fewer, bigger, an arc round the thumb. ATTACK at the rest point, JUMP above it, DEFEND to its left, SKILL up-left; the two contextual buttons above. */
-const SPOT_SIMPLE = { atk: [0, 0, 0.9], jump: [-0.1, -1.95, 0.75], defend: [-2.0, -0.25, 0.68], skill: [-1.9, -1.95, 0.6], interact: [-1.15, -3.25, 0.55], ctx: [-2.95, -2.9, 0.5] };
+const SPOT_SIMPLE = { atk: [0, 0, 0.9], jump: [-0.1, -1.95, 0.75], defend: [-2.0, -0.25, 0.68], skill: [-1.9, -1.95, 0.6], interact: [-1.15, -3.25, 0.55], ctx: [-2.95, -2.9, 0.5], stance: [-3.45, -1.05, 0.46] };
 const SPOTS = { simple: SPOT_SIMPLE, full: SPOT_FULL };
 const LABEL = { throw: 'F', skill2: 'G', skill3: '3', skill4: '4' };
 
@@ -89,7 +90,8 @@ export function createTouch(env) {
   const hasPos = () => !!(SET.touchPos && Object.keys(SET.touchPos).length);
   const preset = () => (SET.touchPreset === 'simple' || SET.touchPreset === 'full' || SET.touchPreset === 'custom' ? SET.touchPreset : hasPos() ? 'custom' : 'simple');   /* (a player who dragged buttons before presets existed keeps his layout: it is CUSTOM on the FULL buttons) */
   const baseOf = () => { const p = preset(); return p === 'custom' ? (SET.touchBase === 'simple' ? 'simple' : 'full') : p; };
-  const btnSet = () => (baseOf() === 'simple' ? SIMPLE_BTNS : FULL_BTNS);
+  const hasStance = () => !!(env.stance && env.stance());   /* (claude/rangerhud) THE RANGER: a BOW / KNIFE button of her own, drawn with her current stance */
+  const btnSet = () => { const b = baseOf() === 'simple' ? SIMPLE_BTNS : FULL_BTNS; return hasStance() ? [...b, 'stance'] : b; };
   const legacyAssist = () => SET.touchAssist !== false;   /* the one old switch (buffer + auto-face) is what the two new ones default to */
   const faceOn = () => (SET.touchFace === undefined ? legacyAssist() : SET.touchFace !== false), bufOn = () => (SET.touchBuf === undefined ? legacyAssist() : SET.touchBuf !== false);
   const aimOn = () => SET.touchAim !== false, useOn = () => SET.touchAutoUse === true, swipeOn = () => SET.touchSwipe === true, blockTog = () => !!SET.blockToggle;
@@ -114,7 +116,7 @@ export function createTouch(env) {
     return { t: v[0] * DPR, r: (v[1] || 0) * DPR, b: (v[2] || 0) * DPR, l: (v[3] || 0) * DPR };
   }
   function layout() {
-    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, gm.S | 0, gm.offX | 0, size(), left(), layVer, preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
+    const W = disp.width, H = disp.height, ins = insets(), gm = env.geom(), key = [W, H, gm.S | 0, gm.offX | 0, size(), left(), layVer, hasStance() ? 'rg' : '', preset(), baseOf(), ins.t, ins.r, ins.b, ins.l].join('|');
     if (lay && key === layKey) return lay; layKey = key;
     const { DPR } = env.geom(), s = Math.min(W, H) * 0.145 * size(), m = Math.max(10 * DPR, 0) , L = left(), sg = L ? -1 : 1;
     const pivX = L ? ins.l + m + s : W - ins.r - m - s, pivY = H - ins.b - m - 0.78 * s;
@@ -133,12 +135,12 @@ export function createTouch(env) {
         const top = ins.t + mb, bot = H - ins.b - m, pauseR = Math.min(0.4 * s, wi * 0.35), limit = top + 2 * pauseR + 0.14 * s, avail = bot - limit, cx1 = (bx0 + bx1) / 2, pos = {};
         let ok = false, f = Math.min(1, size());
         if (baseOf() === 'simple') {   // one column, the thumb at the bottom: ATTACK, JUMP, DEFEND, SKILL, then the two contextual ones
-          const order = ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx'], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66 };
+          const order = hasStance() ? ['atk', 'jump', 'defend', 'stance', 'skill', 'interact', 'ctx'] : ['atk', 'jump', 'defend', 'skill', 'interact', 'ctx'], wt = { atk: 1, jump: 0.88, defend: 0.82, skill: 0.78, interact: 0.74, ctx: 0.66, stance: 0.62 };
           const rmax = Math.min(wi / 2, 0.95 * s) * Math.max(0.7, f); let used = 0; for (const k of order) used += 2 * rmax * wt[k] + 0.12 * rmax;
           const k2 = Math.min(1, avail / used); if (k2 >= 0.5) { ok = true; let y = bot; for (const k of order) { const r = rmax * k2 * wt[k]; pos[k] = [cx1, y - r, r]; y -= 2 * r + 0.12 * rmax * k2; } }
         } else {   // FULL: two columns of five rows (ATTACK on the outer edge)
-          const rows = [['atk', 'jump'], ['dodge', 'block'], ['throw', 'skill2'], ['skill3', 'skill4'], ['interact', 'ctx']];
-          const r = Math.min(wi / 4, avail / 10.6) * Math.max(0.7, f); if (r >= 17 * DPR) { ok = true; const cxo = L ? bx0 + wi * 0.25 : bx0 + wi * 0.75, cxi = L ? bx0 + wi * 0.75 : bx0 + wi * 0.25; rows.forEach((pr2, i) => { const y = bot - r - i * (2 * r + 0.1 * r); pos[pr2[0]] = [cxo, y, r]; pos[pr2[1]] = [cxi, y, r]; }); }
+          const rows = [['atk', 'jump'], ['dodge', 'block'], ['throw', 'skill2'], ['skill3', 'skill4'], ['interact', 'ctx']]; if (hasStance()) rows.splice(2, 0, ['stance', 'stance_']);   /* the ranger's BOW / KNIFE sits right above the thumb's own buttons */
+          const r = Math.min(wi / 4, avail / (hasStance() ? 12.8 : 10.6)) * Math.max(0.7, f); if (r >= 17 * DPR) { ok = true; const cxo = L ? bx0 + wi * 0.25 : bx0 + wi * 0.75, cxi = L ? bx0 + wi * 0.75 : bx0 + wi * 0.25; rows.forEach((pr2, i) => { const y = bot - r - i * (2 * r + 0.1 * r); pos[pr2[0]] = [cxo, y, r]; pos[pr2[1]] = [cxi, y, r]; }); }
         }
         if (ok) { bar = true; for (const k of set) if (pos[k]) { const [x, y, r] = pos[k]; btn[k] = { k, cx: x, cy: y, r }; } btn.pause = { k: 'pause', cx: cx1, cy: top + pauseR, r: pauseR };
           const dR2 = Math.min(1.45 * s, pwi / 2); dpadBar = { R: dR2, cx: (px0 + px1) / 2, cy: bot - dR2 * 0.1 - dR2, catchR: dR2 * 1.7 }; }
@@ -177,6 +179,7 @@ export function createTouch(env) {
       if (k === 'skill' && !SLOT_KEYS.some((_, i) => env.skillOn(i))) continue;
       if (k === 'interact' && !verb) continue;
       if (k === 'ctx' && !ctx) continue;
+      if (k === 'stance' && !hasStance()) continue;
       out.push(L.btn[k]);
     }
     out.push(L.btn.pause); return out;
@@ -386,10 +389,21 @@ export function createTouch(env) {
       dg.beginPath(); for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 - Math.PI / 2, rr = i % 2 ? u * 0.28 : u * 0.95; dg.lineTo(Math.cos(a) * rr, Math.sin(a) * rr - u * 0.12); } dg.closePath(); dg.stroke();
       const n = SLOT_KEYS.length, a1 = dg.globalAlpha; for (let i = 0; i < n; i++) { if (!env.skillOn(i)) continue; const inf = env.skillInfo ? env.skillInfo(i) : null; dg.globalAlpha = a1 * (inf && inf.k > 0 ? 0.35 : 1); dg.beginPath(); dg.arc((i - (n - 1) / 2) * u * 0.42, u * 1.05, Math.max(1.5, u * 0.11), 0, 7); dg.fill(); } dg.globalAlpha = a1;
     }
+    else if (k === 'stance') stanceIcon(r, u);
     else if (k === 'interact' || k === 'ctx') { const word = (k === 'ctx' ? (ctx && ctx.label) : verb && verb.verb) || (k === 'ctx' ? 'THROW' : 'USE'), px = fit(String(word).toUpperCase(), r * 1.55, Math.round(r * 0.55)); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(String(word).toUpperCase(), 0, 1); }
     else if (k in SKILL_OF && skillNow && skillNow.icon) skillFace(k, r, skillNow);   // THE SKILL'S OWN GLYPH (the same picture the HUD slot and the store use), a whole-number scale so the pixels stay square, the wait swept over it
         else { dg.font = Math.round(r * 0.9) + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(LABEL[k] || '?', 0, 1); }
     dg.restore();
+  }
+  /* (claude/rangerhud) THE RANGER's BOW / KNIFE BUTTON: the glyph of the stance she is in (a bow with an arrow nocked, or the knife drawn), its word under it, and the arrows left as pips on the bow's string side */
+  function stanceIcon(r, u) {
+    const st = (env.stance && env.stance()) || { s: 'bow', q: 0, mq: 0 }, knife = st.s === 'knife';
+    dg.save(); dg.translate(0, -u * 0.18);
+    if (knife) { dg.beginPath(); dg.moveTo(-u * 0.7, u * 0.7); dg.lineTo(u * 0.55, -u * 0.75); dg.lineTo(u * 0.8, -u * 0.5); dg.lineTo(-u * 0.3, u * 0.95); dg.closePath(); dg.stroke(); dg.beginPath(); dg.moveTo(-u * 0.75, u * 0.2); dg.lineTo(-u * 0.2, u * 0.75); dg.stroke(); }
+    else { dg.beginPath(); dg.moveTo(-u * 0.25, -u * 0.95); dg.quadraticCurveTo(u * 0.85, 0, -u * 0.25, u * 0.95); dg.stroke(); dg.lineWidth = Math.max(1, r * 0.06); dg.beginPath(); dg.moveTo(-u * 0.25, -u * 0.95); dg.lineTo(-u * 0.25, u * 0.95); dg.stroke(); dg.lineWidth = Math.max(2, r * 0.12);
+      dg.beginPath(); dg.moveTo(-u * 0.55, 0); dg.lineTo(u * 0.55, 0); dg.stroke(); dg.beginPath(); dg.moveTo(u * 0.55, 0); dg.lineTo(u * 0.3, -u * 0.22); dg.moveTo(u * 0.55, 0); dg.lineTo(u * 0.3, u * 0.22); dg.stroke(); }
+    dg.restore();
+    const w = knife ? 'KNIFE' : 'BOW', px = fit(w, r * 1.7, Math.round(r * 0.4)); dg.font = px + 'px ' + FONT; dg.textAlign = 'center'; dg.textBaseline = 'middle'; dg.fillText(w, 0, r * 0.62);
   }
   /* the skill glyph + its wait sweep + its key letter, centred on the current origin (the button's own face and the wheel's slots share it) */
   function skillFace(k, r, info) {
@@ -473,7 +487,7 @@ export function createTouch(env) {
   function sigNow(L) {
     const st = env.state(), dp = playing() && moveMode() === 'dpad', parts = [st, editing ? 1 : 0, layVer, L.W, L.H, opacity(), preset(), moveMode(), padHidden() ? 'pad' : '', banner ? banner.text : '', drag ? drag.k : '', stick ? (dp && stick.dp ? stick.sec : (stick.cx | 0) + ',' + (stick.cy | 0) + ',' + (stick.x | 0) + ',' + (stick.y | 0) + ',' + stick.sec) : ''];
     for (const t of touches.values()) if (t.role === 'btn') parts.push('d' + t.k + (t.radial ? 'R' + t.sel : '') + (t.blocking ? 'B' : ''));
-    if (playing() || editing) { for (const b of visibleBtns()) parts.push(b.k + '@' + (b.cx | 0) + ',' + (b.cy | 0)); parts.push(verb ? verb.verb : '', ctx ? ctx.label + (ctx.dim ? '~' : '') : '');
+    if (playing() || editing) { if (hasStance()) { const sn = env.stance(); parts.push('st:' + sn.s); } for (const b of visibleBtns()) parts.push(b.k + '@' + (b.cx | 0) + ',' + (b.cy | 0)); parts.push(verb ? verb.verb : '', ctx ? ctx.label + (ctx.dim ? '~' : '') : '');
       if (playing() && env.skillInfo) for (let i = 0; i < 4; i++) { const s = env.skillInfo(i); parts.push(s ? (s.icon && s.icon.__id || s.id || 'x') + ':' + Math.round(s.k * 32) + ':' + Math.ceil(s.secs || 0) : '-'); } }
     return parts.join('|');
   }
