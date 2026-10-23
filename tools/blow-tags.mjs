@@ -21,6 +21,8 @@ const argsAt = (src, open) => { let d = 0, k = open; for (; k < src.length; k++)
 const splitArgs = a => { const out = []; let d = 0, cur = ''; for (const c of a) { if (c === '(' || c === '[' || c === '{') d++; if (c === ')' || c === ']' || c === '}') d--; if (c === ',' && d === 0) { out.push(cur.trim()); cur = ''; } else cur += c; } if (cur.trim()) out.push(cur.trim()); return out; };
 /* NOT BOSS HOOKS (a common foe's or an elite's own gate): named, with the reason, so a new boss hook can never hide among them */
 const NOT_BOSS = {
+  'gormTake': "KING GORM's own gate (src/gorm.js): his 0.4x clank / warded states read his OPENINGS (cages held, ward timer), not a blow verb - every blow is chipped alike outside them (claude/gorm2)",
+  'RBM.boarTake': 'THE ROYAL BOAR (src/royal-boar.js), a hall foe: only its dazed state (x1.5) changes the blow, not a blow verb (claude/gorm2)',
   'EK.take': 'an ELITE (src/elite-kit.js): it already reads the hero blow (blow), and an elite is not a boss',
   'BLM.leechTake': 'THE BOG LEECH (src/bog-leech.js), a common fen foe: its own mode (lurk, latched, rear, home) gates the blow, and a leech is not a boss (claude/fenroad2)',
   'CNF.grindylowTake': 'THE GRINDYLOW, a common canal foe', 'CNF.wispTake': 'THE WILL-O-WISP, a common canal foe', 'FWR.wraithTake': 'THE FOG WRAITH, a common towpath foe (light, not the blow, makes it solid: claude/towpath2)',
