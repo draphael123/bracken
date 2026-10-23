@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,21 @@ env:
 permissions:
   contents: read
 jobs:
+  paladin-boot:
+    if: inputs.mode == 'paladin-boot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/paladin-boot-bake-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: paladin-boot
+          path: gate-data/
   hero-reuse:
     if: inputs.mode == 'hero-reuse'
     runs-on: ubuntu-latest
