@@ -228,7 +228,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools: [], falls: [], moversExtra: [],
     foeHit: { hornet: 0.6 },   /* a nest hornet's sting is the river wasp's machine at three-fifths its blow (they are many here) */
-    hornetsNest: true, combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
+    hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 403, [150, 180, 90], 0.10]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine */
     music: 'hornetnest',   /* claude/hornetmusic: "Cathedral in the forest (ambient loop)" by congusbongus, CC0 */
