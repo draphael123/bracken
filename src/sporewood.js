@@ -255,6 +255,7 @@ export function buildSporewood({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 + DY }, pools, falls: [], moversExtra: caps,
     arena, sporewood2: true,
+    reskin: { shield: 'myconidguard', brute: 'capbrute' },   /* (claude/sporewood2art) THEME FIT: the goblin heavies are the wood's own people - art + names only, src/main.js gives the skin at spawn (so the level's hash is the greybox's) */
     knot: { x: MX * TS + 8, y: (F + DY) * TS - 118 },   /* THE MOTHER'S KNOT: the landmark's anchor (src/redraw/sporewood_knot.js) and her knot's place */
     reachDoors: [{ x0: 379, x1: 380, y0: 5 + DY, y1: 8 + DY }],   /* the root knot's door (optional: the fill counts it open; the knot is plunged, src/sporewood-hands.js) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
@@ -269,14 +270,14 @@ export function buildSporewood({ painter, T, TS }) {
     ],
     duskStart: -1, duskLen: 1, music: 'sporewood', night: false, glowNight: true,   /* "Mysterious Ambience (song21)" by cynicmusic, CC0 - SPOREWOOD's own theme (audio/CREDITS.txt) */
     interiors: [],
-    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(120,160,140,0.2)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#2a1f38', '#3a2a4c', '#4e3a64', '#66507e'] },
+    palette: { sky: [[64, 96, 112], [150, 190, 160]], near: 'mushroom', myc: true, dress: 'myc', haze: 'rgba(150,170,130,0.1)', grass: '#4a8a4a', grassL: '#7ac860', grassD: '#2f5e3a', dirt: '#4a3a3c', dirtL: '#5e4c4a', dirtD: '#33262a', canopy: ['#2a1f38', '#3a2a4c', '#4e3a64', '#66507e'] },
     weather: [{ x0: 0, x1: 99999, kind: 'spore' }],
     /* the glade's insects, the hollows' drip, the larder's silence, her hollow's heartbeat - one bed a place (art lane: own beds; the drip until then) */
     ambient: [{ x0: 0, x1: 99999, kind: 'drip' }],
     /* THE DARK: the Lantern Hollows (the canopy over them), and the knot's cellar */
     dark: 0.01, darkZones: [{ x0: 104 * TS, x1: 198 * TS, y0: (14 + DY) * TS, y1: 44 * TS, dark: 0.86 }, { x0: 378 * TS, x1: 387 * TS, y0: (5 + DY) * TS, y1: (10 + DY) * TS, dark: 0.7 }],
     /* the wood sickens toward her: violet over the glade, deeper in the hollows, the larder's grey-green, her pink (the seam into the Rootway past her) */
-    tints: [[-24, 100, [120, 200, 140], 0.08], [100, 198, [110, 80, 180], 0.12], [198, 298, [150, 90, 200], 0.12], [298, 358, [120, 150, 110], 0.13], [358, 408, [190, 80, 160], 0.14], [408, W + 24, [200, 60, 150], 0.15]],
+    tints: [[-24, 100, [150, 190, 120], 0.05], [100, 198, [50, 70, 120], 0.1], [198, 298, [130, 160, 80], 0.07], [298, 358, [150, 150, 130], 0.08], [358, 408, [180, 90, 70], 0.09], [408, W + 24, [130, 50, 120], 0.11]],   /* (claude/sporewood2art: earth and fungus, one place at a time - no longer one violet wash) */
     reachExact: false,
   };
 }

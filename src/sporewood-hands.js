@@ -16,7 +16,7 @@
 //                  (hold jump: higher; plunge onto it: highest). It grows back. THE MOTHER's spore bloom and her brood make the same spring spores (addSpring).
 //     ROOT KNOT    (ent 'rootknot') opens only FROM ABOVE: a plunge onto it opens its root door (stays open). A blade on it clanks FROM ABOVE (B10/B14).
 // Every capital line it says goes through ctx.number with a line listed in SPW_SAY (and src/hint-lines.js).
-import { SPRING_MOVE } from './hero-move.js';
+import { SPRING_MOVE } from './hero-move.js'; import * as SW2ART from './redraw/sporewood2_world.js';
 export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.08, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
 export const SPW_SAY = {
   lit: 'THE LANTERN CAP LIGHTS', dazzled: 'DAZZLED', dark: 'THIS BUD IS DARK: LIGHT A LANTERN CAP', mend: 'THE SPORES MEND YOU', spring: 'A SPRING SPORE',
@@ -154,38 +154,10 @@ export function makeSporewoodHands(ctx) {
     return null;
   };
 
-  /* ---------- DRAWING (greybox: the art pass gives the puffs, spores, knots and caps their own sprites) ---------- */
-  const R = Math.round;
-  function drawPuff(g, x, b, col, hi, time, k) { const w = 12, h = 11, bob = R(Math.sin(time * 2 + x) * 0.6);
-    g.fillStyle = 'rgba(20,14,24,0.6)'; g.fillRect(x - w / 2 - 1, b - h - 1 + bob, w + 2, h + 1);
-    g.fillStyle = col; g.fillRect(x - w / 2, b - h + bob, w, h); g.fillRect(x - w / 2 + 2, b - h - 2 + bob, w - 4, 2);
-    g.fillStyle = hi; g.fillRect(x - 3, b - h + 1 + bob, 3, 2); if (k) { g.fillStyle = '#ffffff'; g.fillRect(x + 2, b - h + 3 + bob, 1, 1); } }
+  /* ---------- DRAWING (src/redraw/sporewood2_world.js, the art pass) ---------- */
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return;
-    /* MEND PUFFS: a pale green puffball breathing spores; a green cloud while it mends */
-    for (const q of S.mends) { const x = R(q.x - cx), b = R(q.y - cy); if (x < -30 || x > VW + 30) continue;
-      if (q.state === 'whole') { drawPuff(g, x, b, '#8fc070', '#dfffa0', time, true); if (Math.floor(time * 2 + q.x) % 3 === 0) { g.fillStyle = '#c9ffb0'; g.fillRect(x - 1 + R(Math.sin(time * 3) * 3), b - 16 - R((time * 8) % 6), 1, 1); } }
-      else if (q.state === 'mending') { const k = Math.min(1, q.t / (SP.mendT + 0.6)); g.globalAlpha = 0.5 * (1 - k); g.fillStyle = '#a6e04a'; g.beginPath(); g.ellipse(x, b - 10, 14 + 10 * k, 9 + 6 * k, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
-      else { g.fillStyle = '#4a5a3a'; g.fillRect(x - 4, b - 2, 8, 2); } }
-    /* PUFFBALLS: a violet-grey puffball; gone, a stump */
-    for (const q of S.puffs) { const x = R(q.x - cx), b = R(q.y - cy); if (x < -30 || x > VW + 30) continue;
-      if (q.state === 'whole') drawPuff(g, x, b, '#b8a8c8', '#efe6ff', time, false); else { g.fillStyle = '#5a4a5e'; g.fillRect(x - 3, b - 2, 6, 2); } }
-    /* SPRING SPORES: a hovering disc of spores with a bright rim (the bounce cap's read), fading as it goes */
-    for (const s of S.springs) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; const a = Math.min(1, s.life / 1.2), sq = s.t > 0 ? (s.t -= 1 / 60) * 6 : 0;
-      g.globalAlpha = 0.35 * a; g.fillStyle = '#c9a0ff'; g.beginPath(); g.ellipse(x, y + 2, 16, 7, 0, 0, 7); g.fill();
-      g.globalAlpha = 0.9 * a; g.fillStyle = '#efe6ff'; g.fillRect(x - SP.springW, y - 4 + R(sq), SP.springW * 2, 2); g.fillStyle = '#9a5aa8'; g.fillRect(x - SP.springW + 2, y - 2 + R(sq), SP.springW * 2 - 4, 2);
-      for (let i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#fff1ff' : '#c9a0ff'; g.fillRect(x - 10 + i * 5, y - 6 - R(Math.abs(Math.sin(time * 4 + i)) * 3), 1, 1); }
-      g.globalAlpha = 1; }
-    /* ROOT KNOTS: a gnarl of roots with a gold seam on top while shut (the target first: a dotted line straight down onto it) */
-    for (const k of S.knots) { const x = R(k.px - cx), b = R(k.py - cy); if (x < -30 || x > VW + 30) continue;
-      if (!k.open) { g.fillStyle = '#3a2a24'; g.fillRect(x - 9, b - 10, 18, 10); g.fillStyle = '#6a5446'; g.fillRect(x - 8, b - 9, 16, 3); g.fillRect(x - 5, b - 12, 10, 2);
-        const gl = Math.floor(time * 3) % 2; g.fillStyle = gl ? '#fff1a8' : '#ffd36b'; g.fillRect(x - 4, b - 13, 8, 1); g.fillStyle = 'rgba(255,233,160,0.45)'; for (let y = b - 40; y < b - 16; y += 5) g.fillRect(x, y, 1, 2);
-        g.fillStyle = '#ffd36b'; g.fillRect(x - 2, b - 44, 5, 1); g.fillRect(x - 1, b - 43, 3, 1); g.fillRect(x, b - 42, 1, 1); }
-      else { g.fillStyle = '#2a1e18'; g.fillRect(x - 9, b - 3, 18, 3); } }
-    /* THE BUDS' OWN MARKS: a dark bud unlit is a dim violet with a closed eye; a seed cap shows its seed (a gold fleck) while it waits for a blow */
-    for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !(m.dark || m.seed)) continue; const x = R(m.x + m.w / 2 - cx), y = R(m.y - cy); if (x < -30 || x > VW + 30) continue;
-      if (m.dark && !m.lit && m.state === 'bud') { g.fillStyle = 'rgba(40,20,60,0.55)'; g.fillRect(x - 15, y - 2, 30, 8); g.fillStyle = '#7a5aa8'; g.fillRect(x - 3, y + 1, 6, 1); }
-      if (m.seed && m.state === 'bud' && !(m.cd > 0) && !m.noSeed) { const gl = Math.floor(time * 3 + m.x) % 2; g.fillStyle = gl ? '#fff1a8' : '#ffd36b'; g.fillRect(x - 2, y - 4, 4, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 1, y - 6, 2, 2); } }
+    SW2ART.drawWorld(g, S, SP, cx, cy, VW, VH, time);   /* (claude/sporewood2art) the puffs, spring spores and root knots, drawn (src/redraw/sporewood2_world.js); the buds' and seed caps' own marks are in drawGrowcap */
     /* the area banner */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(24,12,30,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
       g.fillStyle = '#c9a0ff'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); ctx.text(S.banner.name, VW / 2, 31, '#efe6ff', 'center'); g.globalAlpha = 1; }
