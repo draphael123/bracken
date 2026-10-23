@@ -89,9 +89,9 @@ export function makeMotherCap(ctx) {
     const p = P0(), f = A().floor, a = A();
     if (k === 'lash') { e.mode = 'lashTell'; e.modeT = MC.lash.tell * (e.phase >= 2 ? 0.85 : 1); e.lashDir = p && p.x < e.x ? -1 : 1; e.lashBoth = e.phase >= 2; ctx.number(e.x, f - 140, '!!', '#ff6b6b'); say(e.x, f - 152, 'lash', '#ff9b6b'); ctx.sfx.crack && ctx.sfx.crack(); }
     else if (k === 'crush') { e.mode = 'crushTell'; e.modeT = MC.crush.tell; const tx = Math.max(a.x0 + 20, Math.min(a.x1 - 20, p ? p.x : e.x)); e.crushX = tx; ctx.number(tx, f - 40, '!!', '#ff6b6b'); say(tx, f - 52, 'crush', '#ff9b6b'); ctx.sfx.buzz && ctx.sfx.buzz(); }
-    else if (k === 'bloom') { e.mode = 'bloomTell'; e.modeT = MC.bloom.tell; const bx = Math.max(a.x0 + 20, Math.min(a.x1 - 20, p ? p.x : e.x)), by = p ? p.y - 12 : f - 12; (e.blooms = e.blooms || []).push({ x: bx, y: by, t: 0, live: false, tickT: 0 }); ctx.number(bx, by - 30, '!', '#ffd36b'); say(bx, by - 42, 'bloom', '#e0b0f0'); ctx.sfx.puff && ctx.sfx.puff(); }
+    else if (k === 'bloom') { e.mode = 'bloomTell'; e.modeT = MC.bloom.tell; const bx = Math.max(a.x0 + 20, Math.min(a.x1 - 20, p ? p.x : e.x)), by = p ? p.y - 12 : f - 12; (e.blooms = e.blooms || []).push({ x: bx, y: by, t: 0, live: false, tickT: 0 }); ctx.number(bx, by - 30, '!!', '#ff6b6b'); say(bx, by - 42, 'bloom', '#e0b0f0'); ctx.sfx.puff && ctx.sfx.puff(); }
     else if (k === 'wither') { const up = seeds().filter(m => m.state === 'up'); const tgt = up.sort((m1, m2) => Math.abs(m1.x + 16 - (p ? p.x : e.x)) - Math.abs(m2.x + 16 - (p ? p.x : e.x)))[0];
-      if (!tgt) return begin(e, 'bloom'); e.mode = 'witherTell'; e.modeT = MC.wither.tell; e.witherCap = tgt; tgt.shiver = MC.wither.tell; ctx.number(tgt.x + 16, tgt.y - 16, '!', '#ffd36b'); say(tgt.x + 16, tgt.y - 28, 'wither', '#c9a0ff'); ctx.sfx.hiss && ctx.sfx.hiss(); }
+      if (!tgt) return begin(e, 'bloom'); e.mode = 'witherTell'; e.modeT = MC.wither.tell; e.witherCap = tgt; tgt.shiver = MC.wither.tell; say(tgt.x + 16, tgt.y - 28, 'wither', '#c9a0ff'); ctx.sfx.hiss && ctx.sfx.hiss(); }
     else if (k === 'brood') { e.mode = 'broodTell'; e.modeT = MC.brood.tell; ctx.number(e.x, f - 140, '!', '#ffd36b'); say(e.x, f - 152, 'brood', '#e0b0f0'); ctx.sfx.squelch && ctx.sfx.squelch(); }
   }
   function release(e) {

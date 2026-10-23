@@ -17,7 +17,7 @@
 //     ROOT KNOT    (ent 'rootknot') opens only FROM ABOVE: a plunge onto it opens its root door (stays open). A blade on it clanks FROM ABOVE (B10/B14).
 // Every capital line it says goes through ctx.number with a line listed in SPW_SAY (and src/hint-lines.js).
 import { SPRING_MOVE } from './hero-move.js';
-export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.2, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
+export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.1, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
 export const SPW_SAY = {
   lit: 'THE LANTERN CAP LIGHTS', dazzled: 'DAZZLED', dark: 'THIS BUD IS DARK: LIGHT A LANTERN CAP', mend: 'THE SPORES MEND YOU', spring: 'A SPRING SPORE',
   seed: 'THE SEED CAP GROWS', knot: 'THE KNOT OPENS', above: 'FROM ABOVE',
@@ -141,10 +141,16 @@ export function makeSporewoodHands(ctx) {
       if (lt) { const side = px <= lt.x ? -1 : 1; return { x: lt.x + side * 14, y: lt.y, key: 'atk', face: -side, r: 16 }; } }
     /* a WEB across the way, at his height, within three tiles ahead: stand off it and cut it (one cut clears the curtain) */
     if (ctx.tileAt) for (const dir of [1, -1]) { const tx0 = Math.floor(px / TS), ty = Math.floor((py - 4) / TS); for (let d = 1; d <= 3; d++) { const tx = tx0 + dir * d; if (ctx.tileAt(tx, ty) === ctx.T.WEB || ctx.tileAt(tx, ty - 1) === ctx.T.WEB) { if (dir < 0 && !(route && route.some(([rx]) => rx < tx0 - 1))) break; return { x: tx * TS + 8 - dir * 18, y: py, key: "atk", face: dir, r: 4 }; } } }
-    /* a seed cap ahead on his floor, not grown: strike it from beside */
-    for (const m of ctx.movers().filter(q => q.kind === 'growcap' && q.seed && !q.mother && q.state === 'bud' && !(q.cd > 0)).sort((a, b) => a.x - b.x)) { const cx = m.x + m.w / 2;
-      if (cx < px - 4 * TS || cx > px + 12 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;
-      return { x: m.x - 8, y: m.y0 + 8, key: 'atk', face: 1, r: 14 }; }
+    /* THE SEED STAIR (not her hollow's): standing on the low step, struck - the pair grows and the low one lifts him; up, a hop to the high one */
+    for (const lo of ctx.movers().filter(q => q.kind === 'growcap' && q.seed && !q.mother && q.pair)) {
+      const pair = ctx.movers().filter(q => q.kind === 'growcap' && q.seed && q.pair === lo.pair).sort((a, b) => a.rise - b.rise); if (pair[0] !== lo) continue; const hi = pair[pair.length - 1];
+      const cx = lo.x + lo.w / 2; if (cx < px - 4 * TS || cx > px + 12 * TS) continue;
+      if (P.onMover === hi) return null;
+      if (P.onMover === lo && lo.state === 'up' && hi.state === 'up') return { x: lo.x + lo.w / 2, y: lo.y, hop: Math.sign(hi.x - lo.x) || 1, hold: 22, land: hi.x + hi.w / 2, r: 4 };
+      const dir = Math.sign(hi.x - lo.x) || 1;
+      if (P.onMover === lo && lo.state === 'bud' && !(lo.cd > 0)) return { x: P.x, y: P.y, key: 'atk', face: dir, r: 4 };   /* on the low bud: strike, facing the high one - the pair grows, the low one lifts him */
+      if (P.onMover === lo) return { x: P.x, y: P.y, key: null, hold: true, r: 4 };
+      if (lo.state === 'bud' && !(lo.cd > 0) && hi.state === 'bud' && Math.abs(lo.y0 + 8 - py) < 2 * TS) return { x: dir > 0 ? lo.x - 10 : lo.x + lo.w + 10, y: lo.y0 + 8, hop: dir, hold: 7, land: lo.x + lo.w / 2, r: 14 }; }   /* (a bud is landed on from above: a hop onto it) */
     return null;
   };
 
