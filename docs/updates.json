@@ -1,6 +1,18 @@
 [
   {
     "date": "2026-10-23",
+    "batch": 116,
+    "lines": [
+      "The Hornet's Nest: a new side path off the Lumber Trail - climb a giant paper nest",
+      "Cut comb to make steps, and carry smoke pots to quiet the swarms",
+      "The Hornet Queen returns: perch dives, smoke, a falling nest and the great pine",
+      "New music for the Nest and her fight",
+      "King Gorm: bigger cages you can drop any time, and a longer burning escape",
+      "Gorm now waits for you in the glade (bug fix)"
+    ]
+  },
+  {
+    "date": "2026-10-23",
     "batch": 115,
     "lines": [
       "Kingswood rebuilt: the King's Hunting Wood",
