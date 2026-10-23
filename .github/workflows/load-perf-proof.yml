@@ -6,6 +6,12 @@ on:
         type: choice
         options: [profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
+      baseline:
+        type: string
+        default: '5e44cddd'
+      control:
+        type: boolean
+        default: false
       pixel_cpu:
         type: boolean
         default: false
