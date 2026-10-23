@@ -18,17 +18,17 @@ jobs:
         with:
           node-version: '24.11.1'
       - name: Keep the diagnostic collector outside the frozen source checkout
-        run: cp tools/native-memory-trace.mjs /tmp/bracken-native-memory-trace.mjs
+        run: cp tools/native-allocation-profile.mjs /tmp/bracken-native-allocation-profile.mjs
       - name: Use the exact failing audit source
         run: |
           git checkout --detach 3ea61398a0164d0acd1b3e0a8e481b604dfa62eb
-          cp /tmp/bracken-native-memory-trace.mjs tools/native-memory-trace.mjs
+          cp /tmp/bracken-native-allocation-profile.mjs tools/native-allocation-profile.mjs
           node --input-type=module <<'JS'
           import fs from 'node:fs';
           const p='tools/mark-integrity.mjs';let s=fs.readFileSync(p,'utf8');
           const needle="    await pg.send('Memory.simulatePressureNotification',{level:'critical'});";
           if(s.split(needle).length!==2)throw Error('ordered fight boundary changed');
-          s="import {nativeMemoryTrace} from './native-memory-trace.mjs';\n"+s;
+          s="import {nativeAllocationProfile as nativeMemoryTrace} from './native-allocation-profile.mjs';\n"+s;
           s=s.replace('const fails = [], report = [];','const trace = await nativeMemoryTrace(pg);\nconst fails = [], report = [];');
           s=s.replace(needle,'    await trace.sample(row.t);\n'+needle);
           s=s.replace('} finally { pg.close(); }','} finally { await trace.close(); pg.close(); }');
