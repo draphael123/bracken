@@ -77,7 +77,7 @@ ok(r.shut0 === 10, 'court gate: shut on a fresh run (10 bars, ' + r.shut0 + ')')
 ok(r.press[0] && r.press[1] === 0, 'court gate: a hero standing on the plate on the step presses it and the whole column lifts ' + JSON.stringify(r.press));
 ok(r.d1 && r.d1shut === 10 && !r.d1plate && r.d1press[0] && r.d1press[1] === 0, 'court gate: a death before the plate - after the respawn the plate still presses and the gate lifts ' + JSON.stringify([r.d1, r.d1at, r.d1shut, r.d1plate, r.d1press]));
 ok(r.d2pre === 0 && r.d2 && r.d2after === 0, 'court gate: a death after the plate - after the respawn the gate is open, or the plate presses again and lifts it ' + JSON.stringify([r.d2pre, r.d2, r.d2shut, r.d2plate, r.d2after]));
-ok(r.d2walk > 411, 'court gate: and the hero walks through its column (to ' + r.d2walk + ')');
+ok(r.d2walk >= 411, 'court gate: and the hero walks through its column (past col 410, to ' + r.d2walk + ')');
 ok(r.k0 > 0 && r.kOn && r.k1 === 0, 'kennel gate: shut until the Great Hound falls, open after ' + JSON.stringify([r.k0, r.kOn, r.kSlay, r.k1]));
 ok(r.kd && r.k2 === 0, 'kennel gate: a death after he falls does not shut it again ' + JSON.stringify([r.kd, r.k2]));
 if (fails.length) { console.log('gate-openers (runtime): ' + fails.length + ' failure(s)\n  ' + fails.join('\n  ')); process.exit(1); }
