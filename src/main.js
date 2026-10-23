@@ -33881,8 +33881,8 @@ function drawHeroCard() { // who you are right now: the numbers behind the bars
   const ch = PROG.charm && PROG.charms[PROG.charm] ? (CHARMS.find(c => c.id === PROG.charm) || {}).name : 'NONE';
   const cleared = LEVELS.filter(l => !l.hidden && PROG[l.id] && PROG[l.id].cleared).length, total = LEVELS.filter(l => !l.hidden).length;
   const rows = [['health', String(P.maxHp)], ['stamina', String(P.maxSt)], ['damage', String(swordDmg())], ['sword', sword().name], ['skill  F', skName], ['skill  G', sk2Name], ['charm', ch], ['skin', (skinById(PROG.skin) || {}).name || ''], ['levels', cleared + ' / ' + total], ['gold / silver', PROG.coins + ' / ' + silverAvail() + ' spare']];
-  rows.forEach(([a, b], i) => { const yy = rowY + i * 10; text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
-  if (SC.heroLine(hero())) text(SC.heroLine(hero()), VW / 2, y + h - 44, '#c8b6ff', 'center', 6);   /* (claude/secrets) a hero a secret carries says so */
+  rows.forEach(([a, b], i) => { const yy = rowY + i * (loop.length > 2 ? 8 : 10); text(a, x + 62, yy, '#9aa39a'); text(b, x + w - 8, yy, '#fff6e0', 'right'); });
+  if (SC.heroLine(hero())) ['FOUND ON', 'A HIDDEN', 'PATH'].forEach((ln, i) => text(ln, x + 30, y + 64 + i * 8, '#c8b6ff', 'center', 6));   /* (claude/secrets) a hero a secret carries says so */
   { const tr = 'level ' + heroLevel() + ' (' + (xpFloor(heroLevel() + 1) - heroXp()) + ' xp to next)   passives ' + passiveLadder(hero()).filter(n => passiveOn(PROG, hero(), n.id, heroLevel())).length + '/' + passiveLadder(hero()).length + '   flasks ' + (P.flasks | 0) + '/' + SV.flaskMax(PROG);
     text(tr, VW / 2, y + h - 34, '#8fd160', 'center', 6);
     text('Q  SKILLS AND LOADOUT', VW / 2, y + h - 24, UI.gold, 'center', 6);
