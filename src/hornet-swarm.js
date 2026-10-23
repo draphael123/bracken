@@ -8,7 +8,7 @@
 //     drifts home, quiet, for SWARM.calmHold s after the smoke has left it. Struck while it is quiet it scatters easily (x SWARM.calmK).
 //   A BLADE THINS IT: it has health like anything else (never an immune body); a thinner cloud is drawn thinner.
 // X = { heroes(), calm(x, y) -> bool, drainOn(e, pp), drainOff(e, pp), mark(e, txt, col), sfx, hint(id, msg) }
-export const SWARM = { hp: 16, w: 22, h: 18, wake: 60, leash: 90, speed: 30, drain: 0.038, rise: 0.6, calmK: 2, calmHold: 2.5, sink: 10, r: 13, home: 40, burst: 3.5, settle: 2.5 };   /* burst: s of stinging before it SETTLES (settle s, quiet, told) - a swarm comes in bursts */
+export const SWARM = { hp: 16, w: 22, h: 18, wake: 64, leash: 104, speed: 36, drain: 0.04, rise: 0.6, calmK: 2, calmHold: 2.5, sink: 10, r: 13, home: 40, burst: 3.5, settle: 2.5 };   /* burst: s of stinging before it SETTLES (settle s, quiet, told) - a swarm comes in bursts */
 export const SWARM_SAY = { rise: '!!', calm: 'THE SWARM GOES QUIET', stung: 'THE SWARM IS ON YOU: WALK OUT, OR SMOKE IT', scatter: 'SCATTERED', settle: 'THE SWARM SETTLES' };
 export const SWARM_HINT = 'A SWARM STINGS WHILE YOU STAND IN IT. WALK OUT OF IT - IT IS SLOW - OR CARRY A SMOKE POT THROUGH IT: IT GOES QUIET.';
 /* THE POSE IDS (the art lane's contract): 0 IDLE (a loose cloud) 1 RISE (bunched, red - the tell) 2 ANGRY (streaming at you) 3 CALM (grey, sunk, slow) 4 hurt */
