@@ -9,6 +9,29 @@ on:
 permissions:
   contents: read
 jobs:
+  remaining:
+    if: inputs.mode == 'remaining'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [normal-health, tower-chase, harvest-fair]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/standingreds-proof.mjs "$CHECK" gate-data/remaining
+        env:
+          CHECK: ${{ matrix.check }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: remaining-${{ matrix.check }}
+          path: gate-data/
   server-lease:
     if: inputs.mode == 'server-lease' || inputs.mode == 'server-only'
     runs-on: ubuntu-latest
