@@ -13,8 +13,9 @@ function hqPlan0(s) {
   const seenFor = (key, d = s.v2 ? 0 : PLAN.react) => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= d; };
   const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, rng() < pr); return mem.roll.get(key); };
   const half = HQ.w / 2, dx = Math.abs(e.x - P.x);
-  const hitR = reach + half - 4, inReach = () => Math.abs(e.x - P.x) < hitR && e.y > P.y - 40 && e.y - HQ.h < P.y + 2;
-  const swing = () => { out.face = Math.sign(e.x - P.x) || out.face; out.atk = P.atk < 0; };
+  /* in reach: level with the swing, or a little over it - the RISING CUT (UP+X) takes her there (a perch she is stuck in, her low pass) */
+  const hitR = reach + half - 4, inReach = () => Math.abs(e.x - P.x) < hitR && e.y > P.y - 58 && e.y - HQ.h < P.y + 2;
+  const swing = () => { out.face = Math.sign(e.x - P.x) || out.face; out.atk = P.atk < 0; out.up = e.y < P.y - 16; };
   /* 0. a jump is carried through (a jump attack: the swing comes at the top of it) */
   if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.6) { out.gx = mem.jumpX; out.why = 'in the air'; if (mem.jumpAtk && Math.abs(e.y - HQ.h / 2 - (P.y - 14)) < 22 && dx < hitR + 4) swing(); return out; }
   const jumpTo = (x, atk, why) => { out.jump = P.ground; out.gx = x; mem.jumpT = t; mem.jumpX = x; mem.jumpAtk = !!atk; out.why = why; return out; };
@@ -39,6 +40,7 @@ function hallPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   if (hqOpen(e)) {
     if (P.held) { out.talk = true; out.why = 'set the pot down: she is open'; return out; }
     const sp = perches.find(p => Math.abs(e.y - p.y) < 4 && e.x > p.x0p - 4 && e.x < p.x1p + 4);
+    if (sp && onPerch !== sp && inReach()) { swing(); out.gx = P.x; out.why = 'a rising cut at her perch'; return out; }
     if (sp && onPerch !== sp) { const gx = Math.max(sp.x0p + 4, Math.min(sp.x1p - 4, e.x - side * (half + 2)));
       if (P.ground && P.y > sp.y + 4 && Math.abs(P.x - gx) < 26) return jumpTo(gx, true, 'up onto her perch');
       out.gx = gx; out.why = 'to her perch'; return out; }
@@ -46,33 +48,34 @@ function hallPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   /* B. HER TELLS (a reaction late) - before her ward: she strikes through it */
   if (e.mode === 'sweepTell' || e.mode === 'sweep') {
     if (onPerch) { out.gx = P.x; out.why = 'the sweep passes under the perch'; return out; }
-    if (seen && !miss) { if (s.shield && !roll(tellKey + 'b', 0.3)) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the sweep'; return out; }
+    if (seen && !miss) { if (s.shield && roll(tellKey + 'b', 0.35)) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the sweep'; return out; }
       const coming = e.mode === 'sweep' && (P.x - e.x) * (e.vx || 0) > 0 && dx < 46; if (coming) return jumpTo(P.x + Math.sign(e.vx || 1) * 8, false, 'jump the sweep'); }
     out.gx = P.x; out.why = 'the sweep: ready'; return out; }
   if (e.mode === 'aim' || e.mode === 'dive') {
     if (e.mode === 'aim') {
       if (s.shield) { out.gx = P.x; out.face = Math.sign(e.x - P.x) || 1; out.why = 'her aim: shield ready'; return out; }
-      if (P.held) { out.gx = P.x; out.why = 'her aim: the pot in hand'; return out; }
+      if (P.held && !((e.smokeCd || 0) > 0)) { out.gx = P.x; out.why = 'her aim: the pot in hand'; return out; }
       if (!onPerch && lowNear) { const gx = (lowNear.x0p + lowNear.x1p) / 2; if (P.ground && Math.abs(P.x - gx) < 30) return jumpTo(gx, false, 'onto a perch: bait the dive'); out.gx = gx; out.why = 'to a perch: bait the dive'; return out; }
       out.gx = P.x; out.why = 'on the perch: wait for the stoop'; return out; }
     /* the stoop: a shield takes it; on a perch, leave LATE (her sting goes in the comb); with a pot, let it come (the smoke takes her) */
     const toward = (e.vy || 0) > 0, eta = Math.max(0, P.y - e.y) / Math.max(60, e.vy || 1);
     if (s.shield && seenFor('dv' + S.act, 0.12)) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the dive'; return out; }
-    if (P.held) { out.gx = P.x; out.why = 'the dive meets the smoke'; return out; }
+    if (P.held && !((e.smokeCd || 0) > 0)) { out.gx = P.x; out.why = 'the dive meets the smoke'; return out; }
     if (toward && eta < PLAN.leave + (s.v2 ? 0 : 0.05) && dx < 40) { if (s.dodge) { out.dodge = true; out.gx = P.x + side * 40; out.why = 'leave late: roll'; return out; } return jumpTo(P.x + side * 40, false, 'leave late: jump'); }
     out.gx = P.x; out.why = 'the stoop: hold'; return out; }
   if (e.mode === 'buzzTell' && onPerch && onPerch.st === 'shake') { out.gx = onPerch.x0p - 20 > H.x0 ? onPerch.x0p - 20 : onPerch.x1p + 20; out.why = 'off the shaking perch'; return out; }
   /* HER BROOD'S DRONES: a cut at one in reach while she is not on you */
   const add = (s.adds || []).filter(a => Math.abs(a.x - P.x) < reach + 8 && a.y > P.y - 40 && a.y < P.y + 4).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
   if (add && !P.held) { out.face = Math.sign(add.x - P.x) || out.face; out.atk = P.atk < 0; out.gx = P.x; out.why = 'cut a drone'; return out; }
-  if (S.ward > 0 || e.mode === 'thrash') { out.gx = e.x + side * 44; out.why = 'her ward: off her'; return out; }
+  if (S.ward > 0 || e.mode === 'thrash') { if (inReach()) { swing(); out.gx = P.x; out.why = 'a cut through her ward'; return out; } out.gx = e.x + side * 44; out.why = 'her ward: off her'; return out; }
   /* C. A PULSING CELL: smash it while she is not on you */
   const cell = S.cells.find(c => c.st === 'pulse'); if (cell && (e.mode === 'hover' || e.mode === 'rise' || e.mode === 'buzz' || e.mode === 'buzzTell')) {
     if (Math.abs(cell.y - P.y) > 6 && P.ground && Math.abs(P.x - cell.x) < 22) return jumpTo(cell.x, true, 'up to the cell');
     out.gx = cell.x - Math.sign(cell.x - P.x || 1) * 10; out.face = Math.sign(cell.x - P.x) || out.face; if (Math.abs(P.x - cell.x) < reach + 6 && Math.abs(cell.y - P.y) < 6) out.atk = P.atk < 0; out.why = 'smash the pulsing cell'; return out; }
   /* D. SMOKE, for the no-shield heroes: a pot in hand before her next dive */
   if (smoker && !P.held && (e.smokeCd || 0) <= 0 && s.stands && s.stands.length) { const st = s.stands.slice().sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-    if (Math.abs(st.x - P.x) < 180) { out.gx = st.x; if (Math.abs(st.x - P.x) < 8 && P.ground && Math.abs(st.y - P.y) < 10) out.talk = true; out.why = 'take a smoke pot'; return out; } }
+    if (Math.abs(st.x - P.x) < 180) { out.gx = st.x; if (P.ground && P.y < st.y - 10 && Math.abs(st.x - P.x) < 30) { out.drop = true; out.why = 'down off the perch to the pot'; return out; }
+      if (Math.abs(st.x - P.x) < 8 && P.ground && Math.abs(st.y - P.y) < 10) out.talk = true; out.why = 'take a smoke pot'; return out; } }
   /* E. IN REACH (she hangs low after a pull-up): a cut, her shell or not */
   if (inReach() && (e.mode === 'skim' || e.mode === 'rise')) { swing(); out.gx = P.x; out.why = 'a cut as she rises'; return out; }
   /* F. stand by a perch, ready to go up onto it */
@@ -83,6 +86,7 @@ function hallPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
 /* THE FALLING NEST: the ledges down, one after another, out of the rings */
 function escapePlan(s, out, mem, t) {
   const { P, S } = s, X = S.G.x; if (!X) { out.why = 'no escape'; return out; }
+  if (P.held) { out.talk = true; out.why = 'set the pot down: the nest is falling'; return out; }
   if (P.y <= X.top + 2 && P.x < X.x0) { out.gx = X.x0 + 24; out.why = 'out of the hall'; return out; }
   if (P.y >= X.bottom - 2) { out.gx = S.G.p.trigger + 40; out.why = 'into the clearing'; return out; }
   const below = X.ledges.filter(l => l.y > P.y + 2).sort((a, b) => a.y - b.y), next = below[0];
@@ -102,13 +106,20 @@ function pinePlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
   if (P.held) { out.talk = true; out.why = 'set the pot down'; return out; }
   { const fall = S.pines.find(p => p.st === 'fall' && P.x > Math.min(p.x + p.dir * 8, p.x + p.dir * p.len * 16) - 8 && P.x < Math.max(p.x + p.dir * 8, p.x + p.dir * p.len * 16) + 8);
     if (fall) { out.gx = fall.x - fall.dir * 20; out.why = 'out of the falling pine'; return out; } }
+  const inLine = p => { const a = p.x + p.dir * 8, b = p.x + p.dir * p.len * 16; return P.x > Math.min(a, b) - 8 && P.x < Math.max(a, b) + 8; };
+  const primedOver = S.pines.find(p => p.st === 'stand' && p.hp <= 1 && inLine(p) && Math.abs(p.x - P.x) < reach + 24);
+  if (primedOver && (hqOpen(e) || inReach())) { out.gx = primedOver.x - primedOver.dir * 20; out.why = 'out of a primed pine\'s line'; return out; }
   /* A. STINGERS in the air: a shield takes them; else off their line */
   const st = S.stingers.find(q => Math.abs(q.x - P.x) < 70 && q.y < P.y && (P.x - q.x) * q.vx >= -4);
   if (st) { if (s.shield) { out.block = true; out.face = Math.sign(st.x - P.x) || 1; out.why = 'block the stingers'; return out; } if (s.dodge && !roll('vd' + S.act, 0.3)) { out.dodge = true; out.gx = P.x + side * 40; out.why = 'roll the stingers'; return out; } }
   /* B. OPEN: strike her */
   if (hqOpen(e)) { out.gx = e.x + side * (half + reach * 0.5); if (inReach()) swing(); out.why = 'strike her: ' + (OPEN_NAME[e.mode] || 'open').toLowerCase(); return out; }
   /* C. HER DIVE: a shield takes it; else leave late */
-  if (e.mode === 'aim' && seen && !miss) { out.gx = P.x; out.face = Math.sign(e.x - P.x) || 1; out.why = 'her aim'; return out; }
+  if (e.mode === 'aim' && seen && !miss) {
+    /* WOOD UNDER HER STOOP: a felled trunk lying near - stand on its line (she sticks in it); a shield takes it anywhere */
+    const tr = s.shield ? null : S.pines.filter(p => p.st === 'down').map(p => { const a = p.x + p.dir * 8, b = p.x + p.dir * p.len * 16; return { lo: Math.min(a, b) + 10, hi: Math.max(a, b) - 10 }; }).filter(z => Math.abs((z.lo + z.hi) / 2 - P.x) < 140).sort((a, b) => Math.abs((a.lo + a.hi) / 2 - P.x) - Math.abs((b.lo + b.hi) / 2 - P.x))[0];
+    if (tr) { out.gx = Math.max(tr.lo, Math.min(tr.hi, P.x)); out.why = 'onto the trunk: bait her stoop'; return out; }
+    out.gx = P.x; out.face = Math.sign(e.x - P.x) || 1; out.why = 'her aim'; return out; }
   if (e.mode === 'dive' && (e.vy || 0) > 0) { const eta = Math.max(0, P.y - e.y) / Math.max(60, e.vy);
     if (s.shield) { out.block = true; out.face = Math.sign(e.x - P.x) || 1; out.why = 'block the dive'; return out; }
     if (eta < PLAN.leave + 0.05 && dx < 44) { if (s.dodge) { out.dodge = true; out.gx = P.x + side * 40; out.why = 'roll the dive'; return out; } return jumpTo(P.x + side * 40, false, 'jump the dive'); }
@@ -127,10 +138,12 @@ function pinePlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
     out.why = 'on the bough: wait for her under the comb'; return out; }
   /* E. THE PINES: three strokes laid in one; the fourth when she will be under it as it lands */
   const cand = S.pines.filter(p => p.st === 'stand'); if (cand.length) {
-    const kept = mem.pine !== undefined && cand.find(p => p.id === mem.pine), target = kept || cand.slice().sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; mem.pine = target.id;
+    /* the pine she will come under soonest (her loop, read ahead), the near one on a tie - kept once its strokes are laid */
+    const soon = p => { for (let k = 1; k <= 40; k++) { const q = loopAhead(S, k * 0.2); if (underPine(p, q, floor)) return k * 0.2; } return 9; };
+    const kept = mem.pine !== undefined && cand.find(p => p.id === mem.pine), target = kept || cand.slice().sort((a, b) => (soon(a) + Math.abs(a.x - P.x) / 120) - (soon(b) + Math.abs(b.x - P.x) / 120))[0]; mem.pine = target.id;
     const spot = target.x - target.dir * 12; if (Math.abs(P.x - spot) > 6) { out.gx = spot; out.why = 'to the marked pine'; if (inReach()) swing(); return out; }
     out.face = target.dir; if (target.hp > 1) { out.atk = P.atk < 0; out.why = 'lay a stroke in the pine'; return out; }
-    const q = loopAhead(S, HQ.pine.fall + 0.1); if (e.mode === 'circle' && underPine(target, { x: q.x, y: q.y }, floor) && !roll('fell' + Math.floor(t * 2), PLAN.missFell)) { out.atk = P.atk < 0; out.why = 'the fourth stroke: she will be under it'; return out; }
+    const q = loopAhead(S, HQ.pine.fall + 0.22); if (e.mode === 'circle' && underPine(target, { x: q.x, y: q.y }, floor) && !roll('fell' + Math.floor(t * 2), PLAN.missFell)) { out.atk = P.atk < 0; out.why = 'the fourth stroke: she will be under it'; return out; }
     if (inReach()) { swing(); out.why = 'a cut as she passes'; return out; }
     out.why = 'by the primed pine: wait for her pass'; return out; }
   /* F. nothing primed: cut her on her low pass */

@@ -49,12 +49,12 @@ export const PERCHES = [[296, 300, 20, 'L1'], [327, 331, 20, 'R1'], [303, 307, 1
 /* her BROOD CELLS in the hall: [col, row] - the cell a wax pocket stands in (on the floor, and on the two wall perches) */
 export const HALL_CELLS = [[301, 21], [326, 21], [297, 19], [330, 19]];
 /* THE GREAT PINE's marked pines (OLD TUSKER's kind, src/old-tusker.js: four strokes, it falls the way it leans) - fell one INTO HER FLIGHT */
-export const PINE_PINES = [{ col: 358, dir: 1 }, { col: 363, dir: 1 }, { col: 392, dir: -1 }, { col: 397, dir: -1 }];
+export const PINE_PINES = [{ col: 356, dir: 1, len: 6 }, { col: 363, dir: 1, len: 6 }, { col: 392, dir: -1, len: 6 }, { col: 399, dir: -1, len: 6 }];   /* none stands in another's fall line */
 /* THE LAST COMB: hung over her low pass from a bough of the great pine; struck from THE BOUGH (or by an arrow / an ember / a thrown pot), it drops on her */
 export const LAST_COMB = { x0: 383, x1: 387, row: 58, rows: 3 };   /* its bottom a hand over the head of a hero on the bough's east end: one swing cuts it */
 export const BOUGH = { x0: 370, x1: 382, row: 62 };
 /* THE FALLING NEST's comb ledges (crumbling: L.crumbles), [x0, x1, row]: west and east by turns down the drop beside the trunk */
-export const LEDGES = [[341, 346, 26], [333, 338, 30], [341, 346, 34], [333, 338, 38], [341, 346, 42], [333, 338, 46], [341, 346, 50], [333, 338, 54], [341, 346, 58]];
+export const LEDGES = [[341, 346, 29], [333, 338, 36], [341, 346, 43], [333, 338, 50], [341, 346, 57]];
 
 export function buildHornetsNest({ painter, T, TS }) {
   const { W, H, FL } = NEST, L = painter(W, H), { set, block, ent } = L;

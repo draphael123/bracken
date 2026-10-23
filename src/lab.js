@@ -1683,6 +1683,7 @@ async function runbossLab(BK, opts) {
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
         if(pl.down&&!P.ground)k.down=true;
+        if(pl.drop&&P.ground){k.down=true;if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;}}   /* down + jump: through the one-way perch */
         if(pl.talk&&(P.labTalkF===undefined||f-P.labTalkF>12)){BK.press('talk');P.labTalkF=f;}
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;if(pl.up)k.up=true;BK.press('atk');swings++;}
         if(hqOpen(boss)&&!wasOpen)opened++;wasOpen=hqOpen(boss);

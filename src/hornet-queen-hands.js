@@ -85,7 +85,9 @@ export function makeHornetQueenHands(ctx) {
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
           let res = null; hurt(name, () => { res = ctx.damagePlayer(e.x, d, { who: e, name, unblockable: !o.blockable }); });
-          if (res === 'blocked' && o.onBlock) o.onBlock(); }); },
+          const parried = (P.parryT || 0) > 0.2;
+          if (res === 'blocked' && o.blockChip && !parried) { const c = Math.max(1, Math.round(d * o.blockChip)); P.hp = Math.max(1, P.hp - c); if (S) S.hurt[name + 'Chip'] = (S.hurt[name + 'Chip'] || 0) + c; ctx.number(P.x, P.y - 30, HQM.HQ_SAY.jarred, '#ff9a5c'); }   /* (a plain block of her sweep still jars you: a parry, or a jump) */
+          if (res === 'blocked' && o.onBlock && (!o.parryOnly || parried)) o.onBlock(); }); },
       hitHero: (h, d, name, key) => { const pp = h.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return; if (key && keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer(e.x, d, { who: e, name, unblockable: true })); }); },
       hatch: (c, n) => { for (let i = 0; i < n; i++) ctx.spawnDrone(c.x + (i ? 10 : -10), c.y - 22 - i * 6); },
       drones: () => ctx.enemies().filter(q => q.alive && q.t === 'wasp' && q.drone).length,
@@ -108,18 +110,19 @@ export function makeHornetQueenHands(ctx) {
     if (S.stage === 'escape' && e.mode === 'wake') { S.stage = 2; BOSS_PHASE.hornetqueen = 2; }   /* the hero has come down the trunk into the great pine's clearing: her second room */
     if (e.mode === 'wake' && !S.woke && S.stage === 1) { S.woke = true; e.modeT = 1.6; ctx.number(e.x, e.y - 60, HQ_SAY_WAKE, '#ffd36b'); SOUND.thrash(ctx.sfx); ctx.shake(5); }
     /* THE SMOKE UNDER HER: a cloud, a set-down pot or a carried one (src/hornets-nest-hands.js) - she is dazed (P2: her cloak goes first) */
-    if (HQM.feelsSmoke(e) && !(S.ward > 0) && ctx.smokeUnder) { const sm = ctx.smokeUnder(e.x, e.y, HQ.dazed.r, HQ.dazed.h); if (sm && !(e.smokeCd > 0)) { if (HQM.dazed(e, S, w)) e.smokeCd = HQ.dazed.cd; } }
+    if (HQM.feelsSmoke(e) && !(S.ward > 0) && ctx.smokeUnder) { const sm = ctx.smokeUnder(e.x, e.y, HQ.dazed.r, HQ.dazed.h); if (sm && !(e.smokeCd > 0)) { if (HQM.dazed(e, S, w)) e.smokeCd = HQ.dazed.cd; } else if (sm && !(e.fanSaid > 0)) { e.fanSaid = 2.5; ctx.number(e.x, e.y - HQ.h - 16, HQM.HQ_SAY.smokeOff, '#c8d0d8'); } }   /* (a daze leaves her wary of smoke a while: she fans it off, told) */
+    e.fanSaid = Math.max(0, (e.fanSaid || 0) - dt);
     e.smokeCd = Math.max(0, (e.smokeCd || 0) - dt);
     /* THE RANGER's arrow: a stroke in a marked pine, the last comb cut */
     for (const pp of ctx.players) for (const a of (pp.rgArrows || [])) { if (a.state !== 'fly') continue;
       if (S.stage === 2) { const p = S.pines.find(q => q.st === 'stand' && Math.abs(a.x - q.x) < 8 && a.y > S.G.p.floor - 60 && a.y < S.G.p.floor); if (p) { a.state = 'drop'; a.vx *= -0.1; a.vy = -40; HQM.strokePine(S, p, w); continue; }
         const c = S.comb; if (c && c.st === 'hang' && a.x > c.x0 && a.x < c.x1 && a.y > c.y && a.y < c.y + c.rows * 16) { a.state = 'drop'; a.vy = -40; HQM.cutComb(S, w); } } }
     HQM.stepQueen(e, S, dt, heroes(), w);
-    S.tStage = S.tStage || {}; if (!S.tStage[S.stage]) S.tStage[S.stage] = Math.round(ctx.time());
+    if (S.tStart === undefined) S.tStart = ctx.time(); S.tStage = S.tStage || {}; if (S.tStage[S.stage] === undefined) S.tStage[S.stage] = Math.round(ctx.time() - S.tStart);   /* (when each room began, from her waking: tools read it) */
     e.phase = S.stage === 2 ? 2 : 1; e.open = HQM.hqOpen(e) ? Math.max(0, e.modeT) : 0; e.openKind = e.mode;
   };
   /* THE LEVEL'S FRAME, fight or not: the escape's falling comb (she is gone, the hall is open, the nest is coming down) */
-  H.tick = dt => { if (!S) return; const e = live(); if (S.stage === 'escape') { S.tStage = S.tStage || {}; if (!S.tStage.escape) S.tStage.escape = Math.round(ctx.time()); const w = world(e || { x: 0, y: 0 }); HQM.stepEscape(S, dt, heroes(), w); const hs = heroes();
+  H.tick = dt => { if (!S) return; const e = live(); if (S.stage === 'escape') { S.tStage = S.tStage || {}; if (S.tStage.escape === undefined && S.tStart !== undefined) S.tStage.escape = Math.round(ctx.time() - S.tStart); const w = world(e || { x: 0, y: 0 }); HQM.stepEscape(S, dt, heroes(), w); const hs = heroes();
       /* the chunks fall on their own clock here (her stepQueen does not run while her fight is off) */
       for (const c of S.chunks) { if (c.st === 'told') { c.t -= dt; if (c.t <= 0) c.st = 'fall'; } else if (c.st === 'fall') { c.vy = Math.min(520, c.vy + 900 * dt); c.y += c.vy * dt;
           if (c.y >= c.floorY) { c.st = 'done'; ctx.dust(c.x, c.floorY, 8); SOUND.chunk(ctx.sfx); w.hit([c.x - HQ.escape.r, c.x + HQ.escape.r, c.floorY - 26, c.floorY + 2], HQ.escape.dmg, 'falling comb', { key: c.key }); } } }
@@ -133,14 +136,14 @@ export function makeHornetQueenHands(ctx) {
   /* A THROWN SMOKE POT that meets her (src/hornets-nest-hands.js onQueen): it breaks on her - and the cloud it leaves is under her */
   H.potHits = (x, y) => { const e = live(); if (!e || !ctx.bossActive || !S || S.stage === 'escape') return false; return Math.abs(x - e.x) < HQ.w / 2 + 4 && y > e.y - HQ.h - 4 && y < e.y + 6; };
   /* A BLOW ON HER (B15; src/hornet-queen.js takeBlow) - the turned share clanks and says why */
-  H.take = (e, dmg, fromX, pl) => { if (!S) return dmg; const [d, word] = HQM.takeBlow(e, S, dmg, pl);
+  H.take = (e, dmg, fromX, pl) => { if (!S) return dmg; const [d, word] = HQM.takeBlow(e, S, dmg, pl); S.dmgBy = S.dmgBy || {}; const mk = (S.ward > 0 ? 'ward' : e.mode) + (S.stage === 2 ? '2' : ''); S.dmgBy[mk] = (S.dmgBy[mk] || 0) + d;   /* (what each of her states gave: a tool's ledger) */
     if (word && d > 0) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && ctx.sfx.clank(); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 12, e.y - 12, sd, 4);
       if (!S.told.shell && word === HQM.HQ_SAY.shell) { S.told.shell = 1; ctx.hint && ctx.hint('HER SHELL TURNS A CUT. BAIT HER DIVE INTO A COMB PERCH, SMOKE UNDER HER, OR COME DOWN ON HER FROM ABOVE.'); } }
     return d; };
   H.barName = e => 'THE HORNET QUEEN' + (HQM.hqOpen(e) ? '  ' + (HQM.OPEN_NAME[e.mode] || 'OPEN') : S && S.ward > 0 ? '  WARDED' : S && S.cloak > 0 ? '  CLOAKED' : S && S.stage === 2 ? '  THE PINE' : '');
   H.end = e => { if (S) { S.chunks = []; S.stingers = []; } BOSS_PHASE.hornetqueen = 1; };
   H.stage = () => (S ? S.stage : 0);
-  H.read = () => S && { stage: S.stage, tStage: S.tStage, mode: ctx.boss && ctx.boss.mode, ward: S.ward, cloak: S.cloak, perches: S.perches.map(p => ({ id: p.id, st: p.st })), cells: S.cells.map(c => ({ x: c.x, st: c.st })),
+  H.read = () => S && { stage: S.stage, tStage: S.tStage, dmgBy: S.dmgBy, maxHp: ctx.boss && ctx.boss.maxHp, mode: ctx.boss && ctx.boss.mode, ward: S.ward, cloak: S.cloak, perches: S.perches.map(p => ({ id: p.id, st: p.st })), cells: S.cells.map(c => ({ x: c.x, st: c.st })),
     pines: S.pines.map(p => ({ id: p.id, x: p.x, st: p.st, hp: p.hp })), comb: S.comb && { st: S.comb.st, y: S.comb.y }, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...S.hurt } };
   /* a level reload or a fresh attempt: the perches her buzz brought down are back, the comb heap is gone */
   H.restore = () => { for (const [x, y] of perchSaved) ctx.cellSet(x, y, ctx.T.ONEWAY); perchSaved = []; if (heap) for (const [x, y] of heap) ctx.cellSet(x, y, ctx.T.AIR); heap = null; };
@@ -165,7 +168,8 @@ export function makeHornetQueenHands(ctx) {
     if (S.stage !== 'escape') { const fl = S.stage === 2 ? S.G.p.floor : S.G.h.floor; g.globalAlpha = 0.25; ell(g, x, fl - cy - 1, 14, 2.5, '#10060a'); g.globalAlpha = 1; }
     if (S.cloak > 0) for (let i = 0; i < 16; i++) { const a = i * 2.39 + time * 4, rr = 16 + (i % 4) * 3; rect(g, x + Math.cos(a) * rr, y + Math.sin(a * 1.3) * rr * 0.7, 2, 2, Math.floor(time * 10 + i) % 2 ? '#d08a1a' : '#2a160a'); }
     g.save(); g.translate(R(x), R(y + (p.y || 0))); g.scale(f, 1); drawQueenBody(g, p, time, flash, S.stage === 2 ? 2 : 1); g.restore();
-    if (e.mode === 'aim' && e.held && Math.floor(time * 6) % 2) rect(g, x - f * 14, y + 10, 3, 3, '#ffd36b'); };
+    if (e.mode === 'aim' && e.held && Math.floor(time * 6) % 2) rect(g, x - f * 14, y + 10, 3, 3, '#ffd36b');
+    if ((e.smokeCd || 0) > 0) { g.globalAlpha = 0.5; for (let k = 0; k < 3; k++) { const ph = (time * 2 + k / 3) % 1; rect(g, x + (k - 1) * 10, y - 12 - ph * 14, 4, 2, '#c8d0d8'); } g.globalAlpha = 1; } };   /* wary of smoke: her wings fan it off (the read of her smoke cooldown) */
   H.drawOver = (g, cx, cy, time) => { if (!S) return; const e = live(), X = v => R(v - cx), Y = v => R(v - cy), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', VW = ctx.VW();
     /* the felled pines over her (a pinned queen lies under one) */
     for (const p of S.pines) if (p.st === 'down' || p.st === 'pin') ctx.drawPine(g, p, X(p.x), Y(S.G.p.floor), time, null);
