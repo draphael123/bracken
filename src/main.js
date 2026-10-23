@@ -2004,7 +2004,10 @@ function allyTick() {
   if (Math.abs(p.x - one.x) < 10 && Math.abs(p.y - one.y) < 20) goal = one.x + (p.x >= one.x ? 26 : -26);   /* never in his way */
   if (S.raft) goal = one.x;
   if (one === p) goal = p.x;   /* nobody standing to follow: hold */
-  p.aiWalk(allySafeGoal(goal));
+  const safeGoal = allySafeGoal(goal);
+  // A settled companion has arrived: the route walker's stuck hops are for reaching a goal, not waiting beside a leader.
+  if (!foe && p.ground && !p.swim && safeGoal === goal && Math.abs(p.x - goal) <= 10 && Math.abs(p.y - one.y) < 20) return;
+  p.aiWalk(safeGoal);
   if (holdOff) { keys.left = keys.right = false; keys.block = LABMOD.SHIELDED(h); p.abuf = 0; }   /* and the buffered swing goes with it, or a press from two frames back still takes the beat */
 }
 /* ==================== end of the co-op block ==================== */

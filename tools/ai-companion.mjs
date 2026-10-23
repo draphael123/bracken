@@ -161,6 +161,9 @@ if (PAGE.length) {
         o.offS=+(off/60).toFixed(1);o.toldRaft=why;o.m2x=Math.round(m2.x-m2.x0);o.m2done=m2.done;o.m2ret=m2.returning;
         a2.x=m2.x+m2.w/2;a2.y=m2.y;a2.vy=0;a2.onMover=m2;a2.ground=true;BK.sim(90);o.reboard=m2.x>m2.x0+4||m2.moving;return o;})()`);
       console.log('    ' + JSON.stringify(r));
+      const idle = await E(`(async()=>{await __level('marsh',[['knight','balanced']]);BK.god=true;BK.enemies().forEach(e=>e.alive=false);BK.ambushes().forEach(a=>a.st='done');const m=BK.movers().find(m=>m.callId==='marsh-grove'),a=__P(1),q=__ai();m.x=m.x1;m.moving=false;m.done=true;m.returning=false;m.called=false;m.paid=true;m.free=true;a.x=m.x+m.w/2;a.y=m.y;a.vx=a.vy=0;a.onMover=m;a.ground=true;a.face=1;q.x=a.x-22;q.y=a.y;q.vx=q.vy=0;q.onMover=m;q.ground=true;q.aiWalk=null;q.aiS=null;let airborne=0,maxGap=0;for(let f=0;f<720;f++){BK.sim(1);if(!q.ground)airborne++;maxGap=Math.max(maxGap,Math.abs(q.x-a.x));}const x0=q.x;a.x+=40;BK.sim(180);return{airborne,maxGap,moved:q.x-x0,gap:Math.abs(q.x-a.x)};})()`);console.log('    idle raft '+JSON.stringify(idle));
+      ok(idle.airborne===0 && idle.maxGap<=64, 'a companion already beside the leader waits on the settled raft without inventing jumps ('+JSON.stringify(idle)+')');
+      ok(idle.moved>20 && idle.gap<=64, '...then follows when the leader moves on ('+JSON.stringify(idle)+')');
       ok(r.done && r.lone === 0, 'player one rides the marsh raft to its far dock; it never moved without a person aboard (' + r.secs + ' s)');
       ok(r.gap <= 4, '...and the AI that stood on the dock is on the far side with him (' + r.gap + ' tiles; ' + r.pulls + ' catch-ups' + (r.aiOn ? ', it rode along' : '') + ')');
       ok(r.offS >= 0 && r.offS <= 4 && r.toldRaft === 'raft', 'an AI alone on a docked raft is taken off it, told (catch-up \'raft\', off in ' + r.offS + ' s)');

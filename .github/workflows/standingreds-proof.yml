@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [normal-health, tower-chase, harvest-fair]
+        check: [normal-health, tower-chase, harvest-fair, ai-companion]
     steps:
       - uses: actions/checkout@v4
         with:

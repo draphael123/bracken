@@ -5,6 +5,7 @@ import { resolve, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 const root = fileURLToPath(new URL('..', import.meta.url)), name = process.argv[2], dir = resolve(process.argv[3] || 'gate-data');
 const checks = {
+  'ai-companion': ['tools/ai-companion.mjs'],
   'normal-health': ['tools/normal-health.mjs'], 'tower-chase': ['tools/tower-chase.mjs'], 'harvest-fair': ['tools/harvest-fair.mjs'],
   berserker: ['tools/berserker.mjs'], 'dune-worm': ['tools/dune-worm.mjs'], bells: ['tools/bells.mjs'],
   'rule-openings': ['tools/rule-openings.mjs'], 'slopes-trace': ['tools/slopes-trace.mjs'],
