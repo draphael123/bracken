@@ -129,7 +129,7 @@ try {
       /* no bash: the arrow lands */
       { __set('ranger',[]);const p=P();const hp0=p.hp;BK.seeds().push({x:p.x+40,y:p.y-10,vx:-160,vy:0,life:3,arrow:true});BK.sim(30);o.none={lost:hp0-p.hp}; }
       /* the kneeling draw */
-      const draw=(kneel)=>{__set('ranger',[]);const p=P();p.face=1;if(kneel){BK.keys.down=true;BK.sim(14);}BK.press('atk');BK.keys.atk=true;let f=0,started=-1;while(f++<120){BK.sim(1);if(started<0&&p.charge>0)started=f;if(p.chargeFull)break;}
+      const draw=(kneel)=>{__set('ranger',[]);const p=P();p.face=1;if(kneel){BK.keys.down=true;BK.sim(14);}BK.press('atk');BK.keys.atk=true;let f=0,started=-1;while(f++<120){BK.sim(1);if(started<0&&p.charge>0)started=f;if(p.chargeFull||(BK.rg().tier|0)>=1)break;/* (integ114) the three-tier draw: the full draw is TIER 1 (the long shot), not P.chargeFull */}
         const k=!!p.rgKneel,full=f,duck=!!p.ducking;BK.keys.atk=false;BK.sim(1);const a=(p.rgArrows||[]).at(-1);BK.keys.down=false;return {kneel:k,framesToFull:full-started,duck,vy:a?Math.round(a.vy):null,vx:a?Math.round(a.vx):null};};
       o.stand=draw(false);o.knelt=draw(true);
       /* knelt and drawing, a high blow goes over */
