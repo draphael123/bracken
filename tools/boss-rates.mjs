@@ -21,7 +21,7 @@ const ways = opt('ways', 'practiced,first,built').split(','), prof = opt('profil
 if (opt('difficulty', '')) process.env.DIFFICULTY = opt('difficulty', '');   /* (claude/difficulty) --difficulty=easy|normal|master (default normal) */
 const seedsOf = { practiced: seeds, first: +opt('first-seeds', Math.max(2, Math.ceil(seeds / 2))), built: +opt('built-seeds', Math.max(2, Math.ceil(seeds / 2))) };
 const fights = [];
-for (const r of rowsArg) for (const way of ways) for (const h of heroes) for (let s = 1; s <= seedsOf[way]; s++) fights.push({ r, way, h, s, profile: prof, flasks });
+for (const r of rowsArg) for (const way of ways) for (const h of heroes) for (let s = 1 + (+process.env.SEED0 || 0); s <= (+process.env.SEED0 || 0) + seedsOf[way]; s++) fights.push({ r, way, h, s, profile: prof, flasks });
 const t0 = Date.now();
 const out = await runFights(fights, { jobs, secs, onRow: (x, all) => { console.log(line(x)); if (OUT && all.length % 6 === 0) writeFileSync(OUT, JSON.stringify(all)); } });
 if (OUT) writeFileSync(OUT, JSON.stringify(out));

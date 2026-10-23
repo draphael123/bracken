@@ -718,12 +718,13 @@ function rotateWanted(BK) {
 function rotHold(BK) {
   const P = BK.P; if (!P || !(P.labRotHold > 0)) return; const b = ROWBOSS || BK.boss, k = BK.keys;
   if (ROT) { const why = P.heavy ? 'heavy' : P.hurt > 0 ? 'hurt' : P.dodge > 0 ? 'dodge' : P.labRotHold > 110 ? 'long' : BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true ? 'tell' : null; if (why) ROT[why] = (ROT[why] || 0) + 1; }
-  if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > 110 || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
+  const holdCap = HUMAN_H === 'reaper' && LABP.bkKit ? (LABP.bkCap ?? 110) : 110;   /* (claude/bkbot) frames; 110 stops at T2 (T3 is 1.3 s) */
+  if (P.heavy || P.hurt > 0 || P.dodge > 0 || !b || !b.alive || P.labRotHold > holdCap || (BK.windingUp && BK.windingUp(b) && OPEN(b, BK) !== true)) { P.labRotHold = 0; if (!P.heavy) k.atk = false; return; }
   if (HUMAN_H === 'knight' && P.atkHeld >= KNIGHT_CUT) { k.atk = false; P.labRotHold = 0; return; }   /* the guard-break cut, let go */
   if (HUMAN_H === 'ranger' && rgLetGo(BK, rgBossTier(BK, b))) { k.atk = false; P.labRotHold = 0; return; }
   if (HUMAN_H === 'berserker' && bzLetGo(BK, bzBossTier(BK, b))) { k.atk = false; P.labRotHold = 0; return; }
   if (HUMAN_H === 'geomancer' && geoLetGo(BK, geoBossTier(BK, b), b, Math.abs(b.x - P.x))) { k.atk = false; P.labRotHold = 0; return; }   /* (claude/chargetiers) his wind-up, let go on the tier he asks for */   /* (claude/chargetiers) her draw, let go on the tier he asks for */
-  if (HUMAN_H === 'reaper' && BK.dk2) { const Bd = BK.dk2().blood(), T = Bd.BLOOD.tiers, want = b.broken > 0 ? 2 : 1;   /* (claude/bkfeel) +tiers: SUNDER (it bites his poise); on a BROKEN boss the CRIMSON CRESCENT (T4/T5 are past the hold's 110-frame cap) */
+  if (HUMAN_H === 'reaper' && BK.dk2) { const Bd = BK.dk2().blood(), T = Bd.BLOOD.tiers, want = Math.max(b.broken > 0 ? (LABP.bkBroken ?? 2) : (LABP.bkOpen ?? 1), (P.bd || 0) >= 0.06 * P.maxHp ? (LABP.bkDebtTier ?? 0) : 0);   /* (claude/bkfeel) +tiers: SUNDER (it bites his poise); on a BROKEN boss the CRIMSON CRESCENT (T4/T5 are past the hold's 110-frame cap) */
     if (P.atkHeld >= T.at[want] * Bd.quick + 0.03) { k.atk = false; P.labRotHold = 0; return; } }
   P.labRotHold++; k.atk = true; k.block = false; P.face = Math.sign(b.x - P.x) || P.face; if (ROT) ROT.holds += P.labRotHold === 2 ? 1 : 0;
 }
@@ -828,7 +829,7 @@ async function runbossLab(BK, opts) {
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
        time behind it, so it is RETURNED. One release in ten is early. dkHold keeps the ward up a little past the end of a tell. */
     const dkOpen = () => { const g = BK.bossOpen ? BK.bossOpen(boss) : null; return g !== null && g !== undefined ? !!g : boss.open > 0; };   /* (OPEN() is TRUE for a boss with no opening of its own: here only a real one counts) */
-    const dkSwingOK = () => !(LABP.v2 && LABP.dkPunish !== false && h === 'reaper') || dkOpen() || DK_FREE.has(boss.mode) || !(f - dkS.tellF < dkF(6) || f - dkS.hitSwF < dkF(8)) || f - Math.max(dkS.endF, dkS.hitF) < dkF(LABP.dkWin ?? 0.25);   /* (claude/herobots) may the Death Knight begin his slow swing now? */
+    const dkSwingOK = () => !(LABP.v2 && LABP.dkPunish !== false && h === 'reaper') || LABP.bkFree || dkOpen() || DK_FREE.has(boss.mode) || !(f - dkS.tellF < dkF(6) || f - dkS.hitSwF < dkF(8)) || f - Math.max(dkS.endF, dkS.hitF) < dkF(LABP.dkWin ?? 0.25);   /* (claude/herobots) may the Death Knight begin his slow swing now? */
     const dkS = { m: '', blow: null, endF: -999, tellF: -9999, hitF: -9999, hitSwF: -9999, hp: -1, relF: -999 };
     const dkLag = {}, dkLagH = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     /* (claude/botreads, v2) A TOLD RUN: a charge / rush / bash / ride whose TELL was read (seen within the last 1.5 s) is known to be coming, so the hands answer it
