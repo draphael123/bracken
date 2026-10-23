@@ -1779,7 +1779,7 @@ async function runbossLab(BK, opts) {
         if(P.labJump>0){P.labJump--;k.jump=true;}
         if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
         if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
-        if(pl.down)k.down=true;if(pl.up)k.up=true;if(pl.jump&&P.swim&&f%10===0)BK.press('jump');P.labFkPush=(k.left||k.right)&&P.ground&&!P.swim&&Math.abs(P.vx)<4&&P.atk<0?(P.labFkPush||0)+1:0;if(P.labFkPush>=10){BK.press('jump');P.labJump=18;P.labFkPush=0;}   /* (a step in the way - his dais - is hopped, as the generic hands do) */
+        if(pl.down)k.down=true;if(pl.up)k.up=true;if(pl.jump&&P.swim&&f%10===0){BK.press('jump');P.labJump=14;k.jump=true;}   /* Hold the water jump like the ground jump above; releasing it next frame clips the hop below the court's pads. */ P.labFkPush=(k.left||k.right)&&P.ground&&!P.swim&&Math.abs(P.vx)<4&&P.atk<0?(P.labFkPush||0)+1:0;if(P.labFkPush>=10){BK.press('jump');P.labJump=18;P.labFkPush=0;}   /* (a step in the way - his dais - is hopped, as the generic hands do) */
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
         if(OPEN(boss,BK)&&!wasOpen)opened++;wasOpen=!!OPEN(boss,BK);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:!!OPEN(boss,BK),why:pl.why});if(f%600===599)await yieldNow();continue;
