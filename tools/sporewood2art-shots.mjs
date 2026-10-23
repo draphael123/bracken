@@ -10,7 +10,7 @@ const ROOT = fileURLToPath(new URL('..', import.meta.url)), OUT = join(ROOT, 'wo
 const only = process.argv[2] ? new Set(process.argv[2].split(',')) : null;
 mkdirSync(OUT, { recursive: true });
 /* [tag, tile x, tile y (feet, built rows), script after the hero is placed] */
-const boss = m => `BK.tp(424,14);BK.sim(200);const b=BK.enemies().find(e=>e.t==='mother');if(b){b.mode='${m}';b.modeT=${m === 'open' ? 2 : 0.3};b.poseT0=0.9;${m === 'crushTell' ? 'b.crushX=BK.P.x;' : ''}${m === 'bloomTell' ? 'b.blooms=[{x:BK.P.x,y:BK.P.y-12,t:0.6,live:false,tickT:0}];' : ''}${m === 'lash' ? 'b.lashes=[{x:b.x-90,d:-1,hit:new Set()}];' : ''}${m === 'open' ? 'b.openK=1;' : ''}}BK.SET.speed=0.001;`;
+const boss = m => `BK.tp(424,14);BK.sim(200);const b=BK.enemies().find(e=>e.t==='mother');if(b){b.mode='${m}';b.poseMode='${m}';b.modeT=${m === 'open' ? 2 : 0.12};b.poseT0=0.9;${m === 'crushTell' ? 'b.crushX=BK.P.x;' : ''}${m === 'bloomTell' ? 'b.blooms=[{x:BK.P.x,y:BK.P.y-12,t:0.6,live:false,tickT:0}];' : ''}${m === 'lash' ? 'b.lashes=[{x:b.x-90,d:-1,hit:new Set()}];' : ''}${m === 'open' ? 'b.openK=1;' : ''}}BK.SET.speed=0.001;`;
 const SHOTS = [
   ['v0', 10, 40, ''], ['v1', 60, 36, ''], ['v2', 140, 38, ''], ['v3', 175, 36, ''], ['v4', 230, 26, ''], ['v5', 275, 18, ''], ['v6', 320, 19, ''], ['v7', 380, 11, ''], ['v8', 425, 14, ''],
   ['glade', 26, 40, ''], ['bounce-pit', 56, 36, ''], ['terrace', 80, 32, ''],
