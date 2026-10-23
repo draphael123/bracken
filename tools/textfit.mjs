@@ -1,3 +1,6 @@
+import { freemem } from 'node:os';
+import { admitBrowser } from './browser-admission.mjs';
+import { DEFAULT_RENDERER_MB } from './memory-policy.mjs';
 // tools/textfit.mjs — DOES THE TEXT FIT WHAT IT IS DRAWN ON?
 // The owner keeps finding words running out of their box. Measuring strings against a guessed width misses that the box
 // is whatever the draw code happened to put behind them. So this puts every player-facing screen on the page and records
@@ -372,6 +375,7 @@ async function pageTextFit(input) {
 
 // Scope bodies advance and draw every measured frame explicitly. Idle pages must not also run the real-time loop.
 async function openLayoutPage() {
+  await admitBrowser();
   const page = await openPage({ audioFiles: false });
   await page.evalp('BK.manualSimulation = true');
   return page;
@@ -409,9 +413,11 @@ async function main() {
   for (const h of HEROES) { const us = units.filter(u => u.sc === 'talk' && u.heroes[0] === h); if (us.length) jobs.push(us); }
   units.filter(u => u.sc === 'bossfix').forEach(u => jobs.push([u]));
   const rest = units.filter(u => !LONG.includes(u.sc)); if (rest.length) jobs.unshift(rest);
-  /* TWO pages, not five (10-16 leakfix): every page is its own headless Chrome and a talk page grows to 1.5-3 GB of baked level canvases, so five
-     at once peaked near 9 GB on a 16 GB PC (the 14:53 hang). Scopes are independent pages with their own timers; fewer at a time only makes the whole run longer. */
-  const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || 2));
+  /* At most three workers, budgeted at the full renderer ceiling plus browser overhead; every boot also passes the existing admission gate. */
+  const freeMb = Math.floor(freemem() / 1048576), reserveMb = +(process.env.BRACKEN_MIN_FREE_MB ?? 512);
+  const capacity = Math.max(1, Math.min(3, 1 + Math.floor((freeMb - reserveMb) / (DEFAULT_RENDERER_MB + 1024))));
+  const nPages = Math.max(1, Math.min(jobs.length, +process.env.TEXTFIT_PAGES || capacity));
+  console.log('  layout workers=' + nPages + ' free=' + freeMb + 'MB; original per-renderer ceiling=' + DEFAULT_RENDERER_MB + 'MB');
   const pages = [{ p: pg }]; for (let k = 1; k < nPages; k++) pages.push({ p: await openLayoutPage() });   /* (one after another: four boots at once starve each other past the page's own 30 s wait) */
   const closeAll = async () => { for (const slot of pages) { try { await slot.p.close(); } catch {} } };
   const results = new Map(), queue = jobs.slice(); let shotBudget = 120;
