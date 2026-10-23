@@ -107,17 +107,22 @@ export function buildSporewood({ painter, T, TS }) {
   air(59, 66, 0, 39); ground(59, 66, 40); for (let x = 59; x <= 66; x++) spring(x, 40);   /* (its whole floor is cap: wherever you land, it throws you) */
   sign(56, 35, 'NO JUMP CROSSES. DROP IN: A BOUNCE CAP THROWS YOU OUT.');
   coins([62, 37], [63, 35], [65, 37]);
-  ground(67, 78, 36); glow(70, 35); deco(73, 35, 'tinyCap', 2); foe('brute', 71, 35, 'pitFar', { face: -1 });   /* (where the bounce throws you out: a heavy, the pit at your back) */
+  ground(67, 78, 36); glow(70, 35); deco(73, 35, 'tinyCap', 2); foe('brute', 71, 35, 'pitFar', { face: -1 }); foe('archer', 76, 35, 'pitFar', { face: -1 });   /* (where the bounce throws you out: a heavy, the pit at your back) */
   /* THE GLADE'S EXAM, THE CAP TERRACE: two buds up two four-row tiers - the first under a spore drop on a count (let it burst, then stop on the bud), a SHIELD on
      the first tier where the cap sets you down, a SPITCAP on the second tier's lip over the bud, a sporeling behind it. Shrine at the top */
   bud(77, 36); ground(79, 104, 32); drip(78, 2.8);
   sign(70, 35, 'SPORES FALL ON THE BUDS. LET ONE BURST, THEN STOP ON THE BUD.');
   foe('shield', 82, 31, 'terrace', { face: -1 });
   bud(85, 32); ground(87, 104, 28);
-  plank(88, 102, 25);                                                               /* a root shelf over the top tier */
-  foe('spitcap', 89, 27, 'terrace', { face: -1 }); foe('brute', 91, 27, 'terrace', { face: -1 }); drip(91, 2.9);   /* (the terrace's heavy, where the bud sets you down) */
-  coins([80, 30], [83, 30], [88, 26], [91, 26]); glow(95, 27); deco(100, 27, 'sporePod');
-  ent('check', 97, 27);                                                             /* SHRINE ONE: the glade's exam is behind you */
+  plank(88, 89, 25); plank(97, 102, 25);                                            /* root shelves over the top tier (split: none spans the gap) */
+  foe('spitcap', 88, 27, 'terrace', { face: -1 }); foe('brute', 89, 27, 'terrace', { face: -1 }); drip(87, 2.9);   /* (the terrace's heavy, where the bud sets you down) */
+  /* THE TERRACE'S FALL (claude/sporewood2tune, the walker band): the top tier ends in a REAL GAP, six wide, no floor - a fall is the end (back to the last shrine). A pillar of two BOUNCE CAPS stands in it: a hop from the lip onto them, and they throw you over to the far lip
+     (hold jump for height). Told: the sign on the lip, a warning post each side, the pit's mouth the same as the bounce pit taught (which had a floor); a spitcap holds the far lip */
+  air(91, 96, 28, 42); ground(93, 94, 28); spring(93, 28); spring(94, 28); deco(90, 27, 'warnPost', 0); deco(97, 27, 'warnPost', 1);
+  sign(86, 27, 'THE TERRACE ENDS IN A DROP. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');
+  foe('spitcap', 98, 27, 'terraceFar', { face: -1 });
+  coins([80, 30], [83, 30], [87, 26], [89, 26], [93, 22], [95, 22]); glow(99, 27); deco(102, 27, 'sporePod');
+  ent('check', 100, 27);                                                            /* SHRINE ONE: the glade's exam is behind you */
 
   // ================= 2. THE LANTERN HOLLOWS (100-198): TEST - dark under the cap canopy; the lantern caps light the way and the dark buds grow only in it =================
   block(104, 198, 0, 13);                                                           /* THE CAP CANOPY over the hollows */
@@ -144,7 +149,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* a nook in the wall's foot off the shaft's floor (a pocket west of the way on): gold, lit by its own lantern */
   air(154, 160, 37, 39); lantern(158, 39); coins([155, 39], [156, 39], [157, 39]);
   lantern(165, 39); bud(168, 40, { dark: true }); ground(170, 198, 36);
-  foe('lurker', 174, 35, 'shaft'); foe('shield', 162, 39, 'shaft', { face: 1 });
+  foe('lurker', 174, 35, 'shaft'); foe('archer', 178, 35, 'shaft', { face: -1 }); foe('sporeling', 163, 39, 'shaft', { face: 1 });
   lantern(176, 35); bud(180, 36, { dark: true }); ground(182, 198, 32); drip(180, 3.0, 14);
   foe('weaver', 184, 31, 'shaft', { face: -1 }); foe('shield', 183, 31, 'shaft2', { face: -1 });
   lantern(186, 31); bud(188, 32, { dark: true }); ground(190, 198, 28); foe('brute', 192, 27, 'shaftTop', { face: -1 });   /* (the shaft's top: a heavy where the last bud sets you down, the shaft at your back) */
@@ -156,7 +161,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* Cap stalks stand up out of the bog; the way on is along their tops. The bog floor is no death: a stalk's east face has a stair of root shelves, so a fall
      is the climb back to the stalk you fell from. Rollers trundle the bog floor (plunge one: it pops); puffballs on the stalks burst into SPRING SPORES. */
   ground(198, 300, 40);                                                             /* THE BOG FLOOR */
-  for (const [a, b] of [[210, 217], [233, 235]]) pools.push({ x0: a * TS, x1: (b + 1) * TS, y: (37 + DY) * TS + 6, bottom: (41 + DY) * TS, swim: true, clear: true, harm: true, bog: true, foulCol: '#5a6a2a', foulColL: '#b4cc68', foulColD: '#1c2814', wash: 0.6 });   /* (the bog's water: a fall in stings while you climb out) */
+  for (const [a, b] of [[210, 217]]) pools.push({ x0: a * TS, x1: (b + 1) * TS, y: (37 + DY) * TS + 6, bottom: (41 + DY) * TS, swim: true, clear: true, harm: true, bog: true, foulCol: '#5a6a2a', foulColL: '#b4cc68', foulColD: '#1c2814', wash: 0.6 });   /* (the bog's water: a fall in stings while you climb out) */
   ground(199, 205, 28);                                                             /* the lip out of the hollows (to stalk one's foot: no one-column shaft beside it) */
   sign(200, 27, 'THE PUFFBALL BOG. STRIKE A PUFFBALL: IT BURSTS INTO A SPRING SPORE YOU CAN BOUNCE OFF.');
   puff(202, 27); air(200, 204, 37, 39);                                            /* (a hollow under the lip, in off the bog floor) */
@@ -170,10 +175,13 @@ export function buildSporewood({ painter, T, TS }) {
   foe('spitcap', 227, 21, 'stalk3', { face: -1 }); foe('brute', 224, 21, 'stalk3', { face: -1 });   /* (where the bud sets you down) */   /* the spitcap on the lip over the bud */
   coins([224, 20], [229, 20]); plank(224, 229, 19);
   /* THE BOUNCE STALK: down to a stalk capped with a bounce cap, and up off it to the high stalk, four rows over it (no jump climbs four) */
-  ground(236, 238, 26); spring(236, 26); spring(237, 26); spring(238, 26); ground(239, 239, 29);   /* (a stub in the one-column gap: a miss lands on it, a jump from it is back on the bounce cap) */
-  sign(231, 21, 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK.'); sign(248, 21, 'THE CAP LADDER: NO FLOOR UNDER IT. THE BOG KEEPS WHAT FALLS IN.');
+  ground(236, 238, 26); spring(236, 26); spring(237, 26); spring(238, 26);
+  /* THE BOUNCE STALK'S FALL (claude/sporewood2tune, the walker band): it was a stalk with a bog floor under it and a stub to catch a miss. Now the caps hang over a REAL GAP (six wide, no floor): a miss short of them is a fall - the end, back to the last shrine (the one-column stub past the caps stays: the walker died on that hole three times in six runs). Told: the sign on stalk three's
+     lip and a warning post each side; the bounce was taught twice before it (the glade's pit, the terrace's pillar), and a lurker holds the high stalk where the throw lands you */
+  air(233, 238, 27, 42); ground(239, 239, 29); deco(232, 21, 'warnPost', 0); deco(240, 21, 'warnPost', 1);
+  sign(229, 21, 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK. NO FLOOR UNDER IT: MISS AND YOU FALL.'); sign(248, 21, 'THE CAP LADDER: NO FLOOR UNDER IT. THE BOG KEEPS WHAT FALLS IN.');
   ground(240, 251, 22);
-  foe('drone', 247, 17, 'highStalk'); foe('brute', 243, 21, 'highStalk', { face: -1 }); drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
+  foe('drone', 247, 17, 'highStalk'); foe('brute', 243, 21, 'highStalk', { face: -1 }); foe('lurker', 248, 21, 'highStalk'); lantern(244, 21);   /* (its lantern: strike it and the lurker is dazzled out of its cap) */ drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
   mend(245, 21); puff(247, 21);
   /* THE HIGH SILVER: a cap hung high over the bog (on a stalk of its own), reached off the spring spore of the puffball under it - or a plunged bounce */
   plank(246, 249, 16); ent('silver', 248, 15); coins([246, 15], [249, 15]);
@@ -184,15 +192,15 @@ export function buildSporewood({ painter, T, TS }) {
   bud(250, 22, { rise: 16, lean: 112, growT: 1.6 });
   /* THE EXAM's GAP HAS NO FLOOR (A10 amended): the bog under the cap ladder's leaning cap keeps what falls in - a fall is the end (back to the shrine). Told: the sign at
      the last shrine's lip and a warning post on the near lip; the lean was taught first over a gap with a floor (stalk one) */
-  air(252, 259, 23, 42); deco(251, 21, 'warnPost', 0); deco(260, 21, 'warnPost', 1);
-  ground(260, 264, 22);
+  air(252, 258, 23, 42); deco(251, 21, 'warnPost', 0); deco(259, 21, 'warnPost', 1);
+  ground(259, 264, 22);
   bud(263, 22); drip(264, 2.9); ground(265, 274, 18);
   foe('spitcap', 268, 17, 'ladder', { face: -1 }); foe('brute', 266, 17, 'ladder', { face: -1 }); foe('shield', 272, 17, 'ladder', { face: -1 }); foe('archer', 274, 17, 'ladder', { face: -1 }); plank(266, 272, 15);
   sign(261, 21, 'THE CAP LADDER: LEAN, GROW, BOUNCE.');
   air(275, 282, 0, 22); ground(275, 282, 23); for (const x of [276, 279, 282]) spring(x, 23);
   ground(283, 300, 19); foe('brute', 286, 18, 'ladderTop', { face: -1 });   /* (where the well throws you: a heavy on the lip) */
   coins([276, 20], [279, 18], [282, 20], [284, 17]); glow(287, 18); deco(290, 18, 'sporePod');
-  air(224, 232, 37, 39); air(260, 263, 37, 39); air(218, 221, 37, 39);   /* hollows in the stalks' feet, in off the bog floor: what fell finds gold */
+  air(224, 230, 37, 39); air(218, 221, 37, 39);   /* hollows in the stalks' feet, in off the bog floor: what fell finds gold. (claude/sporewood2tune: the nook at 260-263 is gone and 231-232 stay wall - both opened onto a bottomless gap and CAUGHT a fall on their floor: a hero who missed the leaning cap stood in the nook with no way out, not dead - the walker stalled there in 5 runs of 6) */
   ent('check', 294, 18);                                                            /* SHRINE THREE */
 
   // ================= 4. THE WEB LARDER (298-358): her larder in the roots - webs, the weaver, the bud stair, and THE SPORE MAGE =================
@@ -230,8 +238,11 @@ export function buildSporewood({ painter, T, TS }) {
   air(381, 386, 6, 8); spring(380, 9); ent('silver', 385, 8); coins([382, 8], [384, 8]); glow(383, 8);   /* the knot's cellar: the third silver; a bounce cap under the door to spring back out */
   /* her approach: gill pods, skulls, her roots across the way; the last fight before her door - a BRUTE (the weighty one) and a sporeling */
   for (const [x, k, v] of [[371, 'sporePod', 1], [389, 'skullPile', 0], [393, 'rootDecor', 2], [398, 'sporePod', 0], [402, 'skullPile', 1]]) deco(x, 4, k, v);
-  foe('brute', 393, 4, 'knotDoor', { face: -1 }); foe('sporeling', 389, 4, 'knotDoor', { face: -1 }); foe('shield', 385, 4, 'knotDoor', { face: -1 }); foe('brute', 400, 4, 'knotDoor', { face: -1 }); drip(392, 2.9); foe('shield', 396, 4, 'knotDoor', { face: -1 });
-  plank(370, 402, 2); plank(405, 408, 6); coins([386, 1], [390, 1]);                 /* a root over her approach */
+  foe('brute', 389, 4, 'knotDoor', { face: -1 }); foe('sporeling', 387, 4, 'knotDoor', { face: -1 }); foe('shield', 385, 4, 'knotDoor', { face: -1 }); foe('brute', 400, 4, 'knotDoor', { face: -1 }); drip(391, 2.9); foe('shield', 402, 4, 'knotDoor', { face: -1 });
+  /* HER APPROACH'S FALL (claude/sporewood2tune): the last stretch before her door breaks in a REAL GAP, seven wide, no floor, a pillar of two bounce caps in it - hop on, be thrown over. A heavy waits where it throws you. Told: the post each side, the sign */
+  air(392, 398, 5, 42); ground(394, 395, 5); spring(394, 5); spring(395, 5); deco(391, 4, 'warnPost', 0); deco(399, 4, 'warnPost', 1);
+  sign(388, 4, 'THE ROOT BREAKS HERE. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');
+  plank(370, 391, 2); plank(399, 402, 2); plank(405, 408, 6); coins([386, 1], [390, 1]);                 /* a root over her approach */
   coins([374, 3], [390, 3], [400, 3]);
   sign(403, 4, 'HER CAP TURNS BLADES. GROW HER SEED CAPS, CLIMB, AND PLUNGE ONTO HER KNOT.');
   ground(405, 408, 9);                                                              /* down into her hollow */

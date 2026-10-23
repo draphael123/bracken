@@ -68,7 +68,7 @@ ok(at('roller').length >= 2 && at('drone').length >= 1 && at('shaman').length >=
 
 // ---- THE ANNOYANCE CUT ----
 const DEBUFF = ['spitcap', 'lurker', 'weaver', 'drone', 'spider', 'thorn'], deb = L.ents.filter(e => DEBUFF.includes(e.t));
-ok(deb.length >= 8 && deb.length <= 12, 'debuffers cut to ' + deb.length + ' (was 41): ' + DEBUFF.map(t => t + ' ' + deb.filter(e => e.t === t).length).filter(s => !/ 0$/.test(s)).join(', '));
+ok(deb.length >= 8 && deb.length <= 14, 'debuffers cut to ' + deb.length + ' (was 41): ' + DEBUFF.map(t => t + ' ' + deb.filter(e => e.t === t).length).filter(s => !/ 0$/.test(s)).join(', '));
 ok(at('lurker').every(e => lanterns.some(g => Math.hypot(g.x - e.x, g.y - e.y) * TS < 76 * 1.3)), 'every lurker stands in a lantern cap\'s light (light it: it is dazzled out of its cap)');
 ok(!(L.sleeps && L.sleeps.length) && !L.storm, 'no sleep clouds, no storm');
 

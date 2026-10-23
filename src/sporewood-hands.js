@@ -139,6 +139,12 @@ export function makeSporewoodHands(ctx) {
       if (cx < px - 3 * TS || cx > px + 14 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;
       const lt = ctx.props().filter(pr => pr.t === 'glowbud' && Math.abs(pr.x - cx) < SP.litX && Math.abs(pr.y - m.y0) < SP.litY).sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
       if (lt) { const side = px <= lt.x ? -1 : 1; return { x: lt.x + side * 14, y: lt.y, key: 'atk', face: -side, r: 16 }; } }
+    /* a LEANING cap ahead on his floor, not yet stood on (claude/sporewood2tune): the walker used to run past it and jump the gap flat out - over the bog's real fall that was a death every time. A player reads the sign, stops on the cap and waits for it to carry him: stand on it (a bud rises only under a hero who has stopped) */
+    for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.lean || m.seed || m.state !== 'bud' || (m.dark && !m.lit)) continue; const cx = m.x + m.w / 2;
+      if (cx < px - 1 * TS || cx > px + 9 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;
+      const lN = H._leanN || (H._leanN = {}), k = Math.round(m.x); if ((lN[k] = (lN[k] || 0) + 1) > 420) continue;   /* (at most a few seconds a cap: the walker must never wait for ever on one that will not rise) */
+      if (P.onMover === m) return { x: P.x, y: P.y, key: null, hold: true, r: 4 };   /* (on it: stand - it rises under a hero who has stopped) */
+      return { x: m.x - 10, y: m.y0 + 8, hop: 1, hold: 7, land: cx, r: 9 }; }   /* (a bud is landed on from above: a hop from the stalk, east - both leaning caps carry him east) */
     /* a WEB across the way, at his height, within three tiles ahead: stand off it and cut it (one cut clears the curtain) */
     if (ctx.tileAt) for (const dir of [1, -1]) { const tx0 = Math.floor(px / TS), ty = Math.floor((py - 4) / TS); for (let d = 1; d <= 3; d++) { const tx = tx0 + dir * d; if (ctx.tileAt(tx, ty) === ctx.T.WEB || ctx.tileAt(tx, ty - 1) === ctx.T.WEB) { if (dir < 0 && !(route && route.some(([rx]) => rx < tx0 - 1))) break; return { x: tx * TS + 8 - dir * 18, y: py, key: "atk", face: dir, r: 4 }; } } }
     /* THE SEED STAIR (not her hollow's): standing on the low step, struck - the pair grows and the low one lifts him; up, a hop to the high one */
