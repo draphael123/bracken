@@ -23,8 +23,8 @@ if (WANT.includes('page')) {
     await E(`(()=>{window.__fresh=async()=>{for(const k in BK.keys)BK.keys[k]=false;BK.manualSimulation=true;BK.SET.speed=1;BK.coopEnd();BK.reset({fresh:true});await BK.allyReady();return BK.state;};return true;})()`);
     for (const seats of [2, 3]) {
       console.log('page: ' + seats + ' human seats');
-      const r = await E(`(async()=>{await __fresh();const SV=await import('/src/survival.js'),{LEVELS}=await import('/src/level.js');BK.PROG.flaskUp=2;BK.coopArm('warden',false);BK.tavern.want().seats=BK.tavern.want().seats||[];${seats > 2 ? "BK.tavern.want().seats.push({hero:'pyro',ally:false});" : ''}
-        BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(5);const o={};const ps=()=>BK.players();const fm=SV.flaskMax(BK.PROG);o.fm=fm;o.n=ps().length;o.humans=ps().filter(p=>!p.ai).length;o.start=ps().map(p=>p.flasks|0);
+      const r = await E(`(async()=>{await __fresh();const SV=await import('/src/survival.js'),{LEVELS}=await import('/src/level.js');BK.PROG.flaskUp=2;${seats > 2 ? '' : "BK.coopArm('warden',false);"}
+        BK.load(LEVELS.findIndex(l=>l.id==='wood'));BK.start();BK.sim(5);${seats > 2 ? "BK.coopStart('warden',false,[{hero:'warden'},{hero:'pyro'}]);BK.players().forEach((p,i)=>{p.x=BK.players()[0].x-10*i;p.y=BK.players()[0].y;p.vx=p.vy=0;});BK.sim(5);" : ''}const o={};const ps=()=>BK.players();const fm=SV.flaskMax(BK.PROG);o.fm=fm;o.n=ps().length;o.humans=ps().filter(p=>!p.ai).length;o.start=ps().map(p=>p.flasks|0);
         o.mul=BK.aiComp.mul();o.take=BK.aiComp.take();
         /* a seat drinks: hurt, grounded, a held press on ITS hands */
         const q=ps()[1];BK.sim(30);q.hp=Math.round(q.maxHp*0.3);const before=q.flasks|0,hp0=q.hp;q.press.flask=true;BK.sim(2);q.press.flask=false;for(let i=0;i<140;i++)BK.sim(1);o.drank={before,after:q.flasks|0,hp0,hp1:Math.round(q.hp)};
