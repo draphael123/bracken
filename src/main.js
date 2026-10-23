@@ -145,7 +145,7 @@ import * as TR from './title-region.js';   /* THE TITLE BY REGION (claude/titler
 import { depthsOf, gateOf } from './campaign-order.js'; import { roadEndId, roadTally } from './ending.js';   /* CATCH-UP XP: how deep a level sits is the level a hero is expected to be in it */
 import { GROUND_KITS } from './dressing.js';
 import { lightSupport } from './fixtures.js';
-import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js'; import * as FPA from './redraw/fen_planks_art.js'; import * as HPL from './redraw/hero_plank_poses.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
+import * as HNT from './redraw/hornets_nest_tiles.js'; import * as HNB from './redraw/hornets_nest_backdrop.js';   /* (claude/hornetsnestart) THE HORNET'S NEST's tile kit and backdrop */ import * as FRA from './redraw/fen_road_art.js'; import * as FNB from './redraw/fen_backdrop.js'; import * as FPA from './redraw/fen_planks_art.js'; import * as HPL from './redraw/hero_plank_poses.js';   /* (claude/fenroad2art) THE FEN ROAD's own backdrop */ import * as M3A from './redraw/marsh3_art.js';   /* (claude/marsh3art) MARSH WOOD 3's reed stands, current rafts, log boom, winch, night (src/redraw/marsh3_art.js) */
 import * as LPD from './redraw/lilypad.js';   /* (claude/marsh3) the readable lily pads: rim, water edge, two tints, the sinking tell, the night's marsh lights */
 import * as M2A from './redraw/marsh2_art.js'; import * as FCA from './redraw/frog_court_art.js'; /* (claude/frogking2art) THE CROAKING COURT's art: royal pads, reeds, lanterns, the stir, the leap's splash, the tongue */ /* (claude/marsh2art) MARSH WOOD 2's sluice house, dam, mud bed, stilt walks (src/redraw/marsh2_art.js) */ import { bakeFrog } from './redraw/frogking.js'; import { FK as FROGK, makeFrogCourt, stationAt as frogStationAt, nextStation as frogNextStation } from './frog-king.js'; let FKC = null;   /* (claude/marsh2) THE BULLFROG KING REWORKED: his numbers, his court (the flies, the ripples, the tipped pads, the ride) and the bot's hands */
 import * as LWP from './lw_props.js';
@@ -1320,6 +1320,7 @@ function resolveTiles() {
     const t = tileAt(x, y); let s = null; const ZG = zoneG(y);
     if (L.fenroad && L.sagCells && t !== T.SOLID && (L.sagSetI || (L.sagSetI = new Set(L.sagCells.map(([sx, sy]) => sy * LW + sx)))).has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/fenroad) a bowed section's / crew gap's boards are drawn by src/fen-road-hands.js */
     if (L.fenroad && (t === T.SOLID || t === T.PLANK || t === T.ONEWAY)) { const ts = FRA.tile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/fenroadart) THE FEN ROAD's kit: sound boards, stilt decks, driven piles, lashed log cribs, the peat cutting (src/redraw/fen_road_art.js) */
+    if (L.hornetsNest && (t === T.SOLID || t === T.ONEWAY || t === T.SPIKE)) { const ts = HNT.hnTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = 0; continue; } }   /* (claude/hornetsnestart) THE HORNET'S NEST's kit: paper shells, comb footing, wax, bark, needle litter (src/redraw/hornets_nest_tiles.js) */
     if (L.lumberKit && L.fellSet && L.fellSet.has(y * LW + x)) { tileSpr[y * LW + x] = null; tileDeep[y * LW + x] = 0; continue; }   /* (claude/lumbertrailart) a felled pine's ramp/plank cells are its trunk (drawn as the trunk), never stepped log stubs */
     if (L.lumberKit && (t === T.SOLID || t === T.ONEWAY)) { const ts = LTT.lumberTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; tileDeep[y * LW + x] = solidish(x, y) ? groundDeep[y * LW + x] : 0; continue; } }   /* (claude/lumbertrailart) THE LUMBER TRAIL's tile kit: stumps, corduroy, rock, gravel, the camp's yard, log stacks, the hollow log, log decks */
     if (L.tavern && t === T.SOLID) { const ts = TVT.tavernTile(t, x, y, tileAt, T, L); if (ts) { tileSpr[y * LW + x] = ts; continue; } }   /* THE CROSSROADS INN's own floor, cellar, ceiling and corner posts (claude/tavernart, src/redraw/tavern_tiles.js) */
@@ -31395,6 +31396,7 @@ function drawLightCones(cx, cy) {
 }
 
 function drawShaftsFront(cx, cy) {
+  if (L.hornetsNest) return;   /* (claude/hornetsnestart) the nest paints its own light */
   if (!SET.weather || SET.parts === 'low' || !daylit()) return;
   if (!SHAFT) bakeGlows();
   const sl = skylineNow(cx, cy), n = sl.length;
@@ -31417,7 +31419,7 @@ function drawShaftsFront(cx, cy) {
 }
 
 function drawShafts(cx, cy) {
-  if (!SET.weather || SET.parts === 'low' || !daylit() || L.noSkyRays) return;   /* (claude/buriedcity2: L.noSkyRays - under a sand roof the sky's rays are only the level's own shafts) */
+  if (!SET.weather || SET.parts === 'low' || !daylit() || L.noSkyRays || L.hornetsNest) return;   /* (claude/buriedcity2: L.noSkyRays - under a sand roof the sky's rays are only the level's own shafts) */
   if (!SHAFT) bakeGlows();
   g.globalCompositeOperation = 'lighter';
   for (let i = 0; i < 5; i++) { const span = VW + 160, x = (((i * 131 + 40 - cx * 0.35 + Math.sin(time * 0.2 + i) * 12) % span) + span) % span - 80, a = 0.2 + 0.07 * Math.sin(time * 0.5 + i * 1.7);
@@ -31836,6 +31838,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawStormClouds(cx, cy); // the weather itself: banks of it at their own speeds, lit from underneath when the sky goes
   if (!L.night && (!(L.weather || []).length || !weatherAt().includes('rain'))) for (const c of clouds) { const x = Math.round(c.x - cx * 0.1), y = Math.round(c.y + bgDY(cy) * 0.05); g.globalAlpha = 0.85; g.drawImage(CLOUD[c.k], ((x % (VW + 160)) + VW + 160) % (VW + 160) - 80, y); g.globalAlpha = 1; }
   if (L.sealedpyramid) SPB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE SEALED PYRAMID's face: far pyramids and THE APEX with its gilded capstone (claude/spart, src/redraw/sealed_pyramid_backdrop.js) */
+  if (L.hornetsNest) HNB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/hornetsnestart) THE HORNET'S NEST's own pine wood, the ancient pine, the nest's paper wall and honey lights, the brood hall's vault (src/redraw/hornets_nest_backdrop.js) */
   if (L.buriedcity) BCB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy));   /* THE BURIED CITY (claude/buriedcity2): UNDER THE SAND ROOF - the back wall, the roof's underside and THE HOURGLASS TOWER over the desert sky (the dunes keep theirs), whatever the parallax setting (src/redraw/buried_city_backdrop.js) */
   if (L.ksar && KSH && KSH.on()) KSH.drawBack(g, cx, cy, VW, VH, time, bgDY(cy));   /* THE BANDIT KSAR (claude/ksar art pass): the fort's skyline and the Hawk Tower on the horizon (src/redraw/ksar_set.js drawBack) */
   if (L.glasssea && GSH && GSH.on()) GSH.drawBack(g, cx, cy, time);   /* THE GLASS SEA (claude/glasssea art pass): its own sky by the hour, the far glass dunes, the Colossus on the horizon (src/redraw/glasssea_art.js) - the greybox's hook sat inside the L.dark branch and never ran */
@@ -31852,7 +31855,7 @@ function drawWorld(cx, cy, showPlayer) {
     { const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, 'rgba(0,0,0,0.42)'); gr.addColorStop(0.5, 'rgba(0,0,0,0)'); gr.addColorStop(1, 'rgba(0,0,0,0.25)');
       g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }                 /* and the dark closes over the top of it */
   } // under the mountain there is only more mountain
-  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
+  else if (SET.parallax !== 'off' && !L.colosseum && !L.sealedpyramid && !L.hornetsNest) { if (L.fields) drawFieldsTower(cx, cy);   /* THE ARCHMAGE'S TOWER, behind the far hills: nearer and brighter the further you go */
   /* THE FLOTILLA'S HARBOUR is laid for where her camera lives (a deck twenty rows down a forty-row level), not for the bottom of the
      level: the port's horizon a little over the middle of the frame, the moored hulls under it, and each layer's life laid on it */
   if (L.palette && L.palette.far === 'harbour') { const dY = bgDY(cy);
@@ -31890,12 +31893,13 @@ function drawWorld(cx, cy, showPlayer) {
   if (L.deep) drawDeepTint(cx, cy);
   if (L.tall) { const k = Math.max(0, Math.min(1, (camY + VH / 2 - L.tall.top) / (L.tall.bottom - L.tall.top))); if (k > 0.02) { g.fillStyle = 'rgba(' + (L.tall.col || '16,34,18') + ',' + ((L.tall.deepest ?? 0.4) * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } } // the roots sit in the canopy's gloom; the crown is in the light
   if (L.rot && !L.healed && !L.violet) { const k = Math.max(0, Math.min(1, (camX + VW / 2 - L.rot.x0) / (L.rot.x1 - L.rot.x0))); if (k > 0) { g.fillStyle = 'rgba(110,30,130,' + (0.26 * k).toFixed(3) + ')'; g.fillRect(0, 0, VW, VH); } }
-  drawShafts(cx, cy);
+  if (!L.hornetsNest) drawShafts(cx, cy);
   if (L.witch && SET.parallax !== 'off' && !L.colosseum) drawWitchBack(cx, cy);
   if (MRH && MRH.on() && SET.parallax !== 'off') MRH.drawFar(g, cx, cy, VW, VH, time);   /* GALE MOOR: the goblins' windmill frame on the horizon */
   if (L.oreRoad && SET.parallax !== 'off') drawOreBackdrop(g, VW, VH, cx, time, cy);   /* THE ORE ROAD: her castle on its peak, and the far pylons marching to it */   /* THE WITCHLIGHT STAIR: its tower stands in front of the far hills, behind the near ones */
-  if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
+  if (BG.nearTrees && !L.colosseum && !L.rootway && !L.lumberKit && !L.fenroad && !L.hornetsNest) { g.globalAlpha = 0.85; drawLayer(BG.nearTrees, 0.45, VH - 300, cx, cy); g.globalAlpha = 1; }
   if (L.palette && L.palette.near === 'harbour') HB.drawHarbourLayer(g, 'near', BG.near, 0.55, VH - 265, cx, bgDY(cy), time, VW, VH);
+  else if (L.hornetsNest) { if (SET.parallax !== 'off') HNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/hornetsnestart) pollen and boughs outside; wax motes, far hornets and the nest's close warm edge inside */
   else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/fenroad2art) the fen's near trunks, moss curtains, low drift and dragonflies */
   else if (L.lumberKit) { if (SET.parallax !== 'off') LTB.drawNearTrunks(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/lumberbackdrop) the trail's own near trunks + boughs, not the shared leafy trees */
   else if (!L.castle && !L.colosseum && !FAIR && !L.canal && !L.towpath && !L.rootway && !(L.palette && L.palette.near === 'none')) drawLayer(BG.near, 0.55, VH - 300, cx, cy);
@@ -31935,14 +31939,14 @@ function drawWorld(cx, cy, showPlayer) {
   if (FAIR) FR.drawBack(g, cx, cy, VW, VH, L, FAIR, time, { dusk: dusk(), burnT: FAIR.effigyBurnT || 0, burnDone: !!FAIR.effigyBurnDone, heroes: players.map(p => ({ x: p.x, y: p.y })), foes: enemies.filter(q => q.alive && (q.t === 'mummer' || q.t === 'stringjack') && Math.abs(q.x - P.x) < 420).map(q => ({ x: q.x, y: q.y, mode: q.mode })) });   /* the effigy, the wheel's frame, the swing ride's gantry, the hall of mirrors' back wall and glass */   /* THE HARVEST FAIR: the figures at the edge of the light, more of them the later it gets */   /* (after the near layer, so the hall's glass is not sat under a skyline) */
   // THE TRUNKS STAY BEHIND THE ROAD: scenery cannot turn into a wall, or flash when a hero crosses its ink.
   drawHarborLandmarks(g,L,cx,cy);
-  drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg)) drawFg(cx, cy);
+  drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg) && !L.hornetsNest) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
   if (L.ucKit) { UCA.drawShafts(g, cx, cy, VW, VH, time, tileAt, T); UCA.drawAmbient(g, cx, cy, VW, VH, time, tileAt, T, props); }   /* THE UNDERCROWN: the castle's light through the cracks, the drips, the grit, the lamp moths (claude/undercrown2art) */
   /* THE SAND'S OWN SKY, over the level's violet night and under everything else: the camera is only ever up here after
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
      and built of no tiles at all - see the head of src/sanctum.js for why. */
   if (L.sandWalk) drawDesertEnd(g, L, cx, cy, time, desertEndArt());   /* (round 2) THE DESERT past the second door, the Caravan's own sky and land */   /* PAST THE SECOND DOOR AND NOWHERE ELSE. Gating this on the camera height instead put it within a pixel or two of flashing above the vault at the top of the fight, where the room is 24px shallower than the screen is tall. */
-  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); if (L.fenroad) FRA.drawBack(g, L, cx, cy, time, T, P.x); if (L.frogCourt) FCA.drawBack(g, L, cx, cy, time); drawClimbCues(g,L,cx,cy);
+  if (LEH && LEH.on()) LEH.drawWall(cx, cy, time); drawTowerBackdrop(g,L,cx,cy); drawBurningTown(cx, cy); drawHouses(cx, cy); if (!L.towpath && !L.hornetsNest) drawRouteSupports(g,L,cx,cy); if (L.marsh2Kit) M2A.drawBack(g, L, cx, cy, time); if (L.marsh3) M3A.drawBack(g, L, cx, cy, time, T, darkNow); if (L.fenroad) FRA.drawBack(g, L, cx, cy, time, T, P.x); if (L.frogCourt) FCA.drawBack(g, L, cx, cy, time); drawClimbCues(g,L,cx,cy);
   const tx0 = Math.floor(cx / TS), ty0 = Math.floor(cy / TS);
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
