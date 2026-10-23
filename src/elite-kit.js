@@ -61,7 +61,7 @@ export const AFFIX_AT = {
   'marsh|thorn#amb': 'VENOMOUS',   /* (claude/order: the far bank's thorned spike goblin is THE BOG BLADE now) */
   'stockade|archer#amb': 'SWIFT',   /* (claude/wardens12: the camp brute is THE HORN LANCE now - his SUMMONER rides his ent) */
   'spore|shield#amb': 'THORNED',   /* (claude/wardens12: the cap-top shield is THE SPORE MAGE now - VENOMOUS rides his ent) */
-  'kings|brute': 'UNSTOPPABLE', 'kings|archer#amb': 'WARDING',
+  'kings|brute#1': 'UNSTOPPABLE', 'kings|brute#2': 'SWIFT',   /* (integ115: the rebuilt Hunting Wood places two brutes - the road's keeps UNSTOPPABLE, the second is quick) */ 'kings|archer#amb': 'WARDING',
   'underleaf|brute#1': 'WARDING', 'underleaf|brute#2': 'SWIFT', 'underleaf|shield#1': 'SHIELDED', 'underleaf|shield#2': 'WARDING', 'underleaf|archer': 'SWIFT', 'underleaf|hearthgob#1': 'THORNED', 'underleaf|hearthgob#2': 'SUMMONER',   /* (claude/underleaf2) the terrace's captain at the windmill foot (his sprig takes half from the front: him first), the green's captain in the open */
   'burning|brute#amb': 'BURNING',   /* (claude/wardens12: the crofts' shield is THE EMBER BLADE now - BURNING rides his ent) */
   'scree|troll#amb': 'THORNED',   /* (claude/wardens12: the crag troll at 505 is THE SCREE MAUL now) */
