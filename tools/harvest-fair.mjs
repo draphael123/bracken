@@ -478,10 +478,10 @@ try {
     // 2. BACK TURNED: face away: it creeps toward him
     const x1 = m0.x; for (let i = 0; i < 120; i++) { BK.P.x = m0.x - 110; BK.P.y = m0.y; BK.P.vx = 0; BK.P.face = -1; BK.sim(1); }
     out.creepDx = x1 - m0.x; out.creepMode = m0.mode; out.bell = BK.mummerBells ? BK.mummerBells() : null;
-    // 3. HIT WHILE FROZEN: look at it, swing: it takes damage and dies in a few blows
-    BK.P.x = m0.x - 14; BK.P.y = m0.y; BK.P.face = 1; BK.sim(4); m0.st.mode = 'still'; const hp0 = m0.hp; let blows = 0, bx = m0.x;
-    for (let i = 0; i < 12 && m0.alive; i++) { BK.P.x = m0.x - 16; BK.P.y = m0.y; BK.P.face = 1; BK.P.vx = 0; BK.P.inv = 99; BK.press('atk'); BK.sim(30); blows++; }
-    out.hit = { hp0, hp1: m0.hp, alive: m0.alive, blows, moved: Math.abs(m0.x - bx) };
+    // 3. HIT WHILE FROZEN: count damaging hits, not button presses (Daniel, 2026-10-23). The original 12-attempt cap and 2..5-hit assertion remain.
+    BK.P.x = m0.x - 14; BK.P.y = m0.y; BK.P.face = 1; BK.sim(4); m0.st.mode = 'still'; const hp0 = m0.hp; let blows = 0, attempts = 0, bx = m0.x;
+    for (let i = 0; i < 12 && m0.alive; i++) { BK.P.x = m0.x - 16; BK.P.y = m0.y; BK.P.face = 1; BK.P.vx = 0; BK.P.inv = 99; BK.log = []; BK.press('atk'); BK.sim(30); attempts++; blows += BK.log.filter(q => q.k === 'dmgE' && q.e === m0 && q.hp < q.hp0).length; BK.log = null; }
+    out.hit = { hp0, hp1: m0.hp, alive: m0.alive, blows, attempts, moved: Math.abs(m0.x - bx) };
     return out;
   })()`, 600000);
 } finally { pg.close(); }
