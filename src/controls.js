@@ -21,7 +21,7 @@
 export const KB_ACTIONS = [
   { id: 'left', label: 'MOVE LEFT' }, { id: 'right', label: 'MOVE RIGHT' }, { id: 'up', label: 'UP / LOOK UP' }, { id: 'down', label: 'CROUCH / DOWN' },
   { id: 'jump', label: 'JUMP' }, { id: 'atk', label: 'ATTACK / HEAVY' }, { id: 'block', label: 'C: GUARD/ABILITY' }, { id: 'dodge', label: 'DODGE' },
-  { id: 'throw', label: 'SKILL ONE' }, { id: 'skill2', label: 'SKILL TWO' }, { id: 'flask', label: 'DRINK FLASK' }, { id: 'stance', label: 'RANGER: BOW / KNIFE' }, { id: 'grab', label: 'GRAB / THROW' },   /* (claude/partnerthrow) lift your partner, throw him; throw what you carry */ { id: 'talk', label: 'TALK / READ' }, { id: 'map', label: 'MAP' },
+  { id: 'throw', label: 'SKILL ONE' }, { id: 'skill2', label: 'SKILL TWO' }, { id: 'flask', label: 'DRINK FLASK' }, { id: 'stance', label: 'BOW / KNIFE' }, { id: 'grab', label: 'GRAB / THROW' },   /* (claude/partnerthrow) lift your partner, throw him; throw what you carry */ { id: 'talk', label: 'TALK / READ' }, { id: 'map', label: 'MAP' },
   { id: 'talents', label: 'SKILLS MENU' }, { id: 'pause', label: 'PAUSE' }, { id: 'dance', label: 'EMOTE' },
 ];
 export const ACTION_IDS = KB_ACTIONS.map(a => a.id);
@@ -31,13 +31,13 @@ const PROFILE_IDS = PROFILES.map(p => p.id);
 /* THE DEFAULTS: the lists main.js's KEYS held before rebinding existed, word for word */
 export const KB_DEFAULT = {
   jump: ['z', 'Space', 'ArrowUp', 'w', 'k'], atk: ['x', 'j', 'Enter'], block: ['c', 'l'], dodge: ['v', 'Shift'],
-  throw: ['f', 'b'], grab: ['i'], skill2: ['g', 'n'],   /* GRAB: I (free: V is the dodge, Y is a common rebind) */ talk: ['e', 't'], flask: ['u', '1'], stance: ['2'],   /* THE RANGER's STANCE (Daniel 10-15) */   /* THE FLASK (claude/survival, Daniel 10-07) */
+  throw: ['f', 'b'], grab: ['i'], skill2: ['g', 'n'],   /* GRAB: I (free: V is the dodge, Y is a common rebind) */ talk: ['e', 't'], flask: ['u', '1'], stance: ['2'],   /* THE RANGER's STANCE (Daniel 10-15). 10-23: no second key - O, Y and the rest are the rebinds other actions and tests rely on being free */   /* THE FLASK (claude/survival, Daniel 10-07) */
   left: ['ArrowLeft', 'a'], right: ['ArrowRight', 'd'], down: ['ArrowDown', 's'], up: ['ArrowUp', 'w'], pause: ['Escape', 'p'], talents: ['q'], dance: ['h'], map: ['Tab'],
 };
 /* the pad's defaults: A jump, X swing, B dodge, Y skill one, RT skill two, LB/RB C, BACK the emote, START pause, the d-pad to move (the stick always moves too).
    skill three / four (L3, R3) have no menu row (the game has two skill slots) but keep their buttons. */
 /* (claude/survival) THE FLASK takes LT (6), which was talk's second button: talk keeps the d-pad's up */
-export const PAD_DEFAULT = { stance: [], jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], grab: [11], talk: [12],   /* GRAB: R3 (the fourth skill slot has no skill, so its press is free) */ flask: [6], block: [4, 5], dance: [8], pause: [9],
+export const PAD_DEFAULT = { stance: [8],   /* (Daniel 10-23) BACK: the ranger's BOW / KNIFE. BACK is also the emote's button: a ranger's BACK is the stance and does not dance (main.js: danceHeld). Every other free button is a skill, the flask, the grab or the C guard */ jump: [0], atk: [2], dodge: [1], throw: [3], skill2: [7], skill3: [10], skill4: [11], grab: [11], talk: [12],   /* GRAB: R3 (the fourth skill slot has no skill, so its press is free) */ flask: [6], block: [4, 5], dance: [8], pause: [9],
   left: [14], right: [15], up: [12], down: [13], map: [], talents: [] };
 const ALL_PAD_ACTIONS = Object.keys(PAD_DEFAULT);
 
@@ -182,7 +182,7 @@ export function cardRows({ hero = 'knight', binds = emptyBinds(), prof = 'pad1',
     [cRow[0], cRow[1](tk), pd('block')],
     ...(hero === 'paladin' ? [['hammer throw', k1('up') + '+' + tk.c + '  (THREE PIPS)', pd('up') + '+' + pd('block')], ['tap ' + tk.c + ' spends', 'SMITE 1-2 RADIANCE 3-4 SUN 5', pd('block')]] : []),   /* (claude/paladin2) THE LIGHT SPENT */
     ...(hero === 'berserker' ? [['axe throw', k1('up') + '+' + tk.c + '  (PICK IT UP)', pd('up') + '+' + pd('block')]] : []),   /* THE BERSERKER's off axe (src/berserker.js throwAxe) */
-    ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['stance', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
+    ...(hero === 'ranger' ? [['mark', k1('up') + '+' + tk.c + '  (FOCUS FULL)', pd('up') + '+' + pd('block')], ['bow / knife', kb('stance') + ': BOW / KNIFE', pd('stance')]] : []),   /* THE RANGER's focus, spent (src/ranger.js spendMark) */
     ['dodge', hero === 'ranger' ? k1('dodge') + ': BACKFLIP, OR TAP A WAY TWICE' : hero === 'warden' ? k1('dodge') + ' BACK, OR TAP A WAY TWICE' : 'TAP A WAY TWICE, OR ' + kb('dodge'), pd('dodge')],
     ['', 'TELLS ARE TIMED FOR ONE PRESS', pd('dodge')],
     hero === 'reaper' ? ['summon', kb('throw') + '  (HOLD, FULL: SURGE)', pd('throw')] : ['skill', kb('throw') + ' (equipped)', pd('throw')],

@@ -96,7 +96,7 @@ export const POSE_BEATS = {
   bzUnch: [0.16],              /* UNCHAINED: fists to his chest, then flung out */
   bzStorm: [0.12],             /* AXE STORM: one hatchet underhand, then the fan overhand */
   /* THE RANGER (claude/ranger): her shots and her kit, each the bow doing something */
-  rgShot: [0.07], rgAirShot: [0.07], rgLoose: [0.1], rgRise: [0.08], rgDown: [0.08], rgBash: [0.06], rgSnare: [0.12], rgMark: [0.12], rgHawkPose: [0.14], rgLeapPose: [0.16],
+  rgShot: [0.07], rgAirShot: [0.07], rgLoose: [0.1], rgRise: [0.08], rgDown: [0.08], rgBash: [0.06], rgSnare: [0.12], rgMark: [0.12], rgSling: [0.1], rgBowUp: [0.1], rgHawkPose: [0.14], rgLeapPose: [0.16],
   ripo: [0.06, 0.14],          /* (claude/ranger) THE RIPOSTE STRIKE when it is an ARROW (hers): the step-in, the loose, the follow-through - played off the pose clock, not the swing */
   rgVolleyPose: [0.12], rgTrapPose: [0.12], rgRainPose: [0.14], rgSmokePose: [0.12], rgRefillPose: [0.16], rgHeartPose: [0.18], rgHuntPose: [0.16],
 };

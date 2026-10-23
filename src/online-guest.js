@@ -98,6 +98,7 @@ addEventListener('keydown', e => {
   for (const [a, pr] of [['dodge', 1], ['throw', 1], ['grab', 1], ['talk', 1], ['left', 1], ['right', 1], ['down', 1], ['up', 1], ['dance', 0]]) if (isKey(e, KT[a])) { hold(kb, a, true); if (pr) presses.add(a); }
   if (isKey(e, KT.skill2)) presses.add('skill2');
   if (isKey(e, KT.flask)) presses.add('flask');
+  if (isKey(e, KT.stance)) presses.add('stance');   /* (claude/rangerhud) a ranger guest's BOW / KNIFE */
   const lk = e.key.toLowerCase(); if (lk === String(SET.skill3Key || '3')) presses.add('skill3'); if (lk === String(SET.skill4Key || '4')) presses.add('skill4');
   e.preventDefault(); flush();
 });
@@ -116,7 +117,7 @@ function pollPad() {
   if (!gp) { if (Object.keys(pad).length) { for (const k in pad) delete pad[k]; flush(); } return; }
   const now = CTL.padStateOf(gp, PT), rose = k => now[k] && !padPrev[k];
   if (rose('pause')) toggleMenu();
-  if (!G.menu) { for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'left', 'right', 'up', 'down']) if (rose(k)) presses.add(k);
+  if (!G.menu) { for (const k of ['jump', 'atk', 'dodge', 'throw', 'grab', 'skill2', 'skill3', 'skill4', 'talk', 'flask', 'stance', 'left', 'right', 'up', 'down']) if (rose(k)) presses.add(k);
     for (const k of HELD) hold(pad, k, !!now[k]); }
   if (Object.values(now).some(Boolean)) unmute();
   padPrev = now; flush();
@@ -125,7 +126,7 @@ function pollPad() {
 /* THE PHONE: the game's own touch buttons, on this page's own canvas, writing into `tk` - the same layer, his own layout and size */
 const TCH = createTouch({ disp, dg: disp.getContext('2d'), q, SET, save: () => {}, geom: () => geo, state: () => (G.phase === 'play' && !G.menu ? 'play' : 'online'), keys: tk,
   initAudio: () => unmute(), press: k => { if (k === 'pause') { toggleMenu(); return; } if (k !== 'confirm') presses.add(k); queueMicrotask(() => flush()); },   /* (claude/batch86) AFTER the touch layer has set the key it holds for this button: a press sent before its hold reaches the host as a jump with the key not down - a 7 px hop, the variable-jump cut */
-  skillOn: i => i < 2, skillInfo: () => null, phoneMode: () => {}, verb: () => ({ verb: 'USE', key: 'talk' }), ctx: () => (G.grab ? { label: G.grab, key: 'grab' } : null), autoFace: () => {}, speed: () => 0, padUsed: () => false, touched: () => {} });
+  stance: () => (G.hero === 'ranger' ? { s: 'bow', q: 0, mq: 0 } : null), skillOn: i => i < 2, skillInfo: () => null, phoneMode: () => {}, verb: () => ({ verb: 'USE', key: 'talk' }), ctx: () => (G.grab ? { label: G.grab, key: 'grab' } : null), autoFace: () => {}, speed: () => 0, padUsed: () => false, touched: () => {} });
 place();
 
 let last = performance.now();

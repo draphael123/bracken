@@ -242,6 +242,9 @@ async function pageTextFit(input) {
     /* (claude/coopplates) THE SEAT PLATES with hero icon + 'HERO LV n' + the over-head level tags, two, three and four human seats (guests: no save), the longest hero name, a downed seat in the last one */
     for (const n of [2, 3, 4]) { BK.coopEnd(); BK.coopStart('geomancer', false, [{ hero: 'reaper' }, { hero: 'berserker' }, { hero: 'geomancer' }].slice(0, n - 1));
       frame('seat plates x' + n, () => { BK.state = 'play'; const ps = BK.players(); ps.forEach((p, i) => { p.tagUntil = BK.time + 9; if (i) { p.x = ps[0].x + i * 30; p.y = ps[0].y; p.vx = p.vy = 0; p.leash = 0; } if (i === n - 1 && n > 2) { p.down = 8; p.hp = 0; } }); }, { settle: 5 }); }
+    /* (claude/rangerhud) a RANGER's seat plate: her own quiver row, three ranger seats (the plate is 9 px taller each), one low, one on the knife, one empty */
+    BK.coopEnd(); BK.coopStart('ranger', false, [{ hero: 'ranger' }, { hero: 'ranger' }, { hero: 'ranger' }]);
+    frame('seat plates x4 rangers', () => { BK.state = 'play'; const ps = BK.players(); ps.forEach((p, i) => { p.tagUntil = BK.time + 9; if (i) { p.x = ps[0].x + i * 30; p.y = ps[0].y; p.vx = p.vy = 0; p.leash = 0; } p.rgStance = i === 2 ? 'knife' : 'bow'; p.rgQ = [5, 1, 4, 0][i]; p.rgMaxQ = 5; p.rgRefMax = 8; p.rgRefT = 4; p.rgArrows = p.rgArrows || []; }); }, { settle: 5 });
     /* (claude/partypersist) THE PARTY'S WIN CARD BUTTON (Z NEXT: <WOOD> ESC MAP, on every wood that has a next one) and the MAP's party chips (four seats, the longest hero names) */
     const roadIds = BK.mapNodes().ids.filter(id => lvm.LEVELS.some(l => l.id === id)), nameOf = id => (lvm.LEVELS.find(l => l.id === id) || { name: '' }).name.length, longNext = roadIds.map((id, i) => [id, nameOf(roadIds[i + 1] || '')]).sort((a, b) => b[1] - a[1]).slice(0, 5).map(a => lvm.LEVELS.findIndex(l => l.id === a[0]));   /* the five woods whose NEXT wood has the longest name */
     for (const li of [lvm.LEVELS.findIndex(l => l.id === 'wood'), ...longNext]) { if (li < 0 || lvm.LEVELS[li].hidden) continue; toPlay(li, 'reaper'); BK.coopEnd(); BK.coopStart('geomancer', true, [{ hero: 'geomancer', ally: true }, { hero: 'berserker' }, { hero: 'reaper' }]); BK.aiComp.arm(['geomancer', 'berserker', 'reaper'], ['support', 'balanced', 'defensive'], 3);
@@ -310,7 +313,7 @@ async function pageTextFit(input) {
     for (let p = 0; p < BK.creditPageCount(); p++) frame('credits page #' + p, () => { BK.state = 'credits'; BK.creditsPage = p; }, { settle: 20 });
     await yieldNow(); }
 
-  if (want('hud')) for (const h of HEROES) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);
+  if (want('hud')) for (const h of [...HEROES, 'ranger']) { toPlay(campaign.findIndex(([l]) => l.id === 'waymeet') >= 0 ? campaign.find(([l]) => l.id === 'waymeet')[1] : 0, h);
     frame('hud [' + h + '] meters full', () => { BK.state = 'play'; Object.assign(P, { resolve: 100, heat: 100, full: true, light: 100, harvest: 100, plunder: 100, loaded: true, mixN: 5, mixAt: BK.time, mixLast: 'x' }); window.BK.PROG.tonics = 3; });   /* (claude/riposteart: the MIX-UP chain's five pips are on the bar too) */
     frame('hud [' + h + '] swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });
     /* HUD-SLIM: the PLATE HUD is the opt-in (the default is MINIMAL, measured above): the same frames with it on, and the minimal one hurt and winded */
@@ -319,6 +322,10 @@ async function pageTextFit(input) {
     frame('hud [' + h + '] PLATE swimming, no air', () => { BK.state = 'play'; Object.assign(P, { swim: true, breath: 0 }); });
     BK.SET.hud = 'minimal'; P.swim = false;
     frame('hud [' + h + '] minimal hurt and winded', () => { BK.state = 'play'; Object.assign(P, { hp: Math.max(1, P.maxHp * 0.4), st: 0, mixN: 5, mixAt: BK.time, mixLast: 'x' }); });
+    if (h === 'ranger') {   /* (claude/rangerhud) THE QUIVER ROW under the XP bar: bow / knife stance, full / low / empty, arrows lying out in the world, both HUDs */
+      for (const hm of ['full', 'minimal']) { BK.SET.hud = hm; for (const [nm, st, q, ly] of [['bow full', 'bow', 5, 0], ['bow low', 'bow', 1, 3], ['bow empty', 'bow', 0, 5], ['knife', 'knife', 3, 2]])
+        frame('hud [ranger] ' + hm + ' quiver ' + nm, () => { BK.state = 'play'; P.rgStance = st; P.rgQ = q; P.rgRefT = 3; P.hp = P.maxHp; P.st = P.maxSt; P.rgArrows = []; for (let i = 0; i < ly; i++) P.rgArrows.push({ x: P.x + 20 + i * 8, y: P.y, vx: 0, vy: 0, g: 0, state: 'lie', t: 0, kind: 'quick', hit: new Set(), tag: 'shot', dmg: 1, x0: P.x, y0: P.y, ang: 0.1 }); }); }
+      BK.SET.hud = 'minimal'; P.rgStance = 'bow'; P.rgQ = 5; P.rgArrows = []; }
     P.hp = P.maxHp; P.st = P.maxSt; await yieldNow(); }
 
   /* THE WORLD PLATES (claude/marsh3, Daniel 10-20: "the black text box on the raft - text not centred"): a label drawn on its own dark plate over the world
