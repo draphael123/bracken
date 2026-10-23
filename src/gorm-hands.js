@@ -48,7 +48,7 @@ export function makeGormHands(ctx) {
     if (!warmed) { warmed = true; warm(); }
     const g = lv.gorm, keepSaid = S ? S.said : new Set();
     S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [], rocks: [], took: 0, rockCd: 0, near: null, arc: null,
-      run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
+      run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false, surged: false, surgeT: 0 }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
       hangs: (g.glade.hangs || []).map(d => ({ d, state: 'hang', y: d.y0, vy: 0, lx: d.x, resetT: 0, hitK: false, heroHit: false, turn: 0 })),
       cones: [], logs: [], waves: [], swarms: [], n: { arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
     /* the hall's ropes: one to each boss cage, by column */
@@ -201,7 +201,11 @@ export function makeGormHands(ctx) {
     if (!persist) { ctx.drainStop('gormfire'); ctx.drainStop('gormground'); return; }
     if (run.armed && P && P.x > g.hall.x1 + 12) { run.armed = false; run.on = true; run.t = R.grace - 0.6; run.fireX = g.hall.x1 - 4 * TS; }
     if (run.on && !run.done) { run.t += dt;
-      if (run.t > R.grace) run.fireX = Math.min(g.run.fireMax, fireStep(run.fireX, P ? P.x : run.fireX, dt));
+      /* (claude/kingsfix2: more hectic) the fire SURGES once as the bough bridge begins (a word, a roar, 3 s at the run's speed + surgeV), and the wood shakes every few seconds */
+      if (g.run.surgeAt && !run.surged && P && P.x >= g.run.surgeAt) { run.surged = true; run.surgeT = R.surgeT; say(P.x, P.y - 40, 'surge', '#ff6b5c'); ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); }
+      if (run.surgeT > 0) run.surgeT -= dt;
+      if (P && !P.dead && (run.trem = (run.trem === undefined ? R.tremEvery : run.trem) - dt) <= 0) { run.trem = R.tremEvery * (0.7 + 0.6 * ((Math.sin(run.t * 7.1) + 1) / 2)); ctx.shake(2); ctx.sfx.creak && ctx.sfx.creak(); }
+      if (run.t > R.grace) run.fireX = Math.min(g.run.fireMax, fireStep(run.fireX, P ? P.x : run.fireX, dt) + (run.surgeT > 0 ? R.surgeV * dt : 0));
       if (P && P.x >= g.run.cpX) { run.done = true; run.on = false; persist.runDone = true; lv.oakBurn = 0.55; ctx.number(P.x, P.y - 40, GORM_SAY.fireDies, '#8fd160'); }
       const inFire = P && !P.dead && P.x < run.fireX + 4;
       if (inFire) { ctx.drain('gormfire', R.drain, { name: GORM_SAY.burning, die: 'BURNED IN THE WOOD', tick: '#ff9a5c' }); S.n.fireT += dt; if (once('inFire')) say(P.x, P.y - 34, 'burning', '#ff6b5c'); }
@@ -305,6 +309,7 @@ export function makeGormHands(ctx) {
   H.update = dt => {
     if (!S) return; S.clankT = Math.max(0, (S.clankT || 0) - dt);
     if (hallOn() && S.n.fightAt === undefined) S.n.fightAt = Math.round(ctx.time() * 10) / 10;
+    { const Pp = ctx.P(); if (Pp && S.n.fightAt !== undefined && S.n.p1At === undefined) { if (S.lastHp !== undefined && Pp.hp < S.lastHp) S.n.p1Taken = (S.n.p1Taken || 0) + (S.lastHp - Pp.hp) / Pp.maxHp; if (S.lastFl !== undefined && (Pp.flasks || 0) < S.lastFl) S.n.p1Drinks = (S.n.p1Drinks || 0) + 1; S.lastHp = Pp.hp; S.lastFl = Pp.flasks || 0; } }   /* (claude/kingsfix2 measuring: what P1 cost the hero) */
     hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt);
     const e = king(), lv = L();
     if (e && e.stage === 'glade' && ctx.bossActive() && S.n.p2At === undefined) S.n.p2At = Math.round(ctx.time() * 10) / 10;
@@ -371,6 +376,9 @@ export function makeGormHands(ctx) {
         if (tl) { if (ctx.text) ctx.text('!', x, by - 28, '#ff6b5c', 'center'); for (let q = 0; q < 3; q++) { const t = (time * 2 + q / 3) % 1; f(g, '#ff9a3c', x - 8 + q * 8, by + t * 60, 1, 2); } } }
       else if (b.state === 'fall') { const by = y - 74 * (b.t / 0.22) - 5; g.drawImage(GG.branch(34), x - 21, by - 8); flame(g, x, by - 2, 10, time, b.x); f(g, 'rgba(255,170,80,0.5)', x - 1, by - 36, 2, 30); }
       else if (b.state === 'down') { g.drawImage(GG.branch(34), x - 21, y - 14); flame(g, x - 8, y - 6, 8 * Math.min(1, b.t) + 2, time, b.x); flame(g, x + 9, y - 6, 6 * Math.min(1, b.t) + 2, time, b.x + 1); } }
+    /* (claude/kingsfix2) THE BOUGH BRIDGE's limbs burn: a flame at each end of every limb that holds, tall and white-hot while it counts down (the crack and the count are the game's: drawCrumbles) */
+    for (const c of (lv.crumbles || [])) { if (c.kind !== 'bough' || c.st === 'down' || c.gone) continue; const x0 = R(c.x0 * TS - cx), x1 = R((c.x1 + 1) * TS - cx), y = R(c.row * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; const cnt = c.st === 'count';
+      FX.flame(g, x0 + 6, y + 1, cnt ? 'M' : 'S', time, c.x0); FX.flame(g, x1 - 6, y + 1, cnt ? 'M' : 'S', time, c.x1 + 5); if (cnt || (c.x0 & 1)) FX.flame(g, (x0 + x1) / 2, y + 1, 'S', time, c.x0 + 11); }
     /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the marks, the logs, the hive */
     const gl = lv.glade; if (gl) { const gOn = gladeOn();
       for (const h of S.hangs) for (const [pk, pgx] of h.d.pegs.entries()) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(pgx - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;

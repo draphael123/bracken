@@ -1733,7 +1733,7 @@ function drawDowned(cx, cy) {
 }
 /* (claude/coopplates, Daniel 10-21: "show the level and class of the other players more clearly") A SEAT'S LEVEL, LIVE: a seat on his own save reads his own XP (it lands in his view as he earns);
    a guest or a lent hero plays at player one's level (heroLevel: coopLent). Read outside any pass, so no asPlayer swap per frame. */
-const seatLv = p => { try { const x = p && p.prof ? (p.prof.view.xp || {})[p.hero] || 0 : ((profHost || PROG).xp || {})[players[0].hero] || 0; return levelOfXp(x); } catch { return 1; } };
+const seatLv = p => { try { const x = p && p.prof ? (p.prof.view.xp || {})[p.hero] || 0 : ((profHost || PROG).xp || {})[players[0].hero] || 0; return Math.max(1, levelOfXp(x)); } catch { return 1; } };   /* (claude/kingsfix2, Daniel 10-23) a fresh save reads LV 1, not LV 0 - the label only; the hero's stats and the XP floors are unchanged (old saves load as they were) */
 const seatHeroName = p => HERO_SHORT[p.hero] || String(p.hero).toUpperCase();
 /* THE HERO ICON: a crop of the hero's own idle frame at its native pixels (a bust for the plate, just the head for the over-head tag) - block-voting a thin-lined sprite down ate it. Cropped about his feet anchor (ax, ay). */
 function drawHeroIcon(h, x, y, cw, ch, off, a, ctx) {
@@ -1791,7 +1791,7 @@ function drawSeatPlate(p, slotI) {
 const CAMPAIGN_END = roadEndId(LEVELS);
 const campaignDone = () => !!LEVELS[levelIndex] && LEVELS[levelIndex].id === CAMPAIGN_END;
 const scoreRows = s => [['foes', s.kills], ['hurt', s.dmg], ['gold', s.coins], ['revives', s.revives], ['turned', s.turns], ['deaths', s.deaths]];
-const coopName = p => (p.ai ? 'ALLY ' : 'P' + (p.n || 1) + ' ') + (HERO_SHORT[p.hero] || String(p.hero).toUpperCase());
+const coopName = p => (p.ai ? 'AI ' : 'P' + (p.n || 1) + ' ') + (HERO_SHORT[p.hero] || String(p.hero).toUpperCase());
 /* WHO CAME OUT AHEAD, in words. The ally is tallied but never wins: it is not a player, and losing to the
    computer on a card you asked for company on is nobody's idea of a good evening. */
 function coopWinner(key) {
@@ -5613,7 +5613,7 @@ const treePreview = (n, x, y, w, h) => { if (!n) return;
   drawAbilityPreview(g, x, y, w, h, { id: n.id, hero: hero(), t: time, idle: set.R.idle, atk: set.R.atk, icon: treeIcon(n) }); };
 function drawSkills() {   /* the SKILLS tab of the one store: the loadout on F and G, the abilities and passives, and the live preview of the one under the cursor */
  const h=hero(),lv=heroLevel(),ns=treeNodes(),idx=Math.max(0,Math.min(ns.length-1,treeI)),n=ns[idx],list=equipped(PROG,h,lv),limit=slotsAt(lv),width=(VW-20)/limit;
- text('LEVEL '+lv,VW/2,6,UI.dim,'center',6);
+ text('LEVEL '+Math.max(1,lv),VW/2,6,UI.dim,'center',6);
  for(let i=0;i<limit;i++){const x=10+i*width,id=list[i],sk=skillFor(h,id),lab=sk&&!sk.active?'PASSIVE':['F','G',SET.skill3Key.toUpperCase()][i],lw=inkW(lab,6)+8;g.fillStyle='#302c3e';g.fillRect(x,38,width-3,11);text(lab,x+4,40,UI.gold,'left',6);text(fitName(sk?sk.name:'EMPTY',width-lw-8,6),x+4+lw,40,UI.text,'left',6);}
  for(let tab=0;tab<2;tab++){const x=10+tab*95;g.fillStyle=treeBranch===tab?'#4a4431':'#201e2c';g.fillRect(x,51,91,11);text(tab===0?'ACTIVES':'PASSIVES',x+45,53,treeBranch===tab?UI.gold:UI.dim,'center',6);}
  const LW=192,start=Math.floor(idx/6)*6;for(let i=start;i<Math.min(ns.length,start+6);i++){const q=ns[i],y=64+(i-start)*10,owned=PROG.skillOwned[h]?.[q.id],eq=list.includes(q.id);if(i===idx){g.fillStyle='#4a4431';g.fillRect(9,y-1,LW,10);}
@@ -6126,7 +6126,7 @@ function drawSlots() {
     const cleared = LEVELS.filter(l => p[l.id] && p[l.id].cleared).length, medals = LEVELS.reduce((a, l) => a + ((p[l.id] && p[l.id].medal) || 0), 0), hid = p.hero || 'knight', hn = ((HEROES.find(q => q.id === hid) || {}).name || hid.toUpperCase()).replace(/^THE /, '');
     const skin = SKINS.find(k => k.id === (p.skin || 'bracken')); const gT = gearTier(slotLevel(p), SET.gear === false), K2 = preview('slot:' + (p.hero || 'knight') + ':' + (p.skin || 'bracken') + ':' + (p.sword || 'steel') + ':g' + gT, () => heroSet(p.skin || 'bracken', p.sword || 'steel', 'idle', p.hero || 'knight', gT)); void skin;
     g.save(); g.beginPath(); g.rect(x + 1, y + 1, 40, h - 2); g.clip(); drawSet(K2, 'idle', Math.floor(time * 4.5), x + 22, y + h - 2, 1, false); g.restore();
-    text(hn, x + 100, y + 4, '#fff6e0'); { const lv = slotLevel(p), roomL = w - 6 - (i === slot ? inkW('LAST PLAYED', 6) + 8 : 0) - (108 + inkW(hn, 8)); text((inkW('LEVEL ' + lv, 8) <= roomL ? 'LEVEL ' : 'LV ') + lv, x + 108 + inkW(hn, 8), y + 4, '#8fd160'); }   /* (a long hero name gives LEVEL up for LV before it would run into LAST PLAYED; textfit slots) */   /* (SLOT 1 is ~48 px wide from x + 44: the hero starts at x + 100, a clear gap after it) */
+    text(hn, x + 100, y + 4, '#fff6e0'); { const lv = Math.max(1, slotLevel(p)), roomL = w - 6 - (i === slot ? inkW('LAST PLAYED', 6) + 8 : 0) - (108 + inkW(hn, 8)); text((inkW('LEVEL ' + lv, 8) <= roomL ? 'LEVEL ' : 'LV ') + lv, x + 108 + inkW(hn, 8), y + 4, '#8fd160'); }   /* (a long hero name gives LEVEL up for LV before it would run into LAST PLAYED; textfit slots) */   /* (SLOT 1 is ~48 px wide from x + 44: the hero starts at x + 100, a clear gap after it) */
     if (i === slot) text('LAST PLAYED', x + w - 6, y + 5, '#ffd36b', 'right', 6);   /* the save the game last opened (bracken.slot); the picker starts its cursor on it */
     const stat = pts => [[cleared + '/' + levels + ' WOODS', '#c9d1dc'], [(p.coins || 0) + ' GOLD', '#ffd34a'], [medals + pts, '#c9d1dc']], done = cleared >= levels;
     /* (a full save with a big purse: COMPLETE sits at the right of this row, so the last label gives way - MEDAL PTS -> PTS - before it would run into it; textfit slots) */
@@ -20569,6 +20569,7 @@ function updateCrumbles(dt){
  for(const v of crumbleStep(L,bodies,dt,(x,y,how)=>cellSet(x,y,how==='fall'?T.AIR:grid0[y*LW+x]))){const c=v.c,mx=(c.x0+c.x1+1)*TS/2,my=c.row*TS;
   if(v.t==='start'){SFX.crack();shakeCam(1.5);lastTellT=time;dust(mx,my+TS*c.rows,6);}
   else if(v.t==='tick'){SFX.crack();shakeCam(v.n===1?3:2);dust(mx,my+TS*c.rows,v.n===1?12:7);if(v.n===1&&SFX.rumble)SFX.rumble();}
+  else if(v.t==='fall'&&c.kind==='bough'){re=true;SFX.crack();SFX.rumble&&SFX.rumble();shakeCam(4);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+6,4,['#ff9a3c','#ffd36b','#47291b','#2c1a12'],80,.9,380,2);}   /* (claude/kingsfix2) a limb of the burning wood goes: splinters and embers */
   else if(v.t==='fall'&&c.kind==='awning'){re=true;SFX.puff();for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+4,4,['#b8382c','#ece0c4','#7a2418'],70,.8,300,2);}   /* (claude/fairfix5) a TEARING awning rips: canvas scraps, not stone */
   else if(v.t==='fall'){re=true;SFX.stone();shakeCam(5);for(let x=c.x0;x<=c.x1;x++)burst(x*TS+8,my+8,3,['#8a8e9c','#5c6070','#b8b4a8'],60,.9,420,2);}
   else if(v.t==='back'){re=true;SFX.clank&&SFX.clank();dust(mx,my,8);}}
@@ -22951,7 +22952,7 @@ function cvTile(x, y, t) {
   return true;
 }
 function caravanReset() {
-  if (L && L.caravanCrumbles && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* (claude/caravan2) THE SLABS on the quicksand are whole again on every attempt */
+  if (L && (L.caravanCrumbles || L.kwoodCrumbles) && L.crumbles && L.crumbles.length) { if (grid0) keepCrumbleReset(); else crumbleInit(L); }   /* (claude/kingsfix2: and KINGSWOOD's burning boughs) (claude/caravan2) THE SLABS on the quicksand are whole again on every attempt */
   dwClearStones();   /* (claude/caravan2) the Dune Worm's ledges go back under the sand on every attempt */
   CV = null; if (!L || !L.caravan) return;
   const ws = props.filter(p => p.t === 'awningwinch');   /* the camp's, and THE HOLLOW WINCH (the worm's trap) */
@@ -23472,7 +23473,7 @@ function updateVillage(dt) {
   if (MCH && MCH.on()) MCH.update(dt);   /* THE DEEP RAILS (src/minecart-hands.js): the points, the hazards, the goblin carts, a fall */
   if (RGH && RGH.on()) RGH.update(dt);   /* THE RED GORGE (src/red-gorge-hands.js) */
   if (SNR && SNR.on()) SNR.update(dt); if (HPD && HPD.on()) HPD.update(dt);   /* (claude/rootway2) the jaw traps and nets, the spore pods */
-  if (KWH && KWH.on()) KWH.update(dt); if (GMH && GMH.on()) GMH.update(dt);   /* KINGSWOOD 2 (src/kingswood-hands.js): the royal ropes, the log traps, the court's procession */
+  if (KWH && KWH.on()) KWH.update(dt); if (GMH && GMH.on()) GMH.update(dt); if (L.kwoodCrumbles && L.crumbles && L.crumbles.length && state === 'play') updateCrumbles(dt);   /* (claude/kingsfix2) THE BOUGH BRIDGE's limbs burn through (src/tower-collapse.js) */   /* KINGSWOOD 2 (src/kingswood-hands.js): the royal ropes, the log traps, the court's procession */
   if (RWH && RWH.on()) RWH.update(dt);   if (FRH && FRH.on()) FRH.update(dt); if (FPK && FPK.on()) FPK.update(dt);   /* (claude/fenroad2) the planks */   /* THE FEN ROAD (src/fen-road-hands.js): the bowed sections, the crew gaps, the thing under the road, the footing */   /* THE ROOTWAY (src/rootway-hands.js): the hoists falling, the hunters on them, the lookout manned */
   if (SKY && SKY.on()) { SKY.update(dt); if (L.crumbles && L.crumbles.length) updateCrumbles(dt); }   /* THE SKY ROAD: the stones, the disc, the horn's call; THE BROKEN SKY BRIDGE's cracked spans (src/tower-collapse.js) */
   if (MRH && MRH.on()) { MRH.update(dt); MRH.tick(dt); }   /* GALE MOOR: the wind that takes a struck goblin, the frame (src/moor-rocks-hands.js) */
@@ -34725,7 +34726,7 @@ function render() {
     /* THE XP BAR: a thin line under the meters, inside the plate, with the level beside it. A level-up turns it gold and it says LEVEL n */
     if (xpRow) { const yy = HY + 8, n = heroLevel(), lo = xpFloor(n), k = n >= LV_MAX ? 1 : Math.max(0, Math.min(1, (heroXp() - lo) / Math.max(1, xpFloor(n + 1) - lo)));
       if (lvUpT > 0) lvUpT = Math.max(0, lvUpT - 1 / 60); const up = lvUpT > 0, fl = up && Math.floor(time * 8) % 2 === 0;
-      const cu = !up && catchingUp(), sc = !up && !cu ? softCut() : 1, lab = (up ? 'LEVEL ' : 'LV ') + n + (cu ? ' x' + XP_CATCHUP : sc < 1 ? (sc < 0.5 ? ' 1/5' : ' 1/2') : ''), bx = 4 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
+      const cu = !up && catchingUp(), sc = !up && !cu ? softCut() : 1, lab = (up ? 'LEVEL ' : 'LV ') + Math.max(1, n) + (cu ? ' x' + XP_CATCHUP : sc < 1 ? (sc < 0.5 ? ' 1/5' : ' 1/2') : ''), bx = 4 + inkW(lab, 6) + 4;   /* x3: CATCHING UP, below the level this wood expects */
       g.globalAlpha = xpA; text(lab, 4, yy - 3, up ? (fl ? '#fff6c8' : '#ffd36b') : cu ? '#8fd160' : '#c9b27c', 'left', 6, HS);
       if (60 - bx >= 8) bar(bx, yy, 60 - bx, 3, up ? 1 : k, up ? (fl ? '#fff6c8' : '#ffd36b') : '#8fb8ff'); g.globalAlpha = 1; }
     hudShow(); g.globalAlpha = 1;

@@ -66,5 +66,5 @@ export function gormSkipRun(BK) {
   if (G.persist && G.persist.runDone && BK.L.arena === BK.L.glade && e.stage === 'glade') return false;
   /* the wood is not free: the walker (tools/level-walk.mjs kings --from=470 --setup) arrives at its shrine with RUN_ARRIVE of his health on the mean, having
      drunk nothing - so the lab's hero touches that shrine (the game's own refill: one flask) and goes into the glade with that share of his health */
-  G.skipTo('glade'); const sh = G.persist ? null : null; BK.tp(595, 9); BK.sim(40); BK.P.hp = Math.min(BK.P.hp, Math.round(BK.P.maxHp * RUN_ARRIVE)); const A = BK.L.glade; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); return true;
+  G.skipTo('glade'); const sh = G.persist ? null : null; BK.tp(635, 9); BK.sim(40); BK.P.hp = Math.min(BK.P.hp, Math.round(BK.P.maxHp * RUN_ARRIVE)); const A = BK.L.glade; BK.tp(Math.round(A.trigger / 16) + 1, Math.round(A.floor / 16) - 1); return true;
 }

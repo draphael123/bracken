@@ -185,24 +185,24 @@ const AREAS = [
       for (const c of [424, 456, 486]) out.push({ x: c * TS - 20, w: 40, draw: g => { const cx = c * TS, y = 168; rc(g, cx - 8, y, 16, 12, '#3a2412'); rc(g, cx - 8, y, 16, 1, '#8a5a32'); for (const s of [-1, 1]) for (let k = 0; k < 16; k++) { rc(g, cx + s * (3 + k * 0.9) - (s > 0 ? 0 : 1), y - k * 0.9, 2, 2, '#cdb88a'); if (k % 5 === 3) rc(g, cx + s * (3 + k * 0.9) - (s > 0 ? 0 : 1), y - k * 0.9 - 6, 2, 6, '#e8dcc0'); } } });
       return out; },
     lights: [[430 * TS + 8, 100, 62, 0.16], [442 * TS + 8, 100, 62, 0.16], [454 * TS + 8, 100, 62, 0.16], [466 * TS + 8, 100, 62, 0.16], [478 * TS + 8, 100, 62, 0.16]] },
-  { id: 'burn', x0: 490, x1: 600, y0: 0, y1: 300, alpha: 0.97,
-    feats(L) { const out = [], r = mulberry(7606), X0 = 490 * TS, W = 110 * TS;
+  { id: 'burn', x0: 490, x1: 640, y0: 0, y1: 300, alpha: 0.97,   /* (claude/kingsfix2: 40 columns longer, THE BOUGH BRIDGE) */
+    feats(L) { const out = [], r = mulberry(7606), X0 = 490 * TS, W = 150 * TS;
       out.push({ x: X0, w: W, draw: g => { rc(g, X0, 0, W, 300, 'rgba(26,6,4,0.5)'); skyGlow(g, X0, W, 40, 300, 0.7); smokeBand(g, X0, 0, W, 44, 0.85); smokeBand(g, X0, 30, W, 34, 0.6); smokeBand(g, X0, 84, W, 26, 0.32); } });
       /* far trunks, dim, then near ones with the fire on their faces, a burnt crown over the whole run */
-      for (let x = 492; x < 598; x += 9) { const w = 10 + ((r() * 8) | 0), tx = x * TS + ((r() * 40) | 0), tp = 20 + ((r() * 30) | 0); out.push({ x: tx - w - 14, w: w * 2 + 28, draw: g => charTrunk(g, tx, tp, 14 * TS + 2, w, tx, false) }); }
-      for (let x = 494; x < 598; x += 15) { const w = 18 + ((r() * 12) | 0), tx = x * TS + ((r() * 70) | 0); out.push({ x: tx - w - 14, w: w * 2 + 28, draw: g => charTrunk(g, tx, 0, 16 * TS + 8, w, tx + 3, true) }); }
-      for (let x = 492; x < 600; x += 10) { const cxx = x * TS + ((r() * 60) | 0), cyy = 14 + ((r() * 40) | 0); out.push({ x: cxx - 110, w: 220, draw: g => burntCrown(g, cxx, cyy, 90, 24, cxx) }); }
-      for (let x = 498; x < 600; x += 13) { const fx = x * TS + ((r() * 60) | 0); out.push({ x: fx - 10, w: 20, draw: g => { FX.flame(g, fx, 224, 'L', 0.3, fx); FX.flame(g, fx + 9, 224, 'M', 0.9, fx); } }); }
+      for (let x = 492; x < 638; x += 9) { const w = 10 + ((r() * 8) | 0), tx = x * TS + ((r() * 40) | 0), tp = 20 + ((r() * 30) | 0); out.push({ x: tx - w - 14, w: w * 2 + 28, draw: g => charTrunk(g, tx, tp, 14 * TS + 2, w, tx, false) }); }
+      for (let x = 494; x < 638; x += 15) { const w = 18 + ((r() * 12) | 0), tx = x * TS + ((r() * 70) | 0); out.push({ x: tx - w - 14, w: w * 2 + 28, draw: g => charTrunk(g, tx, 0, 16 * TS + 8, w, tx + 3, true) }); }
+      for (let x = 492; x < 640; x += 10) { const cxx = x * TS + ((r() * 60) | 0), cyy = 14 + ((r() * 40) | 0); out.push({ x: cxx - 110, w: 220, draw: g => burntCrown(g, cxx, cyy, 90, 24, cxx) }); }
+      for (let x = 498; x < 640; x += 11) { const fx = x * TS + ((r() * 60) | 0); out.push({ x: fx - 10, w: 20, draw: g => { FX.flame(g, fx, 224, 'L', 0.3, fx); FX.flame(g, fx + 9, 224, 'M', 0.9, fx); } }); }
       return out; },
-    lights: [510, 523, 536, 549, 562, 575, 588].map((c, i) => [c * TS + ((i * 29) % 40), 110 + ((i * 17) % 50), 90, 0.2])
+    lights: [510, 523, 536, 549, 562, 575, 588, 601, 614, 627].map((c, i) => [c * TS + ((i * 29) % 40), 110 + ((i * 17) % 50), 90, 0.2])
   },
-  { id: 'glade', x0: 600, x1: 650, y0: 0, y1: 260, alpha: 0.95,
-    feats(L) { const out = [], r = mulberry(7707), X0 = 600 * TS, W = 50 * TS;
+  { id: 'glade', x0: 640, x1: 690, y0: 0, y1: 260, alpha: 0.95,
+    feats(L) { const out = [], r = mulberry(7707), X0 = 640 * TS, W = 50 * TS;
       out.push({ x: X0, w: W, draw: g => { rc(g, X0, 0, W, 260, 'rgba(26,6,4,0.3)'); skyGlow(g, X0, W, 20, 250, 0.55); smokeBand(g, X0, 0, W, 36, 0.6); smokeBand(g, X0, 28, W, 26, 0.35); } });
-      for (let x = 601; x < 650; x += 8) { const w = 10 + ((r() * 10) | 0), tx = x * TS + ((r() * 40) | 0), tp = 10 + ((r() * 30) | 0); if (Math.abs(tx - (624 * TS + 8)) < 50) continue; out.push({ x: tx - w - 14, w: w * 2 + 28, draw: g => charTrunk(g, tx, tp, 14 * TS + 2, w, tx, false) }); }
-      for (let x = 602; x < 650; x += 9) { const cxx = x * TS + ((r() * 50) | 0), cyy = 10 + ((r() * 30) | 0); out.push({ x: cxx - 110, w: 220, draw: g => burntCrown(g, cxx, cyy, 80, 18, cxx) }); }
+      for (let x = 641; x < 690; x += 8) { const w = 10 + ((r() * 10) | 0), tx = x * TS + ((r() * 40) | 0), tp = 10 + ((r() * 30) | 0); if (Math.abs(tx - (664 * TS + 8)) < 50) continue; out.push({ x: tx - w - 14, w: w * 2 + 28, draw: g => charTrunk(g, tx, tp, 14 * TS + 2, w, tx, false) }); }
+      for (let x = 642; x < 690; x += 9) { const cxx = x * TS + ((r() * 50) | 0), cyy = 10 + ((r() * 30) | 0); out.push({ x: cxx - 110, w: 220, draw: g => burntCrown(g, cxx, cyy, 80, 18, cxx) }); }
       return out; },
-    lights: [606, 614, 634, 644].map((c, i) => [c * TS + 8, 90 + i * 12, 100, 0.17]) },
+    lights: [646, 654, 674, 684].map((c, i) => [c * TS + 8, 90 + i * 12, 100, 0.17]) },
 ];
 
 /* a chunk of an area, baked the first time it is seen */

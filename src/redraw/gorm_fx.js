@@ -11,7 +11,7 @@ import { canvas, rect } from '../px.js';
 
 const R = Math.round;
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
-export const EMBER_CAP = 22;
+export const EMBER_CAP = 40;   /* (claude/kingsfix2: the escape's 'more fire' - fillRects only; the glade passes its own smaller n) */
 const LAYERS = ['#7a1a10', '#c9401a', '#f08a2a', '#ffd27a', '#fff6c8'];
 const SZ = { S: [8, 14], M: [12, 20], L: [16, 28] };
 

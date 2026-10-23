@@ -39,8 +39,8 @@ ok(G.run.burn.every(([x0, x1, y]) => { for (let x = x0; x <= x1; x++) if (!solid
 ok(G.run.burn.every(([x0, x1, y]) => { let n = 0; for (let x = x0; x <= x1; x++) for (let r = y - 7; r < y; r++) if (oneway(x, r)) { n++; break; } return n >= (x1 - x0 + 1) * 0.5; }), 'boughs over every burning floor (a way over it, in the canopy)');
 ok(G.run.branches.length >= 4 && G.run.branches.every(b => stand(Math.floor(b.x / TS), b.y / TS)), 'burning branches hang over a floor or a bough: ' + G.run.branches.length);
 ok(L.ents.filter(e => e.kw && e.kw.torch).length >= 3, 'torch goblins on the road: ' + L.ents.filter(e => e.kw && e.kw.torch).length);
-{ const sh = L.ents.filter(e => e.t === 'check' && e.x >= 490 && e.x < 600); ok(sh.length === 1 && sh[0].x * TS >= G.run.cpX && G.run.fireMax < G.run.cpX, 'one shrine at its end (col ' + (sh[0] || {}).x + '), past where the fire dies'); }
-ok(L.squadBands.some(b => b.lo === 600 && b.spots === 0), 'no squad stands in his glade');
+{ const sh = L.ents.filter(e => e.t === 'check' && e.x >= 490 && e.x < 640); ok(sh.length === 1 && sh[0].x * TS >= G.run.cpX && G.run.fireMax < G.run.cpX, 'one shrine at its end (col ' + (sh[0] || {}).x + '), past where the fire dies'); }
+ok(L.squadBands.some(b => b.lo === 640 && b.spots === 0), 'no squad stands in his glade');
 ok(L.lastArena === L.glade, "the route runs to his glade (L.lastArena: tools/pacing's goal)");
 
 console.log('THE GLADE');
