@@ -1,3 +1,4 @@
+import { pauseGameAtBoot } from './manual-lab-boot.mjs';
 /* THE WINNABLE ROW MOVED OFF KING GORM (claude/sweep1 follow-up, Daniel approved Q7): King Gorm sits in the 50-60% boss band now (1000 hp, x1.5) and a level-1 legacy reaper rightly dies to him. The row is the Bullfrog (marsh): the first-act puzzle wall whose openings are made, left untouched by the sweep (no number changed, 58% for the standard bot), and the one early boss a level-1 hero is MEANT to be able to beat at normal health. Every assertion is unchanged - a win, never died, endHp>0, health reconciles - and the damageTaken>0 line now holds for it too (the King took none), so its exemption is gone. */
 /* THE WINNABLE ROW is Kingswood's, not the Deep's: the Diving Bell was the easy fight this leaned on, and he is not easy now (docs/briefs/deep-rework-2.md) */
 /* THE DEATH ROW MOVED OFF LONGWATER (claude/botfix, batch32): longwater/knight/normal used to stop on death here, but two real bot
@@ -17,9 +18,12 @@
 /* (b97base merge) claude/difficulty ALSO moved this row off the pyromancer (to the warden, anti-mash inside openings); both lanes leave the pyro, so the merged row keeps the paladin (paladintune) and is re-run on the merged tree - if it is red the warden is the fallback. */
 import assert from 'node:assert/strict';import{openPage}from'./cdp.mjs';
 const pg=await openPage({audio:false,fonts:false});const results=[];
+// Every row is a manual simulation from reload: host boot speed must not add automatic game ticks before its seeded setup.
+await pg.send('Page.addScriptToEvaluateOnNewDocument',{source:'('+pauseGameAtBoot.toString()+')()'});
 try{
  for(const [lvl,h,mode,secs]of[['deep','knight','normal',180],['marsh','paladin','normal',180],['longwater','knight','refill',30]]){
   await pg.reload();const row=await pg.evalp(`(async()=>{BK.manualSimulation=true;let seed=1919;Math.random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};return(await BK.bossLab({bosses:[${JSON.stringify(lvl)}],heroes:[${JSON.stringify(h)}],healthMode:${JSON.stringify(mode)},maxSecs:${secs}})).rows[0]})()`);
+  console.log(JSON.stringify({fixture:[lvl,h,mode],row}));
   assert.equal(row.health.mode,mode);assert.ok(row.health.damageTaken>0,'actual enemy attacks must cost health');
   if(mode==='normal'){if(lvl==='deep'){assert.equal(row.outcome,'death');assert.equal(row.health.died,true);assert.ok(row.secs<secs,'stop on death instead of clearing it');assert.equal(row.health.endHp,0);}else{assert.equal(row.outcome,'win');assert.equal(row.health.died,false);assert.ok(row.health.endHp>0);}assert.ok(Math.abs(row.health.startHp+row.health.healthRecovered-row.health.damageTaken-row.health.endHp)<.001,'normal health must reconcile without invisible refills');}
   else {assert.ok(row.health.endHp>0);assert.ok(row.health.damageTaken>row.health.startHp-row.health.endHp,'refill mode remains explicitly distinct');}
