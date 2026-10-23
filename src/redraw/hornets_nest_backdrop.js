@@ -166,3 +166,22 @@ export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
         if (q % 3 === 0 && q > 6) for (let s = 0; s < 5; s++) { const len = 6 + ((q * 7 + s * 3) % 7); R(g, NEEDLE[(q + s) % 3], nx + (s - 2) * 2, ny + th, 1, len); R(g, NEEDLE[3], nx + (s - 2) * 2, ny + th, 1, 2); } } }
   }
 }
+/* (claude/hornetsnest2) THE NEIGHBOURS SEE IT: the road runs THE LUMBER TRAIL -> THE HORNET'S NEST -> MARSH WOOD now, so the great pine with the paper nest hung in it stands on
+   their horizons - far off past the Lumber Trail's felling clearing (where the trail climbs on into the old pines), and behind the first screens of MARSH WOOD (the pine you just
+   climbed down). A far, hazy silhouette on the sky (no tile, no ent: those levels' hashes keep). drawNeighbourPine(g, cx, cy, VW, VH, id, dY) */
+function farPine() { return once('farpine', () => { const W = 150, H = 330, [c, g] = canvas(W, H), r = mulberry(1023), mid = W / 2;
+  const trunk = '#5d6f5a', dark = '#4c5c4a', needle = '#62785c', paper = '#a8a48c', paperD = '#8a866e';
+  for (let y = 0; y < H; y++) { const w = 12 + y * 0.02 + (y > H - 40 ? (y - (H - 40)) * 0.5 : 0); R(g, y % 7 < 3 ? dark : trunk, mid - w / 2, y, w, 1); }   /* the trunk, flaring at its foot */
+  for (let k = 0; k < 9; k++) { const y = 20 + k * 26 + (r() * 8 | 0), side = k % 2 ? 1 : -1, len = 30 + (r() * 26 | 0) - k;   /* the boughs and their drooping needle-skirts */
+    for (let i = 0; i < len; i++) { const x = mid + side * (6 + i), yy = y + i * 0.35; R(g, dark, x, yy, 1, 2); if (i % 3 === 0) R(g, needle, x - 2, yy + 1, 5, 4 + (i % 5)); } }
+  { const nx = mid + 22, ny = 120, rx = 22, ry = 30;   /* THE NEST: a grey paper mass hung off the right side of the trunk, its scalloped shells */
+    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) { const d = (x * x) / (rx * rx) + (y * y) / (ry * ry); if (d > 1) continue; R(g, ((y + ry) % 6 < 2) ? paperD : paper, nx + x, ny + y, 1, 1); }
+    R(g, '#3a3428', nx - 2, ny + ry - 6, 5, 4); R(g, paperD, nx - 1, ny - ry - 6, 2, 7); }
+  return gpu(c); }); }
+export function drawNeighbourPine(g, cx, cy, VW, VH, id, dY = 0) {
+  const p = id === 'wood' ? { col: 600, k: 0.12, show: [440, 560], a: 0.5 } : id === 'marsh' ? { col: -10, k: 0.12, show: [0, 70], a: 0.45 } : null; if (!p) return;
+  const tc = cx / TS; if (tc < p.show[0] - 40 || tc > p.show[1] + 40) return;
+  const fade = Math.max(0, Math.min(1, (tc - (p.show[0] - 40)) / 40, ((p.show[1] + 40) - tc) / 40)), img = farPine();
+  const x = Math.round((p.col * TS - cx) * p.k + VW * (id === 'wood' ? 0.62 : 0.12) - img.width / 2), y = Math.round(VH - img.height - 30 + dY * 0.1);
+  g.globalAlpha = p.a * fade; g.drawImage(img, x, y); g.globalAlpha = 1;
+}

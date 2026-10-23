@@ -125,7 +125,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
   hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); fat(104, 29, { squad: 'cells' });   /* THE FIRST FAT HONEY HORNET: up the throat with a pot in hand, you meet it with its answer */
-  sign(96, 33, 'A FAT HONEY HORNET: ITS PLATED BACK TURNS A CUT. IT RAMS ON A ! - JUMP IT OR BLOCK IT. SMOKE IT AND IT SINKS, OPEN.');
+  sign(96, 33, 'A FAT HONEY HORNET: ITS BACK IS PLATED - HIT ITS HEAD. SMOKE IT AND IT SINKS, OPEN.');
   shelf(95, 104, 31); shelf(129, 136, 31);                  /* comb shelves along the chamber's wall (a second height) */
   coins([94, 32], [98, 31], [102, 32]);
   /* THE COMB BRIDGE (REQUIRED): an eight-wide gap down into the waste pit; the comb over it is wider than the gap - cut it and it lands across */
@@ -225,7 +225,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   coins([380, FL - 4], [382, FL - 4]);
   ground(389, 398, FL + 1); water(389, 398, FL); reeds(388, FL - 1, 1); reeds(394, FL - 1, 2); reeds(399, FL - 1, 1);   /* the second water, reeds standing in it */
   ground(399, W - 1, FL);
-  sign(356, FL - 1, 'THE MARSH BEGINS WHERE THE PINE ENDS. THE FROG KING KEEPS THE WATER AHEAD.');
+  sign(356, FL - 1, 'THE MARSH BEGINS WHERE THE PINE ENDS. THE BULLFROG KING KEEPS THE WATER AHEAD.');
   ent('gate', 416, FL - 1);
 
   /* WHERE EACH COMB LANDS: its plumb line down to the first footing under any of its columns (a chained comb names its own: it lands on the one under it) */
@@ -241,7 +241,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools, falls: [], moversExtra: [], gateAfterBoss: true,   /* (claude/hornetsnest2) her death opens the way on: the descent and the marsh's edge to the gate */
     foeHit: { hornet: 0.6 },   /* a nest hornet's sting is the river wasp's machine at three-fifths its blow (they are many here) */
-    squadBands: [{ lo: 412, hi: 419, spots: 0, why: "THE MARSH EDGE: the last columns are the marsh's bank and the gate - the way out" }],
+    squadBands: [{ lo: 400, hi: 419, spots: 0, why: "THE MARSH EDGE: the last columns (past the second water) are the marsh's bank and the gate - the way out after her death" }],
     hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
     tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 419, [120, 160, 110], 0.12]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine to the marsh's green */

@@ -428,14 +428,14 @@ export const STUCK = {
     { id: 'sk-deadair-220', zone: [220, 28, 222, 29], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
     { id: 'sk-deadair-223', zone: [223, 42, 224, 43], at: [224, 55], glint: 'stall', done: ['vent', 226, 52, 'src0'], line: 'THE AIR HERE IS DEAD: THE CLOUD SEA THROWS YOU BACK UP' },
   ],
-  /* THE HORNET'S NEST (claude/hornetsnest): every required comb (the glint on it until it is cut), the torn hall's way down. (A chain's two combs hang a tile apart: each done-test
+  /* THE HORNET'S NEST (claude/hornetsnest): every required comb (the glint on it until it is cut), the way down the trunk once she is dead (claude/hornetsnest2). (A chain's two combs hang a tile apart: each done-test
      is read a row past its own foot, away from the other's, so neither is taken for the other) */
   hornetsnest: [
     { id: 'hn-first', zone: [25, 60, 41, 66], at: [37, 62], done: ['comb', 37, 63, 'on'], line: 'THE COMB HANGING BY THE ROOT IS YOUR STEP UP: CUT IT DOWN' },
     { id: 'hn-bridge', zone: [104, 29, 117, 34], at: [121, 30], done: ['comb', 121, 31, 'on'], line: 'THE COMB OVER THE GAP IS THE BRIDGE: CUT IT DOWN' },
     { id: 'hn-chain', zone: [197, 15, 208, 20], steps: [{ at: [206, 16], done: ['comb', 206, 18, 'on'], line: 'TWO COMBS OVER THE LEDGE: CUT THE LOW ONE DOWN FOR A STEP' }, { at: [207, 14], done: ['comb', 207, 14, 'on'], line: 'FROM THE FALLEN COMB, CUT THE HIGH ONE DOWN ONTO IT' }] },
     { id: 'hn-last', zone: [214, 9, 222, 14], steps: [{ at: [220, 10], done: ['comb', 220, 12, 'on'], line: 'THE HIGH WALL: CUT THE LOW COMB DOWN FOR A STEP' }, { at: [221, 8], done: ['comb', 221, 8, 'on'], line: 'FROM THE FALLEN COMB, CUT THE HIGH ONE DOWN ONTO IT' }] },
-    { id: 'hn-torn', zone: [326, 18, 332, 22], at: [334, 21], glint: 'stall', line: 'SHE TORE THE HALL OPEN: THE WAY ON IS DOWN THE TRUNK' },
+    { id: 'hn-torn', zone: [326, 18, 332, 22], at: [334, 21], glint: 'stall', line: 'THE NEST TORE LOOSE: THE WAY ON IS DOWN THE TRUNK' },
   ],
   /* THE FEN ROAD (claude/fenroad): the barricade (its lashing is the only way on), and the peat pit's steps out */
   fenroad: [

@@ -144,8 +144,9 @@ export function makeHornetQueenHands(ctx) {
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const VW = ctx.VW(), G = S.G.h;
     /* THE HONEY (P2): the flood on the hall's floor, a glossy amber skin with its slow creep, and the drips from the torn vault */
     if (S.stage === 2 && G.honey) { const x0 = G.honey.x0 - cx, w = G.honey.x1 - G.honey.x0, y = G.floor - cy;
-      g.globalAlpha = 0.85; g.fillStyle = '#c47a14'; g.fillRect(R(x0), R(y - 3), R(w), 3); g.fillStyle = '#eea52a'; g.fillRect(R(x0), R(y - 4), R(w), 1); g.globalAlpha = 1;
-      for (let k = 6; k < w - 4; k += 11) { const ph = (time * 0.5 + k * 0.071) % 1; if (ph < 0.35) rect(g, x0 + k, y - 4, 2, 1, '#fff0a0'); }
+      g.globalAlpha = 0.92; g.fillStyle = '#8a4c08'; g.fillRect(R(x0), R(y - 2), R(w), 3); g.fillStyle = '#c47a14'; g.fillRect(R(x0), R(y - 5), R(w), 3); g.fillStyle = '#eea52a'; g.fillRect(R(x0), R(y - 6), R(w), 1); g.globalAlpha = 1;
+      for (let k = 0; k < w; k += 23) { const ph = (time * 0.35 + k * 0.013) % 1, bx = x0 + k + ph * 9; rect(g, bx, y - 7, 6, 1, '#eea52a'); rect(g, bx + 1, y - 8, 3, 1, '#f8c24a'); }   /* slow swells creeping on its skin */
+      for (let k = 6; k < w - 4; k += 11) { const ph = (time * 0.5 + k * 0.071) % 1; if (ph < 0.35) rect(g, x0 + k, y - 6, 2, 1, '#fff0a0'); }
       for (let k = 0; k < 7; k++) { const xx = x0 + 24 + k * (w - 48) / 6, ph = (time * 0.6 + k * 0.37) % 1, top = G.top - cy + 6, len = 10 + ((k * 13) % 17); rect(g, xx, top, 2, len, '#c47a14'); rect(g, xx, top + len + ph * (y - top - len), 2, 3, '#eea52a'); } }
     /* THE HALL (P1): her brood cells in its walls */
     for (const k of S.cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue; HNP.cell(g, x, y, k.st, k.st === 'pulse' ? 1 - k.t / HQ.brood.pulse : 0, time); }
