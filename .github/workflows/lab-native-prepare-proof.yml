@@ -16,7 +16,7 @@ jobs:
       matrix:
         check: [mark-integrity, no-hidden-hits]
     env:
-      PREPARE_SOURCE: ${{ inputs.source }}
+      PREPARE_SOURCE: ${{ inputs.source || 'af6d16cf6ecac7713d5b9a33b534c2cb5aeb6fb1' }}
     steps:
       - uses: actions/checkout@v4
         with:
