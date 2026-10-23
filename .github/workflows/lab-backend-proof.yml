@@ -1,0 +1,36 @@
+name: lab-backend-proof
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cpu-canvas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [mark-integrity, no-hidden-hits]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The active serial proof stays frozen at this source, including all assertions.
+          ref: efdf07c2d80ce48bbc62ddc0dc77fc913373bc3e
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Existing and CPU backends must give identical gameplay and pixels
+        run: node tools/lab-canvas-proof.mjs
+      - name: Unchanged full audit under the existing memory ceiling
+        env:
+          CHECK: ${{ matrix.check }}
+          BRACKEN_CPU_CANVAS: '1'
+          NO_HIDDEN_RESULT: gate-data/no-hidden-hits.measurement.json
+        run: node tools/lab-memory-check.mjs "$CHECK"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lab-backend-${{ matrix.check }}
+          path: gate-data/
+          if-no-files-found: error
