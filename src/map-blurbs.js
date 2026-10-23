@@ -4,6 +4,7 @@
 export const MAP_BLURB = {
   kings: "the goblins' court in the old wood",
   wood: 'a logging trail to the hive',
+  hornetsnest: 'the paper nest in the great pine',
   rootway: "the way up out of the fungus",
   fenroad: 'the boardwalk to the stockade',
   fair: 'abandoned mid-festival, at sundown',

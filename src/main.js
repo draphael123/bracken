@@ -4787,6 +4787,7 @@ const MAPW = 320, MAPH = 900, DESERT_Y = 0, INLAND_Y = 180, COAST_Y = 360, CRAG_
 const UC_ROAD = !!(LEVELS.find(l => l.id === 'undercrown') || {}).needs;   /* (claude/undercrown2) THE UNDERCROWN on the road (level.js ROAD_OPEN): a node between Stormhold and Highcrown, not a stub off Highcrown */
 const WOOD_NODES = [
   { id: 'wood', kind: 'level', level: 0, x: 62, y: 112, plate: 'left', name: 'THE LUMBER TRAIL' }   /* (claude/lumbertrail: BRACKEN WOOD became THE LUMBER TRAIL) */,
+  { id: 'hornetsnest', kind: 'level', level: LEVELS.findIndex(l => l.id === 'hornetsnest'), x: 40, y: 112, plate: 'above', spur: true, name: "THE HORNET'S NEST" },   /* THE HORNET'S NEST (claude/hornetsnest, Daniel 10-22): a SPUR off THE LUMBER TRAIL - the trail's node is its junction (spurOf + opensOn wood); up and back into the pines from the first node, off the road */
   { id: 'store', kind: 'store', shop: 'shop', x: 156, y: 68, plate: 'left', name: 'THE STORE' },
   { id: 'marsh', kind: 'level', level: 1, x: 251, y: 129, plate: 'right', name: 'MARSH WOOD' },
   { id: 'fenroad', kind: 'level', level: LEVELS.findIndex(l => l.id === 'fenroad'), x: 268, y: 94, plate: 'right', name: 'THE FEN ROAD' },   /* THE FEN ROAD (claude/fenroad, Daniel 10-20): between MARSH WOOD and THE STOCKADE, on the road's old bend */
