@@ -54,6 +54,7 @@ export const SIG = {
   whelp: { mode: 'crouchTell', answer: 'parry' },  grub: { mode: 'spit', answer: 'parry' },          bonearcher: { mode: 'draw', answer: 'duck' },
   bonegob: { mode: 'throw', answer: 'parry' },
   /* THE SEVEN THAT WERE ON TOLD_TODO (claude/sweepact12, 10-20): each got a NEW answerable told attack with its own windup (src/main.js, each family's update) */
+  drone: { mode: 'puffTell', answer: 'parry' },   /* (claude/sporewood2tune) the spore drone rears back, then lunges: a shield turns it */
   thief: { mode: 'swipeTell', answer: 'jump' },   spitcap: { mode: 'spitTell', answer: 'duck' },   sapper: { mode: 'shoveTell', answer: 'parry' },   emberwisp: { mode: 'dartTell', answer: 'parry' },   stormshaman: { mode: 'jabTell', answer: 'parry' },   clinger: { mode: 'lashTell', answer: 'duck' },   shardling: { mode: 'flickTell', answer: 'jump' },
 };
 /* THE FAMILIES OF ACTS I-II WHOSE EVERY BLOW IS A RED !! (dodge) - no blow they have can be parried, jumped or ducked. Each needs a NEW told attack

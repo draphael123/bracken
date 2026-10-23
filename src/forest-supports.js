@@ -4,8 +4,8 @@
      glasssea glass pedestals, witchlight rune-stone pillars, THE LUMBER TRAIL (wood) woodsmen's timber cribs (claude/lumbertrail).
    A support runs down to the first tile under it (<= GROUND rows); with nothing near, it ends free in the level's own manner (a tapering stalactite, dangling roots, a cloud).
    NO tile changes: route, walker and mash rows are untouched. tools/solid-islands.mjs counts these as drawn supports. */
-export const FOREST_KIT = { wood: 'crib', scree: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', glasssea: 'ice', witchlight: 'rune', marsh: 'stilt' };   /* (claude/marsh2) MARSH WOOD: a bog-oak stilt under a board, a bundle of reed stalks under a tuft - driven into the bed under the water */
-export const FREE_LEN = { crib: 4, rock: 5, vine: 6, pile: 3, cloud: 6, root: 6, ice: 5, rune: 6, stilt: 4, reed: 4 };
+export const FOREST_KIT = { wood: 'crib', scree: 'rock', hanging: 'vine', moor: 'pile', skyroad: 'cloud', rootway: 'root', spore: 'stalk',   /* (claude/sporewood2: SPOREWOOD 2's shelves hang on the Mother's roots - the art lane may give them cap stalks) */ glasssea: 'ice', witchlight: 'rune', marsh: 'stilt' };   /* (claude/marsh2) MARSH WOOD: a bog-oak stilt under a board, a bundle of reed stalks under a tuft - driven into the bed under the water */
+export const FREE_LEN = { crib: 4, rock: 5, vine: 6, pile: 3, cloud: 6, root: 6, stalk: 6, ice: 5, rune: 6, stilt: 4, reed: 4 };
 const GROUND = 16, STEP = 10;
 
 export function addForestSupports(L, id, T, islandsOf) {

@@ -155,7 +155,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   /* THE RIDES THE TOOLS ASK ABOUT (opts.rides): the lily pads, a wasp you pogo off, a water wheel's paddles, the width of a
      wind column and the great kite's flight. These are why Bracken Wood read 16% reachable and the Marsh 7%. The coin
      sprinkler in level.js does NOT pass the option, so no gold moves: only the audits see further. */
-  const extraFoot = [], springs = new Set(), buds = new Set(), groups = []; let flight = null;
+  const extraFoot = [], springs = new Set(), spores = new Set(), buds = new Set(), groups = []; let flight = null;
   /* A FLY LINE'S TWO STOPS ARE LEDGES (THE MASKWRIGHT'S THEATRE): a batten stands at its high stop or its low one until its lock is struck, so each
      stop is somewhere you can stand - which is how the model steps from one batten across to the next */
   if (!plain) for (const [x0, x1, y0, y1] of (L.rigBands || [])) for (let x = x0; x <= x1; x++) for (const y of [y0, y1]) extraFoot.push(x + ',' + (y - 1));
@@ -165,6 +165,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
       if (e.t === 'pad') for (const dx of (e.big ? [-1, 0, 1] : [-1, 0])) extraFoot.push((e.x + dx) + ',' + (e.y - 1));   /* a big pad is two tiles wide, centred on its column: it reaches half into both neighbours */
       if (e.t === 'pad' && e.spring && !e.big) for (const dx of [-1, 0]) buds.add((e.x + dx) + ',' + (e.y - 1));
       if (e.t === 'wasp' && !opts.noFoes) { extraFoot.push(e.x + ',' + (e.y - 1)); springs.add(e.x + ',' + (e.y - 1)); }
+      if (e.t === 'springpuff') spores.add(e.x + ',' + e.y);   /* (claude/sporewood2) SPOREWOOD 2's PUFFBALL: struck, it hangs a SPRING SPORE where it stood - a bounce cap's throw (src/sporewood-hands.js) */
     }
     for (const m of (L.moversExtra || [])) if (m.kind === 'wheel' && m.r) { const cells = [];
       for (let a = 0; a < 24; a++) { const th = a / 24 * Math.PI * 2; cells.push([Math.floor((m.px + Math.cos(th) * m.r) / TSZ), Math.floor((m.py + Math.sin(th) * m.r) / TSZ) - 1]); }
@@ -316,7 +317,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
   /* what throws him from (x, y), if anything: a striker, a springy tile, a head, a bud (null: his legs) */
   const thrownAt = (x, y) => { const k0 = key(x, y);
     if (strikeUp.has(k0)) return HJ.throwOf('striker', { launch: strikeLaunch.get(k0) });
-    if (at(x, y + 1) === T.BOUNCER) return HJ.throwOf('bounce', { awning: (L.awnings || []).some(a => x >= a.x0 && x <= a.x1 && y + 1 === a.row) });
+    if (at(x, y + 1) === T.BOUNCER || spores.has(k0)) return HJ.throwOf('bounce', { awning: (L.awnings || []).some(a => x >= a.x0 && x <= a.x1 && y + 1 === a.row) });
     if (springs.has(k0)) { let fu = false; for (let r = y + 2; r <= y + 4 && !fu; r++) fu = stand(at(x, r)); return HJ.throwOf('head', { footUnder: fu }); }
     return buds.has(k0) ? HJ.throwOf('bud') : null; };
   /* the launches from (x, y) going s: his legs from the floor behind him (and the sprint, if he has it here going this way), the slide, or what throws him */
@@ -375,7 +376,7 @@ export function floodReach(L, T, opts = {}) { const L0 = L;   /* (the level as b
     return { cols: dy => Math.max(0, Math.floor((D(dy) + 4) / TSZ) + 1), fits: (fx, r) => { const s1 = Math.sign(fx - x); return landing(x, y, s1).need(fx, r, fl[s1 > 0 ? 1 : 0].v) <= D(r - y); } }; }
   const expand = (x, y, push) => {
     if (sky) { glideFrom(x, y, push); for (const v of therm) if (Math.abs(v.x - x) <= 1 && y <= v.y && y >= tTop(v) - 1) ride(v, push); }
-    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
+    const springy = at(x, y + 1) === T.BOUNCER || springs.has(key(x, y)) || spores.has(key(x, y)), up = strikeUp.has(key(x, y)) ? strikeUp.get(key(x, y)) : springy ? BOUNCE_UP : buds.has(key(x, y)) ? BUD_UP : Math.min(JUMP_UP, opts.maxUp || JUMP_UP);
     for (const v of vents) if (Math.abs(v.x - x) <= 1 && v.y === y) { const top = Math.floor(v.y + 1 - (v.h || 112) / TSZ);
       const half = opts.rides ? Math.max(3, Math.ceil((v.w || 0) / 2 / TSZ)) : 3;
       for (let ty = top - 1; ty <= v.y; ty++) for (let dx = -half; dx <= half; dx++) push(v.x + dx, ty); }

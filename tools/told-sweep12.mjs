@@ -17,6 +17,7 @@ const CASES = [
   { t: 'stormshaman', tell: 'jabTell', blow: 'jab', answer: 'block', dx: 1.5, dy: 0 },
   { t: 'clinger', tell: 'lashTell', blow: 'lash', answer: 'duck', dx: 1, dy: -4 },
   { t: 'shardling', tell: 'flickTell', answer: 'jump', ranged: true, dx: 5, dy: 0 },
+  { t: 'drone', tell: 'puffTell', blow: 'puff', answer: 'block', dx: 4, dy: 0 },   /* (claude/sporewood2tune) the spore drone rears back, then lunges */
 ];
 const pg = await openPage({ audio: false, fonts: false });
 let R;

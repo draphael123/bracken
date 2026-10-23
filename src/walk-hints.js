@@ -176,4 +176,6 @@ function hornetsNest(BK, P) {
   if (!c) return null; const mid = c.x0 * TS + 8;   /* under its near (west) end: a bridge comb hangs over the gap it spans, so its middle has no footing under it */
   return { x: mid, y: P.y, key: 'atk', up: true, face: 1, r: 14 };
 }
-export const WALK_HINTS = { hornetsnest: hornetsNest, stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };
+/* SPOREWOOD 2 (claude/sporewood2): the level's own hands say it (src/sporewood-hands.js walkHint) - a dark bud's lantern cap, an unstruck seed cap, a web across the way */
+const sporewood = (BK, P, mem) => { const S = BK.sporewood ? BK.sporewood() : null; return S && S.on() && S.walkHint ? S.walkHint(P, mem && mem.route) : null; };
+export const WALK_HINTS = { hornetsnest: hornetsNest, spore: sporewood, stockade, glasssea: glassSea, underleaf, spire, undercrown: slabHint, flotilla, wood: lumberTrail, marsh: marshBoom, fenroad: fenRoad };
