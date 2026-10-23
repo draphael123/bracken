@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { pauseGameAtBoot, installLabRenderClock } from './manual-lab-boot.mjs';
 const root = process.cwd(), reference = resolve('../flush-reference'), out = 'gate-data/display-flush';
 mkdirSync(out, { recursive: true });
-const added = spawnSync('git', ['worktree','add','--detach',reference,'3ea61398a0164d0acd1b3e0a8e481b604dfa62eb'], { encoding:'utf8' });
+const added = spawnSync('git', ['worktree','add','--detach',reference,process.env.FLUSH_SOURCE || '3ea61398a0164d0acd1b3e0a8e481b604dfa62eb'], { encoding:'utf8' });
 assert.equal(added.status,0,added.stderr);
 const rows = [];
 for (const id of ['wood','spire','canal']) for (const [name,cwd] of [['reference',reference],['flush',root]]) {

@@ -1,9 +1,14 @@
 name: lab-display-flush-proof
 on:
-  push:
-    branches: ['codex/load-perf']
-    paths: ['.github/workflows/lab-display-flush-proof.yml']
   workflow_dispatch:
+    inputs:
+      mode:
+        type: choice
+        options: [audit, layout]
+        default: audit
+      source:
+        type: string
+        default: '3ea61398a0164d0acd1b3e0a8e481b604dfa62eb'
 permissions:
   contents: read
 jobs:
@@ -13,7 +18,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [mark-integrity, no-hidden-hits]
+        check: ${{ fromJSON(inputs.mode == 'layout' && '["textfit-full"]' || '["mark-integrity","no-hidden-hits"]') }}
+    env:
+      FLUSH_SOURCE: ${{ inputs.source || '3ea61398a0164d0acd1b3e0a8e481b604dfa62eb' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,7 +31,7 @@ jobs:
       - run: cp tools/lab-display-flush-proof.mjs /tmp/bracken-lab-display-flush-proof.mjs
       - name: Read back deferred display commands at existing collection boundaries
         run: |
-          git checkout --detach 3ea61398a0164d0acd1b3e0a8e481b604dfa62eb
+          git checkout --detach "$FLUSH_SOURCE"
           cp /tmp/bracken-lab-display-flush-proof.mjs tools/lab-display-flush-proof.mjs
           node --input-type=module <<'JS'
           import fs from 'node:fs';import {createHash} from 'node:crypto';
@@ -35,15 +42,19 @@ jobs:
             collect = () => { const c = document.getElementById('c'); if (c?.width && c?.height) c.getContext('2d').getImageData(0,0,1,1); originalCollect(); };
           `;
           fs.writeFileSync(p,s.replace(needle,patch+needle));fs.mkdirSync('gate-data',{recursive:true});
-          fs.writeFileSync('gate-data/display-flush-source.json',JSON.stringify({source:'3ea61398a0164d0acd1b3e0a8e481b604dfa62eb',file:p,original:createHash('sha256').update(s).digest('hex'),patch,rendererCeilingMb:2816},null,2));
+          fs.writeFileSync('gate-data/display-flush-source.json',JSON.stringify({source:process.env.FLUSH_SOURCE,file:p,original:createHash('sha256').update(s).digest('hex'),patch,rendererCeilingMb:2816},null,2));
           JS
       - name: Exact game, random stream and frame/display pixels
         run: node tools/lab-display-flush-proof.mjs
       - name: Complete original audit under original memory ceiling
+        if: matrix.check != 'textfit-full'
         env:
           CHECK: ${{ matrix.check }}
           NO_HIDDEN_RESULT: gate-data/no-hidden-hits.measurement.json
         run: node tools/lab-memory-check.mjs "$CHECK"
+      - name: Complete all original layout scopes within ten minutes
+        if: matrix.check == 'textfit-full'
+        run: node tools/textfit-memory-proof.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
