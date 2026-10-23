@@ -1,3 +1,5 @@
+import { createTileStrips } from './tile-strips.js';
+const tileStrips = createTileStrips(T);
 import { setLevelSfx, levelSfxReady, prepareLevelSfx } from './audio.js';
 import { staticGradient } from './render-cache.js';
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
@@ -1267,6 +1269,7 @@ function groundDepth(W, H, solidAt, cap) {
   return D;
 }
 function resolveTiles() {
+  tileStrips.clear();
   if (!LEDGE_SETS.beam) { LEDGE_SETS.beam = { ledge: TILE.beam, ledgeL: TILE.beamL, ledgeR: TILE.beamR };
     LEDGE_SETS.staging = { ledge: TILE.staging, ledgeL: TILE.stagingL, ledgeR: TILE.stagingR };
     LEDGE_SETS.lashed = { ledge: TILE.lashed, ledgeL: TILE.lashedL, ledgeR: TILE.lashedR }; }
@@ -31796,8 +31799,10 @@ function drawWorld(cx, cy, showPlayer) {
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
   const lip = L.edgeLit ? (typeof L.edgeLit === 'string' ? L.edgeLit : 'rgba(236,214,168,0.5)') : null, lip2 = lip && lip.replace(/[\d.]+\)$/, '0.18)');
+  const stripTiles = !WRD.size && tileStrips.canDraw(g);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
+    if (stripTiles && tx + tileStrips.span <= LW && tx + tileStrips.span - 1 <= tx0 + Math.ceil(VW / TS) + 1 && tileStrips.draw(g, tileSpr, L.grid, LW, tx, ty, tx * TS - cx, ty * TS - cy, lip, lip2)) { tx += tileStrips.span - 1; continue; }
     const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0) + (WRD.size ? WR.dipOf(WRD, ty * LW + tx) : 0));
     if (lip && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = lip; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = lip2; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
   }
