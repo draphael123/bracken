@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [tiles-confirm, tiles, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       pixel_cpu:
         type: boolean
@@ -22,30 +22,6 @@ env:
 permissions:
   contents: read
 jobs:
-  tiles-confirm:
-    if: inputs.mode == 'tiles-confirm'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    strategy:
-      fail-fast: false
-      matrix:
-        level: [lamplit, minecart]
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24.11.1'
-      - run: node tools/tile-strips-proof.mjs
-      - run: node tools/load-perf-compare.mjs "$LEVEL" --baseline=c07061a35f56ff24c325333e7117aed1440e2c8d --control
-        env:
-          LEVEL: ${{ matrix.level }}
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: tile-confirm-${{ matrix.level }}
-          path: gate-data/
   pixel-debug:
     if: inputs.mode == 'pixel-debug'
     runs-on: ubuntu-latest
@@ -156,7 +132,7 @@ jobs:
           name: mobile-comparison
           path: gate-data/
   compare:
-    if: inputs.mode == 'compare' || inputs.mode == 'present' || inputs.mode == 'tiles'
+    if: inputs.mode == 'compare' || inputs.mode == 'present'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -172,14 +148,11 @@ jobs:
           node-version: '24.11.1'
       - run: node tools/canvas-bitmap-proof.mjs
         if: inputs.present == 'bitmap' && inputs.mode == 'present'
-      - run: node tools/tile-strips-proof.mjs
-        if: inputs.mode == 'tiles'
       - name: Same-runner original phone setup, pixels and three FPS samples per build
         env:
           LEVEL: ${{ matrix.level }}
           PRESENT: ${{ inputs.mode == 'present' && inputs.present || 'drawImage' }}
-          BASELINE: ${{ inputs.mode == 'tiles' && 'c07061a35f56ff24c325333e7117aed1440e2c8d' || '' }}
-        run: node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT" --baseline="$BASELINE"
+        run: node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
