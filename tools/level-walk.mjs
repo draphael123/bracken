@@ -71,7 +71,7 @@ export function walkCfg(id, hero, seed, o = {}) {
   const lv = BYID[id]; if (!lv) throw Error('no such level ' + id);
   const d = DEPTH[id] ?? 1, lvl = o.level ?? campaignLevel(id), route = routeOf(lv, o.reachHero ? hero : undefined);
   return { id, hero, seed, lvl, depth: d, beaten: beatenBefore(id), tonics: o.tonics ?? tonicsAt(d), charm: o.charm === undefined ? charmAt(d) : o.charm,
-    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, traceFrom: o.traceFrom || 0, traceN: o.traceN || 400, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, from: o.from ?? null, duel: o.duel ?? true, fight: o.fight ?? true, mini: o.mini ?? true, nofoes: o.nofoes || null, dk: !!o.dk, legacy: o.legacy || [], reachHero: !!o.reachHero, subs: o.subs ?? true, setup: o.setup || '', route };
+    profile: o.profile ?? 'human+first', strict: !!o.strict, trace: o.trace || null, traceFrom: o.traceFrom || 0, traceN: o.traceN || 400, coins: o.coins ?? 60 * d, skills: o.skills ?? true, frames: o.frames ?? 36000, stuck: o.stuck ?? 1500, deathCap: o.deaths ?? 8, from: o.from ?? null, duel: o.duel ?? true, fight: o.fight ?? true, mini: o.mini ?? true, nofoes: o.nofoes || null, dk: !!o.dk, legacy: o.legacy || [], reachHero: !!o.reachHero, subs: o.subs ?? true, setup: o.setup || '', coop: o.coop | 0, coopAi: !!o.coopAi, route };   /* (claude/coopbalance) coop: seats (2-4); the others are the co-op AI hands standing in for people (coopAi: counted as AIs) */
 }
 /* THE DRINK HOOK (page side): one place, so the walker keeps working when the manual flask lands */
 export const drinkJs = `const heldNow=()=>{try{if(typeof BK.flasks==='function')return +BK.flasks()||0;const PG=BKT.PROG;return +(PG.flasks??PG.tonics??0)||0;}catch{return 0;}};
@@ -85,7 +85,8 @@ export function walkJs(c) { return `(async()=>{const c=${JSON.stringify(c)},h=c.
   const seedOf=s=>{let x=2166136261;for(let i=0;i<s.length;i++)x=Math.imul(x^s.charCodeAt(i),16777619);return x>>>0;};
   const rnd0=Math.random;Math.random=mulberry(seedOf('walk|'+c.id+'|'+h+'|'+c.seed));
   try{
-  BK.load(LEVELS.findIndex(l=>l.id===c.id));BK.state='play';BK.start();BK.god=false;BK.reset();P0.tonics=c.tonics;if(c.setup)(0,eval)(c.setup);   /* (claude/gorm2) --setup=<js>: a level state set after the load (KING GORM: BK.gorm().flee() - his hall beaten, the wood burning) */
+  if(c.coop>1){BK.coopEnd();BK.aiComp.AIC.COOP.aiAsHuman=!c.coopAi;const PR2={knight:['warden','pyro','paladin'],warden:['knight','pyro','paladin'],pyro:['paladin','knight','warden']}[h]||['warden','knight','pyro'];BK.aiComp.arm(PR2.slice(0,c.coop-1),'balanced',c.coop-1);}   /* (claude/coopbalance) a party: the co-op AI hands beside the walker */
+  BK.load(LEVELS.findIndex(l=>l.id===c.id));BK.state='play';BK.start();BK.god=false;BK.reset();if(c.coop>1){await BK.allyReady();BK.sim(5);}P0.tonics=c.tonics;if(c.setup)(0,eval)(c.setup);   /* (claude/gorm2) --setup=<js>: a level state set after the load (KING GORM: BK.gorm().flee() - his hall beaten, the wood burning) */
   const gear=Object.keys(P0.items).filter(k=>P0.items[k]),maxHp0=BK.P.maxHp,G=BK.L.grid,GW=BK.L.W;let R=c.route;
   ${drinkJs}
   const prof=c.profile&&c.profile!=='none'?B.profileOf(c.profile):null,perc=prof&&prof.perceive?PC.makePerception(BK,prof,c.id+'|'+h+'|'+c.seed,null,{}):null;
@@ -322,6 +323,7 @@ if (process.argv[1] && /level-walk\.mjs$/.test(process.argv[1])) {
   if (!ids.length) { console.log('usage: PORT=8708 node tools/level-walk.mjs <id>[,<id>..] [--heroes=knight,warden,pyro] [--seeds=2] [--frames=36000] [--stuck=1500] [--jobs=1] [--json=out.json]'); process.exit(2); }
   const heroes = opt('heroes', 'knight,warden,pyro').split(','), seeds = +opt('seeds', 2), jobs = Math.max(1, +opt('jobs', 1)), OUT = opt('json', '');
   const o = { level: levelOverride() ?? undefined, frames: +opt('frames', 36000), stuck: +opt('stuck', 1500), deaths: +opt('deaths', 8), profile: opt('profile', 'human+first'), skills: opt('skills', '1') !== '0', strict: args.includes('--strict'), reachHero: args.includes('--reach-hero'), dk: args.includes('--dk'), legacy: opt('legacy', '') ? opt('legacy').split(',') : [], nofoes: opt('nofoes', '') ? opt('nofoes').split('-').map(Number) : null, trace: opt('trace', '') ? opt('trace').split('-').map(Number) : null, traceFrom: +opt('tracefrom', 0), traceN: +opt('tracen', 400), from: opt('from', '') ? +opt('from') : null, setup: opt('setup', ''), duel: opt('duel', '1') !== '0', fight: opt('fight', '1') !== '0', subs: opt('subs', '1') !== '0', mini: opt('mini', '1') !== '0' };
+  if (opt('coop', null) !== null) { o.coop = +opt('coop'); o.coopAi = args.includes('--coop-ai'); }   /* (claude/coopbalance) --coop=N seats (the others the co-op AI hands, counted as people unless --coop-ai) */
   if (opt('tonics', null) !== null) o.tonics = +opt('tonics'); if (opt('charm', null) !== null) o.charm = opt('charm') === 'none' ? null : opt('charm');
   const cfgs = []; for (const id of ids) for (const h of heroes) for (let s = 1; s <= seeds; s++) cfgs.push(walkCfg(id, h, s, o));
   const t0 = Date.now(), rows = await runWalks(cfgs, { jobs, onRow: (r, all) => { console.log(line(r)); if (r.trace) console.log('    trace: ' + r.trace.join(' ')); if (OUT) writeFileSync(OUT, JSON.stringify(all, null, 1)); } });

@@ -39,7 +39,7 @@ export const AI_WEIGHT = 0.5;
    about twice as deadly-off as alone. Now two tables by SEATS (index = seats; 1 is solo): COOP.hp the foes' health, COOP.dmg the blow on EACH hero. An AI is a
    partial seat (AI_WEIGHT), so a party's worth is people + AI_WEIGHT a AI, and a value between two seats is the line between their rows; an AI-only party
    keeps its old cap (the x2 health row, the 2-seat blow row). Mutable on purpose: the lab sweeps it (BK.aiComp.AIC.COOP). */
-export const COOP = { hp: [1, 1, 2, 2.6, 3.2], dmg: [1, 1, 1.35, 1.45, 1.5], aiAsHuman: false };   /* aiAsHuman: the LAB's two-bot fights - a bot standing in for a second PERSON counts as one */
+export const COOP = { hp: [1, 1, 2, 2.6, 3.2], dmg: [1, 1, 1.25, 1.38, 1.5], aiAsHuman: false };   /* MEASURED (tools/coop-boss-rates.mjs, act I-II bosses, the human bot + co-op AI hands as people, flasks every seat): 2p 1.35 56% / 1.25 69%; 3p 1.45 50% / 1.3 79%; 4p 1.35 94% - solo 73% */   /* aiAsHuman: the LAB's two-bot fights - a bot standing in for a second PERSON counts as one */
 const rowAt = (row, w) => { const lo = Math.max(1, Math.min(4, Math.floor(w))), hi = Math.min(4, lo + 1), t = Math.max(0, Math.min(1, w - lo)); return row[lo] + (row[hi] - row[lo]) * t; };
 /* the party's worth in seats: 1 for the first, 1 a person after him (a body with no ai flag), AI_WEIGHT an AI (b.labHuman: the lab's second bot, counted as a person) */
 export function seatsOf(bodies) {

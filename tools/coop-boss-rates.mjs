@@ -27,16 +27,17 @@ function coopJs(F, seats) {
   j = j.replace('return {stk:', () => 'return {fl0:window.__cbFl0,seatsN,wipes,party,mul,take,stk:').replace('outcome:r.outcome||r.skipped', () => "outcome:(wipes>0&&(r.outcome==='win'||r.outcome==='trade'))?'wipe':(r.outcome||r.skipped)");
   return { lvl, js: j };
 }
-const rows = [], t0 = Date.now();
+const rows = [], t0 = Date.now(), REUSE = +opt('reuse', 6);   /* one page serves REUSE fights in a row (each fight's own js resets the save and the seats), then a fresh one: a page start is most of a short fight */
+let pg = null, used = 0;
 for (const id of levels) for (const seats of seatsL) for (const h of heroes) for (let s = 1; s <= seeds; s++) {
-  let pg, row; const F = { r: id, h, s };
-  try { const { lvl, js } = coopJs(F, seats); pg = await openRetry(); await pg.evalp(diffJs()); row = { lvl, ...(await pg.evalp(js, 1200000)) }; }
-  catch (e) { row = { err: String(e.message).slice(0, 160) }; }
-  finally { if (pg) await pg.close(); }
+  let row; const F = { r: id, h, s };
+  try { const { lvl, js } = coopJs(F, seats); if (!pg || used >= REUSE) { if (pg) await pg.close(); pg = await openRetry(); used = 0; await pg.evalp(diffJs()); } used++; row = { lvl, ...(await pg.evalp(js, 1200000)) }; }
+  catch (e) { row = { err: String(e.message).slice(0, 160) }; if (pg) { try { await pg.close(); } catch {} pg = null; } }
   const rec = { row: id, hero: h, seats, seed: s, ai: AI, ...row }; rows.push(rec);
   console.log(id + ' ' + h + '+' + seats + (AI ? 'ai' : '') + ' s' + s + ' L' + rec.lvl + ': ' + (rec.err ? 'ERR ' + rec.err : rec.outcome + ' ' + rec.secs + 's left ' + rec.bossLeft + '% taken ' + rec.taken + ' wipes ' + rec.wipes + ' mul ' + rec.mul + '/' + rec.take + ' fl0 ' + JSON.stringify(rec.fl0) + ' party ' + JSON.stringify((rec.party || []).map(q => q.h.slice(0, 2) + ':' + q.dmg + '/' + q.fl))));
   if (OUT) writeFileSync(OUT, JSON.stringify(rows));
 }
+if (pg) await pg.close();
 const key = r => r.row + ' ' + r.hero + ' ' + r.seats + (r.ai ? 'ai' : ''), by = new Map();
 for (const r of rows) { if (r.err) continue; const k = key(r), B = by.get(k) || { w: 0, n: 0 }; B.n++; if (r.outcome === 'win' || r.outcome === 'trade') B.w++; by.set(k, B); }
 console.log('\nCOOP RATES  profile ' + PROFILE + (AI ? '  AI-counted' : '  bots as people') + '  (' + rows.length + ' fights, ' + Math.round((Date.now() - t0) / 60000) + ' min)');
