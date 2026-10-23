@@ -384,14 +384,14 @@
   "bare": true
  },
  "spore": {
-  "hash": "c0b80ba1d0de",
+  "hash": "f48637fe943d",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
   "hits": 12,
-  "deaths": 0,
-  "kills": 29,
-  "lifts": 89,
+  "deaths": 1,
+  "kills": 32,
+  "lifts": 93,
   "walked": 100,
   "bare": true
  },
