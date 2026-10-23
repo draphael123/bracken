@@ -19,6 +19,7 @@ import { makeGormHands } from '../src/gorm-hands.js';
 import { updateGorm } from '../src/gorm-king.js';
 import { RB, newRoyalBoar, boarStep } from '../src/royal-boar.js';
 import { readFileSync } from 'fs';
+import { openPage } from './cdp.mjs';   /* (claude/kingsfix2) the first-arrival regression runs  in the page */
 const TS = 16; let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'kings'), L = lv.build(), G = L.gorm, W = L.W;
 const cell = (x, y) => L.grid[y * W + x], solid = (x, y) => cell(x, y) === T.SOLID, oneway = (x, y) => cell(x, y) === T.ONEWAY || cell(x, y) === T.PLANK, stand = (x, y) => solid(x, y) || oneway(x, y);
@@ -61,6 +62,17 @@ function world() {
     moveBody: (e, dx, dy) => { e.x += dx; e.y = Math.min(e.y + dy, (e.stage === 'glade' ? gl.floor : 14 * TS)); return { ground: true }; }, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, text: () => {}, hint: () => {}, spawn: e => { W0.enemies.push(e); return e; }, ehp: () => 10 };
   const H = makeGormHands(ctx); H.reset(); return { W0, H, ctx, P, king, props };
 }
+/* (claude/kingsfix2) REGRESSION: a fresh run P1 win -> escape -> the glade, in the game's own foe loop: Gorm is THERE on the first arrival and wakes (his flee clock once removed him) */
+{ const pg = await openPage({ audio: false, fonts: false });
+  try { const r = await pg.evalp(`(async () => { const { LEVELS } = await import('/src/level.js'); const out = {};
+    BK.manualSimulation = true; BKT.setHeroLevel('knight', 8); BK.setHero('knight'); BK.reset({ fresh: false }); BK.load(LEVELS.findIndex(l => l.id === 'kings')); BK.state = 'play'; BK.god = false; BK.sim(10);
+    const P = BK.P, step = n => { for (let i = 0; i < n; i++) { if (BK.state === 'card') BK.cardClose(); BK.sim(1); } }, keep = () => { P.hp = P.maxHp; P.dead = 0; }, kg = () => BK.enemies().find(e => e.t === 'king');
+    BK.tp(426, 13); for (let i = 0; i < 300; i++) { keep(); step(1); }
+    const b = kg(); b.phase = 2; b.mode = 'walk'; b.open = 0; b.ward = 0; b.hp = 3; BKT.hurtEnemy(b, 40, b.x - 10, false); step(2);
+    BK.tp(473, 13); for (let i = 0; i < 300; i++) { keep(); step(1); } BK.tp(600, 13); for (let i = 0; i < 700; i++) { keep(); step(1); } BK.tp(649, 13);   /* (the run takes a minute: the old bug removed him ~7 s after the bearers set him down) */
+    for (let i = 0; i < 240; i++) { keep(); step(1); } const k = kg();
+    out.k = k ? { alive: k.alive, stage: k.stage, mode: k.mode, x: Math.round(k.x / 16) } : null; out.active = BK.bossActive; out.px = Math.round(P.x / 16); return out; })()`, 400000);
+    ok(r.k && r.k.alive && r.k.stage === 'glade' && r.k.mode !== 'sleep' && r.active, 'FIRST ARRIVAL in the glade after the escape: Gorm is there and awake ' + JSON.stringify(r)); } finally { await pg.close(); } }
 console.log('THE FREE ROPES, THE FLEE, THE OPENINGS (his hands in a fake world)');
 { const { W0, H, P, king } = world();
   for (let i = 0; i < 400; i++) { W0.t += 0.01; H.update(0.01); }

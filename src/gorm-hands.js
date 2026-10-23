@@ -61,7 +61,8 @@ export function makeGormHands(ctx) {
       if (!S.run.done) S.run.armed = true; }
   };
   /* the King, set down on his stump throne in the glade, asleep until you come (bossStart wakes him there) */
-  function toGlade(e) { const gl = L().glade, g = G(); e.stage = 'glade'; e.phase = 4; e.mode = 'sleep'; e.modeT = 0; e.x = g.glade.stumpX; e.y = gl.floor; e.vx = 0; e.vy = 0; e.h = 60; e.w = 68; e.open = 0; e.ward = 0; e.hidden = false;
+  function toGlade(e) { const gl = L().glade, g = G(); e.fleeT = 0;   /* (claude/kingsfix2, Daniel's playtest: THE GLADE WAS EMPTY on the first arrival) his flee clock is also main.js's generic 'foe flees, then is gone' timer: left running it walked him west and removed him a few seconds after the bearers set him down - a shrine respawn built a fresh King, so he was there the second time */
+  e.stage = 'glade'; e.phase = 4; e.mode = 'sleep'; e.modeT = 0; e.x = g.glade.stumpX; e.y = gl.floor; e.vx = 0; e.vy = 0; e.h = 60; e.w = 68; e.open = 0; e.ward = 0; e.hidden = false;
     e.maxHp = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1); e.hp = e.maxHp; e.huntN = 0; e.clubT = 1.5; e.logT = 6; e.quakeT = 9; e.shakeT = 11; e.face = -1; if (ctx.bossActive()) { e.mode = 'wake'; e.modeT = 1.6; } }
 
   /* ---------------- THE HALL ---------------- */

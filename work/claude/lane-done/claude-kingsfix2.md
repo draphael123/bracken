@@ -1,0 +1,9 @@
+# KINGSFIX2 (sonnet) - claude/kingsfix2 off 0f56945e (Daniel 10-23 playtest)
+- Boughs past the hall (burning wood, glade): scorched limbs with rope stubs instead of the hall's gilt timber (src/redraw/kingswood_tiles.js charBough, x>=478). Same tiles/collision.
+- Gorm P1: hall cages BIG (glade cage art, pr.big: catch 48 px wide on him, 17 on the hero, 26 boar), EVERY rope free at any moment, peg OR anywhere along the rope drops it; archers stay (4.2 s, 10 dmg) as pressure; P1-only opening take held 1.4 / open 1.0 (P2 unchanged).
+- Escape +40 columns (SH): THE BOUGH BRIDGE 560-599 (six limbs that burn through a beat after you stand on them, tower-collapse crumbles kind 'bough'; floor burns only under the gaps), fire SURGES (3 s) as it begins, tremors, 14 branches (was 6), torch goblin on a limb, ember cap 40, flames on the limbs. Ravine/shrine/glade shifted +40; checkRun 240 (no shrine in the run).
+- BUG (Daniel 10-23): glade empty on first arrival = his flee clock e.fleeT is main.js's generic "foe flees then is removed" timer; toGlade now zeroes it. Regression in tools/gorm2.mjs (page: P1 win -> escape -> glade: present + awake).
+- Win card AI label (coopName), LV 1 label on fresh saves (display only: HUD, slots, seats, party rows; stats/XP floors untouched).
+- RATES (BOT_PROFILE human, flasks kit, campaign L6): before 11/18 = 61% (k3 w6 p2; P1 cleared 14/18, P1 157 s, 83% hp taken, 0.9 flasks); after 26/36 = 72% (k3/12 w12/12 p11/12; P1 cleared 34/36, 70 s, 67% hp, 0.7 flasks). Dry after 7/17 (k0/5 w6/6 p1/6; before 44%). Mash boss 0/6. Walker escape: 0 deaths all heroes, arrival k65 w52 p57 %.
+- fps (4x phone): hall 58.7, escape 57-60, glade 48. LQ CLEARS, solid-islands ok, reach-heroes 9 heroes 0 crossings, textfit 0, coop-progress/tavern/online-coop/save-slots/ai-companion green, gorm2/kingswood2 ok. Restamped pilot/curve/mash rows.
+- Q for Daniel: whole fight reads 72% (warden/pyro easy in P2, knight hard); P2 left alone as asked.
