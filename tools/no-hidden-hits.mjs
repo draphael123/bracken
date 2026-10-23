@@ -56,7 +56,7 @@ try {
         let placed = false; for (const dx of [-24, 24, -36, 36, -16, 16]) { const x = e.x + dx; if (!solidAt(x, e.y - 8) && !solidAt(x, e.y - 20)) { BK.look(Math.floor(x / TS), Math.floor((e.y - 1) / TS)); placed = true; break; }   /* (look: the hero AND the camera on the tile - a camera still easing from the last foe would show the wrong place) */ } if (!placed) continue;
         P().vx = P().vy = 0; P().hp = P().maxHp; P().dead = false; row.sampled++;
         const r = judge(lv, 240, () => { clear(); const dir = e.x > P().x ? 'right' : 'left'; if (Math.abs(e.x - P().x) > 20) k[dir] = true; P().hp = P().maxHp; }, seen, null, lv === 'canal' ? 5 : 0);
-        row.blows += r.blows; row.hidden.push(...r.hidden); row.notes.push(...r.notes); clear(); }
+        row.blows += r.blows; row.hidden.push(...r.hidden); row.notes.push(...r.notes); clear(); await collectRetired(); }
       out.levels.push(row); }
     /* ---- THE LEGGING TUNNEL: the hero legs the barge, lit then dimmed ---- */
     if (TUNNEL && (!ONLY || ONLY.includes('canal'))) for (const dim of [false, true]) { const li = LEVELS.findIndex(l => l.id === 'canal'); BK.load(li); BK.start ? BK.start() : (BK.state = 'play'); BK.god = true;
