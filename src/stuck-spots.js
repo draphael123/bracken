@@ -82,20 +82,34 @@ export const STUCK = {
       { zone: [545, 8, 575, 22], at: [551, 17], line: 'THE BOOM IS OPEN: BACK TO THE RAFT, SHE CARRIES YOU ON' }] },
     { id: 'ms-night', zone: [596, 8, 612, 22], at: [602, 17], line: 'THE PADS WITH A MARSH LIGHT HOLD. WAIT ON THOSE' },
   ],
-  /* (claude/stuckguides) SPORE: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
+  /* SPOREWOOD 2, THE MOTHER'S KNOT (claude/sporewood2): every lock on the way - the buds, the bounce caps, the dark buds' lanterns, the leaning caps, the
+     bounce well, the larder stair and the seed caps at her door (built rows: src/sporewood.js lays them one row higher, DY) */
   spore: [
-    { id: 'sp-bud-37', zone: [23, 10, 41, 27], at: [37, 19], glint: 'stall', line: 'STOP ON A BUD: THE CAP GROWS INTO A STEP' },
-    { id: 'sp-vent-58', zone: [46, 8, 64, 29], ats: [[58, 25], [52, 16], [56, 16]], glint: 'stall', line: 'THE VENT LIFTS YOU TO THE CAP THAT CARRIES YOU ON' },
-    { id: 'sp-cap-164', zone: [150, 0, 172, 14], ats: [[164, 6], [168, 6]], glint: 'stall', line: 'THE CAP IN THE CANOPY DRIFTS: RIDE IT' },
-    { id: 'sp-lean-177', zone: [163, 5, 181, 21], at: [177, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER THE GAP' },
-    { id: 'sp-lean-192', zone: [180, 5, 196, 21], at: [192, 13], glint: 'stall', line: 'THE NEXT LEANING CAP IS THE WAY OVER' },
-    { id: 'sp-bud-250', zone: [238, 4, 250, 21], at: [250, 13], glint: 'stall', line: 'STOP ON A BUD: IT GROWS A STEP UNDER YOU' },
-    { id: 'sp-bud-257', zone: [253, 1, 263, 19], at: [257, 9], glint: 'stall', line: 'STOP ON THE HIGH BUD: IT LIFTS YOU TO THE LEDGE' },
-    { id: 'sp-vent-292', zone: [278, 5, 296, 21], at: [292, 13], glint: 'stall', line: 'THE VENT LIFTS WHOEVER STANDS IN IT' },
-    { id: 'sp-cap-313', zone: [298, 2, 328, 18], ats: [[313, 9], [318, 9]], glint: 'stall', line: 'THE FLOATING CAP CARRIES YOU OVER THE BOG' },
-    { id: 'sp-bud-345', zone: [331, 5, 349, 21], at: [345, 13], glint: 'stall', line: 'A LEANING CAP CARRIES YOU OVER' },
-    { id: 'sp-glowbuds', zone: [420, 10, 462, 28], ats: [[432, 24], [437, 24], [449, 21], [455, 17]], glint: 'stall', line: 'STRIKE THE GLOWBUDS: THEIR LIGHT WAKES THE CAPS' },
-    { id: 'sp-bud-477', zone: [465, 10, 489, 27], at: [477, 19], glint: 'stall', line: 'A BUD CAP RISES UNDER YOU: STAND ON IT' },
+    { id: 'sw-bud-28', zone: [18, 36, 29, 41], at: [28, 40], glint: 'stall', line: 'STOP ON THE BUD: THE CAP GROWS INTO A STEP' },
+    { id: 'sw-pit-64', zone: [52, 33, 66, 42], ats: [[61, 42], [64, 42]], glint: 'stall', line: 'DROP INTO THE PIT: HOLD JUMP ON A BOUNCE CAP' },
+    { id: 'sw-bud-77', zone: [67, 33, 78, 37], at: [77, 36], glint: 'stall', line: 'LET THE SPORES BURST, THEN STOP ON THE BUD' },
+    { id: 'sw-bud-85', zone: [79, 29, 86, 33], at: [85, 32], glint: 'stall', line: 'THE NEXT BUD TAKES YOU TO THE TOP TIER' },
+    { id: 'sw-dark-136', zone: [128, 34, 137, 39], steps: [
+      { at: [133, 38], done: ['glowbud', 133, 38, 'lit'], line: 'THE BUD IS DARK: STRIKE THE LANTERN CAP BESIDE IT' },
+      { at: [136, 38], line: 'THE LANTERN IS LIT: STOP ON THE DARK BUD NOW' }] },
+    { id: 'sw-shaft-168', zone: [161, 36, 169, 41], steps: [
+      { at: [165, 40], done: ['glowbud', 165, 40, 'lit'], line: 'STRIKE THE LANTERN CAP: ITS LIGHT LETS THE BUD GROW' },
+      { at: [168, 40], line: 'STOP ON THE LIT BUD' }] },
+    { id: 'sw-shaft-180', zone: [170, 32, 181, 37], steps: [
+      { at: [176, 36], done: ['glowbud', 176, 36, 'lit'], line: 'THE NEXT BUD IS DARK: ITS LANTERN CAP IS BESIDE YOU' },
+      { at: [180, 36], line: 'STOP ON THE LIT BUD' }] },
+    { id: 'sw-shaft-188', zone: [182, 28, 189, 33], steps: [
+      { at: [186, 32], done: ['glowbud', 186, 32, 'lit'], line: 'THE LAST DARK BUD: STRIKE ITS LANTERN CAP' },
+      { at: [188, 32], line: 'STOP ON THE LIT BUD' }] },
+    { id: 'sw-lean-208', zone: [199, 23, 209, 29], at: [208, 26], glint: 'stall', line: 'THIS CAP LEANS: STOP ON IT AT THE EDGE' },
+    { id: 'sw-bud-220', zone: [218, 23, 221, 27], at: [220, 26], glint: 'stall', line: 'STOP ON THE BUD BETWEEN THE SPORE DROPS' },
+    { id: 'sw-bounce-237', zone: [222, 19, 238, 27], ats: [[236, 27], [237, 27], [238, 27]], glint: 'stall', line: 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK' },
+    { id: 'sw-lean-250', zone: [241, 19, 251, 23], at: [250, 22], glint: 'stall', line: 'THE LEANING CAP CARRIES YOU OVER THE GAP' },
+    { id: 'sw-bud-263', zone: [260, 19, 264, 23], at: [263, 22], glint: 'stall', line: 'STOP ON THE BUD: IT LIFTS YOU TO THE LADDER' },
+    { id: 'sw-well-282', zone: [265, 15, 282, 26], ats: [[279, 26], [282, 26]], glint: 'stall', line: 'THE BOUNCE WELL: HOLD JUMP ON THE FAR CAP' },
+    { id: 'sw-bud-314', zone: [301, 16, 315, 20], at: [314, 19], glint: 'stall', line: 'STOP ON THE BUD BY THE ROOT WALL' },
+    { id: 'sw-bud-332', zone: [316, 12, 333, 16], at: [332, 15], glint: 'stall', line: 'THE NEXT BUD TAKES YOU UP TO THE LARDER END' },
+    { id: 'sw-seeds', zone: [356, 8, 367, 12], ats: [[363, 11], [366, 11]], glint: 'stall', line: 'STRIKE THE SEED CAPS: EACH GROWS A STEP' },
   ],
   /* (claude/stuckguides) FLOTILLA: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */
   /* (claude/flotilla2) THE FLOTILLA 2, rebuilt x2: every route need - the bowsprit, the benches (the rowers), the stern castle, the long gap's lines, the rigging run's

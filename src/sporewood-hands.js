@@ -1,0 +1,186 @@
+// src/sporewood-hands.js - SPOREWOOD 2, THE MOTHER'S KNOT: the level's rule and machines (claude/sporewood2, the OPUS GREYBOX, 2026-10-22; brief
+// scratch/brief-sporewood2-1015.md, recipe scratch/review-rootway-recipe-1014.md). src/sporewood.js builds the level; this binds it to the game.
+// main.js owns the world and calls: reset (spawnEntities), update, strike (a blow's box), props (the guide's), drawSky (THE MOTHER'S KNOT on the skyline),
+// drawWorld (the puffs, the spores, the knots, the dark buds' and seed caps' marks, the area banner), read (tools), addSpring (the boss's spring spores).
+// THE RULE (L.rule): THE CAPS GROW INTO STEPS, AND THE SPORES HELP YOU.
+//   THE BUDS are main.js's growcap movers. Two kinds of this level's own, which main.js's growcap step asks this module about (growsUnder):
+//     dark   (m.dark) grows under a hero only while it is LIT: a lantern cap (glowbud) burning within SP.litX / SP.litY of it. A struck lantern also wakes it at
+//            once (main.js wakeMycelium). Unlit, standing on it says so.
+//     seed   (m.seed) never grows under a hero: a BLOW on it grows it (strike), and it stands SP.seedHold (or its own hold) as a STEP, then withers. THE MOTHER's
+//            hollow is ringed with them (m.mother: src/mother-cap2.js withers them in her second phase).
+//   THE SPORES HELP YOU:
+//     LANTERN CAP  (main.js's glowbud: a blow lights it 14 s and wakes the buds near it) - here it also DAZZLES a lurker in its light: out of his cap, no lunge.
+//     MEND PUFF    (ent 'mendpuff') walk into it or strike it: it bursts and mends SP.mend of your health over SP.mendT s. Once a life (it grows back on a death).
+//     PUFFBALL     (ent 'springpuff') strike it: it bursts into a SPRING SPORE that hangs SP.springLife s - land on it and it throws you as a bounce cap does
+//                  (hold jump: higher; plunge onto it: highest). It grows back. THE MOTHER's spore bloom and her brood make the same spring spores (addSpring).
+//     ROOT KNOT    (ent 'rootknot') opens only FROM ABOVE: a plunge onto it opens its root door (stays open). A blade on it clanks FROM ABOVE (B10/B14).
+// Every capital line it says goes through ctx.number with a line listed in SPW_SAY (and src/hint-lines.js).
+import { SPRING_MOVE } from './hero-move.js';
+export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.2, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
+export const SPW_SAY = {
+  lit: 'THE LANTERN CAP LIGHTS', dazzled: 'DAZZLED', dark: 'THIS BUD IS DARK: LIGHT A LANTERN CAP', mend: 'THE SPORES MEND YOU', spring: 'A SPRING SPORE',
+  seed: 'THE SEED CAP GROWS', knot: 'THE KNOT OPENS', above: 'FROM ABOVE',
+};
+
+export function makeSporewoodHands(ctx) {
+  const TS = ctx.TS, H = {};
+  const L = () => ctx.L;
+  let S = null;
+  H.on = () => !!(L() && L().sporewood2);
+  const say = (x, y, k, col = '#c9ffb0') => ctx.number(x, y, SPW_SAY[k], col);
+  const once = k => { if (S.said.has(k)) return false; S.said.add(k); return true; };
+  const P0 = () => ctx.players()[0];
+  const overlap = (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t;
+
+  /* ---------- RESET (every load and every respawn) ---------- */
+  H.reset = () => {
+    const lv = L(); if (!lv || !lv.sporewood2) { S = null; return; }
+    const keep = S && S.L === lv ? S : null;
+    const knots = (lv.ents || []).filter(e => e.t === 'rootknot').map(e => { const was = keep && keep.knots.find(k => k.x === e.x && k.y === e.y);
+      return { x: e.x, y: e.y, door: e.door, open: !!(was && was.open), px: e.x * TS + 8, py: (e.y + 1) * TS }; });
+    for (const k of knots) if (k.open) openDoor(k, true);
+    S = { L: lv, said: keep ? keep.said : new Set(), sec: -1, banner: null, knots,
+      mends: (lv.ents || []).filter(e => e.t === 'mendpuff').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, state: 'whole', t: 0, heal: 0 })),
+      puffs: (lv.ents || []).filter(e => e.t === 'springpuff').map(e => ({ x: e.x * TS + 8, y: (e.y + 1) * TS, state: 'whole', t: 0 })),
+      springs: [], lit: new Map(), darkSaid: 0,
+      n: keep ? keep.n : { lit: 0, dazzled: 0, mended: 0, springs: 0, bounces: 0, seeds: 0, knots: 0 } };
+    /* THE WALKER's machine hands (tools/level-walk.mjs workOf) work a prop with a numeric `hits` that is not `done`: an unlit lantern cap */
+    for (const pr of ctx.props()) if (pr.t === 'glowbud') { pr.hits = pr.hits || 0; pr.done = (pr.lit || 0) > 2; }
+  };
+  H.load = () => { S = null; H.reset(); };
+  function openDoor(k, quiet) {
+    k.open = true; const [x0, x1, y0, y1] = k.door || [0, -1, 0, -1];
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) ctx.cellSet(x, y, ctx.T.AIR);
+    if (!quiet) { ctx.shake(3); ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(k.px, k.py - 6, 14, ['#8fd160', '#6a5446', '#e0b0f0'], 90, 0.6); if (S) S.n.knots++; }
+  }
+
+  /* ---------- THE BUDS: does this one grow under a hero now? (main.js's growcap step asks) ---------- */
+  const litNear = m => { const cx = m.x + m.w / 2, cy = m.y0; for (const pr of ctx.props()) if (pr.t === 'glowbud' && (pr.lit || 0) > 0 && Math.abs(pr.x - cx) < SP.litX && Math.abs(pr.y - cy) < SP.litY) return true; return false; };
+  H.growsUnder = m => { if (!S) return true; if (m.seed) return false; if (m.dark) return !!m.lit; return true; };
+
+  /* ---------- SPRING SPORES (the puffballs here; the Mother's bloom and brood through addSpring) ---------- */
+  H.addSpring = (x, y, life, o) => { if (!S) return null; const s = { x, y, life: life || SP.springLife, max: life || SP.springLife, t: 0, ...(o || {}) }; S.springs.push(s); S.n.springs++; return s; };
+  function stepSprings(dt) {
+    S.springs = S.springs.filter(s => (s.life -= dt) > 0);
+    for (const p of ctx.players()) { if (!p || p.dead) continue; const prevY = p.y - (p.vy || 0) * dt - 1;
+      for (const s of S.springs) { const top = s.y - 4;
+        if ((p.vy || 0) <= 0 || Math.abs(p.x - s.x) > SP.springW || prevY > top + 2 || p.y < top) continue;
+        const held = ctx.keys().jump, pl = !!p.plunge; p.y = top; p.vy = pl ? SPRING_MOVE.BOUNCE_PLUNGED : held ? SPRING_MOVE.BOUNCE_HELD : SPRING_MOVE.BOUNCE; p.ground = false; if (pl) { p.plunge = false; p.canCut = false; }
+        s.t = 0.25; S.n.bounces++; ctx.sfx.bounce ? ctx.sfx.bounce() : ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(s.x, top, 6, ['#c9a0ff', '#fff1ff', '#bff0f0'], 50, 0.35);
+        if (once('spring')) say(s.x, top - 18, 'spring', '#e0c8ff'); } }
+  }
+
+  /* ---------- UPDATE ---------- */
+  H.update = dt => {
+    if (!S) return; const lv = L(), P = P0(); if (!P) return;
+    /* the area banner: the name of the place you have come into */
+    const secs = lv.sections || []; const si = secs.findIndex(s => P.x >= s.x0 * TS && P.x < s.x1 * TS);
+    if (si >= 0 && si !== S.sec) { if (S.sec >= 0 || si > 0) S.banner = { name: secs[si].name, t: 0 }; S.sec = si; }
+    if (S.banner) { S.banner.t += dt; if (S.banner.t > 3.4) S.banner = null; }
+    /* THE LANTERN CAPS: a fresh light is said, wakes its dark buds (main.js) and dazzles the lurkers in it */
+    const buds = ctx.props().filter(pr => pr.t === 'glowbud');
+    for (const pr of buds) { const was = S.lit.get(pr) || 0, now = pr.lit || 0; pr.hits = pr.hits || 0; pr.done = now > 2;
+      if (now > was + 1) { S.n.lit++; if (once('lit')) say(pr.x, pr.y - 30, 'lit', '#bff0f0'); }
+      S.lit.set(pr, now); }
+    for (const e of ctx.enemies()) { if (!e.alive || e.t !== 'lurker') continue;
+      const inLight = buds.some(pr => (pr.lit || 0) > 0 && pr.light && Math.hypot(pr.x - e.x, pr.y - 8 - (e.y - 6)) < pr.light.r * 1.3);   /* (the light as drawn: main.js cuts its hole r x 1.3) */
+      if (!inLight) { e.dazzled = 0; continue; }
+      if (e.mode === 'hide' || e.mode === 'springTell') { e.mode = 'rest'; e.modeT = Math.max(e.modeT || 0, SP.dazzle); e.vx = 0; if (!e.dazzled) { S.n.dazzled++; say(e.x, e.y - 22, 'dazzled', '#bff0f0'); } }
+      else if (e.mode === 'rest') e.modeT = Math.max(e.modeT || 0, SP.dazzle);
+      e.dazzled = 1; }
+    /* THE DARK BUDS: lit or not, and a hero on an unlit one is told */
+    for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.dark) continue; m.lit = litNear(m);
+      if (!m.lit && m.state === 'bud' && P.onMover === m && Math.abs(P.vx) < 25) { S.darkSaid += dt; if (S.darkSaid > 0.6) { S.darkSaid = -3; say(m.x + m.w / 2, m.y - 24, 'dark', '#c9a0ff'); } } }
+    /* MEND PUFFS: walked into */
+    for (const q of S.mends) { if (q.state === 'whole') { for (const p of ctx.players()) if (p && !p.dead && Math.abs(p.x - q.x) < SP.mendR && Math.abs(p.y - 6 - (q.y - 6)) < 14) burstMend(q, p); }
+      else if (q.state === 'mending') { q.t += dt; const p = q.who; if (p && !p.dead && q.heal > 0) { const d = Math.min(q.heal, (SP.mend * p.maxHp / SP.mendT) * dt); q.heal -= d; ctx.heal(p, d); } if (q.t > SP.mendT + 0.6) q.state = 'spent'; } }
+    /* PUFFBALLS: grow back */
+    for (const q of S.puffs) if (q.state === 'gone') { q.t -= dt; if (q.t <= 0) q.state = 'whole'; }
+    stepSprings(dt);
+    /* ROOT KNOTS: a plunge onto one opens it (from above: falling, over it, feet at its top) */
+    for (const k of S.knots) { if (k.open) continue;
+      for (const p of ctx.players()) if (p && !p.dead && p.plunge && (p.vy || 0) > 0 && Math.abs(p.x - k.px) < SP.knotW + 2 && p.y >= k.py - SP.knotH - 4 && p.y <= k.py + 4) {
+        openDoor(k); say(k.px, k.py - 30, 'knot', '#8fd160'); p.plunge = false; p.vy = -300; p.ground = false; p.canCut = false; break; } }
+  };
+  function burstMend(q, p) { q.state = 'mending'; q.t = 0; q.who = p; q.heal = SP.mend * p.maxHp; S.n.mended++; ctx.sfx.puff && ctx.sfx.puff(); ctx.sfx.heal && ctx.sfx.heal();
+    ctx.burst(q.x, q.y - 8, 16, ['#a6e04a', '#dfffa0', '#ffffff'], 60, 0.7); say(q.x, q.y - 26, 'mend', '#a6e04a'); }
+
+  /* ---------- A BLOW ---------- */
+  H.strike = hb => {
+    if (!S || !hb) return; const P = P0();
+    for (const q of S.mends) if (q.state === 'whole' && overlap(hb, { l: q.x - 8, r: q.x + 8, t: q.y - 14, b: q.y })) burstMend(q, P);
+    for (const q of S.puffs) if (q.state === 'whole' && overlap(hb, { l: q.x - 7, r: q.x + 7, t: q.y - 13, b: q.y })) {
+      q.state = 'gone'; q.t = SP.springRegrow + SP.springLife; ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(q.x, q.y - 8, 14, ['#e8e0d0', '#c9a0ff', '#fff1ff'], 70, 0.6);
+      H.addSpring(q.x, q.y - 8, SP.springLife); }
+    /* SEED CAPS: a blow grows one (her hollow's too - src/mother-cap2.js may refuse one she is withering: m.noSeed) */
+    for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.seed || m.state !== 'bud' || m.cd > 0 || m.noSeed) continue;
+      if (!overlap(hb, { l: m.x - 2, r: m.x + m.w + 2, t: m.y - 18, b: m.y + 10 })) continue;
+      m.state = 'grow'; m.k = 0; m.hold = m.hold || SP.seedHold; m.struck = (m.struck || 0) + 1; S.n.seeds++; ctx.sfx.puff && ctx.sfx.puff(); ctx.burst(m.x + m.w / 2, m.y, 10, ['#8fd160', '#dfffa0', '#e0b0f0'], 60, 0.5);
+      if (once(m.mother ? 'seedM' : 'seed')) say(m.x + m.w / 2, m.y - 22, 'seed', '#dfffa0'); }
+    /* a ROOT KNOT turns a blade: it opens FROM ABOVE */
+    for (const k of S.knots) if (!k.open && !(P && P.plunge) && overlap(hb, { l: k.px - SP.knotW, r: k.px + SP.knotW, t: k.py - SP.knotH, b: k.py })) {
+      if (ctx.turned) ctx.turned(k.px, k.py - 8, SPW_SAY.above); else say(k.px, k.py - 24, 'above', '#ffd36b'); }
+  };
+
+  /* ---------- THE GUIDE's props (src/stuck-spots.js reads `on`) ---------- */
+  H.props = () => { if (!S) return []; const out = [];
+    for (const k of S.knots) out.push({ t: 'rootknot', x: k.px, y: k.py, on: k.open });
+    return out; };
+  H.read = () => S ? { sec: S.sec, banner: S.banner ? S.banner.name : null, n: { ...S.n }, knots: S.knots.map(k => ({ x: k.x, y: k.y, open: k.open })),
+    mends: S.mends.map(q => q.state), puffs: S.puffs.map(q => ({ x: q.x, y: q.y, state: q.state })), springs: S.springs.map(s => ({ x: s.x, y: s.y, life: s.life })) } : null;
+  /* THE WALKER (tools/level-walk.mjs via src/walk-hints.js): the next lock on the way - an unlit lantern cap by a dark bud, an unstruck seed cap, a knot */
+  H.walkHint = (P, route) => {
+    if (!S || !P) return null; const lv = L(), px = P.x, py = P.y;
+    if (lv.arena && px > lv.arena.x0 - 8 * TS) return null;
+    /* a dark bud ahead on his floor, not lit: the lantern cap nearest it */
+    for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !m.dark || m.lit || m.state !== 'bud') continue; const cx = m.x + m.w / 2;
+      if (cx < px - 3 * TS || cx > px + 14 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;
+      const lt = ctx.props().filter(pr => pr.t === 'glowbud' && Math.abs(pr.x - cx) < SP.litX && Math.abs(pr.y - m.y0) < SP.litY).sort((a, b) => Math.abs(a.x - cx) - Math.abs(b.x - cx))[0];
+      if (lt) { const side = px <= lt.x ? -1 : 1; return { x: lt.x + side * 14, y: lt.y, key: 'atk', face: -side, r: 16 }; } }
+    /* a seed cap ahead on his floor, not grown: strike it from beside */
+    for (const m of ctx.movers().filter(q => q.kind === 'growcap' && q.seed && !q.mother && q.state === 'bud' && !(q.cd > 0)).sort((a, b) => a.x - b.x)) { const cx = m.x + m.w / 2;
+      if (cx < px - 4 * TS || cx > px + 12 * TS || Math.abs(m.y0 - py) > 2 * TS) continue;
+      return { x: m.x - 8, y: m.y0 + 8, key: 'atk', face: 1, r: 14 }; }
+    return null;
+  };
+
+  /* ---------- DRAWING (greybox: the art pass gives the puffs, spores, knots and caps their own sprites) ---------- */
+  const R = Math.round;
+  function drawPuff(g, x, b, col, hi, time, k) { const w = 12, h = 11, bob = R(Math.sin(time * 2 + x) * 0.6);
+    g.fillStyle = 'rgba(20,14,24,0.6)'; g.fillRect(x - w / 2 - 1, b - h - 1 + bob, w + 2, h + 1);
+    g.fillStyle = col; g.fillRect(x - w / 2, b - h + bob, w, h); g.fillRect(x - w / 2 + 2, b - h - 2 + bob, w - 4, 2);
+    g.fillStyle = hi; g.fillRect(x - 3, b - h + 1 + bob, 3, 2); if (k) { g.fillStyle = '#ffffff'; g.fillRect(x + 2, b - h + 3 + bob, 1, 1); } }
+  H.drawWorld = (g, cx, cy, VW, VH, time) => {
+    if (!S) return;
+    /* MEND PUFFS: a pale green puffball breathing spores; a green cloud while it mends */
+    for (const q of S.mends) { const x = R(q.x - cx), b = R(q.y - cy); if (x < -30 || x > VW + 30) continue;
+      if (q.state === 'whole') { drawPuff(g, x, b, '#8fc070', '#dfffa0', time, true); if (Math.floor(time * 2 + q.x) % 3 === 0) { g.fillStyle = '#c9ffb0'; g.fillRect(x - 1 + R(Math.sin(time * 3) * 3), b - 16 - R((time * 8) % 6), 1, 1); } }
+      else if (q.state === 'mending') { const k = Math.min(1, q.t / (SP.mendT + 0.6)); g.globalAlpha = 0.5 * (1 - k); g.fillStyle = '#a6e04a'; g.beginPath(); g.ellipse(x, b - 10, 14 + 10 * k, 9 + 6 * k, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+      else { g.fillStyle = '#4a5a3a'; g.fillRect(x - 4, b - 2, 8, 2); } }
+    /* PUFFBALLS: a violet-grey puffball; gone, a stump */
+    for (const q of S.puffs) { const x = R(q.x - cx), b = R(q.y - cy); if (x < -30 || x > VW + 30) continue;
+      if (q.state === 'whole') drawPuff(g, x, b, '#b8a8c8', '#efe6ff', time, false); else { g.fillStyle = '#5a4a5e'; g.fillRect(x - 3, b - 2, 6, 2); } }
+    /* SPRING SPORES: a hovering disc of spores with a bright rim (the bounce cap's read), fading as it goes */
+    for (const s of S.springs) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; const a = Math.min(1, s.life / 1.2), sq = s.t > 0 ? (s.t -= 1 / 60) * 6 : 0;
+      g.globalAlpha = 0.35 * a; g.fillStyle = '#c9a0ff'; g.beginPath(); g.ellipse(x, y + 2, 16, 7, 0, 0, 7); g.fill();
+      g.globalAlpha = 0.9 * a; g.fillStyle = '#efe6ff'; g.fillRect(x - SP.springW, y - 4 + R(sq), SP.springW * 2, 2); g.fillStyle = '#9a5aa8'; g.fillRect(x - SP.springW + 2, y - 2 + R(sq), SP.springW * 2 - 4, 2);
+      for (let i = 0; i < 5; i++) { g.fillStyle = i % 2 ? '#fff1ff' : '#c9a0ff'; g.fillRect(x - 10 + i * 5, y - 6 - R(Math.abs(Math.sin(time * 4 + i)) * 3), 1, 1); }
+      g.globalAlpha = 1; }
+    /* ROOT KNOTS: a gnarl of roots with a gold seam on top while shut (the target first: a dotted line straight down onto it) */
+    for (const k of S.knots) { const x = R(k.px - cx), b = R(k.py - cy); if (x < -30 || x > VW + 30) continue;
+      if (!k.open) { g.fillStyle = '#3a2a24'; g.fillRect(x - 9, b - 10, 18, 10); g.fillStyle = '#6a5446'; g.fillRect(x - 8, b - 9, 16, 3); g.fillRect(x - 5, b - 12, 10, 2);
+        const gl = Math.floor(time * 3) % 2; g.fillStyle = gl ? '#fff1a8' : '#ffd36b'; g.fillRect(x - 4, b - 13, 8, 1); g.fillStyle = 'rgba(255,233,160,0.45)'; for (let y = b - 40; y < b - 16; y += 5) g.fillRect(x, y, 1, 2);
+        g.fillStyle = '#ffd36b'; g.fillRect(x - 2, b - 44, 5, 1); g.fillRect(x - 1, b - 43, 3, 1); g.fillRect(x, b - 42, 1, 1); }
+      else { g.fillStyle = '#2a1e18'; g.fillRect(x - 9, b - 3, 18, 3); } }
+    /* THE BUDS' OWN MARKS: a dark bud unlit is a dim violet with a closed eye; a seed cap shows its seed (a gold fleck) while it waits for a blow */
+    for (const m of ctx.movers()) { if (m.kind !== 'growcap' || !(m.dark || m.seed)) continue; const x = R(m.x + m.w / 2 - cx), y = R(m.y - cy); if (x < -30 || x > VW + 30) continue;
+      if (m.dark && !m.lit && m.state === 'bud') { g.fillStyle = 'rgba(40,20,60,0.55)'; g.fillRect(x - 15, y - 2, 30, 8); g.fillStyle = '#7a5aa8'; g.fillRect(x - 3, y + 1, 6, 1); }
+      if (m.seed && m.state === 'bud' && !(m.cd > 0) && !m.noSeed) { const gl = Math.floor(time * 3 + m.x) % 2; g.fillStyle = gl ? '#fff1a8' : '#ffd36b'; g.fillRect(x - 2, y - 4, 4, 3); g.fillStyle = '#8fd160'; g.fillRect(x - 1, y - 6, 2, 2); } }
+    /* the area banner */
+    if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(24,12,30,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
+      g.fillStyle = '#c9a0ff'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); ctx.text(S.banner.name, VW / 2, 31, '#efe6ff', 'center'); g.globalAlpha = 1; }
+  };
+  /* THE MOTHER'S KNOT on the skyline (src/redraw/sporewood_knot.js) */
+  H.drawSky = (g, cx, cy, VW, VH, time, dY) => { const lv = L(); if (ctx.knotArt) ctx.knotArt(g, cx, cy, VW, VH, lv, time, dY); };
+  return H;
+}

@@ -157,7 +157,7 @@ export const ORDER_AT = {
      kings (Kingswood 2), crown (Highcrown rework), minecart (Deep Rails 5), undercrown (Undercrown 2), wood (Lumber Trail). */
   stockade: { body: 'oathlance', chapter: 'marsh', twist: 'horn', sig: ['mud'], affix: 'SUMMONER', hp: 1.0, at: [302, 19], gate: 317, replaces: 'brute',
     name: 'THE HORN LANCE', why: 'the camp\'s yard before the palisade gate: the tower rule (a horn, and the blower to silence) worn by a knight; a charge ends at the shut gate behind you' },
-  spore: { body: 'oathmage', chapter: 'fungus', twist: 'bud', sig: [], affix: 'VENOMOUS', hp: 1.0, at: [412, 13], gate: 430, replaces: 'shield',
+  spore: { body: 'oathmage', chapter: 'fungus', twist: 'bud', sig: [], affix: 'VENOMOUS', hp: 1.0, at: [346, 10], gate: 353, replaces: 'shield',   /* (claude/sporewood2: THE WEB LARDER's end, was 412/430 of the old wood) */
     name: 'THE SPORE MAGE', why: 'the battle mage\'s first wiring (rec: Sporewood col 412, the cap-top exam): he casts SPORE CLOUD from mid range and stamps the caps to spring them' },
   rootway: { body: 'oathmaul', chapter: 'fungus', twist: 'hoist', sig: [], affix: 'WARDING', hp: 0.85, at: [147, 22], gate: 157, replaces: 'shield',
     name: 'THE HOIST MAUL', why: 'the hollow trunk\'s exam, the knothole at his back; the hoist rule worn by a brute - a slow heavy that drops a load on a told strip' },
