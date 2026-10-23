@@ -4,8 +4,7 @@ export async function nativeMemoryTrace(pg) {
   mkdirSync('gate-data', { recursive: true });
   const info = await (await fetch('http://127.0.0.1:' + pg.dbg + '/json/version')).json();
   const ws = new WebSocket(info.webSocketDebuggerUrl), pending = new Map(), dumps = [], samples = [];
-  let id = 0, completed;
-  const finished = new Promise(resolve => { completed = resolve; });
+  let id = 0, completed = () => {}, active = false;
   const save = () => writeFileSync('gate-data/native-memory-trace.json', JSON.stringify({ time: new Date().toISOString(), samples, dumps }, null, 2) + '\n');
   await new Promise((resolve, reject) => { ws.onopen = resolve; ws.onerror = reject; });
   ws.onmessage = event => {
@@ -28,17 +27,22 @@ export async function nativeMemoryTrace(pg) {
     pending.set(key, { resolve: v => { clearTimeout(timer); resolve(v); }, reject: e => { clearTimeout(timer); reject(e); } });
     ws.send(JSON.stringify({ id: key, method, params }));
   });
-  await send('Tracing.start', { categories: '-*,disabled-by-default-memory-infra', transferMode: 'ReportEvents', options: 'record-until-full' });
   process.on('exit', save);
   return {
     async sample(label) {
-      const heap = await pg.send('Runtime.getHeapUsage');
+      const heapResponse = await pg.send('Runtime.getHeapUsage'), heap = heapResponse.result || heapResponse;
+      const finished = new Promise(resolve => { completed = resolve; });
+      const before = dumps.length;
+      await send('Tracing.start', { categories: '-*,disabled-by-default-memory-infra', transferMode: 'ReportEvents', options: 'record-until-full' }); active = true;
       const dump = await send('Tracing.requestMemoryDump', { levelOfDetail: 'detailed', deterministic: true });
-      samples.push({ label, time: new Date().toISOString(), heap, dump }); save();
+      await send('Tracing.end');
+      await Promise.race([finished, new Promise((_,reject) => setTimeout(() => reject(new Error('memory trace did not flush')), 10000))]); active = false;
+      samples.push({ label, time: new Date().toISOString(), heap, dump, flushedDumps: dumps.length - before }); save();
+      if (dumps.length === before) throw new Error('memory dump acknowledged without readable allocation data');
       console.log('MEMORY_ROW ' + label + ' heap=' + Math.round(heap.usedSize / 1048576) + 'MB backing=' + Math.round((heap.backingStorageSize || 0) / 1048576) + 'MB');
     },
     async close() {
-      try { await send('Tracing.end'); await Promise.race([finished, new Promise(r => setTimeout(r, 5000))]); } catch {}
+      if (active) try { await send('Tracing.end'); } catch {}
       save(); ws.close();
     },
   };
