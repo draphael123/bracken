@@ -12,6 +12,8 @@ import { canvas, mulberry } from '../px.js';
 import { PAPER, COMB, BARK, NEEDLE } from './hornets_nest_tiles.js';
 
 const TS = 16, memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+/* the big baked pictures are drawn every frame: a CPU-side bake canvas has to be uploaded to the graphics card each time it is drawn (a 576 x 320 vault cost ~12 ms a frame headless), so each one is copied ONCE onto a GPU canvas */
+const gpu = c => { const [o, g] = canvas(c.width, c.height, true); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0); return o; };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h ^ (h >>> 16); };
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
 const hx = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
@@ -32,7 +34,7 @@ function conifer(g, x, base, h, w, T, r) {
   R(g, T[0], x - 1, base - h - 3, 2, 5);
 }
 function farStrip(ti) { return once('far' + ti, () => { const [c, g] = canvas(768, 230), r = mulberry(31 + ti), T = ti ? ['#7f9c7a', '#6a8a68', '#587858'] : ['#8aa882', '#759872', '#628462'];
-  for (let i = 0; i < 17; i++) { const x = 20 + i * 45 + (r() * 24 | 0), h = 90 + (r() * 110 | 0); conifer(g, x, 230, h, 24 + (r() * 14 | 0), T, r); } return c; }); }
+  for (let i = 0; i < 17; i++) { const x = 20 + i * 45 + (r() * 24 | 0), h = 90 + (r() * 110 | 0); conifer(g, x, 230, h, 24 + (r() * 14 | 0), T, r); } return gpu(c); }); }
 /* the mid trunks: pines whose crowns are far above - a column of bark, a few bare limbs, a tuft of needles at the top of the frame */
 function midStrip(ti) { return once('mid' + ti, () => { const [c, g] = canvas(768, 360), r = mulberry(77 + ti), T = ti ? [BARK[1], BARK[3], BARK[4], BARK[2]] : [BARK[1], BARK[2], BARK[3], BARK[2]];
   for (let i = 0; i < 5; i++) { const x = 40 + i * 150 + (r() * 60 | 0), w = 12 + (r() * 12 | 0);
@@ -41,7 +43,7 @@ function midStrip(ti) { return once('mid' + ti, () => { const [c, g] = canvas(76
         R(g, mix(T[Math.min(3, Math.max(0, 3 - s))], '#7a9a70', 0.28), x + xx, y, 1, 1); if (cr) R(g, mix(T[0], '#7a9a70', 0.28), x + xx, y, 1, 3); } }
     for (let k = 0; k < 3; k++) { const ly = 40 + (r() * 250 | 0), d = r() < 0.5 ? -1 : 1, len = 18 + (r() * 24 | 0); for (let q = 0; q < len; q++) R(g, mix(T[0], '#7a9a70', 0.28), x + d * (w + q), ly - q * 0.35, 1, 3);
       for (let q = 0; q < 26; q++) { const nx = x + d * (w + len * (0.45 + 0.55 * r())), ny = ly - len * 0.35 + (r() - 0.4) * 8; R(g, mix(NEEDLE[1 + (r() * 3 | 0)], '#7a9a70', 0.3), nx + (r() - 0.5) * 16, ny + r() * 6, 2, 1); } } }
-  return c; }); }
+  return gpu(c); }); }
 /* THE ANCIENT PINE: one trunk, 176 x 1152 (rows 0..71): plated bark, deep furrows, resin, a root-flare at the foot, stubs of limbs. Lit from the left. */
 function ancientPine() { return once('ancient', () => { const PAD = 130, TW = 176, W = TW + PAD * 2, H = 1152, [c, g] = canvas(W, H), r = mulberry(4091), cxm = W / 2;
   /* the great boughs first (behind the trunk): limbs with drooping needle-skirts, both sides, down the upper trunk */
@@ -55,7 +57,7 @@ function ancientPine() { return once('ancient', () => { const PAD = 130, TW = 17
       if (hash(x, y) % 9 === 0) s = Math.max(0, s - 1); else if (hash(x, y) % 13 === 0) s = Math.min(5, s + 1);
       R(g, mix(BARK[Math.max(0, Math.min(5, s + 1))], '#6a8a5e', y < 520 ? 0.12 : 0.04), x, y, 1, 1); } }
   for (let i = 0; i < 22; i++) { const x = cxm + (r() - 0.5) * 110, y = 60 + r() * (H - 300); R(g, '#e8b24a', x, y, 2, 3); R(g, '#fff0a0', x, y, 1, 1); }   /* resin beads */
-  return c; }); }
+  return gpu(c); }); }
 /* a hanging comb CURTAIN for the nest's back wall: a tapering mass of hex cells hung from the ceiling, dark with an amber lit left edge and a dripping tip */
 function curtain(seed, zi) { return once('curt' + seed + '_' + zi, () => { const r = mulberry(seed * 13 + zi), w = 40 + (r() * 36 | 0), h = 150 + (r() * 130 | 0), [c, g] = canvas(w, h), P = PAPER[zi];
   const hex = (u, v) => { const row = Math.floor(v / 5), cu = (((u + (row & 1) * 4) % 8) + 8) % 8, cv = v % 5; if (cv === 0) return cu >= 1 && cu <= 6 ? 1 : 0; if (cu === 0 || cu === 7) return 1; return cv === 1 && cu < 4 ? 3 : 2; };
@@ -64,10 +66,10 @@ function curtain(seed, zi) { return once('curt' + seed + '_' + zi, () => { const
       R(g, k === 1 ? '#1a0e06' : k === 3 ? COMB[2] : lit ? COMB[2] : edge ? '#3a2410' : mix('#3a2410', COMB[1], 0.3 + (hash(x, y) % 4) * 0.06), x, y, 1, 1); }
     if (y > h - 18 && y < h - 2) { /* the drips */ } }
   for (let k = 0; k < 3; k++) { const dx = Math.round(w * (0.3 + 0.2 * k)); R(g, COMB[3], dx, h - 14 + k * 3, 1, 12 - k * 3); R(g, COMB[4], dx, h - 3 - k * 2, 1, 2); }
-  void P; return c; }); }
+  void P; return gpu(c); }); }
 /* a soft round glow for the honey lights */
 function glow(r0, col) { return once('glow' + r0 + col, () => { const [c, g] = canvas(r0 * 2, r0 * 2), gr = g.createRadialGradient(r0, r0, 0, r0, r0, r0), [R_, G_, B_] = rgbOf(col);
-  gr.addColorStop(0, `rgba(${R_},${G_},${B_},0.55)`); gr.addColorStop(0.5, `rgba(${R_},${G_},${B_},0.2)`); gr.addColorStop(1, `rgba(${R_},${G_},${B_},0)`); g.fillStyle = gr; g.fillRect(0, 0, r0 * 2, r0 * 2); return c; }); }
+  gr.addColorStop(0, `rgba(${R_},${G_},${B_},0.55)`); gr.addColorStop(0.5, `rgba(${R_},${G_},${B_},0.2)`); gr.addColorStop(1, `rgba(${R_},${G_},${B_},0)`); g.fillStyle = gr; g.fillRect(0, 0, r0 * 2, r0 * 2); return gpu(c); }); }
 /* the nest's back wall: wasp paper in broad scalloped shells, dark, hex comb showing through in patches; 192 x 192, tiles */
 function wallTile(zi) { return once('wall' + zi, () => { const S = 192, [c, g] = canvas(S, S), W = WALL[zi], P = PAPER[zi], img = g.getImageData(0, 0, S, S), d = img.data;
   for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) { const band = 14, k = Math.floor(y / band), rr = y % band, off = Math.round(2.2 * Math.sin((x + k * 29) * 2 * Math.PI / 64 + k)), q = rr + off;
@@ -92,11 +94,13 @@ function hallVault() { return once('hall', () => { const w = (HALL.x1 - HALL.x0 
   /* THE ROYAL CELL: a great hex dome, glowing, in the crown of the vault */
   const rx = hx0, ry = h * 0.2; for (let a = 0; a < 6; a++) { const a0 = a * Math.PI / 3 - Math.PI / 6, a1 = (a + 1) * Math.PI / 3 - Math.PI / 6; g.fillStyle = a % 2 ? COMB[2] : COMB[3]; g.beginPath(); g.moveTo(rx, ry); g.lineTo(rx + Math.cos(a0) * 34, ry + Math.sin(a0) * 34); g.lineTo(rx + Math.cos(a1) * 34, ry + Math.sin(a1) * 34); g.closePath(); g.fill(); }
   g.strokeStyle = '#2a1408'; g.lineWidth = 3; g.beginPath(); for (let a = 0; a <= 6; a++) { const aa = a * Math.PI / 3 - Math.PI / 6; g.lineTo(rx + Math.cos(aa) * 34, ry + Math.sin(aa) * 34); } g.stroke();
-  g.fillStyle = '#ffe9a0'; g.beginPath(); g.arc(rx, ry, 7, 0, 7); g.fill(); void P; void r; return c; }); }
+  g.fillStyle = '#ffe9a0'; g.beginPath(); g.arc(rx, ry, 7, 0, 7); g.fill(); void P; void r; return gpu(c); }); }
 
 /* ------------------------------------------------------------------ the frame ------------------------------------------------------------------ */
 const LIGHTS = [];   /* [world x, world y, radius, colour index] - the honey lights of the wall, laid by hash over the nest's width */
-for (let i = 0; i < 40; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + (hash(i, 3) % 50), hash(i, 7) % 3]);
+for (let i = 0; i < 40; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + 20 * (hash(i, 3) % 3), hash(i, 7) % 3]);   /* (three radii only: each is a baked glow) */
+/* WARM: every picture baked at the level's load (a first draw in play, mid-fight, was a hitch) */
+export function warm() { ancientPine(); farStrip(0); midStrip(0); midStrip(1); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
 const zoneOfCol = tx => tx < 169 ? 0 : tx < 248 ? 1 : 2;
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   cx = Math.round(cx); cy = Math.round(cy);
@@ -121,7 +125,7 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   const sx0 = NEST_X0 * TS - cx, sx1 = (NEST_X1 + 1) * TS - cx;
   if (sx1 > 0 && sx0 < VW) {
     g.save(); g.beginPath(); g.rect(Math.max(0, sx0), 0, Math.min(VW, sx1) - Math.max(0, sx0), VH); g.clip();
-    const k = 0.78, z = zoneOfCol(tx), wallAt = zz => { const pat = once('wpat' + zz, () => g.createPattern(wallTile(zz), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); return pat; };
+    const k = 0.78, z = zoneOfCol(tx), wallAt = zz => { const pat = once('wpat' + zz, () => g.createPattern(gpu(wallTile(zz)), 'repeat')); pat.setTransform(new DOMMatrix().translate(-Math.round(cx * k), -Math.round(cy * k))); return pat; };
     g.fillStyle = wallAt(z); g.fillRect(0, 0, VW, VH);
     for (const e of [169, 248]) { const d = (tx - e) / 14; if (d > -1 && d < 1) { const al = d < 0 ? 0.5 + 0.5 * d : 0.5 - 0.5 * d; if (al > 0.01) { g.globalAlpha = al; g.fillStyle = wallAt(d < 0 ? zoneOfCol(e - 1) : zoneOfCol(e)); g.fillRect(0, 0, VW, VH); g.globalAlpha = 1; } } }
     /* the combs hanging in the wall (parallax 0.62), dim */
@@ -130,14 +134,14 @@ export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
     /* shade the back wall a step so the footing reads in front of it; deeper rows (the roots) darker */
     g.fillStyle = 'rgba(8,4,2,0.24)'; g.fillRect(0, 0, VW, VH);
     /* the HONEY LIGHTS: warm pools on the wall, breathing */
-    g.globalCompositeOperation = 'lighter'; for (const [lx, ly, lr, ci] of LIGHTS) { const x = lx - Math.round(cx * 0.9), y = ly - Math.round(cy * 0.9); if (x < -lr || x > VW + lr || y < -lr || y > VH + lr) continue;
+    if (!(globalThis.__hnDbg && globalThis.__hnDbg.lights)) { g.globalCompositeOperation = 'source-over'; for (const [lx, ly, lr, ci] of LIGHTS) { const x = lx - Math.round(cx * 0.9), y = ly - Math.round(cy * 0.9); if (x < -lr || x > VW + lr || y < -lr || y > VH + lr) continue;
       g.globalAlpha = (ci === 2 ? 0.3 : 0.22) * (0.8 + 0.2 * Math.sin(time * (0.7 + ci * 0.25) + lx)); g.drawImage(glow(lr, ci === 0 ? '#ffc860' : ci === 1 ? '#ffb040' : '#ff8a3a'), x - lr, y - lr); }
-    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; }
     /* THE BROOD HALL: the vault and the royal cell, world-anchored */
-    { const hx0 = HALL.x0 * TS - cx, hy0 = (HALL.y0 - 1) * TS - cy; if (hx0 < VW && hx0 + 36 * TS > 0) { g.drawImage(hallVault(), hx0, hy0); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.5 + 0.12 * Math.sin(time * 1.3); g.drawImage(glow(130, '#ff9a3a'), hx0 + 18 * TS - 130, hy0 + 4 * TS - 100); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; } }
+    if (!(globalThis.__hnDbg && globalThis.__hnDbg.vault)) { const hx0 = HALL.x0 * TS - cx, hy0 = (HALL.y0 - 1) * TS - cy; if (hx0 < VW && hx0 + 36 * TS > 0) { if (!(globalThis.__hnDbg && globalThis.__hnDbg.vimg)) g.drawImage(hallVault(), hx0, hy0); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 0.5 + 0.12 * Math.sin(time * 1.3); if (!(globalThis.__hnDbg && globalThis.__hnDbg.vglow)) g.drawImage(glow(130, '#ff9a3a'), hx0 + 18 * TS - 130, hy0 + 4 * TS - 100); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; } }
     g.restore();
     /* the nest's mouth, seen from outside, is lit: a honey glow at the doorway (cols 82-90, rows 50-53) */
-    { const mx = 86 * TS - cx, my = 52 * TS - cy; if (mx > -100 && mx < VW + 100) { g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.5; g.drawImage(glow(70, '#ffc860'), mx - 70, my - 70); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; } }
+    { const mx = 86 * TS - cx, my = 52 * TS - cy; if (mx > -100 && mx < VW + 100) { g.globalCompositeOperation = 'source-over'; g.globalAlpha = 0.5; g.drawImage(glow(70, '#ffc860'), mx - 70, my - 70); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1; } }
   }
 }
 /* ------------------------------------------------------------------ the near layer ------------------------------------------------------------------ */

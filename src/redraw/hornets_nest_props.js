@@ -10,6 +10,7 @@ import { canvas } from '../px.js';
 import { COMB, WAX } from './hornets_nest_tiles.js';
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+const gpu = c => { const [o, g] = canvas(c.width, c.height, true); g.imageSmoothingEnabled = false; g.drawImage(c, 0, 0); return o; };   /* (a sprite drawn every frame lives on the GPU: see hornets_nest_backdrop.js) */
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h ^ (h >>> 16); };
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
 const PAPER = ['#2a1c10', '#4a3420', '#6a4e30', '#8a6c46', '#a8896a'];
@@ -33,7 +34,7 @@ function slabSprite(w, h, set) { return once('slab' + w + 'x' + h + (set ? 's' :
       if (set && ((x * 5 + y * 3) % 31 === 0 || (x * 3 - y * 7 + 200) % 37 === 0)) col = pal[0];   /* cracks */
       R(g, col, x, top + y, 1, 1); } }
   if (set) { for (let x = 3; x < w - 3; x += 5 + (hash(x, 7) % 4)) { R(g, pal[0], x, H - 1, 2, 1 + (hash(x, 3) % 3)); } }   /* a crumbled underside */
-  return c; }); }
+  return gpu(c); }); }
 export function slab(g, x, y, w, h, set, time) {
   x = Math.round(x); y = Math.round(y); g.drawImage(slabSprite(w, h, set), x - 2, y);
   if (!set) glintDrips(g, x, y + h, w, time);
@@ -101,6 +102,16 @@ function cellSprite(st, step) { return once('cell' + st + step, () => { const [c
 export function cell(g, x, y, st, kk, time) { x = Math.round(x); y = Math.round(y);
   if (st === 'broken' || st === 'hatched') { g.drawImage(cellSprite('broken', 0), x - 12, y - 24); return; }
   if (st === 'pulse') { const step = Math.min(3, 1 + Math.floor(kk * 3)), sw = 1 + 0.12 * Math.sin(time * (8 + 14 * kk)); g.drawImage(cellSprite('pulse', step), x - 12, y - 24 + (1 - sw) * 20);
-    g.globalAlpha = 0.25 + 0.25 * kk; g.globalCompositeOperation = 'lighter'; g.fillStyle = '#ff5a2a'; g.beginPath(); g.arc(x, y - 12, 14 + kk * 6, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    g.globalAlpha = 0.25 + 0.25 * kk; g.globalCompositeOperation = 'source-over'; g.fillStyle = '#ff5a2a'; g.beginPath(); g.arc(x, y - 12, 14 + kk * 6, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
     R(g, '#ff6b6b', x - 8, y + 2, 16 * kk, 2); return; }
   g.drawImage(cellSprite('idle', 0), x - 12, y - 24); }
+
+/* ---------------- the supports: a comb shelf stands on a WAX PILLAR (L.routeSupports; the greybox's wooden posts are not drawn here) ---------------- */
+function pillarSprite(h) { return once('pil' + h, () => { const w = 11, [c, g] = canvas(w, h + 2);
+  for (let y = 0; y < h; y++) { const t = y / Math.max(1, h - 1), hw = 2.6 + Math.pow(t, 3) * 2.6 + (y < 4 ? 1.4 - y * 0.3 : 0), x0 = Math.round(5.5 - hw), x1 = Math.round(5.5 + hw);
+    for (let x = x0; x < x1; x++) { const row = Math.floor(y / 4), cu = (((x + (row & 1) * 3) % 6) + 6) % 6, cv = y % 4, wall = cv === 0 ? cu >= 1 && cu <= 4 : (cv !== 3 && (cu === 0 || cu === 5)) || (cv === 3 && (cu === 0 || cu === 5));
+      const edge = x === x0 || x === x1 - 1; let col = edge ? COMB[0] : wall ? COMB[1] : (x - x0 < 3 ? COMB[3] : x1 - x < 3 ? COMB[1] : COMB[2]); if (!edge && !wall && hash(x, y) % 13 === 0) col = COMB[4]; R(g, col, x, y, 1, 1); } }
+  R(g, COMB[0], 1, h - 1, 9, 2); R(g, COMB[1], 2, h - 2, 7, 1);   /* the foot, spread on the floor */
+  return c; }); }
+export function posts(g, L, cx, cy) { for (const p of L.routeSupports || []) { const x = Math.round(p.x * 16 + 6 - cx), y = Math.round(p.y * 16 + 6 - cy), bottom = Math.round(p.bottom * 16 - cy); if (x < -8 || x > g.canvas.width + 8 || y > g.canvas.height + 4 || bottom < -4) continue;
+  const h = Math.max(4, bottom - y); g.drawImage(pillarSprite(h), x - 5, y); } }

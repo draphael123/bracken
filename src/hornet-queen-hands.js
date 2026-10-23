@@ -58,6 +58,8 @@ export function drawQueenBody(g, p, time, flash, ph) {
   if (p.stars) for (let k = 0; k < 3; k++) { const an = time * 4 + k * 2.1; rect(g, 10 + Math.cos(an) * 8, -14 + Math.sin(an) * 3, 2, 2, '#ffd36b'); }
 }
 
+/* (claude/hornetsnestart) bake every frame of every pose at the level's load: the first draw of a pose in the fight was a hitch */
+export function warmQueen() { for (const p of Object.values(POSE)) for (let k = 0; k < HQA.beats(p); k++) HQA.queenFrame(p, k, false); }
 export function makeHornetQueenHands(ctx) {
   let S = null; const H = {}; let heap = null, perchSaved = [];
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'hornetqueen' ? ctx.L.arena : null);
