@@ -158,14 +158,14 @@ jobs:
         env:
           LEVEL: ${{ matrix.level }}
           PRESENT: ${{ inputs.mode == 'present' && inputs.present || 'drawImage' }}
-            BASELINE: ${{ inputs.baseline || '5e44cddd' }}
-            CONTROL: ${{ inputs.control && 'true' || 'false' }}
-          run: |
-            args=()
-            if [[ "$CONTROL" == 'true' ]]; then
-              args+=(--control)
-            fi
-            node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT" --baseline="$BASELINE" "${args[@]}"
+          BASELINE: ${{ inputs.baseline || '5e44cddd' }}
+          CONTROL: ${{ inputs.control && 'true' || 'false' }}
+        run: |
+          args=()
+          if [[ "$CONTROL" == 'true' ]]; then
+            args+=(--control)
+          fi
+          node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT" --baseline="$BASELINE" "${args[@]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
