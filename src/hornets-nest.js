@@ -69,8 +69,8 @@ export function buildHornetsNest({ painter, T, TS }) {
   const hang = (id, x0, x1, row, rows = 2, o = {}) => combs.push({ id, x0, x1, row, rows, ...o });
   const waxed = (x0, x1, row) => wax.push([x0, x1, row]);   /* the footing row whose top is fresh comb (sticky) */
   const smoke = (x, row) => smokers.push([x, row]);          /* a smoke stand in the cell (x, row); its pot sits on row+1's top */
-  const swarm = (x, y, o = {}) => ent('swarm', x, y, { flyman: true, ...o });   /* (integ116: a flyer hangs above its squad's floor on purpose - tools/sprinkle-cap.mjs's flyman exemption) */
-  const hornet = (x, y, o = {}) => ent('wasp', x, y, { sting: true, cnSkin: 'hornet', flyman: true, ...o });
+  const swarm = (x, y, o = {}) => ent('swarm', x, y, { perch: true, ...o });   /* (integ116: a flyer hangs above its squad's floor on purpose - tools/sprinkle-cap.mjs's perch exemption) */
+  const hornet = (x, y, o = {}) => ent('wasp', x, y, { sting: true, cnSkin: 'hornet', perch: true, ...o });
   const drone = (x, y, o = {}) => ent('sprig', x, y, { cnSkin: 'combdrone', face: -1, ...o });
   const spitter = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'venomspitter', face: -1, ...o });   /* THE VENOM SPITTER: the toadstool spitter's machine under a worker clinging to the comb (it fills its cheeks, a yellow !, and spits) */
 
