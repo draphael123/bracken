@@ -24,19 +24,12 @@ export function gormHands(c) {
     /* an arrow's told ring on you: step off it */
     for (const q of G.bows) if (q.aim && q.aim.t < 0.45 && Math.abs(P.x - q.aim.tx) < 18) return { goal: P.x + (P.x >= q.aim.tx ? 34 : -34), strike: false };
     if (open) return { goal: e.x, strike: true };
-    const live = G.ropes.find(r => r.i === G.act);
-    /* a rock in hand: to where the high lob lands on a bowman, and throw it */
-    if (G.held) { const bw = G.bows.filter(q => !live || q.rope === live.i).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
-      if (!bw) { BK.press('talk'); return { goal: null, strike: false }; }   /* (nothing to throw at: set it down) */
-      const aim = BK.gorm().aim(); if (aim === 'high' && P.ground) { k.up = true; P.face = Math.sign(bw.x - P.x) || P.face; if (P.atk < 0) BK.press('atk'); return { goal: P.x, strike: false }; }
-      const side = P.x < bw.x ? -1 : 1, spot = Math.max(A.x0 + 16, Math.min(A.x1 - 16, bw.x + side * 78)); P.face = -side; return { goal: spot, strike: false }; }
-    /* the live rope's archers: a rock from the nearest heap */
-    if (live && G.bows.some(q => q.rope === live.i)) { const hp = G.heaps.slice().sort((a, b) => Math.abs(a - P.x) - Math.abs(b - P.x))[0];
-      if (Math.abs(P.x - hp) < 8 && onFloor && P.ground) { if (f % 6 === 0) BK.press('talk'); return { goal: P.x, strike: false }; }
-      return { goal: hp, strike: false }; }
-    /* the rope is free: stand at the peg away from him and cut it when he is under the cage */
-    if (live && live.free) { const pg = live.pegs.slice().sort((a, b) => Math.abs(b - e.x) - Math.abs(a - e.x))[0], side = Math.sign(live.x - pg) || 1;
-      if (Math.abs(e.x - live.x) < 22 && Math.abs(P.x - pg) < 16 && P.ground) { P.face = Math.sign(pg - P.x) || side; if (P.atk < 0 && f % 4 === 0) BK.press('atk'); return { goal: P.x, strike: false }; }
+    /* (claude/kingsfix2: every rope is free at any moment) the rope of the cage he is nearest: stand at its peg on the side away from him, let him come in under it and cut it.
+       A held rock is set down - the archers are pressure the bot does not hunt. */
+    if (G.held) { BK.press('talk'); return { goal: null, strike: false }; }
+    const live = G.ropes.filter(r => !r.dropped && !r.spent && r.free).sort((p, q) => Math.abs(p.x - e.x) - Math.abs(q.x - e.x))[0];
+    if (live) { const pg = live.pegs.slice().sort((p, q) => Math.abs(q - e.x) - Math.abs(p - e.x))[0], side = Math.sign(live.x - pg) || 1;
+      if (Math.abs(e.x - live.x) < 36 && Math.abs(P.x - pg) < 16 && P.ground) { P.face = Math.sign(pg - P.x) || side; if (P.atk < 0 && f % 4 === 0) BK.press('atk'); return { goal: P.x, strike: false }; }
       return { goal: pg - side * 4, strike: false }; }
     return { goal: e.x, strike: ad < 140 };
   }

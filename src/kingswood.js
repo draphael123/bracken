@@ -207,7 +207,7 @@ export function buildKingswood({ painter, T, TS }) {
   deco(408, 13, 'banner', 0); deco(412, 13, 'banner', 1); ent('torch', 409, 13); ent('torch', 413, 13);
   sign(401, 13, 'THE COURT GATE. THE PLATE ON THE STEP LIFTS IT.');
   ent('check', 414, 13);                                                           /* SHRINE FOUR: his door */
-  sign(416, 13, "KING GORM: ARCHERS HOLD THE CAGE ROPES. BRING THEM DOWN, THEN CUT A PEG WHEN HE IS UNDER.");
+  sign(416, 13, "KING GORM: STRIKE ANY CAGE ROPE OR PEG WHEN HE IS UNDER IT. HIS ARCHERS ARE ONLY PRESSURE.");   /* (claude/kingsfix2) the ropes are free at any moment */
 
   // ================= 5. THE KING'S HALL (420-474): KING GORM UNDERLEAF, phase 1 as it stands (his old throne room, moved here whole; the next lane reworks it) =================
   const [A0, A1] = KINGSWOOD.arena, ax = c => A0 + c;                              /* (the old hall's columns, from its west wall) */

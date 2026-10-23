@@ -67,7 +67,7 @@ export function makeGormHands(ctx) {
   /* ---------------- THE HALL ---------------- */
   const hallOn = () => { const e = ctx.boss(); return !!(e && e.t === 'king' && e.alive && e.stage === 'court' && ctx.bossActive()); };
   const bows = () => ctx.enemies().filter(q => q.alive && q.gormBow);
-  const ropeLocked = r => !r || S.act !== r.i || bows().some(q => q.rope === r.i);
+  const ropeLocked = () => false;   /* (claude/kingsfix2, Daniel 10-23: P1 a little too hard) every rope is FREE at any moment: the rafter archers are pressure, no longer a lock */
   function nextRope() {
     const g = G(), order = g.hall.order || [0, 1, 2, 3, 4];
     let live = S.ropes.filter(r => !r.cage.spent);
@@ -84,7 +84,7 @@ export function makeGormHands(ctx) {
         gormBow: true, rope: r.i, shotT: GORM.archers.firstFile + k * GORM.archers.every / 2, deckY: y, noGr: false });
       ctx.burst(ax, y - 6, 8, ['#c9b27c', '#8a5a32'], 60, 0.4); }
     const e = king(); say(r.x, r.deck[2] - 34, 'file', '#ff9a5c'); ctx.sfx.hornDraw && ctx.sfx.hornDraw();
-    if (once('ropeHint')) ctx.hint('THE CAGE ROPE IS HELD BY THE ARCHERS ON ITS DECK. CLIMB TO THEM, OR THROW A ROCK (E AT A HEAP, UP LOBS). THEN STRIKE ITS PEG WHEN HE IS UNDER IT.');
+    if (once('ropeHint')) ctx.hint('STRIKE ANY CAGE ROPE OR PEG WHEN HE IS UNDER IT, AT ANY MOMENT. THE ARCHERS ARE ONLY PRESSURE (E AT A HEAP TAKES A ROCK TO KNOCK ONE DOWN).');
     return e; }
   function hallStep(dt) {
     const e = ctx.boss(), on = hallOn();
@@ -94,7 +94,6 @@ export function makeGormHands(ctx) {
     if (cur && cur.cage.spent && !cur.counted) { cur.counted = true; S.n.caught++; }
     if (!cur || cur.cage.spent) { if (S.waitT === null || S.waitT === undefined) S.waitT = cur ? GORM.archers.fileIn : GORM.archers.firstFile;
       S.waitT -= dt; if (S.waitT <= 0) { S.waitT = null; fileIn(nextRope()); } return; }
-    if (!cur.free && !bows().some(q => q.rope === cur.i)) { cur.free = true; say(cur.x, cur.pegY - 40, 'free', '#8fd160'); ctx.sfx.medal && ctx.sfx.medal(); }
   }
   /* A RAFTER ARCHER's frame: no walking - he stands his deck, draws (the told arc), looses. main.js calls it instead of the archer's AI */
   H.archerStep = (e, dt) => {
@@ -153,12 +152,15 @@ export function makeGormHands(ctx) {
     S.arc = heldRock(P) && !P.dead ? arcFor(P, CT.aimOf('courtrock', P.face || 1, ctx.keys()).aim) : null;
   }
 
+  /* (claude/kingsfix2) ANYWHERE ALONG THE ROPE: the line from its pulley (on the deck) down to a peg is as good as the peg - a blow that crosses it parts it */
+  const ropeHit = (hb, r, pegX) => { const x0 = r.x, y0 = r.deck[2] + 21, x1 = pegX, y1 = r.pegY - 13; for (let k = 0; k <= 14; k++) { const t = k / 14, qx = x0 + (x1 - x0) * t, qy = y0 + (y1 - y0) * t; if (ctx.overlap(hb, { l: qx - 3, r: qx + 3, t: qy - 3, b: qy + 3 })) return true; } return false; };
+  /* the big cage (main.js calls it for a hall cage, `pr.big`): the sprite of the glade's cages, hung from its pulley, the straw spilled when it has come down */
+  H.drawCage = (g, pr, cx, cy, time) => { KP.drawCage(g, R(pr.x - cx), R(pr.y - cy), pr.landed > 0, time, pr.dropped ? 0 : 1.2); };
   /* ---------------- A BLOW: the hall's pegs, the glade's pegs ---------------- */
   H.strike = hb => {
     if (!S || !hb) return;
-    for (const r of S.ropes) { const px = r.pegs.find(x => ctx.overlap(hb, pegBox(x, r.pegY))); if (px === undefined) continue; const c = r.cage; if (c.dropped || c.spent) continue;
+    for (const r of S.ropes) { const px = r.pegs.find(x => ctx.overlap(hb, pegBox(x, r.pegY)) || ropeHit(hb, r, x)); if (px === undefined) continue; const c = r.cage; if (c.dropped || c.spent) continue;
       if (!hallOn()) continue;
-      if (ropeLocked(r)) { if ((S.clankT || 0) <= 0) { S.clankT = 0.5; ctx.sfx.clank && ctx.sfx.clank(); say(px, r.pegY - 34, S.act === r.i ? 'locked' : 'lashed', '#c9d1dc'); } continue; }
       c.dropped = true; c.landed = 0; c.hit.clear(); c.resetT = GORM.cageReset; S.n.cut++; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(px, r.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); say(c.x, c.y0 - 50, 'cagefall', '#ff9a5c'); }
     for (const h of S.hangs) { const d = h.d; if (h.state !== 'hang') continue; const px = d.pegs.find(x => ctx.overlap(hb, pegBox(x, d.pegY))); if (px === undefined) continue;
       h.state = 'fall'; h.vy = 0; h.hitK = false; h.heroHit = false; S.n.hangDrops++; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.creak && ctx.sfx.creak(); ctx.burst(px, d.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); }
