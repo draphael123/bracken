@@ -48,7 +48,7 @@ export function makeGormHands(ctx) {
     if (!warmed) { warmed = true; warm(); }
     const g = lv.gorm, keepSaid = S ? S.said : new Set();
     S = { said: keepSaid, ropes: [], act: -1, fileT: 0, ord: 0, arrows: [], rocks: [], took: 0, rockCd: 0, near: null, arc: null,
-      run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
+      run: { on: false, fireX: 0, t: 0, done: !!(persist && persist.runDone), lit: [], armed: false, surged: false, surgeT: 0 }, branches: (g.run.branches || []).map(b => ({ ...b, state: 'hang', t: 0 })),
       hangs: (g.glade.hangs || []).map(d => ({ d, state: 'hang', y: d.y0, vy: 0, lx: d.x, resetT: 0, hitK: false, heroHit: false, turn: 0 })),
       cones: [], logs: [], waves: [], swarms: [], n: { arrows: 0, arrowHits: 0, rocks: 0, knocked: 0, cut: 0, caught: 0, boars: 0, penned: 0, branch: 0, branchHits: 0, lit: 0, fireT: 0, cones: 0, logs: 0, quakes: 0, hangDrops: 0, held2: 0, downed: 0, stung: 0, glance: 0, fightAt: undefined } };
     /* the hall's ropes: one to each boss cage, by column */
@@ -61,13 +61,14 @@ export function makeGormHands(ctx) {
       if (!S.run.done) S.run.armed = true; }
   };
   /* the King, set down on his stump throne in the glade, asleep until you come (bossStart wakes him there) */
-  function toGlade(e) { const gl = L().glade, g = G(); e.stage = 'glade'; e.phase = 4; e.mode = 'sleep'; e.modeT = 0; e.x = g.glade.stumpX; e.y = gl.floor; e.vx = 0; e.vy = 0; e.h = 60; e.w = 68; e.open = 0; e.ward = 0; e.hidden = false;
+  function toGlade(e) { const gl = L().glade, g = G(); e.fleeT = 0;   /* (claude/kingsfix2, Daniel's playtest: THE GLADE WAS EMPTY on the first arrival) his flee clock is also main.js's generic 'foe flees, then is gone' timer: left running it walked him west and removed him a few seconds after the bearers set him down - a shrine respawn built a fresh King, so he was there the second time */
+  e.stage = 'glade'; e.phase = 4; e.mode = 'sleep'; e.modeT = 0; e.x = g.glade.stumpX; e.y = gl.floor; e.vx = 0; e.vy = 0; e.h = 60; e.w = 68; e.open = 0; e.ward = 0; e.hidden = false;
     e.maxHp = e.maxHp2 || Math.round((e.maxHp || GORM.hp1) * GORM.hp2 / GORM.hp1); e.hp = e.maxHp; e.huntN = 0; e.clubT = 1.5; e.logT = 6; e.quakeT = 9; e.shakeT = 11; e.face = -1; if (ctx.bossActive()) { e.mode = 'wake'; e.modeT = 1.6; } }
 
   /* ---------------- THE HALL ---------------- */
   const hallOn = () => { const e = ctx.boss(); return !!(e && e.t === 'king' && e.alive && e.stage === 'court' && ctx.bossActive()); };
   const bows = () => ctx.enemies().filter(q => q.alive && q.gormBow);
-  const ropeLocked = r => !r || S.act !== r.i || bows().some(q => q.rope === r.i);
+  const ropeLocked = () => false;   /* (claude/kingsfix2, Daniel 10-23: P1 a little too hard) every rope is FREE at any moment: the rafter archers are pressure, no longer a lock */
   function nextRope() {
     const g = G(), order = g.hall.order || [0, 1, 2, 3, 4];
     let live = S.ropes.filter(r => !r.cage.spent);
@@ -84,7 +85,7 @@ export function makeGormHands(ctx) {
         gormBow: true, rope: r.i, shotT: GORM.archers.firstFile + k * GORM.archers.every / 2, deckY: y, noGr: false });
       ctx.burst(ax, y - 6, 8, ['#c9b27c', '#8a5a32'], 60, 0.4); }
     const e = king(); say(r.x, r.deck[2] - 34, 'file', '#ff9a5c'); ctx.sfx.hornDraw && ctx.sfx.hornDraw();
-    if (once('ropeHint')) ctx.hint('THE CAGE ROPE IS HELD BY THE ARCHERS ON ITS DECK. CLIMB TO THEM, OR THROW A ROCK (E AT A HEAP, UP LOBS). THEN STRIKE ITS PEG WHEN HE IS UNDER IT.');
+    if (once('ropeHint')) ctx.hint('STRIKE ANY CAGE ROPE OR PEG WHEN HE IS UNDER IT, AT ANY MOMENT. THE ARCHERS ARE ONLY PRESSURE (E AT A HEAP TAKES A ROCK TO KNOCK ONE DOWN).');
     return e; }
   function hallStep(dt) {
     const e = ctx.boss(), on = hallOn();
@@ -94,7 +95,6 @@ export function makeGormHands(ctx) {
     if (cur && cur.cage.spent && !cur.counted) { cur.counted = true; S.n.caught++; }
     if (!cur || cur.cage.spent) { if (S.waitT === null || S.waitT === undefined) S.waitT = cur ? GORM.archers.fileIn : GORM.archers.firstFile;
       S.waitT -= dt; if (S.waitT <= 0) { S.waitT = null; fileIn(nextRope()); } return; }
-    if (!cur.free && !bows().some(q => q.rope === cur.i)) { cur.free = true; say(cur.x, cur.pegY - 40, 'free', '#8fd160'); ctx.sfx.medal && ctx.sfx.medal(); }
   }
   /* A RAFTER ARCHER's frame: no walking - he stands his deck, draws (the told arc), looses. main.js calls it instead of the archer's AI */
   H.archerStep = (e, dt) => {
@@ -153,12 +153,15 @@ export function makeGormHands(ctx) {
     S.arc = heldRock(P) && !P.dead ? arcFor(P, CT.aimOf('courtrock', P.face || 1, ctx.keys()).aim) : null;
   }
 
+  /* (claude/kingsfix2) ANYWHERE ALONG THE ROPE: the line from its pulley (on the deck) down to a peg is as good as the peg - a blow that crosses it parts it */
+  const ropeHit = (hb, r, pegX) => { const x0 = r.x, y0 = r.deck[2] + 21, x1 = pegX, y1 = r.pegY - 13; for (let k = 0; k <= 14; k++) { const t = k / 14, qx = x0 + (x1 - x0) * t, qy = y0 + (y1 - y0) * t; if (ctx.overlap(hb, { l: qx - 3, r: qx + 3, t: qy - 3, b: qy + 3 })) return true; } return false; };
+  /* the big cage (main.js calls it for a hall cage, `pr.big`): the sprite of the glade's cages, hung from its pulley, the straw spilled when it has come down */
+  H.drawCage = (g, pr, cx, cy, time) => { KP.drawCage(g, R(pr.x - cx), R(pr.y - cy), pr.landed > 0, time, pr.dropped ? 0 : 1.2); };
   /* ---------------- A BLOW: the hall's pegs, the glade's pegs ---------------- */
   H.strike = hb => {
     if (!S || !hb) return;
-    for (const r of S.ropes) { const px = r.pegs.find(x => ctx.overlap(hb, pegBox(x, r.pegY))); if (px === undefined) continue; const c = r.cage; if (c.dropped || c.spent) continue;
+    for (const r of S.ropes) { const px = r.pegs.find(x => ctx.overlap(hb, pegBox(x, r.pegY)) || ropeHit(hb, r, x)); if (px === undefined) continue; const c = r.cage; if (c.dropped || c.spent) continue;
       if (!hallOn()) continue;
-      if (ropeLocked(r)) { if ((S.clankT || 0) <= 0) { S.clankT = 0.5; ctx.sfx.clank && ctx.sfx.clank(); say(px, r.pegY - 34, S.act === r.i ? 'locked' : 'lashed', '#c9d1dc'); } continue; }
       c.dropped = true; c.landed = 0; c.hit.clear(); c.resetT = GORM.cageReset; S.n.cut++; ctx.sfx.crack && ctx.sfx.crack(); ctx.burst(px, r.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); say(c.x, c.y0 - 50, 'cagefall', '#ff9a5c'); }
     for (const h of S.hangs) { const d = h.d; if (h.state !== 'hang') continue; const px = d.pegs.find(x => ctx.overlap(hb, pegBox(x, d.pegY))); if (px === undefined) continue;
       h.state = 'fall'; h.vy = 0; h.hitK = false; h.heroHit = false; S.n.hangDrops++; ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.creak && ctx.sfx.creak(); ctx.burst(px, d.pegY - 12, 8, ['#c9b27c', '#a83a2a', '#ffe9a0'], 60, 0.5); }
@@ -199,7 +202,11 @@ export function makeGormHands(ctx) {
     if (!persist) { ctx.drainStop('gormfire'); ctx.drainStop('gormground'); return; }
     if (run.armed && P && P.x > g.hall.x1 + 12) { run.armed = false; run.on = true; run.t = R.grace - 0.6; run.fireX = g.hall.x1 - 4 * TS; }
     if (run.on && !run.done) { run.t += dt;
-      if (run.t > R.grace) run.fireX = Math.min(g.run.fireMax, fireStep(run.fireX, P ? P.x : run.fireX, dt));
+      /* (claude/kingsfix2: more hectic) the fire SURGES once as the bough bridge begins (a word, a roar, 3 s at the run's speed + surgeV), and the wood shakes every few seconds */
+      if (g.run.surgeAt && !run.surged && P && P.x >= g.run.surgeAt) { run.surged = true; run.surgeT = R.surgeT; say(P.x, P.y - 40, 'surge', '#ff6b5c'); ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); }
+      if (run.surgeT > 0) run.surgeT -= dt;
+      if (P && !P.dead && (run.trem = (run.trem === undefined ? R.tremEvery : run.trem) - dt) <= 0) { run.trem = R.tremEvery * (0.7 + 0.6 * ((Math.sin(run.t * 7.1) + 1) / 2)); ctx.shake(2); ctx.sfx.creak && ctx.sfx.creak(); }
+      if (run.t > R.grace) run.fireX = Math.min(g.run.fireMax, fireStep(run.fireX, P ? P.x : run.fireX, dt) + (run.surgeT > 0 ? R.surgeV * dt : 0));
       if (P && P.x >= g.run.cpX) { run.done = true; run.on = false; persist.runDone = true; lv.oakBurn = 0.55; ctx.number(P.x, P.y - 40, GORM_SAY.fireDies, '#8fd160'); }
       const inFire = P && !P.dead && P.x < run.fireX + 4;
       if (inFire) { ctx.drain('gormfire', R.drain, { name: GORM_SAY.burning, die: 'BURNED IN THE WOOD', tick: '#ff9a5c' }); S.n.fireT += dt; if (once('inFire')) say(P.x, P.y - 34, 'burning', '#ff6b5c'); }
@@ -303,6 +310,7 @@ export function makeGormHands(ctx) {
   H.update = dt => {
     if (!S) return; S.clankT = Math.max(0, (S.clankT || 0) - dt);
     if (hallOn() && S.n.fightAt === undefined) S.n.fightAt = Math.round(ctx.time() * 10) / 10;
+    { const Pp = ctx.P(); if (Pp && S.n.fightAt !== undefined && S.n.p1At === undefined) { if (S.lastHp !== undefined && Pp.hp < S.lastHp) S.n.p1Taken = (S.n.p1Taken || 0) + (S.lastHp - Pp.hp) / Pp.maxHp; if (S.lastFl !== undefined && (Pp.flasks || 0) < S.lastFl) S.n.p1Drinks = (S.n.p1Drinks || 0) + 1; S.lastHp = Pp.hp; S.lastFl = Pp.flasks || 0; } }   /* (claude/kingsfix2 measuring: what P1 cost the hero) */
     hallStep(dt); arrowsStep(dt); rocksStep(dt); runStep(dt); hangStep(dt); gladeFx(dt);
     const e = king(), lv = L();
     if (e && e.stage === 'glade' && ctx.bossActive() && S.n.p2At === undefined) S.n.p2At = Math.round(ctx.time() * 10) / 10;
@@ -369,6 +377,9 @@ export function makeGormHands(ctx) {
         if (tl) { if (ctx.text) ctx.text('!', x, by - 28, '#ff6b5c', 'center'); for (let q = 0; q < 3; q++) { const t = (time * 2 + q / 3) % 1; f(g, '#ff9a3c', x - 8 + q * 8, by + t * 60, 1, 2); } } }
       else if (b.state === 'fall') { const by = y - 74 * (b.t / 0.22) - 5; g.drawImage(GG.branch(34), x - 21, by - 8); flame(g, x, by - 2, 10, time, b.x); f(g, 'rgba(255,170,80,0.5)', x - 1, by - 36, 2, 30); }
       else if (b.state === 'down') { g.drawImage(GG.branch(34), x - 21, y - 14); flame(g, x - 8, y - 6, 8 * Math.min(1, b.t) + 2, time, b.x); flame(g, x + 9, y - 6, 6 * Math.min(1, b.t) + 2, time, b.x + 1); } }
+    /* (claude/kingsfix2) THE BOUGH BRIDGE's limbs burn: a flame at each end of every limb that holds, tall and white-hot while it counts down (the crack and the count are the game's: drawCrumbles) */
+    for (const c of (lv.crumbles || [])) { if (c.kind !== 'bough' || c.st === 'down' || c.gone) continue; const x0 = R(c.x0 * TS - cx), x1 = R((c.x1 + 1) * TS - cx), y = R(c.row * TS - cy); if (x1 < -20 || x0 > VW + 20) continue; const cnt = c.st === 'count';
+      FX.flame(g, x0 + 6, y + 1, cnt ? 'M' : 'S', time, c.x0); FX.flame(g, x1 - 6, y + 1, cnt ? 'M' : 'S', time, c.x1 + 5); if (cnt || (c.x0 & 1)) FX.flame(g, (x0 + x1) / 2, y + 1, 'S', time, c.x0 + 11); }
     /* THE GLADE: what hangs in the oak (ropes from the boughs, the pegs), the marks, the logs, the hive */
     const gl = lv.glade; if (gl) { const gOn = gladeOn();
       for (const h of S.hangs) for (const [pk, pgx] of h.d.pegs.entries()) { const d = h.d, px = R(d.x - cx), py = R(d.top - cy), gx = R(pgx - cx), gy = R(d.pegY - cy), lx = R(h.lx - cx), ly = R(h.y - cy); if (Math.max(px, gx, lx) < -60 || Math.min(px, gx, lx) > VW + 60) continue;

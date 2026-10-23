@@ -39,7 +39,7 @@ try {
     P.hp = 1; BKT.hurtPlayer ? 0 : 0; for (let i = 0; i < 600 && !P.dead; i++) step(1); for (let i = 0; i < 300 && P.dead; i++) step(1); step(30);
     const b2 = BK.enemies().find(e => e.t === 'king'); out.afterDeath = { stage: b2 && b2.stage, mode: b2 && b2.mode, persist: BK.gorm().persist, arena: BK.L.arena === BK.L.glade, hallActive: BK.bossActive };
     /* the glade */
-    BK.gorm().skipTo('glade'); BK.tp(610, 13); keep(); for (let i = 0; i < 500; i++) { keep(); step(1); }
+    BK.gorm().skipTo('glade'); BK.tp(650, 13); keep(); for (let i = 0; i < 500; i++) { keep(); step(1); }
     const k = BK.enemies().find(e => e.t === 'king'); out.glade = { active: BK.bossActive, mode: k.mode, club: !!k.club };
     const seen = new Set(); for (let i = 0; i < 4000; i++) { keep(); step(1); seen.add(k.mode); } out.p2 = [...seen];
     const lg = BK.gorm().hangs.find(h => h.kind === 'log'); k.mode = 'walk'; k.modeT = 5; k.ward = 0; k.open = 0; k.x = lg.x + 160; P.x = lg.pegs[0] - 10; P.y = 224; P.face = 1; step(2); BK.press('atk');

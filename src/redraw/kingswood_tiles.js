@@ -154,6 +154,24 @@ function bough(zone, l, rr, v) {
     g.globalAlpha = 0.3; rect(g, 0, 9, 16, 3, '#000'); g.globalAlpha = 1;
     return c; });
 }
+/* THE BURNT BOUGH (claude/kingsfix2, Daniel 10-23: "chandeliers after the first boss section don't make sense - it's a wood, not a palace: just floating wood blocks"): the ledges of
+   the burning wood and the glade, past his hall - a rough scorched limb, bark on its edge, a rope stub or two hanging from its belly, ember in the cracks; no gold, no iron, no candles */
+const CHAR = ['#0c0706', '#1a0f0b', '#2c1a12', '#47291b', '#683a24', '#8a5232', '#b06a3a'];
+function charBough(l, rr, v) {
+  return once('cb' + (l ? 'l' : '') + (rr ? 'r' : '') + v, () => { const [c, g] = canvas(16, 16), r = mulberry(v * 29 + 5);
+    rect(g, 0, 0, 16, 5, CHAR[3]); rect(g, 0, 0, 16, 1, CHAR[5]); rect(g, 0, 1, 16, 1, CHAR[4]); rect(g, 0, 4, 16, 1, CHAR[2]);
+    rect(g, 0, 5, 16, 2, CHAR[2]); rect(g, 0, 7, 16, 1, CHAR[1]); rect(g, 0, 8, 16, 1, CHAR[0]);
+    for (let k = 1; k < 16; k += 3) { const hh = hash(k + v * 7, 3) % 3; rect(g, k, 1 + hh, 1, 3, CHAR[1]); }   /* the bark's furrows */
+    for (let i = 0; i < 5; i++) px2(g, (r() * 16) | 0, 1 + ((r() * 4) | 0), r() < 0.5 ? CHAR[2] : CHAR[5]);
+    for (let k = 0; k < 16; k++) { const hh = hash(k + v * 5, 9) % 11; if (hh === 0) { px2(g, k, 0, '#a89a8a'); px2(g, k, -1, '#6a5a4a'); } else if (hh === 1) { px2(g, k, 2, '#ff9a3c'); px2(g, k, 3, '#a83a1c'); } }   /* ash on the lip, a coal in a crack */
+    if (v === 0) { for (let dy = -1; dy <= 1; dy++) for (let dx = -2; dx <= 2; dx++) if (Math.hypot(dx / 2, dy) <= 1) px2(g, 10 + dx, 3 + dy, dy === 0 ? CHAR[0] : CHAR[2]); }   /* a knot */
+    if (v === 2) { rect(g, 6, 8, 2, 6, '#8a6a3a'); rect(g, 6, 8, 1, 6, '#c9a060'); px2(g, 5, 13, '#c9a060'); px2(g, 8, 14, '#8a6a3a'); px2(g, 6, 14, '#c9a060'); }   /* a rope stub hanging from the belly, frayed at the end */
+    if (v === 1) { rect(g, 11, 8, 1, 4, '#8a6a3a'); px2(g, 11, 12, '#c9a060'); px2(g, 12, 12, '#8a6a3a'); }
+    for (let k = 2; k < 16; k += 4) px2(g, k, 9 + (k & 1), CHAR[0]);   /* root hair under it */
+    if (l) { rect(g, 0, 0, 2, 8, CHAR[5]); px2(g, 0, 3, CHAR[0]); } if (rr) { rect(g, 14, 0, 2, 8, CHAR[2]); px2(g, 15, 3, CHAR[0]); }
+    g.globalAlpha = 0.3; rect(g, 0, 9, 16, 3, '#000'); g.globalAlpha = 1;
+    return c; });
+}
 /* THE HALL's gallery: carved dark timber, gold studs, a gold lip */
 function hallTimber(l, rr, v) {
   return once('ht' + (l ? 'l' : '') + (rr ? 'r' : '') + v, () => { const [c, g] = canvas(16, 16), Z = ZONE[4];
@@ -183,7 +201,7 @@ export function kingsTile(t, x, y, at, T, L) {
   if (t === T.PORT) { const foot = at(x, y + 1) !== T.PORT; return portcullis(x, y, foot, zone); }
   if (t === T.ONEWAY) {
     const same = k => at(x + k, y) === t, l = !same(-1), r = !same(1), v = ((x * 5 + y) % 3 + 3) % 3;
-    return zone === 4 ? hallTimber(l, r, v) : zone >= 2 ? bough(zone, l, r, v) : deck(zone, l, r, v);
+    return x >= 478 ? charBough(l, r, v) : zone === 4 ? hallTimber(l, r, v) : zone >= 2 ? bough(zone, l, r, v) : deck(zone, l, r, v);   /* (claude/kingsfix2) past his hall: scorched limbs, not gilt timber */
   }
   if (t !== T.SOLID) return null;
   const open = (dx, dy) => { const v = at(x + dx, y + dy); return v === T.AIR || v === T.NET; };

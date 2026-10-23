@@ -65,7 +65,7 @@ function render() {
         if (api.setBeh) { const c = UI.el('button', 'HOW IT PLAYS', () => { view = { k: 'aibeh', n: s.n, hero: s.heroId, change: true }; msg = null; render(); }); c.dataset.seat = s.n; c.dataset.act = 'retune'; r.append(c); }   /* (claude/partypersist) retune a seated AI from the pause menu */
         parts.push(r); continue; }
       const from = s.kind === 'ally' ? 'COMPUTER' : s.saved ? (s.kind === 'online' ? 'ONLINE, ' : '') + 'SAVE ' + (s.slot + 1) : s.kind === 'online' ? 'ONLINE GUEST - NOTHING SAVED' : 'GUEST - NOTHING SAVED';
-      const r = UI.row(seatIcon(s), UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + s.hero + (s.lv != null ? ' LV ' + s.lv : '') + '  ' + from));
+      const r = UI.row(seatIcon(s), UI.el('span.seat' + (s.saved ? '.ok' : ''), 'P' + s.n + '  ' + s.hero + (s.lv != null ? ' LV ' + Math.max(1, s.lv) : '') + '  ' + from));
       if (s.kind === 'local' && !s.saved) { const u = UI.el('button', 'USE A SAVE', () => { view = { k: 'slot', mode: 'attach', n: s.n }; msg = null; render(); }); u.dataset.seat = s.n; u.dataset.act = 'attach'; r.append(u); }
       parts.push(r);
     }

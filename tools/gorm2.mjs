@@ -19,6 +19,7 @@ import { makeGormHands } from '../src/gorm-hands.js';
 import { updateGorm } from '../src/gorm-king.js';
 import { RB, newRoyalBoar, boarStep } from '../src/royal-boar.js';
 import { readFileSync } from 'fs';
+import { openPage } from './cdp.mjs';   /* (claude/kingsfix2) the first-arrival regression runs  in the page */
 const TS = 16; let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'kings'), L = lv.build(), G = L.gorm, W = L.W;
 const cell = (x, y) => L.grid[y * W + x], solid = (x, y) => cell(x, y) === T.SOLID, oneway = (x, y) => cell(x, y) === T.ONEWAY || cell(x, y) === T.PLANK, stand = (x, y) => solid(x, y) || oneway(x, y);
@@ -39,8 +40,8 @@ ok(G.run.burn.every(([x0, x1, y]) => { for (let x = x0; x <= x1; x++) if (!solid
 ok(G.run.burn.every(([x0, x1, y]) => { let n = 0; for (let x = x0; x <= x1; x++) for (let r = y - 7; r < y; r++) if (oneway(x, r)) { n++; break; } return n >= (x1 - x0 + 1) * 0.5; }), 'boughs over every burning floor (a way over it, in the canopy)');
 ok(G.run.branches.length >= 4 && G.run.branches.every(b => stand(Math.floor(b.x / TS), b.y / TS)), 'burning branches hang over a floor or a bough: ' + G.run.branches.length);
 ok(L.ents.filter(e => e.kw && e.kw.torch).length >= 3, 'torch goblins on the road: ' + L.ents.filter(e => e.kw && e.kw.torch).length);
-{ const sh = L.ents.filter(e => e.t === 'check' && e.x >= 490 && e.x < 600); ok(sh.length === 1 && sh[0].x * TS >= G.run.cpX && G.run.fireMax < G.run.cpX, 'one shrine at its end (col ' + (sh[0] || {}).x + '), past where the fire dies'); }
-ok(L.squadBands.some(b => b.lo === 600 && b.spots === 0), 'no squad stands in his glade');
+{ const sh = L.ents.filter(e => e.t === 'check' && e.x >= 490 && e.x < 640); ok(sh.length === 1 && sh[0].x * TS >= G.run.cpX && G.run.fireMax < G.run.cpX, 'one shrine at its end (col ' + (sh[0] || {}).x + '), past where the fire dies'); }
+ok(L.squadBands.some(b => b.lo === 640 && b.spots === 0), 'no squad stands in his glade');
 ok(L.lastArena === L.glade, "the route runs to his glade (L.lastArena: tools/pacing's goal)");
 
 console.log('THE GLADE');
@@ -51,7 +52,7 @@ ok(G.glade.trunkX > gl.x0 && G.glade.trunkX < gl.x1, 'THE GREAT OAK stands in hi
 
 /* a fake world for the hands and his AI */
 function world() {
-  const lvl = { ...L, arena: L.arena, glade: L.glade, gorm: G }; const props = cages.map(c => ({ t: 'dropcage', x: c.x * TS + 8, y: (c.y + 1) * TS, y0: (c.y + 1) * TS, dropped: false, landed: 0, hit: new Set(), boss: true, resetT: 0 }));
+  const lvl = { ...L, arena: L.arena, glade: L.glade, gorm: G }; const props = cages.map(c => ({ t: 'dropcage', x: c.x * TS + 8, y: (c.y + 1) * TS, y0: (c.y + 1) * TS, dropped: false, landed: 0, hit: new Set(), boss: true, resetT: 0, big: true }));
   const P = { x: 430 * TS, y: 14 * TS, vx: 0, vy: 0, hp: 50, maxHp: 140, h: 18, face: 1, ground: true, dead: 0 };
   const king = { t: 'king', stage: 'court', x: 448 * TS, y: 14 * TS, w: 68, h: 45, hp: 900, maxHp: 900, alive: true, mode: 'carried', modeT: 1, phase: 1, face: -1, anim: 0 };
   const W0 = { L: lvl, P, props, enemies: [king], king, bossActive: true, drains: {}, healed: 0, numbers: [], t: 0 };
@@ -61,17 +62,30 @@ function world() {
     moveBody: (e, dx, dy) => { e.x += dx; e.y = Math.min(e.y + dy, (e.stage === 'glade' ? gl.floor : 14 * TS)); return { ground: true }; }, overlap: (a, b) => a.l < b.r && a.r > b.l && a.t < b.b && a.b > b.t, text: () => {}, hint: () => {}, spawn: e => { W0.enemies.push(e); return e; }, ehp: () => 10 };
   const H = makeGormHands(ctx); H.reset(); return { W0, H, ctx, P, king, props };
 }
-console.log('THE LOCK, THE FLEE, THE OPENINGS (his hands in a fake world)');
+/* (claude/kingsfix2) REGRESSION: a fresh run P1 win -> escape -> the glade, in the game's own foe loop: Gorm is THERE on the first arrival and wakes (his flee clock once removed him) */
+{ const pg = await openPage({ audio: false, fonts: false });
+  try { const r = await pg.evalp(`(async () => { const { LEVELS } = await import('/src/level.js'); const out = {};
+    BK.manualSimulation = true; BKT.setHeroLevel('knight', 8); BK.setHero('knight'); BK.reset({ fresh: false }); BK.load(LEVELS.findIndex(l => l.id === 'kings')); BK.state = 'play'; BK.god = false; BK.sim(10);
+    const P = BK.P, step = n => { for (let i = 0; i < n; i++) { if (BK.state === 'card') BK.cardClose(); BK.sim(1); } }, keep = () => { P.hp = P.maxHp; P.dead = 0; }, kg = () => BK.enemies().find(e => e.t === 'king');
+    BK.tp(426, 13); for (let i = 0; i < 300; i++) { keep(); step(1); }
+    const b = kg(); b.phase = 2; b.mode = 'walk'; b.open = 0; b.ward = 0; b.hp = 3; BKT.hurtEnemy(b, 40, b.x - 10, false); step(2);
+    BK.tp(473, 13); for (let i = 0; i < 300; i++) { keep(); step(1); } BK.tp(600, 13); for (let i = 0; i < 700; i++) { keep(); step(1); } BK.tp(649, 13);   /* (the run takes a minute: the old bug removed him ~7 s after the bearers set him down) */
+    for (let i = 0; i < 240; i++) { keep(); step(1); } const k = kg();
+    out.k = k ? { alive: k.alive, stage: k.stage, mode: k.mode, x: Math.round(k.x / 16) } : null; out.active = BK.bossActive; out.px = Math.round(P.x / 16); return out; })()`, 400000);
+    ok(r.k && r.k.alive && r.k.stage === 'glade' && r.k.mode !== 'sleep' && r.active, 'FIRST ARRIVAL in the glade after the escape: Gorm is there and awake ' + JSON.stringify(r)); } finally { await pg.close(); } }
+console.log('THE FREE ROPES, THE FLEE, THE OPENINGS (his hands in a fake world)');
 { const { W0, H, P, king } = world();
   for (let i = 0; i < 400; i++) { W0.t += 0.01; H.update(0.01); }
   let r = H.read(); const live = r.ropes.find(q => q.i === r.act);
   ok(r.act >= 0 && r.bows.length === 2 && r.bows.every(b => b.rope === r.act), 'the court files two archers onto the live rope\'s deck');
   const pegHb = x => ({ l: x - 4, r: x + 4, t: 14 * TS - 20, b: 14 * TS - 2 });
-  const c0 = W0.props.find(p => Math.abs(p.x - live.x) < 2); H.strike(pegHb(live.pegs[0])); ok(!c0.dropped, 'its peg will not drop the cage while its archers live (LOCKED)');
-  const other = r.ropes.find(q => q.i !== r.act), c1 = W0.props.find(p => Math.abs(p.x - other.x) < 2); H.strike(pegHb(other.pegs[1])); ok(!c1.dropped, 'nor will a rope that is not live');
-  for (const q of W0.enemies) if (q.gormBow) q.alive = false; H.update(0.01); r = H.read();
-  ok(r.ropes.find(q => q.i === r.act).free, 'its archers down: the rope is FREE');
-  H.strike(pegHb(live.pegs[1])); ok(c0.dropped, 'and either peg drops its cage');
+  /* (claude/kingsfix2) NO LOCK: every rope is free at any moment, its archers alive or not; a blow anywhere along the rope parts it, not only on the peg */
+  ok(r.ropes.every(q => q.free), 'every rope is FREE from the first moment (the archers are pressure, not a lock): ' + r.ropes.map(q => q.free).join(','));
+  const c0 = W0.props.find(p => Math.abs(p.x - live.x) < 2); H.strike(pegHb(live.pegs[0])); ok(c0.dropped, 'a peg drops the live cage while its archers live');
+  const other = r.ropes.find(q => q.i !== r.act), c1 = W0.props.find(p => Math.abs(p.x - other.x) < 2), dk = L.gorm.hall.ropes[other.i].deck[2];
+  const mid = { x: (other.x + other.pegs[1]) / 2, y: (dk + 21 + (14 * TS - 13)) / 2 }; H.strike({ l: mid.x - 3, r: mid.x + 3, t: mid.y - 3, b: mid.y + 3 }); ok(c1.dropped, 'a blow MID-ROPE (between its pulley and its peg) on a rope that is not the live one drops that cage');
+  ok(c0.big && c1.big, 'the hall cages are BIG (pr.big: the catch is wider, the sprite is the glade cages)');
+  H.update(0.01); r = H.read();
   /* the flee */
   ok(H.spare(king) && king.stage === 'flee' && king.hp === king.maxHp && king.maxHp === Math.round(900 * GORM.hp2 / GORM.hp1), 'his P1 bar emptied: SPARED - the flee, a fresh P2 bar (hp2/hp1 of his)');
   ok(P.hp === P.maxHp && !W0.bossActive && W0.L.arena === W0.L.glade, 'the hero FULLY HEALED, the hall\'s fight over, his glade the arena now');
