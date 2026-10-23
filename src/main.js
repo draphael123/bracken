@@ -32270,6 +32270,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (FKH && FKH.drawDead && L.arena && L.arena.boss === 'fogknight') FKH.drawDead(g, cx, cy, time); if (CHH && L.arena && L.arena.boss === 'champion') CHH.drawDead(g, cx, cy, time);   /* the Fog Knight's plate, fallen (src/redraw/fog_knight_art.js) */
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
+  const strikingBargemen = CANAL ? [] : null;
   for (const e of enemies) {
     if (OKD.isKnightT(e.t)) { OK.draw(g, e, cx, cy); if (e.elite) OK.drawBanner(g, e, cx, cy, TS); }   /* (claude/order) what a knight leaves on the floor and in the air, and HIS CHAPTER'S BANNER on the gate he holds (src/order-knights.js) */
     if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
@@ -32658,7 +32659,9 @@ function drawWorld(cx, cy, showPlayer) {
          from the thin white of a hit - unless the Flashes option is off (Reduce motion turns it off with the rest) */
       if (e.breakFlash > 0 && SET.flashes && sprSet.white) for (const [ox, oy] of [[-2, 0], [2, 0], [0, -2], [0, 2], [-1, -1], [1, 1], [-1, 1], [1, -1]]) drawSet(sprSet, null, frame, dx0 + ox, dy0 + oy, ps.face, true, pSX, pSY, 1, pRot);
       const pupQ = PUPH && e.alive && PM.isPuppet(e) ? { set: sprSet, frame, x: dx0, y: dy0, face: ps.face, sx: pSX, sy: pSY, rot: pRot } : null; if (pupQ) PUPH.under(e, pupQ);   /* (claude/theatre4) HIS PUPPETS' READ: a gold outline when it can be hit (src/puppeteer-hands.js under/over) */
-      drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
+      // A winding-up neighbour must not paint over the bargeman whose haft is actually striking.
+      if (CANAL && e.bargee && e.t === 'gaffer' && e.mode === 'haft' && enemies.some(q => q !== e && q.alive && q.bargee && q.t === 'gaffer' && q.mode === 'haftTell' && Math.abs(q.x - e.x) < (q.w + e.w) / 2 && Math.abs(q.y - e.y) < 2)) strikingBargemen.push([sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot]);
+      else drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
       if (OKD.isKnightT(e.t) && e.alive) OK.drawOver(g, e, dx0, dy0, frame, ps);   /* (claude/orderart) the parry glint on the blade, the ore plates on the pauldrons: over the sprite */
       if (wind) { drawTellFlash(e, sprSet, frame, dx0, dy0, ps, pSX, pSY, pRot); drawTellGlint(e, dx0, dy0, bigF, ps); }   /* (claude/tellposes) the white frame and the glint on the weapon hand */
       if (pupQ) PUPH.over(e, pupQ);   /* ...and grey steel when it cannot */
@@ -32695,6 +32698,7 @@ function drawWorld(cx, cy, showPlayer) {
     if (e.alive && e.fa) { const tx = Math.round(e.x - cx); FOA.drawShell(g, e, tx, Math.round(e.y - cy), time); FOA.drawIcon(g, e, tx, Math.round(e.y - e.h - cy), ART.OUT); FOA.fx(e, time, q => parts.push(q)); }   /* (claude/foepass) THE AFFIX'S READ: the shell, the icon left of its bar, its streaks / embers / dust */
     if (SET.foeBars && e.hp0 && e.hp < e.hp0 && e.hp > 0 && !e.maxHp && !e.harmless && !e.elite) { const bx = Math.round(e.x - cx) - 6, by = Math.round(e.y - e.h - cy) - 5; g.fillStyle = ART.OUT; g.fillRect(bx - 1, by - 1, 14, 4); g.fillStyle = '#2a2230'; g.fillRect(bx, by, 12, 2); g.fillStyle = e.hp / e.hp0 > 0.5 ? '#8fd160' : '#ff6b6b'; g.fillRect(bx, by, Math.round(12 * e.hp / e.hp0), 2); }
   }
+  if (strikingBargemen && strikingBargemen.length) { g.save(); g.globalAlpha = 1; for (const args of strikingBargemen) drawSet(...args); g.restore(); }
   FOA.drawFuses(g, cx, cy, time);   /* (claude/foepass) a VOLATILE foe's fuse: the red ring closing on the body */
   if (FKC && boss && boss.t === 'frog') { FKC.draw(g, cx, cy, time); if (L.frogCourt) FCA.drawBossFx(g, L, boss, cx, cy, time, FROGK.leap); }   /* (claude/marsh2) the flies, the ripples, the tipped pads */
   if (tongue && tongue.active && L.frogCourt && boss && boss.t === 'frog') FCA.drawTongue(g, tongue, cx, cy, time, boss.phase || 1); else if (tongue && tongue.active) { const x0 = Math.round(tongue.x0 - cx), y = Math.round(tongue.y - cy), len = Math.round(tongue.len); g.fillStyle = '#ff7a9a'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 4); g.fillStyle = '#ffb0c0'; g.fillRect(tongue.dir > 0 ? x0 : x0 - len, y - 2, len, 1); g.fillStyle = '#c9463d'; g.fillRect(tongue.dir > 0 ? x0 + len - 4 : x0 - len, y - 3, 4, 6); }

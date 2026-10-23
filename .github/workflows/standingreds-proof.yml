@@ -4,11 +4,27 @@ on:
     inputs:
       mode:
         type: choice
-        options: [cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  canal-proof:
+    if: inputs.mode == 'canal-proof'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/canal-overlap-proof.mjs
+      - run: node tools/standingreds-proof.mjs no-hidden-hits gate-data/canal-proof
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canal-proof
+          path: gate-data/
   cause-fixes:
     if: inputs.mode == 'cause-fixes'
     runs-on: ubuntu-latest
