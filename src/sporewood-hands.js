@@ -17,7 +17,7 @@
 //     ROOT KNOT    (ent 'rootknot') opens only FROM ABOVE: a plunge onto it opens its root door (stays open). A blade on it clanks FROM ABOVE (B10/B14).
 // Every capital line it says goes through ctx.number with a line listed in SPW_SAY (and src/hint-lines.js).
 import { SPRING_MOVE } from './hero-move.js';
-export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.1, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
+export const SP = { litX: 120, litY: 80, dazzle: 0.7, mend: 0.08, mendT: 1.0, mendR: 12, springLife: 6, springRegrow: 8, springW: 13, seedHold: 12, knotW: 12, knotH: 12 };
 export const SPW_SAY = {
   lit: 'THE LANTERN CAP LIGHTS', dazzled: 'DAZZLED', dark: 'THIS BUD IS DARK: LIGHT A LANTERN CAP', mend: 'THE SPORES MEND YOU', spring: 'A SPRING SPORE',
   seed: 'THE SEED CAP GROWS', knot: 'THE KNOT OPENS', above: 'FROM ABOVE',

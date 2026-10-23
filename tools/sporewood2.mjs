@@ -61,7 +61,7 @@ for (const [name, cut] of LOCKS) { const C = copy(); let x0 = 0;
 // ---- THE SPORES THAT HELP ----
 const darkBuds = (L.moversExtra || []).filter(m => m.kind === 'growcap' && m.dark), lanterns = at('glowbud');
 ok(darkBuds.length >= 4 && darkBuds.every(m => lanterns.some(g => Math.abs(g.x * TS + 8 - (m.x + 16)) < SP.litX && Math.abs((g.y + 1) * TS - (m.y0 + 8)) < SP.litY)), 'every dark bud has a lantern cap in reach (' + darkBuds.length + ' dark buds, ' + lanterns.length + ' lantern caps)');
-ok(at('mendpuff').length >= 4 && at('springpuff').length >= 2, 'mend puffs ' + at('mendpuff').length + ', puffballs ' + at('springpuff').length);
+ok(at('mendpuff').length >= 3 && at('springpuff').length >= 2, 'mend puffs ' + at('mendpuff').length + ', puffballs ' + at('springpuff').length);
 let springTiles = 0; for (let i = 0; i < L.grid.length; i++) if (L.grid[i] === T.BOUNCER) springTiles++;
 ok(springTiles >= 10, 'bounce caps: ' + springTiles + ' tiles (the teach, the pit, the stalk, the well, the knot cellar)');
 ok(at('roller').length >= 2 && at('drone').length >= 1 && at('shaman').length >= 1, 'the signature actors are back: rollers ' + at('roller').length + ', drone ' + at('drone').length + ', shaman ' + at('shaman').length);
@@ -96,7 +96,7 @@ ok(['lashTell', 'crushTell', 'bloomTell'].every(m => ANSWER['mother|' + m]), 'he
   const H = makeSporewoodHands(ctx); H.reset();
   /* a mend puff */
   const mp = at('mendpuff')[0]; P.x = mp.x * TS + 8; P.y = (mp.y + 1) * TS; H.update(1 / 60); for (let i = 0; i < 90; i++) H.update(1 / 60);
-  ok(P.hp >= 59, 'a mend puff mends (50 -> ' + Math.round(P.hp) + ')');
+  ok(P.hp >= 57, 'a mend puff mends (50 -> ' + Math.round(P.hp) + ')');
   /* a puffball: struck, a spring spore; falling onto it throws */
   const pf = at('springpuff')[0], px = pf.x * TS + 8, py = (pf.y + 1) * TS; H.strike({ l: px - 6, r: px + 6, t: py - 12, b: py }); const sp = H.read().springs[0];
   P.x = px; P.y = sp.y - 3; P.vy = 200; P.ground = false; H.update(1 / 60); ok(sp && P.vy < -300, 'a struck puffball hangs a spring spore that throws a hero (vy ' + Math.round(P.vy) + ')');
