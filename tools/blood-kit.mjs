@@ -131,6 +131,13 @@ try {
     out.spikeAny = { r: rA, spikes: D().stats().spikes - s3, foeHurt: fh3 - f3.hp, bd: +B().bd.toFixed(2), wash: B().spikeWash !== w3, pose: P().lastKey || null }; keysOff(); f3.alive = false; BK.sim(10);
     place(60); const f4 = foe(), s4 = D().stats().spikes; BK.keys.down = true; BK.sim(40); const rB = blow(10, { who: f4 }); BK.sim(2); out.lateAny = { r: rB, spikes: D().stats().spikes - s4 }; keysOff(); f4.alive = false; BK.sim(10);
     place(60); const f5 = foe(); f5.x = P().x + 220; const fh5 = f5.hp, s5 = D().stats().spikes; BK.keys.down = true; BK.sim(4); const rC = blow(10, { who: f5 }); BK.sim(2); out.farSpike = { r: rC, spikes: D().stats().spikes - s5, foeHurt: fh5 - f5.hp }; keysOff(); f5.alive = false; BK.sim(10);
+    /* 5c. (claude/bloodstep) THE PERFECT STEP: a blow met inside the BLOOD STEP's untouchable window is no hit, bleeds off BLOOD.step.debt of his debt, edges the blade; once a second; a hazard (no attacker) or a blow after the window gives nothing */
+    { const stepOn = () => { const p = P(); p.dodge = 0.2; p.dodgeMax = 0.2; p.dodgeInv = 0.14; p.kPoseK = 'shadowStep'; p.kPoseT = 0.2; p.bkEdgeT = 0; };
+      place(60); P().bd = 20; P().bdLast = P().hp; P().bkPerfectAt = -9; const f6 = foe(); stepOn(); const hp6 = P().hp, bd6 = P().bd, r6 = blow(10, { who: f6 }); const got6 = P().hp - hp6, edge6 = P().bkEdgeT;
+      P().inv = 0; P().hurt = 0; stepOn(); P().bkEdgeT = 0; const hp7 = P().hp, r7 = blow(10, { who: f6 }); const got7 = P().hp - hp7;
+      BK.sim(70); place(60); P().bd = 20; P().bdLast = P().hp; stepOn(); P().dodgeInv = 0; const r8 = blow(10, { who: f6 }); const bdAfterLate = P().bd;
+      place(60); P().bd = 20; P().bdLast = P().hp; P().bkPerfectAt = -9; stepOn(); const r9 = blow(10, {}); const got9 = P().bd;
+      out.perfect = { r6, got6, drop6: +(bd6 - P().bd).toFixed(2), edge6, r7, got7, late: String(r8), lateBd: +bdAfterLate.toFixed(2), r9, bd9: +got9.toFixed(2), want: Math.round(P().maxHp * B().BLOOD.step.debt) }; keysOff(); f6.alive = false; BK.sim(10); }
     /* 6. NO HARVEST: crouched over a body */
     place(P().maxHp - 30); const n0 = D().enemies.length; D().spawn({ t: 'brute', x: spot.x, y: spot.y }); const br = D().enemies[n0]; br.x = P().x + 2; br.y = P().y; D().kill(br); BK.sim(3);
     const hpH = P().hp; P().bdLast = P().hp; P().bd = 0; BK.keys.down = true; BK.sim(90); BK.keys.down = false; out.harvest = { bodies: D().bodies.length, healed: P().hp - hpH };
@@ -174,6 +181,9 @@ try {
     /* (claude/bkkit2) */
     ok(R.spikeAny.r === 'blocked' && R.spikeAny.spikes === 1 && R.spikeAny.foeHurt > 0 && R.spikeAny.bd < 0.01 && R.spikeAny.wash, 'a plain blow landing AS the kneel began was not a BLOOD SPIKE (with the wash): ' + JSON.stringify(R.spikeAny));
     ok(R.lateAny.spikes === 0, 'a blow on a long kneel was spiked (the spike is only on the beat): ' + JSON.stringify(R.lateAny));
+    ok(R.perfect.r6 === 'false' && R.perfect.got6 >= 1 && Math.abs(R.perfect.got6 - R.perfect.want) <= 1 && R.perfect.edge6 > 0 && R.perfect.r7 === 'false' && R.perfect.got7 === 0, 'the PERFECT STEP did not give ' + R.perfect.want + ' hp back once (and edge the blade, and only once a second): ' + JSON.stringify(R.perfect));
+    ok(R.perfect.late !== 'false' || R.perfect.lateBd >= 19.5, 'a blow after the step window was refunded: ' + JSON.stringify(R.perfect));
+    ok(R.perfect.bd9 >= 19.5, 'a blow with no attacker (a hazard) was refunded: ' + JSON.stringify(R.perfect));
     ok(R.farSpike.r === 'blocked' && R.farSpike.spikes === 1 && R.farSpike.foeHurt === 0, 'a blow from a foe far off, on the beat, was not turned - or the spikes struck it across the room: ' + JSON.stringify(R.farSpike));
     const pct = k => Math.round(95 * BLOOD.host[k].price);
     ok(R.worms.paid > 0 && R.worms.worms >= BLOOD.host.worms.n && R.worms.cd > 0 && R.worms.bites >= 2 && R.worms.back > 0 && R.worms.after === 0 && R.worms.risen === 0, 'BLOODWORMS was not paid in blood, did not bite, or won nothing back (or raised a thrall): ' + JSON.stringify(R.worms));

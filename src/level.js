@@ -3670,7 +3670,7 @@ function trialYard(hero) {
       ['price', 1, 'BLOOD PRICE: DOWN+C. HEALTH GOES ON THE BAR AS DEBT. LAND BLOWS TO WIN IT BACK.', [['dummy', 14], ['dummy', 20]], 'DOWN+LB'],   /* (claude/bloodknight) */
       ['kneel', 2, 'THE LOW GUARD: HOLD DOWN TO TURN A LOW BLOW. KNEEL AS ANY BLOW LANDS: BLOOD SPIKE.', [['waterthief', 18]], 'HOLD DOWN'],   /* (claude/bloodknight: any low blow turned counts; on the beat it is BLOOD SPIKE) */
       REAPER_C.ward,
-      ['dodge', 2, 'THE SHADOW-STEP: TAP A WAY TWICE, OR V. HE GOES AS A SHADE AND LEAVES HIS WAKE. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
+      ['dodge', 2, 'THE BLOOD STEP: TAP A WAY TWICE, OR V. HE GOES AS A RED MIST. STEP THROUGH A BLOW AT THE LAST MOMENT AND IT BLEEDS HIS DEBT AWAY. TWICE.', [], 'B, OR THE STICK TWICE'],   /* (claude/heropassa) */
       ['flash', 2, 'THE RETURN: HOLD C, LET GO AS HIS SWORD FLASHES WHITE: THE BLOW IS THROWN BACK. TWICE.', [['swornsword', 18]], 'HOLD LB, LET GO AS IT FLASHES'],   /* (claude/foepass) HIS YARD TEACHES HIS PARRY, THE WARD-RELEASE (scratch/brief-bloodknight-1017.md 1: it taught the roll) */
       ['tells', 2, 'ONE YELLOW ! CAN BE TURNED OR ROLLED. TWO RED !! CANNOT BE TURNED: GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'B THROUGH BOTH, OR A CLEAR', MARKS],
       ['pogo', 2, 'THE BLOOD BURST: JUMP, THEN DOWN+X. BLOOD TEARS OUT OF WHAT HE LANDS ON. BOUNCE TWICE.', [['dummy', 12], ['dummy', 16], ['dummy', 20]], 'A, THEN DOWN+X'],

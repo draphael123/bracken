@@ -243,7 +243,7 @@ export const SFX = {
     heroVo('hurt', 0.55) || file('hurt', 0.6) || (tone('sawtooth', 240, 60, 0.32, 0.25), noise(0.15, 0.2, 400)); tone('square', 900, 600, 0.06, 0.07); chain(0.02, 2); },
   pDie() { if (heroVoice === 'pyro') { heroVo('die', 0.65) || file('hurt', 0.6, 1.1); noise(0.9, 0.22, 1800, 0.4); tone('sine', 420, 60, 0.9, 0.18); crackle(6, 0.1); return; }
     if (!heroVo('die', 0.7)) SFX.die(); else tone('sawtooth', 320, 40, 0.7, 0.1); for (let i = 0; i < 5; i++) tone('square', vary(1300 - i * 120), 500, 0.05, 0.06, 0.15 + i * 0.07); },
-  pDodge() { if (heroVoice === 'reaper') { noise(0.3, 0.14, 400, 0.3); tone('sine', 220, 80, 0.24, 0.06); return; }
+  pDodge() { if (heroVoice === 'reaper') { noise(0.14, 0.2, 260, 0.5); tone('sine', 130, 46, 0.2, 0.12); tone('sawtooth', vary(170), 70, 0.09, 0.05, 0.02); tone('square', vary(1100), 700, 0.035, 0.035, 0.07); tone('triangle', vary(1700), 900, 0.07, 0.03, 0.075); return; }   /* (claude/bloodstep) THE BLOOD STEP: a wet, heavy step and a little armour clank */
     if (heroVoice === 'pirate') { noise(0.16, 0.2, 1100, 0.45); tone('triangle', 300, 160, 0.1, 0.05); return; }
     if (heroVoice === 'pyro') { noise(0.2, 0.2, 700, 0.4); tone('triangle', 260, 520, 0.12, 0.05); crackle(2, 0.05); return; }
     SFX.dodge(); chain(0.025, 3); tone('sine', 110, 60, 0.1, 0.12, 0.12); },

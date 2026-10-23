@@ -65,6 +65,9 @@ export const BLOOD = {
      blow a bite (min 2); spent s off the wait (SPENT BLOOD) when a worm is done; burst: BURST VESSEL's reach px and x the sword; cd/quick: the wait, and with QUICKENED BLOOD.
      bolt: sp px/s, life s, mul x the sword. pool: r px, life s, tick s, dmg a tick, slow (the foe's clock in it), bleed s. drain: range px to take hold (it lets go at x1.4), t s held,
      tick s, mul x the sword a tick (min 1), over: the part of a tick past his debt that heals him, st wind */
+  /* (claude/bloodstep, Daniel 10-22 "make it a BLOOD STEP") PERFECT STEP: a blow that would have landed inside the step's untouchable window bleeds off a little of his debt (debt: of max
+     hp, won back as every reclaim) and edges the blade for edge s (BLOOD PRICE's cut, paid by nobody); at most one a cd s so a held step cannot farm it */
+  step: { debt: 0.05, edge: 1.2, cd: 1 },
   host: {
     worms: { price: 0.06, n: 2, brood: 3, life: 5, sp: 150, bites: 3, biteT: 0.45, mul: 0.25, bleed: 1.2, spent: 3, burst: { r: 34, mul: 0.5 }, cd: 12, quick: 8 },
     bolt: { price: 0.04, sp: 340, life: 0.65, mul: 0.75, bleed: 2, cd: 3 },   /* (first pass 0.9 x, 2.2 s: the built reaper went 6/6 at the Stockade and the Goblin Queen with ~20 bolts a fight - knight 4/6, 5/6) */
