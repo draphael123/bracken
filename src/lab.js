@@ -58,7 +58,8 @@ export const RANGER_SAFE = 130;   /* px from the boss at which the bot will crou
 export const LE_RG_REACH = 28;   /* (claude/rangercanal) THE LANTERN-EATER's keys are the knife's: its gums are a low SWEEP (DOWN+X on her feet, 28 out), its lure a rise shot or a jump. The bow's stand-off (RANGER_STAND) put her 58 px from the rail, out of her own sweep's reach */
 /* (claude/rangercanal) THE HUMAN'S FLASK: under drinkAt of the bar, OR - once a single blow has taken LABP.drinkBig of it - whenever the next such blow would kill (bar <= 1.1 x the biggest blow so far). Called once a frame. */
 const botShouldDrinkBig = (P, LABP) => { if (P.labHpWas !== undefined && P.labHpWas - P.hp > (P.labMaxHit || 0)) P.labMaxHit = P.labHpWas - P.hp; P.labHpWas = P.hp;
-  if (botShouldDrink(P, LABP.drinkAt)) return true;
+  if (LABP.bkKit && HUMAN_H === 'reaper' && (P.bd || 0) > 0.02 * P.maxHp) { if (botShouldDrink(P, Math.min(LABP.drinkAt, 0.2))) return true; }   /* (claude/bkbot) BLOOD DEBT: a flask fills the red segment first, so with debt to win back he lands blows before he drinks, unless the bar is nearly out */
+  else if (botShouldDrink(P, LABP.drinkAt)) return true;
   return LABP.drinkBig > 0 && (P.labMaxHit || 0) >= P.maxHp * LABP.drinkBig && botShouldDrink(P, 1) && P.hp <= P.labMaxHit * 1.1; };
 export const RANGER_PICK_WALK = 150;   /* (claude/rangertune) px the bot walks to take an arrow back */
 const rgArrows = () => { try { const r = globalThis.BK && globalThis.BK.rg && globalThis.BK.rg(); return r ? r.q : 0; } catch { return 0; } };
@@ -647,6 +648,28 @@ function humanSwingOk(BK) {
    nearest winding foe's tell has under ROLL_LATE s left (or its time cannot be read), once per tell (0.7 s); with no tell in reach (a shot, a
    hazard) at most one roll in ROLL_GAP s. */
 const ROLL_LATE = 0.22, ROLL_GAP = 0.6;
+/* (claude/bkbot) THE BLOOD STEP'S PERFECT STEP: a blow that lands inside the step's first 0.14 s edges his blade and wins back debt - a player gets it SOMETIMES (LABP.bkPerfect of the tells), by holding the step until the blow is a tenth of a second off; the rest he steps at ROLL_LATE as before. Drawn once a tell. */
+function rollLate(e) {
+  if (HUMAN_H !== 'reaper' || !LABP.bkKit || !e) return ROLL_LATE;
+  const t = typeof e.modeT === 'number' ? e.modeT : 0;
+  if (e.labRlM !== e.mode || t > (e.labRlT ?? -1) + 0.05) { e.labRlM = e.mode; const r = GUARDR ? GUARDR() : Math.random(); e.labRl = r < (LABP.bkPerfect ?? 0.3) ? 0.07 + 0.06 * (GUARDR ? GUARDR() : Math.random()) : ROLL_LATE; }
+  e.labRlT = t; return e.labRl;
+}
+/* (claude/bkbot) THE BLOOD SPIKE: bkSpike of the blockable tells are answered with the crouch (kneel begun inside BLOOD.spike.beat of the blow), the rest with the ward-release parry. Drawn once a tell; labSpAt = the tell time left when the knee goes down (earlier by the blow's known lag after the tell). */
+function bkSpikeUse(e, lag) {
+  const t = typeof e.modeT === 'number' ? e.modeT : 0;
+  if (e.labSpM !== e.mode || t > (e.labSpT ?? -1) + 0.05) { e.labSpM = e.mode; const r = GUARDR ? GUARDR() : Math.random(); e.labSp = r < (LABP.bkSpike ?? 0.2); if (ROT) { ROT.spDraw = (ROT.spDraw || 0) + 1; if (e.labSp) ROT.spPick = (ROT.spPick || 0) + 1; } e.labSpAt = Math.max(0.02, 0.09 + 0.05 * (GUARDR ? GUARDR() : Math.random()) - Math.min(0.2, Math.max(0, lag || 0))); }
+  e.labSpT = t; return e.labSp;
+}
+/* (claude/bkbot) BLOOD PRICE: a player opens the vein as an opening begins - the blade is edged x1.2 for 6 s and the price is only debt, won back by the blows he lands. Healthy, no debt already owing, the edge nearly out, on the ground and free, the boss's opening on and in reach. One press (DOWN+C on the same frame). */
+function bkPriceHands(BK, boss, k, open) {
+  const P = BK.P; if (!P || P.dead || !open || !boss || !boss.alive || !(P.ground) || P.swim) return;
+  if (P.atk >= 0 || P.dodge > 0 || P.hurt > 0 || P.heavy || P.charge > 0 || P.atkHeld > 0 || P.warding || P.wardHeld > 0 || P.drinkT > 0 || P.castT > 0 || P.bkDrainOn || k.block || k.down) return;
+  if ((P.bkPriceCd || 0) > 0 || (P.bkEdgeT || 0) > 1.2) return;
+  if (P.hp < P.maxHp * 0.6 || (P.bd || 0) > P.maxHp * 0.03) return;
+  if (Math.abs(boss.x - P.x) > 120 || Math.abs(boss.y - P.y) > 40) return;
+  k.down = true; k.block = true; k.left = k.right = false;
+}
 function humanRollOk(BK) {
   const P = BK.P; if (BK.labHuman === false || !P || !HUMAN_H || HUMAN_H === 'warden') return true;   /* (her BACK-STEP is spacing, not a roll: 15 wind, a 0.09 s grace, taken in pairs to stay at the point's range - a person steps it as often as the bot does) */
   const now = BK.time !== undefined ? BK.time : performance.now() / 1000;
@@ -654,7 +677,7 @@ function humanRollOk(BK) {
   for (const e of BK.enemies()) { if (!e.alive || e.harmless) continue; const d = Math.abs(e.x - P.x); if (d > 160 || Math.abs(e.y - P.y) > 90) continue;
     if (!(e.greedT > 0) && !(BK.windingUp && BK.windingUp(e))) continue; if (d < bd) { bd = d; best = e; } }
   if (best) { const left = best.greedT > 0 ? best.greedT : (typeof best.modeT === 'number' && best.modeT > 0 ? best.modeT : 0);
-        if (left > ROLL_LATE) { P.labRollWant = { e: best, until: now + left + 0.35 }; return false; }   /* too early: he means to roll, and waits for it (rollWhenDue) */
+        if (left > rollLate(best)) { P.labRollWant = { e: best, until: now + left + 0.35 }; return false; }   /* too early: he means to roll, and waits for it (rollWhenDue) */
     if (now - (best.labRollT ?? -9) < 0.7) return false; best.labRollT = now; P.labRollT = now; return true; }
   if (now - (P.labRollT ?? -9) < ROLL_GAP) return false; P.labRollT = now; return true;
 }
@@ -663,7 +686,7 @@ function rollWhenDue(BK, press0) {
   const P = BK.P, w = P && P.labRollWant; if (!w) return; const now = BK.time, e = w.e;
   if (now > w.until || !e.alive) { P.labRollWant = null; return; }
   const winding = e.greedT > 0 || (BK.windingUp && BK.windingUp(e)), left = e.greedT > 0 ? e.greedT : (typeof e.modeT === 'number' && e.modeT > 0 ? e.modeT : 0);
-  if (winding && left > ROLL_LATE) return;
+  if (winding && left > rollLate(e)) return;
   P.labRollWant = null; if (now - (e.labRollT ?? -9) < 0.7) return; if (callerRollBad(BK)) return; e.labRollT = now; P.labRollT = now; press0.call(BK, 'dodge');
 }
 /* (claude/flasklever) THE HUMAN PARRY. A SHIELD hero's guard held from the first frame of a tell is a block, never a parry (the perfect guard is the first 0.11 s of a raised
@@ -799,7 +822,7 @@ async function runbossLab(BK, opts) {
     Math.random = mulberry(seedOf(lvId + '|' + h + '|' + healthMode + (opts.seed ? '|' + opts.seed : '') + (opts.salt ? '|' + opts.salt : '')));
     /* (claude/bot2) A PERCEIVING PROFILE gets its eyes here, on their own dice (the boss's stream above is not touched), and opts.skills its skill hands */
     if (LABP.perceive) { PERC = makePerception(BK, LABP, lvId + '|' + h + '|' + healthMode + '|' + (opts.seed || '') + '|' + (opts.salt || ''), boss, opts); PERC.apply(); GUARDR = mulberry(seedOf('guard|' + lvId + '|' + h + '|' + (opts.seed || '') + '|' + (opts.salt || ''))); GSTATS = { tells: 0, tried: 0 }; P.labGuardM = null; P.labGuardT = -1; }
-    ROWBOSS = boss; ROT = { holds: 0, want: 0, lowSt: 0 }; if (typeof window !== 'undefined') window.__labRot = ROT; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2) : null;
+    ROWBOSS = boss; ROT = { holds: 0, want: 0, lowSt: 0 }; if (typeof window !== 'undefined') window.__labRot = ROT; SKH = opts.skills ? makeSkillHands(BK, boss, h, SKILL_RANGE, ROLL_COST[h] || 24, !!LABP.v2, !!LABP.bkKit) : null;
     let f = 0, taken = 0, swings = 0, opened = 0, wasOpen = false, falls = 0, holdC = 0; const bowSeen = new Set();   /* the Queen's Lance's bowmen, every one that came (row: archers, archersCut) */
     /* THE DEATH KNIGHT'S WARD, played like a man: C held through a tell, and let go when the ward has stopped the blow (the nova) - or,
        once he has SEEN how late a tell's blow lands after its windup ends (dkLag), let go just before it lands, with a reaction
@@ -807,7 +830,7 @@ async function runbossLab(BK, opts) {
     const dkOpen = () => { const g = BK.bossOpen ? BK.bossOpen(boss) : null; return g !== null && g !== undefined ? !!g : boss.open > 0; };   /* (OPEN() is TRUE for a boss with no opening of its own: here only a real one counts) */
     const dkSwingOK = () => !(LABP.v2 && LABP.dkPunish !== false && h === 'reaper') || dkOpen() || DK_FREE.has(boss.mode) || !(f - dkS.tellF < dkF(6) || f - dkS.hitSwF < dkF(8)) || f - Math.max(dkS.endF, dkS.hitF) < dkF(LABP.dkWin ?? 0.25);   /* (claude/herobots) may the Death Knight begin his slow swing now? */
     const dkS = { m: '', blow: null, endF: -999, tellF: -9999, hitF: -9999, hitSwF: -9999, hp: -1, relF: -999 };
-    const dkLag = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
+    const dkLag = {}, dkLagH = {}, dkF = s => Math.round(s * 60 / (BK.SET.speed || 1)), par0 = BK.stats().parries; let dkHold = 0, dkRel = { mode: null, t0: 0, at: -9 }, dkG = 0, dkEndF = -99, dkEndM = null;   /* the paladin's aegis is HELD: a tap of C is a mend that roots her, so the guard is kept up through the tell */
     /* (claude/botreads, v2) A TOLD RUN: a charge / rush / bash / ride whose TELL was read (seen within the last 1.5 s) is known to be coming, so the hands answer it
        on its BODY - drawn, moving at you - from the frame it moves, not only once the running pose itself has been seen a reaction late */
     const v2Told = {}, toldRun = ms => LABP.v2 && ms.some(m => f - (v2Told[m] ?? -1e9) < dkF(1.5)) && Math.abs(boss.vx || 0) > 20 && (boss.x - P.x) * boss.vx < 0;
@@ -2289,7 +2312,8 @@ async function runbossLab(BK, opts) {
         P.face = Math.sign(d) || P.face;
         if ((DEFLECTS(h) || h === 'pirate' && boss.t === 'herald') && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = DEFLECT_TAP(f); }   /* THE DEFLECT, at any blow of his the marks do not call red */
         else if (SHIELDED(h) && !HARD_TELLS.has(boss.t + '|' + boss.mode)) { k.block = true; if (h === 'paladin') holdC = f + 40;
-          if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
+          if (h === 'reaper' && LABP.bkKit && bkSpikeUse(boss, dkLag[boss.mode] ?? dkLagH[boss.mode])) { k.block = false; dkHold = 0; if (boss.modeT < boss.labSpAt) { k.down = true; if (ROT) ROT.spDown = (ROT.spDown || 0) + 1; } }   /* (claude/bkbot) the crouch's BLOOD SPIKE: down on the knee a tenth of a second before the blow (the 0.22 s beat) */
+          else if (h === 'reaper') { dkHold = f + dkF(0.5); const lg = dkLag[boss.mode];
             if (tell && lg !== undefined && lg <= 0.15) { if (dkRel.mode !== boss.mode || boss.modeT > dkRel.t0 + 0.05) dkRel = { mode: boss.mode, t0: boss.modeT, at: 0.03 + Math.random() * 0.16 + (Math.random() < 0.1 ? 0.25 : 0) - lg }; dkRel.t0 = boss.modeT;
               if (boss.modeT < dkRel.at) { k.block = false; dkHold = 0; } } } }
         else if (f % 6 === 0 && !P.climb && !(boss.t === 'windcaller' && callerNoRoll(BK, d > 0 ? 1 : -1))) { k[d > 0 ? 'right' : 'left'] = true; BK.press('dodge'); }   /* YOU CANNOT ROLL ON A ROPE: a dodge lets go of the rungs, and the Quartermaster shoots at a climber every two seconds - the pyromancer rolled off her shrouds all the way back down into the hold */
@@ -2806,11 +2830,13 @@ async function runbossLab(BK, opts) {
       if (boss.t === 'owl' && P.ground) for (const [a, b] of (A.drops || [])) { const l = a * 16, r = (b + 1) * 16, cross = goal !== null && ((P.x < l && goal > r) || (P.x > r && goal < l)); if (cross) continue;
         const side = P.x >= r - 2 && P.x < r + 36 ? -1 : P.x <= l + 2 && P.x > l - 36 ? 1 : 0; if (!side) continue;
         if (side < 0) k.left = false; else k.right = false; if (P.face === side || k.jump || P.labJump > 0) { k.jump = false; P.labJump = 0; BK.unpress(); } }
+      if (h === 'reaper' && LABP.v2 && LABP.bkKit) bkPriceHands(BK, boss, k, dkOpen());   /* (claude/bkbot) BLOOD PRICE, DOWN+C, in his openings */
       const was = P.hp, m0 = boss.mode; advance(1,!!opts.draw); if (P.hp < was && !P.dead) taken += Math.min(60, was - P.hp); ledger(m0, P.dead ? 0 : was - P.hp);
       if (boss.t === 'lance') for (const q of BK.enemies()) if (q.lanceBow) bowSeen.add(q);
       if (h === 'reaper') { if (/Tell$/.test(m0 || '') && boss.mode !== m0) { dkEndF = f; dkEndM = m0; }
         /* the ward took something: learn how late that tell's blow came, and let go now - the nova */
         if ((P.wardG || 0) > dkG + 0.5 && !(P.parryT > 0)) { if (dkEndM && f - dkEndF <= dkF(0.8)) dkLag[dkEndM] = Math.min(dkLag[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60); dkHold = 0; dkS.relF = f; }
+        if (LABP.bkKit && P.hp < was - 0.5 && dkEndM && f - dkEndF <= dkF(0.8)) dkLagH[dkEndM] = Math.min(dkLagH[dkEndM] ?? 9, (f - dkEndF) * (BK.SET.speed || 1) / 60);   /* (claude/bkbot) how late a tell's blow came when it LANDED (the crouch aims its beat by it) */
         dkG = P.wardG || 0; }
       if (opts.onFrame) await opts.onFrame({ boss, P, f, h, lvl: lvId, open });   /* THE CAMERA HOOK (opts.draw renders each frame; opts.onFrame may take it) */   /* a fall into a pit is a death and a respawn, not a blow: it is counted as falls, not as damage */
       if (P.dead) falls++;

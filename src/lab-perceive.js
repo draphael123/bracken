@@ -108,7 +108,7 @@ export function makePerception(BK, prof, key, boss, opts = {}) {
 /* THE SKILLS A PLAYER CASTS (claude/bot2 #3, opts.skills): whatever is in his slots (BK.skillAt), cast at the boss when it is ready, in its
    range, the hero free and not about to be hit by a windup he can see (or the boss OPEN), with a roll's wind kept back, at most one cast a
    second. A generic hand, the same for every boss: a player's skill use is not boss-specific either. */
-export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false) {
+export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false, bk = false) {
   const KEYS = ['throw', 'skill2', 'skill3'], P = () => BK.P; let last = -9, casts = {};
   return { casts: () => casts, step() {
     const p = P(); if (!p || p.dead || (h === 'reaper' && !v2) || p.atk >= 0 || (p.dodge > 0) || !boss.alive) return;
@@ -119,7 +119,10 @@ export function makeSkillHands(BK, boss, h, RANGE, rollCost, v2 = false) {
       for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null; if (id !== 'boneArmor' || (p.cds && p.cds[id] > 0) || p.st < 26 + rollCost) continue;
         BK.press(KEYS[i]); last = now; casts[id] = (casts[id] || 0) + 1; return; } }
     if (wind || Math.abs(boss.y - p.y) > 48) return;
-    for (let i = 0; i < 3; i++) { const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null;   /* (the slots are BKT's: main.js's skillAt) */ if (!id || !(id in RANGE) || (id === 'boneArmor')) continue;
+    /* (claude/bkbot) THE RED HOST in a Blood Knight's hands (bk): the spells are PAID IN BLOOD, so a player casts the priced ones (BOLT, WORMS, POOL) while he can afford them (healthy, little debt owing), and with debt on the bar and the health down he reaches for DRAIN first (it pulls the debt back and heals the rest) */
+    const bkHurt = bk && h === 'reaper' && p.hp < 0.7 * p.maxHp && (p.bd || 0) > 0.03 * p.maxHp, order = bkHurt ? [0, 1, 2].sort((a, b) => (((globalThis.BKT.skillAt(a) === 'bidden') ? 0 : 1) - ((globalThis.BKT.skillAt(b) === 'bidden') ? 0 : 1))) : [0, 1, 2];
+    for (const i of order) {   /* (the slots, DRAIN first when hurt) */
+      if (bk && h === 'reaper') { const sid = globalThis.BKT && globalThis.BKT.skillAt ? globalThis.BKT.skillAt(i) : null; if ((sid === 'gravecall' || sid === 'summonSkeleton' || sid === 'unholyGround') && (p.hp < 0.4 * p.maxHp || (p.bd || 0) > 0.12 * p.maxHp)) continue; if (sid === 'bidden' && !(boss.hp > 0)) continue; } const T = globalThis.BKT, id = T && T.skillAt ? T.skillAt(i) : null;   /* (the slots are BKT's: main.js's skillAt) */ if (!id || !(id in RANGE) || (id === 'boneArmor')) continue;
       if (p.cds && p.cds[id] > 0) continue; if (edge > RANGE[id] || p.st < 30 + rollCost) continue;
       p.face = Math.sign(dx) || p.face; BK.press(KEYS[i]); last = now; casts[id] = (casts[id] || 0) + 1; return; } } };
 }
