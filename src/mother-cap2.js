@@ -18,7 +18,7 @@
 // broodDied(e, heavy), draw(g, e, cx, cy, time) (her and her tells), drawWorld(g, cx, cy, time) (the floor's tells), read() (tools and the lab).
 import { KEY_ROWS } from './boss-read.js';
 export const MC = {
-  hp: 1100,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
+  hp: 1150,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
   take: 0.4, openMul: 2, openT: 3.5, wardT: 3.0, wind: 0.7,
   idle: [1.15, 0.85],                        /* the breath between her moves, P1 / P2 */
   knotW: 16, knotUp: 132, knotDn: 104,       /* her knot: half its width; from how high over her floor to how low a plunge counts */
