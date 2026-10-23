@@ -31799,7 +31799,7 @@ function drawWorld(cx, cy, showPlayer) {
   /* A LIT LIP: in a dark mine the edge you can stand on is the one thing you have to be able to see. `edgeLit: true` is the mine's warm
      lamplight; a drowned level names its own colour (a cold rgba string), because a warm line under teal water reads as a fault */
   const lip = L.edgeLit ? (typeof L.edgeLit === 'string' ? L.edgeLit : 'rgba(236,214,168,0.5)') : null, lip2 = lip && lip.replace(/[\d.]+\)$/, '0.18)');
-  const stripTiles = !WRD.size && tileStrips.canDraw(g);
+  const stripTiles = (curId() === 'lamplit' || curId() === 'minecart') && !WRD.size && tileStrips.canDraw(g);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
     const s = tileSpr[ty * LW + tx];
