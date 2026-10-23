@@ -45,7 +45,7 @@ export const RG = {
        T3 PINNING SHOT  a heavy bodkin, flat: a common foe is PINNED where it stands (NAILED to a wall behind it, longer); an elite briefly; a boss or a mini is never held
                         (B3/B13) - the pin bites his break bar (poise of its max) and checks him (stagger) */
   tiers: { at: [0.55, 1.06, 1.61], hold: 2.0, st: [0, 9, 11, 13], focusMul: 1.3,
-    names: ['', 'LONG SHOT', 'PIERCING SHOT', 'PINNING SHOT'], cols: [null, '#f0ead8', '#9fdc6a', '#ffb84a'], label: [null, '#fff6d8', '#dfffb0', '#ffd68a'] },
+    names: ['', 'LONG SHOT', 'PIERCING SHOT', 'PINNING SHOT'], focusNames: ['', '', 'FOCUSED PIERCING', 'FOCUSED PINNING'], cols: [null, '#f0ead8', '#9fdc6a', '#ffb84a'], label: [null, '#fff6d8', '#dfffb0', '#ffd68a'] },
   pin: { vx: 560, vy: -12, g: 110, range: 250, dmg: 2.4, hold: 2.0, eliteHold: 1.0, wall: 1.5, poise: 0.3, stagger: 0.35 },
   sweet: { near: 52, far: 138, quick: 14, draw: 26, rise: 10, down: 10 },   /* px from where it was loosed; focus each arrow that lands in it gives */
   mark: { t: 10, mul: 1.33, apex: 1.5, range: 300 },  /* THE MARK: s; x on every blow; px ahead it reaches (through walls) */
@@ -201,10 +201,10 @@ export function makeRanger(api) {
     if (tier === 2) {   /* THE PIERCING SHOT: flat, through the whole line */
       stats.pierces++;
       const a = loose(p, { kind: 'pierce', vx: p.face * RG.pierce.vx, vy: 0, g: 0, dmg: dmgBase() * RG.pierce.dmg * fm, tag: ['heavy', 'shot'], pierce: true, range: RG.pierce.range * far * (focused ? 1.25 : 1) }); a.full = true; a.focused = focused;
-      api.number(p.x, p.y - 28, focused ? 'FOCUSED: ' + word : word, RG.tiers.label[2]); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, 8, ['#dfffb0', TC], 160);
+      api.number(p.x, p.y - 28, focused ? RG.tiers.focusNames[tier] : word, RG.tiers.label[2]); api.shakeCam(3, p.face * 2); api.zoomKick(1.04, 0.18); api.streaks(p.x + p.face * 12, p.y - 13, 8, ['#dfffb0', TC], 160);
     } else if (tier === 3) {   /* THE PINNING SHOT: a heavy bodkin, flat and fast, that holds what it lands in */
       const a = loose(p, { kind: 'pin', vx: p.face * RG.pin.vx, vy: RG.pin.vy, g: RG.pin.g, dmg: dmgBase() * RG.pin.dmg * fm, tag: ['heavy', 'shot'], range: RG.pin.range * far }); a.full = true; a.focused = focused;
-      api.number(p.x, p.y - 28, focused ? 'FOCUSED: ' + word : word, RG.tiers.label[3]); api.shakeCam(4, p.face * 3); api.zoomKick(1.05, 0.2); api.hitstop(0.05);
+      api.number(p.x, p.y - 28, focused ? RG.tiers.focusNames[tier] : word, RG.tiers.label[3]); api.shakeCam(4, p.face * 3); api.zoomKick(1.05, 0.2); api.hitstop(0.05);
       api.streaks(p.x + p.face * 12, p.y - 13, 10, ['#ffffff', TC, '#ff7a5a'], 200); api.ringAt(p.x + p.face * 12, p.y - 13, 12, TC, 0.25);
     } else {
       const kn = p.rgKneel ? RG.kneel : null;   /* (claude/heropassa) THE KNEELING DRAW: flatter, further, more Focus from the sweet spot, loosed low */
