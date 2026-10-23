@@ -11,7 +11,7 @@ import { BK_LINES } from './unburied-foes.js';
 import { HK_SAY } from './hourglass-king.js';
 import { SAY as RM_SAY } from './raptor-matriarch.js';   /* (claude/redgorgerework) THE RAPTOR MATRIARCH's sluice-stun lines, said as variables */   /* (claude/buriedcity3) THE HOURGLASS KING's new moves' words and the great glass's line, said as variables */
 import { TK_SAY } from './tomb-king.js'; import { OT_SAY } from './old-tusker.js'; import { FR_SAY } from './fen-road-hands.js'; import { BT_SAY } from './bog-troll.js'; import { SW_SAY } from './stilt-walker.js'; import { PLANK_SAY } from './fen-planks.js'; import { LEECH_SAY } from './bog-leech.js';   /* (claude/fenroad2) LAY THE ROAD's and THE BOG LEECH's lines, said as variables */   /* (claude/fenroad) THE FEN ROAD's, THE BOG TROLL's and THE STILT-WALKER's lines, said as variables */   /* (claude/oldtusker) OLD TUSKER's lines, said as variables */
-import { SPW_SAY } from './sporewood-hands.js';   /* (claude/sporewood2) SPOREWOOD 2's lantern, puff, spore, seed and knot lines, said as variables */
+import { SPW_SAY } from './sporewood-hands.js'; import { MC_SAY } from './mother-cap2.js';   /* (claude/sporewood2) SPOREWOOD 2's lantern, puff, spore, seed and knot lines, said as variables */
 import { STK_SAY } from './stockade-hands.js';   /* (claude/stockade2) THE STOCKADE 2's horn, piles, gate, exam and war-tower lines, said as variables */
 import { LP3_SAY } from './lamplit-fire.js'; import { WK_SAY } from './wickling.js';   /* (claude/lamplit3) THE LAMPLIT STREET 3's fire lines and THE WICKLING's, said as variables */   /* (claude/pyramidboss) THE COFFIN KING's lines, said as variables */
 export const CALL_LINES = new Set([
@@ -95,10 +95,10 @@ export const CALL_LINES = new Set([
   'HE FALLS: CUT HIM', 'HE RISES ON THE WIND', 'SHE RAPS THE FLOOR: CUT HER', 'HE SHAKES IT OFF', 'IT GATHERS ITS GLASS', 'IT SHAKES IT OFF', 'HE GATHERS HIMSELF', 'THE GATE HAS HIM: CUT HIM', 'HE DRAGS HIMSELF OUT', 'THE RUNE TURNS HIM OVER', 'THE GRATE COMES DOWN ON HER',   /* (claude/bosswave2) a mini's opening shut after a third of him (src/boss-greed.js miniCap) */
   'STUNG: HIS ARMS LIE STILL', 'HIS ARM FALLS - CLIMB IT', 'THE COLD TAKES YOUR FIRE: A CANDLE AT THE WALL',
   /* the ones that say what to do about a hazard */
-  'LOW: JUMP IT', 'JUMP THE FLOCK', 'FROM BOTH WALLS: JUMP', 'JUMP! AND KEEP JUMPING', 'GET CLEAR', 'GET ABOVE THE ROOTS - AND THE SPORES',
-  'GET ABOVE THE ROOTS', 'STAY LOW OR CLIMB', 'LEAVE THE MARKS - SEEDS FALLING', 'LEAVE THE MARKS', 'LOOK UP', 'HURRY!', 'HELP! CUT THE BOARDS!', 'HELP! THE DOOR IS HOT!',
+  'LOW: JUMP IT', 'JUMP THE FLOCK', 'FROM BOTH WALLS: JUMP', 'JUMP! AND KEEP JUMPING', 'GET CLEAR', 
+  'LOOK UP', 'HURRY!', 'HELP! CUT THE BOARDS!', 'HELP! THE DOOR IS HOT!',
   /* a way that is open */
-  'THE FIRE IS OUT - GO', 'IT BURNS DOWN - THE STREET IS OPEN', 'THE HEART OPENS. TAKE THE SPRING.', 'HER CAP JAMS. THE HEART OPENS.', 'THE TOWER BREAKS OPEN AT THE FOOT',
+  'THE FIRE IS OUT - GO', 'IT BURNS DOWN - THE STREET IS OPEN', 'THE TOWER BREAKS OPEN AT THE FOOT',
   /* claude/lanterneater: THE LANTERN-EATER on the raft (src/lantern-eater.js, src/lantern-eater-hands.js) - its lights, its key, its openings, its tells, the lantern.
      (JENNY GREENTEETH's lines went with her to src/benched/: nothing says them now) */
   'SOMETHING VAST MOVES UNDER THE RAFT', 'TWO LIGHTS: THE LAMP FLICKERS. THE LURE SWAYS: HIT IT HIGH', 'THE LURE IS ITS WEAK POINT: JUMP AND STRIKE, OR UP AND STRIKE',
@@ -316,7 +316,7 @@ export const CALL_COUNTS = [/^VERDICT x\d+$/, /^FOCUS \d+%: SWEET-SPOT HITS FILL
 /* (claude/gorgemodule) THE RED GORGE's NUDGES are data now (src/stuck-spots.js STUCK_HANDS): the hands say them through number() as a variable, so they are routed here, not as CALL_LINES */
 export const SPOT_LINES = new Set(Object.values(STUCK_HANDS).flat().flatMap(sp => (sp.steps || [sp]).map(s => s.line || sp.line)));
 /* (claude/dk3) THE DEATH KNIGHT's teaching lines - his openings, his coil healing him, his dodge - said through number() as a variable (c.say), so they are routed here, not as CALL_LINES; his tells keep their sound, mark and floor colour */
-export const SAY_LINES = new Set([...Object.values(SPW_SAY), ...Object.values(STK_SAY), ...Object.values(LP3_SAY), ...Object.values(WK_SAY), ...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY), ...Object.values(TK_SAY), ...Object.values(OT_SAY), ...Object.values(FR_SAY), ...Object.values(BT_SAY).filter(t => t !== BT_SAY.hide), ...Object.values(SW_SAY), ...Object.values(PLANK_SAY), ...Object.values(LEECH_SAY), 'TIMBER', 'HER DOOR LIFTS: THE WAY UP TO THE KING']);   /* (claude/pyramidboss: THE SCARAB MOTHER's MINI_DONE line, said as a variable by main.js miniEnd) */
+export const SAY_LINES = new Set([...Object.values(SPW_SAY), ...Object.values(MC_SAY), ...Object.values(STK_SAY), ...Object.values(LP3_SAY), ...Object.values(WK_SAY), ...BK_LINES, ...HK_SAY, ...Object.values(RM_SAY), ...Object.values(TK_SAY), ...Object.values(OT_SAY), ...Object.values(FR_SAY), ...Object.values(BT_SAY).filter(t => t !== BT_SAY.hide), ...Object.values(SW_SAY), ...Object.values(PLANK_SAY), ...Object.values(LEECH_SAY), 'TIMBER', 'HER DOOR LIFTS: THE WAY UP TO THE KING']);   /* (claude/pyramidboss: THE SCARAB MOTHER's MINI_DONE line, said as a variable by main.js miniEnd) */
 /* (claude/minecart fix pass, review MF1) THE DEEP RAILS' TELLS - the cart's teaching, put in the hint box ~2.5 s ahead of what it tells - are data
    (src/minecart.js TELL_LINES, laid by tell() into L.mcTells and said through number() as a variable), so they are routed here, not as CALL_LINES */
 export const MC_TELL_LINES = new Set([...TELL_LINES, ...Object.values(FOREMAN_LINES)]);   /* (claude/deeprails3: and THE FOREMAN's lines, said as variables by src/foreman.js) */

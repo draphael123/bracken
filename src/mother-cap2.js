@@ -19,11 +19,11 @@
 import { KEY_ROWS } from './boss-read.js';
 export const MC = {
   hp: 1100,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
-  take: 0.4, openMul: 2, openT: 3.2, wardT: 3.0,
+  take: 0.4, openMul: 2, openT: 3.5, wardT: 3.0, wind: 0.7,
   idle: [1.15, 0.85],                        /* the breath between her moves, P1 / P2 */
   knotW: 16, knotUp: 132, knotDn: 104,       /* her knot: half its width; from how high over her floor to how low a plunge counts */
   knotY: 118,                                /* the knot's centre over her floor (L.knot) */
-  lash: { tell: 0.75, v: 330, dmg: 14, h: 20, rel: 0.5 },
+  lash: { tell: 0.75, v: 330, dmg: 12, h: 20, rel: 0.5 },
   crush: { tell: 1.0, fall: 0.32, dmg: 20, w: 20, from: 190 },
   bloom: { tell: 0.95, live: 3.4, r: 26, dmg: 5, tick: 0.5, st: 14 },
   brood: { tell: 0.8, n: [2, 2], max: 2, every: [18, 13], hp: 9 },
@@ -35,7 +35,7 @@ export const MC = {
 };
 export const MC_SAY = {
   lash: 'ROOT LASH: JUMP', crush: 'CAP CRUSH: MOVE OFF', bloom: 'SPORE BLOOM: STEP OUT OR STRIKE IT', brood: 'HER BROOD: A HEAVY BLOW BURSTS ONE',
-  open: 'HER KNOT OPENS', seal: 'SHE SEALS', ward: 'WARDED', above: 'FROM ABOVE: HER KNOT', spring: 'A SPRING SPORE', burst: 'IT BURSTS INTO A SPRING SPORE',
+  open: 'HER KNOT OPENS', seal: 'SHE SEALS', wind: 'HER SPORES GIVE YOU WIND', ward: 'WARDED', above: 'FROM ABOVE: HER KNOT', spring: 'A SPRING SPORE', burst: 'IT BURSTS INTO A SPRING SPORE',
   net: 'THE NET WAKES: LIVE ON THE CAPS', netOn: 'THE FLOOR STINGS', wither: 'SHE WITHERS YOUR CAP', crushed: 'SHE CRUSHES YOUR CAP',
 };
 /* B14: her key, shown (src/boss-read.js draws the glyph over her and names it on a turned blow) */
@@ -61,7 +61,10 @@ export function makeMotherCap(ctx) {
   function open(e, p) {
     e.mode = 'open'; e.modeT = MC.openT; e.opens = (e.opens || 0) + 1; e.lashes = []; e.crushes = [];
     say(e.x, A().floor - 140, 'open', '#ff7a9a'); ctx.sfx.gillOpen && ctx.sfx.gillOpen(); ctx.shake(6); ctx.burst(e.x, knotY(), 34, ['#ff7a9a', '#fff1a8', '#e0b0f0'], 150, 0.8);
-    if (p) { p.plunge = false; p.vy = -170; p.ground = false; p.canCut = true; if (p.hitSet) p.hitSet.clear(); }   /* (a short hop off her knot: the window is for cutting, not for falling) */
+    if (p) { p.plunge = false; p.vy = -170; p.ground = false; p.canCut = true; if (p.hitSet) p.hitSet.clear();   /* (a short hop off her knot: the window is for cutting, not for falling) */
+      /* THE SPORES HELP YOU, here too: her knot bursts in a cloud of the wood's own spores that GIVE YOU BACK YOUR WIND (a plunge - the pyromancer's FIREDROP most of all - can leave
+         a hero winded, and a window spent winded was no window: the lab's pyromancer opened her nine times and cut her for half the knight's share) */
+      if (p.maxSt) { p.st = Math.max(p.st || 0, p.maxSt * MC.wind); p.winded = false; p.exhaustT = 0; p.stDelay = 0; } say(e.x, A().floor - 152, 'wind', '#a6e04a'); ctx.burst(e.x, knotY(), 18, ['#a6e04a', '#dfffa0'], 90, 0.6); }
   }
   /* a plunge on her knot (main.js's plunge branch asks first; update() asks too, for a plunge that never met her body) */
   H.knotHit = (p, e) => { e = e || ctx.boss(); if (!e || !H.knotReady(e) || !p || p.dead || !p.plunge || (p.vy || 0) <= 0) return false;

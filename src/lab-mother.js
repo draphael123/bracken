@@ -31,6 +31,7 @@ export function motherHands(c) {
   if (brood && Math.abs(brood.x - P.x) < 50 && m !== 'open') { if (Math.abs(brood.x - P.x) > reach - 2) go(brood.x - (Math.sign(brood.x - P.x) || 1) * (reach - 4)); else if (P.atk < 0 && !tired) { P.face = Math.sign(brood.x - P.x) || 1; swing = true; } return done(); }
   /* ---- HER KNOT OPEN: cut her body ---- */
   if (m === 'open') { const side = P.x < e.x ? -1 : 1, spot = e.x + side * (14 + reach * 0.55);
+    if (c.h === 'pyro' && P.full && !P.cWas && P.atk < 0 && Math.abs(e.x - P.x) < 140 && !P.plunge) { P.face = -side; k.block = true; }   /* (the pyromancer's banked heat, THE PYRE, thrown into her window - as the lab's generic hands throw it, src/lab.js) */
     if (!P.ground && !P.onMover) { go(spot); if (Math.abs(P.x - e.x) < 14 + reach && P.y > A.floor - 100 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }   /* (cut her on the way down too) */
     go(spot); if (Math.abs(P.x - spot) < 12 && P.atk < 0 && !tired) { P.face = -side; swing = true; } return done(); }
   /* ---- THE NET (P2): off the floor while it is told or stings ---- */
@@ -55,7 +56,7 @@ export function motherHands(c) {
   /* nothing to climb (warded, withered, tired): under the net, onto a shelf or a cap; else chip her from beside, out of the lash's start */
   if (netBad && (onFloor || P.ground && P.y > floor - 6)) { const shelfX = P.x < e.x ? A.x0 + 3 * TS : A.x1 - 3 * TS, capUp = S.filter(up).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
     const tx = capUp ? capUp.x + capUp.w / 2 : shelfX; go(tx); if (Math.abs(P.x - tx) < 22) jump(18); return done(); }
-  if (tired) { const away = e.x + (P.x < e.x ? -110 : 110); go(Math.max(A.x0 + 20, Math.min(A.x1 - 20, away))); return done(); }
+  if (tired || (R.ready && !fresh)) { const away = e.x + (P.x < e.x ? -110 : 110); go(Math.max(A.x0 + 20, Math.min(A.x1 - 20, away))); return done(); }   /* (her knot ready and no wind for the climb and its window: get the wind back, out of her reach - a chip now only delays the opening) */
   /* her greed (src/boss-greed.js): out of her reach while the reprisal is told, and one blow short of its count outside an opening, as the ground hands do (labGreedStop) */
   const G = BK.greed, out = G ? (G.reach || 60) + (e.w || 20) / 2 : 0;
   if (G && e.greedT > 0 && Math.abs(P.x - e.x) < out + 18) { go(e.x - (Math.sign(e.x - P.x) || 1) * (out + 30)); return done(); }
