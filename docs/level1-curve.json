@@ -622,5 +622,18 @@
   "walked": 100,
   "bare": true,
   "lostPct": 209
+ },
+ "hornetsnest": {
+  "hash": "911b87aa6815",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 12,
+  "deaths": 0,
+  "kills": 50,
+  "lifts": 52,
+  "walked": 100,
+  "bare": true,
+  "lostPct": 49
  }
 }

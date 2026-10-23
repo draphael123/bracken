@@ -478,5 +478,17 @@
   "lifts": 83,
   "walked": 100,
   "bare": true
+ },
+ "hornetsnest": {
+  "hash": "911b87aa6815",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 10,
+  "deaths": 0,
+  "kills": 44,
+  "lifts": 51,
+  "walked": 100,
+  "bare": true
  }
 }
