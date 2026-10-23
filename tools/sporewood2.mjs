@@ -32,7 +32,7 @@ ok(/SPORES HELP YOU/.test(lv.rule) && /BOUNCE CAPS/.test(lv.rule) && /LANTERN CA
 ok(/GATE = \[[^\]]*'spore'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(L.sporewood2 === true && L.W === SPOREWOOD.W, 'the level is src/sporewood.js (L.sporewood2)');
 ok(JSON.stringify((L.sections || []).map(s => s.name)) === JSON.stringify(SECTIONS.map(s => s[0])) && L.sections.length === 6, 'five named areas and her hollow: ' + (L.sections || []).map(s => s.name).join(' | '));
-ok(L.knot && L.knot.x === SPOREWOOD.mother * TS + 8 && /drawKnot/.test(src('src/redraw/sporewood_knot.js')) && /SWH\.drawSky/.test(src('src/main.js')), "THE MOTHER'S KNOT: anchored on her, drawn on the skyline");
+ok(L.knot && L.knot.x === SPOREWOOD.mother * TS + 8 && /drawKnot/.test(src('src/redraw/sporewood_knot.js')) && /SWKNOT\(g, cx, cy, VW, VH, L, time/.test(src('src/main.js')) && /SW2B\.drawBackdrop/.test(src('src/main.js')), "THE MOTHER'S KNOT: anchored on her, drawn on the skyline");
 ok(!/R\.ents\.filter\(e=>!\['puffball','roller','nest','shaman','drone','gill'\]/.test(src('src/sporewood.js')), 'no filter deletes the signature actors from the built level');
 
 // ---- THE ROUTE AND ITS LOCKS ----

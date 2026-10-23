@@ -94,3 +94,15 @@ export function bakePuffBrood(base) {
     outline(c, OUT); return c; });
   return pack(fr, base);
 }
+
+/* ------------------------------------------------------------------ THE SPORE ARCHER (the goblin archer's AI and frames) ------------------------------------------------------------------ */
+export function bakeSporeArcher(base) {
+  const cap = ['#1c2812', '#3e5826', '#76923c'], cream = ['#6a5a40', '#c8b890', '#f0e6c8'], rust = ['#3a1e12', '#7a4222', '#b87c46'];
+  const frames = base.R.map(f => { const h = headOf(f), [d, g] = canvas(f.width, f.height); g.drawImage(f, 0, 0); const img = g.getImageData(0, 0, d.width, d.height), p = img.data;
+    for (let i = 0; i < p.length; i += 4) { if (!p[i + 3]) continue; const r = p[i], gg = p[i + 1], b = p[i + 2], l = (r + gg + b) / 765, k = kind(r, gg, b, l), yy = (i >> 2) / d.width | 0; let st = null;
+      if (k === 'skin') st = l < 0.36 && h.top >= 0 && yy <= h.top + 5 ? cap : cream; else if (k === 'red') st = rust; if (!st) continue; const o = rampAt(st, Math.min(1, l * 1.25)); p[i] = o[0]; p[i + 1] = o[1]; p[i + 2] = o[2]; }
+    g.putImageData(img, 0, 0); let c = d;
+    if (h.top >= 0) { const cx = h.cx, y0 = h.top; c = overlay(c, o => { dome(o, cx, y0 - 2, 5, 4, cap, [[-2, 1], [2, 2]]); row(o, cx - 5, y0 + 2, 11, '#e8ddc0'); }); const k2 = c.getContext('2d'); px1(k2, cx - 2, y0 + 3, EYE); px1(k2, cx + 2, y0 + 3, EYE); }
+    return c; });
+  return pack(frames, base);
+}

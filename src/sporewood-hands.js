@@ -157,6 +157,7 @@ export function makeSporewoodHands(ctx) {
   /* ---------- DRAWING (src/redraw/sporewood2_world.js, the art pass) ---------- */
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return;
+    SW2ART.drawDress(g, cx, cy, VW, time, S.dress || (S.dress = SW2ART.planDress(S.L, ctx.T)));   /* each area's own litter on its floor and hanging from its ceilings */
     SW2ART.drawWorld(g, S, SP, cx, cy, VW, VH, time);   /* (claude/sporewood2art) the puffs, spring spores and root knots, drawn (src/redraw/sporewood2_world.js); the buds' and seed caps' own marks are in drawGrowcap */
     /* the area banner */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(16,14,10,0.7)'; g.fillRect(VW / 2 - 110, 26, 220, 18);

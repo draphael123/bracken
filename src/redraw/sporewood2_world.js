@@ -175,3 +175,62 @@ export function drawStalkSupport(g, p, cx, cy) {
   if (!p.free) { R(g, st[0], x - 6, bot - 4, 12, 4); R(g, st[1], x - 5, bot - 4, 10, 1); R(g, P.thread, x - 9, bot - 1, 3, 1); R(g, P.thread, x + 6, bot - 1, 4, 1); R(g, P.thread, x - 7, bot - 2, 1, 1); }   /* the foot flares and runs off into mycelium */
   else for (let d = 0; d < 3; d++) R(g, P.thread, x + d * 2 - 3, h0 + body + tip - 2, 1, 4 - d);
 }
+
+/* ------------------------------------------------------------------ THE FLOOR'S DRESSING: each area's own litter on its ground (planned once from the grid, drawn behind the tiles) ------------------------------------------------------------------ */
+const reedClump = (z, v) => once('rc' + z + '_' + v, () => { const P = PAL[z], [c, g] = canvas(22, 22), r = mulberry(v * 11 + z), col = mix(P.fung[1], '#9ab070', 0.3), dk = P.fung[0];
+  for (let i = 0; i < 4; i++) { const x = 3 + i * 4 + ((r() * 2) | 0), h = 8 + ((r() * 12) | 0); for (let y = 0; y < h; y++) R(g, y % 6 === 0 ? dk : col, x, 22 - h + y, 1, 1); for (let y = 4; y < h; y += 6) { R(g, col, x - 1, 22 - h + y, 3, 1); R(g, dk, x - 2, 22 - h + y + 1, 1, 1); R(g, dk, x + 2, 22 - h + y + 1, 1, 1); } R(g, '#c8dca0', x, 22 - h, 1, 1); }
+  return c; });
+const foxCluster = v => once('fc' + v, () => { const r = mulberry(v + 9), [c, g] = canvas(20, 16); R(g, '#3a4a46', 9, 8, 2, 8);
+  for (let i = 0; i < 6; i++) { const x = 3 + ((r() * 14) | 0), y = 2 + ((r() * 8) | 0), w = 2 + ((r() * 2) | 0); R(g, GLOW.lo, x - 1, y + 1, w + 2, 1); R(g, GLOW.mid, x, y, w, 1); R(g, GLOW.c, x, y, Math.max(1, w - 1), 1); R(g, GLOW.hi, x, y, 1, 1); R(g, '#3a4a46', x + 1, y + 1, 1, Math.max(1, 8 - y)); } return c; });
+const silkBundle = v => once('sb' + v, () => { const r = mulberry(v + 4), [c, g] = canvas(22, 10);
+  for (let y = 0; y < 8; y++) { const w = Math.round(10 * Math.sqrt(1 - Math.pow((y - 4) / 4.5, 2))); R(g, y % 3 === 0 ? '#8c8878' : '#cfc9b4', 11 - w, 1 + y, w * 2, 1); R(g, '#efe9d4', 11 - w, 1 + y, 1, 1); R(g, '#7e7a68', 10 + w, 1 + y, 1, 1); }
+  for (let i = 0; i < 3; i++) R(g, '#7e7a68', 5 + i * 5, 2 + ((r() * 5) | 0), 1, 3); return c; });
+const boneSpr = v => once('bn' + v, () => { const [c, g] = canvas(22, 12), B = '#e8e0c8', D = '#a89878';
+  if (v % 3 === 0) { for (let i = 0; i < 4; i++) { R(g, B, 3 + i * 4, 3 + (i % 2), 2, 8 - (i % 2)); R(g, D, 4 + i * 4, 4, 1, 7); } R(g, B, 1, 10, 20, 2); R(g, D, 1, 11, 20, 1); }
+  else if (v % 3 === 1) { R(g, B, 2, 8, 17, 2); R(g, D, 2, 9, 17, 1); R(g, B, 0, 6, 4, 4); R(g, B, 17, 7, 4, 4); R(g, D, 0, 9, 4, 1); }
+  else { R(g, B, 4, 4, 9, 7); R(g, D, 4, 10, 9, 1); R(g, '#2a2018', 6, 6, 2, 2); R(g, '#2a2018', 10, 6, 2, 2); R(g, D, 6, 9, 5, 1); R(g, B, 13, 8, 7, 3); }
+  return c; });
+const puffSmall = v => once('ps' + v, () => { const [c, g] = canvas(22, 16);
+  for (const [cxp, rad] of [[6, 5], [14, 4], [19, 3]]) { const cyp = 16 - rad - 1; for (let dy = -rad; dy <= rad; dy++) for (let dx = -rad; dx <= rad; dx++) { if (dx * dx + dy * dy > rad * rad) continue; const lit = (-dx * 0.6 - dy * 0.8) / rad; R(g, lit > 0.4 ? '#f2eedc' : lit > -0.2 ? '#d2ccb6' : '#8a8670', cxp + dx, cyp + dy, 1, 1); } R(g, '#6a5a48', cxp - 1, cyp - rad, 2, 1); }
+  return c; });
+const hangRoot = (z, v) => once('hr' + z + '_' + v, () => { const P = PAL[z], [c, g] = canvas(10, 30), r = mulberry(v * 3 + z); let x = 5;
+  for (let y = 0; y < 28; y++) { R(g, P.s[3], x, y, 2, 1); R(g, P.s[5], x, y, 1, 1); if (r() < 0.25) x += r() < 0.5 ? -1 : 1; x = Math.max(1, Math.min(8, x)); } R(g, P.thread, x, 27, 1, 2); return c; });
+const hangCocoon = v => once('hc' + v, () => { const [c, g] = canvas(14, 38), r = mulberry(v + 6); R(g, '#a8a490', 6, 0, 1, 14);
+  for (let y = 0; y < 22; y++) { const w = Math.round(2 + 4 * Math.sin((y + 2) / 24 * Math.PI)); R(g, y % 4 === 0 ? '#8c8878' : '#cfc9b4', 7 - w, 14 + y, w * 2, 1); R(g, '#efe9d4', 7 - w, 14 + y, 1, 1); } for (let i = 0; i < 3; i++) R(g, '#7e7a68', 4 + ((r() * 6) | 0), 18 + i * 5, 5, 1); return c; });
+const hangFox = v => once('hf' + v, () => { const [c, g] = canvas(8, 30); R(g, '#3a4a46', 3, 0, 1, 24);
+  for (let i = 0; i < 4; i++) { const y = 6 + i * 5; R(g, GLOW.mid, 1 + (i % 2) * 3, y, 3, 2); R(g, GLOW.c, 1 + (i % 2) * 3, y, 2, 1); R(g, GLOW.hi, 1 + (i % 2) * 3, y, 1, 1); } return c; });
+const dressPlans = new WeakMap();
+export function planDress(L, T) {
+  if (dressPlans.has(L)) return dressPlans.get(L);
+  const W = L.W, H = L.H, gr = L.grid, ar = L.arena, items = [], solid = (x, y) => gr[y * W + x] === T.SOLID, air = (x, y) => gr[y * W + x] === T.AIR;
+  for (let x = 3; x < W - 3; x++) { const z = zoneOf(x); if (ar && x * 16 >= ar.x0 - 16) continue;
+    for (let y = 2; y < H - 1; y++) { const h = hash(x, y * 3 + 1), p = h % 100, v = (h >> 8) % 3;
+      if (solid(x, y) && air(x, y - 1) && air(x, y - 2) && air(x, y - 3) && air(x, y - 4)) {   /* a floor with headroom */
+        const dens = [30, 24, 34, 28, 30, 0][z]; if (p >= dens) continue; const q = (h >> 12) % 100; let k = null;
+        if (z === 0) k = q < 40 ? 'toad' : q < 75 ? 'reed' : 'tiny'; else if (z === 1) k = q < 50 ? 'fox' : q < 75 ? 'toad' : 'tiny'; else if (z === 2) k = q < 50 ? 'reed' : q < 82 ? 'puff' : 'toad';
+        else if (z === 3) k = q < 35 ? 'bone' : q < 70 ? 'silk' : 'tiny'; else if (z === 4) k = q < 60 ? 'root' : q < 80 ? 'toad' : 'tiny';
+        if (k) items.push({ x: x * 16 + 8 + ((h >> 4) % 5) - 2, y: y * 16, k, z, v, ph: (h % 628) / 100 }); }
+      else if (solid(x, y) && air(x, y + 1) && air(x, y + 2) && air(x, y + 3)) {   /* a ceiling with room under it */
+        const dens = [0, 14, 0, 18, 16, 0][z]; if (p >= dens) continue; items.push({ x: x * 16 + 8, y: (y + 1) * 16, k: z === 1 ? 'hfox' : z === 3 ? ((h >> 12) % 2 ? 'hcoc' : 'web') : 'hroot', z, v, ph: (h % 628) / 100, hang: true }); } } }
+  items.sort((a, b) => a.x - b.x); dressPlans.set(L, items); return items;
+}
+export function drawDress(g, cx, cy, VW, time, plan) {
+  let lo = 0, hi = plan.length; const xmin = cx - 40; while (lo < hi) { const m = (lo + hi) >> 1; if (plan[m].x < xmin) lo = m + 1; else hi = m; }
+  for (let i = lo; i < plan.length; i++) { const it = plan[i]; if (it.x > cx + VW + 40) break; const sx = rc(it.x - cx), sy = rc(it.y - cy); if (sy < -40 || sy > 420) continue; let sp = null, ox = 0, oy = 0, glow = 0;
+    switch (it.k) {
+      case 'toad': sp = toadCluster(it.z, it.v); ox = 13; oy = 20; break;
+      case 'tiny': sp = tinyCapSpr(it.z, it.v); ox = 6; oy = 12; break;
+      case 'reed': sp = reedClump(it.z, it.v); ox = 11 - rc(Math.sin(time * 1.3 + it.ph) * 0.6); oy = 22; break;
+      case 'fox': sp = foxCluster(it.v); ox = 10; oy = 16; glow = 1; break;
+      case 'puff': sp = puffSmall(it.v); ox = 11; oy = 16; break;
+      case 'bone': sp = boneSpr(it.v); ox = 11; oy = 12; break;
+      case 'silk': sp = silkBundle(it.v); ox = 11; oy = 9; break;
+      case 'root': sp = rootTangle(it.z, it.v); ox = 14; oy = 14; break;
+      case 'hfox': sp = hangFox(it.v); ox = 4; oy = 0; glow = 2; break;
+      case 'hcoc': sp = hangCocoon(it.v); ox = 7 - rc(Math.sin(time * 0.7 + it.ph)); oy = 0; break;
+      case 'web': sp = webSpr(it.v); ox = 12; oy = 0; break;
+      case 'hroot': sp = hangRoot(it.z, it.v); ox = 5 - rc(Math.sin(time * 0.6 + it.ph)); oy = 0; break;
+      default: continue; }
+    g.drawImage(sp, sx - ox, sy - oy);
+    if (glow) { const tw = 0.5 + 0.5 * Math.sin(time * 1.8 + it.ph); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.34 * tw; g.drawImage(halo(GLOW.rgb), sx - 20, sy - (glow === 1 ? 20 : -2) - 8, 40, 32); g.restore(); g.globalAlpha = 1; } }
+}
