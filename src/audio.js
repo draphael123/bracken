@@ -1538,6 +1538,7 @@ const DIE = {
   harpy() { tone('sawtooth', 1700, 420, 0.45, 0.14); tone('sawtooth', 1750, 400, 0.45, 0.08, 0.02); noise(0.4, 0.2, 1200, 0.3, 0.25); },
   goat() { tone('sawtooth', 520, 480, 0.12, 0.14); tone('sawtooth', 480, 560, 0.12, 0.14, 0.12); tone('sawtooth', 560, 180, 0.3, 0.14, 0.24); },
   badger() { tone('sawtooth', 240, 90, 0.3, 0.14); noise(0.2, 0.24, 700, 0.5, 0.05); tone('sine', 110, 50, 0.3, 0.12, 0.15); },   /* a squall, and a heavy little body going over */
+  royalboar() { SFX.boarSnort(); tone('sawtooth', 160, 45, 0.5, 0.16, 0.1); noise(0.3, 0.2, 500, 0.5, 0.15); },   /* (integ115) THE ROYAL BOAR (King Gorm's hall) goes down: a snort, and a heavy body folding */
   gar() { noise(0.18, 0.24, 1200, 0.5); tone('sine', 200, 70, 0.3, 0.12, 0.05); noise(0.12, 0.2, 700, 0.5, 0.18); },   /* one last flap on the grass */
   hare() { tone('sine', 2200, 2900, 0.06, 0.1); tone('sine', 2800, 1200, 0.16, 0.1, 0.06); noise(0.12, 0.2, 300, 0.6, 0.2); },
   wight() { tone('sine', 210, 90, 0.9, 0.18); tone('sine', 214, 92, 0.9, 0.1, 0.05); noise(0.9, 0.16, 500, 0.15, 0.1); },
@@ -1731,6 +1732,7 @@ const HURT = {
   goat() { SFX.goatCry(); },
   hare() { SFX.hareSqueak(); },
   badger() { SFX.badgerHuff(); },
+  royalboar() { SFX.boarSnort(); },   /* (integ115) the royal boar, struck */
   gar() { noise(0.1, 0.2, 1400, 0.5); tone('sine', 300, 160, 0.08, 0.08); },
   wight() { tone('sine', 240, 160, 0.25, 0.14); },
   kite() { SFX.kiteChatter(); },
