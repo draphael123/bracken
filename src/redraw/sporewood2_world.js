@@ -234,3 +234,17 @@ export function drawDress(g, cx, cy, VW, time, plan) {
     g.drawImage(sp, sx - ox, sy - oy);
     if (glow) { const tw = 0.5 + 0.5 * Math.sin(time * 1.8 + it.ph); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.34 * tw; g.drawImage(halo(GLOW.rgb), sx - 20, sy - (glow === 1 ? 20 : -2) - 8, 40, 32); g.restore(); g.globalAlpha = 1; } }
 }
+
+/* ------------------------------------------------------------------ THE SPORE FALL (rockfall props with spore: true) ------------------------------------------------------------------ */
+const podSprite = (big) => once('pod' + big, () => { const [c, g] = canvas(12, 14), cx0 = 6, cy0 = 8, rad = big ? 5 : 4;
+  for (let dy = -rad - 1; dy <= rad + 1; dy++) for (let dx = -rad; dx <= rad; dx++) { const d = (dx * dx) / (rad * rad) + (dy * dy) / ((rad + 1) * (rad + 1)); if (d > 1) continue; const lit = (-dx * 0.6 - dy * 0.8) / rad; R(g, lit > 0.45 ? '#e0e8a0' : lit > -0.1 ? '#a8b858' : lit > -0.55 ? '#6a7a34' : '#3a4a1c', cx0 + dx, cy0 + dy, 1, 1); }
+  R(g, '#5a4a30', cx0 - 1, 0, 2, 3); R(g, '#d85a3a', cx0 - 1, cy0 + 1, 1, 1); R(g, '#d85a3a', cx0 + 1, cy0 + 2, 1, 1); R(g, '#1b1626', cx0 - rad, cy0 + 2, 1, 1); return c; });
+export function drawSporeFall(g, r, cx, cy, time) {
+  const x = rc(r.x - cx), y = rc(r.y - cy); g.drawImage(podSprite(true), x - 6, y - 12);
+  for (let i = 0; i < 5; i++) { const t = (time * 2.4 + i * 0.37) % 1; g.globalAlpha = (1 - t) * 0.8; R(g, i % 2 ? '#e0e8a0' : '#d85a3a', x - 4 + ((i * 5) % 9), y - 14 - t * 14, 1, 1); } g.globalAlpha = 1;
+}
+export function drawPodSource(g, pr, cx, cy, time) {
+  const x = rc(pr.x - cx), y = rc(pr.y - cy), tell = pr.tellT || 0.9, k = pr.timer < tell ? 1 - pr.timer / tell : 0, sw = 1 + k * 0.25;
+  g.save(); g.translate(x, y + 2); g.scale(sw, sw); g.drawImage(podSprite(false), -6, -3); g.restore();   /* it swells before it lets go */
+  if (k > 0) { g.globalAlpha = 0.5 * k; R(g, '#ffd36b', x - 1, y + 10 + ((time * 40) % 4), 2, 2); g.globalAlpha = 1; }
+}
