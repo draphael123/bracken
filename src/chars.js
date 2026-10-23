@@ -5270,23 +5270,23 @@ function rgKitPoses(F, h) {
     KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-3, { stave: [X + 7, Y + 8, X + 7, Y - 12] }), plume: 0, bits: [o(14, -3, C), o(15, -3, W2), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] })];
   /* ==== THE THREE-TIER DRAW (claude/chargetiers, greybox - the art lane redraws): held past the full draw (the windup's last beat = T1 THE LONG SHOT) her body changes with the shot.
      T2 THE PIERCING SHOT - rgDraw2: drawn PAST the ear, elbow high, the bow upright and dead level, the head glinting green; two beats, a held tremble.
-     T3 THE PINNING SHOT - rgDraw3: down in a wide braced stance, the bow canted forward, the heavy bodkin drawn right back past her ear, its dark iron head and an amber glint; two beats.
+     T3 THE TRIPLE SHOT - rgDraw3: down in a wide braced stance, the bow canted forward, THREE arrows nocked in a tight fan drawn right back past her ear, amber heads; two beats.
      Kneeling: rgKneelDraw2 / rgKneelDraw3, the same on one knee. LOOSES: rgLoose2 the piercing shot's flat snap (the draw hand flung straight back, a green line out of the bow);
-     rgLoose3 the pinning shot's heavy follow-through (rocked back a step on the recoil, the bow arm kicked up, amber sparks off the string) ==== */
+     rgLoose3 the triple shot's heavy follow-through (rocked back a step on the recoil, the bow arm kicked up, three amber streaks off the string) ==== */
   { const G2 = '#9fdc6a', G2L = '#dfffb0', AM = '#ffb84a', AML = '#ffd68a', IR = '#3a3e46';
     const lvl = { stave: [X + 6, Y + 9, X + 6, Y - 13] }, cant = { stave: [X + 8, Y + 8, X + 4, Y - 13] };
     F.rgDraw2 = [KF({ legs: 'wide', sho: 1, hy: -1, ...aimed(-5, lvl), plume: 2, bits: [o(8, -3, G2), o(9, -3, G2L), o(7, -4, G2)] }),
       KF({ legs: 'wide', sho: 1, hy: -1, ...aimed(-5, lvl), plume: 1, bits: [o(8, -3, G2L), o(9, -3, W2), o(9, -4, G2)] })];
-    F.rgDraw3 = [KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-6, cant), plume: 2, bits: [o(9, -2, IR), o(10, -2, IR), o(8, -3, AM), o(11, -3, AML)] }),
-      KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-7, cant), plume: 1, bits: [o(9, -2, IR), o(10, -2, IR), o(8, -1, AM), o(11, -1, AML), o(12, -2, W2)] })];
+    F.rgDraw3 = [KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-6, cant), plume: 2, bits: [o(8, -5, AM), o(9, -5, AML), o(8, -3, AM), o(9, -3, AML), o(8, -1, AM), o(9, -1, AML)] }),
+      KF({ dy: 1, legs: 'wide', wide: 8, sho: 1, ...aimed(-7, cant), plume: 1, bits: [o(8, -5, AM), o(9, -5, AML), o(8, -3, AM), o(10, -3, W2), o(8, -1, AM), o(9, -1, AML)] })];
     const kst = { stave: [X + 7, Y + 8, X + 7, Y - 12] };
     F.rgKneelDraw2 = [KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-5, kst), plume: 0, bits: [o(8, -3, G2), o(9, -3, G2L), o(9, 12, D), o(5, 13, D)] }),
       KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-5, kst), plume: 1, bits: [o(8, -3, G2L), o(9, -3, W2), o(9, 12, D), o(5, 13, D)] })];
-    F.rgKneelDraw3 = [KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 0, bits: [o(9, -3, IR), o(10, -3, IR), o(8, -4, AM), o(11, -4, AML), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] }),
-      KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 1, bits: [o(9, -3, IR), o(10, -3, IR), o(8, -2, AM), o(12, -3, W2), o(9, 12, D), o(5, 13, D)] })];
+    F.rgKneelDraw3 = [KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 0, bits: [o(8, -6, AM), o(9, -6, AML), o(8, -4, AM), o(9, -4, AML), o(8, -2, AM), o(9, -2, AML), o(9, 12, D), o(5, 13, D), o(3, 12, GR)] }),
+      KF({ dy: 3, hy: 1, sho: 1, legs: 'kneel', ...aimed(-7, kst), plume: 1, bits: [o(8, -6, AM), o(9, -6, AML), o(8, -4, AM), o(10, -4, W2), o(8, -2, AM), o(9, -2, AML), o(9, 12, D), o(5, 13, D)] })];
     F.rgLoose2 = [KF({ wide: 12, legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 7, Y - 3], plume: 2, bits: [...ln(9, -3, 17, -3, (i, n) => i === n ? W2 : i % 2 ? G2 : G2L)] }),
       KF({ legs: 'wide', ...aimed(null, lvl), arm2: [OFF[0], OFF[1], X - 5, Y - 1], plume: 1, bits: [o(15, -3, G2), o(17, -3, G2L)] })];
-    F.rgLoose3 = [KF({ wide: 12, dx: -1, dy: 1, legs: 'wide', ...aimed(null, { stave: [X + 7, Y + 7, X + 6, Y - 15], arm: [X, Y, X + 6, Y - 4] }), arm2: [OFF[0], OFF[1], X - 7, Y + 1], plume: 2, bits: [o(13, -3, AM), o(15, -2, AML), o(14, -5, AM), o(16, -4, W2), o(12, 0, AM)] }),
+    F.rgLoose3 = [KF({ wide: 12, dx: -1, dy: 1, legs: 'wide', ...aimed(null, { stave: [X + 7, Y + 7, X + 6, Y - 15], arm: [X, Y, X + 6, Y - 4] }), arm2: [OFF[0], OFF[1], X - 7, Y + 1], plume: 2, bits: [o(13, -5, AM), o(15, -6, AML), o(13, -3, AM), o(16, -3, W2), o(13, -1, AM), o(15, 0, AML)] }),
       KF({ dx: -1, legs: 'wide', ...aimed(null, cant), arm2: [OFF[0], OFF[1], X - 4, Y + 2], plume: 1, bits: [o(15, -4, AM), o(17, -3, AML)] })]; }
   riposteKit(F, 'ranger', KF, { X, Y, OFF, aimed, knife });
 }
@@ -5734,6 +5734,23 @@ function bzKitPoses(F, sh) {
   /* BATTLE ROAR: the breath in, axes down and back; then head back, both fists punched up at the sky, the roar's lines off his mouth */
   F.bzRoar = [KF({ dy: 1, legs: 'wide', ...lead(1, 4, -4, 9, -1), ...off(-4, 4, -9, 9, -1), plume: 0 }),
     KF({ dy: -1, legs: 'wide', sho: 1, hy: -1, ...lead(3, -8, 5, -17), ...off(-3, -8, -5, -17), plume: 2, bits: [o(2, -4, R), o(4, -5, R), o(5, -3, R)] })];
+  /* ==== THE RAGE WIND-UP (claude/chargetiers, greybox - the art lane redraws): held past the double chop's wind, his body changes with the blow.
+     bzWind2 (T2 THE WHIRL held): coiled low and twisted away, both axes swept back level behind him for the turn - two shaking beats.
+     bzWind3 (T3 GROUND-SPLITTER held): up on his toes, both axes high over his head together, a red glow at the heads - two shaking beats.
+     bzTier2 (the cleave): the axes out level, turning - ahead, through behind (his back to them), round again, the follow - four frames.
+     bzTier3 (the splitter): both axes over the top, down, and BURIED in the floor ahead with him crouched over the hafts - three frames. ==== */
+  { const O = '#ff8a4c', RD = '#ff3a2a';
+    F.bzWind2 = [KF({ dx: -1, dy: 2, legs: 'crouch', legsDy: 2, sho: 1, ...lead(-4, 2, -13, 0, -1), ...off(-6, 1, -15, -2, -1), plume: 2, bits: [o(-14, -1, O)] }),
+      KF({ dx: -2, dy: 2, legs: 'crouch', legsDy: 2, sho: 1, ...lead(-4, 3, -13, 1, -1), ...off(-6, 2, -15, -1, -1), plume: 1, bits: [o(-16, 0, O), o(-12, 2, W2)] })];
+    F.bzWind3 = [KF({ dy: -2, legs: 'jump2', sho: 1, hy: -1, ...lead(1, -9, 1, -19), ...off(-1, -9, -2, -19), plume: 2, bits: [o(0, -20, RD), o(2, -21, R)] }),
+      KF({ dy: -2, legs: 'jump2', sho: 1, hy: -1, ...lead(1, -10, 2, -20), ...off(-1, -10, -1, -20), plume: 1, bits: [o(1, -22, RD), o(-1, -21, R), o(3, -19, W2)] })];
+    F.bzTier2 = [KF({ wide: 10, dx: 2, legs: 'runC', ...lead(6, 0, 15, -1, -1), ...off(-6, 0, -14, 1, -1), plume: 1, bits: [o(16, -1, W2)] }),
+      KF({ wide: 10, legs: 'wide', dy: 1, sho: 1, ...lead(1, 2, -6, 3, -1), ...off(2, 2, 9, 3, -1), plume: 2, bits: [o(-15, 1, O), o(14, 2, O), o(-13, 3, W2), o(12, 0, W2)] }),
+      KF({ wide: 10, dx: 1, legs: 'runC', ...lead(-7, 0, -16, -1, -1), ...off(6, 0, 15, 1, -1), plume: 0, bits: [o(-17, -1, W2)] }),
+      KF({ wide: 8, dx: 2, legs: 'wide', ...lead(6, 2, 13, 6, -1), ...off(4, 3, 11, 7, -1), plume: 1 })];
+    F.bzTier3 = [KF({ dy: -1, legs: 'wide', sho: 1, ...lead(3, -8, 8, -17), ...off(1, -8, 6, -17), plume: 2, bits: [o(7, -18, RD)] }),
+      KF({ wide: 10, dx: 2, dy: 1, legs: 'runC', ...lead(6, 0, 14, 6, 1), ...off(5, 1, 13, 5, -1), plume: 2, bits: [o(14, 7, R), o(16, 6, W2)] }),
+      KF({ wide: 10, dx: 3, dy: 4, legs: 'crouch', legsDy: 3, ...lead(6, 5, 12, 11, -1), ...off(5, 6, 13, 11, -1), plume: 0, bits: [o(10, 11, D), o(15, 11, D), o(12, 12, RD), o(13, 10, RD), o(9, 12, D), o(17, 12, D), o(14, 9, W2)] })]; }
   /* THE SPIN: arms out, one head ahead and one behind, turning (a cycle of three) */
   F.bzSpin = [KF({ wide: 8, legs: 'runC', ...lead(5, 0, 14, -1, -1), ...off(-7, 0, -15, 1, -1), plume: 1 }),
     KF({ wide: 8, legs: 'wide', dy: 1, ...lead(2, 2, 6, 5, -1), ...off(-2, 2, -6, 5, -1), plume: 2, bits: [o(13, 0, W2), o(-13, 0, W2)] }),
@@ -5773,6 +5790,16 @@ function geoKitPoses(F, sh) {
   const [X, Y] = sh, OFF = [BX + 2, BY + 7], KF = f => knightFrame({ top: ATTACK_HEADROOM, ...f });
   const o = (x, y, col) => [X - BX + x, Y - BY + y, col];
   const A = '#e8a83a', D = '#c9b27c', M = '#8c8a7e', MS = '#6f9a4a';
+  /* ==== THE THREE-TIER STAVE (claude/chargetiers, greybox - the art lane redraws). gWind3 (T3 RISING PILLAR held): the stave lifted crossways over her head in both hands, the geode
+     blazing, grit lifting round her feet - two beats. gShard (T1 STONE SHARD): the stave whipped forward level, a shard of stone off the geode. gPillar (T3 let go): the butt driven
+     down, then both hands heaved up palms-first as the pillar comes - two frames ==== */
+  { const E = '#ff8a3a', G = '#fff0c0';
+    F.gWind3 = [KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y - 8], arm2: [OFF[0], OFF[1], X - 3, Y - 8], stave: [X - 7, Y - 10, X + 9, Y - 11], plume: 2, bits: [o(9, -12, A), o(10, -13, G), o(-2, 10, D), o(4, 10, D)] }),
+      KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 4, Y - 9], arm2: [OFF[0], OFF[1], X - 3, Y - 9], stave: [X - 7, Y - 11, X + 9, Y - 12], plume: 1, bits: [o(9, -13, E), o(10, -14, G), o(0, 9, D), o(6, 9, M)] })];
+    F.gShard = [KF({ wide: 6, dx: 1, legs: 'runC', arm: [X, Y, X + 5, Y - 3], arm2: [OFF[0], OFF[1], X + 2, Y - 2], stave: [X - 4, Y - 1, X + 12, Y - 5], plume: 2, bits: [o(14, -6, A), o(15, -5, M)] }),
+      KF({ wide: 8, dx: 2, legs: 'wide', arm: [X, Y, X + 6, Y - 2], arm2: [OFF[0], OFF[1], X + 3, Y - 1], stave: [X - 3, Y, X + 13, Y - 3], plume: 1, bits: [o(18, -4, M), o(19, -4, D), o(17, -5, A)] })];
+    F.gPillar = [KF({ wide: 4, dx: 1, dy: 2, legs: 'wide', arm: [X, Y, X + 5, Y - 1], arm2: [OFF[0], OFF[1], X + 4, Y + 1], stave: [X + 7, Y + 9, X + 6, Y - 9], plume: 2, bits: [o(6, 9, D), o(10, 9, D), o(8, 8, E)] }),
+      KF({ dy: -1, legs: 'wide', sho: 1, arm: [X, Y, X + 6, Y - 6], arm2: [OFF[0], OFF[1], X + 5, Y - 7], stave: [X - 6, Y + 8, X - 2, Y - 10, 'back'], plume: 2, bits: [o(8, -9, E), o(7, -10, G), o(12, 6, M), o(12, 2, D)] })]; }
   /* EARTHFALL (B16, claude/plunges - her plunge has its OWN windup and release). The windup: the stave lifted point-down high over her head in both hands, the geode blazing; then the fall with it driven down
      under her, the butt first and grit streaming up. The release (earthHit, played as she lands): the butt of the stave in the ground, her weight on it and the grit flung off it; then her coming up off it. */
   F.earthWind = [KF({ dy: -1, sho: 1, hy: -1, legs: 'jump2', arm: [X, Y, X + 2, Y - 9], arm2: [OFF[0], OFF[1], X - 2, Y - 9], stave: [X, Y - 17, X + 1, Y + 1], plume: 2, bits: [o(-3, -19, A), o(3, -19, A)] }),

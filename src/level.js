@@ -3725,7 +3725,7 @@ function trialYard(hero) {
        marks (the ward takes a yellow one; a red one breaks through it), STONEFALL (she lands like a boulder and the ring knocks down
        both sides) and THE QUAKE (a full TREMOR, spent). */
     geomancer: [
-      ['fault', 2, 'FAULT LINE: HOLD X, LET GO. A LONGER HOLD, A LONGER CRACK. CATCH BOTH IN ONE.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
+      ['fault', 2, 'FAULT LINE: HOLD X TILL THE STAVE NAMES IT, LET GO. CATCH BOTH IN ONE CRACK.', [['dummy', 12], ['dummy', 17]], 'HOLD X, LET GO'],
       ['flash', 2, 'THE WARD: TAP C AS HIS SWORD FLASHES. IT RISES ON THE BEAT AND EMPOWERS YOU. TWICE.', [['swornsword', 18]], 'TAP LB AS IT FLASHES'],
       ['tells', 2, 'ONE YELLOW ! : THE WARD TAKES IT. TWO RED !! : IT BREAKS THROUGH, SO GET CLEAR. DO BOTH.', [['hedgeknight', 18]], 'TAP LB FOR !    B OR A FOR !!', MARKS],
       ['stonefall', 2, 'EARTHFALL: JUMP, THEN DOWN+X BETWEEN THEM. A STONE RISES AND HITS. LAND IT TWICE.', [['dummy', 13], ['dummy', 17]], 'A, THEN DOWN+X'],

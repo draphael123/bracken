@@ -64,4 +64,5 @@ const said = []; const W = { number: (x, y, t) => said.push(t), sound() {}, shak
 /* B5 */
 { const { S, e } = fresh(); e.hp = OT.hp * OT.p2 - 1; OTM.stepTusker(e, S, 1 / 60, [{ x: e.x - 200, y: A.floor, ground: true, alive: true }], W); ok(S.ph === 2 && e.mode === 'stompTell', 'at half his blood is up: phase two opens on the stomp'); }
 ok(OT.hp > 0 && OT.hide >= 0.4 && OT.wardMul >= 0.4 && OT.pin.mul >= 1.5 && OT.pin.mul <= 2, 'the numbers keep B15 (>= 0.4) and the opening at 1.5-2x');
+ok(OT.bz && OT.bz.hurt > 1 && OT.bz.hurt <= 3, 'the Berserker takes his gores and tusks at a multiple (claude/tuskerbz): ' + OT.bz.hurt);
 console.log('old-tusker: ' + n + ' checks - B15 floor, the pine pins him (capped), the ward, the felled trunk he rams (and the standing pines he does not), phase two.');
