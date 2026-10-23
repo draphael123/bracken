@@ -79,7 +79,7 @@ function paintFace(g, P, fx, fy, net) {
   /* the dazed swirl (knot open): two foxfire spirals circling her head */
   if (P.swirl) { const ph = P.swirl === -1 ? 0 : P.swirl; for (const s of [-1, 1]) for (let i = 0; i < 14; i++) { const a = i * 0.55 + ph * 6.28 * s, rr = 1 + i * 0.5; R(g, i > 9 ? GLOW.hi : i % 3 ? '#ffd36b' : GLOW.c, fx + s * 21 + Math.round(Math.cos(a) * rr), fy + 12 + Math.round(Math.sin(a) * rr * 0.8), 1, 1); } }
   /* P2: the net lays foxfire veins over her face */
-  if (net && eye !== 'out' && eye !== 'dim') for (const [sx, sy, dir] of [[-10, 9, -1], [10, 9, 1], [-3, 2, -1], [4, 2, 1], [-8, 15, -1], [8, 15, 1], [0, 19, 1]]) { let x = sx, y = sy; for (let k = 0; k < 10; k++) { put(x, y, k % 3 ? GLOW.lo : GLOW.mid); if (k % 4 === 0) put(x + dir, y, GLOW.lo); x += dir * (hash(sx + k, sy) % 2); y += (k % 2); if (Math.abs(x) > 11 || y > plateH - 2) break; } }
+  if (net && eye !== 'out' && eye !== 'dim') for (const [sx, sy, dir] of [[-11, 9, -1], [11, 9, 1], [-4, 2, -1], [-9, 16, -1]]) { let x = sx, y = sy; for (let k = 0; k < 10; k++) { put(x, y, k % 3 ? GLOW.lo : GLOW.mid); if (k % 4 === 0) put(x + dir, y, GLOW.lo); x += dir * (hash(sx + k, sy) % 2); y += (k % 2); if (Math.abs(x) > 11 || y > plateH - 2) break; } }
 }
 /* the gills hang from the cap's rim down both sides of her face like hair: cream strands with a dark root, longer near her cheeks */
 function paintFringe(g, P, lxAt, rimAt, domeW, gillD, capCx, stalkTop) {
