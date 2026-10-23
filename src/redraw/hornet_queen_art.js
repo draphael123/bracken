@@ -31,9 +31,11 @@ function wingPair(g, pivot, tilt, kind, step, hind, far) {
   const osc = kind === 'blur' ? (step - 1) * 0.55 : kind === 'wide' ? (step - 1) * 0.45 : kind === 'beat' ? (step - 1) * 0.95 : 0;
   const L = (hind ? 17 : 24) * (kind === 'wide' ? 1.15 : 1), Wd = hind ? 3.6 : 4.8, a = tilt + base + osc + (hind ? 0.32 : 0) + (far ? -0.1 : 0);
   const cx = pivot[0] + Math.cos(a) * L / 2, cy = pivot[1] + Math.sin(a) * L / 2, ghost = kind === 'blur' || kind === 'wide';
-  blob(g, cx, cy, L / 2, Wd, a, (u, v, dx, dy, x, y) => { if (ghost && ((x + y) & 1) && Math.abs(u) < 0.9) return null;   /* a wing in motion: half the pixels */
+  g.globalAlpha = ghost ? 0.62 : 1;
+  blob(g, cx, cy, L / 2, Wd, a, (u, v, dx, dy, x, y) => { /* a wing in motion is drawn thinner (see-through), not dithered */
     const vein = Math.abs(v) < 0.12 || (Math.abs(u * 6 % 2) < 0.18 && Math.abs(v) < 0.8); const edge = Math.abs(v) > 0.78 || u > 0.86 || u < -0.86;
     return edge ? WING[0] : vein ? WING[1] : (far ? WING[1] : u < 0 ? WING[3] : WING[2]); });
+  g.globalAlpha = 1;
 }
 /* one baked frame of a pose */
 function bake(p, step) {

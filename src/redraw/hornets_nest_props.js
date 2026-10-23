@@ -58,11 +58,6 @@ function standSprite() { return once('stand', () => { const [c, g] = canvas(26, 
 export function stand(g, x, y, time) { x = Math.round(x); y = Math.round(y); g.drawImage(standSprite(), x - 13, y - 30);
   g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 5 + x); R(g, '#ff8a3a', x - 2, y - 11, 4, 1); g.globalAlpha = 1;
   smokeCurl(g, x, y - 29, time, 4); }
-/* a curl of smoke rising from (x, y): n puffs growing and fading as they climb, swaying */
-export function smokeCurl(g, x, y, time, n = 4) { for (let k = 0; k < n; k++) { const ph = (time * 0.45 + k / n) % 1, rr = 2 + ph * 5, px = x + Math.sin(time * 1.6 + k * 2 + ph * 4) * (2 + ph * 5), py = y - ph * 34;
-  g.globalAlpha = 0.55 * (1 - ph) * (ph < 0.1 ? ph * 10 : 1); g.fillStyle = k % 2 ? '#aab0b8' : '#d0d6dc'; g.beginPath(); g.arc(Math.round(px), Math.round(py), rr, 0, 7); g.fill();
-  g.globalAlpha = 0.3 * (1 - ph); g.fillStyle = '#7a8088'; g.beginPath(); g.arc(Math.round(px + rr * 0.35), Math.round(py + rr * 0.3), rr * 0.7, 0, 7); g.fill(); } g.globalAlpha = 1; }
-
 /* ---------------- the pot in hand / set down / in flight ---------------- */
 function potSprite() { return once('pot', () => { const [c, g] = canvas(13, 13);
   R(g, CLAY[0], 3, 3, 8, 8); R(g, CLAY[0], 2, 5, 10, 4); R(g, CLAY[2], 3, 4, 7, 7); R(g, CLAY[2], 2, 6, 9, 3); R(g, CLAY[3], 3, 5, 2, 5); R(g, CLAY[1], 9, 6, 2, 4); R(g, CLAY[4], 3, 6, 1, 2);
@@ -74,11 +69,15 @@ export function pot(g, x, y, time, lit = true) { x = Math.round(x); y = Math.rou
   if (lit) { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 9 + x); R(g, '#ff8a3a', x - 1, y - 5, 2, 1); g.globalAlpha = 1; smokeCurl(g, x, y - 13, time + x * 0.01, 3); } }
 
 /* ---------------- a smoke cloud ---------------- */
+/* a soft puff: a radial fade, baked once per tint and scaled (smoke is the one soft thing here) */
+const puffSprite = col => once('puff' + col, () => { const [c, g] = canvas(32, 32, true), gr = g.createRadialGradient(16, 16, 1, 16, 16, 16), r = parseInt(col.slice(1, 3), 16), gg = parseInt(col.slice(3, 5), 16), b = parseInt(col.slice(5, 7), 16);
+  gr.addColorStop(0, `rgba(${r},${gg},${b},0.95)`); gr.addColorStop(0.55, `rgba(${r},${gg},${b},0.55)`); gr.addColorStop(1, `rgba(${r},${gg},${b},0)`); g.fillStyle = gr; g.fillRect(0, 0, 32, 32); return c; });
+const puff = (g, x, y, r, a, col) => { g.globalAlpha = a; g.drawImage(puffSprite(col), Math.round(x - r), Math.round(y - r), Math.round(r * 2), Math.round(r * 2)); g.globalAlpha = 1; };
+export function smokeCurl(g, x, y, time, n = 4) { for (let k = 0; k < n; k++) { const ph = (time * 0.45 + k / n) % 1, rr = 3 + ph * 7, px_ = x + Math.sin(time * 1.6 + k * 2 + ph * 4) * (2 + ph * 5), py = y - ph * 34; puff(g, px_, py, rr, 0.7 * (1 - ph) * (ph < 0.1 ? ph * 10 : 1), k % 2 ? '#aab0b8' : '#d0d6dc'); } }
 export function cloud(g, x, y, r, k, time) { const n = 11;
-  for (let i = 0; i < n; i++) { const a = i * 2.4 + time * (0.3 + (i % 3) * 0.12), rr = r * (0.25 + 0.5 * ((i * 37) % 10) / 10), px = x + Math.cos(a) * rr * 0.75, py = y + Math.sin(a * 1.3) * rr * 0.4, pr = r * (0.26 + 0.1 * ((i * 13) % 5) / 5);
-    g.globalAlpha = 0.17 * k; g.fillStyle = i % 3 === 0 ? '#9aa0a8' : i % 3 === 1 ? '#c8d0d8' : '#e8ecf0'; g.beginPath(); g.arc(Math.round(px), Math.round(py), Math.round(pr), 0, 7); g.fill();
-    g.globalAlpha = 0.1 * k; g.fillStyle = '#6a7078'; g.beginPath(); g.arc(Math.round(px + pr * 0.3), Math.round(py + pr * 0.35), Math.round(pr * 0.7), 0, 7); g.fill(); }
-  g.globalAlpha = 0.18 * k; g.fillStyle = '#f4f6f8'; g.beginPath(); g.arc(Math.round(x), Math.round(y), Math.round(r * 0.3), 0, 7); g.fill();   /* the pale heart */
+  for (let i = 0; i < n; i++) { const a = i * 2.4 + time * (0.3 + (i % 3) * 0.12), rr = r * (0.25 + 0.5 * ((i * 37) % 10) / 10), px_ = x + Math.cos(a) * rr * 0.75, py = y + Math.sin(a * 1.3) * rr * 0.4, pr = r * (0.34 + 0.12 * ((i * 13) % 5) / 5);
+    puff(g, px_ + pr * 0.15, py + pr * 0.2, pr, 0.34 * k, '#6a7078'); puff(g, px_, py, pr, 0.4 * k, i % 3 === 0 ? '#9aa0a8' : i % 3 === 1 ? '#c8d0d8' : '#e8ecf0'); }
+  puff(g, x, y, r * 0.42, 0.4 * k, '#f4f6f8');
   for (let i = 0; i < 4; i++) { const a = time * 0.8 + i * 1.7, rr = r * 0.5 * ((i + 1) / 4); g.globalAlpha = 0.5 * k * (0.5 + 0.5 * Math.sin(time * 5 + i)); R(g, '#ffb060', x + Math.cos(a) * rr, y + Math.sin(a * 1.2) * rr * 0.5, 1, 1); }   /* an ember in it */
   g.globalAlpha = 1; }
 
@@ -102,7 +101,7 @@ function cellSprite(st, step) { return once('cell' + st + step, () => { const [c
 export function cell(g, x, y, st, kk, time) { x = Math.round(x); y = Math.round(y);
   if (st === 'broken' || st === 'hatched') { g.drawImage(cellSprite('broken', 0), x - 12, y - 24); return; }
   if (st === 'pulse') { const step = Math.min(3, 1 + Math.floor(kk * 3)), sw = 1 + 0.12 * Math.sin(time * (8 + 14 * kk)); g.drawImage(cellSprite('pulse', step), x - 12, y - 24 + (1 - sw) * 20);
-    g.globalAlpha = 0.25 + 0.25 * kk; g.globalCompositeOperation = 'source-over'; g.fillStyle = '#ff5a2a'; g.beginPath(); g.arc(x, y - 12, 14 + kk * 6, 0, 7); g.fill(); g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
+    puff(g, x, y - 12, 18 + kk * 8, 0.5 + 0.3 * kk, '#ff5a2a');
     R(g, '#ff6b6b', x - 8, y + 2, 16 * kk, 2); return; }
   g.drawImage(cellSprite('idle', 0), x - 12, y - 24); }
 

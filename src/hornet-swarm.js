@@ -79,7 +79,7 @@ function mote(g, px, py, dir, col, bandCol, beat, tint) {
   g.fillStyle = COL.wing; if (beat) { g.fillRect(x0 + 1 + (o > 0 ? 1 : 1), py - 2, 2, 1); g.fillRect(x0 + 2, py - 3, 1, 1); } else g.fillRect(x0 + 1, py - 2, 3, 1);
 }
 export function drawSwarm(g, e, cx, cy, time) {
-  const n = Math.round(swarmCount(e) * 1.7), x = e.x - cx, y = e.y - SWARM.h / 2 - cy, m = e.mode === 'settle' ? 'calm' : e.mode, R = SWARM.r * 1.25 * (m === 'rise' ? 0.65 : m === 'calm' ? 1.15 : 1);
+  const n = Math.round(swarmCount(e) * (e.card ? 0.8 : 1.7)), x = e.x - cx, y = e.y - SWARM.h / 2 - cy, m = e.mode === 'settle' ? 'calm' : e.mode, R = SWARM.r * 1.25 * (m === 'rise' ? 0.65 : m === 'calm' ? 1.15 : 1);
   const hot = m === 'rise' || m === 'angry', flick = Math.floor(time * 10) % 2;
   /* the cloud's own shadow: a soft dark smudge, red-hot when it rises, grey-cool when quiet */
   g.globalAlpha = m === 'calm' ? 0.16 : hot ? 0.26 : 0.2; g.fillStyle = m === 'calm' ? '#4a5058' : hot ? (flick ? '#5a1408' : '#3a1008') : '#3a2410'; g.beginPath(); g.ellipse(Math.round(x), Math.round(y + (m === 'calm' ? 2 : 0)), R * 1.25, R * 0.85, 0, 0, 7); g.fill();
@@ -96,7 +96,7 @@ export function drawSwarm(g, e, cx, cy, time) {
 export function bakeSwarm(canvas, flipX, whiten) {
   const CW = 30, CH = 26, ax = 15, ay = 20, frames = [];
   for (const [mode, hurt] of [['idle'], ['rise'], ['angry'], ['calm'], ['idle', 1]]) { const [c, g] = canvas(CW, CH); g.imageSmoothingEnabled = false;
-    drawSwarm(g, { x: ax, y: ay + 1, mode, hp: SWARM.hp, maxHp: SWARM.hp, hurtT: hurt ? 1 : 0 }, 0, 0, 0.35); frames.push(c); }
+    drawSwarm(g, { x: ax, y: ay + 1, mode, hp: SWARM.hp, maxHp: SWARM.hp, hurtT: hurt ? 1 : 0, card: 1 }, 0, 0, 0.35); frames.push(c); }
   const white = frames.map(c => whiten(c));
   return { R: frames, L: frames.map(flipX), white: { R: white, L: white.map(flipX) }, ax, ay, w: SWARM.w, h: SWARM.h };
 }
