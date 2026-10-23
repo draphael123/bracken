@@ -1,0 +1,51 @@
+name: lab-display-flush-proof
+on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/lab-display-flush-proof.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  flush:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [mark-integrity, no-hidden-hits]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: cp tools/lab-display-flush-proof.mjs /tmp/bracken-lab-display-flush-proof.mjs
+      - name: Read back deferred display commands at existing collection boundaries
+        run: |
+          git checkout --detach 3ea61398a0164d0acd1b3e0a8e481b604dfa62eb
+          cp /tmp/bracken-lab-display-flush-proof.mjs tools/lab-display-flush-proof.mjs
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';import {createHash} from 'node:crypto';
+          const p='tools/lab-collect.mjs',s=fs.readFileSync(p,'utf8');
+          const needle='  let count = 0, pending = 0, frames = 0, draws = 0;';
+          if(s.split(needle).length!==2)throw Error('collection boundary changed');
+          const patch=`  const originalCollect = collect;
+            collect = () => { const c = document.getElementById('c'); if (c?.width && c?.height) c.getContext('2d').getImageData(0,0,1,1); originalCollect(); };
+          `;
+          fs.writeFileSync(p,s.replace(needle,patch+needle));fs.mkdirSync('gate-data',{recursive:true});
+          fs.writeFileSync('gate-data/display-flush-source.json',JSON.stringify({source:'3ea61398a0164d0acd1b3e0a8e481b604dfa62eb',file:p,original:createHash('sha256').update(s).digest('hex'),patch,rendererCeilingMb:2816},null,2));
+          JS
+      - name: Exact game, random stream and frame/display pixels
+        run: node tools/lab-display-flush-proof.mjs
+      - name: Complete original audit under original memory ceiling
+        env:
+          CHECK: ${{ matrix.check }}
+          NO_HIDDEN_RESULT: gate-data/no-hidden-hits.measurement.json
+        run: node tools/lab-memory-check.mjs "$CHECK"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: display-flush-${{ matrix.check }}
+          path: gate-data/
