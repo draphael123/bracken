@@ -23,6 +23,7 @@ export const GORM = {
   hp2: 1000,
   chip: 0.4,             /* B15: outside an opening a blade lands at 0.4 (boss-greed GREED.chipBy.king) */
   take: { held: 2, open: 1.25, downed: 1.75, stung: 1.5 },
+  p1take: { held: 1.4, open: 1.0 },   /* (claude/kingsfix2) P1 ONLY: with every rope free at any moment his hall needs a little less per opening (P2's take is unchanged) */
   ward: 3,               /* B3: after an opening, seconds the hangings glance off him (told WARDED, a pale shell) */
   /* P1: THE COURT */
   litterTo: 0.55,        /* at this share of P1's bar the litter breaks and he stands */
@@ -32,7 +33,7 @@ export const GORM = {
   sweepEvery: 2.6, sweepTell: 0.8, sweepReach: 66, sweepCool: 1.1,
   hornEvery: 17, hornTell: 1.1, hornFirst: 9,
   walkV: 44, walkV2: 54,
-  archers: { hp: 1, every: 5.2, tell: 1.0, v: 150, g: 260, dmg: 8, fileIn: 2.4, firstFile: 1.4 },
+  archers: { hp: 1, every: 4.2, tell: 1.0, v: 150, g: 260, dmg: 10, fileIn: 2.4, firstFile: 1.4 },
   cageReset: 5,          /* a cage that MISSED him goes back up after this (its rope stays free: its archers are down) */
   rock: { every: 0.6, vx: 70, vy: -470, mid: { vx: 150, vy: -300 }, low: { vx: 120, vy: -150 }, g: 640 },
   /* THE ESCAPE: the fire behind you (px a world-second; the hero runs ~89) */
@@ -63,10 +64,11 @@ export const GORM_WORDS = ['caught', 'warded', 'penned', 'knocked', 'downed', 's
 export const gormOpen = e => !!e && (e.mode === 'held' || e.mode === 'downed' || e.mode === 'stung' || e.open > 0);
 export function gormTake(e) {
   if (!e) return 1;
-  if (e.mode === 'held') return GORM.take.held;
-  if (e.mode === 'downed') return GORM.take.downed;
-  if (e.mode === 'stung') return GORM.take.stung;
-  if (e.open > 0) return GORM.take.open;
+  const T = e.stage === 'court' && GORM.p1take ? { ...GORM.take, ...GORM.p1take } : GORM.take;
+  if (e.mode === 'held') return T.held;
+  if (e.mode === 'downed') return T.downed;
+  if (e.mode === 'stung') return T.stung;
+  if (e.open > 0) return T.open;
   return null;   /* null: not open - the global rule's chip (0.4) */
 }
 /* THE FLEE: where the fire stands for a hero at x (px), t world-seconds after it was lit at x0 */
