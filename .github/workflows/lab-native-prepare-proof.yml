@@ -1,5 +1,8 @@
 name: lab-native-prepare-proof
 on:
+  push:
+    branches: ['codex/load-perf']
+    paths: ['.github/workflows/lab-native-prepare-proof.yml']
   workflow_dispatch:
     inputs:
       source:
