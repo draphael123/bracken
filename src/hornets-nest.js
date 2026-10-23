@@ -79,13 +79,13 @@ export function buildHornetsNest({ painter, T, TS }) {
   smoke(6, FL - 1);
   sign(3, FL - 1, "THE HONEY-HUNTERS' SMOKE POTS STILL SMOULDER. E TAKES ONE: CARRIED, THE SWARM NEAR YOU GOES QUIET.");
   ground(16, 24, FL - 2);                                   /* a root step under the first swarm */
-  swarm(20, FL - 6, { squad: 'foot' }); hornet(27, FL - 6, { squad: 'foot' });
+  swarm(20, FL - 6, { squad: 'foot' }); hornet(27, FL - 6, { squad: 'foot' }); ent('badger', 30, FL - 1, { face: -1, cnSkin: 'boar', squad: 'foot' });   /* a boar rooting at the pine's foot (the trail's own: its charge is jumped) */
   shelf(8, 13, FL - 3); shelf(27, 31, FL - 3);              /* low roots over the forest floor (a second height) */
   sign(12, FL - 1, 'A SWARM. WALK THROUGH WITH THE POT AND IT SLEEPS. ATTACK THROWS THE POT: WHERE IT BREAKS, THE SMOKE STAYS.');
   coins([18, FL - 4], [21, FL - 4], [23, FL - 4]);
   /* THE FIRST COMB: the buttress root stands four rows over the forest floor - no jump makes it. A comb hangs off the pine's low bough beside it: cut it,
      it drops at the root's foot as a step (REQUIRED) */
-  hang('first', 36, 39, FL - 6, 2, { teach: true });
+  hang('first', 36, 39, FL - 5, 2, { teach: true });   /* (every comb hangs with its foot three rows over the footing you cut it from: a rising cut reaches it) */
   sign(31, FL - 1, 'A COMB HANGS ON ITS STALK. CUT IT AND IT DROPS - WHAT IT LANDS ON, YOU CAN STAND ON.');
   ground(42, 46, FL - 4); ground(47, 50, FL - 6); ground(51, 53, FL - 8); ground(54, 61, FL - 10);   /* the buttress root climbs in knuckles: 62, 60, 58, 56 */
   coins([43, FL - 5], [48, FL - 7], [52, FL - 9]);
@@ -126,11 +126,11 @@ export function buildHornetsNest({ painter, T, TS }) {
   coins([94, 32], [98, 31], [102, 32]);
   /* THE COMB BRIDGE (REQUIRED): an eight-wide gap down into the waste pit; the comb over it is wider than the gap - cut it and it lands across */
   cells.push({ x: 112, y: 33 });                             /* a cell on the lower cells' floor, by the gap */
-  air(118, 125, 34, 39);                                     /* the waste pit, bed at row 40, a stair up its east wall: 40 -> 38 -> 36 -> 34 */
-  block(124, 125, 38, 39); block(125, 125, 36, 37);
-  hang('bridge', 117, 126, 29, 1, { bridge: true });
+  air(118, 125, 34, 39);                                     /* the waste pit, bed at row 40, a stair back up its WEST wall (the near side: a fall is a climb back, never a way across): 40 -> 38 -> 36 -> 34 */
+  block(118, 119, 38, 39); block(118, 118, 36, 37);
+  hang('bridge', 117, 126, 30, 1, { bridge: true });
   sign(113, 33, 'THE COMB OVER THE GAP IS WIDER THAN THE GAP. CUT IT: IT LANDS ACROSS.');
-  coins([120, 39], [122, 39]); ent('silver', 119, 39);   /* the waste pit's bed: whoever falls in finds the nest's loot (a dead end that pays) */
+  coins([121, 39], [123, 39]); ent('silver', 124, 39);   /* the waste pit's bed: whoever falls in finds the nest's loot (a dead end that pays) */
   /* THE WAXED FLOOR: the chamber's far half is fresh comb under darting hornets (slow feet, quick stings) */
   air(141, 168, 24, 31);                                     /* (a step up from 34 to 32 at 141) */
   waxed(142, 156, 32);
@@ -141,10 +141,10 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* THE EXAM: THE NEST-GUARD (an elite: the shieldbearer's machine under a soldier hornet's wax plate - he guards his front) on the floor under the comb
      ledge (plunge him from it), a swarm at his back */
   shelf(157, 162, 29); waxed(157, 162, 29); block(155, 156, 31, 31);   /* the comb ledge three rows over the floor, a knuckle of wax up to it */
-  ent('shield', 161, 31, { face: -1, cnSkin: 'nestguard', elite: true });
-  swarm(164, 28, { squad: 'guard' });
+  ent('shield', 158, 31, { face: -1, cnSkin: 'nestguard', elite: true, gate: 165 });   /* he holds the chamber's way on: a gate across it until he falls (the shrine past it) */
+  swarm(163, 28, { squad: 'guard' });
   sign(143, 31, 'THE NEST-GUARD HOLDS THE CHAMBER. HIS WAX PLATE TURNS A CUT FROM THE FRONT: GO ROUND, OR COME DOWN ON HIM FROM THE LEDGE.');
-  ent('check', 167, 31);
+  ent('check', 168, 31);
 
   // ================= 3. THE COMB STAIR (169-247): REMIX (A14) - the nest's core climbed on comb shelves =================
   /* the core: a tall shaft 169-247, floor 32, up to row 4; the route snakes up it to the brood cells' sill at row 8 */
@@ -165,16 +165,16 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* stage 3: THE CHAIN (REQUIRED) - the wall east of the ledge stands six rows over it. Two combs hang over the ledge's end, one over the other: cut them and
      they stack on the ledge into a stair (the low one is cut from the ledge, the high one from the low one, or the high one first: they stack either way) */
   block(209, 214, 14, 31);
-  hang('chainA', 205, 207, 14, 2, { chain: 'A', land: 18 });
-  hang('chainB', 206, 208, 12, 2, { chain: 'A', land: 16, on: 'chainA' });
+  hang('chainA', 205, 207, 15, 2, { chain: 'A', land: 18 });
+  hang('chainB', 206, 208, 13, 2, { chain: 'A', land: 16, on: 'chainA' });
   hornet(211, 10, { squad: 'chain' });
   sign(198, 19, 'TWO COMBS OVER THE LEDGE. CUT BOTH: THEY STACK INTO A STAIR UP THE WALL.');
   coins([206, 17], [210, 13], [213, 13]);
   /* stage 4 + THE EXAM: a sticky shelf east off the wall top, and the LAST CHAIN up the high wall under a swarm and two hornets (REQUIRED) */
   shelf(215, 222, 14); waxed(215, 222, 14);
   block(223, 247, 8, 31);                                    /* the high wall: its top (row 8) runs east to the brood cells */
-  hang('lastA', 219, 221, 8, 2, { chain: 'B', land: 12 });
-  hang('lastB', 220, 222, 6, 2, { chain: 'B', land: 10, on: 'lastA' });
+  hang('lastA', 219, 221, 9, 2, { chain: 'B', land: 12 });
+  hang('lastB', 220, 222, 7, 2, { chain: 'B', land: 10, on: 'lastA' });
   swarm(217, 10, { squad: 'exam' }); hornet(221, 4, { squad: 'exam' }); hornet(214, 6, { squad: 'exam' }); spitter(228, 7, { squad: 'exam' });
   smoke(212, 13);
   coins([218, 13], [221, 9], [226, 7]);
@@ -222,7 +222,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (const c of combs) { if (c.land !== undefined) continue; let y = c.row + c.rows; for (; y < H; y++) { let hit = false; for (let x = c.x0; x <= c.x1; x++) if (foot(L.grid[y * W + x])) hit = true; if (hit) break; } c.land = y - c.rows; }
   const reachSpans = combs.map(c => [c.x0, c.x1, c.land]);
   /* THE MACHINES AS ENTS (the hands read the arrays; the tools - level-quality's gadgets, the stuck guide - read these): a comb at its middle, a stand, a wax shelf, a brood cell */
-  for (const c of combs) ent('comb', (c.x0 + c.x1) >> 1, c.row, { id: c.id, land: c.land });
+  for (const c of combs) ent('comb', (c.x0 + c.x1) >> 1, c.row + c.rows - 1, { id: c.id, land: c.land });   /* (in its lowest row: where the guide's glint and its done-test look) */
   for (const [x, row] of smokers) ent('smoker', x, row);
   for (const [x0, x1, row] of wax) ent('wax', (x0 + x1) >> 1, row - 1, { x0, x1 });   /* (hallSmokers / hallWax are the boss room's: not listed here) */
   for (const c of cells) ent('broodcell', c.x, c.y);

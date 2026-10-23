@@ -160,6 +160,7 @@ export function makeNestHands(ctx) {
     arc = held(P) && !P.dead ? (() => { const h = handAt(P), a = CT.aimOf('smokepot', P.face || 1, ctx.keys ? ctx.keys() : {}), v = { vx: a.vx, vy: a.vy };
       return CT.predictArc('smokepot', h.x, h.y, v, ctx.solidPx, { stopAt: (x, y) => foeAt(x, y) || (ctx.onQueen && ctx.onQueen(x, y, null)) }); })() : null;
   };
+  W.props = () => combs.map(c => ({ t: 'comb', id: c.id, x: ((c.x0 + c.x1) >> 1) * TS + 8, y: (c.row + c.rows) * TS, on: c.st !== 'hang' }));   /* the shared guide (src/stuck-guide.js): a comb is done once it is cut */
   W.read = () => ({ combs: combs.map(c => ({ id: c.id, st: c.st, x0: c.x0, x1: c.x1, row: c.row, rows: c.rows, y: c.y, land: c.st === 'down' ? Math.round(c.y / TS) : landRow(c) })),
     stands: W.stands(), held: W.held(), pots: pots.map(q => ({ state: q.state, x: q.x, y: q.y })), clouds: clouds.map(c => ({ x: c.x, y: c.y, r: c.r, t: c.t })),
     cells: cells.map(k => ({ x: k.x, y: k.y, st: k.st })), n: { ...W.n } });

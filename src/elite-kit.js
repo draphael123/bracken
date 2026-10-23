@@ -50,13 +50,14 @@ export const AFFIX_FIT = {
   4: ['WARDING', 'SUMMONER', 'UNSTOPPABLE', 'THORNED', 'SHIELDED', 'VENOMOUS', 'SWIFT'],
   5: ['BURNING', 'VENOMOUS', 'SWIFT', 'SUMMONER', 'UNSTOPPABLE', 'SHIELDED'],
 };
-export const LEVEL_FIT = { burning: ['BURNING'], crown: ['BURNING'], marsh: ['VENOMOUS'], spore: ['VENOMOUS'] };
+export const LEVEL_FIT = { burning: ['BURNING'], crown: ['BURNING'], marsh: ['VENOMOUS'], spore: ['VENOMOUS'], hornetsnest: ['VENOMOUS'] };   /* (claude/hornetsnest: the nest stings) */
 export const affixFits = (id, affix, ambush) => !!AFFIX[affix] && !(ambush && affix === 'SUMMONER') && ((AFFIX_FIT[actOf(id).act] || []).includes(affix) || (LEVEL_FIT[id] || []).includes(affix));
 /* THE HAND-PICKED TABLE. One row a placed elite (and one an ambush room's captain, #amb: a room has waves of its own, so no SUMMONER there).
    The key is level|kind, or level|kind#n for the nth of that kind in the level by column. Edit only your own rows. */
 export const AFFIX_AT = {
   'church|gobmage': 'WARDING', 'church|husk#amb': 'THORNED',   /* (claude/litchurch) THE ARCHDEACON's ward over his clergy (kill him first); the sealed vault's grave captain grows bone spines at a mash */
   'wood|shield#amb': 'SHIELDED',   /* (claude/order: the gated warding shield captain at 147 is THE BRIAR MAUL now - src/order-chapters.js ORDER_AT; a knight's affix rides on his ent) */
+  'hornetsnest|shield': 'VENOMOUS',   /* (claude/hornetsnest) THE NEST-GUARD: a soldier hornet - his blows poison (his wax plate is already his front) */
   'fenroad|shield': 'SWIFT',   /* (claude/fenroad) THE BARRICADE's crew captain: quick on his feet, his tells shorter (a shield's guard is already his front) */
   'marsh|thorn#amb': 'VENOMOUS',   /* (claude/order: the far bank's thorned spike goblin is THE BOG BLADE now) */
   'stockade|archer#amb': 'SWIFT',   /* (claude/wardens12: the camp brute is THE HORN LANCE now - his SUMMONER rides his ent) */

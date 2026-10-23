@@ -23,7 +23,7 @@ const OUT = '#1b1626';
 /* THE TABLE. Level id -> kind (the region's landmark). A level not named takes `DEFAULT`. Regions follow src/title-region.js's road order:
    forest, marsh, fungus, crag, mine, storm, coast, canal, inland, desert. */
 export const KIND_OF = {
-  wood: 'forest',
+  wood: 'forest', hornetsnest: 'forest',
   marsh: 'marsh', fenroad: 'marsh', stockade: 'marsh', burning: 'marsh',
   spore: 'fungus', rootway: 'fungus', kings: 'fungus', underleaf: 'fungus',
   scree: 'crag', hanging: 'crag', spire: 'crag', moor: 'crag', skyroad: 'crag',

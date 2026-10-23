@@ -139,7 +139,7 @@ function stepP1(e, S, dt, P, w, hs) {
       gather(e, dt, 0); e.x += e.vx * dt; e.y += e.vy * dt; e.x = Math.max(H.x0 + 6, Math.min(H.x1 - 6, e.x));
       w.hit([e.x - HQ.dive.half, e.x + HQ.dive.half, e.y - 14, e.y + 2], HQ.dive.dmg, 'dive', { key: 'dv' + S.act, blockable: true, blockChip: HQ.dive.chip, onBlock: () => winded(e, S, w) });
       if (e.mode !== 'dive') return;
-      if (e.vy > 0) { const p = S.perches.find(q => q.st !== 'gone' && e.x > q.x0p - 2 && e.x < q.x1p + 2 && e.y >= q.y && e.y - e.vy * dt < q.y + 4);
+      if (e.vy > 0) { const p = S.perches.find(q => q.st !== 'gone' && q.y > (e.diveY0 ?? -1e9) + 8 && e.x > q.x0p - 2 && e.x < q.x1p + 2 && e.y >= q.y && e.y - e.vy * dt < q.y + 4);   /* (a perch she stoops FROM is not one she stoops INTO) */
         if (p) { e.y = p.y; stuck(e, S, w, 'comb'); return; } }
       if (e.y >= floor || e.modeT <= 0) { e.y = Math.min(e.y, floor); e.mode = 'skim'; e.modeT = HQ.dive.skim; e.vx *= 0.25; e.vy = -90; w.dust(e.x, floor, 6); w.number(e.x, e.y - 20, HQ_SAY.pull, '#9aa39a');
         if (!S.told.floor) { S.told.floor = 1; w.say('THE FLOOR DOES NOT HOLD HER STING. STAND ON A COMB PERCH AS SHE DIVES, THEN LEAVE.'); } }
@@ -185,7 +185,7 @@ function release(e, S, P, w, ph) {
   const floor = S.stage === 1 ? S.G.h.floor : S.G.p.floor;
   const ty = P && P.ground && P.y < floor - 4 ? P.y : P && !P.ground ? Math.min(floor, P.y + 6) : floor;
   const dx = (P ? P.x : e.x) - e.x, dy = Math.max(12, ty - e.y), d = Math.hypot(dx, dy) || 1, sp = HQ.dive.speed[ph];
-  e.ux = dx / d; e.uy = dy / d; e.dsp = HQ.dive.v0; e.vx = e.ux * e.dsp; e.vy = e.uy * e.dsp; e.mode = 'dive'; e.modeT = 1.6; w.sound('dive'); e.held = false; void sp;
+  e.diveY0 = e.y; e.ux = dx / d; e.uy = dy / d; e.dsp = HQ.dive.v0; e.vx = e.ux * e.dsp; e.vy = e.uy * e.dsp; e.mode = 'dive'; e.modeT = 1.6; w.sound('dive'); e.held = false; void sp;
 }
 const gather = (e, dt, ph) => { e.dsp = Math.min(HQ.dive.speed[ph], (e.dsp || HQ.dive.v0) + HQ.dive.acc * dt); e.vx = (e.ux || 0) * e.dsp; e.vy = (e.uy || 1) * e.dsp; };
 function stuck(e, S, w, what) { e.mode = 'stuck'; e.modeT = HQ.stuck.t[S.stage === 2 ? 1 : 0]; e.openT0 = e.modeT; e.vx = 0; e.vy = 0; S.n.stuck++; S.act++;
