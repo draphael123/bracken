@@ -25,6 +25,7 @@ import { THIN, CHECK_DROP, CHECK_PIN } from '../src/checkpoint-thin.js';
 import { MAX, MIN, judgeLevel, A10B, judgeLevelA10b } from './checkpoint-rule.mjs';
 export { MAX, MIN };
 const KNOWN = new Map([
+  ['kings', 'THE BURNING WOOD ESCAPE runs 220 route tiles from the last shrine (route 415) with no shrine in it, on purpose: claude/kingsfix2 lengthened it 40 columns (Daniel 10-23 playtest; src/kingswood.js checkRun 240). Delete this line if a shrine is ever put in it.'],
 ]);
 const bad = [], stale = [], rows = [], a10b = []; let total = 0;
 for (const lv of LEVELS) {
