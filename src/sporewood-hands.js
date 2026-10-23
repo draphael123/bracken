@@ -159,8 +159,8 @@ export function makeSporewoodHands(ctx) {
     if (!S) return;
     SW2ART.drawWorld(g, S, SP, cx, cy, VW, VH, time);   /* (claude/sporewood2art) the puffs, spring spores and root knots, drawn (src/redraw/sporewood2_world.js); the buds' and seed caps' own marks are in drawGrowcap */
     /* the area banner */
-    if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(24,12,30,0.62)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
-      g.fillStyle = '#c9a0ff'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); ctx.text(S.banner.name, VW / 2, 31, '#efe6ff', 'center'); g.globalAlpha = 1; }
+    if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4 + 0.2); g.globalAlpha = Math.max(0, Math.min(1, a)); g.fillStyle = 'rgba(16,14,10,0.7)'; g.fillRect(VW / 2 - 110, 26, 220, 18);
+      g.fillStyle = '#7fe8c8'; g.fillRect(VW / 2 - 110, 26, 220, 1); g.fillRect(VW / 2 - 110, 43, 220, 1); g.fillStyle = '#3fb89c'; g.fillRect(VW / 2 - 110, 25, 6, 1); g.fillRect(VW / 2 + 104, 25, 6, 1); ctx.text(S.banner.name, VW / 2, 31, '#e8f4dc', 'center'); g.globalAlpha = 1; }
   };
   /* THE MOTHER'S KNOT on the skyline (src/redraw/sporewood_knot.js) */
   H.drawSky = (g, cx, cy, VW, VH, time, dY) => { const lv = L(); if (ctx.knotArt) ctx.knotArt(g, cx, cy, VW, VH, lv, time, dY); };

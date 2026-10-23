@@ -156,7 +156,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* Cap stalks stand up out of the bog; the way on is along their tops. The bog floor is no death: a stalk's east face has a stair of root shelves, so a fall
      is the climb back to the stalk you fell from. Rollers trundle the bog floor (plunge one: it pops); puffballs on the stalks burst into SPRING SPORES. */
   ground(198, 300, 40);                                                             /* THE BOG FLOOR */
-  for (const [a, b] of [[210, 217], [233, 235]]) pools.push({ x0: a * TS, x1: (b + 1) * TS, y: (37 + DY) * TS + 6, bottom: (41 + DY) * TS, swim: true, clear: true, harm: true, bog: true, foulCol: '#4a3a5e', foulColL: '#9a7ab8', foulColD: '#241a30', wash: 0.55 });   /* (the bog's water: a fall in stings while you climb out) */
+  for (const [a, b] of [[210, 217], [233, 235]]) pools.push({ x0: a * TS, x1: (b + 1) * TS, y: (37 + DY) * TS + 6, bottom: (41 + DY) * TS, swim: true, clear: true, harm: true, bog: true, foulCol: '#5a6a2a', foulColL: '#b4cc68', foulColD: '#1c2814', wash: 0.6 });   /* (the bog's water: a fall in stings while you climb out) */
   ground(199, 205, 28);                                                             /* the lip out of the hollows (to stalk one's foot: no one-column shaft beside it) */
   sign(200, 27, 'THE PUFFBALL BOG. STRIKE A PUFFBALL: IT BURSTS INTO A SPRING SPORE YOU CAN BOUNCE OFF.');
   puff(202, 27); air(200, 204, 37, 39);                                            /* (a hollow under the lip, in off the bog floor) */

@@ -82,3 +82,15 @@ export function bakeCapBrute(base) {
     return c; });
   return pack(frames, base);
 }
+
+/* ------------------------------------------------------------------ HER BROOD: the puffballs she drops (the sporeling's AI and sheet size) ------------------------------------------------------------------ */
+export function bakePuffBrood(base) {
+  const fr = Array.from({ length: base.R.length }, (_, f) => { const [c, g] = canvas(base.R[0].width, base.R[0].height), W = c.width, H = c.height, cx = W >> 1, bob = f < 4 && f % 2 ? 1 : 0, swell = f === 4 ? 1 : 0, rad = 4 + swell, cy0 = H - 4 - rad - bob + (swell ? 0 : 1);
+    const lo = swell ? '#a06a5a' : '#8a8670', base0 = swell ? '#e8b8a8' : '#d6d0bc', hi = swell ? '#fff0e0' : '#f6f2e2';
+    for (let y = -rad; y <= rad; y++) for (let x = -rad; x <= rad; x++) { if (x * x + y * y > rad * rad + 1) continue; const lit = (-x * 0.6 - y * 0.8) / rad; g.fillStyle = lit > 0.4 ? hi : lit > -0.15 ? base0 : lit > -0.6 ? lo : '#5a5444'; g.fillRect(cx + x, cy0 + y, 1, 1); }
+    g.fillStyle = '#5a5444'; g.fillRect(cx - 1, cy0 - rad, 3, 1);                                   /* the vent it will burst from */
+    g.fillStyle = '#1b1626'; g.fillRect(cx - 3, cy0 - 1, 2, 2); g.fillRect(cx + 2, cy0 - 1, 2, 2); g.fillStyle = EYE; g.fillRect(cx - 3, cy0 - 1, 1, 1); g.fillRect(cx + 2, cy0 - 1, 1, 1);   /* eyes with a foxfire glint */
+    g.fillStyle = '#6a5a48'; const s = f < 4 ? (f % 2 ? 1 : -1) : 0; g.fillRect(cx - 3 + s, H - 2, 2, 2); g.fillRect(cx + 1 - s, H - 2, 2, 2);   /* two little feet */
+    outline(c, OUT); return c; });
+  return pack(fr, base);
+}

@@ -96,8 +96,9 @@ function massTile(z, x, y, d) {
     soilFill(g, z, x, y, d <= 1 ? 2 : 1, false);
     g.globalAlpha = [0, 0.05, 0.1, 0.14, 0.18, 0.21, 0.24][Math.min(d, 6)]; rect(g, 0, 0, 16, 16, '#080410'); g.globalAlpha = 1;
     /* THE MYCELIUM: a pale branching vein running through the earth (dim where it is deep), with a foxfire bead where it forks in the hollows and her hollow */
-    if ((hash(x >> 1, y) % 3) === 0) { const y0 = 3 + ((r() * 9) | 0), sl = r() < 0.5 ? -1 : 1; for (let k = 0; k < 16; k++) { const yy = y0 + Math.round(sl * Math.sin(k / 16 * Math.PI) * 3); px2(g, k, yy, mix(P.thread, S[2], Math.min(0.75, d * 0.13))); if (k % 5 === 2) px2(g, k, yy + 1, mix(P.thread, S[2], 0.6)); }
-      if ((z === 1 || z === 5) && r() < 0.5) px2(g, 4 + ((r() * 8) | 0), y0 + 1, GLOW.lo); }
+    if ((hash(x >> 3, y) % 3) === 0) { const yl = 3 + (hash(x, y * 7) % 10), yr = 3 + (hash(x + 1, y * 7) % 10), vc = mix(P.thread, S[2], Math.min(0.78, d * 0.13)), fork = hash(x, y * 3) % 4 === 0;   /* a vein is the same height where two tiles meet, so it runs on across the row */
+      for (let k = 0; k < 16; k++) { const yy = Math.round(yl + (yr - yl) * k / 15 + Math.sin(k * 0.9 + x) * 0.9); px2(g, k, yy, vc); if (k % 5 === 2) px2(g, k, yy + 1, mix(P.thread, S[2], 0.62)); if (fork && k > 5 && k < 12) px2(g, k, yy - 1 - ((k - 5) >> 1), mix(vc, S[2], 0.35)); }
+      if ((z === 1 || z === 5) && hash(x, y) % 3 === 0) px2(g, 4 + (hash(y, x) % 8), yl + 1, GLOW.lo); }
     if (r() < 0.3) stone(g, z, 1 + ((r() * 11) | 0), 1 + ((r() * 11) | 0), 3, 3);
     for (let i = 0; i < 5; i++) px2(g, (r() * 16) | 0, (r() * 16) | 0, r() < 0.5 ? S[0] : S[3]);
     deepTint(g, y, 1.15);

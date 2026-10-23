@@ -111,68 +111,79 @@ function bakeHalo(rgb) { const [c, g] = canvas(48, 48), gr = g.createRadialGradi
 
 /* ------------------------------------------------------------------ placement ------------------------------------------------------------------ */
 const farBase = (VH, dY) => Math.round(VH * 0.52 + dY * 0.05), midBase = (VH, dY) => Math.round(VH * 0.7 + dY * 0.12);
-/* a deterministic list of world-anchored items on a parallax layer: [{ sx, z, hs }] with spacing s and a per-zone density (0..100) */
-function row(cx, VW, f, s, salt, densOf) {
+/* a deterministic list of world-anchored items on a parallax layer: [{ sx, hs }] with spacing s; the caller keeps those under a per-place density (hs >>> 5) % 100 < dens */
+function row(cx, VW, f, s, salt) {
   const out = [], mid = cx + VW / 2, i0 = Math.floor((mid * f - VW / 2 - 70) / s), i1 = Math.ceil((mid * f + VW / 2 + 70) / s);
-  for (let i = i0; i <= i1; i++) { const hs = hash(i, salt), U = i * s + (hs % Math.max(2, s >> 1)), t = (U / f) / 16, z = zoneOf(t); if ((hs >>> 5) % 100 >= densOf(z)) continue;
-    out.push({ sx: Math.round(VW / 2 + U - mid * f), z, hs, t }); }
+  for (let i = i0; i <= i1; i++) { const hs = hash(i, salt), U = i * s + (hs % Math.max(2, s >> 1)); out.push({ sx: Math.round(VW / 2 + U - mid * f), hs }); }
   return out;
 }
+const rgbStr = h => h.slice(1).match(/../g).map(x => parseInt(x, 16)).join(',');
+
+/* ------------------------------------------------------------------ the layers, each drawn for one place at an alpha (a seam draws two) ------------------------------------------------------------------ */
+function farLayer(g, z, al, cx, VW, VH, fb, time) {
+  const P = PAL[z], look = LOOK[z]; g.globalAlpha = 0.5 * al; g.fillStyle = mix(P.haze, P.s[1], 0.55); g.fillRect(0, fb + 6, VW, VH - fb); g.globalAlpha = al;
+  for (const o of row(cx, VW, 0.12, 38, 13)) { if ((o.hs >>> 5) % 100 >= 78) continue; const sp = once('fs' + z + '_' + (o.hs % 5), () => bakeFarShroom(z, o.hs % 5 + 1)); g.drawImage(sp, o.sx - (sp.width >> 1), fb - sp.height + 36 + (o.hs % 6)); }
+  /* far foxfire (the hollows, her hollow, her knot): pin-points twinkling in the dark */
+  if (look.fox > 0.3) for (let i = 0; i < 16; i++) { const hs = hash(i, 301), U = (hs % 900) - 220, sx = Math.round(((U - cx * 0.1) % (VW + 100) + VW + 100) % (VW + 100)) - 50, sy = 14 + (hs >> 5) % Math.round(VH * 0.55), tw = 0.5 + 0.5 * Math.sin(time * (1.1 + (hs % 5) * 0.2) + hs); g.globalAlpha = al * look.fox * 0.7 * tw; R(g, GLOW.c, sx, sy, 1, 1); }
+  g.globalAlpha = 1;
+}
+function midLayer(g, z, al, cx, VW, VH, mb, time) {
+  const look = LOOK[z]; g.globalAlpha = al;
+  for (const o of row(cx, VW, 0.3, 54, 71)) { if ((o.hs >>> 5) % 100 >= look.dens) continue; const v = o.hs % 4, w = 9 + (o.hs % 4) * 3, hz = z === 5 ? 0.12 : 0.22;
+    const sp = once('ms' + z + '_' + v, () => bakeStem(z, v + 1, w, 300, hz)), X = o.sx - (sp.width >> 1), Y = mb - 300 + 4 - (o.hs & 3);
+    g.drawImage(sp, X, Y);
+    if (z === 1 || z === 5) { for (let q = 0; q < 2; q++) { const fx = o.sx + ((o.hs >> (q * 3)) % 2 ? 1 : -1) * (w + 2), fy = mb - 40 - ((o.hs >> (q + 4)) % 120), tw = 0.55 + 0.45 * Math.sin(time * 1.7 + o.hs * 0.1 + q * 2);
+        g.drawImage(once('fx' + q, () => bakeFox(q + 1)), fx - 8, fy - 7); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.5 * tw * al; g.drawImage(once('halo', () => bakeHalo(GLOW.rgb)), fx - 24, fy - 24); g.restore(); g.globalAlpha = al; } }
+    if (z === 3) { const wb = once('web' + (o.hs % 3), () => bakeWeb(o.hs % 3 + 1)); g.globalAlpha = 0.55 * al; g.drawImage(wb, o.sx + w - 8, mb - 200 - (o.hs % 60)); g.globalAlpha = al;
+      if (o.hs % 3 === 0) { const sw = Math.round(Math.sin(time * 0.7 + o.hs) * 1.5); g.globalAlpha = 0.85 * al; g.drawImage(once('cc', () => bakeCocoon(3)), o.sx - 7 + sw, mb - 190 - (o.hs % 50)); g.globalAlpha = al; } }
+    if (z === 2) { const rd = once('rd' + (o.hs % 3), () => bakeReed(2, o.hs % 3, 70 + (o.hs % 3) * 20)); for (let q = 0; q < 3; q++) g.drawImage(rd, o.sx + 16 + q * 7 + Math.round(Math.sin(time * 0.8 + q + o.hs) * 1), mb - rd.height + 4 + q * 2); } }
+  /* THE BOG'S PUFFBALLS: great pale spheres along the far bank, between the stems */
+  if (z === 2) for (const o of row(cx, VW, 0.3, 70, 233)) { if ((o.hs >>> 5) % 100 >= 80) continue; const rad = 10 + (o.hs % 3) * 5, sp = once('pb' + (o.hs % 3), () => bakePuff(2, o.hs % 3 + 1, rad)), bob = Math.round(Math.sin(time * 0.9 + o.hs) * 0.8); g.globalAlpha = 0.92 * al; g.drawImage(sp, o.sx + 22 - (sp.width >> 1), mb - sp.height + 6 + bob); g.globalAlpha = al; }
+  /* HER ROOTS (the knot's approach): great roots arching over the way */
+  if (z === 4) for (const o of row(cx, VW, 0.3, 110, 419)) { if ((o.hs >>> 5) % 100 >= 90) continue; const sp = once('ra' + (o.hs % 2), () => bakeRootArch(o.hs % 2 + 1)); g.globalAlpha = 0.9 * al; g.drawImage(sp, o.sx - 75, mb - 186); g.globalAlpha = al; }
+  g.globalAlpha = 1;
+}
+function gillRoof(g, z, al, cx, dY) { const zz = z === 4 ? 5 : z, depth = zz === 5 ? 56 : 40, sp = once('gr' + zz, () => bakeGills(zz, 5, depth)), so = ((-(cx * 0.3)) % 160 + 160) % 160, top = zz === 5 ? 0 : -8;
+  g.globalAlpha = al * (zz === 1 ? 0.92 : 0.85); for (let X = -160 + so; X < 400; X += 160) g.drawImage(sp, Math.round(X), top); g.globalAlpha = 1; }
 
 /* ------------------------------------------------------------------ the frame ------------------------------------------------------------------ */
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full, knotFn) {
-  const mid = cx + VW / 2, tM = mid / 16, A = palAt(tM), z = A.z, P = A.P, Q = A.Q, fb = farBase(VH, dY), mb = midBase(VH, dY), look = LOOK[z];
+  const mid = cx + VW / 2, tM = mid / 16, A = palAt(tM), z = A.z, nz = A.nz, P = A.P, Q = A.Q, fb = farBase(VH, dY), mb = midBase(VH, dY), look = LOOK[z], seam = A.k > 0.02;
   /* SKY / BACK COLOUR: the place's two colours, a seam crossfade to the next place */
   { const c0 = mix(P.sky[0], Q.sky[0], A.k), c1 = mix(P.sky[1], Q.sky[1], A.k); const gr = g.createLinearGradient(0, 0, 0, VH); gr.addColorStop(0, c0); gr.addColorStop(0.75, c1); gr.addColorStop(1, mix(c1, '#000000', 0.2)); g.fillStyle = gr; g.fillRect(0, 0, VW, VH); }
   /* LIGHT SHAFTS (the glade's morning, a little in the bog and the larder): slow slanted bars, additive */
-  { const rays = look.rays; if (rays > 0.01) { g.save(); g.globalCompositeOperation = 'lighter';
+  { const rays = look.rays * (1 - A.k) + LOOK[nz].rays * A.k; if (rays > 0.01) { g.save(); g.globalCompositeOperation = 'lighter';
     for (let i = 0; i < 5; i++) { const x0 = ((i * 83 - cx * 0.08 + time * 1.5 * (i % 2 ? 1 : -1)) % (VW + 120) + VW + 120) % (VW + 120) - 60, w = 14 + (i * 7) % 16; g.globalAlpha = rays * (0.6 + 0.4 * Math.sin(time * 0.4 + i * 2));
       g.fillStyle = mix(P.sky[1], '#fff6d0', 0.55); g.beginPath(); g.moveTo(x0, 0); g.lineTo(x0 + w, 0); g.lineTo(x0 + w - 46, VH); g.lineTo(x0 - 46, VH); g.fill(); } g.restore(); g.globalAlpha = 1; } }
   /* FAR (0.12): hazy toadstools, a haze floor */
-  if (full) {
-    g.globalAlpha = 0.5; g.fillStyle = mix(P.haze, P.s[1], 0.55); g.fillRect(0, fb + 6, VW, VH - fb); g.globalAlpha = 1;
-    for (const o of row(cx, VW, 0.12, 38, 13, () => 78)) { const sp = once('fs' + o.z + '_' + (o.hs % 5), () => bakeFarShroom(o.z, o.hs % 5 + 1)); g.drawImage(sp, o.sx - (sp.width >> 1), fb - sp.height + 36 + (o.hs % 6)); }
-    /* far foxfire (the hollows, her hollow, her knot): pin-points twinkling in the dark */
-    if (look.fox > 0.3) for (let i = 0; i < 16; i++) { const hs = hash(i, 301), U = (hs % 900) - 220, sx = Math.round(((U - cx * 0.1) % (VW + 100) + VW + 100) % (VW + 100)) - 50, sy = 14 + (hs >> 5) % Math.round(VH * 0.55), tw = 0.5 + 0.5 * Math.sin(time * (1.1 + (hs % 5) * 0.2) + hs); g.globalAlpha = look.fox * 0.7 * tw; R(g, GLOW.c, sx, sy, 1, 1); g.globalAlpha = 1; }
-  }
+  if (full) { farLayer(g, z, 1 - A.k, cx, VW, VH, fb, time); if (seam) farLayer(g, nz, A.k, cx, VW, VH, fb, time); }
   /* THE MOTHER'S KNOT on the skyline: behind the mid row, over the far line (the caller's callback) */
   if (knotFn) knotFn();
   /* a pale bank of the place's air between the far line and the mid row */
-  { const ph = Math.sin(time * 0.12) * 12, mc = P.haze.slice(1).match(/../g).map(h => parseInt(h, 16)).join(','); g.globalAlpha = Math.min(1, 0.5 * look.mist + 0.12); g.drawImage(once('mA' + z, () => bakeMist(mc, 0.6)), 0, 0, 1, 48, Math.round(ph) - 14, fb - 24, VW + 28, 52); g.globalAlpha = 1; }
-  /* THE GILL ROOF (the hollows, her hollow): the undersides of the great caps across the top of the view */
-  if (z === 1 || z === 5 || (z === 4 && A.k > 0)) { const k = z === 4 ? 1 : 1, depth = z === 5 ? 56 : 40, sp = once('gr' + (z === 4 ? 5 : z), () => bakeGills(z === 4 ? 5 : z, 5, depth)), so = ((-(cx * 0.3)) % 160 + 160) % 160, top = Math.round(-6 - Math.min(14, Math.max(0, 40 - dY * 0.1)) * 0) - (z === 5 ? 0 : 8);
-    g.globalAlpha = k * (z === 1 ? 0.92 : 0.85); for (let X = -160 + so; X < VW; X += 160) g.drawImage(sp, Math.round(X), top); g.globalAlpha = 1; }
-  /* MID (0.30): the stems of the place - and each place's own things on the stems */
-  { const dens = zz => LOOK[zz].dens;
-    for (const o of row(cx, VW, 0.3, 54, 71, dens)) { const v = o.hs % 4, w = 9 + (o.hs % 4) * 3, hz = 0.28;
-      const sp = once('ms' + o.z + '_' + v, () => bakeStem(o.z, v + 1, w, 300, hz)), X = o.sx - (sp.width >> 1), Y = mb - 300 + 4 - (o.hs & 3);
-      g.drawImage(sp, X, Y);
-      /* per place */
-      if (o.z === 1 || o.z === 5) { for (let q = 0; q < 2; q++) { const fx = o.sx + ((o.hs >> (q * 3)) % 2 ? 1 : -1) * (w + 2), fy = mb - 40 - ((o.hs >> (q + 4)) % 120), tw = 0.55 + 0.45 * Math.sin(time * 1.7 + o.hs * 0.1 + q * 2);
-          g.drawImage(once('fx' + q, () => bakeFox(q + 1)), fx - 8, fy - 7); g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.5 * tw; g.drawImage(once('halo', () => bakeHalo(GLOW.rgb)), fx - 24, fy - 24); g.restore(); g.globalAlpha = 1; } }
-      if (o.z === 3) { const wb = once('web' + (o.hs % 3), () => bakeWeb(o.hs % 3 + 1)); g.globalAlpha = 0.55; g.drawImage(wb, o.sx + w - 8, mb - 200 - (o.hs % 60)); g.globalAlpha = 1;
-        if (o.hs % 3 === 0) { const sw = Math.round(Math.sin(time * 0.7 + o.hs) * 1.5); g.globalAlpha = 0.85; g.drawImage(once('cc', () => bakeCocoon(3)), o.sx - 7 + sw, mb - 190 - (o.hs % 50)); g.globalAlpha = 1; } }
-      if (o.z === 2) { const rd = once('rd' + (o.hs % 3), () => bakeReed(2, o.hs % 3, 70 + (o.hs % 3) * 20)); for (let q = 0; q < 3; q++) g.drawImage(rd, o.sx + 16 + q * 7 + Math.round(Math.sin(time * 0.8 + q + o.hs) * 1), mb - rd.height + 4 + q * 2); } }
-    /* THE BOG'S PUFFBALLS: great pale spheres along the far bank, between the stems (and a few in the larder's dark) */
-    for (const o of row(cx, VW, 0.3, 70, 233, zz => zz === 2 ? 80 : 0)) { const rad = 10 + (o.hs % 3) * 5, sp = once('pb' + (o.hs % 3), () => bakePuff(2, o.hs % 3 + 1, rad)), bob = Math.round(Math.sin(time * 0.9 + o.hs) * 0.8); g.globalAlpha = 0.92; g.drawImage(sp, o.sx + 22 - (sp.width >> 1), mb - sp.height + 6 + bob); g.globalAlpha = 1; }
-    /* HER ROOTS (the knot's approach): great roots arching over the way */
-    for (const o of row(cx, VW, 0.3, 110, 419, zz => zz === 4 ? 90 : 0)) { const sp = once('ra' + (o.hs % 2), () => bakeRootArch(o.hs % 2 + 1)); g.globalAlpha = 0.9; g.drawImage(sp, o.sx - 75, mb - 186); g.globalAlpha = 1; } }
+  { const ph = Math.sin(time * 0.12) * 12, mc = rgbStr(mix(P.haze, Q.haze, A.k)); g.globalAlpha = Math.min(1, 0.5 * look.mist + 0.12); g.drawImage(once('mA' + mc, () => bakeMist(mc, 0.6)), 0, 0, 1, 48, Math.round(ph) - 14, fb - 24, VW + 28, 52); g.globalAlpha = 1; }
+  /* THE GILL ROOF (the hollows, her knot's end, her hollow): the undersides of the great caps across the top of the view */
+  if (z === 1 || z === 5 || z === 4) gillRoof(g, z, z === 4 ? 0.6 : 1, cx, dY);
+  /* MID (0.30): the stems of the place - and each place's own things on the stems (a seam draws both places) */
+  midLayer(g, z, 1 - A.k, cx, VW, VH, mb, time); if (seam) midLayer(g, nz, A.k, cx, VW, VH, mb, time);
   /* a low bank of mist laid over the mid foot */
-  { const ph = Math.sin(time * 0.17 + 1) * 16, mc = P.haze.slice(1).match(/../g).map(h => parseInt(h, 16)).join(','); g.globalAlpha = Math.min(1, 0.7 * look.mist); g.drawImage(once('mB' + z, () => bakeMist(mc, 0.5)), 0, 0, 1, 48, Math.round(ph) - 16, mb - 30, VW + 32, 48); g.globalAlpha = 1; }
+  { const ph = Math.sin(time * 0.17 + 1) * 16, mc = rgbStr(mix(P.haze, Q.haze, A.k)); g.globalAlpha = Math.min(1, 0.7 * look.mist); g.drawImage(once('mB' + mc, () => bakeMist(mc, 0.5)), 0, 0, 1, 48, Math.round(ph) - 16, mb - 30, VW + 32, 48); g.globalAlpha = 1; }
 }
 
 /* ---------------- NEAR (0.55): the dark stems you walk past, hanging gills over the top, foxfire fireflies ---------------- */
+const nearStem = (z, v, w) => once('ns' + z + '_' + v, () => { const [c, g2] = canvas(w * 2 + 40, 250); g2.drawImage(bakeStem(z, v + 9, w, 250, 0), 0, 0); const img = g2.getImageData(0, 0, c.width, c.height), d = img.data; for (let i = 0; i < d.length; i += 4) { d[i] *= 0.42; d[i + 1] *= 0.42; d[i + 2] *= 0.46; } g2.putImageData(img, 0, 0); return c; });
 export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
-  const mid = cx + VW / 2, tM = mid / 16, f = 0.55, z0 = zoneOf(tM), yoff = Math.round(VH - 250 + Math.min(80, dY * 0.16));
-  for (const o of row(cx, VW, f, 130, 41, zz => LOOK[zz].dens * 0.5)) { const w = 12 + (o.hs % 3) * 4, sp = once('ns' + o.z + '_' + (o.hs % 3), () => { const [c, g2] = canvas(w * 2 + 40, 250); g2.drawImage(bakeStem(o.z, o.hs % 3 + 9, w, 250, 0), 0, 0); const img = g2.getImageData(0, 0, c.width, c.height), d = img.data; for (let i = 0; i < d.length; i += 4) { d[i] *= 0.42; d[i + 1] *= 0.42; d[i + 2] *= 0.46; } g2.putImageData(img, 0, 0); return c; });
-    g.globalAlpha = 0.72; g.drawImage(sp, o.sx - (sp.width >> 1), yoff); g.globalAlpha = 1; }
-  /* gills / threads hanging across the top edge (the hollows and her hollow) and mycelium curtains elsewhere, swaying */
-  if (z0 === 1 || z0 === 5 || z0 === 4) { const s2 = 100, j0 = Math.floor((mid * 0.5 - VW / 2 - 40) / s2), j1 = Math.ceil((mid * 0.5 + VW / 2 + 40) / s2);
-    for (let j = j0; j <= j1; j++) { const hs = hash(j, 59), U = j * s2 + (hs % 50); if (zoneOf((U / 0.5) / 16) === 2) continue; const sx = Math.round(VW / 2 + U - mid * 0.5), sw = Math.round(Math.sin(time * 0.5 + hs * 0.02) * 1.5), P = PAL[zoneOf((U / 0.5) / 16)];
-      const sp = once('hg' + (hs % 3) + '_' + zoneOf((U / 0.5) / 16), () => { const [c, g2] = canvas(48, 60), r = mulberry(hs % 3 + 5); R(g2, mix(P.cap[0], '#000', 0.5), 0, 0, 48, 3); for (let i = 0; i < 14; i++) { const x = 2 + ((r() * 44) | 0), len = 8 + ((r() * 40) | 0) * (1 - Math.abs(x - 24) / 40); for (let k = 0; k < len; k++) R(g2, k > len - 3 ? P.thread : mix(P.cap[1], '#000', 0.4 + 0.2 * (k / len)), x, 2 + k, 1, 1); } return c; });
-      g.globalAlpha = 0.8; g.drawImage(sp, sx - 24 + sw, -22 + Math.min(0, Math.round(dY * 0.05) - 4)); g.globalAlpha = 1; } }
+  const mid = cx + VW / 2, tM = mid / 16, A = palAt(tM), yoff = Math.round(VH - 250 + Math.min(80, dY * 0.16));
+  for (const [z, al] of A.k > 0.02 ? [[A.z, 1 - A.k], [A.nz, A.k]] : [[A.z, 1]]) {
+    for (const o of row(cx, VW, 0.55, 130, 41)) { if ((o.hs >>> 5) % 100 >= LOOK[z].dens * 0.5) continue; const w = 12 + (o.hs % 3) * 4, sp = nearStem(z, o.hs % 3, w); g.globalAlpha = 0.72 * al; g.drawImage(sp, o.sx - (sp.width >> 1), yoff); }
+    /* gills / threads hanging across the top edge (the hollows, her knot and her hollow), swaying */
+    if (z === 1 || z === 5 || z === 4) { const P = PAL[z === 4 ? 5 : z];
+      for (const o of row(cx, VW, 0.5, 100, 59)) { if ((o.hs >>> 5) % 100 >= 70) continue; const hs = o.hs, sw = Math.round(Math.sin(time * 0.5 + hs * 0.02) * 1.5);
+        const sp = once('hg' + (hs % 3) + '_' + (z === 4 ? 5 : z), () => { const [c, g2] = canvas(48, 60), r = mulberry(hs % 3 + 5); R(g2, mix(P.cap[0], '#000', 0.5), 0, 0, 48, 3); for (let i = 0; i < 14; i++) { const x = 2 + ((r() * 44) | 0), len = 8 + ((r() * 40) | 0) * (1 - Math.abs(x - 24) / 40); for (let k = 0; k < len; k++) R(g2, k > len - 3 ? P.thread : mix(P.cap[1], '#000', 0.4 + 0.2 * (k / len)), x, 2 + k, 1, 1); } return c; });
+        g.globalAlpha = 0.8 * al; g.drawImage(sp, o.sx - 24 + sw, -22 + Math.min(0, Math.round(dY * 0.05) - 4)); } }
+  }
+  g.globalAlpha = 1;
   /* foxfire fireflies drifting in the hollows, her knot's approach and her hollow */
-  const fox = LOOK[z0].fox; if (fox > 0.3) for (let i = 0; i < 9; i++) { const hs = hash(i, 777), a = time * (0.25 + (hs % 5) * 0.05) + hs, X = ((hs % 400) - cx * 0.55 % 400 + 400) % 400 - 40 + Math.round(Math.sin(a) * 14), Y = 20 + (hs >> 4) % Math.round(VH * 0.6) + Math.round(Math.sin(a * 1.3) * 8), tw = 0.5 + 0.5 * Math.sin(time * 2 + hs);
+  const fox = LOOK[A.z].fox; if (fox > 0.3) for (let i = 0; i < 9; i++) { const hs = hash(i, 777), a = time * (0.25 + (hs % 5) * 0.05) + hs, X = ((hs % 400) - cx * 0.55 % 400 + 400) % 400 - 40 + Math.round(Math.sin(a) * 14), Y = 20 + (hs >> 4) % Math.round(VH * 0.6) + Math.round(Math.sin(a * 1.3) * 8), tw = 0.5 + 0.5 * Math.sin(time * 2 + hs);
     g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.35 * fox * tw; g.drawImage(once('halo', () => bakeHalo(GLOW.rgb)), X - 12, Y - 12, 24, 24); g.restore(); g.globalAlpha = fox * (0.5 + 0.5 * tw); R(g, GLOW.hi, X, Y, 1, 1); g.globalAlpha = 1; }
 }
 export { ZONES };

@@ -34,22 +34,24 @@ export function bakeKnot() {
 
 export function drawKnot(g, cx, cy, VW, VH, L, time, dY) {
   const Wpx = L.W * 16, mid = cx + VW / 2, kx = (L.knot && L.knot.x) || Wpx * 0.92, p = Math.max(0, Math.min(1, mid / kx)), dd = (dY || 0) * 0.3;
+  const fade = L.arena ? Math.max(0, Math.min(1, (L.arena.x0 + 6 * 16 - mid) / (36 * 16))) : 1;   /* over her hollow the real one stands: the landmark gives way to her */
+  if (fade <= 0.01) return;
   const sc = 0.46 + p * 0.95, hh = Math.round(240 * sc), ww = Math.round(260 * sc);
   const gx = Math.round(VW * 0.72 - ww / 2 - (p - 0.5) * 80), gy = Math.round(VH - 56 - hh + dd + 30 * (1 - p));
   const haze = mix('#9ab0a0', '#6a4878', p);   /* pale and grey-green in the glade's air, plum in hers */
-  g.globalAlpha = 0.5 + p * 0.4; g.drawImage(once('knot', bakeKnot), 0, 0, 260, 240, gx, gy, ww, hh);
+  g.globalAlpha = (0.5 + p * 0.4) * fade; g.drawImage(once('knot', bakeKnot), 0, 0, 260, 240, gx, gy, ww, hh);
   /* the air between: the glade's haze laid over the far thing, thinning as you come */
-  g.globalAlpha = 0.38 * (1 - p); g.fillStyle = haze; g.fillRect(gx, gy, ww, hh); g.globalAlpha = 1;
+  g.globalAlpha = 0.38 * (1 - p) * fade; g.fillStyle = haze; g.fillRect(gx, gy, ww, hh); g.globalAlpha = 1;
   /* her gills lit (foxfire cream), and THE KNOT burning brighter as you come */
   const pulse = 0.5 + 0.5 * Math.sin(time * 1.6);
-  g.globalAlpha = (0.2 + 0.3 * p) * (0.7 + 0.3 * pulse); R(g, '#d6fff0', gx + 22 * sc, gy + 82 * sc, 216 * sc, 5 * sc);
+  g.globalAlpha = (0.2 + 0.3 * p) * (0.7 + 0.3 * pulse) * fade; R(g, '#d6fff0', gx + 22 * sc, gy + 82 * sc, 216 * sc, 5 * sc);
   const kxs = gx + 130 * sc, kys = gy + 152 * sc, kr = (10 + 9 * p) * sc * (0.9 + 0.2 * pulse);
   g.save(); g.globalCompositeOperation = 'lighter';
-  g.globalAlpha = (0.2 + 0.4 * p) * (0.6 + 0.4 * pulse); g.fillStyle = GLOW.mid; g.beginPath(); g.ellipse(kxs, kys, kr * 2.4, kr * 1.5, 0, 0, 7); g.fill();
-  g.globalAlpha = (0.35 + 0.5 * p); g.fillStyle = GLOW.c; g.beginPath(); g.ellipse(kxs, kys, kr * 1.1, kr * 0.7, 0, 0, 7); g.fill();
-  g.restore(); g.globalAlpha = (0.55 + 0.4 * p); g.fillStyle = GLOW.hi; g.beginPath(); g.ellipse(kxs, kys, kr * 0.45, kr * 0.28, 0, 0, 7); g.fill();
+  g.globalAlpha = (0.2 + 0.4 * p) * (0.6 + 0.4 * pulse) * fade; g.fillStyle = GLOW.mid; g.beginPath(); g.ellipse(kxs, kys, kr * 2.4, kr * 1.5, 0, 0, 7); g.fill();
+  g.globalAlpha = (0.35 + 0.5 * p) * fade; g.fillStyle = GLOW.c; g.beginPath(); g.ellipse(kxs, kys, kr * 1.1, kr * 0.7, 0, 0, 7); g.fill();
+  g.restore(); g.globalAlpha = (0.55 + 0.4 * p) * fade; g.fillStyle = GLOW.hi; g.beginPath(); g.ellipse(kxs, kys, kr * 0.45, kr * 0.28, 0, 0, 7); g.fill();
   /* spore falling off the rim like a fine rain */
   for (let i = 0; i < 14; i++) { const t = (time * 0.1 + i / 14) % 1, x = gx + (26 + ((i * 53) % 210)) * sc + Math.sin(t * 6 + i) * 5 * sc, y = gy + (88 + t * 130) * sc;
-    g.globalAlpha = (1 - t) * (0.3 + p * 0.35); R(g, i % 2 ? '#e8d8f4' : '#fff1ff', x, y, Math.max(1, sc * 1.5), Math.max(1, sc * 1.5)); }
+    g.globalAlpha = (1 - t) * (0.3 + p * 0.35) * fade; R(g, i % 2 ? '#e8d8f4' : '#fff1ff', x, y, Math.max(1, sc * 1.5), Math.max(1, sc * 1.5)); }
   g.globalAlpha = 1;
 }

@@ -15,7 +15,7 @@ const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, 
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.max(1, Math.round(w)), Math.max(1, Math.round(h))); };
 const rc = Math.round;
 const TS = 16;
-const halo = (rgb) => once('halo' + rgb, () => { const [c, g] = canvas(64, 64), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(' + rgb + ',0.55)'); gr.addColorStop(0.45, 'rgba(' + rgb + ',0.18)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c; });
+export const halo = (rgb) => once('halo' + rgb, () => { const [c, g] = canvas(64, 64), gr = g.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(' + rgb + ',0.55)'); gr.addColorStop(0.45, 'rgba(' + rgb + ',0.18)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)'); g.fillStyle = gr; g.fillRect(0, 0, 64, 64); return c; });
 
 /* ------------------------------------------------------------------ THE BUDS ------------------------------------------------------------------ */
 const STALK = ['#6a6248', '#cdbf9a', '#efe6c8'];
@@ -160,3 +160,18 @@ export function decoOf(e) {
 }
 /* bake the lot at the level load (no hitch in the first frames) */
 export function warm() { for (let z = 0; z < 6; z++) { for (let v = 0; v < 3; v++) { toadCluster(z, v); podSpr(z, v); tinyCapSpr(z, v); rootTangle(z, v); } } bakeLantern(true); bakeLantern(false); bakePuffSpr('mend'); bakePuffSpr('spring'); halo(GLOW.rgb); halo('255,211,107'); }
+
+/* ------------------------------------------------------------------ THE STALK SUPPORT: what a bracket-fungus shelf stands on (src/forest-supports.js kind 'stalk') ------------------------------------------------------------------ */
+export function drawStalkSupport(g, p, cx, cy) {
+  const h0 = rc(p.y * 16 + 10 - cy), bot = rc(p.bottom * 16 - cy), len = bot - h0; if (len < 3) return;
+  const z = zoneOf(p.x), P = PAL[z], x = rc(p.x * 16 + 8 - cx), w = 6, sd = (p.x * 7 + p.y * 13) & 7, tip = p.free ? Math.min(len, 22) : 0, body = len - tip;
+  const st = [mix(P.stem[0], '#000000', 0.25), mix(P.stem[1], '#d8cfae', 0.35), mix(P.stem[2], '#f0e8cc', 0.4)];
+  R(g, st[0], x - 3, h0, w, body); R(g, st[1], x - 3, h0, w - 2, body); R(g, st[2], x - 3, h0, 1, body);
+  for (let y = h0 + 4 + (sd & 3); y < h0 + body - 2; y += 7) R(g, st[0], x - 3, y, w, 1);   /* fibres */
+  /* the ring under the shelf, and a little cap-shaped corbel where the stalk meets it */
+  R(g, '#e8ddc0', x - 5, h0 + 2, 10, 1); R(g, '#a89870', x - 5, h0 + 3, 10, 1); for (let k = -4; k <= 4; k += 2) R(g, '#8c7c58', x + k, h0 + 4, 1, 2);
+  R(g, P.cap[1], x - 6, h0 - 2, 12, 2); R(g, P.cap[2], x - 6, h0 - 2, 12, 1);
+  for (let t = 0; t < tip; t += 2) { const f = 1 - t / tip, ww = Math.max(1, Math.round(w * f)), xx = x - (ww >> 1); R(g, st[0], xx - 1, h0 + body + t, ww, 2); R(g, st[1], xx - 1, h0 + body + t, Math.max(1, ww - 1), 2); }
+  if (!p.free) { R(g, st[0], x - 6, bot - 4, 12, 4); R(g, st[1], x - 5, bot - 4, 10, 1); R(g, P.thread, x - 9, bot - 1, 3, 1); R(g, P.thread, x + 6, bot - 1, 4, 1); R(g, P.thread, x - 7, bot - 2, 1, 1); }   /* the foot flares and runs off into mycelium */
+  else for (let d = 0; d < 3; d++) R(g, P.thread, x + d * 2 - 3, h0 + body + tip - 2, 1, 4 - d);
+}

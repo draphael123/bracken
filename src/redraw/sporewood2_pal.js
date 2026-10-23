@@ -21,7 +21,7 @@ export const PAL = [
   { s: ['#0e100a', '#1a2012', '#2c361d', '#434f2c', '#5f6e3d', '#82945a', '#aabc7c'], fung: ['#34502a', '#5a8a3e', '#a4d064'], thread: '#c8d2b0', sky: ['#4a5a48', '#8a9c80'], stem: ['#4a5238', '#788060', '#a8b088'], cap: ['#5a6a48', '#8a9c66', '#c0d08c'], haze: '#8a9c86' },
   { s: ['#12100c', '#241f17', '#3c342a', '#594d3e', '#7c6d58', '#a29278', '#cdbf9e'], fung: ['#3a3a2c', '#6a6a52', '#b4b494'], thread: '#ece8d8', sky: ['#464a44', '#8a8c7c'], stem: ['#4a463c', '#78725e', '#aaa488'], cap: ['#5a5244', '#8e8468', '#c4b894'], haze: '#8c8c7c' },
   { s: ['#150b0b', '#291511', '#43231b', '#64352a', '#874f38', '#ab714e', '#d19a6e'], fung: ['#4a2a2a', '#8a4a4a', '#d49a8a'], thread: '#e6c8b0', sky: ['#3a2630', '#7a5460'], stem: ['#4a2c2c', '#7a4a42', '#a8786a'], cap: ['#5a3446', '#8e5870', '#c48ca4'], haze: '#8a6a74' },
-  { s: ['#0d0810', '#1b0f1f', '#2f182d', '#4a2640', '#6b3a59', '#8e5575', '#b37c98'], fung: ['#3a1e44', '#7a3e8a', '#c488d0'], thread: '#d8b8e0', sky: ['#241430', '#5a3060'], stem: ['#3a2236', '#684462', '#98708e'], cap: ['#4e2a5e', '#7e4e94', '#b488c8'], haze: '#6a4878' },
+  { s: ['#0d0810', '#1b0f1f', '#2f182d', '#4a2640', '#6b3a59', '#8e5575', '#b37c98'], fung: ['#3a1e44', '#7a3e8a', '#c488d0'], thread: '#d8b8e0', sky: ['#0e060f', '#2a1230'], stem: ['#1e1019', '#33202e', '#503448'], cap: ['#3a2046', '#5e3a74', '#8a64a4'], haze: '#3a2248' },
 ];
 const rgbOf = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const hx = n => Math.max(0, Math.min(255, Math.round(n))).toString(16).padStart(2, '0');
@@ -32,6 +32,6 @@ export function palAt(tx) {
   const z = zoneOf(tx), P = PAL[z]; let near = -1, k = 0;
   if (z > 0 && tx - ZONES[z].x0 < 14) { near = z - 1; k = 0.5 * (1 - (tx - ZONES[z].x0) / 14); }
   else if (z < ZONES.length - 1 && ZONES[z].x1 - tx < 14) { near = z + 1; k = 0.5 * (1 - (ZONES[z].x1 - tx) / 14); }
-  if (near < 0) return { z, P, k: 0, Q: P };
-  return { z, P, k, Q: PAL[near] };
+  if (near < 0) return { z, P, k: 0, Q: P, nz: z };
+  return { z, P, k, Q: PAL[near], nz: near };
 }

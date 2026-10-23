@@ -17,6 +17,7 @@
 // main.js owns the world and calls: owns(e), update(e, dt), take(e, fromX) (a blow's share), knotHit(p) (a plunge on her knot), strike(hb) (a blow on a bloom),
 // broodDied(e, heavy), draw(g, e, cx, cy, time) (her and her tells), drawWorld(g, cx, cy, time) (the floor's tells), read() (tools and the lab).
 import { KEY_ROWS } from './boss-read.js';
+import * as MART from './redraw/sporewood2_mother.js'; import { drawCloud as drawSporeCloud, halo as foxHalo } from './redraw/sporewood2_world.js'; import { GLOW as FOX } from './redraw/sporewood2_pal.js';   /* (claude/sporewood2art) her baked frames, one per windup and release, and her floor effects */
 export const MC = {
   hp: 1150,                                   /* her bar (tuned with flasks, campaign level: see the lane report) */
   take: 0.4, openMul: 2, openT: 3.5, wardT: 3.0, wind: 0.7,
@@ -48,6 +49,7 @@ export function makeMotherCap(ctx) {
   const A = () => ctx.L.arena, P0 = () => ctx.P();
   const say = (x, y, k, c = '#ffd36b') => ctx.number(x, y, MC_SAY[k], c);
   H.owns = e => e && e.t === 'mother';
+  H.warm = () => MART.warm();   /* (claude/sporewood2art) every pose baked at the level load, not in the fight */
   const knotX = e => e.x, knotY = () => A().floor - MC.knotY;
   const seeds = () => ctx.movers().filter(m => m.kind === 'growcap' && m.mother && m.seed);
   H.knotReady = e => e && e.alive && e.mode !== 'sleep' && e.mode !== 'wake' && e.mode !== 'open' && e.mode !== 'phaseRise' && !(e.ward > 0);
@@ -157,31 +159,36 @@ export function makeMotherCap(ctx) {
 
   /* ---------- DRAWING (greybox: her poses are the art lane's - every move has its own windup and release here, from her body) ---------- */
   H.drawWorld = (g, cx, cy, time) => { const e = ctx.boss(); if (!e || e.t !== 'mother') return; const a = A(), f = a.floor, R = Math.round, fy = R(f - cy);
-    /* the net's veins on the floor: told (yellow, spreading), live (green, crackling) */
-    if (e.net && e.net.ph !== 'off' && e.alive) { const N = e.net, live = N.ph === 'live', k = live ? 1 : 1 - Math.max(0, N.t) / MC.net.tell, span = (a.x1 - a.x0) / 2;
-      g.globalAlpha = live ? 0.55 + 0.2 * Math.sin(time * 18) : 0.35 + 0.4 * k; g.fillStyle = live ? '#a6e04a' : '#ffd36b';
-      for (const s of [-1, 1]) for (let q = 0; q < span * (live ? 1 : k); q += 5) { const x = R(e.x + s * q - cx); g.fillRect(x, fy - 2 - ((q * 7) % 3 === 0 ? 1 : 0), 3, 2); if (q % 25 < 5) g.fillRect(x, fy - 4 - (q % 3), 1, 3); }
+    /* the net's veins on the floor (P2): a told web of foxfire threads spreading from her foot (yellow while told), then live and crackling green-white; every thread forks */
+    if (e.net && e.net.ph !== 'off' && e.alive) { const N = e.net, live = N.ph === 'live', k = live ? 1 : 1 - Math.max(0, N.t) / MC.net.tell, span = (a.x1 - a.x0) / 2, col = live ? FOX.c : '#ffd36b', hi = live ? FOX.hi : '#fff1a8';
+      for (const s of [-1, 1]) for (let q = 0; q < span * (live ? 1 : k); q += 2) { const x = R(e.x + s * q - cx), wob = Math.round(Math.sin(q * 0.31 + (live ? time * 14 : 0)) * 1.5); g.globalAlpha = live ? 0.8 : 0.4 + 0.4 * k; g.fillStyle = col; g.fillRect(x, fy - 2 + wob, 2, 1);
+        if (q % 14 < 2) { g.fillRect(x, fy - 4 + wob, 1, 2); g.fillRect(x + s, fy - 6 + wob - (q % 3), 1, 2); } if (live && (q + Math.floor(time * 20)) % 17 === 0) { g.fillStyle = hi; g.fillRect(x, fy - 3 + wob, 1, 1); g.fillStyle = col; } }
+      if (live) { g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.18 + 0.08 * Math.sin(time * 16); g.fillStyle = FOX.c; g.fillRect(R(a.x0 - cx), fy - 5, R(a.x1 - a.x0), 5); g.restore(); }
       g.globalAlpha = 1; }
-    /* the lashes: a root along the floor, its tip bright */
-    for (const l of e.lashes || []) { const x0 = R(e.x - cx), x1 = R(l.x - cx); g.fillStyle = '#4a3a38'; g.fillRect(Math.min(x0, x1), fy - 7, Math.abs(x1 - x0), 6); g.fillStyle = '#6a5446'; g.fillRect(Math.min(x0, x1), fy - 7, Math.abs(x1 - x0), 2);
-      for (let q = 0; q < 4; q++) { g.fillStyle = q % 2 ? '#8fd160' : '#dfffa0'; g.fillRect(x1 - l.d * q * 2, fy - 10 - q, 3, 3); } }
-    /* the crush: the red ring on the mark while it is told, the falling cap's shadow growing; the cap itself */
+    /* the lashes: a thorned root along the floor, undulating, its tip hot and kicking up dust */
+    for (const l of e.lashes || []) { const x0 = R(e.x - cx), x1 = R(l.x - cx), lo = Math.min(x0, x1), len = Math.abs(x1 - x0);
+      for (let q = 0; q < len; q += 1) { const t = q / Math.max(1, len), u = l.d > 0 ? lo + q : lo + len - q, w = Math.max(2, Math.round(7 - t * 4)), y = fy - w - Math.round(Math.sin(q * 0.35 + time * 22) * 1.5);
+        g.fillStyle = '#3c2a2e'; g.fillRect(u, y, 1, w); g.fillStyle = (q % 7 < 3) ? '#5e4642' : '#86685c'; g.fillRect(u, y, 1, 2); if (q % 11 === 5) { g.fillStyle = '#b09480'; g.fillRect(u, y - 2, 1, 2); } }
+      const tx = x1, ty = fy - 8; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.6; g.drawImage(foxHalo('255,120,80'), tx - 14, ty - 14, 28, 28); g.restore(); g.globalAlpha = 1; for (let q = 0; q < 4; q++) { g.fillStyle = q % 2 ? '#ffd36b' : '#ff9a6b'; g.fillRect(tx - l.d * q * 2, fy - 10 - q, 3, 3); }
+      for (let q = 0; q < 5; q++) { g.globalAlpha = 0.5; g.fillStyle = '#9a8aa0'; g.fillRect(tx - l.d * (4 + q * 5), fy - 4 - ((q * 7 + R(time * 30)) % 6), 2, 2); } g.globalAlpha = 1; }
+    /* the crush: the red ring on the mark while it is told (and the cap's own shadow growing); the falling cap itself is a plum dome with its gills showing */
     if (e.mode === 'crushTell' && e.crushX !== undefined) { const k = 1 - Math.max(0, e.modeT) / MC.crush.tell, x = R(e.crushX - cx); g.globalAlpha = 0.5 + 0.4 * k; g.strokeStyle = '#ff6b6b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, fy - 2, MC.crush.w, 5, 0, 0, 7); g.stroke(); g.lineWidth = 1;
       g.fillStyle = 'rgba(20,10,30,' + (0.2 + 0.4 * k).toFixed(2) + ')'; g.beginPath(); g.ellipse(x, fy - 2, MC.crush.w * (0.4 + 0.6 * k), 4, 0, 0, 7); g.fill(); g.globalAlpha = 1;
       g.fillStyle = 'rgba(255,155,107,0.5)'; for (let y = fy - MC.crush.from; y < fy - 20; y += 8) g.fillRect(x, y, 1, 3); }
-    for (const c of e.crushes || []) { const x = R(c.x - cx), y = R(c.y - cy), a2 = c.done ? Math.max(0, 1 - c.t / 0.5) : 1; g.globalAlpha = a2;
-      g.fillStyle = '#4e3a6e'; g.beginPath(); g.ellipse(x, y - 8, MC.crush.w, 8, 0, Math.PI, 0); g.fill(); g.fillStyle = '#8a6ab0'; g.fillRect(x - 10, y - 13, 6, 3); g.fillRect(x + 4, y - 11, 4, 2); g.fillStyle = '#e0b0f0'; g.fillRect(x - MC.crush.w + 2, y - 2, MC.crush.w * 2 - 4, 2); g.globalAlpha = 1; }
-    /* the blooms: a violet ring that grows while told; a rolling cloud while it lives */
+    for (const c of e.crushes || []) { const x = R(c.x - cx), y = R(c.y - cy), a2 = c.done ? Math.max(0, 1 - c.t / 0.5) : 1; g.globalAlpha = a2; g.drawImage(dropCap(), x - 24, y - 24);
+      if (!c.done) { g.globalAlpha = 0.5; g.fillStyle = '#c9a0ff'; for (let q = 1; q < 4; q++) g.fillRect(x - 14 + q * 8, y - 28 - q * 4, 1, 6); } g.globalAlpha = 1; }
+    /* the blooms: a violet ring that grows while told, spores gathering inward; then a DRAWN spore cloud (lobes, a ring at its reach, motes) */
     for (const b of e.blooms || []) { const x = R(b.x - cx), y = R(b.y - cy);
       if (!b.live) { const k = Math.min(1, b.t / MC.bloom.tell); g.globalAlpha = 0.45 + 0.4 * k; g.strokeStyle = '#c9a0ff'; g.lineWidth = 2; g.beginPath(); g.arc(x, y, MC.bloom.r * (0.3 + 0.7 * k), 0, 7); g.stroke(); g.lineWidth = 1;
-        for (let i = 0; i < 8; i++) { const an = i / 8 * 6.283 + time * 2, rr = MC.bloom.r * (1.4 - 0.9 * k); g.fillStyle = i % 2 ? '#fff1ff' : '#c9a0ff'; g.fillRect(R(x + Math.cos(an) * rr), R(y + Math.sin(an) * rr * 0.7), 2, 2); } g.globalAlpha = 1; continue; }
-      const fade = Math.min(1, (MC.bloom.live - b.t) / 0.6); for (let i = 0; i < 7; i++) { const an = i / 7 * 6.283 + time * 0.8, rr = 6 + (i % 3) * 7;
-        g.globalAlpha = 0.4 * fade; g.fillStyle = i % 2 ? '#9a5aa8' : '#c9a0ff'; g.beginPath(); g.ellipse(x + Math.cos(an) * rr, y + Math.sin(an) * rr * 0.6, 10, 7, 0, 0, 7); g.fill(); }
-      g.globalAlpha = 0.8 * fade; g.strokeStyle = '#efe6ff'; g.beginPath(); g.arc(x, y, MC.bloom.r, 0, 7); g.stroke(); g.globalAlpha = 1; }
-    /* a cap she is withering shudders violet */
-    for (const m of seeds()) if (m.shiver > 0) { const x = R(m.x + 16 - cx), y = R(m.y - cy); g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 30); g.fillStyle = '#9a5aa8'; g.fillRect(x - 17 + R(Math.sin(time * 40) * 2), y - 3, 34, 6); g.globalAlpha = 1; }
+        for (let i = 0; i < 10; i++) { const an = i / 10 * 6.283 + time * 2, rr = MC.bloom.r * (1.5 - 1.0 * k); g.fillStyle = i % 2 ? '#fff1ff' : '#c9a0ff'; g.fillRect(R(x + Math.cos(an) * rr), R(y + Math.sin(an) * rr * 0.7), 2, 2); } g.globalAlpha = 1; continue; }
+      drawSporeCloud(g, { x: b.x, y: b.y, r: MC.bloom.r, life: Math.max(0.3, (MC.bloom.live - b.t) * 1.2), sleep: true }, cx, cy, time);
+      g.globalAlpha = 0.7 * Math.min(1, (MC.bloom.live - b.t) / 0.6); g.strokeStyle = '#efe6ff'; g.beginPath(); g.arc(x, y, MC.bloom.r, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    /* a cap she is withering shudders violet (the cap's own draw does it: src/redraw/sporewood2_world.js) */
   };
-
+  /* the cap she drops: a plum dome, its pale veil and gills showing underneath; 48 x 30 */
+  let DROP = null; const dropCap = () => DROP || (DROP = (() => { const [c, g] = MART.canvasOf(48, 30); const cp = ['#4e2a5e', '#7e4e94', '#b488c8'];
+    for (let y = 0; y < 14; y++) { const t = (y + 1) / 14, w = Math.round(22 * Math.sqrt(1 - Math.pow(1 - t, 2))); g.fillStyle = y < 2 ? '#e8d0f0' : y < 6 ? cp[2] : y < 11 ? cp[1] : cp[0]; g.fillRect(24 - w, 8 + y, w * 2, 1); g.fillStyle = y < 6 ? '#e8d0f0' : cp[2]; g.fillRect(24 - w, 8 + y, Math.max(1, Math.round(w * 0.3)), 1); }
+    g.fillStyle = '#e8ddc0'; g.fillRect(2, 22, 44, 1); for (let x = 3; x < 45; x += 2) { g.fillStyle = x % 4 ? '#b8a888' : '#e8ddc0'; g.fillRect(x, 23, 1, 4); } g.fillStyle = '#f4e6f4'; for (const [x, y] of [[14, 12], [24, 10], [33, 14], [20, 15]]) g.fillRect(x, y, 3, 2); return c; })());
   /* HER BODY: the stalk, the cap (sealed / open / torn) on a pose of its own for every move (B16), the knot on her crown with her key over it */
   H.pose = e => { const md = e.mode || 'idle', tell = /Tell$/.test(md), kind = tell ? md.slice(0, -4) : md, k = Math.max(0, Math.min(1, 1 - (e.modeT || 0) / (e.poseT0 || 0.5))), ek = k * k * (3 - 2 * k);
     const o = { kind, tell, k: ek, capDy: 0, rot: 0, sx: 1, sy: 1, shake: 0, gill: 0, roots: 0, lean: 0 };
@@ -194,28 +201,18 @@ export function makeMotherCap(ctx) {
     return o; };
   const R6 = v => Math.round(v);
   H.draw = (g, e, cx, cy, time) => {
-    const f = A().floor, R = Math.round, x = R(e.x - cx), fy = R(f - cy), ps = H.pose(e), MC2 = ctx.PROP && ctx.PROP.motherCap, oK = e.openK || 0, oE = oK * oK * (3 - 2 * oK);
-    /* the stalk */
-    if (MC2) g.drawImage(MC2.stalk, x - 16, fy - 100); else { g.fillStyle = '#6a5446'; g.fillRect(x - 12, fy - 92, 24, 92); }
-    /* her roots at her foot: they writhe in the lash's windup and the rise */
-    if (ps.roots > 0.02) for (let i = 0; i < 8; i++) { const s = i % 2 ? 1 : -1, len = (14 + 7 * (i % 3)) * (0.6 + ps.roots), wob = Math.sin(time * 9 + i * 1.7) * 4 * ps.roots; let px = x + s * (8 + (i >> 1) * 2);
-      for (let q = 0; q < len; q += 2) { px += s * 2; const py = fy - Math.round(Math.sin(q / len * Math.PI) * (5 + (i % 3) * 3 + wob)); g.fillStyle = q % 6 < 3 ? '#6a5446' : '#4a3a38'; g.fillRect(R(px), py - 1, 2, 3); }
-      g.fillStyle = ps.tell && Math.floor(time * 10) % 2 ? '#ffd36b' : '#8fd160'; g.fillRect(R(px), fy - 4, 2, 2); }
-    /* the cap: sealed, open (her knot torn wide, the heart showing), the ward's pale sheen after */
-    const capY = fy - 90 + Math.round(Math.sin(time * 1.2) * 2) + ps.capDy;
-    g.save(); g.translate(x + ps.shake, capY); g.rotate(ps.rot + ps.lean + oE * 0.3); g.scale(0.78 * ps.sx, 0.78 * ps.sy);
-    if (MC2) g.drawImage(oE > 0.45 ? MC2.capTorn : ps.gill > 0.3 ? MC2.capOpen : MC2.cap, -80, -34); else { g.fillStyle = '#6e529a'; g.fillRect(-80, -34, 160, 50); }
-    g.restore();
-    if (ps.gill > 0) { g.globalAlpha = 0.15 + 0.35 * ps.gill; g.fillStyle = '#e0b0f0'; g.beginPath(); g.ellipse(x, capY + 10, 48 * (0.7 + 0.3 * ps.gill), 7, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
-    /* THE KNOT on her crown: gold-seamed and glinting while it can be plunged, dark while she is open or warded */
-    { const kx = R(e.x - cx), ky = R(f - MC.knotY - cy) + ps.capDy, ready = H.knotReady(e);
-      g.fillStyle = '#3a2a24'; g.fillRect(kx - 10, ky - 6, 20, 11); g.fillStyle = '#6a5446'; g.fillRect(kx - 9, ky - 5, 18, 3); g.fillRect(kx - 6, ky - 8, 12, 2);
-      if (ready) { const gl = Math.floor(time * 3) % 2; g.fillStyle = gl ? '#fff1a8' : '#ffd36b'; g.fillRect(kx - 5, ky - 9, 10, 1); g.fillRect(kx - 1, ky - 4, 2, 6); }
-      if (oE > 0.05) { const pulse = (1 + Math.sin(time * 6) * 0.12) * oE; g.globalAlpha = 0.55; g.fillStyle = '#ff7a9a'; g.beginPath(); g.ellipse(kx, ky, 16 * pulse, 10 * pulse, 0, 0, 7); g.fill(); g.globalAlpha = 1; g.fillStyle = '#c9463d'; g.beginPath(); g.ellipse(kx, ky, 7 * pulse, 5 * pulse, 0, 0, 7); g.fill(); }
-      if (e.mode === 'open' && oK < 1) { g.globalAlpha = 0.8 * (1 - oE); g.strokeStyle = '#fff1a8'; g.lineWidth = 2; g.beginPath(); g.arc(kx, ky, 12 + 50 * oE, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; } }
-    if (e.ward > 0) { const k = Math.min(1, e.ward / 0.6); g.globalAlpha = 0.35 * k * (0.7 + 0.3 * Math.sin(time * 8)); g.fillStyle = '#efe6ff'; g.beginPath(); g.ellipse(x, capY - 4, 64, 30, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
-    /* her eyes under the cap, watching you */
-    if (oK < 0.35) { const ex = x + Math.sign((P0() ? P0().x : e.x) - e.x) * 3, blink = Math.floor(time * 0.7) % 7 === 0; g.fillStyle = '#ffd0ff'; if (!blink) { g.fillRect(ex - 19, capY + 2, 4, 3); g.fillRect(ex + 15, capY + 2, 4, 3); } else { g.fillRect(ex - 19, capY + 3, 4, 1); g.fillRect(ex + 15, capY + 3, 4, 1); } }
+    /* (claude/sporewood2art) HER BODY IS A BAKED PICTURE PER POSE (src/redraw/sporewood2_mother.js: a windup frame for every move, a release frame, the open crown, the ward, the rise): chosen by her mode and how far into it she is */
+    const f = A().floor, R = Math.round, x = R(e.x - cx), fy = R(f - cy), ps = H.pose(e), oK = e.openK || 0, oE = oK * oK * (3 - 2 * oK), md = e.mode;
+    let kind = ps.kind, tell = ps.tell, k = ps.k; if (md === 'sleep') { kind = 'wake'; k = 0; tell = false; } else if (md === 'idle' || md === 'walk') kind = 'idle';
+    const fr = MART.frameFor(e, kind, tell, k, e.phase || 1, e.ward || 0, time), flip = (kind === 'lash' ? (e.lashDir || 1) : kind === 'wither' ? (e.witherCap && e.witherCap.x + 16 < e.x ? -1 : 1) : 1) < 0;
+    if (flip) { g.save(); g.translate(x, 0); g.scale(-1, 1); g.drawImage(fr, -MART.AX, fy - MART.AY); g.restore(); } else g.drawImage(fr, x - MART.AX, fy - MART.AY);
+    /* THE KNOT on her crown: the target. Gold-haloed and glinting while it can be plunged; open it burns (a pulsing ring as it tears) */
+    { const kx = R(e.x - cx), ky = R(f - MC.knotY - cy) + (ps.kind === 'crush' || ps.kind === 'lash' ? 4 : 0), ready = H.knotReady(e);
+      if (ready) { const gl = Math.floor(time * 3) % 2; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.32 + 0.16 * gl; g.drawImage(foxHalo('255,211,107'), kx - 22, ky - 20, 44, 40); g.restore(); g.globalAlpha = 1; g.fillStyle = gl ? '#fff1a8' : '#ffd36b'; g.fillRect(kx - 5, ky - 7, 10, 1); }
+      if (oE > 0.05) { const pulse = (1 + Math.sin(time * 6) * 0.12) * oE; g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = 0.5; g.fillStyle = '#ff7a9a'; g.beginPath(); g.ellipse(kx, ky - 2, 18 * pulse, 11 * pulse, 0, 0, 7); g.fill(); g.restore(); g.globalAlpha = 1; }
+      if (e.mode === 'open' && oK < 1) { g.globalAlpha = 0.8 * (1 - oE); g.strokeStyle = '#fff1a8'; g.lineWidth = 2; g.beginPath(); g.arc(kx, ky - 2, 12 + 50 * oE, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; } }
+    /* the ward: a told pearl sheen that fades with it (the frame is already pale) */
+    if (e.ward > 0) { const kk = Math.min(1, e.ward / 0.6); g.globalAlpha = 0.28 * kk * (0.7 + 0.3 * Math.sin(time * 8)); g.fillStyle = '#efe6ff'; g.beginPath(); g.ellipse(x, fy - 100, 66, 30, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
   };
   H.read = () => { const e = ctx.boss(); if (!e || e.t !== 'mother') return null;
     return { mode: e.mode, modeT: e.modeT, phase: e.phase || 1, hp: e.hp, maxHp: e.maxHp, ward: e.ward || 0, opens: e.opens || 0, ready: H.knotReady(e), knot: { x: knotX(e), y: knotY() },

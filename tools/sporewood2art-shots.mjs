@@ -21,6 +21,7 @@ const SHOTS = [
   ['seed-stair', 361, 11, "for(const m of BK.movers())if(m.pair==='door'){m.state='up';m.k=1;m.upT=99;m.y=m.y0-m.rise;}"], ['root-knot', 374, 5, ''],
   ['her-door', 400, 5, ''],
   ['mother-idle', 0, 0, boss('idle')], ['mother-lashTell', 0, 0, boss('lashTell')], ['mother-lash', 0, 0, boss('lash')], ['mother-crushTell', 0, 0, boss('crushTell')],
+  ['mother-brood', 0, 0, boss('broodTell').replace('BK.SET.speed=0.001;', '') + 'BK.sim(70);'], ['mother-net', 0, 0, "BK.tp(424,14);BK.sim(200);const b=BK.enemies().find(e=>e.t==='mother');if(b){b.phase=2;b.hp=b.maxHp*0.4;b.mode='idle';b.modeT=5;b.net={ph:'live',t:2.5};}BK.sim(6);"],
   ['mother-bloomTell', 0, 0, boss('bloomTell')], ['mother-broodTell', 0, 0, boss('broodTell')], ['mother-witherTell', 0, 0, boss('witherTell')], ['mother-open', 0, 0, boss('open')],
 ].filter(s => !only || only.has(s[0]));
 const pg = await openPage({ audio: false, fonts: false });

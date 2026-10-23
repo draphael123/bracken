@@ -1,7 +1,7 @@
 /* src/forest-supports-art.js - the drawn supports of the forest and crag levels (see src/forest-supports.js). p = {x, y, bottom, kind, free}; tile coords. Drawn behind the tiles. */
 import { drawRockPier } from './scree-rock.js';
 import { drawSpireSupport } from './spire-supports-art.js';
-import { drawCrib } from './redraw/lumber_trail_tiles.js';   /* (claude/lumbertrailart) THE LUMBER TRAIL's cribwork */
+import { drawCrib } from './redraw/lumber_trail_tiles.js'; import { drawStalkSupport } from './redraw/sporewood2_world.js';   /* (claude/sporewood2art) SPOREWOOD 2's cap stalks */   /* (claude/lumbertrailart) THE LUMBER TRAIL's cribwork */
 const R = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(x, y, w, h); };
 const PAL = {
   rock: ['#4b4640', '#7d756b', '#2e2a27', '#5f7d3b'], vine: ['#44331f', '#7a5c36', '#2c2214', '#3e8040'], pile: ['#2f2a24', '#5d5446', '#1c1915', '#8a5f93'],
@@ -10,6 +10,7 @@ const PAL = {
 };
 export function drawForestSupport(g, p, cx, cy) {
   if (p.kind === 'beam' || p.kind === 'pier') { drawSpireSupport(g, p, cx, cy); return; }   /* THE MONASTERY's scaffold posts and masonry piers (claude/screefix, src/spire-supports.js) */
+  if (p.kind === 'stalk') { drawStalkSupport(g, p, cx, cy); return; }   /* (claude/sporewood2art) a shelf fungus stands on a stalk of the wood, not a post */
   if (p.kind === 'crib') { drawCrib(g, p, cx, cy); return; }   /* THE LUMBER TRAIL's own cribs (claude/lumbertrailart, src/redraw/lumber_trail_tiles.js) */
   if (p.kind === 'rock') { drawRockPier(g, p, cx, cy); return; }   /* THE SCREE PATH's own rock piers (claude/screefix, src/scree-rock.js) */
   const k = p.kind, c = PAL[k], h0 = Math.round(p.y * 16 + 10 - cy), bot = Math.round(p.bottom * 16 - cy), len = bot - h0;
