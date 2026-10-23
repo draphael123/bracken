@@ -45,13 +45,13 @@ export const HALL = { x0: 296, x1: 331, floor: 22, top: 3, wallL: 295, wallR: 33
 export const PINE = { x0: 354, x1: 401, floor: 66, wallL: 353, wallR: 402, trigger: 357, trunk: 350 };
 /* her COMB PERCHES in the hall: [x0, x1, row, id, fall] - wax shelves; a dive that meets one drives her sting into it (src/hornet-queen.js). `fall`: a perch her
    wing-buzz can shake loose (told) - never the last two (L1 and R1 are in the walls) */
-export const PERCHES = [[296, 300, 18, 'L1'], [327, 331, 18, 'R1'], [302, 305, 14, 'L2', 1], [322, 325, 14, 'R2', 1], [311, 316, 16, 'C', 1]];
+export const PERCHES = [[296, 300, 20, 'L1'], [327, 331, 20, 'R1'], [303, 307, 18, 'L2', 1], [320, 324, 18, 'R2', 1], [310, 317, 16, 'C', 1]];   /* L1/R1 two rows over the floor (a jump), L2/R2 two over them, C two over those */
 /* her BROOD CELLS in the hall: [col, row] - the cell a wax pocket stands in (on the floor, and on the two wall perches) */
-export const HALL_CELLS = [[300, 21], [327, 21], [298, 17], [329, 17]];
+export const HALL_CELLS = [[301, 21], [326, 21], [297, 19], [330, 19]];
 /* THE GREAT PINE's marked pines (OLD TUSKER's kind, src/old-tusker.js: four strokes, it falls the way it leans) - fell one INTO HER FLIGHT */
 export const PINE_PINES = [{ col: 358, dir: 1 }, { col: 363, dir: 1 }, { col: 392, dir: -1 }, { col: 397, dir: -1 }];
 /* THE LAST COMB: hung over her low pass from a bough of the great pine; struck from THE BOUGH (or by an arrow / an ember / a thrown pot), it drops on her */
-export const LAST_COMB = { x0: 383, x1: 387, row: 55, rows: 3 };
+export const LAST_COMB = { x0: 383, x1: 387, row: 58, rows: 3 };   /* its bottom a hand over the head of a hero on the bough's east end: one swing cuts it */
 export const BOUGH = { x0: 370, x1: 382, row: 62 };
 /* THE FALLING NEST's comb ledges (crumbling: L.crumbles), [x0, x1, row]: west and east by turns down the drop beside the trunk */
 export const LEDGES = [[341, 346, 26], [333, 338, 30], [341, 346, 34], [333, 338, 38], [341, 346, 42], [333, 338, 46], [341, 346, 50], [333, 338, 54], [341, 346, 58]];
@@ -85,7 +85,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   coins([18, FL - 4], [21, FL - 4], [23, FL - 4]);
   /* THE FIRST COMB: the buttress root stands four rows over the forest floor - no jump makes it. A comb hangs off the pine's low bough beside it: cut it,
      it drops at the root's foot as a step (REQUIRED) */
-  hang('first', 36, 39, FL - 7, 2, { teach: true });
+  hang('first', 36, 39, FL - 6, 2, { teach: true });
   sign(31, FL - 1, 'A COMB HANGS ON ITS STALK. CUT IT AND IT DROPS - WHAT IT LANDS ON, YOU CAN STAND ON.');
   ground(42, 46, FL - 4); ground(47, 50, FL - 6); ground(51, 53, FL - 8); ground(54, 61, FL - 10);   /* the buttress root climbs in knuckles: 62, 60, 58, 56 */
   coins([43, FL - 5], [48, FL - 7], [52, FL - 9]);
@@ -206,13 +206,13 @@ export function buildHornetsNest({ painter, T, TS }) {
   ground(333, 353, FL);
   block(333, 335, HALL.floor, HALL.floor);                   /* the hall floor's torn edge */
   for (const [x0, x1, row] of LEDGES) { shelf(x0, x1, row); crumbles.push({ x0, x1, row, count: 2, kind: 'comb' }); }
-  for (let x = 333; x <= 339; x++) set(x, FL - 1, T.SPIKE); /* a bramble at the foot of the drop: the ledges are the way down */
+  for (let x = 333; x <= 338; x++) set(x, FL - 1, T.SPIKE); /* a bramble at the foot of the drop, under the west ledges: the ledges are the way down */
   ent('check', 351, FL - 1);
 
   // ================= 7. THE GREAT PINE (354-403): BOSS P2 =================
   ground(354, W - 1, FL);
-  ground(368, 369, FL - 2); ground(383, 384, FL - 2);        /* the great pine's root knuckles, two rows up */
-  block(BOUGH.x0, BOUGH.x1, BOUGH.row, BOUGH.row); block(BOUGH.x0, BOUGH.x0 + 1, BOUGH.row, FL - 1); block(BOUGH.x1 - 1, BOUGH.x1, BOUGH.row, FL - 1);   /* its low bough on two root legs: the floor runs under it */
+  shelf(366, 369, FL - 2); shelf(383, 386, FL - 2);          /* the great pine's roots arching over the floor, two rows up (the floor runs on under them) */
+  shelf(BOUGH.x0, BOUGH.x1, BOUGH.row);                      /* its low bough, four rows over the floor (up off a root knuckle): the floor runs on under it */
   air(PINE.wallR, PINE.wallR, FL - 6, FL - 1);
   ent('gate', 400, FL - 1);
   sign(355, FL - 1, 'THE MARKED PINES FALL THE WAY THEY LEAN. FELL ONE INTO HER FLIGHT, OR DROP THE LAST COMB ON HER.');

@@ -29,16 +29,16 @@ export const HQ = {
   hp: 1500, w: 30, h: 22, markH: 40, p1End: 0.5,
   shell: 0.5, cloak: 0.4, above: 1, wardMul: 0.4,
   hover: 70, speed: 120,
-  dive: { aim: [0.9, 0.72], held: 0.55, heldEvery: 3, speed: [235, 270], dmg: 12, half: 9, skim: 0.4 },
+  dive: { aim: [0.9, 0.72], held: 0.55, heldEvery: 3, speed: [250, 285], v0: 60, acc: 950, aimH: 96, dmg: 12, half: 9, skim: 0.4 },   /* the stoop STARTS SLOW and gathers (v0 -> speed at acc): from her aim height a stoop takes ~0.3 s - leave as it gathers */
   stuck: { t: [2.6, 2.3], mul: 1.5 },
   winded: { t: 1.7, mul: 2 },
-  dazed: { t: 2.5, mul: 1.5, r: 34, h: 96 },
+  dazed: { t: 2.5, mul: 1.5, r: 30, h: 56, cd: 7 },   /* the smoke under her: within r across, h below her; after a daze she will not feel smoke again for cd s (no chain-lock) */
   ward: 3, thrash: 0.5,
   sweep: { tell: 0.65, speed: 165, y: 13, dmg: 10, half: 12 },
-  buzz: { tell: 1.1, every: 3, n: 3, dmg: 10, r: 14, fall: 0.8, spread: 46, cool: 9 },
-  brood: { every: 10, pulse: 3, n: 2, cap: 3 },
+  buzz: { tell: 1.1, every: 3, n: 3, dmg: 10, r: 14, fall: 0.8, spread: 58, cool: 9 },
+  brood: { every: 14, pulse: 3.2, n: 2, cap: 2 },
   tear: { tell: 1.4, fly: 1.1 },
-  escape: { every: 1.15, tell: 0.9, dmg: 8, r: 14 },
+  escape: { every: 1.6, tell: 1.0, dmg: 8, r: 14 },
   circle: { lap: 6.2, low: 30, high: 112, edge: 30, laps: [1, 2] },
   volley: { tell: 0.75, n: 5, spread: 1.0, speed: 215, dmg: 9 },
   cloakT: { tell: 0.9, t: 10, touch: 6 },
@@ -131,11 +131,11 @@ function stepP1(e, S, dt, P, w, hs) {
       if (e.modeT > 0) return;
       pickP1(e, S, P, w); return; }
     case 'aim': {   /* THE DIVE'S TELL: over you, the sting cocked; a HELD aim lasts longer and its sting pulses twice */
-      if (P) hoverTo(e, P.x, floor - HQ.hover + 6, 150, dt); if (P) e.face = Math.sign(P.x - e.x) || e.face;
+      if (P) hoverTo(e, P.x, floor - HQ.dive.aimH, 150, dt); if (P) e.face = Math.sign(P.x - e.x) || e.face;
       if (e.held && !e.heldSaid && e.modeT < HQ.dive.held) { e.heldSaid = true; w.number(e.x, e.y - HQ.h - 18, HQ_SAY.held, '#ffd36b'); w.sound('held'); }
       if (e.modeT <= 0) release(e, S, P, w, 0); return; }
-    case 'dive': {   /* THE STOOP: straight at where your feet were; it sticks in comb (a perch), it pulls up off the floor */
-      e.x += e.vx * dt; e.y += e.vy * dt; e.x = Math.max(H.x0 + 6, Math.min(H.x1 - 6, e.x));
+    case 'dive': {   /* THE STOOP: straight at where your feet were, gathering speed; it sticks in comb (a perch), it pulls up off the floor */
+      gather(e, dt, 0); e.x += e.vx * dt; e.y += e.vy * dt; e.x = Math.max(H.x0 + 6, Math.min(H.x1 - 6, e.x));
       w.hit([e.x - HQ.dive.half, e.x + HQ.dive.half, e.y - 14, e.y + 2], HQ.dive.dmg, 'dive', { key: 'dv' + S.act, blockable: true, onBlock: () => winded(e, S, w) });
       if (e.mode !== 'dive') return;
       if (e.vy > 0) { const p = S.perches.find(q => q.st !== 'gone' && e.x > q.x0p - 2 && e.x < q.x1p + 2 && e.y >= q.y && e.y - e.vy * dt < q.y + 4);
@@ -184,8 +184,9 @@ function release(e, S, P, w, ph) {
   const floor = S.stage === 1 ? S.G.h.floor : S.G.p.floor;
   const ty = P && P.ground && P.y < floor - 4 ? P.y : P && !P.ground ? Math.min(floor, P.y + 6) : floor;
   const dx = (P ? P.x : e.x) - e.x, dy = Math.max(12, ty - e.y), d = Math.hypot(dx, dy) || 1, sp = HQ.dive.speed[ph];
-  e.vx = dx / d * sp; e.vy = dy / d * sp; e.mode = 'dive'; e.modeT = 1.3; w.sound('dive'); e.held = false;
+  e.ux = dx / d; e.uy = dy / d; e.dsp = HQ.dive.v0; e.vx = e.ux * e.dsp; e.vy = e.uy * e.dsp; e.mode = 'dive'; e.modeT = 1.6; w.sound('dive'); e.held = false; void sp;
 }
+const gather = (e, dt, ph) => { e.dsp = Math.min(HQ.dive.speed[ph], (e.dsp || HQ.dive.v0) + HQ.dive.acc * dt); e.vx = (e.ux || 0) * e.dsp; e.vy = (e.uy || 1) * e.dsp; };
 function stuck(e, S, w, what) { e.mode = 'stuck'; e.modeT = HQ.stuck.t[S.stage === 2 ? 1 : 0]; e.openT0 = e.modeT; e.vx = 0; e.vy = 0; S.n.stuck++; S.act++;
   w.sound('stuck'); w.shake(5); w.fx('open', e.x, e.y); w.number(e.x, e.y - HQ.h - 18, what === 'wood' ? HQ_SAY.stuckWood : HQ_SAY.stuck, '#8fd160'); }
 function winded(e, S, w) { if (e.mode !== 'dive' && e.mode !== 'sweep') return; e.mode = 'winded'; e.modeT = HQ.winded.t; e.openT0 = e.modeT; e.vx = 0; e.vy = 0; S.n.winded++; S.act++;
@@ -201,10 +202,10 @@ export function stepEscape(S, dt, hs, w) {
   const X = S.G.x; if (!X || S.stage !== 'escape') return;
   const P = hs.find(h => h.alive); if (!P || P.x < X.x0 - 8 || P.x > X.x1 || P.y >= X.bottom - 2) return;
   S.escT -= dt; if (S.escT > 0) return; S.escT = HQ.escape.every;
-  /* the ledge under the hero, or the next one he will land on: a ring there */
-  const below = X.ledges.filter(l => l.y >= P.y - 2).sort((a, b) => a.y - b.y);
-  const L = below.find(l => P.x > l.x0 - 40 && P.x < l.x1 + 40) || below[0]; if (!L) return;
-  const x = Math.max(L.x0 + 8, Math.min(L.x1 - 8, P.x + (Math.random() - 0.5) * 30));
+  /* the NEXT ledge down from the hero (the one he will land on): a ring there - wait for it to come down, but not long: his own ledge is giving way */
+  const below = X.ledges.filter(l => l.y > P.y + 2).sort((a, b) => a.y - b.y);
+  const L = below[0]; if (!L || !P.ground) return;
+  const x = Math.max(L.x0 + 10, Math.min(L.x1 - 10, (L.x0 + L.x1) / 2 + (Math.random() - 0.5) * 24));
   S.chunks.push({ x, y: Math.max(0, L.y - 150), vy: 0, st: 'told', t: HQ.escape.tell, floorY: L.y, key: 'ex' + S.n.escapeHits++ + '.' + Math.round(x), esc: true });
 }
 function stepChunks(S, dt, hs, w) {
@@ -235,10 +236,10 @@ function stepP2(e, S, dt, P, w, hs) {
       /* her moves come off the top of the loop (high, at the far side) - never while she is low */
       if (e.modeT <= 0 && Math.sin(S.loop.th) > 0.6) pickP2(e, S, P, w);
       return; }
-    case 'aim': if (P) hoverTo(e, P.x, floor - HQ.hover, 160, dt); if (P) e.face = Math.sign(P.x - e.x) || e.face;
+    case 'aim': if (P) hoverTo(e, P.x, floor - HQ.dive.aimH, 160, dt); if (P) e.face = Math.sign(P.x - e.x) || e.face;
       if (e.held && !e.heldSaid && e.modeT < HQ.dive.held) { e.heldSaid = true; w.number(e.x, e.y - HQ.h - 18, HQ_SAY.held, '#ffd36b'); w.sound('held'); }
       if (e.modeT <= 0) release(e, S, P, w, 1); return;
-    case 'dive': { e.x += e.vx * dt; e.y += e.vy * dt; e.x = Math.max(G.x0 + 6, Math.min(G.x1 - 6, e.x));
+    case 'dive': { gather(e, dt, 1); e.x += e.vx * dt; e.y += e.vy * dt; e.x = Math.max(G.x0 + 6, Math.min(G.x1 - 6, e.x));
       w.hit([e.x - HQ.dive.half, e.x + HQ.dive.half, e.y - 14, e.y + 2], HQ.dive.dmg, 'dive', { key: 'dv' + S.act, blockable: true, onBlock: () => winded(e, S, w) });
       if (e.mode !== 'dive') return;
       if (e.vy > 0 && w.woodAt(e.x, e.y)) { e.y = Math.floor(e.y / 16) * 16; stuck(e, S, w, 'wood'); return; }
@@ -313,4 +314,5 @@ function stepComb(e, S, dt, hs, w) {
     for (const h of hs) if (h.alive && h.x > c.x0 - 4 && h.x < c.x1 + 4 && h.y > c.y) w.hitHero(h, HQ.lastComb.heroDmg, 'comb', 'lc'); }
 }
 /* the smoke: the hands ask the level (src/hornets-nest-hands.js smokeUnder) every frame while she is low enough to feel it */
-export const feelsSmoke = e => e.mode === 'hover' || e.mode === 'rise' || e.mode === 'aim' || e.mode === 'sweep' || e.mode === 'sweepTell' || e.mode === 'skim' || e.mode === 'circle' || e.mode === 'rejoin' || e.mode === 'volleyTell' || e.mode === 'dive';
+/* SHE FEELS IT ONLY WHEN SHE COMES LOW: her dive and its pull-up, her sweep, and (P2) the low pass of her loop - never hanging high over you (a pot held up under her hover does nothing) */
+export const feelsSmoke = e => e.mode === 'dive' || e.mode === 'skim' || e.mode === 'sweep' || e.mode === 'sweepTell' || e.mode === 'circle' || e.mode === 'rejoin';

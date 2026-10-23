@@ -84,7 +84,7 @@ export function makeNestHands(ctx) {
     ctx.sfx.crack && ctx.sfx.crack(); ctx.sfx.puff && ctx.sfx.puff(); ctx.number(x, y - 30, NEST_SAY.broke, SMOKE.col); };
   const foeAt = (x, y) => { for (const e of ctx.enemies()) { if (!e.alive || e.harmless || e.boss) continue; const w = (e.w || 14) / 2 + 3, h = (e.h || 20) + 3; if (x > e.x - w && x < e.x + w && y > e.y - h && y < e.y + 3) return e; } return null; };
   /* ---------- COMB: cut, fall, land ---------- */
-  const combBox = c => ({ l: c.x0 * TS, r: (c.x1 + 1) * TS, t: c.y, b: c.y + c.rows * TS });
+  const combBox = c => ({ l: c.x0 * TS, r: (c.x1 + 1) * TS, t: c.y, b: c.y + c.rows * TS + 10 });   /* (its drips hang a hand under it: a blow there cuts it too) */
   /* where a comb falling from its current y lands (its top row): the first footing row under any of its columns, read off the LIVE grid (another comb laid there counts) */
   const landRow = c => { const H = L().H; for (let y = Math.floor((c.y + c.rows * TS) / TS); y < H; y++) for (let x = c.x0; x <= c.x1; x++) if (ctx.footAt(x, y)) return y - c.rows; return H - c.rows; };
   W.landRow = c => landRow(c);
