@@ -23,7 +23,7 @@ const pg = await openPage({ audio: false, fonts: false });
 try {
   for (const id of ids) {
     const lv = LEVELS.find(l => l.id === id); if (!lv) { console.log(id + ': no such level'); continue; }
-    const P = pacing(lv), way = []; for (const [x, y] of P.route) { const l = way[way.length - 1]; if (!l || Math.abs(x - l[0]) >= 8 || Math.abs(y - l[1]) >= 6) way.push([x, y]); }
+    const P = pacing(lv), way = [], L0 = lv.build(), stopX = L0.lastArena && L0.arena ? (L0.arena.x0 + L0.arena.x1) / 2 / 16 : Infinity; for (const [x, y] of P.route) { if (x > stopX) break;   /* (claude/gorm2) a fight in two rooms (L.lastArena, KING GORM): the level the pilot measures ends at the first, as it always did - the burning wood after it is the walker's (tools/level-walk.mjs --setup) */ const l = way[way.length - 1]; if (!l || Math.abs(x - l[0]) >= 8 || Math.abs(y - l[1]) >= 6) way.push([x, y]); }
     const r = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.setHero(${JSON.stringify(hero)}); BK.reset({ fresh: true });
       const { LEVELS } = await import('/src/level.js'), { makeBot } = await import('/src/playtest.js'), TS = 16, way = ${JSON.stringify(way)};
       ${CART_PILOT}

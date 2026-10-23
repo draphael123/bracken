@@ -478,5 +478,17 @@
   "lifts": 83,
   "walked": 100,
   "bare": true
+ },
+ "kings": {
+  "hash": "6d72748bf23f",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 20,
+  "deaths": 3,
+  "kills": 37,
+  "lifts": 81,
+  "walked": 100,
+  "bare": true
  }
 }

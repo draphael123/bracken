@@ -233,14 +233,15 @@ export const STUCK = {
     { id: 'lw-quay-gate', zone: [366, 0, 386, 27], at: [387, 22], glint: 'stall', line: 'THE QUAY GATE LIFTS AT HIGH WATER: WAIT FOR THE BELL' },
     { id: 'lw-flats-gate', zone: [388, 0, 418, 28], ats: [[419, 22], [390, 25]], glint: 'stall', line: 'THE FLATS GATE LIFTS AT LOW WATER: DRAIN THE STREET OR WAIT' },
   ],
+  /* KINGSWOOD 2 (claude/kingswood2): every rope the route needs until it is cut (the checkpoint's step, the stands' span, the cage stair), and the court gate's plate */
   kings: [
-    { id: 'kg-court-gate', zone: [568, 0, 584, 14], at: [583, 7], done: ['plate', 583, 7, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE LEDGE' },   /* (claude/kingsgate) the plate stands ON its ledge now, and the nudge names the verb */
-    { id: 'kg-ram-lever-148', zone: [132, 13, 156, 27], at: [148, 21], glint: 'stall', done: ['lever', 148, 21, 'on'], line: 'THE LEVER SWINGS THE RAM ON WHAT STANDS BELOW IT' },
-    { id: 'kg-stands-357', zone: [344, 3, 364, 20], at: [357, 10], glint: 'stall', done: ['timber', 357, 10, 'broken'], line: 'THE HUNTING STANDS: THEIR CRACKED POSTS GIVE WAY' },
-    { id: 'kg-stands-393', zone: [380, 3, 400, 20], at: [393, 13], glint: 'stall', done: ['timber', 393, 13, 'broken'], line: 'THE NEXT HUNTING STAND HAS A CRACKED POST' },
-    { id: 'kg-stands-420', zone: [405, 6, 424, 22], at: [420, 15], glint: 'stall', done: ['timber', 420, 15, 'broken'], line: 'THE LAST HUNTING STAND HAS A CRACKED POST' },
-    { id: 'kg-ram-lever-426', zone: [425, 10, 446, 24], at: [426, 20], glint: 'stall', done: ['lever', 426, 20, 'on'], line: 'THE LEVER SWINGS THE RAM ON WHAT STANDS BELOW IT' },
-    { id: 'kg-ram-lever-554', zone: [536, 4, 557, 20], at: [554, 13], glint: 'stall', done: ['lever', 554, 13, 'on'], line: 'THE LEVER SWINGS THE RAM THAT GUARDS THE LAST ARCH' },
+    { id: 'kg-check-cage', zone: [44, 33, 58, 37], at: [52, 37], done: ['hoist', 52, 37, 'on'], line: "THE CHECKPOINT'S CAGE HANGS ON A PEG: STRIKE IT" },
+    { id: 'kg-stand-span', zone: [143, 24, 150, 27], at: [149, 27], done: ['hoist', 149, 27, 'on'], line: 'NO JUMP CROSSES: THE LOG SPAN HANGS ON A PEG' },
+    { id: 'kg-cage-stair', zone: [244, 10, 260, 22], steps: [
+      { at: [249, 22], done: ['hoist', 249, 22, 'on'], line: 'THE CAGE STAIR: STRIKE THE PEG BY THE TRUNK' },
+      { at: [254, 18], done: ['hoist', 254, 18, 'on'], line: 'THE SECOND CAGE STILL HANGS: ITS PEG' },
+      { at: [258, 14], done: ['hoist', 258, 14, 'on'], line: 'THE THIRD CAGE STILL HANGS: ITS PEG' } ] },
+    { id: 'kg-court-gate', zone: [396, 0, 409, 13], at: [405, 11], done: ['plate', 405, 11, 'down'], line: 'THE COURT GATE IS SHUT: STAND ON THE PLATE ON THE STEP' },
   ],
   theatre: [
     { id: 'th-hatch-rope', zone: [108, 26, 140, 34], at: [130, 28], line: 'A ROPE BY THE RACKS: CLIMB IT' },
@@ -782,7 +783,7 @@ export const STUCK_SIGNS = {
     { x: 321, text: 'THE BORE STONES. STAND ON ONE AND LET THE SEA GO UNDER YOU. THE SEA GATE LIFTS BEHIND IT.' },
     { x: 393, text: 'STRIKE THE SLUICE WHEEL TO DRAIN THE STREET. THE FLATS GATE LIFTS ONLY AT LOW WATER.' } ],
     add: [{ x: 385, y: 26, text: 'THE QUAY GATE LIFTS AT HIGH WATER, WHEN THE SEA BELL TURNS.' }] },
-  kings: { fix: [{ x: 570, text: 'FIRE ARCHERS LIGHT THE GRASS. STAND ON THE LEDGE PLATE: IT LIFTS THE GATE.' }] },
+  /* (claude/kingswood2) kings: the old court gate's sign fix went with the old wood - KINGSWOOD 2's signs say the verb at each point of use */
   theatre: { add: [
     { x: 136, y: 24, text: 'A ROPE-LOCK. STRIKE IT AND ITS SHUTTER FLIES.' },
     { x: 214, y: 15, text: 'THE FLOOR STOPS. STRIKE THE LOCK: ITS BATTEN BRIDGES THE GAP.' },

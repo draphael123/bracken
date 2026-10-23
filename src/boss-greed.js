@@ -26,7 +26,7 @@
 
    main.js wires it: wardedDamage's tail (chipOf), hurtEnemy0 (noteGreed), updateEnemies (greedStep), damagePlayer0
    (GREED.miniHit), BK.bossOpen (openOf). tools/boss-greed.mjs is its check. */
-import { abbotOpen } from './false-abbot.js';
+import { abbotOpen } from './false-abbot.js'; import { gormOpen } from './gorm.js';   /* (claude/gorm2) KING GORM 2 */
 import { gargOpen } from './gate-gargoyle.js';
 import { winchOpen } from './winchmaster.js';
 import { wormOpen } from './dune-worm.js';
@@ -78,7 +78,7 @@ export const OPEN_RULE = {
   queen: e => e.mode === 'winded' || e.mode === 'stuck',                     // a dive taken on the shield, or her sting in the wood
   frog: e => H.frogOpen(e),                                                  // dazed, croaking, in the mud
   chief: e => e.mode === 'planted',                                          // his club in the ground
-  king: e => e.mode === 'held' || e.open > 0,                                // held in a cage (his crown turns everything else already)
+  king: e => gormOpen(e),                                                   // (claude/gorm2) HELD in a cage, KNOCKED DOWN by the log trap, STUNG by the hive, or OPEN after a cage
   ram: e => H.ramOpen(e),                                                    // (claude/scree2) STUNNED under a fold overhang he was lured beneath, or into the wall off a dodged charge (src/ram-lord.js)
   owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned',   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
   abbot: e => abbotOpen(e),                                                  // the bell has him down
@@ -149,6 +149,7 @@ export const NO_OPENING = {
 /* A DUELIST, NOT A PUZZLE: full damage on every hero blow (no chip), his own defence instead - ward faces, dodges, guards (the design standard, B2).
    His OPEN_RULE still names his openings (they pay more in his own code), and greed is still counted outside them (the mash reprisal stays). */
 export const FULL_DAMAGE = {
+  king: 'B15 (claude/gorm2, Daniel 10-22): off the old all-or-nothing crown - outside his openings a blade lands at 0.4 and clanks (main.js hurtEnemy0, GORM.chip); HELD x2, KNOCKED DOWN x1.75, STUNG x1.5, OPEN x1.25 (src/gorm.js); greed still counts',
   /* (claude/keyscore, B13 + B15) THE DUELIST'S WALL (src/boss-read.js GUARD 'wall'): off the chip - his front takes ANGLE.front (0.4, told GO ROUND), round or over him whole, his openings 1.5-2x */
   lance: 'B13/B15 (claude/keyscore): plate on his front - 0.4 into it, whole round or over, committed x1.5 (stuck x1.6)', closedhelm: 'B13/B15 (claude/keyscore): his ward faces you - 0.4 into it, whole round or over, his sword on the beat breaks it (x2)',
   captain: 'B13/B15 (claude/keyscore): on his wave or his feet his front is guarded - 0.4 into it, whole round or over, beached x2',
