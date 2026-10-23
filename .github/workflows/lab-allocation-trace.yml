@@ -34,7 +34,7 @@ jobs:
           s=s.replace('} finally { pg.close(); }','} finally { await trace.close(); pg.close(); }');
           fs.writeFileSync(p,s);
           JS
-      - name: Trace complete original fights under the original memory ceiling
+      - name: Trace coarse live allocation stacks between original complete fights
         run: node tools/lab-memory-check.mjs mark-integrity
       - uses: actions/upload-artifact@v4
         if: always()
