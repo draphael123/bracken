@@ -132,6 +132,9 @@ try {
           if(e.mode==='cutTell'&&e.glint){if(glintAt<0)glintAt=f;if(!pressed&&f-glintAt>=3){K.block=true;BK.sim(1);K.block=false;pressed=1;continue;}}else{glintAt=-1;pressed=0;}BK.sim(1);}
         K.left=K.right=false;out.yard.flash=!!st.done;}}
     return out;})()`, 600000);
+  // A brute winding up used to bypass heroCut, dropping real frenzy hits from the rend counter.
+  // Pin that attack state and strike from behind; the ordinary front guard remains covered by the original checks.
+  r.rendRaise = await pg.evalp("(()=>{const P=()=>BK.P,K=BK.keys,Z=()=>BK.bz();const run=frenzy=>{__bz();const e=__foe(16,'brute');BK.sim(2);if(frenzy){P().bzFightT=BK.time;P().rage=100;K.down=K.block=true;BK.sim(2);K.block=K.down=false;BK.sim(60);}const fz=P().frenzyT, before={...Z().stats},keys=new Set();BK.log=[];for(let i=0;i<8;i++){P().st=P().maxSt;P().combo=0;P().bzChainHit=false;BK.press('atk');for(let f=0;f<18;f++){e.x=P().x+16;e.face=1;e.mode='raise';e.modeT=1;e.stagger=e.poise=0;e.poiseCd=99;BK.sim(1);if(e.keyHit!==undefined)keys.add(e.keyHit);}}const hits=BK.log.filter(x=>x.k==='dmgE'&&x.e===e);BK.log=null;return{fz,hits:hits.length,heavy:hits.filter(x=>x.heavy).length,rends:Z().stats.rends-before.rends,cracks:Z().stats.cracks-before.cracks,keyed:keys.size};};return{cold:run(false),hot:run(true)};})()", 120000);
   console.log(JSON.stringify(r));
   const F = r.flurry;
   ok(F.combos.slice(0, 5).join() === '1,2,3,4,5' && F.heavy.join() === 'false,false,false,false,true', 'flurry: five landed chops did not run 1..5 with the fifth the cross-chop: ' + JSON.stringify(F));
@@ -159,6 +162,9 @@ try {
   ok(Z.swing > Z.swing0 && !Z.hurt && Z.lost20 > Z.lostN, 'frenzy: not quicker / flinched / not x1.25 taken: ' + JSON.stringify(Z));
   ok(Z.hpSur === 1 && !Z.deadSur, 'frenzy: HE NEVER KILLS HIMSELF - the frenzy\'s quarter killed him (or did not leave him on 1): ' + JSON.stringify(Z));
   ok(Z.healed >= 1 && Z.healed <= Math.ceil(Z.dealtF * 0.03) + 1, 'frenzy: heal on hit should be ~2.5% of what lands: ' + JSON.stringify(Z));
+  const RR = r.rendRaise;
+  ok(RR.cold.hits === 8 && RR.cold.rends === 0 && RR.cold.cracks === 0 && RR.cold.heavy === 0, 'rend overhead: eight ordinary landed chops must not crack: ' + JSON.stringify(RR));
+  ok(RR.hot.fz > 0 && RR.hot.hits === 8 && RR.hot.rends === 8 && RR.hot.cracks === 2 && RR.hot.heavy === 2 && RR.hot.keyed === 2, 'rend overhead: eight frenzied landed chops must stack eight rends and two heavy beast keys: ' + JSON.stringify(RR));
   const R = r.rend;
   ok(R.cold.hits >= 4 && R.cold.cracks === 0 && R.cold.heavy === 0, 'rend: without a frenzy nothing should rend or crack: ' + JSON.stringify(R));
   ok(R.hits >= 8 && R.cracks >= 2 && R.heavy >= 2 && R.heavy <= Math.ceil(R.hits / 4) && R.keyed >= 2, 'rend: every fourth frenzied blow on one foe should CRACK it as a HEAVY (the beast key): ' + JSON.stringify(R));
