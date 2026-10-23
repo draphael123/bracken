@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [tiles, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       pixel_cpu:
         type: boolean
@@ -132,7 +132,7 @@ jobs:
           name: mobile-comparison
           path: gate-data/
   compare:
-    if: inputs.mode == 'compare' || inputs.mode == 'present'
+    if: inputs.mode == 'compare' || inputs.mode == 'present' || inputs.mode == 'tiles'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -148,11 +148,14 @@ jobs:
           node-version: '24.11.1'
       - run: node tools/canvas-bitmap-proof.mjs
         if: inputs.present == 'bitmap' && inputs.mode == 'present'
+      - run: node tools/tile-strips-proof.mjs
+        if: inputs.mode == 'tiles'
       - name: Same-runner original phone setup, pixels and three FPS samples per build
         env:
           LEVEL: ${{ matrix.level }}
           PRESENT: ${{ inputs.mode == 'present' && inputs.present || 'drawImage' }}
-        run: node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT"
+          BASELINE: ${{ inputs.mode == 'tiles' && 'c07061a35f56ff24c325333e7117aed1440e2c8d' || '' }}
+        run: node tools/load-perf-compare.mjs "$LEVEL" --present="$PRESENT" --baseline="$BASELINE"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

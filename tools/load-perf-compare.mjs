@@ -4,7 +4,7 @@ import{pauseGameAtBoot,useCpuPixelCanvas,installLabRenderClock}from'./manual-lab
 // Same-runner before/after comparison: original 4x CPU phone setup, three FPS samples, exact pixels.
 import{spawnSync}from'node:child_process';import{mkdirSync,writeFileSync,readFileSync}from'node:fs';import{resolve,join}from'node:path';import{pathToFileURL}from'node:url';import assert from'node:assert/strict';
 const id=process.argv[2],present=process.argv.find(a=>a.startsWith('--present='))?.slice(10)||'drawImage';assert(['drawImage','copy','pattern','cpu-frame','sync-display','bitmap','opaque-frame'].includes(present));assert(id);const root=process.cwd(),out=resolve('gate-data/'+id),before=resolve('../perf-before');mkdirSync(out,{recursive:true});
-const baselineRef=['bitmap','opaque-frame'].includes(present)?'HEAD':'5e44cddd';
+const baselineRef=process.argv.find(a=>a.startsWith('--baseline='))?.slice(11)||(['bitmap','opaque-frame'].includes(present)?'HEAD':'5e44cddd');
 const added=spawnSync('git',['worktree','add','--detach',before,baselineRef],{encoding:'utf8'});assert.equal(added.status,0,added.stderr);
 copyLabHarness(root,before);
 let afterRoot=root;if(present==='opaque-frame'){afterRoot=resolve('../perf-after');const added=spawnSync('git',['worktree','add','--detach',afterRoot,'HEAD'],{encoding:'utf8'});assert.equal(added.status,0,added.stderr);const file=join(afterRoot,'src/main.js'),text=readFileSync(file,'utf8'),needle='const [buf, g0] = canvas(VW, VH, true);';assert.equal(text.split(needle).length,2);writeFileSync(file,text.replace(needle,"const [buf, g0] = (() => { const c = document.createElement('canvas'); c.width = VW; c.height = VH; const g = c.getContext('2d', { alpha: false }); g.imageSmoothingEnabled = false; return [c,g]; })();"));}

@@ -31802,8 +31802,9 @@ function drawWorld(cx, cy, showPlayer) {
   const stripTiles = !WRD.size && tileStrips.canDraw(g);
   for (let ty = ty0; ty <= ty0 + Math.ceil(VH / TS) + 1; ty++) for (let tx = tx0; tx <= tx0 + Math.ceil(VW / TS) + 1; tx++) {
     if (tx < 0 || ty < 0 || tx >= LW || ty >= LH) continue;
-    if (stripTiles && tx + tileStrips.span <= LW && tx + tileStrips.span - 1 <= tx0 + Math.ceil(VW / TS) + 1 && tileStrips.draw(g, tileSpr, L.grid, LW, tx, ty, tx * TS - cx, ty * TS - cy, lip, lip2)) { tx += tileStrips.span - 1; continue; }
-    const s = tileSpr[ty * LW + tx]; if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0) + (WRD.size ? WR.dipOf(WRD, ty * LW + tx) : 0));
+    const s = tileSpr[ty * LW + tx];
+    if (stripTiles && s && s.width === TS && s.height === TS && tx % tileStrips.span === 0 && tx + tileStrips.span <= LW && tx + tileStrips.span - 1 <= tx0 + Math.ceil(VW / TS) + 1 && tileStrips.draw(g, tileSpr, L.grid, LW, tx, ty, tx * TS - cx, ty * TS - cy, lip, lip2)) { tx += tileStrips.span - 1; continue; }
+    if (s) g.drawImage(s, tx * TS - cx, ty * TS - cy - (L.grid[ty * LW + tx] === T.REED ? 8 : 0) + (WRD.size ? WR.dipOf(WRD, ty * LW + tx) : 0));
     if (lip && s) { const t0 = L.grid[ty * LW + tx]; if ((t0 === T.SOLID || t0 === T.ONEWAY || t0 === T.PLANK || t0 === T.SHELF || t0 === T.RAIL || t0 === T.CRATE) && ty > 0 && L.grid[(ty - 1) * LW + tx] === T.AIR) { g.fillStyle = lip; g.fillRect(tx * TS - cx, ty * TS - cy, TS, 1); g.fillStyle = lip2; g.fillRect(tx * TS - cx, ty * TS - cy + 1, TS, 1); } }
   }
   if (L.arena && L.arena.drops) OWA.drawDrops(g, L.arena, cx, cy, time, TS, bossActive && boss && boss.t === 'owl' && boss.alive && (boss.mode === 'gustTell' || boss.mode === 'gust') ? 1 : 0);   /* (claude/owl3art) THE DROP: the void, the broken planks, the rope ends */
