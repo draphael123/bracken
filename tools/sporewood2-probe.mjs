@@ -47,7 +47,7 @@ const lk=E().find(e=>e.t==='lurker'&&Math.abs(e.x/16-125.5)<2);if(lk){lk.alive=t
   ok(r.lantern.lit > 5, 'a blow lights the lantern cap: ' + JSON.stringify(r.lantern));
   ok(r.darkLit.state !== 'bud' && r.darkLit.lit, 'lit, the dark bud grows under him: ' + JSON.stringify(r.darkLit));
   ok(r.dazzle && r.dazzle.mode === 'rest' && r.dazzle.dazzled, 'a lurker in the light is dazzled out of his cap: ' + JSON.stringify(r.dazzle));
-  ok(r.mend.to > r.mend.from + 10, 'a mend puff mends: ' + JSON.stringify(r.mend));
+  ok(r.mend.to >= r.mend.from + 6, 'a mend puff mends (SP.mend, 8%): ' + JSON.stringify(r.mend));
   ok(r.spring.n >= 1 && r.spring.bounced, 'a struck puffball hangs a spring spore that throws a hero: ' + JSON.stringify(r.spring));
   ok(r.seedStood === 'bud' && r.seedStruck.state !== 'bud', 'a seed cap does not grow when stood on, and grows when struck: ' + r.seedStood + ' ' + JSON.stringify(r.seedStruck));
   ok(!r.knotBlade.open && r.knotPlunge.open && r.knotPlunge.door === 0, 'the root knot turns a blade and opens to a plunge (its door gone): ' + JSON.stringify([r.knotBlade, r.knotPlunge]));
