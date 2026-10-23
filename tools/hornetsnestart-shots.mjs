@@ -22,6 +22,11 @@ try {
       BK.P.x = 15 * 16; BK.P.y = 65 * 16; BK.sim(50); snap('swarm-calm', 3); BK.press('atk'); BK.sim(25); snap('pot-thrown', 3); BK.sim(40); snap('cloud', 3);
       load(); at(106, 33); BK.sim(30); snap('brood-pulse', 3); BK.sim(110); snap('brood-hatched', 3);
     }
+    if (!ONLY || ONLY.some(n => /^q-/.test(n))) {
+      load(); BK.tp(301, 21); BK.sim(60); const E = () => BK.boss; BK.P.hp = BK.P.maxHp || 100;
+      const place = (m, dx = 70, dy = -50) => { const e = E(); if (!e) return; e.mode = m; e.modeT = 9; e.x = BK.P.x + dx; e.y = BK.P.y + dy; e.vx = 0; e.vy = 0; };
+      for (const m of ['hover', 'aim', 'dive', 'stuck', 'dazed', 'winded', 'sweepTell', 'sweep', 'buzzTell', 'tearTell', 'volleyTell', 'volley', 'cloakTell', 'thrash']) { if (!want('q-' + m)) continue; place(m); if (m === 'cloakTell') { try { E().cloak = 5; } catch (e) {} } snap('q-' + m, 3); }
+    }
     return { res: shots }; })()`, 600000);
   for (const [n, d] of r.res) writeFileSync(join(out, 'hornetsnestart-' + TAG + '-' + n + '.png'), Buffer.from(d.split(',')[1], 'base64'));
   console.log(r.res.length + ' shots: ' + r.res.map(s => s[0]).join(' '), 'errors', JSON.stringify(pg.errors.slice(0, 4)));

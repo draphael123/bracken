@@ -11,6 +11,8 @@
 import * as HQM from './hornet-queen.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
+import * as HQA from './redraw/hornet_queen_art.js';   /* (claude/hornetsnestart) her baked frames, her live extras, her darts */
+import * as HNP from './redraw/hornets_nest_props.js';
 const { HQ } = HQM;
 const SOUND = { aim: s => (s.buzz || s.tell)(), held: s => (s.tell || s.buzz)(), dive: s => (s.charge || s.whoosh || s.tell)(), stuck: s => { (s.thud || s.heavy)(); (s.crack || s.thud)(); },
   winded: s => (s.thud || s.heavy)(), dazed: s => (s.puff || s.thud)(), thrash: s => (s.queenShriek || s.roar)(), sweepTell: s => (s.buzz || s.tell)(), sweep: s => (s.charge || s.whoosh)(),
@@ -23,15 +25,15 @@ const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y),
 const ell = (g, x, y, rx, ry, col, rot = 0) => { g.fillStyle = col; g.beginPath(); g.ellipse(R(x), R(y), Math.max(1, rx), Math.max(1, ry), rot, 0, 7); g.fill(); };
 const C = { body: '#6a3a14', bodyD: '#3a1e0a', amber: '#e8a030', amberL: '#ffd070', stripe: '#2a160a', wing: 'rgba(220,232,244,0.55)', wingE: '#c8d8e8', eye: '#ff3a2a', sting: '#f0e8d0', leg: '#2a160a', crown: '#ffd36b' };
 /* THE POSE A MODE WEARS (local px, facing right, her centre at 0,0): body tilt (rad), abdomen angle relative to the body, wings, lying, legs out */
-export const POSE = {
-  sleep: { tilt: 0.1, abd: 0.4, wing: 'fold', y: 0 }, wake: { tilt: -0.1, abd: 0.2, wing: 'blur' }, hover: { tilt: 0, abd: 0.25, wing: 'blur' }, rise: { tilt: -0.15, abd: 0.3, wing: 'blur' },
-  circle: { tilt: 0.1, abd: 0.15, wing: 'blur' }, rejoin: { tilt: -0.1, abd: 0.2, wing: 'blur' }, enter: { tilt: 0.3, abd: 0.1, wing: 'back' },
-  aim: { tilt: 0.15, abd: 1.35, wing: 'blur', sting: true }, dive: { tilt: 0.9, abd: 0.1, wing: 'back', sting: true }, skim: { tilt: -0.5, abd: 0.4, wing: 'blur' },
-  stuck: { tilt: 1.2, abd: 0.2, wing: 'beat', sting: true }, winded: { tilt: 0.2, abd: 0.6, wing: 'droop', y: 2 }, dazed: { tilt: -0.2, abd: 0.5, wing: 'droop', y: 2, stars: true },
-  thrash: { tilt: -0.4, abd: -0.3, wing: 'beat' }, sweepTell: { tilt: -0.1, abd: -0.15, wing: 'blur', head: 3 }, sweep: { tilt: 0.05, abd: -0.25, wing: 'back' },
-  buzzTell: { tilt: -1.1, abd: 0.3, wing: 'wide' }, buzz: { tilt: -1.0, abd: 0.4, wing: 'wide' }, tearTell: { tilt: -1.3, abd: 0.6, wing: 'wide', legs: true }, tear: { tilt: -0.6, abd: 0.2, wing: 'back' },
-  volleyTell: { tilt: -0.1, abd: 1.7, wing: 'blur', sting: true }, volley: { tilt: 0.1, abd: 1.0, wing: 'blur', sting: true }, cloakTell: { tilt: -0.3, abd: 0.4, wing: 'wide' },
-  pinned: { tilt: 0, abd: 0.2, wing: 'fold', lying: true }, away: { tilt: 0, abd: 0, wing: 'blur' },
+export const POSE = {   /* (claude/hornetsnestart: the abdomen's angle reads as the TAIL'S SWING - abd < 0 hangs it down and curls it under, > 0 flicks it up; the art lane re-signed the greybox's table so the sting points where the move says) */
+  sleep: { tilt: 0.1, abd: -0.4, wing: 'fold', y: 0 }, wake: { tilt: -0.1, abd: -0.2, wing: 'blur' }, hover: { tilt: 0, abd: -0.25, wing: 'blur' }, rise: { tilt: -0.15, abd: -0.3, wing: 'blur' },
+  circle: { tilt: 0.1, abd: -0.15, wing: 'blur' }, rejoin: { tilt: -0.1, abd: -0.2, wing: 'blur' }, enter: { tilt: 0.3, abd: -0.1, wing: 'back' },
+  aim: { tilt: -0.1, abd: -1.3, wing: 'blur', sting: true }, dive: { tilt: 1.0, abd: -2.3, wing: 'back', sting: true }, skim: { tilt: -0.5, abd: -0.4, wing: 'blur' },
+  stuck: { tilt: 0.15, abd: -1.6, wing: 'beat', sting: true }, winded: { tilt: 0.2, abd: -0.6, wing: 'droop', y: 2 }, dazed: { tilt: -0.2, abd: -0.5, wing: 'droop', y: 2, stars: true },
+  thrash: { tilt: -0.4, abd: 0.4, wing: 'beat' }, sweepTell: { tilt: -0.1, abd: 0.15, wing: 'blur', head: 3 }, sweep: { tilt: 0.05, abd: 0.3, wing: 'back' },
+  buzzTell: { tilt: -1.1, abd: -0.3, wing: 'wide' }, buzz: { tilt: -1.0, abd: -0.4, wing: 'wide' }, tearTell: { tilt: -1.3, abd: -0.6, wing: 'wide', legs: true }, tear: { tilt: -0.6, abd: -0.2, wing: 'back' },
+  volleyTell: { tilt: -0.1, abd: -2.2, wing: 'blur', sting: true }, volley: { tilt: 0.1, abd: -2.7, wing: 'blur', sting: true }, cloakTell: { tilt: -0.3, abd: -0.4, wing: 'wide' },
+  pinned: { tilt: 0, abd: -0.2, wing: 'fold', lying: true }, away: { tilt: 0, abd: 0, wing: 'blur' },
 };
 /* HER BODY (greybox): a big hornet - a crowned head, the thorax, the striped abdomen and its sting, two pairs of wings - in the pose's angles */
 export function drawQueenBody(g, p, time, flash, ph) {
@@ -154,28 +156,26 @@ export function makeHornetQueenHands(ctx) {
       const e = live(), hot = e && S.stage === 2 && p.st === 'stand' && HQM.underPine(p, e, S.G.p.floor); const lineCol = S.stage !== 2 ? 'rgba(255,211,107,0.35)' : hot ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : 'rgba(255,211,107,0.55)';
       ctx.drawPine(g, p, x, S.G.p.floor - cy, time, lineCol); }
     const c = S.comb; if (c && (c.st === 'hang' || c.st === 'fall' || c.st === 'onHer' || c.st === 'heap')) { const x = c.x0 - cx, y = c.y - cy, w = c.x1 - c.x0, h = c.rows * 16; if (x < VW + 40 && x + w > -40) {
-      if (c.st === 'hang') { rect(g, x + w / 2 - 1, y - 40, 2, 40, '#5a3a10'); g.fillStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : '#d8a840'; for (let q = y + h + 3; q < S.G.p.floor - cy; q += 6) { g.fillRect(R(x + 2), R(q), 2, 2); g.fillRect(R(x + w - 4), R(q), 2, 2); } }
-      rect(g, x - 1, y - 1, w + 2, h + 2, '#3a240c'); rect(g, x, y, w, h, c.st === 'heap' ? '#a8741e' : '#e0a838'); for (let yy = 0; yy < h - 2; yy += 4) for (let xx = ((yy / 4) & 1) * 3; xx < w - 2; xx += 6) rect(g, x + xx + 1, y + yy + 1, 3, 2, c.st === 'heap' ? '#7a5014' : '#f6d070'); } }
+      if (c.st === 'hang') { HNP.stalk(g, x + w / 2, y, 44); g.fillStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : '#d8a840'; for (let q = y + h + 3; q < S.G.p.floor - cy; q += 6) { g.fillRect(R(x + 2), R(q), 2, 2); g.fillRect(R(x + w - 4), R(q), 2, 2); } }
+      HNP.slab(g, x, y, w, h, c.st === 'heap', time); } }
     /* THE HALL (P1): her brood cells in its walls */
-    for (const k of S.cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue;
-      if (k.st === 'broken' || k.st === 'hatched') { rect(g, x - 6, y - 5, 12, 5, '#7a5014'); continue; }
-      const pz = k.st === 'pulse' ? 1 + 0.2 * Math.sin(time * 14) : 1; rect(g, x - 7 * pz, y - 15 * pz, 14 * pz, 15 * pz, '#3a240c'); rect(g, x - 6 * pz, y - 14 * pz, 12 * pz, 14 * pz, k.st === 'pulse' ? (Math.floor(time * 8) % 2 ? '#ff7a4a' : '#e0a838') : '#c8902c');
-      rect(g, x - 2, y - 11 * pz, 4, 8 * pz, '#fff1d0'); if (k.st === 'pulse') { g.fillStyle = '#ff6b6b'; g.fillRect(x - 8, y + 2, R(16 * (1 - k.t / HQ.brood.pulse)), 2); } }
+    for (const k of S.cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue; HNP.cell(g, x, y, k.st, k.st === 'pulse' ? 1 - k.t / HQ.brood.pulse : 0, time); }
     /* a perch her buzz has set shaking: it drips and trembles (the tell) */
     for (const p of S.perches) if (p.st === 'shake') { const x0 = p.x0p - cx, y = p.y - cy; for (let k = 0; k < 4; k++) rect(g, x0 + 4 + k * 18 + Math.sin(time * 30 + k) * 1.5, y + 2, 2, 3 + ((time * 8 + k) % 4), '#ff9a5c'); } };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S || e.mode === 'away') return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const f = e.face || 1, x = e.x - cx, y = e.y - cy - HQ.h / 2, p = POSE[e.mode] || POSE.hover, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06;
     if (S.stage !== 'escape') { const fl = S.stage === 2 ? S.G.p.floor : S.G.h.floor; g.globalAlpha = 0.25; ell(g, x, fl - cy - 1, 14, 2.5, '#10060a'); g.globalAlpha = 1; }
-    if (S.cloak > 0) for (let i = 0; i < 16; i++) { const a = i * 2.39 + time * 4, rr = 16 + (i % 4) * 3; rect(g, x + Math.cos(a) * rr, y + Math.sin(a * 1.3) * rr * 0.7, 2, 2, Math.floor(time * 10 + i) % 2 ? '#d08a1a' : '#2a160a'); }
-    g.save(); g.translate(R(x), R(y + (p.y || 0))); g.scale(f, 1); drawQueenBody(g, p, time, flash, S.stage === 2 ? 2 : 1); g.restore();
+    if (S.cloak > 0) HQA.cloak(g, x, y, time);
+    const at = HQA.drawQueen(g, x, y + (p.y || 0), f, p, time, flash);
+    HQA.queenFx(g, { mode: e.mode, x, y, f, time, tip: at.tip, head: at.head, vx: (e.vx || 0) * f, vy: e.vy || 0, held: !!e.held });
     if (e.mode === 'aim' && e.held && Math.floor(time * 6) % 2) rect(g, x - f * 14, y + 10, 3, 3, '#ffd36b');
     if ((e.smokeCd || 0) > 0) { g.globalAlpha = 0.5; for (let k = 0; k < 3; k++) { const ph = (time * 2 + k / 3) % 1; rect(g, x + (k - 1) * 10, y - 12 - ph * 14, 4, 2, '#c8d0d8'); } g.globalAlpha = 1; } };   /* wary of smoke: her wings fan it off (the read of her smoke cooldown) */
   H.drawOver = (g, cx, cy, time) => { if (!S) return; const e = live(), X = v => R(v - cx), Y = v => R(v - cy), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0', VW = ctx.VW();
     /* the felled pines over her (a pinned queen lies under one) */
     for (const p of S.pines) if (p.st === 'down' || p.st === 'pin') ctx.drawPine(g, p, X(p.x), Y(S.G.p.floor), time, null);
     /* the falling comb: a chunk in the air, and its red ring where it will land */
-    for (const c of S.chunks) { g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.x), Y(c.floorY) - 1, HQ.buzz.r, 3, 0, 0, 7); g.stroke(); if (c.st === 'fall') { rect(g, X(c.x) - 5, Y(c.y) - 6, 10, 7, '#3a240c'); rect(g, X(c.x) - 4, Y(c.y) - 5, 8, 5, '#e0a838'); } }
-    for (const s of S.stingers) { rect(g, X(s.x) - 2, Y(s.y) - 1, 4, 2, '#f0e8d0'); rect(g, X(s.x) - 1, Y(s.y) - 2, 2, 4, '#3a1e0a'); }
+    for (const c of S.chunks) { g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.x), Y(c.floorY) - 1, HQ.buzz.r, 3, 0, 0, 7); g.stroke(); if (c.st === 'fall') HNP.slab(g, X(c.x) - 8, Y(c.y) - 9, 16, 11, false, time); }
+    for (const s of S.stingers) HQA.dart(g, X(s.x), Y(s.y), s.vx, s.vy, time);
     if (!e || !ctx.bossActive || e.mode === 'away') return;
     /* HER FLIGHT (P2), told: her loop's shadow on the ground ahead of her, a dotted line where she will pass low */
     if (S.stage === 2 && (e.mode === 'circle' || e.mode === 'rejoin')) { g.fillStyle = 'rgba(40,20,10,0.35)'; for (let k = 1; k <= 14; k++) { const q = HQM.loopAhead(S, k * 0.18); if (S.G.p.floor - q.y > HQ.pine.reach) continue; g.fillRect(X(q.x) - 2, Y(S.G.p.floor) - 2, 4, 2); } }
@@ -191,6 +191,6 @@ export function makeHornetQueenHands(ctx) {
 const HQ_SAY_WAKE = HQM.HQ_SAY.wake;
 /* HER BESTIARY CARD: two of her poses (hover, the aim) - main.js SPR.hornetqueenCard */
 export function bakeHornetQueenCard() {
-  const fr = [POSE.hover, POSE.aim].map((p, i) => { const [c, g] = canvas(64, 40); g.imageSmoothingEnabled = false; g.save(); g.translate(30, 22); drawQueenBody(g, p, i * 0.3, false, 1); g.restore(); return c; });
-  const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 30, ay: 34, w: HQ.w, h: HQ.h };
+  const fr = HQA.bakeCard([POSE.hover, POSE.aim]);
+  const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 56, ay: 62, w: HQ.w, h: HQ.h };
 }
