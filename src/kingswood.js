@@ -150,7 +150,7 @@ export function buildKingswood({ painter, T, TS }) {
   coins([215, 22], [219, 22]); plank(225, 231, 23);
   /* the wasps' boughs: a rise, the wasps out of their hives, a cage over a shield (cut it from the bough) */
   ground(215, 232, 26); ground(233, 249, 23);
-  plank(236, 241, 20); foe('wasp', 238, 17, 'hives', {}); foe('wasp', 246, 18, 'hives', {});
+  plank(236, 241, 20); foe('wasp', 238, 17, 'hives', { perch: true }); foe('wasp', 246, 18, 'hives', { perch: true });   /* (integ115) the wasps hang above the squad's floor on purpose (sprinkle-cap's e.perch) */
   rope('hiveCage', { x: 245, top: 14, hang: 18, cleat: [240, 19], load: 'cage' });
   foe('shield', 245, 22, 'hives', { face: -1 }); foe('sprig', 242, 22, 'hives', { face: -1 });
   deco(234, 22, 'gobPennant', 1); coins([237, 19], [240, 19], [247, 21]);
@@ -163,7 +163,7 @@ export function buildKingswood({ painter, T, TS }) {
   rope('stairC', { x: 260, top: 2, hang: 8, cleat: [258, 14], load: 'cage', land: [259, 13] });
   ground(261, 300, 11);                                                            /* THE CANOPY ROAD: the trunk's top, four rows over ledge two */
   sign(246, 22, 'THE CAGE STAIR. EACH CAGE YOU CUT DOWN IS THE NEXT STEP UP.');
-  foe('sprig', 255, 18, 'stair', { face: -1 }); foe('archer', 259, 14, 'stair', { face: -1 });
+  foe('sprig', 255, 18, 'stair', { face: -1 }); foe('archer', 259, 14, 'stair', { face: -1, perch: true });
   coins([254, 17], [258, 13]);
   /* THE CANOPY ROAD: a log trap down the road through a hound and a shield, then THE CAGE-WARDEN (the area's exam, an elite) under a plate's cage, the fall at his back */
   plank(262, 267, 8); plank(276, 283, 8); coins([264, 7], [279, 7]);              /* the canopy's high boughs */
@@ -171,7 +171,7 @@ export function buildKingswood({ painter, T, TS }) {
   foe('hound', 272, 10, 'canopy', { face: -1 }); foe('shield', 277, 10, 'canopy', { face: -1 });
   block(285, 286, 9, 10);                                                          /* the knot the log splits on (two rows: a step) */
   plank(287, 292, 7); ent('plate', 289, 6, { cage: 295 }); ent('dropcage', 295, 4);
-  foe('brute', 295, 10, 'warden', { face: -1 }); foe('wasp', 292, 4, 'warden', {});
+  foe('brute', 295, 10, 'warden', { face: -1 }); foe('wasp', 292, 4, 'warden', { perch: true });
   sign(281, 10, 'THE CAGE-WARDEN. HIS PLATE IS ON THE BOUGH OVER HIM.');
   deco(298, 10, 'hangCage', 0, { hang: true }); coins([288, 6], [291, 6], [298, 9]);
   /* the fall at his back: the canopy ends over the grove floor */
@@ -253,7 +253,7 @@ export function buildKingswood({ painter, T, TS }) {
   ground(560, 568, 12);
   ground(569, 584, 16);
   plank(571, 575, 10); plank(578, 582, 9); plank(582, 584, 14); plank(582, 584, 12);   /* (a bough ladder up the ravine's east wall: a fall is a climb out of the fire) */
-  foe('sprig', 580, 8, 'ravine', { face: -1, kw: { torch: true } });
+  foe('sprig', 580, 8, 'ravine', { face: -1, kw: { torch: true }, perch: true });
   ground(585, 600, 10);
   foe('sprig', 589, 9, 'ravine', { face: -1 });
   coins([573, 9], [580, 8], [587, 9]);
