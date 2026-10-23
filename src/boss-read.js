@@ -71,6 +71,7 @@ export const TURN_WORD = {
   gangleader: e => e.mode === 'dodge' ? TURN.NOT_THERE : 'NOT INTO HIS CUTS',   // his other blade guards while one is moving
   homunculus: e => e.hidden ? TURN.NOT_THERE : TURN.WARDED,  // in the smoke there is nothing there
   bogtroll: e => (e.ward > 0 ? TURN.WARDED : 'PEAT HIDE'),   // (claude/fenroad) his peat hide takes most of a blow (B15: x0.4); stuck in a rotten section he takes it double
+  hornetqueen: e => (e.ward > 0 ? TURN.WARDED : e.cloak > 0 ? 'CLOAKED' : 'HARD SHELL'),   // (claude/hornetsnest) her shell turns half a cut (B15 x0.5), her swarm cloak more (x0.4); a plunge from above lands whole; her openings x1.5-x2
   oldtusker: e => (e.ward > 0 ? TURN.WARDED : 'THICK HIDE'),   // (claude/oldtusker) his hide takes most of a cut (B15: x0.4); a plunge on his back, a ram, a felled pine open him
   tombking: e => (e.ward > 0 ? TURN.WARDED : 'SEALED'),   // (claude/pyramidboss) his lid takes most of a blow until a switch or a trap tips him (B15: x0.4, never nothing)
   scarabmother: e => (e.ward > 0 ? TURN.WARDED : e.mode === 'burrowed' ? 'UNDER THE SAND' : 'HER SHELL'),   // (claude/sealedpyramid) her shell takes most of a blow until a trap opens her (B15: x0.45, never nothing)
