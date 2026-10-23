@@ -1,5 +1,6 @@
 // Per-level ground kits and allowed decoration kinds. Add a kind deliberately here before placing it.
 export const GROUND_KITS = {
+  "hornetsnest": {"density":0,"kinds":[]},   /* integ116 (claude/hornetsnest): the nest paints its own wall, comb and wax (src/redraw/hornets_nest_*.js) and grows no ground cover */
   "oreroad": {"density":0.25,"kinds":["rock","stone","tuft"]},   /* THE ORE ROAD: bare crag and spoil, a little grass in the lee of the stations */
   "witchlight": {"density":0.3,"kinds":["tuft","rock","flower","stone"]},   /* THE WITCHLIGHT STAIR: a hillside road at dusk */
   "burning": {"density":0.34,"kinds":["tuft","rock","stump"]},   /* THE BURNING VILLAGE: a farming street on the road, and the fires they cooked on */
@@ -267,6 +268,7 @@ export const GROUND_KITS = {
   }
 };
 export const ALLOWED_DECORATIONS = {
+  "hornetsnest": [],
   "oreroad": ["rock","stone","tuft","barrels","cart","lanternPost","lootHeap","cairn","bones"],
   "witchlight": ["tuft","rock","flower","stone","topiaryUrn","lamppost","ivyWall","grave","bones","candelabra","coffer"],
   "burning": ["tuft","rock","stump","campfire","barrels","fence","cart","hayBale","brokenCart","milkChurn","waterPump","crookedFence","lanternPost"],
