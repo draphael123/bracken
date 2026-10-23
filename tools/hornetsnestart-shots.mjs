@@ -14,6 +14,14 @@ try {
     const snap = (name, z = 2) => { if (!want(name)) return; BK.step(1); const c = document.createElement('canvas'), b = BK.buf; c.width = b.width * z; c.height = b.height * z; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(b, 0, 0, c.width, c.height); shots.push([name, c.toDataURL('image/png')]); };
     const at = (col, row, face = 1) => { const P = BK.P; P.x = col * 16 + 8; P.y = (row + 1) * 16; P.vx = P.vy = 0; P.face = face; BK.sim(50); };
     load(); for (const [n, c, r] of ${JSON.stringify(SPOTS)}) { if (!want(n)) continue; at(c, r); snap(n); }
+    if (!ONLY || ONLY.some(n => /^(stand|swarm|comb|pot|cloud|brood)/.test(n))) {
+      load(); at(4, 65); snap('stand', 3);
+      load(); at(17, 64); snap('swarm-idle', 3); BK.P.x = 19 * 16; BK.sim(45); snap('swarm-rise', 3); BK.sim(30); snap('swarm-angry', 3);
+      load(); at(34, 65); snap('comb-hang'); BK.press('jump'); BK.sim(7); BK.press('atk'); BK.sim(14); snap('comb-fall'); BK.sim(90); snap('comb-landed');
+      load(); at(4, 65); BK.press('talk'); BK.sim(12); snap('pot-carry', 4);
+      BK.P.x = 15 * 16; BK.P.y = 65 * 16; BK.sim(50); snap('swarm-calm', 3); BK.press('atk'); BK.sim(25); snap('pot-thrown', 3); BK.sim(40); snap('cloud', 3);
+      load(); at(106, 33); BK.sim(30); snap('brood-pulse', 3); BK.sim(110); snap('brood-hatched', 3);
+    }
     return { res: shots }; })()`, 600000);
   for (const [n, d] of r.res) writeFileSync(join(out, 'hornetsnestart-' + TAG + '-' + n + '.png'), Buffer.from(d.split(',')[1], 'base64'));
   console.log(r.res.length + ' shots: ' + r.res.map(s => s[0]).join(' '), 'errors', JSON.stringify(pg.errors.slice(0, 4)));

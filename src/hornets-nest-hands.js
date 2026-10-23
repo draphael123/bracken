@@ -15,6 +15,7 @@
 //   arrows() -> [{ x, y, state }] (the ranger's arrows in flight)
 import * as CT from './carry-throw.js';
 import { drawSwarm } from './hornet-swarm.js';
+import * as HNP from './redraw/hornets_nest_props.js';   /* (claude/hornetsnestart) the props, drawn */
 export const SMOKE = { reachX: 15, reachY: 18, aura: 58, rest: 7, cloudR: 46, cloudT: 6, dmg: 3, stagger: 0.7, keep: 3, col: '#c8d0d8' };
 export const COMB = { g: 900, maxV: 520, crush: 24, heroCrush: 0, sticky: 0.12 };
 export const BROOD = { near: 120, pulse: 3.2, n: 2 };
@@ -166,47 +167,31 @@ export function makeNestHands(ctx) {
     cells: cells.map(k => ({ x: k.x, y: k.y, st: k.st })), n: { ...W.n } });
   /* ---------- DRAWING (GREYBOX: the art lane draws the comb, the wax, the stands, the pot, the smoke and the cells - these are the shapes and the reads) ---------- */
   const rc = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-  /* a slab of comb: amber hexagon cells, a dark rim; `set` (landed) is darker and cracked */
-  const slab = (g, x, y, w, h, set, time) => { rc(g, x - 1, y - 1, w + 2, h + 2, '#3a240c'); rc(g, x, y, w, h, set ? '#a8741e' : '#e0a838');
-    for (let yy = 0; yy < h - 2; yy += 4) for (let xx = ((yy / 4) & 1) * 3; xx < w - 2; xx += 6) { rc(g, x + xx + 1, y + yy + 1, 3, 2, set ? '#7a5014' : '#f6d070'); rc(g, x + xx + 1, y + yy + 3, 3, 1, set ? '#5a3a10' : '#b07a20'); }
-    if (!set) for (let xx = 4; xx < w; xx += 9) { const d = (time * 6 + xx) % 6; rc(g, x + xx, y + h, 1, 1 + d * 0.5, '#e0a838'); }
-    if (set) { rc(g, x + w * 0.3, y, 1, h, '#4a300c'); rc(g, x + w * 0.7, y + 2, 1, h - 2, '#4a300c'); } };
   W.draw = (g, cx, cy, time) => {
     if (!W.on()) return; const Lv = L(), VW = ctx.VW ? ctx.VW() : 640;
-    /* WAX: a glossy amber skin on the footing, and its drips */
+    /* WAX: the tiles are the glossy footing (src/redraw/hornets_nest_tiles.js); here only its glints, that sparkle and creep */
     for (const [x0, x1, row] of Lv.wax || []) { const x = x0 * TS - cx, y = row * TS - cy, w = (x1 - x0 + 1) * TS; if (x > VW + 20 || x + w < -20) continue;
-      rc(g, x, y - 2, w, 3, '#e0a838'); rc(g, x, y - 2, w, 1, '#fff1a0'); for (let k = 5; k < w - 2; k += 11) { const d = ((time * 2 + k * 0.37) % 1) * 4; rc(g, x + k, y + 1, 1, 1 + d, '#c08a28'); } }
+      for (let k = 7; k < w - 4; k += 13) { const ph = (time * 0.6 + k * 0.173) % 1; if (ph < 0.3) rc(g, x + k, y + 1, 1 + (ph < 0.15 ? 1 : 0), 1, '#fff6c8'); } }
     /* THE COMBS: hanging (with the stalk up and the gold plumb line down to a ghost of where it lands), falling, landed */
     for (const c of combs) { const x = c.x0 * TS - cx, w = (c.x1 - c.x0 + 1) * TS, h = c.rows * TS; if (x > VW + 40 || x + w < -40) continue;
       if (c.st === 'hang') { const y = c.y - cy, mid = x + w / 2;
-        let sy = c.row - 1; while (sy > 0 && sy > c.row - 6 && !ctx.solidPx(c.x0 * TS + w / 2, sy * TS + 8, false)) sy--; rc(g, mid - 1, (sy + 1) * TS - cy, 2, y - ((sy + 1) * TS - cy), '#5a3a10');   /* its stalk */
+        { let sy = c.row - 1; while (sy > 0 && sy > c.row - 6 && !ctx.solidPx(c.x0 * TS + w / 2, sy * TS + 8, false)) sy--; HNP.stalk(g, mid, y, Math.max(4, y - ((sy + 1) * TS - cy))); }   /* its paper stalk up to what it hangs from */
         const lr = landRow(c), ly = lr * TS - cy; g.fillStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : '#d8a840'; for (let q = y + h + 3; q < ly; q += 6) { g.fillRect(R(x + 2), R(q), 2, 2); g.fillRect(R(x + w - 4), R(q), 2, 2); }   /* the plumb line (its two edges) */
         g.globalAlpha = 0.28 + 0.12 * Math.sin(time * 4); g.strokeStyle = '#ffd36b'; g.strokeRect(R(x) + 0.5, R(ly) + 0.5, w - 1, h - 1); g.globalAlpha = 1;   /* the ghost where it lands */
-        slab(g, x, y, w, h, false, time); }
-      else slab(g, x, c.y - cy, w, h, c.st === 'down', time); }
-    /* THE SMOKE STANDS: a clay pot on a forked stick, smouldering */
-    for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue;
-      rc(g, x - 5, y - 14, 1, 14, '#5a3a20'); rc(g, x + 4, y - 14, 1, 14, '#5a3a20'); rc(g, x - 6, y - 15, 13, 1, '#5a3a20');
-      rc(g, x - 4, y - 12, 9, 7, '#2a1a10'); rc(g, x - 3, y - 11, 7, 5, '#a0603a'); rc(g, x - 2, y - 10, 2, 1, '#d08a5a'); rc(g, x - 2, y - 13, 5, 1, '#ff8a3a');
-      for (let k = 0; k < 3; k++) { const ph = (time * 0.6 + k / 3) % 1; g.globalAlpha = 0.5 * (1 - ph); rc(g, x - 2 + Math.sin(time * 2 + k) * 3, y - 16 - ph * 22, 4, 3, '#c8d0d8'); } g.globalAlpha = 1; }
-    /* THE BROOD CELLS: a wax pocket; pulsing, it swells and glows */
-    for (const k of cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue;
-      if (k.st === 'broken' || k.st === 'hatched') { rc(g, x - 6, y - 5, 12, 5, '#7a5014'); rc(g, x - 4, y - 6, 2, 2, '#a8741e'); rc(g, x + 2, y - 7, 2, 3, '#a8741e'); continue; }
-      const p = k.st === 'pulse' ? 1 + 0.18 * Math.sin(time * (8 + 10 * (1 - k.t / BROOD.pulse))) : 1, ww = R(12 * p), hh = R(14 * p);
-      rc(g, x - ww / 2 - 1, y - hh - 1, ww + 2, hh + 1, '#3a240c'); rc(g, x - ww / 2, y - hh, ww, hh, k.st === 'pulse' ? (Math.floor(time * 8) % 2 ? '#ff7a4a' : '#e0a838') : '#e0a838');
-      rc(g, x - 2, y - hh + 3, 4, hh - 5, k.st === 'pulse' ? '#fff1d0' : '#f0d8a0'); rc(g, x - 1, y - hh + 4, 2, 2, '#3a240c');
-      if (k.st === 'pulse') { const kk = 1 - k.t / BROOD.pulse; g.fillStyle = '#ff6b6b'; g.fillRect(x - 8, y + 2, R(16 * kk), 2); } }
+        HNP.slab(g, x, y, w, h, false, time); }
+      else HNP.slab(g, x, c.y - cy, w, h, c.st === 'down', time); }
+    /* THE SMOKE STANDS: a clay pot on a tripod of sticks, smouldering */
+    for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; HNP.stand(g, x, y, time); }
+    /* THE BROOD CELLS: a capped wax pocket; pulsing, it swells, reddens and cracks */
+    for (const k of cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue; HNP.cell(g, x, y, k.st, k.st === 'pulse' ? 1 - k.t / BROOD.pulse : 0, time); }
   };
   W.drawOver = (g, cx, cy, time) => {
     if (!W.on()) return; const P = ctx.P();
     /* THE POTS: in the hand, set down, in flight - and the smoke a carried one throws round you (its reach drawn: the rule's state) */
-    for (const q of pots) { const x = R(q.x - cx), y = R(q.y - cy);
-      rc(g, x - 3, y - 6, 7, 6, '#2a1a10'); rc(g, x - 2, y - 5, 5, 4, '#a0603a'); rc(g, x - 1, y - 7, 3, 1, '#ff8a3a');
+    for (const q of pots) { const x = R(q.x - cx), y = R(q.y - cy); HNP.pot(g, x, y + 3, time, true);
       if (q.state === 'held' && q.holder) { g.globalAlpha = 0.16 + 0.06 * Math.sin(time * 3); g.strokeStyle = '#c8d0d8'; g.beginPath(); g.arc(R(q.holder.x - cx), R(q.holder.y - 14 - cy), SMOKE.aura, 0, 7); g.stroke(); g.globalAlpha = 1; }
       if (q.state === 'rest') { g.globalAlpha = 0.12; g.fillStyle = '#c8d0d8'; g.beginPath(); g.arc(x, y - 8, SMOKE.aura * Math.min(1, q.smoulder / 2), 0, 7); g.fill(); g.globalAlpha = 1; } }
-    for (const c of clouds) { const x = c.x - cx, y = c.y - cy, k = Math.min(1, c.t / 1.2);
-      for (let i = 0; i < 9; i++) { const a = i * 0.7 + time * 0.4, rr = c.r * (0.35 + 0.45 * ((i * 37) % 10) / 10); g.globalAlpha = 0.22 * k; g.fillStyle = i % 2 ? '#c8d0d8' : '#e8ecf0'; g.beginPath(); g.arc(R(x + Math.cos(a) * rr * 0.6), R(y + Math.sin(a * 1.3) * rr * 0.35), R(c.r * 0.38), 0, 7); g.fill(); }
-      g.globalAlpha = 1; }
+    for (const c of clouds) { HNP.cloud(g, c.x - cx, c.y - cy, c.r, Math.min(1, c.t / 1.2), time); }
     if (near && ctx.text) ctx.text('E: A SMOKE POT', R(near.x - cx), R(near.y - cy) - 30, SMOKE.col, 'center');
     if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && arc.land.hit ? '#8fd160' : '#c8ccd4');
     void P;

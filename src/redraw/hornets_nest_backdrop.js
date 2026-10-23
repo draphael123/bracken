@@ -157,7 +157,8 @@ export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
     const gr = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); gr.addColorStop(0, 'rgba(10,4,0,0)'); gr.addColorStop(1, 'rgba(10,4,0,0.32)'); g.fillStyle = gr; g.fillRect(0, 0, VW, VH);
   } else {
     /* near boughs in the top corners: needles, a limb, tilted by the wind */
-    const sway = Math.sin(time * 0.6) * 2; for (const d of [-1, 1]) { const bx = d < 0 ? -10 : VW + 10, by = -6 + sway * d;
-      for (let q = 0; q < 70; q++) { const nx = bx - d * q * 1.6, ny = by + q * 0.35 + Math.sin(q / 6) * 2; R(g, BARK[1], nx, ny, 2, 3); if (q % 3 === 0) for (let s = 0; s < 4; s++) R(g, NEEDLE[(q + s) % 3 + 1], nx + (s - 2) * 2, ny + 3 + s % 2 * 3, 2, 1); } }
+    const sway = Math.sin(time * 0.6) * 2; for (const d of [-1, 1]) { const bx = d < 0 ? -10 : VW + 10, by = 0 + sway * d;
+      for (let q = 0; q < 96; q++) { const nx = bx - d * q * 1.5, ny = by + q * 0.28 + Math.sin(q / 7) * 2.5, th = 5 - q * 0.04; R(g, BARK[0], nx, ny - 1, 2, th + 2); R(g, BARK[2], nx, ny, 2, th); R(g, BARK[4], nx, ny, 2, 1);
+        if (q % 3 === 0 && q > 6) for (let s = 0; s < 5; s++) { const len = 6 + ((q * 7 + s * 3) % 7); R(g, NEEDLE[(q + s) % 3], nx + (s - 2) * 2, ny + th, 1, len); R(g, NEEDLE[3], nx + (s - 2) * 2, ny + th, 1, 2); } } }
   }
 }

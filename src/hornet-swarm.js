@@ -66,14 +66,31 @@ export const swarmFrame = e => e.hurtT > 0 ? SWARM_POSE.hurt : SWARM_POSE[e.mode
 /* HOW MANY HORNETS ARE DRAWN in the cloud (a cut thins it) */
 export const swarmCount = e => Math.max(4, Math.round(18 * Math.max(0, e.hp) / (e.maxHp || SWARM.hp)));
 /* ---------- GREYBOX: the cloud is drawn live (drawSwarm, a dot a hornet); the sheet (5 poses) is for the bestiary card and the art lane's contract ---------- */
-const COL = { body: '#d08a1a', bodyD: '#5a3a10', wing: '#e8eef4', red: '#ff5a3a', grey: '#9aa0a8', out: '#1b1626' };
+const COL = { body: '#e8a418', bodyD: '#3a2410', band: '#1a1006', wing: '#d4dce8', red: '#ff5a3a', grey: '#9aa0a8', greyD: '#6a7078', out: '#1b1626' };
+/* ONE HORNET of the cloud (art pass, claude/hornetsnestart): a 5 x 3 body - a dark head, an amber thorax, a banded abdomen with its sting - with two wing-flecks that beat. dir = which way it flies. */
+function mote(g, px, py, dir, col, bandCol, beat, tint) {
+  /* head (dark) - thorax (col, 2) - abdomen (band, col) : 5 px long, 1 high, a shadow under it, wings a flick above */
+  const o = dir > 0 ? 1 : -1, x0 = dir > 0 ? px - 2 : px - 2;
+  g.globalAlpha *= 0.55; g.fillStyle = COL.out; g.fillRect(x0, py + 1, 5, 1); g.globalAlpha = g.globalAlpha / 0.55;
+  const seq = dir > 0 ? [bandCol, col, bandCol, col, COL.band] : [COL.band, col, bandCol, col, bandCol];   /* tail -> head, flipped */
+  for (let k = 0; k < 5; k++) { g.fillStyle = seq[k]; g.fillRect(x0 + k, py, 1, 1); }
+  g.fillStyle = col; g.fillRect(x0 + (dir > 0 ? 2 : 1), py - 1, 2, 1);                       /* the humped thorax */
+  if (tint) { g.fillStyle = tint; g.fillRect(x0 + 1, py - 1, 3, 1); }
+  g.fillStyle = COL.wing; if (beat) { g.fillRect(x0 + 1 + (o > 0 ? 1 : 1), py - 2, 2, 1); g.fillRect(x0 + 2, py - 3, 1, 1); } else g.fillRect(x0 + 1, py - 2, 3, 1);
+}
 export function drawSwarm(g, e, cx, cy, time) {
-  const n = swarmCount(e), x = e.x - cx, y = e.y - SWARM.h / 2 - cy, m = e.mode === 'settle' ? 'calm' : e.mode, R = SWARM.r * (m === 'rise' ? 0.65 : m === 'calm' ? 1.15 : 1);
-  const col = m === 'calm' ? COL.grey : m === 'rise' || m === 'angry' ? (Math.floor(time * 10) % 2 ? COL.red : COL.body) : COL.body;
-  for (let i = 0; i < n; i++) { const a = i * 2.39996 + time * (m === 'calm' ? 0.6 : m === 'angry' ? 4.5 : 2.2) * (i % 2 ? 1 : -1), rr = R * Math.sqrt((i + 0.5) / n);
-    const px = Math.round(x + Math.cos(a) * rr), py = Math.round(y + Math.sin(a * 1.3) * rr * 0.7 + (m === 'calm' ? 2 : 0));
-    g.fillStyle = COL.out; g.fillRect(px - 1, py - 1, 3, 3); g.fillStyle = col; g.fillRect(px, py, 2, 1); g.fillStyle = COL.bodyD; g.fillRect(px, py + 1, 2, 1);
-    if (m !== 'calm' && (Math.floor(time * 20) + i) % 2) { g.fillStyle = COL.wing; g.fillRect(px, py - 1, 1, 1); } }
+  const n = Math.round(swarmCount(e) * 1.7), x = e.x - cx, y = e.y - SWARM.h / 2 - cy, m = e.mode === 'settle' ? 'calm' : e.mode, R = SWARM.r * 1.25 * (m === 'rise' ? 0.65 : m === 'calm' ? 1.15 : 1);
+  const hot = m === 'rise' || m === 'angry', flick = Math.floor(time * 10) % 2;
+  /* the cloud's own shadow: a soft dark smudge, red-hot when it rises, grey-cool when quiet */
+  g.globalAlpha = m === 'calm' ? 0.16 : hot ? 0.26 : 0.2; g.fillStyle = m === 'calm' ? '#4a5058' : hot ? (flick ? '#5a1408' : '#3a1008') : '#3a2410'; g.beginPath(); g.ellipse(Math.round(x), Math.round(y + (m === 'calm' ? 2 : 0)), R * 1.25, R * 0.85, 0, 0, 7); g.fill();
+  if (m === 'rise') { g.globalAlpha = 0.45 + 0.3 * flick; g.strokeStyle = '#ff5a3a'; g.lineWidth = 1; g.beginPath(); g.ellipse(Math.round(x), Math.round(y), R * 1.5, R * 1.1, 0, 0, 7); g.stroke(); }   /* the tell: a hot ring closing in */
+  g.globalAlpha = 1;
+  for (let i = 0; i < n; i++) { const sp = m === 'calm' ? 0.6 : m === 'angry' ? 4.5 : m === 'rise' ? 6 : 2.2, dr = i % 2 ? 1 : -1, a = i * 2.39996 + time * sp * dr, rr = R * Math.sqrt((i + 0.5) / n);
+    const px = Math.round(x + Math.cos(a) * rr), py = Math.round(y + Math.sin(a * 1.3) * rr * 0.7 + (m === 'calm' ? 2 + (i % 3) : 0)), dir = -Math.sin(a) * dr >= 0 ? 1 : -1;
+    const col = m === 'calm' ? COL.grey : hot ? (flick ^ (i & 1) ? COL.red : COL.body) : COL.body, band = m === 'calm' ? COL.greyD : COL.band;
+    if (m === 'angry') { g.globalAlpha = 0.35; g.fillStyle = COL.red; g.fillRect(px - dir * 3, py, 2, 1); g.globalAlpha = 1; }   /* streaming at you */
+    mote(g, px, py, dir, col, band, m !== 'calm' && ((Math.floor(time * 22) + i) & 1), null); }
+  if (m === 'calm') { for (let k = 0; k < 3; k++) { const ph = (time * 0.4 + k / 3) % 1; g.globalAlpha = 0.35 * (1 - ph); g.fillStyle = '#c8d0d8'; g.fillRect(Math.round(x - 6 + k * 6 + Math.sin(time + k) * 2), Math.round(y - R - ph * 10), 3, 2); } g.globalAlpha = 1; }   /* the smoke on it */
   if ((e.hurtT || 0) > 0) { g.globalAlpha = 0.5; g.fillStyle = '#ffffff'; g.beginPath(); g.arc(Math.round(x), Math.round(y), R + 2, 0, 7); g.fill(); g.globalAlpha = 1; }
 }
 export function bakeSwarm(canvas, flipX, whiten) {
