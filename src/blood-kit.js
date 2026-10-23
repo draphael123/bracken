@@ -21,7 +21,7 @@
 export const BLOOD = {
   /* share: the part of a blow taken that becomes debt; cap: of max hp; drainT: s from a new debt to empty; hold: s before it starts to drain;
      reclaim: x the damage of his landed blow that comes back (min reclaimMin hp, never past the segment) */
-  debt: { share: 0.5, cap: 0.25, drainT: 3, hold: 0.45, reclaim: 0.45, reclaimMin: 1 },
+  debt: { share: 0.6, cap: 0.3, drainT: 4, hold: 0.45, reclaim: 0.7, reclaimMin: 1 },   /* (claude/bkbot TUNE, was share 0.5 / cap 0.25 / drainT 3 / reclaim 0.45: the lab bot with his whole kit still won stockade 2/12 where knight/warden/pyro win 56%; a bigger, slower rally - more of each blow owed, 4 s to win it back, 0.7 of every landed blow reclaimed - lifts it to 33-50% without touching what a clean player takes) */
   /* BLOOD PRICE: pct of max health, on the bar as debt; buffT s of BLOOD-EDGED blades at mul; cd s between prices */
   price: { pct: 0.10, buffT: 6, mul: 1.2, cd: 1.2 },
   /* THE TIERS: at = held s (from the press, as the knight's CUT_AT) for T1..T5; auto = held this long, the best tier he may have comes down by itself;
