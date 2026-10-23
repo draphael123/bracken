@@ -107,6 +107,13 @@ harness code when Task2 adds cleanup helpers. The copier is tested against the a
 performance graph and eight-module stabilized graph, including successful imports. Reference game
 files stay at their selected base. This follow-up changes tools only; the verified src tree is unchanged.
 
+A cloud-only CPU-canvas follow-up (39881083202, workflow9c61c692, audit source efdf07c2) passes
+exact gameplay/pixel controls for Wood, Spire and Canal. Mark-integrity completes all fights without skips
+in336362ms, renderer2809MB, versus the retained native occurrence217915ms/2804MB. Hidden-hit still
+interrupts at2874MB after246648ms. It gives no reliable memory margin and slows the successful audit,
+so the backend remains opt-in and is not adopted. Frozen full suites and real-time FPS retain their
+original backend. This workflow is diagnostic only; it does not change production or release budgets.
+
 ## QUESTIONS FOR DANIEL
 
 No decision is required to retain the verified demand loading and conservative renderer changes. Recommend
