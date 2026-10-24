@@ -7,7 +7,7 @@ import { drawArm, drawSlab, drawProp } from './scree-lip.js';
 //   THE LEVEL'S RULE IS HIS OPENING: "the cliff drops what it likes". Two LOOSE OVERHANGS lean out over the fold, each held up by the shepherds' dry-stone
 //     PROP at its foot. The prop glints gold while he stands in the overhang's fall line (drawn on the floor); strike it (any blow, standing - every hero)
 //     and the overhang creaks and comes down: rock on whatever is under it. Under it, he is STUNNED - the shared OPEN read (B10): a GOLD ring and a timer
-//     bar, blows land x2. A spent overhang loosens again (told: grit trickles, the crack glows) after LIP.rearm seconds.
+//     bar, blows land x8 (claude/ramtune2: was x4, Daniel 10-24 "too much health for the mechanics"; the wall crash x6, was x4). A spent overhang loosens again (told: grit trickles, the crack glows) after LIP.rearm seconds.
 //   THE WALL CRASH stays a BONUS opening (a charge you got out of the way of, into the stone): gold now, not green (the shared read), x1.5.
 //   THE WARD (B3): when either opening ends he shakes off the stone - a told ~3 s ward (a pale shell round him, WARDED on every blow, the overhang's rock
 //     bounces off him) so he can never be chain-locked.
@@ -18,7 +18,7 @@ import { drawArm, drawSlab, drawProp } from './scree-lip.js';
 // main.js wires it (updateRam calls ramStep; the hit code asks ramGuard; the draw asks drawRamLips/drawRamRead). tools/ram-lord.mjs is its check.
 export const RAM = {
   hp: 3600,             // (was 360 on the chip; a duelist's blows land - and a fight is ~90-150 s)
-  stunT: 3.4, stunMul: 4, crashMul: 4, wardT: 2, frontMul: 0.4, burnMul: 0.4, paceExtra: [0.5, 0.35, 0.2],   /* burnMul: a burn tick outside his openings (off the chip, the pyro's fire ran whole: 4/4 in 34-48 s) */
+  stunT: 3.4, stunMul: 6, crashMul: 6,   /* (Daniel 10-24: x8 measured 92% with flasks -> x6) */ wardT: 2, frontMul: 0.4, burnMul: 0.4, paceExtra: [0.5, 0.35, 0.2],   /* burnMul: a burn tick outside his openings (off the chip, the pyro's fire ran whole: 4/4 in 34-48 s) */
   p2: 0.66, p3: 0.33,
   rainEvery: 2.1, rainTell: 0.95,
   sweepTell: 0.65, sweepR: 42, sweepH: 22,
@@ -92,7 +92,7 @@ export function drawRamLips(g, e, floor, cx, cy, t) {
 export function drawLip(g, L, floor, cx, cy, t) {
   {
     const px = Math.round(L.x - cx), fy = Math.round(floor - cy), lipX0 = Math.round(Math.min(L.x, L.x + L.side * (LIP.gap + LIP.zone)) - cx), lipW = LIP.gap + LIP.zone + 10;
-    const up = L.state === 'armed' || L.state === 'creak', shake = L.state === 'creak' ? Math.round(Math.sin(t * 60) * 2) : 0, drop = L.state === 'fall' ? Math.round((1 - L.t / LIP.fall) * 50) : 0;
+    const up = L.state === 'armed' || L.state === 'creak', warn = L.state === 'armed' && L.glow > 0, shake = L.state === 'creak' ? Math.round(Math.sin(t * 60) * 2) : warn ? Math.round(Math.sin(t * 38) * 1.2) : 0, drop = L.state === 'fall' ? Math.round((1 - L.t / LIP.fall) * 50) : 0;
     { const wx = L.side > 0 ? lipX0 : lipX0 + lipW, ay = fy - 58; drawArm(g, wx, ay, L.side); }   /* THE CRAG ARM it leans out on, up out of the view: rock, not a flat polygon (claude/screefix, src/scree-lip.js) */
     if (up || L.state === 'fall') {   /* THE LIP: a slab of ochre rock out of the cliff, its underside ragged */
       const ly = fy - 58 + drop; drawSlab(g, lipX0 + shake, ly, lipW);   /* THE LIP: a slab of the hill's rock, a stalactite fringe under it (src/scree-lip.js) */
@@ -102,7 +102,13 @@ export function drawLip(g, L, floor, cx, cy, t) {
     if (up) { const gl = L.glow > 0 || L.state === 'creak';   /* THE PROP: a dry-stone pier, its stones in courses, wider at the foot, a crack up its middle */
       drawProp(g, px, fy);
       if (gl) { const k = 0.5 + 0.5 * Math.sin(t * 12); g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(px - 8, fy - LIP.propH - 2, 16, LIP.propH + 2); g.fillStyle = '#fff6c8'; g.fillRect(px - 1, fy - 22, 2, 2);
-        g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; g.fillRect(Math.round(L.z0 - cx), fy - 1, Math.round(L.z1 - L.z0), 1); g.globalAlpha = 1; } }
+        /* HE IS ABOUT TO BE STUNNED (claude/ramtune2): the fall line is a bright band on the floor, a pulsing gold ring round the prop and a bouncing gold arrow over it, and grit + pebbles drop through the line while the slab shakes */
+        const z0 = Math.round(Math.min(L.z0, L.z1) - cx), zw = Math.round(Math.abs(L.z1 - L.z0));
+        g.globalAlpha = 0.3 + 0.3 * k; g.fillStyle = '#ffd36b'; g.fillRect(z0, fy - 3, zw, 3); g.globalAlpha = 0.9; g.fillStyle = '#fff6c8'; g.fillRect(z0, fy - 1, zw, 1);
+        g.globalAlpha = 0.4 + 0.5 * k; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(px, fy - LIP.propH / 2, 11 + k * 4, LIP.propH / 2 + 4 + k * 3, 0, 0, Math.PI * 2); g.stroke();
+        const ab = fy - LIP.propH - 14 - Math.round(k * 4); g.globalAlpha = 1; g.fillStyle = '#ffd36b'; g.beginPath(); g.moveTo(px - 6, ab - 8); g.lineTo(px + 6, ab - 8); g.lineTo(px, ab); g.closePath(); g.fill(); g.fillRect(px - 2, ab - 15, 4, 8); g.strokeStyle = '#3a2a10'; g.lineWidth = 1; g.strokeRect(px - 2.5, ab - 15.5, 5, 8);
+        for (let i = 0; i < 8; i++) { const ph = (t * 1.7 + i * 0.37) % 1, dx = z0 + ((i * 53 + 11) % Math.max(1, zw)), dy = fy - 56 + ph * 54; g.globalAlpha = 0.95 - ph * 0.5; g.fillStyle = i % 2 ? '#d8c8a8' : '#8a7a6a'; const sz = i % 3 === 0 ? 2 : 1; g.fillRect(dx, Math.round(dy), sz, sz); }
+        g.globalAlpha = 1; } }
     else { g.fillStyle = '#7a6a62'; g.fillRect(px - 7, fy - 5, 14, 5); g.fillStyle = '#5a4a58'; g.fillRect(px - 6, fy - 2, 12, 2); }   /* the prop's rubble */
   }
 }
