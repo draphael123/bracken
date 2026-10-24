@@ -14,7 +14,7 @@
 //     4 PUFFBALL BROOD her gills drop puffballs (!) that waddle at you and burst - a HEAVY blow bursts one into a spring spore
 //     P2 (under half) THE MYCELIUM NET: the floor's veins glow (a tell) and then STING (an A13 drain, no stagger) - live on the caps and the shelves; and she
 //        WITHERS the caps you grew (told: the cap shudders violet) so you keep regrowing them. ONE new move, and it changes the arena (B5).
-// main.js owns the world and calls: owns(e), update(e, dt), take(e, fromX) (a blow's share), knotHit(p) (a plunge on her knot), strike(hb) (a blow on a bloom),
+// main.js owns the world and calls: owns(e), update(e, dt), take(e, fromX, tag) (a blow's share), knotHit(p) (a plunge on her knot), strike(hb) (a blow on a bloom),
 // broodDied(e, heavy), draw(g, e, cx, cy, time) (her and her tells), drawWorld(g, cx, cy, time) (the floor's tells), read() (tools and the lab).
 import { KEY_ROWS } from './boss-read.js';
 import * as MART from './redraw/sporewood2_mother.js'; import { drawCloud as drawSporeCloud, halo as foxHalo } from './redraw/sporewood2_world.js'; import { GLOW as FOX } from './redraw/sporewood2_pal.js';   /* (claude/sporewood2art) her baked frames, one per windup and release, and her floor effects */
@@ -56,7 +56,7 @@ export function makeMotherCap(ctx) {
   H.isOpen = e => !!e && e.mode === 'open';
 
   /* ---------- A BLOW'S SHARE (B15): open x2; warded or sealed 0.4 with a told clank ---------- */
-  H.take = (e, fromX) => { if (e.mode === 'open') return { mul: MC.openMul };
+  H.take = (e, fromX, tag) => { if (e.mode === 'open') return { mul: MC.openMul };
     if (e.ward > 0) return { mul: MC.take, word: MC_SAY.ward }; return { mul: MC.take, word: MC_SAY.above, key: true }; };
 
   /* ---------- THE OPENING ---------- */
