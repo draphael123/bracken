@@ -42,12 +42,12 @@ const KIT = {
 const B = (id, level, hero, extra = {}) => ({ id, kind: 'boss', level, hero, lvl: 24, secs: 6, ...extra });
 const W = (id, level, hero, from, to, extra = {}) => ({ id, kind: 'walk', level, hero, lvl: 12, from, to, secs: 6, ...extra });
 export const SHOTS = [
-  B('open_cistern', 'underwell', 'pyro', { sect: 'open', note: 'the Cistern Queen ablaze' }),
+  B('open_cistern', 'underwell', 'pyro', { lvl: 30, sect: 'open', note: 'the Cistern Queen ablaze' }),
   B('hero_knight', 'kings', 'knight', { sect: 'hero', note: 'King Gorm, Kingswood 2' }),
   B('hero_warden', 'hornetsnest', 'warden', { sect: 'hero', note: "the Hornet Queen, Hornet's Nest 2 honey hall" }),
   B('hero_geomancer', 'spore', 'geomancer', { sect: 'hero', note: 'the Mother Cap, Sporewood 2' }),
   B('hero_pyro', 'fair', 'pyro', { sect: 'hero', note: 'the Wicker Queen' }),
-  B('hero_paladin', 'sealedpyramid', 'paladin', { sect: 'hero', note: 'the Tomb King' }),
+  B('hero_paladin', 'fields', 'paladin', { sect: 'hero', note: 'the Scarecrow King' }),
   B('hero_ranger', 'hanging', 'ranger', { sect: 'hero', note: 'the Owl Reeve' }),
   B('hero_reaper', 'buriedcity', 'reaper', { sect: 'hero', note: 'the Hourglass King' }),
   B('hero_berserker', 'minecart', 'berserker', { sect: 'hero', note: 'the Great Drill' }),
@@ -57,10 +57,11 @@ export const SHOTS = [
   W('trav_tower', 'fallingtower', 'ranger', 0.05, 0.9, { sect: 'trav', note: 'the Falling Tower climb' }),
   W('trav_sand', 'buriedcity', 'geomancer', 0.05, 0.9, { sect: 'trav', note: 'the Buried City sand' }),
   W('trav_lock', 'towpath', 'knight', 0.05, 0.9, { sect: 'trav', note: 'the Towpath lock' }),
+  W('coop_spore', 'spore', 'knight', 0.1, 0.6, { sect: 'coop', ally: ['warden', 'balanced'], note: 'local co-op: a knight and a warden (AI partner) through Sporewood 2' }),
   W('trav_fen', 'fenroad', 'ranger', 0.05, 0.9, { sect: 'trav', note: 'Fen Road 2 boardwalk and palisade' }),
   B('boss_duneworm', 'caravan', 'knight', { sect: 'boss', note: 'the Dune Worm breach' }),
   B('boss_dk', 'unburied', 'paladin', { sect: 'boss', note: 'the Blood Knight (the Death Knight)' }),
-  B('boss_colossus', 'glasssea', 'warden', { sect: 'boss', note: 'the Glass Colossus' }),
+  B('boss_colossus', 'glasssea', 'ranger', { lvl: 30, sect: 'boss', note: 'the Glass Colossus' }),
   B('final_queen', 'crown', 'knight', { sect: 'final', secs: 7, note: 'the Goblin Queen (the big finish)' }),
   /* the early-November DEMO cut: act I only (Lumber Trail, Hornet's Nest, Marsh, Fen Road, Stockade, Burning Village + the Pyromancer's duel) */
   W('demo_wood', 'wood', 'knight', 0.05, 0.9, { demo: 1, lvl: 4, note: 'the Lumber Trail' }),
@@ -114,7 +115,9 @@ const PAGE_LIB = `(() => {
 async function pageWalk(o) {
   const BK = window.BK, T = window.__TR, PT = await import('/src/playtest.js'), LV = await import('/src/level.js');
   const li = LV.LEVELS.findIndex(l => l.id === o.id);
-  BK.setHero(o.hero); BK.load(li); BK.state = 'play'; BK.start(); BK.god = false; BK.reset();
+  if (o.ally) { BK.coopEnd(); BK.reset({ fresh: true }); await BK.allyReady(); BK.setHero(o.hero); BK.aiComp.arm([o.ally[0]], [o.ally[1]], 1); }
+  else BK.setHero(o.hero);
+  BK.load(li); BK.state = 'play'; BK.start(); BK.god = false; BK.reset(); if (o.ally) BK.sim(5);
   const wp = o.route, P = BK.P; let bot = PT.makeBot(BK), idx = Math.round(o.from * (wp.length - 1)), best = idx, stall = 0, f = 0, tps = 0, heals = 0, lastX = 0, lastY = 0, end = null, hp = P.hp;
   if (idx > 0) { BK.tp(wp[idx][0], wp[idx][1]); BK.reset(); bot = PT.makeBot(BK); }
   lastX = P.x; lastY = P.y;
@@ -194,7 +197,7 @@ async function runShot(s, seed, mode, win) {
     }
     const p = pacing(lv), pts = []; let next = 0;
     for (let i = 0; i < p.route.length; i++) if (p.cum[i] >= next || i === p.route.length - 1) { pts.push(p.route[i]); next = p.cum[i] + 3; }
-    const from = Math.min(0.95, s.from + (seed - 1) * 0.07), o = { id: s.level, hero: s.hero, route: pts, from, to: s.to, N, maxF: 60 * 150 };
+    const from = Math.min(0.95, s.from + (seed - 1) * 0.07), o = { id: s.level, hero: s.hero, route: pts, from, to: s.to, N, maxF: 60 * 150, ally: s.ally || null };
     await pg.evalp(`(async()=>{BK.manualSimulation=true;BKT.setHeroLevel(${J(s.hero)},${s.lvl});BK.setHero(${J(s.hero)});__TR.clean();${begin};return true})()`);
     const r = await pg.evalp(`(${pageWalk.toString()})(${J(o)})`, 900000);
     return { pg, row: { ...r, from, won: true }, meta: await pg.evalp('__TR.meta()') };
@@ -216,7 +219,7 @@ async function record() {
   mkdirSync(CLIPS, { recursive: true });
   for (const s of list) {
     let done = null;
-    for (let seed = 1; seed <= TRIES && !done; seed++) {
+    for (let seed = 1; seed <= (s.tries || TRIES) && !done; seed++) {
       await waitRam();
       try { const r = await recordOne(s, seed);   /* a fresh page per pass: no state crosses a clip; audio unlocked by cdp.mjs (no PRESS A KEY banner) */ console.log(s.id.padEnd(16) + ' seed ' + seed + ' ' + (r.ok ? 'OK ' : 'no ') + (r.replay || '') + ' ' + JSON.stringify(r.row).slice(0, 220) + ' ' + r.wall + 's');
         if (r.ok) { done = { shot: s.id, level: s.level, hero: s.hero, kind: s.kind, note: s.note, seed, ...r.row, meta: r.meta, secs: s.secs, replay: r.replay }; writeFileSync(join(CLIPS, s.id + '.json'), J(done)); } }
@@ -233,6 +236,115 @@ function sheets() {
     const r = ff(['-framerate', String(FPS), '-i', join(CLIPS, id, '%05d.png'), '-vf', 'select=not(mod(n\\,30)),scale=320:180:flags=neighbor,tile=3x2', '-frames:v', '1', join(CLIPS, id + '-sheet.png')]); console.log(id + (r.status === 0 ? ' sheet' : ' ' + r.stderr)); }
 }
 
-const main = { record, sheets, list: () => SHOTS.forEach(s => console.log(s.id.padEnd(16), s.kind.padEnd(5), s.level.padEnd(13), s.hero.padEnd(10), s.note))   };
-if (!main[cmd]) { console.error('commands: ' + Object.keys(main).join(' ') + ' cards cut'); process.exit(1); }
+
+/* ---------------- cards + the world map (one short page) ---------------- */
+const CARDS = join(OUT, 'cards'), FONT = join(ROOT, 'fonts', 'PressStart2P-Regular.ttf'), BG = '0x100d18';
+async function cards() {
+  mkdirSync(CARDS, { recursive: true }); await waitRam();
+  const pg = args.includes('--text-only') ? null : await openPage({ audio: true, fonts: true, seed: 7 });
+  if (pg) try {
+    await pg.evalp(PAGE_LIB); await pg.evalp('BK.manualSimulation=true;BK.step(200);true');
+    /* the game's own title plaque (its font, its palette), taken off the title screen: the menu under it is left out */
+    const t = await pg.evalp('BK.buf.toDataURL("image/png").slice(22)'); writeFileSync(join(CARDS, 'title-screen.png'), Buffer.from(t, 'base64'));
+    /* THE WORLD MAP: every level cleared, the camera walked down the road, one frame in two kept (clips/map) */
+    const dir = join(CLIPS, 'map'); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+    const road = ['wood', 'hornetsnest', 'marsh', 'fenroad', 'stockade', 'spore', 'rootway', 'kings', 'underleaf', 'scree', 'hanging', 'spire', 'moor', 'skyroad'];
+    const frames = await pg.evalp(`(async()=>{const {LEVELS}=await import('/src/level.js');BK.manualSimulation=true;__TR.clean();BK.SET.hideHud=false;BK.reset({fresh:true});
+      for(const l of LEVELS.slice(0,40))BKT.PROG[l.id]={cleared:true,medal:3,silver:7,quest:true};
+      const out=[],road=${J(road)};BK.mapLook(road[0]);BK.step(60);
+      for(let i=0;i<road.length;i++){BK.mapLook(road[i]);for(let k=0;k<10;k++){BK.step(2);out.push(__TR.shot());}}
+      return out;})()`, 300000);
+    frames.forEach((b, i) => writeFileSync(join(dir, String(i).padStart(5, '0') + '.png'), Buffer.from(b, 'base64')));
+    writeFileSync(join(CLIPS, 'map.json'), J({ shot: 'map', kind: 'map', frames: frames.length, note: 'the world map pan' }));
+    console.log('map frames ' + frames.length);
+  } finally { await pg.close(); }
+  /* text cards: the game's Press Start 2P on its dark purple, drawn at 320x180 and scaled 6x nearest-neighbour; the title card is the game's plaque */
+  const dt = (txt, y, size, col = 'fff6e0') => `drawtext=fontfile=font.ttf:text='${txt}':fontsize=${size}:fontcolor=0x${col}:x=(w-text_w)/2:y=${y}:shadowcolor=0x000000:shadowx=1:shadowy=1`;
+  const { copyFileSync } = await import('fs'); copyFileSync(FONT, join(CARDS, 'font.ttf'));
+  const up = ',scale=1920:1080:flags=neighbor,format=rgb24';
+  const blank = ['-f', 'lavfi', '-i', `color=c=${BG}:s=320x180`];
+  const run = (name, args) => { const r = ff([...args, '-frames:v', '1', join(CARDS, name + '.png')], { cwd: CARDS }); console.log('card ' + name + (r.status === 0 ? '' : ' FAILED ' + r.stderr.slice(0, 300))); };
+  run('title', ['-i', 'title-screen.png', '-filter_complex', `[0:v]crop=192:38:64:1[p];color=c=${BG}:s=320x180[b];[b][p]overlay=64:70${up}`]);
+  run('end', [...blank, '-vf', [dt('BRACKEN', 52, 16, 'ffd34a'), dt('A KNIGHT, A WOOD, A MOUNTAIN', 78, 8, 'c9b27c'), dt('bracken-nine.vercel.app', 104, 8), dt('MUSIC - GREAT BOSS', 142, 8, '9aa39a'), dt('BY SPRING SPRING - CC0', 154, 8, '9aa39a')].join(',') + up]);
+  run('end-demo', [...blank, '-vf', [dt('BRACKEN', 44, 16, 'ffd34a'), dt('THE ACT I DEMO', 76, 8, 'a8e06e'), dt('COMING EARLY NOVEMBER', 94, 8), dt('bracken-nine.vercel.app', 120, 8, 'c9b27c'), dt('MUSIC - GREAT BOSS', 148, 8, '9aa39a'), dt('BY SPRING SPRING - CC0', 160, 8, '9aa39a')].join(',') + up]);
+}
+
+/* ---------------- the cut ---------------- */
+const TRACK = join(ROOT, 'audio', 'boss4.ogg'), BPM = 139.5, BEAT = 60 / BPM, WORK = join(OUT, 'work');
+const isWide = id => {   /* a boss room draws a 640x360 buffer; every other frame is a 320x180 buffer doubled: tell them by whether every 2x2 block is one colour */
+  const r = spawnSync(FFMPEG, ['-loglevel', 'error', '-i', join(CLIPS, id, '00000.png'), '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], { maxBuffer: 1 << 26 }); const b = r.stdout, W = 640, H = 360;
+  if (!b || b.length < W * H * 3) return false; let bad = 0;
+  for (let y = 0; y < H; y += 2) for (let x = 0; x < W; x += 2) { const i = (y * W + x) * 3, j = i + 3, k = i + W * 3; for (let c = 0; c < 3; c++) if (b[i + c] !== b[j + c] || b[i + c] !== b[k + c]) { bad++; break; } }
+  return bad > 30;
+};
+const smooth = (a, k = 15) => a.map((_, i) => { let s = 0, n = 0; for (let j = Math.max(0, i - k); j <= Math.min(a.length - 1, i + k); j++) { s += a[j]; n++; } return s / n; });
+const fpath = p => p.replace(/\\/g, '/').replace(':', '\\:');
+/* one clip -> an mp4, 1920x1080 (wide) or 1080x1920 (vertical). fade: [in, out] seconds */
+function renderClip(id, beats, vert, fade, outFile) {
+  const meta = JSON.parse(readFileSync(join(CLIPS, id + '.json'), 'utf8')), have = readdirSync(join(CLIPS, id)).filter(f => f.endsWith('.png')).length;
+  const n = Math.min(have, Math.round(beats * BEAT * FPS)), start = Math.max(0, Math.floor((have - n) / 2)), hx = meta.meta && meta.meta.hx;
+  const wide = meta.kind === 'map' ? false : isWide(id), fl = [], boss = wide && meta.kind === 'boss';
+  const fx = hx ? smooth(hx.map(q => (boss ? 0.7 * q[0] + 0.3 * q[2] : q[0]))) : null, fy = hx ? smooth(hx.map(q => (boss ? 0.7 * q[1] + 0.3 * q[3] : q[1]))) : null;
+  let vf;
+  if (vert) {   /* 216x360 of the 640x360 plate, followed on the hero, x5 = 1080x1800, on the game's dark purple to 1080x1920 */
+    const cmdFile = join(WORK, id + '-v.cmd'), L = [];
+    for (let i = 0; i < n; i++) { const cx = fx ? fx[Math.min(fx.length - 1, start + i)] : 0.5, x = Math.round(Math.max(0, Math.min(640 - 216, cx * 640 - 108))); L.push((i / FPS).toFixed(4) + ' crop x ' + x + ';'); }
+    writeFileSync(cmdFile, L.join('\n')); vf = `sendcmd=f=${id}-${vert ? "v" : "w"}.cmd,crop=216:360:0:0,scale=1080:1800:flags=neighbor,pad=1080:1920:0:60:color=${BG}`;
+  } else if (boss) {   /* the arena view is tiny at 3x: a 320x180 window (the game's own size), followed, x6 */
+    const cmdFile = join(WORK, id + '-w.cmd'), L = [];
+    for (let i = 0; i < n; i++) { const j = Math.min(fx.length - 1, start + i), x = Math.round(Math.max(0, Math.min(640 - 320, fx[j] * 640 - 160))), y = Math.round(Math.max(0, Math.min(360 - 180, fy[j] * 360 - 90))); L.push((i / FPS).toFixed(4) + ' crop x ' + x + ', crop y ' + y + ';'); }
+    writeFileSync(cmdFile, L.join('\n')); vf = `sendcmd=f=${id}-${vert ? "v" : "w"}.cmd,crop=320:180:0:0,scale=1920:1080:flags=neighbor`;
+  } else vf = 'scale=1920:1080:flags=neighbor';
+  if (fade[0]) fl.push(`fade=t=in:st=0:d=${fade[0]}`); if (fade[1]) fl.push(`fade=t=out:st=${(n / FPS - fade[1]).toFixed(3)}:d=${fade[1]}`);
+  const r = ff(['-framerate', String(FPS), '-start_number', String(start), '-i', join(CLIPS, id, '%05d.png'), '-frames:v', String(n), '-vf', [vf, ...fl, 'format=yuv420p'].join(','), '-r', String(FPS), '-c:v', 'libx264', '-crf', '14', '-preset', 'medium', outFile], { cwd: WORK });
+  if (r.status !== 0) throw new Error(id + ': ' + r.stderr.slice(0, 300));
+  return { id, frames: n, start, wide };
+}
+function renderCard(name, beats, vert, fade, outFile) {
+  const d = beats * BEAT, vf = [vert ? `scale=1080:608:flags=neighbor,pad=1080:1920:0:656:color=${BG}` : 'null', ...(fade[0] ? [`fade=t=in:st=0:d=${fade[0]}`] : []), ...(fade[1] ? [`fade=t=out:st=${(d - fade[1]).toFixed(3)}:d=${fade[1]}`] : []), 'format=yuv420p'].join(',');
+  const r = ff(['-loop', '1', '-framerate', String(FPS), '-t', d.toFixed(3), '-i', join(CARDS, name + '.png'), '-vf', vf, '-r', String(FPS), '-c:v', 'libx264', '-crf', '14', outFile]); if (r.status !== 0) throw new Error(name + ': ' + r.stderr.slice(0, 300));
+}
+/* THE TIMELINES, in beats of the track (139.5 bpm): a fade only where a section changes */
+const T_MAIN = [
+  ['clip', 'open_cistern', 12, 'open'], ['card', 'title', 8, 'title'],
+  ...['hero_knight', 'hero_warden', 'hero_geomancer', 'hero_pyro', 'hero_paladin', 'hero_ranger', 'hero_reaper', 'hero_berserker', 'hero_pirate'].map(i => ['clip', i, 6, 'hero']),
+  ...['trav_ksar', 'trav_rails', 'trav_tower', 'trav_sand', 'trav_lock', 'trav_fen'].map(i => ['clip', i, 6, 'trav']),
+  ...['boss_duneworm', 'boss_dk', 'boss_colossus'].map(i => ['clip', i, 8, 'boss']),
+  ['clip', 'map', 8, 'map'], ['clip', 'coop_spore', 8, 'coop'], ['clip', 'final_queen', 12, 'final'], ['card', 'end', 12, 'end'],
+];
+const T_VERT = [['clip', 'open_cistern', 6, 'a'], ...['hero_warden', 'hero_geomancer', 'hero_pyro', 'hero_paladin'].map(i => ['clip', i, 5, 'a']), ...['trav_rails', 'trav_tower'].map(i => ['clip', i, 5, 'a']), ['clip', 'boss_duneworm', 6, 'a'], ['clip', 'final_queen', 8, 'a'], ['card', 'end', 8, 'end']];
+const T_DEMO = [
+  ['card', 'title', 6, 'title'], ...['demo_wood', 'demo_nest', 'demo_queen', 'demo_marsh', 'demo_fen', 'demo_stockade', 'demo_burning', 'demo_duel'].map(i => ['clip', i, 8, 'a']),
+  ['clip', 'hero_pyro', 8, 'a'], ['card', 'end-demo', 12, 'end'],
+];
+function cut() {
+  const which = opt('which', 'main'), TL = { main: T_MAIN, vertical: T_VERT, demo: T_DEMO }[which], vert = which === 'vertical';
+  const outName = { main: 'bracken-trailer-draft.mp4', vertical: 'bracken-trailer-vertical-draft.mp4', demo: 'bracken-demo-trailer-draft.mp4' }[which];
+  mkdirSync(WORK, { recursive: true }); const parts = [], used = [], skipped = []; let t = 0;
+  TL.forEach(([kind, id, beats, sect], i) => {
+    const prev = TL[i - 1], next = TL[i + 1], fade = [!prev || prev[3] !== sect ? 0.25 : 0, !next || next[3] !== sect ? 0.25 : 0], file = join(WORK, which + '-' + String(i).padStart(2, '0') + '-' + id + '.mp4');
+    try {
+      if (kind === 'card') { if (!existsSync(join(CARDS, id + '.png'))) throw new Error('no card ' + id); renderCard(id, beats, vert, fade, file); used.push({ at: +t.toFixed(2), card: id, secs: +(beats * BEAT).toFixed(2) }); t += beats * BEAT; }
+      else { if (!existsSync(join(CLIPS, id + '.json'))) throw new Error('no clip ' + id); const u = renderClip(id, beats, vert, fade, file), m = JSON.parse(readFileSync(join(CLIPS, id + '.json'), 'utf8'));
+        used.push({ at: +t.toFixed(2), ...u, secs: +(u.frames / FPS).toFixed(2), level: m.level, hero: m.hero, seed: m.seed }); t += u.frames / FPS; }
+      parts.push(file);
+    } catch (e) { skipped.push(id + ': ' + String(e.message).slice(0, 120)); }
+  });
+  const list = join(WORK, which + '-list.txt'); writeFileSync(list, parts.map(p => "file '" + p.replace(/\\/g, '/') + "'").join('\n'));
+  const dur = used.reduce((s, u) => s + u.secs, 0), mp4 = join(OUT, outName);
+  const r = ff(['-f', 'concat', '-safe', '0', '-i', list, '-ss', '0', '-t', dur.toFixed(3), '-i', TRACK, '-af', `loudnorm=I=-14:TP=-1.5:LRA=11,afade=t=out:st=${(dur - 2.5).toFixed(2)}:d=2.5`, '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-shortest', '-movflags', '+faststart', mp4]);
+  if (r.status !== 0) throw new Error('mux: ' + r.stderr.slice(0, 400));
+  const p = spawnSync(FFMPEG.replace(/ffmpeg(\.exe)?$/, 'ffprobe$1'), ['-v', 'error', '-show_entries', 'format=duration', '-of', 'csv=p=0', mp4], { encoding: 'utf8' });
+  console.log(outName + ' ' + (+p.stdout).toFixed(1) + ' s, ' + used.length + ' parts' + (skipped.length ? ', SKIPPED ' + skipped.join(' | ') : ''));
+  writeFileSync(join(OUT, which + '-parts.json'), J({ which, bpm: BPM, parts: used, skipped }, null, 1));
+}
+function shotlist() {
+  const rows = ['# trailer shot list (every clip is the bot playing the live build; re-record on a newer build with: PORT=<p> node tools/trailer.mjs record --shots=<id>)', '', 'shot | kind | level | hero | seed | note', '--- | --- | --- | --- | --- | ---'];
+  for (const f of readdirSync(CLIPS).filter(f => f.endsWith('.json'))) { const m = JSON.parse(readFileSync(join(CLIPS, f), 'utf8')); rows.push([m.shot, m.kind, m.level || '', m.hero || '', m.seed ?? '', m.note || ''].join(' | ')); }
+  for (const w of ['main', 'vertical', 'demo']) { const f = join(OUT, w + '-parts.json'); if (!existsSync(f)) continue; const m = JSON.parse(readFileSync(f, 'utf8')); rows.push('', '## ' + w + ' cut (timecode | part | secs)'); for (const u of m.parts) rows.push(u.at + ' s | ' + (u.id || 'card ' + u.card) + ' | ' + u.secs + (u.start != null ? ' | frames from ' + u.start : '')); }
+  writeFileSync(join(OUT, 'shotlist.md'), rows.join('\n') + '\n'); console.log('shotlist.md');
+}
+
+const main = { record, sheets, cards, cut, shotlist, list: () => SHOTS.forEach(s => console.log(s.id.padEnd(16), s.kind.padEnd(5), s.level.padEnd(13), s.hero.padEnd(10), s.note))   };
+if (!main[cmd]) { console.error('commands: ' + Object.keys(main).join(' ') + ''); process.exit(1); }
 if (process.argv[1] && /trailer.mjs$/.test(process.argv[1])) await main[cmd]();
