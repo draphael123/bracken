@@ -167,7 +167,7 @@ export function buildSporewood({ painter, T, TS }) {
   puff(202, 27); air(200, 204, 37, 39);                                            /* (a hollow under the lip, in off the bog floor) */
   /* stalk one, a hop up; on its east edge a LEANING bud over the first gap (eight wide: no jump) */
   ground(206, 209, 26); stair(209, 26, 40);
-  bud(208, 26, { rise: 16, lean: 112, growT: 1.6 }); sign(205, 27, 'THIS CAP LEANS. STOP ON IT AT THE EDGE AND IT CARRIES YOU ACROSS.');
+  bud(208, 26, { rise: 16, lean: 112, growT: 1.6 }); sign(204, 27, 'THIS CAP LEANS. STOP ON IT AT THE EDGE AND IT CARRIES YOU ACROSS.');
   coins([207, 24], [212, 22], [215, 22]); foe('archer', 230, 21, 'stalk3', { face: -1 });   /* (a goblin forager's bow over the crossing - the Stockade's, come down into the fungus) */
   /* stalk two: a bud under a spore drop against stalk three's wall (four rows) */
   ground(218, 221, 26); bud(220, 26); drip(221, 2.7); foe('shield', 219, 25, 'stalk2', { face: -1 });
