@@ -6,7 +6,7 @@ import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 const out = join(ROOT, 'work/claude/lane-done'); mkdirSync(out, { recursive: true });
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
-const SPOTS = [['foot', 4, 65], ['hall', 310, 21], ['edge-roots', 360, 65], ['edge-water', 372, 65], ['edge-gate', 405, 65]];
+const SPOTS = [['stinger', 96, 33], ['foot', 4, 65], ['hall', 310, 21], ['edge-roots', 360, 65], ['edge-water', 372, 65], ['edge-gate', 405, 65]];
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async () => { const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; const shots = []; const ONLY = ${JSON.stringify(ONLY)};
