@@ -13,9 +13,9 @@ import { openPage } from './cdp.mjs';
 const heroes = (process.argv[2] || 'knight,warden').split(',');
 /* [tile x, standing row, note, action] - action 'take': press INTERACT once this waypoint is reached (the Hall's rain butt);
    'throw': press ATTACK once, facing the way the route runs, to throw whatever is carried */
-const WP = [[40, 25, 'the road in'], [150, 25, 'the crofts'], [204, 25, 'the long street'], [208, 22], [210, 19], [212, 16], [215, 13, 'up the gable'],
+const WP = [[40, 25, 'the road in'], [70, 25], [79, 25, 'past the first falling tiles'], [100, 25], [110, 25], [118, 25, 'past the oil'], [132, 25, "THE YARD GATE's rack - takes the bucket", 'take'], [134, 25, 'throws the bucket at THE YARD GATE (claude/burning3: the street is shut by it; the roof is the other way)', 'throw'], [150, 25, 'the crofts'], [204, 25, 'the long street'], [208, 22], [210, 19], [212, 16], [215, 13, 'up the gable'],
   [225, 13], [236, 13, 'over THE FALLEN HOUSE'], [245, 13], [252, 13, "the Hall's ledge"], [255, 10, "THE HALL's rain butt - takes the bucket", 'take'], [267, 10], [276, 13, 'the second house'],
-  [285, 13, 'throws the bucket at THE BURNING BEAM', 'throw'], [297, 13, 'across THE BURNING BEAM, doused'], [307, 13], [310, 16], [312, 19], [314, 22], [318, 25, 'down to the street'], [340, 25, 'the barn'],
+  [285, 13, 'throws the bucket at THE BURNING BEAM', 'throw'], [297, 13, 'across THE BURNING BEAM, doused'], [307, 13], [310, 16], [312, 19], [314, 22], [318, 25, 'down to the street'], [320, 25, "THE BARN DOOR's rack - takes the bucket", 'take'], [320, 25, 'throws the bucket at THE BARN DOOR (claude/burning3)', 'throw'], [340, 25, 'the barn'],
   [395, 25, 'through THE BARN'], [438, 25, 'the well yard'], [446, 23, "the square's door"], [459, 23, 'into his square']];
 const pg = await openPage({ audio: false, fonts: false });
 try {
@@ -34,11 +34,11 @@ try {
           if(P.ground&&hold<=0&&(wy<row||gap||wall)){BK.press('jump');hold=30;}
           k.jump=hold>0;hold--;if(P.dead)break;BK.sim(1);}
         k.left=k.right=k.jump=false;
-        if(ok&&action==='take'){k.talk=true;BK.sim(2);k.talk=false;BK.sim(2);}   /* THE HALL'S BUTT: INTERACT takes its bucket, the same as a player would */
-        if(ok&&action==='throw'){P.face=1;k.atk=true;BK.sim(2);k.atk=false;BK.sim(40);}   /* thrown at the beam, facing the way the route runs - it arcs, lands and douses before the walk reaches it */
+        if(ok&&action==='take'){BK.press('talk');k.talk=true;BK.sim(2);k.talk=false;BK.sim(2);}   /* THE HALL'S BUTT: INTERACT takes its bucket, the same as a player would */
+        if(ok&&action==='throw'){P.face=1;BK.press('atk');k.atk=true;BK.sim(2);k.atk=false;BK.sim(40);}   /* thrown at the beam, facing the way the route runs - it arcs, lands and douses before the walk reaches it */
         out.push({wp:wx+','+wy,note:note||'',ok,st:BK.state,secs:+((f-t0)/60).toFixed(1),at:Math.round(P.x/16)+','+(Math.round(P.y/16)-1),hp:Math.round(P.hp),dead:!!P.dead,carry:!!P.carry});if(!ok)break;}
       return {out,lost:hp0-P.hp};})()`, 1200000);
-    console.log('== ' + h); for (const x of r.out) console.log((x.ok ? ' ok  ' : 'FAIL ') + x.wp.padEnd(8) + String(x.secs).padStart(6) + ' s  hp ' + x.hp + (x.dead ? ' DEAD' : '') + '  at ' + x.at + '  ' + x.note + (x.ok ? '' : '  [' + x.st + ']'));
+    console.log('== ' + h); for (const x of r.out) console.log((x.ok ? ' ok  ' : 'FAIL ') + x.wp.padEnd(8) + String(x.secs).padStart(6) + ' s  hp ' + x.hp + (x.dead ? ' DEAD' : '') + (x.carry ? ' [carrying]' : '') + '  at ' + x.at + '  ' + x.note + (x.ok ? '' : '  [' + x.st + ']'));
     console.log('   ' + (r.out.every(x => x.ok) ? 'reached his square' : 'stopped') + ', health lost on the way: ' + r.lost);
   }
   console.log('errors', JSON.stringify(pg.errors.slice(0, 5)));
