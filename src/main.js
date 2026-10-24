@@ -5509,8 +5509,8 @@ function drawMap() {
        there, so the line stays short enough to sit beside the rest of the footer without crowding it out - both
        measured with textW at size 6: 234 + 66 leaves a clear 12px between them at 320 wide. */
     const on = coopShown();
-    g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11);
-    for (const f of mapFooter(mapPanel.open, on)) text(f.t, f.x, VH - 8, f.right ? (on ? '#8fd160' : UI.dim) : UI.dim, f.right ? 'right' : 'left', 6); }
+    if (!SET.hideHud) { g.fillStyle = 'rgba(12,10,18,0.78)'; g.fillRect(0, VH - 11, VW, 11); }   /* (claude/trailer) SET.hideHud: no key line along the map's foot in a trailer */
+    if (!SET.hideHud) for (const f of mapFooter(mapPanel.open, on)) text(f.t, f.x, VH - 8, f.right ? (on ? '#8fd160' : UI.dim) : UI.dim, f.right ? 'right' : 'left', 6); }
   drawMapParty();   /* (claude/partypersist) the party that takes the next road */
   if (mapPanel.open) drawMapPanel();   /* over everything else, on the side away from the token so it never covers it or the node you are standing on */
   g.__world = false;

@@ -20,6 +20,7 @@ import { openPage } from './cdp.mjs';
 import { LEVELS } from '../src/level.js';
 import { pacing } from './pacing.mjs';
 import { fightFlasks } from './boss-run.mjs';
+import { SCENES } from './trailer-scenes.mjs';
 
 const ROOT = fileURLToPath(new URL('..', import.meta.url));
 const args = process.argv.slice(2), cmd = args.find(a => !a.startsWith('--')) || 'list';
@@ -41,7 +42,7 @@ const KIT = {
 };
 const B = (id, level, hero, extra = {}) => ({ id, kind: 'boss', level, hero, lvl: 24, secs: 6, ...extra });
 const W = (id, level, hero, from, to, extra = {}) => ({ id, kind: 'walk', level, hero, lvl: 12, from, to, secs: 6, ...extra });
-export const SHOTS = [
+export const SHOTS0 = [
   B('open_cistern', 'underwell', 'pyro', { lvl: 30, sect: 'open', note: 'the Cistern Queen ablaze' }),
   B('hero_knight', 'kings', 'knight', { sect: 'hero', note: 'King Gorm, Kingswood 2' }),
   B('hero_warden', 'hornetsnest', 'warden', { sect: 'hero', note: "the Hornet Queen, Hornet's Nest 2 honey hall" }),
@@ -73,6 +74,16 @@ export const SHOTS = [
   W('demo_burning', 'burning', 'pyro', 0.05, 0.9, { demo: 1, lvl: 8, note: 'the Burning Village, as the Pyromancer' }),
   B('demo_duel', 'burning', 'ranger', { demo: 1, lvl: 12, note: "the Pyromancer's duel" }),
 ];
+/* v2 (Daniel 10-24: 'can the trailer show more than combat?'): the LEVEL VERBS and SET PIECES, walked by the bot with the hero close (zoom: a 480x270 window of the plate, x4) */
+const V = (id, level, hero, from, to, extra = {}) => W(id, level, hero, from, to, { zoom: 1, lvl: 14, ...extra });
+const SHOTS2 = [
+  V('verb_spore', 'spore', 'knight', 0.15, 0.65, { note: 'Sporewood 2: bounce caps and leaning caps carry the road' }),
+  V('verb_nest', 'hornetsnest', 'knight', 0.25, 0.75, { lvl: 8, note: "the Hornet's Nest: a struck comb drops and becomes a step" }),
+  V('verb_kings', 'kings', 'knight', 0.72, 0.98, { setup: 'BK.gorm().flee()', note: "King Gorm's escape run: the burning wood behind you" }),
+  V('verb_hanging', 'hanging', 'ranger', 0.2, 0.9, { note: 'the Hanging Village: the hoist and the bridges of a town on a cliff' }),
+  V('verb_burning', 'burning', 'knight', 0.1, 0.9, { lvl: 8, note: 'the Burning Village: water against the fire' }),
+];
+export const SHOTS = [...SHOTS0, ...SHOTS2, ...SCENES.map(c => ({ kind: 'scene', level: '', hero: '', ...c }))];
 
 /* ---------------- in the page ---------------- */
 const PAGE_LIB = `(() => {
@@ -98,6 +109,8 @@ const PAGE_LIB = `(() => {
     if (T.ring.length > T.N) { const o = T.ring.shift(); T.sum -= o.s; if (o.b) T.bad--; }
     if (T.ring.length === T.N && T.bad === 0 && (!T.best || T.sum > T.best.score)) T.best = { score: T.sum, endF: T.f, hx: T.ring.map(r => r.hx.map(q => +q.toFixed(3))) };
   };
+  /* a SCENE: scripted frames. cap(n) runs n game frames (a picture every second one = 30 fps) and keeps them with where the hero sits in the plate (for the crops) */
+  T.cap = n => { for (let i = 0; i < n; i += 2) { BK.step(2); T.out.push(T.shot()); const P = BK.P, v = BK.view; T.hxs.push(BK.state === 'play' && P ? [(P.x - v.x) / v.VW, (P.y - 14 - v.y) / v.VH, (P.x - v.x) / v.VW, (P.y - 14 - v.y) / v.VH].map(q => +Math.max(0.05, Math.min(0.95, q)).toFixed(3)) : [0.5, 0.5, 0.5, 0.5]); } };
   T.take = (i, n) => T.out.slice(i, i + n);
   T.meta = () => T.best ? { score: Math.round(T.best.score), endF: T.best.endF, hx: T.best.hx } : null;
   /* the game as the player sees it, minus what a trailer should not carry */
@@ -120,6 +133,7 @@ async function pageWalk(o) {
   BK.load(li); BK.state = 'play'; BK.start(); BK.god = false; BK.reset(); if (o.ally) BK.sim(5);
   const wp = o.route, P = BK.P; let bot = PT.makeBot(BK), idx = Math.round(o.from * (wp.length - 1)), best = idx, stall = 0, f = 0, tps = 0, heals = 0, lastX = 0, lastY = 0, end = null, hp = P.hp;
   if (idx > 0) { BK.tp(wp[idx][0], wp[idx][1]); BK.reset(); bot = PT.makeBot(BK); }
+  if (o.setup) (0, eval)(o.setup);   /* a state set after the tp (the escape run: BK.gorm().flee()) */
   lastX = P.x; lastY = P.y;
   const lastIdx = Math.round(o.to * (wp.length - 1)), nearest = (lo, hi) => { const tx = Math.floor(P.x / 16), ty = Math.round(P.y / 16) - 1; let bi = -1, bd = 1e9;
     for (let j = Math.max(0, lo); j < Math.min(wp.length, hi); j++) { const d = Math.abs(wp[j][0] - tx) + Math.abs(wp[j][1] - ty) * 1.5; if (d < bd) { bd = d; bi = j; } } return [bi, bd]; };
@@ -197,13 +211,25 @@ async function runShot(s, seed, mode, win) {
     }
     const p = pacing(lv), pts = []; let next = 0;
     for (let i = 0; i < p.route.length; i++) if (p.cum[i] >= next || i === p.route.length - 1) { pts.push(p.route[i]); next = p.cum[i] + 3; }
-    const from = Math.min(0.95, s.from + (seed - 1) * 0.07), o = { id: s.level, hero: s.hero, route: pts, from, to: s.to, N, maxF: 60 * 150, ally: s.ally || null };
+    const from = Math.min(0.95, s.from + (seed - 1) * 0.07), o = { id: s.level, hero: s.hero, route: pts, from, to: s.to, N, maxF: s.maxF || 60 * 150, ally: s.ally || null, setup: s.setup || null };
     await pg.evalp(`(async()=>{BK.manualSimulation=true;BKT.setHeroLevel(${J(s.hero)},${s.lvl});BK.setHero(${J(s.hero)});__TR.clean();${begin};return true})()`);
     const r = await pg.evalp(`(${pageWalk.toString()})(${J(o)})`, 900000);
     return { pg, row: { ...r, from, won: true }, meta: await pg.evalp('__TR.meta()') };
   } catch (e) { await pg.close(); throw e; }
 }
+/* a SCENE (tools/trailer-scenes.mjs): one fresh page, the script runs once and every frame it keeps is the clip */
+async function recordScene(s, seed) {
+  const t0 = Date.now(), dir = join(CLIPS, s.id), pg = await openPage({ audio: true, fonts: true, seed: 1000 + seed });
+  try {
+    await pg.evalp(PAGE_LIB); await pg.evalp('(async()=>{BK.manualSimulation=true;__TR.clean();' + (s.hud ? 'BK.SET.hideHud=false;' : '') + '__TR.begin({N:0,mode:"grab",from:1e9,to:0});return true})()');
+    await pg.evalp('(async()=>{const { LEVELS } = await import("/src/level.js");const idx = id => LEVELS.findIndex(l => l.id === id), cap = n => __TR.cap(n);BK.manualSimulation=true;' + s.js + ';return true})()', 600000);
+    const n = await pg.evalp('__TR.out.length'), hx = await pg.evalp('__TR.hxs'); rmSync(dir, { recursive: true, force: true }); mkdirSync(dir, { recursive: true });
+    for (let i = 0; i < n; i += 40) { const part = await pg.evalp('__TR.take(' + i + ',40)'); part.forEach((b, k) => writeFileSync(join(dir, String(i + k).padStart(5, '0') + '.png'), Buffer.from(b, 'base64'))); }
+    return { ok: n > 0, row: { frames: n, mask: s.mask, zoom: s.zoom }, meta: { hx }, replay: 'scene', wall: Math.round((Date.now() - t0) / 1000) };
+  } finally { await pg.close(); }
+}
 async function recordOne(s, seed) {
+  if (s.js) return recordScene(s, seed);
   const t0 = Date.now(), N = s.secs * FPS, dir = join(CLIPS, s.id);
   const a = await runShot(s, seed, 'score'); await a.pg.close();
   if (!a.row.won || !a.meta) return { ok: false, row: a.row, wall: Math.round((Date.now() - t0) / 1000) };
@@ -222,7 +248,7 @@ async function record() {
     for (let seed = 1; seed <= (s.tries || TRIES) && !done; seed++) {
       await waitRam();
       try { const r = await recordOne(s, seed);   /* a fresh page per pass: no state crosses a clip; audio unlocked by cdp.mjs (no PRESS A KEY banner) */ console.log(s.id.padEnd(16) + ' seed ' + seed + ' ' + (r.ok ? 'OK ' : 'no ') + (r.replay || '') + ' ' + JSON.stringify(r.row).slice(0, 220) + ' ' + r.wall + 's');
-        if (r.ok) { done = { shot: s.id, level: s.level, hero: s.hero, kind: s.kind, note: s.note, seed, ...r.row, meta: r.meta, secs: s.secs, replay: r.replay }; writeFileSync(join(CLIPS, s.id + '.json'), J(done)); } }
+        if (r.ok) { done = { shot: s.id, level: s.level, hero: s.hero, kind: s.kind, note: s.note, zoom: s.zoom, mask: s.mask, seed, ...r.row, meta: r.meta, secs: s.secs, replay: r.replay }; writeFileSync(join(CLIPS, s.id + '.json'), J(done)); } }
       catch (e) { console.log(s.id + ' seed ' + seed + ' FAILED: ' + String(e.message).slice(0, 200)); }
     }
     if (!done) console.log(s.id + ': NO CLIP after ' + TRIES + ' tries');
@@ -294,7 +320,11 @@ function renderClip(id, beats, vert, fade, outFile) {
     const cmdFile = join(WORK, id + '-w.cmd'), L = [];
     for (let i = 0; i < n; i++) { const j = Math.min(fx.length - 1, start + i), x = Math.round(Math.max(0, Math.min(640 - 320, fx[j] * 640 - 160))), y = Math.round(Math.max(0, Math.min(360 - 180, fy[j] * 360 - 90))); L.push((i / FPS).toFixed(4) + ' crop x ' + x + ', crop y ' + y + ';'); }
     writeFileSync(cmdFile, L.join('\n')); vf = `sendcmd=f=${id}-${vert ? "v" : "w"}.cmd,crop=320:180:0:0,scale=1920:1080:flags=neighbor`;
-  } else vf = 'scale=1920:1080:flags=neighbor';
+  } else if (meta.zoom && hx) {   /* the hero bigger: a 480x270 window of the 640x360 plate, followed, x4 (whole-number pixels) */
+    const cmdFile = join(WORK, id + '-z.cmd'), L = [];
+    for (let i = 0; i < n; i++) { const j = Math.min(fx.length - 1, start + i), x = Math.round(Math.max(0, Math.min(160, fx[j] * 640 - 240))), y = Math.round(Math.max(0, Math.min(90, fy[j] * 360 - 135))); L.push((i / FPS).toFixed(4) + ' crop x ' + x + ', crop y ' + y + ';'); }
+    writeFileSync(cmdFile, L.join('\n')); vf = `sendcmd=f=${id}-z.cmd,crop=480:270:0:0,scale=1920:1080:flags=neighbor`;
+  } else vf = (meta.mask ? `drawbox=x=${meta.mask[0]}:y=${meta.mask[1]}:w=${meta.mask[2]}:h=${meta.mask[3]}:color=${meta.mask[4]}:t=fill,` : '') + 'scale=1920:1080:flags=neighbor';
   if (fade[0]) fl.push(`fade=t=in:st=0:d=${fade[0]}`); if (fade[1]) fl.push(`fade=t=out:st=${(n / FPS - fade[1]).toFixed(3)}:d=${fade[1]}`);
   const r = ff(['-framerate', String(FPS), '-start_number', String(start), '-i', join(CLIPS, id, '%05d.png'), '-frames:v', String(n), '-vf', [vf, ...fl, 'format=yuv420p'].join(','), '-r', String(FPS), '-c:v', 'libx264', '-crf', '14', '-preset', 'medium', outFile], { cwd: WORK });
   if (r.status !== 0) throw new Error(id + ': ' + r.stderr.slice(0, 300));
