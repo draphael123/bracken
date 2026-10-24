@@ -2462,7 +2462,22 @@ async function runbossLab(BK, opts) {
       /* THE GRANDMOTHER (claude/underleaf2, B14 keyed FROM BEHIND): her front turns a blade, so a player MAKES her back - he strikes a bell-pull whose
          chime rings on her far side (or lobs a pot over her), and cuts her back while she lashes at the sound; in her told ward he stands off; when she
          listens he stands still (the branch below). Nothing is rung or thrown for the bot: a real swing at the cord, a real pot taken and thrown. */
-      else if (boss.t === 'grandmother' && BK.hushHands && BK.hushHands() && !['listenTell', 'listen', 'sleep', 'wake'].includes(boss.mode)) {
+      /* THE GRANDMOTHER 3 (claude/underleaf3, src/potion-hands.js): a player keeps off the spots she marks (her fireballs, her jars, her cauldron's gouts),
+         cuts her BROOD down first (while one stands she is warded x0.4), then takes a BLUE jar off her shelf and throws it at her from a stride off -
+         a real jar taken (INTERACT) and thrown (ATTACK) - and cuts her while she floats. Her ward after an opening is chipped through (x0.4 is still a blow) */
+      else if (boss.t === 'grandmother' && boss.gm3 && BK.potions && BK.potions() && !['sleep', 'wake'].includes(boss.mode)) {
+        const PH = BK.potions(), mk = PH.marks().find(m => Math.abs(m.x - P.x) < m.r + 9), gp = PH.gpatches().find(q => Math.abs(q.x - P.x) < 28);
+        const br = PH.broodOf(boss).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0], c = P.carry && P.carry.t === 'jar' ? P.carry.col : null;
+        if (mk || gp) { const bad = x => PH.marks().some(m => Math.abs(m.x - x) < m.r + 10) || PH.gpatches().some(q => Math.abs(q.x - x) < 30);   /* the nearest floor no mark covers */
+          let gx = P.x; for (let dd = 8; dd < 260; dd += 8) { if (P.x + dd < A.x1 - 16 && !bad(P.x + dd)) { gx = P.x + dd; break; } if (P.x - dd > A.x0 + 16 && !bad(P.x - dd)) { gx = P.x - dd; break; } } goal = gx; strike = false; }
+        else if (boss.mode === 'floated') { goal = boss.x; strike = true; }
+        else if (br) { goal = br.x; strike = false; if (Math.abs(br.x - P.x) < LAB_REACH[h] + 8 && Math.abs(br.y - P.y) < 22 && P.atk < 0) { P.face = Math.sign(br.x - P.x) || P.face; BK.press('atk'); swings++; } }
+        else if (boss.ward > 0) { goal = boss.x; strike = true; }
+        else if (c === 'blue') { const dx = boss.x - P.x; if (Math.abs(Math.abs(dx) - 56) > 22) { goal = boss.x - (Math.sign(dx) || 1) * 56; strike = false; } else { goal = null; strike = false; k.left = k.right = false; k.up = k.down = false; P.face = Math.sign(dx) || P.face; BK.press('atk'); } }
+        else if (c) { k.down = true; BK.press('atk'); }
+        else { const j = PH.state().jars.filter(q => q.state === 'rest' && q.col === 'blue').sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+          if (j && !(ad < 60 && /Tell$/.test(boss.mode || ''))) { goal = j.x; strike = false; if (Math.abs(j.x - P.x) < 10 && P.ground && f % 8 === 0) BK.press('talk'); } else { goal = boss.x; strike = true; } } }
+      else if (boss.t === 'grandmother' && !boss.gm3 && BK.hushHands && BK.hushHands() && !['listenTell', 'listen', 'sleep', 'wake'].includes(boss.mode)) {
         const side = Math.sign(P.x - boss.x) || -1, back = -(boss.face || 1), behind = side === back;
         const knell = BK.hushHands().knells().some(q => Math.abs(q.x - P.x) < 36 && (P.x - q.x) * q.dir > 0);   /* HER KNELL runs the boards at you: jumped as it comes, as a player jumps a wave he can see */
         if (knell || P.labKnell > 0) { if (knell && P.ground && !(P.labKnell > 0)) { BK.press('jump'); P.labKnell = 16; } if (P.labKnell > 0) { P.labKnell--; k.jump = true; } goal = null; strike = false; }

@@ -370,6 +370,7 @@ export const ANSWER = {
   'archmage|boltTell': 'block', 'archmage|booksTell': 'block', 'archmage|crushTell': 'dodge', 'archmage|glyphTell': 'dodge', 'archmage|pairTell': 'dodge', 'archmage|rendTell': 'jump',   // THE ARCHMAGE (a boss: his rows are his fight's, claude/archmage2): the bolt and the flying books a shield turns; out from under the stack, off the glyph and clear of the red circle of a pair (a jump straight up clears a pair too); the rend is jumped
   'armour|swingTell': 'block',
   'assassin|markTell': 'dodge', 'assassin|stabTell': 'block',
+  'grandmother|staffTell': 'block', 'grandmother|fireballTell': 'dodge', 'grandmother|jarTell': 'dodge', 'grandmother|stirTell': 'dodge',   /* (claude/underleaf3) off the marked spots */
   'grandmother|knellTell': 'jump', 'grandmother|lureTell': 'block', 'grandmother|jabTell': 'block', 'bellman|swingTell': 'block',   /* (claude/underleaf2) her knell runs the boards: jump it; her lash at a lure a shield turns; the Bellman's handbell */
   'royalboar|tell': 'block',   /* (claude/gorm2) THE ROYAL BOAR: a shield turns it (dazed) - or jump it, it runs on under you */
   'badger|chargeTell': 'block',
@@ -640,6 +641,7 @@ export const HEIGHT = {
   'archmage|boltTell': 'low', 'archmage|booksTell': 'low', 'archmage|crushTell': 'low', 'archmage|glyphTell': 'low', 'archmage|pairTell': 'low', 'archmage|rendTell': 'low',
   'armour|swingTell': 'high',
   'assassin|markTell': 'low', 'assassin|stabTell': 'low',
+  'grandmother|staffTell': 'low', 'grandmother|fireballTell': 'low', 'grandmother|jarTell': 'low', 'grandmother|stirTell': 'low',   /* (claude/underleaf3) her staff across your shins, the rest on the floor */
   'bellman|swingTell': 'low', 'grandmother|lureTell': 'low', 'grandmother|knellTell': 'low', 'grandmother|jabTell': 'low',   /* (claude/underleaf2) the handbell at your chest, her lash and jab low, the knell along the boards: no duck takes any of them */
   'royalboar|tell': 'low', 'king|clubHiTell': 'high', 'king|sweepTell': 'high', 'king|clubLoTell': 'low', 'badger|chargeTell': 'low',
   'bale|rollTell': 'low',
