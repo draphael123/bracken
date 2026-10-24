@@ -78,6 +78,8 @@ export function buildSporewood({ painter, T, TS }) {
   const bud = (x, row, o = {}) => { const rise = o.rise ?? 56, y0 = (row + DY) * TS - 8; caps.push({ kind: 'growcap', x: x * TS, y: y0, y0, y1: y0 - rise, w: 32, h: 8, rise, state: 'bud', k: 0, ...(o.lean ? { bx: x * TS } : {}), ...o }); };
   /* a STAIR of root shelves up the EAST face of a stalk (x1 its last column), every three rows from `bottom` up to under its `top`: a fall into the bog is the
      climb back to the stalk you fell from (nothing here is bottomless, A10) */
+  /* a GAUNTLET'S BOG POOL (claude/sporeplat): the pit floor row F, foul water over it (a fall stings while you climb out - the bog's own pool) */
+  const gpool = (a, b, F) => pools.push({ x0: a * TS, x1: (b + 1) * TS, y: (F - 3 + DY) * TS + 6, bottom: (F + 1 + DY) * TS, swim: true, clear: true, harm: true, bog: true, foulCol: '#5a6a2a', foulColL: '#b4cc68', foulColD: '#1c2814', wash: 0.6 });
   const stair = (x1, top, bottom) => { for (let r = bottom - 3; r > top + 1; r -= 3) plank(x1 + 1, x1 + 2, r); };
 
   block(0, 0, 0, H - 1);                                                            /* the world's west edge */
@@ -138,16 +140,22 @@ export function buildSporewood({ painter, T, TS }) {
   coins([122, 36], [127, 36], [131, 36]);
   /* THE DARK BUD WALL: four rows, a bud at its foot that grows only in light; its lantern is beside it. REQUIRED (the lantern and the bud) */
   ground(138, 160, 34); bud(136, 38, { dark: true }); lantern(133, 37);
+  /* (claude/sporeplat) GAUNTLET ONE, THE LANTERN LEDGES: the wall top is cut into cap stalks over a bog pool (142-156): hop to the first lit ledge, hop to the bounce
+     pair, and the bounce throws you up to the high ledge. Few foes: the shaman and a lurker wait at the far lip. A fall stings and is the climb back (a plank up each east face). */
+  air(142, 156, 34, 39); ground(144, 145, 34); ground(148, 149, 34); spring(148, 34); spring(149, 34); ground(150, 151, 30); ground(154, 156, 30);
+  gpool(142, 156, 40); stair(141, 34, 40); stair(145, 34, 40); stair(151, 30, 40);
+  lantern(144, 33); lantern(154, 29); deco(141, 33, 'warnPost', 0);
+  sign(139, 33, 'THE LANTERN LEDGES. HOP THE LIT STALKS: THE BOUNCE CAPS THROW YOU UP TO THE HIGH LEDGE. THE BOG STINGS.');
   sign(130, 37, 'THIS BUD IS DARK. LIGHT THE LANTERN CAP BESIDE IT, THEN STOP ON THE BUD.');
   /* the wall top: a lurker in the caps, the hollows' SHAMAN (he raises the dead: the kill-first target), a mend puff for after */
-  foe('lurker', 146, 33, 'wallTop2'); foe('shaman', 155, 33, 'wallTop2', { face: -1 }); foe('brute', 151, 33, 'wallTop2', { face: -1 }); foe('shield', 140, 33, 'wallTop2', { face: -1 });
-  lantern(142, 33); mend(158, 33); plank(140, 153, 31); drip(148, 3.2, 14);
-  coins([143, 32], [149, 32], [156, 32]);
+  foe('lurker', 158, 33, 'wallTop2'); foe('shaman', 160, 33, 'wallTop2', { face: -1 });
+  lantern(159, 33); mend(157, 33); plank(139, 141, 31);
+  coins([143, 32], [146, 31], [152, 27], [155, 27]);
   /* THE DARK SHAFT (the hollows' EXAM): down off the wall into a room under the canopy, and up its far side on three dark buds, each lit by the lantern beside it;
      a lurker on the first tier, a WEAVER on the second, a spore drop on the middle bud. A miss is a fall a tier (cheap) */
   ground(161, 198, 40);
   /* a nook in the wall's foot off the shaft's floor (a pocket west of the way on): gold, lit by its own lantern */
-  air(154, 160, 37, 39); lantern(158, 39); coins([155, 39], [156, 39], [157, 39]);
+  air(158, 160, 37, 39); lantern(159, 39); coins([158, 39], [159, 39], [160, 39]);
   lantern(165, 39); bud(168, 40, { dark: true }); ground(170, 198, 36);
   foe('lurker', 174, 35, 'shaft', { perch: true }); foe('archer', 178, 35, 'shaft', { face: -1, perch: true }); foe('sporeling', 163, 39, 'shaft', { face: 1 });
   lantern(176, 35); bud(180, 36, { dark: true }); ground(182, 198, 32); drip(180, 3.0, 14);
@@ -212,11 +220,17 @@ export function buildSporewood({ painter, T, TS }) {
   foe('weaver', 308, 16, 'larderDoor', { face: -1, perch: true }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
   deco(306, 18, 'bones', 0); deco(309, 18, 'skullPile', 0);
   /* THE LARDER STAIR: two four-row tiers up the root wall, a bud at each foot (no web on a tier: a web's top is footing, and a curtain there was a stair round the bud) */
-  bud(314, 19); ground(316, 358, 15); drip(322, 3.0, 6); foe('spider', 320, 7, 'larderStair', { drop: 110, perch: true });   /* (the larder's keeper: it drops off the root roof on whoever climbs the stair) */
-  foe('shield', 324, 14, 'larderStair', { face: -1 });
-  plank(318, 331, 11);                                                              /* (a root ledge over the first tier, level with the second: walked onto from it) */
+  bud(314, 19); ground(316, 358, 15);
+  /* (claude/sporeplat) GAUNTLET TWO, THE ROOT SPAN: the second tier is cut into stalks over a bog pool (318-330): a LEANING cap carries you off the stair's top over the bog, a hop down
+     (two wide) onto a bounce pair, and the pair throws you up against the next wall to the tier's pad and its bud. One spider keeps the pad; no other foe. The stalks keep every route
+     lock: nothing here reaches the larder's end without the bud at 332. A fall stings and is the climb back (a plank up each east face). */
+  air(318, 330, 15, 22); ground(325, 326, 15); ground(329, 330, 19); spring(329, 19); spring(330, 19); bud(316, 15, { rise: 16, lean: 112, growT: 1.6 });
+  gpool(318, 330, 23); stair(317, 15, 23); stair(326, 15, 23);
+  sign(312, 18, 'THE ROOT SPAN. STAND ON THE LEANING CAP: IT CARRIES YOU OVER THE BOG. HOP DOWN ONTO THE BOUNCE CAPS: THEY THROW YOU UP.');
+  foe('spider', 334, 7, 'larderStair', { drop: 110, perch: true });   /* (the larder's keeper: it drops off the root roof on whoever reaches the pad) */
+  coins([319, 13], [322, 12], [325, 13], [328, 16], [331, 12]);
   bud(332, 15); ground(334, 358, 11); foe('brute', 337, 10, 'larderEnd', { face: -1 });
-  coins([317, 13], [322, 13], [329, 13], [336, 9], [340, 9]); deco(330, 14, 'bones', 1);
+  coins([336, 9], [340, 9]);
   /* THE LARDER'S EXAM: the elite (level.js ELITES spore: THE SPORE MAGE, the Order's battle mage, replaces this shield) holds its end - his gate at 353 */
   foe('shield', 346, 10, 'larderEnd', { face: -1 }); foe('archer', 351, 10, 'larderEnd', { face: -1 }); foe('shield', 341, 10, 'larderEnd', { face: -1 });   /* (a forager's bow behind the mage, a shield before him) */
   glow(338, 10); deco(349, 10, 'skullPile', 1);
@@ -230,20 +244,24 @@ export function buildSporewood({ painter, T, TS }) {
   bud(363, 11, { seed: true, rise: 40, hold: 14, pair: 'door' }); bud(366, 11, { seed: true, rise: 88, hold: 14, pair: 'door' });
   sign(360, 10, 'A SEED CAP. STRIKE IT: IT GROWS A STAIR OF TWO STEPS. CLIMB IT.');
   ground(368, 404, 5);
+  /* (claude/sporeplat) GAUNTLET THREE, THE ROOT BREAK: the stair's top lands on a three-wide lip; a LEANING cap carries you over a real gap (six wide) to the knot's island, then the
+     bounce pillar over the second break. A fall is the end (back to the shrine, a dozen columns off): told by the post, the sign, and the two caps taught before it. */
+  air(371, 376, 5, 42); bud(369, 5, { rise: 16, lean: 96, growT: 1.6 }); deco(378, 4, 'warnPost', 1);
   /* A ROOT KNOT on the wall top: jump, and PLUNGE onto it from above (down and attack in the air) - it opens the root door beside it, down to the last silver.
      Optional (a teach on the way): HER knot opens her the same way */
   ent('rootknot', 377, 4, { door: [379, 380, 5, 8] });
-  sign(373, 4, 'A ROOT KNOT OPENS FROM ABOVE: JUMP, THEN PLUNGE ONTO IT. SO DOES HERS.');
+  sign(381, 4, 'A ROOT KNOT OPENS FROM ABOVE: JUMP, THEN PLUNGE ONTO IT. SO DOES HERS.');
+  sign(368, 4, 'THE ROOT BREAKS. STAND ON THE LEANING CAP: IT CARRIES YOU OVER. MISS AND YOU FALL.');
   for (let y = 5; y <= 8; y++) { set(379, y, T.PORT); set(380, y, T.PORT); }   /* THE ROOT DOOR, shut (T.PORT, so the reach fill counts it open: L.reachDoors; the art pass draws it as roots) */
   air(381, 386, 6, 8); spring(380, 9); ent('silver', 385, 8); coins([382, 8], [384, 8]); glow(383, 8);   /* the knot's cellar: the third silver; a bounce cap under the door to spring back out */
   /* her approach: gill pods, skulls, her roots across the way; the last fight before her door - a BRUTE (the weighty one) and a sporeling */
-  for (const [x, k, v] of [[371, 'sporePod', 1], [389, 'skullPile', 0], [393, 'rootDecor', 2], [398, 'sporePod', 0], [402, 'skullPile', 1]]) deco(x, 4, k, v);
+  for (const [x, k, v] of [[382, 'sporePod', 1], [389, 'skullPile', 0], [393, 'rootDecor', 2], [398, 'sporePod', 0], [402, 'skullPile', 1]]) deco(x, 4, k, v);
   foe('brute', 389, 4, 'knotDoor', { face: -1 }); foe('sporeling', 387, 4, 'knotDoor', { face: -1 }); foe('shield', 385, 4, 'knotDoor', { face: -1 }); foe('brute', 400, 4, 'knotDoor', { face: -1 }); drip(391, 2.9); foe('shield', 402, 4, 'knotDoor', { face: -1 });
   /* HER APPROACH'S FALL (claude/sporewood2tune): the last stretch before her door breaks in a REAL GAP, seven wide, no floor, a pillar of THREE bounce caps in it (integ117: three, not two - the paladin's thrown carry fell 23 px short of the far lip over a two-cap pillar) - hop on, be thrown over. A heavy waits where it throws you. Told: the post each side, the sign */
   air(392, 398, 5, 42); ground(394, 396, 5); spring(394, 5); spring(395, 5); spring(396, 5); deco(391, 4, 'warnPost', 0); deco(399, 4, 'warnPost', 1);
   sign(388, 4, 'THE ROOT BREAKS HERE. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');
   plank(370, 391, 2); plank(399, 402, 2); plank(405, 408, 6); coins([386, 1], [390, 1]);                 /* a root over her approach */
-  coins([374, 3], [390, 3], [400, 3]);
+  coins([372, 3], [374, 3], [390, 3], [400, 3]);
   sign(403, 4, 'HER CAP TURNS BLADES. GROW HER SEED CAPS, CLIMB, AND PLUNGE ONTO HER KNOT.');
   ground(405, 408, 9);                                                              /* down into her hollow */
 
