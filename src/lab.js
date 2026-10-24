@@ -13,8 +13,9 @@ import { PLAN as RT_QUEEN } from './cistern-queen.js'; import { DJ_PLAN as RT_DJ
 import { COL_PLAN as RT_COL } from './glass-colossus.js'; import { PLAN as RT_FOG } from './fog-knight.js'; import { PLAN as RT_GANG } from './gang-leader.js'; import { PLAN as RT_CRAB } from './gorge-crab.js';
 import { PLAN as RT_HAWK } from './hawk-mistress.js'; import { PLAN as RT_HOUR } from './hourglass-king.js'; import { PLAN as RT_HUNT } from './huntmaster.js'; import { PLAN as RT_LANT } from './lantern-eater.js';
 import { PLAN as RT_PAL } from './paladin-boss.js'; import { PLAN as RT_PUP } from './puppeteer.js'; import { PLAN as RT_MAT } from './raptor-matriarch.js'; import { PLAN as RT_SCARAB } from './scarab-mother.js'; import { ROC_LAG as RT_ROC } from './roc-eyrie.js';
+import { bbPlan, bbOpen, PLAN as RT_BB } from './battering-beast.js';   /* THE BATTERING BEAST (claude/palisadewood): the bot reads his tells, the stakes' rings, the waves and the clearing's scaffolds off his own module */
 import { hqPlan } from './hornet-queen-plan.js'; import { hqOpen } from './hornet-queen.js';   /* THE HORNET QUEEN 2 (claude/hornetsnest): the bot reads her tells, the rings, the stingers, her loop and works her rules */ import { otPlan, otOpen, PLAN as RT_OT, OT as OT_K, underLine as OT_UNDER } from './old-tusker.js'; import { btPlan, btOpen } from './bog-troll.js'; const OT_W = OT_K.w; const GEO_FELL = false;   /* THE BOG TROLL (claude/fenroad): the bot reads the bubbles, the bulge, his tells and the rings off his own module, and works the lure */   /* OLD TUSKER (claude/oldtusker): the bot reads his tells, the clods, the waves and the clearing's pines off his own module */
-const PLAN_CLOCKS = [RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
+const PLAN_CLOCKS = [RT_BB, RT_OT, RT_QUEEN, RT_DJINN, RT_DRILL, RT_FOREMAN, RT_COL, RT_FOG, RT_GANG, RT_CRAB, RT_HAWK, RT_HOUR, RT_HUNT, RT_LANT, RT_PAL, RT_PUP, RT_MAT, RT_SCARAB];
 import { profileOf, SKILL_RANGE } from './bot-profile.js'; import { makePerception, makeSkillHands } from './lab-perceive.js';   /* (claude/bot2) WHO THE BOT IS (opts.profile; 'legacy' = the old bot, the default) and ITS EYES */
 import { CHARGE_TELL } from './crouch-a.js';   /* THE CROUCH TWISTS, PART A (claude/croucha): what the warden sets her spear against */
 import { FLIGHTS as SPIRAL_FLIGHTS, pendSafe as spiralPendSafe } from './spiral-chase.js';
@@ -846,7 +847,7 @@ async function runbossLab(BK, opts) {
         if (dkS.hp >= 0 && P.hp < dkS.hp - 0.5) { dkS.hitF = f; if (P.atk >= 0) dkS.hitSwF = f; } dkS.hp = P.hp; }
       if(!normalHealth){P.hp = P.maxHp; P.dead = 0;} // refill mode observes health separately; stamina must be earned back by the real recovery rule
       const hum=BK.labHuman!==false;if(P.st<(hum?(ROLL_COST[h]||24)+2:12))P.labRest=true;if(P.st>=(hum?Math.min(60,P.maxSt*.65):Math.min(48,P.maxSt*.6)))P.labRest=false;   /* WEIGHT: rest before the bar is below a roll (it was below 12), back in at 60 (it was 48) */
-      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
+      if(P.labRest&&!P.plunge&&boss.t!=='windcaller'&&boss.t!=='hourglassking'&&boss.t!=='scarabmother'&&boss.t!=='tombking'&&boss.t!=='oldtusker'&&boss.t!=='batteringbeast'&&boss.t!=='hornetqueen'&&boss.t!=='bogtroll'&&boss.t!=='matriarch'&&boss.t!=='colossus'&&boss.t!=='greatdrill'&&boss.t!=='mother'&&boss.t!=='undeadmage'&&boss.t!=='pyromancer'&&boss.t!=='gravewarden'&&boss.t!=='hedgewarden'&&boss.t!=='gargoyle'&&boss.t!=='winchmaster'&&boss.t!=='duneworm'&&boss.t!=='lanterneater'&&boss.t!=='cisternqueen'&&boss.t!=='gangleader'&&boss.t!=='djinn'&&boss.t!=='hawkmistress'&&boss.t!=='fogknight'&&boss.t!=='huntmaster'&&boss.t!=='owl'&&boss.t!=='champion'&&boss.t!=='frog'){   /* (claude/owl3: and the Owl Reeve's - a rest stood still on her pellets' marks and backed blind toward THE DROP; her hands wait by a lamp in their own branch, still off every mark) */   /* (and the Dune Worm's: his hands rest inside their own branch, still off every tell - a rest that backed off blind stood in his sinkholes) */   /* (the Winchmaster's too, round three: its floor is the pit, and this rest backs 30 px away from him - off his ledge into the spikes, measured, over and over) */   /* (the Mother's pilot rests inside its own branch: resting used to stand it still under her vines) */
         k.left=k.right=k.up=k.down=k.jump=k.block=k.atk=k.throw=false;
         const wet=(L.pools||[]).some(q=>P.x>q.x0&&P.x<q.x1&&P.y>q.y);
         if(wet&&P.ground){BK.press('jump');P.labJump=24;}if(P.labJump>0){P.labJump--;k.jump=true;}
@@ -1698,6 +1699,24 @@ async function runbossLab(BK, opts) {
         if(pl.atk&&P.atk<0){P.face=pl.face||P.face;if(pl.up)k.up=true;BK.press('atk');swings++;}
         if(hqOpen(boss)&&!wasOpen)opened++;wasOpen=hqOpen(boss);
         const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:hqOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
+      }
+      if(boss.t==='batteringbeast'){
+        /* THE BATTERING BEAST (claude/palisadewood): src/battering-beast.js bbPlan reads what a player sees - his tells a reaction late, the stakes' rings, the trample's
+           waves, the scaffolds' fall lines - and works THE RULE: a prop knocked so the wreck lies between him and you (or on him), his charge rams it and sticks; in phase
+           two a jump at the buckle while he is open. It rests inside its own branch */
+        k.left=k.right=k.up=k.down=k.jump=k.block=false;
+        const BH=BK.batteringBeastHands(),S=BH&&BH.show();
+        if(f===0||!P.labBbMem)P.labBbMem={};
+        const pl=S?bbPlan({tip:h==='warden'?WARDEN_TIP:0,v2:!!LABP.v2,hero:h,rest:!!P.labRest,P:{x:P.x,y:P.y,vy:P.vy,face:P.face,ground:P.ground,atk:P.atk},e:boss,S,reach:LAB_REACH[h],shield:(SHIELDED(h)&&(h!=='geomancer'||P.st>=30))||h==='warden',dodge:!(h==='warden'&&!LABP.v2),t:f/60,rng:Math.random,mem:P.labBbMem}):{gx:null,face:P.face};
+        if(pl.dodge&&P.ground&&(P.labDodgeF===undefined||f-P.labDodgeF>30)){if(pl.gx!=null)k[pl.gx>P.x?'right':'left']=true;if(h==='warden'&&LABP.v2&&pl.gx!=null)P.face=pl.gx>P.x?-1:1;BK.press('dodge');P.labDodgeF=f;}
+        if(pl.jump&&P.ground){if(P.labJumpF===undefined||f-P.labJumpF>14){BK.press('jump');P.labJumpF=f;P.labJump=16;}}
+        if(P.labJump>0){P.labJump--;k.jump=true;}
+        if(pl.block)k.block=h==='warden'?(LABP.v2?f%2===0:DEFLECT_TAP(f)):DEFLECTS(h)?DEFLECT_TAP(f):true;
+        if(!pl.block&&pl.gx!=null&&Math.abs(pl.gx-P.x)>3)k[pl.gx>P.x?'right':'left']=true;else if(!k.left&&!k.right)P.face=pl.face||P.face;
+        if(pl.down&&!P.ground)k.down=true;
+        if(pl.atk&&P.atk<0){P.face=pl.face||P.face;BK.press('atk');swings++;}
+        if(bbOpen(boss)&&!wasOpen)opened++;wasOpen=bbOpen(boss);
+        const was=P.hp,m0=boss.mode;advance(1,!!opts.draw);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(opts.onFrame)await opts.onFrame({boss,P,f,h,lvl:lvId,open:bbOpen(boss),why:pl.why});if(f%600===599)await yieldNow();continue;
       }
       if(boss.t==='oldtusker'){
         /* OLD TUSKER (claude/oldtusker): src/old-tusker.js otPlan reads what a player sees - his tells a reaction late (the v2 eyes), the clods' red rings, the stomp's
