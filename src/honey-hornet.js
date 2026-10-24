@@ -14,8 +14,8 @@
 //   glob(x, y) (a glob splashed here: lay the sticky patch), mark(e, txt, col), sfx, hint(id, msg) }
 export const HONEY = {
   hp: 46, w: 22, h: 18, speed: 40, wake: 150, leash: 190, beat: 46, hover: 64, ramH: 14,
-  dripTell: 0.7, dripCd: 2.0, globG: 700, globDmg: 12, globR: 7, patch: 6,
-  ramTell: 0.8, ramSpeed: 210, ramT: 0.55, ramDmg: 30, ramRange: 110, ramMin: 26, ramDy: 14, ramCd: 1.0, recover: 0.9, reel: 1.3,
+  dripTell: 0.7, dripCd: 2.0, globG: 700, globDmg: 14, globR: 7, patch: 6,
+  ramTell: 0.8, ramSpeed: 210, ramT: 0.55, ramDmg: 36, ramRange: 110, ramMin: 26, ramDy: 14, ramCd: 1.0, recover: 0.9, reel: 1.3,
   armour: 0.5, drowsy: 3.0, drowsyK: 2, sink: 150, rise: 40,
 };
 export const HONEY_SAY = { drip: '!', ram: '!', armour: 'ARMOURED', drowsy: 'DROWSY: IT SINKS', reel: 'IT REELS', rouse: 'IT ROUSES' };
