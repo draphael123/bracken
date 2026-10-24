@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,27 @@ env:
 permissions:
   contents: read
 jobs:
+  cpu-profile:
+    if: inputs.mode == 'cpu-profile'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [undercrown, lamplit, hanging, hurricane, minecart]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/arena-cpu-profile.mjs "$LEVEL"
+        env:
+          LEVEL: ${{ matrix.level }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: arena-cpu-${{ matrix.level }}
+          path: gate-data/
   tile-cache:
     if: inputs.mode == 'tile-cache'
     runs-on: ubuntu-latest
