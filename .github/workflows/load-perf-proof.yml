@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,21 @@ env:
 permissions:
   contents: read
 jobs:
+  region-props:
+    if: inputs.mode == 'region-props'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/region-prop-bake-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: region-prop-components
+          path: gate-data/region-props/
   border-present:
     if: inputs.mode == 'border-present'
     runs-on: ubuntu-latest
@@ -213,7 +228,7 @@ jobs:
           name: renderer-variant-${{ matrix.variant }}
           path: gate-data/
   campaign:
-    if: inputs.mode == 'campaign'
+    if: inputs.mode == 'campaign' || inputs.mode == 'region-props'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -227,9 +242,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24.11.1'
-      - run: node tools/renderer-campaign-proof.mjs "$SHARD"
+      - run: node tools/renderer-campaign-proof.mjs "$SHARD" --baseline="$BASELINE"
         env:
           SHARD: ${{ matrix.shard }}
+          BASELINE: ${{ inputs.baseline || '5e44cddd' }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
