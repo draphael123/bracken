@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,29 @@ env:
 permissions:
   contents: read
 jobs:
+  fixed-ornaments:
+    if: inputs.mode == 'fixed-ornaments'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/fixed-ornament-proof.mjs
+      - name: Before, after and return to the explicit baseline
+        env:
+          BASELINE: ${{ inputs.baseline }}
+        run: |
+          git worktree add --detach ../outline-before-local "$BASELINE"
+          node tools/fixed-ornament-load-cost.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fixed-ornament-components-and-loader
+          path: gate-data/
   region-props:
     if: inputs.mode == 'region-props'
     runs-on: ubuntu-latest
@@ -228,7 +251,7 @@ jobs:
           name: renderer-variant-${{ matrix.variant }}
           path: gate-data/
   campaign:
-    if: inputs.mode == 'campaign' || inputs.mode == 'region-props'
+    if: inputs.mode == 'campaign' || inputs.mode == 'region-props' || inputs.mode == 'fixed-ornaments'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
