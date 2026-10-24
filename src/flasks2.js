@@ -110,7 +110,7 @@ export const OBJ_LINE = { dry: 'CLEARED WITHOUT A DRINK: QUICK DRAUGHT IS AT THE
    The HIDDEN ones (EXTRA FLASK III, BOTTLED SUNLIGHT, STEADY HAND) are never in the typical kit. */
 export function typicalFlaskKit({ depth = 1, beaten = [], act = 1 } = {}) {
   const b = new Set(beaten), it = {};
-  if (depth >= 4) it.tonic = true;   /* (integ111) was 3: THE FEN ROAD sits before the Stockade (depth 3 now), and a typical player buys EXTRA FLASK I only AFTER the Chieftain, as before - every old level keeps its kit */
+  if (depth >= 5) it.tonic = true;   /* (integ111) was 3: THE FEN ROAD sits before the Stockade; (batch118) was 4: THE HORNET'S NEST sits before the marsh (Stockade is depth 4 now), and a typical player buys EXTRA FLASK I only AFTER the Chieftain, as before - every old level keeps its kit */
   if (b.has('crown')) it.extra2 = true;
   if (b.has('stockade')) it.rich = true;
   if (b.has('keep')) it.distilled = true;

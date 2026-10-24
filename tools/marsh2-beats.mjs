@@ -23,7 +23,7 @@ const bad = [], ok = (c, m) => { if (!c) bad.push(m); }, out = [];
 const lv = LEVELS.find(l => l.id === 'marsh'); assert(lv, 'no marsh');
 const L = lv.build(), at = (x, y) => L.grid[y * L.W + x];
 ok(lv.rule === 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', 'the rule line does not name the pads: ' + lv.rule);
-ok(lv.needs === 'wood', 'the marsh must still follow the wood (the ferry transition): needs ' + lv.needs);
+ok(lv.needs === 'hornetsnest', 'the marsh must follow the nest (the road runs wood -> nest -> marsh; the ferry transition): needs ' + lv.needs);
 /* THE SLUICE HOUSE */
 const sh = L.ents.find(e => e.t === 'sluice' && e.sluiceHouse);
 ok(!!sh, 'no sluice house gate (a sluice with sluiceHouse)');

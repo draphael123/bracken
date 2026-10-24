@@ -92,7 +92,7 @@ check('catch-up pays x3 below the curve, stops at it, x1 above', () => {
   for (let lv = 0; lv < 26; lv++) for (const n of [1, 7, 60, 900]) { const xp = xpFloor(lv) + 3, got = c(n, xp, 12);
     assert(got >= n && got <= 3 * n); if (got > n) assert(xp + got - n <= xpFloor(12), 'the bonus took him past the curve'); } });
 check('expected level is the depth on the gate chain', () => {
-  const d = depthsOf(LEVELS.filter(l => !l.hidden || l.secret)); assert.equal(d.wood, 0); assert.equal(d.marsh, 1);
+  const d = depthsOf(LEVELS.filter(l => !l.hidden || l.secret)); assert.equal(d.wood, 0); assert.equal(d.hornetsnest, 1); assert.equal(d.marsh, 2);
   for (const [id, v] of Object.entries(d)) assert(Number.isInteger(v) && v >= 0, id + ' has no depth'); });
 
 if (fails.length) { console.log('LEVELLING: ' + fails.length + ' red\n  ' + fails.join('\n  ')); process.exit(1); }

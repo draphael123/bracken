@@ -12,7 +12,7 @@
 import assert from 'node:assert/strict'; import { openPage } from './cdp.mjs'; import { writeFileSync } from 'node:fs';
 const pg = await openPage({ audio: false, fonts: false }); let r;
 try {
-  r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const KD=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)).keep;/* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
+  r = await pg.evalp(`(async()=>{const PR=await import('/src/progression.js'),{xpFloor}=await import('/src/xp.js'),{LEVELS}=await import('/src/level.js'),{depthsOf}=await import('/src/campaign-order.js');const DP=depthsOf(LEVELS.filter(l=>!l.hidden||l.secret)),KD=DP.keep,HD=DP.hanging;/* (batch118) the owl's depth too: the knight arrives ON the curve (a level below it the catch-up x3 pays past the level the line expects) *//* the keep's depth is read from the campaign order, not typed: a level added before it (the Sky Road) moves it */BK.manualSimulation=true;const fails=[],shots=[],out={};
 const fresh=(h,lv)=>{for(const k in BK.keys)BK.keys[k]=false;BK.setHero(h);BK.reset({fresh:true});BKT.PROG.xp[h]=xpFloor(lv);BKT.PROG.skillOwned[h]={};BKT.PROG.loadouts[h]=[];BK.applyUpgrades();};
 /* 1. tal(): on from its level, unowned and unslotted; off a level below */
 let n1=0;for(const h of PR.HERO_IDS){const ladder=PR.skillsFor(h).filter(n=>!n.active);
@@ -39,13 +39,13 @@ if(BKT.heroLevel('knight')!==4)fails.push('no level-up');if(BK.P.hp!==BK.P.maxHp
 if(!/FULLY HEALED/.test(BK.hint.msg))fails.push('the hint does not say so: '+BK.hint.msg);out.plainHint=BK.hint.msg;
 if(BK.state!=='card')fails.push('THE LEVEL CARD did not open with the heal: '+BK.state);else BK.cardClose();/* (LEVELING: the card comes with the heal) */for(let f=0;f<170;f++)BK.step(1);if(BK.state!=='play')fails.push('left play after the level-up: '+BK.state);BK.step(0);shots.push({name:'level-up',png:BK.view.buf.toDataURL()});
 /* ...and one inside a boss fight waits for the boss */
-fresh('knight',9);BK.load(W('hanging'));BK.state='play';BK.god=false;BK.sim(200);{const A=BK.L.arena;BK.tp(A.trigger/16+2,A.floor/16-1);}BK.sim(500);
+fresh('knight',HD);BK.load(W('hanging'));BK.state='play';BK.god=false;BK.sim(200);{const A=BK.L.arena;BK.tp(A.trigger/16+2,A.floor/16-1);}BK.sim(500);
 const owl=BK.boss;if(!BK.bossActive||!owl||!owl.alive)fails.push('the owl fight did not start');
 BK.P.hp=12;BK.P.inv=99;BK.gainXp(toNext('knight'));const lvMid=BKT.heroLevel('knight');let most=0;for(let f=0;f<90;f++){BK.P.inv=99;BK.sim(1);most=Math.max(most,BK.P.hp);}
-if(lvMid!==10)fails.push('no level-up mid-fight');if(most>=BK.P.maxHp)fails.push('a level-up healed him while the owl stood ('+most+'/'+BK.P.maxHp+')');out.midFightHp=most+'/'+BK.P.maxHp;
-BK.P.hp=12;BKT.PROG.xp.knight=xpFloor(11)-5;for(let k=0;k<20&&owl.alive;k++){BKT.hurtEnemy(owl,1e5,owl.x-10,false);if(owl.alive){BK.P.inv=99;BK.sim(3);}}
+if(lvMid!==HD+1)fails.push('no level-up mid-fight');if(most>=BK.P.maxHp)fails.push('a level-up healed him while the owl stood ('+most+'/'+BK.P.maxHp+')');out.midFightHp=most+'/'+BK.P.maxHp;
+BK.P.hp=12;BKT.PROG.xp.knight=xpFloor(HD+2)-5;for(let k=0;k<20&&owl.alive;k++){BKT.hurtEnemy(owl,1e5,owl.x-10,false);if(owl.alive){BK.P.inv=99;BK.sim(3);}}
 out.owlKill={alive:owl.alive,bossActive:BK.bossActive,level:BKT.heroLevel('knight'),hp:BK.P.hp+'/'+BK.P.maxHp};BK.sim(1);
-if(owl.alive||BK.bossActive)fails.push('the owl fight did not end');if(BKT.heroLevel('knight')<11)fails.push('the owl purse did not level him');if(BK.P.hp!==BK.P.maxHp)fails.push('the fight ended and he was not healed: '+BK.P.hp+'/'+BK.P.maxHp);
+if(owl.alive||BK.bossActive)fails.push('the owl fight did not end');if(BKT.heroLevel('knight')<HD+2)fails.push('the owl purse did not level him');if(BK.P.hp!==BK.P.maxHp)fails.push('the fight ended and he was not healed: '+BK.P.hp+'/'+BK.P.maxHp);
 /* 4. CATCH-UP */
 const pay=(id,lv,n,xp)=>{fresh('pyro',lv);if(xp!==undefined)BKT.PROG.xp.pyro=xp;BK.load(W(id));BK.state='play';BK.god=true;BK.xpStart();BK.sim(5);const h0=BK.hint.msg,x0=BKT.PROG.xp.pyro;BK.gainXp(n);return{paid:BKT.PROG.xp.pyro-x0,hint:h0};};
 const low=pay('keep',1,40);if(low.paid!==120)fails.push('a level-1 pyro in the keep was paid '+low.paid+' for 40, not 120');if(!/CATCHING UP/.test(low.hint))fails.push('the keep did not say CATCHING UP: '+low.hint);out.catchHint=low.hint;
