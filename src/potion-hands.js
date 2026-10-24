@@ -26,16 +26,16 @@
 import * as CTW from './carry-throw.js';
 
 export const JAR = { brew: 0.8, burnR: 40, bedR: 30, snare: 1.6, snareR: 28, hover: 2.4, rise: 92, riseMax: 7 * 16, foeFloat: 2.6, foeRise: 34, bubbleR: 13, fireLife: 2.6, hedgeBurn: 0.45, coatR: 34 };
-export const GM = { hp: 980, ward: 0.4, openMul: 2, float: 3.2, purse: 0.15, after: 3, p2: 0.55, brood: 3, brood2: 4, broodCd: 11, broodCd2: 9, broodHp: 1,
+export const GM = { hp: 1180, ward: 0.4, openMul: 2, float: 3.2, purse: 0.15, after: 3, p2: 0.55, brood: 3, brood2: 4, broodCd: 11, broodCd2: 9, broodHp: 1, broodBite: 0.6,
   walk: 34, walk2: 42, sweepAt: 48, sweepCd: 2.6, sweepTell: 0.55, fireCd: 8, fireCd2: 6.5, fireTell: 0.85, fireN: 2, fireN2: 3, fireR: 20, fireFly: 0.9,
-  farAt: 110, farK: 0.9, hurlCd: 7, hurlTell: 0.6, hurlFly: 0.8, patchR: 22, patchLife: 2.8, patchTick: 0.7, stirCd: 8.5, stirTell: 1.0, stirN: 3, broodTell: 1.0, kick: 1.2,
-  dmg: { sweep: 22, fire: 20, thorns: 9, burn: 9, gout: 22 } };
+  farAt: 100, farK: 1.6, hurlCd: 7, hurlTell: 0.6, hurlFly: 0.8, patchR: 22, patchLife: 2.8, patchTick: 0.7, stirCd: 8.5, stirTell: 1.0, stirN: 3, broodTell: 1.0, kick: 1.2,
+  dmg: { sweep: 24, fire: 26, thorns: 11, burn: 11, gout: 28 } };
 export const PO_SAY = {
   take: 'INTERACT TAKES HER JAR. ATTACK THROWS IT. UP LOBS, DOWN AT YOUR FEET.',
   ladder: 'THE VINE GROWS: A LADDER', bridge: 'THE VINE GROWS: A BRIDGE', snare: 'THE VINES HOLD THEM',
   bubble: 'THE BUBBLE LIFTS YOU', floated: 'OFF HIS FEET', burnt: 'THE THORNS BURN AWAY', coat: 'THE COAT BURNS OFF', burnIt: 'BURN IT',
   brood: 'SHE CALLS HER BROOD', bare: 'THE BROOD IS DOWN: A BLUE JAR LIFTS HER', holds: 'THE BROOD HOLDS HER DOWN', open: 'SHE FLOATS: CUT HER',
-  stir: 'SHE STIRS THE CAULDRON', spit: 'THE CAULDRON SPITS', thorns: 'THORNS', burning: 'BURNING GROUND',
+  stir: 'SHE STIRS THE CAULDRON', noBurn: 'HER OWN FIRE: IT DOES NOT TAKE', spit: 'THE CAULDRON SPITS', thorns: 'THORNS', burning: 'BURNING GROUND',
 };
 const COL = { green: ['#5fae3a', '#9be06a', '#2e5a1c'], blue: ['#4a8fd8', '#a8d8ff', '#24406a'], red: ['#d8502a', '#ffb070', '#6a2014'] };
 
@@ -215,7 +215,7 @@ export function makePotionHands(ctx) {
     const n = (e.phase >= 2 ? GM.brood2 : GM.brood) - brood(e).length; if (n <= 0) return;
     const row = Math.round(A().floor / TS) - 1;
     for (let i = 0; i < n; i++) { const side = i % 2 ? 1 : -1, x = clampX(e.x + side * (26 + 14 * Math.floor(i / 2)));
-      const made = ctx.spawn({ t: 'sprig', x: Math.floor(x / TS), y: row, face: -side }); for (const q of made) { q.broodOf = e; q.hp = Math.max(1, Math.round(q.hp * GM.broodHp)); q.woke = 1; q.sleeper = false; }
+      const made = ctx.spawn({ t: 'sprig', x: Math.floor(x / TS), y: row, face: -side }); for (const q of made) { q.broodOf = e; q.nip = GM.broodBite; q.hp = Math.max(1, Math.round(q.hp * GM.broodHp)); q.woke = 1; q.sleeper = false; }
       ctx.burst(x, A().floor - 6, 8, ['#5a4a2a', '#8a7a4a', '#c9b27c'], 50, 0.5); }
     e.called++; ctx.sfx.whistleCall ? ctx.sfx.whistleCall() : ctx.sfx.charge(); say(e.x, e.y - e.h - 18, 'brood', '#c9b27c');
   }
@@ -241,7 +241,7 @@ export function makePotionHands(ctx) {
     if (e.mode !== 'floated') { e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); }
     if (e.wasBrood && !broodUp(e) && e.mode !== 'sleep') { e.wasBrood = false; e.broodT = ph >= 2 ? GM.broodCd2 : GM.broodCd; say(e.x, e.y - e.h - 18, 'bare', '#8fd160'); }
     if (broodUp(e)) e.wasBrood = true;
-    if ((e.burn || 0) > 0 && (broodUp(e) || e.ward > 0)) { e.burn = 0; ctx.sfx.hiss && ctx.sfx.hiss(); if (once('smother')) ctx.word(e.x, e.y - e.h - 12, 'WARDED', '#dfe8ff'); }   /* HER WARD SMOTHERS A FIRE too (B3): a burn bites her only bare */
+    if ((e.burn || 0) > 0) { e.burn = 0; if (once('smother')) { ctx.sfx.hiss && ctx.sfx.hiss(); ctx.word(e.x, e.y - e.h - 12, PO_SAY.noBurn, '#ff9a5c'); } }   /* SHE IS THE WITCH-FIRE'S MISTRESS: a fire never takes on her (a flame's blow lands; its burn does not stay) */
     let want = 0;
     if (ph === 1 && e.hp <= e.maxHp * GM.p2 && e.mode === 'walk') { e.phase = 2; e.mode = 'kick'; e.modeT = GM.kick; e.vx = 0; ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); say(e.x, e.y - e.h - 24, 'stir', '#ff9a5c'); e.broodT = 0.4; e.stirT = 2.5; }
     switch (e.mode) {

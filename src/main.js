@@ -7473,6 +7473,7 @@ const LP_HERO = { tollmaster: { knight: 0.92, ranger: 0.85, paladin: 1.3 }, lamp
 function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = false, noKnock = false, who = null, blow = null, name = null, geo = false, low = false, pct = 0 } = {}) {
   { const src = who || updFoe; if (src && src.elite && dmg > 0) dmg = Math.max(1, Math.round(dmg * tuneOf(src.t).dmg));   /* (ELITETUNE) per-kind elite damage, elite-kit.js TUNE */
     if (src && src.disarmed && !lcBig(src) && dmg > 0) dmg = Math.max(1, Math.round(dmg * DISARMED_TAKE));
+    if (src && src.nip > 0 && dmg > 0) dmg = Math.max(1, Math.round(dmg * src.nip));   /* (claude/underleaf3) A NIP: a summoned small thing bites for a share of its kind's blow (THE GRANDMOTHER 3's brood: src/potion-hands.js GM.broodBite) */
     if (src && src.xpRole === 'mini' && dmg > 0) dmg = Math.round(dmg * GB.GREED.miniHit);
     if (src && dmg > 0 && BOSS_HIT[src.t] && (src === boss || src.xpRole === 'mini')) dmg = Math.round(dmg * BOSS_HIT[src.t] * (src.t === 'captain' ? (CAP_HERO[hero()] ?? 1) : DUEL_HERO[src.t] ? (DUEL_HERO[src.t][hero()] ?? 1) : 1));
     if (src && dmg > 0 && LP_HERO[src.t] && (src === boss || src.xpRole === 'mini')) dmg = Math.max(1, Math.round(dmg * (LP_HERO[src.t][hero()] ?? 1)));   /* (claude/lamplit3tune) THE LAMPREEVE and THE TOLLMASTER, PER HERO: the knight stands in their blows and cuts them slowly */
