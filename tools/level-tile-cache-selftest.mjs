@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {levelTileCache,levelTileMemo,resetLevelTileCaches} from '../src/level-tile-cache.js';
+const once=levelTileMemo();let bakes=0;
+const original=()=>({colour:'original',generation:++bakes});
+const held=once('shared-key',original);
+assert.equal(once('shared-key',()=>({colour:'different-input'})),held);
+resetLevelTileCaches();assert.equal(bakes,1,'eviction must not eagerly rebuild');
+const rebuilt=once('shared-key',()=>({colour:'different-input'}));
+assert.notEqual(rebuilt,held);assert.equal(rebuilt.colour,'original','preserve the first successful inputs after eviction');
+assert.equal(held.colour,'original','eviction must leave existing art references usable');
+assert.equal(bakes,2);
+let failures=0;const retry=levelTileMemo();
+assert.throws(()=>retry('retry',()=>{failures++;throw Error('failed bake');}),/failed bake/);
+assert.equal(retry('retry',()=>7),7);assert.equal(failures,1,'a failed bake must not retain its recipe');
+const tint=levelTileCache(),reference={width:16};tint.set('tint',reference);resetLevelTileCaches();
+assert.equal(tint.size,0);assert.equal(reference.width,16);
+console.log('PASS tile cache lifetime, canonical inputs, failed-bake retry and held references');

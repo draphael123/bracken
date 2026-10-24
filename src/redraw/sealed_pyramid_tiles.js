@@ -9,9 +9,10 @@
 //   LIGHT           every tile is tinted by the light on it: warm near a brazier, the face in sun, cold and dim where only the tomb's dark reaches
 // Made from px.js primitives, 16x16, baked once and memoised.   spTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 import { canvas, px, rect } from '../px.js';
+import { levelTileCache, levelTileMemo } from '../level-tile-cache.js';
 import { hash } from './buried_city_tiles.js';
 
-const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+const once = levelTileMemo();
 
 export const SEC = {
   face:  { r: ['#7a5a38', '#9a7848', '#bc9a60', '#dcb878', '#f4dc9c'], joint: '#5a4026', inlay: null,      base: 1 },
@@ -42,7 +43,7 @@ function lightAt(I, x, y, base) {
   for (const lp of I.lamps) { const d = Math.hypot(lp.x - x, (lp.y - y) * 1.2); v = Math.max(v, 3.4 - d * 0.4); }
   return Math.max(-3, Math.min(4, Math.round(v)));
 }
-const TINTED = new Map();
+const TINTED = levelTileCache();
 function tint(c, lit) {
   if (lit === 0) return c;
   if (!TINTED.has(lit)) TINTED.set(lit, new WeakMap()); const tm = TINTED.get(lit); if (tm.has(c)) return tm.get(c);

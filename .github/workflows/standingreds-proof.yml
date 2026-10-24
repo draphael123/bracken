@@ -4,13 +4,13 @@ on:
     inputs:
       mode:
         type: choice
-        options: [hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
   hero-reuse-checks:
-    if: inputs.mode == 'hero-reuse-checks'
+    if: inputs.mode == 'hero-reuse-checks' || inputs.mode == 'tile-cache'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     strategy:
@@ -33,6 +33,22 @@ jobs:
         if: always()
         with:
           name: hero-reuse-checks-${{ matrix.check }}
+          path: gate-data/
+  tile-cache-pixels:
+    if: inputs.mode == 'tile-cache'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/level-tile-cache-selftest.mjs
+      - run: node tools/tile-cache-lifetime-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tile-cache-pixels
           path: gate-data/
   canal-proof:
     if: inputs.mode == 'canal-proof'

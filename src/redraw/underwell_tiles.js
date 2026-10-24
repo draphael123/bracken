@@ -9,6 +9,7 @@
 // Made from px.js primitives, 16x16, baked once and memoised.   wellTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 // The rules (the canalart / redgorge rules): a wall mass is darker than the floor on it; every standable top has a lit lip; the oil is the darkest, glossiest thing in the level.
 import { canvas, px, rect, mulberry } from '../px.js';
+import { levelTileMemo } from '../level-tile-cache.js';
 import { uwX, UW_SPILL, UW_RES } from '../underwell.js';
 
 /* the palette: STONE (cool grey-tan limestone), BRICK (the vaults), SILT (blown dust), OIL (black with a violet and a teal sheen), IRON, BRASS */
@@ -20,7 +21,7 @@ export const UC = {
   i0: '#15151a', i1: '#25252d', i2: '#3a3a44', i3: '#585866', i4: '#82828f', i5: '#b4b4c0',
   br0: '#3c2a08', br1: '#6c4a10', br2: '#a4742a', br3: '#d8a444', br4: '#fcdc84',
   h0: '#3a2a16', h1: '#5c4426', h2: '#82643a', h3: '#a68652', h4: '#c8aa72', hd: '#241a0e', lime: '#8c8672', lime2: '#b8b29a' };
-const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+const once = levelTileMemo();
 export const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
 const px2 = (g, x, y, c) => { if (x >= 0 && x < 16 && y >= 0 && y < 16) px(g, x, y, c); };
 const mix = (a, b, t) => { const A = parseInt(a.slice(1), 16), B = parseInt(b.slice(1), 16); const q = (s) => Math.round(((A >> s) & 255) * (1 - t) + ((B >> s) & 255) * t); return '#' + [16, 8, 0].map(s => q(s).toString(16).padStart(2, '0')).join(''); };

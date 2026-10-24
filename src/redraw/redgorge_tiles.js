@@ -5,6 +5,7 @@
 //   gorgeTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 // The rules: a wall mass is darker than the floor on it; every ledge top is warm-lit (reflected light off the far wall); the channel is the palest thing on the screen.
 import { canvas, px, rect, mulberry } from '../px.js';
+import { levelTileMemo } from '../level-tile-cache.js';
 import { tile as newGroundTile } from './redgorge2_art.js';
 import { tile as spillwayTile } from './spillway_art.js';   /* THE SPILLWAY's head shelf, ledge slabs and basin apron (claude/rgart) */   /* THE RAPIDS' rock, the nest ledge's pillars and bed (claude/redgorge2 art pass) */
 
@@ -13,7 +14,7 @@ export const RK = { r0: '#240f0e', r1: '#3c1a16', r2: '#5c2c20', r3: '#76382a', 
   pale0: '#7a5844', pale1: '#9c7860', pale2: '#bd9878', pale3: '#ecc4a6', pale4: '#f2d8b4',
   mas0: '#3a1c18', mas1: '#58302a', mas2: '#76443a', mas3: '#92584a', mort: '#1a0c0c',
   w0: '#2a1c12', w1: '#46301c', w2: '#6a4a2a', w3: '#8e683a', w4: '#b08a50', rope: '#c8a868', ropeD: '#7a5c34', ropeL: '#e8d09a', iron: '#3a3a42' };
-const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+const once = levelTileMemo();
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
 const px2 = (g, x, y, c) => { if (x >= 0 && x < 16 && y >= 0 && y < 16) px(g, x, y, c); };
 
