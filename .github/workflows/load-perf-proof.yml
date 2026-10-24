@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,31 @@ env:
 permissions:
   contents: read
 jobs:
+  border-present:
+    if: inputs.mode == 'border-present'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [undercrown, lamplit, hanging, hurricane, minecart]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/display-border-proof.mjs --verify-only
+      - name: Original viewport, CPU, all pixel samples and return control
+        run: node tools/display-border-proof.mjs "$LEVEL" --baseline=ffd61f8d9c56feca694b6b8fb87559e0f50ee988 --control
+        env:
+          LEVEL: ${{ matrix.level }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: border-present-${{ matrix.level }}
+          path: gate-data/
   tile-warm:
     if: inputs.mode == 'tile-warm'
     runs-on: ubuntu-latest
