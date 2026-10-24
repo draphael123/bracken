@@ -4,11 +4,33 @@ on:
     inputs:
       mode:
         type: choice
-        options: [towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  layout-schedule:
+    if: inputs.mode == 'layout-schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        workers: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Original full strict layout, unchanged ten-minute check deadline
+        run: node tools/textfit-memory-proof.mjs
+        env:
+          TEXTFIT_PAGES: ${{ matrix.workers }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: layout-workers-${{ matrix.workers }}
+          path: gate-data/textfit-memory/
   towpath-visibility:
     if: inputs.mode == 'towpath-visibility'
     runs-on: ubuntu-latest
