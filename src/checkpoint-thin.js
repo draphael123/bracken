@@ -24,7 +24,7 @@ export const CHECK_DROP = {
   spore: [],   /* (claude/sporewood2) SPOREWOOD 2 places one shrine at the end of each named area's exam, the last at her door (A10c), by hand - nothing to drop */
   kings: [],   /* (claude/kingswood2) KINGSWOOD 2 places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
   scree: [[58,19],[105,19],[222,13],[493,18],[500,18],[534,8]],   /* (claude/scree2: the rockslide chase grew 96 columns in at 339 - 404/438 are 500/534 now; the ropeway's own shrine (493) goes for the chase's shrine on the gorge bank (441); the slope's 330 went with the slope; and the pasture's 58, 56 tiles from the start: difficulty v2, one a section) */
-  hanging: [[12,51],[43,79],[98,107]],
+  hanging: [[13,51],[43,79],[98,107]],   /* (claude/hanging3: the upper boughs' west checkpoint stands at 13 now - the counterweight's shaft took 10-11) */
   spire: [[8,195],[13,117],[21,217],[22,55],[30,99],[72,151]],
   moor: [[25,21],[52,21],[204,21],[296,13],[399,13],[406,13],[494,13]],
   storm: [[29,35],[76,35],[173,31],[190,31],[258,31],[274,31],[306,31],[351,29],[388,29],[425,29],[503,28],[533,29]],

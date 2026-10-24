@@ -2548,11 +2548,17 @@ async function runbossLab(BK, opts) {
       else { goal = boss.x; strike = true; }
       /* THE OWL'S DEAD BOUGHS: when the Reeve is low under one the bot cuts its peg, as a player standing at it would, and it hops the skim */
       if (boss.t === 'owl') {
-        const down=['grounded','crash','pinned','stuckTalons'].includes(boss.mode);
+        const down=['grounded','crash','pinned','stuckTalons','perchDown','perchFall'].includes(boss.mode);
         /* (claude/owl3) A LAMP IS A MOMENT: it burns two seconds and one crash spends it, so a player waits by a lamp and strikes it AS SHE COMES -
            her swoop or skim told and set on its line (she runs through him, and the lamp beside him), or her shadow over him for the plunge - never before */
         const comes = (boss.mode === 'swoopTell' && boss.swAt) || (boss.mode === 'skimTell' && boss.skimAt) || boss.mode === 'stalk';
         if(!down){strike=false;const lamps=BK.props().filter(p=>p.owl&&!p.perch);const lamp=lamps.sort((a,b)=>Math.abs(a.x-P.x)-Math.abs(b.x-P.x))[0];const run=(boss.mode==='swoopTell'&&boss.swAt)||(boss.mode==='skimTell'&&boss.skimAt);if(lamp){goal=run?lamp.x+(Math.sign(lamp.x-boss.x)||1)*12:lamp.x+(Math.sign((A.x0+A.x1)/2-lamp.x)||1)*10;   /* (set on her line: to the lamp's far side from her, so she meets the light before him) */   /* (stood on the lamp's inner side, away from the drop: a goal that flipped sides of the lamp each frame set off the stuck-hop, and the hop carried him into the drop) */if(comes&&!lamp.lit&&!(lamp.cool>0)&&Math.abs(P.x-lamp.x)<22&&P.atk<0&&(!run||(P.x-lamp.x)*(lamp.x-boss.x)>=0)){k.block=false;P.face=Math.sign(lamp.x-P.x)||1;BK.press('atk');swings++;}}}
+        /* (claude/hanging3) HER PERCH HANGS ON A ROPE: while she sits on a perch whose rope is still tied, a player walks to its red-and-gold knot on the floor
+           and cuts it - she comes down with it, open. (The lamps stay the minor extra above; her told moves below still come first.) */
+        { const hv = BK.hvr ? BK.hvr() : null; if (!down && hv && P.ground && ['sit','land','screechTell','screech','fanTell','fan','gustTell','gust','pelletTell','pellet','hootTell','douseTell'].includes(boss.mode)) {
+          const pr = hv.ropes.find(r => r.kind === 'perch' && r.k === boss.perchI && r.state === 'tied');
+          if (pr) { const kx = pr.knot[0] * 16 + 8, side = Math.sign(P.x - kx) || 1; goal = kx + side * 12; strike = false;
+            if (Math.abs(P.x - kx) < 22 && P.atk < 0) { k.block = false; P.face = Math.sign(kx - P.x) || 1; BK.press('atk'); swings++; } } } }
         /* (claude/owl3) HER PLUNGE with no lamp to give her (the nearest one lit already, or its wick still smoking): out from under her shadow */
         if ((boss.mode === 'stalk' || boss.mode === 'plunge') && P.ground) { const lp = BK.props().filter(p => p.owl && !p.perch).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0]; if (!lp || lp.cool > 0 || Math.abs(lp.x - P.x) > 24 || (lp.lit && lp.lampT < 0.6)) { goal = P.x + (Math.sign(P.x - boss.x) || 1) * 44; strike = false; } }
         /* (claude/owl3) HER SKIM, LED: a player who has read the mantle and its low line jumps as she will arrive - its hold, then her run to him - not when he first sees her moving (a reaction late, she is on him) */
