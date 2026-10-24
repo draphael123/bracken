@@ -85,5 +85,7 @@ export function pad(g, x, y, k, time) { x = Math.round(x); y = Math.round(y + Ma
   if (k % 4 === 0) { R(g, '#f6f0e0', x - 2, y - 4, 1, 2); R(g, '#f6f0e0', x, y - 5, 1, 3); R(g, '#f6f0e0', x + 2, y - 4, 1, 2); R(g, '#e8c840', x, y - 3, 1, 1); }   /* a flower */
 }
 const mistPuff = () => once('mist', () => { const [c, g] = canvas(96, 20, true), gr = g.createRadialGradient(48, 0, 1, 48, 0, 46); gr.addColorStop(0, 'rgba(232,240,232,0.85)'); gr.addColorStop(0.6, 'rgba(220,232,224,0.35)'); gr.addColorStop(1, 'rgba(220,232,224,0)'); g.translate(0, 10); g.scale(1, 0.22); g.fillStyle = gr; g.fillRect(0, -46, 96, 92); return c; });
+/* bake the old pines' and the marsh edge's pictures at the level's load (a first draw in play was a hitch) */
+export function warmEdge() { pineNestSprite(); for (let k = 0; k < 4; k++) scrapSprite(k); mistPuff(); }
 export function mist(g, x0, x1, y, time, a = 0.3) { const spr = mistPuff();
   for (let k = 0; k < 7; k++) { const ph = (time * 0.025 + k * 0.143) % 1, x = x0 + ph * (x1 - x0) - 48, yy = y - 6 - (k % 3) * 5 + Math.sin(time * 0.4 + k) * 1.5; g.globalAlpha = a * Math.sin(ph * Math.PI); g.drawImage(spr, Math.round(x), Math.round(yy), 120, 24); } g.globalAlpha = 1; }

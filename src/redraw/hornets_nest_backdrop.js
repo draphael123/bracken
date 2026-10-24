@@ -10,6 +10,7 @@
 // Every static picture is baked ONCE; a frame is a few dozen drawImage calls.
 import { canvas, mulberry } from '../px.js';
 import { PAPER, COMB, BARK, NEEDLE } from './hornets_nest_tiles.js';
+import { warmEdge } from './hornets_nest_edge.js';
 
 const TS = 16, memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 /* the big baked pictures are drawn every frame: a CPU-side bake canvas has to be uploaded to the graphics card each time it is drawn (a 576 x 320 vault cost ~12 ms a frame headless), so each one is copied ONCE onto a GPU canvas */
@@ -100,7 +101,7 @@ function hallVault() { return once('hall', () => { const w = (HALL.x1 - HALL.x0 
 const LIGHTS = [];   /* [world x, world y, radius, colour index] - the honey lights of the wall, laid by hash over the nest's width */
 for (let i = 0; i < 40; i++) LIGHTS.push([NEST_X0 * TS + 60 + i * 100 + (hash(i, 5) % 50), 40 + (hash(i, 9) % 560), 70 + 20 * (hash(i, 3) % 3), hash(i, 7) % 3]);   /* (three radii only: each is a baked glow) */
 /* WARM: every picture baked at the level's load (a first draw in play, mid-fight, was a hitch) */
-export function warm() { ancientPine(); farStrip(0); midStrip(0); midStrip(1); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
+export function warm() { warmEdge(); ancientPine(); farStrip(0); midStrip(0); midStrip(1); for (let z = 0; z < 3; z++) { wallTile(z); for (let i = 0; i < 5; i++) curtain(i, z); } hallVault(); for (const r of [70, 90, 110]) for (const c of ['#ffc860', '#ffb040', '#ff8a3a']) glow(r, c); for (const c of ['#fff0a0']) glow(150, c); glow(130, '#ff9a3a'); glow(70, '#ffc860'); }
 const zoneOfCol = tx => tx < 169 ? 0 : tx < 248 ? 1 : 2;
 export function drawBackdrop(g, cx, cy, VW, VH, L, time, dY, full) {
   cx = Math.round(cx); cy = Math.round(cy);
