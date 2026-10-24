@@ -101,7 +101,8 @@ export function makeHornetQueenHands(ctx) {
       /* THE HALL TEARS: the torn combs and THE LAST COMB hang (the nest's own combs: cut them and they drop), the honey floods the floor (the nest's sticky rule) */
       tearHall: () => { const N = NEST(), G = S.G.h; if (N && N.addCombs) N.addCombs([...G.torn, ...(G.last ? [G.last] : [])].map(c => ({ id: c.id, x0: c.x0, x1: c.x1, row: c.row, rows: c.rows, last: c.last, hq: true })));
         if (N && N.addHoney && G.honey) N.addHoney(G.honey.x0, G.honey.x1, G.honey.row, Infinity, 'flood');
-        ctx.burst((G.x0 + G.x1) / 2, G.top + 20, 30, ['#e0a838', '#fff1a0', '#c47a14', '#d8c8a0'], 160, 1.2); },
+        ctx.burst((G.x0 + G.x1) / 2, G.top + 20, 30, ['#e0a838', '#fff1a0', '#c47a14', '#d8c8a0'], 160, 1.2);
+        for (const q of ctx.enemies()) if (q.alive && q.t === 'wasp' && q.drone) { q.alive = false; ctx.burst(q.x, q.y - 3, 8, ['#e0a838', '#3a2412', '#fff1a0'], 70, 0.5); }   /* her brood's drones go down in the honey: no adds in P2 (Daniel 10-22) */ },
     };
   }
   /* the hall's combs as her fight reads them (the nest's hands hold them): hanging, falling, or cut down into the honey */

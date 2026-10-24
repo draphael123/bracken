@@ -44,7 +44,7 @@ export const HQ = {
   tear: { tell: 1.4, rip: 0.9 },   /* THE HALL TEARS: the told rear-up (the inner perches shake), then the rip (the perches hang, the last comb sags, the honey comes) */
   circle: { lap: 7, low: 26, high: 150, edge: 30, laps: [0.5, 0.9], lift: 6 },   /* a lap of her loop (s): low across the middle (her back a hand under a hanging comb's foot), high and back; lift: px she keeps over a cut comb lying in the honey */
   volley: { tell: 0.75, n: 5, spread: 1.0, speed: 215, dmg: 30 },
-  cloakT: { tell: 0.9, t: 10, touch: 24 },
+  cloakT: { tell: 0.9, t: 10, touch: 16 },
   pin: { t: 3.8, mul: 2, cap: 0.22, capLast: 0.3, last: 4.4, heroDmg: 8 },   /* a pin is worth at most cap of her (the blow that empties it, she heaves free: told); THE LAST COMB: capLast, held `last` s */
   descent: { every: 1.6, tell: 1.0, dmg: 26, r: 14 },   /* (her death) THE FALLING NEST: comb chunks down the trunk, each told by a red ring on the ledge it hits */
 };

@@ -122,6 +122,10 @@ function honeyPlan(s, out, mem, t, seenFor, roll, swing, inReach, jumpTo) {
     out.gx = P.x; out.why = 'the stoop: hold'; return out; }
   if (e.mode === 'volleyTell') { out.gx = P.x + side * 30; out.why = 'the volley: step aside'; return out; }
   if (S.cloak > 0 && dx < 40 && Math.abs(e.y - P.y) < 40) { out.gx = e.x + side * 56; out.why = 'her cloak: off her'; return out; }
+  /* HER CLOAK's answer is smoke: any hero takes a pot to strip it (a shield does not turn its touch) */
+  if (S.cloak > 2 && !P.held && s.stands && s.stands.length) { const sd = s.stands.slice().sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0];
+    out.gx = sd.x; if (P.ground && P.y < sd.y - 10 && Math.abs(sd.x - P.x) < 30) { out.drop = true; out.why = 'her cloak: down to the pot'; return out; }
+    if (Math.abs(sd.x - P.x) < 8 && P.ground && Math.abs(sd.y - P.y) < 10) out.talk = true; out.why = 'her cloak: take a smoke pot'; return out; }
   if (S.ward > 0 || e.mode === 'thrash') { if (inReach()) { swing(); out.gx = P.x; out.why = 'a cut through her ward'; return out; } }
   /* E. THE LAST COMB: from the inner end of a torn comb cut down into the honey, cut it as she comes under it */
   if (last) { const heaps = S.combs.filter(c => c.st === 'down' && !c.last && (Math.abs(c.x1p - last.x0p) < 24 || Math.abs(c.x0p - last.x1p) < 24));
