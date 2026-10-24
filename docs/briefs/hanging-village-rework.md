@@ -185,3 +185,37 @@ went from 162 to 85.
 - **Pilots:** `BK.bossLab`, dice pinned, one salt per pass, for the Reeve and the Weaver, before and after.
 - **INDEX** before and after (`tools/curve.mjs`).
 - Real-page captures of every floor, both rooms and the rope cut, before and after, in `docs/hanging/`.
+
+---
+
+## 9. HANGING VILLAGE 3: CUT IT AND RIDE IT (claude/hanging3, Daniel 10-24)
+
+Daniel, live: *"the level is good, but it lacks a verb ... the boss doesn't really fit. I don't want to rework the entire level."* The seven
+floors, the hollow, the checkpoints and the hoists stay. The rule line is unchanged; the verb is now on every floor.
+
+**The verb.** A RED-AND-GOLD KNOT is a rope you can cut: any blow, every hero, and a bolt, an ember, a thrown hammer, a plunge or the
+pyromancer's jet too (src/main.js `ropeStruck`, the lists that light the Reeve's lamps). What the rope holds is drawn first, in gold
+dots, where it will go (A3/A6). Everything is re-tied when you come back after a death. Code: `src/hanging-ropes.js`; data: `L.ropes`.
+
+| floor | rope | what it teaches |
+|---|---|---|
+| the roots | CARGO NET over the road, knot at 86 | TAUGHT, safe: cut it as the shield comes under it; miss and it lies there as a step |
+| the ropewalk | SWING BRIDGE over the 28-33 gap (was a sliding bough) | the first REQUIRED cut, under the archer |
+| the market | CARGO NET over the snuffer's lamp walk | TESTED, no sign |
+| the windy bough | SWING BRIDGE over 36-40 (was a sliding bough), gusts at your back | TESTED; the vine swing beside it stays |
+| the windy bough's trunk | COUNTERWEIGHT deck up to the upper boughs, beside the snapping branches | TAUGHT, safe, by the shrine |
+| the upper boughs | PULLEY LINE off the springy bough's ledge, over the spiders to 76,49 | TAUGHT, a one-way ride (optional) |
+| the lantern stair (the exam) | CARGO NET over the bridge-cutter's post; a BRIDGE tied up HIGH over 52-57 whose knot you reach only from a COUNTERWEIGHT deck | REMIX: rope against rope; ride a deck, cut a bridge mid-ride |
+
+**The Owl Reeve, rebuilt on ropes.** Her three perches hang from the dead pine's bough on ropes tied off at knots on the floor (37, 58,
+62). Cut the knot while she sits and she comes down with the planks: `perchFall` then `perchDown`, OPEN (gold ring and bar, x2, ~2.8 s;
+B10), then her told ward (B3). A perch that is down is no seat until it is hauled back up (7 s); deny all three and she has NOWHERE TO SIT.
+Two counterweight decks (45-46, 68-69) take you up level with the outer perches (her hoot still throws you off her branch). The side
+climbs and links hang too: past half blood SHE cuts ropes herself - the deck you ride first, else the ledge you stand on, else the hung
+ledge nearest you - told (SHE CUTS THE ROPE, she lands on the rope over it, a red ring, the creak and the fray, 0.8 s; QUIET, it strikes
+nobody) and on a 7 s cooldown. The two ledges over THE DROP stay fixed. Her swoop, skim, wing beat, pellets, plunge and bough shake are as
+before; the lamps are a minor extra; the dead boughs and the crown hoist are gone (the perches and the decks are their places).
+
+**Checks.** `tools/hanging-hoist.mjs` (Node: every rope kind, knots on floors, the perch cut and her opening, the phase-two cut told and
+fair and repeated), `tools/hanging-hoist-walk.mjs` (page, real keys: every rope ridden or crossed by each hero), `tools/stuck.mjs` (the
+guide's glints on the three route ropes).

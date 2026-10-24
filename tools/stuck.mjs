@@ -20,8 +20,10 @@ const SOLIDS = new Set([T.SOLID, T.SPIKE, T.CRATE, T.PALISADE, T.PLANK, T.PORT, 
 const levels = new Map(LEVELS.map(l => [l.id, l]));
 
 /* a level's props and movers the way main.js has them, as far as the guide reads them: type, pixel position, the state fields false */
+/* (claude/hanging3) THE HANGING VILLAGE's ropes are props in the game (src/hanging-ropes.js H.props: t 'hvrope' at its knot) though not ents in the level: read from L.ropes */
+const entsOf = L => (L.ents || []).concat((L.ropes || []).filter(r => r.knot).map(r => ({ t: 'hvrope', x: r.knot[0], y: r.knot[1], kind: r.kind })));
 const envOf = (L, flags = new Set()) => {
-  const props = (L.ents || []).map(e => ({ t: e.t, x: e.x * TS + 8, y: e.y * TS + 16, kind: e.kind, ent: e })).map(p => { for (const f of flags) if (f.t === p.t && Math.abs(p.x / TS - f.c - 0.5) <= 1.5 && Math.abs(p.y / TS - f.r) <= 2.5) p[f.f] = true; return p; });
+  const props = entsOf(L).map(e => ({ t: e.t, x: e.x * TS + 8, y: e.y * TS + 16, kind: e.kind, ent: e })).map(p => { for (const f of flags) if (f.t === p.t && Math.abs(p.x / TS - f.c - 0.5) <= 1.5 && Math.abs(p.y / TS - f.r) <= 2.5) p[f.f] = true; return p; });
   const movers = (L.moversExtra || []).map(m => ({ ...m, x: m.x ?? 0, y: m.y ?? 0 }))
     .concat((L.ents || []).filter(e => e.t === 'pushblock').map(e => ({ kind: 'pushblock', mantlet: e.mantlet, x: e.x * TS, y: e.y * TS, w: 16, h: 16 })));   /* (claude/unburied4) a pushblock ent is a mover too (main.js spawnEnt: newPushBlock), at its placed tile */
   return { TS, props, movers, hero: null };
@@ -48,7 +50,7 @@ for (const [id, spots] of Object.entries(STUCK)) {
       const zone = s.zone || sp.zone, line = s.line || sp.line;
       ok(typeof line === 'string' && line.length > 0 && line.length <= NUDGE_MAX, tag + ': a nudge line of 1-' + NUDGE_MAX + ' characters (' + (line || '').length + ')');
       ok(line === line.toUpperCase(), tag + ': the nudge is written in capitals like every hint');
-      for (const key of ['done', 'when']) if (s[key]) { const [t, c, r] = s[key]; ok((L.ents || []).some(e => e.t === t && Math.abs(e.x - c) <= 1.5 && Math.abs(e.y - r) <= 2.5), tag + ': ' + key + ' names a ' + t + ' the level really has near ' + c + ',' + r); }
+      for (const key of ['done', 'when']) if (s[key]) { const [t, c, r] = s[key]; ok(entsOf(L).some(e => e.t === t && Math.abs(e.x - c) <= 1.5 && Math.abs(e.y - r) <= 2.5), tag + ': ' + key + ' names a ' + t + ' the level really has near ' + c + ',' + r); }
       /* the steps before this one are done: mark their `done` props set, and (for a `when` of ours) ours set too */
       if (s.when) { const [t, c, r, f] = s.when; flags.add({ t, c, r, f }); }
       const env = envOf(L, flags), env0 = envOf(L, new Set(s.when ? [{ t: s.when[0], c: s.when[1], r: s.when[2], f: s.when[3] }] : [])), probe = (c, r) => { const a = resolve(id, c, r, env, { [id]: [sp] }); return a && a.key === tag ? a : resolve(id, c, r, env0, { [id]: [sp] }); };   /* (earlier steps done, or none: a step that stands on the same prop as an earlier one is reached by the zone) */

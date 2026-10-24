@@ -378,7 +378,10 @@ export const STUCK = {
     { id: 'hg-wheels', zone: [90, 58, 112, 84], ats: [[104, 75], [104, 68]], glint: 'stall', line: 'THE WATER WHEEL PADDLES CARRY YOU UP' },
     { id: 'hg-hoist-mill', zone: [64, 56, 92, 68], mover: {hoist:'mill'}, glint: 'stall', line: 'THE MILL HOIST NEEDS A SACK IN ITS WELL' },
     { id: 'hg-hoist-nest', zone: [52, 40, 76, 53], mover: {hoist:'nest'}, glint: 'stall', line: 'THE NEST HOIST NEEDS TWO SACKS IN ITS WELL' },
-    { id: 'hg-hoist-crown', zone: [46, 5, 70, 21], mover: {hoist:'crown'}, glint: 'stall', line: 'THE CROWN HOIST NEEDS A COIL IN ITS WELL' },
+    /* (claude/hanging3) CUT IT AND RIDE IT: the ropes the route needs - the tied-up bridges (the knot glints until it is cut) and the exam's deck-then-bridge */
+    { id: 'hg-bridge-rope', zone: [34, 84, 52, 93], at: [36, 93], done: ['hvrope', 36, 93, 'cut'], line: 'THE RED AND GOLD KNOT HOLDS THE BRIDGE UP' },
+    { id: 'hg-bridge-wind', zone: [41, 56, 60, 65], at: [43, 65], done: ['hvrope', 43, 65, 'cut'], glint: 'stall', line: 'THE KNOT BY THE GAP HOLDS A BRIDGE UP' },
+    { id: 'hg-stair-bridge', zone: [56, 24, 64, 37], ats: [[60, 37], [57, 31]], done: ['hvrope', 57, 31, 'cut'], line: 'THE COUNTERWEIGHT RIDES UP TO THE BRIDGE KNOT' },
   ],
   spire: [
     { id: 'sp-baskets', zone: [14, 126, 34, 140], mover: { cw: 'cw0' }, line: 'THE BOOK-HOIST BASKETS CARRY YOU UP' },

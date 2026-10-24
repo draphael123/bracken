@@ -78,17 +78,17 @@
   "lostPct": 349
  },
  "hanging": {
-  "hash": "b35069a79993",
+  "hash": "de251894a0ea",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 26,
+  "hits": 22,
   "deaths": 3,
-  "kills": 23,
-  "lifts": 87,
+  "kills": 32,
+  "lifts": 101,
   "walked": 100,
   "bare": true,
-  "lostPct": 171
+  "lostPct": 162
  },
  "spire": {
   "hash": "20e1d5c2d349",
