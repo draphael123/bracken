@@ -4,13 +4,13 @@ import { openPage } from './cdp.mjs';
 import { writeFileSync, mkdirSync } from 'fs';
 import { join } from 'path';
 import { fileURLToPath } from 'url';
-const ROOT = fileURLToPath(new URL('..', import.meta.url)), OUT = join(ROOT, 'work', 'claude', 'lane-done', 'underleafart');
+const ROOT = fileURLToPath(new URL('..', import.meta.url)), OUT = join(ROOT, 'work', 'claude', 'lane-done', process.env.OUTNAME || 'underleafart');
 mkdirSync(OUT, { recursive: true });
 const keys = (process.argv[2] || 'sprig').split(','), scale = +(process.argv[3] || 6), name = process.argv[4] || keys.join('-');
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const png = await pg.evalp(`(()=>{const S=BK.SPR,keys=${JSON.stringify(keys)},sc=${scale};let W=0,H=0;const rows=[];
-    for(const k of keys){const s=S[k];if(!s)continue;const FR=${JSON.stringify(process.env.FR || '')},fr=FR?FR.split(',').map(i=>s.R[+i]):s.R;const w=fr[0].width,h=fr[0].height;rows.push({k,fr,w,h});W=Math.max(W,fr.length*(w+2)*sc+8);H+=(h+3)*sc;}
+    for(const k of keys){const s=S[k];if(!s)continue;const FR=${JSON.stringify(process.env.FR || '')},fr=FR?FR.split(',').map(i=>s.R[+i]):s.R;const w=fr[0].width,h=fr[0].height;const WR=+${process.env.WRAP || 0}||fr.length;for(let q=0;q<fr.length;q+=WR){const part=fr.slice(q,q+WR);rows.push({k,fr:part,w,h});W=Math.max(W,part.length*(w+2)*sc+8);H+=(h+3)*sc;}}
     const c=document.createElement('canvas');c.width=W;c.height=H+4;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.fillStyle='#3a3a44';g.fillRect(0,0,W,H+4);let y=2;
     for(const r of rows){let x=4;for(const f of r.fr){g.fillStyle='#2a2a34';g.fillRect(x,y,r.w*sc,r.h*sc);g.drawImage(f,x,y,r.w*sc,r.h*sc);x+=(r.w+2)*sc;}y+=(r.h+3)*sc;}
     return c.toDataURL('image/png');})()`, 60000);

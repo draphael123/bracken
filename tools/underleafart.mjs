@@ -19,6 +19,7 @@ try {
     out.bare=!!S.thornbare&&S.thornbare.R.length===S.brute.R.length; out.brood=!!S.grandbrood&&S.grandbrood.R.length===S.sprig.R.length;
     const sig=cv=>{const d=cv.getContext('2d').getImageData(0,0,cv.width,cv.height).data;let h=2166136261;for(let i=0;i<d.length;i++){h=Math.imul(h^d[i],16777619)>>>0;}return h;};
     out.g1=S.grandmother.R.map(sig); out.g2=S.grandmother2.R.map(sig); out.gw=S.grandmother.R[0].width; out.gh=S.grandmother.R[0].height; out.card=S.grandmotherCard.R.length;
+    { const G=await import('/src/redraw/underleaf3_gran.js'); out.N=G.N; out.F=G.F; out.deadF=[0,0.3,0.5,0.9].map(G.deathFrame); }
     out.desc=[...BK.BEASTS?BK.BEASTS.map(b=>b.t):[]];
     BK.manualSimulation=false; return JSON.stringify(out); })()`, 300000);
   const o = JSON.parse(r);
@@ -27,11 +28,13 @@ try {
   for (const [sk, v] of Object.entries(o.sheets)) ok(v.have && v.frames === v.base && v.left === v.base && v.white, sk + " has its own sheet with the goblin's " + v.base + ' frames, mirrored and white-flash');
   ok(o.bare, 'the thorn-beast has a bare (coat burnt off) sheet'); ok(o.brood, 'her brood has its own sheet');
   ok(o.gw >= 54 && o.gh >= 60, 'the Grandmother is ~1.3x the old 42x48 sheet (' + o.gw + 'x' + o.gh + ')');
-  const need = 19, idle = o.g1[2], dup = [], seen = new Map();
-  ok(o.g1.length === need && o.g2.length === need, 'a pose for every move: ' + o.g1.length + ' frames in each phase');
-  o.g1.forEach((s, i) => { if (i !== 2 && i !== 3 && s === idle) dup.push(i); if (seen.has(s)) dup.push(i + '=' + seen.get(s)); seen.set(s, i); });
+  const seen = new Map(), dup = []; o.g1.forEach((s, i) => { if (seen.has(s)) dup.push(i + '=' + seen.get(s)); seen.set(s, i); });
+  const moves = ['sleep', 'wake', 'idle', 'walk', 'hurt', 'staffTell', 'staff', 'fireballTell', 'cast', 'jarTellG', 'jarTellR', 'hurledG', 'hurledR', 'broodTell', 'kick', 'stirTell', 'stir', 'ward', 'floated', 'dead'];
+  ok(moves.every(m => o.N[m] >= 3), 'every move is animated (>= 3 frames each): ' + moves.map(m => m + ' ' + o.N[m]).join(', '));
+  ok(o.g1.length === o.g2.length && o.g1.length === moves.reduce((n, m) => n + o.N[m], 0), 'a frame set for every move in each phase: ' + o.g1.length + ' frames');
   ok(dup.length === 0, 'each frame is its own picture, none the walk (B16)' + (dup.length ? ': ' + dup.join(',') : ''));
-  ok(o.g2.every((s, i) => i === 18 || s !== o.g1[i]), 'phase two wears its own set');
+  ok(o.deadF[0] === o.F.dead && o.deadF[3] === o.F.dead + 3 && new Set(o.deadF).size === 4, 'her death plays four frames (clutch, kneel, slump, heap)');
+  ok(o.g2.every((s, i) => i === o.F.dead + 3 || s !== o.g1[i]), 'phase two wears its own set');
   ok(o.card === 2, "her bestiary card shows her walking (2 frames)");
   ok(pg.errors.length === 0, 'no page error' + (pg.errors.length ? ': ' + JSON.stringify(pg.errors.slice(0, 2)) : ''));
 } finally { await pg.close(); }
