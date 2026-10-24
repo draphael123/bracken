@@ -17,9 +17,10 @@ for(const variant of ['before','after','return'])for(const [scope,batch] of case
    window.__gcCost={calls:0,skipped:0,ms:0,random:0};let stable=false;const select=BK.setHero;
    BK.setHero=function(...a){const before=BK.heroSet,result=select.apply(this,a);stable=!!before&&before===BK.heroSet;return result;};
    (${installLabCollection.toString()})(BK,()=>{const omit=stable&&${JSON.stringify(variant)}==='after';stable=false;if(omit){__gcCost.skipped++;return;}const t=performance.now();gc();__gcCost.calls++;__gcCost.ms+=performance.now()-t;});
-   const random=Math.random;Math.random=()=>{__gcCost.random++;return random();};
    return import('/src/level.js').then(m=>m.LEVELS.filter(l=>(!l.hidden||l.secret)&&l.id!=='custom').map(l=>l.id));
   })()`);
+  // Start every measured batch at the same stream position, after asynchronous boot/unlock work.
+  await pg.evalp('(()=>{let seed=1008;Math.random=()=>{__gcCost.random++;seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296;};})()');
   const start=Date.now(),r=await pg.evalp('('+body+')('+JSON.stringify({only:[scope],hints:[],levels:ids.slice(0,batch),talkHeroes:['knight'],maxShots:120})+')',240000);
   const details=await pg.evalp('({gc:__gcCost,state:[BK.state,BK.time,BK.PROG.hero,...["x","y","vx","vy","hp","st","dead"].map(k=>BK.P[k])]})');
   rows.push({variant,scope,batch,ms:Date.now()-start,...details,stats:r.stats,issues:r.issues.map(({type,screen,s})=>({type,screen,s})),pageErrors:pg.errors});
