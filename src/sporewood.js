@@ -227,7 +227,7 @@ export function buildSporewood({ painter, T, TS }) {
      lock: nothing here reaches the larder's end without the bud at 332. A fall stings and is the climb back (a plank up each east face). */
   air(318, 330, 15, 22); ground(325, 326, 15); ground(329, 330, 19); spring(329, 19); spring(330, 19); bud(316, 15, { rise: 16, lean: 112, growT: 1.6 });
   gpool(318, 330, 23); stair(317, 15, 23); stair(326, 15, 23);
-  sign(312, 18, 'THE ROOT SPAN. THE LEANING CAP CARRIES YOU OVER THE BOG. THE BOUNCE CAPS THROW YOU UP.');
+  sign(309, 18, 'THE ROOT SPAN. THE LEANING CAP CARRIES YOU OVER THE BOG. THE BOUNCE CAPS THROW YOU UP.');
   foe('spider', 334, 7, 'larderStair', { drop: 110, perch: true });   /* (the larder's keeper: it drops off the root roof on whoever reaches the pad) */
   coins([319, 13], [322, 12], [325, 13], [328, 16], [331, 12]);
   bud(332, 15); ground(334, 358, 11); foe('brute', 337, 10, 'larderEnd', { face: -1 });
