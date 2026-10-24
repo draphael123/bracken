@@ -1,3 +1,0 @@
-import { edit } from './patch.mjs';
-const F = 'src/redraw/palisade_foes.js';
-edit(F, "recolor(f, { cloth: RUSTC, red: AP, wood: FRSH, metal: IR, skin: ['#2a5222', '#5a9a40', '#90d060'] });\n    if (h.top >= 0) c = overlay(c, g => { RC(g, h.cx - 3, h.top - 1, 7, 2, CAP[1]); RC(g, h.cx - 3, h.top - 1, 7, 1, CAP[2]); RC(g, h.cx - 3, h.top + 1, 7, 1, RUSTC[1]);   /* a leather cap and a rust band */\n      RC(g,", "recolor(f, { cloth: RUSTC, red: AP, wood: FRSH, metal: CAP, skin: ['#2a5222', '#5a9a40', '#90d060'] });   /* the helm is a leather cap now, the tunic rust, the belt tan */\n    if (h.top >= 0) c = overlay(c, g => { RC(g, h.cx - 3, h.top, 7, 1, RUSTC[1]);   /* a rust band round the cap */\n      RC(g,");
