@@ -21,7 +21,7 @@ export const CHECK_DROP = {
   wood: [],   /* (claude/lumbertrail) THE LUMBER TRAIL places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
   marsh: [[47,21],[163,17],[206,17],[216,17],[313,17],[369,16],[440,17]],   /* (claude/marsh3: the grove's far-bank shrine goes - THE REED RUN starts three columns on and ends at its own shrine; level-quality's 90 route tiles a shrine) */   /* (claude/marsh2: the drowned village's plank shrine goes - the grove dock's (391, pinned) closes the sluice house 22 columns on) */
   stockade: [[36,19],[135,19],[224,19],[299,19],[331,19],[421,11]],
-  spore: [[63,11],[132,19],[283,13],[371,13],[408,13]],
+  spore: [],   /* (claude/sporewood2) SPOREWOOD 2 places one shrine at the end of each named area's exam, the last at her door (A10c), by hand - nothing to drop */
   kings: [],   /* (claude/kingswood2) KINGSWOOD 2 places one shrine at the end of each named area's exam + one before the boss (A10c) by hand - nothing to drop */
   scree: [[58,19],[105,19],[222,13],[493,18],[500,18],[534,8]],   /* (claude/scree2: the rockslide chase grew 96 columns in at 339 - 404/438 are 500/534 now; the ropeway's own shrine (493) goes for the chase's shrine on the gorge bank (441); the slope's 330 went with the slope; and the pasture's 58, 56 tiles from the start: difficulty v2, one a section) */
   hanging: [[12,51],[43,79],[98,107]],
