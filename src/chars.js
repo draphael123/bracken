@@ -1689,8 +1689,8 @@ export function bakeSquirrel() {
 export function bakeOwl() {
   // HER OFFICE OUTLASTS THE CLOTH: a tarnished chain over a torn tabard, pale eyes inside dark sails.
   const frames=[];
-  for(let f=0;f<17;f++) {   /* (claude/owl3art) 13 the WING BEAT's windup (the sails hoisted up and back, the body crouched under them), 14 its release (the sails driven down, the tips trailing up, the air torn off them), 15 the PELLET cough (hunched, the throat full), 16 the pellet out (beak wide, the pellet in it) - each its own body (B16) */
-    const [c,g]=canvas(116,66), down=[4,10,15].includes(f), spread=![0,11,15,16].includes(f), lift=[1,7,8,12].includes(f)?-18:0;
+  for(let f=0;f<20;f++) {   /* (claude/hangpolish) 17-18 the SAW (she is at a rope: head down, the strand in her beak, the sails half open for balance; two frames, the head working left and right), 19 the FALL WITH HER PERCH (the sails thrown up, the talons clutching, the beak wide) */   /* (claude/owl3art) 13 the WING BEAT's windup (the sails hoisted up and back, the body crouched under them), 14 its release (the sails driven down, the tips trailing up, the air torn off them), 15 the PELLET cough (hunched, the throat full), 16 the pellet out (beak wide, the pellet in it) - each its own body (B16) */
+    const [c,g]=canvas(116,66), down=[4,10,15].includes(f), spread=![0,11,15,16].includes(f), lift=[1,7,8,12].includes(f)?-18:(f===17||f===18)?-5:f===19?-20:0, saw=f===17||f===18;
     const poly=(p,col)=>{g.fillStyle=col;g.beginPath();p.forEach(([x,y],i)=>i?g.lineTo(x,y):g.moveTo(x,y));g.closePath();g.fill();};
     /* THE SAILS, for the two beat poses: an arm from the shoulder to the wrist, then the primaries fanned from the wrist (angle in degrees, 0 out, -90 up, +90 down; length; width) and the secondaries hung off the arm */
     const sail=(side,S,W,prim,sec)=>{const X=n=>58+side*n;
@@ -1715,14 +1715,14 @@ export function bakeOwl() {
     poly([[43,23],[71,23],[78,44],[69,57],[46,57],[38,44]],'#4a3d4e');
     poly([[46,39],[69,39],[70,56],[64,53],[60,59],[55,54],[47,57]],'#374b54');
     if(f===13){ /* crouched under the sails: the chest drawn in */ g.fillStyle='#3a3040';g.fillRect(44,30,3,22);g.fillRect(70,30,3,22); }
-    const hdy=f===13?3:f===14?-2:f===15?7:f===16?5:0;
-    g.save();g.translate(0,hdy);
+    const hdy=f===13?3:f===14?-2:f===15?7:f===16?5:saw?7:f===19?-3:0, hdx=f===17?-3:f===18?3:0;
+    g.save();g.translate(hdx,hdy);
     poly([[42,20],[41,4],[51,13],[64,13],[75,4],[73,24]],'#302c3c');
     if(f===13) { /* the tufts flattened back by the effort */ poly([[42,20],[39,9],[51,14],[64,14],[77,9],[73,24]],'#302c3c'); }
     poly([[43,18],[51,14],[58,19],[66,14],[74,19],[71,31],[63,36],[57,33],[49,35],[42,27]],'#d9ceb2');
     for(const x of [48,63]){g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,8);g.fillStyle='#edb24e';
-      if(f===13){g.fillRect(x,23,6,3);g.fillStyle='#241d28';g.fillRect(x+2,23,2,3);g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,3);}   /* narrowed, brows down: she sets herself */
-      else if(f===14){g.fillRect(x-1,20,8,8);g.fillStyle='#241d28';g.fillRect(x+1,22,4,5);g.fillStyle='#fff2c8';g.fillRect(x,21,2,2);}   /* eyes huge and round: the beat is thrown */
+      if(f===13||saw){g.fillRect(x,23,6,3);g.fillStyle='#241d28';g.fillRect(x+2,23,2,3);g.fillStyle='#5a4d4e';g.fillRect(x-2,20,10,3);}   /* narrowed, brows down: she sets herself */
+      else if(f===14||f===19){g.fillRect(x-1,20,8,8);g.fillStyle='#241d28';g.fillRect(x+1,22,4,5);g.fillStyle='#fff2c8';g.fillRect(x,21,2,2);}   /* eyes huge and round: the beat is thrown */
       else if(f===15){g.fillRect(x,24,6,1);g.fillStyle='#241d28';g.fillRect(x+1,25,4,1);}   /* screwed shut */
       else if(f===16){g.fillRect(x-1,21,8,6);g.fillStyle='#241d28';g.fillRect(x+3,21,2,6);g.fillStyle='#fff2c8';g.fillRect(x,21,1,1);}   /* strained wide, the pupils pulled to a slit */
       else {g.fillRect(x,down?24:21,6,down?1:5);if(!down){g.fillStyle='#241d28';g.fillRect(x+2,21,2,5);}}}
@@ -1733,8 +1733,18 @@ export function bakeOwl() {
       g.fillStyle='#e8e0cc';g.beginPath();g.ellipse(58.5,37,4,2.6,0,0,7);g.fill();g.fillStyle='#a8997a';g.fillRect(55,37,3,1);g.fillRect(59,38,3,1);g.fillStyle='#fffbea';g.fillRect(57,35,2,1);g.fillRect(61,36,1,1);   /* the fur, the bone */
       g.fillStyle='#bcd2d8';g.fillRect(58,46,1,3);g.fillRect(60,47,1,2); }   /* spit */
     else if(f===15){ poly([[55,31],[62,30],[61,36],[56,35]],'#b49a5e');g.fillStyle='#34202b';g.fillRect(56,35,5,2);   /* the beak just cracked */ }
+    else if(saw){ /* THE SAW: the beak bared and set on the strand, the mouth dark, the strand pale between the halves */ poly([[55,29],[62,28],[61,34],[56,33]],'#b49a5e');g.fillStyle='#34202b';g.fillRect(55,34,7,3);g.fillStyle='#b49a5e';g.fillRect(56,37,5,2);g.fillStyle='#f4e8c0';g.fillRect(55,34,7,1);g.fillRect(58,36,3,1); }
+    else if(f===19){ /* THE FALL: the beak wide open, a cry */ poly([[54,27],[63,26],[61,32],[56,31]],'#b49a5e');g.fillStyle='#34202b';g.fillRect(55,32,7,6);g.fillStyle='#6a2c38';g.fillRect(57,36,3,2);poly([[54,38],[63,38],[61,43],[56,43]],'#9a8450'); }
     else poly([[55,28],[62,27],[60,35],[56,33]],'#b49a5e');
     g.restore();
+    if(saw){ /* THE STRAND: a hemp line pulled taut from her beak, one cut end frayed, loose fibres flying (the rope she is cutting; B16: this is the cutting pose, not the cast frame) */
+      const dir=f===17?-1:1, bx=58+hdx, by=hdy+37;
+      for(let k=0;k<16;k++){const px=bx+dir*k*1.1,py=by+k*0.7;g.fillStyle='#2a1c0c';g.fillRect(Math.round(px)-1,Math.round(py),3,3);}
+      for(let k=0;k<16;k++){const px=bx+dir*k*1.1,py=by+k*0.7;g.fillStyle=k%2?'#e0c68a':'#9a7e48';g.fillRect(Math.round(px),Math.round(py)+(k%2),2,1);}
+      const ex=Math.round(bx+dir*17),ey=Math.round(by+11.5);g.fillStyle='#f4e8c0';g.fillRect(ex,ey,2,2);for(const [ox,oy,c] of [[dir*2,2,'#e0c68a'],[dir*3,1,'#9a7e48'],[dir*4,3,'#e0c68a'],[dir*2,4,'#9a7e48']]){g.fillStyle=c;g.fillRect(ex+ox,ey+oy,1,1);}
+      g.fillStyle='#fff2c8';g.fillRect(bx-dir*5,by-2,1,1);g.fillRect(bx-dir*8,by+3,1,1);   /* the fibres thrown back */
+      g.strokeStyle='#8a7a86';g.lineWidth=1;g.beginPath();g.moveTo(bx-dir*10+.5,by-5.5);g.lineTo(bx-dir*15+.5,by-8.5);g.stroke(); }   /* (a shiver line off the head: the work) */
+    if(f===19){ /* the feathers torn off by the fall */ for(const [fx,fy] of [[24,26],[92,24],[30,10],[88,8],[18,42],[98,44]]){poly([[fx,fy],[fx+4,fy-3],[fx+2,fy+4]],'#665a6c');g.fillStyle='#8a7a86';g.fillRect(fx+1,fy,2,1);} }
     if(f===14){ /* the thrown beat: pale wind-lines torn off the wing tips */ g.strokeStyle='#c9d1dc';g.lineWidth=1;for(const side of [-1,1]){const X=n=>58+side*n;for(let k=0;k<3;k++){g.globalAlpha=.7-k*.18;g.beginPath();g.moveTo(X(30+k*7),38+k*6);g.quadraticCurveTo(X(46+k*5),32+k*8,X(52+k*4),22+k*9);g.stroke();}}g.globalAlpha=1; }
     for(let k=0;k<9;k++){g.fillStyle=k%2?'#b59a55':'#756448';g.fillRect(46+k*3,35+Math.round(Math.sin(k/8*Math.PI)*7),2,3);}g.fillStyle='#bea15c';g.fillRect(56,42,5,5);
     for(const x of [47,64]){g.fillStyle='#b79a60';g.fillRect(x,53,3,7);for(let k=0;k<3;k++){g.fillRect(x-3+k*3,59,2,3);g.fillStyle='#e4cf99';g.fillRect(x-3+k*3,61,2,2);g.fillStyle='#b79a60';}}
