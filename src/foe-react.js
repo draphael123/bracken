@@ -42,7 +42,7 @@ export const ACTS = [
    (1.4 / 1.5 / 1.7 were walked: the bot is hit too rarely for it to move his numbers much - most of what lands is from range - so this is set for a
    person, who is hit more often than the walker). The per-act lanes fold this into ACTS[].dmg
    once Daniel has played the pilot; until then it is one level's knob, so the rest of the act is untouched. */
-export const LEVEL_DMG = { causeway: 0.8, church: 0.7, palisadewood: 1.5 };   /* (claude/palisadewood: THE PALISADE WOOD built to difficulty v2 - fewer, weightier crews; the level-1 curve read 40% at x1) */   /* (claude/curvec5 STEP 2b, Daniel 10-19: held at the pre-curve absolute blows - causeway 1.25 x 1.5 = 1.875 -> 2.4 x 0.8, church 1.4 x 1.5 = 2.1 -> 3.0 x 0.7) */   /* (claude/litchurch: THE LIT CHURCH, built to difficulty v2 - its dead and its clergy alike) */
+export const LEVEL_DMG = { causeway: 0.8, church: 0.7, palisadewood: 1.8 };   /* (claude/palisadewood: THE PALISADE WOOD built to difficulty v2 - fewer, weightier crews; the level-1 curve read 40% at x1) */   /* (claude/curvec5 STEP 2b, Daniel 10-19: held at the pre-curve absolute blows - causeway 1.25 x 1.5 = 1.875 -> 2.4 x 0.8, church 1.4 x 1.5 = 2.1 -> 3.0 x 0.7) */   /* (claude/litchurch: THE LIT CHURCH, built to difficulty v2 - its dead and its clergy alike) */
 /* a level not in the table (a new one, a trial, the shop) takes the act of its depth on the gate chain, else act 1 */
 const DEPTH_ACT = [[29, 5], [21, 4], [12, 3], [5, 2], [0, 1]];
 export function actOf(id, depth) {

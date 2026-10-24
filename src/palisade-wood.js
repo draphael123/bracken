@@ -129,7 +129,8 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(155, 168, 32);
   air(155, 160, 39, 41); ent('silver', 159, 41); crop(157, 41, 'nuts');             /* SILVER ONE: THE WOODCUTTERS' HOLLOW (off the pit's floor - off the road) */
   plank(156, 158, 30); plank(160, 164, 28); foe('archer', 162, 27, 'farTower', { face: -1, perch: true });
-  foe('shield', 157, 31, 'farTower', { face: -1 }); foe('pike', 166, 31, 'farTower', { face: -1 });   /* (the bridge sets you down in front of the shield) */
+  foe('shield', 157, 31, 'farTower', { face: -1 }); foe('pike', 163, 31, 'farTower', { face: -1 });
+  ground(166, 168, 30);                                                            /* (a step up to the upper yard: two, then one) */   /* (the bridge sets you down in front of the shield) */
   coins([150, 30], [152, 30], [158, 31]);
   ground(169, 204, 29);                                                            /* the yard's upper ground (three up) */
   plank(170, 176, 26); coins([172, 25], [175, 25]);
@@ -175,10 +176,10 @@ export function buildPalisadeWood({ painter, T, TS }) {
   foe('shield', 264, 12, 'span', { face: -1 }); foe('hound', 267, 12, 'span', { face: -1 });
   coins([257, 11], [259, 11]);
   /* THE HALF-BUILT TOWER on the wall: climb over it (a board, its top, down); the scaffold over it holds a silver */
-  plank(268, 270, 10); block(272, 275, 7, 12); foe('archer', 274, 6, 'tower', { face: -1, perch: true });
-  plank(276, 279, 4); ent('silver', 278, 3);                                       /* SILVER THREE: on the tower's top scaffold (a jump off the road) */
+  plank(268, 270, 10); block(272, 275, 8, 12); foe('archer', 274, 7, 'tower', { face: -1, perch: true });
+  plank(276, 279, 5); ent('silver', 278, 4);                                       /* SILVER THREE: on the tower's top scaffold (a jump off the road) */
   plank(277, 279, 10);
-  coins([269, 9], [273, 6], [280, 11]);
+  coins([269, 9], [273, 7], [280, 11]);
   /* THE WALL'S END (the area's exam): a brute and a setter on the wall top, an archer on the end scaffold, the crew's walkway over the brute */
   prop('wallExamCrew', { x: 290, top: 8, cleat: [284, 12], load: 'crew', walk: [287, 293, 8] });
   foe('sprig', 290, 7, 'wallEnd', { face: -1, perch: true });
