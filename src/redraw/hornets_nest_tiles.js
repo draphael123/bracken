@@ -6,6 +6,7 @@
 //   DUFF    the forest floor: a litter of pine needles over dark earth, and the nest's shadow floor (darker, mushroomed with old paper)
 // Made from px.js primitives, 16x16, baked lazily and memoised.   hnTile(t, x, y, at, T, L) -> a canvas for one cell, or null (the game's own kit draws it)
 import { canvas } from '../px.js';
+import { mudTile } from './hornets_nest_edge.js';
 
 const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
 const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h ^ (h >>> 16); };
@@ -164,7 +165,7 @@ export function hnTile(t, x, y, at, T, L) {
   if (inTrunk(x, y)) return barkTile(x, y, at, T, true);
   if (inNest(x, y)) return paperTile(x, y, at, T, L);
   /* below the nest: the roots / the shaft's earth / the forest floor */
-  if (x < 80 || x >= 333) { if (y <= 65) return barkTile(x, y, at, T, false); return earthTile(x, y, at, T, 'floor'); }
+  if (x < 80 || x >= 333) { if (y <= 65) return barkTile(x, y, at, T, false); if (x >= 354 && y <= 69) return mudTile(x, y, at, T, 66);   /* (claude/hornets2art) THE MARSH EDGE: the muddy bank */ return earthTile(x, y, at, T, 'floor'); }
   if (x <= 92 && y <= 65) return barkTile(x, y, at, T, false);
   if (x >= 328 && y < 66 && y >= 52 && x <= 332) return earthTile(x, y, at, T, 'duff');
   return earthTile(x, y, at, T, 'duff');

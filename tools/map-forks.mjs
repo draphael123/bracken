@@ -62,7 +62,13 @@ try {
       { const K = 'bracken.progress.4', raw = JSON.parse(JSON.stringify(BKT.PROG)); delete raw.ucRoadMig; delete raw.crownOpen; delete raw.undercrown; delete raw.crown; raw.storm = { cleared: true, medal: 1, best: 400 };
         localStorage.setItem(K, JSON.stringify(raw)); BK.loadSlot(4); out.grand = { open: !!BKT.PROG.crownOpen, crown: info('crown') };
         const raw2 = { ...raw, ucRoadMig: 1 }; localStorage.setItem(K, JSON.stringify(raw2)); BK.loadSlot(4); out.fresh = { open: !!BKT.PROG.crownOpen, crown: info('crown') }; localStorage.removeItem(K); }
-    } else {
+    }
+    /* (claude/hornetsnest2, DANIEL 10-23) THE HORNET'S NEST ON THE ROAD: THE LUMBER TRAIL -> THE HORNET'S NEST -> MARSH WOOD; a save past the trail keeps the marsh open (once: PROG.nestRoadMig) */
+    { wipe(); BKT.PROG.wood = { cleared: true, medal: 1, best: 400 }; delete BKT.PROG.marshOpen; out.nest = { nest: info('hornetsnest'), marsh: info('marsh'), right: go('wood', 'right') };
+      const K = 'bracken.progress.4', raw = JSON.parse(JSON.stringify(BKT.PROG)); delete raw.nestRoadMig; delete raw.marshOpen; delete raw.hornetsnest; delete raw.marsh; raw.wood = { cleared: true, medal: 1, best: 400 };
+      localStorage.setItem(K, JSON.stringify(raw)); BK.loadSlot(4); out.nestGrand = { open: !!BKT.PROG.marshOpen, marsh: info('marsh') };
+      localStorage.setItem(K, JSON.stringify({ ...raw, nestRoadMig: 1 })); BK.loadSlot(4); out.nestFresh = { open: !!BKT.PROG.marshOpen, marsh: info('marsh') }; localStorage.removeItem(K); }
+    if (!ROAD_OPEN.undercrown) {
     wipe(); out.crownUnseen = info('undercrown');
     BKT.PROG.crown = { cleared: true, medal: 1, best: 400, slain: 10, slainOf: 100 }; out.crownFew = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
     BKT.PROG.crown.slain = 90; out.crownMany = { info: info('undercrown'), up: go('crown', 'up'), right: go('crown', 'right') };
@@ -76,6 +82,8 @@ try {
     !S.ucOpen.uc.locked && S.ucOpen.crown.locked && S.ucOpen.right === 'undercrown' ? ok('Stormhold cleared: the road walks on to THE UNDERCROWN, and Highcrown waits for it') : fail('undercrown after stormhold: ' + JSON.stringify(S.ucOpen));
     !S.ucDone.crown.locked && S.ucDone.right === 'crown' ? ok('THE UNDERCROWN cleared: Highcrown opens and the road walks on to it') : fail('highcrown after the undercrown: ' + JSON.stringify(S.ucDone));
     S.grand.open && !S.grand.crown.locked && !S.fresh.open && S.fresh.crown.locked ? ok('an old save with Stormhold cleared keeps Highcrown open (grandfathered once); a save made on the new road must walk the Undercrown first') : fail('grandfathering: ' + JSON.stringify({ grand: S.grand, fresh: S.fresh }));
+    !S.nest.nest.locked && S.nest.marsh.locked && S.nest.right === 'hornetsnest' ? ok("the Lumber Trail cleared: the road walks on to THE HORNET'S NEST, and MARSH WOOD waits for it") : fail('the nest on the road: ' + JSON.stringify(S.nest));
+    S.nestGrand.open && !S.nestGrand.marsh.locked && !S.nestFresh.open && S.nestFresh.marsh.locked ? ok('an old save past the Lumber Trail keeps MARSH WOOD open (grandfathered once); a save made on the new road walks the nest first') : fail('nest grandfathering: ' + JSON.stringify({ grand: S.nestGrand, fresh: S.nestFresh }));
   } else {
   S.crownUnseen.secret ? ok('undercrown not shown before highcrown is cleared') : fail('undercrown shown early: ' + JSON.stringify(S.crownUnseen));
   !S.crownFew.info.secret && S.crownFew.info.locked && S.crownFew.up === 'crown' && S.crownFew.right !== 'undercrown' ? ok('undercrown shown but shut at 10%: UP stays on highcrown, RIGHT walks the road on (' + S.crownFew.right + ')') : fail('undercrown at 10%: ' + JSON.stringify(S.crownFew));

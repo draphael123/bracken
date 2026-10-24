@@ -60,12 +60,12 @@ try {
   const r = await pg.evalp(`(async()=>{ BK.manualSimulation = true; BK.reset({ fresh: true }); BK.mapLook('wood'); BK.step(20); const boxes = JSON.parse(JSON.stringify(BK.mapPortraits())); const bl = BK.mapBlurbs(); return { boxes, bl }; })()`, 120000);
   for (const b of r.bl) if (b.w > b.max) bad.push('blurb "' + b.text + '" (' + b.id + ') is ' + b.w + ' px wide, the card line holds ' + b.max + ': say it shorter in src/map-blurbs.js');
   const at = Object.fromEntries(NODES.map(n => [n.id, n]));
-  const names = { wood: 'wood', hanging: 'hanging', crown: 'crown', scree: 'scree', marsh: 'marsh', stockade: 'stockade', spore: 'spore', kings: 'kings', castle: 'crown' };
+  const names = { hornetsnest: 'hornetsnest', wood: 'wood', hanging: 'hanging', crown: 'crown', scree: 'scree', marsh: 'marsh', stockade: 'stockade', spore: 'spore', kings: 'kings', castle: 'crown' };
   for (const [k, box] of Object.entries(r.boxes)) { const nd = at[names[k]], rec = (LANDMARKS[nd.id] || []).map(([dx, dy, w, h]) => ({ x: nd.x + dx, y: nd.y + dy, w, h }));
     const inside = rec.some(q => box.x >= q.x - 1 && box.y >= q.y - 1 && box.x + box.w <= q.x + q.w + 1 && box.y + box.h <= q.y + q.h + 1);
     if (!inside) bad.push('landmark ' + k + ' is drawn at ' + JSON.stringify(box) + ' outside every LANDMARKS box for ' + nd.id + ' (map-plates.js)');
     if (!(box.k >= 1) || !Number.isInteger(box.k)) bad.push('landmark ' + k + ' is not a whole-number shrink'); }
-  if (Object.keys(r.boxes).length < 9) bad.push('only ' + Object.keys(r.boxes).length + ' landmarks drawn (expected 9)');
+  if (Object.keys(r.boxes).length < 10) bad.push('only ' + Object.keys(r.boxes).length + ' landmarks drawn (expected 10)');
   if (pg.errors.length) bad.push('page errors: ' + pg.errors.slice(0, 2).join(' | '));
 } finally { pg.close(); }
 

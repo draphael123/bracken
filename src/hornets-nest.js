@@ -1,8 +1,9 @@
 // src/hornets-nest.js - THE HORNET'S NEST (claude/hornetsnest, the OPUS GREYBOX; scratch/brief-hornetsnest-1022.md, Daniel-approved 10-22 "all this makes sense").
-// A SIDE LEVEL (a spur) off THE LUMBER TRAIL - it does not lengthen the main road. The Hornet Queen's home: a giant paper nest hung in an ancient pine. You climb
-// the pine's roots, in at the nest's mouth and UP through it to her BROOD HALL; she tears out, the nest drops, you climb down the falling nest along the
-// trunk, and you finish her at the foot of THE GREAT PINE with the woodsmen's own verb. Her fight is src/hornet-queen.js; this level's rule and machines are
-// src/hornets-nest-hands.js.
+// (claude/hornetsnest2, Daniel's 10-23 playtest) MAIN ROAD LEVEL 2: THE LUMBER TRAIL -> THE HORNET'S NEST -> MARSH WOOD. The Hornet Queen's home: a giant paper nest hung
+// in an ancient pine. Out of the felling clearing the trail climbs into the old pines (paper scraps, a hum); you climb the pine's roots, in at the nest's mouth and UP
+// through it to her BROOD HALL, where she fights BOTH her phases (the hall tears and floods with honey at half). When she dies the nest tears loose: you climb down the
+// falling nest along the trunk and out through the great pine's roots to THE MARSH EDGE - reeds, the first water - and on to MARSH WOOD. Her fight is
+// src/hornet-queen.js; this level's rule and machines are src/hornets-nest-hands.js.
 //
 // THE RULE (L.rule, NEST_RULE): WAX AND SMOKE.
 //   FRESH COMB IS STICKY: a wax shelf or floor (L.wax) holds your feet - the run's pace drops to a walk (main.js reads P.syrupT, the shared slow).
@@ -15,7 +16,7 @@
 //     (the told arc) and where it breaks the SMOKE STAYS a few seconds - a quiet patch you climb through.
 //
 // SEVEN NAMED AREAS (A10c: a shrine closes each area's exam; one before the boss). Columns; rows: smaller is higher. The route climbs from the forest floor
-// (row 66) to the brood hall (row 22), drops down the trunk and finishes on the forest floor again.
+// (row 66) to the brood hall (row 22), drops down the trunk and finishes at the marsh's edge.
 //      0-79   THE PINE'S FOOT       TEACH  the smoke stand + a lone swarm over a root step (carry the pot through), THE FIRST COMB (cut it: the step up onto the
 //                                          buttress root - REQUIRED), a sticky comb bridge over a root hollow under a hornet, a comb dropped on a drone   shrine 78
 //     80-168  THE PAPER GATE        TEST   up the nest's mouth (comb rungs) with a swarm in its throat (carry the pot up), THE COMB BRIDGE (cut it over the
@@ -25,34 +26,35 @@
 //                                          span under a hornet, THE CHAIN (two combs that stack into a stair - REQUIRED); EXAM: the last chain under a swarm
 //                                          and two hornets (REQUIRED)                                                                                       shrine 240
 //    248-294  THE BROOD CELLS       TEACH THE BOSS  her brood: cells that PULSE before they hatch (smash a pulsing cell, or its drones come); her door
-//    295-332  THE BROOD HALL        BOSS P1   src/hornet-queen.js: comb perches (bait the dive into one: her sting sticks), smoke pots, comb that falls
-//    333-353  THE FALLING NEST      ESCAPE    the nest tears loose: down beside the trunk on comb ledges that give way, falling comb told by its ring, a bramble
-//                                             at the foot                                                                                                 shrine 351
-//    354-403  THE GREAT PINE        BOSS P2   marked pines to fell into her flight, THE LAST COMB to drop on her, the bough to strike it from
+//    295-332  THE BROOD HALL        BOSS      src/hornet-queen.js, BOTH PHASES: P1 comb perches (bait the dive into one: her sting sticks), smoke pots, comb that falls,
+//                                             her brood; THE HALL TEARS at half - P2 honey floods the floor (sticky), the torn combs hang (cut one: a step out of the
+//                                             honey, or a weight on her), THE LAST COMB in the vault (drop it on her: the big pin)
+//    333-353  THE FALLING NEST      DESCENT   (after her death) the nest tears loose: down beside the trunk on comb ledges that give way, falling comb told by its
+//                                             ring, a bramble at the foot                                                                                 shrine 351
+//    354-419  THE MARSH EDGE        WAY OUT   out through the great pine's roots to the marsh: reeds, the first shallow water, a hornet or two that fled the nest; the gate
 // Every number is a FINAL column (tools/hornets-nest.mjs pins the beats).
-export const NEST = { W: 404, H: 72, FL: 66 };
+export const NEST = { W: 420, H: 72, FL: 66 };
 export const NEST_RULE = 'FRESH COMB IS STICKY. CUT A HANGING COMB AND IT DROPS - A STEP OR A BRIDGE. CARRY A SMOKE POT AND THE SWARM GOES QUIET.';
-export const SECTIONS = [["THE PINE'S FOOT", 0, 79], ['THE PAPER GATE', 80, 168], ['THE COMB STAIR', 169, 247], ['THE BROOD CELLS', 248, 294], ['THE BROOD HALL', 295, 332], ['THE FALLING NEST', 333, 353], ['THE GREAT PINE', 354, 403]];
+export const SECTIONS = [["THE PINE'S FOOT", 0, 79], ['THE PAPER GATE', 80, 168], ['THE COMB STAIR', 169, 247], ['THE BROOD CELLS', 248, 294], ['THE BROOD HALL', 295, 332], ['THE FALLING NEST', 333, 353], ['THE MARSH EDGE', 354, 419]];
 /* each verb's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED (tools/hornets-nest.mjs reads these) */
 export const ARCS = {
-  comb: { teach: [30, 46], test: [112, 128], remix: [196, 214], exam: [214, 226], boss: [354, 403] },     /* the first comb step; the bridge; the chain; the last chain; THE LAST COMB */
+  comb: { teach: [30, 46], test: [112, 128], remix: [196, 214], exam: [214, 226], boss: [295, 332] },     /* the first comb step; the bridge; the chain; the last chain; her torn combs and THE LAST COMB */
   wax: { teach: [56, 70], test: [141, 158], remix: [169, 222], boss: [295, 332] },                          /* the sticky bridge; the waxed floor; the stair's shelves; her perches */
   smoke: { teach: [3, 26], test: [82, 92], remix: [180, 204], exam: [214, 226], boss: [295, 332] },        /* the lone swarm; the gate's throat; THROWN up to the ledge; the exam swarm; her daze */
   brood: { teach: [250, 292], boss: [295, 332] },                                                          /* the pulsing cells, then hers */
 };
-/* THE BROOD HALL (P1) and THE GREAT PINE (P2): the two rooms of one fight (src/hornet-queen.js). P2's arena takes L.arena's place when she tears out */
+/* THE BROOD HALL: her one arena, both phases (src/hornet-queen.js) */
 export const HALL = { x0: 296, x1: 331, floor: 22, top: 3, wallL: 295, wallR: 332, trigger: 300 };
-export const PINE = { x0: 354, x1: 401, floor: 66, wallL: 353, wallR: 402, trigger: 357, trunk: 350 };
 /* her COMB PERCHES in the hall: [x0, x1, row, id, fall] - wax shelves; a dive that meets one drives her sting into it (src/hornet-queen.js). `fall`: a perch her
    wing-buzz can shake loose (told) - never the last two (L1 and R1 are in the walls) */
 export const PERCHES = [[296, 300, 20, 'L1'], [327, 331, 20, 'R1'], [303, 307, 18, 'L2', 1], [320, 324, 18, 'R2', 1], [310, 317, 16, 'C', 1]];   /* L1/R1 two rows over the floor (a jump), L2/R2 two over them, C two over those */
 /* her BROOD CELLS in the hall: [col, row] - the cell a wax pocket stands in (on the floor, and on the two wall perches) */
 export const HALL_CELLS = [[301, 21], [326, 21], [297, 19], [330, 19]];
-/* THE GREAT PINE's marked pines (OLD TUSKER's kind, src/old-tusker.js: four strokes, it falls the way it leans) - fell one INTO HER FLIGHT */
-export const PINE_PINES = [{ col: 356, dir: 1, len: 6 }, { col: 363, dir: 1, len: 6 }, { col: 392, dir: -1, len: 6 }, { col: 399, dir: -1, len: 6 }];   /* none stands in another's fall line */
-/* THE LAST COMB: hung over her low pass from a bough of the great pine; struck from THE BOUGH (or by an arrow / an ember / a thrown pot), it drops on her */
-export const LAST_COMB = { x0: 383, x1: 387, row: 58, rows: 3 };   /* its bottom a hand over the head of a hero on the bough's east end: one swing cuts it */
-export const BOUGH = { x0: 370, x1: 382, row: 62 };
+/* THE HALL TEARS (P2, src/hornet-queen.js): the inner perches tear loose and HANG as TORN COMBS - each with its foot three rows over the hall's floor (a rising cut from the
+   honey reaches it) and over her low pass (cut as she passes under: PINNED); THE LAST COMB, the royal comb, sags out of the vault between them - its foot three rows over
+   a torn comb once that one is cut down into the honey (stand on it, at its inner end, and cut the last comb: an arrow, an ember or a thrown pot reaches it too).
+   HONEY floods the floor between the two wall perches [x0, x1, row]: sticky (src/hornets-nest-hands.js addHoney) */
+export const HALL_P2 = { torn: [{ id: 'tornW', x0: 302, x1: 306, row: 17, rows: 2 }, { id: 'tornE', x0: 321, x1: 325, row: 17, rows: 2 }], last: { id: 'last', x0: 307, x1: 320, row: 14, rows: 3 }, honey: [301, 326, 22] };
 /* THE FALLING NEST's comb ledges (crumbling: L.crumbles), [x0, x1, row]: west and east by turns down the drop beside the trunk */
 export const LEDGES = [[341, 346, 29], [333, 338, 36], [341, 346, 43], [333, 338, 50], [341, 346, 57]];
 
@@ -63,7 +65,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   const shelf = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };
   const sign = (x, y, text, o = {}) => ent('sign', x, y, { text, ...o });
   const coins = (...pts) => pts.forEach(([x, y]) => ent('coin', x, y));
-  const combs = [], wax = [], smokers = [], cells = [], crumbles = [], hallSmokers = [], hallWax = [];
+  const combs = [], wax = [], smokers = [], cells = [], crumbles = [], hallSmokers = [], hallWax = [], pools = [];
   /* A HANGING COMB: cells x0..x1, rows row..row+rows-1 while it hangs (AIR in the grid: it is drawn and struck, not stood on). `land` (its top row once down)
      is computed at the end, once the ground is laid, unless the comb lands on another comb (a chain: given) */
   const hang = (id, x0, x1, row, rows = 2, o = {}) => combs.push({ id, x0, x1, row, rows, ...o });
@@ -72,7 +74,10 @@ export function buildHornetsNest({ painter, T, TS }) {
   const swarm = (x, y, o = {}) => ent('swarm', x, y, { perch: true, ...o });   /* (integ116: a flyer hangs above its squad's floor on purpose - tools/sprinkle-cap.mjs's perch exemption) */
   const hornet = (x, y, o = {}) => ent('wasp', x, y, { sting: true, cnSkin: 'hornet', perch: true, ...o });
   const drone = (x, y, o = {}) => ent('sprig', x, y, { cnSkin: 'combdrone', face: -1, ...o });
-  const spitter = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'venomspitter', face: -1, ...o });   /* THE VENOM SPITTER: the toadstool spitter's machine under a worker clinging to the comb (it fills its cheeks, a yellow !, and spits) */
+  /* (claude/hornetsnest2, Daniel 10-23: the venom spitter read as a MAGE - gone; hornets only) THE FAT HONEY HORNET (src/honey-hornet.js, the nest's one new heavy): slow, its
+     plated abdomen turns a cut from behind; its told RAM; its honey globs leave sticky patches; SMOKE makes it drowsy - it sinks to the ground, open */
+  const fat = (x, y, o = {}) => ent('honeyhornet', x, y, { face: -1, perch: true, ...o });
+  const stinger = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'stinger', face: -1, ...o });   /* THE STINGER HORNET: the spitter's machine under a NEST HORNET on the comb - it curls its abdomen (a yellow !) and flicks venom (a hornet, not a mage) */
 
   // ================= 1. THE PINE'S FOOT (0-79): TEACH - the smoke stand, the lone swarm, THE FIRST COMB, the sticky bridge =================
   ground(0, 41, FL);
@@ -94,7 +99,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   ground(62, 62, FL - 8);                                    /* a knuckle in the hollow: 60 -> 58 -> the bridge at 56 */
   shelf(62, 67, FL - 10); waxed(62, 67, FL - 10);            /* the comb across it */
   ground(68, 79, FL - 10);
-  hornet(65, FL - 14, { squad: 'hollow' }); spitter(69, FL - 11, { squad: 'hollow' });
+  hornet(65, FL - 14, { squad: 'hollow' }); stinger(69, FL - 11, { squad: 'hollow' });
   sign(58, FL - 11, 'FRESH COMB IS STICKY: IT HOLDS YOUR FEET. A HORNET STINGS ON ITS ! - STEP OFF ITS LINE.');
   coins([64, FL - 12], [66, FL - 12]);
   /* a comb over a comb drone: the first DROP (cut it: it lands on him) */
@@ -120,7 +125,8 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: YOU CANNOT SWING, BUT YOU CAN JUMP.");
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
-  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); spitter(98, 30, { squad: 'cells', perch: true });
+  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); fat(104, 29, { squad: 'cells' }); stinger(98, 30, { squad: 'cells', perch: true });   /* THE FIRST FAT HONEY HORNET: up the throat with a pot in hand, you meet it with its answer */
+  sign(96, 33, 'A FAT HONEY HORNET: ITS BACK IS PLATED - HIT ITS HEAD. SMOKE IT AND IT SINKS, OPEN.');
   shelf(95, 104, 31); shelf(129, 136, 31);                  /* comb shelves along the chamber's wall (a second height) */
   coins([94, 32], [98, 31], [102, 32]);
   /* THE COMB BRIDGE (REQUIRED): an eight-wide gap down into the waste pit; the comb over it is wider than the gap - cut it and it lands across */
@@ -133,7 +139,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* THE WAXED FLOOR: the chamber's far half is fresh comb under darting hornets (slow feet, quick stings) */
   air(141, 168, 24, 31);                                     /* (a step up from 34 to 32 at 141) */
   waxed(142, 156, 32);
-  hornet(146, 27, { squad: 'wax' }); hornet(153, 26, { squad: 'wax' }); spitter(150, 28, { squad: 'wax' });
+  hornet(146, 27, { squad: 'wax' }); fat(152, 27, { squad: 'wax' }); stinger(150, 28, { squad: 'wax' });   /* a fat honey hornet over the waxed floor: its globs on fresh comb (slow feet, its ram) */
   shelf(144, 150, 29);
   coins([145, 30], [150, 30], [155, 30]);
   smoke(139, 33);
@@ -156,7 +162,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   hornet(185, 18, { squad: 'span' });
   block(195, 196, 20, 31);                                   /* a wax pillar: the span's east end; the swarm's ledge runs east off its top */
   shelf(197, 208, 20);
-  swarm(201, 17, { squad: 'span' }); spitter(206, 19, { squad: 'span' });   /* THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
+  swarm(201, 17, { squad: 'span' }); fat(205, 15, { squad: 'span' });   /* a fat honey hornet over the swarm's ledge: its globs on the sticky span, its ram as you climb; THE SWARM ON THE LEDGE: lob a pot up onto it from the span */
   smoke(186, 31);
   sign(183, 31, 'A SWARM SITS ON THE LEDGE OVER THE SPAN. CARRY A POT UP: UP+ATTACK LOBS IT HIGH.');
   coins([190, 21], [199, 19], [203, 19]);
@@ -173,7 +179,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   block(223, 247, 8, 31);                                    /* the high wall: its top (row 8) runs east to the brood cells */
   hang('lastA', 219, 221, 9, 2, { chain: 'B', land: 12 });
   hang('lastB', 220, 222, 7, 2, { chain: 'B', land: 10, on: 'lastA' });
-  swarm(217, 10, { squad: 'exam' }); hornet(221, 4, { squad: 'exam' }); hornet(214, 6, { squad: 'exam' }); spitter(228, 7, { squad: 'exam' });
+  swarm(217, 10, { squad: 'exam' }); hornet(221, 4, { squad: 'exam' }); hornet(214, 6, { squad: 'exam' }); fat(232, 5, { squad: 'exam' }); stinger(228, 7, { squad: 'exam' });   /* the exam's heavy waits on the wall top */
   smoke(212, 13);
   coins([218, 13], [221, 9], [226, 7]);
   air(223, 247, 4, 7);
@@ -184,21 +190,21 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (const [x, y] of [[258, 9], [267, 9], [277, 9], [286, 9]]) cells.push({ x, y });   /* brood cells on the nursery floor (a wax pocket each) */
   sign(251, 9, 'BROOD CELLS PULSE BEFORE THEY HATCH. SMASH A PULSING CELL, OR ITS DRONES COME OUT.');
   coins([262, 8], [272, 8], [282, 8]);
-  hornet(272, 5, { squad: 'brood' }); spitter(280, 9, { squad: 'brood' });
+  hornet(272, 5, { squad: 'brood' }); fat(282, 6, { squad: 'brood' }); stinger(278, 9, { squad: 'brood' });   /* the last fat honey hornet keeps her nursery: smoke is behind you now - its head, or its ram on your shield */
   shelf(262, 266, 8); shelf(257, 260, 5); ent('silver', 258, 4); shelf(272, 277, 8); shelf(284, 288, 8);   /* the nursery's upper comb (a second height; a silver in the brood's own wax) */
   air(295, 295, 3, 9);                                       /* her door: the nursery floor runs out over the hall; you drop in */
   sign(290, 9, 'HER STING STICKS IN COMB. STAND ON A PERCH AS SHE DIVES. SMOKE HER AND SHE FALLS.');
 
-  // ================= 5. THE BROOD HALL (295-332): BOSS P1 - src/hornet-queen.js =================
+  // ================= 5. THE BROOD HALL (295-332): THE BOSS, BOTH PHASES - src/hornet-queen.js =================
   air(HALL.x0, HALL.x1, HALL.top, HALL.floor - 1);
   for (const [x0, x1, row] of PERCHES) { shelf(x0, x1, row); hallWax.push([x0, x1, row]); }   /* her perches are fresh comb too (sticky: L.wax), but hers - not the level's ents */
-  air(HALL.wallR, HALL.wallR, HALL.floor - 3, HALL.floor - 1);   /* the hall's east wall: her arena wall shuts it; she tears out through it, and you after her */
+  air(HALL.wallR, HALL.wallR, HALL.floor - 3, HALL.floor - 1);   /* the hall's east wall: her arena wall shuts it; when she dies the nest tears loose there - the way down */
   hallSmokers.push([297, HALL.floor - 1], [330, HALL.floor - 1]);   /* her hall's own stands (the hands run them like the level's) */
   ent('hornetqueen', 313, HALL.floor - 7, { face: -1 });
 
-  // ================= 6. THE FALLING NEST (333-353): ESCAPE - down beside the trunk on comb ledges that give way =================
+  // ================= 6. THE FALLING NEST (333-353): DESCENT (after her death) - down beside the trunk on comb ledges that give way =================
   /* the drop: 333-346 between the nest's torn side (332) and the great pine's trunk (347-352, solid from the sky to row 59); at the foot a root arch under
-     the trunk (rows 60-65) opens on its clearing (the arena's wall column, 353, is air until she wakes) */
+     the trunk (rows 60-65) opens on the pine's roots and the marsh beyond */
   air(333, 346, 0, FL - 1);
   block(347, 352, 0, FL - 7); air(347, 353, FL - 6, FL - 1);
   ground(333, 353, FL);
@@ -207,13 +213,21 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (let x = 333; x <= 338; x++) set(x, FL - 1, T.SPIKE); /* a bramble at the foot of the drop, under the west ledges: the ledges are the way down */
   ent('check', 351, FL - 1);
 
-  // ================= 7. THE GREAT PINE (354-403): BOSS P2 =================
-  ground(354, W - 1, FL);
-  shelf(366, 369, FL - 2); shelf(383, 386, FL - 2);          /* the great pine's roots arching over the floor, two rows up (the floor runs on under them) */
-  shelf(BOUGH.x0, BOUGH.x1, BOUGH.row);                      /* its low bough, four rows over the floor (up off a root knuckle): the floor runs on under it */
-  air(PINE.wallR, PINE.wallR, FL - 6, FL - 1);
-  ent('gate', 400, FL - 1);
-  sign(355, FL - 1, 'MARKED PINES FALL THE WAY THEY LEAN. FELL ONE INTO HER FLIGHT, OR DROP THE LAST COMB.');
+  // ================= 7. THE MARSH EDGE (354-419): THE WAY OUT - the great pine's roots down to the marsh: reeds, the first water =================
+  const water = (x0, x1, yTop) => pools.push({ x0: x0 * TS, x1: (x1 + 1) * TS, y: yTop * TS + 4, shallow: true, depth: 12 });   /* (MARSH WOOD's own shallows: you wade them) */
+  const reeds = (x, y, n) => { for (let i = 0; i < n; i++) set(x + i, y, T.REED); };
+  ground(354, 366, FL);
+  shelf(358, 362, FL - 2);                                   /* a root of the great pine arching over the floor (a second height) */
+  hornet(364, FL - 6, { squad: 'edge' });                    /* a hornet that fled the falling nest, over the roots */
+  ground(367, 374, FL + 1); water(367, 374, FL);             /* THE FIRST WATER: a shallow pool where the roots give way to the marsh (wade it) */
+  reeds(366, FL - 1, 1); reeds(375, FL - 1, 1);
+  ground(375, 388, FL); shelf(379, 384, FL - 3);             /* a root hummock, a last root shelf over it */
+  drone(384, FL - 1, { squad: 'edge' });                     /* a comb drone that came down with the nest */
+  coins([380, FL - 4], [382, FL - 4]);
+  ground(389, 398, FL + 1); water(389, 398, FL); reeds(388, FL - 1, 1); reeds(394, FL - 1, 2); reeds(399, FL - 1, 1);   /* the second water, reeds standing in it */
+  ground(399, W - 1, FL);
+  sign(356, FL - 1, 'THE MARSH BEGINS WHERE THE PINE ENDS. THE BULLFROG KING KEEPS THE WATER AHEAD.');
+  ent('gate', 416, FL - 1);
 
   /* WHERE EACH COMB LANDS: its plumb line down to the first footing under any of its columns (a chained comb names its own: it lands on the one under it) */
   const foot = v => v === T.SOLID || v === T.ONEWAY || v === T.PLANK || v === T.SPIKE;
@@ -226,18 +240,16 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (const c of cells) ent('broodcell', c.x, c.y);
 
   return {
-    W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools: [], falls: [], moversExtra: [],
-    foeHit: { hornet: 0.6 },   /* a nest hornet's sting is the river wasp's machine at three-fifths its blow (they are many here) */
-    squadBands: [{ lo: 400, hi: 403, spots: 0, why: "THE GREAT PINE: the last four columns are the pine's foot and the way out - no squad stands in a boss arena" }],
+    W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools, falls: [], moversExtra: [], gateAfterBoss: true,   /* (claude/hornetsnest2) her death opens the way on: the descent and the marsh's edge to the gate */
+    foeHit: { hornet: 0.85 },   /* a nest hornet's sting is the river wasp's machine at 0.85 of its blow (claude/hornetsnest2: 0.6 -> 0.85 with the venom spitters gone: the level-1 curve read EASY at 30%) */
+    squadBands: [{ lo: 400, hi: 419, spots: 0, why: "THE MARSH EDGE: the last columns (past the second water) are the marsh's bank and the gate - the way out after her death" }],
     hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),
-    tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 403, [150, 180, 90], 0.10]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine */
+    tints: [[0, 79, [214, 196, 120], 0.10], [80, 168, [220, 190, 120], 0.14], [169, 247, [230, 170, 70], 0.16], [248, 294, [200, 120, 70], 0.18], [295, 332, [220, 150, 50], 0.18], [333, 353, [120, 150, 110], 0.10], [354, 419, [120, 160, 110], 0.12]],   /* the pine's green-gold, the paper's parchment, the comb's amber deepening to the brood's red-amber, then out under the pine to the marsh's green */
     music: 'hornetnest',   /* claude/hornetmusic: "Cathedral in the forest (ambient loop)" by congusbongus, CC0 */
     ambient: [{ x0: 0, x1: 80 * TS, kind: 'forest' }, { x0: 80 * TS, x1: 333 * TS, kind: 'cave' }, { x0: 333 * TS, x1: 99999, kind: 'forest' }],
     arena: { x0: HALL.x0 * TS, x1: (HALL.x1 + 1) * TS, floor: HALL.floor * TS, trigger: HALL.trigger * TS, wallL: HALL.wallL, wallR: HALL.wallR, boss: 'hornetqueen', music: 'hornetqueen', tint: '#e0a040', tintA: 0.12, fx: 'dust', stage: 1,
-      top: HALL.top * TS, perches: PERCHES.map(([x0, x1, row, id, fall]) => ({ x0, x1, row, id, fall: !!fall })), cells: HALL_CELLS.map(([x, y]) => ({ x, y })) },
-    arena2: { x0: PINE.x0 * TS, x1: (PINE.x1 + 1) * TS, floor: PINE.floor * TS, trigger: PINE.trigger * TS, wallL: PINE.wallL, wallR: PINE.wallR, boss: 'hornetqueen', music: 'hornetqueen', tint: '#8aa040', tintA: 0.1, fx: 'dust', stage: 2,
-      pines: PINE_PINES, lastComb: LAST_COMB, bough: BOUGH, trunk: PINE.trunk },
-    escape: { x0: 333, x1: 353, top: HALL.floor, bottom: FL, ledges: LEDGES, check: [351, FL - 1], out: HALL.wallR },
+      top: HALL.top * TS, perches: PERCHES.map(([x0, x1, row, id, fall]) => ({ x0, x1, row, id, fall: !!fall })), cells: HALL_CELLS.map(([x, y]) => ({ x, y })), p2: HALL_P2 },
+    descent: { x0: 333, x1: 353, top: HALL.floor, bottom: FL, ledges: LEDGES, check: [351, FL - 1], out: HALL.wallR },   /* THE FALLING NEST, after her death (src/hornet-queen-hands.js tick) */
   };
 }

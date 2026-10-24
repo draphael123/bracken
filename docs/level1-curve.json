@@ -624,16 +624,16 @@
   "lostPct": 209
  },
  "hornetsnest": {
-  "hash": "08c7134cea23",
+  "hash": "ad6ec4c9664a",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 16,
-  "deaths": 0,
-  "kills": 37,
-  "lifts": 50,
+  "hits": 19,
+  "deaths": 1,
+  "kills": 40,
+  "lifts": 56,
   "walked": 100,
   "bare": true,
-  "lostPct": 69
+  "lostPct": 88
  }
 }

@@ -112,5 +112,5 @@ function pillarSprite(h) { return once('pil' + h, () => { const w = 11, [c, g] =
       const edge = x === x0 || x === x1 - 1; let col = edge ? COMB[0] : wall ? COMB[1] : (x - x0 < 3 ? COMB[3] : x1 - x < 3 ? COMB[1] : COMB[2]); if (!edge && !wall && hash(x, y) % 13 === 0) col = COMB[4]; R(g, col, x, y, 1, 1); } }
   R(g, COMB[0], 1, h - 1, 9, 2); R(g, COMB[1], 2, h - 2, 7, 1);   /* the foot, spread on the floor */
   return c; }); }
-export function posts(g, L, cx, cy) { for (const p of L.routeSupports || []) { const x = Math.round(p.x * 16 + 6 - cx), y = Math.round(p.y * 16 + 6 - cy), bottom = Math.round(p.bottom * 16 - cy); if (x < -8 || x > g.canvas.width + 8 || y > g.canvas.height + 4 || bottom < -4) continue;
+export function posts(g, L, cx, cy) { for (const p of L.routeSupports || []) { if (L.grid && !L.grid[p.y * L.W + p.x]) continue;   /* (claude/hornetsnest2) a perch torn loose (her buzz, the hall's tear) takes its pillar with it */ const x = Math.round(p.x * 16 + 6 - cx), y = Math.round(p.y * 16 + 6 - cy), bottom = Math.round(p.bottom * 16 - cy); if (x < -8 || x > g.canvas.width + 8 || y > g.canvas.height + 4 || bottom < -4) continue;
   const h = Math.max(4, bottom - y); g.drawImage(pillarSprite(h), x - 5, y); } }

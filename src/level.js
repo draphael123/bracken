@@ -7809,7 +7809,7 @@ export const LOST_BANNERS = { fields: [538, 3], burial: [293, 55], witchlight: [
 export const ROAD_OPEN = { undercrown: true };
 export const LEVELS = [
   { id: 'wood', name: 'THE LUMBER TRAIL', sub: 'down the woodsmen\'s trail through bracken wood, to the hive', rule: RULE_WOOD, build: () => buildLumberTrail({ painter, T, TS }) },   /* (claude/lumbertrail) BRACKEN WOOD becomes THE LUMBER TRAIL: one rule, one sentence - what main.js fellStroke/fellLay do (src/felling.js) */
-  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', build: marshWood, needs: 'wood' },
+  { id: 'marsh', name: 'MARSH WOOD', sub: 'water and the frog', rule: 'PADS SINK. THE CHANNEL IS DEEP: PAY THE FERRYMAN OR DRAIN IT.', build: marshWood, needs: 'hornetsnest' },   /* (claude/hornetsnest2, Daniel 10-23: THE HORNET'S NEST is MAIN ROAD level 2 - the Lumber Trail -> the nest -> here; a save past the trail keeps this open: src/main.js progDefaults nestRoadMig, PROG.marshOpen) */
   { id: 'stockade', name: 'THE STOCKADE', sub: 'the goblin camp', rule: 'EVERY TOWER HAS A HORN. SILENCE THE BLOWER BEFORE IT SOUNDS.', build: theStockade, needs: 'fenroad' },   /* (claude/fenroad, Daniel 10-20: THE FEN ROAD stands between MARSH WOOD and here) */
   { id: 'spore', name: 'SPOREWOOD', sub: 'the deep fungus', rule: "THE CAPS GROW INTO STEPS, AND THE SPORES HELP YOU: BOUNCE CAPS THROW YOU, LANTERN CAPS LIGHT THE DARK, MEND PUFFS HEAL. CLIMB TO THE MOTHER'S KNOT.", build: () => buildSporewood({ painter, T, TS }), needs: 'stockade' },   /* (claude/sporewood2, Daniel 10-14: "spores help you, fewer debuff clouds" - SPOREWOOD 2, THE MOTHER'S KNOT, src/sporewood.js; the old builder sporewood() stays below, unused, for the art lane's reference until it merges) */
   { id: 'kings', name: 'KINGSWOOD', sub: 'up from the deep fungus, the goblins made a court of the old wood', rule: 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', build: () => buildKingswood({ painter, T, TS }), needs: 'rootway' },   /* (claude/kingswood2, Daniel 10-14: "fine but very BLAND" - THE KING'S HUNTING WOOD, src/kingswood.js; the old builder kingswood() stays below, unused, for the art lane's reference until it merges) */   /* (claude/rootway, Daniel 10-07: THE ROOTWAY comes between it and Sporewood) */
@@ -7930,9 +7930,10 @@ export const LEVELS = [
   { id: 'tavern', name: 'THE TAVERN', sub: 'friends meet here', build: theTavern, hidden: true },
   /* THE FEN ROAD (claude/fenroad, the greybox; scratch/brief-fenroad-1020.md, Daniel 10-20): APPENDED (saves count levels by index); on the road between MARSH WOOD and THE STOCKADE by its needs (the Stockade needs it) */
   { id: 'fenroad', name: 'THE FEN ROAD', sub: "the goblins' boardwalk to their stockade", rule: FEN_RULE, build: () => buildFenRoad({ painter, T, TS }), needs: 'marsh' },
-  /* THE HORNET'S NEST (claude/hornetsnest, the OPUS GREYBOX; scratch/brief-hornetsnest-1022.md, Daniel 10-22): APPENDED (saves count levels by index). A SPUR off THE LUMBER TRAIL
-     (spurOf + opensOn: it opens when the trail is cleared, and the map steps onto it from the trail's node); it does not lengthen the main road. Her home: THE HORNET QUEEN 2 */
-  { id: 'hornetsnest', name: "THE HORNET'S NEST", sub: 'up the great pine, into the paper nest', rule: NEST_RULE, build: () => buildHornetsNest({ painter, T, TS }), needs: 'wood', spurOf: 'wood', opensOn: { level: 'wood' } },
+  /* THE HORNET'S NEST (claude/hornetsnest, the OPUS GREYBOX; scratch/brief-hornetsnest-1022.md, Daniel 10-22): APPENDED (saves count levels by index). Her home: THE HORNET QUEEN 2.
+     (claude/hornetsnest2, Daniel 10-23 playtest: "generally good") MAIN ROAD LEVEL 2 now, no longer a spur: THE LUMBER TRAIL -> THE HORNET'S NEST -> MARSH WOOD (marsh needs it) -
+     up out of the felling clearing into the old pines, up the paper nest, and down the great pine's trunk to the marsh's edge */
+  { id: 'hornetsnest', name: "THE HORNET'S NEST", sub: 'up the great pine, through the paper nest, down to the marsh', rule: NEST_RULE, build: () => buildHornetsNest({ painter, T, TS }), needs: 'wood' },
 ];
 
 /* THE MIX. A level that is one creature is one question asked forty times. Some of each crowd is swapped for a

@@ -16,7 +16,7 @@ try {
     at(760, 20, h => P.cloud(h, 40, 40, 46, 1, 2.2), 'smoke cloud');
     at(1000, 20, h => P.cell(h, 20, 50, 'idle', 0, 1), 'brood cell'); at(1100, 20, h => P.cell(h, 20, 50, 'pulse', 0.3, 1.1), 'pulse early'); at(1200, 20, h => P.cell(h, 20, 50, 'pulse', 0.9, 1.15), 'pulse late'); at(1300, 20, h => P.cell(h, 20, 50, 'broken', 0, 1), 'hatched');
     const row = (names, y) => names.forEach((n, j) => { const s = S[n]; s.R.forEach((f, i) => g.drawImage(f, 0, 0, f.width, f.height, 10 + i * 17 * Z + (j % 1) * 0, y, f.width * Z, f.height * Z)); g.fillText(n, 10, y - 2); });
-    row(['hornet'], 380); row(['combdrone'], 480); row(['nestguard'], 600); row(['venomspitter'], 740); row(['swarm'], 850);
+    row(['hornet'], 380); row(['combdrone'], 480); row(['nestguard'], 600); row(['swarm'], 850);
     return c.toDataURL('image/png'); })()`, 120000);
   writeFileSync(join(out, 'hornetsnestart-' + TAG + '-props-sheet.png'), Buffer.from(r.split(',')[1], 'base64')); console.log('written', JSON.stringify(pg.errors.slice(0, 3)));
 } finally { pg.close(); }

@@ -4,6 +4,10 @@
 //             stair) - as ONE-WAY footing (cellSet). A falling comb knocks a hanging comb under it loose too. What stands where it lands is struck: a foe takes
 //             COMB.crush; a hero is shoved up onto it (COMB.heroCrush 0: the comb he cut is his step, never his death - the walker died under its own cuts at 8). A respawn hangs them all again (B4).
 //   WAX       L.wax: [x0, x1, row] - the footing row whose top is FRESH COMB: a hero standing on it is held (P.syrupT: main.js's shared slow, the run's cap 40).
+//   HONEY     (claude/hornetsnest2) the same hold, laid at run time: addHoney(x0, x1, row, t, kind) - THE HONEY HALL's flood (src/hornet-queen-hands.js tearHall, for the
+//             fight) and a FAT HONEY HORNET's glob where it splashes (src/honey-hornet.js, a few seconds). honey() lists them; a respawn takes them up.
+//   HALL COMBS (claude/hornetsnest2) addCombs([...]): THE HORNET QUEEN's torn combs and THE LAST COMB hang from the torn vault as combs like the level's (cut, drop, land as footing);
+//             they carry hq: true (her hands read them: a comb that falls on her pins her). A respawn takes them up.
 //   SMOKE     L.smokers: the honey-hunters' SMOKE STANDS (they never run out). E takes a SMOKE POT: carried (P.carry, THROW_KIND.smokepot: slower, no swing - you can
 //             still jump); its smoke QUIETS every swarm and hornet within SMOKE.aura of you. E sets it down (it smoulders where it stands SMOKE.rest s, quieting
 //             round it). ATTACK THROWS IT (src/carry-throw.js's told arc: UP lobs, DOWN tosses short): it BREAKS where it lands and leaves a CLOUD (SMOKE.cloudR,
@@ -15,7 +19,10 @@
 //   arrows() -> [{ x, y, state }] (the ranger's arrows in flight)
 import * as CT from './carry-throw.js';
 import { drawSwarm } from './hornet-swarm.js';
-import * as HNP from './redraw/hornets_nest_props.js';   /* (claude/hornetsnestart) the props, drawn */
+import * as HNP from './redraw/hornets_nest_props.js';
+import * as HNHY from './redraw/hornets_nest_honey.js';
+import * as HNHL from './redraw/hornets_nest_hall.js';
+import * as HNE from './redraw/hornets_nest_edge.js';   /* (claude/hornets2art) the old pines and the marsh edge */   /* (claude/hornets2art) the honey: the sticky patch, the hall's flood and combs */   /* (claude/hornetsnestart) the props, drawn */
 export const SMOKE = { reachX: 15, reachY: 18, aura: 58, rest: 7, cloudR: 46, cloudT: 6, dmg: 3, stagger: 0.7, keep: 3, col: '#c8d0d8' };
 export const COMB = { g: 900, maxV: 520, crush: 24, heroCrush: 0, sticky: 0.12 };
 export const BROOD = { near: 120, pulse: 3.2, n: 2 };
@@ -29,7 +36,7 @@ export const SMOKE_POSES = ['carry', 'throw'];
 CT.addKind('smokepot', { aims: { low: { vx: 100, vy: -110 }, mid: { vx: 165, vy: -190 }, high: { vx: 105, vy: -325 } }, g: 620, r: 3, ring: 12, dots: 14 });
 
 export function makeNestHands(ctx) {
-  let combs = [], stands = [], pots = [], clouds = [], cells = [], arc = null, near = null, inited = null;
+  let combs = [], stands = [], pots = [], clouds = [], cells = [], honey = [], splashes = [], arc = null, near = null, inited = null;
   const W = { n: { cut: 0, landed: 0, crushed: 0, taken: 0, thrown: 0, broke: 0, setDown: 0, dropped: 0, smashed: 0, hatched: 0, stuck: 0 } };
   const TS = 16, R = Math.round;
   const held = P => (P && P.carry && P.carry.t === 'smokepot' ? P.carry : null);
@@ -38,14 +45,20 @@ export function makeNestHands(ctx) {
   W.on = () => !!(L() && L().hornetsNest);
   /* ---------- RESET (every spawnEntities: a load and a respawn) - the combs hang again, the cells are whole, no pot in the air ---------- */
   W.reset = () => {
-    const Lv = L(); if (!Lv || !Lv.hornetsNest) { combs = []; stands = []; pots = []; clouds = []; cells = []; return; }
+    const Lv = L(); if (!Lv || !Lv.hornetsNest) { combs = []; stands = []; pots = []; clouds = []; cells = []; honey = []; splashes = []; return; }
     for (const c of combs) if (c.st === 'down' || c.cells) for (const [x, y] of c.cells || []) ctx.cellSet(x, y, ctx.T.AIR);   /* (what a landed comb laid is taken up: the grid under it was air) */
-    combs = (Lv.combs || []).map(c => ({ ...c, st: 'hang', y: c.row * TS, vy: 0, cells: null }));
+    combs = (Lv.combs || []).map(c => ({ ...c, st: 'hang', y: c.row * TS, vy: 0, cells: null })); honey = []; splashes = [];
     stands = (Lv.smokers || []).map(([x, row]) => ({ x: x * TS + 8, y: (row + 1) * TS }));
     cells = (Lv.broodCells || []).map(c => ({ x: c.x * TS + 8, y: (c.y + 1) * TS, st: 'idle', t: 0 }));
     pots = []; clouds = []; arc = null; near = null; inited = Lv;
   };
   W.combs = () => combs;
+  /* (claude/hornetsnest2) THE HALL'S COMBS hang (THE HORNET QUEEN's tear): [{ id, x0, x1, row, rows, last, hq }] - combs like the level's */
+  W.addCombs = list => { for (const c of list) if (!combs.some(o => o.id === c.id)) combs.push({ ...c, st: 'hang', y: c.row * TS, vy: 0, cells: null }); };
+  /* (claude/hornetsnest2) HONEY: sticky footing laid at run time, px x0..x1 on the footing row `row`, for t s (Infinity: the hall's flood) */
+  W.addHoney = (x0, x1, row, t = 6, kind = 'glob') => { honey.push({ x0, x1, row, t, t0: t, kind }); if (honey.length > 24) honey.splice(honey.findIndex(h => h.kind !== 'flood'), 1); };
+  W.honey = () => honey;
+  W.stickyAt = (x, y) => { const ty = Math.floor((y + 2) / TS), Lv = L(); for (const [x0, x1, row] of Lv.wax || []) if (row === ty && x > x0 * TS - 2 && x < (x1 + 1) * TS + 2) return true; for (const h of honey) if (h.row === ty && x > h.x0 - 2 && x < h.x1 + 2) return true; return false; };
   W.cells = () => cells;
   W.clouds = () => clouds;
   W.stands = () => stands.map(s => ({ x: s.x, y: s.y }));
@@ -97,6 +110,7 @@ export function makeNestHands(ctx) {
     const top = landRow(c); c.y = top * TS; c.vy = 0; c.st = 'down'; c.cells = [];
     const stacked = (() => { for (let x = c.x0; x <= c.x1; x++) if (combs.some(o => o !== c && o.st === 'down' && o.cells && o.cells.some(([cx, cy]) => cx === x && cy === top + c.rows))) return true; return false; })();
     for (let y = top; y < top + c.rows; y++) for (let x = c.x0; x <= c.x1; x++) { ctx.cellSet(x, y, ctx.T.ONEWAY); c.cells.push([x, y]); }
+    if (c.hq && honey.some(h => h.kind === 'flood')) { splashes.push({ x: (c.x0 + c.x1 + 1) * TS / 2, y: (top + c.rows) * TS, w: (c.x1 - c.x0 + 1) * TS, t: 0 }); ctx.burst((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS - 6, c.last ? 22 : 12, ['#ffd36b', '#fff4b0', '#c47a14', '#e0a020'], 110, 0.7); ctx.sfx.squelch && ctx.sfx.squelch(); }   /* (claude/hornets2art) a comb dropped into the honey: it splashes */
     W.n.landed++; ctx.sfx.thud && ctx.sfx.thud(); ctx.dust((c.x0 + c.x1 + 1) * TS / 2, (top + c.rows) * TS, 10);
     if (stacked) ctx.number((c.x0 + c.x1 + 1) * TS / 2, top * TS - 10, NEST_SAY.stacked, '#ffd36b');
     const box = { l: c.x0 * TS, r: (c.x1 + 1) * TS, t: top * TS, b: (top + c.rows) * TS };
@@ -116,9 +130,11 @@ export function makeNestHands(ctx) {
     const P = ctx.P(), Lv = L();
     /* WAX: fresh comb under your feet holds them (the shared slow: main.js caps the run at FT2.syrup.cap while P.syrupT > 0 on the ground) */
     for (const pp of ctx.players()) { if (!pp || pp.dead) continue; let on = false;
-      if (pp.ground) { const ty = Math.floor((pp.y + 2) / TS); for (const [x0, x1, row] of Lv.wax || []) if (row === ty && pp.x > x0 * TS - 2 && pp.x < (x1 + 1) * TS + 2) { on = true; break; } }
+      if (pp.ground) on = W.stickyAt(pp.x, pp.y);   /* (fresh comb, and honey: the hall's flood, a fat hornet's glob) */
       pp.syrupT = on ? COMB.sticky : Math.max(0, (pp.syrupT || 0) - dt);
       if (on && pp === P && !ctx.told('sticky')) { ctx.tell('sticky'); ctx.number(pp.x, pp.y - 30, NEST_SAY.sticky, '#e0b040'); } }
+    for (const h of honey) h.t -= dt; honey = honey.filter(h => h.t > 0);
+    for (const s of splashes) s.t += dt; splashes = splashes.filter(s => s.t < 0.9);
     /* COMBS falling */
     for (const c of combs) { if (c.st !== 'fall') continue;
       c.vy = Math.min(COMB.maxV, c.vy + COMB.g * dt); const top = landRow(c), ny = c.y + c.vy * dt;
@@ -137,6 +153,7 @@ export function makeNestHands(ctx) {
       if (q.state === 'fly') { if (!q.counted) { q.counted = true; W.n.thrown++; if (q.holder) { q.holder.potPose = 'throw'; q.holder.potPoseT = 0.25; } } q.holder = null;
         const k = CT.KINDS.smokepot, px = q.x, py = q.y; CT.stepArc(q, dt, k.g);
         if (ctx.onQueen && ctx.onQueen(q.x, q.y, q)) { breakAt(q, q.x, q.y + 8); continue; }   /* (the Hornet Queen's hands: a pot that meets her breaks on her) */
+        { const hc = combs.find(c => c.st === 'hang' && (() => { const b = combBox(c); return q.x > b.l && q.x < b.r && q.y > b.t && q.y < b.b - 16; })()); if (hc) { cut(hc); breakAt(q, q.x, q.y + 6); continue; } }   /* (claude/hornetsnest2) a THROWN POT that meets a hanging comb cuts it loose (and breaks: smoke) - every hero's reach to a high comb */
         const e = foeAt(q.x, q.y); if (e) { ctx.hurtFoe(e, SMOKE.dmg, q.x); breakAt(q, q.x, q.y + 6); continue; }
         if (ctx.solidPx(q.x + Math.sign(q.vx) * k.r, py, false) && !ctx.solidPx(px, py, false)) { breakAt(q, px, py); continue; }
         if (q.vy < 0 && ctx.solidPx(q.x, q.y - k.r, false)) { breakAt(q, q.x, q.y + 4); continue; }
@@ -175,16 +192,38 @@ export function makeNestHands(ctx) {
     /* THE COMBS: hanging (with the stalk up and the gold plumb line down to a ghost of where it lands), falling, landed */
     for (const c of combs) { const x = c.x0 * TS - cx, w = (c.x1 - c.x0 + 1) * TS, h = c.rows * TS; if (x > VW + 40 || x + w < -40) continue;
       if (c.st === 'hang') { const y = c.y - cy, mid = x + w / 2;
-        { let sy = c.row - 1; while (sy > 0 && sy > c.row - 6 && !ctx.solidPx(c.x0 * TS + w / 2, sy * TS + 8, false)) sy--; HNP.stalk(g, mid, y, Math.max(4, y - ((sy + 1) * TS - cy))); }   /* its paper stalk up to what it hangs from */
+        if (c.hq) HNHL.tornStalks(g, c, x, y, w, cx, cy, time);   /* (claude/hornets2art) the hall's combs hang from the tear on ropes of ragged paper */
+        else { let sy = c.row - 1; while (sy > 0 && sy > c.row - 6 && !ctx.solidPx(c.x0 * TS + w / 2, sy * TS + 8, false)) sy--; HNP.stalk(g, mid, y, Math.max(4, y - ((sy + 1) * TS - cy))); }   /* its paper stalk up to what it hangs from */
         const lr = landRow(c), ly = lr * TS - cy; g.fillStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : '#d8a840'; for (let q = y + h + 3; q < ly; q += 6) { g.fillRect(R(x + 2), R(q), 2, 2); g.fillRect(R(x + w - 4), R(q), 2, 2); }   /* the plumb line (its two edges) */
         g.globalAlpha = 0.28 + 0.12 * Math.sin(time * 4); g.strokeStyle = '#ffd36b'; g.strokeRect(R(x) + 0.5, R(ly) + 0.5, w - 1, h - 1); g.globalAlpha = 1;   /* the ghost where it lands */
-        HNP.slab(g, x, y, w, h, false, time); }
-      else HNP.slab(g, x, c.y - cy, w, h, c.st === 'down', time); }
+        (c.last ? HNHL.royal : HNP.slab)(g, x, y, w, h, false, time); }
+      else (c.last ? HNHL.royal : HNP.slab)(g, x, c.y - cy, w, h, c.st === 'down', time); }
+    for (const s of splashes) HNHL.splash(g, s.x - cx, s.y - cy, s.w, s.t / 0.9, time);   /* (claude/hornets2art) a comb into the honey: the crown of drops */
+    /* HONEY: a glossy amber skin on the footing (the hall's flood is drawn by her hands; here the globs' splashes, fading) */
+    for (const h of honey) { if (h.kind === 'flood') continue; const x = h.x0 - cx, w = h.x1 - h.x0, y = h.row * TS - cy; if (x > VW + 20 || x + w < -20) continue; HNHY.patch(g, x, y, w, h.t, h.t0, time); }
     /* THE SMOKE STANDS: a clay pot on a tripod of sticks, smouldering */
     for (const s of stands) { const x = R(s.x - cx), y = R(s.y - cy); if (x < -30 || x > VW + 30) continue; HNP.stand(g, x, y, time); }
     /* THE BROOD CELLS: a capped wax pocket; pulsing, it swells, reddens and cracks */
     for (const k of cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue; HNP.cell(g, x, y, k.st, k.st === 'pulse' ? 1 - k.t / BROOD.pulse : 0, time); }
+    dress(g, cx, cy, time, VW);
   };
+  /* (claude/hornetsnest2) THE JOURNEY'S TWO ENDS, drawn (no tile, no ent: the level's hash keeps): THE OLD PINES at the foot - scraps of the nest's grey paper blown down on
+     the needles and snagged on the roots, the first sign of it; and THE MARSH EDGE past the great pine - cattails and reed clumps along the banks and in the shallows, lily pads
+     on the first water, a low mist over it: MARSH WOOD begins here */
+  const SCRAPS = [[5, 66, 0], [11, 66, 1], [14, 63, 2], [22, 64, 0], [26, 66, 1], [33, 66, 2], [44, 62, 0], [49, 60, 1], [57, 56, 2], [63, 60, 0]];
+  const REEDS = [[355, 66, 3], [357, 66, 2], [365, 66, 4], [366, 67, 3], [368, 67, 2], [373, 67, 3], [375, 66, 4], [376, 66, 2], [386, 66, 3], [388, 67, 4], [390, 67, 2], [393, 67, 3], [395, 67, 4], [397, 67, 2], [399, 66, 3], [402, 66, 2], [407, 66, 3], [411, 66, 4], [414, 66, 2]];
+  function dressOver(g, cx, cy, time, VW) {
+    for (const [c, r, k] of PADS) { const x = R(c * TS - cx), y = R(r * TS + 4 - cy); if (x < -20 || x > VW + 20) continue; HNE.pad(g, x, y, k, time); }   /* (claude/hornets2art) a lily pad (the marsh's own, not yet sinking) */
+    { const x0 = R(354 * TS - cx), x1 = R(419 * TS - cx); if (x1 > -20 && x0 < VW + 20) HNE.mist(g, x0, x1, R(66 * TS - cy) + 2, time, 0.26); }   /* a low marsh mist */
+  }
+  const PADS = [[369.5, 66, 0], [372, 66, 1], [391, 66, 2], [396.5, 66, 4], [367.5, 66, 3]];
+  /* (claude/hornets2art) the old pines' first sightings: a little abandoned paper nest hung from a bough, [col, row of the bough] */
+  const PINENESTS = [[13, 59], [27, 58.6], [49, 52], [67, 48]];   /* (the camera shows ~11 rows over the floor: these hang in view over the road) */
+  function dress(g, cx, cy, time, VW) {
+    for (const [c, r, k] of PINENESTS) { const x = R(c * TS - cx); if (x < -40 || x > VW + 40) continue; HNE.pineNest(g, x, R(r * TS - cy), time); }
+    for (const [c, r, k] of SCRAPS) { const x = R(c * TS + (k * 5) % 11 - cx), y = R(r * TS - cy); if (x < -20 || x > VW + 20) continue; HNE.scrap(g, x, y, k + (c & 1), time); }   /* a scrap of nest paper, curled */
+    for (const [c, r, h] of REEDS) { const x = R(c * TS + 8 - cx), y = R(r * TS - cy); if (x < -20 || x > VW + 20) continue; if (c % 3 === 0) HNE.cattail(g, x, y, h, time); else HNE.reed(g, x, y, h, c, time); }
+  }
   W.drawOver = (g, cx, cy, time) => {
     if (!W.on()) return; const P = ctx.P();
     /* THE POTS: in the hand, set down, in flight - and the smoke a carried one throws round you (its reach drawn: the rule's state) */
@@ -194,6 +233,7 @@ export function makeNestHands(ctx) {
     for (const c of clouds) { HNP.cloud(g, c.x - cx, c.y - cy, c.r, Math.min(1, c.t / 1.2), time); }
     if (near && ctx.text) ctx.text('E: A SMOKE POT', R(near.x - cx), R(near.y - cy) - 30, SMOKE.col, 'center');
     if (arc) CT.drawArc(g, arc, cx, cy, time, arc.land && arc.land.hit ? '#8fd160' : '#c8ccd4');
+    dressOver(g, cx, cy, time, ctx.VW ? ctx.VW() : 640);   /* (claude/hornetsnest2) the marsh's lily pads and its mist, over the water */
     void P;
   };
   W.drawSwarm = (g, e, cx, cy, time) => drawSwarm(g, e, cx, cy, time);
