@@ -6,7 +6,7 @@ export const PLATE_SPOTS = {
   "marsh": [-7, 8, 70, 10],
   "stockade": [-32, 10, 58, 10],
   "burning": [-90, -32, 100, 10],
-  "spore": [-74, -4, 64, 10],
+  "spore": [12, -22, 64, 10],
   "rootway": [10, 2, 52, 10],
   "kings": [-42, -32, 64, 10],
   "underleaf": [-54, 8, 64, 10],

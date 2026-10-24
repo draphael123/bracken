@@ -89,6 +89,21 @@ try {
   !S.crownFew.info.secret && S.crownFew.info.locked && S.crownFew.up === 'crown' && S.crownFew.right !== 'undercrown' ? ok('undercrown shown but shut at 10%: UP stays on highcrown, RIGHT walks the road on (' + S.crownFew.right + ')') : fail('undercrown at 10%: ' + JSON.stringify(S.crownFew));
   !S.crownMany.info.locked && S.crownMany.up === 'undercrown' && S.crownMany.right === 'undercrown' ? ok('undercrown open at 90%: UP and RIGHT walk onto it') : fail('undercrown at 90%: ' + JSON.stringify(S.crownMany));
   }
+  /* (claude/palisadewood, DANIEL 10-15) THE PALISADE WOOD ON THE ROAD: THE ROOTWAY -> THE PALISADE WOOD -> KINGSWOOD. A save that had Kingswood open keeps it (once: PROG.palisadeRoadMig),
+     and a save that already CLEARED Kingswood finds THE PALISADE WOOD UNLOCKED as an extra - never a new requirement */
+  const PWS = await pg.evalp(`(async()=>{ const { LEVELS } = await import('/src/level.js'); BK.manualSimulation = true; const out = {};
+    const go = (id, key) => { BK.mapLook(id); BK.state = 'map'; BK.step(2); BK.press(key); for (let i = 0; i < 120; i++) BK.step(1); const n = BK.mapNodes(); return n.ids[n.node]; };
+    const info = id => { const n = BK.mapNodes(), i = n.ids.indexOf(id); return { secret: n.secret[i], locked: n.locked[i] }; };
+    const road = upto => { BK.reset({ fresh: true }); for (const l of LEVELS) delete BKT.PROG[l.id]; for (const l of LEVELS) { if (l.id === upto) break; if (!['burning', 'church', 'unburied', 'harbor', 'undercrown', 'palisadewood', 'kings'].includes(l.id)) BKT.PROG[l.id] = { cleared: true, medal: 1, best: 400 }; } };
+    road('kings'); BKT.PROG.rootway = { cleared: true, medal: 1, best: 400 }; BKT.PROG.palisadeRoadMig = 1; delete BKT.PROG.kingsOpen; out.newRoad = { pal: info('palisadewood'), kings: info('kings'), next: go('rootway', 'up') === 'palisadewood' || go('rootway', 'left') === 'palisadewood' || go('rootway', 'right') === 'palisadewood' };
+    const K = 'bracken.progress.4', raw = JSON.parse(JSON.stringify(BKT.PROG)); delete raw.palisadeRoadMig; delete raw.kingsOpen; delete raw.palisadewood; raw.kings = { cleared: true, medal: 1, best: 400 };
+    localStorage.setItem(K, JSON.stringify(raw)); BK.loadSlot(4); out.oldClear = { open: !!BKT.PROG.kingsOpen, kings: info('kings'), pal: info('palisadewood'), palCleared: !!(BKT.PROG.palisadewood && BKT.PROG.palisadewood.cleared) };
+    const raw2 = JSON.parse(JSON.stringify(raw)); delete raw2.kings; localStorage.setItem(K, JSON.stringify(raw2)); BK.loadSlot(4); out.oldRoot = { open: !!BKT.PROG.kingsOpen, kings: info('kings') };
+    localStorage.setItem(K, JSON.stringify({ ...raw2, palisadeRoadMig: 1 })); BK.loadSlot(4); out.fresh = { open: !!BKT.PROG.kingsOpen, kings: info('kings') }; localStorage.removeItem(K);
+    return out; })()`, 300000);
+  !PWS.newRoad.pal.locked && PWS.newRoad.kings.locked && PWS.newRoad.next ? ok('the Rootway cleared: the road walks on to THE PALISADE WOOD, and KINGSWOOD waits for it') : fail('the palisade on the road: ' + JSON.stringify(PWS.newRoad));
+  PWS.oldClear.open && !PWS.oldClear.kings.locked && !PWS.oldClear.pal.locked && !PWS.oldClear.palCleared ? ok('an old save that cleared KINGSWOOD keeps it, and finds THE PALISADE WOOD UNLOCKED as an extra (not cleared, not required)') : fail('palisade old save (kings cleared): ' + JSON.stringify(PWS.oldClear));
+  PWS.oldRoot.open && !PWS.oldRoot.kings.locked && !PWS.fresh.open && PWS.fresh.kings.locked ? ok('an old save past the Rootway keeps KINGSWOOD open (grandfathered once); a save made on the new road walks the palisade first') : fail('palisade grandfathering: ' + JSON.stringify({ old: PWS.oldRoot, fresh: PWS.fresh }));
   // the gate tree against the nodes
   const C = chainOf(LEVELS.filter(l => !l.hidden || l.secret)); const noNode = LEVELS.filter(l => !ids.includes(l.id) && !(l.id in SHELVED) && !l.locked && !/^(shop|shopCrag|shopWell)$/.test(l.id)).map(l => l.id);
   const stray = noNode.filter(id => !lv[id].hidden || lv[id].secret);
