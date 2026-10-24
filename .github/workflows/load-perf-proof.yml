@@ -32,6 +32,10 @@ jobs:
     if: inputs.mode == 'tile-warm'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [buriedcity, skyroad, rootway, redgorge, sealedpyramid, underwell, undercrown]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -39,10 +43,13 @@ jobs:
           node-version: '24.11.1'
       - run: node tools/level-tile-cache-selftest.mjs
       - run: node tools/tile-cache-warm-cost.mjs
+      - run: node tools/same-level-load-proof.mjs --only="$LEVEL"
+        env:
+          LEVEL: ${{ matrix.level }}
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tile-warm-cost
+          name: tile-warm-cost-${{ matrix.level }}
           path: gate-data/
   captain-boot:
     if: inputs.mode == 'captain-boot'
