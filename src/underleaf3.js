@@ -212,7 +212,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   // ================= 6. HER COTTAGE (427-477): THE GRANDMOTHER 3 =================
   ground(427, 428, 22); ground(429, 431, 26); ground(432, 477, G);
   block(477, 477, 0, H - 1);
-  jar(435, 29, 'blue'); jar(471, 29, 'blue');                                              /* her shelves either side of the room: the opening's jars */
+  jar(435, 29, 'blue'); jar(453, 29, 'blue'); jar(471, 29, 'blue');                                              /* her shelves either side of the room: the opening's jars */
   ent('grandmother', 460, 29);
   ent('gate', 476, 29);
   coins([440, 28], [446, 28], [466, 28]);

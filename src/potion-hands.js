@@ -26,10 +26,10 @@
 import * as CTW from './carry-throw.js';
 
 export const JAR = { brew: 0.8, burnR: 40, bedR: 30, snare: 1.6, snareR: 28, hover: 2.4, rise: 92, riseMax: 7 * 16, foeFloat: 2.6, foeRise: 34, bubbleR: 13, fireLife: 2.6, hedgeBurn: 0.45, coatR: 34 };
-export const GM = { hp: 640, ward: 0.4, openMul: 2, float: 3.2, purse: 0.2, after: 3, p2: 0.55, brood: 3, brood2: 5, broodCd: 8, broodCd2: 6.5, broodHp: 1,
-  walk: 34, walk2: 42, sweepAt: 48, sweepCd: 2.6, sweepTell: 0.55, fireCd: 6.2, fireCd2: 4.8, fireTell: 0.85, fireN: 2, fireN2: 3, fireR: 20, fireFly: 0.9,
-  hurlCd: 5.6, hurlTell: 0.6, hurlFly: 0.8, patchR: 22, patchLife: 2.8, patchTick: 0.7, stirCd: 8.5, stirTell: 1.0, stirN: 3, broodTell: 1.0, kick: 1.2,
-  dmg: { sweep: 30, fire: 24, thorns: 9, burn: 9, gout: 22 } };
+export const GM = { hp: 980, ward: 0.4, openMul: 2, float: 3.2, purse: 0.15, after: 3, p2: 0.55, brood: 3, brood2: 4, broodCd: 11, broodCd2: 9, broodHp: 1,
+  walk: 34, walk2: 42, sweepAt: 48, sweepCd: 2.6, sweepTell: 0.55, fireCd: 8, fireCd2: 6.5, fireTell: 0.85, fireN: 2, fireN2: 3, fireR: 20, fireFly: 0.9,
+  farAt: 110, farK: 0.9, hurlCd: 7, hurlTell: 0.6, hurlFly: 0.8, patchR: 22, patchLife: 2.8, patchTick: 0.7, stirCd: 8.5, stirTell: 1.0, stirN: 3, broodTell: 1.0, kick: 1.2,
+  dmg: { sweep: 22, fire: 20, thorns: 9, burn: 9, gout: 22 } };
 export const PO_SAY = {
   take: 'INTERACT TAKES HER JAR. ATTACK THROWS IT. UP LOBS, DOWN AT YOUR FEET.',
   ladder: 'THE VINE GROWS: A LADDER', bridge: 'THE VINE GROWS: A BRIDGE', snare: 'THE VINES HOLD THEM',
@@ -236,10 +236,12 @@ export function makePotionHands(ctx) {
     if (!e.gm3) granInit(e);
     const P = hero(), d = P.x - e.x, ad = Math.abs(d), ph = e.phase;
     e.modeT -= dt; e.anim = (e.anim || 0) + dt; e.ward = Math.max(0, (e.ward || 0) - dt);
-    e.sweepT -= dt; e.fireT -= dt; e.hurlT -= dt; e.stirT -= dt; if (!broodUp(e)) e.broodT -= dt;
+    e.sweepT -= dt; e.fireT -= dt; e.hurlT -= dt; e.stirT -= dt;
+    if (ad > GM.farAt && e.mode !== 'floated') { e.fireT -= dt * GM.farK; e.hurlT -= dt * GM.farK * 0.6; }   /* a hero who keeps his distance gets her lantern sooner: she does not walk to you, she casts at you */ if (!broodUp(e)) e.broodT -= dt;
     if (e.mode !== 'floated') { e.vy = Math.min(300, (e.vy || 0) + 1000 * dt); }
     if (e.wasBrood && !broodUp(e) && e.mode !== 'sleep') { e.wasBrood = false; e.broodT = ph >= 2 ? GM.broodCd2 : GM.broodCd; say(e.x, e.y - e.h - 18, 'bare', '#8fd160'); }
     if (broodUp(e)) e.wasBrood = true;
+    if ((e.burn || 0) > 0 && (broodUp(e) || e.ward > 0)) { e.burn = 0; ctx.sfx.hiss && ctx.sfx.hiss(); if (once('smother')) ctx.word(e.x, e.y - e.h - 12, 'WARDED', '#dfe8ff'); }   /* HER WARD SMOTHERS A FIRE too (B3): a burn bites her only bare */
     let want = 0;
     if (ph === 1 && e.hp <= e.maxHp * GM.p2 && e.mode === 'walk') { e.phase = 2; e.mode = 'kick'; e.modeT = GM.kick; e.vx = 0; ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); say(e.x, e.y - e.h - 24, 'stir', '#ff9a5c'); e.broodT = 0.4; e.stirT = 2.5; }
     switch (e.mode) {
@@ -255,7 +257,7 @@ export function makePotionHands(ctx) {
         else if (ph >= 2 && e.stirT <= 0) { e.stirT = GM.stirCd; e.mode = 'stirTell'; e.modeT = GM.stirTell; ctx.number(e.x, e.y - e.h - 16, '!!', '#ff6b6b'); ctx.sfx.charge();
           const sp = (A().x1 - A().x0) / (GM.stirN * 2), off = (e.called % 2) * sp; for (let i = 0; i < GM.stirN; i++) mark(A().x0 + off + sp * (2 * i + 0.5), 'gout', GM.stirTell + 0.7, 22); }
         else if (e.fireT <= 0) { e.fireT = ph >= 2 ? GM.fireCd2 : GM.fireCd; e.mode = 'fireballTell'; e.modeT = GM.fireTell; ctx.number(e.x, e.y - e.h - 16, '!!', '#ff6b6b'); ctx.sfx.charge();
-          const n = ph >= 2 ? GM.fireN2 : GM.fireN; e.fireAt = []; for (let i = 0; i < n; i++) { const x = clampX(P.x + (i - (n - 1) / 2) * 44 + (n % 2 ? 0 : 0)); e.fireAt.push(x); mark(x, 'fire', GM.fireTell + GM.fireFly + 0.1); } }
+          const n = ph >= 2 ? GM.fireN2 : GM.fireN; e.fireAt = []; for (let i = 0; i < n; i++) { const x = clampX(P.x + (i - (n - 1) / 2) * 60); e.fireAt.push(x); mark(x, 'fire', GM.fireTell + GM.fireFly + 0.1); } }
         else if (e.hurlT <= 0) { e.hurlT = GM.hurlCd - (ph - 1) * 0.8; e.mode = 'jarTell'; e.modeT = GM.hurlTell; e.hurlCol = (e.hurls = (e.hurls || 0) + 1) % 2 ? 'green' : 'red'; ctx.number(e.x, e.y - e.h - 16, '!!', '#ff6b6b'); ctx.sfx.snort && ctx.sfx.snort();
           e.hurlX = clampX(P.x); mark(e.hurlX, 'pot', GM.hurlTell + GM.hurlFly + 0.1, GM.patchR).col = e.hurlCol; }
         break; }
@@ -277,7 +279,8 @@ export function makePotionHands(ctx) {
           const cx0 = cauldronX(); for (const m of marks.filter(q => q.kind === 'gout')) { const sy = A().floor - 40, t = 0.6, g = 600; balls.push({ x: cx0, y: sy, vx: (m.x - cx0) / t, vy: (A().floor - 4 - sy) / t - 0.5 * g * t, g, tx: m.x, life: t + 0.4, who: e, gout: true }); } } break;
       case 'stir': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.4; } break;
       case 'kick': want = 0; if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.3; } break;
-      case 'floated': { want = 0; e.vx = 0; e.vy = 0; const k = Math.min(1, (e.floatLen - e.modeT) * 3); e.y = e.floatY0 - 22 * k; e.stagger = 0;   /* STAGGER MEANS STILL (B4): she hangs where she was lifted */
+      case 'floated': { want = 0; e.vx = 0; e.vy = 0; e.burn = 0;   /* the bubble keeps the fire off her: the opening is the purse, no more */
+        const k = Math.min(1, (e.floatLen - e.modeT) * 3); e.y = e.floatY0 - 8 * k; e.stagger = 0;   /* STAGGER MEANS STILL (B4): she hangs where she was lifted */
         if (e.modeT <= 0) { e.y = e.floatY0; granWard(e); ctx.shake(3); ctx.dust && ctx.dust(e.x, e.y, 8); } return; }
     }
     if (e.stagger > 0) { want = 0; e.stagger -= dt; }

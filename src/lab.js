@@ -2449,7 +2449,8 @@ async function runbossLab(BK, opts) {
       else if (boss.t === 'grandmother' && boss.gm3 && BK.potions && BK.potions() && !['sleep', 'wake'].includes(boss.mode)) {
         const PH = BK.potions(), mk = PH.marks().find(m => Math.abs(m.x - P.x) < m.r + 9), gp = PH.gpatches().find(q => Math.abs(q.x - P.x) < 28);
         const br = PH.broodOf(boss).sort((a, b) => Math.abs(a.x - P.x) - Math.abs(b.x - P.x))[0], c = P.carry && P.carry.t === 'jar' ? P.carry.col : null;
-        if (mk || gp) { const z = mk || gp, rr = (mk ? mk.r : 22) + 18, sd = P.x >= z.x ? 1 : -1; let gx = z.x + sd * rr; if (gx < A.x0 + 16 || gx > A.x1 - 16) gx = z.x - sd * rr; goal = gx; strike = false; }
+        if (mk || gp) { const bad = x => PH.marks().some(m => Math.abs(m.x - x) < m.r + 10) || PH.gpatches().some(q => Math.abs(q.x - x) < 30);   /* the nearest floor no mark covers */
+          let gx = P.x; for (let dd = 8; dd < 260; dd += 8) { if (P.x + dd < A.x1 - 16 && !bad(P.x + dd)) { gx = P.x + dd; break; } if (P.x - dd > A.x0 + 16 && !bad(P.x - dd)) { gx = P.x - dd; break; } } goal = gx; strike = false; }
         else if (boss.mode === 'floated') { goal = boss.x; strike = true; }
         else if (br) { goal = br.x; strike = false; if (Math.abs(br.x - P.x) < LAB_REACH[h] + 8 && Math.abs(br.y - P.y) < 22 && P.atk < 0) { P.face = Math.sign(br.x - P.x) || P.face; BK.press('atk'); swings++; } }
         else if (boss.ward > 0) { goal = boss.x; strike = true; }
