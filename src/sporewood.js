@@ -256,7 +256,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(381, 386, 6, 8); spring(380, 9); ent('silver', 385, 8); coins([382, 8], [384, 8]); glow(383, 8);   /* the knot's cellar: the third silver; a bounce cap under the door to spring back out */
   /* her approach: gill pods, skulls, her roots across the way; the last fight before her door - a BRUTE (the weighty one) and a sporeling */
   for (const [x, k, v] of [[382, 'sporePod', 1], [389, 'skullPile', 0], [393, 'rootDecor', 2], [398, 'sporePod', 0], [402, 'skullPile', 1]]) deco(x, 4, k, v);
-  foe('brute', 389, 4, 'knotDoor', { face: -1 }); foe('sporeling', 387, 4, 'knotDoor', { face: -1 }); foe('shield', 385, 4, 'knotDoor', { face: -1 }); foe('brute', 400, 4, 'knotDoor', { face: -1 }); drip(391, 2.9); foe('shield', 402, 4, 'knotDoor', { face: -1 });
+  foe('brute', 400, 4, 'knotDoor', { face: -1 }); foe('shield', 402, 4, 'knotDoor', { face: -1 });
   /* HER APPROACH'S FALL (claude/sporewood2tune): the last stretch before her door breaks in a REAL GAP, seven wide, no floor, a pillar of THREE bounce caps in it (integ117: three, not two - the paladin's thrown carry fell 23 px short of the far lip over a two-cap pillar) - hop on, be thrown over. A heavy waits where it throws you. Told: the post each side, the sign */
   air(392, 398, 5, 42); ground(394, 396, 5); spring(394, 5); spring(395, 5); spring(396, 5); deco(391, 4, 'warnPost', 0); deco(399, 4, 'warnPost', 1);
   sign(388, 4, 'THE ROOT BREAKS HERE. HOP ONTO THE BOUNCE CAPS: THEY THROW YOU OVER. MISS AND YOU FALL.');
