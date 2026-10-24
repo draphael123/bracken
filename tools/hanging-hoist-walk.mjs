@@ -6,7 +6,10 @@
                hero must be able to step off onto it
      MILL      stand on the deck and cut the peg - the sack must drop in, the deck rise, and the hero step off onto the ledge
      NEST      carry the near sack in, fetch the far one off the springy bough's ledge, carry it back - the deck must wait for two
-     CROWN     carry a stone in and ride up level with the Reeve's middle perch
+     ROPES     (claude/hanging3, CUT IT AND RIDE IT) with real keys: cut the ropewalk bridge's knot and walk across; stand on the trunk
+               counterweight, cut its knot and ride up to the upper boughs; sit on the pulley seat, cut it and ride the line down; the exam -
+               ride the stair's counterweight up, cut the bridge's high knot from the deck, drop onto the bridge; and the crown's deck up to
+               her perch height (the crown hoist is gone: the decks stand in its place)
    Each hoist must also TIP and come home once the hero is off it. Not in the suite: it is a minute of the page.
 
    A LIVE REPORT (Daniel, 2026-09-28, screenshot in GOD MODE): "this platform does not work in the hanging village" - the ropewalk or
@@ -64,12 +67,24 @@ try {
       hold('right', 900, () => P().x > 62 * TS + 8 && P().ground && Math.floor(P().y / TS) === 52); hop('right'); hold('right', 240, () => m.hs.load >= 2);
       note('nest: two sacks in, and it rises with the hero on it', m.hs.load >= 2 && P().onMover === m, at(m));
       until(() => m.hs.state === 'top'); BK.sim(10); hold('right', 60); note('nest: rode up and stepped onto the nest silver', Math.floor(P().y / TS) === 44 && P().x > 65 * TS, at(m));
-      /* CROWN: a stone in, and up level with the middle perch; the well at 56, west of the deck */
-      fresh(); m = H('crown'); BK.tp(65, 19); BK.sim(10); for (const e of BK.enemies()) if (e.t === 'owl') { e.mode = 'sleep'; }
-      take(); hold('left', 300, () => P().x < 60 * TS); hop('left'); hold('left', 60, () => m.hs.load > 0);
-      note('crown: stood on the deck and a stone went in the basket', m.hs.load >= 1 && P().onMover === m, at(m));
-      until(() => m.hs.state === 'top'); BK.sim(10); note('crown: rode up level with the middle perch', P().onMover === m && m.y === m.y1, at(m));
-      hold('left', 40); note('crown: stepped onto the perch', P().ground && Math.floor(P().y / TS) === 12 && !P().onMover, at(m));
+      /* THE ROPES (claude/hanging3): a blow on a red-and-gold knot, real keys */
+      const R = id => (BK.hvr().ropes.find(q => q.id === id) || {}), D = id => BK.movers().find(q => q.rope === id), swing = dir => { clear(); P().face = dir; k[dir > 0 ? 'right' : 'left'] = true; BK.sim(1); clear(); BK.press('atk'); BK.sim(24); };
+      const board = d => { P().x = d.x + 16; P().y = d.y; P().vy = 0; P().onMover = d; BK.sim(4); };
+      fresh(); BK.tp(38, 93); BK.sim(10); hold('left', 40, () => P().x < 37 * TS + 4); swing(-1); BK.sim(40);
+      note('ropes: a blow on the ropewalk bridge knot swings it down', R('bridge-rope').state === 'down', { state: R('bridge-rope').state, x: +(P().x / TS).toFixed(1) });
+      hold('left', 300, () => P().x < 26 * TS); note('ropes: walked across the bridge', P().x < 27 * TS && Math.floor(P().y / TS) === 94, { x: +(P().x / TS).toFixed(1), row: Math.floor(P().y / TS) });
+      fresh(); m = D('cw-trunk'); board(m); swing(1); note('ropes: standing on the trunk counterweight, a blow on its knot sends it up', m.rs === 'rise' || m.rs === 'top', { rs: m.rs, onDeck: P().onMover === m });
+      until(() => m.rs === 'top', 400); BK.sim(10); note('ropes: the deck reached the upper boughs with the hero on it', m.y === m.y1 && P().onMover === m, { rs: m.rs, y: m.y });
+      hold('right', 40); note('ropes: stepped off onto the upper boughs', P().ground && Math.floor(P().y / TS) === 52 && !P().onMover, { row: Math.floor(P().y / TS), x: +(P().x / TS).toFixed(1) });
+      until(() => m.rs === 'tied', 900); note('ropes: the empty deck came back down and was tied again', m.rs === 'tied' && m.y === m.y0, { rs: m.rs });
+      fresh(); m = D('line-rook'); board(m); swing(-1); note('ropes: on the pulley seat, a blow on its knot sends it down the line', m.rs === 'run' || m.rs === 'end', { rs: m.rs });
+      until(() => m.rs === 'end', 600); note('ropes: rode the line to its far end', m.rs === 'end' && P().onMover === m, { rs: m.rs, x: +(P().x / TS).toFixed(1) });
+      hold('right', 50); note('ropes: stepped off onto the far ledge', P().ground && !P().onMover && P().x > 75 * TS, { x: +(P().x / TS).toFixed(1), row: Math.floor(P().y / TS) });
+      fresh(); m = D('cw-stair'); board(m); swing(1); until(() => m.rs === 'top', 400); BK.sim(6); note('ropes: the exam counterweight rode up to the bridge high knot', m.rs === 'top' && P().onMover === m, { rs: m.rs });
+      swing(-1); BK.sim(40); note('ropes: from the deck a blow cut the bridge high knot and it swung down', R('bridge-stair').state === 'down', { state: R('bridge-stair').state });
+      hold('left', 120, () => P().ground && !P().onMover && P().x < 57 * TS); note('ropes: dropped off the deck onto the bridge', P().ground && Math.floor(P().y / TS) === 38 && P().x < 58 * TS, { x: +(P().x / TS).toFixed(1), row: Math.floor(P().y / TS) });
+      fresh(); for (const e of BK.enemies()) if (e.t === 'owl') e.mode = 'sleep'; m = D('cw-crown-w'); board(m); swing(-1); until(() => m.rs === 'top', 500); BK.sim(6);
+      note('ropes: the crown deck took the hero up level with her west perch', m.rs === 'top' && P().onMover === m && Math.abs(m.y - 9 * TS) < 2, { rs: m.rs, y: m.y });
       clear(); return out; })()`, 600000);
     for (const x of r) { if (!x.ok) bad++; console.log((x.ok ? ' ok  ' : 'FAIL ') + h.padEnd(8) + x.what + (x.extra ? '  ' + JSON.stringify(x.extra) : '')); }
   }

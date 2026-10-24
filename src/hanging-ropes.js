@@ -185,8 +185,11 @@ export function makeHangingRopes(ctx) {
       else if (d.kind === 'bridge') { const [b0, b1, row] = d.span, Lb = (b1 - b0 + 1) * TS, hx = d.hinge > 0 ? (b1 + 1) * TS : b0 * TS, hy = row * TS; if (!vis(Math.min(hx, kp.x) - Lb, hy - Lb, Math.max(hx, kp.x) + Lb, hy + 16)) continue;
         if (s.state !== 'down') { const th = s.a * Math.PI / 2, ux = -d.hinge * Math.sin(th), uy = -Math.cos(th);
           if (s.state === 'tied') { ghostRect(g, b0 * TS - cx, hy - cy, Lb, 6, time); ghostArrow(g, hx - cx - d.hinge * 4, hy - Lb * 0.7 - cy, hx - d.hinge * Lb * 0.7 - cx, hy - 6 - cy, time); }
-          for (let i = 0; i < Lb; i += 4) { const px0 = hx + ux * (i + 2) - cx, py0 = hy + uy * (i + 2) - cy; rect(g, OUT, px0 - 3, py0 - 3, 6, 6); rect(g, (i >> 2) % 2 ? PLANK.top : PLANK.mid, px0 - 2, py0 - 2, 4, 4); }
-          const tx = hx + ux * Lb, ty = hy + uy * Lb; ropeLine(g, hx - cx, hy - cy, tx - cx, ty - cy);
+          /* THE BRIDGE STANDING: slats across two side ropes, hinged at the lip - planks perpendicular to its length, so it reads as a bridge on end, not a ladder */
+          const px = -uy, py = ux, sx = hx + px * 4 - cx, sy = hy + py * 4 - cy; g.lineCap = 'butt';
+          for (let i = 2; i < Lb; i += 5) { const mx = hx + ux * i - cx, my = hy + uy * i - cy; g.lineWidth = 4; g.strokeStyle = OUT; g.beginPath(); g.moveTo(R(mx - px * 6), R(my - py * 6)); g.lineTo(R(mx + px * 6), R(my + py * 6)); g.stroke();
+            g.lineWidth = 2; g.strokeStyle = (i / 5 | 0) % 2 ? PLANK.top : '#c99e62'; g.beginPath(); g.moveTo(R(mx - px * 5), R(my - py * 5)); g.lineTo(R(mx + px * 5), R(my + py * 5)); g.stroke(); }
+          g.lineWidth = 1; const tx = hx + ux * Lb, ty = hy + uy * Lb; for (const k of [-6, 6]) ropeLine(g, hx + px * k - cx, hy + py * k - cy, tx + px * k - cx, ty + py * k - cy);
           if (s.state === 'tied') ropeLine(g, tx - cx, ty - cy, kp.x - cx, kp.y - 12 - cy, false); }
         else { for (let x = b0; x <= b1; x++) planks(g, x * TS - cx, hy - cy, TS, x); ropeLine(g, b0 * TS - cx, hy - 6 - cy, (b1 + 1) * TS - cx, hy - 6 - cy, false); for (const x of [b0 * TS, (b1 + 1) * TS - 1]) rect(g, OUT, x - cx, hy - 9 - cy, 2, 9); }
         knot(g, kp.x - cx, kp.y - cy, hot, time, d.high); }
@@ -196,6 +199,7 @@ export function makeHangingRopes(ctx) {
         g.fillStyle = OUT; g.beginPath(); g.arc(R(wx - cx), R(wy - cy), 7, 0, 7); g.fill(); g.fillStyle = '#7a5a34'; g.beginPath(); g.arc(R(wx - cx), R(wy - cy), 5, 0, 7); g.fill(); rect(g, '#c9a870', wx - cx - 1, wy - cy - 1, 2, 2);
         rect(g, '#7a5a34', wx - cx - 1, wy - cy - 30, 2, 24); ropeLine(g, m.x + 16 - cx, wy - cy - 6, bx - cx, wy - cy - 6);
         sandbag(g, bx - cx, by - cy); deck(g, m, cx, cy);
+        if (s.fray > 0) { g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 30); g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(R(m.x + 16 - cx), R(m.y - 20 - cy), 10, 0, 7); g.stroke(); g.globalAlpha = 1; rect(g, '#ff6b6b', m.x + 15 - cx, m.y - 30 - cy, 3, 2); }   /* (her beak on the deck's rope) */
         if (m.rs === 'tied') { ropeLine(g, m.x + (kp.x > m.x ? 30 : 2) - cx, m.y + 4 - cy, kp.x - cx, kp.y - 10 - cy, false); ghostRect(g, m.x - cx, m.y1 - cy, 32, 6, time); ghostArrow(g, m.x + 16 - cx, m.y - 20 - cy, m.x + 16 - cx, m.y1 + 10 - cy, time); }
         knot(g, kp.x - cx, kp.y - cy, hot && m.rs === 'tied', time, d.high); }
       else if (d.kind === 'line') { const m = moverOf(d.id); if (!m) continue; const ax = d.a[0] * TS + 16, ay = (d.a[1] + 1) * TS - 22, bx = d.b[0] * TS + 16, by = (d.b[1] + 1) * TS - 22; if (!vis(Math.min(ax, bx) - 20, Math.min(ay, by) - 30, Math.max(ax, bx) + 20, Math.max(ay, by) + 30)) continue;
@@ -212,7 +216,8 @@ export function makeHangingRopes(ctx) {
         if (s.state !== 'tied') planks(g, x0 - cx, y - cy - (s.state === 'down' ? 5 : 0), x1 - x0, d.x0);
         if (kp) { const k = s.state === 'tied'; if (k) ropeLine(g, x1 - 4 - cx, top - cy, kp.x - cx, kp.y - 12 - cy, false); knot(g, kp.x - cx, kp.y - cy, hot, time, false);
           if (k && ctx.owlOn && ctx.owlOn(d.k)) { g.globalAlpha = 0.5 + 0.3 * Math.sin(time * 10); ghostArrow(g, (x0 + x1) / 2 - cx, y + 8 - cy, (x0 + x1) / 2 - cx, d.floor * TS - 6 - cy, time); g.globalAlpha = 1; } }
-        if (s.fray > 0) { g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 30); g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(R((x0 + x1) / 2 - cx), R(top + 6 - cy), 10, 0, 7); g.stroke(); g.globalAlpha = 1; } }
+        if (s.fray > 0) { g.globalAlpha = 0.5 + 0.5 * Math.sin(time * 30); g.strokeStyle = '#ff6b6b'; g.beginPath(); g.arc(R((x0 + x1) / 2 - cx), R(y - 12 - cy), 10, 0, 7); g.stroke(); g.globalAlpha = 1;
+          for (const rx of [x0 + 3, x1 - 4]) { rect(g, '#ff6b6b', rx - cx - 1, y - 20 - cy + R(Math.sin(time * 40) * 1), 3, 2); } } }   /* (her beak on it: the fray, red, where she saws) */
     }
   };
   return H;

@@ -1817,7 +1817,7 @@ function hangingVillage() {
      bough on a rope run to a red-and-gold knot; its landing is drawn on the road in gold before you touch it. The shield comes down the road to
      you under it: cut the knot as he passes and the net takes him. Miss, and you fight him as before - and the net lies there as a step. */
   const ropes = [];
-  ropes.push({ kind: 'net', id: 'net-roots', x: 90, w: 2, hang: 99, land: 107, ring: [91, 98], knot: [86, 107] });
+  ropes.push({ kind: 'net', id: 'net-roots', x: 90, w: 2, hang: 104, land: 107, ring: [91, 98], knot: [86, 107] });
   ent('sign', 83, 107, { text: 'A RED AND GOLD KNOT IS A ROPE YOU CAN CUT. CUT THIS ONE AS HE COMES UNDER THE NET.' });
   // ---- THE WEB HOLLOW: under the roots. Everything down here is webbed, and something made it. ----
   ent('doorway', 66, 107, { id: 'hollow-out', to: 'hollow-in', kind: 'goblin' });
@@ -1881,7 +1881,7 @@ function hangingVillage() {
   ent('door', 32, 79, { kind: 'cottage', at: 32 }); ent('folk', 35, 79, { door: 32, alt: true }); ent('deco', 40, 79, { kind: 'well' });
   ent('door', 50, 79, { at: 50 }); ent('folk', 47, 79, { door: 50 }); ent('deco', 56, 79, { kind: 'fence', v: 0 }); ent('door', 64, 79, { at: 64 }); ent('folk', 67, 79, { door: 64 });
   ent('squirrel', 74, 79, { face: -1 }); ent('snuffer', 62, 79, { face: -1 }); ent('shield', 92, 79, { face: -1 });
-  ropes.push({ kind: 'net', id: 'net-market', x: 60, w: 2, hang: 71, land: 79, ring: [61, 70], knot: [58, 79] });   /* (claude/hanging3) THE NET, TESTED: the snuffer walks under it to put out the street lamp - no sign this time */
+  ropes.push({ kind: 'net', id: 'net-market', x: 61, w: 2, hang: 76, land: 79, ring: [62, 70], knot: [58, 79] });   /* (claude/hanging3) THE NET, TESTED: the snuffer walks under it to put out the street lamp - no sign this time */
   plat(58, 76, 3); failing(78, 75, 3); coins([59, 75], [79, 74], [18, 77], [38, 77], [70, 77], [88, 77], [96, 77]);
   movers.push({ kind: 'swing', px: 44 * TS, py: 70 * TS, arm: 70, x: 0, y: 0, w: 32, h: 8, period: 3.0, phase: 0 }); plat(40, 73, 2); plat(48, 72, 2); ent('spit', 49, 71, { face: -1 }); coins([44, 71]); // a rope swing over the well to a spitter's ledge
   ent('check', 96, 79); ent('check', 43, 79);   /* mid-market: the ropewalk hoist to the market's east end was 103 walked tiles (B6 is a hundred) */
