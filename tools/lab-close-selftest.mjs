@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {closeLabResources} from './lab-close.mjs';
+let release;const pending=new Promise(r=>release=r),events=[];
+const closing=closeLabResources(async()=>{events.push('browser-start');await pending;events.push('browser-closed');},async()=>events.push('server-closed'));
+await Promise.resolve();assert.deepEqual(events,['browser-start'],'server must stay available until the browser is closed');
+release();await closing;assert.deepEqual(events,['browser-start','browser-closed','server-closed']);
+let serverClosed=false;
+await assert.rejects(closeLabResources(async()=>{throw Error('browser fault');},async()=>{serverClosed=true;}),/browser fault/);
+assert(serverClosed,'server cleanup must still run when browser cleanup fails');
+await assert.rejects(closeLabResources(async()=>{},async()=>{throw Error('server fault');}),/server fault/);
+console.log('PASS ordered lab shutdown: server survives browser disposal; both cleanup errors remain observable');
