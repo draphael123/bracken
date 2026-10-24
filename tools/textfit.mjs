@@ -37,7 +37,7 @@ import { FIRST as CROUCH_FIRST } from '../src/crouch-hint.js';
 
 const OUT = process.env.OUT || join(ROOT, 'audits', 'readability');
 const args = process.argv.slice(2), strict = args.includes('--strict');
-const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'party', 'bossjump', 'bossselect', 'menu', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
+const SCOPES = ['hints', 'talk', 'bestiary', 'store', 'tree', 'pick', 'trial', 'erase', 'opening', 'press', 'title', 'mapcard', 'death', 'results', 'card', 'levelcard', 'slots', 'ending', 'practice', 'party', 'bossjump', 'bossselect', 'menu', 'secrets', 'settings', 'soundtest', 'credits', 'whatsnew', 'hud', 'worldplates', 'plates', 'bossfix', 'boss'];   /* the order they run in */
 const SCOPE_TIMEOUT_S = +process.env.TEXTFIT_SCOPE_TIMEOUT || 480;
 const only = (args.find(a => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
@@ -274,6 +274,20 @@ async function pageTextFit(input) {
     /* THE PAUSE MAP: its title, its legend and its controls line, on a wood with every kind of mark (Stormhold: gates, keys, doors) */
     for (const id of ['wood', 'storm']) { const li = lvm.LEVELS.findIndex(l => l.id === id); if (li < 0) continue; toPlay(li, 'knight'); frame('menu map ' + id, () => { BK.state = 'menu'; BK.ui.mapOpen(); }, { settle: 40 }); }
     BK.ui.menuKind = 'pause'; }
+  /* THE SECRETS SYSTEM (claude/secrets): the journal (fresh / one banner / open), the pickup toast and the last-piece toast over a wood, the map with the dim ? and its progress line and with the reveal, and the hero pick + hero card with the FOUND ON A HIDDEN PATH line */
+  if (want('secrets')) { const pr = BKT.PROG, keep = JSON.stringify(pr), lvx = lvm.LEVELS, ix = id => lvx.findIndex(l => l.id === id);
+    const wipeS = () => { for (const k of ['lostBanners', 'fieldOpen', 'fieldPathDrawn', 'votive', 'churchOpen', 'secretTold', 'secretNew']) delete pr[k]; pr.bannerMig = 1; pr.churchMig = 1; for (const id of ['fair', 'fields', 'burial', 'witchlight', 'waymeet']) pr[id] = { cleared: true, medal: 1, best: 400 }; };
+    const states = { fresh: () => {}, one: () => { pr.lostBanners = { fields: 1 }; pr.votive = { v1: 1 }; }, two: () => { pr.lostBanners = { fields: 1, burial: 1 }; pr.votive = { v1: 1, v2: 1 }; }, open: () => { pr.lostBanners = { fields: 1, burial: 1, witchlight: 1 }; pr.churchOpen = 1; pr.votive = { v1: 1, v2: 1, v3: 1 }; pr.secretTold = { unburied: 1, church: 1 }; } };
+    for (const [st, set] of Object.entries(states)) { wipeS(); set(); toPlay(0, 'knight'); BK.state = 'menu';
+      frame('secrets journal ' + st, () => { BK.state = 'menu'; BK.ui.menuKind = 'secrets'; }, { settle: 20 }); BK.ui.menuKind = 'pause';
+      frame('secrets pick ' + st, () => { BK.state = 'heropick'; BK.ui.heroPickI = 8; BK.ui.heroPickStage = 'pick'; }, { settle: 20 }); frame('secrets pick paladin ' + st, () => { BK.state = 'heropick'; BK.ui.heroPickI = 6; BK.ui.heroPickStage = 'pick'; }, { settle: 20 });
+      for (const h of ['reaper', 'paladin']) { pr.heroes = pr.heroes || {}; pr.heroes[h] = true; BK.setHero(h); frame('secrets herocard ' + h + ' ' + st, () => { BK.state = 'herocard'; }, { settle: 20 }); } BK.setHero('knight');
+      frame('secrets map ' + st, () => { BK.mapLook('witchlight'); BK.state = 'map'; }, { settle: 40 }); frame('secrets map church ' + st, () => { BK.mapLook('church'); BK.state = 'map'; }, { settle: 40 }); }
+    wipeS(); pr.lostBanners = { fields: 1, burial: 1 }; toPlay(ix('witchlight'), 'knight'); BK.sim(4); BK.banners().pickup('witchlight'); frame('secrets toast last', () => { BK.state = 'play'; }, { settle: 30 });
+    wipeS(); toPlay(ix('fields'), 'knight'); BK.sim(4); BK.banners().pickup('fields'); frame('secrets toast piece', () => { BK.state = 'play'; }, { settle: 30 });
+    wipeS(); pr.lostBanners = { fields: 1, burial: 1, witchlight: 1 }; pr.secretNew = ['unburied']; frame('secrets map reveal', () => { BK.mapLook('witchlight'); BK.state = 'map'; }, { settle: 90 });
+    wipeS(); pr.churchOpen = 1; pr.secretNew = ['church']; frame('secrets map reveal church', () => { BK.mapLook('church'); BK.state = 'map'; }, { settle: 90 });
+    Object.keys(pr).forEach(k => delete pr[k]); Object.assign(pr, JSON.parse(keep)); BK.ui.menuKind = 'pause'; await yieldNow(); }
   /* SETTINGS IN TABS, THE CONTROLS CARD, THE REBIND PAGES AND THE CO-OP GUIDE (claude/storeui): every row of every tab selected in turn, the card for every hero, every rebind page with every row, and every guide page */
   if (want('settings')) { toPlay(0, 'knight'); BK.ui.openMenu('title');
     for (const tb of ['audio', 'display', 'gameplay', 'controls', 'access']) { BK.ui.settingsTab = tb; const n = BK.ui.menuCount();

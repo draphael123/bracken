@@ -105,7 +105,7 @@ try {
   const shown = i => r.cards[i];
   ok(shown(7).includes('???') && !shown(7).includes('PIRATE') && shown(7).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: a locked card says ??? and the how-to line: ' + shown(7).join(' | '));
   ok(shown(4).includes('???') && !shown(4).includes('BERSERKER') && shown(4).some(s => /BUY IN THE STORE - 10 SILVER/.test(s)), '3: (claude/ranger) the berserker is no longer free: his card is locked and says BUY IN THE STORE - 10 SILVER: ' + shown(4).join(' | '));
-  ok(shown(8).includes('???') && shown(8).some(s => /UNBURIED/.test(s)), '3: the Death Knight card is locked and names his way in: ' + shown(8).join(' | '));
+  ok(shown(8).includes('???') && shown(8).some(s => /FOUND ON A HIDDEN PATH/.test(s)) && !shown(8).some(s => /UNBURIED/.test(s)), '3: (claude/secrets) the Death Knight card is locked, says FOUND ON A HIDDEN PATH and names no place before the secret is found: ' + shown(8).join(' | '));
   ok(shown(0).includes('KNIGHT') && shown(3).includes('RANGER') && shown(5).includes('PYRO') && shown(6).includes('PALADIN'), '3: open heroes are named: ' + shown(0).join(' | '));
   ok(shown(0).filter(s => s === '???').length === 3, '3: exactly the three locked cards are ??? (berserker, pirate, reaper): ' + shown(0).join(' | '));
   for (const h of ['pirate', 'reaper', 'paladin']) { const s = r.sil[h]; ok(s.inside > 60 && s.black === s.inside && s.colour === 0, '3: ' + h + "'s silhouette is solid black over exactly his idle frame's pixels: " + JSON.stringify(s)); ok(s.rim > 10 && s.size[0] === s.frame[0] + 2, '3: ' + h + ' has a faint rim one pixel out: ' + JSON.stringify(s)); }
