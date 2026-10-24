@@ -208,7 +208,7 @@ export function makePotionHands(ctx) {
   H.granOpen = e => e.mode === 'floated';
   H.granWarded = e => !!e.gm3 && e.mode !== 'floated' && e.mode !== 'sleep' && (broodUp(e) || e.ward > 0);
   let marks = [], balls = [], pots = [], gpatches = [];
-  function granInit(e) { e.gm3 = true; e.hp = e.maxHp = GM.hp; e.phase = 1; e.ward = 0; e.broodT = 0.6; e.fireT = 3.2; e.hurlT = 5; e.sweepT = 1.5; e.stirT = 3; e.called = 0; marks = []; balls = []; pots = []; gpatches = []; }
+  function granInit(e) { e.gm3 = true; const k = ctx.baseHp && ctx.baseHp() > 0 && e.maxHp > 0 ? e.maxHp / ctx.baseHp() : 1; e.hp = e.maxHp = Math.round(GM.hp * k);   /* (the difficulty's and the tier's scaling of her spawn kept) */ e.phase = 1; e.ward = 0; e.broodT = 0.6; e.fireT = 3.2; e.hurlT = 5; e.sweepT = 1.5; e.stirT = 3; e.called = 0; marks = []; balls = []; pots = []; gpatches = []; }
   const A = () => L().arena;
   const clampX = x => Math.max(A().x0 + 18, Math.min(A().x1 - 18, x));
   function callBrood(e) {

@@ -136,7 +136,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   ground(189, 205, G);
   jar(192, 29, 'red');
   sign(193, 29, "HER RED JAR BURNS: THORNS, WEBS, AND THE THORN-BEAST'S COAT.");
-  hedge(198, 199, 24, 29);
+  hedge(198, 199, 23, 29);
   board(189, 191, 27); board(200, 204, 27);
   foe('sprig', 202, 29, { squad: 'hedge1' }); foe('thief', 204, 29, { squad: 'hedge1' });
   ground(205, 205, 28); ground(206, 214, 26);                                              /* a bank, and a pocket in it behind a web */
@@ -148,7 +148,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   sign(219, 32, 'THE THORN-BEAST: ITS COAT TURNS A BLADE. BURN IT, THEN CUT.');
   foe('brute', 224, 32, { thornCoat: true });
   jar(228, 32, 'red');
-  hedge(232, 233, 27, 32);
+  hedge(232, 233, 26, 32);
   board(220, 222, 30); coins([221, 29], [226, 31]);
   ground(234, 237, 33); ground(238, 240, 31);
   foe('rockgoblin', 239, 30, { face: -1, herb: 'jarthrower' });
@@ -158,7 +158,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   /* THE HEDGES' EXAM: a thorn-beast captain and his gatherers before the third hedge - burn him, burn it */
   brew(256, 29, 'red');
   foe('brute', 264, 29, { elite: true, squad: 'thornexam', thornCoat: true }); foe('sprig', 261, 29, { squad: 'thornexam' }); foe('sprig', 267, 29, { squad: 'thornexam' });
-  hedge(270, 271, 24, 29);
+  hedge(270, 271, 23, 29);
   ground(272, 280, G); ent('check', 276, 29); board(273, 276, 27); board(279, 283, 27);
   coins([245, 26], [252, 26], [259, 26], [274, 28], [278, 28]);
 
@@ -195,7 +195,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   // ================= 5. HER GREAT LEAF (372-427): EXAM - burn, grow, float, back to back =================
   ground(373, 392, G);
   sign(374, 29, 'HER GREAT LEAF. HER COTTAGE IS UNDER IT: BURN, GROW, AND FLOAT YOUR WAY TO HER DOOR.');
-  jar(377, 29, 'red'); hedge(382, 383, 24, 29); board(373, 376, 27); board(386, 389, 27); 
+  jar(377, 29, 'red'); hedge(382, 383, 23, 29); board(373, 376, 27); board(386, 389, 27); 
   jar(386, 29, 'green'); ladderBed(392, 29, 23);
   foe('sprig', 388, 29, { squad: 'leafA' }); foe('thief', 390, 29, { squad: 'leafA' });
   ground(393, 410, 24);
