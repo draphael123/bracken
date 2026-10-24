@@ -5846,7 +5846,7 @@ function drawStore() {
         : tab.key === 'hero' && (eq || owned) ? (eq ? 'EQUIPPED  L' : 'OWNED  L') + heroLevel(k.id)   /* a hero carries his own level now: the card has to say which */
         : k.practice ? 'Z TO STEP THROUGH' : eq ? 'EQUIPPED' : owned ? 'OWNED' : locked ? 'LOCKED' : k.price === 0 ? 'FREE' : k.price + (k.silver ? ' SILVER' : ' GOLD') + (coinRoute(k) ? ' OR ' + k.coinPrice + ' GOLD' : '');
       text(cost, mx, ty, eq || owned ? UI.sel : locked ? '#ff9a5c' : k.silver ? UI.silver : UI.gold, 'center', 6); ty += 11;
-      const body = locked ? lockWhy : (k.desc || k.per || '');
+      const body = body0;   /* (integ118) the same words the squeeze above measured, with the hidden-path line a secret hero carries: they were wrapped there and never drawn (textfit CLIPPED) */
       /* THE WHOLE OF WHAT IT DOES, A PAGE AT A TIME: a hero's description ran to thirty lines and the panel showed the first eight */
       const bl = wrap(body, pvW - 10, 6), per = Math.max(1, Math.floor((pvY + pvH - 12 - ty) / BODY_LH)), pages = Math.max(1, Math.ceil(bl.length / per)), pg = storePage % pages; storePages = pages;
       if (pages > 1 && window.__textRec) textRec('paged', { s: body, pages });
