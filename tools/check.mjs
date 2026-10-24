@@ -290,6 +290,8 @@ if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headles
 /* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,
    the hands and the stake-setter in a fake world, the beast's openings / armour floor / ward / phase two / harness (its own line: the big list is edited by every lane) */
 if (take('palisadewood')) results.push(run('palisadewood', process.execPath, ['tools/palisadewood.mjs']));
+/* (claude/palisadeart, headless) THE ART PASS: the level hash is the greybox's, the TIMBER table lies on solid blocks, the setter / lantern-hand / maul crew wear their own sheets, every windup and release of the beast is its own baked frame, his body and card, the palisade ambient bed (its own line) */
+if (take('palisadeart')) results.push(run('palisadeart', process.execPath, ['tools/palisadeart.mjs'], { PORT: String(portFor(6)) }));
 if (take('feel-speed')) results.push(run('feel-speed', process.execPath, ['tools/feel-speed.mjs'], { PORT: String(portFor(4)) }));
 if (take('feel-platform')) results.push(run('feel-platform', process.execPath, ['tools/feel-platform.mjs'], { PORT: String(portFor(5)) }));
 /* THE SLOPES SWAP, PROVED IN THE PAGE (docs/slopes-integration.md §8.3). tools/slopes.mjs above proves the two movers equal in Node;

@@ -10,6 +10,7 @@
 import * as BBM from './battering-beast.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
+import * as BBA from './redraw/battering_beast_art.js';   /* (claude/palisadeart) every picture of him and his clearing: src/redraw/battering_beast_art.js */
 const { BB } = BBM;
 
 const SOUND = { snort: s => (s.boarSnort || s.snort || s.tell)(), charge: s => (s.boarCharge || s.badgerCharge || s.tell)(), ram: s => { (s.heavy || s.thud)(); (s.crack || s.thud)(); },
@@ -33,50 +34,6 @@ export const POSE = {
   stuck: { head: [6, 6], ram: [20, -6, 0.3], legs: 'brace', sunk: 6, hand: 'flail', eye: 'red', timber: true }, tear: { head: [-2, -4], ram: [12, -16, -0.3], legs: 'splay', shake: true, hand: 'cling' },
   loose: { head: [6, 2], legs: 'run', noRam: true, hand: 'none', eye: 'red' },
 };
-/* HIS BODY (greybox): a great plated ox-thing, a ram slung under its chin on chains, two goblin handlers on a saddle-frame on its back */
-function drawBeast(g, name, p, flash, time, ph, harnessCut) {
-  const lift = p.rear ? -10 : 0, sunk = p.sunk || 0, step = (Math.floor(time * 7) & 1);
-  g.save(); g.translate(0, sunk); if (p.pitch) g.rotate(p.pitch); if (p.rear) g.rotate(-0.45);
-  const legs = p.lie ? [] : [[-22, 0], [-12, 0], [10, 0], [20, 0]];
-  legs.forEach(([lx], k) => { const sw = p.legs === 'walk' || p.legs === 'run' ? ((k + step) % 2 ? 3 : -3) * (p.legs === 'run' ? 2 : 1) : p.legs === 'splay' ? (k < 2 ? -4 : 4) : p.legs === 'brace' ? (k < 2 ? -6 : 2) : p.legs === 'paw' && k === 2 ? (step ? 5 : -2) : 0;
-    rect(g, lx + sw, -12, 6, 12, C.hideD); rect(g, lx + sw - 1, -3, 8, 3, '#1a120c'); });
-  const by = p.lie ? -14 : -12 + lift;
-  rect(g, -28, by - 26, 56, 26, flash ? '#ffffff' : C.hide); rect(g, -28, by - 26, 56, 3, C.hideL);
-  for (let k = 0; k < 4; k++) { rect(g, -24 + k * 12, by - 24, 11, 9, C.plate); rect(g, -24 + k * 12, by - 24, 11, 2, C.plateL); rect(g, -24 + k * 12, by - 16, 11, 1, C.plateD); }
-  const [hx, hy] = p.head || [0, 0]; rect(g, 24 + hx, by - 22 + hy, 16, 14, flash ? '#ffffff' : C.hideD); rect(g, 26 + hx, by - 24 + hy, 12, 4, C.plate);
-  rect(g, 36 + hx, by - 28 + hy, 3, 8, C.horn); rect(g, 26 + hx, by - 28 + hy, 3, 8, C.horn);
-  rect(g, 34 + hx, by - 18 + hy, 3, 3, p.eye === 'red' ? C.red : p.eye === 'shut' ? C.hideD : C.eye);
-  /* THE RAM on its chains */
-  if (!p.noRam && !harnessCut) { const [rx, ry, ra] = p.ram || [12, -14, 0]; g.save(); g.translate(rx + 10, by + ry + 8); g.rotate(ra);
-    rect(g, -18, -5, 40, 10, C.ram); rect(g, -18, -5, 40, 2, '#a07040'); rect(g, 20, -7, 8, 14, C.iron); rect(g, 22, -6, 4, 12, C.ironL); rect(g, -6, -10, 2, 6, C.iron); rect(g, 8, -10, 2, 6, C.iron); g.restore(); }
-  /* the harness and its BUCKLE (glints in P2) */
-  if (!harnessCut) { rect(g, -26, by - 8, 52, 3, C.strap); rect(g, -4, by - 30, 3, 26, C.strap); if (ph > 1) { const on = Math.floor(time * 6) % 2; rect(g, -6, by - 32, 8, 7, on ? C.buckle : '#c09030'); } }
-  /* THE HANDLERS on the saddle-frame */
-  if (p.hand !== 'none' && !harnessCut) for (const [ox, k] of [[-18, 0], [2, 1]]) { const up = p.hand === 'stand' || p.hand === 'throw' ? -6 : p.hand === 'duck' ? 3 : 0, hy0 = by - 26 - 12 + up;
-    rect(g, ox, hy0, 7, 10, C.gob); rect(g, ox + 1, hy0 - 6, 6, 6, C.gobD);
-    const arm = p.hand === 'whip' ? -10 : p.hand === 'stand' ? -9 : p.hand === 'throw' ? 4 : p.hand === 'flail' ? (step ? -8 : 2) : p.hand === 'cling' ? 6 : -2;
-    rect(g, ox + 6, hy0 + 2 + Math.min(0, arm), 2, Math.abs(arm) + 2, C.gobD); if (p.hand === 'stand' || p.hand === 'whip') rect(g, ox + 7, hy0 + arm - 3, 2, 8, p.hand === 'whip' ? C.rope : C.timL); }
-  if (p.timber) for (let k = 0; k < 4; k++) rect(g, -30 + k * 16, by - 6 - (k % 2) * 8, 18, 4, C.tim);
-  g.restore();
-  if (p.stars) for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1; rect(g, 30 + Math.cos(a) * 10, by - 36 + Math.sin(a) * 4, 3, 3, '#ffe9a0'); }
-}
-/* A SCAFFOLD: standing (deck on two posts, braces, the PROP at its inner foot with its wedge, rope and strain marks), tipping, a WRECK on the floor, spent (stumps), rising */
-function scafDraw(g, s, X, Y, floorY, time, lineCol, ctxTS) {
-  const fy = Y(floorY), x0 = X(s.x0), x1 = X(s.x1), dy = Y(s.deckY);
-  if (s.st === 'stand' || s.st === 'fall') { const k = s.st === 'fall' ? 1 - s.t / BB.scaf.fall : 0;
-    g.save(); g.translate(s.dir > 0 ? x1 : x0, fy); g.rotate(s.dir * k * k * Math.PI / 2); g.translate(-(s.dir > 0 ? x1 : x0), -fy);
-    rect(g, x0, dy, x1 - x0, 4, C.tim); rect(g, x0, dy, x1 - x0, 1, C.timL); rect(g, x0 + 2, dy + 4, 3, fy - dy - 4, C.timD); rect(g, x1 - 5, dy + 4, 3, fy - dy - 4, C.timD);
-    g.strokeStyle = C.timD; g.beginPath(); g.moveTo(x0 + 3, dy + 4); g.lineTo(x1 - 4, fy); g.stroke(); g.restore();
-    if (s.st === 'stand') { const px = X(s.x); rect(g, px - 2, dy + 2, 4, fy - dy - 2, C.tim); rect(g, px - 3, dy + 10, 6, 2, C.rope); rect(g, px - 3, dy + 18, 6, 2, C.rope);
-      g.fillStyle = '#ff9a5c'; const sh = Math.sin(time * 18) > 0 ? 1 : 0; g.fillRect(px + 3 + sh, dy + 6, 2, 1); g.fillRect(px + 5 + sh, dy + 7, 2, 1); g.fillRect(px + 3 + sh, dy + 8, 2, 1);
-      g.fillStyle = '#c9a060'; g.beginPath(); g.moveTo(px - s.dir * 7, fy); g.lineTo(px + s.dir * 3, fy); g.lineTo(px - s.dir * 7, fy - 6); g.closePath(); g.fill();
-      if (Math.floor(time * 3) % 2) rect(g, px - s.dir * 9, fy - 8, 2, 2, '#ffd36b');
-      if (lineCol) { const [lo, hi] = BBM.lineOf(s); g.fillStyle = lineCol; for (let q = lo; q < hi; q += 8) g.fillRect(X(q), fy - 1, 5, 2); } }
-    return; }
-  if (s.st === 'down' || s.st === 'pin') { const [lo, hi] = BBM.lineOf(s); for (let q = lo; q < hi; q += 10) { rect(g, X(q), fy - 8 - ((q / 10) % 2) * 4, 12, 4, C.tim); rect(g, X(q) + 4, fy - 14, 3, 14, C.timD); } return; }
-  if (s.st === 'spent') { rect(g, x0 + 2, fy - 4, 3, 4, C.timD); rect(g, x1 - 5, fy - 4, 3, 4, C.timD); if (s.t < 2) { const k = 1 - s.t / 2; rect(g, x0 + 2, fy - (fy - dy) * k, 3, (fy - dy) * k, C.timD); rect(g, x1 - 5, fy - (fy - dy) * k, 3, (fy - dy) * k, C.timD); } }
-}
-
 export function makeBatteringBeastHands(ctx) {
   let S = null; const H = {};
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'batteringbeast' ? ctx.L.arena : null);
@@ -139,17 +96,20 @@ export function makeBatteringBeastHands(ctx) {
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const e = live(), x = X(cx), y = Y(cy), G = S.G;
     /* THE OLD FOREST GATE at the clearing's west wall (the gate you came through), and the palisade's unfinished end at its east */
-    const gx = x(G.x0) - 14, fy = y(G.floorY); if (gx > -60) { rect(g, gx - 10, fy - 70, 24, 70, '#4a3020'); rect(g, gx - 14, fy - 76, 32, 8, '#3a2414'); for (let k = 0; k < 4; k++) rect(g, gx - 8 + k * 5, fy - 64, 2, 60, '#2e1c10'); rect(g, gx - 10, fy - 40, 24, 3, '#6a6a72'); }
-    const px = x(G.x1) + 2; if (px < ctx.VW() + 60) for (let k = 0; k < 4; k++) { rect(g, px + k * 6, fy - 60 + (k % 2) * 6, 5, 60, '#6a4428'); rect(g, px + k * 6 + 1, fy - 64 + (k % 2) * 6, 3, 4, '#c9a060'); }
+    const gx = x(G.x0) - 4, fy = y(G.floorY); if (gx > -80) BBA.drawGate(g, gx, fy);
+    const px = x(G.x1) + 2; if (px < ctx.VW() + 60) BBA.drawEnd(g, px, fy, time);
     for (const s of S.scafs) { if (s.st === 'down' || s.st === 'pin') continue; const hot = e && ctx.bossActive && s.st === 'stand' && BBM.underLine(s, e.x, BB.w / 2 - 6);
-      scafDraw(g, s, x, y, G.floorY, time, !ctx.bossActive ? null : hot ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : 'rgba(255,211,107,0.55)'); } };
+      BBA.drawScaf(g, s, x, y, G.floorY, time, !ctx.bossActive ? null : hot ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : 'rgba(255,211,107,0.55)', BBM.lineOf, BB.scaf.fall); } };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const f = e.face || 1, m = e.mode, x = e.x - cx, y = e.y - cy, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, p = POSE[m] || POSE.walk;
     g.globalAlpha = 0.3; g.fillStyle = '#10060a'; g.fillRect(R(x - 30), R(y - 2), 60, 3); g.globalAlpha = 1;
-    g.save(); g.translate(R(x + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(y)); g.scale(f, 1); drawBeast(g, m, p, flash, time, S.ph, S.harness.cut); g.restore();
+    const step = Math.floor(time * (m === 'charge' || m === 'loose' ? 11 : 6)), cut = S.harness.cut, fr = flash ? BBA.whiteOf(m, cut, step) : BBA.frame(m, cut, step, S.ph);   /* (claude/palisadeart) his baked frame: every windup and release its own picture */
+    g.save(); g.translate(R(x + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(y)); g.scale(f, 1); g.drawImage(fr, -BBA.AX, -BBA.AY);
+    if (S.ph > 1 && !cut && m !== 'sleep' && m !== 'dead') { const on = Math.floor(time * 6) % 2; g.fillStyle = on ? '#ffd36b' : '#d8a020'; g.fillRect(-3, -37, 6, 4); g.fillStyle = on ? '#fff6d0' : '#a07418'; g.fillRect(-1, -36, 2, 2); }   /* THE BUCKLE glints (P2): where the hands cut */
+    g.restore(); e.lastSet = BBA.deadSet(); e.lastFrame = 0; e.lastBigF = 1;   /* the body he leaves when he falls (main.js spawnCorpse) */
     if (m === 'chargeTell' && Math.random() < 0.5) ctx.dust(e.x + f * 20, e.y, 1); };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss, G = S.G, x = X(cx), y = Y(cy);
-    for (const s of S.scafs) if (s.st === 'down' || s.st === 'pin') scafDraw(g, s, x, y, G.floorY, time, null);
+    for (const s of S.scafs) if (s.st === 'down' || s.st === 'pin') BBA.drawScaf(g, s, x, y, G.floorY, time, null, BBM.lineOf, BB.scaf.fall);
     if (!ctx.bossActive || !e || e.t !== 'batteringbeast') return;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     for (const c of S.stakes) { const q = BBM.stakeAt(c, G.floorY); g.save(); g.translate(x(q.x), y(q.y)); g.rotate(q.k * 6); rect(g, -6, -1, 12, 3, '#a8783e'); rect(g, 5, -2, 3, 5, '#e0c890'); g.restore();
@@ -167,8 +127,5 @@ export function makeBatteringBeastHands(ctx) {
   return H;
 }
 /* HIS BESTIARY CARD: two of his poses (walk, the charge's windup) - main.js SPR.batteringbeastCard */
-export function bakeBatteringBeastCard() {
-  const fr = [['walk', POSE.walk], ['chargeTell', POSE.chargeTell]].map(([n, p], i) => { const [c, g] = canvas(64, 40); g.imageSmoothingEnabled = false; g.save(); g.translate(28, 38); g.scale(0.5, 0.5); drawBeast(g, n, p, false, i * 0.3, 1, false); g.restore(); return c; });
-  const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 28, ay: 38, w: 56, h: 40 };
-}
-export const _drawBeast = drawBeast;
+export function bakeBatteringBeastCard() { return BBA.bakeCard(); }   /* (claude/palisadeart) two of his baked poses, scaled to a card */
+

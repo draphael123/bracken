@@ -36,7 +36,7 @@ function logEnd(g, x, y, d, fresh) { const c = fresh ? FRESH : MID, r = d / 2; f
 
 /* ============================== THE PROP ============================== */
 /* x, y = the foot (centre of the cleat cell, its floor); lean = -1 | 0 | 1 toward what it holds */
-function drawProp(g, x, y, lean, up, time, id) {
+export function drawProp(g, x, y, lean, up, time, id) {
   g.globalAlpha = 0.28; rect(g, x - 10, y - 1, 22, 3, '#000'); g.globalAlpha = 1;
   if (!up) {   /* KNOCKED: the shore on the ground, the wedge kicked out, the rope slack, splinters */
     rect(g, x - 14, y - 5, 24, 5, OLD[1]); rect(g, x - 14, y - 5, 24, 1, FRESH[3]); rect(g, x - 14, y - 2, 24, 2, OLD[0]); rect(g, x - 15, y - 4, 2, 3, FRESH[3]); rect(g, x + 9, y - 4, 2, 3, FRESH[2]);
