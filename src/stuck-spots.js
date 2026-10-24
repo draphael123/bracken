@@ -302,9 +302,10 @@ export const STUCK = {
     { id: 'ul-hedge-1', zone: [189,20,197,31], at: [198,29], done: ['thornhedge', 198, 29, 'burnt'], line: "THE THORN HEDGE: HER RED JAR BURNS IT" },
     { id: 'ul-hedge-2', zone: [217,25,231,33], at: [232,32], done: ['thornhedge', 232, 32, 'burnt'], line: "THE THORN HEDGE IN THE HOLLOW: A RED JAR" },
     { id: 'ul-hedge-3', zone: [255,20,269,31], at: [270,29], done: ['thornhedge', 270, 29, 'burnt'], line: "THE THIRD HEDGE: A RED JAR BURNS IT" },
-    { id: 'ul-hedge-yard', zone: [279,20,289,31], at: [290,29], done: ['thornhedge', 290, 29, 'burnt'], line: "THE THORNS HIDE A SEED BED: BURN THEM FIRST" },
-    { id: 'ul-bed-yard', zone: [279,20,292,31], at: [292,29], done: ['vinebed', 292, 29, 'grown'], line: "THE SEED BED UNDER THE YARD: A GREEN JAR" },
-    { id: 'ul-well-yard', zone: [306,15,318,23], at: [316,22], done: ['floatwell', 316, 22, 'used'], line: "THE FLOAT WELL: A BUBBLE UP TO HER LEAF" },
+    { id: 'ul-yard', zone: [279,20,292,31], steps: [   /* the remix: the thorns first, then the bed they hid */
+      { at: [290,29], done: ['thornhedge', 290, 29, 'burnt'], line: "THE THORNS HIDE A SEED BED: BURN THEM FIRST" },
+      { at: [292,29], done: ['vinebed', 292, 29, 'grown'], line: "THE SEED BED UNDER THE YARD: A GREEN JAR" } ] },
+    { id: 'ul-well-yard', zone: [306,17,318,23], at: [316,22], done: ['floatwell', 316, 22, 'used'], line: "THE FLOAT WELL: A BUBBLE UP TO HER LEAF" },
     { id: 'ul-bed-leaf', zone: [317,10,322,16], at: [322,15], done: ['vinebed', 322, 15, 'grown'], line: "THE SEED BED ON THE LEAF: A BRIDGE TO THE HEARTH" },
     { id: 'ul-hedge-leaf', zone: [372,20,381,31], at: [382,29], done: ['thornhedge', 382, 29, 'burnt'], line: "HER LEAF: THE THORNS FIRST" },
     { id: 'ul-bed-great', zone: [384,20,392,31], at: [392,29], done: ['vinebed', 392, 29, 'grown'], line: "THE SEED BED AT HER WALL: A GREEN JAR" },

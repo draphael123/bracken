@@ -61,7 +61,7 @@ const req = [...E('vinebed').filter(b => !optional.has(String(b.x))).map(b => ({
 for (const r of req) ok(!reached(floodReach({ ...L, ...r.cut }, T, { rides: true })), 'the ' + r.k + ' is a LOCK: without it the boss room is lost');
 ok(req.length >= 14, 'fourteen required jar uses: ' + req.length);
 const spots = (STUCK.underleaf || []);
-for (const r of req) { const x = +r.k.split(' ')[1]; ok(spots.some(s => s.at && Math.abs(s.at[0] - x) <= 1), 'the ' + r.k + ' is glinted and nudged (src/stuck-spots.js)'); }
+for (const r of req) { const x = +r.k.split(' ')[1]; ok(spots.flatMap(s => s.steps || [s]).some(s => s.at && Math.abs(s.at[0] - x) <= 1), 'the ' + r.k + ' is glinted and nudged (src/stuck-spots.js)'); }
 ok(E('silver').length === 3, 'three silvers (A11: cap 3)');
 /* her numbers */
 ok(GM.ward >= 0.4 && GM.openMul >= 1.5 && GM.openMul <= 2 && GM.after >= 2.5 && GM.after <= 3.5 && GM.purse <= 0.25, 'her ward x0.4 (B15 floor), x2 open on a purse, a ~3 s told ward after');

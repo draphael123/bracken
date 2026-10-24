@@ -55,12 +55,10 @@ try {
       const setup = () => { b.alive = true; b.hp = b.maxHp * 0.95; b.mode = 'open'; b.open = 4; b.openT0 = 4; b.openHits = 0; b.hitCap = HM.hitCap; b.capLeft = HM.hitCap * HM.blowRef; b.openMul = HM.openMul; b.ward = 0; };
       run(b, 'huntmaster', setup, () => +(b.capLeft).toFixed(2), 15, b.x - 40, () => b.mode === 'open' && b.open > 0); out.huntmaster.cap = HM.hitCap * HM.blowRef * HM.openMul; });
 
-    /* THE GRANDMOTHER (underleaf): her back and her rap */
-    await tryBoot('grandmother', async () => { const b = boot('underleaf'); const GR = (await import('/src/hush-hands.js')).GRAN;
-      const setupB = () => { b.alive = true; b.hp = b.maxHp * 0.95; b.ward = 0; b.purseLeft = undefined; b.purseShut = false; b.mode = 'turned'; b.modeT = 5; b.face = 1; };
-      run(b, 'grandmotherBack', setupB, () => b.purseLeft === undefined ? -1 : +b.purseLeft.toFixed(2), 25, b.x - 40); out.grandmotherBack.cap = GR.purse * b.maxHp;
-      const setupR = () => { b.alive = true; b.hp = b.maxHp * 0.95; b.ward = 0; b.purseLeft = undefined; b.purseShut = false; b.mode = 'rap'; b.modeT = 5; };
-      run(b, 'grandmotherRap', setupR, () => b.purseLeft === undefined ? -1 : +b.purseLeft.toFixed(2), 25, b.x - 40); out.grandmotherRap.cap = GR.rapPurse * b.maxHp; });
+    /* THE GRANDMOTHER 3 (underleaf, claude/underleaf3 - a DELIBERATE DESIGN CHANGE: her back and her rap went with the hush; her one opening now is FLOATED by a blue jar, on a purse) */
+    await tryBoot('grandmother', async () => { const b = boot('underleaf'); const GM = (await import('/src/potion-hands.js')).GM, H = BK.potions(); for (let i = 0; i < 30; i++) BK.sim(1);
+      const setupF = () => { for (const q of H.broodOf(b)) q.alive = false; b.alive = true; b.hp = b.maxHp * 0.95; b.ward = 0; b.purseLeft = undefined; b.pursed = false; b.mode = 'floated'; b.modeT = 5; b.floatLen = 5; b.floatY0 = b.y; b.broodT = 99; };
+      run(b, 'grandmotherFloat', setupF, () => b.purseLeft === undefined ? -1 : +b.purseLeft.toFixed(2), 25, b.x - 40, () => b.mode === 'floated'); out.grandmotherFloat.cap = GM.purse * b.maxHp; });
 
     /* (claude/pyramidboss) THE COFFIN KING (the Sealed Pyramid): one window (tipped over), counted in wardedDamage after every multiplier (src/tomb-king.js takeBlow) */
     await tryBoot('tombking', async () => { const b = boot('sealedpyramid'); const H = BK.tombKingHands(), TKM = await import('/src/tomb-king.js'), S = H.show();
@@ -91,7 +89,7 @@ try {
 
     return out; })()`);
 } finally { pg.close(); }
-const CAPS = ['wicker', 'colossus', 'colossusLegs', 'drill', 'huntmaster', 'grandmotherBack', 'grandmotherRap', 'archmage', 'cisternqueen', 'cisternqueenTail', 'tombking'];   /* (claude/cqueenrework: the Cistern Queen's opening and her stinger's purse) */
+const CAPS = ['wicker', 'colossus', 'colossusLegs', 'drill', 'huntmaster', 'grandmotherFloat', 'archmage', 'cisternqueen', 'cisternqueenTail', 'tombking'];   /* (claude/cqueenrework: the Cistern Queen's opening and her stinger's purse) */
 for (const name of CAPS) { const r = R[name]; if (!r || r.error) { bad.push(name + ': the fight could not be set up: ' + (r && r.error)); continue; }
   for (const [vn, v] of Object.entries(r)) { if (vn === 'cap' || vn === 'runes' || vn === 'stingHits') continue;
     ok(v.lost <= r.cap + 1, name + ' / ' + vn + ': one opening took ' + v.lost + ' of its health, its cap is ' + r.cap.toFixed(1) + ' (blows ' + JSON.stringify(v.each) + ')');

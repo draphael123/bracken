@@ -194,6 +194,7 @@ export function makePotionHands(ctx) {
     if (e.t !== 'grandmother' || !e.gm3) return dmg;
     if (e.mode === 'sleep' || e.mode === 'wake') return dmg;
     e.pursed = false;
+    if (e.mode === 'floated' && e.purseLeft === 0) { ctx.turned(e, fromX, 'WARDED'); return 0; }   /* the purse spent this frame: she is coming down into her ward (the next frame) - the opening is over */
     if (e.mode === 'floated') { const d = Math.round(dmg * GM.openMul), left = purseOf(e); e.pursed = true;
       if (d < left) { e.purseLeft -= d; return d; } e.purseLeft = 0; e.modeT = Math.min(e.modeT, 0.05); return Math.max(1, left); }   /* the purse emptied: she drops (her ward) */
     if (broodUp(e) || e.ward > 0) { ctx.turned(e, fromX, 'WARDED', { stop: false }); S && S.n && (S.n.warded = (S.n.warded || 0) + 1); return Math.max(1, Math.round(dmg * GM.ward)); }
