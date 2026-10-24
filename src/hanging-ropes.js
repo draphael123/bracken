@@ -142,12 +142,23 @@ export function makeHangingRopes(ctx) {
   const R = Math.round;
   const rect = (g, c, x, y, w, h) => { g.fillStyle = c; g.fillRect(R(x), R(y), w, h); };
   const CUTFACE = '#f4e8c0';
-  function ropeLine(g, x0, y0, x1, y1, taut = true) {   /* a twisted hemp line, dark-edged, two pixels */
+  function ropeRaw(g, x0, y0, x1, y1, taut = true) {   /* a twisted hemp line, dark-edged, two pixels */
     const n = Math.max(1, Math.ceil(Math.hypot(x1 - x0, y1 - y0) / 2)), sag = taut ? 0 : Math.min(10, Math.abs(x1 - x0) * 0.06);
     const px = [], py = []; for (let i = 0; i <= n; i++) { const u = i / n; px.push(R(x0 + (x1 - x0) * u)); py.push(R(y0 + (y1 - y0) * u + Math.sin(u * Math.PI) * sag)); }
-    g.fillStyle = OUT; for (let i = 0; i <= n; i++) g.fillRect(px[i] - 1, py[i], 1, 2);   /* (three fills, not 2n: the arena draws a dozen ropes a frame) */
-    g.fillStyle = HEMP; for (let i = 0; i <= n; i++) if ((i >> 1) & 1) g.fillRect(px[i], py[i], 1, 2);
-    g.fillStyle = HEMP_D; for (let i = 0; i <= n; i++) if (!((i >> 1) & 1)) g.fillRect(px[i], py[i], 1, 2);
+    /* (path-batched: one fill per colour, not one fillRect per dot - the arena draws a dozen ropes a frame) */
+    g.fillStyle = OUT; g.beginPath(); for (let i = 0; i <= n; i++) g.rect(px[i] - 1, py[i], 1, 2); g.fill();
+    g.fillStyle = HEMP; g.beginPath(); for (let i = 0; i <= n; i++) if ((i >> 1) & 1) g.rect(px[i], py[i], 1, 2); g.fill();
+    g.fillStyle = HEMP_D; g.beginPath(); for (let i = 0; i <= n; i++) if (!((i >> 1) & 1)) g.rect(px[i], py[i], 1, 2); g.fill();
+  }
+  /* (claude/b120release) THE ROPE CACHE: the same (dx, dy) rope is drawn every frame - the arena has a dozen - so the second sighting bakes it once and every frame after blits it (moving ropes keep drawing direct until a shape repeats) */
+  const ROPES = new Map();
+  function ropeLine(g, x0, y0, x1, y1, taut = true) {
+    const dx = R(x1 - x0), dy = R(y1 - y0); if (Math.abs(dx) + Math.abs(dy) < 20) return ropeRaw(g, x0, y0, x1, y1, taut);
+    const key = dx + "," + dy + (taut ? "t" : "s"); let e = ROPES.get(key);
+    if (!e) { if (ROPES.size > 600) ROPES.clear(); ROPES.set(key, { n: 1 }); return ropeRaw(g, x0, y0, x1, y1, taut); }
+    if (!e.c) { const P = 3, ox = P + (dx < 0 ? -dx : 0), oy = P + (dy < 0 ? -dy : 0), c = document.createElement("canvas"); c.width = Math.abs(dx) + P * 2 + 1; c.height = Math.abs(dy) + P * 2 + 14;
+      ropeRaw(c.getContext("2d"), ox, oy, ox + dx, oy + dy, taut); e.c = c; e.ox = ox; e.oy = oy; }
+    g.drawImage(e.c, R(x0) - e.ox, R(y0) - e.oy);
   }
   /* A BAKED SPRITE: the static pieces (sandbag, deck, knot, net, wheel) are drawn once into their own canvas and blitted - the arena has seven ropes on screen at 4x throttle */
   const BAKE = new Map();
