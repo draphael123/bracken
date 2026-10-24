@@ -13,7 +13,7 @@ export function nodeBox(n) { return n.kind === 'store' ? { x: n.x - 12, y: n.y -
 export function signBox(n) { return { x: n.x + 8, y: n.y - 12, w: 10, h: 12 }; }
 export const LANDMARKS = {
   wood: [[15, -35, 30, 27]], hanging: [[14, -27, 31, 23]], crown: [[-26, -58, 52, 42], [13, -13, 34, 22]], scree: [[16, -7, 22, 17]],
-  marsh: [[-35, -8, 18, 14]], stockade: [[-28, -9, 16, 16]], spore: [[18, -7, 17, 16]], kings: [[-41, -11, 36, 18]],
+  hornetsnest: [[-26, -47, 24, 26]], marsh: [[-35, -8, 18, 14]], stockade: [[-28, -9, 16, 16]], spore: [[18, -7, 17, 16]], kings: [[-41, -11, 36, 18]],
 };
 export function landmarkRects(nodes) { const out = []; for (const n of nodes) for (const [dx, dy, w, h] of LANDMARKS[n.id] || []) out.push({ x: n.x + dx, y: n.y + dy, w, h, of: n.id }); return out; }
 /* THE NAME ON A BOARD: the place's name without its article (THE GLASS SEA -> GLASS SEA). A map label is a tag, not a sentence; the card, the list and the loading screen keep the whole name. A

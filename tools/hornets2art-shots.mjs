@@ -28,6 +28,14 @@ try {
       if (want('hh-patch')) { prep(); const N = BK.nestHands(); N.addHoney(BK.P.x - 14, BK.P.x + 14, 34, 6); BK.sim(14); snap('hh-patch', 5, [-30, -50, 100, 70]); BK.sim(40); snap('hh-patch2', 5, [-30, -50, 100, 70]); }
       if (want('hh-glob')) { const e = prep(); if (e) { e.x = BK.P.x + 30; e.y = BK.P.y - 60; e.mode = 'drop'; e.modeT = 9; e.cd = 9; e.globs = [{ x: e.x, y: e.y + 10, vy: 160 }]; BK.step(4); snap('hh-glob', 5, [-10, -80, 80, 100]); } }
     }
+    /* THE MAP: the wood sheet, the nest's landmark beside its node (clear the other nodes first: this is only for the picture) */
+    if (!ONLY || ONLY.includes('map-nest')) { BK.reset({ fresh: true }); if (BK.mapLook('hornetsnest') || BK.mapLook('wood')) { BK.step(60); const b = BK.buf, z = 4, c = document.createElement('canvas'); c.width = b.width * z; c.height = b.height * z; const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.drawImage(b, 0, 0, c.width, c.height); shots.push(['map-nest', c.toDataURL('image/png')]); } }
+    /* THE NEIGHBOURS: the great pine and its nest on the Lumber Trail's and Marsh Wood's horizons */
+    for (const [n, id, col] of [['wood-pine', 'wood', 500], ['wood-pine2', 'wood', 440], ['marsh-pine', 'marsh', 12], ['marsh-pine2', 'marsh', 40]]) { if (!want(n)) continue; load(id); const L = BK.L; let y = 8; while (y < L.H - 2 && !L.grid[y * L.W + col]) y++; at(col, y - 1); snap(n); }
+    if (!ONLY || ONLY.some(n => /^stinger-/.test(n))) {
+      load(); at(96, 33); BK.sim(200); const st = () => BK.enemies().filter(e => e.alive && e.t === 'spit').sort((a, b) => Math.abs(a.x - BK.P.x) - Math.abs(b.x - BK.P.x))[0];
+      let e = st(); if (e) { BK.step(2); const c = [e.x - BK.P.x - 40, e.y - BK.P.y - 36, 80, 56]; snap('stinger-idle', 8, c); e.mouth = 1; e.mouthT = 1; BK.step(1); snap('stinger-flick', 8, c); }
+    }
     /* HER HALL: P1, the tear (told, then ripped), P2 (the flood, the torn combs, THE LAST COMB), a pin, a comb landing in the honey, her death */
     if (!ONLY || ONLY.some(n => /^q2-/.test(n))) {
       load(); BK.tp(301, 21); BK.sim(90); const E = () => BK.boss; snap('q2-p1');

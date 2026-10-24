@@ -169,19 +169,32 @@ export function drawNear(g, cx, cy, VW, VH, L, time, dY) {
 /* (claude/hornetsnest2) THE NEIGHBOURS SEE IT: the road runs THE LUMBER TRAIL -> THE HORNET'S NEST -> MARSH WOOD now, so the great pine with the paper nest hung in it stands on
    their horizons - far off past the Lumber Trail's felling clearing (where the trail climbs on into the old pines), and behind the first screens of MARSH WOOD (the pine you just
    climbed down). A far, hazy silhouette on the sky (no tile, no ent: those levels' hashes keep). drawNeighbourPine(g, cx, cy, VW, VH, id, dY) */
-function farPine() { return once('farpine', () => { const W = 150, H = 330, [c, g] = canvas(W, H), r = mulberry(1023), mid = W / 2;
-  const trunk = '#5d6f5a', dark = '#4c5c4a', needle = '#62785c', paper = '#a8a48c', paperD = '#8a866e';
-  for (let y = 0; y < H; y++) { const w = 12 + y * 0.02 + (y > H - 40 ? (y - (H - 40)) * 0.5 : 0); R(g, y % 7 < 3 ? dark : trunk, mid - w / 2, y, w, 1); }   /* the trunk, flaring at its foot */
-  for (let k = 0; k < 9; k++) { const y = 20 + k * 26 + (r() * 8 | 0), side = k % 2 ? 1 : -1, len = 30 + (r() * 26 | 0) - k;   /* the boughs and their drooping needle-skirts */
-    for (let i = 0; i < len; i++) { const x = mid + side * (6 + i), yy = y + i * 0.35; R(g, dark, x, yy, 1, 2); if (i % 3 === 0) R(g, needle, x - 2, yy + 1, 5, 4 + (i % 5)); } }
-  { const nx = mid + 22, ny = 120, rx = 22, ry = 30;   /* THE NEST: a grey paper mass hung off the right side of the trunk, its scalloped shells */
-    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) { const d = (x * x) / (rx * rx) + (y * y) / (ry * ry); if (d > 1) continue; R(g, ((y + ry) % 6 < 2) ? paperD : paper, nx + x, ny + y, 1, 1); }
-    R(g, '#3a3428', nx - 2, ny + ry - 6, 5, 4); R(g, paperD, nx - 1, ny - ry - 6, 2, 7); }
+/* (claude/hornets2art) the far great pine, redrawn: a conifer crown of drooping boughs over a tall trunk, THE NEST hung under it (a tiered egg of grey paper, a dark mouth, a strand or two of paper on the air), hazed to its level's own
+   palette ('wood': dusk rose-grey; 'marsh': cool green-grey). 150 x 230, the foot at the bottom - the camera is only 180 tall, so it is placed with its nest in view. */
+const FARPAL = { wood: { trunk: '#5c5f58', dark: '#474a45', foliage: '#566058', foliageL: '#6a756a', paper: '#b2a898', paperD: '#8c8272', mouth: '#2e2a24' },
+  marsh: { trunk: '#4c6252', dark: '#3a4e42', foliage: '#4c6a58', foliageL: '#628068', paper: '#aab09c', paperD: '#868c7a', mouth: '#26302a' } };
+function farPine(id) { return once('farpine' + id, () => { const W = 150, H = 230, [c, g] = canvas(W, H), r = mulberry(1023), mid = 70, P = FARPAL[id] || FARPAL.wood;
+  /* the trunk, flaring at its foot, with plated bark */
+  for (let y = 10; y < H; y++) { const w = 9 + (y - 10) * 0.012 + (y > H - 36 ? (y - (H - 36)) * 0.55 : 0); R(g, y % 7 < 3 ? P.dark : P.trunk, mid - w / 2, y, w, 1); R(g, P.dark, mid + w / 2 - 1, y, 1, 1); }
+  /* the crown: tiers of drooping boughs, widest at the bottom (a conifer), each with a skirt of needle fringe */
+  for (let k = 0; k < 8; k++) { const y = 6 + k * 13, hw = 12 + k * 5 + (r() * 4 | 0);
+    for (let i = -hw; i <= hw; i += 2) { const dy = Math.abs(i) * 0.32, fy = y + dy, len = 5 + (r() * 5 | 0) - Math.round(Math.abs(i) / hw * 2);
+      R(g, P.foliage, mid + i, fy, 2, 3); R(g, P.foliageL, mid + i, fy, 2, 1); R(g, P.foliage, mid + i, fy + 3, 1, len); if (i % 4 === 0) R(g, P.dark, mid + i, fy + 3 + len, 1, 2); } }
+  /* THE NEST: an egg of overlapping tiers of grey paper hung from a bough by a stalk, a dark mouth at its foot */
+  { const nx = mid + 26, ny = 124, rx = 17, ry = 24; R(g, P.dark, nx - 1, 100, 3, ny - ry - 100 + 4); R(g, P.trunk, nx, 100, 1, 24);
+    for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) { const d = (x * x) / (rx * rx) + (y * y) / (ry * ry); if (d > 1) continue; const tier = Math.floor((y + ry) / 6), rr = (y + ry) % 6 + Math.round(1.2 * Math.sin((x + tier * 4) / 2.6));
+      R(g, d > 0.9 ? P.dark : rr >= 5 ? P.paperD : rr <= 0 ? P.paper : (x < -rx * 0.4 ? P.paper : P.paperD), nx + x, ny + y, 1, 1); }
+    R(g, P.mouth, nx - 3, ny + ry - 4, 7, 4); R(g, P.mouth, nx - 2, ny + ry - 6, 5, 3); }
+  /* a strand or two of shed paper on the air under it */
+  for (const [x0, y0, len] of [[mid + 28, 156, 18], [mid + 20, 170, 12]]) for (let i = 0; i < len; i++) R(g, P.paper, x0 + i * 1.4, y0 + Math.sin(i / 2) * 1.5 + i * 0.5, 1, 1);
   return gpu(c); }); }
-export function drawNeighbourPine(g, cx, cy, VW, VH, id, dY = 0) {
-  const p = id === 'wood' ? { col: 600, k: 0.12, show: [440, 560], a: 0.5 } : id === 'marsh' ? { col: -10, k: 0.12, show: [0, 70], a: 0.45 } : null; if (!p) return;
+export function drawNeighbourPine(g, cx, cy, VW, VH, id, dY = 0, time = 0) {
+  const p = id === 'wood' ? { col: 600, k: 0.06, fx: 0.55, show: [400, 560], a: 0.85 } : id === 'marsh' ? { col: -10, k: 0.1, fx: 0.3, show: [0, 60], a: 0.8 } : null; if (!p) return;
   const tc = cx / TS; if (tc < p.show[0] - 40 || tc > p.show[1] + 40) return;
-  const fade = Math.max(0, Math.min(1, (tc - (p.show[0] - 40)) / 40, ((p.show[1] + 40) - tc) / 40)), img = farPine();
-  const x = Math.round((p.col * TS - cx) * p.k + VW * (id === 'wood' ? 0.62 : 0.12) - img.width / 2), y = Math.round(VH - img.height - 30 + dY * 0.1);
-  g.globalAlpha = p.a * fade; g.drawImage(img, x, y); g.globalAlpha = 1;
+  const fade = Math.max(0, Math.min(1, (tc - (p.show[0] - 40)) / 40, ((p.show[1] + 40) - tc) / 40)), img = farPine(id);
+  const x = Math.round(VW * p.fx + (p.col * TS - cx) * p.k - img.width / 2), y = Math.round(VH - img.height + 22 + dY * 0.1);
+  g.globalAlpha = p.a * fade; g.drawImage(img, x, y);
+  /* the hornets about their nest: a few dark specks on loops, and the odd glint of a wing */
+  for (let k = 0; k < 6; k++) { const a = time * (0.9 + k * 0.17) + k * 1.9, hx = x + 96 + Math.cos(a) * (14 + k * 3), hy = y + 140 + Math.sin(a * 1.4) * (10 + k * 2); g.fillStyle = '#2a2622'; g.fillRect(Math.round(hx), Math.round(hy), 2, 1); if (k % 2) { g.fillStyle = '#d8d0c0'; g.fillRect(Math.round(hx), Math.round(hy) - 1, 1, 1); } }
+  g.globalAlpha = 1;
 }

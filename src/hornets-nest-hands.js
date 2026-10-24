@@ -21,7 +21,8 @@ import * as CT from './carry-throw.js';
 import { drawSwarm } from './hornet-swarm.js';
 import * as HNP from './redraw/hornets_nest_props.js';
 import * as HNHY from './redraw/hornets_nest_honey.js';
-import * as HNHL from './redraw/hornets_nest_hall.js';   /* (claude/hornets2art) the honey: the sticky patch, the hall's flood and combs */   /* (claude/hornetsnestart) the props, drawn */
+import * as HNHL from './redraw/hornets_nest_hall.js';
+import * as HNE from './redraw/hornets_nest_edge.js';   /* (claude/hornets2art) the old pines and the marsh edge */   /* (claude/hornets2art) the honey: the sticky patch, the hall's flood and combs */   /* (claude/hornetsnestart) the props, drawn */
 export const SMOKE = { reachX: 15, reachY: 18, aura: 58, rest: 7, cloudR: 46, cloudT: 6, dmg: 3, stagger: 0.7, keep: 3, col: '#c8d0d8' };
 export const COMB = { g: 900, maxV: 520, crush: 24, heroCrush: 0, sticky: 0.12 };
 export const BROOD = { near: 120, pulse: 3.2, n: 2 };
@@ -212,18 +213,16 @@ export function makeNestHands(ctx) {
   const SCRAPS = [[5, 66, 0], [11, 66, 1], [14, 63, 2], [22, 64, 0], [26, 66, 1], [33, 66, 2], [44, 62, 0], [49, 60, 1], [57, 56, 2], [63, 60, 0]];
   const REEDS = [[355, 66, 3], [357, 66, 2], [365, 66, 4], [366, 67, 3], [368, 67, 2], [373, 67, 3], [375, 66, 4], [376, 66, 2], [386, 66, 3], [388, 67, 4], [390, 67, 2], [393, 67, 3], [395, 67, 4], [397, 67, 2], [399, 66, 3], [402, 66, 2], [407, 66, 3], [411, 66, 4], [414, 66, 2]];
   function dressOver(g, cx, cy, time, VW) {
-    for (const [c, r] of PADS) { const x = R(c * TS - cx), y = R(r * TS + 4 - cy + Math.sin(time * 1.6 + c) * 0.6); if (x < -20 || x > VW + 20) continue;
-      rc(g, x - 6, y, 12, 2, '#4e7a34'); rc(g, x - 5, y - 1, 10, 1, '#6a9a44'); rc(g, x, y, 2, 1, '#2e4a20'); }   /* a lily pad (the marsh's own, not yet sinking) */
-    { const x0 = R(366 * TS - cx), x1 = R(400 * TS - cx); if (x1 > -20 && x0 < VW + 20) { g.globalAlpha = 0.14; for (let k = 0; k < 5; k++) { const ph = (time * 0.05 + k * 0.21) % 1; rc(g, x0 + ph * (x1 - x0) - 40, R(66 * TS - cy) - 8 - k * 3, 90, 3, '#dfe8e0'); } g.globalAlpha = 1; } }   /* a low marsh mist */
+    for (const [c, r, k] of PADS) { const x = R(c * TS - cx), y = R(r * TS + 4 - cy); if (x < -20 || x > VW + 20) continue; HNE.pad(g, x, y, k, time); }   /* (claude/hornets2art) a lily pad (the marsh's own, not yet sinking) */
+    { const x0 = R(354 * TS - cx), x1 = R(419 * TS - cx); if (x1 > -20 && x0 < VW + 20) HNE.mist(g, x0, x1, R(66 * TS - cy) + 2, time, 0.26); }   /* a low marsh mist */
   }
-  const PADS = [[369.5, 66], [372, 66], [391, 66], [396.5, 66]];
+  const PADS = [[369.5, 66, 0], [372, 66, 1], [391, 66, 2], [396.5, 66, 4], [367.5, 66, 3]];
+  /* (claude/hornets2art) the old pines' first sightings: a little abandoned paper nest hung from a bough, [col, row of the bough] */
+  const PINENESTS = [[13, 59], [27, 58.6], [49, 52], [67, 48]];   /* (the camera shows ~11 rows over the floor: these hang in view over the road) */
   function dress(g, cx, cy, time, VW) {
-    for (const [c, r, k] of SCRAPS) { const x = R(c * TS + (k * 5) % 11 - cx), y = R(r * TS - cy); if (x < -20 || x > VW + 20) continue;
-      rc(g, x, y - 2, 6 - k, 2, '#a89c84'); rc(g, x + 1, y - 3, 3, 1, '#c8bca0'); rc(g, x + 2 + k, y - 1, 3, 1, '#7a6e58');   /* a scrap of nest paper, curled */
-      if (k === 2) { rc(g, x + 6, y - 6 - Math.round(Math.sin(time * 1.3 + c) * 1), 3, 2, '#b8ac90'); } }   /* (one lifting in the draught) */
-    for (const [c, r, h] of REEDS) { const x = R(c * TS + 8 - cx), y = R(r * TS - cy); if (x < -20 || x > VW + 20) continue; const sway = Math.round(Math.sin(time * 1.1 + c * 0.7) * 1.5);
-      for (let k = -1; k <= 1; k++) { const hh = h * 6 + (k === 0 ? 6 : 0); rc(g, x + k * 3 + (k ? sway : 0), y - hh, 1, hh, k ? '#5e7a3a' : '#7a9a48'); }   /* three blades */
-      rc(g, x + sway - 1, y - h * 6 - 12, 3, 6, '#6a3e1c'); rc(g, x + sway, y - h * 6 - 14, 1, 2, '#7a9a48'); }   /* a cattail's brown head */
+    for (const [c, r, k] of PINENESTS) { const x = R(c * TS - cx); if (x < -40 || x > VW + 40) continue; HNE.pineNest(g, x, R(r * TS - cy), time); }
+    for (const [c, r, k] of SCRAPS) { const x = R(c * TS + (k * 5) % 11 - cx), y = R(r * TS - cy); if (x < -20 || x > VW + 20) continue; HNE.scrap(g, x, y, k + (c & 1), time); }   /* a scrap of nest paper, curled */
+    for (const [c, r, h] of REEDS) { const x = R(c * TS + 8 - cx), y = R(r * TS - cy); if (x < -20 || x > VW + 20) continue; if (c % 3 === 0) HNE.cattail(g, x, y, h, time); else HNE.reed(g, x, y, h, c, time); }
   }
   W.drawOver = (g, cx, cy, time) => {
     if (!W.on()) return; const P = ctx.P();

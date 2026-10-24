@@ -33,8 +33,27 @@ function hornetFrame(beat, hurt) { return g => {
 }
 /* ---------------- THE STINGER HORNET (16 x 14, claude/hornetsnest2): the spitter's machine under a NEST HORNET clinging to the comb - idle, idle, and the flick (its abdomen
    curled forward under it, a bead of venom on the sting) ---------------- */
-function stingerFrame(beat, aim) { return g => { g.save(); g.translate(0, 3); hornetFrame(beat)(g); g.restore();
-  if (aim) { line(g, '#fff6c8', 1, 11, 3, 12.5); px(g, '#9ed84a', 3.5, 13); px(g, '#5ea02a', 4, 13.4); } }; }
+function stingerFrame(beat, aim) { return g => {
+  /* (claude/hornets2art, the proper pass) a hornet CLINGING to the comb wall, drawn as itself: upright and braced (the spitter's machine hangs it on the wall), wings folded flat along its back,
+     the abdomen hanging under it with a green VENOM GLAND at the tip that glows; the flick CURLS the abdomen forward under the body at you with a bead of venom swelling on the sting.
+     beat 0 / 1 the idle (the abdomen's slow pulse, a feeler's twitch); aim = the told flick (curled, bead) */
+  const pulse = beat ? 0.5 : 0, bob = beat ? 0.4 : 0;
+  /* the legs gripping the wall: forelegs reaching, a mid pair, the hind pair braced low */
+  for (const [x0, y0, x1, y1, x2, y2] of [[10, 7.5, 12.5, 8.5, 13.5, 10.5], [8.5, 8, 10, 10, 11.2, 12.2], [6.5, 8.4, 6, 10.6, 5.2, 12.8]]) { line(g, CH[1], x0, y0 + bob, x1, y1 + bob); line(g, CH[0], x1, y1 + bob, x2, y2); px(g, AM[3], x2, y2 + 0.5); }
+  /* the wings: folded slender and pale along the back, a faint tremble */
+  line(g, WING[1], 8, 3.6 + bob, 1.5, 1.4 + (beat ? 0.6 : 0)); line(g, WING[2], 8.4, 3.2 + bob, 2.4, 0.8 + (beat ? 0.6 : 0)); line(g, WING[0], 7.6, 4 + bob, 2, 2.4 + (beat ? 0.6 : 0)); px(g, WING[2], 5, 1.6);
+  /* the abdomen: banded, hanging under the thorax - or, on the flick, curled forward beneath the head */
+  if (aim) { blob(g, 8.6, 10.2, 4.2, 2.8, (dx, dy, x) => (Math.floor((x - 4.4) / 2.2) % 2 === 1 ? (dy < -0.3 ? '#3a2410' : BLK) : sh(AM, dx, dy)));
+    line(g, '#fff6c8', 12.6, 11.4, 14.4, 12.2); px(g, VEN[3], 14.8, 12.4); px(g, VEN[2], 15, 13); px(g, VEN[1], 15, 13.6);                         /* the sting out in front, a bead of venom on its point */
+    px(g, VEN[2], 11.5, 11); px(g, VEN[1], 11, 10.4); }
+  else { blob(g, 5.4, 9.2 + pulse * 0.4, 3.0, 3.6 + pulse * 0.3, (dx, dy, x, y) => (Math.floor((y - 5.6) / 2.1) % 2 === 1 ? (dx < -0.3 ? '#3a2410' : BLK) : sh(AM, dx, dy)));
+    line(g, '#f4ecd8', 5, 12.8 + pulse * 0.4, 4.6, 14.2); px(g, VEN[2], 4.6, 13.9); px(g, VEN[3], 4.5, 13.2); }                                   /* the sting hangs low, its gland a small green gleam */
+  /* the thorax (a pauldron of lighter chitin), the head, the red eye, the jaws, the feelers */
+  blob(g, 8.4, 5.2 + bob, 2.9, 2.7, (dx, dy) => sh(CH, dx, dy)); px(g, CH[3], 7.4, 3.8 + bob); px(g, AM[2], 8.2, 6.8 + bob);
+  const hx = 12, hy = 4.6 + bob; blob(g, hx, hy, 2.4, 2.3, (dx, dy) => sh(CH, dx, dy)); eye(g, hx + 0.9, hy - 0.8, true); px(g, '#f0e4c8', hx + 2.2, hy + 1.5); px(g, '#f0e4c8', hx + 1.4, hy + 2.4);
+  line(g, INK, hx + 0.6, hy - 2.1, hx + 2.8, hy - 3.8 - (beat ? 0.8 : 0)); px(g, AM[3], hx + 3, hy - 4 - (beat ? 0.8 : 0)); line(g, INK, hx - 0.4, hy - 2.1, hx + 0.4, hy - 4);
+  if (aim) { px(g, '#ff6b6b', hx - 0.5, hy - 5.4); px(g, '#ff6b6b', hx - 0.5, hy - 6.8); }   /* the red ! over its head */
+}; }
 /* ---------------- THE COMB DRONE (16 x 12): a stout worker on six-ish legs; frames walk0-3, look, tell, bite, hurt ---------------- */
 function droneFrame(kind, k) { return g => {
   const hurt = kind === 'hurt', lunge = kind === 'bite' ? 2 : 0, rear = kind === 'tell' ? -2.2 : kind === 'look' ? -1 : 0, bob = kind === 'walk' && (k & 1) ? 0.6 : 0, oy = hurt ? 1 : 0;
@@ -73,7 +92,7 @@ export function bakeNestSkins(SPR) {
   return {
     hornet: sheet([hornetFrame(0), hornetFrame(1), hornetFrame(2), hornetFrame(0, true)], 16, 11, SPR.wasp.ax, SPR.wasp.ay, keep('wasp')),
     combdrone: sheet([droneFrame('walk', 0), droneFrame('walk', 1), droneFrame('walk', 2), droneFrame('walk', 3), droneFrame('look'), droneFrame('tell'), droneFrame('bite'), droneFrame('hurt')], 16, 12, SPR.sprig.ax, SPR.sprig.ay, keep('sprig')),
-    stinger: sheet([stingerFrame(0), stingerFrame(1), stingerFrame(2, true)], 16, 14, SPR.spit.ax, SPR.spit.ay, keep('spit')),   /* (claude/hornetsnest2) the nest's ranged hornet */
+    stinger: sheet([stingerFrame(0), stingerFrame(1), stingerFrame(1, true)], 16, 16, SPR.spit.ax, SPR.spit.ay, keep('spit')),   /* (claude/hornetsnest2) the nest's ranged hornet */
     nestguard: sheet([guardFrame('walk', 0), guardFrame('walk', 1), guardFrame('walk', 2), guardFrame('walk', 3), guardFrame('turn'), guardFrame('tell'), guardFrame('shove'), guardFrame('low')], 16, 16, SPR.shield.ax, SPR.shield.ay, keep('shield')),
   };
 }
