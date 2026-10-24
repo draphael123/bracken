@@ -291,22 +291,24 @@ export const STUCK = {
     { id: 'fr-night-striker', zone: [545, 15, 566, 28], at: [566, 27], line: 'THE STRIKER PAD IS THE WAY UP' },
     { id: 'fr-night-targets', zone: [563, 5, 594, 27], ats: [[570, 13], [578, 13], [587, 14]], line: 'THE BARS DROP FOR THE TARGETS: HIT ALL THREE, FAST' },
   ],
+  /* (claude/underleaf3) UNDERLEAF 3: every REQUIRED jar use - the seed bed (until its vine grows), the thorn hedge (until it burns), the float well (until a bubble has lifted you from it).
+     The beds, hedges and wells are src/potion-hands.js's props (main.js hands them to the guide: POH.props): their tile is where the glint stands */
   underleaf: [
-    { id: 'ul-brass', zone: [90, 2, 170, 45], steps: [
-      { zone: [96, 2, 124, 17], at: [112, 6], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY HANGS ON THE HOIST BEAM' },
-      { zone: [90, 18, 170, 45], at: [122, 33], done: ['key', 112, 6, 'got'], line: 'THE BRASS KEY IS IN THE MILL: FIND ITS DOOR' },
-      { zone: [96, 18, 170, 45], at: [157, 33], done: ['lockgate', 157, 33, 'open'], line: 'THE BRASS GATE WANTS THE KEY YOU CARRY' } ] },
-    { id: 'ul-iron', zone: [140, 2, 345, 45], steps: [
-      { zone: [140, 2, 196, 17], at: [188, 8], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS ON THE ROOD BEAM' },
-      { zone: [175, 18, 345, 45], at: [278, 33], done: ['key', 188, 8, 'got'], line: 'THE IRON KEY IS IN THE CHURCH: FIND ITS DOOR' },
-      { zone: [175, 18, 345, 45], at: [336, 33], when: ['key', 188, 8, 'got'], done: ['lockgate', 336, 33, 'open'], line: 'THE IRON GATE WANTS THE KEY YOU CARRY' } ] },
-    /* (claude/underleaf2) THE ONE REQUIRED THROW: the bone key hangs on the school's bell-cote - its nail glints from the roof (and the chimney pots
-       by the ladder), the key where it falls, then the gate. (A street gate the alarm drops is glinted and nudged by src/hush-hands.js itself: it is
-       not there in a fresh street, so it is no route-list spot) */
-    { id: 'ul-bone', zone: [337, 2, 475, 45], steps: [
-      { zone: [345, 18, 400, 33], ats: [[378, 22], [355, 27]], done: ['keynail', 378, 22, 'down'], line: 'THE BONE KEY HANGS ON THE BELL-COTE' },
-      { zone: [345, 18, 470, 45], at: [378, 27], when: ['keynail', 378, 22, 'down'], done: ['key', 378, 27, 'got'], line: 'THE BONE KEY FELL ON THE SCHOOL ROOF' },
-      { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 378, 27, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
+    { id: 'ul-bed-garden', zone: [1,20,13,31], at: [13,29], done: ['vinebed', 13, 29, 'grown'], line: "THE SEED BED AT THE WALL: HER GREEN JAR IS BY IT" },
+    { id: 'ul-bed-ditch', zone: [44,20,49,31], at: [49,29], done: ['vinebed', 49, 29, 'grown'], line: "THE SEED BED ON THE DITCH'S LIP: A GREEN JAR GROWS A BRIDGE" },
+    { id: 'ul-bed-warden', zone: [76,20,87,31], at: [87,29], done: ['vinebed', 87, 29, 'grown'], line: "THE SEED BED AT THE WALL: THE GREEN JAR IS BACK ALONG THE LANE" },
+    { id: 'ul-well-loft', zone: [97,20,104,31], at: [103,29], done: ['floatwell', 103, 29, 'used'], line: "THE FLOAT WELL UNDER THE LOFT: HER BLUE JAR IS BY IT" },
+    { id: 'ul-well-rack', zone: [136,12,146,19], at: [144,17], done: ['floatwell', 144, 17, 'used'], line: "THE HIGH RACK: A BLUE BUBBLE OFF THE BOARD" },
+    { id: 'ul-hedge-1', zone: [189,20,197,31], at: [198,29], done: ['thornhedge', 198, 29, 'burnt'], line: "THE THORN HEDGE: HER RED JAR BURNS IT" },
+    { id: 'ul-hedge-2', zone: [217,25,231,33], at: [232,32], done: ['thornhedge', 232, 32, 'burnt'], line: "THE THORN HEDGE IN THE HOLLOW: A RED JAR" },
+    { id: 'ul-hedge-3', zone: [255,20,269,31], at: [270,29], done: ['thornhedge', 270, 29, 'burnt'], line: "THE THIRD HEDGE: A RED JAR BURNS IT" },
+    { id: 'ul-hedge-yard', zone: [279,20,289,31], at: [290,29], done: ['thornhedge', 290, 29, 'burnt'], line: "THE THORNS HIDE A SEED BED: BURN THEM FIRST" },
+    { id: 'ul-bed-yard', zone: [279,20,292,31], at: [292,29], done: ['vinebed', 292, 29, 'grown'], line: "THE SEED BED UNDER THE YARD: A GREEN JAR" },
+    { id: 'ul-well-yard', zone: [306,15,318,23], at: [316,22], done: ['floatwell', 316, 22, 'used'], line: "THE FLOAT WELL: A BUBBLE UP TO HER LEAF" },
+    { id: 'ul-bed-leaf', zone: [317,10,322,16], at: [322,15], done: ['vinebed', 322, 15, 'grown'], line: "THE SEED BED ON THE LEAF: A BRIDGE TO THE HEARTH" },
+    { id: 'ul-hedge-leaf', zone: [372,20,381,31], at: [382,29], done: ['thornhedge', 382, 29, 'burnt'], line: "HER LEAF: THE THORNS FIRST" },
+    { id: 'ul-bed-great', zone: [384,20,392,31], at: [392,29], done: ['vinebed', 392, 29, 'grown'], line: "THE SEED BED AT HER WALL: A GREEN JAR" },
+    { id: 'ul-well-great', zone: [393,15,410,24], at: [408,23], done: ['floatwell', 408, 23, 'used'], line: "THE FLOAT WELL: A BUBBLE TO HER STOOP" },
   ],
   burning: [
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },
@@ -820,9 +822,7 @@ export const STUCK_SIGNS = {
     { x: 205, y: 27, text: 'THE BOAT SWINGS TO YOU. STEP IN, AND LET GO AT THE TOP.' },
     { x: 564, y: 27, text: 'THE HIGH STRIKER AGAIN. COME DOWN ON THE PAD HARD.' },
     { x: 566, y: 13, text: 'THREE TARGETS, NINE SECONDS: THE BARS DROP FOR THEM.' } ] },
-  underleaf: { add: [
-    { x: 118, y: 33, text: 'THE MILL. THE BRASS KEY IS IN THE LOFT.' },
-    { x: 274, y: 33, text: 'THE CHURCH. THE IRON KEY IS ON THE ROOD BEAM.' } ] },
+  /* (claude/underleaf3: the mill's and the church's route signs went with UNDERLEAF 2's village) */
   burning: { add: [
     { x: 224, y: 25, text: 'TOO HIGH TO JUMP. WATER PUTS IT OUT, OR GO OVER THE ROOFS.' },
     { x: 245, y: 25, text: 'THE STREET IS GONE. GO OVER THE ROOFS.' } ] },

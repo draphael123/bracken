@@ -57,7 +57,7 @@ function glassSea(BK, P, mem) {
 }
 /* UNDERLEAF (claude/underleaf2, src/hush-hands.js walkHint): the one required throw - a pot from the school roof's chimney stack, lobbed (UP) at the
    bell-cote's nail, and the bone key that falls */
-const underleaf = (BK, P) => (BK.hushHands && BK.hushHands() ? BK.hushHands().walkHint(P) : null);
+const underleaf = (BK, P) => (BK.potions && BK.potions() ? BK.potions().walkHint(P) : null);   /* (claude/underleaf3) UNDERLEAF 3: the next jar the route needs - fetched, carried to its throw spot, tossed DOWN (src/potion-hands.js walkHint) */
 /* THE MONASTERY (claude/monastery2, review: "the walker cannot drive vents or wheels, so 88% of the level is unmeasured"): what a player does with
    what the monks built. AN INCENSE BRAZIER the route rises from (a route node over its column, its smoke's height above it): stand in its column and
    wait for its breath - or, cold or spent, strike it (STRIKE THE CENSER). A PRAYER WHEEL whose OTHER stair the route walks: strike it. A BELL whose

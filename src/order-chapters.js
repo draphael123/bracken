@@ -116,7 +116,7 @@ export const TWISTS = {
   plank: { level: 'burning', fam: 'patch', move: 'plank', rule: 'ONLY HIS FIRE SPREADS. WATER PUTS IT OUT.', mark: '!!', word: 'BURNING PLANK', sound: 'creak', fire: 'ember',
     what: 'he KICKS a burning plank under your feet: it flares on the strip, and the embers keep burning for a few seconds - get off the red.',
     n: { tell: 0.85, half: 24, dmg: 10, vy: -90, vx: 0, every: 7.0, col: '#ff8a3a', life: 2.6, ember: { life: 2.6, dmg: 4, tick: 0.6 } } },
-  pot: { level: 'underleaf', fam: 'patch', move: 'pot', rule: 'NOTHING HERE CAN SEE YOU, ONLY HEAR YOU. A THROWN POT IS A SOUND YOU CHOOSE.', mark: '!!', word: 'POT', sound: 'throwWhoosh', fire: 'flaskBreak',
+  pot: { level: 'underleaf', fam: 'patch', move: 'pot', rule: 'HER JARS CHANGE WHAT THEY BREAK ON: GREEN GROWS A VINE, BLUE LIFTS IN A BUBBLE, RED BURNS.', mark: '!!', word: 'POT', sound: 'throwWhoosh', fire: 'flaskBreak',
     what: 'he lobs a pot at the spot he last HEARD you: it bursts on a small red patch (a sound he chose) and throws you clear of it.',
     n: { tell: 0.7, half: 16, dmg: 8, vy: -60, vx: 140, every: 6.0, col: '#c9a96a', life: 0.9 } },
   kick: { level: 'scree', fam: 'patch', move: 'kick', rule: 'THE SLOPE MOVES UNDER YOU AND THE CLIFF DROPS WHAT IT LIKES.', mark: '!!', word: 'KICK ROCK', sound: 'stone', fire: 'rubble',
@@ -163,7 +163,7 @@ export const ORDER_AT = {
     name: 'THE HOIST MAUL', why: 'the hollow trunk\'s exam, the knothole at his back; the hoist rule worn by a brute - a slow heavy that drops a load on a told strip' },
   burning: { body: 'oathblade', chapter: 'marsh', twist: 'plank', sig: ['wade'], affix: 'BURNING', hp: 1.0, at: [156, 25], gate: 166, replaces: 'shield',
     name: 'THE EMBER BLADE', why: 'the crofts\' lane out of the village: a duelist who kicks a burning plank under you (the fire is his; water puts it out)' },
-  underleaf: { body: 'oathlance', chapter: 'fungus', twist: 'pot', sig: [], affix: 'UNSTOPPABLE', hp: 1.0, at: [331, 33], replaces: 'pike',
+  underleaf: { body: 'oathlance', chapter: 'fungus', twist: 'pot', sig: [], affix: 'UNSTOPPABLE', hp: 1.0, at: [366, 29], replaces: 'pike',   /* (claude/underleaf3: THE CAULDRON YARD's exam, at the foot of the jar stair) */
     name: 'THE HUSH LANCE', why: 'the tower-foot pike, UPGRADED not added (the level has no gated exam: it is a sneak level and keeps none): a lancer who throws a pot at where he last heard you' },
   scree: { body: 'oathmaul', chapter: 'crag', twist: 'kick', sig: [], affix: 'WARDING', hp: 0.85, at: [505, 18], gate: 510, replaces: 'troll',
     name: 'THE SCREE MAUL', why: 'the crag troll\'s place before the climb: the slope moves under you and he moves it - a brute that kicks the scree loose' },
