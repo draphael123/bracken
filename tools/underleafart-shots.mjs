@@ -10,7 +10,7 @@ const only = process.argv[2] ? new Set(process.argv[2].split(',')) : null;
 mkdirSync(OUT, { recursive: true });
 const boss = (m, extra = '') => `BK.tp(444,29);BK.sim(60);const b=BK.enemies().find(e=>e.t==='grandmother');if(b){b.mode='${m}';b.modeT=9;b.x=BK.P.x+64;b.face=-1;BK.P.face=1;${extra}}`;
 const SHOTS = [
-  ['1-garden-teach', 7, 29, ''], ['2-ditch-bridge', 48, 29, ''], ['3-float-well', 102, 29, ''], ['4-hanging-racks', 134, 19, ''], ['5-thorn-hedge', 195, 29, ''],
+  ['1-garden-teach', 7, 29, ''], ['2-ditch-bridge', 48, 29, ''], ['3-float-well', 102, 29, ''], ['4-hanging-racks', 129, 19, ''], ['5-thorn-hedge', 195, 29, ''],
   ['6-thorn-beast', 222, 32, ''], ['7-cauldron-yard', 300, 22, ''], ['8-leaf-bridge', 322, 15, ''], ['9-great-leaf', 388, 29, ''], ['10-her-stoop', 421, 17, ''],
   ['11-boss-idle', 0, 0, boss('walk')], ['12-boss-broodTell', 0, 0, boss('broodTell')], ['13-boss-fireballTell', 0, 0, boss('fireballTell')], ['14-boss-jarTell-green', 0, 0, boss('jarTell', "b.hurlCol='green';")],
   ['15-boss-jarTell-red', 0, 0, boss('jarTell', "b.hurlCol='red';")], ['16-boss-staffTell', 0, 0, boss('staffTell')], ['17-boss-floated', 0, 0, boss('floated', 'b.floatLen=3.2;b.floatY0=b.y;b.modeT=2.6;')], ['18-boss-stirTell', 0, 0, boss('stirTell', 'b.phase=2;')],

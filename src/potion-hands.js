@@ -24,7 +24,7 @@
 //               RED leaves BURNING GROUND; the spot is marked); THE BROOD (broodTell: no blow). PHASE TWO (GM.p2): she STIRS THE CAULDRON - a
 //               bigger brood, and the cauldron SPITS FIRE (stirTell: gouts on marked spots across the room) - five told moves in all.
 import * as CTW from './carry-throw.js';
-import * as UW from './redraw/underleaf3_world.js'; import * as UG from './redraw/underleaf3_gran.js'; import * as UD from './redraw/underleaf3_dress.js'; import * as UT from './redraw/underleaf3_tiles.js';   /* (claude/underleafart) her jars, shelves, beds, hedges, wells, bubbles, marks and cauldron, drawn */
+import * as UW from './redraw/underleaf3_world.js'; import * as UG from './redraw/underleaf3_gran.js'; import * as UB from './redraw/underleaf3_backdrop.js'; import * as UD from './redraw/underleaf3_dress.js'; import * as UT from './redraw/underleaf3_tiles.js';   /* (claude/underleafart) her jars, shelves, beds, hedges, wells, bubbles, marks and cauldron, drawn */
 
 export const JAR = { brew: 0.8, burnR: 40, bedR: 30, snare: 1.6, snareR: 28, hover: 2.4, rise: 92, riseMax: 7 * 16, foeFloat: 2.6, foeRise: 34, bubbleR: 13, fireLife: 2.6, hedgeBurn: 0.45, coatR: 34 };
 export const GM = { hp: 1180, ward: 0.4, openMul: 2, float: 3.2, purse: 0.15, after: 3, p2: 0.55, brood: 3, brood2: 4, broodCd: 11, broodCd2: 9, broodHp: 1, broodBite: 0.6,
@@ -53,7 +53,7 @@ export function makePotionHands(ctx) {
   /* ---------- RESET (every load and every respawn: what grew and what burnt stays for the attempt) ---------- */
   H.reset = () => {
     const lv = L(); if (!lv || !lv.jars) { S = null; return; }
-    if (!warmed) { warmed = true; UW.warm(); UD.warmDress(); UT.warmTiles(); }   /* (claude/underleafart) bake the level's pictures at the load, not in the first frames */
+    if (!warmed) { warmed = true; UW.warm(); UD.warmDress(); UT.warmTiles(); try { const cv = document.createElement('canvas'); cv.width = 320; cv.height = 180; const gg = cv.getContext('2d'), plan = UD.planDress(lv, T); for (const tx of [10, 60, 130, 180, 230, 270, 320, 360, 400, 425, 450]) { const cx0 = tx * 16 - 160; UB.drawBackdrop(gg, cx0, 0, 320, 180, lv, 0, 0, true); UB.drawNear(gg, cx0, 0, 320, 180, lv, 0, 0); UD.drawDress(gg, cx0, 400, 320, 0, plan); } } catch (err) { /* the warm-up is a nicety */ } }   /* (claude/underleafart) bake the level's pictures at the load, not in the first frames */
     const keep = S && S.L === lv ? S : null;
     const jars = [...ents('jarshelf'), ...ents('brewpot')].map(e => ({ t: 'jar', col: e.col, brew: e.t === 'brewpot', hx: e.x * TS + 8, hy: (e.y + 1) * TS, x: e.x * TS + 8, y: (e.y + 1) * TS - (e.t === 'brewpot' ? 12 : 0), state: 'rest', retT: 0, thrKind: 'pot', vx: 0, vy: 0,
       launch: P0 => CTW.launchOf('pot', P0, ctx.keys()) }));
