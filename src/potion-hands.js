@@ -357,8 +357,8 @@ export function makePotionHands(ctx) {
     g.globalAlpha = 0.7 * a; if (p.col === 'green') { g.fillStyle = '#3e7a26'; for (let k = -3; k <= 3; k++) g.fillRect(x + k * 4, y - 2 - (k % 2 ? 4 : 2), 2, 5); }
     g.globalAlpha = 1; }
   function drawBanner(g, time) { if (!S.banner) return; const VW = ctx.VW(), a = Math.min(1, S.banner.t, 3.4 - S.banner.t); g.save(); g.globalAlpha = Math.max(0, a);
-    g.fillStyle = 'rgba(20,24,14,0.7)'; g.fillRect(VW / 2 - 90, 22, 180, 15); g.fillStyle = '#c9b27c'; g.fillRect(VW / 2 - 90, 22, 180, 1); g.fillRect(VW / 2 - 90, 36, 180, 1);
-    if (ctx.text) ctx.text(S.banner.name, VW / 2, 26, '#e8dcc0', 'center'); g.restore(); }
+    g.fillStyle = 'rgba(20,24,14,0.7)'; g.fillRect(VW / 2 - 90, 40, 180, 15); g.fillStyle = '#c9b27c'; g.fillRect(VW / 2 - 90, 40, 180, 1); g.fillRect(VW / 2 - 90, 54, 180, 1);
+    if (ctx.text) ctx.text(S.banner.name, VW / 2, 44, '#e8dcc0', 'center'); g.restore(); }
   /* her cottage: the great cauldron at the back of the room (her landmark's heart), her jar shelves' frames */
   function drawCottage(g, cx, cy, time) { const a = L().arena; if (!a) return; const x = R(cauldronX() - cx), y = R(a.floor - cy); if (x < -80 || x > ctx.VW() + 80) return;
     g.fillStyle = '#1e1a14'; g.fillRect(x - 22, y - 26, 44, 26); g.fillStyle = '#2e2a22'; g.fillRect(x - 24, y - 28, 48, 4);
