@@ -13,7 +13,7 @@
 // X = { heroes(), calm(x, y) -> bool, floorAt(x, y) -> px (the footing under a point), solidAt(x, y), hit(e, box, dmg, o) (o: { blockable, onBlock, name }),
 //   glob(x, y) (a glob splashed here: lay the sticky patch), mark(e, txt, col), sfx, hint(id, msg) }
 export const HONEY = {
-  hp: 46, w: 22, h: 18, speed: 40, wake: 150, leash: 190, beat: 46, hover: 64, ramH: 14,
+  hp: 54, w: 22, h: 18, speed: 40, wake: 150, leash: 190, beat: 46, hover: 64, ramH: 14,
   dripTell: 0.7, dripCd: 2.0, globG: 700, globDmg: 14, globR: 7, patch: 6,
   ramTell: 0.8, ramSpeed: 210, ramT: 0.55, ramDmg: 36, ramRange: 110, ramMin: 26, ramDy: 14, ramCd: 1.0, recover: 0.9, reel: 1.3,
   armour: 0.5, drowsy: 3.0, drowsyK: 2, sink: 150, rise: 40,
@@ -25,7 +25,7 @@ export const HONEY_HINT = { drowsy: 'SMOKE MAKES A FAT HONEY HORNET DROWSY: IT S
    4 RAM TELL (leaning back, wings wide) 5 RAM (stretched along its line, wings swept back) 6 REEL (knocked crooked, after a blocked ram / its recover) 7 DROWSY (down on the
    ground, wings folded, the sac flat) 8 HURT 9 DEAD (on its back, legs up: the corpse) */
 export const HONEY_POSE = { fly: 0, fly2: 1, dripTell: 2, drop: 3, ramTell: 4, ram: 5, reel: 6, recover: 6, drowsy: 7, hurt: 8, dead: 9 };
-export const newHoneyHornet = e => Object.assign(e, { hx: e.x, hy: e.y, mode: 'patrol', modeT: 0, noGrav: true, vx: 0, vy: 0, cd: 0.6, next: 'drip', tgt: null, globs: [], drowsyT: 0, phase: (Math.floor(e.x) % 9) * 0.7, face: e.face || -1 });
+export const newHoneyHornet = e => Object.assign(e, { hx: e.x, hy: e.y, mode: 'patrol', modeT: 0, noGrav: true, vx: 0, vy: 0, cd: 0.3, next: 'drip', tgt: null, globs: [], drowsyT: 0, phase: (Math.floor(e.x) % 9) * 0.7, face: e.face || -1 });
 const steer = (e, tx, ty, sp, dt) => { const dx = tx - e.x, dy = ty - e.y, d = Math.hypot(dx, dy) || 1, v = Math.min(sp, d * 3); e.vx += (dx / d * v - e.vx) * Math.min(1, dt * 3); e.vy += (dy / d * v - e.vy) * Math.min(1, dt * 3); e.x += e.vx * dt; e.y += e.vy * dt; };
 /* ONE FRAME. Everything it does to a hero goes through X */
 export function stepHoneyHornet(e, dt, X) {

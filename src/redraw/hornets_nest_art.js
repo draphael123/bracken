@@ -31,6 +31,10 @@ function hornetFrame(beat, hurt) { return g => {
   px(g, '#f0e4c8', 14, 7.5 + dy); line(g, INK, 13, 3.4 + dy, 14.5, 1.6 + dy);                                              /* a mandible, a feeler */
   px(g, CH[0], 7, 8 + dy); px(g, CH[0], 9, 8.5 + dy); px(g, CH[0], 11, 8.4 + dy); };
 }
+/* ---------------- THE STINGER HORNET (16 x 14, claude/hornetsnest2): the spitter's machine under a NEST HORNET clinging to the comb - idle, idle, and the flick (its abdomen
+   curled forward under it, a bead of venom on the sting) ---------------- */
+function stingerFrame(beat, aim) { return g => { g.save(); g.translate(0, 3); hornetFrame(beat)(g); g.restore();
+  if (aim) { line(g, '#fff6c8', 1, 11, 3, 12.5); px(g, '#9ed84a', 3.5, 13); px(g, '#5ea02a', 4, 13.4); } }; }
 /* ---------------- THE COMB DRONE (16 x 12): a stout worker on six-ish legs; frames walk0-3, look, tell, bite, hurt ---------------- */
 function droneFrame(kind, k) { return g => {
   const hurt = kind === 'hurt', lunge = kind === 'bite' ? 2 : 0, rear = kind === 'tell' ? -2.2 : kind === 'look' ? -1 : 0, bob = kind === 'walk' && (k & 1) ? 0.6 : 0, oy = hurt ? 1 : 0;
@@ -69,6 +73,7 @@ export function bakeNestSkins(SPR) {
   return {
     hornet: sheet([hornetFrame(0), hornetFrame(1), hornetFrame(2), hornetFrame(0, true)], 16, 11, SPR.wasp.ax, SPR.wasp.ay, keep('wasp')),
     combdrone: sheet([droneFrame('walk', 0), droneFrame('walk', 1), droneFrame('walk', 2), droneFrame('walk', 3), droneFrame('look'), droneFrame('tell'), droneFrame('bite'), droneFrame('hurt')], 16, 12, SPR.sprig.ax, SPR.sprig.ay, keep('sprig')),
+    stinger: sheet([stingerFrame(0), stingerFrame(1), stingerFrame(2, true)], 16, 14, SPR.spit.ax, SPR.spit.ay, keep('spit')),   /* (claude/hornetsnest2) the nest's ranged hornet */
     nestguard: sheet([guardFrame('walk', 0), guardFrame('walk', 1), guardFrame('walk', 2), guardFrame('walk', 3), guardFrame('turn'), guardFrame('tell'), guardFrame('shove'), guardFrame('low')], 16, 16, SPR.shield.ax, SPR.shield.ay, keep('shield')),
   };
 }

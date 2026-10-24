@@ -77,6 +77,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* (claude/hornetsnest2, Daniel 10-23: the venom spitter read as a MAGE - gone; hornets only) THE FAT HONEY HORNET (src/honey-hornet.js, the nest's one new heavy): slow, its
      plated abdomen turns a cut from behind; its told RAM; its honey globs leave sticky patches; SMOKE makes it drowsy - it sinks to the ground, open */
   const fat = (x, y, o = {}) => ent('honeyhornet', x, y, { face: -1, perch: true, ...o });
+  const stinger = (x, y, o = {}) => ent('spit', x, y, { cnSkin: 'stinger', face: -1, ...o });   /* THE STINGER HORNET: the spitter's machine under a NEST HORNET on the comb - it curls its abdomen (a yellow !) and flicks venom (a hornet, not a mage) */
 
   // ================= 1. THE PINE'S FOOT (0-79): TEACH - the smoke stand, the lone swarm, THE FIRST COMB, the sticky bridge =================
   ground(0, 41, FL);
@@ -98,7 +99,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   ground(62, 62, FL - 8);                                    /* a knuckle in the hollow: 60 -> 58 -> the bridge at 56 */
   shelf(62, 67, FL - 10); waxed(62, 67, FL - 10);            /* the comb across it */
   ground(68, 79, FL - 10);
-  hornet(65, FL - 14, { squad: 'hollow' });
+  hornet(65, FL - 14, { squad: 'hollow' }); stinger(69, FL - 11, { squad: 'hollow' });
   sign(58, FL - 11, 'FRESH COMB IS STICKY: IT HOLDS YOUR FEET. A HORNET STINGS ON ITS ! - STEP OFF ITS LINE.');
   coins([64, FL - 12], [66, FL - 12]);
   /* a comb over a comb drone: the first DROP (cut it: it lands on him) */
@@ -124,7 +125,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   sign(88, FL - 13, "THE GATE'S THROAT HUMS. TAKE A POT UP WITH YOU: YOU CANNOT SWING, BUT YOU CAN JUMP.");
   /* THE LOWER CELLS: a long chamber, floor 34; the comb bridge over the waste pit */
   air(90, 140, 26, 33);
-  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); fat(104, 29, { squad: 'cells' });   /* THE FIRST FAT HONEY HORNET: up the throat with a pot in hand, you meet it with its answer */
+  hornet(100, 29, { squad: 'cells' }); drone(108, 33, { squad: 'cells' }); fat(104, 29, { squad: 'cells' }); stinger(98, 30, { squad: 'cells', perch: true });   /* THE FIRST FAT HONEY HORNET: up the throat with a pot in hand, you meet it with its answer */
   sign(96, 33, 'A FAT HONEY HORNET: ITS BACK IS PLATED - HIT ITS HEAD. SMOKE IT AND IT SINKS, OPEN.');
   shelf(95, 104, 31); shelf(129, 136, 31);                  /* comb shelves along the chamber's wall (a second height) */
   coins([94, 32], [98, 31], [102, 32]);
@@ -138,7 +139,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   /* THE WAXED FLOOR: the chamber's far half is fresh comb under darting hornets (slow feet, quick stings) */
   air(141, 168, 24, 31);                                     /* (a step up from 34 to 32 at 141) */
   waxed(142, 156, 32);
-  hornet(146, 27, { squad: 'wax' }); fat(152, 27, { squad: 'wax' });   /* a fat honey hornet over the waxed floor: its globs on fresh comb (slow feet, its ram) */
+  hornet(146, 27, { squad: 'wax' }); fat(152, 27, { squad: 'wax' }); stinger(150, 28, { squad: 'wax' });   /* a fat honey hornet over the waxed floor: its globs on fresh comb (slow feet, its ram) */
   shelf(144, 150, 29);
   coins([145, 30], [150, 30], [155, 30]);
   smoke(139, 33);
@@ -178,7 +179,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   block(223, 247, 8, 31);                                    /* the high wall: its top (row 8) runs east to the brood cells */
   hang('lastA', 219, 221, 9, 2, { chain: 'B', land: 12 });
   hang('lastB', 220, 222, 7, 2, { chain: 'B', land: 10, on: 'lastA' });
-  swarm(217, 10, { squad: 'exam' }); hornet(221, 4, { squad: 'exam' }); hornet(214, 6, { squad: 'exam' }); fat(232, 5, { squad: 'exam' });   /* the exam's heavy waits on the wall top */
+  swarm(217, 10, { squad: 'exam' }); hornet(221, 4, { squad: 'exam' }); hornet(214, 6, { squad: 'exam' }); fat(232, 5, { squad: 'exam' }); stinger(228, 7, { squad: 'exam' });   /* the exam's heavy waits on the wall top */
   smoke(212, 13);
   coins([218, 13], [221, 9], [226, 7]);
   air(223, 247, 4, 7);
@@ -189,7 +190,7 @@ export function buildHornetsNest({ painter, T, TS }) {
   for (const [x, y] of [[258, 9], [267, 9], [277, 9], [286, 9]]) cells.push({ x, y });   /* brood cells on the nursery floor (a wax pocket each) */
   sign(251, 9, 'BROOD CELLS PULSE BEFORE THEY HATCH. SMASH A PULSING CELL, OR ITS DRONES COME OUT.');
   coins([262, 8], [272, 8], [282, 8]);
-  hornet(272, 5, { squad: 'brood' }); fat(282, 6, { squad: 'brood' });   /* the last fat honey hornet keeps her nursery: smoke is behind you now - its head, or its ram on your shield */
+  hornet(272, 5, { squad: 'brood' }); fat(282, 6, { squad: 'brood' }); stinger(278, 9, { squad: 'brood' });   /* the last fat honey hornet keeps her nursery: smoke is behind you now - its head, or its ram on your shield */
   shelf(262, 266, 8); shelf(257, 260, 5); ent('silver', 258, 4); shelf(272, 277, 8); shelf(284, 288, 8);   /* the nursery's upper comb (a second height; a silver in the brood's own wax) */
   air(295, 295, 3, 9);                                       /* her door: the nursery floor runs out over the hall; you drop in */
   sign(290, 9, 'HER STING STICKS IN COMB. STAND ON A PERCH AS SHE DIVES. SMOKE HER AND SHE FALLS.');
@@ -240,7 +241,7 @@ export function buildHornetsNest({ painter, T, TS }) {
 
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 2, y: FL - 1 }, pools, falls: [], moversExtra: [], gateAfterBoss: true,   /* (claude/hornetsnest2) her death opens the way on: the descent and the marsh's edge to the gate */
-    foeHit: { hornet: 0.7 },   /* a nest hornet's sting is the river wasp's machine at seven-tenths its blow (they are many here; claude/hornetsnest2: 0.6 -> 0.7 with the venom spitters gone) */
+    foeHit: { hornet: 0.85 },   /* a nest hornet's sting is the river wasp's machine at 0.85 of its blow (claude/hornetsnest2: 0.6 -> 0.85 with the venom spitters gone: the level-1 curve read EASY at 30%) */
     squadBands: [{ lo: 400, hi: 419, spots: 0, why: "THE MARSH EDGE: the last columns (past the second water) are the marsh's bank and the gate - the way out after her death" }],
     hornetsNest: true, palette: { dress: 'wood' }, /* integ116: names the forest kit it has always painted with (tools/skins.mjs: nothing falls through unnamed) */ combs, wax: wax.concat(hallWax), smokers: smokers.concat(hallSmokers), broodCells: cells, crumbles, reachSpans,
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-').replace(/^-|-$/g, ''), name, x0, x1 })),

@@ -55,9 +55,9 @@ for (const [x, row] of L.smokers) ok(foot(at(x, row + 1)), 'a smoke stand at ' +
 for (const [x0, x1, row] of L.wax) for (let x = x0; x <= x1; x++) assert.ok(foot(at(x, row)), 'wax at ' + x + ',' + row + ' is on footing');
 ok(L.wax.length >= 8, L.wax.length + ' wax shelves and floors (fresh comb)');
 ok(L.ents.filter(e => e.t === 'swarm').length >= 5 && L.ents.some(e => e.t === 'shield' && e.cnSkin === 'nestguard' && e.elite && e.gate), 'the swarms, and THE NEST-GUARD (an elite holding the gate\'s chamber)');
-ok(!L.ents.some(e => e.t === 'spit' || e.cnSkin === 'venomspitter'), 'NO VENOM SPITTER (Daniel 10-23: it read as a mage) - hornets only');
+ok(!L.ents.some(e => e.cnSkin === 'venomspitter') && L.ents.filter(e => e.t === 'spit').every(e => e.cnSkin === 'stinger'), 'NO VENOM SPITTER (Daniel 10-23: it read as a mage) - its machine is a STINGER HORNET now: hornets only');
 { const hh = L.ents.filter(e => e.t === 'honeyhornet'); ok(hh.length >= 3 && hh.length <= 5 && hh.every(e => e.x < HN.HALL.x0 || e.x > HN.HALL.x1), hh.length + ' FAT HONEY HORNETS on the climb (taught, tested, examined), none in her hall');
-  ok(hh[0].x < 170 && L.smokers.some(([x]) => Math.abs(x - hh[0].x) < 50), 'the first fat honey hornet meets you near a smoke stand (its answer, taught)'); }
+  ok(hh[0].x < 170 && L.smokers.some(([x]) => Math.abs(x - hh[0].x) < 25), 'the first fat honey hornet meets you near a smoke stand (its answer, taught)'); }
 
 /* ---------- B. THE LOCKS ---------- */
 const reached = (R, col, row) => [...R.seen].some(k => { const [x, y] = k.split(',').map(Number); return x >= col && Math.abs(y - row) <= 3; });
