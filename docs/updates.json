@@ -1,6 +1,15 @@
 [
   {
     "date": "2026-10-24",
+    "batch": 119,
+    "lines": [
+      "The Ram Lord on the Scree Path is easier: bigger openings to hit him",
+      "A clear warning shows when the Ram Lord can be stunned",
+      "Three new spore-cap platforming gauntlets in the Sporewood"
+    ]
+  },
+  {
+    "date": "2026-10-24",
     "batch": 118,
     "lines": [
       "The Hornet's Nest is now level 2, before the Marsh",
