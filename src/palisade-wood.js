@@ -87,12 +87,12 @@ export function buildPalisadeWood({ painter, T, TS }) {
   sign(26, 32, 'A CREW ON A WALKWAY. KNOCK OUT ITS PROP: THE CREW COMES DOWN.');
   coins([30, 31], [40, 31], [43, 31]); crop(41, 32, 'rake');
   ground(45, 58, 35);
-  foe('brute', 52, 34, 'edgeB', { face: -1 }); foe('shield', 55, 34, 'edgeB', { face: -1 }); foe('archer', 49, 31, 'edgeB', { face: -1, perch: true });
+  foe('brute', 52, 34, 'edgeB', { face: -1 }); foe('pike', 55, 34, 'edgeB', { face: -1 }); foe('archer', 49, 31, 'edgeB', { face: -1, perch: true });
   plank(46, 51, 32); coins([47, 31], [50, 31]);
   deco(47, 34, 'timber', 1); deco(57, 34, 'stump', 1); crop(49, 34, 'sheaf');
   ground(59, 61, 37);                                                              /* the saw pit (two down, two up) */
   ground(62, 79, 35);
-  foe('rockgoblin', 72, 34, 'edgeC', { face: -1 }); foe('pike', 76, 34, 'edgeC', { face: -1 }); foe('hound', 67, 31, 'edgeC', { face: -1, perch: true });                                /* a stake-thrower on the felled ground (art: the reskin) */
+  foe('rockgoblin', 72, 34, 'edgeC', { face: -1 }); foe('pike', 76, 34, 'edgeC', { face: -1 }); foe('hound', 69, 31, 'edgeC', { face: -1, perch: true });                                /* a stake-thrower on the felled ground (art: the reskin) */
   plank(64, 70, 32); coins([65, 31], [68, 31]);
   deco(66, 34, 'stump', 0); deco(75, 34, 'fruitTree', 0); crop(69, 34, 'apples');
   coins([64, 33], [70, 33], [77, 33]);
