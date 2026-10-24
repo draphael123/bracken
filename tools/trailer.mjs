@@ -348,8 +348,8 @@ const T_MAIN = [
 ];
 const T_VERT = [C('open_cistern', 5, 'a'), C('verb_spore', 5, 'a'), C('verb_comb', 6, 'a'), C('verb_kings', 6, 'a'), C('trav_ksar', 5, 'a'), C('verb_hoist', 6, 'a'), C('hero_pyro', 5, 'a'), C('boss_duneworm', 5, 'a'), C('final_queen', 7, 'a'), ['card', 'end', 8, 'end']];
 const T_DEMO = [
-  ['card', 'title', 5, 'title'], C('demo_wood', 6, 'a'), C('verb_comb', 7, 'a'), C('demo_queen', 6, 'a'), C('demo_marsh', 6, 'a'), C('demo_fen', 6, 'a'), C('scene_tavern', 7, 'a'),
-  C('demo_stockade', 6, 'a'), C('verb_barrel', 7, 'a'), C('demo_duel', 8, 'a'), ['card', 'end-demo', 10, 'end'],
+  ['card', 'title', 5, 'title'], C('demo_wood', 6, 'a'), C('verb_comb', 7, 'a'), C('demo_marsh', 6, 'a'), C('demo_fen', 6, 'a'), C('scene_tavern', 7, 'a'),
+  C('demo_stockade', 6, 'a'), C('scene_store', 5, 'a'), C('verb_barrel', 7, 'a'), C('demo_duel', 8, 'a'), ['card', 'end-demo', 10, 'end'],
 ];
 function cut() {
   const which = opt('which', 'main'), TL = { main: T_MAIN, vertical: T_VERT, demo: T_DEMO }[which], vert = which === 'vertical';
@@ -380,10 +380,10 @@ function preview() {
       const r = ff(['-i', mp4, '-vf', 'select=not(mod(n\\,' + every + ')),scale=640:360:flags=neighbor,tile=3x3', '-frames:v', '1', join(CLIPS, id + '-prev.png')]); console.log(id + (r.status === 0 ? ' prev' : ' ' + r.stderr.slice(0, 200))); } catch (e) { console.log(id + ' ' + e.message); } }
 }
 function shotlist() {
-  const rows = ['# trailer shot list (every clip is the bot playing the live build; re-record on a newer build with: PORT=<p> node tools/trailer.mjs record --shots=<id>)', '', 'shot | kind | level | hero | seed | note', '--- | --- | --- | --- | --- | ---'];
+  const rows = ['# trailer shot list (every clip is the bot playing the live build; v2; re-record on a newer build with: PORT=<p> node tools/trailer.mjs record --shots=<id>; scenes are scripted in tools/trailer-scenes.mjs)', '', 'shot | kind | level | hero | seed | note', '--- | --- | --- | --- | --- | ---'];
   for (const f of readdirSync(CLIPS).filter(f => f.endsWith('.json'))) { const m = JSON.parse(readFileSync(join(CLIPS, f), 'utf8')); rows.push([m.shot, m.kind, m.level || '', m.hero || '', m.seed ?? '', m.note || ''].join(' | ')); }
   for (const w of ['main', 'vertical', 'demo']) { const f = join(OUT, w + '-parts.json'); if (!existsSync(f)) continue; const m = JSON.parse(readFileSync(f, 'utf8')); rows.push('', '## ' + w + ' cut (timecode | part | secs)'); for (const u of m.parts) rows.push(u.at + ' s | ' + (u.id || 'card ' + u.card) + ' | ' + u.secs + (u.start != null ? ' | frames from ' + u.start : '')); }
-  writeFileSync(join(OUT, 'shotlist.md'), rows.join('\n') + '\n'); console.log('shotlist.md');
+  writeFileSync(join(OUT, 'shotlist-v2.md'), rows.join('\n') + '\n'); console.log('shotlist-v2.md');
 }
 
 const main = { record, sheets, preview, cards, cut, shotlist, list: () => SHOTS.forEach(s => console.log(s.id.padEnd(16), s.kind.padEnd(5), s.level.padEnd(13), s.hero.padEnd(10), s.note))   };
