@@ -4,11 +4,26 @@ on:
     inputs:
       mode:
         type: choice
-        options: [mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, textfit-memory, hidden-memory, mark-memory, load-audit, memory-policy, pool-recycle, server-lease, server-only]
+        options: [layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  layout-gc:
+    if: inputs.mode == 'layout-gc'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/layout-gc-cost.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: layout-gc-cost
+          path: gate-data/
   mark-trace:
     if: inputs.mode == 'mark-trace'
     runs-on: ubuntu-latest
