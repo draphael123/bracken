@@ -504,14 +504,14 @@
   "bare": true
  },
  "palisadewood": {
-  "hash": "9542f84699a9",
+  "hash": "6060af42a578",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 6,
+  "hits": 13,
   "deaths": 0,
-  "kills": 72,
-  "lifts": 71,
+  "kills": 76,
+  "lifts": 74,
   "walked": 100,
   "bare": true
  }
