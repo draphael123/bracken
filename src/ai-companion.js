@@ -35,12 +35,21 @@ export const cleanCfg = c => ({ beh: c && BEH[c.beh] ? c.beh : 'balanced', linke
    every blow on a hero, with any number of seats. A party with a HUMAN partner keeps that exactly. A party of one human and AIs is 1 + AI_WEIGHT a seat,
    never more than the human x2. bodies: [{ ai }] (seat one first). */
 export const AI_WEIGHT = 0.5;
-export function coopMulOf(bodies) {
+/* (claude/coopbalance, Daniel 10-21) THE SPLIT. Co-op used to be one number (x2) for the foes' health AND every blow on a hero, so a person in co-op was
+   about twice as deadly-off as alone. Now two tables by SEATS (index = seats; 1 is solo): COOP.hp the foes' health, COOP.dmg the blow on EACH hero. An AI is a
+   partial seat (AI_WEIGHT), so a party's worth is people + AI_WEIGHT a AI, and a value between two seats is the line between their rows; an AI-only party
+   keeps its old cap (the x2 health row, the 2-seat blow row). Mutable on purpose: the lab sweeps it (BK.aiComp.AIC.COOP). */
+export const COOP = { hp: [1, 1, 2, 2.6, 3.2], dmg: [1, 1, 1.25, 1.38, 1.5], aiAsHuman: false };   /* MEASURED (tools/coop-boss-rates.mjs, act I-II bosses, the human bot + co-op AI hands as people, flasks every seat): 2p 1.35 56% / 1.25 69%; 3p 1.45 50% / 1.3 79%; 4p 1.35 94% - solo 73% */   /* aiAsHuman: the LAB's two-bot fights - a bot standing in for a second PERSON counts as one */
+const rowAt = (row, w) => { const lo = Math.max(1, Math.min(4, Math.floor(w))), hi = Math.min(4, lo + 1), t = Math.max(0, Math.min(1, w - lo)); return row[lo] + (row[hi] - row[lo]) * t; };
+/* the party's worth in seats: 1 for the first, 1 a person after him (a body with no ai flag), AI_WEIGHT an AI (b.labHuman: the lab's second bot, counted as a person) */
+export function seatsOf(bodies) {
   if (!bodies || bodies.length < 2) return 1;
-  const rest = bodies.slice(1);
-  if (rest.some(b => b && !b.ai)) return 2;
-  return Math.min(2, 1 + AI_WEIGHT * rest.length);
+  let w = 1, people = 0;
+  for (const b of bodies.slice(1)) { const ai = b && b.ai && !b.labHuman && !COOP.aiAsHuman; w += ai ? AI_WEIGHT : 1; if (!ai) people++; }
+  return people ? w : Math.min(w, 1 + AI_WEIGHT * 2);
 }
+export function coopMulOf(bodies) { const w = seatsOf(bodies); return w <= 1 ? 1 : Math.round(rowAt(COOP.hp, w) * 1000) / 1000; }   /* the foes' health */
+export function coopTakeOf(bodies) { const w = seatsOf(bodies); return w <= 1 ? 1 : Math.round(rowAt(COOP.dmg, w) * 1000) / 1000; }   /* the blow on each hero (and the breath, and the ward's price) */
 
 /* WHO AN AI FOLLOWS: player one while he stands; else the nearest standing human; an AI never leads a human (the leash never pulls a person to a bot) */
 export function leadOf(bodies, me) {

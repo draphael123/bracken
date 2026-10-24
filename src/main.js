@@ -345,6 +345,7 @@ const coop = () => !!players && players.length > 1;
 /* THE CO-OP SCALE (claude/aicompanions): x2 for everything that fights and every blow on a hero with a HUMAN partner, as it always was; a party of one human and
    AI partners is LIGHTER - 1 + AIC.AI_WEIGHT a seat, never past x2 (brief-aicompanions: 'enemy scaling counts an AI as a lighter partner') */
 const coopMul = () => (coop() ? AIC.coopMulOf(players) : 1);
+const coopTake = () => (coop() ? AIC.coopTakeOf(players) : 1);   /* (claude/coopbalance) the other half, split from the first: every blow on a hero, the breath, the ward's price */
 /* WHAT THE TOGGLE SHOWS. `coop()` is the level's own live truth; `coopWant` is the intent for the NEXT one - on the
    map, or in the pause menu before it has applied, the level has not caught up yet and coopWant is the honest answer.
    Turning it off clears both at once (see the pause menu and the map handlers), so the two are never out of step. */
@@ -1580,7 +1581,7 @@ function seatAdd(s) {
   players.push(p); seatStamp(p);
   partyColours();
   seatBake(p);
-  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; if (s.ally) P.flasks = SV.flaskMax(PROG); });   /* (claude/aicompanions) an AI partner carries its own flasks (its save's max) */
+  asPlayer(p, () => { applyUpgrades(); P.hp = P.maxHp; P.hpShown = P.hp; P.st = P.maxSt; P.flasks = SV.flaskMax(PROG); });   /* (claude/aicompanions) an AI partner carries its own flasks (its save's max); (claude/coopbalance) so does EVERY human seat - his own save's count, a guest with no save the host's */
   if (s.ally) allyLoad();   /* the bot's modules on their way (each AI makes its own walker on its first frame) */
   return p;
 }
@@ -1615,7 +1616,7 @@ function coopRegroup() {
   if (!coop()) return;
   if (PTK) PTK.reset();   /* (claude/partnerthrow) a respawn lets everybody go */
   for (const p of players) { if (p === P) continue;
-    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); if (P.ai) { P.flasks = Math.max(P.flasks | 0, SV.flaskMax(PROG)); P.aiS = null; } seatStamp(P); }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too */
+    asPlayer(p, () => { Object.assign(P, { x: checkpoint.x + ([0, 14, -14, 28][P.n - 1] ?? 14) * (L && L.tavern ? -1 : 1), y: checkpoint.y, vx: 0, vy: 0, hp: P.maxHp, hpShown: P.maxHp, st: P.maxSt, inv: 1, hurt: 0, dead: 0, down: 0, reviveT: 0, atk: -1, plunge: false, onMover: null, face: 1, block: false, dodge: 0, breath: breathCapacity(L), drownT: 0 }); BRD.clear(P); P.hitSet.clear(); P.flasks = SV.deathRefill(P.flasks, SV.flaskMax(PROG)); if (P.ai) P.aiS = null; seatStamp(P); }); }   /* (claude/aicompanions) a respawn restores an AI's flasks too; (claude/coopbalance) and every human seat's, as a solo death does (a flask over the max stays) */
 }
 /* DOWNED, NOT DEAD. At nothing left a hero goes down where he fell: on his side, no swings, a slow crawl, and a
    clock over his head. His partner stands on him for a breath and a half, a green ring fills, and he is back at a
@@ -1818,7 +1819,9 @@ function drawSeatPlate(p, slotI) {
   else { bar(bx, y0 + 19, bw, 4, p.hp / p.maxHp, p.hp > p.maxHp * 0.3 ? '#e04848' : '#ff7a6b', p.hpShown / p.maxHp);
     if (p.hero === 'reaper' && (p.bd || 0) > 0.4) drawDebt(bx, y0 + 19, bw, 4, p);   /* (claude/bloodknightart) a Blood Knight's BLOOD DEBT on the seat plate too */
     text(String(Math.max(0, Math.ceil(p.hp))), x0 + w - 4, y0 + 11, '#fff6e0', 'right', 6);
-    text('LV ' + seatLv(p), x0 + w - 4, y0 + 3, '#ffd36b', 'right', 6); }
+    text('LV ' + seatLv(p), x0 + w - 4, y0 + 3, '#ffd36b', 'right', 6);
+    if (!(L && (L.shop || L.trial))) { const fn = p.flasks | 0, fx = x0 + w - 8 - textW('LV ' + seatLv(p), 6) - textW(String(fn), 6) - 8;   /* (claude/coopbalance) HIS FLASKS: a little bottle and the count on the plate's first line (every seat carries its own) */
+      g.fillStyle = fn ? '#c9463d' : '#4a4452'; g.fillRect(fx + 1, y0 + 5, 4, 5); g.fillStyle = fn ? '#fff6e0' : '#6a6272'; g.fillRect(fx + 2, y0 + 3, 2, 2); text(String(fn), fx + 7, y0 + 3, fn ? '#fff6e0' : UI.dim, 'left', 6); } }
   text(fitText(seatHeroName(p), bw - 16, 6), bx, y0 + 11, UI.text, 'left', 6);
   if (rgSeat(p) && RGK) { const hd = RGK.hudOf(p); if (hd) drawRgRow(x0 + 4, y0 + 25, w - 8, hd); }   /* (claude/rangerhud) THIS seat's own arrows */
   if (RP.chainOf(p) > 0 && !(p.down > 0)) { const tw = 5 * 6 + 3, tx = x0 + w - tw;   /* (claude/riposteart) P2's MIX-UP pips, on a tab hung under the plate's right end (the same gems as the HUD's) */
@@ -4582,7 +4585,7 @@ function startGame() {
   for (const a of acorns) a.got = false; { const sv = (PROG[LEVELS[levelIndex].id] || {}).silver || 0; for (const s of silvers) s.got = !!(sv & (1 << s.i)); } for (const s of shrines) s.lit = false; collectedCrates.clear(); healCrates.clear(); healths = []; destroyed = new Set(); cutBridges = new Set(); marks = new Set(); straysGot = new Set(); strayLast = null; resetPools();
   checkpoint = { x: L.START.x * TS + 8, y: (L.START.y + 1) * TS };
   if (q.get('tx')) checkpoint = { x: +q.get('tx') * TS + 8, y: (+(q.get('ty') || 21) + 1) * TS };
-  for (const s of shrines) { s.broken = false; s.life = -1; } respawn(); P.flasks = SV.flaskMax(PROG); flaskHud.levelDrinks = 0; flaskHud.spills = []; flaskHud.glowT = 0; if (PROG.flaskObjNew) { toastNow(F2.OBJ_LINE[PROG.flaskObjNew], 6); PROG.flaskObjNew = null; } if (speedNote && !speedNoteShown && !window.BK?.manualSimulation) { speedNoteShown = true; toastNow('GAME SPEED IS 100% NOW - TURN IT DOWN IN SETTINGS', 7); }   /* (feelplatform) the one-time line for a player the speed-v3 migration moved */ levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length + (L.ambushes || []).reduce((n, A) => n + A.waves.reduce((m, w) => m + w.length, 0), 0);   /* the ambushers are in the body count before they arrive */
+  for (const s of shrines) { s.broken = false; s.life = -1; } respawn(); P.flasks = SV.flaskMax(PROG); for (const p of players) if (p !== P) asPlayer(p, () => { P.flasks = SV.flaskMax(PROG); }); flaskHud.levelDrinks = 0;   /* (claude/coopbalance) every seat starts the wood with its own flasks */ flaskHud.spills = []; flaskHud.glowT = 0; if (PROG.flaskObjNew) { toastNow(F2.OBJ_LINE[PROG.flaskObjNew], 6); PROG.flaskObjNew = null; } if (speedNote && !speedNoteShown && !window.BK?.manualSimulation) { speedNoteShown = true; toastNow('GAME SPEED IS 100% NOW - TURN IT DOWN IN SETTINGS', 7); }   /* (feelplatform) the one-time line for a player the speed-v3 migration moved */ levelFoes = enemies.filter(e => !e.harmless && e.t !== 'folk' && e.t !== 'fisher' && e.t !== 'bale').length + (L.ambushes || []).reduce((n, A) => n + A.waves.reduce((m, w) => m + w.length, 0), 0);   /* the ambushers are in the body count before they arrive */
   xpStart(); camX = P.x - VW / 2; camY = P.y - 100; bannerT = 2.6; SFX.levelStart();
   startActCard();
 }
@@ -7610,7 +7613,7 @@ function damagePlayer0(fromX, dmg, { up = false, unblockable = false, pierce = f
     number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b');
   }
   if (L && L.trial) { P.inv = 0.8; P.hurt = 0.2; flash = 0.08; SFX.pHurt(); P.vx = (Math.sign(P.x - fromX) || -P.face) * 120; P.vy = -120; P.ground = false; return 'hit'; } // a trial never hurts
-  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopMul() * (perk('iron') ? 0.9 : 1)));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
+  dmg = Math.max(1, Math.round(dmg * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId(), who || updFoe)) * coopTake() * (perk('iron') ? 0.9 : 1)));   /* (claude/difficulty) the mode's damage taken (Normal x1) */   /* (IRON HIDE: a milestone perk) */   /* AND TWICE AS HARD: the other half of the co-op rule, on the one line every blow that ever lands on a hero comes through */
   if (PROG.charm === 'iron') dmg = Math.max(1, Math.round(dmg * 0.8));
   dmg = Math.max(1, Math.round(dmg * (PROG.items.mail ? 0.9 : 1) * (PROG.items.plate ? 0.9 : 1) * (PROG.items.mail2 ? 0.9 : 1) * (isPyro() && tal('heatShield') && (P.heat || 0) >= 50 ? 0.75 : 1)));
   /* (PLATED took a twentieth off every blow; it is the shield at his back now) */
@@ -7730,7 +7733,7 @@ function drawFlaskDrink(cx, cy) {
 /* A SHRINE IS DRY (claude/survival): it lights the checkpoint, banks what you carry, fills the stamina - it does not heal. Said twice a save.
    (claude/survival2, Daniel 10-07 A10b) It gives back ONE flask, once a shrine a LIFE (lifeN: a death, never R, starts a new one): no touch-farming */
 let lifeN = 0, litSeq = 0;
-function shrineFill() { P.st = P.maxSt; const fm = SV.flaskMax(PROG); const shr = DFM.df('shrine'), give = shr === 'all' ? fm : shr === 'none' ? 0 : F2.shrineGives(PROG);   /* (claude/difficulty) Story: a shrine refills ALL; Master: NONE (a death still restores all) */ for (const p of players) { const was = p.flasks | 0; for (let i = 0; i < give; i++) p.flasks = SV.shrineRefill(p.flasks, fm); if (p === P && (p.flasks | 0) > was) flaskHud.flashT = 0.8; }   /* (claude/flasks2) SHRINE BLESSING gives back two */
+function shrineFill() { P.st = P.maxSt; const shr = DFM.df('shrine');   /* (claude/difficulty) Story: a shrine refills ALL; Master: NONE (a death still restores all) */ for (const p of players) { const was = p.flasks | 0, one = () => { const fm = SV.flaskMax(PROG), give = shr === 'all' ? fm : shr === 'none' ? 0 : F2.shrineGives(PROG); for (let i = 0; i < give; i++) P.flasks = SV.shrineRefill(P.flasks, fm); }; asPlayer(p, one); if (p === P && (p.flasks | 0) > was) flaskHud.flashT = 0.8; }   /* (claude/coopbalance) each seat is refilled by ITS OWN save's count (asPlayer swaps in his save) */   /* (claude/flasks2) SHRINE BLESSING gives back two */
   if ((PROG.shrineTold || 0) < 2) { PROG.shrineTold = (PROG.shrineTold || 0) + 1; hintSay('mechanic', 5, SV.LINES.shrine.replace('(KEY)', '(' + flaskKeyName() + ')')); } }
 /* BREAK THE SHRINE (claude/survival2, Daniel 10-07; src/survival.js SHRINE): HOLD the interact key at a lit shrine - told by the prompt over it.
    Never a bot (keys.talk is only ever a person's key or pad), never in a boss fight, its arena or at the pre-boss shrine (SV.breakBlock) */
@@ -11409,7 +11412,7 @@ function sunDrain(n) { if (P.dead || !(n > 0)) return; P.hp = Math.max(0, P.hp -
    (~3 hp/s at Normal), but smooth - whole hp off the bar every third of a second - and with NONE of a blow's reactions. The tick is a soft gasp and a small '-n' a second. A flask's drink is not a blow, so
    the drain moves its spill-guard (P.drinkHp) with it. */
 const BREATH_DRAIN_HP = 3.1;
-const breathRate = () => BREATH_DRAIN_HP * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId())) * coopMul() * (perk('iron') ? 0.9 : 1);   /* hp a second, past the same chain every hazard's damage goes through */
+const breathRate = () => BREATH_DRAIN_HP * diffNow().take * DFM.df('take') * (1 + 0.28 * hitTierOf(curId())) * coopTake() * (perk('iron') ? 0.9 : 1);   /* hp a second, past the same chain every hazard's damage goes through */
 function breathTake(n, src) {
   if (P.dead || !(n > 0)) return;
   P.hp = Math.max(0, P.hp - n); if (P.drinkT > 0) P.drinkHp = P.hp;
@@ -26385,7 +26388,7 @@ function wardFoe(fromX) { const f = nearFoe(fromX); if (f) return f;
 function wardStop(dmg, fromX) {
   const cap = wardCap();
   if ((P.wardG || 0) >= cap - 0.5) { wardBreak(fromX); return 'broken'; }
-  const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopMul()));   /* a trial never hurts */
+  const blood = L && L.trial ? 0 : Math.max(1, Math.round(dmg * WARD_PRICE * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake()));   /* a trial never hurts */
   if (blood >= P.hp) return 'bled';
   if (!SET.invincible) P.hp -= blood; P.wardDmg = (P.wardDmg || 0) + blood; if (blood > 0) number(P.x, P.y - 20, '-' + blood, '#c0283a');
   P.wardG = Math.min(cap, (P.wardG || 0) + (8 + dmg * 0.9) * (1 + 0.12 * prk('dward')));
@@ -28025,7 +28028,7 @@ BZK = makeBerserker({ get P() { return P; }, get enemies() { return enemies; }, 
   /* (claude/berserker2) TAKE IT: the shared tap beat, a block's stamina, the guard break, and what a blow is scaled by on its way to him (the chip is a tenth of it) */
   tap: () => RP_K.tap * DFM.df('parry'), blockCost: d => CM.blockCost(d, 0), canPay: c => P.st >= c, pay: c => { P.st -= c; P.stDelay = ST.delay; },
   guardBreak: () => { P.st = 0; P.stFlash = 0.5; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'GUARD BREAK', '#ffd36b'); },
-  takeScale: () => diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopMul(),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => !!(L && L.trial),
+  takeScale: () => diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake(),   /* (claude/riposte: his AXE BRACE is the shared parry) */ inTrial: () => !!(L && L.trial),
   poiseLean: (e, n) => { const m = poiseMax(e); if (!m || !e.alive || e.broken > 0 || e.poiseCd > 0) return; e.poise = Math.min(m, (e.poise || 0) + n); e.poiseT = 2.5; if (e.poise >= m) addPoise(e, 1, P.x, false); } });
 /* THE CROUCH TWISTS, PART C (src/crouch-c.js): the berserker WORKING UP - crouched and still, his rage fills and the growl draws them in */
 CRC = makeCrouchC({ get P() { return P; }, get L() { return L; }, get enemies() { return enemies; }, get parts() { return parts; }, get time() { return time; }, get levelIndex() { return levelIndex; }, get PROG() { return PROG; },
@@ -29175,7 +29178,7 @@ function lightWardTakes(fromX, dmg, pierce, who) { const W = HG.ward, beat = tal
   trialEvent('aegis');
   if (beat) { const f = RP.parried(rpFoe(fromX, who)); if (f && !f.maxHp && !f.mini && !f.elite) f.vx = Math.sign(f.x - P.x) * 160;   /* (claude/riposte) THE LIGHT-WARD raised on the beat is every paladin's parry (MOVING FORTRESS: a longer beat) */
     noteVerb('parry'); P.parryT = 0.22; parries++; blocks++; trialEvent('parry'); convGain(HG.conv.parry / HG.conv.pip, true); holyFlash(f); SFX.parry(); hitstop(0.09); zoomKick(1.04, 0.2); ringAt(P.x + P.face * 9, P.y - 9, 18, '#fff6c8', 0.3); number(P.x, P.y - 28, 'PARRY', '#fff6c8'); parryBurst(); return 'blocked'; }   /* A PERFECT GUARD: +2 CONVICTION and a HOLY FLASH */
-  const lands = dmg * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopMul();
+  const lands = dmg * diffNow().take * (1 + 0.28 * hitTierOf(curId())) * coopTake();
   if (P.st < CM.blockCost(dmg, tal('steady')) || lands >= W.big * P.maxHp) {   /* BROKEN: the knight's rules */
     P.st = 0; P.stFlash = 0.5; P.aegis = false; P.aegisT = 0; SFX.guardBreak(); SFX.gasp(); shakeCam(5, -P.face * 4); hitstop(0.1); ringAt(P.x, P.y - 10, 18, '#9a8a60', 0.3);
     P.hurt = CM.STAM.breakStagger; P.guardTired = CM.STAM.breakTired; CM.exhaust(P); number(P.x, P.y - 22, 'WARD BROKEN', '#ffd36b'); if (HFX) HFX.shatter(P.x, P.y - 12); P.wardBroken = (P.wardBroken || 0) + 1; return 'half'; }
@@ -35038,7 +35041,7 @@ window.BK = { setView: m => setView(m), tileChunks: v => { tcOn = v !== false; t
   coopDown: n => { const p = players[n || 0]; if (!p) return 'no such hero'; asPlayer(p, () => goDown({ name: 'THE HARNESS', red: false, rule: '' })); return p.hero + ' down ' + p.down; },
   allyReady: () => allyLoad(),
   /* (claude/aicompanions) AI COMPANIONS, for tools/ai-companion.mjs: seat one from the board's own api, the party's scale, each AI seat's state, a party armed for the next wood */
-  aiComp: { AIC, join: (slotI, h, beh) => partyAi(slotI, h, beh), mul: () => coopMul(), board: () => PBOARD.debug(), openBoard: () => partyBoardOpen(),
+  aiComp: { AIC, join: (slotI, h, beh) => partyAi(slotI, h, beh), mul: () => coopMul(), take: () => coopTake(), board: () => PBOARD.debug(), openBoard: () => partyBoardOpen(),
     seats: () => players.filter(p => p.ai).map(p => ({ n: p.n, hero: p.hero, beh: (p.aiCfg || {}).beh, linked: !!p.prof, slot: p.prof ? p.prof.dest.slot : -1, x: p.x, y: p.y, hp: p.hp, maxHp: p.maxHp, down: p.down || 0, dead: p.dead || 0, flasks: p.flasks | 0, pulls: p.leashes || 0, ups: p.aiUps || 0, why: p.leashWhy || '', leash: p.leash || 0, stuckT: p.aiS ? p.aiS.stuckT : 0, onMover: p.onMover ? (p.onMover.kind || 'mover') : null, kills: p.score ? p.score.kills : 0, dmg: p.score ? p.score.dmg : 0, revives: p.score ? p.score.revives : 0, deaths: p.score ? p.score.deaths : 0, lv: p.prof ? levelOfXp((p.prof.view.xp || {})[p.hero] || 0) : heroLevel(p.hero), xp: p.prof ? (p.prof.view.xp || {})[p.hero] || 0 : null, coins: p.prof ? p.prof.view.coins | 0 : null })),
     arm: (h, beh, n) => { const seats = []; for (let i = 0; i < (n || 1); i++) seats.push({ hero: Array.isArray(h) ? h[i] : h, ally: true, aiCfg: { beh: Array.isArray(beh) ? beh[i] : beh } }); coopWant = { hero: seats[0].hero, ally: true, seats }; return coopWant; } },   /* AWAIT THIS BEFORE MEASURING AN ALLY: a synchronous run of sim() never lets its import resolve */
   /* EVERYTHING DRAWN WITH A BASE OR A TOP, as the draw code places it: the sprite, where its top-left lands, and whether it
