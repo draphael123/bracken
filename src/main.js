@@ -1104,7 +1104,7 @@ function* bakeAllG(pal = {}) { const it = bakeAllG0(pal), own = [];
 function retireBakes() { if (!BAKE_OLD.length) return;
   const keep = new Set(), seen = new Set(), stack = [TILE, PROP, BG, LEDGE_SETS, REDRESS_GROUND, REDRESS_PROPS, CROWN, VILL, SHORE, REEF, FLOT, CITY, MONK, RAINART, typeof KRKP === 'undefined' ? null : KRKP];
   while (stack.length) { const o = stack.pop(); if (!o || typeof o !== 'object' || seen.has(o)) continue; seen.add(o);
-    if (o instanceof HTMLCanvasElement) { keep.add(o); continue; } if (ArrayBuffer.isView(o)) continue;
+    if (o instanceof HTMLCanvasElement) { keep.add(o); for (const k of Object.keys(o)) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } continue; } if (ArrayBuffer.isView(o)) continue;
     for (const k in o) { const v = o[k]; if (v && typeof v === 'object') stack.push(v); } }
   const old = new Set(BAKE_OLD); for (const k in TITLE_LAYERS) { const T = TITLE_LAYERS[k]; if ([T.sky, T.far, T.near].some(c => c && old.has(c) && !keep.has(c))) delete TITLE_LAYERS[k]; }   /* (batch98 integ: a title layer that borrows a retired sheet - BG.skyDusk - was drawn empty on the way back to the title; it is rebuilt on its next draw) */
   const audit = window.__bakeAudit;   /* tools/load-leak.mjs: a weak note of every sheet given back, to prove after a collection that nothing kept one */

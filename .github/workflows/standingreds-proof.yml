@@ -4,11 +4,52 @@ on:
     inputs:
       mode:
         type: choice
-        options: [mage-prefix, layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [canvas-lifetime, mage-prefix, layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  canvas-lifetime:
+    if: inputs.mode == 'canvas-lifetime'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [attachments, drawn-solids-sweep, load-leak]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/canvas-retirement-selftest.mjs
+      - name: Retained rig pixels and repeated original sweep
+        if: matrix.check != 'load-leak'
+        env:
+          CHECK: ${{ matrix.check }}
+        run: |
+          set -o pipefail
+          mkdir -p gate-data/canvas-lifetime
+          for n in 1 2 3; do
+            if test "$CHECK" = attachments; then
+              CANVAS_ATTACHMENT_OUT="gate-data/canvas-lifetime/attachment-$n" node tools/canvas-attachment-proof.mjs 2>&1 | tee "gate-data/canvas-lifetime/attachment-$n.log"
+            else
+              node tools/check.mjs drawn-solids-sweep 2>&1 | tee "gate-data/canvas-lifetime/sweep-$n.log"
+            fi
+          done
+      - name: Original memory growth and retained-sheet audit
+        if: matrix.check == 'load-leak'
+        run: |
+          set -o pipefail
+          mkdir -p gate-data/canvas-lifetime
+          node tools/check.mjs load-leak 2>&1 | tee gate-data/canvas-lifetime/load-leak.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: canvas-lifetime-${{ matrix.check }}
+          path: |
+            gate-data/canvas-lifetime/
+            audits/check-runs/
   mage-prefix:
     if: inputs.mode == 'mage-prefix'
     runs-on: ubuntu-latest
