@@ -253,13 +253,21 @@ export function makeVillageHands(ctx) {
   /* ---------- A BURNING GATE (a heap with gate: true; main.js drawHeaps calls this) ---------- */
   H.drawGate = (g, x, top, w, ht, out, time) => {
     if (out) return;
+    const g0 = g.globalAlpha;
+    /* the glow it throws on the street and the wall round it: a burning gate reads from a screen away */
+    { const gr = g.createLinearGradient(x - 22, 0, x + w + 22, 0); gr.addColorStop(0, 'rgba(255,110,40,0)'); gr.addColorStop(0.5, 'rgba(255,120,48,' + (0.32 + 0.06 * Math.sin(time * 9)) + ')'); gr.addColorStop(1, 'rgba(255,110,40,0)'); g.fillStyle = gr; g.fillRect(x - 22, top, w + 44, ht); }
     g.fillStyle = '#1a1210'; g.fillRect(x - 3, top, 4, ht); g.fillRect(x + w - 1, top, 4, ht); g.fillRect(x - 3, top - 3, w + 6, 5);                              /* the posts and the lintel */
-    g.fillStyle = '#4a2e1a'; g.fillRect(x - 2, top, 2, ht); g.fillRect(x + w, top, 2, ht);
-    g.fillStyle = '#2a1a12'; g.fillRect(x + 1, top + 2, w - 2, ht - 2);
-    g.fillStyle = '#4a2e1a'; for (let q = 3; q < w - 2; q += 5) g.fillRect(x + q, top + 2, 2, ht - 2);                                                                  /* the planks */
-    g.fillStyle = '#5a5850'; g.fillRect(x + 1, top + 10, w - 2, 2); g.fillRect(x + 1, top + ht - 12, w - 2, 2);                                                        /* the straps */
-    for (let q = 0; q < 6; q++) { const kk = (time * 1.1 + q * 0.17) % 1, ex = x + 2 + ((q * 7) % Math.max(1, w - 4)), ey = top + ht - 4 - kk * (ht - 4); g.globalAlpha = 1 - kk; g.fillStyle = Math.floor(time * 12 + q) % 2 ? '#ff6b2c' : '#ffd36b'; g.fillRect(ex, R(ey), 3, 4 + (q % 3)); } g.globalAlpha = 1;   /* the fire in every plank */
-    g.fillStyle = Math.floor(time * 6) % 2 ? '#ff9a3c' : '#c8401c'; g.fillRect(x + 2, top + ht - 3, w - 4, 3);
+    g.fillStyle = '#6a3e1e'; g.fillRect(x - 2, top, 2, ht); g.fillRect(x + w, top, 2, ht);
+    g.fillStyle = '#3a2214'; g.fillRect(x + 1, top + 2, w - 2, ht - 2);
+    g.fillStyle = '#7a4a24'; for (let q = 3; q < w - 2; q += 5) g.fillRect(x + q, top + 2, 2, ht - 2);                                                                  /* the planks */
+    g.fillStyle = '#a05a2a'; for (let q = 3; q < w - 2; q += 5) g.fillRect(x + q, top + 2, 1, ht - 2);
+    g.fillStyle = '#8a919c'; for (let r = 10; r < ht - 8; r += 28) g.fillRect(x + 1, top + r, w - 2, 2);                                                               /* the straps */
+    for (let r = 4; r < ht - 4; r += 3) { if ((r * 7 + Math.floor(time * 5)) % 5 < 2) { g.fillStyle = '#ff6b2c'; g.fillRect(x + 1 + ((r * 5) % Math.max(1, w - 4)), top + r, 2, 2); } }   /* embers in the grain */
+    for (let q = 0; q < 12; q++) { const kk = (time * 1.0 + q * 0.083) % 1, ex = x + 1 + ((q * 5) % Math.max(1, w - 3)), hh = 10 + (q % 4) * 5, ey = top + ht - hh - kk * (ht - hh);
+      for (let r = 0; r < hh; r++) { const k2 = r / hh, ww = Math.max(1, Math.round(4 * (1 - k2))); g.globalAlpha = 0.9 * (1 - kk * 0.8); g.fillStyle = k2 < 0.25 ? '#ffe08a' : k2 < 0.6 ? '#ff9a3c' : '#d6401c'; g.fillRect(ex - (ww >> 1) + Math.round(Math.sin(time * 8 + q + r * 0.4) * k2 * 2), R(ey + hh - r), ww, 1); } }   /* the fire climbs every plank */
+    g.globalAlpha = g0;
+    g.fillStyle = Math.floor(time * 6) % 2 ? '#ffd36b' : '#ff9a3c'; g.fillRect(x - 1, top + ht - 4, w + 2, 4);
+    g.globalAlpha = 0.5 + 0.35 * Math.sin(time * 4); g.strokeStyle = '#eef8ff'; g.strokeRect(x - 3.5, top - 2.5, w + 7, ht + 3); g.globalAlpha = g0;   /* A6: the pale outline pulse - water opens this one */
   };
   /* THE FLAME ON A ROOF of the street's own houses (the fire's second and third stages): non-burning dressing, only ever drawn over a roof slab */
   H.stageAtCol = tx => stageAt(tx);
