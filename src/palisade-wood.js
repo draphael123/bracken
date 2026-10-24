@@ -92,7 +92,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   deco(47, 34, 'timber', 1); deco(57, 34, 'stump', 1); crop(49, 34, 'sheaf');
   ground(59, 61, 38);                                                              /* the saw pit (three down, three up) */
   ground(62, 79, 35);
-  foe('rockgoblin', 72, 34, 'edgeC', { face: -1 }); foe('pike', 76, 34, 'edgeC', { face: -1 }); foe('hound', 67, 31, 'edgeC', { face: -1 });                                /* a stake-thrower on the felled ground (art: the reskin) */
+  foe('rockgoblin', 72, 34, 'edgeC', { face: -1 }); foe('pike', 76, 34, 'edgeC', { face: -1 }); foe('hound', 67, 31, 'edgeC', { face: -1, perch: true });                                /* a stake-thrower on the felled ground (art: the reskin) */
   plank(64, 70, 32); coins([65, 31], [68, 31]);
   deco(66, 34, 'stump', 0); deco(75, 34, 'fruitTree', 0); crop(69, 34, 'apples');
   coins([64, 33], [70, 33], [77, 33]);
@@ -133,7 +133,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   coins([150, 30], [152, 30], [158, 31]);
   ground(169, 204, 29);                                                            /* the yard's upper ground (three up) */
   plank(170, 176, 26); coins([172, 25], [175, 25]);
-  foe('brute', 178, 28, 'yardCart', { face: -1 }); foe('hound', 174, 25, 'yardCart', { face: -1 });
+  foe('brute', 178, 28, 'yardCart', { face: -1 }); foe('hound', 174, 25, 'yardCart', { face: -1, perch: true });
   deco(171, 28, 'cart', 0); crop(174, 28, 'sheaf');
   /* THE YARD GATE (the area's exam): a setter and a shield hold it, an archer on the scaffold over the gate; a stake stack racked over them rolls through them */
   prop('yardExamStakes', { x: 183, top: 21, hang: 25, cleat: [179, 28], load: 'stakes', roll: 1, rollMax: 13 });
@@ -205,18 +205,18 @@ export function buildPalisadeWood({ painter, T, TS }) {
   block(346, 356, 6, 20);
   foe('shield', 349, 24, 'passage', { face: -1 }); foe('pike', 353, 24, 'passage', { face: -1 }); foe('archer', 351, 5, 'passage', { face: -1, perch: true });
   prop('gateStakes', { x: 360, top: 15, hang: 19, cleat: [342, 24], load: 'stakes', roll: -1, rollMax: 15 });
-  sign(340, 24, "THE GATE'S STAKES ARE RACKED BEYOND THE PASSAGE: KNOCK OUT THEIR PROP. THEY ROLL BACK THIS WAY.");
+  sign(340, 24, "THE GATE'S STAKES ROLL BACK THROUGH THE PASSAGE: KNOCK OUT THEIR PROP.");
   deco(344, 24, 'gobPennant', 0); deco(358, 24, 'gobPennant', 1);
   /* the crew over the gate's far side, a setter on the road, the supply carts on to Kingswood */
   prop('gateCrew', { x: 362, top: 18, cleat: [358, 24], load: 'crew', walk: [359, 366, 19] });
   foe('rockgoblin', 361, 18, 'gateCrew', { face: -1, perch: true }); foe('archer', 364, 18, 'gateCrew', { face: -1, perch: true });
-  setter(369, 24, 'gateRoad'); foe('brute', 373, 24, 'gateRoad', { face: -1 }); foe('hound', 379, 21, 'gateRoad', { face: -1 });
+  setter(369, 24, 'gateRoad'); foe('brute', 373, 24, 'gateRoad', { face: -1 }); foe('hound', 379, 21, 'gateRoad', { face: -1, perch: true });
   plank(368, 374, 21); plank(377, 383, 22); coins([370, 20], [380, 21]);
   deco(374, 24, 'cart', 0); deco(379, 24, 'barrels', 0); crop(377, 24, 'sheaf'); crop(381, 24, 'nuts');
   sign(372, 24, "THE SUPPLY CARTS ROLL ON TO KINGSWOOD'S ROYAL ROAD.");
   coins([343, 23], [351, 23], [366, 23], [376, 23]);
   ent('check', 386, 24);                                                           /* SHRINE FOUR: the old forest gate's door */
-  sign(389, 24, 'THE BATTERING BEAST. KNOCK OUT A SCAFFOLD PROP SO THE SCAFFOLD FALLS IN ITS PATH: IT CHARGES INTO THE WRECK AND STICKS.');
+  sign(389, 24, 'THE BATTERING BEAST: DROP A SCAFFOLD ON IT OR IN ITS PATH. IT STICKS IN THE WRECK.');
 
   // ================= 5. THE OLD FOREST GATE (394-438): THE BATTERING BEAST =================
   /* A clearing at the old forest gate (the gate you came through stands at its west wall: the beast is brought up to batter it). Two scaffolds on the clearing's floor,
@@ -237,7 +237,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: 390, hi: W - 1, spots: 0, why: 'THE OLD FOREST GATE: columns 390-442 are the beast\'s clearing - no squad stands in a boss arena' }],
+    squadBands: [{ lo: 400, hi: W - 1, spots: 0, why: 'THE OLD FOREST GATE: columns 390-442 are the beast\'s clearing - no squad stands in a boss arena' }],
     unlocks: [
       { kind: 'hoists', opens: 'what the prop holds comes down: a scaffold folds into a ramp, a watchtower or the gatehouse scaffold falls across as a bridge, a crew\'s walkway drops its crew, a stack of stakes rolls down the road', hud: 'THE PROP GOES: IT COMES DOWN' },
     ],
