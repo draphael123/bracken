@@ -244,11 +244,12 @@ export function buildPalisadeWood({ painter, T, TS }) {
     ],
     duskStart: -1, duskLen: 1, music: 'kingswood', night: false, glowNight: true,
     interiors: [],
-    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(210,140,70,0.16)', grass: '#9a7a2a', grassL: '#d0a83a', grassD: '#5e4a1a', dirt: '#4e3420', dirtL: '#63432a', dirtD: '#2e1c10', canopy: ['#8a3a18', '#b8582a', '#d8862e', '#e8b04a'] },
+    palette: { sky: 'autumn', near: 'autumn', dress: 'wood', fg: 'pwood', haze: 'rgba(220,150,80,0.07)', grass: '#9a7a2a', grassL: '#d0a83a', grassD: '#5e4a1a', dirt: '#4e3420', dirtL: '#63432a', dirtD: '#2e1c10', canopy: ['#8a3a18', '#b8582a', '#d8862e', '#e8b04a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    reskin: { rockgoblin: 'lanternhand', brute: 'maulcrew' },   /* (claude/palisadeart) the work crews' own sheets (the setter's is given at spawn: pw.pwSetter): art, names and cards only, so the level's hash is the greybox's */
+    ambient: [{ x0: 0, x1: 99999, kind: 'palisade' }],   /* (claude/palisadeart) its own bed: saws, mallets, rope and timber, dry leaves (src/audio.js palisade()) */
     /* THE SEAM from the Rootway (its amber canopy), then russet and gold: the wood is an autumn wood, warming toward the gate */
-    tints: [[-24, 20, [200, 130, 90], 0.10], [-24, 104, [220, 150, 70], 0.11], [104, 204, [225, 140, 60], 0.12], [204, 306, [215, 125, 60], 0.12], [306, 390, [210, 110, 55], 0.13], [390, W + 24, [200, 95, 50], 0.13]],
+    tints: [[-24, 104, [220, 150, 70], 0.05], [104, 204, [225, 140, 60], 0.06], [204, 306, [215, 125, 60], 0.06], [306, 390, [210, 110, 55], 0.07], [390, W + 24, [200, 95, 50], 0.08]],
     reachExact: false,
   };
 }

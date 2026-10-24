@@ -1,0 +1,6 @@
+import { edit } from './patch.mjs';
+const M = 'src/main.js';
+edit(M, "import * as PWT from './redraw/palisade_tiles.js';", "import * as PWT from './redraw/palisade_tiles.js'; import * as PWB from './redraw/palisade_backdrop.js';");
+edit(M, "  else if (L.rootway) RWB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), dusk());", "  else if (L.pwood) PWB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), SET.parallax === 'full');   /* (claude/palisadeart) THE PALISADE WOOD's own autumn sky, far wood, the palisade line and the half-built gatehouse, the place's mid row (src/redraw/palisade_backdrop.js) */\n  else if (L.rootway) RWB.drawBackdrop(g, cx, cy, VW, VH, L, time, bgDY(cy), dusk());");
+edit(M, "!L.hornetsNest && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85;", "!L.hornetsNest && !L.pwood && !(L.sporewood2 && SET.parallax !== 'off')) { g.globalAlpha = 0.85;");
+edit(M, "  else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }", "  else if (L.fenroad) { if (SET.parallax !== 'off') FNB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }\n  else if (L.pwood) { if (SET.parallax !== 'off') PWB.drawNear(g, cx, cy, VW, VH, L, time, bgDY(cy)); }   /* (claude/palisadeart) near trunks, leaf clusters and gold motes */");
