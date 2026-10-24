@@ -14,7 +14,8 @@ import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 import * as HQA from './redraw/hornet_queen_art.js';   /* (claude/hornetsnestart) her baked frames, her live extras, her darts */
 import * as HNP from './redraw/hornets_nest_props.js';
-import { HALL_P2 } from './hornets-nest.js';   /* (claude/hornetsnest2) the hall's P2 combs, to bake at the level's load */
+import { HALL_P2 } from './hornets-nest.js';
+import * as HNHL from './redraw/hornets_nest_hall.js';   /* (claude/hornets2art) the honey hall: the tear, the flood, the royal comb, the pin */   /* (claude/hornetsnest2) the hall's P2 combs, to bake at the level's load */
 const { HQ } = HQM;
 const SOUND = { aim: s => (s.buzz || s.tell)(), held: s => (s.tell || s.buzz)(), dive: s => (s.charge || s.whoosh || s.tell)(), stuck: s => { (s.thud || s.heavy)(); (s.crack || s.thud)(); },
   winded: s => (s.thud || s.heavy)(), dazed: s => (s.puff || s.thud)(), thrash: s => (s.queenShriek || s.roar)(), sweepTell: s => (s.buzz || s.tell)(), sweep: s => (s.charge || s.whoosh)(),
@@ -61,7 +62,7 @@ export function drawQueenBody(g, p, time, flash, ph) {
 
 /* (claude/hornetsnestart) bake every frame of every pose at the level's load: the first draw of a pose in the fight was a hitch */
 export function warmQueen() { for (const p of Object.values(POSE)) for (let k = 0; k < HQA.beats(p); k++) HQA.queenFrame(p, k, false);
-  /* (claude/hornetsnest2) the hall's torn combs and THE LAST COMB, hanging and landed: baked now, not at the tear */ const [, wg] = canvas(4, 4); for (const c of [...HALL_P2.torn, HALL_P2.last]) for (const set of [false, true]) HNP.slab(wg, 0, 0, (c.x1 - c.x0 + 1) * 16, c.rows * 16, set, 0); }
+  /* (claude/hornetsnest2) the hall's torn combs and THE LAST COMB, hanging and landed: baked now, not at the tear */ const [, wg] = canvas(4, 4); for (const c of [...HALL_P2.torn, HALL_P2.last]) for (const set of [false, true]) HNP.slab(wg, 0, 0, (c.x1 - c.x0 + 1) * 16, c.rows * 16, set, 0); HNHL.warmHall([...HALL_P2.torn, HALL_P2.last]); }
 export function makeHornetQueenHands(ctx) {
   let S = null; const H = {}; let perchSaved = [];
   const A = () => (ctx.L && ctx.L.arena && ctx.L.arena.boss === 'hornetqueen' ? ctx.L.arena : null);
@@ -145,12 +146,10 @@ export function makeHornetQueenHands(ctx) {
   H.restore = () => { for (const [x, y] of perchSaved) ctx.cellSet(x, y, ctx.T.ONEWAY); perchSaved = []; };
   /* ---------- DRAWING ---------- */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const VW = ctx.VW(), G = S.G.h;
-    /* THE HONEY (P2): the flood on the hall's floor, a glossy amber skin with its slow creep, and the drips from the torn vault */
-    if (S.stage === 2 && G.honey) { const x0 = G.honey.x0 - cx, w = G.honey.x1 - G.honey.x0, y = G.floor - cy;
-      g.globalAlpha = 0.92; g.fillStyle = '#8a4c08'; g.fillRect(R(x0), R(y - 2), R(w), 3); g.fillStyle = '#c47a14'; g.fillRect(R(x0), R(y - 5), R(w), 3); g.fillStyle = '#eea52a'; g.fillRect(R(x0), R(y - 6), R(w), 1); g.globalAlpha = 1;
-      for (let k = 0; k < w; k += 23) { const ph = (time * 0.35 + k * 0.013) % 1, bx = x0 + k + ph * 9; rect(g, bx, y - 7, 6, 1, '#eea52a'); rect(g, bx + 1, y - 8, 3, 1, '#f8c24a'); }   /* slow swells creeping on its skin */
-      for (let k = 6; k < w - 4; k += 11) { const ph = (time * 0.5 + k * 0.071) % 1; if (ph < 0.35) rect(g, x0 + k, y - 6, 2, 1, '#fff0a0'); }
-      for (let k = 0; k < 7; k++) { const xx = x0 + 24 + k * (w - 48) / 6, ph = (time * 0.6 + k * 0.37) % 1, top = G.top - cy + 6, len = 10 + ((k * 13) % 17); rect(g, xx, top, 2, len, '#c47a14'); rect(g, xx, top + len + ph * (y - top - len), 2, 3, '#eea52a'); } }
+    /* (claude/hornets2art) THE TEAR (the told rear-up: cracks and falling bits; the rip: the vault opens to the pines and its light), THE HONEY (P2): the flood on the hall's floor, its drips from the lip */
+    { const e = live(), tm = e && e.mode === 'tearTell' ? 1 - Math.max(0, e.modeT) / HQM.HQ.tear.tell : 0, op = S.stage === 2 ? 1 : e && e.mode === 'tear' ? 1 - Math.max(0, e.modeT) / HQM.HQ.tear.rip : 0;
+      if (tm > 0 || op > 0) HNHL.tear(g, cx, cy, time, { tell: tm, open: op, deb: op > 0 && op < 1 ? 1 : tm > 0 ? 0.5 : S.stage === 2 ? 0.12 : 0 });
+      if ((S.stage === 2 || op > 0) && G.honey) { HNHL.flood(g, G.honey.x0, G.honey.x1, G.floor, cx, cy, time, VW); HNHL.drips(g, G.floor, cx, cy, time, VW, op); } }
     /* THE HALL (P1): her brood cells in its walls */
     for (const k of S.cells) { const x = R(k.x - cx), y = R(k.y - cy); if (x < -30 || x > VW + 30) continue; HNP.cell(g, x, y, k.st, k.st === 'pulse' ? 1 - k.t / HQ.brood.pulse : 0, time); }
     /* a perch her buzz (or the tear) has set shaking: it drips and trembles (the tell) */
@@ -164,6 +163,10 @@ export function makeHornetQueenHands(ctx) {
     if (e.mode === 'aim' && e.held && Math.floor(time * 6) % 2) rect(g, x - f * 14, y + 10, 3, 3, '#ffd36b');
     if ((e.smokeCd || 0) > 0) { g.globalAlpha = 0.5; for (let k = 0; k < 3; k++) { const ph = (time * 2 + k / 3) % 1; rect(g, x + (k - 1) * 10, y - 12 - ph * 14, 4, 2, '#c8d0d8'); } g.globalAlpha = 1; } };   /* wary of smoke: her wings fan it off (the read of her smoke cooldown) */
   H.drawOver = (g, cx, cy, time) => { if (!S) return; const e = live(), X = v => R(v - cx), Y = v => R(v - cy), blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
+    if (S.stage === 2 && S.G.h.honey) HNHL.floodFront(g, S.G.h.honey.x0, S.G.h.honey.x1, S.G.h.floor, cx, cy, time, ctx.VW());   /* (claude/hornets2art) they wade: a film of honey over their feet */
+    /* (claude/hornets2art) PINNED: the comb that fell on her is drawn back over her hindquarters - her head, wings and kicking forelegs show out from under it */
+    if (e && e.mode === 'pinned') { const cb = S.combs.find(c => c.st === 'down' && e.x > c.x0p - 6 && e.x < c.x1p + 6); if (cb) { const f = e.face || 1, xa = e.x - f * 34, xb = e.x - f * 2, w = cb.x1p - cb.x0p;
+      HNHL.pinOver(g, () => (cb.last ? HNHL.royal : HNP.slab)(g, X(cb.x0p), Y(cb.y), w, cb.rows * 16, true, time), Math.min(xa, xb) - cx, Math.max(xa, xb) - cx, Y(cb.y), Y(cb.y + cb.rows * 16), time, X(e.x - f * 10)); } }
     /* the falling comb: a chunk in the air, and its red ring where it will land */
     for (const c of S.chunks) { g.strokeStyle = blink; g.beginPath(); g.ellipse(X(c.x), Y(c.floorY) - 1, HQ.buzz.r, 3, 0, 0, 7); g.stroke(); if (c.st === 'fall') HNP.slab(g, X(c.x) - 8, Y(c.y) - 9, 16, 11, false, time); }
     for (const s of S.stingers) HQA.dart(g, X(s.x), Y(s.y), s.vx, s.vy, time);
