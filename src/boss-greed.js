@@ -80,7 +80,7 @@ export const OPEN_RULE = {
   chief: e => e.mode === 'planted',                                          // his club in the ground
   king: e => gormOpen(e),                                                   // (claude/gorm2) HELD in a cage, KNOCKED DOWN by the log trap, STUNG by the hive, or OPEN after a cage
   ram: e => H.ramOpen(e),                                                    // (claude/scree2) STUNNED under a fold overhang he was lured beneath, or into the wall off a dodged charge (src/ram-lord.js)
-  owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned',   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
+  owl: e => e.mode === 'crash' || e.mode === 'grounded' || e.mode === 'pinned' || e.mode === 'perchDown',   // (claude/hanging3) and down in her cut perch's planks   // (claude/bosswave1) down on the boards only: lampT open in the air made a lit lamp a free window
   abbot: e => abbotOpen(e),                                                  // the bell has him down
   windcaller: e => H.callerOpen(e),                                          // (claude/bosswave1) FALLEN only: his bolt sent back UP CLOSE (claude/windcaller3), or his howl braced through
   lance: e => H.lanceOpen(e),                                                // committed: planted, thrusting, reeling
