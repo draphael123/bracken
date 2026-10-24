@@ -109,6 +109,10 @@ export const STUCK = {
     { id: 'sw-well-282', zone: [265, 15, 282, 24], ats: [[279, 24], [282, 24]], glint: 'stall', line: 'THE BOUNCE WELL: THE FAR CAP THROWS YOU OUT' },
     { id: 'sw-bud-314', zone: [301, 16, 315, 20], at: [314, 19], glint: 'stall', line: 'STOP ON THE BUD BY THE ROOT WALL' },
     { id: 'sw-bud-332', zone: [316, 12, 333, 16], at: [332, 15], glint: 'stall', line: 'THE NEXT BUD TAKES YOU UP TO THE LARDER END' },
+    { id: 'sw-ledge-148', zone: [140, 30, 153, 41], ats: [[148, 35], [149, 35]], glint: 'stall', line: 'HOP ONTO THE BOUNCE CAPS: THEY THROW YOU UP THE WALL' },   /* (claude/sporeplat) the Lantern Ledges */
+    { id: 'sw-lean-316', zone: [314, 12, 326, 24], at: [316, 15], glint: 'stall', line: 'STOP ON THE LEANING CAP: IT CARRIES YOU OVER THE BOG' },   /* the Root Span */
+    { id: 'sw-bounce-330', zone: [325, 14, 333, 24], ats: [[329, 20], [330, 20]], glint: 'stall', line: 'HOP DOWN ONTO THE BOUNCE CAPS: THEY THROW YOU UP' },
+    { id: 'sw-lean-369', zone: [364, 3, 379, 8], at: [369, 5], glint: 'stall', line: 'STOP ON THE LEANING CAP: IT CARRIES YOU OVER THE BREAK' },   /* the Root Break */
     { id: 'sw-seeds', zone: [356, 8, 367, 12], ats: [[363, 11], [366, 11]], glint: 'stall', line: 'STRIKE THE SEED CAPS: EACH GROWS A STEP' },
   ],
   /* (claude/stuckguides) FLOTILLA: every route verb, a glint and the 10 s stall nudge (keyed by id so a rework can rewrite them) */

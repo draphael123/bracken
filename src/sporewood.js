@@ -99,7 +99,7 @@ export function buildSporewood({ painter, T, TS }) {
   /* THE ROOT WALL: four rows (no jump climbs four), and a bud at its foot. The first REQUIRED bud, nothing else on it */
   ground(30, 58, 36); bud(28, 40); sign(27, 39, SAY_SIGNS.bud);
   glow(33, 35); deco(37, 35, 'rootDecor', 1); coins([32, 34], [35, 34]);
-  plank(31, 52, 33); coins([33, 32], [48, 32]);                                    /* a root shelf over the wall top */
+  plank(31, 57, 33); coins([33, 32], [48, 32]);                                    /* a root shelf over the wall top */
   /* the wall top: THE SPITCAP, taught. It swells before it spits: strike it then (a sign at the point of use) */
   foe('spitcap', 43, 35, 'wallTop', { face: -1 });
   sign(39, 35, 'A SPITCAP SWELLS BEFORE IT SPITS. STRIKE IT THEN; STEP OUT OF ITS CLOUD.');
@@ -144,13 +144,14 @@ export function buildSporewood({ painter, T, TS }) {
      pair, and the bounce throws you up to the high ledge. Few foes: the shaman and a lurker wait at the far lip. A fall stings and is the climb back (a plank up each east face). */
   air(142, 156, 34, 39); ground(144, 145, 34); ground(148, 149, 34); spring(148, 34); spring(149, 34); ground(150, 151, 30); ground(154, 156, 30);
   gpool(142, 156, 40); stair(141, 34, 40); stair(145, 34, 40); stair(151, 30, 40);
+  plank(144, 145, 31); plank(150, 151, 27); plank(154, 156, 27);   /* (a shelf over each ledge: a second height, and a way to save a bad hop) */
   lantern(144, 33); lantern(154, 29); deco(141, 33, 'warnPost', 0);
-  sign(139, 33, 'THE LANTERN LEDGES. HOP THE LIT STALKS: THE BOUNCE CAPS THROW YOU UP TO THE HIGH LEDGE. THE BOG STINGS.');
+  sign(139, 33, 'THE LANTERN LEDGES. HOP THE LIT STALKS; THE BOUNCE CAPS THROW YOU UP. THE BOG STINGS.');
   sign(130, 37, 'THIS BUD IS DARK. LIGHT THE LANTERN CAP BESIDE IT, THEN STOP ON THE BUD.');
   /* the wall top: a lurker in the caps, the hollows' SHAMAN (he raises the dead: the kill-first target), a mend puff for after */
   foe('lurker', 158, 33, 'wallTop2'); foe('shaman', 160, 33, 'wallTop2', { face: -1 });
   lantern(159, 33); mend(157, 33); plank(139, 141, 31);
-  coins([143, 32], [146, 31], [152, 27], [155, 27]);
+  coins([143, 32], [146, 31], [152, 26], [155, 26]);
   /* THE DARK SHAFT (the hollows' EXAM): down off the wall into a room under the canopy, and up its far side on three dark buds, each lit by the lantern beside it;
      a lurker on the first tier, a WEAVER on the second, a spore drop on the middle bud. A miss is a fall a tier (cheap) */
   ground(161, 198, 40);
@@ -206,7 +207,7 @@ export function buildSporewood({ painter, T, TS }) {
   foe('spitcap', 268, 17, 'ladder', { face: -1 }); foe('brute', 266, 17, 'ladder', { face: -1 }); foe('shield', 272, 17, 'ladder', { face: -1 }); foe('archer', 274, 17, 'ladder', { face: -1 }); plank(266, 272, 15);
   sign(261, 21, 'THE CAP LADDER: LEAN, GROW, BOUNCE.');
   air(275, 282, 0, 22); ground(275, 282, 23); for (const x of [276, 279, 282]) spring(x, 23);
-  ground(283, 300, 19); foe('brute', 286, 18, 'ladderTop', { face: -1 });   /* (where the well throws you: a heavy on the lip) */
+  ground(283, 300, 19); plank(284, 292, 16); foe('brute', 286, 18, 'ladderTop', { face: -1 });   /* (where the well throws you: a heavy on the lip) */
   coins([276, 20], [279, 18], [282, 20], [284, 17]); glow(287, 18); deco(290, 18, 'sporePod');
   air(224, 230, 37, 39); air(218, 221, 37, 39);   /* hollows in the stalks' feet, in off the bog floor: what fell finds gold. (claude/sporewood2tune: the nook at 260-263 is gone and 231-232 stay wall - both opened onto a bottomless gap and CAUGHT a fall on their floor: a hero who missed the leaning cap stood in the nook with no way out, not dead - the walker stalled there in 5 runs of 6) */
   ent('check', 294, 18);                                                            /* SHRINE THREE */
@@ -226,11 +227,11 @@ export function buildSporewood({ painter, T, TS }) {
      lock: nothing here reaches the larder's end without the bud at 332. A fall stings and is the climb back (a plank up each east face). */
   air(318, 330, 15, 22); ground(325, 326, 15); ground(329, 330, 19); spring(329, 19); spring(330, 19); bud(316, 15, { rise: 16, lean: 112, growT: 1.6 });
   gpool(318, 330, 23); stair(317, 15, 23); stair(326, 15, 23);
-  sign(312, 18, 'THE ROOT SPAN. STAND ON THE LEANING CAP: IT CARRIES YOU OVER THE BOG. HOP DOWN ONTO THE BOUNCE CAPS: THEY THROW YOU UP.');
+  sign(312, 18, 'THE ROOT SPAN. THE LEANING CAP CARRIES YOU OVER THE BOG. THE BOUNCE CAPS THROW YOU UP.');
   foe('spider', 334, 7, 'larderStair', { drop: 110, perch: true });   /* (the larder's keeper: it drops off the root roof on whoever reaches the pad) */
   coins([319, 13], [322, 12], [325, 13], [328, 16], [331, 12]);
   bud(332, 15); ground(334, 358, 11); foe('brute', 337, 10, 'larderEnd', { face: -1 });
-  coins([336, 9], [340, 9]);
+  coins([336, 9], [340, 9]); plank(336, 351, 8);   /* a root shelf over the larder's end (claude/sporeplat: the second height the Root Span's tier gave up) */
   /* THE LARDER'S EXAM: the elite (level.js ELITES spore: THE SPORE MAGE, the Order's battle mage, replaces this shield) holds its end - his gate at 353 */
   foe('shield', 346, 10, 'larderEnd', { face: -1 }); foe('archer', 351, 10, 'larderEnd', { face: -1 }); foe('shield', 341, 10, 'larderEnd', { face: -1 });   /* (a forager's bow behind the mage, a shield before him) */
   glow(338, 10); deco(349, 10, 'skullPile', 1);
