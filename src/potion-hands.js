@@ -24,6 +24,7 @@
 //               RED leaves BURNING GROUND; the spot is marked); THE BROOD (broodTell: no blow). PHASE TWO (GM.p2): she STIRS THE CAULDRON - a
 //               bigger brood, and the cauldron SPITS FIRE (stirTell: gouts on marked spots across the room) - five told moves in all.
 import * as CTW from './carry-throw.js';
+import * as UW from './redraw/underleaf3_world.js'; import * as UD from './redraw/underleaf3_dress.js'; import * as UT from './redraw/underleaf3_tiles.js';   /* (claude/underleafart) her jars, shelves, beds, hedges, wells, bubbles, marks and cauldron, drawn */
 
 export const JAR = { brew: 0.8, burnR: 40, bedR: 30, snare: 1.6, snareR: 28, hover: 2.4, rise: 92, riseMax: 7 * 16, foeFloat: 2.6, foeRise: 34, bubbleR: 13, fireLife: 2.6, hedgeBurn: 0.45, coatR: 34 };
 export const GM = { hp: 1180, ward: 0.4, openMul: 2, float: 3.2, purse: 0.15, after: 3, p2: 0.55, brood: 3, brood2: 4, broodCd: 11, broodCd2: 9, broodHp: 1, broodBite: 0.6,
@@ -42,7 +43,7 @@ const COL = { green: ['#5fae3a', '#9be06a', '#2e5a1c'], blue: ['#4a8fd8', '#a8d8
 export function makePotionHands(ctx) {
   const TS = ctx.TS, T = ctx.T, H = {}, R = Math.round;
   const L = () => ctx.L;
-  let S = null;
+  let S = null, warmed = false;
   H.on = () => !!(L() && L().jars);
   const say = (x, y, k, c) => ctx.number(x, y, PO_SAY[k], c || '#ffd36b');
   const once = k => { if (!S || S.said.has(k)) return false; S.said.add(k); return true; };
@@ -52,6 +53,7 @@ export function makePotionHands(ctx) {
   /* ---------- RESET (every load and every respawn: what grew and what burnt stays for the attempt) ---------- */
   H.reset = () => {
     const lv = L(); if (!lv || !lv.jars) { S = null; return; }
+    if (!warmed) { warmed = true; UW.warm(); UD.warmDress(); UT.warmTiles(); }   /* (claude/underleafart) bake the level's pictures at the load, not in the first frames */
     const keep = S && S.L === lv ? S : null;
     const jars = [...ents('jarshelf'), ...ents('brewpot')].map(e => ({ t: 'jar', col: e.col, brew: e.t === 'brewpot', hx: e.x * TS + 8, hy: (e.y + 1) * TS, x: e.x * TS + 8, y: (e.y + 1) * TS - (e.t === 'brewpot' ? 12 : 0), state: 'rest', retT: 0, thrKind: 'pot', vx: 0, vy: 0,
       launch: P0 => CTW.launchOf('pot', P0, ctx.keys()) }));
@@ -86,7 +88,7 @@ export function makePotionHands(ctx) {
   function breakJar(j, x, y, hit) {
     const c = j.col; S.n.breaks[c] = (S.n.breaks[c] || 0) + 1;
     ctx.sfx.crack(); ctx.burst(x, y - 3, 10, COL[c], 70, 0.5, 400, 2);
-    j.state = 'return'; j.retT = j.brew ? JAR.brew : ctx.respawn('pot');
+    j.state = 'return'; j.retT = j.brew ? JAR.brew : ctx.respawn('pot'); j.retMax = j.retT;
     if (c === 'green') {
       const b = S.beds.filter(q => !q.grown && Math.abs(q.x - x) < JAR.bedR && Math.abs(q.y - y) < 26).sort((a2, b2) => Math.abs(a2.x - x) - Math.abs(b2.x - x))[0];
       if (b) { grow(b); return; }
@@ -125,7 +127,7 @@ export function makePotionHands(ctx) {
     const tx = Math.floor(j.x / TS), ty = Math.floor((j.y + 2) / TS);
     if (j.vy >= 0 && (ctx.isSolid(tx, ty) || ctx.oneWay(tx, ty))) { breakJar(j, j.x, ty * TS); return; }
     if (ctx.isSolid(Math.floor((j.x + Math.sign(j.vx || 1) * 4) / TS), Math.floor(j.y / TS))) { breakJar(j, j.x, j.y); return; }
-    if (j.y > ctx.LH() * TS || j.x < 0 || j.x > ctx.LW() * TS) { j.state = 'return'; j.retT = 0.5; }
+    if (j.y > ctx.LH() * TS || j.x < 0 || j.x > ctx.LW() * TS) { j.state = 'return'; j.retT = j.retMax = 0.5; }
   }
   /* THE TOLD ARC of the jar in your hand (the same stepper: the arc you are shown is the arc it flies) */
   H.jarArc = j => { const P = hero(), v = CTW.launchOf('pot', P, ctx.keys());
@@ -143,7 +145,7 @@ export function makePotionHands(ctx) {
     for (const j of S.jars) {
       if (j.state === 'return') { if (j.brew && (j.retT -= dt) <= 0) { j.state = 'rest'; j.x = j.hx; j.y = j.hy - 12; j.vx = j.vy = 0; continue; } if ((j.retT -= dt) <= 0) { j.state = 'rest'; j.x = j.hx; j.y = j.hy; j.vx = j.vy = 0; ctx.burst(j.x, j.y - 6, 4, COL[j.col], 20, 0.3); } continue; }
       if (j.state === 'held') {
-        if (P.carry !== j || P.dead) { j.state = 'return'; j.retT = j.brew ? JAR.brew : ctx.respawn('pot'); if (P.carry === j) P.carry = null; continue; }
+        if (P.carry !== j || P.dead) { j.state = 'return'; j.retT = j.brew ? JAR.brew : ctx.respawn('pot'); j.retMax = j.retT; if (P.carry === j) P.carry = null; continue; }
         j.x = P.x + P.face * 7; j.y = P.y - 3;
         if (P.hurt > 0 && !j.hurtWas) { P.carry = null; j.hurtWas = true; breakJar(j, P.x, P.y); continue; }   /* a blow drops it: it breaks at your feet */
         j.hurtWas = P.hurt > 0; continue; }
@@ -314,59 +316,26 @@ export function makePotionHands(ctx) {
   H.props = () => (S ? [...S.beds, ...S.hedges, ...S.wells] : []);
 
   /* ---------- DRAWING ---------- */
-  function drawJarShape(g, x, y, col) { const c = COL[col];
-    g.fillStyle = c[2]; g.fillRect(x - 4, y - 8, 9, 8); g.fillStyle = c[0]; g.fillRect(x - 3, y - 7, 7, 6); g.fillStyle = c[1]; g.fillRect(x - 2, y - 6, 2, 3);
-    g.fillStyle = '#5a3a1e'; g.fillRect(x - 2, y - 11, 5, 3); g.fillStyle = '#c9b27c'; g.fillRect(x - 1, y - 12, 3, 1); }
-  function drawShelf(g, j, cx, cy, time) { const x = R(j.hx - cx), y = R(j.hy - cy);
-    if (j.brew) { const c = COL[j.col]; g.fillStyle = '#1e1a14'; g.fillRect(x - 10, y - 12, 21, 12); g.fillStyle = '#2e2a22'; g.fillRect(x - 11, y - 13, 23, 3); g.fillStyle = c[0]; g.globalAlpha = 0.7 + 0.2 * Math.sin(time * 3 + x); g.fillRect(x - 9, y - 13, 19, 2); g.globalAlpha = 1;
-      for (let k = 0; k < 2; k++) { const ph = (time * 0.9 + k / 2 + j.hx * 0.01) % 1; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = c[1]; g.fillRect(x - 4 + k * 7, y - 15 - R(ph * 14), 2, 2); } g.globalAlpha = 1;
-      g.fillStyle = Math.floor(time * 9) % 2 ? '#ff9a5c' : '#ffd36b'; g.fillRect(x - 5, y - 2, 3, 2); g.fillRect(x + 3, y - 2, 3, 2); return; }
-    g.fillStyle = '#4a3420'; g.fillRect(x - 7, y - 1, 15, 2); g.fillRect(x - 6, y + 1, 2, 3); g.fillRect(x + 5, y + 1, 2, 3); }
+  /* (claude/underleafart) the drawing is src/redraw/underleaf3_world.js: jars, shelves that visibly refill, brewpots, seed beds, thorn hedges, float wells, bubbles, patches, her cauldron */
+  function drawJarShape(g, x, y, col) { UW.drawHeldJar(g, col, x, y, 0); }
+  function drawShelf(g, j, cx, cy, time) { UW.drawShelf(g, j, cx, cy, time); }
   function drawJar(g, j, cx, cy, time) {
-    const x = R(j.x - cx), y = R(j.y - cy);
-    if (j.state === 'rest') { g.save(); g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 4 + j.hx); g.fillStyle = COL[j.col][1]; g.fillRect(x - 5, y - 10, 11, 11); g.fillRect(x - 3, y - 13, 7, 3); g.restore(); }
-    drawJarShape(g, x, y, j.col);
-    const P = hero();
-    if (j.state === 'rest' && !P.carry && Math.abs(j.x - P.x) < 48 && Math.abs(j.y - P.y) < 32) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 5 + j.hx); g.strokeStyle = COL[j.col][1]; g.beginPath(); g.arc(x, y - 5, 10, 0, 7); g.stroke(); g.globalAlpha = 1; }
+    UW.drawJar(g, j, cx, cy, time);
+    const P = hero(), x = R(j.x - cx), y = R(j.y - cy);
+    if (j.state === 'rest' && !P.carry && Math.abs(j.x - P.x) < 48 && Math.abs(j.y - P.y) < 32) { g.globalAlpha = 0.3 + 0.2 * Math.sin(time * 5 + j.hx); g.strokeStyle = COL[j.col][1]; g.beginPath(); g.arc(x, y - (j.brew ? 18 : 20), 10, 0, 7); g.stroke(); g.globalAlpha = 1; }
   }
-  function drawBed(g, b, cx, cy, time) {
-    const x = R(b.x - cx), y = R(b.y - cy);
-    g.fillStyle = '#3a2a18'; g.fillRect(x - 7, y - 3, 15, 3); g.fillStyle = '#5a4026'; g.fillRect(x - 6, y - 4, 13, 1);
-    if (!b.grown) { const s = Math.sin(time * 3 + b.x) * 0.5; g.fillStyle = '#6aa83a'; g.fillRect(x, y - 8, 1, 5); g.fillRect(x - 2 + R(s), y - 7, 2, 1); g.fillRect(x + 1, y - 6, 2, 1);
-      g.globalAlpha = 0.25 + 0.15 * Math.sin(time * 4 + b.x); g.strokeStyle = '#9be06a'; g.beginPath(); g.ellipse(x, y - 2, 10, 3, 0, 0, 7); g.stroke(); g.globalAlpha = 1; return; }
-    const k = b.growT;
-    g.fillStyle = '#3e7a26';
-    if (b.grow === 'ladder') { const top = R(b.top * TS - cy), bot = y, h = R((bot - top) * k);
-      g.fillRect(x - 5, bot - h, 2, h); g.fillRect(x + 4, bot - h, 2, h); g.fillStyle = '#5fae3a'; for (let yy = bot - 4; yy > bot - h; yy -= TS / 2) { g.fillRect(x - 4, yy, 9, 1); g.fillRect(x + (yy % 32 ? 4 : -7), yy - 2, 3, 2); } }
-    else { const bx0 = R(b.x0 * TS - cx), by = R(b.row * TS - cy), w = R((b.x1 - b.x0 + 1) * TS * k);
-      g.fillRect(bx0, by, w, 3); g.fillStyle = '#5fae3a'; for (let xx = bx0 + 3; xx < bx0 + w; xx += 6) { g.fillRect(xx, by - 2, 3, 2); g.fillRect(xx + 2, by + 3, 1, 3); } }
-  }
-  function drawHedge(g, h, cx, cy, time) { if (h.burnt) return;
-    const x0 = R(h.x0 * TS - cx), y0 = R(h.y0 * TS - cy), w = (h.x1 - h.x0 + 1) * TS, hh = (h.y1 - h.y0 + 1) * TS;
-    g.fillStyle = '#2a3a1a'; g.fillRect(x0, y0, w, hh); g.fillStyle = '#3e5422'; for (let yy = 0; yy < hh; yy += 6) for (let xx = (yy / 6) % 2 ? 3 : 0; xx < w; xx += 7) g.fillRect(x0 + xx, y0 + yy, 4, 3);
-    g.fillStyle = '#c9b27c'; for (let yy = 2; yy < hh; yy += 5) { g.fillRect(x0 - 2, y0 + yy, 2, 1); g.fillRect(x0 + w, y0 + yy + 2, 2, 1); }   /* the thorns */
-    g.fillStyle = '#5a2a14'; g.fillRect(x0 + 2, y0 - 2, w - 4, 2);
-    if (h.burnT > 0) { g.fillStyle = Math.floor(time * 14) % 2 ? '#ff9a5c' : '#ffd36b'; for (let k = 0; k < 5; k++) g.fillRect(x0 + (k * 7) % w, y0 + hh - 6 - ((k * 11 + R(time * 40)) % hh), 3, 4); } }
-  function drawWell(g, w, cx, cy, time) { const x = R(w.x - cx), y = R(w.y - cy);
-    g.fillStyle = '#2e4a3a'; g.beginPath(); g.ellipse(x, y - 1, 10, 3, 0, 0, 7); g.fill(); g.fillStyle = '#6a8a5a'; g.fillRect(x - 11, y - 3, 3, 2); g.fillRect(x + 9, y - 3, 3, 2);
-    for (let k = 0; k < 4; k++) { const ph = (time * 0.6 + k / 4) % 1; g.globalAlpha = 0.5 * (1 - ph); g.fillStyle = '#a8d8ff'; g.fillRect(x - 6 + k * 4, y - 4 - R(ph * w.h * TS * 0.5), 1, 2); } g.globalAlpha = 1; }
-  function drawBubble(g, b, cx, cy, time) { const x = R(b.x - cx), y = R(b.y - cy), r = b.state === 'pop' ? JAR.bubbleR + b.t * 30 : JAR.bubbleR + Math.sin(time * 6 + b.x) * 1.2;
-    g.save(); g.globalAlpha = b.state === 'pop' ? Math.max(0, 0.6 - b.t * 2.4) : 0.55; g.strokeStyle = '#a8d8ff'; g.lineWidth = 1; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke();
-    g.globalAlpha *= 0.3; g.fillStyle = '#4a8fd8'; g.fill(); g.globalAlpha = 0.8; g.fillStyle = '#ffffff'; g.fillRect(x - R(r * 0.5), y - R(r * 0.55), 2, 2); g.restore(); }
-  function drawPatch(g, p, cx, cy, time) { const x = R(p.x - cx), y = R(p.y - cy), a = 1 - p.t / p.life;
-    g.globalAlpha = 0.7 * a; if (p.col === 'green') { g.fillStyle = '#3e7a26'; for (let k = -3; k <= 3; k++) g.fillRect(x + k * 4, y - 2 - (k % 2 ? 4 : 2), 2, 5); }
-    g.globalAlpha = 1; }
-  function drawBanner(g, time) { if (!S.banner) return; const VW = ctx.VW(), a = Math.min(1, S.banner.t, 3.4 - S.banner.t); g.save(); g.globalAlpha = Math.max(0, a);
-    g.fillStyle = 'rgba(20,24,14,0.7)'; g.fillRect(VW / 2 - 90, 40, 180, 15); g.fillStyle = '#c9b27c'; g.fillRect(VW / 2 - 90, 40, 180, 1); g.fillRect(VW / 2 - 90, 54, 180, 1);
-    if (ctx.text) ctx.text(S.banner.name, VW / 2, 44, '#e8dcc0', 'center'); g.restore(); }
-  /* her cottage: the great cauldron at the back of the room (her landmark's heart), her jar shelves' frames */
-  function drawCottage(g, cx, cy, time) { const a = L().arena; if (!a) return; const x = R(cauldronX() - cx), y = R(a.floor - cy); if (x < -80 || x > ctx.VW() + 80) return;
-    g.fillStyle = '#1e1a14'; g.fillRect(x - 22, y - 26, 44, 26); g.fillStyle = '#2e2a22'; g.fillRect(x - 24, y - 28, 48, 4);
-    g.fillStyle = '#3a8a3a'; g.globalAlpha = 0.6 + 0.2 * Math.sin(time * 3); g.fillRect(x - 20, y - 27, 40, 2); g.globalAlpha = 1;
-    for (let k = 0; k < 3; k++) { const ph = (time * 0.8 + k / 3) % 1; g.globalAlpha = 0.4 * (1 - ph); g.fillStyle = '#9be06a'; g.fillRect(x - 10 + k * 9, y - 30 - R(ph * 24), 2, 2); } g.globalAlpha = 1;
-    g.fillStyle = Math.floor(time * 9) % 2 ? '#ff9a5c' : '#ffd36b'; for (let k = -2; k <= 2; k++) g.fillRect(x + k * 7, y - 3, 3, 3); }
+  function drawBed(g, b, cx, cy, time) { UW.drawBed(g, b, cx, cy, time); }
+  function drawHedge(g, h, cx, cy, time) { UW.drawHedge(g, h, cx, cy, time); }
+  function drawWell(g, w, cx, cy, time) { UW.drawWell(g, w, cx, cy, time); }
+  function drawBubble(g, b, cx, cy, time) { UW.drawBubble(g, b, cx, cy, time, JAR.bubbleR); }
+  function drawPatch(g, p, cx, cy, time) { UW.drawPatch(g, p, cx, cy, time); }
+  function drawBanner(g, time) { if (!S.banner) return; UW.drawBanner(g, S.banner.name, ctx.VW(), Math.min(1, S.banner.t, 3.4 - S.banner.t), ctx.text); }
+  /* her cottage: the great cauldron at the back of the room (her landmark's heart): green and calm, boiling red in phase two */
+  function drawCottage(g, cx, cy, time) { const a = L().arena; if (!a) return; const e = ctx.boss(), on = e && e.t === 'grandmother' && e.alive && e.gm3;
+    const fury = !on ? 0 : e.mode === 'stirTell' || e.mode === 'stir' ? 1 : e.phase >= 2 ? 0.55 : 0; UW.drawCauldron(g, cauldronX(), a.floor, cx, cy, time, fury, on && e.mode === 'stir'); }
   H.drawWorld = (g, cx, cy, time) => {
     if (!S || !H.on()) return;
+    UD.drawDress(g, cx, cy, ctx.VW(), time, UD.planDress(L(), T));   /* (claude/underleafart) what stands on her ground and hangs from her boards */
     drawCottage(g, cx, cy, time);
     for (const w of S.wells) drawWell(g, w, cx, cy, time);
     for (const b of S.beds) drawBed(g, b, cx, cy, time);
@@ -379,14 +348,10 @@ export function makePotionHands(ctx) {
     for (const b of S.bubbles) drawBubble(g, b, cx, cy, time);
     if (P.carry && P.carry.t === 'jar' && !P.dead) CTW.drawArc(g, H.jarArc(P.carry), cx, cy, time, COL[P.carry.col][1]);
     /* HER MARKS (told on the floor where each will land) and her projectiles */
-    for (const m of marks) { const x = R(m.x - cx), y = R(m.y - cy), p = 0.5 + 0.5 * Math.sin(time * 12), col = m.kind === 'pot' ? COL[m.col || 'red'][1] : '#ff9a5c';
-      g.globalAlpha = 0.45 + 0.4 * p; g.strokeStyle = col; g.beginPath(); g.ellipse(x, y - 1, m.r, m.r * 0.32, 0, 0, 7); g.stroke(); g.globalAlpha = 0.18; g.fillStyle = col; g.fill(); g.globalAlpha = 1; }
-    for (const b of balls) { const x = R(b.x - cx), y = R(b.y - cy), fl = Math.floor(time * 20) % 2; g.fillStyle = fl ? '#ff9a5c' : '#ffd36b'; g.fillRect(x - 4, y - 4, 8, 8); g.fillStyle = '#fff1a0'; g.fillRect(x - 2, y - 2, 4, 4); }
-    for (const p of pots) drawJarShape(g, R(p.x - cx), R(p.y - cy) + 6, p.col);
-    for (const q of gpatches) { const x = R(q.x - cx), y = R(A().floor - cy), a = 1 - q.t / q.life;
-      if (q.col === 'green') { g.fillStyle = '#3e7a26'; g.globalAlpha = a; for (let k = -5; k <= 5; k++) { g.fillRect(x + k * 4, y - 6 + (k % 2 ? 2 : 0), 2, 6); g.fillStyle = '#c9b27c'; g.fillRect(x + k * 4, y - 7 + (k % 2 ? 2 : 0), 1, 1); g.fillStyle = '#3e7a26'; } }
-      else { g.globalAlpha = a; g.fillStyle = Math.floor(time * 14 + k0(q)) % 2 ? '#ff9a5c' : '#ffd36b'; for (let k = -5; k <= 5; k++) g.fillRect(x + k * 4, y - 2 - (k % 2), 3, 2 + (k % 2)); }
-      g.globalAlpha = 1; }
+    for (const m of marks) UW.drawMark(g, m, cx, cy, time);
+    for (const b of balls) UW.drawBall(g, b, cx, cy, time);
+    for (const p of pots) UW.drawHurledJar(g, p, cx, cy, time);
+    for (const q of gpatches) UW.drawGranPatch(g, q, A().floor, cx, cy, time);
     drawBanner(g, time);
   };
   const k0 = q => Math.floor(q.x);
