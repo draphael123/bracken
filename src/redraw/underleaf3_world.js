@@ -228,3 +228,18 @@ export function drawBanner(g, text, VW, a, textFn) {
 }
 export function warm() { for (const c of ['green', 'blue', 'red']) { jarSpr(c); jarSpr(c, 0); shelfSpr(c); } bedSpr(); wellSpr(); bigPot(); for (const r of ['255,200,96', '184,240,112', '255,154,92', '74,143,216', '95,174,58', '216,80,42']) halo(r); }
 export { JAR_AX, JAR_AY, glowAt };
+/* the jar-thrower's FIRE-JAR in the air (the rock-goblin's lantern, in her craft): a turning red jar with the flame loose in it, a trail of sparks, the glow on whatever it passes */
+export function drawFireJar(g, s, cx, cy, time) {
+  const x = rc(s.x - cx), y = rc(s.y - cy), fl = Math.floor(time * 18) % 2;
+  g.save(); g.translate(x, y); g.rotate(time * 9); g.drawImage(jarSpr('red'), -JAR_AX, -7); g.restore();
+  R(g, fl ? '#ffd36b' : '#ff9a5c', x - 1, y - 2, 3, 3); R(g, '#fff1a0', x, y - 1, 1, 1);
+  for (let q = 1; q <= 4; q++) { g.globalAlpha = 0.5 / q; R(g, q < 3 ? '#ff9a5c' : '#d8502a', x - (s.vx || 0) * 0.012 * q + rc(Math.sin(time * 30 + q)), y - (s.vy || 0) * 0.012 * q, 3, 3); } g.globalAlpha = 1;
+  glowAt(g, '255,154,92', x, y, 40, 40, 0.45);
+}
+/* the coat of a thorn-beast burning off: flames climbing its back and flakes of ash coming away (e.coatBurn counts 1.6 -> 0) */
+export function drawCoatFire(g, e, cx, cy, time) {
+  const x = rc(e.x - cx), y = rc(e.y - cy), k = Math.max(0, Math.min(1, e.coatBurn / 1.6)), h = e.h || 18;
+  for (let q = -4; q <= 4; q++) { const fl = Math.floor(time * 16 + q) % 2, fh = (5 + ((q * 5) & 3) + fl * 2) * (0.4 + k); g.globalAlpha = Math.min(1, k * 1.6); R(g, fl ? '#ff9a5c' : '#d8502a', x + q * 2 - 1, y - h * 0.5 - fh - ((q * 3) & 3), 2, fh); R(g, '#ffd36b', x + q * 2, y - h * 0.5 - fh * 0.5, 1, fh * 0.4); }
+  for (let q = 0; q < 5; q++) { const ph = (time * 1.5 + q / 5) % 1; g.globalAlpha = (1 - ph) * k; R(g, '#2a2420', x - 8 + q * 4, y - h - ph * 14, 2, 2); }
+  g.globalAlpha = 1; glowAt(g, '255,154,92', x, y - h * 0.5, 50, 40, 0.5 * k);
+}

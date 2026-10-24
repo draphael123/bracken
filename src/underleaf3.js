@@ -221,6 +221,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 29 }, pools: [], falls: [], moversExtra: [], interiors: [],
     arena, jars: true, ul3: true, reachSpans, reachDoors, reachVents,
+    reskin: { sprig: 'herbgatherer', thief: 'herbthief', shield: 'herbwarden', rockgoblin: 'jarthrower', archer: 'leafarcher', brute: 'thornbeast' },   /* (claude/underleafart) THE VILLAGE'S OWN PEOPLE: art + names only, src/main.js gives the skin at spawn (so the level's hash is the greybox's) */
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* five shrines, one closing each area's exam and one at her door (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),

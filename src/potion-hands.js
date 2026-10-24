@@ -24,7 +24,7 @@
 //               RED leaves BURNING GROUND; the spot is marked); THE BROOD (broodTell: no blow). PHASE TWO (GM.p2): she STIRS THE CAULDRON - a
 //               bigger brood, and the cauldron SPITS FIRE (stirTell: gouts on marked spots across the room) - five told moves in all.
 import * as CTW from './carry-throw.js';
-import * as UW from './redraw/underleaf3_world.js'; import * as UD from './redraw/underleaf3_dress.js'; import * as UT from './redraw/underleaf3_tiles.js';   /* (claude/underleafart) her jars, shelves, beds, hedges, wells, bubbles, marks and cauldron, drawn */
+import * as UW from './redraw/underleaf3_world.js'; import * as UG from './redraw/underleaf3_gran.js'; import * as UD from './redraw/underleaf3_dress.js'; import * as UT from './redraw/underleaf3_tiles.js';   /* (claude/underleafart) her jars, shelves, beds, hedges, wells, bubbles, marks and cauldron, drawn */
 
 export const JAR = { brew: 0.8, burnR: 40, bedR: 30, snare: 1.6, snareR: 28, hover: 2.4, rise: 92, riseMax: 7 * 16, foeFloat: 2.6, foeRise: 34, bubbleR: 13, fireLife: 2.6, hedgeBurn: 0.45, coatR: 34 };
 export const GM = { hp: 1180, ward: 0.4, openMul: 2, float: 3.2, purse: 0.15, after: 3, p2: 0.55, brood: 3, brood2: 4, broodCd: 11, broodCd2: 9, broodHp: 1, broodBite: 0.6,
@@ -81,7 +81,7 @@ export function makePotionHands(ctx) {
     for (let y = h.y0; y <= h.y1; y++) ctx.burst((h.x0 + h.x1 + 1) * TS / 2, y * TS + 8, 4, ['#ff9a5c', '#ffd36b', '#3a2a1a'], 60, 0.6, -60, 2);
     say(h.x, h.y0 * TS - 10, 'burnt', '#ff9a5c'); }
   const hedgeNear = (x, y, r) => S.hedges.filter(h => !h.burnt && x > h.x0 * TS - r && x < (h.x1 + 1) * TS + r && y > h.y0 * TS - r && y < (h.y1 + 1) * TS + r);
-  function burnCoat(e) { if (!e.thornCoat || e.coatOff) return; e.coatOff = true; e.stagger = Math.max(e.stagger || 0, 1.0); S.n.coats++; ctx.sfx.hiss && ctx.sfx.hiss();
+  function burnCoat(e) { if (!e.thornCoat || e.coatOff) return; e.coatOff = true; e.skinNow = 'thornbare'; e.coatBurn = 1.6; e.stagger = Math.max(e.stagger || 0, 1.0); S.n.coats++; ctx.sfx.hiss && ctx.sfx.hiss();
     ctx.burst(e.x, e.y - 10, 16, ['#ff9a5c', '#5a4a2a', '#ffd36b'], 70, 0.6, -40, 2); ctx.word(e.x, e.y - (e.h || 14) - 12, PO_SAY.coat, '#ff9a5c'); }
 
   /* ---------- A JAR BREAKS ---------- */
@@ -218,7 +218,7 @@ export function makePotionHands(ctx) {
     const n = (e.phase >= 2 ? GM.brood2 : GM.brood) - brood(e).length; if (n <= 0) return;
     const row = Math.round(A().floor / TS) - 1;
     for (let i = 0; i < n; i++) { const side = i % 2 ? 1 : -1, x = clampX(e.x + side * (26 + 14 * Math.floor(i / 2)));
-      const made = ctx.spawn({ t: 'sprig', x: Math.floor(x / TS), y: row, face: -side }); for (const q of made) { q.broodOf = e; q.nip = GM.broodBite; q.hp = Math.max(1, Math.round(q.hp * GM.broodHp)); q.woke = 1; q.sleeper = false; }
+      const made = ctx.spawn({ t: 'sprig', x: Math.floor(x / TS), y: row, face: -side, cnSkin: 'grandbrood' }); for (const q of made) { q.broodOf = e; q.nip = GM.broodBite; q.hp = Math.max(1, Math.round(q.hp * GM.broodHp)); q.woke = 1; q.sleeper = false; }
       ctx.burst(x, A().floor - 6, 8, ['#5a4a2a', '#8a7a4a', '#c9b27c'], 50, 0.5); }
     e.called++; ctx.sfx.whistleCall ? ctx.sfx.whistleCall() : ctx.sfx.charge(); say(e.x, e.y - e.h - 18, 'brood', '#c9b27c');
   }
@@ -246,7 +246,7 @@ export function makePotionHands(ctx) {
     if (broodUp(e)) e.wasBrood = true;
     if ((e.burn || 0) > 0) { e.burn = 0; if (once('smother')) { ctx.sfx.hiss && ctx.sfx.hiss(); ctx.word(e.x, e.y - e.h - 12, PO_SAY.noBurn, '#ff9a5c'); } }   /* SHE IS THE WITCH-FIRE'S MISTRESS: a fire never takes on her (a flame's blow lands; its burn does not stay) */
     let want = 0;
-    if (ph === 1 && e.hp <= e.maxHp * GM.p2 && e.mode === 'walk') { e.phase = 2; e.mode = 'kick'; e.modeT = GM.kick; e.vx = 0; ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); say(e.x, e.y - e.h - 24, 'stir', '#ff9a5c'); e.broodT = 0.4; e.stirT = 2.5; }
+    if (ph === 1 && e.hp <= e.maxHp * GM.p2 && e.mode === 'walk') { e.phase = 2; e.skinNow = 'grandmother2'; e.mode = 'kick'; e.modeT = GM.kick; e.vx = 0; ctx.sfx.roar && ctx.sfx.roar(); ctx.shake(5); say(e.x, e.y - e.h - 24, 'stir', '#ff9a5c'); e.broodT = 0.4; e.stirT = 2.5; }
     switch (e.mode) {
       case 'sleep': return;
       case 'wake': if (e.modeT <= 0) { e.mode = 'walk'; e.modeT = 0.6; } break;
@@ -348,6 +348,7 @@ export function makePotionHands(ctx) {
     for (const b of S.bubbles) drawBubble(g, b, cx, cy, time);
     if (P.carry && P.carry.t === 'jar' && !P.dead) CTW.drawArc(g, H.jarArc(P.carry), cx, cy, time, COL[P.carry.col][1]);
     /* HER MARKS (told on the floor where each will land) and her projectiles */
+    for (const e of ctx.enemies()) if (e.alive && e.coatBurn > 0) { e.coatBurn -= 0.016; UW.drawCoatFire(g, e, cx, cy, time); }   /* the thorn-beast's coat burning off */
     for (const m of marks) UW.drawMark(g, m, cx, cy, time);
     for (const b of balls) UW.drawBall(g, b, cx, cy, time);
     for (const p of pots) UW.drawHurledJar(g, p, cx, cy, time);
@@ -358,6 +359,8 @@ export function makePotionHands(ctx) {
   /* HER READ (B10): OPEN = the gold ring and its bar (floated); WARDED = a pale shell and, while the brood stands, a line to each of them */
   H.drawGran = (g, e, cx, cy, time) => {
     if (!e.gm3) return; const x = R(e.x - cx), y = R(e.y - cy), pul = 0.5 + 0.5 * Math.sin(time * 10);
+    { const lp = UG.LANTERN[UG.frameOf(e)]; if (lp) UW.glowAt(g, e.phase >= 2 ? "255,154,92" : "184,240,112", e.x - cx + e.face * (lp[0] - 28), e.y - cy - (60 - lp[1]), 54, 54, 0.38 + 0.12 * Math.sin(time * 7)); }   /* her witch-fire lantern lights her */
+    if (e.mode === "floated") UW.drawBubble(g, { x: e.x, y: e.y - 24 + cy * 0, state: "hover", t: 0 }, cx, cy, time, 27);   /* the bubble she hangs in */
     if (e.mode === 'floated') { const k = Math.max(0, e.modeT / (e.floatLen || GM.float));
       g.globalAlpha = 0.5 + 0.35 * pul; g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.beginPath(); g.ellipse(x, y - 1, 18 + pul * 2, 5, 0, 0, 7); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1;
       g.fillStyle = '#1b1626'; g.fillRect(x - 21, y - 62, 42, 5); g.fillStyle = '#ffd36b'; g.fillRect(x - 20, y - 61, R(40 * k), 3); return; }
@@ -366,8 +369,7 @@ export function makePotionHands(ctx) {
       if (e.ward > 0) { g.fillStyle = '#1b1626'; g.fillRect(x - 21, y - 62, 42, 5); g.fillStyle = '#dfe8ff'; g.fillRect(x - 20, y - 61, R(40 * Math.min(1, e.ward / GM.after)), 3); } }
   };
   /* her sprite's frame (main.js draws her with the old set until the art lane: B16 poses are its job) */
-  H.granFrame = e => e.mode === 'sleep' ? 0 : e.mode === 'wake' ? 1 : (e.mode === 'fireballTell' || e.mode === 'cast') ? 8 : (e.mode === 'staff' || e.mode === 'staffTell') ? 5
-    : (e.mode === 'jarTell' || e.mode === 'hurled') ? 6 : (e.mode === 'broodTell' || e.mode === 'kick') ? 7 : (e.mode === 'stirTell' || e.mode === 'stir') ? 8 : e.mode === 'floated' ? 4 : (Math.floor((e.anim || 0) * 4) % 2 ? 2 : 3);
+  H.granFrame = e => UG.frameOf(e);   /* (claude/underleafart) her own sheet: a pose for every move (src/redraw/underleaf3_gran.js) */
 
   /* ---------- THE WALKER'S HANDS (tools/level-walk.mjs via src/walk-hints.js): the next jar the route needs, and where it is thrown from ---------- */
   const needs = () => [...S.hedges.filter(h => !h.burnt).map(h => ({ kind: 'red', x: h.x0 * TS, y: (h.y1 + 1) * TS, o: h })),
