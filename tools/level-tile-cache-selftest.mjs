@@ -15,3 +15,9 @@ assert.equal(retry('retry',()=>7),7);assert.equal(failures,1,'a failed bake must
 const tint=levelTileCache(),reference={width:16};tint.set('tint',reference);resetLevelTileCaches();
 assert.equal(tint.size,0);assert.equal(reference.width,16);
 console.log('PASS tile cache lifetime, canonical inputs, failed-bake retry and held references');
+const warm=levelTileMemo();let generations=0;const bake=()=>({generation:++generations});
+resetLevelTileCaches('wood');const first=warm('tile',bake);
+resetLevelTileCaches('wood');assert.equal(warm('tile',bake),first);assert.equal(generations,1);
+resetLevelTileCaches('canal');const next=warm('tile',bake);assert.notEqual(next,first);assert.equal(generations,2);
+resetLevelTileCaches();assert.notEqual(warm('tile',bake),next);assert.equal(generations,3,'unkeyed explicit eviction must always clear');
+console.log('PASS same-level reuse, level-change eviction and explicit eviction');
