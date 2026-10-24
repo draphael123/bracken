@@ -229,7 +229,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ent('batteringbeast', A1 - 10, FL - 1);
   block(W - 1, W - 1, 0, H - 1);                                                   /* the world's east edge */
 
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'batteringbeast', music: 'boss3', tint: '#c87a3a', tintA: 0.08,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'batteringbeast', music: 'batteringbeast', tint: '#c87a3a', tintA: 0.08,
     /* THE TWO SCAFFOLDS (src/battering-beast.js geom): deck columns, deck row, the prop's column (its inner foot) and the side the wreck falls to */
     scaffolds: [{ x0: A0 + 4, x1: A0 + 8, row: FL - 3, prop: A0 + 10, dir: 1 }, { x0: A1 - 8, x1: A1 - 4, row: FL - 3, prop: A1 - 10, dir: -1 }], gate: A0 - 1 };
   return {
@@ -242,7 +242,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
     unlocks: [
       { kind: 'hoists', opens: 'what the prop holds comes down: a scaffold folds into a ramp, a watchtower or the gatehouse scaffold falls across as a bridge, a crew\'s walkway drops its crew, a stack of stakes rolls down the road', hud: 'THE PROP GOES: IT COMES DOWN' },
     ],
-    duskStart: -1, duskLen: 1, music: 'kingswood', night: false, glowNight: true,
+    duskStart: -1, duskLen: 1, music: 'palisadewood', night: false, glowNight: true,
     interiors: [],
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', fg: 'pwood', haze: 'rgba(220,150,80,0.07)', grass: '#9a7a2a', grassL: '#d0a83a', grassD: '#5e4a1a', dirt: '#4e3420', dirtL: '#63432a', dirtD: '#2e1c10', canopy: ['#8a3a18', '#b8582a', '#d8862e', '#e8b04a'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
