@@ -287,6 +287,9 @@ if (take('lab-order')) results.push(run('lab-order', process.execPath, ['tools/l
 /* THE PIXELS NEED THE PAGE: a headless Chrome on a port of its own, so a dev server left running from another checkout is never the one measured */
 if (take('pixels')) results.push(run('pixels', process.execPath, ['tools/headless.mjs', 'floats'], { PORT: String(portFor(3)) }));
 /* PLATFORM FEEL (claude/feelplatform, Daniel 10-12): the Game speed range + sub-steps + migration (feel-speed), and the camera lookahead, landings by height and the world's small reactions (feel-platform) */
+/* THE PALISADE WOOD and THE BATTERING BEAST (claude/palisadewood, Node): the road and the old-save unlock, the five areas, every required prop a LOCK, the stake rolls, the shrines,
+   the hands and the stake-setter in a fake world, the beast's openings / armour floor / ward / phase two / harness (its own line: the big list is edited by every lane) */
+if (take('palisadewood')) results.push(run('palisadewood', process.execPath, ['tools/palisadewood.mjs']));
 if (take('feel-speed')) results.push(run('feel-speed', process.execPath, ['tools/feel-speed.mjs'], { PORT: String(portFor(4)) }));
 if (take('feel-platform')) results.push(run('feel-platform', process.execPath, ['tools/feel-platform.mjs'], { PORT: String(portFor(5)) }));
 /* THE SLOPES SWAP, PROVED IN THE PAGE (docs/slopes-integration.md §8.3). tools/slopes.mjs above proves the two movers equal in Node;
