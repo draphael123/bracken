@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,22 @@ env:
 permissions:
   contents: read
 jobs:
+  tile-cache:
+    if: inputs.mode == 'tile-cache'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/level-tile-cache-selftest.mjs
+      - run: node tools/tile-cache-lifetime-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tile-cache-pixels
+          path: gate-data/
   paladin-boot:
     if: inputs.mode == 'paladin-boot'
     runs-on: ubuntu-latest

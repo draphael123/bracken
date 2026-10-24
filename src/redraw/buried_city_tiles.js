@@ -13,9 +13,10 @@
 //   LIGHT           every tile is tinted by the light on it: warm near a lamp, golden in a shaft of sun, cold blue where only the sand's shadow reaches
 // Made from px.js primitives, 16x16, baked once and memoised.   bcTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 import { canvas, px, rect } from '../px.js';
+import { levelTileCache, levelTileMemo } from '../level-tile-cache.js';
 
 export const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
-const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+const once = levelTileMemo();
 const p2 = (g, x, y, c) => { if (x >= 0 && x < 16 && y >= 0 && y < 16) px(g, x, y, c); };
 
 /* ---------- the districts' stone: five tones dark -> lit, a joint, an inlay ---------- */
@@ -50,7 +51,7 @@ function lightAt(I, x, y) {
   for (const lp of I.lamps) { const d = Math.hypot(lp.x - x, (lp.y - y) * 1.2); v = Math.max(v, 3.2 - d * 0.42); }
   return Math.max(-3, Math.min(4, Math.round(v)));
 }
-const TINTED = new Map();
+const TINTED = levelTileCache();
 function tint(c, lit) {
   if (lit === 0) return c;
   if (!TINTED.has(lit)) TINTED.set(lit, new WeakMap()); const tm = TINTED.get(lit); if (tm.has(c)) return tm.get(c);

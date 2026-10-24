@@ -10,8 +10,9 @@
 //   ONEWAY / PLANK  boards: nailed deal planks with an iron strap, drip-stained
 // Made from px.js primitives, 16x16, baked lazily and memoised.   ucTile(t, x, y, at, T, L) -> the canvas for one cell, or null (the game's own kit draws it)
 import { canvas, px, rect, mulberry } from '../px.js';
+import { levelTileMemo } from '../level-tile-cache.js';
 
-const memo = new Map(); const once = (k, fn) => { if (!memo.has(k)) memo.set(k, fn()); return memo.get(k); };
+const once = levelTileMemo();
 export const hash = (a, b) => { let h = (Math.imul(a | 0, 73856093) ^ Math.imul(b | 0, 19349663)) >>> 0; h = Math.imul(h ^ (h >>> 13), 1274126177) >>> 0; return h; };
 const px2 = (g, x, y, c) => { if (x >= 0 && x < 16 && y >= 0 && y < 16) px(g, x, y, c); };
 

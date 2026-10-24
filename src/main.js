@@ -1,4 +1,5 @@
 import { reuseCurrentHeroBake } from './hero-bake-reuse.js';
+import { resetLevelTileCaches } from './level-tile-cache.js';
 import { setLevelSfx, levelSfxReady, prepareLevelSfx } from './audio.js';
 import { staticGradient } from './render-cache.js';
 import './bug-report.js';   /* FIRST: the console and error taps REPORT A BUG reads must be in before any other module speaks */
@@ -2496,7 +2497,7 @@ function* loadLevelG(i) {
   if (TRN && !TRN.loading) TRN = null;   /* (claude/transwm) a level loaded some other way (the map, a restart, a tool) ends a transition that never finished */
   hintT = 0; HINTS.newLevel((LEVELS[i] || {}).id || i);   /* a lesson banner from the last level or the last life does not follow you into this one (the crouch lessons, src/crouch-a.js, are told from a foe near you; a stale one sat over burial-vents section 7) */
   flight = null; if (typeof P !== 'undefined' && P) P.fly = false;
-  setView('normal'); levelIndex = i; L = LEVELS[i].build(); setLevelSfx({ ...L, id: LEVELS[i].id }, [hero()]); mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
+  setView('normal'); levelIndex = i; L = LEVELS[i].build(); resetLevelTileCaches(); setLevelSfx({ ...L, id: LEVELS[i].id }, [hero()]); mapPreloadTracks.set(i, L.music); LW = L.W; LH = L.H; L.knockHazards = kiRows(LEVELS[i].id, L, TS, LH); BAR.prime(LEVELS[i].id);   /* (claude/kifollow) the per-act knock-into hazard rows (lava, quicksand) */ trialVerbs = !!L.trial; trialLend = null; if (L.trial && L.trial.length) trialLend = lendSkills(); yield 'build'; yield* bakeAllG(L.palette || {});
   SLOPES_ON = levelHasSlopes(L.grid);
   SLAB_PHYS = !!(L.slabs && L.slabs.length); SLAB_MASK = new Set(); SLAB_RT = new Map(); for (const s of (L.slabs || [])) SLAB_RT.set(s.id, { ...s, state: 'up', posts: [], heaps: [], cells: [], anim: 0 });   /* (claude/undercrown2) the slabs as built; their posts join them as they are placed */   /* THE SLOPES SWITCH, and it has to be here: moveBody reads it for every body of this level */
   if (!window.__rawPlace) groundEnts();   /* window.__rawPlace = true draws a level as it was placed, so BK.floatLab can measure what the rule is saving */
