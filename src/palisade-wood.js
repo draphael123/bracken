@@ -72,7 +72,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   sign(5, 37, "THE PALISADE WOOD. GORM'S GOBLINS ARE WALLING OFF THE FOREST FOR THEIR KING.");
   deco(2, 37, 'mushroom', 0); deco(9, 37, 'fern', 0); deco(11, 37, 'stump', 0); deco(16, 37, 'timber', 0);   /* (the last caps of the Rootway, then stumps: the felling) */
   crop(7, 37, 'basket'); crop(13, 37, 'nuts');
-  foe('sprig', 14, 37, 'edgeA', { face: -1 });
+  foe('hound', 15, 37, 'edgeA', { face: -1 });                                      /* the crews' hound: it runs at you over the stumps */
   coins([8, 36], [12, 36]);
   plank(4, 9, 35); coins([5, 34], [8, 34]);                                        /* a felled trunk propped on its stump (a second height) */
   /* THE FIRST PROP, SAFE: a scaffold section stands against the ledge (five rows: no jump), held by a prop at the roadside. Knock it out: the section folds down
@@ -87,12 +87,12 @@ export function buildPalisadeWood({ painter, T, TS }) {
   sign(26, 32, 'A CREW ON A WALKWAY. KNOCK OUT ITS PROP: THE CREW COMES DOWN.');
   coins([30, 31], [40, 31], [43, 31]); crop(41, 32, 'rake');
   ground(45, 58, 35);
-  foe('brute', 52, 34, 'edgeB', { face: -1 }); foe('sprig', 56, 34, 'edgeB', { face: -1 });
+  foe('brute', 52, 34, 'edgeB', { face: -1 }); foe('shield', 55, 34, 'edgeB', { face: -1 }); foe('archer', 49, 31, 'edgeB', { face: -1, perch: true });
   plank(46, 51, 32); coins([47, 31], [50, 31]);
   deco(47, 34, 'timber', 1); deco(57, 34, 'stump', 1); crop(49, 34, 'sheaf');
   ground(59, 61, 38);                                                              /* the saw pit (three down, three up) */
   ground(62, 79, 35);
-  foe('rockgoblin', 72, 34, 'edgeC', { face: -1 });                                /* a stake-thrower on the felled ground (art: the reskin) */
+  foe('rockgoblin', 72, 34, 'edgeC', { face: -1 }); foe('pike', 76, 34, 'edgeC', { face: -1 }); foe('hound', 67, 31, 'edgeC', { face: -1 });                                /* a stake-thrower on the felled ground (art: the reskin) */
   plank(64, 70, 32); coins([65, 31], [68, 31]);
   deco(66, 34, 'stump', 0); deco(75, 34, 'fruitTree', 0); crop(69, 34, 'apples');
   coins([64, 33], [70, 33], [77, 33]);
@@ -129,10 +129,11 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(155, 168, 32);
   air(155, 160, 39, 41); ent('silver', 159, 41); crop(157, 41, 'nuts');             /* SILVER ONE: THE WOODCUTTERS' HOLLOW (off the pit's floor - off the road) */
   plank(156, 158, 30); plank(160, 164, 28); foe('archer', 162, 27, 'farTower', { face: -1, perch: true });
-  foe('sprig', 166, 31, 'farTower', { face: -1 });
+  foe('shield', 157, 31, 'farTower', { face: -1 }); foe('pike', 166, 31, 'farTower', { face: -1 });   /* (the bridge sets you down in front of the shield) */
   coins([150, 30], [152, 30], [158, 31]);
   ground(169, 204, 29);                                                            /* the yard's upper ground (three up) */
   plank(170, 176, 26); coins([172, 25], [175, 25]);
+  foe('brute', 178, 28, 'yardCart', { face: -1 }); foe('hound', 174, 25, 'yardCart', { face: -1 });
   deco(171, 28, 'cart', 0); crop(174, 28, 'sheaf');
   /* THE YARD GATE (the area's exam): a setter and a shield hold it, an archer on the scaffold over the gate; a stake stack racked over them rolls through them */
   prop('yardExamStakes', { x: 183, top: 21, hang: 25, cleat: [179, 28], load: 'stakes', roll: 1, rollMax: 13 });
@@ -163,13 +164,15 @@ export function buildPalisadeWood({ painter, T, TS }) {
   plank(238, 241, 13); crumbles.push({ x0: 238, x1: 241, row: 13, rows: 1, count: 1.05, kind: 'bough' });
   prop('wallCrew', { x: 241, top: 8, cleat: [233, 12], load: 'crew', walk: [236, 246, 8] });
   foe('rockgoblin', 239, 7, 'wallCrew', { face: -1, perch: true }); foe('sprig', 243, 7, 'wallCrew', { face: -1, perch: true });
+  foe('pike', 233, 12, 'boards', { face: -1 });
   sign(231, 12, 'THE LOOSE BOARDS GIVE WAY: KEEP MOVING. THE CREW OVER THEM THROWS STAKES.');
   coins([224, 11], [235, 11], [245, 11]);
+  plank(222, 225, 9); foe('archer', 224, 8, 'slotOne', { face: -1, perch: true });   /* an archer over slot one: he covers the jump */
   /* THE UNBUILT SPAN (REQUIRED): eight wide - the second watchtower stands on the wall top at its lip */
   air(254, 261, 13, 21); plank(254, 256, 19); plank(254, 256, 16);
   prop('wallTower', { x: 252, top: 3, cleat: [249, 12], load: 'tower', span: [254, 261, 13] });
   sign(247, 12, 'THE UNBUILT SPAN. ITS WATCHTOWER STANDS ON A PROP.');
-  foe('sprig', 265, 12, 'span', { face: -1 });
+  foe('shield', 264, 12, 'span', { face: -1 }); foe('hound', 267, 12, 'span', { face: -1 });
   coins([257, 11], [259, 11]);
   /* THE HALF-BUILT TOWER on the wall: climb over it (a board, its top, down); the scaffold over it holds a silver */
   plank(268, 270, 10); block(272, 275, 7, 12); foe('archer', 274, 6, 'tower', { face: -1, perch: true });
@@ -191,7 +194,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   sign(307, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
   deco(310, 24, 'siege', 0); deco(316, 24, 'cart', 1); deco(320, 24, 'batteringRam', 0); crop(313, 24, 'apples'); crop(318, 24, 'basket');
   plank(308, 314, 22); coins([309, 21], [313, 21]);
-  foe('pike', 312, 24, 'yard2', { face: -1 }); foe('shield', 317, 24, 'yard2', { face: -1 });
+  foe('pike', 312, 24, 'yard2', { face: -1 }); foe('shield', 317, 24, 'yard2', { face: -1 }); foe('brute', 321, 24, 'yard2', { face: -1 }); foe('archer', 311, 21, 'yard2', { face: -1, perch: true });
   coins([308, 23], [314, 23], [322, 23]);
   /* THE DITCH (REQUIRED): eight wide; the gatehouse scaffold stands on its lip on a prop - it falls across. A fall is a climb (a board up its west wall) */
   prop('gateBridge', { x: 328, top: 14, cleat: [325, 24], load: 'bridge', span: [330, 337, 25] });
@@ -200,14 +203,14 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(338, 442, 25);
   /* THE GATEHOUSE: half-built over the road (the passage under it four rows high); its stakes racked on its far side roll back through the passage at its guards */
   block(346, 356, 6, 20);
-  foe('shield', 349, 24, 'passage', { face: -1 }); foe('pike', 353, 24, 'passage', { face: -1 });
+  foe('shield', 349, 24, 'passage', { face: -1 }); foe('pike', 353, 24, 'passage', { face: -1 }); foe('archer', 351, 5, 'passage', { face: -1, perch: true });
   prop('gateStakes', { x: 360, top: 15, hang: 19, cleat: [342, 24], load: 'stakes', roll: -1, rollMax: 15 });
   sign(340, 24, "THE GATE'S STAKES ARE RACKED BEYOND THE PASSAGE: KNOCK OUT THEIR PROP. THEY ROLL BACK THIS WAY.");
   deco(344, 24, 'gobPennant', 0); deco(358, 24, 'gobPennant', 1);
   /* the crew over the gate's far side, a setter on the road, the supply carts on to Kingswood */
   prop('gateCrew', { x: 362, top: 18, cleat: [358, 24], load: 'crew', walk: [359, 366, 19] });
   foe('rockgoblin', 361, 18, 'gateCrew', { face: -1, perch: true }); foe('archer', 364, 18, 'gateCrew', { face: -1, perch: true });
-  setter(369, 24, 'gateRoad');
+  setter(369, 24, 'gateRoad'); foe('brute', 373, 24, 'gateRoad', { face: -1 }); foe('hound', 379, 21, 'gateRoad', { face: -1 });
   plank(368, 374, 21); plank(377, 383, 22); coins([370, 20], [380, 21]);
   deco(374, 24, 'cart', 0); deco(379, 24, 'barrels', 0); crop(377, 24, 'sheaf'); crop(381, 24, 'nuts');
   sign(372, 24, "THE SUPPLY CARTS ROLL ON TO KINGSWOOD'S ROYAL ROAD.");
