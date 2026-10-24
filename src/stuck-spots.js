@@ -309,6 +309,8 @@ export const STUCK = {
       { zone: [340, 18, 475, 45], at: [469, 33], when: ['key', 378, 27, 'got'], done: ['lockgate', 469, 33, 'open'], line: 'THE BONE GATE WANTS THE KEY YOU CARRY' } ] },
   ],
   burning: [
+    { id: 'bn-yard-gate', zone: [124, 18, 137, 30], at: [137, 23], glint: 'stall', line: 'THE GATE BURNS: WATER OPENS IT, OR THE ROOF' },
+    { id: 'bn-barn-gate', zone: [304, 18, 321, 30], at: [322, 24], glint: 'stall', line: 'THE BARN DOOR BURNS: WATER OPENS IT, OR THE ROOF' },
     { id: 'bn-fallen-house', zone: [200, 22, 232, 30], ats: [[227, 25], [208, 23]], line: 'TOO HIGH TO JUMP: WATER, OR THE ROOFS' },
     { id: 'bn-trench', zone: [240, 18, 252, 30], at: [252, 23], line: 'THE STREET IS GONE: GO OVER THE ROOFS' },
   ],

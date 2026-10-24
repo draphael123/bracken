@@ -48,7 +48,7 @@ for (const z of (L.deckBreaks || [])) if ((z.beam || z.log) && z.x0 !== 45) { co
   assert.ok(d <= RACK_CLOSE, 'a ' + (z.beam ? 'beam' : 'log') + ' at ' + z.x0 + '-' + z.x1 + ' has a rack within ' + RACK_CLOSE + ' tiles: nearest is ' + d); }
 assert.ok((L.deckBreaks || []).some(z => z.x0 === 45 && z.log && !z.onTop), 'the road-in pit (45-48) is still the plain, pre-bucket log this exemption describes - if it changed, re-check whether the exemption still applies');
 /* EVERY HEAP - burning timber blocking the way (THE FALLEN HOUSE) or hiding a stash under it (THE ROOT CELLAR) */
-for (const h of (L.heaps || [])) { const d = Math.min(nearestWell(h.x0, h.y0), nearestWell(h.x1, h.y0));
+for (const h of (L.heaps || [])) { const hy = h.gate ? h.y1 : h.y0, d = Math.min(nearestWell(h.x0, hy), nearestWell(h.x1, hy));   /* (claude/burning3: a burning GATE fills the street up to the roof - its foot is on the rack floor) */
   assert.ok(d <= RACK_CLOSE, h.name + ' at ' + h.x0 + ' has a rack within ' + RACK_CLOSE + ' tiles: nearest is ' + d); }
 /* THE BARN ROOF'S BARRIER FIRE (Daniel's explicit ask: it had none before this pass) */
 for (const [x, y] of (L.roofFire || [])) { const d = nearestWell(x, y);

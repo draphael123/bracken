@@ -3,7 +3,7 @@ import { bossSelectRows, bossKey, bossRecordNext } from './bossselect.js';
 import { ABBOT, updateFalseAbbot as stepFalseAbbot, drawFalseAbbot, drawAbbotRopes, abbotFrame, abbotOpen, abbotTake, abbotBellRung, abbotBlessed, abbotSanctus, abbotSpoil } from './false-abbot.js';   /* THE FALSE ABBOT, the Monastery's boss (2026-09-22), in place of the Roc */
 import { layoutPlates, plateNodes, placePanel, plateLabel, panelSize } from './map-plates.js';
 import { bakeFalseAbbot } from './redraw/false_abbot.js';
-import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
+import { stepFuse, fuseLeft, drawBurningBackdrop, drawPixelSmoke, drawTownFlame, drawSmokeColumn, BEAM, SMOKE } from './burning-village.js'; import { blazeAt, drawBlazingHouse, drawBlazingFront, FRONT } from './village-blaze.js'; import * as VWA from './village-water.js'; import * as CTW from './carry-throw.js';   /* (claude/burnvillage2) THROW WATER: the jug, the stun and the steam ward (src/village-water.js); the told arc (src/carry-throw.js) */   /* THE BURNING VILLAGE's stakes and its fire behind the town (2026-09-23) */
 import { PASSIVE_GLYPH } from './skill-glyphs.js';   /* every passive's glyph, by hero and id */
 import { emptyCarry, carryHas, drop as dcDrop, doorSpot, freshDeathCost, bankStake, actStake } from './death-cost.js';   /* THE DEATH COST: the rules and the save shape, no game in them */
 import { THROW_KIND, isFireFoe, throwDamage, PYRO_HIT_FIELD } from './throwables.js';   /* CARRY & THROW (2026-09-28): the generic pick-up-and-throw system, and the water buckets built on it */
@@ -116,6 +116,7 @@ import { makeNestHands } from './hornets-nest-hands.js'; import { makeHornetQuee
 import { makeKsarHands } from './ksar-hands.js'; import { makeHawkMistressHands } from './hawk-mistress-hands.js'; import * as HMG from './hawk-mistress.js'; import * as KSF from './ksar-foes.js'; import * as KSA from './redraw/ksar_art.js'; import * as KST from './redraw/ksar_tiles.js'; let KSH = null, HMH = null, WRK = null;   /* THE BANDIT KSAR (claude/ksar, the greybox): the gongs, the throw, the gate winch; THE HAWK-MISTRESS */
 import * as MCK from './redraw/minecart_skins.js'; import * as MCB from './redraw/minecart_backdrop.js'; import * as MCT from './redraw/minecart_tiles.js'; import { makeMinecartHands } from './minecart-hands.js'; import { makeDrillHands } from './great-drill-hands.js'; import * as GDG from './great-drill.js'; let MCH = null, GDH = null;   /* THE DEEP RAILS (claude/minecart, the greybox): the cart, the points, the hazards, the goblin carts; THE GREAT DRILL */
 import { makeVotiveHands, VOTIVE_IDS, VOTIVE_N } from './votive-hands.js'; let VTH = null;   /* WAYMEET's three votive lamps (claude/towpathchurch): light them, the hill road to THE LIT CHURCH opens */
+import { makeVillageHands, stageAt } from './village-hands.js'; let VWH = null;   /* (claude/burning3) THE BURNING VILLAGE 3: burst tanks, SOAKED, oil fire, told falling debris, the fire's three stages */
 import * as STB from './redraw/stockade3_backdrop.js'; import * as STB3 from './redraw/stockade3_art.js';   /* (claude/stockade3) THE STOCKADE's own dusk, far wall + towers, mid camp and near smoke */
 import { makeStockadeHands } from './stockade-hands.js'; import * as STKA from './redraw/stockade2_art.js'; let SKD = null;   /* (claude/stockade2art) the Stockade's drawn tower bodies, pit, gate and horn */   /* THE STOCKADE 2 (claude/stockade2): the captured horn, the log piles, the barred gate, the three towers' exam and the Chieftain's war tower */import * as PBA from './redraw/paladin_boss_art.js'; import { makeLitChurchHands } from './lit-church-hands.js'; import { makePaladinHands } from './paladin-boss-hands.js'; import * as PBG from './paladin-boss.js'; import { makeDeaconHands } from './deacon-hands.js'; import * as DCG from './deacon.js'; let DCH = null;   /* (claude/church2) THE DEACON, LIT CHURCH 2's mini */ import * as CHS from './redraw/church_skins.js'; import * as CHT from './redraw/church_tiles.js'; import * as CHP from './redraw/church_props.js'; let LCH = null, PBH = null;   /* THE LIT CHURCH (claude/litchurch, the greybox): the light, the organ, the crypt, the dark rising; THE PALADIN */
 import * as OPF from './order-paladin.js'; import * as UPF from './undead-priest.js'; import * as C3A from './redraw/church3_foes_art.js'; import { flameBy as C3_FLAME_BY } from './flame.js';   /* (claude/church3) THE ORDER / UNDEAD PALADIN (one AI, two skins) and THE UNDEAD PRIEST: reusable foes */
@@ -23489,7 +23490,7 @@ function drawDuneStorm() {
 function villageReset() {
   unbReset(); caravanReset(); fairReset();   /* THE UNBURIED FIELD rides the village's hooks: reset, step and draw */
   theatreReset();   /* THE MASKWRIGHT'S THEATRE (src/theatre-hands.js) */
-  VG = L && L.village ? fireGrid(L) : null; if (!VG) return;
+  VG = L && L.village ? fireGrid(L) : null; if (!VG) { if (VWH) VWH.reset(); return; }
   for (const [x, y] of L.roofFire || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, barrier: true, tall: 46 });   /* THE FIRE ACROSS THE BARN ROOF: water puts it out for a while (villageSplash) */
   for (const [x, y, per, ph] of L.stillFires || []) fires.push({ x: x * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, pillar: !!per, per: per || 4, ph: ph || 0, tall: 14 });   /* FLAME PILLARS (villageTick) */
   for (const z of L.deckBreaks || []) if (z.log) { for (let x = z.x0; x <= z.x1; x++) fires.push({ x: x * TS + 8, y: (z.row + 2) * TS, life: 1e9, delay: 0, still: true, dmg: DMG.squareFire }); }   /* the embers in the pits under the logs */
@@ -23499,6 +23500,7 @@ function villageReset() {
   for (const [x, y] of L.cellarFires || []) for (const dx of [0, 1]) fires.push({ x: (x + dx) * TS + 8, y: (y + 1) * TS, life: 1e9, delay: 0, still: true, dmg: DMG.squareFire });
   for (const h of L.heaps || []) { if (h.out || h.lid) continue; for (let x = h.x0; x <= h.x1; x++) fires.push({ x: x * TS + 8, y: h.y0 * TS, life: 1e9, delay: 0, still: true, barrier: true, heap: h, tall: 30 }); }
   for (const [x, y, bx, by] of L.beams || []) props.push({ t: 'vbeam', x: x * TS + 8, y: y * TS + 6, cx: bx, cy: by, state: 'hung', vy: 0, tellT: 0 });
+  if (VWH) VWH.reset();   /* (claude/burning3) the tanks full, the oil alight, the debris standing again */
 }
 function villageAshes(e) {   /* where a burning goblin falls, the ground catches: that is its whole idea */
   if (!VG) return; const tx = Math.floor(e.x / TS), ty = Math.floor((e.y - 1) / TS);
@@ -23507,6 +23509,7 @@ function villageAshes(e) {   /* where a burning goblin falls, the ground catches
 }
 /* WATER: out goes the spread within r tiles, and any hot door within cool tiles is cooled for twelve seconds */
 function villageSplash(x, y, r, cool) {
+  if (VWH && VWH.on() && r <= 7 && !P.dead && Math.abs(P.x - x) < 30 && Math.abs(P.y - y) < 34) VWH.soak('splash');   /* (claude/burning3) the trough or the well you struck is over you: SOAKED */
   const n = douse(VG, Math.floor(x / TS), Math.floor((y - 1) / TS), r);
   for (const f of fires) if (!f.still && !f.grid && Math.abs(f.x - x) < r * TS && Math.abs(f.y - y) < 40) f.life = 0;
   if (fires.some(f => f.barrier && !f.heap && Math.abs(f.x - x) < (r + 3) * TS && Math.abs(f.y - y) < 40)) { const bs = fires.filter(f => f.barrier && !f.heap);   /* (the barn roof's: a heap is put out by a bucket, never by a splash) */ if (bs.some(f => !(f.delay > 0))) number(bs[0].x + 16, bs[0].y - 40, 'THE FIRE IS OUT - GO', '#9ad0ff'); for (const f of bs) f.delay = 12; }   /* the roof's fire: out for twelve seconds, and back */
@@ -23539,8 +23542,9 @@ let vflee = [], vfleeT = 2;
 const PILLAR = { on: 1.7, tall: 46, warn: 0.6 };
 function villageTick(dt) {
   for (const f of fires) { if (!f.pillar) continue;
+    if (f.outT > 0) continue;   /* (claude/burning3) a wave has put this column out: src/village-hands.js keeps it out */
     const ph = (time + f.ph) % f.per, on = ph < PILLAR.on;
-    if (on) { f.delay = 0; f.tall = PILLAR.tall * Math.min(1, ph / 0.2); }
+    if (on) { f.delay = 0; f.tall = PILLAR.tall * (1 + 0.15 * stageAt(f.x / TS)) * Math.min(1, ph / 0.2); }
     else { f.delay = Math.max(0.001, f.per - ph); f.tall = 0; if (f.per - ph < PILLAR.warn && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 30) parts.push({ x: f.x + (Math.random() - 0.5) * 10, y: f.y - 2, vx: 0, vy: -60 - Math.random() * 60, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ffd36b' : '#ff6b2c', size: 1, grav: -20 }); } }
   /* THE LOGS: they burn through a moment after you stand on them, and grow back once you are out of their way */
   updateDeckBreaks(L, P, dt, (x, y) => { const z = L.deckBreaks.find(q => x >= q.x0 && x <= q.x1); if (z && y === z.row) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; } }, z => { SFX.crack(); shakeCam(2); burst((z.x0 + z.x1 + 1) * 8, z.row * 16, 18, ['#ff9a5c', '#5c3a1d', '#ffd36b'], 90, 0.7); number((z.x0 + z.x1 + 1) * 8, z.row * 16 - 20, z.beam ? 'THE BEAM BURNS THROUGH' : 'THE LOG BURNS THROUGH', '#ff9a5c'); });   /* (updateSea does not reach this level: memory's rule, and the Falling Tower calls it for itself too) */
@@ -23564,13 +23568,18 @@ function villageTick(dt) {
 function drawBurningTown(cx, cy) {
   if (!VG) return;
   const par = 0.35, base = VH - 58 - Math.round((cy - (L.arena.floor - VH + 40)) * 0.15), off = cx * par;
-  drawBurningBackdrop(g, VW, VH, base, off, time, VG.heat || 0);   /* banded glow + the far ridge, driven by the fire that is really burning */
+  const stg = stageAt((camX + VW / 2) / TS);   /* (claude/burning3) the fire's stage by column: the sky climbs red-orange, the town burns taller, smoke columns stand up out of it */
+  const tEff = levelTime + Math.max(0, ((camX + VW / 2) / TS - FRONT.lead) / FRONT.v + 60 - levelTime) * Math.min(1, stg);   /* (claude/burning3) the later stages are a town already well alight: a hurrying hero is never ahead of the fire past the Crofts */
+  drawBurningBackdrop(g, VW, VH, base, off, time, VG.heat || 0, stg);   /* banded glow + the far ridge, driven by the fire that is really burning */
   for (let k = Math.floor(off / 46) - 1; k < Math.floor((off + VW) / 46) + 2; k++) {
     const h = 26 + ((k * 37) % 5) * 7, w = 30 + ((k * 13) % 3) * 8, x = Math.round(k * 46 - off), y = base - h, peak = 10 + ((k * 7) % 3) * 4, lit = (k * 11) % 4;
     /* (claude/burnvillage2) EACH HOUSE BEHIND THE STREET BURNS THROUGH ITS OWN FIRE (src/village-blaze.js): the roof, then down the walls and out of the
        windows, the roof falls in, a shell - and the fire front moves east over the level's clock. Its world tile is where the camera stands when it is centred */
     const wx = ((k * 46 + w / 2 - VW / 2) / par + VW / 2) / TS;
-    drawBlazingHouse(g, x, y, w, h, peak, blazeAt(wx, k, levelTime), time, k, VG.heat || 0, (k * 5) % 3 === 0);
+    const bz = blazeAt(wx, k, tEff);
+    drawBlazingHouse(g, x, y, w, h, peak, bz, time, k, Math.min(1, (VG.heat || 0) + 0.3 * stg), (k * 5) % 3 === 0);
+    if (stg > 0.3 && k % 3 === 0 && bz.st !== 'unlit') drawSmokeColumn(g, x + w / 2, y - peak - 4, time, k, stg);
+    if (bz.st === 'collapse' && bz.k < 0.2 && VWH && VWH.collapsed(k)) { SFX.crumble ? SFX.crumble() : SFX.crack(); if (!bossActive) shakeCam(1); burst(camX + x + w / 2, camY + y, 12, ['#3a3036', '#6e6266', '#ff9a5c'], 50, 0.9, -20, 2); }   /* a house of the town behind comes down: told by its sound and a rumble */
   }
   drawFacades(cx, cy);   /* THE VILLAGE'S OWN WALLS, over the town behind it: drawFacades runs before this backdrop, so the burning fronts and the barn's back wall were painted over by the sky (burning village rework, 2026-09-25) */
 }
@@ -23602,6 +23611,7 @@ function updateVillage(dt) {
   if (THEATRE) THH.theatreUpdate(THEATRE, THX, dt);   /* THE MASKWRIGHT'S THEATRE */
   if (!VG) return;
   villageTick(dt);
+  if (VWH && VWH.on()) VWH.update(dt);   /* (claude/burning3) the tanks, the waves, SOAKED, the debris, the ember storm */
   /* THE SMOKE RISES (THE ROOFTOPS): a hero in the air inside a plume while it is up is carried up with it, to its top */
   for (const s of L.smoke || []) { if (!smokeUp(s) || P.dead || P.ground || P.climb) continue;
     const sx = s.x * TS + 8; if (Math.abs(P.x - sx) < SMOKE.half && P.y > s.y0 * TS && P.y <= (s.y1 + 1) * TS + 2) { P.vy = Math.min(P.vy, -SMOKE.lift); P.canCut = false; } }
@@ -23686,7 +23696,7 @@ function putOutHeap(h) {
   const keep = h.step ? h.y1 : h.y1 + 1;   /* THE FALLEN HOUSE burns down to a step; the root cellar's timber falls in whole */
   for (let x = h.x0; x <= h.x1; x++) for (let y = h.y0; y < keep; y++) { const i = y * LW + x; L.grid[i] = T.AIR; tileSpr[i] = null; }
   SFX.hiss(); SFX.crumble ? SFX.crumble() : SFX.crack(); shakeCam(2); burst((h.x0 + h.x1 + 1) * 8, h.y0 * TS + 8, 22, ['#3a3036', '#6e6266', '#ff9a5c'], 70, 0.8, -30, 2);
-  number((h.x0 + h.x1 + 1) * 8, h.y0 * TS - 12, h.step ? 'IT BURNS DOWN - THE STREET IS OPEN' : 'IT FALLS IN', '#9ad0ff');
+  number((h.x0 + h.x1 + 1) * 8, h.y0 * TS - 12, h.step ? 'IT BURNS DOWN - THE STREET IS OPEN' : h.gate ? 'THE GATE BURNS DOWN - THE WAY IS OPEN' : 'IT FALLS IN', '#9ad0ff');
 }
 /* A THROWN BUCKET LANDS ON A TARGET: pr is the flying bucket (pr.x, pr.y its own position, not the hero's) */
 function pourBucket(pr, tg) {
@@ -23813,6 +23823,7 @@ function drawSmoke(cx, cy) {
 function drawHeaps(cx, cy) {
   for (const h of L.heaps || []) { const x = Math.round(h.x0 * TS - cx), top = Math.round(h.y0 * TS - cy), w = (h.x1 - h.x0 + 1) * TS, ht = (h.y1 - h.y0 + 1) * TS, foot = top + ht; if (x > VW + 30 || x + w < -30) continue;
     const hot = !h.out, ember = k => hot ? (Math.floor(time * 6 + k) % 3 ? '#ff6b2c' : '#ffd36b') : '#4a4442';
+    if (h.gate) { if (VWH) VWH.drawGate(g, x, top, w, ht, h.out, time); continue; }   /* (claude/burning3) a burning gate: the posts, the planks, the fire in every one */
     if (h.lid) { if (h.out) continue;   /* THE ROOT CELLAR's hatch: charred planks in the road, embers between them, smoke off it - no flame to walk through */
       for (let k = 0; k < w; k += 6) { g.fillStyle = k % 12 ? '#2a1a12' : '#3a2616'; g.fillRect(x + k, top - 3, 5, 5); g.fillStyle = '#4a2e1a'; g.fillRect(x + k, top - 3, 5, 1); g.fillStyle = ember(k); g.fillRect(x + k + 5, top - 1, 1, 2); }
       g.fillStyle = '#6a4424'; g.fillRect(x + 3, top - 5, w - 6, 2);   /* the hatch's iron-less handle bar */
@@ -23834,6 +23845,7 @@ function drawVillage(cx, cy) {
   if (UWH && UWH.on()) UWH.drawWorld(g, cx, cy, time);
   if (SKD && SKD.on()) SKD.drawWorld(g, cx, cy, time);   /* THE STOCKADE 2's piles, horn, gate bar and war tower */
   if (VTH && VTH.on()) VTH.drawWorld(g, cx, cy, time);   /* WAYMEET's votive braziers and lamps */
+  if (VWH && VWH.on()) VWH.drawWorld(g, cx, cy, time);   /* (claude/burning3) the oil, the tanks, the waves, the falling things, the ember storm */
   if (LCH && LCH.on()) LCH.drawWorld(g, cx, cy, time);   /* THE LIT CHURCH: the lamps, the fires, the bellows, the key desk, the grates, the doors, the clergy's tells */
   if (KSH && KSH.on()) KSH.drawWorld(g, cx, cy, time);   /* THE BANDIT KSAR: the gongs, the arches, the gate, the stacks, the chain, the fort's men's marks */
   if (TPH && TPH.on()) TPH.drawWorld(g, cx, cy, time);   /* THE TOWPATH: the gates and gauges, the punts, the wheel, the bridges, the paddles, capstans and lamps */
@@ -28455,6 +28467,9 @@ SKD = makeStockadeHands({ get L() { return L; }, TS, T, sfx: SFX, hornSounds: e 
   clearCells: (x0, x1, y0, y1) => { for (let ty = y0; ty <= y1; ty++) for (let tx = x0; tx <= x1; tx++) { const i = ty * LW + tx; if (L.grid[i] !== T.AIR) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); } } resolveTiles(); },
   spawnFoe: (t, px, py, face) => { const n0 = enemies.length; spawnEnt({ t, x: Math.floor(px / TS), y: Math.round(py / TS) - 1, face }); const q = enemies[n0]; if (q) { q.woke = 1; q.seenP = true; burst(px, py - 6, 6, COLS[t] || COLS.sprig, 40, 0.4); } return q; },   /* (claude/chief3) his horn's crew, in at the hall's doors */
   volley: (e, px, n) => { const A = L.arena; for (let i = 0; i < n; i++) { const x = Math.max(A.x0 + 10, Math.min(A.x1 - 10, px + (i - (n - 1) / 2) * 24 + (Math.random() - 0.5) * 10)); rain.push({ x, y: A.floor, t: 0.85 + i * 0.07, owner: e, fired: false }); seeds.push({ x: e.x + e.face * 6, y: e.y - 14, vx: (x - e.x) / 1.4, vy: -340, g: 0, dead: false, life: 0.45, arrow: true, owner: e }); } SFX.bow(); } });
+VWH = makeVillageHands({ get L() { return L; }, TS, T, DMG, sfx: SFX, hero: () => P, enemies: () => enemies, fires: () => fires, parts: () => parts, boss: () => boss, bossActive: () => bossActive, VW: () => VW, VH: () => VH, camX: () => camX, camY: () => camY, camTile: () => Math.floor((camX + VW / 2) / TS),
+  number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), dust: (...a) => dust(...a), shake: n => shakeCam(n), attackBox: () => attackBox(), splash: (x, y, r, cool) => villageSplash(x, y, r, cool),
+  hurtEnemy: (...a) => hurtEnemy(...a), damagePlayer: (...a) => damagePlayer(...a), isFireFoe, setTile: (x, y, t) => { const i = y * LW + x; L.grid[i] = t; tileSpr[i] = null; } });   /* (claude/burning3) src/village-hands.js */
 VTH = makeVotiveHands({ get L() { return L; }, get players() { return players; }, TS, T, sfx: SFX, hero: () => P, movers: () => movers, time: () => time, VW: () => VW, VH: () => VH,
   number: (x, y, t, c) => number(x, y, t, c), burst: (...a) => burst(...a), shake: n => shakeCam(n), owned: () => (PROG.votive = PROG.votive || {}),
   lit: id => { PROG.votive = PROG.votive || {}; PROG.votive[id] = 1; const n = votiveOwned(); if (n >= VOTIVE_N) PROG.churchOpen = 1; saveProgress(); secretFound('church', n); return n; } });
@@ -29776,7 +29791,7 @@ function updateProps(dt) {
           fires.push({ x: nx, y: f.y, life: 2.2, delay: 0.3, own: true, gen: (f.gen || 0) + 1 }); }
       if ((f.gen || 0) === 0 && time - (P.grassSaidAt || -9) > 4) { P.grassSaidAt = time; number(f.x, f.y - 24, 'THE GRASS CATCHES', '#ff9a5c'); } }
     if (!f.vent && Math.abs(f.x - P.x) < 260 && Math.random() < dt * 9) flame(f.x, f.y - 7, 1, 5, 45, 3);
-    { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && Math.abs(P.x - f.x) < 9 && P.y > f.y - Math.max(14, f.tall || 0) && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, f.dmg || DMG.fire, { up: true, unblockable: true, name: 'THE FIRE' }); } for (const e of enemies) if (e.alive && !f.still && !FIREPROOF.has(e.t) && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, Math.round(10*(f.own ? amul('fireWall') : 1)), f.x, false); } }
+    { const ftx = Math.floor(f.x / TS), fty = Math.floor((f.y - 1) / TS); for (const dx of [-1, 0, 1]) for (let dy = 0; dy <= 2; dy++) { const tx = ftx + dx, ty = fty - dy; const tt = tileAt(tx, ty); if (tt !== T.PALISADE && tt !== T.WEB) continue; const i = ty * LW + tx; burnT[i] = (burnT[i] || 0) + dt; if (Math.random() < dt * 6) parts.push({ x: tx * TS + Math.random() * TS, y: ty * TS + Math.random() * TS, vx: 0, vy: -30, life: 0.4, max: 0.4, col: Math.random() < 0.5 ? '#ff9a5c' : '#5a5a66', size: 1, grav: 0 }); if (burnT[i] > 0.9) { L.grid[i] = T.AIR; tileSpr[i] = null; destroyed.add(i); burst(tx * TS + 8, ty * TS + 8, 8, ['#8a5a32', '#ff9a5c', '#3a2416'], 60, 0.5); SFX.crack(); if (!fires.some(q => Math.abs(q.x - (tx * TS + 8)) < 6 && Math.abs(q.y - (ty + 1) * TS) < 6)) fires.push({ x: tx * TS + 8, y: (ty + 1) * TS, life: 2.5, delay: 0.1, own: f.own }); } } } /* fire climbs and eats a stake wall */ if (!P.dead && !(f.own && isPyro()) && !(P.soaked > 0) && Math.abs(P.x - f.x) < 9 && P.y > f.y - Math.max(14, f.tall || 0) && P.y <= f.y + 2) { if (isPyro() && tal('kindle')) { P.kindleT = (P.kindleT || 0) + dt; if (P.kindleT >= 0.5) { P.kindleT = 0; if (P.hp < P.maxHp) { P.hp = Math.min(P.maxHp, P.hp + 1); number(P.x, P.y - 24, '+1', '#8fd160'); } if (Math.random() < 0.7) parts.push({ x: P.x + (Math.random() - 0.5) * 8, y: P.y - 10, vx: 0, vy: -30, life: 0.5, max: 0.5, col: '#8fd160', size: 1, grav: 0 }); } } else damagePlayer(f.x, f.dmg || DMG.fire, (f.oil || f.debris) ? { unblockable: true, noKnock: true, name: f.oil ? 'THE OIL FIRE' : 'THE BURNING WRECK' } : { up: true, unblockable: true, name: 'THE FIRE' }); }   /* (claude/burning3) oil is a toll, never a wall: it burns you as you cross, it does not throw you back out of it */ for (const e of enemies) if (e.alive && !f.still && !FIREPROOF.has(e.t) && e.t !== 'chief' && e.t !== 'wasp' && e.t !== 'king' && e.t !== 'master' && Math.abs(e.x - f.x) < 9 && Math.abs(e.y - f.y) < 6 && !(e.fireT > 0)) { e.fireT = 0.6; hurtEnemy(e, Math.round(10*(f.own ? amul('fireWall') : 1)), f.x, false); } }
   fires = fires.filter(f => f.life > 0);
   for (const e of enemies) if (e.fireT > 0) e.fireT -= dt;
   // rope bridges: the cutter at the far end saws through once you're out over the drop
@@ -32404,7 +32419,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (GMH && GMH.on()) GMH.drawWorld(g, cx, cy, time);   /* (claude/gorm2) KING GORM 2: the hall's ropes, pegs, heaps and told arrows; the burning wood; the glade's hangings */
   drawVillage(cx, cy);   /* THE BURNING VILLAGE's straw, char, doors, troughs and beams, under the flames */
   if (HUH && L.hush) HUH.drawWorld(g, cx, cy, time);   /* UNDERLEAF 2: the pots, the streets' gates, alarms and caches, the toll, the key's nail, her bell-pulls and rugs */
-  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if ((f.pillar || f.barrier) && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
+  for (const f of fires) { if (f.delay > 0 || f.vent || f.x < cx - 20 || f.x > cx + VW + 20) continue; if (f.oil) continue; if ((f.pillar || f.barrier || f.debris) && f.tall > 14) { const n = Math.ceil(f.tall / 12); for (let q = n - 1; q >= 0; q--) { const s2 = 1.25 - q * 0.12, fr = PROP.fire[Math.floor(time * 14 + f.x + q) % 3], w = Math.round(16 * s2), h = Math.round(16 * s2), wob = Math.round(Math.sin(time * 11 + q * 1.7 + f.x) * 2); g.drawImage(fr, Math.round(f.x - w / 2 + wob) - cx, Math.round(f.y - h - q * 11) - cy, w, h); } continue; } g.drawImage(PROP.fire[Math.floor(time * 12 + f.x) % 3], Math.round(f.x) - 8 - cx, Math.round(f.y) - 16 - cy); }   /* (a FLAME PILLAR at its roar is a column of them) */
   drawLampWorld(cx, cy);   /* (claude/lamplit2) the Lamplit Street's oil, wax, writ, flare reach and fuse */
   for (const e of enemies) if (e.alive && (e.t === 'spider' || e.t === 'weaver')) { g.strokeStyle = 'rgba(230,230,240,0.7)'; g.lineWidth = 1; g.beginPath(); g.moveTo(Math.round(e.x - cx) + 0.5, Math.round(e.restY - 26 - cy)); g.lineTo(Math.round(e.x - cx) + 0.5, Math.round(e.y - 8 - cy)); g.stroke(); }
   for (const b of pyres) { const x = Math.round(b.x - cx), y = Math.round(b.y - cy), pulse = Math.sin(time * 30) * 1.2;
@@ -33233,6 +33248,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (COH && COH.on()) COH.drawOver(g, cx, cy, time); if (HNH && HNH.on()) HNH.drawOver(g, cx, cy, time);   /* THE GOBLIN HUNTMASTER: his arrows (gold and red), the poisoned floor, the hoist-drop shot's shadow */   /* THE GLASS COLOSSUS: the lance's line, the rings, the shards, the wave, and the read */
   if (MTH && MTH.on()) MTH.drawOver(g, cx, cy, time);
   if (VTH && VTH.on()) VTH.drawOver(g, cx, cy, time);
+  if (VWH && VWH.on()) VWH.drawOver(g, cx, cy, time);   /* (claude/burning3) the soaked bar, the heat shimmer, the stage's red wash */
   if (SKD && SKD.on()) SKD.drawOver(g, cx, cy, time);   /* the horn's rings, the horn at your belt, the area banner */
   if (LCH && LCH.on()) LCH.drawOver(g, cx, cy, time);   /* THE LIT CHURCH: the rising dark, the flame in your hand */
   if (PBH && PBH.on()) PBH.drawOver(g, cx, cy, time);
