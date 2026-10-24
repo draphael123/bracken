@@ -22,7 +22,7 @@ try {
   const crewFoes=()=>E().filter(e=>e.alive&&e.x>31*16&&e.x<39*16&&e.y<29*16).length;out.crew0=crewFoes();out.edgeCrew=knock('edgeCrew');out.crew1=crewFoes();out.walk=cell(33,28);
   out.yardStakes=(()=>{const d=D('yardStakes');tp(d.cleat[0]-1,d.cleat[1]);P.face=1;BK.press('atk');let roll=false;for(let i=0;i<300;i++){BK.sim(1);if(st('yardStakes')==='roll')roll=true;}return [roll,st('yardStakes')];})();
   out.yardTower=knock('yardTower');out.span=cell(150,32);
-  out.wallRamp=knock('wallRamp');out.wallSteps=[cell(213,17),cell(213,15)];
+  out.wallRamp=knock('wallRamp');out.wallSteps=[cell(218,18),cell(220,15)];
   out.wallTower=knock('wallTower');out.gateBridge=knock('gateBridge');out.gateStakes=knock('gateStakes');out.gateCrew=knock('gateCrew');
   /* a death keeps what stays */
   tp(205,28);BK.god=false;BK.damagePlayer(P.x+20,9999,{unblockable:true});let back=false;for(let i=0;i<600&&!back;i++){BK.sim(1);back=i>30&&!(P.dead>0)&&P.hp>0;}BK.sim(10);BK.god=true;out.afterDeath={ramp:cell(21,36),span:cell(150,32),walk:cell(33,28),edgeRamp:PW.hoist('edgeRamp').state,edgeCrew:PW.hoist('edgeCrew').state};

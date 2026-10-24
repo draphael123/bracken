@@ -35,7 +35,7 @@ export const PALISADE = { W: 443, H: 44, arena: [394, 438], floor: 25 };
 export const SECTIONS = [['THE FELLED EDGE', 0, 104], ['THE STAKE YARD', 104, 204], ['THE SCAFFOLDS', 204, 306], ['THE HALF-BUILT GATEHOUSE', 306, 390], ['THE OLD FOREST GATE', 390, 443]];
 /* the rule's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/palisadewood.mjs and the brief */
 export const ARCS = {
-  ramp: { teach: [14, 26], remix: [205, 216] },                          /* the first prop (the ledge); the wall's ramp */
+  ramp: { teach: [14, 26], remix: [205, 222] },                          /* the first prop (the ledge); the wall's ramp */
   crew: { teach: [26, 40], develop: [80, 96], remix: [232, 247], exam: [356, 368] },
   stakes: { teach: [106, 130], develop: [178, 198], exam: [340, 362] },
   tower: { test: [139, 156], remix: [248, 262], exam: [322, 338] },
@@ -90,7 +90,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   foe('brute', 52, 34, 'edgeB', { face: -1 }); foe('shield', 55, 34, 'edgeB', { face: -1 }); foe('archer', 49, 31, 'edgeB', { face: -1, perch: true });
   plank(46, 51, 32); coins([47, 31], [50, 31]);
   deco(47, 34, 'timber', 1); deco(57, 34, 'stump', 1); crop(49, 34, 'sheaf');
-  ground(59, 61, 38);                                                              /* the saw pit (three down, three up) */
+  ground(59, 61, 37);                                                              /* the saw pit (two down, two up) */
   ground(62, 79, 35);
   foe('rockgoblin', 72, 34, 'edgeC', { face: -1 }); foe('pike', 76, 34, 'edgeC', { face: -1 }); foe('hound', 67, 31, 'edgeC', { face: -1, perch: true });                                /* a stake-thrower on the felled ground (art: the reskin) */
   plank(64, 70, 32); coins([65, 31], [68, 31]);
@@ -146,21 +146,21 @@ export function buildPalisadeWood({ painter, T, TS }) {
 
   // ================= 3. THE SCAFFOLDS (204-306): REMIX + A14 - up the scaffolds and along the unfinished wall top =================
   sign(205, 28, 'THE SCAFFOLDS. CLIMB THE WALL THEY ARE BUILDING.');
-  ground(205, 215, 29);
-  ground(216, 300, 13);                                                            /* THE PALISADE: the wall itself, its top thirteen rows over the yard */
+  ground(205, 221, 29);
+  ground(222, 300, 13);                                                            /* THE PALISADE: the wall itself, its top thirteen rows over the yard */
   /* the scaffold tiers up its face (three rows a tier) */
-  plank(206, 211, 26); plank(212, 215, 23); plank(206, 211, 20);
-  foe('sprig', 208, 25, 'tiers', { face: -1 }); foe('archer', 214, 22, 'tiers', { face: -1, perch: true });
-  coins([209, 24], [213, 21], [208, 18]);
+  plank(206, 209, 26); plank(210, 213, 23); plank(214, 217, 21);                  /* (a straight stair of tiers, left to right: no tier over another) */
+  foe('sprig', 208, 25, 'tiers', { face: -1 }); foe('archer', 212, 22, 'tiers', { face: -1, perch: true });
+  coins([207, 24], [211, 21], [215, 18]);
   /* THE WALL'S RAMP (REQUIRED, the remix): from the top tier the wall is seven rows - a scaffold section stands against it; its prop folds it into a stair of boards */
-  prop('wallRamp', { x: 213, top: 12, cleat: [210, 19], load: 'ramp', steps: [[212, 214, 17, 'O'], [212, 215, 15, 'O']] });
-  sign(207, 19, 'THE WALL IS TOO HIGH. KNOCK OUT THE SCAFFOLD PROP: IT FOLDS INTO A STAIR.');
+  prop('wallRamp', { x: 219, top: 12, cleat: [216, 20], load: 'ramp', steps: [[218, 219, 18, 'O'], [219, 221, 15, 'O']] });
+  sign(214, 20, 'THE WALL IS TOO HIGH. KNOCK OUT THE SCAFFOLD PROP: IT FOLDS INTO A STAIR.');
   /* THE UNFINISHED WALL TOP (A14): its gaps are sections not yet built - a slot nine rows deep with rungs up its side (a fall is a climb, never the run) */
-  sign(218, 12, 'THE WALL TOP IS UNFINISHED. JUMP THE GAPS; A FALL IS A CLIMB OUT OF THE SLOT.');
-  air(227, 229, 13, 21); plank(227, 229, 19); plank(227, 229, 16);                 /* slot one: three wide (a jump) */
+  sign(223, 12, 'THE WALL TOP IS UNFINISHED. JUMP THE GAPS; A FALL IS A CLIMB OUT OF THE SLOT.');
+  air(227, 229, 13, 21); plank(227, 229, 19); plank(227, 229, 16); plank(229, 229, 14);   /* (a one-tile step at the slot's far lip: the climb out) */                 /* slot one: three wide (a jump) */
   ent('silver', 228, 21);                                                          /* SILVER TWO: dropped down slot one by the crew (a fall to it, the rungs back up) */
   /* THE LOOSE BOARDS over slot two: they give way a beat after you stand on them (src/tower-collapse.js); a crew on a walkway over them throws stakes */
-  air(238, 241, 13, 21); plank(238, 241, 19); plank(238, 241, 16);
+  air(238, 241, 13, 21); plank(238, 241, 19); plank(238, 241, 16); plank(241, 241, 14);
   plank(238, 241, 13); crumbles.push({ x0: 238, x1: 241, row: 13, rows: 1, count: 1.05, kind: 'bough' });
   prop('wallCrew', { x: 241, top: 8, cleat: [233, 12], load: 'crew', walk: [236, 246, 8] });
   foe('rockgoblin', 239, 7, 'wallCrew', { face: -1, perch: true }); foe('sprig', 243, 7, 'wallCrew', { face: -1, perch: true });
@@ -169,7 +169,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   coins([224, 11], [235, 11], [245, 11]);
   plank(222, 225, 9); foe('archer', 224, 8, 'slotOne', { face: -1, perch: true });   /* an archer over slot one: he covers the jump */
   /* THE UNBUILT SPAN (REQUIRED): eight wide - the second watchtower stands on the wall top at its lip */
-  air(254, 261, 13, 21); plank(254, 256, 19); plank(254, 256, 16);
+  air(254, 261, 13, 21); plank(254, 256, 19); plank(254, 256, 16); plank(254, 254, 14);
   prop('wallTower', { x: 252, top: 3, cleat: [249, 12], load: 'tower', span: [254, 261, 13] });
   sign(247, 12, 'THE UNBUILT SPAN. ITS WATCHTOWER STANDS ON A PROP.');
   foe('shield', 264, 12, 'span', { face: -1 }); foe('hound', 267, 12, 'span', { face: -1 });
