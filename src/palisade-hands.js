@@ -15,6 +15,7 @@
 //   and a hero can JUMP it (two rows). He plants one wall at a time, never into a hero, never in a gap.
 // Every capital line it says goes through ctx.number with a line listed here (PW_SAY) and in src/hint-lines.js.
 export const PROPS = { g: 900, vmax: 520, crush: 30, crewFall: 26, debrisDmg: 12, stakeW: 3, stakeH: 12, stakeV: 150, stakeDmg: 26, stakeHero: 14, stakeMax: 40 };
+export const PROP_KIND = { ramp: 'scaffoldprop', tower: 'towerprop', bridge: 'towerprop', crew: 'crewprop', stakes: 'stakeprop' };   /* the ent kind at a prop's foot (src/palisade-wood.js) - the guide's done names it */
 export const SETTER = { reach: 7, tell: 0.7, cd: 3.2, wallHits: 2, wallLife: 12, rows: 2 };
 export const PW_SAY = {
   knock: 'THE PROP GOES: IT COMES DOWN', ramp: 'THE SCAFFOLD FOLDS: A RAMP', bridge: 'IT FALLS ACROSS: A BRIDGE', crew: 'THE CREW COMES DOWN', crushed: 'CRUSHED UNDER IT',
@@ -156,7 +157,7 @@ export function makePalisadeHands(ctx) {
 
   /* ---------- THE GUIDE's props (src/stuck-spots.js reads `on`) ---------- */
   H.props = () => { if (!S) return []; const out = [];
-    for (const h of S.hs.values()) { const d = h.d; out.push({ t: 'hoist', id: h.id, x: d.cleat[0] * TS + 8, y: (d.cleat[1] + 1) * TS, on: h.state !== 'hang' }); }
+    for (const h of S.hs.values()) { const d = h.d; out.push({ t: PROP_KIND[d.load], id: h.id, x: d.cleat[0] * TS + 8, y: (d.cleat[1] + 1) * TS, on: h.state !== 'hang' }); }
     return out; };
   H.read = () => S ? { hoists: [...S.hs.values()].map(h => ({ id: h.id, load: h.d.load, state: h.state, ly: h.ly, lx: h.lx })), walls: S.walls.filter(w => !w.down).map(w => ({ x: w.x, y: w.y, hits: w.hits })), banner: S.banner ? S.banner.name : null, sec: S.sec, n: { ...S.n } } : null;
   H.hoist = id => S && S.hs.get(id);
