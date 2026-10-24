@@ -62,7 +62,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
      An ent at the prop's foot names it for the guide, the tools and the gadget count (src/threat.js: worth 0) */
   const KIND = { ramp: 'scaffoldprop', tower: 'towerprop', bridge: 'towerprop', crew: 'crewprop', stakes: 'stakeprop' };
   const prop = (id, o) => { hoists.push(Object.assign({ id, cut: false }, o)); if (o.load === 'crew') plank(o.walk[0], o.walk[1], o.walk[2]); ent(KIND[o.load], o.cleat[0], o.cleat[1], { id }); return o; };
-  const setter = (x, y, squad, o) => foe('sprig', x, y, squad, Object.assign({ face: -1, pw: { setter: true } }, o || {}));   /* THE STAKE-SETTER (src/palisade-hands.js): the goblin with the mallet and an armful of stakes */
+  const setter = (x, y, squad, o) => foe('sprig', x, y, squad, Object.assign({ face: -1, pw: { pwSetter: true } }, o || {}));   /* THE STAKE-SETTER (src/palisade-hands.js): the goblin with the mallet and an armful of stakes */
   const crop = (x, y, k) => harvest.push([x, y, k]);   /* the harvest the goblins took (greybox props drawn by src/palisade-hands.js: basket, nuts, rake, sheaf, apples) */
 
   block(0, 0, 0, H - 1);                                                           /* the world's west edge */
@@ -74,6 +74,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   crop(7, 37, 'basket'); crop(13, 37, 'nuts');
   foe('sprig', 14, 37, 'edgeA', { face: -1 });
   coins([8, 36], [12, 36]);
+  plank(4, 9, 35); coins([5, 34], [8, 34]);                                        /* a felled trunk propped on its stump (a second height) */
   /* THE FIRST PROP, SAFE: a scaffold section stands against the ledge (five rows: no jump), held by a prop at the roadside. Knock it out: the section folds down
      into a ramp of two steps up the ledge. Nothing hurts here - a miss costs a walk back */
   sign(10, 37, 'THE WALL IS STILL GOING UP. KNOCK OUT A PROP AND WHAT IT HOLDS COMES DOWN.');
@@ -87,10 +88,12 @@ export function buildPalisadeWood({ painter, T, TS }) {
   coins([30, 31], [40, 31], [43, 31]); crop(41, 32, 'rake');
   ground(45, 58, 35);
   foe('brute', 52, 34, 'edgeB', { face: -1 }); foe('sprig', 56, 34, 'edgeB', { face: -1 });
+  plank(46, 51, 32); coins([47, 31], [50, 31]);
   deco(47, 34, 'timber', 1); deco(57, 34, 'stump', 1); crop(49, 34, 'sheaf');
   ground(59, 61, 38);                                                              /* the saw pit (three down, three up) */
   ground(62, 79, 35);
   foe('rockgoblin', 72, 34, 'edgeC', { face: -1 });                                /* a stake-thrower on the felled ground (art: the reskin) */
+  plank(64, 70, 32); coins([65, 31], [68, 31]);
   deco(66, 34, 'stump', 0); deco(75, 34, 'fruitTree', 0); crop(69, 34, 'apples');
   coins([64, 33], [70, 33], [77, 33]);
   ground(80, 128, 32);
@@ -109,6 +112,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   prop('yardStakes', { x: 114, top: 25, hang: 29, cleat: [110, 31], load: 'stakes', roll: 1, rollMax: 15 });
   sign(108, 31, 'STACKED STAKES. KNOCK OUT THEIR PROP: THEY COME DOWN AND ROLL.');
   foe('pike', 117, 31, 'stakeLine', { face: -1 }); foe('sprig', 121, 31, 'stakeLine', { face: -1 }); foe('sprig', 124, 31, 'stakeLine', { face: -1 });
+  plank(117, 119, 30); plank(120, 127, 27); coins([122, 26], [125, 26]);        /* the sharpeners' bench and the drying rack over the yard */
   deco(126, 31, 'spearRack', 0); coins([116, 30], [122, 30]);
   block(129, 130, 30, 31);                                                         /* the chopping block the stakes split on (two rows: a hop) */
   ground(129, 146, 32);
@@ -124,10 +128,11 @@ export function buildPalisadeWood({ painter, T, TS }) {
   plank(147, 149, 39); plank(151, 153, 36); plank(147, 149, 33);
   ground(155, 168, 32);
   air(155, 160, 39, 41); ent('silver', 159, 41); crop(157, 41, 'nuts');             /* SILVER ONE: THE WOODCUTTERS' HOLLOW (off the pit's floor - off the road) */
-  plank(160, 164, 28); foe('archer', 162, 27, 'farTower', { face: -1, perch: true });
+  plank(156, 158, 30); plank(160, 164, 28); foe('archer', 162, 27, 'farTower', { face: -1, perch: true });
   foe('sprig', 166, 31, 'farTower', { face: -1 });
   coins([150, 30], [152, 30], [158, 31]);
   ground(169, 204, 29);                                                            /* the yard's upper ground (three up) */
+  plank(170, 176, 26); coins([172, 25], [175, 25]);
   deco(171, 28, 'cart', 0); crop(174, 28, 'sheaf');
   /* THE YARD GATE (the area's exam): a setter and a shield hold it, an archer on the scaffold over the gate; a stake stack racked over them rolls through them */
   prop('yardExamStakes', { x: 183, top: 21, hang: 25, cleat: [179, 28], load: 'stakes', roll: 1, rollMax: 13 });
@@ -186,6 +191,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(301, 329, 25);
   sign(307, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
   deco(310, 24, 'siege', 0); deco(316, 24, 'cart', 1); deco(320, 24, 'batteringRam', 0); crop(313, 24, 'apples'); crop(318, 24, 'basket');
+  plank(308, 314, 22); coins([309, 21], [313, 21]);
   foe('pike', 312, 24, 'yard2', { face: -1 }); foe('shield', 317, 24, 'yard2', { face: -1 });
   coins([308, 23], [314, 23], [322, 23]);
   /* THE DITCH (REQUIRED): eight wide; the gatehouse scaffold stands on its lip on a prop - it falls across. A fall is a climb (a board up its west wall) */
@@ -203,6 +209,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   prop('gateCrew', { x: 362, top: 18, cleat: [358, 24], load: 'crew', walk: [359, 366, 19] });
   foe('rockgoblin', 361, 18, 'gateCrew', { face: -1, perch: true }); foe('archer', 364, 18, 'gateCrew', { face: -1, perch: true });
   setter(369, 24, 'gateRoad');
+  plank(368, 374, 21); plank(377, 383, 22); coins([370, 20], [380, 21]);
   deco(374, 24, 'cart', 0); deco(379, 24, 'barrels', 0); crop(377, 24, 'sheaf'); crop(381, 24, 'nuts');
   sign(372, 24, "THE SUPPLY CARTS ROLL ON TO KINGSWOOD'S ROYAL ROAD.");
   coins([343, 23], [351, 23], [366, 23], [376, 23]);
