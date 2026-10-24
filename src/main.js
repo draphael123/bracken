@@ -34534,6 +34534,16 @@ function drawEdPalette() {
   text('CLICK one  ESC close', VW / 2, VH - 10, UI.dim, 'center', 6);
 }
 
+/* THE TITLE CARDS over a level (claude/trailer: lifted out of render so SET.hideHud can keep them): the act card, a secret's toast, the level's name and rule */
+function drawCards() {
+    if (actCard && state === 'play') { const a = AC.cardAlpha(actCard.t, actCard.hold), y0 = Math.round(VH * 0.22); if (a > 0) {   /* (claude/actcards) the act card: above the level's name card, over the iris, never eats input */
+      g.globalAlpha = a; g.fillStyle = 'rgba(10,8,20,0.62)'; g.fillRect(0, y0 - 10, VW, 30); g.fillStyle = '#ffd36b'; g.fillRect(0, y0 - 10, VW, 1); g.fillRect(0, y0 + 19, VW, 1);
+      text(actCard.label, VW / 2, y0 - 5, '#c9a26a', 'center', 6); text(actCard.name, VW / 2 + 1, y0 + 5, '#3a2214', 'center', 10); text(actCard.name, VW / 2, y0 + 4, '#ffd36b', 'center', 10); g.globalAlpha = 1; } }
+    if (secretToast && state === 'play') drawSecretToast();   /* (claude/secrets) 'LOST BANNER 1/3', 'A HIDDEN WAY OPENS': a card over the level */
+    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
+      { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
+      g.globalAlpha = 1; }
+}
 function render() {
   TCH.beginFrame(); g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1;   /* one bad draw (a throw between a save and its restore) must never poison the frames after it: the Falling Tower purple screen */
   setView(desiredView());
@@ -34577,6 +34587,7 @@ function render() {
     if (Math.floor(time * 3) % 2 === 0) text(talk.i + 1 < talk.lines.length ? talkGlyph() + ' >' : talkGlyph() + ' x', bx + bw - 8, by + bh - 11, '#8fd160', 'right', 6);
     if (talk.lines.length > 1) text((talk.i + 1) + '/' + talk.lines.length, bx + 8, by + bh - 11, '#b4bcb4', 'left', 6);
   }
+  if (SET.hideHud && state === 'play') drawCards();   /* (claude/trailer) the act card, a secret's toast and the level's name card are the game's own title cards, not the HUD: a trailer keeps them */
   if (!SET.hideHud && (state === 'play' || (state === 'talk' && !talkOverHud) || (state === 'win' && !TRN) || state === 'gameover' || (state === 'menu' && menuFrom === 'play' && menuKind !== 'map'))) {   /* (the map is the whole screen: no plates under it) */   /* (claude/trailer) SET.hideHud: a tool's flag, never saved or shown - tools/trailer.mjs records the world without the plates, counters and hints */
     {   /* (the MINIMAL HUD's bars wait out of sight below when there is nothing to say - hudIdle; the counters, the clock, the hint and the boss bar are always on) */
     if (SET.vignette) { const vg = g.createRadialGradient(VW / 2, VH / 2, VH * 0.55, VW / 2, VH / 2, VH * 1.05); vg.addColorStop(0, 'rgba(10,8,20,0)'); vg.addColorStop(1, 'rgba(10,8,20,0.34)'); g.fillStyle = vg; g.fillRect(0, 0, VW, VH); }
@@ -34795,13 +34806,7 @@ function render() {
       g.fillStyle = 'rgba(12,10,20,0.85)'; g.fillRect(VW / 2 - w2 / 2, 14, w2, 11);
       g.strokeStyle = '#ffd36b'; g.lineWidth = 1; g.strokeRect(VW / 2 - w2 / 2 + 0.5, 14.5, w2 - 1, 10);
       text(rushMsg, VW / 2, 17, '#ffd36b', 'center', 6); }
-    if (actCard && state === 'play') { const a = AC.cardAlpha(actCard.t, actCard.hold), y0 = Math.round(VH * 0.22); if (a > 0) {   /* (claude/actcards) the act card: above the level's name card, over the iris, never eats input */
-      g.globalAlpha = a; g.fillStyle = 'rgba(10,8,20,0.62)'; g.fillRect(0, y0 - 10, VW, 30); g.fillStyle = '#ffd36b'; g.fillRect(0, y0 - 10, VW, 1); g.fillRect(0, y0 + 19, VW, 1);
-      text(actCard.label, VW / 2, y0 - 5, '#c9a26a', 'center', 6); text(actCard.name, VW / 2 + 1, y0 + 5, '#3a2214', 'center', 10); text(actCard.name, VW / 2, y0 + 4, '#ffd36b', 'center', 10); g.globalAlpha = 1; } }
-    if (secretToast && state === 'play') drawSecretToast();   /* (claude/secrets) 'LOST BANNER 1/3', 'A HIDDEN WAY OPENS': a card over the level */
-    if (bannerT > 0 && state === 'play') { const k = Math.min(1, bannerT > 2.2 ? (2.6 - bannerT) / 0.4 : bannerT < 0.5 ? bannerT / 0.5 : 1), rl = LEVELS[levelIndex].rule ? Math.min(3, wrap(LEVELS[levelIndex].rule, VW - 40, 6).length) * 9 : 0; g.globalAlpha = k; g.fillStyle = 'rgba(10,8,20,0.7)'; g.fillRect(0, VH / 2 - 22, VW, 24 + rl); g.fillStyle = '#ffd36b'; g.fillRect(0, VH / 2 - 22, VW, 1); g.fillRect(0, VH / 2 + 1 + rl, VW, 1); text(LEVELS[levelIndex].name, VW / 2 + 1, VH / 2 - 12, '#3a2214', 'center', 12); text(LEVELS[levelIndex].name, VW / 2, VH / 2 - 13, '#ffd36b', 'center', 12); /* (claude/storyremove) no story line under the name: the card is the NAME and its one-line RULE; it fades, never pauses play, never eats input */
-      { const r = LEVELS[levelIndex].rule; if (r) wrap(r, VW - 40, 6).slice(0, 3).forEach((ln, i) => text(ln, VW / 2, VH / 2 + 4 + i * 9, '#ffd36b', 'center', 6)); }
-      g.globalAlpha = 1; }
+    drawCards();
     }
     if (state === 'menu' || state === 'win' || state === 'gameover') { /* the plates own the screen: the boss bar waits */ }
     else if (miniActive && !bossActive) { const m = miniOne(); if (m) { bossPlate(m.phase === 2 ? miniName() + '  ENRAGED' : m.t === 'sailer' && m.mode === 'tumble' ? miniName() + '  SPILLED' : miniName(), m.phase === 2 ? '#ff6b6b' : '#ffd36b'); g.drawImage(PROP.skullMini, VW / 2 - 72, VH - 15); bar(VW / 2 - 60, hpBy(), 120, hpBh(), Math.max(0, m.hp) / fullHp(m), m.mounted ? '#e0b040' : '#8fd160');   /* the Stalker, the Overman, the Boatswain, and the Serjeant carry no maxHp - that is the boss flag, and giving it them changes how every blow treats them - so their bars drew NaN, empty. What it stood up with is hp0. */ for (let i = 1; i < 10; i++) { g.fillStyle = 'rgba(0,0,0,0.35)'; g.fillRect(VW / 2 - 60 + i * 12, hpBy(), 1, hpBh()); } bossHpNums(Math.max(0, m.hp), fullHp(m)); } }
