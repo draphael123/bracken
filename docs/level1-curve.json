@@ -637,16 +637,16 @@
   "lostPct": 69
  },
  "palisadewood": {
-  "hash": "6fff758b686c",
+  "hash": "9542f84699a9",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 7,
+  "hits": 10,
   "deaths": 0,
-  "kills": 70,
-  "lifts": 69,
+  "kills": 75,
+  "lifts": 71,
   "walked": 100,
   "bare": true,
-  "lostPct": 50
+  "lostPct": 80
  }
 }
