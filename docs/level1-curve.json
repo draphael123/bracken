@@ -39,17 +39,17 @@
   "lostPct": 122
  },
  "spore": {
-  "hash": "237f11b92bb5",
+  "hash": "0a43f20e255c",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 12,
+  "hits": 13,
   "deaths": 2,
-  "kills": 28,
-  "lifts": 92,
+  "kills": 24,
+  "lifts": 89,
   "walked": 100,
   "bare": true,
-  "lostPct": 114
+  "lostPct": 110
  },
  "kings": {
   "hash": "f2a3b79f1cad",
