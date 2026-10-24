@@ -207,7 +207,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   foe('rockgoblin', 417, 17, { face: -1, herb: 'jarthrower' });
   ent('check', 424, 17);
   coins([395, 23], [398, 23], [413, 17], [416, 17], [421, 17]);
-  sign(421, 17, 'SHE KEEPS A BROOD ABOUT HER: WHILE IT STANDS, SHE IS WARDED. KILL IT, THEN A BLUE JAR LIFTS HER HELPLESS.');
+  sign(421, 17, 'HER BROOD WARDS HER. KILL IT, THEN A BLUE JAR LIFTS HER HELPLESS.');
 
   // ================= 6. HER COTTAGE (427-477): THE GRANDMOTHER 3 =================
   ground(427, 428, 22); ground(429, 431, 26); ground(432, 477, G);
