@@ -4,11 +4,43 @@ on:
     inputs:
       mode:
         type: choice
-        options: [tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, textfit-memory, hidden-memory, mark-memory, load-audit, memory-policy, pool-recycle, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  mark-trace:
+    if: inputs.mode == 'mark-trace'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [control, candidate]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Prepare the exact pre-cache control
+        if: matrix.variant == 'control'
+        run: |
+          git worktree add --detach /tmp/mark-control 69a81a272ea9ba74fb4b7006ad80d13c118ac5c0
+          cp tools/mark-integrity-trace.mjs /tmp/mark-control/tools/
+      - name: Original complete mark oracle with state logging
+        working-directory: ${{ matrix.variant == 'control' && '/tmp/mark-control' || github.workspace }}
+        run: |
+          set -o pipefail
+          mkdir -p gate-data
+          node tools/mark-integrity-trace.mjs --verify-only
+          node tools/mark-integrity-trace.mjs 2>&1 | tee gate-data/mark-trace.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mark-trace-${{ matrix.variant }}
+          path: ${{ matrix.variant == 'control' && '/tmp/mark-control/gate-data/' || 'gate-data/' }}
   hero-reuse-checks:
     if: inputs.mode == 'hero-reuse-checks' || inputs.mode == 'tile-cache'
     runs-on: ubuntu-latest
