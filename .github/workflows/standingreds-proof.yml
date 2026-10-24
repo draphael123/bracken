@@ -4,11 +4,27 @@ on:
     inputs:
       mode:
         type: choice
-        options: [layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [mage-prefix, layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  mage-prefix:
+    if: inputs.mode == 'mage-prefix'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/mage-pose-prefix-probe.mjs --verify-only
+      - run: node tools/mage-pose-prefix-probe.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: mage-prefix-diagnosis
+          path: gate-data/mage-prefix/
   layout-schedule:
     if: inputs.mode == 'layout-schedule'
     runs-on: ubuntu-latest
