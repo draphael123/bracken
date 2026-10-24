@@ -115,7 +115,7 @@ export function buildSporewood({ painter, T, TS }) {
   foe('shield', 82, 31, 'terrace', { face: -1 });
   bud(85, 32); ground(87, 104, 28);
   plank(88, 89, 25); plank(97, 102, 25);                                            /* root shelves over the top tier (split: none spans the gap) */
-  foe('spitcap', 88, 27, 'terrace', { face: -1 }); foe('brute', 89, 27, 'terrace', { face: -1 }); drip(87, 2.9);   /* (the terrace's heavy, where the bud sets you down) */
+  foe('spitcap', 88, 27, 'terrace', { face: -1, perch: true }); foe('brute', 89, 27, 'terrace', { face: -1, perch: true }); drip(87, 2.9);   /* (the terrace's heavy, where the bud sets you down) */
   /* THE TERRACE'S FALL (claude/sporewood2tune, the walker band): the top tier ends in a REAL GAP, six wide, no floor - a fall is the end (back to the last shrine). A pillar of two BOUNCE CAPS stands in it: a hop from the lip onto them, and they throw you over to the far lip
      (hold jump for height). Told: the sign on the lip, a warning post each side, the pit's mouth the same as the bounce pit taught (which had a floor); a spitcap holds the far lip */
   air(91, 96, 28, 42); ground(93, 94, 28); spring(93, 28); spring(94, 28); deco(90, 27, 'warnPost', 0); deco(97, 27, 'warnPost', 1);
@@ -149,9 +149,9 @@ export function buildSporewood({ painter, T, TS }) {
   /* a nook in the wall's foot off the shaft's floor (a pocket west of the way on): gold, lit by its own lantern */
   air(154, 160, 37, 39); lantern(158, 39); coins([155, 39], [156, 39], [157, 39]);
   lantern(165, 39); bud(168, 40, { dark: true }); ground(170, 198, 36);
-  foe('lurker', 174, 35, 'shaft'); foe('archer', 178, 35, 'shaft', { face: -1 }); foe('sporeling', 163, 39, 'shaft', { face: 1 });
+  foe('lurker', 174, 35, 'shaft', { perch: true }); foe('archer', 178, 35, 'shaft', { face: -1, perch: true }); foe('sporeling', 163, 39, 'shaft', { face: 1 });
   lantern(176, 35); bud(180, 36, { dark: true }); ground(182, 198, 32); drip(180, 3.0, 14);
-  foe('weaver', 184, 31, 'shaft', { face: -1 }); foe('shield', 183, 31, 'shaft2', { face: -1 });
+  foe('weaver', 184, 31, 'shaft', { face: -1, perch: true }); foe('shield', 183, 31, 'shaft2', { face: -1 });
   lantern(186, 31); bud(188, 32, { dark: true }); ground(190, 198, 28); foe('brute', 192, 27, 'shaftTop', { face: -1 });   /* (the shaft's top: a heavy where the last bud sets you down, the shaft at your back) */
   sign(163, 39, 'THE DARK SHAFT. EVERY BUD HAS ITS LANTERN.');
   coins([166, 38], [178, 34], [189, 26], [192, 26]); glow(196, 27); plank(191, 197, 25);
@@ -181,7 +181,7 @@ export function buildSporewood({ painter, T, TS }) {
   air(233, 235, 27, 42); air(239, 240, 27, 42); deco(232, 21, 'warnPost', 0); deco(241, 21, 'warnPost', 1);
   sign(229, 21, 'THE BOUNCE STALK THROWS YOU UP TO THE HIGH STALK. NO FLOOR UNDER IT: MISS AND YOU FALL.'); sign(248, 21, 'THE CAP LADDER: NO FLOOR UNDER IT. THE BOG KEEPS WHAT FALLS IN.');
   ground(241, 251, 22);
-  foe('drone', 247, 17, 'highStalk'); foe('brute', 243, 21, 'highStalk', { face: -1 }); foe('lurker', 248, 21, 'highStalk'); lantern(244, 21);   /* (its lantern: strike it and the lurker is dazzled out of its cap) */ drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
+  foe('drone', 247, 17, 'highStalk', { perch: true }); foe('brute', 243, 21, 'highStalk', { face: -1 }); foe('lurker', 248, 21, 'highStalk'); lantern(244, 21);   /* (its lantern: strike it and the lurker is dazzled out of its cap) */ drip(244, 2.8);   /* (where the bounce throws you: a heavy, the gap at your back) */
   mend(245, 21); puff(247, 21);
   /* THE HIGH SILVER: a cap hung high over the bog (on a stalk of its own), reached off the spring spore of the puffball under it - or a plunged bounce */
   plank(246, 249, 16); ent('silver', 248, 15); coins([246, 15], [249, 15]);
@@ -209,10 +209,10 @@ export function buildSporewood({ painter, T, TS }) {
   sign(297, 18, 'THE WEB LARDER. THE MOTHER KEEPS HER CATCH HERE. ONE CUT CLEARS A WEB.');
   ground(301, 315, 19);
   web(304, 15, 18); web(311, 15, 18);
-  foe('weaver', 308, 16, 'larderDoor', { face: -1 }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
+  foe('weaver', 308, 16, 'larderDoor', { face: -1, perch: true }); plank(305, 310, 15); foe('shield', 302, 18, 'larderDoor', { face: -1 });         /* (a root ledge over the larder floor, level with the first tier: walked onto from it) */                              /* the larder's WEAVER hangs between its curtains: cut him or cut the web */
   deco(306, 18, 'bones', 0); deco(309, 18, 'skullPile', 0);
   /* THE LARDER STAIR: two four-row tiers up the root wall, a bud at each foot (no web on a tier: a web's top is footing, and a curtain there was a stair round the bud) */
-  bud(314, 19); ground(316, 358, 15); drip(322, 3.0, 6); foe('spider', 320, 7, 'larderStair', { drop: 110 });   /* (the larder's keeper: it drops off the root roof on whoever climbs the stair) */
+  bud(314, 19); ground(316, 358, 15); drip(322, 3.0, 6); foe('spider', 320, 7, 'larderStair', { drop: 110, perch: true });   /* (the larder's keeper: it drops off the root roof on whoever climbs the stair) */
   foe('shield', 324, 14, 'larderStair', { face: -1 });
   plank(318, 331, 11);                                                              /* (a root ledge over the first tier, level with the second: walked onto from it) */
   bud(332, 15); ground(334, 358, 11); foe('brute', 337, 10, 'larderEnd', { face: -1 });
