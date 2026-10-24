@@ -16,7 +16,7 @@
 // Every capital line it says is in HR_SAY (src/hint-lines.js routes them).
 
 export const HR = { netG: 900, netDmg: 60, netStun: 2.4, bridgeT: 0.5, cwUp: 165, cwDown: 60, cwHold: 1.4, cwDrop: 170, lineV: 150, lineBack: 90, lineWait: 1.2,
-  perchG: 900, perchDown: 7, ledgeDown: 7, haulV: 60, near: 150 };
+  perchG: 900, perchDown: 12, ledgeDown: 7, haulV: 60, near: 150 };
 export const HR_SAY = {
   net: 'THE NET DROPS ON HIM', netStep: 'THE NET LANDS: A STEP', bridge: 'THE BRIDGE SWINGS DOWN: A WAY ACROSS', counter: 'THE SANDBAG FALLS: UP YOU GO',
   line: 'THE LINE RUNS: HOLD ON', perch: 'HER PERCH FALLS', perchEmpty: 'THE PERCH FALLS', retied: 'RE-TIED', back: 'HAULED BACK UP',
