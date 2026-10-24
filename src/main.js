@@ -32272,7 +32272,7 @@ function drawWorld(cx, cy, showPlayer) {
   if (FKH && FKH.drawDead && L.arena && L.arena.boss === 'fogknight') FKH.drawDead(g, cx, cy, time); if (CHH && L.arena && L.arena.boss === 'champion') CHH.drawDead(g, cx, cy, time);   /* the Fog Knight's plate, fallen (src/redraw/fog_knight_art.js) */
   for (const fx of deathFx) drawDeathFx(g, fx, cx, cy);   /* what they were made of, after the bodies and before the living */
   if (boss && boss.t === 'lance' && boss.alive && boss.bowCall) drawBowCall(boss.bowCall, cx, cy);   /* drawn whether he is on the screen or not: his bowman is coming to where YOU are */
-  const strikingBargemen = CANAL ? [] : null;
+  const strikingBargemen = CANAL ? [] : null, contactBargemen = L.towpath && showPlayer ? [] : null;
   for (const e of enemies) {
     if (OKD.isKnightT(e.t)) { OK.draw(g, e, cx, cy); if (e.elite) OK.drawBanner(g, e, cx, cy, TS); }   /* (claude/order) what a knight leaves on the floor and in the air, and HIS CHAPTER'S BANNER on the gate he holds (src/order-knights.js) */
     if (e.behind) continue;   /* (claude/fairfix3) round the back of the chair-o-plane: drawn small behind its mast (src/redraw/fair_newrides.js) */
@@ -32664,6 +32664,8 @@ function drawWorld(cx, cy, showPlayer) {
       // A winding-up neighbour must not paint over the bargeman whose haft is actually striking.
       if (CANAL && e.bargee && e.t === 'gaffer' && e.mode === 'haft' && enemies.some(q => q !== e && q.alive && q.bargee && q.t === 'gaffer' && q.mode === 'haftTell' && Math.abs(q.x - e.x) < (q.w + e.w) / 2 && Math.abs(q.y - e.y) < 2)) strikingBargemen.push([sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot]);
       else drawSet(sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot);
+      // A hero standing on the striking bargeman must not cover the entire live haft pose.
+      if (contactBargemen && e.alive && e.bargee && e.t === 'gaffer' && e.mode === 'haft' && players.some(p => !p.dead && Math.abs(p.x - e.x) < ((p.w || 12) + e.w) / 2 && Math.abs(p.y - e.y) < e.h)) contactBargemen.push([sprSet, null, frame, dx0, dy0, ps.face, e.flash > 0 || (e.breakFlash > 0 && SET.flashes), pSX, pSY, 1, pRot]);
       if (OKD.isKnightT(e.t) && e.alive) OK.drawOver(g, e, dx0, dy0, frame, ps);   /* (claude/orderart) the parry glint on the blade, the ore plates on the pauldrons: over the sprite */
       if (wind) { drawTellFlash(e, sprSet, frame, dx0, dy0, ps, pSX, pSY, pRot); drawTellGlint(e, dx0, dy0, bigF, ps); }   /* (claude/tellposes) the white frame and the glint on the weapon hand */
       if (pupQ) PUPH.over(e, pupQ);   /* ...and grey steel when it cannot */
@@ -32906,6 +32908,7 @@ function drawWorld(cx, cy, showPlayer) {
     }
   }
   });
+  if (contactBargemen && contactBargemen.length) { g.save(); g.globalAlpha = 1; for (const args of contactBargemen) drawSet(...args); g.restore(); }
   for (const pd of players) PTK.drawFx({ g, cx, cy, time, text }, pd);   /* (claude/partnerthrow) the told arc and landing ring while he is carried, the wiggle bar over him */
   drawBoxes(cx, cy);
   drawSlide(cx, cy); drawOverhangs(cx, cy); drawBeams(cx, cy); if (boss && boss.t === 'ram' && L.arena) { RLD.ramState(boss, L.arena); RLD.drawRamLips(g, boss, L.arena.floor, cx, cy, time); }   /* THE FOLD'S OVERHANGS (claude/scree2) */

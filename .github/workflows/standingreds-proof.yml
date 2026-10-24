@@ -4,11 +4,61 @@ on:
     inputs:
       mode:
         type: choice
-        options: [layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  towpath-visibility:
+    if: inputs.mode == 'towpath-visibility'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/canal-overlap-proof.mjs
+      - run: |
+          for n in 1 2 3; do
+            node tools/towpath-overlap-proof.mjs
+            cp gate-data/towpath-overlap-proof.json "gate-data/towpath-overlap-$n.json"
+          done
+      - run: node tools/standingreds-proof.mjs no-hidden-hits gate-data/towpath-visibility
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: towpath-visibility
+          path: gate-data/
+  theatre-trace:
+    if: inputs.mode == 'theatre-trace'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/theatre-audience-trace.mjs --verify-only
+      - run: |
+          mkdir -p gate-data
+          failed=0
+          for n in 1 2 3; do
+            if node tools/theatre-audience-trace.mjs > "gate-data/theatre-$n.log" 2>&1; then
+              echo "Theatre occurrence $n passed"
+            else
+              failed=1
+            fi
+            if test -f gate-data/theatre-audience-trace.json; then
+              mv gate-data/theatre-audience-trace.json "gate-data/theatre-trace-$n.json"
+            fi
+          done
+          exit "$failed"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: theatre-audience-trace
+          path: gate-data/
   layout-gc:
     if: inputs.mode == 'layout-gc'
     runs-on: ubuntu-latest
