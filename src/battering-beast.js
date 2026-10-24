@@ -21,16 +21,16 @@
 //                   off) - LOOSE, a long opening (x BB.harness.mul) - and with no handlers there is no more volley.
 //   NO ADDS (Daniel: no adds unless the brief says so; the handlers are part of him).
 export const BB = {
-  hp: 1300, w: 56, h: 40, markH: 60,
-  walk: 46, rest: [0.8, 0.55],
+  hp: 1500, w: 56, h: 40, markH: 60,
+  walk: 46, rest: [0.7, 0.45],
   armour: 0.4, above: 1, wardMul: 0.4,
   p2: 0.5,
-  charge: { tell: [1.0, 0.82], speed: 280, dmg: 12, hitH: 30, minD: 110 },
+  charge: { tell: [1.0, 0.82], speed: 280, dmg: 13, hitH: 24, minD: 110 },
   daze: { t: [1.7, 1.4], mul: 1.25 },
   stuck: { t: 3.2, mul: 2, cap: 0.13, ward: 3, wreckBlow: 0.03 },
-  sweep: { tell: [0.78, 0.62], t: 0.42, reach: 50, h: 14, dmg: 12, chip: 0.5, rec: 0.6, range: 80 },
-  volley: { tell: [0.95, 0.8], n: 3, flight: 1.0, r: 16, dmg: 10, rec: 0.6, spread: 62 },
-  trample: { tell: 0.85, sp: 150, life: 1.9, dmg: 14, rec: 0.8, w: 7 },
+  sweep: { tell: [0.78, 0.62], t: 0.42, reach: 50, h: 14, dmg: 16, chip: 0.8, rec: 0.6, range: 80 },
+  volley: { tell: [0.95, 0.8], n: 3, flight: 1.0, r: 16, dmg: 12, rec: 0.6, spread: 62 },
+  trample: { tell: 0.85, sp: 150, life: 1.9, dmg: 16, rec: 0.8, w: 7 },
   scaf: { fall: 0.5, len: 6, heroDmg: 10, lie: 16, rearm: 11 },
   harness: { hits: 3, loose: 4.2, mul: 2, cap: 0.16 },
   bz: { hurt: 1.6 },
@@ -124,9 +124,9 @@ export function stepBeast(e, S, dt, heroes, w) {
       const k = 1 - e.modeT / BB.sweep.t, l2 = k < 0.5 ? lo : a, h2 = k < 0.5 ? hi : b;
       w.hit([l2, h2, floor - BB.sweep.h, floor], BB.sweep.dmg, 'sweep', { key: e.hitKey, blockable: true, blockChip: BB.sweep.chip, knock: f * 160 });
       if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BB.sweep.rec; } return; }
-    case 'volleyTell': if (e.modeT <= 0) { e.mode = 'volley'; e.modeT = 0.35; w.sound('throw'); const px = P ? P.x : e.x, sp = BB.volley.spread;
+    case 'volleyTell': if (e.modeT <= 0) { e.mode = 'volley'; e.modeT = 0.35; w.sound('throw'); const px = P ? P.x : e.x, py = P && P.ground ? P.y : floor, sp = BB.volley.spread;   /* (they throw at where you STAND - a scaffold deck too) */
         const ts = [px, px - sp, px + sp].slice(0, BB.volley.n).map(x => Math.max(G.x0 + 10, Math.min(G.x1 - 10, x)));
-        for (const tx of ts) S.stakes.push({ x0: e.x, y0: floor - BB.h - 10, tx, t: 0, T: BB.volley.flight, key: 'vs' + S.act + '.' + tx.toFixed(0) }); }
+        for (const tx of ts) S.stakes.push({ x0: e.x, y0: floor - BB.h - 10, tx, ty: Math.abs(tx - px) < 4 ? py : floor, t: 0, T: BB.volley.flight, key: 'vs' + S.act + '.' + tx.toFixed(0) }); }
       return;
     case 'volley': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = BB.volley.rec; } return;
     case 'trampleTell': if (e.modeT <= 0) { e.mode = 'trample'; e.modeT = 0.3; w.sound('stomp'); w.shake(8); w.dust(e.x, floor, 14);
@@ -176,8 +176,8 @@ function stepScafs(e, S, dt, heroes, w) {
   }
 }
 function stepStakes(S, dt, w) {
-  for (const c of S.stakes) { c.t += dt; if (c.t < c.T || c.done) continue; c.done = true; w.dust(c.tx, S.G.floorY, 6); w.sound('stake');
-    w.hit([c.tx - BB.volley.r, c.tx + BB.volley.r, S.G.floorY - 22, S.G.floorY + 2], BB.volley.dmg, 'volley', { key: c.key }); }
+  for (const c of S.stakes) { c.t += dt; if (c.t < c.T || c.done) continue; c.done = true; const ty = c.ty ?? S.G.floorY; w.dust(c.tx, ty, 6); w.sound('stake');
+    w.hit([c.tx - BB.volley.r, c.tx + BB.volley.r, ty - 22, ty + 2], BB.volley.dmg, 'volley', { key: c.key }); }
   S.stakes = S.stakes.filter(c => !c.done);
 }
 function stepWaves(S, dt, heroes, w) {
@@ -185,7 +185,7 @@ function stepWaves(S, dt, heroes, w) {
     for (const h of heroes) if (h.alive && h.ground && Math.abs(h.y - S.G.floorY) < 6 && Math.abs(h.x - q.x) < BB.trample.w) w.hitHero(h, BB.trample.dmg, 'trample', q.key); }
   S.waves = S.waves.filter(q => q.life > 0);
 }
-export function stakeAt(c, floorY) { const k = Math.min(1, c.t / c.T); return { x: c.x0 + (c.tx - c.x0) * k, y: c.y0 + (floorY - c.y0) * k - Math.sin(k * Math.PI) * 60, k }; }
+export function stakeAt(c, floorY) { const k = Math.min(1, c.t / c.T), ty = c.ty ?? floorY; return { x: c.x0 + (c.tx - c.x0) * k, y: c.y0 + (ty - c.y0) * k - Math.sin(k * Math.PI) * 60, k }; }
 /* ---------- A BLOW ON HIM (B15) -> [what lands, the word or null] ---------- */
 export function takeBlow(e, S, dmg, plunge) {
   if (S.ward > 0 || e.mode === 'tear') return [Math.max(1, Math.round(dmg * BB.wardMul)), 'WARDED'];
@@ -199,7 +199,7 @@ export function takeBlow(e, S, dmg, plunge) {
 /* ---------- THE BOT (src/lab.js): what a player reads - his tells a reaction late, the stakes' rings, the waves, the scaffolds' lines - and THE RULE: knock a prop so the
    wreck lies between him and you (stand on the wall side of it), or knock it when he stands under its line; strike him stuck; in phase two the buckle when he is open ---------- */
 export const PLAN = { react: 0.25, miss: 0.12, missKnock: 0.2 };
-export const bbHazards = S => [...S.stakes.map(c => [c.tx, BB.volley.r + 12]), ...S.scafs.filter(s => s.st === 'fall').map(s => { const [lo, hi] = lineOf(s); return [(lo + hi) / 2, (hi - lo) / 2 + 10]; })];
+export const bbHazards = S => [...S.stakes.map(c => [c.tx, BB.volley.r + 12, c.ty]), ...S.scafs.filter(s => s.st === 'fall').map(s => { const [lo, hi] = lineOf(s); return [(lo + hi) / 2, (hi - lo) / 2 + 10]; })];
 export function bbPlan(s) {
   const out = bbPlan0(s), S = s.S, P = s.P, hz = bbHazards(S);
   if (out.gx != null && !out.jump && P.ground) { const bad = x => hz.some(([hx, r]) => Math.abs(x - hx) < r);

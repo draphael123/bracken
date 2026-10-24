@@ -145,15 +145,14 @@ export function buildPalisadeWood({ painter, T, TS }) {
 
   // ================= 3. THE SCAFFOLDS (204-306): REMIX + A14 - up the scaffolds and along the unfinished wall top =================
   sign(205, 28, 'THE SCAFFOLDS. CLIMB THE WALL THEY ARE BUILDING.');
-  ground(205, 212, 29);
-  ground(213, 300, 13);                                                            /* THE PALISADE: the wall itself, its top thirteen rows over the yard */
+  ground(205, 215, 29);
+  ground(216, 300, 13);                                                            /* THE PALISADE: the wall itself, its top thirteen rows over the yard */
   /* the scaffold tiers up its face (three rows a tier) */
   plank(206, 211, 26); plank(212, 215, 23); plank(206, 211, 20);
   foe('sprig', 208, 25, 'tiers', { face: -1 }); foe('archer', 214, 22, 'tiers', { face: -1, perch: true });
   coins([209, 24], [213, 21], [208, 18]);
   /* THE WALL'S RAMP (REQUIRED, the remix): from the top tier the wall is seven rows - a scaffold section stands against it; its prop folds it into a stair of boards */
   prop('wallRamp', { x: 213, top: 12, cleat: [210, 19], load: 'ramp', steps: [[212, 214, 17, 'O'], [212, 215, 15, 'O']] });
-  air(212, 212, 13, 16);                                                           /* (the wall's foot stands back a tile at the ramp: the boards land against it) */
   sign(207, 19, 'THE WALL IS TOO HIGH. KNOCK OUT THE SCAFFOLD PROP: IT FOLDS INTO A STAIR.');
   /* THE UNFINISHED WALL TOP (A14): its gaps are sections not yet built - a slot nine rows deep with rungs up its side (a fall is a climb, never the run) */
   sign(218, 12, 'THE WALL TOP IS UNFINISHED. JUMP THE GAPS; A FALL IS A CLIMB OUT OF THE SLOT.');

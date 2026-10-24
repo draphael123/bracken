@@ -153,7 +153,7 @@ export function makeBatteringBeastHands(ctx) {
     if (!ctx.bossActive || !e || e.t !== 'batteringbeast') return;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     for (const c of S.stakes) { const q = BBM.stakeAt(c, G.floorY); g.save(); g.translate(x(q.x), y(q.y)); g.rotate(q.k * 6); rect(g, -6, -1, 12, 3, '#a8783e'); rect(g, 5, -2, 3, 5, '#e0c890'); g.restore();
-      g.strokeStyle = blink; g.strokeRect(x(c.tx) - BB.volley.r, y(G.floorY) - 3, BB.volley.r * 2, 3); }
+      g.strokeStyle = blink; g.strokeRect(x(c.tx) - BB.volley.r, y(c.ty ?? G.floorY) - 3, BB.volley.r * 2, 3); }
     for (const q of S.waves) for (let k = 0; k < 3; k++) rect(g, x(q.x) - q.dir * k * 6 - 3, y(G.floorY) - 5 - (k % 2) * 3, 6, 5, k ? '#6a4a2a' : '#8e6a40');
     if (e.mode === 'chargeTell') { const st = BBM.chargeStop(S, e.x, e.face || 1); g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; for (let q = Math.min(e.x, st.x); q < Math.max(e.x, st.x); q += 10) g.fillRect(x(q), y(G.floorY) - 1, 6, 1); g.globalAlpha = 1;
       const ex = x(st.x + (e.face || 1) * (BB.w / 2 + 3)), ey = y(G.floorY), on = Math.floor(time * 10) % 2; g.fillStyle = st.scaf ? (on ? '#ffd36b' : '#fff6e0') : (on ? '#ff6b6b' : '#ffd36b'); g.fillRect(ex - 1, ey - 18, 2, 16); }
