@@ -153,8 +153,8 @@ export function buildPalisadeWood({ painter, T, TS }) {
   foe('sprig', 208, 25, 'tiers', { face: -1 }); foe('archer', 212, 22, 'tiers', { face: -1, perch: true });
   coins([207, 24], [211, 21], [215, 18]);
   /* THE WALL'S RAMP (REQUIRED, the remix): from the top tier the wall is seven rows - a scaffold section stands against it; its prop folds it into a stair of boards */
-  prop('wallRamp', { x: 219, top: 12, cleat: [216, 20], load: 'ramp', steps: [[218, 219, 18, 'O'], [219, 221, 15, 'O']] });
-  sign(214, 20, 'THE WALL IS TOO HIGH. KNOCK OUT THE SCAFFOLD PROP: IT FOLDS INTO A STAIR.');
+  prop('wallRamp', { x: 219, top: 12, cleat: [215, 28], load: 'ramp', steps: [[218, 219, 18, 'O'], [219, 221, 15, 'O']] });   /* (its prop at the scaffold's foot on the yard: knock it, then climb the tiers to the stair) */
+  sign(211, 28, 'THE TIERS STOP SHORT OF THE TOP. KNOCK OUT THE SCAFFOLD PROP: IT FOLDS INTO A STAIR.');
   /* THE UNFINISHED WALL TOP (A14): its gaps are sections not yet built - a slot nine rows deep with rungs up its side (a fall is a climb, never the run) */
   sign(223, 12, 'THE WALL TOP IS UNFINISHED. JUMP THE GAPS; A FALL IS A CLIMB OUT OF THE SLOT.');
   air(227, 229, 13, 21); plank(227, 229, 19); plank(227, 229, 16); plank(229, 229, 14);   /* (a one-tile step at the slot's far lip: the climb out) */                 /* slot one: three wide (a jump) */
