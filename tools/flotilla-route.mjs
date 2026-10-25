@@ -7,14 +7,14 @@
    node tools/flotilla-route.mjs [--heroes=a,b] (PORT)  */
 import { openPage } from './cdp.mjs';
 const args = process.argv.slice(2), opt = (k, d) => { const a = args.find(x => x.startsWith('--' + k + '=')); return a ? a.slice(k.length + 3) : d; };
-const HEROES = opt('heroes', 'knight,warden,pyro,ranger,paladin,reaper,geomancer').split(',');
+const HEROES = opt('heroes', 'knight,warden,pyro,ranger,paladin,reaper,geomancer,pirate,berserker').split(',');
 /* the chains: a start (tile, the hero's feet row) and an ordered list of links - { bench: id } | { yard: x0col } | { ledge: [c0, c1, row] } */
 const CHAINS = [
   { name: 'GALLEY HULL: the teach well', start: [100, 23], links: [{ bench: 'b0' }, { ledge: [110, 117, 23] }] },
   { name: 'GALLEY HULL: the test well', start: [116, 23], links: [{ bench: 'b1' }, { bench: 'b2' }, { bench: 'b3' }, { ledge: [139, 152, 23] }] },
   { name: 'GALLEY HULL: up to the stern castle', start: [151, 23], links: [{ bench: 'b4' }, { bench: 'b5' }, { bench: 'b6' }, { ledge: [171, 186, 14] }] },
   { name: 'GALLEY HULL: the exam well', start: [185, 14], links: [{ bench: 'b7' }, { bench: 'b8' }, { bench: 'b9' }, { ledge: [204, 208, 23], tol: 18 }] },
-  { name: 'RIGGING RUN: teach + test', start: [289, 8], links: [{ yard: 289 }, { ledge: [301, 305, 8] }, { yard: 305 }, { yard: 313 }, { ledge: [321, 325, 7] }] },
+  /* (claude/flotilla3) the teach is the top gun's dropped yard now - static, so the reach model has it */ { name: 'RIGGING RUN: the test', start: [302, 8], links: [{ yard: 305 }, { yard: 313 }, { ledge: [321, 325, 7] }] },
   { name: 'RIGGING RUN: the lashing and the remix', start: [323, 7], links: [{ ledge: [325, 336, 10] }, { ledge: [337, 341, 8] }, { yard: 341 }, { ledge: [356, 360, 7] }] },
   { name: 'RIGGING RUN: the exam', start: [358, 7], links: [{ yard: 361 }, { yard: 368 }, { yard: 376 }, { ledge: [385, 389, 8] }] },
 ];
