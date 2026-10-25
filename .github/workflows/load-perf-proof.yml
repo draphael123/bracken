@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,32 @@ env:
 permissions:
   contents: read
 jobs:
+  foreground-direct:
+    if: inputs.mode == 'foreground-direct'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        level: [undercrown, lamplit, hanging, hurricane, minecart]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/foreground-direct-proof.mjs --verify-only
+      - name: Original A/B/A controls and all120 frame/display/state/RNG samples
+        run: node tools/foreground-direct-proof.mjs "$LEVEL" --baseline=62d9c02c102decc69ceaef4e1ec593a23170f1ff --control
+        env:
+          LEVEL: ${{ matrix.level }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: foreground-direct-${{ matrix.level }}
+          path: gate-data/foreground-direct/
+          if-no-files-found: error
   fixed-ornaments:
     if: inputs.mode == 'fixed-ornaments'
     runs-on: ubuntu-latest
