@@ -126,7 +126,7 @@ const clampDeck = (G, k, x) => { const [a, b] = G.hulls[k]; return Math.max(a + 
 function tell(e, S, c, mode, t) { setMode(e, mode, Math.max(0.5, t)); S.act++; S.n.moves[mode] = (S.n.moves[mode] || 0) + 1; const mv = MOVES[mode]; if (mv && mv.mark) c.mark(mv.mark);
   c.sound(mode === 'whistleTell' ? 'whistle' : mv && mv.mark === '!!' ? 'tellHard' : 'tell'); if (MOVE_WORD[mode]) c.word(e, MOVE_WORD[mode], mode); }
 function open(e, S, c, mode, t, line, col = '#8fd160') { setMode(e, mode, t + 0.05); e.open = t; S.taken = 0; S.cutsLeft = 0; if (line) c.number(e.x, e.y - 76, line, col); c.sound('open'); }
-function endOpen(e, S, c) { e.open = 0; S.ward = AD.wardT; S.n.wards++; S.taken = 0; c.number(e.x, e.y - 76, 'HE IS UP: HIS GUARD IS SET', '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
+function endOpen(e, S, c) { e.open = 0; S.ward = AD.wardT; S.n.wards++; S.taken = 0; c.number(e.x, e.y - 76, AD_SAY.up, '#9ab0c0'); c.sound('tell'); c.fx('ward', e.x, e.y); }
 
 /* ---------- THE RULE ON HIM (the hands call it) ----------
    A ROUND SHOT met him (src/main.js updateBalls), or his own KEG blew on him. On his line or falling it passes under him; in his ward it glances off; otherwise A PLATE
@@ -135,7 +135,7 @@ export function blowPlate(e, S, c, by = 'gun', dir = 0) {
   if (!e || !e.alive || e.mode === 'sleep' || e.mode === 'wake' || e.mode === 'dead') return 'busy';
   if (airborne(e) || e.mode === 'climb') return 'air';
   if (adFlat(e) || e.mode === 'stagger') return 'busy';
-  if (S.ward > 0) { S.n.glanced++; c.number(e.x, e.y - 66, by === 'keg' ? 'THE BLAST GLANCES OFF HIS GUARD' : 'THE BALL GLANCES OFF HIS GUARD: NOT YET', '#9ab0c0'); c.sound('clank'); return 'ward'; }
+  if (S.ward > 0) { S.n.glanced++; c.number(e.x, e.y - 66, by === 'keg' ? AD_SAY.glanceK : AD_SAY.glance, '#9ab0c0'); c.sound('clank'); return 'ward'; }
   S.shots = S.shots.filter(q => !q.his); S.swing = null; S.cutsLeft = 0; S.lanes = S.lanes && S.lanes.t > 0 ? S.lanes : null;
   if (S.plates > 0) {
     /* WHICH PLATE: a shot from in front of him takes the CHEST, from behind the BACK, a keg (or the third) the PAULDRONS */
@@ -144,11 +144,11 @@ export function blowPlate(e, S, c, by = 'gun', dir = 0) {
     S.off.push(which); S.plates--; S.n.plates++; S.n[by === 'keg' ? 'platesByKeg' : 'platesByGun']++; S.floorHeld = 0;
     c.fx('plate', e.x, e.y, which); c.sound('crunch'); c.shake(8);
     if (S.plates > 0) { open(e, S, c, 'stagger', AD.staggerT, PLATE_LINE[which], '#8fd160');
-      if (!S.told.plate) { S.told.plate = 1; c.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 136, 'EVERY PLATE OFF OPENS MORE OF HIM. NO REFIT', '#ffd36b'); } }
-    else { open(e, S, c, 'stagger', AD.staggerT, 'THE LAST PLATE IS OFF: HE IS BARE', '#ffd36b'); S.bareNext = true; }
+      if (!S.told.plate) { S.told.plate = 1; c.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 136, AD_SAY.plates, '#ffd36b'); } }
+    else { open(e, S, c, 'stagger', AD.staggerT, AD_SAY.last, '#ffd36b'); S.bareNext = true; }
     return 'plate'; }
   setMode(e, 'flat', AD.flatT + 0.05); e.open = AD.flatT; S.taken = 0; S.n.flats++;
-  c.fx('flat', e.x, e.y); c.sound('flat'); c.shake(7); c.number(e.x, e.y - 76, 'KNOCKED FLAT: CUT HIM NOW', '#8fd160');
+  c.fx('flat', e.x, e.y); c.sound('flat'); c.shake(7); c.number(e.x, e.y - 76, AD_SAY.flat, '#8fd160');
   return 'flat';
 }
 
@@ -167,15 +167,15 @@ export function stepAdmiral(e, S, dt, h, c) {
   /* THE PHASE: the last plate's stagger runs out first, then he throws the iron off and the flagship lists */
   if (S.ph === 1 && S.plates <= 0 && !adOpen(e) && (e.mode === 'walk' || e.mode === 'recover')) {
     S.ph = 2; S.cycle = 0; S.step = 0; S.script = null; e.phase = 2; c.music(2); S.bareNext = false;
-    c.number((G.x0 + G.x1) / 2, G.floorY - 146, 'HE THROWS OFF THE LAST OF THE IRON. THE FLAGSHIP LISTS', '#ff9a5c'); tell(e, S, c, 'listTell', AD.listTell); return; }
+    c.number((G.x0 + G.x1) / 2, G.floorY - 146, AD_SAY.bare, '#ff9a5c'); tell(e, S, c, 'listTell', AD.listTell); return; }
   switch (e.mode) {
     case 'stagger': case 'reload': case 'soaked': case 'axeStuck': case 'flat':
-      if (e.open <= 0) { if (e.mode === 'reload') { c.number(e.x, e.y - 66, 'RELOADED', '#9aa39a'); setMode(e, 'recover', 0.35); }
-        else if (e.mode === 'axeStuck') { c.number(e.x, e.y - 66, 'HE WRENCHES THE AXE OUT', '#9aa39a'); setMode(e, 'recover', 0.4); }
+      if (e.open <= 0) { if (e.mode === 'reload') { c.number(e.x, e.y - 66, AD_SAY.reloaded, '#9aa39a'); setMode(e, 'recover', 0.35); }
+        else if (e.mode === 'axeStuck') { c.number(e.x, e.y - 66, AD_SAY.axeOut, '#9aa39a'); setMode(e, 'recover', 0.4); }
         else { endOpen(e, S, c); setMode(e, 'recover', 0.45); } } return;   /* B4: open, he stands (or lies) where he is */
     case 'listTell': if (e.modeT <= 0) { S.list = true; c.list(true); c.fx('list', e.x, e.y); c.sound('creak'); c.shake(6);
-      if (!S.told.list) { S.told.list = 1; c.number((G.x0 + G.x1) / 2, G.floorY - 136, 'HER DECK LISTS TO THE LASHING: WALK UP IT', '#ffd36b'); } setMode(e, 'recover', 0.5); } return;
-    case 'climb': if (e.modeT <= 0) { e.y = G.floorY; e.x = S.climbTo; open(e, S, c, 'soaked', AD.soakedT, 'HE HAULS OUT OF THE HARBOUR SOAKED: CUT HIM', '#8fd160'); } else e.y = G.floorY + 20 * Math.max(0, e.modeT); return;
+      if (!S.told.list) { S.told.list = 1; c.number((G.x0 + G.x1) / 2, G.floorY - 136, AD_SAY.list, '#ffd36b'); } setMode(e, 'recover', 0.5); } return;
+    case 'climb': if (e.modeT <= 0) { e.y = G.floorY; e.x = S.climbTo; open(e, S, c, 'soaked', AD.soakedT, AD_SAY.soaked, '#8fd160'); } else e.y = G.floorY + 20 * Math.max(0, e.modeT); return;
     case 'recover': if (e.modeT <= 0) nextMove(e, S, P, c); return;
     case 'walk': {
       const d = P.x - e.x;
@@ -221,7 +221,7 @@ function stepMove(e, S, dt, P, h, c) {
     case 'pistolTell': case 'pistol2Tell': if (e.modeT > AD.pistolLock) { S.aimY = Math.max(G.floorY - 34, Math.min(G.floorY - 6, P.y - 14)); e.face = Math.sign(P.x - e.x) || f; }
       if (e.modeT <= 0) { S.shots.push({ x: e.x + (e.face || 1) * 16, y: S.aimY, vx: (e.face || 1) * AD.shotV, t: 0, his: true, key: 'shot' + S.act + '.' + S.pistol }); S.n.shots++; c.sound('pistol'); c.fx('muzzle', e.x + (e.face || 1) * 16, S.aimY);
         if (S.pistol === 1) { S.pistol = 2; tell(e, S, c, 'pistol2Tell', AD.pistol2Tell); }
-        else { S.n.reloads++; open(e, S, c, 'reload', AD.reloadT, 'HE RELOADS: GO IN', '#8fd160'); } } return;
+        else { S.n.reloads++; open(e, S, c, 'reload', AD.reloadT, AD_SAY.reload, '#8fd160'); } } return;
     case 'kegTell': if (e.modeT <= 0) { const dir = Math.sign(P.x - e.x) || f; S.keg = { x: e.x + dir * 18, y: G.floorY, vx: dir * AD.kegV, fuse: AD.kegFuse, back: false, key: 'keg' + S.act, hull: k }; S.n.kegs++; c.sound('fuse'); setMode(e, 'kegRec', AD.kegRec); } return;
     case 'kegRec': if (e.modeT <= 0) after(); return;
     case 'whistleTell': if (e.modeT <= 0) { setMode(e, 'whistleRec', AD.laneT + AD.whistleRec); c.sound('gunports'); } return;
@@ -234,7 +234,7 @@ function stepMove(e, S, dt, P, h, c) {
         S.swing = null; e.face = Math.sign(P.x - e.x) || f; setMode(e, 'landRec', AD.landRec); } return; }
     case 'fall': { S.fallVy = (S.fallVy || 0) + 900 * dt; e.y = Math.min(G.floorY + 40, e.y + S.fallVy * dt);
       const wet = inGap(G, e.x);
-      if (!wet && e.y >= G.floorY) { e.y = G.floorY; c.fx('land', e.x, e.y); c.sound('land'); c.shake(5); open(e, S, c, 'soaked', AD.soakedT, 'CUT OFF HIS LINE: HE IS DOWN', '#8fd160'); }
+      if (!wet && e.y >= G.floorY) { e.y = G.floorY; c.fx('land', e.x, e.y); c.sound('land'); c.shake(5); open(e, S, c, 'soaked', AD.soakedT, AD_SAY.down, '#8fd160'); }
       else if (wet && e.y >= G.floorY + 30) { c.fx('splash', e.x, G.floorY + 8); c.sound('splash'); S.climbTo = e.x < G.gapMid ? G.gap[0] - 16 : G.gap[1] + 16; setMode(e, 'climb', 1.0); } return; }
     case 'landRec': if (e.modeT <= 0) after(); return;
     case 'flurryTell': if (e.modeT <= 0) { setMode(e, 'flurry', AD.flurryT); c.sound('slash'); } return;
@@ -245,7 +245,7 @@ function stepMove(e, S, dt, P, h, c) {
     case 'axe': { const a = e.x + f * AD.axeNear, b = e.x + f * AD.axeFar;
       if (c.hit([Math.min(a, b), Math.max(a, b), e.y - 44, e.y], AD.dmg.axe, MOVE_NAME.axe, { key: 'axe' + S.act })) { S.axeHit = true; S.n.axeHits++; }
       if (e.modeT <= 0) { c.shake(5); c.fx('splinter', S.axeX, G.floorY);
-        if (S.axeHit) setMode(e, 'axeRec', AD.axeRec); else { S.n.axeStuck++; open(e, S, c, 'axeStuck', AD.axeT, 'THE AXE IS IN THE DECK: CUT HIM'); } } return; }
+        if (S.axeHit) setMode(e, 'axeRec', AD.axeRec); else { S.n.axeStuck++; open(e, S, c, 'axeStuck', AD.axeT, AD_SAY.axe); } } return; }
     case 'axeRec': if (e.modeT <= 0) after(); return;
     case 'flurryRec': if (e.modeT <= 0) after(); return;
     default: setMode(e, 'walk', 0.5);
@@ -254,7 +254,7 @@ function stepMove(e, S, dt, P, h, c) {
 /* CUT HIS LINE (a blow on him, or on the line, while he swings): he drops - into the harbour if he is over it */
 export function cutLine(e, S, c) { if (!e || e.mode !== 'swing' || !S.swing || S.swing.cut) return false;
   S.swing.cut = true; S.swing = null; S.n.lineCut++; S.fallVy = -40; setMode(e, 'fall', 3); c.sound('snap'); c.fx('snap', e.x, e.y - 30);
-  c.number(e.x, e.y - 60, 'HIS LINE IS CUT', '#8fd160'); return true; }
+  c.number(e.x, e.y - 60, AD_SAY.cut, '#8fd160'); return true; }
 /* the line's two ends while he swings (drawn; the hands test a blow on it) */
 export const lineOf = (e, S) => (e && e.mode === 'swing' && S.swing ? [S.G.yard.x, S.G.yard.y, e.x, e.y - 30] : null);
 /* HIS PISTOL SHOT in flight: it runs flat at the height the aim locked at; a hero it meets (not rolling) is hit; it stops at the arena's edge */
@@ -266,10 +266,10 @@ function stepShots(e, S, dt, h, c) {
   S.shots = S.shots.filter(s => !s.dead);
 }
 /* HIS KEG: it rolls down the deck at you; struck, it rolls back at him; it stops at the deck's end or falls in the lashing; the fuse decides */
-export function kegStruck(S, dir, c) { const K = S.keg; if (!K || K.back) return false; K.back = true; K.vx = dir * AD.kegBackV; S.n.kegBack++; c.number(K.x, K.y - 26, 'STRUCK BACK AT HIM', '#8fd160'); c.sound('clank'); return true; }
+export function kegStruck(S, dir, c) { const K = S.keg; if (!K || K.back) return false; K.back = true; K.vx = dir * AD.kegBackV; S.n.kegBack++; c.number(K.x, K.y - 26, AD_SAY.back, '#8fd160'); c.sound('clank'); return true; }
 function stepKeg(e, S, dt, h, c) {
   const K = S.keg; if (!K) return; const G = S.G; K.fuse -= dt;
-  if (!K.wet) { const nx = K.x + K.vx * dt; if (inGap(G, nx) && !inGap(G, K.x)) { K.wet = true; K.x = nx; c.fx('splash', K.x, G.floorY + 8); c.sound('splash'); c.number(K.x, G.floorY - 20, 'THE KEG GOES IN THE HARBOUR', '#bfe6f5'); }
+  if (!K.wet) { const nx = K.x + K.vx * dt; if (inGap(G, nx) && !inGap(G, K.x)) { K.wet = true; K.x = nx; c.fx('splash', K.x, G.floorY + 8); c.sound('splash'); c.number(K.x, G.floorY - 20, AD_SAY.wet, '#bfe6f5'); }
     else { K.x = Math.max(G.x0 + 6, Math.min(G.x1 - 6, nx)); if (K.x <= G.x0 + 6 || K.x >= G.x1 - 6) K.vx = 0; } }
   if (K.wet) { if (K.fuse < AD.kegFuse - 0.6 || K.fuse <= 0) S.keg = null; return; }
   /* back at him: it meets him on the deck - IT BLOWS ON HIM */

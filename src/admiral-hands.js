@@ -78,12 +78,12 @@ export function makeAdmiralHands(ctx) {
   /* ---------- ONE FRAME OF HIM ---------- */
   H.update = (e, dt) => {
     if (!S || !e.alive) return; const Ar = A(); if (!Ar) return;
-    if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - 90, 'THE ADMIRAL: THE FLAGSHIP IS HIS', '#ffd36b'); }
-    if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 128, 'HIS IRON TURNS A BLADE. HIS OWN GUNS BLOW IT OFF', '#ffd36b'); }
+    if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - 90, ADM.AD_SAY.woke, '#ffd36b'); }
+    if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number((S.G.x0 + S.G.x1) / 2, S.G.floorY - 128, ADM.AD_SAY.rule, '#ffd36b'); }
     /* THE HARBOUR IN THE LASHING (A10): a hero who goes in costs the hazard's share of his health and is HAULED OUT onto the deck he fell from (the Champion's rule, kept) */
     for (const pp of ctx.players) { if (pp.dead || !(pp.y > S.G.floorY + 20) || pp.x < S.G.gap[0] - 20 || pp.x > S.G.gap[1] + 20) continue;
       const k = pp.x < S.G.gapMid ? 0 : 1, to = k === 0 ? S.G.gap[0] - 34 : S.G.gap[1] + 34;
-      splashes.push({ x: pp.x, hx: to, t: ctx.time() }); ctx.hazard(pp, to, S.G.floorY); S.n.hauled++; ctx.number(to, S.G.floorY - 40, 'HAULED OUT OF THE HARBOUR', '#bfe6f5'); }
+      splashes.push({ x: pp.x, hx: to, t: ctx.time() }); ctx.hazard(pp, to, S.G.floorY); S.n.hauled++; ctx.number(to, S.G.floorY - 40, ADM.AD_SAY.hauled, '#bfe6f5'); }
     ADM.stepAdmiral(e, S, dt, heroes(), world(e));
     e.phase = S.ph;
     if (WORD && (!/Tell$/.test(e.mode) || ctx.time() - WORD.t > 2)) WORD = null;
@@ -91,7 +91,7 @@ export function makeAdmiralHands(ctx) {
   /* A ROUND SHOT met him (src/main.js updateBalls): true = it is spent on him */
   H.onBall = (e, b) => { if (!S || !e || e.t !== 'admiral') return false; const r = ADM.blowPlate(e, S, world(e), 'gun', b.vx || 0); if (r === 'air') return false;
     if (r === 'plate' || r === 'flat') { ctx.shake(7); for (const gn of ctx.props()) if (gn.t === 'cannon' && gn.deck && gn.x > S.G.x0 - 16 && gn.x < S.G.x1 + 16) gn.cool = Math.max(gn.cool || 0, AD.gunHot);
-      if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, e.y - 92, 'HIS GUNS ARE HOT: THEY WILL NOT SPEAK AGAIN A WHILE', '#9aa39a'); } }
+      if (!S.told.hot) { S.told.hot = 1; ctx.number(e.x, e.y - 92, ADM.AD_SAY.hot, '#9aa39a'); } }
     return true; };
   /* A HERO'S BLOW across the deck: on his KEG it strikes it back at him; on his GRAPNEL LINE it cuts it */
   H.strike = hb => { if (!S || !hb || !A()) return; const P = ctx.hero(), e = ctx.boss; if (!e || e.t !== 'admiral' || !e.alive) return;
@@ -105,9 +105,9 @@ export function makeAdmiralHands(ctx) {
     if (r.k <= 0) return 0;
     if (r.word && blow) { S.n[S.ward > 0 ? 'warded' : 'chipped']++; e.guardFx = 0.25; e.guardWord = r.word; ctx.turned(e, P.x, r.word, { stop: false }); if (r.word === 'IRON PLATE' && ctx.sparks) ctx.sparks(e.x, e.y - 24, -(Math.sign(e.x - P.x) || 1), 8); }
     let d = dmg * r.k;
-    if (ADM.adFlat(e)) { const cap = e.maxHp * AD.flatCap; d = Math.min(d, Math.max(0, cap - S.taken)); S.taken += d; if (S.taken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 76, 'HE IS GETTING UP', '#9aa39a'); } }
+    if (ADM.adFlat(e)) { const cap = e.maxHp * AD.flatCap; d = Math.min(d, Math.max(0, cap - S.taken)); S.taken += d; if (S.taken >= cap - 0.01 && e.open > 0.3) { e.open = 0.3; ctx.number(e.x, e.y - 76, ADM.AD_SAY.getting, '#9aa39a'); } }
     /* HIS PLATE HOLDS: armoured, nothing takes him under AD.floor (the guns are the way in) */
-    const fl = ADM.floorHp(e, S); if (fl > 0 && e.hp - d < fl) { d = Math.max(0, e.hp - fl); S.n.held++; if (ctx.time() - (S.floorHeld || 0) > 2.5) { S.floorHeld = ctx.time(); ctx.number(e.x, e.y - 84, 'HIS IRON HOLDS: BLOW A PLATE OFF WITH A GUN', '#ffd36b'); } }
+    const fl = ADM.floorHp(e, S); if (fl > 0 && e.hp - d < fl) { d = Math.max(0, e.hp - fl); S.n.held++; if (ctx.time() - (S.floorHeld || 0) > 2.5) { S.floorHeld = ctx.time(); ctx.number(e.x, e.y - 84, ADM.AD_SAY.held, '#ffd36b'); } }
     ADM.landed(e, S); return d; };
   H.barName = e => 'THE ADMIRAL' + (e.mode === 'stagger' && e.open > 0 ? '  STAGGERED' : e.mode === 'reload' && e.open > 0 ? '  RELOADING' : e.mode === 'soaked' && e.open > 0 ? '  SOAKED' : e.mode === 'axeStuck' && e.open > 0 ? '  AXE STUCK' : ADM.adFlat(e) ? '  KNOCKED FLAT'
     : S && S.ward > 0 ? '  WARDED' : S && S.plates > 0 ? '  IRON x' + S.plates : '  BARE');

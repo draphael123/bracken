@@ -27,7 +27,7 @@ export const F3 = {
 /* EVERY LINE THE LEVEL SAYS (src/hint-lines.js SAY_LINES lets them through number()) */
 export const F3_SAY = { flag: 'HIS FLAG RUNS RED: OFF THE MARKED ROW, OR BEHIND SOMETHING SOLID', short: 'OUT HERE HIS SHOT FALLS SHORT', door: 'HIS SHOT TAKES THE DOOR',
   fired: 'THE SHOT FLIES ITS LINE', hole: 'THE DECK IS OPEN', bridge: 'THE YARD DROPS: A BRIDGE', cut: 'CUT OFF HIS LINE', wet: 'INTO THE HARBOUR', back: 'STRUCK BACK AT HIM',
-  boarders: 'BOARDERS! CUT THEM OFF THEIR LINES', kegWet: 'THE KEG GOES IN THE HARBOUR' };
+  boarders: 'BOARDERS! CUT THEM OFF THEIR LINES', kegWet: 'THE KEG GOES IN THE HARBOUR', reloading: 'RELOADING' };
 export function makeFlotilla3(ctx) {
   const H = {}; let Z = [], GUNS = [], KEGS = [], TOLD = {};
   const F = () => (ctx.L && ctx.L.flot3) || null, TS = () => ctx.TS;
