@@ -2,6 +2,7 @@
 // level-select list and the loading card) is sometimes longer than that line, and a sentence cut mid-way ("only blue in") is worse than a shorter whole one. A level
 // listed here is said whole in less; the rest use their `sub` as written. tools/map-scale.mjs measures every one in the face the card is drawn in and fails when any does not fit.
 export const MAP_BLURB = {
+  kitchengate: "the castle's kitchens",
   kings: "the goblins' court in the old wood",
   wood: 'a logging trail to the hive',
   hornetsnest: 'the paper nest in the great pine',

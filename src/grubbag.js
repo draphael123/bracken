@@ -1,0 +1,268 @@
+// src/grubbag.js - LORD GRUBBAG THE GLUTTON, THE KITCHEN GATE's boss (claude/kitchengate, the OPUS GREYBOX, 2026-10-25; concept scratch/concept-kitchengate.md, Daniel 10-01).
+// The goblin queen's glutton of a brother, at the head of the high table. HE NEVER LEAVES HIS REINFORCED CHAIR - he only eats (KING GORM fights; Grubbag eats). This file is
+// the fight, PURE (his moves, his phases, the serving line and its dishes, the pie oven, what a blow does to him, and the bot's plan); src/grubbag-hands.js binds it to the
+// world (main.js) and draws him. tools/kitchengate.mjs checks it.
+// HEADER (design-standard B1 / B11 / B14 / B15 / B17): A PUZZLE BOSS WITH THE LEVEL'S RULE AS HIS OPENING. He is NEVER invulnerable:
+//   WELL FED, a blade lands at GB.fed (0.45, over the B15 floor; told: a dull slap and WELL FED). From above (a plunge on his belly) x GB.above.
+//   THE LEVEL'S RULE IS HIS OPENING (B1, B17 - the level's verb is the fight's central mechanic): "STRIKE A BELLOWS AND ITS FIRE ROARS". THE PIE OVEN stands by the kitchen
+//     hatch at the west end with its BELLOWS. Strike it: the oven ROARS and bakes a POWDER PIE (GB.oven.bake s, its gauge drawn), and the pie goes out on THE SERVING LINE -
+//     the meat-hook rail under the roof that brings every dish from the hatch to his table (the level's hooks). He eats whatever reaches him - he cannot help it - and the
+//     powder pie goes off in him: CHOKING (the shared OPEN read, B10: a gold ring and a timer) - GB.choke.t s, blades x GB.choke.mul, up to GB.choke.cap of him - then a
+//     told WARD (B3: GB.ward s, a pale ring, WARDED x0.4) while he coughs it up. The oven must cool before it bakes again (GB.oven.cool s after the pie is gone).
+//   STARVE HIM (the concept's other answer): every other dish on the line HEALS him (GB.dish.heal of him) and POWERS his next blow (x GB.dish.power). A dish hangs high on its hook -
+//     a JUMPING blow knocks it off the line: it smashes, and he goes HUNGRY (GB.hungry.t s): weaker (blades x GB.hungry.mul) but angrier (his cooldowns x GB.hungry.cd). Strike
+//     the POWDER PIE on the line and it bursts there (it singes you; the oven must cool again).
+//   EVERY MOVE TOLD with its own windup and release pose (B16, src/grubbag-hands.js POSE) and its own sound; ONE NEW MOVE PER PHASE (B5); his phases change the line (greedier):
+//     P1 (100-62%)  1 THE BELCH (head back, belly swelling, red !!): a ring runs out along the floor both ways - jump it
+//                   2 THROWN FOOD (a drumstick up, yellow !): bones and drumsticks arc onto red rings at your spot - move off them
+//                   3 THE GIANT FORK (drawn back low, yellow !): a long stab along the floor in front of his chair - block it or back off
+//                   4 THE TABLE SLAM (both fists up, red !!): plates fly off the high table onto red rings, and the table end shakes - get off the table end
+//     P2 (62-30%)   the dishes come faster, and 5 THE GRAVY FLOOD (a hand on the gravy cauldron, yellow !): the cauldron tips, a wave of gravy runs west along the floor - jump
+//                   it or get up on a bench - and the floor it leaves is slow and slick for GB.flood.lie s
+//     P3 (30-0%)    6 THE GRAB (he leans out of the chair, his arm drawn back, red !!): his arm sweeps out along the floor to take you as food - jump it or roll; caught, he
+//                   bites (GB.grab.dmg) and throws you down the hall
+//   NO ADDS (Daniel: no adds unless the brief says so - the serving line is the "servers"; see the lane report's questions).
+export const GB = {
+  hp: 2050, w: 44, h: 46, markH: 66,
+  fed: 0.45, above: 0.7, wardMul: 0.4,
+  p2: 0.62, p3: 0.3,
+  rest: [1.25, 1.05, 0.9],
+  belch: { tell: [0.95, 0.85, 0.8], sp: 175, life: 2.6, h: 14, w: 9, dmg: 18, rec: 0.7 },
+  food: { tell: [0.8, 0.72, 0.65], n: [2, 3, 3], flight: 0.95, r: 15, dmg: 15, spread: 46, rec: 0.6 },
+  fork: { tell: [0.72, 0.64, 0.58], t: 0.34, reach: 120, h: 16, dmg: 20, chip: 0.35, rec: 0.75, range: 140 },
+  slam: { tell: [0.9, 0.8, 0.75], n: 4, flight: 0.9, r: 16, dmg: 13, shock: 70, shockDmg: 16, rec: 0.8 },
+  flood: { tell: 1.0, sp: 120, h: 12, dmg: 16, lie: 4, slow: 0.55, rec: 0.9 },
+  grab: { tell: 0.85, t: 0.55, reach: 210, h: 20, dmg: 26, rec: 0.9, throwV: 260 },
+  choke: { t: 3.8, mul: 2, cap: 0.13 },
+  ward: 2.6,
+  eat: 0.7,
+  dish: { every: [7.2, 5.4, 4.6], v: 105, heal: 0.02, power: 1.3, hang: 64, box: 8 },
+  hungry: { t: 6, mul: 0.7, cd: 0.8 },
+  oven: { bake: 1.3, cool: 4.5, burst: 10 },
+  bz: { hurt: 1.5 },
+};
+export const GB_SAY = { wake: 'LORD GRUBBAG THE GLUTTON', rule: 'STOKE THE OVEN: IT BAKES A POWDER PIE, AND HE EATS WHATEVER THE LINE BRINGS HIM.', p2: 'MORE! FASTER!', p3: 'HE REACHES FOR YOU',
+  bake: 'THE OVEN BAKES A POWDER PIE', pie: 'THE POWDER PIE GOES OUT ON THE LINE', choke: 'HE CHOKES ON IT', ward: 'HE COUGHS IT UP', eats: 'HE EATS: HEALED', powered: 'FED: HIS NEXT BLOW IS HEAVIER',
+  smash: 'THE DISH SMASHES: HE GOES HUNGRY', hungry: 'HUNGRY', burst: 'THE PIE BURSTS ON THE LINE', cool: 'THE OVEN COOLS', ready: 'THE OVEN IS HOT AGAIN', flood: 'THE GRAVY: JUMP IT, OR A BENCH',
+  grab: 'THE GRAB: JUMP IT', belch: 'THE BELCH: JUMP THE RING', fork: 'THE FORK: BLOCK IT, OR BACK OFF', slam: 'THE PLATES: OFF THE TABLE END', caught: 'CAUGHT: HE BITES' };
+export const OPEN_NAME = { choke: 'CHOKING' };
+export const gbOpen = e => !!e && e.mode === 'choke';
+const TELLS = new Set(['belchTell', 'throwTell', 'forkTell', 'slamTell', 'floodTell', 'grabTell']);
+export const gbTelling = e => TELLS.has(e.mode);
+/* THE HIGH TABLE'S HALL (px): x0/x1 inside the walls, floorY; his chair; the table; the oven and its bellows; the serving line (its two ends) */
+export function geom(A, TS = 16) {
+  const [lx0, ly0, lx1, ly1] = A.line || [0, 0, 0, 0];
+  return { x0: A.x0, x1: A.x1, floorY: A.floor, mid: (A.x0 + A.x1) / 2, chairX: A.chair * TS + 8, table: [A.table[0] * TS, (A.table[1] + 1) * TS], ovenX: A.oven * TS + 8, bellowsX: A.bellows * TS + 8,
+    line: { x0: lx0 * TS + 8, y0: ly0 * TS, x1: lx1 * TS + 8, y1: ly1 * TS }, TS };
+}
+export function newFight(G) {
+  return { G, ph: 1, ward: 0, act: 0, last: [], restT: 1.4, hungry: 0, powered: false, purse: 0, items: [], dishT: 3.0, oven: { st: 'cold', t: 0 }, waves: [], throws: [], floods: [], gravy: 0, told: {},
+    n: { belch: 0, throw: 0, fork: 0, slam: 0, flood: 0, grab: 0, caught: 0, dishes: 0, eaten: 0, healed: 0, smashed: 0, pies: 0, chokes: 0, bursts: 0, stokes: 0, fedHits: 0, openHits: 0, wardHits: 0 } };
+}
+const cdK = S => (S.hungry > 0 ? GB.hungry.cd : 1);
+/* the line: an item's place at x (px) - the hook's y on the rail and the dish's y under it */
+export const lineY = (G, x) => G.line.y0 + (G.line.y1 - G.line.y0) * Math.max(0, Math.min(1, (x - G.line.x0) / Math.max(1, G.line.x1 - G.line.x0)));
+export const dishY = (G, it) => it.state === 'down' ? G.floorY - GB.dish.hang - it.k * 6 : G.floorY - GB.dish.hang;
+export const dishBox = (G, it) => { const y = dishY(G, it); return { l: it.x - GB.dish.box, r: it.x + GB.dish.box, t: y - GB.dish.box, b: y + GB.dish.box }; };
+/* A HERO'S BLOW ON THE OVEN'S BELLOWS: it roars and bakes a powder pie (if it is cold) */
+export function stokeOven(S, w) {
+  if (S.oven.st !== 'cold') { if (!S.told.notYet) { S.told.notYet = 1; w.number(S.G.bellowsX, S.G.floorY - 50, S.oven.st === 'bake' ? GB_SAY.bake : GB_SAY.cool, '#c9b27c'); } return false; }
+  S.oven.st = 'bake'; S.oven.t = GB.oven.bake; S.n.stokes++; w.sound('roar'); w.oven(true);
+  if (!S.told.bake) { S.told.bake = 1; w.number(S.G.ovenX + 30, S.G.floorY - 70, GB_SAY.bake, '#ffd36b'); }
+  return true;
+}
+/* A HERO'S BLOW ON A DISH ON THE LINE: it smashes (he goes hungry) - or a pie bursts */
+export function smashItem(S, it, w) {
+  if (!it || it.state !== 'ride') return false;
+  it.state = 'gone';
+  if (it.kind === 'pie') { S.n.bursts++; w.burst(it.x, S.G.floorY - GB.dish.hang); w.hitArea([it.x - 22, it.x + 22, S.G.floorY - GB.dish.hang - 30, S.G.floorY], GB.oven.burst, 'pie', 'pb' + it.id); w.number(it.x, S.G.floorY - 90, GB_SAY.burst, '#ff9a5c'); S.oven.st = 'cool'; S.oven.t = GB.oven.cool; return true; }
+  S.n.smashed++; S.hungry = GB.hungry.t; S.powered = false; w.smash(it.x, S.G.floorY - GB.dish.hang); w.number(it.x, S.G.floorY - 90, GB_SAY.smash, '#8fd160'); w.sound('smash');
+  return true;
+}
+/* ---------- ONE FRAME OF HIM. heroes: [{ x, y, ground, alive, pp }]; w: the world (src/grubbag-hands.js world()) ---------- */
+export function stepGrubbag(e, S, dt, heroes, w) {
+  const G = S.G, P = heroes.find(h => h.alive) || heroes[0];
+  S.ward = Math.max(0, S.ward - dt); e.ward = S.ward; S.hungry = Math.max(0, S.hungry - dt); S.gravy = Math.max(0, S.gravy - dt);
+  stepOven(S, dt, w); stepLine(e, S, dt, w); stepThrows(S, dt, w); stepWaves(S, dt, heroes, w); stepFloods(S, dt, heroes, w);
+  if (e.mode === 'sleep') return;
+  e.modeT -= dt;
+  const i = S.ph - 1, dx = P ? P.x - e.x : 0, ad = Math.abs(dx);
+  if (P) e.face = Math.sign(dx) || e.face;
+  if (e.mode === 'sit' || e.mode === 'recover') {
+    if (S.ph < 2 && e.hp <= e.maxHp * GB.p2) { phase(e, S, 2, w); return; }
+    if (S.ph < 3 && e.hp <= e.maxHp * GB.p3) { phase(e, S, 3, w); return; } }
+  const pw = S.powered ? GB.dish.power : 1;
+  switch (e.mode) {
+    case 'wake': if (e.modeT <= 0) { e.mode = 'sit'; S.restT = 1.2; } return;
+    case 'sit': {
+      /* a dish (or the pie) waiting at his mouth: he eats it */
+      const it = S.items.find(q => q.state === 'wait'); if (it) { eat(e, S, it, w); return; }
+      S.restT -= dt; if (S.restT > 0 || !P || !P.alive) return; pick(e, S, ad, w); return; }
+    case 'eat': if (e.modeT <= 0) { const it = e.eating; e.eating = null; if (it && it.kind === 'pie') { choke(e, S, w); return; } e.mode = 'sit'; S.restT = 0.5; } return;
+    case 'belchTell': if (e.modeT <= 0) { e.mode = 'belch'; e.modeT = 0.4; w.sound('belch'); w.shake(5); const n = (S.ph > 2 ? 2 : 1) + (S.powered ? 1 : 0); S.powered = false;
+        for (let k = 0; k < n; k++) for (const d of [-1, 1]) S.waves.push({ x: e.x + d * (GB.w / 2 - 4), dir: d, life: GB.belch.life, delay: k * 0.45, key: 'bw' + S.act + d + k, dmg: GB.belch.dmg * (n > 1 && k ? 1 : pw) }); }
+      return;
+    case 'belch': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.belch.rec; } return;
+    case 'throwTell': if (e.modeT <= 0) { e.mode = 'throw'; e.modeT = 0.35; w.sound('throw'); const px = P ? P.x : G.mid, n = GB.food.n[i] + (S.powered ? 1 : 0); S.powered = false;
+        const xs = [px, px - GB.food.spread, px + GB.food.spread, px - GB.food.spread * 2].slice(0, n).map(x => Math.max(G.x0 + 12, Math.min(G.x1 - 12, x)));
+        xs.forEach((tx, k) => S.throws.push({ x0: e.x - e.face * 4, y0: G.floorY - GB.h - 6, tx, ty: G.floorY, t: -k * 0.12, T: GB.food.flight, key: 'th' + S.act + '.' + k, dmg: GB.food.dmg * pw, plate: false })); }
+      return;
+    case 'throw': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.food.rec; } return;
+    case 'forkTell': if (e.modeT <= 0) { e.mode = 'fork'; e.modeT = GB.fork.t; e.hitKey = 'fk' + S.act; e.forkPw = pw; S.powered = false; w.sound('stab'); } return;
+    case 'fork': { const f = e.face, k = 1 - e.modeT / GB.fork.t, tip = e.x + f * (GB.w / 2 + GB.fork.reach * Math.min(1, k * 2.2));
+      w.hit([Math.min(e.x + f * GB.w / 2, tip), Math.max(e.x + f * GB.w / 2, tip), G.floorY - GB.fork.h - 10, G.floorY], GB.fork.dmg * (e.forkPw || 1), 'fork', { key: e.hitKey, blockable: true, blockChip: GB.fork.chip, knock: f * 170 });
+      if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.fork.rec; } return; }
+    case 'slamTell': if (e.modeT <= 0) { e.mode = 'slam'; e.modeT = 0.4; w.sound('slam'); w.shake(7); const pwk = pw; S.powered = false;
+        const tx0 = G.table[0], near = Math.max(G.x0 + 14, tx0 - 230);
+        for (let k = 0; k < GB.slam.n; k++) { const tx = near + (k + 0.5) * (tx0 - near) / GB.slam.n + (Math.random() - 0.5) * 30, aim = k === 1 && P ? Math.max(near, Math.min(tx0, P.x)) : tx;
+          S.throws.push({ x0: (G.table[0] + G.table[1]) / 2, y0: G.floorY - 30, tx: aim, ty: G.floorY, t: -k * 0.08, T: GB.slam.flight, key: 'pl' + S.act + '.' + k, dmg: GB.slam.dmg * pwk, plate: true }); }
+        w.hitArea([G.table[0] - GB.slam.shock, G.x1, G.floorY - 30, G.floorY], GB.slam.shockDmg * pwk, 'slam', 'sl' + S.act); }
+      return;
+    case 'slam': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.slam.rec; } return;
+    case 'floodTell': if (e.modeT <= 0) { e.mode = 'flood'; e.modeT = 0.5; w.sound('flood'); S.floods.push({ x: e.x - GB.w / 2, dir: -1, key: 'fl' + S.act, dmg: GB.flood.dmg * pw }); S.powered = false; S.gravy = GB.flood.lie + 3; } return;
+    case 'flood': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.flood.rec; } return;
+    case 'grabTell': if (e.modeT <= 0) { e.mode = 'grab'; e.modeT = GB.grab.t; e.hitKey = 'gr' + S.act; e.grabDir = e.face; e.grabPw = pw; S.powered = false; w.sound('grab'); } return;
+    case 'grab': { const k = 1 - e.modeT / GB.grab.t, out = GB.grab.reach * Math.sin(Math.min(1, k) * Math.PI), f = e.grabDir || e.face, hand = e.x + f * (GB.w / 2 + out); e.handX = hand;
+      const res = w.hit([Math.min(hand - 14, hand + 14), Math.max(hand - 14, hand + 14), G.floorY - GB.grab.h, G.floorY], GB.grab.dmg * (e.grabPw || 1), 'grab', { key: e.hitKey, throwV: f * GB.grab.throwV });
+      if (res === 'hit' || res === 'blocked') { S.n.caught++; w.number(hand, G.floorY - 60, GB_SAY.caught, '#ff6b6b'); }
+      if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = GB.grab.rec; e.handX = null; } return; }
+    case 'choke': if (e.modeT <= 0) { e.mode = 'recover'; e.modeT = 0.5; S.ward = GB.ward; e.ward = S.ward; w.fx('ward', e.x, e.y); w.number(e.x, e.y - GB.h - 26, GB_SAY.ward, '#c8d8e8'); w.sound('cough'); } return;
+    case 'recover': if (e.modeT <= 0) { e.mode = 'sit'; S.restT = GB.rest[i] * cdK(S); } return;
+    default: e.mode = 'sit';
+  }
+}
+function phase(e, S, ph, w) {
+  S.ph = ph; e.phase = ph; w.music(ph); w.sound('roar'); w.shake(6);
+  w.number(e.x, e.y - GB.h - 30, ph === 2 ? GB_SAY.p2 : GB_SAY.p3, '#ff6b6b');
+  S.act++; if (ph === 2) { e.mode = 'floodTell'; e.modeT = GB.flood.tell; S.n.flood++; w.mark('!'); if (!S.told.flood) { S.told.flood = 1; w.number(S.G.mid, S.G.floorY - 110, GB_SAY.flood, '#ffd36b'); } }
+  else { e.mode = 'grabTell'; e.modeT = GB.grab.tell; S.n.grab++; w.mark('!!'); if (!S.told.grab) { S.told.grab = 1; w.number(S.G.mid, S.G.floorY - 110, GB_SAY.grab, '#ff6b6b'); } }
+}
+function eat(e, S, it, w) { it.state = 'eaten'; e.mode = 'eat'; e.modeT = GB.eat; e.eating = it; w.sound('chew');
+  if (it.kind === 'dish') { S.n.eaten++; const h = Math.round(e.maxHp * GB.dish.heal); e.hp = Math.min(e.maxHp, e.hp + h); S.n.healed += h; S.powered = true; w.number(e.x, e.y - GB.h - 20, GB_SAY.eats, '#8fd160');
+    if (!S.told.powered) { S.told.powered = 1; w.number(e.x, e.y - GB.h - 36, GB_SAY.powered, '#ffd36b'); } } }
+function choke(e, S, w) {
+  e.mode = 'choke'; e.modeT = GB.choke.t; e.openT0 = e.modeT; S.purse = e.maxHp * GB.choke.cap; S.n.chokes++; S.oven.st = 'cool'; S.oven.t = GB.oven.cool;
+  w.shake(9); w.sound('boom'); w.fx('open', e.x, e.y); w.number(e.x, e.y - GB.h - 26, GB_SAY.choke, '#ffd36b');
+}
+/* WHICH MOVE: close in, the fork or the slam; at range, the belch, the food, the flood (P2) or the grab (P3). Never the same move three times running. */
+function pick(e, S, ad, w) {
+  const ph = S.ph, i = ph - 1, last = S.last, twice = k => last.length >= 2 && last[0] === k && last[1] === k, r = Math.random();
+  const nearTable = S.G && ad < GB.fork.range;
+  let k;
+  if (nearTable) k = r < 0.42 ? 'fork' : r < 0.72 ? 'slam' : r < 0.86 ? 'belch' : ph > 2 ? 'grab' : 'throw';
+  else k = r < 0.34 ? 'throw' : r < 0.62 ? 'belch' : ph > 1 && r < 0.8 ? 'flood' : ph > 2 && ad < GB.grab.reach + 30 ? 'grab' : r < 0.9 ? 'throw' : 'belch';
+  if (twice(k)) k = k === 'throw' ? 'belch' : k === 'belch' ? 'throw' : k === 'fork' ? 'slam' : 'belch';
+  last.unshift(k); last.length = Math.min(last.length, 3); S.act++; S.n[k]++;
+  const T = { belch: ['belchTell', GB.belch.tell[i], '!!', 'belchTell'], throw: ['throwTell', GB.food.tell[i], '!', 'throwTell'], fork: ['forkTell', GB.fork.tell[i], '!', 'forkTell'],
+    slam: ['slamTell', GB.slam.tell[i], '!!', 'slamTell'], flood: ['floodTell', GB.flood.tell, '!', 'floodTell'], grab: ['grabTell', GB.grab.tell, '!!', 'grabTell'] }[k];
+  e.mode = T[0]; e.modeT = T[1]; w.mark(T[2]); w.sound(T[3]);
+  const sayK = { belch: 'belch', fork: 'fork', slam: 'slam' }[k]; if (sayK && !S.told[sayK]) { S.told[sayK] = 1; w.number(S.G.mid, S.G.floorY - 120, GB_SAY[sayK], T[2] === '!!' ? '#ff6b6b' : '#ffd36b'); }
+}
+/* THE PIE OVEN: bake -> the pie goes out on the line; cool -> cold (ready) */
+function stepOven(S, dt, w) {
+  const o = S.oven; if (o.st === 'bake') { o.t -= dt; if (o.t <= 0) { o.st = 'out'; S.n.pies++; S.items.push({ id: ++S.act, kind: 'pie', x: S.G.line.x0, state: 'ride', k: 0 }); w.sound('pie'); w.oven(false);
+      if (!S.told.pie) { S.told.pie = 1; w.number(S.G.ovenX + 40, S.G.floorY - 90, GB_SAY.pie, '#ffd36b'); } } return; }
+  if (o.st === 'out' && !S.items.some(q => q.kind === 'pie' && q.state !== 'gone' && q.state !== 'eaten')) { o.st = 'cool'; o.t = GB.oven.cool; }
+  if (o.st === 'cool') { o.t -= dt; if (o.t <= 0) { o.st = 'cold'; if (!S.told.ready) { S.told.ready = 1; w.number(S.G.bellowsX, S.G.floorY - 50, GB_SAY.ready, '#ffd36b'); } } }
+}
+/* THE SERVING LINE: a dish out of the hatch every GB.dish.every s; each rides to his table, and is lowered to him (he eats it when he is free) */
+function stepLine(e, S, dt, w) {
+  const G = S.G; if (e.mode !== 'sleep') { S.dishT -= dt * (S.hungry > 0 ? 1.3 : 1); if (S.dishT <= 0) { S.dishT = GB.dish.every[S.ph - 1]; S.n.dishes++; S.items.push({ id: ++S.act, kind: 'dish', x: G.line.x0, state: 'ride', k: 0 }); } }
+  for (const it of S.items) {
+    if (it.state === 'ride') { it.x += GB.dish.v * dt; if (it.x >= G.line.x1) { it.x = G.line.x1; it.state = 'down'; it.k = 0; } }
+    else if (it.state === 'down') { it.k = Math.min(1, it.k + dt / 0.35); if (it.k >= 1) it.state = 'wait'; } }
+  S.items = S.items.filter(q => q.state !== 'gone' && q.state !== 'eaten');
+}
+function stepThrows(S, dt, w) {
+  for (const c of S.throws) { c.t += dt; if (c.t < c.T || c.done) continue; c.done = true; w.dust(c.tx, c.ty, 6); w.sound(c.plate ? 'plate' : 'thud');
+    w.hitArea([c.tx - GB.food.r, c.tx + GB.food.r, c.ty - 22, c.ty + 2], c.dmg, c.plate ? 'plates' : 'food', c.key); }
+  S.throws = S.throws.filter(c => !c.done);
+}
+function stepWaves(S, dt, heroes, w) {
+  for (const q of S.waves) { if (q.delay > 0) { q.delay -= dt; continue; } q.life -= dt; q.x += q.dir * GB.belch.sp * dt; if (q.x < S.G.x0 || q.x > S.G.x1) q.life = 0;
+    for (const h of heroes) if (h.alive && h.ground && Math.abs(h.y - S.G.floorY) < 6 && Math.abs(h.x - q.x) < GB.belch.w) w.hitHero(h, q.dmg, 'belch', q.key); }
+  S.waves = S.waves.filter(q => q.life > 0);
+}
+function stepFloods(S, dt, heroes, w) {
+  for (const q of S.floods) { q.x += q.dir * GB.flood.sp * dt; if (q.x < S.G.x0) q.done = true;
+    for (const h of heroes) if (h.alive && Math.abs(h.y - S.G.floorY) < 8 && Math.abs(h.x - q.x) < 12) w.hitHero(h, q.dmg, 'flood', q.key); }
+  S.floods = S.floods.filter(q => !q.done);
+}
+/* the gravy on the floor (behind the wave): x < this is gravied (slow, slick) while S.gravy > 0 */
+export const gravyFrom = S => S.floods.length ? S.floods[0].x : S.G.x0;
+export function throwAt(c, floorY) { const k = Math.max(0, Math.min(1, c.t / c.T)); return { x: c.x0 + (c.tx - c.x0) * k, y: c.y0 + (c.ty - c.y0) * k - Math.sin(k * Math.PI) * 70, k }; }
+/* ---------- A BLOW ON HIM (B15) -> [what lands, the word or null] ---------- */
+export function takeBlow(e, S, dmg, plunge) {
+  if (S.ward > 0 || (e.mode === 'recover' && S.ward > 0)) return [Math.max(1, Math.round(dmg * GB.wardMul)), 'WARDED'];
+  if (e.mode === 'choke') { const d = Math.round(dmg * GB.choke.mul), left = S.purse ?? Infinity;
+    if (d >= left) { S.purse = 0; e.modeT = Math.min(e.modeT, 0.01); return [Math.max(1, Math.round(left)), null]; } S.purse = left - d; return [d, null]; }
+  if (S.hungry > 0) return [Math.max(1, Math.round(dmg * GB.hungry.mul)), null];
+  if (plunge) return [Math.max(1, Math.round(dmg * GB.above)), null];
+  return [Math.max(1, Math.round(dmg * GB.fed)), 'WELL FED'];
+}
+
+/* ---------- THE BOT (src/lab.js): what a player reads - his tells a reaction late, the rings where food and plates land, the belch's rings and the gravy's wave, the grab's
+   arm - and THE RULE: strike the oven's bellows when it is hot, be at his chair when the pie reaches him, and cut him while he chokes ---------- */
+export const PLAN = { react: 0.24, miss: 0.12 };
+export const gbHazards = S => S.throws.map(c => [c.tx, GB.food.r + 12]);
+export function gbPlan(s) {
+  const out = gbPlan0(s);
+  if (globalThis.__gbWhy) { const k = out.why.replace(/ \(.*/, ''); globalThis.__gbWhy[k] = (globalThis.__gbWhy[k] || 0) + 1; }
+  return out;
+}
+function gbPlan0(s) {
+  const { P, e, S, reach } = s, G = S.G, out = { gx: null, face: P.face, atk: false, jump: false, dodge: false, block: false, down: false, why: '' };
+  const mem = s.mem || {}, rng = s.rng || Math.random, t = s.t || 0;
+  mem.seen = mem.seen || new Map(); mem.roll = mem.roll || new Map(); if (mem.seen.size > 600) { mem.seen.clear(); mem.roll.clear(); }
+  const seenFor = (key, d = s.v2 ? 0 : PLAN.react) => { if (!mem.seen.has(key)) mem.seen.set(key, t); return t - mem.seen.get(key) >= d; };
+  const roll = (key, pr) => { if (!mem.roll.has(key)) mem.roll.set(key, rng() < pr); return mem.roll.get(key); };
+  const half = GB.w / 2, lo = G.x0 + 10, hi = G.x1 - 10, clamp = x => Math.max(lo, Math.min(hi, x));
+  const kx = e.x, side = Math.sign(P.x - kx) || -1, dx = Math.abs(kx - P.x), hitR = reach + half - 4;
+  const strikeSpot = clamp(kx - (s.tip ? 30 : half + 10));   /* his west side, a blade's reach off him */
+  const hz = gbHazards(S), inHaz = x => hz.some(([hx, r]) => Math.abs(x - hx) < r);
+  const safeX = x => { let q = clamp(x); for (let k = 0; k < 3; k++) for (const [hx, r] of hz) if (Math.abs(q - hx) < r) q = clamp(q < hx ? hx - r - 4 : hx + r + 4); return q; };
+  const swing = fx => { out.face = Math.sign(fx - P.x) || out.face; out.atk = P.atk < 0; };
+  const pie = S.items.find(q => q.kind === 'pie' && q.state !== 'gone' && q.state !== 'eaten');
+  /* 1. IN THE AIR: keep going */
+  if (!P.ground && mem.jumpT !== undefined && t - mem.jumpT < 0.55) { out.gx = mem.jumpX; out.why = 'in the air'; return out; }
+  /* 2. A RING ON ME: off it */
+  if (inHaz(P.x) && P.ground) { const [hx, r] = hz.find(([x0, r0]) => Math.abs(P.x - x0) < r0); out.gx = safeX(P.x + (P.x < hx ? -r - 8 : r + 8)); out.why = 'off the ring'; return out; }
+  /* 3. THE BELCH'S RING / THE GRAVY coming at me: jump it */
+  const wave = S.waves.find(q => !(q.delay > 0) && (P.x - q.x) * q.dir > 0 && Math.abs(P.x - q.x) < 34);
+  if (wave && P.ground && seenFor('bw' + wave.key, 0.06) && !roll('bwm' + wave.key, s.v2 ? 0 : PLAN.miss)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the belch'; return out; }
+  const fl = S.floods.find(q => (P.x - q.x) * q.dir > 0 && Math.abs(P.x - q.x) < 40);
+  if (fl && P.ground && seenFor('fl' + fl.key, 0.08)) { out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the gravy'; return out; }
+  /* 4. HIS TELLS */
+  if (gbTelling(e) || e.mode === 'fork' || e.mode === 'grab') {
+    const key = 'a' + S.act, miss = s.v2 ? false : roll(key + 'm', PLAN.miss), seen = seenFor(key);
+    if (seen && !miss) {
+      if (e.mode === 'grabTell' || e.mode === 'grab') { if (dx < GB.grab.reach + half + 20) {
+          const hand = e.handX; if (e.mode === 'grab' && hand != null && Math.abs(hand - P.x) < 46 && P.ground) { if (s.dodge && roll(key + 'd', 0.4)) { out.dodge = true; out.gx = clamp(P.x - side * 30); out.why = 'roll the grab'; return out; }
+            out.jump = true; out.gx = P.x; mem.jumpT = t; mem.jumpX = P.x; out.why = 'jump the grab'; return out; }
+          out.gx = P.x; out.why = 'the grab: ready to jump'; return out; } }
+      if ((e.mode === 'forkTell' || e.mode === 'fork') && dx < half + GB.fork.reach + 20) {
+        if (s.shield && !roll(key + 'b', 0.45)) { out.block = true; out.face = Math.sign(kx - P.x) || 1; out.why = 'block the fork'; return out; }
+        out.gx = safeX(kx - (half + GB.fork.reach + 34)); out.why = 'back off the fork'; return out; }
+      if (e.mode === 'slamTell' && P.x > G.table[0] - GB.slam.shock - 30) { out.gx = safeX(G.table[0] - GB.slam.shock - 46); out.why = 'off the table end'; return out; }
+      if (e.mode === 'throwTell') { out.gx = safeX(P.x + (P.x < G.mid ? 34 : -34)); out.why = 'the food: keep moving'; return out; }
+      if (e.mode === 'belchTell') { out.gx = P.x; out.why = 'the belch: ready to jump'; return out; }
+      if (e.mode === 'floodTell') { out.gx = P.x; out.why = 'the gravy: ready to jump'; return out; }
+    } }
+  /* 5. HE CHOKES: strike him */
+  if (gbOpen(e)) { out.gx = strikeSpot; if (dx < hitR + 4) swing(kx); out.why = 'strike him: choking'; return out; }
+  /* 6. THE OVEN IS HOT and no pie on the line: go and stoke it */
+  if (S.oven.st === 'cold' && !pie) { const bx = G.bellowsX, spot = clamp(bx + 12);
+    if (Math.abs(P.x - spot) > 5) { out.gx = spot; out.why = 'to the oven'; return out; }
+    out.face = -1; out.atk = P.atk < 0 && !roll('ov' + S.n.stokes + Math.floor(t * 3), s.v2 ? 0 : 0.15); out.why = 'stoke the oven'; return out; }
+  /* 7. THE PIE ON THE LINE: be at his chair when it reaches him (never under it with a blade out) */
+  if (pie) { const eta = (G.line.x1 - pie.x) / GB.dish.v + (pie.state === 'ride' ? 0.35 : 0), walk = Math.abs(strikeSpot - P.x) / 92;
+    if (S.ward > 0 || e.mode === 'recover') { out.gx = safeX(kx - 120); out.why = 'the pie coming: wait off him'; return out; }
+    if (walk + 0.6 >= eta || dx < 140) { out.gx = strikeSpot; out.why = 'the pie coming: to his chair'; if (dx < hitR && e.mode === 'eat' && !roll('ch' + S.act, 0.4)) swing(kx); return out; }
+    out.gx = safeX(kx - 170); out.why = 'the pie coming: wait'; return out; }
+  /* 8. HE IS WARDED, OR EATING: off him / a cut while he chews */
+  if (S.ward > 0) { out.gx = safeX(kx - 150); out.why = 'his ward: off him'; return out; }
+  if (s.rest) { out.gx = safeX(G.x0 + 80); out.why = 'winded: off him'; return out; }
+  if (e.mode === 'eat' && dx < hitR + 30) { out.gx = strikeSpot; if (dx < hitR) swing(kx); out.why = 'a cut while he eats'; return out; }
+  /* 9. THE OVEN COOLING: wait by it, out of his fork */
+  out.gx = safeX(Math.min(G.bellowsX + 60, kx - 160)); out.face = 1; out.why = 'wait for the oven'; return out;
+}
