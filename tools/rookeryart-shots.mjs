@@ -15,6 +15,10 @@ const aim = id => `{const d=BK.L.hoists.find(h=>h.id==='${id}');BK.tp(d.cleat[0]
 const sis = (r, m, t, x, y) => `BK.tp(380,10);BK.sim(300);const S=BK.shriekSistersHands().show();if(S){for(const q of ['diver','shrieker','snatcher']){S.sis[q].cd=99;if(q!=='${r}'){S.sis[q].mode=q==='snatcher'?'fly':'hover';}}const s=S.sis['${r}'];s.mode='${m}';s.modeT=${t};s.openT0=${t};s.x=${x};s.y=S.G.floorY-${y};s.face=-1;
   if('${m}'==='diveTell')s.aim={x:BK.P.x,lock:${t} < 0.3,y:S.G.floorY};if('${m}'==='dropTell')s.dropX=s.x;if('${m}'==='stuck'){s.y=S.G.floorY;s.purse=999;S.G.slabs[1].st='rubble';S.G.slabs[1].t=9;}if('${m}'==='snatchTell'||'${m}'==='snatch')s.sDir=1;}`;
 const SHOTS = [
+  ['nest-whole', 115, 37, ''], ['nest-broken', 115, 37, brk('firstNest')], ['pillar-whole', 148, 37, ''], ['pillar-broken', 148, 37, brk('firstPillar')], ['slab-whole', 94, 42, ''], ['slab-broken', 94, 42, brk('roostSlab')],
+  ['eggnest-whole', 187, 34, ''], ['eggnest-broken', 187, 34, brk('eggNest')], ['floor-whole', 50, 39, ''], ['floor-broken', 50, 39, brk('firstFloor')],
+  ['updraft-a', 262, 31, 'BK.sim(30)'], ['updraft-b', 262, 31, 'BK.sim(90)'], ['updraft-c', 262, 31, 'BK.sim(150)'], ['updraft-d', 262, 31, 'BK.sim(210)'], ['roost', 100, 42, ''],
+
   ['ledges', 14, 43, ''], ['first-floor', 44, 39, ''], ['first-floor-aim', 0, 0, aim('firstFloor')], ['first-floor-after', 46, 39, brk('firstFloor')],
   ['first-roost', 88, 42, ''], ['first-roost-after', 90, 42, brk('roostSlab')],
   ['first-nest', 110, 37, ''], ['first-nest-after', 112, 37, brk('firstNest')], ['shrieker', 134, 37, "for(let k=0;k<200;k++){BK.step(1);BK.P.hp=BK.P.maxHp;if(BK.rookery().read().marks)break;}"],
@@ -30,7 +34,7 @@ const SHOTS = [
 const pg = await openPage({ audio: false, fonts: false });
 try {
   const r = await pg.evalp(`(async()=>{const LV=(await import('/src/level.js')).LEVELS;const idx=LV.findIndex(l=>l.id==='rookery');BK.manualSimulation=true;
-    const snap=()=>{const c=document.createElement('canvas');c.width=640;c.height=360;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,640,360);return c.toDataURL('image/png');};
+    const snap=()=>{const c=document.createElement('canvas');c.width=${+(process.env.SNAPW||640)};c.height=${+(process.env.SNAPH||360)};const g=c.getContext('2d');g.imageSmoothingEnabled=false;{const cr=${JSON.stringify((process.env.CROP||'').split(',').map(Number))};if(cr.length===4&&cr.every(Number.isFinite))g.drawImage(BK.buf,cr[0],cr[1],cr[2],cr[3],0,0,c.width,c.height);else g.drawImage(BK.buf,0,0,c.width,c.height);}return c.toDataURL('image/png');};
     const load=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(420);};
     const out=[];for(const [tag,x,y,extra] of ${JSON.stringify(SHOTS)}){load();if(x)BK.tp(x,y);BK.sim(20);eval(extra);for(let k=0;k<(tag.startsWith('sis-')?2:20);k++)BK.step(1);out.push({tag,png:snap()});}
     BK.manualSimulation=false;return out;})()`, 900000);

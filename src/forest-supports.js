@@ -36,7 +36,7 @@ export function addForestSupports(L, id, T, islandsOf) {
       if (g[b * W + x] === T.AIR || b - y > GROUND) { free = true; b = y + 1; const n = FREE_LEN[kindI]; while (b - y <= n && b < H - 1 && g[b * W + x] === T.AIR) b++; b = Math.min(b, y + 1 + n); }
       if (free && id === 'marsh') { const q = (L.pools || []).find(p => x * 16 + 8 >= p.x0 && x * 16 + 8 < p.x1 && p.y > y * 16); if (q) { free = false; b = Math.floor(q.y / 16) + 2; } }   /* (claude/marsh2) a reed bundle over the deep water goes down into it: its foot is in the pool */
       if (b - y < 2) continue;
-      L.routeSupports.push(widths.has(x) ? { x, y, bottom: b, kind: kindI, free, w: widths.get(x) } : { x, y, bottom: b, kind: kindI, free }); have.add(x + ',' + y); }
+      L.routeSupports.push(widths.has(x) ? { x, y, bottom: b, kind: kindI, free, w: widths.get(x), ...(id === 'rookery' ? { rk: 1 } : {}) } : { x, y, bottom: b, kind: kindI, free, ...(id === 'rookery' ? { rk: 1 } : {}) });   /* (claude/rookeryart: rk = THE ROOKERY's own grey, guano-streaked piers, src/redraw/rookery_world.js drawPier) */ have.add(x + ',' + y); }
   }
   return L;
 }

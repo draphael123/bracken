@@ -19,6 +19,7 @@
 //   and let her mark you, and they break it for you. After a scream she swoops low (open) and climbs back.
 // Every capital line it says goes through ctx.number with a line listed here (RK_SAY) and in src/hint-lines.js.
 import { canvas, flipX, whiten } from './px.js';
+import * as RKW from './redraw/rookery_world.js';   /* (claude/rookeryart) the cracked rocks, nests, roosts, the area plate: drawn there */
 /* THE SHRIEKER's skin (greybox): the crag harpy's frames, darkened to a blood-red (her crest is drawn over her: harpyOver) - main.js SPR.shrieker */
 export function bakeShriekerSet(Hs) {
   const R = Hs.R.map(c => { const [o, g] = canvas(c.width, c.height); g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(130,28,36,0.5)'; g.fillRect(0, 0, c.width, c.height); g.globalCompositeOperation = 'source-over'; return o; });
@@ -191,45 +192,25 @@ export function makeRookeryHands(ctx) {
       else if (k === 'O' || !cells.some(q => q[0] === x && q[1] === y - 1)) g.fillRect(sx + 1, sy, 14, k === 'O' ? 3 : 2); } };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L();
-    /* THE EGG NESTS on the ledges (twigs, bones, a pale egg or two) */
-    for (const [nx0, ny0] of (lv.rkNests || [])) { const x = R(nx0 * TS + 8 - cx), y = R((ny0 + 1) * TS - cy); if (x < -30 || x > VW + 30) continue;
-      rect(g, x - 9, y - 4, 18, 4, C.twig); for (let k = 0; k < 4; k++) rect(g, x - 9 + k * 5, y - 6 + (k % 2), 4, 2, C.bone); rect(g, x - 4, y - 9, 4, 5, '#efe6cf'); rect(g, x + 1, y - 8, 4, 4, '#e2d8bc'); }
-    /* THE ROOSTS: a bone nest on a knob of crag where a harpy lives */
-    for (const c of S.cs.values()) { const d = c.d; if (!d.roost) continue; const x = R(d.roost[0] * TS + 8 - cx), y = R((d.roost[1] + 1) * TS - cy); if (x < -40 || x > VW + 40) continue;
-      rect(g, x - 9, y, 18, 4, C.rockD); rect(g, x - 11, y - 4, 22, 5, C.twig); for (let k = 0; k < 5; k++) rect(g, x - 10 + k * 5, y - 6 - (k % 2), 4, 2, C.bone); }
+    /* THE EGG NESTS on the ledges (twigs, bones, cream eggs) and THE ROOSTS: a bone nest on a knob of crag where a harpy lives (src/redraw/rookery_world.js) */
+    for (const [nx0, ny0] of (lv.rkNests || [])) { const x = R(nx0 * TS + 8 - cx), y = R((ny0 + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; RKW.drawEggs(g, x, y, RKW.zoneIdx(nx0), nx0 & 3); }
+    for (const c of S.cs.values()) { const d = c.d; if (!d.roost) continue; const x = R(d.roost[0] * TS + 8 - cx), y = R((d.roost[1] + 1) * TS - cy); if (x < -40 || x > VW + 40) continue; RKW.drawRoost(g, x, y, RKW.zoneIdx(d.roost[0])); }
     for (const c of S.cs.values()) { const d = c.d, mx = markX(d, TS), my = markY(d, TS), sx = R(mx - cx), sy = R(my - cy);
       if (sx < -160 || sx > VW + 160) continue;
       const cells = crackCells(d, (x, y) => ctx.solidAt(x, y)), whole = c.state === 'whole';
-      /* THE MARK on the rock: split, limed white, a ring painted on it - and it glints */
-      if (whole) { rect(g, sx - K.markW, sy, K.markW * 2, 3, C.lime); crackLines(g, sx - K.markW, sy, K.markW * 2, d.cleat[0]);
-        g.strokeStyle = Math.floor(time * 3) % 2 ? C.gold : 'rgba(255,211,107,0.6)'; g.beginPath(); g.ellipse ? g.ellipse(sx, sy - 1, 11, 3, 0, 0, Math.PI * 2) : g.rect(sx - 11, sy - 3, 22, 4); g.stroke();
-        ghostCells(g, cells, cx, cy, time); }
-      const top = d.top !== undefined ? d.top : d.cleat[1] - 4;
-      if (d.load === 'span') { const bx = R(d.x * TS + 8 - cx), foot = R((d.cleat[1] + 1) * TS - cy), ty = R(top * TS - cy), dir = Math.sign(d.span[0] - d.x) || 1;
-        if (whole || c.state === 'break') { g.save(); g.translate(bx, foot); g.rotate(dir * (c.state === 'break' ? c.fold * c.fold : 0) * Math.PI / 2);
-          rect(g, -7, ty - foot, 14, foot - ty, C.rock); rect(g, -7, ty - foot, 3, foot - ty, C.rockL); rect(g, -8, ty - foot - 3, 16, 4, C.lime); crackLines(g, -7, -14, 14, 3); g.restore(); }
-        else { const s0 = R(d.span[0] * TS - cx), s1 = R((d.span[1] + 1) * TS - cx), yy = R(d.span[2] * TS - cy); rect(g, s0, yy, s1 - s0, 8, C.rock); rect(g, s0, yy, s1 - s0, 2, C.lime); for (let x = s0 + 6; x < s1; x += 13) rect(g, x, yy + 3, 1, 4, C.crack); } }
-      else if (d.load === 'nest') { const ax = R(d.x * TS + 8 - cx), ay = R(top * TS - cy), s0 = R(d.span[0] * TS - cx), s1 = R((d.span[1] + 1) * TS - cx), ny = R(d.span[2] * TS - cy);
-        if (whole) { rect(g, Math.min(sx, ax) - 2, ay - 3, Math.abs(ax - sx) + 4, 5, C.rock); crackLines(g, Math.min(sx, ax), ay - 3, Math.abs(ax - sx), 7);   /* the cracked arm */
-          for (let k = 0; k < 3; k++) rect(g, ax - 1 + k * 0, ay + 2 + k * 5, 2, 4, C.twig);   /* the lashing */
-          const nx = (s0 + s1) / 2, nw = s1 - s0; rect(g, nx - nw / 2, ay + 16, nw, 8, C.twig); for (let k = 0; k < nw; k += 5) rect(g, nx - nw / 2 + k, ay + 14 + (k % 3), 4, 2, C.bone); rect(g, nx - 4, ay + 10, 8, 6, '#efe6cf'); }
-        else if (c.state === 'break') { const k = c.fold; rect(g, s0, ay + 16 + (ny - ay - 16) * k * k, s1 - s0, 8, C.twig); }
-        else { rect(g, s0, ny, s1 - s0, 6, C.twig); for (let k = 0; k < s1 - s0; k += 5) rect(g, s0 + k, ny - 2 + (k % 3), 4, 2, C.bone); } }
-      else if (d.load === 'steps') { const xs = cells.map(q => q[0]), x0 = Math.min(...xs), x1 = Math.max(...xs) + 1, ty = R(top * TS - cy);
-        if (whole) { rect(g, R(x0 * TS - cx), ty, (x1 - x0) * TS, 10, C.rock); rect(g, R(x0 * TS - cx), ty, (x1 - x0) * TS, 2, C.lime); crackLines(g, R(x0 * TS - cx), ty, (x1 - x0) * TS, 5); }
-        else if (c.state === 'break') rect(g, R(x0 * TS - cx), ty + (sy - ty) * c.fold * c.fold * 0.7, (x1 - x0) * TS, 10, C.rock);
-        else for (const [x, y, k] of cells) { rect(g, R(x * TS - cx), R(y * TS - cy), 16, k === 'O' ? 4 : 16, C.rock); rect(g, R(x * TS - cx), R(y * TS - cy), 16, 2, C.lime); } }
-      else if (d.load === 'drop' && !whole) { rect(g, sx - 12, sy + 2, 4, 3, C.rockD); rect(g, sx + 8, sy + 3, 5, 2, C.rockD); }
+      RKW.drawCrack(g, c, { cx, cy, TS, time, cells, solidAt: (x, y) => ctx.solidAt(x, y) });
+      /* THE MARK: a lime ring painted on the stone, glinting - and what it will do is DRAWN FIRST (the trebuchet test: a dashed ghost of the hole, the bridge, the platform or the steps) */
+      if (whole) { RKW.drawMark(g, sx, sy, time); RKW.drawGhost(g, cells, cx, cy, TS, time); }
     }
     /* THE DIVE LINES: a red dotted line from an aiming harpy to her spot, a ring on it */
     for (const e of ctx.enemies()) if (e.alive && e.rkAim) { const a = e.rkAim, x0 = e.x - cx, y0 = e.y - cy, x1 = a.tx - cx, y1 = a.ty - cy, n = Math.max(2, Math.floor(Math.hypot(x1 - x0, y1 - y0) / 7));
       g.fillStyle = Math.floor(time * 12) % 2 ? C.red : '#ffb0a0'; for (let i = 1; i < n; i++) g.fillRect(R(x0 + (x1 - x0) * i / n), R(y0 + (y1 - y0) * i / n), 2, 2);
       g.strokeStyle = C.red; g.beginPath(); g.ellipse ? g.ellipse(R(x1), R(y1), 12, 3, 0, 0, Math.PI * 2) : g.rect(R(x1) - 12, R(y1) - 3, 24, 6); g.stroke(); }
-    /* THE SHRIEKER'S MARK */
+    /* THE SHRIEKER'S MARK: a red ring and a crossed claw-cut, the scream's rings widening off it */
     for (const m of S.marks) { const x = R(m.x - cx), y = R(m.y - cy), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = C.red; g.lineWidth = 2; g.beginPath(); g.ellipse ? g.ellipse(x, y - 1, 14, 4, 0, 0, Math.PI * 2) : g.rect(x - 14, y - 4, 28, 6); g.stroke();
-      g.lineWidth = 1; rect(g, x - 5, y - 6, 10, 2, C.red); rect(g, x - 1, y - 10, 2, 10, C.red); g.globalAlpha = 1; }
-    /* THE AREA BANNER */
-    if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4); g.globalAlpha = Math.max(0, a); ctx.text(S.banner.name, R(VW / 2), 34, '#ece8dc', 'center', 8); g.globalAlpha = 1; }
+      g.lineWidth = 1; rect(g, x - 5, y - 6, 10, 2, C.red); rect(g, x - 1, y - 10, 2, 10, C.red); g.globalAlpha = 0.5 * k; g.beginPath(); g.ellipse ? g.ellipse(x, y - 1, 14 + (1 - k) * 18, 4 + (1 - k) * 5, 0, 0, Math.PI * 2) : g.rect(x - 20, y - 5, 40, 8); g.stroke(); g.globalAlpha = 1; }
+    /* THE AREA PLATE */
+    if (S.banner) { const a = Math.max(0, Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4)); RKW.drawPlate(g, S.banner.name, VW, a, ctx.text); }
   };
   /* a harpy's overlay: the shrieker's crest and her scream rings */
   H.harpyOver = (g, e, cx, cy, time) => { if (!S || !e.alive) return; const x = R(e.x - cx), y = R(e.y - cy);
