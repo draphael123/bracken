@@ -48,8 +48,8 @@ export const POSE = {
   recover: { head: [4, 4], belly: 1, hand: [52, -88], far: [-62, -72], fork: [52, -88, -1.48, 76], eyes: 'open', mouth: 'open', cough: true },
   /* THE BELLY FLOP (claude/grubbagbig, Daniel 10-25): the heave (both fists on the chair's arms, up off the seat, belly swelling, mouth wide), up and over (out of the chair, fists
      flung up), belly down on the boards (sunk to the floor line, the belly spread wide, arms splayed flat, eyes bulging), and the roll back up (half up, pushing off the floor) */
-  flopTell: { head: [6, -10], belly: 1.08, hand: [116, -66], far: [-124, -64], fork: FORK_REST, eyes: 'red', mouth: 'wide', lean: 10, lift: 12 },
-  flop: { head: [4, -6], belly: 1.04, hand: [84, -184], far: [-80, -178], fork: null, eyes: 'red', mouth: 'wide', lean: 6, noChair: true },
+  flopTell: { head: [6, -10], belly: 1.08, hand: [116, -66], far: [-124, -64], fork: FORK_REST, eyes: 'red', mouth: 'wide', lean: 14, lift: 20 },
+  flop: { head: [4, -6], belly: 1.04, hand: [86, -160], far: [-80, -156], fork: null, eyes: 'red', mouth: 'wide', lean: 6, noChair: true },
   flopDown: { head: [8, 14], belly: 1.1, wide: 1.22, tall: 0.86, hand: [132, -40], far: [-134, -40], fork: null, eyes: 'bulge', mouth: 'wide', lean: 4, noChair: true, sink: 30 },
   flopRoll: { head: [0, 6], belly: 1.04, wide: 1.1, hand: [104, -30], far: [-108, -32], fork: null, eyes: 'open', mouth: 'open', lean: -8, noChair: true, sink: 14, cough: true },
 };
@@ -155,8 +155,8 @@ export function makeGrubbagHands(ctx) {
     if ((e.mode === 'flopTell' || e.mode === 'flop') && e.landX != null) { const F = GB.flop, k = e.mode === 'flopTell' ? 0.35 + 0.25 * (1 - Math.max(0, e.modeT) / F.tell[0]) : 0.6 + 0.35 * (1 - Math.max(0, e.modeT) / F.air), lx = x(e.landX);
       g.globalAlpha = k; g.fillStyle = '#120a10'; g.beginPath(); g.ellipse(lx, fy - 1, F.crush * (0.7 + 0.3 * k), 7, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
       g.fillStyle = blink; for (const sd of [-1, 1]) { const ex2 = lx + sd * F.crush; g.fillRect(ex2 - (sd > 0 ? 2 : 0), fy - 14, 2, 14); g.fillRect(ex2 - (sd > 0 ? 8 : 0), fy - 14, 8, 2); }
-      g.globalAlpha = 0.5; for (let q = lx - F.crush; q < lx + F.crush; q += 10) g.fillRect(q, fy - 2, 6, 2); g.globalAlpha = 1; }
-    if (e.mode === 'flopDown') ctx.text(GBM.GB_SAY.winded, x(e.x), y(e.y - GB.flop.lieH - 34), '#ffd36b', 'center', 6);
+      g.globalAlpha = 0.22 + 0.2 * Math.sin(time * 14); g.fillStyle = '#ff4a2a'; g.fillRect(lx - F.crush, fy - 5, F.crush * 2, 5); g.globalAlpha = 0.6; g.fillStyle = blink; for (let q = lx - F.crush; q < lx + F.crush; q += 10) g.fillRect(q, fy - 2, 6, 2); g.globalAlpha = 1; }
+    if (e.mode === 'flopDown') ctx.text(GBM.GB_SAY.winded, x(e.x), y(e.y - 178), '#ffd36b', 'center', 6);
     if (e.mode === 'slamTell') { g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; g.fillRect(x(G.table[0] - GB.slam.shock), fy - 2, x(G.x1) - x(G.table[0] - GB.slam.shock), 2); g.globalAlpha = 1; }
     const ex = x(e.x);
     const bw = (e.w || GB.w) + 12, bh = (e.h || GB.h) + 12, by0 = y(e.y - (e.h || GB.h) - 8);

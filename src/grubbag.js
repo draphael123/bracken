@@ -42,7 +42,7 @@ export const GB = {
   /* THE BELLY FLOP (claude/grubbagbig, Daniel 10-25 18:00): he heaves out of the chair (tell), rises over the table (air, rise px at the top of the arc) and comes down belly first on
      the floor at the spot told by his shadow (crush px each side of it); the floor's shockwave runs out both ways from the crush's edges (shockSp, shockLife; jump it); then he lies
      there winded (down s, blades x mul - a punish, not the choke) and rolls back up into his chair (roll s). p: his chance at a pick; never twice in three picks. */
-  flop: { tell: [1.15, 1.05, 0.95], air: 0.62, rise: 74, crush: 84, h: 64, dmg: 22, shock: 12, shockSp: 190, shockLife: 1.3, shockW: 11, down: 1.5, roll: 0.75, mul: 1, lieW: 200, lieH: 72, p: 0.16, reach: 470 },
+  flop: { tell: [1.15, 1.05, 0.95], air: 0.62, rise: 44, crush: 84, h: 64, dmg: 22, shock: 12, shockSp: 190, shockLife: 1.3, shockW: 11, down: 1.5, roll: 0.75, mul: 1, lieW: 200, lieH: 72, p: 0.16, reach: 470 },
   choke: { t: 9, mul: 2, cap: 0.13, boom: 0.16 },
   ward: 2.6, coughRest: 2.2,
   eat: 0.7,

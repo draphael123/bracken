@@ -29,7 +29,11 @@ const SHOTS = [
   ['gb-floodTell', 0, 0, gb('floodTell', 0.6)], ['gb-flood', 0, 0, gb('flood', 0.3, "S.floods.push({x:b.x-190,dir:-1,key:'f',dmg:1});S.gravy=3;")],
   ['gb-grabTell', 0, 0, gb('grabTell', 0.5)], ['gb-grab', 0, 0, gb('grab', 0.28, "b.grabDir=-1;b.handX=b.x-250;")],
   ['gb-pie', 0, 0, gb('sit', 1, "S.oven.st='out';S.items.push({id:99,kind:'pie',x:S.G.line.x0+150,state:'ride',k:0});S.items.push({id:98,kind:'dish',x:S.G.line.x0+40,state:'ride',k:0});")],
-  ['gb-eat', 0, 0, gb('eat', 0.4, "b.eating={kind:'pie'};")], ['gb-choke', 0, 0, gb('choke', 3)], ['gb-ward', 0, 0, gb('recover', 0.4, "S.ward=2;")],
+  ['gb-eat', 0, 0, gb('eat', 0.4, "b.eating={kind:'pie'};")],
+  /* (claude/grubbagbig) THE BELLY FLOP: the heave (his shadow told), up over the table, belly down (the shock each way), the roll back up */
+  ['gb-flopTell', 0, 0, gb('flopTell', 0.5, "b.landX=BK.P.x;b.chairFace=-1;")], ['gb-flop', 0, 0, gb('flop', 0.36, "b.landX=BK.P.x+20;b.flopFrom=S.G.chairX;b.chairFace=-1;")],
+  ['gb-flopDown', 0, 0, gb('flopDown', 1.2, "b.landX=BK.P.x+150;b.x=b.landX;b.w=200;b.h=72;b.chairFace=-1;for(const d of [-1,1])S.waves.push({x:b.landX+d*150,dir:d,life:1,delay:0,key:'fw'+d,dmg:0,sp:190,hw:11,kind:'flop',name:'flopShock'});")],
+  ['gb-flopRoll', 0, 0, gb('flopRoll', 0.4, "b.landX=BK.P.x+150;b.x=b.landX+60;b.chairFace=-1;")], ['gb-choke', 0, 0, gb('choke', 3)], ['gb-ward', 0, 0, gb('recover', 0.4, "S.ward=2;")],
 ].filter(s => !only || only.has(s[0]));
 const pg = await openPage({ audio: false, fonts: false });
 try {
