@@ -236,7 +236,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
     /* EARTHY, NOT GAUDY (the brief): moss greens, root browns and candle amber under the leaves - the one strong accent is her jars' glow (drawn by src/potion-hands.js) */
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(70,90,50,0.18)', grass: '#4a6a32', grassL: '#6a8a42', grassD: '#2e4420', dirt: '#3e2e1e', dirtL: '#54402a', dirtD: '#241a10', canopy: ['#24361c', '#2e4422', '#3a522a', '#4a6234'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'forest' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],   /* (BATCH120 integ: ambient-landmarks - only the woods play forest birdsong; Underleaf keeps the night wind it had on master. QUESTION FOR DANIEL if it wants its own bed) */
     tints: [[-24, 96, [140, 170, 90], 0.10], [96, 189, [170, 150, 90], 0.10], [189, 279, [150, 110, 70], 0.12], [279, 372, [180, 120, 60], 0.12], [372, W + 24, [200, 140, 70], 0.13]],
     reachExact: false,
   };
