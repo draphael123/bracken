@@ -408,13 +408,13 @@ export const STUCK = {
   /* THE SKY ROAD (claude/skyroad): every thermal the route rides, the cloak, every sun-stone the route needs until it is turned, the reel's cage, the sun-disc */
   /* THE ROOKERY (claude/rookery): every cracked rock the route needs until a dive breaks it (stand on the mark) */
   rookery: [
-    { id: 'rk-first-floor', zone: [40, 34, 51, 39], at: [49, 39], done: ['crackfloor', 49, 39, 'on'], line: 'THE FLOOR IS CRACKED: STAND ON THE MARK, THEN STEP OFF AS SHE DIVES' },
+    { id: 'rk-first-floor', zone: [40, 34, 51, 39], at: [49, 39], done: ['crackfloor', 49, 39, 'on'], line: 'THE FLOOR IS CRACKED: STAND ON THE MARK, STEP OFF AS SHE DIVES' },
     { id: 'rk-roost-slab', zone: [86, 37, 97, 42], at: [95, 42], done: ['crackslab', 95, 42, 'on'], line: 'THE CLIFF IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
     { id: 'rk-first-nest', zone: [106, 32, 117, 37], at: [115, 37], done: ['cracknest', 115, 37, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
     { id: 'rk-first-pillar', zone: [140, 32, 151, 37], at: [149, 37], done: ['crackpillar', 149, 37, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE FOOT OF THE PILLAR' },
     { id: 'rk-egg-nest', zone: [175, 29, 186, 34], at: [184, 34], done: ['cracknest', 184, 34, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
     { id: 'rk-ledge-slab', zone: [217, 20, 228, 25], at: [226, 25], done: ['crackslab', 226, 25, 'on'], line: 'THE FACE IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
-    { id: 'rk-span-pillar', zone: [283, 10, 294, 15], at: [292, 15], done: ['crackpillar', 292, 15, 'on'], line: 'NO JUMP CROSSES: STAND ON THE FOOT OF THE PILLAR AND LET THEM DIVE' },
+    { id: 'rk-span-pillar', zone: [283, 10, 294, 15], at: [292, 15], done: ['crackpillar', 292, 15, 'on'], line: 'NO JUMP CROSSES: STAND ON THE PILLAR FOOT, LET THEM DIVE' },
     { id: 'rk-last-nest', zone: [313, 10, 324, 15], at: [322, 15], done: ['cracknest', 322, 15, 'on'], line: 'NO JUMP CROSSES: BAIT HER ONTO THE MARK UNDER THE NEST' },
     { id: 'rk-top-slab', zone: [339, 10, 350, 15], at: [348, 15], done: ['crackslab', 348, 15, 'on'], line: 'THE FACE IS TOO HIGH: BAIT HER ONTO THE MARK UNDER THE SLAB' },
   ],

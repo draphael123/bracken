@@ -13,6 +13,8 @@ import { floodReach } from '../src/reachcore.js';
 import { ROOKERY, SECTIONS, RK_RULE, ARCS } from '../src/rookery.js';
 import { makeRookeryHands, RK_SAY, K, crackCells, markX, markY } from '../src/rookery-hands.js';
 import { SAY_LINES } from '../src/hint-lines.js';
+import * as SSM from '../src/shriek-sisters.js';
+import { POSE as POSE_SS } from '../src/shriek-sisters-hands.js';
 const TS = 16;
 let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'rookery'), L = lv.build();
@@ -101,5 +103,57 @@ ok(Object.values(RK_SAY).every(s => SAY_LINES.has(s)), 'every capital line the r
   ok(foes.filter(e => e.rkAim).every(e => Math.abs(e.rkAim.tx - P.x) < 1), 'they aim at the MARK, not at the hero (off it, they hit the rock)');
 }
 
-console.log(bad ? '\nrookery: ' + bad + ' FAILED' : '\nok  rookery: the road, the old-save rule, the locks, the hands');
+// ---- THE SHRIEK SISTERS (pure) ----
+{ const A = L.arena; ok(A && A.boss === 'shrieksisters' && (A.slabs || []).length === 3, 'THE SISTERS\' CRAG: the arena, three cracked slabs in its floor');
+  const said = [], hits = []; let shook = 0;
+  const w = { number: (x, y, t) => said.push(t), sound() {}, shake: () => shook++, music() {}, mark() {}, dust() {}, fx() {}, rubble() {},
+    hit: (s, bx, d, name) => { if (hero.x > bx[0] && hero.x < bx[1] && hero.y > bx[2] && hero.y - 20 < bx[3]) { hits.push(name); return hero.block ? 'blocked' : 'hit'; } return null; },
+    hitArea: (bx, d, name) => { if (hero.x > bx[0] && hero.x < bx[1]) hits.push(name); }, hitHero: (h, d, name) => hits.push(name) };
+  const hero = { x: 0, y: A.floor, ground: true, alive: true, block: false };
+  const S = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S.sis[r].mode = 'hover'; S.sis[r].cd = 99; }
+  const step = (s, f) => { for (let i = 0; i < Math.round(s * 60); i++) { SSM.stepSisters(S, 1 / 60, [hero], w); if (f && f(i)) return true; } return false; };
+  /* THE OPENING: on a slab, the diver aims (the line follows, then LOCKS), step off, she breaks the slab and lies STUNNED */
+  const sl = S.G.slabs[1]; hero.x = sl.x; const dv = S.sis.diver; dv.cd = 0; S.sis.shrieker.cd = 99; S.sis.snatcher.mode = 'fly';
+  step(0.05); ok(dv.mode === 'diveTell' && !dv.aim.lock, 'the diver aims: her red line follows the hero');
+  step(SSM.SS.dive.tell[0] - SSM.SS.dive.lock + 0.02); ok(dv.aim.lock && Math.abs(dv.aim.x - sl.x) < 2, 'the line LOCKS (' + SSM.SS.dive.lock + ' s before she drops) on the spot');
+  hero.x = sl.x + 60; step(1.2, () => dv.mode === 'stuck');
+  ok(dv.mode === 'stuck' && sl.st === 'rubble' && said.includes(SSM.SS_SAY.stunned), 'stepped off: her dive breaks the slab and she lies STUNNED IN THE RUBBLE');
+  ok(!hits.includes('dive'), 'the dive missed the hero who stepped off');
+  { const [d1] = SSM.takeBlow(dv, 20, false); ok(d1 === 40, 'stunned: a cut lands x2 (20 -> ' + d1 + ')'); }
+  { let total = 40, n = 0; while (dv.purse > 0 && n < 99) { total += SSM.takeBlow(dv, 20, false)[0]; n++; } ok(dv.mode === 'stuck' && dv.modeT <= 0.02 && total <= Math.ceil(dv.maxHp * SSM.SS.stun.cap) + 1, 'the stun pays at most ' + SSM.SS.stun.cap + ' of her (' + total + ' of ' + dv.maxHp + '), then she tears free'); }
+  step(0.6); ok(dv.ward > 0 && SSM.takeBlow(dv, 20, false)[1] === 'WARDED' && SSM.takeBlow(dv, 20, false)[0] === 8, 'she tears free behind a told WARD (B3): 0.4x, WARDED');
+  /* off a crack her dive skids; on the shield she is knocked down */
+  dv.ward = 0; dv.mode = 'hover'; dv.cd = 0; hero.x = S.G.x0 + 40; step(SSM.SS.dive.tell[0] + 0.05); hero.x += 70; step(1.0, () => dv.mode === 'land');
+  ok(dv.mode === 'land' && S.n.skids >= 1, 'off any crack her dive SKIDS (no opening) - she lands low: whole (' + SSM.takeBlow(dv, 20, false)[0] + ')');
+  dv.mode = 'hover'; dv.cd = 0; dv.ward = 0; hero.x = S.G.x0 + 40; hero.block = true; step(SSM.SS.dive.tell[0] + 0.6, () => dv.mode === 'downed'); hero.block = false;
+  ok(dv.mode === 'downed' && SSM.takeBlow(dv, 20, false)[0] === 30, 'her dive taken on the shield: KNOCKED DOWN, x' + SSM.SS.downK);
+  /* B15: NEVER INVULNERABLE - every mode of every sister takes at least 0.4x */
+  { const low = []; for (const r of SSM.ROLES) for (const m of Object.keys(POSE_SS)) { const s = { ...S.sis[r], mode: m, ward: 0 }; const [d] = SSM.takeBlow(s, 20, false); if (d < 8) low.push(r + ':' + m + '=' + d); }
+    ok(!low.length, 'B15: no sister is ever invulnerable - every mode takes >= 0.4x ' + low.join(' ')); }
+  ok(SSM.takeBlow({ ...S.sis.shrieker, mode: 'hover', ward: 0 }, 20, false).join() === '8,ON THE WING' && SSM.takeBlow({ ...S.sis.shrieker, mode: 'swoop', ward: 0 }, 20, false)[0] === 20 && SSM.takeBlow({ ...S.sis.snatcher, mode: 'pick', ward: 0 }, 20, false)[0] === 20, 'ON THE WING 0.4x (told); low - the swoop, the pick on the shelf - whole');
+  /* THE SCREAM: the mark, and the diver strikes it */
+  for (const r of SSM.ROLES) { const s = S.sis[r]; s.mode = 'hover'; s.ward = 0; s.cd = 99; } hero.x = S.G.slabs[0].x; const sh = S.sis.shrieker; sh.cd = 0; step(SSM.SS.scream.tell + 0.05);
+  ok(S.marks.length >= 1 && dv.mode === 'diveTell' && dv.aim.mark && Math.abs(dv.aim.x - hero.x) < 2 && sh.mode === 'swoop', 'THE SHRIEKER screams: the MARK snaps onto the hero\'s spot, the diver aims AT THE MARK, the shrieker swoops low');
+  hero.x += 70; step(1.2, () => dv.mode === 'stuck'); ok(dv.mode === 'stuck' && S.n.marksStruck >= 1, 'off the mark on a crack: the marked dive breaks it - stunned');
+  /* THE SNATCHER: pick, carry, the red ring, the rock lies as a CRACKED STONE */
+  for (const r of SSM.ROLES) { const s = S.sis[r]; s.mode = 'hover'; s.cd = 99; } const sn = S.sis.snatcher; sn.mode = 'fly'; sn.perchI = 0; hero.x = S.G.mid + 100; const st0 = S.stones.length;
+  step(9, () => S.stones.length > st0); ok(S.n.drops >= 1 && S.stones.length > st0, 'THE SNATCHER picks a rock on her shelf, carries it over the hero, tells the red ring and drops it: it lies CRACKED (a new bait spot)');
+  /* TAKE ONE OUT AND THE OTHERS CHANGE */
+  const S2 = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S2.sis[r].mode = 'hover'; S2.sis[r].cd = 99; }
+  S2.sis.diver.alive = false; SSM.fell(S2, 'diver', w); ok(said.includes(SSM.SS_SAY.diverFell) && S2.ph === 2, 'the DIVER falls: her sisters dive in her place (phase two)');
+  { const s = S2.sis.shrieker; s.cd = 0; hero.x = S2.G.slabs[2].x; let dived = false; for (let i = 0; i < 120 && !dived; i++) { SSM.stepSisters(S2, 1 / 60, [hero], w); dived = s.mode === 'diveTell'; } ok(dived && s.aim.mark, 'the diver gone: the shrieker dives at her own mark (the opening never goes)'); }
+  { let snatched = false; for (let i = 0; i < 600 && !snatched; i++) { SSM.stepSisters(S2, 1 / 60, [hero], w); snatched = S2.sis.snatcher.mode === 'snatchTell'; } ok(snatched, 'after the first fall the snatcher gains THE SNATCH (a low red !! sweep)'); }
+  const S3 = SSM.newFight(SSM.geom(A, TS)); S3.sis.shrieker.alive = false; SSM.fell(S3, 'shrieker', w); ok(said.includes(SSM.SS_SAY.shriekerFell), 'the SHRIEKER falls: the diver\'s dives come in pairs, two rocks a carry');
+  S3.sis.diver.alive = false; SSM.fell(S3, 'diver', w); ok(said.includes(SSM.SS_SAY.last) && S3.ph === 3, 'the LAST SISTER: frantic (cooldowns x' + SSM.SS.last + ')');
+  /* every move told (a mark) with its own windup and release pose (B16) */
+  const TELLS = ['diveTell', 'screamTell', 'dropTell', 'snatchTell', 'waveTell'], REL = { diveTell: 'dive', screamTell: 'scream', dropTell: 'drop', snatchTell: 'snatch', waveTell: 'wave' };
+  const marks = src('src/marks.js'); ok(TELLS.every(t => marks.includes("'shrieksister|" + t + "'")), 'five told moves, each a mark in src/marks.js (!! / !)');
+  ok(TELLS.every(t => POSE_SS[t] && POSE_SS[REL[t]] && JSON.stringify(POSE_SS[t]) !== JSON.stringify(POSE_SS[REL[t]])), 'B16: each its own windup and release pose (' + TELLS.map(t => t + '/' + REL[t]).join(', ') + ')');
+  ok(Object.values(SSM.SS_SAY).every(s => SAY_LINES.has(s)), 'every capital line the sisters say is in src/hint-lines.js');
+  /* the bot's plan answers every tell (a sample frame each) */
+  const why = m => SSM.ssPlan({ P: { x: hero.x, y: A.floor, vy: 0, face: 1, ground: true, atk: -1 }, S: m, reach: 22, t: 5, v2: true, mem: {}, rng: () => 0.9, shield: false, dodge: true }).why;
+  { const S4 = SSM.newFight(SSM.geom(A, TS)); for (const r of SSM.ROLES) { S4.sis[r].mode = 'hover'; S4.sis[r].cd = 99; } hero.x = S4.G.slabs[0].x; S4.sis.diver.mode = 'diveTell'; S4.sis.diver.act = 7; S4.sis.diver.aim = { x: hero.x, lock: true }; const a = why(S4);
+    S4.sis.diver.mode = 'stuck'; S4.sis.diver.x = hero.x + 30; const b = why(S4); ok(/step off/.test(a) && /strike her/.test(b), 'the bot reads the LOCK and steps off (' + a + '), then strikes her stunned (' + b + ')'); } }
+
+console.log(bad ? '\nrookery: ' + bad + ' FAILED' : '\nok  rookery: the road, the old-save rule, the locks, the hands, the sisters');
 process.exit(bad ? 1 : 0);
