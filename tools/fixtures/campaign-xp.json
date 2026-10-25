@@ -38,9 +38,9 @@
    "clear": 452
   },
   "hanging": {
-   "run": 1094,
+   "run": 980,
    "foeXp": 496,
-   "bossXp": 399,
+   "bossXp": 285,
    "clear": 298
   },
   "spire": {
@@ -98,10 +98,10 @@
    "clear": 540
   },
   "underleaf": {
-   "run": 871,
-   "foeXp": 440,
+   "run": 958,
+   "foeXp": 502,
    "bossXp": 255,
-   "clear": 264
+   "clear": 301
   },
   "deep": {
    "run": 2076,
@@ -296,10 +296,10 @@
    "clear": 134
   },
   "palisadewood": {
-   "run": 839,
-   "foeXp": 432,
+   "run": 979,
+   "foeXp": 532,
    "bossXp": 234,
-   "clear": 259
+   "clear": 319
   }
  }
 }
