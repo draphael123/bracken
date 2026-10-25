@@ -78,17 +78,17 @@
   "lostPct": 349
  },
  "hanging": {
-  "hash": "de251894a0ea",
+  "hash": "9142ce6eeb62",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 22,
+  "hits": 23,
   "deaths": 3,
   "kills": 32,
   "lifts": 101,
   "walked": 100,
   "bare": true,
-  "lostPct": 162
+  "lostPct": 146
  },
  "spire": {
   "hash": "20e1d5c2d349",
@@ -351,17 +351,17 @@
   "lostPct": 583
  },
  "burning": {
-  "hash": "65a4c0d5570d",
+  "hash": "342eb49d3ea1",
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 45,
-  "deaths": 2,
-  "kills": 44,
-  "lifts": 91,
+  "hits": 42,
+  "deaths": 3,
+  "kills": 50,
+  "lifts": 92,
   "walked": 100,
   "bare": true,
-  "lostPct": 172
+  "lostPct": 178
  },
  "witchlight": {
   "hash": "7fcd84c38afa",
@@ -641,12 +641,12 @@
   "hero": "knight",
   "steps": 30000,
   "runs": 3,
-  "hits": 12,
+  "hits": 13,
   "deaths": 1,
-  "kills": 69,
-  "lifts": 77,
+  "kills": 63,
+  "lifts": 82,
   "walked": 100,
   "bare": true,
-  "lostPct": 118
+  "lostPct": 119
  }
 }
