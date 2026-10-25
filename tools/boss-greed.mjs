@@ -105,6 +105,9 @@ for (const [id, o] of Object.entries(R)) {
   const own = o.t === 'puppeteer', exempt = !!NO_OPENING[o.t];
   /* (claude/oldtusker) AN OWN-WARD BOSS ON THE B15 FLOOR (OLD TUSKER: his hide, src/old-tusker.js): off the chip, his own number - OT.hide of a blow outside his openings, never nothing; his burn lands at it too */
   const floorOwn = OWN_WARD.has(o.t) && o.t === 'oldtusker';
+  /* (claude/underleaf4) THE POTION MASTER: off the chip, but outside an opening ONE POTION GUARD always covers her (hedge / aloft / fire ring): x0.4 of any blow (B15), never nothing; her openings pay x2 */
+  if (o.t === 'grandmother') { ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open'); ok(o.heroShut === Math.round(40 * 0.4), id + ': B15 - her potion guard takes 0.4 of a blow outside her openings, never nothing (a blow of 40 took ' + o.heroShut + ')');
+    ok(o.roomShut > 0 && o.roomShut <= 17, id + ': a blow from the ROOM is guarded too, never nothing (took ' + o.roomShut + ')'); if (o.openOpen !== undefined) { ok(o.openOpen === true, id + ': forced into her opening, BK.greed.open must say so'); ok(o.heroOpen >= 40, id + ': in her opening a hero blow of 40 lands whole or better (took ' + o.heroOpen + ')'); } continue; }
   if (floorOwn) { ok(o.openShut === false, id + ': the sampled closed mode must read as NOT open'); ok(o.heroShut === Math.round(40 * OT.hide), id + ': B15 - his hide takes OT.hide of a blow outside his openings, never nothing (a blow of 40 took ' + o.heroShut + ')');
     ok(o.heroRun === 20 * Math.round(20 * OT.hide), id + ': 20 blows of 20 at his hide (took ' + o.heroRun + ')'); ok(o.openOpen === true && o.heroOpen >= 60, id + ': PINNED, BK.greed.open says so and a blow of 40 lands x2 (took ' + o.heroOpen + ')');
     ok(o.burn4s > 4 * 2 / 0.3 * GREED.chip + 1, id + ': B15 - off the chip, his burn lands at his hide (2 s of burn took ' + o.burn4s + ')'); }
