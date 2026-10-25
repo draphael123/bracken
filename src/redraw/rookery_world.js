@@ -233,3 +233,29 @@ export function drawPier(g, p, cx, cy) {
 }
 /* every baked prop in one list, for tools/rookeryart-sheet.mjs (the contact sheet) and tools/rookeryart.mjs */
 export const SPRITES = () => ({ floor: bakeFloor(36, 0), pillar: bakePillar(110, 1), fallen: bakeFallen(100, 1), nest: bakeNest(60, 1, true), nestPlain: bakeNest(60, 3, false), arm: bakeArm(40, 1), slab: bakeSlab(48, 0), roost: bakeRoost(1), eggs: bakeEggs(1, 1), eggs2: bakeEggs(3, 2) });
+
+/* THE SUMMIT (claude/rookerypolish): the boss floor's cracked slabs, rubble and the snatcher's stones, in the Sisters' Crag rose stone (zone 4). Baked once; the glint ring is live.
+   Same stone, lime wash and black fracture as the cracked floor / pillar above. */
+export function bakeSummitSlab(w) { return bakeFloor(w, 4); }
+/* the slab broken: a rim of tumbled blocks (lit tops, dark undersides, lime dust, one black crack) with the floor below showing */
+export function bakeSummitRubble(w) {
+  return once('sr' + w, () => {
+    const [c, g] = canvas(w, 8), r = mulberry(w * 3 + 5), S = PAL[4].s; let x = 0, k = 0;
+    while (x < w) { const bw = Math.min(w - x, 5 + ((r() * 4) | 0)), last = w - x <= bw, bh = 3 + ((k + (r() * 2)) % 3 | 0), y = 4 - bh + 1 + (k & 1);
+      R(g, x, y + 1, bw, bh, S[3]); R(g, x, y, bw, 1, S[6]); R(g, x, y + 1, Math.max(1, bw >> 1), 1, S[5]); R(g, x + bw - 1, y + 1, 1, bh, S[1]); R(g, x + 1, y + bh, Math.max(1, bw - 1), 1, S[0]);
+      if (r() < 0.5) R(g, x + 1, y + 1, Math.max(1, bw - 3), 1, LIME[1 + (k & 1)]); if (r() < 0.4) R(g, x + 1 + ((r() * Math.max(1, bw - 2)) | 0), y + 2, 1, bh - 1, CRACK);
+      x += last ? w : bw - 1; k++; }
+    R(g, 0, 6, w, 2, S[1]); for (let i = 0; i < 6; i++) R(g, (r() * (w - 3)) | 0, 5 + ((r() * 2) | 0), 2 + ((r() * 3) | 0), 1, LIME[1 + (i & 1)]);
+    return c; });
+}
+/* a stone the Snatcher left: a 20x11 boulder, lit left, strata, guano cap, a black fracture */
+export function bakeSummitStone() {
+  return once('ss', () => {
+    const [c, g] = canvas(20, 12), S = PAL[4].s;
+    const prof = [4, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 4];   /* the top edge, cut away at the corners so it reads as a rounded rock */
+    for (let x = 0; x < 20; x++) { const t = prof[x] + 1, h = 11 - t - (x < 2 || x > 17 ? 1 : 0); R(g, x, t, 1, h, x < 8 ? S[4] : x > 14 ? S[2] : S[3]); R(g, x, t, 1, 1, x < 12 ? S[6] : S[5]); R(g, x, t + h - 1, 1, 1, S[0]); }
+    R(g, 2, 6, 15, 1, S[2]); R(g, 3, 7, 5, 1, S[5]); R(g, 11, 4, 6, 1, S[2]);   /* strata */
+    R(g, 3, 0, 11, 2, GUANO[2]); R(g, 5, 0, 7, 1, GUANO[3]); R(g, 8, 2, 2, 3, GUANO[1]);   /* the guano cap and a drip */
+    R(g, 11, 2, 1, 2, CRACK); R(g, 12, 4, 1, 2, CRACK); R(g, 11, 6, 1, 2, CRACK); R(g, 10, 8, 1, 2, CRACK); R(g, 12, 3, 2, 1, LIME[2]); R(g, 9, 7, 2, 1, LIME[2]);
+    return c; });
+}

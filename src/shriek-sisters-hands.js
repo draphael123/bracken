@@ -13,6 +13,7 @@ import * as SSM from './shriek-sisters.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 import { drawSister } from './redraw/shriek_sisters_art.js';
+import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
 const { SS, ROLES } = SSM;
 
 const SOUND = { screech: s => (s.screech || s.tell)(), lock: s => (s.tell || s.clank)(), dive: s => (s.whoosh || s.throwWhoosh || s.screech || s.tell)(), smash: s => { (s.crack || s.stone || s.thud)(); (s.heavy || s.thud)(); },
@@ -109,10 +110,10 @@ export function makeShriekSistersHands(ctx) {
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY);
     for (const sl of G.slabs) { const sx = x(sl.x) - SS.slab.w / 2;
-      if (sl.st === 'crack') { rect(g, sx, fy - 1, SS.slab.w, 4, '#ece8dc'); g.strokeStyle = '#2a2620'; g.beginPath(); g.moveTo(sx + 6, fy); g.lineTo(sx + 16, fy + 3); g.lineTo(sx + 24, fy); g.lineTo(sx + 34, fy + 4); g.lineTo(sx + 42, fy + 1); g.stroke();
+      if (sl.st === 'crack') { g.drawImage(bakeSummitSlab(SS.slab.w), sx, fy - 1);
         g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, SS.slab.w - 1, 5); }
-      else { for (let k = 0; k < 6; k++) rect(g, sx + k * 8, fy - 3 - (k % 2) * 2, 7, 4, k % 2 ? '#8a8478' : '#5e594f'); const k = 1 - sl.t / SS.slab.regrow[0]; rect(g, sx, fy + 3, R(SS.slab.w * Math.max(0, k)), 1, '#c8d8e8'); } }
-    for (const q of S.stones) { const sx = x(q.x), a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; rect(g, sx - 9, fy - 9, 18, 9, '#8a8478'); rect(g, sx - 9, fy - 9, 18, 2, '#b4ae9f'); g.strokeStyle = '#2a2620'; g.beginPath(); g.moveTo(sx - 4, fy - 9); g.lineTo(sx, fy - 4); g.lineTo(sx - 2, fy); g.stroke(); g.strokeStyle = '#ffd36b'; g.strokeRect(sx - 10.5, fy - 10.5, 21, 11); g.globalAlpha = 1; } };
+      else { g.drawImage(bakeSummitRubble(SS.slab.w), sx, fy - 4); const k = 1 - sl.t / SS.slab.regrow[0]; rect(g, sx, fy + 3, R(SS.slab.w * Math.max(0, k)), 1, '#c8d8e8'); } }
+    for (const q of S.stones) { const sx = x(q.x), a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitStone(), sx - 10, fy - 11); g.strokeStyle = '#ffd36b'; g.strokeRect(sx - 10.5, fy - 10.5, 21, 11); g.globalAlpha = 1; } };
   H.drawBoss = (g, b, cx, cy, time) => { if (!S || !b || b.t !== 'shrieksister') return; const s = S.sis[b.role]; if (!s) return; b.guardFx = Math.max(0, (b.guardFx || 0) - 1 / 60);
     const p = POSE[s.mode] || POSE.hover, flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60);
     g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - 12 - cx), R(S.G.floorY - 2 - cy), 24, 2); g.globalAlpha = 1;
@@ -144,8 +145,10 @@ export function makeShriekSistersHands(ctx) {
   return H;
 }
 /* THEIR BESTIARY CARD: the three, small (main.js SPR.shrieksistersCard) */
+function bakeCardLedge(g) { const S = ['#1c161e', '#30242c', '#4e3c46', '#725a62', '#98807f', '#bf9fa0', '#e4c8c4'];   /* (claude/rookerypolish) the Sisters' Crag shelf they roost on */
+  rect(g, 1, 37, 62, 3, S[2]); rect(g, 1, 36, 62, 1, S[5]); rect(g, 1, 35, 62, 1, S[6]); rect(g, 1, 39, 62, 1, S[1]); for (const [x, w] of [[5, 9], [22, 7], [38, 12], [53, 6]]) { rect(g, x, 35, w, 1, '#f8f6f0'); rect(g, x + 1, 34, Math.max(2, w - 3), 1, '#e6e4e0'); } for (const x of [14, 31, 49]) rect(g, x, 37, 1, 3, '#1c1a22'); rect(g, 9, 37, 2, 1, '#e6e4e0'); rect(g, 27, 38, 2, 1, '#e6e4e0'); }
 export function bakeShriekSistersCard() {
-  const fr = [0, 1].map(i => { const [c, g] = canvas(64, 40); g.imageSmoothingEnabled = false;
+  const fr = [0, 1].map(i => { const [c, g] = canvas(64, 40); g.imageSmoothingEnabled = false; bakeCardLedge(g);
     ROLES.forEach((r, k) => { g.save(); g.translate(12 + k * 20, 26 + (k % 2) * 8); g.scale(0.55, 0.55); drawSister(g, r, POSE[i ? (r === 'diver' ? 'diveTell' : r === 'shrieker' ? 'screamTell' : 'carry') : 'hover'], false, i * 0.3, undefined); g.restore(); }); return c; });
   const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 32, ay: 38, w: 56, h: 36 };
 }
