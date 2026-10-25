@@ -1,6 +1,6 @@
 // tools/kingswood2.mjs - KINGSWOOD 2, THE KING'S HUNTING WOOD (claude/kingswood2, the opus greybox of the level; Node, no page). It replaces tools/kings2-beats.mjs, which
 // pinned the old grafted wood's beats (fork one's high-road plate, the fired wood, the toll bridge...) that the rework (Daniel 10-14: "fine but very BLAND") took out.
-//   THE ROAD: Rootway > Kingswood > Underleaf; gated by level-quality; the rule line; the five named areas in order (Daniel's brief); THE GREAT OAK drawn on the skyline.
+//   THE ROAD: Rootway > Underleaf > Palisade Wood > Kingswood > Scree; gated by level-quality; the rule line; the five named areas in order (Daniel's brief); THE GREAT OAK drawn on the skyline.
 //   THE ROUTE: the fill reaches every shrine, silver, the mini, the King and the court gate's plate; every REQUIRED rope is a LOCK (without its drop the next shrine is
 //   out of reach): the checkpoint's cage, the stands' log span, the three cages of the cage stair; the taught ropes and the log traps are weapons, not locks.
 //   THE RULE'S ARC: taught safe (the sleeping brute, a sign at the peg), developed, remixed, examined (A4) - each rope's load drawn to where it lands (L.hoists has the
@@ -24,7 +24,7 @@ const lv = LEVELS.find(l => l.id === 'kings'), L = lv.build();
 const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8');
 
 // ---- THE ROAD ----
-ok(lv.needs === 'palisadewood' && LEVELS.find(l => l.id === 'palisadewood').needs === 'rootway' && LEVELS.find(l => l.id === 'scree').needs === 'kings' && LEVELS.find(l => l.id === 'underleaf').needs === 'scree', 'Rootway > PALISADE WOOD > KINGSWOOD > Scree > Underleaf (claude/underorder)');   /* (BATCH120: the Palisade Wood is on the road before Kingswood, claude/palisadewood) */
+ok(lv.needs === 'palisadewood' && LEVELS.find(l => l.id === 'palisadewood').needs === 'underleaf' && LEVELS.find(l => l.id === 'underleaf').needs === 'rootway' && LEVELS.find(l => l.id === 'scree').needs === 'kings' && LEVELS.find(l => l.id === 'hanging').needs === 'scree', 'Rootway > UNDERLEAF > PALISADE WOOD > KINGSWOOD > Scree > Hanging (claude/underleaf4, Daniel 10-25)');   /* (BATCH120: the Palisade Wood is on the road before Kingswood, claude/palisadewood) */
 ok(lv.rule === 'THE COURT HOLDS THE ROAD, AND WHAT HANGS OVER IT CAN BE DROPPED ON IT.', 'the rule line (true to the code: the court holds the road with checkpoints and a procession; ropes and plates drop what hangs)');
 ok(/GATE = \[[^\]]*'kings'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(L.kwood === true && L.W === KINGSWOOD.W, 'the level is src/kingswood.js (L.kwood)');

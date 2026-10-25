@@ -46,7 +46,7 @@ import { chainOf } from './campaign-order.mjs';
 /* Named, with a reason each. THE ORE ROAD IS BEING REWORKED and must leave this list when it lands. */
 const GRANDFATHERED = {
   harbor: 'shelved on purpose - the only level in LEVELS with no map node.',
-  underleaf: 'UNDERLEAF 3 (BATCH120 integ): its herb-gatherers, jar-throwers, thorn-beast and herb-warden are reskins of the sprig, thief, rock-goblin, brute and shield, and the Hornet Nest now sits before it in the chain so the thief is seen earlier. Needs a real new creature or Daniel to say the reskins count (QUESTION FOR DANIEL, scratch/lane-reports/batch120-release.md).',
+  palisadewood: 'THE ROAD MOVE (claude/underleaf4, Daniel 10-25): UNDERLEAF now stands before it (Rootway -> Underleaf -> Palisade Wood) and its herb-gatherers and jar-throwers ARE the sprig and the rock-goblin, the two foes the palisade used to bring first. The palisade rework lane (claude/palisade2) gives it its own; drop this line when it lands.',   /* (underleaf left this list: on the 10-25 road it is the first level with the sprig and the rock-goblin) */
 };   /* THE UNDERWATER KEEP LEFT THIS LIST when THE LEADFOOT landed (docs/briefs/keep-leadfoot.md; he was removed on 2026-09-25 and THE DROWNED KNIGHT, docs/briefs/keep-rework-2.md, is its new foe now), which is the tool working as written: the stale check above is what put him on the board. */ /* HIGHCROWN LEFT IT TOO, when THE TEMPERER landed (docs/briefs/crown-temperer.md). */
 
 const src = readFileSync(new URL('../src/main.js', import.meta.url), 'utf8');

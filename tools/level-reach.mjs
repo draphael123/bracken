@@ -91,8 +91,8 @@ try {
   for (const s of r.steps) if (s.votive) assert.ok(!s.stepWhileShut && s.tipShut && s.tipShut[0].includes('LOCKED: LIGHT WAYMEET' + String.fromCharCode(39) + 'S VOTIVE LAMPS 0/3'), s.id + ': the votive road must stay shut with its lamps dark and SHOW the lamp count (' + JSON.stringify(s) + ')');
   for (const s of r.steps) if (!s.secret && !s.votive && s.ruled) assert.ok(s.tip && /LOCKED/.test(s.tip[0]) && /12:57/.test(s.tip[1]), s.id + ': the shut road does not SHOW its rule and the player best time (' + JSON.stringify(s.tip) + ')');
   for (const s of r.steps) assert.ok(s.onSpur, s.id + ' (a spur off ' + s.junction + ') cannot be stepped onto from its junction with the map keys once the junction is cleared');
-  /* UNDERLEAF IS A MAIN-ROAD LEVEL (Daniel 10-08): Kingswood -> the Scree Path -> Underleaf -> the Hanging Village (claude/underorder 10-24), a node ON the road, no secret and no clock */
-  for (const u of r.road) { assert.ok(!u.hidden && !u.secret && !u.timed && u.needs === 'scree' && u.next === 'hanging' && u.onMap && !u.spur, 'underleaf is not a plain main-road level between scree and hanging: ' + JSON.stringify(u)); }
+  /* UNDERLEAF IS A MAIN-ROAD LEVEL (Daniel 10-08): the Rootway -> Underleaf -> the Palisade Wood (claude/underleaf4 10-25; was Kingswood -> Scree -> Underleaf -> Hanging, claude/underorder 10-24), a node ON the road, no secret and no clock */
+  for (const u of r.road) { assert.ok(!u.hidden && !u.secret && !u.timed && u.needs === 'rootway' && u.next === 'palisadewood' && u.onMap && !u.spur, 'underleaf is not a plain main-road level between the rootway and the palisade wood (claude/underleaf4, Daniel 10-25): ' + JSON.stringify(u)); }
   for (const h of r.coin) { assert.ok(h.level, 'hero ' + h.id + ' coinNeeds names no level: ' + h.needs); if (!h.boss) assert.ok(reached.has(h.needs), 'hero ' + h.id + ': its coinNeeds level ' + h.needs + ' is unreachable'); }
   assert.deepEqual(pg.errors, []);
   console.log('Level reachability: every level is reachable from a fresh save through the map, every spur steps on from its junction, every hero coin level is reachable.');

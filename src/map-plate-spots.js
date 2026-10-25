@@ -12,7 +12,7 @@ export const PLATE_SPOTS = {
   "rootway": [-16, 8, 52, 10],
   "palisadewood": [-73, -24, 58, 10],
   "kings": [-74, -26, 64, 10],
-  "underleaf": [-10, 8, 64, 10],
+  "underleaf": [-60, 22, 64, 10],
   "scree": [-44, -32, 70, 10],
   "hanging": [10, 22, 100, 10],
   "highstore": [-5, 8, 70, 10],
