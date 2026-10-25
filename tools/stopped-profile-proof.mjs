@@ -1,0 +1,9 @@
+// Source-specific cloud proof; every original fixture/assertion and memory/timeout policy remains unchanged.
+import fs from 'node:fs';import path from 'node:path';import { spawnSync, execFileSync } from 'node:child_process';import { newRunTag } from './ports.mjs';
+const out=path.resolve('gate-data/stopped-profile');fs.mkdirSync(out,{recursive:true});const source=execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),gameTree=execFileSync('git',['rev-parse','HEAD:src'],{encoding:'utf8'}).trim(),rows=[];
+function run(name,args,env={}){const file=path.join(out,name+'.log'),fd=fs.openSync(file,'w'),start=Date.now();let r;try{r=spawnSync(process.execPath,args,{env:{...process.env,...env},stdio:['ignore',fd,fd]});}finally{fs.closeSync(fd);}const row={name,args,exitCode:r.status,signal:r.signal,error:r.error?.message,ms:Date.now()-start,log:file};rows.push(row);return row;}
+run('synthetic-regression',['tools/stopped-profile-selftest.mjs'],{STOPPED_PROFILE_OUT:path.join(out,'synthetic')});
+run('original-profile-cleanup',['tools/profile-cleanup.mjs']);
+const tag=newRunTag(),since=Date.now();run('original-pixels',['tools/check.mjs','pixels','--progress='+path.join(out,'pixels.json')],{BRACKEN_RUN:tag});
+run('original-profile-leaks',['tools/profile-sweep.mjs','--kill-orphans','--since',String(since),'--run',tag,'--check']);
+const receipt={time:new Date().toISOString(),source,gameTree,baselineGameSource:'dc02ecc059959b795f76dee47665b54f349d4e2f',rows,complete:rows.every(r=>r.exitCode===0&&!r.signal&&!r.error),noOriginalFixtureAssertionDeadlineFrameMemoryOrBalanceChange:true,noFailedAssertionRerun:true,originalPixelInterruptedAttemptsStayUnknown:true};fs.writeFileSync(path.join(out,'receipt.json'),JSON.stringify(receipt,null,2)+'\n');console.log(JSON.stringify(receipt));if(!receipt.complete)process.exitCode=1;

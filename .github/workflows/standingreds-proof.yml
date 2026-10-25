@@ -4,11 +4,30 @@ on:
     inputs:
       mode:
         type: choice
-        options: [companion-geometry, canvas-lifetime, mage-prefix, layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
+        options: [stopped-profile, companion-geometry, canvas-lifetime, mage-prefix, layout-schedule, towpath-visibility, theatre-trace, layout-gc, mark-trace, tile-cache, hero-reuse-checks, canal-proof, cause-fixes, remaining, prove, refresh, trace-probe, trace-context, trace-calibrate, canvas-memory, moor, serial, harness, lab-trace, heap512, yield-memory, unforced-heap, load-audit, memory-policy, pool-recycle, textfit-memory, hidden-memory, mark-memory, server-lease, server-only]
         default: prove
 permissions:
   contents: read
 jobs:
+  stopped-profile:
+    if: inputs.mode == 'stopped-profile'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/stopped-profile-proof.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: stopped-profile-proof
+          path: |
+            gate-data/stopped-profile/
+            audits/check-runs/
   companion-geometry:
     if: inputs.mode == 'companion-geometry'
     runs-on: ubuntu-latest

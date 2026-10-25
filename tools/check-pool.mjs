@@ -1,10 +1,11 @@
 import { admitBrowser } from './browser-admission.mjs';
+import { cleanupStoppedProfiles } from './stopped-profile-cleanup.mjs';
 // tools/check-pool.mjs - THE SAME CHECKS, WITH A SMALL NUMBER OF HANDS.
 // The parent keeps every answer until that check finishes: two tools may work together, but their words never mix.
 // Each hand has one port and one long-lived server. Page tools still ask cdp.mjs whether that server serves this checkout.
 // A browser slot is held for the WHOLE check, not merely for launch, so a large page lab cannot crowd another off RAM.
 import { spawn } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readFileSync, appendFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
 import { join, resolve } from 'node:path';
 import { killTreeSync, launchBrowser } from './browser-profile.mjs';
@@ -94,6 +95,8 @@ export async function execute(job, root, port) {
       const lines = (Buffer.concat(stdout).toString('utf8') + Buffer.concat(stderr).toString('utf8') + (error ? '\n' + error.stack : '')).trim().split(/\r?\n/);
       let events = [];
       try { events = readFileSync(process.env.BRACKEN_PROCESS_LOG, 'utf8').split('\n').filter(Boolean).map(l => JSON.parse(l)).filter(e => e.attempt === attempt); } catch {}
+      const stoppedProfiles = cleanupStoppedProfiles(events, { attempt, check: job.name, run: job.env?.BRACKEN_RUN ?? process.env.BRACKEN_RUN, forced: forcedInterruption });
+      for (const row of stoppedProfiles) if (process.env.BRACKEN_PROCESS_LOG) try { appendFileSync(process.env.BRACKEN_PROCESS_LOG, JSON.stringify({ type: 'supervisor-profile-cleanup', check: job.name, attempt, time: Date.now(), ...row }) + '\n'); } catch {}
       const interrupted = events.find(e => e.type === 'interrupted') || (forcedInterruption ? { reason: forcedInterruption } : null);
       const memory = { totalMb: Math.max(0, ...events.map(e => e.peak?.totalMb || 0)), rendererMb: Math.max(0, ...events.map(e => e.peak?.rendererMb || 0)) };
       resolveResult({ name: job.name, exitCode: code, signal, ok: code === 0 && !timedOut && !error && !interrupted, ms: Date.now() - t0, memory,
