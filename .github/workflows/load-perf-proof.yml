@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [palette-standing, palette-base, layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,42 @@ env:
 permissions:
   contents: read
 jobs:
+  palette-standing:
+    if: inputs.mode == 'palette-standing'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [memory,layout,campaign-1,campaign-2,campaign-3,campaign-4,campaign-5,campaign-6,campaign-7,campaign-8]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: palette-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - name: Original actual-Task3 proof without budget overrides
+        run: |
+          if [[ "$SCOPE" == campaign-* ]]; then
+            node tools/palette-standing-proof.mjs campaign --shard="${SCOPE#campaign-}" --game=palette-game
+          else
+            node tools/palette-standing-proof.mjs "$SCOPE" --game=palette-game
+          fi
+        env:
+          SCOPE: ${{ matrix.scope }}
+          PALETTE_STANDING_OUT: ${{ runner.temp }}/palette-standing-${{ matrix.scope }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: palette-standing-${{ matrix.scope }}
+          path: ${{ runner.temp }}/palette-standing-${{ matrix.scope }}/
+          if-no-files-found: error
   palette-base-campaign:
     if: inputs.mode == 'palette-base'
     runs-on: ubuntu-latest
