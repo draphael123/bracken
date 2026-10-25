@@ -28,9 +28,9 @@ const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').split
 const main = src('src/main.js');
 
 // ---- THE ROAD ----
-ok(lv.needs === 'rootway' && LEVELS.find(l => l.id === 'kings').needs === 'palisadewood', 'Rootway > THE PALISADE WOOD > Kingswood');
+ok(lv.needs === 'underleaf' && LEVELS.find(l => l.id === 'underleaf').needs === 'rootway' && LEVELS.find(l => l.id === 'kings').needs === 'palisadewood', 'Rootway > UNDERLEAF > THE PALISADE WOOD > Kingswood (claude/underleaf4, Daniel 10-25)');
 ok(LEVELS.indexOf(lv) === LEVELS.length - 1 || LEVELS.slice(LEVELS.indexOf(lv) + 1).every(l => l.id !== 'kings'), 'APPENDED (saves count levels by index): nothing before it moved');
-ok(/\{ id: 'palisadewood', kind: 'level', level: LEVELS\.findIndex/.test(main) && /\[221,68\], \[\d+,\d+\], \[141,24\]/.test(main), 'a map node on the road between the Rootway and Kingswood');
+ok(/\{ id: 'palisadewood', kind: 'level', level: LEVELS\.findIndex/.test(main) && /\[221,68\], \[196,72\], \[\d+,\d+\], \[141,24\]/.test(main), 'a map node on the road between Underleaf (after the Rootway: claude/underleaf4, Daniel 10-25) and Kingswood');
 ok(lv.rule === PW_RULE && /KNOCK OUT A PROP AND WHAT IT HOLDS COMES DOWN/.test(lv.rule), 'the rule line: ' + lv.rule);
 ok(/GATE = \[[^\]]*'palisadewood'/.test(src('tools/level-quality.mjs')), 'gated by level-quality');
 ok(L.pwood === true && L.W === PALISADE.W, 'the level is src/palisade-wood.js (L.pwood)');
@@ -41,8 +41,9 @@ ok(L.weather.some(w => w.kind === 'leaves') && L.palette.sky === 'autumn' && (L.
 /* THE OLD SAVES: the gate rule over a fake PROG (the levelLocked clause and the migration, lifted out of main.js) */
 { const mig = /if \(!PROG\.palisadeRoadMig\) \{[^\n]*\}/.exec(main), lock = /\(lv\.needs && !\(PROG\[lv\.needs\] && PROG\[lv\.needs\]\.cleared\)[^\n]*?&& !q\.get\('unlock'\)\)/.exec(main);
   ok(mig && lock && /lv\.id === 'kings' && PROG\.kingsOpen/.test(lock[0]), 'the migration and the gate clause are in src/main.js');
-  if (mig && lock) { const run = PROG => { new Function('PROG', mig[0])(PROG); const q = { get: () => null }; const locked = lv2 => new Function('lv', 'PROG', 'q', 'return !!' + lock[0])(lv2, PROG, q); return { kings: locked(LEVELS.find(l => l.id === 'kings')), pal: locked(lv) }; };
-    const old = run({ rootway: { cleared: true }, kings: { cleared: true } }), oldR = run({ rootway: { cleared: true } }), fresh = run({ palisadeRoadMig: 1, rootway: { cleared: true } }), done = run({ palisadeRoadMig: 1, rootway: { cleared: true }, palisadewood: { cleared: true } });
+  if (mig && lock) { const mig4 = /if \(!PROG\.underleaf4Mig\) \{[^\n]*\}/.exec(main);   /* (claude/underleaf4: the 10-25 road move's own once-migration runs too - an old save keeps the palisade open) */
+    const run = PROG => { new Function('PROG', mig[0])(PROG); if (mig4) new Function('PROG', mig4[0])(PROG); const q = { get: () => null }; const locked = lv2 => new Function('lv', 'PROG', 'q', 'return !!' + lock[0])(lv2, PROG, q); return { kings: locked(LEVELS.find(l => l.id === 'kings')), pal: locked(lv) }; };
+    const old = run({ rootway: { cleared: true }, kings: { cleared: true } }), oldR = run({ rootway: { cleared: true } }), fresh = run({ palisadeRoadMig: 1, underleaf4Mig: 1, rootway: { cleared: true }, underleaf: { cleared: true } }), done = run({ palisadeRoadMig: 1, underleaf4Mig: 1, rootway: { cleared: true }, underleaf: { cleared: true }, palisadewood: { cleared: true } });
     ok(!old.kings && !old.pal, 'an old save that CLEARED Kingswood: Kingswood stays open and THE PALISADE WOOD is UNLOCKED as an extra (not a requirement) ' + JSON.stringify(old));
     ok(!oldR.kings && !oldR.pal, 'an old save with the Rootway cleared (Kingswood was open): Kingswood stays open (grandfathered once), the palisade open ' + JSON.stringify(oldR));
     ok(fresh.kings && !fresh.pal, 'a save made on the new road: the palisade is open and Kingswood waits for it ' + JSON.stringify(fresh));

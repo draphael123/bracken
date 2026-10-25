@@ -128,6 +128,7 @@ function vineBridge(l, rr, v) {
   return once('vb' + (l ? 'l' : '') + (rr ? 'r' : '') + v, () => { const [c, g] = canvas(16, 16), r = mulberry(v * 5 + 3), J = ['#2e5a1c', '#5fae3a', '#9be06a'];
     for (let k = 0; k < 16; k++) { const w = Math.round(Math.sin((k + v * 3) * 0.7) * 1); rect(g, k, 1 + w, 1, 3, k % 4 < 2 ? J[1] : J[0]); px2(g, k, 1 + w, k % 4 < 2 ? J[2] : J[1]); px2(g, k, 3 + w, J[0]); }
     for (let k = 0; k < 4; k++) { const lx = 1 + k * 4 + (v & 1), ly = 4 + ((r() * 3) | 0); rect(g, lx, ly, 3, 2, J[1]); px2(g, lx, ly, J[2]); px2(g, lx + 2, ly + 1, J[0]); px2(g, lx + 1, ly + 2, J[0]); }
+    for (const hx of [2 + (v & 1), 9, 13 - (v & 1)]) { const hl = 3 + ((hx * 3 + v) % 4); for (let q = 0; q < hl; q++) px2(g, hx + (q % 2), 6 + q, q % 3 ? J[0] : J[1]); px2(g, hx, 6 + hl, J[2]); }   /* (claude/underleaf4art) hanging tendrils: a bridge with weight */
     if (v === 1) { px2(g, 6, 0, '#f0ecd0'); px2(g, 5, 1, '#f0ecd0'); px2(g, 7, 1, '#f0ecd0'); px2(g, 6, 1, '#e0b040'); }
     if (l) g.clearRect(0, 0, 2, 8); if (rr) g.clearRect(14, 0, 2, 8);
     return c; });

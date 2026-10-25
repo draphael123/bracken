@@ -15,7 +15,10 @@ const OUT = '#1b1626', W = 56, H = 62, AX = 28, AY = 60;
 export const LANTERN = {};
 const C = { sh: ['#1c2412', '#2e3a1e', '#46582c', '#6a8240'], hood: ['#12180c', '#222e18', '#384a26', '#587038'], skin: ['#3a5a2a', '#5a7e3e', '#86aa5c', '#b4d080'], wood: ['#2a1a0e', '#4a3220', '#6e4e30', '#98724a'],
   patchA: '#8a6a30', patchB: '#7a4222', bone: '#e8dcc0', boneD: '#9c8c68', hair: '#ece8d6', iron: '#2a2420', ironL: '#5a544c', twine: '#cbb888', boot: '#2a1a0e' };
-const FLAME = [{ lo: '#4a8a1e', mid: '#9be048', hi: '#d8ff90', core: '#f4ffd8', eye: '#d8ff90' }, { lo: '#c8381c', mid: '#ff8a3a', hi: '#ffd36b', core: '#fff1a0', eye: '#ffb070' }];
+const FLAME = [{ lo: '#4a8a1e', mid: '#9be048', hi: '#d8ff90', core: '#f4ffd8', eye: '#d8ff90' }, { lo: '#c8381c', mid: '#ff8a3a', hi: '#ffd36b', core: '#fff1a0', eye: '#ffb070' }, { lo: '#2a5a9a', mid: '#4a8fd8', hi: '#a8d8ff', core: '#f0faff', eye: '#a8d8ff' }];   /* (claude/underleaf4art) 0 green (P1), 1 red (P3), 2 BLUE (P2) */
+/* (claude/underleaf4art) HER THREE LOOKS: the shawl and hood take the phase's potion - green bramble, blue-dusk bubbles, scorched cauldron-brick (skin, wood and iron stay hers) */
+const SHAWL = [null, { sh: ['#2a1410', '#4a2418', '#7a3a22', '#a8582e'], hood: ['#1a0c0a', '#30160e', '#52281a', '#7a3c24'] }, { sh: ['#141c34', '#222f58', '#3a4f86', '#5f7fb8'], hood: ['#0e1226', '#1a2446', '#2c3c6c', '#4a60a0'] }];
+const SHAWL0 = { sh: C.sh.slice(), hood: C.hood.slice() };
 const JC = { green: ['#2e5a1c', '#5fae3a', '#9be06a'], blue: ['#24406a', '#4a8fd8', '#a8d8ff'], red: ['#6a2014', '#d8502a', '#ffb070'] };
 
 function painter() {
@@ -195,6 +198,40 @@ DEF.push(
     { c: 17, sit: true, lean: 5, hdx: 2, hdy: 8, eyes: 'closed', hair: 2, staff: [34, 58, 54, 51], lan: [53, 54, 0], fh: [30, 54, { fd: 1 }], bh: [12, 56, {}], noBelt: false },
     null][i]],
 );
+/* (claude/underleaf4) THE VINE LASH: the staff dragged low and back along the floor (green sparks run up it), then flung forward along the boards;
+   THE BUBBLE TRAP: the lantern held out in both hands, a blue bubble swelling at its mouth, then pushed off */
+const vineUp = k => P => { for (let q = 0; q < 3 + k; q++) { P.put(8 + q * 3, 52 - q * 2, q % 2 ? '#9be06a' : '#5fae3a'); P.put(9 + q * 3, 53 - q * 2, '#2e5a1c'); } };
+const bub = (bx, by, r) => P => { for (let a = 0; a < 16; a++) { const t = a / 16 * Math.PI * 2; P.put(bx + Math.round(Math.cos(t) * r), by + Math.round(Math.sin(t) * r), a % 4 ? '#a8d8ff' : '#ffffff'); } P.put(bx - 1, by - 1, '#ffffff'); };
+DEF.push(
+  ['lashTell', 3, i => [{ lean: -3, c: 2, hdx: -1, eyes: 'open', mouth: true, staff: [32, 42, 8, 54], lan: [20, 30, 1], fh: [30, 42, { fist: true }], bh: [40, 40, { fd: 1 }], over: vineUp(0) },
+    { lean: -5, c: 3, hdx: -2, eyes: 'blaze', mouth: true, hair: -2, tipSwing: 2, staff: [30, 44, 4, 56], lan: [16, 32, 2], fh: [28, 44, { fist: true }], bh: [42, 38, { fd: 1 }], over: vineUp(2) },
+    { lean: -6, c: 4, hdx: -2, eyes: 'blaze', mouth: true, hair: -3, tipSwing: 3, staff: [30, 46, 2, 57], lan: [14, 33, 2], fh: [28, 46, { fist: true }], bh: [43, 37, { fd: 1 }], over: vineUp(4) }][i]],
+  ['lash', 3, i => [{ dx: 2, lean: 3, c: 2, hdx: 1, mouth: true, staff: [30, 46, 56, 56], lan: [52, 48, 1], fh: [34, 44, { fist: true }], bh: [14, 46, {}], step: [2, -2], under: smearP(20, 50, 58, 56, '#5fae3a') },
+    { dx: 4, lean: 5, c: 3, hdx: 2, hdy: 1, mouth: true, staff: [34, 48, 60, 57], lan: [56, 50, 1], fh: [38, 46, { fist: true }], bh: [12, 46, {}], step: [3, -3], over: sparks([[58, 55], [60, 52]]) },
+    { dx: 4, lean: 4, c: 3, hdx: 2, hdy: 2, mouth: true, staff: [34, 48, 59, 57], lan: [55, 51, 1], fh: [38, 46, { fist: true }], bh: [12, 46, {}], step: [3, -3] }][i]],
+  ['trapTell', 3, i => [{ lean: -1, c: 1, eyes: 'open', mouth: true, staff: [20, 59, 22, 10], lan: [44, 30, 1], fh: [42, 34, { fist: true }], bh: [46, 32, { fist: true }], over: bub(52, 26, 2) },
+    { lean: -2, c: 1, hood: 0.5, eyes: 'blaze', mouth: true, staff: [20, 59, 22, 10], lan: [44, 28, 2], fh: [42, 32, { fist: true }], bh: [46, 30, { fist: true }], over: bub(53, 24, 4) },
+    { lean: -3, c: 0, hood: 1, eyes: 'blaze', mouth: true, hair: 2, staff: [20, 59, 22, 10], lan: [44, 27, 2], fh: [42, 31, { fist: true }], bh: [46, 29, { fist: true }], over: bub(54, 22, 6) }][i]],
+  ['trap', 2, i => [{ dx: 2, lean: 4, c: 2, hdx: 2, eyes: 'open', mouth: true, staff: [20, 59, 22, 10], lan: [50, 30, 1], fh: [48, 32, { fist: true }], bh: [52, 30, { fd: 1 }], over: bub(60, 26, 6) },
+    { dx: 3, lean: 5, c: 3, hdx: 2, hdy: 1, eyes: 'open', mouth: true, staff: [20, 59, 22, 10], lan: [50, 32, 1], fh: [48, 34, { fist: true }], bh: [54, 34, { fd: 1 }] }][i]],
+);
+/* (claude/underleaf4art) WHEN A POTION BREAKS HER GUARD: P1 SINGED (the hedge burning off her: hands up over her face, reeling back, smoke off the shawl), P2 SNARED (the vine's grip: coiled round her legs and waist,
+   hauled down, hunched, one arm flung out), and P2's ALOFT (hanging calm on her bubbles: the hem lifted, feet dangling, the lantern held high), so the flailing floated set is the lifted-out-of-the-fire pose only */
+const smoke = k => P => { const g = ['#3a3632', '#6a645a', '#9a9488']; for (let q = 0; q < 6; q++) { const x = 16 + q * 5 + ((q * (k + 1)) % 3), y = 38 - q * 3 - k * 2; P.put(x, y, g[q % 3]); P.put(x + 1, y, g[(q + 1) % 3]); P.put(x, y + 1, g[0]); }
+  for (const [x, y] of [[16, 44], [30, 41], [40, 47], [24, 36]]) P.put(x + k, y - k * 2, k % 2 ? '#ffd36b' : '#ff9a5c'); for (const [x, y] of [[20, 46], [34, 50], [26, 52]]) P.put(x, y, '#1a1410'); };
+const coil = k => P => { const J = JC.green; for (const [y0, w] of [[57, 22], [51, 20], [45, 17], [39, 14]]) { const a = (y0 + k) % 3; P.line(13, y0 + a % 2, 13 + w, y0 - 2 + (a >> 1), J[1], 2); P.line(13, y0 + 1, 13 + w, y0 - 1, J[0], 1); P.put(14 + ((y0 * 3) % 11), y0 - 2, '#e8dcc0'); P.put(22 + ((y0 * 5 + k) % 9), y0 + 1, J[2]); P.put(26 + ((y0 + k) % 6), y0 - 3, '#e8dcc0'); }
+  for (let y = 56; y > 30; y -= 6) { P.put(10 + (y % 5), y, J[2]); P.put(11 + (y % 5), y + 1, J[1]); } };
+DEF.push(
+  ['singed', 3, i => [{ lean: -6, c: 3, hdx: -3, hdy: 0, hood: 1, eyes: 'closed', mouth: true, hair: 3, tipSwing: 3, staff: [40, 59, 56, 14], lan: [58, 19, 1], fh: [33, 32, { fist: true }], bh: [29, 34, { fist: true }], step: [-3, 2], over: smoke(0) },
+    { lean: -7, c: 4, hdx: -4, hdy: 1, hood: 1, eyes: 'closed', mouth: true, hair: 3, tipSwing: 2, staff: [38, 59, 55, 13], lan: [57, 18, 1], fh: [32, 34, { fist: true }], bh: [28, 36, { fist: true }], step: [-4, 3], over: smoke(1) },
+    { lean: -5, c: 4, hdx: -2, hdy: 2, hood: 0, eyes: 'one', mouth: true, hair: 2, tipSwing: 1, staff: [40, 59, 54, 14], lan: [56, 19, 1], fh: [36, 36, { fist: true }], bh: [30, 38, { fist: true }], step: [-2, 2], over: smoke(2) }][i]],
+  ['snared', 3, i => [{ lean: 2, c: 6, hdx: 1, hdy: 4, hood: 0, eyes: 'blaze', mouth: true, hair: -1, staff: [6, 58, 34, 55], lan: [37, 53, 0], fh: [46, 40, { fd: 1, up: -1 }], bh: [8, 44, { fd: -1 }], hemDy: 1, step: [-1, 2], over: coil(0) },
+    { lean: 3, c: 7, hdx: 1, hdy: 5, hood: 0, eyes: 'closed', mouth: true, hair: 1, staff: [6, 58, 34, 55], lan: [37, 53, 0], fh: [48, 44, { fd: 1 }], bh: [6, 40, { fd: -1, up: -1 }], hemDy: 1, step: [-2, 1], over: coil(1) },
+    { lean: 2, c: 7, hdx: 2, hdy: 5, hood: 0, eyes: 'blaze', mouth: true, hair: -2, staff: [6, 58, 34, 55], lan: [37, 53, 0], fh: [44, 38, { fd: 1, up: -2 }], bh: [10, 46, { fd: -1 }], hemDy: 1, step: [-1, 1], over: coil(2) }][i]],
+  ['aloft', 4, i => ({ c: -5, lean: [-1, 0, 1, 0][i], hdx: 0, hdy: [-1, -2, -1, 0][i], hood: 0, eyes: 'open', mouth: false, hair: [2, 3, 2, 1][i], tipSwing: [2, 3, 1, 0][i], spread: [3, 4, 3, 2][i], hemDy: -3, step: [[-1, 3], [1, 4], [-2, 3], [0, 4]][i], lift: [[3, 0], [4, 0], [3, 1], [4, 0]][i],
+    staff: [20, 59 - i % 2, 22, 10], lan: [26, 15 - (i % 2), 2], fh: [[24, 20, { fist: true }], [24, 19, { fist: true }], [24, 20, { fist: true }], [24, 21, { fist: true }]][i], bh: [[12, 40, { fd: -1 }], [10, 38, { fd: -1, up: -1 }], [12, 40, { fd: -1 }], [14, 41, { fd: -1 }]][i],
+    over: P => { for (let k = 0; k < 3; k++) P.put(14 + k * 12 + (i % 2) * 3, 56 + ((k + i) % 2), '#a8d8ff'); } })],
+);
 export const F = {}, N = {}; const ORDER = []; for (const [name, n] of DEF) { F[name] = ORDER.length; N[name] = n; for (let i = 0; i < n; i++) ORDER.push([name, i]); }
 
 /* the heap: a pile of shawl on the floor, the hood fallen, the staff broken beside her, the lantern out */
@@ -209,20 +246,27 @@ function pose(name, i, fl, fi) {
   if (name === 'dead' && i === 3) heap(P, fl, fi); else { const def = DEF.find(d => d[0] === name); body(P, def[2](i), fl, fi); }
   outline(P.c, OUT); return P.c;
 }
-const bakeSet = ph => { const fl = FLAME[ph], fr = ORDER.map(([n, i], fi) => pose(n, i, fl, fi)); if (ph) fr.forEach((c, i) => { if (i === F.dead + 3) return; const g = c.getContext('2d'); for (let k = 0; k < 7; k++) { g.fillStyle = k % 2 ? '#ff9a5c' : '#d8502a'; g.fillRect(14 + ((k * 7 + i * 3) % 26), 34 + ((k * 5) % 22), 1, 1); } });   /* phase two: embers on the shawl */
+const bakeSet = ph => { const fl = FLAME[ph], sw = SHAWL[ph] || SHAWL0; C.sh = sw.sh; C.hood = sw.hood; const fr = ORDER.map(([n, i], fi) => pose(n, i, fl, fi)); C.sh = SHAWL0.sh; C.hood = SHAWL0.hood;
+  if (ph === 2) fr.forEach((c, i) => { if (i === F.dead + 3) return; const g = c.getContext('2d'); for (let k = 0; k < 6; k++) { const x = 14 + ((k * 7 + i * 3) % 26), y = 34 + ((k * 5) % 22); g.fillStyle = k % 2 ? '#a8d8ff' : '#4a8fd8'; g.fillRect(x, y, 1, 1); if (k % 3 === 0) { g.fillStyle = '#ffffff'; g.fillRect(x + 1, y - 1, 1, 1); } } });   /* P2: bubble motes caught in the shawl */
+  if (ph === 1) fr.forEach((c, i) => { if (i === F.dead + 3) return; const g = c.getContext('2d'); for (let k = 0; k < 7; k++) { g.fillStyle = k % 2 ? '#ff9a5c' : '#d8502a'; g.fillRect(14 + ((k * 7 + i * 3) % 26), 34 + ((k * 5) % 22), 1, 1); } });   /* phase two: embers on the shawl */
   return { R: fr, L: fr.map(c => flipX(c)), white: { R: fr.map(c => whiten(c)), L: fr.map(c => flipX(whiten(c))) }, ax: AX, ay: AY, w: 20, h: 40 }; };
-export function bakeSets() { const p1 = bakeSet(0), p2 = bakeSet(1), pick = (s, ids) => { const fr = ids.map(i => s.R[i]); return { R: fr, L: fr.map(c => flipX(c)), white: { R: fr.map(c => whiten(c)), L: fr.map(c => flipX(whiten(c))) }, ax: AX, ay: AY, w: 20, h: 40 }; };
-  return { p1, p2, card: pick(p1, [F.walk, F.walk + 2]) }; }
+export function bakeSets() { const p1 = bakeSet(0), p2 = bakeSet(1), pb = bakeSet(2), pick = (s, ids) => { const fr = ids.map(i => s.R[i]); return { R: fr, L: fr.map(c => flipX(c)), white: { R: fr.map(c => whiten(c)), L: fr.map(c => flipX(whiten(c))) }, ax: AX, ay: AY, w: 20, h: 40 }; };
+  return { p1, p2, pb, card: pick(p1, [F.walk, F.walk + 2]) }; }   /* p1 green (P1), p2 red/scorched (P3: SPR.grandmother2), pb blue (P2: SPR.grandmother3) */
 
 /* THE FRAME FOR WHAT SHE IS DOING: each move walks its own frames over its own length (DUR is potion-hands.js GM's, kept here so this module needs nothing of it).
    A flinch shows over a quiet moment only - never over a windup, which is the tell. */
-const DUR = { staffTell: 0.55, staff: 0.32, fireballTell: 0.85, cast: 0.5, jarTell: 0.6, hurled: 0.45, broodTell: 1.0, kick: 1.2, stirTell: 1.0, stir: 0.6, wake: 1.6 };
+const DUR = { lashTell: 0.7, lash: 0.4, trapTell: 0.8, trap: 0.45, staffTell: 0.55, staff: 0.32, fireballTell: 0.85, cast: 0.5, jarTell: 0.6, hurled: 0.45, broodTell: 1.0, kick: 1.2, stirTell: 1.0, stir: 0.6, wake: 1.6 };
 const along = (base, e, key) => { const n = N[base], p = Math.max(0, Math.min(0.999, 1 - Math.max(0, e.modeT) / (DUR[key || base] || 1))); return F[base] + Math.floor(p * n); };
 export function frameOf(e) {
   const m = e.mode, an = e.anim || 0;
   if (m === 'sleep') return F.sleep + [0, 1, 2, 1][Math.floor(an * 1.6) % 4];
   if (m === 'wake') return along('wake', e);
   if (m === 'floated') return F.floated + (Math.floor(an * 8) % 4);
+  if (m === 'lashTell') return along('lashTell', e); if (m === 'lash') return along('lash', e);   /* (claude/underleaf4) THE POTION MASTER's new moves */
+  if (m === 'trapTell') return along('trapTell', e); if (m === 'trap') return along('trap', e);
+  if (m === 'opened') return e.phase === 1 ? F.singed + (Math.floor(an * 5) % 3) : F.snared + (Math.floor(an * 4) % 3);   /* (claude/underleaf4art) her hedge burning off her / the vine's grip: her own staggers */
+  if (m === 'reform') return F.ward + (Math.floor(an * 5) % 3);
+  if (e.aloft && (m === 'walk' || m === 'kick')) return F.aloft + (Math.floor(an * 3) % 4);   /* aloft on her bubbles: calm, the hem lifted */
   if (m === 'staffTell') return along('staffTell', e); if (m === 'staff') return along('staff', e);
   if (m === 'fireballTell') return along('fireballTell', e); if (m === 'cast') return along('cast', e);
   if (m === 'jarTell') return along(e.hurlCol === 'green' ? 'jarTellG' : 'jarTellR', e, 'jarTell'); if (m === 'hurled') return along(e.hurlCol === 'green' ? 'hurledG' : 'hurledR', e, 'hurled');

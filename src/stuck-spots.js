@@ -319,9 +319,20 @@ export const STUCK = {
       { at: [292,29], done: ['vinebed', 292, 29, 'grown'], line: "THE SEED BED UNDER THE YARD: A GREEN JAR" } ] },
     { id: 'ul-well-yard', zone: [306,17,318,23], at: [316,22], done: ['floatwell', 316, 22, 'used'], line: "THE FLOAT WELL: A BUBBLE UP TO HER LEAF" },
     { id: 'ul-bed-leaf', zone: [317,10,322,16], at: [322,15], done: ['vinebed', 322, 15, 'grown'], line: "THE SEED BED ON THE LEAF: A BRIDGE TO THE HEARTH" },
-    { id: 'ul-hedge-leaf', zone: [372,20,381,31], at: [382,29], done: ['thornhedge', 382, 29, 'burnt'], line: "HER LEAF: THE THORNS FIRST" },
-    { id: 'ul-bed-great', zone: [384,20,392,31], at: [392,29], done: ['vinebed', 392, 29, 'grown'], line: "THE SEED BED AT HER WALL: A GREEN JAR" },
-    { id: 'ul-well-great', zone: [393,15,410,24], at: [408,23], done: ['floatwell', 408, 23, 'used'], line: "THE FLOAT WELL: A BUBBLE TO HER STOOP" },
+    /* (claude/underleaf4) THE VINE GULLY: each stump's bed grows the next bridge; the third stump's bed the ladder up the cliff */
+    { id: 'ul-gully-1', zone: [372,24,376,31], at: [376,29], done: ['vinebed', 376, 29, 'grown'], line: "THE GULLY: A GREEN JAR ON THE BANK'S BED GROWS A BRIDGE" },
+    { id: 'ul-gully-2', zone: [385,22,387,29], at: [387,28], done: ['vinebed', 387, 28, 'grown'], line: "THE STUMP'S BED: A GREEN JAR GROWS THE NEXT BRIDGE" },
+    { id: 'ul-gully-3', zone: [396,21,398,28], at: [398,27], done: ['vinebed', 398, 27, 'grown'], line: "THE STUMP'S BED: A GREEN JAR GROWS THE NEXT BRIDGE" },
+    { id: 'ul-gully-4', zone: [407,20,409,28], at: [409,27], done: ['vinebed', 409, 27, 'grown'], line: "THE CLIFF'S FOOT: A GREEN JAR GROWS A LADDER UP IT" },
+    /* THE BUBBLE SHAFTS: a well on the lip and on each rack; the remix - the vine ledge first, then the float to it */
+    { id: 'ul-shaft-1', zone: [414,14,420,21], at: [420,20], done: ['floatwell', 420, 20, 'used'], line: "THE LIP'S WELL: A BLUE JAR AT YOUR FEET, RIDE TO THE RACK" },
+    { id: 'ul-shaft-2', zone: [422,8,425,14], at: [425,13], done: ['floatwell', 425, 13, 'used'], line: "THE RACK'S WELL: ANOTHER BUBBLE UP" },
+    { id: 'ul-shaft-3', zone: [432,6,438,14], steps: [
+      { at: [438,12], done: ['vinebed', 438, 12, 'grown'], line: "THE THIRD RACK: A GREEN JAR GROWS A VINE LEDGE UP THERE" },
+      { at: [438,12], done: ['floatwell', 438, 12, 'used'], line: "NOW A BLUE JAR: FLOAT UP TO THE LEDGE" } ] },
+    { id: 'ul-hedge-leaf', zone: [458,20,467,31], at: [468,29], done: ['thornhedge', 468, 29, 'burnt'], line: "HER LEAF: THE THORNS FIRST" },   /* (claude/underleaf4: her great leaf moved +86) */
+    { id: 'ul-bed-great', zone: [470,20,478,31], at: [478,29], done: ['vinebed', 478, 29, 'grown'], line: "THE SEED BED AT HER WALL: A GREEN JAR" },
+    { id: 'ul-well-great', zone: [479,15,496,24], at: [494,23], done: ['floatwell', 494, 23, 'used'], line: "THE FLOAT WELL: A BUBBLE TO HER STOOP" },
   ],
   burning: [
     { id: 'bn-yard-gate', zone: [124, 18, 137, 30], at: [137, 23], glint: 'stall', line: 'THE GATE BURNS: WATER OPENS IT, OR THE ROOF' },

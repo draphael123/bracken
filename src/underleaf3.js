@@ -25,22 +25,32 @@
 //                                              hedge with a jar-thrower behind it (REQUIRED); exam = a thorn-beast captain before the third hedge; shrine 276
 //   279-372  THE CAULDRON YARD   REMIX         RED then GREEN (the thorns hide a seed bed: REQUIRED), BLUE then GREEN (a bubble up to her leaf, a bridge off it to the
 //                                              hearth: REQUIRED), BLUE a foe off the hearth; the jar stair down; exam = THE HUSH LANCE (the road warden); shrine 370
+//   372-415  THE VINE GULLY      A14 PLATFORMING (claude/underleaf4, Daniel 10-25: "platforming sections where you have to USE POTIONS to get over them"):
+//                                              a stake gully crossed on three vine bridges grown off stumps and a vine ladder up the far cliff - every bridge REQUIRED
+//                                              (eight-wide gaps, no jump makes them), a jar on each stump (refills), the jar-thrower and the leaf archer on the cliff
+//                                              lobbing at you while you throw = its first exam (no shrine: one named area, THE POTION CROSSING, A10c). A fall is the stakes: hurt, back on your stump
+//   415-458  THE BUBBLE SHAFTS   A14 PLATFORMING + REMIX: three floats chained over a thorn chasm (a well on each rack, a blue jar on each), then GREEN THEN BLUE:
+//                                              grow a vine ledge high over the chasm off the third rack, and float up to it; the far bank's archer captain = its exam;
+//                                              shrine 456. (everything from here on is the old 372-477, shifted +86: XO in the builder)
 //   372-427  HER GREAT LEAF      EXAM          all three in a row under the biggest leaf, her cottage in view: burn, grow, float - the ONE stretch where all three are
 //                                              required back to back; shrine 424 at her door
 //   427-477  HER COTTAGE         THE BOSS      THE GRANDMOTHER 3 (src/potion-hands.js): her brood wards her, her blue-jar opening, her cauldron
-export const UL3 = { W: 478, H: 40, G: 30, arena: [433, 474] };
-export const SECTIONS = [['THE HERB GARDEN', 0, 96], ['THE DRYING LOFTS', 96, 189], ['THE THORN HEDGES', 189, 279], ['THE CAULDRON YARD', 279, 372], ['HER GREAT LEAF', 372, 427], ["THE GRANDMOTHER'S COTTAGE", 427, 478]];
+export const UL3 = { W: 478 + 86, H: 40, G: 30, arena: [433 + 86, 474 + 86] };   /* (claude/underleaf4: +86 columns at 372 for THE VINE GULLY and THE BUBBLE SHAFTS) */
+export const UL4_D = 86;
+export const SECTIONS = [['THE HERB GARDEN', 0, 96], ['THE DRYING LOFTS', 96, 189], ['THE THORN HEDGES', 189, 279], ['THE CAULDRON YARD', 279, 372], ['THE POTION CROSSING', 372, 458], ['HER GREAT LEAF', 372 + 86, 427 + 86], ["THE POTION MASTER'S COTTAGE", 427 + 86, 478 + 86]];
 /* each colour's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/underleaf.mjs and the brief */
 export const ARCS = {
-  green: { teach: [9, 15], test: [46, 58], remix: [282, 340], exam: [384, 393] },
-  blue: { teach: [99, 106], test: [108, 118], remix: [314, 324], exam: [402, 410] },
-  red: { teach: [192, 200], test: [217, 234], remix: [284, 292], exam: [375, 384] },
+  green: { teach: [9, 15], test: [46, 58], remix: [282, 340], gully: [372, 415], exam: [384 + 86, 393 + 86] },
+  blue: { teach: [99, 106], test: [108, 118], remix: [314, 324], shafts: [415, 458], exam: [402 + 86, 410 + 86] },
+  red: { teach: [192, 200], test: [217, 234], remix: [284, 292], exam: [375 + 86, 384 + 86] },
 };
 export const UL3_RULE = 'HER JARS CHANGE WHAT THEY BREAK ON: GREEN GROWS A VINE, BLUE LIFTS IN A BUBBLE, RED BURNS.';
 
 export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   const { W, H, G } = UL3;
-  const L = painter(W, H), { set, block, ent } = L;
+  const L = painter(W, H); let XO = 0;   /* (claude/underleaf4) the columns the old HER GREAT LEAF and HER COTTAGE moved right, to make room for the two platforming areas */
+  const set = (x, y, v) => L.set(x + XO, y, v), block = (x0, x1, y0, y1) => L.block(x0 + XO, x1 + XO, y0, y1);
+  const ent = (t, x, y, o) => { const p = { ...(o || {}) }; if (XO) for (const k of ['x0', 'x1']) if (typeof p[k] === 'number') p[k] += XO; return L.ent(t, x + XO, y, p); };
   const ground = (x0, x1, top) => block(x0, x1, top, H - 1);
   const air = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.AIR); };
   const board = (x0, x1, y) => { for (let x = x0; x <= x1; x++) set(x, y, T.ONEWAY); };   /* a drying rack's board / a leaf you can stand on */
@@ -56,22 +66,22 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   /* ONE OF HER CAULDRONS: it brews one colour and fills a jar again in a breath (a jar is taken off its rim like a shelf's) */
   const brew = (x, y, col) => ent('brewpot', x, y, { col });
   /* A SEED BED. ladder: a vine from the bed's row up to `top` (one row over the wall it climbs); bridge: a vine across [x0, x1] at `row` from the lip */
-  const ladderBed = (x, y, top) => { ent('vinebed', x, y, { grow: 'ladder', top }); for (let r = top; r <= y; r++) reachSpans.push([x, x, r]); };
-  const bridgeBed = (x, y, x0, x1, row) => { ent('vinebed', x, y, { grow: 'bridge', x0, x1, row }); reachSpans.push([x0, x1, row]); };
+  const ladderBed = (x, y, top) => { ent('vinebed', x, y, { grow: 'ladder', top }); for (let r = top; r <= y; r++) reachSpans.push([x + XO, x + XO, r]); };
+  const bridgeBed = (x, y, x0, x1, row) => { ent('vinebed', x, y, { grow: 'bridge', x0, x1, row }); reachSpans.push([x0 + XO, x1 + XO, row]); };
   /* A THORN HEDGE: barred cells (T.PORT) a red fire burns away */
-  const hedge = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.PORT); ent('thornhedge', x0, y1, { x0, x1, y0, y1 }); reachDoors.push({ x0, x1, y0, y1 }); };
+  const hedge = (x0, x1, y0, y1) => { for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) set(x, y, T.PORT); ent('thornhedge', x0, y1, { x0, x1, y0, y1 }); reachDoors.push({ x0: x0 + XO, x1: x1 + XO, y0, y1 }); };
   /* A FLOAT WELL: a mossy spring where a blue bubble rides h rows (the reach fill rides it like a vent) */
-  const well = (x, y, h) => { ent('floatwell', x, y, { h }); reachVents.push({ t: 'vent', x, y, h: h * TS }); };
+  const well = (x, y, h) => { ent('floatwell', x, y, { h }); reachVents.push({ t: 'vent', x: x + XO, y, h: h * TS }); };
 
   block(0, 0, 0, H - 1);                                                                   /* the world's west edge */
 
   // ================= 1. THE HERB GARDEN (0-96): TEACH green, where a miss costs nothing =================
   ground(1, 14, G);
-  sign(4, 29, "UNDERLEAF: THE GRANDMOTHER'S VILLAGE. HER JARS CHANGE WHAT THEY BREAK ON.");
+  sign(4, 29, "UNDERLEAF: THE POTION MASTER'S VILLAGE. HER JARS CHANGE WHAT THEY BREAK ON.");
   jar(9, 29, 'green');
   sign(7, 29, 'HER GREEN JAR: INTERACT TAKES IT, ATTACK THROWS IT. ON A SEED BED, A VINE GROWS.');
   ladderBed(13, 29, 23);                                                                   /* up the garden wall: nothing to fight here */
-  deco(3, 29, 'beehive'); deco(11, 29, 'hideRack', 0);
+  deco(3, 29, 'barrels', 1); deco(11, 29, 'hideRack', 0);
   coins([5, 28], [10, 28]);
   board(2, 5, 27); board(8, 11, 27);
   ground(14, 44, 24);                                                                      /* the upper garden: six rows over the lane */
@@ -79,7 +89,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   foe('sprig', 22, 23, { squad: 'garden' }); foe('sprig', 34, 23, { squad: 'garden' }); foe('thief', 40, 23, { face: -1 });
   board(16, 25, 20); board(31, 41, 20);                                                    /* drying racks over the beds (a second height) */
   coins([19, 19], [21, 19], [28, 21], [37, 19], [39, 19], [42, 23]);
-  deco(24, 23, 'hideRack', 1); deco(32, 21, 'beehive');
+  deco(24, 23, 'hideRack', 1); deco(32, 21, 'barrels', 2);
   ground(45, 49, G);                                                                       /* down off the upper garden into the ditch lane */
   jar(46, 29, 'green'); board(44, 47, 27);
   sign(47, 29, "A SEED BED ON THE DITCH'S LIP: A GREEN JAR ON IT GROWS A BRIDGE ACROSS.");
@@ -192,6 +202,42 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   ent('check', 370, 29);
   coins([362, 28], [368, 28]);
 
+  // ================= 4b. THE VINE GULLY (372-415): A14 - GREEN PLATFORMING (claude/underleaf4) =================
+  /* a stake gully three stumps wide: no jump crosses an eight-wide gap (reachcore: six with a run-up), so each stump is reached on a vine bridge grown
+     off the one before; a jar stands on every stump (it refills), and the far cliff is climbed on a vine ladder. The stakes send a fall back to the
+     last stump stood on (hazardBack): no soft-lock. The exam is the cliff: a jar-thrower and a leaf archer up there lob at you while you throw. */
+  ground(373, 376, G);
+  sign(373, 29, 'THE VINE GULLY: NO JUMP CROSSES IT. GROW YOUR BRIDGES, STUMP BY STUMP.');
+  jar(374, 29, 'green'); bridgeBed(376, 29, 377, 384, G);                                  /* the bank's bed: the first bridge */
+  ground(377, 406, 36); spikes(377, 384, 35); spikes(388, 395, 35); spikes(399, 406, 35);   /* the gully floor: stakes from wall to wall */
+  ground(385, 387, 29); jar(385, 28, 'green'); bridgeBed(387, 28, 388, 395, 29);           /* the first stump */
+  ground(396, 398, 28); jar(396, 27, 'green'); bridgeBed(398, 27, 399, 406, 28);           /* the second stump, a row higher */
+  ground(407, 409, 28); jar(407, 27, 'green'); ladderBed(409, 27, 20);                     /* the third stump, at the cliff's foot */
+  ground(410, 420, 21);                                                                    /* THE CLIFF: seven rows over the stump */
+  foe('rockgoblin', 414, 20, { face: -1, herb: 'jarthrower', squad: 'gully' }); foe('archer', 418, 20, { face: -1, squad: 'gully' });
+  board(379, 382, 26); board(390, 393, 25); board(401, 404, 24);                           /* drying racks over the gully: the coins, and a ledge to land on */
+  coins([380, 25], [381, 25], [391, 24], [392, 24], [402, 23], [403, 23], [412, 20]);
+  board(411, 417, 17); coins([413, 16], [415, 16]);                                      /* a rack over the cliff top (a second height) */
+
+  // ================= 4c. THE BUBBLE SHAFTS (415-458): A14 - BLUE PLATFORMING + REMIX (claude/underleaf4) =================
+  /* three floats chained over a thorn chasm: a well on the cliff's lip lifts you to the first rack, a well on each rack to the next (a blue jar on each,
+     it refills); then the REMIX - off the third rack a GREEN jar grows a vine ledge high over the chasm, and only a BLUE float reaches it. From the vine
+     ledge the far bank; its archer captain is the exam. A fall into the thorns sends you back to the last rack you stood on. */
+  sign(416, 20, 'THE BUBBLE SHAFTS: FLOAT FROM RACK TO RACK. A BUBBLE RIDES A WELL HIGHER.');
+  jar(417, 20, 'blue'); well(420, 20, 7);                                                  /* the lip's well: up to the first rack */
+  ground(421, 446, 36); spikes(421, 446, 35);                                              /* THE CHASM: thorns from wall to wall */
+  board(422, 425, 14); jar(422, 13, 'blue'); well(425, 13, 6);                             /* the first rack: its well rides six rows */
+  board(428, 431, 8);                                                                      /* the second rack, high: no well - the drop to the third is the way on */
+  board(435, 438, 13); jar(435, 12, 'green'); jar(436, 12, 'blue'); well(438, 12, 7);      /* the third rack: a GREEN and a BLUE */
+  bridgeBed(438, 12, 439, 445, 6);                                                         /* REMIX: the vine LEDGE grows high over the chasm - only a float reaches it */
+  sign(437, 12, 'GROW THE VINE LEDGE, THEN FLOAT UP TO IT.');
+  ground(446, 457, 7); board(447, 455, 3);                                                                     /* THE FAR BANK, high */
+  foe('archer', 452, 6, { face: -1, elite: true, squad: 'shafts' }); foe('sprig', 449, 6, { squad: 'shafts' });
+  ground(458, 458, 24);                                                                    /* the bank's foot: the way down to her great leaf */
+  coins([423, 13], [424, 13], [429, 7], [430, 7], [440, 5], [442, 5], [444, 5], [448, 6]);
+  ent('check', 456, 6);
+
+  XO = 86;   /* (claude/underleaf4) the rest is the old level, shifted right */
   // ================= 5. HER GREAT LEAF (372-427): EXAM - burn, grow, float, back to back =================
   ground(373, 392, G);
   sign(374, 29, 'HER GREAT LEAF. HER COTTAGE IS UNDER IT: BURN, GROW, AND FLOAT YOUR WAY TO HER DOOR.');
@@ -207,7 +253,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   foe('rockgoblin', 417, 17, { face: -1, herb: 'jarthrower' });
   ent('check', 424, 17);
   coins([395, 23], [398, 23], [413, 17], [416, 17], [421, 17]);
-  sign(421, 17, 'HER BROOD WARDS HER. KILL IT, THEN A BLUE JAR LIFTS HER HELPLESS.');
+  sign(421, 17, 'THE POTION MASTER. RED BURNS HER HEDGE, GREEN PULLS HER DOWN, BLUE LIFTS HER OUT.');
 
   // ================= 6. HER COTTAGE (427-477): THE GRANDMOTHER 3 =================
   ground(427, 428, 22); ground(429, 431, 26); ground(432, 477, G);
@@ -217,7 +263,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   ent('gate', 476, 29);
   coins([440, 28], [446, 28], [466, 28]);
 
-  const arena = { x0: 433 * TS, x1: 475 * TS, floor: G * TS, trigger: 438 * TS, wallL: 432, wallR: 476, boss: 'grandmother', camBelow: 4, music: 'grandmother', tint: '#2a3a24', tintA: 0.12, fx: 'motes' };
+  const arena = { x0: (433 + XO) * TS, x1: (475 + XO) * TS, floor: G * TS, trigger: (438 + XO) * TS, wallL: 432 + XO, wallR: 476 + XO, boss: 'grandmother', camBelow: 4, music: 'grandmother', tint: '#2a3a24', tintA: 0.12, fx: 'motes' };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 29 }, pools: [], falls: [], moversExtra: [], interiors: [],
     arena, jars: true, ul3: true, reachSpans, reachDoors, reachVents,
@@ -225,7 +271,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* five shrines, one closing each area's exam and one at her door (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: 427, hi: 477, spots: 0, why: "HER COTTAGE: columns 427-477 are her arena - no squad stands in a boss arena" }],
+    squadBands: [{ lo: 427 + XO, hi: 477 + XO, spots: 0, why: "HER COTTAGE: columns 513-563 are her arena - no squad stands in a boss arena" }],
     unlocks: [
       { kind: 'jarshelf', opens: 'its jar: green grows a vine on a seed bed (a ladder or a bridge), blue lifts in a bubble, red burns a thorn hedge away', hud: 'THE JAR BREAKS: WHAT IT BREAKS ON CHANGES' },
       { kind: 'vinebed', opens: 'a green jar grows its vine: a ladder up the wall or a bridge across the ditch', hud: 'THE VINE GROWS' },
@@ -237,7 +283,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
     palette: { sky: 'autumn', near: 'autumn', dress: 'wood', haze: 'rgba(70,90,50,0.18)', grass: '#4a6a32', grassL: '#6a8a42', grassD: '#2e4420', dirt: '#3e2e1e', dirtL: '#54402a', dirtD: '#241a10', canopy: ['#24361c', '#2e4422', '#3a522a', '#4a6234'] },
     weather: [{ x0: 0, x1: 99999, kind: 'leaves' }],
     ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],   /* (BATCH120 integ: ambient-landmarks - only the woods play forest birdsong; Underleaf keeps the night wind it had on master. QUESTION FOR DANIEL if it wants its own bed) */
-    tints: [[-24, 96, [140, 170, 90], 0.10], [96, 189, [170, 150, 90], 0.10], [189, 279, [150, 110, 70], 0.12], [279, 372, [180, 120, 60], 0.12], [372, W + 24, [200, 140, 70], 0.13]],
+    tints: [[-24, 96, [140, 170, 90], 0.10], [96, 189, [170, 150, 90], 0.10], [189, 279, [150, 110, 70], 0.12], [279, 372, [180, 120, 60], 0.12], [372, 415, [140, 170, 90], 0.11], [415, 458, [150, 170, 200], 0.10], [458, W + 24, [200, 140, 70], 0.13]],
     reachExact: false,
   };
 }

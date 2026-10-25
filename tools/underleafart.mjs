@@ -8,7 +8,7 @@ import { levelHash } from './level-quality.mjs';
 import { LEVELS } from '../src/level.js';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
-ok(levelHash(LEVELS.find(l => l.id === 'underleaf')) === '3d5dd5571299', "the level hash is the greybox's (art lanes never change the level data)");
+ok(levelHash(LEVELS.find(l => l.id === 'underleaf')) === '9aea76bcc829', "the level hash is underleaf4's greybox (art lanes never change the level data)");
 try {
   const r = await pg.evalp(`(async()=>{
     const LV=(await import('/src/level.js')).LEVELS, idx=LV.findIndex(l=>l.id==='underleaf'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true}); BK.load(idx); BK.start(); BK.god=true; BK.sim(120);
@@ -29,9 +29,9 @@ try {
   ok(o.bare, 'the thorn-beast has a bare (coat burnt off) sheet'); ok(o.brood, 'her brood has its own sheet');
   ok(o.gw >= 54 && o.gh >= 60, 'the Grandmother is ~1.3x the old 42x48 sheet (' + o.gw + 'x' + o.gh + ')');
   const seen = new Map(), dup = []; o.g1.forEach((s, i) => { if (seen.has(s)) dup.push(i + '=' + seen.get(s)); seen.set(s, i); });
-  const moves = ['sleep', 'wake', 'idle', 'walk', 'hurt', 'staffTell', 'staff', 'fireballTell', 'cast', 'jarTellG', 'jarTellR', 'hurledG', 'hurledR', 'broodTell', 'kick', 'stirTell', 'stir', 'ward', 'floated', 'dead'];
+  const moves = ['sleep', 'wake', 'idle', 'walk', 'hurt', 'staffTell', 'staff', 'fireballTell', 'cast', 'jarTellG', 'jarTellR', 'hurledG', 'hurledR', 'broodTell', 'kick', 'stirTell', 'stir', 'ward', 'floated', 'dead', 'lashTell', 'lash', 'trapTell', 'singed', 'snared', 'aloft'];   /* (claude/underleaf4art) her underleaf4 moves + the two staggers + the aloft hover; 'trap' is 2 frames, counted below */
   ok(moves.every(m => o.N[m] >= 3), 'every move is animated (>= 3 frames each): ' + moves.map(m => m + ' ' + o.N[m]).join(', '));
-  ok(o.g1.length === o.g2.length && o.g1.length === moves.reduce((n, m) => n + o.N[m], 0), 'a frame set for every move in each phase: ' + o.g1.length + ' frames');
+  ok(o.g1.length === o.g2.length && o.g1.length === moves.reduce((n, m) => n + o.N[m], 0) + o.N.trap, 'a frame set for every move in each phase: ' + o.g1.length + ' frames');
   ok(dup.length === 0, 'each frame is its own picture, none the walk (B16)' + (dup.length ? ': ' + dup.join(',') : ''));
   ok(o.deadF[0] === o.F.dead && o.deadF[3] === o.F.dead + 3 && new Set(o.deadF).size === 4, 'her death plays four frames (clutch, kneel, slump, heap)');
   ok(o.g2.every((s, i) => i === o.F.dead + 3 || s !== o.g1[i]), 'phase two wears its own set');
