@@ -97,7 +97,7 @@ try {
   const ehp = +((ehpLine.match(/\bpyromancer: *(\d+)/) || [])[1]);
   /* (claude/burnvillage2, Daniel 10-07: he takes WHOLE blows now - FULL_DAMAGE, no quarter chip - so his health was measured again at campaign level,
      human+dry, 12 seeds a hero: 1225 = knight 7/12, warden 9/12, pyro 4/12, 56%. Was: 'about 15% more than the ' + WAS + ' he had', 587) */
-  const NOW = 1225;
+  const NOW = 1500;   /* (claude/pyrotune 10-24: 1225 -> 1500, with the staff-hit damage unchanged and his rest between runs shortened 1.15 -> 1.0 s (0.8 -> 0.75 phase two) and the first cut told 0.4 s: the hero buffs since 10-07 had him at 97% with flasks, k/w/p 11-12/12; the 60-70 band is read at campaign level, human, flasks) */
   assert.equal(ehp, NOW, 'his health is the measured ' + NOW + ': ' + ehp);
   assert.ok(r.hp.max > NOW * 0.95 && r.hp.max <= NOW * 1.05, 'and it is the health he fights with in the square: ' + r.hp.max);
   /* 1 */
