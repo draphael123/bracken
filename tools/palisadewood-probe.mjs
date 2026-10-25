@@ -32,7 +32,7 @@ try {
   BK.god=true;
   tp(108,31);BK.sim(10);out.banner2=PW.read().banner;
   /* THE BATTERING BEAST */
-  tp(401,24);for(let i=0;i<240;i++)BK.sim(1);const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,active:!!BK.bossActive}:null;
+  tp(461,24);for(let i=0;i<240;i++)BK.sim(1);const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,active:!!BK.bossActive}:null;
   const BH=BK.batteringBeastHands(),S=BH&&BH.show();
   if(b&&S){for(let i=0;i<200&&b.mode==='wake';i++)BK.sim(1);
     const sc=S.scafs[1];b.mode='walk';b.modeT=0;S.restT=5;b.x=sc.x-sc.dir*0+sc.dir*40;tp(Math.floor((sc.x-sc.dir*12)/16),24);P.face=sc.dir;BK.press('atk');for(let i=0;i<50;i++){BK.sim(1);S.restT=5;b.x=sc.x+sc.dir*40;}

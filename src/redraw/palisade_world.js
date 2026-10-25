@@ -155,6 +155,19 @@ export function harvestSprite(kind) {
     else if (kind === 'nuts') { for (let row = 0; row < 4; row++) for (let i = 0; i < 6 - row; i++) { const x = 3 + i * 3 + row * 1.5, y = 17 - row * 3; rect(g, x, y, 4, 4, OUT); rect(g, x + 1, y, 2, 1, (i + row) % 2 ? '#a4743a' : '#6a4420'); rect(g, x, y + 1, 4, 2, (i + row) % 2 ? '#8a5a2a' : '#7a4a22'); rect(g, x + 1, y + 1, 1, 1, '#d8a860'); rect(g, x + 1, y + 3, 2, 1, '#3a2210'); }
       rect(g, 1, 20, 22, 1, OUT); }
     else if (kind === 'rake') { rect(g, 11, 0, 3, 21, OUT); rect(g, 12, 0, 1, 21, FRESH[3]); rect(g, 13, 0, 1, 21, MID[0]); rect(g, 12, 1, 1, 21, MID[2]); rect(g, 3, 1, 18, 4, OUT); rect(g, 4, 2, 16, 2, MID[2]); rect(g, 4, 2, 16, 1, FRESH[3]); for (let k = 0; k < 7; k++) { rect(g, 4 + k * 2.5, 4, 1, 5, OUT); rect(g, 4 + k * 2.5, 4, 1, 4, FRESH[2]); } lash(g, 10, 6, 4, false); rect(g, 11, 6, 3, 1, ROPE[1]); }
+    /* (claude/palisade2, Daniel 10-25: "leaves on the ground and all that - add to the theme") THE SIEGE CAMP'S DRESSING: on-theme stock only - the palisade's own timber */
+    else if (kind === 'ropeCoil') { for (let k = 0; k < 4; k++) { const w = 18 - k * 3, x = 3 + k * 1.5, y = 19 - k * 3; rect(g, x, y - 2, w, 4, OUT); rect(g, x + 1, y - 1, w - 2, 1, ROPE[2]); rect(g, x + 1, y, w - 2, 1, ROPE[1]); for (let q = 1; q < w - 1; q += 3) rect(g, x + q, y - 1, 1, 2, ROPE[0]); }
+      rect(g, 19, 12, 4, 2, OUT); rect(g, 19, 12, 3, 1, ROPE[1]); rect(g, 21, 13, 2, 7, ROPE[1]); }
+    else if (kind === 'toolRack') { for (const px of [3, 19]) { rect(g, px, 2, 3, 19, OUT); rect(g, px + 1, 2, 1, 19, MID[2]); } rect(g, 2, 5, 21, 2, OUT); rect(g, 3, 5, 19, 1, FRESH[2]);
+      rect(g, 8, 6, 2, 13, MID[1]); rect(g, 6, 16, 6, 3, IRON[2]); rect(g, 6, 16, 6, 1, IRON[3]);                 /* a mallet */
+      rect(g, 13, 6, 1, 14, MID[1]); rect(g, 12, 7, 5, 4, IRON[1]); rect(g, 16, 7, 1, 4, IRON[3]);                 /* an axe */
+      rect(g, 16, 6, 1, 12, MID[2]); for (let k = 0; k < 4; k++) rect(g, 15 + (k & 1), 18 + k, 2, 1, IRON[2]); }   /* a two-man saw's end */
+    else if (kind === 'sawdust') { for (let k = 0; k < 26; k++) { const x = 1 + ((k * 37) % 22), y = 17 + ((k * 13) % 4); rect(g, x, y, 1 + (k % 2), 1, k % 3 ? FRESH[4] : FRESH[3]); } rect(g, 4, 20, 16, 1, FRESH[3]); rect(g, 6, 19, 10, 1, FRESH[4]);
+      rect(g, 15, 15, 7, 4, OUT); rect(g, 16, 16, 5, 2, FRESH[2]); rect(g, 16, 16, 1, 2, FRESH[4]); }               /* a sawn-off block */
+    else if (kind === 'stakePile') { for (let k = 0; k < 5; k++) { const y = 18 - (k % 3) * 3 - (k > 2 ? 2 : 0), x = 1 + (k % 2) * 2; rect(g, x, y - 1, 19, 4, OUT); rect(g, x + 1, y, 16, 1, FRESH[4]); rect(g, x + 1, y + 1, 16, 1, FRESH[2]); rect(g, x + 17, y, 3, 2, FRESH[4]); rect(g, x + 20, y + 1, 2, 1, FRESH[3]); } lash(g, 8, 13, 2, false); }
+    else if (kind === 'logStack') { for (let row = 0; row < 3; row++) for (let i = 0; i < 3 - row; i++) logEnd(g, 2 + i * 7 + row * 3.5, 14 - row * 6, 7, row !== 1); rect(g, 0, 20, 24, 1, OUT); }   /* the palisade's stock, cut to length */
+    else if (kind === 'brokenStakes') { for (let k = 0; k < 4; k++) { const x = 2 + k * 5, h = 6 + ((k * 5) % 9); rect(g, x, 21 - h, 4, h, OUT); rect(g, x + 1, 21 - h, 2, h, k & 1 ? '#3a2414' : '#5a3a1d'); rect(g, x + 1, 21 - h, 1, 2, '#1a0e06'); rect(g, x + 2, 22 - h, 1, 1, '#ff8a3a'); } }   /* charred butts, an ember */
+    else if (kind === 'scorch') { for (let k = 0; k < 18; k++) rect(g, 1 + ((k * 29) % 22), 19 + ((k * 7) % 3), 2, 1, k % 4 ? '#1a1008' : '#5a5048'); rect(g, 3, 21, 18, 1, '#120a04'); }   /* a burnt patch, ash */
     else if (kind === 'sheaf') { for (let i = 0; i < 9; i++) { const x = 6 + i * 1.5 + (i - 4) * (i - 4) * 0.12 * (i < 4 ? -1 : 1), top = 1 + Math.abs(i - 4) * 1.2; rect(g, x, top, 2, 20 - top, OUT); rect(g, x, top, 1, 20 - top, '#e8c860'); rect(g, x + 1, top, 1, 20 - top, '#b08828'); rect(g, x - 0, top - 1, 2, 3, '#f4dc88'); }
       rect(g, 5, 10, 14, 3, OUT); rect(g, 6, 10, 12, 1, ROPE[2]); rect(g, 6, 11, 12, 1, ROPE[1]); rect(g, 6, 12, 12, 1, ROPE[0]); rect(g, 8, 13, 1, 3, ROPE[1]); }
     else { for (let row = 0; row < 3; row++) for (let i = 0; i < 5 - row; i++) apple(2 + i * 4 + row * 2, 16 - row * 3, (i + row) % 3 === 0 ? '#c0402a' : (i + row) % 3 === 1 ? '#e06030' : LEAF[4]); rect(g, 0, 20, 24, 1, OUT); rect(g, 2, 19, 20, 1, MID[0]); }
@@ -162,8 +175,68 @@ export function harvestSprite(kind) {
 }
 
 /* ============================== THE WHOLE WORLD'S DRAW (called by PWH.drawWorld) ============================== */
+/* (claude/palisade2) FALLEN LEAVES on every floor (Daniel 10-25): each top surface in view carries a scatter of russet and gold leaves, hashed so it never crawls;
+   THE BREACH's crater floor and stumps carry ash instead. The surfaces are found once a level (a cell you stand on: solid or boards, with air over it) */
+const leafCache = new WeakMap();
+function surfaces(lv) { let s = leafCache.get(lv); if (s) return s; s = new Map();
+  for (let x = 0; x < lv.W; x++) { const col = []; for (let y = 1; y < lv.H; y++) { const t = lv.grid[y * lv.W + x], up = lv.grid[(y - 1) * lv.W + x]; if ((t === 1 || t === 2) && up === 0) col.push(y); } if (col.length) s.set(x, col); }
+  leafCache.set(lv, s); return s; }
+function leafLitter(g, lv, cx, cy, VW, VH, TS, time) {
+  const s = surfaces(lv), ash = lv.breach || [0, -1], x0 = Math.max(0, Math.floor(cx / TS)), x1 = Math.min(lv.W - 1, Math.ceil((cx + VW) / TS));
+  for (let x = x0; x <= x1; x++) { const col = s.get(x); if (!col) continue;
+    for (const y of col) { const sy = y * TS - cy; if (sy < -8 || sy > VH + 8) continue; const sx = x * TS - cx, burnt = x >= ash[0] && x <= ash[1];
+      let h = strHash(x + ':' + y); const n = 3 + (h % 4);
+      for (let k = 0; k < n; k++) { h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0; const lx = sx + (h % 16), ly = sy - 1 + ((h >>> 5) % 3) - 1, c = burnt ? ((h >>> 9) % 3 ? '#1e140c' : '#6a6058') : LEAF[1 + ((h >>> 9) % 5)];
+        g.fillStyle = c; g.fillRect(R(lx), R(ly), (h >>> 12) % 3 ? 2 : 1, 1); if (!burnt && (h >>> 15) % 4 === 0) g.fillRect(R(lx) + 1, R(ly) - 1, 1, 1); } } } }
+/* ============================== (claude/palisade2art) THE BREACH, DRAWN OVER ITS TILES ==============================
+   What the beast and the siege fire left: a CRATER of charred stakes (the spike floor), BURNT STUMPS with their ring-cut tops, three STANDING TOWERS (scorched posts, braces, a broken parapet, a pennant rag), SCORCHED BOARDS
+   (cracked, gapped, one end burnt through) and ASH. The columns are the level's own (src/palisade-wood.js THE BREACH); the archers' DRAW gets a GLINT on the arrowhead (a four-point star that pulses) so the shot is told in the air as well as by the '!' */
+const BR = { pit: [309, 361, 32], stumps: [[311, 312, 24], [315, 316, 23], [335, 336, 20], [344, 345, 21]], towers: [[324, 326, 19], [349, 351, 18], [365, 366, 22]], boards: [[319, 322, 22], [329, 332, 21], [340, 341, 22], [347, 347, 19], [354, 356, 20], [359, 361, 21]] };
+const CHAR = ['#0c0806', '#1e140c', '#3a2a1e', '#5a4632'], EMBER = ['#c8281e', '#ff6a1a', '#ffb03a'];
+function drawBreach(g, lv, ctx, cx, cy, VW, VH, TS, time) {
+  const vx0 = cx, vx1 = cx + VW, X = v => R(v - cx), Y = v => R(v - cy), seen = (a, b) => b * TS + TS > vx0 - 8 && a * TS < vx1 + 8;
+  const rc = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
+  /* the crater: charred stakes standing in the pit, ash between */
+  const [p0, p1, prow] = BR.pit; if (seen(p0, p1)) { const base = Y((prow + 1) * TS);
+    for (let x = p0 * TS; x < (p1 + 1) * TS; x += 5) { if (x + 5 < vx0 || x > vx1) continue; const h = 9 + (strHash('s' + x) % 8), sx = X(x), lean = (strHash('l' + x) % 3) - 1;
+      rc(sx - 1, base - h - 1, 5, h + 1, CHAR[0]); rc(sx, base - h, 3, h, CHAR[1]); rc(sx, base - h, 1, h, CHAR[3]); rc(sx + 1 + lean, base - h - 3, 1, 3, CHAR[3]); rc(sx + 1 + lean, base - h - 4, 1, 1, '#d8c8a0');
+      if (strHash('e' + x) % 5 === 0 && Math.floor(time * 3 + x) % 3) rc(sx + 1, base - h + 2, 1, 1, EMBER[1]); }
+    for (let x = p0 * TS; x < (p1 + 1) * TS; x += 11) { if (x < vx0 - 8 || x > vx1) continue; rc(X(x), base - 3, 9, 2, '#4a4038'); rc(X(x) + 2, base - 4, 4, 1, '#6a6058'); } }
+  /* burnt stumps: a ring-cut top, a charred skin, a split */
+  for (const [a, b, row] of BR.stumps) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS);
+    rc(x - 2, y - 3, w + 4, 6, CHAR[0]); rc(x - 1, y - 2, w + 2, 4, '#8a6a44'); rc(x - 1, y - 2, w + 2, 1, '#c49a5c'); rc(x + 2, y - 1, w - 4, 2, '#6a4a2c'); rc(x + 5, y - 1, w - 10, 1, '#c49a5c');   /* the cut top, a ring */
+    for (let k = 0; k < w; k += 5) rc(x + k, y + 2, 2, (b - a + 1) * TS * 0 + 14 + (strHash('c' + a + k) % 20), CHAR[1 + (k & 1)] );
+    rc(x + 3, y + 3, 1, 16, CHAR[0]); rc(x + w - 6, y + 8, 1, 14, CHAR[0]);
+    if (Math.floor(time * 2 + a) % 3) rc(x + 6, y - 3, 1, 1, EMBER[1]); }
+  /* the standing towers */
+  for (const [a, b, row] of BR.towers) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS), bot = Y(33 * TS);
+    rc(x - 2, y - 3, w + 4, 5, CHAR[0]); rc(x - 1, y - 2, w + 2, 1, '#c49a5c'); rc(x - 1, y - 1, w + 2, 2, '#7a5030');   /* the deck lip */
+    for (const px of [x + 1, x + w - 6]) { rc(px - 1, y + 2, 7, bot - y - 2, CHAR[0]); rc(px, y + 2, 5, bot - y - 2, '#4a3220'); rc(px, y + 2, 1, bot - y - 2, '#8a6a44'); for (let yy = y + 6; yy < bot; yy += 11) { rc(px - 1, yy, 7, 3, ROPE[0]); rc(px - 1, yy, 7, 1, ROPE[1]); } for (let yy = y + 10; yy < bot; yy += 17) rc(px + 1, yy, 3, 6, CHAR[0]); }   /* posts, scorched, lashed */
+    g.strokeStyle = '#5a4632'; g.lineWidth = 2; g.beginPath(); g.moveTo(x + 6, y + 4); g.lineTo(x + w - 7, y + (bot - y) * 0.55); g.moveTo(x + w - 7, y + 4); g.lineTo(x + 6, y + (bot - y) * 0.55); g.stroke(); g.lineWidth = 1;   /* braces */
+    rc(x + 2, y - 15, 3, 13, CHAR[0]); rc(x + 3, y - 14, 1, 11, '#a88a5c'); rc(x + 3, y - 16, 1, 2, '#d8c8a0');                                                                 /* a stake left of the parapet */
+    rc(x + w - 6, y - 8, 3, 6, CHAR[0]); rc(x + w - 5, y - 7, 1, 4, '#a88a5c'); rc(x + w - 7, y - 10, 2, 3, CHAR[1]);                                                                /* another, snapped */
+    rc(x + w - 3, y - 20, 1, 18, '#3a2414'); rc(x + w - 2, y - 20 + (Math.floor(time * 4 + a) & 1), 8, 5, RUST[1]); rc(x + w - 2, y - 15, 5, 3, RUST[0]); rc(x + w + 4, y - 16, 2, 2, RUST[0]); }   /* a torn rust pennant */
+  /* scorched boards: a charred underside, split planks, a burnt-through end */
+  for (const [a, b, row] of BR.boards) { if (!seen(a, b)) continue; const x = X(a * TS), w = (b - a + 1) * TS, y = Y(row * TS);
+    rc(x, y + 4, w, 4, CHAR[0]); rc(x + 1, y + 5, w - 2, 2, CHAR[2]); for (let k = 5; k < w - 3; k += 9) { rc(x + k, y + 1, 1, 7, CHAR[0]); rc(x + k + 1, y + 2, 1, 3, '#a07040'); }
+    rc(x + w - 5, y, 5, 3, CHAR[0]); rc(x + w - 4, y + 1, 3, 1, EMBER[0]); rc(x, y + 8, 3, 3, CHAR[1]); rc(x + w - 4, y + 8, 3, 5, CHAR[1]);
+    for (let k = 6; k < w - 6; k += 13) rc(x + k, y + 8, 1, 4 + (k % 4), ROPE[0]); }
+}
+/* (claude/palisade2art) the archers' tell in the air: a bright four-point GLINT on the arrowhead while the bow is drawn, quickening as he comes to full draw */
+function archerGlint(g, ctx, cx, cy, VW, time, lv) {
+  const br = lv.breach || [0, -1], TS = ctx.TS;
+  for (const e of ctx.enemies()) { if (!e.alive || e.t !== 'archer' || !(e.draw > 0) || e.x < br[0] * TS - 40 || e.x > (br[1] + 1) * TS + 40) continue;
+    const f = e.face || -1, tx = R(e.x + f * 9 - cx), ty = R(e.y - 6 - cy), k = Math.max(0, Math.min(1, 1 - e.draw)), on = Math.floor(time * (8 + k * 14)) % 2, L = on ? 5 : 3;
+    g.fillStyle = '#fff6d0'; g.fillRect(tx - L, ty, L * 2 + 1, 1); g.fillRect(tx, ty - L, 1, L * 2 + 1); g.fillStyle = '#ffd36b'; g.fillRect(tx - 1, ty - 1, 3, 3); g.fillStyle = '#ffffff'; g.fillRect(tx, ty, 1, 1);
+    g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; for (let q = 1; q < 6; q++) g.fillRect(tx + f * q * 5, ty, 2, 1); g.globalAlpha = 1; } }   /* and a faint dotted line along the way it will fly */
+/* (claude/palisade2art) LEAVES IN THE AIR: a few drifting down through the view, swaying (screen-space, hashed, nothing baked per frame) */
+function driftLeaves(g, cx, cy, VW, VH, time) {
+  for (let k = 0; k < 16; k++) { const sp = 14 + (k * 7) % 11, ph = (time * sp / 220 + k * 0.173) % 1, sx = ((k * 97 + 40) % (VW + 60)) + Math.sin(time * 1.3 + k * 2.1) * 12 - ((cx * (0.25 + (k % 3) * 0.1)) % (VW + 60)), x = ((sx % (VW + 60)) + VW + 60) % (VW + 60) - 30, y = ph * (VH + 20) - 10;
+    g.fillStyle = LEAF[2 + (k % 4)]; g.fillRect(R(x), R(y), 3, 1); g.fillRect(R(x) + (Math.floor(time * 4 + k) & 1), R(y) + 1, 2, 1); } }
 export function drawWorld(E) {
   const { g, S, lv, ctx, cx, cy, VW, time, propCells, PROPS, SETTER, standAt } = E, TS = ctx.TS;
+  if (!E.noLeaves) { leafLitter(g, lv, cx, cy, VW, E.VH || 400, TS, time); driftLeaves(g, cx, cy, VW, E.VH || 360, time); }
+  if (lv.breach && lv.breach[1] >= lv.breach[0]) { drawBreach(g, lv, ctx, cx, cy, VW, E.VH || 360, TS, time); archerGlint(g, ctx, cx, cy, VW, time, lv); }
   /* THE HARVEST the goblins took */
   for (const [hx, hy, k] of (lv.harvest || [])) { const x = R(hx * TS + 8 - cx), y = R((hy + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; const sp = harvestSprite(k); g.globalAlpha = 0.3; rect(g, x - 9, y - 1, 18, 2, '#000'); g.globalAlpha = 1; g.drawImage(sp, x - 12, y - sp.height + 1); }
   for (const h of S.hs.values()) { const d = h.d, ccx = R(d.cleat[0] * TS + 8 - cx), ccy = R((d.cleat[1] + 1) * TS - cy), lxs = R(h.lx - cx), ly = R(h.ly - cy), up = h.state === 'hang';

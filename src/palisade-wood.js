@@ -31,15 +31,19 @@
 //   306-390  THE HALF-BUILT GATEHOUSE  EXAM  down into the gatehouse yard: siege engines, supply carts; THE DITCH (its scaffold falls across - REQUIRED), the gate
 //                                          stakes roll through the passage's guards, the crew over the gate, a setter; shrine 386, the old forest gate's door
 //   390-442  THE OLD FOREST GATE   BOSS    THE BATTERING BEAST is brought up to batter the old gate you came through - two SCAFFOLDS in the clearing, each on a prop
-export const PALISADE = { W: 443, H: 44, arena: [394, 438], floor: 25 };
-export const SECTIONS = [['THE FELLED EDGE', 0, 104], ['THE STAKE YARD', 104, 204], ['THE SCAFFOLDS', 204, 306], ['THE HALF-BUILT GATEHOUSE', 306, 390], ['THE OLD FOREST GATE', 390, 443]];
+export const PALISADE = { W: 503, H: 44, arena: [454, 498], floor: 25 };   /* (claude/palisade2: THE BREACH, 60 columns at 307 - the gatehouse and the clearing moved east 60) */
+export const SECTIONS = [['THE FELLED EDGE', 0, 104], ['THE STAKE YARD', 104, 204], ['THE SCAFFOLDS', 204, 306], ['THE HALF-BUILT GATEHOUSE', 306, 450], ['THE OLD FOREST GATE', 450, 503]];
+/* (claude/palisade2, Daniel 10-25: "platforming sections over destroyed terrain where archers shoot at you") THE BREACH: the gatehouse area's approach, A14's second real
+   platforming section - over the crater the beast's ram and the siege fire made: burnt stumps, broken palisade, crumbling boards over a stake pit, three archers on the
+   towers still standing. No shrine inside it (fewer checkpoints): shrine three (299) is behind you, shrine four (446) after the gatehouse. Its exam: the last crossing */
+export const BREACH = { x0: 307, x1: 366, pitRow: 32, towers: [[324, 19], [349, 18], [365, 22]] };
 /* the rule's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/palisadewood.mjs and the brief */
 export const ARCS = {
   ramp: { teach: [14, 26], remix: [205, 222] },                          /* the first prop (the ledge); the wall's ramp */
-  crew: { teach: [26, 40], develop: [80, 96], remix: [232, 247], exam: [356, 368] },
-  stakes: { teach: [106, 130], develop: [178, 198], exam: [340, 362] },
-  tower: { test: [139, 156], remix: [248, 262], exam: [322, 338] },
-  setter: { teach: [130, 140], develop: [184, 196], remix: [284, 292], exam: [364, 372] },
+  crew: { teach: [26, 40], develop: [80, 96], remix: [232, 247], exam: [416, 428] },
+  stakes: { teach: [106, 130], develop: [178, 198], exam: [400, 422] },
+  tower: { test: [139, 156], remix: [248, 262], exam: [382, 398] },
+  setter: { teach: [130, 140], develop: [184, 196], remix: [284, 292], exam: [424, 432] },
 };
 export const PW_RULE = 'THE WALL IS STILL GOING UP: KNOCK OUT A PROP AND WHAT IT HOLDS COMES DOWN.';
 
@@ -189,37 +193,70 @@ export function buildPalisadeWood({ painter, T, TS }) {
   coins([286, 11], [294, 11]);
   ent('check', 299, 12);                                                           /* SHRINE THREE: the wall top is behind you */
 
-  // ================= 4. THE HALF-BUILT GATEHOUSE (306-390): THE EXAM - every use at once, under the landmark =================
+  // ================= 4. THE HALF-BUILT GATEHOUSE (306-450): THE EXAM - every use at once, under the landmark =================
   plank(301, 303, 16); plank(304, 306, 19); plank(301, 303, 22);                   /* down the wall's far face (boards) */
-  ground(301, 329, 25);
-  sign(307, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
-  deco(310, 24, 'siege', 0); deco(316, 24, 'cart', 1); deco(320, 24, 'batteringRam', 0); crop(313, 24, 'apples'); crop(318, 24, 'basket');
-  plank(308, 314, 22); coins([309, 21], [313, 21]);
-  foe('pike', 312, 24, 'yard2', { face: -1 }); foe('shield', 317, 24, 'yard2', { face: -1 }); foe('brute', 321, 24, 'yard2', { face: -1 }); foe('archer', 311, 21, 'yard2', { face: -1, perch: true });
-  coins([308, 23], [314, 23], [322, 23]);
+  ground(301, 308, 25);
+  // ----- 4a. THE BREACH (307-366, claude/palisade2): A14 OVER DESTROYED TERRAIN, UNDER THE ARCHERS -----
+  /* the palisade here is down: the beast's ram broke it and the siege fire took the wood. A crater of stakes (a SPIKE floor, it bites and sets you back) under what is
+     left standing: burnt stumps, broken stake butts, a leaning panel, crumbling boards, and the three towers that did not fall - an archer on each. Every jump is in
+     their sight (an archer sees within four rows): the draw is told ('!' and his draw pose), the arrow flies an arc you can jump over or drop under. Kill the first two
+     by STORMING their towers (the route goes over each one); the third covers the last crossing - the exam */
+  sign(304, 24, 'THE BREACH. THE BEAST CAME THROUGH HERE. ARCHERS HOLD THE TOWERS STILL STANDING.');
+  ground(309, 361, 33); for (let x = 309; x <= 361; x++) set(x, 32, T.SPIKE);       /* the crater floor: sharpened stakes */
+  block(311, 312, 24, 32); coins([311, 22]);                                        /* a burnt stump (up one) */
+  block(315, 316, 23, 32); coins([315, 21]);                                        /* a stake butt (two across, up one) */
+  plank(319, 322, 22);                                                              /* a leaning palisade panel */
+  block(324, 326, 19, 32); foe('archer', 325, 18, 'breachA', { face: -1, perch: true });   /* TOWER ONE (standing): storm it - up three from the panel */
+  sign(318, 21, 'THE TOWERS STILL STAND. STORM THEM: KILL THE ARCHER ON TOP.');
+  plank(329, 332, 21); crumbles.push({ x0: 329, x1: 332, row: 21, rows: 1, count: 1.05, kind: 'bough' });   /* scorched boards: they give way */
+  block(335, 336, 20, 32); coins([335, 18]);                                        /* a burnt stump */
+  plank(340, 341, 22);                                                              /* a broken scaffold board */
+  block(344, 345, 21, 32);                                                          /* a stump */
+  plank(347, 347, 19);                                                              /* a stake butt's head: the step up to tower two */
+  block(349, 351, 18, 32); foe('archer', 350, 17, 'breachB', { face: -1, perch: true });   /* TOWER TWO */
+  coins([340, 20], [347, 17]);
+  /* THE EXAM: the last crossing - crumbling boards over the pit under TOWER THREE's archer, and a pike waiting at the landing */
+  sign(352, 17, 'THE LAST CROSSING. THE BOARDS GIVE WAY: KEEP MOVING.');
+  plank(354, 356, 20); crumbles.push({ x0: 354, x1: 356, row: 20, rows: 1, count: 1.05, kind: 'bough' });
+  plank(359, 361, 21); crumbles.push({ x0: 359, x1: 361, row: 21, rows: 1, count: 1.05, kind: 'bough' });
+  coins([355, 18], [360, 19]);
+  ground(362, 389, 25);
+  block(365, 366, 22, 24); foe('archer', 366, 21, 'breachC', { face: -1, perch: true });   /* TOWER THREE (a stump of a tower: up three) */
+  foe('pike', 363, 24, 'breachC', { face: -1 });
+  /* the breach's wreck: what the beast left (art: burnt timber, a broken ram's track, scorched leaves) */
+  /* (claude/palisade2) THE SIEGE CAMP'S DRESSING through the wood: the palisade's own stock and the crews' gear (rope, tools, sawdust, stakes cut to length) */
+  harvest.push([3, 37, 'sawdust'], [20, 37, 'stakePile'], [42, 32, 'ropeCoil'], [56, 34, 'logStack'], [63, 34, 'sawdust'], [78, 34, 'toolRack'], [99, 31, 'ropeCoil'],
+    [112, 31, 'stakePile'], [128, 31, 'sawdust'], [136, 31, 'toolRack'], [165, 31, 'logStack'], [185, 28, 'ropeCoil'], [203, 28, 'stakePile'],
+    [207, 28, 'logStack'], [218, 28, 'toolRack'], [226, 12, 'ropeCoil'], [263, 12, 'sawdust'], [285, 12, 'stakePile'], [383, 24, 'toolRack'], [398, 24, 'stakePile'], [445, 24, 'ropeCoil']);
+  harvest.push([310, 24, 'brokenStakes'], [327, 31, 'brokenStakes'], [338, 31, 'scorch'], [352, 31, 'brokenStakes'], [363, 24, 'scorch']);
+  sign(367, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
+  deco(370, 24, 'siege', 0); deco(376, 24, 'cart', 1); deco(380, 24, 'batteringRam', 0); crop(373, 24, 'apples'); crop(378, 24, 'basket');
+  plank(368, 374, 22); coins([369, 21], [373, 21]);
+  foe('pike', 372, 24, 'yard2', { face: -1 }); foe('shield', 377, 24, 'yard2', { face: -1 }); foe('brute', 381, 24, 'yard2', { face: -1 }); foe('archer', 371, 21, 'yard2', { face: -1, perch: true });
+  coins([368, 23], [374, 23], [382, 23]);
   /* THE DITCH (REQUIRED): eight wide; the gatehouse scaffold stands on its lip on a prop - it falls across. A fall is a climb (a board up its west wall) */
-  prop('gateBridge', { x: 328, top: 14, cleat: [325, 24], load: 'bridge', span: [330, 337, 25] });
-  sign(323, 24, 'THE DITCH. THE GATEHOUSE SCAFFOLD STANDS ON A PROP.');
-  ground(330, 337, 31); plank(330, 332, 28);
-  ground(338, 442, 25);
+  prop('gateBridge', { x: 388, top: 14, cleat: [385, 24], load: 'bridge', span: [390, 397, 25] });
+  sign(383, 24, 'THE DITCH. THE GATEHOUSE SCAFFOLD STANDS ON A PROP.');
+  ground(390, 397, 31); plank(390, 392, 28);
+  ground(398, 502, 25);
   /* THE GATEHOUSE: half-built over the road (the passage under it four rows high); its stakes racked on its far side roll back through the passage at its guards */
-  block(346, 356, 6, 20);
-  foe('shield', 349, 24, 'passage', { face: -1 }); foe('pike', 353, 24, 'passage', { face: -1 }); foe('archer', 351, 5, 'passage', { face: -1, perch: true });
-  prop('gateStakes', { x: 360, top: 15, hang: 19, cleat: [342, 24], load: 'stakes', roll: -1, rollMax: 15 });
-  sign(340, 24, "THE GATE'S STAKES ROLL BACK THROUGH THE PASSAGE: KNOCK OUT THEIR PROP.");
-  deco(344, 24, 'gobPennant', 0); deco(358, 24, 'gobPennant', 1);
+  block(406, 416, 6, 20);
+  foe('shield', 409, 24, 'passage', { face: -1 }); foe('pike', 413, 24, 'passage', { face: -1 }); foe('archer', 411, 5, 'passage', { face: -1, perch: true });
+  prop('gateStakes', { x: 420, top: 15, hang: 19, cleat: [402, 24], load: 'stakes', roll: -1, rollMax: 15 });
+  sign(400, 24, "THE GATE'S STAKES ROLL BACK THROUGH THE PASSAGE: KNOCK OUT THEIR PROP.");
+  deco(404, 24, 'gobPennant', 0); deco(418, 24, 'gobPennant', 1);
   /* the crew over the gate's far side, a setter on the road, the supply carts on to Kingswood */
-  prop('gateCrew', { x: 362, top: 18, cleat: [358, 24], load: 'crew', walk: [359, 366, 19] });
-  foe('rockgoblin', 361, 18, 'gateCrew', { face: -1, perch: true }); foe('archer', 364, 18, 'gateCrew', { face: -1, perch: true });
-  setter(369, 24, 'gateRoad'); foe('brute', 373, 24, 'gateRoad', { face: -1 }); foe('hound', 379, 21, 'gateRoad', { face: -1, perch: true });
-  plank(368, 374, 21); plank(377, 383, 22); coins([370, 20], [380, 21]);
-  deco(374, 24, 'cart', 0); deco(379, 24, 'barrels', 0); crop(377, 24, 'sheaf'); crop(381, 24, 'nuts');
-  sign(372, 24, "THE SUPPLY CARTS ROLL ON TO KINGSWOOD'S ROYAL ROAD.");
-  coins([343, 23], [351, 23], [366, 23], [376, 23]);
-  ent('check', 386, 24);                                                           /* SHRINE FOUR: the old forest gate's door */
-  sign(389, 24, 'THE BATTERING BEAST: DROP A SCAFFOLD ON IT OR IN ITS PATH. IT STICKS IN THE WRECK.');
+  prop('gateCrew', { x: 422, top: 18, cleat: [418, 24], load: 'crew', walk: [419, 426, 19] });
+  foe('rockgoblin', 421, 18, 'gateCrew', { face: -1, perch: true }); foe('archer', 424, 18, 'gateCrew', { face: -1, perch: true });
+  setter(429, 24, 'gateRoad'); foe('brute', 433, 24, 'gateRoad', { face: -1 }); foe('hound', 439, 21, 'gateRoad', { face: -1, perch: true });
+  plank(428, 434, 21); plank(437, 443, 22); coins([430, 20], [440, 21]);
+  deco(434, 24, 'cart', 0); deco(439, 24, 'barrels', 0); crop(437, 24, 'sheaf'); crop(441, 24, 'nuts');
+  sign(432, 24, "THE SUPPLY CARTS ROLL ON TO KINGSWOOD'S ROYAL ROAD.");
+  coins([403, 23], [411, 23], [426, 23], [436, 23]);
+  ent('check', 446, 24);                                                           /* SHRINE FOUR: the old forest gate's door */
+  sign(449, 24, 'THE BATTERING BEAST: DROP A SCAFFOLD ON IT OR IN ITS PATH. IT STICKS IN THE WRECK.');
 
-  // ================= 5. THE OLD FOREST GATE (394-438): THE BATTERING BEAST =================
+  // ================= 5. THE OLD FOREST GATE (454-498): THE BATTERING BEAST =================
   /* A clearing at the old forest gate (the gate you came through stands at its west wall: the beast is brought up to batter it). Two scaffolds on the clearing's floor,
      their decks three rows up (a jump onto them out of a charge), each on a PROP at its inner foot: knock it out and the scaffold comes down in the beast's path (src/battering-beast.js) */
   const [A0, A1] = PALISADE.arena, FL = PALISADE.floor;
@@ -238,7 +275,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 240,                  /* four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
     sections: SECTIONS.map(([name, x0, x1]) => ({ id: name.toLowerCase().replace(/[^a-z]+/g, '-'), name, x0, x1 })),
-    squadBands: [{ lo: 400, hi: W - 1, spots: 0, why: 'THE OLD FOREST GATE: columns 390-442 are the beast\'s clearing - no squad stands in a boss arena' }],
+    squadBands: [{ lo: 460, hi: W - 1, spots: 0, why: 'THE OLD FOREST GATE: columns 450-502 are the beast\'s clearing - no squad stands in a boss arena' }],
     unlocks: [
       { kind: 'hoists', opens: 'what the prop holds comes down: a scaffold folds into a ramp, a watchtower or the gatehouse scaffold falls across as a bridge, a crew\'s walkway drops its crew, a stack of stakes rolls down the road', hud: 'THE PROP GOES: IT COMES DOWN' },
     ],
@@ -249,7 +286,8 @@ export function buildPalisadeWood({ painter, T, TS }) {
     reskin: { rockgoblin: 'lanternhand', brute: 'maulcrew' },   /* (claude/palisadeart) the work crews' own sheets (the setter's is given at spawn: pw.pwSetter): art, names and cards only, so the level's hash is the greybox's */
     ambient: [{ x0: 0, x1: 99999, kind: 'palisade' }],   /* (claude/palisadeart) its own bed: saws, mallets, rope and timber, dry leaves (src/audio.js palisade()) */
     /* THE SEAM from the Rootway (its amber canopy), then russet and gold: the wood is an autumn wood, warming toward the gate */
-    tints: [[-24, 104, [220, 150, 70], 0.05], [104, 204, [225, 140, 60], 0.06], [204, 306, [215, 125, 60], 0.06], [306, 390, [210, 110, 55], 0.07], [390, W + 24, [200, 95, 50], 0.08]],
+    tints: [[-24, 104, [220, 150, 70], 0.05], [104, 204, [225, 140, 60], 0.06], [204, 306, [215, 125, 60], 0.06], [306, 450, [210, 110, 55], 0.07], [450, W + 24, [200, 95, 50], 0.08]],
     reachExact: false,
+    breach: [BREACH.x0, BREACH.x1],   /* (claude/palisade2) THE BREACH's columns: ash, not leaves, on its floors (src/redraw/palisade_world.js leafLitter) */
   };
 }
