@@ -155,6 +155,19 @@ export function harvestSprite(kind) {
     else if (kind === 'nuts') { for (let row = 0; row < 4; row++) for (let i = 0; i < 6 - row; i++) { const x = 3 + i * 3 + row * 1.5, y = 17 - row * 3; rect(g, x, y, 4, 4, OUT); rect(g, x + 1, y, 2, 1, (i + row) % 2 ? '#a4743a' : '#6a4420'); rect(g, x, y + 1, 4, 2, (i + row) % 2 ? '#8a5a2a' : '#7a4a22'); rect(g, x + 1, y + 1, 1, 1, '#d8a860'); rect(g, x + 1, y + 3, 2, 1, '#3a2210'); }
       rect(g, 1, 20, 22, 1, OUT); }
     else if (kind === 'rake') { rect(g, 11, 0, 3, 21, OUT); rect(g, 12, 0, 1, 21, FRESH[3]); rect(g, 13, 0, 1, 21, MID[0]); rect(g, 12, 1, 1, 21, MID[2]); rect(g, 3, 1, 18, 4, OUT); rect(g, 4, 2, 16, 2, MID[2]); rect(g, 4, 2, 16, 1, FRESH[3]); for (let k = 0; k < 7; k++) { rect(g, 4 + k * 2.5, 4, 1, 5, OUT); rect(g, 4 + k * 2.5, 4, 1, 4, FRESH[2]); } lash(g, 10, 6, 4, false); rect(g, 11, 6, 3, 1, ROPE[1]); }
+    /* (claude/palisade2, Daniel 10-25: "leaves on the ground and all that - add to the theme") THE SIEGE CAMP'S DRESSING: on-theme stock only - the palisade's own timber */
+    else if (kind === 'ropeCoil') { for (let k = 0; k < 4; k++) { const w = 18 - k * 3, x = 3 + k * 1.5, y = 19 - k * 3; rect(g, x, y - 2, w, 4, OUT); rect(g, x + 1, y - 1, w - 2, 1, ROPE[2]); rect(g, x + 1, y, w - 2, 1, ROPE[1]); for (let q = 1; q < w - 1; q += 3) rect(g, x + q, y - 1, 1, 2, ROPE[0]); }
+      rect(g, 19, 12, 4, 2, OUT); rect(g, 19, 12, 3, 1, ROPE[1]); rect(g, 21, 13, 2, 7, ROPE[1]); }
+    else if (kind === 'toolRack') { for (const px of [3, 19]) { rect(g, px, 2, 3, 19, OUT); rect(g, px + 1, 2, 1, 19, MID[2]); } rect(g, 2, 5, 21, 2, OUT); rect(g, 3, 5, 19, 1, FRESH[2]);
+      rect(g, 8, 6, 2, 13, MID[1]); rect(g, 6, 16, 6, 3, IRON[2]); rect(g, 6, 16, 6, 1, IRON[3]);                 /* a mallet */
+      rect(g, 13, 6, 1, 14, MID[1]); rect(g, 12, 7, 5, 4, IRON[1]); rect(g, 16, 7, 1, 4, IRON[3]);                 /* an axe */
+      rect(g, 16, 6, 1, 12, MID[2]); for (let k = 0; k < 4; k++) rect(g, 15 + (k & 1), 18 + k, 2, 1, IRON[2]); }   /* a two-man saw's end */
+    else if (kind === 'sawdust') { for (let k = 0; k < 26; k++) { const x = 1 + ((k * 37) % 22), y = 17 + ((k * 13) % 4); rect(g, x, y, 1 + (k % 2), 1, k % 3 ? FRESH[4] : FRESH[3]); } rect(g, 4, 20, 16, 1, FRESH[3]); rect(g, 6, 19, 10, 1, FRESH[4]);
+      rect(g, 15, 15, 7, 4, OUT); rect(g, 16, 16, 5, 2, FRESH[2]); rect(g, 16, 16, 1, 2, FRESH[4]); }               /* a sawn-off block */
+    else if (kind === 'stakePile') { for (let k = 0; k < 5; k++) { const y = 18 - (k % 3) * 3 - (k > 2 ? 2 : 0), x = 1 + (k % 2) * 2; rect(g, x, y - 1, 19, 4, OUT); rect(g, x + 1, y, 16, 1, FRESH[4]); rect(g, x + 1, y + 1, 16, 1, FRESH[2]); rect(g, x + 17, y, 3, 2, FRESH[4]); rect(g, x + 20, y + 1, 2, 1, FRESH[3]); } lash(g, 8, 13, 2, false); }
+    else if (kind === 'logStack') { for (let row = 0; row < 3; row++) for (let i = 0; i < 3 - row; i++) logEnd(g, 2 + i * 7 + row * 3.5, 14 - row * 6, 7, row !== 1); rect(g, 0, 20, 24, 1, OUT); }   /* the palisade's stock, cut to length */
+    else if (kind === 'brokenStakes') { for (let k = 0; k < 4; k++) { const x = 2 + k * 5, h = 6 + ((k * 5) % 9); rect(g, x, 21 - h, 4, h, OUT); rect(g, x + 1, 21 - h, 2, h, k & 1 ? '#3a2414' : '#5a3a1d'); rect(g, x + 1, 21 - h, 1, 2, '#1a0e06'); rect(g, x + 2, 22 - h, 1, 1, '#ff8a3a'); } }   /* charred butts, an ember */
+    else if (kind === 'scorch') { for (let k = 0; k < 18; k++) rect(g, 1 + ((k * 29) % 22), 19 + ((k * 7) % 3), 2, 1, k % 4 ? '#1a1008' : '#5a5048'); rect(g, 3, 21, 18, 1, '#120a04'); }   /* a burnt patch, ash */
     else if (kind === 'sheaf') { for (let i = 0; i < 9; i++) { const x = 6 + i * 1.5 + (i - 4) * (i - 4) * 0.12 * (i < 4 ? -1 : 1), top = 1 + Math.abs(i - 4) * 1.2; rect(g, x, top, 2, 20 - top, OUT); rect(g, x, top, 1, 20 - top, '#e8c860'); rect(g, x + 1, top, 1, 20 - top, '#b08828'); rect(g, x - 0, top - 1, 2, 3, '#f4dc88'); }
       rect(g, 5, 10, 14, 3, OUT); rect(g, 6, 10, 12, 1, ROPE[2]); rect(g, 6, 11, 12, 1, ROPE[1]); rect(g, 6, 12, 12, 1, ROPE[0]); rect(g, 8, 13, 1, 3, ROPE[1]); }
     else { for (let row = 0; row < 3; row++) for (let i = 0; i < 5 - row; i++) apple(2 + i * 4 + row * 2, 16 - row * 3, (i + row) % 3 === 0 ? '#c0402a' : (i + row) % 3 === 1 ? '#e06030' : LEAF[4]); rect(g, 0, 20, 24, 1, OUT); rect(g, 2, 19, 20, 1, MID[0]); }
@@ -162,8 +175,22 @@ export function harvestSprite(kind) {
 }
 
 /* ============================== THE WHOLE WORLD'S DRAW (called by PWH.drawWorld) ============================== */
+/* (claude/palisade2) FALLEN LEAVES on every floor (Daniel 10-25): each top surface in view carries a scatter of russet and gold leaves, hashed so it never crawls;
+   THE BREACH's crater floor and stumps carry ash instead. The surfaces are found once a level (a cell you stand on: solid or boards, with air over it) */
+const leafCache = new WeakMap();
+function surfaces(lv) { let s = leafCache.get(lv); if (s) return s; s = new Map();
+  for (let x = 0; x < lv.W; x++) { const col = []; for (let y = 1; y < lv.H; y++) { const t = lv.grid[y * lv.W + x], up = lv.grid[(y - 1) * lv.W + x]; if ((t === 1 || t === 2) && up === 0) col.push(y); } if (col.length) s.set(x, col); }
+  leafCache.set(lv, s); return s; }
+function leafLitter(g, lv, cx, cy, VW, VH, TS, time) {
+  const s = surfaces(lv), ash = lv.breach || [0, -1], x0 = Math.max(0, Math.floor(cx / TS)), x1 = Math.min(lv.W - 1, Math.ceil((cx + VW) / TS));
+  for (let x = x0; x <= x1; x++) { const col = s.get(x); if (!col) continue;
+    for (const y of col) { const sy = y * TS - cy; if (sy < -8 || sy > VH + 8) continue; const sx = x * TS - cx, burnt = x >= ash[0] && x <= ash[1];
+      let h = strHash(x + ':' + y); const n = 3 + (h % 4);
+      for (let k = 0; k < n; k++) { h = Math.imul(h ^ (h >>> 13), 0x5bd1e995) >>> 0; const lx = sx + (h % 16), ly = sy - 1 + ((h >>> 5) % 3) - 1, c = burnt ? ((h >>> 9) % 3 ? '#1e140c' : '#6a6058') : LEAF[1 + ((h >>> 9) % 5)];
+        g.fillStyle = c; g.fillRect(R(lx), R(ly), (h >>> 12) % 3 ? 2 : 1, 1); if (!burnt && (h >>> 15) % 4 === 0) g.fillRect(R(lx) + 1, R(ly) - 1, 1, 1); } } } }
 export function drawWorld(E) {
   const { g, S, lv, ctx, cx, cy, VW, time, propCells, PROPS, SETTER, standAt } = E, TS = ctx.TS;
+  if (!E.noLeaves) leafLitter(g, lv, cx, cy, VW, E.VH || 400, TS, time);
   /* THE HARVEST the goblins took */
   for (const [hx, hy, k] of (lv.harvest || [])) { const x = R(hx * TS + 8 - cx), y = R((hy + 1) * TS - cy); if (x < -30 || x > VW + 30) continue; const sp = harvestSprite(k); g.globalAlpha = 0.3; rect(g, x - 9, y - 1, 18, 2, '#000'); g.globalAlpha = 1; g.drawImage(sp, x - 12, y - sp.height + 1); }
   for (const h of S.hs.values()) { const d = h.d, ccx = R(d.cleat[0] * TS + 8 - cx), ccy = R((d.cleat[1] + 1) * TS - cy), lxs = R(h.lx - cx), ly = R(h.ly - cy), up = h.state === 'hang';

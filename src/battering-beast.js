@@ -30,19 +30,19 @@
 //                   4 THE BUCK (NEW) (hug his flank and he turns his rump on you and kicks: back off, block, or jump)
 //                   + THE HANDLERS ON FOOT (NEW): the goblins are a problem he made, not riders.
 export const BB = {
-  hp: 1500, w: 56, h: 40, markH: 60,
+  hp: 1350, w: 56, h: 40, markH: 60,
   walk: 46, rest: [0.7, 0.45],
   armour: 0.4, above: 1, wardMul: 0.4,
   p2: 0.5,
-  charge: { tell: [1.0, 0.72], speed: 280, sp2: 1.15, dmg: 13, hitH: 24, minD: 110 },
+  charge: { tell: [1.0, 0.8], speed: 280, sp2: 1.08, dmg: 12, hitH: 24, minD: 110 },
   daze: { t: [1.7, 1.4], mul: 1.25 },
   stuck: { t: 3.0, mul: 2, cap: 0.11, ward: 3, wreckBlow: 0.03 },
   sweep: { tell: [0.78, 0.62], t: 0.42, mid: 0.3, reach: 50, h: 14, dmg: 15, chip: 0.8, rec: 0.6, range: 80 },
   volley: { tell: [0.95, 0.8], n: 3, flight: 1.0, r: 16, dmg: 12, rec: 0.6, spread: 62 },
-  pots: { tell: 0.95, n: 2, flight: 0.95, r: 18, life: 3.2, tick: 0.45, dmg: 5, spread: 58, rec: 0.6 },
+  pots: { tell: 0.95, n: 2, flight: 0.95, r: 18, life: 2.6, tick: 0.45, dmg: 5, spread: 58, rec: 0.6 },
   batter: { tell: 0.8, shake: 1.25, dmg: 14, reach: 96 },
-  trample: { tell: 0.85, sp: 150, life: 1.9, dmg: 17, rec: 0.8, w: 7 },
-  flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 15, rec: 0.7 },
+  trample: { tell: 0.85, sp: 150, life: 1.9, dmg: 14, rec: 0.8, w: 7 },
+  flail: { tell: 0.85, t: 0.36, reach: 132, low: 14, hiTop: 40, hiBot: 18, dmg: 13, rec: 0.7 },
   kick: { tell: 0.6, t: 0.22, reach: 46, dmg: 14, chip: 0.6, rec: 0.5, range: 44 },
   scaf: { fall: 0.5, len: 6, heroDmg: 10, lie: 16, rearm: 11 },
   unchain: { tell: 1.0, adds: 2, addHp: 2.4 },
@@ -209,10 +209,10 @@ function pick(e, S, ad, dx, w) {
     const dk = S.deck;
     if (dk && Math.abs(batterX(dk) - e.x) < 8 && !twice('batter')) k = 'batter';
     else if (dk) { if (S.walkT < 1.4) return; k = r < 0.5 ? 'volley' : 'pots'; }
-    else if (cover) k = r < 0.4 && !twice('volley') ? 'volley' : r < 0.75 ? 'pots' : 'charge';
+    else if (cover) k = r < 0.35 && !twice('volley') ? 'volley' : r < 0.6 ? 'pots' : 'charge';
     else if (ad < BB.sweep.range) k = 'sweep';
-    else if (ad > BB.charge.minD) k = r < 0.45 ? 'charge' : r < 0.72 ? 'volley' : 'pots';
-    else { if (S.walkT < 1.1) return; k = r < 0.45 ? 'volley' : r < 0.8 ? 'pots' : 'charge'; }
+    else if (ad > BB.charge.minD) k = r < 0.5 ? 'charge' : r < 0.78 ? 'volley' : 'pots';
+    else { if (S.walkT < 1.1) return; k = r < 0.35 ? 'volley' : r < 0.65 ? 'pots' : 'charge'; }
     if (twice(k)) k = k === 'charge' ? 'volley' : k === 'sweep' ? 'charge' : k === 'pots' ? 'charge' : 'pots';
     if (k === 'charge' && ad < 54 && !cover) k = 'sweep';
   } else {

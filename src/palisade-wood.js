@@ -224,6 +224,10 @@ export function buildPalisadeWood({ painter, T, TS }) {
   block(365, 366, 22, 24); foe('archer', 366, 21, 'breachC', { face: -1, perch: true });   /* TOWER THREE (a stump of a tower: up three) */
   foe('pike', 363, 24, 'breachC', { face: -1 });
   /* the breach's wreck: what the beast left (art: burnt timber, a broken ram's track, scorched leaves) */
+  /* (claude/palisade2) THE SIEGE CAMP'S DRESSING through the wood: the palisade's own stock and the crews' gear (rope, tools, sawdust, stakes cut to length) */
+  harvest.push([3, 37, 'sawdust'], [20, 37, 'stakePile'], [42, 32, 'ropeCoil'], [56, 34, 'logStack'], [63, 34, 'sawdust'], [78, 34, 'toolRack'], [99, 31, 'ropeCoil'],
+    [112, 31, 'stakePile'], [128, 31, 'sawdust'], [136, 31, 'toolRack'], [165, 31, 'logStack'], [185, 28, 'ropeCoil'], [203, 28, 'stakePile'],
+    [207, 28, 'logStack'], [218, 28, 'toolRack'], [226, 12, 'ropeCoil'], [263, 12, 'sawdust'], [285, 12, 'stakePile'], [383, 24, 'toolRack'], [398, 24, 'stakePile'], [445, 24, 'ropeCoil']);
   harvest.push([310, 24, 'brokenStakes'], [327, 31, 'brokenStakes'], [338, 31, 'scorch'], [352, 31, 'brokenStakes'], [363, 24, 'scorch']);
   sign(367, 24, "THE HALF-BUILT GATEHOUSE. THE KING'S SIEGE ENGINES ARE READIED HERE.");
   deco(370, 24, 'siege', 0); deco(376, 24, 'cart', 1); deco(380, 24, 'batteringRam', 0); crop(373, 24, 'apples'); crop(378, 24, 'basket');
@@ -284,5 +288,6 @@ export function buildPalisadeWood({ painter, T, TS }) {
     /* THE SEAM from the Rootway (its amber canopy), then russet and gold: the wood is an autumn wood, warming toward the gate */
     tints: [[-24, 104, [220, 150, 70], 0.05], [104, 204, [225, 140, 60], 0.06], [204, 306, [215, 125, 60], 0.06], [306, 450, [210, 110, 55], 0.07], [450, W + 24, [200, 95, 50], 0.08]],
     reachExact: false,
+    breach: [BREACH.x0, BREACH.x1],   /* (claude/palisade2) THE BREACH's columns: ash, not leaves, on its floors (src/redraw/palisade_world.js leafLitter) */
   };
 }

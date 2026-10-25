@@ -21,6 +21,7 @@ import { POSE } from '../src/battering-beast-hands.js';
 import * as BBA from '../src/redraw/battering_beast_art.js';
 import { SAY_LINES } from '../src/hint-lines.js';
 const TS = 16; const { BB } = BBM;
+{ let a = 0x9e3779b9; Math.random = () => { a |= 0; a = a + 0x6d2b79f5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }   /* (claude/palisade2) a seeded random: the move-sweep asserts are deterministic */
 let bad = 0; const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
 const lv = LEVELS.find(l => l.id === 'palisadewood'), L = lv.build();
 const src = f => readFileSync(new URL('../' + f, import.meta.url), 'utf8').split('\r').join('');
@@ -121,6 +122,8 @@ ok(/'palisadewood'/.test(src('tools/one-new-foe.mjs')) || true, '(one-new-foe re
     for (let i = 0; i < 9000; i++) { S.restT = Math.min(S.restT, 0.01); BBM.stepBeast(e, S, 1 / 60, hero(A.x0 + 40 + (i * 3) % 500), w); seen2.add(e.mode); }
     ok(S.n.volley + S.n.pots + S.n.batter === before, 'no handlers on him, no orders (stakes, pitch, batter) once the chains snap');
     ok(['trampleTell', 'flailTell', 'kickTell', 'chargeTell'].every(m => seen2.has(m)) && !seen2.has('sweepTell'), 'P2, THE BEAST UNCHAINED: the charge, the trample, THE CHAIN FLAIL and THE BUCK (no ram swing) ' + ['trampleTell', 'flailTell', 'kickTell', 'chargeTell'].filter(m => seen2.has(m)).join(' '));
+    { e.mode = 'walk'; S.restT = 0; S.last = []; S.ward = 0; const hx = e.x + 24; e.face = 1; BBM.stepBeast(e, S, 1 / 60, hero(hx), w); ok(e.mode === 'kickTell' && e.face === -1, 'hug his flank: THE BUCK - he turns his rump on you (' + e.mode + ')');
+      for (let i = 0; i < 60 && e.mode !== 'recover'; i++) BBM.stepBeast(e, S, 1 / 60, hero(hx), w); }
     ok(hits.includes('flail') && hits.includes('buck'), 'the flail and the buck land blows (their boxes)'); }
   { const [S, e] = fresh(), sc = S.scafs[0], h = [{ x: (sc.x0 + sc.x1) / 2, y: sc.deckY, ground: true, alive: true }]; e.x = BBM.batterX(sc); S.restT = 0; hits.length = 0;
     for (let i = 0; i < 400 && e.mode !== 'batterTell'; i++) { S.restT = Math.min(S.restT, 0.01); BBM.stepBeast(e, S, 1 / 60, h, w); }
