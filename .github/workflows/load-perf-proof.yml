@@ -4,7 +4,7 @@ on:
     inputs:
       mode:
         type: choice
-        options: [foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
+        options: [layout-candidate, foreground-reuse, foreground-direct, fixed-ornaments, region-props, border-present, tile-warm, captain-boot, cpu-profile, tile-cache, paladin-boot, hero-reuse, profile, sfx, compare, mobile, calls, present, campaign, variant, pixel-debug]
         default: profile
       baseline:
         type: string
@@ -28,6 +28,33 @@ env:
 permissions:
   contents: read
 jobs:
+  layout-candidate:
+    if: inputs.mode == 'layout-candidate'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/checkout@v4
+        with:
+          ref: 1a576c3f4511b6856df9fb4738df5aaae9987e81
+          path: layout-game
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.11.1'
+      - run: node tools/layout-candidate-proof.mjs --game=layout-game --verify-only
+      - name: Original full strict layout with original600000ms deadline
+        run: node tools/layout-candidate-proof.mjs --game=layout-game
+        env:
+          LAYOUT_CANDIDATE_OUT: ${{ runner.temp }}/bracken-layout-candidate
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: combined-layout-candidate
+          path: ${{ runner.temp }}/bracken-layout-candidate/
+          if-no-files-found: error
   foreground-reuse:
     if: inputs.mode == 'foreground-reuse'
     runs-on: ubuntu-latest
@@ -48,11 +75,12 @@ jobs:
         run: node tools/foreground-reuse-proof.mjs "$LEVEL" --baseline=62d9c02c102decc69ceaef4e1ec593a23170f1ff --control
         env:
           LEVEL: ${{ matrix.level }}
+          FOREGROUND_REUSE_OUT: ${{ runner.temp }}/bracken-foreground-reuse
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: foreground-reuse-${{ matrix.level }}
-          path: ../foreground-reuse-evidence/
+          path: ${{ runner.temp }}/bracken-foreground-reuse/
           if-no-files-found: error
   foreground-direct:
     if: inputs.mode == 'foreground-direct'
