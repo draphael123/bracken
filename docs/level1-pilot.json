@@ -502,5 +502,17 @@
   "lifts": 56,
   "walked": 100,
   "bare": true
+ },
+ "rookery": {
+  "hash": "94898799520e",
+  "hero": "knight",
+  "steps": 30000,
+  "runs": 3,
+  "hits": 42,
+  "deaths": 3,
+  "kills": 38,
+  "lifts": 70,
+  "walked": 100,
+  "bare": true
  }
 }
