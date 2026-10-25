@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto';
 import {openPage,ROOT as CHECKOUT} from './cdp.mjs';
 export const ROOT=CHECKOUT;
 export const GAME='62d9c02c102decc69ceaef4e1ec593a23170f1ff';
-export const OUT=path.resolve('gate-data/foreground-reuse');
+export const OUT=path.resolve('../foreground-reuse-evidence');
 const hash=s=>createHash('sha256').update(s).digest('hex');
 export function recipe(){
  const original=fs.readFileSync(ROOT+'/src/main.js','utf8');

@@ -52,7 +52,7 @@ jobs:
         if: always()
         with:
           name: foreground-reuse-${{ matrix.level }}
-          path: gate-data/foreground-reuse/
+          path: ../foreground-reuse-evidence/
           if-no-files-found: error
   foreground-direct:
     if: inputs.mode == 'foreground-direct'
