@@ -10021,7 +10021,7 @@
   }
  },
  "palisadewood": {
-  "hash": "46cf7f28682c",
+  "hash": "be9812f93c6c",
   "boss": {
    "boss": "batteringbeast",
    "wins": 0,
@@ -10122,7 +10122,7 @@
    ]
   },
   "carried": {
-   "from": "c24d09eb780c",
+   "from": "46cf7f28682c",
    "parts": [
     "boss"
    ]

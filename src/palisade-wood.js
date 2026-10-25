@@ -189,7 +189,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   foe('sprig', 290, 7, 'wallEnd', { face: -1, perch: true });
   foe('brute', 291, 12, 'wallEnd', { face: -1 }); setter(287, 12, 'wallEnd');
   plank(295, 298, 9); foe('archer', 297, 8, 'wallEnd', { face: -1, perch: true });
-  foe('hornsman', 295, 8, 'wallEnd', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN, TAUGHT: the crew's handler on the end scaffold beside the archer - his horn hurries the archer over the brute's fight (src/hornsman.js) */
+  foe('hornsman', 295, 8, 'wallEndHorn', { face: -1 });   /* (claude/palisadefoe) THE HORNSMAN, TAUGHT: the crew's handler on the end scaffold beside the archer - his horn hurries the archer over the brute's fight (src/hornsman.js) */
   sign(282, 12, "THE WALL'S END. ITS CREW STANDS OVER THE BRUTE.");
   coins([286, 11], [294, 11]);
   ent('check', 299, 12);                                                           /* SHRINE THREE: the wall top is behind you */
@@ -225,7 +225,7 @@ export function buildPalisadeWood({ painter, T, TS }) {
   ground(362, 389, 25);
   block(365, 366, 22, 24); foe('archer', 366, 21, 'breachC', { face: -1, perch: true });   /* TOWER THREE (a stump of a tower: up three) */
   foe('pike', 363, 24, 'breachC', { face: -1 });
-  foe('hornsman', 365, 21, 'breachC', { face: -1 });   /* (claude/palisadefoe) THE EXAM's horn: tower three's hornsman hurries the archers over the crumbling boards - cut his horn short, or storm him */
+  foe('hornsman', 365, 21, 'breachCHorn', { face: -1 });   /* (claude/palisadefoe) THE EXAM's horn: tower three's hornsman hurries the archers over the crumbling boards - cut his horn short, or storm him */
   /* the breach's wreck: what the beast left (art: burnt timber, a broken ram's track, scorched leaves) */
   /* (claude/palisade2) THE SIEGE CAMP'S DRESSING through the wood: the palisade's own stock and the crews' gear (rope, tools, sawdust, stakes cut to length) */
   harvest.push([3, 37, 'sawdust'], [20, 37, 'stakePile'], [42, 32, 'ropeCoil'], [56, 34, 'logStack'], [63, 34, 'sawdust'], [78, 34, 'toolRack'], [99, 31, 'ropeCoil'],
