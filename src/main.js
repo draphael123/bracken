@@ -8591,7 +8591,7 @@ function greedHit(e, fromX, blow) {
 function hurtEnemy0(e, dmg, fromX, plunge, blow, tag = blow) { const raw0 = dmg, pl = !!plunge || blowHas(tag, 'plunge');
   if(e.t==='magechase')return;
   if (e.t === 'shrieksister') { if (SSH) SSH.hit(e, dmg, fromX, pl); return; }   /* (claude/rookery) A SISTER takes her own blow (B15: ON THE WING 0.4, low whole, STUNNED x2 capped, WARDED 0.4) - src/shriek-sisters.js */
-  if (e.t === 'shrieksisters') { if (!e.ssPass) return; e.ssPass = false; }   /* THE ANCHOR: no blade reaches it; the last sister's fall is handed through so it dies the way every boss does */
+  if (e.t === 'shrieksisters') { if (!e.ssPass && !e.passThrough) return; e.ssPass = false; e.passThrough = false; }   /* THE ANCHOR: no blade reaches it; the last sister's fall is handed through so it dies the way every boss does */
   if (e.t === 'wickling') { if (WKH) WKH.struck(e); return; }   /* (claude/lamplit3) THE WICKLING: any blow and it swells and bursts into fire (told) - the blow itself does nothing else */   /* THE SPIRAL STAIR: he is run down, not fought - out of reach, and a blow that does reach him does nothing (kept first: tools/tower-chase.mjs reads the head of this function) */
   if (e.t === 'drillgear') { if (GDH) GDH.takeGear(e, dmg, fromX); return; }   /* (claude/deeprails4) THE GREAT DRILL's GEAR BANKS: src/great-drill-hands.js takes the blow (whole; broken, that attack is gone for the phase) */
   /* HE IS UNTOUCHABLE BETWEEN TWO PLACES, NOT WHILE HE WORKS. Being immune through the collapse as well meant the one
