@@ -22,17 +22,17 @@
 //     the LAST SISTER is frantic: every cooldown x SS.last
 //   NO ADDS (the three are the fight). Every move TOLD with its own windup and release pose (B16, src/shriek-sisters-hands.js POSE) and its own sound.
 export const SS = {
-  hp: { diver: 880, shrieker: 660, snatcher: 760 },
+  hp: { diver: 920, shrieker: 690, snatcher: 800 },
   wing: 0.4, downK: 1.5, wardMul: 0.4, last: 0.8,
   hover: { diver: 112, shrieker: 150, snatcher: 104 },
-  dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 26, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.3 },
+  dive: { tell: [0.85, 0.75, 0.7], lock: 0.24, markTell: 0.62, v: 430, dmg: 22, land: 0.7, rise: 0.8, cd: [2.4, 2.1, 1.8], second: 0.55, downed: 1.3 },
   stun: { t: 2.6, mul: 2, cap: 0.24 },
   ward: 2.5,
   slab: { w: 48, regrow: [9, 9, 6.5] },
   scream: { tell: 0.95, cd: [4.6, 4.0, 3.4], mark: 1.6, swoop: 1.9, low: 34 },
   wave: { tell: 0.8, v: 230, h: 26, dmg: 18, life: 1.8 },
-  rock: { tell: 0.75, fall: 0.45, r: 18, dmg: 24, life: 11, pick: 1.0, carry: 2.2 },
-  snatch: { tell: 0.8, v: 320, h: 16, dmg: 26, cd: 6.5 },
+  rock: { tell: 0.75, fall: 0.45, r: 18, dmg: 21, life: 11, pick: 1.0, carry: 2.2 },
+  snatch: { tell: 0.8, v: 320, h: 16, dmg: 22, cd: 6.5 },
   sister: { w: 26, h: 18 },
 };
 export const ROLES = ['diver', 'shrieker', 'snatcher'];

@@ -220,7 +220,7 @@ export function buildRookery({ painter, T, TS }) {
       { kind: 'hoists', opens: "a cracked rock breaks under a harpy's dive: a floor gives way, a pillar falls across, a nest drops as a platform, a slab slides down as steps", hud: "HER DIVE BREAKS THE ROCK" },
     ],
     reskin: { harpy: 'cragharpy' },   /* (claude/rookeryart) the cliff's own pale crag harpies (src/redraw/rookery_foes.js): art, not behaviour - the level's hash is the greybox's */
-    duskStart: -1, duskLen: 1, music: 'northumberland', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'rookery', night: false, glowNight: false,
     interiors: [],
     palette: { sky: [[150, 160, 196], [232, 222, 214]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, fg: 'rookery', haze: 'rgba(224,220,240,0.06)', grass: '#7a7a5a', grassL: '#a8a488', grassD: '#4e4e3a', dirt: '#8a8478', dirtL: '#b4ae9f', dirtD: '#5e594f', canopy: ['#6a6a7a', '#8a8a9a', '#b0b0be', '#e0e0e8'] },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],

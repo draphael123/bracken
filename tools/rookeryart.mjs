@@ -14,7 +14,7 @@ ok(L.reskin && L.reskin.harpy === 'cragharpy' && L.palette.fg === 'rookery', 'th
 ok(L.ambient.every(a => a.kind === 'rookery') && A.AMBIENT_NAMES.includes('rookery') && A.AMBIENT_SOURCES.rookery, "the level's air is its own bed ('rookery', synth)");
 ok(L.arena.music === 'shrieksisters' && A.MUSIC_NAMES.includes('shrieksisters') && /Fato Shadow/.test(A.MUSIC_CREDITS.shrieksisters) && existsSync(new URL('../audio/shrieksisters.ogg', import.meta.url)), "THE SHRIEK SISTERS' fight has its own track, named and credited");
 ok(/shrieksisters\.ogg/.test(rd('audio/CREDITS.txt')) && /shrieksisters/.test(rd('src/credits.js')), 'its credit is in audio/CREDITS.txt and the credits page');
-if (L.music === 'rookery') ok(A.MUSIC_NAMES.includes('rookery') && /Tsorthan/.test(A.MUSIC_CREDITS.rookery) && statSync(new URL('../audio/rookery.ogg', import.meta.url)).size > 1e6, "THE ROOKERY's level track is named, credited and on disk");
+if (L.music === 'rookery') ok(A.MUSIC_NAMES.includes('rookery') && /Icy Heights/.test(A.MUSIC_CREDITS.rookery) && statSync(new URL('../audio/rookery.ogg', import.meta.url)).size > 1e5, "THE ROOKERY's level track is named, credited and on disk");
 const xp = JSON.parse(rd('tools/fixtures/campaign-xp.json')).rows; ok(xp.rookery && xp.rookery.run > 0, "tools/fixtures/campaign-xp.json has THE ROOKERY's row");
 const fs = rd('src/forest-supports.js'), fa = rd('src/forest-supports-art.js'); ok(/rk: 1/.test(fs) && /drawRkPier/.test(fa), "its shelves stand on its own piers");
 console.log('\nrookeryart: all green');
