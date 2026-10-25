@@ -195,6 +195,8 @@ function bakeFace(L, z) {
   return c;
 }
 function faceOf(L, z) { const k = z.look + ':' + z.y0; if (!FACE.has(k) || FACE.get(k).L !== L) FACE.set(k, { L, c: bakeFace(L, z) }); return FACE.get(k).c; }
+/* (claude/smallfix3) every floor band's face baked at the level load: the crown's was baked the first time the camera reached it, 0.7-2.8 s at 4x CPU (a cold visit to the crown door) */
+export function warm(L) { for (const z of (L.groundZones || [])) if (!z.noFace) faceOf(L, z); }
 
 /* THE CROWN, REDRAWN (claude/owl2, Daniel 10-08: "make the crown look much better"). The top of the village at night: a moonlit sky over the
    other hanging villages' trees and the rooftops of this one far below; the great dead pine the Reeve roosts in - bark, knots, broken limbs,
