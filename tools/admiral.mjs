@@ -107,15 +107,15 @@ try {
       /* THE WARD: a ball glances */
       hold();S.ward=2;const r=AH.onBall(e,{x:e.x,y:G.floorY-9,vx:400});o.ward={spent:r,glanced:S.n.glanced,plates:S.plates};S.ward=0;
       /* HIS KEG struck back */
-      hold();const p0=S.plates;e.x=G.hulls[0][0]+300;e.face=-1;BK.P.x=e.x-120;BK.P.y=G.floorY;BK.P.face=1;BK.P.inv=99;BK.sim(2);S.keg={x:BK.P.x+16,y:G.floorY,vx:-60,fuse:3,back:false,key:'kt'};BK.press('atk');
-      for(let i=0;i<150&&S.plates===p0;i++){if(e.mode!=='stagger'){e.mode='walk';e.modeT=99;S.script=['cut'];S.step=0;S.ward=0;}BK.sim(1);}o.keg={plates:S.plates,p0,back:S.n.kegBack};
+      hold();const p0=S.plates;e.x=G.hulls[0][0]+300;e.face=-1;BK.P.x=e.x-120;BK.P.y=G.floorY;BK.P.face=1;BK.P.inv=99;BK.sim(2);S.keg={x:BK.P.x+16,y:G.floorY,vx:-60,fuse:3,back:false,key:'kt'};if(h==='ranger'){BK.keys.down=true;BK.sim(2);}BK.press('atk');
+      for(let i=0;i<150&&S.plates===p0;i++){if(e.mode!=='stagger'){e.mode='walk';e.modeT=99;S.script=['cut'];S.step=0;S.ward=0;}BK.sim(1);}BK.keys.down=false;o.keg={plates:S.plates,p0,back:S.n.kegBack};
       e.hp=e.maxHp;e.alive=true;}catch(err){o.err=String(err&&err.stack||err).slice(0,300);}out.heroes[h]=o;}
     /* THE WORLD (the knight, out of the fight) */
     {BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(10);keys();const F3=BK.flotilla3(),L=BK.L;BK.P.inv=99;
       const sw=F3.guns().find(g=>g.id==='swivel');BK.tp(sw.x-1,sw.y);BK.sim(20);BK.P.x=sw.x*16-4;BK.P.face=1;BK.sim(2);BK.press('atk');BK.sim(120);out.world.swivel={fired:sw.fired,hole:[257,258,259,260].map(x=>L.grid[22*L.W+x])};
-      const tg=F3.guns().find(g=>g.id==='topgun');BK.tp(tg.x-1,tg.y);BK.sim(20);BK.P.x=tg.x*16-4;BK.P.face=1;BK.sim(2);BK.press('atk');BK.sim(120);out.world.topgun={fired:tg.fired,bridge:[289,294,300].map(x=>L.grid[10*L.W+x])};
+      const tg=F3.guns().find(g=>g.id==='topgun');BK.tp(tg.x-1,tg.y-1);BK.sim(30);const tq={};for(let k=0;k<3&&!tg.fired;k++){BK.P.x=tg.x*16-4;BK.P.y=(tg.y+1)*16;BK.P.vy=0;BK.P.face=1;BK.sim(2);tq['p'+k]=[+(BK.P.x/16).toFixed(2),+(BK.P.y/16).toFixed(2),BK.P.ground];BK.press('atk');BK.sim(40);}BK.sim(80);out.world.topgun={tq,fired:tg.fired,bridge:[289,294,300].map(x=>L.grid[10*L.W+x])};
       /* HIS BROADSIDE on the galley's deck (no god: what it costs) */
-      BK.god=false;const z=F3.zones().find(q=>q.id==='galley');BK.tp(60,23);BK.sim(10);BK.P.hp=BK.P.maxHp;BK.P.inv=0;z.st='tell';z.t=0.05;const hp0=BK.P.hp;for(let i=0;i<90;i++){BK.P.x=60*16+8;BK.P.vx=0;BK.sim(1);}out.world.broadside={cost:+((hp0-BK.P.hp)/BK.P.maxHp).toFixed(2)};BK.P.hp=BK.P.maxHp;BK.god=true;
+      BK.god=false;const z=F3.zones().find(q=>q.id==='galley');BK.tp(91,22);BK.sim(10);BK.P.hp=BK.P.maxHp;BK.P.inv=0;z.st='tell';z.t=0.05;const hp0=BK.P.hp;for(let i=0;i<90;i++){BK.P.x=91*16+8;BK.P.vx=0;BK.sim(1);}out.world.broadside={cost:+((hp0-BK.P.hp)/BK.P.maxHp).toFixed(2)};BK.P.hp=BK.P.maxHp;BK.god=true;
       /* a grapnel boarder cut off his line over the harbour */
       const gb=BK.enemies().find(q=>q.t==='grapnel'&&q.alive&&q.x<263*16);if(gb){gb.gmode='swing';gb.sw={x0:gb.x,y0:gb.y,x1:230*16,y1:26*16,t:0.5};gb.x=252*16;gb.y=22*16;BK.flotilla3().strike({l:gb.x-10,r:gb.x+10,t:gb.y-30,b:gb.y});for(let i=0;i<120&&gb.alive;i++)BK.sim(1);out.world.grapnel={mode:gb.gmode,alive:gb.alive};}
       const r0=L.flot2.rowers[0],m=BK.movers().find(q=>q.flot==='bench'&&q.bench===r0.bench);

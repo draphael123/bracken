@@ -20,7 +20,7 @@ export const F3 = {
   tell: 2.5, every: 10, shotV: 520, pct: 0.25, shove: 150, examShove: 260,
   /* THE GRAPNEL BOARDER: he sees you sightX px off and within sightY; whirls whirlT s; swings swingT s (swingH px over the straight line at its middle); lands on a
      mark landR px; then fights: cutTell s, a cut cutT s at cutReach px, cutRec s after */
-  sightX: 260, sightY: 120, whirlT: 0.9, swingT: 1.0, swingH: 30, landR: 22, cutTell: 0.5, cutT: 0.15, cutReach: 28, cutRec: 0.65, walk: 52, hp: 70, dmg: 18, landDmg: 14,
+  sightX: 260, sightY: 240, whirlT: 0.9, swingT: 1.0, swingH: 30, landR: 22, cutTell: 0.5, cutT: 0.15, cutReach: 28, cutRec: 0.65, walk: 52, hp: 70, dmg: 18, landDmg: 14,
   /* THE KEG ROLLER's keg: rolls kegV px/s, back at him kegBackV; fuse kegFuse s; blast kegR px */
   kegV: 105, kegBackV: 210, kegFuse: 2.8, kegR: 34,
 };
@@ -95,7 +95,7 @@ export function makeFlotilla3(ctx) {
   H.spawnFoe = (base, ent) => { const T = TS(); return { ...base, t: 'grapnel', w: 12, h: 22, hp: ctx.EHP.grapnel || F3.hp, maxHp: 0, face: ent.face || -1, gmode: 'wait', gT: 0, vx: 0, vy: 0, onGround: false,
     g3: { px: (ent.px ?? ent.x) * T + 8, py: (ent.py ?? ent.y - 8) * T, land: ent.land ? [ent.land[0] * T, ent.land[1] * T] : null, homeX: base.x, homeY: base.y } }; };
   const lineOf = e => (e.gmode === 'swing' && e.g3 ? [e.g3.px, e.g3.py, e.x, e.y - 18] : e.gmode === 'whirl' && e.g3 ? [e.g3.px, e.g3.py, e.x, e.y - 22] : null);
-  function cutLine(e) { if (e.gmode !== 'swing') return; e.gmode = 'fall'; e.vy = -30; e.vx = (e.sw ? Math.sign(e.sw.x1 - e.sw.x0) : e.face) * 60; ctx.sound('snap'); ctx.number(e.x, e.y - 28, F3_SAY.cut, '#8fd160'); }
+  function cutLine(e) { if (e.gmode !== 'swing') return; e.gmode = 'fall'; e.vy = -30; e.vx = (e.sw ? Math.sign(e.sw.x1 - e.sw.x0) : e.face) * 20; ctx.sound('snap'); ctx.number(e.x, e.y - 28, F3_SAY.cut, '#8fd160'); }
   H.takeFoe = (e, dmg, blow) => { if (e.gmode === 'swing' && blow) cutLine(e); return dmg; };
   H.updateFoe = (e, dt) => { const P = hero(), T = TS(); if (!e.alive || !P) return; e.gT -= dt; e.anim = (e.anim || 0) + dt * 8;
     const d = P.x - e.x, ad = Math.abs(d);
