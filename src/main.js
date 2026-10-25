@@ -11759,7 +11759,7 @@ function bossEnd(e) {
       ringAt(x, y - 12, 56, '#ffd36b', 0.6); SFX.queenShriek(); say('THE NEST IS QUIET'); break; }
     case 'grubbag': { /* THE HIGH TABLE IS QUIET: he slumps in his chair, the last dish on the line swings to a stop */
       shakeCam(9); zoomKick(1.12, 0.5); killFlash = 0.1; if (GBH) GBH.end(e);
-      for (let i = 0; i < 26; i++) parts.push({ x: e.x + (Math.random() - 0.5) * 70, y: e.y - 20 - Math.random() * 50, vx: (Math.random() - 0.5) * 120, vy: -40 - Math.random() * 80, life: 1.4, max: 1.4, col: ['#c8ccd4', '#a0602a', '#7a8a52', '#ffd36b'][i % 4], size: 2, grav: 300 });
+      for (let i = 0; i < 44; i++) parts.push({ x: e.x + (Math.random() - 0.5) * e.w * 1.3, y: e.y - 20 - Math.random() * e.h, vx: (Math.random() - 0.5) * 120, vy: -40 - Math.random() * 80, life: 1.4, max: 1.4, col: ['#c8ccd4', '#a0602a', '#7a8a52', '#ffd36b'][i % 4], size: 2, grav: 300 });
       say('THE HIGH TABLE IS QUIET', '#ffd36b'); break; }
     case 'batteringbeast': { /* THE OLD GATE HOLDS: the beast goes down in the timber, its handlers run for the palisade */
       shakeCam(10); zoomKick(1.12, 0.5); killFlash = 0.1; if (BBH) BBH.end(e);

@@ -23,26 +23,29 @@ const C = { skin: '#7a8a52', skinD: '#4e5a32', skinL: '#a0b070', robe: '#6a2a3a'
   fork: '#c8ccd4', forkD: '#8a8e96', eye: '#ffe9a0', red: '#ff4a2a', mouth: '#2a0e0e', tooth: '#efe6cf', dish: '#c8ccd4', food: '#a0602a', pie: '#c0302a', pieL: '#ff8a5c', gravy: '#7a4a22', gravyL: '#a8743a', copper: '#b8673a' };
 const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
-/* THE POSE A MODE WEARS (local px, facing right, his seat at 0,0): head [dx, dy], belly swell, near arm's hand [dx, dy], far arm's hand, the fork [dx, dy, angle, length], lean, eyes, mouth, what he holds */
+/* THE POSE A MODE WEARS (local px, facing right, his seat at 0,0): head [dx, dy] (his head's own offset), belly swell, near arm's hand [x, y], far arm's hand, the fork [x, y, angle, shaft]
+   (null: set down out of sight), lean, eyes, mouth, what he holds. (claude/grubbagbig, Daniel 10-25 "enormous, double the queen, extremely fat": REDRAWN BIG - every number here is at his new
+   size, ~225 x 157 px seated in a chair 180 high; the fork's stab ends where GB.fork.reach says it does: 50 + 156 = GB.w / 2 + GB.fork.reach.) */
+const FORK_REST = [130, -40, -1.42, 76];   /* stuck upright in the table's end while both hands are busy */
 export const POSE = {
-  sleep: { head: [2, 6], belly: 1, hand: [12, -14], far: [-10, -14], fork: [20, -6, 1.4, 30], eyes: 'shut', mouth: 'shut', zzz: true },
-  wake: { head: [0, -4], belly: 1, hand: [16, -30], far: [-16, -30], fork: [22, -20, -0.3, 34], eyes: 'red', mouth: 'open' },
-  sit: { head: [0, 0], belly: 1, hand: [14, -18], far: [-12, -18], fork: [22, -10, 1.2, 34], eyes: 'open', mouth: 'chew' },
-  belchTell: { head: [-6, -6], belly: 1.25, hand: [10, -24], far: [-12, -24], fork: [22, -10, 1.2, 34], eyes: 'red', mouth: 'shut', tilt: -0.3 },
-  belch: { head: [6, 2], belly: 0.95, hand: [16, -16], far: [-14, -16], fork: [22, -10, 1.2, 34], eyes: 'red', mouth: 'wide', rings: true },
-  throwTell: { head: [-2, -2], belly: 1, hand: [-14, -46], far: [-12, -18], fork: [-20, -10, -1.5, 34], eyes: 'red', mouth: 'open', item: 'drumstick' },
-  throw: { head: [4, 0], belly: 1, hand: [30, -30], far: [-12, -18], fork: [-20, -10, -1.5, 34], eyes: 'open', mouth: 'open', lean: 4 },
-  forkTell: { head: [0, 0], belly: 1, hand: [-6, -14], far: [-12, -18], fork: [-14, -10, 0.05, 40], eyes: 'red', mouth: 'shut', lean: -3 },
-  fork: { head: [6, 2], belly: 1, hand: [26, -10], far: [-12, -18], fork: [26, -8, 0.0, 60], eyes: 'red', mouth: 'open', lean: 6, long: true },
-  slamTell: { head: [0, -6], belly: 1.05, hand: [14, -56], far: [-6, -56], fork: [-22, -8, -1.5, 34], eyes: 'red', mouth: 'wide' },
-  slam: { head: [6, 4], belly: 1, hand: [30, -12], far: [22, -12], fork: [-22, -8, -1.5, 34], eyes: 'red', mouth: 'open', lean: 6, plates: true },
-  floodTell: { head: [-4, 0], belly: 1, hand: [-30, -26], far: [-12, -18], fork: [22, -10, 1.2, 34], eyes: 'red', mouth: 'open', lean: -6, cauldron: 0.2 },
-  flood: { head: [-4, 2], belly: 1, hand: [-34, -14], far: [-12, -18], fork: [22, -10, 1.2, 34], eyes: 'open', mouth: 'open', lean: -6, cauldron: 1.4 },
-  grabTell: { head: [6, 4], belly: 1, hand: [-10, -24], far: [-12, -18], fork: [-22, -8, -1.5, 34], eyes: 'red', mouth: 'wide', lean: 10, fingers: true },
-  grab: { head: [10, 6], belly: 1, hand: [30, -6], far: [-12, -18], fork: [-22, -8, -1.5, 34], eyes: 'red', mouth: 'wide', lean: 14, arm: true },
-  eat: { head: [0, -2], belly: 1.05, hand: [10, -42], far: [-12, -18], fork: [22, -10, 1.2, 34], eyes: 'shut', mouth: 'chew', item: 'dish' },
-  choke: { head: [0, -4], belly: 1.15, hand: [6, -38], far: [-6, -38], fork: [24, -2, 1.5, 34], eyes: 'bulge', mouth: 'wide', smoke: true, shake: true, red: true },
-  recover: { head: [2, 2], belly: 1, hand: [12, -24], far: [-12, -20], fork: [22, -10, 1.2, 34], eyes: 'open', mouth: 'open', cough: true },
+  sleep: { head: [4, 10], belly: 1, hand: [40, -50], far: [-50, -50], fork: [60, -6, 0.02, 120], eyes: 'shut', mouth: 'shut', zzz: true },
+  wake: { head: [0, -4], belly: 1, hand: [66, -130], far: [-70, -126], fork: [66, -130, -1.25, 80], eyes: 'red', mouth: 'open' },
+  sit: { head: [0, 0], belly: 1, hand: [58, -70], far: [-62, -66], fork: [58, -70, -1.48, 80], eyes: 'open', mouth: 'chew' },
+  belchTell: { head: [-6, -8], belly: 1.1, hand: [52, -92], far: [-64, -90], fork: [52, -92, -1.48, 72], eyes: 'red', mouth: 'shut', tilt: -0.3 },
+  belch: { head: [8, 4], belly: 0.96, hand: [66, -66], far: [-64, -64], fork: [66, -66, -1.3, 80], eyes: 'red', mouth: 'wide', rings: true },
+  throwTell: { head: [-4, -4], belly: 1, hand: [-20, -158], far: [-62, -66], fork: FORK_REST, eyes: 'red', mouth: 'open', item: 'drumstick' },
+  throw: { head: [8, 0], belly: 1, hand: [104, -96], far: [-62, -66], fork: FORK_REST, eyes: 'open', mouth: 'open', lean: 8 },
+  forkTell: { head: [0, 0], belly: 1, hand: [10, -46], far: [-62, -66], fork: [-40, -34, 0.06, 120], eyes: 'red', mouth: 'shut', lean: -6 },
+  fork: { head: [8, 4], belly: 1, hand: [86, -28], far: [-62, -66], fork: [50, -26, 0.08, 120], eyes: 'red', mouth: 'open', lean: 12, long: true },
+  slamTell: { head: [0, -8], belly: 1.04, hand: [46, -180], far: [-36, -182], fork: FORK_REST, eyes: 'red', mouth: 'wide' },
+  slam: { head: [8, 8], belly: 1, hand: [104, -46], far: [80, -48], fork: FORK_REST, eyes: 'red', mouth: 'open', lean: 12, plates: true },
+  floodTell: { head: [-2, 0], belly: 1, hand: [96, -72], far: [-62, -66], fork: null, eyes: 'red', mouth: 'open', lean: 6, cauldron: 0.2 },
+  flood: { head: [6, 4], belly: 1, hand: [120, -58], far: [-62, -66], fork: null, eyes: 'open', mouth: 'open', lean: 10, cauldron: 1.2 },
+  grabTell: { head: [10, 6], belly: 1, hand: [-10, -96], far: [-62, -66], fork: FORK_REST, eyes: 'red', mouth: 'wide', lean: 18, fingers: true },
+  grab: { head: [16, 10], belly: 1, hand: [92, -30], far: [-62, -66], fork: FORK_REST, eyes: 'red', mouth: 'wide', lean: 24, arm: true },
+  eat: { head: [0, -4], belly: 1.05, hand: [40, -118], far: [-62, -66], fork: FORK_REST, eyes: 'shut', mouth: 'chew', item: 'dish' },
+  choke: { head: [0, -6], belly: 1.1, hand: [30, -112], far: [0, -114], fork: [70, -6, 0.02, 120], eyes: 'bulge', mouth: 'wide', smoke: true, shake: true, red: true },
+  recover: { head: [4, 4], belly: 1, hand: [52, -88], far: [-62, -72], fork: [52, -88, -1.48, 76], eyes: 'open', mouth: 'open', cough: true },
 };
 /* HIM (claude/kitchengateart: src/redraw/grubbag_art.js draws him; POSE above is still the contract) */
 function drawGrubbag(g, p, flash, time, holding) { GA.drawGrubbagArt(g, p, flash, time, holding); }
@@ -70,8 +73,8 @@ export function makeGrubbagHands(ctx) {
       music: ph => { BOSS_PHASE.grubbag = ph; },
       mark: m => ctx.number(e.x, e.y - GB.markH, m, m === '!' ? '#ffd36b' : '#ff6b6b'),
       dust: (x, y, n) => ctx.dust(x, y, n),
-      fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 30, 44, '#ffd36b'); ctx.burst(x, y - 50, 22, ['#ff9a3c', '#ffd36b', '#4a4440', '#fff6c8'], 140, 0.8); } else if (k === 'ward') ctx.ring(x, y - 30, 46, '#c8d8e8'); },
-      oven: on => { if (on) ctx.burst(S.G.ovenX, S.G.floorY - 20, 14, ['#ffd36b', '#ff9a3c', '#fff6c8'], 90, 0.5); },
+      fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - GB.h / 2, GB.w * 0.6, '#ffd36b'); ctx.burst(x - e.face * 30, y - GB.h, 34, ['#ff9a3c', '#ffd36b', '#4a4440', '#fff6c8'], 170, 0.9); } else if (k === 'ward') ctx.ring(x, y - GB.h / 2, GB.w * 0.62, '#c8d8e8'); },
+      oven: on => { if (on) ctx.burst(S.G.ovenX, S.G.floorY - 26, 20, ['#ffd36b', '#ff9a3c', '#fff6c8'], 90, 0.5); },
       burst: (x, y) => ctx.burst(x, y, 20, ['#ff9a3c', '#ffd36b', '#4a4440'], 130, 0.7),
       smash: (x, y) => ctx.burst(x, y, 14, ['#c8ccd4', '#a0602a', '#e8dcc0'], 110, 0.6),
       hit: (bx, d, name, o = {}) => { let out = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
@@ -87,7 +90,7 @@ export function makeGrubbagHands(ctx) {
   }
   H.update = (e, dt) => {
     if (!S || !e.alive || !A()) return;
-    if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - 96, GBM.GB_SAY.wake, '#ffd36b'); SOUND.roar(ctx.sfx); ctx.shake(5); }
+    if (e.mode === 'wake' && !S.woke) { S.woke = true; e.modeT = 1.8; ctx.number(e.x, e.y - GB.markH - 16, GBM.GB_SAY.wake, '#ffd36b'); SOUND.roar(ctx.sfx); ctx.shake(5); }
     if (S.woke && !S.told.rule && e.mode !== 'wake') { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 130, GBM.GB_SAY.rule, '#ffd36b'); ctx.hint && ctx.hint(GBM.GB_SAY.rule); }
     GBM.stepGrubbag(e, S, dt, heroes(), world(e));
     /* THE GRAVY on the floor: slow and slick behind its wave, and for GB.flood.lie s after */
@@ -96,12 +99,12 @@ export function makeGrubbagHands(ctx) {
   };
   /* A HERO'S BLOW (main.js attackBox): on the oven's bellows it stokes the oven; on a dish riding the line it knocks it off */
   H.strike = hb => { if (!S || !hb || !ctx.bossActive) return; const e = live(); if (!e) return; const w = world(e), G = S.G;
-    const bb = { l: G.bellowsX - 10, r: G.bellowsX + 10, t: G.floorY - 22, b: G.floorY };
+    const bb = { l: G.bellowsX - GB.oven.box, r: G.bellowsX + GB.oven.box, t: G.floorY - 30, b: G.floorY };
     if (hb.l < bb.r && hb.r > bb.l && hb.t < bb.b && hb.b > bb.t && (!ctx.hitOnce || ctx.hitOnce(S.oven))) GBM.stokeOven(S, w);
     for (const it of S.items) { if (it.state !== 'ride') continue; const b = GBM.dishBox(G, it); if (hb.l < b.r && hb.r > b.l && hb.t < b.b && hb.b > b.t && (!ctx.hitOnce || ctx.hitOnce(it))) GBM.smashItem(S, it, w); } };
   H.take = (e, dmg, fromX, pl, tag) => { if (!S) return dmg; const [d, word] = GBM.takeBlow(e, S, dmg, pl);
     S.n[word === 'WARDED' ? 'wardHits' : word ? 'fedHits' : GBM.gbOpen(e) ? 'openHits' : 'fedHits']++;
-    if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && word === 'WARDED' ? ctx.sfx.clank() : (ctx.sfx.thud && ctx.sfx.thud()); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * 20, e.y - 30, sd, 3);
+    if (word) { e.chipHit = ctx.time(); e.guardFx = 0.25; e.guardWord = word; ctx.sfx.clank && word === 'WARDED' ? ctx.sfx.clank() : (ctx.sfx.thud && ctx.sfx.thud()); const sd = Math.sign(ctx.hero().x - e.x) || 1; ctx.sparks(e.x + sd * GB.w / 2, e.y - GB.h / 2, sd, 4);
       if (!S.told.fed && word === 'WELL FED') { S.told.fed = 1; ctx.hint && ctx.hint('WELL FED, HE BARELY FEELS A BLADE. STOKE THE PIE OVEN: HE EATS THE POWDER PIE AND CHOKES. KNOCK A DISH OFF THE LINE WITH A JUMPING BLOW: HE GOES HUNGRY.'); } }
     return d; };
   H.barName = e => 'LORD GRUBBAG' + (GBM.gbOpen(e) ? '  CHOKING' : S && S.ward > 0 ? '  WARDED' : S && S.hungry > 0 ? '  HUNGRY' : '');
@@ -111,23 +114,22 @@ export function makeGrubbagHands(ctx) {
   /* THE HALL: the kitchen hatch and the pie oven (its gauge), the oven's bellows, the serving line and its hooks, the high table */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY), L0 = G.line;
     GA.drawLine(g, x(L0.x0), y(L0.y0), x(L0.x1), y(L0.y1), qs => y(GBM.lineY(G, qs + cx)), 48);
-    GA.drawOven(g, x(G.ovenX), fy, S.oven.st, time);
+    GA.drawOven(g, x(G.ovenX), fy, S.oven.st, time, G.floorY - L0.y0);
     const bx = x(G.bellowsX); GA.drawBellows(g, bx, fy, S.oven.st === 'cold', time, 0);
     const k = S.oven.st === 'bake' ? 1 - S.oven.t / GB.oven.bake : S.oven.st === 'cool' ? 1 - S.oven.t / GB.oven.cool : S.oven.st === 'cold' ? 1 : 0;
-    rect(g, bx - 11, fy - 25, 22, 5, '#1a1410'); rect(g, bx - 10, fy - 24, 20, 3, '#1b1626'); rect(g, bx - 10, fy - 24, R(20 * k), 3, S.oven.st === 'cold' ? '#ffd36b' : S.oven.st === 'cool' ? '#8a8a9a' : '#ff9a3c'); rect(g, bx - 11, fy - 25, 22, 1, '#c9a040');
+    rect(g, bx - 15, fy - 36, 30, 6, '#1a1410'); rect(g, bx - 14, fy - 35, 28, 4, '#1b1626'); rect(g, bx - 14, fy - 35, R(28 * k), 4, S.oven.st === 'cold' ? '#ffd36b' : S.oven.st === 'cool' ? '#8a8a9a' : '#ff9a3c'); rect(g, bx - 15, fy - 36, 30, 1, '#c9a040');
     GA.drawTable(g, x(G.table[0]), x(G.table[1]), fy, time); };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const p = POSE[e.mode] || POSE.sit, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, f = e.face || -1;
     g.save(); g.translate(R(e.x - cx + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(e.y - cy)); g.scale(f, 1); drawGrubbag(g, p, flash, time, e.eating ? e.eating.kind : null); g.restore();
     /* THE GRAB's arm drawn the whole way out to his hand (it reaches along the floor) */
-    if (e.mode === 'grab' && e.handX != null) { const hx = R(e.handX - cx), fy = R(e.y - cy) - 8; g.strokeStyle = flash ? '#ffffff' : C.skin; g.lineWidth = 8; g.beginPath(); g.moveTo(R(e.x - cx) + f * 10, fy - 30); g.lineTo(hx, fy); g.stroke(); g.lineWidth = 1;
-      for (let k = 0; k < 4; k++) rect(g, hx + f * 4 - 3, fy - 6 + k * 3, 7, 2, C.skin); } };
+    if (e.mode === 'grab' && e.handX != null) { const el = POSE.grab.hand, ex = R(e.x - cx + f * el[0]), ey = R(e.y - cy + el[1]), hx = R(e.handX - cx), hy = R(e.y - cy) - 12; GA.drawGrabArm(g, ex, ey, hx, hy, flash); } };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss, G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
     /* the dishes on the line (and the powder pie, its fuse sparking) */
     for (const it of S.items) GA.drawHooked(g, x(it.x), y(GBM.lineY(G, it.x)), y(GBM.dishY(G, it)), it.kind, time);
     /* the gravy */
-    if (S.gravy > 0) { const from = x(GBM.gravyFrom(S)), to = x(G.chairX); g.globalAlpha = Math.min(1, S.gravy / 1.5) * 0.8; rect(g, from, fy - 3, to - from, 3, C.gravy); g.globalAlpha = 1; }
-    for (const q of S.floods) { const fx = x(q.x); rect(g, fx - 6, fy - 14, 14, 14, C.gravy); rect(g, fx - 4, fy - 16, 10, 3, C.gravyL); }
+    if (S.gravy > 0) { const from = x(GBM.gravyFrom(S)), to = x(G.chairX - GB.flood.from * (e && e.face ? -e.face : 1)); g.globalAlpha = Math.min(1, S.gravy / 1.5) * 0.8; rect(g, from, fy - 3, to - from, 3, C.gravy); g.globalAlpha = 1; }
+    for (const q of S.floods) { const fx = x(q.x); rect(g, fx - 9, fy - 16, 20, 16, C.gravy); rect(g, fx - 6, fy - 19, 14, 4, C.gravyL); rect(g, fx + 9, fy - 8, 8, 8, C.gravy); }
     if (!ctx.bossActive || !e || e.t !== 'grubbag') return;
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     for (const c of S.throws) { const q = GBM.throwAt(c, G.floorY); if (c.t > 0) { g.save(); g.translate(x(q.x), y(q.y)); g.rotate(q.k * 7); if (c.plate) { rect(g, -6, -1, 12, 3, C.dish); } else { rect(g, -5, -3, 8, 6, C.food); rect(g, 3, -1, 4, 2, C.tooth); } g.restore(); }
@@ -137,18 +139,22 @@ export function makeGrubbagHands(ctx) {
     if (e.mode === 'forkTell') { g.globalAlpha = 0.35; g.fillStyle = '#ffd36b'; const a = e.x + e.face * GB.w / 2, b = a + e.face * GB.fork.reach; for (let q = Math.min(a, b); q < Math.max(a, b); q += 9) g.fillRect(x(q), fy - 2, 5, 1); g.globalAlpha = 1; }
     if (e.mode === 'grabTell') { g.globalAlpha = 0.4; g.fillStyle = '#ff6b6b'; const a = e.x + e.face * GB.w / 2, b = a + e.face * GB.grab.reach; for (let q = Math.min(a, b); q < Math.max(a, b); q += 9) g.fillRect(x(q), fy - 6, 5, 2); g.globalAlpha = 1; }
     if (e.mode === 'slamTell') { g.globalAlpha = 0.35; g.fillStyle = '#ff6b6b'; g.fillRect(x(G.table[0] - GB.slam.shock), fy - 2, x(G.x1) - x(G.table[0] - GB.slam.shock), 2); g.globalAlpha = 1; }
-    const ex = x(e.x), ey = y(e.y - GB.h / 2 - 10);
-    if (GBM.gbOpen(e)) { const kk = Math.max(0, e.modeT / (e.openT0 || 1)); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(ex - 34, ey - 36, 68, 66); g.lineWidth = 1; g.globalAlpha = 1;
+    const ex = x(e.x);
+    const bw = GB.w + 12, bh = GB.h + 12, by0 = y(e.y - GB.h - 8);
+    if (GBM.gbOpen(e)) { const kk = Math.max(0, e.modeT / (e.openT0 || 1)); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(ex - bw / 2, by0, bw, bh); g.lineWidth = 1; g.globalAlpha = 1;
       const by = y(e.y - GB.h - 40); ctx.text(GBM.OPEN_NAME[e.mode] || 'OPEN', ex, by - 6, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(ex - 18, by, 36, 3); g.fillStyle = '#ffd36b'; g.fillRect(ex - 18, by, R(36 * kk), 3); }
-    if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.strokeRect(ex - 36, ey - 38, 72, 70); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', ex, y(e.y - GB.h - 44), '#c8d8e8', 'center', 5); }
+    if (S.ward > 0) { g.globalAlpha = 0.35 + 0.25 * Math.sin(time * 6); g.strokeStyle = '#c8d8e8'; g.lineWidth = 2; g.strokeRect(ex - bw / 2 - 2, by0 - 2, bw + 4, bh + 4); g.lineWidth = 1; g.globalAlpha = 1; ctx.text('WARDED', ex, y(e.y - GB.h - 44), '#c8d8e8', 'center', 5); }
     if (S.hungry > 0 && !GBM.gbOpen(e)) ctx.text(GBM.GB_SAY.hungry, ex, y(e.y - GB.h - 54), '#8fd160', 'center', 5);
     if (e.guardFx > 0 && e.guardWord) ctx.text(e.guardWord, ex, y(e.y - GB.h - 60) - R((0.25 - e.guardFx) * 30), Math.floor(time * 12) % 2 ? '#ffffff' : '#e8c070', 'center', 6);
   };
   return H;
 }
-/* HIS BESTIARY CARD: two of his poses (sitting, the belch's windup) - main.js SPR.grubbagCard */
+/* HIS BESTIARY CARD (claude/grubbagbig): a portrait - his head, chins, collar, chest and the top of the belly, two poses (sitting, the belch's windup) - drawn at full size and halved
+   (the whole of him would be a smudge in the card's 64 px), the halving's soft edges cut back to hard alpha */
 export function bakeGrubbagCard() {
-  const fr = [0, 1].map(i => { const [c, g] = canvas(72, 60); g.imageSmoothingEnabled = false; g.save(); g.translate(40, 58); g.scale(-0.66, 0.66); drawGrubbag(g, POSE[i ? 'belchTell' : 'sit'], false, i * 0.3, null); g.restore(); return c; });
+  const CW = 72, CH = 60, fr = [0, 1].map(i => { const [big, bg] = canvas(CW * 2, CH * 2); bg.translate(CW + 4, 194); bg.scale(-1, 1); drawGrubbag(bg, POSE[i ? 'belchTell' : 'sit'], false, i * 0.3, null);
+    const [c, g] = canvas(CW, CH); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(big, 0, 0, CW, CH);
+    const d = g.getImageData(0, 0, CW, CH); for (let q = 3; q < d.data.length; q += 4) d.data[q] = d.data[q] > 110 ? 255 : 0; g.putImageData(d, 0, 0); return c; });
   const white = fr.map(c => whiten(c)); return { R: fr, L: fr.map(flipX), white: { R: white, L: white.map(flipX) }, ax: 36, ay: 58, w: 64, h: 56 };
 }
 export const _drawGrubbag = drawGrubbag;

@@ -12,7 +12,7 @@ const only = process.argv[2] ? new Set(process.argv[2].split(',')) : null;
 mkdirSync(OUT, { recursive: true });
 const stoke = (id, n) => `BK.kitchen().stoke('${id}');for(let k=0;k<${n};k++){BK.step(1);BK.P.hp=BK.P.maxHp;}`;
 /* the boss: his hall, him set into a mode */
-const gb = (m, t, extra) => `BK.tp(398,21);for(let k=0;k<320;k++){BK.sim(1);BK.P.hp=BK.P.maxHp;}const GH=BK.grubbagHands(),S=GH&&GH.show(),b=BK.boss;if(S&&b){S.restT=99;S.waves=[];S.throws=[];S.floods=[];S.items=[];S.oven.st='cold';BK.tp(402,21);b.mode='${m}';b.modeT=${t};b.openT0=${t};b.face=-1;${extra || ''}}`;
+const gb = (m, t, extra) => `BK.tp(398,21);for(let k=0;k<320;k++){BK.sim(1);BK.P.hp=BK.P.maxHp;}const GH=BK.grubbagHands(),S=GH&&GH.show(),b=BK.boss;if(S&&b){S.restT=99;S.waves=[];S.throws=[];S.floods=[];S.items=[];S.oven.st='cold';BK.tp(406,21);b.mode='${m}';b.modeT=${t};b.openT0=${t};b.face=-1;${extra || ''}}`;
 const SHOTS = [
   ['cellar', 6, 39, ''], ['cold-store', 30, 37, ''], ['scullery', 58, 39, ''], ['scullery-steam', 62, 39, stoke('scullery', 40)],
   ['vaults', 72, 26, ''], ['brewhouse', 84, 26, stoke('brewhouse', 30)],
@@ -23,11 +23,11 @@ const SHOTS = [
   ['butcher', 286, 23, "for(let k=0;k<40;k++){BK.step(1);BK.P.hp=BK.P.maxHp;}"], ['butcher-burning', 286, 23, "{const bu=BK.enemies().find(e=>e.alive&&e.t==='butcher'&&e.x<300*16);if(bu){bu.x=291*16;}}" + stoke('stove2', 50)],
   ['feast-hall', 304, 21, ''], ['gallery', 318, 15, ''], ['hearth-trench', 328, 15, ''], ['buttery', 344, 21, ''], ['spice-vault', 360, 21, ''],
   ['gb-sit', 0, 0, gb('sit', 1)], ['gb-belchTell', 0, 0, gb('belchTell', 0.6)], ['gb-belch', 0, 0, gb('belch', 0.3, "for(const d of [-1,1])S.waves.push({x:b.x+d*30,dir:d,life:2,delay:0,key:'x'+d,dmg:1});")],
-  ['gb-throwTell', 0, 0, gb('throwTell', 0.5)], ['gb-throw', 0, 0, gb('throw', 0.3, "for(const dx of [-64,0,64])S.throws.push({x0:b.x,y0:S.G.floorY-50,tx:BK.P.x+dx,ty:S.G.floorY,t:0.4,T:1,key:'t'+dx,dmg:1,plate:false});")],
+  ['gb-throwTell', 0, 0, gb('throwTell', 0.5)], ['gb-throw', 0, 0, gb('throw', 0.3, "for(const dx of [-64,0,64])S.throws.push({x0:b.x,y0:S.G.floorY-130,tx:BK.P.x+dx,ty:S.G.floorY,t:0.4,T:1,key:'t'+dx,dmg:1,plate:false});")],
   ['gb-forkTell', 0, 0, gb('forkTell', 0.5)], ['gb-fork', 0, 0, gb('fork', 0.2)],
-  ['gb-slamTell', 0, 0, gb('slamTell', 0.6)], ['gb-slam', 0, 0, gb('slam', 0.3, "for(let k=0;k<4;k++)S.throws.push({x0:S.G.table[0],y0:S.G.floorY-30,tx:S.G.table[0]-40-k*40,ty:S.G.floorY,t:0.4,T:0.9,key:'p'+k,dmg:1,plate:true});")],
-  ['gb-floodTell', 0, 0, gb('floodTell', 0.6)], ['gb-flood', 0, 0, gb('flood', 0.3, "S.floods.push({x:b.x-90,dir:-1,key:'f',dmg:1});S.gravy=3;")],
-  ['gb-grabTell', 0, 0, gb('grabTell', 0.5)], ['gb-grab', 0, 0, gb('grab', 0.28, "b.grabDir=-1;b.handX=b.x-150;")],
+  ['gb-slamTell', 0, 0, gb('slamTell', 0.6)], ['gb-slam', 0, 0, gb('slam', 0.3, "for(let k=0;k<4;k++)S.throws.push({x0:S.G.table[0],y0:S.G.floorY-44,tx:S.G.table[0]-40-k*40,ty:S.G.floorY,t:0.4,T:0.9,key:'p'+k,dmg:1,plate:true});")],
+  ['gb-floodTell', 0, 0, gb('floodTell', 0.6)], ['gb-flood', 0, 0, gb('flood', 0.3, "S.floods.push({x:b.x-190,dir:-1,key:'f',dmg:1});S.gravy=3;")],
+  ['gb-grabTell', 0, 0, gb('grabTell', 0.5)], ['gb-grab', 0, 0, gb('grab', 0.28, "b.grabDir=-1;b.handX=b.x-250;")],
   ['gb-pie', 0, 0, gb('sit', 1, "S.oven.st='out';S.items.push({id:99,kind:'pie',x:S.G.line.x0+150,state:'ride',k:0});S.items.push({id:98,kind:'dish',x:S.G.line.x0+40,state:'ride',k:0});")],
   ['gb-eat', 0, 0, gb('eat', 0.4, "b.eating={kind:'pie'};")], ['gb-choke', 0, 0, gb('choke', 3)], ['gb-ward', 0, 0, gb('recover', 0.4, "S.ward=2;")],
 ].filter(s => !only || only.has(s[0]));

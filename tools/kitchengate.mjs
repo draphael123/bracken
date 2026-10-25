@@ -109,7 +109,7 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   ok(H.hoist('stove1').state === 'cut' && H.hoist('spit1').state === 'hang', 'the pilot reads a bellows as a cleat: done once its door is gone, waiting while its fire is banked'); }
 
 // ---- LORD GRUBBAG, PURE ----
-{ const A = { x0: 386 * TS, x1: 417 * TS, floor: 22 * TS, chair: 410, table: [401, 408], oven: 387, bellows: 389, line: [387, 11, 407, 13] };
+{ const A = { x0: 390 * TS, x1: 429 * TS, floor: 22 * TS, chair: 421, table: [411, 416], oven: 392, bellows: 395, line: [392, 11, 418, 13] };   /* (claude/grubbagbig: his hall at his new size) */
   const G = GBM.geom(A, TS), S = GBM.newFight(G), said = [], hits = [];
   const w = { number: (x, y, t) => said.push(t), sound() {}, shake() {}, music() {}, mark() {}, dust() {}, fx() {}, oven() {}, burst() {}, smash() {}, hit: (b, d, n) => { hits.push(n); return null; }, hitArea: (b, d, n) => hits.push(n), hitHero: (h, d, n) => hits.push(n) };
   const e = { t: 'grubbag', x: G.chairX, y: G.floorY, w: GBM.GB.w, h: GBM.GB.h, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0, face: -1, alive: true };
@@ -135,10 +135,10 @@ ok(Object.values(KG_SAY).every(s => SAY_LINES.has(s)) && Object.values(GBM.GB_SA
   /* the phases: one new move each */
   const S2 = GBM.newFight(G), e2 = { ...e, hp: 1000, maxHp: 1000, mode: 'sit', modeT: 0 }; S2.restT = 0;
   const seen = new Set(); const runP = (s) => { for (let i = 0; i < Math.round(s * 60); i++) { GBM.stepGrubbag(e2, S2, 1 / 60, [P], w); seen.add(e2.mode); if (e2.mode === 'choke') e2.mode = 'sit'; } };
-  P.x = G.chairX - 60; runP(30); const p1 = new Set(seen); P.x = G.chairX - 180; runP(30); const p1b = new Set(seen);
+  P.x = G.chairX - 90; runP(30); const p1 = new Set(seen); P.x = G.chairX - 280; runP(30); const p1b = new Set(seen);
   ok(['belchTell', 'throwTell', 'forkTell', 'slamTell'].every(m => p1b.has(m)) && !p1b.has('floodTell') && !p1b.has('grabTell'), 'P1: THE BELCH, THROWN FOOD, THE GIANT FORK, THE TABLE SLAM (no flood, no grab) ' + [...p1b].filter(m => /Tell$/.test(m)).join(' '));
   e2.hp = 600; seen.clear(); runP(40); ok(S2.ph === 2 && seen.has('floodTell') && !seen.has('grabTell'), 'P2 (' + GBM.GB.p2 + '): THE GRAVY FLOOD joins');
-  e2.hp = 250; seen.clear(); P.x = G.chairX - 120; runP(40); ok(S2.ph === 3 && seen.has('grabTell'), 'P3 (' + GBM.GB.p3 + '): THE GRAB joins');
+  e2.hp = 250; seen.clear(); P.x = G.chairX - 200; runP(40); ok(S2.ph === 3 && seen.has('grabTell'), 'P3 (' + GBM.GB.p3 + '): THE GRAB joins');
   ok(S2.last.length <= 3, 'never the same move three times running');
   /* B16 / B17: six told attacks, each its own windup and release pose */
   const tells = ['belch', 'throw', 'fork', 'slam', 'flood', 'grab'];

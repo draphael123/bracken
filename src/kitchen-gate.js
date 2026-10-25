@@ -27,9 +27,9 @@
 //                                           BUTCHER on a trail (the one new foe: burn him); shrine 299
 //    300-372  THE FEAST HALL        EXAM    THE THIRD SPIT up to the minstrels' gallery (REQUIRED), THE HEARTH TRENCH on the hooks (REQUIRED), a butcher, a thrower and
 //                                           cooks on the grease before THE BUTTERY DOOR (REQUIRED); THE SPICE VAULT (the three recipe pages open it: silver); shrine 368
-//    372-420  GRUBBAG'S TABLE       BOSS    LORD GRUBBAG THE GLUTTON in his chair at the high table
-export const KITCHEN = { W: 420, H: 48, arena: [390, 416], floor: 22 };
-export const SECTIONS = [['THE UNDERCELLARS', 0, 104], ['THE SPIT HALL', 104, 201], ['THE GREASE KITCHENS', 201, 300], ['THE FEAST HALL', 300, 372], ["GRUBBAG'S TABLE", 372, 420]];
+//    372-432  GRUBBAG'S TABLE       BOSS    LORD GRUBBAG THE GLUTTON in his chair at the high table (claude/grubbagbig: the hall 12 columns wider and 2 rows higher for him at his new size)
+export const KITCHEN = { W: 432, H: 48, arena: [390, 428], floor: 22, roof: 6 };
+export const SECTIONS = [['THE UNDERCELLARS', 0, 104], ['THE SPIT HALL', 104, 201], ['THE GREASE KITCHENS', 201, 300], ['THE FEAST HALL', 300, 372], ["GRUBBAG'S TABLE", 372, 432]];
 /* the rule's arc in COLUMNS - TAUGHT, TESTED, REMIXED, EXAMINED - read by tools/kitchengate.mjs and the brief */
 export const ARCS = {
   copper: { teach: [56, 70], test: [82, 98], remix: [160, 186] },
@@ -212,19 +212,20 @@ export function buildKitchenGate({ painter, T, TS }) {
   /* THE KITCHEN SHELVES: pot racks and dressers along the walls (a second height, coins on them) - never where one would climb a face a machine is for */
   for (const [a, b, y] of [[24, 27, 34], [58, 61, 23], [84, 86, 22], [93, 97, 15], [150, 153, 7], [157, 161, 10], [196, 199, 10], [212, 216, 20], [226, 230, 20], [241, 244, 19], [259, 262, 19], [266, 270, 19], [292, 296, 20], [362, 366, 18]]) { shelf(a, b, y); racks.push([a, b, y]); ent('coin', Math.round((a + b) / 2), y - 1); }
 
-  // ================= 5. GRUBBAG'S TABLE (374-416): LORD GRUBBAG THE GLUTTON =================
-  /* The high table's hall: the floor (row 22), his reinforced chair at the east end behind the high table, the KITCHEN HATCH and its PIE OVEN at the west end with the
-     oven's bellows, and THE SERVING LINE - a hook rail under the roof from the hatch to his table (the dishes ride it). Two benches (shelves) along the west wall */
-  const [A0, A1] = KITCHEN.arena, FL = KITCHEN.floor;
+  // ================= 5. GRUBBAG'S TABLE (374-428): LORD GRUBBAG THE GLUTTON =================
+  /* The high table's hall: the floor (row 22), his reinforced chair at the east end hard against the wall (claude/grubbagbig: he is ~225 px across now and fills it), the high table
+     under his belly, the KITCHEN HATCH high in the west wall over its PIE OVEN, the oven's bellows, and THE SERVING LINE - a hook rail under the roof from the hatch to his table (the
+     dishes ride it). Two benches along the hall, and THE GALLERY (a shelf two benches up, west of his table): from it a hero can come down on his belly (a plunge, GB.above). */
+  const [A0, A1] = KITCHEN.arena, FL = KITCHEN.floor, RF = KITCHEN.roof;
   air(373, A0 - 2, 12, FL - 1);                                                          /* the passage from the feast hall to his table */
-  air(A0 - 1, A1 + 1, 8, FL - 1);
-  shelf(A0 + 2, A0 + 5, FL - 3); shelf(A0 + 9, A0 + 12, FL - 3);
-  ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 1, FL - 1);
-  ent('grubbag', A1 - 6, FL - 1);
+  air(A0 - 1, A1 + 1, RF, FL - 1);
+  shelf(A0 + 6, A0 + 9, FL - 3); shelf(A0 + 12, A0 + 15, FL - 3); shelf(A1 - 21, A1 - 19, FL - 6);
+  ent('torch', A0 + 11, FL - 1); ent('torch', A1 - 23, FL - 1);
+  ent('grubbag', A1 - 7, FL - 1);
 
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: 8 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: RF * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
     /* THE TABLE (src/grubbag.js geom): his chair's column, the high table's span, the hatch / oven and its bellows, the serving line's two ends (columns, rows) */
-    chair: A1 - 6, table: [A1 - 11, A1 - 8], oven: A0 + 1, bellows: A0 + 3, line: [A0 + 1, 11, A1 - 9, 13] };
+    chair: A1 - 7, table: [A1 - 17, A1 - 12], oven: A0 + 2, bellows: A0 + 5, line: [A0 + 2, 11, A1 - 10, 13] };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
     arena, kitchen: true, kgKit: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,
@@ -238,7 +239,7 @@ export function buildKitchenGate({ painter, T, TS }) {
       { kind: 'kgpage', opens: 'secret', hud: 'RECIPE PAGES n/3: THE SPICE VAULT' },
     ],
     duskStart: -1, duskLen: 1, music: 'kitchengate', night: false, glowNight: false,
-    interiors: [[1, 72, 28, 46, 'cellar'], [56, 104, 9, 26, 'cellar'], [105, 200, 4, 28, 'keep'], [201, 300, 8, 27, 'keep'], [300, 388, 6, 27, 'royal'], [389, 418, 8, 21, 'royal']],   /* INSIDE THE CASTLE: every hall has a back wall, never the sky (the art lane gives each its own) */
+    interiors: [[1, 72, 28, 46, 'cellar'], [56, 104, 9, 26, 'cellar'], [105, 200, 4, 28, 'keep'], [201, 300, 8, 27, 'keep'], [300, 388, 6, 27, 'royal'], [389, 430, 6, 21, 'royal']],   /* INSIDE THE CASTLE: every hall has a back wall, never the sky (the art lane gives each its own) */
     palette: { hall: true, sky: 'night', dress: 'none', ledges: 'beam', haze: 'rgba(255,170,90,0.10)', dirt: '#5e4a3a', dirtL: '#7a6450', dirtD: '#3a2c22', grass: '#8a7058', grassL: '#a88a6a', grassD: '#5a4636' },
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     tints: [[-24, 104, [180, 190, 210], 0.07], [104, 201, [255, 200, 150], 0.07], [201, 300, [255, 210, 160], 0.07], [300, 372, [255, 215, 170], 0.06], [372, W + 24, [255, 200, 140], 0.08]],
