@@ -4896,7 +4896,7 @@ const WOOD_NODES = [
   { id: 'kings', kind: 'level', level: 4, x: 141, y: 24, name: 'KINGSWOOD' },
 ];
 /* the road itself, and nothing but: the Burning Village hangs off it on a spur (NODES `spur: true`); UNDERLEAF is ON it (between Kingswood and the Scree Path) */
-const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [268,94], [288,47], [254,27], [199,38], [221,68], [141,24]];   /* (claude/underorder, Daniel 10-24: UNDERLEAF left the wood sheet - the road goes straight from KINGSWOOD down to the crags' door, no dip south to the village) */
+const WOOD_PATH = [[62,112], [96,104], [122,79], [156,68], [187,80], [215,112], [251,129], [268,94], [288,47], [254,27], [199,38], [221,68], [178,58], [141,24]];   /* (claude/underorder, Daniel 10-24: UNDERLEAF left the wood sheet - the road goes straight from KINGSWOOD down to the crags' door, no dip south to the village) */
 /* [170,26]: nudged 4px off the top margin, map-grammar's own rule (map-redesign §6 item 2 applies to every sheet, not only the two this brief re-routed) */
 /* OPTION B — THE SINGLE DIAGONAL S (docs/crag-options.png, letter B). Every node moved. One continuous climb from
    bottom-left to top-right, X sweeping through a smooth ogee (half-sine) curve as Y falls strictly - no hairpins,
