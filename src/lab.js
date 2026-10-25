@@ -945,7 +945,7 @@ async function runbossLab(BK, opts) {
       /* THE MOTHER CAP 2 (claude/sporewood2): src/lab-mother.js plays her - her seed caps struck and climbed, a plunge on her knot, her told moves answered; nothing is grown or opened for the bot */
       if(boss.t==='mother'){
         k.left=k.right=k.up=k.down=k.jump=k.block=false;
-        const mh=motherHands({BK,boss,P,k,A,h,f,reach:LAB_REACH[h],strike:labStrike});if(mh.swing&&P.atk<0){BK.press('atk');swings++;}if(mh.struck)swings++;
+        const mh=motherHands({BK,boss,P,k,A,h,f,reach:LAB_REACH[h],strike:labStrike,keyVerb});if(mh.swing&&P.atk<0){BK.press('atk');swings++;}if(mh.struck)swings++;
         if(opts.samples&&f%20===0){const R=BK.motherCap();out.samples=out.samples||[];out.samples.push([h,+(f/60).toFixed(1),boss.mode,Math.round(P.x-boss.x),Math.round(P.y-A.floor),P.onMover?(P.onMover.seed?'S'+Math.round((P.onMover.x-boss.x)/16):'m'):P.ground?'g':'air',Math.round(P.st),boss.hp,R?R.seeds.map(q=>q.state[0]+(q.cd>0?'*':'')).join(''):'',R&&R.ready?'R':'-',mh.swing?'X':'',+(P.stDelay||0).toFixed(2),k.jump?'J':'',P.jet?'JET':'',P.labRest?'REST':'',Math.round(P.heat||0),(BK.clouds?BK.clouds():[]).filter(c=>Math.hypot(P.x-c.x,P.y-8-c.y)<c.r).map(c=>(c.mild?'m':'')+Math.round(c.r)+'/'+(c.life||0).toFixed(1)).join(';'),P.winded?'W':'',P.exhaustT>0?'EX':'']);} const was=P.hp,m0=boss.mode;advance(1);taken+=Math.max(0,was-P.hp);ledger(m0,Math.max(0,was-P.hp));if(f%600===599)await yieldNow();continue;
       }
       /* THE UNDEAD ARCHMAGE, FROM THE CARPET (batch 4). The bot flies: out of the storm column sideways, straight out of a death
