@@ -206,7 +206,7 @@ export function buildRookery({ painter, T, TS }) {
   ent('shrieksisters', A0 + 21, FL - 1);
   block(W - 1, W - 1, 0, H - 1);                                                    /* the world's east edge */
 
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'boss2', tint: '#c8c0d8', tintA: 0.07,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: (FL - 9) * TS, trigger: (A0 + 5) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'shrieksisters', music: 'shrieksisters', tint: '#c8c0d8', tintA: 0.07,
     /* THE CRACKED SLABS (src/shriek-sisters.js geom): tile columns of each slab's middle */
     slabs: [A0 + 8, A0 + 21, A1 - 8] };
   return {
@@ -224,7 +224,7 @@ export function buildRookery({ painter, T, TS }) {
     interiors: [],
     palette: { sky: [[150, 160, 196], [232, 222, 214]], far: 'crag', mid: 'crag', near: 'none', dress: 'crag', noNear: true, fg: 'rookery', haze: 'rgba(224,220,240,0.06)', grass: '#7a7a5a', grassL: '#a8a488', grassD: '#4e4e3a', dirt: '#8a8478', dirtL: '#b4ae9f', dirtD: '#5e594f', canopy: ['#6a6a7a', '#8a8a9a', '#b0b0be', '#e0e0e8'] },
     weather: [{ x0: 0, x1: 99999, kind: 'wind' }],
-    ambient: [{ x0: 0, x1: 99999, kind: 'wind' }],
+    ambient: [{ x0: 0, x1: 99999, kind: 'rookery' }],   /* (claude/rookeryart) its own bed (src/audio.js rookery()) */
     tints: [[-24, 106, [210, 205, 225], 0.06], [106, 206, [205, 200, 220], 0.07], [206, 316, [200, 200, 225], 0.07], [316, 368, [215, 195, 210], 0.08], [368, W + 24, [220, 190, 205], 0.09]],
     reachExact: false,
   };

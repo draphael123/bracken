@@ -26,7 +26,7 @@ export function bakeShriekerSet(Hs) {
   const white = R.map(c => whiten(c));
   return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: Hs.ax, ay: Hs.ay, w: Hs.w, h: Hs.h };
 }
-export const K = { aim: 0.75, diveV: 300, diveDmg: 11, stun: 2.2, respawn: 4.5, markW: 18, fold: 0.5,
+export const K = { aim: 0.75, diveV: 300, diveDmg: 8, stun: 2.2, respawn: 4.5, markW: 18, fold: 0.5,
   shriek: { reach: 15, tell: 0.9, mark: 1.3, cd: 5.6, swoop: 1.7, call: 18, gap: 0.32, low: 40, hi: 78 } };
 export const KIND = { drop: 'crackfloor', span: 'crackpillar', nest: 'cracknest', steps: 'crackslab' };   /* the ent kind at a mark (src/rookery.js) - the guide's done names it */
 export const RK_SAY = {
