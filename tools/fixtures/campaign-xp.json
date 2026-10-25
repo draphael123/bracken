@@ -2,82 +2,70 @@
  "note": "tools/boss-level.mjs --write-xp: a straight run per level (0.8 of its foes, its mini and boss, the clear share), from BK.xpSim",
  "rows": {
   "wood": {
-   "run": 785,
-   "foeXp": 454,
+   "run": 811,
+   "foeXp": 472,
    "bossXp": 150,
-   "clear": 272
+   "clear": 283
   },
   "marsh": {
-   "run": 747,
-   "foeXp": 410,
+   "run": 892,
+   "foeXp": 514,
    "bossXp": 173,
-   "clear": 246
-  },
-  "fenroad": {
-   "run": 509,
-   "foeXp": 233,
-   "bossXp": 183,
-   "clear": 140
+   "clear": 308
   },
   "stockade": {
-   "run": 752,
-   "foeXp": 398,
+   "run": 895,
+   "foeXp": 500,
    "bossXp": 195,
-   "clear": 239
+   "clear": 300
   },
   "spore": {
-   "run": 1105,
-   "foeXp": 634,
+   "run": 873,
+   "foeXp": 468,
    "bossXp": 218,
-   "clear": 380
+   "clear": 281
   },
   "kings": {
-   "run": 1199,
-   "foeXp": 616,
+   "run": 991,
+   "foeXp": 468,
    "bossXp": 336,
-   "clear": 370
+   "clear": 281
   },
   "scree": {
-   "run": 1288,
-   "foeXp": 732,
+   "run": 1318,
+   "foeXp": 754,
    "bossXp": 263,
-   "clear": 439
+   "clear": 452
   },
   "hanging": {
-   "run": 1038,
-   "foeXp": 456,
+   "run": 1094,
+   "foeXp": 496,
    "bossXp": 399,
-   "clear": 274
+   "clear": 298
   },
   "spire": {
-   "run": 1428,
-   "foeXp": 720,
+   "run": 1431,
+   "foeXp": 722,
    "bossXp": 420,
-   "clear": 432
+   "clear": 433
   },
   "moor": {
-   "run": 1054,
-   "foeXp": 528,
+   "run": 1110,
+   "foeXp": 568,
    "bossXp": 315,
-   "clear": 317
+   "clear": 341
   },
   "storm": {
-   "run": 1615,
-   "foeXp": 918,
+   "run": 2161,
+   "foeXp": 1308,
    "bossXp": 330,
-   "clear": 551
+   "clear": 785
   },
   "crown": {
    "run": 2390,
    "foeXp": 1362,
    "bossXp": 483,
    "clear": 817
-  },
-  "undercrown": {
-   "run": 921,
-   "foeXp": 390,
-   "bossXp": 375,
-   "clear": 234
   },
   "longwater": {
    "run": 1371,
@@ -92,28 +80,28 @@
    "clear": 300
   },
   "flotilla": {
-   "run": 1108,
-   "foeXp": 496,
+   "run": 1278,
+   "foeXp": 618,
    "bossXp": 413,
-   "clear": 298
+   "clear": 371
   },
   "hurricane": {
-   "run": 1902,
-   "foeXp": 1048,
+   "run": 1202,
+   "foeXp": 548,
    "bossXp": 435,
-   "clear": 629
+   "clear": 329
   },
   "lamplit": {
-   "run": 1845,
-   "foeXp": 860,
+   "run": 1901,
+   "foeXp": 900,
    "bossXp": 641,
-   "clear": 516
+   "clear": 540
   },
   "underleaf": {
-   "run": 1036,
-   "foeXp": 558,
+   "run": 871,
+   "foeXp": 440,
    "bossXp": 255,
-   "clear": 335
+   "clear": 264
   },
   "deep": {
    "run": 2076,
@@ -145,11 +133,17 @@
    "bossXp": 609,
    "clear": 682
   },
+  "undercrown": {
+   "run": 921,
+   "foeXp": 390,
+   "bossXp": 375,
+   "clear": 234
+  },
   "fields": {
-   "run": 1645,
-   "foeXp": 710,
+   "run": 1636,
+   "foeXp": 704,
    "bossXp": 651,
-   "clear": 426
+   "clear": 422
   },
   "burial": {
    "run": 1652,
@@ -164,16 +158,16 @@
    "clear": 443
   },
   "fallingtower": {
-   "run": 1777,
-   "foeXp": 766,
+   "run": 1785,
+   "foeXp": 772,
    "bossXp": 704,
-   "clear": 460
+   "clear": 463
   },
   "burning": {
-   "run": 963,
-   "foeXp": 540,
+   "run": 1030,
+   "foeXp": 588,
    "bossXp": 207,
-   "clear": 324
+   "clear": 353
   },
   "witchlight": {
    "run": 1743,
@@ -194,10 +188,10 @@
    "clear": 349
   },
   "caravan": {
-   "run": 1213,
-   "foeXp": 502,
+   "run": 1289,
+   "foeXp": 556,
    "bossXp": 510,
-   "clear": 301
+   "clear": 334
   },
   "fair": {
    "run": 2015,
@@ -224,10 +218,10 @@
    "clear": 379
   },
   "redgorge": {
-   "run": 1290,
-   "foeXp": 546,
+   "run": 1404,
+   "foeXp": 628,
    "bossXp": 525,
-   "clear": 328
+   "clear": 377
   },
   "underwell": {
    "run": 1450,
@@ -236,46 +230,76 @@
    "clear": 398
   },
   "skyroad": {
-   "run": 626,
-   "foeXp": 220,
+   "run": 727,
+   "foeXp": 292,
    "bossXp": 318,
-   "clear": 132
+   "clear": 175
   },
   "glasssea": {
-   "run": 1247,
-   "foeXp": 510,
+   "run": 1300,
+   "foeXp": 548,
    "bossXp": 533,
-   "clear": 306
+   "clear": 329
   },
   "ksar": {
-   "run": 1399,
-   "foeXp": 614,
+   "run": 1758,
+   "foeXp": 870,
    "bossXp": 540,
-   "clear": 368
+   "clear": 522
   },
   "rootway": {
-   "run": 835,
-   "foeXp": 434,
+   "run": 1073,
+   "foeXp": 604,
    "bossXp": 228,
+   "clear": 362
+  },
+  "minecart": {
+   "run": 1069,
+   "foeXp": 434,
+   "bossXp": 462,
    "clear": 260
   },
+  "church": {
+   "run": 1389,
+   "foeXp": 542,
+   "bossXp": 630,
+   "clear": 325
+  },
   "towpath": {
-   "run": 1046,
-   "foeXp": 436,
+   "run": 1196,
+   "foeXp": 544,
    "bossXp": 435,
-   "clear": 262
+   "clear": 326
   },
   "buriedcity": {
-   "run": 1217,
-   "foeXp": 478,
+   "run": 1399,
+   "foeXp": 608,
    "bossXp": 548,
-   "clear": 287
+   "clear": 365
   },
   "sealedpyramid": {
-   "run": 984,
-   "foeXp": 306,
-   "bossXp": 555,
-   "clear": 184
+   "run": 1752,
+   "foeXp": 696,
+   "bossXp": 777,
+   "clear": 418
+  },
+  "fenroad": {
+   "run": 671,
+   "foeXp": 349,
+   "bossXp": 183,
+   "clear": 209
+  },
+  "hornetsnest": {
+   "run": 477,
+   "foeXp": 223,
+   "bossXp": 165,
+   "clear": 134
+  },
+  "palisadewood": {
+   "run": 839,
+   "foeXp": 432,
+   "bossXp": 234,
+   "clear": 259
   }
  }
 }
