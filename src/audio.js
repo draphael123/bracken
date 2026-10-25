@@ -1920,6 +1920,9 @@ Object.assign(CAST, {
   put(['stringjack', 'marionette', 'masterpiece', 'wickerman'], wood); put(['glasssentinel'], glass); put(['colossus'], stone); put(['greatdrill', 'construct'], brass); put(['tome'], paper); put(['willowisp', 'wickling'], wisp);   /* THE WICKLING (claude/lamplit3): a small flame spirit, the wisp's voice */
 }
 const vbody = (mat, die) => { if (mat === 'plate') file('clang', die ? 0.26 : 0.14, die ? 0.6 : 0.78); else if (mat === 'mail') chain(die ? 0.04 : 0.025, die ? 5 : 3); else if (mat === 'cloth') noise(0.08, die ? 0.08 : 0.05, 900, 0.5); };
+/* (BATCH120 integ, voices-check) THE PALISADE WOOD's and UNDERLEAF 3's reskinned people speak as the goblin they are drawn from; THE BATTERING BEAST grunts as the great boar does */
+for (const [t, b] of Object.entries({ stakesetter: 'rockgoblin', lanternhand: 'rockgoblin', maulcrew: 'brute', herbgatherer: 'sprig', herbthief: 'thief', herbwarden: 'shield', jarthrower: 'rockgoblin', leafarcher: 'archer', thornbeast: 'brute', grandbrood: 'sprig' })) { if (HURT[b] && !HURT[t]) HURT[t] = HURT[b]; if (DIE[b] && !DIE[t]) DIE[t] = DIE[b]; }
+CAST.batteringbeast = { kit: 'ogre', rate: 0.55, lp: 1300, boss: true };
 SFX.dieOf = t => { const c = CAST[t], d = DIE[t]; if (!c) return d || null;
   return () => { const roll = Math.random(), pool = c.human && c.kit !== 'hd' && roll < 0.25 && clips.vo_dp_die ? 'vo_dp_die' : c.human && c.kit !== 'hd' && roll < 0.45 && clips.vo_ex_die ? 'vo_ex_die' : VOK(c.kit, 'die');
     const ok = voice(pool, c.human ? 0.6 : 0.48, (pool === 'vo_dp_die' || pool === 'vo_ex_die') ? c.rate * 0.97 : c.rate * (c.human ? 1 : 0.92), c.lp || 0);
