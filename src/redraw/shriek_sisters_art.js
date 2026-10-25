@@ -44,7 +44,7 @@ function body(g, P, p, role) {
   /* the breast: pale feathers in rows (barred for the snatcher) */
   const br = P.belly; ellipse(g, 1, cy + 1.5, bw - 3.2, bh - 3.4 + (p.chest ? 1.6 : 0), br);
   for (let q = 0; q < 4; q++) { const yy = cy - 3 + q * 3, ww = Math.round(bw - 3.6 - Math.abs(q - 1.2) * 0.8); R(g, -ww + 2, yy, ww, 1, role === 'snatcher' ? P.faceD : P.light); R(g, -ww + 3, yy + 1, Math.max(1, ww - 2), 1, br); }
-  if (role === 'shrieker') { ellipse(g, 3, cy - 7 + (p.beak ? 1 : 0), 3 + (p.cone || p.rings || p.chest ? 2 : 0.6), 2.6 + (p.rings || p.cone ? 1.6 : 0.4), P.belly); }   /* the throat sac: swollen when she screams */
+  if (role === 'shrieker') { ellipse(g, 3, cy - 7 + (p.beak ? 1 : 0), 3 + (p.sac ? 3.4 : p.cone || p.rings || p.chest ? 2 : 0.6), 2.6 + (p.sac ? 2.6 : p.rings || p.cone ? 1.6 : 0.4), P.belly); if (p.sac) { ellipse(g, 2, cy - 8, 2.2, 1.4, '#f8c8c8'); for (let k = -2; k <= 2; k += 2) R(g, 3 + k, cy - 6, 1, 2, '#c06070'); } }   /* (claude/sisters2) THE SHOCK SHRIEK: the sac blown up tight, veins showing */   /* the throat sac: swollen when she screams */
   return { cy, bw, bh };
 }
 function head(g, P, p, role, b) {
@@ -73,10 +73,16 @@ function talons(g, P, p, role) {
     if (st === 'fwd') { line(g, x0, y0, x0 + 6, -2, '#c8b060', 2); claw(x0 + 6, -2, x0 + 12, 0); claw(x0 + 6, -2, x0 + 11, -3); claw(x0 + 6, -2, x0 + 10, 2); }   /* thrust out ahead: the stoop */
     else if (st === 'spread' || st === 'open') { const e = sx < 0 ? -1 : 1; line(g, x0, y0, x0 + e * 4, -2, '#c8b060', 2); claw(x0 + e * 4, -2, x0 + e * 10, 1); claw(x0 + e * 4, -2, x0 + e * 9, -3); claw(x0 + e * 4, -2, x0 + e * 7, 3); }   /* open wide, empty */
     else if (st === 'grip') { line(g, x0, y0, x0 + 1, -3, '#c8b060', 2); claw(x0 + 1, -3, x0 + 6, -1); claw(x0 + 1, -3, x0 - 3, -1); R(g, x0 - 1, -4, 4, 2, P.talon); }                                      /* curled round a thing */
+    else if (st === 'rake') { line(g, x0, y0, x0 + 8, -1, '#c8b060', 2); claw(x0 + 8, -1, x0 + 14, 0); claw(x0 + 8, -1, x0 + 13, -2); claw(x0 + 8, -1, x0 + 3, 0); R(g, x0 + 9, 0, 6, 1, P.talon); }   /* (claude/sisters2) THE RAKE: legs thrust out ahead along the ground, claws dug in */
+    else if (st === 'reach') { const e = sx < 0 ? -0.5 : 1; line(g, x0, y0, x0 + 7, y0 - 3 + (sx < 0 ? 2 : 0), '#c8b060', 2); const hx = x0 + 7, hy = y0 - 3 + (sx < 0 ? 2 : 0); claw(hx, hy, hx + 6, hy - 4); claw(hx, hy, hx + 7, hy); claw(hx, hy, hx + 5, hy + 4); claw(hx, hy, hx - 1, hy + 4 * e); }   /* THE GRAB: both feet reaching forward, every claw open */
+    else if (st === 'clutch') { line(g, x0, y0, x0 + (sx < 0 ? -1 : 1), -1, '#c8b060', 2); claw(x0, -1, x0 + 3, 3); claw(x0, -1, x0 - 2, 3); claw(x0, -1, x0 + 1, 4); R(g, x0 - 1, 2, 3, 1, P.talon); }   /* HOLDING YOU: feet down, claws closed round your shoulders */
     else { line(g, x0, y0, x0, -2, '#c8b060', 2); claw(x0, -2, x0 + Math.round(5 * big), 0); claw(x0, -2, x0 - Math.round(3 * big), 0); claw(x0, -2, x0 + 2, 2); }
   }
 }
-function rockSprite(g) { const S = ['#4a4640', '#8a8478', '#b4ae9f']; ellipse(g, 0, -4, 8, 5.5, S[1]); ellipse(g, -1.5, -5.5, 5.5, 3, S[2]); R(g, 3, -2, 5, 2, S[0]); line(g, -2, -8, 1, -3, '#2a2620', 1); line(g, 1, -3, 4, -4, '#2a2620', 1); R(g, -6, -3, 3, 1, '#ece8dc'); }
+/* (claude/sisters2) THE BOULDER: the crag's own rose stone (as the summit's slabs), bigger than the old rock - guano cap, strata, a black fracture */
+function rockSprite(g) { const S = ['#30242c', '#4e3c46', '#725a62', '#987c80', '#bf9fa0', '#e4c8c4'];
+  ellipse(g, 0, -6, 11, 7.5, S[2]); ellipse(g, -2, -7.5, 8.5, 5.5, S[3]); ellipse(g, -3.5, -9, 5, 3, S[4]); R(g, -5, -13, 8, 2, '#f4f0e6'); R(g, -3, -14, 5, 1, '#ffffff'); R(g, -1, -11, 2, 3, '#e6e2d8');
+  R(g, -9, -6, 17, 1, S[1]); R(g, -7, -3, 13, 1, S[1]); R(g, 4, -1, 6, 2, S[0]); line(g, 2, -12, 4, -7, '#1c1a22', 1); line(g, 4, -7, 2, -3, '#1c1a22', 1); R(g, 5, -8, 2, 1, '#ece8dc'); }
 const rubble = g => { const C = ['#5e594f', '#8a8478', '#b4ae9f', '#ece8dc']; for (let k = 0; k < 8; k++) { const x = -20 + k * 6 + (k % 3), w = 4 + (k % 3), h = 3 + (k % 2) * 2; R(g, x, -h, w, h, C[k % 2]); R(g, x, -h, w, 1, C[2]); if (k % 3 === 0) R(g, x + 1, -h - 1, 2, 1, C[3]); } };
 
 function bake(role, pose, ph, rockOn) {
@@ -109,8 +115,13 @@ export function drawSister(g, role, p, flash, time, rocks) {
   if (p.stars) for (let k = 0; k < 3; k++) { const a = time * 5 + k * 2.1; R(g, Math.round(4 + Math.cos(a) * 11), Math.round(-33 + Math.sin(a) * 4), 3, 3, '#ffe9a0'); R(g, Math.round(5 + Math.cos(a) * 11), Math.round(-34 + Math.sin(a) * 4), 1, 1, '#ffffff'); }
   const [hx0, hy0] = p.head || [8, -2], hx = Math.round(hx0 * 0.55) + 11, hy = -29 + Math.round(hy0 * 0.5);
   if (p.rings) { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.lineWidth = 1; g.beginPath(); g.arc(hx, hy + 3, 6 + k * 26, -0.9, 0.9); g.stroke(); g.strokeStyle = 'rgba(255,200,170,' + (0.7 - k * 0.7).toFixed(2) + ')'; g.beginPath(); g.arc(hx, hy + 3, 3 + k * 16, -0.9, 0.9); g.stroke(); }
+  /* (claude/sisters2) the signature moves' live bits: the rake's sparks and dust streak, the shock's blast rings, the echo's rings at the floor */
+  if (p.sparks) for (let k = 0; k < 4; k++) { const a = (time * 9 + k * 1.7) % 1; R(g, Math.round(14 + a * 10), Math.round(-1 - a * 6 + k), 1, 1, k % 2 ? '#ffe9a0' : '#ffffff'); }
+  if (p.streak) for (let k = 0; k < 5; k++) { const a = (time * 6 + k * 0.2) % 1; g.fillStyle = 'rgba(232,224,204,' + (0.7 - a * 0.7).toFixed(2) + ')'; g.fillRect(Math.round(-8 - a * 22 - k * 3), -2 - (k % 2), 6, 1); }
+  if (p.blast) for (let k = 0; k < 3; k++) { const a = (time * 4 + k / 3) % 1; g.strokeStyle = 'rgba(255,236,170,' + (0.9 - a * 0.9).toFixed(2) + ')'; g.lineWidth = 2 - (k === 2 ? 1 : 0); g.beginPath(); g.arc(hx + 2, hy + 4, 6 + a * 30, -0.7, 0.7); g.stroke(); } g.lineWidth = 1;
+  if (p.down) { const k = (time * 3) % 1; g.strokeStyle = 'rgba(255,90,74,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(hx + 4, hy + 8, 4 + k * 16, 0.5, 2.0); g.stroke(); }
   if (p.cone) { g.fillStyle = 'rgba(255,211,107,0.35)'; g.beginPath(); g.moveTo(hx + 4, hy + 4); g.lineTo(hx + 36, hy - 12); g.lineTo(hx + 36, hy + 22); g.closePath(); g.fill(); }
 }
 /* the three, small, for the bestiary card: a grid of the roles in a telling pose and at rest */
-export const SHEET = (POSE) => { const out = {}, ms = ['hover', 'diveTell', 'dive', 'stuck', 'screamTell', 'scream', 'swoop', 'waveTell', 'pick', 'carry', 'dropTell', 'drop', 'snatchTell', 'snatch', 'tear', 'land'];
+export const SHEET = (POSE) => { const out = {}, ms = ['hover', 'diveTell', 'dive', 'stuck', 'screamTell', 'scream', 'swoop', 'waveTell', 'pick', 'carry', 'dropTell', 'drop', 'snatchTell', 'snatch', 'tear', 'land', 'chainTell', 'jar', 'rakeTell', 'rake', 'shockTell', 'shock', 'echoTell', 'echo', 'grabTell', 'grab', 'lift', 'hold'];
   for (const role of Object.keys(ROLE)) for (const m of ms) { const p = POSE[m]; if (p) { named(p); out[role + '-' + m] = bake(role, p, 1, true).c; } } return out; };

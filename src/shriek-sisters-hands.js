@@ -8,18 +8,25 @@
 // (beak forward, a cone), the pick (head down to the rock on the shelf), the carry (rock in the talons), the drop's windup (talons open over the ring) and the drop
 // (talons spread, empty), the snatch's windup (low, talons spread) and the snatch (flat out, talons first).
 // THE SHARED READ (B10): OPEN = a gold ring and a timer bar (STUNNED / DOWN); WARDED = a pale ring and the word; ON THE WING = a turned blow sparks and says so.
-// main.js calls: spawnBoss, owns, on, update, hit, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
+// (claude/sisters2) THE SIGNATURE MOVES' hands: the SHOCK SHRIEK's shove (a shield braces it, a roll goes through it) and the TEETER on the summit's crumbling lip; THE GRAB's
+// catch, the hold (main.js updatePlayer hands a held hero to H.held: he hangs from her talons, every swing a strike on her) and the let-go; and their reads - the chain's numbered
+// rings, the rake's chevrons, the shock's cone, the echo's shivering tile and the cracked tiles it leaves, the boulder's shadow, the grab's talon line, the escape bar.
+// main.js calls: spawnBoss, owns, on, update, hit, held, drawBack, drawBoss, drawOver, barName, end, read, show, clear.
 import * as SSM from './shriek-sisters.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
 import { drawSister } from './redraw/shriek_sisters_art.js';
-import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
+import { bakeSummitSlab, bakeSummitRubble, bakeSummitStone, bakeSummitEcho, bakeBoulder, bakeSummitLip } from './redraw/rookery_world.js';   /* (claude/rookerypolish) the summit's slabs, rubble and stones in the Sisters' Crag stone */
 const { SS, ROLES } = SSM;
 
 const SOUND = { screech: s => (s.screech || s.tell)(), lock: s => (s.tell || s.clank)(), dive: s => (s.whoosh || s.throwWhoosh || s.screech || s.tell)(), smash: s => { (s.crack || s.stone || s.thud)(); (s.heavy || s.thud)(); },
   skid: s => (s.skid || s.stone || s.thud)(), screamTell: s => (s.screech || s.tell)(), scream: s => (s.queenShriek || s.screech)(), inhale: s => (s.tell)(), shriek: s => (s.queenShriek || s.screech)(),
   pick: s => (s.stone || s.thud)(), rockTell: s => (s.tell)(), drop: s => (s.throwWhoosh || s.tell)(), rockLand: s => { (s.heavy || s.thud)(); (s.crack || s.stone)(); }, snatchTell: s => (s.screech || s.tell)(),
-  swoop: s => (s.whoosh || s.throwWhoosh || s.tell)(), crack: s => (s.crack || s.stone)(), fall: s => (s.queenShriek || s.screech)(), clank: s => (s.clank || s.thud)() };
+  swoop: s => (s.whoosh || s.throwWhoosh || s.tell)(), crack: s => (s.crack || s.stone)(), fall: s => (s.queenShriek || s.screech)(), clank: s => (s.clank || s.thud)(),
+  /* (claude/sisters2) the signature moves */
+  chainTell: s => { (s.screech || s.tell)(); (s.whoosh || s.tell)(); }, rakeTell: s => (s.clank || s.tell)(), rake: s => (s.skid || s.stone || s.thud)(), shockTell: s => (s.tell)(), shock: s => { (s.queenShriek || s.screech)(); (s.heavy || s.thud)(); },
+  echoTell: s => (s.screech || s.tell)(), echo: s => { (s.crack || s.stone)(); (s.stone || s.thud)(); }, grabTell: s => (s.screech || s.tell)(), grab: s => (s.whoosh || s.throwWhoosh || s.tell)(), caught: s => (s.thud || s.heavy)(),
+  free: s => (s.clank || s.thud)(), letGo: s => (s.whoosh || s.tell)(), teeter: s => (s.stone || s.thud)() };
 const COL = { diver: { body: '#6a7890', dark: '#3e4a5e', light: '#9aaac4', crest: '#c8d4e8' }, shrieker: { body: '#7a4a5a', dark: '#4a2634', light: '#b0707e', crest: '#e04a3a' }, snatcher: { body: '#7a6448', dark: '#4a3a26', light: '#a88c64', crest: '#d8b070' } };
 const R = Math.round;
 const rect = (g, x, y, w, h, col) => { g.fillStyle = col; g.fillRect(R(x), R(y), R(w), R(h)); };
@@ -35,6 +42,18 @@ export const POSE = {
   pick: { wing: 0.4, pitch: 0.5, head: [9, 6], talon: 'grip', rock: true }, carry: { wing: -0.5, flap: true, pitch: 0, head: [8, -2], rock: true, talon: 'grip' },
   dropTell: { wing: -1.1, pitch: -0.1, head: [7, 2], rock: true, talon: 'open', eye: 'red' }, drop: { wing: -0.8, pitch: 0, head: [8, -2], talon: 'spread' },
   snatchTell: { wing: -1.0, pitch: 0.3, head: [10, 2], talon: 'spread', eye: 'red' }, snatch: { wing: 0.1, pitch: 0.15, head: [13, 1], talon: 'fwd', fold: true },
+  /* (claude/sisters2) THE SIGNATURE MOVES, each its own windup and release (B16):
+     CHAIN STOOP - the climb (wings flung up and back, head up, beak open, talons cocked) then the ordinary dive; between dives the JAR (thrown back off the rock, wings out low, rubble)
+     TALON RAKE  - the plant (crouched flat, head low, legs out ahead, sparks off the claws) and the rake (sliding, legs thrust out, a dust streak behind)
+     SHOCK SHRIEK - the swell (leaning back, wings drawn in low, the throat sac blown up tight) and the shriek (lunging forward, beak wide, blast rings)
+     CRACKING ECHO - head down at the floor (wings high, beak open) and the scream into it (pitched over, rings at the floor)
+     THE GRAB     - wings high, both feet reaching forward claws open; the lunge (wings back, feet out); THE LIFT and THE HOLD (beating hard, claws closed on your shoulders) */
+  chainTell: { wing: -1.45, pitch: -0.45, head: [6, -8], beak: true, talon: 'fwd', eye: 'red' }, jar: { wing: 0.35, pitch: 0.3, head: [9, 3], talon: 'spread', rubble: true, beak: true },
+  rakeTell: { wing: -0.1, pitch: 0.6, head: [12, 6], talon: 'rake', eye: 'red', sparks: true }, rake: { wing: 0.3, pitch: 0.2, head: [13, 3], talon: 'rake', streak: true },
+  shockTell: { wing: 0.55, pitch: -0.5, head: [2, -9], chest: true, sac: true, eye: 'red' }, shock: { wing: -1.0, pitch: 0.3, head: [14, 1], beak: true, sac: true, blast: true },
+  echoTell: { wing: -1.25, pitch: 0.75, head: [10, 8], beak: true, eye: 'red' }, echo: { wing: -0.55, pitch: 0.95, head: [12, 9], beak: true, down: true },
+  grabTell: { wing: -1.35, pitch: 0.2, head: [10, -1], talon: 'reach', eye: 'red' }, grab: { wing: -0.15, pitch: 0.25, head: [12, 1], talon: 'reach' },
+  lift: { wing: -1.0, flap: true, pitch: -0.15, head: [8, -4], talon: 'clutch', beak: true }, hold: { wing: -0.7, flap: true, pitch: 0, head: [8, -1], talon: 'clutch' },
 };
 /* A SISTER is drawn by src/redraw/shriek_sisters_art.js (claude/rookeryart: three different birds, baked per pose; the greybox's rectangles are gone) */
 
@@ -44,7 +63,8 @@ export function makeShriekSistersHands(ctx) {
   H.show = () => S;
   H.on = () => !!(S && A());
   H.owns = e => e.t === 'shrieksisters' || e.t === 'shrieksister';
-  H.clear = () => { S = null; A0 = null; BOSS_PHASE.shrieksisters = 1; };
+  const unhold = () => { for (const pp of ctx.players || []) { pp.ssHeld = null; pp.ssShove = null; } };
+  H.clear = () => { S = null; A0 = null; BOSS_PHASE.shrieksisters = 1; unhold(); };
   const anchor = () => { const e = ctx.boss; return e && e.t === 'shrieksisters' ? e : null; };
   const hurt = (name, fn) => { const P = ctx.hero(), h0 = P.hp; fn(); if (S) { S.hurt = S.hurt || {}; S.hurt[name] = (S.hurt[name] || 0) + Math.max(0, h0 - Math.max(0, P.hp)); } };
   const keyed = (pp, key) => { pp.ssKeys = pp.ssKeys || new Map(); if (pp.ssKeys.size > 160) pp.ssKeys.clear(); if (pp.ssKeys.has(key)) return true; pp.ssKeys.set(key, 1); return false; };
@@ -55,8 +75,8 @@ export function makeShriekSistersHands(ctx) {
     e.x = S.G.mid; e.y = S.G.floorY - 15 * ctx.TS; A0 = e;
     for (const r of ROLES) { const s = S.sis[r]; const b = { t: 'shrieksister', role: r, x: s.x, y: s.y, w: SS.sister.w, h: SS.sister.h, hp: s.hp, maxHp: s.maxHp, alive: true, dying: 0, noGrav: true, face: -1, anim: 0, flash: 0, stagger: 0, vx: 0, vy: 0, mode: 'sleep', boss: false };
       bodies[r] = b; ctx.addEnemy(b); }
-    for (const pp of ctx.players) pp.ssKeys = null; return e; };
-  const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
+    for (const pp of ctx.players) { pp.ssKeys = null; pp.ssHeld = null; pp.ssShove = null; } return e; };
+  const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, face: pp.face || 1, pp }));
   function world() {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
@@ -65,13 +85,27 @@ export function makeShriekSistersHands(ctx) {
       dust: (x, y, n) => ctx.dust(x, y, n),
       fx: (k, x, y) => { if (k === 'open') { ctx.ring(x, y - 10, 34, '#ffd36b'); } else if (k === 'ward') ctx.ring(x, y - 10, 36, '#c8d8e8'); },
       rubble: x => { ctx.burst(x, S.G.floorY - 4, 18, ['#e8e4d8', '#8a8478', '#5e594f'], 120, 0.8); },
-      hit: (s, bx, d, name, o = {}) => { let out = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
+      hit: (s, bx, d, name, o = {}) => { let out = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead || pp.ssHeld) return;   /* (claude/sisters2: in her talons, no other blow finds you) */
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
           let res = null; hurt(name, () => { res = ctx.damagePlayer(s.x, d, { who: A0, name, unblockable: !o.blockable }); }); out = out || res;
           if (res === 'hit' && o.knockUp) { P.vy = Math.min(P.vy || 0, -220); P.vx = (P.x < s.x ? -1 : 1) * 120; } });
         return out; },
-      hitArea: (bx, d, name, key) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return; if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer((bx[0] + bx[1]) / 2, d, { who: A0, name, unblockable: true })); }); },
-      hitHero: (h, d, name, key, blockable) => { const pp = h.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return; if (key && keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer(P.x - 10, d, { who: A0, name, unblockable: !blockable })); }); },
+      hitArea: (bx, d, name, key) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead || pp.ssHeld) return; if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer((bx[0] + bx[1]) / 2, d, { who: A0, name, unblockable: true })); }); },
+      hitHero: (h, d, name, key, blockable) => { const pp = h.pp; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead || pp.ssHeld) return; if (key && keyed(pp, key)) return; hurt(name, () => ctx.damagePlayer(P.x - 10, d, { who: A0, name, unblockable: !blockable })); }); },
+      /* (claude/sisters2) THE SHOCK SHRIEK's shove: a shield braces it (no shove), a roll goes through it (no blow at all), else it throws you toward the edge */
+      shove: (s, h, dir, key) => { const pp = h.pp; let r = null; ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead || pp.ssHeld || keyed(pp, key)) return;
+          hurt('shock', () => { r = ctx.damagePlayer(s.x, SS.shock.dmg, { who: A0, name: 'shock' }); });
+          if (r === 'hit') { P.vx = dir * SS.shock.vx; P.vy = SS.shock.vy; P.ground = false; pp.ssShove = { t: 0.9, dir }; }
+          else if (r === 'blocked') { P.vx = dir * 50; ctx.number(P.x, P.y - 30, SSM.SS_SAY.braced, '#8fd160'); } }); return r; },
+      /* THE GRAB's catch: her talons find you (a roll goes through them) - you hang from her */
+      grab: (s, bx, d, key) => { let caught = null; for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (caught || !ctx.upright(pp) || P.dead || pp.ssHeld) return;
+          if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, key)) return;
+          let res = null; hurt('grab', () => { res = ctx.damagePlayer(s.x, d, { who: A0, name: 'grab', unblockable: true }); });
+          if (res === 'hit' && !P.dead && P.hp > 0 && ctx.upright(pp)) { pp.ssHeld = true; caught = pp; P.vx = 0; P.vy = 0; } });
+        return caught; },
+      /* she lets go: you drop to the summit floor (she only ever holds you over it) - the drop hurts, unless she fell with you */
+      letGo: (s, pp, d) => { if (!pp) return; ctx.asPlayer(pp, () => { const P = ctx.hero(); pp.ssHeld = null; P.vx = 0; P.vy = 0; P.ground = false;
+          if (d > 0 && ctx.upright(pp) && !P.dead) { hurt('drop', () => ctx.damagePlayer(P.x, d, { who: A0, name: 'drop', unblockable: true, noKnock: true })); ctx.number(P.x, P.y - 30, SSM.SS_SAY.letGo, '#ff6b6b'); SOUND.letGo(ctx.sfx); } }); },
     };
   }
   H.update = (e, dt) => {
@@ -83,6 +117,12 @@ export function makeShriekSistersHands(ctx) {
       ROLES.forEach((r, i) => { const s = S.sis[r]; s.mode = 'wake'; s.modeT = 1.2 + i * 0.35; }); }
     if (S.woke && !S.told.rule && e.modeT <= 0.2) { S.told.rule = 1; ctx.number(S.G.mid, S.G.floorY - 104, SSM.SS_SAY.rule, '#ffd36b'); ctx.hint && ctx.hint(SSM.SS_SAY.rule); }
     if (!S.woke) return;
+    /* (claude/sisters2) a held hero who went down: she drops him; a shoved hero who reaches the summit's lip TEETERS (a told stagger) */
+    if (S.held && (!ctx.upright(S.held.pp) || S.held.pp.dead || !(S.held.pp.hp > 0))) { S.held.pp.ssHeld = null; S.held = null; const sn = S.sis.snatcher; if (sn.alive && (sn.mode === 'lift' || sn.mode === 'hold')) { sn.mode = 'rise'; sn.modeT = SS.dive.rise; } }
+    for (const pp of ctx.players) { const q = pp.ssShove; if (!q) continue; q.t -= dt; const edge = SS.shock.edge, atL = pp.x < S.G.x0 + edge, atR = pp.x > S.G.x1 - edge;
+      if ((atL && q.dir < 0) || (atR && q.dir > 0)) { pp.ssShove = null; S.n.teeters++; ctx.asPlayer(pp, () => { const P = ctx.hero(); P.hurt = Math.max(P.hurt || 0, SS.shock.teeter); P.vx = 0; });
+        ctx.number(pp.x, pp.y - 34, SSM.SS_SAY.teeter, '#ff6b6b'); SOUND.teeter(ctx.sfx); ctx.burst(pp.x + q.dir * 6, S.G.floorY - 2, 8, ['#bf9fa0', '#725a62', '#e4c8c4'], 70, 0.7); ctx.shake(2); }
+      else if (q.t <= 0) pp.ssShove = null; }
     SSM.stepSisters(S, dt, heroes(), w);
     /* the bodies follow the sisters; a sister at 0 falls */
     let sum = 0;
@@ -101,11 +141,19 @@ export function makeShriekSistersHands(ctx) {
     else S.n[SSM.sisOpen(s) ? 'openHits' : 'lowHits']++;
     ctx.number(s.x, s.y - 26, d, SSM.sisOpen(s) ? '#ffd36b' : word ? '#9aa39a' : '#fff6e0'); ctx.hitstop && ctx.hitstop(0.03);
     const e = anchor(); if (e) e.hp = Math.max(1, ROLES.reduce((n, r) => n + (S.sis[r].alive ? S.sis[r].hp : 0), 0)); };
+  /* (claude/sisters2) THE HOLD: main.js updatePlayer hands a held hero here every frame instead of moving him - he hangs from her talons; a swing is a STRIKE on her (a real blow,
+     whole: her hands are full) and SS.grab.strikes of them break her grip (she falls, KNOCKED DOWN). false = not held (any more) */
+  H.held = (P, swing) => { if (!S || !S.held || S.held.pp !== P) { P.ssHeld = null; return false; } const s = S.sis.snatcher, b = bodies.snatcher;
+    if (!s.alive || !(s.mode === 'lift' || s.mode === 'hold')) { S.held = null; P.ssHeld = null; return false; }
+    P.x = s.x; P.y = s.y + SS.grab.hang; P.vx = 0; P.vy = 0; P.ground = false;
+    if (swing) { const r = SSM.strikeHeld(S, world()); if (r) { if (ctx.strike && b) ctx.strike(b); ctx.sparks(s.x, s.y + 4, P.face || 1, 5); ctx.hitstop && ctx.hitstop(0.03); }
+      if (r === 'free') { P.vy = -40; P.ssHeld = null; return false; } }
+    if (!S.held) P.ssHeld = null; return !!S.held; };
   H.barName = () => { if (!S) return 'THE SHRIEK SISTERS'; const left = ROLES.filter(r => S.sis[r].alive), open = left.find(r => SSM.sisOpen(S.sis[r]));
     return 'THE SHRIEK SISTERS' + (open ? '  ' + SSM.NAME[open] + ' ' + SSM.OPEN_NAME[S.sis[open].mode] : left.length < 3 ? '  ' + left.length + ' LEFT' : ''); };
-  H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; } BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
+  H.end = () => { if (S) { S.rocks = []; S.waves = []; S.marks = []; S.echoes = []; S.held = null; } unhold(); BOSS_PHASE.shrieksisters = 1; for (const r of ROLES) if (bodies[r]) bodies[r].alive = false; };
   H.read = () => S && { ph: S.ph, dead: { ...S.dead }, sis: Object.fromEntries(ROLES.map(r => [r, { mode: S.sis[r].mode, hp: S.sis[r].hp, alive: S.sis[r].alive, ward: S.sis[r].ward, x: S.sis[r].x, y: S.sis[r].y }])),
-    slabs: S.G.slabs.map(s => ({ x: s.x, st: s.st })), stones: S.stones.length, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
+    slabs: S.G.slabs.map(s => ({ x: s.x, st: s.st })), stones: S.stones.length, echoes: S.echoes.length, held: !!S.held, n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* THE SUMMIT: the slabs (cracked, or rubble growing back), the stones the snatcher left, the shelves' guano, the Roc's peak beyond */
   H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY);
@@ -113,7 +161,12 @@ export function makeShriekSistersHands(ctx) {
       if (sl.st === 'crack') { g.drawImage(bakeSummitSlab(SS.slab.w), sx, fy - 1);
         g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, SS.slab.w - 1, 5); }
       else { g.drawImage(bakeSummitRubble(SS.slab.w), sx, fy - 4); const k = 1 - sl.t / SS.slab.regrow[0]; rect(g, sx, fy + 3, R(SS.slab.w * Math.max(0, k)), 1, '#c8d8e8'); } }
-    for (const q of S.stones) { const sx = x(q.x), a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitStone(), sx - 10, fy - 11); g.strokeStyle = '#ffd36b'; g.strokeRect(sx - 10.5, fy - 10.5, 21, 11); g.globalAlpha = 1; } };
+    for (const q of S.stones) { const sx = x(q.x), a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitStone(), sx - 10, fy - 11); g.strokeStyle = '#ffd36b'; g.strokeRect(sx - 10.5, fy - 10.5, 21, 11); g.globalAlpha = 1; }
+    /* (claude/sisters2) THE ECHO'S CRACKED TILES (bait: the gold glint ring, blinking out as they crumble) and THE LIP at each end of the summit (it blinks while a shock shriek swells) */
+    const ew = SS.echo.w; for (const q of S.echoes) { const sx = x(q.x) - ew / 2, a = q.t < 2 ? (Math.floor(time * 8) % 2 ? 0.4 : 1) : 1; g.globalAlpha = a; g.drawImage(bakeSummitEcho(ew), sx, fy - 1); g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(sx + 0.5, fy - 2.5, ew - 1, 5); g.globalAlpha = 1; }
+    const shocking = ROLES.some(r => S.sis[r].alive && S.sis[r].mode === 'shockTell'), E = SS.shock.edge;
+    for (const [ex, side] of [[x(G.x0), -1], [x(G.x1) - E, 1]]) { g.drawImage(bakeSummitLip(side), ex, fy - 1);
+      if (shocking) { g.globalAlpha = 0.45 + 0.35 * Math.sin(time * 12); g.strokeStyle = '#ff6b6b'; g.strokeRect(ex + 0.5, fy - 3.5, E - 1, 5); g.globalAlpha = 1; } } };
   H.drawBoss = (g, b, cx, cy, time) => { if (!S || !b || b.t !== 'shrieksister') return; const s = S.sis[b.role]; if (!s) return; b.guardFx = Math.max(0, (b.guardFx || 0) - 1 / 60);
     const p = POSE[s.mode] || POSE.hover, flash = (b.hurtT || 0) > 0 || (b.flash || 0) > 0.06; b.hurtT = Math.max(0, (b.hurtT || 0) - 1 / 60);
     g.globalAlpha = 0.25; g.fillStyle = '#10060a'; g.fillRect(R(s.x - 12 - cx), R(S.G.floorY - 2 - cy), 24, 2); g.globalAlpha = 1;
@@ -121,8 +174,11 @@ export function makeShriekSistersHands(ctx) {
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar || !ctx.bossActive) return; const G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
     const blink = Math.floor(time * 12) % 2 ? '#ff6b6b' : '#fff6e0';
     /* the rocks falling, and the red ring where each will land */
-    for (const c of S.rocks) { const q = SSM.rockAt(c, G.floorY); rect(g, x(q.x) - 6, y(q.y) - 8, 12, 9, '#8a8478'); g.strokeStyle = blink; g.strokeRect(x(c.x) - SS.rock.r, fy - 3, SS.rock.r * 2, 3); }
-    for (const r of ROLES) { const s = S.sis[r]; if (s.alive && s.mode === 'dropTell') { g.strokeStyle = blink; g.strokeRect(x(s.dropX) - SS.rock.r, fy - 3, SS.rock.r * 2, 3); } }
+    /* (claude/sisters2) THE BOULDER DROP: its SHADOW on the floor - soft while she carries it over you, dark and red-rimmed once it is fixed, growing as the boulder comes down */
+    const shadow = (sx, k, fixed) => { const rw = Math.round(SS.rock.r * (0.55 + 0.45 * k)); g.globalAlpha = 0.25 + 0.4 * k; g.fillStyle = '#10060a'; g.beginPath(); g.ellipse(sx, fy - 1, rw, 3 + 2 * k, 0, 0, Math.PI * 2); g.fill(); g.globalAlpha = 1;
+      if (fixed) { g.fillStyle = blink; for (let a = 0; a < 16; a++) { const t2 = a / 16 * Math.PI * 2; g.fillRect(Math.round(sx + Math.cos(t2) * (rw + 2)), Math.round(fy - 1 + Math.sin(t2) * (4 + 2 * k)), 1, 1); } } };
+    for (const r of ROLES) { const s = S.sis[r]; if (!s.alive) continue; if (s.mode === 'carry') shadow(x(s.x), 0.2, false); if (s.mode === 'dropTell') shadow(x(s.dropX), 0.45 + 0.3 * (1 - Math.max(0, s.modeT) / SS.rock.tell), true); }
+    for (const c of S.rocks) { const q = SSM.rockAt(c, G.floorY); shadow(x(c.x), 0.6 + 0.4 * q.k, true); g.drawImage(bakeBoulder(), x(q.x) - 13, y(q.y) - 17); }
     /* the marks */
     for (const m of S.marks) { const mx = x(m.x), k = m.t / m.T; g.globalAlpha = 0.5 + 0.5 * k; g.strokeStyle = '#ff5a4a'; g.lineWidth = 2; g.strokeRect(mx - 14, fy - 4, 28, 5); g.lineWidth = 1; rect(g, mx - 1, fy - 14, 2, 10, '#ff5a4a'); g.globalAlpha = 1; }
     /* the waves */
@@ -133,6 +189,17 @@ export function makeShriekSistersHands(ctx) {
         g.fillStyle = s.aim.lock ? '#ff3a2a' : blink; for (let i = 1; i < n; i++) g.fillRect(R(sx + (tx - sx) * i / n), R(sy + (fy - sy) * i / n), s.aim.lock ? 3 : 2, s.aim.lock ? 3 : 2);
         g.strokeStyle = '#ff3a2a'; g.strokeRect(tx - 12, fy - 3, 24, 4); }
       if (s.mode === 'snatchTell') { g.fillStyle = 'rgba(255,90,74,0.35)'; for (let q = G.x0; q < G.x1; q += 12) g.fillRect(x(q), y(G.floorY - SS.snatch.h) - 1, 7, 2); }
+      /* (claude/sisters2) the signature moves' reads */
+      if (s.mode === 'diveTell' && s.aim && s.aim.n) ctx.text(s.aim.n + '/' + s.aim.of, x(s.aim.x), fy - 12, s.aim.lock ? '#ff3a2a' : blink, 'center', 6);   /* CHAIN STOOP: which dive of the chain */
+      if (s.mode === 'chainTell') { g.globalAlpha = 0.5 + 0.4 * Math.sin(time * 14); g.strokeStyle = '#ff3a2a'; g.lineWidth = 2; g.beginPath(); g.moveTo(sx - 8, sy + 10); g.lineTo(sx, sy + 2); g.lineTo(sx + 8, sy + 10); g.stroke(); g.lineWidth = 1; g.globalAlpha = 1; }
+      if (s.mode === 'rakeTell') { g.fillStyle = Math.floor(time * 10) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.45)'; const L = SS.rake.v * SS.rake.T; for (let q = 14; q < L; q += 14) { const cx2 = x(s.x + s.rDir * q); for (let k = 0; k < 4; k++) { g.fillRect(cx2 - s.rDir * k, fy - 3 - k, 1, 1); g.fillRect(cx2 - s.rDir * k, fy - 9 + k, 1, 1); } } }   /* TALON RAKE: chevrons along her path */
+      if (s.mode === 'shockTell' || s.mode === 'shock') { const k = s.mode === 'shock' ? 1 : 1 - Math.max(0, s.modeT) / SS.shock.tell, L = SS.shock.range, top = fy - SS.shock.h;   /* SHOCK SHRIEK: the cone, pale, filling as she swells */
+        g.globalAlpha = 0.12 + 0.22 * k; g.fillStyle = '#ffe9a0'; g.beginPath(); g.moveTo(sx + s.face * 8, sy + 2); g.lineTo(sx + s.face * L, top); g.lineTo(sx + s.face * L, fy); g.lineTo(sx + s.face * 8, fy); g.closePath(); g.fill(); g.globalAlpha = 0.6 + 0.3 * k;
+        g.strokeStyle = '#ffd36b'; for (let q = 1; q <= 3; q++) { const r0 = (q / 3) * L * (s.mode === 'shock' ? 1 : 0.35 + 0.65 * k); g.beginPath(); if (s.face > 0) g.arc(sx, sy + 2, r0, -0.35, 0.55); else g.arc(sx, sy + 2, r0, Math.PI - 0.55, Math.PI + 0.35); g.stroke(); } g.globalAlpha = 1; }
+      if (s.mode === 'echoTell' && s.echoX != null) { const ex = x(s.echoX), w2 = SS.echo.w / 2; g.strokeStyle = blink; g.strokeRect(ex - w2 - 0.5, fy - 3.5, w2 * 2 + 1, 5);   /* CRACKING ECHO: the tile shivers red */
+        g.fillStyle = '#ff3a2a'; for (let k = 0; k < 6; k++) { const jx = Math.round(Math.sin(time * 40 + k * 2.3) * 1.5); g.fillRect(ex - w2 + 2 + k * 3 + jx, fy - 1 - (k % 3), 2, 1); } }
+      if (s.mode === 'grabTell') { const L = 150, hy = fy - SS.grab.h - 6; g.fillStyle = Math.floor(time * 12) % 2 ? '#ff3a2a' : 'rgba(255,58,42,0.5)'; for (let q = 10; q < L; q += 9) g.fillRect(sx + s.gDir * q, hy, 5, 2);   /* THE GRAB: the talon line at your height */
+        const tx2 = sx + s.gDir * L; g.fillRect(tx2, hy - 4, 1, 10); g.fillRect(tx2 - s.gDir * 3, hy - 3, 1, 2); g.fillRect(tx2 - s.gDir * 3, hy + 3, 1, 2); }
       /* the shared read (B10): OPEN gold ring + bar, WARDED pale ring, a turned blow's word */
       if (SSM.sisOpen(s)) { const kk = Math.max(0, s.modeT / (s.openT0 || 1)); g.globalAlpha = 0.6 + 0.3 * Math.sin(time * 10); g.strokeStyle = '#ffd36b'; g.lineWidth = 2; g.strokeRect(sx - 20, sy - 18, 40, 30); g.lineWidth = 1; g.globalAlpha = 1;
         ctx.text(SSM.OPEN_NAME[s.mode] || 'OPEN', sx, sy - 30, '#ffd36b', 'center', 6); g.fillStyle = '#1b1626'; g.fillRect(sx - 16, sy - 24, 32, 3); g.fillStyle = '#ffd36b'; g.fillRect(sx - 16, sy - 24, R(32 * kk), 3); }
@@ -141,6 +208,11 @@ export function makeShriekSistersHands(ctx) {
       /* her name over her the first seconds, and a pip of her health */
       if (S.woke && (ctx.time() < (S.nameT || (S.nameT = ctx.time() + 6)))) ctx.text(SSM.NAME[r], sx, sy - 48, '#ece8dc', 'center', 5);
       g.fillStyle = '#1b1626'; g.fillRect(sx - 12, sy + 14, 24, 2); g.fillStyle = COL[r].crest; g.fillRect(sx - 12, sy + 14, R(24 * s.hp / s.maxHp), 2); }
+    /* (claude/sisters2) HELD: the escape read over the held hero - STRIKE HER, a pip a strike, the time left before she lets go */
+    if (S.held && S.held.pp) { const pp = S.held.pp, hx = x(pp.x), hy = y(pp.y) - 44, k = Math.max(0, 1 - S.held.t / SS.grab.hold);
+      ctx.text('STRIKE HER', hx, hy - 8, Math.floor(time * 8) % 2 ? '#ffd36b' : '#fff6e0', 'center', 6);
+      for (let i = 0; i < SS.grab.strikes; i++) { g.fillStyle = '#1b1626'; g.fillRect(hx - 13 + i * 9, hy, 7, 4); g.fillStyle = i < S.held.strikes ? '#8fd160' : '#4a4060'; g.fillRect(hx - 12 + i * 9, hy + 1, 5, 2); }
+      g.fillStyle = '#1b1626'; g.fillRect(hx - 14, hy + 6, 28, 3); g.fillStyle = '#ff6b6b'; g.fillRect(hx - 13, hy + 7, R(26 * k), 1); }
   };
   return H;
 }
