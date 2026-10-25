@@ -71,7 +71,7 @@ export function makeBatteringBeastHands(ctx) {
       gate: () => { ctx.burst(S.G.x0 + 4, S.G.floorY - 30, 12, ['#6a4a2a', '#c9a060'], 90, 0.6); },
       palisade: () => { ctx.burst(S.G.x1 - 6, S.G.floorY - 30, 22, ['#8a5a32', '#c9a060', '#6a8a3a'], 140, 0.9); },
       loose: () => { ctx.burst(e.x, e.y - BB.h - 10, 16, ['#6a8a3a', '#3e5a22', '#7a5030'], 120, 0.8); S.stakes = []; S.pots = []; },
-      add: (x, y, d) => ctx.spawn ? ctx.spawn({ t: 'sprig', x, y, vx: d * 90, vy: -180, w: 8, h: 10, hp: Math.round((ctx.EHP.sprig || 10) * BB.unchain.addHp), speed: 30, face: d, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.7, bbHandler: true }) : null,   /* (claude/palisade2) THE HANDLERS ON FOOT: two goblins bucked off his back */
+      add: (x, y, d) => ctx.spawn ? ctx.spawn({ t: 'sprig', x, y, vx: d * 90, vy: -180, w: 8, h: 10, hp: Math.round((ctx.EHP.sprig || 10) * BB.unchain.addHp), speed: 30, face: d, alive: true, dying: 0, anim: 0, flash: 0, stagger: 0.7, bbHandler: true, cnSkin: 'siegecrew' }) : null,   /* (claude/palisade2) THE HANDLERS ON FOOT: two goblins bucked off his back */
       trunkBlow: d => { e.hp = Math.max(1, e.hp - d); e.flash = 0.15; ctx.number(e.x, e.y - BB.h - 10, '-' + d, '#ff6b6b'); },
       hit: (bx, d, name, o = {}) => { for (const pp of ctx.players) ctx.asPlayer(pp, () => { const P = ctx.hero(); if (!ctx.upright(pp) || P.dead) return;
           if (!ctx.overlap({ l: bx[0], r: bx[1], t: bx[2], b: bx[3] }, ctx.box(P)) || keyed(pp, o.key || name)) return;
@@ -109,7 +109,7 @@ export function makeBatteringBeastHands(ctx) {
     const px = x(G.x1) + 2; if (px < ctx.VW() + 60) BBA.drawEnd(g, px, fy, time);
     for (const s of S.scafs) { if (s.st === 'down' || s.st === 'pin') continue; const hot = e && ctx.bossActive && s.st === 'stand' && BBM.underLine(s, e.x, BB.w / 2 - 6);
       const sx = s.shake > 0 ? Math.round(Math.sin(time * 70) * 2) : 0, xs = sx ? v => x(v) + sx : x;   /* (claude/palisade2) BATTERED: the scaffold shakes before it collapses */
-      BBA.drawScaf(g, s, xs, y, G.floorY, time, !ctx.bossActive ? null : hot ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : 'rgba(255,211,107,0.55)', BBM.lineOf, BB.scaf.fall);
+      BBA.drawScaf(g, s, xs, y, G.floorY, time, !ctx.bossActive ? null : hot ? (Math.floor(time * 8) % 2 ? '#ff6b6b' : '#ffd36b') : 'rgba(255,211,107,0.55)', BBM.lineOf, BB.scaf.fall, s.shake > 0 ? Math.min(1, 1 - s.shake / BB.batter.shake) : 0);
       if (s.shake > 0) { const on = Math.floor(time * 10) % 2; g.fillStyle = on ? '#ff6b6b' : '#ffd36b'; const w0 = R((s.x1 - s.x0) * Math.min(1, s.shake / BB.batter.shake)); g.fillRect(x(s.x0), y(s.deckY) - 4, w0, 2);
         for (let k = 0; k < 4; k++) { g.fillStyle = '#c9a060'; g.fillRect(x(s.x0) + ((k * 23 + Math.floor(time * 30)) % Math.max(1, R(s.x1 - s.x0))), y(s.deckY) + 2 + ((time * 60 + k * 7) % 30), 2, 2); } } } };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
@@ -127,13 +127,11 @@ export function makeBatteringBeastHands(ctx) {
       g.strokeStyle = blink; g.strokeRect(x(c.tx) - BB.volley.r, y(c.ty ?? G.floorY) - 3, BB.volley.r * 2, 3); }
     for (const q of S.waves) for (let k = 0; k < 3; k++) rect(g, x(q.x) - q.dir * k * 6 - 3, y(G.floorY) - 5 - (k % 2) * 3, 6, 5, k ? '#6a4a2a' : '#8e6a40');
     /* (claude/palisade2) THE PITCH POTS in flight (a clay pot, a flame) and their red rings; the BURNING PITCH where they burst */
-    for (const c of S.pots) { const q = BBM.stakeAt(c, G.floorY); rect(g, x(q.x) - 3, y(q.y) - 3, 6, 6, '#150a05'); rect(g, x(q.x) - 2, y(q.y) - 2, 4, 4, '#8a4a22'); rect(g, x(q.x) - 1, y(q.y) - 6 - (Math.floor(time * 20) % 2), 2, 3, Math.floor(time * 16) % 2 ? '#ffd36b' : '#ff6a1a');
+    for (const c of S.pots) { const q = BBM.stakeAt(c, G.floorY); BBA.drawPot(g, x(q.x), y(q.y), time * 9 + c.tx * 0.1, time);   /* (claude/palisade2art) a clay pot turning in flight, a lit rag, embers */
       g.strokeStyle = blink; g.strokeRect(x(c.tx) - BB.pots.r, y(c.ty) - 3, BB.pots.r * 2, 3); }
-    for (const f of S.fires) { const a = Math.min(1, f.life / 0.5), fx = x(f.x), fy = y(G.floorY); g.globalAlpha = 0.8 * a; rect(g, fx - BB.pots.r, fy - 2, BB.pots.r * 2, 2, '#2a1006');
-      for (let k = 0; k < 7; k++) { const ph = time * 9 + k * 1.7, hgt = 4 + R(3 + Math.sin(ph) * 3); rect(g, fx - BB.pots.r + 2 + k * 5, fy - 2 - hgt, 3, hgt, k % 2 ? '#ff6a1a' : '#ffb03a'); rect(g, fx - BB.pots.r + 3 + k * 5, fy - 3 - hgt, 1, 2, '#fff0b0'); } g.globalAlpha = 1; }
+    for (const f of S.fires) BBA.drawPitch(g, x(f.x), y(G.floorY), BB.pots.r, Math.min(1, f.life / 0.5), time);   /* (claude/palisade2art) BURNING PITCH: a glossy black pool, three heights of flame, embers, smoke */
     /* THE ORDER'S FLAG (P1): a handler raises it on the gantry for the whole windup - the colour names the order */
-    if (S.ph < 2 && BBM.ORDER[e.mode]) { const fl = BBM.ORDER[e.mode], fx = x(e.x - (e.face || 1) * 12), fy = y(e.y - BB.h - 30), wv = Math.floor(time * 8) % 2;
-      rect(g, fx, fy, 1, 22, '#3a2414'); rect(g, fx + 1, fy + wv, 10, 7, fl.flag); rect(g, fx + 1, fy + wv, 10, 1, '#fff0d0'); }
+    /* (claude/palisade2art) the flag now flies from his drawn gantry (battering_beast_art.js, the pose's `flag` colour = BBM.ORDER's) */
     /* THE CHAIN FLAIL's band (P2): where the chain will go, LOW or HIGH, drawn through the windup */
     if (e.mode === 'flailTell') { const [l, r2, t2, b2] = BBM.flailBox(e, S), on = Math.floor(time * 10) % 2; g.globalAlpha = 0.45; g.fillStyle = S.flailHigh ? '#ff6b6b' : '#ffd36b';
       for (let q = l; q < r2; q += 8) g.fillRect(x(q), y((t2 + b2) / 2), 5, 1); g.globalAlpha = 1; g.fillStyle = on ? '#ffffff' : (S.flailHigh ? '#ff6b6b' : '#ffd36b'); g.fillRect(x(e.face > 0 ? r2 : l) - 1, y(t2), 2, R(b2 - t2)); }

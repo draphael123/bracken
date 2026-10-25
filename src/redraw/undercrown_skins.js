@@ -22,12 +22,21 @@ export const SKIN_MAPS = {
   timberman: { '#6faa4a': '#d09a74', '#3f6e2c': '#5a4a3a', '#c9b27c': '#7a5a3a' },
   lampsnuffer: { '#1c2c44': '#2c2a30', '#2e4668': '#4a464e', '#101a2a': '#1a181c' },   /* Lamplit Street: the snuffer as a night-warden, the lamplighter's coat gone black (the brass and the cup stay) */
   gravehound: { '#5a4a3a': '#8a96a8', '#3a2e22': '#4a5668' },   /* the Witchlight Stair's one hound: bone-grey with a blue shadow, a grave hound */
+  siegecrew: { '#6faa4a': '#6a707e', '#3f6e2c': '#2a2018', '#c9463d': '#a8442a', '#8f2f28': '#5a1e12', '#f3f0d2': '#ffd36b' },   /* (claude/palisade2art) THE SIEGE CREW (the Battering Beast's handlers once they are bucked off, the sprig's AI): the goblin's green head becomes a riveted iron kettle hat, the shadows soot (the face wrap, the trousers), the cloth a rust tunic, the eyes lit - see POST for the crest */
   minewarden: { '#6faa4a': '#d09a74', '#3f6e2c': '#4a3a2c', '#5a2a7a': '#b8862a', '#3a1850': '#7a5a1c' },
 };
-const FOR = { navvy: 'miner', bonechucker: 'rockgoblin', timberman: 'propman', minewarden: 'sentry', lampsnuffer: 'lamplighter', gravehound: 'hound' };
+/* a skin's last touch, on the recoloured frame: the siege crew's hat gets a lit rim along its crown and a red crest pixel at the top of it */
+const POST = { siegecrew: c => { const g = c.getContext('2d'), img = g.getImageData(0, 0, c.width, c.height), d = img.data, iron = hex('#6a707e'), at = (x, y) => (y * c.width + x) * 4;
+  const isIron = (x, y) => { const i = at(x, y); return d[i + 3] && d[i] === iron[0] && d[i + 1] === iron[1] && d[i + 2] === iron[2]; };
+  let top = 99, cols = []; for (let x = 0; x < c.width; x++) for (let y = 0; y < c.height; y++) if (isIron(x, y)) { if (y < top) { top = y; cols = [x]; } else if (y === top) cols.push(x); break; }
+  if (top === 99) return c;
+  for (let x = 0; x < c.width; x++) for (let y = 0; y < c.height; y++) if (isIron(x, y)) { const i = at(x, y), hl = y === top ? hex('#c4c8d4') : hex('#9aa0b0'); if (y <= top + 1) { d[i] = hl[0]; d[i + 1] = hl[1]; d[i + 2] = hl[2]; } break; }
+  const mid = cols[Math.floor(cols.length / 2)], ci = at(mid, top), cr = hex('#d03a24'); d[ci] = cr[0]; d[ci + 1] = cr[1]; d[ci + 2] = cr[2];
+  g.putImageData(img, 0, 0); return c; } };
+const FOR = { siegecrew: 'sprig', navvy: 'miner', bonechucker: 'rockgoblin', timberman: 'propman', minewarden: 'sentry', lampsnuffer: 'lamplighter', gravehound: 'hound' };
 export function bakeUndercrownSkins(SPR) {
   const out = {};
   for (const [skin, base] of Object.entries(FOR)) { const s = SPR[base]; if (!s || !s.R) continue;
-    out[skin] = pack(s.R.map(c => recolour(c, SKIN_MAPS[skin])), s.ax, s.ay, s.w, s.h); }
+    out[skin] = pack(s.R.map(c => { const r = recolour(c, SKIN_MAPS[skin]); return POST[skin] ? POST[skin](r) : r; }), s.ax, s.ay, s.w, s.h); }
   return out;
 }
