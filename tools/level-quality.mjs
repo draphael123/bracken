@@ -32,7 +32,6 @@ export const GATE = ['kitchengate', 'palisadewood', 'wood', 'hornetsnest', 'fenr
 /* A MEASURE THAT IS REPORT-ONLY FOR ONE LEVEL: { levelId: ['measure', ..] }. It is still printed (WARN) and counted in --all, but does not fail the gate.
    Daniel decides when it is lifted; each row carries the TODO and the reason. */
 export const REPORT_ONLY = {
-  kitchengate: ['music'],   /* (claude/kitchengate, the greybox) TODO: THE KITCHEN GATE plays the benched 'cave' track as a placeholder (and the generic pool's boss3 at the high table) until Daniel picks its own CC0/CC-BY tracks */
   /* (claude/theatre3: the theatre's roles row is lifted - THE PROMPTER, the goblin priest reskinned, is its support; THE FLYMAN, the archer reskinned, throws) */
   skyroad: ['music'],
   fenroad: ['music'],

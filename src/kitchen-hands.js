@@ -18,8 +18,8 @@
 //   (raised high, a red !!, no shield turns it: step back) and THE HACK (cocked low, a yellow !, the shield holds it). His cleaver is heavy: ON GREASE the chop's weight
 //   SLIDES him on past you (his back is yours a breath). BURNING GREASE stops him dead: STUNNED in the flames, blades x2.
 // Every capital line it says goes through ctx.number with a line listed here (KG_SAY) and in src/hint-lines.js.
-import { canvas, flipX, whiten } from './px.js';
 import { WHEEL } from './kitchen-gate.js';
+import * as KA from './redraw/kitchen_art.js';   /* (claude/kitchengateart) the machines, the butcher's sheet, the halls */
 export const K = { roar: 8, restoke: 0.6, lift: 240, colW: 13, trailV: 150, burnFor: 2.6, burnDmg: 9, burnEvery: 0.5, foeBurn: 14, melt: 0.9, regrease: 5, pageR: 14,
   butcher: { hp: 64, speed: 24, near: 210, reach: 34, chopTell: 0.85, chop: 24, chopRest: 1.15, hackTell: 0.55, hack: 15, hackRest: 0.6, slide: 130, burn: 2.6, burnMul: 2 } };
 export const KG_SAY = {
@@ -31,11 +31,8 @@ export const KG_SAY = {
 export const spitAt = (w, a) => ({ x: w.x + Math.cos(a) * WHEEL.R, y: w.y + Math.sin(a) * WHEEL.R });
 export const spitAngle = (w, ang, k) => ang + k * Math.PI * 2 / WHEEL.n;
 /* THE BUTCHER's skin (greybox): the club goblin's frames, gone a meaty red-brown (his apron and cleaver are drawn over him: butcherOver) - main.js SPR.butcher */
-export function bakeButcherSet(Bs) {
-  const R = Bs.R.map(c => { const [o, g] = canvas(c.width, c.height); g.drawImage(c, 0, 0); g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(150,60,40,0.42)'; g.fillRect(0, 0, c.width, c.height); g.globalCompositeOperation = 'source-over'; return o; });
-  const white = R.map(c => whiten(c));
-  return { R, L: R.map(flipX), white: { R: white, L: white.map(flipX) }, ax: Bs.ax, ay: Bs.ay, w: Bs.w, h: Bs.h };
-}
+export function bakeButcherSet() { return KA.bakeButcher(); }   /* (claude/kitchengateart) his own seven frames: idle, walk x2, raise, slam, wind, sweep */
+export const butcherFrameOf = KA.butcherFrameOf;
 
 export function makeKitchenHands(ctx) {
   const TS = ctx.TS, H = {};
@@ -168,65 +165,38 @@ export function makeKitchenHands(ctx) {
     trails: [...S.trails.values()].map(t => ({ id: t.d.id, state: t.state, front: Math.round(t.front) })), doors: [...S.doors.values()].map(d => ({ id: d.d.id, state: d.state })),
     race: { state: S.race.state, front: Math.round(S.race.front) }, pages: S.pages.size, vault: S.vaultOpen, banner: S.banner ? S.banner.name : null, sec: S.sec, n: JSON.parse(JSON.stringify(S.n)) } : null;
 
-  /* ---------- DRAWING (GREYBOX: readable shapes; the sonnet art lane redraws every one - see the lane report's ART NOTES) ---------- */
+  /* ---------- DRAWING (claude/kitchengateart): src/redraw/kitchen_art.js draws every machine; this only places them ---------- */
   const R = Math.round;
   const rect = (g, x, y, w, h, c) => { g.fillStyle = c; g.fillRect(R(x), R(y), R(w), R(h)); };
-  const C = { iron: '#3a3a42', ironL: '#7a7a86', copper: '#b8673a', copperL: '#e09a5c', copperD: '#6a3418', leather: '#6a4228', leatherL: '#8e5e3a', wood: '#5a3a22', ember: '#c0401a', flame: '#ff9a3c', flameL: '#ffd36b', flameW: '#fff6c8',
-    grease: 'rgba(196,160,72,0.75)', greaseL: 'rgba(255,232,150,0.6)', char: '#2a1e16', tallow: '#efe6c8', tallowD: '#c8b890', roast: '#8a4a26', roastL: '#b86a3a', parch: '#e8dcb0', gold: '#ffd36b' };
-  const flames = (g, x, y, w, h, time, seed) => { for (let i = 0; i < Math.max(1, Math.floor(w / 6)); i++) { const fx = x + i * 6 + 3, k = 0.6 + 0.4 * Math.sin(time * 14 + i * 1.7 + seed), fh = h * k;
-      rect(g, fx - 3, y - fh, 6, fh, C.flame); rect(g, fx - 2, y - fh * 0.7, 4, fh * 0.7, C.flameL); rect(g, fx - 1, y - fh * 0.35, 2, fh * 0.35, C.flameW); } };
   H.drawWorld = (g, cx, cy, VW, VH, time) => {
     if (!S) return; const lv = L(), inX = (x, m = 80) => x - cx > -m && x - cx < VW + m;
     /* THE GREASE FLOORS: a glossy amber skin on the floor's top */
-    for (const [x0, x1, f] of lv.slick || []) { if (!inX(x0 * TS, 600) ) continue; const y = R(f * TS - cy); rect(g, x0 * TS - cx, y, (x1 - x0 + 1) * TS, 2, C.grease); for (let x = x0; x <= x1; x += 3) rect(g, x * TS - cx + 4, y, 5, 1, C.greaseL); }
+    for (const [x0, x1, f] of lv.slick || []) { if (!inX(x0 * TS, 600) || x0 * TS - cx > VW || (x1 + 1) * TS - cx < 0) continue; KA.drawSlick(g, R(x0 * TS - cx), R(f * TS - cy), (x1 - x0 + 1) * TS, time, x0); }
     /* THE FIRES and their BELLOWS (the heat gauge over each bellows: the roar left) */
     for (const f of S.fires.values()) { const d = f.d, fx = d.fx * TS + 8; if (!inX(fx, 200)) continue; const fy = R(d.f * TS - cy), on = roaring(f), sx = R(fx - cx);
-      if (!d.wheels.length && !d.pots.length) { rect(g, sx - 10, fy - 10, 20, 10, C.iron); rect(g, sx - 10, fy - 10, 20, 2, C.ironL); }   /* a stove's iron grate */
-      if (on) flames(g, sx - 12, fy - (d.pots.length ? 2 : 4), 24, d.wheels.length ? 26 : 14, time, d.bx); else { rect(g, sx - 9, fy - 4, 18, 3, C.ember); if (Math.floor(time * 2 + d.bx) % 3 === 0) rect(g, sx - 3 + (d.bx % 5), fy - 5, 2, 1, C.flameL); }
-      const bx = R(d.bx * TS + 8 - cx), by = R((d.by + 1) * TS - cy), pump = f.pump > 0 ? Math.sin(f.pump * 20) * 2 : 0;
-      rect(g, bx - 7, by - 3, 14, 3, C.wood); rect(g, bx - 6, by - 11 + pump, 12, 8 - pump, C.leather); rect(g, bx - 6, by - 11 + pump, 12, 2, C.leatherL); rect(g, bx + 5, by - 9, 6, 2, C.iron); rect(g, bx - 9, by - 15 + pump, 6, 2, C.wood);
-      if (!on && !fireDone(f)) { g.strokeStyle = Math.floor(time * 3) % 2 ? C.gold : 'rgba(255,211,107,0.5)'; g.strokeRect(bx - 8.5, by - 13.5, 17, 14); }
-      rect(g, bx - 10, by - 20, 20, 3, '#1b1626'); rect(g, bx - 10, by - 20, R(20 * f.roarT / K.roar), 3, f.roarT > 2 ? C.flame : '#c0401a'); }
+      KA.drawFire(g, d, sx, fy, on, time);
+      KA.drawBellows(g, R(d.bx * TS + 8 - cx), R((d.by + 1) * TS - cy), f.pump, !on && !fireDone(f), Math.max(0, Math.min(1, f.roarT / K.roar)), time); }
     /* THE COPPERS and their steam */
-    for (const pd of lv.kgPots || []) { const x = R(pd.x * TS + 8 - cx), y = R(pd.f * TS - cy); if (x < -80 || x > VW + 80) continue; const on = roaring(S.fires.get(pd.fire));
-      rect(g, x - 12, y - 16, 24, 14, C.copper); rect(g, x - 13, y - 17, 26, 3, C.copperL); rect(g, x - 12, y - 6, 24, 3, C.copperD); rect(g, x - 15, y - 14, 3, 5, C.copperD); rect(g, x + 12, y - 14, 3, 5, C.copperD);
-      if (on) { const top = R(pd.top * TS - cy), hgt = y - 16 - top; for (let i = 0; i < 9; i++) { const k = ((time * 0.9 + i / 9) % 1), py = y - 16 - k * hgt, w = 8 + k * 14, a = (1 - k) * 0.55;
-          g.fillStyle = 'rgba(236,236,240,' + a.toFixed(2) + ')'; g.fillRect(R(x - w / 2 + Math.sin(time * 3 + i) * 3), R(py), R(w), 6); } } }
-    /* THE GREAT SPITS: the hub, the spokes, the spits with their roasts */
+    for (const pd of lv.kgPots || []) { const x = R(pd.x * TS + 8 - cx), y = R(pd.f * TS - cy); if (x < -80 || x > VW + 80) continue; KA.drawCopper(g, x, y, R(y - (pd.top * TS - cy)), roaring(S.fires.get(pd.fire)), time, pd.x); }
+    /* THE GREAT SPITS */
     for (const w of S.wheels.values()) { const d = w.d, hx = R(d.x - cx), hy = R(d.y - cy); if (hx < -120 || hx > VW + 120) continue;
-      g.strokeStyle = C.iron; g.lineWidth = 2; for (let k = 0; k < WHEEL.n; k++) { const q = spitAt(d, spitAngle(d, w.ang, k)); g.beginPath(); g.moveTo(hx, hy); g.lineTo(R(q.x - cx), R(q.y - cy) + 3); g.stroke(); }
-      g.lineWidth = 1; rect(g, hx - 5, hy - 5, 10, 10, C.ironL); rect(g, hx - 2, hy - 2, 4, 4, C.iron);
-      rect(g, hx - 2, hy, 4, R(d.f * TS - cy) - hy + 30, 'rgba(58,58,66,0.6)');   /* its post down into the pit */
-      for (let k = 0; k < WHEEL.n; k++) { const q = spitAt(d, spitAngle(d, w.ang, k)), sx = R(q.x - cx), sy = R(q.y - cy);
-        rect(g, sx - WHEEL.w / 2, sy, WHEEL.w, 3, C.ironL); rect(g, sx - WHEEL.w / 2 - 2, sy - 1, 3, 5, C.iron); rect(g, sx + WHEEL.w / 2 - 1, sy - 1, 3, 5, C.iron);
-        rect(g, sx - 9, sy + 3, 18, 6, C.roast); rect(g, sx - 7, sy + 3, 14, 2, C.roastL); } }
-    /* THE GREASE TRAILS: raw (glossy), burning (the flame and its front), burnt (char) */
-    for (const t of S.trails.values()) { const d = t.d, x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS, y = R(d.f * TS - cy); if (!inX(x0, 400)) continue;
-      if (t.state === 'raw') { rect(g, x0 - cx, y - 2, x1 - x0, 3, C.grease); for (let x = x0; x < x1; x += 10) rect(g, x - cx + 2, y - 3, 4, 1, C.greaseL); }
-      else if (t.state === 'burning') { rect(g, x0 - cx, y - 1, x1 - x0, 2, C.char); rect(g, t.front - cx, y - 2, x1 - t.front, 3, C.grease); flames(g, x0 - cx, y, t.front - x0, 12, time, d.x0); }
-      else rect(g, x0 - cx, y - 1, x1 - x0, 2, C.char); }
+      const sp = []; for (let k = 0; k < WHEEL.n; k++) { const q = spitAt(d, spitAngle(d, w.ang, k)); sp.push({ x: R(q.x - cx), y: R(q.y - cy) }); }
+      KA.drawWheel(g, d, hx, hy, sp, w.ang, R(d.f * TS - cy), WHEEL, roaring(S.fires.get(d.fire)), time); }
+    /* THE GREASE TRAILS */
+    for (const t of S.trails.values()) { const d = t.d, x0 = d.x0 * TS, x1 = (d.x1 + 1) * TS; if (!inX(x0, 400)) continue; KA.drawTrail(g, R(x0 - cx), R(x1 - cx), R(d.f * TS - cy), t.state, R(t.front - cx), time, d.x0); }
     /* THE TALLOW DOORS */
-    for (const dr of S.doors.values()) { if (dr.state === 'gone') continue; const d = dr.d, x = R(d.x0 * TS - cx), y0 = R(d.y0 * TS - cy), w = (d.x1 - d.x0 + 1) * TS, h = (d.y1 - d.y0 + 1) * TS; if (x < -60 || x > VW + 60) continue;
-      const k = dr.state === 'melting' ? dr.t / K.melt : 0, top = y0 + h * k;
-      rect(g, x, top, w, y0 + h - top, C.tallow); for (let i = 0; i < w; i += 5) rect(g, x + i + 1, top, 3, 4 + ((i * 7 + d.x0) % 6), C.tallowD); rect(g, x + 2, top + 6, 2, h - 10 - h * k, 'rgba(255,255,255,0.4)'); }
+    for (const dr of S.doors.values()) { if (dr.state === 'gone') continue; const d = dr.d, x = R(d.x0 * TS - cx); if (x < -60 || x > VW + 60) continue; KA.drawDoor(g, x, R(d.y0 * TS - cy), (d.x1 - d.x0 + 1) * TS, (d.y1 - d.y0 + 1) * TS, dr.state === 'melting' ? dr.t / K.melt : 0, time); }
     /* THE OVERTURNED POT: the great pot (tipped once it goes), the fire along the grease */
-    const rc = lv.kgRace; if (rc && inX(rc.pot[0] * TS, 600)) { const px = R(rc.pot[0] * TS + 8 - cx), py = R((rc.pot[1] + 1) * TS - cy), tip = S.race.state !== 'armed';
-      g.save(); g.translate(px, py); g.rotate(tip ? 1.2 : 0); rect(g, -12, -20, 24, 20, C.iron); rect(g, -13, -21, 26, 3, C.ironL); rect(g, -10, -18, 20, 4, C.grease); g.restore();
-      if (S.race.state === 'on') { const lo = Math.max(rc.x0 * TS, S.race.front - rc.v * rc.behind); flames(g, lo - cx, R(rc.f * TS - cy), S.race.front - lo, 16, time, 7); } }
+    const rc = lv.kgRace; if (rc && inX(rc.pot[0] * TS, 600)) { KA.drawPot(g, R(rc.pot[0] * TS + 8 - cx), R((rc.pot[1] + 1) * TS - cy), S.race.state !== 'armed', time);
+      if (S.race.state === 'on') { const lo = Math.max(rc.x0 * TS, S.race.front - rc.v * rc.behind); KA.drawTrail(g, R(lo - cx), R(S.race.front - cx), R(rc.f * TS - cy), 'burning', R(S.race.front - cx), time, 7); } }
     /* THE RECIPE PAGES, THE SPICE VAULT's grate */
-    (lv.kgPages || []).forEach(([px, py], i) => { if (S.pages.has(i)) return; const x = R(px * TS + 8 - cx), y = R((py + 1) * TS - cy) - 8 + Math.sin(time * 2 + i) * 2; if (x < -20 || x > VW + 20) return;
-      rect(g, x - 5, y - 7, 10, 12, C.parch); rect(g, x - 3, y - 4, 6, 1, '#7a6448'); rect(g, x - 3, y - 1, 6, 1, '#7a6448'); if (Math.floor(time * 3 + i) % 3 === 0) rect(g, x + 4, y - 9, 2, 2, '#ffffff'); });
-    if (lv.kgVault && !S.vaultOpen) { const v = lv.kgVault, x = R(v.x0 * TS - cx), y = R(v.y0 * TS - cy); rect(g, x, y, (v.x1 - v.x0 + 1) * TS, 3, C.iron); for (let i = 2; i < (v.x1 - v.x0 + 1) * TS; i += 6) rect(g, x + i, y, 2, 2 * TS, C.ironL);
-      ctx.text && ctx.text(S.pages.size + '/3', x + TS, y - 8, C.parch, 'center', 5); }
+    (lv.kgPages || []).forEach(([px, py], i) => { if (S.pages.has(i)) return; const x = R(px * TS + 8 - cx), y = R((py + 1) * TS - cy) - 8 + Math.sin(time * 2 + i) * 2; if (x < -20 || x > VW + 20) return; KA.drawPage(g, x, R(y), i, time); });
+    if (lv.kgVault && !S.vaultOpen) { const v = lv.kgVault, x = R(v.x0 * TS - cx), y = R(v.y0 * TS - cy); KA.drawVault(g, x, y, (v.x1 - v.x0 + 1) * TS, S.pages.size);
+      ctx.text && ctx.text(S.pages.size + '/3', x + TS, y - 8, '#e8dcb0', 'center', 5); }
     /* THE AREA BANNER */
     if (S.banner && ctx.text) { const a = Math.min(1, S.banner.t / 0.6, (3.4 - S.banner.t) / 0.4); g.globalAlpha = Math.max(0, a); ctx.text(S.banner.name, R(VW / 2), 34, '#ffe0b0', 'center', 8); g.globalAlpha = 1; }
   };
-  /* THE BUTCHER's overlay: the apron, the cleaver (up for THE CLEAVER, back for THE HACK), the flames while he burns */
-  H.butcherOver = (g, e, cx, cy, time) => { if (!e.alive) return; const x = R(e.x - cx), y = R(e.y - cy), f = e.face || 1;
-    rect(g, x - 5, y - 13, 10, 9, '#e8e0d0'); rect(g, x - 3, y - 10, 3, 3, '#a02020'); rect(g, x + 1, y - 7, 2, 2, '#a02020');
-    const up = e.mode === 'raise', back = e.mode === 'wind', down = e.mode === 'slam' || e.mode === 'sweep';
-    const hx = x + f * (up ? 2 : back ? -10 : down ? 12 : 8), hy = y - (up ? 30 : back ? 12 : down ? 8 : 14);
-    rect(g, hx - 1, hy, 2, up ? 10 : 6, C.wood); rect(g, f > 0 ? hx : hx - 9, hy - (up ? 8 : 0) + (up ? 0 : -4), 9, 7, '#c8ccd4'); rect(g, f > 0 ? hx + 7 : hx - 9, hy - (up ? 8 : 4), 2, 7, '#8a8e96');
-    if (e.mode === 'burn') flames(g, x - 8, y - 2, 16, 14, time, 3); };
+  /* THE BUTCHER's flames while he burns (his body, apron and cleaver are his own sheet: KA.bakeButcher) */
+  H.butcherOver = (g, e, cx, cy, time) => { if (!e.alive) return; if (e.mode === 'burn') KA.butcherBurn(g, R(e.x - cx), R(e.y - cy), time); };
   return H;
 }

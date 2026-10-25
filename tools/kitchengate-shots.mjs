@@ -36,7 +36,7 @@ try {
   const r = await pg.evalp(`(async()=>{const LV=(await import('/src/level.js')).LEVELS;const idx=LV.findIndex(l=>l.id==='kitchengate');BK.manualSimulation=true;
     const snap=()=>{const c=document.createElement('canvas');c.width=640;c.height=360;const g=c.getContext('2d');g.imageSmoothingEnabled=false;g.drawImage(BK.buf,0,0,640,360);return c.toDataURL('image/png');};
     const load=()=>{BK.setHero('knight');BK.reset({fresh:true});BK.load(idx);BK.start();BK.god=true;BK.sim(60);};
-    const out=[];for(const [tag,x,y,extra] of ${JSON.stringify(SHOTS)}){load();if(x)BK.tp(x,y);BK.sim(20);eval(extra);for(let k=0;k<(tag.startsWith('gb-')?2:20);k++)BK.step(1);out.push({tag,png:snap()});}
+    const out=[];for(const [tag,x,y,extra] of ${JSON.stringify(SHOTS)}){load();if(x)BK.tp(x,y);BK.sim(tag.startsWith('gb-')?20:360);eval(extra);for(let k=0;k<(tag.startsWith('gb-')?2:20);k++)BK.step(1);out.push({tag,png:snap()});}
     BK.manualSimulation=false;return out;})()`, 900000);
   for (const s of r) { writeFileSync(join(OUT, 'kitchengate-' + s.tag + '.png'), Buffer.from(s.png.split(',')[1], 'base64')); console.log('kitchengate-' + s.tag + '.png'); }
   if (pg.errors.length) console.log('page errors', pg.errors.slice(0, 3));

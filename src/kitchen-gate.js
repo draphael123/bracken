@@ -222,12 +222,12 @@ export function buildKitchenGate({ painter, T, TS }) {
   ent('torch', A0 + 1, FL - 1); ent('torch', A1 - 1, FL - 1);
   ent('grubbag', A1 - 6, FL - 1);
 
-  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: 8 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'boss3', tint: '#f0c890', tintA: 0.06,
+  const arena = { x0: A0 * TS, x1: (A1 + 1) * TS, floor: FL * TS, y0: 8 * TS, trigger: (A0 + 6) * TS, wallL: A0 - 1, wallR: A1 + 1, boss: 'grubbag', music: 'grubbag', tint: '#f0c890', tintA: 0.06,
     /* THE TABLE (src/grubbag.js geom): his chair's column, the high table's span, the hatch / oven and its bellows, the serving line's two ends (columns, rows) */
     chair: A1 - 6, table: [A1 - 11, A1 - 8], oven: A0 + 1, bellows: A0 + 3, line: [A0 + 1, 11, A1 - 9, 13] };
   return {
     W, H, grid: L.grid, ents: L.ents, START: { x: 3, y: 39 }, pools: [], falls: [],
-    arena, kitchen: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,
+    arena, kitchen: true, kgKit: true, hoists, kgFires: fires, kgPots: pots, kgWheels: wheels, kgTrails: trails, kgDoors: doors, kgRace: race, kgPages: pages, kgVault: vault, kgRacks: racks,
     zipLines, slick, reachVents, moversExtra: movers,
     calm: [[0, W - 1, 0, H - 1]],   /* placed wholly by hand: nothing sprinkled */
     checkRun: 260,                  /* four shrines, one closing each area's exam (A10c): src/level.js checkpoints() must not fill between them */
@@ -237,7 +237,7 @@ export function buildKitchenGate({ painter, T, TS }) {
       { kind: 'hoists', opens: 'a lift (the copper\'s steam), a ride up (the great spit), a door (the grease burns to the tallow door and melts it)', hud: 'THE FIRE ROARS' },
       { kind: 'kgpage', opens: 'secret', hud: 'RECIPE PAGES n/3: THE SPICE VAULT' },
     ],
-    duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: false,
+    duskStart: -1, duskLen: 1, music: 'kitchengate', night: false, glowNight: false,
     interiors: [[1, 72, 28, 46, 'cellar'], [56, 104, 9, 26, 'cellar'], [105, 200, 4, 28, 'keep'], [201, 300, 8, 27, 'keep'], [300, 388, 6, 27, 'royal'], [389, 418, 8, 21, 'royal']],   /* INSIDE THE CASTLE: every hall has a back wall, never the sky (the art lane gives each its own) */
     palette: { hall: true, sky: 'night', dress: 'none', ledges: 'beam', haze: 'rgba(255,170,90,0.10)', dirt: '#5e4a3a', dirtL: '#7a6450', dirtD: '#3a2c22', grass: '#8a7058', grassL: '#a88a6a', grassD: '#5a4636' },
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],

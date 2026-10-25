@@ -11,6 +11,7 @@
 import * as GBM from './grubbag.js';
 import { BOSS_PHASE } from './boss-music.js';
 import { canvas, flipX, whiten } from './px.js';
+import * as GA from './redraw/grubbag_art.js';   /* (claude/kitchengateart) him, his chair, the oven, the table, the dishes */
 const { GB } = GBM;
 
 const SOUND = { belchTell: s => (s.charge || s.tell)(), belch: s => (s.boreRoar || s.roar || s.thud)(), throwTell: s => (s.gobShout || s.tell)(), throw: s => (s.throwWhoosh || s.whoosh || s.tell)(),
@@ -43,42 +44,8 @@ export const POSE = {
   choke: { head: [0, -4], belly: 1.15, hand: [6, -38], far: [-6, -38], fork: [24, -2, 1.5, 34], eyes: 'bulge', mouth: 'wide', smoke: true, shake: true, red: true },
   recover: { head: [2, 2], belly: 1, hand: [12, -24], far: [-12, -20], fork: [22, -10, 1.2, 34], eyes: 'open', mouth: 'open', cough: true },
 };
-/* HIM (greybox): the chair behind, the body, the head and its gold circlet, the arms, the fork; local px facing right, his seat on the floor at 0,0 */
-function drawGrubbag(g, p, flash, time, holding) {
-  const lean = p.lean || 0, bk = p.belly || 1;
-  /* the reinforced chair */
-  rect(g, -30, -78, 54, 78, C.chair); rect(g, -30, -78, 54, 4, C.chairL); for (const y of [-64, -40, -16]) rect(g, -30, y, 54, 3, C.iron); rect(g, -34, -24, 8, 24, C.chairL); rect(g, 20, -24, 8, 24, C.chairL);
-  g.save(); g.translate(lean, 0); if (p.tilt) g.rotate(p.tilt * 0.15);
-  /* the far arm */
-  const arm = (hx, hy, col) => { const sx = 0, sy = -40; g.strokeStyle = col; g.lineWidth = 7; g.beginPath(); g.moveTo(sx, sy); g.lineTo(hx, hy); g.stroke(); g.lineWidth = 1; rect(g, hx - 4, hy - 4, 8, 8, col); };
-  arm(p.far[0], p.far[1], flash ? '#ffffff' : C.skinD);
-  /* the body: robe and the great belly */
-  rect(g, -20, -50, 40, 42, flash ? '#ffffff' : C.robe); rect(g, -20, -50, 40, 3, C.robeD);
-  const bw = 34 * bk, bh = 26 * bk; rect(g, -bw / 2 + 4, -12 - bh, bw, bh, flash ? '#ffffff' : (p.red ? '#a85a42' : C.skin)); rect(g, -bw / 2 + 6, -12 - bh, bw - 4, 3, C.skinL); rect(g, 2, -12 - bh / 2, 3, 3, C.skinD);
-  rect(g, -18, -10, 14, 10, C.robeD); rect(g, 6, -10, 14, 10, C.robeD);   /* his legs, short under it */
-  /* the head and the circlet */
-  const [hx, hy] = p.head; const H0 = -66 + hy;
-  rect(g, -10 + hx, H0, 22, 18, flash ? '#ffffff' : (p.red ? '#b05a42' : C.skin)); rect(g, -10 + hx, H0 + 14, 22, 6, C.skinD);   /* jowls */
-  rect(g, -9 + hx, H0 - 4, 20, 4, C.gold); rect(g, -7 + hx, H0 - 7, 3, 3, C.gold); rect(g, 0 + hx, H0 - 8, 3, 4, C.gold); rect(g, 6 + hx, H0 - 7, 3, 3, C.gold);
-  const ey = p.eyes; if (ey === 'shut') rect(g, 4 + hx, H0 + 5, 6, 1, C.skinD); else { rect(g, 4 + hx, H0 + 3, ey === 'bulge' ? 6 : 5, ey === 'bulge' ? 6 : 4, ey === 'red' ? C.red : C.eye); rect(g, 6 + hx, H0 + 4, 2, 2, '#1a1010'); }
-  const mo = p.mouth; if (mo === 'wide') { rect(g, 2 + hx, H0 + 10, 12, 8, C.mouth); rect(g, 3 + hx, H0 + 10, 3, 2, C.tooth); rect(g, 10 + hx, H0 + 10, 3, 2, C.tooth); }
-  else if (mo === 'open') rect(g, 4 + hx, H0 + 11, 9, 4, C.mouth); else if (mo === 'chew') rect(g, 4 + hx, H0 + 12 + (Math.floor(time * 6) % 2), 8, 2, C.mouth); else rect(g, 4 + hx, H0 + 12, 8, 1, C.skinD);
-  /* the fork */
-  const [fx, fy, fa, fl] = p.fork; g.save(); g.translate(fx, fy); g.rotate(fa); rect(g, 0, -1, fl, 3, C.forkD); rect(g, fl, -5, 2, 11, C.fork); for (const ty of [-5, -1, 3]) rect(g, fl + 2, ty, 9, 2, C.fork); g.restore();
-  /* the near arm (the grab: flung out along the floor) */
-  if (p.arm) { g.strokeStyle = flash ? '#ffffff' : C.skin; g.lineWidth = 8; g.beginPath(); g.moveTo(0, -40); g.lineTo(p.hand[0], p.hand[1]); g.stroke(); g.lineWidth = 1; }
-  else arm(p.hand[0], p.hand[1], flash ? '#ffffff' : C.skin);
-  if (p.fingers || p.arm) for (let k = 0; k < 4; k++) rect(g, p.hand[0] + 3, p.hand[1] - 6 + k * 3, 6, 2, C.skin);
-  if (p.item === 'drumstick') { rect(g, p.hand[0] - 3, p.hand[1] - 12, 8, 8, C.food); rect(g, p.hand[0], p.hand[1] - 4, 2, 6, C.tooth); }
-  if (p.item === 'dish' && holding) { rect(g, p.hand[0] - 8, p.hand[1] - 4, 16, 3, C.dish); rect(g, p.hand[0] - 5, p.hand[1] - 9, 10, 5, holding === 'pie' ? C.pie : C.food); }
-  g.restore();
-  /* the gravy cauldron at his side */
-  g.save(); g.translate(-36, -2); g.rotate(-(p.cauldron || 0)); rect(g, -10, -16, 20, 16, C.copper); rect(g, -11, -17, 22, 3, '#e09a5c'); rect(g, -8, -14, 16, 3, C.gravy); g.restore();
-  if (p.rings) { const k = (time * 3) % 1; g.strokeStyle = 'rgba(160,200,90,' + (1 - k).toFixed(2) + ')'; g.beginPath(); g.arc(16 + p.head[0], -56, 6 + k * 26, -0.8, 0.8); g.stroke(); }
-  if (p.smoke) for (let k = 0; k < 4; k++) { const a = time * 3 + k * 1.6; rect(g, 8 + Math.cos(a) * 10, -80 - ((time * 20 + k * 9) % 30), 6, 5, 'rgba(70,64,60,0.7)'); }
-  if (p.zzz) { const k = (time * 0.8) % 1; g.globalAlpha = 1 - k; rect(g, 12, -84 - k * 14, 5, 1, '#e8e0d0'); rect(g, 16, -84 - k * 14, 1, 4, '#e8e0d0'); rect(g, 12, -80 - k * 14, 5, 1, '#e8e0d0'); g.globalAlpha = 1; }
-  if (p.cough) for (let k = 0; k < 2; k++) rect(g, 18 + k * 6, -58 - (time * 30 + k * 7) % 10, 3, 3, 'rgba(200,190,170,0.7)');
-}
+/* HIM (claude/kitchengateart: src/redraw/grubbag_art.js draws him; POSE above is still the contract) */
+function drawGrubbag(g, p, flash, time, holding) { GA.drawGrubbagArt(g, p, flash, time, holding); }
 
 export function makeGrubbagHands(ctx) {
   let S = null; const H = {};
@@ -96,7 +63,7 @@ export function makeGrubbagHands(ctx) {
     const e = { ...base, t: 'grubbag', w: GB.w, h: GB.h, hp, maxHp: hp, noGrav: true, markH: GB.markH, face: -1, mode: 'sleep', modeT: 0, phase: 1, boss: true, ward: 0 };
     e.x = S.G.chairX; e.y = S.G.floorY; for (const pp of ctx.players) pp.gbKeys = null; return e; };
   const heroes = () => ctx.players.map(pp => ({ x: pp.x, y: pp.y, ground: !!pp.ground, alive: ctx.upright(pp) && !pp.dead, pp }));
-  const bzD = d => Math.round(ctx.heroId && ctx.heroId() === 'berserker' ? d * GB.bz.hurt : d);
+  const bzD = d => Math.round((ctx.heroId && ctx.heroId() === 'berserker' ? d * GB.bz.hurt : d) * (GB.dmgMul || 1));
   function world(e) {
     return {
       number: (x, y, t, col) => ctx.number(x, y, t, col), sound: k => { const f = SOUND[k]; if (f) try { f(ctx.sfx); } catch {} }, shake: n => ctx.shake(n),
@@ -142,21 +109,13 @@ export function makeGrubbagHands(ctx) {
   H.read = () => S && { mode: ctx.boss && ctx.boss.mode, ph: S.ph, ward: S.ward, hungry: S.hungry, oven: { ...S.oven }, items: S.items.map(q => ({ kind: q.kind, x: Math.round(q.x), state: q.state })), n: JSON.parse(JSON.stringify(S.n)), hurt: { ...(S.hurt || {}) } };
   const X = cx => v => R(v - cx), Y = cy => v => R(v - cy);
   /* THE HALL: the kitchen hatch and the pie oven (its gauge), the oven's bellows, the serving line and its hooks, the high table */
-  H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY);
-    /* the hatch and the oven */
-    const ox = x(G.ovenX); rect(g, ox - 20, fy - 44, 40, 44, '#5a4a40'); rect(g, ox - 20, fy - 44, 40, 4, '#7a6a5a'); rect(g, ox - 10, fy - 24, 20, 16, '#1a1010');
-    const hot = S.oven.st === 'bake' || S.oven.st === 'out'; if (hot) { const k = 0.6 + 0.4 * Math.sin(time * 14); rect(g, ox - 8, fy - 22, 16, 12 * k, '#ff9a3c'); rect(g, ox - 5, fy - 18, 10, 6 * k, '#ffd36b'); } else if (S.oven.st === 'cold') rect(g, ox - 8, fy - 12, 16, 3, '#c0401a');
-    rect(g, ox - 14, fy - 66, 28, 20, '#3a2c22'); rect(g, ox - 12, fy - 64, 24, 16, '#1a1010');   /* the hatch */
-    const bx = x(G.bellowsX); rect(g, bx - 7, fy - 3, 14, 3, '#5a3a22'); rect(g, bx - 6, fy - 11, 12, 8, '#6a4228'); rect(g, bx - 6, fy - 11, 12, 2, '#8e5e3a'); rect(g, bx + 5, fy - 9, 6, 2, '#3a3a42');
-    if (S.oven.st === 'cold') { g.strokeStyle = Math.floor(time * 3) % 2 ? '#ffd36b' : 'rgba(255,211,107,0.5)'; g.strokeRect(bx - 8.5, fy - 13.5, 17, 14); }
+  H.drawBack = (g, cx, cy, time) => { if (!S) return; const x = X(cx), y = Y(cy), G = S.G, fy = y(G.floorY), L0 = G.line;
+    GA.drawLine(g, x(L0.x0), y(L0.y0), x(L0.x1), y(L0.y1), qs => y(GBM.lineY(G, qs + cx)), 48);
+    GA.drawOven(g, x(G.ovenX), fy, S.oven.st, time);
+    const bx = x(G.bellowsX); GA.drawBellows(g, bx, fy, S.oven.st === 'cold', time, 0);
     const k = S.oven.st === 'bake' ? 1 - S.oven.t / GB.oven.bake : S.oven.st === 'cool' ? 1 - S.oven.t / GB.oven.cool : S.oven.st === 'cold' ? 1 : 0;
-    rect(g, bx - 10, fy - 20, 20, 3, '#1b1626'); rect(g, bx - 10, fy - 20, R(20 * k), 3, S.oven.st === 'cold' ? '#ffd36b' : S.oven.st === 'cool' ? '#8a8a9a' : '#ff9a3c');
-    /* the serving line under the roof */
-    const L0 = G.line; g.strokeStyle = '#3a3a42'; g.lineWidth = 2; g.beginPath(); g.moveTo(x(L0.x0), y(L0.y0)); g.lineTo(x(L0.x1), y(L0.y1)); g.stroke(); g.lineWidth = 1;
-    for (let q = L0.x0; q < L0.x1; q += 48) rect(g, x(q) - 1, y(GBM.lineY(G, q)) - 10, 2, 10, '#5a5a62');
-    /* the high table */
-    const t0 = x(G.table[0]), t1 = x(G.table[1]); rect(g, t0, fy - 18, t1 - t0, 4, '#6e4a2e'); rect(g, t0 + 2, fy - 14, 3, 14, '#4a3020'); rect(g, t1 - 5, fy - 14, 3, 14, '#4a3020');
-    for (let q = t0 + 8; q < t1 - 8; q += 14) { rect(g, q, fy - 21, 10, 3, '#c8ccd4'); rect(g, q + 2, fy - 24, 6, 3, '#a0602a'); } };
+    rect(g, bx - 11, fy - 25, 22, 5, '#1a1410'); rect(g, bx - 10, fy - 24, 20, 3, '#1b1626'); rect(g, bx - 10, fy - 24, R(20 * k), 3, S.oven.st === 'cold' ? '#ffd36b' : S.oven.st === 'cool' ? '#8a8a9a' : '#ff9a3c'); rect(g, bx - 11, fy - 25, 22, 1, '#c9a040');
+    GA.drawTable(g, x(G.table[0]), x(G.table[1]), fy, time); };
   H.drawBoss = (g, e, cx, cy, time) => { if (!S) return; e.guardFx = Math.max(0, (e.guardFx || 0) - 1 / 60);
     const p = POSE[e.mode] || POSE.sit, flash = (e.hurtT || 0) > 0 || (e.flash || 0) > 0.06, f = e.face || -1;
     g.save(); g.translate(R(e.x - cx + (p.shake ? Math.sin(time * 50) * 2 : 0)), R(e.y - cy)); g.scale(f, 1); drawGrubbag(g, p, flash, time, e.eating ? e.eating.kind : null); g.restore();
@@ -165,9 +124,7 @@ export function makeGrubbagHands(ctx) {
       for (let k = 0; k < 4; k++) rect(g, hx + f * 4 - 3, fy - 6 + k * 3, 7, 2, C.skin); } };
   H.drawOver = (g, cx, cy, time) => { const Ar = A(); if (!S || !Ar) return; const e = ctx.boss, G = S.G, x = X(cx), y = Y(cy), fy = y(G.floorY);
     /* the dishes on the line (and the powder pie, its fuse sparking) */
-    for (const it of S.items) { const dy = y(GBM.dishY(G, it)), dx = x(it.x), hy = y(GBM.lineY(G, it.x)); rect(g, dx - 1, hy, 1, dy - hy - 4, '#5a5a62'); rect(g, dx - 3, dy - 6, 6, 2, '#7a7a86');
-      rect(g, dx - 9, dy, 18, 3, C.dish); if (it.kind === 'pie') { rect(g, dx - 7, dy - 6, 14, 6, C.pie); rect(g, dx - 6, dy - 6, 12, 2, C.pieL); rect(g, dx + 3, dy - 10, 1, 4, '#3a3a42'); if (Math.floor(time * 12) % 2) rect(g, dx + 2, dy - 12, 3, 3, '#ffd36b'); }
-      else { rect(g, dx - 6, dy - 7, 12, 7, C.food); rect(g, dx - 4, dy - 9, 3, 3, C.tooth); } }
+    for (const it of S.items) GA.drawHooked(g, x(it.x), y(GBM.lineY(G, it.x)), y(GBM.dishY(G, it)), it.kind, time);
     /* the gravy */
     if (S.gravy > 0) { const from = x(GBM.gravyFrom(S)), to = x(G.chairX); g.globalAlpha = Math.min(1, S.gravy / 1.5) * 0.8; rect(g, from, fy - 3, to - from, 3, C.gravy); g.globalAlpha = 1; }
     for (const q of S.floods) { const fx = x(q.x); rect(g, fx - 6, fy - 14, 14, 14, C.gravy); rect(g, fx - 4, fy - 16, 10, 3, C.gravyL); }

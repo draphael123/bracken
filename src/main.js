@@ -30,6 +30,7 @@ import * as SLD from './slide.js'; import * as RSL from './run-slide.js';   /* T
 import * as SCA from './scree-art.js';
 import * as RLD from './ram-lord.js';   /* THE RAM LORD, REWORKED (claude/scree2): a beast duelist, his horns guard his front; the fold's overhangs are his opening */   /* THE SCREE PATH's own stone: the quarry's blocks, derrick and face (claude/scree2) */
 import { MOVE, SPRING_MOVE, WARDEN_SPEAR, heroRunMul, sprintK as sprintKOf } from './hero-move.js';   /* THE HEROES' BASE MOVEMENT, one copy (claude/reachcore): src/reach-hero.js reads it too */
+import * as KGT from './redraw/kitchen_tiles.js'; import * as KGA from './redraw/kitchen_art.js';   /* THE KITCHEN GATE's art (claude/kitchengateart): tile kit, halls, dressing, ambient, machines, the butcher */
 import * as UCT from './redraw/undercrown_tiles.js'; import * as UCA from './redraw/undercrown_art.js';   /* THE UNDERCROWN's art (claude/undercrown2art): tile kit, walls, slabs, posts, lights */
 import * as USL from './undercrown-slabs.js';   /* THE UNDERCROWN'S SLABS (claude/undercrown2): a span on two posts that hinges into a ramp or drops flat */
 import { levelHasSlopes, moveBodySquare, moveBodySlopes, isSlope, footSlope, slideStep, slideKeepAt, aheadTile, slopeRise, slopeGrade, hillTop, hillAcc, hillBleed } from './slopes.js'; import { slopeTile } from './redraw/ground-slopes.js';   /* a slope in the level's own ground (claude/fairlevel) */
@@ -1484,6 +1485,7 @@ function resolveTiles() {
     if (L.rootway) { const ts = RWT.rootTile(t, x, y, tileAt, T, L); if (ts) s = ts; }
     if (L.pwood) { const ts = PWT.pwTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* (claude/palisadeart) THE PALISADE WOOD's tile kit: leaf-litter loam, the palisade's standing logs, the gatehouse's hewn beams, scaffold decks, loose boards (src/redraw/palisade_tiles.js) */   /* THE ROOTWAY's tile kit (claude/rootway art pass): bark and root that warms as you climb, lashed timber (src/redraw/rootway_tiles.js) */
     if (L.kwood) { const ts = KWT.kingsTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* (claude/kingswood2art) THE KING'S HUNTING WOOD's tile kit: the court's flagstone road, the hunt's root-cobble, bark, the hall's basalt, deck boards and boughs, the portcullis (src/redraw/kingswood_tiles.js) */
+    if (L.kgKit) { const ts = KGT.kgTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE KITCHEN GATE's tile kit (claude/kitchengateart, src/redraw/kitchen_tiles.js): cellar brick, soot basalt, glazed tile, sandstone, plum royal stone; dresser shelves; coals */
     if (L.ucKit) { const ts = UCT.ucTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* THE UNDERCROWN's tile kit (claude/undercrown2art, src/redraw/undercrown_tiles.js) */
     if (L.moorRocks) { const ts = MRT.moorTile(t, x, y, tileAt, T, L); if (ts) s = ts; }   /* GALE MOOR's tor country kit, THE WIND ROCKS to the landing (src/redraw/moor_tiles.js) */
     tileSpr[y * LW + x] = s;
@@ -1500,6 +1502,7 @@ function resolveTiles() {
       if (isSolid(x, y) && tileAt(x, y - 1) === T.AIR && R2() < 0.07) decor.push({ k: 'frost', x: x * TS + ((R2() * 6) | 0), y: y * TS - 7, c: PROP.frost[(R2() * 2) | 0] }); } }
   if (L.stockade) STB3.dress(decor, lights, L, tileAt, T, tileSpr, LW, TS);   /* (claude/stockade3) ground variety (paths, mud) baked into the surface tiles + camp props on the floor: stakes, kennels, a war tent, chop blocks, hides, bones (src/redraw/stockade3_art.js) */
   if (L.lumberKit) LTT.dress(decor, lights, L, tileAt, T);   /* (claude/lumbertrailart) the store's and the den's dark, props and lamps, the hollow log's tunnel */
+  if (L.kgKit) KGA.dress(decor, L, tileAt, T);   /* THE KITCHEN GATE's dressing (claude/kitchengateart): hams, pans, braids, banners, sacks, jars, plates */
   if (L.ucKit) UCA.dress(decor, L, tileAt, T);   /* THE UNDERCROWN's dressing (claude/undercrown2art): rubble, puddles, bones, picks, crystal, webs, chains - static sprites */
   for (const A of [L.arena, L.mini]) if (A) for (let i = decor.length - 1; i >= 0; i--) { const d = decor[i]; if (BULKY.has(d.k) && d.x > A.x0 - TS && d.x < A.x1 + TS) { decor.splice(i, 1); if (d.fire) for (let j = lights.length - 1; j >= 0; j--) if (lights[j].x === d.x + 7 && lights[j].y === d.y + 8) lights.splice(j, 1); } }
 }
@@ -32116,6 +32119,7 @@ function drawWorld(cx, cy, showPlayer) {
   drawHarborLandmarks(g,L,cx,cy);
   drawBelfry(cx, cy); drawMoorWeather(cx, cy); drawScenery(cx, cy); drawStructures(cx, cy); drawLightHolders(cx, cy); drawOccluders(cx, cy); if (!(L.palette && L.palette.noFg) && !L.hornetsNest) drawFg(cx, cy);
   drawAirHaze(cx, cy); drawMotes(cx, cy, false);
+  if (L.kgKit) KGA.drawAmbient(g, cx, cy, VW, VH, time, tileAt, T);   /* THE KITCHEN GATE: the coal pits' glow and embers, the flies over the grease */
   if (L.ucKit) { UCA.drawShafts(g, cx, cy, VW, VH, time, tileAt, T); UCA.drawAmbient(g, cx, cy, VW, VH, time, tileAt, T, props); }   /* THE UNDERCROWN: the castle's light through the cracks, the drips, the grit, the lamp moths (claude/undercrown2art) */
   /* THE SAND'S OWN SKY, over the level's violet night and under everything else: the camera is only ever up here after
      the second door, and when it is, the world is warm. Then his hall, which is PAINTED at the carpet box's own edges
@@ -32718,7 +32722,8 @@ function drawWorld(cx, cy, showPlayer) {
     else if (e.t === 'drone') frame = e.mode === 'puffTell' || e.mode === 'puff' || e.mode === 'burstTell' ? 2 : Math.floor(e.anim * 1.1) % 6 === 0 && (e.anim * 1.1) % 1 < 0.15 ? 2 : [0, 3, 1, 3][Math.floor(e.anim * 5) % 4];
     else if (e.t === 'shaman') frame = e.cast > 0 ? (Math.floor(e.anim * 10) % 2 ? 4 : 1) : Math.abs(e.vx || 0) > 4 ? 2 + Math.floor(e.anim * 6) % 2 : 0;
     else if (e.t === 'hound') frame = e.air ? 2 : Math.floor(e.anim * 14) % 2;
-    else if (e.t === 'brute' || e.t === 'butcher') frame = e.mode === 'elCut1Tell' || e.mode === 'elCut2Tell' || e.mode === 'elOverTell' || e.mode === 'elCryTell' ? 2 : e.mode === 'elCut1' || e.mode === 'elCut2' || e.mode === 'elOver' || e.mode === 'elStuck' ? 3 : e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
+    else if (e.t === 'butcher') frame = KGM.butcherFrameOf(e);   /* (claude/kitchengateart) his own sheet: idle, walk x2, raise, slam, wind, sweep */
+    else if (e.t === 'brute') frame = e.mode === 'elCut1Tell' || e.mode === 'elCut2Tell' || e.mode === 'elOverTell' || e.mode === 'elCryTell' ? 2 : e.mode === 'elCut1' || e.mode === 'elCut2' || e.mode === 'elOver' || e.mode === 'elStuck' ? 3 : e.mode === 'raise' ? 2 : (e.mode === 'slam' || e.mode === 'wind' || e.mode === 'sweep') ? 3 : (Math.abs(e.vx) > 4 ? Math.floor(e.anim * 6) % 2 : 0);
     else if (e.t === 'chief' && SKD && SKD.on() && SKD.chiefFrame(e) >= 0) frame = SKD.chiefFrame(e);   /* (claude/stockade2art) his climb, hold-on, deck aim / loose / wait and fall */
     else if (e.t === 'chief') frame = e.mode === 'leap' || e.mode === 'crouch' || e.mode === 'towerClimb' || e.mode === 'towerFall' ? 9 : e.mode === 'tower' || e.mode === 'towerAim' || e.mode === 'towerLoose' ? 8 : e.mode === 'whirl' ? (Math.floor(e.anim * 12) % 2 ? 4 : 3) : e.mode === 'whirlWind' ? 4 : e.mode === 'rainAim' || e.mode === 'rainLoose' ? 8 : e.mode === 'raise' ? 2 : e.mode === 'slam' || e.mode === 'planted' ? 3 : e.mode === 'wind' || e.mode === 'sweep' ? 4 : e.mode === 'reach' || e.mode === 'lunge' ? 5 : e.mode === 'slash' || e.mode === 'bash' ? 7 : e.mode === 'aim' || e.mode === 'shoot' ? 8 : (() => { const moving = Math.abs(e.vx) > 4, step = Math.floor(e.anim * 8) % 4; if (e.stance === 'sword') return moving ? [6, 11, 12, 11][step] : 6; if (e.stance === 'bow') return moving ? [8, 13, 14, 13][step] : 8; return moving ? [0, 1, 10, 1][step] : 0; })();
     else if (e.t === 'shield') frame = e.mode === 'elChargeTell' || e.mode === 'elWallTell' ? 5 : e.mode === 'elCharge' ? 6 : e.mode === 'elDazed' || e.mode === 'elChargeEnd' ? 4 : e.mode === 'shoveTell' ? 5 : e.mode === 'shove' ? 6 : (e.behindT > 0.12 || e.turnT > 0.12) ? 4 : Math.abs(e.vx) > 4 ? Math.floor(e.anim * 8) % 4 : 0;   /* bringing the shield round: the slow turn while you are behind it, or the skid off a fast one */
@@ -33528,6 +33533,7 @@ function drawRoomPaint(st, sx, sy, w, h, tx0, ty0) {
   if (L.theatre && THH.paintTheatreRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY)) return;   /* THE MASKWRIGHT'S THEATRE's rooms (src/redraw/theatre_rooms.js) */
   if (L.mage && MW.paintRoom && MW.paintRoom(g, st, sx, sy, w, h, tx0, time)) return;   /* THE MAGE'S FOLLY paints its own rooms */
   if (L.canal && CNH.paintCanalRoom(g, st, sx, sy, w, h, time)) return;   /* THE FOG CANAL (greybox rooms) */
+  if (L.kgKit && KGA.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY, VW, VH)) return;   /* THE KITCHEN GATE's halls (claude/kitchengateart, src/redraw/kitchen_art.js) */
   if (L.ucKit && UCA.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time, camX, camY, VW, VH)) return;   /* THE UNDERCROWN's walls: the castle's footings, the cribbed timber, the barrow's niches, the prince's arcade (claude/undercrown2art, src/redraw/undercrown_art.js) */
   if (L.underwell && UWB.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE UNDERWELL's rooms: the brood chamber, the fountain's vault, the Queen's cistern */
   if (L.welltown && WTB.paintRoom(g, st, sx, sy, w, h, tx0, ty0, time)) return;   /* THE WELL TOWN's rooms: the cisterns' cut stone, a house's plaster, the dovecote's niches */
