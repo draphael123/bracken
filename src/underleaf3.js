@@ -94,7 +94,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   jar(46, 29, 'green'); board(44, 47, 27);
   sign(47, 29, "A SEED BED ON THE DITCH'S LIP: A GREEN JAR ON IT GROWS A BRIDGE ACROSS.");
   bridgeBed(49, 29, 50, 57, G);
-  ground(50, 57, 34); spikes(50, 57, 33);                                                  /* THE THORN DITCH: eight wide, stakes in its bed */
+  ground(50, 57, 34); net(50, 30, 33);                                                  /* THE THORN DITCH: eight wide, a bare bed and a twine ladder up the near wall: a fall here costs the climb, not health (underleaf act-I tune: taught where failure is cheap) */
   ground(58, 79, G);
   foe('sprig', 60, 29, { squad: 'ditch' }); foe('sprig', 63, 29, { squad: 'ditch' });
   ground(64, 68, 27); foe('rockgoblin', 66, 26, { face: -1, herb: 'jarthrower' });         /* the first jar-thrower, on a raised bed */
@@ -185,7 +185,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   jar(314, 22, 'blue'); well(316, 22, 7);
   sign(313, 22, 'A BUBBLE UP TO HER LEAF. A SEED BED ON ITS EDGE.');
   board(317, 322, 16); jar(319, 15, 'green'); bridgeBed(322, 15, 323, 331, 16);
-  ground(319, 331, 31); spikes(320, 331, 30); net(319, 22, 30);                            /* under the leaf: the stake pit (a twine ladder back up) */
+  ground(319, 331, 31); net(319, 22, 30);                            /* under the leaf: the stake pit (a twine ladder back up) */
   ground(332, 345, 16);                                                                    /* THE GREAT HEARTH: her old fire's stones */
   brew(334, 15, 'blue');
   sign(335, 15, 'FLOAT HIM OFF THE HEARTH.');
@@ -209,7 +209,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
   ground(373, 376, G);
   sign(373, 29, 'THE VINE GULLY: NO JUMP CROSSES IT. GROW YOUR BRIDGES, STUMP BY STUMP.');
   jar(374, 29, 'green'); bridgeBed(376, 29, 377, 384, G);                                  /* the bank's bed: the first bridge */
-  ground(377, 406, 36); spikes(377, 384, 35); spikes(388, 395, 35); spikes(399, 406, 35);   /* the gully floor: stakes from wall to wall */
+  ground(377, 406, 36); net(377, 30, 35); spikes(390, 393, 35); spikes(401, 404, 35);   /* the gully floor: the first pocket (the bank) is bare with a twine ladder up (a fall off the first bridge costs the climb), the stakes are under the two bridges that follow */
   ground(385, 387, 29); jar(385, 28, 'green'); bridgeBed(387, 28, 388, 395, 29);           /* the first stump */
   ground(396, 398, 28); jar(396, 27, 'green'); bridgeBed(398, 27, 399, 406, 28);           /* the second stump, a row higher */
   ground(407, 409, 28); jar(407, 27, 'green'); ladderBed(409, 27, 20);                     /* the third stump, at the cliff's foot */
@@ -225,7 +225,7 @@ export function buildUnderleaf3({ painter, T, TS, knightRow }) {
      ledge the far bank; its archer captain is the exam. A fall into the thorns sends you back to the last rack you stood on. */
   sign(416, 20, 'THE BUBBLE SHAFTS: FLOAT FROM RACK TO RACK. A BUBBLE RIDES A WELL HIGHER.');
   jar(417, 20, 'blue'); well(420, 20, 7);                                                  /* the lip's well: up to the first rack */
-  ground(421, 446, 36); spikes(421, 446, 35);                                              /* THE CHASM: thorns from wall to wall */
+  ground(421, 446, 36); net(421, 22, 35); spikes(436, 441, 35);                                              /* THE CHASM: thorns from wall to wall */
   board(422, 425, 14); jar(422, 13, 'blue'); well(425, 13, 6);                             /* the first rack: its well rides six rows */
   board(428, 431, 8);                                                                      /* the second rack, high: no well - the drop to the third is the way on */
   board(435, 438, 13); jar(435, 12, 'green'); jar(436, 12, 'blue'); well(438, 12, 7);      /* the third rack: a GREEN and a BLUE */

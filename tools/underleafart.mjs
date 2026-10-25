@@ -8,7 +8,7 @@ import { levelHash } from './level-quality.mjs';
 import { LEVELS } from '../src/level.js';
 const pg = await openPage({ audio: false, fonts: false }); let bad = 0;
 const ok = (c, m) => { console.log((c ? '  ok   ' : '  FAIL ') + m); if (!c) bad++; };
-ok(levelHash(LEVELS.find(l => l.id === 'underleaf')) === '9aea76bcc829', "the level hash is underleaf4's greybox (art lanes never change the level data)");
+ok(levelHash(LEVELS.find(l => l.id === 'underleaf')) === '7eb89a497cf8', "the level hash is the act-I tune's (claude/batch123 underleaf-act1-tune, over underleaf4's greybox): the art pass itself never changes the level data");
 try {
   const r = await pg.evalp(`(async()=>{
     const LV=(await import('/src/level.js')).LEVELS, idx=LV.findIndex(l=>l.id==='underleaf'); BK.manualSimulation=true; BK.setHero('knight'); BK.reset({fresh:true}); BK.load(idx); BK.start(); BK.god=true; BK.sim(120);
