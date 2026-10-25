@@ -238,7 +238,7 @@ export function buildKitchenGate({ painter, T, TS }) {
       { kind: 'kgpage', opens: 'secret', hud: 'RECIPE PAGES n/3: THE SPICE VAULT' },
     ],
     duskStart: -1, duskLen: 1, music: 'cave', night: false, glowNight: false,
-    interiors: [],
+    interiors: [[1, 72, 28, 46, 'cellar'], [56, 104, 9, 26, 'cellar'], [105, 200, 4, 28, 'keep'], [201, 300, 8, 27, 'keep'], [300, 388, 6, 27, 'royal'], [389, 418, 8, 21, 'royal']],   /* INSIDE THE CASTLE: every hall has a back wall, never the sky (the art lane gives each its own) */
     palette: { hall: true, sky: 'night', dress: 'none', ledges: 'beam', haze: 'rgba(255,170,90,0.10)', dirt: '#5e4a3a', dirtL: '#7a6450', dirtD: '#3a2c22', grass: '#8a7058', grassL: '#a88a6a', grassD: '#5a4636' },
     ambient: [{ x0: 0, x1: 99999, kind: 'cave' }],
     tints: [[-24, 104, [180, 190, 210], 0.07], [104, 201, [255, 200, 150], 0.07], [201, 300, [255, 210, 160], 0.07], [300, 372, [255, 215, 170], 0.06], [372, W + 24, [255, 200, 140], 0.08]],

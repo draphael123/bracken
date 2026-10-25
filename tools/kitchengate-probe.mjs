@@ -42,13 +42,13 @@ try {
   for(const [x,y] of BK.L.kgPages){tp(x,y);BK.sim(6);}out.pages=rd().pages;out.vault=rd().vault;out.vaultCell=cell(362,22);
   tp(304,21);BK.sim(10);out.banner3=rd().banner;
   /* 7. LORD GRUBBAG */
-  tp(380,21);for(let i=0;i<260;i++){BK.sim(1);P.hp=P.maxHp;}const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
+  tp(398,21);for(let i=0;i<260;i++){BK.sim(1);P.hp=P.maxHp;}const b=BK.boss;out.boss=b?{t:b.t,mode:b.mode,hp:b.hp,max:b.maxHp,active:!!BK.bossActive}:null;
   const GH=BK.grubbagHands(),S=GH&&GH.show();
   if(b&&S){b.mode='sit';S.restT=99;S.ward=0;S.hungry=0;out.fed=GH.take(b,20,P.x,false);
     /* a REAL blow on the pie oven's bellows */
     tp(Math.floor(S.G.bellowsX/16)-1,21);P.face=1;for(let i=0;i<40&&S.oven.st==='cold';i++){if(P.atk<0)BK.press('atk');BK.sim(1);S.restT=99;}out.oven=S.oven.st;
     tp(Math.floor(S.G.chairX/16)-9,21);let ch=false,modes=new Set();for(let i=0;i<900&&!ch;i++){BK.sim(1);P.hp=P.maxHp;if(b.mode==='sit')S.restT=99;modes.add(b.mode);ch=b.mode==='choke';}
-    out.choke={ch,modes:[...modes].join(','),items:S.n.pies,chokes:S.n.chokes};if(ch){out.open=GH.take(b,20,P.x,false);for(let i=0;i<400&&b.mode==='choke';i++){BK.sim(1);P.hp=P.maxHp;}for(let i=0;i<40;i++)BK.sim(1);out.ward=S.ward>0;out.warded=GH.take(b,20,P.x,false);}
+    out.choke={ch,modes:[...modes].join(','),items:S.n.pies,chokes:S.n.chokes};if(ch){out.open=GH.take(b,20,P.x,false);for(let i=0;i<1200&&b.mode==='choke';i++){BK.sim(1);P.hp=P.maxHp;}for(let i=0;i<40;i++)BK.sim(1);out.ward=S.ward>0;out.warded=GH.take(b,20,P.x,false);}
     out.bar=GH.barName(b);out.n=JSON.parse(JSON.stringify(S.n));}
   BK.manualSimulation=false;return out;})()`, 300000);
   console.log(JSON.stringify(r));

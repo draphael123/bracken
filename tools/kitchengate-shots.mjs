@@ -12,7 +12,7 @@ const only = process.argv[2] ? new Set(process.argv[2].split(',')) : null;
 mkdirSync(OUT, { recursive: true });
 const stoke = (id, n) => `BK.kitchen().stoke('${id}');for(let k=0;k<${n};k++){BK.step(1);BK.P.hp=BK.P.maxHp;}`;
 /* the boss: his hall, him set into a mode */
-const gb = (m, t, extra) => `BK.tp(394,21);for(let k=0;k<320;k++){BK.sim(1);BK.P.hp=BK.P.maxHp;}const GH=BK.grubbagHands(),S=GH&&GH.show(),b=BK.boss;if(S&&b){S.restT=99;S.waves=[];S.throws=[];S.floods=[];S.items=[];S.oven.st='cold';BK.tp(400,21);b.mode='${m}';b.modeT=${t};b.openT0=${t};b.face=-1;${extra || ''}}`;
+const gb = (m, t, extra) => `BK.tp(398,21);for(let k=0;k<320;k++){BK.sim(1);BK.P.hp=BK.P.maxHp;}const GH=BK.grubbagHands(),S=GH&&GH.show(),b=BK.boss;if(S&&b){S.restT=99;S.waves=[];S.throws=[];S.floods=[];S.items=[];S.oven.st='cold';BK.tp(402,21);b.mode='${m}';b.modeT=${t};b.openT0=${t};b.face=-1;${extra || ''}}`;
 const SHOTS = [
   ['cellar', 6, 39, ''], ['cold-store', 30, 37, ''], ['scullery', 58, 39, ''], ['scullery-steam', 62, 39, stoke('scullery', 40)],
   ['vaults', 72, 26, ''], ['brewhouse', 84, 26, stoke('brewhouse', 30)],
